@@ -1,6 +1,7 @@
   module contraction
   use wrapper_sorting
   use symmetry_offset
+  use modified_sorting
     implicit none
 
     public contraction_222
@@ -16,7 +17,7 @@
      contains
 
    subroutine contraction_222 (left_order,right_order,im_order,leftTensor,rightTensor,imTensor, &
-           &                   dia_factor,dia_sum_factor,nrep)
+           &                   dia_factor,dia_sum_factor,nrep,irrep_left,irrep_right)
 
 !----------calling variables-----------------------------------
     character(2), dimension(2), intent(in)   ::left_order,im_order,right_order
@@ -24,6 +25,7 @@
     integer, intent(in)                      :: nrep
     real(8), intent(in)                      :: dia_factor, dia_sum_factor             !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
     real(8), intent(inout)                   :: imTensor(*)
+    integer,intent(in),optional              :: irrep_left,irrep_right
 !--------------------------------------------------------------
     integer        :: x_row(nrep),x_column(nrep),y_row(nrep),y_column(nrep)
     character(1)   :: transA,transB
@@ -32,14 +34,28 @@
     logical        :: array_equal = .true. 
     real*8,allocatable :: ImTensor_temp(:) 
     real*8,allocatable :: ImTensor_temp_temp(:) 
+    integer             :: irrep_left_loc,irrep_right_loc
+    integer             :: irrep_target
 
 #include "param.inc"
 #include "complex.inc"
 
+ if (.not.present(irrep_left)) then
+   irrep_left_loc = 1
+ else
+   irrep_left_loc = irrep_left
+ endif 
+
+ if (.not.present(irrep_right)) then
+   irrep_right_loc = 1
+ else
+   irrep_right_loc = irrep_right
+ endif 
+
     transA = 'N'  
     transB = 'N'  
 
-!  1) fetch the fixed arrays, properly sorted to contract with BLAS.
+!  1) fetch the fixed arrays, properly sort to contract with BLAS.
    
    call onebody_for_blas (left_order,im_order,right_order,transA,x_row,x_column,freeindex_left)
 
@@ -49,7 +65,8 @@
 
    if (array_equal) then
 
-   call cntrct (transA,transB,x_row,y_column,x_column,dia_factor*A1,leftTensor,rightTensor,dia_sum_factor*A1,imTensor,NREP) 
+    call cntrct_new (transA,transB,x_row,y_column,x_column,dia_factor*A1,leftTensor,rightTensor, &
+   &                dia_sum_factor*A1,imTensor,irrep_left_loc,irrep_right_loc,irrep_target,.false.) 
 
    else
 
@@ -57,11 +74,16 @@
 
    ImTensor_temp = 0.0d0
 
-   call cntrct (transA,transB,x_row,y_column,x_column,dia_factor*A1,leftTensor,rightTensor,A0,imTensor_temp,NREP) 
+    call cntrct_new (transA,transB,x_row,y_column,x_column,dia_factor*A1,leftTensor,rightTensor, &
+   &                dia_sum_factor*A1,imTensor_temp,irrep_left_loc,irrep_right_loc,irrep_target,.false.) 
 
    allocate (ImTensor_temp_temp(dot_product(x_row,y_column)*rcw))
 
-   call srt1c1n (nrep,x_row,y_column,imTensor_temp,imTensor_temp_temp)
+
+    call SRT1C1_exp (irrep_target,.false.,x_row,y_column,imTensor_temp,imTensor_temp_temp,1)
+
+
+!   call srt1c1n (nrep,x_row,y_column,imTensor_temp,imTensor_temp_temp)
 
    call xaxpy (dot_product(x_row,y_column),dia_sum_factor*A1,imTensor_temp_temp,1,imTensor,1) 
 
@@ -73,7 +95,7 @@
     end subroutine
 
    subroutine contraction_442 (left_order,right_order,im_order,ImTensor, &
-           &                   dia_factor,dia_sum_factor,nrep,LeftTensor,RightTensor)
+           &   dia_factor,dia_sum_factor,nrep,LeftTensor,RightTensor,irrep_left,irrep_right)
      
 !----------calling variables-----------------------------------
     real(8), intent(in) ::  dia_sum_factor   !dia_factor = \alpha in DGEMM ; dia_sum_factor= \beta in DGEMM
@@ -82,6 +104,7 @@
     character(2),dimension(2), intent(in) :: im_order
     real(8),optional,intent(in)           :: RightTensor(:),LeftTensor(:)   
     integer,intent(in)    :: nrep
+    integer,intent(in),optional  :: irrep_left,irrep_right
     integer   :: x_row(nrep),x_column(nrep)
     integer   :: y_column(nrep),y_row(nrep)              
     real(8),intent(inout) :: ImTensor(*)
@@ -94,6 +117,7 @@
     logical               :: array_equal = .true. 
     integer               :: asym_factor_R,asym_factor_L,i 
     integer               :: maxdim1, maxdim2 
+    integer             :: irrep_left_loc,irrep_right_loc,irrep_target
     real(8),allocatable   :: ImTensor_temp(:) 
     real(8),allocatable   :: ImTensor_temp_temp(:) 
 !--------------------------------------------------------------
@@ -103,6 +127,18 @@
 
       maxdim1 = sorted_dimension(left_order)
       maxdim2 = sorted_dimension(right_order)
+
+ if (.not.present(irrep_left)) then
+   irrep_left_loc = 1
+ else
+   irrep_left_loc = irrep_left
+ endif 
+
+ if (.not.present(irrep_right)) then
+   irrep_right_loc = 1
+ else
+   irrep_right_loc = irrep_right
+ endif 
 
   allocate(v_sort(maxdim1*rcw))  
   allocate(right_sorted(maxdim2*rcw))  
@@ -115,13 +151,14 @@
      call decide_sorting_routine(13,left_order,right_order,im_order,transA,match_index_L,asym_factor_L, &
     &   .true.,sorted_opArray=sorted_oparray_left)
 
-
 !     write(*,*)'debug info left array 13 ',transA,match_index_L,asym_factor_L
 
      if (present(LeftTensor)) then 
-      call sorting_for_blas(13,left_order,match_index_L,.false.,transA,v_sort,x_row,x_column,LeftTensor)
+      call sorting_for_blas(13,left_order,match_index_L,.false.,transA,v_sort,x_row,x_column,LeftTensor, &
+            irrep_input=irrep_left_loc)
      else
-      call sorting_for_blas(13,left_order,match_index_L,.false.,transA,v_sort,x_row,x_column)
+      call sorting_for_blas(13,left_order,match_index_L,.false.,transA,v_sort,x_row,x_column, &
+            irrep_input=irrep_left_loc)
      endif 
 
 ! 2) general sorting routine for fixed arrays. 
@@ -136,27 +173,30 @@
      array_equal = all((/sorted_oparray_left(1),sorted_oparray_right(4)/)==im_order)
 
      if (present(RightTensor)) then 
-     call sorting_for_blas(31,right_order,match_index_R,.false.,transB,right_sorted,y_row,y_column,rightTensor)
+     call sorting_for_blas(31,right_order,match_index_R,.false.,transB,right_sorted,y_row,y_column,rightTensor, &
+           irrep_input=irrep_right_loc)
      else
-     call sorting_for_blas(31,right_order,match_index_R,.false.,transB,right_sorted,y_row,y_column)
+     call sorting_for_blas(31,right_order,match_index_R,.false.,transB,right_sorted,y_row,y_column, &
+          irrep_input=irrep_right_loc)
      endif  
 
 ! 3) contraction routine for symmetry-packed arrays.
 
    if (array_equal) then
       call cntrct_new (transA,transB,x_row,y_column,x_column,asym_factor_R*asym_factor_L*dia_factor*A1,v_sort, &
-   &                right_sorted,dia_sum_factor*A1,imTensor,1,1,.false.) 
+   &                right_sorted,dia_sum_factor*A1,imTensor,irrep_left_loc,irrep_right_loc,irrep_target,.false.) 
 
     else
 
    allocate (ImTensor_temp(dot_product(x_row,y_column)*rcw))
    ImTensor_temp = 0.0d0
      call cntrct_new (transA,transB,x_row,y_column,x_column,asym_factor_R*asym_factor_L*dia_factor*A1,v_sort, &
-    &              right_sorted,A0,imTensor_temp,1,1,.false.) 
+    &              right_sorted,A0,imTensor_temp,irrep_left_loc,irrep_right_loc,irrep_target,.false.) 
 
    allocate (ImTensor_temp_temp(dot_product(x_row,y_column)*rcw))
 
-   call srt1c1n (nrep,x_row,y_column,imTensor_temp,imTensor_temp_temp)
+   call srt1c1_exp (irrep_target,.false.,x_row,y_column,imTensor_temp,imTensor_temp_temp,1)
+!   call srt1c1n (nrep,x_row,y_column,imTensor_temp,imTensor_temp_temp)
 
    deallocate (ImTensor_temp)
 
@@ -172,7 +212,7 @@
     end subroutine
 
    subroutine contraction_422 (left_order,right_order,im_order,rightTensor,imTensor, &
-           &                   dia_factor,dia_sum_factor,nrep,LeftTensor)
+           &                   dia_factor,dia_sum_factor,nrep,LeftTensor,irrep_left,irrep_right)
      
 !----------calling variables-----------------------------------
     character(2),dimension(4),intent(in)   :: left_order
@@ -182,6 +222,7 @@
     integer,intent(in)     :: nrep
     real(8),intent(in)     :: dia_sum_factor,dia_factor   !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
     real(8),intent(inout)  :: imTensor(*)
+    integer,intent(in),optional  :: irrep_left,irrep_right
 !--------------------------------------------------------------
     integer        :: x_row(nrep), x_column(nrep),y_row(nrep),y_column(nrep)
     character(1)   :: transA,transB
@@ -189,6 +230,7 @@
     integer        :: asym_factor
     integer        :: maxdim, lda
     logical        :: array_equal
+    integer        :: irrep_left_loc,irrep_right_loc, irrep_target
     real(8),allocatable        :: v_sort(:)
     real(8),allocatable        :: RightTensor_sort(:)
     character(2)   :: sorted_left(4),freeindx(2)
@@ -205,6 +247,22 @@
 
   maxdim = sorted_dimension(left_order)
 
+ if (.not.present(irrep_left)) then
+   irrep_left_loc = 1
+ else
+   irrep_left_loc = irrep_left
+ endif 
+
+ if (.not.present(irrep_right)) then
+   irrep_right_loc = 1
+ else
+   irrep_right_loc = irrep_right
+ endif 
+
+  irrep_target = irrep_right_loc
+
+  if (irrep_left_loc > irrep_right_loc) irrep_target = irrep_left_loc
+
 
   allocate(v_sort(maxdim*rcw))  
 
@@ -213,14 +271,15 @@
      call decide_sorting_routine(22,left_order,right_order,im_order,transA,match_index,asym_factor,.true., &
     &                        sorted_opArray=sorted_left)
 
-
      if (present(LeftTensor)) then
 
-     call sorting_for_blas(22,left_order,match_index,.false.,transA,v_sort,x_row,x_column,presorted=LeftTensor,if_totsym=.true.)
+     call sorting_for_blas(22,left_order,match_index,.false.,transA,v_sort,x_row,x_column,presorted=LeftTensor, &
+                     if_totsym=.true.,irrep_input=irrep_left_loc)
 
      else
 
-     call sorting_for_blas(22,left_order,match_index,.false.,transA,v_sort,x_row,x_column,if_totsym=.true.)
+     call sorting_for_blas(22,left_order,match_index,.false.,transA,v_sort,x_row,x_column,if_totsym=.true., &
+          irrep_input=irrep_left_loc)
 
      endif
 
@@ -232,21 +291,22 @@
 !      write(*,*)'inside 422: array_equal' ,array_equal 
 
          if (transA.eq.'n'.or.transA.eq.'N') then
-            lda = x_row(1)
+            lda = x_row(irrep_target)
          else
-            lda = x_column(1)
+            lda = x_column(irrep_right_loc)
          endif
 
      if (transB=='T') then
 
-      allocate(rightTensor_sort(x_column(1)*rcw))
+      allocate(rightTensor_sort(x_column(irrep_right_loc)*rcw))
 
-      call srt1c1n (nrep,y_column,y_row,rightTensor,rightTensor_sort)
+!      call srt1c1n (nrep,y_column,y_row,rightTensor,rightTensor_sort)
+      call srt1c1_exp (irrep_right_loc,.false.,y_column,y_row,rightTensor,rightTensor_sort,1)
 
 !!      if (carith) call conjuga(x_column(1),rightTensor,1)
 
-      call xgemm (transA,'N',x_row(1),1,x_column(1),asym_factor*dia_factor*A1,v_sort, &
-     &       lda,rightTensor_sort,x_column(1),dia_sum_factor*A1,imTensor,x_row(1))
+      call xgemm (transA,'N',x_row(irrep_target),1,x_column(irrep_right_loc),asym_factor*dia_factor*A1,v_sort, &
+     &       lda,rightTensor_sort,x_column(irrep_right_loc),dia_sum_factor*A1,imTensor,x_row(irrep_target))
 
 !     call xgemv (transA,x_row(1),x_column(1),asym_factor*dia_factor*A1,v_sort,x_row(1),rightTensor_sort, &
 !     &            1,dia_sum_factor*A1,imTensor,1) 
@@ -255,8 +315,8 @@
      
       else
 
-      call xgemm (transA,'N',x_row(1),1,x_column(1),asym_factor*dia_factor*A1,v_sort, &
-      &       lda,rightTensor,x_column(1),dia_sum_factor*A1,imTensor,x_row(1))
+      call xgemm (transA,'N',x_row(irrep_target),1,x_column(irrep_right_loc),asym_factor*dia_factor*A1,v_sort, &
+      &       lda,rightTensor,x_column(irrep_right_loc),dia_sum_factor*A1,imTensor,x_row(irrep_target))
 
 !!       call xgemv (transA,x_row(1),x_column(1),asym_factor*dia_factor*A1,v_sort,x_row(1),rightTensor,1,dia_sum_factor*A1,imTensor,1) 
       endif
@@ -265,7 +325,7 @@
     end subroutine
 
    subroutine contraction_242 (left_order,right_order,im_order,LeftTensor,ImTensor, &
-           &                   dia_factor,dia_sum_factor,nrep,RightTensor)
+           &                   dia_factor,dia_sum_factor,nrep,RightTensor,irrep_left,irrep_right)
 
 
 !----------calling variables-----------------------------------
@@ -277,6 +337,7 @@
     real(8), intent(in)                      :: dia_sum_factor        
     real(8), intent(in)                      :: dia_factor            
     real(8), intent(inout)                   :: ImTensor(*)
+    integer,intent(in),optional  :: irrep_left,irrep_right
 !--------------------------------------------------------------
     character(2)   :: freeindex_left(2)
     character(2)   :: sorted_oparray_right(4) 
@@ -286,6 +347,7 @@
     integer        :: match_index,i 
     integer        :: asym_factor
     integer        :: maxdim
+    integer        :: irrep_left_loc,irrep_right_loc,irrep_target 
     integer        :: ldb 
     logical        :: array_equal
     real(8),allocatable        :: right_sort(:)
@@ -296,21 +358,39 @@
 
     maxdim = sorted_dimension(right_order)
 
+ if (.not.present(irrep_left)) then
+   irrep_left_loc = 1
+ else
+   irrep_left_loc = irrep_left
+ endif 
+
+ if (.not.present(irrep_right)) then
+   irrep_right_loc = 1
+ else
+   irrep_right_loc = irrep_right
+ endif 
+
+  irrep_target = irrep_left_loc
+
+  if (irrep_right_loc > irrep_left_loc) irrep_target = irrep_right_loc
+
    allocate(right_sort(maxdim*rcw))  
 
      transA  =  'N'
      trans1A = 'N'
 
-!**  1> fetch the integral array, properly sorted to contract with BLAS.
+!**  1> fetch the integral array, properly sort to contract with BLAS.
 
    call decide_sorting_routine(22,right_order,im_order,left_order,transA,match_index,asym_factor,.true.,&
    &                          sorted_opArray=sorted_oparray_right)
 
 
    if (present(RightTensor)) then
-   call sorting_for_blas(22,right_order,match_index,.false.,transA,right_sort,y_row,y_column,presorted=RightTensor,if_totsym=.true.)
+  call sorting_for_blas(22,right_order,match_index,.false.,transA,right_sort,y_row,y_column,presorted=RightTensor, &
+         if_totsym=.true.,irrep_input=irrep_right_loc)
    else
-   call sorting_for_blas(22,right_order,match_index,.false.,transA,right_sort,y_row,y_column,if_totsym=.true.)
+  call sorting_for_blas(22,right_order,match_index,.false.,transA,right_sort,y_row,y_column,if_totsym=.true., &
+       irrep_input=irrep_right_loc)
    endif
 
 !**  2> sort onebody integral properly to use in BLAS.
@@ -320,27 +400,28 @@
      array_equal = all((/sorted_oparray_right(3),sorted_oparray_right(4)/)==im_order)
 
          if (transA.eq.'N'.or.transA.eq.'n') then
-            ldb = y_row(1)
+            ldb = y_row(irrep_right_loc)
          else
-            ldb = y_column(1)
+            ldb = y_column(irrep_target)
          endif
 
 !**  3>  to do B = XA  type operation with xgemv, we are doing B^T = A^T*X^T then transpose(B^T). that implies following modifications.   
 
    if (trans1A=='T') then
 
-   allocate (left_sort(y_row(1)*rcw))
+   allocate (left_sort(y_row(irrep_left_loc)*rcw))
 
-   call srt1c1n (nrep,x_column,x_row,LeftTensor,left_sort)
+!   call srt1c1n (nrep,x_column,x_row,LeftTensor,left_sort)
+   call srt1c1_exp (irrep_left_loc,.false.,x_column,x_row,LeftTensor,left_sort,1)
 
-   call xgemm ('N',transA,1,y_column(1),y_row(1),asym_factor*dia_factor*A1,left_sort, &
+   call xgemm ('N',transA,1,y_column(irrep_target),y_row(irrep_right_loc),asym_factor*dia_factor*A1,left_sort, &
       &       1,right_sort,ldb,dia_sum_factor*A1,imTensor,1)
 
    deallocate (left_sort)
 
    else
     
-   call xgemm ('N',transA,1,y_column(1),y_row(1),asym_factor*dia_factor*A1,LeftTensor, &
+   call xgemm ('N',transA,1,y_column(irrep_target),y_row(irrep_right_loc),asym_factor*dia_factor*A1,LeftTensor, &
       &       1,right_sort,ldb,dia_sum_factor*A1,imTensor,1)
 
    endif
@@ -349,7 +430,7 @@
     end subroutine
 
    subroutine contraction_444 (left_order,right_order,im_order,imTensor, &
-           &                   dia_factor,dia_sum_factor,nrep,RightTensor,LeftTensor)
+           &    dia_factor,dia_sum_factor,nrep,RightTensor,LeftTensor,irrep_left,irrep_right)
     
 !----------calling variables-----------------------------------
     character(*), dimension(4), intent(in)   :: left_order, right_order, im_order
@@ -358,6 +439,7 @@
     integer, intent(in) :: nrep
     real(8), intent(in) :: dia_factor,dia_sum_factor      !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
     real(8), intent(inout)  :: imTensor(*)
+    integer,intent(in),optional  :: irrep_left,irrep_right
 !--------------------------------------------------------------
    integer        :: x_row(nrep),x_column(nrep),y_row(nrep),y_column(nrep)
    character(1)   :: transA, transB
@@ -368,6 +450,8 @@
    real(8),allocatable :: im_temp(:)
    real(8),allocatable :: im_temp_temp(:)
    integer             :: asym_factor_R,asym_factor_L
+    integer             :: irrep_left_loc,irrep_right_loc
+    integer             :: irrep_target
    integer             :: maxdim1, maxdim2
    integer             :: contraction_type
 
@@ -377,6 +461,18 @@
 
   maxdim1 = max(sorted_dimension(left_order),sorted_dimension(im_order))
   maxdim2 = sorted_dimension(right_order)
+
+ if (.not.present(irrep_left)) then
+   irrep_left_loc = 1
+ else
+   irrep_left_loc = irrep_left
+ endif 
+
+ if (.not.present(irrep_right)) then
+   irrep_right_loc = 1
+ else
+   irrep_right_loc = irrep_right
+ endif 
 
   allocate(v_sort(maxdim1*rcw))  
   allocate(right_sorted(maxdim2*rcw))  
@@ -393,9 +489,11 @@
 !    write(*,*)'debug info left array 22:  ',transA,save_index_L,asym_factor_L,sorted_opArray_left
 
     if (present(LeftTensor)) then 
-    call sorting_for_blas(22,left_order,save_index_l,.false.,transA,v_sort,x_row,x_column, presorted=LeftTensor,if_TotSym=.false.)
+    call sorting_for_blas(22,left_order,save_index_l,.false.,transA,v_sort,x_row,x_column, presorted=LeftTensor, &
+        if_TotSym=.false.,irrep_input=irrep_left_loc)
     else
-    call sorting_for_blas(22,left_order,save_index_l,.false.,transA,v_sort,x_row,x_column,if_TotSym=.false.)
+    call sorting_for_blas(22,left_order,save_index_l,.false.,transA,v_sort,x_row,x_column,if_TotSym=.false., &
+          irrep_input=irrep_left_loc)
     endif
 
 !  2) fetch/provide the right tensor and sort properly for BLAS. also extract row and column dimensions of the sorted tensor.
@@ -408,9 +506,10 @@
 
     if (present(RightTensor)) then 
     call sorting_for_blas(22,right_order,save_index_r,.false.,transB,right_sorted,y_row,y_column,&
-   &                  presorted=RightTensor,if_TotSym=.false.)
+   &                  presorted=RightTensor,if_TotSym=.false.,irrep_input=irrep_right_loc)
     else
-    call sorting_for_blas(22,right_order,save_index_r,.false.,transB,right_sorted,y_row,y_column,if_TotSym=.false.)
+    call sorting_for_blas(22,right_order,save_index_r,.false.,transB,right_sorted,y_row,y_column, &
+        if_TotSym=.false.,irrep_input=irrep_right_loc)
     endif
 
 !  3) Distinguish the contraction cases based on symmetry ordering of the sorted tensors.
@@ -441,23 +540,25 @@
     case(1)
 
     call cntrct_new (transA,transB,x_row,y_column,x_column,asym_factor_L*asym_factor_R*dia_factor*A1,v_sort,&
-    &    right_sorted,A0,im_temp,1,1,.true.) 
+    &    right_sorted,A0,im_temp,irrep_left_loc,irrep_right_loc,irrep_target,.true.) 
 
     case(2)
 
     call cntrct_1 (transA,transB,x_row,y_column,x_column,asym_factor_L*asym_factor_R*dia_factor*A1,v_sort, &
-    &      right_sorted,A0,im_temp,1,1,.true.) 
+    &      right_sorted,A0,im_temp,irrep_left_loc,irrep_right_loc,irrep_target,.true.) 
 
     case(3)
 
     call cntrct_2 (transA,transB,x_row,y_column,x_column,asym_factor_L*asym_factor_R*dia_factor*A1,v_sort, &
-    &              right_sorted,A0,im_temp,1,1,.true.) 
+    &              right_sorted,A0,im_temp,irrep_left_loc,irrep_right_loc,irrep_target,.true.) 
     case(4)
 
     call cntrct_3 (transA,transB,x_row,y_column,x_column,asym_factor_L*asym_factor_R*dia_factor*A1,v_sort, &
-    &           right_sorted,A0,im_temp,1,1,.true.) 
+    &           right_sorted,A0,im_temp,irrep_left_loc,irrep_right_loc,irrep_target,.true.) 
 
   end select  
+
+   write(*,*)'inside 444',irrep_target
 
 !  5) resort and antisymmetrize the product tensor. sum that up with the particular class of intermediate/residue/sigma etc. 
 
@@ -480,14 +581,17 @@
 
    im_temp_temp = 0.0d0
 
-   call srt1c1n (nrep,x_row,y_column,im_temp,im_temp_temp)
+!   call srt1c1n (nrep,x_row,y_column,im_temp,im_temp_temp)
+   call srt1c1_exp (irrep_target,.true.,x_row,y_column,im_temp,im_temp_temp,2)
 
-   call sorting_for_blas(22,im_order,save_index,.true.,transA,v_sort,x_row,x_column,im_temp_temp,if_TotSym=.false.)
+   call sorting_for_blas(22,im_order,save_index,.true.,transA,v_sort,x_row,x_column,im_temp_temp,if_TotSym=.false., &
+      irrep_input=irrep_right_loc)
 
      deallocate(im_temp_temp)
    else
 
-   call sorting_for_blas(22,im_order,save_index,.true.,transA,v_sort,x_row,x_column,im_temp,if_TotSym=.false.)
+   call sorting_for_blas(22,im_order,save_index,.true.,transA,v_sort,x_row,x_column,im_temp,if_TotSym=.false., &
+             irrep_input=irrep_right_loc)
 
    endif
 
@@ -496,7 +600,7 @@
 
    else
     call cntrct_new (transA,transB,x_row,y_column,x_column,asym_factor_R*asym_factor_L*dia_factor*A1,v_sort,right_sorted, &
-   &              dia_sum_factor*A1,imTensor,1,1,.true.) 
+   &              dia_sum_factor*A1,imTensor,irrep_left_loc,irrep_right_loc,irrep_target,.true.) 
    endif
 
    deallocate(v_sort)
@@ -504,8 +608,8 @@
 
   end subroutine
 
-   subroutine contraction_424 (left_order,right_order,im_order,ImTensor, &
-           &                   dia_factor,dia_sum_factor,nrep,LeftTensor,RightTensor)
+   subroutine contraction_424 (left_order,right_order,im_order,ImTensor,dia_factor, &
+           &     dia_sum_factor,nrep,LeftTensor,RightTensor,irrep_left,irrep_right)
 
 !----------calling variables-----------------------------------
     character(2), dimension(4), intent(in)   :: left_order,im_order
@@ -514,9 +618,12 @@
     integer, intent(in) :: nrep
     real(8), intent(in) :: dia_factor,dia_sum_factor      !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
     real(8), intent(inout) :: ImTensor(*)
+    integer,intent(in),optional  :: irrep_left,irrep_right
     integer      :: x_row(nrep),x_column(nrep),y_row(nrep),y_column(nrep)
     character(1) :: transA, transB
     integer      :: match_index,i
+    integer             :: irrep_left_loc,irrep_right_loc
+    integer             :: irrep_target
     character(2) :: FreeIndx(2),sorted_opArray(4)
     real(8),allocatable :: v_sort (:)
     integer :: asym_factor 
@@ -529,25 +636,37 @@
 
   maxdim = max (sorted_dimension(left_order),sorted_dimension(im_order))
 
+ if (.not.present(irrep_left)) then
+   irrep_left_loc = 1
+ else
+   irrep_left_loc = irrep_left
+ endif 
+
+ if (.not.present(irrep_right)) then
+   irrep_right_loc = 1
+ else
+   irrep_right_loc = irrep_right
+ endif 
+
   allocate(v_sort(maxdim*rcw))  
 
    transA = 'N'
    transB = 'N'
-
 
 !  1) fetch/provide the left tensor and sort properly for BLAS. also extract row and column dimensions of the sorted tensor.
 
    call decide_sorting_routine(31,left_order,right_order,im_order,transA,match_index,asym_factor, &
    &             .true.,sorted_opArray=sorted_opArray)
 
-
  if (present(LeftTensor)) then
 
-   call sorting_for_blas(31,left_order,match_index,.false.,transA,v_sort,x_row,x_column,presorted=LeftTensor)
+   call sorting_for_blas(31,left_order,match_index,.false.,transA,v_sort,x_row,x_column,presorted=LeftTensor, &
+         irrep_input=irrep_right_loc)
  
  else
 
-   call sorting_for_blas(31,left_order,match_index,.false.,transA,v_sort,x_row,x_column)
+   call sorting_for_blas(31,left_order,match_index,.false.,transA,v_sort,x_row,x_column, &
+          irrep_input=irrep_right_loc)
 
  endif
 
@@ -559,7 +678,7 @@
    im_temp = 0.0d0
 
     if (present(RightTensor)) call cntrct_new (transA,transB,x_row,y_column,x_column,asym_factor*dia_factor*A1,v_sort, &
-    &                                      RightTensor,A0,im_temp,1,1,.false.)
+    &                                      RightTensor,A0,im_temp,irrep_left_loc,irrep_right_loc,irrep_target,.false.)
 
 !  3) re-sort the arrays to align with the desired structure of the intermediate.
 
@@ -574,17 +693,20 @@
 
    allocate(im_temp_temp(dot_product(x_row,y_column)*rcw))
 
-   call srt1c1n (nrep,x_row,y_column,im_temp,im_temp_temp)
+!   call srt1c1n (nrep,x_row,y_column,im_temp,im_temp_temp)
+   call srt1c1_exp (irrep_target,.false.,x_row,y_column,im_temp,im_temp_temp,1)
 
    deallocate(im_temp)
 
-   call sorting_for_blas(31,im_order,match_index,.true.,transA,v_sort,x_row,x_column,im_temp_temp,if_TotSym=.false.)
+   call sorting_for_blas(31,im_order,match_index,.true.,transA,v_sort,x_row,x_column,im_temp_temp,if_TotSym=.false., &
+           irrep_input=irrep_right_loc)
 
    deallocate(im_temp_temp)
 
    else
 
-   call sorting_for_blas(31,im_order,match_index,.true.,transA,v_sort,x_row,x_column,im_temp,if_TotSym=.false.) 
+   call sorting_for_blas(31,im_order,match_index,.true.,transA,v_sort,x_row,x_column,im_temp,if_TotSym=.false., &
+      irrep_input=irrep_right_loc)  
 
    deallocate(im_temp)
 
@@ -596,8 +718,8 @@
 
   end subroutine
 
-  subroutine contraction_244 (left_order,right_order,im_order,ImTensor, &
-           &                   dia_factor,dia_sum_factor,nrep,LeftTensor,RightTensor)
+  subroutine contraction_244 (left_order,right_order,im_order,ImTensor,dia_factor, &
+           &     dia_sum_factor,nrep,LeftTensor,RightTensor,irrep_left,irrep_right)
 
 !----------calling variables-----------------------------------
     character(2),dimension(4),intent(in) :: right_order,im_order
@@ -607,12 +729,14 @@
     real(8),intent(in) ::  dia_sum_factor      !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
     real(8),intent(in) :: dia_factor           !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
     real(8),intent(inout) :: imTensor(*)
+    integer,intent(in),optional  :: irrep_left,irrep_right
     integer :: x_row(nrep), x_column(nrep), y_row(nrep), y_column(nrep)
     character(1) :: transA, transB
     integer :: match_index,i
     character(2) :: FreeIndx(2),sorted_opArray(4)
     real(8),allocatable :: right_sort (:)
     integer :: asym_factor
+    integer             :: irrep_left_loc,irrep_right_loc, irrep_target
     integer :: maxdim 
     real(8),allocatable :: im_temp(:)
     real(8),allocatable :: im_temp_temp(:)
@@ -621,6 +745,18 @@
 #include "complex.inc"
 
   maxdim = max (sorted_dimension(right_order),sorted_dimension(im_order))
+
+ if (.not.present(irrep_left)) then
+   irrep_left_loc = 1
+ else
+   irrep_left_loc = irrep_left
+ endif 
+
+ if (.not.present(irrep_right)) then
+   irrep_right_loc = 1
+ else
+   irrep_right_loc = irrep_right
+ endif 
 
   allocate(right_sort(maxdim*rcw))  
 
@@ -633,11 +769,13 @@
 
  if (present(RightTensor)) then
  
-   call sorting_for_blas(13,right_order,match_index,.false.,transB,right_sort,y_row,y_column,RightTensor)
+   call sorting_for_blas(13,right_order,match_index,.false.,transB,right_sort,y_row,y_column,RightTensor, &
+                       irrep_input=irrep_right_loc)
  
  else
 
-   call sorting_for_blas(13,right_order,match_index,.false.,transB,right_sort,y_row,y_column)
+   call sorting_for_blas(13,right_order,match_index,.false.,transB,right_sort,y_row,y_column, &
+                    irrep_input=irrep_right_loc)   
 
  endif
 
@@ -655,7 +793,7 @@
 
 
   if (present(LeftTensor)) call cntrct_new (transA,transB,x_row,y_column,y_row,asym_factor*dia_factor*A1,LeftTensor,&
-  &        right_sort,A0,im_temp,1,1,.false.) 
+  &        right_sort,A0,im_temp,irrep_left_loc,irrep_right_loc,irrep_target,.false.) 
 
 !!   right_sort = 0.0d0
 !  4) re-sort the arrays to align with the desired structure of the imtermediate.
@@ -669,14 +807,18 @@
 
 !    write(*,*)'possibility of mistake',x_row(1),y_column(1),x_row(2),y_column(2)
   allocate(im_temp_temp(dot_product(x_row,y_column)*rcw))
-   call srt1c1n (nrep,x_row,y_column,im_temp,im_temp_temp)
+   call srt1c1_exp (irrep_target,.false.,x_row,y_column,im_temp,im_temp_temp,1)
+!   call srt1c1n (nrep,x_row,y_column,im_temp,im_temp_temp)
 
  deallocate(im_temp)
-   call sorting_for_blas(13,im_order,match_index,.true.,transA,right_sort,x_row,x_column,im_temp_temp,if_TotSym=.false.)
+   call sorting_for_blas(13,im_order,match_index,.true.,transA,right_sort,x_row,x_column,im_temp_temp,if_TotSym=.false., &
+                  irrep_input=irrep_target)   
 
  deallocate(im_temp_temp)
    else
-   call sorting_for_blas(13,im_order,match_index,.true.,transA,right_sort,x_row,x_column,im_temp,if_TotSym=.false.)
+   call sorting_for_blas(13,im_order,match_index,.true.,transA,right_sort,x_row,x_column,im_temp,if_TotSym=.false., &
+                  irrep_input=irrep_target)   
+
  deallocate(im_temp)
    endif
    call xaxpy (dot_product(x_row,x_column),A1*asym_factor*dia_sum_factor,right_sort,1,ImTensor,1)
@@ -688,11 +830,11 @@
 !===========================================================================================
 
       subroutine cntrct_new (transa,transb,mdim,ndim,kdim,alpha,a,b, &
-     &                   beta,c,irrepa,irrepb,shift_for_boson)
+     &                   beta,c,irrepa,irrepb,irrepc,shift_for_boson)
 
 #include "symm.inc"
 !---------------description--------------------------------------------
-!     generalization of cntrct routine by Luuk. the previous routine is
+!     generalization of cntrct routine by Luuk. the previous routine was
 !     applicable only for the tensors of totally symmetric irrep.
 !     now my target is to contract the tensors of any given bosonic irreps.
 !     the contraction will generate a tensor belonging to the direct product 
@@ -708,6 +850,7 @@
     integer,intent(in)    :: mdim(nrep),ndim(nrep),kdim(nrep)
 !   integer,intent(in)    :: nrep           ! total number of irreps
     integer,intent(in)    :: irrepa,irrepb  ! irreps to which A & B belong.
+    integer,intent(out)    :: irrepc         ! irrep to which C belong.
     logical,intent(in)    :: shift_for_boson! a logical variable indicating whether the shift for bosonic irrep is necessary 
     character*1,intent(in):: transa,transb
 
@@ -727,7 +870,7 @@
 
       shift = 0
       if(shift_for_boson) shift=nrep 
-
+      irrepc = multb(irrepa+shift,irrepb+shift,2)
        if (transa.eq.'N'.or.transa.eq.'n') then
         call auto_symmetry_offset(e,mdim,kdim,shift_for_boson,shift_for_boson)
        else
@@ -784,11 +927,11 @@
       end subroutine
 
       subroutine cntrct_1 (transa,transb,mdim,ndim,kdim,alpha,a,b, &
-     &                   beta,c,irrepa,irrepb,shift_for_boson)
+     &                   beta,c,irrepa,irrepb,irrepc,shift_for_boson)
 
 #include "symm.inc"
 !---------------description--------------------------------------------
-!     generalization of cntrct routine by Luuk. the previous routine is
+!     generalization of cntrct routine by Luuk. the previous routine was
 !     applicable only for the tensors of totally symmetric irrep.
 !     now my target is to contract the tensors of any given bosonic irreps.
 !     the contraction will generate a tensor belonging to the direct product 
@@ -804,6 +947,7 @@
     integer,intent(in)    :: mdim(nrep),ndim(nrep),kdim(nrep)
 !   integer,intent(in)    :: nrep           ! total number of irreps
     integer,intent(in)    :: irrepa,irrepb  ! irreps to which A & B belong.
+    integer,intent(out)    :: irrepc         ! irrep to which C belong.
     logical,intent(in)    :: shift_for_boson! a logical variable indicating whether the shift for bosonic irrep is necessary 
     character*1,intent(in):: transa,transb
 
@@ -819,9 +963,13 @@
      type(Offset) :: e,f,g
 !---------------executable code--------------------------------------
 
+
+
       call alloc_array(e,nrep,f,g)
       shift = 0
       if(shift_for_boson) shift=nrep 
+
+      irrepc = multb(irrepa+shift,irrepb+shift,2)
 
        if (transa.eq.'N'.or.transa.eq.'n') then
         call auto_symmetry_offset(e,mdim,kdim,shift_for_boson,shift_for_boson)
@@ -880,11 +1028,11 @@
       end subroutine
 
       subroutine cntrct_2 (transa,transb,mdim,ndim,kdim,alpha,a,b, &
-     &                   beta,c,irrepa,irrepb,shift_for_boson)
+     &                   beta,c,irrepa,irrepb,irrepc,shift_for_boson)
 
 #include "symm.inc"
 !---------------description--------------------------------------------
-!     generalization of cntrct routine by Luuk. the previous routine is
+!     generalization of cntrct routine by Luuk. the previous routine was
 !     applicable only for the tensors of totally symmetric irrep.
 !     now my target is to contract the tensors of any given bosonic irreps.
 !     the contraction will generate a tensor belonging to the direct product 
@@ -900,6 +1048,7 @@
     integer,intent(in)    :: mdim(nrep),ndim(nrep),kdim(nrep)
 !   integer,intent(in)    :: nrep           ! total number of irreps
     integer,intent(in)    :: irrepa,irrepb  ! irreps to which A & B belong.
+    integer,intent(out)    :: irrepc         ! irrep to which C belong.
     logical,intent(in)    :: shift_for_boson! a logical variable indicating whether the shift for bosonic irrep is necessary 
     character*1,intent(in):: transa,transb
 
@@ -919,6 +1068,7 @@
       shift = 0
       if(shift_for_boson) shift=nrep 
 
+      irrepc = multb(irrepa+shift,irrepb+shift,2)
        if (transa.eq.'N'.or.transa.eq.'n') then
         call auto_symmetry_offset(e,mdim,kdim,shift_for_boson,shift_for_boson)
        else
@@ -976,11 +1126,11 @@
       end subroutine
 
       subroutine cntrct_3 (transa,transb,mdim,ndim,kdim,alpha,a,b, &
-     &                   beta,c,irrepa,irrepb,shift_for_boson)
+     &                   beta,c,irrepa,irrepb,irrepc,shift_for_boson)
 
 #include "symm.inc"
 !---------------description--------------------------------------------
-!     generalization of cntrct routine by Luuk. the previous routine is
+!     generalization of cntrct routine by Luuk. the previous routine was
 !     applicable only for the tensors of totally symmetric irrep.
 !     now my target is to contract the tensors of any given bosonic irreps.
 !     the contraction will generate a tensor belonging to the direct product 
@@ -996,6 +1146,7 @@
     integer,intent(in)    :: mdim(nrep),ndim(nrep),kdim(nrep)
 !   integer,intent(in)    :: nrep           ! total number of irreps
     integer,intent(in)    :: irrepa,irrepb  ! irreps to which A & B belong.
+    integer,intent(out)    :: irrepc         ! irrep to which C belong.
     logical,intent(in)    :: shift_for_boson! a logical variable indicating whether the shift for bosonic irrep is necessary 
     character*1,intent(in):: transa,transb
 
@@ -1015,6 +1166,7 @@
       shift = 0
       if(shift_for_boson) shift=nrep 
 
+      irrepc = multb(irrepa+shift,irrepb+shift,2)
        if (transa.eq.'N'.or.transa.eq.'n') then
         call auto_symmetry_offset(e,mdim,kdim,shift_for_boson,shift_for_boson)
        else

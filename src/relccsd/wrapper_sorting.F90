@@ -629,7 +629,7 @@
 
   end subroutine
 
-  subroutine sorting_for_blas(Sort_Type,orb_array,save_index,do_inverse,if_trans,sorted,row,column,presorted,if_TotSym) 
+  subroutine sorting_for_blas(Sort_Type,orb_array,save_index,do_inverse,if_trans,sorted,row,column,presorted,if_TotSym,irrep_input) 
 
 !---------------description-------
 !        carry-out the sorting.
@@ -645,9 +645,11 @@
     character(1),intent(inout)            :: if_trans
     integer,intent(out)                   :: row(:),column(:)
     real(8),intent(inout)                 :: sorted(:) !think a bit more carefully to replace it by dynamic allocation. not easy.
+    integer,intent(in)           :: irrep_input 
 !----------------------------------------------
 
 !-------local variables------------------------
+
     character(20) :: Array_Type
     logical      :: do_TotSym,if_bra,if_ket
     integer      :: i,j,k,l 
@@ -797,10 +799,10 @@
        call input_index(orb_array,c,d)
 
     if (if_trans=='N') then
-      call srt_22(save_index)%unrestricted (nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+      call srt_22(save_index)%unrestricted (irrep_input,nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
      &     c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,row,column)
     else
-      call srt_22(save_index)%unrestricted (nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+      call srt_22(save_index)%unrestricted (irrep_input,nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
      &     c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,column,row)
     endif
 
@@ -810,11 +812,11 @@
 
 
     if (if_trans=='N') then
-        call srt_22(save_index)%restricted_braket(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,&
-       &    c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,row,column)
+     call srt_22(save_index)%restricted_braket(irrep_input,nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,&
+    &    c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,row,column)
     else
-        call srt_22(save_index)%restricted_braket(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,&
-       &    c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,column,row)
+     call srt_22(save_index)%restricted_braket(irrep_input,nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,&
+    &    c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,column,row)
     endif
 
          case('restricted_bra')
@@ -823,10 +825,10 @@
 
 
     if (if_trans=='N') then
-      call srt_22(save_index)%restricted_bra(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+      call srt_22(save_index)%restricted_bra(irrep_input,nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
      & c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,row,column)  
     else
-      call srt_22(save_index)%restricted_bra(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+      call srt_22(save_index)%restricted_bra(irrep_input,nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
      & c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,column,row)  
     endif
 
@@ -836,10 +838,10 @@
 
 
     if (if_trans=='N') then
-      call srt_22(save_index)%restricted_ket(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+      call srt_22(save_index)%restricted_ket(irrep_input,nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
      & c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,row,column)  
     else
-      call srt_22(save_index)%restricted_ket(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+      call srt_22(save_index)%restricted_ket(irrep_input,nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
      & c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,column,row)  
     endif
 
@@ -905,12 +907,12 @@
 
       if (if_trans=='N') then
 
-      call srt_31(save_index)%unrestricted(nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+      call srt_31(save_index)%unrestricted(irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
      &               c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,row,column)
 
       else
 
-      call srt_31(save_index)%unrestricted(nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+      call srt_31(save_index)%unrestricted(irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
      &               c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,column,row)
 
       endif
@@ -922,12 +924,12 @@
 
       if (if_trans=='N') then
 
-      call srt_31(save_index)%restricted_braket(nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+      call srt_31(save_index)%restricted_braket(irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
      &               c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,row,column)
 
       else
 
-      call srt_31(save_index)%restricted_braket(nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+      call srt_31(save_index)%restricted_braket(irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
      &               c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,column,row)
 
       endif
@@ -939,12 +941,12 @@
 
       if (if_trans=='N') then
 
-      call srt_31(save_index)%restricted_bra(nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+      call srt_31(save_index)%restricted_bra(irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
      &               c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,row,column)
 
       else
 
-      call srt_31(save_index)%restricted_bra(nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+      call srt_31(save_index)%restricted_bra(irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
      &               c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,column,row)
 
       endif
@@ -955,12 +957,12 @@
 
       if (if_trans=='N') then
 
-      call srt_31(save_index)%restricted_ket(nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+      call srt_31(save_index)%restricted_ket(irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
      &               c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,row,column)
 
       else
 
-      call srt_31(save_index)%restricted_ket(nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+      call srt_31(save_index)%restricted_ket(irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
      &               c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,column,row)
 
       endif
@@ -977,12 +979,12 @@
 
       if (if_trans=='N') then
 
-        call srt_13(save_index)%unrestricted (nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+        call srt_13(save_index)%unrestricted (irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
        &                          c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,row,column)
 
      else
 
-        call srt_13(save_index)%unrestricted (nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+        call srt_13(save_index)%unrestricted (irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
        &                          c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,column,row)
 
      endif 
@@ -994,12 +996,12 @@
 
       if (if_trans=='N') then
 
-        call srt_13(save_index)%restricted_braket (nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+        call srt_13(save_index)%restricted_braket (irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
        &                          c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,row,column)
 
      else
 
-        call srt_13(save_index)%restricted_braket (nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+        call srt_13(save_index)%restricted_braket (irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
        &                          c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,column,row)
 
      endif 
@@ -1011,12 +1013,12 @@
 
       if (if_trans=='N') then
 
-        call srt_13(save_index)%restricted_bra (nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+        call srt_13(save_index)%restricted_bra (irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
        &                          c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,row,column)
 
      else
 
-        call srt_13(save_index)%restricted_bra (nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+        call srt_13(save_index)%restricted_bra (irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
        &                          c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,column,row)
 
      endif 
@@ -1027,12 +1029,12 @@
 
       if (if_trans=='N') then
 
-        call srt_13(save_index)%restricted_ket (nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+        call srt_13(save_index)%restricted_ket (irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
        &                          c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,row,column)
 
      else
 
-        call srt_13(save_index)%restricted_ket (nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+        call srt_13(save_index)%restricted_ket (irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
        &                          c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,column,row)
 
      endif 

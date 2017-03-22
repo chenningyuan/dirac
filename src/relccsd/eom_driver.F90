@@ -286,7 +286,6 @@
      deallocate(diag_H)
       end if
 
-
    case ('IP')
 
 !As of now, I am targetting the lowest energy determinants across the symmetries.
@@ -1635,6 +1634,7 @@
 subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL, davResultsR, B, eps)
    use davidson
    use allocator_parameters, only : klongint
+   use symmetry_offset
 
 #include "symm.inc"
 #include "complex.inc"
@@ -1654,6 +1654,7 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
    integer :: AllocateStatus
    integer :: N, N1, N2 ! size of determinantal space 
    character(len=3) :: left_or_right
+   type(Offset) :: e,f,g,h
 
 ! 
 !  we set the state for the diagonalizer, as this should not change within a given type of calculation,
@@ -1698,8 +1699,21 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
 
           case ('EE')
 
-             ndimr1 = ndimt1
-             ndimr2 = ndimt2
+      call alloc_array(e,nrep,f,g,h)
+      call auto_symmetry_offset(e,nv,no,.false.,.false.)
+      call auto_symmetry_offset(f,nv,nv,.false.,.false.)
+      call auto_symmetry_offset(g,no,no,.false.,.false.)
+      call auto_symmetry_offset(h,f%oneDirac,g%oneDirac,.true.,.true.)
+
+      if (state_sym == 1) then
+         ndimr1 = ndimt1
+         ndimr2 = ndimt2
+      else
+         ndimr1 = e%oneNonDirac(state_sym)
+         ndimr2 = h%oneNonDirac(state_sym)
+      endif
+
+      call dealloc_array(e,f,g,h)
 
              call set_eom_ndet(1, ndimr1)
              call set_eom_ndet(2, ndimr2)
@@ -1859,12 +1873,12 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
          end select 
 
          if (right_vectors) then
-             call davidson_driver(nroot, B, davResultsR(state_sym), trial_vector)
+             call davidson_driver(nroot, B, davResultsR(state_sym), trial_vector,state_sym)
              call eom_analysis(davResultsR(state_sym)%eValuesRe,davResultsR(state_sym)%eVectorsR,eps) ! Fock-Space like output for EA, EE and IP
 
          else if (left_vectors) then
 
-             call davidson_driver(nroot, B, davResultsL(state_sym), trial_vector)
+             call davidson_driver(nroot, B, davResultsL(state_sym), trial_vector,state_sym)
 
          end if
 

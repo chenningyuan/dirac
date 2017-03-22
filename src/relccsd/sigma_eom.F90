@@ -43,6 +43,7 @@
     real(kind=8), pointer :: local_buf1(:) 
     real(kind=8), pointer :: local_buf2(:) 
     real(kind=8), pointer :: local_buf3(:) 
+    integer :: nbuf3
     integer, pointer :: eom_ndet(:)
     integer, pointer :: eom_nvx(:)
 
@@ -162,11 +163,9 @@
       type(intermediates) :: A
       integer :: N
       integer :: ndimt1, ndimt2
-      integer :: nbuf3
 
       ndimt1 = eom_ndet(1)
       ndimt2 = eom_ndet(2)
-      nbuf3 = size(local_buf3)
 
       N = ndimt1 + ndimt2
 
@@ -185,7 +184,7 @@
    end function
 
 
-   function create_sigma_vector_left(A, r, old_sigma_vector)
+   function create_sigma_vector_left(A, r, old_sigma_vector,state_sym)
 #include "files.inc"
 #include "inpt.inc"
       real(kind=8), pointer :: create_sigma_vector_left(:,:)
@@ -194,12 +193,9 @@
       real(kind=8), intent(in) :: r(:,:)
       integer :: L, N, L_already_done
       integer :: ndimr1, ndimr2
-      integer :: nbuf3
       integer :: start_r1, end_r1, start_r2, end_r2
       integer :: iroot
-      real(kind=8), allocatable :: local_buffer (:)  
-
-      nbuf3 = size(local_buf3)
+      integer, intent(in) :: state_sym
 
       N = size(r,1)
       L = size(r,2)
@@ -224,7 +220,6 @@
       start_r2 = end_r1 + 1
       end_r2   = end_r1 + ndimr2
 
-      allocate (local_buffer(ndimr2))
 
       select case (A%eomtype)
          case ('IP')
@@ -268,18 +263,16 @@
                  &                  r(start_r2:end_r2, iroot), & 
                  &                  A,                               &
                  &                  create_sigma_vector_left(start_r1:end_r1, iroot), &
-                 &                  create_sigma_vector_left(start_r2:end_r2, iroot), &
-                 &                  nbuf3)
+                 &                  create_sigma_vector_left(start_r2:end_r2, iroot), state_sym)
 
              enddo
       end select
 
-      deallocate (local_buffer)
 
    end function 
    
 
-   function create_sigma_vector_right(A, r, old_sigma_vector)
+   function create_sigma_vector_right(A, r, old_sigma_vector, state_sym)
 #include "files.inc"
 #include "inpt.inc"
       real(kind=8), pointer :: create_sigma_vector_right(:,:)
@@ -288,12 +281,9 @@
       real(kind=8), intent(in) :: r(:,:)
       integer :: L, N, L_already_done 
       integer :: ndimr1, ndimr2
-      integer :: nbuf3
       integer :: start_r1, end_r1, start_r2, end_r2
       integer :: iroot,ierr
-      real(kind=8), allocatable :: local_buffer (:)  
-
-      nbuf3 = size(local_buf3)
+      integer, intent(in) :: state_sym
 
       N = size(r,1)
       L = size(r,2)
@@ -318,7 +308,6 @@
       start_r2 = end_r1 + 1
       end_r2   = end_r1 + ndimr2
 
-      allocate (local_buffer(ndimr2))
 
       select case (A%eomtype)
          case ('IP')
@@ -349,7 +338,7 @@
                  &             create_sigma_vector_right(start_r1:end_r1, iroot:iroot), &
                  &             create_sigma_vector_right(start_r2:end_r2, iroot:iroot), &
                  &             ndimr1, &
-                 &             ndimr2,nbuf3) 
+                 &             ndimr2) 
 
 
              enddo
@@ -364,13 +353,11 @@
                  &                  r(start_r2:end_r2, iroot:iroot), & 
                  &                  A,                               &
                  &                  create_sigma_vector_right(start_r1:end_r1, iroot:iroot), &
-                 &                  create_sigma_vector_right(start_r2:end_r2, iroot:iroot), &
-                 &                  nbuf3)
+                 &                  create_sigma_vector_right(start_r2:end_r2, iroot:iroot),state_sym)
 
              enddo
       end select
 
-      deallocate (local_buffer)
 
    end function
 
@@ -396,7 +383,7 @@ type(intermediates), intent(inout) :: A
 !Local Variables
 !----------------
 real(8), allocatable :: foo(:),fvo(:),fvv(:) 
-integer :: nbuf3,ierr
+integer :: ierr
 
 !-----------------------------------------------------------------------------
 
@@ -489,7 +476,7 @@ integer :: nbuf3,ierr
 
    end subroutine
 
-   subroutine sigma_ee_1h1p(r1,r2,B,sigma1,sigma2,nbuf3)
+   subroutine sigma_ee_1h1p(r1,r2,B,sigma1,sigma2, state_sym)
 #include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
@@ -503,9 +490,9 @@ integer :: nbuf3,ierr
 
 !---------------Calling variables--------------------------------------
   real(8), intent(in),contiguous,target   :: r1(:,:), r2(:,:) ! R-Amplitudes
-  integer, intent(in)     :: nbuf3    
   type(intermediates), intent(in)  :: B      
   real(8), intent(inout)           :: sigma1(:,:), sigma2(:,:)  ! sigma-vectors
+      integer, intent(in) :: state_sym
 !---------------Local Variables--------------------
   real(8), allocatable :: tau(:)
   real(8), pointer     :: r1_ptr(:),r2_ptr(:)
@@ -897,7 +884,7 @@ integer :: nbuf3,ierr
 
 !==============================================================================================================================================================================================================
 
-   subroutine sigma_EA(nox,r1,r2,B,sigma1,sigma2,ndimr1,ndimr2,nbuf3)
+   subroutine sigma_EA(nox,r1,r2,B,sigma1,sigma2,ndimr1,ndimr2)
 
 #include "param.inc"
 #include "symm.inc"
@@ -914,7 +901,7 @@ integer :: nbuf3,ierr
   real(8), intent(in),contiguous,target   :: r1(:,:), r2(:,:) ! R-Amplitudes
   type(intermediates), intent(in)  :: B      
   real(8), intent(inout),contiguous :: sigma1(:,:),sigma2(:,:)  ! sigma-vectors
-  integer, intent(in) :: ndimr1, ndimr2,nox(nrep),nbuf3
+  integer, intent(in) :: ndimr1, ndimr2,nox(nrep)
 !---------------Local Variables--------------------
   real(8), allocatable :: tau(:),w_vvvv(:)
   real(8), pointer :: r1_ptr(:),r2_ptr(:)
@@ -1223,7 +1210,7 @@ integer :: nbuf3,ierr
 
  end subroutine
 
-   subroutine Lambda_EE(l1,l2,B,lambda1,lambda2,nbuf3)
+   subroutine Lambda_EE(l1,l2,B,lambda1,lambda2,state_sym)
   use intermediates_1b_2b 
   use symmetry_offset
   use lambda_equation  
@@ -1241,8 +1228,8 @@ integer :: nbuf3,ierr
 !---------------Calling variables--------------------------------------
   real(8), intent(in),contiguous,target   :: L1(:), L2(:) ! R-Amplitudes
   type(intermediates), intent(in)  :: B      
+  integer, intent(in) :: state_sym
   real(8), intent(inout),contiguous :: lambda1(:),lambda2(:)  ! sigma-vectors
-  integer, intent(in) :: nbuf3
 !---------------Local Variables--------------------
   real(8), pointer,contiguous :: l1_ptr(:),l2_ptr(:)
   real(8), allocatable :: int_oo(:), G_vv(:), G_oo(:) 

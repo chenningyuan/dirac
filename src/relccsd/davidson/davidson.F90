@@ -89,7 +89,7 @@ contains
 ! inside it we will handle left and right sigma vector cases, and the sigma_eom module 
 ! will have to be initialized so that it knows whether to do left or right vectors
 !  
-   function create_sigma_vector(A, r, old_sigma_vector)
+   function create_sigma_vector(A, r, old_sigma_vector, state_sym)
 ! bad coupling between modules, to be replaced by an abstract class that the sigma vector module extends
 ! and that will have associated get_matrix_size, create_sigma_vector and create_diagonal
       use sigma_eom, only : intermediates, create_sigma_vector_left, create_sigma_vector_right
@@ -98,14 +98,15 @@ contains
       real(kind=8), pointer :: old_sigma_vector(:,:)
       type(intermediates) :: A
       real(kind=8), intent(in) :: r(:,:)
+      integer, intent(in) :: state_sym
 
       if (davidson_solve_rhs.and..not.davidson_solve_lhs) then 
 !     do right vectors, this is the default
-          create_sigma_vector => create_sigma_vector_right(A, r, old_sigma_vector)
+          create_sigma_vector => create_sigma_vector_right(A, r, old_sigma_vector, state_sym)
 
       else if (davidson_solve_lhs.and..not.davidson_solve_rhs) then
 !     do left vectors vectors
-          create_sigma_vector => create_sigma_vector_left(A, r, old_sigma_vector)
+          create_sigma_vector => create_sigma_vector_left(A, r, old_sigma_vector, state_sym)
 
       else
 ! do both at the same time; this will require some thinking, one option is to return
@@ -880,7 +881,7 @@ contains
         end do
     end function
 
-    subroutine get_values_vectors_davidson(nroots, A, results, b_guess)
+    subroutine get_values_vectors_davidson(nroots, A, results, b_guess,state_sym)
 ! bad coupling between modules, to be replaced by an abstract class that the sigma vector module extends
 ! and that will have associated get_matrix_size, create_sigma_vector and create_diagonal
         use sigma_eom, only : intermediates, get_matrix_size, create_diagonal
@@ -889,6 +890,7 @@ contains
         type(davidson_results), intent(inout) :: results
         real(kind=8), intent(inout), pointer :: b_guess(:,:)
         integer, intent(in) :: nroots
+        integer, intent(in) :: state_sym
 !
 ! nullifying all pointers at the start to give them a state, see discussion on http://www.cs.rpi.edu/~szymansk/OOF90/bugs.html
 ! "[...] When a pointer is declared its status is undefined, and cannot be safely queried with the associated intrinsic. [...]"
@@ -977,7 +979,7 @@ contains
 
             if (associated(M_small)) deallocate(M_small)
 
-            sigma_vector => create_sigma_vector(A, b, sigma_vector)
+            sigma_vector => create_sigma_vector(A, b, sigma_vector, state_sym)
 
 
             if (davidson_solve_rhs) M_small => create_reduced_problem(b, sigma_vector)
@@ -1193,7 +1195,7 @@ contains
             allocate(bc(vectors_N,vectors_L))
             bc = zero_r8
 !           call print_vectors_R(eVectorsSmall, label="R eigenvectors small problem  ")
-            call dgemm('N', 'N', vectors_N, vectors_L, vectors_L, alpha_lapack, b, &
+            call dgemm('N', 'T', vectors_N, vectors_L, vectors_L, alpha_lapack, b, &
                        vectors_N, eVectorsSmall, vectors_L, beta_lapack, bc, vectors_N)
 
 !           call print_vectors_R(bc, label="bc                            ")
