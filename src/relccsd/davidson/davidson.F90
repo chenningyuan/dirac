@@ -616,7 +616,6 @@ contains
         integer :: N, N_complex
         double precision ddot, dznrm2
         real(kind=8) :: numerator_complex(2), denominator_complex(2), factor_complex(2)
-        complex(kind=16) :: num_c, denom_c, fac_c
 
         N = size(u,1)
 
