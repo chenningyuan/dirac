@@ -229,16 +229,11 @@
 
       if (relcc_mfd_trial_full_matrix) then
 ! New trial vectors for R1 
-
-!         print *,'debug, dimensions R1',size(R1,1),size(R1,2)
-!         print *,'debug, dimensions R2',size(R2,1),size(R2,2)
-!         print *,'debug, ndimr1',ndimr1
-!         print *,'debug, ndimr2',ndimr2
-
           do i = 1, min(ndimr1,nroot)
               iroot = i
               if (rcw.eq.2) iroot = 2*i - 1
               jroot = i
+              print *, 'iroot',iroot,' jroot',jroot
               R1(iroot,jroot) = 1.0d0
           end do
           if (nroot.gt.ndimr1) then
@@ -246,7 +241,7 @@
                   iroot = i
                   if (rcw.eq.2) iroot = 2*i - 1
                   jroot = i
-!                 print *, 'iroot',iroot,' ndimr1+jroot',ndimr1+jroot 
+!                 print *, 'iroot',iroot,' ndimr1+jroot',ndimr1+jroot
                   R2(iroot,ndimr1+jroot) = 1.0d0
              end do
           end if
@@ -254,27 +249,28 @@
 
       if (relcc_mfd_trial_ccs) then
           print *, '  Using eigenvalues of singles-singles block as trial vectors'
-
           allocate (R1_dum(ndimr1*rcw,ndimr1))
           R1_dum = 0.0d0
 
-          
           do i = 1, ndimr1
-              iroot = i 
+              iroot = i
               if (rcw.eq.2) iroot = 2*i - 1
               jroot = i
               R1_dum(iroot,jroot) = 1.0d0
           end do
+          if (iprnt.ge.3) call davidson_print_vectors(R1_dum, label="debug:  R1_dum vector         ")
 
           call trial_vectors_ee(R1_dum,Fbar_HH,Fbar_PP,Vbar_SS)
+          if (iprnt.ge.3) call davidson_print_vectors(R1_dum, label="debug:  R1_dum vector  CD1    ",complex_dimension=1)
 
-          R1 = R1_dum(:,1:nroot) 
+          R1 = R1_dum(:,1:nroot)
 
 !         print *,"R1_dum",R1_dum
 !         do iroot = 1, nroot
 !             jroot = 2*iroot - 1
 !             R1(:,iroot) = R1_dum(:,jroot)
 !         end do
+          if (iprnt.ge.3) call davidson_print_vectors(R1, label="debug:  R1 vector             ")
 
           deallocate(R1_dum)
       end if
@@ -492,42 +488,50 @@
 
       if (relcc_mfd_trial_full_matrix) then
 ! New trial vectors for R1 
-          do i = 1, ndimr1
+          do i = 1, min(ndimr1,nroot)
               iroot = i
               if (rcw.eq.2) iroot = 2*i - 1
               jroot = i
+              print *, 'iroot',iroot,' jroot',jroot
               R1(iroot,jroot) = 1.0d0
           end do
-          do i = 1, ndimr2
-              iroot = i
-              if (rcw.eq.2) iroot = 2*i - 1
-              jroot = i
-              R2(iroot,ndimr1+jroot) = 1.0d0
-         end do
+          if (nroot.gt.ndimr1) then
+              do i = 1, min(ndimr2,nroot)
+                  iroot = i
+                  if (rcw.eq.2) iroot = 2*i - 1
+                  jroot = i
+!                 print *, 'iroot',iroot,' ndimr1+jroot',ndimr1+jroot
+                  R2(iroot,ndimr1+jroot) = 1.0d0
+             end do
+          end if
       end if
 
       if (relcc_mfd_trial_ccs) then
           print *, '  Using eigenvalues of singles-singles block as trial vectors'
-
           allocate (R1_dum(ndimr1*rcw,ndimr1))
           R1_dum = 0.0d0
 
-          do iroot = 1, ndimr1
-              R1_dum(iroot,iroot) = 1.0d0
+          do i = 1, ndimr1
+              iroot = i
+              if (rcw.eq.2) iroot = 2*i - 1
+              jroot = i
+              R1_dum(iroot,jroot) = 1.0d0
           end do
+          if (iprnt.ge.3) call davidson_print_vectors(R1_dum, label="debug:  R1_dum vector         ")
 
           call trial_vectors_EA(R1_dum,Fbar_PP)
+          if (iprnt.ge.3) call davidson_print_vectors(R1_dum, label="debug:  R1_dum vector  CD1    ",complex_dimension=1)
 
-!         R1 = R1_dum(:,1:nroot) 
+          R1 = R1_dum(:,1:nroot)
 
-          print *,"R1_dum",R1_dum
-          do iroot = 1, nroot
-              jroot = 2*iroot - 1
-              R1(:,iroot) = R1_dum(:,jroot)
-          end do
+!         print *,"R1_dum",R1_dum
+!         do iroot = 1, nroot
+!             jroot = 2*iroot - 1
+!             R1(:,iroot) = R1_dum(:,jroot)
+!         end do
+          if (iprnt.ge.3) call davidson_print_vectors(R1, label="debug:  R1 vector             ")
 
           deallocate(R1_dum)
-
       end if
 
  !  if (nroot.eq.(ndimr1+ndimr2)) then
