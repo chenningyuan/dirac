@@ -278,18 +278,25 @@
       if (relcc_mfd_trial_diagonal) then
           print *, '  Using (reordered) unit vectors as trial vectors'
 
-     allocate(diag_H(ndimr1))
-     diag_H = H_II(1:ndimr1)
+! In the following section we generate the guess vectors belonging to a particular state symmetry.
+! Thereby we avoid the sigma vector calculations of the degenerate roots.  
 
-       do iroot = 1, nroot*rcw, rcw
-        k = minloc(diag_H) 
-!ashee        write(iw,*)'roots',iroot,H_II(k(1)),k(1) 
-        i = k(1)
-        diag_H(i) = 8000.0d0
-        R1(i,iroot) = 1.0d0
-       enddo
-     deallocate(diag_H)
-      end if
+          allocate(diag_H(ndimr1*rcw))
+          diag_H = H_II(1:ndimr1*rcw)
+
+          xroot = 1
+
+          do iroot = 1, nroot*rcw, rcw
+              k = minloc(diag_H)
+              if (iprnt.ge.3) write(iw,*)'roots',iroot,H_II(k(1)),k(1)
+              i = k(1)
+              diag_H(i) = 8000.0d0
+              jroot = i
+              if (rcw.eq.2) jroot = 2*i - 1
+              R1(jroot,xroot) = 1.0d0
+          enddo
+          deallocate(diag_H)
+      end if  ! relcc_mfd_trial_diagonal
 
    case ('IP')
 
@@ -389,24 +396,10 @@
       
           R1 = R1_dum(:,1:nroot) 
 
-!         print *,"R1_dum",R1_dum
-!         do iroot = 1, nroot
-!             jroot = 2*iroot - 1
-!             R1(:,iroot) = R1_dum(:,jroot)
-!         end do
           if (iprnt.ge.3) call davidson_print_vectors(R1, label="debug:  R1 vector             ")
 
           deallocate(R1_dum)
       end if
-
- !  if (nroot.eq.(ndimr1+ndimr2)) then
- !   do iroot = 1, ndimr1
- !       R1(iroot,iroot) = 1.0d0
- !   end do
- !   do iroot = 1, ndimr2
- !       R2(iroot,ndimr1+iroot) = 1.0d0
- !   end do
- !  else
 
       if (relcc_mfd_trial_diagonal) then
           print *, '  Using (reordered) unit vectors as trial vectors'
@@ -414,26 +407,30 @@
 ! In the following section we generate the guess vectors belonging to a particular state symmetry.
 ! Thereby we avoid the sigma vector calculations of the degenerate roots.  
 
-     search_dimension = ncont(state_sym)*no(state_sym) 
+          search_dimension = ncont(state_sym)*no(state_sym) 
 
-     allocate(diag_H(ndimr1*rcw))
-     diag_H = H_II(1:ndimr1*rcw)
+          allocate(diag_H(ndimr1*rcw))
+          diag_H = H_II(1:ndimr1*rcw)
 
-        xroot = 1 
+          xroot = 1 
 
-       do iroot = 1, 2*nroot*rcw, rcw
-        k = minloc(diag_H) 
-!ashee        write(iw,*)'roots',iroot,H_II(k(1)),k(1) 
-        i = k(1)
-        diag_H(i) = 8000.0d0
-
-        if (i <= search_dimension) then
-         R1(i,xroot) = 1.0d0
-         xroot = xroot + 1
-        endif
-
-       enddo
-     deallocate(diag_H)
+          do iroot = 1, 2*nroot*rcw, rcw
+              k = minloc(diag_H) 
+              if (iprnt.ge.3) write(iw,*)'roots',iroot,H_II(k(1)),k(1) 
+              i = k(1)
+              diag_H(i) = 8000.0d0
+              if (i <= search_dimension) then
+                  jroot = i
+                  if (rcw.eq.2) jroot = 2*i - 1
+                  R1(jroot,xroot) = 1.0d0
+                  if (rcw.eq.2) then
+                      xroot = xroot + 1
+                  else
+                      xroot = xroot + 1
+                  endif
+              end if
+          enddo
+          deallocate(diag_H)
       end if  ! relcc_mfd_trial_diagonal
  ! end if 
 
@@ -524,49 +521,50 @@
 
           R1 = R1_dum(:,1:nroot)
 
-!         print *,"R1_dum",R1_dum
-!         do iroot = 1, nroot
-!             jroot = 2*iroot - 1
-!             R1(:,iroot) = R1_dum(:,jroot)
-!         end do
           if (iprnt.ge.3) call davidson_print_vectors(R1, label="debug:  R1 vector             ")
 
           deallocate(R1_dum)
       end if
-
- !  if (nroot.eq.(ndimr1+ndimr2)) then
- !   do iroot = 1, ndimr1
- !       R1(iroot,iroot) = 1.0d0
- !   end do
- !   do iroot = 1, ndimr2
- !       R2(iroot,ndimr1+iroot) = 1.0d0
- !   end do
- !  else
 
 ! calculate the orbital dimension within which our desired root should belong..
 
       if (relcc_mfd_trial_diagonal) then
           print *, '  Using (reordered) unit vectors as trial vectors'
 
-  search_dimension = ncont(state_sym)*nv(state_sym) 
+! In the following section we generate the guess vectors belonging to a particular state symmetry.
+! Thereby we avoid the sigma vector calculations of the degenerate roots.  
 
-     allocate(diag_H(ndimr1*rcw))
-     diag_H = H_II(1:ndimr1*rcw)
-        xroot = 1
-       do iroot = 1, 2*nroot
-        k = minloc(diag_H) 
-!ashee        write(iw,*)'roots',iroot,H_II(k(1)),k(1) 
-        i = k(1)
-        diag_H(i) = 8000.0d0
-        if (i <= search_dimension) then
-         R1(i,xroot) = 1.0d0
-         xroot = xroot + 1
-        endif
-       enddo
-     deallocate(diag_H)
+          search_dimension = ncont(state_sym)*nv(state_sym)
 
-      end if
-!! end if 
+          allocate(diag_H(ndimr1*rcw))
+          diag_H = H_II(1:ndimr1*rcw)
+
+          xroot = 1
+
+          do iroot = 1, 2*nroot*rcw, rcw
+              k = minloc(diag_H)
+!             if (iprnt.ge.3) write(iw,*)'roots',iroot,H_II(k(1)),k(1)
+              write(iw,*)'roots',iroot,H_II(k(1)),k(1)
+              i = k(1)
+              diag_H(i) = 8000.0d0
+              if (i <= search_dimension) then
+                  write(iw,*) jroot, ndimr1, ndimr2
+                  jroot = i
+                  if (rcw.eq.2) jroot = 2*i - 1
+                  if (jroot.le.ndimr1) then
+                      R1(jroot,xroot) = 1.0d0
+                  else if (jroot.le.ndimr2) then
+                      R2(jroot,xroot) = 1.0d0
+                  end if
+                  if (rcw.eq.2) then
+                      xroot = xroot + 1
+                  else
+                      xroot = xroot + 1
+                  endif
+              end if
+          enddo
+          deallocate(diag_H)
+      end if  ! relcc_mfd_trial_diagonal
 
   end select 
 
