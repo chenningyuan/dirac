@@ -628,77 +628,7 @@ C
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !&&& a new sorter for the non totally symmetric two-particle
-!&&& contributions to the transition moments (POLPRP)
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SRT1T3_NTSI (NREP,DESREP,MULTB,NPAIR,KFIE,LFIE,NTRIPL,
-     &                        OFF,OFF1,BUF1,BUF2,ICEIL)
-!
-      IMPLICIT INTEGER (A-Z)
-!
-!---------------Description--------------------------------------------
-!
-!  this is a special sorter for the F_abij(2) A+B array needed
-!  for the 2p2h contributions to the transition moments in POLPRP.
-!  Performing the BUF(IJ K,L:LREP)  --- >  BUF(IJ,K>L:KLREP) step
-!  exclusively. Hereby antisymmetrization in KL is done and it is not
-!  assumed that the product of all four ireps is totally symmetric!
-!  Only for DESREP symmetry the sorting is done.
-!
-!---------------Calling variables--------------------------------------
-!
-      REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, DESREP, MULTB(64,64,2), ICEIL
-      INTEGER NPAIR(NREP),KFIE(NREP),LFIE(NREP),NTRIPL(NREP)
-      INTEGER OFF(nrep,nrep),OFF1(32,32)
-!
-!---------------Common Blocks--------------------------------------
-!
-#include "../relccsd/complex.inc"
-#include "../relccsd/param.inc"
-!
-!---------------Executable code--------------------------------------
-!
-      IJKL = 1
-      DO KLREP = 1, NREP
-       IJREP = MULTB(KLREP+NREP,DESREP+NREP,2)
-       if(MULTB(IJREP+NREP,KLREP+NREP,1).ne.desrep) then
-         stop 'munchDX'
-       endif
-       N = NPAIR(IJREP)
-       DO 10 LREP = 1, NREP
-        KREP = MULTB(LREP,KLREP+NREP,2)
-        IF (KREP.LT.LREP) GOTO 10
-        IJKREP = MULTB(IJREP+NREP,KREP,1)
-        IJLREP = MULTB(IJREP+NREP,LREP,1)
-        if(multb(ijkrep,lrep,1).ne.desrep) stop 'munch4 :-('
-        if(multb(ijlrep,krep,1).ne.desrep) stop 'munch5 :-('
-        LOFF = (OFF(IJKREP,LREP) + OFF1(IJREP,KREP)) * RCW
-        KOFF = (OFF(IJLREP,KREP) + OFF1(IJREP,LREP)) * RCW
-        DO L = 1, LFIE(LREP)
-         IJL  = (L-1) * N * RCW + 1
-         KMIN = 1
-         IF (KREP.EQ.LREP) KMIN = L + 1
-         DO K = KMIN, KFIE(KREP)
-            IJK  = (K-1) * N * RCW + 1
-            IJKL1 = LOFF + (L-1) * NTRIPL(LREP) * RCW + IJK
-            IJLK1 = KOFF + (K-1) * NTRIPL(KREP) * RCW + IJL
-
-            IF( (IJKL.gt.ICEIL).and.(N.ne.0)) then
-              write(*,*) ' *** Illegal memory access attempt!'
-              STOP 'in SRT1T3_NTSI'
-            endif
-
-            CALL XCOPY (N,BUF1(IJKL1),1,BUF2(IJKL),1)
-            CALL XAXPY (N,-A1,BUF1(IJLK1),1,BUF2(IJKL),1)
-
-            IJKL = IJKL + N * RCW
-         ENDDO
-        ENDDO
- 10    CONTINUE
-      ENDDO
-C
-      RETURN
-      END
+!&&& contributions to the transition moments (POLPRP), not yet functional
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT1T2_NTSI(NREP,desrep,MULTB,NPAIR1,IFIE,JFIE,NPAIR2,
      &                       OFF,OFF2,BUF1,BUF2,ICEIL)

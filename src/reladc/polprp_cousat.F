@@ -684,7 +684,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 ! jrep,brep,J and B. BUFCOL was allocated by the caller
 ! and is filled in this subroutine.
 !              *** real case ***
-! all arrays are transferred as ** assumed shape **
 !
       INTEGER                          :: desrep,lencouplbl
       REAL*8, dimension(:)             :: bufcol
@@ -700,7 +699,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !---------------Executable code--------------------------------------
 !
 
-!     write(iw,*) 'Xcolmake:',desrep,lencouplbl,jrep,brep,j,b
+      write(*,*) 'Xcolmake:',desrep,lencouplbl,jrep,brep,j,b
+      write(*,*) 'Sequence of beta(cd) and beta(kl) for',desrep
+      write(*,*)
+      write(*,*) 'beta(cd)     beta(kl)'
       CDKL = 0
 !
 !  do the |>|> side...
@@ -710,6 +712,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       if(MULTB(CDREP+NREP,KLREP+NREP,2).ne.desrep) then
          Stop 'xcolmake error #aa1'
       endif
+      write(*,*) cdrep,klrep
       DO 10 LREP = 1, NREP
       KREP = MULTB(LREP,KLREP+NREP,2)
       IF (KREP.LT.LREP) GOTO 10

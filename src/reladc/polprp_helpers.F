@@ -975,8 +975,8 @@ C
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SRT1T3_2PC (NREP,MULTB,DOINV,NPAIR,KFIE,LFIE,NTRIPL,
-     &                       OFF,OFF1,BUF1,BUF2,DESREP)
+      SUBROUTINE SRT1T3_NTS (NREP,MULTB,DOINV,NPAIR,KFIE,LFIE,NTRIPL,
+     &                       OFF,OFF1,BUF1,BUF2,DESREP,ICEIL)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -989,12 +989,13 @@ C---------------Routines called----------------------------------------
 C
 C---------------Last modified------------------------------------------
 C
-C     Author : Luuk Visscher
+C     Author : Luuk Visscher, modified by MP for the nontotally symmetric
+C                             case, where <IJ| x |KL> = desrep
 C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(64,64,2),DESREP
+      INTEGER NREP, MULTB(64,64,2),DESREP,ICEIL
       INTEGER NPAIR(NREP),KFIE(NREP),LFIE(NREP),NTRIPL(NREP)
       INTEGER OFF(NREP+1),OFF1(32,32)
       LOGICAL DOINV
@@ -1006,46 +1007,98 @@ C
 C
 C---------------Local variables--------------------------------------
 C
+       integer summer,sumkl
+       complex*16 af
+C
 C---------------Executable code--------------------------------------
 C
 
+      af=(-999999.99999999d0,-999999.99999999d0)
+      write(*,*) 'SRT13  ** doing special tests **'
+!     write(*,*) 'SRT1T3_2PC  bosonic irep order b(cd),b(kl):'
+      write(*,*) 'SRT1T3_NTS, ICEIL:',iceil
       IF (.NOT.DOINV) THEN
          CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
       ENDIF
+      do ipp=1,nrep+1
+        write(*,*) ipp,off(ipp)
+      enddo
+      summer = 0
       IJKL = 1
       DO KLREP = 1, NREP
 !      IJREP = KLREP
        IJREP = MULTB (KLREP+NREP,DESREP+NREP,2)
        IJREP = MULTB (IJREP+NREP,1+NREP,2)      
-       IF(MULTB(ijrep+nrep,klrep+nrep,2).ne.desrep) stop 'Munch :-('
+       IF(MULTB(ijrep+nrep,klrep+nrep,2).ne.desrep) stop 'Error!'
+ 
+!      write(*,*) IJREP,KLREP
+       sumkl=0
+
        N = NPAIR(IJREP)
+       write(*,*) 'N=npair(ijrep),ijrep,klrep:',N,ijrep,klrep
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
+
+        LREPC = MULTB (LREP,DESREP+NREP,2)
+        LREPC = MULTB (LREPC,NREP+1,2)
+
+        KREPC = MULTB (KREP,DESREP+NREP,2)
+        KREPC = MULTB (KREPC,NREP+1,2)
+
         IF (KREP.LT.LREP) GOTO 10
         LOFF = (OFF(LREP) + OFF1(IJREP,KREP)) * RCW
         KOFF = (OFF(KREP) + OFF1(IJREP,LREP)) * RCW
+        write(*,*) 'off(lrep),off(krep),LOFF,KOFF',
+     &     off(lrep),off(krep),loff,koff
         DO L = 1, LFIE(LREP)
          IJL  = (L-1) * N * RCW + 1
          KMIN = 1
          IF (KREP.EQ.LREP) KMIN = L + 1
+
+            AREP = MULTB (IREP,AIREP+NREP,2)
+            AREP = MULTB (AREP,NREP+1,2)
+
+
+
          DO K = KMIN, KFIE(KREP)
             IJK  = (K-1) * N * RCW + 1
-            IJKL1 = LOFF + (L-1) * NTRIPL(LREP) * RCW + IJK 
-            IJLK1 = KOFF + (K-1) * NTRIPL(KREP) * RCW + IJL 
+            IJKL1 = LOFF + (L-1) * NTRIPL(LREPC) * RCW + IJK 
+            IJLK1 = KOFF + (K-1) * NTRIPL(KREPC) * RCW + IJL 
+!           write(*,*) 'IJKL1,IJLK1:',IJKL1,IJLK1
+            if(IJKL1+N.gt.iceil) write(*,*) '***alert A'
+            if(IJLK1+N.gt.iceil) write(*,*) '***alert B'
             IF (DOINV) THEN
+!              stop 'no doinv at the moment'
                CALL XCOPY (N,BUF1(IJKL1),1,BUF2(IJKL),1)
                CALL XAXPY (N,-A1,BUF1(IJLK1),1,BUF2(IJKL),1)
             ELSE
+               write(*,*) 'Checking destination range',
+     &          IJKL1,IJKL1+N,'  and  ',IJLK1,IJLK1+N
+! ** pt I
+               do IPP = IJKL1,IJKL1+N-1
+                 if(BUF2(IPP).ne.0.0d0)   write(*,*) '   <<<BING 1>>>'
+!    &      write(*,*) 'ntripl(lrep),ntripl(krep),ijl,ijk,l,k,IJKL1',
+!    &            ntripl(lrep),ntripl(krep),ijl,ijk,l,k,ijkl1
+               enddo
+! ** pt II
+               do IPP = IJLK1,IJLK1+N-1
+                 if(BUF2(IPP).ne.0.0d0)   write(*,*) '   <<<BING 2>>>'
+!    &      write(*,*) 'ntripl(lrep),ntripl(krep),ijl,ijk,l,k,IJLK1',
+!    &            ntripl(lrep),ntripl(krep),ijl,ijk,l,k,ijlk1
+               enddo
                CALL XCOPY (N,BUF1(IJKL),1,BUF2(IJKL1),1)
                CALL XCOPY (N,BUF1(IJKL),1,BUF2(IJLK1),1)
                CALL XSCAL (N,-A1,BUF2(IJLK1),1)
             ENDIF
             IJKL = IJKL + N * RCW
+            sumkl = sumkl + 1
          ENDDO
         ENDDO
  10    CONTINUE
+       summer = summer + npair(IJREP)*sumkl
       ENDDO
 C
+      write(*,*) '* * * * * number of elements:',summer
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

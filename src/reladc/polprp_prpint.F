@@ -574,9 +574,9 @@
 !    &    avo(ai)
 !         write(*,*) '-avo/aov- ',avo(ai),aov(ai)
 
-          write(*,*) AI,' pai1,pai2,pia1,pia2:',
-     &     PROP(1,AA,II),PROP(2,AA,II),PROP(1,II,AA),PROP(2,II,AA),
-     &     AVO(AI),AOV(AI)
+!         write(*,*) AI,' pai1,pai2,pia1,pia2:',
+!    &     PROP(1,AA,II),PROP(2,AA,II),PROP(1,II,AA),PROP(2,II,AA),
+!    &     AVO(AI),AOV(AI)
 
                       AVOI = PROP(1,AA,II)*APHASE(2) +
      &                       PROP(2,AA,II)*APHASE(1)

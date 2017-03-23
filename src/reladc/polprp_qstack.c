@@ -388,11 +388,11 @@ int qstack_compl(int *stack, double *retvec){
 
   stackn = *stack - 1;  // C indexing starts at zero!
 
-/* if there are no elements on stack, return and do not touch retvec array */
+/* if there are no elements on stack, return -1 and do not touch retvec array */
 
-  if(qsdep[stackn] == 0) return 0;
+  if(qsdep[stackn] == 0) return -1;
 
-/* copy >>last<< vector from stack (LIFO) to retvec, do not adjust stack */
+/* compare >>last<< vector from stack (LIFO) to retvec, do not adjust stack */
 
   curdep = qsdep[stackn];
   curlen = qslen[stackn][curdep - 1];

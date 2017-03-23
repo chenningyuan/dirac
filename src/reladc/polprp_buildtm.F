@@ -103,6 +103,11 @@
 
       Integer                                :: n1,n2,n3,n4
       Integer                                :: ialloc,iat
+                                            
+! special symmetry test arrays
+
+      Integer,allocatable,dimension(:)       :: NVVOTY
+      Integer,allocatable,dimension(:,:)     :: KKVVOTY
 
 ! some parameters
 
@@ -113,7 +118,7 @@
       character*30                           :: iorder
       integer                                :: incsat
       integer                                :: numstacks
-      real*8                                 :: x4
+      real*8                                 :: x1,x2,x3,x4
 !
 !---------------interface region --------------------------------------
 !
@@ -1480,14 +1485,7 @@
 !
 !  analyze contributions
 !
-      if(printlevel.ge.0) call gov_analyzer
-      write(*,*) 'ABIJTT/MVVOOT   array:'
-      do i=1,nrep
-        write(*,*) 'irep',i,':',ABIJTT(i),MVVOOT(i)
-      enddo
-      write(*,*)
-      write(*,*)
-
+      if(printlevel.ge.5) call gov_analyzer
 !
 !  allocate required space, faibj arrays have to be complex!
 !
@@ -1500,7 +1498,7 @@
       fabijtx = A0
       fabijty = A0
       fabijtz = A0
-      allocate(vvoop(n1*rcw))
+      allocate(vvoop(n1*rcw))    ! buffer for nts vvoo stream
       vvoop = 0.0d0
 
 
@@ -1527,6 +1525,11 @@
       CALL RCA_NEGATE(n1,vvoo1)
       CALL SRT1T3 (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
      &             vvoo1,vvoo3)
+!     n2 = KVVOOT(nrep+1)
+!     if(qstack_push(10,n2,vvoo3).ne.n2) stop 'qse'
+!     CALL SRT1T3_NTS (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
+!    &                 vvoo1,vvoo3,1)
+!     write(*,*) 'Comparison:',qstack_compl(10,vvoo3)
       CALL RCA_NEGATE(n1,vvoo1)
 !*
 !* ---------------------------------------------------------------
@@ -1542,8 +1545,8 @@
 !
       write(*,*) 'Contracting in IREP',desrep
       write(*,*)
-      write(*,*) 'ABIREP (KREP),     JREP,   off1,  off2,  off3    K',
-     & '  JAVVOO(i,j),   no(krep)'
+      write(*,*) '|KREP>,  |JREP>,   no(|krep>),   no(|jrep>)',
+     &      '  nvvot(|krep>),  nvvot(<krep|),   LVVONO(jrep)'
       write(*,*)
 
       LVVONO = 0
@@ -1551,17 +1554,22 @@
       DO JREP = 1, NREP    ! loop over rightmost irep of D_kj
 
         KREP = MULTB (JREP,DESREP+NREP,2)  !determine |gamma_k>
-        KREP = MULTB (KREP,NREP+1,2)   ! form <gamma_k|
+        if(multb(krep,jrep,1).eq.desrep) then
+           write(*,*) 'no riot.'
+        else
+           stop
+        endif
+        KREPB = MULTB (KREP,NREP+1,2)   ! form <gamma_k|
 
-        OFF1 = KVVOOT(KREP) + 1
+        OFF1 = KVVOOT(KREP)*rcw + 1
         OFF2 = (JPOOXX(desrep) + JJOO(KREP,JREP))*rcw + 1
-
 
         M = NVVOT(KREP)
         N = NO(JREP)
         K = NO(KREP)
 
-        write(*,*) KREP,JREP,off1,off2,off3,K,JAVVOO(KREP,JREP),NO(krep)
+        write(*,*) KREP,JREP,NO(krep),no(jrep),nvvot(krep),
+     &         nvvot(krepb),lvvono(jrep)
 
         CALL XGEMM ('N','N',M,N,K,A1,vvoo3(OFF1),M,doox(OFF2),K,
      &              A0,vabijx(OFF3),M)
@@ -1573,14 +1581,47 @@
         OFF3 = OFF3 + M * N * RCW
         LVVONO(JREP+1) = LVVONO(JREP) + M*N
 
-      ENDDO  !KREP
+      ENDDO  !JREP
+
+      write(*,*) 'control sum x:',dot_product(vabijx,vabijx)
+      write(*,*) 'control sum y:',dot_product(vabijy,vabijy)
+      write(*,*) 'control sum z:',dot_product(vabijz,vabijz)
 
       write(*,*)
-      write(*,*) 'offset array LVVONO for desrep:',desrep
+      write(*,*) 'desrep:',desrep
+      write(*,*) 'offset arrays ABIJTT / MVVOOT / LVVONO'
       write(*,*)
       do i=1,nrep+1
-         write(*,*) i,lvvono(i)
+         write(*,*) i,abijtt(i),mvvoot(i),lvvono(i)
       enddo
+!
+!************************************************
+!  do alternative NVVOT TEST ********************
+!************************************************
+!
+!     allocate(NVVOTY(MXREP))
+!     allocate(KKVVOTY(MXREP,MXREP))
+!     NVVOTY = 0
+!     KKVVOTY = 0
+
+!     DO KREP = 1, NREP
+!        DO IJREP = 1, NREP
+!           IJKREP = MULTB(IJREP+NREP,KREP,2)
+!           KKVVOTY(IJREP,KREP) = NVVOTY(IJKREP)
+!           NVVOTY(IJKREP) = NVVOTY(IJKREP) + NVVT(IJREP)*NO(KREP)
+!        ENDDO
+!     ENDDO
+!     write(*,*) 'nvvoty comparison:'
+!     DO KREP = 1, NREP
+!       write(*,*) krep,nvvot(krep),nvvoty(krep)
+!       DO jrep = 1,nrep
+!         write(*,*) ' kkvvoty',jrep,kkvvoty(jrep,krep),
+!    &               kkvvot(jrep,krep)
+!       enddo
+!     ENDDO
+!     deallocate(nvvoty,kkvvoty)
+!     stop
+
 !
 !     OFF1 = 1
 !     OFF3 = 1
@@ -1599,22 +1640,97 @@
 !         write(*,*) 'Loop:',krep,' offset: ',off3
 !       ENDDO
 !     ENDDO
+
+!
+!  test NTS routine
+!
+!     n1=KVVOOT(nrep+1)
+!     allocate(vovo3(n1),stat=ialloc)
+!     vovo3 = 0.0d0
+!     n1=ivvoott(nrep+1)
+!     do i=1,n1
+!       vvoo1(i)=dble(i)
+!     enddo
+!     CALL SRT1T3 (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,
+!    &             KVVOOT,KKVVOT,vvoo1,vovo3)
+!     x4 = 0.0d0
+!     do i=1,kvvoot(nrep+1)
+!       write(*,*) i,vovo3(i)
+!       x4 = x4 + vovo3(i)
+!     enddo
+!     write(*,*) 'total sum  fter 1T3:',x4
+
+!     x2=0.0d0
+!     do i=1,kvvoot(nrep+1) - 1
+!       x1 = vovo3(i)
+!       if(x1.eq.0.0d0) cycle
+!       do j=i+1,kvvoot(nrep+1)
+!         if(abs(x1).eq.abs(vovo3(j))) x2 = x2 + 1.0d0
+!       enddo
+!     enddo
+!     write(*,*) 'x2 sum:',x2,' length:',ivvoott(nrep+1)
+!     stop
+
+
+
+
+
+      if(mvvoot(desrep).ne.lvvono(nrep+1)) stop ' ## internal error ##'
+      write(*,*) 'Filling source array, length',abijtt(desrep)
+      do i=1,abijtt(desrep)
+        vvoop(i) = dble(i)       
+!       write(*,*) i,vvoop(i)
+      enddo
+      n2=LVVONO(nrep+1)
+      vabijx = 0.0d0
+      CALL SRT1T3_NTS (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,
+     &                LVVONO,KKVVOT,vvoop,vabijx,desrep,n2)
+      write(*,*) 'After forward NTS sort'
+      write(*,*) 'Checking destination array.'
+!     do i=1,abijtt(desrep)
+!       write(*,*) i,vvoop(i)
+!     enddo
+
+      x4 = 0.0d0
+      do i=1,lvvono(nrep+1)
+!       write(*,*) i,vabijx(i)
+        x4 = x4 + vabijx(i)
+      enddo
+      write(*,*) 'total sum of destination array:',x4
+
+!     x2=0.0d0
+!     do i=1,lvvono(nrep+1) - 1
+!       x1 = vabijx(i)
+!       if(x1.eq.0.0d0) cycle
+!       do j=i+1,lvvono(nrep+1)
+!         if(abs(x1).eq.abs(vabijx(j))) x2 = x2 + 1.0d0
+!       enddo
+!     enddo
+!     write(*,*) 'x2 sum:',x2,' length:',abijtt(desrep)
+      stop
+
+
+
 !
 !  do antisymmetrization.
 !
       n1=ABIJTT(desrep)
+      n2=LVVONO(nrep+1)
 
       vvoop = 0.0d0
-      CALL SRT1T3_2PC (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,
-     &                LVVONO,KKVVOT,vabijx,vvoop,desrep)
+      CALL SRT1T3_NTS (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,
+     &                LVVONO,KKVVOT,vabijx,vvoop,desrep,n2)
+      write(*,*) 'control sum 2 x:',dot_product(vvoop,vvoop)
       call rcaxpy(n1,carith,pphasex,vvoop,fabijtx)
       vvoop = 0.0d0
-      CALL SRT1T3_2PC (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,
-     &                LVVONO,KKVVOT,vabijy,vvoop,desrep)
+      CALL SRT1T3_NTS (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,
+     &                LVVONO,KKVVOT,vabijy,vvoop,desrep,n2)
+      write(*,*) 'control sum 2 y:',dot_product(vvoop,vvoop)
       call rcaxpy(n1,carith,pphasey,vvoop,fabijty)
       vvoop = 0.0d0
-      CALL SRT1T3_2PC (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,
-     &                LVVONO,KKVVOT,vabijz,vvoop,desrep)
+      CALL SRT1T3_NTS (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,
+     &                LVVONO,KKVVOT,vabijz,vvoop,desrep,n2)
+      write(*,*) 'control sum 2 z:',dot_product(vvoop,vvoop)
       call rcaxpy(n1,carith,pphasez,vvoop,fabijtz)
 
       iorder='0th-2nd order ph + 2p2h A+B'
@@ -1624,7 +1740,7 @@
      &            LTR,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
-      stop 'fafafafafafafafafafafafafafafa'
+!     stop 'fafafafafafafafafafafafafafafa'
 !
 !*
 !* ---------------------------------------------------------------
@@ -1635,58 +1751,58 @@
 !*
 ! apply proper symmetry loop due to nontotally symmetric D_oo contributions
 ! 
-      do krep = 1, nrep
-        jrep = multb(krep,desrep+nrep,1)
-        if(MULTB(krep,jrep,2).ne.desrep) then
-          stop 'munch:-('
-        endif
-        m = NVVOT(krep)
-        n = NO(jrep)
-        k = NO(krep)
-        ioff1 = KVVOOT(krep) + 1
-        ioff2 = JPOOXX(desrep) + JJOO(krep,jrep) + 1
-        ioff3 = JAVVOO(krep,jrep) + 1
-        write(*,*) 'm,n,k:',m,n,k
+!     do krep = 1, nrep
+!       jrep = multb(krep,desrep+nrep,1)
+!       if(MULTB(krep,jrep,2).ne.desrep) then
+!         stop 'munch:-('
+!       endif
+!       m = NVVOT(krep)
+!       n = NO(jrep)
+!       k = NO(krep)
+!       ioff1 = KVVOOT(krep) + 1
+!       ioff2 = JPOOXX(desrep) + JJOO(krep,jrep) + 1
+!       ioff3 = JAVVOO(krep,jrep) + 1
+!       write(*,*) 'm,n,k:',m,n,k
 !x
-        call xgemm ('N','N',m,n,k,a1,vvoo3(ioff1),m,doox(ioff2),k,
-     &              a0,vabijx(ioff3),m)
+!       call xgemm ('N','N',m,n,k,a1,vvoo3(ioff1),m,doox(ioff2),k,
+!    &              a0,vabijx(ioff3),m)
 !y
-        call xgemm ('N','N',m,n,k,a1,vvoo3(ioff1),m,dooy(ioff2),k,
-     &              a0,vabijy(ioff3),m)
+!       call xgemm ('N','N',m,n,k,a1,vvoo3(ioff1),m,dooy(ioff2),k,
+!    &              a0,vabijy(ioff3),m)
 !z
-        call xgemm ('N','N',m,n,k,a1,vvoo3(ioff1),m,dooz(ioff2),k,
-     &              a0,vabijz(ioff3),m)
-      enddo
+!       call xgemm ('N','N',m,n,k,a1,vvoo3(ioff1),m,dooz(ioff2),k,
+!    &              a0,vabijz(ioff3),m)
+!     enddo
 
-      n1 = ABIJTT(desrep)
-      write(*,*) 'ICEIL 1:',n1
-      vvoop = 0.0d0
-      CALL SRT1T3_NTSI (NREP,desrep,MULTB,NVVT,NO,NO,NVVOT,
-     &                  JAVVOO,KKVVOT,vabijx,vvoop,n1)
+!     n1 = ABIJTT(desrep)
+!     write(*,*) 'ICEIL 1:',n1
+!     vvoop = 0.0d0
+!     CALL SRT1T3_NTSI (NREP,desrep,MULTB,NVVT,NO,NO,NVVOT,
+!    &                  JAVVOO,KKVVOT,vabijx,vvoop,n1)
 ! debug test resorted x array:
-      do i=1,n1
-        write(*,*) i,vvoop(i)
-      enddo
+!     do i=1,n1
+!       write(*,*) i,vvoop(i)
+!     enddo
 ! debug end
-      call rcaxpy(n1,carith,pphasex,vvoop,fabijtx)
-      vvoop = 0.0d0
-      CALL SRT1T3_NTSI (NREP,desrep,MULTB,NVVT,NO,NO,NVVOT,
-     &                  JAVVOO,KKVVOT,vabijy,vvoop,n1)
+!     call rcaxpy(n1,carith,pphasex,vvoop,fabijtx)
+!     vvoop = 0.0d0
+!     CALL SRT1T3_NTSI (NREP,desrep,MULTB,NVVT,NO,NO,NVVOT,
+!    &                  JAVVOO,KKVVOT,vabijy,vvoop,n1)
 ! debug test resorted x array:
-      do i=1,n1
-        write(*,*) i,vvoop(i)
-      enddo
+!     do i=1,n1
+!       write(*,*) i,vvoop(i)
+!     enddo
 ! debug end
-      call rcaxpy(n1,carith,pphasey,vvoop,fabijty)
-      vvoop = 0.0d0
-      CALL SRT1T3_NTSI (NREP,desrep,MULTB,NVVT,NO,NO,NVVOT,
-     &                  JAVVOO,KKVVOT,vabijz,vvoop,n1)
+!     call rcaxpy(n1,carith,pphasey,vvoop,fabijty)
+!     vvoop = 0.0d0
+!     CALL SRT1T3_NTSI (NREP,desrep,MULTB,NVVT,NO,NO,NVVOT,
+!    &                  JAVVOO,KKVVOT,vabijz,vvoop,n1)
 ! debug test resorted x array:
-      do i=1,n1
-        write(*,*) i,vvoop(i)
-      enddo
+!     do i=1,n1
+!       write(*,*) i,vvoop(i)
+!     enddo
 ! debug end
-      call rcaxpy(n1,carith,pphasez,vvoop,fabijtz)
+!     call rcaxpy(n1,carith,pphasez,vvoop,fabijtz)
 
       deallocate(vvoop)
       deallocate(vabijx)
