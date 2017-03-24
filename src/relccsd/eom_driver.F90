@@ -137,6 +137,7 @@
    real(kind=8) :: fac, fac3, fac2
    integer :: ndimr1, ndimr2, search_dimension, xroot
    real*8,allocatable :: R1_dum(:,:) 
+   integer :: fudge_factor
 
 
 !initialize the R-vector
@@ -414,7 +415,10 @@
 
           xroot = 1 
 
-          do iroot = 1, 2*nroot*rcw, rcw
+          fudge_factor = 2
+          if (rcw.eq.2) fudge_factor = 1
+
+          do iroot = 1, fudge_factor*nroot
               k = minloc(diag_H) 
               if (iprnt.ge.3) write(iw,*)'roots',iroot,H_II(k(1)),k(1) 
               i = k(1)
@@ -541,7 +545,10 @@
 
           xroot = 1
 
-          do iroot = 1, 2*nroot*rcw, rcw
+          fudge_factor = 2
+          if (rcw.eq.2) fudge_factor = 1
+
+          do iroot = 1, fudge_factor*nroot
               k = minloc(diag_H)
 !             if (iprnt.ge.3) write(iw,*)'roots',iroot,H_II(k(1)),k(1)
               write(iw,*)'roots',iroot,H_II(k(1)),k(1)
