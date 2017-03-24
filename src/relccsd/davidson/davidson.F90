@@ -81,9 +81,6 @@ integer, save :: left_sigma_file_unit     = 240
 integer, save :: left_vectors_file_unit   = 241
 integer, save :: left_subspace_file_unit  = 242
 
-!double precision :: ddot, dscal
-!complex(kind=16) :: zscal, zladiv
-
 
 contains 
 
@@ -662,7 +659,6 @@ contains
             else
                 factor = 0.0d0
             end if
-!           projection = factor * u
             projection = u
             call dscal(N, factor, projection, 1)
             if (davidson_debug) print *, "GS projection, factor: ",factor
@@ -1661,7 +1657,7 @@ contains
                      nroot = nroot / 2
 ! aspg, check consistency of complex and real modes after real mode is validated
                      call zgemm('C', 'N', nroot, M_nroots, nroot, (1.0d0, 0.0d0), eVectorsR_old, &
-                                nroot, eVectorsR(1:nroot,1:M_nroots), nroot, (1.0d0, 0.0d0), overlap, nroot)
+                                nroot, eVectorsR(1:2*nroot,1:M_nroots), nroot, (1.0d0, 0.0d0), overlap, nroot)
                  else
                      call dgemm('T', 'N', nroot, M_nroots, nroot, (1.0d0), eVectorsR_old, &
                                 nroot, eVectorsR(1:nroot,1:M_nroots), nroot, (1.0d0), overlap, nroot)
@@ -1675,14 +1671,14 @@ contains
                      nroot = nroot / 2
 ! aspg, check consistency of complex and real modes after real mode is validated
                      call zgemm('C', 'N', nroot, M_nroots, nroot, (1.0d0, 0.0d0), eVectorsL_old, &
-                                nroot, eVectorsL(1:nroot,1:M_nroots), nroot, (1.0d0, 0.0d0), overlap, nroot)
+                                nroot, eVectorsL(1:2*nroot,1:M_nroots), nroot, (1.0d0, 0.0d0), overlap, nroot)
                  else
                      call dgemm('T', 'N', nroot, M_nroots, nroot, (1.0d0), eVectorsL_old, &
                                 nroot, eVectorsL(1:nroot,1:M_nroots), nroot, (1.0d0), overlap, nroot)
                  end if
             endif
 
-            if (davidson_debug) call davidson_print_vectors(overlap, label="overlap                       ")
+            if (davidson_debug) call davidson_print_vectors(overlap, label="overlap in calculate eval/evec")
             call sort_by_overlap(-1, eValues, overlap, eVectorsR, eVectorsL, &
                                  right_local, left_local) 
             deallocate(overlap)
@@ -2034,33 +2030,27 @@ contains
         i = first
         j = last
 
-        if (davidson_debug) then
-            print *,"------"
-            print *,"debug, start of sorting of complex eigenvalues"
-            print *,"------"
-        end if
+!       if (davidson_debug) then
+!           print *,"------"
+!           print *,"debug, start of sorting of complex eigenvalues"
+!           print *,"------"
+!       end if
 
         do
            do while ((sqrt(v(1,i)*v(1,i) + v(2,i)*v(2,i)) < x))
-!          do while ((sqrt(v(1,i)*v(1,i) + v(2,i)*v(2,i)) < x).or. &
-!                   ((sqrt(v(1,i)*v(1,i) + v(2,i)*v(2,i)).eq.x).and.(v(2,i) < v(2,start_index))))
               i = i + 1
            end do
            do while ((x < sqrt(v(1,j)*v(1,j) + v(2,j)*v(2,j))))
-!          do while ((x < sqrt(v(1,j)*v(1,j) + v(2,j)*v(2,j))).or. &
-!                   ((sqrt(v(1,j)*v(1,j) + v(2,j)*v(2,j)).eq.x).and.(v(2,start_index) < v(2,j))))
               j = j - 1
            end do
            if (i >= j) exit
 
-           if (davidson_debug) then
-!          if (.true.) then
-               call davidson_print_vectors(v, label="debug, original vector        ")
-!              call davidson_print_vectors(indices_sorted, label="debug, index vector b/f xc    ")
-               print *,"debug, index vector before exchange"
-               print *,indices_sorted
-               print *," debug, exchanging i",i,"and j",j
-           end if
+!          if (davidson_debug) then
+!              call davidson_print_vectors(v, label="debug, original vector        ")
+!              print *,"debug, index vector before exchange"
+!              print *,indices_sorted
+!              print *," debug, exchanging i",i,"and j",j
+!          end if
  
            t = v(1,i)
            v(1,i) = v(1,j)
@@ -2074,33 +2064,32 @@ contains
            indices_sorted(i) = indices_sorted(j)
            indices_sorted(j) = ti
 
-           if (davidson_debug) then
-               call davidson_print_vectors(v, label="debug, exchanged vector       ")
-!              call davidson_print_vectors(indices_sorted, label="debug, index vector a/f xc    ")
-               print *,"debug, index vector before exchange"
-               print *,indices_sorted
-           end if
+!          if (davidson_debug) then
+!              call davidson_print_vectors(v, label="debug, exchanged vector       ")
+!              print *,"debug, index vector before exchange"
+!              print *,indices_sorted
+!          end if
 
            i = i + 1
            j = j - 1
 
-           if (davidson_debug) print *,"debug, at the end of the loop, i",i,"j",j
+!          if (davidson_debug) print *,"debug, at the end of the loop, i",i,"j",j
 
         end do
         if (first < i-1) then 
-            if (davidson_debug) print *,"first",first,"i-1",(i-1)
+!           if (davidson_debug) print *,"first",first,"i-1",(i-1)
             call quicksort_vector_complex_as_real(v, indices_sorted, first, i-1)
         end if
         if (j+1 < last)  then
-            if (davidson_debug) print *,"last",last,"j+1",(j+1)
+!           if (davidson_debug) print *,"last",last,"j+1",(j+1)
             call quicksort_vector_complex_as_real(v, indices_sorted, j+1, last)
         end if
 
-        if (davidson_debug) then
-            print *,"------"
-            print *,"debug, end of sorting of complex eigenvalues"
-            print *,"------"
-        end if
+!       if (davidson_debug) then
+!           print *,"------"
+!           print *,"debug, end of sorting of complex eigenvalues"
+!           print *,"------"
+!       end if
 
     end subroutine
 
