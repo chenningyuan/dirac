@@ -1577,23 +1577,29 @@ contains
 
     subroutine calculate_eigenvalues_and_eigenvectors(output_file_unit, M, eValues, & 
                                 eVectorsR, eVectorsL, eVectorsR_old, eVectorsL_old, left, right,    &
-                                sorting_order, nroots, verbose, follow_overlap)
+                                sorting_order, nroots, verbose, follow_overlap, follow_overlap_scheme)
         real(kind=8), intent(inout), pointer   :: M(:,:)
         real(kind=8), intent(inout), pointer   :: eValues(:,:)
         real(kind=8), intent(inout), pointer   :: eVectorsR(:,:), eVectorsL(:,:)
         real(kind=8), intent(in)   :: eVectorsR_old(:,:), eVectorsL_old(:,:) !old vectors
         logical, optional, intent(in) :: left, right, verbose, follow_overlap
-        integer, optional, intent(in) :: sorting_order, nroots
+        integer, optional, intent(in) :: sorting_order, nroots, follow_overlap_scheme
         integer, intent(in) :: output_file_unit 
 
         logical :: left_local, right_local, verbose_local, follow_overlap_local
-        integer :: sorting_order_local, M_nroots, nroot, nroots_to_print
+        integer :: sorting_order_local, M_nroots, nroot, nroots_to_print, follow_overlap_scheme_local
         real(kind=8), allocatable :: overlap(:,:)
 
         if (present(follow_overlap)) then
             follow_overlap_local = follow_overlap
         else
             follow_overlap_local = .false.
+        end if
+
+        if (present(follow_overlap_scheme)) then
+            follow_overlap_scheme_local = follow_overlap_scheme
+        else
+            follow_overlap_scheme_local = 1 ! 1 = scheme calculating overlap matrix ; 2 = scheme not explicitly calculating overlap matrix
         end if
 
         if (present(sorting_order)) then
@@ -1643,45 +1649,51 @@ contains
             end if
         end if
 
-        if (follow_overlap) then
-            if (davidson_debug) print *, "following overlap !"
+        if (follow_overlap_local) then
+            if (davidson_debug) print *, "debug, following overlap !"
+            
+            if (follow_overlap_scheme_local .eq. 1) then
 ! calculate overlap between old and new vectors. Overlap(nroot,mroot) = Old^T(nroot,nroot)*New(1:nroot,mroot)   
 ! Max(Overlap(iroot,mroot)) for all iroot = 1,nroot 
-            
-            if(right_local) then    
-                 nroot = size(eVectorsR_old,1)
-                 allocate(overlap(nroot,M_nroots))
-                 overlap = 0.0d0 
-
-                 if (davidson_complex_mode_with_reals) then
-                     nroot = nroot / 2
+                nroot = size(eVectorsR_old,1)
+                allocate(overlap(nroot,M_nroots))
+                overlap = 0.0d0 
+                if(right_local) then    
+                    if (davidson_complex_mode_with_reals) then
+                        nroot = nroot / 2
 ! aspg, check consistency of complex and real modes after real mode is validated
-                     call zgemm('C', 'N', nroot, M_nroots, nroot, (1.0d0, 0.0d0), eVectorsR_old, &
-                                nroot, eVectorsR(1:2*nroot,1:M_nroots), nroot, (1.0d0, 0.0d0), overlap, nroot)
-                 else
-                     call dgemm('T', 'N', nroot, M_nroots, nroot, (1.0d0), eVectorsR_old, &
-                                nroot, eVectorsR(1:nroot,1:M_nroots), nroot, (1.0d0), overlap, nroot)
-                 end if
-            else if (left_local) then
-                 nroot = size(eVectorsL_old,1)
-                 allocate(overlap(nroot,M_nroots))
-                 overlap = 0.0d0 
-
-                 if (davidson_complex_mode_with_reals) then
-                     nroot = nroot / 2
+                        call zgemm('C', 'N', nroot, M_nroots, nroot, (1.0d0, 0.0d0), eVectorsR_old, &
+                                   nroot, eVectorsR(1:2*nroot,1:M_nroots), nroot, (1.0d0, 0.0d0), overlap, nroot)
+                    else
+                        call dgemm('T', 'N', nroot, M_nroots, nroot, (1.0d0), eVectorsR_old, &
+                                   nroot, eVectorsR(1:nroot,1:M_nroots), nroot, (1.0d0), overlap, nroot)
+                    end if
+                else if (left_local) then
+                    if (davidson_complex_mode_with_reals) then
+                        nroot = nroot / 2
 ! aspg, check consistency of complex and real modes after real mode is validated
-                     call zgemm('C', 'N', nroot, M_nroots, nroot, (1.0d0, 0.0d0), eVectorsL_old, &
-                                nroot, eVectorsL(1:2*nroot,1:M_nroots), nroot, (1.0d0, 0.0d0), overlap, nroot)
-                 else
-                     call dgemm('T', 'N', nroot, M_nroots, nroot, (1.0d0), eVectorsL_old, &
-                                nroot, eVectorsL(1:nroot,1:M_nroots), nroot, (1.0d0), overlap, nroot)
-                 end if
-            endif
+                        call zgemm('C', 'N', nroot, M_nroots, nroot, (1.0d0, 0.0d0), eVectorsL_old, &
+                                   nroot, eVectorsL(1:2*nroot,1:M_nroots), nroot, (1.0d0, 0.0d0), overlap, nroot)
+                    else
+                        call dgemm('T', 'N', nroot, M_nroots, nroot, (1.0d0), eVectorsL_old, &
+                                   nroot, eVectorsL(1:nroot,1:M_nroots), nroot, (1.0d0), overlap, nroot)
+                    end if
+                endif
 
-            if (davidson_debug) call davidson_print_vectors(overlap, label="overlap in calculate eval/evec")
-            call sort_by_overlap(-1, eValues, overlap, eVectorsR, eVectorsL, &
-                                 right_local, left_local) 
-            deallocate(overlap)
+                if (davidson_debug) call davidson_print_vectors(overlap, label="overlap in calculate eval/evec")
+                call sort_by_overlap(-1, eValues, overlap, eVectorsR, eVectorsL, &
+                                     right_local, left_local) 
+                deallocate(overlap)
+
+            else if (follow_overlap_scheme_local .eq. 2) then
+! aspg, debug, testing new overlap sorting
+                if(right_local) then
+                    call sort_by_overlap_of_subspace_left_or_right(eValues, eVectorsR)
+                else if (left_local) then
+                    call sort_by_overlap_of_subspace_left_or_right(eValues, eVectorsL)
+                end if
+            end if ! selection of overlap sorting scheme 
+
         else
             if (davidson_debug) print *, "not following overlap !"
             call sort_values_vectors(sorting_order_local, eValues, eVectorsR, eVectorsL, &
@@ -2233,6 +2245,93 @@ contains
         open (unit=fileno, file=filename, form="unformatted", access="direct", recl=irec)
         write(unit=fileno, rec=1) matrix
         close(unit=fileno)
+    end subroutine
+
+
+    subroutine sort_by_overlap_of_subspace_left_or_right(e_small, c_small)
+! this routine sorts the eigenvectors with respect to the overlap between them
+! so that the diagonal of the sorted eigenvector matrix contains the largest
+! element of each row.
+!
+! this should be equivalent to sorting the eigenpairs in descending order of overlap
+! with a set of initial trial vectors V = {v_1, v_2, v_3, ...} since, following the
+! reasoning by Zuev et al, J. Comput. Chem 2014 (DIO:10.1002/jcc23800):
+!
+! 1. the overlap of the initial and new vectors is given as:
+!    S_{1;k} = < v_1 | V c_small_k >
+!    S_{2;k} = < v_2 | V c_small_k >
+!    S_{3;k} = < v_3 | V c_small_k >
+!
+!    where c_small_k is the k-th element of c_small, the eigenvectors for the reduced subspace
+! [... explanation to be continued]
+!    
+! NOTE: nothing is done to ensure that no vector is placed twice, or removed from c_small altogether;
+! to do so i thin
+!
+        real(kind=8), intent(inout) :: c_small(:,:) ! left or right-side reduced subspace eigenvectors
+        real(kind=8), intent(inout) :: e_small(:,:) ! reduced subspace eigenvalues
+
+        real(kind=8), allocatable :: temp_vector(:,:)
+        real(kind=8),allocatable :: temp(:)
+        integer, allocatable :: indices_sorted_array(:), already_sorted(:)
+        integer :: vectors_L, vectors_N, i_sorted, i, max_overlap(1), iroot, jroot, kroot
+        integer :: factor
+        real(kind=8) :: vr, vi
+
+        vectors_N = size(c_small,1)
+        vectors_L = size(c_small,2)
+        factor    = vectors_N/vectors_L 
+
+        allocate(indices_sorted_array(vectors_L))
+        allocate(already_sorted(vectors_L))
+        do i = 1, vectors_L 
+            indices_sorted_array(i) = i 
+        end do
+        already_sorted = -1
+
+        allocate(temp(vectors_L))
+
+
+        do iroot = 1, vectors_N, factor
+          if (davidson_complex_mode_with_reals) then
+! the loop over jroot will create a temporary array with the norm of the iroot-th roow of the eigenvectors
+              do jroot = 1, vectors_L
+                  vr = c_small(iroot,jroot)*c_small(iroot,jroot)
+                  vi = c_small(iroot+1,jroot)*c_small(iroot+1,jroot)
+                  temp(jroot) = sqrt(vr*vr + vi*vi)
+              end do
+              max_overlap = maxloc(temp)
+              kroot = (iroot + 1) / factor
+          else
+              kroot = iroot
+              max_overlap = maxloc(abs(c_small(iroot:iroot,:)),2)
+          end if
+          i = max_overlap(1)
+          indices_sorted_array(kroot) = i
+        enddo
+        if (.true.) print *, 'indices will be exchanged as',indices_sorted_array
+
+        allocate(temp_vector(vectors_N,vectors_L))
+
+        do i = 1, vectors_L
+            i_sorted = indices_sorted_array(i)
+            temp_vector(:,i) = c_small(:,i_sorted)
+        end do
+        c_small = temp_vector
+
+        deallocate(temp_vector)
+
+        allocate(temp_vector(2,vectors_L))
+        do i = 1, vectors_L
+            i_sorted = indices_sorted_array(i)
+            temp_vector(1,i) = e_small(1,i_sorted)
+            temp_vector(2,i) = e_small(2,i_sorted)
+        end do
+        e_small = temp_vector
+
+        deallocate(temp_vector)
+        deallocate(indices_sorted_array)
+
     end subroutine
 
 
