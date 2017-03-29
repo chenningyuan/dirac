@@ -122,7 +122,7 @@
 !Argument <tens_descr> specifies the tensor slice for which the integrals to be computed.
          implicit none
          type(tens_descr_t), intent(in):: tens_descr       !in: tensor descriptor (specifies which Hamiltonian tensor slice to compute)
-         complex(16), intent(inout):: tens_body(*)         !out: Hamiltonian integrals
+         complex(8), intent(inout):: tens_body(*)         !out: Hamiltonian integrals
          type(basis_func_info_t), intent(in):: ao_info(1:) !in: information on each basis function
          integer, intent(out):: ierr                       !out: error code (0:success)
 

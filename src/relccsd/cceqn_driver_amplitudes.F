@@ -60,6 +60,7 @@ C---------------Local variables--------------------------------------
       CHARACTER*2 DELS1
       CHARACTER*4 DELS2
       REAL*8 DDOT
+      Complex(8) ZDOTU
 
 C---------------Executable code--------------------------------------
 C
@@ -117,15 +118,19 @@ C  EVALUATE T2 INTERMEDIATES
 C
          CALL XTIME(0,1,'-- GOINTM                        ')
          CALL GOINTM (FVO,T1,BUF1,BUF2,HO)
+         print*,"GO intermediate ",zdotu(nfoo,ho,1,ho,1)
          CALL XTIME(0,2,'-- GOINTM                        ')
          CALL XTIME(0,1,'-- GVINTM                        ')
          CALL GVINTM (FVO,T1,BUF3,NBUF3,BUF2,NBUF2,HV)
+         print*,"GV intermediate ",zdotu(nfvv,hv,1,hv,1)
          CALL XTIME(0,2,'-- GVINTM                        ')
          CALL XTIME(0,1,'-- AINTM                         ')
          CALL AINTM (T1,T2,BUF1,BUF2,AZ)
+         print*,"A intermediate ",zdotu(nv1,az,1,az,1)
          CALL XTIME(0,2,'-- AINTM                         ')
          CALL XTIME(0,1,'-- HINTM                         ')
          CALL HINTM (T1,T2,BUF1,BUF2,BUF3,NBUF3,H)
+         print*,"H intermediate ",zdotu(nv4,h,1,h,1)
          CALL XTIME(0,2,'-- HINTM                         ')
 
 #if defined (VAR_MPI)

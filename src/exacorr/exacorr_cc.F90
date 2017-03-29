@@ -3,7 +3,8 @@
 
         implicit none
 
-        complex(8), parameter :: zero=(0.D0,0.D0),one=(1.D0,0.D0),minus_one=(-1.D0,0.D0)
+        complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
+                                 ONE_HALF=(0.5D0,0.D0),ONE_QUARTER=(0.25D0,0.D0)
 
         private
         public cc_driver
@@ -28,7 +29,7 @@
 
          integer   :: ierr, i
          complex(8), pointer, contiguous:: ao_tens(:,:,:,:)
-         complex(8), pointer :: energy(:)
+         complex(8), pointer :: energy(:),result_tens(:)
          type(C_PTR):: body_p
          integer(C_SIZE_T), parameter:: BUF_SIZE=1_8*1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
          integer(C_SIZE_T):: host_buf_size
@@ -42,8 +43,8 @@
          type(talsh_tens_t):: aoint_tensor
          integer:: aoint_dims(1:4)
 !        sorted integral tensors
-         type(talsh_tens_t):: oovv_tensor, vvvv_tensor, oooo_tensor, vovo_tensor
-         integer:: oovv_dims(1:4),vvvv_dims(1:4),oooo_dims(1:4),vovo_dims(1:4)
+         type(talsh_tens_t):: oovv_tensor, vvvv_tensor, oooo_tensor, vovo_tensor, ovvo_tensor
+         integer:: oovv_dims(1:4),vvvv_dims(1:4),oooo_dims(1:4),vovo_dims(1:4), ovvo_dims(1:4)
 !        intermediate tensors (same notation as in relccsd)
          type(talsh_tens_t):: goint_tensor, gvint_tensor
          type(talsh_tens_t):: aint_tensor, bint_tensor, hint_tensor
@@ -53,8 +54,8 @@
          type(talsh_tens_t):: t2_tensor, s2_tensor
          integer:: t2_dims(1:4), s2_dims(1:4)
 !        scalars (need to be defined as tensor types)
-         type(talsh_tens_t):: one_tensor,mone_tensor,energy_tensor
-         integer:: scalar_dims(1)
+         type(talsh_tens_t):: result_tensor, minusone_tensor
+         integer:: result_dims(1),minusone_dims(1)
 
          integer:: nmo(4)
          integer, allocatable :: mo_list(:)
@@ -63,9 +64,10 @@
 !        CCD control variables
          integer :: iccd, nccd
 
-!        These declarations are needed for work-arounds
+!        These declarations are needed for work-arounds and debugging
+         type(talsh_tens_t):: halft2_tensor
          real(8) :: mp2_energy, ccd_energy
-         complex(8), pointer, contiguous:: oovv_tens(:,:,:,:),t2_tens(:,:,:,:),s2_tens(:,:,:,:)
+         complex(8), pointer, contiguous:: oovv_tens(:,:,:,:),t2_tens(:,:,:,:),s2_tens(:,:,:,:),halft2_tens(:,:,:,:)
          integer :: j,a,b
 
 !        Make some noise so that we know we are here
@@ -92,7 +94,7 @@
          
 !        Get tensor with AO integrals
          aoint_dims      = nao
-         ierr=talsh_tensor_construct(aoint_tensor,C8,aoint_dims,init_val=zero)
+         ierr=talsh_tensor_construct(aoint_tensor,C8,aoint_dims,init_val=ZERO)
 !        Initialize AO integral tensors (ideally via an initialization routine, for now via direct access)
          ierr=talsh_tensor_get_body_access(aoint_tensor,body_p,C8,0,DEV_HOST)
          call c_f_pointer(body_p,ao_tens,aoint_dims(1:4)) ! to use <ao_tens> as a regular Fortran 4d array
@@ -107,7 +109,7 @@
 !        Get oovv tensor (assuming closed shells for the moment)
          oovv_dims(1:2) = nocc  * 2
          oovv_dims(3:4) = nvir * 2
-         ierr=talsh_tensor_construct(oovv_tensor,C8,oovv_dims,init_val=zero)
+         ierr=talsh_tensor_construct(oovv_tensor,C8,oovv_dims,init_val=ZERO)
          allocate (mo_list(2*nocc+2*nvir))
          nmo(1) = nocc
          nmo(2) = nvir
@@ -123,7 +125,7 @@
 !        Initialize t2 amplitudes with the MP2 values
          t2_dims(1:2) = nvir * 2
          t2_dims(3:4) = nocc * 2
-         ierr=talsh_tensor_construct(t2_tensor,C8,t2_dims,init_val=zero)
+         ierr=talsh_tensor_construct(t2_tensor,C8,t2_dims,init_val=ZERO)
 !        This is a work-around, this transpose and copy should be cast in talsh calls
          ierr=talsh_tensor_get_body_access(oovv_tensor,body_p,C8,0,DEV_HOST)
          call c_f_pointer(body_p,oovv_tens,oovv_dims)
@@ -142,7 +144,7 @@
 
 !        Calculate and print the MP2 energy
 !        This is a work-around, should be cast as a complete contraction of tensors
-         mp2_energy = zero
+         mp2_energy = ZERO
          do j = 1, 2 * nocc
            do i = 1, j
              do b = 1, 2 * nvir
@@ -156,9 +158,9 @@
 
 !        Prepare for CC by getting the other classes of integrals
 
-!        Get oooo tensor
+!        Get antisymmetric oooo tensor
          oooo_dims = nocc * 2
-         ierr=talsh_tensor_construct(oooo_tensor,C8,oooo_dims,init_val=zero)
+         ierr=talsh_tensor_construct(oooo_tensor,C8,oooo_dims,init_val=ZERO)
          allocate (mo_list(4*nocc))
          nmo = nocc 
          mo_list(1:nocc)          = mo_occ(1:nocc)
@@ -173,7 +175,7 @@
          vovo_dims(2) = nocc * 2
          vovo_dims(3) = nvir * 2
          vovo_dims(4) = nocc * 2
-         ierr=talsh_tensor_construct(vovo_tensor,C8,vovo_dims,init_val=zero)
+         ierr=talsh_tensor_construct(vovo_tensor,C8,vovo_dims,init_val=ZERO)
          allocate (mo_list(2*nvir+2*nocc))
          nmo(1:2) = nvir
          nmo(3:4) = nocc
@@ -183,10 +185,31 @@
          mo_list(2*nvir+nocc+1:2*nvir+2*nocc) = mo_occ(1:nocc)
          call get_integral_tensor (aoint_tensor,vovo_tensor,.false.,nmo,mo_list)
          deallocate (mo_list)
+!        Get ovvo tensor
+         ovvo_dims(1) = nocc * 2
+         ovvo_dims(2) = nvir * 2
+         ovvo_dims(3) = nvir * 2
+         ovvo_dims(4) = nocc * 2
+         ierr=talsh_tensor_construct(ovvo_tensor,C8,ovvo_dims,init_val=ZERO)
+         allocate (mo_list(2*nvir+2*nocc))
+         nmo(1) = nocc
+         nmo(2) = nvir
+         nmo(3) = nvir
+         nmo(4) = nocc
+         mo_list(1:nocc)                      = mo_occ(1:nocc)
+         mo_list(nocc+1:nocc+nvir)            = mo_vir(1:nvir)
+         mo_list(nvir+nocc+1:2*nvir+nocc)     = mo_vir(1:nvir)
+         mo_list(2*nvir+nocc+1:2*nvir+2*nocc) = mo_occ(1:nocc)
+         call get_integral_tensor (aoint_tensor,ovvo_tensor,.false.,nmo,mo_list)
+         deallocate (mo_list)
+!        Make anti-symmetrized vovo tensor
+         minusone_dims(1) = 1
+         ierr=talsh_tensor_construct(minusone_tensor,C8,minusone_dims(1:0),init_val=MINUS_ONE)
+         ierr=talsh_tensor_contract("V(a,i,b,j)+=V(i,a,b,j)*C()",vovo_tensor,ovvo_tensor,minusone_tensor)
 
 !        Get vvvv tensor
          vvvv_dims = nvir * 2
-         ierr=talsh_tensor_construct(vvvv_tensor,C8,vvvv_dims,init_val=zero)
+         ierr=talsh_tensor_construct(vvvv_tensor,C8,vvvv_dims,init_val=ZERO)
          allocate (mo_list(4*nvir))
          nmo = nvir
          mo_list(1:nvir)          = mo_vir(1:nvir)
@@ -199,42 +222,82 @@
 !        Start CCD iterations
 
          nccd = 30 ! hard wired for the moment
-!        Start CCD iterations
-
-         nccd = 30 ! hard wired for the moment
 
          goint_dims = nocc  * 2
-         ierr=talsh_tensor_construct(goint_tensor,C8,goint_dims,init_val=zero)
+         ierr=talsh_tensor_construct(goint_tensor,C8,goint_dims,init_val=ZERO)
          gvint_dims = nvir * 2
-         ierr=talsh_tensor_construct(gvint_tensor,C8,gvint_dims,init_val=zero)
+         ierr=talsh_tensor_construct(gvint_tensor,C8,gvint_dims,init_val=ZERO)
          aint_dims  = nocc  * 2
-         ierr=talsh_tensor_construct(aint_tensor,C8,aint_dims,init_val=zero)
+         ierr=talsh_tensor_construct(aint_tensor,C8,aint_dims,init_val=ZERO)
          hint_dims(1) = nvir * 2
          hint_dims(2) = nocc * 2
          hint_dims(3) = nvir * 2
          hint_dims(4) = nocc * 2
-         ierr=talsh_tensor_construct(hint_tensor,C8,hint_dims,init_val=zero)
+         ierr=talsh_tensor_construct(hint_tensor,C8,hint_dims,init_val=ZERO)
          s2_dims(1:2) = nvir * 2
          s2_dims(3:4) = nocc * 2
-         ierr=talsh_tensor_construct(s2_tensor,C8,s2_dims,init_val=zero)
+         ierr=talsh_tensor_construct(s2_tensor,C8,s2_dims,init_val=ZERO)
+!        For debugging
+         result_dims(1) = 1
+         ierr=talsh_tensor_construct(result_tensor,C8,result_dims(1:0),init_val=ZERO)
+         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,0,DEV_HOST)
+         call c_f_pointer(body_p,result_tens,result_dims)
 
          do iccd = 1, nccd
 
+!        work-around for missing scale option in tensor contraction
+         ierr=talsh_tensor_construct(halft2_tensor,C8,t2_dims,init_val=ZERO)
+         ierr=talsh_tensor_get_body_access(halft2_tensor,body_p,C8,0,DEV_HOST)
+         call c_f_pointer(body_p,halft2_tens,t2_dims)
+         do j = 1, 2 * nocc
+           do i = 1, 2 * nocc
+             do b = 1, 2 * nvir
+               do a = 1, 2 * nvir
+                  halft2_tens(a,b,i,j) = ONE_HALF * t2_tens(a,b,i,j)
+               end do 
+             end do 
+           end do 
+         end do 
+
 !        calculate intermediaries
          ierr=talsh_tensor_init(goint_tensor)
-         ierr=talsh_tensor_contract("G(k,i)+=V(k,l,c,d)*T(c,d,i,l)",goint_tensor,oovv_tensor,t2_tensor)
+         ierr=talsh_tensor_contract("G(k,j)+=V(k,l,c,d)*T(c,d,l,j)",goint_tensor,oovv_tensor,halft2_tensor, &
+                                     scale=ONE)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=11; return; endif
          ierr=talsh_tensor_init(gvint_tensor)
-         ierr=talsh_tensor_contract("G(a,c)+=V(k,l,c,d)*T(a,d,k,l)",gvint_tensor,oovv_tensor,t2_tensor)
+         ierr=talsh_tensor_contract("G(a,c)+=V(k,l,c,d)*T(d,a,k,l)",gvint_tensor,oovv_tensor,halft2_tensor, &
+                                     scale=ONE)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=12; return; endif
          ierr=talsh_tensor_init(aint_tensor)
          ierr=talsh_tensor_add("A(k,l,i,j)+=V(k,l,i,j)",aint_tensor,oooo_tensor)
-         ierr=talsh_tensor_contract("A(k,l,i,j)+=V(k,l,c,d)*T(c,d,i,j)",aint_tensor,oovv_tensor,t2_tensor)
+         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=13; return; endif
+         ierr=talsh_tensor_contract("A(k,l,i,j)+=V(k,l,c,d)*T(c,d,i,j)",aint_tensor,oovv_tensor,halft2_tensor, &
+                                     scale=ONE)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=13; return; endif
          ierr=talsh_tensor_init(hint_tensor)
-         ierr=talsh_tensor_add("H(a,k,i,c)+=V(a,k,i,c)",hint_tensor,vovo_tensor)
-!        ierr=talsh_tensor_contract("H(a,k,i,c)+=V(k,l,c,d)*T(a,d,i,l)",hint_tensor,oovv_tensor,t2_tensor)
+         ierr=talsh_tensor_add("H(a,i,c,k)+=V(a,i,c,k)",hint_tensor,vovo_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=14; return; endif
+         ierr=talsh_tensor_contract("H(a,i,c,k)+=V(k,l,c,d)*T(a,d,l,i)",hint_tensor,oovv_tensor,halft2_tensor, &
+                                     scale=ONE)
+         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=14; return; endif
+
+!        For debugging
+         ierr=talsh_tensor_init(result_tensor)
+         ierr=talsh_tensor_contract("S()+=T(a,b,i,j)*T(a,b,i,j)",result_tensor,halft2_tensor,halft2_tensor, &
+                                     scale=ONE)
+         print*, "T2amp = ",result_tens(1)
+         ierr=talsh_tensor_init(result_tensor)
+         ierr=talsh_tensor_contract("S()+=G(k,j)*G(k,j)",result_tensor,goint_tensor,goint_tensor)
+         print*, "goint = ",result_tens(1)
+         ierr=talsh_tensor_init(result_tensor)
+         ierr=talsh_tensor_contract("S()+=G(a,c)*G(a,c)",result_tensor,gvint_tensor,gvint_tensor)
+         print*, "gvint = ",result_tens(1)
+         ierr=talsh_tensor_init(result_tensor)
+         ierr=talsh_tensor_contract("S()+=A(k,l,i,j)*A(k,l,i,j)",result_tensor,aint_tensor,aint_tensor)
+         print*, "a int = ",result_tens(1)/4.D0
+         ierr=talsh_tensor_init(result_tensor)
+         ierr=talsh_tensor_contract("S()+=H(a,i,c,k)*H(a,i,c,k)",result_tensor,hint_tensor,hint_tensor)
+         print*, "h int = ",result_tens(1)
 
 !        calculate s2 tensor
 !        ierr=talsh_tensor_init(s2_tensor)
@@ -242,27 +305,43 @@
 !        work-around
          ierr=talsh_tensor_get_body_access(s2_tensor,body_p,C8,0,DEV_HOST)
          call c_f_pointer(body_p,s2_tens,s2_dims)
-         do j = 1, 2 * nocc
-           do i = 1, 2 * nocc
-             do b = 1, 2 * nvir
-               do a = 1, 2 * nvir
+         do j = 1, s2_dims(4)
+           do i = 1, s2_dims(3)
+             do b = 1, s2_dims(2)
+               do a = 1, s2_dims(1)
                   s2_tens(a,b,i,j)   = dconjg(oovv_tens(i,j,a,b))
                end do 
              end do 
            end do 
          end do 
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=G(k,i)*T(a,b,j,k)",s2_tensor,goint_tensor,t2_tensor)
+
+!        This terms appears twice as we need to permute i and j
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=G(k,j)*T(a,b,i,k)",s2_tensor,goint_tensor,t2_tensor)
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=G(k,i)*T(a,b,k,j)",s2_tensor,goint_tensor,t2_tensor)
+
+!        This terms appears twice as we need to permute a and b
          ierr=talsh_tensor_contract("S(a,b,i,j)+=G(a,c)*T(c,b,i,j)",s2_tensor,gvint_tensor,t2_tensor)
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=A(k,l,i,j)*T(a,b,k,l)",s2_tensor,aint_tensor,t2_tensor)
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=H(a,k,i,c)*T(b,c,j,k)",s2_tensor,hint_tensor,t2_tensor)
-!        ierr=talsh_tensor_contract("S(a,b,i,j)+=V(a,b,c,d)*T(c,d,i,j)",s2_tensor,vvvv_tensor,t2_tensor)
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=G(b,c)*T(a,c,i,j)",s2_tensor,gvint_tensor,t2_tensor)
+
+!        The oooo contribution
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=A(k,l,i,j)*T(a,b,k,l)",s2_tensor,aint_tensor,halft2_tensor)
+
+!        The vvvv contribution
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=V(a,b,c,d)*T(c,d,i,j)",s2_tensor,vvvv_tensor,halft2_tensor, &
+                                     scale=ONE)
+
+!        This terms appears four times as we need to permute both i and j and a and b
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=H(a,i,c,k)*T(c,b,j,k)",s2_tensor,hint_tensor,t2_tensor)
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=H(a,j,c,k)*T(c,b,k,i)",s2_tensor,hint_tensor,t2_tensor)
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=H(b,i,c,k)*T(a,c,j,k)",s2_tensor,hint_tensor,t2_tensor)
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=H(b,j,c,k)*T(a,c,k,i)",s2_tensor,hint_tensor,t2_tensor)
 
 !        prepare for next iteration
          ierr=talsh_tensor_init(t2_tensor)
          ierr=talsh_tensor_add("T2(a,b,i,j)+=S2(a,b,i,j)",t2_tensor,s2_tensor)
          call scale_with_denominators (t2_tensor,eps_occ,eps_vir)
 
-         ccd_energy = zero
+         ccd_energy = ZERO
          do j = 1, 2 * nocc
            do i = 1, j
              do b = 1, 2 * nvir
@@ -310,7 +389,7 @@
          type(talsh_tens_t)                 :: moint_tensor
 
          moint_dims = 2 * nmo
-         ierr=talsh_tensor_construct(moint_tensor,C8,moint_dims,init_val=zero)
+         ierr=talsh_tensor_construct(moint_tensor,C8,moint_dims,init_val=ZERO)
 !        Transform integrals
          call aomo_transform (aoint_tensor,moint_tensor,nmo,mo_list)
 !        Switch to Dirac order and antisymmetrize
