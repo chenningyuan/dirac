@@ -61,13 +61,12 @@
          integer, allocatable :: mo_list(:)
          real(8), allocatable :: eps_occ(:),eps_vir(:)
 
-!        CCD control variables
+!        CCD control and result variables
          integer :: iccd, nccd
+         real(8) :: mp2_energy, ccd_energy
 
 !        These declarations are needed for work-arounds and debugging
-         type(talsh_tens_t):: halft2_tensor
-         real(8) :: mp2_energy, ccd_energy
-         complex(8), pointer, contiguous:: oovv_tens(:,:,:,:),t2_tens(:,:,:,:),s2_tens(:,:,:,:),halft2_tens(:,:,:,:)
+         complex(8), pointer, contiguous:: oovv_tens(:,:,:,:),t2_tens(:,:,:,:),s2_tens(:,:,:,:)
          integer :: j,a,b
 
 !        Make some noise so that we know we are here
@@ -245,46 +244,32 @@
 
          do iccd = 1, nccd
 
-!        work-around for missing scale option in tensor contraction
-         ierr=talsh_tensor_construct(halft2_tensor,C8,t2_dims,init_val=ZERO)
-         ierr=talsh_tensor_get_body_access(halft2_tensor,body_p,C8,0,DEV_HOST)
-         call c_f_pointer(body_p,halft2_tens,t2_dims)
-         do j = 1, 2 * nocc
-           do i = 1, 2 * nocc
-             do b = 1, 2 * nvir
-               do a = 1, 2 * nvir
-                  halft2_tens(a,b,i,j) = ONE_HALF * t2_tens(a,b,i,j)
-               end do 
-             end do 
-           end do 
-         end do 
-
 !        calculate intermediaries
          ierr=talsh_tensor_init(goint_tensor)
-         ierr=talsh_tensor_contract("G(k,j)+=V(k,l,c,d)*T(c,d,l,j)",goint_tensor,oovv_tensor,halft2_tensor, &
-                                     scale=ONE)
+         ierr=talsh_tensor_contract("G(k,j)+=V(k,l,c,d)*T(c,d,l,j)",goint_tensor,oovv_tensor,t2_tensor, &
+                                     scale=ONE_HALF)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=11; return; endif
          ierr=talsh_tensor_init(gvint_tensor)
-         ierr=talsh_tensor_contract("G(a,c)+=V(k,l,c,d)*T(d,a,k,l)",gvint_tensor,oovv_tensor,halft2_tensor, &
-                                     scale=ONE)
+         ierr=talsh_tensor_contract("G(a,c)+=V(k,l,c,d)*T(d,a,k,l)",gvint_tensor,oovv_tensor,t2_tensor, &
+                                     scale=ONE_HALF)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=12; return; endif
          ierr=talsh_tensor_init(aint_tensor)
          ierr=talsh_tensor_add("A(k,l,i,j)+=V(k,l,i,j)",aint_tensor,oooo_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=13; return; endif
-         ierr=talsh_tensor_contract("A(k,l,i,j)+=V(k,l,c,d)*T(c,d,i,j)",aint_tensor,oovv_tensor,halft2_tensor, &
-                                     scale=ONE)
+         ierr=talsh_tensor_contract("A(k,l,i,j)+=V(k,l,c,d)*T(c,d,i,j)",aint_tensor,oovv_tensor,t2_tensor, &
+                                     scale=ONE_HALF)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=13; return; endif
          ierr=talsh_tensor_init(hint_tensor)
          ierr=talsh_tensor_add("H(a,i,c,k)+=V(a,i,c,k)",hint_tensor,vovo_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=14; return; endif
-         ierr=talsh_tensor_contract("H(a,i,c,k)+=V(k,l,c,d)*T(a,d,l,i)",hint_tensor,oovv_tensor,halft2_tensor, &
-                                     scale=ONE)
+         ierr=talsh_tensor_contract("H(a,i,c,k)+=V(k,l,c,d)*T(a,d,l,i)",hint_tensor,oovv_tensor,t2_tensor, &
+                                     scale=ONE_HALF)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=14; return; endif
 
 !        For debugging
          ierr=talsh_tensor_init(result_tensor)
-         ierr=talsh_tensor_contract("S()+=T(a,b,i,j)*T(a,b,i,j)",result_tensor,halft2_tensor,halft2_tensor, &
-                                     scale=ONE)
+         ierr=talsh_tensor_contract("S()+=T(a,b,i,j)*T(a,b,i,j)",result_tensor,t2_tensor,t2_tensor, &
+                                     scale=ONE_QUARTER)
          print*, "T2amp = ",result_tens(1)
          ierr=talsh_tensor_init(result_tensor)
          ierr=talsh_tensor_contract("S()+=G(k,j)*G(k,j)",result_tensor,goint_tensor,goint_tensor)
@@ -324,11 +309,12 @@
          ierr=talsh_tensor_contract("S(a,b,i,j)+=G(b,c)*T(a,c,i,j)",s2_tensor,gvint_tensor,t2_tensor)
 
 !        The oooo contribution
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=A(k,l,i,j)*T(a,b,k,l)",s2_tensor,aint_tensor,halft2_tensor)
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=A(k,l,i,j)*T(a,b,k,l)",s2_tensor,aint_tensor,t2_tensor, &
+                                    scale=ONE_HALF)
 
 !        The vvvv contribution
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=V(a,b,c,d)*T(c,d,i,j)",s2_tensor,vvvv_tensor,halft2_tensor, &
-                                     scale=ONE)
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=V(a,b,c,d)*T(c,d,i,j)",s2_tensor,vvvv_tensor,t2_tensor, &
+                                     scale=ONE_HALF)
 
 !        This terms appears four times as we need to permute both i and j and a and b
          ierr=talsh_tensor_contract("S(a,b,i,j)+=H(a,i,c,k)*T(c,b,j,k)",s2_tensor,hint_tensor,t2_tensor)
@@ -471,9 +457,9 @@
             end if
          end if
 
-        end subroutine mulliken_to_dirac_sort
+       end subroutine mulliken_to_dirac_sort
         
-        subroutine scale_with_denominators (t2_tensor,eps_occ,eps_vir)
+       subroutine scale_with_denominators (t2_tensor,eps_occ,eps_vir)
 
          use tensor_algebra
          use talsh
