@@ -9361,7 +9361,6 @@ C
        PLABEL(1) = 'OVERLAP'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
-ciaa1/4   cambie 2+mxcoor por 4+mxcoor
        CALL OP1IND('XSPINMOM',IPSPINRO(4+MXCOOR),LLRBPU,NLRBPT,
      &                       INDXPR,MAXLLR)
 C
