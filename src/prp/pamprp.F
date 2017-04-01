@@ -9265,6 +9265,7 @@ c...common block for expectation values
 C...common block for linear reponse
 #include "dcbxpr.h"
 #include "dcbgen.h"
+#include "dcbspinro.h"
 
       INTEGER IPRINT,NATOM,I,J,IATOM,IATOM1,
      &        IC1,IC2,ICOOR,ICOOR1,IFIRST,ILOW,INDOP1,
@@ -9330,7 +9331,14 @@ C     Here we set up the operators needed for the linear reponse part
 C
 C     Define right-hand operators
 C
+      LINDET=.FALSE.  ! to detect if linear symmetry is used
+C
       IF (LINEAR) THEN  ! linear molecule detected using symmetry
+C
+Ciaa   LINDET is used to record that LINEAR symmetry is used,
+C      even when in further steps it could be changed, as occur
+C      for UKB, spin-free and ZORA calculations.
+       LINDET=.TRUE.  ! save that linear symmetry is used
 C
 C.....Orbital angular momentum
 C
@@ -9353,7 +9361,8 @@ C
        PLABEL(1) = 'OVERLAP'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
-       CALL OP1IND('XSPINMOM',IPSPINRO(2+MXCOOR),LLRBPU,NLRBPT,
+ciaa1/4   cambie 2+mxcoor por 4+mxcoor
+       CALL OP1IND('XSPINMOM',IPSPINRO(4+MXCOOR),LLRBPU,NLRBPT,
      &                       INDXPR,MAXLLR)
 C
       ELSE ! if LINEAR is not TRUE
@@ -9590,6 +9599,8 @@ C***********************************************************************
 #include "iratdef.h"  ! added
 #include "dgroup.h"   ! added
 #include "ibtfun.h"
+#include "dcbham.h"   ! added
+#include "dcbspinro.h" ! added
 C
 C 
       logical, allocatable :: DOATOM(:)
@@ -9615,7 +9626,7 @@ C
      &        NATOM,NB1,NB2,NCMAT,
      &        NEXP,NISO,NSCOOR, NSPEC,
      &        ICONVXYZ,IBTOR,IBTSHL,IBTSHR,IBTXOR,IEXP,IBTAND,
-     &        JEXP,KEXP,IBUFB1(3),IBUFB2(3),NMAX, IATINF(3,NUCDEP)
+     &        JEXP,KEXP,IBUFB1(3),IBUFB2(3),IATINF(3,NUCDEP)
 C
       double precision RATINF(3,5,NUCDEP),DISOTP,
      &                 EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
@@ -9738,12 +9749,16 @@ C     The NSCOOR nucl. magn. dipole operators as A operators in <<A;B>> :
         CALL QUIT('PRP_SPINRO:Wrong value of NA!')
       ENDIF
 C
-      NMAX=3
+Ciaa   As in the current implementation UKB, spin-free and ZORA
+C      calculations of energy cannot be performed employing symmetry
+C      (they set LINEAR to false in such cases, see subroutine GLINSM)
+C      LINDET allows to recover LINEAR symmetry defined in DEF_SPINRO
+C      if it is lost due to the use of UKB, SF or ZORA functionalities
+      IF ((URKBAL.or.SPINFR.or.ZORA).and.LINDET) LINEAR=.TRUE.
 C
-      IF (LINEAR) NMAX=1
 C     The 3 L orbital angular momentum directions as B operators in <<A;B>> :
       NB1 = 0
-      DO I = 1, NMAX
+      DO I = 1,3
         IF(IPSPINRO(I+MXCOOR).GT.0) THEN
           NB1 = NB1 + 1
           IBUFB1(NB1) = I
@@ -9756,8 +9771,8 @@ C     The 3 L orbital angular momentum directions as B operators in <<A;B>> :
 C
 C     The 3 S spin angular momentum directions as B operators in <<A;B>> :
       NB2 = 0
-      DO I = 1, NMAX
-        IF(IPSPINRO(I+NMAX+MXCOOR).GT.0) THEN
+      DO I = 1,3
+        IF(IPSPINRO(I+3+MXCOOR).GT.0) THEN
           NB2 = NB2 + 1
           IBUFB2(NB2) = I
         ENDIF
@@ -9874,7 +9889,7 @@ C...        then extract the e-p contribution
 C
         DO IB2 = 1,NB2
           JB2 = IBUFB2(IB2)
-          KB2 = IPSPINRO(MXCOOR+NMAX+JB2)
+          KB2 = IPSPINRO(MXCOOR+3+JB2)
           DO IA = 1,NA
             JA = IBUFA(IA)
             KA = IPSPINRO(JA)
@@ -10275,6 +10290,10 @@ C
       IF (LINEAR) THEN     ! linear molecule detected using symmetry
 !
 ! iaa: Symmetry. It is not working for diatomic molecules with 2 equal atoms
+        IF (CHARGE(1).EQ.CHARGE(2)) THEN
+          CALL QUIT('SPRRES: spin-rotation constants using symmetry '//
+     &                  'and 2 equal atoms is not yet implemented')
+        END IF
 !
          IF (IPRINT .GE. 0) THEN
             WRITE (LUPRI,'(/,1X,A)') ' The molecule is linear.'
