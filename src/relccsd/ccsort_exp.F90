@@ -24,6 +24,7 @@
    public SRT10_exp
    public SRT1TS4_exp
    public SRT1C1_exp
+   public nvo_to_mvo
 
      private
 
@@ -2126,7 +2127,7 @@
 !---------------Calling variables--------------------------------------
 
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NPAIR1(NREP),NPAIR2(NREP)
+      INTEGER NPAIR1(NREP),NPAIR2(NREP),IRP_INPUT
       LOGICAL SHIFT_BOSON
       INTEGER, OPTIONAL :: IRREP_PROD_TYPE
       INTEGER  :: IRREP_PROD_TYPE_LOC
@@ -2176,5 +2177,66 @@
 
       RETURN
       END SUBROUTINE
+
+
+     SUBROUTINE nvo_to_mvo (IRP_INPUT,DOINV,IFIE,JFIE,BUF1,BUF2)
+      IMPLICIT INTEGER (A-Z)
+#include "symm.inc"
+
+!---------------Description--------------------------------------------
+!
+!     BUF(I>J,K>L:KLREP) <--> BUF(IK,JL)
+!     If (FIRST) take only the totally symmetric (first) irrep.
+!     If (DOINV) inverse sort.
+!     IRP_INPUT specifies the IRREP to which the incoming tensors belong. 
+!---------------Routines called----------------------------------------
+!
+!---------------Last modified------------------------------------------
+!
+!     Author : Luuk Visscher
+!
+!---------------Calling variables--------------------------------------
+
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER IRP_INPUT
+      INTEGER IFIE(NREP),JFIE(NREP)
+      LOGICAL DOINV
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
+!---------------Local variables--------------------------------------
+      type(Offset) :: d,e,f,g,h
+!---------------Executable code--------------------------------------
+
+      call alloc_array(d,nrep)
+
+      call auto_symmetry_offset(d,IFIE,JFIE,.false.,.false.)
+
+      BUF2(1:d%oneDirac(IRP_INPUT)) = 0.0d0   
+
+      IJ = 1
+      DO JREP = 1, NREP
+         IREP = MULTB(JREP,IRP_INPUT+NREP,1)
+
+           DO J = 1, JFIE(JREP)
+               IJ1 = d%twoDirac(IREP,JREP)+(J-1)*IFIE(IREP)
+
+             IF (DOINV) THEN
+                CALL XCOPY (IFIE(IREP),BUF1(IJ1*RCW+1),1,BUF2(IJ),1)
+             ELSE
+                CALL XCOPY (IFIE(IREP),BUF1(IJ),1,BUF2(IJ1*RCW+1),1)
+
+             ENDIF
+             IJ = IJ + RCW * IFIE(IREP)
+           ENDDO
+       ENDDO
+
+      call dealloc_array(d)
+      RETURN
+      END SUBROUTINE
+
 
   end module      

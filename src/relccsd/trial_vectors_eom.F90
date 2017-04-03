@@ -44,21 +44,21 @@ module trial_vectors_eom
 !S_ai = S_ai +  F^a_e*R^e_i   
 !---------------------------
    
-      call contraction_222 ((/"p1","p2"/),(/"p2","o1"/),(/"p1","o1"/),Fbar_ae,r1(:,iroot:iroot),sigma1(:,iroot:iroot), &
+      call contraction_222 ((/"p1","p2"/),(/"p2","o1"/),(/"p1","o1"/),Fbar_ae,r1(:,iroot),sigma1(:,iroot), &
   &                       1.0d0,1.0d0,nrep)
 
 !S_ai = S_ai - f_bar_mi(m,i)*r1(a,m) 
 !------------------------------------
 
-      call contraction_222 ((/"p1","o2"/),(/"o2","o1"/),(/"p1","o1"/),r1(:,iroot:iroot),Fbar_mi, &
-  &                         sigma1(:,iroot:iroot),-1.0d0,1.0d0,nrep)
+      call contraction_222 ((/"p1","o2"/),(/"o2","o1"/),(/"p1","o1"/),r1(:,iroot),Fbar_mi, &
+  &                         sigma1(:,iroot),-1.0d0,1.0d0,nrep)
 
 
 !S_ai = S_ai + w_mbej(ma,ei)*r1(e,m)
 !------------------------------------ 
 
-      call contraction_422 ((/"o2","p1","p2","o1"/),(/"p2","o2"/),(/"p1","o1"/),r1(:,iroot:iroot), &
-  &                         sigma1(:,iroot:iroot),1.0d0,1.0d0,nrep,W_mbej)
+      call contraction_422 ((/"o2","p1","p2","o1"/),(/"p2","o2"/),(/"p1","o1"/),r1(:,iroot), &
+  &                         sigma1(:,iroot),1.0d0,1.0d0,nrep,W_mbej)
 
   enddo
 
@@ -123,7 +123,7 @@ module trial_vectors_eom
 
    do iroot = 1, nroot
 
-     call contraction_222 ((/"o2","o1"/),(/"c1","o2"/),(/"c1","o1"/),Fbar_mi,r1(:,iroot:iroot),sigma1(:,iroot:iroot), &
+     call contraction_222 ((/"o2","o1"/),(/"c1","o2"/),(/"c1","o1"/),Fbar_mi,r1(:,iroot),sigma1(:,iroot), &
     &                       -1.0d0,1.0d0,nrep)
 
    enddo
@@ -189,7 +189,7 @@ module trial_vectors_eom
 
    do iroot = 1, nroot
 
-    call contraction_222 ((/"p1","p2"/),(/"p2","c1"/),(/"p1","c1"/),Fbar_ae,r1(:,iroot:iroot),sigma1(:,iroot:iroot), &
+    call contraction_222 ((/"p1","p2"/),(/"p2","c1"/),(/"p1","c1"/),Fbar_ae,r1(:,iroot),sigma1(:,iroot), &
    &                    1.0d0,1.0d0,nrep)
 
    end do

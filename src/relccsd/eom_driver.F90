@@ -127,7 +127,7 @@
 !Local Variables
 !==============
 
-   integer :: i,ii,irep,j,iaai,aoff,a,aa,ai,arep,iroot,k(1), jroot
+   integer :: i,ii,irep,j,iaai,aoff,a,aa,ai,arep,iroot,k(1),jroot,newarep
    real*8  :: fac1
    real*8  :: eps((iv(nrep+1)+io(nrep+1))) 
    real*8, pointer :: diag_H(:)
@@ -180,7 +180,7 @@
              aa = aoff + a
              iaai = (iovvo(state_sym) + (iivo(arep,irep)+(i-1)*nv(arep)+a-1)*nov(state_sym) + &
        &      iiov(irep,arep) + (a-1)*no(irep))*rcw+i ! careful about the complex algebra  
-              H_II(ai) = -fac1 + eps(aa)  - vbar_ss (iaai)
+              H_II(ai) = -fac1 + eps(aa) !- vbar_ss (iaai)
              ai = ai + 1
           enddo
         enddo
@@ -278,7 +278,7 @@
 
        do iroot = 1, nroot*rcw, rcw
         k = minloc(diag_H) 
-!ashee        write(iw,*)'roots',iroot,H_II(k(1)),k(1) 
+        write(iw,*)'roots',iroot,H_II(k(1)),k(1) 
         i = k(1)
         diag_H(i) = 8000.0d0
         R1(i,iroot) = 1.0d0
@@ -961,7 +961,7 @@
     call alloc(B%Fbar_ae,   (nfvv*rcw), id="Fbar_ae")  
 
     call alloc(B%W_ijmn,    (nv1*rcw),            id="W_ijmn") 
-!    call alloc(B%W_ejmb,    (iovvo(nrep+1)*rcw),  id="W_ejmb")
+    call alloc(B%W_ejmb,    (iovvo(nrep+1)*rcw),  id="W_ejmb")
     call alloc(B%W_mbej,    (iovvo(nrep+1)*rcw),  id="W_mbej")
     call alloc(B%W_iemn,    (iovoot(nrep+1)*rcw), id="W_iemn")
 
@@ -1701,18 +1701,13 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
 
       call alloc_array(e,nrep,f,g,h)
       call auto_symmetry_offset(e,nv,no,.false.,.false.)
-      call auto_symmetry_offset(f,nv,nv,.false.,.false.)
-      call auto_symmetry_offset(g,no,no,.false.,.false.)
-      call auto_symmetry_offset(h,f%oneDirac,g%oneDirac,.true.,.true.)
+      call auto_symmetry_offset_triangular(f,nv,nv)
+      call auto_symmetry_offset_triangular(g,no,no)
+      call auto_symmetry_offset(h,f%oneNonDirac,g%oneNonDirac,.true.,.true.)
 
-      if (state_sym == 1) then
-         ndimr1 = ndimt1
-         ndimr2 = ndimt2
-      else
          ndimr1 = e%oneNonDirac(state_sym)
          ndimr2 = h%oneNonDirac(state_sym)
-      endif
-
+ 
       call dealloc_array(e,f,g,h)
 
              call set_eom_ndet(1, ndimr1)
