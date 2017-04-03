@@ -445,7 +445,8 @@ C       active quaternion unit.
                 IF (JFRP.EQ.2) IREPIB = IBE21(I)
                 IQI = IPQTOQ(1,IREPIB)
                 IQ  = IQMULT (IQI,IQJ,IQPRP)
-                IQS = IQPHASE(IQI,IQJ,IQPRP)*IQSIGN(IQJ,2,1)
+!LV             IQS = IQPHASE(IQI,IQJ,IQPRP)*IQSIGN(IQJ,2,1)
+                IQS = IQPHASE(IQI,IQJ,1)*IQSIGN(IQJ,2,1)
 C
 C The code is to be debugged. The MOLTRA part is probably OK but the
 C phase transformed integrals do not give the correct answer when fed
