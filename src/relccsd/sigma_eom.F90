@@ -1,4 +1,4 @@
-  module sigma_eom
+module sigma_eom
 
   use contraction
   use interface_to_mpi
@@ -43,6 +43,7 @@
     real(kind=8), pointer :: local_buf1(:) 
     real(kind=8), pointer :: local_buf2(:) 
     real(kind=8), pointer :: local_buf3(:) 
+    integer :: nbuf3
     integer, pointer :: eom_ndet(:)
     integer, pointer :: eom_nvx(:)
 
@@ -108,7 +109,7 @@
       call dealloc(A%Fbar_ae,   id="Fbar_ae")
     
       call dealloc(A%W_ijmn,    id="W_ijmn")
-!      call dealloc(A%W_ejmb,    id="W_ejmb")
+      call dealloc(A%W_ejmb,    id="W_ejmb")
       call dealloc(A%W_mbej,    id="W_mbej")
       call dealloc(A%W_iemn,    id="W_iemn")
 
@@ -161,14 +162,12 @@
       real(kind=8), pointer :: create_diagonal(:)
       type(intermediates) :: A
       integer :: N
-      integer :: ndimt1, ndimt2
-      integer :: nbuf3
+      integer :: ndimr1, ndimr2
 
-      ndimt1 = eom_ndet(1)
-      ndimt2 = eom_ndet(2)
-      nbuf3 = size(local_buf3)
+      ndimr1 = eom_ndet(1)
+      ndimr2 = eom_ndet(2)
 
-      N = ndimt1 + ndimt2
+      N = ndimr1 + ndimr2
 
       allocate(create_diagonal(N))
       create_diagonal = 1.0d0
@@ -185,7 +184,7 @@
    end function
 
 
-   function create_sigma_vector_left(A, r, old_sigma_vector)
+   function create_sigma_vector_left(A, r, old_sigma_vector,state_sym)
 #include "files.inc"
 #include "inpt.inc"
       real(kind=8), pointer :: create_sigma_vector_left(:,:)
@@ -194,12 +193,9 @@
       real(kind=8), intent(in) :: r(:,:)
       integer :: L, N, L_already_done
       integer :: ndimr1, ndimr2
-      integer :: nbuf3
       integer :: start_r1, end_r1, start_r2, end_r2
       integer :: iroot
-      real(kind=8), allocatable :: local_buffer (:)  
-
-      nbuf3 = size(local_buf3)
+      integer, intent(in) :: state_sym
 
       N = size(r,1)
       L = size(r,2)
@@ -224,7 +220,6 @@
       start_r2 = end_r1 + 1
       end_r2   = end_r1 + ndimr2
 
-      allocate (local_buffer(ndimr2))
 
       select case (A%eomtype)
          case ('IP')
@@ -233,11 +228,11 @@
 
                 create_sigma_vector_left(:,iroot:iroot) = 0.0d0
                 if (iprnt.ge.2) write(iw,"(2x,a,i6,a,i6)") "debug, constructing Left EOM-IP sigma vector ",iroot," out of ",L
-                call Lambda_IP(r(start_r1:end_r1, iroot:iroot), &
-                 &             r(start_r2:end_r2, iroot:iroot), &
+                call Lambda_IP(r(start_r1:end_r1, iroot), &
+                 &             r(start_r2:end_r2, iroot), &
                  &             A,                               &
-                 &             create_sigma_vector_left(start_r1:end_r1, iroot:iroot), &
-                 &             create_sigma_vector_left(start_r2:end_r2, iroot:iroot), &
+                 &             create_sigma_vector_left(start_r1:end_r1, iroot), &
+                 &             create_sigma_vector_left(start_r2:end_r2, iroot), &
                  &             ndimr1, &
                  &             ndimr2) 
              enddo
@@ -268,18 +263,16 @@
                  &                  r(start_r2:end_r2, iroot), & 
                  &                  A,                               &
                  &                  create_sigma_vector_left(start_r1:end_r1, iroot), &
-                 &                  create_sigma_vector_left(start_r2:end_r2, iroot), &
-                 &                  nbuf3)
+                 &                  create_sigma_vector_left(start_r2:end_r2, iroot), state_sym)
 
              enddo
       end select
 
-      deallocate (local_buffer)
 
    end function 
    
 
-   function create_sigma_vector_right(A, r, old_sigma_vector)
+   function create_sigma_vector_right(A, r, old_sigma_vector, state_sym)
 #include "files.inc"
 #include "inpt.inc"
       real(kind=8), pointer :: create_sigma_vector_right(:,:)
@@ -288,12 +281,9 @@
       real(kind=8), intent(in) :: r(:,:)
       integer :: L, N, L_already_done 
       integer :: ndimr1, ndimr2
-      integer :: nbuf3
       integer :: start_r1, end_r1, start_r2, end_r2
       integer :: iroot,ierr
-      real(kind=8), allocatable :: local_buffer (:)  
-
-      nbuf3 = size(local_buf3)
+      integer, intent(in) :: state_sym
 
       N = size(r,1)
       L = size(r,2)
@@ -318,7 +308,6 @@
       start_r2 = end_r1 + 1
       end_r2   = end_r1 + ndimr2
 
-      allocate (local_buffer(ndimr2))
 
       select case (A%eomtype)
          case ('IP')
@@ -328,11 +317,11 @@
                 create_sigma_vector_right(:,iroot:iroot) = 0.0d0
                 if (iprnt.ge.2) write(iw,"(2x,a,i6,a,i6)") "debug, constructing EOM-IP sigma vector ",iroot," out of ",L
                 call sigma_IP(eom_nvx,  &
-                 &             r(start_r1:end_r1, iroot:iroot), &
-                 &             r(start_r2:end_r2, iroot:iroot), &
+                 &             r(start_r1:end_r1, iroot), &
+                 &             r(start_r2:end_r2, iroot), &
                  &             A,                               &
-                 &             create_sigma_vector_right(start_r1:end_r1, iroot:iroot), &
-                 &             create_sigma_vector_right(start_r2:end_r2, iroot:iroot), &
+                 &             create_sigma_vector_right(start_r1:end_r1, iroot), &
+                 &             create_sigma_vector_right(start_r2:end_r2, iroot), &
                  &             ndimr1, &
                  &             ndimr2) 
              enddo
@@ -343,13 +332,13 @@
                 create_sigma_vector_right(:,iroot:iroot) = 0.0d0
                 if (iprnt.ge.2) write(iw,"(2x,a,i6,a,i6)") "debug, constructing EOM-EA sigma vector ",iroot," out of ",L
                 call sigma_EA(eom_nvx,  &
-                 &             r(start_r1:end_r1, iroot:iroot), &
-                 &             r(start_r2:end_r2, iroot:iroot), &
+                 &             r(start_r1:end_r1, iroot), &
+                 &             r(start_r2:end_r2, iroot), &
                  &             A,                               &
-                 &             create_sigma_vector_right(start_r1:end_r1, iroot:iroot), &
-                 &             create_sigma_vector_right(start_r2:end_r2, iroot:iroot), &
+                 &             create_sigma_vector_right(start_r1:end_r1, iroot), &
+                 &             create_sigma_vector_right(start_r2:end_r2, iroot), &
                  &             ndimr1, &
-                 &             ndimr2,nbuf3) 
+                 &             ndimr2) 
 
 
              enddo
@@ -360,17 +349,15 @@
 
                 create_sigma_vector_right(:,iroot:iroot) = 0.0d0
                 if (iprnt.ge.2) write(iw,"(2x,a,i6,a,i6)") "debug, constructing EOM-EE sigma vector ",iroot," out of ",L
-                call sigma_ee_1h1p(r(start_r1:end_r1, iroot:iroot), &
-                 &                  r(start_r2:end_r2, iroot:iroot), & 
+                call sigma_ee_1h1p(r(start_r1:end_r1, iroot), &
+                 &                  r(start_r2:end_r2, iroot), & 
                  &                  A,                               &
-                 &                  create_sigma_vector_right(start_r1:end_r1, iroot:iroot), &
-                 &                  create_sigma_vector_right(start_r2:end_r2, iroot:iroot), &
-                 &                  nbuf3)
+                 &                  create_sigma_vector_right(start_r1:end_r1, iroot), &
+                 &                  create_sigma_vector_right(start_r2:end_r2, iroot),state_sym)
 
              enddo
       end select
 
-      deallocate (local_buffer)
 
    end function
 
@@ -396,7 +383,7 @@ type(intermediates), intent(inout) :: A
 !Local Variables
 !----------------
 real(8), allocatable :: foo(:),fvo(:),fvv(:) 
-integer :: nbuf3,ierr
+integer :: ierr
 
 !-----------------------------------------------------------------------------
 
@@ -414,27 +401,27 @@ integer :: nbuf3,ierr
      call fmtofile (.false.,fvo,foo,fvv) ! read one-body integrals from file.
 
      call f_bar_mi(foo,fvo,A%t1,A%t2,A%Fbar_mi)
-     write (iw,*) "    done with Fbar_mi"
+     write (iw,*) "    done with Fbar_mi",dot_product(A%Fbar_mi,A%Fbar_mi)
 
      call f_bar_me(fvo,A%t1,A%Fbar_me)
-     write (iw,*) "    done with Fbar_me"
+     write (iw,*) "    done with Fbar_me",dot_product(A%Fbar_me,A%Fbar_me)       
 
      call f_bar_ae(fvv,fvo,A%t1,A%t2,A%Fbar_ae)
-     write (iw,*) "    done with Fbar_ae"
+     write (iw,*) "    done with Fbar_ae",dot_product(A%Fbar_ae,A%Fbar_ae)
 
      call w_ijmn(A%t1,A%t2,A%W_ijmn)
-     write (iw,*) "    done with W_ijmn"
+     write (iw,*) "    done with W_ijmn",dot_product(A%W_ijmn,A%W_ijmn)
 
      call wbar_mbej(A%t2,A%Wbar_mbej)
-     write (iw,*) "    done with Wbar_mbej"
+     write (iw,*) "    done with Wbar_mbej",dot_product(A%Wbar_mbej,A%Wbar_mbej)
 
      call w_mbej(A%t1,A%t2,A%W_mbej)
-     write (iw,*) "    done with W_mbej"
+     write (iw,*) "    done with W_mbej",dot_product(A%W_mbej,A%W_mbej)
 
-!ashee     call w_ejmb(A%t1,A%t2,A%W_ejmb)
+     call w_ejmb(A%t1,A%t2,A%W_ejmb)
 
      call w_iemn(A%t1,A%t2,A%W_iemn,A%Wbar_mbej,A%W_ijmn,A%Fbar_me)
-     write (iw,*) "    done with W_iemn"
+     write (iw,*) "    done with W_iemn",dot_product(A%W_iemn,A%W_iemn)
 
      if (eomtype /= "IP") then
 
@@ -489,7 +476,8 @@ integer :: nbuf3,ierr
 
    end subroutine
 
-   subroutine sigma_ee_1h1p(r1,r2,B,sigma1,sigma2,nbuf3)
+   subroutine sigma_ee_1h1p(r1,r2,B,sigma1,sigma2,state_sym)
+   use symmetry_offset
 #include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
@@ -502,23 +490,26 @@ integer :: nbuf3,ierr
 !-----------------------------------------------------------------------
 
 !---------------Calling variables--------------------------------------
-  real(8), intent(in),contiguous,target   :: r1(:,:), r2(:,:) ! R-Amplitudes
-  integer, intent(in)     :: nbuf3    
+  real(8), intent(in),contiguous,target   :: r1(:), r2(:) ! R-Amplitudes
   type(intermediates), intent(in)  :: B      
-  real(8), intent(inout)           :: sigma1(:,:), sigma2(:,:)  ! sigma-vectors
+  real(8), intent(inout)           :: sigma1(:), sigma2(:)  ! sigma-vectors
+  integer, intent(in) :: state_sym
 !---------------Local Variables--------------------
   real(8), allocatable :: tau(:)
   real(8), pointer     :: r1_ptr(:),r2_ptr(:)
   real(8), allocatable :: int_1b(:),sigma2_temp(:),lambda2_temp(:),w_vvvv(:),local_buffer(:) 
   integer :: off1,off2,irp,istart,mint,m,n,k,nint
-  integer :: off3,i,j,kstart,ntot,ierr
+  integer :: off3,i,j,kstart,ntot,ierr,mrp,nrp,ndimr1,ndimr2
   logical :: done 
   real(8)              :: ddot
+  type(Offset) :: f,g
 !--------------------------------------------------
 
-  r1_ptr(1:ndimt1*rcw)  => r1
-  r2_ptr(1:ndimt2*rcw)  => r2
+  ndimr1 = size(sigma1,1)
+  ndimr2 = size(sigma2,1)
 
+  r1_ptr(1:ndimr1*rcw)  => r1
+  r2_ptr(1:ndimr2*rcw)  => r2
 
     if (myproc == 0) then
 
@@ -528,201 +519,223 @@ integer :: nbuf3,ierr
 !S_ai = S_ai +  F^a_e*R^e_i   
 !---------------------------
    
-    call contraction_222 ((/"p1","p2"/),(/"p2","o1"/),(/"p1","o1"/),B%Fbar_ae,r1,sigma1,1.0d0,1.0d0,nrep)
+    call contraction_222 ((/"p1","p2"/),(/"p2","o1"/),(/"p1","o1"/),B%Fbar_ae,r1,sigma1,1.0d0,1.0d0,nrep, &
+       irrep_left=1,irrep_right=state_sym)
 
        if (iprnt.ge.2) &
-    write(iw,*)'diagram 1 ', ddot(ndimt1,sigma1(:,1:1),1,sigma1(:,1:1),1)
+    write(iw,*)'diagram 1 ', ddot(ndimr1,sigma1,1,sigma1,1)
 
 !S_ai = S_ai - f_bar_mi(m,i)*r1(a,m) 
 !------------------------------------
 
-    call contraction_222 ((/"p1","o2"/),(/"o2","o1"/),(/"p1","o1"/),r1,B%Fbar_mi,sigma1,-1.0d0,1.0d0,nrep)
+    call contraction_222 ((/"p1","o2"/),(/"o2","o1"/),(/"p1","o1"/),r1,B%Fbar_mi,sigma1,-1.0d0,1.0d0,nrep, &
+        irrep_left=state_sym,irrep_right=1)
 
        if (iprnt.ge.2) &
-    write(iw,*)'diagram 2 ', ddot(ndimt1,sigma1(:,1:1),1,sigma1(:,1:1),1)
+    write(iw,*)'diagram 2 ', ddot(ndimr1,sigma1,1,sigma1,1)
 
 !S_ai = S_ai + w_mbej(ma,ei)*r1(e,m)
 !------------------------------------ 
 
-    call contraction_422 ((/"o2","p1","p2","o1"/),(/"p2","o2"/),(/"p1","o1"/),r1_ptr,sigma1,1.0d0,1.0d0,nrep,B%W_mbej)
+!  call contraction_422 ((/"o2","p1","p2","o1"/),(/"p2","o2"/),(/"p1","o1"/),r1,sigma1,1.0d0,1.0d0,nrep,B%W_mbej, &
+!                     irrep_left=1,irrep_right=state_sym)
+
+   call contraction_422 ((/"p1","o2","o1","p2"/),(/"p2","o2"/),(/"p1","o1"/),r1,sigma1,1.0d0,1.0d0,nrep,B%W_ejmb, &
+                      irrep_left=1,irrep_right=state_sym)
+
+!   call contraction_242 ((/"p2","o2"/),(/"o2","p1","p2","o1"/),(/"p1","o1"/),r1,sigma1,1.0d0,1.0d0,nrep,B%W_mbej, &
+!                      irrep_left=1,irrep_right=state_sym)
+
+
+    if (iprnt.ge.2) &
+    write(iw,*)'diagram 3 ', ddot(ndimr1,sigma1,1,sigma1,1)
+
+!!class : [HBar_SD*R](a,i)
+!!========================
+
+!!S_ai = S_ai + F_bar_me(m,e)*r2(ae,im)
+!!-------------------------------------
+
+     call contraction_422 ((/"p1","p2","o1","o2"/),(/"o2","p2"/), &
+    & (/"p1","o1"/),B%Fbar_me,sigma1,1.0d0,1.0d0,nrep,LeftTensor=r2,irrep_left=state_sym,irrep_right=1)
 
        if (iprnt.ge.2) &
-    write(iw,*)'diagram 3 ', ddot(ndimt1,sigma1(:,1:1),1,sigma1(:,1:1),1)
+    write(iw,*)'diagram 4 ', ddot(ndimr1,sigma1,1,sigma1,1)
 
-! class : [HBar_SD*R](a,i)
-!=========================
-
-!S_ai = S_ai + F_bar_me(m,e)*r2(ae,im)
-!--------------------------------------
-
-    call contraction_422 ((/"p1","p2","o1","o2"/),(/"o2","p2"/), &
-   &   (/"p1","o1"/),B%Fbar_me,sigma1,1.0d0,1.0d0,nrep,LeftTensor=r2_ptr)
-
-       if (iprnt.ge.2) &
-    write(iw,*)'diagram 4 ', ddot(ndimt1,sigma1(:,1:1),1,sigma1(:,1:1),1)
-
-!S_ai = S_ai + w_amef(am,ef) * r2(ef,im)
-!----------------------------------------
+!!S_ai = S_ai + w_amef(am,ef) * r2(ef,im)
+!!---------------------------------------
  
     call contraction_442((/"p1","o2","p2","p3"/),(/"p2","p3","o1","o2"/),(/"p1","o1"/),sigma1,1.0d0,1.0d0,nrep, &
-   &         LeftTensor=B%W_amef,RightTensor=r2_ptr)
+   &         LeftTensor=B%W_amef,RightTensor=r2_ptr,irrep_left=1,irrep_right=state_sym)
 
        if (iprnt.ge.2) &
-    write(iw,*)'diagram 5 ', ddot(ndimt1,sigma1(:,1:1),1,sigma1(:,1:1),1)
-!S_ai = S_ai - W_mnie(mn,ie)*r2(ae,mn)
-!---------------------------------------
+    write(iw,*)'diagram 5 ', ddot(ndimr1,sigma1,1,sigma1,1)
+!!S_ai = S_ai - W_mnie(mn,ie)*r2(ae,mn)
+!!--------------------------------------
 
      call contraction_442((/"p1","p2","o2","o3"/),(/"o2","o3","o1","p2"/),(/"p1","o1"/),sigma1,-1.0d0,1.0d0,nrep, &
-    &         RightTensor=B%W_mnie,LeftTensor=r2_ptr)
-
+    & RightTensor=B%W_mnie,LeftTensor=r2_ptr,irrep_left=state_sym,irrep_right=1)
 
        if (iprnt.ge.2) &
-    write(iw,*)'diagram 6 ', ddot(ndimt1,sigma1(:,1:1),1,sigma1(:,1:1),1)
+    write(iw,*)'diagram 6 ', ddot(ndimr1,sigma1,1,sigma1,1)
 
-! class : [HBar_DS*R](ab,ij)
-!===========================
+!!class : [HBar_DS*R](ab,ij)
+!!==========================
 
-!S(ab,ij) = S(ab,ij) - P(ab) w_iemn(mb,ij)*r1(a,m)
-!--------------------------------------------------
+!!S(ab,ij) = S(ab,ij) - P(ab) w_iemn(mb,ij)*r1(a,m)
+!!-------------------------------------------------
 
     call contraction_244 ((/"p1","o3"/),(/"o3","p2","o1","o2"/), &
-   &    (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%W_iemn, &
-   &   LeftTensor=r1_ptr) 
+   &    (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,righttensor=b%w_iemn, &
+   &   LeftTensor=r1,irrep_left=state_sym,irrep_right=1) 
 
        if (iprnt.ge.2) &
-    write(*,*)'diagram 7 ', ddot(ndimt2,sigma2(:,1:1),1,sigma2(:,1:1),1)
+    write(*,*)'diagram 7 ', ddot(ndimr2,sigma2,1,sigma2,1)
 
-!S(ab,ij) = S(ab,ij) + P(ij) w_efam(ab,ej)*r1(e,i)
-!--------------------------------------------------
+!!S(ab,ij) = S(ab,ij) + P(ij) w_efam(ab,ej)*r1(e,i)
+!!-------------------------------------------------
 
     call contraction_424 ((/"p1","p2","p3","o2"/),(/"p3","o1"/), &
    &    (/"p1","p2","o2","o1"/),sigma2,1.0d0,-1.0d0,nrep,LeftTensor=B%W_efam, &
-   &    RightTensor=r1_ptr) 
+   &    RightTensor=r1_ptr,irrep_left=1,irrep_right=state_sym) 
 
        if (iprnt.ge.2) &
-    write(*,*)'diagram 8 ', ddot(ndimt2,sigma2(:,1:1),1,sigma2(:,1:1),1)
+    write(*,*)'diagram 8 ', dot_product(sigma2,sigma2)
 
-!int_1b(b,f) = int_1b(b,f) + w_amef (bm,fe)*r1(e,m)
-!S(ab,ij) = S(ab,ij) + P(ab) int_1b(b,f)*t2(af,ij)
-!---------------------------------------------------
+!!int_1b(b,f) = int_1b(b,f) + w_amef (bm,fe)*r1(e,m)
+!!S(ab,ij) = S(ab,ij) + P(ab) int_1b(b,f)*t2(af,ij)
+!!--------------------------------------------------
 
-    allocate(int_1b(nfvv*rcw))
+    allocate(int_1b(MVV(state_sym)*rcw))
 
     int_1b = 0.0d0
 
-    call contraction_422 ((/"p2","o3","p4","p3"/),(/"p3","o3"/),(/"p2","p4"/),r1_ptr,int_1b,1.0d0,1.0d0,nrep,B%W_amef)
+    call contraction_422 ((/"p2","o3","p3","p4"/),(/"p3","o3"/),(/"p2","p4"/),r1_ptr,int_1b,-1.0d0,1.0d0,nrep,B%W_amef, &
+           irrep_left=1,irrep_right=state_sym)
+
+!   call contraction_242 ((/"p3","o3"/),(/"p2","o3","p4","p3"/),(/"p2","p4"/),r1_ptr,int_1b,1.0d0,1.0d0,nrep,B%W_amef, &
+!          irrep_left=1,irrep_right=state_sym)
+
 
     call contraction_424 ((/"p1","p4","o1","o2"/),(/"p2","p4"/),(/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0, &
-   &                       nrep,RightTensor=int_1b,LeftTensor=B%t2)
+   &                       nrep,RightTensor=int_1b,LeftTensor=B%t2,irrep_left=1,irrep_right=state_sym)
 
     deallocate(int_1b)
 
        if (iprnt.ge.2) &
-    write(*,*)'diagram 9 ', ddot(ndimt2,sigma2(:,1:1),1,sigma2(:,1:1),1)
+    write(*,*)'diagram 9 ', ddot(ndimr2,sigma2,1,sigma2,1)
 
-!int_1b(n,j) = int_1b(n,j) + w_mnie(nm,je)*r1(e,m)
-!S(ab,ij) = S(ab,ij) - int_1b(n,j) * t2(ab,in)
-!---------------------------------------------------
+!!int_1b(n,j) = int_1b(n,j) + w_mnie(nm,je)*r1(e,m)
+!!S(ab,ij) = S(ab,ij) - int_1b(n,j) * t2(ab,in)
+!!--------------------------------------------------
 
-    allocate(int_1b(nfoo*rcw))
+    allocate(int_1b(MOO(state_sym)*rcw))
 
     int_1b = 0.0d0
 
-    call contraction_422 ((/"o4","o3","o2","p3"/),(/"p3","o3"/),(/"o4","o2"/),r1_ptr,int_1b,1.0d0,1.0d0,nrep,LeftTensor=B%W_mnie)
+    call contraction_422 ((/"o4","o3","o2","p3"/),(/"p3","o3"/),(/"o4","o2"/),r1_ptr,int_1b,1.0d0,1.0d0,nrep,LeftTensor=B%W_mnie, &
+        irrep_left=1,irrep_right=state_sym)
 
     call contraction_424 ((/"p1","p2","o1","o4"/),(/"o4","o2"/), &
-   & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=int_1b,LeftTensor=B%t2)
+   & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=int_1b,LeftTensor=B%t2,irrep_left=1,irrep_right=state_sym)
 
 
     deallocate(int_1b)
 
        if (iprnt.ge.2) &
-    write(*,*)'diagram 10 ', ddot(ndimt2,sigma2(:,1:1),1,sigma2(:,1:1),1)
+    write(*,*)'diagram 10 ', ddot(ndimr2,sigma2,1,sigma2,1)
 
 ! class : [HBar_DD*R](ab,ij) 
-!===========================
+! ==========================
 
 ! S(ab,ij) = S(ab,ij) + P(ab) f_bar_ae(b,e) * r2(ae,ij)
-!-------------------------------------------------------
+! ------------------------------------------------------
 
 
     call contraction_424 ((/"p1","p3","o1","o2"/),(/"p2","p3"/), &
-   & (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=B%Fbar_ae,LeftTensor=r2_ptr)
+   & (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=B%Fbar_ae,LeftTensor=r2_ptr,irrep_left=state_sym,irrep_right=1)
 
        if (iprnt.ge.2) &
-    write(*,*)'diagram 11 ', ddot(ndimt2,sigma2(:,1:1),1,sigma2(:,1:1),1)
-     
-! S(ab,ij) = S(ab,ij) - P(ij) f_bar_mi(m,j)*r2(ab,im) 
-!-----------------------------------------------------
+    write(*,*)'diagram 11 ', ddot(ndimr2,sigma2,1,sigma2,1)
+ !   
+!!S(ab,ij) = S(ab,ij) - P(ij) f_bar_mi(m,j)*r2(ab,im) 
+!!----------------------------------------------------
 
     call contraction_424 ((/"p1","p2","o1","o3"/),(/"o3","o2"/), &
-   & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2_ptr)
+   & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2_ptr,irrep_left=state_sym,irrep_right=1)
 
        if (iprnt.ge.2) &
-    write(*,*)'diagram 12 ', ddot(ndimt2,sigma2(:,1:1),1,sigma2(:,1:1),1)
+    write(*,*)'diagram 12 ', ddot(ndimr2,sigma2,1,sigma2,1)
 
 
 ! S(ab,ij) = S(ab,ij) + w_ijmn(mn,ij) * r2(ab,mn)
 !--------------------------------------------------
 
       call contraction_444((/"p1","p2","o3","o4"/),(/"o3","o4","o1","o2"/), &
-     &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=r2_ptr,RightTensor=B%W_ijmn)
+     &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=r2_ptr,RightTensor=B%W_ijmn,irrep_left=state_sym,irrep_right=1)
 
        if (iprnt.ge.2) &
-    write(*,*)'diagram 14 ', ddot(ndimt2,sigma2(:,1:1),1,sigma2(:,1:1),1)
+    write(*,*)'diagram 14 ', ddot(ndimr2,sigma2,1,sigma2,1)
 
 ! S(ab,ij) = S(ab,ij) + P(ab)P(ij) w_mbej(mb,ej)*r2(ae,im)
 !----------------------------------------------------------
 
       call contraction_444((/"p1","p3","o1","o3"/),(/"o3","p2","p3","o2"/), &
-     &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,0.0d0,nrep,LeftTensor=r2_ptr,RightTensor=B%W_mbej)
+     &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,0.0d0,nrep,LeftTensor=r2_ptr,RightTensor=B%W_mbej,irrep_left=state_sym,irrep_right=1)
 
        if (iprnt.ge.2) &
-    write(*,*)'diagram 15 ', ddot(ndimt2,sigma2(:,1:1),1,sigma2(:,1:1),1)
+    write(*,*)'diagram 15 ', ddot(ndimr2,sigma2,1,sigma2,1)
 
-!int_1b(a,f) = int_1b(a,f) - V(nm,fe)*r2(ea,mn)  
-!S(ab,ij) = S(ab,ij) + int_1b(a,f)*t2(fb,ij)  
-!-----------------------------------------------
+! int_1b(a,f) = int_1b(a,f) - V(nm,fe)*r2(ea,mn)  
+! S(ab,ij) = S(ab,ij) + int_1b(a,f)*t2(fb,ij)  
+! ----------------------------------------------
 
     allocate(int_1b(nfvv*rcw))
     int_1b = 0.0d0
 
-    call contraction_442 ((/"p1","p3","o4","o3"/),(/"o4","o3","p4","p3"/),(/"p1","p4"/),int_1b,-1.0d0,1.0d0,nrep,LeftTensor=r2_ptr)
+     call contraction_442 ((/"p1","p3","o4","o3"/),(/"o4","o3","p4","p3"/),(/"p1","p4"/),int_1b,-1.0d0,1.0d0,nrep,LeftTensor=r2_ptr, &
+         irrep_left=state_sym,irrep_right=1)
 
      call contraction_244 ((/"p1","p4"/),(/"p4","p2","o1","o2"/), &
-    & (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=B%t2)
+    & (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=B%t2,irrep_left=state_sym,irrep_right=1)
 
     deallocate(int_1b)
 
        if (iprnt.ge.2) &
-    write(*,*)'diagram 16 ', ddot(ndimt2,sigma2(:,1:1),1,sigma2(:,1:1),1)
+    write(*,*)'diagram 16 ', ddot(ndimr2,sigma2,1,sigma2,1)
 
-!int_1b(n,i) = int_1b(n,i) + V(nm,fe)*r2(fe,im)
-!S(ab,ij) = S(ab,ij) - int_1b(n,i)*t(ba,jn)
-!------------------------------------------------
+!!int_1b(n,i) = int_1b(n,i) + V(nm,fe)*r2(fe,im)
+!!S(ab,ij) = S(ab,ij) - int_1b(n,i)*t(ba,jn)
+!!-----------------------------------------------
 
     allocate(int_1b(nfoo*rcw))
     int_1b = 0.0d0
 
-    call contraction_442 ((/"o4","o3","p4","p3"/),(/"p4","p3","o1","o3"/),(/"o4","o1"/),int_1b,1.0d0,1.0d0,nrep,RightTensor=r2_ptr)
+    call contraction_442 ((/"o4","o3","p4","p3"/),(/"p4","p3","o1","o3"/),(/"o4","o1"/),int_1b,1.0d0,1.0d0,nrep,RightTensor=r2_ptr, &
+         irrep_left=1,irrep_right=state_sym)
 
     call contraction_424 ((/"p1","p2","o2","o4"/),(/"o4","o1"/), &
-    & (/"p1","p2","o2","o1"/),sigma2,1.0d0,-1.0d0,nrep,RightTensor=int_1b,LeftTensor=B%t2)
+    & (/"p1","p2","o2","o1"/),sigma2,1.0d0,-1.0d0,nrep,RightTensor=int_1b,LeftTensor=B%t2,irrep_left=1,irrep_right=state_sym)
 
     deallocate(int_1b)
 
-       if (iprnt.ge.2) &
-    write(*,*)'diagram 17 ', ddot(ndimt2,sigma2(:,1:1),1,sigma2(:,1:1),1)
+    if (iprnt.ge.2) &
+    write(*,*)'diagram 17 ', ddot(ndimr2,sigma2,1,sigma2,1)
 
-  endif
-
+ endif
 
 ! S(ab,ij) = S(ab,ij) + w_vvvv(ab,ef)*r2(ef,ij)
 !------------------------------------------------
+      call alloc_array(f,nrep,g)
 
-      off1 = 1
-      off2 = 1
+      call auto_symmetry_offset(f,nvvt,noot,.true.,.true.)
+      call auto_symmetry_offset(g,nvvt,noot,.true.,.true.)
+
       do irp = 1, nrep
+
+         mrp = multb(irp+nrep,1+nrep,1)  
+         nrp = multb(irp+nrep,state_sym+nrep,1)  
+
          istart = 0
          done =.false.
          if (nvvt(irp).eq.0) cycle
@@ -733,41 +746,44 @@ integer :: nbuf3,ierr
          nint = min0(mint,ntot-kstart)
          allocate(w_vvvv(nvvt(irp)*nint*rcw))
          call getdz (irp,istart,nint,done,w_vvvv,mint)
-         m = nvvt(irp)
-         n = noot(irp)
+         m = nvvt(mrp)
+         n = noot(nrp)
          k = nint
+
+          off1 = 1 + f%twoDirac(irp,nrp)*rcw
+          off2 = 1 + g%twoDirac(mrp,nrp)*rcw
+
          call xgemm ('n','n',m,n,k,a1,w_vvvv,m,r2_ptr(off1+istart*rcw),m, &
-     &               a1,sigma2(off2,1),m)
+     &               a1,sigma2(off2),m)
          deallocate(w_vvvv)
          if (.not.done) then
             istart = istart + nint
             goto 10
          endif
-         off1 = off1 + n * m * rcw
-         off2 = off2 + m * n * rcw
       enddo
 
        if (iprnt.ge.2) &
-    write(*,*)'diagram 13 ', ddot(ndimt2,sigma2(:,1:1),1,sigma2(:,1:1),1)
+    write(*,*)'diagram 13 ', ddot(ndimr2,sigma2,1,sigma2,1)
 
-      allocate (local_buffer(ndimt2*rcw))
+      allocate (local_buffer(ndimr2*rcw))
 
 #if defined (VAR_MPI)
       if (nmproc .gt. 1) then
-        call xcopy (ndimt2,a0,0,local_buffer,1)
+        call xcopy (ndimr2,a0,0,local_buffer,1)
         ierr = 0
 
         call interface_mpi_allreduce(sigma2, &
-             local_buffer, ndimt2*rcw, &
+             local_buffer, ndimr2*rcw, &
              op_mpi_sum,global_communicator)
 
         if(ierr.gt.0) then
            call quit('mpi_reduce error in collecting sigma2 !')
         endif
-        call xcopy(ndimt2*rcw,local_buffer,1,sigma2,1)
+        call xcopy(ndimr2*rcw,local_buffer,1,sigma2,1)
         endif
 #endif
 
+      call dealloc_array(f,g)
       deallocate (local_buffer)
 
   end subroutine
@@ -785,9 +801,9 @@ integer :: nbuf3,ierr
 !-----------------------------------------------------------------------
 
 !---------------Calling variables--------------------------------------
-  real(8), intent(in),contiguous,target   :: r1(:,:), r2(:,:) ! R-Amplitudes
+  real(8), intent(in),contiguous,target   :: r1(:), r2(:) ! R-Amplitudes
   type(intermediates), intent(in)  :: B      
-  real(8), intent(inout),contiguous :: sigma1(:,:),sigma2(:,:)  ! sigma-vectors
+  real(8), intent(inout),contiguous :: sigma1(:),sigma2(:)  ! sigma-vectors
   integer, intent(in) :: ndimr1, ndimr2,nvx(nrep)
 !---------------Local Variables--------------------
   real(8), allocatable :: tau(:)
@@ -813,7 +829,7 @@ integer :: nbuf3,ierr
   &                      sigma1,1.0d0,1.0d0,nrep,r2_ptr)
 
        if (iprnt.ge.2) &
-  write(iw,*)'diagram 2 ', ddot(ndimr1,sigma1(:,1:1),1,sigma1(:,1:1),1)
+  write(iw,*)'diagram 2 ', ddot(ndimr1,sigma1,1,sigma1,1)
 !-------------------------------------
 !S(a*,i) = S(a*,i) - W_mnie(mn,ie)*r2(a*e,mn)
 !-------------------------------------
@@ -822,7 +838,7 @@ integer :: nbuf3,ierr
    &         RightTensor=B%W_mnie,LeftTensor=r2_ptr)
 
        if (iprnt.ge.2) &
-  write(iw,*)'diagram 3 ', ddot(ndimr1,sigma1(:,1:1),1,sigma1(:,1:1),1)
+  write(iw,*)'diagram 3 ', ddot(ndimr1,sigma1,1,sigma1,1)
 
 !--------------------------------------------
 !  S(a*b,ij) = S(a*b,ij)-W(mb,ij)*r(a*,m)
@@ -833,7 +849,7 @@ integer :: nbuf3,ierr
    &    LeftTensor=r1_ptr) 
 
        if (iprnt.ge.2) &
-  write(iw,*)'diagram 4 ',ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
+  write(iw,*)'diagram 4 ',ddot(ndimr2,sigma2,1,sigma2,1)
 
 !----------------------------------------------------
 ! S(a*b,ij) = S(a*b,ij) - P(ij) f_bar_mi(m,j)*r2(a*b,im) 
@@ -843,7 +859,7 @@ integer :: nbuf3,ierr
    & (/"c1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2_ptr)
 
        if (iprnt.ge.2) &
-  write(iw,*)'diagram 5 ',ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
+  write(iw,*)'diagram 5 ',ddot(ndimr2,sigma2,1,sigma2,1)
 
 !---------------------------------------------------------
 ! S(a*b,ij) = S(a*b,ij) + P(ij) w_mbej(mb,ej)*r2(a*e,im)
@@ -853,7 +869,7 @@ integer :: nbuf3,ierr
      &    (/"c1","p2","o1","o2"/),sigma2,-1.0d0,0.0d0,nrep,LeftTensor=r2_ptr,RightTensor=B%W_mbej)
 
        if (iprnt.ge.2) &
-  write(iw,*)'diagram 6 ',ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
+  write(iw,*)'diagram 6 ',ddot(ndimr2,sigma2,1,sigma2,1)
 
 !--------------------------------------------------
 ! S(a*b,ij) = S(a*b,ij) + w_ijmn(mn,ij) * r2(a*b,mn)
@@ -863,7 +879,7 @@ integer :: nbuf3,ierr
      &    (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=r2_ptr,RightTensor=B%W_ijmn)
 
        if (iprnt.ge.2) &
-  write(iw,*)'diagram 7 ',ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
+  write(iw,*)'diagram 7 ',ddot(ndimr2,sigma2,1,sigma2,1)
 
 !------------------------------------------------------
 ! S(a*b,ij) = S(a*b,ij) + f_bar_ae(b,e) * r2(a*e,ij)
@@ -873,7 +889,7 @@ integer :: nbuf3,ierr
    & (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=B%Fbar_ae,LeftTensor=r2_ptr)
 
        if (iprnt.ge.2) &
-  write(iw,*)'diagram 8 ',ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
+  write(iw,*)'diagram 8 ',ddot(ndimr2,sigma2,1,sigma2,1)
 
 !int_1b(a*,f) = int_1b(a*,f) - V(nm,fe)*r2(a*e,nm)  
 !S(a*b,ij) = S(a*b,ij) + int_1b(a*,f)*t2(fb,ij)  
@@ -890,14 +906,14 @@ integer :: nbuf3,ierr
     deallocate(int_1b)
 
  if (iprnt.ge.2) &
-  write(iw,*)'diagram 9 ',ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
+  write(iw,*)'diagram 9 ',ddot(ndimr2,sigma2,1,sigma2,1)
 
  end subroutine
 
 
 !==============================================================================================================================================================================================================
 
-   subroutine sigma_EA(nox,r1,r2,B,sigma1,sigma2,ndimr1,ndimr2,nbuf3)
+   subroutine sigma_EA(nox,r1,r2,B,sigma1,sigma2,ndimr1,ndimr2)
 
 #include "param.inc"
 #include "symm.inc"
@@ -911,10 +927,10 @@ integer :: nbuf3,ierr
 !-----------------------------------------------------------------------
 
 !---------------Calling variables--------------------------------------
-  real(8), intent(in),contiguous,target   :: r1(:,:), r2(:,:) ! R-Amplitudes
+  real(8), intent(in),contiguous,target   :: r1(:), r2(:) ! R-Amplitudes
   type(intermediates), intent(in)  :: B      
-  real(8), intent(inout),contiguous :: sigma1(:,:),sigma2(:,:)  ! sigma-vectors
-  integer, intent(in) :: ndimr1, ndimr2,nox(nrep),nbuf3
+  real(8), intent(inout),contiguous :: sigma1(:),sigma2(:)  ! sigma-vectors
+  integer, intent(in) :: ndimr1, ndimr2,nox(nrep)
 !---------------Local Variables--------------------
   real(8), allocatable :: tau(:),w_vvvv(:)
   real(8), pointer :: r1_ptr(:),r2_ptr(:)
@@ -934,7 +950,7 @@ integer :: nbuf3,ierr
     call contraction_222 ((/"p1","p2"/),(/"p2","c1"/),(/"p1","c1"/),B%Fbar_ae,r1,sigma1,1.0d0,1.0d0,nrep)
 
     if (iprnt.ge.2) &
-    write(iw,*)'diagram 1 ', ddot(ndimr1,sigma1(:,1:1),1,sigma1(:,1:1),1)
+    write(iw,*)'diagram 1 ', ddot(ndimr1,sigma1,1,sigma1,1)
 
 !S(a,i*) = S(a,i*) + F_bar_me(m,e)*r2(ae,i*m)
 !--------------------------------------
@@ -946,7 +962,7 @@ integer :: nbuf3,ierr
 !  &   (/"p1","c1"/),B%Fbar_me,sigma1,1.0d0,1.0d0,nrep,RightTensor=r2_ptr)
 
    if (iprnt.ge.2) &
-   write(iw,*)'diagram 2 ', ddot(ndimr1,sigma1(:,1:1),1,sigma1(:,1:1),1)
+   write(iw,*)'diagram 2 ', ddot(ndimr1,sigma1,1,sigma1,1)
 
 !S(a,i*) = S(a,i*) + w_amef(am,ef) * r2(ef,i*m)
 !----------------------------------------
@@ -955,7 +971,7 @@ integer :: nbuf3,ierr
    &         LeftTensor=B%W_amef,RightTensor=r2_ptr)
 
    if (iprnt.ge.2) &
-   write(iw,*)'diagram 3 ', ddot(ndimr1,sigma1(:,1:1),1,sigma1(:,1:1),1)
+   write(iw,*)'diagram 3 ', ddot(ndimr1,sigma1,1,sigma1,1)
 
    if (myproc == master) then
 
@@ -967,7 +983,7 @@ integer :: nbuf3,ierr
    &    RightTensor=r1_ptr) 
 
    if (iprnt.ge.2) &
-    write(iw,*)'diagram 4 ', ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
+    write(iw,*)'diagram 4 ', ddot(ndimr2,sigma2,1,sigma2,1)
 
 ! S(ab,i*j) = S(ab,i*j) + P(ab) f_bar_ae(b,e) * r2(ae,i*j)
 !-------------------------------------------------------
@@ -976,7 +992,7 @@ integer :: nbuf3,ierr
    & (/"p1","p2","c1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=B%Fbar_ae,LeftTensor=r2_ptr)
 
    if (iprnt.ge.2) &
-    write(iw,*)'diagram 5 ', ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
+    write(iw,*)'diagram 5 ', ddot(ndimr2,sigma2,1,sigma2,1)
 
 ! S(ab,i*j) = S(ab,i*j) - P(ij) f_bar_mi(m,j)*r2(ab,i*m) 
 !-----------------------------------------------------
@@ -985,7 +1001,7 @@ integer :: nbuf3,ierr
    & (/"p1","p2","c1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2_ptr)
 
        if (iprnt.ge.2) &
-    write(iw,*)'diagram 6 ', ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
+    write(iw,*)'diagram 6 ', ddot(ndimr2,sigma2,1,sigma2,1)
 
 ! S(ab,i*j) = S(ab,i*j) + P(ab) w_mbej(mb,ej)*r2(ae,i*m)
 !----------------------------------------------------------
@@ -1000,7 +1016,7 @@ integer :: nbuf3,ierr
 !    &    (/"p1","p2","c1","o2"/),sigma2,1.0d0,0.0d0,nrep,RightTensor=r2_ptr,LeftTensor=B%W_ejmb)
 
    if (iprnt.ge.2) &
-    write(iw,*)'diagram 8 ', ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
+    write(iw,*)'diagram 8 ', ddot(ndimr2,sigma2,1,sigma2,1)
 
 !int_1b(n,i*) = int_1b(n,i*) + V(nm,fe)*r2(fe,i*m)
 !S(ab,i*j) = S(ab,i*j) - int_1b(n,i*)*t(ba,jn)
@@ -1017,7 +1033,7 @@ integer :: nbuf3,ierr
     deallocate(int_1b)
 
        if (iprnt.ge.2) &
-    write(iw,*)'diagram 9 ', ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
+    write(iw,*)'diagram 9 ', ddot(ndimr2,sigma2,1,sigma2,1)
 
      else
 
@@ -1046,7 +1062,7 @@ integer :: nbuf3,ierr
          n = nox(irp)
          k = nint
          call xgemm ('n','n',m,n,k,a1,w_vvvv,m,r2_ptr(off1+istart*rcw),m, &
-     &               a1,sigma2(off2,1),m)
+     &               a1,sigma2(off2),m)
 
          deallocate(w_vvvv)
 
@@ -1059,7 +1075,7 @@ integer :: nbuf3,ierr
       enddo
 
     if (iprnt.ge.2) &
-    write(iw,*)'diagram 7 ', ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
+    write(iw,*)'diagram 7 ', ddot(ndimr2,sigma2,1,sigma2,1)
 
       allocate (local_buffer(ndimr2))
 
@@ -1097,9 +1113,9 @@ integer :: nbuf3,ierr
 !-----------------------------------------------------------------------
 
 !---------------Calling variables--------------------------------------
-  real(8), intent(in),contiguous,target   :: L1(:,:), L2(:,:) ! R-Amplitudes
+  real(8), intent(in),contiguous,target   :: L1(:), L2(:) ! R-Amplitudes
   type(intermediates), intent(in)  :: B      
-  real(8), intent(inout),contiguous :: lambda1(:,:),lambda2(:,:)  ! sigma-vectors
+  real(8), intent(inout),contiguous :: lambda1(:),lambda2(:)  ! sigma-vectors
   integer, intent(in) :: ndiml1, ndiml2
 !---------------Local Variables--------------------
   real(8), pointer,contiguous :: l1_ptr(:),l2_ptr(:)
@@ -1118,7 +1134,7 @@ integer :: nbuf3,ierr
   &    L1_ptr,B%Fbar_mi,lambda1,-1.0d0,1.0d0,nrep)
 
        if (iprnt.ge.0) &
-    write(iw,*)'diagram 1 ', ddot(ndiml1,lambda1(:,1:1),1,lambda1(:,1:1),1)
+    write(iw,*)'diagram 1 ', ddot(ndiml1,lambda1,1,lambda1,1)
 
 !-----------------------------------------------------
 ! L(i,a*) = L(i,a*) -  L2(mn,a*e)*W(ie,mn)
@@ -1134,7 +1150,8 @@ integer :: nbuf3,ierr
   &          LeftTensor=B%W_iemn)
 
        if (iprnt.ge.0) &
-    write(iw,*)'diagram 2 ', ddot(ndiml1,lambda1(:,1:1),1,lambda1(:,1:1),1)
+    write(iw,*)'diagram 2 ', ddot(ndiml1,lambda1,1,lambda1,1)
+
 !-------------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) + L2 (ij,a*e)*f_bar_ae(e,b)
 !-------------------------------------------------
@@ -1144,7 +1161,8 @@ integer :: nbuf3,ierr
    &    RightTensor=B%Fbar_ae)
 
        if (iprnt.ge.0) &
-    write(iw,*)'diagram 3 ', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
+    write(iw,*)'diagram 3 ', ddot(ndiml2,lambda2,1,lambda2,1)
+
 !----------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) - P(ij) L2 (im,a*b)*f_bar_im (j,m)
 !----------------------------------------------
@@ -1154,7 +1172,8 @@ integer :: nbuf3,ierr
      &    LeftTensor=L2_ptr,RightTensor=B%Fbar_mi)
 
        if (iprnt.ge.0) &
-    write(iw,*)'diagram 4 ', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
+    write(iw,*)'diagram 4 ', ddot(ndiml2,lambda2,1,lambda2,1)
+
 !--------------------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) + L2(mn,a*b) * W_ijmn(ij,mn)
 !--------------------------------------------------------
@@ -1164,7 +1183,7 @@ integer :: nbuf3,ierr
 
 
        if (iprnt.ge.0) &
-    write(iw,*)'diagram 5 ', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
+    write(iw,*)'diagram 5 ', ddot(ndiml2,lambda2,1,lambda2,1)
 !--------------------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) + P(ij) L2(im,a*e) * W_bmej(je,bm)
 !--------------------------------------------------------
@@ -1174,7 +1193,7 @@ integer :: nbuf3,ierr
 
 
        if (iprnt.ge.0) &
-    write(iw,*)'diagram 6 ', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
+    write(iw,*)'diagram 6 ', ddot(ndiml2,lambda2,1,lambda2,1)
 !---------------------------------------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) + L1(m,a*) * w_mnie(ij,mb)
 !---------------------------------------------------------------------------
@@ -1185,7 +1204,7 @@ integer :: nbuf3,ierr
 
 
        if (iprnt.ge.0) &
-    write(iw,*)'diagram 7 ', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
+    write(iw,*)'diagram 7 ', ddot(ndiml2,lambda2,1,lambda2,1)
 !---------------------------------------------------------------
 !  G (e,a*)  = G(e,a*) + L2(mn,a*f) * t2(ef,mn) 
 !  L(ij,a*b) = L(ij,a*b) + V(ij,eb)*G (e,a*)  
@@ -1207,17 +1226,18 @@ integer :: nbuf3,ierr
     deallocate(G)
 
        if (iprnt.ge.0) &
-    write(iw,*)'diagram 8 ', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
+    write(iw,*)'diagram 8 ', ddot(ndiml2,lambda2,1,lambda2,1)
+
      call dealloc_array(e)
 
    call lambda2_disconnected_IP(L1_ptr,B%Fbar_me,lambda2)
 
        if (iprnt.ge.0) &
-    write(iw,*)'diagram 9 ', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
+    write(iw,*)'diagram 9 ', ddot(ndiml2,lambda2,1,lambda2,1)
 
  end subroutine
 
-   subroutine Lambda_EE(l1,l2,B,lambda1,lambda2,nbuf3)
+   subroutine Lambda_EE(l1,l2,B,lambda1,lambda2,state_sym)
   use intermediates_1b_2b 
   use symmetry_offset
   use lambda_equation  
@@ -1235,8 +1255,8 @@ integer :: nbuf3,ierr
 !---------------Calling variables--------------------------------------
   real(8), intent(in),contiguous,target   :: L1(:), L2(:) ! R-Amplitudes
   type(intermediates), intent(in)  :: B      
+  integer, intent(in) :: state_sym
   real(8), intent(inout),contiguous :: lambda1(:),lambda2(:)  ! sigma-vectors
-  integer, intent(in) :: nbuf3
 !---------------Local Variables--------------------
   real(8), pointer,contiguous :: l1_ptr(:),l2_ptr(:)
   real(8), allocatable :: int_oo(:), G_vv(:), G_oo(:) 
@@ -1244,11 +1264,13 @@ integer :: nbuf3,ierr
   real(8)              :: ddot
   logical              :: done
   integer     :: jklrep,m2,irep,jrep,abrep,jkloff,ij,ijkl,ijkl1,mint
-  integer     :: off2,i,j,istart,m,k,n,irp,ntot,nint,kstart,off1
+  integer     :: off2,i,j,istart,m,k,n,irp,ntot,nint,kstart,off1,ndimr1,ndimr2
   type(Offset)         :: e
 !--------------------------------------------------
 ! l1_ptr(1:ndiml1) => l1
 ! l2_ptr(1:ndiml2) => l2
+      ndimr1 = size(l1)
+      ndimr2 = size(l2)
 
      allocate(G_vv(nfvv*rcw))
      allocate(G_oo(nfoo*rcw))
@@ -1369,7 +1391,7 @@ integer :: nbuf3,ierr
 !    term 10 : lambda2 = lambda2 + L2(ij,ef) * W_vvvv(ef,ab)
 !--------------------------------------------------------
 
-      allocate(tau(ndimt2*rcw))
+      allocate(tau(ndimr2*rcw))
       call gettau(B%t1,B%t2,tau)
       off2 = 1
       off1 = 1
@@ -1406,7 +1428,7 @@ integer :: nbuf3,ierr
        if (iprnt.ge.1) &
      & write(iw,*)'lambda2 after term10',dot_product(lambda2,lambda2)
 
-      call xcopy (ndimt1,B%Fbar_me,1,lambda1,1)
+      call xcopy (ndimr1,B%Fbar_me,1,lambda1,1)
 
      if (iprnt.ge.1) &
      &   write(iw,*)'lambda1: init',dot_product(lambda1,lambda1)

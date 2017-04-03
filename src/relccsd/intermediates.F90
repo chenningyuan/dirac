@@ -29,12 +29,12 @@
     public G_intm
      private
 
-      interface
-         subroutine gettau(t1,t2,tau)
-         real*8,intent(in) :: t1(*),t2(*)
-         real*8,intent(out) :: tau(*)
-         end subroutine gettau
-      end interface
+!     interface
+!        subroutine gettau(t1,t2,tau)
+!        real*8,intent(in) :: t1(*),t2(*)
+!        real*8,intent(out) :: tau(*)
+!        end subroutine gettau
+!     end interface
 
      contains
 
@@ -88,7 +88,7 @@
 !---------------Calling variables--------------------------------------
       real(8), intent(in)  :: fvv(nfvv*rcw), fvo(nfvo*rcw)
       real(8), intent(in)  :: t1(rcw*ndimt1),t2(rcw*ndimt2)  ! Amplitudes.
-      real(8), intent(out) :: hv(nfvv*rcw)
+      real(8), intent(inout) :: hv(nfvv*rcw)
 !---------------Local variables--------------------------------------
       real(8), allocatable :: tau(:)
       real(8), allocatable :: fov(:)
@@ -135,9 +135,9 @@
 #include "param.inc"
 #include "complex.inc"
 !++++++++++++++Calling variables+++++++++++++++++++++++++++++++++++++++
-     real(8), intent(in),target  :: fvo(rcw,nfvo)          ! Fock matrix elements
-     real(8), intent(in) :: t1(rcw,ndimt1)                 ! Amplitudes
-     real(8), intent(out):: hov(rcw,nfvo)                  ! Intermediate
+     real(8), intent(in),target  :: fvo(rcw*nfvo)          ! Fock matrix elements
+     real(8), intent(in) :: t1(rcw*ndimt1)                 ! Amplitudes
+     real(8), intent(out):: hov(rcw*nfvo)                  ! Intermediate
 !+++++initialization of hov+++++++++++++
  
   call srt1c1(nrep,nv,no,fvo,hov)
@@ -163,7 +163,7 @@
 #include "complex.inc"
 
 !---------------Calling variables--------------------------------------
-  real(8), intent(in)  :: t1(rcw*ndimt1),t2(rcw,ndimt2)  ! Amplitudes.
+  real(8), intent(in)  :: t1(rcw*ndimt1),t2(rcw*ndimt2)  ! Amplitudes.
   real(8), intent(out) :: w_oooo(rcw*nv1)                ! Intermediate.
 !---------------Local Variables--------------------
   real(8), allocatable :: tau(:)
@@ -189,10 +189,9 @@
    allocate(tau(ndimt2*rcw))
    call gettau (t1,t2,tau)
    call contraction_444 ((/"o1","o2","p1","p2"/),(/"p1","p2","o3","o4"/),(/"o1","o2","o3","o4"/),w_oooo,1.0d0,1.0d0,nrep, &
-   &                      RightTensor=tau)
+  &                      RightTensor=tau)
 
    deallocate(tau)
-
 
   end subroutine
  
@@ -200,9 +199,9 @@
 
  subroutine w_ejmb(t1,t2,w_voov)
 
-!!---------------Description--------------------------------------------
-!!     Calculates w_voov intermediate
-!!-----------------------------------------------------------------------
+!---------------Description--------------------------------------------
+!     Calculates w_voov intermediate
+!-----------------------------------------------------------------------
 
 #include "param.inc"
 #include "symm.inc"

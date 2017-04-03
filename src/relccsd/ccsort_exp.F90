@@ -23,12 +23,14 @@
    public SRT9_exp
    public SRT10_exp
    public SRT1TS4_exp
+   public SRT1C1_exp
+   public nvo_to_mvo
 
      private
 
      contains
 
-      SUBROUTINE SRT1TT4_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+      SUBROUTINE SRT1TT4_exp (IRP_INPUT,NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
       IMPLICIT INTEGER (A-Z)
 
@@ -37,7 +39,7 @@
 !     BUF(I>J,K>L:KLREP) <--> BUF(IK,JL)
 !     If (FIRST) take only the totally symmetric (first) irrep.
 !     If (DOINV) inverse sort.
-!
+!     IRP_INPUT specifies the IRREP to which the incoming tensors belong. 
 !---------------Routines called----------------------------------------
 !
 !---------------Last modified------------------------------------------
@@ -47,7 +49,7 @@
 !---------------Calling variables--------------------------------------
 
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IRP_INPUT,NREP, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL FIRST,DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
@@ -76,7 +78,7 @@
       IF (FIRST) THEN
         CALL XCOPY(f%oneDirac(1)*g%oneDirac(1),A0,0,BUF2,1)
       ELSE
-        CALL XCOPY(h%oneNonDirac(1),A0,0,BUF2,1)
+        CALL XCOPY(h%oneNonDirac(IRP_INPUT),A0,0,BUF2,1)
       ENDIF
       ELSE
          ROW    = d%oneNonDirac
@@ -97,7 +99,7 @@
 
       IJKL = 1
       DO KLREP = 1, NREP
-         IJREP = MULTB(KLREP+NREP,1+NREP,1)
+         IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
         IF (KREP.LT.LREP) GOTO 10
@@ -180,7 +182,7 @@
       END SUBROUTINE
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SRT1TT5_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+      SUBROUTINE SRT1TT5_exp (IRP_INPUT,NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
       IMPLICIT INTEGER (A-Z)
 
@@ -197,7 +199,7 @@
 !---------------Calling variables--------------------------------------
 
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(64,64,2)
+      INTEGER NREP,IRP_INPUT, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL FIRST,DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
@@ -226,7 +228,7 @@
          IF (FIRST) THEN
             CALL XCOPY(f%oneDirac(1)*g%oneDirac(1),A0,0,BUF2,1)
          ELSE
-            CALL XCOPY(h%oneDirac(1),A0,0,BUF2,1)
+            CALL XCOPY(h%oneDirac(IRP_INPUT),A0,0,BUF2,1)
          ENDIF
       ELSE
          ROW    = d%oneNonDirac
@@ -235,7 +237,7 @@
 
       IJKL = 1
       DO KLREP = 1, NREP
-         IJREP = MULTB(KLREP+NREP,1+NREP,1)
+         IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
         IF (KREP.LT.LREP) GOTO 10
@@ -325,7 +327,7 @@
       END SUBROUTINE
 
 !=====================================================================================
-      SUBROUTINE SRT1ST4_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+      SUBROUTINE SRT1ST4_exp (IRP_INPUT,NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
       IMPLICIT INTEGER (A-Z)
 
@@ -342,7 +344,7 @@
 !---------------Calling variables--------------------------------------
 
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IRP_INPUT,NREP, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL FIRST,DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
@@ -372,7 +374,7 @@
       IF (FIRST) THEN
         CALL XCOPY(f%oneDirac(1)*g%oneDirac(1),A0,0,BUF2,1)
       ELSE
-        CALL XCOPY(h%oneNonDirac(1),A0,0,BUF2,1)
+        CALL XCOPY(h%oneNonDirac(IRP_INPUT),A0,0,BUF2,1)
       ENDIF
       ELSE
          ROW    = d%oneNonDirac
@@ -381,7 +383,7 @@
 
       IJKL = 1
       DO KLREP = 1, NREP
-        IJREP = MULTB(KLREP+NREP,1+NREP,1)
+        IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
         IF (KREP.LT.LREP) GOTO 10
@@ -430,7 +432,7 @@
       END SUBROUTINE
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SRT1SS4_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+      SUBROUTINE SRT1SS4_exp (IRP_INPUT,NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
       IMPLICIT INTEGER (A-Z)
 
@@ -447,7 +449,7 @@
 !---------------Calling variables--------------------------------------
 
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IRP_INPUT, NREP, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL FIRST,DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
@@ -476,7 +478,7 @@
       IF (FIRST) THEN
         CALL XCOPY(f%oneDirac(1)*g%oneDirac(1),A0,0,BUF2,1)
       ELSE
-        CALL XCOPY(h%oneNonDirac(1),A0,0,BUF2,1)
+        CALL XCOPY(h%oneNonDirac(IRP_INPUT),A0,0,BUF2,1)
       ENDIF
       ELSE
          ROW    = d%oneNonDirac
@@ -485,12 +487,13 @@
 
       IJKL = 1
       DO KLREP = 1, NREP
+        IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
         DO L = 1, LFIE(LREP)
          DO K = 1, KFIE(KREP)
           DO 20 JREP = 1, NREP
-           IREP = MULTB(JREP,KLREP+NREP,2)
+           IREP = MULTB(JREP,IJREP+NREP,2)
            JLREP = MULTB(JREP,LREP,2)
            IKREP = MULTB(IREP,KREP,2)
            IKJL0 = h%twoNonDirac(IKREP,JLREP)  & 
@@ -517,7 +520,7 @@
       RETURN
       END SUBROUTINE
 !=======================================================================
-      SUBROUTINE SRT1T3_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+      SUBROUTINE SRT1T3_exp (IRP_INPUT,NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
       IMPLICIT INTEGER (A-Z)
 
@@ -535,7 +538,7 @@
 !---------------Calling variables--------------------------------------
 
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IRP_INPUT, NREP, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
@@ -562,7 +565,7 @@
       call auto_symmetry_offset(h,g%oneDirac,LFIE,.false.,.false.)
 
       if (.not.doinv) then 
-         CALL XCOPY(h%oneNonDirac(1),A0,0,BUF2,1)
+         CALL XCOPY(h%oneNonDirac(IRP_INPUT),A0,0,BUF2,1)
          row = g%oneDirac
          column = lfie
       else
@@ -572,7 +575,7 @@
 
       IJKL = 1
       DO KLREP = 1, NREP
-       IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
        N = f%oneNonDirac(IJREP)
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
@@ -608,7 +611,7 @@
       END SUBROUTINE
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
-      SUBROUTINE SRT1T2_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+      SUBROUTINE SRT1T2_exp (IRP_INPUT, NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
       IMPLICIT INTEGER (A-Z)
 
@@ -626,7 +629,7 @@
 !---------------Calling variables--------------------------------------
 
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IRP_INPUT, NREP, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
@@ -653,7 +656,7 @@
       call auto_symmetry_offset(h,IFIE,g%oneDirac,.false.,.false.)
 
       if (.not.doinv) then 
-         CALL XCOPY(h%oneDirac(1),A0,0,BUF2,1)
+         CALL XCOPY(h%oneDirac(IRP_INPUT),A0,0,BUF2,1)
          row = jfie
          column = g%oneDirac
       else
@@ -663,7 +666,7 @@
 
       IJKL = 0
       DO KLREP = 1, NREP
-       IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
        M = e%onenonDirac(IJREP)
        N = f%onenonDirac(KLREP)
        IJ = 1
@@ -703,7 +706,7 @@
       END SUBROUTINE
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SRT6_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+      SUBROUTINE SRT6_exp (IRP_INPUT,NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
       IMPLICIT INTEGER (A-Z)
 
@@ -720,7 +723,7 @@
 !---------------Calling variables--------------------------------------
 
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IRP_INPUT, NREP, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
@@ -747,7 +750,7 @@
       call auto_symmetry_offset(h,g%oneDirac,JFIE,.false.,.false.)
 
       if (.not.doinv) then 
-      CALL XCOPY(h%oneDirac(1),A0,0,BUF2,1)
+      CALL XCOPY(h%oneDirac(IRP_INPUT),A0,0,BUF2,1)
       row = g%oneDirac
       column = jfie
       else
@@ -758,7 +761,7 @@
 
       IJKL = 0
       DO KLREP = 1, NREP
-       IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
        M = e%onenonDirac(IJREP)
        N = f%onenonDirac(KLREP)
        IJ = 1
@@ -768,7 +771,7 @@
         JOFF = (h%twoDirac(IKLREP,JREP) + g%twoDirac(IREP,KLREP)) * RCW
         DO J = 1, JFIE(JREP)
          DO I = 1, IFIE(IREP)
-            IKLJ1 = JOFF + ((J-1)*g%oneDirac(JREP)+I-1) * RCW + 1
+            IKLJ1 = JOFF + ((J-1)*g%oneDirac(IKLREP)+I-1) * RCW + 1
             IF (DOINV) THEN
                CALL XCOPY(N,BUF1(IKLJ1),IFIE(IREP),BUF2(IJKL+IJ),M)
             ELSE
@@ -785,7 +788,7 @@
       RETURN
       END SUBROUTINE
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SRT9_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+      SUBROUTINE SRT9_exp (IRP_INPUT,NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
       IMPLICIT INTEGER (A-Z)
 
@@ -805,7 +808,7 @@
 !---------------Calling variables--------------------------------------
 
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IRP_INPUT, NREP, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
@@ -832,7 +835,7 @@
       call auto_symmetry_offset(h,g%oneDirac,IFIE,.false.,.false.)
 
       if (.not.doinv) then 
-      CALL XCOPY(h%oneDirac(1),A0,0,BUF2,1)
+      CALL XCOPY(h%oneDirac(IRP_INPUT),A0,0,BUF2,1)
       row = g%oneDirac
       column = Ifie
       else
@@ -842,7 +845,7 @@
 
       IJKL = 0
       DO KLREP = 1, NREP
-       IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
        M = e%onenonDirac(IJREP)
        N = f%onenonDirac(KLREP)
        IJ = 1
@@ -852,7 +855,7 @@
         IOFF = (h%twoNonDirac(KLJREP,IREP)+g%twoDirac(KLREP,JREP)) * RCW + 1
         DO J = 1, JFIE(JREP)
          DO I = 1, IFIE(IREP)
-            KLJI = IOFF+((I-1)*g%oneDirac(IREP)+(J-1)*N)*RCW
+            KLJI = IOFF+((I-1)*g%oneDirac(KLJREP)+(J-1)*N)*RCW
             IF (DOINV) THEN
                CALL XCOPY(N,BUF1(KLJI),1,BUF2(IJKL+IJ),M)
             ELSE
@@ -869,7 +872,7 @@
       RETURN
       END SUBROUTINE
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SRT10_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+      SUBROUTINE SRT10_exp (IRP_INPUT,NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
       IMPLICIT INTEGER (A-Z)
 
@@ -886,7 +889,7 @@
 !---------------Calling variables--------------------------------------
 
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IRP_INPUT, NREP, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
@@ -913,7 +916,7 @@
       call auto_symmetry_offset(h,g%oneDirac,JFIE,.false.,.false.)
 
       if (.not.doinv) then 
-      CALL XCOPY(h%oneDirac(1),A0,0,BUF2,1)
+      CALL XCOPY(h%oneDirac(IRP_INPUT),A0,0,BUF2,1)
       row = g%oneDirac
       column = Jfie
       else
@@ -923,7 +926,7 @@
 
       IJKL = 0
       DO KLREP = 1, NREP
-       IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
        M = e%onenonDirac(IJREP)
        N = f%onenonDirac(KLREP)
        IJ = 1
@@ -952,7 +955,7 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 
-      SUBROUTINE SRT1S2_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+      SUBROUTINE SRT1S2_exp (IRP_INPUT, NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
       IMPLICIT INTEGER (A-Z)
 
@@ -969,7 +972,7 @@
 !---------------Calling variables--------------------------------------
 
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IRP_INPUT, NREP, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
@@ -995,7 +998,7 @@
       call auto_symmetry_offset(h,IFIE,g%oneDirac,.false.,.false.)
 
       if (.not.doinv) then 
-      CALL XCOPY(h%oneDirac(1),A0,0,BUF2,1)
+      CALL XCOPY(h%oneDirac(IRP_INPUT),A0,0,BUF2,1)
       row = ifie
       column = g%oneDirac
       else
@@ -1005,7 +1008,7 @@
 
       IJKL = 0
       DO KLREP = 1, NREP
-       IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
        M = e%onenonDirac(IJREP)
        N = f%onenonDirac(KLREP)
        IJ = 1
@@ -1033,7 +1036,7 @@
       RETURN
       END SUBROUTINE
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SRT16_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+      SUBROUTINE SRT16_exp (IRP_INPUT,NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
       IMPLICIT INTEGER (A-Z)
 
@@ -1051,7 +1054,7 @@
 !---------------Calling variables--------------------------------------
 
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IRP_INPUT, NREP, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL FIRST, DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
@@ -1082,7 +1085,7 @@
          IF (FIRST) THEN
             CALL XCOPY(f%oneDirac(1)*g%oneDirac(1),A0,0,BUF2,1)
          ELSE
-            CALL XCOPY(h%oneDirac(1),A0,0,BUF2,1)
+            CALL XCOPY(h%oneDirac(IRP_INPUT),A0,0,BUF2,1)
          ENDIF
       ELSE
          ROW    = d%oneNonDirac
@@ -1091,12 +1094,15 @@
 
       IJKL = 1
       DO KLREP = 1, NREP
+
+       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
+
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
         DO L = 1, LFIE(LREP)
          DO K = 1, KFIE(KREP)
           DO 20 JREP = 1, NREP
-           IREP = MULTB(JREP,KLREP+NREP,2)
+           IREP = MULTB(JREP,IJREP+NREP,2)
            KJREP = MULTB(KREP,JREP,2)
            ILREP = MULTB(IREP,LREP,2)
            ILKJ0 = h%twoDirac(ILREP,KJREP) & 
@@ -1123,7 +1129,7 @@
       RETURN
       END SUBROUTINE
 !=============================================================================================================
-      SUBROUTINE SRT46_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+      SUBROUTINE SRT46_exp (IRP_INPUT, NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
       IMPLICIT INTEGER (A-Z)
 
@@ -1141,7 +1147,7 @@
 !---------------Calling variables--------------------------------------
 
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IRP_INPUT, NREP, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL FIRST, DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
@@ -1169,7 +1175,7 @@
          IF (FIRST) THEN
             CALL XCOPY(f%oneDirac(1)*g%oneDirac(1),A0,0,BUF2,1)
          ELSE
-            CALL XCOPY(h%oneDirac(1),A0,0,BUF2,1)
+            CALL XCOPY(h%oneDirac(IRP_INPUT),A0,0,BUF2,1)
          ENDIF
       ELSE
          ROW    = d%oneNonDirac
@@ -1178,12 +1184,13 @@
 
       IJKL = 1
       DO KLREP = 1, NREP
+       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
         DO L = 1, LFIE(LREP)
          DO K = 1, KFIE(KREP)
           DO 20 JREP = 1, NREP
-           IREP = MULTB(JREP,KLREP+NREP,2)
+           IREP = MULTB(JREP,IJREP+NREP,2)
 
            LJREP = MULTB(LREP,JREP,2)
            IKREP = MULTB(IREP,KREP,2)
@@ -1215,7 +1222,7 @@
 
       END SUBROUTINE
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SRT19_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+      SUBROUTINE SRT19_exp (IRP_INPUT,NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
  
       IMPLICIT INTEGER (A-Z)
 
@@ -1232,7 +1239,7 @@
 !---------------Calling variables--------------------------------------
 
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IRP_INPUT, NREP, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
@@ -1258,7 +1265,7 @@
       call auto_symmetry_offset(h,g%oneDirac,KFIE,.false.,.false.)
 
       if (.not.doinv) then 
-      CALL XCOPY(h%oneNonDirac(1),A0,0,BUF2,1)
+      CALL XCOPY(h%oneNonDirac(IRP_INPUT),A0,0,BUF2,1)
       row = g%oneDirac
       column = kfie
       else
@@ -1268,7 +1275,7 @@
 
       IJKL = 1
       DO KLREP = 1, NREP
-       IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
        N = f%oneNonDirac(IJREP)
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
@@ -1294,7 +1301,7 @@
       END SUBROUTINE
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SRT22_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+      SUBROUTINE SRT22_exp (IRP_INPUT,NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
       IMPLICIT INTEGER (A-Z)
 
@@ -1311,7 +1318,7 @@
 !---------------Calling variables--------------------------------------
 
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IRP_INPUT, NREP, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
@@ -1344,11 +1351,11 @@
       column = e%oneNonDirac
       endif
 
-      IF (.NOT.DOINV) CALL XCOPY(h%oneDirac(1),A0,0,BUF2,1)
+      IF (.NOT.DOINV) CALL XCOPY(h%oneDirac(IRP_INPUT),A0,0,BUF2,1)
 
       IJKL = 1
       DO KLREP = 1, NREP
-       IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
        N = f%oneNonDirac(IJREP)
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
@@ -1361,8 +1368,8 @@
          KMIN = 1
          IF (KREP.EQ.LREP) KMIN = L + 1
          DO K = KMIN, KFIE(KREP)
-            LIJK = (KOFF + (K-1) * g%oneDirac(KREP) + L - 1) * RCW + 1 
-            KIJL = (LOFF + (L-1) * g%oneDirac(LREP) + K - 1) * RCW + 1
+            LIJK = (KOFF + (K-1) * g%oneDirac(LIJREP) + L - 1) * RCW + 1 
+            KIJL = (LOFF + (L-1) * g%oneDirac(KIJREP) + K - 1) * RCW + 1
             IF (DOINV) THEN
                CALL XCOPY (N,BUF1(LIJK),LFIE(LREP),BUF2(IJKL),1)
                CALL XAXPY (N,-A1,BUF1(KIJL),KFIE(KREP),BUF2(IJKL),1)
@@ -1381,7 +1388,7 @@
       RETURN
       END SUBROUTINE
 !===========================================================================
-      SUBROUTINE SRT32_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+      SUBROUTINE SRT32_exp (IRP_INPUT,NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
       IMPLICIT INTEGER (A-Z)
 
@@ -1398,7 +1405,7 @@
 !---------------Calling variables--------------------------------------
 
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IRP_INPUT, NREP, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
@@ -1431,11 +1438,11 @@
       column = e%oneNonDirac
       endif
 
-      CALL XCOPY(h%oneDirac(1),A0,0,BUF2,1)
+      CALL XCOPY(h%oneDirac(IRP_INPUT),A0,0,BUF2,1)
 
       IJKL = 1
       DO KLREP = 1, NREP
-       IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
        N = f%oneNonDirac(IJREP)
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
@@ -1443,7 +1450,7 @@
         KOFF = h%twoDirac(LIJREP,KREP) + g%twoDirac(LREP,IJREP)
         DO L = 1, LFIE(LREP)
          DO K = 1, KFIE(KREP)
-            LIJK = (KOFF + (K-1) * g%oneDirac(KREP) + L - 1) * RCW + 1 
+            LIJK = (KOFF + (K-1) * g%oneDirac(LIJREP) + L - 1) * RCW + 1 
             IF (DOINV) THEN
                CALL XCOPY (N,BUF1(LIJK),LFIE(LREP),BUF2(IJKL),1)
             ELSE
@@ -1461,7 +1468,7 @@
 
 !====================================================================================
 
-      SUBROUTINE SRT1S3_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+      SUBROUTINE SRT1S3_exp (IRP_INPUT,NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
       IMPLICIT INTEGER (A-Z)
 
@@ -1479,7 +1486,7 @@
 !---------------Calling variables--------------------------------------
 
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IRP_INPUT,NREP, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
@@ -1509,14 +1516,14 @@
         ROW    = f%onenonDirac
         COLUMN = e%onenonDirac  
       ELSE
-        CALL XCOPY(h%oneNonDirac(1),A0,0,BUF2,1)
+        CALL XCOPY(h%oneNonDirac(IRP_INPUT),A0,0,BUF2,1)
         ROW    = g%oneDirac
         COLUMN = lfie 
       ENDIF
 
       IJKL = 1
       DO KLREP = 1, NREP
-       IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
        N = f%oneNonDirac(IJREP)
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
@@ -1542,7 +1549,7 @@
       END SUBROUTINE
       
 !==========================================================================================
-      SUBROUTINE SRT26_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+      SUBROUTINE SRT26_exp (IRP_INPUT,NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
       IMPLICIT INTEGER (A-Z)
 
@@ -1561,7 +1568,7 @@
 !---------------Calling variables--------------------------------------
 
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IRP_INPUT, NREP, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL FIRST,DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
@@ -1590,9 +1597,9 @@
          ROW = f%oneDirac 
          COLUMN = g%oneDirac
          IF (FIRST) THEN
-            CALL XCOPY(f%oneDirac(1)*g%oneDirac(1),A0,0,BUF2,1)
+            CALL XCOPY(f%oneDirac(1)*g%oneDirac(1),A0,0,BUF2,1) !have to modify this for non-totally symmetric case.
          ELSE
-            CALL XCOPY(h%oneDirac(1),A0,0,BUF2,1)
+            CALL XCOPY(h%oneDirac(IRP_INPUT),A0,0,BUF2,1)
          ENDIF
          offx = h%twoDirac 
       ELSE
@@ -1603,7 +1610,7 @@
 
       IJKL = 1
       DO KLREP = 1, NREP
-         IJREP = MULTB(KLREP+NREP,1+NREP,1)
+         IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
         IF (KREP.LT.LREP) GOTO 10
@@ -1653,7 +1660,7 @@
       END SUBROUTINE
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SRT36_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+      SUBROUTINE SRT36_exp (IRP_INPUT,NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
       IMPLICIT INTEGER (A-Z)
 
@@ -1672,7 +1679,7 @@
 !---------------Calling variables--------------------------------------
 
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IRP_INPUT, NREP, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL FIRST,DOINV
       INTEGER ROW(nrep),COLUMN(nrep)
@@ -1704,7 +1711,7 @@
          IF (FIRST) THEN
             CALL XCOPY((f%oneDirac(1)*g%oneDirac(1)),A0,0,BUF2,1)
          ELSE
-            CALL XCOPY(h%oneDirac(1),A0,0,BUF2,1)
+            CALL XCOPY(h%oneDirac(IRP_INPUT),A0,0,BUF2,1)
          ENDIF
       ELSE
          ROW = d%oneNonDirac
@@ -1714,7 +1721,7 @@
 
       IJKL = 1
       DO KLREP = 1, NREP
-       IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
        DO 10 LREP = 1, NREP
          KREP = MULTB(LREP,KLREP+NREP,2)
         DO L = 1, LFIE(LREP)
@@ -1775,7 +1782,7 @@
 
 !====================================================================================
 
-      SUBROUTINE SRT56_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+      SUBROUTINE SRT56_exp (IRP_INPUT,NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
       IMPLICIT INTEGER (A-Z)
 
@@ -1794,7 +1801,7 @@
 !---------------Calling variables--------------------------------------
 
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IRP_INPUT, NREP, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL FIRST,DOINV
       INTEGER ROW(nrep),COLUMN(nrep)
@@ -1826,7 +1833,7 @@
          IF (FIRST) THEN
             CALL XCOPY((f%oneDirac(1)*g%oneDirac(1)),A0,0,BUF2,1)
          ELSE
-            CALL XCOPY(h%oneDirac(1),A0,0,BUF2,1)
+            CALL XCOPY(h%oneDirac(IRP_INPUT),A0,0,BUF2,1)
          ENDIF
       ELSE
          ROW = d%oneNonDirac
@@ -1836,7 +1843,7 @@
 
       IJKL = 1
       DO KLREP = 1, NREP
-       IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
        DO 10 LREP = 1, NREP
          KREP = MULTB(LREP,KLREP+NREP,2)
         DO L = 1, LFIE(LREP)
@@ -1901,7 +1908,7 @@
       END SUBROUTINE
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
-      SUBROUTINE SRT1TS4_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+      SUBROUTINE SRT1TS4_exp (IRP_INPUT,NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
       IMPLICIT INTEGER (A-Z)
 
@@ -1920,7 +1927,7 @@
 !---------------Calling variables--------------------------------------
 
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IRP_INPUT, NREP, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL FIRST,DOINV
       INTEGER ROW(nrep),COLUMN(nrep)
@@ -1952,7 +1959,7 @@
          IF (FIRST) THEN
             CALL XCOPY(f%oneDirac(1)*g%oneDirac(1),A0,0,BUF2,1)
          ELSE
-            CALL XCOPY(h%oneNonDirac(1),A0,0,BUF2,1)
+            CALL XCOPY(h%oneNonDirac(IRP_INPUT),A0,0,BUF2,1)
          ENDIF
       ELSE
          ROW = d%oneNonDirac 
@@ -1962,7 +1969,7 @@
 
       IJKL = 1
       DO KLREP = 1, NREP
-        IJREP = MULTB(KLREP+NREP,1+NREP,1)
+        IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
         DO L = 1, LFIE(LREP)
@@ -2018,7 +2025,7 @@
 
 !=======================================================================
 
-      SUBROUTINE SRT7_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+      SUBROUTINE SRT7_exp (IRP_INPUT,NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
       IMPLICIT INTEGER (A-Z)
 
@@ -2035,7 +2042,7 @@
 !---------------Calling variables--------------------------------------
 
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IRP_INPUT, NREP, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP) 
       LOGICAL DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
@@ -2069,10 +2076,10 @@
       column = f%oneNonDirac
       endif
 
-      IF (.NOT.DOINV) CALL XCOPY(h%oneDirac(1),A0,0,BUF2,1)
+      IF (.NOT.DOINV) CALL XCOPY(h%oneDirac(IRP_INPUT),A0,0,BUF2,1)
       IJKL = 0
       DO KLREP = 1, NREP
-       IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
        M = e%onenonDirac(IJREP)
        N = f%onenonDirac(KLREP)
        IJ = 1
@@ -2087,8 +2094,8 @@
          IMIN=1
          IF(IREP.EQ.JREP) IMIN=J+1
          DO I = IMIN, IFIE(IREP)
-            IKLJ1 = JOFF + ((J-1)*g%oneDirac(JREP)+I-1) * RCW + 1
-            JKLI1 = IOFF + ((I-1)*g%oneDirac(IREP)+J-1) * RCW + 1
+            IKLJ1 = JOFF + ((J-1)*g%oneDirac(IKLREP)+I-1) * RCW + 1
+            JKLI1 = IOFF + ((I-1)*g%oneDirac(JKLREP)+J-1) * RCW + 1
             IF (DOINV) THEN
                CALL XCOPY(N,BUF1(IKLJ1),IFIE(IREP),BUF2(IJKL+IJ),M)
                CALL XAXPY(N,-A1,BUF1(JKLI1),JFIE(JREP),BUF2(IJKL+IJ),M)
@@ -2107,5 +2114,129 @@
       call dealloc_array(e,f,g,h)
       RETURN
       END SUBROUTINE
+
+      SUBROUTINE SRT1C1_exp (IRP_INPUT,SHIFT_BOSON,NPAIR1,NPAIR2,BUF1,BUF2, &
+    &    IRREP_PROD_TYPE)
+      IMPLICIT INTEGER (A-Z)
+#include "symm.inc"
+!---------------Description--------------------------------------------
+!
+!     Sort array BUF1(IJ,KL:KLREP) to array BUF2*(KL,IJ:KLREP)
+!     BUF1 and BUF2 belong to bosonic type irreps 
+!
+!---------------Calling variables--------------------------------------
+
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NPAIR1(NREP),NPAIR2(NREP),IRP_INPUT
+      LOGICAL SHIFT_BOSON
+      INTEGER, OPTIONAL :: IRREP_PROD_TYPE
+      INTEGER  :: IRREP_PROD_TYPE_LOC
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
+!---------------Local variables--------------------------------------
+
+!---------------Executable code--------------------------------------
+
+!      CALL XCOPY(dot_product(npair1,npair2),A0,0,BUF2,1)
+
+      IRREP_PROD_TYPE_LOC = 1
+
+      IF (PRESENT(IRREP_PROD_TYPE)) IRREP_PROD_TYPE_LOC=IRREP_PROD_TYPE
+
+      IJKL = 1
+      KLIJ = 1
+      DO KLREP = 1, NREP
+      SELECT CASE(IRREP_PROD_TYPE_LOC)
+      CASE(1)
+       IF (SHIFT_BOSON) THEN
+        IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
+       ELSE
+        IJREP = MULTB(KLREP,IRP_INPUT+NREP,1)
+       ENDIF
+      CASE(2)
+       IF (SHIFT_BOSON) THEN
+        IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,2)
+       ELSE
+        IJREP = MULTB(KLREP,IRP_INPUT+NREP,2)
+       ENDIF
+      END SELECT
+
+       M = NPAIR1(IJREP)
+       N = NPAIR2(KLREP)
+       DO IJ = 1, M
+         CALL XCOPY (N,BUF1(IJKL),M,BUF2(KLIJ),1)
+         IJKL = IJKL + RCW
+         KLIJ = KLIJ + N * RCW
+       ENDDO
+       IJKL = KLIJ
+      ENDDO
+
+      RETURN
+      END SUBROUTINE
+
+
+     SUBROUTINE nvo_to_mvo (IRP_INPUT,DOINV,IFIE,JFIE,BUF1,BUF2)
+      IMPLICIT INTEGER (A-Z)
+#include "symm.inc"
+
+!---------------Description--------------------------------------------
+!
+!     BUF(I>J,K>L:KLREP) <--> BUF(IK,JL)
+!     If (FIRST) take only the totally symmetric (first) irrep.
+!     If (DOINV) inverse sort.
+!     IRP_INPUT specifies the IRREP to which the incoming tensors belong. 
+!---------------Routines called----------------------------------------
+!
+!---------------Last modified------------------------------------------
+!
+!     Author : Luuk Visscher
+!
+!---------------Calling variables--------------------------------------
+
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER IRP_INPUT
+      INTEGER IFIE(NREP),JFIE(NREP)
+      LOGICAL DOINV
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
+!---------------Local variables--------------------------------------
+      type(Offset) :: d,e,f,g,h
+!---------------Executable code--------------------------------------
+
+      call alloc_array(d,nrep)
+
+      call auto_symmetry_offset(d,IFIE,JFIE,.false.,.false.)
+
+      BUF2(1:d%oneDirac(IRP_INPUT)) = 0.0d0   
+
+      IJ = 1
+      DO JREP = 1, NREP
+         IREP = MULTB(JREP,IRP_INPUT+NREP,1)
+
+           DO J = 1, JFIE(JREP)
+               IJ1 = d%twoDirac(IREP,JREP)+(J-1)*IFIE(IREP)
+
+             IF (DOINV) THEN
+                CALL XCOPY (IFIE(IREP),BUF1(IJ1*RCW+1),1,BUF2(IJ),1)
+             ELSE
+                CALL XCOPY (IFIE(IREP),BUF1(IJ),1,BUF2(IJ1*RCW+1),1)
+
+             ENDIF
+             IJ = IJ + RCW * IFIE(IREP)
+           ENDDO
+       ENDDO
+
+      call dealloc_array(d)
+      RETURN
+      END SUBROUTINE
+
 
   end module      
