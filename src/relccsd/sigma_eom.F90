@@ -1194,7 +1194,7 @@ integer :: nbuf3,ierr
     call alloc_array(e,nrep)
     call auto_symmetry_offset(e,nv,ncont,.false.,.false.)
 
-    allocate (G(e%oneNonDirac(1)))
+    allocate (G(e%oneNonDirac(1)*rcw))
 
      G = 0.0d0
 

@@ -133,15 +133,29 @@ contains
 ! for symmetric matrices we only need one of the vectors, and we choose it to be the right one
 ! left vectors, if asked, are ignored
         N_local = N
-        if (davidson_complex_mode_with_reals) N_local = 2*N
 
         if (davidson_symmetric) then
-            if (values) allocate(results%eValues(1,nroots))
-            if (right)  allocate(results%eVectorsR(N_local,nroots))
+            if (values) then 
+                allocate(results%eValues(1,nroots))
+                results%eValues   = 0.0d0
+            end if
+            if (right) then
+                allocate(results%eVectorsR(N_local,nroots))
+                results%eVectorsR = 0.0d0
+            end if
         else
-            if (values) allocate(results%eValues(2,nroots))
-            if (right) allocate(results%eVectorsR(N_local,nroots))
-            if (left)  allocate(results%eVectorsL(N_local,nroots))
+            if (values) then
+                allocate(results%eValues(2,nroots))
+                results%eValues   = 0.0d0
+            end if
+            if (right) then
+                allocate(results%eVectorsR(N_local,nroots))
+                results%eVectorsR = 0.0d0
+            end if
+            if (left) then
+                allocate(results%eVectorsL(N_local,nroots))
+                results%eVectorsL = 0.0d0
+            end if
         end if
     end subroutine
 
@@ -1532,10 +1546,14 @@ contains
 
         call form_eigenvalues_full_problem(results%eValues, nroots, e_small) 
 
-        if (davidson_solve_lhs) &
+        if (davidson_solve_lhs) then 
             call form_eigenvector_full_problem(results%eVectorsL, nroots,b,c_small_l,davidson_solve_rhs,davidson_solve_lhs)
-        if (davidson_solve_rhs) &
+            if (davidson_debug) call davidson_print_vectors(results%eVectorsL, label="final eigenvalues full problem")
+        end if
+        if (davidson_solve_rhs) then 
             call form_eigenvector_full_problem(results%eVectorsR, nroots,b,c_small_r,davidson_solve_rhs,davidson_solve_lhs)
+            if (davidson_debug) call davidson_print_vectors(results%eVectorsR, label="final eigenvalues full problem")
+        end if
 
         if(associated(b)) deallocate(b)
         deallocate(M_small)
@@ -1752,10 +1770,15 @@ contains
         vectors_N = size(b,1)
         vectors_L = size(b,2)
 
+        if (davidson_debug) then
+            print *,'debug sizes 1,2 of b',size(b,1),size(b,2)
+            print *,'debug sizes 1,2 of eVectorsFull',size(eVectorsFull,1),size(eVectorsFull,2)
+            print *,'debug sizes 1,2 of eVectorsSmall',size(eVectorsSmall,1),size(eVectorsSmall,2)
+        end if
+
         if (left_vector) then
             allocate(bc(vectors_L,vectors_N))
             bc = 0.0d0
-
 !           call davidson_print_vectors(eVectorsSmall, label="L eigenvectors small problem  ")
             if (davidson_complex_mode_with_reals) then
                 vectors_N = vectors_N / 2
