@@ -693,8 +693,8 @@ integer :: ierr
     allocate(int_1b(nfvv*rcw))
     int_1b = 0.0d0
 
-     call contraction_442 ((/"p1","p3","o4","o3"/),(/"o4","o3","p4","p3"/),(/"p1","p4"/),int_1b,-1.0d0,1.0d0,nrep,LeftTensor=r2_ptr, &
-         irrep_left=state_sym,irrep_right=1)
+     call contraction_442 ((/"p1","p3","o4","o3"/),(/"o4","o3","p4","p3"/),(/"p1","p4"/),int_1b,-1.0d0,1.0d0,nrep,&
+    &                     LeftTensor=r2_ptr,irrep_left=state_sym,irrep_right=1)
 
      call contraction_244 ((/"p1","p4"/),(/"p4","p2","o1","o2"/), &
     & (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=B%t2,irrep_left=state_sym,irrep_right=1)
@@ -711,8 +711,8 @@ integer :: ierr
     allocate(int_1b(nfoo*rcw))
     int_1b = 0.0d0
 
-    call contraction_442 ((/"o4","o3","p4","p3"/),(/"p4","p3","o1","o3"/),(/"o4","o1"/),int_1b,1.0d0,1.0d0,nrep,RightTensor=r2_ptr, &
-         irrep_left=1,irrep_right=state_sym)
+    call contraction_442 ((/"o4","o3","p4","p3"/),(/"p4","p3","o1","o3"/),(/"o4","o1"/),int_1b,1.0d0,1.0d0,nrep,&
+   &                      RightTensor=r2_ptr, irrep_left=1,irrep_right=state_sym)
 
     call contraction_424 ((/"p1","p2","o2","o4"/),(/"o4","o1"/), &
     & (/"p1","p2","o2","o1"/),sigma2,1.0d0,-1.0d0,nrep,RightTensor=int_1b,LeftTensor=B%t2,irrep_left=1,irrep_right=state_sym)
