@@ -412,7 +412,7 @@
      transA  =  'N'
      trans1A = 'N'
 
-!**  1> fetch the integral array, properly sort to contract with BLAS.
+!** 1> fetch the integral array, properly sort to contract with BLAS.
 
    call decide_sorting_routine(22,right_order,im_order,left_order,transA,match_index,asym_factor,.true.,&
    &                          sorted_opArray=sorted_oparray_right)
@@ -634,7 +634,7 @@
    call decide_sorting_routine(22,im_order,left_order,(/sorted_opArray_left(1:2),sorted_opArray_right(3:4)/), &
                        & transA,save_index,asym_factor_R,.false.,sorted_opArray=sorted_opArray_right,inverse=.true.)
 
-!     write(*,*)'debug info intermediate array 22:  ' ,transA,save_index,asym_factor_r,sorted_opArray_right
+! write(*,*)'debug info intermediate array 22:  ' ,transA,save_index,asym_factor_r,sorted_opArray_right
 
    if (transA=='T') then
 
@@ -1351,7 +1351,6 @@
 
        call auto_symmetry_offset(g,mdim,ndim,shift_for_boson,shift_for_boson)
 
-
          krp = irrepb
          mrp = multb(krp+shift,irrepa+nrep,1)  
          nrp = multb(krp+shift,irrepb+nrep,1)  
@@ -1380,26 +1379,26 @@
 !         off2 = 1
 
          if (transb.eq.'N'.or.transb.eq.'n') then
-          off2 = 1 + f%twoDirac(krp,nrp)*rcw
+          off2 = 1 !+ f%twoDirac(krp,nrp)*rcw
          else 
-          off2 = 1 + f%twoDirac(nrp,krp)*rcw
+          off2 = 1 !+ f%twoDirac(nrp,krp)*rcw
          endif
 
 
          off3 = 1 !+ g%twoDirac(mrp,nrp)*rcw
 
 
-!        if (k.eq.0) then
-!           call xscal (m*n,beta,c(off3),1)
-!        else
-!           call xgemm (transa,transb,m,n,k,alpha,a(off1),lda,b(off2),ldb,beta,c(off3),ldc)
-!        endif
+         if (k.eq.0) then
+            call xscal (m*n,beta,c(off3),1)
+         else
+            call xgemm (transa,transb,m,n,k,alpha,a(off1),lda,b(off2),ldb,beta,c(off3),ldc)
+         endif
       
-      if (transa.eq.'N'.or.transa.eq.'n') then
-       call xgemv (transa,m,k,alpha,a(off1),lda,b(off2),1,beta,c(off3),1) 
-      else
-       call xgemv (transa,k,m,alpha,a(off1),lda,b(off2),1,beta,c(off3),1) 
-      endif
+!     if (transa.eq.'N'.or.transa.eq.'n') then
+!      call xgemv (transa,m,k,alpha,a(off1),lda,b(off2),1,beta,c(off3),1) 
+!     else
+!      call xgemv (transa,k,m,alpha,a(off1),lda,b(off2),1,beta,c(off3),1) 
+!     endif
 
       call dealloc_array(e,f,g)
       end subroutine
@@ -1441,7 +1440,6 @@
 !---------------executable code--------------------------------------
 
       call alloc_array(e,nrep,f,g)
-
 
       shift = 0
 

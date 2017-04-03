@@ -180,7 +180,7 @@
              aa = aoff + a
              iaai = (iovvo(state_sym) + (iivo(arep,irep)+(i-1)*nv(arep)+a-1)*nov(state_sym) + &
        &      iiov(irep,arep) + (a-1)*no(irep))*rcw+i ! careful about the complex algebra  
-              H_II(ai) = -fac1 + eps(aa) !- vbar_ss (iaai)
+              H_II(ai) = -fac1 + eps(aa) - vbar_ss (iaai)
              ai = ai + 1
           enddo
         enddo
