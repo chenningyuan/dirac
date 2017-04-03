@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -514,6 +514,47 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
+      SUBROUTINE GETVVVO_incore (VVVVO)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C     Get VOVO part of two-electron integrals
+
+C---------------Calling variables--------------------------------------
+C
+      REAL*8             :: VVVVO(*)
+      REAL*8, ALLOCATABLE:: VVOVV(:)
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "files.inc"
+#include "param.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "eqns.inc"
+C
+C---------------Local variables--------------------------------------
+      REAL*8, ALLOCATABLE :: VOVV_TEMP(:)
+      INTEGER, ALLOCATABLE :: counter(:), displ(:)
+      LOGICAL :: DONE
+      INTEGER :: totsize
+C---------------Executable code--------------------------------------
+C
+      ALLOCATE(VVOVV(NV5*IRW*RCW))
+
+      CALL GETVOVV_incore (VVOVV)
+
+      CALL SRT1C1 (NREP,NVO,NVVT,VVOVV,VVVVO) 
+
+      DEALLOCATE(VVOVV)
+
+      RETURN
+      END
+!=================================================================
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
       SUBROUTINE GETVOVV_incore (VVOVV)
 
       use interface_to_mpi
@@ -544,6 +585,9 @@ C
 #include "symm.inc"
 #include "eqns.inc"
 #include "ccpar.inc"
+#if defined (VAR_MPI)
+     DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+#endif
 C
 C---------------Local variables--------------------------------------
       REAL*8, ALLOCATABLE :: VOVV_TEMP(:)
@@ -559,7 +603,7 @@ C
 
        OFF1 = 1
        DO  30 IRP = 1, NREP
-
+         check = IRP
          totsize = 0
          IF (NVO(IRP).EQ.0) GOTO 30
          ALLOCATE(VOVV_TEMP(NVO(IRP)*NVVT(IRP)*RCW))
@@ -599,15 +643,16 @@ C
         IF(IERR.GT.0) THEN
            CALL QUIT('MPI_GATHER ERROR in collecting VOVV Integrals !')
         ENDIF
-
       ENDIF
 #endif
 
       if (nmproc .eq. 1) then
 
-       call xcopy(nvo(irp)*nvvt(irp),vovv_temp(1),1,VVOVV(off1),1) 
-     
+       call xcopy(nvo(irp)*nvvt(irp),vovv_temp(1),1,VVOVV(off1),1)
+    
       endif
+
+
 
          totsize = totsize + sum(counter)
 
@@ -626,45 +671,6 @@ C
 
       RETURN
       END
-!=================================================================
-
-      SUBROUTINE GETVVVO_incore (VVVVO)
-C
-      IMPLICIT INTEGER (A-Z)
-C
-C---------------Description--------------------------------------------
-
-C     Get VOVO part of two-electron integrals
-
-C---------------Calling variables--------------------------------------
-C
-      REAL*8             :: VVVVO(*)
-      REAL*8, ALLOCATABLE:: VVOVV(:)
-C
-C---------------Common Blocks--------------------------------------
-C
-#include "files.inc"
-#include "complex.inc"
-#include "symm.inc"
-#include "eqns.inc"
-#include "param.inc"
-C
-C---------------Local variables--------------------------------------
-C
-C---------------Executable code--------------------------------------
-C
-
-      ALLOCATE(VVOVV(NV5*IRW*RCW))
-
-      CALL GETVOVV_incore (VVOVV)
-
-      CALL SRT1C1 (NREP,NVO,NVVT,VVOVV,VVVVO) 
-
-      DEALLOCATE(VVOVV)
-
-      RETURN
-      END
-
 
       SUBROUTINE GETOVVV_incore (VOVVV)
 C
@@ -790,7 +796,7 @@ C---------------Routines called----------------------------------------
 C
 C---------------Last modified------------------------------------------
 C
-C     Author : Luuk Visscher
+C     Author : Avijit Shee
 C
 C---------------Calling variables--------------------------------------
 C
@@ -841,7 +847,7 @@ C---------------Routines called----------------------------------------
 C
 C---------------Last modified------------------------------------------
 C
-C     Author : Luuk Visscher
+C     Author : Avijit Shee
 C
 C---------------Calling variables--------------------------------------
 C
@@ -1024,4 +1030,3 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-

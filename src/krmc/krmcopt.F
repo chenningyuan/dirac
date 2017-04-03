@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -20,7 +20,9 @@
 !dirac_copyright_end
 
 C FILE    : krmcopt.F
-C
+
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck psiopt */
       SUBROUTINE PSIOPT(WFTYP,WFCONV)
@@ -1965,7 +1967,8 @@ C     ***************************************************
 C     *** Orbital parameters ****************************
 C     ***************************************************
 C
-      CALL IZERO(NOROT,NORBT)
+      LNOROT = .FALSE.
+      NOROT(1:NORBT) = 0
 C
       NDSHT = 0
       NVSHT = 0
@@ -2012,6 +2015,15 @@ C         the associated IDX* arrays could not be made in
 C         the SETDCBIDX routines.) SK+HJAaJ Aug 08
 C        ***************************************************
 C
+         IF (NFRO(I) .GT. 0) THEN
+            WRITE(LUPRI,'(5X,A,I4)')
+     &      'Frozen orbitals     : 1..',NFRO(I)
+            LNOROT = .TRUE.
+            DO J = 1, NFRO(I)
+               K = IORB(I) + NPSH(I) + J
+               NOROT(K) = 1
+            END DO
+         END IF
          NVEC = 1
          CALL NUMLST(OPT_DELSTR(I),ILIST,NORB(I),
      &        -NPSH(I),NESH(I),I,NVEC)
@@ -2024,6 +2036,13 @@ C        we still want to freeze but doubly occupied core
 C        orbitals...
 C        TODO FIXME: IMPLEMENT ME - SK Aug 2008
 C
+C        hjaaj comment Feb 2017: we could use OPT_DELSTR
+C        also for .FREEZE and remove .DELETE
+C        (i.e. let .DELETE be part of .FREEZE);
+C        I have today implemented that NDSH(I) only
+C        counts deleted secondary orbitals.
+C        
+C
 csk      CALL NUMLST(OPT_FRZSTR(I),ILIST,NORB(I),
 csk  &        -NPSH(I),NESH(I),I,NVEC)
          IF (NVEC .GT. 0) THEN
@@ -2032,11 +2051,13 @@ csk         WRITE(LUPRI,'(A,A50)')
 csk  &           '     Frozen orbitals      : ',OPT_FRZSTR(I)
             WRITE(LUPRI,'(A,A50)')
      &           '     Deleted orbitals     : ',OPT_DELSTR(I)
+            NVEC_I = 0
             DO J = 1, NVEC
                K = ILIST(J) + IORB(I) + NPSH(I)
                NOROT(K) = 1
+               IF (ILIST(J) .GT. NOCC(I)) NVEC_I = NVEC_I + 1
             END DO
-            NDSH(I) = NVEC
+            NDSH(I) = NVEC_I
          END IF
 C
          NVSH(I) = NSSH(I) - NDSH(I)
@@ -2044,6 +2065,7 @@ C
          NDSHT = NDSHT + NDSH(I)
          NVSHT = NVSHT + NVSH(I)
       END DO
+      NOROTC(1:NORBT) = NOROT(1:NORBT)
 C     ... 'active' secondary orbitals
       N2VSHX   = NVSHT   * NVSHT
       N2VSHXQ  = N2VSHX  * NZ
@@ -2165,6 +2187,7 @@ C
             NOROT(IORB(I) + NPSH(I) + NISH(I) + J) = 0
          END DO
       END DO
+      NOROTC(1:NORBT) = NOROT(1:NORBT)
       IF (IPROPT .GT. 4) THEN
          WRITE(LUPRI,*) 'Orbitals excluded from 4-index transformation:'
          CALL IWRTMA(NOROT,NORBT,1,NORBT,1)
@@ -2490,7 +2513,7 @@ C
      &      ' (dimension ',NZCONFQ,')',
      &      ' CPU (Wall) time for generation of determinants: ',
      &      CPUTID,'(',WALLTID,')'
-      IF (NASHT .GT. 1 .AND. NZCONF .LE. 0) THEN
+      IF (NASHT .GT. 0 .AND. NZCONF .LE. 0) THEN
          WRITE(LUPRI,'(/A)') ' INFO: no determinants in this symmetry!'
       END IF
 C
@@ -6102,7 +6125,7 @@ C
 C     Calculate transformation to SV orbitals
 C     ---------------------------------------
 C
-      CALL DCOPY(NORBT,NOROT,1,NOROTC,1)
+      NOROTC(1:NORBT) = NOROT(1:NORBT)
 C
       IF (NXOPE .GT. 0) THEN
 C
@@ -6476,7 +6499,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     ITASK = 7 for parallel KR-MCSCF
 C
-      IF (PARCAL) CALL DIRAC_PARCTL( 7 )
+      IF (PARCAL) CALL DIRAC_PARCTL( KRMCSCF_PAR )
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -6497,7 +6520,7 @@ C
 C
 C     Let the slaves sleep (if relevant for this operating system)
 C
-      CALL DIRAC_PARCTL( 0 )
+      CALL DIRAC_PARCTL( RELEASE_NODES )
 C
       END
 #if defined (VAR_MPI2)

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -450,7 +450,8 @@ C
 #include "ibtfun.h"
 #include "memint.h"
       IF (SET) RETURN
-      SET = .TRUE.
+!Miro: nasty workaround to enable repeated input reading in the RelCC geometry optimization
+      !SET = .TRUE. 
 C
 C     Local variables
 C
@@ -466,9 +467,13 @@ C     Initialize /DCBTRA/
 C     ===================
 C
       IPRTRA  = 0
-Caspg, default in MOLTA is scheme 6 unless it's a LUCITA run... 
+Caspg, default in MOLTA is scheme 6 unless it's a GOSCIP, DIRRCI or LUCITA run... 
 C      if problems are encountered, should be reverted to scheme 4
-      if (DOLUCT) then
+Clv,   reason is that scheme 6 produces a list of integrals that is distributed over nodes and the
+clv,   authors of the above-mentioned modules nor anyone else have taken the time to adjust the
+clv,   integral processing routines accordingly (if anyone is inclined to do so: this is not rocket
+clv    science, just have a look on how RELCCSD does this in ccints.F).
+      if (DOLUCT.OR.DOCIM) then
          ISTRAT = 4
       else
          ISTRAT = 6
@@ -886,7 +891,8 @@ C       if "*HSCC" is in the input but MOD_HSCC is not defined !!!
 C
   400 CONTINUE
 
-      CALL TRPINP(WORD,.FALSE.,WORK,LWORK)  ! always call this routine, sets transformation for dipole integrals
+      CALL TRPINP(WORD,.TRUE.,WORK,LWORK)  ! always call this routine, sets transformation for dipole integrals
+!Miro: set RESET to .true. to enable geometry optimization
 
 C
 C     Process defaults for 2- and 4-index transformations
@@ -1173,14 +1179,14 @@ C
       IPRTRP   = IPRTRA
 !     Always transform the dipole length operator
       IF (.NOT. BSS) THEN
-      PNAME(1) = 'XDIPLEN'
-      PNAME(2) = 'YDIPLEN'
-      PNAME(3) = 'ZDIPLEN'
-      DO I=1,3
-         CALL XPRIND(PNAME(I),1,1,D1,PNAME(I),INDXPR,ISYXPR,
-     &               ITRXPR,WORK,LWORK,IPRXQR)
-         CALL OP1IND('TRPINP',INDTRP,LTRPP,NTRPP,INDXPR,MAXTRP)
-      END DO
+        PNAME(1) = 'XDIPLEN'
+        PNAME(2) = 'YDIPLEN'
+        PNAME(3) = 'ZDIPLEN'
+        DO I=1,3
+          CALL XPRIND(PNAME(I),1,1,D1,PNAME(I),INDXPR,ISYXPR,
+     &               ITRXPR,IPRTRP)
+          CALL OP1IND('TRPINP',INDTRP,LTRPP,NTRPP,INDXPR,MAXTRP)
+        END DO
       END IF
 
 C
@@ -1301,14 +1307,17 @@ C
 C     Input section for RESOLVE module (GOSCI)
 C
 C     Written by Jon K. Laerdahl and T. Saue (Dec 1996)
+C     Last changes: Miro Ilias, Aug.2016 (for DFT-COSCI)
 C
 C*****************************************************************************
+      use include_dcbtra_h, only : set_tra_ascii
+      use dirac_cfg
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "maxorb.h"
       PARAMETER(D0 = 0.0D0)
-      PARAMETER (NTABLE = 5)
+      PARAMETER (NTABLE = 10)
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -1324,7 +1333,8 @@ C
       DIMENSION WORK(LWORK),IR(2,2)
 C
       SAVE SET
-      DATA TABLE /'.PRINT ','.INTFLG','.SCREEN','.SCHEME','xTHROUT'/
+      DATA TABLE /'.PRINT ','.INTFLG','.SCREEN','.SCHEME','xTHROUT',
+     &            '.ASCII ','.NOVXC ','.COREDN','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 #include "ibtfun.h"
 #include "memint.h"
@@ -1340,8 +1350,8 @@ C
       END IF
 C
 C
-C     Initialize /DCBRES/
-C     ===================
+C     Initialize /DCLRES, DCBRES, DCIRES/
+C     ===================================
 C
       ISTRES = 4
       IPRRES = 0
@@ -1351,6 +1361,8 @@ C
       IGTINT = IBTAND(INTGEN/8,1)
       SCRRES = 1.D-14
       RESOUT = 1.D-14
+      NOVXC  = .FALSE.
+      COREDENS = .FALSE.
 C
 C     Process input for RESOLV
 C     ========================
@@ -1369,7 +1381,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1, 2, 3, 4, 5),I
+                     GO TO (1, 2, 3, 4, 5, 6, 7, 8),I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1405,6 +1417,25 @@ C&&&& THROUT - Treshold for output integrals
 CTROND: disabled, because THROUT is not implemented 
                   READ(LUCMD,*) RESOUT
                GO TO 100
+!Miro: .ASCII keyword for writing the "MO_integrals.txt" file
+    6          CONTINUE
+                  call set_tra_ascii(.true.)
+               GO TO 100
+!Miro: .NOVXC keyword for not adding DFT-Vxc terms into Fij (rough approx)
+    7          CONTINUE
+                  NOVXC = .TRUE.
+               GO TO 100
+!Miro: .COREDN keyword to have only core density for Vxc (approximation)
+    8          CONTINUE
+                  COREDENS= .TRUE.
+               GO TO 100
+! .XXXXX
+    9          CONTINUE
+               GO TO 100
+! .XXXXX
+   10          CONTINUE
+               GO TO 100
+
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -1471,6 +1502,24 @@ C
      +     '* SS integrals not included.'
          IF (IGTINT.NE.1) WRITE(LUPRI,'(1X,A)')
      +     '* Gaunt integrals not included.'
+
+!Miro: printouts concerning DFT-COSCI
+      IF (dirac_cfg_dft_calculation) THEN
+         IF (NOVXC) THEN
+            WRITE(LUPRI,"(2X,A)")
+     &     "No Vxc term in transformed Fij elements for COSCI!"
+            WRITE(LUPRI,"(2X,A)")
+     &     "This is crude approximation for DFT-COSCI ..."
+         ENDIF
+         IF (COREDENS) THEN
+            WRITE(LUPRI,"(2X,A)")
+     &      "Only core-density for Vxc in Fij terms ... approximation "
+         ENDIF
+      ENDIF
+      IF ((NOVXC.OR.COREDENS).AND..NOT.dirac_cfg_dft_calculation) THEN
+          WRITE(LUPRI,"(2X,A)")
+     &    "COSCI-DFT works only with open-shell DFT !"
+      ENDIF
 
  999  CONTINUE
       RETURN

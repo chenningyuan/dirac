@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,6 +19,8 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR6T */
       SUBROUTINE TRDR6T(WORK,KFREE,LFREE,IPRINT,INTFLG,KGAB,KDRIJ,
@@ -186,13 +188,13 @@ C
 !    &              WORK(KIBE(1,2)),WORK(KIBE(2,2)),
 !    miro: easy fix
       I_KIBE11=KIBE(1,1)
-      IF (KIBE(1,1).EQ.0) I_KIBE11=1
+      IF (KIBE(1,1).LE.0) I_KIBE11=1
       I_KIBE21=KIBE(2,1)
-      IF (KIBE(2,1).EQ.0) I_KIBE21=1
+      IF (KIBE(2,1).LE.0) I_KIBE21=1
       I_KIBE12=KIBE(1,2)
-      IF (KIBE(1,2).EQ.0) I_KIBE12=1
+      IF (KIBE(1,2).LE.0) I_KIBE12=1
       I_KIBE22=KIBE(2,2)
-      IF (KIBE(2,2).EQ.0) I_KIBE22=1
+      IF (KIBE(2,2).LE.0) I_KIBE22=1
       CALL MKINDXB (NSTR,WORK(I_KIBE11),WORK(I_KIBE21),
      &              WORK(I_KIBE12),WORK(I_KIBE22),
      &              .FALSE.,INDXB12)
@@ -200,13 +202,13 @@ C
 !    &              WORK(KIBE(1,4)),WORK(KIBE(2,4)),
 !    miro: easy fix
       I_KIBE13=KIBE(1,3)
-      IF (KIBE(1,3).EQ.0) I_KIBE13=1
+      IF (KIBE(1,3).LE.0) I_KIBE13=1
       I_KIBE23=KIBE(2,3)
-      IF (KIBE(2,3).EQ.0) I_KIBE23=1
+      IF (KIBE(2,3).LE.0) I_KIBE23=1
       I_KIBE14=KIBE(1,4)
-      IF (KIBE(1,4).EQ.0) I_KIBE14=1
+      IF (KIBE(1,4).LE.0) I_KIBE14=1
       I_KIBE24=KIBE(2,4)
-      IF (KIBE(2,4).EQ.0) I_KIBE24=1
+      IF (KIBE(2,4).LE.0) I_KIBE24=1
       CALL MKINDXB (NSTR,WORK(I_KIBE13),WORK(I_KIBE23),
      &              WORK(I_KIBE14),WORK(I_KIBE24),
      &              .FALSE.,INDXB34)
@@ -258,7 +260,7 @@ C
 C
 C     It is the masters duty to release the slaves
 C
-      IF (PARCAL.AND.MYTID.EQ.MPARID) CALL DIRAC_PARCTL( -1 )
+      IF (PARCAL.AND.MYTID.EQ.MPARID) CALL DIRAC_PARCTL( EXIT_NODEMENU )
 C
       CALL MEMREL('TRDR6T',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('TRDR6T')
@@ -430,7 +432,7 @@ C
 C       Get hold of the slaves
 C       ( ITASK = 2 for parallel integral transformation )
 C
-        CALL DIRAC_PARCTL( 2 )
+        CALL DIRAC_PARCTL( MOLTRA_PAR )
 C       
 C       Initialize (for the slave this is done in TRANOD)
 C

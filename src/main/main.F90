@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -45,9 +45,8 @@ use iso_c_binding
 #endif
 
 interface
-!miro: long strings can be printed out only by C function
-  subroutine print_info() bind(c)
-  end subroutine
+   subroutine print_info() bind(c)
+   end subroutine
 end interface
 
 #include "priunit.h"
@@ -77,7 +76,8 @@ end interface
 ! iparex = 1 for parallel run mode with MPI executable (default)
   iparex = get_environment_integer('DIRPAR',1)
 !
-! initialize MPI environment and wake up slaves - set parcal == .true.
+! initialize MPI environment and wake up slaves -
+! iff numnod > 0 set parcal == .true.
   if (iparex .gt. 0) call mpixinit()
   if (parcal) then 
     call stopwatch(1,numnod+1)
@@ -150,7 +150,7 @@ end interface
      call printsubtitle
      call flush(lupri)
      ! print out git_info & build_info by the executable
-     call print_info
+     call print_info()
      call flush(lupri)
 ! miro: do the self-tests after printing dirac system info
 #ifndef NO_SELFTEST

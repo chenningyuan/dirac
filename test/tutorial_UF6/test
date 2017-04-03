@@ -25,15 +25,15 @@ test.run(['F.x2c.scf_2fs.inp'], ['F.v2z.D2h.mol'], f, args='--mw=140  --get "DFA
 # run UF6 molecule with U,F atomic starts
 test.run(['x2c_a4p.atstart_scf_autoocc_2fs.inp'],  ['UF6.v2z.D2h.mol'], f, args='--mw=140 --put "DFACMO.F.x2c.v2z=AFFXXX DFACMO.U.x2c.v2z=AFUXXX" --get "DFCOEF=DFCOEF.UF6.x2c_a4p.scf_autoocc.v2z"')
 
+# not active runs; shown for tutorial purposes
 ## Preparation for the geometry optimization step - get DFT MOs 
 #test.run(['UF6.x2c_a4p.bp86_72_74.inp'],  ['UF6.v2z.D2h.mol'], f, args='--mw=140 --put "DFCOEF.UF6.x2c_a4p.scf_autoocc.v2z=DFCOEF" --get "DFCOEF=DFCOEF.UF6.x2c_a4p.bp86.v2z"')
 
 ## Own geometry optimization with starting MOs
 #test.run(['UF6.geomopt.x2c_a4p.bp86_72_74.inp'],  ['UF6.v2z.D2h.mol'], f, args='--mw=140 --put "DFCOEF.UF6.x2c_a4p.bp86.v2z=DFCOEF" ')
 
-
 os.unlink('DFACMO.U.x2c.v2z')
 os.unlink('DFACMO.F.x2c.v2z')
-os.unlink('DFCOEF.UF6.x2c_a4p.scf.v2z')
+os.unlink('DFCOEF.UF6.x2c_a4p.scf_autoocc.v2z')
 
 sys.exit(test.return_code)

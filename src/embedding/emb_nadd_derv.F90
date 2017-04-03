@@ -47,7 +47,7 @@ module fde_nadd_derv
 
       real(8) :: hfx_out, mu_out, beta_out
 
-! derv_lenght here is set to the appropriate parameter from xc_derv
+! derv_length here is set to the appropriate parameter from xc_derv
 ! looking at xcint, this would be done differently if using openrsp...
       integer :: derv_length = nr_nonzero_derv
 

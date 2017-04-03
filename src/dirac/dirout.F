@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -626,7 +626,15 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ORBCNT(JVEC,NVEC,NNEG,NPOS,NPVEC,NEVEC)
 C***********************************************************************
-C     Find number of electronic/positronic vectors
+C     "Orbital Count"
+C     Find NEVEC/NPVEC, the number of electronic/positronic orbital vectors,
+C     in the list of orbitals in JVEC(1:NVEC).
+C     Orbitals outside the range -NNEG:NPOS are ignored and eliminated
+C     from JVEC.
+C
+C     In   : NNEG, NPOS
+C     InOut: NVEC; JVEC(1:NVEC)
+C     Out  : NEVEC,NPVEC
 C
 C     Written by T.Saue Jan 7 1996
 C

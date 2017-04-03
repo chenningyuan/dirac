@@ -1,5 +1,6 @@
+#define interface_to_mpi_DEBUG -1
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1685,8 +1686,8 @@ contains
   subroutine interface_mpi_allreduce_r1(x,y,ndim,operation,communicator)
 
 !-------------------------------------------------------------------------------
-    real(8)                    :: x(:)
-    real(8)                    :: y(:)
+    real(8)                    :: x(*)
+    real(8)                    :: y(*)
     integer(kind=integer_kind) :: ndim
     integer(kind=integer_kind) :: operation
     integer(kind=integer_kind) :: communicator
@@ -3289,15 +3290,19 @@ contains
     integer(kind=4)            :: ierr_i4
 !-------------------------------------------------------------------------------
     datatype_i4     = datatype
+#if interface_to_mpi_DEBUG > 0
     write (0,*) 'datatype ',datatype
     write (0,*) 'mpi_type_extent called, MPI_INIT ?',MPI_INIT_called
+#endif
     if (.not. MPI_INIT_called) return
     call mpi_type_extent(datatype_i4, extent_i4, ierr_i4)
     extent          = extent_i4
 #else
     integer(kind=integer_kind)       :: ierr
+#if interface_to_mpi_DEBUG > 0
     write (0,*) 'datatype ',datatype
     write (0,*) 'mpi_type_extent called, MPI_INIT ?',MPI_INIT_called
+#endif
     if (.not. MPI_INIT_called) return
     call mpi_type_extent(datatype   , extent   , ierr   )
 !   print *, 'extent ',extent

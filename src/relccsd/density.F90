@@ -1,4 +1,7 @@
   module eom_density
+      use memory_allocator
+      use allocator_parameters, only : klongint, kreal
+
   use contraction
   implicit none
 
@@ -22,7 +25,7 @@
    real*8, intent(in) :: t1(:),t2(:)
    real*8, intent(inout) :: dmo(*)
 !----------------local variables---------------------------
-   real*8, allocatable :: doo(:),dvv(:),dvo(:),dov(:)  
+   real*8, allocatable, target :: doo(:),dvv(:),dvo(:),dov(:)  
    real*8, allocatable :: work1(:),work2(:) 
    real*8, allocatable :: woo_temp(:),wpp_temp(:),wop_temp(:)
    real(8), pointer,contiguous :: l1_ptr(:),l2_ptr(:),r1_ptr(:),r2_ptr(:)
@@ -40,10 +43,15 @@
   r1_ptr(1:ndiml1) => r1
   r2_ptr(1:ndiml2) => r2
 
-    allocate(doo(nfoo*rcw))
-    allocate(dvv(nfvv*rcw))
-    allocate(dvo(nfvo*rcw))
-    allocate(dov(nfvo*rcw))
+!   allocate(doo(nfoo*rcw))
+!   allocate(dvv(nfvv*rcw))
+!   allocate(dvo(nfvo*rcw))
+!   allocate(dov(nfvo*rcw))
+
+    call alloc(doo, (nfoo*rcw),  id="doo")
+    call alloc(dvv, (nfvv*rcw),  id="dvv")
+    call alloc(dvo, (nfvo*rcw),  id="dvo")
+    call alloc(dov, (nfvo*rcw),  id="dov")
 
      doo = 0.0d0
      dvv = 0.0d0
@@ -73,7 +81,7 @@
 !    doo(j,i) = doo(j,i) + wop_temp(i,e) * t1(e,j)
 !---------------------------------------------------------------------
 
-  allocate(wop_temp(nfvo*rcw)) 
+  call alloc(wop_temp, (nfvo*rcw), id="wop_temp vo") 
 
   wop_temp = 0.0d0
 
@@ -81,7 +89,7 @@
 
   call contraction_222 ((/"p2","o2"/),(/"o1","p2"/),(/"o2","o1"/),t1,wop_temp,doo,1.0d0,1.0d0,nrep)
 
- deallocate(wop_temp)
+! call dealloc(wop_temp, id="wop_temp vo")
 
    write(*,*)'diagram3',dot_product(doo,doo) 
 !----------------------------------------------------------------------
@@ -98,15 +106,14 @@
 !     dvv(b,a) = dvv(b,a) + wop_temp(m,b)*t1(a,m)
 !----------------------------------------------------------------------
 
-  allocate(wop_temp(nfvo*rcw))
-
+! call alloc(wop_temp, (nfvo*rcw), id="wop_temp vo")
   wop_temp = 0.0d0
 
   call contraction_422 ((/"o1","o2","c1","p2"/),(/"c1","o2"/),(/"o1","p2"/),r1,wop_temp,-1.0d0,1.0d0,nrep,LeftTensor=l2)
 
   call contraction_222 ((/"o1","p2"/),(/"p1","o1"/),(/"p2","p1"/),wop_temp,t1,dvv,-1.0d0,1.0d0,nrep)
 
-  deallocate(wop_temp)
+  call dealloc(wop_temp, id="wop_temp vo")
 
    write(*,*)'diagram5',dot_product(dvv,dvv)
 !----------------------------------------------------------------------------
@@ -131,7 +138,7 @@
 !      dvo(a,i) = dvo(a,i) - l1(m,e) * r(e,i)*t(a,m)
 !----------------------------------------------------------
 
-      allocate(woo_temp(nfoo*rcw))
+      call alloc(woo_temp, (nfoo*rcw), id="wop_temp oo")
 
       woo_temp = 0.0d0
 
@@ -142,14 +149,14 @@
       call contraction_222 ((/"o2","o1"/),(/"p1","o2"/),(/"p1","o1"/), &
      &              woo_temp,t1,dvo,-1.0d0,1.0d0,nrep)                 
 
-      deallocate(woo_temp)
+!     call dealloc(woo_temp, id="wop_temp oo")
 
    write(*,*)'diagram8',dot_product(dvo,dvo)
 !-------------------------------------------------------------
 !       dvo(a,i) = dvo(a,i) -  l2(mn,ef)*r2(ef,in)*t1(a,m) 
 !-------------------------------------------------------------
 
-      allocate(woo_temp(nfoo*rcw))
+!     call alloc(woo_temp, (nfoo*rcw), id="wop_temp oo")
 
       woo_temp = 0.0d0
 
@@ -160,7 +167,7 @@
       call contraction_222 ((/"o2","o1"/),(/"p1","o2"/),(/"p1","o1"/),&
      &              woo_temp,t1,dvo,-1.0d0,1.0d0,nrep)                
 
-      deallocate(woo_temp)
+      call dealloc(woo_temp, id="wop_temp oo")
 
    write(*,*)'diagram9',dot_product(dvo,dvo)
 !-----------------------------------------------------------------------
@@ -171,7 +178,7 @@
     call alloc_array(e,nrep)
     call auto_symmetry_offset(e,nv,ncont,.false.,.false.)
 
-      allocate(wpp_temp(e%oneNonDirac(1)*rcw))
+    call alloc(wpp_temp, (e%oneNonDirac(1)*rcw), id="wpp_temp #1")
 
       wpp_temp = 0.0d0
 
@@ -182,7 +189,8 @@
       call contraction_222 ((/"p1","c1"/),(/"c1","o1"/),(/"p1","o1"/), &
      &              wpp_temp,r1_ptr,dvo,1.0d0,1.0d0,nrep)                  
 
-      deallocate(wpp_temp)
+    call dealloc(wpp_temp, id="wpp_temp #1")
+
   call dealloc_array(e)
 
    write(*,*)'diagram10',dot_product(dvo,dvo)
@@ -190,7 +198,7 @@
 !      dvo(a,i) = dvo(a,i) - l2(mn,ef)*t1(f,i)*r2(ea,mn)
 !------------------------------------------------------------------
 
-      allocate(wpp_temp(nfvv*rcw))
+      call alloc(wpp_temp, (nfvv*rcw), id="wpp_temp vv")
 
       wpp_temp = 0.0d0
 
@@ -201,7 +209,7 @@
 !     call contraction_222 ((/"p1","p3"/),(/"p3","o1"/),(/"p1","o1"/), &
 !    &              wpp_temp,t1,dvo,1.0d0,1.0d0,nrep)                  
 
-      deallocate(wpp_temp)
+      call dealloc(wpp_temp, id="wpp_temp vv")
 
 
    write(*,*)'diagram10'
@@ -209,7 +217,7 @@
 !       dvo(a,i) = dvo(a,i) +  l2(mn,ef)*t2(af,in)*r1(e,m) 
 !--------------------------------------------------------------------
 
-      allocate(woo_temp(nfvo*rcw))
+      call alloc(woo_temp, (nfvo*rcw), id="woo_temp vo")
 
       woo_temp = 0.0d0
 
@@ -219,33 +227,33 @@
       call contraction_422 ((/"p1","p3","o1","o3"/),(/"o3","p3"/),(/"p1","o1"/),&
      &           woo_temp,dvo,1.0d0,1.0d0,nrep,t2)                
 
-      deallocate(woo_temp)
+!     call dealloc(woo_temp, id="woo_temp vo")
 
    write(*,*)'diagram11',dot_product(dvo,dvo)
 !--------------------------------------------------------------------
 !       dvo(a,i) = dvo(a,i) -  l2(mn,ef)*t1(f,i)*t1(a,n)*r1(e,m) 
 !--------------------------------------------------------------------
 
-      allocate(woo_temp(nfvo*rcw))
+!     call alloc(woo_temp, (nfvo*rcw), id="woo_temp vo")
 
       woo_temp = 0.0d0
 
       call contraction_422((/"o2","o3","c1","p3"/),(/"c1","o2"/), &
      &       (/"o3","p3"/),r1_ptr,woo_temp,1.0d0,1.0d0,nrep,LeftTensor=l2_ptr)   
 
-     allocate(work1(nfoo*rcw)) 
+     call alloc(work1, (nfoo*rcw), id="work1 oo") 
 
        work1 = 0.0d0
 
       call contraction_222 ((/"p3","o1"/),(/"o3","p3"/),(/"o3","o1"/),&
      &              t1,woo_temp,work1,1.0d0,1.0d0,nrep)                
 
-      deallocate(woo_temp)
+      call dealloc(woo_temp, id="woo_temp vo")
 
       call contraction_222 ((/"p1","o3"/),(/"o3","o1"/),(/"p1","o1"/),&
      &              t1,work1,dvo,-1.0d0,1.0d0,nrep)                
 
-     deallocate(work1)
+     call dealloc(work1, id="work1 oo")
 
    write(*,*)'diagram12',dot_product(dvo,dvo)
 !----------------------------------------------------------
@@ -264,17 +272,23 @@
       endif
 
 
-     allocate(work1(nfvv*rcw))
-     allocate(work2(nfvv*rcw))
+     call alloc(work1, (nfvv*rcw), id="work1 vv")
+     call alloc(work2, (nfvv*rcw), id="work2 vv")
 
       call convdm(work1,work2,doo,dvv,dov,dvo,dmo)
 
-     deallocate(work1,work2)  
+     call dealloc(work1, id="work1 vv")
+     call dealloc(work2, id="work2 vv")
 
-    deallocate(dov)
-    deallocate(dvo)
-    deallocate(doo)
-    deallocate(dvv)
+    call dealloc(doo, id="doo")
+    call dealloc(dvv, id="dvv")
+    call dealloc(dvo, id="dvo")
+    call dealloc(dov, id="dov")
+
+!   deallocate(dov)
+!   deallocate(dvo)
+!   deallocate(doo)
+!   deallocate(dvv)
 
       end subroutine
 

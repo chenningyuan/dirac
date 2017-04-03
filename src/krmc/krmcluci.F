@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,8 +19,8 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-C
-C
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE LUCI_SETUP()
 C***********************************************************************
@@ -2110,9 +2110,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcbgen.h"
 #include "parluci.h"
 C
-C     ITASK = 6 for parallel KRMC-LUCIAREL
+C     Send task code for parallel KRMC-LUCIAREL
 C
-      IF (PARCAL) CALL DIRAC_PARCTL( 6 )
+      IF (PARCAL) CALL DIRAC_PARCTL( LUCIAREL_PAR )
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2135,7 +2135,7 @@ C
 C
 C     Let the slaves sleep (if relevant for this operating system)
 C
-      CALL DIRAC_PARCTL( 0 )
+      CALL DIRAC_PARCTL( RELEASE_NODES )
 C
       END
 #if defined (VAR_MPI2)

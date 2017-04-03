@@ -559,18 +559,24 @@ contains
           CALL  NUMLST(INDSTR(ITYP,IFRP),IND(1,ITYP,IFRP),              &
                   NFBAS(IFRP,0),-NFBAS(IFRP,2),NFBAS(IFRP,1),           &
                   IFRP,NVEC)
+          ! count number of p-type and of e-type orbitals
           CALL ORBCNT(IND(1,ITYP,IFRP),NVEC,                            &
                  NPSH(IFRP),NESH(IFRP),                                 &
                  NIND(1,ITYP,IFRP),NIND(2,ITYP,IFRP))
 !
-!         Absolute indices of positronic orbitals
+!         Convert to absolute indices of positronic orbitals.
+!         (For ifrp=1: this means mapping -npsh(1):-1 to 1:npsh(1),
+!          that is, -1 -> npsh(1), -2 -> npsh(1)-1, ..., -npsh(1) -> 1;
+!          for ifrp=2 we add the total number of orbitals in ifrp=1)
 !
           IOFF = NPSH(IFRP) + 1 + IORB(IFRP)
           DO I = 1,NIND(1,ITYP,IFRP)
             IND(I,ITYP,IFRP) = IOFF + IND(I,ITYP,IFRP)
           ENDDO
 !
-!         Absolute indices of electronic orbitals
+!         Convert to absolute indices of electronic orbitals.
+!         (For ifrp=1: this means mapping 1:nesh(1) to npsh(1)+1:npsh(1)+nesh(1),
+!          for ifrp=2 we add the total number of orbitals in ifrp=1)
 !
           IOFF = NPSH(IFRP) + IORB(IFRP)
           JOFF = NIND(1,ITYP,IFRP)

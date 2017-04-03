@@ -1,7 +1,7 @@
 !define DEBUG_MP2_NO
 
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -246,7 +246,7 @@ C
       END
       SUBROUTINE MAKE_VECMP2NO_occ(VECMP2NO_occ,VEC,NSTR,NOCC_I)
 !
-!     July 2015, Hans Jørgen Aa. Jensen
+!     July 2015, Hans Joergen Aa. Jensen
 !
 #include "priunit.h"
       CHARACTER VECMP2NO_occ*(*)
@@ -323,6 +323,7 @@ C
       IF (TOBE) THEN
 C       ... search for coefficients label
         CALL OPNFIL(LUKRMC,'KRMCOLD','UNKNOWN','MP2_NA')
+        IF( FNDLAB('MP2NATOB',LUKRMC)) THEN
         IF( FNDLAB('NEWNATOB',LUKRMC)) THEN 
            SKIP_MP2DEN = .TRUE.
            WRITE(LUPRI,'(//A/A)') 
@@ -330,6 +331,7 @@ C       ... search for coefficients label
      &'     *****             using existing orbitals          *****'
         END IF
         CLOSE(LUKRMC,STATUS='KEEP')
+      END IF
       END IF
       INQUIRE(FILE='MDCINT',EXIST=TOBE)
       IF (TOBE) SKIP_ITRAFO = .TRUE.

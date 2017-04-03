@@ -88,7 +88,7 @@ keyword(GAS SHELLS)
 Specification of CI calculation with electron distribution in orbital (GAS) spaces. 
 The first line contains the number of GA spaces to be used (1-7), 
 followed by one line per GAS with a separation by a "/" of the min/max number of electrons in each GAS and the 
-number of orbitals per fermion correp (either one (no inversion symmetry) or two (inversion
+number of orbitals per fermion corep (either one (no inversion symmetry) or two (inversion
 symmetry: *gerade* *ungerade*) entries per line). 
 
 The first entry before the "/" gives the minimal number of accumulated (!) electrons
@@ -97,7 +97,7 @@ number, separated by blanks. The minimum and maximum accumulated
 occupations allow for a very flexible parameterization of the wave
 function. All determinants fulfilling the occupation constraints will be
 constructed. The second entry after the "/" gives  the 
-number of orbitals per fermion correp. See also the open-shell input in :ref:`*SCF` which is similar to the syntax used
+number of orbitals per fermion corep. See also the open-shell input in :ref:`*SCF` which is similar to the syntax used
 here. The design of a GAS scheme is non-trivial and should be motivated by the electronic structure of the system (e.g.
 inner core, outer core, valence, virtual space). Sometimes it is useful to subdivide the valence space, for scientific reasons, or/and the
 virtual space, for technical reasons (save core memory). See reference :cite:`Fleig2006a`,
@@ -126,7 +126,7 @@ if all remaining orbitals (fullCI) should be included in the last GAS space, use
 
 keyword(INACTIVE)
 
-Inactive orbitals per fermion correp. *default*: all orbitals active. example for 4 *gerade*  and 2 *ungerade* orbitals frozen in a molecule with inversion center:
+Inactive orbitals per fermion corep. *default*: all orbitals active. example for 4 *gerade*  and 2 *ungerade* orbitals frozen in a molecule with inversion center:
 
 ::
 

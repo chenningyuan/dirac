@@ -3,6 +3,7 @@
 ! Module to make intermediates needed in the CC and Lambda equations and for EOMCC
 ! Written by Avijit Shee and Lucas Visscher, 2014
 
+  use interface_to_mpi
   use contraction
   use interface_to_mpi
   use wrapper_sorting
@@ -429,7 +430,6 @@
 
  end subroutine
 
-
  subroutine w_mnie(t1,int_wooop)
 
 !---------------Description--------------------------------------------
@@ -496,6 +496,7 @@
 #include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
+#include "files.inc"
 
 !---------------Calling variables--------------------------------------
    real*8, intent(in)  :: t2(rcw*ndimt2),t1(rcw*ndimt1)         ! Amplitudes.
@@ -514,13 +515,14 @@
 !----------------------------------------------------------
 
    call getvvvo_incore(w_vvvo)
-
 !-----------------------------------------------------------
 !   diagram1 : w_vvvo(ef,am)  = w_vvvo(ef,am) + p(ef) V(en,ag)*t2(fg,mn)  
 !-----------------------------------------------------------
 
   call contraction_444 ((/"p2","o2","p4","p1"/),(/"p3","p4","o1","o2"/),(/"p2","p3","p1","o1"/),w_vvvo, &
              &      -1.0d0,0.0d0,nrep,RightTensor=t2)
+
+       write(iw,*)'dot product efam:dia1',dot_product(w_vvvo,w_vvvo)
 
 !------------------------------------------------------------
 !  diagram2 : w_vvvo(ef,am) =  w_vvvo(ef,am) + w (ef,ag)*t(g,m) 
@@ -1079,5 +1081,6 @@
       ENDDO
 
       end subroutine
+
 
   end module

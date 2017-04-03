@@ -8,6 +8,10 @@
 !> This module contains routines for calculating contributions
 !> to molecular properties (1st order, linear response, etc.),
 !> and perturbed Fock matrices. 
+
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
+
 module prop_contribs
 
    use matrix_defop_old
@@ -2364,7 +2368,7 @@ contains
             
             call generate_num_grid(D(1)%elms)
 #ifdef VAR_MPI
-            if (parcal) call dirac_parctl(4)
+            if (parcal) call dirac_parctl( XCINT_PAR )
 #endif
             call integrate_xc(xc_mat_dim      = A%nrow,                              &
                                xc_nz           = nz,                                  &

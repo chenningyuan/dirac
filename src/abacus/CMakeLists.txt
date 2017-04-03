@@ -79,7 +79,6 @@ twoao.h
     hercen.F
     herdirect.F
     herdrv.F
-    herfckcon.F
     hergam.F
     hergeo.F
     hergp.F
@@ -92,11 +91,10 @@ twoao.h
     hersym.F
     hertst.F
     vibnor.F
- # ... satisfy herfckcon.F dependencies
-    ${PROJECT_SOURCE_DIR}/src/densfit/df_dirac.F
 )
 
 set(FREE_ABACUS_FORTRAN_SOURCES
+   carsph.F90
    hermodules.F90
    filemodule.F90
 )
@@ -135,6 +133,3 @@ add_dependencies(abacus gp)
 add_dependencies(abacus ecp)
 add_dependencies(abacus xcint)  
 add_dependencies(abacus grid)  
-if (ENABLE_DENSFIT)
-    add_dependencies(abacus densfit)  
-endif()

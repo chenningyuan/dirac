@@ -28,7 +28,7 @@ f.add(from_string = ' Energy eigenvalues in atomic units',
       to_re       = 'Relative real eigenvalues in other units;',
       rel_tolerance   = 1.0e-4)
 f.add(string    = 'ZZSECMOM',
-      rel_tolerance = 1.0e-7)
+      rel_tolerance = 5.0e-5)
 
 test.run(['b3lyp.inp', 'blyp.inp', 'lda.inp'], ['hf.mol'], f)
 

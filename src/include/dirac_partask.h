@@ -1,0 +1,17 @@
+#define FINISH_PAR_SIGNAL -2
+#define EXIT_NODEMENU     -1
+#define RELEASE_NODES      0
+#define HERFCK_PAR         1
+#define MOLTRA_PAR         2
+#define RELCC_PAR          3
+#define XCINT_PAR          4
+#define LUCITA_PAR         5
+#define LUCIAREL_PAR       6
+#define KRMCSCF_PAR        7
+#define INTEREST_INIT_PAR  8
+#define INTEREST_4C_PAR    9
+#define INTEREST_2C_PAR   10
+#define GASCIP_PAR        11
+#define PELIB_PAR         12
+
+

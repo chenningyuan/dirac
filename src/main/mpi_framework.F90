@@ -1,5 +1,8 @@
+#ifndef MPIX_DEBUG
+#define MPIX_DEBUG -1
+#endif
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -86,7 +89,7 @@ IF( IPAREX .gt. 0 )THEN
 ! we count the number of slave nodes, subtract the master
   NUMNOD = NUMPROC - 1
 !
-  PARCAL = .TRUE.
+  IF (NUMNOD .GT. 0) PARCAL = .TRUE.
 !
 ! distribute environment variables
 !
@@ -316,22 +319,33 @@ use interface_to_mpi
     CALL interface_MPI_GET_PROCESSOR_NAME(HOST,LHOST)
     IF( MYTID .eq. MPARID ) THEN
        print '(a,a,a,i20,a,i14,a)', 'DIRAC master    (',HOST(1:LHOST), &
-             ') starts by allocating ',IVARIABLE,' words (',IVARIABLE/2**17,   &
+             ') starts by allocating ',IVARIABLE,' r*8 words (',IVARIABLE/2**17,   &
              ' MB) of memory'
+       ! 1 MB = 2**20 bytes; 1 r*8 word = 2**3 bytes = 8 bytes
+       flush(lupri)
     ENDIF
     CALL interface_MPI_BARRIER(global_communicator)
-!
-!   DO IJ = 1, (NUMNOD - 1)
+
+#if MPIX_DEBUG > 0
     DO IJ = 1, (NUMNOD    )
        CALL interface_MPI_BARRIER(global_communicator)
-       IF( MYTID .eq. IJ )  THEN
+       IF( MYTID .eq. IJ ) THEN
           print '(a,i4,1x,a,a,a,i20,a,i14,a)', 'DIRAC node ',mytid, &
-          '(',HOST(1:LHOST),') starts by allocating ',IVARIABLE,' words (', &
+          '(',HOST(1:LHOST),') starts by allocating ',IVARIABLE,' r*8 words (', &
           IVARIABLE/2**17,' MB) of memory'
        ENDIF
        CALL interface_MPI_BARRIER(global_communicator)
 !
     END DO
+#else
+    IF( MYTID .eq. 1 ) THEN
+       print '(a,i0,a,i20,a,i14,a)', 'DIRAC nodes 1 to ',numnod, &
+       ' starts by allocating ',IVARIABLE,' r*8 words (', &
+       IVARIABLE/2**17,' MB) of memory'
+       flush(lupri)
+    END IF
+    CALL interface_MPI_BARRIER(global_communicator)
+#endif
 !   ordered last printing
   ELSE IF( ITASK .eq. 1 )THEN
     DO IJ = 1, NUMNOD
@@ -347,7 +361,7 @@ use interface_to_mpi
     IF( MYTID .eq. MPARID ) THEN
        if (ivariable.gt.0) then
            print '(a,a,a,i20,a,i14,a)', 'DIRAC master    (',HOST(1:LHOST), &
-              ') to allocate at most  ',IVARIABLE,' words (',IVARIABLE/2**17,&
+              ') to allocate at most  ',IVARIABLE,' r*8 words (',IVARIABLE/2**17,&
               ' MB) of memory'
        else
            print '(a,a,a)', 'DIRAC master    (',HOST(1:LHOST), &
@@ -356,15 +370,16 @@ use interface_to_mpi
        print '(a)',' '
        print '(a)','Note: maximum allocatable memory for master+nodes can be set by -aw flag (MW) in pam'
        print '(a)',' '
+       flush(lupri)
     ENDIF
-!
-!   DO IJ = 1, (NUMNOD - 1)
+
+#if MPIX_DEBUG > 0
     DO IJ = 1, (NUMNOD    )
        CALL interface_MPI_BARRIER(global_communicator)
        IF( MYTID .eq. IJ )  THEN
            if (ivariable.gt.0) then
               print '(a,i4,1x,a,a,a,i20,a,i14,a)', 'DIRAC node ',mytid, &
-              '(',HOST(1:LHOST),') to allocate at most  ',IVARIABLE,' words (', &
+              '(',HOST(1:LHOST),') to allocate at most ',IVARIABLE,' r*8 words (', &
               IVARIABLE/2**17,' MB) of memory'
            else
               print '(a,i4,1x,a,a,a,i20,a,i14,a)', 'DIRAC node ',mytid, &
@@ -374,6 +389,21 @@ use interface_to_mpi
        CALL interface_MPI_BARRIER(global_communicator)
 !
     END DO
+#else
+    CALL interface_MPI_BARRIER(global_communicator)
+    IF( MYTID .eq. 1 ) THEN
+       if (ivariable.gt.0) then
+          print '(a,i0,a,i20,a,i14,a)', 'DIRAC nodes 1 to ',numnod, &
+          ' to allocate at most  ',IVARIABLE,' r*8 words (', &
+          IVARIABLE/2**17,' MB) of memory'
+       else
+          print '(a,i0,a,i20,a,i14,a)', 'DIRAC nodes 1 to ',numnod, &
+          ' has no limitations in place for the amount of dynamically allocated memory'
+       endif
+       flush(lupri)
+    END IF
+    CALL interface_MPI_BARRIER(global_communicator)
+#endif
 !
   END IF
 !
