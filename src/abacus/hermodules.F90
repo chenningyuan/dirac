@@ -1203,6 +1203,8 @@
 !     ***** Process symmetry input data *****
 !     ***************************************
 !
+!     Fix a problem with ADDSYM for some D(2) cases
+      CALL FIX_DUPLICATE_GENERATORS (NSYMOP,KASYM)
       CALL SYMINP(NSYMOP,KASYM,IFXYZ, CLASS)
 
 !

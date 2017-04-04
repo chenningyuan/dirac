@@ -972,6 +972,10 @@ C        ... before extracting of EIG print the Fock matrix
         ENDDO
       ENDIF
 C
+C     If converged, exit SCF here
+C
+      IF (DHFEXIT) GOTO 9999      
+C
 C     Diagonalize Fock matrix
 C     =======================
 C
@@ -992,10 +996,6 @@ C     Boson type selection
 C     ====================
 C
       IF(DOBOSSEL) CALL BOSSEL(EIG,IBEIG,FAO,WORK(KFREE),LFREE)
-C
-C     If converged, do not select occupation or save orbitals
-C
-      IF (DHFEXIT) GOTO 9999
 C
 C     Automatic occupation
 C     ====================
@@ -1600,7 +1600,8 @@ C          reset intbuf so no old Fock matrices are used :
            INTBUF = INTFLG
         END IF
 C
-        IF (DHFEXIT) THEN
+        IF(DHFEXIT) GOTO 30
+        IF (.FALSE.) THEN
 C     Comments on open shell convergence. Feb. 2013 hjaaj.
 C          ====================================================
 C          Some authors have put forward that OPEN_FAC = 1.0D0 is the best choice,
@@ -2161,7 +2162,7 @@ C
 #include "dcbdhf.h"
 #include "memint.h"
 C     Memory allocation - NSMOTQ initialized in SMOGEN
-      CALL MEMGET('REAL',KSMO,NSMOTQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','SMO',KSMO,NSMOTQ,WORK,KFREE,LFREE)
 
       CALL SMOSE1(EIG,IBEIG,CFU,WORK(KSMO),WORK(KFREE),LFREE)
 C     Memory deallocation
@@ -2202,12 +2203,14 @@ C
       DO I = 1,NFSYM
       IF(NESHMF(I).NE.0) THEN
 C       Memory allocation
-        CALL MEMGET('REAL',KEBUF,NESHMF(I),WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIBEB,NESHMF(I),WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KCBUF,NESHMF(I)*NTMO(I)*NZ,WORK,KFREE,LFREE)
-       CALL MEMGET('REAL',KSBUF,NESHMF(I)*NESHMF(I)*NZ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KRSEL,NESHMF(I),WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KISEL,2*NESHMF(I),WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','EBUF'  ,KEBUF,NESHMF(I),WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IBEBUF',KIBEB,NESHMF(I),WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','CBUF'  ,KCBUF,NESHMF(I)*NTMO(I)*NZ,
+     &               WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','SBUF'  ,KSBUF,NESHMF(I)*NESHMF(I)*NZ,
+     &               WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','RCSEL' ,KRSEL,NESHMF(I),WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','ICSEL' ,KISEL,2*NESHMF(I),WORK,KFREE,LFREE)
         CALL SMOSE2(I,EIG(IORB(I)+1),IBEIG(IORB(I)+1),
      &              CFU(I2ORBT(I)+1),SMO(ISMOQ(I)+1),
      &              WORK(KEBUF),WORK(KIBEB),WORK(KCBUF),WORK(KSBUF),

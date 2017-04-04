@@ -3,6 +3,9 @@
 .ANALYZE                                                                                            
 **ANALYZE                                                                                           
 .MULPOP                                                                                             
+*MULPOP
+.LABEL 
+SHELL
 **WAVE FUNCTION                                                                                     
 .SCF                                                                                                
 .REORDER
