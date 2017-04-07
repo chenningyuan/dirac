@@ -172,7 +172,7 @@ cgendet1( unsigned long long int anStr[], integer n, integer m,
        }
      }
      else {
-         printf("GAS :(, bit string: %64s \n", lli_to_b_format(prefix,pos));
+//       printf("GAS :(, bit string: %64s \n", lli_to_b_format(prefix,pos));
      }
    }
    else {
