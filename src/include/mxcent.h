@@ -7,4 +7,4 @@
 !               density fit sets for both + extended Huckel basis)
 !
       INTEGER MXATOM, MXCENT, MXCOOR, MXBSETS
-      PARAMETER (MXATOM=20, MXCENT = 500, MXCOOR = 3*MXCENT, MXBSETS=5)
+      PARAMETER (MXATOM=20, MXCENT = 300, MXCOOR = 3*MXCENT, MXBSETS=5)
