@@ -630,7 +630,7 @@
 
    integer :: ijab, ijrp, abrp, jrp, jj, irp, ioff, imin, bb, amin, arp, brp, b
    real(kind=8) :: fac, fac3, fac2
-   integer :: ndimL1, ndimL2, search_dimension, xroot, N1, N2, fudge_factor, jroot
+   integer :: ndimL1, ndimL2, search_dimension, xroot, N, N1, N2, fudge_factor, jroot
    type(Offset)         :: e
    real*8,allocatable :: L1_dum(:,:) 
 
@@ -640,6 +640,7 @@
 
     N1 = size(L1,1)
     N2 = size(L2,1)
+    N  = N1 + N2
 
     ndimL1 = N1 / rcw
     ndimL2 = N2 / rcw
@@ -732,7 +733,7 @@
 
       call srt1c1 (nrep,nv,no,eVectorsR(1:N1,iroot:iroot), &
      &             L1(1:N1,iroot:iroot)) 
-      call srt1c1 (nrep,nvvt,noot,eVectorsR(1+N1:N2,iroot:iroot), &
+      call srt1c1 (nrep,nvvt,noot,eVectorsR(N1+1:N,iroot:iroot), &
      &             L2(1:N2,iroot:iroot)) 
 
     enddo
@@ -821,25 +822,13 @@
          print *, '  Using RHS eigenvectors as LHS trial vectors'
 ! if we are reusing the right-hand side eigenvectors, we resort them
 
-          if (.false.) then
-          call davidson_print_vectors(eVectorsR,label="debug:  R  vector            ")
-          call davidson_print_vectors(L1, label="debug:  L1 vector            ")
-          call davidson_print_vectors(L2, label="debug:  L2 vector            ")
-          end if
-
           do iroot = 1, nroot
-
               call srt1c1 (nrep,ncont,no,eVectorsR(1:N1,iroot:iroot), &
      &                     L1(1:N1,iroot:iroot))
-              call srt1c1 (nrep,e%oneNonDirac,noot,eVectorsR(1+N1:N2,iroot:iroot), &
+              call srt1c1 (nrep,e%oneNonDirac,noot,eVectorsR(N1+1:N,iroot:iroot), &
      &                     L2(1:N2,iroot:iroot))
           enddo
 
-          if (.false.) then
-          call davidson_print_vectors(eVectorsR,label="debug:  R  vector  after     ")
-          call davidson_print_vectors(L1, label="debug:  L1 vector after      ")
-          call davidson_print_vectors(L2, label="debug:  L2 vector after      ")
-          end if
       else
 ! otherwise, we are going to generate trial vectors for the lhs
           if (relcc_mfd_trial_full_matrix) then
