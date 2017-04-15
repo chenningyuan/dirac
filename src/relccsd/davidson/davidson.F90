@@ -923,13 +923,14 @@ contains
             if (abs(vr).lt.print_values_threshold) vr = 0.0d0
 
             if (vi .lt. 0.0d0) then
-                print "(4x,a,i6,a,1e14.6,a,1e14.6,a)", &
+                write (davidson_output_file_unit,'(4x,a,i6,a,1e14.6,a,1e14.6,a)'), &
                       "Eigenvalue ",i," : ", vr," -",abs(vi)," i"
             else if (vi .gt. 0.0d0) then
-                print "(4x,a,i6,a,1e14.6,a,1e14.6,a)", &
+                write (davidson_output_file_unit,'(4x,a,i6,a,1e14.6,a,1e14.6,a)'), &
                       "Eigenvalue ",i," : ", vr," +",abs(vi)," i"
             else
-                print "(4x,a,i6,a,1e14.6)", "Eigenvalue ",i," : ", vr
+                write (davidson_output_file_unit,'(4x,a,i6,a,1e14.6)'), &
+                      "Eigenvalue ",i," : ", vr
             end if
         end do
         if (left) then
@@ -1005,7 +1006,7 @@ contains
                unconverged_roots = unconverged_roots + 1
             end if
         end do
-        print *, ""
+        write (davidson_output_file_unit,*), ""
 
         if (any(vectors_to_update)) then
             if (correct_all_local) then
@@ -1082,7 +1083,8 @@ contains
                             form_preconditioner(j+1,k) = -form_preconditioner(j+1,k) / x2py2
                         else
 !                           stop ('detected division by zero')
-                            print *, 'Warning : numerator is small', (1.0d0 / form_preconditioner(l,k)),& 
+                            write (davidson_output_file_unit,*) 'Warning : numerator is small', &
+                                                             (1.0d0 / form_preconditioner(l,k)),& 
 &                                    ' element of preconditioner set to 1'
 !                           form_preconditioner(j,k) = 1.0d0
 !                           form_preconditioner(j+1,k) = 1.0d0
@@ -1098,7 +1100,8 @@ contains
                         else
 !                           stop ('detected division by zero')
                             x2py2=1.0d0 / form_preconditioner(l,k)
-                            print *, 'warning : numerator is smaller than', safe_minimum, &
+                            write (davidson_output_file_unit,*) &
+                          'warning : numerator is smaller than', safe_minimum, &
      &                               '(',x2py2,'). element of preconditioner set to 1.'
                             form_preconditioner(l,k) = 1.0d0 
                         end if
@@ -1127,7 +1130,7 @@ contains
             vectors_N_complex = vectors_N / 2
             scaling_factor(2) = 0.0d0 
  
-            print *, 'debug, vectors to update',vectors_to_update
+            write (davidson_output_file_unit,*) 'debug, vectors to update',vectors_to_update
             i = 1
             do k = 1, nroots
                if (vectors_to_update(k)) then
@@ -1289,12 +1292,13 @@ contains
 
                     vr = v(kr,j)
                     vi = v(ki,j)
-                    print '(a,1i4,a,1i4,a,1i4,a,1i4,a,1e14.6,a,1e14.6)','i:',i,' j:',j,' kr',kr,' ki:',ki,'  vr:',vr,'  vi:',vi 
+                    write (davidson_output_file_unit,'(a,1i4,a,1i4,a,1i4,a,1i4,a,1e14.6,a,1e14.6)') &
+                                 ,'i:',i,' j:',j,' kr',kr,' ki:',ki,'  vr:',vr,'  vi:',vi 
 
                     vt(j,kr) =  vr
                     vt(j,ki) = -vi
 
-                    print '(a,1i4,a,1i4,a,1e14.6,a,1e14.6,a,1i4,a,1i4,a,1e14.6,a,1e14.6)', &
+                     write (davidson_output_file_unit,'(a,1i4,a,1i4,a,1e14.6,a,1e14.6,a,1i4,a,1i4,a,1e14.6,a,1e14.6)') &
                            ' v(',i,',',j,')=(',vr,',',vi,') ->  vt(',j,',',i,')=(',vt(j,kr),',',vt(j,ki),')'
                 else if (complex_dimension_v.eq.2) then
 
@@ -1303,12 +1307,13 @@ contains
 
                     vr = v(i, kr)
                     vi = v(i, ki)
-                    print '(a,1i4,a,1i4,a,1i4,a,1i4,a,1e14.6,a,1e14.6)','i:',i,' j:',j,' kr',kr,' ki:',ki,'  vr:',vr,'  vi:',vi
+                     write (davidson_output_file_unit,'(a,1i4,a,1i4,a,1i4,a,1i4,a,1e14.6,a,1e14.6)') &
+                           'i:',i,' j:',j,' kr',kr,' ki:',ki,'  vr:',vr,'  vi:',vi
 
                     vt(kr, i) =  vr
                     vt(ki, i) = -vi
 
-                    print '(a,1i4,a,1i4,a,1e14.6,a,1e14.6,a,1i4,a,1i4,a,1e14.6,a,1e14.6)', &
+                     write (davidson_output_file_unit,'(a,1i4,a,1i4,a,1e14.6,a,1e14.6,a,1i4,a,1i4,a,1e14.6,a,1e14.6)') &
                            ' v(',i,',',j,')=(',vr,',',vi,') ->  vt(',j,',',i,')=(',vt(kr,i),',',vt(ki,i),')'
 
                 end if

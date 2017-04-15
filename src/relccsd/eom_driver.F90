@@ -820,6 +820,13 @@
       if (relcc_mfd_trial_lhs_use_rhs) then
          print *, '  Using RHS eigenvectors as LHS trial vectors'
 ! if we are reusing the right-hand side eigenvectors, we resort them
+
+          if (.false.) then
+          call davidson_print_vectors(eVectorsR,label="debug:  R  vector            ")
+          call davidson_print_vectors(L1, label="debug:  L1 vector            ")
+          call davidson_print_vectors(L2, label="debug:  L2 vector            ")
+          end if
+
           do iroot = 1, nroot
 
               call srt1c1 (nrep,ncont,no,eVectorsR(1:N1,iroot:iroot), &
@@ -828,6 +835,11 @@
      &                     L2(1:N2,iroot:iroot))
           enddo
 
+          if (.false.) then
+          call davidson_print_vectors(eVectorsR,label="debug:  R  vector  after     ")
+          call davidson_print_vectors(L1, label="debug:  L1 vector after      ")
+          call davidson_print_vectors(L2, label="debug:  L2 vector after      ")
+          end if
       else
 ! otherwise, we are going to generate trial vectors for the lhs
           if (relcc_mfd_trial_full_matrix) then
