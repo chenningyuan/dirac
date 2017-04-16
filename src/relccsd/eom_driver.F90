@@ -237,7 +237,7 @@
               iroot = i
               if (rcw.eq.2) iroot = 2*i - 1
               jroot = i
-              print *, 'iroot',iroot,' jroot',jroot
+!             print *, 'iroot',iroot,' jroot',jroot
               R1(iroot,jroot) = 1.0d0
           end do
           if (nroot.gt.ndimr1) then
@@ -251,7 +251,7 @@
           end if
 
       else if (relcc_mfd_trial_ccs) then
-          print *, '  Using eigenvalues of singles-singles block as trial vectors'
+          write (iw,*) '  Using eigenvalues of singles-singles block as trial vectors'
           allocate (R1_dum(N1,ndimr1))
           R1_dum = 0.0d0
 
@@ -279,7 +279,7 @@
 
 
       else if (relcc_mfd_trial_diagonal) then
-          print *, '  Using (reordered) unit vectors as trial vectors'
+          write (iw,*) '  Using (reordered) unit vectors as trial vectors'
 
 ! In the following section we generate the guess vectors belonging to a
 ! particular state symmetry.
@@ -367,10 +367,10 @@
       ENDDO
       ENDDO
 
-      print *,'debug, dimensions R1',size(R1,1),size(R1,2)
-      print *,'debug, dimensions R2',size(R2,1),size(R2,2)
-      print *,'debug, ndimr1',ndimr1
-      print *,'debug, ndimr2',ndimr2
+!     print *,'debug, dimensions R1',size(R1,1),size(R1,2)
+!     print *,'debug, dimensions R2',size(R2,1),size(R2,2)
+!     print *,'debug, ndimr1',ndimr1
+!     print *,'debug, ndimr2',ndimr2
 
       if (relcc_mfd_trial_full_matrix) then
 ! New trial vectors for R1 
@@ -378,7 +378,7 @@
               iroot = i
               if (rcw.eq.2) iroot = 2*i - 1 
               jroot = i 
-              print *, 'iroot',iroot,' jroot',jroot
+!             print *, 'iroot',iroot,' jroot',jroot
               R1(iroot,jroot) = 1.0d0
           end do
           if (nroot.gt.ndimr1) then
@@ -392,7 +392,7 @@
           end if
 
       else if (relcc_mfd_trial_ccs) then
-          print *, '  Using eigenvalues of singles-singles block as trial vectors'
+          write (iw,*) '  Using eigenvalues of singles-singles block as trial vectors'
           allocate (R1_dum(N1,ndimr1))
           R1_dum = 0.0d0
 
@@ -414,7 +414,7 @@
           deallocate(R1_dum)
 
       else if (relcc_mfd_trial_diagonal) then
-          print *, '  Using (reordered) unit vectors as trial vectors'
+          write (iw,*) '  Using (reordered) unit vectors as trial vectors'
 
 ! In the following section we generate the guess vectors belonging to a particular state symmetry.
 ! Thereby we avoid the sigma vector calculations of the degenerate roots.  
@@ -509,7 +509,7 @@
               iroot = i
               if (rcw.eq.2) iroot = 2*i - 1
               jroot = i
-              print *, 'iroot',iroot,' jroot',jroot
+!             print *, 'iroot',iroot,' jroot',jroot
               R1(iroot,jroot) = 1.0d0
           end do
           if (nroot.gt.ndimr1) then
@@ -523,7 +523,7 @@
           end if
 
       else if (relcc_mfd_trial_ccs) then
-          print *, '  Using eigenvalues of singles-singles block as trial vectors'
+          write (iw,*) '  Using eigenvalues of singles-singles block as trial vectors'
           allocate (R1_dum(N1,ndimr1))
           R1_dum = 0.0d0
 
@@ -547,7 +547,7 @@
 ! calculate the orbital dimension within which our desired root should belong..
 
       else if (relcc_mfd_trial_diagonal) then
-          print *, '  Using (reordered) unit vectors as trial vectors'
+          write (iw,*) '  Using (reordered) unit vectors as trial vectors'
 
 ! In the following section we generate the guess vectors belonging to a particular state symmetry.
 ! Thereby we avoid the sigma vector calculations of the degenerate roots.  
@@ -819,7 +819,7 @@
  !   deallocate(diag_H)
 
       if (relcc_mfd_trial_lhs_use_rhs) then
-         print *, '  Using RHS eigenvectors as LHS trial vectors'
+         write (iw,*) '  Using RHS eigenvectors as LHS trial vectors'
 ! if we are reusing the right-hand side eigenvectors, we resort them
 
           do iroot = 1, nroot
@@ -837,7 +837,7 @@
                   iroot = i
                   if (rcw.eq.2) iroot = 2*i - 1
                   jroot = i
-                  print *, 'iroot',iroot,' jroot',jroot
+!                 print *, 'iroot',iroot,' jroot',jroot
                   L1(iroot,jroot) = 1.0d0
               end do
               if (nroot.gt.ndiml1) then
@@ -850,7 +850,7 @@
               end if
 
           else if (relcc_mfd_trial_ccs) then
-              print *, '  Using eigenvalues of singles-singles block as trial vectors'
+              write (iw,*) '  Using eigenvalues of singles-singles block as trial vectors'
               allocate (L1_dum(N1,ndiml1))
               L1_dum = 0.0d0
 
@@ -874,7 +874,7 @@
               deallocate(L1_dum)
 
           else if (relcc_mfd_trial_diagonal) then
-              print *, '  Using (reordered) unit vectors as trial vectors'
+              write (iw,*) '  Using (reordered) unit vectors as trial vectors'
 
 ! In the following section we generate the guess vectors belonging to a
 ! particular state symmetry.
@@ -1280,9 +1280,9 @@
 
                end select
 
-               print *, "debug, before store_eom_density for state",state
+               write (iw,*) "debug, before store_eom_density for state",state
                call store_eom_density ('EOM ',state,dmo)
-               print *, "debug,  after store_eom_density for state",state
+               write (iw,*) "debug,  after store_eom_density for state",state
                state = state + 1
            enddo ! loop over roots 
        enddo ! loop over symmetries
@@ -1934,7 +1934,7 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
              enddo
 
              do irep = 1, nrep
-                if (iprnt.ge.2) write(*,*)'continuous orbital ',irep,ncont(irep),nroot
+                if (iprnt.ge.3) write(*,*)'continuous orbital ',irep,ncont(irep),nroot
                 ndimr1 = ndimr1 + ncont(irep)*no(irep)
              enddo
 
@@ -2099,7 +2099,7 @@ subroutine eom_analysis_allirreps(davResults, eps)
    type(davidson_results), intent(inout) :: davResults(nrep)
    real(kind=8)                          :: eps(*)
 !--------------------------------------------------
-   print *, "Analysis of all EOM roots not implemented yet !"
+   write (iw,*) "Analysis of all EOM roots not implemented yet !"
 end subroutine
 
    end module 
