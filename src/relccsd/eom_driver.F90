@@ -237,7 +237,6 @@
               iroot = i
               if (rcw.eq.2) iroot = 2*i - 1
               jroot = i
-!             print *, 'iroot',iroot,' jroot',jroot
               R1(iroot,jroot) = 1.0d0
           end do
           if (nroot.gt.ndimr1) then
@@ -245,7 +244,6 @@
                   iroot = i
                   if (rcw.eq.2) iroot = 2*i - 1
                   jroot = i
-!                 print *, 'iroot',iroot,' ndimr1+jroot',ndimr1+jroot
                   R2(iroot,ndimr1+jroot) = 1.0d0
              end do
           end if
@@ -267,12 +265,6 @@
           if (iprnt.ge.3) call davidson_print_vectors(R1_dum, label="debug:  R1_dum vector  CD1    ",complex_dimension=1)
 
           R1 = R1_dum(:,1:nroot)
-
-!         print *,"R1_dum",R1_dum
-!         do iroot = 1, nroot
-!             jroot = 2*iroot - 1
-!             R1(:,iroot) = R1_dum(:,jroot)
-!         end do
           if (iprnt.ge.3) call davidson_print_vectors(R1, label="debug:  R1 vector             ")
 
           deallocate(R1_dum)
@@ -291,7 +283,9 @@
           xroot = 1
 
           fudge_factor = 2
-          if (rcw.eq.2) fudge_factor = 1
+! here we set the factor to 1 because for C1, with only one fermion irrep,
+! we can't get around to working with the degenerate roots
+          if (nrep.eq.1) fudge_factor = 1
 
           do iroot = 1, fudge_factor*nroot
               k = minloc(diag_H)
@@ -367,18 +361,12 @@
       ENDDO
       ENDDO
 
-!     print *,'debug, dimensions R1',size(R1,1),size(R1,2)
-!     print *,'debug, dimensions R2',size(R2,1),size(R2,2)
-!     print *,'debug, ndimr1',ndimr1
-!     print *,'debug, ndimr2',ndimr2
-
       if (relcc_mfd_trial_full_matrix) then
 ! New trial vectors for R1 
           do i = 1, min(ndimr1,nroot)
               iroot = i
               if (rcw.eq.2) iroot = 2*i - 1 
               jroot = i 
-!             print *, 'iroot',iroot,' jroot',jroot
               R1(iroot,jroot) = 1.0d0
           end do
           if (nroot.gt.ndimr1) then
@@ -386,7 +374,6 @@
                   iroot = i
                   if (rcw.eq.2) iroot = 2*i - 1 
                   jroot = i 
-!                 print *, 'iroot',iroot,' ndimr1+jroot',ndimr1+jroot
                   R2(iroot,ndimr1+jroot) = 1.0d0
              end do
           end if
@@ -427,7 +414,9 @@
           xroot = 1 
 
           fudge_factor = 2
-          if (rcw.eq.2) fudge_factor = 1
+! here we set the factor to 1 because for C1, with only one fermion irrep,
+! we can't get around to working with the degenerate roots
+          if (nrep.eq.1) fudge_factor = 1
 
           do iroot = 1, fudge_factor*nroot
               k = minloc(diag_H) 
@@ -509,7 +498,6 @@
               iroot = i
               if (rcw.eq.2) iroot = 2*i - 1
               jroot = i
-!             print *, 'iroot',iroot,' jroot',jroot
               R1(iroot,jroot) = 1.0d0
           end do
           if (nroot.gt.ndimr1) then
@@ -517,7 +505,6 @@
                   iroot = i
                   if (rcw.eq.2) iroot = 2*i - 1
                   jroot = i
-!                 print *, 'iroot',iroot,' ndimr1+jroot',ndimr1+jroot
                   R2(iroot,ndimr1+jroot) = 1.0d0
              end do
           end if
@@ -560,21 +547,22 @@
           xroot = 1
 
           fudge_factor = 2
-          if (rcw.eq.2) fudge_factor = 1
+! here we set the factor to 1 because for C1, with only one fermion irrep,
+! we can't get around to working with the degenerate roots
+          if (nrep.eq.1) fudge_factor = 1
 
           do iroot = 1, fudge_factor*nroot
               k = minloc(diag_H)
-!             if (iprnt.ge.3) write(iw,*)'roots',iroot,H_II(k(1)),k(1)
-              write(iw,*)'roots',iroot,H_II(k(1)),k(1)
+              if (iprnt.ge.3) write(iw,*)'roots',iroot,H_II(k(1)),k(1)
               i = k(1)
               diag_H(i) = 8000.0d0
               if (i <= search_dimension) then
                   write(iw,*) jroot, ndimr1, ndimr2
                   jroot = i
                   if (rcw.eq.2) jroot = 2*i - 1
-                  if (jroot.le.ndimr1) then
+                  if (jroot.le.N1) then
                       R1(jroot,xroot) = 1.0d0
-                  else if (jroot.le.ndimr2) then
+                  else if (jroot.le.N2) then
                       R2(jroot,xroot) = 1.0d0
                   end if
                   if (rcw.eq.2) then
@@ -888,7 +876,9 @@
               xroot = 1
 
               fudge_factor = 2
-              if (rcw.eq.2) fudge_factor = 1
+! here we set the factor to 1 because for C1, with only one fermion irrep,
+! we can't get around to working with the degenerate roots
+              if (nrep.eq.1) fudge_factor = 1
 
               do iroot = 1, fudge_factor*nroot
                   k = minloc(diag_H)
