@@ -557,7 +557,6 @@
               i = k(1)
               diag_H(i) = 8000.0d0
               if (i <= search_dimension) then
-                  write(iw,*) jroot, ndimr1, ndimr2
                   jroot = i
                   if (rcw.eq.2) jroot = 2*i - 1
                   if (jroot.le.N1) then
