@@ -50,6 +50,8 @@ integer, save      :: davidson_subspaces_file_unit
 integer, save      :: davidson_sigmas_file_unit 
 integer, save      :: davidson_results_file_unit 
 integer, save      :: davidson_overlap_sorting_scheme
+integer, save      :: davidson_trial_vector_refresh_rate
+integer, save      :: davidson_maximum_trial_vector_refresh_rate = 10
 
 logical, save      :: davidson_solve_rhs 
 logical, save      :: davidson_solve_lhs 
@@ -63,6 +65,7 @@ logical, save      :: davidson_save_results
 logical, save      :: davidson_overlap_sorting
 logical, save      :: davidson_debug = .false.
 logical, save      :: davidson_use_preconditioner = .true.
+logical, save      :: davidson_refresh_trial_vectors = .false.
 
 ! 
 ! variables for controlling i/o
@@ -184,6 +187,7 @@ contains
                               symmetric,         &
                               complex_mode,      &
                               use_preconditioner,&
+                              refresh_trial_rate,&
                               verbose,           & 
                               overlap_sorting,   &
                               overlap_sorting_scheme,  &
@@ -199,6 +203,7 @@ contains
         integer, intent(in), optional :: unit_sigmas
         integer, intent(in), optional :: unit_results
         integer, intent(in), optional :: overlap_sorting_scheme
+        integer, intent(in), optional :: refresh_trial_rate
         logical, optional :: solve_values
         logical, optional :: solve_right
         logical, optional :: solve_left
@@ -286,6 +291,21 @@ contains
             davidson_complex_mode_with_reals = .false. 
         end if
 
+        if (present(refresh_trial_rate)) then
+            if (refresh_trial_rate.le.0) then
+                davidson_refresh_trial_vectors = .false.
+            else 
+                davidson_refresh_trial_vectors = .true.
+                if (refresh_trial_rate.le.davidson_maximum_trial_vector_refresh_rate) then
+                    davidson_trial_vector_refresh_rate = davidson_maximum_trial_vector_refresh_rate 
+                else
+                    davidson_trial_vector_refresh_rate = refresh_trial_rate
+                end if
+            end if
+        else
+            davidson_refresh_trial_vectors = .false.
+        end if
+
         if (present(unit_output)) then
             davidson_output_file_unit = unit_output
         end if
@@ -329,6 +349,7 @@ contains
         if (davidson_complex_mode_with_reals.and.davidson_overlap_sorting) then
             davidson_overlap_sorting_scheme = 2
         end if
+
         call davidson_show_configurations()
     end subroutine
 
@@ -347,6 +368,11 @@ contains
         write(davidson_output_file_unit, *) "  convergence threshold         : ", davidson_convergence_threshold
         write(davidson_output_file_unit, *) "  maximum subspace size         : ", davidson_max_subspace_size
         write(davidson_output_file_unit, *) "  maximum number of iterations  : ", davidson_max_iterations
+        write(davidson_output_file_unit, *) "  refresh trial vectors         : ", davidson_refresh_trial_vectors 
+        if (davidson_refresh_trial_vectors) then
+            write(davidson_output_file_unit, '(A,I4,A)') &
+                         "     set to refresh vectors every ",davidson_trial_vector_refresh_rate," interations"
+        end if
 
         write(davidson_output_file_unit, *) ""
         write(davidson_output_file_unit, *) " restart/data storage"
@@ -1131,7 +1157,7 @@ contains
             vectors_N_complex = vectors_N / 2
             scaling_factor(2) = 0.0d0 
  
-            write (davidson_output_file_unit,*) 'debug, vectors to update',vectors_to_update
+            if (davidson_debug) write (davidson_output_file_unit,*) 'debug, vectors to update',vectors_to_update
             i = 1
             do k = 1, nroots
                if (vectors_to_update(k)) then
@@ -1531,21 +1557,54 @@ contains
                  if (associated(preconditioner)) deallocate(preconditioner)
                 exit
             end if
-            b => updated_subspace_vectors_R(b, delta, verbose=davidson_debug)
 
-            if (davidson_verbose) then
-                call davidson_print_vectors(delta, label="delta                         ")
-                call davidson_print_vectors(b, label="Updated subspace vectors      ")
+! not converged yet, if asked to refresh the trial vectors do it now, otherwise create
+! new trial vectors
+            if (davidson_refresh_trial_vectors.and.(mod(niter,davidson_trial_vector_refresh_rate).eq.0)) then
+                write(davidson_output_file_unit,*) "Resetting trial vectors at iteration",niter
+                call form_eigenvalues_full_problem(results%eValues, nroots, e_small)
+                if (davidson_solve_lhs) then
+                   write(davidson_output_file_unit,*) "    forming left  eigenvectors for original problem"
+                   call form_eigenvector_full_problem(results%eVectorsL, nroots,b,c_small_l,davidson_solve_rhs,davidson_solve_lhs)
+                   if (davidson_debug) &
+                       call davidson_print_vectors(results%eVectorsL, label="intm  eigenvalues full problem")
+                   deallocate(b)
+                   allocate(b(vectors_N,nroots))
+                   write(davidson_output_file_unit,*) "    copying left  eigenvectors to trial vectors"
+                   write(davidson_output_file_unit,*) " "
+                   b = results%eVectorsL
+                end if
+                if (davidson_solve_rhs) then
+                   write(davidson_output_file_unit,*) " "
+                   write(davidson_output_file_unit,*) "    forming right eigenvectors for original problem"
+                   call form_eigenvector_full_problem(results%eVectorsR, nroots,b,c_small_r,davidson_solve_rhs,davidson_solve_lhs)
+                   if (davidson_debug) &
+                       call davidson_print_vectors(results%eVectorsR, label="intm  eigenvalues full problem")
+                   deallocate(b)
+                   allocate(b(vectors_N,nroots))
+                   write(davidson_output_file_unit,*) "    copying right eigenvectors to trial vectors"
+                   write(davidson_output_file_unit,*) " "
+                   b = results%eVectorsR
+                end if
+                deallocate(sigma_vector)
+            else
+               b => updated_subspace_vectors_R(b, delta, verbose=davidson_debug)
+
+               if (davidson_verbose) then
+                   call davidson_print_vectors(delta, label="delta                         ")
+                   call davidson_print_vectors(b, label="Updated subspace vectors      ")
+               end if
             end if
-  
+ 
+! now check whether we reached the maximum subspace size
             L = size(b,2)
             if (L .eq. max_subspace_size) then
                if (associated(preconditioner)) deallocate(preconditioner)
                if (associated(delta)) deallocate(delta)
-                write(davidson_output_file_unit, *) "Reached maximum subspace size, stopping."
-                exit
+               write(davidson_output_file_unit, *) "Reached maximum subspace size, stopping."
+               exit
             end if
-        end do
+        end do ! davidson iterations
 
         if (davidson_solve_rhs.and.davidson_overlap_sorting) deallocate(c_small_r_old)
         if (davidson_solve_lhs.and.davidson_overlap_sorting) deallocate(c_small_l_old)
@@ -1563,12 +1622,12 @@ contains
             if (davidson_debug) call davidson_print_vectors(results%eVectorsR, label="final eigenvalues full problem")
         end if
 
-        if(associated(b)) deallocate(b)
+        if (associated(b)) deallocate(b)
         deallocate(M_small)
-        deallocate(sigma_vector)
+        if (associated(sigma_vector)) deallocate(sigma_vector)
         deallocate(M_diag)
         deallocate(e_small)
-        deallocate(c_small_r)
+        if (associated(c_small_r)) deallocate(c_small_r)
         if (associated(c_small_l)) deallocate(c_small_l)
 
     end subroutine

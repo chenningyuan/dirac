@@ -118,6 +118,7 @@ module relcc_cfg
   real*8, public  :: relcc_mfd_convergence_threshold = 1.0d-5
   integer, public :: relcc_mfd_max_subspace_size = 128
   integer, public :: relcc_mfd_max_iterations = 80
+  integer, public :: relcc_mfd_refresh_rate = 0
   logical, public :: relcc_mfd_overlap_sorting = .true.
   logical, public :: relcc_mfd_verbose = .false.
   logical, public :: relcc_mfd_trial_diagonal = .true.
@@ -233,6 +234,7 @@ contains
   call interface_mpi_bcast(relcc_mfd_convergence_threshold ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_mfd_max_subspace_size     ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_mfd_max_iterations        ,1,0,global_communicator)
+  call interface_mpi_bcast(relcc_mfd_refresh_rate          ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_mfd_overlap_sorting    ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_mfd_verbose            ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_mfd_trial_diagonal     ,1,0,global_communicator)

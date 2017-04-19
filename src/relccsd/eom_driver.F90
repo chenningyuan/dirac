@@ -1839,6 +1839,7 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
                         solve_left=left_vectors,   &
                         symmetric=.false., &
                         verbose=relcc_mfd_verbose,   &
+                        refresh_trial_rate=relcc_mfd_refresh_rate,  &
                         complex_mode=(rcw.eq.2), &
                         convergence_threshold = relcc_mfd_convergence_threshold, &
                         max_subspace_size = relcc_mfd_max_subspace_size, &

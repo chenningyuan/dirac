@@ -1103,6 +1103,10 @@
          call kw_read(word,  relcc_mfd_max_subspace_size)
       end if
 
+      if (kw_matches(word, '.REFRESH')) then
+         call kw_read(word, relcc_mfd_refresh_rate)
+      end if
+
       if (kw_matches(word, '.MAXITER')) then
          call kw_read(word, relcc_mfd_max_iterations)
       end if
