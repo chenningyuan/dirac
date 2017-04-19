@@ -30,9 +30,9 @@ module trial_vectors_eom
 !--------------------------------------------------
 
     nroot = size(r1,2)
-    dimr1 = size(r1,1)/rcw
+    dimr1 = size(r1,1)
 
-    allocate(sigma1(dimr1*rcw,nroot))
+    allocate(sigma1(dimr1,nroot))
 
     sigma1 = 0.0d0
 
@@ -62,23 +62,28 @@ module trial_vectors_eom
   enddo
 
    if (iprnt.ge.3) then
-       print *,"debug in trial_vectors_ip, nrep:",nrep,dimr1,nroot
+       print *,"debug in trial_vectors_ee, nrep:",nrep,dimr1,nroot
        call davidson_print_vectors(sigma1,  label="debug:  sigma1 vector         ")
    end if
 
    allocate (ev(2,nroot))
-   allocate (evec(dimr1*rcw,nroot))
+   allocate (evec(dimr1,nroot))
 
    evec = 0.0d0
    ev   = 0.0d0
 
    call solve_values_vectors(sigma1, ev, evec, evec, .false.)
+! note: we are forcing the CCS vectors to be sorted here according to the lowest
+! energy, but perhaps we need to perform such sorting at a higher level, at the
+! routines generating the different kinds of trial vectors
+   call sort_values_vectors(1, ev, evec, evec, .true., .false.)
+!
    if (iprnt.ge.3) then
-       print *,'CCS eigenvalues in (real, imaginary) format'
+       print *,'CCS right eigenvalues in (real, imaginary) format'
        do i = 1, nroot
            print *,"(",ev(1,i), ",",ev(2,i),")"
        end do
-       call davidson_print_vectors(evec, label="debug:  CCS eigenvectors      ")
+       call davidson_print_vectors(evec, label="debug: right CCS eigenvectors ")
    end if
 
 ! copy the eigenvectors to r1
@@ -111,9 +116,9 @@ module trial_vectors_eom
 !--------------------------------------------------
 
     nroot = size(r1,2)
-    dimr1 = size(r1,1)/rcw
+    dimr1 = size(r1,1)
 
-    allocate(sigma1(dimr1*rcw,nroot))
+    allocate(sigma1(dimr1,nroot))
 
     sigma1 = 0.0d0
 
@@ -130,18 +135,22 @@ module trial_vectors_eom
 
 
    allocate (ev(2,nroot))
-   allocate (evec(dimr1*rcw,nroot))
+   allocate (evec(dimr1,nroot))
 
    evec = 0.0d0
    ev   = 0.0d0
 
    call solve_values_vectors(sigma1, ev, evec, evec, .false.)
+! note: we are forcing the CCS vectors to be sorted here according to the lowest
+! energy, but perhaps we need to perform such sorting at a higher level, at the
+! routines generating the different kinds of trial vectors
+   call sort_values_vectors(1, ev, evec, evec, .true., .false.)
    if (iprnt.ge.3) then
        print *,'CCS eigenvalues in (real, imaginary) format'
        do i = 1, nroot
            print *,"(",ev(1,i), ",",ev(2,i),")"
        end do
-       call davidson_print_vectors(evec, label="debug:  CCS eigenvectors      ")
+       call davidson_print_vectors(evec, label="debug: right CCS eigenvectors ")
    end if
 
 ! copy the eigenvectors to r1
@@ -175,9 +184,9 @@ module trial_vectors_eom
 !--------------------------------------------------
 
     nroot = size(r1,2)
-    dimr1 = size(r1,1)/rcw
+    dimr1 = size(r1,1)
 
-    allocate(sigma1(dimr1*rcw,nroot))
+    allocate(sigma1(dimr1,nroot))
 
     sigma1 = 0.0d0
 
@@ -189,24 +198,28 @@ module trial_vectors_eom
    end do
 
    if (iprnt.ge.3) then
-       print *,"debug in trial_vectors_ip, nrep:",nrep,dimr1,nroot
+       print *,"debug in trial_vectors_ea, nrep:",nrep,dimr1,nroot
        call davidson_print_vectors(sigma1,  label="debug:  sigma1 vector         ")
    end if
 
 
    allocate (ev(2,nroot))
-   allocate (evec(dimr1*rcw,nroot))
+   allocate (evec(dimr1,nroot))
 
    evec = 0.0d0
    ev   = 0.0d0
 
    call solve_values_vectors(sigma1, ev, evec, evec, .false.)
+! note: we are forcing the CCS vectors to be sorted here according to the lowest
+! energy, but perhaps we need to perform such sorting at a higher level, at the
+! routines generating the different kinds of trial vectors
+   call sort_values_vectors(1, ev, evec, evec, .true., .false.)
    if (iprnt.ge.3) then
        print *,'CCS eigenvalues in (real, imaginary) format'
        do i = 1, nroot
            print *,"(",ev(1,i), ",",ev(2,i),")"
        end do
-       call davidson_print_vectors(evec, label="debug:  CCS eigenvectors      ")
+       call davidson_print_vectors(evec, label="debug: right CCS eigenvectors ")
    end if
 
 ! copy the eigenvectors to r1

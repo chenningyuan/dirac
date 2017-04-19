@@ -8,6 +8,7 @@ public davidson_cleanup
 public davidson_driver
 public davidson_print_vectors
 public solve_values_vectors
+public sort_values_vectors
 
 !public sort_values_vectors
 !public set_safe_minimum

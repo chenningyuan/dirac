@@ -282,12 +282,7 @@
 
           xroot = 1
 
-          fudge_factor = 2
-! here we set the factor to 1 because for C1, with only one fermion irrep,
-! we can't get around to working with the degenerate roots
-          if (nrep.eq.1) fudge_factor = 1
-
-          do iroot = 1, fudge_factor*nroot
+          do iroot = 1, nroot
               k = minloc(diag_H)
               if (iprnt.ge.3) write(iw,*)'roots',iroot,H_II(k(1)),k(1)
               i = k(1)
@@ -394,8 +389,18 @@
           call trial_vectors_ip(R1_dum,Fbar_HH)
           if (iprnt.ge.3) call davidson_print_vectors(R1_dum, label="debug:  R1_dum vector  CD1    ",complex_dimension=1)
       
-          R1 = R1_dum(:,1:nroot) 
-
+! aspg 19/04/2017 : this if structure should't be here, but it appears that the
+!                   unit trial vectors constructed for irrep 1 in effect span other irreps (at least for water with DC)
+!                   is this due to issues setting the continuous orbitals for other irreps ?
+!         if (nrep.eq.1) then
+             R1 = R1_dum(:,1:nroot) 
+!         else
+!            jroot = 1
+!            do i = 1, nroot
+!               R1(:,i) = R1_dum(:,jroot)
+!               jroot = jroot + 2
+!            end do
+!         end if
           if (iprnt.ge.3) call davidson_print_vectors(R1, label="debug:  R1 vector             ")
 
           deallocate(R1_dum)
@@ -525,8 +530,18 @@
           call trial_vectors_EA(R1_dum,Fbar_PP)
           if (iprnt.ge.3) call davidson_print_vectors(R1_dum, label="debug:  R1_dum vector  CD1    ",complex_dimension=1)
 
-          R1 = R1_dum(:,1:nroot)
-
+! aspg 19/04/2017 : this if structure should't be here, but it appears that the
+!                   unit trial vectors constructed for irrep 1 in effect span other irreps (at least for water with DC)
+!                   is this due to issues setting the continuous orbitals for other irreps ?
+!         if (nrep.eq.1) then
+             R1 = R1_dum(:,1:nroot)
+!         else
+!            jroot = 1
+!            do i = 1, nroot
+!               R1(:,i) = R1_dum(:,jroot)
+!               jroot = jroot + 2
+!            end do
+!         end if
           if (iprnt.ge.3) call davidson_print_vectors(R1, label="debug:  R1 vector             ")
 
           deallocate(R1_dum)
