@@ -14,7 +14,7 @@ f.add(from_string = 'Expectation values',
       to_string   = '    s0 = T : Expectation value zero by point group symmetry.',
       rel_tolerance = 1.0e-5)
 f.add(from_string = 'DIRAC  - INDIRECT NUCLEAR SPIN-SPIN-COUPLINGS',
-      to_string   = 'DSO contribution to reduced SSCC K (SI)',
+      to_string   = 'DSO contribution to reduced SSCC K (SI:10**19 m-2 kg s-2 A-2)',
       rel_tolerance = 1.0e-5)
 f.add(from_string = 'At1  #  iso',
       num_lines   = 4,

@@ -2951,7 +2951,8 @@ C***********************************************************************
 #include "maxaqn.h"
 #include "dummy.h"
       PARAMETER (D3 = 3.0D0, D0 = 0.0D0)
-      PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*xfmp*xfmp)*xthz)
+      PARAMETER (AUTOHZ = xthz*ALPHA2*ALPHA2/(4*xfmp*xfmp),
+     &           REDHZ=1E19*nmagn*nmagn/planck)
 C
 #include "dcbprp.h"
 #include "dcbxpr.h"
@@ -3182,8 +3183,9 @@ CTROND  Insert dimensions !!
         ENDDO
         CALL PRSYMB(LUPRI,'-',100,0)
 !radovan: print out reduced SSCC in SI units
-        FACTOR = AUTOHZ/3.85000804D-1
-        CALL AROUND('Final reduced spin-spin-couplings K (SI)')
+        FACTOR = AUTOHZ/REDHZ
+        CALL AROUND('Final reduced spin-spin-couplings K '//
+     &              '(SI:10**19 m-2 kg s-2 A-2)')
         WRITE(LUPRI,'(2A15,5(2X,A12))')
      &  'At1  #  iso  : ','At2  #  iso  : ',
      &  'Isotropic   ','Anisotropic ','Asymmetry   ',
@@ -3605,9 +3607,9 @@ C***********************************************************************
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "dummy.h"
-      PARAMETER (PRMASS = 1.007276470D0, D3 = 3.0D0, D0 = 0.0D0)
-      PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PRMASS*PRMASS)
-     &                   *6.5796838999D15)
+      PARAMETER (D3 = 3.0D0, D0 = 0.0D0)
+      PARAMETER (AUTOHZ = xthz*ALPHA2*ALPHA2/(4*xfmp*xfmp),
+     &           REDHZ=1E19*nmagn*nmagn/planck)
 C
 #include "dcbprp.h"
 #include "dcbxpr.h"
@@ -3768,7 +3770,8 @@ CTROND  Insert dimensions !!
       ENDDO
       CALL PRSYMB(LUPRI,'-',100,0)
 !radovan: print out reduced SSCC in SI units
-      CALL AROUND('DSO contribution to reduced SSCC K (SI)')
+      CALL AROUND('DSO contribution to reduced SSCC K '//
+     &     '(SI:10**19 m-2 kg s-2 A-2)')
       WRITE(LUPRI,'(2A15,5(2X,A12))')
      &  'At1  #  iso  : ','At2  #  iso  : ',
      &  'Isotropic   ','Anisotropic ','Asymmetry   ',
@@ -3790,7 +3793,7 @@ CTROND  Insert dimensions !!
               J3END = JISO
             ENDIF
             DO J3 = 1,J3END
-              FACTOR = AUTOHZ/3.85000804D-1
+              FACTOR = AUTOHZ/REDHZ
               WRITE(LUPRI,'(2(A6,I5,2X,A1,1X),5(2X,F12.4))')
      &              NAMDEP(IATOM1),I3,':',NAMDEP(IATOM2),J3,':',
      &              FACTOR*SPNPAR(1,IATIJ),
