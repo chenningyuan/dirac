@@ -2951,8 +2951,7 @@ C***********************************************************************
 #include "maxaqn.h"
 #include "dummy.h"
       PARAMETER (D3 = 3.0D0, D0 = 0.0D0)
-      PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PMASS*PMASS)
-     &                   *6.5796838999D15)
+      PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*xfmp*xfmp)*xthz)
 C
 #include "dcbprp.h"
 #include "dcbxpr.h"
