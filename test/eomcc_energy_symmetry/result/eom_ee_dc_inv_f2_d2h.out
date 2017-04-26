@@ -204,7 +204,7 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Thu Apr 20 18:10:09 2017
+     Date and time (Linux)  : Tue Apr 25 16:17:29 2017
      Host name              : phlam-s-sakura.univ-lille1.fr           
 
 
@@ -949,7 +949,7 @@ Total no. of orbitals      (NORB):    28      28      56
              Improved by a sum of atomic screening potentials.
 
 
-########## START ITERATION NO.   1 ##########   Thu Apr 20 18:10:10 2017
+########## START ITERATION NO.   1 ##########   Tue Apr 25 16:17:29 2017
 
 
 * AUTOCC( 0) : Initial occupation:
@@ -960,158 +960,158 @@ E_HOMO...E_LUMO, symmetry 1:    19  -0.48605   20   0.60085
 E_HOMO...E_LUMO, symmetry 2:    46  -1.16457   47   0.44752
 
 => Calculating sum of orbital energies
-It.    1    -60.02512323616      0.00D+00  0.00D+00  0.00D+00               0.05899100s   Scr. nuclei    Thu Apr 20
+It.    1    -60.02512323616      0.00D+00  0.00D+00  0.00D+00               0.05799100s   Scr. nuclei    Tue Apr 25
 
-########## START ITERATION NO.   2 ##########   Thu Apr 20 18:10:11 2017
+########## START ITERATION NO.   2 ##########   Tue Apr 25 16:17:29 2017
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.00999800s
-SOfock:SL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.07498900s
+SOfock:LL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.01099800s
+SOfock:SL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.07298899s
 E_HOMO...E_LUMO, symmetry 1:    19  -0.05358   20   1.27953
 E_HOMO...E_LUMO, symmetry 2:    46  -0.95226   47   0.94076
->>> Total wall time: 0.09310000s, and total CPU time : 0.08998500s
+>>> Total wall time: 0.09320000s, and total CPU time : 0.08998600s
 
-########## END ITERATION NO.   2 ##########   Thu Apr 20 18:10:11 2017
+########## END ITERATION NO.   2 ##########   Tue Apr 25 16:17:29 2017
 
-It.    2    -196.9640233167      1.37D+02  4.79D+00  1.51D+00               0.08998500s   LL SL          Thu Apr 20
+It.    2    -196.9640233167      1.37D+02  4.79D+00  1.51D+00               0.08998600s   LL SL          Tue Apr 25
 
-########## START ITERATION NO.   3 ##########   Thu Apr 20 18:10:11 2017
+########## START ITERATION NO.   3 ##########   Tue Apr 25 16:17:29 2017
 
     3 *** Differential density matrix. DCOVLP     = 0.7604
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.01199900s
-SOfock:SL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.07398801s
+SOfock:LL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.01099800s
+SOfock:SL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.07298900s
 E_HOMO...E_LUMO, symmetry 1:    19  -0.31001   20   1.15922
 E_HOMO...E_LUMO, symmetry 2:    46  -1.22545   47   0.88331
->>> Total wall time: 0.09320000s, and total CPU time : 0.08898700s
+>>> Total wall time: 0.09270000s, and total CPU time : 0.08998600s
 
-########## END ITERATION NO.   3 ##########   Thu Apr 20 18:10:11 2017
+########## END ITERATION NO.   3 ##########   Tue Apr 25 16:17:29 2017
 
-It.    3    -197.2331425968      2.69D-01 -1.07D+00  7.61D-01   DIIS   2    0.08898700s   LL SL          Thu Apr 20
+It.    3    -197.2331425968      2.69D-01 -1.07D+00  7.61D-01   DIIS   2    0.08998600s   LL SL          Tue Apr 25
 
-########## START ITERATION NO.   4 ##########   Thu Apr 20 18:10:11 2017
+########## START ITERATION NO.   4 ##########   Tue Apr 25 16:17:29 2017
 
     4 *** Differential density matrix. DCOVLP     = 1.0483
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.01099801s
-SOfock:SL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.07398900s
+SOfock:LL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.01099899s
+SOfock:SL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.07498801s
 E_HOMO...E_LUMO, symmetry 1:    19  -0.31468   20   1.15980
 E_HOMO...E_LUMO, symmetry 2:    46  -1.23004   47   0.88345
->>> Total wall time: 0.09410000s, and total CPU time : 0.09198600s
+>>> Total wall time: 0.09390000s, and total CPU time : 0.09098600s
 
-########## END ITERATION NO.   4 ##########   Thu Apr 20 18:10:11 2017
+########## END ITERATION NO.   4 ##########   Tue Apr 25 16:17:29 2017
 
-It.    4    -197.3077255444      7.46D-02  3.51D-01  2.00D-02   DIIS   3    0.09198600s   LL SL          Thu Apr 20
+It.    4    -197.3077255444      7.46D-02  3.51D-01  2.00D-02   DIIS   3    0.09098600s   LL SL          Tue Apr 25
 
-########## START ITERATION NO.   5 ##########   Thu Apr 20 18:10:11 2017
+########## START ITERATION NO.   5 ##########   Tue Apr 25 16:17:29 2017
 
     5 *** Differential density matrix. DCOVLP     = 1.0004
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.01099902s
-SOfock:SL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.07398897s
+SOfock:LL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.01099801s
+SOfock:SL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.07498899s
 E_HOMO...E_LUMO, symmetry 1:    19  -0.31432   20   1.15952
 E_HOMO...E_LUMO, symmetry 2:    46  -1.23040   47   0.88315
->>> Total wall time: 0.09390000s, and total CPU time : 0.09098700s
+>>> Total wall time: 0.09300000s, and total CPU time : 0.09098600s
 
-########## END ITERATION NO.   5 ##########   Thu Apr 20 18:10:11 2017
+########## END ITERATION NO.   5 ##########   Tue Apr 25 16:17:30 2017
 
-It.    5    -197.3077891640      6.36D-05 -2.75D-03  2.81D-03   DIIS   4    0.09098700s   LL SL          Thu Apr 20
+It.    5    -197.3077891640      6.36D-05 -2.75D-03  2.81D-03   DIIS   4    0.09098600s   LL SL          Tue Apr 25
 
-########## START ITERATION NO.   6 ##########   Thu Apr 20 18:10:11 2017
+########## START ITERATION NO.   6 ##########   Tue Apr 25 16:17:30 2017
 
     6 *** Differential density matrix. DCOVLP     = 1.0003
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.01099801s
-SOfock:SL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.07398897s
+SOfock:LL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.01199800s
+SOfock:SL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.07498899s
 E_HOMO...E_LUMO, symmetry 1:    19  -0.31437   20   1.15953
 E_HOMO...E_LUMO, symmetry 2:    46  -1.23045   47   0.88315
->>> Total wall time: 0.09370000s, and total CPU time : 0.08998600s
+>>> Total wall time: 0.09310000s, and total CPU time : 0.08998700s
 
-########## END ITERATION NO.   6 ##########   Thu Apr 20 18:10:11 2017
+########## END ITERATION NO.   6 ##########   Tue Apr 25 16:17:30 2017
 
-It.    6    -197.3077909632      1.80D-06  2.42D-04  2.12D-04   DIIS   5    0.08998600s   LL SL          Thu Apr 20
+It.    6    -197.3077909632      1.80D-06  2.42D-04  2.12D-04   DIIS   5    0.08998700s   LL SL          Tue Apr 25
 
-########## START ITERATION NO.   7 ##########   Thu Apr 20 18:10:11 2017
+########## START ITERATION NO.   7 ##########   Tue Apr 25 16:17:30 2017
 
     7 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.01199800s
-SOfock:SL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.07398903s
+SOfock:LL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.01199901s
+SOfock:SL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.07398802s
 E_HOMO...E_LUMO, symmetry 1:    19  -0.31436   20   1.15952
 E_HOMO...E_LUMO, symmetry 2:    46  -1.23045   47   0.88314
->>> Total wall time: 0.09230000s, and total CPU time : 0.08998700s
+>>> Total wall time: 0.09370000s, and total CPU time : 0.09098600s
 
-########## END ITERATION NO.   7 ##########   Thu Apr 20 18:10:11 2017
+########## END ITERATION NO.   7 ##########   Tue Apr 25 16:17:30 2017
 
-It.    7    -197.3077909760      1.28D-08 -2.21D-05  2.88D-05   DIIS   6    0.08998700s   LL SL          Thu Apr 20
+It.    7    -197.3077909760      1.28D-08 -2.21D-05  2.88D-05   DIIS   6    0.09098600s   LL SL          Tue Apr 25
 
-########## START ITERATION NO.   8 ##########   Thu Apr 20 18:10:11 2017
+########## START ITERATION NO.   8 ##########   Tue Apr 25 16:17:30 2017
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.01199806s
+SOfock:SL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.07298899s
+E_HOMO...E_LUMO, symmetry 1:    19  -0.31436   20   1.15952
+E_HOMO...E_LUMO, symmetry 2:    46  -1.23045   47   0.88314
+>>> Total wall time: 0.09320000s, and total CPU time : 0.08998600s
+
+########## END ITERATION NO.   8 ##########   Tue Apr 25 16:17:30 2017
+
+It.    8    -197.3077909762      1.90D-10  4.94D-06  2.33D-06   DIIS   7    0.08998600s   LL SL          Tue Apr 25
+
+########## START ITERATION NO.   9 ##########   Tue Apr 25 16:17:30 2017
+
+    9 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.01299798s
+SOfock:SL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.07398897s
+E_HOMO...E_LUMO, symmetry 1:    19  -0.31436   20   1.15952
+E_HOMO...E_LUMO, symmetry 2:    46  -1.23045   47   0.88314
+>>> Total wall time: 0.09400000s, and total CPU time : 0.09198700s
+
+########## END ITERATION NO.   9 ##########   Tue Apr 25 16:17:30 2017
+
+It.    9    -197.3077909762      9.38D-13 -1.84D-07  1.99D-07   DIIS   8    0.09198700s   LL SL          Tue Apr 25
+
+########## START ITERATION NO.  10 ##########   Tue Apr 25 16:17:30 2017
+
+   10 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.01199800s
+SOfock:SL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.07398802s
+E_HOMO...E_LUMO, symmetry 1:    19  -0.31436   20   1.15952
+E_HOMO...E_LUMO, symmetry 2:    46  -1.23045   47   0.88314
+>>> Total wall time: 0.08970000s, and total CPU time : 0.08998600s
+
+########## END ITERATION NO.  10 ##########   Tue Apr 25 16:17:30 2017
+
+It.   10    -197.3077909762     -1.71D-13  3.65D-08  1.76D-08   DIIS   9    0.08998600s   LL SL          Tue Apr 25
+
+########## START ITERATION NO.  11 ##########   Tue Apr 25 16:17:30 2017
+
+   11 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.01099801s
 SOfock:SL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.07498896s
 E_HOMO...E_LUMO, symmetry 1:    19  -0.31436   20   1.15952
 E_HOMO...E_LUMO, symmetry 2:    46  -1.23045   47   0.88314
->>> Total wall time: 0.09340000s, and total CPU time : 0.09098500s
+>>> Total wall time: 0.08920000s, and total CPU time : 0.08898600s
 
-########## END ITERATION NO.   8 ##########   Thu Apr 20 18:10:11 2017
+########## END ITERATION NO.  11 ##########   Tue Apr 25 16:17:30 2017
 
-It.    8    -197.3077909762      1.90D-10  4.94D-06  2.33D-06   DIIS   7    0.09098500s   LL SL          Thu Apr 20
+It.   11    -197.3077909762      8.53D-14  1.60D-09  3.22D-09   DAMP 25%    0.08898600s   LL SL          Tue Apr 25
 
-########## START ITERATION NO.   9 ##########   Thu Apr 20 18:10:11 2017
-
-    9 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.01199800s
-SOfock:SL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.07398897s
-E_HOMO...E_LUMO, symmetry 1:    19  -0.31436   20   1.15952
-E_HOMO...E_LUMO, symmetry 2:    46  -1.23045   47   0.88314
->>> Total wall time: 0.09280000s, and total CPU time : 0.08998700s
-
-########## END ITERATION NO.   9 ##########   Thu Apr 20 18:10:11 2017
-
-It.    9    -197.3077909762      9.38D-13 -1.84D-07  1.99D-07   DIIS   8    0.08998700s   LL SL          Thu Apr 20
-
-########## START ITERATION NO.  10 ##########   Thu Apr 20 18:10:11 2017
-
-   10 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.01199800s
-SOfock:SL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.07498801s
-E_HOMO...E_LUMO, symmetry 1:    19  -0.31436   20   1.15952
-E_HOMO...E_LUMO, symmetry 2:    46  -1.23045   47   0.88314
->>> Total wall time: 0.09040000s, and total CPU time : 0.08998600s
-
-########## END ITERATION NO.  10 ##########   Thu Apr 20 18:10:11 2017
-
-It.   10    -197.3077909762     -1.71D-13  3.65D-08  1.76D-08   DIIS   9    0.08998600s   LL SL          Thu Apr 20
-
-########## START ITERATION NO.  11 ##########   Thu Apr 20 18:10:11 2017
-
-   11 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.01099801s
-SOfock:SL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.07498902s
-E_HOMO...E_LUMO, symmetry 1:    19  -0.31436   20   1.15952
-E_HOMO...E_LUMO, symmetry 2:    46  -1.23045   47   0.88314
->>> Total wall time: 0.08950000s, and total CPU time : 0.08998600s
-
-########## END ITERATION NO.  11 ##########   Thu Apr 20 18:10:11 2017
-
-It.   11    -197.3077909762      8.53D-14  1.60D-09  3.22D-09   DAMP 25%    0.08998600s   LL SL          Thu Apr 20
-
-########## START ITERATION NO.  12 ##########   Thu Apr 20 18:10:11 2017
+########## START ITERATION NO.  12 ##########   Tue Apr 25 16:17:30 2017
 
    12 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.01199901s
-SOfock:SL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.07398802s
->>> Total wall time: 0.08730000s, and total CPU time : 0.08698700s
+SOfock:SL  0.00D+00    0.00%    0.00%    0.00%    0.00%   0.07398796s
+>>> Total wall time: 0.08690000s, and total CPU time : 0.08698700s
 
-########## END ITERATION NO.  12 ##########   Thu Apr 20 18:10:12 2017
+########## END ITERATION NO.  12 ##########   Tue Apr 25 16:17:30 2017
 
-It.   12    -197.3077909762      8.53D-14  5.52D-10  2.20D-09   DAMP 25%    0.08698700s   LL SL          Thu Apr 20
+It.   12    -197.3077909762      8.53D-14  5.52D-10  2.20D-09   DAMP 25%    0.08698700s   LL SL          Tue Apr 25
 
 
                                    SCF - CYCLE
@@ -1127,23 +1127,23 @@ It.   12    -197.3077909762      8.53D-14  5.52D-10  2.20D-09   DAMP 25%    0.08
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -60.02512323616      0.00D+00  0.00D+00  0.00D+00               0.05899100s   Scr. nuclei    Thu Apr 20
-It.    2    -196.9640233167      1.37D+02  4.79D+00  1.51D+00               0.08998500s   LL SL          Thu Apr 20
-It.    3    -197.2331425968      2.69D-01 -1.07D+00  7.61D-01   DIIS   2    0.08898700s   LL SL          Thu Apr 20
-It.    4    -197.3077255444      7.46D-02  3.51D-01  2.00D-02   DIIS   3    0.09198600s   LL SL          Thu Apr 20
-It.    5    -197.3077891640      6.36D-05 -2.75D-03  2.81D-03   DIIS   4    0.09098700s   LL SL          Thu Apr 20
-It.    6    -197.3077909632      1.80D-06  2.42D-04  2.12D-04   DIIS   5    0.08998600s   LL SL          Thu Apr 20
-It.    7    -197.3077909760      1.28D-08 -2.21D-05  2.88D-05   DIIS   6    0.08998700s   LL SL          Thu Apr 20
-It.    8    -197.3077909762      1.90D-10  4.94D-06  2.33D-06   DIIS   7    0.09098500s   LL SL          Thu Apr 20
-It.    9    -197.3077909762      9.38D-13 -1.84D-07  1.99D-07   DIIS   8    0.08998700s   LL SL          Thu Apr 20
-It.   10    -197.3077909762     -1.71D-13  3.65D-08  1.76D-08   DIIS   9    0.08998600s   LL SL          Thu Apr 20
-It.   11    -197.3077909762      8.53D-14  1.60D-09  3.22D-09   DAMP 25%    0.08998600s   LL SL          Thu Apr 20
-It.   12    -197.3077909762      8.53D-14  5.52D-10  2.20D-09   DAMP 25%    0.08698700s   LL SL          Thu Apr 20
+It.    1    -60.02512323616      0.00D+00  0.00D+00  0.00D+00               0.05799100s   Scr. nuclei    Tue Apr 25
+It.    2    -196.9640233167      1.37D+02  4.79D+00  1.51D+00               0.08998600s   LL SL          Tue Apr 25
+It.    3    -197.2331425968      2.69D-01 -1.07D+00  7.61D-01   DIIS   2    0.08998600s   LL SL          Tue Apr 25
+It.    4    -197.3077255444      7.46D-02  3.51D-01  2.00D-02   DIIS   3    0.09098600s   LL SL          Tue Apr 25
+It.    5    -197.3077891640      6.36D-05 -2.75D-03  2.81D-03   DIIS   4    0.09098600s   LL SL          Tue Apr 25
+It.    6    -197.3077909632      1.80D-06  2.42D-04  2.12D-04   DIIS   5    0.08998700s   LL SL          Tue Apr 25
+It.    7    -197.3077909760      1.28D-08 -2.21D-05  2.88D-05   DIIS   6    0.09098600s   LL SL          Tue Apr 25
+It.    8    -197.3077909762      1.90D-10  4.94D-06  2.33D-06   DIIS   7    0.08998600s   LL SL          Tue Apr 25
+It.    9    -197.3077909762      9.38D-13 -1.84D-07  1.99D-07   DIIS   8    0.09198700s   LL SL          Tue Apr 25
+It.   10    -197.3077909762     -1.71D-13  3.65D-08  1.76D-08   DIIS   9    0.08998600s   LL SL          Tue Apr 25
+It.   11    -197.3077909762      8.53D-14  1.60D-09  3.22D-09   DAMP 25%    0.08898600s   LL SL          Tue Apr 25
+It.   12    -197.3077909762      8.53D-14  5.52D-10  2.20D-09   DAMP 25%    0.08698700s   LL SL          Tue Apr 25
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   12 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.05830000s
-      LL SL        :    0.09215455s
+      No 2-ints    :    0.05820000s
+      LL SL        :    0.09205455s
 
 
                                    TOTAL ENERGY
@@ -1201,10 +1201,10 @@ It.   12    -197.3077909762      8.53D-14  5.52D-10  2.20D-09   DAMP 25%    0.08
      ************************************************************************
 
 
- Transformation started at : Thu Apr 20 18:10:12 2017
+ Transformation started at : Tue Apr 25 16:17:30 2017
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -197.307790976184805
-* Heading :DIRAC: No title specified !!!                     Thu Apr 20 18:10:11 2017
+* Heading :DIRAC: No title specified !!!                     Tue Apr 25 16:17:30 2017
 
 * Orbital ranges for 4-index transformation:
 
@@ -1276,10 +1276,10 @@ It.   12    -197.3077909762      8.53D-14  5.52D-10  2.20D-09   DAMP 25%    0.08
       **********************************************************************
 
 
- Transformation started at : Thu Apr 20 18:10:12 2017
+ Transformation started at : Tue Apr 25 16:17:30 2017
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -197.307790976184805
-* Heading :DIRAC: No title specified !!!                     Thu Apr 20 18:10:11 2017
+* Heading :DIRAC: No title specified !!!                     Tue Apr 25 16:17:30 2017
 
 
  * Fermion ircop E1g
@@ -1320,13 +1320,13 @@ It.   12    -197.3077909762      8.53D-14  5.52D-10  2.20D-09   DAMP 25%    0.08
        ********************************************************************
 
 
- Transformation started at : Thu Apr 20 18:10:12 2017
+ Transformation started at : Tue Apr 25 16:17:30 2017
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -197.307790976184805
-* Heading :DIRAC: No title specified !!!                     Thu Apr 20 18:10:11 2017
+* Heading :DIRAC: No title specified !!!                     Tue Apr 25 16:17:30 2017
 
 * REAFCK: Fock matrix read from file /state/partition1/gomes/dirac_runspace/gomes/DIRAC_eom_ee_dc
-* Heading :DIRAC: No title specified !!!                     Thu Apr 20 18:10:10 2017
+* Heading :DIRAC: No title specified !!!                     Tue Apr 25 16:17:29 2017
 
 
  Core energy (includes nuclear repulsion) :             57.1630252364
@@ -1340,16 +1340,16 @@ It.   12    -197.3077909762      8.53D-14  5.52D-10  2.20D-09   DAMP 25%    0.08
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
  - Integral class 1 : (LL|??)
    - Beginning task   1 of   3 after      0. seconds and      0. CPU-seconds
-   - Beginning task   2 of   3 after      4. seconds and      4. CPU-seconds
-   - Beginning task   3 of   3 after      4. seconds and      4. CPU-seconds
+   - Beginning task   2 of   3 after      0. seconds and      0. CPU-seconds
+   - Beginning task   3 of   3 after      0. seconds and      0. CPU-seconds
  - Integral class 2 : (SS|??)
-   - Beginning task   4 of   8 after      4. seconds and      4. CPU-seconds
-   - Beginning task   5 of   8 after      4. seconds and      4. CPU-seconds
-   - Beginning task   6 of   8 after      4. seconds and      4. CPU-seconds
-   - Beginning task   7 of   8 after      4. seconds and      4. CPU-seconds
-   - Beginning task   8 of   8 after      4. seconds and      4. CPU-seconds
+   - Beginning task   4 of   8 after      0. seconds and      0. CPU-seconds
+   - Beginning task   5 of   8 after      0. seconds and      0. CPU-seconds
+   - Beginning task   6 of   8 after      0. seconds and      0. CPU-seconds
+   - Beginning task   7 of   8 after      0. seconds and      0. CPU-seconds
+   - Beginning task   8 of   8 after      0. seconds and      0. CPU-seconds
  Node    0 finished first half transformation         3322644 HT integrals written ( 86.66%,      0.05 GB)
- >>> Time used in 2HT_all is   0.53 seconds
+ >>> Time used in 2HT_all is   0.56 seconds
  - Binary  file MDCINT was written.
 * Screening statistics:
    (LL|LL)ints :   0.00%
@@ -1358,14 +1358,14 @@ It.   12    -197.3077909762      8.53D-14  5.52D-10  2.20D-09   DAMP 25%    0.08
 
 ------ Timing report (in CPU seconds) of module  integral transformation      
 
- Time in  First halftransformation            4.552 seconds
- Time in  Second halftransformation           0.532 seconds
+ Time in  First halftransformation            0.693 seconds
+ Time in  Second halftransformation           0.556 seconds
 
 
- Total wall time used in PAMTRA :   00:00:05
- Total CPU  time used in PAMTRA (master only) :   00:00:05
+ Total wall time used in PAMTRA :   00:00:01
+ Total CPU  time used in PAMTRA (master only) :   00:00:01
 
- Transformation ended at : Thu Apr 20 18:10:17 2017
+ Transformation ended at : Tue Apr 25 16:17:32 2017
 
 
 ---< Process     1 of     1----<
@@ -1390,8 +1390,8 @@ It.   12    -197.3077909762      8.53D-14  5.52D-10  2.20D-09   DAMP 25%    0.08
   - Parallelization :        M. Pernpointner and L. Visscher, J. Comp. Chem. 24 (2003) 754.
 
 
- Today is :    20 Apr 17
- The time is :  18:10:17
+ Today is :    25 Apr 17
+ The time is :  16:17:32
 
  Initializing word-addressable I/O : the FORTRAN-interface is used with    16 KB records
   1Eg 2Eg 1Eu 2Eu  ag  bg  au  bu
@@ -1448,26 +1448,26 @@ It.   12    -197.3077909762      8.53D-14  5.52D-10  2.20D-09   DAMP 25%    0.08
  Type VOVV :          120230 integrals
  Type VVVV :          123805 integrals
  
- Start sorting of integral classes at  20 Apr 17 18:10:17
+ Start sorting of integral classes at  25 Apr 17 16:17:32
  
  
- Sorting of first 4 classes done at  20 Apr 17 18:10:17
+ Sorting of first 4 classes done at  25 Apr 17 16:17:32
 
  Need      1 passes to sort VOVV integrals
  
- Pass     1 ended at  20 Apr 17 18:10:17
+ Pass     1 ended at  25 Apr 17 16:17:32
  
- VOVV sorting done at  20 Apr 17 18:10:17
+ VOVV sorting done at  25 Apr 17 16:17:32
 
  Need      1 passes to sort VVVV integrals
  
- Pass     1 ended at  20 Apr 17 18:10:17
+ Pass     1 ended at  25 Apr 17 16:17:32
  
- VVVV sorting done at  20 Apr 17 18:10:17
+ VVVV sorting done at  25 Apr 17 16:17:32
 
  Reading Coulomb integrals :
- File date :      20 Apr 17
- File time :       18:10:17
+ File date :      25 Apr 17
+ File time :       16:17:32
  # of integrals              791659
 
  Finished sorting of integrals
@@ -2949,8 +2949,8 @@ It.   12    -197.3077909762      8.53D-14  5.52D-10  2.20D-09   DAMP 25%    0.08
 --------------------------------------------------------------------------------
 
 
- Today is :    20 Apr 17
- The time is :  18:10:19
+ Today is :    25 Apr 17
+ The time is :  16:17:34
 
  Status of the calculations
  Integral sort # 1 :                   Completed, restartable        
@@ -2979,59 +2979,58 @@ It.   12    -197.3077909762      8.53D-14  5.52D-10  2.20D-09   DAMP 25%    0.08
 
 ------ Timing report (in CPU seconds) of module  RELCCSD                      
 
- Time in Sorting of integrals                 0.398 seconds
- Time in CCSD equations                       0.233 seconds
- Time in - T1 equations                       0.040 seconds
- Time in --- T1EQNS T*[HOV - F]*T             0.001 seconds
- Time in --- T1EQNS HOV*T2(A,C,I,K            0.002 seconds
- Time in --- T1EQNS VOOO*TAU                  0.005 seconds
+ Time in Sorting of integrals                 0.415 seconds
+ Time in CCSD equations                       0.241 seconds
+ Time in - T1 equations                       0.041 seconds
+ Time in --- T1EQNS HOV*T2(A,C,I,K            0.003 seconds
+ Time in --- T1EQNS VOOO*TAU                  0.006 seconds
  Time in --- T1EQNS VOVV contribution         0.011 seconds
  Time in --- T1EQNS VOVO * T(C,K)             0.003 seconds
- Time in - T2 equations                       0.172 seconds
- Time in -- GOINTM                            0.002 seconds
- Time in -- GVINTM                            0.009 seconds
- Time in -- AINTM                             0.002 seconds
- Time in -- HINTM                             0.068 seconds
- Time in --- HINTM: VOVV*T                    0.014 seconds
- Time in --- HINTM: VVOO contribution         0.017 seconds
- Time in -- T2 EQNS                           0.068 seconds
+ Time in - T2 equations                       0.176 seconds
+ Time in -- GOINTM                            0.005 seconds
+ Time in -- GVINTM                            0.004 seconds
+ Time in -- AINTM                             0.008 seconds
+ Time in -- HINTM                             0.067 seconds
+ Time in --- HINTM: VOVV*T                    0.012 seconds
+ Time in --- HINTM: VVOO contribution         0.018 seconds
+ Time in -- T2 EQNS                           0.070 seconds
  Time in --- T2EQNS: TAU*AINTM contract       0.002 seconds
- Time in --- T2EQNS: VOVV*T1                  0.009 seconds
- Time in --- T2EQNS: HINTM*T2                 0.035 seconds
- Time in -- BINTM                             0.023 seconds
- Time in - DIIS extrapolation                 0.015 seconds
- Time in CCSD(T) evaluation                   0.094 seconds
+ Time in --- T2EQNS: VOVV*T1                  0.010 seconds
+ Time in --- T2EQNS: HINTM*T2                 0.034 seconds
+ Time in -- BINTM                             0.021 seconds
+ Time in - DIIS extrapolation                 0.019 seconds
+ Time in CCSD(T) evaluation                   0.098 seconds
  Time in -- T3CORR: Integral resorting        0.001 seconds
- Time in -- T3CORR: VOVV contraction          0.045 seconds
- Time in -- T3CORR: energy calculation        0.044 seconds
+ Time in -- T3CORR: VOVV contraction          0.050 seconds
+ Time in -- T3CORR: energy calculation        0.043 seconds
 
 
  Timing of main modules :         Wallclock (s)       CPU on master (s)
- Before CC driver :             206017.41                     7.81
+ Before CC driver :             201756.09                     2.48
  Initialization :                    0.05                     0.05
- Integral sorting :                  0.40                     0.40
- Energy calculation :                0.35                     0.35
+ Integral sorting :                  0.41                     0.41
+ Energy calculation :                0.36                     0.36
  First order properties :            0.00                     0.00
  Second order properties :           0.00                     0.00
  Fock space energies :               0.00                     0.00
- EOMCC energies :                    0.00                     1.08
- Untimed parts :                     1.08                     0.00
- Total time in CC driver :             2.                     1.88
+ EOMCC energies :                    0.00                     1.10
+ Untimed parts :                     1.10                     0.00
+ Total time in CC driver :             2.                     1.93
 
  Statistics for the word-addressable I/O
  Number of write calls                                1152.
  Number of read calls                                 1398.
  Megabytes written                                   14.313
  Megabytes read                                     289.134
- Seconds spent in reads                               0.033
- Seconds spent in writes                              0.041
- average I/O speed for write (Mb/s)                 429.830
- average I/O speed for read  (Mb/s)                7000.823
+ Seconds spent in reads                               0.037
+ Seconds spent in writes                              0.046
+ average I/O speed for write (Mb/s)                 391.075
+ average I/O speed for read  (Mb/s)                6244.794
 
 
- CPU time (seconds) used in RELCCSD:                     1.8797
- CPU time (seconds) used before RELCCSD:                 7.8088
- CPU time (seconds) used in total sofar:                 9.6885
+ CPU time (seconds) used in RELCCSD:                     1.9327
+ CPU time (seconds) used before RELCCSD:                 2.4836
+ CPU time (seconds) used in total sofar:                 4.4163
 
   --- Normal end of RELCCSD Run ---
 
@@ -3044,7 +3043,7 @@ It.   12    -197.3077909762      8.53D-14  5.52D-10  2.20D-09   DAMP 25%    0.08
 
 
  
-     Date and time (Linux)  : Thu Apr 20 18:10:19 2017
+     Date and time (Linux)  : Tue Apr 25 16:17:34 2017
      Host name              : phlam-s-sakura.univ-lille1.fr           
 
   
@@ -3072,5 +3071,5 @@ It.   12    -197.3077909762      8.53D-14  5.52D-10  2.20D-09   DAMP 25%    0.08
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
->>>> Node 0, utime: 3, stime: 6, minflt: 129183, majflt: 0, nvcsw: 8, nivcsw: 78, maxrss: 80832
->>>> Total WALL time used in DIRAC: 10s
+>>>> Node 0, utime: 3, stime: 0, minflt: 21197, majflt: 0, nvcsw: 8, nivcsw: 74, maxrss: 482864
+>>>> Total WALL time used in DIRAC: 5s
