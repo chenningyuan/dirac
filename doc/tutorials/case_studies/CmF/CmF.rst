@@ -62,4 +62,7 @@ This assures that the orbitals are correctly ordered when we start the SCF itera
 overlap selection. We impose non-dynamic overlap selection, which means that orbitals in a given iteration are selected based on their overlap 
 with the *initial* orbitals.
 
+This calculation converges smoothly in 13 iterations.
+
+
 

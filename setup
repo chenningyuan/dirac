@@ -5,6 +5,7 @@
 
 import os
 import sys
+assert sys.version_info >= (2, 6), 'Python >= 2.6 is required' 
 
 sys.path.insert(0, 'cmake')
 from autocmake import configure
@@ -37,7 +38,7 @@ Options:
   --explicit-libs=<LIBS>                 Explicit linker specification for extra libraries passed directly to the linker [default: off].
   --pcmsolver=<ENABLE_PCMSOLVER>         Toggle use of PCMSolver <ON/OFF> [default: ON].
   --pcmsolver-dir=<PCMSOLVER_ROOT>       The PCMSolver module location. [default: ''].
-  --type=<TYPE>                          Set the CMake build type (debug, release, or relwithdeb) [default: release].
+  --type=<TYPE>                          Set the CMake build type (debug, release, relwithdebinfo, minsizerel) [default: release].
   --generator=<STRING>                   Set the CMake build system generator [default: Unix Makefiles].
   --show                                 Show CMake command and exit.
   --cmake-executable=<CMAKE_EXECUTABLE>  Set the CMake executable [default: cmake].
@@ -71,7 +72,7 @@ def gen_cmake_command(options, arguments):
     command.append('-DENABLE_MPI={0}'.format(arguments['--mpi']))
     command.append('-DENABLE_CODE_COVERAGE={0}'.format(arguments['--coverage']))
     command.append('-DENABLE_STATIC_LINKING={0}'.format(arguments['--static']))
-    command.append('-DENABLE_PROFILING={0}'.format(arguments['--check']))
+    command.append('-DENABLE_PROFILING={0}'.format(arguments['--profile']))
     command.append('-DENABLE_RUNTIMECHECK={0}'.format(arguments['--check']))
     command.append('-DENABLE_64BIT_INTEGERS={0}'.format(arguments['--int64']))
     command.append('-DEXPLICIT_LIBS="{0}"'.format(arguments['--explicit-libs'].strip()))

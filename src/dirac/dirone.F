@@ -6250,7 +6250,7 @@ C         If so, subtract from occupation number
             I1 = NISH(IFRP)
             DO IOPEN = 1,NOPEN
               I2 = I1 + NACSH(IFRP,IOPEN)
-              IF(IP.GT.I1.OR.IP.LE.I2) THEN
+              IF(IP.GT.I1.AND.IP.LE.I2) THEN
                 NACSHMF(IFRP,IOPEN) = NACSHMF(IFRP,IOPEN) - 1
                 GOTO 20
               ENDIF
@@ -6785,6 +6785,7 @@ C
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dgroup.h"
+#include "pgroup.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbdhf.h"
@@ -6906,6 +6907,16 @@ C
           NEFF  = NORB_SUB(ISUB,IFRP,0) - NVECS_SUB(ISUB)
 C.........New matrix
           IF(NVECS_SUB(ISUB).GT.0) THEN
+            IF(SUB_BL) THEN
+              ID = ID_SUB_BL(ISUB,IFRP)
+              IF (SPINFR) THEN
+                WRITE(LUPRI,'(/2A)') '* Boson symmetry ',REP(ID)
+              ELSE
+                WRITE(LUPRI,'(/A,I4,3A,I2,A)')
+     &              '* Block',ISUB,' in ',FREP(IFRP),
+     &              ':  Omega = ',ABS(ID),'/2'
+              ENDIF
+            ENDIF
             NPRJ = NORB_SUB(ISUB,IFRP,0)*NORB_SUB(ISUB,IFRP,0)*NZ
             CALL MEMGET('REAL',KBUF,NPRJ,WORK,KFREE,LFREE)
 C...........Do projection
@@ -7164,7 +7175,7 @@ C.....Form density matrix
      &           WORK(KEIG),1,VMO,NORB,
      &           NORB,WORK(KFREE),LFREE,IERR)
 CTROND
-      WRITE(6,*) 'Eigenvalues from PRJORT:'
+      WRITE(6,*) ' Eigenvalues from PRJORT: ',NVEC
       CALL OUTPUT(WORK(KEIG),1,NORB,1,1,
      &            NORB,NORB,-1,LUPRI)
       CALL MEMREL('PRJORT',WORK,1,KFRSAV,KFREE,LFREE)
