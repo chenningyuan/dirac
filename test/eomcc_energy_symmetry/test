@@ -30,7 +30,7 @@ test.run(['eom_ea_dc_noinv.inp'],    ['f2_d2.mol', 'f2_c2v.mol', 'f2_c2.mol', 'f
 #test.run(['eom_ea_dc_noinv_c1.inp'], ['f2_c1.mol'], f, args='--mw=110')
 
 # at this time only real groups work for eom-ee
-test.run(['eom_ee_dc_noinv.inp'],    ['f2_c2v.mol', 'f2_d2.mol'], f, args='--mw=110')
+test.run(['eom_ee_dc_noinv.inp'],    ['f2_d2.mol', 'f2_c2v.mol', 'f2_c2.mol', 'f2_cs.mol'], f, args='--mw=110')
 
 # now run tests with inversion
 test.run(['eom_ip_dc_inv.inp'],      ['f2_d2h.mol'], f, args='--mw=110')
@@ -58,7 +58,7 @@ test.run(['eom_ea_dc_noinv_full_nooverlap.inp'],    ['f2_d2.mol', 'f2_c2v.mol', 
 #test.run(['eom_ea_dc_noinv_full_nooverlap_c1.inp'], ['f2_c1.mol'], f, args='--mw=110')
 
 # at this time only real groups work for eom-ee
-test.run(['eom_ee_dc_noinv_full_nooverlap.inp'],    ['f2_c2v.mol', 'f2_d2.mol'], f, args='--mw=110')
+test.run(['eom_ee_dc_noinv_full_nooverlap.inp'],    ['f2_d2.mol', 'f2_c2v.mol', 'f2_c2.mol', 'f2_cs.mol'], f, args='--mw=110')
 
 # now run tests with inversion
 #test.run(['eom_ip_dc_inv_full_nooverlap.inp'],      ['f2_d2h.mol'], f, args='--mw=110')
