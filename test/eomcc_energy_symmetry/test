@@ -25,9 +25,10 @@ f.add(from_string = ' Energy eigenvalues in atomic units',
 test.run(['eom_ip_dc_noinv.inp'],    ['f2_d2.mol', 'f2_c2v.mol', 'f2_c2.mol', 'f2_cs.mol'], f, args='--mw=110')
 test.run(['eom_ip_dc_noinv_c1.inp'], ['f2_c1.mol'], f, args='--mw=110')
 
-test.run(['eom_ea_dc_noinv.inp'],    ['f2_d2.mol', 'f2_c2v.mol', 'f2_c2.mol', 'f2_cs.mol'], f, args='--mw=110')
+test.run(['eom_ea_dc_noinv.inp'],    ['f2_d2.mol', 'f2_c2v.mol'], f, args='--mw=110')
+test.run(['eom_ea_dc_noinv.inp'],    ['f2_cs.mol', 'f2_c2.mol'], f, args='--mw=110')
 # the eom-ea c1 test is commented for the time being because it may fail due to the degeneracies of certain roots not being strictly maintained
-#test.run(['eom_ea_dc_noinv_c1.inp'], ['f2_c1.mol'], f, args='--mw=110')
+test.run(['eom_ea_dc_noinv_c1.inp'], ['f2_c1.mol'], f, args='--mw=110')
 
 # at this time only real groups work for eom-ee
 test.run(['eom_ee_dc_noinv.inp'],    ['f2_d2.mol', 'f2_c2v.mol', 'f2_c2.mol', 'f2_cs.mol'], f, args='--mw=110')

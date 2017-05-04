@@ -956,11 +956,7 @@ integer :: ierr
   r1_ptr(1:ndimr1) => r1
   r2_ptr(1:ndimr2) => r2
 
-!!#if defined (VAR_MPI)
-!!    if (myproc.gt.0) then
-!        sigma2(1:ndimr2*rcw) = 0.0d0
-!!     endif
-!!#endif
+  sigma2(1:ndimr2) = 0.0d0
 
 !S(a,i*) = S(a,i*) +  F(a,e)*R(e,i*)   
 !---------------------------
@@ -990,8 +986,6 @@ integer :: ierr
 
    if (iprnt.ge.2) &
    write(iw,*)'diagram 3 ', ddot(ndimr1,sigma1,1,sigma1,1)
-
-   if (myproc == master) then
 
 !S(ab,i*j) = S(ab,i*j) +  w_efam(ab,ej)*r1(e,i*)
 !--------------------------------------------------
@@ -1053,17 +1047,10 @@ integer :: ierr
        if (iprnt.ge.2) &
     write(iw,*)'diagram 9 ', ddot(ndimr2,sigma2,1,sigma2,1)
 
-     else
-
-     sigma2 = 0.0d0
-
-   endif
-
 ! S(ab,i*j) = S(ab,i*j) + w_vvvv(ab,ef)*r2(ef,i*j)
 !------------------------------------------------
-
-!     allocate(sigma2_local(ndimr2*rcw))
-!     sigma2_local = 0.0d0
+      allocate(sigma2_local(ndimr2))
+      sigma2_local = 0.0d0
 
       off1 = 1
       off2 = 1
@@ -1083,8 +1070,7 @@ integer :: ierr
          n = nox(irp)
          k = nint
          call xgemm ('n','n',m,n,k,a1,w_vvvv,m,r2_ptr(off1+istart*rcw),m, &
-!    &               a1,sigma2_local(off2),m)
-     &               a1,sigma2(off2),m)
+     &               a1,sigma2_local(off2),m)
 
          deallocate(w_vvvv)
 
@@ -1096,35 +1082,36 @@ integer :: ierr
          off2 = off2 + m * n * rcw
       enddo
 
+      allocate (local_buffer(ndimr2))
 #if defined (VAR_MPI)
       if (nmproc .gt. 1) then
-        allocate (local_buffer(ndimr2))
         call xcopy (ndimr2,a0,0,local_buffer,1)
         ierr = 0
 
-!       call interface_mpi_allreduce(sigma2_local, &
-        call interface_mpi_allreduce(sigma2, &
+      if (iprnt.ge.2) &
+   write(*,*)'diagram 7a ', ddot(ndimr2,sigma2_local,1,sigma2_local,1),myproc
+
+        call interface_mpi_allreduce(sigma2_local, &
              local_buffer, ndimr2, &
              op_mpi_sum,global_communicator)
+   write(*,*)'diagram 7b ', ddot(ndimr2,sigma2_local,1,sigma2_local,1),myproc
 
         if(ierr.gt.0) then
            call quit('mpi_reduce error in collecting sigma2 !')
         endif
-!       call xcopy(ndimr2,local_buffer,1,sigma2_local,1)
-        call xcopy(ndimr2,local_buffer,1,sigma2,1)
-      deallocate (local_buffer)
+        call xcopy(ndimr2,local_buffer,1,sigma2_local,1)
       endif
 #endif
+      deallocate (local_buffer)
 
-!     if (iprnt.ge.2) &
-!  write(*,*)'diagram 7 ', ddot(ndimr2,sigma2_local,1,sigma2_local,1),myproc
+      if (iprnt.ge.2) &
+   write(*,*)'diagram 7c ', ddot(ndimr2,sigma2_local,1,sigma2_local,1),myproc
 
-!      call XAXPY (ndimr2,A1,sigma2_local,1,sigma2,1)
-!    deallocate(sigma2_local)
+       call XAXPY (ndimr2,A1,sigma2_local,1,sigma2,1)
+     deallocate(sigma2_local)
 
-
-    if (iprnt.ge.2) &
-    write(iw,*)'diagram 7 ', ddot(ndimr2,sigma2,1,sigma2,1)
+       if (iprnt.ge.2) &
+    write(*,*)'diagram 7d ', ddot(ndimr2,sigma2,1,sigma2,1),myproc
 
  end subroutine
 
