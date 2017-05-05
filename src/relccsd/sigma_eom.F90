@@ -770,30 +770,36 @@ integer :: ierr
 #if defined (VAR_MPI)
       if (nmproc .gt. 1) then
         allocate (local_buffer(ndimr2))
-        call xcopy (ndimr2,a0,0,local_buffer,1)
+        call xcopy (ndimr2/rcw,a0,0,local_buffer,1)
         ierr = 0
+
+      if (iprnt.ge.2) &
+   write(*,*)'diagram 13a ', ddot(ndimr2,sigma2_local,1,sigma2_local,1),myproc
 
         call interface_mpi_allreduce(sigma2_local, &
 !       call interface_mpi_allreduce(sigma2, &
              local_buffer, ndimr2, &
              op_mpi_sum,global_communicator)
 
+      if (iprnt.ge.2) &
+   write(*,*)'diagram 13b ', ddot(ndimr2,sigma2_local,1,sigma2_local,1),myproc
+
         if(ierr.gt.0) then
            call quit('mpi_reduce error in collecting sigma2 !')
         endif
-        call xcopy(ndimr2,local_buffer,1,sigma2_local,1)
-!       call xcopy(ndimr2,local_buffer,1,sigma2,1)
+        call xcopy(ndimr2/rcw,local_buffer,1,sigma2_local,1)
+!       call xcopy(ndimr2/rcw,local_buffer,1,sigma2,1)
         deallocate (local_buffer)
      endif
 #endif
       if (iprnt.ge.2) &
-   write(*,*)'diagram 13 ', ddot(ndimr2,sigma2_local,1,sigma2_local,1),myproc
+   write(*,*)'diagram 13c', ddot(ndimr2,sigma2_local,1,sigma2_local,1),myproc
 
        call XAXPY (ndimr2/rcw,A1,sigma2_local,1,sigma2,1)
      deallocate(sigma2_local)
 
        if (iprnt.ge.2) &
-    write(*,*)'diagram 13 ', ddot(ndimr2,sigma2,1,sigma2,1),myproc
+    write(*,*)'diagram 13d', ddot(ndimr2,sigma2,1,sigma2,1),myproc
 
       call dealloc_array(f,g)
 
@@ -1086,7 +1092,7 @@ integer :: ierr
       allocate (local_buffer(ndimr2))
 #if defined (VAR_MPI)
       if (nmproc .gt. 1) then
-        call xcopy (ndimr2,a0,0,local_buffer,1)
+        call xcopy (ndimr2/rcw,a0,0,local_buffer,1)
         ierr = 0
 
       if (iprnt.ge.2) &
@@ -1103,8 +1109,8 @@ integer :: ierr
         if(ierr.gt.0) then
            call quit('mpi_reduce error in collecting sigma2 !')
         endif
-        call xcopy(ndimr2,local_buffer,1,sigma2_local,1)
-!       call xcopy(ndimr2,local_buffer,1,sigma2,1)
+        call xcopy(ndimr2/rcw,local_buffer,1,sigma2_local,1)
+!       call xcopy(ndimr2/rcw,local_buffer,1,sigma2,1)
       endif
 #endif
       deallocate (local_buffer)
