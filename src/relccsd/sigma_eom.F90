@@ -789,7 +789,7 @@ integer :: ierr
       if (iprnt.ge.2) &
    write(*,*)'diagram 13 ', ddot(ndimr2,sigma2_local,1,sigma2_local,1),myproc
 
-       call XAXPY (ndimr2,A1,sigma2_local,1,sigma2,1)
+       call XAXPY (ndimr2/rcw,A1,sigma2_local,1,sigma2,1)
      deallocate(sigma2_local)
 
        if (iprnt.ge.2) &
@@ -1071,6 +1071,7 @@ integer :: ierr
          k = nint
          call xgemm ('n','n',m,n,k,a1,w_vvvv,m,r2_ptr(off1+istart*rcw),m, &
      &               a1,sigma2_local(off2),m)
+!    &               a1,sigma2(off2),m)
 
          deallocate(w_vvvv)
 
@@ -1090,16 +1091,20 @@ integer :: ierr
 
       if (iprnt.ge.2) &
    write(*,*)'diagram 7a ', ddot(ndimr2,sigma2_local,1,sigma2_local,1),myproc
+!  write(*,*)'diagram 7a ', ddot(ndimr2,sigma2,1,sigma2,1),myproc
 
         call interface_mpi_allreduce(sigma2_local, &
+!       call interface_mpi_allreduce(sigma2, &
              local_buffer, ndimr2, &
              op_mpi_sum,global_communicator)
    write(*,*)'diagram 7b ', ddot(ndimr2,sigma2_local,1,sigma2_local,1),myproc
+!  write(*,*)'diagram 7b ', ddot(ndimr2,sigma2,1,sigma2,1),myproc
 
         if(ierr.gt.0) then
            call quit('mpi_reduce error in collecting sigma2 !')
         endif
         call xcopy(ndimr2,local_buffer,1,sigma2_local,1)
+!       call xcopy(ndimr2,local_buffer,1,sigma2,1)
       endif
 #endif
       deallocate (local_buffer)
@@ -1107,7 +1112,7 @@ integer :: ierr
       if (iprnt.ge.2) &
    write(*,*)'diagram 7c ', ddot(ndimr2,sigma2_local,1,sigma2_local,1),myproc
 
-       call XAXPY (ndimr2,A1,sigma2_local,1,sigma2,1)
+       call XAXPY (ndimr2/rcw,A1,sigma2_local,1,sigma2,1)
      deallocate(sigma2_local)
 
        if (iprnt.ge.2) &
