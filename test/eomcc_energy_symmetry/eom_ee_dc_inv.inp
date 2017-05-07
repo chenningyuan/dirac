@@ -29,6 +29,12 @@
 *EOMCC
 .EE
 1 4
+.EE
+2 4
+.EE
+3 4
+.EE
+4 4
 *CCENER
 .MAXIT
 45

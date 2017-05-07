@@ -19,16 +19,25 @@ f.add(from_string = ' Energy eigenvalues in atomic units',
 # 1. tests with the standard options, that is,sorted unit vectors as initial trial vectors and, roots sorted by overlap to the trial vectors
 # during the davidson procedure). 
 
-test.run(['eom_ip_dc_noinv.inp',    'eom_ea_dc_noinv.inp',    'eom_ee_dc_noinv.inp'],    ['f2_d2.mol', 'f2_c2v.mol', 'f2_c2.mol', 'f2_cs.mol'], f, args='--mw=110')
+test.run(['eom_ip_dc_noinv.inp'],   ['f2_d2.mol', 'f2_c2v.mol', 'f2_c2.mol', 'f2_cs.mol'], f, args='--mw=110')
+test.run(['eom_ea_dc_noinv.inp'],   ['f2_d2.mol', 'f2_c2v.mol', 'f2_c2.mol', 'f2_cs.mol'], f, args='--mw=110')
+test.run(['eom_ee_dc_noinv.inp'],   ['f2_d2.mol', 'f2_c2v.mol', 'f2_c2.mol', 'f2_cs.mol'], f, args='--mw=110')
 
-test.run(['eom_ip_dc_inv.inp',    'eom_ee_dc_inv.inp' ],     ['f2_d2h.mol'], f, args='--mw=110')
-test.run(['eom_ip_dc_inv_ci.inp'],                           ['f2_ci.mol'], f, args='--mw=110')
-#test.run(['eom_ip_dc_inv_ci.inp', 'eom_ee_dc_inv_ci.inp'],   ['f2_ci.mol'], f, args='--mw=110')
+test.run(['eom_ip_dc_noinv_c1.inp'], ['f2_c1.mol'], f, args='--mw=110')
+test.run(['eom_ea_dc_noinv_c1.inp'], ['f2_c1.mol'], f, args='--mw=110')
+test.run(['eom_ee_dc_noinv_c1.inp'], ['f2_c1.mol'], f, args='--mw=110')
 
-# the eom-ea tests for groups with inversion symmetry is commented for the time being because of an issue with trial vector construction (to be fixed) 
-#test.run(['eom_ea_dc_inv.inp'],      ['f2_d2h.mol'], f, args='--mw=110')
-#test.run(['eom_ea_dc_inv_ci.inp'],   ['f2_ci.mol'], f, args='--mw=110')
+test.run(['eom_ip_dc_inv.inp'],     ['f2_d2h.mol'], f, args='--mw=110')
+test.run(['eom_ea_dc_inv.inp'],     ['f2_d2h.mol'], f, args='--mw=110')
+test.run(['eom_ee_dc_inv.inp'],     ['f2_d2h.mol'], f, args='--mw=110')
 
+test.run(['eom_ip_dc_inv_ci.inp'],  ['f2_ci.mol'], f, args='--mw=110')
+# the next two runs don't use the standard approach because of issues in 
+# trial vector generation 
+test.run(['eom_ea_dc_inv_full_nooverlap_ci.inp'], ['f2_ci.mol'], f, args='--mw=110')
+test.run(['eom_ee_dc_inv_ccs_full_nooverlap_ci.inp'], ['f2_ci.mol'], f, args='--mw=110')
+#test.run(['eom_ea_dc_inv_ci.inp'],  ['f2_ci.mol'], f, args='--mw=110')
+#test.run(['eom_ee_dc_inv_ci.inp'],  ['f2_ci.mol'], f, args='--mw=110')
 
 # 2. the tests above but using the  unit vectors (1's along the diagonal)
 # and without enforcing overlap to the original trial vectors in the davidson 
@@ -37,19 +46,21 @@ test.run(['eom_ip_dc_inv_ci.inp'],                           ['f2_ci.mol'], f, a
 # the singly excited/ionized/attached states that the sorting with overlap
 # constrains.
 
-test.run(['eom_ip_dc_inv_full_nooverlap.inp',    'eom_ea_dc_noinv_full_nooverlap.inp',    'eom_ee_dc_noinv_full_nooverlap.inp'],    ['f2_d2.mol', 'f2_c2v.mol', 'f2_c2.mol', 'f2_cs.mol'], f, args='--mw=110')
+#test.run(['eom_ip_dc_noinv_full_nooverlap.inp'],  ['f2_d2.mol', 'f2_c2v.mol', 'f2_c2.mol', 'f2_cs.mol'], f, args='--mw=110')
+#test.run(['eom_ea_dc_noinv_full_nooverlap.inp'],  ['f2_d2.mol', 'f2_c2v.mol', 'f2_c2.mol', 'f2_cs.mol'], f, args='--mw=110')
+#test.run(['eom_ee_dc_noinv_full_nooverlap.inp'],  ['f2_d2.mol', 'f2_c2v.mol', 'f2_c2.mol', 'f2_cs.mol'], f, args='--mw=110')
 
-test.run(['eom_ip_dc_inv_full_nooverlap.inp',    'eom_ea_dc_inv_full_nooverlap.inp',    'eom_ee_dc_inv_full_nooverlap.inp'],      ['f2_d2h.mol'], f, args='--mw=110')
-test.run(['eom_ip_dc_inv_full_nooverlap_ci.inp', 'eom_ea_dc_inv_full_nooverlap_ci.inp', 'eom_ee_dc_inv_full_nooverlap_ci.inp'],   ['f2_ci.mol'], f, args='--mw=110')
+##test.run(['eom_ip_dc_inv_full_nooverlap.inp'],    ['f2_d2h.mol'], f, args='--mw=110')
+##test.run(['eom_ea_dc_inv_full_nooverlap.inp'],    ['f2_d2h.mol'], f, args='--mw=110')
+##test.run(['eom_ee_dc_inv_full_nooverlap.inp'],    ['f2_d2h.mol'], f, args='--mw=110')
 
-
-# do the c1 tests with a little less accuracy
-f.add(from_string = ' Energy eigenvalues in atomic units',
-      to_re       = 'Relative real eigenvalues in other units;',
-      abs_tolerance = 1.0e-5) 
-
-test.run(['eom_ip_dc_noinv_c1.inp', 'eom_ea_dc_noinv_c1.inp', 'eom_ee_dc_noinv_c1.inp'], ['f2_c1.mol'], f, args='--mw=110')
-test.run(['eom_ip_dc_inv_full_nooverlap_ci.inp', 'eom_ea_dc_noinv_full_nooverlap_c1.inp', 'eom_ee_dc_noinv_full_nooverlap_c1.inp'], ['f2_c1.mol'], f, args='--mw=110')
+#test.run(['eom_ip_dc_inv_full_nooverlap_ci.inp'], ['f2_ci.mol'], f, args='--mw=110')
+#test.run(['eom_ea_dc_inv_full_nooverlap_ci.inp'], ['f2_ci.mol'], f, args='--mw=110')
+#test.run(['eom_ee_dc_inv_full_nooverlap_ci.inp'], ['f2_ci.mol'], f, args='--mw=110')
+#
+##test.run(['eom_ip_dc_noinv_full_nooverlap_c1.inp'], ['f2_c1.mol'], f, args='--mw=110')
+##test.run(['eom_ea_dc_noinv_full_nooverlap_c1.inp'], ['f2_c1.mol'], f, args='--mw=110')
+##test.run(['eom_ee_dc_noinv_full_nooverlap_c1.inp'], ['f2_c1.mol'], f, args='--mw=110')
 
 
 sys.exit(test.return_code)
