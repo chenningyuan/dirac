@@ -5,8 +5,10 @@ C
 C     For the Intermediate Hamiltonian method we need to identify spinors as either
 C     element of Pm or Pi space. We use an array that gives this info that has
 C     the same structure as the EPS array (that is passed as argument).
+      INTEGER MAXSPIM
       PARAMETER (MAXSPIM=5000)
       REAL*8 CIH,ER_IH,AIH,SHIFT_IH
+      INTEGER IHSCHEME,IPIORB
       COMMON /CCIHI/ IPIORB(MAXSPIM),IHSCHEME,NIH
       COMMON /CCIHR/ CIH,ER_IH(2,2),AIH,SHIFT_IH(2,6)
       LOGICAL DOIH

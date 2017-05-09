@@ -2,11 +2,12 @@ C
 C     Define common blocks and other data for word-addressable I/O
 C
 C     The length of records, measured in integer words.
-      INTEGER*8 NWORDS_ON_RECORD8
+      INTEGER*8 NWORDS_ON_RECORD8,NWORDS_ON_RECORD
       PARAMETER (NWORDS_ON_RECORD8=4096)
       PARAMETER (NWORDS_ON_RECORD=4096)
 C
 C     The maximum number fo files that can be opened.
+      INTEGER MAX_WAIO_FILES
       PARAMETER (MAX_WAIO_FILES=100)
 C
 C     The file name for each file. This name is made unique 

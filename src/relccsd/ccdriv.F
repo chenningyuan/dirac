@@ -23,7 +23,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCHEADER
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+      IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
 C
@@ -134,6 +134,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !     blocks should go, keep them for the moment for compatibility with reladc
 C
       IMPLICIT INTEGER (A-Z)
+      INTEGER IN,IW
 C
 C---------------Description--------------------------------------------
 C
@@ -172,8 +173,11 @@ C
      &                 MAXIT,MAXDIM,NTOL
       DOUBLE PRECISION D0
       PARAMETER (D0 = 0.0D00)
+      INTEGER NACTH,NACTP,NACTHI,NACTPI
       DIMENSION NACTH(16),NACTP(16)
       DIMENSION NACTHI(16),NACTPI(16)
+      INTEGER MAXIT00,MAXIT01,MAXIT10,MAXIT11,MAXIT20,MAXIT02,I,IFREQ,
+     &        ISECT,IPRP_WF,IOPER,MAXDIM,MAXIT
 C
 C---------------Executable code--------------------------------------
 
@@ -527,9 +531,9 @@ C
      &     'EPMIN:',ER_IH(1,2),'EPMAX:',ER_IH(2,2)
       ENDIF
 C
-      IF( MP2_DENRUN )THEN
-        IN = IN_SAVE
-      END IF
+C     IF( MP2_DENRUN )THEN
+C       IN = IN_SAVE
+C     END IF
 C
       RETURN
       END
@@ -574,6 +578,7 @@ C     CC is the static memory  (when called as subroutine)
 C     CC is the dynamic memory (when used as stand-alone code)
 C
 C
+      INTEGER MAXSP
       PARAMETER (MAXSP=1000)
       INTEGER IREPSP(MAXSP*4),IREPSPI(MAXSP*MXREP*2)
       REAL*8 EPS(MAXSP),EPS1(MAXSP)
@@ -591,6 +596,7 @@ C
       integer(kind=klongint) :: mword_limit
       real(kind=kreal)       :: new_mword_limit = 0
       integer :: word
+      integer :: jcode
 C
 C---------------Executable code--------------------------------------
 C
@@ -3154,7 +3160,7 @@ C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT INTEGER (A-Z) 
 C
 C---------------Description--------------------------------------------
 C
@@ -4560,7 +4566,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      INTEGER*8 JOFF,KOFF
+      INTEGER*8 JOFF,KOFF,I,IOFF,IREP,JREP,K,M,MI
 C
 C---------------Executable code--------------------------------------
 C
