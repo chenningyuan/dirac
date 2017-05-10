@@ -21,6 +21,7 @@ C     The position of the file : this is the highest record written
 C     by the WAIO routines.
 C
       COMMON /POINTR/ IWRIT_WAIO(MAX_WAIO_FILES)
+      INTEGER IWRIT_WAIO
 C
 C     Some statistics to compute I/O performance
 C

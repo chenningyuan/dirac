@@ -547,7 +547,7 @@ c
       use relcc_cfg
       use xmlout
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -596,8 +596,8 @@ C
       integer(kind=klongint) :: mxcorr1
       integer(kind=klongint) :: mword_limit
       real(kind=kreal)       :: new_mword_limit = 0
-      integer :: word
-      integer :: jcode
+      integer :: word,mycharge,NELECT,NSP
+      integer :: jcode,IUNIN,IUNUT,I,ICALC,IERR
 C
 C---------------Executable code--------------------------------------
 C
@@ -666,7 +666,11 @@ C     Number of integer words for REAL*8 and
 C     number of REAL*8 words per variable (2 for complex groups,
 C     1 for real)
 C
-      IRW = INTOWP(1)
+#if  defined (INT_STAR8)
+      IRW = 1
+#else
+      IRW = 2
+#endif
       IF (CARITH) THEN
          RCW = 2
       ELSE
@@ -3161,7 +3165,7 @@ C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
 C
-      IMPLICIT INTEGER (A-Z) 
+      IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
 C
