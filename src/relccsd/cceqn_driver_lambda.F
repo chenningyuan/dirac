@@ -8,7 +8,7 @@
       use intermediates_1b_2b
       use lambda_equation
 
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 
 C---------------Description--------------------------------------------
 C
@@ -23,7 +23,7 @@ C     Intermediaries etc.
       REAL*8 W_OOOO(*),W_VOOV(*),W_OVVO(*),W_OVOO(*),HO(*),HV(*),
      & HOV(*),BUF1(*),BUF2(*),BUF3(*)
       REAL*8 CZ(*) ! is only allocated for Lambda equations
-      INTEGER NBUF2,NBUF3 
+      INTEGER NBUF2,NBUF3,MAXIT
 
 C     for diis ...
 
@@ -57,7 +57,7 @@ C---------------Local variables--------------------------------------
       real*8,allocatable :: G_oo(:),G_vv(:),int_wooop(:),w_v_temp(:)
       integer            :: i !remove
       real*8             :: val  
-
+      integer            :: it, itc, nit
 C---------------Executable code--------------------------------------
 C
 C
