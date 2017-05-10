@@ -23,7 +23,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCHEADER
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -133,7 +133,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !     All initialization should be done in relcc_cfg, ultimately all common
 !     blocks should go, keep them for the moment for compatibility with reladc
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
       INTEGER IN,IW
 C
 C---------------Description--------------------------------------------
@@ -173,11 +173,12 @@ C
      &                 MAXIT,MAXDIM,NTOL
       DOUBLE PRECISION D0
       PARAMETER (D0 = 0.0D00)
-      INTEGER NACTH,NACTP,NACTHI,NACTPI
+      INTEGER NACTH,NACTP,NACTHI,NACTPI,NTOL
       DIMENSION NACTH(16),NACTP(16)
       DIMENSION NACTHI(16),NACTPI(16)
       INTEGER MAXIT00,MAXIT01,MAXIT10,MAXIT11,MAXIT20,MAXIT02,I,IFREQ,
-     &        ISECT,IPRP_WF,IOPER,MAXDIM,MAXIT
+     &        ISECT,IPRP_WF,IOPER,MAXDIM,MAXIT,TSHOLD
+
 C
 C---------------Executable code--------------------------------------
 

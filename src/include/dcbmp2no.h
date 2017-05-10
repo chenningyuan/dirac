@@ -7,7 +7,8 @@
 !     max. number of virt. spinors in NO-MP2 run
       INTEGER JMAXVSP,IMO_NAT,IOCC_NAT,NACTMP2NO,
      &        LMP2_DEN_INP,LUNATORB,IAOMOSCHEME,
-     &        IF2MP2NO,IMAXVSP,INTMP2NO,IPRMP2NO
+     &        IF2MP2NO,IMAXVSP,INTMP2NO,IPRMP2NO,
+     &        MP2NOFN_L
       PARAMETER (JMAXVSP = 200)
 !     dimension of transform. matrix : IMO_NAT
 !
