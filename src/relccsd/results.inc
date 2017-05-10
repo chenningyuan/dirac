@@ -25,7 +25,7 @@
 !     13 - fock-space sector 20 and T1 + T2 amplitudes
 !     14 - 30 reserved for future use
 !
-      INTEGER NSTATS
+      INTEGER NSTATS,IMSTAT
       PARAMETER (NSTATS=30)
       COMMON/STATUS/IMSTAT(NSTATS)
 !

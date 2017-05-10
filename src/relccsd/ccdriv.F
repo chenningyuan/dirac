@@ -963,7 +963,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                   NSP,EPS1,EPS,IREPSP,IREPSPI,
      &                   FOCKSP,REPORT,NELEC_F1,NELEC_F2)
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -992,6 +992,7 @@ C
       INTEGER NFROZ(16),NINACT(16),NACT(16)
       REAL*8 EPS1(*),EPS(*)
       LOGICAL FOCKSP,REPORT
+      INTEGER NSP
 C
 C---------------Local variables--------------------------------------
 C
@@ -1006,6 +1007,8 @@ C
       INTEGER NAOPI_ACT(MXREP),NAVPI_ACT(MXREP)
       LOGICAL ASSREP
       INTEGER IOI(0:3), IVA(0:3)
+      integer i,ICURFSS,ii,IJKREP,IJREP,IREP,IRP,ISP,j,JKREP,JREP
+      integer KREP,NACT_REP,NREP1,NREP2
 
 C
 C---------------Executable code--------------------------------------
@@ -2014,7 +2017,7 @@ C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
 
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -2048,12 +2051,13 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 EPS(*)
-      INTEGER IREPSP(NSP,4),IREPSPI(NSP,MXREP,2)
+      INTEGER IREPSP(NSP,4),IREPSPI(NSP,MXREP,2),ICALC,NSP
 C
 C---------------Local variables--------------------------------------
 C
       LOGICAL ALLOC_ME,SRTALL
       INTEGER*8 NVT
+      integer minbuf,nbuf,nvf,nvtmin
 Caspg, replacing memget
       integer,       allocatable, target :: a_kr(:),
      &                              a_indk(:),   a_indl(:),
@@ -2211,7 +2215,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use allocator_parameters, only : klongint, kreal
       use xmlout
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -2233,7 +2237,7 @@ C
 C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
-C
+      integer icalc
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
@@ -2274,6 +2278,7 @@ c
       integer                :: freemem = 0
       integer                :: maxit_save
       logical                :: is_ccsd_converged = .false.
+      integer                :: dum,irp,nbuf1,nbuf2,nbuf3,nvovv
 C
 C---------------Executable code--------------------------------------
 C
@@ -2599,7 +2604,7 @@ C
       use interface_to_mpi
       use lambda_equation
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -2623,6 +2628,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       DIMENSION IREPSPI(*)
+      integer icalc,nsp,irepspi
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -2669,6 +2675,8 @@ C
       integer(kind=8)        :: mxcorr
       integer                :: freemem = 0
       integer                :: work_memsize
+      integer                :: eoff,eoper,iprint_no,irp,kfree
+      integer                :: lfree,nbuf1,nbuf2,nbuf3
 C
 C---------------Executable code--------------------------------------
 C
@@ -3165,7 +3173,7 @@ C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -3189,6 +3197,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 EPS(*)
+      INTEGER ICALC,NSP,IREPSPI
       DIMENSION IREPSPI(*)
 C
 C---------------Common Blocks--------------------------------------
@@ -3223,6 +3232,7 @@ C
       integer(kind=8)        :: mxcr    = 0
       integer(kind=8)        :: mxcorr
       integer                :: freemem = 0
+      integer                :: aoff,aoper,boper,dum,ifreq,nbuf1
 C
 C---------------Executable code--------------------------------------
 C
@@ -3335,7 +3345,7 @@ C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -3359,6 +3369,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 EPS(*)
+      INTEGER ICALC,NSP,IREPSPI
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -3391,6 +3402,7 @@ C
       integer(kind=8)        :: mxcr    = 0
       integer(kind=8)        :: mxcorr
       integer                :: freemem = 0
+      integer                :: irep,nbuf1
 C
 C---------------Executable code--------------------------------------
 C
@@ -3484,7 +3496,7 @@ C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
 
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -3505,6 +3517,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 EPS1(*),EPS(*)
+      INTEGER ICALC,NSP,IREPSP,IREPSPI
       DIMENSION IREPSP(*),IREPSPI(*)
 C
 C---------------Common Blocks--------------------------------------
@@ -3539,6 +3552,7 @@ c
       integer(kind=8)        :: mxcorr, mxcorr1
       integer                :: maxit_save
       logical                :: is_ccsd_converged = .false.
+      integer                :: dum,ifstat,irp,nbuf1,nbuf2,nbuf3
 C
 C---------------Executable code--------------------------------------
 C
@@ -3814,7 +3828,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FS_PUTAMPT (ICURFSS,T1,T2,BUF1,BUF2)
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -3830,6 +3844,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 T1(*),T2(*),BUF1(*),BUF2(*)
+      INTEGER ICURFSS
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -3874,7 +3889,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCDINI(do_restart)
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -3907,6 +3922,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
+      INTEGER BUFF,I,IRECL,IRECLEN
       DIMENSION BUFF(RSRCLEN)
       LOGICAL do_restart, file_found
       LOGICAL restart_and_current_differ
@@ -4120,7 +4136,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCDUMP
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -4143,6 +4159,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
+      INTEGER BUFF,IRECL,IRECLEN
       DIMENSION BUFF(RSRCLEN)
 C
 C---------------Executable code--------------------------------------
@@ -4172,7 +4189,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCSUMM
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -4194,6 +4211,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
+      INTEGER BUFF,I,IRECL,IRECLEN
       DIMENSION BUFF(RSRCLEN)
       CHARACTER DATEX*10,TIMEX*8
       CHARACTER*30 STATCH(0:4)
@@ -4304,7 +4322,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RDSYMI (NSP,EPS1,IREPSP,ncore_elec)
 C
       use interface_to_mpi
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -4321,7 +4339,7 @@ C---------------Calling variables--------------------------------------
 C
       INTEGER IREPSP(*)
       REAL*8 EPS1(*)
-      integer ncore_elec
+      integer ncore_elec,NSP
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -4337,6 +4355,7 @@ C---------------Local variables--------------------------------------
 C
       CHARACTER*14 REPNT(16)
       integer   :: spinor_info(5,2)
+      integer   :: i,irep,irp,isp,j,jrep,krep,nfsym
 C
 C---------------Executable code--------------------------------------
 C
@@ -4545,7 +4564,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DISLIST
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -4572,6 +4591,8 @@ C
 C---------------Local variables--------------------------------------
 C
       INTEGER*8 JOFF,KOFF,I,IOFF,IREP,JREP,K,M,MI
+      integer MTOT,mvotot,n,nbtch,no33,nootot,nrest,ntot,nv33
+      integer nvoo33,nvotot,nvvo33,nvvtot,off1,off2,off3
 C
 C---------------Executable code--------------------------------------
 C
