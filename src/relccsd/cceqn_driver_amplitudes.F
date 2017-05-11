@@ -50,6 +50,7 @@ C---------------Common Blocks--------------------------------------
 #include "complex.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)
+      integer ISTAT
       DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 
@@ -60,7 +61,7 @@ C---------------Local variables--------------------------------------
       CHARACTER*2 DELS1
       CHARACTER*4 DELS2
       REAL*8 DDOT
-      INTEGER it,itc,nit
+      INTEGER it,itc,nit,IERR
 
 C---------------Executable code--------------------------------------
 C

@@ -588,14 +588,15 @@ C
 #include "eqns.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)
-     DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      integer istat
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 C
 C---------------Local variables--------------------------------------
       REAL*8, ALLOCATABLE :: VOVV_TEMP(:)
       INTEGER, ALLOCATABLE :: counter(:), displ(:)
       LOGICAL :: DONE
-      INTEGER :: totsize, check, i, istart, mint, nint, off1, irp
+      INTEGER :: totsize, check, i, istart, mint, nint, off1, irp,IERR
 C---------------Executable code--------------------------------------
 C
        allocate(counter(0:nmproc-1))

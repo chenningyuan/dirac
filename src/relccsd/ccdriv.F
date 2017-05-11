@@ -2676,7 +2676,7 @@ C
       integer                :: freemem = 0
       integer                :: work_memsize
       integer                :: eoff,eoper,iprint_no,irp,kfree
-      integer                :: lfree,nbuf1,nbuf2,nbuf3
+      integer                :: lfree,nbuf1,nbuf2,nbuf3,NODE,NTEST
 C
 C---------------Executable code--------------------------------------
 C
