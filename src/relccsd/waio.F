@@ -92,8 +92,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Opens a word-addressable file.
 C
-      IMPLICIT NONE
-      INTEGER ITAPE
+      implicit none
+      integer itape
 C
 #include "waio.h"
 #if defined (VAR_MPI)
@@ -152,8 +152,8 @@ C
 C     JCODE = 3     CLOSE AND SAVE FILE
 C     JCODE = 4     CLOSE AND DELETE FILE
 C
-      IMPLICIT NONE
-      INTEGER ITAPE,JCODE
+      implicit none
+      integer itape,jcode
 C
 #include "waio.h"
 #if defined (VAR_MPI)
