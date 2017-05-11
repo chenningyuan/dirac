@@ -990,12 +990,6 @@ C---------------Last modified------------------------------------------
 C
 C     Author : Luuk Visscher
 C
-C---------------Calling variables--------------------------------------
-C
-      INTEGER KR(-NSP:NSP),INDK(*),INDL(*),MREADER
-      REAL*8 CBUF(RCW,*)
-      INTEGER IBUF(7,*)
-      INTEGER INDEX(NSP,NSP,4,*),MDINT,NSP,ITRSGN,IATYP,NONZR,NZE
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1006,6 +1000,13 @@ C
 #include "ccpar.inc"
 #include "dgroup.h"
 #include "dcbham.h"
+C
+C---------------Calling variables--------------------------------------
+C
+      INTEGER KR(-NSP:NSP),INDK(*),INDL(*),MREADER
+      REAL*8 CBUF(RCW,*)
+      INTEGER IBUF(7,*)
+      INTEGER INDEX(NSP,NSP,4,*),MDINT,NSP,ITRSGN,IATYP,NONZR,NZE
 C
 C---------------Local variables--------------------------------------
 C
