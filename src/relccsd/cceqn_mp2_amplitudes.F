@@ -1,6 +1,6 @@
       SUBROUTINE amplitude_equation_mp2 (EPS,FVO,T1,S1,T2,S2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C

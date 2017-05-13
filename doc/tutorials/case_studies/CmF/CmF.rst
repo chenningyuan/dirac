@@ -106,4 +106,6 @@ The calculation converges in 14 iterations. Again a snippet from the Mulliken po
 .. literalinclude:: CmF_5f_relax.pop
 
 We note that the curium :math:`5f` orbital energies are split by the molecular field, also that they are somewhat lowered.
+We also note that orbitals 46 - 48, dominated by fluorine :math:`2p` orbitals, are almost degenerate with the curium :math:`5f` orbitals,
+whereas orbital 50 is an almost pure curium :math:`7s` orbital.
 		    
