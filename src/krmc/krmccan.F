@@ -642,6 +642,7 @@ C
 #include "dcbbas.h"
 #include "maxorb.h"
 #include "dcbidx.h"
+#include "dcbkrmc.h"
 C
       DIMENSION CREF(*), CMO(*), EIG(*), WORK(*)
       CHARACTER KEYCNO*6
@@ -744,9 +745,10 @@ C
       CALL RFCKMAT(WORK(KDV),CMO,EIX,EAX,WORK(KFC),WORK(KFV),
      &     WORK(KFREE),LFREE)
 C
-C     Calculate FD
+C     Calculate modified FD: FD = FC + DKRMC_MVOFAC*FV
 C
-      IF (NASHT .GT. 0) CALL DAXPY(N2ORBXQ,D1,WORK(KFV),1,WORK(KFD),1)
+      IF (NASHT .GT. 0)
+     &   CALL DAXPY(N2ORBXQ,DKRMC_MVOFAC,WORK(KFV),1,WORK(KFD),1)
 
       CALL MEMREL('RKRMCCNO.after full FD',WORK,KFV,KFV,KFREE,LFREE)
 C
