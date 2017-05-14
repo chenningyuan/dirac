@@ -546,6 +546,7 @@ C     Transfer open shell average-of-configuration to GAS space notation
 C     (for e.g. ESR GASCIP) /July 2002 hjaaj
 C     HOW it is transferred is determined by the CISELECT keyword. /hjaaj
 C
+      MAXMK2_temp = 99999
       IF ( CISELECT .EQ. 'NO CI' ) THEN
          NGAS_DC  = 0
          OPT_THR_CVEC = D0
@@ -597,7 +598,8 @@ C        ... set which CI program in charge
          OPT_CIPROGRAM = 'GASCIP'
 C
          OPT_THR_CVEC = THR_CVEC_ESR
-         THRPCI   = THRPCI_ESR
+         THRPCI = THRPCI_ESR
+         MAXMK2_temp = MAXMK2_ESR ! MAXMK2_ESR may be specified in *ESR input
 C
 C        Set up orbital shells for GASCIP
 C
@@ -688,7 +690,13 @@ C     transfer open shell average-of-configuration to GAS space notation /July 2
 C
 C
       NASHT  = NASH(1) + NASH(2)
+      ! MAXMK2 two cases:
+      ! NAELEC .le. NASHT: MAXMK2 = NAELEC (all electrons A-elecrons)
+      !                           = 2*NAELEC - NAELEC
+      ! NAELEC .gt. NASHT: MAXMK2 = NASHT (A-electrons) - (NAELEC-NAST) (B-electrons)
+      !                           = 2*NASHT - NAELEC
       IOPT_MAXMK2 = 2*MIN(NAELEC,NASHT) - NAELEC
+      IOPT_MAXMK2 = MIN(IOPT_MAXMK2, MAXMK2_temp) ! MAXMK2 may be set in input for some CISELECT choices
       IOPT_MINMK2 = -IOPT_MAXMK2
       IOPT_MK2REF = 0
       IOPT_MK2DEL = IOPT_MAXMK2

@@ -287,8 +287,9 @@ C
          IF (UCIBOS) WRITE(LUPRI,'(10X,A)')
      &    'Using boson spinor symmetry (exact or approximate) in the CI'
          IF (IRRP .LE. 0) THEN
-            WRITE(LUPRI,'(10X,A)')
-     &        'Generating determinants of all symmetries'
+            WRITE(LUPRI,'(10X,2A,I4,A,I3)')
+     &        'Generating determinants of all symmetries',
+     &        ' and 2*MK interval:',MINMK2,' to',MAXMK2
          ELSE IF (UCIBOS) THEN
             WRITE(LUPRI,'(10X,3A,I4,A,I3)')
      &        'Generating dets. with spatial symmetry ', REP(IRP-1),
@@ -433,6 +434,10 @@ C
 #endif
          NEL_STR_T = NEL_STR_T + NEL_STR(IEL)
       END DO
+
+      IF (NEL_STR_T .EQ. 0) THEN
+         CALL QUIT('GASCIP_GENSTR ERROR : zero strings generated.')
+      END IF
 
       NASTR_T = 0
       NBSTR_T = 0

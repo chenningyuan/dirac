@@ -44,7 +44,7 @@ C
 #include "dcborb.h"
 #include "orgcom.h"
 #include "dgroup.h"
-      PARAMETER (NTABLE = 16)
+      PARAMETER (NTABLE = 17)
       LOGICAL SET, NEWDEF, RESET, GORG_BY_USER
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION WORK(LWORK)
@@ -53,7 +53,8 @@ C
       DATA TABLE /'.GAUGEO','.PRINT ','.OPERAT','.MULTIP',
      &            '.SPINPO','.SDCI  ','.MAX CI','.CI ROO',
      &            '.THRCVE','.THRCI ','.SDTCI ','.SDT*CI',
-     &            '.ESR CI','.MY CI ','.THRPCI','.KR-CON'/
+     &            '.ESR CI','.MY CI ','.THRPCI','.KR-CON',
+     &            '.MAXMK2'/
       DATA SET/.FALSE./
 C
       NEWDEF = (WORD .EQ. '*ESR   ')
@@ -90,6 +91,7 @@ C     variables for spin polarization and correlation in CI
       LVL_CIESR(:,2) = -1   ! no occupation restriction in RAS2-GAS
       NGAS_CIESR(3)  = 0  ! RAS3_GAS
       LVL_CIESR(:,3) = 0
+      MAXMK2_ESR     = 99999
 
       NGSH_CIESR(:,:,:) = 0
 
@@ -120,7 +122,8 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), I
+                     GO TO ( 1, 2, 3, 4, 5, 6, 7, 8, 9,10,
+     &                      11,12,13,14,15,16,17), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -250,6 +253,10 @@ C&&&& use Kramers conjugation on CI vector
    16          CONTINUE ! .KR_CON
                   USE_KRAMERS_CONJ = .TRUE.
                GO TO 100
+C&&&& limit MK2 value
+   17          CONTINUE ! .MAXMK2
+                  READ(LUCMD,*) MAXMK2_ESR
+               GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -302,6 +309,12 @@ C
      &       NGSH_CIESR(1:NFSYM,J,3)
          END DO
 
+         IF (MAXMK2_ESR .NE. 99999) THEN
+             WRITE(LUPRI,'(/A,I0)')
+     &       ' Max MK2 value for included Slater determinants: ',
+     &       MAXMK2_ESR
+         END IF
+
          NERR = 0
          LVL_RAS1 = 10000
          LVL_RAS3 = 10000
@@ -316,6 +329,7 @@ C
                IF (NGSH_CIESR(I,J,3) < 0) NERR = NERR + 10
             END DO
          END DO
+         IF (MAXMK2_ESR .LT. MULTIPESR-1) NERR = NERR + 10000
 
          IF (NERR > 0) THEN
            WRITE(LUPRI,'(//A,I5/)')
@@ -325,6 +339,7 @@ C
            WRITE(LUPRI,*) 'RAS3 LVL_CIESR:',LVL_CIESR(1:maxgas_esr,1)
            WRITE(LUPRI,*) 'RAS1 orbitals :',NGSH_CIESR(1,1:maxgas_esr,1)
            WRITE(LUPRI,*) 'RAS3 orbitals :',NGSH_CIESR(1,1:maxgas_esr,3)
+           WRITE(LUPRI,*) 'MAXMK2 < MULTIPESR-1?',MAXMK2_ESR,MULTIPESR-1
          END IF
          IF (NFSYM .GT. 1) THEN
             CALL QUIT('Sorry, inversion symmetry is not implemented'//
