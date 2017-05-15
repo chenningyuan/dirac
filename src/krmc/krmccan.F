@@ -750,7 +750,7 @@ C
       IF (NASHT .GT. 0)
      &   CALL DAXPY(N2ORBXQ,DKRMC_MVOFAC,WORK(KFV),1,WORK(KFD),1)
 
-      CALL MEMREL('RKRMCCNO.after full FD',WORK,KFV,KFV,KFREE,LFREE)
+      CALL MEMREL('KRMCCNO.after full FD',WORK,KFV,KFV,KFREE,LFREE)
 C
       IF (TRTOCO) THEN
 C
@@ -760,7 +760,7 @@ C
 C        CALL RGETAC(FD,FDAC,IPRINT)
 C
          IF (.NOT. TRTOFD) THEN
-            CALL MEMREL('RKRMCCNO.after RGETAC for FCAC',
+            CALL MEMREL('KRMCCNO.after RGETAC for FCAC',
      &                  WORK,1,KEIGVC,KFREE,LFREE)
             GO TO 1000
          END IF
@@ -779,7 +779,7 @@ C
 
       IF (IPROPT .GE. 5) THEN
          DO I = 1, NFSYM
-            WRITE(LUPRI,*) 'RKRMCCNO: FOCK matrix for fsym = ',I
+            WRITE(LUPRI,*) 'KRMCCNO: FOCK matrix for fsym = ',I
             CALL PRQMAT(WORK(KFD+I2ORBX(I,I)),NORB(I),NORB(I),
      &                  NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
          ENDDO
@@ -850,7 +850,7 @@ C        ... initialize
          end do
 
          IF (IPROPT .GE. 5) THEN
-           WRITE(LUPRI,*) 'RKRMCCNO: positronic FOCK matrix (extracted)'
+           WRITE(LUPRI,*) 'KRMCCNO: positronic FOCK matrix (extracted)'
            CALL PRQMAT(WORK(KFDP),NPSHT,NPSHT,
      &                 NPSHT,NPSHT,NZ,IPQTOQ(1,0),LUPRI)
          END IF
@@ -877,12 +877,12 @@ C        ... initialize
 
          IF (IPROPT .GE. 5) THEN
            WRITE(LUPRI,*)
-     &     'RKRMCCNO: transformation matrix (p-p)'
+     &     'KRMCCNO: transformation matrix (p-p)'
            CALL PRQMAT(WORK(KEIGVC),NORBT,NORBT,
      &                 NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
          END IF
 
-         CALL MEMREL('RKRMCCNO.after p-p',WORK,1,KFDP,KFREE,LFREE)
+         CALL MEMREL('KRMCCNO.after p-p',WORK,1,KFDP,KFREE,LFREE)
       END IF
 C
 C     3.2 i-i block
@@ -917,7 +917,7 @@ C        ... initialize
          end do
 
          IF (IPROPT .GE. 5) THEN
-           WRITE(LUPRI,*) 'RKRMCCNO: inactive FOCK matrix (extracted)'
+           WRITE(LUPRI,*) 'KRMCCNO: inactive FOCK matrix (extracted)'
            CALL PRQMAT(WORK(KFDI),NISHT,NISHT,
      &                 NISHT,NISHT,NZ,IPQTOQ(1,0),LUPRI)
          END IF
@@ -944,12 +944,12 @@ C        ... initialize
 
          IF (IPROPT .GE. 5) THEN
            WRITE(LUPRI,*)
-     &     'RKRMCCNO: transformation matrix (p-p + i-i)'
+     &     'KRMCCNO: transformation matrix (p-p + i-i)'
            CALL PRQMAT(WORK(KEIGVC),NORBT,NORBT,
      &                 NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
          END IF
  
-         CALL MEMREL('RKRMCCNO.after i-i',WORK,1,KFDI,KFREE,LFREE)
+         CALL MEMREL('KRMCCNO.after i-i',WORK,1,KFDI,KFREE,LFREE)
       END IF
 !
 !     3.3 'active' secondary orbitals: v-v block
@@ -984,7 +984,7 @@ C        ... initialize
          end do
 
          IF (IPROPT .GE. 5) THEN
-           WRITE(LUPRI,*) 'RKRMCCNO: virtual FOCK matrix (extracted)'
+           WRITE(LUPRI,*) 'KRMCCNO: virtual FOCK matrix (extracted)'
            CALL PRQMAT(WORK(KFDVI),NVSHT,NVSHT,
      &                 NVSHT,NVSHT,NZ,IPQTOQ(1,0),LUPRI)
          END IF
@@ -1011,12 +1011,12 @@ C        ... initialize
 
          IF (IPROPT .GE. 5) THEN
            WRITE(LUPRI,*) 
-     &     'RKRMCCNO: transformation matrix (p-p + i-i + v-v)'
+     &     'KRMCCNO: transformation matrix (p-p + i-i + v-v)'
            CALL PRQMAT(WORK(KEIGVC),NORBT,NORBT,
      &                 NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
          END IF
 !
-         CALL MEMREL('RKRMCCNO.after v-v',WORK,1,KFDVI,KFREE,LFREE)
+         CALL MEMREL('KRMCCNO.after v-v',WORK,1,KFDVI,KFREE,LFREE)
       END IF
 C
 C     3.4 deleted secondary orbitals: d-d block 
@@ -1036,12 +1036,12 @@ C
      &               NDSHT,NDSHT,IDXD2G,NZ)
          IF (IPROPT .GE. 5) THEN
            WRITE(LUPRI,*) 
-     &     'RKRMCCNO: transformation matrix (p-p + i-i + v-v + d-d)'
+     &     'KRMCCNO: transformation matrix (p-p + i-i + v-v + d-d)'
            CALL PRQMAT(WORK(KEIGVC),NORBT,NORBT,
      &                 NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
          END IF
 C
-         CALL MEMREL('RKRMCCNO.after d-d',WORK,1,KEIGVCDL,KFREE,LFREE)
+         CALL MEMREL('KRMCCNO.after d-d',WORK,1,KEIGVCDL,KFREE,LFREE)
       END IF
 C
 C     3.5 unit matrix for a-a block
@@ -1062,14 +1062,14 @@ C
 C
          IF (IPROPT .GE. 5) THEN
            WRITE(LUPRI,*) 
-     &  'RKRMCCNO: transformation matrix (p-p + i-i + v-v + d-d + a-a)'
+     &  'KRMCCNO: transformation matrix (p-p + i-i + v-v + d-d + a-a)'
            CALL PRQMAT(WORK(KEIGVC),NORBT,NORBT,
      &                 NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
          END IF
-         CALL MEMREL('RKRMCCNO.after a-a',WORK,1,KEIGVCA,KFREE,LFREE)
+         CALL MEMREL('KRMCCNO.after a-a',WORK,1,KEIGVCA,KFREE,LFREE)
       END IF
 C
-      CALL MEMREL('RKRMCCNO.after FD diag',WORK,1,KFD,KFREE,LFREE)
+      CALL MEMREL('KRMCCNO.after FD diag',WORK,1,KFD,KFREE,LFREE)
 C
 C     4. Transform orbitals
 C     ---------------------
@@ -1085,12 +1085,12 @@ C
          NORBI = NORB(I)
 C
          IF( IPROPT .ge. 2 )THEN
-           WRITE(LUPRI,'(A,I3)') ' RKRMCCNO: '//
+           WRITE(LUPRI,'(A,I3)') ' KRMCCNO: '//
      &     'Coefficients before transformation for symmetry',I
            CALL PRQMAT(CMO(1+ICMOQ(I)),NBASI,NORBI,
      &          NBASI,NORBI,NZ,IPQTOQ(1,0),LUPRI)
            WRITE(LUPRI,'(A,I3)')
-     &     ' RKRMCCNO: transformation matrix for symmetry',I
+     &     ' KRMCCNO: transformation matrix for symmetry',I
            CALL PRQMAT(WORK(KEIGVC+I2ORBX(I,I)),NORBI,NORBI,
      &          NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
          END IF
@@ -1122,7 +1122,7 @@ C
          END IF
 C
          IF( IPROPT .ge. 2 )THEN
-           WRITE(LUPRI,'(A,I3)') ' RKRMCCNO: '//
+           WRITE(LUPRI,'(A,I3)') ' KRMCCNO: '//
      &     'MO coefficients after FD transformation for symmetry',I
            CALL PRQMAT(CMO(1+ICMOQ(I)),NBASI,NORBI,
      &          NBASI,NORBI,NZ,IPQTOQ(1,0),LUPRI)
@@ -1131,7 +1131,7 @@ C
 C
 C     Deallocate everything but the density matrix.
 C
-      CALL MEMREL('RKRMCCNO.after FD rot',WORK,1,KEIGVC,KFREE,LFREE)
+      CALL MEMREL('KRMCCNO.after FD rot',WORK,1,KEIGVC,KFREE,LFREE)
 C
  1000 CONTINUE
 C
@@ -2294,7 +2294,7 @@ C       print omega values
 #endif
 C
 C       release memory
-        CALL MEMREL('RKRMCCNO.after x-x',WORK,1,KOMX,KFREE,LFREE)
+        CALL MEMREL('KRMCCNO.after x-x',WORK,1,KOMX,KFREE,LFREE)
 C
 C       keep track of active states
         IX_AC = IX_AC + NXSTATES
