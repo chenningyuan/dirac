@@ -1063,8 +1063,8 @@ C
       IKRMCCNO    =  - 3
       OPT_NOPFQ   = .FALSE.
       OPT_NOFQX   = .FALSE.
-      NATONL      = .FALSE.
-      FOCKON      = .FALSE.
+      NATONLY     = .FALSE.
+      FOCKONLY    = .FALSE.
       COMPROT     = .FALSE.
       GENFOCK     = GENFOCK_KRCI
       NATOLCR     = NATOLCR_KRCI
@@ -1581,8 +1581,8 @@ C parallel stuff
       IKRMCCNO    =  - 3
       OPT_NOPFQ   = .FALSE.
       OPT_NOFQX   = .FALSE.
-      NATONL      = .FALSE.
-      FOCKON      = .FALSE.
+      NATONLY     = .FALSE.
+      FOCKONLY    = .FALSE.
       COMPROT     = .FALSE.
 C at the moment no fock type orbitlas
       GENFOCK     = .FALSE. !GENFOCK_KRCI

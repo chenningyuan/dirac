@@ -1169,8 +1169,8 @@ C
       IDOPARIO    = get_environment_integer('GLBSCR',IDOPARIO)
       OPT_NOPFQ   = .FALSE.
       OPT_NOFQX   = .FALSE.
-      NATONL      = .FALSE.
-      FOCKON      = .FALSE.
+      NATONLY     = .FALSE.
+      FOCKONLY    = .FALSE.
       COMPROT     = .FALSE.
       GENFOCK     = .FALSE.
       NATOLCR     = .FALSE.
@@ -1233,16 +1233,16 @@ C&&& .NO TRACI: don't call rtraci for transform of CI vectors
                   IKRMCCNO = -1
                GO TO 100
     5          CONTINUE
-C&&& .NATONL: only natural orbitals (no canonical orbitals)
+C&&& .NATONLy: only natural orbitals (no canonical orbitals)
                   IKRMCCNO = 1
-                  NATONL = .TRUE.
-                  FOCKON = .FALSE.
+                  NATONLY  = .TRUE.
+                  FOCKONLY = .FALSE.
                GO TO 100
     6          CONTINUE
-C&&& .FOCKON: only Fock-type orbitals (no natural orbitals)
+C&&& .FOCKONly: only Fock-type orbitals (no natural orbitals)
                   IKRMCCNO = 1
-                  FOCKON = .TRUE.
-                  NATONL = .FALSE.
+                  FOCKONLY = .TRUE.
+                  NATONLY  = .FALSE.
                GO TO 100
     7          CONTINUE
 C&&& .NO TRANS: no transformation of orbitals
@@ -1424,7 +1424,8 @@ C     Transformation of CI vectors and orbitals.
 C     ------------------------------------------
 C
       IF (IKRMCCNO .EQ. -1) THEN
-         FOCKON = .TRUE.
+         FOCKONLY = .TRUE.
+         NATONLY  = .FALSE.
       END IF
 C
       IF ( IKRMCCNO .GE. -1 ) THEN
@@ -1432,14 +1433,14 @@ C
      &        ' * Call RTRACI for transformation of CI vectors.'
          IF ( IKRMCCNO .EQ. 0 ) WRITE(LUPRI,'(A)')
      &        ' * Call RTRACI for transformation of CI vectors ' //
-     &        '(if necesary).'
+     &        '(if necessary).'
          IF ( IKRMCCNO .EQ.-1 ) WRITE(LUPRI,'(A)')
      &        ' * Do not call RTRACI for transformation of CI vectors.'
 C
-         IF ( FOCKON ) THEN
+         IF ( FOCKONLY ) THEN
             WRITE(LUPRI,'(A)')
      &           '   - transform to Fock-type orbitals.'
-         ELSE IF (NATONL) THEN
+         ELSE IF ( NATONLY ) THEN
             WRITE(LUPRI,'(A)')
      &           '   - transform to natural orbitals.'
          ELSE

@@ -87,8 +87,8 @@ C        ... default quadratic conv. factor for SCF
 C            (not set in KRMCINP because we don't know if SCF there)
          IF (IKRMCCNO .EQ. -3) THEN
 C           ... no user input, default for SCF: transform to canonical orbitals
-            NATONL = .FALSE.
-            FOCKON = .TRUE.
+            NATONLY  = .FALSE.
+            FOCKONLY = .TRUE.
             IKRMCCNO = -1
 C           ... code for no RTRACI (no RTRACI for SCF)
          END IF
