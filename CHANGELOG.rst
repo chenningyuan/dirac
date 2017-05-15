@@ -5,6 +5,7 @@
 
 New features:
 - New and numerically stable procedure for elimination/freezing of orbitals at SCF level
+- .MVOFAC for \*KRMC
   
 (Do not change anything below this text on the master branch,
 the lines below should only be changed on the release branch.)
