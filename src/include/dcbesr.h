@@ -50,6 +50,6 @@
       COMMON /DCBESR/ THR_CIESR,THR_CVEC_ESR,THRPCI_ESR,                &
      &        IPRESR,   NESRP, LESRP, IPSIGMA,                          &
      &        N_CIESR, MULTIPESR, MAX_CIESR_IT,                         &
-     &        NGAS_CIESR, LVL_CIESR, NGSH_CIESR, MAXMK2_ESR             &
+     &        NGAS_CIESR, LVL_CIESR, NGSH_CIESR, MAXMK2_ESR,            &
      &        USE_KRAMERS_CONJ
 ! --- end of dcbesr.h ---
