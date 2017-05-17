@@ -1,5 +1,11 @@
 :orphan:
 
+hjaaj-esr branch:
+-----------------
+
+New features:
+- .MAXMK2 for \*ESR
+
 17.alpha
 --------
 
