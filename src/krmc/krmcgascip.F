@@ -286,19 +286,6 @@ C
      &       ' (GASCIP_GENDET) Output from generation of determinants:'
          IF (UCIBOS) WRITE(LUPRI,'(10X,A)')
      &    'Using boson spinor symmetry (exact or approximate) in the CI'
-         IF (IRRP .LE. 0) THEN
-            WRITE(LUPRI,'(10X,2A,I4,A,I3)')
-     &        'Generating determinants of all symmetries',
-     &        ' and 2*MK interval:',MINMK2,' to',MAXMK2
-         ELSE IF (UCIBOS) THEN
-            WRITE(LUPRI,'(10X,3A,I4,A,I3)')
-     &        'Generating dets. with spatial symmetry ', REP(IRP-1),
-     &        ' and 2*MS interval:',MINMK2,' to',MAXMK2
-         ELSE
-            WRITE(LUPRI,'(10X,3A,I4,A,I3)')
-     &        'Generating dets. with symmetry ', REPNA(IRRP),
-     &        ' and 2*MK interval:',MINMK2,' to',MAXMK2
-         END IF
          WRITE(LUPRI,'(10X,A,I10)')
      &        'Max no. of determinants',MAXDET
       END IF
@@ -379,6 +366,20 @@ C
      &      '    (constraints: min/max active electrons after space : ',
      &           NGASSP(1,I),'/',NGASSP(2,I),')'
          END DO
+         IF (IRRP .LE. 0) THEN
+            WRITE(LUPRI,'(2A,I4,A,I3)')
+     &        ' * Generating determinants of all symmetries',
+     &        ' and 2*MK interval:',MINMK2,' to',MAXMK2
+         ELSE IF (UCIBOS) THEN
+            WRITE(LUPRI,'(A/3A,I4,A,I3)')
+     &' * Using boson spinor symmetry (exact or approximate) in the CI;'
+     & ,'   generating determinants with spatial symmetry ', REP(IRP-1),
+     &      ' and 2*MS interval:',MINMK2,' to',MAXMK2
+         ELSE
+            WRITE(LUPRI,'(3A,I4,A,I3)')
+     &        ' * Generating determinants of symmetry ', REPNA(IRRP),
+     &        ' and 2*MK interval:',MINMK2,' to',MAXMK2
+         END IF
          IF (NGASSP(2,NGAS_DC) .NE. NAELEC) THEN
             CALL QUIT('*** ERROR in GASCIP_GENDET *** ' //
      &      'Inconsistency between GAS specification and NAELEC')
