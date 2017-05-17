@@ -517,7 +517,7 @@ integer :: ierr
        irrep_left=1,irrep_right=state_sym)
 
        if (iprnt.ge.2) &
-    write(iw,*)'diagram 1 ', ddot(N1,sigma1,1,sigma1,1)
+    write(*,*)'diagram 1 ', dot_product(sigma1,sigma1), myproc
 
 !S_ai = S_ai - f_bar_mi(m,i)*r1(a,m) 
 !------------------------------------
@@ -526,7 +526,7 @@ integer :: ierr
         irrep_left=state_sym,irrep_right=1)
 
        if (iprnt.ge.2) &
-    write(iw,*)'diagram 2 ', ddot(N1,sigma1,1,sigma1,1)
+    write(*,*)'diagram 2 ', dot_product(sigma1,sigma1), myproc
 
 !S_ai = S_ai + w_mbej(ma,ei)*r1(e,m)
 !------------------------------------ 
@@ -542,7 +542,7 @@ integer :: ierr
 
 
     if (iprnt.ge.2) &
-    write(iw,*)'diagram 3 ', ddot(N1,sigma1,1,sigma1,1)
+    write(*,*)'diagram 3 ', dot_product(sigma1,sigma1), myproc
 
 !!class : [HBar_SD*R](a,i)
 !!========================
@@ -554,7 +554,7 @@ integer :: ierr
     & (/"p1","o1"/),B%Fbar_me,sigma1,1.0d0,1.0d0,nrep,LeftTensor=r2,irrep_left=state_sym,irrep_right=1)
 
        if (iprnt.ge.2) &
-    write(iw,*)'diagram 4 ', ddot(N1,sigma1,1,sigma1,1)
+    write(*,*)'diagram 4 ', dot_product(sigma1,sigma1), myproc
 
 !!S_ai = S_ai + w_amef(am,ef) * r2(ef,im)
 !!---------------------------------------
@@ -563,7 +563,7 @@ integer :: ierr
    &         LeftTensor=B%W_amef,RightTensor=r2_ptr,irrep_left=1,irrep_right=state_sym)
 
        if (iprnt.ge.2) &
-    write(iw,*)'diagram 5 ', ddot(N1,sigma1,1,sigma1,1)
+    write(*,*)'diagram 5 ', dot_product(sigma1,sigma1), myproc
 !!S_ai = S_ai - W_mnie(mn,ie)*r2(ae,mn)
 !!--------------------------------------
 
@@ -571,7 +571,7 @@ integer :: ierr
     & RightTensor=B%W_mnie,LeftTensor=r2_ptr,irrep_left=state_sym,irrep_right=1)
 
        if (iprnt.ge.2) &
-    write(iw,*)'diagram 6 ', ddot(N1,sigma1,1,sigma1,1)
+    write(*,*)'diagram 6 ', dot_product(sigma1,sigma1), myproc
 
 !!class : [HBar_DS*R](ab,ij)
 !!==========================
@@ -584,7 +584,7 @@ integer :: ierr
    &   LeftTensor=r1,irrep_left=state_sym,irrep_right=1) 
 
        if (iprnt.ge.2) &
-    write(*,*)'diagram 7 ', ddot(N2,sigma2,1,sigma2,1)
+    write(*,*)'diagram 7 ', dot_product(sigma2,sigma2), myproc
 
 !!S(ab,ij) = S(ab,ij) + P(ij) w_efam(ab,ej)*r1(e,i)
 !!-------------------------------------------------
@@ -594,7 +594,7 @@ integer :: ierr
    &    RightTensor=r1_ptr,irrep_left=1,irrep_right=state_sym) 
 
        if (iprnt.ge.2) &
-    write(*,*)'diagram 8 ', dot_product(sigma2,sigma2)
+    write(*,*)'diagram 8 ', dot_product(sigma2,sigma2), myproc
 
 !!int_1b(b,f) = int_1b(b,f) + w_amef (bm,fe)*r1(e,m)
 !!S(ab,ij) = S(ab,ij) + P(ab) int_1b(b,f)*t2(af,ij)
@@ -617,7 +617,7 @@ integer :: ierr
     deallocate(int_1b)
 
        if (iprnt.ge.2) &
-    write(*,*)'diagram 9 ', ddot(N2,sigma2,1,sigma2,1)
+    write(*,*)'diagram 9 ', dot_product(sigma2,sigma2), myproc
 
 !!int_1b(n,j) = int_1b(n,j) + w_mnie(nm,je)*r1(e,m)
 !!S(ab,ij) = S(ab,ij) - int_1b(n,j) * t2(ab,in)
@@ -637,7 +637,7 @@ integer :: ierr
     deallocate(int_1b)
 
        if (iprnt.ge.2) &
-    write(*,*)'diagram 10 ', ddot(N2,sigma2,1,sigma2,1)
+    write(*,*)'diagram 10 ', dot_product(sigma2,sigma2), myproc
 
 ! class : [HBar_DD*R](ab,ij) 
 ! ==========================
@@ -650,7 +650,7 @@ integer :: ierr
    & (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=B%Fbar_ae,LeftTensor=r2_ptr,irrep_left=state_sym,irrep_right=1)
 
        if (iprnt.ge.2) &
-    write(*,*)'diagram 11 ', ddot(N2,sigma2,1,sigma2,1)
+    write(*,*)'diagram 11 ', dot_product(sigma2,sigma2), myproc
  !   
 !!S(ab,ij) = S(ab,ij) - P(ij) f_bar_mi(m,j)*r2(ab,im) 
 !!----------------------------------------------------
@@ -659,7 +659,7 @@ integer :: ierr
    & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2_ptr,irrep_left=state_sym,irrep_right=1)
 
        if (iprnt.ge.2) &
-    write(*,*)'diagram 12 ', ddot(N2,sigma2,1,sigma2,1)
+    write(*,*)'diagram 12 ', dot_product(sigma2,sigma2), myproc
 
 
 ! S(ab,ij) = S(ab,ij) + w_ijmn(mn,ij) * r2(ab,mn)
@@ -669,7 +669,7 @@ integer :: ierr
      &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=r2_ptr,RightTensor=B%W_ijmn,irrep_left=state_sym,irrep_right=1)
 
        if (iprnt.ge.2) &
-    write(*,*)'diagram 14 ', ddot(N2,sigma2,1,sigma2,1)
+    write(*,*)'diagram 14 ', ddot(N2,sigma2,1,sigma2,1), myproc
 
 ! S(ab,ij) = S(ab,ij) + P(ab)P(ij) w_mbej(mb,ej)*r2(ae,im)
 !----------------------------------------------------------
@@ -678,7 +678,7 @@ integer :: ierr
      &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,0.0d0,nrep,LeftTensor=r2_ptr,RightTensor=B%W_mbej,irrep_left=state_sym,irrep_right=1)
 
        if (iprnt.ge.2) &
-    write(*,*)'diagram 15 ', ddot(N2,sigma2,1,sigma2,1)
+    write(*,*)'diagram 15 ', ddot(N2,sigma2,1,sigma2,1), myproc
 
 ! int_1b(a,f) = int_1b(a,f) - V(nm,fe)*r2(ea,mn)  
 ! S(ab,ij) = S(ab,ij) + int_1b(a,f)*t2(fb,ij)  
@@ -696,7 +696,7 @@ integer :: ierr
     deallocate(int_1b)
 
        if (iprnt.ge.2) &
-    write(*,*)'diagram 16 ', ddot(N2,sigma2,1,sigma2,1)
+    write(*,*)'diagram 16 ', ddot(N2,sigma2,1,sigma2,1), myproc
 
 !!int_1b(n,i) = int_1b(n,i) + V(nm,fe)*r2(fe,im)
 !!S(ab,ij) = S(ab,ij) - int_1b(n,i)*t(ba,jn)
@@ -714,7 +714,7 @@ integer :: ierr
     deallocate(int_1b)
 
     if (iprnt.ge.2) &
-    write(*,*)'diagram 17 ', ddot(N2,sigma2,1,sigma2,1)
+    write(*,*)'diagram 17 ', ddot(N2,sigma2,1,sigma2,1), myproc
 
 
 ! S(ab,ij) = S(ab,ij) + w_vvvv(ab,ef)*r2(ef,ij)
