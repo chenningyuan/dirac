@@ -3259,7 +3259,7 @@ C         write back on file - if not present
             CLOSE(LUNI,STATUS='KEEP')
           END IF
 
-          CALL MEMREL('KRMCSAV.1',WORK,1,KFRSAV,KFREE,LFREE)
+          CALL MEMREL('ROPTST.MJVEC',WORK,1,KFRSAV,KFREE,LFREE)
           WRITE(LUPRI,'(/A)')
      &    '  Vector containing mj-values saved as MJVEC on KRMCSCF'
         END IF
