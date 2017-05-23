@@ -25,6 +25,18 @@
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
 #include "dirac_partask.h"
+
+! Outlay of parallel GASCIP: (Written May 2017, hjaaj)
+! On Master:
+!   var PAR_GASCIP = PARCAL .and. NDET > 10000
+!   GASCIP_WAKE_NODES -> DIRAC_PARCTL(GASCIP_PAR) + transfers common block info
+!   1) GASCIP_PAR_CISIG_SETUP -> send itask=1
+!      loop GASCIP_PAR_CISIG
+!   GASCIP_RELEASE_NODES -> DIRAC_PARCTL(RELEASE_NODES)
+! On Slaves:
+!   DIRAC_NODE receives var GASCIP_PAR -> GASCIP_NODE, receives common block info + itask
+!   itask=1) -> GASCIP_NODE_CISIG
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GASCIP_SETUP(UCIBOS,ICIREP,IPRINT)
 C***********************************************************************
@@ -63,6 +75,9 @@ C
 C
 C
       CALL QENTER('GASCIP_SETUP')
+
+      IF (NASHT .LE. 0)
+     &   CALL QUIT('GASCIP_SETUP error: no active orbitals.')
 C
 C     Setup symmetry mult. table
 C     --------------------------
@@ -232,7 +247,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gascip_gendet */
-      SUBROUTINE GASCIP_GENDET(NDET,IDET,ISTR,MAXDET,MAXSTR,
+      SUBROUTINE GASCIP_GENDET(NDET,IDET,JSTR,MAXDET,MAXSTR,
      &                         UCIBOS,ICIREP,IPRINT_in)
 C***********************************************************************
 C
@@ -250,16 +265,17 @@ C        ICIREP : spatial symmetry (if .lt. 0, include all symmetries)
 C        IRPINT_in : print level
 C
 C      Work space
-C XXX    ISTR(1:MAXSTR) : array for strings (both a- and b-strings)
+C XXX    JSTR(1:MAXSTR) : array for strings (both a- and b-strings)
 C
 C     Written by J. Thyssen and H. J. Aa. Jensen - Jan 2001
-C     Last revision : Aug. 2015 hjaaj
+C     Last revisions : Aug. 2015/May 2017 hjaaj
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
 C Used from include files:
+C  dcbgascipo.h : NGAS_DC
 C  dcborb.h : NAELEC,NASHT, NGSH(), ?
 C
 #include "dcbgascip.h"
@@ -269,15 +285,18 @@ C
 C
       INTEGER   NA(MAXASH_GASCIP), NB(MAXASH_GASCIP)
       INTEGER*8 IDET(2,*), IASTR, IBSTR
-      INTEGER*8 ISTR(*)
+      INTEGER*8 JSTR(*)
       LOGICAL   GASCIP_GASOK, GASCIP_SYMOK, UCIBOS, MK_symmetric
 C
       INTEGER*8 MSKGAS(MXGAS), L
       INTEGER   IBTAB(0:255)
+      CHARACTER SECTID*12, CPUTID*12, WALLTID*12
+
+      INTEGER, allocatable :: NG_STR(:,:), SYM_STR(:,:)
 
       iprint = max(GASCIP_DEBUG,iprint_in)
 C
-C     Use GASCIP:
+C     Setup necessary information for GASCIP in dcbgascip.h:
 C
       CALL GASCIP_SETUP(UCIBOS,ICIREP,IPRINT)
 C
@@ -412,11 +431,10 @@ C
          MK_symmetric = (MAXMK2 + MINMK2 .EQ. 0)
       END IF
 
-C
-C
-C     Generate determinants:
-C     -----------------------
-C
+C     Generate strings and string information:
+C     ----------------------------------------
+
+      CALL GETTIM(CPU1,WLL1)
 #if GASCIP_DEBUG > 1
       write(lupri,*) 'minmk2, maxmk2',minmk2,maxmk2
       write(lupri,*) 'NAELEC, NASHT ',NAELEC, NASHT
@@ -429,16 +447,38 @@ C
          IEL_STR(IEL) = NEL_STR_T
          J1 = NEL_STR_T + 1
          MAXSTR_I = MAXSTR - NEL_STR_T
-         CALL GASCIP_GENSTR(IEL,ISTR(J1),NEL_STR(IEL),MSKGAS,MAXSTR_I)
-#if GASCIP_DEBUG > 1
-         write(lupri,*) 'GASCIP_GENSTR: IEL, NEL_STR',IEL,NEL_STR(IEL)
-#endif
+         CALL GASCIP_GENSTR(IEL,JSTR(J1),NEL_STR(IEL),MSKGAS,MAXSTR_I)
          NEL_STR_T = NEL_STR_T + NEL_STR(IEL)
+#if GASCIP_DEBUG > 1
+         write(lupri,*) 'GASCIP_GENSTR: IEL, NEL_STR(IEL), NEL_STR_T',
+     &      IEL,NEL_STR(IEL),NEL_STR_T
+#endif
       END DO
+
+!     for each string: generate number of occupied spinors in each gas space and symmetry of string
+!     (to be used in GASCIP_GASOK and GASCIP_SYMOK)
+      allocate(NG_STR(NGAS_DC, NEL_STR_T))
+      CALL GASCIP_STR_GASINFO(NEL_STR_T, JSTR, NG_STR,
+     &   NGAS_DC, MSKGAS, IBTAB)
+      allocate(SYM_STR(2,NEL_STR_T))
+      CALL GASCIP_STR_SYMINFO(NEL_STR_T, JSTR, SYM_STR, UCIBOS)
+
+      IF (IPRINT .GT. 0) THEN
+         CALL GETTIM(CPU2,WLL2)
+         CPUTID  = SECTID(CPU2-CPU1)
+         WALLTID = SECTID(WLL2-WLL1)
+C
+         WRITE(LUPRI,'(/5A)')
+     &      ' CPU (Wall) time for generation of strings: ',
+     &      CPUTID,'(',WALLTID,')'
+      END IF
 
       IF (NEL_STR_T .EQ. 0) THEN
          CALL QUIT('GASCIP_GENSTR ERROR : zero strings generated.')
       END IF
+
+C     Generate determinants:
+C     -----------------------
 
       NASTR_T = 0
       NBSTR_T = 0
@@ -471,9 +511,10 @@ C
             JASTR = IASTR_OFF + IA
             DO IB = 1, NBSTR
                JBSTR = IBSTR_OFF + IB
-               IF (GASCIP_GASOK(ISTR(JASTR),ISTR(JBSTR),MSKGAS,IBTAB))
+               IF ( GASCIP_GASOK(NG_STR(1,JASTR),NG_STR(1,JBSTR)) )
      &            THEN
-                  IF (GASCIP_SYMOK(ISTR(JASTR),ISTR(JBSTR),UCIBOS)) THEN
+                  IF (GASCIP_SYMOK(SYM_STR(1,JASTR),SYM_STR(2,JBSTR),
+     &               UCIBOS) ) THEN
                      NDET = NDET + 1
                      IF (NDET .GE. MAXDET) THEN
                         WRITE(LUPRI,'(/A,I12/A)')
@@ -483,8 +524,8 @@ C
      &                     'Allocate more memory!'
                         CALL QUIT('*** ERROR in GASCIP_GENDET ***')
                      END IF
-                     IDET(1,NDET) = ISTR(JASTR)
-                     IDET(2,NDET) = ISTR(JBSTR)
+                     IDET(1,NDET) = JSTR(JASTR)
+                     IDET(2,NDET) = JSTR(JBSTR)
                   END IF
                END IF
             END DO
@@ -598,12 +639,64 @@ C
  9006 FORMAT(1X,79('='))
 C
 C
+      deallocate(NG_STR, SYM_STR)
       RETURN
  1010 FORMAT(I6,I10,32I2)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GASCIP_STR_GASINFO(NSTR, JSTR, NG_STR,
+     &   NGAS_DC, MSKGAS, IBTAB)
+C***********************************************************************
+C
+C     Create GAS space information and symmetry information for each string
+C
+C     Input :
+C       JSTR(1:NSTR) : strings
+C       MSKGAS  : mask for counting occupation in each GAS space
+C       IBTAB   : table of # of 1-bits for table lookup in FNBITS
+C
+C     Output:
+C       NG_STR  : number of occupied orbigtals in each GAS space for each string
+C
+C     Written by hjaaj May 2017 (based on code by J. Thyssen - Feb 11 2001)
+C
+C***********************************************************************
+
+      IMPLICIT  NONE
+
+      INTEGER   NSTR, NGAS_DC
+      INTEGER*8 JSTR(NSTR), MSKGAS(NGAS_DC)
+      INTEGER   NG_STR(NGAS_DC, NSTR), IBTAB(NGAS_DC)
+
+! Used from include files:
+!  priunit.h : LUPRI
+#include "priunit.h"
+
+      INTEGER   I, IGAS
+      INTEGER*8 IG
+
+      DO I = 1, NSTR
+         DO IGAS = 1, NGAS_DC
+            IG = IAND(MSKGAS(IGAS),JSTR(I))
+            CALL FNBITS(NG_STR(IGAS,I), IG, IBTAB)
+#if GASCIP_DEBUG > 10
+            write(lupri,*) 'GASCIP_STR_GASINFO: fnbits i,igas,ng',
+     &         i,igas,ng_str(igas,i)
+            WRITE (LUPRI,'(10X,B64/10X,B64)') JSTR(I),IG
+#endif
+         END DO
+#if GASCIP_DEBUG > 4
+         write(lupri,'(A,I10,1X,B64,20I5)')
+     &         'GASCIP_STR_GASINFO: string, NG',
+     &         I,JSTR(I), NG_STR(1:NGAS_DC,I)
+#endif
+      END DO
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gascip_gasok */
-      LOGICAL FUNCTION GASCIP_GASOK(IA,IB,MSKGAS,IBTAB)
+      LOGICAL FUNCTION GASCIP_GASOK(NG_A,NG_B)
 C***********************************************************************
 C
 C     Check that determinant is allowed for GASSCF calculations.
@@ -617,35 +710,26 @@ C     Output:
 C       function value true or false
 C
 C     Written by J. Thyssen - Feb 11 2001
-C     Last revision :
+C     Last revision : May 2017, hjaaj
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
 C Used from include files:
-C  dcborb.h : NGASSP(),?
+C  dcborb.h : NGAS_DC, NGASSP(),?
 
 #include "dcbgascip.h"
 #include "dcborb.h"
 C
-      INTEGER*8 MSKGAS(*), IA, IB, IGA, IGB
-      DIMENSION IBTAB(*)
+      INTEGER   NG_A(NGAS_DC), NG_B(NGAS_DC)
 C
 C
       GASCIP_GASOK = .TRUE.
       IF (NGAS_DC .EQ. 0) RETURN
 C
       DO IGAS = 1, NGAS_DC
-         IGA = IAND(MSKGAS(IGAS),IA)
-         IGB = IAND(MSKGAS(IGAS),IB)
-         CALL FNBITS(NA,IGA,IBTAB)
-         CALL FNBITS(NB,IGB,IBTAB)
-#if GASCIP_DEBUG > 10
-         write(lupri,*) 'GASCIP_GASOK: fnbits igas,na,nb',igas,na,nb
-         WRITE (LUPRI,'(10X,B64/10X,B64)') IGA,IGB
-#endif
-         NG = NA + NB
+         NG = NG_A(IGAS) + NG_B(IGAS)
          IF ( NG .LT. NGASSP(1,IGAS) .OR. NG .GT. NGASSP(2,IGAS)) THEN
             GASCIP_GASOK = .FALSE.
             RETURN
@@ -754,8 +838,77 @@ C     write(lupri,*) 'id1',id1
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GASCIP_STR_SYMINFO(NSTR, JSTR, SYM_STR, UCIBOS)
+C***********************************************************************
+C
+C     Find symmetry of each string.
+C
+C     Output:
+C        SYM_STR(1,1:NSTR) : symmetry of A-strings
+C        SYM_STR(2,1:NSTR) : symmetry of B-strings
+C
+C     hjaaj May 2017, based on code by J. Thyssen 2001
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      INTEGER   NSTR, SYM_STR(2,NSTR)
+      INTEGER*8 JSTR(NSTR), ID
+      LOGICAL   UCIBOS
+C
+C dcbgascip.h : IRRP, *
+C    dcborb.h : NASHT
+#include "dcbgascip.h"
+#include "dcborb.h"
+
+#if GASCIP_DEBUG > 4
+         WRITE(LUPRI,*) 'GASCIP_STR_SYMINFO UCIBOS ',UCIBOS
+#endif
+
+      DO J = 1, NSTR
+         ID = JSTR(J)
+      IF (.NOT. UCIBOS) THEN
+C
+C        The normal symmetry scheme.
+C
+         JRRP_A = 0
+         JRRP_B = 0
+         DO I = 1, NASHT
+            IF (MOD(ID,2_8) .EQ. 1) THEN
+               JRRP_A = MULTB(IRPAMO(IPTA2O(I)),JRRP_A)
+               JRRP_B = MULTB(IRPAMO(IPTB2O(I)),JRRP_B)
+            ENDIF
+            ID = ID/2
+         END DO
+      ELSE
+C
+C        Boson symmetry (spin free or Levy-Leblond).
+C        (do not use IRRP and MULTB which includes spin-symmetry -- see GMULTSF --
+C         as we treat the spin Ms separately as in non-rel codes /hjaaj aug 03)
+C
+         JRRP_A = 0
+         JRRP_B = 0
+         DO I = 1, NASHT
+            IF ( MOD(ID,2_8) .EQ. 1) THEN
+               JRRP_A = IEOR(IRPAMO(IPTA2O(I)),JRRP_A)
+               JRRP_B = IEOR(IRPAMO(IPTB2O(I)),JRRP_B)
+            END IF
+            ID = ID / 2
+         END DO
+      ENDIF
+         SYM_STR(1,J) = JRRP_A
+         SYM_STR(2,J) = JRRP_B
+#if GASCIP_DEBUG > 4
+         WRITE(LUPRI,'(A,I10,1X,B64,2I5)')
+     &   'string, string symmetry A B',J,JSTR(J),JRRP_A,JRRP_B
+#endif
+      END DO ! J = 1, NSTR
+
+      RETURN
+      END ! of GASCIP_STR_SYMINFO
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gascip_symok */
-      LOGICAL FUNCTION GASCIP_SYMOK(IA,IB,UCIBOS)
+      LOGICAL FUNCTION GASCIP_SYMOK(IREPA,IREPB,UCIBOS)
 C***********************************************************************
 C
 C     Find symmetry of determinant (IA,IB).
@@ -767,10 +920,10 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-      INTEGER*8 IA, IB, ID
+      INTEGER   IREPA, IREPB, IREPAB
       LOGICAL   UCIBOS
 C
-C dcbgascip.h : IRRP, *
+C dcbgascip.h : IRP, IRRP, A
 C    dcborb.h : NASHT
 #include "dcbgascip.h"
 #include "dcborb.h"
@@ -779,47 +932,24 @@ C
 C        ... include all symmetries
          GASCIP_SYMOK = .TRUE.
       ELSE IF (.NOT. UCIBOS) THEN
-C
-C        The normal symmetry scheme.
-C
-         JRRP = 0
-         ID = IA
-         DO I=1,NASHT
-            IF (MOD(ID,2_8).EQ.1) THEN
-               JRRP = MULTB(IRPAMO(IPTA2O(I)),JRRP)
-            ENDIF
-            ID = ID/2
-         END DO
-         ID = IB
-         DO I=1,NASHT
-            IF (MOD(ID,2_8).EQ.1) THEN
-               JRRP = MULTB(IRPAMO(IPTB2O(I)),JRRP)
-            ENDIF
-            ID = ID/2
-         END DO
-         GASCIP_SYMOK = (JRRP .EQ. IRRP)
+         IREPAB = MULTB(IREPA,IREPB)
+         GASCIP_SYMOK = (IREPAB .EQ. IRRP)
+#if GASCIP_DEBUG > 4
+         WRITE(LUPRI,*) 'GASIP_SYMOK, IREPA, IREPB, IREPAB, IRRP',
+     &   GASCIP_SYMOK, IREPA, IREPB, IREPAB, IRRP
+#endif
       ELSE
 C
 C        Boson symmetry (spin free or Levy-Leblond).
 C        (do not use IRRP and MULTB which includes spin-symmetry -- see GMULTSF --
 C         as we treat the spin Ms separately as in non-rel codes /hjaaj aug 03)
 C
-         JRRP = 0
-         ID = IA
-         DO I = 1, NASHT
-            IF ( MOD(ID,2_8) .EQ. 1) THEN
-               JRRP = IEOR(IRPAMO(IPTA2O(I)),JRRP)
-            END IF
-            ID = ID / 2
-         END DO
-         ID = IB
-         DO I = 1, NASHT
-            IF ( MOD(ID,2_8) .EQ. 1) THEN
-               JRRP = IEOR(IRPAMO(IPTB2O(I)),JRRP)
-            END IF
-            ID = ID / 2
-         END DO
-         GASCIP_SYMOK = (JRRP .EQ. IRP-1)
+         IREPAB = IEOR(IREPA,IREPB)
+         GASCIP_SYMOK = (IREPAB .EQ. IRP-1)
+#if GASCIP_DEBUG > 4
+         WRITE(LUPRI,*) 'GASIP_SYMOK, IREPA, IREPB, IREPAB, IRP-1',
+     &   GASCIP_SYMOK, IREPA, IREPB, IREPAB, IRP-1
+#endif
       ENDIF
 C
       RETURN
@@ -1762,7 +1892,6 @@ C
 #include "dcbgascip.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbesr.h"
 #include "dcbgen.h"
 C
 !     output
@@ -1804,7 +1933,6 @@ C
      &                2*NASHT,2*NASHT,-1,LUPRI)
        END IF
 
-
        WRITE(LUPRI,*)
      &   'GASCIP_MAKE_P1MAT: Real part of the N_CIVEC CI vectors'
        CALL OUTPUT(CIVEC,1,NDET,1,N_CIVEC,
@@ -1819,8 +1947,8 @@ C
 
       PAR_GASCIP = PARCAL .AND. NDET .GT. 10000
       IF (PAR_GASCIP) THEN
-         IPRINT_slaves = IPRINT - 1
          CALL GASCIP_WAKE_NODES()
+         IPRINT_slaves = IPRINT - 1
          CALL GASCIP_PAR_CISIG_SETUP(
      &            P1MAT_MO,WORK(KPMUUUU),
      &            .FALSE.,NDET,IDET,ACCURACY,IPRINT_slaves)
@@ -2522,8 +2650,8 @@ C     THRSCR = THR_CONV**2 was not good enough for the complex group /hjaaj July
 
       PAR_GASCIP = PARCAL .AND. NDET .GT. 10000
       IF (PAR_GASCIP) THEN
-         IPRINT_slaves = IPRINT - 1
          CALL GASCIP_WAKE_NODES()
+         IPRINT_slaves = IPRINT - 1
          CALL GASCIP_PAR_CISIG_SETUP(
      &            WORK(KFCACM),WORK(KMUUUU),
      &            .TRUE.,NDET,IDET,THRSCR,IPRINT_slaves)
@@ -3368,7 +3496,7 @@ C
       IF (PAR_GASCIP) THEN
          CALL GASCIP_RELEASE_NODES()
       END IF
-      call memchk('esr_resolve end RCISTD',work,1)
+      call memchk('GASCIP_RCISTD',work,1)
       CALL QEXIT('GASCIP_RCISTD')
 
       !> debug...
@@ -5158,16 +5286,16 @@ C
       call interface_MPI_BCAST(itask,1,MPARID,
      &                         global_communicator)
 
+      call interface_MPI_BCAST(IPRINT,1,MPARID,
+     &                         global_communicator)
+
 !     Send CI information and operator matrices to slaves
 
       call interface_mpi_bcast_l0(DO2EL,1,MPARID,
      &                         global_communicator)
-
       call interface_MPI_BCAST(NDET,1,MPARID,
      &                         global_communicator)
       call interface_MPI_BCAST(THRSCR,1,MPARID,
-     &                         global_communicator)
-      call interface_MPI_BCAST(IPRINT,1,MPARID,
      &                         global_communicator)
 
       len_HCORE = (2*NASHT)**2 * NZ_in_CI
@@ -5396,7 +5524,7 @@ C
       IF (itask .lt. 0) THEN
 !        exit from GASCIP_NODE
          CONTINUE
-      ELSE IF (itask .eq. 1) then ! GASCIP_PAR_CISG
+      ELSE IF (itask .eq. 1) then ! GASCIP_PAR_CISIG
          CALL GASCIP_NODE_CISIG(WORK,KFREE,LFREE)
       ELSE
          CALL QUIT('Unknown task code in GASCIP_NODE')
@@ -5423,17 +5551,29 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 #include "implicit.h"
 #include "priunit.h"
-C
+
+      REAL*8    WORK(*)
+      INTEGER   KFREE, LFREE
+
+! infpar.h    : MYTID, MPARID
+! dcbgascip.h :
+! dcborb.h    :
+! dgroup.h    : NZ_in_CI
 #include "infpar.h"
 #include "dcbgascip.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
-      REAL*8    WORK(*)
       LOGICAL   DO2EL
       INTEGER   MY_S_INTERVAL(3)
 
       KFRSAV = KFREE
+
+      call interface_MPI_BCAST(IPRINT,1,MPARID,
+     &                         global_communicator)
+      IF (MYTID .GT. 1) THEN
+         IPRINT = IPRINT / 10
+      END IF
 
 !     Receive CI information from master
 
@@ -5444,11 +5584,6 @@ C
      &                         global_communicator)
       call interface_MPI_BCAST(THRSCR,1,MPARID,
      &                         global_communicator)
-      call interface_MPI_BCAST(IPRINT,1,MPARID,
-     &                         global_communicator)
-      IF (MYTID .GT. 1) THEN
-         IPRINT = IPRINT / 10
-      END IF
 
       len_HCORE = (2*NASHT)**2 * NZ_in_CI
       IF (DO2EL) THEN
@@ -5491,7 +5626,7 @@ C
       write(lupri,*) MYTID,' GASCIP_NODE_CISIG: received N_CSIM',N_CSIM
       call flshfo(lupri)
 #endif
-      IF (N_CSIM .lt. 0) GO TO 9000
+      IF (N_CSIM .lt. 0) GO TO 9000 ! RELASE_NODES signal, exit
       IF (N_CSIM .eq. 0) GO TO 100
 
       NDETQ = NDET * NZ_in_CI
