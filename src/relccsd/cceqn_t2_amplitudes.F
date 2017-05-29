@@ -2,7 +2,7 @@
      &                   GO,GV,HOV,H,AZ,CZ,GOO,GVV,
      &                   BUF1,BUF2,BUF3,NBUF3,S2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -50,6 +50,8 @@ C
       DATA T1VAL /2*0.0D0/
       complex*16 zdotc
       real*8 ddot
+      integer abji,c,cj,crep,i,imin,irep,irp,istart,j,ij,jmin,jrep,k,kld
+      integer m,mint,n,nint,off1,off2,off3,t1ci,abij,ji
 C
 C---------------Executable code--------------------------------------
 C

@@ -23,7 +23,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FOLDED (ICURFSS,IHEQ,T1,T2,BUF1,BUF2,BUF3,
      &                   DS1,DS2,S1,S2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -50,6 +50,7 @@ C---------------Calling variables--------------------------------------
 C
       REAL*8 T1(*),T2(*),S1(*),S2(*),DS1(*),DS2(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)
+      INTEGER ICURFSS,IHEQ
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -264,7 +265,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                 HEFF,EIGENVALUES,EIGENVECTORS)
 
 C
-      implicit real*8 (a-h,o-z)
+      implicit none
 C---------------Description--------------------------------------------
 C
 C     Extract the Hamiltonian dressing terms from the S1 and S2 arrays
@@ -275,7 +276,7 @@ C     transition moments.
 C---------------Calling variables--------------------------------------
 C
       REAL*8 HEFF(*),EIGENVALUES(0:*),EIGENVECTORS(*)
-      REAL*8 S1(*),FVO(*)
+      REAL*8 S1(*),S2(*),FVO(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)
       CHARACTER*40 TIT
       INTEGER ICURFSS
@@ -289,6 +290,7 @@ C
 #include "files.inc"
 C
 C---------------Local variables -----------------------------------
+      integer ndimh,ipr,eps,ind,indx_all,irp,irps_all,ndt_all,ndimh2
       PARAMETER (NDIMH=600,NDIMH2=NDIMH*NDIMH)
       DIMENSION INDX_ALL(NDIMH*MXREP),IRPS_ALL(NDIMH*MXREP)
       DIMENSION IND(MXREP),NDT_ALL(MXREP)
@@ -423,7 +425,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SOLVE_CG (NDT,H,EVEC,EV)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -451,13 +453,14 @@ C
 C---------------Calling variables--------------------------------------
 
       REAL*8 H(RCW,NDT,NDT),EVEC(RCW,NDT,NDT),EV(RCW,NDT)
+      INTEGER NDT
 C---------------Local variables -----------------------------------
       REAL*8, ALLOCATABLE :: EVR(:),EVI(:)
       REAL*8, ALLOCATABLE :: HR(:,:),HI(:,:)
       REAL*8, ALLOCATABLE :: VECR(:,:),VECI(:,:)
       REAL*8, ALLOCATABLE :: SCR(:,:)
       INTEGER , ALLOCATABLE :: INDX(:)
-      INTEGER :: IERR
+      INTEGER :: IERR,I,J,NDT2
       REAL*8 FNOR(RCW),E_OFF
 C---------------Executable code--------------------------------------
 C
@@ -603,7 +606,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FS_ANALYSIS1(ICURFSS,EPS,EIGENVALUES,EIGENVECTORS,
      &  NSP,IREPSPI)      
 C
-      implicit real*8 (a-h,o-z)
+      implicit none
 C---------------Description--------------------------------------------
 C
 C     Analyse the eigenvectors of the effective Hamiltonian and
@@ -622,11 +625,11 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 EPS(*),EIGENVALUES(RCW,0:*),EIGENVECTORS(*) 
-      INTEGER ICURFSS,NSP
+      INTEGER ICURFSS,NSP,IREPSPI
 C
 C---------------Local variables -----------------------------------
       INTEGER , ALLOCATABLE :: INDX_ALL(:), IRPS_ALL(:)
-      INTEGER :: IERR, ISIZE
+      INTEGER :: IERR, ISIZE,IND
       DIMENSION IND(MXREP)
       DIMENSION IREPSPI(NSP,MXREP,2)
       REAL*8 E_OFF
@@ -690,7 +693,7 @@ C     Detailed print-out including oscillator strengths
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DENOMF (EPS,T1,T2,CT1,CT2,OPTION)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -721,6 +724,7 @@ C
       REAL*8 EPS(*)
       REAL*8 T1(*),T2(*)
       COMPLEX*16 CT1(*),CT2(*)
+      INTEGER OPTION
 C
 C---------------Common Blocks--------------------------------------					
 C
@@ -739,6 +743,9 @@ C
       CHARACTER*2 CLASS(3,2)
       LOGICAL DENO,ZERO,Z1,Z2,Z3,Z4,IHZERO
       LOGICAL DOIHDN
+      INTEGER A,AA,ABIJ,acv,acvMIN,AI,AMIN,AOFF,ARP,B,BB,bcv,BRP,i,ico
+      INTEGER icomin,ijrp,ii,imin,ioff,irp,isecth,isecth1,isecth2
+      INTEGER isectp,isectp1,isectp2,j,jj,jco,jrp
 C
 C---------------Executable code--------------------------------------
 C
@@ -1155,7 +1162,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXTRT1 (T1,FT1,ACVMIN,ACVMAX,ICOMIN,ICOMAX,DOINV)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1174,6 +1181,7 @@ C---------------Calling variables--------------------------------------
 C
       REAL*8 T1(*),FT1(*)
       LOGICAL DOINV
+      INTEGER ACVMIN,ACVMAX,ICOMIN,ICOMAX
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1183,6 +1191,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
+      integer ai,i,ico,ioffs1,ioi,irp,iva,lngth
       dimension IOI(0:3), IVA(0:3)
 C
 C---------------Executable code--------------------------------------
@@ -1238,7 +1247,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXTRT2R(T2,FT2,ABCVMIN,ABCVMAX,ICOMIN,ICOMAX,JCOMIN,
      &                   JCOMAX,DOINV)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1280,6 +1289,8 @@ C
 C
 C---------------Local variables--------------------------------------
 C
+      integer ab,abij,acv,acvstrt,amin,b,arp,bcv,brp,i,ico,ij,ijoff
+      integer ijrp,ijrpoff,ioff2,ioi,ioj,irp,iva,ivb,j,jco,jrp,lngth
       dimension IOI(0:3), IVA(0:3)
       dimension IOJ(0:3), IVB(0:3)
       COMPLEX*16 FACTOR 
@@ -1401,7 +1412,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXTRT2L(T2,FT2,ACVMIN,ACVMAX,BCVMIN,BCVMAX,IJCOMIN,
      &                   IJCOMAX,DOINV)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1443,6 +1454,9 @@ C
 C
 C---------------Local variables--------------------------------------
 C
+      integer a,ab,abij,acv,acvstrt,arp,b,bcv,brp,i,ico,icostrt,ij
+      integer ijoff,ijrp,ijrpoff,imin,ioff,ioff2,ioi,ioj
+      integer irp,iva,ivb,j,jco,jrp
       dimension IOI(0:3), IVA(0:3)
       dimension IOJ(0:3), IVB(0:3)
       COMPLEX*16 FACTOR
@@ -1567,7 +1581,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PRAMPF (T1,T2,CT1,CT2,TRES)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1600,6 +1614,8 @@ C
       INTEGER IOI(0:3), IVA(0:3)
       INTEGER IOJ(0:3), IVB(0:3)
       CHARACTER*2 CLASS(5)
+      integer a,aa,abij,acv,acvmin,ai,amin,aoff,arp,b,bcv,brp,i,ico
+      integer icomin,ii,ijrp,imin,ioff,irp,j,jco,jj,jrp
 C
 C---------------Executable code--------------------------------------
 C
@@ -1768,7 +1784,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXTRT2T(T2,FT2,ABCVMIN,ABCVMAX,IJCOMIN,IJCOMAX,DOINV)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1810,6 +1826,9 @@ C
 C
 C---------------Local variables--------------------------------------
 C
+      integer ab,abij,acv,acvstrt,amin,arp,b,bcv,brp,i,ico,icostrt,ij
+      integer ijoff,ijrp,ijrpoff,imin,ioff2,ioi,ioj,irp,iva,ivb,j
+      integer jco,jrp,lngth
       dimension IOI(0:3), IVA(0:3)
       dimension IOJ(0:3), IVB(0:3)
 C
@@ -1913,7 +1932,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXTRT2S(T2,FT2,ACVMIN,ACVMAX,BCVMIN,BCVMAX,
      &                   ICOMIN,ICOMAX,JCOMIN,JCOMAX,DOINV)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1955,6 +1974,8 @@ C
 C
 C---------------Local variables--------------------------------------
 C
+      integer a,ab,abij,acv,acvstrt,arp,b,bcv,brp,i,ico,ij,ijoff,ijrp
+      integer ijrpoff,ioff2,ioi,ioj,irp,iva,ivb,j,jco,jrp
       dimension IOI(0:3), IVA(0:3)
       dimension IOJ(0:3), IVB(0:3)
       COMPLEX*16 FACTOR,FACTOR1
@@ -2090,7 +2111,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SCALE_S1 (S1)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -2117,7 +2138,7 @@ C
 #include "param.inc"
 C
 C---------------Local variables--------------------------------------
-C
+      integer ai,i,iend,irp,istart
 C---------------Executable code--------------------------------------
 c
 c
@@ -2157,7 +2178,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GET_FSTAU (T1,T2,BUF1,BUF2,BUF3)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -2208,7 +2229,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FS_ANALYSIS (ICURFSS,EPS,IPR,NDT_TOT,E_OFF,
      &                        EV_ALL,H,NSP,IREPSPI)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -2251,6 +2272,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
+      integer ndt_tot,irepspi,ij,irp,irpoff,j_coeff,k_coeff,ndimh,ndt
       PARAMETER (NDIMH=5000)
       INTEGER I_EIGENVALUE, J_EIGENVALUE, I_COEFF
       CHARACTER*50 LABEL(NDIMH)
@@ -2334,7 +2356,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                                 NDT_TOT,IREPSPI,NSP,
      &                                 E_OFF,EV_ALL) 
 c
-      IMPLICIT INTEGER (A-Z)   
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -2370,6 +2392,7 @@ c    NB: note that this scheme is treating a H-eff as were it a Hermitian CI mat
 c        is to use the left and righthand side eigenvectors, but this needs to be worked out more carefully.
 c
       REAL*8, ALLOCATABLE:: PROP(:,:,:)
+      integer eoper,i,ierr,irp,ix,iy,j_eigenvalue,i_eigenvalue,ndt
 c
 c---------------Executable code--------------------------------------------------
 c
@@ -2495,7 +2518,7 @@ c
 !C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE TRANSITION_EA_IP (ICURFSS,EOPER,PROP,
      &                             EIGENVECTORS,NDT_TOT,IREPSPI,NSP)
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 c
 c     Contraction of dipole integrals with coefficients for sector (0,1) or (1,0)
 c     Output is written directly here, as getting a nice human-readable output is
@@ -2511,7 +2534,7 @@ c
 c
 c-------------------Calling Variables-------------------------------------------------
 c
-      INTEGER NSP,NDT_TOT,EOPER,IREPSPI(NSP,MXREP,2)
+      INTEGER NSP,NDT_TOT,EOPER,IREPSPI(NSP,MXREP,2),ICURFSS
       REAL*8 EIGENVECTORS(RCW,IFS_HE2(NREP+1,ICURFSS))
       REAL*8 PROP(RCW,NSP,NSP)
 c
@@ -2520,6 +2543,7 @@ c
       REAL*8, ALLOCATABLE::  DIP_RHS(:,:,:),DIP_SUB(:,:,:),
      &                       TDIP_SUB(:,:,:)
       REAL*8 DDOT
+      INTEGER i, ircw,irep,j,jrep,ndtl,ndtr
 c
 c------------------------------------------------------------------------------------
 c
@@ -2589,7 +2613,7 @@ c
 !C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE TRANSITION_ONEONE (EOPER,PROP,TRANS_DIPOLE,
      &                       EIGENVECTORS,NDT_TOT,IREPSPI,NSP)
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 c
 c     Contraction of dipole integrals with coefficients for sector (1,1)
 c
@@ -2612,6 +2636,7 @@ c-------------------Local Variables---------------------------------------------
 c
       INTEGER, ALLOCATABLE:: IND(:,:)
       REAL*8 DDOT
+      integer i,ijrep,j,ji,k,ndt
 c
 c------------------------------------------------------------------------------------
 c
@@ -2659,7 +2684,7 @@ c     find  the position of the dipole_{av,ao} elements in the full array
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
        SUBROUTINE READ_PROP(DIPLEN,NSP,PROP)
 C
-       IMPLICIT INTEGER (A-Z)
+       implicit none
 C
 C This routine is analogous to RDPROP in relccsd/ccints.F (without the sorting).
 C
@@ -2682,6 +2707,7 @@ C
       CHARACTER*32 ACHAR
       REAL*8 DUMPROP(2,NSP,NSP)
       REAL*8 DUMMY,AMAXR,AMAXI,ANORM,APHASE(2)
+      integer i,ierr,imax,j,jmax
 C
 C---------------Executable code--------------------------------------
 C
@@ -2774,7 +2800,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PROP_SUB(ICURFSS,PROP,IREP,JREP,DIP_SUB,NDTL,NDTR,
      &                    IREPSPI,NSP)
 
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 c
 c Takes out symmetry block as needed in subroutine Transition_EA_IP
 c                                                      
@@ -2790,10 +2816,14 @@ c
 c
 c----------------Calling variables---------------------------------------------
 c
-      INTEGER NDTR, NDTL,IJREP,ICURFSS
+      INTEGER NDTR, NDTL,IJREP,ICURFSS,NSP,IREP,JREP,IREPSPI
       DIMENSION IREPSPI(NSP,MXREP,2)
       REAL*8 PROP(RCW,NSP,NSP),DIP_SUB(RCW,NDTL,NDTR)
 
+c
+c---------------Local variables--------------------------------------
+c
+      integer i, ii, j, jj
 c
 c  Distinguish between the two possible cases and get the symmetry block
 c 
@@ -2824,7 +2854,7 @@ c
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PROPINDEX(IND,IJREP,NDT,IREPSPI,NSP) 
 
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 c
 c define offsets of property matrix needed in subroutine Transition_OneOne
 c                                                      
@@ -2840,10 +2870,14 @@ c
 c
 c----------------Calling variables---------------------------------------------
 c
-      INTEGER NDT, IJREP
+      INTEGER NDT, IJREP, IREPSPI, NSP
       INTEGER IND(2,NDT)
       DIMENSION IREPSPI(NSP,MXREP,2)
 
+c
+c---------------Local variables--------------------------------------
+c
+      integer i, irep, ii, j, jrep
 c
 c  Determine indices for property matrix (in MOLFDIR format!)
 c 
@@ -2864,7 +2898,7 @@ c
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GET_FSLABEL (ICURFSS,EPS,LABEL,NDIMH)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -2880,6 +2914,7 @@ C
 C
 C---------------Variables-----------------------------------------------
 C
+      integer ndimh,iao,iav,ii,ijrep,irep,j,jrep
       CHARACTER*50 LABEL(NDIMH),NOT_DEFINED
       INTEGER ICURFSS,I
       REAL*8 EPS(*)
