@@ -10,6 +10,7 @@ Keyword reference
    - :doc:`*PARALLEL <parallel>` --- Parallel run directives
 
 * :doc:`**MOLECULE<molecule>` --- Specification of basis set and other atom-specific information
+   - :doc:`*CHARGE <molecule>` --- Define the molecular charge
    - :doc:`*BASIS <molecule>` --- Define default and atom-specific basis sets
    - :doc:`*CENTERS <molecule>` --- Define specific properties for atoms (e.g. ghost centers, point charges)
    - :doc:`*SYMMETRY <molecule>` --- Set symmetry manually (when reading from xyz file)

@@ -23,7 +23,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE AINTM(T1,T2,BUF1,BUF2,AZ)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -93,7 +93,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GOINTM (FVO,T1,BUF1,BUF2,GO)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -119,6 +119,8 @@ C
 #include "complex.inc"
 C
 C---------------Local variables--------------------------------------
+C
+      integer m,n
 C
 C---------------Executable code--------------------------------------
 C
@@ -146,7 +148,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GVINTM(FVO,T1,BUF3,NBUF3,BUF2,NBUF2,GV)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -177,6 +179,7 @@ C---------------Local variables--------------------------------------
 C
       LOGICAL USEDZ,RIGHT
       real*8 ddot
+      integer m,n
 C
 C---------------Executable code--------------------------------------
 C
@@ -219,7 +222,7 @@ C------------------------------------
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE HINTM(T1,T2,BUF1,BUF2,BUF3,NBUF3,H)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -251,6 +254,8 @@ C
       DATA T1VAL /2*0.0D0/
       LOGICAL DONE,TEQ
       real*8 ddot,xsum
+      integer akcd,akci,akdi,c,cco,cd,ci,cmin,crep,d,di,drep,i,irep,irp
+      integer istart,jrep,k,kld,m,mint,n,nint,off1,off2,off3,t1ci,t1di
 C
 C---------------Executable code--------------------------------------
 
@@ -446,7 +451,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE HOINTM(FOO,EPS,T1,T2,BUF1,BUF2,BUF3,HO)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -475,6 +480,7 @@ C
 C---------------Local variables--------------------------------------
 C
       real*8 ddot
+      integer i,ii,irp,n,nd
 C---------------Executable code--------------------------------------
       interface
          subroutine gettau(t1,t2,tau)
@@ -516,7 +522,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE HOVINTM(FVO,T1,BUF1,BUF2,HOV)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -542,6 +548,8 @@ C
 #include "complex.inc"
 C
 C---------------Local variables--------------------------------------
+C
+      integer k,m
 C
 C---------------Executable code--------------------------------------
 C
@@ -569,7 +577,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE HVINTM(FVV,EPS,T1,T2,BUF1,BUF2,BUF3,HV)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -596,6 +604,7 @@ C
 C
 C---------------Local variables--------------------------------------
       REAL*8 ddot
+      integer a,aa,irp,n,nd
 C
 C---------------Executable code--------------------------------------
 
@@ -643,7 +652,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE BINTM(T1,T2,BUF1,BUF2,NBUF2,BUF3,NBUF3,S2,IW)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -676,6 +685,7 @@ C
       REAL*8 T1MIN(2)
       DATA T1MIN /2*0.0D0/
       REAL*8 ddot
+      integer irp,istart,k,kd,m,mint,n,nint,off1,off2
 C
 C---------------Executable code--------------------------------------
 
@@ -790,7 +800,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETTAU (T1,T2,TAU)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -818,6 +828,8 @@ C---------------Local variables--------------------------------------
 C
       REAL*8  T1MIN(2)
       DATA    T1MIN /2*0.0D0/
+      integer ab,abijoff,ai,aj,amin,arp,b,bi,bj,brp,i,ijrp,imin,irp,j
+      integer jrp,na
     
 C
 C---------------Executable code--------------------------------------
@@ -894,7 +906,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       SUBROUTINE GETTAU2 (S1,DL,TAU)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -931,6 +943,8 @@ C---------------Local variables--------------------------------------
 C
       REAL*8 S1MIN(2)
       DATA S1MIN /2*0.0D0/
+      integer na,n,jrp,j,irp,imin,ijrp,i,f,e,brp,bj,bi,b,arp,amin,aj
+      integer ai,abijoff,ab,a,m
 C
 C---------------Executable code--------------------------------------
 C
@@ -1019,7 +1033,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETTAU3 (T1,T2,TAU)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1048,6 +1062,8 @@ C---------------Local variables--------------------------------------
 C
       REAL*8 T1VAL(2)
       DATA T1VAL /2*0.0D0/
+      integer ab,abijoff,ai,aj,amin,arp,b,bi,bj,brp,i,ijrp,imin,irp
+      integer j,jrp,na
 C
 C---------------Executable code--------------------------------------
 C
@@ -1120,7 +1136,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE LAMBD21(T1,L1,S2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1147,6 +1163,8 @@ C---------------Local variables--------------------------------------
 C
       REAL*8 T1MIN(2)
       DATA T1MIN /2*0.0D0/
+      integer ab,abijoff,ai,aj,amin,arp,b,bi,bj,brp,i,ijrp,imin,irp
+      integer j,jrp,na
 C
 C---------------Executable code--------------------------------------
 C
@@ -1219,7 +1237,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CINTM(T1,T2,HOV,AZ,BUF1,BUF2,BUF3,NBUF3,CZ)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1250,6 +1268,7 @@ C
       DATA T1VAL /2*0.0D0/
       LOGICAL DONE
       real*8 ddot,xsum
+      integer irep,irp,istart,jrep,k,m,mint,n,nint,off1,off2,off3
 C
 C---------------Executable code--------------------------------------
 
@@ -1390,7 +1409,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DINTM(T1,T2,HOV,BUF1,BUF2,NBUF2,BUF3,NBUF3,H)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1422,6 +1441,9 @@ C
       REAL*8 T1CON(2)
       DATA T1CON /2*0.0D0/
       LOGICAL DONE
+      integer a,ab,abkl,ak,akcj,amin,arep,b,bk,bkcj,brep,c,cd,cj,ck,cmin
+      integer crep,d,dj,drep,irp,istart,j,jrep,k,kmin,krep,m,mint,n,nint
+      integer abkj
 C
 C---------------Executable code--------------------------------------
 
@@ -1588,7 +1610,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE MKGPP (T2,S2,BUF1,BUF2,GOO,GVV)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1641,7 +1663,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CNTRCT (TRANSA,TRANSB,MDIM,NDIM,KDIM,ALPHA,A,B,
      &                   BETA,C,NREP)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1666,6 +1688,8 @@ C
 #include "complex.inc"
 C
 C---------------Local variables--------------------------------------
+C
+      integer nrep,irp,k,lda,ldb,ldc,m,n,off1,off2,off3
 C
 C---------------Executable code--------------------------------------
 C
@@ -1706,7 +1730,7 @@ C
       SUBROUTINE CNTRCT_SP (TRANSA,TRANSB,MDIM,NDIM,KDIM,ALPHA,A,B,
      &                   BETA,C)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1733,6 +1757,7 @@ C
 C
 C---------------Local variables--------------------------------------
       INTEGER :: OFFXX(NREP+1),OFFYY(NREP+1),OFFZZ(NREP+1),IRP,JRP
+      integer k,lda,ldb,ldc,m,n,off1,off2,off3
 C---------------Executable code--------------------------------------
 C
 
@@ -1792,7 +1817,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DINTM1(T1,T2,BUF1,BUF2,BUF3,NBUF3,H)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1822,6 +1847,8 @@ C
       DATA T1VAL /2*0.0D0/
       LOGICAL DONE
       real*8 ddot,xsum
+      integer akcd,akci,akdi,c,cd,ci,cmin,crep,d,di,drep,i,irep,irp
+      integer istart,jrep,k,m,mint,n,nint,off1,off2,off3,t1ci,t1di
 C
 C---------------Executable code--------------------------------------
 C
@@ -1917,7 +1944,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DINTM2(T1,BUF1,BUF3,NBUF3,H)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1947,6 +1974,8 @@ C
       DATA T1VAL /2*0.0D0/
       LOGICAL DONE
       real*8 ddot,xsum
+      integer akcd,akci,akdi,c,cd,ci,cmin,crep,d,di,drep,i,irp,istart
+      integer mint,nint,t1ci,t1di
 C
 C---------------Executable code--------------------------------------
 C

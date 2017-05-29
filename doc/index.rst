@@ -114,6 +114,9 @@ Tutorials and walkthrus
   :doc:`An introduction to complex reponse <tutorials/properties/complex_response>` |
   :doc:`Magnetizabilities with London Atomic Orbitals <tutorials/lao_magnetizabilities/lao-magnetizabilities>`
 
+* **Spectroscopy:**
+  :doc:`X-ray spectroscopy: water <tutorials/dft/water_Kedge>`
+
 * **Analysis:**
   :doc:`Projection analysis <tutorials/analysis/projection_analysis>`
 

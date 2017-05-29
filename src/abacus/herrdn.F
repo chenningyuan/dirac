@@ -723,6 +723,9 @@ C
      &               CLASS,TOL_SYMADD,IPREAD,.true.)
          IF (CLASS(3:4).EQ.'oo') LINEAR = .TRUE.
       END IF
+
+C     Fix a problem with ADDSYM for some D(2) cases, also corrects for wrong user inputs (e.g. specifying X Y and XY as generators)
+      CALL FIX_DUPLICATE_GENERATORS (NSYMOP,KASYM)
 C
 C     ***************************************
 C     ***** Process symmetry input data *****
@@ -7038,5 +7041,33 @@ C
 C
       RETURN
       END
+
+      subroutine fix_duplicate_generators (nsymop,kasym)
+      implicit none
+      integer, intent(inout)    :: nsymop
+      character, intent(inout)  :: kasym(3,3)*1
+      integer :: i, j, k, igen12, igen(3)
+#include "ibtfun.h"
+
+C     We only need to check for 3 generators, 2 generators are always independent
+      if (nsymop.lt.3) return
+
+      do j = 1, nsymop
+        igen(j) = 0
+        do i = 1, 3
+C         Convert the string into a bit representation (e.g. "XY"  becomes 3 = 011) 
+          if (kasym(i,j).NE.' ') THEN
+            k = ICHAR(kasym(i,j)) - ICHAR('W')
+            igen(j) = igen(j) + 2**(k-1)
+          end if
+        end do
+      end do
+
+C     Check and correct for cases with redundant generators (generator 1 times generator 2 yields generator 3)
+      igen12 = IBTXOR(igen(1),igen(2))
+      if (igen12 .eq. igen(3)) then
+          nsymop = nsymop - 1
+      end if
+      end
 
 C --- end of herrdn.F ---

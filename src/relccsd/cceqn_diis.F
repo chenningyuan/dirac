@@ -1,7 +1,7 @@
       SUBROUTINE DIISX (NDIMT1,NDIMT2,T1N,T2N,IT,
      &                  CC,BB,ITC,BB2,RMS)
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -17,7 +17,7 @@ C---------------Calling variables--------------------------------------
 C
       REAL*8 T2N(*),T1N(*)
       REAL*8 RMS
-      INTEGER NDIMT1, NDIMT2  
+      INTEGER NDIMT1, NDIMT2, IT, ITC  
 C---------------Common Blocks--------------------------------------
 C
 #include "param.inc"
@@ -35,6 +35,7 @@ C
       REAL*8 SUM1,SUM2,SSUM,DSUM,SDOT,DDOT
       COMPLEX*16 CFAC
       real*8, allocatable :: T1O(:),T2O(:)
+      integer it1,it2,jcode,m,n,sect1,sect2,intowp
 C
 C---------------Executable code--------------------------------------
 C

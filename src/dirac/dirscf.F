@@ -972,6 +972,10 @@ C        ... before extracting of EIG print the Fock matrix
         ENDDO
       ENDIF
 C
+C     If converged, exit SCF here
+C
+      IF (DHFEXIT) GOTO 9999      
+C
 C     Diagonalize Fock matrix
 C     =======================
 C
@@ -992,10 +996,6 @@ C     Boson type selection
 C     ====================
 C
       IF(DOBOSSEL) CALL BOSSEL(EIG,IBEIG,FAO,WORK(KFREE),LFREE)
-C
-C     If converged, do not select occupation or save orbitals
-C
-      IF (DHFEXIT) GOTO 9999
 C
 C     Automatic occupation
 C     ====================
@@ -1623,7 +1623,8 @@ C          reset intbuf so no old Fock matrices are used :
            INTBUF = INTFLG
         END IF
 C
-        IF (DHFEXIT) THEN
+        IF(DHFEXIT) GOTO 30
+        IF (.FALSE.) THEN
 C     Comments on open shell convergence. Feb. 2013 hjaaj.
 C          ====================================================
 C          Some authors have put forward that OPEN_FAC = 1.0D0 is the best choice,

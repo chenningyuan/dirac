@@ -6,7 +6,7 @@
       use interface_to_mpi
       use xmlout
       use intermediates_1b_2b
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 
 C---------------Description--------------------------------------------
 C
@@ -32,7 +32,7 @@ C     for diis ...
 
       REAL*8 RMS,CONV
       REAL*8 DIAG
-      INTEGER MAXIT
+      INTEGER MAXIT,NBUF2,NBUF3
 
 C     for Fock space ...
 
@@ -50,6 +50,7 @@ C---------------Common Blocks--------------------------------------
 #include "complex.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)
+      integer ISTAT
       DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 
@@ -60,6 +61,7 @@ C---------------Local variables--------------------------------------
       CHARACTER*2 DELS1
       CHARACTER*4 DELS2
       REAL*8 DDOT
+      INTEGER it,itc,nit,IERR
 
 C---------------Executable code--------------------------------------
 C
