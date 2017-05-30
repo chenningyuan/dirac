@@ -5564,7 +5564,7 @@ C&&& MDIRAC: use modified Dirac Hamiltonian as implemented in INTEREST integral 
 C..TODO: check for inconsistencies and add stops
   165     CONTINUE
 !&&&& .TRSMIX : allow mixing T+ Hamiltonian with added T- perturbation operator
-          TRS_MIX = .TRUE.
+            TRS_MIX = .TRUE.
           GO TO 100
 !&&&& .PEQM: polarizable embedding
   166     CONTINUE
@@ -6507,7 +6507,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10,11), I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11,12), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
