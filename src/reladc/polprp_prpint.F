@@ -122,6 +122,11 @@
         if(.not.success) then
           call insuff_prop_return(nameofprop)
           lavail = .false.
+          deallocate(CPVV)
+          deallocate(CPVO)
+          deallocate(CPOV)
+          deallocate(CPOO)
+          deallocate(CBUF)
           return
         endif
 
@@ -634,11 +639,17 @@ C
 !
 !  generate AOO stream
 !
+      write(*,*) '- - - - DOO STREAM:  - - - - - '
       IJ = 1
       DO IJREP = 1,NREP
+        write(*,*)
+        write(*,*) 'DESREP:',ijrep
+        write(*,*)
         DO JREP = 1, NREP
            IREP = MULTB (JREP,IJREP+NREP,2)
            IREP = MULTB (IREP,NREP+1,2) ! form gamma*_i
+          write(*,*) 'irep/jrep,no(irep),no(jrep)',irep,jrep,
+     &               no(irep),no(jrep)
            DO J = 1, NO(JREP)
               JJ = IREPSPI(J,JREP,1)
               DO I = 1, NO(IREP)
@@ -650,12 +661,15 @@ C
                     AOO(IJ) = PROP(1,II,JJ)*APHASE(1) -
      &                        PROP(2,II,JJ)*APHASE(2)
                  ENDIF
+
+       write(*,*) 'Integral',IJ,' irep/jrep',irep,jrep,' val:',
+     &      aoo(ij)
                  IJ = IJ + 1
-                 iaoocount = iaoocount + 1
-              ENDDO
-           ENDDO
-        ENDDO
-      ENDDO
+
+              ENDDO  !I
+           ENDDO   !J
+        ENDDO  !JREP
+      ENDDO  !IJREP
       IF( (IJ-1).ne.dimpoo) Call Quit('AOO counting error!')
 !
 !  generate AVV stream

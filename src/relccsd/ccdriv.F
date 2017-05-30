@@ -1130,6 +1130,7 @@ C
                         NO(IREP) = NO(IREP) + 1
                         IREPSP(I,3) = NO(IREP)
                         IREPSPI(NO(IREP),IREP,1) = I
+!        write(*,*) 'occ:',NO(IREP),IREP,IREPSPI(NO(IREP),IREP,1)
                         IF (.not.IFROZ_set_in_input) THEN
                            IF (NO(IREP).GT.MAXFROZ)
      &                        CALL QUIT("INCREASE MAXFROZ")
@@ -1148,6 +1149,7 @@ C
                         NV(IREP) = NV(IREP) + 1
                         IREPSP(I,3) = - NV(IREP)
                         IREPSPI(NV(IREP),IREP,2) = I
+!        write(*,*) 'vir:',NV(IREP),IREP,IREPSPI(NV(IREP),IREP,2)
                      ENDIF
                   ENDIF
                ENDDO

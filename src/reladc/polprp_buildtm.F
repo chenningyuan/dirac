@@ -45,11 +45,15 @@
 ! offset and length arrays for NTS two-electron contributions
                                             
       INTEGER,allocatable,dimension(:)       :: ABIJTT
-      INTEGER,allocatable,dimension(:,:)     :: JAVVOO
-      INTEGER,allocatable,dimension(:,:)     :: JBVVOO
-      INTEGER,allocatable,dimension(:)       :: MVVOOT
+      INTEGER,allocatable,dimension(:)       :: AVVOOT
       INTEGER,allocatable,dimension(:)       :: BVVOOT
       INTEGER,allocatable,dimension(:)       :: LVVONO
+      INTEGER,allocatable,dimension(:)       :: LVNVOO
+
+! index and offset arrays for the nontotally symmetric (NTS) sorters
+
+      INTEGER,allocatable,dimension(:,:)     :: MMVVOT
+      INTEGER,allocatable,dimension(:)       :: PVVOT
 
 ! phase information for the property x,y,z arrays in case of real arithmetic
 
@@ -103,11 +107,6 @@
 
       Integer                                :: n1,n2,n3,n4
       Integer                                :: ialloc,iat
-                                            
-! special symmetry test arrays
-
-      Integer,allocatable,dimension(:)       :: NVVOTY
-      Integer,allocatable,dimension(:,:)     :: KKVVOTY
 
 ! some parameters
 
@@ -115,10 +114,11 @@
       Logical                                :: LTR=.true.
 
       character*9                            :: preconfn='VVVVXVVOO'
-      character*30                           :: iorder
+      character*40                           :: iorder
       integer                                :: incsat
       integer                                :: numstacks
-      real*8                                 :: x1,x2,x3,x4
+      real*8                                 :: x1,x2,x3,x4,xcntrl
+      integer                                :: nabixj,nabxij
 !
 !---------------interface region --------------------------------------
 !
@@ -139,9 +139,26 @@
           real*8, dimension(:)         :: ra10,ra11,ra12
         END SUBROUTINE
 
+!       SUBROUTINE SRT1T3_NEW (i1,ia1,l1,ia2,ia3,ia4,ia5,
+!    &                    ia6,ia7,ra1,ra2,i2,i3)
+!         integer                       :: i1
+!         integer, dimension(64,64,2)   :: ia1
+!         logical                       :: l1
+!         integer, dimension(:)         :: ia2,ia3,ia4,ia5
+!         integer, dimension(:)         :: ia6
+!         integer, dimension(32,32)     :: ia7
+!         real*8,  dimension(:)         :: ra1,ra2
+!         integer                       :: i2,i3
+!       END SUBROUTINE
+
         INTEGER FUNCTION XCOLDET(i1)
           integer                      :: i1
         END FUNCTION
+
+        SUBROUTINE XCOLDET_FILL(i1,ra1)
+          integer                      :: i1
+          real*8, dimension(:)         :: ra1
+        END SUBROUTINE
 
         SUBROUTINE denomvots(ra1,ra2)
           real*8, dimension(:)         :: ra1,ra2
@@ -158,10 +175,6 @@
         SUBROUTINE MATXMAT(i1,ra1,ra2,ra3)
           integer                      :: i1
           real*8, dimension(:)         :: ra1,ra2,ra3
-        END SUBROUTINE
-
-        SUBROUTINE SRT27(ra1,ra2)
-          real*8, dimension(:)         :: ra1,ra2
         END SUBROUTINE
 
         SUBROUTINE rcaxpy(i1,l1,c1,ra1,ca1)
@@ -362,7 +375,6 @@
       if(carith) call conjuga(n1,vvoo2,1)
       call denomvvoo(eps,vvoo1,vvoo1)
       call denomvvoo(eps,vvoo2,vvoo2)
-      if(qstack_push(7,n1,vvoo1).ne.n1) stop
 !
 !  get the property integrals and phases from corresponding files.
 !
@@ -373,12 +385,12 @@
      &               dvox,dvoy,dvoz,
      &               dvvx,dvvy,dvvz)
 
-      if(qstack_push(1,idaov*rcw,dovx).ne.idaov*rcw) stop
-      if(qstack_push(2,idaov*rcw,dovy).ne.idaov*rcw) stop
-      if(qstack_push(3,idaov*rcw,dovz).ne.idaov*rcw) stop
-      if(qstack_push(4,idavo*rcw,dvox).ne.idavo*rcw) stop
-      if(qstack_push(5,idavo*rcw,dvoy).ne.idavo*rcw) stop
-      if(qstack_push(6,idavo*rcw,dvoz).ne.idavo*rcw) stop
+!     if(qstack_push(1,idaov*rcw,dovx).ne.idaov*rcw) stop
+!     if(qstack_push(2,idaov*rcw,dovy).ne.idaov*rcw) stop
+!     if(qstack_push(3,idaov*rcw,dovz).ne.idaov*rcw) stop
+!     if(qstack_push(4,idavo*rcw,dvox).ne.idavo*rcw) stop
+!     if(qstack_push(5,idavo*rcw,dvoy).ne.idavo*rcw) stop
+!     if(qstack_push(6,idavo*rcw,dvoz).ne.idavo*rcw) stop
 
 ! canary values for catching errors. For complex arithmetic these
 ! phase variables must not be accessed or used.
@@ -1122,14 +1134,6 @@
      &            fabijtx,fabijty,fabijtz)
 
       write(*,*) '------  F_ai(2,6) finished'
-      if(qstack_compl(1,dovx).ne.0) stop 'CE'
-      if(qstack_compl(2,dovy).ne.0) stop 'CE'
-      if(qstack_compl(3,dovz).ne.0) stop 'CE'
-      if(qstack_compl(4,dvox).ne.0) stop 'CE'
-      if(qstack_compl(5,dvoy).ne.0) stop 'CE'
-      if(qstack_compl(6,dvoz).ne.0) stop 'CE'
-      if(qstack_compl(7,vvoo1).ne.0) stop 'CE'
-      write(*,*) '------ consistency check of the DOV,DVO arrays passed'
 !
 !-------------------------------------
 !------  F_ai(2,7): a DOV contribution
@@ -1441,135 +1445,180 @@
       write(*,*) '------  F_ai(2,10) finished'
 !
 !  ----------------------------------------------------------
+!  ----------------------------------------------------------
+!  ----------------------------------------------------------
+!  ----------------------------------------------------------
 !  -------     2h2p second order contributions to F  --------
 !  ----------------------------------------------------------
+!  ----------------------------------------------------------
+!  ----------------------------------------------------------
+!  ----------------------------------------------------------
 !
-! Generate index arrays for NTS two-particle contribs
+      call pst('calculating the 2h2p 2nd order contributions+')
+
+!______________________________________________________________
+!|
+!|
+!|  Generate index arrays for NTS two-particle contribs
+!|
 !
       allocate(ABIJTT(NREP))
-      allocate(JAVVOO(NREP,NREP))
-      allocate(JBVVOO(NREP,NREP))
-      allocate(MVVOOT(NREP))
+      allocate(AVVOOT(NREP))
       allocate(BVVOOT(NREP))
       allocate(LVVONO(NREP+1))
+      allocate(LVNVOO(NREP+1))
 
-      ABIJTT  = 0   !length of the non-totally symmetric ab,ij array with a>b, i>j
-      JAVVOO  = 0   !offset array for the non-totally symmetric VVO,O combinations
-      JBVVOO  = 0
-      MVVOOT  = 0   !length of the non-totally symmetric VVO,O array
-      BVVOOT  = 0
+      ABIJTT  = 0   !length of the non-totally symmetric ab,ij arrays with a>b, i>j
+      AVVOOT  = 0   !length of the non-totally symmetric VVO,O array in desrep
+      BVVOOT  = 0   !length of the non-totally symmetric V,VOO array in desrep
+      LVVONO  = 0   !offset array for nontotally symmetric VVO,O array
+      LVNVOO  = 0   !offset array for nontotally symmetric V,VOO array
 
+      nabixj = 0
+      nabxij = 0
+
+!_______________________________________________________________
+!|
+!|
+!| fill the ABI,J offset array for NTS handling.
+!|
+!|  we allow for the situation <ABIREP,KREP><KREP,JREP>
+!|  where NO(KREP) = 0! This can occur in the nontotally
+!|  symmetric regime.
+!|
       DO JREP = 1, NREP
-        DO IREP = 1, NREP
-           IJREP = MULTB(IREP,JREP,2)
-           IJBREP = MULTB(IREP+NREP,JREP+NREP,2)  !ABIJTT refers to bosonic ireps!
 
-           ABIJTT(IJBREP) = ABIJTT(IJBREP) + NVVT(IREP)*NOOT(JREP)
-           JAVVOO(IREP,JREP) = MVVOOT(IJREP)
-           JBVVOO(IREP,JREP) = BVVOOT(IJREP)
-           MVVOOT(IJREP) = MVVOOT(IJREP) + NVVOT(IREP)*NO(JREP)
-           BVVOOT(IJREP) = BVVOOT(IJREP) + NV(IREP)*NVOOT(JREP)
+        ABIREP = MULTB (JREP,DESREP+NREP,2)
+               if(multb(abirep,jrep,1).ne.desrep) 
+     &         stop '2p2h fermion symm error!'
 
-        ENDDO
-      ENDDO
+!       IF(NVVOT(ABIREP).ne.0.and.
+!    &     NO(JREP).ne.0.and.
+!    &     NO(ABIREP).ne.0) THEN
+!         LVVONO(JREP+1) = LVVONO(JREP) + nvvot(abirep)*no(jrep)
+!         nabixj = nabixj + nvvot(abirep)*no(jrep)
+!         write(*,*) 'For lvvono:',abirep,jrep
+!       ELSE
+!         LVVONO(JREP+1) = LVVONO(JREP)
+!       ENDIF
+        
+        LVVONO(JREP+1) = LVVONO(JREP) + nvvot(abirep)*no(jrep)
+        nabixj = nabixj + nvvot(abirep)*no(jrep)
+        write(*,*) 'ABIREP,JREP,lvvono(jrep):',abirep,jrep,lvvono(jrep)
 
-      DO irep = 1, NREP
-        if(ABIJTT(irep).ne.xcoldet(irep)) then
-          write(*,*) 'Internal error in coupling block lengths!'
-          write(*,*) 'IREP:',irep,' ABIJTT(irep):',ABIJTT(irep),
-     &               ' XCOLDET(irep):',xcoldet(irep)
-          Call quit('**********')
-        endif
-      ENDDO
+        IJBREP = MULTB(DESREP+NREP,JREP+NREP,2)
+               if(multb(ijbrep+nrep,jrep+nrep,2).ne.desrep) 
+     &         stop '2p2h bosonic symm error!'
 
+        nabxij = nabxij + nvvt(ijbrep)*noot(jrep)
+
+      ENDDO !JREP
+      write(*,*) 'NREP+1,nabixj,lvvono(jrep):',
+     &    nrep+1,nabixj,lvvono(nrep+1)
+      write(*,*) 'size of vabij(x,y,z) buffer (part A):',nabixj
+      write(*,*) 'size of fabij(x,y,z) buffer (part A):',nabxij
+!|
+!|______________________________________________________________
+!
+!  now allocate relevant buffer  now allocate relevant bufferss
+!
+      allocate(vabijx(nabixj*rcw))
+      allocate(vabijy(nabixj*rcw))
+      allocate(vabijz(nabixj*rcw))
+      vabijx = 0.0d0
+      vabijy = 0.0d0
+      vabijz = 0.0d0
+
+      IF(nabxij.ne.xcoldet(desrep)) 
+     &    stop 'fabij length does not match sat space length!'
+
+      allocate(fabijtx(nabxij))
+      allocate(fabijty(nabxij))
+      allocate(fabijtz(nabxij))
+      allocate(vvoop(nabxij*rcw))    ! buffer for nts vvoo stream
+      fabijtx = A0
+      fabijty = A0
+      fabijtz = A0
+      vvoop = 0.0d0
 !
 !  analyze contributions
 !
       if(printlevel.ge.5) call gov_analyzer
 !
-!  allocate required space, faibj arrays have to be complex!
+!---------------------------------------------------
+!-----  F_ab,ij(2nd order A PART)  -----------------
+!-----  see master sheet -TM 20-   -----------------
+!---------------------------------------------------
 !
-      call pst('calculating the 2h2p 2nd order contributions+')
-      n1=ABIJTT(desrep)  !ABIJTT is non-cumulative!
-      write(*,*) 'Allocating F_abij buffers of length',n1
-      allocate(fabijtx(n1))
-      allocate(fabijty(n1))
-      allocate(fabijtz(n1))
-      fabijtx = A0
-      fabijty = A0
-      fabijtz = A0
-      allocate(vvoop(n1*rcw))    ! buffer for nts vvoo stream
-      vvoop = 0.0d0
-
-
-      n1=mvvoot(desrep)  !mvvoot is non-cumulative!
-      write(*,*) 'Allocating A_abi,k buffers of length',n1
-      allocate(vabijx(n1*rcw))
-      allocate(vabijy(n1*rcw))
-      allocate(vabijz(n1*rcw))
+! test forward antisymmetrization with totally symmetric stream
+! and original SRT_1T3 routine.
+!
+!     do i=1,ivvoott(nrep+1)
+!       vvoo1(i) = dble(i)
+!     enddo
+!     vvoo3 = 0.0d0
+!     CALL SRT1T3 (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
+!    &             vvoo1,vvoo3)
+!     xcntrl = 0.0d0
+!     do i=1,kvvoot(nrep+1)
+!       xcntrl = xcntrl + vvoo3(i)
+!       write(*,*) i,' xcntrl contrib:',vvoo3(i)
+!     enddo
+!     write(*,*) 'Forward antisymmetry for totally symm.:',xcntrl
+!
+! test forward antisymmetrization with nontotally symmetric stream
+! and !!new!! SRT_1T3 routine.
+ 
+      write(*,*) 'Performing antisymmetry test of new sorter...'
+      do i=1,nabxij
+        vvoop(i) = dble(i)
+      enddo
       vabijx = 0.0d0
-      vabijy = 0.0d0
-      vabijz = 0.0d0
+      CALL SRT1T3_NEW (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,
+     &                LVVONO,KKVVOT,vvoop,vabijx,desrep,nabixj)
+      xcntrl = 0.0d0
+      do i=1,lvvono(nrep+1)
+        xcntrl = xcntrl + vabijx(i)
+!       write(*,*) i,' xcntrl contrib:',vvoo3(i)
+      enddo
+      if(abs(xcntrl).gt.1.0E-16) stop '** FAILED **'
+      write(*,*) 'passed.'
+      vabijx = 0.0d0
 !
-!---------------------------------------------------
-!-----  F_ab,ij(2,A+B and antisymmetrization) ------
-!---------------------------------------------------
-!
-!  v_ab,ki = -v_ab,ik (vvoo1)
-!  sort -v_ab,ik to A_abi,k  (vvoo3)
-!  contract v_abi,k and D(x,y,z)kj  ---> Babi,j **NTS**
-!  backsort and antisymmetrize Babi,j ---> Bab,ij.
+!  sort v_ab,ik to A_abi,k  (vvoo3)
 !
       vvoo3 = 0.0d0
-      n1=ivvoott(nrep+1)
-      CALL RCA_NEGATE(n1,vvoo1)
       CALL SRT1T3 (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
      &             vvoo1,vvoo3)
-!     n2 = KVVOOT(nrep+1)
-!     if(qstack_push(10,n2,vvoo3).ne.n2) stop 'qse'
-!     CALL SRT1T3_NTS (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
-!    &                 vvoo1,vvoo3,1)
-!     write(*,*) 'Comparison:',qstack_compl(10,vvoo3)
-      CALL RCA_NEGATE(n1,vvoo1)
-!*
-!* ---------------------------------------------------------------
-!*
-!                  from here we try new routines
-!         following the equation notations from master sheet
-!*
-!* ---------------------------------------------------------------
-!*
-!
-!  contract A_abi,k (VVOO3) with D_kj   --->  A_abi,j (vabijx,y,z)
-!  and generate the corresponding total length array L(vvo,o) <- desrep
-!
-      write(*,*) 'Contracting in IREP',desrep
-      write(*,*)
-      write(*,*) '|KREP>,  |JREP>,   no(|krep>),   no(|jrep>)',
-     &      '  nvvot(|krep>),  nvvot(<krep|),   LVVONO(jrep)'
-      write(*,*)
 
-      LVVONO = 0
+!  contract A_abi,k (VVOO3) with D_kj   --->  B_abi,j (vabijx,y,z)
+!  and generate the corresponding total length array L(vvo,o) <- desrep
+
+      write(*,*) 'gamma_abi,   gamma_j,   desrep'
+      write(*,*)
       OFF3 = 1
       DO JREP = 1, NREP    ! loop over rightmost irep of D_kj
 
-        KREP = MULTB (JREP,DESREP+NREP,2)  !determine |gamma_k>
-        if(multb(krep,jrep,1).eq.desrep) then
-           write(*,*) 'no riot.'
-        else
-           stop
-        endif
-        KREPB = MULTB (KREP,NREP+1,2)   ! form <gamma_k|
+        ABIREP = MULTB (JREP,DESREP+NREP,2)
+        if(multb(abirep,jrep,1).ne.desrep)
+     &       stop 'Part A fermionic symm. error'
+        ABIREPC = MULTB (ABIREP,NREP+1,2)
 
-        OFF1 = KVVOOT(KREP)*rcw + 1
-        OFF2 = (JPOOXX(desrep) + JJOO(KREP,JREP))*rcw + 1
+!
+!  we do not test for zero occupation because this is intrinsically accounted for
+!
+!       if(nvvot(abirep).eq.0.or.no(jrep).eq.0.or.no(abirep).eq.0) cycle
 
-        M = NVVOT(KREP)
+        write(*,*) 'contracting abirep,jrep',abirep,jrep,
+     &    nvvot(abirep),no(abirep),no(jrep),
+     &    ' from',off1,' to ',off3
+
+        OFF1 = KVVOOT(ABIREP)*rcw + 1    ! offsetting with |gamma_abi>
+        OFF2 = (JPOOXX(desrep) + JJOO(ABIREPC,JREP))*rcw + 1   ! offs. with <gamma_k|
+
+        M = NVVOT(ABIREP)
         N = NO(JREP)
-        K = NO(KREP)
-
-        write(*,*) KREP,JREP,NO(krep),no(jrep),nvvot(krep),
-     &         nvvot(krepb),lvvono(jrep)
+        K = NO(ABIREP)
 
         CALL XGEMM ('N','N',M,N,K,A1,vvoo3(OFF1),M,doox(OFF2),K,
      &              A0,vabijx(OFF3),M)
@@ -1579,311 +1628,192 @@
      &              A0,vabijz(OFF3),M)
 
         OFF3 = OFF3 + M * N * RCW
-        LVVONO(JREP+1) = LVVONO(JREP) + M*N
+!       write(*,*) 'offs control:',off3,lvvono(jrep+1)
 
       ENDDO  !JREP
-
-      write(*,*) 'control sum x:',dot_product(vabijx,vabijx)
-      write(*,*) 'control sum y:',dot_product(vabijy,vabijy)
-      write(*,*) 'control sum z:',dot_product(vabijz,vabijz)
-
-      write(*,*)
-      write(*,*) 'desrep:',desrep
-      write(*,*) 'offset arrays ABIJTT / MVVOOT / LVVONO'
-      write(*,*)
-      do i=1,nrep+1
-         write(*,*) i,abijtt(i),mvvoot(i),lvvono(i)
+      do i=1,lvvono(nrep+1)
+        write(*,*) i,vabijx(i)
       enddo
 !
-!************************************************
-!  do alternative NVVOT TEST ********************
-!************************************************
+!  do antisymmetrization via nontotally symmetric sorter.
 !
-!     allocate(NVVOTY(MXREP))
-!     allocate(KKVVOTY(MXREP,MXREP))
-!     NVVOTY = 0
-!     KKVVOTY = 0
+!
+!     allocate(mmvvot(32,32))
+!     allocate(pvvot(nrep))
+!     mmvvot = 0
+!     pvvot  = 0
 
 !     DO KREP = 1, NREP
-!        DO IJREP = 1, NREP
-!           IJKREP = MULTB(IJREP+NREP,KREP,2)
-!           KKVVOTY(IJREP,KREP) = NVVOTY(IJKREP)
-!           NVVOTY(IJKREP) = NVVOTY(IJKREP) + NVVT(IJREP)*NO(KREP)
-!        ENDDO
-!     ENDDO
-!     write(*,*) 'nvvoty comparison:'
-!     DO KREP = 1, NREP
-!       write(*,*) krep,nvvot(krep),nvvoty(krep)
-!       DO jrep = 1,nrep
-!         write(*,*) ' kkvvoty',jrep,kkvvoty(jrep,krep),
-!    &               kkvvot(jrep,krep)
-!       enddo
-!     ENDDO
-!     deallocate(nvvoty,kkvvoty)
-!     stop
-
-!
-!     OFF1 = 1
-!     OFF3 = 1
-!     DO KREP = 1, NREP
-!       DO JREP = 1, NREP
-!         XREP = MULTB (JREP,desrep+NREP,2)
-!         IF(XREP.ne.KREP) cycle
-!         M = NVVOT(KREP)
-!         N = NO(JREP)
-!         K = NO(KREP)
-!         OFF2 = (JPOOXX(desrep) + JJOO(KREP,JREP))*rcw + 1
-!         CALL XGEMM ('N','N',M,N,K,A1,vvoo3(OFF1),M,doox(OFF2),K,
-!    &                A0,vabijx(OFF3),M)
-!         OFF1 = OFF1 + M * K * RCW
-!         OFF3 = OFF3 + M * N * RCW
-!         write(*,*) 'Loop:',krep,' offset: ',off3
+!       DO IJREP = 1, NREP
+!         IJKREP = MULTB(IJREP+NREP,KREP,2)
+!         MMVVOT(IJREP,KREP) = PVVOT(IJKREP)
+!         PVVOT(IJKREP) = PVVOT(IJKREP) + NVVT(IJREP)*NO(KREP)
 !       ENDDO
 !     ENDDO
-
+!     DO KREP = 1, NREP
+!       if((pvvot(krep) - nvvot(krep)).ne.0) then
+!          stop 'pvvot problem.'
+!       endif
+!       DO IJREP = 1, NREP
+!         if((mmvvot(ijrep,krep) - kkvvot(ijrep,krep)).ne.0) then
+!                stop 'arrco problem'
+!         endif
+!       ENDDO
+!     ENDDO
 !
-!  test NTS routine
+!  original formulation
 !
-!     n1=KVVOOT(nrep+1)
-!     allocate(vovo3(n1),stat=ialloc)
-!     vovo3 = 0.0d0
-!     n1=ivvoott(nrep+1)
-!     do i=1,n1
-!       vvoo1(i)=dble(i)
-!     enddo
-!     CALL SRT1T3 (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,
-!    &             KVVOOT,KKVVOT,vvoo1,vovo3)
-!     x4 = 0.0d0
-!     do i=1,kvvoot(nrep+1)
-!       write(*,*) i,vovo3(i)
-!       x4 = x4 + vovo3(i)
-!     enddo
-!     write(*,*) 'total sum  fter 1T3:',x4
-
-!     x2=0.0d0
-!     do i=1,kvvoot(nrep+1) - 1
-!       x1 = vovo3(i)
-!       if(x1.eq.0.0d0) cycle
-!       do j=i+1,kvvoot(nrep+1)
-!         if(abs(x1).eq.abs(vovo3(j))) x2 = x2 + 1.0d0
-!       enddo
-!     enddo
-!     write(*,*) 'x2 sum:',x2,' length:',ivvoott(nrep+1)
-!     stop
-
-
-
-
-
-      if(mvvoot(desrep).ne.lvvono(nrep+1)) stop ' ## internal error ##'
-      write(*,*) 'Filling source array, length',abijtt(desrep)
-      do i=1,abijtt(desrep)
-        vvoop(i) = dble(i)       
-!       write(*,*) i,vvoop(i)
-      enddo
-      n2=LVVONO(nrep+1)
-      vabijx = 0.0d0
-      CALL SRT1T3_NTS (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,
-     &                LVVONO,KKVVOT,vvoop,vabijx,desrep,n2)
-      write(*,*) 'After forward NTS sort'
-      write(*,*) 'Checking destination array.'
-!     do i=1,abijtt(desrep)
-!       write(*,*) i,vvoop(i)
-!     enddo
-
-      x4 = 0.0d0
-      do i=1,lvvono(nrep+1)
+!     CALL SRT1T3_NEW (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,
+!    &                LVVONO,KKVVOT,vvoop,vabijx,desrep,nabixj)
+!
+! new:
+!
+!     CALL SRT1T3_NEW (NREP,MULTB,LFA,NVVT,NO,NO,PVVOT,
+!    &                LVVONO,KKVVOT,vvoop,vabijx,desrep,nabixj)
+!     write(*,*)
+!     write(*,*) '-------- forming control sum ---------------'
+!     write(*,*)
+!     xcntrl = 0.0d0
+!     do i=1,nabixj
 !       write(*,*) i,vabijx(i)
-        x4 = x4 + vabijx(i)
-      enddo
-      write(*,*) 'total sum of destination array:',x4
-
-!     x2=0.0d0
-!     do i=1,lvvono(nrep+1) - 1
-!       x1 = vabijx(i)
-!       if(x1.eq.0.0d0) cycle
-!       do j=i+1,lvvono(nrep+1)
-!         if(abs(x1).eq.abs(vabijx(j))) x2 = x2 + 1.0d0
-!       enddo
+!       xcntrl = xcntrl + vabijx(i)
 !     enddo
-!     write(*,*) 'x2 sum:',x2,' length:',abijtt(desrep)
-      stop
+!     write(*,*) 'Control sum: ',xcntrl
 
-
-
+!     deallocate(mmvvot,pvvot)
+!     stop
 !
-!  do antisymmetrization.
+!***** end debug
 !
-      n1=ABIJTT(desrep)
-      n2=LVVONO(nrep+1)
-
+      n2 = LVVONO(nrep+1)
       vvoop = 0.0d0
-      CALL SRT1T3_NTS (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,
+      CALL SRT1T3_NEW (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,
      &                LVVONO,KKVVOT,vabijx,vvoop,desrep,n2)
-      write(*,*) 'control sum 2 x:',dot_product(vvoop,vvoop)
-      call rcaxpy(n1,carith,pphasex,vvoop,fabijtx)
+      CALL rca_negate(nabxij,vvoop)
+      call rcaxpy(nabxij,carith,pphasex,vvoop,fabijtx)
+      write(*,*) '----------------  control of backsort: '
+      do i=1,nabxij
+        write(*,*) i,vvoop(i)
+      enddo
+
       vvoop = 0.0d0
-      CALL SRT1T3_NTS (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,
+      CALL SRT1T3_NEW (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,
      &                LVVONO,KKVVOT,vabijy,vvoop,desrep,n2)
-      write(*,*) 'control sum 2 y:',dot_product(vvoop,vvoop)
-      call rcaxpy(n1,carith,pphasey,vvoop,fabijty)
+      CALL rca_negate(nabxij,vvoop)
+      call rcaxpy(nabxij,carith,pphasey,vvoop,fabijty)
+
       vvoop = 0.0d0
-      CALL SRT1T3_NTS (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,
+      CALL SRT1T3_NEW (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,
      &                LVVONO,KKVVOT,vabijz,vvoop,desrep,n2)
-      write(*,*) 'control sum 2 z:',dot_product(vvoop,vvoop)
-      call rcaxpy(n1,carith,pphasez,vvoop,fabijtz)
+      CALL rca_negate(nabxij,vvoop)
+      call rcaxpy(nabxij,carith,pphasez,vvoop,fabijtz)
 
-      iorder='0th-2nd order ph + 2p2h A+B'
-      incsat = ABIJTT(desrep)
+      iorder='0th-2nd order ph + 2p2h (part A)'
+      incsat = nabxij
 
+      write(*,*) 'entering TMgen...'
       CALL TM_GEN(ioch,desrep,incsat,iorder,
      &            LTR,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
-!     stop 'fafafafafafafafafafafafafafafa'
-!
-!*
-!* ---------------------------------------------------------------
-!*
-!                  end new routines
-!*
-!* ---------------------------------------------------------------
-!*
-! apply proper symmetry loop due to nontotally symmetric D_oo contributions
-! 
-!     do krep = 1, nrep
-!       jrep = multb(krep,desrep+nrep,1)
-!       if(MULTB(krep,jrep,2).ne.desrep) then
-!         stop 'munch:-('
-!       endif
-!       m = NVVOT(krep)
-!       n = NO(jrep)
-!       k = NO(krep)
-!       ioff1 = KVVOOT(krep) + 1
-!       ioff2 = JPOOXX(desrep) + JJOO(krep,jrep) + 1
-!       ioff3 = JAVVOO(krep,jrep) + 1
-!       write(*,*) 'm,n,k:',m,n,k
-!x
-!       call xgemm ('N','N',m,n,k,a1,vvoo3(ioff1),m,doox(ioff2),k,
-!    &              a0,vabijx(ioff3),m)
-!y
-!       call xgemm ('N','N',m,n,k,a1,vvoo3(ioff1),m,dooy(ioff2),k,
-!    &              a0,vabijy(ioff3),m)
-!z
-!       call xgemm ('N','N',m,n,k,a1,vvoo3(ioff1),m,dooz(ioff2),k,
-!    &              a0,vabijz(ioff3),m)
-!     enddo
+      stop 'hammer'
 
-!     n1 = ABIJTT(desrep)
-!     write(*,*) 'ICEIL 1:',n1
-!     vvoop = 0.0d0
-!     CALL SRT1T3_NTSI (NREP,desrep,MULTB,NVVT,NO,NO,NVVOT,
-!    &                  JAVVOO,KKVVOT,vabijx,vvoop,n1)
-! debug test resorted x array:
-!     do i=1,n1
-!       write(*,*) i,vvoop(i)
-!     enddo
-! debug end
-!     call rcaxpy(n1,carith,pphasex,vvoop,fabijtx)
-!     vvoop = 0.0d0
-!     CALL SRT1T3_NTSI (NREP,desrep,MULTB,NVVT,NO,NO,NVVOT,
-!    &                  JAVVOO,KKVVOT,vabijy,vvoop,n1)
-! debug test resorted x array:
-!     do i=1,n1
-!       write(*,*) i,vvoop(i)
-!     enddo
-! debug end
-!     call rcaxpy(n1,carith,pphasey,vvoop,fabijty)
-!     vvoop = 0.0d0
-!     CALL SRT1T3_NTSI (NREP,desrep,MULTB,NVVT,NO,NO,NVVOT,
-!    &                  JAVVOO,KKVVOT,vabijz,vvoop,n1)
-! debug test resorted x array:
-!     do i=1,n1
-!       write(*,*) i,vvoop(i)
-!     enddo
-! debug end
-!     call rcaxpy(n1,carith,pphasez,vvoop,fabijtz)
+      write(*,*) 'F_ab,ij(2,part A) contributions finished.'
+      stop 'sort check finished...'
 
-      deallocate(vvoop)
       deallocate(vabijx)
       deallocate(vabijy)
       deallocate(vabijz)
-
-      write(*,*) 'F_ab,ij(2,A+B) contributions finished.'
-      write(*,*) 'skipping the F_ab,ij(2,C+D) contributions.'
-      goto 7766
+      stop 'gulasch'
 !
 !---------------------------------------------------
-!-----  F_ab,ij(2,C+D and antisymmetrization)  -----
+!-----  F_ab,ij(2nd order B PART)  -----------------
+!-----  see master sheet -TM 21-   -----------------
 !---------------------------------------------------
 !
       n1=BVVOOT(desrep)
-      write(*,*) 'Allocating three B_a,bij buffers of length',n1
-      allocate(vabijx(n1*rcw)) !still called vabij? for simplicity
+      write(*,*) 'Allocating B_a,bij buffers of length',n1
+      allocate(vabijx(n1*rcw))
       allocate(vabijy(n1*rcw))
       allocate(vabijz(n1*rcw))
       vabijx = 0.0d0
       vabijy = 0.0d0
       vabijz = 0.0d0
-
-      n1=ABIJTT(desrep)
-      write(*,*) 'Allocating one more F_aibj buffer of length',n1
-      allocate(vvoop(n1*rcw))
-      vvoop = 0.0d0
 !
-!  sort v_cb,ij to v_c,bij (1T2)  -->  vvoo3 (dim = lvvoot(nrep+1)! )
-!  contract Dac with v_c,bij to B_a,bij, keeping proper symmetry
-!  backsort B_a,bij to B_ab,ij  including antisymmetrization.
+!  sort v_cb,ij to A_c,bij (1T2)  -->  vvoo3 (dim = lvvoot(nrep+1)! )
 !
+      vvoo3 = 0.0d0
       CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
      &             vvoo1,vvoo3)
-      do crep = 1, nrep
-         arep = multb(desrep+nrep,crep,2)
-         if(MULTB(arep,crep,2).ne.desrep) stop 'munch:-('
-         m = NV(arep)
-         n = NVOOT(crep)
-         k = NV(crep)
-         ioff1 = JPVVXX(desrep) + JJVV(arep,crep) + 1
-         ioff2 = LVVOOT(crep) + 1
-         ioff3 = JBVVOO(arep,crep) + 1
-!x
-         call xgemm ('N','N',m,n,k,a1,dvvx(ioff1),m,vvoo3(ioff2),k,
-     &               a0,vabijx(ioff3),m)
-!y
-         call xgemm ('N','N',m,n,k,a1,dvvy(ioff1),m,vvoo3(ioff2),k,
-     &               a0,vabijy(ioff3),m)
-!z
-         call xgemm ('N','N',m,n,k,a1,dvvz(ioff1),m,vvoo3(ioff2),k,
-     &               a0,vabijz(ioff3),m)
-      enddo
+!
+!  contract Dac with v_c,bij to B_a,bij (vabijx,y,z)
+!  and generate the corresponding total length array L(v,voo) <- desrep
+!
+      write(*,*) 'gamma_a,   gamma_bij,   desrep'
+      write(*,*)
+      LVNVOO = 0
+      OFF3 = 1
+      DO BIJREP = 1, NREP   !loop over righmost irep
+         
+         AREP = MULTB(DESREP+NREP,BIJREP,2)  !determine |gamma_a>
+         if(multb(arep,bijrep,2).ne.desrep) stop 'Part B symm. error'
+
+         CREP = BIJREP   ! this holds since the integral array is totsymm.
+         OFF1 = (JPVVXX(DESREP) + JJVV(AREP,CREP))*rcw + 1
+         OFF2 = LVVOOT(BIJREP)*rcw + 1
+
+         M = NV(AREP)
+         N = NVOOT(BIJREP)
+         K = NV(CREP)
+
+         write(*,*) '$$:',AREP,BIJREP,desrep
+
+         CALL XGEMM ('N','N',M,N,K,A1,dvvx(off1),M,vvoo3(off2),K,
+     &               A0,vabijx(off3),m)
+         CALL XGEMM ('N','N',M,N,K,A1,dvvy(off1),M,vvoo3(off2),K,
+     &               A0,vabijy(off3),m)
+         CALL XGEMM ('N','N',M,N,K,A1,dvvz(off1),M,vvoo3(off2),K,
+     &               A0,vabijz(off3),m)
+
+        OFF3 = OFF3 + M * N * RCW
+        LVNVOO(BIJREP+1) = LVNVOO(BIJREP) + M*N
+
+      enddo  ! BIJREP
+
+
+!     write(*,*) 'control sum x:',dot_product(vabijx,vabijx)
+!     write(*,*) 'control sum y:',dot_product(vabijy,vabijy)
+!     write(*,*) 'control sum z:',dot_product(vabijz,vabijz)
 
       n1 = ABIJTT(desrep)
-      write(*,*) 'ICEIL 2:',n1
-
-! debug: original call leading to boundary violations
-!     CALL SRT1T2_NTSI (NREP,desrep,MULTB,NVVT,NV,NV,NOOT,
-!    &                  JBVVOO,vabijx,vvoop,n1)
-! debug end
-
-      CALL SRT1T2_NTSI (NREP,desrep,MULTB,NVVT,NV,NV,NOOT,
-     &                  JBVVOO,LLVOOT,vabijx,vvoop,n1)
+      vvoop=0
+      CALL SRT1T2_NTS (NREP,desrep,MULTB,LTR,NVVT,NV,NV,NOOT,
+     &                 LVNVOO,LLVOOT,vabijx,vvoop)
+!     CALL rca_negate(n1,vvoop)
       call rcaxpy(n1,carith,pphasex,vvoop,fabijtx)
-      CALL SRT1T2_NTSI (NREP,desrep,MULTB,NVVT,NV,NV,NOOT,
-     &                  JBVVOO,LLVOOT,vabijy,vvoop,n1)
-      call rcaxpy(n1,carith,pphasey,vvoop,fabijty)
-      CALL SRT1T2_NTSI (NREP,desrep,MULTB,NVVT,NV,NV,NOOT,
-     &                  JBVVOO,LLVOOT,vabijz,vvoop,n1)
-      call rcaxpy(n1,carith,pphasez,vvoop,fabijtz)
 
+      vvoop=0
+      CALL SRT1T2_NTS (NREP,desrep,MULTB,LTR,NVVT,NV,NV,NOOT,
+     &                 LVNVOO,LLVOOT,vabijy,vvoop)
+!     CALL rca_negate(n1,vvoop)
+      call rcaxpy(n1,carith,pphasey,vvoop,fabijty)
+
+      vvoop=0
+      CALL SRT1T2_NTS (NREP,desrep,MULTB,LTR,NVVT,NV,NV,NOOT,
+     &                 LVNVOO,LLVOOT,vabijz,vvoop)
+!     CALL rca_negate(n1,vvoop)
+      call rcaxpy(n1,carith,pphasez,vvoop,fabijtz)
 
       deallocate(vvoop)
       deallocate(vabijx)
       deallocate(vabijy)
       deallocate(vabijz)
+
+      write(*,*) 'F_ab,ij(2,part B) contributions finished.'
 !
 !  calculate total transition moment including all contribs.
 !
- 7766 iorder='0th-2nd order ph + 2p2h A+B'
+      iorder='0th-2nd order ph + 2p2h (part A+B)'
       incsat = ABIJTT(desrep)
 
       CALL TM_GEN(ioch,desrep,incsat,iorder,
@@ -1923,9 +1853,7 @@
       deallocate(pphase)
 
       deallocate(ABIJTT)
-      deallocate(JAVVOO)
-      deallocate(JBVVOO)
-      deallocate(MVVOOT)
+      deallocate(AVVOOT)
       deallocate(BVVOOT)
 
       deallocate(JPOOXX,JPVOXX,JPOVXX,JPVVXX)
@@ -1937,6 +1865,7 @@
      &                  do2h2p,
      &                  faitx,faity,faitz,
      &                  fabijtx,fabijty,fabijtz)
+
       implicit none
 !
 !  this routine contracts the Davidson eigenvector with the 
@@ -1955,7 +1884,7 @@
 !  calling parameters
 !
       integer                      :: ioch,desrep,isatctl
-      character*30                 :: iorder
+      character*40                 :: iorder
       logical                      :: do2h2p
       complex*16, dimension(:)     :: faitx,faity,faitz
       complex*16, dimension(:)     :: fabijtx,fabijty,fabijtz
@@ -1971,7 +1900,7 @@
       character*11                            :: davevcname
       logical                                 :: isthere
 
-      real*8, allocatable, dimension(:)       :: rcoef
+      real*8, allocatable, dimension(:)       :: rcoef,xcoef,ycoef
       complex*16, allocatable, dimension(:)   :: ccoef
       complex*16,allocatable,dimension(:)     :: tmx,tmy,tmz
 
@@ -1981,7 +1910,7 @@
       real*8                                  :: ps
       real*8, parameter                       :: D0=0.0d0
       complex*16, parameter                   :: A0=(D0,D0)
-      integer                                 :: i,k,ist
+      integer                                 :: i,k,ist,iln,numofstacks
       complex*16                              :: ax,ay,az
       real*8, parameter                       :: autoev = 27.2113957D0
       integer                                 :: n2h2p
@@ -2060,9 +1989,11 @@
         read(ioch) ist
         read(ioch) evl(k)
         read(ioch) ps
+        write(*,*)
         write(*,'(A,X,I3,X,A,F10.4,A,X,F10.4,A,F10.4)') 
      &    'State',ist,':exc. energy',evl(k),'(au)',evl(k)*autoev,
      &    ' (eV) and PS',ps
+!       write(*,*)
         if(carith) then
           read(ioch)(ccoef(i),i=1,ladc)
           do i=1,ladc
@@ -2073,10 +2004,10 @@
           read(ioch)(rcoef(i),i=1,ladc)
           do i=1,ladc
             xnr(k)=xnr(k) + rcoef(i)**2.0d0
+!           write(*,'(I6,F15.7)') i,rcoef(i)
           enddo
         endif
         xnr(k) = dsqrt(xnr(k))
-        
 !
 ! the do2h2p flag controls the level of contraction.
 !
@@ -2091,9 +2022,9 @@
           enddo
           if(do2h2p) then
             do i=1,n2h2p
-              ax = ax + ccoef(i+nmain) * fabijtx(i)
-              ay = ay + ccoef(i+nmain) * fabijty(i)
-              az = az + ccoef(i+nmain) * fabijtz(i)
+              ax = ax + 4.0d0 * ccoef(i+nmain) * fabijtx(i)
+              ay = ay + 4.0d0 * ccoef(i+nmain) * fabijty(i)
+              az = az + 4.0d0 * ccoef(i+nmain) * fabijtz(i)
             enddo
           endif
         else
@@ -2101,14 +2032,13 @@
             ax = ax + dcmplx(rcoef(i),D0)*faitx(i)
             ay = ay + dcmplx(rcoef(i),D0)*faity(i)
             az = az + dcmplx(rcoef(i),D0)*faitz(i)
-!           write(*,'(F10.6,7X,2F10.6,7X,2F10.6)') rcoef(i),
-!    &              faitx(i),faity(i)
           enddo
           if(do2h2p) then
             do i=1,n2h2p
-              ax = ax + dcmplx(rcoef(i+nmain),D0)*fabijtx(i)
-              ay = ay + dcmplx(rcoef(i+nmain),D0)*fabijty(i)
-              az = az + dcmplx(rcoef(i+nmain),D0)*fabijtz(i)
+!             write(*,'(I6,3X,F20.9,7X,2F20.14)') i,rcoef(i),fabijtx(i)
+              ax = ax + 4.0d0 * dcmplx(rcoef(i+nmain),D0)*fabijtx(i)
+              ay = ay + 4.0d0 * dcmplx(rcoef(i+nmain),D0)*fabijty(i)
+              az = az + 4.0d0 * dcmplx(rcoef(i+nmain),D0)*fabijtz(i)
             enddo
           endif
         endif
@@ -2127,8 +2057,8 @@
       write(*,*) '   Transition moments for states in symmetry',desrep
       write(*,*)
       write(*,*)
-      write(*,'(3A)') '---------------  contribution:   ',iorder,
-     &   '-------------------------------------'
+      write(*,'(A30,A40,A30)') '------------  contribution:   ',
+     &   iorder,'------------------------------'
       write(*,'(A,4X,A,9X,A,20X,A,20X,A)')
      &       'State','Energy(eV)','TM(x)','TM(y)','TM(z)'
       write(*,*) '----------------------------------------------------'
@@ -2153,6 +2083,91 @@
       deallocate(evl)
       deallocate(xnr)
 
+!_________________________  coefficient analysis via stack
+!|
+!|
+!     write(*,*)
+!     write(*,*) '   All arrays deallocated, doing coefficient'
+!     write(*,*) '   analysis from stack.'
+!     write(*,*)
+
+!     allocate(rcoef(ladc))
+!     allocate(xcoef(ladc))
+!     allocate(ycoef(ladc))
+!     rcoef = 0.0d0
+!     xcoef = 0.0d0
+!     ycoef = 0.0d0
+
+!     do k=1,nroots-1
+!       iln = qstack_peekf(k,rcoef) 
+!       iln = qstack_peekf(k+1,xcoef) 
+!       do i=1,ladc
+!         if(dabs(rcoef(i)).lt.1.0E-10.or.
+!    &       dabs(xcoef(i)).lt.1.0E-10) then
+!            ycoef(i) = -9999999.999999999d0
+!         else
+!            ycoef(i) = dabs(rcoef(i)/xcoef(i))
+!         endif
+!       enddo
+!       write(*,*) 'relations for ',k,k+1
+!       do i=1,ladc
+!         write(*,*) i,ycoef(i)
+!       enddo
+!       write(*,*)
+!     enddo
+!     do k=1,nroots
+!       iln = qstack_drop(k)
+!     enddo
+!|
+!|________________________________________________________________
+
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&  dump region &&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!     n2 = KVVOOT(nrep+1)
+!     if(qstack_push(10,n2,vvoo3).ne.n2) stop 'qse'
+!     CALL SRT1T3_NTS (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
+!    &                 vvoo1,vvoo3,1)
+!     write(*,*) 'Comparison:',qstack_compl(10,vvoo3)
+!*
+!
+!     write(*,*) 'Contracting in IREP',desrep
+!     write(*,*)
+!     write(*,*) '|KREP>,  |JREP>,   no(|krep>),   no(|jrep>)',
+!    &      '  nvvot(|krep>),  nvvot(<krep|),   LVVONO(jrep)'
+!     write(*,*)
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!
+!  debug:
+!  print out bosonic and fermionic irep sequences for current desrep
+
+!     write(*,*) '****************************'
+!     write(*,*) '** desrep:',desrep
+!     write(*,*) '****************************'
+!     write(*,*) 'fermionic         '
+!     write(*,*) 'gamma_i, gamma_j  '
+!     DO JREP = 1, NREP
+!       DO IREP = 1, NREP
+
+!         IJFREP = MULTB(IREP,JREP,2)
+!         if(ijfrep.eq.desrep) write(*,*) irep,jrep
+
+!       ENDDO
+!     ENDDO
+
+!     write(*,*) 'bosonic         '
+!     write(*,*) 'beta_i, beta_j  '
+!     DO JREP = 1, NREP
+!       DO IREP = 1, NREP
+
+!         IJBREP = MULTB(IREP+NREP,JREP+NREP,2)
+!         if(IJBREP.eq.desrep) write(*,*) irep,jrep
+
+!       ENDDO
+!     ENDDO
+!|_____________________________________________________________
+
+

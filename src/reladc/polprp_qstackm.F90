@@ -50,6 +50,11 @@ module qstack
            real (c_double)         :: ra1(*)
          END FUNCTION
        
+         FUNCTION qstack_getinf () bind(c, name="qstack_getinf")
+           use, intrinsic ::  iso_c_binding
+           integer (c_int)         :: qstack_getinf
+         END FUNCTION
+       
          FUNCTION qstack_meminf () bind(c, name="qstack_meminf")
            use, intrinsic ::  iso_c_binding
            real (c_double)         :: qstack_meminf

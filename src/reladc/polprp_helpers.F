@@ -1,3 +1,212 @@
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE XCOLANA(MAXSP,NSP,IREPSPI)
+
+      use qstack
+!
+      IMPLICIT INTEGER (A-Z)
+!
+!---------------Description--------------------------------------------
+!
+!  determines length of excitation coupling block (V>V O>O: desrep)
+!  Att: These are nontotally symmetric <cd||kl> streams where
+!  c>d and k>l! Here the absolue spinor numbers are printed.
+!
+!---------------Calling variables--------------------------------------
+!
+      INTEGER, INTENT(IN)           :: MAXSP,NSP
+!
+!---------------Common Blocks--------------------------------------
+!
+#include "../relccsd/symm.inc"
+#include "../relccsd/param.inc"
+!
+! MXREP comes from symm.inc!
+! ATT: for a correct offsetting in case of NSP<MAXSP we need to define
+! the correct physical dimensions of the irepspi array.
+!
+      INTEGER                       :: IREPSPI(NSP,MXREP,2)
+!
+!---------------Local variables--------------------------------------
+!
+      real*8,allocatable,dimension(:)       ::  abij
+      real*8,allocatable,dimension(:)       ::  sabij
+      integer,allocatable,dimension(:)      ::  abijtt
+      integer,allocatable,dimension(:)      ::  mvvoot
+      integer,allocatable,dimension(:)      ::  lvvono
+      real*8                                ::  csum
+!
+!---------------Executable code--------------------------------------
+!
+      numstacks = 10
+      if(qstack_init(numstacks,1).ne.numstacks)
+     &   call quit('Qstack problem')
+      WRITE(IW,*)'Stack system initialized with',numstacks,' stacks'
+      WRITE(IW,*)
+
+      DESREP = 3
+
+!
+!  determine general tables for each irep.
+!
+      allocate(abijtt(nrep))
+      allocate(mvvoot(nrep))
+      allocate(lvvono(nrep+1))
+      abijtt = 0
+      mvvoot = 0
+      lvvono = 0
+      DO JREP = 1, NREP
+        DO IREP = 1, NREP
+
+           IJREP = MULTB(IREP,JREP,2)
+           IJBREP = MULTB(IREP+NREP,JREP+NREP,2)  !ABIJTT refers to bosonic ireps!
+
+           ABIJTT(IJBREP) = ABIJTT(IJBREP) + NVVT(IREP)*NOOT(JREP)
+           MVVOOT(IJREP) = MVVOOT(IJREP) + NVVOT(IREP)*NO(JREP)
+
+        ENDDO
+        krep = multb (jrep,desrep+nrep,2)       
+        lvvono(jrep+1) = lvvono(jrep) + nvvot(krep) * no(jrep)
+      ENDDO
+      DO JREP = 1, NREP
+       write(*,*) 'abijtt(irep),mvvoot(irep):',abijtt(jrep),mvvoot(jrep)
+      ENDDO
+      write(*,*) 'ivvoott(nrep+1):',ivvoott(nrep+1)
+      DO JREP = 1, NREP+1
+        write(*,*) 'lvvono(jrep):',lvvono(jrep)
+      ENDDO
+
+      call pst('xcolana+')
+      write(*,*) 'irep      no(irep)      nv(irep)'
+      do irep = 1,nrep
+        write(*,*) irep,no(irep),nv(irep)
+      enddo
+      write(*,*)
+
+      write(*,*) '-----------------------'
+      write(*,*) '---- irepspi table ----'
+      write(*,*) '-----------------------'
+      write(*,*)
+      write(*,*) 'Att: The absolute spinor numbers do in general'
+      write(*,*) 'not correspond to the printout obtained from'
+      write(*,*) 'CCSETI !'
+      write(*,*)
+      write(*,*) 'spinors in this run:',nsp,' max ireps:',nrep 
+      write(*,*)
+      ICNT = 0
+      write(*,'(4A6)') 'occ SP','IREP','abs sp:','indx'
+      do irep = 1,nrep
+        do ioc = 1,NO(irep)
+          icnt = icnt + 1
+          write(*,'(5I6)') ioc,irep,irepspi(ioc,irep,1),ICNT,
+     &                     io(irep) + ioc
+        enddo
+      enddo
+      write(*,'(4A6)') 'vir SP','IREP','abs sp:','indx'
+      do irep = 1,nrep
+        do ivi = 1,NV(irep)
+          icnt = icnt + 1
+          write(*,'(5I6)') ivi,irep,irepspi(ivi,irep,2),ICNT,
+     &                     io(nrep)+iv(irep)+ivi
+        enddo
+      enddo
+      write(*,*) '*********************************************'
+
+      ICNT = 0
+
+      write(*,*) ' - - - - list of absolute spinor numbers - - - - -'
+      write(*,*) ' - - - - for final state symmetry',desrep
+      write(*,*) ' - - - - plus array generation'
+      write(*,*) ' - - - - abijtt: ',abijtt(desrep)
+
+      allocate(abij(abijtt(desrep)))
+      abij = 0.0d0
+
+      DO KLREP = 1,NREP     ! klrep, cdrep and desrep are bosonic
+      CDREP = MULTB(DESREP+NREP,KLREP+NREP,2)
+      write(*,*) 'cdrep, klrep',cdrep,klrep
+      DO 10 LREP = 1, NREP
+      KREP = MULTB(LREP,KLREP+NREP,2)
+      IF (KREP.LT.LREP) GOTO 10
+      DO L = 1, NO(LREP)
+         KMIN = 1
+         IF (KREP.EQ.LREP) KMIN = L + 1
+         DO K = KMIN, NO(KREP)
+            DO 20 DREP = 1, NREP
+              CREP = MULTB(DREP,CDREP+NREP,2)
+              IF (CREP.LT.DREP) GOTO 20
+              DO D = 1, NV(DREP)
+                CMIN = 1
+                IF (CREP.EQ.DREP) CMIN = D + 1
+                DO C = CMIN, NV(CREP)
+                  ICNT = ICNT + 1
+
+                 CSP=IREPSPI(C,CREP,2)
+                 DSP=IREPSPI(D,DREP,2)
+                 KSP=IREPSPI(K,KREP,1)
+                 LSP=IREPSPI(L,LREP,1)
+
+                 abij(icnt) = 
+     &            (dble(csp)*10.0**6.0 + 
+     &             dble(dsp)*10.0**4.0 + 
+     &             dble(ksp)*10.0**2.0 + 
+     &             dble(lsp))/1000.0d0
+
+!                write(*,'(I5,A,4I8,F20.6)') icnt,' : ',
+!    &                     csp,dsp,ksp,lsp,abij(icnt)
+
+                ENDDO  !C
+              ENDDO  !D
+ 20         CONTINUE  !DREP
+            write(*,'(I5,A,2I8,F20.6)') icnt,' ,I/J: ',
+     &             ksp,lsp,abij(icnt)
+         ENDDO
+      ENDDO
+ 10   CONTINUE
+      ENDDO
+!
+! from here we have a <cd||kl>  antisymm. array with overall symmetry desrep.
+! the spinor number sequence in cd must be the same as after the backsort via
+! SRT1T3_NTS!
+! 
+      write(*,*) 'Total number of spinors:',ICNT
+      write(*,*) 'Entering sorting step'
+
+      allocate(sabij(mvvoot(desrep)))
+      sabij = 0.0d0
+
+      CALL SRT1T3_NTS (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,lvvono,KKVVOT,
+     &             abij,sabij,desrep,mvvoot(desrep)+1)
+
+      write(*,*) 'Doing annihilating sort ...'
+      abij = 0.0d0
+      csum = 0.0d0
+      do i=1,abijtt(desrep)
+        csum = csum + abij(i)
+      enddo
+      write(*,*) 'Checksum before:',csum
+
+      CALL SRT1T3_NTS (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,lvvono,KKVVOT,
+     &             sabij,abij,desrep,mvvoot(desrep))
+
+      csum = 0.0d0
+      do i=1,abijtt(desrep)
+        csum = csum + abij(i)
+      enddo
+      write(*,*) 'Checksum after:',csum
+
+
+!     call pst('NVVOT irep structure per destination symmetry+')
+!     do irep = 1,nrep
+!       write(*,*) 'IREP number',irep
+!       do i=lvvono(irep)+1,lvvono(irep+1)
+!         write(*,*) i,sabij(i)
+!       enddo
+!     enddo
+
+      call qstack_shutdown
+ 
+      RETURN
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE WCONDAT_X(LUN,FILENAME,IRECL,DESREP,RECCOUNT)
 C
@@ -135,8 +344,6 @@ C|__________________________________________________________
       CLOSE(LUN)
 
       RECCOUNT = RECCOUNT - 1
-      write(*,*) 'Wcondat info:',reccount,' conf recs written.'
-
  
       RETURN
       END
@@ -247,8 +454,8 @@ C|__________________________________________________________
 !
 !---------------Executable code--------------------------------------
 !
-      call PST('Creating ABIJ energy denominators+')
-      write(*,*) 'jvovo:',jvovo(nrep+1)
+!     call PST('Creating ABIJ energy denominators+')
+!     write(*,*) 'jvovo:',jvovo(nrep+1)
       ABIJ = 0
       DO IJRP = 1, NREP
       DO 10 JRP = 1, NREP
@@ -322,9 +529,7 @@ C|__________________________________________________________
 !---------------Executable code--------------------------------------
 !
 
-      write(*,*) '+++++++++++ entering DENOMVOVO +++++++++++'
-      write(*,*) '+++++++++++ entering DENOMVOVO +++++++++++'
-      write(*,*) '+++++++++++ entering DENOMVOVO +++++++++++'
+!     write(*,*) '+++++++++++ entering DENOMVOVO +++++++++++'
       AIBJ = 0
 
       DO BJREP = 1, NREP   !bosonic irep
@@ -871,7 +1076,7 @@ C
 !
 !---------------Executable --------------------------------------
 !
-      call pst('in matxmat+')
+!     call pst('in matxmat+')
       write(*,*) n,carith
       If(carith) then
         Do i=1,n
@@ -890,91 +1095,6 @@ C
       Return
       End
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SRT27(S,T)
- 
-      IMPLICIT INTEGER (A-Z)
-!
-!---------------Description--------------------------------------------
-!
-! Sorts the <a|i><b|j> integral stream to a <a|j><b|i> stream.
-! SRT16 does not apply because it sorts from <<>> to <><> !
-! Due to the bra ket order on the LHS we change the 
-!          BREP = MULTB(JREP,BJREP+NREP,2)
-! to the
-!          BREP = MULTB(JREP,BJREP+NREP,1)
-! instruction
-!
-!---------------Calling variables--------------------------------------
-!
-      REAL*8,dimension(:)              :: S   ! source array <><>
-      REAL*8,dimension(:)              :: T   ! destination array <><>
-!
-!---------------Common Blocks--------------------------------------
-!
-#include "../relccsd/symm.inc"
-#include "../relccsd/complex.inc"
-!
-!---------------Local variables--------------------------------------
-!
-!
-!---------------Executable code--------------------------------------
-!
-      AIBJ = 0
-
-      DO BJREP = 1, NREP   !bosonic irep
-        DO 10 JREP = 1, NREP   !fermionic irep
-          BREP = MULTB(JREP,BJREP+NREP,2)
-          BREP = MULTB(BREP,1+NREP,2)
-          IF(MULTB(brep,jrep,2).ne.BJREP) Stop 'SRT 27 BJ error'
-          DO J = 1, NO(JREP)
-            DO B = 1, NV(BREP)
-               DO 20 IREP = 1, NREP
-                 AREP = MULTB(IREP,BJREP+NREP,2)
-                 AREP = MULTB(AREP,1+NREP,2)
-          IF(MULTB(arep,irep,2).ne.BJREP) Stop 'SRT 27 AI error'
-                 DO I = 1, NO(IREP)
-                   DO A = 1, NV(AREP)
-
-!              *** calculate destination offset  AJBI
-
-                     AJREP = MULTB(AREP,JREP,2)
-                     BIREP = MULTB(BREP,IREP,2)
-  
-                     AJBI = JVOVO(BIREP) +
-     &                 (JJVO(BREP,IREP)+(I-1)*NV(BREP) + B-1)*MVO(AJREP)
-                     AJBI = AJBI + JJVO(AREP,JREP) + (J-1)*NV(AREP) + A
-
-                     if(ajbi.gt.jvovo(nrep+1)) then
-                       write(*,*) 'srt 27 problem:'
-                       write(*,*) 'ajbi,jvovo:',ajbi,jvovo(nrep+1)
-                       stop
-                     endif
-
-                     AIBJ = AIBJ + 1
-                     IF (CARITH) THEN
-                        stop 'complex not yet available'
-                     ELSE
-                        T(AJBI) = S(AIBJ)
-                     ENDIF
-
-                   ENDDO !A
-                 ENDDO !I
- 20           ENDDO  !IREP
-            ENDDO  !B
-          ENDDO  !J
- 10     ENDDO !JREP
-      ENDDO  !BJREP
-
-      IF((AIBJ).ne.JVOVO(nrep+1)) Then
-        write(*,*) 'Consistency error in SRT27!'
-        write(*,*) 'Counter:',AIBJ
-        write(*,*) 'Required value:',JVOVO(nrep+1)
-        stop
-      ENDIF
-
-      RETURN
-      END
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT1T3_NTS (NREP,MULTB,DOINV,NPAIR,KFIE,LFIE,NTRIPL,
      &                       OFF,OFF1,BUF1,BUF2,DESREP,ICEIL)
 C
@@ -983,14 +1103,10 @@ C
 C---------------Description--------------------------------------------
 C
 C     BUF(IJ,K>L:KLREP) <--> BUF(IJ K,L:LREP)
+C     where the product of all four ireps is non-totally symmetric
 C     If (DOINV) inverse sort.
 C
-C---------------Routines called----------------------------------------
-C
-C---------------Last modified------------------------------------------
-C
-C     Author : Luuk Visscher, modified by MP for the nontotally symmetric
-C                             case, where <IJ| x |KL> = desrep
+C                 <IJ| x |KL> = desrep
 C
 C---------------Calling variables--------------------------------------
 C
@@ -1008,87 +1124,82 @@ C
 C---------------Local variables--------------------------------------
 C
        integer summer,sumkl
-       complex*16 af
 C
 C---------------Executable code--------------------------------------
 C
 
-      af=(-999999.99999999d0,-999999.99999999d0)
-      write(*,*) 'SRT13  ** doing special tests **'
-!     write(*,*) 'SRT1T3_2PC  bosonic irep order b(cd),b(kl):'
-      write(*,*) 'SRT1T3_NTS, ICEIL:',iceil
       IF (.NOT.DOINV) THEN
          CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
       ENDIF
-      do ipp=1,nrep+1
-        write(*,*) ipp,off(ipp)
-      enddo
       summer = 0
       IJKL = 1
       DO KLREP = 1, NREP
-!      IJREP = KLREP
-       IJREP = MULTB (KLREP+NREP,DESREP+NREP,2)
-       IJREP = MULTB (IJREP+NREP,1+NREP,2)      
+!      IJREP = KLREP  !original code
+       IJREP = MULTB (DESREP+NREP,KLREP+NREP,2)
        IF(MULTB(ijrep+nrep,klrep+nrep,2).ne.desrep) stop 'Error!'
  
-!      write(*,*) IJREP,KLREP
        sumkl=0
 
        N = NPAIR(IJREP)
-       write(*,*) 'N=npair(ijrep),ijrep,klrep:',N,ijrep,klrep
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
 
-        LREPC = MULTB (LREP,DESREP+NREP,2)
-        LREPC = MULTB (LREPC,NREP+1,2)
+        IJKREP = MULTB (IJREP+NREP,KREP,2)
+        IJLREP = MULTB (IJREP+NREP,LREP,2)
 
-        KREPC = MULTB (KREP,DESREP+NREP,2)
-        KREPC = MULTB (KREPC,NREP+1,2)
+        if(multb(ijkrep,lrep,1).ne.desrep) stop 'error 3'
+        if(multb(ijlrep,krep,1).ne.desrep) stop 'error 4'
+
+        write(*,*) '==>',krep,lrep,ijrep,off(krep),off(lrep),
+     &                   off1(ijrep,krep),off1(ijrep,lrep)
 
         IF (KREP.LT.LREP) GOTO 10
         LOFF = (OFF(LREP) + OFF1(IJREP,KREP)) * RCW
         KOFF = (OFF(KREP) + OFF1(IJREP,LREP)) * RCW
-        write(*,*) 'off(lrep),off(krep),LOFF,KOFF',
-     &     off(lrep),off(krep),loff,koff
+!       write(*,*) 'off(lrep),off(krep),LOFF,KOFF',
+!    &     off(lrep),off(krep),loff,koff
         DO L = 1, LFIE(LREP)
          IJL  = (L-1) * N * RCW + 1
          KMIN = 1
          IF (KREP.EQ.LREP) KMIN = L + 1
-
-            AREP = MULTB (IREP,AIREP+NREP,2)
-            AREP = MULTB (AREP,NREP+1,2)
-
-
-
          DO K = KMIN, KFIE(KREP)
             IJK  = (K-1) * N * RCW + 1
-            IJKL1 = LOFF + (L-1) * NTRIPL(LREPC) * RCW + IJK 
-            IJLK1 = KOFF + (K-1) * NTRIPL(KREPC) * RCW + IJL 
-!           write(*,*) 'IJKL1,IJLK1:',IJKL1,IJLK1
+!           IJKL1 = LOFF + (L-1) * NTRIPL(LREPC) * RCW + IJK 
+!           IJLK1 = KOFF + (K-1) * NTRIPL(KREPC) * RCW + IJL 
+            IJKL1 = LOFF + (L-1) * NTRIPL(IJKREP) * RCW + IJK 
+            IJLK1 = KOFF + (K-1) * NTRIPL(IJLREP) * RCW + IJL 
+            write(*,*) 'IJKL1,IJLK1:',IJKL1,IJLK1,LOFF,KOFF,
+     &           NTRIPL(IJKREP),NTRIPL(IJLREP),KREP,LREP,K,L,IJK,IJL
             if(IJKL1+N.gt.iceil) write(*,*) '***alert A'
             if(IJLK1+N.gt.iceil) write(*,*) '***alert B'
             IF (DOINV) THEN
-!              stop 'no doinv at the moment'
                CALL XCOPY (N,BUF1(IJKL1),1,BUF2(IJKL),1)
+
+!       write(*,*) 'Attention: no antisymmetrization occurring!'
+
                CALL XAXPY (N,-A1,BUF1(IJLK1),1,BUF2(IJKL),1)
             ELSE
-               write(*,*) 'Checking destination range',
-     &          IJKL1,IJKL1+N,'  and  ',IJLK1,IJLK1+N
+!              write(*,*) 'Checking forward sort...'
+!              write(*,*) 'Checking destination range',
+!    &          IJKL1,IJKL1+N,'  and  ',IJLK1,IJLK1+N
 ! ** pt I
-               do IPP = IJKL1,IJKL1+N-1
-                 if(BUF2(IPP).ne.0.0d0)   write(*,*) '   <<<BING 1>>>'
+!              do IPP = IJKL1,IJKL1+N-1
+!                if(BUF2(IPP).ne.0.0d0)   write(*,*) IJKL1,IJKL1+N-1,
+!    &              lfie(lrep),kfie(krep),buf2(ipp),'   <<<BING 1>>>'
 !    &      write(*,*) 'ntripl(lrep),ntripl(krep),ijl,ijk,l,k,IJKL1',
 !    &            ntripl(lrep),ntripl(krep),ijl,ijk,l,k,ijkl1
-               enddo
+!              enddo
 ! ** pt II
-               do IPP = IJLK1,IJLK1+N-1
-                 if(BUF2(IPP).ne.0.0d0)   write(*,*) '   <<<BING 2>>>'
+!              do IPP = IJLK1,IJLK1+N-1
+!                if(BUF2(IPP).ne.0.0d0)   write(*,*) IJLK1,IJLK1+N-1,
+!    &              lfie(lrep),kfie(krep),buf2(ipp),'   <<<BING 2>>>'
 !    &      write(*,*) 'ntripl(lrep),ntripl(krep),ijl,ijk,l,k,IJLK1',
 !    &            ntripl(lrep),ntripl(krep),ijl,ijk,l,k,ijlk1
-               enddo
+!              enddo
                CALL XCOPY (N,BUF1(IJKL),1,BUF2(IJKL1),1)
                CALL XCOPY (N,BUF1(IJKL),1,BUF2(IJLK1),1)
                CALL XSCAL (N,-A1,BUF2(IJLK1),1)
+
             ENDIF
             IJKL = IJKL + N * RCW
             sumkl = sumkl + 1
@@ -1099,6 +1210,200 @@ C
       ENDDO
 C
       write(*,*) '* * * * * number of elements:',summer
+      RETURN
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SRT1T2_NTS (NREP,DESREP,MULTB,DOINV,NPAIR1,IFIE,JFIE,
+     &                       NPAIR2,OFF,OFF2,BUF1,BUF2)
+!
+      IMPLICIT INTEGER (A-Z)
+!
+!---------------Description--------------------------------------------
+!
+!     BUF(I>J,KL:KLREP) <--> BUF(I,J KL:JKLREP)
+!     If (DOINV) inverse sort.
+!
+!---------------Routines called----------------------------------------
+!
+!---------------Last modified------------------------------------------
+!
+!     Author : Luuk Visscher, modified by MP for nontotally
+!              symmetric cases.
+!
+!---------------Calling variables--------------------------------------
+!
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NREP,DESREP,MULTB(64,64,2)
+      INTEGER NPAIR1(NREP),IFIE(NREP),JFIE(NREP),NPAIR2(NREP)
+      INTEGER OFF(NREP+1),OFF2(32,32)
+      LOGICAL DOINV
+!
+!---------------Common Blocks--------------------------------------
+!
+#include "../relccsd/complex.inc"
+#include "../relccsd/param.inc"
+!
+!---------------Local variables--------------------------------------
+!
+      integer summer,summkl
+!
+!---------------Executable code--------------------------------------
+!
+      IF (.NOT.DOINV) THEN
+         CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
+      ENDIF
+      summer = 0
+      summkl = 0
+      IJKL = 0
+      DO KLREP = 1, NREP
+
+! new for nontotally symmetric cases:
+       IJREP = MULTB (DESREP+NREP,KLREP+NREP,2)
+       IF(MULTB(ijrep+nrep,klrep+nrep,2).ne.desrep) stop 'Error!'
+
+       M = NPAIR1(IJREP)
+       N = NPAIR2(KLREP)
+       IJ = 1
+       DO 10 JREP = 1, NREP
+        IREP = MULTB(JREP,IJREP+NREP,2)
+        IF (IREP.LT.JREP) GOTO 10
+
+! new for nontotally symmetric cases:
+
+        JKLREP = MULTB(IREP,DESREP+NREP,2)
+        IKLREP = MULTB(JREP,DESREP+NREP,2)
+
+!       JKLREP = IREP
+!       IKLREP = JREP
+
+        JKLOFF = (OFF(JKLREP)+OFF2(JREP,KLREP)*IFIE(IREP)) * RCW
+        IKLOFF = (OFF(IKLREP)+OFF2(IREP,KLREP)*JFIE(JREP)) * RCW
+        M2 = IFIE(IREP) * JFIE(JREP)
+        DO J = 1, JFIE(JREP)
+         IMIN = 1
+         IF (IREP.EQ.JREP) IMIN = J + 1
+         DO I = IMIN, IFIE(IREP)
+            IJKL1 = JKLOFF + ((J-1) * IFIE(IREP) + I - 1) * RCW + 1
+            JIKL1 = IKLOFF + ((I-1) * JFIE(JREP) + J - 1) * RCW + 1
+            IF (DOINV) THEN
+               CALL XCOPY(N,BUF1(IJKL1),M2,BUF2(IJKL+IJ),M)
+               CALL XAXPY(N,-A1,BUF1(JIKL1),M2,BUF2(IJKL+IJ),M)
+            ELSE
+               CALL XCOPY(N,BUF1(IJKL+IJ),M,BUF2(IJKL1),M2)
+               CALL XCOPY(N,BUF1(IJKL+IJ),M,BUF2(JIKL1),M2)
+               CALL XSCAL(N,-A1,BUF2(JIKL1),M2)
+            ENDIF
+            IJ = IJ + RCW
+            summer = summer + N
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+       IJKL = IJKL + M * N * RCW
+      ENDDO
+
+      write(*,*) '* * * * number of elements 1t2_nts: ',summer
+
+      RETURN
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SRT1T3_NEW (NREP,MULTB,DOINV,NPAIR,KFIE,LFIE,NTRIPL,
+     &                       OFF,OFF1,BUF1,BUF2,DESREP,ICEIL)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     BUF(IJ,K>L:KLREP) <--> BUF(IJ K,L:LREP)
+C     where the product of all four ireps can be non-totally symmetric
+C     If (DOINV) inverse sort.
+C
+C                 <IJ| x |KL> = desrep
+C
+C---------------Calling variables--------------------------------------
+C
+      INTEGER                  NREP
+      INTEGER                  MULTB(64,64,2)
+      LOGICAL                  DOINV
+      INTEGER                  NPAIR(NREP),KFIE(NREP)
+      INTEGER                  LFIE(NREP),NTRIPL(NREP)
+      INTEGER                  OFF(NREP+1),OFF1(32,32)
+      REAL*8                   BUF1(*),BUF2(*)
+      INTEGER                  DESREP,ICEIL
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "../relccsd/complex.inc"
+#include "../relccsd/param.inc"
+C
+C---------------Local variables--------------------------------------
+C
+       integer summer,sumkl
+C
+C---------------Executable code--------------------------------------
+C
+
+!     write(*,*) 'ICEIL:',iceil,desrep
+!     do i=1,nrep+1
+!        write(*,*) 'off(nrep+1):',i,off(i)
+!     enddo
+!     write(*,*) 'lbounds:',
+!    &      lbound(multb,1),lbound(multb,2),lbound(multb,3)
+!     write(*,*) 'ubounds:',
+!    &      ubound(multb,1),ubound(multb,2),ubound(multb,3)
+      IF (.NOT.DOINV) THEN
+         CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
+      ENDIF
+      summer = 0
+      IJKL = 1
+      DO KLREP = 1, NREP
+
+       IJREP = MULTB (DESREP+NREP,KLREP+NREP,2)
+       IF(MULTB(ijrep+nrep,klrep+nrep,2).ne.desrep) 
+     &        stop 'Symm error 1 in SRT_1T3_NTS'
+       write(*,*) 'srt1t3_new, ijrep,klrep',ijrep,klrep
+
+       N = NPAIR(IJREP)
+       DO 10 LREP = 1, NREP
+        if(lfie(lrep).eq.0) cycle
+        KREP = MULTB(LREP,KLREP+NREP,2)
+        if(kfie(krep).eq.0) cycle
+        IF (KREP.LT.LREP) GOTO 10
+
+        GREP   = MULTB (LREP,DESREP+NREP,2)
+        IJKREP = MULTB (IJREP+NREP,KREP,2)
+        IJLREP = MULTB (IJREP+NREP,LREP,2)
+        write(*,*) 'IJKREP,GREP,LREP:',ijkrep,grep,lrep,
+     &   ' nvvot(grep),no(lrep)',ntripl(grep),lfie(lrep)
+        if(multb(ijkrep,lrep,1).ne.desrep) stop 'Symm error 2'
+        if(multb(ijlrep,krep,1).ne.desrep) stop 'Symm error 3'
+
+        LOFF = (OFF(LREP) + OFF1(IJREP,KREP)) * RCW
+        KOFF = (OFF(KREP) + OFF1(IJREP,LREP)) * RCW
+
+        DO L = 1, LFIE(LREP)
+         IJL  = (L-1) * N * RCW + 1
+         KMIN = 1
+         IF (KREP.EQ.LREP) KMIN = L + 1
+         DO K = KMIN, KFIE(KREP)
+            IJK  = (K-1) * N * RCW + 1
+            IJKL1 = LOFF + (L-1) * NTRIPL(IJKREP) * RCW + IJK 
+            IJLK1 = KOFF + (K-1) * NTRIPL(IJLREP) * RCW + IJL 
+            if(IJKL1+N.gt.iceil) write(*,*) '***alert A'
+            if(IJLK1+N.gt.iceil) write(*,*) '***alert B'
+            IF (DOINV) THEN
+               CALL XCOPY (N,BUF1(IJKL1),1,BUF2(IJKL),1)
+               CALL XAXPY (N,-A1,BUF1(IJLK1),1,BUF2(IJKL),1)
+            ELSE
+               CALL XCOPY (N,BUF1(IJKL),1,BUF2(IJKL1),1)
+               CALL XCOPY (N,BUF1(IJKL),1,BUF2(IJLK1),1)
+               CALL XSCAL (N,-A1,BUF2(IJLK1),1)
+            ENDIF
+            IJKL = IJKL + N * RCW
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+      ENDDO
+C
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

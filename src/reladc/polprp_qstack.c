@@ -2,6 +2,8 @@
 #include<stdlib.h>
 #include<string.h>
 
+#define MAXNUMSTACK 100
+
 /*
  *     Local variables managing the heap space for the vector stack.
  *     Visible only in this source file.
@@ -16,6 +18,13 @@ static double *** qsbase = NULL;    /* stack distributor */
 static int ** qslen = NULL;  /* length of each vector on each stack */
 static int * qsdep = NULL; /* depth of stack #i */
 
+/*
+ * local variable for string output
+ */
+
+const char *taginf = "*** Qstack info:";
+const char *tagerr = "*** Qstack error:";
+const char *tagnit = "*** Qstack error: Please initialize before use.";
 
 
 /*
@@ -28,16 +37,14 @@ int qstack_init(int *nost, int *vbflag){
   int nos;
 
   if(initialized){
-    printf("*** Qstack: Stack already initialized!\n");
-    printf("*** Qstack: No action taken.\n");
+    printf("%s Stack already initialized. No action taken.\n",taginf);
     return 0;
   }
  
   nos = *nost;
 
-  if(nos<1 || nos>100){
-    printf("*** Qstack: Illegal value for number of stacks!\n");
-    printf("*** Qstack: Should be between 1 and 100.\n");
+  if(nos<1 || nos > MAXNUMSTACK){
+    printf("%s max. %d stacks allowed!\n",tagerr,MAXNUMSTACK);
     return -1;
   }
 
@@ -52,7 +59,7 @@ int qstack_init(int *nost, int *vbflag){
 
   qslen = (int **)malloc(nos*sizeof(int *));
   if(qslen == NULL){
-    printf("*** Qstack: Could not generate %d stacks.\n",nos);
+    printf("%s Could not generate %d stacks.\n",tagerr,nos);
     return -1;
   }
   for(i=0;i<nos;i++){
@@ -61,7 +68,7 @@ int qstack_init(int *nost, int *vbflag){
 
   qsbase = (double ***)malloc(nos*sizeof(double **));
   if(qsbase==NULL){
-    printf("*** Qstack: Could not generate %d stacks.\n",nos);
+    printf("%s Could not generate %d stacks.\n",tagerr,nos);
     return -1;
   }
   for(i=0;i<nos;i++){
@@ -71,8 +78,8 @@ int qstack_init(int *nost, int *vbflag){
   numofstacks = (unsigned int)nos;
   verbose = (*vbflag)?1:0;
 
-  printf("*** Qstack: Created %d stacks.\n",nos);
-  printf("*** Qstack: Verbose mode is ");
+  printf("%s Created %d stacks.\n",taginf,nos);
+  printf("%s Verbose mode is ",taginf);
   printf((verbose)?"on\n":"off\n");
   return nos;
 }
@@ -405,6 +412,18 @@ int qstack_compl(int *stack, double *retvec){
 
 
 /*
+ *               function qstack_getinf
+ *&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+ */
+int qstack_getinf(void){
+   return (int) numofstacks;
+}
+
+
+
+
+
+/*
  *               function qstack_meminf
  *&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  */
@@ -442,7 +461,7 @@ double qstack_meminf(void){
   umem+=numofstacks*sizeof(int);
 
   usedmem=(double)(umem)/(1024.0 * 1024.0);  // mem in MB as a double
-  printf("*** Qstack: total allocated memory: %lu bytes = (%.2f Megabytes).\n",umem,usedmem);
+  if(verbose) printf("*** Qstack: total allocated memory: %lu bytes = (%.2f Megabytes).\n",umem,usedmem);
 
   return usedmem;
 }

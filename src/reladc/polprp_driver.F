@@ -406,13 +406,17 @@ C
          RCW = 1
       ENDIF
 !
-!  Report memory in megabytes
-!
-!
 !     Set up symmetry tables and parallel distribution arrays
 !
       CALL SYMTAB (NELEC,NFROZ,NINACT,NACT,NSP,EPS1,EPS,IREPSP,
      &             IREPSPI,.FALSE.,.TRUE.,NELEC_F1,NELEC_F2)
+
+      write(*,*) 'NSP  :',NSP
+      write(*,*) 'MAXSP:',maxsp
+      write(*,*) 'MXREP:',mxrep
+      write(*,*) 'Length of irepspi array:',MAXSP*MXREP*2,' integers'
+!     CALL XCOLANA(MAXSP,NSP,IREPSPI)
+!     stop
 !
 !  determine number of electrons and print general information
 !
@@ -713,13 +717,23 @@ C
         WRITE(IW,*)'|________________________________________________|'
         WRITE(IW,*)
 !
-! initialize stack system
+! initialize stack system (only master does this)
 !
-        numstacks = 20
+        numstacks = 10
         if(qstack_init(numstacks,1).ne.numstacks) 
      &     call quit('Qstack problem')
         WRITE(IW,*)'Stack system initialized with',numstacks,' stacks'
         WRITE(IW,*)
+!
+!  debug purpose: print out IREPSPI array for absolute spinor numbers
+!  IREPSPI(relative spinor number,irep,1=occ,2=virt) and
+!  analyze the spinor sequence in a 2h2p column of the ADC matrix for all
+!  possible final state symmetries (can be a long output)
+!
+!  this routine is called via an interface. That means that we have access
+!  to array information, esp. boundaries. We call XCOLANA in a non-interfaced
+!  way to allow for dimension redefinition in the called routine.
+!
 !___________________________________________________________________
 !|
 !| check availability of transformed dipole moment integrals

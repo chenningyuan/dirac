@@ -30,6 +30,7 @@
 !---------------Local variables--------------------------------------
 !
       INTEGER              :: n1,irep,k
+      INTEGER*8            :: ix8,n8  !needed for the ivovvt variable!
       INTEGER              :: jrep,brep,jfun,bfun
       INTEGER              :: ialloc,mjcol,nmvod
 
@@ -99,7 +100,7 @@
 !---------------Executable code--------------------------------------
 !
 !________________________________________________________
-!|     allocate ADC MATRIX WRITE BUFFERS and counters
+!|     allocate ADC MATRIX READ/WRITE BUFFERS and counters
 !|
 !|
       allocate(wbufr(intbuf),stat=ialloc)
@@ -153,7 +154,7 @@
 !
 !
 !  Attention*** Some arrays that have to store *huge* numbers 
-!  Are defined as Integer*8 in symm.inc ! The generic sorters
+!  are defined as Integer*8 in symm.inc ! The generic sorters
 !  operate with unspecified INTEGER declarations. Transferring such
 !  an array as an argument to the SRT_xxx results in an erroneous
 !  behaviour of the sorting routine.
@@ -166,11 +167,20 @@
       call getvooo(vooo1)
 !
 ! fetch <VO||VV> integrals needed for coupling block 
+! and test for completeness
 ! 
-      n1=ivovvt(nrep+1)
-      allocate(vovv1(n1),stat=ialloc)
+      n8=ivovvt(nrep+1)
+      allocate(vovv1(n8),stat=ialloc)
       if(ialloc.ne.0) STOP 'alloc error vovv1!'
+      do ix8 = 1,n8
+        vovv1(ix8) = -9999.0d0
+      enddo
       call rdvovv (vovv1)
+      do ix8 = 1,n8
+        if(vovv1(ix8).eq. -9999.0d0)
+     &      call quit('BUILD_X_COUSAT_R error: gap in VOVV stream!')
+      enddo
+      write(*,*) 'BUILD_X_COUSAT_R: VOVV stream complete.'
 !
 ! length of main block:
 !
@@ -198,18 +208,27 @@
 !  after construction we write out the column together with the
 !  components of the main block.
 !
-!     write(*,*) '   ======= cousat desrep:',desrep,' ============='
-!     write(*,*)
       mjcol = 1
       do jrep = 1,nrep
 
-        brep = multb(desrep+nrep,jrep,2)
+!       brep = multb(desrep+nrep,jrep,2)
 
-!       write(*,*) 'brep,jrep:',brep,jrep
+!  the transposition of the following line together with a
+!  complex conjugation gives the same irep relations.
+
+        brep = multb(jrep,desrep+nrep,2)
+        brep = multb(brep,1+nrep,2)
+
+!  jrep is |jrep>, brep is <brep|
+
+        if(MULTB(brep,jrep,2).eq.desrep) then
+!         write(*,*) 'BJ rep generation ok.'
+        else
+          stop 'BJ rep generation failed.'
+        endif
 
         do jfun = 1,NO(jrep)
         do bfun = 1,NV(brep)
-!       write(*,*) '         B,J:',bfun,jfun
 
           bufcol   = 0.0d0
           bufcolex = 0.0d0
@@ -218,6 +237,7 @@
      &                  jrep,brep,jfun,bfun,
      &                  mxno,mxnv,
      &                  vooo1,vovv1,oolt,vvlt)
+!         write(*,*) mjcol,'. XCOLMAKE run done.'
 !
 ! combine main block column with coupling block column
 ! istart is the start address for picking the right main block
@@ -306,17 +326,13 @@
 !
 !  Computes (complex) 2H2P/HP and SAT block of the exc. ADC Matrix
 !  In the corresponding symmetry DESREP.
-!  The matrix is built columnwise. Desrep determines column symmetry
-!  according to |b><j| spinors.
 !
 !---------------Calling variables--------------------------------------
 !
-      real*8                           :: PHPH_BLOCK(:)
-      REAL*8                           :: EPS(*)
+      REAL*8                           :: PHPH_BLOCK(:)
+      REAL*8                           :: EPS(:)
       INTEGER                          :: DESREP
-      INTEGER                          :: LENCOUPLBL
-      INTEGER                          :: INTBUF
-      INTEGER                          :: NBUFS
+      INTEGER                          :: LENCOUPLBL,INTBUF,NBUFS
       LOGICAL                          :: DOXEXT
       REAL*8                           :: WTHR
       INTEGER                          :: IOCH
@@ -331,7 +347,7 @@
 !---------------Local variables--------------------------------------
 !
       INTEGER              :: n1,irep,k
-      INTEGER*8            :: i8,n8  !needed for the ivovvt variable!
+      INTEGER*8            :: n8  !needed for the ivovvt variable!
       INTEGER              :: jrep,brep,jfun,bfun
       INTEGER              :: ialloc,mjcol,nmvod
       integer              :: n2
@@ -422,8 +438,7 @@
         ix = 2*(i-1) + 1
         phph_blc(i)=dcmplx(phph_block(ix),phph_block(ix+1))
       enddo
-
-!|  configuration generator
+!|
 !|__________________________________________
 
 !________________________________________________________
@@ -489,9 +504,6 @@
 !  an array as an argument to the SRT_xxx results in an erroneous
 !  behaviour of the sorting routine.
 
-      if(rcw.ne.2) then
-        call quit('*** RCW ne 2! Internal error (build_x_cousat_c) ***')
-      endif
 !
 ! fetch <VO||OO> integrals needed for coupling block 
 ! 
@@ -537,6 +549,12 @@
       do jrep = 1,nrep
 
         brep = multb(desrep+nrep,jrep,2)
+        if(MULTB(brep,jrep,2).eq.desrep) then
+          write(*,*) 'BJ rep generation ok.'
+        else
+          write(*,*) 'BJ rep generation failed.'
+          stop
+        endif
 
         do jfun = 1,NO(jrep)
         do bfun = 1,NV(brep)
@@ -626,7 +644,8 @@
 !---------------Description--------------------------------------------
 !
 !  determines length of excitation coupling block (V>V O>O: desrep)
-!  att. Length is not related to entries in ivvoott(:) !
+!  Att: These are nontotally symmetric <cd||kl> streams where
+!  c>d and k>l!
 !
 !---------------Calling variables--------------------------------------
 !
@@ -641,8 +660,13 @@
 !
       ICNT = 0
 
+!     call pst('XCOLDET+')
+
       DO KLREP = 1,NREP     ! klrep, cdrep and desrep are bosonic
       CDREP = MULTB(DESREP+NREP,KLREP+NREP,2)
+!     write(*,*) 'cdrep, klrep',cdrep,klrep
+      write(*,*) 'xcoldet:',cdrep,klrep,' nvvt,noot:',
+     &           nvvt(cdrep),noot(klrep)
       DO 10 LREP = 1, NREP
       KREP = MULTB(LREP,KLREP+NREP,2)
       IF (KREP.LT.LREP) GOTO 10
@@ -669,7 +693,65 @@
       XCOLDET = ICNT
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!     subroutine XCOLDET_FILL(desrep,a)
+!
+!     IMPLICIT INTEGER (A-Z)
+!
+!---------------Description--------------------------------------------
+!
+!  determines length of excitation coupling block (V>V O>O: desrep)
+!  Att: These are nontotally symmetric <cd||kl> streams where
+!  c>d and k>l!
+!
+!---------------Calling variables--------------------------------------
+!
+!     INTEGER                       :: XCOLDET
+!     INTEGER, INTENT(IN)           :: desrep
+!     Real*8                        :: a(:)
+!
+!---------------Common Blocks--------------------------------------
+!
+!include "../relccsd/symm.inc"
+!
+!---------------Executable code--------------------------------------
+!
+!     ICNT = 0
+
+!     call pst('XCOLDET+')
+
+!     DO KLREP = 1,NREP     ! klrep, cdrep and desrep are bosonic
+!     CDREP = MULTB(DESREP+NREP,KLREP+NREP,2)
+!     write(*,*) 'xcoldet: nvvt,noot:',nvvt(cdrep),noot(klrep)
+!     DO 10 LREP = 1, NREP
+!     KREP = MULTB(LREP,KLREP+NREP,2)
+!     IF (KREP.LT.LREP) GOTO 10
+!     DO L = 1, NO(LREP)
+!        KMIN = 1
+!        IF (KREP.EQ.LREP) KMIN = L + 1
+!        DO K = KMIN, NO(KREP)
+!           DO 20 DREP = 1, NREP
+!             CREP = MULTB(DREP,CDREP+NREP,2)
+!             IF (CREP.LT.DREP) GOTO 20
+!             DO D = 1, NV(DREP)
+!               CMIN = 1
+!               IF (CREP.EQ.DREP) CMIN = D + 1
+!               DO C = CMIN, NV(CREP)
+!                 ICNT = ICNT + 1
+!                 a(icnt) = dble(icnt)
+!                 write(*,*) a(icnt)
+!               ENDDO
+!             ENDDO
+!20         CONTINUE
+!        ENDDO
+!     ENDDO
+!10   CONTINUE
+!     ENDDO
+
+!     XCOLDET = ICNT
+!     RETURN
+!     END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE XCOLMAKE (desrep,lencouplbl,bufcol,
      &                     jrep,brep,J,B,
      &                     mxno,mxnv,
@@ -699,10 +781,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !---------------Executable code--------------------------------------
 !
 
-      write(*,*) 'Xcolmake:',desrep,lencouplbl,jrep,brep,j,b
-      write(*,*) 'Sequence of beta(cd) and beta(kl) for',desrep
-      write(*,*)
-      write(*,*) 'beta(cd)     beta(kl)'
+!     write(*,*) 'Xcolmake:',desrep,lencouplbl,jrep,brep,j,b
+!     write(*,*) 'Sequence of beta(cd) and beta(kl) for',desrep
+!     write(*,*)
+!     write(*,*) 'beta(cd)     beta(kl)'
       CDKL = 0
 !
 !  do the |>|> side...
@@ -712,7 +794,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       if(MULTB(CDREP+NREP,KLREP+NREP,2).ne.desrep) then
          Stop 'xcolmake error #aa1'
       endif
-      write(*,*) cdrep,klrep
+!     write(*,*) cdrep,klrep
       DO 10 LREP = 1, NREP
       KREP = MULTB(LREP,KLREP+NREP,2)
       IF (KREP.LT.LREP) GOTO 10
@@ -750,6 +832,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         ELSE
           IOFF=IIOOT(KREP,LREP) + (L-1)*NO(KREP) + K - 1
         ENDIF
+!       write(*,*) 'Case A:',djrep,klrep,nvo(djrep),nvo(klrep)
         IOFF=IOFF * NVO(KLREP) + IVOOOT(KLREP)
         IOFF=IOFF + IIVO(DREP,JREP) + (J-1)*NV(DREP) + D
         if(ioff.gt.ivooot(nrep+1).or.ioff.lt.1) 
@@ -767,6 +850,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         ELSE
           IOFF=IIOOT(KREP,LREP) + (L-1)*NO(KREP) + K - 1
         ENDIF
+!       write(*,*) 'Case B:',cjrep,klrep,nvo(cjrep),nvo(klrep)
         IOFF=IOFF * NVO(KLREP) + IVOOOT(KLREP)
         IOFF=IOFF + IIVO(CREP,JREP) + (J-1)*NV(CREP) + C
         if(ioff.gt.ivooot(nrep+1).or.ioff.lt.1)
@@ -784,6 +868,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         ELSE
           IOFF=IIVVT(CREP,DREP) + (D-1)*NV(CREP) + C - 1
         ENDIF
+!       write(*,*) 'Case C:',blrep,cdrep,nvo(blrep),nvo(cdrep)
         IOFF=IOFF * NVO(CDREP) + IVOVVT(CDREP)
         IOFF=IOFF + IIVO(BREP,LREP) + (L-1)*NV(BREP) + B
         if(ioff.gt.ivovvt(nrep+1).or.ioff.lt.1)
@@ -801,6 +886,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         ELSE
           IOFF=IIVVT(CREP,DREP) + (D-1)*NV(CREP) + C - 1
         ENDIF
+!       write(*,*) 'Case D:',bkrep,cdrep,nvo(bkrep),nvo(cdrep)
         IOFF=IOFF * NVO(CDREP) + IVOVVT(CDREP)
         IOFF=IOFF + IIVO(BREP,KREP) + (K-1)*NV(BREP) + B
         if(ioff.gt.ivovvt(nrep+1).or.ioff.lt.1)
@@ -811,6 +897,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !|            END   Case A-D
 !|___________________________________________________________
 !
+
+!     write(*,*) 'Coupling vector:',cdkl,bufcol(cdkl)
                 ENDDO
               ENDDO
  20         CONTINUE
@@ -1176,6 +1264,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Start execution--------------------------------------
 !
+      call pst('Constructing satellite part+')
 
 ! allocate space and read in integrals
 
@@ -1284,6 +1373,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
            ea=eps(aoff); eb=eps(boff); ei=eps(ioff); ej=eps(joff)
            S = S + (ea + eb - ei - ej)
 !          write(*,*) 'qaq diagonal:',S,ABIJ,CDKL
+!          write(*,*) abij,log(s)
          endif
        endif
 !
