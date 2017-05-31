@@ -1103,6 +1103,7 @@ C***********************************************************************
      &          process_two_electron_integrals_4comp_slaves,            &
      &          process_two_electron_integrals_2comp_slaves 
 #endif
+
       implicit none
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -1270,6 +1271,11 @@ C
 C        start GASCIP MPI calculation
 C
          CALL GASCIP_NODE()
+
+      ELSE IF (ITASK .EQ. 12) THEN
+
+         CALL PELIB_IFC_SLAVE()
+
       ELSE
 C
 C        Unknown task. Abort execution.
