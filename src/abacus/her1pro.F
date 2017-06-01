@@ -2294,6 +2294,7 @@ C     (OV 08.03.90)
 C
 C     Solvent flag (22.01.91/HJAAJ+KM) (SOLVENT)
 C
+      use pe_variables, only: peqm, pe_lf
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -2382,6 +2383,17 @@ C
          IF (KLAST .GT. LWORK) CALL STOPIT('PR1INT_1','TST',KLAST,LWORK)
          CALL DSOTST(SOINT,WORK(KDIFF),NBAST,NELMNT,NOPTYP,
      &               LABINT,DOATOM,NPQUAD,INTADR,IPRINT)
+      END IF
+
+C
+C     *************************************************************
+C     ***** Local field corrections (EEF) to dipole integrals *****
+C     *************************************************************
+C
+      IF (INTTYP .EQ. 2) THEN
+         IF (PEQM .AND. PE_LF) THEN
+            CALL PELIB_IFC_LOCALFIELD(SOINT, NELMNT, NOPTYP)
+         END IF
       END IF
 C
 C     ***********************************

@@ -4000,6 +4000,11 @@ C***********************************************************************
         use pcm_linear_response, only: pcm_oit_asc
         use pcmmod_cfg
 #endif
+
+#ifdef HAS_PELIB
+        use polarizable_embedding, only: pe_master
+        use pe_variables, only: peqm, pe_gspol
+#endif
         use orbital_rotation_indices
 
 
@@ -4170,6 +4175,12 @@ C
               deallocate(mep_oit_asc)
            endif
         endif 
+#endif      
+#ifdef HAS_PELIB
+        if (pe_gspol) write(lupri,*)'Dynamical response is disabled'
+        if (peqm .and. .not. pe_gspol) then
+           call pelib_ifc_response(fao, fmo, ndmat, ihrmop)
+        endif
 #endif
  
 C

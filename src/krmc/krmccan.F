@@ -29,15 +29,15 @@ C     Calculate natural orbital occupation numbers and,
 C     if NATORB is true, transform orbital to natural orbitals.
 C
 C     Input:
-C        CREF - CI reference vector
-C        CMO  - MO orbitals
-C        NATORB - transform to natural orbitals
+C        CREF   - CI reference vector
+C        CMO    - MO orbitals
+C        NATORB - transform CMO to natural orbitals
 C
 C     Output:
-C        OCCNO - natural orbital occupation numbers
-C        UNO   - transformation matrix
-C        MOISNO - MO orbitals were already NO orbitals.
-C        CMO   - if NATORB, then NO orbitals, else unchanged
+C        OCCNO  - natural orbital occupation numbers
+C        UNO    - transformation matrix
+C        MOISNO - MO orbitals were already NO orbitals at entry.
+C        CMO    - if NATORB, then NO orbitals, else unchanged
 C
 C     Written by J. Thyssen - Dec 21 2000
 C     Last revision :
@@ -886,9 +886,9 @@ C
 C     For the empty (virtual) orbitals:
 C     calculate modified FD: FD' = FC + DKRMC_MVOFAC*FV = FD + (DKRMC_MVOFAC-1)*FV
 C
-      FAC = DKRMC_MVOFAC - 1.0D0
-      IF (NASHT .GT. 0 .AND. FAC .NE. 0.0D0)
-     &   CALL DAXPY(N2ORBXQ,FAC,WORK(KFV),1,WORK(KFD),1)
+      FAC_FV = DKRMC_MVOFAC - 1.0D0
+      IF (NASHT .GT. 0 .AND. FAC_FV .NE. 0.0D0)
+     &   CALL DAXPY(N2ORBXQ,FAC_FV,WORK(KFV),1,WORK(KFD),1)
 
 C
 C     3.2 p-p block
@@ -998,6 +998,15 @@ C        ... initialize
 !        diagonalize
          CALL DIAG_piv2fock('V',WORK(KFDVI),WORK(KEIGVI),WORK(KEIGVCVI),
      &                      IDXV2G,work(kibeig),WORK(KFREE),LFREE)
+
+         IF (FAC_FV .NE. 0.0D0) THEN
+         IF (IPROPT .GE. 1) THEN
+            WRITE (LUPRI,'(/A,1P,D10.2)')
+     &      ' Modified virtual orbitals for MCSCF from FC + a*FV, a =',
+     &      DKRMC_MVOFAC
+            CALL PREIGV(WORK(KEIGVI),NVSHT,0,WORK(KFREE),LFREE)
+         END IF
+         END IF
 !
 !        insert new v-v matrix block into transformation matrix
          do indx_loop = 1, max_loop
