@@ -79,7 +79,6 @@ modules:
     - 'custom/benchmarks.cmake'
     - 'custom/external_libs.cmake'
     - 'custom/tutorials.cmake'
-    - 'custom/basis_set_check.cmake'
     - 'custom/unit/unit_tests.cmake'
     - 'custom/core.cmake'
     - 'custom/c_fortran_interface.cmake'
