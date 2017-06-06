@@ -434,7 +434,6 @@
       subroutine pelib_ifc_start_slaves(runtyp)
           use interface_to_mpi
           integer :: runtyp
-#include "iprtyp.h"
 #include "infpar.h"
           call qenter('pelib_ifc_start_slaves')
               !if (.not. use_pelib()) call quit('PElib not active')

@@ -100,7 +100,7 @@ Other relativistic basis sets
 Apart from Dyall's sets, one can choose several different basis sets based upon
 geometric progressions of exponents. One such set is that of K. Faegri, also
 available in the basis set library, but with the drawback that the user needs
-to extended it by adding polarization functions.
+to extend it by adding polarization functions.
 
 Non-relativistic and scalar-relativistic basis sets
 ---------------------------------------------------
