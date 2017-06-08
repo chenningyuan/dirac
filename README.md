@@ -2,9 +2,14 @@
 
 # Quick start
 
-Clone the repository
+Clone the complete repository
 ```
 $ git clone --recursive git@gitlab.com:dirac/dirac.git
+```
+
+or the latest revision only
+```
+$ git clone --depth 1 --recursive git@gitlab.com:dirac/dirac.git
 ```
 
 Build the code
