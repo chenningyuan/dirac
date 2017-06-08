@@ -639,17 +639,17 @@ C
 !
 !  generate AOO stream
 !
-      write(*,*) '- - - - DOO STREAM:  - - - - - '
+!     write(*,*) '- - - - DOO STREAM:  - - - - - '
       IJ = 1
       DO IJREP = 1,NREP
-        write(*,*)
-        write(*,*) 'DESREP:',ijrep
-        write(*,*)
+!       write(*,*)
+!       write(*,*) 'DESREP:',ijrep
+!       write(*,*)
         DO JREP = 1, NREP
            IREP = MULTB (JREP,IJREP+NREP,2)
            IREP = MULTB (IREP,NREP+1,2) ! form gamma*_i
-          write(*,*) 'irep/jrep,no(irep),no(jrep)',irep,jrep,
-     &               no(irep),no(jrep)
+!         write(*,*) 'irep/jrep,no(irep),no(jrep)',irep,jrep,
+!    &               no(irep),no(jrep)
            DO J = 1, NO(JREP)
               JJ = IREPSPI(J,JREP,1)
               DO I = 1, NO(IREP)
@@ -662,8 +662,8 @@ C
      &                        PROP(2,II,JJ)*APHASE(2)
                  ENDIF
 
-       write(*,*) 'Integral',IJ,' irep/jrep',irep,jrep,' val:',
-     &      aoo(ij)
+!      write(*,*) 'Integral',IJ,' irep/jrep',irep,jrep,' val:',
+!    &      aoo(ij)
                  IJ = IJ + 1
 
               ENDDO  !I

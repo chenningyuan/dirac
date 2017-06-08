@@ -215,6 +215,9 @@
       write(*,*)
       write(*,*) '   **********************'
       write(*,*) '   Symmetry: ',desrep
+      write(*,*) '   RCW for the current run:',RCW
+      write(*,*) '   Number of ireps:',NREP
+      write(*,*) '   CARITH:',carith
       write(*,*) '   **********************'
       write(*,*)
 !
@@ -385,12 +388,18 @@
      &               dvox,dvoy,dvoz,
      &               dvvx,dvvy,dvvz)
 
-!     if(qstack_push(1,idaov*rcw,dovx).ne.idaov*rcw) stop
-!     if(qstack_push(2,idaov*rcw,dovy).ne.idaov*rcw) stop
-!     if(qstack_push(3,idaov*rcw,dovz).ne.idaov*rcw) stop
-!     if(qstack_push(4,idavo*rcw,dvox).ne.idavo*rcw) stop
-!     if(qstack_push(5,idavo*rcw,dvoy).ne.idavo*rcw) stop
-!     if(qstack_push(6,idavo*rcw,dvoz).ne.idavo*rcw) stop
+      write(*,*) 'control sum 1:',dot_product(doox,doox)
+      write(*,*) 'control sum 1:',dot_product(dooy,dooy)
+      write(*,*) 'control sum 1:',dot_product(dooz,dooz)
+      write(*,*) 'control sum 2:',dot_product(dovx,dovx)
+      write(*,*) 'control sum 2:',dot_product(dovy,dovy)
+      write(*,*) 'control sum 2:',dot_product(dovz,dovz)
+      write(*,*) 'control sum 3:',dot_product(dvox,dvox)
+      write(*,*) 'control sum 3:',dot_product(dvoy,dvoy)
+      write(*,*) 'control sum 3:',dot_product(dvoz,dvoz)
+      write(*,*) 'control sum 4:',dot_product(dvvx,dvvx)
+      write(*,*) 'control sum 4:',dot_product(dvvy,dvvy)
+      write(*,*) 'control sum 4:',dot_product(dvvz,dvvz)
 
 ! canary values for catching errors. For complex arithmetic these
 ! phase variables must not be accessed or used.
@@ -426,24 +435,6 @@
       Endif   !carith
  
 !
-!-----------------------------------------------
-!------ Determine relevant irep such that
-!------ b * b-1 = A where b=desrep of the state
-!------ and check consistency.
-!-----------------------------------------------
-!
-      proprep = multb(desrep+nrep,1+nrep,2)
-      if(MVO(desrep).ne.MVO(proprep))then
-        CALL QUIT('Property dimension inconsistency!')
-      endif
-      if(MVO(proprep).ne.MOV(proprep))then
-        CALL QUIT('OV/VO dimension inconsistency!')
-      endif
-      if(JPVOXX(proprep).ne.JPOVXX(proprep))then
-        CALL QUIT('OV/VO offset inconsistency!')
-      endif
-      write(*,*) 'Dimension/offset check passed.'
-!
 !  storage of property contributions is F_ai. Therefore the
 !  First contribution is D_ai and not D_ia
 !
@@ -451,8 +442,8 @@
 !------  F_ai(0)
 !------------------------
 !
-      n1 = MVO(proprep)       !number of integrals   (OV = VO!)
-      off = JPVOXX(proprep) + 1    !offset for prop. integrals (OV = VO!)
+      n1 = MVO(desrep)       !number of integrals   (OV = VO!)
+      off = JPVOXX(desrep) + 1    !offset for prop. integrals (OV = VO!)
 
 ! even if the dimensions are equivalent we copy the dov* integrals since
 ! they bear the correct phases in case of imaginary property integrals.
@@ -1492,25 +1483,15 @@
                if(multb(abirep,jrep,1).ne.desrep) 
      &         stop '2p2h fermion symm error!'
 
-!       IF(NVVOT(ABIREP).ne.0.and.
-!    &     NO(JREP).ne.0.and.
-!    &     NO(ABIREP).ne.0) THEN
-!         LVVONO(JREP+1) = LVVONO(JREP) + nvvot(abirep)*no(jrep)
-!         nabixj = nabixj + nvvot(abirep)*no(jrep)
-!         write(*,*) 'For lvvono:',abirep,jrep
-!       ELSE
-!         LVVONO(JREP+1) = LVVONO(JREP)
-!       ENDIF
-        
         LVVONO(JREP+1) = LVVONO(JREP) + nvvot(abirep)*no(jrep)
         nabixj = nabixj + nvvot(abirep)*no(jrep)
         write(*,*) 'ABIREP,JREP,lvvono(jrep):',abirep,jrep,lvvono(jrep)
 
-        IJBREP = MULTB(DESREP+NREP,JREP+NREP,2)
-               if(multb(ijbrep+nrep,jrep+nrep,2).ne.desrep) 
+        IJREP = MULTB(DESREP+NREP,JREP+NREP,2)
+               if(multb(ijrep+nrep,jrep+nrep,2).ne.desrep) 
      &         stop '2p2h bosonic symm error!'
 
-        nabxij = nabxij + nvvt(ijbrep)*noot(jrep)
+        nabxij = nabxij + nvvt(ijrep)*noot(jrep)
 
       ENDDO !JREP
       write(*,*) 'NREP+1,nabixj,lvvono(jrep):',
@@ -1550,24 +1531,11 @@
 !-----  see master sheet -TM 20-   -----------------
 !---------------------------------------------------
 !
-! test forward antisymmetrization with totally symmetric stream
-! and original SRT_1T3 routine.
 !
-!     do i=1,ivvoott(nrep+1)
-!       vvoo1(i) = dble(i)
-!     enddo
-!     vvoo3 = 0.0d0
-!     CALL SRT1T3 (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
-!    &             vvoo1,vvoo3)
-!     xcntrl = 0.0d0
-!     do i=1,kvvoot(nrep+1)
-!       xcntrl = xcntrl + vvoo3(i)
-!       write(*,*) i,' xcntrl contrib:',vvoo3(i)
-!     enddo
-!     write(*,*) 'Forward antisymmetry for totally symm.:',xcntrl
-!
-! test forward antisymmetrization with nontotally symmetric stream
-! and !!new!! SRT_1T3 routine.
+!_________________________________________________________________
+!|
+!|   test forward antisymmetrization with nontotally symmetric stream
+!|   and !!new!! SRT_1T3 routine.
  
       write(*,*) 'Performing antisymmetry test of new sorter...'
       do i=1,nabxij
@@ -1584,6 +1552,9 @@
       if(abs(xcntrl).gt.1.0E-16) stop '** FAILED **'
       write(*,*) 'passed.'
       vabijx = 0.0d0
+!|
+!|___________________________________________________________________
+!
 !
 !  sort v_ab,ik to A_abi,k  (vvoo3)
 !
@@ -1628,62 +1599,10 @@
      &              A0,vabijz(OFF3),M)
 
         OFF3 = OFF3 + M * N * RCW
-!       write(*,*) 'offs control:',off3,lvvono(jrep+1)
 
       ENDDO  !JREP
-      do i=1,lvvono(nrep+1)
-        write(*,*) i,vabijx(i)
-      enddo
 !
 !  do antisymmetrization via nontotally symmetric sorter.
-!
-!
-!     allocate(mmvvot(32,32))
-!     allocate(pvvot(nrep))
-!     mmvvot = 0
-!     pvvot  = 0
-
-!     DO KREP = 1, NREP
-!       DO IJREP = 1, NREP
-!         IJKREP = MULTB(IJREP+NREP,KREP,2)
-!         MMVVOT(IJREP,KREP) = PVVOT(IJKREP)
-!         PVVOT(IJKREP) = PVVOT(IJKREP) + NVVT(IJREP)*NO(KREP)
-!       ENDDO
-!     ENDDO
-!     DO KREP = 1, NREP
-!       if((pvvot(krep) - nvvot(krep)).ne.0) then
-!          stop 'pvvot problem.'
-!       endif
-!       DO IJREP = 1, NREP
-!         if((mmvvot(ijrep,krep) - kkvvot(ijrep,krep)).ne.0) then
-!                stop 'arrco problem'
-!         endif
-!       ENDDO
-!     ENDDO
-!
-!  original formulation
-!
-!     CALL SRT1T3_NEW (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,
-!    &                LVVONO,KKVVOT,vvoop,vabijx,desrep,nabixj)
-!
-! new:
-!
-!     CALL SRT1T3_NEW (NREP,MULTB,LFA,NVVT,NO,NO,PVVOT,
-!    &                LVVONO,KKVVOT,vvoop,vabijx,desrep,nabixj)
-!     write(*,*)
-!     write(*,*) '-------- forming control sum ---------------'
-!     write(*,*)
-!     xcntrl = 0.0d0
-!     do i=1,nabixj
-!       write(*,*) i,vabijx(i)
-!       xcntrl = xcntrl + vabijx(i)
-!     enddo
-!     write(*,*) 'Control sum: ',xcntrl
-
-!     deallocate(mmvvot,pvvot)
-!     stop
-!
-!***** end debug
 !
       n2 = LVVONO(nrep+1)
       vvoop = 0.0d0
@@ -1691,10 +1610,6 @@
      &                LVVONO,KKVVOT,vabijx,vvoop,desrep,n2)
       CALL rca_negate(nabxij,vvoop)
       call rcaxpy(nabxij,carith,pphasex,vvoop,fabijtx)
-      write(*,*) '----------------  control of backsort: '
-      do i=1,nabxij
-        write(*,*) i,vvoop(i)
-      enddo
 
       vvoop = 0.0d0
       CALL SRT1T3_NEW (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,
@@ -1716,7 +1631,6 @@
      &            LTR,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
-      stop 'hammer'
 
       write(*,*) 'F_ab,ij(2,part A) contributions finished.'
       stop 'sort check finished...'
@@ -1724,7 +1638,7 @@
       deallocate(vabijx)
       deallocate(vabijy)
       deallocate(vabijz)
-      stop 'gulasch'
+      stop 'intermediate'
 !
 !---------------------------------------------------
 !-----  F_ab,ij(2nd order B PART)  -----------------
@@ -2163,11 +2077,57 @@
 !     DO JREP = 1, NREP
 !       DO IREP = 1, NREP
 
-!         IJBREP = MULTB(IREP+NREP,JREP+NREP,2)
-!         if(IJBREP.eq.desrep) write(*,*) irep,jrep
 
 !       ENDDO
 !     ENDDO
 !|_____________________________________________________________
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+! test forward antisymmetrization with totally symmetric stream
+! and original SRT_1T3 routine.
+!
+!     do i=1,ivvoott(nrep+1)
+!       vvoo1(i) = dble(i)
+!     enddo
+!     vvoo3 = 0.0d0
+!     CALL SRT1T3 (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
+!    &             vvoo1,vvoo3)
+!     xcntrl = 0.0d0
+!     do i=1,kvvoot(nrep+1)
+!       xcntrl = xcntrl + vvoo3(i)
+!       write(*,*) i,' xcntrl contrib:',vvoo3(i)
+!     enddo
+!     write(*,*) 'Forward antisymmetry for totally symm.:',xcntrl
+
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+
+!
+!     allocate(mmvvot(32,32))
+!     allocate(pvvot(nrep))
+!     mmvvot = 0
+!     pvvot  = 0
+
+!     DO KREP = 1, NREP
+!       DO IJREP = 1, NREP
+!         IJKREP = MULTB(IJREP+NREP,KREP,2)
+!         MMVVOT(IJREP,KREP) = PVVOT(IJKREP)
+!         PVVOT(IJKREP) = PVVOT(IJKREP) + NVVT(IJREP)*NO(KREP)
+!       ENDDO
+!     ENDDO
+!     DO KREP = 1, NREP
+!       if((pvvot(krep) - nvvot(krep)).ne.0) then
+!          stop 'pvvot problem.'
+!       endif
+!       DO IJREP = 1, NREP
+!         if((mmvvot(ijrep,krep) - kkvvot(ijrep,krep)).ne.0) then
+!                stop 'arrco problem'
+!         endif
+!       ENDDO
+!     ENDDO
+!
+
 
 

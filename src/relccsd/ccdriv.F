@@ -1433,7 +1433,17 @@ C
 C
       DO KREP = 1, NREP
          DO IJREP = 1, NREP
+!
+!  discussion with luuk
+!  for consistency IJREP is a bra and the order in the MULTB
+!  array may be swapped to maintain consistency with the definitions
+!
+!  original:
+!
             IJKREP = MULTB(KREP,IJREP+NREP,2)
+!  new:
+!           IJKREP = MULTB(IJREP+NREP,KREP,2)
+!
             KKOOOT(IJREP,KREP) = NOOOT(IJKREP)
             KKVVOT(IJREP,KREP) = NVVOT(IJKREP)
             KKOOVT(IJREP,KREP) = NOOVT(IJKREP)

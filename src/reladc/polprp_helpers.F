@@ -707,6 +707,7 @@ C
       write(iw,*) '-------------------------'
       write(iw,*)
       write(iw,*) 'we do extended calculation: ',polprp_doextended
+      write(iw,*) 'we calculate transition moments: ',polprp_dotrmo
       write(iw,'(A,F10.5)') 
      &   'threshold for elements in ADC matrix: ',polprp_writethr
       write(iw,*) 'we perform a Davidson diagonalization:',polprp_dodiag
@@ -732,6 +733,12 @@ C
             write(iw,*) '   No: ',icount,
      &                  '  symmetry: ',polprp_statesym(i)
             icount = icount + 1
+            if(polprp_statesym(i).gt.nrep) then
+              write(iw,*) 'This state symmetry is higher than'
+              write(iw,*) 'the number of available symmetries.'
+              write(iw,*) 'Setting it to the maximum value.'
+              polprp_statesym(i) = nrep
+            endif
           endif
         enddo
       endif

@@ -415,8 +415,6 @@ C
       write(*,*) 'MAXSP:',maxsp
       write(*,*) 'MXREP:',mxrep
       write(*,*) 'Length of irepspi array:',MAXSP*MXREP*2,' integers'
-!     CALL XCOLANA(MAXSP,NSP,IREPSPI)
-!     stop
 !
 !  determine number of electrons and print general information
 !
@@ -508,7 +506,6 @@ C
       use qstack         !make stack system available to master node
 
  
-!     IMPLICIT INTEGER(A-Z)
       IMPLICIT NONE
 !
 !---------------Argument Variables---------------------------------
@@ -739,7 +736,11 @@ C
 !| check availability of transformed dipole moment integrals
 !| required for transition moment calculations.
 !|
-        CALL property_handler(iobase,iobase+1,propertyints,NSP,IREPSPI)
+        if(polprp_dotrmo) then
+          write(*,*) 'TMs requested, entering property handler.'
+          CALL property_handler(iobase,iobase+1,
+     &                          propertyints,NSP,IREPSPI)
+        endif
 !|
 !|
 !|__________________________________________________________________
@@ -1015,15 +1016,19 @@ C
 !| serial or parallel/MASTER: calculate transition moments
 !|
 
-          if(propertyints) then
-            write(*,*)
-            write(*,*)  'Property integrals exist.'
-            write(*,*)  'TMs are calculated for this symmetry.'
-            write(*,*)
-            call build_tramo(desrep,iobase,eps)
-          else
-            write(*,*) 'No transition moments for irep',desrep,
-     &                 ' can be calculated.'
+          if(polprp_dotrmo) then
+            write(*,*) 'User asks for TM calculation:'
+            if(propertyints) then
+              write(*,*)
+              write(*,*) '  Required property integrals exist.'
+              write(*,*) '  TMs will be  calculated for this symmetry.'
+              write(*,*)
+              call build_tramo(desrep,iobase,eps)
+            else
+              write(*,*) '  but required integrals do not exist.'
+              write(*,*) '  No transition moments for irep',desrep,
+     &                   '  can be calculated.'
+            endif
           endif
 !|
 !|________________________________________________________________
