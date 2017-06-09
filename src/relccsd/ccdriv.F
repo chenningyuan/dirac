@@ -1395,13 +1395,17 @@ C           Write only active irreps (NO or NV > 0)
          ENDIF
       ENDIF
 C
-C
 C     Set up dimension arrays
+C
+C     Nxx(IREP) gives the total number of |ket>|ket> index pairs that have symmetry IREP
+C     Mxx(IREP) gives the total number of <bra |ket> index pairs that have symmetry IREP
+C     II arrays provide pointers to the start of irrep combinations for |ket>|ket> or <bra|<bra| index pairs
+C     JJ arrays provide pointers to the start of irrep combinations for <bra|ket> index pairs
 C
       DO JREP = 1, NREP
          DO IREP = 1, NREP
             IJREP = MULTB(IREP,JREP,1)
-            IIOO(IREP,JREP) = NOO(IJREP)  !new
+            IIOO(IREP,JREP) = NOO(IJREP)
             IIOV(IREP,JREP) = NOV(IJREP)
             IIVO(IREP,JREP) = NVO(IJREP)
             IIVV(IREP,JREP) = NVV(IJREP)
@@ -1418,9 +1422,10 @@ C
             MOV(IJREP) = MOV(IJREP) + NO(IREP)*NV(JREP)
             MVO(IJREP) = MVO(IJREP) + NV(IREP)*NO(JREP)
             MVV(IJREP) = MVV(IJREP) + NV(IREP)*NV(JREP)
-!           write(*,*) 'MVO irep,jrep,ijrep',irep,jrep,ijrep
          ENDDO
       ENDDO
+C
+C     Same M/N/II/JJ convention as used above, but now for triangular (I>J) arrays
 C
       DO JREP = 1, NREP
          IJREP = MULTB(JREP,JREP,1)
@@ -1437,6 +1442,10 @@ C
          ENDDO
       ENDDO
 C
+C     Dimension arrays for 3-index tensors, formed by combining a 2-index array with a 1-index array
+C     KK arrays are symmetry pointers for tensors in which the leftmost indices are first grouped together
+C     LL arrays are symmetry pointers for tensors in which the rightmost indices are first grouped together
+C
       DO KREP = 1, NREP
          DO IJREP = 1, NREP
             IJKREP = MULTB(KREP,IJREP+NREP,2)
@@ -1448,7 +1457,6 @@ C
             KKVOV (IJREP,KREP) = NVOV (IJKREP)
             KKOVO (IJREP,KREP) = NOVO2(IJKREP)
             KKOVV (IJREP,KREP) = NOVV (IJKREP)
-
 
             NOOOT(IJKREP) = NOOOT(IJKREP) + NOOT(IJREP)*NO(KREP)
             NVVOT(IJKREP) = NVVOT(IJKREP) + NVVT(IJREP)*NO(KREP)
