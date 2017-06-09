@@ -998,7 +998,6 @@ C---------------Local variables--------------------------------------
 C
       CHARACTER*14 REPNT(16)
       INTEGER NVIRT(16)
-!      INTEGER NOOOT2(MXREP),NVVVT2(MXREP)
       CHARACTER*4 REPNA_ACT(MXREP)
       INTEGER NO_ACT(MXREP),NV_ACT(MXREP)
       INTEGER NIO_ACT(MXREP),NAO_ACT(MXREP)
@@ -1449,6 +1448,8 @@ C
       DO KREP = 1, NREP
          DO IJREP = 1, NREP
             IJKREP = MULTB(KREP,IJREP+NREP,2)
+C           Here we use that (i) KLREP = IJREP, (ii) LREP = MULTB(KREP,KLREP,2), (iii) Ordering should be
+C           such that we can contract with an array to the right in which the leftmost index is ordered on LREP.
             KKOOOT(IJREP,KREP) = NOOOT(IJKREP)
             KKVVOT(IJREP,KREP) = NVVOT(IJKREP)
             KKOOVT(IJREP,KREP) = NOOVT(IJKREP)
