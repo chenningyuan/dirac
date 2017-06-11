@@ -5,12 +5,12 @@
 cmake_minimum_required(VERSION 2.8.10 FATAL_ERROR)
 
 # project name
-project(DIRAC)
+project(DIRAC Fortran C CXX)
 
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
-# if CMAKE_BUILD_TYPE undefined, we set it to Debug
+# if CMAKE_BUILD_TYPE undefined, we set it to Release
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
 endif()
