@@ -44,19 +44,22 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       real*8, allocatable        :: vovo1(:)
 
       integer                    :: ialloc
+
+      character*31               :: ierror=
+     &                              'Internal error in BUILD_X_MAIN!'
 !
 !---------------Executable code--------------------------------------
 !
       IF(CARITH) THEN
-        CALL PST('Building complex HP/HP block+')
+        CALL PST('Building complex PH/PH block (all symmetries)+')
       ELSE
-        CALL PST('Building real HP/HP block+')
+        CALL PST('Building real PH/PH block (all symmetries)+')
       ENDIF
       if(carith.and.(rcw.ne.2)) then
-        call quit('Internal error in BUILD_X_MAIN!')
+        call quit(ierror)
       endif
       if(.not.carith.and.(rcw.ne.1)) then
-        call quit('Internal error in BUILD_X_MAIN!')
+        call quit(ierror)
       endif
 !
 !******************* preparations
@@ -83,9 +86,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 ! we have v_ac,kl in sa_vvoott and
 ! V_ac,kl         in sb_vvoott
 !
-!  allocate all remaining arrays here in this section
-!  and not throughout the rest of the code. Otherwise it's error-prone!
-!  for BAB: since the delta_ij enforces gamma_i = gamma_j only the totally
+!  allocate remaining arrays
+!  BAB: since the delta_ij enforces gamma_i = gamma_j only the totally
 !  symmetric entries in BAB will survive!
 !
       ic2 = NFVV
@@ -137,6 +139,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
           call matsym(bab(ioff),nv(krep),nv(krep))
         endif
       enddo
+!|
+!|____________________________________________________
 !
 !_____________________________________________________
 !|
@@ -165,6 +169,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
           call matsym(dij(ioff),no(krep),no(krep))
         endif
       enddo
+!|
+!|____________________________________________________
+!
 ! ****************** why this conjugation ???? ***************
       if(carith) call conjuga(ic4,dij,1)
 !
@@ -222,10 +229,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !  buf5 now contains C(2)C in <a||i>,|b><j| storage mode (Y_ai,bj).
 !  Do intermediate resort of Y_ai,bj (buf5) ---->  Y_aj,bi  (buf3) with *generic* VOVO BKC.
-!  in SRT 16 the *second* buffer is the source buffer when it comes to inverse !  sorting.
+!  in SRT16 the buffer order is inverted for inverse sorting.
 !
       buf3 = 0.0d0
-      call srt16 (nrep,multb,lfa,ltr,nv,no,nv,no,mvo,jvovo,jjvo,jjvo,
+      CALL SRT16 (nrep,multb,lfa,ltr,nv,no,nv,no,mvo,jvovo,jjvo,jjvo,
      &            buf3,buf5)
 !
 !  ----------------------------------
@@ -499,7 +506,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Executable code--------------------------------------
 !
-      call PST('Generating (real) Davidson start vectors+')
+      call PST('Generating (real) Dav. start vectors (all symm.)+')
 !
 !  create local single configuration descriptor array
 !  remember: first index is virtual^*, second is occupied
@@ -717,7 +724,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Executable code--------------------------------------
 !
-      call PST('Generating (complex) Davidson start vectors+')
+      call PST('Generating (complex) Dav. start vectors (all symm.)+')
 
       if(rcw.ne.2) then
         write(*,*) 'Variable RCW is not 2 despite complex mode!'

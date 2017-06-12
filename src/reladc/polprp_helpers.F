@@ -1104,124 +1104,92 @@ C
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT1T3_NTS (NREP,MULTB,DOINV,NPAIR,KFIE,LFIE,NTRIPL,
      &                       OFF,OFF1,BUF1,BUF2,DESREP,ICEIL)
-C
+!
       IMPLICIT INTEGER (A-Z)
-C
-C---------------Description--------------------------------------------
-C
-C     BUF(IJ,K>L:KLREP) <--> BUF(IJ K,L:LREP)
-C     where the product of all four ireps is non-totally symmetric
-C     If (DOINV) inverse sort.
-C
-C                 <IJ| x |KL> = desrep
-C
-C---------------Calling variables--------------------------------------
-C
-      REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(64,64,2),DESREP,ICEIL
-      INTEGER NPAIR(NREP),KFIE(NREP),LFIE(NREP),NTRIPL(NREP)
-      INTEGER OFF(NREP+1),OFF1(32,32)
-      LOGICAL DOINV
-C
-C---------------Common Blocks--------------------------------------
-C
+!
+!---------------Description--------------------------------------------
+!
+!     BUF(IJ,K>L:KLREP) <--> BUF(IJ K,L:LREP)
+!     where the product of all four ireps can be non-totally symmetric
+!     If (DOINV) inverse sort.
+!
+!                 <IJ| x |KL> = desrep
+!
+!---------------Calling variables--------------------------------------
+!
+      INTEGER                  NREP
+      INTEGER                  MULTB(64,64,2)
+      LOGICAL                  DOINV
+      INTEGER                  NPAIR(NREP),KFIE(NREP)
+      INTEGER                  LFIE(NREP),NTRIPL(NREP)
+      INTEGER                  OFF(NREP+1),OFF1(32,32)
+      REAL*8                   BUF1(*),BUF2(*)
+      INTEGER                  DESREP,ICEIL
+!
+!---------------Common Blocks--------------------------------------
+!
 #include "../relccsd/complex.inc"
 #include "../relccsd/param.inc"
-C
-C---------------Local variables--------------------------------------
-C
+!
+!---------------Local variables--------------------------------------
+!
        integer summer,sumkl
-C
-C---------------Executable code--------------------------------------
-C
-
+!
+!---------------Executable code--------------------------------------
+!
       IF (.NOT.DOINV) THEN
          CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
       ENDIF
       summer = 0
       IJKL = 1
       DO KLREP = 1, NREP
-!      IJREP = KLREP  !original code
+
        IJREP = MULTB (DESREP+NREP,KLREP+NREP,2)
-       IF(MULTB(ijrep+nrep,klrep+nrep,2).ne.desrep) stop 'Error!'
- 
-       sumkl=0
+       IF(MULTB(ijrep+nrep,klrep+nrep,2).ne.desrep) 
+     &        stop 'Symm error 1 in SRT_1T3_NTS'
 
        N = NPAIR(IJREP)
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
+        IF (KREP.LT.LREP) GOTO 10
 
         IJKREP = MULTB (IJREP+NREP,KREP,2)
         IJLREP = MULTB (IJREP+NREP,LREP,2)
+        if(multb(ijkrep,lrep,1).ne.desrep) stop 'Symm error 2'
+        if(multb(ijlrep,krep,1).ne.desrep) stop 'Symm error 3'
 
-        if(multb(ijkrep,lrep,1).ne.desrep) stop 'error 3'
-        if(multb(ijlrep,krep,1).ne.desrep) stop 'error 4'
-
-        write(*,*) '==>',krep,lrep,ijrep,off(krep),off(lrep),
-     &                   off1(ijrep,krep),off1(ijrep,lrep)
-
-        IF (KREP.LT.LREP) GOTO 10
         LOFF = (OFF(LREP) + OFF1(IJREP,KREP)) * RCW
         KOFF = (OFF(KREP) + OFF1(IJREP,LREP)) * RCW
-!       write(*,*) 'off(lrep),off(krep),LOFF,KOFF',
-!    &     off(lrep),off(krep),loff,koff
+
         DO L = 1, LFIE(LREP)
          IJL  = (L-1) * N * RCW + 1
          KMIN = 1
          IF (KREP.EQ.LREP) KMIN = L + 1
          DO K = KMIN, KFIE(KREP)
             IJK  = (K-1) * N * RCW + 1
-!           IJKL1 = LOFF + (L-1) * NTRIPL(LREPC) * RCW + IJK 
-!           IJLK1 = KOFF + (K-1) * NTRIPL(KREPC) * RCW + IJL 
             IJKL1 = LOFF + (L-1) * NTRIPL(IJKREP) * RCW + IJK 
             IJLK1 = KOFF + (K-1) * NTRIPL(IJLREP) * RCW + IJL 
-            write(*,*) 'IJKL1,IJLK1:',IJKL1,IJLK1,LOFF,KOFF,
-     &           NTRIPL(IJKREP),NTRIPL(IJLREP),KREP,LREP,K,L,IJK,IJL
             if(IJKL1+N.gt.iceil) write(*,*) '***alert A'
             if(IJLK1+N.gt.iceil) write(*,*) '***alert B'
             IF (DOINV) THEN
                CALL XCOPY (N,BUF1(IJKL1),1,BUF2(IJKL),1)
-
-!       write(*,*) 'Attention: no antisymmetrization occurring!'
-
                CALL XAXPY (N,-A1,BUF1(IJLK1),1,BUF2(IJKL),1)
             ELSE
-!              write(*,*) 'Checking forward sort...'
-!              write(*,*) 'Checking destination range',
-!    &          IJKL1,IJKL1+N,'  and  ',IJLK1,IJLK1+N
-! ** pt I
-!              do IPP = IJKL1,IJKL1+N-1
-!                if(BUF2(IPP).ne.0.0d0)   write(*,*) IJKL1,IJKL1+N-1,
-!    &              lfie(lrep),kfie(krep),buf2(ipp),'   <<<BING 1>>>'
-!    &      write(*,*) 'ntripl(lrep),ntripl(krep),ijl,ijk,l,k,IJKL1',
-!    &            ntripl(lrep),ntripl(krep),ijl,ijk,l,k,ijkl1
-!              enddo
-! ** pt II
-!              do IPP = IJLK1,IJLK1+N-1
-!                if(BUF2(IPP).ne.0.0d0)   write(*,*) IJLK1,IJLK1+N-1,
-!    &              lfie(lrep),kfie(krep),buf2(ipp),'   <<<BING 2>>>'
-!    &      write(*,*) 'ntripl(lrep),ntripl(krep),ijl,ijk,l,k,IJLK1',
-!    &            ntripl(lrep),ntripl(krep),ijl,ijk,l,k,ijlk1
-!              enddo
                CALL XCOPY (N,BUF1(IJKL),1,BUF2(IJKL1),1)
                CALL XCOPY (N,BUF1(IJKL),1,BUF2(IJLK1),1)
                CALL XSCAL (N,-A1,BUF2(IJLK1),1)
-
             ENDIF
             IJKL = IJKL + N * RCW
-            sumkl = sumkl + 1
          ENDDO
         ENDDO
  10    CONTINUE
-       summer = summer + npair(IJREP)*sumkl
       ENDDO
-C
-      write(*,*) '* * * * * number of elements:',summer
+!
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SRT1T2_NTS (NREP,DESREP,MULTB,DOINV,NPAIR1,IFIE,JFIE,
-     &                       NPAIR2,OFF,OFF2,BUF1,BUF2)
+      SUBROUTINE SRT1T2_NTS (NREP,MULTB,DOINV,NPAIR1,IFIE,JFIE,
+     &                       NPAIR2,OFF,OFF2,BUF1,BUF2,DESREP)
 !
       IMPLICIT INTEGER (A-Z)
 !
@@ -1280,9 +1248,6 @@ C
         JKLREP = MULTB(IREP,DESREP+NREP,2)
         IKLREP = MULTB(JREP,DESREP+NREP,2)
 
-!       JKLREP = IREP
-!       IKLREP = JREP
-
         JKLOFF = (OFF(JKLREP)+OFF2(JREP,KLREP)*IFIE(IREP)) * RCW
         IKLOFF = (OFF(IKLREP)+OFF2(IREP,KLREP)*JFIE(JREP)) * RCW
         M2 = IFIE(IREP) * JFIE(JREP)
@@ -1310,107 +1275,6 @@ C
 
       write(*,*) '* * * * number of elements 1t2_nts: ',summer
 
-      RETURN
-      END
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SRT1T3_NEW (NREP,MULTB,DOINV,NPAIR,KFIE,LFIE,NTRIPL,
-     &                       OFF,OFF1,BUF1,BUF2,DESREP,ICEIL)
-C
-      IMPLICIT INTEGER (A-Z)
-C
-C---------------Description--------------------------------------------
-C
-C     BUF(IJ,K>L:KLREP) <--> BUF(IJ K,L:LREP)
-C     where the product of all four ireps can be non-totally symmetric
-C     If (DOINV) inverse sort.
-C
-C                 <IJ| x |KL> = desrep
-C
-C---------------Calling variables--------------------------------------
-C
-      INTEGER                  NREP
-      INTEGER                  MULTB(64,64,2)
-      LOGICAL                  DOINV
-      INTEGER                  NPAIR(NREP),KFIE(NREP)
-      INTEGER                  LFIE(NREP),NTRIPL(NREP)
-      INTEGER                  OFF(NREP+1),OFF1(32,32)
-      REAL*8                   BUF1(*),BUF2(*)
-      INTEGER                  DESREP,ICEIL
-C
-C---------------Common Blocks--------------------------------------
-C
-#include "../relccsd/complex.inc"
-#include "../relccsd/param.inc"
-C
-C---------------Local variables--------------------------------------
-C
-       integer summer,sumkl
-C
-C---------------Executable code--------------------------------------
-C
-
-!     write(*,*) 'ICEIL:',iceil,desrep
-!     do i=1,nrep+1
-!        write(*,*) 'off(nrep+1):',i,off(i)
-!     enddo
-!     write(*,*) 'lbounds:',
-!    &      lbound(multb,1),lbound(multb,2),lbound(multb,3)
-!     write(*,*) 'ubounds:',
-!    &      ubound(multb,1),ubound(multb,2),ubound(multb,3)
-      IF (.NOT.DOINV) THEN
-         CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
-      ENDIF
-      summer = 0
-      IJKL = 1
-      DO KLREP = 1, NREP
-
-       IJREP = MULTB (DESREP+NREP,KLREP+NREP,2)
-       IF(MULTB(ijrep+nrep,klrep+nrep,2).ne.desrep) 
-     &        stop 'Symm error 1 in SRT_1T3_NTS'
-       write(*,*) 'srt1t3_new, ijrep,klrep',ijrep,klrep
-
-       N = NPAIR(IJREP)
-       DO 10 LREP = 1, NREP
-        if(lfie(lrep).eq.0) cycle
-        KREP = MULTB(LREP,KLREP+NREP,2)
-        if(kfie(krep).eq.0) cycle
-        IF (KREP.LT.LREP) GOTO 10
-
-        GREP   = MULTB (LREP,DESREP+NREP,2)
-        IJKREP = MULTB (IJREP+NREP,KREP,2)
-        IJLREP = MULTB (IJREP+NREP,LREP,2)
-        write(*,*) 'IJKREP,GREP,LREP:',ijkrep,grep,lrep,
-     &   ' nvvot(grep),no(lrep)',ntripl(grep),lfie(lrep)
-        if(multb(ijkrep,lrep,1).ne.desrep) stop 'Symm error 2'
-        if(multb(ijlrep,krep,1).ne.desrep) stop 'Symm error 3'
-
-        LOFF = (OFF(LREP) + OFF1(IJREP,KREP)) * RCW
-        KOFF = (OFF(KREP) + OFF1(IJREP,LREP)) * RCW
-
-        DO L = 1, LFIE(LREP)
-         IJL  = (L-1) * N * RCW + 1
-         KMIN = 1
-         IF (KREP.EQ.LREP) KMIN = L + 1
-         DO K = KMIN, KFIE(KREP)
-            IJK  = (K-1) * N * RCW + 1
-            IJKL1 = LOFF + (L-1) * NTRIPL(IJKREP) * RCW + IJK 
-            IJLK1 = KOFF + (K-1) * NTRIPL(IJLREP) * RCW + IJL 
-            if(IJKL1+N.gt.iceil) write(*,*) '***alert A'
-            if(IJLK1+N.gt.iceil) write(*,*) '***alert B'
-            IF (DOINV) THEN
-               CALL XCOPY (N,BUF1(IJKL1),1,BUF2(IJKL),1)
-               CALL XAXPY (N,-A1,BUF1(IJLK1),1,BUF2(IJKL),1)
-            ELSE
-               CALL XCOPY (N,BUF1(IJKL),1,BUF2(IJKL1),1)
-               CALL XCOPY (N,BUF1(IJKL),1,BUF2(IJLK1),1)
-               CALL XSCAL (N,-A1,BUF2(IJLK1),1)
-            ENDIF
-            IJKL = IJKL + N * RCW
-         ENDDO
-        ENDDO
- 10    CONTINUE
-      ENDDO
-C
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

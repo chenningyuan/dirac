@@ -756,7 +756,6 @@ C
         if(ialloc.ne.0) stop 'allocation problem daibj'
         daibj=0.0d0
 
-        write(*,*) 'entering old main building block'
         CALL BUILD_X_MAIN (daibj,eps,n1)
 !
 ! diagonalize main block for Davidson start vectors
@@ -817,18 +816,18 @@ C
 ! print current run info
 
           CALL PST('Starting calculation of Coupling and SAT block+')
-          WRITE(IW,'(A,I4,X,A4)') 'Curr. symmetry:',desrep,repna(desrep)
-          WRITE(IW,'(A,A)') 'Used main matrix file name: ',namematfil
-          WRITE(IW,'(A,I14)') 'Current I/O buffer size: ',INTBUF
-          WRITE(IW,'(A,I14)') 'Real/complex word: ',rcw
-          WRITE(IW,*)
+!         WRITE(IW,'(A,I4,X,A4)') 'Curr. symmetry:',desrep,repna(desrep)
+!         WRITE(IW,'(A,A)') 'Used main matrix file name: ',namematfil
+!         WRITE(IW,'(A,I14)') 'Current I/O buffer size: ',INTBUF
+!         WRITE(IW,'(A,I14)') 'Real/complex word: ',rcw
+!         WRITE(IW,*)
 
 ! generate configuration file for this symmetry
 
-          WRITE(IW,*) 'Configuration data written to ',namecnffil
+!         WRITE(IW,*) 'Configuration data written to ',namecnffil
           CALL WCONDAT_X(iobase,namecnffil,irecl,desrep,ireccnt)
-          WRITE(IW,*) 'Record length in configuration file:',IRECL
-          WRITE(IW,*) 'Number of records (=matrix dimension):',ireccnt
+!         WRITE(IW,*) 'Record length in configuration file:',IRECL
+!         WRITE(IW,*) 'Number of records (=matrix dimension):',ireccnt
 
 ! generate coupling and sat block in this symmetry
 ! together with the helpers simultaneously started.
