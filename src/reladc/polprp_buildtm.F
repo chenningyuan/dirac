@@ -44,7 +44,6 @@
 
 ! offset and length arrays for NTS two-electron contributions
                                             
-      INTEGER,allocatable,dimension(:)       :: ABIJTT
       INTEGER,allocatable,dimension(:)       :: LVVONO
       INTEGER,allocatable,dimension(:)       :: LVNVOO
 
@@ -193,18 +192,19 @@
 !
 ! say hello
 !
-      call pst('Calculating transition moments+')
+      if(carith) then
+        call pst('Transition moments (complex run)+')
+      else
+        call pst('Transition moments (real run)+')
+      endif
       write(*,*)
       write(*,*) '   Note: Even in SPINFREE/NONREL cases the TMs'
       write(*,*) '   can be complex due to the quaternionic structure'
       write(*,*) '   of the wave function.'
       write(*,*)
-      write(*,*) '   **********************'
-      write(*,*) '   Symmetry: ',desrep
-      write(*,*) '   RCW for the current run:',RCW
-      write(*,*) '   Number of ireps:',NREP
-      write(*,*) '   CARITH:',carith
-      write(*,*) '   **********************'
+      write(*,*) '   *******************************'
+      write(*,*) '   Final state Symmetry: ',desrep
+      write(*,*) '   *******************************'
       write(*,*)
 !
 ! initialization of constant variables
@@ -374,18 +374,18 @@
      &               dvox,dvoy,dvoz,
      &               dvvx,dvvy,dvvz)
 
-      write(*,*) 'control sum 1:',dot_product(doox,doox)
-      write(*,*) 'control sum 1:',dot_product(dooy,dooy)
-      write(*,*) 'control sum 1:',dot_product(dooz,dooz)
-      write(*,*) 'control sum 2:',dot_product(dovx,dovx)
-      write(*,*) 'control sum 2:',dot_product(dovy,dovy)
-      write(*,*) 'control sum 2:',dot_product(dovz,dovz)
-      write(*,*) 'control sum 3:',dot_product(dvox,dvox)
-      write(*,*) 'control sum 3:',dot_product(dvoy,dvoy)
-      write(*,*) 'control sum 3:',dot_product(dvoz,dvoz)
-      write(*,*) 'control sum 4:',dot_product(dvvx,dvvx)
-      write(*,*) 'control sum 4:',dot_product(dvvy,dvvy)
-      write(*,*) 'control sum 4:',dot_product(dvvz,dvvz)
+!     write(*,*) 'control sum 1:',dot_product(doox,doox)
+!     write(*,*) 'control sum 1:',dot_product(dooy,dooy)
+!     write(*,*) 'control sum 1:',dot_product(dooz,dooz)
+!     write(*,*) 'control sum 2:',dot_product(dovx,dovx)
+!     write(*,*) 'control sum 2:',dot_product(dovy,dovy)
+!     write(*,*) 'control sum 2:',dot_product(dovz,dovz)
+!     write(*,*) 'control sum 3:',dot_product(dvox,dvox)
+!     write(*,*) 'control sum 3:',dot_product(dvoy,dvoy)
+!     write(*,*) 'control sum 3:',dot_product(dvoz,dvoz)
+!     write(*,*) 'control sum 4:',dot_product(dvvx,dvvx)
+!     write(*,*) 'control sum 4:',dot_product(dvvy,dvvy)
+!     write(*,*) 'control sum 4:',dot_product(dvvz,dvvz)
 
 ! canary values for catching errors. For complex arithmetic these
 ! phase variables must not be accessed or used.
@@ -395,31 +395,28 @@
       pphasez = -999999.0d0
       
       If(carith.eqv..false.) then
-        write(*,*) 'We are in real mode and have to check'
-        write(*,*) 'the phases of the property integrals.'
         if(aimag(pphase(1)).ne.0) then
-          write(*,*) 'Adjusting dvox'
+          write(*,*) 'Real mode, but adjusting dvox'
           pphasex = AI
         else
-          write(*,*) 'Unchanged dvox'
+!         write(*,*) 'Unchanged dvox'
           pphasex = A1
         endif
         if(aimag(pphase(2)).ne.0) then
-          write(*,*) 'Adjusting dvoy'
+          write(*,*) 'Real mode, but adjusting dvoy'
           pphasey = AI
         else
-          write(*,*) 'Unchanged dvoy'
+!         write(*,*) 'Unchanged dvoy'
           pphasey = A1
         endif
         if(aimag(pphase(3)).ne.0) then
-          write(*,*) 'Adjusting dvoz'
+          write(*,*) 'Real mode, but adjusting dvoz'
           pphasez = AI
         else
-          write(*,*) 'Unchanged dvoz'
+!         write(*,*) 'Unchanged dvoz'
           pphasez = A1
         endif
       Endif   !carith
- 
 !
 !  storage of property contributions is F_ai. Therefore the
 !  First contribution is D_ai and not D_ia
@@ -552,7 +549,7 @@
       call rcaxpy(n1,carith,pphasey,faipy,faity)
       call rcaxpy(n1,carith,pphasez,faipz,faitz)
 
-      write(*,*) '------  F_ai(2)A finished'
+!     write(*,*) '------  F_ai(2)A finished'
 
       iorder='0th + 1st + 2ndA'
       CALL TM_GEN(ioch,desrep,incsat,iorder,
@@ -606,7 +603,7 @@
       call rcaxpy(n1,carith,pphasey,faipy,faity)
       call rcaxpy(n1,carith,pphasez,faipz,faitz)
 
-      write(*,*) '------  F_ai(2)B finished'
+!     write(*,*) '------  F_ai(2)B finished'
 
       iorder='0th + 1st + 2ndAB'
       CALL TM_GEN(ioch,desrep,incsat,iorder,
@@ -676,7 +673,7 @@
       call rcaxpy(n1,carith,pphasey,faipy,faity)
       call rcaxpy(n1,carith,pphasez,faipz,faitz)
       
-      write(*,*) '------  F_ai(2)C finished'
+!     write(*,*) '------  F_ai(2)C finished'
 
       iorder='0th + 1st + 2ndABC'
       CALL TM_GEN(ioch,desrep,incsat,iorder,
@@ -749,7 +746,7 @@
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
 
-      write(*,*) '------  F_ai(2,1) finished'
+!     write(*,*) '------  F_ai(2,1) finished'
       
 !
 !--------------------------------------
@@ -813,7 +810,7 @@
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
       
-      write(*,*) '------  F_ai(2,2) finished'
+!     write(*,*) '------  F_ai(2,2) finished'
 !
 !-------------------------------------
 !------  F_ai(2,3), a DVV contribution
@@ -874,7 +871,7 @@
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
 
-      write(*,*) '------  F_ai(2,3) finished'
+!     write(*,*) '------  F_ai(2,3) finished'
 !
 !-------------------------------------
 !------  F_ai(2,4), a DVV contribution
@@ -937,7 +934,7 @@
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
 
-      write(*,*) '------  F_ai(2,4) finished'
+!     write(*,*) '------  F_ai(2,4) finished'
 !
 !-------------------------------------
 !------  F_ai(2,5), a DOV contribution
@@ -1026,7 +1023,7 @@
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
 
-      write(*,*) '------  F_ai(2,5) finished'
+!     write(*,*) '------  F_ai(2,5) finished'
 !
 !-------------------------------------
 !------  F_ai(2,6): a DOV contribution
@@ -1110,7 +1107,7 @@
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
 
-      write(*,*) '------  F_ai(2,6) finished'
+!     write(*,*) '------  F_ai(2,6) finished'
 !
 !-------------------------------------
 !------  F_ai(2,7): a DOV contribution
@@ -1217,7 +1214,7 @@
 
       deallocate(vovo1,vovo2,vovo3)
 
-      write(*,*) '------  F_ai(2,7) finished'
+!     write(*,*) '------  F_ai(2,7) finished'
 !
 !-------------------------------------
 !------  F_ai(2,8): a DOV contribution
@@ -1307,7 +1304,7 @@
 
       deallocate(vovo1,vovo2,vovo3)
 
-      write(*,*) '------  F_ai(2,8) finished'
+!     write(*,*) '------  F_ai(2,8) finished'
 !
 !-------------------------------------
 !------  F_ai(2,9): a DOV contribution
@@ -1362,7 +1359,7 @@
       deallocate(vvoop)
       deallocate(vovo3)
 
-      write(*,*) '------  F_ai(2,9) finished'
+!     write(*,*) '------  F_ai(2,9) finished'
 !
 !-------------------------------------
 !-----  F_ai(2,10): a DOV contribution
@@ -1419,7 +1416,7 @@
       deallocate(oooo)
       deallocate(vovo3)
 
-      write(*,*) '------  F_ai(2,10) finished'
+!     write(*,*) '------  F_ai(2,10) finished'
 !
 !  ----------------------------------------------------------
 !  ----------------------------------------------------------
@@ -1439,41 +1436,42 @@
 !|  Generate index arrays for NTS two-particle contribs
 !|
 !
-      allocate(ABIJTT(NREP))
       allocate(LVVONO(NREP+1))
       allocate(LVNVOO(NREP+1))
 
-      ABIJTT  = 0   !length of the non-totally symmetric ab,ij arrays with a>b, i>j
       LVVONO  = 0   !offset array for nontotally symmetric VVO,O array
       LVNVOO  = 0   !offset array for nontotally symmetric V,VOO array
 
-      nabixj = 0
-      naxbij = 0
-      nabxij = 0
-
-!_______________________________________________________________
+      nabxij = 0  ! total number of nts ab,ij  integrals
+      nabixj = 0  ! total number of nts abi,j  integrals
+      naxbij = 0  ! total number of nts a,bij  integrals
 !|
+!| fill the AB|IJ, ABI|J and A|BIJ offset arrays for NTS handling.
 !|
-!| fill the ABI,J offset array for NTS handling.
+!| In the abi,j and a,bij cases both ireps are fermionic whereas in the
+!| ab,ij case both ireps are bosonic
 !|
       DO JREP = 1, NREP
 
-        ABIREP = MULTB (DESREP+NREP,JREP,2)
-               if(multb(abirep,jrep,2).ne.desrep) 
-     &         stop '2p2h fermion symm error!'
+        IREP = MULTB (DESREP+NREP,JREP,2)
+         if(multb(irep,jrep,2).ne.desrep) 
+     &      stop '2p2h fermion symm error!'
+        IREP_B = MULTB(DESREP+NREP,JREP+NREP,2)
+         if(multb(irep_b+nrep,jrep+nrep,2).ne.desrep) 
+     &      stop '2p2h bosonic symm error!'
 
-        LVVONO(JREP+1) = LVVONO(JREP) + nvvot(abirep)*no(jrep)
-        nabixj = nabixj + nvvot(abirep)*no(jrep)
+        nabxij = nabxij + nvvt(irep_b)*noot(jrep)
 
-        IJREP = MULTB(DESREP+NREP,JREP+NREP,2)
-               if(multb(ijrep+nrep,jrep+nrep,2).ne.desrep) 
-     &         stop '2p2h bosonic symm error!'
+        LVVONO(JREP+1) = LVVONO(JREP) + nvvot(irep)*no(jrep)
+        nabixj = nabixj + nvvot(irep)*no(jrep)
 
-        nabxij = nabxij + nvvt(ijrep)*noot(jrep)
+        LVNVOO(JREP+1) = LVNVOO(JREP) + nv(irep)*nvoot(jrep)
+        naxbij = naxbij + nv(irep)*nvoot(jrep)
 
       ENDDO !JREP
+      write(*,*) 'size of F_abij(x,y,z) buffer:        ',nabxij
       write(*,*) 'size of vabij(x,y,z) buffer (part A):',nabixj
-      write(*,*) 'size of fabij(x,y,z) buffer (part A):',nabxij
+      write(*,*) 'size of vabij(x,y,z) buffer (part B):',naxbij
 !|
 !|______________________________________________________________
 !
@@ -1510,13 +1508,12 @@
 !-----  see master sheet -TM 20-   -----------------
 !---------------------------------------------------
 !
-!
 !_________________________________________________________________
 !|
 !|   test forward antisymmetrization with nontotally symmetric stream
 !|   and !!new!! SRT1T3_NTS routine.
  
-      write(*,*) 'Performing antisymmetry test of SRT1T3_NTS'
+      write(*,*) 'Performing antisymmetry test of SRT1T3_NTS...'
       do i=1,nabxij
         vvoop(i) = dble(i)
       enddo
@@ -1593,7 +1590,6 @@
       iorder='0th-2nd order ph + 2p2h (part A)'
       incsat = nabxij
 
-      write(*,*) 'entering TMgen...'
       CALL TM_GEN(ioch,desrep,incsat,iorder,
      &            LTR,
      &            faitx,faity,faitz,
@@ -1603,31 +1599,12 @@
       deallocate(vabijy)
       deallocate(vabijz)
 
-      write(*,*) 'F_ab,ij(2,part A) contributions finished.'
+!     write(*,*) 'F_ab,ij(2,part A) contributions finished.'
 !
 !---------------------------------------------------
 !-----  F_ab,ij(2nd order PART B)  -----------------
 !-----  see master sheet -TM 21-   -----------------
 !---------------------------------------------------
-!
-!_______________________________________________________________
-!|
-!|
-!| fill the A,BIJ offset array for NTS handling.
-!|
-      DO BIJREP = 1, NREP
-
-        AREP = MULTB (DESREP+NREP,BIJREP,2)
-         if(multb(AREP,BIJREP,2).ne.desrep) 
-     &     stop '2p2h fermion symm error!'
-
-        LVNVOO(BIJREP+1) = LVNVOO(BIJREP) + nv(arep)*nvoot(bijrep)
-        naxbij = naxbij + nv(arep)*nvoot(bijrep)
-
-      ENDDO
-      write(*,*) 'size of vabij(x,y,z) buffer (part B):',naxbij
-!|
-!|______________________________________________________________
 !
 !  allocate NTS a,bij buffers
 !
@@ -1642,7 +1619,7 @@
 !|   test forward antisymmetrization with nontotally symmetric stream
 !|   and !!new!! SRT1T2_NTS routine.
  
-      write(*,*) 'Performing antisymmetry test of SRT1T2_NTS'
+      write(*,*) 'Performing antisymmetry test of SRT1T2_NTS...'
       do i=1,nabxij
         vvoop(i) = dble(i)
       enddo
@@ -1758,8 +1735,6 @@
 
       deallocate(pphase)
 
-      deallocate(ABIJTT)
-
       deallocate(JPOOXX,JPVOXX,JPOVXX,JPVVXX)
 
       RETURN
@@ -1773,14 +1748,7 @@
       implicit none
 !
 !  this routine contracts the Davidson eigenvector with the 
-!  F_ai/F_aibj matrix elements to form the three transition moments.
-!  Remind that the F_ai and F_aibj elements together with the TMs
-!  are kept complex!
-!
-!  due to high numerical effort in the calling routine a flag (do2h2p) 
-!  determines if the 2h2p contributions should be included. In this
-!  case the arrays fabijt[xyz] must be allocated! Otherwise they are not
-!  referenced.
+!  F_ai/F_abij matrix elements to form the x,y,z transition moments.
 !
 !  The routine can be called for each order of perturbation theory in the
 !  F_ai matrix elements. It just needs access to the Davidson eigenvectors.
@@ -1840,9 +1808,6 @@
         write(*,*) 'No TMs accessible!'
         write(*,*)
         return
-      else
-        write(*,*)
-        write(*,*) 'Found ',numtype(rcw),' eigenvecs in symm.',desrep
       endif
       OPEN(ioch,file=davevcname,access='sequential',
      &     status='unknown',form='unformatted')
@@ -1854,19 +1819,15 @@
       READ(ioch,iostat=ioresult) nroots
       READ(ioch,iostat=ioresult) nmain
       READ(ioch,iostat=ioresult) ladc
-
-      write(*,*) 'Found',nroots,' states in the eigenvector file.'
-      write(*,*) 'Length of ADC matrix (from file):',ladc
-      write(*,*) 'Length of main space (from file):',nmain
       n2h2p = ladc-nmain
-      write(*,*) 'Length of sat space:',n2h2p
 
-      if(do2h2p) then
-        write(*,*) 'Including 2h2p contributions to TM.'
-        if (isatctl.ne.n2h2p) 
-     &    call quit('Internal error for coupling block length')
-      else
-        write(*,*) 'Omitting 2h2p contributions to TM'
+!     write(*,*) 'Found',nroots,' states in the eigenvector file.'
+!     write(*,*) 'Length of ADC matrix (from file):',ladc
+!     write(*,*) 'Length of main space (from file):',nmain
+!     write(*,*) 'Length of sat space:',n2h2p
+
+      if(do2h2p.and.isatctl.ne.n2h2p) then
+        call quit('Internal error for coupling block length')
       endif
 !
 ! allocate eigenvalue, transition moment and coefficient arrays
@@ -1893,11 +1854,11 @@
         read(ioch) ist
         read(ioch) evl(k)
         read(ioch) ps
-        write(*,*)
-        write(*,'(A,X,I3,X,A,F10.4,A,X,F10.4,A,F10.4)') 
-     &    'State',ist,':exc. energy',evl(k),'(au)',evl(k)*autoev,
-     &    ' (eV) and PS',ps
 !       write(*,*)
+!       write(*,'(A,X,I3,X,A,F10.4,A,X,F10.4,A,F10.4)') 
+!    &    'State',ist,':exc. energy',evl(k),'(au)',evl(k)*autoev,
+!    &    ' (eV) and PS',ps
+
         if(carith) then
           read(ioch)(ccoef(i),i=1,ladc)
           do i=1,ladc
@@ -1908,7 +1869,6 @@
           read(ioch)(rcoef(i),i=1,ladc)
           do i=1,ladc
             xnr(k)=xnr(k) + rcoef(i)**2.0d0
-!           write(*,'(I6,F15.7)') i,rcoef(i)
           enddo
         endif
         xnr(k) = dsqrt(xnr(k))
@@ -1939,7 +1899,6 @@
           enddo
           if(do2h2p) then
             do i=1,n2h2p
-!             write(*,'(I6,3X,F20.9,7X,2F20.14)') i,rcoef(i),fabijtx(i)
               ax = ax + dcmplx(rcoef(i+nmain),D0)*fabijtx(i)
               ay = ay + dcmplx(rcoef(i+nmain),D0)*fabijty(i)
               az = az + dcmplx(rcoef(i+nmain),D0)*fabijtz(i)
@@ -1958,20 +1917,27 @@
 !_________________________  print output
 !|
 !|
-      write(*,*) '   Transition moments for states in symmetry',desrep
       write(*,*)
+      write(*,'(A35,A40)') '     *******************   Level:  ',
+     &   iorder
       write(*,*)
-      write(*,'(A30,A40,A30)') '------------  contribution:   ',
-     &   iorder,'------------------------------'
-      write(*,'(A,4X,A,9X,A,20X,A,20X,A)')
-     &       'State','Energy(eV)','TM(x)','TM(y)','TM(z)'
-      write(*,*) '----------------------------------------------------'
-      write(*,*)
+      write(*,'(A,4X,A,2X,A,3X,A,9X,A,10X,A,10X,A)')
+     &       'State','Energy (au)','Energy(eV)','Norm',
+     &       'TM(x)_r        TM(x)_i',
+     &       'TM(y)_r        TM(y)_i',
+     &       'TM(z)_r        TM(z)_i'
+      write(*,'(3A)') '----------------------------------------------',
+     &  '----------------------------------------------',
+     &  '----------------------------------------------'
+
       do k=1,nroots
-        write(*,'(I4,F14.7,F8.4,2F15.9,A,2F15.9,A,2F15.9)') k,
-     &     evl(k)*autoev,xnr(k),tmx(k),' | ',tmy(k),' | ',tmz(k)
+        write(*,'(I4,F14.7,F14.7,F7.2,A,2F15.9,A,2F15.9,A,2F15.9)') k,
+     &   evl(k),evl(k)*autoev,xnr(k),'  : ',
+     &   tmx(k),' | ',tmy(k),' | ',tmz(k)
       enddo
-      write(*,*) '----------------------------------------------------'
+      write(*,'(3A)') '----------------------------------------------',
+     &  '----------------------------------------------',
+     &  '----------------------------------------------'
 !|
 !|________________________ end print output
 

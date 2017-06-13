@@ -1198,12 +1198,9 @@ C
 !     BUF(I>J,KL:KLREP) <--> BUF(I,J KL:JKLREP)
 !     If (DOINV) inverse sort.
 !
-!---------------Routines called----------------------------------------
-!
 !---------------Last modified------------------------------------------
 !
-!     Author : Luuk Visscher, modified by MP for nontotally
-!              symmetric cases.
+!    by MP for nontotally symmetric cases.
 !
 !---------------Calling variables--------------------------------------
 !
@@ -1218,17 +1215,11 @@ C
 #include "../relccsd/complex.inc"
 #include "../relccsd/param.inc"
 !
-!---------------Local variables--------------------------------------
-!
-      integer summer,summkl
-!
 !---------------Executable code--------------------------------------
 !
       IF (.NOT.DOINV) THEN
          CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
       ENDIF
-      summer = 0
-      summkl = 0
       IJKL = 0
       DO KLREP = 1, NREP
 
@@ -1245,8 +1236,8 @@ C
 
 ! new for nontotally symmetric cases:
 
-        JKLREP = MULTB(IREP,DESREP+NREP,2)
-        IKLREP = MULTB(JREP,DESREP+NREP,2)
+        JKLREP = MULTB(JREP,KLREP+NREP,2)
+        IKLREP = MULTB(IREP,KLREP+NREP,2)
 
         JKLOFF = (OFF(JKLREP)+OFF2(JREP,KLREP)*IFIE(IREP)) * RCW
         IKLOFF = (OFF(IKLREP)+OFF2(IREP,KLREP)*JFIE(JREP)) * RCW
@@ -1266,14 +1257,11 @@ C
                CALL XSCAL(N,-A1,BUF2(JIKL1),M2)
             ENDIF
             IJ = IJ + RCW
-            summer = summer + N
          ENDDO
         ENDDO
  10    CONTINUE
        IJKL = IJKL + M * N * RCW
       ENDDO
-
-      write(*,*) '* * * * number of elements 1t2_nts: ',summer
 
       RETURN
       END

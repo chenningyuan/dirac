@@ -662,8 +662,8 @@
 
       DO KLREP = 1,NREP     ! klrep, cdrep and desrep are bosonic
       CDREP = MULTB(DESREP+NREP,KLREP+NREP,2)
-      write(*,*) 'xcoldet:',cdrep,klrep,' nvvt,noot:',
-     &           nvvt(cdrep),noot(klrep)
+!     write(*,*) 'xcoldet:',cdrep,klrep,' nvvt,noot:',
+!    &           nvvt(cdrep),noot(klrep)
       DO 10 LREP = 1, NREP
       KREP = MULTB(LREP,KLREP+NREP,2)
       IF (KREP.LT.LREP) GOTO 10
