@@ -1,7 +1,7 @@
 #if defined (VAR_MPI)
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE mpi_slave_server()
+      SUBROUTINE mpi_slave_server(iobase,intbuf)
 
       use interface_to_mpi
 
@@ -23,12 +23,23 @@
 !
 !---------------Local variables--------------------------------------
 !
+      Integer                           :: iobase,intbuf
+
       Integer                           :: taskid = 0   ! defines the server's task
       REAL*8,allocatable,dimension(:)   :: buf
       logical                           :: done
       INTEGER                           :: irp,istart,nint,mint
       INTEGER                           :: ialloc,locoff,istat
       INTEGER                           :: efflen
+   
+      Integer                               :: i,ixx,jdummy
+      REAL*8,allocatable,dimension(:)       :: bufr,bufi
+      Complex*16,allocatable,dimension(:)   :: cbuf
+      Integer,allocatable,dimension(:)      :: ioi,ioj
+      Integer                               :: nbufscur,nact
+      Character*10                          :: locfn
+      Character*6                           :: nmbase='PP_ELE'
+     
 !
 !---------------Interface area --------------------------------------
 !
@@ -59,18 +70,18 @@
         select case(taskid)
 
 
-!-----
+!----------------------------------------------------------------
 !-----  TASK: say hello
-!-----
+!----------------------------------------------------------------
 
 
           case(SERVER_HELLO)
           write(*,*) 'Node',MYPROC,' confirms existence.'
 
 
-!-----
+!----------------------------------------------------------------
 !-----  TASK: terminate server loop
-!-----
+!----------------------------------------------------------------
 
 
           case(SERVER_DONE)
@@ -78,9 +89,9 @@
           exit   ! terminates infinite do loop
 
 
-!-----
+!----------------------------------------------------------------
 !-----  TASK: provide local share of VVVV integrals in irep IRP
-!-----
+!----------------------------------------------------------------
 
 
           case(SERVER_VVVV)
@@ -133,9 +144,9 @@
           endif
 
 
-!-----
+!----------------------------------------------------------------
 !-----  TASK: provide local share of VOVV integrals in irep IRP
-!-----
+!----------------------------------------------------------------
 
 
           case(SERVER_VOVV)
@@ -188,6 +199,93 @@
           endif
 
 
+!----------------------------------------------------------------
+!-----  TASK: store fraction of ADC matrix on local node
+!----------------------------------------------------------------
+
+
+          case(SERVER_MATDIS)
+!
+! create local file name
+!
+          IF (MYPROC .LT. 10) THEN
+            WRITE (locfn,'(A6,A1,I1)') nmbase,'.',MYPROC
+          ELSEIF (MYPROC .LT. 100) THEN
+            WRITE (locfn,'(A6,A1,I2)') nmbase,'.',MYPROC
+          ELSEIF (MYPROC .LT. 1000) THEN
+            WRITE (locfn,'(A6,A1,I3)') nmbase,'.',MYPROC
+           ELSE
+          CALL QUIT("NMPROC.GT.1000! EXTEND mpi_xmat_dist routine!")
+          ENDIF
+          write(*,*) 'Node',myproc,' opened ',locfn,' for writing.'
+          open(unit=iobase,file=locfn, access='SEQUENTIAL',
+     &         form='UNFORMATTED',status='new')
+!
+! create local buffers, freed afterwards
+!
+          if(carith) then
+            allocate(cbuf(intbuf))
+            allocate(bufr(intbuf))
+            allocate(bufi(intbuf))
+          else
+            allocate(buf(intbuf))
+          endif
+          allocate(ioi(intbuf))
+          allocate(ioj(intbuf))
+
+          jdummy = 0
+!
+! enter loop for receiving chunks of ADC matrix
+!
+          call interface_mpi_recv(nbufscur,1,MASTER,MSGN,
+     &                           global_communicator)
+          write(*,*) 'Slave',MYPROC,' will receive',nbufscur,
+     &        ' batches from master.'
+          write(iobase,ERR=889) nbufscur
+          do i=1,nbufscur
+            if(carith) then
+              call interface_mpi_recv(bufr,intbuf,MASTER,MSGN,
+     &                                global_communicator)
+              call interface_mpi_recv(bufi,intbuf,MASTER,MSGN,
+     &                                global_communicator)
+              do ixx=1,intbuf
+                cbuf(ixx) = dcmplx(bufr(ixx),bufi(ixx))
+              enddo
+            else
+              call interface_mpi_recv(buf,intbuf,MASTER,MSGN,
+     &                                global_communicator)
+            endif
+            call interface_mpi_recv(ioi,intbuf,MASTER,MSGN,
+     &                              global_communicator)
+            call interface_mpi_recv(ioj,intbuf,MASTER,MSGN,
+     &                              global_communicator)
+            call interface_mpi_recv(nact,1,MASTER,MSGN,
+     &                              global_communicator)
+            if(carith) then
+              write(iobase,ERR=889) (cbuf(ixx),ixx=1,intbuf),
+     &                              (ioi(ixx),ixx=1,intbuf),
+     &                              (ioj(ixx),ixx=1,intbuf),
+     &                              nact,jdummy
+            else
+              write(iobase,ERR=889) (buf(ixx),ixx=1,intbuf),
+     &                              (ioi(ixx),ixx=1,intbuf),
+     &                              (ioj(ixx),ixx=1,intbuf),
+     &                              nact,jdummy
+            endif
+          enddo
+          flush(iobase)
+          close(iobase)
+          write(*,*) 'Node',myproc,' has closed local ADC file.'
+!
+! deallocating local buffers
+!
+          if(carith) then
+            deallocate(cbuf,bufr,bufi)
+          else
+            deallocate(buf)
+          endif
+          deallocate(ioi,ioj)
+
         end select
 
 !----------------------------------------------------------------
@@ -196,6 +294,10 @@
 
 
       return
+!
+!  error exit for write routine.
+!
+ 889  call quit('problem on node with writing partial ADC matrix')
       END SUBROUTINE  ! mpi_slave_server
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #endif

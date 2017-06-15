@@ -656,6 +656,10 @@ C
           character*6           :: c1
         END SUBROUTINE
 
+        SUBROUTINE mpi_slave_server (i1,i2)
+          integer               :: i1,i2
+        END SUBROUTINE
+
         SUBROUTINE build_tramo(i1,i2,ra1)
           integer               :: i1,i2
           real*8, dimension(:)  :: ra1
@@ -913,36 +917,36 @@ C
 ! If an old ADC matrix file is still sitting in the tmpdir, throw it away.
 !
 
-        OPEN(UNIT=IOBASE,FILE=namematfil, ACCESS='SEQUENTIAL',
-     &     FORM='UNFORMATTED',STATUS='NEW')
-        serialindicator = -1
-        Write(iobase) serialindicator
-        write(*,*)
-        write(*,*) '**) Entering serial driver for'
-        IF(CARITH) THEN
-          write(*,*) '**) complex coupling and satellite block.'
+          OPEN(UNIT=IOBASE,FILE=namematfil, ACCESS='SEQUENTIAL',
+     &       FORM='UNFORMATTED',STATUS='NEW')
+          serialindicator = -1
+          Write(iobase) serialindicator
           write(*,*)
-          CALL BUILD_X_COUSAT_C(DAIBJ,EPS,DESREP,LENCOUPLBL,
-     &                          INTBUF,NBUFS,polprp_doextended,
-     &                          polprp_writethr,iobase)
-          CALL XDIAG_INI_C(iobase,iobase+1,
-     &                     INTBUF,NBUFS,lencouplbl + MVO(desrep))
-        ELSE
-          write(*,*) '**) real coupling and satellite block.'
-          write(*,*)
-          CALL BUILD_X_COUSAT_R(DAIBJ,EPS,DESREP,LENCOUPLBL,
-     &                          INTBUF,NBUFS,polprp_doextended,
-     &                          polprp_writethr,iobase)
-          CALL XDIAG_INI_R(iobase,iobase+1,
-     &                     INTBUF,NBUFS,
-     &                     lencouplbl + MVO(desrep),.true.)
-        ENDIF
-        CLOSE(iobase)
+          write(*,*) '**) Entering serial driver for'
+          IF(CARITH) THEN
+            write(*,*) '**) complex coupling and satellite block.'
+            write(*,*)
+            CALL BUILD_X_COUSAT_C(DAIBJ,EPS,DESREP,LENCOUPLBL,
+     &                            INTBUF,NBUFS,polprp_doextended,
+     &                            polprp_writethr,iobase)
+            CALL XDIAG_INI_C(iobase,iobase+1,
+     &                       INTBUF,NBUFS,lencouplbl + MVO(desrep))
+          ELSE
+            write(*,*) '**) real coupling and satellite block.'
+            write(*,*)
+            CALL BUILD_X_COUSAT_R(DAIBJ,EPS,DESREP,LENCOUPLBL,
+     &                            INTBUF,NBUFS,polprp_doextended,
+     &                            polprp_writethr,iobase)
+            CALL XDIAG_INI_R(iobase,iobase+1,
+     &                       INTBUF,NBUFS,
+     &                       lencouplbl + MVO(desrep),.true.)
+          ENDIF
+          CLOSE(iobase)
 
-        Write(*,*)
-        Write(*,*) 'Serial run information:'
-        Write(*,*) 'ADC matrix has',NBUFS,' buffers of length',INTBUF
-        Write(*,*)
+          Write(*,*)
+          Write(*,*) 'Serial run information:'
+          Write(*,*) 'ADC matrix has',NBUFS,' buffers of length',INTBUF
+          Write(*,*)
 #endif
 
 !
@@ -959,6 +963,9 @@ C
           write(iw,*)
           write(iw,*) '**** MASTER: distributing ADC matrix.'
           write(iw,*)
+          call mpi_master_mat_dist(iobase,namematfil,irploop,
+     &                              intbuf,nbufs,ladc,iw)
+          return
 
 ! slaves have knowledge only of the variables 'iobase', 'iw' and 'namematfil'
 ! all other relevant variables for matrix distribution have to be bcast.
@@ -1080,14 +1087,25 @@ C
 ! |
 ! |
 ! |________________ END SYMMETRY LOOP (MASTER) _________________________
-
-!   ________________________________________________________________
+!#####################################################################################
+!#####################################################################################
+!#####################################################################################
+!#####################################################################################
+!#####################################################################################
+!#####################################################################################
+!#####################################################################################
+!#####################################################################################
+!#####################################################################################
+!#####################################################################################
+!#####################################################################################
+!#####################################################################################
+!#####################################################################################
+!   |
 !   |
 !   |
 !   |     Slave execution part
 !   |
-!   |     Consists of corresponding helper routines mainly for heavy duty
-!   |     distributed matrix multiplication
+!   |
 !   |
 #if defined (VAR_MPI)
       else
@@ -1095,7 +1113,7 @@ C
 !|
 !|      debug: test new slave server
 !|
-        call mpi_slave_server()
+        call mpi_slave_server(iobase,intbuf)
         write(*,*) 'Node',myproc,' returns to main program'
         return
 !|

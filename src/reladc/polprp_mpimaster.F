@@ -484,16 +484,10 @@
       SUBROUTINE mpi_master_mat_dist(iobase,nmbase,
      &                               isym,intbuf,nbufs,ladc,iw)
 !
-!     Matrix distribution routine. 
-!     Important: This routine is simultaneously entered by master and slaves!
-!     Slaves are listening and receive
-!     batches. The current number of buffers is saved in the local file.
+!     Master Matrix distribution routine. 
 !
 !     In addition, master also extracts diagonal from the total ADC
 !     matrix and writes it to a file to be retrieved later on. 
-!     This is not a fortunate procedure as soon as the matrices
-!     are distributed and would require an additional rebuilding of the
-!     diagonal.
 !
       use interface_to_mpi
 
@@ -535,10 +529,16 @@
 
 !-------------- execution
 
+      IF(MYPROC.NE.MASTER) THEN
+        write(*,*) ' ***** Internal inconsistency *****'
+        write(*,*) ' ***** in master node number  *****'
+        call quit('error')
+      ENDIF
+
       if(carith) then
-        write(*,*)  'Entering (complex) matrix distribution'
+        write(*,*)  'Master: Entering (complex) matrix distribution'
       else
-        write(*,*)  'Entering (real) matrix distribution'
+        write(*,*)  'Master: Entering (real) matrix distribution'
       endif
       write(*,*) ' +++ Total # of nodes/loc node: ',NMPROC,MYPROC
 !
@@ -569,25 +569,23 @@
       allocate(ioi(intbuf))
       allocate(ioj(intbuf))
 
-! master calculates distribution of batches
+! calculate distribution of batches
 
-      IF(MYPROC.EQ.MASTER) THEN
-        allocate(nbufs_per_node(NMPROC))
-        ip = nbufs/NMPROC
-        iq = mod(nbufs,NMPROC)
-        do i=1,NMPROC
-          nbufs_per_node(i) = ip
-        enddo
-        if(iq.gt.0) then
-           nbufs_per_node(NMPROC) = nbufs_per_node(NMPROC) + iq
-        endif
-        write(iw,*) 'Buffer distribution for each node:'
-        do i=1,NMPROC
-          write(iw,*) 'Node: ',i-1,' number of batches: ',
-     &            nbufs_per_node(i)
-        enddo
-        write(iw,*)
-      ENDIF
+      allocate(nbufs_per_node(NMPROC))
+      ip = nbufs/NMPROC
+      iq = mod(nbufs,NMPROC)
+      do i=1,NMPROC
+        nbufs_per_node(i) = ip
+      enddo
+      if(iq.gt.0) then
+         nbufs_per_node(NMPROC) = nbufs_per_node(NMPROC) + iq
+      endif
+      write(iw,*) 'Buffer distribution for each node:'
+      do i=1,NMPROC
+        write(iw,*) 'Node: ',i-1,' number of batches: ',
+     &          nbufs_per_node(i)
+      enddo
+      write(iw,*)
       
 ! generate local file names and open corresponding file.
 
@@ -600,43 +598,92 @@
       ELSE
          CALL QUIT("NMPROC.GT.1000! EXTEND mpi_xmat_dist routine!")
       ENDIF
-      write(*,*) 'Local file name: ',locfn,' is opened for writing.'
+      write(*,*) 'Master opens ',locfn,' for writing ADC matrix.'
       open(unit=iobase,file=locfn, access='SEQUENTIAL',
      &     form='UNFORMATTED',status='new')
 
       jdummy = 0
+!
+!  allocate required buffers
+!
+      if(carith) then
+        allocate(cadcdiagonal(ladc))
+        cadcdiagonal = czero
+      else
+        allocate(adcdiagonal(ladc))
+        adcdiagonal = rzero
+      endif
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!      M A S T E R    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! open complete ADC matrix
 
-      IF(MYPROC.EQ.MASTER) THEN
-
-        if(carith) then
-          allocate(cadcdiagonal(ladc))
-          cadcdiagonal = czero
-        else
-          allocate(adcdiagonal(ladc))
-          adcdiagonal = rzero
-        endif
-
-! open main matrix (complete ADC matrix)
-
-        iobase1 = iobase + 1
-        open(unit=iobase1,file=nmbase, access='SEQUENTIAL',
-     &       form='UNFORMATTED',status='old')
-        rewind(iobase1)
+      iobase1 = iobase + 1
+      open(unit=iobase1,file=nmbase, access='SEQUENTIAL',
+     &     form='UNFORMATTED',status='old')
+      rewind(iobase1)
 
 ! open file for adc diagonal
 
-        io_diag = iobase + 2
-        open(unit=io_diag,file='ADCDGTMP', access='SEQUENTIAL',
-     &       form='UNFORMATTED',status='unknown')
+      io_diag = iobase + 2
+      open(unit=io_diag,file='ADCDGTMP', access='SEQUENTIAL',
+     &     form='UNFORMATTED',status='unknown')
 
 ! write master's own chunk, at the beginning the number of batches
 
-        write(iobase,ERR=889) nbufs_per_node(MASTER+1)
-        do i=1,nbufs_per_node(MASTER+1)
+      write(iobase,ERR=889) nbufs_per_node(MASTER+1)
+      do i=1,nbufs_per_node(MASTER+1)
+
+        if(carith) then
+          read(iobase1,ERR=889) (cbuf(ixx),ixx=1,intbuf),
+     &                          (ioi(ixx),ixx=1,intbuf),
+     &                          (ioj(ixx),ixx=1,intbuf),
+     &                          nact,jdummy
+        else
+          read(iobase1,ERR=889) (buf(ixx),ixx=1,intbuf),
+     &                          (ioi(ixx),ixx=1,intbuf),
+     &                          (ioj(ixx),ixx=1,intbuf),
+     &                          nact,jdummy
+        endif
+
+! search for diagonal entries
+
+        do ixx = 1,nact
+          irow = ioi(ixx)
+          icol = ioj(ixx)
+          if(irow.eq.icol) then
+             if(carith) then
+               cadcdiagonal(irow) = cbuf(ixx)
+             else
+               adcdiagonal(irow) = buf(ixx)
+             endif
+          endif
+        enddo
+
+        if(carith) then
+          write(iobase,ERR=889) (cbuf(ixx),ixx=1,intbuf),
+     &                          (ioi(ixx),ixx=1,intbuf),
+     &                          (ioj(ixx),ixx=1,intbuf),
+     &                          nact,jdummy
+        else
+          write(iobase,ERR=889) (buf(ixx),ixx=1,intbuf),
+     &                          (ioi(ixx),ixx=1,intbuf),
+     &                          (ioj(ixx),ixx=1,intbuf),
+     &                          nact,jdummy
+        endif
+      enddo  !nbufs_per_node
+      flush(iobase)
+      close(iobase)   !Master's local ADC matrix written.
+      write(iw,*) '------MASTER HAS CLOSED LOCAL ADCFILE-------'
+
+! now spread slave chunks
+
+      do curslave=MASTER+2,NMPROC
+
+        write(iw,*) 'Master sends',nbufs_per_node(curslave),
+     &     ' buffers to slave',curslave-1
+        call interface_mpi_send(nbufs_per_node(curslave),1,curslave-1,
+     &                          mess_dist,global_communicator)
+
+        do i=1,nbufs_per_node(curslave)
 
           if(carith) then
             read(iobase1,ERR=889) (cbuf(ixx),ixx=1,intbuf),
@@ -649,181 +696,67 @@
      &                            (ioj(ixx),ixx=1,intbuf),
      &                            nact,jdummy
           endif
-!         write(iw,*) 'writing master chunk',i,intbuf,nact
 
 ! search for diagonal entries
 
           do ixx = 1,nact
             irow = ioi(ixx)
             icol = ioj(ixx)
-!     write(iw,'(A,2I4,E22.14)') 'master element',irow,icol,buf(ixx)
             if(irow.eq.icol) then
-               if(carith) then
-                 cadcdiagonal(irow) = cbuf(ixx)
-               else
-                 adcdiagonal(irow) = buf(ixx)
-               endif
+              if(carith) then
+                cadcdiagonal(irow) = cbuf(ixx)
+              else
+                adcdiagonal(irow) = buf(ixx)
+              endif
             endif
           enddo
-
-          if(carith) then
-            write(iobase,ERR=889) (cbuf(ixx),ixx=1,intbuf),
-     &                            (ioi(ixx),ixx=1,intbuf),
-     &                            (ioj(ixx),ixx=1,intbuf),
-     &                            nact,jdummy
-          else
-            write(iobase,ERR=889) (buf(ixx),ixx=1,intbuf),
-     &                            (ioi(ixx),ixx=1,intbuf),
-     &                            (ioj(ixx),ixx=1,intbuf),
-     &                            nact,jdummy
-          endif
-        enddo
-        flush(iobase)
-        close(iobase)   !Master's local ADC matrix written.
-        write(iw,*) '------MASTER HAS CLOSED LOCAL ADCFILE-------'
-
-! now spread slave chunks
-
-        do curslave=MASTER+2,NMPROC
-
-          write(iw,*) 'Master sends',nbufs_per_node(curslave),
-     &       ' buffers to slave',curslave-1
-          call interface_mpi_send(nbufs_per_node(curslave),1,curslave-1,
-     &                            mess_dist,global_communicator)
-
-          do i=1,nbufs_per_node(curslave)
-
-          if(carith) then
-            read(iobase1,ERR=889) (cbuf(ixx),ixx=1,intbuf),
-     &                            (ioi(ixx),ixx=1,intbuf),
-     &                            (ioj(ixx),ixx=1,intbuf),
-     &                            nact,jdummy
-          else
-            read(iobase1,ERR=889) (buf(ixx),ixx=1,intbuf),
-     &                            (ioi(ixx),ixx=1,intbuf),
-     &                            (ioj(ixx),ixx=1,intbuf),
-     &                            nact,jdummy
-          endif
-
-! search for diagonal entries
-
-            do ixx = 1,nact
-              irow = ioi(ixx)
-              icol = ioj(ixx)
-              if(irow.eq.icol) then
-                if(carith) then
-                  cadcdiagonal(irow) = cbuf(ixx)
-                else
-                  adcdiagonal(irow) = buf(ixx)
-                endif
-              endif
-            enddo
 
 ! subroutine interface_mpi_send_i0(x,ndim,receiver,message_id,communicator)
 ! nodes count from zero, this is the blocking send. Execution will not
 ! continue until slave has completely received the data chunk
 
-            if(carith) then
-              bufr = real(cbuf)
-              bufi = aimag(cbuf)
-              call interface_mpi_send(bufr,intbuf,curslave-1,
-     &                                mess_dist,global_communicator)
-              call interface_mpi_send(bufi,intbuf,curslave-1,
-     &                                mess_dist,global_communicator)
-            else
-              call interface_mpi_send(buf,intbuf,curslave-1,
-     &                                mess_dist,global_communicator)
-            endif
-            call interface_mpi_send(ioi,intbuf,curslave-1,
-     &                              mess_dist,global_communicator)
-            call interface_mpi_send(ioj,intbuf,curslave-1,
-     &                              mess_dist,global_communicator)
-            call interface_mpi_send(nact,1,curslave-1,
-     &                              mess_dist,global_communicator)
-!           write(iw,*) ' +++ buffer',i,nact,' sent to slave',curslave-1
-
-          enddo  ! loop over nbufs_per_node
-
-        enddo    ! curslave loop
-
-        if(carith) then
-          write(io_diag,ERR=888) (cadcdiagonal(ixx),ixx=1,ladc)
-        else
-          write(io_diag,ERR=888) (adcdiagonal(ixx),ixx=1,ladc)
-        endif
-
-        close(io_diag)
-
-        close(iobase1,status='DELETE')   !remove large Master ADC matrix
-
-        deallocate(nbufs_per_node)
-        if(carith) then
-          deallocate(cadcdiagonal)
-        else
-          deallocate(adcdiagonal)
-        endif
-
-      ELSE
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!       S L A V E     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-        call interface_mpi_recv(nbufscur,1,MASTER,mess_dist,
-     &                          global_communicator)
-        write(*,*) 'Slave',MYPROC,' will receive',nbufscur,
-     &       ' batches from master.'
-        write(iobase,ERR=889) nbufscur
-        do i=1,nbufscur
           if(carith) then
-            call interface_mpi_recv(bufr,intbuf,MASTER,mess_dist,
-     &                              global_communicator)
-            call interface_mpi_recv(bufi,intbuf,MASTER,mess_dist,
-     &                              global_communicator)
-            do ixx=1,intbuf
-              cbuf(ixx) = dcmplx(bufr(ixx),bufi(ixx))
-            enddo
+            bufr = real(cbuf)
+            bufi = aimag(cbuf)
+            call interface_mpi_send(bufr,intbuf,curslave-1,
+     &                              mess_dist,global_communicator)
+            call interface_mpi_send(bufi,intbuf,curslave-1,
+     &                              mess_dist,global_communicator)
           else
-            call interface_mpi_recv(buf,intbuf,MASTER,mess_dist,
-     &                              global_communicator)
+            call interface_mpi_send(buf,intbuf,curslave-1,
+     &                              mess_dist,global_communicator)
           endif
-          call interface_mpi_recv(ioi,intbuf,MASTER,mess_dist,
-     &                            global_communicator)
-          call interface_mpi_recv(ioj,intbuf,MASTER,mess_dist,
-     &                            global_communicator)
-          call interface_mpi_recv(nact,1,MASTER,mess_dist,
-     &                            global_communicator)
-!         write(*,*) 'Slave',MYPROC,' obtained',nact,' valid elements'
+          call interface_mpi_send(ioi,intbuf,curslave-1,
+     &                            mess_dist,global_communicator)
+          call interface_mpi_send(ioj,intbuf,curslave-1,
+     &                            mess_dist,global_communicator)
+          call interface_mpi_send(nact,1,curslave-1,
+     &                            mess_dist,global_communicator)
+!         write(iw,*) ' +++ buffer',i,nact,' sent to slave',curslave-1
 
-          if(carith) then
-            write(iobase,ERR=889) (cbuf(ixx),ixx=1,intbuf),
-     &                            (ioi(ixx),ixx=1,intbuf),
-     &                            (ioj(ixx),ixx=1,intbuf),
-     &                            nact,jdummy
-          else
-            write(iobase,ERR=889) (buf(ixx),ixx=1,intbuf),
-     &                            (ioi(ixx),ixx=1,intbuf),
-     &                            (ioj(ixx),ixx=1,intbuf),
-     &                            nact,jdummy
-          endif
+        enddo  ! loop over nbufs_per_node
 
-!----debug
-!         do ixx = 1,nact
-!        write(iw,'(A,2I4,E22.14)') 'slave  element',
-!    &     ioi(ixx),ioj(ixx),buf(ixx)
-!         enddo
-!----debug end
+      enddo    ! curslave loop
 
-        enddo
-        flush(iobase)
-        close(iobase)
-        write(iw,*) '------SLAVE HAS CLOSED LOCAL ADCFILE-------'
+      if(carith) then
+        write(io_diag,ERR=888) (cadcdiagonal(ixx),ixx=1,ladc)
+      else
+        write(io_diag,ERR=888) (adcdiagonal(ixx),ixx=1,ladc)
+      endif
 
-      ENDIF
+      close(io_diag)
+
+      close(iobase1,status='DELETE')   !remove large Master ADC matrix
+
+      deallocate(nbufs_per_node)
+      if(carith) then
+        deallocate(cadcdiagonal)
+      else
+        deallocate(adcdiagonal)
+      endif
 !
 ! after distribution we sync all nodes.
 !
-
       deallocate(ioj)
       deallocate(ioi)
 
