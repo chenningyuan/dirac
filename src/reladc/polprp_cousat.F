@@ -1252,10 +1252,10 @@
 !
       interface
 
-        SUBROUTINE mpi_vvvv_complete(ra1,i1)
+        SUBROUTINE mpi_master_vvvv_complete(ra1,i1)
           real*8, dimension(:)            :: ra1
           integer*8                       :: i1
-        END SUBROUTINE mpi_vvvv_complete
+        END SUBROUTINE mpi_master_vvvv_complete
 
       end interface
 !
@@ -1274,7 +1274,7 @@
         vvvvz(i8) = -9999.0d0
       enddo
       call rdvvvv(vvvvz)  ! master reads its own chunks
-      call mpi_vvvv_complete(vvvvz,n8)  !.... and completes the stream.
+      call mpi_master_vvvv_complete(vvvvz,n8)  !.... and completes the stream.
       write(*,*) 'VVVV check...'
       do i8=1,n8
         if(vvvvz(i8).eq. -9999.0d0)

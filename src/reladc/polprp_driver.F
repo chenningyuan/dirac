@@ -522,6 +522,7 @@ C
 #include  "../relccsd/complex.inc"
 #include  "../relccsd/param.inc"     !LTR/LFA are defined here (true, false)
 #include  "../relccsd/ccpar.inc"
+#include "polprp_servercodes.h"
 !
 !---------------Local variables---------------------------------
 !
@@ -665,6 +666,11 @@ C
           real*8, dimension(:)  :: ra1
         END SUBROUTINE
 
+        SUBROUTINE PRECONTRACT_NEW(i1,i2,ra1)
+          integer               :: i1,i2
+          real*8, dimension(:)  :: ra1
+        END SUBROUTINE
+
       end interface
 !
 !---------------Execution ---------------------------------
@@ -774,21 +780,45 @@ C
 !|      this part is executed by all nodes
 !|
 
-        INTBUF = 200*1024   !buffer size for matrix R/W buffers
+        INTBUF = 10*1024   !buffer size for matrix R/W buffers
 !|
 !|_________________________________________________
 
 
 #if defined (VAR_MPI)
       if(MYPROC.EQ.MASTER) then 
-#endif
 ! ______________ PRECONTRACTION of the VVVV and the VVOO integrals
 ! |
 ! |   In case of parallel execution we have to collect the VVVV
 ! |   integrals from the nodes. Otherwise all are on one node.
 ! |   Files will be written to 'VVVVXVVOO'
 
-        CALL PRECONTRACT(iobase,iw,eps)
+!
+!**** debug new slave test server
+!
+        write(iw,*) 'Master indicates start.'
+        call interface_mpi_bcast(SERVER_HELLO,1,MASTER,
+     &                           global_communicator)
+!
+!**** end debug new slave test server
+!
+#endif
+!
+!  precontract is executed by master only if its a parallel run
+!
+!       CALL PRECONTRACT(iobase,iw,eps)
+        CALL PRECONTRACT_NEW(iobase,iw,eps)
+
+        write(*,*) 'Precontraction finished.'
+#if defined (VAR_MPI)
+!
+! in case of parallel we release the nodes
+!
+!       write(iw,*) 'Master indicates done.'
+!       call interface_mpi_bcast(SERVER_DONE,1,MASTER,
+!    &                           global_communicator)
+!       return
+#endif
 
 ! ______________ SYMMETRY LOOP FOR COUPLING + SAT BLOCK___________
 ! |
@@ -796,6 +826,8 @@ C
 ! |   only master loops through the irreps and the slaves provide 
 ! |   helper routines.
 ! |
+
+        CALL PST('Entering MASTER symmetry loop+')
 
         DO IRPLOOP = 1,NREP
 
@@ -813,19 +845,15 @@ C
             CYCLE
           endif
 
-! print current run info
+          write(*,*)
+          write(*,*) '**) Starting the run for symmetry',desrep
+          write(*,*)
 
-          CALL PST('Starting calculation of Coupling and SAT block+')
-!         WRITE(IW,'(A,I4,X,A4)') 'Curr. symmetry:',desrep,repna(desrep)
-!         WRITE(IW,'(A,A)') 'Used main matrix file name: ',namematfil
-!         WRITE(IW,'(A,I14)') 'Current I/O buffer size: ',INTBUF
-!         WRITE(IW,'(A,I14)') 'Real/complex word: ',rcw
-!         WRITE(IW,*)
 
 ! generate configuration file for this symmetry
 
-!         WRITE(IW,*) 'Configuration data written to ',namecnffil
           CALL WCONDAT_X(iobase,namecnffil,irecl,desrep,ireccnt)
+!         WRITE(IW,*) 'Configuration data written to ',namecnffil
 !         WRITE(IW,*) 'Record length in configuration file:',IRECL
 !         WRITE(IW,*) 'Number of records (=matrix dimension):',ireccnt
 
@@ -837,15 +865,15 @@ C
 !
 !  send the slave a start signal only in case if there *is* something to do
 !
-          signal = 1  !start code.
-          write(iw,*) 'Master indicates start.'
-          call interface_mpi_bcast(signal,1,MASTER,
-     &                             global_communicator)
 
           open(unit=iobase,file=namematfil, access='SEQUENTIAL',
      &         form='UNFORMATTED',status='NEW')
           n2 = jvovo(nrep+1)
+          write(*,*)
+          write(*,*) '**) Entering parallel driver for'
           if(carith) then
+            write(*,*) '**) complex coupling and satellite block.'
+            write(*,*)
             call mpi_bxcs_c(daibj,
      &                      n2,
      &                      eps,
@@ -858,6 +886,8 @@ C
      &                      iobase,
      &                      iw)
           else
+            write(*,*) '**) real coupling and satellite block.'
+            write(*,*)
             call mpi_bxcs_r(daibj,
      &                      n2,
      &                      eps,
@@ -869,6 +899,7 @@ C
      &                      polprp_writethr,
      &                      iobase,
      &                      iw)
+            write(*,*) '**) returned from real coupling and sat block.'
           endif
           close(iobase)  !after distribution matrix will be deleted.
 
@@ -886,13 +917,19 @@ C
      &     FORM='UNFORMATTED',STATUS='NEW')
         serialindicator = -1
         Write(iobase) serialindicator
+        write(*,*)
+        write(*,*) '**) Entering serial driver for'
         IF(CARITH) THEN
+          write(*,*) '**) complex coupling and satellite block.'
+          write(*,*)
           CALL BUILD_X_COUSAT_C(DAIBJ,EPS,DESREP,LENCOUPLBL,
      &                          INTBUF,NBUFS,polprp_doextended,
      &                          polprp_writethr,iobase)
           CALL XDIAG_INI_C(iobase,iobase+1,
      &                     INTBUF,NBUFS,lencouplbl + MVO(desrep))
         ELSE
+          write(*,*) '**) real coupling and satellite block.'
+          write(*,*)
           CALL BUILD_X_COUSAT_R(DAIBJ,EPS,DESREP,LENCOUPLBL,
      &                          INTBUF,NBUFS,polprp_doextended,
      &                          polprp_writethr,iobase)
@@ -919,9 +956,9 @@ C
 #if defined (VAR_MPI)
 ! Main ADC matrix built in this symmetry. We synchronize all nodes
 
-          call interface_mpi_BARRIER(global_communicator)
-          write(iw,*) 'Master node synchronized after',
-     &               ' matrix construction.'
+          write(iw,*)
+          write(iw,*) '**** MASTER: distributing ADC matrix.'
+          write(iw,*)
 
 ! slaves have knowledge only of the variables 'iobase', 'iw' and 'namematfil'
 ! all other relevant variables for matrix distribution have to be bcast.
@@ -943,9 +980,9 @@ C
      &               ' matrix distribution.'
 
 ! Master calls Davidson diagonalizer
+! Att: for the moment no full diagonalizers are called in parallel!
 
           if(carith) then
-            call fulldia_c3(iobase,namematfil,intbuf,ladc)
             call mpi_davidson_master_c(iw,
      &                                 iobase,
      &                                 desrep,
@@ -956,7 +993,6 @@ C
      &                                 ladc,
      &                                 MVO(desrep))
           else
-            call fulldia_r3(iobase,namematfil,intbuf,ladc,desrep)
             call mpi_davidson_master_r(iw,
      &                                 iobase,
      &                                 desrep,
@@ -1055,22 +1091,34 @@ C
 !   |
 #if defined (VAR_MPI)
       else
+! _______________________________________________________
+!|
+!|      debug: test new slave server
+!|
+        call mpi_slave_server()
+        write(*,*) 'Node',myproc,' returns to main program'
+        return
+!|
+!|      debug end.
+!|_______________________________________________________
 
-        write(*,*) 'Node ',myproc,' is waiting for master finalizing',
-     &               ' PHPH block.'
 
         Do while(.true.)    ! Circulating in the helper loop.
                             ! Slave gets a start signal and a finalizing signal.
 
+          write(*,*) ' **'
+          write(*,*) ' ** Node ',myproc,' is entering service loop **'
+          write(*,*) ' **'
+
           call interface_mpi_bcast(signal,1,MASTER,
      &                             global_communicator)
           if(signal.eq.-1) then
-            write(iw,*) 'Node',MYPROC,' received termination signal.'
+            write(*,*) 'Node',MYPROC,' received termination signal.'
             exit  !Leave do loop
           else if (signal.eq.1) then
-            write(iw,*) 'Node',MYPROC,' received start sig. ADC matrix.'
+            write(*,*) 'Node',MYPROC,' received start sig. ADC matrix.'
           else if (signal.eq.2) then
-            write(iw,*) 'Node',MYPROC,' received start sig. PRECONTR.'
+            write(*,*) 'Node',MYPROC,' received start sig. PRECONTR.'
           else
             call quit('Illegal signal!')
           endif
@@ -1082,17 +1130,19 @@ C
 !
           if(signal.eq.2) then
             call mpi_int_supplier(iw)
-            cycle
+             write(*,*) 'Node',MYPROC,' returned from first SUPPLY.'
+!           cycle
           endif
 !
 !  call the integral completion routine for the slaves
 !  serves real and complex case.
 !
-          call mpi_int_supplier(iw)
+!         call mpi_int_supplier(iw)
 
 ! Main ADC matrix built in this symmetry. We synchronize all nodes...
 ! ... and prepare for matrix distribution.
 
+          write(*,*) 'Node',MYPROC,' entering BARRIER...'
           call interface_mpi_BARRIER(global_communicator)
           write(*,*) 'Node',MYPROC,' synchronized after',
      &               ' matrix construction.'

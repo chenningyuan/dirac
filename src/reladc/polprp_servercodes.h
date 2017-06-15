@@ -1,0 +1,7 @@
+#define SERVER_HELLO  01
+#define SERVER_VOVV   20
+#define SERVER_VVVV   30
+#define SERVER_MATM   35
+#define SERVER_DONE   40
+
+#define MSGN          555

@@ -1,391 +1,5 @@
 #if defined (VAR_MPI)
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE mpi_bxcs_r(PHPH_BLOCK,
-     &                      dimphph,
-     &                      EPS,
-     &                      DESREP,
-     &                      LENCOUPLBL,
-     &                      INTBUF,
-     &                      NBUFS,
-     &                      DOXEXT,
-     &                      WTHR,
-     &                      IOCH,
-     &                      IW)
-!
-!     IMPLICIT INTEGER (A-Z)
-      IMPLICIT NONE
-!
-!---------------Description--------------------------------------------
-!
-!    ************** executed by MASTER **************
-!
-!  Computes *real* 2H2P/HP and SAT block of the exc. ADC Matrix
-!  In the corresponding symmetry DESREP.
-!
-!---------------Calling variables--------------------------------------
-!
-      real*8, dimension(:)             :: PHPH_BLOCK
-      integer                          :: dimphph
-      real*8, dimension(*)             :: EPS
-      integer                          :: DESREP
-      integer                          :: LENCOUPLBL
-      integer                          :: INTBUF
-      integer                          :: NBUFS
-      logical                          :: DOXEXT
-      real*8                           :: WTHR
-      integer                          :: IOCH
-      integer                          :: IW
-!
-!---------------Common Blocks--------------------------------------
-!
-#include  "../relccsd/symm.inc"
-#include  "../relccsd/ccpar.inc"
-!
-!---------------Local variables--------------------------------------
-!
-      INTEGER              :: n1,irep,i,j,k
-      INTEGER*8            :: i8,n8  !needed for the ivovvt variable!
-      INTEGER              :: jrep,brep,jfun,bfun
-      INTEGER              :: ialloc,mjcol,nmvod,istart
-
-      INTEGER              :: mxno,mxnv,ioff
-      INTEGER, dimension (:,:,:), allocatable  :: oolt
-      INTEGER, dimension (:,:,:), allocatable  :: vvlt
-
-      REAL*8, dimension(:), allocatable :: vooo1
-      REAL*8, dimension(:), allocatable :: vovv1
-      REAL*8, dimension(:), allocatable :: bufcol,bufcolex
-!
-!  variables for writing out ADC matrix
-!
-      REAL*8,  dimension(:), allocatable :: wbufr
-      INTEGER, dimension(:), allocatable :: wbufi, wbufj
-      INTEGER              :: IBFP
-      CHARACTER*6          :: NAMEX = 'ADCXPM'
-!
-!---------------Interface area --------------------------------------
-!
-      interface
-
-        SUBROUTINE mpi_vovv_complete(ra1,i8)
-          REAL*8, dimension(:)             :: ra1
-          INTEGER*8                        :: i8
-        END SUBROUTINE
-
-        SUBROUTINE mpi_vvvv_complete(ra1,i8)
-          REAL*8, dimension(:)             :: ra1
-          INTEGER*8                        :: i8
-        END SUBROUTINE
-
-        INTEGER FUNCTION  XCOLDET(i1)
-          INTEGER                         :: i1
-        END FUNCTION XCOLDET
-
-        SUBROUTINE XCOLMAKE(i1,i2,ra1,
-     &                      i3,i4,i5,i6,
-     &                      i7,i8,
-     &                      ra2,ra3,ia1,ia2)
-          INTEGER                         :: i1,i2
-          REAL*8, dimension(:)            :: ra1
-          INTEGER                         :: i3,i4,i5,i6
-          INTEGER                         :: i7,i8
-          REAL*8, dimension(:)            :: ra2,ra3
-          INTEGER, dimension(:,:,:)       :: ia1,ia2
-        END SUBROUTINE XCOLMAKE
-
-        SUBROUTINE XCOLWRIT(i1,r1,ra1,ra2,ia1,ia2,i2,i3,i4,i5,i6)
-          INTEGER                         :: i1
-          REAL*8                          :: r1
-          REAL*8, dimension(:)            :: ra1,ra2
-          INTEGER, dimension(:)           :: ia1,ia2
-          INTEGER                         :: i2,i3,i4,i5,i6
-        END SUBROUTINE XCOLWRIT
-
-        SUBROUTINE XSATMAKE(i1,i2,i3,i4,i5,r1,
-     &              ra1,ia1,ia2,ra2,ia3,ia4,
-     &              l1)
-          INTEGER                   :: i1,i2,i3,i4,i5
-          REAL*8                    :: r1
-          REAL*8, dimension(:)      :: ra1
-          INTEGER, dimension(:)     :: ia1,ia2
-          REAL*8, dimension(*)      :: ra2
-          INTEGER,dimension(:,:,:)  :: ia3,ia4
-          LOGICAL                   :: l1
-        END SUBROUTINE XSATMAKE
-
-        SUBROUTINE XCOLFLSH(i1,i2,i3,i4,ra1,ia1,ia2)
-          INTEGER                         :: i1,i2,i3,i4
-          REAL*8, dimension(:)            :: ra1
-          INTEGER, dimension(:)           :: ia1,ia2
-        END SUBROUTINE XCOLFLSH
-
-      end interface
-!
-!---------------Executable code--------------------------------------
-!
-
-!****** debug
-!     write(iw,*) 'dimphph',dimphph
-!     write(iw,*) 'DESREP',desrep
-!     write(iw,*) 'LENCOUPLBL',LENCOUPLBL
-!     write(iw,*) 'INTBUF',intbuf
-!     write(iw,*) 'NBUFS',nbufs
-!     write(iw,*) 'DOXEXT',doxext
-!     write(iw,*) 'WTHR',wthr
-!     write(iw,*) 'IOCH',ioch
-!     write(iw,*) 'IW',iw
-!     return
-
-!IDIST(6,10,32)
-
-!     do k=1,nrep
-!       write(iw,*) 'Symmetry:',k,' ivovvt,nvo,nvvt:',
-!    &      ivovvt(k),nvo(k),nvvt(k)
-!     enddo
-
-!     do k=2,2
-!     write(iw,*)
-!     write(iw,*) '  checking the idist table (type:',k,')'
-!     write(iw,*)
-!     do i=1,6
-!     do j=1,nrep
-!       write(iw,*) 'off:',i,' type:',k,' symm:',j,idist(i,k,j)
-!     enddo
-!     enddo
-!     enddo
-!****** debug end
-
-!________________________________________________________
-!|     allocate ADC MATRIX WRITE BUFFERS and counters
-!|
-!|
-      allocate(wbufr(intbuf),stat=ialloc)
-      if(ialloc.ne.0) STOP 'data buffer 1 could not be allocated.'
-      allocate(wbufi(intbuf),stat=ialloc)
-      if(ialloc.ne.0) STOP 'data buffer 2 could not be allocated.'
-      allocate(wbufj(intbuf),stat=ialloc)
-      if(ialloc.ne.0) STOP 'data buffer 3 could not be allocated.'
-      wbufr=0.0d0; wbufi = 0; wbufj = 0
-      IBFP = 0   ! pointer to actual buffer level
-      NBUFS = 0  ! counter for full buffers
-!|
-!|
-!|_______________________________________________________
-!________________________________________________________
-!|     create OOT and VVT lookup tables
-!|     tables are small, computation is too clumsy
-!|
-      mxno = 0; mxnv = 0
-      do irep=1,nrep  
-        if(no(irep).gt.mxno) mxno=no(irep)
-        if(nv(irep).gt.mxnv) mxnv=nv(irep)
-      enddo
-      allocate(oolt(mxno,mxno,nrep),stat=ialloc)
-      if(ialloc.ne.0) STOP 'alloc error #a in BUILD_X_COUSAT_R'
-      allocate(vvlt(mxnv,mxnv,nrep),stat=ialloc)
-      if(ialloc.ne.0) STOP 'alloc error #b in BUILD_X_COUSAT_R'
-      OOLT = 0
-      DO IREP=1,NREP
-        IOFF=1
-        DO J=1,NO(IREP)
-          DO I=J+1,NO(IREP)
-            OOLT(I,J,IREP)=IOFF
-            IOFF=IOFF+1
-          ENDDO
-        ENDDO
-      ENDDO
-      VVLT = 0
-      DO IREP=1,NREP
-        IOFF=1
-        DO J=1,NV(IREP)
-          DO I=J+1,NV(IREP)
-            VVLT(I,J,IREP)=IOFF
-            IOFF=IOFF+1
-          ENDDO
-        ENDDO
-      ENDDO
-!|
-!|
-!|_______________________________________________________
-!
-!
-!  Attention*** Some arrays that have to store *huge* numbers 
-!  Are defined as Integer*8 in symm.inc ! The generic sorters
-!  operate with unspecified INTEGER declarations. Transferring such
-!  an array as an argument to the SRT_xxx results in an erroneous
-!  behaviour of the sorting routine.
-!
-! fetch <VO||OO> integrals needed for coupling block 
-! 
-      n1=ivooot(nrep+1)
-      allocate(vooo1(n1),stat=ialloc)
-      if(ialloc.ne.0) STOP 'alloc error vooo1!'
-      call getvooo(vooo1)
-!
-! fetch <VO||VV> integrals needed for coupling block 
-! It is important to note that the VOVV and VVVV integrals
-! are distributed over the nodes. Unfortunately we need them
-! in a heavy-duty random access manner for the construction of
-! the ADC matrix. Therefore we complete the integrals on one
-! node and avoid communicating a huge load of individual numbers
-! and index computations. (less computer time, more memory needs)
-!
-! convention: integers denote the *number* of integrals irrespective of
-! their actual length (real/complex)
-! 
-      n8=ivovvt(nrep+1)
-!     write(iw,*) '++master. Size of vovv:',n8
-      allocate(vovv1(n8),stat=ialloc)
-      if(ialloc.ne.0) then
-        call quit('allocation error of vovv1 array')
-      endif   
-      do i8=1,n8
-        vovv1(i8) = -9999.0d0
-      enddo
-!
-! rdvovv now only reads integral portions on master node !
-! and we need to complete the remaining integrals.
-!
-      call rdvovv (vovv1)
-      call mpi_vovv_complete(vovv1,n8)
-      write(iw,*)
-      write(iw,*)  ' vovv check... :'
-      do i8=1,n8
-        if(vovv1(i8).eq.-9999.0d0)
-     &  call quit('Internal error: illegal gaps in the vovv stream.')
-      enddo
-      write(iw,*)  '....complete.'
-!
-! length of main block:
-!
-      NMVOD = MVO(desrep)
-!
-! determine actual length of coupling block
-! and allocate column buffer
-!
-      lencouplbl =  XCOLDET(desrep)
-      WRITE(IW,*) '   *)) Current symmetry:          ',desrep
-      WRITE(IW,*) '   *)) Block length of main block:',NMVOD
-      WRITE(IW,*) '   *)) Block length of coupling block:',lencouplbl
-      WRITE(IW,'(A,I8,A)') '    *)) Matrix dimension: [',
-     &        lencouplbl + NMVOD,' ]**2'
-
-      ALLOCATE(BUFCOL(lencouplbl),stat=ialloc)
-      if(ialloc.ne.0) STOP 'alloc error #3 in BUILD_X_COUSAT_R'
-      ALLOCATE(BUFCOLEX(NMVOD + lencouplbl),stat=ialloc)
-      if(ialloc.ne.0) STOP 'alloc error #4 in BUILD_X_COUSAT_R'
-!
-!  according to the SRT16 convention, 
-!  the columns also have DESREP symmetry. 
-!  We loop over the columns in the same manner and construct
-!  the columns of the 2H2P/HP coupling block. 
-!  after construction we write out the column together with the
-!  components of the main block.
-!
-      write(iw,*) '----------- after xcoldet ----------------------'
-      mjcol = 1
-      do jrep = 1,nrep
-
-        brep = multb(desrep+nrep,jrep,2)
-
-        do jfun = 1,NO(jrep)
-        do bfun = 1,NV(brep)
-
-          bufcol   = 0.0d0
-          bufcolex = 0.0d0
-
-          CALL XCOLMAKE(desrep,lencouplbl,bufcol,
-     &                  jrep,brep,jfun,bfun,
-     &                  mxno,mxnv,
-     &                  vooo1,vovv1,oolt,vvlt)
-!
-! combine main block column with coupling block column
-! istart is the start address for picking the right main block
-! data to corresponding symetry DESREP.
-!
-          istart = JVOVO(desrep) + (mjcol-1)*nmvod
-          bufcolex(1:nmvod)=phph_block(istart+1:istart+nmvod)
-          bufcolex(nmvod+1:nmvod+lencouplbl)=
-     &        bufcol(1:lencouplbl)
-
-!***** debug
-!         do k=1,nmvod+lencouplbl
-!           write(*,*) 'coupling out:',k,mjcol,bufcolex(k)
-!         enddo
-!***** debug end
-
-!
-! write out full column.
-!
-          CALL XCOLWRIT(IOCH,wthr,bufcolex,wbufr,wbufi,wbufj,
-     &                  IBFP,NBUFS,LENCOUPLBL+NMVOD,mjcol,INTBUF)
-          mjcol = mjcol + 1
-        enddo
-        enddo
-      enddo
-
-      IF((mjcol-1).ne.mvo(desrep))
-     &  stop 'error 3 in build_x_cousat_r!'
-!
-!  free space no longer in use.
-!
-      deallocate(vovv1)
-      deallocate(vooo1)
-      deallocate(bufcolex)
-      deallocate(bufcol)
-!________________________________________________________
-!|
-!|
-!| from here the main and coupling block are written to
-!| the external file. The SAT entries are also written to
-!| the same file.
-!| ATT**  we can release, and should release *all*
-!| memory which we do not need anymore.
-!| Due to the large size of the matrices we can not afford
-!| a four-indexed lookup table as it was used in the two-particle
-!| propagator!
-!|
-!|_______________________________________________________
-
-
-      CALL XSATMAKE(IOCH,IBFP,NBUFS,INTBUF,DESREP,WTHR,
-     &              WBUFR,WBUFI,WBUFJ,EPS,OOLT,VVLT,
-     &              DOXEXT)
-      write(iw,*) '----------- after xsatmake ----------------------'
-!
-!  the SAT block in DESREP is now also on the file
-!  and we can return in this symmetry and diagonalize...
-!
-!
-!  flush buffer
-!
-      IF(IBFP.gt.0) THEN
-        CALL XCOLFLSH(IOCH,IBFP,NBUFS,INTBUF,WBUFR,WBUFI,WBUFJ)
-      ENDIF
-      write(iw,*) '----------- after xcolflsh ----------------------'
-!
-!  release integral collection helpers
-!
-      call mpi_release_helpers()
-
-      write(*,*) '--------------------------------------------'
-      write(*,*) '---- Coupling and Satellite blocks finished.'
-      write(*,*) '---- Number of required buffers:',NBUFS
-      write(*,*) '--------------------------------------------'
-
-!
-! release all intermediate storage
-!
-      deallocate(vvlt)
-      deallocate(oolt)
-      deallocate(wbufj)
-      deallocate(wbufi)
-      deallocate(wbufr)
-      write(iw,*) '----------- end ----------------------'
-
-      RETURN
-      END
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE mpi_bxcs_c(PHPH_BLOCK,
      &                      dimphph,
      &                      EPS,
@@ -857,7 +471,6 @@
 !
       use interface_to_mpi
 !
-!     IMPLICIT INTEGER(A-Z)
       IMPLICIT NONE
 !
 !---------------Description--------------------------------------------
@@ -893,8 +506,13 @@
       REAL*8,allocatable,dimension(:)   :: buf
       INTEGER                           :: tasktype
 
-      write(*,*) ' ---- entering mpi_vvv_complete ----'
+      write(*,*) ' ---- entering mpi_vvvv_complete ----'
+      write(*,*) ' ---- idi:',idi
+      write(*,*) ' ---- lbound of vvvv():',lbound(vvvv)
+      write(*,*) ' ---- ubound of vvvv():',ubound(vvvv)
 !
+      vvvv = 0.0d0
+
 !  indicate that we want to treat vvvv integrals
 !
       tasktype = VVVVTYPE
@@ -906,9 +524,12 @@
 !  in the length/offset numbers the RCW is already accounted for!
 !
         do node=MASTER+1,NMPROC-1
+          write(*,*) 'mpi call 1'
           call interface_mpi_send(irep,1,node,MSGN,global_communicator)
+          write(*,*) 'mpi call 2'
           call interface_mpi_recv(intlength,1,node,MSGN,
      &                            global_communicator)
+          write(*,*) 'mpi call 3'
           call interface_mpi_recv(localoffset,1,node,MSGN,
      &                            global_communicator)
           write(*,*) '   ++ obtained length/offset',intlength,
@@ -918,11 +539,16 @@
 !  only allocate if nonzero length was transferred
 !
           allocate(buf(intlength))
+          write(*,*) 'mpi call 4'
+          write(*,*) 'intlength:',intlength
           call interface_mpi_recv(buf,intlength,node,MSGN,
      &                            global_communicator)
+          write(*,*) 'intlength after call:',intlength
+          write(*,*) 'localoffset after call:',localoffset
           do i=1,intlength
             vvvv(localoffset + i) = buf(i)
           enddo
+          write(*,*) 'mark after filling local buffer'
           deallocate(buf)
         enddo  !node
       enddo  ! irep
@@ -967,7 +593,7 @@
       call interface_mpi_BCAST(tasktype,1,MASTER,
      &                  global_communicator)
 
-      write(*,*) ' % % % % % leaving mpi_release_helpers % % % % % % % '
+      write(*,*) ' % % % % % leaving mpi_release_helpers % % % % %'
       return
       end
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1046,16 +672,13 @@
 !___________________
 !|
 !|
-!|
         call interface_mpi_recv(irp,1,MASTER,MSGN,
      &                          global_communicator)
         if(irp.lt.0) exit  !leave do loop
 !
 !   check if there are any integrals at all in this irep
 !   If no ints are available, do not fiddle around with buffer.
-!
 !                   **** Attention ****
-!
 !   there is the convention in the DIRAC integral fetchers that real and complex
 !   integrals are fetched by the same routine but in case of complex with a buffer
 !   size twice as large as in the real case. This allows for a reduction of routines
@@ -1089,7 +712,6 @@
           
           efflen = NVO(irp) * NINT
         endif
-
 !
 !  effective length and offset is always sent even if it is zero.
 !  In the sent effective length the type of integrals is accounted for.
@@ -1261,6 +883,10 @@
         write(iw,*) '+++++++ WARNING. Matrix too small for'
         write(iw,*) '+++++++ parallel run!. Please do a serial'
         write(iw,*) '+++++++ calculation.'
+        write(iw,*) '+++++++ BUFSIZE:',intbuf
+        write(iw,*) '+++++++ NBUFS:',nbufs
+        write(iw,*) '+++++++ NPROCS:',NMPROC
+        write(iw,*) '+++++++ LADC:',ladc,ladc*ladc
         call quit('+++ Aborting. Matrix too small for parcal.')
       endif
 !

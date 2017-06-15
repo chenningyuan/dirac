@@ -812,15 +812,20 @@ C
           real*8, dimension(:)         :: ra1,ra2
         END SUBROUTINE
 
+        SUBROUTINE mpi_vvvv_complete(ra1,i1)
+          real*8, dimension(:)            :: ra1
+          integer*8                       :: i1
+        END SUBROUTINE mpi_vvvv_complete
+
       end interface
 !
 ! execution
 !
       if(carith) then
-        CALL PST('Performing (complex) precontraction+')
+        write(iw,*) ' **) Performing (complex) precontraction'
         if(rcw.ne.2) call quit ('intenal error in PRECONTRACT')
       else
-        CALL PST('Performing (real) precontraction+')
+        write(iw,*) ' **) Performing (real) precontraction'
         if(rcw.ne.1) call quit ('intenal error in PRECONTRACT')
       endif
       A0=(0.0D00,0.0D00)
@@ -897,6 +902,142 @@ C
       deallocate(vvvvz)
 
       write(*,*) 'PRECONTRACTION finished. Buffers freed'
+      write(*,*)
+      write(*,*)
+
+      return
+      end
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE PRECONTRACT_NEW(iounit,iw,eps)
+!
+!
+!  this routine is called by master only. If we have a parallel run
+!  then the nodes provide integrals.
+!  The routine calculates <ab||cd> * <cd||ji>/(ec + ed - ej - ei)
+!  contracted over cd.
+!
+
+#if defined (VAR_MPI)
+      use interface_to_mpi
+#endif
+
+      implicit none
+
+      integer                  :: iounit         ! I/O file handle for writing to file
+      integer                  :: iw             ! file handle for writing to screen
+      real*8, dimension(:)     :: eps
+!
+! local variables
+!
+      real*8, allocatable, dimension(:)        :: vvvvz
+      real*8, allocatable, dimension(:)        :: vvoo1
+      real*8, allocatable, dimension(:)        :: vvoop
+      integer                                  :: n1,ixx
+      integer                                  :: ialloc
+      integer                                  :: signal
+      integer*8                                :: n8,i8
+      COMPLEX*16                               :: A0,A1
+      character*9                              :: preconfn='VVVVXVVOO'
+      logical                                  :: isthere
+
+
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/complex.inc"
+#include  "../relccsd/ccpar.inc"
+!
+!   function interfaces
+!
+      interface
+
+        SUBROUTINE denomvvoo_pp(ra1,ra2)
+          real*8, dimension(:)         :: ra1,ra2
+        END SUBROUTINE
+
+        SUBROUTINE mpi_master_vvvv_complete(ra1,i1)
+          real*8, dimension(:)            :: ra1
+          integer*8                       :: i1
+        END SUBROUTINE mpi_master_vvvv_complete
+
+      end interface
+!
+! execution
+!
+      if(carith.and.rcw.eq.2) then
+        write(iw,*) ' **) Performing (complex) precontraction'
+      else if(.not.carith.and.rcw.eq.1) then
+        write(iw,*) ' **) Performing (real) precontraction'
+      else
+        write(iw,*) ' Control error in precontract_new!'
+        call quit('error')
+      endif
+      A0=(0.0D00,0.0D00)
+      A1=(1.0D00,0.0D00)
+
+! allocate buffers and read in integrals
+
+      n1 = ivvoott(nrep+1)
+      allocate(vvoo1(n1*rcw))
+      allocate(vvoop(n1*rcw))
+
+      n8 = ivvvvtt(nrep+1)
+      allocate(vvvvz(n8*rcw),stat=ialloc)
+      if(ialloc.ne.0) then
+        STOP 'VVVV buffer could not be allocated.'
+      else
+        write(*,*) 'Master allocated',n8,' words for VVVV buffer.'
+      endif
+!____________________________________________________________________
+!|
+!|  fetching integrals in serial/parallel mode
+!|
+#if defined (VAR_MPI)
+      do i8=1,n8*rcw
+        vvvvz(i8) = -4096.0d0
+      enddo
+      call rdvvvv(vvvvz)  ! master reads its own chunks
+      call mpi_master_vvvv_complete(vvvvz,n8*rcw)  !fetch integrals from slaves
+      do i8=1,n8
+        if(vvvvz(i8).eq. -4096.0d0)
+     &    call quit('Internal error: gap in the VVVV stream!')
+      enddo
+      write(*,*) 'Master: <VV||VV> stream ready.'
+#else
+      call rdvvvv(vvvvz)  ! master reads complete stream in serial mode
+#endif
+!|
+!|  
+!|___________________________________________________________________
+
+      call getvvoo(vvoo1)
+      call denomvvoo_pp(eps,vvoo1)
+!
+!  do the contraction over all symmetries
+!
+      CALL CNTRCT('N','N',NVVT,NOOT,NVVT,A1,vvvvz,vvoo1,A0,vvoop,NREP)
+      write(*,*) 'Master: after CNTRCT.'
+!
+!  check if file already present. If yes, delete it.
+!
+      Inquire(file=preconfn,exist=isthere)
+      If(isthere) then
+         write(*,*) 'Deleting previous precontraction data.'
+         open(unit=iounit, file=preconfn, status='old')
+         close(iounit, status='delete')
+      Endif
+!
+!  open corresponding file and write out contracted integrals.
+!
+      open(unit=iounit,file=preconfn, access='SEQUENTIAL',
+     &     form='UNFORMATTED',status='NEW')
+      write(iounit) (vvoop(ixx), ixx=1,n1*rcw)
+      close(iounit)
+      write(*,*) 'File ',preconfn,' generated.'
+!
+!  free buffers immediately 
+!
+      deallocate(vvoop)
+      deallocate(vvoo1)
+      deallocate(vvvvz)
 
       return
       end
