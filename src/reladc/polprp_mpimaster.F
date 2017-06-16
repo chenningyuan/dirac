@@ -16,6 +16,10 @@
 !  the same real array is used for real and complex integrals but is twice
 !  the size in case of complex arithmetic.
 !
+!  Attention! the transferred vovv array *must not* be set to zero because
+!  it is incrementally filled. On entry it already contains partial contributions from
+!  the master node!
+!
 !---------------Calling variables--------------------------------------
 !
       real*8, dimension(:)     :: vvvv
@@ -36,8 +40,6 @@
 
       write(*,*) ' ---- Master: entering mpi_master_vvvv_complete.'
       write(*,*) ' ---- Master: number of ireps:',nrep
-!
-      vvvv = 0.0d0
 
       do irep=1,nrep    ! after each irep, slaves wait for a new bcast!
 
@@ -53,8 +55,8 @@
      &                            global_communicator)
           call interface_mpi_recv(localoffset,1,node,MSGN,
      &                            global_communicator)
-          write(*,*) '   ++ master obtained intlength/offset',intlength,
-     &               localoffset,' from',node
+!         write(*,*) '   ++ master obtained irep/intlength/offset',
+!    &        irep,intlength,localoffset,' from',node
           if(intlength.eq.0) cycle
 !
 !  only allocate if nonzero length was transferred
@@ -66,8 +68,9 @@
             vvvv(localoffset + i) = buf(i)
           enddo
           deallocate(buf)
-          write(*,*) ' ---- Master: finished fetching from node',node
+!         write(*,*) ' ---- Master: finished fetching from node',node
         enddo  !node
+!       write(*,*) ' ---- Master: finished fetching from irep',irep
       enddo  ! irep
 
       return
@@ -88,6 +91,10 @@
 !  Attention: Also here we follow the CCSETI integral convention that
 !  the same real array is used for real and complex integrals but is twice
 !  the size in case of complex arithmetic.
+
+!  Attention! the transferred vovv array *must not* be set to zero because
+!  it is incrementally filled. On entry it already contains partial contributions from
+!  the master node!
 !
 !---------------Calling variables--------------------------------------
 !
@@ -110,8 +117,6 @@
       write(*,*) ' ---- Master: entering mpi_master_vovv_complete.'
       write(*,*) ' ---- Master: number of ireps:',nrep
 
-      vovv = 0.0d0
-
       do irep=1,nrep
         call interface_mpi_BCAST(SERVER_VOVV,1,MASTER,
      &                           global_communicator)
@@ -125,8 +130,8 @@
      &                            global_communicator)
           call interface_mpi_recv(localoffset,1,node,MSGN,
      &                            global_communicator)
-          write(*,*) '   ++ master obtained length/offs',intlength,
-     &                localoffset,' from',node,irep
+!         write(*,*) '   ++ master obtained length/offs',intlength,
+!    &                localoffset,' from',node,irep
           if(intlength.eq.0) cycle
 !
 ! only allocate if intlength greater than zero.
@@ -138,7 +143,7 @@
             vovv(localoffset + i) = buf(i)
           enddo
           deallocate(buf)
-          write(*,*) ' ---- Master: finished fetching from node',node
+!         write(*,*) ' ---- Master: finished fetching from node',node
         enddo  !node
       enddo  ! irep
 !
@@ -476,7 +481,6 @@
       deallocate(wbufj)
       deallocate(wbufi)
       deallocate(wbufr)
-      write(iw,*) '----------- end ----------------------'
 
       RETURN
       END
@@ -507,6 +511,7 @@
 
 #include "../relccsd/ccpar.inc"
 #include "../relccsd/complex.inc"
+#include "polprp_servercodes.h"
 
 !-------------- local variables
 
@@ -520,7 +525,6 @@
       integer, allocatable, dimension (:)     :: ioi,ioj
       integer                                 :: icol,irow
       integer                                 :: curslave,nbufscur
-      integer                                 :: mess_dist=47
       real*8, allocatable, dimension (:)      :: adcdiagonal
       complex*16,allocatable, dimension (:)   :: cadcdiagonal
 
@@ -550,12 +554,12 @@
         write(iw,*) '+++++++ WARNING. Matrix too small for'
         write(iw,*) '+++++++ parallel run!. Please do a serial'
         write(iw,*) '+++++++ calculation.'
-        write(iw,*) '+++++++ BUFSIZE:',intbuf
-        write(iw,*) '+++++++ NBUFS:',nbufs
-        write(iw,*) '+++++++ NPROCS:',NMPROC
-        write(iw,*) '+++++++ LADC:',ladc,ladc*ladc
         call quit('+++ Aborting. Matrix too small for parcal.')
       endif
+      write(iw,*) '+++++++ BUFSIZE:',intbuf
+      write(iw,*) '+++++++ NBUFS:',nbufs
+      write(iw,*) '+++++++ NPROCS:',NMPROC
+      write(iw,*) '+++++++ LADC:',ladc,ladc*ladc
 !
 !  allocate read/write buffers (master and slaves)
 !
@@ -676,12 +680,14 @@
 
 ! now spread slave chunks
 
+      call interface_mpi_BCAST(SERVER_MATDIS,1,MASTER,
+     &                         global_communicator)
       do curslave=MASTER+2,NMPROC
 
         write(iw,*) 'Master sends',nbufs_per_node(curslave),
      &     ' buffers to slave',curslave-1
         call interface_mpi_send(nbufs_per_node(curslave),1,curslave-1,
-     &                          mess_dist,global_communicator)
+     &                          MSGN,global_communicator)
 
         do i=1,nbufs_per_node(curslave)
 
@@ -719,19 +725,19 @@
             bufr = real(cbuf)
             bufi = aimag(cbuf)
             call interface_mpi_send(bufr,intbuf,curslave-1,
-     &                              mess_dist,global_communicator)
+     &                              MSGN,global_communicator)
             call interface_mpi_send(bufi,intbuf,curslave-1,
-     &                              mess_dist,global_communicator)
+     &                              MSGN,global_communicator)
           else
             call interface_mpi_send(buf,intbuf,curslave-1,
-     &                              mess_dist,global_communicator)
+     &                              MSGN,global_communicator)
           endif
           call interface_mpi_send(ioi,intbuf,curslave-1,
-     &                            mess_dist,global_communicator)
+     &                            MSGN,global_communicator)
           call interface_mpi_send(ioj,intbuf,curslave-1,
-     &                            mess_dist,global_communicator)
+     &                            MSGN,global_communicator)
           call interface_mpi_send(nact,1,curslave-1,
-     &                            mess_dist,global_communicator)
+     &                            MSGN,global_communicator)
 !         write(iw,*) ' +++ buffer',i,nact,' sent to slave',curslave-1
 
         enddo  ! loop over nbufs_per_node

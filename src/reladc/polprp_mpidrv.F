@@ -352,10 +352,6 @@
         CALL XCOLFLSH_C(IOCH,IBFP,NBUFS,INTBUF,WBUFR,WBUFI,WBUFJ)
       ENDIF
       write(iw,*) '----------- after xcolflsh ----------------------'
-!
-!  release integral collection helpers
-!
-      call mpi_release_helpers()
 
       write(*,*) '--------------------------------------------'
       write(*,*) '---- Coupling and Satellite blocks finished.'
@@ -371,7 +367,6 @@
       deallocate(wbufi)
       deallocate(wbufr)
       deallocate(phph_blc)
-      write(iw,*) '----------- end ----------------------'
 
       RETURN
       END
@@ -563,41 +558,7 @@
       return
       end
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE mpi_release_helpers()
-!
-      use interface_to_mpi
-!
-!     IMPLICIT INTEGER(A-Z)
-      IMPLICIT NONE
-!
-!---------------Description--------------------------------------------
-!
-!  routine for sending finalization signal to helpers
-!
-!---------------Calling variables--------------------------------------
-!
-!
-!---------------Common Blocks--------------------------------------
-!
-#include  "../relccsd/ccpar.inc"
-!
-!---------------Local variables--------------------------------------
-!
-      INTEGER                           :: tasktype
-#define VOVVTYPE  20
-#define VVVVTYPE  30
-#define DONETYPE  40
-#define MSGN      55
-
-      tasktype = DONETYPE
-      call interface_mpi_BCAST(tasktype,1,MASTER,
-     &                  global_communicator)
-
-      write(*,*) ' % % % % % leaving mpi_release_helpers % % % % %'
-      return
-      end
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE mpi_int_supplier(iw)
+      SUBROUTINE Xmpi_int_supplier(iw)
 !
       use interface_to_mpi
 !

@@ -557,18 +557,6 @@ C
           integer                  :: i1,i2
         END SUBROUTINE
 
-        SUBROUTINE i_tester()
-        END SUBROUTINE
-
-        SUBROUTINE ph_tester()
-        END SUBROUTINE
-
-        SUBROUTINE pphh_tester()
-        END SUBROUTINE
-
-        SUBROUTINE pphh_pphh_tester()
-        END SUBROUTINE
-
         SUBROUTINE property_handler(i1,i2,l1,i3,ia1)
           integer                  :: i1,i2,i3
           logical                  :: l1
@@ -661,11 +649,6 @@ C
         END SUBROUTINE
 
         SUBROUTINE build_tramo(i1,i2,ra1)
-          integer               :: i1,i2
-          real*8, dimension(:)  :: ra1
-        END SUBROUTINE
-
-        SUBROUTINE PRECONTRACT(i1,i2,ra1)
           integer               :: i1,i2
           real*8, dimension(:)  :: ra1
         END SUBROUTINE
@@ -857,9 +840,9 @@ C
 ! generate configuration file for this symmetry
 
           CALL WCONDAT_X(iobase,namecnffil,irecl,desrep,ireccnt)
-!         WRITE(IW,*) 'Configuration data written to ',namecnffil
-!         WRITE(IW,*) 'Record length in configuration file:',IRECL
-!         WRITE(IW,*) 'Number of records (=matrix dimension):',ireccnt
+          WRITE(IW,*) 'Configuration data written to ',namecnffil
+          WRITE(IW,*) 'Record length in configuration file:',IRECL
+          WRITE(IW,*) 'Number of records (=matrix dimension):',ireccnt
 
 ! generate coupling and sat block in this symmetry
 ! together with the helpers simultaneously started.
@@ -905,7 +888,16 @@ C
      &                      iw)
             write(*,*) '**) returned from real coupling and sat block.'
           endif
-          close(iobase)  !after distribution matrix will be deleted.
+
+          close(iobase)
+
+          write(*,*) '**) Master enters real full diagonalizer.'
+          if(carith) then
+            stop
+          else
+            ladc = ireccnt
+            call fulldia_r3(iobase,namematfil,intbuf,ladc,desrep)
+          endif
 
 !                           lencouplbl and nbufs are set in the
 !                           mpi_bxcs_r routine!
@@ -965,28 +957,33 @@ C
           write(iw,*)
           call mpi_master_mat_dist(iobase,namematfil,irploop,
      &                              intbuf,nbufs,ladc,iw)
-          return
+!       write(iw,*) 'Master indicates done.'
+!       call interface_mpi_bcast(SERVER_DONE,1,MASTER,
+!    &                           global_communicator)
+!         return
 
 ! slaves have knowledge only of the variables 'iobase', 'iw' and 'namematfil'
 ! all other relevant variables for matrix distribution have to be bcast.
 
-          call interface_mpi_bcast(irploop,1,MASTER,global_communicator)
-          call interface_mpi_bcast(intbuf,1,MASTER,global_communicator)
-          call interface_mpi_bcast(nbufs,1,MASTER,global_communicator)
-          call interface_mpi_bcast(ladc,1,MASTER,global_communicator)
+!         call interface_mpi_bcast(irploop,1,MASTER,global_communicator)
+!         call interface_mpi_bcast(intbuf,1,MASTER,global_communicator)
+!         call interface_mpi_bcast(nbufs,1,MASTER,global_communicator)
+!         call interface_mpi_bcast(ladc,1,MASTER,global_communicator)
 
 !  enter matrix distribution routine (master entry)
 
-          call mpi_xmat_dist(iobase,namematfil,irploop,
-     &                     intbuf,nbufs,ladc,iw)
+!         call mpi_xmat_dist(iobase,namematfil,irploop,
+!    &                     intbuf,nbufs,ladc,iw)
 
 ! We synchronize all nodes after matrix distribution
 
-          call interface_mpi_BARRIER(global_communicator)
-          write(iw,*) 'Master node synchronized after',
-     &               ' matrix distribution.'
+!         call interface_mpi_BARRIER(global_communicator)
+!         write(iw,*) 'Master node synchronized after',
+!    &               ' matrix distribution.'
 
-! Master calls Davidson diagonalizer
+! Master calls Davidson diagonalizer driver routine.
+!  Slaves perform partial matrix/vector multiplication.
+
 ! Att: for the moment no full diagonalizers are called in parallel!
 
           if(carith) then
@@ -1078,10 +1075,13 @@ C
         ENDDO   !IRPLOOP
 
 #if defined (VAR_MPI)
-        signal = -1  !code for slave loop termination
-        write(iw,*) 'Master indicates loop break.'
-        call interface_mpi_bcast(signal,1,MASTER,
+        write(iw,*) 'Master indicates finalization.'
+        call interface_mpi_bcast(SERVER_DONE,1,MASTER,
      &                           global_communicator)
+!       signal = -1  !code for slave loop termination
+!       write(iw,*) 'Master indicates loop break.'
+!       call interface_mpi_bcast(signal,1,MASTER,
+!    &                           global_communicator)
 #endif
         deallocate(daibj)
 ! |
@@ -1111,13 +1111,16 @@ C
       else
 ! _______________________________________________________
 !|
-!|      debug: test new slave server
+!|       new slave server
+!|       new slave server
+!|       new slave server
+!|       new slave server
+!|       new slave server
 !|
         call mpi_slave_server(iobase,intbuf)
         write(*,*) 'Node',myproc,' returns to main program'
         return
 !|
-!|      debug end.
 !|_______________________________________________________
 
 

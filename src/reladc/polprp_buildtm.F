@@ -116,6 +116,8 @@
       integer                                :: numstacks
       real*8                                 :: x1,x2,x3,x4,xcntrl
       integer                                :: nabixj,naxbij,nabxij
+      
+      Integer*8                              :: n8
 !
 !---------------interface region --------------------------------------
 !
@@ -185,6 +187,12 @@
           complex*16, dimension(:)      :: ca1,ca2,ca3
           complex*16, dimension(:)      :: ca4,ca5,ca6
         END SUBROUTINE
+
+        SUBROUTINE mpi_master_vovv_complete(ra1,i1)
+          real*8, dimension(:)            :: ra1
+          integer*8                       :: i1
+        END SUBROUTINE mpi_master_vovv_complete
+
 
       end interface
 !
@@ -686,6 +694,7 @@
 !------  F_ai(2,1), a DOO contribution
 !--------------------------------------
 !
+!  In parallel case we need to collect all VOVV integrals!
 !  only temporarily allocate space for the VOVV integrals.
 !
       iat = 0
@@ -701,7 +710,14 @@
 !  divide A_ak by (eps_a  -  eps_k), and multiply by -1.0
 !  and contract A_ak with D_ki(x,y,z) (special loop!)
 !
-      CALL RDVOVV(vovv1); vovv2 = 0.0d0
+#if defined (VAR_MPI)
+      call rdvovv(vovv1)
+      n8 = ivovvt(nrep+1)
+      call mpi_master_vovv_complete(vovv1,n8*rcw)  !fetch integrals from slaves
+#else
+      CALL RDVOVV(vovv1); 
+#endif
+      vovv2 = 0.0d0
       CALL SRT1S2 (NREP,MULTB,LFA,NVO,NV,NO,NVVT,LVOVVT,LLOVVT,
      &             vovv1,vovv2)
       CALL SRT22 (NREP,MULTB,LFA,NVVT,NO,NO,NOVVT,LOOVVT,LLOVVT,
@@ -893,7 +909,14 @@
 !
       CALL SRT22 (NREP,MULTB,LFA,NVVT,NO,NO,NOVVT,LOOVVT,LLOVVT,
      &            vvoo1,vvoo3)
-      CALL RDVOVV(vovv1); vovv2 = 0.0d0
+#if defined (VAR_MPI)
+      call rdvovv(vovv1)
+      n8 = ivovvt(nrep+1)
+      call mpi_master_vovv_complete(vovv1,n8*rcw)  !fetch integrals from slaves
+#else
+      CALL RDVOVV(vovv1)
+#endif
+      vovv2 = 0.0d0
       CALL SRT1S2 (NREP,MULTB,LFA,NVO,NV,NO,NVVT,LVOVVT,LLOVVT,
      &             vovv1,vovv2)
       CALL CNTRCT ('N','N',NV,NO,NOVVT,A1,vovv2,vvoo3,A0,aak,NREP)

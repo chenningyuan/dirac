@@ -50,9 +50,8 @@
 !
 #if defined (VAR_MPI)
 
+#include  "polprp_servercodes.h"
 #include  "../relccsd/ccpar.inc"
-#define FINISH -1
-#define MATMUL 2
 
 #endif
 !
@@ -232,14 +231,6 @@
         nroots = nsiz
       Endif
 
-#if defined (VAR_MPI)
-
-! distributing ladc,intbuf to the davidson_helpers
-
-      call interface_mpi_bcast(ladc,  1,MASTER,global_communicator)
-      call interface_mpi_bcast(intbuf,1,MASTER,global_communicator)
-#endif
-
 !
 !  Read start vectors from main block diagonalization
 !
@@ -319,7 +310,9 @@
 
 #if defined (VAR_MPI)
       do jvec=1,locdim
-        call interface_mpi_bcast(MATMUL,1,MASTER,global_communicator)
+        call interface_mpi_bcast(SERVER_MATMUL,1,MASTER,
+     &                           global_communicator)
+        call interface_mpi_BCAST(ladc,1,MASTER,global_communicator)
         xi(:) = bold(:,jvec)
         call interface_mpi_bcast(xi,ladc,MASTER,global_communicator)
 ! master must do some work, too:
@@ -498,7 +491,9 @@
 !
 #if defined (VAR_MPI)
 
-          call interface_mpi_bcast(MATMUL,1,MASTER,global_communicator)
+          call interface_mpi_bcast(SERVER_MATMUL,1,MASTER,
+     &                             global_communicator)
+          call interface_mpi_bcast(ladc,1,MASTER,global_communicator)
 !         bold(:,locdim+k) needs to be in xi and is still there (see above)
           call interface_mpi_bcast(xi,ladc,MASTER,global_communicator)
 !  master's work (slaves work simultaneously)
@@ -780,16 +775,6 @@
       Write(*,*) '++++++++++++'
       Write(*,*) '++++++ time in davidson: ',ttime
       Write(*,*) '++++++++++++'
-
-#if defined (VAR_MPI)
-
-!
-!  tell the helpers to leave the waiting loop
-!
-      call interface_mpi_bcast(FINISH,1,MASTER,global_communicator)
-
-#endif
-
 !
 !_____ Perform  eigenvector comparison if a full diag took place
 !|
@@ -840,9 +825,8 @@
 !
 #if defined (VAR_MPI)
 
+#include  "polprp_servercodes.h"
 #include  "../relccsd/ccpar.inc"
-#define FINISH -1
-#define MATMUL 2
 
 #endif
 !
@@ -1077,15 +1061,6 @@
         Write(*,*) 'Adapting requested roots',nroots,' to',nsiz
         nroots = nsiz
       Endif
-
-#if defined (VAR_MPI)
-
-! distributing ladc,intbuf to the davidson_helpers
-
-      call interface_mpi_bcast(ladc,  1,MASTER,global_communicator)
-      call interface_mpi_bcast(intbuf,1,MASTER,global_communicator)
-#endif
-
 !
 !  Read (complex) start vectors from main block diagonalization
 !
@@ -1163,7 +1138,9 @@
 !|
 #if defined (VAR_MPI)
       do jvec=1,locdim
-        call interface_mpi_bcast(MATMUL,1,MASTER,global_communicator)
+        call interface_mpi_bcast(SERVER_MATMUL,1,MASTER,
+     &                           global_communicator)
+        call interface_mpi_BCAST(ladc,1,MASTER,global_communicator)
         xi(:) = bold(:,jvec)
 
         mpiaux = real(xi)  ! communicate real part of xi to array mpiaux
@@ -1199,8 +1176,7 @@
 #else
       do jvec=1,locdim
         call xmvmul_sp_c(iobase,intbuf,ladc,bold(:,jvec),xi)
-!       write(*,*) 'Norm of xi/boldvec:',rzvecnorm(ladc,xi),
-!    &             rzvecnorm(ladc,bold(:,jvec))
+
         do i=jvec,locdim
           aijbase(i,jvec) = pp_zdotc(ladc,bold(:,i),xi(:))
           aijbase(jvec,i) = dconjg(aijbase(i,jvec))
@@ -1348,7 +1324,9 @@
 !
 
 #if defined (VAR_MPI)
-          call interface_mpi_bcast(MATMUL,1,MASTER,global_communicator)
+          call interface_mpi_bcast(SERVER_MATMUL,1,MASTER,
+     &                             global_communicator)
+          call interface_mpi_bcast(ladc,1,MASTER,global_communicator)
 !         xi(:) = bold(:,locdim+k)  !xi still contains this (see above)
           mpiaux = real(xi)  ! communicate real part of xi to array mpiaux
           call interface_mpi_bcast(mpiaux,ladc,MASTER,
@@ -1660,14 +1638,6 @@
       Write(*,*) '++++++++++++'
       Write(*,*) '++++++ time in davidson: ',ttime
       Write(*,*) '++++++++++++'
-
-#if defined (VAR_MPI)
-!
-!  tell the helpers to leave the waiting loop
-!
-      call interface_mpi_bcast(FINISH,1,MASTER,global_communicator)
-
-#endif
 
       RETURN
 
@@ -2782,7 +2752,7 @@ c  .. read elements
 !
 
 
-      IF(LADC.gt.5000) THEN                                
+      IF(LADC.gt.2000) THEN                                
         write(*,*) 'Full diagonalization skipped'
         return                                             
       ENDIF

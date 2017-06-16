@@ -25,13 +25,17 @@
 !
       Integer                           :: iobase,intbuf
 
+      Logical                           :: deb = .false.
+
       Integer                           :: taskid = 0   ! defines the server's task
       REAL*8,allocatable,dimension(:)   :: buf
       logical                           :: done
       INTEGER                           :: irp,istart,nint,mint
       INTEGER                           :: ialloc,locoff,istat
       INTEGER                           :: efflen
-   
+!
+! variables for matrix distribution
+!
       Integer                               :: i,ixx,jdummy
       REAL*8,allocatable,dimension(:)       :: bufr,bufi
       Complex*16,allocatable,dimension(:)   :: cbuf
@@ -39,33 +43,44 @@
       Integer                               :: nbufscur,nact
       Character*10                          :: locfn
       Character*6                           :: nmbase='PP_ELE'
+!
+! variables for matrix multiplication
+!
+      Complex*16,allocatable,dimension(:)   :: cveco,cvecn
+      REAL*8,allocatable,dimension(:)       :: veco,vecn
+      REAL*8,allocatable,dimension(:)       :: vecr,veci
+      REAL*8,allocatable,dimension(:)       :: dumarr
+      Integer                               :: ladc,k
+      Integer                               :: irow,icol
+      Integer                               :: nbufsloc
+      Complex*16                            :: a
+      Real*8                                :: b
+
+      complex*16, parameter  :: czero=(0.0d0,0.0d0)
+      real*8, parameter      :: rzero=0.0d0
+
      
 !
 !---------------Interface area --------------------------------------
 !
       interface
 
-        SUBROUTINE mpi_vovv_complete(ra1,i8)
-          REAL*8, dimension(:)             :: ra1
-          INTEGER*8                        :: i8
-        END SUBROUTINE
-
-        SUBROUTINE mpi_vvvv_complete(ra1,i8)
-          REAL*8, dimension(:)             :: ra1
-          INTEGER*8                        :: i8
-        END SUBROUTINE
-
       end interface
 !
 !---------------Executable code--------------------------------------
 !
+!----------------------------------------------------------------
+!        determine if user wants to have traced output
+!----------------------------------------------------------------
+
+      If(SERVER_TRACE.ne.0) deb = .true.
 
 !----------------------------------------------------------------
       DO       ! ---------- INFINITE SERVER MAIN LOOP -----------
 !----------------------------------------------------------------
 
         call interface_mpi_BCAST(taskid,1,MASTER,global_communicator)
-        write(*,*) 'Node',MYPROC,' has received taskid',taskid
+        if(deb) write(*,*) 'Node',MYPROC,' has received taskid',taskid
 
         select case(taskid)
 
@@ -96,7 +111,7 @@
 
           case(SERVER_VVVV)
           call interface_mpi_recv(irp,1,MASTER,MSGN,global_communicator)
-          write(*,*) 'Node',MYPROC,' obtained irp:',irp
+          if(deb) write(*,*) 'Node',MYPROC,' obtained irp:',irp
           if(irp.lt.1.or.irp.gt.nrep) then
             write(*,*)  '**** Warning on node',MYPROC,':'
             write(*,*)  '**** irep number out of bounds,'
@@ -112,14 +127,12 @@
      &          call quit('Allocation problem in mpi_slave_server!')
             buf = 0.0d0
 
-            locoff = 0
-            efflen = 0  !efflen will be recalculated depending on batch length
             istart = 0
 
             MINT = NVVT(IRP)  !maximum number of possible batches
             CALL GETVVVV (irp,istart,nint,done,buf,mint)
 
-            write(*,*) 'Recovered ',nint,' batches on',MYPROC
+            if(deb) write(*,*) 'Recovered ',nint,' batches on',MYPROC
 !
 ! NINT contains the actual number of batches on *this* node.
 !
@@ -127,6 +140,8 @@
                write(*,*) 'irrep',irp,' unfinished on node',myproc
                call quit('Error reading VVVV ints in mpi_slave_server.')
             endif
+            if(deb) write(*,*) '-----> max length:',efflen,
+     &            ' actual len:',NVVT(irp) * NINT
 
             efflen = NVVT(irp) * NINT
           endif
@@ -151,7 +166,7 @@
 
           case(SERVER_VOVV)
           call interface_mpi_recv(irp,1,MASTER,MSGN,global_communicator)
-          write(*,*) 'Node',MYPROC,' obtained irp:',irp
+          if(deb) write(*,*) 'Node',MYPROC,' obtained irp:',irp
           if(irp.lt.1.or.irp.gt.nrep) then
             write(*,*)  '**** Warning on node',MYPROC,':'
             write(*,*)  '**** irep number out of bounds,'
@@ -167,14 +182,12 @@
      &        call quit('Allocation problem in mpi_slave_server!')
             buf = 0.0d0
 
-            locoff = 0
-            efflen = 0  !efflen will be recalculated depending on batch length
             istart = 0
 
             MINT = NVVT(IRP)  !maximum number of possible batches
             CALL GETVOVV (irp,istart,nint,done,buf,mint)
 
-            write(*,*) 'Recovered ',nint,' batches on',MYPROC
+            if(deb) write(*,*) 'Recovered ',nint,' batches on',MYPROC
 !
 ! NINT contains the actual number of batches on *this* node.
 !
@@ -215,9 +228,10 @@
           ELSEIF (MYPROC .LT. 1000) THEN
             WRITE (locfn,'(A6,A1,I3)') nmbase,'.',MYPROC
            ELSE
-          CALL QUIT("NMPROC.GT.1000! EXTEND mpi_xmat_dist routine!")
+          CALL QUIT("NMPROC.GT.1000! EXTEND mpi_slave_server routine!")
           ENDIF
-          write(*,*) 'Node',myproc,' opened ',locfn,' for writing.'
+          if(deb) write(*,*) 'Node',myproc,' opened ',
+     &              locfn,' for writing.'
           open(unit=iobase,file=locfn, access='SEQUENTIAL',
      &         form='UNFORMATTED',status='new')
 !
@@ -239,7 +253,7 @@
 !
           call interface_mpi_recv(nbufscur,1,MASTER,MSGN,
      &                           global_communicator)
-          write(*,*) 'Slave',MYPROC,' will receive',nbufscur,
+          if(deb) write(*,*) 'Slave',MYPROC,' will receive',nbufscur,
      &        ' batches from master.'
           write(iobase,ERR=889) nbufscur
           do i=1,nbufscur
@@ -275,7 +289,7 @@
           enddo
           flush(iobase)
           close(iobase)
-          write(*,*) 'Node',myproc,' has closed local ADC file.'
+          if(deb) write(*,*) 'Node',myproc,' has closed local ADC file.'
 !
 ! deallocating local buffers
 !
@@ -286,6 +300,146 @@
           endif
           deallocate(ioi,ioj)
 
+
+!----------------------------------------------------------------
+!-----  TASK: perform partial matrix multiplication (r+c)
+!----------------------------------------------------------------
+
+
+          case(SERVER_MATMUL)
+          call interface_mpi_BCAST(ladc,1,MASTER,global_communicator)
+          if(deb) write(*,*) 'Node',myproc,' has obtained dim',ladc
+!
+! open local matrix file
+!
+          if (myproc .lt. 10) then
+             write (locfn,'(a6,a1,i1)') nmbase,'.',MYPROC
+          elseif (myproc .lt. 100) then
+             write (locfn,'(a6,a1,i2)') nmbase,'.',MYPROC
+          elseif (myproc .lt. 1000) then
+             write (locfn,'(a6,a1,i3)') nmbase,'.',MYPROC
+          else
+             call quit("nmproc.gt.1000!")
+          ENDIF
+
+          open(unit=iobase,file=locfn, access='SEQUENTIAL',
+     &         form='UNFORMATTED',status='old')
+          if(deb) write(*,*) 'Local file ',locfn,' opened for reading.'
+!
+! complex case
+!
+          if(carith) then
+
+            allocate(cveco(ladc))
+            allocate(cvecn(ladc))
+            allocate(vecr(ladc))
+            allocate(veci(ladc))
+            allocate(dumarr(ladc))
+            allocate(ioi(intbuf))
+            allocate(ioj(intbuf))
+            allocate(cbuf(intbuf))
+            cveco = czero
+            cvecn = czero
+            vecr = rzero
+            veci = rzero
+            dumarr = rzero
+            ioi = 0
+            ioj = 0
+            cbuf = czero
+
+            call interface_mpi_BCAST(vecr,ladc,MASTER,
+     &                               global_communicator)
+            call interface_mpi_BCAST(veci,ladc,MASTER,
+     &                               global_communicator)
+            do i=1,ladc
+              cveco(i) = dcmplx(vecr(i),veci(i))
+            enddo
+
+            cvecn = czero
+            rewind(iobase)
+            read(iobase) nbufsloc
+            do i = 1,nbufsloc
+              read(iobase,err=889) (cbuf(ixx),ixx=1,intbuf),
+     &                             (ioi(ixx),ixx=1,intbuf),
+     &                             (ioj(ixx),ixx=1,intbuf),
+     &                             nact,jdummy
+              do k = 1, nact
+                irow = ioi(k)
+                icol = ioj(k)
+                a    = cbuf(k)
+                cvecn(irow) = cvecn(irow) + cveco(icol) * a
+                if(irow.ne.icol) cvecn(icol) = cvecn(icol) +
+     &                           cveco(irow)*conjg(a)
+              enddo
+            enddo
+            vecr = real(cvecn)
+            veci = aimag(cvecn)
+            call interface_mpi_reduce(vecr,dumarr,ladc,
+     &                 op_MPI_SUM,MASTER,global_communicator)
+            call interface_mpi_reduce(veci,dumarr,ladc,
+     &                 op_MPI_SUM,MASTER,global_communicator)
+
+            deallocate(cveco)
+            deallocate(cvecn)
+            deallocate(vecr)
+            deallocate(veci)
+            deallocate(dumarr)
+            deallocate(ioi)
+            deallocate(ioj)
+            deallocate(cbuf)
+
+          else
+!
+! real case
+!
+            allocate(veco(ladc))
+            allocate(vecn(ladc))
+            allocate(dumarr(ladc))
+            allocate(ioi(intbuf))
+            allocate(ioj(intbuf))
+            allocate(buf(intbuf))
+
+            veco = 0.0d0
+            vecn = 0.0d0
+            dumarr = 0.0d0
+            ioi = 0
+            ioj = 0
+            buf = 0.0d0
+
+            call interface_mpi_BCAST(veco,ladc,MASTER,
+     &                               global_communicator)
+            vecn = 0.0d0
+            rewind(iobase)
+            read(iobase) nbufsloc
+            do i = 1,nbufsloc
+              read(iobase,err=889) (buf(ixx),ixx=1,intbuf),
+     &                             (ioi(ixx),ixx=1,intbuf),
+     &                             (ioj(ixx),ixx=1,intbuf),
+     &                             nact,jdummy
+              do k = 1, nact
+                irow = ioi(k)
+                icol = ioj(k)
+                b    = buf(k)
+                vecn(irow) = vecn(irow) + veco(icol) * b
+                if(irow.ne.icol) vecn(icol) = vecn(icol) + veco(irow)*b
+              enddo
+            enddo
+            call interface_mpi_reduce(vecn,dumarr,ladc,
+     &                 op_MPI_SUM,MASTER,global_communicator)
+
+
+            deallocate(veco)
+            deallocate(vecn)
+            deallocate(dumarr)
+            deallocate(ioi)
+            deallocate(ioj)
+            deallocate(buf)
+
+          endif
+          close(iobase)
+          if(deb) write(*,*) 'Node',MYPROC,' closed local file ',locfn
+
+
         end select
 
 !----------------------------------------------------------------
@@ -295,9 +449,9 @@
 
       return
 !
-!  error exit for write routine.
+!  error exit for read/write routine.
 !
- 889  call quit('problem on node with writing partial ADC matrix')
+ 889  call quit('problem on node with reading/writing partial matrix')
       END SUBROUTINE  ! mpi_slave_server
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #endif

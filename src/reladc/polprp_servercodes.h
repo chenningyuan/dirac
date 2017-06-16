@@ -6,3 +6,5 @@
 #define SERVER_DONE     40
 
 #define MSGN            555
+
+#define SERVER_TRACE    0
