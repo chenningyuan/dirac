@@ -8,10 +8,10 @@ and merely tests whether input parser does not choke on gives basis set. No refe
 
 When the typical string sequence is found in the basis set file, the proton number of a given element is extracted 
 and used for the generic mol file. Afterward, the runtest library (https://runtest.readthedocs.io) based python script
-:download:`test <../../../../../test/basis_input_scripted/test>)`
+:download:`test <../../../test/basis_input_scripted/test>`
 launches Dirac run(s) with
-:download:`input <../../../../../test/basis_input_scripted/input_test_basis.inp>)`, 
-:download:`mol <../../../../../test/basis_input_scripted/element.mol>)` files and 
+:download:`input <../../../test/basis_input_scripted/input_test_basis.inp>`, 
+:download:`mol <../../../test/basis_input_scripted/element.mol>` files and 
 with further pam parameters containing selected basis set name and element's proton number as strings for replacements.
 
 Default run
@@ -34,7 +34,7 @@ Run whole selected basis sets only:
 ::
 
  export BSFILE="basis_ecp/ECPDS28SDFSF"
- /test -b <BUILDIR> 
+ ./test -b <BUILDIR> 
 
 Run only selected elements in selected basis sets:
 
@@ -42,25 +42,25 @@ Run only selected elements in selected basis sets:
 
  export BSFILE="basis_ecp/ECPDS28SDFSF"
  export ZELEM="30 35"
- /test -b <BUILDIR> 
+ ./test -b <BUILDIR> 
 
 Run all elements in two randomly selected basis sets:
 
 ::
 
  export RANDOM_BSF_Z="2"
- /test -b <BUILDIR> 
+ ./test -b <BUILDIR> 
 
 Run three elements in three randomly selected basis sets:
 
 ::
 
  export RANDOM_BSF_Z="3 3"
- /test -b <BUILDIR> 
+ ./test -b <BUILDIR> 
 
 
 Nonworking cases
-----------------
+~~~~~~~~~~~~~~~~
 
 Because of many basis set files (more than 300), one can not expect all working perfectly.
 
