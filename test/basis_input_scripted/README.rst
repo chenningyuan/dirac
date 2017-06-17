@@ -8,19 +8,18 @@ and merely tests whether input parser does not choke on gives basis set. No refe
 
 When the typical string sequence is found in the basis set file, the proton number of a given element is extracted 
 and used for the generic mol file. Afterward, the runtest library (https://runtest.readthedocs.io) based python script
-*test* 
-:download:`(download) <test>)`
+:download:`test <../../../../../test/basis_input_scripted/test>)`
 launches Dirac run(s) with
-:download:`input <input_test_basis.inp>)`, 
-:download:`mol <element.mol>)` files and 
-with parameters containing selected basis set name and element's proton number.
+:download:`input <../../../../../test/basis_input_scripted/input_test_basis.inp>)`, 
+:download:`mol <../../../../../test/basis_input_scripted/element.mol>)` files and 
+with further pam parameters containing selected basis set name and element's proton number as strings for replacements.
 
 Default run
 ~~~~~~~~~~~
 
 Test's default run checks all basis set files in given day once per month. 
 This is achieved by running through basis set directories where each file with several basis sets is read. 
-The total number of individual runs is more than 5000, so it take more than 20 minutes.
+The total number of individual runs is more than 5000, and it takes more than 20 minutes.
 
 On other days it makes empty run. 
 
