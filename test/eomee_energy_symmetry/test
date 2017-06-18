@@ -32,12 +32,6 @@ test.run(['eom_ee_dc_inv_ccs_nooverlap_ci.inp'],  ['f2_ci.mol'], f, args='--mw=1
 
 test.run(['eom_ee_dc_noinv_c1.inp'], ['f2_c1.mol'], f, args='--mw=110')
 
-f = Filter()
-f.add(from_string = ' Energy eigenvalues in atomic units',
-      to_re       = 'Relative real eigenvalues in other units;',
-      abs_tolerance = 1.0e-5)
-test.run(['eom_ea_dc_inv_full_nooverlap.inp'],     ['f2_d2h.mol'], f, args='--mw=110')
-
 # these two tests come in last since there appears to be a issue with crash when printing
 # the results that is not very reproducible, if the second irreps is asked for
 f = Filter()
