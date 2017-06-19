@@ -719,11 +719,6 @@ C
 !  IREPSPI(relative spinor number,irep,1=occ,2=virt) and
 !  analyze the spinor sequence in a 2h2p column of the ADC matrix for all
 !  possible final state symmetries (can be a long output)
-!
-!  this routine is called via an interface. That means that we have access
-!  to array information, esp. boundaries. We call XCOLANA in a non-interfaced
-!  way to allow for dimension redefinition in the called routine.
-!
 !___________________________________________________________________
 !|
 !| check availability of transformed dipole moment integrals
@@ -1078,12 +1073,9 @@ C
         write(iw,*) 'Master indicates finalization.'
         call interface_mpi_bcast(SERVER_DONE,1,MASTER,
      &                           global_communicator)
-!       signal = -1  !code for slave loop termination
-!       write(iw,*) 'Master indicates loop break.'
-!       call interface_mpi_bcast(signal,1,MASTER,
-!    &                           global_communicator)
 #endif
         deallocate(daibj)
+        call qstack_shutdown()
 ! |
 ! |
 ! |________________ END SYMMETRY LOOP (MASTER) _________________________
@@ -1111,101 +1103,24 @@ C
       else
 ! _______________________________________________________
 !|
-!|       new slave server
-!|       new slave server
-!|       new slave server
-!|       new slave server
-!|       new slave server
+!|
+!|  ********************************************************
+!|  *****  TASK SERVER FOR THE SLAVE NODES  ****************
+!|  ********************************************************
+!|
 !|
         call mpi_slave_server(iobase,intbuf)
         write(*,*) 'Node',myproc,' returns to main program'
         return
+
+      endif
+!|
+!|  ********************************************************
+!|  ******************* END OF TASK SERVER *****************
+!|  ********************************************************
 !|
 !|_______________________________________________________
 
-
-        Do while(.true.)    ! Circulating in the helper loop.
-                            ! Slave gets a start signal and a finalizing signal.
-
-          write(*,*) ' **'
-          write(*,*) ' ** Node ',myproc,' is entering service loop **'
-          write(*,*) ' **'
-
-          call interface_mpi_bcast(signal,1,MASTER,
-     &                             global_communicator)
-          if(signal.eq.-1) then
-            write(*,*) 'Node',MYPROC,' received termination signal.'
-            exit  !Leave do loop
-          else if (signal.eq.1) then
-            write(*,*) 'Node',MYPROC,' received start sig. ADC matrix.'
-          else if (signal.eq.2) then
-            write(*,*) 'Node',MYPROC,' received start sig. PRECONTR.'
-          else
-            call quit('Illegal signal!')
-          endif
-!
-!  check if precontraction is requested (only once per program execution!)
-!  In this case call the int_supplier because
-!  nothing else is needed for this task. Afterwards we have to reenter main cycle
-!  WITHOUT DOING ANYTHING ELSE for the individual tasks per IRREP. 
-!
-          if(signal.eq.2) then
-            call mpi_int_supplier(iw)
-             write(*,*) 'Node',MYPROC,' returned from first SUPPLY.'
-!           cycle
-          endif
-!
-!  call the integral completion routine for the slaves
-!  serves real and complex case.
-!
-!         call mpi_int_supplier(iw)
-
-! Main ADC matrix built in this symmetry. We synchronize all nodes...
-! ... and prepare for matrix distribution.
-
-          write(*,*) 'Node',MYPROC,' entering BARRIER...'
-          call interface_mpi_BARRIER(global_communicator)
-          write(*,*) 'Node',MYPROC,' synchronized after',
-     &               ' matrix construction.'
-
-! fetch unknown variables from master node
-
-          call interface_mpi_bcast(irploop,1,MASTER,global_communicator)
-          call interface_mpi_bcast(intbuf,1,MASTER,global_communicator)
-          call interface_mpi_bcast(nbufs,1,MASTER,global_communicator)
-          call interface_mpi_bcast(ladc,1,MASTER,global_communicator)
-
-! and enter matrix distribution routine (slave entry)
-
-          call mpi_xmat_dist(iobase,namematfil,irploop,
-     &                     intbuf,nbufs,ladc,iw)
-
-! We synchronize all nodes after matrix distribution
-
-          call interface_mpi_BARRIER(global_communicator)
-          write(iw,*) 'Node',MYPROC,' synchronized after',
-     &               ' matrix distribution.'
-
-! We enter the helper for Davidson diagonalisation
-! required variables are known to the slaves.
-
-          if(carith) then
-            write(iw,*) 'Node',MYPROC,' enters (complex) dav. helper.'
-            call mpi_davidson_helper_c(iw,namematfil,iobase)
-          else
-            write(iw,*) 'Node',MYPROC,' enters (real) dav. helper.'
-            call mpi_davidson_helper_r(iw,namematfil,iobase)
-          endif
-
-        Enddo  !end of infinite helper loop
-
-        write(iw,*) 'Node',MYPROC,' will return to main program' 
-
-      endif
-!   |
-!   |
-!   |   End of slave execution part
-!   |_______________________________________________________________
 
 #endif
 

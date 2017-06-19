@@ -1976,113 +1976,11 @@
       deallocate(evl)
       deallocate(xnr)
 
-!_________________________  coefficient analysis via stack
-!|
-!|
-!     write(*,*)
-!     write(*,*) '   All arrays deallocated, doing coefficient'
-!     write(*,*) '   analysis from stack.'
-!     write(*,*)
-
-!     allocate(rcoef(ladc))
-!     allocate(xcoef(ladc))
-!     allocate(ycoef(ladc))
-!     rcoef = 0.0d0
-!     xcoef = 0.0d0
-!     ycoef = 0.0d0
-
-!     do k=1,nroots-1
-!       iln = qstack_peekf(k,rcoef) 
-!       iln = qstack_peekf(k+1,xcoef) 
-!       do i=1,ladc
-!         if(dabs(rcoef(i)).lt.1.0E-10.or.
-!    &       dabs(xcoef(i)).lt.1.0E-10) then
-!            ycoef(i) = -9999999.999999999d0
-!         else
-!            ycoef(i) = dabs(rcoef(i)/xcoef(i))
-!         endif
-!       enddo
-!       write(*,*) 'relations for ',k,k+1
-!       do i=1,ladc
-!         write(*,*) i,ycoef(i)
-!       enddo
-!       write(*,*)
-!     enddo
-!     do k=1,nroots
-!       iln = qstack_drop(k)
-!     enddo
-!|
-!|________________________________________________________________
-
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !&&&&&&&&&&&  dump region &&&&&&&&&
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!     n2 = KVVOOT(nrep+1)
-!     if(qstack_push(10,n2,vvoo3).ne.n2) stop 'qse'
-!     CALL SRT1T3_NTS (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
-!    &                 vvoo1,vvoo3,1)
-!     write(*,*) 'Comparison:',qstack_compl(10,vvoo3)
-!*
-!
-!     write(*,*) 'Contracting in IREP',desrep
-!     write(*,*)
-!     write(*,*) '|KREP>,  |JREP>,   no(|krep>),   no(|jrep>)',
-!    &      '  nvvot(|krep>),  nvvot(<krep|),   LVVONO(jrep)'
-!     write(*,*)
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!
-!  debug:
-!  print out bosonic and fermionic irep sequences for current desrep
-
-!     write(*,*) '****************************'
-!     write(*,*) '** desrep:',desrep
-!     write(*,*) '****************************'
-!     write(*,*) 'fermionic         '
-!     write(*,*) 'gamma_i, gamma_j  '
-!     DO JREP = 1, NREP
-!       DO IREP = 1, NREP
-
-!         IJFREP = MULTB(IREP,JREP,2)
-!         if(ijfrep.eq.desrep) write(*,*) irep,jrep
-
-!       ENDDO
-!     ENDDO
-
-!     write(*,*) 'bosonic         '
-!     write(*,*) 'beta_i, beta_j  '
-!     DO JREP = 1, NREP
-!       DO IREP = 1, NREP
-
-
-!       ENDDO
-!     ENDDO
-!|_____________________________________________________________
-
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-
-! test forward antisymmetrization with totally symmetric stream
-! and original SRT_1T3 routine.
-!
-!     do i=1,ivvoott(nrep+1)
-!       vvoo1(i) = dble(i)
-!     enddo
-!     vvoo3 = 0.0d0
-!     CALL SRT1T3 (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
-!    &             vvoo1,vvoo3)
-!     xcntrl = 0.0d0
-!     do i=1,kvvoot(nrep+1)
-!       xcntrl = xcntrl + vvoo3(i)
-!       write(*,*) i,' xcntrl contrib:',vvoo3(i)
-!     enddo
-!     write(*,*) 'Forward antisymmetry for totally symm.:',xcntrl
-
-
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-
-
 !
 !     allocate(mmvvot(32,32))
 !     allocate(pvvot(nrep))
