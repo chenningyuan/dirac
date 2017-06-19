@@ -32,7 +32,6 @@ set(FREE_RELADC_FORTRAN_SOURCES
     polprp_driver.F
     polprp_helpers.F
     polprp_mainblk.F
-    polprp_mpidrv.F
     polprp_mpimaster.F
     polprp_mpiserver.F
     polprp_prpint.F

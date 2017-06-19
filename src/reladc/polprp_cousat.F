@@ -1238,6 +1238,7 @@
 !---------------Common Blocks--------------------------------------
 !
 #include  "../relccsd/symm.inc"
+#include  "../relccsd/complex.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -1245,8 +1246,9 @@
       INTEGER                              :: n1,ialloc
       INTEGER*8                            :: i8,n8
       REAL*8                               :: EA,EB,EI,EJ
-      REAL*8                               :: S
       INTEGER                              :: JDUMMY
+
+      real*8                               :: S
 !
 !---------------Interface area --------------------------------------
 !
@@ -1262,39 +1264,49 @@
 !---------------Start execution--------------------------------------
 !
       call pst('Constructing satellite part+')
+!______________________________________________________
+!|
+!|  we allocate these arrays only in extended mode.
+!|  VVVV, OOOO and VOVO integrals are not needed in strict mode.
+!|
 
-! allocate space and read in integrals
+!****************************
+      IF(DOX) THEN
+!****************************
 
-      n8 = ivvvvtt(nrep+1)
-      allocate(vvvvz(n8),stat=ialloc)
-      if(ialloc.ne.0) STOP 'VVVV buffer could not be allocated.'
+        n8 = ivvvvtt(nrep+1)
+       allocate(vvvvz(n8),stat=ialloc)
+       if(ialloc.ne.0) STOP 'VVVV buffer could not be allocated.'
 
 #if defined (VAR_MPI)
-      do i8=1,n8
-        vvvvz(i8) = -9999.0d0
-      enddo
-      call rdvvvv(vvvvz)  ! master reads its own chunks
-      call mpi_master_vvvv_complete(vvvvz,n8)  !.... and completes the stream.
-      write(*,*) 'VVVV check...'
-      do i8=1,n8
-        if(vvvvz(i8).eq. -9999.0d0)
-     &    call quit('Internal error: gap in the VVVV stream!')
-      enddo
-      write(*,*) '... complete.'
+       do i8=1,n8
+         vvvvz(i8) = -9999.0d0
+       enddo
+       call rdvvvv(vvvvz)  ! master reads its own chunks
+       call mpi_master_vvvv_complete(vvvvz,n8)  !.... and completes the stream.
+       write(*,*) 'VVVV check...'
+       do i8=1,n8
+         if(vvvvz(i8).eq. -9999.0d0)
+     &     call quit('Internal error: gap in the VVVV stream!')
+       enddo
+       write(*,*) '... complete.'
 #else
-      call rdvvvv(vvvvz)  ! master reads complete stream in serial mode
+       call rdvvvv(vvvvz)  ! master reads complete stream in serial mode
 #endif
 
-      n1 = ioooott(nrep+1)
-      allocate(ooooz(n1),stat=ialloc)
-      if(ialloc.ne.0) STOP 'OOOO buffer could not be allocated.'
+       n1 = ioooott(nrep+1)
+       allocate(ooooz(n1),stat=ialloc)
+       if(ialloc.ne.0) STOP 'OOOO buffer could not be allocated.'
 
-      n1 = ivovo(nrep+1)
-      allocate(vovoz(n1),stat=ialloc)
-      if(ialloc.ne.0) STOP 'VOVO buffer could not be allocated.'
-
-      CALL GETOOOO(ooooz)
-      CALL GETVOVO(vovoz)
+       n1 = ivovo(nrep+1)
+       allocate(vovoz(n1),stat=ialloc)
+       if(ialloc.ne.0) STOP 'VOVO buffer could not be allocated.'
+ 
+       CALL GETOOOO(ooooz)
+       CALL GETVOVO(vovoz)
+!****************************
+      ENDIF !DOX
+!****************************
 !
 ! SAT elements are calculated only for the lower triangle which
 ! means that ABIJ >= CDKL !
@@ -1369,8 +1381,6 @@
            joff=io(jrep) + j
            ea=eps(aoff); eb=eps(boff); ei=eps(ioff); ej=eps(joff)
            S = S + (ea + eb - ei - ej)
-!          write(*,*) 'qaq diagonal:',S,ABIJ,CDKL
-!          write(*,*) abij,log(s)
          endif
        endif
 !
@@ -1657,9 +1667,14 @@
       ENDDO
 !
 
-      deallocate(vovoz)
-      deallocate(ooooz)
-      deallocate(vvvvz)
+! we deallocate only in extended mode
+! otherwise the arrays are not allocated.
+
+      if(dox) then
+        deallocate(vovoz)
+        deallocate(ooooz)
+        deallocate(vvvvz)
+      endif
 
       RETURN
       END
@@ -1708,53 +1723,60 @@
 !
       INTERFACE
 
-        SUBROUTINE mpi_vvvv_complete(ra1,i1)
+        SUBROUTINE mpi_master_vvvv_complete(ra1,i1)
           real*8, dimension(:)            :: ra1
           integer*8                       :: i1
-        END SUBROUTINE mpi_vvvv_complete
+        END SUBROUTINE
 
       END INTERFACE
 !
 !---------------Start execution--------------------------------------
 !
-! check consistency
-!
-      if(rcw.ne.2) then
-        call quit('Internal error in XSATMAKE_C !')
-      endif
+      call pst('Constructing satellite part+')
+!______________________________________________________
+!|
+!|  we allocate these arrays only in extended mode.
+!|  VVVV, OOOO and VOVO integrals are not needed in strict mode.
+!|
 
-! allocate space and read in integrals
+!****************************
+      IF(DOX) THEN
+!****************************
 
-      n8 = ivvvvtt(nrep+1)*rcw
-      allocate(vvvvz(n8),stat=ialloc)
-      if(ialloc.ne.0) STOP 'VVVV buffer could not be allocated.'
+        n8 = ivvvvtt(nrep+1)*rcw
+        allocate(vvvvz(n8),stat=ialloc)
+        if(ialloc.ne.0) STOP 'VVVV buffer could not be allocated.'
 
 #if defined (VAR_MPI)
-      do i8=1,n8
-        vvvvz(i8) = -9999.0d0
-      enddo
-      call rdvvvv(vvvvz)  ! master reads its own chunks
-      call mpi_vvvv_complete(vvvvz,n8)  !.... and completes the stream.
-      write(*,*) 'VVVV check...'
-      do i8=1,n8
-        if(vvvvz(i8).eq. -9999.0d0)
-     &    call quit('Internal error: gap in the VVVV stream!')
-      enddo
-      write(*,*) '... complete.'
+        do i8=1,n8
+          vvvvz(i8) = -9999.0d0
+        enddo
+        call rdvvvv(vvvvz)  ! master reads its own chunks
+        call mpi_master_vvvv_complete(vvvvz,n8)  !.... and completes the stream.
+        write(*,*) 'VVVV check...'
+        do i8=1,n8
+          if(vvvvz(i8).eq. -9999.0d0)
+     &      call quit('Internal error: gap in the VVVV stream!')
+        enddo
+        write(*,*) '... complete.'
 #else
-      call rdvvvv(vvvvz)  ! master reads complete stream in serial mode
+        call rdvvvv(vvvvz)  ! master reads complete stream in serial mode
 #endif
 
-      n1 = ioooott(nrep+1)*rcw
-      allocate(ooooz(n1),stat=ialloc)
-      if(ialloc.ne.0) STOP 'OOOO buffer could not be allocated.'
+        n1 = ioooott(nrep+1)*rcw
+        allocate(ooooz(n1),stat=ialloc)
+        if(ialloc.ne.0) STOP 'OOOO buffer could not be allocated.'
 
-      n1 = ivovo(nrep+1)*rcw
-      allocate(vovoz(n1),stat=ialloc)
-      if(ialloc.ne.0) STOP 'VOVO buffer could not be allocated.'
+        n1 = ivovo(nrep+1)*rcw
+        allocate(vovoz(n1),stat=ialloc)
+        if(ialloc.ne.0) STOP 'VOVO buffer could not be allocated.'
 
-      CALL GETOOOO(ooooz)
-      CALL GETVOVO(vovoz)
+        CALL GETOOOO(ooooz)
+        CALL GETVOVO(vovoz)
+
+!****************************
+      ENDIF !DOX
+!****************************
 !________________________________________________________________________
 !|
 !|
@@ -2139,9 +2161,14 @@
       ENDDO
 !
 
-      deallocate(vovoz)
-      deallocate(ooooz)
-      deallocate(vvvvz)
+! we deallocate only in extended mode
+! otherwise the arrays are not allocated.
+
+      if(dox) then
+        deallocate(vovoz)
+        deallocate(ooooz)
+        deallocate(vvvvz)
+      endif
 
       RETURN
       END
