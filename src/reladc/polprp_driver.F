@@ -644,7 +644,7 @@ C
           character*6           :: c1
         END SUBROUTINE
 
-        SUBROUTINE mpi_slave_server (i1,i2)
+        SUBROUTINE mpi_task_server (i1,i2)
           integer               :: i1,i2
         END SUBROUTINE
 
@@ -1109,7 +1109,7 @@ C
 !|  ********************************************************
 !|
 !|
-        call mpi_slave_server(iobase,intbuf)
+        call mpi_task_server(iobase,intbuf)
         write(*,*) 'Node',myproc,' returns to main program'
         return
 
@@ -1131,3 +1131,30 @@ C
       return
       end 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&  dump region &&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!
+!     allocate(mmvvot(32,32))
+!     allocate(pvvot(nrep))
+!     mmvvot = 0
+!     pvvot  = 0
+
+!     DO KREP = 1, NREP
+!       DO IJREP = 1, NREP
+!         IJKREP = MULTB(IJREP+NREP,KREP,2)
+!         MMVVOT(IJREP,KREP) = PVVOT(IJKREP)
+!         PVVOT(IJKREP) = PVVOT(IJKREP) + NVVT(IJREP)*NO(KREP)
+!       ENDDO
+!     ENDDO
+!     DO KREP = 1, NREP
+!       if((pvvot(krep) - nvvot(krep)).ne.0) then
+!          stop 'pvvot problem.'
+!       endif
+!       DO IJREP = 1, NREP
+!         if((mmvvot(ijrep,krep) - kkvvot(ijrep,krep)).ne.0) then
+!                stop 'arrco problem'
+!         endif
+!       ENDDO
+!     ENDDO
+

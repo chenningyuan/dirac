@@ -1204,3 +1204,35 @@ C
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      Function get_file_unit()
+!
+! returns a unit number ifor file I/O that is not in use
+!
+      Implicit none
+
+#define LUMIN 70
+#define LUMAX 99
+
+      Integer                   :: get_file_unit
+      integer                   :: lu,iostat
+      logical                   :: istaken
+!
+      istaken = .true.
+      do lu = LUMIN, LUMAX
+         inquire (unit=lu, opened=istaken, iostat=iostat)
+         if (iostat.ne.0) cycle
+         if (.not.istaken) exit
+      end do
+!
+      if(istaken) then
+        write(*,*) ' *** Attention. Reached',LUMAX
+        write(*,*) ' *** Attention. No free file handle. Terminating.'
+        call quit('I/O problem')
+      else
+        write(*,*) 'Obtained file handle',lu
+      endif
+      get_file_unit = lu
+      return
+      end Function
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+

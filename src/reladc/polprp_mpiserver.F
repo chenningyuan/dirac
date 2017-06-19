@@ -1,7 +1,6 @@
 #if defined (VAR_MPI)
-
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE mpi_slave_server(iobase,intbuf)
+      SUBROUTINE mpi_task_server(iobase,intbuf)
 
       use interface_to_mpi
 
@@ -70,7 +69,7 @@
 !---------------Executable code--------------------------------------
 !
 !----------------------------------------------------------------
-!        determine if user wants to have traced output
+!        determine if user wants to trace MPI communication
 !----------------------------------------------------------------
 
       If(SERVER_TRACE.ne.0) deb = .true.
@@ -113,18 +112,16 @@
           call interface_mpi_recv(irp,1,MASTER,MSGN,global_communicator)
           if(deb) write(*,*) 'Node',MYPROC,' obtained irp:',irp
           if(irp.lt.1.or.irp.gt.nrep) then
-            write(*,*)  '**** Warning on node',MYPROC,':'
+            write(*,*)  '**** Error on node',MYPROC,':'
             write(*,*)  '**** irep number out of bounds,'
-            write(*,*)  '**** returning with zero batch length.'
-            efflen = 0
-            return
+            call quit('IREP error')
           endif
           efflen = NVVT(irp) * NVVT(irp) !efflen is max number of communicated integrals
                                          !in this irep
           if(efflen.gt.0) then
             allocate(buf(efflen*RCW),stat = ialloc)
             if(ialloc.ne.0)
-     &          call quit('Allocation problem in mpi_slave_server!')
+     &          call quit('Allocation problem in mpi_task_server!')
             buf = 0.0d0
 
             istart = 0
@@ -138,7 +135,7 @@
 !
             if (.not.done) then
                write(*,*) 'irrep',irp,' unfinished on node',myproc
-               call quit('Error reading VVVV ints in mpi_slave_server.')
+               call quit('Error reading VVVV ints in mpi_task_server.')
             endif
             if(deb) write(*,*) '-----> max length:',efflen,
      &            ' actual len:',NVVT(irp) * NINT
@@ -168,18 +165,16 @@
           call interface_mpi_recv(irp,1,MASTER,MSGN,global_communicator)
           if(deb) write(*,*) 'Node',MYPROC,' obtained irp:',irp
           if(irp.lt.1.or.irp.gt.nrep) then
-            write(*,*)  '**** Warning on node',MYPROC,':'
+            write(*,*)  '**** Error on node',MYPROC,':'
             write(*,*)  '**** irep number out of bounds,'
-            write(*,*)  '**** returning with zero batch length.'
-            efflen = 0
-            return
+            call quit('IREP error')
           endif
           efflen = NVO(irp) * NVVT(irp)  !efflen is max number of communicated integrals
                                        !in this irep
           if(efflen.gt.0) then
             allocate(buf(efflen*RCW),stat = ialloc)
             if(ialloc.ne.0)
-     &        call quit('Allocation problem in mpi_slave_server!')
+     &        call quit('Allocation problem in mpi_task_server!')
             buf = 0.0d0
 
             istart = 0
@@ -193,7 +188,7 @@
 !
             if (.not.done) then
               write(*,*) 'irrep',irp,' unfinished on node',myproc
-              call quit('Error reading VOVV ints in mpi_slave_server')
+              call quit('Error reading VOVV ints in mpi_task_server')
             endif
 
             efflen = NVO(irp) * NINT
@@ -228,7 +223,7 @@
           ELSEIF (MYPROC .LT. 1000) THEN
             WRITE (locfn,'(A6,A1,I3)') nmbase,'.',MYPROC
            ELSE
-          CALL QUIT("NMPROC.GT.1000! EXTEND mpi_slave_server routine!")
+          CALL QUIT("NMPROC.GT.1000! EXTEND mpi_task_server routine!")
           ENDIF
           if(deb) write(*,*) 'Node',myproc,' opened ',
      &              locfn,' for writing.'
@@ -452,6 +447,6 @@
 !  error exit for read/write routine.
 !
  889  call quit('problem on node with reading/writing partial matrix')
-      END SUBROUTINE  ! mpi_slave_server
+      END SUBROUTINE
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #endif

@@ -3,8 +3,8 @@
 
       use qstack
  
-      IMPLICIT INTEGER (A-Z)
-!     IMPLICIT none
+!     IMPLICIT INTEGER (A-Z)
+      IMPLICIT none
 !
 !---------------Description--------------------------------------------
 !
@@ -26,8 +26,21 @@
 #include "../relccsd/complex.inc"
 #include "../relccsd/symm.inc"
 !
+!---------------  defines  --------------------------------------
+!
+#define PRP_STACKLINE 3
+!
 !---------------Local variables--------------------------------------
 !
+! a whole bunch of required integer variables for
+! counting and offsetting
+
+      INTEGER               ::  i, k, m, n
+      INTEGER               ::  arep, brep, crep, abirep, bijrep
+      INTEGER               ::  idaoo, idaov, idavo, idavv
+      INTEGER               ::  ioff1, ioff2, ioff3
+      INTEGER               ::  irep, irep_b, jrep, krep
+      INTEGER               ::  off, off1, off2, off3
 
 ! filename of property integrals
 
@@ -102,19 +115,21 @@
 
       REAL*8,allocatable,dimension(:)        :: evvoo
 
-      Integer                                :: n1,n2,n3,n4
+      Integer                                :: n1,n2,n3,n4,n1e
       Integer                                :: ialloc,iat
 
-! some parameters
+! some parameters and bookkeeping variables
 
-      Logical                                :: LFA=.false.
-      Logical                                :: LTR=.true.
+      Logical                                :: LFA = .false.
+      Logical                                :: LTR = .true.
+      Logical                                :: istaken = .false.
 
       character*9                            :: preconfn='VVVVXVVOO'
       character*40                           :: iorder
       integer                                :: incsat
       integer                                :: numstacks
       real*8                                 :: x1,x2,x3,x4,xcntrl
+      Integer                                :: lp1,lp2
       integer                                :: nabixj,naxbij,nabxij
       
       Integer*8                              :: n8
@@ -205,6 +220,20 @@
       else
         call pst('Transition moments (real run)+')
       endif
+!
+!   debug start
+!
+!     lunt = 55
+!     inquire(unit=lunt,opened=istaken)
+!     write(*,*) 'lun',lunt,istaken
+!     open(unit=lunt,file='killer',form='unformatted',
+!    &     access='sequential',status='unknown')
+!     inquire(unit=lunt,opened=istaken)
+!     write(*,*) 'lun',lunt,istaken
+!     close(lunt,status='delete')
+!
+!   debug end
+!
       write(*,*)
       write(*,*) '   Note: Even in SPINFREE/NONREL cases the TMs'
       write(*,*) '   can be complex due to the quaternionic structure'
@@ -214,6 +243,17 @@
       write(*,*) '   Final state Symmetry: ',desrep
       write(*,*) '   *******************************'
       write(*,*)
+
+
+      write(*,*) '   *******************************'
+      write(*,*) '   Stack line used:',PRP_STACKLINE
+      write(*,*) '   *******************************'
+!
+! clear stack line for pushing intermediates
+! if stack line is cleared, no action is taken.
+! return value i is irrelevant.
+!
+      i = qstack_drop(PRP_STACKLINE)
 !
 ! initialization of constant variables
 !
@@ -261,6 +301,7 @@
 !***************************************************
 !
       n1 = mvo(desrep)
+      lp1 = n1*rcw   ! actual number of reals in faip(x,y,z) array (r/c)
 
       allocate(faitx(n1))
       allocate(faity(n1))
@@ -453,6 +494,9 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
+      if(qstack_push(PRP_STACKLINE,lp1,faipx).ne.lp1) stop 'QE' 
+      if(qstack_push(PRP_STACKLINE,lp1,faipy).ne.lp1) stop 'QE' 
+      if(qstack_push(PRP_STACKLINE,lp1,faipz).ne.lp1) stop 'QE' 
 !
 !------------------------
 !------  F_ai(1)
@@ -505,6 +549,9 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
+      if(qstack_push(PRP_STACKLINE,lp1,faipx).ne.lp1) stop 'QE' 
+      if(qstack_push(PRP_STACKLINE,lp1,faipy).ne.lp1) stop 'QE' 
+      if(qstack_push(PRP_STACKLINE,lp1,faipz).ne.lp1) stop 'QE' 
 
 !
 !  enter calculation for second-order contributions
@@ -564,6 +611,9 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
+      if(qstack_push(PRP_STACKLINE,lp1,faipx).ne.lp1) stop 'QE' 
+      if(qstack_push(PRP_STACKLINE,lp1,faipy).ne.lp1) stop 'QE' 
+      if(qstack_push(PRP_STACKLINE,lp1,faipz).ne.lp1) stop 'QE' 
 
 !
 !------------------------
@@ -618,6 +668,9 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
+      if(qstack_push(PRP_STACKLINE,lp1,faipx).ne.lp1) stop 'QE' 
+      if(qstack_push(PRP_STACKLINE,lp1,faipy).ne.lp1) stop 'QE' 
+      if(qstack_push(PRP_STACKLINE,lp1,faipz).ne.lp1) stop 'QE' 
 
 !
 !------------------------
@@ -688,6 +741,9 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
+      if(qstack_push(PRP_STACKLINE,lp1,faipx).ne.lp1) stop 'QE' 
+      if(qstack_push(PRP_STACKLINE,lp1,faipy).ne.lp1) stop 'QE' 
+      if(qstack_push(PRP_STACKLINE,lp1,faipz).ne.lp1) stop 'QE' 
 !
 !
 !--------------------------------------
@@ -761,6 +817,9 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
+      if(qstack_push(PRP_STACKLINE,lp1,faipx).ne.lp1) stop 'QE' 
+      if(qstack_push(PRP_STACKLINE,lp1,faipy).ne.lp1) stop 'QE' 
+      if(qstack_push(PRP_STACKLINE,lp1,faipz).ne.lp1) stop 'QE' 
 
 !     write(*,*) '------  F_ai(2,1) finished'
       
@@ -825,6 +884,9 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
+      if(qstack_push(PRP_STACKLINE,lp1,faipx).ne.lp1) stop 'QE' 
+      if(qstack_push(PRP_STACKLINE,lp1,faipy).ne.lp1) stop 'QE' 
+      if(qstack_push(PRP_STACKLINE,lp1,faipz).ne.lp1) stop 'QE' 
       
 !     write(*,*) '------  F_ai(2,2) finished'
 !
@@ -886,6 +948,9 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
+      if(qstack_push(PRP_STACKLINE,lp1,faipx).ne.lp1) stop 'QE' 
+      if(qstack_push(PRP_STACKLINE,lp1,faipy).ne.lp1) stop 'QE' 
+      if(qstack_push(PRP_STACKLINE,lp1,faipz).ne.lp1) stop 'QE' 
 
 !     write(*,*) '------  F_ai(2,3) finished'
 !
@@ -956,6 +1021,9 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
+      if(qstack_push(PRP_STACKLINE,lp1,faipx).ne.lp1) stop 'QE' 
+      if(qstack_push(PRP_STACKLINE,lp1,faipy).ne.lp1) stop 'QE' 
+      if(qstack_push(PRP_STACKLINE,lp1,faipz).ne.lp1) stop 'QE' 
 
 !     write(*,*) '------  F_ai(2,4) finished'
 !
@@ -1045,6 +1113,9 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
+      if(qstack_push(PRP_STACKLINE,lp1,faipx).ne.lp1) stop 'QE' 
+      if(qstack_push(PRP_STACKLINE,lp1,faipy).ne.lp1) stop 'QE' 
+      if(qstack_push(PRP_STACKLINE,lp1,faipz).ne.lp1) stop 'QE' 
 
 !     write(*,*) '------  F_ai(2,5) finished'
 !
@@ -1129,6 +1200,9 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
+      if(qstack_push(PRP_STACKLINE,lp1,faipx).ne.lp1) stop 'QE' 
+      if(qstack_push(PRP_STACKLINE,lp1,faipy).ne.lp1) stop 'QE' 
+      if(qstack_push(PRP_STACKLINE,lp1,faipz).ne.lp1) stop 'QE' 
 
 !     write(*,*) '------  F_ai(2,6) finished'
 !
@@ -1234,6 +1308,9 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
+      if(qstack_push(PRP_STACKLINE,lp1,faipx).ne.lp1) stop 'QE' 
+      if(qstack_push(PRP_STACKLINE,lp1,faipy).ne.lp1) stop 'QE' 
+      if(qstack_push(PRP_STACKLINE,lp1,faipz).ne.lp1) stop 'QE' 
 
       deallocate(vovo1,vovo2,vovo3)
 
@@ -1324,6 +1401,9 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
+      if(qstack_push(PRP_STACKLINE,lp1,faipx).ne.lp1) stop 'QE' 
+      if(qstack_push(PRP_STACKLINE,lp1,faipy).ne.lp1) stop 'QE' 
+      if(qstack_push(PRP_STACKLINE,lp1,faipz).ne.lp1) stop 'QE' 
 
       deallocate(vovo1,vovo2,vovo3)
 
@@ -1378,6 +1458,9 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
+      if(qstack_push(PRP_STACKLINE,lp1,faipx).ne.lp1) stop 'QE' 
+      if(qstack_push(PRP_STACKLINE,lp1,faipy).ne.lp1) stop 'QE' 
+      if(qstack_push(PRP_STACKLINE,lp1,faipz).ne.lp1) stop 'QE' 
 
       deallocate(vvoop)
       deallocate(vovo3)
@@ -1435,6 +1518,9 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
+      if(qstack_push(PRP_STACKLINE,lp1,faipx).ne.lp1) stop 'QE' 
+      if(qstack_push(PRP_STACKLINE,lp1,faipy).ne.lp1) stop 'QE' 
+      if(qstack_push(PRP_STACKLINE,lp1,faipz).ne.lp1) stop 'QE' 
 
       deallocate(oooo)
       deallocate(vovo3)
@@ -1512,6 +1598,8 @@
       fabijty = A0
       fabijtz = A0
       vvoop = 0.0d0
+
+      lp2 = nabxij*rcw   ! actual length in reals of F_abij array (r/c)
 !
 !  allocate NTS abi,j buffers
 !
@@ -1591,24 +1679,30 @@
 !
 !  do antisymmetrization via nontotally symmetric sorter.
 !
+!  x,y,z results are subsequently stored in vvoop, therefore we have to push
+!  immediately!
+!
       n2 = LVVONO(nrep+1)
       vvoop = 0.0d0
       CALL SRT1T3_NTS (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,
      &                LVVONO,KKVVOT,vabijx,vvoop,desrep,n2)
       CALL rca_negate(nabxij,vvoop)
       call rcaxpy(nabxij,carith,pphasex,vvoop,fabijtx)
+      if(qstack_push(PRP_STACKLINE,lp2,vvoop).ne.lp2) stop 'QE' 
 
       vvoop = 0.0d0
       CALL SRT1T3_NTS (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,
      &                LVVONO,KKVVOT,vabijy,vvoop,desrep,n2)
       CALL rca_negate(nabxij,vvoop)
       call rcaxpy(nabxij,carith,pphasey,vvoop,fabijty)
+      if(qstack_push(PRP_STACKLINE,lp2,vvoop).ne.lp2) stop 'QE' 
 
       vvoop = 0.0d0
       CALL SRT1T3_NTS (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,
      &                LVVONO,KKVVOT,vabijz,vvoop,desrep,n2)
       CALL rca_negate(nabxij,vvoop)
       call rcaxpy(nabxij,carith,pphasez,vvoop,fabijtz)
+      if(qstack_push(PRP_STACKLINE,lp2,vvoop).ne.lp2) stop 'QE' 
 
       iorder='0th-2nd order ph + 2p2h (part A)'
       incsat = nabxij
@@ -1696,20 +1790,25 @@
 !
 !  do antisymmetrization via nontotally symmetric sorter.
 !
+!  and, as above, push immediately.
+!
       vvoop=0
       CALL SRT1T2_NTS (NREP,MULTB,LTR,NVVT,NV,NV,NOOT,
      &                 LVNVOO,LLVOOT,vabijx,vvoop,desrep)
       call rcaxpy(nabxij,carith,pphasex,vvoop,fabijtx)
+      if(qstack_push(PRP_STACKLINE,lp2,vvoop).ne.lp2) stop 'QE' 
 
       vvoop=0
       CALL SRT1T2_NTS (NREP,MULTB,LTR,NVVT,NV,NV,NOOT,
      &                 LVNVOO,LLVOOT,vabijy,vvoop,desrep)
       call rcaxpy(nabxij,carith,pphasey,vvoop,fabijty)
+      if(qstack_push(PRP_STACKLINE,lp2,vvoop).ne.lp2) stop 'QE' 
 
       vvoop=0
       CALL SRT1T2_NTS (NREP,MULTB,LTR,NVVT,NV,NV,NOOT,
      &                 LVNVOO,LLVOOT,vabijz,vvoop,desrep)
       call rcaxpy(nabxij,carith,pphasez,vvoop,fabijtz)
+      if(qstack_push(PRP_STACKLINE,lp2,vvoop).ne.lp2) stop 'QE' 
 
       iorder='0th-2nd order ph + 2p2h (part A+B)'
       incsat = nabxij
@@ -1759,6 +1858,10 @@
       deallocate(pphase)
 
       deallocate(JPOOXX,JPVOXX,JPOVXX,JPVVXX)
+!
+!  test the new tm out routine. It is maximally standalone.
+!
+      call TM_OUT(desrep,pphasex,pphasey,pphasez)
 
       RETURN
       END
@@ -1795,7 +1898,7 @@
       character*11                            :: davevcname
       logical                                 :: isthere
 
-      real*8, allocatable, dimension(:)       :: rcoef,xcoef,ycoef
+      real*8, allocatable, dimension(:)       :: rcoef
       complex*16, allocatable, dimension(:)   :: ccoef
       complex*16,allocatable,dimension(:)     :: tmx,tmy,tmz
 
@@ -1979,32 +2082,302 @@
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!&&&&&&&&&&&  dump region &&&&&&&&&
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!
-!     allocate(mmvvot(32,32))
-!     allocate(pvvot(nrep))
-!     mmvvot = 0
-!     pvvot  = 0
+      SUBROUTINE TM_OUT(desrep,phasex,phasey,phasez)
 
-!     DO KREP = 1, NREP
-!       DO IJREP = 1, NREP
-!         IJKREP = MULTB(IJREP+NREP,KREP,2)
-!         MMVVOT(IJREP,KREP) = PVVOT(IJKREP)
-!         PVVOT(IJKREP) = PVVOT(IJKREP) + NVVT(IJREP)*NO(KREP)
-!       ENDDO
-!     ENDDO
-!     DO KREP = 1, NREP
-!       if((pvvot(krep) - nvvot(krep)).ne.0) then
-!          stop 'pvvot problem.'
-!       endif
-!       DO IJREP = 1, NREP
-!         if((mmvvot(ijrep,krep) - kkvvot(ijrep,krep)).ne.0) then
-!                stop 'arrco problem'
+      use qstack
+ 
+      implicit none
+!
+!  this is a final output routine summarizing the results for the obtained
+!  transition moments. Hereby the F_ai and F_ab,ij intermediates in x,y,z
+!  are fetched from the stack and listed for each state. The eigenvectors
+!  in contrast to TM_GEN therefore have to be read only once. This is the method
+!  of choice if it comes to long eigenvectors.
+!
+!  calling parameters
+!
+      integer           :: desrep
+      complex*16        :: phasex,phasey,phasez
+
+! 
+! remark: also in relativistic real symmetries the phases of the property
+!         integrals can be complex and we have to account for that.
+!         Resulting TMs therefore are generally defined as complex numbers
+!         in the final output.
+!
+!  includes
+!
+#include  "../relccsd/complex.inc"
+!
+!  defines
+!
+#define PRP_STACKLINE 3
+#define FAI_CONTRIBS 15
+#define FABIJ_CONTRIBS 2
+!
+!---------------interface region --------------------------------------
+!
+      interface
+
+        Function get_file_unit()
+          integer                      :: get_file_unit
+        END Function
+
+        Subroutine WrtTMLine(l1)
+          logical                      :: l1
+        END Subroutine
+
+      end interface
+!
+!------------------------- locals -----------------------------------
+!
+      real*8, parameter                       :: autoev = 27.2113957D0
+      character*8, parameter                  :: evcnm_root='DAVILONG'
+      character*8, parameter                  :: outnm_root='DAVTMOUT'
+      character*11                            :: evc_fname
+      character*11                            :: out_fname
+      logical                                 :: isthere
+
+      integer                                 :: io1,io2
+      integer                                 :: nroots,nmain,ladc,n2p2h
+
+      complex*16, allocatable, dimension(:)   :: ccoef
+      real*8, allocatable, dimension(:)       :: rcoef
+
+      integer                                 :: ist !root counter
+      real*8                                  :: evl ! kth eigenvalue
+      real*8                                  :: ps  ! kth pole strength
+      real*8                                  :: xnr ! kth norm
+  
+      integer                                 :: i,k,ico,ioresult
+      complex*16                              :: ax,ay,az  !local contribs per root
+      complex*16                              :: tmx,tmy,tmz !global contribs per root
+
+      real*8, allocatable,dimension(:,:)      :: faipx,faipy,faipz
+      real*8, allocatable,dimension(:,:)      :: fabijpx,fabijpy,fabijpz
+      real*8, parameter                       :: D0=0.0d0
+      complex*16, parameter                   :: A0=(D0,D0)
+!
+!  executable
+!
+      call pst('Calculating transition moments (all states)+')
+!
+! generate file names and open files for I/O
+!
+      IF(desrep.GT.9) THEN
+        WRITE(evc_fname,'(A8,A1,I2)') evcnm_root,'.',desrep
+        WRITE(out_fname,'(A8,A1,I2)') outnm_root,'.',desrep
+      ELSE
+        WRITE(evc_fname,'(A8,A2,I1)') evcnm_root,'.0',desrep
+        WRITE(out_fname,'(A8,A2,I1)') outnm_root,'.0',desrep
+      ENDIF
+      INQUIRE(file=evc_fname,exist=isthere)
+      if(.not.isthere) then
+        write(*,*) '***************************************'
+        write(*,*) '*****  Warning:                   *****'
+        write(*,*) '***************************************'
+        write(*,*) 'No eigenvectors found in symmetry',desrep,'!'
+        write(*,*) 'No TMs accessible!'
+        write(*,*)
+        return
+      endif
+
+      io1 = get_file_unit()
+      OPEN(io1,file=evc_fname,access='sequential',
+     &     status='unknown',form='unformatted')
+      rewind(io1)
+      write(*,*) '-- opened eigenvector file: ',evc_fname
+
+      io2 = get_file_unit()
+      OPEN(io2,file=out_fname,access='sequential',
+     &     status='unknown',form='formatted')
+      write(*,*) '-- opened output file: ',out_fname
+
+!_________________________  perform the contractions
+!|
+
+      READ(io1,iostat=ioresult) nroots
+      READ(io1,iostat=ioresult) nmain
+      READ(io1,iostat=ioresult) ladc
+      n2p2h = ladc-nmain
+
+      write(*,*) '       -----------------------------'
+      write(*,*) '       |    TMOUT characteristics  |'
+      write(*,*) '       -----------------------------'
+      write(*,*)
+      write(*,*) 'Found',nroots,' states in the eigenvector file.'
+      write(*,*) 'Length of ADC matrix (from file):',ladc
+      write(*,*) 'Length of main space (from file):',nmain
+      write(*,*) 'Length of sat space:',n2p2h
+!
+! allocate required coefficient arrays (not possible earlier)
+!
+      if(carith) then
+        allocate(ccoef(ladc))
+      else
+        allocate(rcoef(ladc))
+      endif
+!
+! allocate F_ai and F_abij arrays (not possible earlier)
+!
+      allocate(faipx(nmain*rcw,FAI_CONTRIBS))
+      allocate(faipy(nmain*rcw,FAI_CONTRIBS))
+      allocate(faipz(nmain*rcw,FAI_CONTRIBS))
+
+      allocate(fabijpx(n2p2h*rcw,FABIJ_CONTRIBS))
+      allocate(fabijpy(n2p2h*rcw,FABIJ_CONTRIBS))
+      allocate(fabijpz(n2p2h*rcw,FABIJ_CONTRIBS))
+      write(*,*) 'Required arrays allocated.'
+!
+! pull contribs from stack, use popf so we get a FIFO type
+! and we can stick to natural ordering
+! Stackline is PRP_STACKLINE, later the defs go to a stack header file
+!
+      Do k=1,FAI_CONTRIBS
+        if(qstack_popf(PRP_STACKLINE,faipx(:,k)).ne.nmain*rcw) stop 'QE'
+        if(qstack_popf(PRP_STACKLINE,faipy(:,k)).ne.nmain*rcw) stop 'QE'
+        if(qstack_popf(PRP_STACKLINE,faipz(:,k)).ne.nmain*rcw) stop 'QE'
+      EndDo
+      Do k=1,FABIJ_CONTRIBS
+        if(qstack_popf(PRP_STACKLINE,fabijpx(:,k)).ne.n2p2h*rcw)
+     &        stop 'QE'
+        if(qstack_popf(PRP_STACKLINE,fabijpy(:,k)).ne.n2p2h*rcw)
+     &        stop 'QE'
+        if(qstack_popf(PRP_STACKLINE,fabijpz(:,k)).ne.n2p2h*rcw)
+     &        stop 'QE'
+      EndDo
+
+!*******************************************
+!**** MASTER LOOP **************************
+!*******************************************
+
+      Do k=1,nroots
+        read(io1) ist
+        read(io1) evl
+        read(io1) ps
+
+        write(io2,'(A,X,I3,X,A,F10.4,A,X,F10.4,A,F10.4)') 
+     &    'State',ist,':exc. energy',evl,'(au)',evl*autoev,
+     &    ' (eV) and PS',ps
+
+!  read real or complex coefficients, form norm
+
+        if(carith) then
+          read(io1)(ccoef(i),i=1,ladc)
+          do i=1,ladc
+            xnr=xnr + 
+     &         (real(ccoef(i))**2.0d0 + aimag(ccoef(i))**2.0d0)
+          enddo
+        else
+          read(io1)(rcoef(i),i=1,ladc)
+          do i=1,ladc
+            xnr=xnr + rcoef(i)**2.0d0
+          enddo
+        endif
+        xnr = dsqrt(xnr)
+!
+!****   CONTRIBUTION LOOP F_ai   ****
+!
+! this can be hardcoded because the equations of the ADC
+! method unambiguously determine the structure
+!  
+        tmx=A0
+        tmy=A0
+        tmz=A0
+        Do ico = 1,FAI_CONTRIBS
+
+!         ax=A0
+!         ay=A0
+!         az=A0
+!       if(carith) then
+!         do i=1,nmain
+!           ax = ax + ccoef(i) * faipx(i)
+!           ay = ay + ccoef(i) * faipy(i)
+!           az = az + ccoef(i) * faipz(i)
+!         enddo
+!         if(do2h2p) then
+!           do i=1,n2p2h
+!             ax = ax + ccoef(i+nmain) * fabijpx(i)
+!             ay = ay + ccoef(i+nmain) * fabijpy(i)
+!             az = az + ccoef(i+nmain) * fabijpz(i)
+!           enddo
 !         endif
-!       ENDDO
-!     ENDDO
+!       else
+!         do i=1,nmain
+!           ax = ax + dcmplx(rcoef(i),D0)*faipx(i)
+!           ay = ay + dcmplx(rcoef(i),D0)*faipy(i)
+!           az = az + dcmplx(rcoef(i),D0)*faipz(i)
+!         enddo
+!         if(do2h2p) then
+!           do i=1,n2p2h
+!             ax = ax + dcmplx(rcoef(i+nmain),D0)*fabijpx(i)
+!             ay = ay + dcmplx(rcoef(i+nmain),D0)*fabijpy(i)
+!             az = az + dcmplx(rcoef(i+nmain),D0)*fabijpz(i)
+!           enddo
+!         endif
+!       endif
+!       tmx(k) = ax
+!       tmy(k) = ay
+!       tmz(k) = az
+
+          Call WrtTMLine(.false.)
+
+        Enddo   !ico
+        Call WrtTMLine(.true.)
+
+      Enddo   ! nroots
+      CLOSE(io1)
+      CLOSE(io2)
+
+!     write(*,*)
+!     write(*,'(A35,A40)') '     *******************   Level:  ',
+!    &   iorder
+!     write(*,*)
+!     write(*,'(A,4X,A,2X,A,3X,A,9X,A,10X,A,10X,A)')
+!    &       'State','Energy (au)','Energy(eV)','Norm',
+!    &       'TM(x)_r        TM(x)_i',
+!    &       'TM(y)_r        TM(y)_i',
+!    &       'TM(z)_r        TM(z)_i'
+!     write(*,'(3A)') '----------------------------------------------',
+!    &  '----------------------------------------------',
+!    &  '----------------------------------------------'
+
+!     do k=1,nroots
+!       write(*,'(I4,F14.7,F14.7,F7.2,A,2F15.9,A,2F15.9,A,2F15.9)') k,
+!    &   evl(k),evl(k)*autoev,xnr(k),'  : ',
+!    &   tmx(k),' | ',tmy(k),' | ',tmz(k)
+!     enddo
+!     write(*,'(3A)') '----------------------------------------------',
+!    &  '----------------------------------------------',
+!    &  '----------------------------------------------'
+!|
+!|________________________ end print output
+
+      if(carith) then
+        deallocate(ccoef)
+      else
+        deallocate(rcoef)
+      endif
+
+      deallocate(faipx)
+      deallocate(faipy)
+      deallocate(faipz)
+      deallocate(fabijpx)
+      deallocate(fabijpy)
+      deallocate(fabijpz)
+
+      RETURN
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE WRTTMLINE(last)
 !
+! this routine writes out a contribution line to the transition moments
+! If last line then it sums up and also calculates the oscillator strength
+! in x,y,z for the state under consideration.
 
+      logical                            :: last
 
+      return
+      end
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
