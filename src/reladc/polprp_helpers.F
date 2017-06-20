@@ -224,7 +224,7 @@ C|__________________________________________________________
 !     This routine creates an energy denominator array in the
 !     VVOO bra-ket storage <|<|,|>|> in order to be sorted with SRT16
 !     Normally the VVOO integrals are tridiagonally stored. In this case
-!     the full ranges are covered because SRT 16 down not handle tridiagonal
+!     the full ranges are covered because SRT 16 does not handle tridiagonal
 !     storage cases!
 !     The energies are all real and for the complex case we set the imaginary
 !     part to zero!
@@ -440,10 +440,7 @@ C
       rcw = 1
       if(carith) rcw = 2
 
-!     write(*,*) ' *** in rcaxpy ***',carith,rcw
-
       if(.not.carith) then       ! ** as = real case + phase **
-!       write(*,*) '                  * * * rcaxpy phase:',phase
         do i=1,n
           ad(i) = ad(i) + phase*dcmplx(as(i),0.0d0)
         enddo
@@ -1206,7 +1203,7 @@ C
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       Function get_file_unit()
 !
-! returns a unit number ifor file I/O that is not in use
+! returns a unit number for file I/O that is not in use yet
 !
       Implicit none
 
@@ -1225,8 +1222,8 @@ C
       end do
 !
       if(istaken) then
-        write(*,*) ' *** Attention. Reached',LUMAX
-        write(*,*) ' *** Attention. No free file handle. Terminating.'
+        write(*,*) ' *** Attention! Reached LUMAX=',LUMAX
+        write(*,*) ' *** No free file handle available. Terminating.'
         call quit('I/O problem')
       else
         write(*,*) 'Obtained file handle',lu

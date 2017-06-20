@@ -362,6 +362,7 @@
 #include "../relccsd/symm.inc"
 #include "../relccsd/complex.inc"
 #include "../relccsd/ccpar.inc"
+#include "polprp_stacklines.h"
 !
 !---------------Calling variables--------------------------------------
 !
@@ -750,7 +751,8 @@ C
             ENDDO  !A
          ENDDO  !AREP
       ENDDO  !IAREP
-      if(qstack_push(8,dimpov*rcw,GOV).ne.dimpov*rcw) stop 'QPE'
+      if(qstack_push(AUX_STACKLINE,dimpov*rcw,GOV).ne.dimpov*rcw) 
+     &   stop 'QPE'
       deallocate(GOV)
 
 !

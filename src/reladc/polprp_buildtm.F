@@ -25,10 +25,7 @@
 !
 #include "../relccsd/complex.inc"
 #include "../relccsd/symm.inc"
-!
-!---------------  defines  --------------------------------------
-!
-#define PRP_STACKLINE 3
+#include  "polprp_stacklines.h"
 !
 !---------------Local variables--------------------------------------
 !
@@ -1214,12 +1211,18 @@
 ! For the final main block contributions we need the OV
 ! property integrals in generic order and not in the VO order!
 ! we fetch them from the system stack (pushed by propertyhandler)
+! in a FIFO manner! Since the push was done only once we have to
+! repush the data back one stack
 !
-      if(qstack_popf(8,dovxg).ne.idaov*rcw) stop 'Qpferr'
-      if(qstack_popf(8,dovyg).ne.idaov*rcw) stop 'Qpferr'
-      if(qstack_popf(8,dovzg).ne.idaov*rcw) stop 'Qpferr'
-!
-!
+      if(qstack_popf(AUX_STACKLINE,dovxg).ne.idaov*rcw) stop 'Qpferr'
+      if(qstack_popf(AUX_STACKLINE,dovyg).ne.idaov*rcw) stop 'Qpferr'
+      if(qstack_popf(AUX_STACKLINE,dovzg).ne.idaov*rcw) stop 'Qpferr'
+      if(qstack_push(AUX_STACKLINE,idaov*rcw,dovxg).ne.idaov*rcw)
+     &   stop 'Qpferr'
+      if(qstack_push(AUX_STACKLINE,idaov*rcw,dovyg).ne.idaov*rcw)
+     &   stop 'Qpferr'
+      if(qstack_push(AUX_STACKLINE,idaov*rcw,dovzg).ne.idaov*rcw)
+     &   stop 'Qpferr'
 !
       n1 = max(ivovo(nrep+1),jvovo(nrep+1))
       allocate(vovo1(n1*rcw),stat=ialloc)
@@ -2089,8 +2092,10 @@
       implicit none
 !
 !  this is a final output routine summarizing the results for the obtained
-!  transition moments. Hereby the F_ai and F_ab,ij intermediates in x,y,z
-!  are fetched from the stack and listed for each state. The eigenvectors
+!  transition moments in symmetry desrep. 
+!  Hereby the F_ai and F_ab,ij intermediates in x,y,z
+!  are fetched from the stack and the TM contributions are listed for each state. 
+!  The eigenvectors
 !  in contrast to TM_GEN therefore have to be read only once. This is the method
 !  of choice if it comes to long eigenvectors.
 !
@@ -2108,10 +2113,10 @@
 !  includes
 !
 #include  "../relccsd/complex.inc"
+#include  "polprp_stacklines.h"
 !
 !  defines
 !
-#define PRP_STACKLINE 3
 #define FAI_CONTRIBS 15
 #define FABIJ_CONTRIBS 2
 !
@@ -2123,8 +2128,9 @@
           integer                      :: get_file_unit
         END Function
 
-        Subroutine WrtTMLine(l1)
+        Subroutine WrtTMLine(l1,i1)
           logical                      :: l1
+          integer                      :: i1
         END Subroutine
 
       end interface
@@ -2195,7 +2201,9 @@
 
 !_________________________  perform the contractions
 !|
-
+!|
+!|  header information on eigenvector file:
+!|
       READ(io1,iostat=ioresult) nroots
       READ(io1,iostat=ioresult) nmain
       READ(io1,iostat=ioresult) ladc
@@ -2219,6 +2227,11 @@
       endif
 !
 ! allocate F_ai and F_abij arrays (not possible earlier)
+! these arrays are declared as real. In the complex case they acquire
+! twice the size. In relativistic real cases, however, possibly
+! complex property phases exist and they have to be accounted for 
+! in the contractions properly which means that contraction results are
+! always treated as complex numbers.
 !
       allocate(faipx(nmain*rcw,FAI_CONTRIBS))
       allocate(faipy(nmain*rcw,FAI_CONTRIBS))
@@ -2230,8 +2243,8 @@
       write(*,*) 'Required arrays allocated.'
 !
 ! pull contribs from stack, use popf so we get a FIFO type
-! and we can stick to natural ordering
-! Stackline is PRP_STACKLINE, later the defs go to a stack header file
+! and we can stick to natural ordering.
+! Stackline is PRP_STACKLINE.
 !
       Do k=1,FAI_CONTRIBS
         if(qstack_popf(PRP_STACKLINE,faipx(:,k)).ne.nmain*rcw) stop 'QE'
@@ -2277,79 +2290,66 @@
         xnr = dsqrt(xnr)
 !
 !****   CONTRIBUTION LOOP F_ai   ****
-!
-! this can be hardcoded because the equations of the ADC
-! method unambiguously determine the structure
 !  
         tmx=A0
         tmy=A0
         tmz=A0
         Do ico = 1,FAI_CONTRIBS
 
-!         ax=A0
-!         ay=A0
-!         az=A0
-!       if(carith) then
-!         do i=1,nmain
-!           ax = ax + ccoef(i) * faipx(i)
-!           ay = ay + ccoef(i) * faipy(i)
-!           az = az + ccoef(i) * faipz(i)
-!         enddo
-!         if(do2h2p) then
-!           do i=1,n2p2h
-!             ax = ax + ccoef(i+nmain) * fabijpx(i)
-!             ay = ay + ccoef(i+nmain) * fabijpy(i)
-!             az = az + ccoef(i+nmain) * fabijpz(i)
+          ax=A0
+          ay=A0
+          az=A0
+!         if(carith) then
+!           do i=1,nmain
+!             ax = ax + ccoef(i) * faipx(i)
+!             ay = ay + ccoef(i) * faipy(i)
+!             az = az + ccoef(i) * faipz(i)
 !           enddo
-!         endif
-!       else
-!         do i=1,nmain
-!           ax = ax + dcmplx(rcoef(i),D0)*faipx(i)
-!           ay = ay + dcmplx(rcoef(i),D0)*faipy(i)
-!           az = az + dcmplx(rcoef(i),D0)*faipz(i)
-!         enddo
-!         if(do2h2p) then
-!           do i=1,n2p2h
-!             ax = ax + dcmplx(rcoef(i+nmain),D0)*fabijpx(i)
-!             ay = ay + dcmplx(rcoef(i+nmain),D0)*fabijpy(i)
-!             az = az + dcmplx(rcoef(i+nmain),D0)*fabijpz(i)
+!           if(do2h2p) then
+!             do i=1,n2p2h
+!               ax = ax + ccoef(i+nmain) * fabijpx(i)
+!               ay = ay + ccoef(i+nmain) * fabijpy(i)
+!               az = az + ccoef(i+nmain) * fabijpz(i)
+!             enddo
+!           endif
+!         else
+!           do i=1,nmain
+!             ax = ax + dcmplx(rcoef(i),D0)*faipx(i)
+!             ay = ay + dcmplx(rcoef(i),D0)*faipy(i)
+!             az = az + dcmplx(rcoef(i),D0)*faipz(i)
 !           enddo
+!           if(do2h2p) then
+!             do i=1,n2p2h
+!               ax = ax + dcmplx(rcoef(i+nmain),D0)*fabijpx(i)
+!               ay = ay + dcmplx(rcoef(i+nmain),D0)*fabijpy(i)
+!               az = az + dcmplx(rcoef(i+nmain),D0)*fabijpz(i)
+!             enddo
+!           endif
 !         endif
-!       endif
-!       tmx(k) = ax
-!       tmy(k) = ay
-!       tmz(k) = az
+!         tmx(k) = ax
+!         tmy(k) = ay
+!         tmz(k) = az
 
-          Call WrtTMLine(.false.)
+          Call WrtTMLine(.false.,io2)
 
-        Enddo   !ico
-        Call WrtTMLine(.true.)
+        Enddo   !ico for P/H contribs
+
+! --------------- now check 2p2h contributions -------------------
+
+        Do ico = 1,FABIJ_CONTRIBS
+          ax=A0
+          ay=A0
+          az=A0
+
+          Call WrtTMLine(.false.,io2)
+
+        Enddo   !ico for 2P2H contribs
+
+        Call WrtTMLine(.true.,io2)
 
       Enddo   ! nroots
       CLOSE(io1)
       CLOSE(io2)
-
-!     write(*,*)
-!     write(*,'(A35,A40)') '     *******************   Level:  ',
-!    &   iorder
-!     write(*,*)
-!     write(*,'(A,4X,A,2X,A,3X,A,9X,A,10X,A,10X,A)')
-!    &       'State','Energy (au)','Energy(eV)','Norm',
-!    &       'TM(x)_r        TM(x)_i',
-!    &       'TM(y)_r        TM(y)_i',
-!    &       'TM(z)_r        TM(z)_i'
-!     write(*,'(3A)') '----------------------------------------------',
-!    &  '----------------------------------------------',
-!    &  '----------------------------------------------'
-
-!     do k=1,nroots
-!       write(*,'(I4,F14.7,F14.7,F7.2,A,2F15.9,A,2F15.9,A,2F15.9)') k,
-!    &   evl(k),evl(k)*autoev,xnr(k),'  : ',
-!    &   tmx(k),' | ',tmy(k),' | ',tmz(k)
-!     enddo
-!     write(*,'(3A)') '----------------------------------------------',
-!    &  '----------------------------------------------',
-!    &  '----------------------------------------------'
 !|
 !|________________________ end print output
 
@@ -2376,6 +2376,28 @@
 ! in x,y,z for the state under consideration.
 
       logical                            :: last
+
+!     write(*,*)
+!     write(*,'(A35,A40)') '     *******************   Level:  ',
+!    &   iorder
+!     write(*,*)
+!     write(*,'(A,4X,A,2X,A,3X,A,9X,A,10X,A,10X,A)')
+!    &       'State','Energy (au)','Energy(eV)','Norm',
+!    &       'TM(x)_r        TM(x)_i',
+!    &       'TM(y)_r        TM(y)_i',
+!    &       'TM(z)_r        TM(z)_i'
+!     write(*,'(3A)') '----------------------------------------------',
+!    &  '----------------------------------------------',
+!    &  '----------------------------------------------'
+
+!     do k=1,nroots
+!       write(*,'(I4,F14.7,F14.7,F7.2,A,2F15.9,A,2F15.9,A,2F15.9)') k,
+!    &   evl(k),evl(k)*autoev,xnr(k),'  : ',
+!    &   tmx(k),' | ',tmy(k),' | ',tmz(k)
+!     enddo
+!     write(*,'(3A)') '----------------------------------------------',
+!    &  '----------------------------------------------',
+!    &  '----------------------------------------------'
 
       return
       end
