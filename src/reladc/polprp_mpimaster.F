@@ -909,7 +909,7 @@
       write(iw,*) '+++++++ BUFSIZE:',intbuf
       write(iw,*) '+++++++ NBUFS:',nbufs
       write(iw,*) '+++++++ NPROCS:',NMPROC
-      write(iw,*) '+++++++ LADC:',ladc,ladc*ladc
+      write(iw,*) '+++++++ LADC:',ladc
 !
 !  allocate read/write buffers (master and slaves)
 !

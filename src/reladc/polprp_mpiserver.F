@@ -42,6 +42,7 @@
       Integer                               :: nbufscur,nact
       Character*10                          :: locfn
       Character*6                           :: nmbase='PP_ELE'
+      Logical                               :: isthere
 !
 ! variables for matrix multiplication
 !
@@ -214,7 +215,10 @@
 
           case(SERVER_MATDIS)
 !
-! create local file name
+! create local file
+! file must remain after construction. However,
+! if a partial ADC matrix exists at this point it must be deleted
+! because in each symmetry this matrix is constructed exactly once.
 !
           IF (MYPROC .LT. 10) THEN
             WRITE (locfn,'(A6,A1,I1)') nmbase,'.',MYPROC
@@ -227,6 +231,12 @@
           ENDIF
           if(deb) write(*,*) 'Node',myproc,' opened ',
      &              locfn,' for writing.'
+          inquire(file=locfn,exist=isthere)
+          if(isthere) then
+            open(unit=iobase,file=locfn, access='SEQUENTIAL',
+     &           form='UNFORMATTED',status='old')
+            close(iobase,status='delete')
+          endif
           open(unit=iobase,file=locfn, access='SEQUENTIAL',
      &         form='UNFORMATTED',status='new')
 !

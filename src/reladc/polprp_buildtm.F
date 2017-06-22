@@ -2128,9 +2128,11 @@
           integer                      :: get_file_unit
         END Function
 
-        Subroutine WrtTMLine(l1,i1)
+        Subroutine WrtTMLine(l1,ch1,i1,c1,c2,c3)
           logical                      :: l1
+          Character(len=11)            :: ch1
           integer                      :: i1
+          complex*16                   :: c1,c2,c3
         END Subroutine
 
       end interface
@@ -2139,9 +2141,8 @@
 !
       real*8, parameter                       :: autoev = 27.2113957D0
       character*8, parameter                  :: evcnm_root='DAVILONG'
-      character*8, parameter                  :: outnm_root='DAVTMOUT'
       character*11                            :: evc_fname
-      character*11                            :: out_fname
+      character*8                             :: out_fname='DAVTMOUT'
       logical                                 :: isthere
 
       integer                                 :: io1,io2
@@ -2155,27 +2156,46 @@
       real*8                                  :: ps  ! kth pole strength
       real*8                                  :: xnr ! kth norm
   
-      integer                                 :: i,k,ico,ioresult
+      integer                                 :: i,k,iroot,ioresult
       complex*16                              :: ax,ay,az  !local contribs per root
       complex*16                              :: tmx,tmy,tmz !global contribs per root
+      complex*16                              :: fosc
+      real*8                                  :: foscr
 
       real*8, allocatable,dimension(:,:)      :: faipx,faipy,faipz
       real*8, allocatable,dimension(:,:)      :: fabijpx,fabijpy,fabijpz
       real*8, parameter                       :: D0=0.0d0
       complex*16, parameter                   :: A0=(D0,D0)
+      character(len=11),dimension(18)         :: iorder
 !
 !  executable
 !
-      call pst('Calculating transition moments (all states)+')
+      call pst('Calculating transition moments (all contribs)+')
+      iorder(01) = '0th        '
+      iorder(02) = '1st        '
+      iorder(03) = '2ndA       '
+      iorder(04) = '2ndB       '
+      iorder(05) = '2ndC       '
+      iorder(06) = '2nd 2,1    '
+      iorder(07) = '2nd 2,2    '
+      iorder(08) = '2nd 2,3    '
+      iorder(09) = '2nd 2,4    '
+      iorder(10) = '2nd 2,5    '
+      iorder(11) = '2nd 2,6    '
+      iorder(12) = '2nd 2,7    '
+      iorder(13) = '2nd 2,8    '
+      iorder(14) = '2nd 2,9    '
+      iorder(15) = '2nd 2,10   '
+      iorder(16) = '2nd 2p2h A '
+      iorder(17) = '2nd 2p2h B '
+      iorder(18) = 'total      '
 !
-! generate file names and open files for I/O
+! generate symmetry-specific file name for eigenvectors
 !
       IF(desrep.GT.9) THEN
         WRITE(evc_fname,'(A8,A1,I2)') evcnm_root,'.',desrep
-        WRITE(out_fname,'(A8,A1,I2)') outnm_root,'.',desrep
       ELSE
         WRITE(evc_fname,'(A8,A2,I1)') evcnm_root,'.0',desrep
-        WRITE(out_fname,'(A8,A2,I1)') outnm_root,'.0',desrep
       ENDIF
       INQUIRE(file=evc_fname,exist=isthere)
       if(.not.isthere) then
@@ -2187,17 +2207,28 @@
         write(*,*)
         return
       endif
-
+!
+! open eigenvector file
+!
       io1 = get_file_unit()
       OPEN(io1,file=evc_fname,access='sequential',
      &     status='unknown',form='unformatted')
       rewind(io1)
       write(*,*) '-- opened eigenvector file: ',evc_fname
-
+!
+! open master output file and append data if it exists
+!
       io2 = get_file_unit()
-      OPEN(io2,file=out_fname,access='sequential',
-     &     status='unknown',form='formatted')
-      write(*,*) '-- opened output file: ',out_fname
+      INQUIRE(file=out_fname,exist=isthere)
+      If(isthere) then  !append
+        OPEN(io2,file=out_fname,access='sequential',
+     &       position='append',status='old',form='formatted')
+        write(*,*) '-- opened output file: ',out_fname
+      Else
+        OPEN(io2,file=out_fname,access='sequential',
+     &       status='new',form='formatted')
+        write(*,*) '-- created output file: ',out_fname
+      Endif
 
 !_________________________  perform the contractions
 !|
@@ -2213,6 +2244,7 @@
       write(*,*) '       |    TMOUT characteristics  |'
       write(*,*) '       -----------------------------'
       write(*,*)
+      write(*,*) 'Treating symmetry:',desrep
       write(*,*) 'Found',nroots,' states in the eigenvector file.'
       write(*,*) 'Length of ADC matrix (from file):',ladc
       write(*,*) 'Length of main space (from file):',nmain
@@ -2260,18 +2292,28 @@
      &        stop 'QE'
       EndDo
 
+      write(io2,'(A)') ' '
+      write(io2,'(A)') '*********************************************'
+      write(io2,'(A,I12)') '**  Final State Symmetry: ',desrep
+      write(io2,'(A)') '*********************************************'
+      write(io2,'(A)') ' '
+
 !*******************************************
 !**** MASTER LOOP **************************
 !*******************************************
 
-      Do k=1,nroots
+      Do iroot=1,nroots
         read(io1) ist
         read(io1) evl
         read(io1) ps
 
+        write(io2,'(A)') ' '
         write(io2,'(A,X,I3,X,A,F10.4,A,X,F10.4,A,F10.4)') 
      &    'State',ist,':exc. energy',evl,'(au)',evl*autoev,
      &    ' (eV) and PS',ps
+        write(io2,'(A,15X,A,10X,A,10X,A)')
+     &       'Order', 'TM(x)_r        TM(x)_i',
+     &       'TM(y)_r        TM(y)_i','TM(z)_r        TM(z)_i'
 
 !  read real or complex coefficients, form norm
 
@@ -2294,60 +2336,82 @@
         tmx=A0
         tmy=A0
         tmz=A0
-        Do ico = 1,FAI_CONTRIBS
+        Do k = 1,FAI_CONTRIBS
 
-          ax=A0
-          ay=A0
-          az=A0
-!         if(carith) then
-!           do i=1,nmain
-!             ax = ax + ccoef(i) * faipx(i)
-!             ay = ay + ccoef(i) * faipy(i)
-!             az = az + ccoef(i) * faipz(i)
-!           enddo
-!           if(do2h2p) then
-!             do i=1,n2p2h
-!               ax = ax + ccoef(i+nmain) * fabijpx(i)
-!               ay = ay + ccoef(i+nmain) * fabijpy(i)
-!               az = az + ccoef(i+nmain) * fabijpz(i)
-!             enddo
-!           endif
-!         else
-!           do i=1,nmain
-!             ax = ax + dcmplx(rcoef(i),D0)*faipx(i)
-!             ay = ay + dcmplx(rcoef(i),D0)*faipy(i)
-!             az = az + dcmplx(rcoef(i),D0)*faipz(i)
-!           enddo
-!           if(do2h2p) then
-!             do i=1,n2p2h
-!               ax = ax + dcmplx(rcoef(i+nmain),D0)*fabijpx(i)
-!               ay = ay + dcmplx(rcoef(i+nmain),D0)*fabijpy(i)
-!               az = az + dcmplx(rcoef(i+nmain),D0)*fabijpz(i)
-!             enddo
-!           endif
-!         endif
-!         tmx(k) = ax
-!         tmy(k) = ay
-!         tmz(k) = az
+         ax=A0
+         ay=A0
+         az=A0
+         if(.not.carith) then
+           do i=1,nmain
+            ax = ax+dcmplx(rcoef(i),D0)*phasex*dcmplx(faipx(i,k),0.0d0)
+            ay = ay+dcmplx(rcoef(i),D0)*phasey*dcmplx(faipy(i,k),0.0d0)
+            az = az+dcmplx(rcoef(i),D0)*phasez*dcmplx(faipz(i,k),0.0d0)
+           enddo
+         else
+           do i=1,nmain
+            ax = ax + ccoef(i) * dcmplx(faipx(2*i-1,k),faipx(2*i,k))
+            ay = ay + ccoef(i) * dcmplx(faipy(2*i-1,k),faipy(2*i,k))
+            az = az + ccoef(i) * dcmplx(faipz(2*i-1,k),faipz(2*i,k))
+           enddo
+         endif
+         tmx = tmx + ax
+         tmy = tmy + ay
+         tmz = tmz + az
 
-          Call WrtTMLine(.false.,io2)
+         Call WrtTMLine(.false.,iorder(k),io2,tmx,tmy,tmz)
 
-        Enddo   !ico for P/H contribs
+        Enddo   !k for P/H contribs
 
-! --------------- now check 2p2h contributions -------------------
+! --------------- now add 2p2h contributions -------------------
 
-        Do ico = 1,FABIJ_CONTRIBS
-          ax=A0
-          ay=A0
-          az=A0
+        Do k = 1,FABIJ_CONTRIBS
+         ax=A0
+         ay=A0
+         az=A0
+         if(.not.carith) then
+           do i=1,n2p2h
+         ax=ax+dcmplx(rcoef(i+nmain),D0)*phasex*
+     &          dcmplx(fabijpx(i,k),0.0d0)
+         ay=ay+dcmplx(rcoef(i+nmain),D0)*phasey*
+     &          dcmplx(fabijpy(i,k),0.0d0)
+         az=az+dcmplx(rcoef(i+nmain),D0)*phasez*
+     &          dcmplx(fabijpz(i,k),0.0d0)
+           enddo
+         else
+           do i=1,n2p2h
+         ax = ax+ccoef(i+nmain)*
+     &          dcmplx(fabijpx(2*i-1,k),fabijpx(2*i,k))
+         ay = ay+ccoef(i+nmain)*
+     &          dcmplx(fabijpy(2*i-1,k),fabijpy(2*i,k))
+         az = az+ccoef(i+nmain)
+     &          *dcmplx(fabijpz(2*i-1,k),fabijpz(2*i,k))
+           enddo
+         endif
 
-          Call WrtTMLine(.false.,io2)
+         tmx = tmx + ax
+         tmy = tmy + ay
+         tmz = tmz + az
 
-        Enddo   !ico for 2P2H contribs
+         Call WrtTMLine(.false.,iorder(k+FAI_CONTRIBS),
+     &                  io2,tmx,tmy,tmz)
 
-        Call WrtTMLine(.true.,io2)
+        Enddo   !k for 2P2H contribs
 
-      Enddo   ! nroots
+        Call WrtTMLine(.true.,iorder(18),io2,tmx,tmy,tmz)
+        fosc = tmx*dconjg(tmx) + tmy*dconjg(tmy) + tmz*dconjg(tmz)
+        if(dabs(dimag(fosc)).gt.1.0E-14)
+     %   write(io2,'(A)') '*** Oscill. strength acquires imag contribs!'
+        foscr = (2.0d0/3.0d0)*evl*real(fosc)
+        write(io2,'(A,F16.8,A)') '   Osc. strength:     -->>  ',
+     &           foscr,'  a.u.'
+         write(io2,'(3A)') '-----------------------------------------',
+     &  '-----------------------------------------',
+     &  '--------------------------'
+         write(io2,'(A)') ' '
+         write(io2,'(A)') ' '
+         write(io2,'(A)') ' '
+
+      Enddo   ! iroot
       CLOSE(io1)
       CLOSE(io2)
 !|
@@ -2369,35 +2433,27 @@
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE WRTTMLINE(last)
+      SUBROUTINE WRTTMLINE(last,iorder,io,tx,ty,tz)
 !
 ! this routine writes out a contribution line to the transition moments
 ! If last line then it sums up and also calculates the oscillator strength
 ! in x,y,z for the state under consideration.
 
       logical                            :: last
+      character*11                       :: iorder
+      Integer                            :: io
+      Complex*16                         :: tx,ty,tz
 
-!     write(*,*)
-!     write(*,'(A35,A40)') '     *******************   Level:  ',
-!    &   iorder
-!     write(*,*)
-!     write(*,'(A,4X,A,2X,A,3X,A,9X,A,10X,A,10X,A)')
-!    &       'State','Energy (au)','Energy(eV)','Norm',
-!    &       'TM(x)_r        TM(x)_i',
-!    &       'TM(y)_r        TM(y)_i',
-!    &       'TM(z)_r        TM(z)_i'
-!     write(*,'(3A)') '----------------------------------------------',
-!    &  '----------------------------------------------',
-!    &  '----------------------------------------------'
-
-!     do k=1,nroots
-!       write(*,'(I4,F14.7,F14.7,F7.2,A,2F15.9,A,2F15.9,A,2F15.9)') k,
-!    &   evl(k),evl(k)*autoev,xnr(k),'  : ',
-!    &   tmx(k),' | ',tmy(k),' | ',tmz(k)
-!     enddo
-!     write(*,'(3A)') '----------------------------------------------',
-!    &  '----------------------------------------------',
-!    &  '----------------------------------------------'
+      if(.not.last) then
+        write(io,'(A14,2F15.9,A,2F15.9,A,2F15.9)')  iorder,
+     &        tx,' | ',ty,' | ',tz
+      else
+         write(io,'(3A)') '-----------------------------------------',
+     &  '-----------------------------------------',
+     &  '--------------------------'
+        write(io,'(A14,2F15.9,A,2F15.9,A,2F15.9)')  iorder,
+     &        tx,' | ',ty,' | ',tz
+      endif
 
       return
       end
