@@ -606,7 +606,7 @@ C
         SUBROUTINE mpi_bxcs_r(ra1,i1,ra2,i2,i3,i4,i5,l1,r1,i6,i7)
           real*8, dimension(:)  :: ra1
           integer               :: i1,i2,i3,i4,i5,i6,i7
-          real*8, dimension(*)  :: ra2
+          real*8, dimension(:)  :: ra2
           real*8                :: r1
           logical               :: l1
         END SUBROUTINE
@@ -614,7 +614,7 @@ C
         SUBROUTINE mpi_bxcs_c(ra1,i1,ra2,i2,i3,i4,i5,l1,r1,i6,i7)
           real*8, dimension(:)  :: ra1
           integer               :: i1,i2,i3,i4,i5,i6,i7
-          real*8, dimension(*)  :: ra2
+          real*8, dimension(:)  :: ra2
           real*8                :: r1
           logical               :: l1
         END SUBROUTINE
@@ -886,16 +886,6 @@ C
 
           close(iobase)
 
-          write(*,*) '**) Master enters real full diagonalizer.'
-          if(carith) then
-            stop
-          else
-            ladc = ireccnt
-            call fulldia_r3(iobase,namematfil,intbuf,ladc,desrep)
-          endif
-
-!                           lencouplbl and nbufs are set in the
-!                           mpi_bxcs_r routine!
 #else
 !
 ! remind: in the serial case the number of buffers (NBUFS) is known

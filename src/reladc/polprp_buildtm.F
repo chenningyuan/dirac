@@ -154,11 +154,6 @@
           integer                      :: i1
         END FUNCTION
 
-        SUBROUTINE XCOLDET_FILL(i1,ra1)
-          integer                      :: i1
-          real*8, dimension(:)         :: ra1
-        END SUBROUTINE
-
         SUBROUTINE denomvots(ra1,ra2)
           real*8, dimension(:)         :: ra1,ra2
         END SUBROUTINE

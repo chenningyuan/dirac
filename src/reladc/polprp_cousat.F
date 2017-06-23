@@ -55,7 +55,7 @@
 
         INTEGER FUNCTION XCOLDET(i1)
           INTEGER                         :: i1
-        END FUNCTION XCOLDET
+        END FUNCTION
 
         SUBROUTINE XCOLMAKE(i1,i2,ra1,
      &                      i3,i4,i5,i6,
@@ -368,7 +368,7 @@
 
         INTEGER FUNCTION XCOLDET(i1)
           INTEGER                         :: i1
-        END FUNCTION XCOLDET
+        END FUNCTION
 
         SUBROUTINE XCOLMAKE_C(i1,i2,ca1,
      &                        i3,i4,i5,i6,
@@ -628,17 +628,15 @@
       FUNCTION XCOLDET(desrep)
 !
       IMPLICIT INTEGER (A-Z)
+
+      INTEGER                               :: XCOLDET
+      INTEGER                               :: desrep
 !
 !---------------Description--------------------------------------------
 !
-!  determines length of excitation coupling block (V>V O>O: desrep)
+!  determines length of excitation coupling (2p2h) block (V>V O>O: desrep)
 !  Att: These are nontotally symmetric <cd||kl> streams where
 !  c>d and k>l!
-!
-!---------------Calling variables--------------------------------------
-!
-      INTEGER                       :: XCOLDET
-      INTEGER, INTENT(IN)           :: desrep
 !
 !---------------Common Blocks--------------------------------------
 !
@@ -650,8 +648,6 @@
 
       DO KLREP = 1,NREP     ! klrep, cdrep and desrep are bosonic
       CDREP = MULTB(DESREP+NREP,KLREP+NREP,2)
-!     write(*,*) 'xcoldet:',cdrep,klrep,' nvvt,noot:',
-!    &           nvvt(cdrep),noot(klrep)
       DO 10 LREP = 1, NREP
       KREP = MULTB(LREP,KLREP+NREP,2)
       IF (KREP.LT.LREP) GOTO 10
@@ -674,68 +670,97 @@
       ENDDO
  10   CONTINUE
       ENDDO
- 
+
       XCOLDET = ICNT
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!     subroutine XCOLDET_FILL(desrep,a)
+      SUBROUTINE XKENEDIAG(desrep,eps)
+
+      use qstack
 !
-!     IMPLICIT INTEGER (A-Z)
+      IMPLICIT INTEGER (A-Z)
+
+      INTEGER                               :: desrep
+      Real*8, dimension(:)                  :: eps
 !
 !---------------Description--------------------------------------------
 !
-!  determines length of excitation coupling block (V>V O>O: desrep)
-!  Att: These are nontotally symmetric <cd||kl> streams where
-!  c>d and k>l!
+!  furthermore it calculates the 2p2h K_ab,ij diagonal value for strict ADC-2
+!  and stores it on the stack. This considerably accelerates the
+!  ADC-2s calculations since no 8-fold loop is to be executed in the
+!  XSATMAKE routine.
 !
-!---------------Calling variables--------------------------------------
+!---------------Local variables--------------------------------------
 !
-!     INTEGER                       :: XCOLDET
-!     INTEGER, INTENT(IN)           :: desrep
-!     Real*8                        :: a(:)
+      Real*8, allocatable,dimension (:)     :: ecdkl
+      Real*8                                :: ec,ed,ek,el
+      Integer                               :: icntrl
+!
+!---------------interface region --------------------------------------
+!
+      interface
+
+        INTEGER FUNCTION XCOLDET(i1)
+          integer                      :: i1
+        END FUNCTION
+
+      end interface
 !
 !---------------Common Blocks--------------------------------------
 !
-!include "../relccsd/symm.inc"
+#include "../relccsd/symm.inc"
 !
 !---------------Executable code--------------------------------------
 !
-!     ICNT = 0
+      icntrl = xcoldet(desrep)
 
-!     call pst('XCOLDET+')
+      allocate(ecdkl(icntrl))
+      ecdkl = 0.0d0
 
-!     DO KLREP = 1,NREP     ! klrep, cdrep and desrep are bosonic
-!     CDREP = MULTB(DESREP+NREP,KLREP+NREP,2)
-!     write(*,*) 'xcoldet: nvvt,noot:',nvvt(cdrep),noot(klrep)
-!     DO 10 LREP = 1, NREP
-!     KREP = MULTB(LREP,KLREP+NREP,2)
-!     IF (KREP.LT.LREP) GOTO 10
-!     DO L = 1, NO(LREP)
-!        KMIN = 1
-!        IF (KREP.EQ.LREP) KMIN = L + 1
-!        DO K = KMIN, NO(KREP)
-!           DO 20 DREP = 1, NREP
-!             CREP = MULTB(DREP,CDREP+NREP,2)
-!             IF (CREP.LT.DREP) GOTO 20
-!             DO D = 1, NV(DREP)
-!               CMIN = 1
-!               IF (CREP.EQ.DREP) CMIN = D + 1
-!               DO C = CMIN, NV(CREP)
-!                 ICNT = ICNT + 1
-!                 a(icnt) = dble(icnt)
-!                 write(*,*) a(icnt)
-!               ENDDO
-!             ENDDO
-!20         CONTINUE
-!        ENDDO
-!     ENDDO
-!10   CONTINUE
-!     ENDDO
+      ICNT = 0
+      DO KLREP = 1,NREP     ! klrep, cdrep and desrep are bosonic
+      CDREP = MULTB(DESREP+NREP,KLREP+NREP,2)
+      DO 30 LREP = 1, NREP
+      KREP = MULTB(LREP,KLREP+NREP,2)
+      IF (KREP.LT.LREP) GOTO 30
+      DO L = 1, NO(LREP)
+         KMIN = 1
+         IF (KREP.EQ.LREP) KMIN = L + 1
+         DO K = KMIN, NO(KREP)
+            DO 40 DREP = 1, NREP
+              CREP = MULTB(DREP,CDREP+NREP,2)
+              IF (CREP.LT.DREP) GOTO 40
+              DO D = 1, NV(DREP)
+                CMIN = 1
+                IF (CREP.EQ.DREP) CMIN = D + 1
+                DO C = CMIN, NV(CREP)
+                  ICNT = ICNT + 1
+                  coff=io(nrep+1) + iv(crep) + c
+                  doff=io(nrep+1) + iv(drep) + d
+                  koff=io(krep) + k
+                  loff=io(lrep) + l
+                  ec=eps(coff)
+                  ed=eps(doff)
+                  ek=eps(koff)
+                  el=eps(loff)
+                  ecdkl(icnt) = ec + ed - ek - el
+                ENDDO
+              ENDDO
+ 40         CONTINUE
+         ENDDO
+      ENDDO
+ 30   CONTINUE
+      ENDDO
 
-!     XCOLDET = ICNT
-!     RETURN
-!     END
+      if(icnt.ne.icntrl) stop 'Internal error XKENEDIAG!'
+
+      if(qstack_push(ENE_STACKLINE,icnt,ecdkl).ne.icnt) stop 'QE'
+
+      deallocate(ecdkl)
+ 
+      RETURN
+      END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE XCOLMAKE (desrep,lencouplbl,bufcol,
      &                     jrep,brep,J,B,
