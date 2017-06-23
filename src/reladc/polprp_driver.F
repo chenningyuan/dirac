@@ -603,6 +603,11 @@ C
           integer               :: i5
         END SUBROUTINE
 
+        SUBROUTINE XKENEDIAG(i1,ra1)
+          integer               :: i1
+          real*8, dimension(:)  :: ra1
+        END SUBROUTINE
+
         SUBROUTINE mpi_bxcs_r(ra1,i1,ra2,i2,i3,i4,i5,l1,r1,i6,i7)
           real*8, dimension(:)  :: ra1
           integer               :: i1,i2,i3,i4,i5,i6,i7
@@ -627,21 +632,6 @@ C
         SUBROUTINE mpi_davidson_master_c(i1,i2,i3,i4,c1,c2,i5,i6,i7)
           integer               :: i1,i2,i3,i4,i5,i6,i7
           character*6           :: c1,c2
-        END SUBROUTINE
-
-        SUBROUTINE mpi_xmat_dist(i1,c1,i2,i3,i4,i5,i6)
-          integer               :: i1,i2,i3,i4,i5,i6
-          character*6           :: c1
-        END SUBROUTINE
-
-        SUBROUTINE mpi_davidson_helper_r (i1,c1,i2)
-          integer               :: i1,i2
-          character*6           :: c1
-        END SUBROUTINE
-
-        SUBROUTINE mpi_davidson_helper_c (i1,c1,i2)
-          integer               :: i1,i2
-          character*6           :: c1
         END SUBROUTINE
 
         SUBROUTINE mpi_task_server (i1,i2)
@@ -753,6 +743,7 @@ C
         else
           CALL SOLVE_PHPH_R(daibj,n1,iobase)   !iobase is reusable!
         endif
+
 #if defined (VAR_MPI)
       endif
 #endif
@@ -792,15 +783,6 @@ C
         CALL PRECONTRACT_NEW(iobase,iw,eps)
 
         write(*,*) 'Precontraction finished.'
-#if defined (VAR_MPI)
-!
-! in case of parallel we release the nodes
-!
-!       write(iw,*) 'Master indicates done.'
-!       call interface_mpi_bcast(SERVER_DONE,1,MASTER,
-!    &                           global_communicator)
-!       return
-#endif
 
 ! ______________ SYMMETRY LOOP FOR COUPLING + SAT BLOCK___________
 ! |
@@ -838,10 +820,15 @@ C
           WRITE(IW,*) 'Configuration data written to ',namecnffil
           WRITE(IW,*) 'Record length in configuration file:',IRECL
           WRITE(IW,*) 'Number of records (=matrix dimension):',ireccnt
+!
+! calculate diagonal energies in satellite block for ADC-2 strict calculations
+! (only master does it) Energies go on the stack and are fetched by
+! XSATMAKE routine
+!
+          CALL XKENEDIAG(desrep,eps)
 
 ! generate coupling and sat block in this symmetry
 ! together with the helpers simultaneously started.
-! open main matrix file and construct main matrix.
 
 #if defined (VAR_MPI)
 !

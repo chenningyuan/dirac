@@ -217,7 +217,7 @@
 
         brep = multb(desrep+nrep,jrep,2)
         if(MULTB(brep,jrep,2).eq.desrep) then
-          write(*,*) 'BJ rep generation ok.'
+!         write(*,*) 'BJ rep generation ok.'
         else
           stop 'BJ rep generation failed.'
         endif
@@ -537,7 +537,7 @@
 
         brep = multb(desrep+nrep,jrep,2)
         if(MULTB(brep,jrep,2).eq.desrep) then
-          write(*,*) 'BJ rep generation ok.'
+!         write(*,*) 'BJ rep generation ok.'
         else
           stop 'BJ rep generation failed.'
         endif
@@ -710,6 +710,7 @@
 !---------------Common Blocks--------------------------------------
 !
 #include "../relccsd/symm.inc"
+#include "polprp_stacklines.h"
 !
 !---------------Executable code--------------------------------------
 !
@@ -758,6 +759,8 @@
       if(qstack_push(ENE_STACKLINE,icnt,ecdkl).ne.icnt) stop 'QE'
 
       deallocate(ecdkl)
+
+      write(*,*) 'ADC-2s sat energies written. Length check passed.'
  
       RETURN
       END
