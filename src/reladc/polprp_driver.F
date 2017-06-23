@@ -596,7 +596,7 @@ C
 
         SUBROUTINE BUILD_X_COUSAT_C(h,a,i1,i2,i3,i4,l1,r2,i5)
           real*8, dimension(:)  :: h
-          real*8, dimension(*)  :: a
+          real*8, dimension(:)  :: a
           integer               :: i1,i2,i3,i4
           logical               :: l1
           real*8                :: r2
@@ -906,7 +906,7 @@ C
 
           OPEN(UNIT=IOBASE,FILE=namematfil, ACCESS='SEQUENTIAL',
      &       FORM='UNFORMATTED',STATUS='NEW')
-          serialindicator = -1
+          serialindicator = -654321
           Write(iobase) serialindicator
           write(*,*)
           write(*,*) '**) Entering serial driver for'
@@ -952,31 +952,8 @@ C
           write(iw,*)
           call mpi_master_mat_dist(iobase,namematfil,irploop,
      &                              intbuf,nbufs,ladc,iw)
-!       write(iw,*) 'Master indicates done.'
-!       call interface_mpi_bcast(SERVER_DONE,1,MASTER,
-!    &                           global_communicator)
-!         return
 
-! slaves have knowledge only of the variables 'iobase', 'iw' and 'namematfil'
-! all other relevant variables for matrix distribution have to be bcast.
-
-!         call interface_mpi_bcast(irploop,1,MASTER,global_communicator)
-!         call interface_mpi_bcast(intbuf,1,MASTER,global_communicator)
-!         call interface_mpi_bcast(nbufs,1,MASTER,global_communicator)
-!         call interface_mpi_bcast(ladc,1,MASTER,global_communicator)
-
-!  enter matrix distribution routine (master entry)
-
-!         call mpi_xmat_dist(iobase,namematfil,irploop,
-!    &                     intbuf,nbufs,ladc,iw)
-
-! We synchronize all nodes after matrix distribution
-
-!         call interface_mpi_BARRIER(global_communicator)
-!         write(iw,*) 'Master node synchronized after',
-!    &               ' matrix distribution.'
-
-! Master calls Davidson diagonalizer driver routine.
+!  Master calls Davidson diagonalizer driver routine.
 !  Slaves perform partial matrix/vector multiplication.
 
 ! Att: for the moment no full diagonalizers are called in parallel!

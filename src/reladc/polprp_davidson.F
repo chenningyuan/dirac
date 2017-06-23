@@ -2620,7 +2620,7 @@ c  .. read elements
      &         form='UNFORMATTED',status='unknown')
 
       REWIND(io)
-      read(io) serialindicator   !discarded, but necessary.
+      read(io) serialindicator
 
 
       allocate(a(ladc,ladc))
@@ -2747,6 +2747,12 @@ c  .. read elements
 !
 !---------------Executable code--------------------------------------
 !
+!  print info
+!
+!     write(*,*) 'file name: ',fname
+!     write(*,*) 'intbuf:',intbuf
+!     write(*,*) 'ladc:',ladc
+!
 !  do the allocations and
 !  construct ADC matrix by reading nonzero elements from file
 !
@@ -2763,8 +2769,7 @@ c  .. read elements
      &         form='UNFORMATTED',status='unknown')
 
       REWIND(io)
-      read(io) serialindicator   !discarded, but necessary.
-
+      read(io) serialindicator
 
       allocate(a(ladc,ladc))
       allocate(evl(ladc))
@@ -2788,6 +2793,7 @@ c  .. read elements
            call quit('ADC matrix read error (complex). Terminating')
         endif
         if (ioresult < 0) then  ! EOF detected
+!          write(*,*) 'EOF detected.'
            exit    !leave infinite do loop
         endif
 

@@ -84,7 +84,7 @@
           REAL*8                    :: r1
           REAL*8, dimension(:)      :: ra1
           INTEGER, dimension(:)     :: ia1,ia2
-          REAL*8, dimension(*)      :: ra2
+          REAL*8, dimension(:)      :: ra2
           INTEGER,dimension(:,:,:)  :: ia3,ia4
           LOGICAL                   :: l1
         END SUBROUTINE XSATMAKE
@@ -109,7 +109,11 @@
       if(ialloc.ne.0) STOP 'data buffer 2 could not be allocated.'
       allocate(wbufj(intbuf),stat=ialloc)
       if(ialloc.ne.0) STOP 'data buffer 3 could not be allocated.'
-      wbufr=0.0d0; wbufi = 0; wbufj = 0
+
+      wbufr = 0.0d0
+      wbufi = 0
+      wbufj = 0
+
       IBFP = 0   ! pointer to actual buffer level
       NBUFS = 0  ! counter for full buffers
 !|
@@ -204,25 +208,16 @@
 !  according to the SRT16 convention, 
 !  the columns also have DESREP symmetry. 
 !  We loop over the columns in the same manner and construct
-!  the columns of the 2H2P/HP coupling block. 
+!  the columns of the 2P2H/PH coupling block. 
 !  after construction we write out the column together with the
 !  components of the main block.
 !
       mjcol = 1
       do jrep = 1,nrep
 
-!       brep = multb(desrep+nrep,jrep,2)
-
-!  the transposition of the following line together with a
-!  complex conjugation gives the same irep relations.
-
-        brep = multb(jrep,desrep+nrep,2)
-        brep = multb(brep,1+nrep,2)
-
-!  jrep is |jrep>, brep is <brep|
-
+        brep = multb(desrep+nrep,jrep,2)
         if(MULTB(brep,jrep,2).eq.desrep) then
-!         write(*,*) 'BJ rep generation ok.'
+          write(*,*) 'BJ rep generation ok.'
         else
           stop 'BJ rep generation failed.'
         endif
@@ -237,7 +232,6 @@
      &                  jrep,brep,jfun,bfun,
      &                  mxno,mxnv,
      &                  vooo1,vovv1,oolt,vvlt)
-!         write(*,*) mjcol,'. XCOLMAKE run done.'
 !
 ! combine main block column with coupling block column
 ! istart is the start address for picking the right main block
@@ -247,11 +241,6 @@
           bufcolex(1:nmvod)=phph_block(istart+1:istart+nmvod)
           bufcolex(nmvod+1:nmvod+lencouplbl)=
      &        bufcol(1:lencouplbl)
-
-!         do k=1,nmvod+lencouplbl
-!           write(*,*) 'coupling out:',k,mjcol,bufcolex(k)
-!         enddo
-
 !
 ! write out full column.
 !
@@ -350,7 +339,6 @@
       INTEGER*8            :: n8  !needed for the ivovvt variable!
       INTEGER              :: jrep,brep,jfun,bfun
       INTEGER              :: ialloc,mjcol,nmvod
-      integer              :: n2
 
       INTEGER              :: mxno,mxnv,ioff
       INTEGER, dimension (:,:,:), allocatable  :: oolt
@@ -408,7 +396,7 @@
           REAL*8                      :: r1
           complex*16, dimension(:)    :: ca1
           INTEGER, dimension(:)       :: ia1,ia2
-          REAL*8, dimension(*)        :: ra2
+          REAL*8, dimension(:)        :: ra2
           INTEGER,dimension(:,:,:)    :: ia3,ia4
           LOGICAL                     :: l1
         END SUBROUTINE XSATMAKE_C
@@ -426,15 +414,14 @@
       if(rcw.ne.2) then
         call quit('Internal error in BUILD_X_COUSAT_C !')
       endif
-
 !___________________________________________________________
 !|
 !|  generate complex auxiliary array from original real one.
 
-      n2 = jvovo(nrep+1)
-      allocate(phph_blc(n2))
+      n1 = jvovo(nrep+1)
+      allocate(phph_blc(n1))
       phph_blc = czero
-      do i=1,n2
+      do i=1,n1
         ix = 2*(i-1) + 1
         phph_blc(i)=dcmplx(phph_block(ix),phph_block(ix+1))
       enddo
@@ -452,7 +439,7 @@
       allocate(wbufj(intbuf),stat=ialloc)
       if(ialloc.ne.0) STOP 'data buffer 3 could not be allocated.'
 
-      wbufr=czero
+      wbufr = czero
       wbufi = 0
       wbufj = 0
       IBFP = 0   ! pointer to actual buffer level
@@ -552,8 +539,7 @@
         if(MULTB(brep,jrep,2).eq.desrep) then
           write(*,*) 'BJ rep generation ok.'
         else
-          write(*,*) 'BJ rep generation failed.'
-          stop
+          stop 'BJ rep generation failed.'
         endif
 
         do jfun = 1,NO(jrep)
@@ -581,8 +567,10 @@
           CALL XCOLWRIT_C(IOCH,wthr,bufcolex,wbufr,wbufi,wbufj,
      &                    IBFP,NBUFS,LENCOUPLBL+NMVOD,mjcol,INTBUF)
           mjcol = mjcol + 1
+
         enddo
         enddo
+
       enddo
 
       IF((mjcol-1).ne.mvo(desrep))
@@ -1231,7 +1219,7 @@
       INTEGER                   :: mjcol,desrep
       REAL*8, dimension(:)      :: buf
       INTEGER, dimension(:)     :: ioi,ioj
-      REAL*8, dimension(*)      :: eps
+      REAL*8, dimension(:)      :: eps
       INTEGER,dimension(:,:,:)  :: oolt, vvlt
       LOGICAL                   :: dox  !tells the routine ADC2-x
 !
@@ -1257,13 +1245,13 @@
         SUBROUTINE mpi_master_vvvv_complete(ra1,i1)
           real*8, dimension(:)            :: ra1
           integer*8                       :: i1
-        END SUBROUTINE mpi_master_vvvv_complete
+        END SUBROUTINE
 
       end interface
 !
 !---------------Start execution--------------------------------------
 !
-      call pst('Constructing satellite part+')
+      call pst('Constructing real satellite part+')
 !______________________________________________________
 !|
 !|  we allocate these arrays only in extended mode.
@@ -1274,8 +1262,8 @@
       IF(DOX) THEN
 !****************************
 
-        n8 = ivvvvtt(nrep+1)
-       allocate(vvvvz(n8),stat=ialloc)
+       n8 = ivvvvtt(nrep+1)
+       allocate(vvvvz(n8*rcw),stat=ialloc)
        if(ialloc.ne.0) STOP 'VVVV buffer could not be allocated.'
 
 #if defined (VAR_MPI)
@@ -1635,7 +1623,6 @@
          BUF(IBFP)=S
          IOI(IBFP)=ABIJ + MVO(DESREP)
          IOJ(IBFP)=CDKL + MVO(DESREP)
-!        write(*,*) 'Satmatout:',IOI(IBFP),IOJ(IBFP),S
          IF(IBFP.EQ.INTBUF) THEN
            NBUFS = NBUFS + 1
            WRITE(IOCH) (BUF(IXX),IXX=1,INTBUF),
@@ -1697,7 +1684,7 @@
       INTEGER                    :: mjcol,desrep
       complex*16, dimension(:)   :: buf
       INTEGER, dimension(:)      :: ioi,ioj
-      REAL*8, dimension(*)       :: eps
+      REAL*8, dimension(:)       :: eps
       INTEGER,dimension(:,:,:)   :: oolt, vvlt
       LOGICAL                    :: dox  !tells the routine ADC2-x
 !
@@ -1732,7 +1719,7 @@
 !
 !---------------Start execution--------------------------------------
 !
-      call pst('Constructing satellite part+')
+      call pst('Constructing complex satellite part+')
 !______________________________________________________
 !|
 !|  we allocate these arrays only in extended mode.
@@ -1743,18 +1730,18 @@
       IF(DOX) THEN
 !****************************
 
-        n8 = ivvvvtt(nrep+1)*rcw
-        allocate(vvvvz(n8),stat=ialloc)
+        n8 = ivvvvtt(nrep+1)
+        allocate(vvvvz(n8*rcw),stat=ialloc)
         if(ialloc.ne.0) STOP 'VVVV buffer could not be allocated.'
 
 #if defined (VAR_MPI)
-        do i8=1,n8
+        do i8=1,n8*rcw
           vvvvz(i8) = -9999.0d0
         enddo
         call rdvvvv(vvvvz)  ! master reads its own chunks
         call mpi_master_vvvv_complete(vvvvz,n8)  !.... and completes the stream.
         write(*,*) 'VVVV check...'
-        do i8=1,n8
+        do i8=1,n8*rcw
           if(vvvvz(i8).eq. -9999.0d0)
      &      call quit('Internal error: gap in the VVVV stream!')
         enddo
@@ -2129,7 +2116,6 @@
          BUF(IBFP)=S
          IOI(IBFP)=ABIJ + MVO(DESREP)
          IOJ(IBFP)=CDKL + MVO(DESREP)
-!        write(*,*) 'Satmatout:',IOI(IBFP),IOJ(IBFP),S
          IF(IBFP.EQ.INTBUF) THEN
            NBUFS = NBUFS + 1
            WRITE(IOCH) (BUF(IXX),IXX=1,INTBUF),

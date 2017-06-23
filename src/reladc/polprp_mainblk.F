@@ -5,7 +5,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Description--------------------------------------------
 !
-!     Computes HP/HP block (main block) of the Excitation ADC Matrix
+!     Computes PH/PH block (main block) of the Excitation ADC Matrix
 !     (polarization propagator). 
 !     Works for real and complex case.
 !
@@ -520,7 +520,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         do jrep = 1,nrep   !jrep,brep are fermionic
           brep = multb(desrep+nrep,jrep,2)
           if(multb(brep,jrep,2).ne.desrep) then
-            write(*,*) 'HP/HP ordering problem!'
+            write(*,*) 'PH/PH ordering problem!'
             stop 'solve_phph_r'
           endif
           do jfun = 1,NO(jrep)
@@ -590,7 +590,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
         x2 = dabs(qmasymr(amat,nsiz))
         if(x2.gt.1.0E-10) then
-          write(*,*) 'Warning: Asymmetry of HP/HP matrix',
+          write(*,*) 'Warning: Asymmetry of PH/PH matrix',
      &         ' in symmetry',desrep,' amounts to',x2
 !       else
 !         write(*,*) 'Matrix symmetric with',x2
@@ -746,7 +746,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         do jrep = 1,nrep   !jrep,brep are fermionic
           brep = multb(desrep+nrep,jrep,2)
           if(multb(brep,jrep,2).ne.desrep) then
-            write(*,*) 'HP/HP ordering problem!'
+            write(*,*) 'PH/PH ordering problem!'
             stop 'SOLVE_PHPH_C'
           endif
           do jfun = 1,NO(jrep)
@@ -830,10 +830,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
         x2 = dabs(qmasymh(amat,nsiz))
         if(x2.gt.1.0E-10) then
-          write(*,*) 'Warning: Deviation from hermiticity of HP/HP',
+          write(*,*) 'Warning: Deviation from hermiticity of PH/PH',
      &       ' matrix in symmetry',desrep,' amounts to',x2
         else
-          write(*,*) 'Hermiticity of HP/HP block:',x2
+          write(*,*) 'Hermiticity of PH/PH block:',x2
         endif
         write(*,*)
 !

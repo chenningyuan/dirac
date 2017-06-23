@@ -491,11 +491,14 @@ C
 !
       integer               :: i,n,icount
 
+#include "../relccsd/complex.inc"
+
       write(iw,*) 'POLPRP control variables:'
       write(iw,*) '-------------------------'
       write(iw,*)
-      write(iw,*) 'we do extended calculation: ',polprp_doextended
-      write(iw,*) 'we calculate transition moments: ',polprp_dotrmo
+      write(iw,*) 'extended ADC-2 calculation: ',polprp_doextended
+      write(iw,*) 'Compute transition moments : ',polprp_dotrmo
+      write(iw,*) 'Complex arithmetic: ',carith
       write(iw,'(A,F10.5)') 
      &   'threshold for elements in ADC matrix: ',polprp_writethr
       write(iw,*) 'we perform a Davidson diagonalization:',polprp_dodiag
