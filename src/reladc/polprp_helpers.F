@@ -316,11 +316,10 @@ C|__________________________________________________________
 !---------------Local variables--------------------------------------
 !
       REAL*8                           :: EA,EI,EB,EJ
+      REAL*8                           :: ESM
 !
 !---------------Executable code--------------------------------------
 !
-
-!     write(*,*) '+++++++++++ entering DENOMVOVO +++++++++++'
       AIBJ = 0
 
       DO BJREP = 1, NREP   !bosonic irep
@@ -347,9 +346,11 @@ C|__________________________________________________________
 
                      AIBJ = AIBJ + 1
                      IF (CARITH) THEN
-                        stop 'complex not yet available'
+                       ESM = EA+EB-EI-EJ
+                       T(2*AIBJ-1) = T(2*AIBJ-1)/ESM
+                       T(2*AIBJ) = T(2*AIBJ)/ESM
                      ELSE
-                        T(AIBJ) = T(AIBJ)/(EA+EB-EI-EJ)
+                       T(AIBJ) = T(AIBJ)/(EA+EB-EI-EJ)
                      ENDIF
 
                    ENDDO !A
@@ -1107,8 +1108,8 @@ C
             IJK  = (K-1) * N * RCW + 1
             IJKL1 = LOFF + (L-1) * NTRIPL(IJKREP) * RCW + IJK 
             IJLK1 = KOFF + (K-1) * NTRIPL(IJLREP) * RCW + IJL 
-            if(IJKL1+N.gt.iceil) write(*,*) '***alert A'
-            if(IJLK1+N.gt.iceil) write(*,*) '***alert B'
+            if(IJKL1+N.gt.iceil*rcw) write(*,*) '***alert A'
+            if(IJLK1+N.gt.iceil*rcw) write(*,*) '***alert B'
             IF (DOINV) THEN
                CALL XCOPY (N,BUF1(IJKL1),1,BUF2(IJKL),1)
                CALL XAXPY (N,-A1,BUF1(IJLK1),1,BUF2(IJKL),1)

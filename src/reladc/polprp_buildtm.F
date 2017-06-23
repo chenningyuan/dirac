@@ -1628,17 +1628,32 @@
 !|   and !!new!! SRT1T3_NTS routine.
  
       write(*,*) 'Performing antisymmetry test of SRT1T3_NTS...'
-      do i=1,nabxij
-        vvoop(i) = dble(i)
-      enddo
+
+      if(carith) then
+        do i=1,nabxij
+          vvoop(2*i-1) = dble(i)
+          vvoop(2*i)   = dble(i)
+        enddo
+      else
+        do i=1,nabxij
+          vvoop(i) = dble(i)
+        enddo
+      endif
+
       vabijx = 0.0d0
       CALL SRT1T3_NTS (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,
      &                LVVONO,KKVVOT,vvoop,vabijx,desrep,nabixj)
       xcntrl = 0.0d0
-      do i=1,lvvono(nrep+1)
-        xcntrl = xcntrl + vabijx(i)
-!       write(*,*) i,' xcntrl contrib:',vvoo3(i)
-      enddo
+
+      if(carith) then
+        do i=1,lvvono(nrep+1)
+          xcntrl = xcntrl + vabijx(2*i-1) + vabijx(2*i)
+        enddo
+      else
+        do i=1,lvvono(nrep+1)
+          xcntrl = xcntrl + vabijx(i)
+        enddo
+      endif
       if(abs(xcntrl).gt.1.0E-16) stop '** FAILED **'
       write(*,*) '...passed.'
       vabijx = 0.0d0
@@ -1740,17 +1755,32 @@
 !|   and !!new!! SRT1T2_NTS routine.
  
       write(*,*) 'Performing antisymmetry test of SRT1T2_NTS...'
-      do i=1,nabxij
-        vvoop(i) = dble(i)
-      enddo
+
+      if(carith) then
+        do i=1,nabxij
+          vvoop(2*i-1) = dble(i)
+          vvoop(2*i)   = dble(i)
+        enddo
+      else
+        do i=1,nabxij
+          vvoop(i) = dble(i)
+        enddo
+      endif
+
       vabijx = 0.0d0
       CALL SRT1T2_NTS (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVNVOO,LLVOOT,
      &                vvoop,vabijx,desrep)
       xcntrl = 0.0d0
-      do i=1,lvnvoo(nrep+1)
-        xcntrl = xcntrl + vabijx(i)
-!       write(*,*) i,' xcntrl contrib:',vvoo3(i)
-      enddo
+
+      if(carith) then
+        do i=1,lvnvoo(nrep+1)
+          xcntrl = xcntrl + vabijx(2*i-1) + vabijx(2*i)
+        enddo
+      else
+        do i=1,lvnvoo(nrep+1)
+          xcntrl = xcntrl + vabijx(i)
+        enddo
+      endif
       if(abs(xcntrl).gt.1.0E-16) stop '** FAILED **'
       write(*,*) '...passed.'
       vabijx = 0.0d0
