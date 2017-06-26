@@ -20,15 +20,12 @@
  
          use tensor_algebra
          use talsh
-         use dirac_exatensor
-         use exacorr_ao_to_mo
 
          implicit none
          integer, intent(in) :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
          integer, intent(in) :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
 
          integer   :: ierr, i
-         complex(8), pointer, contiguous:: ao_tens(:,:,:,:)
          complex(8), pointer :: energy(:),result_tens(:)
          type(C_PTR):: body_p
          integer(C_SIZE_T), parameter:: BUF_SIZE=1_8*1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
@@ -46,19 +43,13 @@
          type(talsh_tens_t):: t2_tensor, s2_tensor
          integer:: t2_dims(1:4), s2_dims(1:4)
 !        scalars (need to be defined as tensor types)
-         type(talsh_tens_t):: result_tensor, minusone_tensor
-         integer:: result_dims(1),minusone_dims(1)
+         type(talsh_tens_t):: result_tensor, one_tensor
+         integer:: result_dims(1),one_dims(1)
 !        orbital energies
          real(8), allocatable :: eps_occ(:),eps_vir(:)
-
 !        CCD control and result variables
          integer :: iccd, nccd
          real(8) :: mp2_energy, ccd_energy
-
-!        The declarations below are needed for work-arounds and debugging
-         complex(8), pointer, contiguous:: oovv_tens(:,:,:,:),t2_tens(:,:,:,:),s2_tens(:,:,:,:)
-         integer:: oovv_dims(1:4)
-         integer :: j,a,b
 
 !        Make some noise so that we know we are here
          print*, " Arrived in cc_driver routine"
@@ -70,6 +61,14 @@
          write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,host_buf_size,host_arg_max
          call interest_initialize
          print*, " Initialized interest library"
+
+!        Initialize scalars that are to be used as tensors in contractions
+         one_dims(1) = 1
+         ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
+         result_dims(1) = 1
+         ierr=talsh_tensor_construct(result_tensor,C8,result_dims(1:0),init_val=ZERO)
+         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,0,DEV_HOST)
+         call c_f_pointer(body_p,result_tens,result_dims)
 
 !        Get orbital energies from the DIRAC restart file
          allocate (eps_occ(2*nocc))
@@ -84,36 +83,16 @@
          t2_dims(1:2) = nvir * 2
          t2_dims(3:4) = nocc * 2
          ierr=talsh_tensor_construct(t2_tensor,C8,t2_dims,init_val=ZERO)
-!        This is a work-around, this transpose and copy should be cast in talsh calls
-         oovv_dims(1:2) = nocc * 2
-         oovv_dims(3:4) = nvir * 2
-         ierr=talsh_tensor_get_body_access(oovv_tensor,body_p,C8,0,DEV_HOST)
-         call c_f_pointer(body_p,oovv_tens,oovv_dims)
-         ierr=talsh_tensor_get_body_access(t2_tensor,body_p,C8,0,DEV_HOST)
-         call c_f_pointer(body_p,t2_tens,t2_dims)
-         do j = 1, 2 * nocc
-           do i = 1, 2 * nocc
-             do b = 1, 2 * nvir
-               do a = 1, 2 * nvir
-                  t2_tens(a,b,i,j)   = dconjg(oovv_tens(i,j,a,b))
-               end do 
-             end do 
-           end do 
-         end do 
+!        ierr=talsh_tensor_add("T(a,b,i,j)+=V+(i,j,a,b)",t2_tensor,oovv_tensor)
+!        work-around because complex conjugation does not work in the above statement
+         ierr=talsh_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)",t2_tensor,oovv_tensor,one_tensor)
+!        end of work-around
          call scale_with_denominators (t2_tensor,eps_occ,eps_vir)
 
 !        Calculate and print the MP2 energy
-!        This is a work-around, should be cast as a complete contraction of tensors
-         mp2_energy = ZERO
-         do j = 1, 2 * nocc
-           do i = 1, j
-             do b = 1, 2 * nvir
-               do a = 1, b
-                  mp2_energy = mp2_energy + oovv_tens(i,j,a,b) * t2_tens(a,b,i,j)
-               end do 
-             end do 
-           end do 
-         end do 
+         ierr=talsh_tensor_init(result_tensor)
+         ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,t2_tensor,oovv_tensor)
+         mp2_energy=result_tens(1) * ONE_QUARTER
          print*," MP2 energy = ",mp2_energy
 
 !        Start CCD iterations
@@ -134,11 +113,6 @@
          s2_dims(1:2) = nvir * 2
          s2_dims(3:4) = nocc * 2
          ierr=talsh_tensor_construct(s2_tensor,C8,s2_dims,init_val=ZERO)
-!        For debugging
-         result_dims(1) = 1
-         ierr=talsh_tensor_construct(result_tensor,C8,result_dims(1:0),init_val=ZERO)
-         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,0,DEV_HOST)
-         call c_f_pointer(body_p,result_tens,result_dims)
 
          do iccd = 1, nccd
 
@@ -183,20 +157,11 @@
          print*, "h int = ",result_tens(1)
 
 !        calculate s2 tensor
-!        ierr=talsh_tensor_init(s2_tensor)
+         ierr=talsh_tensor_init(s2_tensor)
 !        ierr=talsh_tensor_add("S(a,b,i,j)+=V+(i,j,a,b)",s2_tensor,oovv_tensor)
-!        work-around
-         ierr=talsh_tensor_get_body_access(s2_tensor,body_p,C8,0,DEV_HOST)
-         call c_f_pointer(body_p,s2_tens,s2_dims)
-         do j = 1, s2_dims(4)
-           do i = 1, s2_dims(3)
-             do b = 1, s2_dims(2)
-               do a = 1, s2_dims(1)
-                  s2_tens(a,b,i,j)   = dconjg(oovv_tens(i,j,a,b))
-               end do 
-             end do 
-           end do 
-         end do 
+!        work-around because complex conjugation does not work in the above statement
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=V+(i,j,a,b)",s2_tensor,oovv_tensor,one_tensor)
+!        end of work-around
 
 !        This terms appears twice as we need to permute i and j
          ierr=talsh_tensor_contract("S(a,b,i,j)+=G(k,j)*T(a,b,i,k)",s2_tensor,goint_tensor,t2_tensor)
@@ -225,16 +190,9 @@
          ierr=talsh_tensor_add("T2(a,b,i,j)+=S2(a,b,i,j)",t2_tensor,s2_tensor)
          call scale_with_denominators (t2_tensor,eps_occ,eps_vir)
 
-         ccd_energy = ZERO
-         do j = 1, 2 * nocc
-           do i = 1, j
-             do b = 1, 2 * nvir
-               do a = 1, b
-                  ccd_energy = ccd_energy + oovv_tens(i,j,a,b) * t2_tens(a,b,i,j)
-               end do 
-             end do 
-           end do 
-         end do 
+         ierr=talsh_tensor_init(result_tensor)
+         ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,t2_tensor,oovv_tensor)
+         ccd_energy=result_tens(1) * ONE_QUARTER
          print*," CCD energy = ",ccd_energy
 
          end do
