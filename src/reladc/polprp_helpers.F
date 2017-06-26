@@ -984,7 +984,7 @@ C
 
       do i=2,lde
         do j=1,i-1
-          asym = asym + abs(conjg(e(i,j)) - e(j,i))
+          asym = asym + abs(dconjg(e(i,j)) - e(j,i))
         enddo
       enddo
 

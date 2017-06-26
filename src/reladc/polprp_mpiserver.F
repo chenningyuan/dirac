@@ -374,7 +374,7 @@
                 a    = cbuf(k)
                 cvecn(irow) = cvecn(irow) + cveco(icol) * a
                 if(irow.ne.icol) cvecn(icol) = cvecn(icol) +
-     &                           cveco(irow)*conjg(a)
+     &                           cveco(irow)*dconjg(a)
               enddo
             enddo
             vecr = real(cvecn)

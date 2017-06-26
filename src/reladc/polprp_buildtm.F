@@ -201,6 +201,13 @@
         END SUBROUTINE mpi_master_vovv_complete
 
 
+        Function zdotc (i1,ca1,i2,ca2,i3)
+         complex*16                        :: zdotc
+         Integer                           :: i1,i2,i3
+         Real*8, dimension(*)              :: ca1,ca2
+        End Function
+
+
       end interface
 !
 !---------------Executable code--------------------------------------
@@ -415,18 +422,33 @@
       write(*,*) 'Phasey:',pphase(2)
       write(*,*) 'Phasez:',pphase(3)
 
-!     write(*,*) 'control sum 1:',dot_product(doox,doox)
-!     write(*,*) 'control sum 1:',dot_product(dooy,dooy)
-!     write(*,*) 'control sum 1:',dot_product(dooz,dooz)
-!     write(*,*) 'control sum 2:',dot_product(dovx,dovx)
-!     write(*,*) 'control sum 2:',dot_product(dovy,dovy)
-!     write(*,*) 'control sum 2:',dot_product(dovz,dovz)
-!     write(*,*) 'control sum 3:',dot_product(dvox,dvox)
-!     write(*,*) 'control sum 3:',dot_product(dvoy,dvoy)
-!     write(*,*) 'control sum 3:',dot_product(dvoz,dvoz)
-!     write(*,*) 'control sum 4:',dot_product(dvvx,dvvx)
-!     write(*,*) 'control sum 4:',dot_product(dvvy,dvvy)
-!     write(*,*) 'control sum 4:',dot_product(dvvz,dvvz)
+!     if(carith) then
+!       write(*,*) 'control sumc 1:',zdotc(idaoo,doox,1,doox,1)
+!       write(*,*) 'control sumc 1:',zdotc(idaoo,dooy,1,dooy,1)
+!       write(*,*) 'control sumc 1:',zdotc(idaoo,dooz,1,dooz,1)
+!       write(*,*) 'control sumc 2:',zdotc(idaov,dovx,1,dovx,1)
+!       write(*,*) 'control sumc 2:',zdotc(idaov,dovy,1,dovy,1)
+!       write(*,*) 'control sumc 2:',zdotc(idaov,dovz,1,dovz,1)
+!       write(*,*) 'control sumc 3:',zdotc(idavo,dvox,1,dvox,1)
+!       write(*,*) 'control sumc 3:',zdotc(idavo,dvoy,1,dvoy,1)
+!       write(*,*) 'control sumc 3:',zdotc(idavo,dvoz,1,dvoz,1)
+!       write(*,*) 'control sumc 4:',zdotc(idavv,dvvx,1,dvvx,1)
+!       write(*,*) 'control sumc 4:',zdotc(idavv,dvvy,1,dvvy,1)
+!       write(*,*) 'control sumc 4:',zdotc(idavv,dvvz,1,dvvz,1)
+!     else
+!       write(*,*) 'control sumr 1:',dot_product(doox,doox)
+!       write(*,*) 'control sumr 1:',dot_product(dooy,dooy)
+!       write(*,*) 'control sumr 1:',dot_product(dooz,dooz)
+!       write(*,*) 'control sumr 2:',dot_product(dovx,dovx)
+!       write(*,*) 'control sumr 2:',dot_product(dovy,dovy)
+!       write(*,*) 'control sumr 2:',dot_product(dovz,dovz)
+!       write(*,*) 'control sumr 3:',dot_product(dvox,dvox)
+!       write(*,*) 'control sumr 3:',dot_product(dvoy,dvoy)
+!       write(*,*) 'control sumr 3:',dot_product(dvoz,dvoz)
+!       write(*,*) 'control sumr 4:',dot_product(dvvx,dvvx)
+!       write(*,*) 'control sumr 4:',dot_product(dvvy,dvvy)
+!       write(*,*) 'control sumr 4:',dot_product(dvvz,dvvz)
+!     endif
 
 ! canary values for catching errors. For complex arithmetic these
 ! phase variables must not be accessed or used.
@@ -1955,6 +1977,9 @@
 
 !_________________________  perform the contractions
 !|
+!| If we are in complex arithmetic, the eigenvector obtained
+!| from Davidson is to ne complex conjugated before contraction
+!|
 
       READ(ioch,iostat=ioresult) nroots
       READ(ioch,iostat=ioresult) nmain
@@ -2005,6 +2030,11 @@
             xnr(k)=xnr(k) + 
      &         (real(ccoef(i))**2.0d0 + aimag(ccoef(i))**2.0d0)
           enddo
+!
+!  do c.c.
+!
+          ccoef = dconjg(ccoef)
+
         else
           read(ioch)(rcoef(i),i=1,ladc)
           do i=1,ladc
@@ -2327,6 +2357,8 @@
      &       'TM(y)_r        TM(y)_i','TM(z)_r        TM(z)_i'
 
 !  read real or complex coefficients, form norm
+!  In case of complex algebra we have to complex conjugate the
+!  eigenvectors before contraction.
 
         if(carith) then
           read(io1)(ccoef(i),i=1,ladc)
@@ -2334,6 +2366,7 @@
             xnr=xnr + 
      &         (real(ccoef(i))**2.0d0 + aimag(ccoef(i))**2.0d0)
           enddo
+          ccoef = dconjg(ccoef)
         else
           read(io1)(rcoef(i),i=1,ladc)
           do i=1,ladc

@@ -1496,7 +1496,7 @@
         write(iobase) lambda(K)
         a1 = 0.0d0
         do j=1,nmain
-          a1 = a1 + real(conjg(evint(j,k))*evint(j,k))
+          a1 = a1 + real(dconjg(evint(j,k))*evint(j,k))
         enddo
         write(iobase) a1
         write(iobase) (evint(j,k),j=1,ladc)
@@ -1525,7 +1525,7 @@
 !
         a1 = 0.0d0
         do j=1,nmain
-          a1 = a1 + real(conjg(evint(j,k))*evint(j,k))
+          a1 = a1 + real(dconjg(evint(j,k))*evint(j,k))
         enddo
 
         Write(iobase,'(A14,X,I4)') 'Excited state:',K
@@ -1550,7 +1550,7 @@
           Read(iobase1,rec=ievec(j)) field
           cax = evint(ievec(j),k)
           Write(iobase,'(A70,2F15.6,3X,F15.6)') field,cax,
-     &                  real(conjg(cax)*cax)
+     &                  real(dconjg(cax)*cax)
         Enddo
         Write(iobase,'(A17)') '-----------------'
         Write(iobase,'(A)') ' '
@@ -1579,7 +1579,7 @@
       Do K = 1,nroots
         a1 = 0.0d0
         do j=1,nmain
-          a1 = a1 + real(conjg(evint(j,k))*evint(j,k))
+          a1 = a1 + real(dconjg(evint(j,k))*evint(j,k))
         enddo
         Write(iobase,'(A14,X,I4)') 'Excited state:',K
         Write(iobase,'(A19)') '-----------------'
@@ -1591,7 +1591,7 @@
           read(iobase1,rec=j) field
           cax = evint(j,k)
           Write(iobase,'(A70,2F15.6,3X,F15.6)') field,cax,
-     &                  real(conjg(cax)*cax)
+     &                  real(dconjg(cax)*cax)
         enddo
         write(iobase,'(A)') ' '
       Enddo
@@ -1984,7 +1984,7 @@
                 a    = buf(k)
                 vecn(irow) = vecn(irow) + veco(icol) * a
                 if(irow.ne.icol) vecn(icol) = vecn(icol) + 
-     &                           veco(irow)*conjg(a)
+     &                           veco(irow)*dconjg(a)
               enddo
             enddo
             vecr = real(vecn)
@@ -2044,7 +2044,7 @@
       sum = (0.0d0,0.0d0)
       do i=1,n
         x = z(i)
-        sum = sum + conjg(x) * x
+        sum = sum + dconjg(x) * x
       enddo
       if(abs(aimag(sum)).gt.1.0E-10) then
         write(*,*) 'Too large imaginary part in rzvecnorm!'
