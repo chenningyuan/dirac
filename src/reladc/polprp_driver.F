@@ -791,8 +791,6 @@ C
 ! |   helper routines.
 ! |
 
-        CALL PST('Entering MASTER symmetry loop+')
-
         DO IRPLOOP = 1,NREP
 
 ! check for valid inputs
@@ -810,7 +808,18 @@ C
           endif
 
           write(*,*)
-          write(*,*) '**) Starting the run for symmetry',desrep
+          write(*,*)
+          write(*,*)
+          write(*,*)
+          write(*,*) '-----------------------------------------------',
+     &       '-----------------------------------------------'
+          write(*,*) '-----------------------------------------------',
+     &       '-----------------------------------------------'
+          write(*,*) '--------   Final state symmetry  ',desrep
+          write(*,*) '-----------------------------------------------',
+     &       '-----------------------------------------------'
+          write(*,*) '-----------------------------------------------',
+     &       '-----------------------------------------------'
           write(*,*)
 
 
@@ -832,9 +841,6 @@ C
 
 #if defined (VAR_MPI)
 !
-!  send the slave a start signal only in case if there *is* something to do
-!
-
           open(unit=iobase,file=namematfil, access='SEQUENTIAL',
      &         form='UNFORMATTED',status='NEW')
           n2 = jvovo(nrep+1)
@@ -877,9 +883,6 @@ C
 !
 ! remind: in the serial case the number of buffers (NBUFS) is known
 !         after matrix construction.
-!
-! If an old ADC matrix file is still sitting in the tmpdir, throw it away.
-!
 
           OPEN(UNIT=IOBASE,FILE=namematfil, ACCESS='SEQUENTIAL',
      &       FORM='UNFORMATTED',STATUS='NEW')
@@ -932,8 +935,6 @@ C
 
 !  Master calls Davidson diagonalizer driver routine.
 !  Slaves perform partial matrix/vector multiplication.
-
-! Att: for the moment no full diagonalizers are called in parallel!
 
           if(carith) then
             call mpi_davidson_master_c(iw,
@@ -1005,17 +1006,13 @@ C
 !|
 
           if(polprp_dotrmo) then
-            write(*,*) 'User asks for TM calculation:'
+            write(*,*) 'User asks for TM calculation'
             if(propertyints) then
-              write(*,*)
-              write(*,*) '  Required property integrals exist.'
-              write(*,*) '  TMs will be  calculated for this symmetry.'
-              write(*,*)
               call build_tramo(desrep,iobase,eps)
             else
-              write(*,*) '  but required integrals do not exist.'
-              write(*,*) '  No transition moments for irep',desrep,
-     &                   '  can be calculated.'
+              write(*,*) 'but required integrals do not exist.'
+              write(*,*) 'No transition moments for irep',desrep,
+     &                   'can be calculated.'
             endif
           endif
 !|

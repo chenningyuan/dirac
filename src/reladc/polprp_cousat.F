@@ -686,7 +686,7 @@
 !
 !---------------Description--------------------------------------------
 !
-!  furthermore it calculates the 2p2h K_ab,ij diagonal value for strict ADC-2
+!  routine calculates the 2p2h K_ab,ij diagonal value for strict ADC-2
 !  and stores it on the stack. This considerably accelerates the
 !  ADC-2s calculations since no 8-fold loop is to be executed in the
 !  XSATMAKE routine.
@@ -910,8 +910,6 @@
 !|            END   Case A-D
 !|___________________________________________________________
 !
-
-!     write(*,*) 'Coupling vector:',cdkl,bufcol(cdkl)
                 ENDDO
               ENDDO
  20         CONTINUE

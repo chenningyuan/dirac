@@ -323,15 +323,11 @@
       idavo = JPVOXX(NREP+1)
       idavv = JPVVXX(NREP+1)
 
-      n1 = idaoo*rcw   ! actual lengths
-      allocate(doox(n1),dooy(n1),dooz(n1))
-      n1 = idaov*rcw
-      allocate(dovx(n1), dovy(n1), dovz(n1))
-      allocate(dovxg(n1),dovyg(n1),dovzg(n1))
-      n1 = idavo*rcw
-      allocate(dvox(n1),dvoy(n1),dvoz(n1))
-      n1 = idavv*rcw
-      allocate(dvvx(n1),dvvy(n1),dvvz(n1))
+      allocate(doox(idaoo*rcw),dooy(idaoo*rcw),dooz(idaoo*rcw))
+      allocate(dovx(idaov*rcw), dovy(idaov*rcw), dovz(idaov*rcw))
+      allocate(dovxg(idaov*rcw),dovyg(idaov*rcw),dovzg(idaov*rcw))
+      allocate(dvox(idavo*rcw),dvoy(idavo*rcw),dvoz(idavo*rcw))
+      allocate(dvvx(idavv*rcw),dvvy(idavv*rcw),dvvz(idavv*rcw))
 
       doox  = 0.0d0
       dooy  = 0.0d0
@@ -414,6 +410,10 @@
      &               dovx,dovy,dovz,
      &               dvox,dvoy,dvoz,
      &               dvvx,dvvy,dvvz)
+      write(*,*) 'Phase values from propfetch:'
+      write(*,*) 'Phasex:',pphase(1)
+      write(*,*) 'Phasey:',pphase(2)
+      write(*,*) 'Phasez:',pphase(3)
 
 !     write(*,*) 'control sum 1:',dot_product(doox,doox)
 !     write(*,*) 'control sum 1:',dot_product(dooy,dooy)
@@ -467,7 +467,7 @@
 !------------------------
 !
       n1 = MVO(desrep)       !number of integrals   (OV = VO!)
-      off = JPVOXX(desrep) + 1    !offset for prop. integrals (OV = VO!)
+      off = JPVOXX(desrep)*rcw + 1    !offset for prop. integrals (OV = VO!)
 
 ! even if the dimensions are equivalent we copy the dov* integrals since
 ! they bear the correct phases in case of imaginary property integrals.
@@ -502,17 +502,10 @@
       vvoo3 = 0.0d0
       CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,
      &                 MVO,JVOVO,JJVO,JJVO,vvoo1,vvoo3)
-      off = JPVOXX(desrep) + 1
-      n1 = MVO(desrep)
-!     if(carith) then
-!       call conjuga(n1,dovx(off),1)
-!       call conjuga(n1,dovy(off),1)
-!       call conjuga(n1,dovz(off),1)
-!     endif
 
       faipx = 0.0d0; faipy = 0.0d0; faipz = 0.0d0
-      off1 = JVOVO(desrep) + 1
-      off2 = JPVOXX(desrep) + 1
+      off1 = JVOVO(desrep)*rcw + 1
+      off2 = JPVOXX(desrep)*rcw + 1
       M=MVO(desrep)
       K=MVO(desrep)
       CALL XGEMV ('N',M,K,-A1,vvoo3(off1),M,
@@ -521,11 +514,6 @@
      &            dovy(off2),1,A0,faipy,1)
       CALL XGEMV ('N',M,K,-A1,vvoo3(off1),M,
      &            dovz(off2),1,A0,faipz,1)
-!     if(carith) then
-!       call conjuga(n1,dovx(off),1)
-!       call conjuga(n1,dovy(off),1)
-!       call conjuga(n1,dovz(off),1)
-!     endif
 !
 ! add result on top of the final arrays
 !
@@ -571,13 +559,14 @@
       do irep = 1, nrep
          crep = multb(desrep+nrep,irep,2)
          arep = crep
-         if(MULTB(arep,irep,2).ne.desrep) stop 'munch:-('
+         if(MULTB(arep,irep,2).ne.desrep) 
+     &         stop 'Symmetry problem in F_ai(2)A'
          m = NV(arep)
          n = NO(irep)
          k = NV(crep)
-         ioff1 = JJVV(arep,crep) + 1
-         ioff2 = JPVOXX(desrep) + JJVO(crep,irep) + 1
-         ioff3 = JJVO(arep,irep) + 1
+         ioff1 = JJVV(arep,crep)*rcw + 1
+         ioff2 = (JPVOXX(desrep) + JJVO(crep,irep))*rcw + 1
+         ioff3 = JJVO(arep,irep)*rcw + 1
          call xgemm ('N','N',m,n,k,a1,aac(ioff1),m,dvox(ioff2),k,
      &               a0,faipx(ioff3),m)
          call xgemm ('N','N',m,n,k,a1,aac(ioff1),m,dvoy(ioff2),k,
@@ -629,13 +618,14 @@
       do irep = 1, nrep
          arep = multb(desrep+nrep,irep,2)
          krep = irep
-         if(MULTB(arep,irep,2).ne.desrep) stop 'munch:-('
+         if(MULTB(arep,irep,2).ne.desrep) 
+     &         stop 'Symmetry problem in F_ai(2)B'
          m = NV(arep)
          n = NO(irep)
          k = NO(krep)
-         ioff1 = JPVOXX(desrep) + JJVO(arep,krep) + 1
-         ioff2 = JJOO(krep,irep) + 1
-         ioff3 = JJVO(arep,irep) + 1
+         ioff1 = (JPVOXX(desrep) + JJVO(arep,krep))*rcw + 1
+         ioff2 = JJOO(krep,irep)*rcw + 1
+         ioff3 = JJVO(arep,irep)*rcw + 1
          call xgemm ('N','N',m,n,k,a1,dvox(ioff1),m,aki(ioff2),k,
      &               a0,faipx(ioff3),m)
          call xgemm ('N','N',m,n,k,a1,dvoy(ioff1),m,aki(ioff2),k,
@@ -708,8 +698,8 @@
       faipx = 0.0d0; faipy = 0.0d0; faipz = 0.0d0
       M = MVO(desrep)
       K = MVO(desrep)
-      OFF1 = jvovo(desrep) + 1
-      OFF2 = JPVOXX(desrep) + 1
+      OFF1 = jvovo(desrep)*rcw + 1
+      OFF2 = JPVOXX(desrep)*rcw + 1
       CALL XGEMV ('N',M,K,A1,vovo1(OFF1),M,dvox(OFF2),1,A0,faipx,1)
       CALL XGEMV ('N',M,K,A1,vovo1(OFF1),M,dvoy(OFF2),1,A0,faipy,1)
       CALL XGEMV ('N',M,K,A1,vovo1(OFF1),M,dvoz(OFF2),1,A0,faipz,1)
@@ -788,9 +778,9 @@
          m = NV(arep)
          n = NO(irep)
          k = NO(krep)
-         ioff1 = JJVO(arep,krep) + 1
-         ioff2 = JPOOXX(desrep) + JJOO(krep,irep) + 1
-         ioff3 = JJVO(arep,irep) + 1
+         ioff1 = JJVO(arep,krep)*rcw + 1
+         ioff2 = (JPOOXX(desrep) + JJOO(krep,irep))*rcw + 1
+         ioff3 = JJVO(arep,irep)*rcw + 1
          call xgemm ('N','N',m,n,k,a1,aak(ioff1),m,doox(ioff2),k,
      &               a0,faipx(ioff3),m)
          call xgemm ('N','N',m,n,k,a1,aak(ioff1),m,dooy(ioff2),k,
@@ -855,9 +845,9 @@
          m = NV(arep)
          n = NO(irep)
          k = NO(krep)
-         ioff1 = JJVO(arep,krep) + 1
-         ioff2 = JPOOXX(desrep) + JJOO(krep,irep) + 1
-         ioff3 = JJVO(arep,irep) + 1
+         ioff1 = JJVO(arep,krep)*rcw + 1
+         ioff2 = (JPOOXX(desrep) + JJOO(krep,irep))*rcw + 1
+         ioff3 = JJVO(arep,irep)*rcw + 1
          call xgemm ('N','N',m,n,k,a1,aak(ioff1),m,doox(ioff2),k,
      &               a0,faipx(ioff3),m)
          call xgemm ('N','N',m,n,k,a1,aak(ioff1),m,dooy(ioff2),k,
@@ -919,9 +909,9 @@
          m = NV(arep)
          n = NO(irep)
          k = NV(brep)
-         ioff1 = JPVVXX(desrep) + JJVV(arep,brep) + 1
-         ioff2 = JJVO(brep,irep) + 1
-         ioff3 = JJVO(arep,irep) + 1
+         ioff1 = (JPVVXX(desrep) + JJVV(arep,brep))*rcw + 1
+         ioff2 = JJVO(brep,irep)*rcw + 1
+         ioff3 = JJVO(arep,irep)*rcw + 1
          call xgemm ('N','N',m,n,k,a1,dvvx(ioff1),m,aak(ioff2),k,
      &               a0,faipx(ioff3),m)
          call xgemm ('N','N',m,n,k,a1,dvvy(ioff1),m,aak(ioff2),k,
@@ -992,9 +982,9 @@
          m = NV(arep)
          n = NO(irep)
          k = NV(brep)
-         ioff1 = JPVVXX(desrep) + JJVV(arep,brep) + 1
-         ioff2 = JJVO(brep,irep) + 1
-         ioff3 = JJVO(arep,irep) + 1
+         ioff1 = (JPVVXX(desrep) + JJVV(arep,brep))*rcw + 1
+         ioff2 = JJVO(brep,irep)*rcw + 1
+         ioff3 = JJVO(arep,irep)*rcw + 1
          call xgemm ('N','N',m,n,k,a1,dvvx(ioff1),m,aak(ioff2),k,
      &               a0,faipx(ioff3),m)
          call xgemm ('N','N',m,n,k,a1,dvvy(ioff1),m,aak(ioff2),k,
@@ -1073,8 +1063,8 @@
 !  and add to total result.
 
       faipx = 0.0d0; faipy = 0.0d0; faipz = 0.0d0
-      off1 = JVOVO(desrep) + 1
-      off2 = JPVOXX(desrep) + 1
+      off1 = JVOVO(desrep)*rcw + 1
+      off2 = JPVOXX(desrep)*rcw + 1
       M=MVO(desrep)
       K=MVO(desrep)
 
@@ -1160,8 +1150,8 @@
 !  and add to total result.
 
       faipx = 0.0d0; faipy = 0.0d0; faipz = 0.0d0
-      off1 = JVOVO(desrep) + 1
-      off2 = JPVOXX(desrep)+1
+      off1 = JVOVO(desrep)*rcw + 1
+      off2 = JPVOXX(desrep)*rcw + 1
       M=MVO(desrep)
       K=MVO(desrep)
 
@@ -1270,8 +1260,6 @@
       if(IVVOO(nrep+1).ne.JVOVO(nrep+1)) then
         write(*,*) 'Array lenghts are mismatching for energy denoms!'
         stop
-      else
-        write(*,*) 'dividing by energy denominators'
       endif
       n1 = JVOVO(nrep+1)
       call EARR_VVOO(eps,evvoo)
@@ -1284,8 +1272,8 @@
      &            vovo3,vovo1)
 
       faipx = 0.0d0; faipy = 0.0d0; faipz = 0.0d0
-      off1 = JVOOV(desrep) + 1
-      off2 = JPVOXX(desrep)+1
+      off1 = JVOOV(desrep)*rcw + 1
+      off2 = JPVOXX(desrep)*rcw + 1
       M=MVO(desrep)
       K=MOV(desrep)
 
@@ -1364,8 +1352,6 @@
       if(IVVOO(nrep+1).ne.JVOVO(nrep+1)) then
         write(*,*) 'Array lenghts are mismatching for energy denoms!'
         stop
-      else
-        write(*,*) 'dividing by energy denominators'
       endif
       n1 = JVOVO(nrep+1)
       Call MATXMAT(n1,evvoo,vovo2,vovo3)
@@ -1377,8 +1363,8 @@
      &            vovo3,vovo1)
 
       faipx = 0.0d0; faipy = 0.0d0; faipz = 0.0d0
-      off1 = JVOOV(desrep) + 1
-      off2 = JPVOXX(desrep)+1
+      off1 = JVOOV(desrep)*rcw + 1
+      off2 = JPVOXX(desrep)*rcw + 1
       M=MVO(desrep)
       K=MOV(desrep)
 
@@ -1434,8 +1420,8 @@
      &              MVO,JVOVO,JJVO,JJVO,vvoop,vovo3)
 
       faipx = 0.0d0; faipy = 0.0d0; faipz = 0.0d0
-      off1 = JVOVO(desrep) + 1
-      off2 = JPVOXX(desrep)+1
+      off1 = JVOVO(desrep)*rcw + 1
+      off2 = JPVOXX(desrep)*rcw + 1
       M=MVO(desrep)
       K=MVO(desrep)
 
@@ -1492,8 +1478,8 @@
 !  finally contract the B_ai,bj with the D_jb propints but in VO order!
 !
       faipx = 0.0d0; faipy = 0.0d0; faipz = 0.0d0
-      off1 = JVOVO(desrep) + 1
-      off2 = JPVOXX(desrep)+1
+      off1 = JVOVO(desrep)*rcw + 1
+      off2 = JPVOXX(desrep)*rcw + 1
       M=MVO(desrep)
       K=MVO(desrep)
 
@@ -2196,15 +2182,15 @@
 !  executable
 !
       call pst('Calculating transition moments (all contribs)+')
-      iorder(01) = '0th        '
-      iorder(02) = '1st        '
-      iorder(03) = '2ndA       '
-      iorder(04) = '2ndB       '
-      iorder(05) = '2ndC       '
-      iorder(06) = '2nd 2,1    '
-      iorder(07) = '2nd 2,2    '
-      iorder(08) = '2nd 2,3    '
-      iorder(09) = '2nd 2,4    '
+      iorder(1)  = '0th        '
+      iorder(2)  = '1st        '
+      iorder(3)  = '2ndA       '
+      iorder(4)  = '2ndB       '
+      iorder(5)  = '2ndC       '
+      iorder(6)  = '2nd 2,1    '
+      iorder(7)  = '2nd 2,2    '
+      iorder(8)  = '2nd 2,3    '
+      iorder(9)  = '2nd 2,4    '
       iorder(10) = '2nd 2,5    '
       iorder(11) = '2nd 2,6    '
       iorder(12) = '2nd 2,7    '

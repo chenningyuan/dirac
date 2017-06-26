@@ -497,13 +497,12 @@ C
       write(iw,*) 'POLPRP control variables:'
       write(iw,*) '-------------------------'
       write(iw,*)
-      write(iw,*) 'extended ADC-2 calculation: ',polprp_doextended
+      write(iw,*) 'Extended ADC-2 calculation: ',polprp_doextended
       write(iw,*) 'Compute transition moments : ',polprp_dotrmo
       write(iw,*) 'Complex arithmetic: ',carith
       write(iw,'(A,F10.5)') 
-     &   'threshold for elements in ADC matrix: ',polprp_writethr
-      write(iw,*) 'we perform a Davidson diagonalization:',polprp_dodiag
-      write(iw,*) 'The way final state symmetries are chosen is:'
+     &   ' Threshold for matrix elements: ',polprp_writethr
+      write(iw,*) 'Davidson diagonalization:',polprp_dodiag
 !
 ! determine symmetries to be calculated
 !
@@ -512,7 +511,7 @@ C
         n = n + polprp_statesym(i)
       enddo
       if(n.eq.0) then
-        write(iw,*) 'Program checks symmetries automatically'
+        write(iw,*) 'All final state symmetries calculated.'
         do i=1,nrep
           polprp_statesym(i) = i
         enddo
@@ -545,8 +544,8 @@ C
       if(polprp_dodiag) then
         WRITE(IW,*) 'Number of eigenstates to be calculated (roots)',
      &     polprp_davroots
-        WRITE(IW,*) 'Size of Krylov space: ',polprp_davmaxsp
-        WRITE(IW,*) 'Number of Davidson macro iterations: ',
+        WRITE(IW,*) 'Maximum subspace size: ',polprp_davmaxsp
+        WRITE(IW,*) 'Number of Davidson iterations: ',
      &     polprp_davmaxit
         WRITE(IW,'(A,E20.4)') ' Requested energy conv.: ',polprp_davconv
         IF(polprp_davooc.eqv..false.) THEN
@@ -1000,11 +999,10 @@ C
 !
 !---------------Description--------------------------------------------
 !
-! multiplies the matrix (vector) a with b and stores result in c
-! This is done *elementwise*
+! This routine performs an *elementwise* multiplication as
 !                           c = a * b
-! If the real arrays carry complex numbers, we combine two numbers to
-! one complex number
+! a,b,c can be real or complex. The usefulness of this routine is that
+! the reference always occurs through real arrays as in the X... routines.
 !
 !---------------Calling variables--------------------------------------
 !
@@ -1022,8 +1020,6 @@ C
 !
 !---------------Executable --------------------------------------
 !
-!     call pst('in matxmat+')
-      write(*,*) n,carith
       If(carith) then
         Do i=1,n
           s1=dcmplx(a(2*i-1),a(2*i))
