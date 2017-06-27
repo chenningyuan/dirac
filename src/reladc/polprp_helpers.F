@@ -1104,8 +1104,8 @@ C
             IJK  = (K-1) * N * RCW + 1
             IJKL1 = LOFF + (L-1) * NTRIPL(IJKREP) * RCW + IJK 
             IJLK1 = KOFF + (K-1) * NTRIPL(IJLREP) * RCW + IJL 
-            if(IJKL1+N.gt.iceil*rcw) write(*,*) '***alert A'
-            if(IJLK1+N.gt.iceil*rcw) write(*,*) '***alert B'
+            if(IJKL1+N.gt.iceil*rcw+1) write(*,*) '*** serious alert A'
+            if(IJLK1+N.gt.iceil*rcw+1) write(*,*) '*** serious alert B'
             IF (DOINV) THEN
                CALL XCOPY (N,BUF1(IJKL1),1,BUF2(IJKL),1)
                CALL XAXPY (N,-A1,BUF1(IJLK1),1,BUF2(IJKL),1)

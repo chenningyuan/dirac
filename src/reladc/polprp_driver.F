@@ -926,16 +926,18 @@ C
           endif
 
 #if defined (VAR_MPI)
-! Main ADC matrix built in this symmetry. We synchronize all nodes
+! Master distributes ADC matrix when running in parallel
 
           write(iw,*)
           write(iw,*) '**** MASTER: distributing ADC matrix.'
           write(iw,*)
           call mpi_master_mat_dist(iobase,namematfil,irploop,
      &                              intbuf,nbufs,ladc,iw)
+#endif
 
-!  Master calls Davidson diagonalizer driver routine.
-!  Slaves perform partial matrix/vector multiplication.
+!  Davidson diagonalizer driver call. Works for
+!  Serial and parallel. In case of parallel run
+!  slaves perform partial matrix/vector multiplication.
 
           if(carith) then
             call mpi_davidson_master_c(iw,
@@ -959,47 +961,45 @@ C
      &                                 MVO(desrep))
           endif
 
-! Master deletes its main ADC matrix file
+! Main ADC matrix file is deleted
 
           open(unit=iobase,file=NAMEMATFIL, access='SEQUENTIAL',
      &         form='UNFORMATTED',status='unknown')
           close(iobase,status='DELETE')
-#else
 !
 !________________________________________________________________
 !|   
 !|     serial case diagonalizer call
 !|   
 !
-          if(carith) then
-            call fulldia_c3(iobase,namematfil,intbuf,ladc)
-            call mpi_davidson_master_c(iw,
-     &                                 iobase,
-     &                                 desrep,
-     &                                 intbuf,
-     &                                 namematfil,
-     &                                 namecnffil,
-     &                                 irecl,
-     &                                 ladc,
-     &                                 MVO(desrep))
-          else
-            call fulldia_r3(iobase,namematfil,intbuf,ladc,desrep)
-            call mpi_davidson_master_r(iw,
-     &                                 iobase,
-     &                                 desrep,
-     &                                 intbuf,
-     &                                 namematfil,
-     &                                 namecnffil,
-     &                                 irecl,
-     &                                 ladc,
-     &                                 MVO(desrep))
-          endif
+!         if(carith) then
+!           call fulldia_c3(iobase,namematfil,intbuf,ladc)
+!           call mpi_davidson_master_c(iw,
+!    &                                 iobase,
+!    &                                 desrep,
+!    &                                 intbuf,
+!    &                                 namematfil,
+!    &                                 namecnffil,
+!    &                                 irecl,
+!    &                                 ladc,
+!    &                                 MVO(desrep))
+!         else
+!           call fulldia_r3(iobase,namematfil,intbuf,ladc,desrep)
+!           call mpi_davidson_master_r(iw,
+!    &                                 iobase,
+!    &                                 desrep,
+!    &                                 intbuf,
+!    &                                 namematfil,
+!    &                                 namecnffil,
+!    &                                 irecl,
+!    &                                 ladc,
+!    &                                 MVO(desrep))
+!         endif
 
-          open(unit=iobase,file=NAMEMATFIL, access='SEQUENTIAL',
-     &         form='UNFORMATTED',status='unknown')
-          close(iobase,status='DELETE')
+!         open(unit=iobase,file=NAMEMATFIL, access='SEQUENTIAL',
+!    &         form='UNFORMATTED',status='unknown')
+!         close(iobase,status='DELETE')
 !     stop 'after  davidson'
-#endif
 !
 !_________________________________________________________________
 !|

@@ -83,7 +83,7 @@
       character*11                          :: davevcname
       character*8                           :: dsroot ='DAVSTART'
       character*8                           :: dsroot2='ADCEVECS'
-      character*8                           :: dsroot3='DAVISHRT'
+      character*8                           :: dsroot3='ADCSTATE'
       character*8                           :: dsroot4='DAVIMEDI'
       character*7                           :: fnroot5='FULLEVC'
       character*60                          :: listout
@@ -881,7 +881,7 @@
       character*11                 :: davevcname
       character*8                  :: dsroot ='DAVSTART'
       character*8                  :: dsroot2='ADCEVECS'
-      character*8                  :: dsroot3='DAVISHRT'
+      character*8                  :: dsroot3='ADCSTATE'
       character*8                  :: dsroot4='DAVIMEDI'
       character*60                 :: listout
       character*70                 :: field
