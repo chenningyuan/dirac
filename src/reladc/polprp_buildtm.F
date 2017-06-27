@@ -124,7 +124,6 @@
       character*9                            :: preconfn='VVVVXVVOO'
       character*40                           :: iorder
       integer                                :: incsat
-      integer                                :: numstacks
       real*8                                 :: x1,x2,x3,x4,xcntrl
       Integer                                :: lp1,lp2
       integer                                :: nabixj,naxbij,nabxij
@@ -200,12 +199,11 @@
           integer*8                       :: i1
         END SUBROUTINE mpi_master_vovv_complete
 
-
-        Function zdotc (i1,ca1,i2,ca2,i3)
-         complex*16                        :: zdotc
-         Integer                           :: i1,i2,i3
-         Real*8, dimension(*)              :: ca1,ca2
-        End Function
+!       Function zdotc (i1,ca1,i2,ca2,i3)
+!        complex*16                        :: zdotc
+!        Integer                           :: i1,i2,i3
+!        Real*8, dimension(*)              :: ca1,ca2
+!       End Function
 
 
       end interface
@@ -1930,7 +1928,7 @@
 !
 !  locals
 !
-      character*8, parameter                  :: basename='DAVILONG'
+      character*8, parameter                  :: basename='ADCEVECS'
       character*11                            :: davevcname
       logical                                 :: isthere
 
@@ -2181,9 +2179,9 @@
 !------------------------- locals -----------------------------------
 !
       real*8, parameter                       :: autoev = 27.2113957D0
-      character*8, parameter                  :: evcnm_root='DAVILONG'
+      character*8, parameter                  :: evcnm_root='ADCEVECS'
       character*11                            :: evc_fname
-      character*8                             :: out_fname='DAVTMOUT'
+      character*8                             :: out_fname='ADCTRMOM'
       logical                                 :: isthere
 
       integer                                 :: io1,io2

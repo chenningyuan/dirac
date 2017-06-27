@@ -80,8 +80,8 @@
 !
 !     ITASK = 12 for parallel POLPRP
 !
-      print*, '+++++ in PAMPOLPRP, parcal: ',PARCAL
-      print*, '+++++ trying to wake up slaves.'
+!     print*, '+++++ in PAMPOLPRP, parcal: ',PARCAL
+!     print*, '+++++ trying to wake up slaves.'
       IF (PARCAL) CALL DIRAC_PARCTL( 12 )
 
 #if defined (VAR_MPI)
@@ -523,6 +523,7 @@ C
 #include  "../relccsd/param.inc"     !LTR/LFA are defined here (true, false)
 #include  "../relccsd/ccpar.inc"
 #include "polprp_servercodes.h"
+#include "polprp_stacklines.h"
 !
 !---------------Local variables---------------------------------
 !
@@ -538,7 +539,7 @@ C
       integer                 :: nbufs = 0
       integer                 :: signal
       integer                 :: serialindicator
-      integer                 :: i,numstacks
+      integer                 :: i
       logical                 :: propertyints
 !  
 !  variables for rdprop_adc integral testing
@@ -699,10 +700,10 @@ C
 !
 ! initialize stack system (only master does this)
 !
-        numstacks = 10
-        if(qstack_init(numstacks,1).ne.numstacks) 
+        if(qstack_init(NUM_OF_STACKS,1).ne.NUM_OF_STACKS) 
      &     call quit('Qstack problem')
-        WRITE(IW,*)'Stack system initialized with',numstacks,' stacks'
+        WRITE(IW,*)'Stack system initialized with',
+     &             NUM_OF_STACKS,' stacks'
         WRITE(IW,*)
 !
 !  debug purpose: print out IREPSPI array for absolute spinor numbers
@@ -832,7 +833,8 @@ C
 !
 ! calculate diagonal energies in satellite block for ADC-2 strict calculations
 ! (only master does it) Energies go on the stack and are fetched by
-! XSATMAKE routine
+! XSATMAKE routine. Energies are calculated as real values  (diagonal) and
+! are adapted accordingly in the complex routine.
 !
           CALL XKENEDIAG(desrep,eps)
 
@@ -896,17 +898,16 @@ C
             CALL BUILD_X_COUSAT_C(DAIBJ,EPS,DESREP,LENCOUPLBL,
      &                            INTBUF,NBUFS,polprp_doextended,
      &                            polprp_writethr,iobase)
-            CALL XDIAG_INI_C(iobase,iobase+1,
-     &                       INTBUF,NBUFS,lencouplbl + MVO(desrep))
+            CALL XDIAG_INI_C(iobase,INTBUF,NBUFS,
+     &                       lencouplbl + MVO(desrep))
           ELSE
             write(*,*) '**) real coupling and satellite block.'
             write(*,*)
             CALL BUILD_X_COUSAT_R(DAIBJ,EPS,DESREP,LENCOUPLBL,
      &                            INTBUF,NBUFS,polprp_doextended,
      &                            polprp_writethr,iobase)
-            CALL XDIAG_INI_R(iobase,iobase+1,
-     &                       INTBUF,NBUFS,
-     &                       lencouplbl + MVO(desrep),.true.)
+            CALL XDIAG_INI_R(iobase,INTBUF,NBUFS,
+     &                       lencouplbl + MVO(desrep))
           ENDIF
           CLOSE(iobase)
 

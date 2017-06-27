@@ -1717,7 +1717,6 @@
       ENDDO
  10   CONTINUE
       ENDDO  !KLREP
-!
 
 ! we deallocate only in extended mode
 ! otherwise the arrays are not allocated.
@@ -1731,6 +1730,8 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE XSATMAKE_C (ioch,ibfp,nbufs,intbuf,desrep,wthr,
      &                       buf,ioi,ioj,eps,oolt,vvlt,dox)
+
+      use qstack
 !
       IMPLICIT INTEGER (A-Z)
 !
@@ -1755,11 +1756,9 @@
 !
 #include  "../relccsd/symm.inc"
 #include  "../relccsd/complex.inc"
+#include  "polprp_stacklines.h"
 !
 !---------------Local variables--------------------------------------
-!
-!  att: the integral arrays (not the integrals!) remain real due to legacy code.
-!  in F90 we have better type safety and need to convert to complex type explicitly
 !
       REAL*8, allocatable, dimension(:)    :: vvvvz, ooooz, vovoz
       INTEGER                              :: n1,ialloc
@@ -1768,6 +1767,9 @@
       INTEGER                              :: JDUMMY
 
       complex*16                           :: S
+
+      Integer                              :: kenelen
+      REAL*8, allocatable, dimension(:)    :: eabij
 !
 !---------------Interface area --------------------------------------
 !
@@ -1778,66 +1780,101 @@
           integer*8                       :: i1
         END SUBROUTINE
 
+        INTEGER FUNCTION XCOLDET(i1)
+          integer                      :: i1
+        END FUNCTION
+
       END INTERFACE
 !
 !---------------Start execution--------------------------------------
 !
       call pst('Constructing complex satellite part+')
+!
+! fetch diagonal energies of the satellite block from stack
+! (always done since it was pushed by XKENEDIAG)
+!
+      kenelen = xcoldet(desrep)
+      allocate(eabij(kenelen))
+      eabij = 0.0d0
+      if(qstack_popf(ENE_STACKLINE,eabij).ne.kenelen) stop 'QE'
 !______________________________________________________
+!|
+!|  if we do a restricted calculation only we just add
+!|  the energy diagonal to the write buffer and we are done.
+!|
+      IF(.not.DOX) THEN
+
+        write(*,*) 'for restricted ADC-2'
+        Do iene = 1,kenelen
+
+          S = dcmplx(eabij(iene),0.0d0)
+
+          IF(ABS(S).gt.WTHR) THEN
+            IBFP=IBFP+1
+            BUF(IBFP)=S
+            IOI(IBFP)=MVO(DESREP) + iene
+            IOJ(IBFP)=MVO(DESREP) + iene
+            IF(IBFP.EQ.INTBUF) THEN
+              NBUFS = NBUFS + 1
+              WRITE(IOCH) (BUF(IXX),IXX=1,INTBUF),
+     &                    (IOI(IXX),IXX=1,INTBUF),
+     &                    (IOJ(IXX),IXX=1,INTBUF),
+     &                     INTBUF,JDUMMY
+              IBFP = 0
+            ENDIF
+          ENDIF
+        Enddo ! iene
+
+        write(*,*) 'energy diagonal written.'
+        return
+      ENDIF  ! .not.DOX
+!|
+!|_____________________________________________________
+
+!_______________  extended ADC 2 from here  ___________
 !|
 !|  we allocate these arrays only in extended mode.
 !|  VVVV, OOOO and VOVO integrals are not needed in strict mode.
 !|
-
-!****************************
-      IF(DOX) THEN
-!****************************
-
-        n8 = ivvvvtt(nrep+1)
-        allocate(vvvvz(n8*rcw),stat=ialloc)
-        if(ialloc.ne.0) STOP 'VVVV buffer could not be allocated.'
+!|  The if(dox) can go away because from here dox is set.
+!|
+      write(*,*) 'for extended ADC-2'
+      n8 = ivvvvtt(nrep+1)
+      allocate(vvvvz(n8*rcw),stat=ialloc)
+      if(ialloc.ne.0) STOP 'VVVV buffer could not be allocated.'
 
 #if defined (VAR_MPI)
-        do i8=1,n8*rcw
-          vvvvz(i8) = -9999.0d0
-        enddo
-        call rdvvvv(vvvvz)  ! master reads its own chunks
-        call mpi_master_vvvv_complete(vvvvz,n8)  !.... and completes the stream.
-        write(*,*) 'VVVV check...'
-        do i8=1,n8*rcw
-          if(vvvvz(i8).eq. -9999.0d0)
-     &      call quit('Internal error: gap in the VVVV stream!')
-        enddo
-        write(*,*) '... complete.'
+      do i8=1,n8*rcw
+        vvvvz(i8) = -9999.0d0
+      enddo
+      call rdvvvv(vvvvz)  ! master reads its own chunks
+      call mpi_master_vvvv_complete(vvvvz,n8)  !.... and completes the stream.
+      write(*,*) 'VVVV check...'
+      do i8=1,n8*rcw
+        if(vvvvz(i8).eq. -9999.0d0)
+     &    call quit('Internal error: gap in the VVVV stream!')
+      enddo
+      write(*,*) '... complete.'
 #else
-        call rdvvvv(vvvvz)  ! master reads complete stream in serial mode
+      call rdvvvv(vvvvz)  ! master reads complete stream in serial mode
 #endif
 
-        n1 = ioooott(nrep+1)*rcw
-        allocate(ooooz(n1),stat=ialloc)
-        if(ialloc.ne.0) STOP 'OOOO buffer could not be allocated.'
+      n1 = ioooott(nrep+1)*rcw
+      allocate(ooooz(n1),stat=ialloc)
+      if(ialloc.ne.0) STOP 'OOOO buffer could not be allocated.'
 
-        n1 = ivovo(nrep+1)*rcw
-        allocate(vovoz(n1),stat=ialloc)
-        if(ialloc.ne.0) STOP 'VOVO buffer could not be allocated.'
+      n1 = ivovo(nrep+1)*rcw
+      allocate(vovoz(n1),stat=ialloc)
+      if(ialloc.ne.0) STOP 'VOVO buffer could not be allocated.'
 
-        CALL GETOOOO(ooooz)
-        CALL GETVOVO(vovoz)
+      CALL GETOOOO(ooooz)
+      CALL GETVOVO(vovoz)
 
-!****************************
-      ENDIF !DOX
-!****************************
-!________________________________________________________________________
-!|
-!|
-!|               START     MAIN      LOOP
-!|
-!| SAT elements are calculated only for the lower triangle which
-!| means that ABIJ >= CDKL !
-!| no lookup table (too big!)
-!|
-!|
-!|
+!
+! SAT elements are calculated only for the lower triangle which
+! means that ABIJ >= CDKL !
+! no lookup table (too big!)
+!
       CDKL=0    !column counter
 
       DO KLREP = 1,NREP     ! KLREP (bosonic!) loops through
@@ -1894,7 +1931,7 @@
 !
 ! otherwise: DO NOTHING!
 !
-!  a: check diagonal, that's actually the K-contribution.
+!  a: check diagonal
 !
        S = (0.0d0,0.0d0)
 
@@ -1909,12 +1946,6 @@
            S = S + dcmplx((ea + eb - ei - ej),0.0d0)
          endif
        endif
-!
-!  if strict adc2, we only check diagonal in the SAT block
-!  and leave the rest.
-!
-       IF(DOX) THEN    !yes, we need more ... (ADC2X)
-!
 !
 !  b: check VVVV contributions  <AB||CD> delta_ik delta_jl
 !
@@ -2167,8 +2198,6 @@
          endif 
 
        endif  !delta_ad
-
-       ENDIF     ! DOX
 !
 !  write out corresponding matrix entry with row and column number
 !  note: local row and column counters both start at value 1.
@@ -2207,17 +2236,14 @@
          ENDDO
       ENDDO
  10   CONTINUE
-      ENDDO
-!
+      ENDDO !KLREP
 
 ! we deallocate only in extended mode
 ! otherwise the arrays are not allocated.
 
-      if(dox) then
-        deallocate(vovoz)
-        deallocate(ooooz)
-        deallocate(vvvvz)
-      endif
+      deallocate(vovoz)
+      deallocate(ooooz)
+      deallocate(vvvvz)
 
       RETURN
       END

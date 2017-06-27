@@ -82,7 +82,7 @@
       character*11                          :: davstartname
       character*11                          :: davevcname
       character*8                           :: dsroot ='DAVSTART'
-      character*8                           :: dsroot2='DAVILONG'
+      character*8                           :: dsroot2='ADCEVECS'
       character*8                           :: dsroot3='DAVISHRT'
       character*8                           :: dsroot4='DAVIMEDI'
       character*7                           :: fnroot5='FULLEVC'
@@ -131,7 +131,7 @@
       WRITE(iw,*) 'Number of Davidson roots:         ',nroots
       WRITE(iw,*) 'Maximum Davidson subspace:        ',maxdavsp
       WRITE(iw,*) 'Number of Macro iterations:       ',maxdavit
-      WRITE(iw,'(A,E14.5)') 'Eigenvalue convergence up to:     ',convthr
+      WRITE(iw,'(A,E14.5)') ' Eigenvalue convergence up to:   ',convthr
       WRITE(iw,*) 'Do out-of-core calculation:       ',davooc
       WRITE(iw,*)
       WRITE(iw,*) ' ------------------------------------'
@@ -615,8 +615,6 @@
 !
 !   open configuration file
 !
-      write(*,*) 'Opening config file ',filecnf
-      write(*,*) 'for reading with record length',irecl
       iobase1 = iobase + 1
       OPEN(iobase1,FILE=FILECNF,ACCESS='DIRECT',RECL=IRECL,
      &     STATUS='UNKNOWN')
@@ -882,7 +880,7 @@
       character*11                 :: davstartname
       character*11                 :: davevcname
       character*8                  :: dsroot ='DAVSTART'
-      character*8                  :: dsroot2='DAVILONG'
+      character*8                  :: dsroot2='ADCEVECS'
       character*8                  :: dsroot3='DAVISHRT'
       character*8                  :: dsroot4='DAVIMEDI'
       character*60                 :: listout
@@ -1463,8 +1461,6 @@
 !
 !   open configuration file
 !
-      write(*,*) 'config file ',filecnf,' opened'
-      write(*,*) 'for reading with record length',irecl
       iobase1 = iobase + 1
       OPEN(iobase1,FILE=FILECNF,ACCESS='DIRECT',RECL=IRECL,
      &     STATUS='UNKNOWN')
@@ -2409,20 +2405,19 @@
 
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE XDIAG_INI_R(iobase,io_out,intbuf,nbufs,ladc,ascout)
+      SUBROUTINE XDIAG_INI_R(iobase,intbuf,nbufs,ladc)
 
-!  Fetch the diagonal entries of the sparse matrix A
-!  This routine is only called in the serial case and obtains NBUFS
-!  furthermore it allows writing out the ADC matrix in ASCII format
-!  for a brute force comparison.
+!  Fetch the diagonal entries of the sparse matrix A, needed for the
+!  Davidson iterations.
+!  This routine is only called in the serial case and obtains NBUFS.
+!  It generates a local file handle and writes out diagonal.
 
       IMPLICIT NONE
 !
 !------------------------ calling variables -------------------------
 !
-      integer                        :: iobase, io_out
+      integer                        :: iobase
       integer                        :: intbuf,nbufs,ladc
-      logical                        :: ascout
 !
 !------------------------ local variables -------------------------
 !
@@ -2434,10 +2429,18 @@
       INTEGER                                 :: I,K,IXX
       INTEGER                                 :: NACT,JDUMMY,IROW,ICOL
       REAL*8                                  :: A
-      logical                                 :: isthere
+      INTEGER                                 :: io_out
 
 !
-!---------------Description--------------------------------------------
+!--------------- Interfaces --------------------------------------------
+!
+      interface
+
+        Function get_file_unit()
+          integer                      :: get_file_unit
+        END Function
+
+      end interface
 !
 !---------------Executable code--------------------------------------
 !
@@ -2446,15 +2449,7 @@
       allocate(ioj(intbuf))
       allocate(adiag(ladc))
 
-! open ascii file if activated
-
-      if(ascout) then
-         open(unit=io_out, file="ADCMAT.ASC", status='unknown',
-     &        form="formatted")
-         rewind(io_out)
-      endif
-
-c  .. read elements
+!  .. read elements
 
       REWIND(iobase)
       read(iobase) serialindicator   !discarded, but should be less than zero!
@@ -2471,28 +2466,14 @@ c  .. read elements
 
           IF(IROW.EQ.ICOL) adiag(irow) = A
 
-          IF(ascout) write(io_out,'(2I6,2X,F20.6)') IROW,ICOL,A
-
         ENDDO
       ENDDO
 
-! close file if it was addressed, file handle io_out becomes available again
-
-      if(ascout) then
-         close(io_out)
-      endif
-
-!      Inquire(file=diagfile,exist=isthere)
-!      write(*,*) 'Found an ADC diagonal file. Deleting...'
-!      If(isthere) then
-!        open(unit=io_out, file=diagfile, status='old')
-!        close(io_out, status='delete')
-!      Endif
-
-       open(unit=io_out,file=diagfile, access='SEQUENTIAL',
+      io_out = get_file_unit()
+      open(unit=io_out,file=diagfile, access='SEQUENTIAL',
      &     form='UNFORMATTED',status='NEW')
-       write(io_out,ERR=887) (adiag(ixx),ixx=1,ladc)
-       close(io_out)
+      write(io_out,ERR=887) (adiag(ixx),ixx=1,ladc)
+      close(io_out)
 
       deallocate(adiag)
       deallocate(ioj)
@@ -2506,16 +2487,15 @@ c  .. read elements
 
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE XDIAG_INI_C(iobase,io_out,intbuf,nbufs,ladc)
+      SUBROUTINE XDIAG_INI_C(iobase,intbuf,nbufs,ladc)
 
-!  Fetch the diagonal entries of the sparse matrix A
-!  This routine is only called in the serial case and obtains NBUFS
+! complex extension of XDIAG_INI_R
 
       IMPLICIT NONE
 !
 !------------------------ calling variables -------------------------
 !
-      integer                        :: iobase, io_out
+      integer                        :: iobase
       integer                        :: intbuf,nbufs,ladc
 !
 !------------------------ local variables -------------------------
@@ -2528,9 +2508,17 @@ c  .. read elements
       INTEGER                                   :: I,K,IXX
       INTEGER                                   :: NACT,JDUMMY,IROW,ICOL
       complex*16                                :: A
-
+      INTEGER                                   :: io_out
 !
-!---------------Description--------------------------------------------
+!--------------- Interfaces --------------------------------------------
+!
+      interface
+
+        Function get_file_unit()
+          integer                      :: get_file_unit
+        END Function
+
+      end interface
 !
 !---------------Executable code--------------------------------------
 !
@@ -2559,7 +2547,8 @@ c  .. read elements
         ENDDO
       ENDDO
 
-       open(unit=io_out,file=diagfile, access='SEQUENTIAL',
+      io_out = get_file_unit()
+      open(unit=io_out,file=diagfile, access='SEQUENTIAL',
      &     form='UNFORMATTED',status='NEW')
        write(io_out,ERR=887) (adiag(ixx),ixx=1,ladc)
        close(io_out)
@@ -2571,8 +2560,8 @@ c  .. read elements
 
       RETURN
 
- 887  CALL QUIT('Matrix write error in XDIAG_INI_R')
- 889  CALL QUIT('Matrix read error in XDIAG_INI_R')
+ 887  CALL QUIT('Matrix write error in XDIAG_INI_C')
+ 889  CALL QUIT('Matrix read error in XDIAG_INI_C')
 
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2685,7 +2674,7 @@ c  .. read elements
       ENDDO
 !
 !  write full set of eigenvectors to file
-!  Keep hereby the *same* format as in the DAVILONG file in order
+!  Keep hereby the *same* format as in the ADCEVECS file in order
 !  to make comparison more readable
 !
       IF(desrep.GT.9) THEN
