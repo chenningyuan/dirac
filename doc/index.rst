@@ -212,6 +212,9 @@ Developers
   :doc:`Good Fortran 90 practices <programmers/good_fortran_90_practices>` |
   :doc:`FAQ <programmers/faq>`
 
+* **Basis sets:**
+  :doc:`Testing basis sets in DIRAC <programmers/test_basis_sets>` 
+
 * **Moving code between machines:**
   :doc:`Transfering uncommitted code <programmers/transfering_uncommitted_code>`
 
