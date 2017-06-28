@@ -483,7 +483,7 @@
 
         end subroutine get_integral_tensor
 
-        subroutine mulliken_to_dirac_sort (mulliken_tensor,dirac_tensor,antisymmetrize)
+        subroutine mulliken_to_dirac_sort  (mulliken_tensor,dirac_tensor,antisymmetrize)
 
          use tensor_algebra
          use talsh
@@ -493,24 +493,17 @@
          type(talsh_tens_t), intent(inout)  :: mulliken_tensor,dirac_tensor
          logical, intent(in)                :: antisymmetrize
 
-         complex(8), pointer, contiguous:: mulliken_tens(:,:,:,:),dirac_tens(:,:,:,:)
-         type(C_PTR):: body_p
-
          integer:: mulliken_dims(1:4),dirac_dims(1:4)
 
-         integer   :: ierr, tens_rank, p, q, r, s, mismatch
+         integer   :: ierr, mismatch
 
-!        Make input tensor accessible
-         ierr = talsh_tensor_dimensions(mulliken_tensor,tens_rank,mulliken_dims)
-         if (ierr.ne.0 .or. tens_rank.ne.4) stop 'program error: input tensor corrupted'
-         ierr=talsh_tensor_get_body_access(mulliken_tensor,body_p,C8,0,DEV_HOST)
-         call c_f_pointer(body_p,mulliken_tens,mulliken_dims(1:4)) 
-
-!        Make output tensor accessible
-         ierr = talsh_tensor_dimensions(dirac_tensor,tens_rank,dirac_dims)
-         if (ierr.ne.0 .or. tens_rank.ne.4) stop 'program error: input tensor corrupted'
-         ierr=talsh_tensor_get_body_access(dirac_tensor,body_p,C8,0,DEV_HOST)
-         call c_f_pointer(body_p,dirac_tens,dirac_dims(1:4)) 
+!        work-around: addition with permutation is not implemented
+         type(talsh_tens_t):: one_tensor, minusone_tensor
+         integer:: scalar_dims(1)
+         scalar_dims(1) = 1
+         ierr=talsh_tensor_construct(one_tensor,C8,scalar_dims(1:0),init_val=ONE)
+         ierr=talsh_tensor_construct(minusone_tensor,C8,scalar_dims(1:0),init_val=MINUS_ONE)
+!        end work-round
 
 !        Check consistency
          mismatch = 0
@@ -523,42 +516,28 @@
          end if
          if (mismatch.gt.0) stop 'dimension mismatch in mulliken_to_dirac_sort'
 
-         do s = 1, dirac_dims(4)
-           do r = 1, dirac_dims(3)
-             do q = 1, dirac_dims(2)
-               do p = 1, dirac_dims(1)
-                  dirac_tens(p,q,r,s) = mulliken_tens(p,r,q,s)
-               end do
-             end do
-           end do
-         end do
+         ierr=talsh_tensor_init(dirac_tensor)
+!shorter ierr=talsh_tensor_add("D(p,q,r,s)+=M(p,r,q,s)",dirac_tensor,mulliken_tensor)
+         ierr=talsh_tensor_contract("D(p,q,r,s)+=M(p,r,q,s)*C()",dirac_tensor,mulliken_tensor,one_tensor)
+
 
          if (antisymmetrize) then
             if (dirac_dims(1) .eq. dirac_dims(2)) then
-              do s = 1, dirac_dims(4)
-                do r = 1, dirac_dims(3)
-                  do q = 1, dirac_dims(2)
-                    do p = 1, dirac_dims(1)
-                     dirac_tens(p,q,r,s) = dirac_tens(p,q,r,s) - mulliken_tens(q,r,p,s)
-                    end do
-                  end do
-                end do
-              end do
+!shorter        ierr=talsh_tensor_add("D(p,q,r,s)+=M(q,r,p,s)",dirac_tensor,mulliken_tensor,scale=MINUS_ONE)
+                ierr=talsh_tensor_contract("D(p,q,r,s)+=M(q,r,p,s)*C()",dirac_tensor,mulliken_tensor,minusone_tensor)
             else
-              do s = 1, dirac_dims(4)
-                do r = 1, dirac_dims(3)
-                  do q = 1, dirac_dims(2)
-                    do p = 1, dirac_dims(1)
-                     dirac_tens(p,q,r,s) = dirac_tens(p,q,r,s) - mulliken_tens(p,s,q,r)
-                    end do
-                  end do
-                end do
-              end do
+!shorter        ierr=talsh_tensor_add("D(p,q,r,s)+=M(p,s,q,r)",dirac_tensor,mulliken_tensor,scale=MINUS_ONE)
+                ierr=talsh_tensor_contract("D(p,q,r,s)+=M(p,s,q,r)*C()",dirac_tensor,mulliken_tensor,minusone_tensor)
             end if
          end if
 
-       end subroutine mulliken_to_dirac_sort
-        
+!        work-around: addition with permutation is not implemented
+         ierr=talsh_tensor_destruct(one_tensor)
+         ierr=talsh_tensor_destruct(minusone_tensor)
+!        end work-round
+
+        end subroutine mulliken_to_dirac_sort
+
        subroutine scale_with_denominators (t2_tensor,eps_occ,eps_vir)
 
          use tensor_algebra
