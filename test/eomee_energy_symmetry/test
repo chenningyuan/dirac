@@ -22,8 +22,9 @@ f.add(from_string = ' Energy eigenvalues in atomic units',
 test.run(['eom_ee_dc_noinv.inp'],   ['f2_d2.mol', 'f2_c2v.mol'], f, args='--mw=110')
 
 # this tests is crashing for the u symmetries with ifort15, whereas it passes for gfortran 5.4, needs further checking
-#test.run(['eom_ee_dc_inv.inp'],     ['f2_d2h.mol'], f, args='--mw=110')
+#test.run(['eom_ee_dc_inv.inp'],     ['f2_d2h.mol', 'f2_c2h.mol'], f, args='--mw=110')
 # because of this, we test only the g symmetries for now
+#test.run(['eom_ee_dc_inv_g.inp'],     ['f2_d2h.mol', 'f2_c2h.mol'], f, args='--mw=110')
 test.run(['eom_ee_dc_inv_g.inp'],     ['f2_d2h.mol'], f, args='--mw=110')
 
 # in the following runs we don't use the standard approach because of issues in trial vector generation 
@@ -50,7 +51,7 @@ test.run(['eom_ee_dc_noinv_complex.inp'],   ['f2_cs.mol', 'f2_c2.mol'], f, args=
 #test.run(['eom_ee_dc_noinv_full_nooverlap.inp'],  ['f2_d2.mol', 'f2_c2v.mol', 'f2_c2.mol', 'f2_cs.mol'], f, args='--mw=110')
 #test.run(['eom_ee_dc_noinv_full_nooverlap_c1.inp'], ['f2_c1.mol'], f, args='--mw=110')
 
-#test.run(['eom_ee_dc_inv_full_nooverlap.inp'],    ['f2_d2h.mol'], f, args='--mw=110')
+#test.run(['eom_ee_dc_inv_full_nooverlap.inp'],    ['f2_d2h.mol', 'f2_c2h.mol'], f, args='--mw=110')
 #test.run(['eom_ee_dc_inv_full_nooverlap_ci.inp'], ['f2_ci.mol'], f, args='--mw=110')
 
 
