@@ -157,7 +157,11 @@ Tutorials and walkthrus
   :doc:`Hartree-Fock and DFT calculations in solution with the polarizable continuum model <tutorials/pcm/pcm_scf>` |
   :doc:`Calculation of polarizabilities in solution: response theory approach <tutorials/pcm/pcm_response>`
 
-* **Davidson corrections for relCI (LUCITA and KRCI):**
+* **Polarizable embedding model:**
+  :doc:`First step with polarizable embedding: Hartree-Fock calculation on micro-solvated H2O <tutorials/polarizable_embedding/pe_scf>` |
+  :doc:`TDDFT calculation on micro-solvated H2O  <tutorials/polarizable_embedding/pe_response>`
+
+  '* **Davidson corrections for relCI (LUCITA and KRCI):**
   :doc:`+Q corrections <tutorials/relci_q_corrections/q_corrections>`
 
 * **Utility programs:**
