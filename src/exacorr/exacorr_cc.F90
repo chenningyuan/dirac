@@ -34,7 +34,7 @@
 
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
          type(talsh_tens_t):: fo_tensor, fv_tensor, fov_tensor
-         type(talsh_tens_t):: oovv_tensor, vvvv_tensor, oooo_tensor, vovo_tensor, vooo_tensor, vovv_tensor
+         type(talsh_tens_t):: oovv_tensor, vvvv_tensor, oooo_tensor, vovo_tensor, ooov_tensor, vovv_tensor
 !        intermediate tensors (same notation as in relccsd)
          type(talsh_tens_t):: goint_tensor, gvint_tensor, hoint_tensor, hvint_tensor, hovint_tensor
          type(talsh_tens_t):: aint_tensor, bint_tensor, hint_tensor
@@ -83,7 +83,7 @@
 
 !        Get fixed two-body tensors
          call get_CC_integrals (nocc,nvir,mo_occ,mo_vir, &
-                                oooo_tensor,vooo_tensor,oovv_tensor, &
+                                oooo_tensor,ooov_tensor,oovv_tensor, &
                                 vovo_tensor,vovv_tensor,vvvv_tensor)
 
 !        Initialize t1 amplitudes to zero (we assume canonical orbitals for the moment)
@@ -135,25 +135,44 @@
          s2_dims(1:2) = nvir * 2
          s2_dims(3:4) = nocc * 2
          ierr=talsh_tensor_construct(s2_tensor,C8,s2_dims,init_val=ZERO)
+         tau_dims(1:2) = nvir * 2
+         tau_dims(3:4) = nocc * 2
+         ierr=talsh_tensor_construct(tau_tensor,C8,tau_dims,init_val=ZERO)
          print*,"allocated all tensors"
 
          do iccd = 1, nccd
 
+!        make tau
+         ierr=talsh_tensor_init(tau_tensor)
+         ierr=talsh_tensor_add("T(a,b,i,j)+=R(a,b,i,j)",tau_tensor,t2_tensor)
+         ierr=talsh_tensor_contract("T(a,b,i,j)+=T(a,i)*T(b,j)",tau_tensor,t1_tensor,t1_tensor)
+         ierr=talsh_tensor_contract("T(a,b,i,j)+=T(a,j)*T(b,i)",tau_tensor,t1_tensor,t1_tensor,scale=MINUS_ONE)
+
 !        calculate intermediaries
+
+!        2-index oo
          ierr=talsh_tensor_init(hoint_tensor)
          ierr=talsh_tensor_add("H(k,j)+=F(k,j)",hoint_tensor,fo_tensor)
-         ierr=talsh_tensor_contract("H(k,j)+=V(k,l,c,d)*T(c,d,l,j)",hoint_tensor,oovv_tensor,t2_tensor, &
+         ierr=talsh_tensor_contract("H(k,j)+=V(k,l,c,d)*T(c,d,l,j)",hoint_tensor,oovv_tensor,tau_tensor, &
                                      scale=ONE_HALF)
          ierr=talsh_tensor_init(goint_tensor)
          ierr=talsh_tensor_add("G(k,j)+=H(k,j)",goint_tensor,hoint_tensor)
          ierr=talsh_tensor_contract("G(k,j)+=F(k,c)*T(c,j)",goint_tensor,fov_tensor,t1_tensor)
-!check   ierr=talsh_tensor_contract("G(k,j)+=V+(i,c,k,l)*T(c,l)",goint_tensor,ooov_tensor,t1_tensor, &
-!check                               scale=ONE_HALF)
-         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=11; return; endif
-         ierr=talsh_tensor_init(gvint_tensor)
-         ierr=talsh_tensor_contract("G(a,c)+=V(k,l,c,d)*T(d,a,k,l)",gvint_tensor,oovv_tensor,t2_tensor, &
+         ierr=talsh_tensor_contract("G(k,j)+=V(k,l,j,c)*T(c,l)",goint_tensor,ooov_tensor,t1_tensor, &
                                      scale=ONE_HALF)
+         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=11; return; endif
+
+!        2-index vv
+         ierr=talsh_tensor_init(hvint_tensor)
+         ierr=talsh_tensor_contract("H(a,c)+=V(k,l,c,d)*T(d,a,k,l)",hvint_tensor,oovv_tensor,tau_tensor, &
+                                     scale=ONE_HALF)
+         ierr=talsh_tensor_init(gvint_tensor)
+         ierr=talsh_tensor_add("G(a,c)+=H(a,c)",gvint_tensor,hvint_tensor)
+         ierr=talsh_tensor_contract("G(a,c)+=F(k,c)*T(a,k)",gvint_tensor,fov_tensor,t1_tensor,scale=MINUS_ONE)
+         ierr=talsh_tensor_contract("G(a,c)+=V(a,k,c,d)*T(d,k)",gvint_tensor,vovv_tensor,t1_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=12; return; endif
+
+!        4-index oooo
          ierr=talsh_tensor_init(aint_tensor)
          ierr=talsh_tensor_add("A(k,l,i,j)+=V(k,l,i,j)",aint_tensor,oooo_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=13; return; endif
@@ -280,7 +299,7 @@
         end subroutine get_CC_Fockmatrix
 
         subroutine get_CC_integrals (nocc,nvir,mo_occ,mo_vir, &
-                                     oooo_tensor,vooo_tensor,oovv_tensor, &
+                                     oooo_tensor,ooov_tensor,oovv_tensor, &
                                      vovo_tensor,vovv_tensor,vvvv_tensor)
 
 !        Routine to get integrals needed in CC in the form of antisymmetric tensors.
@@ -299,8 +318,8 @@
          integer, intent(in)               :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
          integer, intent(in)               :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
 !        target integral tensors to be filled and given back to the caller
-         type(talsh_tens_t), intent(inout) :: oovv_tensor, vvvv_tensor, oooo_tensor, vovo_tensor, vooo_tensor, vovv_tensor
-         integer:: oovv_dims(1:4),vvvv_dims(1:4),oooo_dims(1:4),vovo_dims(1:4),vooo_dims(1:4),vovv_dims(1:4)
+         type(talsh_tens_t), intent(inout) :: oovv_tensor, vvvv_tensor, oooo_tensor, vovo_tensor, ooov_tensor, vovv_tensor
+         integer:: oovv_dims(1:4),vvvv_dims(1:4),oooo_dims(1:4),vovo_dims(1:4),ooov_dims(1:4),vovv_dims(1:4)
 
          integer   :: ierr, i
          complex(8), pointer, contiguous:: ao_tens(:,:,:,:)
@@ -422,18 +441,18 @@
          call get_integral_tensor (aoint_tensor,vvvv_tensor,.true.,nmo,mo_list)
          deallocate (mo_list)
 
-!        Get vooo tensor
-         vooo_dims(1)   = nvir * 2
-         vooo_dims(2:4) = nocc * 2
-         ierr=talsh_tensor_construct(vooo_tensor,C8,vooo_dims,init_val=ZERO)
-         allocate (mo_list(nvir+3*nocc))
-         nmo(1)   = nvir
-         nmo(2:4) = nocc
-         mo_list(1:nvir)                    = mo_vir(1:nvir)
-         mo_list(nvir+1:nvir+nocc)          = mo_occ(1:nocc)
-         mo_list(nvir+nocc+1:nvir+2*nocc)   = mo_occ(1:nocc)
-         mo_list(nvir+2*nocc+1:nvir+3*nocc) = mo_occ(1:nocc)
-         call get_integral_tensor (aoint_tensor,vooo_tensor,.true.,nmo,mo_list)
+!        Get ooov tensor
+         ooov_dims(1:3) = nocc * 2
+         ooov_dims(4)   = nvir * 2
+         ierr=talsh_tensor_construct(ooov_tensor,C8,ooov_dims,init_val=ZERO)
+         allocate (mo_list(3*nocc+nvir))
+         nmo(1:3) = nocc
+         nmo(4)   = nvir
+         mo_list(1:nocc)               = mo_occ(1:nocc)
+         mo_list(nocc+1:2*nocc)        = mo_occ(1:nocc)
+         mo_list(2*nocc+1:3*nocc)      = mo_occ(1:nocc)
+         mo_list(3*nocc+1:3*nocc+nvir) = mo_vir(1:nvir)
+         call get_integral_tensor (aoint_tensor,ooov_tensor,.true.,nmo,mo_list)
          deallocate (mo_list)
 
 !        Get vovv tensor
