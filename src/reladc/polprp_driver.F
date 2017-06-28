@@ -532,7 +532,7 @@ C
       real*8, allocatable     :: daibj(:)
       integer                 :: irploop,desrep
       CHARACTER*6             :: namematfil = 'PP_ELE'  !name of the main ADC matrix file
-      CHARACTER*6             :: namecnffil = 'ADCXCF'  !name of the configuration file
+      CHARACTER*6             :: namecnffil = 'XCONFIG'  !name of the configuration file
       integer                 :: irecl, ireccnt, intbuf
       integer                 :: ladc
       integer                 :: lencouplbl = 0
@@ -754,7 +754,7 @@ C
 !|      this part is executed by all nodes
 !|
 
-        INTBUF = 10*1024   !buffer size for matrix R/W buffers
+        INTBUF = 100*1024   !buffer size for matrix R/W buffers
 !|
 !|_________________________________________________
 

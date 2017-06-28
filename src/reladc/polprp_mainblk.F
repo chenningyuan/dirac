@@ -217,7 +217,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 ! conjugated one. Multiply result by -0.5 according to the equations.
 !
       do krep=1,nrep
-!       write(*,*) 'JVOVO/J2VOVO of krep:',jvovo(krep),j2vovo(krep)
         ioff=jvovo(krep)*rcw + 1
         if(carith) then
           call cmatsym(buf5(ioff),mvo(krep),mvo(krep))
@@ -558,9 +557,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &          desrep,repna(desrep)
           cycle
         endif
-!       write(*,*) 'irep/name/offset/# of jvovo/size of main block:',
-!    &        desrep,repna(desrep),
-!    &        ioff,JVOVO(desrep+1) - JVOVO(desrep),MVO(desrep)
         write(*,*)
 !
 !  open corresponding file
@@ -592,8 +588,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         if(x2.gt.1.0E-10) then
           write(*,*) 'Warning: Asymmetry of PH/PH matrix',
      &         ' in symmetry',desrep,' amounts to',x2
-!       else
-!         write(*,*) 'Matrix symmetric with',x2
         endif
 !
 !  amat array has ph/ph structure and is transferred to LAPACK
@@ -765,7 +759,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
          write(*,*) icount,jvoxx(nrep+1)
          stop 'conf array error!'
       endif
-!      write(*,*) 'HP configuration counting successful'
 !|
 !|  end configuration generator
 !|__________________________________________
@@ -852,7 +845,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !  write out eigenvalues and largest eigenvectors for the current symmetry
 !  on screen.
 !
-!       write(*,*)
         write(*,'(1X,A27,6X,I3,3X,A4,A)') 'Vectors available for symm.',
      &            desrep,repna(desrep),'  (max. 10 are printed)'
         write(*,*)

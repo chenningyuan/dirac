@@ -1,60 +1,58 @@
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE WCONDAT_X(LUN,FILENAME,IRECL,DESREP,RECCOUNT)
-C
+!
       IMPLICIT INTEGER (A-Z)
-C
-C---------------Description--------------------------------------------
-C
-C     Writes explicit configuration information for the excited
-C     states in symmetry DESREP.
-C     Important: The absolute spinor numbers calculated here correspond
-C     to the list in the CCSETI output and not the irepspi numbering!
-C     This makes retrieval of orbitals easier for the user
-C
-C---------------Calling variables--------------------------------------
-C
+!
+!---------------Description--------------------------------------------
+!
+!     Writes explicit configuration information for the excited
+!     states in symmetry DESREP.
+!     Important: The absolute spinor numbers calculated here correspond
+!     to the list in the CCSETI output and not the irepspi numbering!
+!     This makes retrieval of orbitals easier for the user
+!
+!---------------Calling variables--------------------------------------
+!
       INTEGER LUN
       CHARACTER*6 FILENAME
       INTEGER IRECL
       INTEGER DESREP
       INTEGER RECCOUNT
-C
-C---------------Common Blocks--------------------------------------
-C
+!
+!---------------Common Blocks--------------------------------------
+!
 #include "../relccsd/files.inc"
 #include "../relccsd/symm.inc"
-C
-C---------------Local variables--------------------------------------
-C
+!
+!---------------Local variables--------------------------------------
+!
       CHARACTER*70 FIELD
       INTEGER bl_conf
       CHARACTER*4 bl_irna
       
-C
-C---------------Executable code--------------------------------------
-C
-C open config file
-C
+!
+!---------------Executable code--------------------------------------
+!
+! open config file
+!
       IRECL = 70
       OPEN(LUN,FILE=FILENAME,ACCESS='DIRECT',RECL=IRECL,
      &     STATUS='UNKNOWN')
-C
-C First do the P--->H part. Column counter is the decisive
-C IRREP.
-C
+!
+! First do the P--->H part. Column counter is the decisive
+! IRREP.
+!
       BL_CONF = 0
       BL_IRNA = '    '
       RECCOUNT = 1
 
-C____________ START WITH H ---> P __________________________
-C|
-C|
-C|
+!____________ START WITH H ---> P __________________________
+!|
+!|
+!|
 
-!     write(*,*) '  **** wcondat output ****'
       do jrep = 1,nrep   !jrep,brep are fermionic, desrep is bosonic
         brep = multb(desrep+nrep,jrep,2)
-!       write(*,*) '  B:',desrep,'  G_a:',brep,'  G_i:',jrep
         do jfun = 1,NO(jrep)
         do bfun = 1,NV(brep)
           jabs=IO(jrep) + jfun
@@ -76,19 +74,13 @@ C|
       if( (reccount-1).ne.MVO(desrep))
      &   stop 'Inconsistent rec counter in WCONDAT_X!'
       write(*,*)
-C|
-C|
-C|
-C|__________________________________________________________
-C
-C
-C____________ NOW DO  2H ---> 2P ___________________________
-C|
-C| important: exactly the same order as the column counter in
-C| XSATMAKE! Otherwise config. information will be erroneous
-C|
-C|
-C|
+!|
+!|__________________________________________________________
+!
+!
+!____________ NOW DO  2H ---> 2P ___________________________
+!|
+!|
       DO KLREP = 1,NREP     ! KLREP (bosonic!) loops through
       CDREP = MULTB(DESREP+NREP,KLREP+NREP,2)
       DO 10 LREP = 1, NREP
@@ -127,10 +119,8 @@ C|
       ENDDO
  10   CONTINUE
       ENDDO
-C|
-C|
-C|
-C|__________________________________________________________
+!|
+!|__________________________________________________________
 
       CLOSE(LUN)
 
@@ -557,147 +547,6 @@ C
 
       return
       end
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!     SUBROUTINE PRECONTRACT(iounit,iw,eps)
-!
-!
-!  this routine is called by master only. If we have a parallel run
-!  then the nodes provide integrals.
-!  The routine provides <ab||cd> * <cd||ji>/(ec + ed - ej - ei)
-!  contracted over cd.
-!
-
-!if defined (VAR_MPI)
-!     use interface_to_mpi
-!endif
-
-!     implicit none
-
-!     integer                  :: iounit         ! I/O file handle for writing to file
-!     integer                  :: iw             ! file handle for writing to screen
-!     real*8, dimension(:)     :: eps
-!
-! local variables
-!
-!     real*8, allocatable, dimension(:)        :: vvvvz
-!     real*8, allocatable, dimension(:)        :: vvoo1
-!     real*8, allocatable, dimension(:)        :: vvoop
-!     integer                                  :: n1,ixx
-!     integer                                  :: ialloc
-!     integer                                  :: signal
-!     integer*8                                :: n8,i8
-!     COMPLEX*16                               :: A0,A1
-!     character*9                              :: preconfn='VVVVXVVOO'
-!     logical                                  :: isthere
-
-
-!include  "../relccsd/symm.inc"
-!include  "../relccsd/complex.inc"
-!include  "../relccsd/ccpar.inc"
-!
-!   function interfaces
-!
-!     interface
-
-!       SUBROUTINE denomvvoo_pp(ra1,ra2)
-!         real*8, dimension(:)         :: ra1,ra2
-!       END SUBROUTINE
-
-!       SUBROUTINE mpi_vvvv_complete(ra1,i1)
-!         real*8, dimension(:)            :: ra1
-!         integer*8                       :: i1
-!       END SUBROUTINE mpi_vvvv_complete
-
-!     end interface
-!
-! execution
-!
-!     if(carith) then
-!       write(iw,*) ' **) Performing (complex) precontraction'
-!       if(rcw.ne.2) call quit ('intenal error in PRECONTRACT')
-!     else
-!       write(iw,*) ' **) Performing (real) precontraction'
-!       if(rcw.ne.1) call quit ('intenal error in PRECONTRACT')
-!     endif
-!     A0=(0.0D00,0.0D00)
-!     A1=(1.0D00,0.0D00)
-
-
-!if defined (VAR_MPI)
-!
-!  send the slaves a start signal for int supply only
-!
-!     signal = 2  !start code.
-!     write(iw,*) 'Master indicates PRECONTRACTION (signal=2)'
-!     call interface_mpi_bcast(signal,1,MASTER,
-!    &                             global_communicator)
-!endif
-
-! allocate buffers and read in integrals
-
-!     n1 = ivvoott(nrep+1)
-!     allocate(vvoo1(n1*rcw))
-!     allocate(vvoop(n1*rcw))
-
-!     n8 = ivvvvtt(nrep+1)
-!     allocate(vvvvz(n8*rcw),stat=ialloc)
-!     if(ialloc.ne.0) then
-!       STOP 'VVVV buffer could not be allocated.'
-!     else
-!       write(*,*) 'Master allocated',n8,' words for VVVV buffer.'
-!     endif
-
-!if defined (VAR_MPI)
-!     do i8=1,n8*rcw
-!       vvvvz(i8) = -4096.0d0
-!     enddo
-!     call rdvvvv(vvvvz)  ! master reads its own chunks
-!     write(*,*) 'masters chunk reading ... complete.'
-!     call mpi_vvvv_complete(vvvvz,n8*rcw)  !.... and completes the stream.
-!     write(*,*) 'VVVV check in PRECONTRACT...'
-!     do i8=1,n8
-!       if(vvvvz(i8).eq. -4096.0d0)
-!    &    call quit('Internal error: gap in the VVVV stream!')
-!     enddo
-!     write(*,*) '.... success. No leaks.'
-!else
-!     call rdvvvv(vvvvz)  ! master reads complete stream in serial mode
-!endif
-!     call getvvoo(vvoo1)
-!     call denomvvoo_pp(eps,vvoo1)
-!
-!  do the contraction over all symmetries
-!
-!     CALL CNTRCT('N','N',NVVT,NOOT,NVVT,A1,vvvvz,vvoo1,A0,vvoop,NREP)
-!
-!  check if file already present. If yes, delete it.
-!
-!     Inquire(file=preconfn,exist=isthere)
-!     If(isthere) then
-!        write(*,*) 'Found a precontraction file. Deleting...'
-!        open(unit=iounit, file=preconfn, status='old')
-!        close(iounit, status='delete')
-!     Endif
-!
-!  open corresponding file and write out contracted integrals.
-!
-!     open(unit=iounit,file=preconfn, access='SEQUENTIAL',
-!    &     form='UNFORMATTED',status='NEW')
-!     write(iounit) (vvoop(ixx), ixx=1,n1*rcw)
-!     close(iounit)
-!
-!  free buffers immediately 
-!
-!     deallocate(vvoop)
-!     deallocate(vvoo1)
-!     deallocate(vvvvz)
-
-!     write(*,*) 'PRECONTRACTION finished. Buffers freed'
-!     write(*,*)
-!     write(*,*)
-
-!     return
-!     end
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PRECONTRACT_NEW(iounit,iw,eps)
 !

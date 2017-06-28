@@ -1614,10 +1614,6 @@
       vabijy = 0.0d0
       vabijz = 0.0d0
 !
-!  analyze contributions
-!
-!     if(printlevel.ge.5) call gov_analyzer
-!
 !---------------------------------------------------
 !-----  F_ab,ij(2nd order PART A)  -----------------
 !-----  see master sheet -TM 20-   -----------------
@@ -2347,9 +2343,9 @@
         read(io1) ps
 
         write(io2,'(A)') ' '
-        write(io2,'(A,X,I3,X,A,F10.4,A,X,F10.4,A,F10.4)') 
-     &    'State',ist,':exc. energy',evl,'(au)',evl*autoev,
-     &    ' (eV) and PS',ps
+        write(io2,'(A,X,I3,X,A,F12.6,A,X,F12.6,A,F12.6,A)') 
+     &    'State',ist,':exc. energy',evl,' (au)',evl*autoev,
+     &    ' (eV)   PS',ps,'   @E'
         write(io2,'(A,15X,A,10X,A,10X,A)')
      &       'Order', 'TM(x)_r        TM(x)_i',
      &       'TM(y)_r        TM(y)_i','TM(z)_r        TM(z)_i'
@@ -2445,7 +2441,7 @@
      %   write(io2,'(A)') '*** Oscill. strength acquires imag contribs!'
         foscr = (2.0d0/3.0d0)*evl*real(fosc)
         write(io2,'(A,F16.8,A)') '   Osc. strength:     -->>  ',
-     &           foscr,'  a.u.'
+     &           foscr,'  a.u.      @O'
          write(io2,'(3A)') '-----------------------------------------',
      &  '-----------------------------------------',
      &  '--------------------------'
