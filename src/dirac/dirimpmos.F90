@@ -10,6 +10,9 @@ subroutine impmos(qcpack,filimp)
 !       MOs need to be converted from the spherical Harmonic into the
 !       Cartesian AO basis
 !
+!   (2) ReSpect MOs for 1C and 2C Hamilonians. So far, the MO export is not
+!       released at ReSpect side
+!
 !
 ! Benjamin Helmich-Paris, fall 2016
 !
@@ -17,7 +20,7 @@ subroutine impmos(qcpack,filimp)
 !
 !------------------------------------------------------------------------------!
 
- use carsph, only : sph2car
+ use carsph, only : sph2car, carsph_init, carsph_clear
  use file_handler, only : open_seq, releaseunit
 
  implicit none
@@ -46,7 +49,7 @@ subroutine impmos(qcpack,filimp)
 
 ! local scalars:
  character(len=74) :: text
- integer :: idim(3,2), lucmo, luimp, ioff, ish, nhkti, norbi, khkti
+ integer :: idim(3,2), lucmo, luimp, ioff, ish, nhkti, norbi, khkti, nhktmx
  integer :: idx, ideg, jorb, itmp, mxscr, iofcar, iofsph, nscr, imo, ibf
  real(8) :: toterg, orbsum, chksum
 
@@ -72,13 +75,18 @@ subroutine impmos(qcpack,filimp)
  
  ! determine dimension of scratch array
  mxscr = 0
+ nhktmx = 0
  do ish = 1,maxshl
   itmp = (2*nhktsh(ish)-1)*norbsh(ish)
+  nhktmx = max(nhktmx,nhktsh(ish))
   mxscr = max(mxscr,itmp)
  end do
 
  allocate(cmocar(ncmotq),cmosph(norbt*norbt),eig(norbt),ibeig(norbt),&
           norb0(nbsym),nbbas0(nbsym),ctmp(mxscr))
+
+ ! initialze carsph module
+ call carsph_init(nhktmx)
 
  ! initialze CMOs with 0
  call dzero(cmocar,ncmotq)
@@ -137,7 +145,7 @@ subroutine impmos(qcpack,filimp)
  do imo = 1,norbt
   do ish = 1,kmax
    nhkti = nhkt(ish)
-   call sph2car(cmocar(iofcar+1),cmosph(iofsph+1),nhkti)
+   call sph2car(cmocar(iofcar+1),cmosph(iofsph+1),1,nhkti)
    iofsph = iofsph+(2*nhkti-1)
    iofcar = iofcar+(nhkti*(nhkti+1)/2)
   end do
@@ -176,6 +184,8 @@ subroutine impmos(qcpack,filimp)
 
  ! clean up
  deallocate(cmocar,cmosph,eig,ibeig,norb0,nbbas0)
+
+ call carsph_clear()
 
  call qexit("impmos")
 
