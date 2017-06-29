@@ -7,7 +7,12 @@
                                  ONE_HALF=(0.5D0,0.D0),ONE_QUARTER=(0.25D0,0.D0)
 
         private
+
         public cc_driver
+
+        interface scale_with_denominators
+           module procedure scale_with_denominators
+        end interface
 
        contains
 !-------------------------------------------------------------------------------------------
@@ -41,6 +46,8 @@
          type(talsh_tens_t):: tau_tensor, tau2_tensor
          integer:: goint_dims(1:2),gvint_dims(1:2),hoint_dims(1:2),hvint_dims(1:2),hovint_dims(1:2)
          integer:: aint_dims(1:4),bint_dims(1:4),cint_dims(1:4),hint_dims(1:4)
+!        auxilliary tensors for t1 equation
+         type(talsh_tens_t):: hovaux_tensor, hoaux_tensor
 !        solution tensors
          type(talsh_tens_t):: t1_tensor, t2_tensor, s1_tensor, s2_tensor
          integer:: t1_dims(1:2), t2_dims(1:4), s1_dims(1:2), s2_dims(1:4)
@@ -51,7 +58,7 @@
          real(8), allocatable :: eps_occ(:),eps_vir(:)
 !        CCD control and result variables
          integer :: iccd, nccd
-         real(8) :: mp2_energy, ccd_energy
+         real(8) :: mp2_energy, ccsd_energy
 
 !        Make some noise so that we know we are here
          print*, " Arrived in cc_driver routine"
@@ -100,7 +107,7 @@
 !        work-around because complex conjugation does not work in the above statement
          ierr=talsh_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)",t2_tensor,oovv_tensor,one_tensor)
 !        end of work-around
-         call scale_with_denominators (t2_tensor,eps_occ,eps_vir)
+         call scale_with_denominators (eps_occ,eps_vir,t1_tensor,t2_tensor)
 
 !        Calculate and print the MP2 energy
          ierr=talsh_tensor_init(result_tensor)
@@ -118,11 +125,13 @@
          ierr=talsh_tensor_construct(gvint_tensor,C8,gvint_dims,init_val=ZERO)
          hoint_dims = nocc  * 2
          ierr=talsh_tensor_construct(hoint_tensor,C8,hoint_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(hoaux_tensor,C8,hoint_dims,init_val=ZERO)
          hvint_dims = nvir * 2
          ierr=talsh_tensor_construct(hvint_tensor,C8,hvint_dims,init_val=ZERO)
          hovint_dims(1) = nocc * 2
          hovint_dims(2) = nvir * 2
          ierr=talsh_tensor_construct(hovint_tensor,C8,hovint_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(hovaux_tensor,C8,hovint_dims,init_val=ZERO)
          aint_dims  = nocc  * 2
          ierr=talsh_tensor_construct(aint_tensor,C8,aint_dims,init_val=ZERO)
          cint_dims(1) = nocc * 2
@@ -143,7 +152,12 @@
          s2_dims(1:2) = nvir * 2
          s2_dims(3:4) = nocc * 2
          ierr=talsh_tensor_construct(s2_tensor,C8,s2_dims,init_val=ZERO)
-         print*,"allocated all tensors"
+         if (ierr.eq.0) then
+            print*," ccdriver: allocated all tensors"
+         else
+            print*," ccdriver: error in tensor allocation, code=",ierr
+            return
+         end if
 
          do iccd = 1, nccd
 
@@ -165,7 +179,6 @@
          ierr=talsh_tensor_contract("G(k,j)+=F(k,c)*T(c,j)",goint_tensor,fov_tensor,t1_tensor)
          ierr=talsh_tensor_contract("G(k,j)+=V(k,l,j,c)*T(c,l)",goint_tensor,ooov_tensor,t1_tensor, &
                                      scale=ONE_HALF)
-         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=11; return; endif
 
 !        vv
          ierr=talsh_tensor_init(hvint_tensor)
@@ -176,12 +189,14 @@
          ierr=talsh_tensor_add("G(a,c)+=H(a,c)",gvint_tensor,hvint_tensor)
          ierr=talsh_tensor_contract("G(a,c)+=F(k,c)*T(a,k)",gvint_tensor,fov_tensor,t1_tensor,scale=MINUS_ONE)
          ierr=talsh_tensor_contract("G(a,c)+=V(a,k,c,d)*T(d,k)",gvint_tensor,vovv_tensor,t1_tensor)
-         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=12; return; endif
 
 !        ov
          ierr=talsh_tensor_init(hovint_tensor)
-         ierr=talsh_tensor_add("H(k,c)+=F(k,c)",hovint_tensor,fov_tensor)
+         ierr=talsh_tensor_init(hovaux_tensor)
          ierr=talsh_tensor_contract("H(k,c)+=V(k,l,c,d)*T(d,l)",hovint_tensor,oovv_tensor,t1_tensor)
+         ierr=talsh_tensor_contract("L(k,c)+=H(k,c)",hovaux_tensor,hovint_tensor,one_tensor) ! this is just a copy of hov
+         ierr=talsh_tensor_add("H(k,c)+=F(k,c)",hovint_tensor,fov_tensor) ! addition with a + sign
+         ierr=talsh_tensor_contract("H(k,c)+=F(k,c)",hovaux_tensor,fov_tensor,one_tensor,scale=MINUS_ONE) ! addition with - sign
 
 !        oooo
          ierr=talsh_tensor_init(aint_tensor)
@@ -191,7 +206,6 @@
                                      scale=MINUS_ONE)
          ierr=talsh_tensor_contract("A(k,l,i,j)+=V(k,l,c,d)*T(c,d,i,j)",aint_tensor,oovv_tensor,tau_tensor, &
                                      scale=ONE_HALF)
-         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=13; return; endif
 
 !        ovoo (these formulas need to be checked carefully, new intermediate to combine 4 terms left out relative to relccsd)
          ierr=talsh_tensor_init(cint_tensor)
@@ -203,31 +217,68 @@
 !        vovo
          ierr=talsh_tensor_init(tau2_tensor)
          ierr=talsh_tensor_add("T(a,d,i,l)+=R(a,d,i,l)",tau2_tensor,t2_tensor,scale=ONE_HALF)
-         ierr=talsh_tensor_contract("T(a,d,i,l)+=T(a,l)*T(d,i)",tau_tensor,t1_tensor,t1_tensor,scale=MINUS_ONE)
+         ierr=talsh_tensor_contract("T(a,d,i,l)+=T(a,l)*T(d,i)",tau2_tensor,t1_tensor,t1_tensor,scale=MINUS_ONE)
          ierr=talsh_tensor_init(hint_tensor)
          ierr=talsh_tensor_add("H(a,i,c,k)+=V(a,i,c,k)",hint_tensor,vovo_tensor)
          ierr=talsh_tensor_contract("H(a,i,c,k)+=V(k,l,i,c)*T(a,l)",hint_tensor,ooov_tensor,t1_tensor)
          ierr=talsh_tensor_contract("H(a,i,c,k)+=V(a,k,c,d)*T(d,i)",hint_tensor,vovv_tensor,t1_tensor,scale=MINUS_ONE)
          ierr=talsh_tensor_contract("H(a,i,c,k)+=V(k,l,c,d)*T(a,d,l,i)",hint_tensor,oovv_tensor,tau2_tensor)
-         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=14; return; endif
+
+         if (ierr.eq.TALSH_SUCCESS) then
+            write (*,'(A,I4,A)') "ccdriver: iteration",iccd," calculated all intermediates"
+         else
+            print*," ccdriver: error in calculation of intermediates, code=",ierr
+            return
+         end if
 
 !        For debugging
+         ierr=talsh_tensor_init(result_tensor)
+         ierr=talsh_tensor_contract("S()+=T(a,i)*T(a,i)",result_tensor,t1_tensor,t1_tensor)
+         print*, "T1amp = ",result_tens(1)
          ierr=talsh_tensor_init(result_tensor)
          ierr=talsh_tensor_contract("S()+=T(a,b,i,j)*T(a,b,i,j)",result_tensor,t2_tensor,t2_tensor, &
                                      scale=ONE_QUARTER)
          print*, "T2amp = ",result_tens(1)
          ierr=talsh_tensor_init(result_tensor)
+         ierr=talsh_tensor_contract("S()+=T(a,b,i,j)*T(a,b,i,j)",result_tensor,tau_tensor,tau_tensor, &
+                                     scale=ONE_QUARTER)
+         print*, "Tau   = ",result_tens(1)
+         ierr=talsh_tensor_init(result_tensor)
+         ierr=talsh_tensor_contract("S()+=H(k,j)*H(k,j)",result_tensor,hoint_tensor,hoint_tensor)
+         print*, "hoint = ",result_tens(1)
+         ierr=talsh_tensor_init(result_tensor)
          ierr=talsh_tensor_contract("S()+=G(k,j)*G(k,j)",result_tensor,goint_tensor,goint_tensor)
          print*, "goint = ",result_tens(1)
          ierr=talsh_tensor_init(result_tensor)
+         ierr=talsh_tensor_contract("S()+=H(a,c)*H(a,c)",result_tensor,hvint_tensor,hvint_tensor)
+         print*, "hvint = ",result_tens(1)
+         ierr=talsh_tensor_init(result_tensor)
          ierr=talsh_tensor_contract("S()+=G(a,c)*G(a,c)",result_tensor,gvint_tensor,gvint_tensor)
          print*, "gvint = ",result_tens(1)
+         ierr=talsh_tensor_init(result_tensor)
+         ierr=talsh_tensor_contract("S()+=H(k,c)*H(k,c)",result_tensor,hovint_tensor,hovint_tensor)
+         print*, "hovint = ",result_tens(1)
          ierr=talsh_tensor_init(result_tensor)
          ierr=talsh_tensor_contract("S()+=A(k,l,i,j)*A(k,l,i,j)",result_tensor,aint_tensor,aint_tensor)
          print*, "a int = ",result_tens(1)/4.D0
          ierr=talsh_tensor_init(result_tensor)
          ierr=talsh_tensor_contract("S()+=H(a,i,c,k)*H(a,i,c,k)",result_tensor,hint_tensor,hint_tensor)
          print*, "h int = ",result_tens(1)
+
+!        calculate s1 tensor
+         ierr=talsh_tensor_init(s1_tensor)
+!        ierr=talsh_tensor_add("S(a,i)+=F+(i,a)",s1_tensor,fov_tensor)
+!        work-around because complex conjugation does not work in the above statement
+         ierr=talsh_tensor_contract("S(a,i)+=F+(i,a)",s1_tensor,fov_tensor,one_tensor)
+!        end of work-around
+         ierr=talsh_tensor_contract("S(a,i)+=H(k,i)*T(a,k)",s1_tensor,hoint_tensor,t1_tensor,scale=MINUS_ONE)
+         ierr=talsh_tensor_contract("S(a,i)+=H(k,c)*T(a,c,k,i)",s1_tensor,hovint_tensor,t2_tensor)
+         ierr=talsh_tensor_init(hoaux_tensor)
+         ierr=talsh_tensor_contract("L(k,i)+=H(k,c)*T(c,i)",hoaux_tensor,hovaux_tensor,t1_tensor)
+         ierr=talsh_tensor_contract("S(a,i)+=H(k,i)*T(a,k)",s1_tensor,hoaux_tensor,t1_tensor)
+         ierr=talsh_tensor_contract("S(a,i)+=V(a,k,c,i)*T(c,k)",s1_tensor,vovo_tensor,t1_tensor,scale=MINUS_ONE)
+         ierr=talsh_tensor_contract("S(a,i)+=V(a,k,c,d)*T(c,d,i,k)",s1_tensor,vovv_tensor,tau_tensor,scale=ONE_HALF)
+         ierr=talsh_tensor_contract("S(a,i)+=V(k,l,i,c)*T(c,a,k,l)",s1_tensor,ooov_tensor,tau_tensor,scale=ONE_HALF)
 
 !        calculate s2 tensor
          ierr=talsh_tensor_init(s2_tensor)
@@ -263,24 +314,42 @@
          ierr=talsh_tensor_contract("S(a,b,i,j)+=H(b,j,c,k)*T(a,c,k,i)",s2_tensor,hint_tensor,t2_tensor)
 
 !        prepare for next iteration
+         ierr=talsh_tensor_init(t1_tensor)
+         ierr=talsh_tensor_add("T1(a,i)+=S1(a,i)",t1_tensor,s1_tensor)
          ierr=talsh_tensor_init(t2_tensor)
          ierr=talsh_tensor_add("T2(a,b,i,j)+=S2(a,b,i,j)",t2_tensor,s2_tensor)
-         call scale_with_denominators (t2_tensor,eps_occ,eps_vir)
+         call scale_with_denominators (eps_occ,eps_vir,t1_tensor,t2_tensor)
 
          ierr=talsh_tensor_init(result_tensor)
-         ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,t2_tensor,oovv_tensor)
-         ccd_energy=result_tens(1) * ONE_QUARTER
-         print*," CCD energy = ",ccd_energy
+         ierr=talsh_tensor_contract("E()+=T(a,i)*F(i,a)",result_tensor,t1_tensor,fov_tensor)
+         ccsd_energy=result_tens(1)
+         ierr=talsh_tensor_init(result_tensor)
+         ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,tau_tensor,oovv_tensor)
+         ccsd_energy=ccsd_energy + result_tens(1) * ONE_QUARTER
+         print*," CCSD energy = ",ccsd_energy
 
          end do
 
 !        Destruct tensors and shut down library
+         ierr=talsh_tensor_destruct(oooo_tensor)
          ierr=talsh_tensor_destruct(oovv_tensor)
+         ierr=talsh_tensor_destruct(vovo_tensor)
+         ierr=talsh_tensor_destruct(vvvv_tensor)
+         ierr=talsh_tensor_destruct(ooov_tensor)
+         ierr=talsh_tensor_destruct(vovv_tensor)
+         ierr=talsh_tensor_destruct(s1_tensor)
          ierr=talsh_tensor_destruct(s2_tensor)
+         ierr=talsh_tensor_destruct(t1_tensor)
          ierr=talsh_tensor_destruct(t2_tensor)
+         ierr=talsh_tensor_destruct(hoint_tensor)
+         ierr=talsh_tensor_destruct(hoaux_tensor)
+         ierr=talsh_tensor_destruct(hvint_tensor)
+         ierr=talsh_tensor_destruct(hovint_tensor)
+         ierr=talsh_tensor_destruct(hovaux_tensor)
          ierr=talsh_tensor_destruct(goint_tensor)
          ierr=talsh_tensor_destruct(gvint_tensor)
          ierr=talsh_tensor_destruct(aint_tensor)
+         ierr=talsh_tensor_destruct(cint_tensor)
          ierr=talsh_tensor_destruct(hint_tensor)
          ierr = talsh_shutdown()
          deallocate (eps_occ)
@@ -528,6 +597,7 @@
          call aomo_transform (aoint_tensor,moint_tensor,nmo,mo_list)
 !        Switch to Dirac order and antisymmetrize
          call mulliken_to_dirac_sort (moint_tensor,integral_tensor,antisymmetrize)
+         ierr=talsh_tensor_destruct(moint_tensor)
 
         end subroutine get_integral_tensor
 
@@ -543,7 +613,7 @@
 
          integer:: mulliken_dims(1:4),dirac_dims(1:4)
 
-         integer   :: ierr, mismatch
+         integer   :: ierr, tens_rank, mismatch
 
 !        work-around: addition with permutation is not implemented
          type(talsh_tens_t):: one_tensor, minusone_tensor
@@ -553,7 +623,11 @@
          ierr=talsh_tensor_construct(minusone_tensor,C8,scalar_dims(1:0),init_val=MINUS_ONE)
 !        end work-round
 
-!        Check consistency
+!        get dimensions of the tensors and check consistency
+         ierr = talsh_tensor_dimensions(mulliken_tensor,tens_rank,mulliken_dims)
+         if (ierr.ne.0 .or. tens_rank.ne.4) stop 'input tensor corrupted in mulliken_to_dirac_sort'
+         ierr = talsh_tensor_dimensions(dirac_tensor,tens_rank,dirac_dims)
+         if (ierr.ne.0 .or. tens_rank.ne.4) stop 'output tensor corrupted in mulliken_to_dirac_sort'
          mismatch = 0
          if (mulliken_dims(1) .ne. dirac_dims(1)) mismatch = mismatch + 1
          if (mulliken_dims(2) .ne. dirac_dims(3)) mismatch = mismatch + 1
@@ -567,7 +641,6 @@
          ierr=talsh_tensor_init(dirac_tensor)
 !shorter ierr=talsh_tensor_add("D(p,q,r,s)+=M(p,r,q,s)",dirac_tensor,mulliken_tensor)
          ierr=talsh_tensor_contract("D(p,q,r,s)+=M(p,r,q,s)*C()",dirac_tensor,mulliken_tensor,one_tensor)
-
 
          if (antisymmetrize) then
             if (dirac_dims(1) .eq. dirac_dims(2)) then
@@ -586,38 +659,57 @@
 
         end subroutine mulliken_to_dirac_sort
 
-       subroutine scale_with_denominators (t2_tensor,eps_occ,eps_vir)
+       subroutine scale_with_denominators (eps_occ,eps_vir,t1_tensor,t2_tensor)
 
          use tensor_algebra
          use talsh
        
          implicit none
 
-         type(talsh_tens_t), intent(inout)  :: t2_tensor
-         complex(8), pointer, contiguous:: t2_tens(:,:,:,:)
+         type(talsh_tens_t), optional, intent(inout)  :: t1_tensor, t2_tensor
+         complex(8), pointer, contiguous:: t1_tens(:,:), t2_tens(:,:,:,:)
          type(C_PTR):: body_p
          real(8) :: eps_occ(:),eps_vir(:),denominator
 
-         integer:: t2_dims(1:4)
+         integer:: t1_dims(1:2), t2_dims(1:4)
 
          integer   :: ierr, tens_rank, a, b, i, j
 
-!        Get tensor dimension of input and output tensors
-         ierr = talsh_tensor_dimensions(t2_tensor,tens_rank,t2_dims)
-         if (ierr.ne.0 .or. tens_rank.ne.4) stop 'program error: t2 tensor corrupted'
-         ierr=talsh_tensor_get_body_access(t2_tensor,body_p,C8,0,DEV_HOST)
-         call c_f_pointer(body_p,t2_tens,t2_dims(1:4)) ! to use <t2_tens> as a regular Fortran 4d array
+         if (present(t1_tensor)) then
 
-         do j = 1, t2_dims(4)
-           do i = 1, t2_dims(3)
-             do b = 1, t2_dims(2)
-               do a = 1, t2_dims(1)
-                  denominator = eps_occ(i) + eps_occ(j) - eps_vir(a) - eps_vir(b)
-                  t2_tens(a,b,i,j) = t2_tens(a,b,i,j) / denominator
-               end do
-             end do
-           end do
-         end do
+            ierr = talsh_tensor_dimensions(t1_tensor,tens_rank,t1_dims)
+            if (ierr.ne.0 .or. tens_rank.ne.2) stop 'program error: t1 tensor corrupted'
+            ierr=talsh_tensor_get_body_access(t1_tensor,body_p,C8,0,DEV_HOST)
+            call c_f_pointer(body_p,t1_tens,t1_dims(1:2)) ! to use <t1_tens> as a regular Fortran 2d array
+
+            do i = 1, t1_dims(2)
+              do a = 1, t1_dims(1)
+                 denominator = eps_occ(i) - eps_vir(a)
+                 t1_tens(a,i) = t1_tens(a,i) / denominator
+              end do
+            end do
+
+         end if
+
+         if (present(t2_tensor)) then
+
+            ierr = talsh_tensor_dimensions(t2_tensor,tens_rank,t2_dims)
+            if (ierr.ne.0 .or. tens_rank.ne.4) stop 'program error: t2 tensor corrupted'
+            ierr=talsh_tensor_get_body_access(t2_tensor,body_p,C8,0,DEV_HOST)
+            call c_f_pointer(body_p,t2_tens,t2_dims(1:4)) ! to use <t2_tens> as a regular Fortran 4d array
+
+            do j = 1, t2_dims(4)
+              do i = 1, t2_dims(3)
+                do b = 1, t2_dims(2)
+                  do a = 1, t2_dims(1)
+                     denominator = eps_occ(i) + eps_occ(j) - eps_vir(a) - eps_vir(b)
+                     t2_tens(a,b,i,j) = t2_tens(a,b,i,j) / denominator
+                  end do
+                end do
+              end do
+            end do
+
+         end if
         
        end subroutine scale_with_denominators
 
@@ -728,7 +820,7 @@
 !        work-around because complex conjugation does not work in the above statement
          ierr=talsh_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)",t2_tensor,oovv_tensor,one_tensor)
 !        end of work-around
-         call scale_with_denominators (t2_tensor,eps_occ,eps_vir)
+         call scale_with_denominators (eps_occ,eps_vir,t2_tensor=t2_tensor)
 
 !        Calculate and print the MP2 energy
          ierr=talsh_tensor_init(result_tensor)
@@ -829,7 +921,7 @@
 !        prepare for next iteration
          ierr=talsh_tensor_init(t2_tensor)
          ierr=talsh_tensor_add("T2(a,b,i,j)+=S2(a,b,i,j)",t2_tensor,s2_tensor)
-         call scale_with_denominators (t2_tensor,eps_occ,eps_vir)
+         call scale_with_denominators (eps_occ,eps_vir,t2_tensor=t2_tensor)
 
          ierr=talsh_tensor_init(result_tensor)
          ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,t2_tensor,oovv_tensor)
@@ -839,13 +931,13 @@
          end do
 
 !        Destruct tensors and shut down library
-         ierr=talsh_tensor_destruct(oovv_tensor)
          ierr=talsh_tensor_destruct(s2_tensor)
          ierr=talsh_tensor_destruct(t2_tensor)
          ierr=talsh_tensor_destruct(goint_tensor)
          ierr=talsh_tensor_destruct(gvint_tensor)
          ierr=talsh_tensor_destruct(aint_tensor)
          ierr=talsh_tensor_destruct(hint_tensor)
+         ierr=talsh_tensor_destruct(oovv_tensor)
          ierr = talsh_shutdown()
          deallocate (eps_occ)
          deallocate (eps_vir)
