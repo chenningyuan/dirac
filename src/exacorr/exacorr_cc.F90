@@ -37,12 +37,13 @@
          type(talsh_tens_t):: oovv_tensor, vvvv_tensor, oooo_tensor, vovo_tensor, ooov_tensor, vovv_tensor
 !        intermediate tensors (same notation as in relccsd)
          type(talsh_tens_t):: goint_tensor, gvint_tensor, hoint_tensor, hvint_tensor, hovint_tensor
-         type(talsh_tens_t):: aint_tensor, bint_tensor, hint_tensor
+         type(talsh_tens_t):: aint_tensor, bint_tensor, cint_tensor, hint_tensor
+         type(talsh_tens_t):: tau_tensor, tau2_tensor
          integer:: goint_dims(1:2),gvint_dims(1:2),hoint_dims(1:2),hvint_dims(1:2),hovint_dims(1:2)
-         integer:: aint_dims(1:4),bint_dims(1:4),hint_dims(1:4)
+         integer:: aint_dims(1:4),bint_dims(1:4),cint_dims(1:4),hint_dims(1:4)
 !        solution tensors
-         type(talsh_tens_t):: t1_tensor, t2_tensor, tau_tensor, s1_tensor, s2_tensor
-         integer:: t1_dims(1:2), t2_dims(1:4), tau_dims(1:4), s1_dims(1:2), s2_dims(1:4)
+         type(talsh_tens_t):: t1_tensor, t2_tensor, s1_tensor, s2_tensor
+         integer:: t1_dims(1:2), t2_dims(1:4), s1_dims(1:2), s2_dims(1:4)
 !        scalars (need to be defined as tensor types)
          type(talsh_tens_t):: result_tensor, one_tensor
          integer:: result_dims(1),one_dims(1)
@@ -124,20 +125,24 @@
          ierr=talsh_tensor_construct(hovint_tensor,C8,hovint_dims,init_val=ZERO)
          aint_dims  = nocc  * 2
          ierr=talsh_tensor_construct(aint_tensor,C8,aint_dims,init_val=ZERO)
+         cint_dims(1) = nocc * 2
+         cint_dims(2) = nvir * 2
+         cint_dims(3) = nocc * 2
+         cint_dims(4) = nocc * 2
+         ierr=talsh_tensor_construct(cint_tensor,C8,hint_dims,init_val=ZERO)
          hint_dims(1) = nvir * 2
          hint_dims(2) = nocc * 2
          hint_dims(3) = nvir * 2
          hint_dims(4) = nocc * 2
          ierr=talsh_tensor_construct(hint_tensor,C8,hint_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(tau_tensor, C8,t2_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(tau2_tensor,C8,t2_dims,init_val=ZERO)
          s1_dims(1) = nvir * 2
          s1_dims(2) = nocc * 2
          ierr=talsh_tensor_construct(s1_tensor,C8,s1_dims,init_val=ZERO)
          s2_dims(1:2) = nvir * 2
          s2_dims(3:4) = nocc * 2
          ierr=talsh_tensor_construct(s2_tensor,C8,s2_dims,init_val=ZERO)
-         tau_dims(1:2) = nvir * 2
-         tau_dims(3:4) = nocc * 2
-         ierr=talsh_tensor_construct(tau_tensor,C8,tau_dims,init_val=ZERO)
          print*,"allocated all tensors"
 
          do iccd = 1, nccd
@@ -150,7 +155,7 @@
 
 !        calculate intermediaries
 
-!        2-index oo
+!        oo
          ierr=talsh_tensor_init(hoint_tensor)
          ierr=talsh_tensor_add("H(k,j)+=F(k,j)",hoint_tensor,fo_tensor)
          ierr=talsh_tensor_contract("H(k,j)+=V(k,l,c,d)*T(c,d,l,j)",hoint_tensor,oovv_tensor,tau_tensor, &
@@ -162,8 +167,9 @@
                                      scale=ONE_HALF)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=11; return; endif
 
-!        2-index vv
+!        vv
          ierr=talsh_tensor_init(hvint_tensor)
+         ierr=talsh_tensor_add("H(a,c)+=F(a,c)",hvint_tensor,fv_tensor)
          ierr=talsh_tensor_contract("H(a,c)+=V(k,l,c,d)*T(d,a,k,l)",hvint_tensor,oovv_tensor,tau_tensor, &
                                      scale=ONE_HALF)
          ierr=talsh_tensor_init(gvint_tensor)
@@ -172,18 +178,37 @@
          ierr=talsh_tensor_contract("G(a,c)+=V(a,k,c,d)*T(d,k)",gvint_tensor,vovv_tensor,t1_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=12; return; endif
 
-!        4-index oooo
+!        ov
+         ierr=talsh_tensor_init(hovint_tensor)
+         ierr=talsh_tensor_add("H(k,c)+=F(k,c)",hovint_tensor,fov_tensor)
+         ierr=talsh_tensor_contract("H(k,c)+=V(k,l,c,d)*T(d,l)",hovint_tensor,oovv_tensor,t1_tensor)
+
+!        oooo
          ierr=talsh_tensor_init(aint_tensor)
          ierr=talsh_tensor_add("A(k,l,i,j)+=V(k,l,i,j)",aint_tensor,oooo_tensor)
-         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=13; return; endif
-         ierr=talsh_tensor_contract("A(k,l,i,j)+=V(k,l,c,d)*T(c,d,i,j)",aint_tensor,oovv_tensor,t2_tensor, &
+         ierr=talsh_tensor_contract("A(k,l,i,j)+=V(k,l,i,c)*T(c,j)",aint_tensor,ooov_tensor,t1_tensor)
+         ierr=talsh_tensor_contract("A(k,l,i,j)+=V(k,l,j,c)*T(c,i)",aint_tensor,ooov_tensor,t1_tensor, &
+                                     scale=MINUS_ONE)
+         ierr=talsh_tensor_contract("A(k,l,i,j)+=V(k,l,c,d)*T(c,d,i,j)",aint_tensor,oovv_tensor,tau_tensor, &
                                      scale=ONE_HALF)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=13; return; endif
+
+!        ovoo (these formulas need to be checked carefully, new intermediate to combine 4 terms left out relative to relccsd)
+         ierr=talsh_tensor_init(cint_tensor)
+         ierr=talsh_tensor_contract("C(k,b,i,j)+=V+(i,j,k,b)",cint_tensor,ooov_tensor,one_tensor)
+         ierr=talsh_tensor_contract("C(k,b,i,j)+=V(b,k,c,i)*T(c,j)",cint_tensor,vovo_tensor,t1_tensor)
+         ierr=talsh_tensor_contract("C(k,b,i,j)+=V(b,k,c,j)*T(c,i)",cint_tensor,vovo_tensor,t1_tensor,scale=MINUS_ONE)
+         ierr=talsh_tensor_contract("C(k,b,i,j)+=V(b,k,c,d)*T(c,d,i,j)",cint_tensor,vovv_tensor,t1_tensor)
+
+!        vovo
+         ierr=talsh_tensor_init(tau2_tensor)
+         ierr=talsh_tensor_add("T(a,d,i,l)+=R(a,d,i,l)",tau2_tensor,t2_tensor,scale=ONE_HALF)
+         ierr=talsh_tensor_contract("T(a,d,i,l)+=T(a,l)*T(d,i)",tau_tensor,t1_tensor,t1_tensor,scale=MINUS_ONE)
          ierr=talsh_tensor_init(hint_tensor)
          ierr=talsh_tensor_add("H(a,i,c,k)+=V(a,i,c,k)",hint_tensor,vovo_tensor)
-         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=14; return; endif
-         ierr=talsh_tensor_contract("H(a,i,c,k)+=V(k,l,c,d)*T(a,d,l,i)",hint_tensor,oovv_tensor,t2_tensor, &
-                                     scale=ONE_HALF)
+         ierr=talsh_tensor_contract("H(a,i,c,k)+=V(k,l,i,c)*T(a,l)",hint_tensor,ooov_tensor,t1_tensor)
+         ierr=talsh_tensor_contract("H(a,i,c,k)+=V(a,k,c,d)*T(d,i)",hint_tensor,vovv_tensor,t1_tensor,scale=MINUS_ONE)
+         ierr=talsh_tensor_contract("H(a,i,c,k)+=V(k,l,c,d)*T(a,d,l,i)",hint_tensor,oovv_tensor,tau2_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=14; return; endif
 
 !        For debugging
@@ -211,23 +236,27 @@
          ierr=talsh_tensor_contract("S(a,b,i,j)+=V+(i,j,a,b)",s2_tensor,oovv_tensor,one_tensor)
 !        end of work-around
 
-!        This terms appears twice as we need to permute i and j
+!        This term appears twice as we need to permute i and j
          ierr=talsh_tensor_contract("S(a,b,i,j)+=G(k,j)*T(a,b,i,k)",s2_tensor,goint_tensor,t2_tensor)
          ierr=talsh_tensor_contract("S(a,b,i,j)+=G(k,i)*T(a,b,k,j)",s2_tensor,goint_tensor,t2_tensor)
+!        Again two times, also note the complex conjugation as we use vovv instead of vvvo
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=V+(c,i,a,b)*T(c,j)",s2_tensor,vovv_tensor,t1_tensor)
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=V+(c,j,a,b)*T(c,i)",s2_tensor,vovv_tensor,t1_tensor,scale=MINUS_ONE)
 
-!        This terms appears twice as we need to permute a and b
+!        This term appears twice as we need to permute a and b
          ierr=talsh_tensor_contract("S(a,b,i,j)+=G(a,c)*T(c,b,i,j)",s2_tensor,gvint_tensor,t2_tensor)
          ierr=talsh_tensor_contract("S(a,b,i,j)+=G(b,c)*T(a,c,i,j)",s2_tensor,gvint_tensor,t2_tensor)
+!        Again two times, with the new C intermediate
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=C(k,b,i,j)*T(a,k)",s2_tensor,cint_tensor,t1_tensor)
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=C(k,a,i,j)*T(b,k)",s2_tensor,cint_tensor,t1_tensor,scale=MINUS_ONE)
 
 !        The oooo contribution
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=A(k,l,i,j)*T(a,b,k,l)",s2_tensor,aint_tensor,t2_tensor, &
-                                    scale=ONE_HALF)
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=A(k,l,i,j)*T(a,b,k,l)",s2_tensor,aint_tensor,tau_tensor,scale=ONE_HALF)
 
 !        The vvvv contribution
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=V(a,b,c,d)*T(c,d,i,j)",s2_tensor,vvvv_tensor,t2_tensor, &
-                                     scale=ONE_HALF)
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=V(a,b,c,d)*T(c,d,i,j)",s2_tensor,vvvv_tensor,tau_tensor,scale=ONE_HALF)
 
-!        This terms appears four times as we need to permute both i and j and a and b
+!        This term appears four times as we need to permute both i and j and a and b
          ierr=talsh_tensor_contract("S(a,b,i,j)+=H(a,i,c,k)*T(c,b,j,k)",s2_tensor,hint_tensor,t2_tensor)
          ierr=talsh_tensor_contract("S(a,b,i,j)+=H(a,j,c,k)*T(c,b,k,i)",s2_tensor,hint_tensor,t2_tensor)
          ierr=talsh_tensor_contract("S(a,b,i,j)+=H(b,i,c,k)*T(a,c,j,k)",s2_tensor,hint_tensor,t2_tensor)
