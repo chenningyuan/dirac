@@ -51,7 +51,7 @@ subroutine impmos(qcpack,filimp)
 ! local scalars:
  character(len=74) :: text
  integer :: idim(3,2), lucmo, luimp, ioff, ish, nhkti, nhktmx
- integer :: itmp, mxscr, iofcar, iofsph, imo, ibf, nz0
+ integer :: itmp, mxscr, iofcar, iofsph, imo, ibf, nz0, minteg
  real(8) :: toterg, orbsum, chksum
 
 ! local allocatables:
@@ -88,9 +88,6 @@ subroutine impmos(qcpack,filimp)
  allocate(cmocar(ncmotq),cmosph(norbt*norbt),eig(norbt),ibeig(norbt),&
           norb0(nbsym),nbbas0(nbsym),ctmp(mxscr))
 
- ! initialze carsph module
- call carsph_init(nhktmx)
-
  if (index(qcpack(1:6),'MOLCAS').gt.0) then
 
   ! ------------------------------------------------------ !
@@ -125,6 +122,14 @@ subroutine impmos(qcpack,filimp)
                  filimp,kmax,natoms,&! inp
                  norbt,nz0) ! dim
 
+  if (locdbg) then
+   write(lupri,"(a)") chrdbg//" imported MO energies:"
+   call output(eig,1,norbt,1,1,norbt,1,2,lupri)
+
+   write(lupri,"(a)") chrdbg//" imported MO coeffs in sph. Harm. basis.:"
+   call output(cmosph,1,norbt,1,norbt,norbt,norbt,1,lupri)
+  end if
+ 
   call reorder_respect(cmosph,cmocar,& ! i/o
                        ncntsh,nhktsh,norbsh,& ! inp
                        maxshl,norbt,nz0,natoms)
@@ -137,6 +142,16 @@ subroutine impmos(qcpack,filimp)
  ! do the spherical Harm. to Cartesian transformation
  ! ------------------------------------------------------ !
 
+ ! different normalizations of spherical Harmonics
+ if      (index(qcpack(1:8),'MOLCAS  ').gt.0) then
+  minteg = 2
+ else if (index(qcpack(1:8),'RESPECT ').gt.0) then
+  minteg = 1
+ end if
+
+ ! initialze carsph module
+ call carsph_init(nhktmx,minteg)
+
  ! initialze CMOs with 0
  call dzero(cmocar,ncmotq)
 
@@ -146,16 +161,18 @@ subroutine impmos(qcpack,filimp)
   do ish = 1,kmax
    nhkti = nhkt(ish)
    call sph2car(cmocar(iofcar+1),cmosph(iofsph+1),1,nhkti)
-   !call sph2car(cmocar(iofcar+1),cmosph(iofsph+1),2,nhkti)
    iofsph = iofsph+(2*nhkti-1)
    iofcar = iofcar+(nhkti*(nhkti+1)/2)
   end do
  end do
 
- !if (locdbg) then
+ ! destroy carsph module
+ call carsph_clear()
+
+ if (locdbg) then
   write(lupri,"(a)") chrdbg//" reordered MO coeffs. in Cart. basis:"
   call output(cmocar,1,ntbas(0),1,norbt,ntbas(0),norbt,1,lupri)
- !end if
+ end if
 
  ! ------------------------------------------------------ !
  ! compute check sum that is printed / tested
@@ -185,8 +202,6 @@ subroutine impmos(qcpack,filimp)
 
  ! clean up
  deallocate(cmocar,cmosph,eig,ibeig,norb0,nbbas0)
-
- call carsph_clear()
 
  call qexit("impmos")
 
@@ -470,7 +485,12 @@ subroutine rdrespect(cmo,eig, &! out
  read(luimp,*) (dummy,idx = 1,nbbas4)
  read(luimp,*) (dummy,idx = 1,nbbas4)
  
- !MOs
+ !MO energies
+ !-----------------
+ read(luimp,*) ndim4
+ read(luimp,*) (eig(idx),idx = 1,ndim4)
+
+ !MO coefficients
  !-----------------
  read(luimp,*) ndim4
  do iz = 1,nz
@@ -585,9 +605,9 @@ subroutine reorder_respect(cmosph,scratch,& ! i/o
 
  call heapsorti(nhkt0,maxshl,.false.,imask)
 
- write(6,*) " nhkt:", nhktsh(1:maxshl)
- write(6,*) "nhkt0:", nhkt0
- write(6,*) "imask:", imask
+! write(6,*) " nhkt:", nhktsh(1:maxshl)
+! write(6,*) "nhkt0:", nhkt0
+! write(6,*) "imask:", imask
 
  itmp = 0
  ihkt = 0
@@ -601,7 +621,7 @@ subroutine reorder_respect(cmosph,scratch,& ! i/o
  nktmx = ihkt
  iofkt(nktmx+1) = maxshl
 
- write(6,*) "iofkt:", iofkt(1:nktmx+1)
+! write(6,*) "iofkt:", iofkt(1:nktmx+1)
 
  do ihkt = 1,nktmx
   lhkt = iofkt(ihkt+1)-iofkt(ihkt)
@@ -611,7 +631,7 @@ subroutine reorder_respect(cmosph,scratch,& ! i/o
   call heapsorti(ncent0,lhkt,.false.,imask(iofkt(ihkt)+1))
  end do
 
- write(6,*) "imask:", imask
+! write(6,*) "imask:", imask
 
  ! --------------------------------------------------------- !
  ! 2.) re-order basis functions in Dirac order for each MO
@@ -627,7 +647,7 @@ subroutine reorder_respect(cmosph,scratch,& ! i/o
  end do
  iofkt(maxshl+1) = ioff
 
- write(6,*) "iofkt:", iofkt
+! write(6,*) "iofkt:", iofkt
 
  do iz = 1,nz
   do imo = 1,norbt
@@ -636,7 +656,7 @@ subroutine reorder_respect(cmosph,scratch,& ! i/o
     nhkti = nhkt0(jshel)
     khkti = 2*nhkti-1
     norbi = norbsh(imask(jshel))
-    write(6,*) "debug:",jshel,imask(jshel),nhkti,norbi
+!    write(6,*) "debug:",jshel,imask(jshel),nhkti,norbi
     call dcopy(khkti*norbi,cmosph(1+ioff,imo,iz),1,&
                            scratch(1+iofkt(imask(jshel)),imo,iz),1)
     ioff = ioff+khkti*norbi
@@ -644,18 +664,14 @@ subroutine reorder_respect(cmosph,scratch,& ! i/o
   end do
  end do
 
- !if (locdbg) then
-  write(lupri,"(a)") chrdbg//" unordered MO coeffs in sph. Harm. basis.:"
-  call output(cmosph,1,norbt,1,norbt,norbt,norbt,1,lupri)
+ if (locdbg) then
   write(lupri,"(a)") chrdbg//" reordered MO coeffs in sph. Harm. basis.:"
   call output(scratch,1,norbt,1,norbt,norbt,norbt,1,lupri)
- !end if
+ end if
 
  call dcopy(nz*norbt*norbt,scratch,1,cmosph,1)
 
  deallocate(imask,ncent0,nhkt0,iofkt)
 
-
- !stop 'panic'
 end subroutine reorder_respect
 !==============================================================================!

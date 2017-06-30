@@ -23,9 +23,10 @@ module carsph
 
  logical :: initialized = .false.
 
- integer :: lmax  = 0
- integer :: ntsph = 0
- integer :: nttrf = 0
+ integer :: lmax   = 0
+ integer :: ntsph  = 0
+ integer :: nttrf  = 0
+ integer :: minteg = 0
 
  integer, pointer :: iofsph(:) => null()
  integer, pointer :: isph(:)   => null()
@@ -51,7 +52,7 @@ logical function carsph_initialized()
 end function carsph_initialized
 !==============================================================================!
 !==============================================================================!
-subroutine carsph_init(nhkt)
+subroutine carsph_init(nhkt,mintg0)
 !------------------------------------------------------------------------------!
 !
 ! generate the 
@@ -74,18 +75,26 @@ subroutine carsph_init(nhkt)
 
 ! input:
  integer, intent(in) :: nhkt
+ integer, intent(in), optional :: mintg0
 
 ! local: 
  integer :: lval, mval, it, iu, iv, lx, ly, lz, nv, nt, ivm, mabs
  integer :: ifct, irow, icol, ideg, irun, ltmp, ldx
  integer :: nsphr, ncart, mxcar, itrf, novl, ioff, ldim, ksph
  integer :: idx, jdx, kdx, lxi, lyi, lzi, lxj, lyj, lzj, ip, jp, kp, nu, nup
- real(8) :: dsgn, dfct, coeff, bilt, bitu, bimv, dnum, deno, dnorm, dtmp
+ real(8) :: dsgn, dfct, coeff, bilt, bitu, bimv, dnum, deno
+ real(8) :: dnorm, dtmp, ttmp, tmin
 
 ! local allocatables:
  integer, allocatable :: icart(:), iovl(:), jovl(:)
  integer(8), allocatable :: factorial(:),  doubfact(:)
  real(8), allocatable :: ccart(:), smat(:)
+
+ if (present(mintg0)) then
+  minteg = mintg0
+ else
+  minteg = 2
+ end if
 
  ! flag for initialization
  initialized = .true.
@@ -196,7 +205,11 @@ subroutine carsph_init(nhkt)
  
     deno = real(factorial(lval)*(2**mabs),8)*deno
  
-    deno  = deno * sqrt(real(doubfact(2*lval-1),8))
+    ! --------------------------------------- !
+    ! extra normalization for minteg = 2 case
+    ! --------------------------------------- !
+    if (minteg.eq.2) deno = deno * sqrt(real(doubfact(2*lval-1),8))
+
     dnorm = dnum / deno
  
     do it = 0,nt
@@ -239,6 +252,32 @@ subroutine carsph_init(nhkt)
      isph(itrf+1) = nttrf+1
      itrf = itrf+1
     end if
+
+    ! --------------------------------------- !
+    ! extra normalization for minteg = 1 case
+    ! --------------------------------------- !
+    if (minteg.eq.1 .and. irun.eq.2) then
+     ! initialize with maximum absolute value
+     tmin = 0.d0
+     do ideg = 1,ncart
+      ttmp = abs(ccart(ideg))
+      if (icart(ideg).gt.0 .and. ttmp.gt.1.D-13 .and. ttmp .gt.tmin) then
+       tmin = ttmp
+       idx = ideg
+      end if
+     end do
+     tmin = ccart(idx)
+
+     ! look for minimum value
+     do ideg = 1,ncart
+      ttmp = abs(ccart(ideg))
+      if (icart(ideg).gt.0 .and. ttmp.gt.1.D-13 .and. ttmp .lt.tmin) tmin = ttmp
+     end do
+     tmin = 1.d0 / tmin
+     do ideg = 1,ncart
+      ccart(ideg) = ccart(ideg) * tmin
+     end do
+    end if 
 
     if (irun.eq.1) then
      do ideg = 1,ncart
