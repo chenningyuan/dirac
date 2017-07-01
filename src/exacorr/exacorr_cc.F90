@@ -362,6 +362,7 @@
          deallocate (eps_vir)
 
 !        Make some noise so that we know we are leaving
+         print*," Final CCSD energy = ",ccsd_energy
          print*, " Leaving cc_driver routine"
          return
         end subroutine cc_driver
