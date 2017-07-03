@@ -8,7 +8,7 @@ set(FIXED_EXACORR_FORTRAN_SOURCES
 )
 
 set(FREE_EXACORR_FORTRAN_SOURCES
-   dirac_exatensor.F90
+   exacorr_datatypes.F90
    exacorr_ao_to_mo.F90
    exacorr_cc.F90
 )

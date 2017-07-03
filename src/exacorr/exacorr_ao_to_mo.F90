@@ -20,7 +20,7 @@
 !        Written by Lucas Visscher, winter 2016/2017
  
          use dirac_MO
-         use dirac_exatensor
+         use exacorr_datatypes
          use tensor_algebra
          use talsh
          use, intrinsic:: ISO_C_BINDING
@@ -67,7 +67,8 @@
          print*, " Allocated ",nshells," shell variables"
          call initialize_shells(shell)
          do i = 1, nshells
-            if (compress_unc_shell(shell(i)) == 1) call quit ('This version can not handle contracted functions')
+            call compress_unc_shell(shell(i),ierr)
+            if (ierr == 1) call quit ('This version can not handle contracted functions')
          enddo
          print*, " Retrieved basis set information from DIRAC common blocks"
          
@@ -157,7 +158,7 @@
 
 !This subroutine drives the generation of AO integrals by InteRest
 !
-         use dirac_exatensor
+         use exacorr_datatypes
          use module_interest_eri
 
          implicit none

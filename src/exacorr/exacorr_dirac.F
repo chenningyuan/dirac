@@ -231,6 +231,57 @@ C
        return 
        end
 
+       subroutine compress_unc_shell (shell,ierr)
+!If basis functions were grouped together in the input, they appear as quasi-contracted functions
+!with a lot of zero coefficients. Remove these zeroes and reduce the length to just one function.
+!Routine will produce an error, if the function is a true contraced function (more than one non-zero coefficient)
+
+          use dirac_exatensor
+
+          integer, intent(out)     :: ierr
+          type(basis_func_info_t), intent(inout) :: shell
+
+          integer i, j, non_zero
+          real(8), allocatable :: exponents(:), coefficients(:)
+          real(8), parameter   :: treshold=1.D-12
+
+          allocate(exponents(shell%n_primitives))
+          allocate(coefficients(shell%n_primitives))
+          exponents    = shell%exponent
+          coefficients = shell%coefficient
+
+          ierr = 0
+          non_zero = 0
+          do i = 1, shell%n_primitives
+             if (abs(coefficients(i)) > treshold) then
+                non_zero = non_zero + 1
+                j = i
+             end if
+          end do
+
+          if (non_zero > 1) then
+             ierr = 1
+             return   ! leave shell untouched and return with error condition
+          else if (non_zero == 0) then
+             print*, " WARNING: compress_unc_shell found empty shell"
+             ierr = 2
+             j = 1    ! set j to the first function, to avoid complications with zero length arrays
+          end if
+
+          deallocate (shell%exponent)
+          deallocate (shell%coefficient)
+          allocate   (shell%exponent(1))
+          allocate   (shell%coefficient(1))
+
+          shell%n_primitives = 1
+          shell%exponent     = exponents(j)
+          shell%coefficient  = coefficients(j)
+
+          deallocate (exponents)
+          deallocate (coefficients)
+
+       end subroutine compress_unc_shell
+
        subroutine Write_To_Mdcint (nmo,rcw,mo_tens)
 
 !      Utility routine to write to the DIRAC moltra format, makes it easier to test the index transform
