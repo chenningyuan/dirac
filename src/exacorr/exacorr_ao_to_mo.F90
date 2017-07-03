@@ -5,9 +5,9 @@
 
         implicit none
         private
-        public compute_mo_integrals
-        public aomo_transform
         public compute_ao_integrals
+        public compute_mo_integrals
+        public get_integral_tensor
 
        contains
 !-------------------------------------------------------------------------------------------
@@ -328,5 +328,92 @@
          return
 
         end subroutine aomo_transform
+
+        subroutine get_integral_tensor (aoint_tensor,integral_tensor,antisymmetrize,nmo,mo_list)
+ 
+
+         use tensor_algebra
+         use talsh
+       
+         implicit none
+
+         complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0)
+
+         type(talsh_tens_t), intent(inout)  :: aoint_tensor,integral_tensor
+         integer, intent(in)                :: nmo(4), mo_list(:)
+         logical, intent(in)                :: antisymmetrize
+
+         integer                            :: ierr, moint_dims(4)
+         type(talsh_tens_t)                 :: moint_tensor
+
+         moint_dims = 2 * nmo
+         ierr=talsh_tensor_construct(moint_tensor,C8,moint_dims,init_val=ZERO)
+!        Transform integrals
+         call aomo_transform (aoint_tensor,moint_tensor,nmo,mo_list)
+!        Switch to Dirac order and antisymmetrize
+         call mulliken_to_dirac_sort (moint_tensor,integral_tensor,antisymmetrize)
+         ierr=talsh_tensor_destruct(moint_tensor)
+
+        end subroutine get_integral_tensor
+
+        subroutine mulliken_to_dirac_sort  (mulliken_tensor,dirac_tensor,antisymmetrize)
+
+         use tensor_algebra
+         use talsh
+       
+         implicit none
+
+         complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0)
+
+         type(talsh_tens_t), intent(inout)  :: mulliken_tensor,dirac_tensor
+         logical, intent(in)                :: antisymmetrize
+
+         integer:: mulliken_dims(1:4),dirac_dims(1:4)
+
+         integer   :: ierr, tens_rank, mismatch
+
+!        work-around: addition with permutation is not implemented
+         type(talsh_tens_t):: one_tensor, minusone_tensor
+         integer:: scalar_dims(1)
+         scalar_dims(1) = 1
+         ierr=talsh_tensor_construct(one_tensor,C8,scalar_dims(1:0),init_val=ONE)
+         ierr=talsh_tensor_construct(minusone_tensor,C8,scalar_dims(1:0),init_val=MINUS_ONE)
+!        end work-round
+
+!        get dimensions of the tensors and check consistency
+         ierr = talsh_tensor_dimensions(mulliken_tensor,tens_rank,mulliken_dims)
+         if (ierr.ne.0 .or. tens_rank.ne.4) stop 'input tensor corrupted in mulliken_to_dirac_sort'
+         ierr = talsh_tensor_dimensions(dirac_tensor,tens_rank,dirac_dims)
+         if (ierr.ne.0 .or. tens_rank.ne.4) stop 'output tensor corrupted in mulliken_to_dirac_sort'
+         mismatch = 0
+         if (mulliken_dims(1) .ne. dirac_dims(1)) mismatch = mismatch + 1
+         if (mulliken_dims(2) .ne. dirac_dims(3)) mismatch = mismatch + 1
+         if (mulliken_dims(3) .ne. dirac_dims(2)) mismatch = mismatch + 1
+         if (mulliken_dims(4) .ne. dirac_dims(4)) mismatch = mismatch + 1
+         if (antisymmetrize) then
+            if (dirac_dims(1) .ne. dirac_dims(2) .and. dirac_dims(3) .ne. dirac_dims(4)) mismatch = mismatch + 1
+         end if
+         if (mismatch.gt.0) stop 'dimension mismatch in mulliken_to_dirac_sort'
+
+         ierr=talsh_tensor_init(dirac_tensor)
+!shorter ierr=talsh_tensor_add("D(p,q,r,s)+=M(p,r,q,s)",dirac_tensor,mulliken_tensor)
+         ierr=talsh_tensor_contract("D(p,q,r,s)+=M(p,r,q,s)*C()",dirac_tensor,mulliken_tensor,one_tensor)
+
+         if (antisymmetrize) then
+            if (dirac_dims(1) .eq. dirac_dims(2)) then
+!shorter        ierr=talsh_tensor_add("D(p,q,r,s)+=M(q,r,p,s)",dirac_tensor,mulliken_tensor,scale=MINUS_ONE)
+                ierr=talsh_tensor_contract("D(p,q,r,s)+=M(q,r,p,s)*C()",dirac_tensor,mulliken_tensor,minusone_tensor)
+            else
+!shorter        ierr=talsh_tensor_add("D(p,q,r,s)+=M(p,s,q,r)",dirac_tensor,mulliken_tensor,scale=MINUS_ONE)
+                ierr=talsh_tensor_contract("D(p,q,r,s)+=M(p,s,q,r)*C()",dirac_tensor,mulliken_tensor,minusone_tensor)
+            end if
+         end if
+
+!        work-around: addition with permutation is not implemented
+         ierr=talsh_tensor_destruct(one_tensor)
+         ierr=talsh_tensor_destruct(minusone_tensor)
+!        end work-round
+
+        end subroutine mulliken_to_dirac_sort
 
        end module exacorr_ao_to_mo
