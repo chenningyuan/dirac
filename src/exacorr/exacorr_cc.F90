@@ -1,8 +1,10 @@
 !This module contains the routines needed to calculate ae coupled cluster wave function
        module exacorr_cc
 
-        implicit none
+        use tensor_algebra
+        use talsh
 
+        implicit none
         complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
                                  ONE_HALF=(0.5D0,0.D0),MINUS_ONE_HALF=(-0.5D0,0.D0),ONE_QUARTER=(0.25D0,0.D0)
 
@@ -14,19 +16,19 @@
            module procedure scale_with_denominators
         end interface
 
+        interface diis
+           module procedure diis
+        end interface
+
        contains
 !-------------------------------------------------------------------------------------------
         subroutine cc_driver (nocc,nvir,mo_occ,mo_vir)
 
-!This subroutine drives the ccd energy calculation
+!This subroutine drives the ccsd energy calculation
 !Currently everything is done in-core, purpose is to provide a working implementation that is suitable for debugging the production code
  
 !        Written by Lucas Visscher, winter 2016/2017
  
-         use tensor_algebra
-         use talsh
-
-         implicit none
          integer, intent(in) :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
          integer, intent(in) :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
 
@@ -56,9 +58,11 @@
          integer:: result_dims(1),one_dims(1)
 !        orbital energies
          real(8), allocatable :: eps_occ(:),eps_vir(:)
-!        CCD control and result variables
-         integer :: iccd, nccd
-         real(8) :: mp2_energy, ccsd_energy
+!        CCSD control and result variables
+         integer :: iccsd, nccsd
+         real(8) :: mp2_energy, ccsd_energy, t_convergence
+         real(8), parameter :: t_target_precision = 1.D-13
+         logical, parameter :: debug=.false.
 
 !        Make some noise so that we know we are here
          print*, " Arrived in cc_driver routine"
@@ -117,7 +121,7 @@
 
 !        Start CCSD iterations
 
-         nccd = 30 ! hard wired for the moment
+         nccsd = 30 ! hard wired for the moment
 
          goint_dims = nocc  * 2
          ierr=talsh_tensor_construct(goint_tensor,C8,goint_dims,init_val=ZERO)
@@ -152,6 +156,7 @@
          s2_dims(1:2) = nvir * 2
          s2_dims(3:4) = nocc * 2
          ierr=talsh_tensor_construct(s2_tensor,C8,s2_dims,init_val=ZERO)
+         call diis (t1_tensor,t2_tensor,mode=1)
          if (ierr.eq.TALSH_SUCCESS) then
             print*," ccdriver: allocated all tensors"
          else
@@ -159,7 +164,7 @@
             return
          end if
 
-         do iccd = 1, nccd
+         do iccsd = 1, nccsd
 
 !        make tau ! validated
          ierr=talsh_tensor_init(tau_tensor)
@@ -230,40 +235,42 @@
             return
          end if
 
+         if (debug) then
 !        For debugging: print quasi-norm (NOT using complex conjugation so that we can also see whether tensors are imaginary)
-         ierr=talsh_tensor_init(result_tensor)
-         ierr=talsh_tensor_contract("S()+=T(a,i)*T(a,i)",result_tensor,t1_tensor,t1_tensor)
-         print*, "T1amp = ",result_tens(1)
-         ierr=talsh_tensor_init(result_tensor)
-         ierr=talsh_tensor_contract("S()+=T(a,b,i,j)*T(a,b,i,j)",result_tensor,t2_tensor,t2_tensor,scale=ONE_QUARTER)
-         print*, "T2amp = ",result_tens(1)
-         ierr=talsh_tensor_init(result_tensor)
-         ierr=talsh_tensor_contract("S()+=T(a,b,i,j)*T(a,b,i,j)",result_tensor,tau_tensor,tau_tensor,scale=ONE_QUARTER)
-         print*, "Tau   = ",result_tens(1)
-         ierr=talsh_tensor_init(result_tensor)
-         ierr=talsh_tensor_contract("S()+=H(k,j)*H(k,j)",result_tensor,hoint_tensor,hoint_tensor)
-         print*, "hoint = ",result_tens(1)
-         ierr=talsh_tensor_init(result_tensor)
-         ierr=talsh_tensor_contract("S()+=G(k,j)*G(k,j)",result_tensor,goint_tensor,goint_tensor)
-         print*, "goint = ",result_tens(1)
-         ierr=talsh_tensor_init(result_tensor)
-         ierr=talsh_tensor_contract("S()+=H(a,c)*H(a,c)",result_tensor,hvint_tensor,hvint_tensor)
-         print*, "hvint = ",result_tens(1)
-         ierr=talsh_tensor_init(result_tensor)
-         ierr=talsh_tensor_contract("S()+=G(a,c)*G(a,c)",result_tensor,gvint_tensor,gvint_tensor)
-         print*, "gvint = ",result_tens(1)
-         ierr=talsh_tensor_init(result_tensor)
-         ierr=talsh_tensor_contract("S()+=H(k,c)*H(k,c)",result_tensor,hovint_tensor,hovint_tensor)
-         print*, "hovint = ",result_tens(1)
-         ierr=talsh_tensor_init(result_tensor)
-         ierr=talsh_tensor_contract("S()+=A(k,l,i,j)*A(k,l,i,j)",result_tensor,aint_tensor,aint_tensor)
-         print*, "a int = ",result_tens(1)/4.D0
-         ierr=talsh_tensor_init(result_tensor)
-         ierr=talsh_tensor_contract("S()+=H(a,i,c,k)*H(a,i,c,k)",result_tensor,hint_tensor,hint_tensor)
-         print*, "h int = ",result_tens(1)
-         ierr=talsh_tensor_init(result_tensor)
-         ierr=talsh_tensor_contract("S()+=C(k,b,i,j)*C(k,b,i,j)",result_tensor,cint_tensor,cint_tensor)
-         print*, "c int = ",result_tens(1)
+            ierr=talsh_tensor_init(result_tensor)
+            ierr=talsh_tensor_contract("S()+=T(a,i)*T(a,i)",result_tensor,t1_tensor,t1_tensor)
+            print*, "T1amp = ",result_tens(1)
+            ierr=talsh_tensor_init(result_tensor)
+            ierr=talsh_tensor_contract("S()+=T(a,b,i,j)*T(a,b,i,j)",result_tensor,t2_tensor,t2_tensor,scale=ONE_QUARTER)
+            print*, "T2amp = ",result_tens(1)
+            ierr=talsh_tensor_init(result_tensor)
+            ierr=talsh_tensor_contract("S()+=T(a,b,i,j)*T(a,b,i,j)",result_tensor,tau_tensor,tau_tensor,scale=ONE_QUARTER)
+            print*, "Tau   = ",result_tens(1)
+            ierr=talsh_tensor_init(result_tensor)
+            ierr=talsh_tensor_contract("S()+=H(k,j)*H(k,j)",result_tensor,hoint_tensor,hoint_tensor)
+            print*, "hoint = ",result_tens(1)
+            ierr=talsh_tensor_init(result_tensor)
+            ierr=talsh_tensor_contract("S()+=G(k,j)*G(k,j)",result_tensor,goint_tensor,goint_tensor)
+            print*, "goint = ",result_tens(1)
+            ierr=talsh_tensor_init(result_tensor)
+            ierr=talsh_tensor_contract("S()+=H(a,c)*H(a,c)",result_tensor,hvint_tensor,hvint_tensor)
+            print*, "hvint = ",result_tens(1)
+            ierr=talsh_tensor_init(result_tensor)
+            ierr=talsh_tensor_contract("S()+=G(a,c)*G(a,c)",result_tensor,gvint_tensor,gvint_tensor)
+            print*, "gvint = ",result_tens(1)
+            ierr=talsh_tensor_init(result_tensor)
+            ierr=talsh_tensor_contract("S()+=H(k,c)*H(k,c)",result_tensor,hovint_tensor,hovint_tensor)
+            print*, "hovint = ",result_tens(1)
+            ierr=talsh_tensor_init(result_tensor)
+            ierr=talsh_tensor_contract("S()+=A(k,l,i,j)*A(k,l,i,j)",result_tensor,aint_tensor,aint_tensor)
+            print*, "a int = ",result_tens(1)/4.D0
+            ierr=talsh_tensor_init(result_tensor)
+            ierr=talsh_tensor_contract("S()+=H(a,i,c,k)*H(a,i,c,k)",result_tensor,hint_tensor,hint_tensor)
+            print*, "h int = ",result_tens(1)
+            ierr=talsh_tensor_init(result_tensor)
+            ierr=talsh_tensor_contract("S()+=C(k,b,i,j)*C(k,b,i,j)",result_tensor,cint_tensor,cint_tensor)
+            print*, "c int = ",result_tens(1)
+         end if
 
 !        calculate s1 tensor
          ierr=talsh_tensor_init(s1_tensor)
@@ -326,17 +333,21 @@
          ierr=talsh_tensor_add("T2(a,b,i,j)+=S2(a,b,i,j)",t2_tensor,s2_tensor)
          call scale_with_denominators (eps_occ,eps_vir,t1_tensor,t2_tensor)
 
+         call diis (t1_tensor,t2_tensor,t_convergence=t_convergence)
+
          ierr=talsh_tensor_init(result_tensor)
          ierr=talsh_tensor_contract("E()+=T(a,i)*F(i,a)",result_tensor,t1_tensor,fov_tensor)
          ccsd_energy=result_tens(1)
          ierr=talsh_tensor_init(result_tensor)
          ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,tau_tensor,oovv_tensor)
          ccsd_energy=ccsd_energy + result_tens(1) * ONE_QUARTER
-         print*," CCSD energy = ",ccsd_energy
+         write (*,'(A,I4,A,F20.15,A,E10.1)') "  Iteration ",iccsd," CCSD energy = ",ccsd_energy, " convergence =",t_convergence
+         if (t_convergence .lt. t_target_precision) exit
 
          end do
 
 !        Destruct tensors and shut down library
+         call diis (t1_tensor,t2_tensor,mode=2)
          ierr=talsh_tensor_destruct(oooo_tensor)
          ierr=talsh_tensor_destruct(oovv_tensor)
          ierr=talsh_tensor_destruct(vovo_tensor)
@@ -376,10 +387,6 @@
 
 !        Written by Lucas Visscher, summer 2017
  
-         use tensor_algebra
-         use talsh
-
-         implicit none
          integer, intent(in)               :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
          real(8), intent(in)               :: eps_occ(:),eps_vir(:) ! the orbital energies
 !        target tensors to be filled and given back to the caller
@@ -414,12 +421,9 @@
 
 !        Written by Lucas Visscher, summer 2017
  
-         use tensor_algebra
-         use talsh
          use exacorr_datatypes
          use exacorr_ao_to_mo
 
-         implicit none
          integer, intent(in)               :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
          integer, intent(in)               :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
 !        target integral tensors to be filled and given back to the caller
@@ -585,11 +589,6 @@
 
        subroutine scale_with_denominators (eps_occ,eps_vir,t1_tensor,t2_tensor)
 
-         use tensor_algebra
-         use talsh
-       
-         implicit none
-
          type(talsh_tens_t), optional, intent(inout)  :: t1_tensor, t2_tensor
          complex(8), pointer, contiguous:: t1_tens(:,:), t2_tens(:,:,:,:)
          type(C_PTR):: body_p
@@ -637,6 +636,156 @@
         
        end subroutine scale_with_denominators
 
+       subroutine diis (t1_tensor,t2_tensor,t_convergence,mode)
+
+         integer, parameter :: maxdim = 5 ! maximum number of tensors that will be stored 
+         integer, parameter :: mindim = 3 ! minimum number of tensors to allow extrapolation
+         integer, intent(in), optional  :: mode ! 1:initialize, 2:clean-up
+         real(8), intent(out), optional :: t_convergence ! convergence of the t1 and t2 amplitudes
+
+         type(talsh_tens_t), intent(inout)  :: t1_tensor, t2_tensor
+         integer            :: ierr, i, tens_rank
+         integer, save      :: t1_dims(1:2), t2_dims(1:4)
+         logical            :: init, clean_up
+         integer, save      :: itens, jtens, ntens
+         complex(8), save   :: b_diis(maxdim,maxdim)
+         complex(8)         :: bb(0:maxdim,0:maxdim),coeff(0:maxdim)
+         real(8)            :: b_max, b_scale
+         type(talsh_tens_t), save :: t1_inp_tensor, t2_inp_tensor
+         type(talsh_tens_t), save :: t1_res_tensor(maxdim), t2_res_tensor(maxdim)
+         type(talsh_tens_t), save :: t1_err_tensor(maxdim), t2_err_tensor(maxdim)
+         integer            :: ipiv(maxdim), info    ! needed for ZHESV solver
+         real(8)            :: work(maxdim,maxdim)   ! needed for ZHESV solver
+         type(talsh_tens_t), save  :: scalar_tensor
+         integer:: scalar_dims(1)
+         complex(8), pointer :: scalar_tens(:)
+         type(C_PTR):: body_p
+
+         init       = .false.
+         clean_up   = .false.
+
+         if (present(mode)) then
+            if (mode.eq.1) init       = .true.
+            if (mode.eq.2) clean_up   = .true.
+         end if 
+
+!        define scalar tensor needed to extract the error
+         scalar_dims(1) = 1
+         ierr=talsh_tensor_construct(scalar_tensor,C8,scalar_dims(1:0),init_val=ZERO)
+         ierr=talsh_tensor_get_body_access(scalar_tensor,body_p,C8,0,DEV_HOST)
+         call c_f_pointer(body_p,scalar_tens,scalar_dims)
+
+         if (init) then
+!           get dimensions of the tensors
+            ierr = talsh_tensor_dimensions(t1_tensor,tens_rank,t1_dims)
+            if (ierr.ne.0 .or. tens_rank.ne.2) stop 'input t1-tensor corrupted in diis'
+            ierr = talsh_tensor_dimensions(t2_tensor,tens_rank,t2_dims)
+            if (ierr.ne.0 .or. tens_rank.ne.4) stop 'input t2-tensor corrupted in diis'
+!           initialize DIIS matrix
+            b_diis      = ZERO
+!           create storage for input, result and error tensors (in memory for the time being)
+            ierr=talsh_tensor_construct(t1_inp_tensor,C8,t1_dims,init_val=ZERO)
+            ierr=talsh_tensor_construct(t2_inp_tensor,C8,t2_dims,init_val=ZERO)
+            do i = 1, maxdim
+               ierr=talsh_tensor_construct(t1_res_tensor(i),C8,t1_dims,init_val=ZERO)
+               ierr=talsh_tensor_construct(t1_err_tensor(i),C8,t1_dims,init_val=ZERO)
+               ierr=talsh_tensor_construct(t2_res_tensor(i),C8,t2_dims,init_val=ZERO)
+               ierr=talsh_tensor_construct(t2_err_tensor(i),C8,t2_dims,init_val=ZERO)
+            end do
+            itens = 0
+            ntens = 0
+!           store the tensors in memory as current input tensors, needed to calculate the error vector later on
+            ierr=talsh_tensor_init(t1_inp_tensor)
+            ierr=talsh_tensor_add("T1O(a,i)+=T1N(a,i)",t1_inp_tensor,t1_tensor)
+            ierr=talsh_tensor_init(t2_inp_tensor)
+            ierr=talsh_tensor_add("T2O(a,b,i,j)+=T2N(a,b,i,j)",t2_inp_tensor,t2_tensor)
+            return ! no extrapolation possible
+         end if
+
+         if (clean_up) then
+!           de-allocate tensors
+            ierr=talsh_tensor_destruct(t1_inp_tensor)
+            ierr=talsh_tensor_destruct(t2_inp_tensor)
+            do i = 1, maxdim
+               ierr=talsh_tensor_destruct(t1_res_tensor(i))
+               ierr=talsh_tensor_destruct(t1_err_tensor(i))
+               ierr=talsh_tensor_destruct(t2_res_tensor(i))
+               ierr=talsh_tensor_destruct(t2_err_tensor(i))
+            end do
+         end if
+
+!        update counters
+         itens = itens + 1                                                                                                                    
+         if (itens.gt.maxdim) itens = 1       ! cycle because we already have the maximum number of stored amplitudes, will overwrite the oldest one
+         ntens = ntens + 1                    ! number of tensors stored after returning
+         if (ntens.gt.maxdim) ntens = maxdim  ! we have reached the maximum number of tensors to be used in DIIS
+
+!        store the result tensors
+         ierr=talsh_tensor_init(t1_res_tensor(itens))
+         ierr=talsh_tensor_add("T1R(a,i)+=T1(a,i)",t1_res_tensor(itens),t1_tensor)
+         ierr=talsh_tensor_init(t2_res_tensor(itens))
+         ierr=talsh_tensor_add("T2R(a,b,i,j)+=T2(a,b,i,j)",t2_res_tensor(itens),t2_tensor)
+
+!        calculate the error tensors by comparing the result of the t-equations with the tensors used as input
+         ierr=talsh_tensor_init(t1_err_tensor(itens))
+         ierr=talsh_tensor_add("T1E(a,i)+=T1R(a,i)",t1_err_tensor(itens),t1_tensor)
+         ierr=talsh_tensor_add("T1E(a,i)+=T1I(a,i)",t1_err_tensor(itens),t1_inp_tensor,scale=MINUS_ONE)
+         ierr=talsh_tensor_init(t2_err_tensor(itens))
+         ierr=talsh_tensor_add("T2E(a,b,i,j)+=T2R(a,b,i,j)",t2_err_tensor(itens),t2_tensor)
+         ierr=talsh_tensor_add("T2E(a,b,i,j)+=T2I(a,b,i,j)",t2_err_tensor(itens),t2_inp_tensor,scale=MINUS_ONE)
+
+!        update the b_diis array that holds the scalar products of the error tensors
+         ierr=talsh_tensor_init(scalar_tensor)
+         do i = 1, ntens
+            ierr=talsh_tensor_init(scalar_tensor)
+            ierr=talsh_tensor_contract("E()+=T+(a,i)*T(a,i)",scalar_tensor,t1_err_tensor(itens),t1_err_tensor(i))
+            ierr=talsh_tensor_contract("E()+=T+(a,b,i,j)*T(a,b,i,j)",scalar_tensor,t2_err_tensor(itens),t2_err_tensor(i))
+            b_diis(itens,i) = scalar_tens(1)
+            b_diis(i,itens) = dconjg(scalar_tens(1))
+         end do
+
+         if (present(t_convergence)) then
+            t_convergence = dsqrt(dble(b_diis(itens,itens)))
+         end if 
+
+!        transfer to a work array in the way requested by the solver and normalize the matrix
+         b_max = maxval (abs(b_diis))
+         if (b_max .gt. 1.D-30) then
+             b_scale = 1.D0 / b_max
+         else
+             print*, "WARNING: something is wrong in DIIS: found zero error for non-converged amplitudes"
+             return
+         end if
+         bb = ZERO
+         bb(1:ntens,0) = MINUS_ONE
+         bb(0,1:ntens) = MINUS_ONE
+         bb(1:ntens,1:ntens) = b_diis(1:ntens,1:ntens) * b_scale
+
+!        solve the linear system of equations using the LAPACK solver ZHESV
+         coeff(0)       = MINUS_ONE  ! on input this should be the right-hand-side of the matrix equation b coef = rhs
+         coeff(1:ntens) = ZERO 
+         call ZHESV ('L',ntens+1,1,bb,maxdim+1,ipiv,coeff,maxdim+1,work,maxdim*maxdim,info)
+
+!        make the extrapolated amplitudes if the space is large enough
+         if (ntens.ge.mindim) then
+           ierr=talsh_tensor_init(t1_tensor)
+           ierr=talsh_tensor_init(t2_tensor)
+            do i = 1, ntens
+               ierr=talsh_tensor_add("T1(a,i)+=T1O(a,i)",t1_tensor,t1_res_tensor(i),scale=coeff(i))
+               ierr=talsh_tensor_add("T2(a,b,i,j)+=T2O(a,b,i,j)",t2_tensor,t2_res_tensor(i),scale=coeff(i))
+            end do
+         end if
+
+!        the extrapolated amplitudes are the new input tensors
+         ierr=talsh_tensor_init(t1_inp_tensor)
+         ierr=talsh_tensor_add("T1O(a,i)+=T1(a,i)",t1_inp_tensor,t1_tensor)
+         ierr=talsh_tensor_init(t2_inp_tensor)
+         ierr=talsh_tensor_add("T2O(a,b,i,j)+=T2(a,b,i,j)",t2_inp_tensor,t2_tensor)
+
+         ierr=talsh_tensor_destruct(scalar_tensor)
+
+       end subroutine diis
+
        subroutine get_orbital_energies (nmo, mo_list, eps)
 
 !This subroutine reads the desired subset of mo energies from DIRAC
@@ -644,10 +793,7 @@
 !        Written by Lucas Visscher, winter 2016/2017 (but in Goa, India, temperature about 25 C)
 
          use dirac_MO
-         use tensor_algebra
-         use talsh
 
-         implicit none
          integer, intent(in) :: nmo          ! the length of the mo basis
          integer, intent(in) :: mo_list(:)   ! and their indices
          real(8) :: eps(:)
