@@ -69,13 +69,13 @@ C     Written by L.Visscher Jul 2017
 C
 C***********************************************************************
 
+      Use exacc_cfg
       Use exacorr_cc
 
 #include "implicit.h"! because common blocks may assume this
 #include "dcborb.h"  ! to access nesh (number of positive energy "electronlike" orbitals)
 #include "dgroup.h"  ! to access nfsym (should be 1)
 
-      character (len=72)   :: orbital_string(4) ! String with range of MO's to be transformed for each index
       integer              :: kvec              ! Dummy variable needed in first call to numlst
       integer, allocatable :: mo_list(:),mo_occ(:),mo_vir(:)
       integer              :: nmo(4),noccu,nvir
@@ -84,18 +84,15 @@ C***********************************************************************
          call quit ('exacorr can not handle symmetry')
       end if
 C
-C     Start new implementation of CCSD, hardwired test case for the moment
-      orbital_string(1) = '1'
       noccu = 0
-      call numlst (orbital_string(1),kvec,1,1,nesh(1),1,noccu)
+      call numlst (string_occupied,kvec,1,1,nesh(1),1,noccu)
       allocate (mo_occ(noccu))
-      call numlst (orbital_string(1),mo_occ,noccu,1,nesh(1),1,noccu)
+      call numlst (string_occupied,mo_occ,noccu,1,nesh(1),1,noccu)
 
-      orbital_string(2) = '2..9'
       nvir = 0
-      call numlst (orbital_string(2),kvec,1,1,nesh(1),1,nvir)
+      call numlst (string_virtual,kvec,1,1,nesh(1),1,nvir)
       allocate (mo_vir(nvir))
-      call numlst (orbital_string(2),mo_vir,nvir,1,nesh(1),1,nvir)
+      call numlst (string_virtual,mo_vir,nvir,1,nesh(1),1,nvir)
 
       call cc_driver (noccu,nvir,mo_occ,mo_vir)
 
