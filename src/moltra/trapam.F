@@ -120,7 +120,7 @@ C
 
 C     Temporary hack to call the exacorr module
       if (tra_exacorr) then
-          call exacorr()
+          call exa_moltra()
           no4ind = .true. ! skip conventional 4-index transformation
       end if
 

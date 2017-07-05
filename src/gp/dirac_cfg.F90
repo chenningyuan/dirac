@@ -44,6 +44,8 @@ module dirac_cfg
   logical, public :: dirac_cfg_openrsp            = .false.
 !                    visualization module
   logical, public :: dirac_cfg_visual             = .false.
+!                    exacc module
+  logical, public :: dirac_cfg_exacc              = .false.
 !                    relcc module
   logical, public :: dirac_cfg_relcc              = .false.
 !                    embedding module

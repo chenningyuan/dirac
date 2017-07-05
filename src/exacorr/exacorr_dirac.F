@@ -4,17 +4,16 @@
 !
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE EXACORR()
+      SUBROUTINE EXA_MOLTRA()
 C***********************************************************************
 C
-C     Driver routine for exacorr CC implementation
+C     Driver routine for exacorr MOLTRA implementation
 C
 C     Written by L.Visscher Jan 2017
 C
 C***********************************************************************
 
       Use exacorr_ao_to_mo
-      Use exacorr_cc
 
 #include "implicit.h"! because common blocks may assume this
 #include "../moltra/dcbtra.h"  ! to access tra4_indstr
@@ -57,6 +56,34 @@ C     Transformed AO to MO integrals are written to MDCINT
       call compute_mo_integrals (nmo, mo_list)
       call mdintf
 C
+      deallocate (mo_list)
+
+      end
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE EXA_CC()
+C***********************************************************************
+C
+C     Driver routine for exacorr CC implementation
+C
+C     Written by L.Visscher Jul 2017
+C
+C***********************************************************************
+
+      Use exacorr_cc
+
+#include "implicit.h"! because common blocks may assume this
+#include "dcborb.h"  ! to access nesh (number of positive energy "electronlike" orbitals)
+#include "dgroup.h"  ! to access nfsym (should be 1)
+
+      character (len=72)   :: orbital_string(4) ! String with range of MO's to be transformed for each index
+      integer              :: kvec              ! Dummy variable needed in first call to numlst
+      integer, allocatable :: mo_list(:),mo_occ(:),mo_vir(:)
+      integer              :: nmo(4),noccu,nvir
+
+      if (nfsym.ne.1) then
+         call quit ('exacorr can not handle symmetry')
+      end if
+C
 C     Start new implementation of CCSD, hardwired test case for the moment
       orbital_string(1) = '1'
       noccu = 0
@@ -72,7 +99,6 @@ C     Start new implementation of CCSD, hardwired test case for the moment
 
       call cc_driver (noccu,nvir,mo_occ,mo_vir)
 
-      deallocate (mo_list)
       deallocate (mo_occ)
       deallocate (mo_vir)
 
@@ -201,7 +227,7 @@ C
 
        subroutine Initialize_Shells (shell)
 
-       use dirac_exatensor
+       use exacorr_datatypes
 
 #include "implicit.h"
 #include "maxorb.h"
@@ -236,7 +262,7 @@ C
 !with a lot of zero coefficients. Remove these zeroes and reduce the length to just one function.
 !Routine will produce an error, if the function is a true contraced function (more than one non-zero coefficient)
 
-          use dirac_exatensor
+          use exacorr_datatypes
 
           integer, intent(out)     :: ierr
           type(basis_func_info_t), intent(inout) :: shell

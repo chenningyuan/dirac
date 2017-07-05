@@ -34,6 +34,9 @@
         case ('*aooSOC')
            call read_input_aoosoc(word, kw_section)
 
+        case ('**EXACC')
+           call read_input_exacc(word, kw_section)
+
         case ('**RELCC')
            call read_input_relcc(word, kw_section)
 
@@ -767,6 +770,32 @@
 
       call check_whether_kw_found(word, kw_section)
 #endif /* ifndef MOD_OPENRSP */
+
+   end subroutine
+
+   subroutine read_input_exacc(word, kw_section)
+
+      use exacc_cfg
+      use input_reader
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.OCCUPIED')) then
+         call kw_read(word, string_occupied)
+      end if
+
+      if (kw_matches(word, '.VIRTUAL')) then
+         call kw_read(word, string_virtual)
+      end if
+
+      call check_whether_kw_found(word, kw_section)
 
    end subroutine
 

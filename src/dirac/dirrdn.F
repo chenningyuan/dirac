@@ -2593,7 +2593,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 19, NTABLE = 23)
+      PARAMETER (NDIR = 20, NTABLE = 24)
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,CTEMP*90
@@ -2610,13 +2610,13 @@ C
      &             '*MVOCAL','*RESOLV','*KRMCSC','*STEP C',
      &             '*OPTIMI','*MP2 NO','*KRCICA','*COSCI ',
      &             '*GASCIP','*HSFS  ','*KRCCCA','*ARDUCC',
-     &             '*SCF   ','*KRCI  ','*QCORR '/
+     &             '*SCF   ','*KRCI  ','*QCORR ','.EXACC '/
       DATA TABLE  /'xxxxxxx','.MP2   ','.LUCITA','.REORDE',
      &             '.POST S','.RELCCS','.DIRRCI','.MVO   ',
      &             '.RESOLV','.ORBROT','.LUCIAR','.KRMCSC',
      &             '.PHCOEF','.MP2 NO','.RELADC','.KR CI ',
      &             '.KR CC ','.COSCI ','.GASCIP','.HSFS  ',
-     &             '.ARDUCC','.SCF   ','.KRCI  '/
+     &             '.ARDUCC','.SCF   ','.KRCI  ','.EXACC '/
 C
       N_WF = 0
 C
@@ -2625,6 +2625,7 @@ C     ===================
 C
       DOMP2   = .FALSE.
       DORES   = .FALSE.
+      DOEXACC = .FALSE.
       DOCCM   = .FALSE.
       DOCIM   = .FALSE.
       DOLUCT  = .FALSE.
@@ -2684,7 +2685,7 @@ C
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (101,102,103,104,105,106,107,108,
      &                109,110,111,112,113,114,115,116,
-     &                117,118,119,120,121,122,123),I
+     &                117,118,119,120,121,122,123,124),I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -2863,6 +2864,13 @@ C&&&& SCF
 C&&&& KRCI :  alternative spelling of KR CI
   123    CONTINUE
             GO TO 116
+C&&&& EXACC: Perfrom coupled cluster calculations with exacc
+  124    CONTINUE
+            DOEXACC = .TRUE.
+            dirac_cfg_exacc = .true.
+            N_WF = N_WF + 1
+            DIRAC_WF(N_WF) = 'EXA_CC'
+            GO TO 100
 
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
