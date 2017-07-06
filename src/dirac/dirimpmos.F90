@@ -50,13 +50,13 @@ subroutine impmos(qcpack,filimp)
 
 ! local scalars:
  character(len=74) :: text
- integer :: idim(3,2), lucmo, luimp, ioff, ish, nhkti, nhktmx
- integer :: itmp, mxscr, iofcar, iofsph, imo, ibf, nz0, minteg
- real(8) :: toterg, orbsum, chksum
+ integer :: idim(3,2), lucmo, luimp, ioff, ish, nhkti, nhktmx, iz
+ integer :: itmp, mxscr, iofcar, iofsph, imo, ibf, jbf, nz0, minteg, ndeg, idx
+ real(8) :: toterg, orbsum, chksum, trace, ddot
 
 ! local allocatables:
  integer, allocatable :: ibeig(:), norb0(:), nbbas0(:)
- real(8), allocatable :: cmosph(:), cmocar(:), eig(:), ctmp(:)
+ real(8), allocatable :: cmosph(:,:,:), cmocar(:,:,:), eig(:), ctmp(:)
 
  call qenter("impmos")
 
@@ -71,9 +71,11 @@ subroutine impmos(qcpack,filimp)
  end if
 
  if (x2cmmf .or. x2c .or. bss .or. dkh1 .or.dkh2) then
-  nz0 = 4
+  nz0  = 4
+  ndeg = 2
  else if (nonrel .or. levyle .or. spinfr) then
-  nz0 = 1
+  nz0  = 1
+  ndeg = 1
  end if
  
  ! determine dimension of scratch array
@@ -85,7 +87,7 @@ subroutine impmos(qcpack,filimp)
   mxscr = max(mxscr,itmp)
  end do
 
- allocate(cmocar(ncmotq),cmosph(norbt*norbt),eig(norbt),ibeig(norbt),&
+ allocate(cmocar(ntbas(0),ntbas(0),4),cmosph(norbt,norbt,nz0),eig(ndeg*norbt),ibeig(norbt),&
           norb0(nbsym),nbbas0(nbsym),ctmp(mxscr))
 
  if (index(qcpack(1:6),'MOLCAS').gt.0) then
@@ -120,14 +122,22 @@ subroutine impmos(qcpack,filimp)
 
   call rdrespect(cmosph,eig, &! out
                  filimp,kmax,natoms,&! inp
-                 norbt,nz0) ! dim
+                 ndeg,norbt,nz0) ! dim
+
+  if (nz0.gt.1) then
+   do imo = 1,norbt-1
+    eig(imo+1) = eig(ndeg*imo+1)
+   end do
+  end if
 
   if (locdbg) then
    write(lupri,"(a)") chrdbg//" imported MO energies:"
-   call output(eig,1,norbt,1,1,norbt,1,2,lupri)
+   call output(eig,1,norbt,1,1,ndeg*norbt,1,2,lupri)
 
-   write(lupri,"(a)") chrdbg//" imported MO coeffs in sph. Harm. basis.:"
-   call output(cmosph,1,norbt,1,norbt,norbt,norbt,1,lupri)
+   do iz = 1,nz0
+    write(lupri,"(a,i1)") chrdbg//" imported MO coeffs in sph. Harm. basis.:",iz
+    call output(cmosph(1,1,iz),1,norbt,1,norbt,norbt,norbt,1,lupri)
+   end do
   end if
  
   call reorder_respect(cmosph,cmocar,& ! i/o
@@ -155,37 +165,45 @@ subroutine impmos(qcpack,filimp)
  ! initialze CMOs with 0
  call dzero(cmocar,ncmotq)
 
- iofsph = 0
- iofcar = 0
- do imo = 1,norbt
-  do ish = 1,kmax
-   nhkti = nhkt(ish)
-   call sph2car(cmocar(iofcar+1),cmosph(iofsph+1),1,nhkti)
-   iofsph = iofsph+(2*nhkti-1)
-   iofcar = iofcar+(nhkti*(nhkti+1)/2)
+ do iz = 1,nz0
+  do imo = 1,norbt
+   iofsph = 0
+   iofcar = 0
+   do ish = 1,kmax
+    nhkti = nhkt(ish)
+    call sph2car(cmocar(iofcar+1,imo,iz),cmosph(iofsph+1,imo,iz),1,nhkti)
+    iofsph = iofsph+(2*nhkti-1)
+    iofcar = iofcar+(nhkti*(nhkti+1)/2)
+   end do
   end do
  end do
+
+ if (nz0.eq.4) then
+  call dscal(ntbas(0)*norbt,-1.d0,cmocar(1,1,3),1)
+ end if
 
  ! destroy carsph module
  call carsph_clear()
 
  if (locdbg) then
-  write(lupri,"(a)") chrdbg//" reordered MO coeffs. in Cart. basis:"
-  call output(cmocar,1,ntbas(0),1,norbt,ntbas(0),norbt,1,lupri)
+  do iz = 1,nz0
+   write(lupri,"(a,i1)") chrdbg//" reordered MO coeffs. in Cart. basis:",iz
+   call output(cmocar(1,1,iz),1,ntbas(0),1,norbt,ntbas(0),norbt,1,lupri)
+  end do
  end if
 
  ! ------------------------------------------------------ !
  ! compute check sum that is printed / tested
  ! ------------------------------------------------------ !
  chksum = d0
- iofcar = 0
- do imo = 1,norbt
-  orbsum = d0
-  do ibf = 1,ntbas(0)
-   orbsum = orbsum+cmocar(iofcar+ibf)
+ do iz = 1,nz0
+  do imo = 1,norbt
+   orbsum = d0
+   do ibf = 1,ntbas(0)
+    orbsum = orbsum+cmocar(ibf,imo,iz)
+   end do
+   chksum = chksum+abs(orbsum)
   end do
-  chksum = chksum+abs(orbsum)
-  iofcar = iofcar+ntbas(0)
  end do
 
  write(lupri,"(/,a,E20.13,/)") "checksum of imported and converted MOs:",chksum
@@ -417,7 +435,7 @@ end subroutine rdinporb
 !==============================================================================!
 subroutine rdrespect(cmo,eig, &! out
                      filimp,kmax,ncent,&! inp
-                     ntorb,nz) ! dim
+                     ndeg,ntorb,nz) ! dim
 !------------------------------------------------------------------------------!
 !
 ! read from ReSpect temporary file provided by Michal Repisky
@@ -441,18 +459,18 @@ subroutine rdrespect(cmo,eig, &! out
  logical, parameter :: locdbg = .false.
 
 ! dimensions:
- integer, intent(in) :: ntorb, nz
+ integer, intent(in) :: ntorb, nz, ndeg
 
 ! input:
  character(len=64), intent(in) :: filimp
  integer, intent(in) :: kmax, ncent
 
 ! output:
- real(8), intent(out) :: cmo(ntorb*ntorb,nz), eig(ntorb)
+ real(8), intent(out) :: cmo(ntorb*ntorb,nz), eig(ndeg,ntorb)
 
 ! local scalars:
  integer(4) :: i4dum, ndim4, ncent4, nbbas4
- integer :: idx, luimp, iz
+ integer :: idx, luimp, iz, ideg
  real(8) :: dummy
 
  call qenter("rdrespect")
@@ -469,8 +487,8 @@ subroutine rdrespect(cmo,eig, &! out
   call quit("Number of centers read from ReSpect do not match!")
  end if
 
- read(luimp,*) (i4dum,idx=1,ncent4)
- read(luimp,*) (dummy,idx=1,ncent4*3)
+ read(luimp,*) (i4dum,idx=1,ncent)
+ read(luimp,*) (dummy,idx=1,ncent*3)
  
  !basis set data (uncontacted basis)
  !----------------------------------
@@ -480,15 +498,20 @@ subroutine rdrespect(cmo,eig, &! out
   call quit("Number of shells read from ReSpect do not match!")
  end if
 
- read(luimp,*) (i4dum,idx = 1,nbbas4)
- read(luimp,*) (i4dum,idx = 1,nbbas4)
- read(luimp,*) (dummy,idx = 1,nbbas4)
- read(luimp,*) (dummy,idx = 1,nbbas4)
+ read(luimp,*) (i4dum,idx = 1,kmax)
+ read(luimp,*) (i4dum,idx = 1,kmax)
+ read(luimp,*) (dummy,idx = 1,kmax)
+ read(luimp,*) (dummy,idx = 1,kmax)
  
  !MO energies
  !-----------------
  read(luimp,*) ndim4
- read(luimp,*) (eig(idx),idx = 1,ndim4)
+
+ if (int(ndim4).ne.ndeg*ntorb) then
+  call quit("Number of orbitals read from ReSpect do not match!")
+ end if
+
+ read(luimp,*) ((eig(ideg,idx),ideg=1,ndeg),idx = 1,ntorb)
 
  !MO coefficients
  !-----------------
@@ -587,7 +610,7 @@ subroutine reorder_respect(cmosph,scratch,& ! i/o
 
 ! local scalars:
  integer :: ishel, jshel, iat, isum, itmp, ihkt, nktmx, lhkt, iz
- integer :: imo, khkti, nhkti, norbi, iorb, ioff
+ integer :: imo, khkti, nhkti, norbi, iorb, ioff, jmo
 
 ! local alloctables:
  integer, allocatable :: imask(:), ncent0(:), nhkt0(:), iofkt(:)
@@ -605,10 +628,6 @@ subroutine reorder_respect(cmosph,scratch,& ! i/o
 
  call heapsorti(nhkt0,maxshl,.false.,imask)
 
-! write(6,*) " nhkt:", nhktsh(1:maxshl)
-! write(6,*) "nhkt0:", nhkt0
-! write(6,*) "imask:", imask
-
  itmp = 0
  ihkt = 0
  do ishel = 1,maxshl
@@ -621,8 +640,6 @@ subroutine reorder_respect(cmosph,scratch,& ! i/o
  nktmx = ihkt
  iofkt(nktmx+1) = maxshl
 
-! write(6,*) "iofkt:", iofkt(1:nktmx+1)
-
  do ihkt = 1,nktmx
   lhkt = iofkt(ihkt+1)-iofkt(ihkt)
   do jshel = 1,lhkt
@@ -631,12 +648,9 @@ subroutine reorder_respect(cmosph,scratch,& ! i/o
   call heapsorti(ncent0,lhkt,.false.,imask(iofkt(ihkt)+1))
  end do
 
-! write(6,*) "imask:", imask
-
  ! --------------------------------------------------------- !
  ! 2.) re-order basis functions in Dirac order for each MO
  ! --------------------------------------------------------- !
-
  ioff = 0
  do ishel = 1,maxshl
   nhkti = nhktsh(ishel)
@@ -647,8 +661,6 @@ subroutine reorder_respect(cmosph,scratch,& ! i/o
  end do
  iofkt(maxshl+1) = ioff
 
-! write(6,*) "iofkt:", iofkt
-
  do iz = 1,nz
   do imo = 1,norbt
    ioff = 0
@@ -656,7 +668,6 @@ subroutine reorder_respect(cmosph,scratch,& ! i/o
     nhkti = nhkt0(jshel)
     khkti = 2*nhkti-1
     norbi = norbsh(imask(jshel))
-!    write(6,*) "debug:",jshel,imask(jshel),nhkti,norbi
     call dcopy(khkti*norbi,cmosph(1+ioff,imo,iz),1,&
                            scratch(1+iofkt(imask(jshel)),imo,iz),1)
     ioff = ioff+khkti*norbi

@@ -1,0 +1,18 @@
+**DIRAC
+.WAVE FUNCTION
+**HAMILTONIAN
+.X2C
+.NOAMFI
+**WAVE FUNCTION
+.SCF
+**INTEGRALS
+.NUCMOD
+ 1
+*READIN
+.UNCONTRACTED
+**GENERAL
+.CVALUE                                                                                             
+ 27.4071998148d0
+.IMPMOS
+ ReSpect  ReSpect.txt
+*END OF

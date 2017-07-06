@@ -67,12 +67,34 @@ f.add(from_string = 'checksum of imported and converted MOs:',
       rel_tolerance = 1.0e-11)
  
 # copy MOs
-shutil.copy('scf-h2o-cc-pVTZ-nosym.ReSpect', 'ReSpect.txt')
+shutil.copy('scf-nr-h2o-cc-pVTZ-nosym.ReSpect', 'ReSpect.txt')
 
 # run test
 test.run(['scf-nr-respect.inp'], ['h2o-cc-pVTZ-nosym.mol'], f, args='--put="ReSpect.txt"')
 
 # remove copy
 os.unlink('ReSpect.txt')
+
+#---------------------------------------#
+#
+# Test 4:  ReSpect with nuclear X2C
+#
+#---------------------------------------#
+
+#f = Filter()
+#
+## check energy
+#f.add(from_string = 'checksum of imported and converted MOs:',
+#      num_lines   = 1,
+#      rel_tolerance = 1.0e-11)
+# 
+## copy MOs
+#shutil.copy('scf-x2c-h2o-cc-pVTZ-nosym.ReSpect', 'ReSpect.txt')
+#
+## run test
+#test.run(['scf-x2c-respect.inp'], ['h2o-cc-pVTZ-nosym.mol'], f, args='--put="ReSpect.txt"')
+#
+## remove copy
+#os.unlink('ReSpect.txt')
 
 sys.exit(test.return_code)

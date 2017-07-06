@@ -584,12 +584,12 @@ C
 
        CALL UPCASE(QCPACK)
 
-       IF (SPINFR .OR. NONREL .OR. LEVYLE) THEN
+!       IF (SPINFR .OR. NONREL .OR. LEVYLE) THEN
 
         SELECT CASE (QCPACK(1:8))
          CASE ('MOLCAS  ')
           WRITE (LUPRI,'(/,A)') 
-     &     "import scalar-relativistic MO coefficients from"
+     &     "import MO coefficients from"
           WRITE (LUPRI,'(/,A,/)') 
      &     "  MOLCAS file "//TRIM(FILIMP)
          CASE ('RESPECT ')
@@ -602,23 +602,23 @@ C
      &              "MOLCAS, ReSpect")
         END SELECT
 
-       ELSE IF (BSS .OR. X2C .OR. DKH1 .OR. DKH2) THEN
-
-        SELECT CASE (QCPACK(1:8))
-         CASE ('RESPECT ')
-          WRITE (LUPRI,'(/,A)') 
-     &     "import MO coefficients from"
-          WRITE (LUPRI,'(/,A,/)') 
-     &     "  ReSpect file "//TRIM(FILIMP)
-         CASE DEFAULT
-          CALL QUIT("unknown QCPACK type! Available options: "// 
-     &              "ReSpect")
-        END SELECT
-
-       ELSE
-        CALL QUIT("imported MO calculation only works in"//
-     &            " 1C and 2C modes!")
-       END IF
+!       ELSE IF (BSS .OR. X2C .OR. DKH1 .OR. DKH2) THEN
+!
+!        SELECT CASE (QCPACK(1:8))
+!         CASE ('RESPECT ')
+!          WRITE (LUPRI,'(/,A)') 
+!     &     "import MO coefficients from"
+!          WRITE (LUPRI,'(/,A,/)') 
+!     &     "  ReSpect file "//TRIM(FILIMP)
+!         CASE DEFAULT
+!          CALL QUIT("unknown QCPACK type! Available options: "// 
+!     &              "ReSpect")
+!        END SELECT
+!
+!       ELSE
+!        CALL QUIT("imported MO calculation only works in"//
+!     &            " 1C and 2C modes!")
+!       END IF
       END IF
 
 C
