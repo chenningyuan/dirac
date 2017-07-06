@@ -300,8 +300,8 @@ SUBROUTINE SYNC_NODES(IVARIABLE,ITASK)
 !          ITASK == 1: call timer and print timing results
 !
 !          Written by Stefan Knecht, Duesseldorf 2008
-!                           H.J.Aa Jensen, SDU, 2016  (polish output)
-!                           M.Ilias, GSI, 2017 (polish output)
+!                           H.J.Aa Jensen, SDU Odense, 2016  (polish output)
+!                           M.Ilias, GSI Darmstadt, 2017 (polish output)
 !
 !**********************************************************************************
 !
@@ -407,7 +407,7 @@ use interface_to_mpi
 #endif
     IF( MYTID .eq. MPARID ) THEN
        print '(a)',' '
-       print '(a)','Note: maximum allocatable memory for master+nodes can be set by -aw flag (MW) in pam'
+       print '(a)','Note: maximum allocatable memory for master+nodes can be set by -aw (MW)/-ag (GB) flags in pam'
        print '(a)',' '
        flush(lupri)
     ENDIF

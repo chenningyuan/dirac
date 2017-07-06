@@ -12,7 +12,8 @@
    
     Environment variables (set by user) used by pam:
              DIRTIMEOUT        - time out limit for dirac run
-             DIRAC_MPI_COMMAND - if set, instead of "dirac.x" pam will execute "$DIRAC_MPI_COMMAND dirac.x", example: export DIRAC_MPI_COMMAND="mpirun -np 8"
+             DIRAC_MPI_COMMAND - if set, instead of "dirac.x" pam will execute "$DIRAC_MPI_COMMAND dirac.x";
+                                 example: export DIRAC_MPI_COMMAND="mpirun -np 8"
                                  if set, pam assumes that this is an MPI run
                                  this environment variable has to be set for parallel tests with ctest
                                  it allows to run DIRAC in parallel on systems which
@@ -181,9 +182,11 @@ class pam_enviroment:
 
         # memory allocation
         mw = 64
-        self.mw_to_mb = 7.62939453
+        self.mw_to_mb = 7.62939453 # as (10^6)*(2^3)/(2^20)
+        self.mw_to_gb = 0.00745058 # as (10^6)*(2^3)/(2^30)
         self.default_memory_work_master = mw
         self.default_memory_work_master_mb = mw*self.mw_to_mb
+        self.default_memory_work_master_gb = mw*self.mw_to_gb
 
         self.max_memory_work_master = self.default_memory_work_master
         self.max_memory_work_slave  = self.default_memory_work_master
@@ -593,6 +596,7 @@ Options are also read from ~/.diracrc"""
                   """,
             metavar='INTEGER',
             )
+
         group.add_option(
             '--mb',
             type='int',
@@ -602,6 +606,17 @@ Options are also read from ~/.diracrc"""
                     for the master (for each MPI thread) [default: %default]
                   """,
             metavar='INTEGER',
+            )
+
+        group.add_option(
+            '--gb',
+            type='float',
+            action='store',
+            dest='dest_gb',
+            help="""set max memory (in GB) for WORK array
+                    for the master (for each MPI thread) [default: %default]
+                  """,
+            metavar='FLOAT',
             )
         group.add_option(  # default set later - it's --mw setting
             '--nw',
@@ -626,6 +641,18 @@ Options are also read from ~/.diracrc"""
             )
         parser.add_option_group(group)
 
+        group.add_option(
+            '--ag',
+            type='float',
+            action='store',
+            dest='dest_awgb',
+            default=self.default_memory_dynamic,
+            help="""set max dynamically allocatable memory (in gigabytes)
+                    (for each MPI thread) [default: %default]
+                  """,
+            metavar='FLOAT',
+            )
+        parser.add_option_group(group)
 
         group = OptionGroup(parser, 'MPI settings')
         group.add_option(
@@ -851,7 +878,9 @@ Options are also read from ~/.diracrc"""
 
         self.max_memory_work_master = int(options.dest_mw)
         if options.dest_mb :
-            self.max_memory_work_master = int(options.dest_mb)/self.mw_to_mb
+            self.max_memory_work_master = int(options.dest_mb/self.mw_to_mb)
+        if options.dest_gb :
+            self.max_memory_work_master = int(options.dest_gb/self.mw_to_gb)
 
         if options.dest_nw:
             # user defined value
@@ -861,6 +890,9 @@ Options are also read from ~/.diracrc"""
             self.max_memory_work_slave = self.max_memory_work_master
 
         self.max_memory_dynamic = int(options.dest_aw)
+
+        if options.dest_awgb:
+            self.max_memory_dynamic = int(options.dest_awgb/self.mw_to_gb)
 
         if options.dest_mpirun:
             self.mpirun = options.dest_mpirun
