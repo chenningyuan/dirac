@@ -320,7 +320,7 @@ use interface_to_mpi
   IF( ITASK .eq. 0 )THEN
     CALL interface_MPI_GET_PROCESSOR_NAME(HOST,LHOST)
     IF( MYTID .eq. MPARID ) THEN
-       print '(a,a,a,i14,a,f6.1,a)', 'DIRAC master    (',HOST(1:LHOST), &
+       print '(a,a,a,i14,a,f7.2,a)', 'DIRAC master    (',HOST(1:LHOST), &
              ') starts by allocating ',IVARIABLE,' r*8 words (',DFLOAT(IVARIABLE)/DFLOAT(2**27),   &
              ' GB) of memory'
        ! 1 MB = 2**20 bytes; 1 r*8 word = 2**3 bytes = 8 bytes
@@ -332,7 +332,7 @@ use interface_to_mpi
     DO IJ = 1, (NUMNOD    )
        CALL interface_MPI_BARRIER(global_communicator)
        IF( MYTID .eq. IJ ) THEN
-          print '(a,i3,1x,a,a,a,i14,a,f6.1,a)', 'DIRAC node ',mytid, &
+          print '(a,i3,1x,a,a,a,i14,a,f7.2,a)', 'DIRAC node ',mytid, &
           '(',HOST(1:LHOST),') starts by allocating ',IVARIABLE,' r*8 words (', &
           DFLOAT(IVARIABLE)/DFLOAT(2**27),' GB) of memory'
           flush(lupri)
@@ -342,7 +342,7 @@ use interface_to_mpi
     END DO
 #else
     IF( MYTID .eq. 1 ) THEN
-       print '(a,i3,a,i14,a,f6.1,a)', 'DIRAC nodes 1 to ',numnod, &
+       print '(a,i3,a,i14,a,f7.2,a)', 'DIRAC nodes 1 to ',numnod, &
        ' starts by allocating      ',IVARIABLE,' r*8 words (', &
        DFLOAT(IVARIABLE)/DFLOAT(2**27),' GB) of memory'
        flush(lupri)
@@ -363,7 +363,7 @@ use interface_to_mpi
     CALL interface_MPI_GET_PROCESSOR_NAME(HOST,LHOST)
     IF( MYTID .eq. MPARID ) THEN
        if (ivariable.gt.0) then
-           print '(a,a,a,i14,a,f6.1,a)', 'DIRAC master    (',HOST(1:LHOST), &
+           print '(a,a,a,i14,a,f7.2,a)', 'DIRAC master    (',HOST(1:LHOST), &
               ') to allocate at most  ',IVARIABLE,' r*8 words (',DFLOAT(IVARIABLE)/DFLOAT(2**27),&
               ' GB) of memory'
        else
@@ -378,7 +378,7 @@ use interface_to_mpi
        CALL interface_MPI_BARRIER(global_communicator)
        IF( MYTID .eq. IJ )  THEN
            if (ivariable.gt.0) then
-              print '(a,i3,1x,a,a,a,i14,a,f6.1,a)', 'DIRAC node ',mytid, &
+              print '(a,i3,1x,a,a,a,i14,a,f7.2,a)', 'DIRAC node ',mytid, &
               '(',HOST(1:LHOST),') to allocate at most ',IVARIABLE,' r*8 words (', &
               DFLOAT(IVARIABLE)/DFLOAT(2**27),' GB) of memory'
            else
@@ -394,7 +394,7 @@ use interface_to_mpi
     CALL interface_MPI_BARRIER(global_communicator)
     IF( MYTID .eq. 1 ) THEN
        if (ivariable.gt.0) then
-          print '(a,i3,a,i14,a,f6.1,a)', 'DIRAC nodes 1 to ',numnod, &
+          print '(a,i3,a,i14,a,f7.2,a)', 'DIRAC nodes 1 to ',numnod, &
           ' to allocate at most       ',IVARIABLE,' r*8 words (', &
           DFLOAT(IVARIABLE)/DFLOAT(2**27),' GB) of memory'
        else
