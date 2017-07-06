@@ -292,7 +292,7 @@
          ierr=talsh_tensor_init(s2_tensor)
 !        ierr=talsh_tensor_add("S(a,b,i,j)+=V+(i,j,a,b)",s2_tensor,oovv_tensor)
 !        work-around because complex conjugation does not work in the above statement
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=V+(i,j,a,b)",s2_tensor,oovv_tensor,one_tensor)        ! validated
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=V+(i,j,a,b)*K()",s2_tensor,oovv_tensor,one_tensor)    ! validated
 !        end of work-around
 
 !        This term appears twice as we need to permute i and j
@@ -316,10 +316,10 @@
          ierr=talsh_tensor_contract("S(a,b,i,j)+=V(a,b,c,d)*T(c,d,i,j)",s2_tensor,vvvv_tensor,tau_tensor,scale=ONE_HALF) !validated
 
 !        This term appears four times as we need to permute both i and j and a and b
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=H(a,i,c,k)*T(c,b,j,k)",s2_tensor,hint_tensor,t2_tensor)  ! validated
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=H(a,j,c,k)*T(c,b,k,i)",s2_tensor,hint_tensor,t2_tensor)  ! validated
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=H(b,i,c,k)*T(a,c,j,k)",s2_tensor,hint_tensor,t2_tensor)  ! validated
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=H(b,j,c,k)*T(a,c,k,i)",s2_tensor,hint_tensor,t2_tensor)  ! validated
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=H(a,k,c,i)*T(c,b,j,k)",s2_tensor,hint_tensor,t2_tensor)  ! validated
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=H(a,k,c,j)*T(c,b,k,i)",s2_tensor,hint_tensor,t2_tensor)  ! validated
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=H(b,k,c,i)*T(a,c,j,k)",s2_tensor,hint_tensor,t2_tensor)  ! validated
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=H(b,k,c,j)*T(a,c,k,i)",s2_tensor,hint_tensor,t2_tensor)  ! validated
 
          if (ierr.ne.TALSH_SUCCESS) then
             print*," ccdriver: error in evaluation of amplitude equations, code=",ierr
