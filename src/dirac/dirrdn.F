@@ -717,6 +717,8 @@ C
     2 CONTINUE
 #if defined (VAR_MPI)
       CALL PRLINP(WORD)
+#else
+      CALL QUIT('*PARALLEL in input, but this is a non_MPI version')
 #endif
         GO TO 200
     3 CONTINUE
