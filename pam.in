@@ -58,7 +58,8 @@ import tarfile
 
 version = sys.version_info
 
-if version.major == 2 and version.minor < 6:
+#miro: for older Pythons, use instead of "version.major == 2 and version.minor < 6"
+if version[0] == 2 and version[2] < 6:
     print('pam requires python version >= 2.6')
     sys.exit(1)
 
