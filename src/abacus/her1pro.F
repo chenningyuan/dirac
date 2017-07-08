@@ -2294,7 +2294,9 @@ C     (OV 08.03.90)
 C
 C     Solvent flag (22.01.91/HJAAJ+KM) (SOLVENT)
 C
+#ifdef HAS_PELIB
       use pe_variables, only: peqm, pe_lf
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
