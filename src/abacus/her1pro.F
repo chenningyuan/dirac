@@ -2392,11 +2392,13 @@ C     *************************************************************
 C     ***** Local field corrections (EEF) to dipole integrals *****
 C     *************************************************************
 C
+#ifdef HAS_PELIB
       IF (INTTYP .EQ. 2) THEN
          IF (PEQM .AND. PE_LF) THEN
             CALL PELIB_IFC_LOCALFIELD(SOINT, NELMNT, NOPTYP)
          END IF
       END IF
+#endif
 C
 C     ***********************************
 C     ***** Write integrals on file *****
