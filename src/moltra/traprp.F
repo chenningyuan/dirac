@@ -318,7 +318,7 @@ C
       DIMENSION NSTR(2,0:2,2),PRCMO(NSTRT1*2,NSTRT2*2,2)
       DIMENSION PROPMO(NSTRT1,NSTRT2,NZ)
       DIMENSION IOFF1(2,2),IOFF2(2,2),IOFF3(2,2)
-      DIMENSION IBE11(*),IBE21(*),IBE12(*),IBE(22)
+      DIMENSION IBE11(*),IBE21(*),IBE12(*),IBE22(*)
 C
       IF (IPRINT.GE.3) THEN
          WRITE(LUPRI,'(/3X,3A/)') '*** Property matrix :',ACHAR,' ***'
@@ -417,6 +417,8 @@ C     the combination with totally symmetric spinor products
 C     makes that the phase factors cancel. 
 C
       IF (SPINFR) THEN
+      write(*,*) '++++ in spinfree branch ++++',NZ
+      write(*,*) '++++ length of PRCMO:',NSTRT1*NSTRT2*8
       CALL DZERO(PRCMO,NSTRT1*NSTRT2*8)
       DO IZ = 1, NZ
 C       Determine the boson character of the operator and the
@@ -456,9 +458,9 @@ C Stop now when we find non-symmetric operators.
 C  
 c               IF (IQ.NE.IQS)
 c    &          CALL QUIT ("This does not work with spinfree !")
-                if (iq.eq.1)
-     &          write (*,'(7i4,f20.10)') i,j,iqi,iqj,iqprp,iq,iqs,
-     &                                   propmo(ii1,jj1,iz)
+!               if (iq.eq.1)
+!    &          write (*,'(7i4,f20.10)') i,j,iqi,iqj,iqprp,iq,iqs,
+!    &                                   propmo(ii1,jj1,iz)
 C
 C               Scale the matrix element
                 PRPME = PROPMO(II1,JJ1,IZ) * IQS
@@ -481,6 +483,7 @@ C               Translate to the complex (bar/unbar) notation.
         ENDDO
       ENDDO
       ENDIF
+      write(*,*) '+++++++++++ leaving spinfree branch'
 C
 ! Printout of complex matrix elements of the transformed operator
       IF (IPRINT.GE.1) THEN

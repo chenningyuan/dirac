@@ -57,11 +57,6 @@
       INTEGER,allocatable,dimension(:)       :: LVVONO
       INTEGER,allocatable,dimension(:)       :: LVNVOO
 
-! index and offset arrays for the nontotally symmetric (NTS) sorters
-
-      INTEGER,allocatable,dimension(:,:)     :: MMVVOT
-      INTEGER,allocatable,dimension(:)       :: PVVOT
-
 ! phase information for the property x,y,z arrays in case of real arithmetic
 
       Complex*16,allocatable,dimension(:)    :: pphase
@@ -199,11 +194,11 @@
           integer*8                       :: i1
         END SUBROUTINE mpi_master_vovv_complete
 
-!       Function zdotc (i1,ca1,i2,ca2,i3)
-!        complex*16                        :: zdotc
-!        Integer                           :: i1,i2,i3
-!        Real*8, dimension(*)              :: ca1,ca2
-!       End Function
+        Function zdotc (i1,ca1,i2,ca2,i3)
+         complex*16                        :: zdotc
+         Integer                           :: i1,i2,i3
+         Real*8, dimension(*)              :: ca1,ca2
+        End Function
 
 
       end interface
@@ -217,20 +212,7 @@
       else
         call pst('Transition moments (real run)+')
       endif
-!
-!   debug start
-!
-!     lunt = 55
-!     inquire(unit=lunt,opened=istaken)
-!     write(*,*) 'lun',lunt,istaken
-!     open(unit=lunt,file='killer',form='unformatted',
-!    &     access='sequential',status='unknown')
-!     inquire(unit=lunt,opened=istaken)
-!     write(*,*) 'lun',lunt,istaken
-!     close(lunt,status='delete')
-!
-!   debug end
-!
+
       write(*,*)
       write(*,*) '   Note: Even in SPINFREE/NONREL cases the TMs'
       write(*,*) '   can be complex due to the quaternionic structure'
@@ -2343,9 +2325,9 @@
         read(io1) ps
 
         write(io2,'(A)') ' '
-        write(io2,'(A,X,I3,X,A,F12.6,A,X,F12.6,A,F12.6,A)') 
-     &    'State',ist,':exc. energy',evl,' (au)',evl*autoev,
-     &    ' (eV)   PS',ps,'   @E'
+        write(io2,'(A,X,I3,X,A,X,I3,X,A,F12.6,A,X,F12.6,A,F12.6,A)') 
+     &    'State',ist,'symm',desrep,'exc. energy',evl,' (au)',
+     &    evl*autoev,' (eV)   PS',ps,'   @E'
         write(io2,'(A,15X,A,10X,A,10X,A)')
      &       'Order', 'TM(x)_r        TM(x)_i',
      &       'TM(y)_r        TM(y)_i','TM(z)_r        TM(z)_i'

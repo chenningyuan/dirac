@@ -900,16 +900,16 @@
 !  case for a serial run. The INTBUF buffer is dimensioned such that the
 !  serial matrix is small enough to go through in a short period of time
 !
+      write(iw,*) '+++++++ BUFSIZE:',intbuf
+      write(iw,*) '+++++++ NBUFS:',nbufs
+      write(iw,*) '+++++++ NPROCS:',NMPROC
+      write(iw,*) '+++++++ LADC:',ladc
       if(nbufs.lt.NMPROC) then
         write(iw,*) '+++++++ WARNING. Matrix too small for'
         write(iw,*) '+++++++ parallel run!. Please do a serial'
         write(iw,*) '+++++++ calculation.'
         call quit('+++ Aborting. Matrix too small for parcal.')
       endif
-      write(iw,*) '+++++++ BUFSIZE:',intbuf
-      write(iw,*) '+++++++ NBUFS:',nbufs
-      write(iw,*) '+++++++ NPROCS:',NMPROC
-      write(iw,*) '+++++++ LADC:',ladc
 !
 !  allocate read/write buffers (master and slaves)
 !

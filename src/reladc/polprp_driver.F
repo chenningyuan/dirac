@@ -312,10 +312,11 @@ C
 
       interface
 
-        SUBROUTINE POLPRP_PAREXE(i1,i2,ra1,ia1,i3)
+        SUBROUTINE POLPRP_PAREXE(i1,i2,ra1,ia1,i3,r1)
           integer                               :: i1,i2,i3
           real*8, dimension(:)                  :: ra1
           integer,dimension(:)                  :: ia1
+          real*8                                :: r1
         END SUBROUTINE
 
       end interface
@@ -469,7 +470,7 @@ C
 !
 !  call *parallel* polarization propagator code
 !  
-      CALL POLPRP_PAREXE(IW,ITAPADC,EPS,IREPSPI,NSP)
+      CALL POLPRP_PAREXE(IW,ITAPADC,EPS,IREPSPI,NSP,total_mem_new)
 !
 !     return after closing low-level I/O files
 !
@@ -495,7 +496,7 @@ C
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE POLPRP_PAREXE(IW,IOBASE,EPS,IREPSPI,NSP)
+      SUBROUTINE POLPRP_PAREXE(IW,IOBASE,EPS,IREPSPI,NSP,total_mem_new)
 !
 ! executed in parallel or in serial from here.
 !
@@ -515,6 +516,7 @@ C
       real*8, dimension(:)              :: eps
       integer, dimension(:)             :: irepspi  ! spinor definitions
       integer                           :: nsp      ! number of active spinors
+      real*8                            :: total_mem_new  ! current max. dyn. memory in bytes!
 !
 !---------------Common Blocks--------------------------------------
 !
@@ -553,6 +555,11 @@ C
 !-----------------------interface section---------------------
 !
       interface
+
+        SUBROUTINE detoptintbuf(i1,r1)
+          integer                  :: i1
+          real*8                   :: r1
+        END SUBROUTINE
 
         SUBROUTINE print_input_info(i1,i2)
           integer                  :: i1,i2
@@ -751,10 +758,17 @@ C
 
 !__________________________________________________
 !|
-!|      this part is executed by all nodes
+!|  determine optimal buffer length
+!|  (executed by all cores)
+!|  total_mem_new is the number of bytes. We transfer the number of
+!|  real*8 words.
 !|
 
-        INTBUF = 100*1024   !buffer size for matrix R/W buffers
+!       write(*,*) 'Calling detopt.. with',total_mem_new/8.0d0
+!       Call detoptintbuf(intbuf,total_mem_new/8.0d0)
+
+        INTBUF = 20*1024   !buffer size for matrix R/W buffers
+!|
 !|
 !|_________________________________________________
 
@@ -767,22 +781,15 @@ C
 ! |   integrals from the nodes. Otherwise all are on one node.
 ! |   Files will be written to 'VVVVXVVOO'
 
-!
-!**** debug new slave test server
-!
         write(iw,*) 'Master indicates start.'
         call interface_mpi_bcast(SERVER_HELLO,1,MASTER,
      &                           global_communicator)
-!
-!**** end debug new slave test server
-!
+
 #endif
 !
-!  precontract is executed by master only if its a parallel run
+!  precontract is only executed by master in case of a par run
 !
-!       CALL PRECONTRACT(iobase,iw,eps)
         CALL PRECONTRACT_NEW(iobase,iw,eps)
-
         write(*,*) 'Precontraction finished.'
 
 ! ______________ SYMMETRY LOOP FOR COUPLING + SAT BLOCK___________
@@ -877,6 +884,7 @@ C
      &                      iobase,
      &                      iw)
             write(*,*) '**) returned from real coupling and sat block.'
+            write(*,*) '**) Used buffers of bufsize',intbuf,': ',nbufs
           endif
 
           close(iobase)
@@ -1083,30 +1091,108 @@ C
       return
       end 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!&&&&&&&&&&&  dump region &&&&&&&&&
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!
-!     allocate(mmvvot(32,32))
-!     allocate(pvvot(nrep))
-!     mmvvot = 0
-!     pvvot  = 0
+      SUBROUTINE DETOPTINTBUF(intbuf,cdmem)
 
-!     DO KREP = 1, NREP
-!       DO IJREP = 1, NREP
-!         IJKREP = MULTB(IJREP+NREP,KREP,2)
-!         MMVVOT(IJREP,KREP) = PVVOT(IJKREP)
-!         PVVOT(IJKREP) = PVVOT(IJKREP) + NVVT(IJREP)*NO(KREP)
-!       ENDDO
-!     ENDDO
-!     DO KREP = 1, NREP
-!       if((pvvot(krep) - nvvot(krep)).ne.0) then
-!          stop 'pvvot problem.'
-!       endif
-!       DO IJREP = 1, NREP
-!         if((mmvvot(ijrep,krep) - kkvvot(ijrep,krep)).ne.0) then
-!                stop 'arrco problem'
-!         endif
-!       ENDDO
-!     ENDDO
+      use interface_to_mpi
+
+      implicit none
+
+      integer                        :: intbuf
+      real*8                         :: cdmem
+!
+!  includes
+!
+#include  "../relccsd/ccpar.inc"
+#include  "../relccsd/symm.inc"
+
+      interface
+        
+        function xcoldet(i1)
+          integer         :: xcoldet
+          integer         :: i1
+        end function
+
+      end interface
+!
+!  local variables
+!
+      integer                        :: maxrow,crow
+      integer                        :: i,desrep
+      real*8                         :: rnzele,bufmem
+
+!------------------------------------------------------
+!   execution part
+!------------------------------------------------------
+
+      intbuf = 0
+
+#if defined (VAR_MPI)
+      if(MYPROC.EQ.MASTER) then 
+
+! max matrix dimension
+
+        maxrow = 0
+        do desrep=1,nrep
+          crow = xcoldet(desrep) + MVO(DESREP)
+          if(crow.ge.maxrow) maxrow = crow
+        enddo
+        write(*,*) 'Maximum matrix length',maxrow
+        write(*,*) 'Number of nodes:',nmproc
+        
+! number of nonzero elements concerning sparsity of 98 percent
+
+        rnzele = dble(maxrow) * 0.02d0 * dble(maxrow)
+
+! number of elements per core
+
+        rnzele = rnzele / dble(nmproc)
+
+! considering storage of row/column indices
+
+        rnzele = 2.0d0 * rnzele
+
+! 30 percent of local max. dynamical memory (in r*8 words) should be used as buffer
+
+        bufmem = 0.3d0 * cdmem
+
+        write(*,*) 'Number of real*8 words to be stored p. node:',rnzele
+        write(*,*) 'Available memory for buffers:',bufmem
+        if(rnzele.le.bufmem) then
+          intbuf = aint(rnzele)
+        else
+          intbuf = aint(bufmem)
+        endif
+        write(*,*) 'Master determined INTBUF as',INTBUF
+        call interface_mpi_bcast(intbuf,1,MASTER,
+     &                           global_communicator)
+      else
+        call interface_mpi_bcast(intbuf,1,MASTER,
+     &                           global_communicator)
+        write(*,*) 'Core',myproc,' obtained INTBUF as',INTBUF
+      endif
+
+#else
+
+      maxrow = 0
+      do desrep=1,nrep
+        crow = xcoldet(desrep) + MVO(DESREP)
+        if(crow.ge.maxrow) maxrow = crow
+      enddo
+      write(*,*) 'Maximum matrix length',maxrow
+      rnzele = dble(maxrow) * 0.02d0 * dble(maxrow)
+      rnzele = 2.0d0 * rnzele
+      bufmem = 0.3d0 * cdmem
+      write(*,*) 'Number of real*8 words to be stored:',rnzele
+      write(*,*) 'Available memory for buffers:',bufmem
+      if(rnzele.le.bufmem) then
+        intbuf = aint(rnzele)
+      else
+        intbuf = aint(bufmem)
+      endif
+      write(*,*) 'determined INTBUF as',INTBUF
+#endif
+      
+      return
+      END SUBROUTINE
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
