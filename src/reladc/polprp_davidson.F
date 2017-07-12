@@ -61,7 +61,6 @@
       INTEGER         :: maxdavsp
       INTEGER         :: maxdavit
       REAL*8          :: convthr
-      LOGICAL         :: davooc
 !
 !---------------Local variables----------------------------------------
 !
@@ -73,7 +72,7 @@
       integer, allocatable, dimension(:)  :: ievec
       logical         :: notallconv,proxflag,orthoviolflag
 
-      real*8, allocatable, dimension(:,:)   :: bold,bnew,aij,evint
+      real*8, allocatable, dimension(:,:)   :: bold,aij,evint
       real*8, allocatable, dimension(:,:)   :: aijbase
       real*8, allocatable, dimension(:)     :: lambda,reserr,work
       real*8, allocatable, dimension(:)     :: qm,adiag,xi,dmp1
@@ -104,7 +103,6 @@
       maxdavsp =   polprp_davmaxsp   !maximum dimension of Davidson space
       maxdavit =   polprp_davmaxit   !maximum number of Dav. iterations
       convthr  =   polprp_davconv    !convergence of Davidson eigenvectors
-      davooc   =   polprp_davooc     !check for ooc calculation
 !
 ! we are on master. Therefore the local adc filename is already fixed
 ! 
@@ -116,7 +114,6 @@
 !
 !  write out matrix and Davidson parameters (master only)
 !
-
       WRITE(iw,*)
       WRITE(iw,*) ' --------------------------------------'
       WRITE(iw,*) ' ------ Davidson parameters -----------'
@@ -132,7 +129,6 @@
       WRITE(iw,*) 'Maximum Davidson subspace:        ',maxdavsp
       WRITE(iw,*) 'Number of Macro iterations:       ',maxdavit
       WRITE(iw,'(A,E14.5)') ' Eigenvalue convergence up to:   ',convthr
-      WRITE(iw,*) 'Do out-of-core calculation:       ',davooc
       WRITE(iw,*)
       WRITE(iw,*) ' ------------------------------------'
       WRITE(iw,*) ' ------ Matrix parameters -----------'
@@ -151,45 +147,35 @@
 !
       lwork = 3*maxdavsp
       allocate(aij(maxdavsp,maxdavsp))     !Dav. overlap matrix (DOM)+eigenvectors
+         aij = 0.0d0
       allocate(aijbase(maxdavsp,maxdavsp)) !Dav. overlap matrix base, calcd in macro itrs
+         aijbase = 0.0d0
       allocate(lambda(maxdavsp))      !Eigenvalues of DOM
+         lambda = 0.0d0
       allocate(reserr(maxdavsp))      !Residual errors of eigenvalues
+         reserr = 0.0d0
       allocate(work(lwork))           !workspace for DSYEV
       allocate(qm(ladc))              !intermediate vector, also used as auxvector
+         qm = 0.0d0
       allocate(adiag(ladc))           !vector of ADC diagonal elements
+         adiag = 0.0d0
       allocate(xi(ladc))              !intermediate vector
+         xi = 0.0d0
       allocate(ievec(ladc))
       allocate(dmp1(ladc))
+         dmp1 = 0.0d0
       allocate(notconverged(maxdavsp))
 
       allocate(bold(ladc,maxdavsp),stat=ialloc)
       if(ialloc.ne.0) then
-        call quit('Allocation problem in davidson_sp_r!')
+        call quit('Alloc. problem (bold) in davidson_sp_r!')
       endif
+      bold = 0.0d0
    
-      if(.not.davooc) then
-        allocate(bnew(ladc,maxdavsp),stat=ialloc)
-        if(ialloc.ne.0) then
-          call quit('Allocation problem in davidson_sp_r!')
-        endif
-        bnew    = 0.0d0
-      endif
-
       allocate(evint(ladc,nroots),stat=ialloc)
       if(ialloc.ne.0) then
-        call quit('Allocation problem in davidson_sp_r!')
+        call quit('Alloc. problem (evint) in davidson_sp_r!')
       endif
-!
-! clear relevant arrays
-!
-      aij     = 0.0d0
-      aijbase = 0.0d0
-      reserr  = 0.0d0
-      qm      = 0.0d0
-      adiag   = 0.0d0
-      xi      = 0.0d0
-      dmp1    = 0.0d0
-      bold    = 0.0d0
       evint   = 0.0d0
 !
 ! set timers to zero
@@ -259,13 +245,10 @@
       Open(iobase,FILE=fileadc,FORM='UNFORMATTED',STATUS='UNKNOWN')
       write(iw,*) 'ADC file ',fileadc,' opened.'
 !
-! open direct access file for new vector block in case of a
-! out of core calculation
+! open direct access file for new vector block
 !
-      if(davooc) then 
-        open(iodachannel,file='DAVXBN',access='direct',
-     &       recl=ladc*8,status='unknown')
-      endif
+      open(iodachannel,file='DAVXBN',access='direct',
+     &     recl=ladc*8,status='unknown')
 !__________________________________________________________
 !|
 !|
@@ -331,32 +314,19 @@
           aijbase(jvec,i) = aijbase(i,jvec)
         enddo
 
-! check if new vectors are to be stored on disk.
-! after MPI_REDUCE the master routine has the new set of vectors
-! as *complete* and not partial vectors and can therefore operate on
-! them without any restriction.
-
-        if(davooc) then 
-          write(iodachannel,rec=jvec) xi
-        else
-          bnew(:,jvec) = xi
-        endif
+        write(iodachannel,rec=jvec) xi
       enddo
 #else
       do jvec=1,locdim
-        call xmvmul_sp_r(iobase,intbuf,ladc,bold(:,jvec),xi) !qm is aux vector!
-!       write(*,*) 'Norm of xi/boldvec:',
-!    &              dsqrt(dot_product(xi(:),xi(:))),
-!    &              dsqrt(dot_product(bold(:,jvec),bold(:,jvec)))
+        call xmvmul_sp_r(iobase,intbuf,ladc,bold(:,jvec),xi)
+
         do i=jvec,locdim
           aijbase(i,jvec) = dot_product(bold(:,i),xi(:))
           aijbase(jvec,i) = aijbase(i,jvec)
         enddo
-        if(davooc) then 
-          write(iodachannel,rec=jvec) xi
-        else
-          bnew(:,jvec) = xi
-        endif
+
+        write(iodachannel,rec=jvec) xi
+
       enddo
 #endif
 
@@ -399,15 +369,7 @@
 
           proxflag = .false.
 
-          IF(davooc) then
-            Call QMOOCCALC_R(iodachannel,qm,aij,ladc,maxdavsp,locdim,k)
-          else
-            qm = 0.0d0
-            Do i = 1,locdim
-              qm(:) = qm(:) + aij(i,k)*bnew(:,i)
-            Enddo
-          endif
-!         write(*,*) 'R   $$$$$$',k,dsqrt(dot_product(qm,qm))
+          Call QMOOCCALC_R(iodachannel,qm,aij,ladc,maxdavsp,locdim,k)
 
           evint(:,k) = qm(:)   !if converged, then we construct the normalized eigenvector.
           a1 = dot_product(evint(:,k),evint(:,k))
@@ -486,7 +448,7 @@
             orthoviolflag = .true.
           endif
 !
-!  STEP G.  Form A*b_(M+1)  , goes to bnew!
+!  STEP G.  Form A*b_(M+1)
 !  this vector has to be included in the array of new vectors!
 !
 #if defined (VAR_MPI)
@@ -507,22 +469,13 @@
           call xmvmul_sp_r(iobase,intbuf,ladc,xi,qm) !qm contains result.
 
 #endif
-          if(davooc) then
-            WRITE(iodachannel,rec=locdim+k) qm(:)
-          else
-            bnew(:,locdim+k) = qm(:)
-          endif
+          WRITE(iodachannel,rec=locdim+k) qm(:)
 !
 !  STEP H.  update Aij to A_i,M+1,  i=1,...,M+1
 !
           do i=1,locdim+k
-           if(davooc) then
-             aijbase(i,locdim+k) = dot_product(bold(:,i),qm(:))
-           else
-             aijbase(i,locdim+k) = dot_product(bold(:,i),
-     &                                         bnew(:,locdim+k))
-           endif
-           aijbase(locdim+k,i) = aijbase(i,locdim+k)
+            aijbase(i,locdim+k) = dot_product(bold(:,i),qm(:))
+            aijbase(locdim+k,i) = aijbase(i,locdim+k)
           enddo
 
           Write(*,*)  listout
@@ -571,7 +524,6 @@
             bold(:,k)=evint(:,k)
           enddo
           call reortho(bold,ladc,nroots)
-          if(.not.davooc) bnew = 0.0d0
           exit
         endif
 
@@ -757,14 +709,11 @@
       deallocate(dmp1)
       deallocate(notconverged)
       deallocate(bold)
-      if(.not.davooc) deallocate(bnew)
       deallocate(evint)
 !
 !  delete direct access file
 !
-      if(davooc) then
-        close(iodachannel,status='delete')
-      endif
+      close(iodachannel,status='delete')
 !
 !  measure time
 !
@@ -834,7 +783,6 @@
       INTEGER         :: maxdavsp
       INTEGER         :: maxdavit
       REAL*8          :: convthr
-      LOGICAL         :: davooc
 !
 !---------------Local variables----------------------------------------
 !
@@ -863,7 +811,7 @@
 !*** arrays
 
       complex*16, allocatable, dimension(:,:)   :: evint
-      complex*16, allocatable, dimension(:,:)   :: bold, bnew
+      complex*16, allocatable, dimension(:,:)   :: bold
       complex*16, allocatable, dimension(:,:)   :: aij
       complex*16, allocatable, dimension(:,:)   :: aijbase
       real*8, allocatable, dimension(:)         :: lambda, reserr
@@ -931,7 +879,6 @@
       maxdavsp =   polprp_davmaxsp   !maximum dimension of Davidson space
       maxdavit =   polprp_davmaxit   !maximum number of Dav. iterations
       convthr  =   polprp_davconv    !convergence of Davidson eigenvectors
-      davooc   =   polprp_davooc     !check for ooc calculation
 !
 ! we are on master. Therefore the local adc filename is already fixed
 ! 
@@ -948,11 +895,16 @@
       WRITE(iw,*) ' ------ Davidson parameters -----------'
       WRITE(iw,*) ' --------------------------------------'
       WRITE(iw,*)
+#if defined (VAR_MPI)
+      WRITE (iw,*) '*** parallel run on',NMPROC,' nodes.'
+#else
+      WRITE (iw,*) '*** serial run'
+#endif
+      WRITE(iw,*)
       WRITE(iw,*) 'Number of Davidson roots:         ',nroots
       WRITE(iw,*) 'Maximum Davidson subspace:        ',maxdavsp
       WRITE(iw,*) 'Number of Macro iterations:       ',maxdavit
-      WRITE(iw,'(A,E14.5)') ' Eigenvalue conv. up to:     ',convthr
-      WRITE(iw,*) 'Do out-of-core calculation:       ',davooc
+      WRITE(iw,'(A,E14.5)') ' Eigenvalue convergence up to:   ',convthr
       WRITE(iw,*)
       WRITE(iw,*) ' ------------------------------------'
       WRITE(iw,*) ' ------ Matrix parameters -----------'
@@ -970,7 +922,6 @@
 !   allocate and clear work space arrays
 !
       lwork = 3*maxdavsp
-
       allocate(aij(maxdavsp,maxdavsp))     !Dav. overlap matrix (DOM)+eigenvectors
            aij = czero
       allocate(aijbase(maxdavsp,maxdavsp)) !Dav. overlap matrix base, calcd in macro itrs
@@ -1005,21 +956,13 @@
 
       allocate(bold(ladc,maxdavsp),stat=ialloc)
       if(ialloc.ne.0) then
-        call quit('Allocation problem in mpi_davidson_master_c!')
+        call quit('Alloc. problem (bold) in mpi_davidson_master_c!')
       endif
       bold = czero
    
-      if(.not.davooc) then
-        allocate(bnew(ladc,maxdavsp),stat=ialloc)
-        if(ialloc.ne.0) then
-          call quit('Allocation problem in mpi_davidson_master_c!')
-        endif
-        bnew = czero
-      endif
-
       allocate(evint(ladc,nroots),stat=ialloc)
       if(ialloc.ne.0) then
-        call quit('Allocation problem in mpi_davidson_master_c!')
+        call quit('Alloc. problem (evint) in mpi_davidson_master_c!')
       endif
       evint = czero
 !
@@ -1089,14 +1032,11 @@
       Open(iobase,FILE=fileadc,FORM='UNFORMATTED',STATUS='UNKNOWN')
       write(iw,*) 'ADC file ',fileadc,' opened.'
 !
-! open direct access file for new vector block in case of a
-! out of core calculation
+! open direct access file for new vector block 
 ! Since we have complex vectors, the record length = ladc*16
 !
-      if(davooc) then 
-        open(iodachannel,file='DAVXBN',access='direct',
-     &       recl=ladc*16,status='unknown')
-      endif
+      open(iodachannel,file='DAVXBN',access='direct',
+     &     recl=ladc*16,status='unknown')
 !__________________________________________________________
 !|
 !|
@@ -1165,11 +1105,7 @@
           aijbase(jvec,i) = dconjg(aijbase(i,jvec))
         enddo
 
-        if(davooc) then 
-          write(iodachannel,rec=jvec) xi
-        else
-          bnew(:,jvec) = xi
-        endif
+        write(iodachannel,rec=jvec) xi
       enddo
 #else
       do jvec=1,locdim
@@ -1179,11 +1115,9 @@
           aijbase(i,jvec) = pp_zdotc(ladc,bold(:,i),xi(:))
           aijbase(jvec,i) = dconjg(aijbase(i,jvec))
         enddo
-        if(davooc) then
-          write(iodachannel,rec=jvec) xi
-        else
-          bnew(:,jvec) = xi
-        endif
+
+        write(iodachannel,rec=jvec) xi
+
       enddo
 #endif
 !|
@@ -1232,15 +1166,7 @@
 
           proxflag = .false.
 
-          IF(davooc) then
-            Call QMOOCCALC_C(iodachannel,qm,aij,ladc,maxdavsp,locdim,k)
-          else
-            qm = czero
-            Do i = 1,locdim
-              qm(:) = qm(:) + aij(i,k)*bnew(:,i)
-            Enddo
-          endif
-!         write(*,*) 'C   $$$$$$',k,rzvecnorm(ladc,qm)
+          Call QMOOCCALC_C(iodachannel,qm,aij,ladc,maxdavsp,locdim,k)
 
           evint(:,k) = qm(:)   !if converged, then we construct the normalized eigenvector.
           a1 = rzvecnorm(ladc,evint(:,k))   !real number!
@@ -1317,7 +1243,7 @@
             orthoviolflag = .true.
           endif
 !
-!  STEP G.  Form A*b_(M+1)  , goes to bnew!
+!  STEP G.  Form A*b_(M+1)
 !  this vector has to be included in the array of new vectors!
 !
 
@@ -1353,22 +1279,13 @@
           call xmvmul_sp_c(iobase,intbuf,ladc,xi,qm)
 
 #endif
-          if(davooc) then
-            WRITE(iodachannel,rec=locdim+k) qm(:)
-          else
-            bnew(:,locdim+k) = qm(:)
-          endif
+          WRITE(iodachannel,rec=locdim+k) qm(:)
 !
 !  STEP H.  update Aij to A_i,M+1,  i=1,...,M+1
 !
           do i=1,locdim+k
-           if(davooc) then
-             aijbase(i,locdim+k) = pp_zdotc(ladc,bold(:,i),qm(:))
-           else
-             aijbase(i,locdim+k) = pp_zdotc(ladc,bold(:,i),
-     &                                         bnew(:,locdim+k))
-           endif
-           aijbase(locdim+k,i) = dconjg(aijbase(i,locdim+k))
+            aijbase(i,locdim+k) = pp_zdotc(ladc,bold(:,i),qm(:))
+            aijbase(locdim+k,i) = dconjg(aijbase(i,locdim+k))
           enddo
 
           Write(*,*)  listout
@@ -1417,7 +1334,6 @@
             bold(:,k)=evint(:,k)
           enddo
           call reortho_c(bold,ladc,nroots)
-          if(.not.davooc) bnew = czero
           exit
         endif
 
@@ -1618,14 +1534,11 @@
       deallocate(mpiaux,mpires1,mpires2)
 
       deallocate(bold)
-      if(.not.davooc) deallocate(bnew)
       deallocate(evint)
 !
 !  delete direct access file
 !
-      if(davooc) then
-        close(iodachannel,status='delete')
-      endif
+      close(iodachannel,status='delete')
 !
 !  measure time
 !
