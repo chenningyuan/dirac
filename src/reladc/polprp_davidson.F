@@ -722,13 +722,810 @@
       Write(*,*) '++++++++++++'
       Write(*,*) '++++++ time in davidson: ',ttime
       Write(*,*) '++++++++++++'
+
+      RETURN
+
+888   call quit('Error reading the diagonal matrix file')
+
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE mpi_davidson_master_ext_r(iw,
+     &                                     iobase,
+     &                                     desrep,
+     &                                     intbuf,
+     &                                     nmbase,
+     &                                     filecnf,
+     &                                     irecl,
+     &                                     ladc,
+     &                                     nmain)
 !
-!_____ Perform  eigenvector comparison if a full diag took place
+!  the real Davidson diagonalizer written for serial and parallel purpose.
+!  Parallel run: only master executes this, the slaves are occupied by performing
+!                the partial matrix multiplication
+!  Serial run:   Everything is done here.
+!
+!  In order to reduce the jungle of include files, we explicitly transfer the
+!  relvant matrix parameters as arguments to the main routine.
+!  In case of a parallel run the
+!  main routine is responsible for communicating the relevant
+!  parameters to the helper processes.
+!
+!  No separate serial Davidson version is kept
+!
+!  Important: In case of a parallel run the number of buffers of the partial
+!  ADC matrices is the first integer in the file. This is -1 in the serial run since
+!  the final size can only be determined at the end of the construction.
+!
+#if defined (VAR_MPI)
+      use interface_to_mpi
+#endif
+      use polprp_cfg   ! make input variables and davidson control variables
+                       ! accessible.
+
+      IMPLICIT NONE
+!
+!  formal subroutine parameters
+!
+      INTEGER                      :: iw
+      INTEGER                      :: iobase
+      INTEGER                      :: desrep
+      INTEGER                      :: intbuf
+      CHARACTER*6                  :: nmbase
+      CHARACTER*6                  :: filecnf
+      INTEGER                      :: irecl
+      INTEGER                      :: ladc
+      INTEGER                      :: nmain
+!
+!  include files (will later be replaced by a suitable polprp_par).
+!
+#if defined (VAR_MPI)
+
+#include  "polprp_servercodes.h"
+#include  "../relccsd/ccpar.inc"
+
+#endif
+!
+! *** control variables for Davidson
+!
+      INTEGER         :: nroots
+      INTEGER         :: maxdavsp
+      INTEGER         :: maxdavit
+      REAL*8          :: convthr
+!
+!---------------Local variables----------------------------------------
+!
+      integer         :: i,j,k,ialloc
+      integer         :: ida_iostat,ibold_maxrec
+      integer         :: nsiz,jvec
+      integer         :: iroot,locdim
+      integer         :: lwork,info
+      integer         :: idavit
+      integer         :: iobase1,io_bnew,io_bold
+      integer, allocatable, dimension(:)  :: ievec
+      logical         :: notallconv,proxflag,orthoviolflag
+
+      real*8, allocatable, dimension(:,:)   :: bstart,aij,evint
+      real*8, allocatable, dimension(:,:)   :: aijbase
+      real*8, allocatable, dimension(:)     :: lambda,reserr,work
+      real*8, allocatable, dimension(:)     :: qm,adiag,xi,dmp1,aux
+      real*8                                :: qmn,a1,ortho
+      real*8,parameter                      :: autoev = 27.2113957D0
+      character*11                          :: davstartname
+      character*11                          :: davevcname
+      character*8                           :: dsroot ='DAVSTART'
+      character*8                           :: dsroot2='ADCEVECS'
+      character*8                           :: dsroot3='ADCSTATE'
+      character*8                           :: dsroot4='DAVIMEDI'
+      character*7                           :: fnroot5='FULLEVC'
+      character*60                          :: listout
+      character*70                          :: field
+      logical, allocatable, dimension(:)    :: notconverged
+      real*8                                :: cput1,cput2,time1,time2
+      real*8                                :: ttime,a
+
+      character*10                          :: fileadc
+!
+!---------------Executable code----------------------------------------
+!
+      Call PST('Entering real (S/P) Davidson diagonalizer+')
+!
+! initialze davidson control variables
+!
+      nroots   =   polprp_davroots   !number of requested Davidson roots
+      maxdavsp =   polprp_davmaxsp   !maximum dimension of Davidson space
+      maxdavit =   polprp_davmaxit   !maximum number of Dav. iterations
+      convthr  =   polprp_davconv    !convergence of Davidson eigenvectors
+!
+! we are on master. Therefore the local adc filename is already fixed
+! 
+#if defined (VAR_MPI)
+      WRITE (fileadc,'(A6,A1,I1)') nmbase,'.',MASTER
+#else
+      WRITE (fileadc,'(A6)') nmbase
+#endif
+!
+!  write out matrix and Davidson parameters (master only)
+!
+      WRITE(iw,*)
+      WRITE(iw,*) ' --------------------------------------'
+      WRITE(iw,*) ' ------ Davidson parameters -----------'
+      WRITE(iw,*) ' --------------------------------------'
+      WRITE(iw,*)
+#if defined (VAR_MPI)
+      WRITE (iw,*) '*** parallel run on',NMPROC,' nodes.'
+#else
+      WRITE (iw,*) '*** serial run'
+#endif
+      WRITE(iw,*)
+      WRITE(iw,*) 'Number of Davidson roots:         ',nroots
+      WRITE(iw,*) 'Maximum Davidson subspace:        ',maxdavsp
+      WRITE(iw,*) 'Number of Macro iterations:       ',maxdavit
+      WRITE(iw,'(A,E14.5)') ' Eigenvalue convergence up to:   ',convthr
+      WRITE(iw,*)
+      WRITE(iw,*) ' ------------------------------------'
+      WRITE(iw,*) ' ------ Matrix parameters -----------'
+      WRITE(iw,*) ' ------------------------------------'
+      WRITE(iw,*)
+      WRITE(iw,*) 'Write buffer length is:           ',intbuf
+      WRITE(iw,*) 'Final states have symmetry:       ',desrep
+      WRITE(iw,*) 'ADC matrix dimension (# of rows): ',ladc
+      WRITE(iw,*) 'Packed partial matrix stored in:  ',fileadc
+      WRITE(iw,*) 'Configuration data stored in:     ',filecnf
+      WRITE(iw,*) 'Record length of Config file:     ',irecl
+      WRITE(iw,*) 'Size of main space:               ',nmain
+      WRITE(iw,*)
+!
+!   allocate work space arrays
+!
+      lwork = 3*maxdavsp
+      allocate(aij(maxdavsp,maxdavsp))     !Dav. overlap matrix (DOM)+eigenvectors
+         aij = 0.0d0
+      allocate(aijbase(maxdavsp,maxdavsp)) !Dav. overlap matrix base, calcd in macro itrs
+         aijbase = 0.0d0
+      allocate(lambda(maxdavsp))      !Eigenvalues of DOM
+         lambda = 0.0d0
+      allocate(reserr(maxdavsp))      !Residual errors of eigenvalues
+         reserr = 0.0d0
+      allocate(work(lwork))           !workspace for DSYEV
+         work = 0.0d0
+      allocate(qm(ladc))              !intermediate vector, also used as auxvector
+         qm = 0.0d0
+      allocate(adiag(ladc))           !vector of ADC diagonal elements
+         adiag = 0.0d0
+      allocate(xi(ladc))              !intermediate vector
+         xi = 0.0d0
+      allocate(ievec(ladc))
+         ievec = 0
+      allocate(dmp1(ladc))
+         dmp1 = 0.0d0
+      allocate(aux(ladc))
+         aux = 0.0d0
+      allocate(notconverged(maxdavsp))
+
+      allocate(evint(ladc,nroots),stat=ialloc)
+      if(ialloc.ne.0) then
+        call quit('Alloc. problem (evint) in davidson_sp_r!')
+      endif
+      evint   = 0.0d0
+!
+! set timers to zero
+!
+      cput1 = 0.0d0
+      cput2 = 0.0d0
+      time1 = 0.0d0
+      time2 = 0.0d0
+!
+! start time measurement here
+!
+      call cpuused(cput1)
+!__________________________________________________________
+!|
+!| open file for start vectors and read them in .
+!| select the first 1,...,nroots vectors from the file
+!| which are the lowest ones in the main space.
+!|
+!| this is only done by MASTER in case of a parallel run!
+!|
+      IF(desrep.GT.9) THEN
+        WRITE(davstartname,'(A8,A1,I2)') dsroot,'.',desrep
+      ELSE
+        WRITE(davstartname,'(A8,A2,I1)') dsroot,'.0',desrep
+      ENDIF
+
+      OPEN(iobase,file=davstartname,access='sequential',
+     &     status='unknown',form='unformatted')
+      READ(iobase) nsiz
+      WRITE(*,*) 'Found',nsiz,' Start vectors on file ',davstartname
+
+      If(2*nroots.gt.maxdavsp) then
+         Call Quit('Increase Davidson space!')
+      Endif
+
+      If(nroots.gt.nsiz) then
+        Write(*,*) 'You request more states than there',
+     &             ' are in the Main space.'
+        Write(*,*) 'Adapting requested roots',nroots,' to',nsiz
+        nroots = nsiz
+      Endif
+
+      allocate(bstart(nsiz,nroots))
+      bstart = 0.0d0
+
+      do i=1,nroots
+        Read(iobase) (bstart(j,i),j=1,nsiz)
+      enddo
+      write(iw,*) nroots,' start vectors read from ',davstartname
+      write(iw,*) 'Length of start vectors:',nsiz
+
+      Close(iobase,status='delete')
+!|
+!|  end reading initial vectors.
+!|___________________________________________________________
+
+      WRITE(*,*) '  '
+      orthoviolflag = .false.
+!__________________________________________________________
+!|
+!|   
+!|   read matrix diagonal and open direct access files
+!|   for ADC matrix, the old and the new Davidson vectors.
+!|   File names for vector storage are hardcoded since they
+!|   are temporary and nowhere else needed.
+!|
+      open(unit=iobase,file='ADCDGTMP', access='SEQUENTIAL',
+     &     form='UNFORMATTED',status='unknown')
+      read(iobase,ERR=888) (adiag(i),i=1,ladc)
+      close(iobase,status='DELETE')
+      write(iw,*) 'Diagonal elements read into memory.'
+
+      Open(iobase,FILE=fileadc,FORM='UNFORMATTED',STATUS='UNKNOWN')
+      write(iw,*) 'ADC file ',fileadc,' opened.'
+
+      io_bnew = iobase + 2
+      open(io_bnew,file='DAVXBN',access='direct',
+     &     recl=ladc*8,status='unknown')
+
+      io_bold = iobase + 3
+      ibold_maxrec = 1
+      open(io_bold,file='DAVXBO',access='direct',
+     &     recl=ladc*8,status='unknown')
 !|
 !|
-      call compare_evc_r(iobase,desrep,nroots,ladc,dsroot2,fnroot5)
+!|___________________________________________________________
+
+!__________________________________________________________
 !|
-!|____________________________________________________________
+!|
+!|             DAVIDSON  MACRO ITERATION LOOP
+!|
+      Do idavit = 1,maxdavit
+
+      Write(*,*) '  ****   MACRO iteration',idavit
+      Write(*,*)
+!
+!      STEP  A.
+!
+      locdim = nroots    ! we start with the smallest dav space
+      notconverged = .true.  !all vectors are at first not converged
+!
+! check orthogonality of the start vectors
+! 
+      ortho = 0.0d0
+      Do i=1,nroots
+      Do j=1,nroots
+        a1 = dot_product(bstart(:,i),bstart(:,j))
+        ortho = ortho + abs(a1)
+      Enddo
+      Enddo
+      ortho = ortho - dble(nroots)
+      WRITE(*,*) 'Deviation from orthogonality of the',locdim,
+     &   ' Davidson start vectors:',ortho
+      WRITE(*,*)
+      WRITE(*,'(3X,A,4X,A,7X,A,7X,A,5X,A)') 'root','dim',
+     &           'exc.energy','error','status'
+      WRITE(*,'(70A1)') ('-',i=1,70)
+!
+! now make start vectors the initial Davidson vectors for the first iterations
+! 
+      Do i=1,nroots
+        qm(1:nsiz) = bstart(1:nsiz,i)
+        qm(nsiz+1:ladc) = 0.0d0
+        write(io_bold,rec=i,iostat=ida_iostat) qm
+        if(ida_iostat.ne.0) call
+     &     quit('Error writing direct access file for bold')
+        if(i.gt.ibold_maxrec) ibold_maxrec = i
+      Enddo
+
+!_____________________________________________________
+!|
+!| perform the initial block multiplication.
+!| always necessary in a macro iteration.
+!| each node performs the partial matrix vector mult.
+!| due to MPI we do multiplication vector by vector
+!|
+!| at this stage of the code locdim is the number of 'old' vectors
+!|
+
+#if defined (VAR_MPI)
+      do jvec=1,locdim
+        call interface_mpi_bcast(SERVER_MATMUL,1,MASTER,
+     &                           global_communicator)
+        call interface_mpi_BCAST(ladc,1,MASTER,global_communicator)
+!
+! old:
+!       xi(:) = bold(:,jvec)
+ 
+! new:
+        if(jvec.gt.ibold_maxrec) then
+          call quit('bold record number exceeds maximum!')
+        endif
+        read(io_bold,rec=jvec,iostat=ida_iostat) xi
+        if(ida_iostat.ne.0) call
+     &     quit('Error reading direct access file for bold')
+
+        call interface_mpi_bcast(xi,ladc,MASTER,global_communicator)
+! master must do some work, too:
+        call xmvmul_sp_r(iobase,intbuf,ladc,xi,qm) !qm is aux vector!
+! master's result is stored in aux array qm
+! important: MASTER participates identically in the reduce operation
+! all the results are then collected in the array xi
+        xi = 0.0d0
+        call interface_mpi_reduce(qm,xi,ladc,
+     &                 op_MPI_SUM,MASTER,global_communicator)
+! as soon as the current new vector is available (in xi)
+! we calculate its contribution to the aijbase-array
+
+        do i=jvec,locdim
+          if(i.gt.ibold_maxrec) then
+            call quit('bold record number exceeds maximum!')
+          endif
+          read(io_bold,rec=i,iostat=ida_iostat) dmp1
+
+          aijbase(i,jvec) = dot_product(dmp1(:),xi(:))
+          aijbase(jvec,i) = aijbase(i,jvec)
+        enddo
+
+        write(io_bnew,rec=jvec) xi
+      enddo
+#else
+      do jvec=1,locdim
+        if(jvec.gt.ibold_maxrec) then
+          call quit('bold record number exceeds maximum!')
+        endif
+        read(io_bold,rec=jvec,iostat=ida_iostat) dmp1
+        call xmvmul_sp_r(iobase,intbuf,ladc,dmp1,xi)
+
+        do i=jvec,locdim
+          if(i.gt.ibold_maxrec) then
+            call quit('bold record number exceeds maximum!')
+          endif
+          read(io_bold,rec=i,iostat=ida_iostat) dmp1
+          aijbase(i,jvec) = dot_product(dmp1(:),xi(:))
+          aijbase(jvec,i) = aijbase(i,jvec)
+        enddo
+
+        write(io_bnew,rec=jvec) xi
+
+      enddo
+#endif
+
+!|
+!| 
+!|         END OF initial block multiplication.
+!| 
+!|____________________________________________________
+    
+!_______________________________________________________________
+!|
+!|         Davidson micro iteration loop
+!|
+      DO      ! Loop terminated by an exit statement
+!
+!  form  b_i*A*b_j and diagonalize. Matrix is replaced by eigenvectors.
+!  Compiler knows length of matrix columns
+!
+        Do j=1,locdim
+        Do i=1,locdim
+          aij(i,j) = aijbase(i,j)
+        Enddo
+        Enddo
+
+        CALL DSYEV('V','L',locdim,aij,maxdavsp,lambda,work,lwork,info)
+        If(INFO.NE.0) Then
+          Call Quit('Error in DSYEV (real Davidson!)')
+!       else
+!         write(*,*) 'Eigenvalues of aij matrix:'
+!         do i=1,locdim
+!           write(*,*) i,lambda(i)
+!         enddo
+        Endif
+!
+!  STEP B + C.  Form residual vector q_m for each eigenvalue k
+!
+!***************************** loop over the roots
+        Do k = 1,nroots   ! loop over sought eigenvalues lambda_k
+!*****************************
+
+          proxflag = .false.
+
+          Call QMOOCCALC_R(io_bnew,qm,aij,ladc,maxdavsp,locdim,k)
+
+          evint(:,k) = qm(:)   !if converged, then we construct the normalized eigenvector.
+          a1 = dot_product(evint(:,k),evint(:,k))
+          a1 = sqrt(a1)
+          evint(:,k) = evint(:,k)/a1
+
+          Do i = 1,locdim
+            if(i.gt.ibold_maxrec) then
+              call quit('bold record number exceeds maximum!')
+            endif
+            read(io_bold,rec=i,iostat=ida_iostat) aux
+            qm(:) = qm(:) - aij(i,k)*lambda(k)*aux(:)
+          Enddo
+          qmn = sqrt(dot_product(qm,qm))
+          reserr(k) = qmn
+         
+          if(qmn.le.convthr) then
+            notconverged(k) = .false.
+          else
+            notconverged(k) = .true.
+          endif
+          write(listout,'(A3,I3,A3,I5,6X,F10.7,6X,F10.7)') '   ',
+     &           k,'   ',locdim,lambda(k),qmn
+          if(notconverged(k).eqv..false.) then
+            listout(47:48) =  ' *'
+          else
+            listout(47:48) =  ' o'
+          endif
+!
+!  STEP D. form new preconditioner Xi
+!  here one has to take care of the division!!!
+!  It may happen that lambda(k) is approx. eq. to adiag(j)!
+!
+          Do j=1,ladc
+            a1=lambda(k) - adiag(j)
+            if(dabs(a1).lt.1.0e-03) then
+              proxflag = .true.
+              listout(49:51) =  ' PX'
+              xi(j) = 1.0d0
+            else
+              xi(j)=qm(j)/a1
+            endif
+          Enddo
+!         write(*,*) '   @Norm of preconditioner xi:',
+!    &           sqrt(dot_product(xi(:),xi(:)))
+!
+!  STEP E. form  vector d_(M+1) for the kth eigenvalue
+!  orthogonalize to *all* previous b_i directions from xi
+!  Importance of new vector is decided on its norm !
+!
+          dmp1 = xi
+          Do i = 1,locdim + k - 1
+            if(i.gt.ibold_maxrec) then
+              call quit('bold record number exceeds maximum!')
+            endif
+            read(io_bold,rec=i,iostat=ida_iostat) aux
+            a1=dot_product(xi,aux)
+            dmp1(:) = dmp1(:) - a1*aux(:)
+          Enddo
+          a1 = sqrt(dot_product(dmp1,dmp1))
+!         write(*,*) '   @Norm of preconditioner d(M+1):',a1
+!
+!  STEP F. form  vector b_(M+1): b_(M+1)=d_(M+1)/||d_(M+1)||
+!  this vector has to be included in the array of old vectors!
+!  important. This is useful only if the vector b_(M+1) adds
+!  new information (should be linearly independent)
+!
+          dmp1(:)=dmp1(:)/a1
+          if(locdim+k.gt.ibold_maxrec) then
+            ibold_maxrec = locdim + k
+            write(*,*) 'New record',ibold_maxrec,' written.'
+          endif
+! old:
+!         bold(:,locdim+k)=dmp1(:)
+! new:
+          write(io_bold,rec=locdim+k,iostat=ida_iostat) dmp1(:)
+          xi = dmp1
+!
+!  intermediate ortho check of new b vector.
+!
+          ortho=0.0d0
+! old:
+!         xi = bold(:,locdim+k)
+! new:
+          read(io_bold,rec=locdim+k,iostat=ida_iostat) xi
+          Do i=1,locdim+k-1
+            read(io_bold,rec=i,iostat=ida_iostat) aux
+            a1 = dot_product(xi,aux)
+            ortho = ortho + a1
+          Enddo
+          If(abs(ortho).lt.1.0E-06) then
+            listout(52:54) = ' OK'
+          else
+            listout(52:54) = ' VI'
+            orthoviolflag = .true.
+          endif
+!
+!  STEP G.  Form A*b_(M+1)
+!  this vector has to be included in the array of new vectors!
+!
+#if defined (VAR_MPI)
+
+          call interface_mpi_bcast(SERVER_MATMUL,1,MASTER,
+     &                             global_communicator)
+          call interface_mpi_bcast(ladc,1,MASTER,global_communicator)
+!         new b vector needs to be in xi and is still there (see above)
+          call interface_mpi_bcast(xi,ladc,MASTER,global_communicator)
+!  master's work (slaves work simultaneously)
+          call xmvmul_sp_r(iobase,intbuf,ladc,xi,qm) !qm is aux vector!
+          call interface_mpi_reduce(qm,xi,ladc,   !xi contains the final result
+     &                 op_MPI_SUM,MASTER,global_communicator)
+! final result should be in qm!
+          qm = xi
+#else
+
+          call xmvmul_sp_r(iobase,intbuf,ladc,xi,qm) !qm contains result.
+
+#endif
+          WRITE(io_bnew,rec=locdim+k) qm(:)
+!
+!  STEP H.  update Aij to A_i,M+1,  i=1,...,M+1
+!
+          do i=1,locdim+k
+            read(io_bold,rec=i,iostat=ida_iostat) aux
+            aijbase(i,locdim+k) = dot_product(aux(:),qm(:))
+            aijbase(locdim+k,i) = aijbase(i,locdim+k)
+          enddo
+
+          Write(*,*)  listout
+!
+! check orthogonality violation of newly added vectors.
+! If it can not be maintained we have to exit in order to
+! avoid intruder states.
+!
+          If(orthoviolflag.eqv..true.) EXIT   !leave this do loop
+
+
+!*****************************  end loop over the roots
+        Enddo  ! (k) was runnng index
+!*****************************
+        Write(*,*) '    '        !spacer
+
+!
+! check vector convergence in microiterations
+!
+        notallconv = .false.
+        do k=1,nroots
+          notallconv=notallconv.or.notconverged(k)
+        enddo
+
+        if(notallconv.eqv..false.) then
+          write(*,*) 'All vectors converged. Leaving',
+     &               ' microiteration loop.'
+          exit
+        endif
+
+        If(orthoviolflag.eqv..true.) exit
+      
+        locdim = locdim + nroots
+!       write(*,*) 'New local dimension:',locdim
+!
+! check for macroiteration, transfer new start vector set.
+! Attention!! It was observed that orthogonality slowly gets
+! lost when macroiterations are entered. We therefore
+! reorthogonalize the new start vector set.
+!
+        if( (locdim + nroots).gt.maxdavsp) then
+          write(*,*) 'Davidson space exhausted.'
+          write(*,*) 'Generating new (orthogonalized) start vectors.'
+          write(*,*) 'For the next macroiteration.'
+          do k=1,nroots
+!           bold(:,k)=evint(:,k)
+            if(k.gt.ibold_maxrec) then
+              write(*,*) 'New record',k,' written.'
+              ibold_maxrec = k
+            endif
+            write(io_bold,rec=k,iostat=ida_iostat) evint(:,k)
+          enddo
+          call reortho_ext(io_bold,ladc,nroots)
+          exit
+        endif
+
+      ENDDO
+!|
+!|         End Davidson micro iteration loop
+!|
+!|______________________________________________________________
+!
+!  we have to check convergence again to distinguish between next
+!  macroiteration or end of davidson
+!
+      if(notallconv.eqv..false.) exit
+
+      If(orthoviolflag.eqv..true.) exit
+
+      ENDDO   !idavit loop
+!|
+!|         End Davidson MACRO iteration loop
+!|
+!|______________________________________________________________
+
+      write(*,*) 'Leaving Davidson macro iteration loop.'
+
+      If(orthoviolflag.eqv..true.) then
+        write(*,*) 'Orthogonality of new vectors can not'
+        write(*,*) 'be maintained any longer. Exiting...'
+      Endif
+
+      if(notallconv.eqv..false.) then
+        write(*,*) 'All vectors converged to desired threshold'
+      else
+        write(*,*) '**WARNING: Not all vectors converged to desired'
+        write(*,*) '**         Threshold. Check residual errors!'
+      endif
+!
+!   close (local) ADC matrix file and delete it
+!
+      close(iobase,status='delete')
+      write(*,*) 'Master node has deleted file ',fileadc
+!
+!   open configuration file for state analysis and writeout
+!
+      iobase1 = iobase + 1
+      OPEN(iobase1,FILE=FILECNF,ACCESS='DIRECT',RECL=IRECL,
+     &     STATUS='UNKNOWN')
+
+!__________________  write out ** LONG ** results (binary)
+!|
+!| The format is number of states, main block size,
+!| length of ADC matrix, then for each state:
+!| state number, excitation energy (eV),
+!| pole strength,  coefficients in the generic order.
+!|
+!|
+      IF(desrep.GT.9) THEN
+        WRITE(davevcname,'(A8,A1,I2)') dsroot2,'.',desrep
+      ELSE
+        WRITE(davevcname,'(A8,A2,I1)') dsroot2,'.0',desrep
+      ENDIF
+      OPEN(iobase,file=davevcname,access='sequential',
+     &     status='unknown',form='unformatted')
+!
+      write(iobase) nroots
+      write(iobase) nmain
+      write(iobase) ladc
+      Do K = 1,nroots
+        write(iobase) K
+        write(iobase) lambda(K)
+        a1 = 0.0d0
+        do j=1,nmain
+          a1 = a1 + evint(j,k)*evint(j,k)
+        enddo
+        write(iobase) a1
+        write(iobase) (evint(j,k),j=1,ladc)
+      Enddo   !nroots
+!
+      CLOSE(iobase)
+!|
+!|
+!|_______________________________________________
+!
+!_____ write out ** SHORT ** results (overview,formatted,sorted,main)
+!|
+!|
+!|
+      IF(desrep.GT.9) THEN
+        WRITE(davevcname,'(A8,A1,I2)') dsroot3,'.',desrep
+      ELSE
+        WRITE(davevcname,'(A8,A2,I1)') dsroot3,'.0',desrep
+      ENDIF
+      OPEN(iobase,file=davevcname,access='sequential',
+     &     status='unknown',form='formatted')
+
+      Do K = 1,nroots
+        a1 = 0.0d0
+        do j=1,nmain
+          a1 = a1 + evint(j,k)*evint(j,k)
+        enddo
+
+        Write(iobase,'(A14,X,I4)') 'Excited state:',K
+        Write(iobase,'(A19)') '-----------------'
+        Write(iobase,'(A12,F10.6,A4,F10.6,A8,F10.6,A5,F10.6,A5,I4)') 
+     &   'Exc. energy:',
+     &   lambda(K),' au ',lambda(K)*autoev,
+     &   ' eV  PS:',a1,' Err:',reserr(k),' Sym:',desrep
+        Write(iobase,'(A28,F15.6)') 'Norm^2 of double exc. contr:',
+     &         1.0d0 - a1
+        Write(iobase,'(A)') ' '
+!
+! determine 20 most relevant configurations
+! reuse xi-array for modulus calculation and sort
+! the corresponding eigenvector with respect to coeffs.
+!
+        do j=1,ladc;ievec(j)=j;enddo
+        xi=-abs(evint(:,k))
+        Call DISORT(ladc,xi,ievec)  !sorts from smallest to largest
+        Do j=1,min(20,ladc)
+          Read(iobase1,rec=ievec(j)) field
+          a1 = evint(ievec(j),k)
+          Write(iobase,'(A70,F15.6,3X,F15.6)') field,a1,a1*a1
+        Enddo
+        Write(iobase,'(A17)') '-----------------'
+        Write(iobase,'(A)') ' '
+
+      Enddo
+      CLOSE(iobase)
+!|
+!|
+!|_______________________________________________
+!
+!_____ write out ** MEDIUM ** results (formatted,main)
+!|
+!|
+      if(desrep.GT.9) THEN
+        write(davevcname,'(A8,A1,I2)') dsroot4,'.',desrep
+      else
+        write(davevcname,'(A8,A2,I1)') dsroot4,'.0',desrep
+      endif
+      open(iobase,file=davevcname,access='sequential',
+     &     status='unknown',form='formatted')
+      write(iobase,'(A)') 'Generic h/p eigenvector components'
+      write(iobase,'(A,I5)') 'for symmetry ',desrep
+      write(iobase,'(A)') ' '
+      Do K = 1,nroots
+        a1 = 0.0d0
+        do j=1,nmain
+          a1 = a1 + evint(j,k)*evint(j,k)
+        enddo
+        Write(iobase,'(A14,X,I4)') 'Excited state:',K
+        Write(iobase,'(A19)') '-----------------'
+        Write(iobase,'(A12,F10.6,A4,F10.6,A8,F10.6,A5,F10.6,A5,I4)') 
+     &   'Exc. energy:',
+     &   lambda(K),' au ',lambda(K)*autoev,
+     &   ' eV  PS:',a1,' Err:',reserr(k),' Sym:',desrep
+        do j=1,nmain
+          read(iobase1,rec=j) field
+          a1 = evint(j,k)
+          Write(iobase,'(A70,F15.6,3X,F15.6)') field,a1,a1*a1
+        enddo
+        
+        write(iobase,'(A)') ' '
+      Enddo
+      close(iobase)
+!
+!|
+!|
+!|
+!|_______________________________________________
+!
+
+      CLOSE(iobase1)
+!
+!  deallocate all intermediate arrays
+!
+      deallocate(aij)
+      deallocate(aijbase)
+      deallocate(lambda)
+      deallocate(work)
+      deallocate(qm)
+      deallocate(adiag)
+      deallocate(xi)
+      deallocate(dmp1)
+      deallocate(notconverged)
+      deallocate(evint)
+!
+!  delete random access files
+!
+      close(io_bnew,status='delete')
+      close(io_bold,status='delete')
+!
+!  measure time
+!
+      call cpuused(cput2)
+      ttime= cput2-cput1
+      Write(*,*) '++++++++++++'
+      Write(*,*) '++++++ time in davidson: ',ttime
+      Write(*,*) '++++++++++++'
 
       RETURN
 
@@ -1996,6 +2793,45 @@
       Enddo
  
       deallocate(x)
+      RETURN
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE REORTHO_EXT(io_bold,ladc,nroots)
+!
+      IMPLICIT NONE
+!
+!------------------------ calling variables -------------------------
+!
+      INTEGER                        :: io_bold,ladc,nroots
+!
+!------------------------ local variables -------------------------
+!
+      REAL*8,  allocatable, dimension(:)     :: x,ax
+      REAL*8                                 :: a1
+      INTEGER                                :: i,k,ida_iostat
+
+!
+!---------------Executable ----------------------------------------
+!
+! reorthogonalize nvec vectors stored columnwise in the array a
+!
+      allocate(x(ladc))
+      allocate(ax(ladc))
+
+      Do k=1,nroots
+        read(io_bold,rec=k,iostat=ida_iostat) x
+        Do i=1,k-1
+          read(io_bold,rec=i,iostat=ida_iostat) ax
+          a1 = dot_product(x(:),ax(:))
+          x = x - a1*ax(:)
+        Enddo
+        a1 = sqrt(dot_product(x,x))
+        ax  =  x/a1
+        write(io_bold,rec=k,iostat=ida_iostat) ax
+      Enddo
+
+      deallocate(x)
+      deallocate(ax)
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

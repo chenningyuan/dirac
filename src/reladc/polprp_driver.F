@@ -637,6 +637,11 @@ C
           character*6           :: c1,c2
         END SUBROUTINE
 
+        SUBROUTINE mpi_davidson_master_ext_r(i1,i2,i3,i4,c1,c2,i5,i6,i7)
+          integer               :: i1,i2,i3,i4,i5,i6,i7
+          character*6           :: c1,c2
+        END SUBROUTINE
+
         SUBROUTINE mpi_davidson_master_c(i1,i2,i3,i4,c1,c2,i5,i6,i7)
           integer               :: i1,i2,i3,i4,i5,i6,i7
           character*6           :: c1,c2
@@ -948,6 +953,7 @@ C
 !  slaves perform partial matrix/vector multiplication.
 
           if(carith) then
+!           call fulldia_c3(iobase,namematfil,intbuf,ladc)
             call mpi_davidson_master_c(iw,
      &                                 iobase,
      &                                 desrep,
@@ -958,7 +964,8 @@ C
      &                                 ladc,
      &                                 MVO(desrep))
           else
-            call mpi_davidson_master_r(iw,
+!           call fulldia_r3(iobase,namematfil,intbuf,ladc,desrep)
+            call mpi_davidson_master_ext_r(iw,
      &                                 iobase,
      &                                 desrep,
      &                                 intbuf,
@@ -974,41 +981,6 @@ C
           open(unit=iobase,file=NAMEMATFIL, access='SEQUENTIAL',
      &         form='UNFORMATTED',status='unknown')
           close(iobase,status='DELETE')
-!
-!________________________________________________________________
-!|   
-!|     serial case diagonalizer call
-!|   
-!
-!         if(carith) then
-!           call fulldia_c3(iobase,namematfil,intbuf,ladc)
-!           call mpi_davidson_master_c(iw,
-!    &                                 iobase,
-!    &                                 desrep,
-!    &                                 intbuf,
-!    &                                 namematfil,
-!    &                                 namecnffil,
-!    &                                 irecl,
-!    &                                 ladc,
-!    &                                 MVO(desrep))
-!         else
-!           call fulldia_r3(iobase,namematfil,intbuf,ladc,desrep)
-!           call mpi_davidson_master_r(iw,
-!    &                                 iobase,
-!    &                                 desrep,
-!    &                                 intbuf,
-!    &                                 namematfil,
-!    &                                 namecnffil,
-!    &                                 irecl,
-!    &                                 ladc,
-!    &                                 MVO(desrep))
-!         endif
-
-!         open(unit=iobase,file=NAMEMATFIL, access='SEQUENTIAL',
-!    &         form='UNFORMATTED',status='unknown')
-!         close(iobase,status='DELETE')
-!     stop 'after  davidson'
-!
 !_________________________________________________________________
 !|
 !| serial or parallel/MASTER: calculate transition moments
