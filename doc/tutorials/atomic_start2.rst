@@ -7,7 +7,7 @@ Atomic start guess
 Initial SCF run
 ---------------
 
-We consider the Hartree-Fock calculation of plutonium dixode cluster
+We consider the Hartree-Fock calculation of plutonium dioxide cluster
 
 .. image:: Pucluster.jpg
    :scale: 80

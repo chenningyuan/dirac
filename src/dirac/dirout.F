@@ -35,6 +35,10 @@ C***********************************************************************
       use pcm_scf, only: get_pcm_energy, pcm_scf_finalize
 #endif      
 
+#ifdef HAS_PELIB
+      use pe_variables, only: peqm
+#endif
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -159,7 +163,14 @@ C            leave this to authors of this part) Done, hjaaj.
           write(lupri,'(3X,A,'//FMT//')')
      +  'Solvation energy                         :   ',get_pcm_energy()
         end if 
-#endif        
+#endif
+#ifdef HAS_PELIB
+! edh should be replaced with energy routine
+        IF (PEQM) THEN
+            write(lupri,'(3X,A,'//FMT//')')
+     +  'Embedding energy                         :   ', E_PE
+        END IF
+#endif
 C       A one-center approximation may be used that gives a correction 
 C       to the electronic energy
         IF (ONECAP .AND. INTV1C.EQ.2) THEN
@@ -626,7 +637,15 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ORBCNT(JVEC,NVEC,NNEG,NPOS,NPVEC,NEVEC)
 C***********************************************************************
-C     Find number of electronic/positronic vectors
+C     "Orbital Count"
+C     Find NEVEC/NPVEC, the number of electronic/positronic orbital vectors,
+C     in the list of orbitals in JVEC(1:NVEC).
+C     Orbitals outside the range -NNEG:NPOS are ignored and eliminated
+C     from JVEC.
+C
+C     In   : NNEG, NPOS
+C     InOut: NVEC; JVEC(1:NVEC)
+C     Out  : NEVEC,NPVEC
 C
 C     Written by T.Saue Jan 7 1996
 C

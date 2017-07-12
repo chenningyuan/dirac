@@ -750,9 +750,14 @@ C
 C           inactive density matrix...
 C
  
-            NI  = NISH(I2) - NFRO(I2)
-            II  = IORB(I2) + NPSH(I2) + NFRO(I2) + 1
-            JI  = ICMOQ(I2) + (NPSH(I2)+ NFRO(I2))*NFBAS(I2,0) + 1
+          ! hjaaj Feb 2017: do not exclude frozen orbitals here:
+          !   simpler code, and does not matter for performance.
+          ! NI  = NISH(I2) - NFRO(I2)
+          ! II  = IORB(I2) + NPSH(I2) + NFRO(I2) + 1
+          ! JI  = ICMOQ(I2) + (NPSH(I2)+ NFRO(I2))*NFBAS(I2,0) + 1
+            NI  = NISH(I2)
+            II  = IORB(I2) + NPSH(I2) + 1
+            JI  = ICMOQ(I2) + NPSH(I2)*NFBAS(I2,0) + 1
 C
 C          Generate modified density matrix as transformation MO to AO
 C
@@ -3995,6 +4000,11 @@ C***********************************************************************
         use pcm_linear_response, only: pcm_oit_asc
         use pcmmod_cfg
 #endif
+
+#ifdef HAS_PELIB
+        use polarizable_embedding, only: pe_master
+        use pe_variables, only: peqm, pe_gspol
+#endif
         use orbital_rotation_indices
 
 
@@ -4165,6 +4175,12 @@ C
               deallocate(mep_oit_asc)
            endif
         endif 
+#endif      
+#ifdef HAS_PELIB
+        if (pe_gspol) write(lupri,*)'Dynamical response is disabled'
+        if (peqm .and. .not. pe_gspol) then
+           call pelib_ifc_response(fao, fmo, ndmat, ihrmop)
+        endif
 #endif
  
 C
@@ -5636,7 +5652,7 @@ C     Generate one-index transformed Fock-matrices
 C     for use in generation of sigma vectors
 C
 C
-C     Bit 1 of ITYP = 0   e-e  rotations in BMAT
+C     Bit 1 of ITYP = 0   e-e rotations in BMAT
 C                     1   e-p rotations in BMAT
 C     Bit 2 of ITYP = 0   inactive density matrix
 C                     1   active density matrix

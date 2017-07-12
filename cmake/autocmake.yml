@@ -2,6 +2,13 @@ name: DIRAC
 
 min_cmake_version: 2.8.10
 
+default_build_type: release
+
+language:
+  - Fortran
+  - C
+  - CXX
+
 url_root: https://github.com/coderefinery/autocmake/raw/master/
 
 modules:
@@ -28,6 +35,7 @@ modules:
     - 'custom/compiler_flags/XL.Fortran.cmake'
 - plugins:
   - source:
+    - 'custom/ar_ranlib.cmake'
     - '%(url_root)modules/definitions.cmake'
     - 'custom/builtin_math.cmake'
     - '%(url_root)modules/python_interpreter.cmake'
@@ -37,7 +45,7 @@ modules:
     - '%(url_root)modules/mpi.cmake'
     - '%(url_root)modules/code_coverage.cmake'
     - 'custom/static_linking.cmake'
-    - 'custom/profiling.cmake'
+    - '%(url_root)modules/profile.cmake'
     - 'custom/runtimecheck.cmake'
     - '%(url_root)modules/int64.cmake'
     - 'custom/mathlibs-integer-compatibility.cmake'
@@ -62,6 +70,8 @@ modules:
     - 'custom/workarounds.cmake'
     - 'custom/external.cmake'
     - 'custom/pcm.cmake'
+    - 'custom/gen1int.cmake'
+    - 'custom/pelib.cmake'
 - subdirectories:
   - source: '%(url_root)modules/src.cmake'
 - custom:
@@ -69,7 +79,6 @@ modules:
     - 'custom/benchmarks.cmake'
     - 'custom/external_libs.cmake'
     - 'custom/tutorials.cmake'
-    - 'custom/basis_set_check.cmake'
     - 'custom/unit/unit_tests.cmake'
     - 'custom/core.cmake'
     - 'custom/c_fortran_interface.cmake'

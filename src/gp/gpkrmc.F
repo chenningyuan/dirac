@@ -1195,6 +1195,8 @@ C***********************************************************************
 C
 C     Set common block DCBIDX (index vectors, orbital symmetries etc.)
 C
+C     See include/dcbidx.h for the definition of the index vectors.
+C
 C     Written by J. Thyssen - Nov 22 2000
 C     Last revision :
 C

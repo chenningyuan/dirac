@@ -118,7 +118,11 @@ C***********************************************************************
        use num_grid_cfg
 #ifdef HAS_PCMSOLVER
       use pcm_linear_response, only: compute_mep_asc, pcm_oper_ao_driver
-#endif      
+#endif
+#ifdef HAS_PELIB
+      use polarizable_embedding, only: pe_master
+      use pe_variables, only: peqm
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -325,6 +329,16 @@ CJTH check this
            deallocate(fock_pcm)
         endif 
 #endif
+
+#ifdef HAS_PELIB
+! edh: As the solvent methods before us (see above) we need
+! to construct the (static) PE contributions from environment
+! before starting a response calculation from DFCOEF
+      IF (PEQM) THEN
+        call genden(fao, cmo, 1, iprint)
+        call pelib_ifc_fock(fao, fmo, tot_nrg, el_nrg)
+      ENDIF
+#endif 
 
 C
 C     3. Get one-electron Fock matrix

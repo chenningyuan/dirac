@@ -972,6 +972,10 @@ C        ... before extracting of EIG print the Fock matrix
         ENDDO
       ENDIF
 C
+C     If converged, exit SCF here
+C
+      IF (DHFEXIT) GOTO 9999      
+C
 C     Diagonalize Fock matrix
 C     =======================
 C
@@ -992,10 +996,6 @@ C     Boson type selection
 C     ====================
 C
       IF(DOBOSSEL) CALL BOSSEL(EIG,IBEIG,FAO,WORK(KFREE),LFREE)
-C
-C     If converged, do not select occupation or save orbitals
-C
-      IF (DHFEXIT) GOTO 9999
 C
 C     Automatic occupation
 C     ====================
@@ -1213,6 +1213,9 @@ C*****************************************************************************
 #ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
+#ifdef HAS_PELIB
+      use pe_variables, only: peqm
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1240,6 +1243,9 @@ C
       real(8)              :: time_pcm_fock
       character(12)        :: pcm_cputid
       real(8), allocatable :: fock_pcm(:, :, :)
+#endif
+#ifdef HAS_PELIB
+      REAL(8) :: PE_TOT_NRG, PE_EL_NRG, PE_TIME
 #endif
       CALL QENTER('SCFCYC_1')
 #include "memint.h"
@@ -1424,6 +1430,18 @@ C
      &                 WORK(KFREE),LFREE,IPRSOL)
          ENDIF
 C
+C        Polarizable embedding contribution
+C        ==================================
+C
+#ifdef HAS_PELIB
+         IF (PEQM) THEN
+            IF (IPRSCF >= 1) WRITE(LUPRI,'(A)') '* Calling PE library'
+            PE_TIME = SECOND()
+            CALL PELIB_IFC_FOCK(DMAT, FOCK, PE_TOT_NRG, PE_EL_NRG)
+            PE_TIME = SECOND() - PE_TIME
+         END IF
+#endif
+C
 C        Read one-electron Fock matrix from file into CMO
 C        ================================================
 C
@@ -1551,6 +1569,13 @@ C
      &      '* PCM Fock matrix contribution  (CPU):', pcm_cputid
          endif 
 #endif
+#ifdef HAS_PELIB
+          IF (PEQM) THEN
+            CPUTID = SECTID(PE_TIME)
+            WRITE(LUPRI,'(3X,A,A12)')
+     &      '* PE Fock matrix            (CPU):',CPUTID
+          END IF
+#endif
           CPUTID = SECTID(TDDG)
           IF(NZ.EQ.1) WRITE(LUPRI,'(3X,A,A12)')
      &      '* Real diagonalization      (CPU):',CPUTID
@@ -1600,7 +1625,8 @@ C          reset intbuf so no old Fock matrices are used :
            INTBUF = INTFLG
         END IF
 C
-        IF (DHFEXIT) THEN
+        IF(DHFEXIT) GOTO 30
+        IF (.FALSE.) THEN
 C     Comments on open shell convergence. Feb. 2013 hjaaj.
 C          ====================================================
 C          Some authors have put forward that OPEN_FAC = 1.0D0 is the best choice,
@@ -1732,6 +1758,9 @@ C*****************************************************************************
 #ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
+#ifdef HAS_PELIB
+      use pe_variables, only: peqm
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1758,6 +1787,8 @@ c     besterg is the lowest energy we encountered so far
 #ifdef HAS_PCMSOLVER
       real(8)      :: pcm_energy
 #endif
+      REAL(8) :: PE_TOT_NRG, PE_EL_NRG
+      REAL(8), DIMENSION(:), ALLOCATABLE :: PE_FMAT
       type(fde_import) :: itmp
       data besterg /1.0D100/
       save besterg
@@ -1846,6 +1877,20 @@ C
         dhferg = dhferg + pcm_energy
       endif 
 #endif
+#ifdef HAS_PELIB
+      IF (PEQM) THEN
+        ! The PE Fock matrix is added to F2 before entering ERGCAL
+        ! and the electronic PE energy is therefore added to E2PART.
+        ! Therefore we subtract it contribution from the total PE energy.
+        ALLOCATE(PE_FMAT(N2BBASX))
+        E_PE = 0.0D0
+        CALL PELIB_IFC_FOCK(DMAT, PE_FMAT, PE_TOT_NRG, PE_EL_NRG)
+        IF (IPRSCF >= 1) CALL PELIB_IFC_ENERGY(DMAT)
+        DHFERG = DHFERG + PE_TOT_NRG - 0.5d0 * PE_EL_NRG
+        E_PE = PE_TOT_NRG 
+        DEALLOCATE(PE_FMAT)
+      END IF
+#endif
       IF(LVCON) THEN
          IF (ONECAP .AND. (INTV1C.EQ.2)) THEN
             JPRINT=0
@@ -1911,6 +1956,11 @@ CMI      ... print out matrixes ...
 #ifdef HAS_PCMSOLVER
          IF(dirac_cfg_pcm) WRITE(LUPRI,'(A,'//FMT//')')
      +       'Polarization energy                :  ',get_pcm_energy()
+#endif
+        ! later this will be replaced by a get energy routine
+#ifdef HAS_PELIB
+        IF (PEQM) WRITE(LUPRI,'(A,'//FMT//')')
+     +       'Embedding energy                   :  ',PE_TOT_NRG
 #endif
          WRITE(LUPRI,'(A,'//FMT//')')
      +       'Total energy                       :  ',DHFERG
@@ -2161,7 +2211,7 @@ C
 #include "dcbdhf.h"
 #include "memint.h"
 C     Memory allocation - NSMOTQ initialized in SMOGEN
-      CALL MEMGET('REAL',KSMO,NSMOTQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','SMO',KSMO,NSMOTQ,WORK,KFREE,LFREE)
 
       CALL SMOSE1(EIG,IBEIG,CFU,WORK(KSMO),WORK(KFREE),LFREE)
 C     Memory deallocation
@@ -2202,12 +2252,14 @@ C
       DO I = 1,NFSYM
       IF(NESHMF(I).NE.0) THEN
 C       Memory allocation
-        CALL MEMGET('REAL',KEBUF,NESHMF(I),WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIBEB,NESHMF(I),WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KCBUF,NESHMF(I)*NTMO(I)*NZ,WORK,KFREE,LFREE)
-       CALL MEMGET('REAL',KSBUF,NESHMF(I)*NESHMF(I)*NZ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KRSEL,NESHMF(I),WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KISEL,2*NESHMF(I),WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','EBUF'  ,KEBUF,NESHMF(I),WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IBEBUF',KIBEB,NESHMF(I),WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','CBUF'  ,KCBUF,NESHMF(I)*NTMO(I)*NZ,
+     &               WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','SBUF'  ,KSBUF,NESHMF(I)*NESHMF(I)*NZ,
+     &               WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','RCSEL' ,KRSEL,NESHMF(I),WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','ICSEL' ,KISEL,2*NESHMF(I),WORK,KFREE,LFREE)
         CALL SMOSE2(I,EIG(IORB(I)+1),IBEIG(IORB(I)+1),
      &              CFU(I2ORBT(I)+1),SMO(ISMOQ(I)+1),
      &              WORK(KEBUF),WORK(KIBEB),WORK(KCBUF),WORK(KSBUF),
