@@ -854,6 +854,7 @@
 #else
       WRITE (iw,*) '*** serial run'
 #endif
+      WRITE (iw,*) '*** all Davidson vectors are externalized.'
       WRITE(iw,*)
       WRITE(iw,*) 'Number of Davidson roots:         ',nroots
       WRITE(iw,*) 'Maximum Davidson subspace:        ',maxdavsp
@@ -956,6 +957,19 @@
       write(iw,*) 'Length of start vectors:',nsiz
 
       Close(iobase,status='delete')
+
+! check orthogonality of the start vectors
+
+      ortho = 0.0d0
+      Do i=1,nroots
+      Do j=1,nroots
+        a1 = dot_product(bstart(:,i),bstart(:,j))
+        ortho = ortho + abs(a1)
+      Enddo
+      Enddo
+      ortho = ortho - dble(nroots)
+      WRITE(*,*) 'Deviation from orthogonality of the',nroots,
+     &   ' Davidson start vectors:',ortho
 !|
 !|  end reading initial vectors.
 !|___________________________________________________________
@@ -969,6 +983,9 @@
 !|   for ADC matrix, the old and the new Davidson vectors.
 !|   File names for vector storage are hardcoded since they
 !|   are temporary and nowhere else needed.
+!|
+!|   Write start vectors into file for old B-vectors. Then start
+!|   macro iteration loop.
 !|
       open(unit=iobase,file='ADCDGTMP', access='SEQUENTIAL',
      &     form='UNFORMATTED',status='unknown')
@@ -987,43 +1004,9 @@
       ibold_maxrec = 1
       open(io_bold,file='DAVXBO',access='direct',
      &     recl=ladc*8,status='unknown')
-!|
-!|
-!|___________________________________________________________
-
-!__________________________________________________________
-!|
-!|
-!|             DAVIDSON  MACRO ITERATION LOOP
-!|
-      Do idavit = 1,maxdavit
-
-      Write(*,*) '  ****   MACRO iteration',idavit
-      Write(*,*)
 !
-!      STEP  A.
-!
-      locdim = nroots    ! we start with the smallest dav space
-      notconverged = .true.  !all vectors are at first not converged
-!
-! check orthogonality of the start vectors
-! 
-      ortho = 0.0d0
-      Do i=1,nroots
-      Do j=1,nroots
-        a1 = dot_product(bstart(:,i),bstart(:,j))
-        ortho = ortho + abs(a1)
-      Enddo
-      Enddo
-      ortho = ortho - dble(nroots)
-      WRITE(*,*) 'Deviation from orthogonality of the',locdim,
-     &   ' Davidson start vectors:',ortho
-      WRITE(*,*)
-      WRITE(*,'(3X,A,4X,A,7X,A,7X,A,5X,A)') 'root','dim',
-     &           'exc.energy','error','status'
-      WRITE(*,'(70A1)') ('-',i=1,70)
-!
-! now make start vectors the initial Davidson vectors for the first iterations
+! now make start vectors the initial Davidson vectors for the first 
+! macro iteration
 ! 
       Do i=1,nroots
         qm(1:nsiz) = bstart(1:nsiz,i)
@@ -1033,6 +1016,34 @@
      &     quit('Error writing direct access file for bold')
         if(i.gt.ibold_maxrec) ibold_maxrec = i
       Enddo
+
+      deallocate(bstart)
+!|
+!|
+!|___________________________________________________________
+
+!__________________________________________________________
+!|
+!|
+!|             DAVIDSON  MACRO ITERATION LOOP
+!|
+!*********************************************************
+      Do idavit = 1,maxdavit
+!*********************************************************
+
+
+      Write(*,*) '  ****   MACRO iteration',idavit
+      Write(*,*)
+!
+!      STEP  A.
+!
+      locdim = nroots    ! we start with the smallest dav space
+      notconverged = .true.  !all vectors are at first not converged
+
+      WRITE(*,*)
+      WRITE(*,'(3X,A,4X,A,7X,A,7X,A,5X,A)') 'root','dim',
+     &           'exc.energy','error','status'
+      WRITE(*,'(70A1)') ('-',i=1,70)
 !_____________________________________________________
 !|
 !| perform the initial block multiplication.
@@ -1305,7 +1316,6 @@
         If(orthoviolflag.eqv..true.) exit
       
         locdim = locdim + nroots
-!       write(*,*) 'New local dimension:',locdim
 !
 ! check for macroiteration, transfer new start vector set.
 ! Attention!! It was observed that orthogonality slowly gets
@@ -1317,7 +1327,6 @@
           write(*,*) 'Generating new (orthogonalized) start vectors.'
           write(*,*) 'For the next macroiteration.'
           do k=1,nroots
-!           bold(:,k)=evint(:,k)
             if(k.gt.ibold_maxrec) then
 !             write(*,*) 'New record',k,' written.'
               ibold_maxrec = k
@@ -1514,7 +1523,6 @@
       deallocate(notconverged)
 
       deallocate(evint)
-      deallocate(bstart)
 !
 !  delete random access files
 !
@@ -2533,6 +2541,7 @@
 #else
       WRITE (iw,*) '*** serial run'
 #endif
+      WRITE (iw,*) '*** all Davidson vectors are externalized.'
       WRITE(iw,*)
       WRITE(iw,*) 'Number of Davidson roots:         ',nroots
       WRITE(iw,*) 'Maximum Davidson subspace:        ',maxdavsp
@@ -2606,9 +2615,12 @@
 !
       call cpuused(cput1)
 !__________________________________________________________
-!| open file of main block eigenvectors and read them in 
+!|
+!| open file for start vectors and read them in .
 !| select the first 1,...,nroots vectors from the file
 !| which are the lowest ones in the main space.
+!|
+!| this is only done by MASTER in case of a parallel run!
 !|
       IF(desrep.GT.9) THEN
         WRITE(davstartname,'(A8,A1,I2)') dsroot,'.',desrep
@@ -2642,12 +2654,24 @@
       write(iw,*) 'Length of start vectors:',nsiz
 
       Close(iobase,status='delete')
+!
+! check convergence of the start vectors
+! 
+      ortho = 0.0d0
+      Do i=1,nroots
+      Do j=1,nroots
+        cax = pp_zdotc(nsiz,bstart(:,i),bstart(:,j))
+        ortho = ortho + abs(cax)
+      Enddo
+      Enddo
+      ortho = ortho - dble(nroots)
+      WRITE(*,*) 'Deviation from orthogonality of the',nroots,
+     &   ' Davidson start vectors:',ortho
 !|
 !|  end reading initial vectors.
 !|___________________________________________________________
 
       WRITE(*,*) '  '
-!
       orthoviolflag = .false.
 !__________________________________________________________
 !|
@@ -2656,6 +2680,9 @@
 !|   for ADC matrix, the old and the new Davidson vectors.
 !|   File names for vector storage are hardcoded since they
 !|   are temporary and nowhere else needed.
+!|
+!|   Write start vectors into file for old B-vectors. Then start
+!|   macro iteration loop.
 !|
       open(unit=iobase,file='ADCDGTMP', access='SEQUENTIAL',
      &     form='UNFORMATTED',status='unknown')
@@ -2674,43 +2701,9 @@
       ibold_maxrec = 1
       open(io_bold,file='DAVXBO',access='direct',
      &     recl=ladc*16,status='unknown')
-!|
-!|
-!|___________________________________________________________
-
-!__________________________________________________________
-!|
-!|
-!|             DAVIDSON  MACRO ITERATION LOOP
-!|
-      Do idavit = 1,maxdavit
-
-      Write(*,*) '  ****   MACRO iteration',idavit
-      Write(*,*)
 !
-!      STEP  A.
-!
-      locdim = nroots    ! we start with the smallest dav space
-      notconverged = .true.  !all vectors are at first not converged
-!
-! check convergence of the start vectors
-! 
-      ortho = 0.0d0
-      Do i=1,nroots
-      Do j=1,nroots
-        cax = pp_zdotc(nsiz,bstart(:,i),bstart(:,j))
-        ortho = ortho + abs(cax)
-      Enddo
-      Enddo
-      ortho = ortho - dble(nroots)
-      WRITE(*,*) 'Deviation from orthogonality of the',locdim,
-     &   ' Davidson start vectors:',ortho
-      WRITE(*,*)
-      WRITE(*,'(3X,A,4X,A,7X,A,7X,A,5X,A)') 'root','dim',
-     &           'exc.energy','error','status'
-      WRITE(*,'(70A1)') ('-',i=1,70)
-!
-! now make start vectors the initial Davidson vectors for the first iterations
+! now make start vectors the initial Davidson vectors for the first
+! macro iteration
 ! 
       Do i=1,nroots
         qm(1:nsiz) = bstart(1:nsiz,i)
@@ -2720,6 +2713,33 @@
      &     quit('Error writing direct access file for bold')
         if(i.gt.ibold_maxrec) ibold_maxrec = i
       Enddo
+
+      deallocate(bstart)
+!|
+!|
+!|___________________________________________________________
+
+!__________________________________________________________
+!|
+!|
+!|             DAVIDSON  MACRO ITERATION LOOP
+!|
+!*********************************************************
+      Do idavit = 1,maxdavit
+!*********************************************************
+
+      Write(*,*) '  ****   MACRO iteration',idavit
+      Write(*,*)
+!
+!      STEP  A.
+!
+      locdim = nroots    ! we start with the smallest dav space
+      notconverged = .true.  !all vectors are at first not converged
+
+      WRITE(*,*)
+      WRITE(*,'(3X,A,4X,A,7X,A,7X,A,5X,A)') 'root','dim',
+     &           'exc.energy','error','status'
+      WRITE(*,'(70A1)') ('-',i=1,70)
 
 !_____________________________________________________
 !|
@@ -3013,7 +3033,6 @@
         If(orthoviolflag.eqv..true.) exit
       
         locdim = locdim + nroots
-!       write(*,*) 'New local dimension:',locdim
 !
 ! check for macroiteration, transfer new start vector set.
 ! Attention!! It was observed that orthogonality slowly gets
@@ -3233,7 +3252,6 @@
       deallocate(mpiaux,mpires1,mpires2)
 
       deallocate(evint)
-      deallocate(bstart)
 !
 !  delete direct access file
 !
