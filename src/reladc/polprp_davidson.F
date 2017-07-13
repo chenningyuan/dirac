@@ -214,71 +214,11 @@
       evint   = 0.0d0
 !__________________________________________________________
 !|
-!| open file for start vectors and read them in .
-!| select the first 1,...,nroots vectors from the file
-!| which are the lowest ones in the main space.
-!|
-!| this is only done by MASTER in case of a parallel run!
-!|
-!     IF(desrep.GT.9) THEN
-!       WRITE(davstartname,'(A8,A1,I2)') dsroot,'.',desrep
-!     ELSE
-!       WRITE(davstartname,'(A8,A2,I1)') dsroot,'.0',desrep
-!     ENDIF
-
-!     OPEN(iobase,file=davstartname,access='sequential',
-!    &     status='unknown',form='unformatted')
-!     READ(iobase) nsiz
-!     WRITE(*,*) 'Found',nsiz,' Start vectors on file ',davstartname
-
-!     If(2*nroots.gt.maxdavsp) then
-!        Call Quit('Increase Davidson space!')
-!     Endif
-
-!     If(nroots.gt.nsiz) then
-!       Write(*,*) 'You request more states than there',
-!    &             ' are in the Main space.'
-!       Write(*,*) 'Adapting requested roots',nroots,' to',nsiz
-!       nroots = nsiz
-!     Endif
-
-!     allocate(bstart(nsiz,nroots))
-!     bstart = 0.0d0
-
-!     do i=1,nroots
-!       Read(iobase) (bstart(j,i),j=1,nsiz)
-!     enddo
-!     write(iw,*) nroots,' start vectors read from ',davstartname
-!     write(iw,*) 'Length of start vectors:',nsiz
-
-!     Close(iobase,status='delete')
-
-! check orthogonality of the start vectors
-
-!     ortho = 0.0d0
-!     Do i=1,nroots
-!     Do j=1,nroots
-!       a1 = dot_product(bstart(:,i),bstart(:,j))
-!       ortho = ortho + abs(a1)
-!     Enddo
-!     Enddo
-!     ortho = ortho - dble(nroots)
-!     WRITE(*,*) 'Deviation from orthogonality of the',nroots,
-!    &   ' Davidson start vectors:',ortho
-!|
-!|  end reading initial vectors.
-!|___________________________________________________________
-
-!__________________________________________________________
-!|
 !|   
 !|   read matrix diagonal and open direct access files
 !|   for ADC matrix, the old and the new Davidson vectors.
 !|   File names for vector storage are hardcoded since they
 !|   are temporary and nowhere else needed.
-!|
-!|   Write start vectors into file for old B-vectors. Then start
-!|   macro iteration loop.
 !|
       WRITE(iw,*)
       WRITE(iw,*) ' ------------------------------------'
@@ -303,21 +243,8 @@
       open(io_bold,file='DAVXBO',access='direct',
      &     recl=ladc*8,status='unknown')
 !
-! now make start vectors the initial Davidson vectors for the first 
-! macro iteration
-! 
-!     Do i=1,nroots
-!       qm(1:nsiz) = bstart(1:nsiz,i)
-!       qm(nsiz+1:ladc) = 0.0d0
-!       write(io_bold,rec=i,iostat=ida_iostat) qm
-!       if(ida_iostat.ne.0) call
-!    &     quit('Error writing direct access file for bold')
-!       if(i.gt.ibold_maxrec) ibold_maxrec = i
-!     Enddo
-
-!     deallocate(bstart)
-!
-! do the Davidson restart check
+! do the Davidson restart check, initializes the bold array
+! There will be exactly as many start vectors as nroots parameter.
 !
       WRITE(iw,*)
       WRITE(iw,*) ' ------------------------------------'
@@ -326,7 +253,6 @@
       WRITE(iw,*)
       call restart_check(desrep,nroots,maxdavsp,ladc,
      &                   dsroot,dsroot2,io_bold)
-
       ibold_maxrec= nroots
 !|
 !|
@@ -2787,12 +2713,16 @@ c  .. read elements
 !
       logical                                :: isthere
       integer                                :: fileavail,io
-      integer                                :: i,j,nsiz
+      integer                                :: i,j,k,ix,nsiz
       integer                                :: ida_iostat
       Character*11                           :: filename_d,filename_e
       Real*8                                 :: ortho,a1
-      Real*8,allocatable,dimension(:)        :: qm
+      Real*8,allocatable,dimension(:)        :: qm,ec
       Real*8,allocatable,dimension(:,:)      :: bstart
+      integer                                :: xnroots,xnmain,xladc
+      integer                                :: unroots,uladc
+      integer                                :: jdummy
+      Real*8                                 :: rdummy
 !
 !------------------------ interface -------------------------
 !
@@ -2831,6 +2761,7 @@ c  .. read elements
 !  read corresponding file or pack in unity matrix
 !
       io = get_file_unit()
+
       Select case(fileavail)
 
 !------------------------------------------------------------
@@ -2838,6 +2769,56 @@ c  .. read elements
       case(2)                 !  ADCEVECS is present
 
       write(*,*) 'Using ',filename_e,' as restart file.'
+      OPEN(io,file=filename_e,access='sequential',
+     &     status='unknown',form='unformatted')
+      READ(io) xnroots
+      READ(io) xnmain
+      READ(io) xladc
+      write(*,*) 'There are',nroots,' vectors on the file'
+      write(*,*) 'Vectors have length',xladc
+
+      unroots = nroots
+      if(nroots.gt.xnroots) then
+        write(*,*) 'Only',xnroots,' available and used.'
+        unroots = xnroots
+      endif
+
+      uladc = ladc
+      if(ladc.ne.xladc) then
+        write(*,*) 'Vector length does not match.'
+        write(*,*) 'It will be adjusted but convergence can suffer!'
+        uladc = min(ladc,xladc)
+      endif
+
+      allocate(qm(ladc))
+      allocate(ec(xladc))
+      Do k=1,unroots
+        read(io) jdummy
+        read(io) rdummy
+        read(io) rdummy
+        read(io) (ec(ix),ix=1,xladc)
+        qm = 0.0d0
+        qm(1:uladc) = ec(1:uladc)  !rest is zero if xladc .lt. ladc
+        write(io_bold,rec=k,iostat=ida_iostat) qm
+        if(ida_iostat.ne.0) call
+     &     quit('Error writing direct access file for bold')
+      Enddo
+      write(*,*) 'Wrote',unroots,' start vectors into initial block.'
+
+! filling the remaining start vectors with diagonal one
+
+      Do k=unroots+1,nroots
+        write(*,*) 'Writing defective vector #',k
+        qm = 0.0d0
+        qm(k) = 1.0d0
+        write(io_bold,rec=k,iostat=ida_iostat) qm
+        if(ida_iostat.ne.0) call
+     &     quit('Error writing direct access file for bold')
+      Enddo
+      deallocate(ec)
+      deallocate(qm)
+
+      Close(io)
 
 !------------------------------------------------------------
 
@@ -2869,8 +2850,6 @@ c  .. read elements
       write(*,*) nroots,' start vectors read.'
       write(*,*) 'Length of start vectors:',nsiz
 
-      Close(io)
-
 ! check orthogonality of the start vectors
 
       ortho = 0.0d0
@@ -2897,6 +2876,8 @@ c  .. read elements
 
       deallocate(qm)
       deallocate(bstart)
+
+      Close(io)
 
 !------------------------------------------------------------
 
