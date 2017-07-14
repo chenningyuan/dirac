@@ -885,7 +885,6 @@
 !*** arrays
 
       complex*16, allocatable, dimension(:,:)   :: evint
-      complex*16, allocatable, dimension(:,:)   :: bstart
       complex*16, allocatable, dimension(:,:)   :: aij
       complex*16, allocatable, dimension(:,:)   :: aijbase
       real*8, allocatable, dimension(:)         :: lambda, reserr
@@ -1036,76 +1035,6 @@
         call quit('Alloc. problem (evint) in mpi_davidson_master_c!')
       endif
       evint = czero
-!
-! set all timers to zero
-!
-      cput1 = 0.0d0
-      cput2 = 0.0d0
-      time1 = 0.0d0
-      time2 = 0.0d0
-!
-! start time measurement here
-!
-      call cpuused(cput1)
-!__________________________________________________________
-!|
-!| open file for start vectors and read them in .
-!| select the first 1,...,nroots vectors from the file
-!| which are the lowest ones in the main space.
-!|
-!| this is only done by MASTER in case of a parallel run!
-!|
-      IF(desrep.GT.9) THEN
-        WRITE(davstartname,'(A8,A1,I2)') dsroot,'.',desrep
-      ELSE
-        WRITE(davstartname,'(A8,A2,I1)') dsroot,'.0',desrep
-      ENDIF
-
-      OPEN(iobase,file=davstartname,access='sequential',
-     &     status='unknown',form='unformatted')
-      READ(iobase) nsiz
-      WRITE(*,*) 'Found',nsiz,' Start vectors on file ',davstartname
-
-      If(2*nroots.gt.maxdavsp) then
-         Call Quit('Increase Davidson space!')
-      Endif
-
-      If(nroots.gt.nsiz) then
-        Write(*,*) 'You request more states than there',
-     &             ' are in the Main space.'
-        Write(*,*) 'Adapting requested roots',nroots,' to',nsiz
-        nroots = nsiz
-      Endif
-
-      allocate(bstart(nsiz,nroots))
-      bstart = czero
-
-      do i=1,nroots
-        Read(iobase) (bstart(j,i),j=1,nsiz)
-      enddo
-      write(iw,*) nroots,' start vectors read from ',davstartname
-      write(iw,*) 'Length of start vectors:',nsiz
-
-      Close(iobase,status='delete')
-!
-! check convergence of the start vectors
-! 
-      ortho = 0.0d0
-      Do i=1,nroots
-      Do j=1,nroots
-        cax = pp_zdotc(nsiz,bstart(:,i),bstart(:,j))
-        ortho = ortho + abs(cax)
-      Enddo
-      Enddo
-      ortho = ortho - dble(nroots)
-      WRITE(*,*) 'Deviation from orthogonality of the',nroots,
-     &   ' Davidson start vectors:',ortho
-!|
-!|  end reading initial vectors.
-!|___________________________________________________________
-
-      WRITE(*,*) '  '
-      orthoviolflag = .false.
 !__________________________________________________________
 !|
 !|   
@@ -1114,9 +1043,11 @@
 !|   File names for vector storage are hardcoded since they
 !|   are temporary and nowhere else needed.
 !|
-!|   Write start vectors into file for old B-vectors. Then start
-!|   macro iteration loop.
-!|
+      WRITE(iw,*)
+      WRITE(iw,*) ' ------------------------------------'
+      WRITE(iw,*) ' ------ File information  -----------'
+      WRITE(iw,*) ' ------------------------------------'
+      WRITE(iw,*)
       open(unit=iobase,file='ADCDGTMP', access='SEQUENTIAL',
      &     form='UNFORMATTED',status='unknown')
       read(iobase,ERR=888) (adiag(i),i=1,ladc)
@@ -1135,23 +1066,35 @@
       open(io_bold,file='DAVXBO',access='direct',
      &     recl=ladc*16,status='unknown')
 !
-! now make start vectors the initial Davidson vectors for the first
-! macro iteration
-! 
-      Do i=1,nroots
-        qm(1:nsiz) = bstart(1:nsiz,i)
-        qm(nsiz+1:ladc) = czero
-        write(io_bold,rec=i,iostat=ida_iostat) qm
-        if(ida_iostat.ne.0) call
-     &     quit('Error writing direct access file for bold')
-        if(i.gt.ibold_maxrec) ibold_maxrec = i
-      Enddo
-
-      deallocate(bstart)
+! do the Davidson restart check, initializes the bold array
+! There will be exactly as many start vectors as nroots parameter.
+!
+      WRITE(iw,*)
+      WRITE(iw,*) ' ------------------------------------'
+      WRITE(iw,*) ' ------ Restart information ---------'
+      WRITE(iw,*) ' ------------------------------------'
+      WRITE(iw,*)
+      call restart_check_c(desrep,nroots,maxdavsp,ladc,
+     &                     dsroot,dsroot2,io_bold)
+      ibold_maxrec= nroots
 !|
 !|
 !|___________________________________________________________
 
+
+      WRITE(*,*) '  '
+      orthoviolflag = .false.
+!
+! set timers to zero
+!
+      cput1 = 0.0d0
+      cput2 = 0.0d0
+      time1 = 0.0d0
+      time2 = 0.0d0
+!
+! start time measurement
+!
+      call cpuused(cput1)
 !__________________________________________________________
 !|
 !|
@@ -2882,7 +2825,250 @@ c  .. read elements
 !------------------------------------------------------------
 
       case(0)                 !  no file. Unity matrix
+
       write(*,*) 'No restart file found. Using unity matrix.'
+
+      allocate(qm(ladc))
+      qm = 0.0d0
+      Do i=1,nroots
+        qm(i) = 1.0d0
+        write(io_bold,rec=i,iostat=ida_iostat) qm
+        if(ida_iostat.ne.0) call
+     &     quit('Error writing direct access file for bold')
+        qm(i) = 0.0d0
+      Enddo
+      deallocate(qm)
+
+
+
+!------------------------------------------------------------
+
+      End select
+
+
+      write(*,*) 'Restart check finalized.'
+      RETURN
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE restart_check_c(desrep,nroots,maxdavsp,ladc,
+     &                           hp_name,ev_name,io_bold)
+
+      IMPLICIT NONE
+!
+!---------------Description--------------------------------------------
+!
+!   This routine checks the existence of some restart files and tries to fit
+!   found restart vectors into the vector array. The order of importance is:
+!
+!   ADCEVECS.XX
+!   DAVSTART.XX
+!   Unity matrix
+!
+!   complex variant
+!
+!------------------------ calling variables -------------------------
+!
+      integer                    :: desrep,nroots,maxdavsp,ladc
+      character*8                :: hp_name,ev_name
+      integer                    :: io_bold
+!
+!------------------------ local variables -------------------------
+!
+      logical                                :: isthere
+      integer                                :: fileavail,io
+      integer                                :: i,j,k,ix,nsiz
+      integer                                :: ida_iostat
+      Character*11                           :: filename_d,filename_e
+      Real*8                                 :: ortho
+      Complex*16                             :: cax
+      Complex*16,allocatable,dimension(:)    :: qm,ec
+      Complex*16,allocatable,dimension(:,:)  :: bstart
+      integer                                :: xnroots,xnmain,xladc
+      integer                                :: unroots,uladc
+      integer                                :: jdummy
+      Real*8                                 :: rdummy
+      Complex*16,parameter                   :: czero=(0.0d0,0.0d0)
+      Complex*16,parameter                   :: cone=(1.0d0,0.0d0)
+!
+!------------------------ interface -------------------------
+!
+      Interface
+
+        function get_file_unit()
+           Integer    :: get_file_unit
+        end function
+
+        FUNCTION pp_zdotc(i1,ca1,ca2)
+          double complex                   :: pp_zdotc
+          INTEGER                          :: i1
+          double complex, dimension(:)     :: ca1,ca2
+        END FUNCTION
+
+      End interface
+!
+!------------------------ executable code -------------------------
+!
+      fileavail = 0
+!
+! check availability of DAVSTART.XX file
+!
+      IF(desrep.GT.9) THEN
+        WRITE(filename_d,'(A8,A1,I2)') hp_name,'.',desrep
+      ELSE
+        WRITE(filename_d,'(A8,A2,I1)') hp_name,'.0',desrep
+      ENDIF
+      inquire(file=filename_d,exist=isthere)
+      if(isthere) fileavail = fileavail + 1
+!
+! check availability of ADCEVECS.XX file
+!
+      IF(desrep.GT.9) THEN
+        WRITE(filename_e,'(A8,A1,I2)') ev_name,'.',desrep
+      ELSE
+        WRITE(filename_e,'(A8,A2,I1)') ev_name,'.0',desrep
+      ENDIF
+      inquire(file=filename_e,exist=isthere)
+      if(isthere) fileavail = fileavail + 1
+!
+!  read corresponding file or pack in unity matrix
+!
+      io = get_file_unit()
+
+      Select case(fileavail)
+
+!------------------------------------------------------------
+
+      case(2)                 !  ADCEVECS is present
+
+      write(*,*) 'Using ',filename_e,' as restart file.'
+      OPEN(io,file=filename_e,access='sequential',
+     &     status='unknown',form='unformatted')
+      READ(io) xnroots
+      READ(io) xnmain
+      READ(io) xladc
+      write(*,*) 'There are',nroots,' vectors on the file'
+      write(*,*) 'Vectors have length',xladc
+
+      unroots = nroots
+      if(nroots.gt.xnroots) then
+        write(*,*) 'Only',xnroots,' available and used.'
+        unroots = xnroots
+      endif
+
+      uladc = ladc
+      if(ladc.ne.xladc) then
+        write(*,*) 'Vector length does not match.'
+        write(*,*) 'It will be adjusted but convergence can suffer!'
+        uladc = min(ladc,xladc)
+      endif
+
+      allocate(qm(ladc))
+      allocate(ec(xladc))
+      Do k=1,unroots
+        read(io) jdummy
+        read(io) rdummy
+        read(io) rdummy
+        read(io) (ec(ix),ix=1,xladc)
+        qm = czero
+        qm(1:uladc) = ec(1:uladc)  !rest is zero if xladc .lt. ladc
+        write(io_bold,rec=k,iostat=ida_iostat) qm
+        if(ida_iostat.ne.0) call
+     &     quit('Error writing direct access file for bold')
+      Enddo
+      write(*,*) 'Wrote',unroots,' start vectors into initial block.'
+
+! filling the remaining start vectors with diagonal one
+
+      Do k=unroots+1,nroots
+        write(*,*) 'Writing defective vector #',k
+        qm = czero
+        qm(k) = cone
+        write(io_bold,rec=k,iostat=ida_iostat) qm
+        if(ida_iostat.ne.0) call
+     &     quit('Error writing direct access file for bold')
+      Enddo
+      deallocate(ec)
+      deallocate(qm)
+
+      Close(io)
+
+!------------------------------------------------------------
+
+      case(1)                 !  DAVSTART is present
+
+      write(*,*) 'Using ',filename_d,' as restart file.'
+      OPEN(io,file=filename_d,access='sequential',
+     &     status='unknown',form='unformatted')
+      READ(io) nsiz
+      WRITE(*,*) 'Found',nsiz,' Start vectors.'
+
+      If(2*nroots.gt.maxdavsp) then
+         Call Quit('Increase Davidson space!')
+      Endif
+
+      If(nroots.gt.nsiz) then
+        Write(*,*) 'You request more states than there',
+     &             ' are in the Main space.'
+        Write(*,*) 'Adapting requested roots',nroots,' to',nsiz
+        nroots = nsiz
+      Endif
+
+      allocate(bstart(nsiz,nroots))
+      bstart = czero
+
+      do i=1,nroots
+        Read(io) (bstart(j,i),j=1,nsiz)
+      enddo
+      write(*,*) nroots,' start vectors read.'
+      write(*,*) 'Length of start vectors:',nsiz
+
+! check orthogonality of the start vectors
+
+      ortho = 0.0d0
+      Do i=1,nroots
+      Do j=1,nroots
+        cax = pp_zdotc(nsiz,bstart(:,i),bstart(:,j))
+        ortho = ortho + abs(cax)
+      Enddo
+      Enddo
+      ortho = ortho - dble(nroots)
+      WRITE(*,*) 'Orthogonality:',ortho
+!
+! now make start vectors the initial Davidson vectors for the first 
+! macro iteration
+! 
+      allocate(qm(ladc))
+      Do i=1,nroots
+        qm(1:nsiz) = bstart(1:nsiz,i)
+        qm(nsiz+1:ladc) = 0.0d0
+        write(io_bold,rec=i,iostat=ida_iostat) qm
+        if(ida_iostat.ne.0) call
+     &     quit('Error writing direct access file for bold')
+      Enddo
+
+      deallocate(qm)
+      deallocate(bstart)
+
+      Close(io)
+
+!------------------------------------------------------------
+
+      case(0)                 !  no file. Unity matrix
+
+      write(*,*) 'No restart file found. Using unity matrix.'
+
+      allocate(qm(ladc))
+      qm = czero
+      Do i=1,nroots
+        qm(i) = cone
+        write(io_bold,rec=i,iostat=ida_iostat) qm
+        if(ida_iostat.ne.0) call
+     &     quit('Error writing direct access file for bold')
+        qm(i) = czero
+      Enddo
+      deallocate(qm)
+
+
 
 !------------------------------------------------------------
 
