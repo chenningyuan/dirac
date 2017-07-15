@@ -77,7 +77,7 @@
       REAL*8,allocatable,dimension(:)        :: dvox,dvoy,dvoz
       REAL*8,allocatable,dimension(:)        :: dvvx,dvvy,dvvz
 
-! OV dipole moment integrals holding the generic order VO property ints
+! OV dipole moment integrals holding the generic order OV property ints
 
       REAL*8,allocatable,dimension(:)        :: dovxg,dovyg,dovzg
                                             
@@ -107,9 +107,6 @@
 
       REAL*8,allocatable,dimension(:)        :: evvoo
 
-      Integer                                :: n1,n2,n3,n4,n1e
-      Integer                                :: ialloc,iat
-
 ! some parameters and bookkeeping variables
 
       Logical                                :: LFA = .false.
@@ -122,6 +119,9 @@
       real*8                                 :: x1,x2,x3,x4,xcntrl
       Integer                                :: lp1,lp2
       integer                                :: nabixj,naxbij,nabxij
+
+      Integer                                :: n1,n2,n3,n4,n1e
+      Integer                                :: ialloc,iat
       
       Integer*8                              :: n8
 !
@@ -199,7 +199,6 @@
          Integer                           :: i1,i2,i3
          Real*8, dimension(*)              :: ca1,ca2
         End Function
-
 
       end interface
 !
@@ -1872,6 +1871,7 @@
       deallocate(JPOOXX,JPVOXX,JPOVXX,JPVVXX)
 !
 !  test the new tm out routine. It is maximally standalone.
+!  and uses the F-vectors from the stack.
 !
       call TM_OUT(desrep,pphasex,pphasey,pphasez)
 
