@@ -24,7 +24,7 @@ static int * qsdep = NULL; /* depth of stack #i */
 
 const char *taginf = "*** Qstack info:";
 const char *tagerr = "*** Qstack error:";
-const char *tagnit = "*** Qstack error: Please initialize before use.";
+const char *tagnit = "*** Qstack runtime error: Please initialize before use.";
 
 
 /*
@@ -146,7 +146,7 @@ int qstack_push(int *stack, int *len, double *arr){
   qslen[stackn]  = newlen;
 
   qsdep[stackn] = curdep;
-  if(verbose) printf("PUSH: Stack #%d has now %d vectors stored.\n",*stack,curdep);
+  if(verbose) printf("%s PUSH: Stack #%d has now %d vectors stored.\n",taginf,*stack,curdep);
 
   return *len;
 }
@@ -216,7 +216,7 @@ int qstack_popf(int *stack, double *retvec){
     qslen[stackn] = newlen;
   }
   qsdep[stackn] = curdep;
-  if(verbose) printf("POPF: Stack # %d has now %d vectors stored.\n",*stack,curdep);
+  if(verbose) printf("%s POPF: Stack # %d has now %d vectors stored.\n",taginf,*stack,curdep);
   return curlen;
 }
 
@@ -286,7 +286,7 @@ int qstack_popl(int *stack, double *retvec){
     qslen[stackn] = newlen;
   }
   qsdep[stackn] = curdep;
-  if(verbose) printf("POPL: Stack # %d has now %d vectors stored.\n",*stack,curdep);
+  if(verbose) printf("%s POPL: Stack # %d has now %d vectors stored.\n",taginf,*stack,curdep);
   return curlen;
 }
 
@@ -461,7 +461,7 @@ double qstack_meminf(void){
   umem+=numofstacks*sizeof(int);
 
   usedmem=(double)(umem)/(1024.0 * 1024.0);  // mem in MB as a double
-  if(verbose) printf("*** Qstack: total allocated memory: %lu bytes = (%.2f Megabytes).\n",umem,usedmem);
+  if(verbose) printf("%s total allocated memory: %lu bytes = (%.2f Megabytes).\n",taginf,umem,usedmem);
 
   return usedmem;
 }
@@ -509,7 +509,7 @@ int qstack_drop(int * stack){
   qsbase[stackn] = NULL;
   qslen[stackn] = NULL;
 
-  if(verbose) printf("*** Qstack: dropped %d elements from stack %d\n",curdep,stackn);
+  if(verbose) printf("%s dropped %d elements from stack %d\n",taginf,curdep,stackn);
 
   return curdep;
 }
@@ -532,7 +532,7 @@ void qstack_shutdown(void){
     return;
   }
  
-  printf("*** Qstack: Shutting down stack system. Clearing heap space.\n");
+  printf("%s Shutting down stack system. Clearing heap space.\n",taginf);
 
   for(stackn=0;stackn < numofstacks;stackn++){
     curstack = qsbase[stackn];       //clear now stack # stackn
