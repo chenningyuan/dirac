@@ -20,6 +20,7 @@ set(FREE_INPUT_FORTRAN_SOURCES
    ${PROJECT_SOURCE_DIR}/src/grid/num_grid_cfg.F90
    ${PROJECT_SOURCE_DIR}/src/visual/visual_cfg.F90
    ${PROJECT_SOURCE_DIR}/src/relccsd/relcc_cfg.F90
+   ${PROJECT_SOURCE_DIR}/src/exacorr/exacorr_cfg.F90
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -45,4 +46,5 @@ add_dependencies(input dirac)
 add_dependencies(input main)
 add_dependencies(input visual)
 add_dependencies(input relccsd)
+add_dependencies(input exacorr)
 add_dependencies(input grid)
