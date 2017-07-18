@@ -371,7 +371,7 @@ C
      &            '.SKIPEP','.MAXRED','.E2CHEK','.NONORM',
      &            '.EPOLE ','.MPOLE ','.INTFLG','.INTENS',
      &            '.OCCUP ','.VIRTUA','.ACTIVE','.BED   ',
-     &            '.ITRINT','.CNVINT','.REAXVC','-------',
+     &            '.ITRINT','.CNVINT','.REAXVC','.ANGLES',
      &            '.RESFAC','.ORBANA','-------','.SKIPEE',
      &            '.MXLOAD','.ONLYSF','.ONLYSG','-------'/
 C
@@ -488,7 +488,7 @@ C&&&& PRINT:  Print level
     2          CONTINUE
                GO TO 100
     3          CONTINUE
-C&&&& ANALYZe: Analyze individual contributions to repsonse functions
+C&&&& ANALYZe: Analyze individual contributions to response functions
                   XPPANA = .TRUE.
                GO TO 100
     4          CONTINUE
@@ -652,6 +652,9 @@ C&&&& REAXVC: Read solution vectors from file XPPFIL
                   READ(LUCMD,'(A6)') XPPFIL
                GO TO 100
  24            CONTINUE
+C&&&& ANGLES: Read the angles (\Theta,\Phi,\Chi) which defines the experimental configuration
+               READ(LUCMD,*) W1,W2,W3
+               CALL ANGLES(W1,W2,W3)
                GO TO 100
  25            CONTINUE
 C&&&& RESFAC:  New trial vectors only for parameters whose residual

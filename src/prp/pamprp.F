@@ -9295,4 +9295,47 @@ C     Memory deallocation
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE ANGLES(THETA,PHI,CHI)
+C***********************************************************************
+C     Define orientation of wave and polarization vector,
+C     based on angles read in degrees.
+C     For this we use a right-handed coordinate system defined by
+C        e_r     = ( sin[Theta}cos[Phi], sin[Theta]sin[Phi], cos[Theta])
+C        e_Theta = ( cos[Theta]cos[Phi], cos[Theta]sin[Phi],-sin[Theta])
+C        e_Phi   = (-sin[Phi]          , cos[Phi]          ,0          )
+C     When Theta and Phi are set to zero we have
+C        (e_r,e_Theta,e_phi) --> (e_z, e_x, e_y)
+C     We align the wave vector with e_r. The polarization vector epsilon
+C     is then in the perpendicular plane spanned by e_Theta and e_Phi,
+C     so we write
+C        epsilon = cos[Chi]e_Theta + sin[Theta]e_Phi
+C     where we have introduced a third angle Theta
+C
+C     Written by Trond Saue, July 18 2017
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      FAC = ACOS(-1.0D0)/180.0D0
+      THETA2 = THETA*FAC
+      PHI2   = PHI*FAC
+      CHI2   = CHI*FAC
+      DKX    = SIN(THETA2)*COS(PHI2)
+      DKY    = SIN(THETA2)*SIN(PHI2)
+      DKZ    = COS(THETA2)
+      W1     = COS(CHI2)
+      W2     = SIN(CHI2)
+      DEX    = W1*COS(THETA2)*COS(PHI2) - W2*SIN(PHI2)
+      DEY    = W1*COS(THETA2)*SIN(PHI2) + W2*COS(PHI2)
+      DEZ    = -W1*SIN(THETA2)
+C.....Output section
+      WRITE(LUPRI,*) '* Wave unit vector:'
+      WRITE(LUPRI,'(A1,3(F7.4,A1))')
+     &     '(',DKX,',',DKY,',',DKZ,')'
+      WRITE(LUPRI,*) '* Polarization vector:'
+      WRITE(LUPRI,'(A1,3(F7.4,A1))')
+     &     '(',DEX,',',DEY,',',DEZ,')'
+      RETURN
+      END
       
