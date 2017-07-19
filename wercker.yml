@@ -2,7 +2,7 @@
 ## Simple DIRAC buildup configuration file for the Wercker-CI service http://devcenter.wercker.com/articles/werckeryml/
 ##
 ##
-box: wercker/python
+box: nodesource/trusty
 
 build:
   steps:
