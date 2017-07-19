@@ -4,10 +4,10 @@ C***********************************************************************
 C
 C     Build representation matrix of full light-matter interaction
 C     Scalar integrals are sorted on symmetries (max. 8)
-C     
-C      
+C
 C     Upon entering this routine solution vectors have been written
-C     to unformatted file PAMXVC which is open with unit number LUXVC                                  C     References are:
+C     to unformatted file PAMXVC which is open with unit number LUXVC
+C     References are:
 C     1. Nanna Holmgaard List, Joanna Kauczor, Trond Saue,
 C        Hans Jørgen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
 C                               
@@ -17,42 +17,41 @@ C
 #include "implicit.h"
 #include "priunit.h"
 C
+      PARAMETER(D0=0.0D0,DP5=0.5D0)
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "pgroup.h"
 #include "dgroup.h"
 #include "dcbxpp.h"
 #include "orgcom.h"
+#include "dcbxpr.h"      
+#include "dcbwav.h"
 C#include "cbiher.h"
       LOGICAL DOINT(2,2)
       INTEGER LWORK, NCOMP, NOPTP
       DIMENSION OMEGA(MAXEXC,NBSYM),ISSYM(MAXEXC,NBSYM),WORK(*)
       real(8), allocatable              :: ONEINT(:,:)
       character (len=8),  allocatable   :: LABINT(:)
-      integer, allocatable              :: INTREP(:)
-      real(8)                           :: WAVVEC(3),POLVEC(3)
-      character (len=6)                 :: PM4NAM(3)
-      integer                           :: IM4(3)
+      integer, allocatable              :: INTREP(:),IPSYM2INT(:,:)
+      real(8)                           :: PBUF(3,2)
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
-!     We are building the full light-matter interaction operator      
-      DATA IM4/2,3,4/
-      DATA PM4NAM/'XALPHA','YALPHA','ZALPHA'/
 C
 #include "ibtfun.h"
 C     
 C     Allocate placeholders for integral labels and irreps 
 C
-      allocate(LABINT(8))
+      allocate(LABINT(9))
       allocate(INTREP(8))
+      allocate(IPSYM2INT(NBSYM,2))
 C
 C     Integral directives
 C     
-      CALL PR1DIR('CXIKR   ',INTTYP,NCOMP,INTREP,
+      CALL PR1DIR('CXIKR   ',INTTYP,NCOMP2,INTREP,
      &            ANTI,SQUARE,DUMMY,LABINT,TRIANG,TRASPH,
      &            SOLVNT,0,.FALSE.,0,NBAST,NELMNT,IPRINT)
-C     NCOMP is by construction an even number,
+C     NCOMP2 is by construction an even number,
 C     the first and second halfs corresponding to the real (eq. 44) and imaginary parts (eq. 45)
-      DO ICOMP = 1,NCOMP
+      DO ICOMP = 1,NCOMP2
           WRITE(6,*) LABINT(ICOMP),'. Symmetry: ',
      &               REP(INTREP(ICOMP))
       ENDDO
@@ -61,81 +60,114 @@ C     the first and second halfs corresponding to the real (eq. 44) and imaginar
       DOINT(2,1)=.TRUE.
       DOINT(1,2)=.TRUE.
       DOINT(2,2)=.FALSE.
-C.....allocate array for holding integrals (on triangular form)
-      allocate(ONEINT(NELMNT,NCOMP))
+C.....allocate array for holding integrals (on lower triangular form)
+      allocate(ONEINT(NELMNT,NCOMP2))
       IORDER=0
       NPQUAD=0
 C
-C     Define propagation vector
+C     Operator setup
 C
-      WAVVEC(1)=0.0
-      WAVVEC(2)=0.0
-      WAVVEC(3)=1.0
-C
-C     Define polarization vector
-C
-      POLVEC(1)=1.0
-      POLVEC(2)=0.0
-      POLVEC(3)=0.0
-C
-C     Check for orthogonality of propagation and polarization vector
-C
-      TTOL=1.0D-10
-      TMP=DDOT(3,WAVVEC,1,POLVEC,1)
-      IF(ABS(TMP).GT.TTOL) THEN
-         CALL QUIT
-     & ('GET_BED: Polarization not orthogonal to propagation !')
+      IOPTYP  = 8                ! iA.P           * dot-product of alpha and vector operator
+      NMAT    = MCMP(IOPTYP)     ! number of components
+      IF((NPRPS+2).GT.MAXPRPS) THEN
+        WRITE(LUPRI,'(A,I5)') 
+     &   ' ** ERROR in GET_BED **  Redimension MAXPRPS to ',INDXPR2
+        CALL QUIT('GET_BED: Too may properties !')
       ENDIF
+      DO IOP = 1,2
+         PRPNAM(NPRPS+IOP)(1:3) = 'BED'
+         WRITE(PRPNAM(NPRPS+IOP)(4:5),'(I1,A1)') IOP,'_'
+         IPRPTIM(NPRPS+IOP) = -1 ! Time antisymmetric operator
+      ENDDO
+C      
+C     Find what symmetries are available
 C
+      NCOMP=NCOMP2/2
+      ITAG=9
+      LABINT(ITAG) = 'inactive'
+      CALL ICOPY(2*NBSYM,ITAG,0,IPSYM2INT,1)
+      DO I = 1,NCOMP
+        ISYM = INTREP(I) + 1
+        IPSYM2INT(ISYM,1) = I
+        II = NCOMP + I
+        ISYM = INTREP(II) + 1
+        IPSYM2INT(ISYM,2) = II
+      ENDDO
+      WRITE(6,*) 'IPSYM2INT:'
+      DO ISYM = 1,NBSYM
+         WRITE(6,*) IPSYM2INT(ISYM,1),IPSYM2INT(ISYM,2)
+      ENDDO
+C     
 C     Loop over excitation energies
 C
       DO 10 IOPSY = 1,NFSYM
         NBF = NBSYM/NFSYM
         DO 20 IBF = 1,NBF
-          ISYM = JFSYM(IBF,IOPSY)
-          IREP = ISYM-1
+          ISYM   = JFSYM(IBF,IOPSY)
+          IREP   = ISYM-1
           NEXCNV = KEXCNV(JSYMOP)
           IF (NEXCNV .EQ. 0) GO TO 20
           CALL PRSYMB(LUPRI,'=',80,0)
           WRITE(LUPRI,'(/A,I2,A,A3/)')
      &     ' *** Excitations of boson symmetry',ISYM,' : ',REP(IREP)
-
 C
 C         Find contributions to property matrix
 C
-          DO IMAT = 1,3
-            IAIND = JM4(1,IOPTYP)
+          DO IMAT = 1,NMAT
+            IAIND = JM4(IMAT,IOPTYP)
             IAREP = JM4REP(IAIND)
-            IBREP = IBTXOR(IAREP,IREP)
-            WRITE(6,*) '* Contributions to ',
-     &         PM4NAM(IMAT),' ',REP(IAREP),' from:'
-            DO ICOMP = 1,NCOMP
-            IF(INTREP(ICOMP).EQ.IBREP) THEN
-              WRITE(6,*) '            ',LABINT(ICOMP),'. Symmetry: ',
-     &               REP(INTREP(ICOMP))
-            ENDIF
+            IBSYM = IBTXOR(IAREP,IREP)+1
+            DO IOP = 1,2
+              IPRPLBL(IMAT,NPRPS+IOP) = IPSYM2INT(IBSYM,IOP)
+              IF(IPRPLBL(IMAT,NPRPS+IOP).EQ.ITAG) THEN
+                PBUF(IMAT,IOP) = D0
+              ELSE
+                PBUF(IMAT,IOP) = DP5*UPOL(IMAT)
+              ENDIF
             ENDDO
+          ENDDO
+          DO IOP = 1,2
+             PRPNAM(NPRPS+IOP)(6:8) = REP(IREP)
+             IPRPSYM(NPRPS+IOP) = ISYM ! Total symmetry of operator
+             IF(DSUM(NMAT,PBUF(1,IOP),1).EQ.D0) THEN
+                IPRPTYP(NPRPS+IOP) = -1  ! Means that there is no contribution
+             ELSE
+                IPRPTYP(NPRPS+IOP) = IOPTYP
+             ENDIF
           ENDDO
           DO IEXC = 1,KEXCNV(ISYM)
 C
 C           Length of wave vector
 C 
             FAC=OMEGA(IEXC,ISYM)/CVAL
+            DO IOP = 1,2
+               WRITE(PRPNAM(NPRPS+IOP)(9:16),'(A4,I4)') '_exc',IEXC
+               DO IMAT = 1,NMAT
+                  FACPRP(IMAT,NPRPS+IOP) = PBUF(IMAT,IOP)/FAC
+               ENDDO
+            ENDDO
 C
+C           Debug output
+C
+            DO IOP = 1,2
+              WRITE(6,*) PRPNAM(NPRPS+IOP),IPRPTYP(NPRPS+IOP)
+              DO IMAT = 1,NMAT
+                II = IPRPLBL(IMAT,NPRPS+IOP)
+                WRITE(6,*) LABINT(II),FACPRP(IMAT,NPRPS+IOP)
+              ENDDO
+            ENDDO
+C     
 C           Generate integrals
 C
             DO I = 1,3
-              ORIGIN(I) = FAC*WAVVEC(I)
+              WAVEVEC(I) = FAC*UWAVE(I)
             ENDDO
-CTROND
-            WRITE(6,*) '*Wave..',REP(IREP),IEXC,OMEGA(IEXC,ISYM),FAC,
-     &          (ORIGIN(J),J=1,3)
             CALL PR1IN2(WORK(KFREE),LFREE,ONEINT,INTTYP,
-     &           NCOMP,INTREP,ANTI,SQUARE,DUMMY,LABINT,TRIANG,
+     &           NCOMP2,INTREP,ANTI,SQUARE,DUMMY,LABINT,TRIANG,
      &           TRASPH,.FALSE.,SOLVNT,0,0,DUMMY,
      &           0,NBAST,NELMNT,IPRINT,DOINT,.FALSE.)
             IF(IPRINT.GE.5) THEN
-              DO ICOMP = 1,NCOMP
+              DO ICOMP = 1,NCOMP2
                 WRITE(6,*) '* Integrals of ',LABINT(ICOMP),
      &            '. Symmetry: ',REP(INTREP(NCOMP))
                 CALL OUTPAK(ONEINT(1,ICOMP),NBAST,1,LUPRI)
@@ -150,7 +182,8 @@ C     Memory deallocation
       deallocate(ONEINT)
       deallocate(LABINT)
       deallocate(INTREP)
-C
+      deallocate(IPSYM2INT)
+C     
       RETURN
       END
 C

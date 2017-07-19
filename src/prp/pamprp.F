@@ -9225,7 +9225,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DEF_BED(IBED,II,IPRINT)
+      SUBROUTINE DEF_BEDCOMP(IBED,NCOMP,IPRINT)
 C***********************************************************************
 C
 C     Define integrals for full light-matter interaction
@@ -9234,7 +9234,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-      PARAMETER (D2 = 2.0D0)      
+      PARAMETER (DP5=0.5D0)
 #include "dcbgen.h"
 #include "dgroup.h"
       CHARACTER PNAME*16      
@@ -9258,7 +9258,7 @@ C     x-components
 C
       IPTYP  = 2
       NPCOMP = MCMP(IPTYP)
-      PFAC   = CVAL/D2
+      PFAC   = DP5
       DO ICOMP = 1,NCOMP
           II = II + 1
           PNAME='BEDintX_'//LABINT(ICOMP)
@@ -9266,11 +9266,11 @@ C
      &            IBED(II),ISYXPR,ITRXPR,IPRINT)
       ENDDO
 C
-C     x-components
+C     y-components
 C
       IPTYP  = 3
       NPCOMP = MCMP(IPTYP)
-      PFAC   = CVAL/D2
+      PFAC   = DP5
       DO ICOMP = 1,NCOMP
           II = II + 1
           PNAME='BEDintY_'//LABINT(ICOMP)
@@ -9278,11 +9278,11 @@ C
      &            IBED(II),ISYXPR,ITRXPR,IPRINT)
       ENDDO
 C
-C     x-components
+C     z-components
 C
       IPTYP  = 4
       NPCOMP = MCMP(IPTYP)
-      PFAC   = CVAL/D2
+      PFAC   = DP5
       DO ICOMP = 1,NCOMP
           II = II + 1
           PNAME='BEDintZ_'//LABINT(ICOMP)
@@ -9296,7 +9296,78 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ANGLES(THETA,PHI,CHI)
+      SUBROUTINE DEF_BED(IBED,NCOMP,UPOL,IPRINT)
+C***********************************************************************
+C
+C     Define integrals for full light-matter interaction
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      PARAMETER (DP5=0.5D0)
+#include "dcbgen.h"
+#include "dgroup.h"
+      CHARACTER PNAME*16      
+      character (len=8),  allocatable   :: LABINT(:)
+      integer, allocatable              :: INTREP(:)
+      DIMENSION IBED(*)
+C      
+C     
+C     Allocate placeholders for integral labels and irreps 
+C
+      allocate(LABINT(8))
+      allocate(INTREP(8))
+C
+C     Get number of scalar integrals (NCOMP) and integral labels (and symmetries)
+C     NCOMP is an even number; first half is real part, then imaginary part      
+C
+      CALL CEXPINT_INFO(NCOMP,INTREP,LABINT)
+      II = 0
+C
+C     x-components
+C
+      IPTYP  = 2
+      NPCOMP = MCMP(IPTYP)
+      PFAC   = DP5
+      DO ICOMP = 1,NCOMP
+          II = II + 1
+          PNAME='BEDintX_'//LABINT(ICOMP)
+          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,LABINT(ICOMP),
+     &            IBED(II),ISYXPR,ITRXPR,IPRINT)
+      ENDDO
+C
+C     y-components
+C
+      IPTYP  = 3
+      NPCOMP = MCMP(IPTYP)
+      PFAC   = DP5
+      DO ICOMP = 1,NCOMP
+          II = II + 1
+          PNAME='BEDintY_'//LABINT(ICOMP)
+          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,LABINT(ICOMP),
+     &            IBED(II),ISYXPR,ITRXPR,IPRINT)
+      ENDDO
+C
+C     z-components
+C
+      IPTYP  = 4
+      NPCOMP = MCMP(IPTYP)
+      PFAC   = DP5
+      DO ICOMP = 1,NCOMP
+          II = II + 1
+          PNAME='BEDintZ_'//LABINT(ICOMP)
+          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,LABINT(ICOMP),
+     &            IBED(II),ISYXPR,ITRXPR,IPRINT)
+      ENDDO
+C     Memory deallocation
+      deallocate(LABINT)
+      deallocate(INTREP)
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE ANGLES(THETA,PHI,CHI,UWAVE,UPOL)
 C***********************************************************************
 C     Define orientation of wave and polarization vector,
 C     based on angles read in degrees.
@@ -9317,25 +9388,25 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      FAC = ACOS(-1.0D0)/180.0D0
-      THETA2 = THETA*FAC
-      PHI2   = PHI*FAC
-      CHI2   = CHI*FAC
-      DKX    = SIN(THETA2)*COS(PHI2)
-      DKY    = SIN(THETA2)*SIN(PHI2)
-      DKZ    = COS(THETA2)
-      W1     = COS(CHI2)
-      W2     = SIN(CHI2)
-      DEX    = W1*COS(THETA2)*COS(PHI2) - W2*SIN(PHI2)
-      DEY    = W1*COS(THETA2)*SIN(PHI2) + W2*COS(PHI2)
-      DEZ    = -W1*SIN(THETA2)
+      DIMENSION UWAVE(3),UPOL(3)
+      FAC      = ACOS(-1.0D0)/180.0D0
+      THETA2   = THETA*FAC
+      PHI2     = PHI*FAC
+      CHI2     = CHI*FAC
+      UWAVE(1) = SIN(THETA2)*COS(PHI2)
+      UWAVE(2) = SIN(THETA2)*SIN(PHI2)
+      UWAVE(3) = COS(THETA2)
+      W1       = COS(CHI2)
+      W2       = SIN(CHI2)
+      UPOL(1)  = W1*COS(THETA2)*COS(PHI2) - W2*SIN(PHI2)
+      UPOL(2)  = W1*COS(THETA2)*SIN(PHI2) + W2*COS(PHI2)
+      UPOL(3)  =-W1*SIN(THETA2)
 C.....Output section
       WRITE(LUPRI,*) '* Wave unit vector:'
       WRITE(LUPRI,'(A1,3(F7.4,A1))')
-     &     '(',DKX,',',DKY,',',DKZ,')'
+     &     '(',UWAVE(1),',',UWAVE(2),',',UWAVE(3),')'
       WRITE(LUPRI,*) '* Polarization vector:'
       WRITE(LUPRI,'(A1,3(F7.4,A1))')
-     &     '(',DEX,',',DEY,',',DEZ,')'
+     &     '(',UPOL(1),',',UPOL(2),',',UPOL(3),')'
       RETURN
       END
-      

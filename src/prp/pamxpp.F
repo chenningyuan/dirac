@@ -630,14 +630,16 @@ C&&&& ACTIVE: String of active orbitals in XPP module
                GO TO 100
  20            CONTINUE
 C&&&& BED: Full light-matter interaction
-               CALL DEF_BED(LPPAPU(NPPAPT+1),NCOMP,IPRXPP)
-               NPPAPT = NPPAPT + NCOMP
-               IF((NPPAPT+NCOMP).GT.MAXLPP) THEN
-                 WRITE(LUPRI,'(A,A)') 'XPPINP: Pointer array LPP',
-     &           'APU out of bounds for BED integrals '
-                 WRITE(LUPRI,'(A,I5)') 
-     &           'Increase MAXEXP to ',(NPPAPT+NCOMP)
-               ENDIF
+               READ(LUCMD,*) W1,W2,W3
+               CALL ANGLES(W1,W2,W3,UWAVE,UPOL)
+C               CALL DEF_BEDCOMP(LPPAPU(NPPAPT+1),NCOMP,IPRXPP)
+C               NPPAPT = NPPAPT + 3*NCOMP
+C               IF((NPPAPT+NCOMP).GT.MAXLPP) THEN
+C                 WRITE(LUPRI,'(A,A)') 'XPPINP: Pointer array LPP',
+C     &           'APU out of bounds for BED integrals '
+C                 WRITE(LUPRI,'(A,I5)') 
+C     &           'Increase MAXEXP to ',(NPPAPT+NCOMP)
+C               ENDIF
                GO TO 100
  21            CONTINUE
 C&&& ITRINT: Number of iterations before adding SL- and SS-integrals
@@ -654,7 +656,7 @@ C&&&& REAXVC: Read solution vectors from file XPPFIL
  24            CONTINUE
 C&&&& ANGLES: Read the angles (\Theta,\Phi,\Chi) which defines the experimental configuration
                READ(LUCMD,*) W1,W2,W3
-               CALL ANGLES(W1,W2,W3)
+               CALL ANGLES(W1,W2,W3,UWAVE,UPOL)
                GO TO 100
  25            CONTINUE
 C&&&& RESFAC:  New trial vectors only for parameters whose residual
@@ -2234,8 +2236,8 @@ C
 C
 C     NANNA: Call bed integrals
 C
-C      CALL GET_BED(OMEGA,ISSYM,IPRXPP,WORK,KFREE,LFREE)
-      CALL BEDLEB(OMEGA,ISSYM,IPRXPP,WORK,KFREE,LFREE)
+      CALL GET_BED(OMEGA,ISSYM,IPRXPP,WORK,KFREE,LFREE)
+C      CALL BEDLEB(OMEGA,ISSYM,IPRXPP,WORK,KFREE,LFREE)
       RETURN
       END
 

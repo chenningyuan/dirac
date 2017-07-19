@@ -1901,7 +1901,7 @@ C
 
          ELSE IF (INTTYP == 106) THEN
            CALL CEXPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
-     &          CORPX,CORPY,CORPZ,ORIGIN,EXPPI,NOPTYP,WORK,LWORK)
+     &          CORPX,CORPY,CORPZ,EXPPI,NOPTYP,WORK,LWORK)
 C
 C        rp integrals, RM1H3  i c Q_MN < r (alpha.p) >
 C        --------------------------------------------------
@@ -5859,7 +5859,7 @@ C
 C/* Deck cexpint */
 C***********************************************************************      
       SUBROUTINE CEXPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
-     &     CORPX,CORPY,CORPZ,ORIGIN,EXPPI,NINTS,WORK,LWORK)
+     &     CORPX,CORPY,CORPZ,EXPPI,NINTS,WORK,LWORK)
 C***********************************************************************      
 C
 C     nhl 2016 -- calculates integrals over exp(ikr)
@@ -5875,17 +5875,17 @@ C
 #include "maxaqn.h"
 #include "onecom.h"             !contains KCKTAB
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
-     &     SHLINT(KCKTAB,NINTS),ORIGIN(3),WORK(LWORK)
+     &     SHLINT(KCKTAB,NINTS),WORK(LWORK)
 #include "memint.h"
       CALL MEMGET2('REAL','TMPARR',KTMP,8*KCKTAB,WORK,KFREE,LFREE)
       CALL CEXPIN1(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
-     &     CORPX,CORPY,CORPZ,ORIGIN,EXPPI,NINTS,WORK(KTMP))
+     &     CORPX,CORPY,CORPZ,EXPPI,NINTS,WORK(KTMP))
       CALL MEMREL('CEXPINT',WORK,KWORK,KTMP,KFREE,LFREE)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
       SUBROUTINE CEXPIN1(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
-     &     CORPX,CORPY,CORPZ,ORIGIN,EXPPI,NINTS,TMPARR)
+     &     CORPX,CORPY,CORPZ,EXPPI,NINTS,TMPARR)
 C***********************************************************************      
 C
 C     nhl 2016 -- calculates integrals over exp(ikr)
@@ -5902,7 +5902,7 @@ C***********************************************************************
 #include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, DP25 = 0.25D0, D1 = 1.0D0, NIREP = 8)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
-     &     SHLINT(KCKTAB,NINTS),ORIGIN(3),TMPARR(KCKTAB,8)
+     &     SHLINT(KCKTAB,NINTS),TMPARR(KCKTAB,8)
       INTEGER T, U, V, NINTS
 #include "onecom.h" !contains KCKTAB
 #include "lmns.h"
@@ -5910,13 +5910,15 @@ C***********************************************************************
 #include "inforb.h"
 #include "pgroup.h"
 #include "dgroup.h"
+#include "dcbwav.h"      
+C
 #include "ibtfun.h"
 C
       CALL DZERO(TMPARR,KCKTAB*8)
 C     
-      DKX = ORIGIN(1)
-      DKY = ORIGIN(2)
-      DKZ = ORIGIN(3)
+      DKX  = WAVEVEC(1)
+      DKY  = WAVEVEC(2)
+      DKZ  = WAVEVEC(3)
       FACX = SHGTF/EXP(DP25*EXPPI*DKX**2)
       FACY = SHGTF/EXP(DP25*EXPPI*DKY**2)
       FACZ = SHGTF/EXP(DP25*EXPPI*DKZ**2)
