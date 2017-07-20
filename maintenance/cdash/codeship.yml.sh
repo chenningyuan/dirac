@@ -74,7 +74,7 @@ doxygen --version
 git submodule update --init --recursive
 
 # Do the 32-bit Integer build
-python ./setup --cmake-options="-D BUILDNAME='gnu.i4-codeship-ci -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_UNIT_TESTS=ON'" build_codeship_i4
+python ./setup --cmake-options="-D BUILDNAME='gnu.i4-codeship-ci' -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_UNIT_TESTS=ON" build_codeship_i4
 cd build_codeship_i4
 ctest -D ExperimentalConfigure
 ctest -j $N_PROC -D ExperimentalBuild
