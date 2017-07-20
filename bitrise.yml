@@ -1,16 +1,14 @@
 ##
 ## Simple DIRAC buildup configuration file for the bitrise CI service https://www.bitrise.io
 ##
+## the free plan is for 10 min/build, therefore do only the compilation...
+##
 ##
 
 build:
   steps:
     - install-packages:
         packages: "git gcc g++ gfortran make libblas-dev liblapack-dev libfreetype6-dev zlib1g-dev doxygen python-pip"
-
-    - pip-install:
-        requirements_file: ""
-        packages_list: "matplotlib sphinx==1.2.3 sphinxcontrib-bibtex sphinx_rtd_theme hieroglyph"
 
     - script:
         name: install the newest cmake form their webpage
@@ -45,27 +43,9 @@ build:
           ## ldd : show dependencies
           ldd dirac.x
           ## true : this script continues even if some of tests fail
-          ctest -j 8  -D ExperimentalTest -L short || true
+          #ctest -j 8  -D ExperimentalTest -L short || true
           ## deliver buildup status to CDash-web
           ctest -D ExperimentalSubmit
-
-    - script:
-        name: build sphinx documentation
-        code: |
-          cd build
-          make html
-
-    - script:
-        name: build doxygen documentation
-        code: |
-          cd build
-          make doxygen
-
-    - script:
-        name: build slides
-        code: |
-          cd build
-          make slides
 
 ## turn off email notifications
 notifications:
