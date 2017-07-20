@@ -7,7 +7,7 @@ box: nodesource/trusty
 build:
   steps:
     - install-packages:
-        packages: "git gcc g++ gfortran make libblas-dev liblapack-dev libfreetype6-dev zlib1g-dev doxygen"
+        packages: "git gcc g++ gfortran make libblas-dev liblapack-dev libfreetype6-dev zlib1g-dev doxygen python-pip"
 
     - pip-install:
         requirements_file: ""
