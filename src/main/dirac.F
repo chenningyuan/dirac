@@ -1282,6 +1282,12 @@ C
          call quit('ERROR: Pelib lib not available')
 #endif
 
+      ELSE IF (ITASK .EQ. 13) THEN
+C
+C        start the Polarization propagator node
+C
+         CALL POLPRP_NODE()
+
       ELSE
 C
 C        Unknown task. Abort execution.

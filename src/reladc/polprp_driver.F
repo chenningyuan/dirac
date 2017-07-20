@@ -78,11 +78,11 @@
 !  to the corresponding POLPRP section.
 !
 !
-!     ITASK = 12 for parallel POLPRP
+!     ITASK = 13 for parallel POLPRP
 !
 !     print*, '+++++ in PAMPOLPRP, parcal: ',PARCAL
 !     print*, '+++++ trying to wake up slaves.'
-      IF (PARCAL) CALL DIRAC_PARCTL( 12 )
+      IF (PARCAL) CALL DIRAC_PARCTL( 13 )
 
 #if defined (VAR_MPI)
       IF (NMPROC .GT. 1) THEN
