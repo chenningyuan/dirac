@@ -24,7 +24,8 @@ C
 #include "dgroup.h"
 #include "dcbxpp.h"
 #include "orgcom.h"
-#include "dcbxpr.h"      
+#include "dcbxpr.h"
+#include "dcbprl.h"            
 #include "dcbwav.h"
 C#include "cbiher.h"
       LOGICAL DOINT(2,2)
@@ -46,14 +47,19 @@ C
 C
 C     Integral directives
 C     
-      CALL PR1DIR('CXIKR   ',INTTYP,NCOMP2,INTREP,
+      CALL PR1DIR('CXIKR   ',INTTYP,NPRPINT,INTREP,
      &            ANTI,SQUARE,DUMMY,LABINT,TRIANG,TRASPH,
      &            SOLVNT,0,.FALSE.,0,NBAST,NELMNT,IPRINT)
-C     NCOMP2 is by construction an even number,
+C     NPRPINT is by construction an even number,
 C     the first and second halfs corresponding to the real (eq. 44) and imaginary parts (eq. 45)
-      DO ICOMP = 1,NCOMP2
-          WRITE(6,*) LABINT(ICOMP),'. Symmetry: ',
-     &               REP(INTREP(ICOMP))
+      IF(NPRPLBL+NPRPINT.GT.MAXPRPLBL) THEN
+        CALL QUIT('GET_BED:Redimension MAXPRPLBL !')
+      ENDIF
+      DO ICOMP = 1,NPRPINT
+        PRPLBL (NPRPLBL+ICOMP) = LABINT(ICOMP)
+        IPRLREP(NPRPLBL+ICOMP) = INTREP(ICOMP)
+        PDOINT (NPRPLBL+ICOMP) = '0++0'
+        IPRLTYP(NPRPLBL+ICOMP) =  1        
       ENDDO
       WRITE(6,*) 'NBAST= ',NBAST,'  NELMNT= ',NELMNT
       DOINT(1,1)=.FALSE.
@@ -61,7 +67,7 @@ C     the first and second halfs corresponding to the real (eq. 44) and imaginar
       DOINT(1,2)=.TRUE.
       DOINT(2,2)=.FALSE.
 C.....allocate array for holding integrals (on lower triangular form)
-      allocate(ONEINT(NELMNT,NCOMP2))
+      allocate(ONEINT(NELMNT,NPRPINT))
       IORDER=0
       NPQUAD=0
 C
@@ -82,7 +88,7 @@ C
 C      
 C     Find what symmetries are available
 C
-      NCOMP=NCOMP2/2
+      NCOMP=NPRPINT/2
       ITAG=9
       LABINT(ITAG) = 'inactive'
       CALL ICOPY(2*NBSYM,ITAG,0,IPSYM2INT,1)
@@ -118,11 +124,11 @@ C
             IAREP = JM4REP(IAIND)
             IBSYM = IBTXOR(IAREP,IREP)+1
             DO IOP = 1,2
-              IPRPLBL(IMAT,NPRPS+IOP) = IPSYM2INT(IBSYM,IOP)
-              IF(IPRPLBL(IMAT,NPRPS+IOP).EQ.ITAG) THEN
+              IF(IPSYM2INT(IBSYM,IOP).EQ.ITAG) THEN
                 PBUF(IMAT,IOP) = D0
               ELSE
                 PBUF(IMAT,IOP) = DP5*UPOL(IMAT)
+                IPRPLBL(IMAT,NPRPS+IOP) = IPSYM2INT(IBSYM,IOP)+NPRPLBL
               ENDIF
             ENDDO
           ENDDO
@@ -142,7 +148,7 @@ C
             FAC=OMEGA(IEXC,ISYM)/CVAL
             DO IOP = 1,2
                WRITE(PRPNAM(NPRPS+IOP)(9:16),'(A4,I4)') '_exc',IEXC
-               DO IMAT = 1,NMAT
+                 DO IMAT = 1,NMAT
                   FACPRP(IMAT,NPRPS+IOP) = PBUF(IMAT,IOP)/FAC
                ENDDO
             ENDDO
@@ -150,11 +156,15 @@ C
 C           Debug output
 C
             DO IOP = 1,2
-              WRITE(6,*) PRPNAM(NPRPS+IOP),IPRPTYP(NPRPS+IOP)
-              DO IMAT = 1,NMAT
-                II = IPRPLBL(IMAT,NPRPS+IOP)
-                WRITE(6,*) LABINT(II),FACPRP(IMAT,NPRPS+IOP)
-              ENDDO
+               WRITE(6,*) PRPNAM(NPRPS+IOP),IPRPTYP(NPRPS+IOP)
+               IF(IPRPTYP(NPRPS+IOP).EQ.-1) THEN
+                 WRITE(6,*) ' - skipped'
+               ELSE
+                 DO IMAT = 1,NMAT
+                   II = IPRPLBL(IMAT,NPRPS+IOP)
+                   WRITE(6,*) PRPLBL(II),FACPRP(IMAT,NPRPS+IOP)
+                 ENDDO
+               ENDIF
             ENDDO
 C     
 C           Generate integrals
@@ -163,11 +173,11 @@ C
               WAVEVEC(I) = FAC*UWAVE(I)
             ENDDO
             CALL PR1IN2(WORK(KFREE),LFREE,ONEINT,INTTYP,
-     &           NCOMP2,INTREP,ANTI,SQUARE,DUMMY,LABINT,TRIANG,
+     &           NPRPINT,INTREP,ANTI,SQUARE,DUMMY,LABINT,TRIANG,
      &           TRASPH,.FALSE.,SOLVNT,0,0,DUMMY,
      &           0,NBAST,NELMNT,IPRINT,DOINT,.FALSE.)
             IF(IPRINT.GE.5) THEN
-              DO ICOMP = 1,NCOMP2
+              DO ICOMP = 1,NPRPINT
                 WRITE(6,*) '* Integrals of ',LABINT(ICOMP),
      &            '. Symmetry: ',REP(INTREP(NCOMP))
                 CALL OUTPAK(ONEINT(1,ICOMP),NBAST,1,LUPRI)

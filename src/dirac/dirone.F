@@ -845,7 +845,8 @@ C     Nuclear attraction integrals
 C     ============================
 C
       IOP = IPMOLFLD
-      CALL PRPMAO(LU1INT,IOP,.TRUE.,NNBBASX,FTRI,OP1INT,FIRST,IPRHAM)
+      CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.TRUE.,NNBBASX,FTRI,OP1INT,
+     &            FIRST,IPRHAM)
       IF (SMLV1C) THEN
          CALL CATCORR(FTRI,DUMMY,DUMMY,WORK,LFREE,IPRHAM)
          CALL PR1CEX1 (FTRI,FIRST,FOCK,WORK,KFREE,LFREE,IPRHAM)
@@ -861,7 +862,7 @@ C       the one-electron matrix prior to the scf...
          call fde_get_import_info(itmp)
          if (itmp%im_vemb) then
             IOP = IPVEMB0
-            CALL PRPMAO(LU1INT,IOP,.TRUE.,NNBBASX,FTRI,
+            CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.TRUE.,NNBBASX,FTRI,
      &      OP1INT,FIRST,IPRHAM)
          endif
       ENDIF
@@ -873,7 +874,7 @@ C
 CMI/Febr.2006 For TWOCOMP=.true. this is the exact nonrelativistic kinetic energy
 C
       IOP = IPKINERG
-      CALL PRPMAO(LU1INT,IOP,.TRUE.,NNBBASX,FTRI,
+      CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.TRUE.,NNBBASX,FTRI,
      &            OP1INT,FIRST,IPRHAM)
 
 C
@@ -884,7 +885,7 @@ CMI/Febr.2006 Beta matrix is not initialized in OP1INI for the two-component mod
 
       IF (.NOT.TWOCOMP) THEN
         IOP = IPBETAMT
-        CALL PRPMAO(LU1INT,IOP,.TRUE.,NNBBASX,FTRI,
+        CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.TRUE.,NNBBASX,FTRI,
      &              OP1INT,FIRST,IPRHAM)
       ENDIF
 
@@ -901,8 +902,8 @@ C     ...skip Fock-matrices for now ...
 C.........Fock matrix
           TOBE = .TRUE.
         ELSE
-          CALL PRPMAO(LU1INT,IOP,.TRUE.,NNBBASX,FTRI,OP1INT,FIRST,
-     &                IPRHAM)
+           CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.TRUE.,NNBBASX,FTRI,
+     &                 OP1INT,FIRST,IPRHAM)
         ENDIF
       ENDDO
 C
@@ -921,7 +922,7 @@ c
       if (ECPCALC) then
          allocate(op1int(n2bbasx))
          IOP = IPSOPP
-         CALL PRPMAO(LU1INT,IOP,.FALSE.,N2BBASX,FOCK,
+         CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.FALSE.,N2BBASX,FOCK,
      &          OP1INT,FIRST,IPRHAM)
          deallocate(op1int)
       endif
@@ -967,7 +968,8 @@ C
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpmao */
-      SUBROUTINE PRPMAO(LU1INT,IOP,TRIANG,NDIM,PMAT,OP1INT,FIRST,IPRINT)
+      SUBROUTINE PRPMAO(LU1INT,IOP,ONFILE,PRPINT,TRIANG,NDIM,PMAT,
+     &                  OP1INT,FIRST,IPRINT)
 C*****************************************************************************
 C
 C     Generates  lower triangular/square  matrix of one-electron integrals
@@ -998,8 +1000,8 @@ C
 #include "dcbprl.h"
 C
       CHARACTER MXFORM*6, FMT*6, RTNLBL(2)*8,JCHR*1
-      LOGICAL FIRST(*), DOINT(4), TRIANG
-      DIMENSION PMAT(NDIM,*),OP1INT(NDIM),IDOINT(4)
+      LOGICAL FIRST(*), DOINT(4), TRIANG, ONFILE
+      DIMENSION PMAT(NDIM,*),OP1INT(NDIM),PRPINT(NDIM,*),IDOINT(4)
 C
 C     Extract information about property
 C     ==================================
@@ -1031,7 +1033,7 @@ C
       NCMP   = MCMP(IOPTYP)
       DO 10 I = 1,NCMP
         PFAC  = FACPRP(I,IOP)
-        IF(ABS(PFAC).LT.PTOL) GOTO 10
+        IF(ABS(PFAC).LT.PTOL) GOTO 10 ! Skip this component of factor is very small
 C
 C       Extract information about component
 C
@@ -1120,9 +1122,14 @@ C       Is this a LL+SS operator (IC=1) or a LS+SL operator (IC=2) ?
         ENDIF
 C =============================================================
 C               Get integrals from the AOPROPER file
-C =============================================================
-        CALL PRPREA(LU1INT,PRPLBL(KLBL),RTNLBL,PDOINT(KLBL),
-     &              OP1INT,NDIM,IPRINT)
+C     =============================================================
+        IF(ONFILE) THEN
+          CALL PRPREA(LU1INT,PRPLBL(KLBL),RTNLBL,PDOINT(KLBL),
+     &          OP1INT,NDIM,IPRINT)
+        ELSE
+           IINT=KLBL-LU1INT  
+           CALL DCOPY(NDIM,PRPINT(1,IINT),1,OP1INT,1)
+        ENDIF  
         IF(IPRINT.GE.10) THEN
           WRITE(LUPRI,'(A,I3)')
      &    '* Integrals from AOPROPER, size of matrix ',NTBAS(0)
@@ -1367,14 +1374,14 @@ C     ... do resort PBUF to DIRAC sorting
         IF (TRIANGULAR) THEN
           IDIMENS=NNBBASX
           CALL MEMGET('REAL',KPBUF  ,NZ*IDIMENS,WORK,KFREE,LFREE)
-          CALL PRPMAO(LU1INT,INDXPR,TRIANGULAR,IDIMENS,
+          CALL PRPMAO(LU1INT,INDXPR,.TRUE.,WORK,TRIANGULAR,IDIMENS,
      &                WORK(KPBUF),PRPAO,FIRST,IPRINT2)
           CALL TRI2SQ(PRPAO,WORK(KPBUF),FIRST,IREP,ITIM)
           CALL MEMREL('PRPMSAO.tri2sq',WORK,KWORK,KPBUF,KFREE,LFREE)
         ELSE
           IDIMENS=N2BBASX
           CALL MEMGET('REAL',KONEIN,N2BBASX,WORK,KFREE,LFREE)
-          CALL PRPMAO(LU1INT,INDXPR,TRIANGULAR,IDIMENS,
+          CALL PRPMAO(LU1INT,INDXPR,.TRUE.,WORK,TRIANGULAR,IDIMENS,
      &                PRPAO,WORK(KONEIN),FIRST,IPRINT2)
           CALL MEMREL('PRPMSAO.prpmao',WORK,KWORK,KONEIN,KFREE,LFREE)
           DO IZ = 1,NZ
@@ -2011,14 +2018,14 @@ C     Beta matrix
 C     ===========
 C
       IOP = IPBETAMT
-      CALL PRPMAO(LU1INT,IOP,.TRUE.,NNBBASX,FTRI,
+      CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.TRUE.,NNBBASX,FTRI,
      &            OP1INT,FIRST,IPRHAM)
 C
 C     Kinetic energy
 C     ==============
 C
       IOP = IPKINERG
-      CALL PRPMAO(LU1INT,IOP,.TRUE.,NNBBASX,FTRI,
+      CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.TRUE.,NNBBASX,FTRI,
      &            OP1INT,FIRST,IPRHAM)
 C
       CLOSE(LU1INT,STATUS = 'KEEP')
@@ -6120,7 +6127,7 @@ C     quantize on.
 C
       FIRST = .TRUE.
       IOP =  IPANGMOM
-      CALL PRPMAO(LU1INT,IOP,.TRUE.,NNBBASX,FTRI,
+      CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.TRUE.,NNBBASX,FTRI,
      &         OP1INT,FIRST,IPRHAM)
       CALL DSPTSI(NTBAS(0),FTRI,FOCK)
 C
@@ -6129,7 +6136,7 @@ C     ===============================================
 C
       FIRST = .TRUE.
       IOP =  IPSPNMOM
-      CALL PRPMAO(LU1INT,IOP,.TRUE.,NNBBASX,FTRI,
+      CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.TRUE.,NNBBASX,FTRI,
      &        OP1INT,FIRST,IPRHAM)
       CALL MEMGET('REAL',KBUF,N2BBASX,WORK,KFREE,LFREE)
       CALL DSPTSI(NTBAS(0),FTRI,WORK(KBUF))

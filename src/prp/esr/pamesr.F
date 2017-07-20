@@ -1712,9 +1712,8 @@ C
 C     Totally symmetric operator ==> proceed
 C
       CALL LSET(NZ,.TRUE.,FIRST)
-CMI   CALL PRPMAO(LU1INT,INDXPR,PTRI,OP1INT,FIRST,WORK,LWORK,IPRINT)
-      CALL PRPMAO(LU1INT,INDXPR,NNBBASX,
-     &             PTRI,OP1INT,FIRST,WORK,LWORK,IPRINT)
+      CALL PRPMAO(LU1INT,INDXPR,.TRUE.,WORK,.TRUE.,NNBBASX,
+     &             PTRI,OP1INT,FIRST,IPRINT)
 C
 C     Get expectation value, using only the matrices containing
 C     integrals
