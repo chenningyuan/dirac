@@ -114,6 +114,9 @@ Tutorials and walkthrus
   :doc:`An introduction to complex reponse <tutorials/properties/complex_response>` |
   :doc:`Magnetizabilities with London Atomic Orbitals <tutorials/lao_magnetizabilities/lao-magnetizabilities>`
 
+* **Spectroscopy:**
+  :doc:`X-ray spectroscopy: water <tutorials/dft/water_Kedge>`
+
 * **Analysis:**
   :doc:`Projection analysis <tutorials/analysis/projection_analysis>`
 
@@ -204,6 +207,9 @@ Developers
   :doc:`Further development <programmers/further_development>` |
   :doc:`Good Fortran 90 practices <programmers/good_fortran_90_practices>` |
   :doc:`FAQ <programmers/faq>`
+
+* **Basis sets:**
+  :doc:`Testing basis sets in DIRAC <programmers/test_basis_sets>` 
 
 * **Moving code between machines:**
   :doc:`Transfering uncommitted code <programmers/transfering_uncommitted_code>`

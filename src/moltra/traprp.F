@@ -457,16 +457,16 @@ C The code is to be debugged. The MOLTRA part is probably OK but the
 C phase transformed integrals do not give the correct answer when fed
 C into RELCCSD. If you use this transformation with another code, you 
 C can proceed at your own risk by uncommenting the stop.
+C Stop now when we find non-symmetric operators.
 !
 ! LV second amendment: we do not stop here, since it should work.
 !
-C Stop now when we find non-symmetric operators.
 C  
 ! LV                IF (IQ.NE.IQS)
 ! LV      &          CALL QUIT ("This does not work with spinfree !")
-!               if (iq.eq.1)
-!    &          write (*,'(7i4,f20.10)') i,j,iqi,iqj,iqprp,iq,iqs,
-!    &                                   propmo(ii1,jj1,iz)
+! LV            if (iq.eq.1)
+! LV &          write (*,'(7i4,f20.10)') i,j,iqi,iqj,iqprp,iq,iqs,
+! LV &                                   propmo(ii1,jj1,iz)
 C
 C               Scale the matrix element
                 PRPME = PROPMO(II1,JJ1,IZ) * IQS

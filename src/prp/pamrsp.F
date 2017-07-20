@@ -1105,7 +1105,7 @@ C
 C
       IND = NZRED
 C
-C     Orbtial (e-e) type trial vector
+C     Orbital (e-e) type trial vector
 C     -------------------------------
 C
       IF(NESIM.GT.0) THEN

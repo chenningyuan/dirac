@@ -5,11 +5,30 @@
 
 New features:
 - New and numerically stable procedure for elimination/freezing of orbitals at SCF level
+- .MVOFAC for \*KRMC
+- Added the RPF-4Z and aug-RPF-4Z basis sets for f-elements to the already existing files with sets for s, p and d elements. Deleted the aug-RPF-3Z set as that was not an official set.
   
 (Do not change anything below this text on the master branch,
 the lines below should only be changed on the release branch.)
 
 -----------------------------------------------------------------------------------------------------
+16.1 (???)
+-----------------
+
+New features:
+- updated basis_dalton/ with basis set updates in the Dalton distribution:
+ - fix of errors in Ahlrichs-pVDZ (several diffuse exponents a factor 10 too big)
+ - fix of errors for 2. row atoms in aug-cc-pCV5Z
+ - added many atoms to aug-cc-PVTZ_J
+ - added many Frank Jensen "pc" type basis sets
+ - added Turbomole "def2" type basis sets
+
+New defaults:
+- .SKIPEP is now default for KR-MCSCF, new keyword .WITHEP to include e-p rotations
+
+Performance improvements:
+- restored integral screening behavior from DIRAC15
+
 
 16.0 (2016-12-12)
 -----------------

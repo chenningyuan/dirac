@@ -432,7 +432,6 @@ C
             CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,
      &                  IBEIG,TOTERG,14,WORK,KFREE,LFREE)
          ENDIF
-         print *,' PAMTRA: CMO read from DFCOEF...'
       END IF
 C
 C     Select the set of MOs that we need for core transformation
@@ -654,6 +653,7 @@ C
      &              NSTR(IFRP,2,2),NSTR(IFRP,1,2))
         NSTR(IFRP,0,2)   = NSTR(IFRP,1,2) + NSTR(IFRP,2,2)
       ENDDO
+      
 C
 C     If energy threshold, truncate virtual space
 C     ===========================================
@@ -714,8 +714,15 @@ C
       Allocate (CMO(N2BBASXQ))
       Allocate (EIG(NORBT))
       Allocate (IBEIG(NORBT))
-      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,
-     &            ESCF,14,WORK,KFREE,LFREE)
+      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+      IF (.NOT.TOBE) THEN
+         WRITE(LUPRI,'(/A)') 'MO coefficient file not present'
+         CALL QUIT('PSIMP2: No MO coefficient file !')
+      ELSE
+         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PSIMP2')
+         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,
+     &               IBEIG,ESCF,14,WORK,KFREE,LFREE)
+      ENDIF
       CLOSE(LUCOEF,STATUS='KEEP')
       WRITE(LUPRI,'(A,F18.10,/)')
      &  'Coefficients imported. Total DHF energy:', ESCF

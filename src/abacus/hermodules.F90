@@ -461,6 +461,7 @@
           NSYMOP=0
           ADDSYM=.TRUE.
           KASYM(:,:)=' '
+          KCHARG=0
 
           DO
             read(tmp_file,*,iostat=ios) str
@@ -482,10 +483,18 @@
 !           The options and suboptions are flattened out in one if then else if construction.
             IF(section(1)=='**MOLECULE') THEN
 
+!             add molecular charge. it is perhaps redundant to have *CHARGE and .CHARGE but i'm not
+!             sure we will not want to add other keywords in the menu later on - plus this keeps in 
+!             line with the other fields that always place keywords (=section(3)) under single-star
+!             menus 
+              IF (section(2)=='*CHARGE'.AND.                            &
+     &            section(3)=='.CHARGE') THEN
+                      read(tmp_file,*,iostat=ios) KCHARG 
+
 !            Symmetry specification (Only NOSYM supported, otherwise automatic recognition)
-              IF (section(2)=='*SYMMETRY'.AND.                          &
-     &            section(3)=='.NOSYM') THEN
-                      ADDSYM=.FALSE.
+              ELSE IF (section(2)=='*SYMMETRY'.AND.                     &
+     &                 section(3)=='.NOSYM') THEN
+                       ADDSYM=.FALSE.
 
 !             Basis specification
               ELSE IF (section(2)=='*BASIS'.AND.                        &
@@ -1203,6 +1212,8 @@
 !     ***** Process symmetry input data *****
 !     ***************************************
 !
+!     Fix a problem with ADDSYM for some D(2) cases
+      CALL FIX_DUPLICATE_GENERATORS (NSYMOP,KASYM)
       CALL SYMINP(NSYMOP,KASYM,IFXYZ, CLASS)
 
 !

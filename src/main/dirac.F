@@ -599,102 +599,81 @@ C
          NGASSP(1,1) = NAELEC
          NGASSP(2,1) = NAELEC
       ELSE IF (CISELECT .EQ. 'ESRCI') THEN
-C        ... do CI for ESR spin-polarization /hjaaj nov 2002
+C        ... do CI for ESR spin-polarization and correlation /hjaaj
 
-C        ... set CI program in charge
+C        ... set which CI program in charge
          OPT_CIPROGRAM = 'GASCIP'
 C
          OPT_THR_CVEC = THR_CVEC_ESR
          THRPCI   = THRPCI_ESR
 C
-C        Set up core (NCSH_ESR), valence (NVSH_ESR) and virtual (secondary, NSSH_ESR) orbital shells.
+C        Set up orbital shells for GASCIP
 C
-         NCSH_ESRT = 0
-         NVSH_ESRT = 0
-         NSSH_ESRT = 0
-         NELECT    = 0
-         DO I = 1,NFSYM
+         NRAS1_ELEC = 0
+         DO J = 1,NFSYM
 
-           IF (NCSH_ESR(I) < 0) THEN
-              CALL QUIT('ERROR: NCSH_ESR(I) < 0')
-           END IF
-           IF (NVSH_ESR(I) < 0) THEN
-              CALL QUIT('ERROR: NVSH_ESR(I) < 0')
-           END IF
-           IF (NSSH_ESR(I) < 0) THEN
-              CALL QUIT('ERROR: NSSH_ESR(I) < 0')
-           END IF
+            DO I = NGAS_CIESR(1),1,-1
+               NISH(J) = NISH(J) - NGSH_CIESR(J,I,1)
+               NRAS1_ELEC = NRAS1_ELEC + 2*NGSH_CIESR(J,I,1)
+            END DO
 
-           NISH(I)   = NISH(I)   - NCSH_ESR(I) - NVSH_ESR(I)
-           NSSH(I)   = NSSH(I)   - NSSH_ESR(I)
+            DO I = 1,NGAS_CIESR(3)
+               NSSH(J) = NSSH(J) - NGSH_CIESR(J,I,3)
+            END DO
 
-           NCSH_ESRT = NCSH_ESRT + NCSH_ESR(I)
-           NVSH_ESRT = NVSH_ESRT + NVSH_ESR(I)
-           NSSH_ESRT = NSSH_ESRT + NSSH_ESR(I)
+         END DO ! J = 1, NFSYM
 
-           NELEC(I)  = NELEC(I) - 2*NCSH_ESR(I) - 2*NVSH_ESR(I)
-           NELECT    = NELECT   + NELEC(I)
+         NAELEC = NAELEC + NRAS1_ELEC
 
-         END DO
-         NGAS12_ELEC = 2*NCSH_ESRT + 2*NVSH_ESRT
-         NAELEC      = NAELEC + NGAS12_ELEC
-C
-C        initialize min and max accumulated no. of electrons in each gas space
-C
+C        Set min and max accumulated no. of electrons in each gas space
+
          CALL IZERO(NGSHT,MXGAS)
-         NGAS_DC = 0
-         IF (NCSH_ESRT > 0) THEN
-            NGAS_DC = NGAS_DC + 1
-            NGASSP(1,NGAS_DC) = MAX(0,2*NCSH_ESRT-LVL_CIESR(0))
-            NGASSP(2,NGAS_DC) = 2*NCSH_ESRT
-            DO I = 1,NFSYM
-               NGSH(I,NGAS_DC) = NCSH_ESR(I)
-               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NCSH_ESR(I)
-            END DO
-         END IF
-         IF (NVSH_ESRT > 0) THEN
-            NGAS_DC = NGAS_DC + 1
-            NGASSP(1,NGAS_DC) = MAX(0,NGAS12_ELEC-LVL_CIESR(1))
-            NGASSP(2,NGAS_DC) = NGAS12_ELEC
-            DO I = 1,NFSYM
-               NGSH(I,NGAS_DC) = NVSH_ESR(I)
-               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NVSH_ESR(I)
-            END DO
-         END IF
 
-C            (Cxx are preparation for RESOLVE instead of FULLCI
-C             in the DHF open shells)
-Cxx      XELEC = D2*NCSH_ESRT
-         IF (NOPEN .NE. 1) THEN
-            write (lupri,*) 'ERROR ESRCI: NOPEN is not 1, it is: ',NOPEN
-            call quit ('ESRCI: sorry, NOPEN is not 1')
-         END IF
-         DO J = 1, NOPEN
+         NGAS_DC = 0
+         NAELEC_ACCUM = 0
+
+         DO I = NGAS_CIESR(1),1,-1 ! RAS1-GAS subspaces
             NGAS_DC = NGAS_DC + 1
-Cxx         XELEC = XELEC + D2*DF(J)*NGSHT(J)
-Cxx         NGASSP(1,NGAS_DC) = NINT(XELEC)
-Cxx         NGASSP(2,NGAS_DC) = NINT(XELEC)
-            NGASSP(1,NGAS_DC) = MAX(0,NAELEC-LVL_CIESR(2))
-            NGASSP(2,NGAS_DC) = NAELEC
-            DO I = 1,NFSYM
-Cxx            NGSH(I,NGAS_DC) = NACSH(I,J)
-               NGSH(I,NGAS_DC) = NASH(I)
-               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NASH(I)
+            DO J = 1,NFSYM
+               NAELEC_ACCUM    = NAELEC_ACCUM + 2*NGSH_CIESR(J,I,1)
+               NGSH(J,NGAS_DC) = NGSH_CIESR(J,I,1)
+               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NGSH_CIESR(J,I,1)
             END DO
+
+            NGASSP(1,NGAS_DC) = MAX(0, NAELEC_ACCUM-LVL_CIESR(I,1)) ! subtract max number of holes in this RAS1-GAS space
+            NGASSP(2,NGAS_DC) = NAELEC_ACCUM
          END DO
-         IF (NSSH_ESRT .GT. 0) THEN
-            NGAS_DC = NGAS_DC + 1
+
+         NGAS_DC = NGAS_DC + 1 ! RAS2-GAS space
+         DO J = 1,NFSYM
+            NGSH(J,NGAS_DC) = NASH(J)
+            NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NASH(I)
+         END DO
+
+         IF (NGAS_CIESR(3) > 0) THEN
+            NGASSP(1,NGAS_DC) = MAX(0,NAELEC-LVL_CIESR(1,3))
+         ELSE ! no RAS3-GAS orbitals, i.e. last GAS space
             NGASSP(1,NGAS_DC) = NAELEC
-            NGASSP(2,NGAS_DC) = NAELEC
-            DO I = 1,NFSYM
-               NGSH(I,NGAS_DC) = NSSH_ESR(I)
-               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NSSH_ESR(I)
-            END DO
-         ELSE
-            NGASSP(1,NGAS_DC) = NAELEC ! reset open shell minimum, not possible with NAELEC-LVL_CIESR(2) if not virt gas space
          END IF
-C
-C        reset number of active orbitals
+         NGASSP(2,NGAS_DC) = NAELEC
+
+         DO I = 1,NGAS_CIESR(3) ! RAS3-GAS subspaces
+            NGAS_DC = NGAS_DC + 1
+            DO J = 1,NFSYM
+               NGSH(J,NGAS_DC) = NGSH_CIESR(J,I,3)
+               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NGSH_CIESR(J,I,3)
+            END DO
+
+            IF (I < NGAS_CIESR(3)) THEN
+               NGASSP(1,NGAS_DC) = MAX(0, NAELEC-LVL_CIESR(I+1,3)) ! subtract max number of electrons in next RAS3-GAS space
+            ELSE ! last RAS1-GAS space
+               NGASSP(1,NGAS_DC) = NAELEC
+            END IF
+            NGASSP(2,NGAS_DC) = NAELEC
+         END DO
+
+C        Reset number of active orbitals
+
          DO I = 1,NFSYM
             NASH(I) = 0
             DO J = 1,NGAS_DC
@@ -1124,6 +1103,7 @@ C***********************************************************************
      &          process_two_electron_integrals_4comp_slaves,            &
      &          process_two_electron_integrals_2comp_slaves 
 #endif
+
       implicit none
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -1294,9 +1274,14 @@ C
 
       ELSE IF (ITASK .EQ. 12) THEN
 C
-C        start POLPRP calculation.
+C        start the PELIB slave.
 C
-         CALL POLPRP_NODE()
+#ifdef HAS_PELIB
+         CALL PELIB_IFC_SLAVE()
+#else
+         call quit('ERROR: Pelib lib not available')
+#endif
+
       ELSE
 C
 C        Unknown task. Abort execution.

@@ -11,5 +11,5 @@
 !     and then rebuild the program using the command "make".
 !
       INTEGER MXSHEL, MXPRIM, MXCORB, MXORBT
-      PARAMETER (MXSHEL = 3000,MXPRIM = 12000, MXCORB = 10000,          &
+      PARAMETER (MXSHEL = 15000,MXPRIM = 30000, MXCORB = 30000,          &
      &           MXORBT = MXCORB*(MXCORB+1)/2)

@@ -46,7 +46,10 @@ C***********************************************************************
 #ifdef HAS_PCMSOLVER      
       use pcmmod_cfg
       use pcm_write
-#endif      
+#endif
+#ifdef HAS_PELIB
+      use pe_variables, only: peqm
+#endif
       use x2cmod_cfg
 #ifdef MOD_AOOSOC
       use atomic_oo_order_so_correction_cfg
@@ -203,8 +206,14 @@ C
       OPEN(LUCMD,FILE='DIRAC.INP')
       CALL HAMINP(WORK,LWORK)
       CLOSE(LUCMD)
-
-
+C
+C     Initialize PE library
+C
+#ifdef HAS_PELIB
+      IF (PEQM) THEN
+        CALL PELIB_IFC_INIT()
+      END IF
+#endif
 !     this is the new input reader
 !     contains:
 !     *DFT
@@ -708,6 +717,8 @@ C
     2 CONTINUE
 #if defined (VAR_MPI)
       CALL PRLINP(WORD)
+#else
+      CALL QUIT('*PARALLEL in input, but this is a non_MPI version')
 #endif
         GO TO 200
     3 CONTINUE
@@ -4789,6 +4800,9 @@ C***********************************************************************
 #ifdef HAS_PCMSOLVER      
       use pcmmod_cfg
 #endif
+#ifdef HAS_PELIB
+      use pe_variables, only: peqm
+#endif
 #ifdef MOD_AOOSOC
       use atomic_oo_order_so_correction_cfg
 #endif
@@ -4796,7 +4810,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 68,NDIR = 11)
+      PARAMETER (NTABLE = 68,NDIR = 12)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include "maxaqn.h"
@@ -4825,7 +4839,7 @@ C
       SAVE SETFUN
       DATA TABDIR /'*END OF','*SOLVEN','*DFT   ','*CAP   ',
      &             '*FDE   ','*AMFI  ','*X2C   ','*ECP   ',
-     &             '*PCM   ','*aooSOC','*PCMSOL'/
+     &             '*PCM   ','*aooSOC','*PEQM  ','*PCMSOL'/
 
 !                    1         2         3         4
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
@@ -4860,7 +4874,7 @@ C
 !                   61        62        63        64
      &            '.ECP   ','.X2CMMF','.DOSSSS','.MDIRAC',
 !                   65        66        67        68
-     &            '.TRSMIX','.JZOUT ','xxxxxxx','xxxxxxx'/
+     &            '.TRSMIX','.PEQM  ','.JZOUT','xxxxxxx'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -4974,6 +4988,10 @@ C ... get integral flags in advance
       IGTINT    = IBTAND(INTGEN/8,1)
 !mi:  by default do not allow mixing T+ with T-
       TRS_MIX=.FALSE.
+!jmho: deafult - no polarizable embedding
+#ifdef HAS_PELIB
+      PEQM = .FALSE.
+#endif
 !mi:  by default, do not save Jz_MO matrices
       WRITE_Jz_MATRIX = .FALSE.
 
@@ -5558,14 +5576,26 @@ C&&& MDIRAC: use modified Dirac Hamiltonian as implemented in INTEREST integral 
             GO TO 100
 C..TODO: check for inconsistencies and add stops
   165     CONTINUE
-!&&&& .TRSMIX : allow mixing T+ Hamiltonian with added T- perturbation operaror
+!&&&& .TRSMIX : allow mixing T+ Hamiltonian with added T- perturbation operator
             TRS_MIX = .TRUE.
-            GO TO 100
+          GO TO 100
+!&&&& .PEQM: polarizable embedding
   166     CONTINUE
-!!&&&& .JZOUT : save Jz_MO matrices into formatted files for analysis
-            WRITE_Jz_MATRIX = .TRUE.
+#ifdef HAS_PELIB
+            IF (LEVYLE) THEN 
+               CALL QUIT('PE libray and Levy-Leblond'//
+     &         ' Hamiltonian have not been tested => Therefore QUIT!')
+            END IF 
+            WRITE(LUPRI,*) 'PE library will be used.'
+            PEQM = .TRUE.
+#else
+            WRITE(LUPRI,*) 'ERROR for .PEQM: PE library not enabled.'
+            CALL QUIT('ERROR for .PEQM: PE library not enabled.')
+#endif
             GO TO 100
   167     CONTINUE
+!!&&&& .JZOUT : save Jz_MO matrices into formatted files for analysis
+            WRITE_Jz_MATRIX = .TRUE.
           GO TO 100
   168     CONTINUE
           GO TO 100
@@ -6474,6 +6504,13 @@ C
           ENDDO
         ENDIF
       ENDIF
+#ifdef HAS_PELIB
+      IF (PEQM) THEN
+        WRITE(LUPRI,'(1X,A,A)')
+     &  '* Environment is modeled using polarizable embedding scheme'//
+     &  ' (PE library)'
+      END IF
+#endif
       IF (NOINPUT) GOTO 500
 C
 C     Process input for various program sections
@@ -6485,7 +6522,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10,11), I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11,12), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -6558,8 +6595,16 @@ CMI  ... reading input routine for AMFI+RELSCF
       ! by new input reader
         call move_to_next_star(word, lucmd)
         go to 200
+!       *PEQM
+   11 CONTINUE
+#ifdef HAS_PELIB
+        CALL PELIB_IFC_INPUT_READER(WORD)
+#else
+        CALL QUIT('ERROR for *PEQM: PE library not enabled.')
+#endif
+        GO TO 200
 !       *PCMSOL
-   11 continue
+   12 continue
       ! this is a cheat so that *PCMSOL section is parsed
       ! by new input reader
         call move_to_next_star(word, lucmd)
