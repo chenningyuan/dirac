@@ -968,14 +968,14 @@ C
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpmao */
-      SUBROUTINE PRPMAO(IOPT,IOP,ONFILE,PRPINT,TRIANG,NDIM,PMAT,
+      SUBROUTINE PRPMAO(LU1INT,IOP,ONFILE,PRPINT,TRIANG,NDIM,PMAT,
      &                  OP1INT,FIRST,IPRINT)
 C*****************************************************************************
 C
 C     Generates  lower triangular/square  matrix of one-electron integrals
 C     corresponding to property IOP of COMMON block XCBPRP
 C
-C     On input:  IOPT    - ONFILE: lu of integral file; CACHE: offset
+C     On input:  LU1INT    - ONFILE: lu of integral file; CACHE: offset
 C                IOP     - index of the property
 C                NDIM    - dimension of array (either triangular or square)
 C                FIRST   - array, must be set to true
@@ -1124,10 +1124,10 @@ C =============================================================
 C               Get integrals from the AOPROPER file
 C     =============================================================
         IF(ONFILE) THEN
-          CALL PRPREA(IOPT,PRPLBL(KLBL),RTNLBL,PDOINT(KLBL),
+          CALL PRPREA(LU1INT,PRPLBL(KLBL),RTNLBL,PDOINT(KLBL),
      &          OP1INT,NDIM,IPRINT)
         ELSE
-           IINT=KLBL-IOPT  
+           IINT=KLBL-NPRPLBL
            CALL DCOPY(NDIM,PRPINT(1,IINT),1,OP1INT,1)
         ENDIF  
         IF(IPRINT.GE.10) THEN
@@ -1241,7 +1241,8 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE PRPMSAO(INDXPR,PRPAO,FIRST,WORK,LWORK,IPRINT)
+      SUBROUTINE PRPMSAO(INDXPR,PRPAO,ONFILE,PRPINT,FIRST,
+     &                   WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
 C     PURPOSE: Get 2c/4c SA-AO matrix of one-electron operator
@@ -1282,8 +1283,8 @@ C
 #include "dcbprl.h"
 #include "dummy.h"
 C
-      LOGICAL TRIANGULAR,TOBE,YESPCTRA, MAKEPCTRA,FIRST(NZ)
-      DIMENSION PRPAO(N2BBASX,NZ),WORK(LWORK)
+      LOGICAL TRIANGULAR,TOBE,YESPCTRA, MAKEPCTRA,FIRST(NZ),ONFILE
+      DIMENSION PRPAO(N2BBASX,NZ),PRPINT(*),WORK(LWORK)
       CHARACTER PRPLABEL*8, prplab_x2c*12, NUMSTR*4
 C
       CALL QENTER('PRPMSAO')
@@ -1292,12 +1293,12 @@ C
 C     Extract symmetry information - ISYM, IREP, ITIM
 C     =============================
 C
-      IOPTYP = IPRPTYP(INDXPR)
-      ISYM = IPRPSYM(INDXPR)
-      IREP = ISYM - 1
-      ITIM = IPRPTIM(INDXPR)
-      IPRINT2 = MAX(IPRPRP,IPRINT)
-      KLBL = IPRPLBL(1,INDXPR)
+      IOPTYP     = IPRPTYP(INDXPR)
+      ISYM       = IPRPSYM(INDXPR)
+      IREP       = ISYM - 1
+      ITIM       = IPRPTIM(INDXPR)
+      IPRINT2    = MAX(IPRPRP,IPRINT)
+      KLBL       = IPRPLBL(1,INDXPR)
       TRIANGULAR = ABS(IPRLTYP(KLBL)).EQ.1
       IF (IPRINT2.GE.10) THEN
        CALL HEADER('*** Output from PRPMSAO ***',-1)
@@ -1321,6 +1322,7 @@ C     X2C module: picture change transformed property integrals reside
 C                 on file X2CMAT
 C ========================================================================================
       IF((TWOCOMP.AND.BSS).or.x2c) THEN
+        IF(ONFILE) CALL QUIT('PRPMSAO:2c not implemented yet !')
         IPRINT2 = MAX(IPRHAM,IPRINT)
         IF (N2BBASXQ.NE.(NTBAS(1)*NTBAS(1)*NZ)) THEN
           write(lupri,*) 'PRPMSAO error output:'
@@ -1374,14 +1376,14 @@ C     ... do resort PBUF to DIRAC sorting
         IF (TRIANGULAR) THEN
           IDIMENS=NNBBASX
           CALL MEMGET('REAL',KPBUF  ,NZ*IDIMENS,WORK,KFREE,LFREE)
-          CALL PRPMAO(LU1INT,INDXPR,.TRUE.,WORK,TRIANGULAR,IDIMENS,
+          CALL PRPMAO(LU1INT,INDXPR,ONFILE,PRPINT,TRIANGULAR,IDIMENS,
      &                WORK(KPBUF),PRPAO,FIRST,IPRINT2)
           CALL TRI2SQ(PRPAO,WORK(KPBUF),FIRST,IREP,ITIM)
           CALL MEMREL('PRPMSAO.tri2sq',WORK,KWORK,KPBUF,KFREE,LFREE)
         ELSE
           IDIMENS=N2BBASX
           CALL MEMGET('REAL',KONEIN,N2BBASX,WORK,KFREE,LFREE)
-          CALL PRPMAO(LU1INT,INDXPR,.TRUE.,WORK,TRIANGULAR,IDIMENS,
+          CALL PRPMAO(LU1INT,INDXPR,ONFILE,PRPINT,TRIANGULAR,IDIMENS,
      &                PRPAO,WORK(KONEIN),FIRST,IPRINT2)
           CALL MEMREL('PRPMSAO.prpmao',WORK,KWORK,KONEIN,KFREE,LFREE)
           DO IZ = 1,NZ
@@ -1395,6 +1397,7 @@ C     ... do resort PBUF to DIRAC sorting
         ENDDO
 CMI   ----  Do the picture change transformation -----
         IF (BSS) THEN
+         IF(ONFILE) CALL QUIT('PRPMSAO: BSS not implemented yet !')
          IPRINT1 = MAX(IPRHAM,IPRPRP)
 C     ... decide if the picture change transformation is needed
          CALL DECIDEPCTR(YESPCTRA,PRPNAM(INDXPR),IPRINT1)

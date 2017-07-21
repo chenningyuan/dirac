@@ -527,7 +527,8 @@ C
 C
 C     Get property matrix in AO-basis
 C     ===============================
-      CALL PRPMSAO(INDXPR,PRPAO,FIRST,WORK(KFREE),LFREE,IPRINT)
+      CALL PRPMSAO(INDXPR,PRPAO,.TRUE.,WORK,FIRST,
+     &             WORK(KFREE),LFREE,IPRINT)
 C .. control print out of 2c/4c-component
 C    operator in the SA-AO basis
       IF (IPRINT.GE.15) THEN

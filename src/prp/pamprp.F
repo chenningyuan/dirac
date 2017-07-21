@@ -8310,7 +8310,8 @@ C       ... get the operator either in the full four-component form,
 C       .... or already in  the picture change transformed shape
 C       ...   (occupying in fact only  LL block of the four-component matrix)
         INDXPR = I
-        CALL PRPMSAO(INDXPR,VMAT,WORK(KFIRST),WORK(KFREE),LFREE,IPRINT)   
+        CALL PRPMSAO(INDXPR,VMAT,.TRUE.,WORK,WORK(KFIRST),
+     &               WORK(KFREE),LFREE,IPRINT)   
 C       .. extract LL block from VMAT into WORK(KPRLL)
         CALL EXTRLL(IREP,VMAT,WORK(KPRLL),IPRINT)
 C      ... save WORK(KPRLL) into BSSMAT under label P2C_xxxx, with xxxx=INDXPR

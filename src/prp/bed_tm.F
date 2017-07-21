@@ -31,7 +31,7 @@ C#include "cbiher.h"
       LOGICAL DOINT(2,2)
       INTEGER LWORK, NCOMP, NOPTP
       DIMENSION OMEGA(MAXEXC,NBSYM),ISSYM(MAXEXC,NBSYM),WORK(*)
-      real(8), allocatable              :: PRPINT(:,:),op1int(:)
+      real(8), allocatable              :: PRPINT(:,:)
       character (len=8),  allocatable   :: LABINT(:)
       integer, allocatable              :: INTREP(:),IPSYM2INT(:,:)
       real(8)                           :: PBUF(3,2)
@@ -72,8 +72,7 @@ C     the first and second halfs corresponding to the real (eq. 44) and imaginar
       DOINT(2,2)=.FALSE.
 C.....allocate array for holding integrals (on lower triangular form)
       allocate(PRPINT(NELMNT,NPRPINT))
-      allocate(OP1INT(NELMNT))
-      allocate(PMAT(NELMNT,NZ))
+      allocate(PMAT(N2BBASX,NZ))
       IORDER=0
       NPQUAD=0
 C
@@ -186,20 +185,19 @@ C
      &           NPRPINT,INTREP,ANTI,SQUARE,DUMMY,LABINT,TRIANG,
      &           TRASPH,.FALSE.,SOLVNT,0,0,DUMMY,
      &           0,NBAST,NELMNT,IPRINT,DOINT,.FALSE.)
-CTROND            IF(IPRINT.GE.5) THEN
+            IF(IPRINT.GE.5) THEN
               DO ICOMP = 1,NPRPINT
                 WRITE(6,*) '* Integrals of ',LABINT(ICOMP),
      &            '. Symmetry: ',REP(INTREP(NCOMP))
                 CALL OUTPAK(PRPINT(1,ICOMP),NBAST,1,LUPRI)
               ENDDO
-CTROND            ENDIF
+            ENDIF
             DO IOP = 1,2
               INDXPR = NPRPS+IOP
               IF(IPRPTYP(INDXPR).NE.-1) THEN
-                 CALL LSET(NZ,.TRUE.,FIRST)
-                 CALL PRPMAO(NPRPLBL,INDXPR,.FALSE.,PRPINT,TRIANG,
-     &                       NELMNT,PMAT,OP1INT,FIRST,10)
-C     &                  OP1INT,FIRST,IPRINT)
+                 CALL PRPMSAO(INDXPR,PMAT,.FALSE.,PRPINT,FIRST,
+C     &                   WORK(KFREE),LFREE,IPRINT)
+     &                WORK(KFREE),LFREE,10)
               ENDIF
             ENDDO
  30       CONTINUE
@@ -207,8 +205,8 @@ C     &                  OP1INT,FIRST,IPRINT)
  10   CONTINUE
 C
 C     Memory deallocation
+      deallocate(PMAT)
       deallocate(PRPINT)
-      deallocate(OP1INT)
       deallocate(LABINT)
       deallocate(INTREP)
       deallocate(IPSYM2INT)
