@@ -1069,7 +1069,8 @@ C
 C     BED: Beyond Electric Dipole Approximation
 C
       IF (DOBED) THEN
-        CALL GETBEDF(OMEGA,ISSYM,WORK,KFREE,LFREE)
+         CALL GETBEDF(OMEGA,ISSYM,WORK(KCMO),WORK(KIBRP),
+     &                WORK,KFREE,LFREE)
       ENDIF
       CALL MEMREL('GETPPF.end',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('GETPPF')
@@ -1197,7 +1198,7 @@ C         Get gradient
 C         ------------
 C
           IF (KTIMOP .EQ. ITIM) THEN
-             CALL GPGET(INDPRA,GPO,JXOP,NXPAR,
+             CALL GPGET(INDPRA,GPO,.TRUE.,WORK,JXOP,NXPAR,
      &                  CMO,IBEIG,NBTYP,WORK,KFREE,LFREE,IPRXPP)
           END IF
 C

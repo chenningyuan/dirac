@@ -1764,7 +1764,7 @@ C         Get gradient
 C         ------------
 C
           IF (KTIMOP .EQ. ITIM) THEN
-             CALL GPGET(INDPRA,GPO,JXOP,NXPAR,
+             CALL GPGET(INDPRA,GPO,.TRUE.,WORK,JXOP,NXPAR,
      &                  CMO,IBEIG,NBTYP,WORK,KFREE,LFREE,IPRXLR)
           END IF
 C

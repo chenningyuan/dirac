@@ -1,5 +1,5 @@
 C  /* Deck getbedf */                                                  
-      SUBROUTINE GETBEDF(OMEGA,ISSYM,WORK,KFREE,LFREE)
+      SUBROUTINE GETBEDF(OMEGA,ISSYM,CMO,IBEIG,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Build representation matrix of full light-matter interaction
@@ -13,7 +13,8 @@ C        Hans Jørgen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (201
 C                               
 C                                                                      
 C***********************************************************************
-C
+      use orbital_rotation_indices
+C     
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -30,13 +31,13 @@ C
 #include "dcbwav.h"
 C#include "cbiher.h"
       LOGICAL DOINT(2,2)
-      INTEGER LWORK, NCOMP, NOPTP
-      DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC),WORK(*)
+      INTEGER LWORK, NCOMP, NOPTP,IBEIG(*)
+      DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC),CMO(*),WORK(*)
       real(8), allocatable              :: PRPINT(:,:)
       character (len=8),  allocatable   :: LABINT(:)
       integer, allocatable              :: INTREP(:),IPSYM2INT(:,:)
       real(8)                           :: PBUF(3,2)
-      real(8), allocatable              :: PMAT(:,:)
+      real(8), allocatable              :: GPOE(:,:),GPOP(:,:)
       logical, allocatable              :: first(:)
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
 C
@@ -74,7 +75,6 @@ C     the first and second halfs corresponding to the real (eq. 44) and imaginar
       DOINT(2,2)=.FALSE.
 C.....allocate array for holding integrals (on lower triangular form)
       allocate(PRPINT(NELMNT,NPRPINT))
-      allocate(PMAT(N2BBASX,NZ))
       IORDER=0
       NPQUAD=0
 C      
@@ -134,6 +134,8 @@ C
 C
 C     Find contributions to property matrix
 C
+      IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,2))
+      IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,2))      
       DO 10 IEXC = 1,KEXCNV(JSYMOP)
         IF(ABS(OMEGA(IEXC)).LT.1.0D-3) THEN
            WRITE(LUPRI,*)
@@ -182,20 +184,31 @@ C
             CALL OUTPAK(PRPINT(1,ICOMP),NBAST,1,LUPRI)
           ENDDO
         ENDIF
-        DO IOP = 1,2
-          INDXPR = NPRPS+IOP
-          IF(IPRPTYP(INDXPR).NE.-1) THEN
-C            CALL PRPMAT(INDXPR,JSYMOP,PRPMO,ONFILE,PRPINT,CMO,
+C
+C     Gradient - orbital (e-e) part
+C     ====================================
+        IF(NZXOPE.GT.0) THEN       
+          DO IOP = 1,2
+            INDXPR = NPRPS+IOP
+            IF(IPRPTYP(INDXPR).NE.-1) THEN
+               CALL GPGET(INDXPR,GPOE(1,IOP),.FALSE.,PRPINT,
+     &              get_orbital_rotation_indices_pp(),
+     &              NZXOPE,CMO,IBEIG,JBENDX,
+C     &              WORK,KFREE,LFREE,IPRXPP)
+     &              WORK,KFREE,LFREE,4)
+C     CALL PRPMAT(INDXPR,JSYMOP,PRPMO,ONFILE,PRPINT,CMO,
 C     &              IBEIG,IPCMO,NPMO,WORK,KFREE,LFREE,10)
-             CALL PRPMSAO(INDXPR,PMAT,.FALSE.,PRPINT,FIRST,
+C             CALL PRPMSAO(INDXPR,PMAT,.FALSE.,PRPINT,FIRST,
 C     &               WORK(KFREE),LFREE,IPRINT)
-     &               WORK(KFREE),LFREE,10)             
-          ENDIF
-        ENDDO
+C     &               WORK(KFREE),LFREE,10)             
+            ENDIF
+          ENDDO
+        ENDIF
  10   CONTINUE
 C
 C     Memory deallocation
-      deallocate(PMAT)
+      IF(NZXOPE.GT.0) deallocate(GPOE)
+      IF(NZXOPP.GT.0) deallocate(GPOP)      
       deallocate(PRPINT)
       deallocate(LABINT)
       deallocate(INTREP)

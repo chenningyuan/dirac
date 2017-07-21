@@ -631,8 +631,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gpget */
-      SUBROUTINE GPGET(INDXPR,GP,JXPAR,NXPAR,CMO,IBEIG,ITYP,
-     &                 WORK,KFREE,LFREE,IPRINT)
+      SUBROUTINE GPGET(INDXPR,GP,ONFILE,PRPINT,JXPAR,NXPAR,CMO,
+     &                 IBEIG,ITYP,WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
 C     Construct orbital part of gradient for property INDXPR 
@@ -668,7 +668,8 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbibn.h"
-      DIMENSION GP(*),CMO(*),IBEIG(*),JXPAR(*),WORK(*)
+       LOGICAL ONFILE
+       DIMENSION GP(*),CMO(*),IBEIG(*),JXPAR(*),PRPINT(*),WORK(*)
 C
       CALL QENTER('GPGET')
       KFRSAV = KFREE
@@ -678,8 +679,8 @@ C
       IF(ITYP.EQ.JBENDX) THEN
         IF(NXPAR.GE.0) THEN
           CALL MEMGET('REAL',KPRPMO,N2BBASXQ,WORK,KFREE,LFREE)
-          CALL GPOGET(INDXPR,GP,JXPAR,NXPAR,WORK(KPRPMO),CMO,
-     &                IBEIG,WORK,KFREE,LFREE,IPRINT)
+          CALL GPOGET(INDXPR,GP,ONFILE,PRPINT,JXPAR,NXPAR,WORK(KPRPMO),
+     &                CMO,IBEIG,WORK,KFREE,LFREE,IPRINT)
           CALL MEMREL('GPGET.e-e',WORK,1,KFRSAV,KFREE,LFREE)
 #ifndef ANALYZE_PROPERTY_GRADIENT
           IF(IPRINT.GE.4) THEN
@@ -697,8 +698,8 @@ C
       ELSEIF(ITYP.EQ.JBPNDX) THEN
         IF(NXPAR.GE.0) THEN
           CALL MEMGET('REAL',KPRPMO,N2BBASXQ,WORK,KFREE,LFREE)
-          CALL GPOGET(INDXPR,GP,JXPAR,NXPAR,WORK(KPRPMO),CMO,
-     &                IBEIG,WORK,KFREE,LFREE,IPRINT)
+          CALL GPOGET(INDXPR,GP,ONFILE,PRPINT,JXPAR,NXPAR,WORK(KPRPMO),
+     &                CMO,IBEIG,WORK,KFREE,LFREE,IPRINT)
           CALL MEMREL('GPGET.e-p',WORK,1,KFRSAV,KFREE,LFREE)
           IF(IPRINT.GE.4) THEN
             CALL HEADER('Output from GPGET',-1)
@@ -726,7 +727,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck GPOGET */
-      SUBROUTINE GPOGET(INDXPR,GPO,JXOP,NXOP,PRPMO,CMO,
+      SUBROUTINE GPOGET(INDXPR,GPO,ONFILE,PRPINT,JXOP,NXOP,PRPMO,CMO,
      &                  IBEIG,WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
@@ -764,8 +765,9 @@ C
 #include "mxcent.h"
 #include "dcbprp.h"
 C
+      LOGICAL ONFILE
       DIMENSION GPO(*),PRPMO(NORBT,NORBT,NZ),CMO(*),
-     &          IBEIG(*),JXOP(NXOP),WORK(*)
+     &          IBEIG(*),JXOP(NXOP),PRPINT(*),WORK(*)
 C
       CALL QENTER('GPOGET')
 C
@@ -781,7 +783,7 @@ C
         CALL GETDHB(IB,FAC2LO,PRPMO,INDXPR,IOPSY,
      &                    WORK,KFREE,LFREE,IPRINT)
       ELSE
-        CALL PRPMAT(INDXPR,IOPSY,PRPMO,.TRUE.,WORK,CMO,IBEIG,ICMOQ,NORB,
+        CALL PRPMAT(INDXPR,IOPSY,PRPMO,ONFILE,PRPINT,CMO,IBEIG,ICMOQ,NORB,
      &            WORK,KFREE,LFREE,IPRINT)
       ENDIF
 
