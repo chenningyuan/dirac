@@ -5573,10 +5573,6 @@ C..TODO: check for inconsistencies and add stops
 !&&&& .PEQM: polarizable embedding
   166     CONTINUE
 #ifdef HAS_PELIB
-            IF (LEVYLE) THEN 
-               CALL QUIT('PE libray and Levy-Leblond'//
-     &         ' Hamiltonian have not been tested => Therefore QUIT!')
-            END IF 
             WRITE(LUPRI,*) 'PE library will be used.'
             PEQM = .TRUE.
 #else

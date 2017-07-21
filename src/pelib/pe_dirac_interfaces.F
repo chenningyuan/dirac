@@ -80,6 +80,7 @@
         implicit none
 #include "priunit.h"
 #include "dcbbas.h"
+#include "dcbham.h"
         real*8, dimension(n2bbasx), intent(in) :: dmat
         real*8, dimension(n2bbasx), intent(inout) :: fmat
         real*8, intent(out) :: tot_nrg, el_nrg
@@ -111,6 +112,8 @@
         end do
         ! SS block
         do i = ntbas(1) + 1, ntbas(0)
+        ! no need for SS if Levy-Leblond
+           if (levyle) exit
            do j = 1, i
               if (j > ntbas(1)) then
                  if (i == j) then
@@ -153,6 +156,7 @@
         end do
         ! SS block
         do i = ntbas(1) + 1, ntbas(0)
+           if (levyle) exit
            do j = 1, i
               if (j > ntbas(1)) then
                   if (i == j) then
@@ -178,6 +182,7 @@
       subroutine pelib_ifc_energy(dmat)
         use polarizable_embedding, only: pe_master
 #include "dcbbas.h"
+#include "dcbham.h"
         real*8, dimension(n2bbasx), intent(in) :: dmat
         integer :: i, j, k, l
         real*8, dimension(1) :: nrg
@@ -200,6 +205,7 @@
         end do
         ! SS block
         do i = ntbas(1) + 1, ntbas(0)
+           if (levyle) exit
            do j = 1, i
               if (j > ntbas(1)) then
                  if (i == j) then
@@ -348,6 +354,7 @@
 
       end subroutine pelib_ifc_response
       subroutine pelib_ifc_london(fckmats)
+! edh modify for DIRAC 
           use polarizable_embedding, only: pe_master
 #include "inforb.h"
           real*8, dimension(3*n2basx), intent(out) :: fckmats
