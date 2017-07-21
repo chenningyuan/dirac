@@ -1,4 +1,4 @@
-C  /* Deck get_bed */                                                  C
+C  /* Deck get_bed */                                                  
       SUBROUTINE GET_BED(OMEGA,ISSYM,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -31,19 +31,22 @@ C#include "cbiher.h"
       LOGICAL DOINT(2,2)
       INTEGER LWORK, NCOMP, NOPTP
       DIMENSION OMEGA(MAXEXC,NBSYM),ISSYM(MAXEXC,NBSYM),WORK(*)
-      real(8), allocatable              :: ONEINT(:,:)
+      real(8), allocatable              :: PRPINT(:,:),op1int(:)
       character (len=8),  allocatable   :: LABINT(:)
       integer, allocatable              :: INTREP(:),IPSYM2INT(:,:)
       real(8)                           :: PBUF(3,2)
+      real(8), allocatable              :: PMAT(:,:)
+      logical, allocatable              :: first(:)
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
 C
 #include "ibtfun.h"
 C     
 C     Allocate placeholders for integral labels and irreps 
 C
-      allocate(LABINT(9))
+      allocate(LABINT(8))
       allocate(INTREP(8))
       allocate(IPSYM2INT(NBSYM,2))
+      allocate(first(nz))
 C
 C     Integral directives
 C     
@@ -62,22 +65,25 @@ C     the first and second halfs corresponding to the real (eq. 44) and imaginar
         IPRLTYP(NPRPLBL+ICOMP) =  1        
       ENDDO
       WRITE(6,*) 'NBAST= ',NBAST,'  NELMNT= ',NELMNT
+      WRITE(6,*) 'Offsets ppr/lbl:',NPRPS,NPRPLBL,NZ
       DOINT(1,1)=.FALSE.
       DOINT(2,1)=.TRUE.
       DOINT(1,2)=.TRUE.
       DOINT(2,2)=.FALSE.
 C.....allocate array for holding integrals (on lower triangular form)
-      allocate(ONEINT(NELMNT,NPRPINT))
+      allocate(PRPINT(NELMNT,NPRPINT))
+      allocate(OP1INT(NELMNT))
+      allocate(PMAT(NELMNT,NZ))
       IORDER=0
       NPQUAD=0
 C
 C     Operator setup
 C
       IOPTYP  = 8                ! iA.P           * dot-product of alpha and vector operator
-      NMAT    = MCMP(IOPTYP)     ! number of components
+      NMAT    = MCMP(IOPTYP)     ! number of components, should be three
       IF((NPRPS+2).GT.MAXPRPS) THEN
         WRITE(LUPRI,'(A,I5)') 
-     &   ' ** ERROR in GET_BED **  Redimension MAXPRPS to ',INDXPR2
+     &   ' ** ERROR in GET_BED **  Redimension MAXPRPS to ',NPRPS+2
         CALL QUIT('GET_BED: Too may properties !')
       ENDIF
       DO IOP = 1,2
@@ -89,9 +95,7 @@ C
 C     Find what symmetries are available
 C
       NCOMP=NPRPINT/2
-      ITAG=9
-      LABINT(ITAG) = 'inactive'
-      CALL ICOPY(2*NBSYM,ITAG,0,IPSYM2INT,1)
+      CALL ICOPY(2*NBSYM,-1,0,IPSYM2INT,1)
       DO I = 1,NCOMP
         ISYM = INTREP(I) + 1
         IPSYM2INT(ISYM,1) = I
@@ -124,31 +128,37 @@ C
             IAREP = JM4REP(IAIND)
             IBSYM = IBTXOR(IAREP,IREP)+1
             DO IOP = 1,2
-              IF(IPSYM2INT(IBSYM,IOP).EQ.ITAG) THEN
+              IF(IPSYM2INT(IBSYM,IOP).EQ.-1) THEN
                 PBUF(IMAT,IOP) = D0
               ELSE
-                PBUF(IMAT,IOP) = DP5*UPOL(IMAT)
+                PBUF(IMAT,IOP)          = DP5*UPOL(IMAT)
                 IPRPLBL(IMAT,NPRPS+IOP) = IPSYM2INT(IBSYM,IOP)+NPRPLBL
               ENDIF
             ENDDO
           ENDDO
           DO IOP = 1,2
              PRPNAM(NPRPS+IOP)(6:8) = REP(IREP)
-             IPRPSYM(NPRPS+IOP) = ISYM ! Total symmetry of operator
+             IPRPSYM(NPRPS+IOP)     = ISYM ! Total symmetry of operator
              IF(DSUM(NMAT,PBUF(1,IOP),1).EQ.D0) THEN
                 IPRPTYP(NPRPS+IOP) = -1  ! Means that there is no contribution
              ELSE
                 IPRPTYP(NPRPS+IOP) = IOPTYP
              ENDIF
           ENDDO
-          DO IEXC = 1,KEXCNV(ISYM)
+          DO 30 IEXC = 1,KEXCNV(ISYM)
+             IF(ABS(OMEGA(IEXC,ISYM)).LT.1.0D-3) THEN
+                WRITE(LUPRI,*)
+     &          'GET_BED: Skipping excitation. Frequency too small: ',
+     &          OMEGA(IEXC,ISYM)
+                GOTO 30
+             ENDIF
 C
 C           Length of wave vector
 C 
             FAC=OMEGA(IEXC,ISYM)/CVAL
             DO IOP = 1,2
                WRITE(PRPNAM(NPRPS+IOP)(9:16),'(A4,I4)') '_exc',IEXC
-                 DO IMAT = 1,NMAT
+               DO IMAT = 1,NMAT
                   FACPRP(IMAT,NPRPS+IOP) = PBUF(IMAT,IOP)/FAC
                ENDDO
             ENDDO
@@ -156,7 +166,7 @@ C
 C           Debug output
 C
             DO IOP = 1,2
-               WRITE(6,*) PRPNAM(NPRPS+IOP),IPRPTYP(NPRPS+IOP)
+               WRITE(6,*) PRPNAM(NPRPS+IOP),IPRPTYP(NPRPS+IOP),FAC
                IF(IPRPTYP(NPRPS+IOP).EQ.-1) THEN
                  WRITE(6,*) ' - skipped'
                ELSE
@@ -172,27 +182,37 @@ C
             DO I = 1,3
               WAVEVEC(I) = FAC*UWAVE(I)
             ENDDO
-            CALL PR1IN2(WORK(KFREE),LFREE,ONEINT,INTTYP,
+            CALL PR1IN2(WORK(KFREE),LFREE,PRPINT,INTTYP,
      &           NPRPINT,INTREP,ANTI,SQUARE,DUMMY,LABINT,TRIANG,
      &           TRASPH,.FALSE.,SOLVNT,0,0,DUMMY,
      &           0,NBAST,NELMNT,IPRINT,DOINT,.FALSE.)
-            IF(IPRINT.GE.5) THEN
+CTROND            IF(IPRINT.GE.5) THEN
               DO ICOMP = 1,NPRPINT
                 WRITE(6,*) '* Integrals of ',LABINT(ICOMP),
      &            '. Symmetry: ',REP(INTREP(NCOMP))
-                CALL OUTPAK(ONEINT(1,ICOMP),NBAST,1,LUPRI)
+                CALL OUTPAK(PRPINT(1,ICOMP),NBAST,1,LUPRI)
               ENDDO
-            ENDIF
-
-          ENDDO
+CTROND            ENDIF
+            DO IOP = 1,2
+              INDXPR = NPRPS+IOP
+              IF(IPRPTYP(INDXPR).NE.-1) THEN
+                 CALL LSET(NZ,.TRUE.,FIRST)
+                 CALL PRPMAO(NPRPLBL,INDXPR,.FALSE.,PRPINT,TRIANG,
+     &                       NELMNT,PMAT,OP1INT,FIRST,10)
+C     &                  OP1INT,FIRST,IPRINT)
+              ENDIF
+            ENDDO
+ 30       CONTINUE
  20     CONTINUE
  10   CONTINUE
 C
 C     Memory deallocation
-      deallocate(ONEINT)
+      deallocate(PRPINT)
+      deallocate(OP1INT)
       deallocate(LABINT)
       deallocate(INTREP)
       deallocate(IPSYM2INT)
+      deallocate(first)
 C     
       RETURN
       END

@@ -968,14 +968,14 @@ C
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpmao */
-      SUBROUTINE PRPMAO(LU1INT,IOP,ONFILE,PRPINT,TRIANG,NDIM,PMAT,
+      SUBROUTINE PRPMAO(IOPT,IOP,ONFILE,PRPINT,TRIANG,NDIM,PMAT,
      &                  OP1INT,FIRST,IPRINT)
 C*****************************************************************************
 C
 C     Generates  lower triangular/square  matrix of one-electron integrals
 C     corresponding to property IOP of COMMON block XCBPRP
 C
-C     On input:  LU1INT  - lu of integral file
+C     On input:  IOPT    - ONFILE: lu of integral file; CACHE: offset
 C                IOP     - index of the property
 C                NDIM    - dimension of array (either triangular or square)
 C                FIRST   - array, must be set to true
@@ -1010,6 +1010,8 @@ C
       IF(IOPTYP.EQ.0) THEN
         CALL QUIT('PRPMAO: No Fock matrix read here !')
       ENDIF
+      IHREF = 1
+      IF(.NOT.TRIANG) IHREF = 0
       IF(IPRINT.GE.5) THEN
         CALL HEADER('Output from PRPMAO',-1)
         WRITE(LUPRI,*)
@@ -1020,15 +1022,11 @@ C
           WRITE(LUPRI,*) '.... it is a SQUARE matrix '
         ENDIF
       ENDIF
-      IF(TRIANG) THEN
-        IHREF = 1
-      ELSE
-        IHREF = 0
-      ENDIF
 C
 C     Loop over components
 C     ====================
 C
+      WRITE(6,*) 'TESTing..',TRIANG,IHREF,IOPT,IOPTYP
       IBRPOP = IPRPSYM(IOP)-1
       NCMP   = MCMP(IOPTYP)
       DO 10 I = 1,NCMP
@@ -1056,7 +1054,9 @@ C
         KLBL = IPRPLBL(I,IOP)
         IH   = IPRLTYP(KLBL)
         IF(IABS(IH).NE.IHREF) THEN
-          WRITE(6,*) 'PRPMAO ERROR: Mismatch square/triangular. IH=',IH
+CTROND           
+           WRITE(6,*) 'TEST..',I,IHREF,IH
+           WRITE(6,*) 'PRPMAO ERROR: Mismatch square/triangular. IH=',IH
           CALL QUIT('PRPMAO: mismatch square/triangular')
         ENDIF
 C
@@ -1124,10 +1124,10 @@ C =============================================================
 C               Get integrals from the AOPROPER file
 C     =============================================================
         IF(ONFILE) THEN
-          CALL PRPREA(LU1INT,PRPLBL(KLBL),RTNLBL,PDOINT(KLBL),
+          CALL PRPREA(IOPT,PRPLBL(KLBL),RTNLBL,PDOINT(KLBL),
      &          OP1INT,NDIM,IPRINT)
         ELSE
-           IINT=KLBL-LU1INT  
+           IINT=KLBL-IOPT  
            CALL DCOPY(NDIM,PRPINT(1,IINT),1,OP1INT,1)
         ENDIF  
         IF(IPRINT.GE.10) THEN
