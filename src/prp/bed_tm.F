@@ -1,12 +1,12 @@
-C  /* Deck get_bed */                                                  
-      SUBROUTINE GET_BED(OMEGA,ISSYM,IPRINT,WORK,KFREE,LFREE)
+C  /* Deck getbedf */                                                  
+      SUBROUTINE GETBEDF(OMEGA,ISSYM,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Build representation matrix of full light-matter interaction
 C     Scalar integrals are sorted on symmetries (max. 8)
 C
 C     Upon entering this routine solution vectors have been written
-C     to unformatted file PAMXVC which is open with unit number LUXVC
+C     to unformatted file PAMXVC, to be opened with unit number LUXVC
 C     References are:
 C     1. Nanna Holmgaard List, Joanna Kauczor, Trond Saue,
 C        Hans Jørgen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
@@ -22,6 +22,214 @@ C
 #include "dcbbas.h"
 #include "pgroup.h"
 #include "dgroup.h"
+#include "dcbxrs.h"
+#include "dcbxpp.h"
+#include "orgcom.h"
+#include "dcbxpr.h"
+#include "dcbprl.h"            
+#include "dcbwav.h"
+C#include "cbiher.h"
+      LOGICAL DOINT(2,2)
+      INTEGER LWORK, NCOMP, NOPTP
+      DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC),WORK(*)
+      real(8), allocatable              :: PRPINT(:,:)
+      character (len=8),  allocatable   :: LABINT(:)
+      integer, allocatable              :: INTREP(:),IPSYM2INT(:,:)
+      real(8)                           :: PBUF(3,2)
+      real(8), allocatable              :: PMAT(:,:)
+      logical, allocatable              :: first(:)
+      LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
+C
+#include "ibtfun.h"
+C     
+C     Allocate placeholders for integral labels and irreps 
+C
+      allocate(LABINT(8))
+      allocate(INTREP(8))
+      allocate(IPSYM2INT(NBSYM,2))
+      allocate(first(nz))
+C
+C     Integral directives
+C
+      IPRINT=0
+      CALL PR1DIR('CXIKR   ',INTTYP,NPRPINT,INTREP,
+     &            ANTI,SQUARE,DUMMY,LABINT,TRIANG,TRASPH,
+     &            SOLVNT,0,.FALSE.,0,NBAST,NELMNT,IPRINT)
+C     NPRPINT is by construction an even number,
+C     the first and second halfs corresponding to the real (eq. 44) and imaginary parts (eq. 45)
+      IF(NPRPLBL+NPRPINT.GT.MAXPRPLBL) THEN
+        CALL QUIT('GET_BED:Redimension MAXPRPLBL !')
+      ENDIF
+      DO ICOMP = 1,NPRPINT
+        PRPLBL (NPRPLBL+ICOMP) = LABINT(ICOMP)
+        IPRLREP(NPRPLBL+ICOMP) = INTREP(ICOMP)
+        PDOINT (NPRPLBL+ICOMP) = '0++0'
+        IPRLTYP(NPRPLBL+ICOMP) =  1        
+      ENDDO
+      WRITE(6,*) 'NBAST= ',NBAST,'  NELMNT= ',NELMNT
+      WRITE(6,*) 'Offsets ppr/lbl:',NPRPS,NPRPLBL,NZ
+      DOINT(1,1)=.FALSE.
+      DOINT(2,1)=.TRUE.
+      DOINT(1,2)=.TRUE.
+      DOINT(2,2)=.FALSE.
+C.....allocate array for holding integrals (on lower triangular form)
+      allocate(PRPINT(NELMNT,NPRPINT))
+      allocate(PMAT(N2BBASX,NZ))
+      IORDER=0
+      NPQUAD=0
+C      
+C     Find what symmetries are available
+C
+      NCOMP=NPRPINT/2
+      CALL ICOPY(2*NBSYM,-1,0,IPSYM2INT,1)
+      DO I = 1,NCOMP
+        ISYM = INTREP(I) + 1
+        IPSYM2INT(ISYM,1) = I
+        II = NCOMP + I
+        ISYM = INTREP(II) + 1
+        IPSYM2INT(ISYM,2) = II
+      ENDDO
+      WRITE(6,*) 'IPSYM2INT:'
+      DO ISYM = 1,NBSYM
+         WRITE(6,*) IPSYM2INT(ISYM,1),IPSYM2INT(ISYM,2)
+      ENDDO
+C
+C     Operator setup
+C
+      IREP   = JSYMOP-1
+      NEXCNV = KEXCNV(JSYMOP)
+      IF (NEXCNV .EQ. 0) RETURN
+      IOPTYP  = 8                ! iA.P           * dot-product of alpha and vector operator
+      NMAT    = MCMP(IOPTYP)     ! number of components, should be three
+      IF((NPRPS+2).GT.MAXPRPS) THEN
+        WRITE(LUPRI,'(A,I5)') 
+     &   ' ** ERROR in GET_BED **  Redimension MAXPRPS to ',NPRPS+2
+        CALL QUIT('GET_BED: Too may properties !')
+      ENDIF
+      DO IOP = 1,2
+        WRITE(PRPNAM(NPRPS+IOP)(1:8),'(A3,I1,A1,A3)')
+     &        'BED',IOP,'_',REP(IREP)
+        IPRPSYM(NPRPS+IOP)     = JSYMOP ! Total symmetry of operator
+        IPRPTIM(NPRPS+IOP) = -1 ! Time antisymmetric operator
+        DO IMAT = 1,NMAT
+          IAIND = JM4(IMAT,IOPTYP)
+          IAREP = JM4REP(IAIND)
+          IBSYM = IBTXOR(IAREP,IREP)+1
+          IF(IPSYM2INT(IBSYM,IOP).EQ.-1) THEN
+            PBUF(IMAT,IOP) = D0
+          ELSE
+            PBUF(IMAT,IOP)          = DP5*UPOL(IMAT)
+            IPRPLBL(IMAT,NPRPS+IOP) = IPSYM2INT(IBSYM,IOP)+NPRPLBL
+          ENDIF
+        ENDDO
+        IF(DSUM(NMAT,PBUF(1,IOP),1).EQ.D0) THEN
+           IPRPTYP(NPRPS+IOP) = -1  ! Means that there is no contribution
+        ELSE
+           IPRPTYP(NPRPS+IOP) = IOPTYP
+        ENDIF
+      ENDDO
+      CALL PRSYMB(LUPRI,'=',80,0)
+      WRITE(LUPRI,'(/A,I2,A,A3/)')
+     &     ' *** Excitations of boson symmetry',JSYMOP,' : ',REP(IREP)
+C
+C     Find contributions to property matrix
+C
+      DO 10 IEXC = 1,KEXCNV(JSYMOP)
+        IF(ABS(OMEGA(IEXC)).LT.1.0D-3) THEN
+           WRITE(LUPRI,*)
+     &     'GET_BED: Skipping excitation. Frequency too small: ',
+     &     OMEGA(IEXC)
+           GOTO 10
+        ENDIF
+C
+C       Length of wave vector
+C 
+        FAC=OMEGA(IEXC)/CVAL
+        DO IOP = 1,2
+           WRITE(PRPNAM(NPRPS+IOP)(9:16),'(A4,I4)') '_exc',IEXC
+           DO IMAT = 1,NMAT
+              FACPRP(IMAT,NPRPS+IOP) = PBUF(IMAT,IOP)/FAC
+           ENDDO
+        ENDDO
+C
+C       Debug output
+C
+        DO IOP = 1,2
+          WRITE(6,*) PRPNAM(NPRPS+IOP),IPRPTYP(NPRPS+IOP),FAC
+          IF(IPRPTYP(NPRPS+IOP).EQ.-1) THEN
+            WRITE(6,*) ' - skipped'
+          ELSE
+            DO IMAT = 1,NMAT
+              II = IPRPLBL(IMAT,NPRPS+IOP)
+              WRITE(6,*) PRPLBL(II),FACPRP(IMAT,NPRPS+IOP)
+            ENDDO
+          ENDIF
+        ENDDO
+C     
+C       Generate integrals
+C
+        DO I = 1,3
+          WAVEVEC(I) = FAC*UWAVE(I)
+        ENDDO
+        CALL PR1IN2(WORK(KFREE),LFREE,PRPINT,INTTYP,
+     &       NPRPINT,INTREP,ANTI,SQUARE,DUMMY,LABINT,TRIANG,
+     &       TRASPH,.FALSE.,SOLVNT,0,0,DUMMY,
+     &       0,NBAST,NELMNT,IPRINT,DOINT,.FALSE.)
+        IF(IPRXPP.GE.5) THEN
+          DO ICOMP = 1,NPRPINT
+            WRITE(6,*) '* Integrals of ',LABINT(ICOMP),
+     &        '. Symmetry: ',REP(INTREP(NCOMP))
+            CALL OUTPAK(PRPINT(1,ICOMP),NBAST,1,LUPRI)
+          ENDDO
+        ENDIF
+        DO IOP = 1,2
+          INDXPR = NPRPS+IOP
+          IF(IPRPTYP(INDXPR).NE.-1) THEN
+C            CALL PRPMAT(INDXPR,JSYMOP,PRPMO,ONFILE,PRPINT,CMO,
+C     &              IBEIG,IPCMO,NPMO,WORK,KFREE,LFREE,10)
+             CALL PRPMSAO(INDXPR,PMAT,.FALSE.,PRPINT,FIRST,
+C     &               WORK(KFREE),LFREE,IPRINT)
+     &               WORK(KFREE),LFREE,10)             
+          ENDIF
+        ENDDO
+ 10   CONTINUE
+C
+C     Memory deallocation
+      deallocate(PMAT)
+      deallocate(PRPINT)
+      deallocate(LABINT)
+      deallocate(INTREP)
+      deallocate(IPSYM2INT)
+      deallocate(first)
+C     
+      RETURN
+      END
+C
+C  /* Deck get_bed */                                                  
+      SUBROUTINE GET_BED(OMEGA,ISSYM,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Build representation matrix of full light-matter interaction
+C     Scalar integrals are sorted on symmetries (max. 8)
+C
+C     Upon entering this routine solution vectors have been written
+C     to unformatted file PAMXVC, to be opened with unit number LUXVC
+C     References are:
+C     1. Nanna Holmgaard List, Joanna Kauczor, Trond Saue,
+C        Hans Jørgen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
+C                               
+C                                                                      
+C***********************************************************************
+C
+#include "implicit.h"
+#include "priunit.h"
+C
+      PARAMETER(D0=0.0D0,DP5=0.5D0)
+#include "dcbgen.h"
+#include "dcbbas.h"
+#include "pgroup.h"
+#include "dgroup.h"
+#include "dcbxrs.h"
 #include "dcbxpp.h"
 #include "orgcom.h"
 #include "dcbxpr.h"
@@ -109,6 +317,8 @@ C
 C     
 C     Loop over excitation energies
 C
+      CALL OPNFIL(LUXVC,'PAMXVC','OLD','GET_BED')
+      WRITE(6,*) 'NVPAR = ',NVPAR,IPEP,IPEM,IPPP,IPPM
       DO 10 IOPSY = 1,NFSYM
         NBF = NBSYM/NFSYM
         DO 20 IBF = 1,NBF
@@ -195,15 +405,16 @@ C
             DO IOP = 1,2
               INDXPR = NPRPS+IOP
               IF(IPRPTYP(INDXPR).NE.-1) THEN
-                CALL PRPMAT(INDXPR,ISYM,PRPMO,ONFILE,PRPINT,CMO,
-     &                  IBEIG,IPCMO,NPMO,WORK,KFREE,LFREE,10)
-C     CALL PRPMSAO(INDXPR,PMAT,.FALSE.,PRPINT,FIRST,
-C     &                   WORK(KFREE),LFREE,IPRINT)
+C                CALL PRPMAT(INDXPR,ISYM,PRPMO,ONFILE,PRPINT,CMO,
+C     &                  IBEIG,IPCMO,NPMO,WORK,KFREE,LFREE,10)
+                 CALL PRPMSAO(INDXPR,PMAT,.FALSE.,PRPINT,FIRST,
+     &                   WORK(KFREE),LFREE,IPRINT)
               ENDIF
             ENDDO
  30       CONTINUE
  20     CONTINUE
  10   CONTINUE
+      CLOSE(LUXVC,STATUS = 'KEEP')
 C
 C     Memory deallocation
       deallocate(PMAT)

@@ -316,12 +316,12 @@ C
      &                ISSYM,WORK,KFREE,LFREE)
  20     CONTINUE
  10   CONTINUE
+      CLOSE(LUXVC,STATUS = 'KEEP')
       CALL MEMREL('PRPXP1',WORK,1,KXPP,KFREE,LFREE)
 C
 C     Final print section
 C
       CALL XPPOUT(ATMPPF,OMEGA,RCNV,ISSYM,WORK,KFREE,LFREE)
-      CLOSE(LUXVC,STATUS = 'KEEP')
       CALL MEMREL('PRPXP1',WORK,1,KFRSAV,KFREE,LFREE)
 C
       CALL QEXIT('PRPXP1')
@@ -423,7 +423,7 @@ C
       XPPNRM     = .TRUE.
       XPPFIL     = 'NORXVC'
       ORBXPP     = .FALSE.
-
+      DOBED      = .FALSE.
 Chj: initialize some parts of dcbxlr; (nov. 2000)
 Chj: dcbxlr includes some general information
 Chj: which should be moved to dcbxrs (?) or another one:
@@ -630,6 +630,7 @@ C&&&& ACTIVE: String of active orbitals in XPP module
                GO TO 100
  20            CONTINUE
 C&&&& BED: Full light-matter interaction
+               DOBED=.TRUE.
                READ(LUCMD,*) W1,W2,W3
                CALL ANGLES(W1,W2,W3,UWAVE,UPOL)
 C               CALL DEF_BEDCOMP(LPPAPU(NPPAPT+1),NCOMP,IPRXPP)
@@ -930,7 +931,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck GETPPF */
       SUBROUTINE GETPPF(ATMPPF,IBTYP,IBCVC,IBEVC,IBPVC,RCNV,
-     &                  EVALR,EVECR,ISSYM,IORBCL,EIG,WORK,KFREE,LFREE)
+     &                  OMEGA,EVECR,ISSYM,IORBCL,EIG,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
 C     Evaluate linear response excitation energies and transition moments
@@ -959,7 +960,7 @@ Chj: MAXRM, MXLOAD
       LOGICAL FIRST
       DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),RCNV(*),ISSYM(*),
      &          IBTYP(2,*),IBCVC(*),IBEVC(*),IORBCL(4,*),
-     &          IBPVC(*),EVALR(*),EVECR(NREDM,*),EIG(*),WORK(*)
+     &          IBPVC(*),OMEGA(*),EVECR(NREDM,*),EIG(*),WORK(*)
 C
       CALL QENTER('GETPPF')
       KFRSAV = KFREE
@@ -1011,7 +1012,7 @@ C
         CALL MEMGET('INTE',KIVEC,NESIM         ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KBMAX,NEXCNV        ,WORK,KFREE,LFREE)
 !fixme ATMPPF can get out of bounds (run test dft_response)
-        CALL GETPP1(ATMPPF(1,1,1,IOFF+1),JBENDX,EVECR,EVALR,RCNV,
+        CALL GETPP1(ATMPPF(1,1,1,IOFF+1),JBENDX,EVECR,OMEGA,RCNV,
      &              IBTYP,IBEVC,FIRST,ISSYM,
      &              WORK(KGVEC),WORK(KXVEC),WORK(KBBUF),NZXOPE,
      &              WORK(KCMO),WORK(KIBRP),IORBCL,EIG,
@@ -1040,7 +1041,7 @@ C
         CALL MEMGET('REAL',KBBUF,NZXOPPQ       ,WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KIVEC,NPSIM         ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KBMAX,NEXCNV        ,WORK,KFREE,LFREE)
-        CALL GETPP1(ATMPPF(1,1,1,IOFF+1),JBPNDX,EVECR,EVALR,RCNV,
+        CALL GETPP1(ATMPPF(1,1,1,IOFF+1),JBPNDX,EVECR,OMEGA,RCNV,
      &              IBTYP,IBPVC,FIRST,ISSYM,
      &              WORK(KGVEC),WORK(KXVEC),WORK(KBBUF),NZXOPP,
      &              WORK(KCMO),WORK(KIBRP),IORBCL,EIG,
@@ -1065,6 +1066,11 @@ C
 C     ..not yet written.....tsaue
       ENDIF
 C
+C     BED: Beyond Electric Dipole Approximation
+C
+      IF (DOBED) THEN
+        CALL GETBEDF(OMEGA,ISSYM,WORK,KFREE,LFREE)
+      ENDIF
       CALL MEMREL('GETPPF.end',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('GETPPF')
       RETURN
@@ -1072,7 +1078,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck GETPP1 */
-      SUBROUTINE GETPP1(ATMPPF,NBTYP,EVECR,EVALR,RCNV,IBTYP,IBVEC,FIRST,
+      SUBROUTINE GETPP1(ATMPPF,NBTYP,EVECR,OMEGA,RCNV,IBTYP,IBVEC,FIRST,
      &                  ISSYM,GPO,XPO,BBUF,NXPAR,CMO,IBEIG,
      &                  IORBCL,EIG,JXOP,IVECS,BMAX,WORK,KFREE,LFREE)
 C*****************************************************************************
@@ -1100,7 +1106,7 @@ C
       DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),RCNV(*),
      &          GPO(NXPAR,NZ),XPO(NXPAR,NZ,MAXEXC),BBUF(*),
      &          CMO(*),EIG(*),IBEIG(*),IORBCL(4,*),ISSYM(*),
-     &          IBVEC(*),IBTYP(2,*),EVECR(NREDM,*),EVALR(*),
+     &          IBVEC(*),IBTYP(2,*),EVECR(NREDM,*),OMEGA(*),
      &          JXOP(2,*),IVECS(*),BMAX(NEXCNV),WORK(*)
       DATA BLANK16/'                '/
       DATA BLANK2/'  '/
@@ -1147,7 +1153,7 @@ C
       IROUND = 0
   100 IROUND = IROUND + 1
       CALL DZERO(XPO,NXDIM)
-      CALL XRSXV1(ITIM,NBTYP,XPO,EVECR,NEXCNV,IBTYP,IBVEC,IVECS,BBUF)
+      CALL XRSXV1(ITIM,NBTYP,XPO,EVECR,NEXCNV,IBTYP,IBVEC,IVECS,BBUF) ! Form solution vector
 C
 C     Print section
 C     -------------
@@ -1214,7 +1220,7 @@ C
                 ENDDO
               ENDIF
               IF(IPRXPP.GE.3) THEN
-                FREQ = EVALR(IEXC)
+                FREQ = OMEGA(IEXC)
 Chj: MAERKE change to trans.mom. output
                 WRITE(LUPRI,1000)
      &          '< 0 |',INDAP,' | ',IEXC,' > =',
@@ -1230,10 +1236,11 @@ C
 C     Write solution vectors to unformatted file for restart
 C
       DO IEXC = 1,NEXCNV
-        FREQ = EVALR(IEXC)
+        FREQ = OMEGA(IEXC)
         CALL WRTRSP(LUXVC,XPO(1,1,IEXC),JXOP,
-     &       RSPLAB,BVTYP(ITYP),FREQ,JSYMOP,JTIMOP,
-     &       BLANK16,BLANK2,D0,0,0,RCNV(IEXC),INTXRS,NBDIM)
+     &       RSPLAB ,BVTYP(ITYP),FREQ        ,JSYMOP,JTIMOP,
+     &       BLANK16,BLANK2     ,D0          ,0     ,0,
+     &       RCNV(IEXC),INTXRS,NBDIM)
       ENDDO
 C
 C     Now calculate the part of the excitation
@@ -2236,7 +2243,7 @@ C
 C
 C     NANNA: Call bed integrals
 C
-      CALL GET_BED(OMEGA,ISSYM,IPRXPP,WORK,KFREE,LFREE)
+C      CALL GET_BED(OMEGA,ISSYM,IPRXPP,WORK,KFREE,LFREE)
 C      CALL BEDLEB(OMEGA,ISSYM,IPRXPP,WORK,KFREE,LFREE)
       RETURN
       END
