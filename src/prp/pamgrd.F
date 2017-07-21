@@ -440,7 +440,6 @@ C
      &          WORK(*)
 C
       CALL QENTER('PRPMAT')
-      WRITE(6,*) 'TEST..PRPMAT',ONFILE
       KFRSAV = KFREE
 C     Determine whether integrals are fetched on triangular or square form;
 C     check if first scalar property operator is has diagonal symmetry or not
@@ -510,7 +509,6 @@ C               PRPMO(J2PMOX(2,2),NZ) gives "PRPMO(u1,u1,NZ)"
 C     where g1 is index of first gerade orbital (always g1 = 1)
 C       and u1 is index of first ungerade orbital (u1 = g1 + NPMO(1)).
 C
-      WRITE(6,*) 'TEST..PRPMA1..',ONFILE
       NPMOT = NPMO(1)
       IF (NFSYM.EQ.2) NPMOT = NPMOT + NPMO(2)
       JOFF = 1
@@ -676,7 +674,6 @@ C
       CALL QENTER('GPGET')
       KFRSAV = KFREE
 C
-      WRITE(6,*) 'TEST GPGET...',ONFILE
       ISYM  = IPRPSYM(INDXPR)
       IOPSY = JBTOF(ISYM-1,1)
       IF(ITYP.EQ.JBENDX) THEN
