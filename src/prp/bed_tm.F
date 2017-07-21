@@ -28,6 +28,7 @@ C
 #include "orgcom.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"            
+#include "dcbibn.h"
 #include "dcbwav.h"
 C#include "cbiher.h"
       LOGICAL DOINT(2,2)
@@ -191,9 +192,9 @@ C     ====================================
           DO IOP = 1,2
             INDXPR = NPRPS+IOP
             IF(IPRPTYP(INDXPR).NE.-1) THEN
-               CALL GPGET(INDXPR,GPOE(1,IOP),.FALSE.,PRPINT,
+               CALL GPGET(INDXPR,GPOE(1,IOP),
      &              get_orbital_rotation_indices_pp(),
-     &              NZXOPE,CMO,IBEIG,JBENDX,
+     &              NZXOPE,CMO,IBEIG,JBENDX,.FALSE.,PRPINT,
 C     &              WORK,KFREE,LFREE,IPRXPP)
      &              WORK,KFREE,LFREE,4)
 C     CALL PRPMAT(INDXPR,JSYMOP,PRPMO,ONFILE,PRPINT,CMO,

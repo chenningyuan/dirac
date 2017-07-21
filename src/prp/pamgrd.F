@@ -440,6 +440,7 @@ C
      &          WORK(*)
 C
       CALL QENTER('PRPMAT')
+      WRITE(6,*) 'TEST..PRPMAT',ONFILE
       KFRSAV = KFREE
 C     Determine whether integrals are fetched on triangular or square form;
 C     check if first scalar property operator is has diagonal symmetry or not
@@ -509,6 +510,7 @@ C               PRPMO(J2PMOX(2,2),NZ) gives "PRPMO(u1,u1,NZ)"
 C     where g1 is index of first gerade orbital (always g1 = 1)
 C       and u1 is index of first ungerade orbital (u1 = g1 + NPMO(1)).
 C
+      WRITE(6,*) 'TEST..PRPMA1..',ONFILE
       NPMOT = NPMO(1)
       IF (NFSYM.EQ.2) NPMOT = NPMOT + NPMO(2)
       JOFF = 1
@@ -530,7 +532,7 @@ C
 C
 C     Get property matrix in AO-basis
 C     ===============================
-      CALL PRPMSAO(INDXPR,PRPAO,.TRUE.,WORK,FIRST,
+      CALL PRPMSAO(INDXPR,PRPAO,ONFILE,PRPINT,FIRST,
      &             WORK(KFREE),LFREE,IPRINT)
 C .. control print out of 2c/4c-component
 C    operator in the SA-AO basis
@@ -631,8 +633,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gpget */
-      SUBROUTINE GPGET(INDXPR,GP,ONFILE,PRPINT,JXPAR,NXPAR,CMO,
-     &                 IBEIG,ITYP,WORK,KFREE,LFREE,IPRINT)
+      SUBROUTINE GPGET(INDXPR,GP,JXPAR,NXPAR,CMO,IBEIG,
+     &                 ITYP,ONFILE,PRPINT,WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
 C     Construct orbital part of gradient for property INDXPR 
@@ -674,13 +676,14 @@ C
       CALL QENTER('GPGET')
       KFRSAV = KFREE
 C
+      WRITE(6,*) 'TEST GPGET...',ONFILE
       ISYM  = IPRPSYM(INDXPR)
       IOPSY = JBTOF(ISYM-1,1)
       IF(ITYP.EQ.JBENDX) THEN
         IF(NXPAR.GE.0) THEN
           CALL MEMGET('REAL',KPRPMO,N2BBASXQ,WORK,KFREE,LFREE)
-          CALL GPOGET(INDXPR,GP,ONFILE,PRPINT,JXPAR,NXPAR,WORK(KPRPMO),
-     &                CMO,IBEIG,WORK,KFREE,LFREE,IPRINT)
+          CALL GPOGET(INDXPR,GP,JXPAR,NXPAR,WORK(KPRPMO),
+     &                CMO,IBEIG,ONFILE,PRPINT,WORK,KFREE,LFREE,IPRINT)
           CALL MEMREL('GPGET.e-e',WORK,1,KFRSAV,KFREE,LFREE)
 #ifndef ANALYZE_PROPERTY_GRADIENT
           IF(IPRINT.GE.4) THEN
@@ -698,8 +701,8 @@ C
       ELSEIF(ITYP.EQ.JBPNDX) THEN
         IF(NXPAR.GE.0) THEN
           CALL MEMGET('REAL',KPRPMO,N2BBASXQ,WORK,KFREE,LFREE)
-          CALL GPOGET(INDXPR,GP,ONFILE,PRPINT,JXPAR,NXPAR,WORK(KPRPMO),
-     &                CMO,IBEIG,WORK,KFREE,LFREE,IPRINT)
+          CALL GPOGET(INDXPR,GP,JXPAR,NXPAR,WORK(KPRPMO),
+     &                CMO,IBEIG,ONFILE,PRPINT,WORK,KFREE,LFREE,IPRINT)
           CALL MEMREL('GPGET.e-p',WORK,1,KFRSAV,KFREE,LFREE)
           IF(IPRINT.GE.4) THEN
             CALL HEADER('Output from GPGET',-1)
@@ -727,8 +730,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck GPOGET */
-      SUBROUTINE GPOGET(INDXPR,GPO,ONFILE,PRPINT,JXOP,NXOP,PRPMO,CMO,
-     &                  IBEIG,WORK,KFREE,LFREE,IPRINT)
+      SUBROUTINE GPOGET(INDXPR,GPO,JXOP,NXOP,PRPMO,CMO,
+     &                  IBEIG,ONFILE,PRPINT,WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
 C     Construct orbital part of gradient for property INDXPR 
@@ -776,18 +779,21 @@ C     ==========================================
 C
       ISYM  = IPRPSYM(INDXPR)
       IOPSY = JBTOF(ISYM-1,1)
-      OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
+      IF(ONFILE) THEN
+        OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
+     &           FILE='AOPROPER')
+      ENDIF
       IF (PRPNAM(INDXPR)(1:3).EQ.'LAO') THEN
         IB = 7 ! 111
         CALL GETDHB(IB,FAC2LO,PRPMO,INDXPR,IOPSY,
      &                    WORK,KFREE,LFREE,IPRINT)
       ELSE
-        CALL PRPMAT(INDXPR,IOPSY,PRPMO,ONFILE,PRPINT,CMO,IBEIG,ICMOQ,NORB,
-     &            WORK,KFREE,LFREE,IPRINT)
+         CALL PRPMAT(INDXPR,IOPSY,PRPMO,ONFILE,PRPINT,
+     &               CMO,IBEIG,ICMOQ,NORB,
+     &               WORK,KFREE,LFREE,IPRINT)
       ENDIF
 
-      CLOSE(LU1INT,STATUS = 'KEEP')
+      IF(ONFILE) CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C     Hermicity of operator
 C     =====================
@@ -796,8 +802,6 @@ C
       IREP = IPRPSYM(INDXPR) - 1
       IQ   = IPQTOQ(1,IREP)
       IH   = IHQMAT(IQ,ITIM)
-C
-C
 C
 C     Construct gradient - electronic part
 C     ====================================
