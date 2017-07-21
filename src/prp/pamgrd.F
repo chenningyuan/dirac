@@ -273,7 +273,7 @@ CMI This has to be adapted also for LAO properties !
         CALL GETDHB(IB,FAC2LO,PRPMO,INDXPR,IOPSY,
      &                    WORK,KFREE,LFREE,IPRINT)
       ELSE
-        CALL PRPMAT(INDXPR,IOPSY,PRPMO,CMO,IBEIG,ICMOQ,NORB,
+        CALL PRPMAT(INDXPR,IOPSY,PRPMO,.TRUE.,WORK,CMO,IBEIG,ICMOQ,NORB,
      &              WORK,KFREE,LFREE,IPRINT)
       ENDIF
 
@@ -397,8 +397,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpmat */
-      SUBROUTINE PRPMAT(INDXPR,IOPSY,PRPMO,CMO,IBEIG,IPCMO,NPMO,
-     &                  WORK,KFREE,LFREE,IPRINT)
+      SUBROUTINE PRPMAT(INDXPR,IOPSY,PRPMO,ONFILE,PRPINT,CMO,
+     &                  IBEIG,IPCMO,NPMO,WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
 C     Construct MO-matrix for property INDXPR listed in /XCBXPR/
@@ -435,7 +435,9 @@ C
 #include "dgroup.h"
 #include "dcbxpr.h"
 C
-      DIMENSION PRPMO(*),CMO(*),IBEIG(*),IPCMO(*),NPMO(*),WORK(*)
+      LOGICAL ONFILE
+      DIMENSION PRPMO(*),PRPINT(*),CMO(*),IBEIG(*),IPCMO(*),NPMO(*),
+     &          WORK(*)
 C
       CALL QENTER('PRPMAT')
       KFRSAV = KFREE
@@ -456,8 +458,9 @@ C     Memory allocation
 C
       CALL MEMGET('REAL',KPRPAO,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('LOGI',KFIRST,NZ      ,WORK,KFREE,LFREE)
-      CALL PRPMA1(INDXPR,PRPMO,CMO,IBEIG,IPCMO,NPMO,N2PMOX,
-     &            WORK(KPRPAO),WORK(KFIRST),WORK,KFREE,LFREE,IPRINT)
+      CALL PRPMA1(INDXPR,PRPMO,ONFILE,PRPINT,CMO,IBEIG,IPCMO,NPMO,
+     &            N2PMOX,WORK(KPRPAO),WORK(KFIRST),
+     &            WORK,KFREE,LFREE,IPRINT)
       CALL MEMREL('PRPMAT',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('PRPMAT')
 C
@@ -465,8 +468,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpma1 */
-      SUBROUTINE PRPMA1(INDXPR,PRPMO,CMO,IBEIG,IPCMO,NPMO,N2PMOX,PRPAO,
-     &                  FIRST,WORK,KFREE,LFREE,IPRINT)
+      SUBROUTINE PRPMA1(INDXPR,PRPMO,ONFILE,PRPINT,CMO,IBEIG,IPCMO,NPMO,
+     &                  N2PMOX,PRPAO,FIRST,WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
 C     Construct MO-matrix for property INDXPR listed in /XCBXPR/
@@ -490,9 +493,9 @@ C
 #include "dcbprl.h"
 #include "dummy.h"
 C
-      LOGICAL QBTR,TOBE,FIRST(NZ)
+      LOGICAL QBTR,TOBE,FIRST(NZ),ONFILE
       DIMENSION PRPMO(N2PMOX,NZ),CMO(*),IBEIG(*),IPCMO(2),NPMO(2),
-     &          PRPAO(N2BBASX,NZ),WORK(*)
+     &          PRPAO(N2BBASX,NZ),PRPINT(*),WORK(*)
       DIMENSION J2PMOX(2,2)
 C
       CALL QENTER('PRPMA1')
@@ -778,7 +781,7 @@ C
         CALL GETDHB(IB,FAC2LO,PRPMO,INDXPR,IOPSY,
      &                    WORK,KFREE,LFREE,IPRINT)
       ELSE
-        CALL PRPMAT(INDXPR,IOPSY,PRPMO,CMO,IBEIG,ICMOQ,NORB,
+        CALL PRPMAT(INDXPR,IOPSY,PRPMO,.TRUE.,WORK,CMO,IBEIG,ICMOQ,NORB,
      &            WORK,KFREE,LFREE,IPRINT)
       ENDIF
 

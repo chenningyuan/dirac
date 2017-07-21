@@ -195,9 +195,10 @@ C
             DO IOP = 1,2
               INDXPR = NPRPS+IOP
               IF(IPRPTYP(INDXPR).NE.-1) THEN
-                 CALL PRPMSAO(INDXPR,PMAT,.FALSE.,PRPINT,FIRST,
+                CALL PRPMAT(INDXPR,ISYM,PRPMO,ONFILE,PRPINT,CMO,
+     &                  IBEIG,IPCMO,NPMO,WORK,KFREE,LFREE,10)
+C     CALL PRPMSAO(INDXPR,PMAT,.FALSE.,PRPINT,FIRST,
 C     &                   WORK(KFREE),LFREE,IPRINT)
-     &                WORK(KFREE),LFREE,10)
               ENDIF
             ENDDO
  30       CONTINUE
