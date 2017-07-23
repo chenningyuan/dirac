@@ -959,8 +959,8 @@ Chj: MAXRM, MXLOAD
 #include "dgroup.h"
       LOGICAL FIRST
       DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),RCNV(*),ISSYM(*),
-     &          IBTYP(2,*),IBCVC(*),IBEVC(*),IORBCL(4,*),
-     &          IBPVC(*),OMEGA(*),EVECR(NREDM,*),EIG(*),WORK(*)
+     &          IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*),IORBCL(4,*),
+     &          OMEGA(*),EVECR(NREDM,*),EIG(*),WORK(*)
 C
       CALL QENTER('GETPPF')
       KFRSAV = KFREE
@@ -1069,8 +1069,12 @@ C
 C     BED: Beyond Electric Dipole Approximation
 C
       IF (DOBED) THEN
+         CALL GETED(OMEGA,ISSYM,WORK(KCMO),WORK(KIBRP),
+     &        EVECR,IBTYP,IBCVC,IBEVC,IBPVC,
+     &        WORK,KFREE,LFREE)
          CALL GETBEDF(OMEGA,ISSYM,WORK(KCMO),WORK(KIBRP),
-     &                WORK,KFREE,LFREE)
+     &        EVECR,IBTYP,IBCVC,IBEVC,IBPVC,
+     &        WORK,KFREE,LFREE)
       ENDIF
       CALL MEMREL('GETPPF.end',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('GETPPF')
