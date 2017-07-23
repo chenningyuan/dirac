@@ -1054,8 +1054,6 @@ C
         KLBL = IPRPLBL(I,IOP)
         IH   = IPRLTYP(KLBL)
         IF(IABS(IH).NE.IHREF) THEN
-CTROND           
-           WRITE(6,*) 'TEST..',I,IHREF,IH
            WRITE(6,*) 'PRPMAO ERROR: Mismatch square/triangular. IH=',IH
           CALL QUIT('PRPMAO: mismatch square/triangular')
         ENDIF
