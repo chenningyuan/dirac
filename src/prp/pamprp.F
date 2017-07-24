@@ -9381,7 +9381,7 @@ C        (e_r,e_Theta,e_phi) --> (e_z, e_x, e_y)
 C     We align the wave vector with e_r. The polarization vector epsilon
 C     is then in the perpendicular plane spanned by e_Theta and e_Phi,
 C     so we write
-C        epsilon = cos[Chi]e_Theta + sin[Theta]e_Phi
+C        epsilon = cos[Chi]e_Theta + sin[Chi]e_Phi
 C     where we have introduced a third angle Theta
 C
 C     Written by Trond Saue, July 18 2017

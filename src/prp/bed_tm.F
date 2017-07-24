@@ -151,7 +151,7 @@ C
          deallocate(IVECS)         
       ENDIF
 C
-C     - orbital (e-e) part      
+C     - orbital (e-p) part      
 C
       IF(NZXOPP.GT.0) THEN
          allocate(XPOE(NZXOPPQ,NEXCNV))
