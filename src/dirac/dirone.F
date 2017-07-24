@@ -1026,7 +1026,6 @@ C
 C     Loop over components
 C     ====================
 C
-      WRITE(6,*) 'TESTing..',TRIANG,IHREF,IOPT,IOPTYP
       IBRPOP = IPRPSYM(IOP)-1
       NCMP   = MCMP(IOPTYP)
       DO 10 I = 1,NCMP

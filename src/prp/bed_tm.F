@@ -47,12 +47,12 @@ C#include "cbiher.h"
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
 C
 #include "ibtfun.h"
+      NOP = 2
 C     
 C     Allocate placeholders for integral labels and irreps 
 C
       allocate(LABINT(8))
       allocate(INTREP(8))
-      allocate(IPSYM2INT(NBSYM,2))
       allocate(first(nz))
 C
 C     Integral directives
@@ -72,8 +72,6 @@ C     the first and second halfs corresponding to the real (eq. 44) and imaginar
         PDOINT (NPRPLBL+ICOMP) = '0++0'
         IPRLTYP(NPRPLBL+ICOMP) =  1        
       ENDDO
-      WRITE(6,*) 'NBAST= ',NBAST,'  NELMNT= ',NELMNT
-      WRITE(6,*) 'Offsets ppr/lbl:',NPRPS,NPRPLBL,NZ
       DOINT(1,1)=.FALSE.
       DOINT(2,1)=.TRUE.
       DOINT(1,2)=.TRUE.
@@ -85,6 +83,7 @@ C.....allocate array for holding integrals (on lower triangular form)
 C      
 C     Find what symmetries are available
 C
+      allocate(IPSYM2INT(NBSYM,NOP))
       NCOMP=NPRPINT/2
       CALL ICOPY(2*NBSYM,-1,0,IPSYM2INT,1)
       DO I = 1,NCOMP
@@ -94,28 +93,25 @@ C
         ISYM = INTREP(II) + 1
         IPSYM2INT(ISYM,2) = II
       ENDDO
-      WRITE(6,*) 'IPSYM2INT:'
-      DO ISYM = 1,NBSYM
-         WRITE(6,*) IPSYM2INT(ISYM,1),IPSYM2INT(ISYM,2)
-      ENDDO
 C
 C     Operator setup
 C
-      IREP   = JSYMOP-1
+      IREP   =  JSYMOP-1
+      ITIM   = -JTIMOP  ! Time antisymmetric operator
       NEXCNV = KEXCNV(JSYMOP)
       IF (NEXCNV .EQ. 0) RETURN
       IOPTYP  = 8                ! iA.P           * dot-product of alpha and vector operator
       NMAT    = MCMP(IOPTYP)     ! number of components, should be three
-      IF((NPRPS+2).GT.MAXPRPS) THEN
+      IF((NPRPS+NOP).GT.MAXPRPS) THEN
         WRITE(LUPRI,'(A,I5)') 
-     &   ' ** ERROR in GET_BED **  Redimension MAXPRPS to ',NPRPS+2
+     &   ' ** ERROR in GET_BED **  Redimension MAXPRPS to ',NPRPS+NOP
         CALL QUIT('GET_BED: Too may properties !')
       ENDIF
-      DO IOP = 1,2
+      DO IOP = 1,NOP
         WRITE(PRPNAM(NPRPS+IOP)(1:8),'(A3,I1,A1,A3)')
      &        'BED',IOP,'_',REP(IREP)
         IPRPSYM(NPRPS+IOP) = JSYMOP ! Total symmetry of operator
-        IPRPTIM(NPRPS+IOP) =-JTIMOP ! Time antisymmetric operator
+        IPRPTIM(NPRPS+IOP) = ITIM
         DO IMAT = 1,NMAT
           IAIND = JM4(IMAT,IOPTYP)
           IAREP = JM4REP(IAIND)
@@ -142,7 +138,6 @@ C     ========================
 C
 C      - orbital (e-e) part      
 C
-      ITIM = -JTIMOP
       IF(NZXOPE.GT.0) THEN
          allocate(XPOE(NZXOPEQ,NEXCNV))
          allocate(BBUF(NZXOPEQ))
@@ -174,8 +169,8 @@ C
 C     Loop over excitation energies
 C     =============================
 C     
-      IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,2))
-      IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,2))      
+      IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,NOP))
+      IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,NOP))      
       DO 10 IEXC = 1,KEXCNV(JSYMOP)
         IF(ABS(OMEGA(IEXC)).LT.1.0D-3) THEN
            WRITE(LUPRI,*)
@@ -196,7 +191,7 @@ C
 C
 C       Debug output
 C
-        DO IOP = 1,2
+        DO IOP = 1,NOP
           WRITE(6,*) PRPNAM(NPRPS+IOP),IPRPTYP(NPRPS+IOP),FAC
           IF(IPRPTYP(NPRPS+IOP).EQ.-1) THEN
             WRITE(6,*) ' - skipped'
@@ -220,7 +215,7 @@ C
         IF(IPRXPP.GE.5) THEN
           DO ICOMP = 1,NPRPINT
             WRITE(6,*) '* Integrals of ',LABINT(ICOMP),
-     &        '. Symmetry: ',REP(INTREP(NCOMP))
+     &        '. Symmetry: ',REP(INTREP(ICOMP))
             CALL OUTPAK(PRPINT(1,ICOMP),NBAST,1,LUPRI)
           ENDDO
         ENDIF
@@ -228,7 +223,7 @@ C
 C     Gradient - orbital (e-e) part
 C     ====================================
         IF(NZXOPE.GT.0) THEN       
-          DO IOP = 1,2
+          DO IOP = 1,NOP
             INDXPR = NPRPS+IOP
             IF(IPRPTYP(INDXPR).NE.-1) THEN
                CALL GPGET(INDXPR,GPOE(1,IOP),
@@ -236,12 +231,12 @@ C     ====================================
      &              NZXOPE,CMO,IBEIG,JBENDX,.FALSE.,PRPINT,
      &              WORK,KFREE,LFREE,IPRXPP)
                TMP=D2*DDOT(NZXOPEQ,GPOE(1,IOP),1,XPOE(1,IEXC),1)
-               WRITE(6,*) 'e-e TMOM:',PRPNAM(NPRPS+IOP),TMP
+               WRITE(6,*) 'e-e TMOM:',PRPNAM(NPRPS+IOP),OMEGA(IEXC),TMP
             ENDIF
           ENDDO
         ENDIF
         IF(NZXOPP.GT.0) THEN       
-          DO IOP = 1,2
+          DO IOP = 1,NOP
             INDXPR = NPRPS+IOP
             IF(IPRPTYP(INDXPR).NE.-1) THEN
                CALL GPGET(INDXPR,GPOP(1,IOP),
@@ -249,7 +244,7 @@ C     ====================================
      &              NZXOPP,CMO,IBEIG,JBPNDX,.FALSE.,PRPINT,
      &              WORK,KFREE,LFREE,IPRXPP)
                TMP=D2*DDOT(NZXOPPQ,GPOP(1,IOP),1,XPOP(1,IEXC),1)
-               WRITE(6,*) 'e-p TMOM:',PRPNAM(NPRPS+IOP),TMP
+               WRITE(6,*) 'e-p TMOM:',PRPNAM(NPRPS+IOP),OMEGA(IEXC),TMP
             ENDIF
           ENDDO
         ENDIF
@@ -273,8 +268,8 @@ C
       RETURN
       END
 C
-C  /* Deck getbedf */                                                  
-      SUBROUTINE GETED(OMEGA,ISSYM,CMO,IBEIG,EVECR,IBTYP,
+C  /* Deck geted_length */                                                  
+      SUBROUTINE GETED_LENGTH(OMEGA,ISSYM,CMO,IBEIG,EVECR,IBTYP,
      &                   IBCVC,IBEVC,IBPVC,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -297,8 +292,10 @@ C
       PARAMETER(D0=0.0D0,D2=2.0D0,D1=1.0D0)
 #include "dcbgen.h"
 #include "dcbbas.h"
+#include "mxcent.h"
 #include "pgroup.h"
 #include "dgroup.h"
+#include "nuclei.h"      
 #include "dcbxrs.h"
 #include "dcbxpp.h"
 #include "orgcom.h"
@@ -314,11 +311,11 @@ C#include "cbiher.h"
       character (len=8),  allocatable   :: LABINT(:)
       integer, allocatable              :: INTREP(:)
       integer, allocatable              :: IVECS(:)
-      real(8)             :: EVECR(NREDM,*)
+      real(8)                           :: EVECR(NREDM,*)
       integer             :: IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*)
       real(8), allocatable              :: GPOE(:,:),GPOP(:,:)
       real(8), allocatable              :: XPOE(:,:),XPOP(:,:)
-      logical, allocatable              :: first(:)
+      logical, allocatable              :: first(:),doatom(:)
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
 C
 #include "ibtfun.h"
@@ -332,9 +329,10 @@ C
 C     Integral directives
 C
       IPRINT=0
+      allocate(doatom(nucind))
       CALL PR1DIR('DIPLEN  ',INTTYP,NPRPINT,INTREP,
      &            ANTI,SQUARE,DUMMY,LABINT,TRIANG,TRASPH,
-     &            SOLVNT,0,.FALSE.,0,NBAST,NELMNT,IPRINT)
+     &            SOLVNT,0,DOATOM,NUCIND,NBAST,NELMNT,IPRINT)
 C     NPRPINT is by construction an even number,
 C     the first and second halfs corresponding to the real (eq. 44) and imaginary parts (eq. 45)
       IF(NPRPLBL+NPRPINT.GT.MAXPRPLBL) THEN
@@ -346,8 +344,6 @@ C     the first and second halfs corresponding to the real (eq. 44) and imaginar
         PDOINT (NPRPLBL+ICOMP) = '+00+'
         IPRLTYP(NPRPLBL+ICOMP) =  1        
       ENDDO
-      WRITE(6,*) 'NBAST= ',NBAST,'  NELMNT= ',NELMNT
-      WRITE(6,*) 'Offsets ppr/lbl:',NPRPS,NPRPLBL,NZ
       DOINT(1,1)=.TRUE.
       DOINT(2,1)=.FALSE.
       DOINT(1,2)=.FALSE.
@@ -359,25 +355,27 @@ C.....allocate array for holding integrals (on lower triangular form)
 C
 C     Operator setup
 C
+      NOP = 3
       IREP   = JSYMOP-1
       NEXCNV = KEXCNV(JSYMOP)
       IF (NEXCNV .EQ. 0) RETURN
       IOPTYP  = 1                ! iA.P           * dot-product of alpha and vector operator
       NMAT    = MCMP(IOPTYP)     ! number of components, should be three
-      IF((NPRPS+3).GT.MAXPRPS) THEN
+      IF((NPRPS+NOP).GT.MAXPRPS) THEN
         WRITE(LUPRI,'(A,I5)') 
-     &   ' ** ERROR in GETED **  Redimension MAXPRPS to ',NPRPS+3
-        CALL QUIT('GETED: Too may properties !')
+     &        ' ** ERROR in GETED_LENGTH **  Redimension MAXPRPS to ',
+     &        NPRPS+NOP
+        CALL QUIT('GETED_LENGTH: Too may properties !')
       ENDIF
-      DO IOP = 1,3
-        WRITE(PRPNAM(NPRPS+IOP)(1:8),'(A4,A3,A1,A8)')
+      DO IOP = 1,NOP
+        WRITE(PRPNAM(NPRPS+IOP),'(A4,A3,A1,A8)')
      &        'ED__',REP(IREP),'_',LABINT(IOP)
         IPRPSYM(NPRPS+IOP) = JSYMOP ! Total symmetry of operator
-        IPRPTIM(NPRPS+IOP) =-JTIMOP ! Time antisymmetric operator
+        IPRPTIM(NPRPS+IOP) = JTIMOP ! Time antisymmetric operator
         IF(INTREP(IOP).EQ.IREP) THEN
            IPRPTYP(NPRPS+IOP)   = IOPTYP
-           IPRPLBL(1,NPRPS+IOP) = IOPT + NPRPLBL
-           FACPRP(1,NPRPS+IOP) = D1
+           IPRPLBL(1,NPRPS+IOP) = IOP + NPRPLBL
+           FACPRP(1,NPRPS+IOP)  = D1
         ELSE
            IPRPTYP(NPRPS+IOP) = -1
            FACPRP(1,NPRPS+IOP) = D0
@@ -424,19 +422,19 @@ C
 C     Loop over excitation energies
 C     =============================
 C     
-      IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,2))
-      IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,2))      
+      IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,NOP))
+      IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,NOP))      
       DO 10 IEXC = 1,KEXCNV(JSYMOP)
         IF(ABS(OMEGA(IEXC)).LT.1.0D-3) THEN
            WRITE(LUPRI,*)
-     &     'GETED: Skipping excitation. Frequency too small: ',
+     &     'GETED_LENGTH: Skipping excitation. Frequency too small: ',
      &     OMEGA(IEXC)
            GOTO 10
         ENDIF
 C
 C       Debug output
 C
-        DO IOP = 1,3
+        DO IOP = 1,NOP
           WRITE(6,*) PRPNAM(NPRPS+IOP),IPRPTYP(NPRPS+IOP)
           IF(IPRPTYP(NPRPS+IOP).EQ.-1) THEN
             WRITE(6,*) ' - skipped'
@@ -452,8 +450,8 @@ C       Generate integrals
 C
         CALL PR1IN2(WORK(KFREE),LFREE,PRPINT,INTTYP,
      &       NPRPINT,INTREP,ANTI,SQUARE,DUMMY,LABINT,TRIANG,
-     &       TRASPH,.FALSE.,SOLVNT,0,0,DUMMY,
-     &       0,NBAST,NELMNT,IPRINT,DOINT,.FALSE.)
+     &       TRASPH,.FALSE.,SOLVNT,0,0,DOATOM,
+     &       NUCIND,NBAST,NELMNT,IPRINT,DOINT,.FALSE.)
         IF(IPRXPP.GE.5) THEN
           DO ICOMP = 1,NPRPINT
             WRITE(6,*) '* Integrals of ',LABINT(ICOMP),
@@ -465,7 +463,7 @@ C
 C     Gradient - orbital (e-e) part
 C     ====================================
         IF(NZXOPE.GT.0) THEN       
-          DO IOP = 1,3
+          DO IOP = 1,NOP
             INDXPR = NPRPS+IOP
             IF(IPRPTYP(INDXPR).NE.-1) THEN
                CALL GPGET(INDXPR,GPOE(1,IOP),
@@ -473,12 +471,12 @@ C     ====================================
      &              NZXOPE,CMO,IBEIG,JBENDX,.FALSE.,PRPINT,
      &              WORK,KFREE,LFREE,IPRXPP)
                TMP=D2*DDOT(NZXOPEQ,GPOE(1,IOP),1,XPOE(1,IEXC),1)
-               WRITE(6,*) 'e-e TMOM:',PRPNAM(NPRPS+IOP),TMP
+               WRITE(6,*) 'e-e TMOM:',PRPNAM(NPRPS+IOP),OMEGA(IEXC),TMP
             ENDIF
           ENDDO
         ENDIF
         IF(NZXOPP.GT.0) THEN       
-          DO IOP = 1,3
+          DO IOP = 1,NOP
             INDXPR = NPRPS+IOP
             IF(IPRPTYP(INDXPR).NE.-1) THEN
                CALL GPGET(INDXPR,GPOP(1,IOP),
@@ -505,6 +503,247 @@ C     Memory deallocation
       deallocate(LABINT)
       deallocate(INTREP)
       deallocate(first)
+      deallocate(doatom)
+C     
+      RETURN
+      END
+C  /* Deck geted_length */                                                  
+      SUBROUTINE GETED_VELOCITY(OMEGA,ISSYM,CMO,IBEIG,EVECR,IBTYP,
+     &                   IBCVC,IBEVC,IBPVC,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Test routine for electric dipole approximation in velocity gauge.
+C     Scalar integrals are sorted on symmetries (max. 8)
+C
+C     Upon entering this routine solution vectors have been written
+C     to unformatted file PAMXVC, to be opened with unit number LUXVC
+C     References are:
+C     1. Nanna Holmgaard List, Joanna Kauczor, Trond Saue,
+C        Hans Jørgen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
+C                               
+C                                                                      
+C***********************************************************************
+      use orbital_rotation_indices
+C     
+#include "implicit.h"
+#include "priunit.h"
+C
+      PARAMETER(D0=0.0D0,D2=2.0D0,D1=1.0D0)
+#include "dcbgen.h"
+#include "dcbbas.h"
+#include "mxcent.h"
+#include "chrxyz.h"
+#include "pgroup.h"
+#include "dgroup.h"
+#include "nuclei.h"      
+#include "dcbxrs.h"
+#include "dcbxpp.h"
+#include "orgcom.h"
+#include "dcbxpr.h"
+#include "dcbprl.h"            
+#include "dcbibn.h"
+#include "dcbwav.h"
+C#include "cbiher.h"
+      LOGICAL DOINT(2,2)
+      INTEGER LWORK, NCOMP, NOPTP,IBEIG(*)
+      DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC),CMO(*),WORK(*)
+      real(8), allocatable              :: PRPINT(:,:),BBUF(:)
+      character (len=8),  allocatable   :: LABINT(:)
+      integer, allocatable              :: INTREP(:)
+      integer, allocatable              :: IVECS(:)
+      real(8)                           :: EVECR(NREDM,*)
+      integer             :: IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*)
+      real(8), allocatable              :: GPOE(:,:),GPOP(:,:)
+      real(8), allocatable              :: XPOE(:,:),XPOP(:,:)
+      logical, allocatable              :: first(:),doatom(:)
+      LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
+C
+#include "ibtfun.h"
+      NOP = 3
+C     
+C     Allocate placeholders for integral labels and irreps 
+C
+      allocate(LABINT(1))
+      allocate(INTREP(1))
+      allocate(first(nz))
+C
+C     Integral directives
+C
+      IPRINT=0
+      allocate(doatom(nucind))
+      CALL PR1DIR('OVERLAP ',INTTYP,NPRPINT,INTREP,
+     &            ANTI,SQUARE,DUMMY,LABINT,TRIANG,TRASPH,
+     &            SOLVNT,0,DOATOM,NUCIND,NBAST,NELMNT,IPRINT)
+      IF(NPRPLBL+NPRPINT.GT.MAXPRPLBL) THEN
+        CALL QUIT('GET_ED_VELOCITY:Redimension MAXPRPLBL !')
+      ENDIF
+      DO ICOMP = 1,NPRPINT
+        PRPLBL (NPRPLBL+ICOMP) = LABINT(ICOMP)
+        IPRLREP(NPRPLBL+ICOMP) = INTREP(ICOMP)
+        PDOINT (NPRPLBL+ICOMP) = '0++0'
+        IPRLTYP(NPRPLBL+ICOMP) =  1        
+      ENDDO
+      DOINT(1,1)=.FALSE.
+      DOINT(2,1)=.TRUE.
+      DOINT(1,2)=.TRUE.
+      DOINT(2,2)=.FALSE.
+C.....allocate array for holding integrals (on lower triangular form)
+      allocate(PRPINT(NELMNT,NPRPINT))
+      IORDER=0
+      NPQUAD=0
+C
+C     Operator setup
+C
+      NOP    = 3
+      IREP   = JSYMOP-1
+      ITIM   = -JTIMOP ! Time antisymmetric operator
+      NEXCNV = KEXCNV(JSYMOP)
+      IF (NEXCNV .EQ. 0) RETURN
+      IF((NPRPS+NOP).GT.MAXPRPS) THEN
+        WRITE(LUPRI,'(A,I5)') 
+     &        ' ** ERROR in GETED_LENGTH **  Redimension MAXPRPS to ',
+     &        NPRPS+NOP
+        CALL QUIT('GETED_LENGTH: Too may properties !')
+      ENDIF
+      DO IOP = 1,NOP
+        WRITE(PRPNAM(NPRPS+IOP),'(A4,A3,2A1,A7)')
+     &        'ED__',REP(IREP),'_',CHRXYZ(IOP),'dipvel_'
+        IOPTYP             = 1 + IOP
+        IAIND = JM4(1,IOPTYP)
+        IAREP = JM4REP(IAIND)
+        IPRPSYM(NPRPS+IOP) = JSYMOP ! Total symmetry of operator
+        IPRPTIM(NPRPS+IOP) = ITIM   
+        IF(IAREP.EQ.IREP) THEN
+           IPRPTYP(NPRPS+IOP)   = IOPTYP
+           IPRPLBL(1,NPRPS+IOP) = 1 + NPRPLBL
+           FACPRP(1,NPRPS+IOP)  = CVAL
+        ELSE
+           IPRPTYP(NPRPS+IOP)  = -1
+           FACPRP(1,NPRPS+IOP) = D0
+        ENDIF
+      ENDDO
+      CALL PRSYMB(LUPRI,'=',80,0)
+      WRITE(LUPRI,'(/A,I2,A,A3/)')
+     &     ' *** Excitations of boson symmetry',JSYMOP,' : ',REP(IREP)
+C
+C     Prepare solution vectors
+C     ========================
+C
+C      - orbital (e-e) part      
+C
+      IF(NZXOPE.GT.0) THEN
+         allocate(XPOE(NZXOPEQ,NEXCNV))
+         allocate(BBUF(NZXOPEQ))
+         allocate(IVECS(NESIM))         
+         OPEN(LUBOE,FILE='PAMBOE',FORM='UNFORMATTED',
+     +         ACCESS='DIRECT',RECL=8*NZXOPEQ,STATUS='UNKNOWN')
+         CALL XRSXV1(ITIM,JBENDX,XPOE,EVECR,NEXCNV,IBTYP,
+     &        IBEVC,IVECS,BBUF)
+         CLOSE(LUBOE,STATUS = 'KEEP')
+         deallocate(BBUF)
+         deallocate(IVECS)         
+      ENDIF
+C
+C     - orbital (e-e) part      
+C
+      IF(NZXOPP.GT.0) THEN
+         allocate(XPOE(NZXOPPQ,NEXCNV))
+         allocate(BBUF(NZXOPPQ))
+         allocate(IVECS(NPSIM))         
+         OPEN(LUBOP,FILE='PAMBOP',FORM='UNFORMATTED',
+     +         ACCESS='DIRECT',RECL=8*NZXOPPQ,STATUS='UNKNOWN')
+         CALL XRSXV1(ITIM,JBPNDX,XPOP,EVECR,NEXCNV,IBTYP,
+     &        IBPVC,IVECS,BBUF)
+         CLOSE(LUBOP,STATUS = 'KEEP')
+         deallocate(BBUF)
+         deallocate(IVECS)         
+      ENDIF
+C      
+C     Loop over excitation energies
+C     =============================
+C     
+      IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,NOP))
+      IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,NOP))      
+      DO 10 IEXC = 1,KEXCNV(JSYMOP)
+        IF(ABS(OMEGA(IEXC)).LT.1.0D-3) THEN
+           WRITE(LUPRI,*)
+     &     'GETED_LENGTH: Skipping excitation. Frequency too small: ',
+     &     OMEGA(IEXC)
+           GOTO 10
+        ENDIF
+C
+C       Debug output
+C
+        DO IOP = 1,NOP
+          WRITE(6,*) PRPNAM(NPRPS+IOP),IPRPTYP(NPRPS+IOP)
+          IF(IPRPTYP(NPRPS+IOP).EQ.-1) THEN
+            WRITE(6,*) ' - skipped'
+          ELSE
+            DO IMAT = 1,1
+              II = IPRPLBL(IMAT,NPRPS+IOP)
+              WRITE(6,*) PRPLBL(II),FACPRP(IMAT,NPRPS+IOP)
+            ENDDO
+          ENDIF
+        ENDDO
+C     
+C       Generate integrals
+C
+        CALL PR1IN2(WORK(KFREE),LFREE,PRPINT,INTTYP,
+     &       NPRPINT,INTREP,ANTI,SQUARE,DUMMY,LABINT,TRIANG,
+     &       TRASPH,.FALSE.,SOLVNT,0,0,DOATOM,
+     &       NUCIND,NBAST,NELMNT,IPRINT,DOINT,.FALSE.)
+        IF(IPRXPP.GE.5) THEN
+          DO ICOMP = 1,NPRPINT
+            WRITE(6,*) '* Integrals of ',LABINT(ICOMP),
+     &        '. Symmetry: ',REP(INTREP(ICOMP))
+            CALL OUTPAK(PRPINT(1,ICOMP),NBAST,1,LUPRI)
+          ENDDO
+        ENDIF
+C
+C     Gradient - orbital (e-e) part
+C     ====================================
+        IF(NZXOPE.GT.0) THEN       
+          DO IOP = 1,NOP
+            INDXPR = NPRPS+IOP
+            IF(IPRPTYP(INDXPR).NE.-1) THEN
+               CALL GPGET(INDXPR,GPOE(1,IOP),
+     &              get_orbital_rotation_indices_pp(),
+     &              NZXOPE,CMO,IBEIG,JBENDX,.FALSE.,PRPINT,
+     &              WORK,KFREE,LFREE,IPRXPP)
+               TMP=D2*DDOT(NZXOPEQ,GPOE(1,IOP),1,XPOE(1,IEXC),1)
+               WRITE(6,*) 'e-e TMOM:',PRPNAM(NPRPS+IOP),OMEGA(IEXC),TMP
+            ENDIF
+          ENDDO
+        ENDIF
+        IF(NZXOPP.GT.0) THEN       
+          DO IOP = 1,NOP
+            INDXPR = NPRPS+IOP
+            IF(IPRPTYP(INDXPR).NE.-1) THEN
+               CALL GPGET(INDXPR,GPOP(1,IOP),
+     &              get_orbital_rotation_indices_pn(),
+     &              NZXOPP,CMO,IBEIG,JBPNDX,.FALSE.,PRPINT,
+     &              WORK,KFREE,LFREE,IPRXPP)
+               TMP=D2*DDOT(NZXOPPQ,GPOP(1,IOP),1,XPOP(1,IEXC),1)
+               WRITE(6,*) 'e-p TMOM:',PRPNAM(NPRPS+IOP),TMP
+            ENDIF
+          ENDDO
+        ENDIF
+ 10   CONTINUE
+C
+C     Memory deallocation
+      IF(NZXOPE.GT.0) THEN
+        deallocate(GPOE)
+        deallocate(XPOE)
+      ENDIF
+      IF(NZXOPP.GT.0) THEN
+        deallocate(GPOP)
+        deallocate(XPOP)         
+      ENDIF
+      deallocate(PRPINT)
+      deallocate(LABINT)
+      deallocate(INTREP)
+      deallocate(first)
+      deallocate(doatom)
 C     
       RETURN
       END
@@ -702,7 +941,7 @@ C
             IF(IPRINT.GE.5) THEN
               DO ICOMP = 1,NPRPINT
                 WRITE(6,*) '* Integrals of ',LABINT(ICOMP),
-     &            '. Symmetry: ',REP(INTREP(NCOMP))
+     &            '. Symmetry: ',REP(INTREP(ICOMP))
                 CALL OUTPAK(PRPINT(1,ICOMP),NBAST,1,LUPRI)
               ENDDO
             ENDIF
