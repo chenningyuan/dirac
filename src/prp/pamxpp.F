@@ -372,7 +372,7 @@ C
      &            '.EPOLE ','.MPOLE ','.INTFLG','.INTENS',
      &            '.OCCUP ','.VIRTUA','.ACTIVE','.BED   ',
      &            '.ITRINT','.CNVINT','.REAXVC','.ANGLES',
-     &            '.RESFAC','.ORBANA','-------','.SKIPEE',
+     &            '.RESFAC','.ORBANA','.ROTAV ','.SKIPEE',
      &            '.MXLOAD','.ONLYSF','.ONLYSG','-------'/
 C
 #include "ibtfun.h"
@@ -430,6 +430,7 @@ Chj: which should be moved to dcbxrs (?) or another one:
 Chj: MAXRM, MXLOAD
       MAXRM      = -1
       MXLOAD     = -1
+      NROTAV     =  5
       XPP_SKIPEP = .FALSE.
       IF(X2C.OR.BSS.OR.LEVYLE.OR.FREEPJ.OR.VEXTPJ) XPP_SKIPEP = .TRUE.
       XPP_SKIPEE = .FALSE.
@@ -669,6 +670,8 @@ C&&&& ORBANA: Analyze individual contributions to response functions
                   ORBXPP = .TRUE.
                GO TO 100
  27            CONTINUE
+C&&&& ROTAV: give Lmax for Lebedev quadrature for rotational averaging
+                  READ(LUCMD,*) NROTAV
                GO TO 100
  28            CONTINUE
 C&&&& SKIPEE: Skip all e-e rotations
@@ -1076,6 +1079,9 @@ C
      &        EVECR,IBTYP,IBCVC,IBEVC,IBPVC,
      &        WORK,KFREE,LFREE)
          CALL GET_BED(OMEGA,ISSYM,WORK(KCMO),WORK(KIBRP),
+     &        EVECR,IBTYP,IBCVC,IBEVC,IBPVC,
+     &        WORK,KFREE,LFREE)
+         CALL BEDLEB(OMEGA,ISSYM,WORK(KCMO),WORK(KIBRP),
      &        EVECR,IBTYP,IBCVC,IBEVC,IBPVC,
      &        WORK,KFREE,LFREE)
       ENDIF

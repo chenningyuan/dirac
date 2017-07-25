@@ -16,6 +16,7 @@ C KEXCNV(8) - number of excitations to converge in each boson sym.
 C KEXSIM(8) - number of simult. trial vectors in each boson sym.
 C KEXSTV(8) - number of start   trial vectors in each boson sym.
 C MAXEXC = max(KEXCNV(i), i = 1,nbsym)
+C NROTAV = maxL for Lebedev quadrature for rotational averaging
 C
 C    dcbxpp.h -- Feb. 18, 1999, hjaaj
 C
@@ -31,6 +32,6 @@ C
      &     KEXCNV(8), KEXSIM(8), KEXSTV(8),
      &     LPPAPU(MAXLPP),LPPAPS(MAXLPP),NPPAPT,NPPAP(8),JPPAP(8),
      &     INTXPP,ITRIPP(2),NCLS_XPP(2,3,2),KVAL_OSC,
-     &     IEPOFF(MAXP),IMPOFF(MAXP)
+     &     IEPOFF(MAXP),IMPOFF(MAXP), NROTAV
       CHARACTER XPP_INDSTR*72, XPPFIL*6
       COMMON/DCCXPP/XPP_INDSTR(3,2),XPPFIL

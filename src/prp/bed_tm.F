@@ -120,7 +120,7 @@ C
           IF(IPSYM2INT(IBSYM,IOP).EQ.-1) THEN
             PBUF(IMAT,IOP) = D0
           ELSE
-            PBUF(IMAT,IOP)          = UPOL(IMAT) ! facot 0.5 not included
+            PBUF(IMAT,IOP)          = UPOL(IMAT) ! factor 0.5 not included
             IPRPLBL(IMAT,NPRPS+IOP) = IPSYM2INT(IBSYM,IOP)+NPRPLBL
           ENDIF
         ENDDO
@@ -173,7 +173,7 @@ C
 C     Loop over excitation energies
 C     =============================
 C
-      allocate(TMOM(NOP,NVAR,NEXCNV))
+      allocate(TMOM(NOP,NPAR,NEXCNV))
       IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,NOP))
       IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,NOP))      
       DO 10 IEXC = 1,NEXCNV
@@ -225,12 +225,12 @@ C
           ENDDO
        ENDIF
 C
-       IVAR = 0
+       IPAR = 0
 C
 C     Gradient - orbital (e-e) part
 C     ====================================
        IF(NZXOPE.GT.0) THEN
-          IVAR = IVAR + 1
+          IPAR = IPAR + 1
           DO IOP = 1,NOP
             INDXPR = NPRPS+IOP
             IF(IPRPTYP(INDXPR).NE.-1) THEN
@@ -238,17 +238,20 @@ C     ====================================
      &              get_orbital_rotation_indices_pp(),
      &              NZXOPE,CMO,IBEIG,JBENDX,.FALSE.,PRPINT,
      &              WORK,KFREE,LFREE,IPRXPP)
-               TMOM(IOP,IVAR,IEXC)=D2*
+               TMOM(IOP,IPAR,IEXC)=D2*
      &              DDOT(NZXOPEQ,GPOE(1,IOP),1,XPOE(1,IEXC),1)
             ELSE
-               TMOM(IOP,IVAR,IEXC)=D0
+               TMOM(IOP,IPAR,IEXC)=D0
             ENDIF
             WRITE(6,*) 'e-e TMOM:',PRPNAM(NPRPS+IOP),OMEGA(IEXC),
-     &              TMOM(IOP,IVAR,IEXC)
+     &              TMOM(IOP,IPAR,IEXC)
            ENDDO
         ENDIF
+C
+C     Gradient - orbital (e-p) part
+C     ====================================
         IF(NZXOPP.GT.0) THEN       
-          IVAR = IVAR + 1
+          IPAR = IPAR + 1
           DO IOP = 1,NOP
             INDXPR = NPRPS+IOP
             IF(IPRPTYP(INDXPR).NE.-1) THEN
@@ -256,10 +259,10 @@ C     ====================================
      &              get_orbital_rotation_indices_pn(),
      &              NZXOPP,CMO,IBEIG,JBPNDX,.FALSE.,PRPINT,
      &              WORK,KFREE,LFREE,IPRXPP)
-               TMOM(IOP,IVAR,IEXC)=D2*
+               TMOM(IOP,IPAR,IEXC)=D2*
      &              DDOT(NZXOPPQ,GPOP(1,IOP),1,XPOP(1,IEXC),1)
                WRITE(6,*) 'e-p TMOM:',PRPNAM(NPRPS+IOP),OMEGA(IEXC),
-     &              TMOM(IOP,IVAR,IEXC)
+     &              TMOM(IOP,IPAR,IEXC)
             ENDIF
           ENDDO
         ENDIF
@@ -576,6 +579,8 @@ C#include "cbiher.h"
 C
 #include "ibtfun.h"
       NOP = 3
+      NEXCNV = KEXCNV(JSYMOP)
+      IF (NEXCNV .EQ. 0) RETURN
 C     
 C     Allocate placeholders for integral labels and irreps 
 C
@@ -613,11 +618,10 @@ C
       NOP    = 3
       IREP   = JSYMOP-1
       ITIM   = -JTIMOP ! Time antisymmetric operator
-      NEXCNV = KEXCNV(JSYMOP)
-      IF (NEXCNV .EQ. 0) RETURN
       IF((NPRPS+NOP).GT.MAXPRPS) THEN
-        WRITE(LUPRI,'(A,I5)') 
-     &        ' ** ERROR in GET_ED_LENGTH **  Redimension MAXPRPS to ',
+        WRITE(LUPRI,'(A,A,I5)') 
+     &        ' ** ERROR in GET_ED_VELOCITY **  ',
+     &        'Redimension MAXPRPS to ',
      &        NPRPS+NOP
         CALL QUIT('GET_ED_LENGTH: Too may properties !')
       ENDIF
@@ -766,81 +770,323 @@ C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
-C  /* Deck bedleb */                                                     C
-      SUBROUTINE BEDLEB(OMEGA,ISSYM,IPRINT,WORK, KFREE,LFREE)
-C      SUBROUTINE BEDLEB(X,Y,Z,WT,NSCHEME,NCOUNT,NATOM,RNODE,RBRAGG)
+C  /* Deck bedleb */                                                   C
+      SUBROUTINE BEDLEB(OMEGA,ISSYM,CMO,IBEIG,EVECR,IBTYP,
+     &                   IBCVC,IBEVC,IBPVC,WORK,KFREE,LFREE)
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-
+C***********************************************************************
+      use orbital_rotation_indices
+C     
 #include "implicit.h"
 #include "priunit.h"
-#include "pi.h"
 C
+      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0)
 #include "dcbgen.h"
+#include "chrxyz.h"
 #include "dcbbas.h"
 #include "pgroup.h"
 #include "dgroup.h"
+#include "dcbxrs.h"
 #include "dcbxpp.h"
 #include "orgcom.h"
+#include "dcbxpr.h"
+#include "dcbprl.h"            
+#include "dcbibn.h"
+#include "dcbwav.h"
+C#include "cbiher.h"
+      LOGICAL DOINT(2,2)
+      INTEGER LWORK, NCOMP, NOPTP,IBEIG(*)
+      DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC),CMO(*),WORK(*)
+      real(8), allocatable              :: PRPINT(:,:),BBUF(:)
+      real(8), allocatable              :: TMOM(:,:,:,:),TMOM2(:,:)
+      character (len=8),  allocatable   :: LABINT(:)
+      integer, allocatable              :: INTREP(:),IPSYM2INT(:,:)
+      integer, allocatable              :: IVECS(:)
+      real(8)             :: PBUF(3,2),EEWT(6),EVECR(NREDM,*)
+      integer             :: IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*)
+      real(8), allocatable              :: GPOE(:,:),GPOP(:,:)
+      real(8), allocatable              :: XPOE(:,:),XPOP(:,:)
+      real(8), allocatable              :: X(:),Y(:),Z(:),WT(:)      
+      logical, allocatable              :: first(:)
+      LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
 C
-      PARAMETER (D0=0.0D0,DP5=0.5D0,D2=2.0D0)
-      PARAMETER (MAXNUM=1455)
-      DIMENSION X(MAXNUM),Y(MAXNUM),Z(MAXNUM),WT(MAXNUM)
-      DIMENSION OMEGA(MAXEXC,NBSYM),ISSYM(MAXEXC,NBSYM),WORK(*)
-      REAL(8):: KVEC(3,MAXNUM),E1VEC(3),E2VEC(3),FAC,TMPNRM
-      REAL(8):: E1E1(3,3),E1E2(3,3),OSC(MAXEXC),ECD(MAXEXC)
-
-C      IF LEBEDEV THEN
-        CALL LD0014(X,Y,Z,WT,NCOUNT)
-C      END IF
-      FAC=OMEGA(1,1)/CVAL
-C
-      DO IK=1,NCOUNT
-C   
-C     Creating wave vector for the given Lebedev point or as specified
-C     in the input      
-C
-        KVEC(1,IK)=FAC * X(IK) 
-        KVEC(2,IK)=FAC * Y(IK) 
-        KVEC(3,IK)=FAC * Z(IK) 
-CC       
-C       CALL INTEGRAL ROUTINE
-C
-C.......Weights for chi-average over pol-directions
-C       Linear absorption 
-C       <E1VEC,E1VEC>_chi average
-        E1E1(1,1)=DP5*(Y(IK)*Y(IK)+Z(IK)*Z(IK))
-        E1E1(1,2)=-DP5*X(IK)*Y(IK)
-        E1E1(1,3)=-DP5*X(IK)*Z(IK)
-        E1E1(2,1)=E1E1(1,2)
-        E1E1(2,2)=DP5*(X(IK)*X(IK)+Z(IK)*Z(IK))
-        E1E1(2,3)=-DP5*Y(IK)*Z(IK)
-        E1E1(3,1)=E1E1(1,3)
-        E1E1(3,2)=E1E1(2,3)
-        E1E1(3,3)=DP5*(X(IK)*X(IK)+Y(IK)*Y(IK))
-C
-C     AVERAGE OVER POL-DIRECTION      
-      WRITE(LUPRI,*) 'VEC', X(IK), Y(IK), Z(IK), WT(IK)
-      DO I=1,3
-        WRITE(LUPRI,*)  E1E1(I,1), E1E1(I,2), E1E1(I,3)
-      END DO
-C
-C      DO I=1,3
-C        DO J=I,3
-C          IF I.EQ.J THEN
-C            OSC(IEXC)=OSC(IEXC)+WT(IK)*E1E1(I,I)
-C     &                         *(TMR(I)*TMR(I)+TMI(I)*TMI(I))
-C          ELSE
-C            OSC(IEXC)=OSC(IEXC)+D2*WT(IK)*E1E1(I,J)
-C     &                         *(TMR(I)*TMR(J)-TMI(I),TMI(J))
-C            ECD(IEXC)=ECD(IEXC)+WT(IK)*E1E2(I,J)
-C     &                         *(TMI(I)*TMR(J)+TMR(I)*TMI(J))
-C          END IF 
-C        END DO 
-C      END DO
+#include "ibtfun.h"
+      NEXCNV = KEXCNV(JSYMOP)
+      IF (NEXCNV .EQ. 0) RETURN
+      NPOINTS = NLEB(NROTAV)
 C     
-      END DO
+C     Allocate placeholders for integral labels and irreps 
+C
+      allocate(LABINT(8))
+      allocate(INTREP(8))
+      allocate(first(nz))
+C
+C     Integral directives
+C
+      IPRINT=0
+      CALL PR1DIR('CXIKR   ',INTTYP,NPRPINT,INTREP,
+     &            ANTI,SQUARE,DUMMY,LABINT,TRIANG,TRASPH,
+     &            SOLVNT,0,.FALSE.,0,NBAST,NELMNT,IPRINT)
+C     NPRPINT is by construction an even number,
+C     the first and second halfs corresponding to the real (eq. 44) and imaginary parts (eq. 45)
+      IF(NPRPLBL+NPRPINT.GT.MAXPRPLBL) THEN
+        CALL QUIT('GET_BED:Redimension MAXPRPLBL !')
+      ENDIF
+      DO ICOMP = 1,NPRPINT
+        PRPLBL (NPRPLBL+ICOMP) = LABINT(ICOMP)
+        IPRLREP(NPRPLBL+ICOMP) = INTREP(ICOMP)
+        PDOINT (NPRPLBL+ICOMP) = '0++0'
+        IPRLTYP(NPRPLBL+ICOMP) =  1        
+      ENDDO
+      DOINT(1,1)=.FALSE.
+      DOINT(2,1)=.TRUE.
+      DOINT(1,2)=.TRUE.
+      DOINT(2,2)=.FALSE.
+C.....allocate array for holding integrals (on lower triangular form)
+      allocate(PRPINT(NELMNT,NPRPINT))
+      IORDER=0
+      NPQUAD=0
+C      
+C     Find what symmetries are available
+C
+      allocate(IPSYM2INT(NBSYM,2))
+      NCOMP=NPRPINT/2
+      CALL ICOPY(2*NBSYM,-1,0,IPSYM2INT,1)
+      DO I = 1,NCOMP
+        ISYM = INTREP(I) + 1
+        IPSYM2INT(ISYM,1) = I
+        II = NCOMP + I
+        ISYM = INTREP(II) + 1
+        IPSYM2INT(ISYM,2) = II
+      ENDDO
+C
+C     Operator setup
+C
+      NOP    = 3
+      IREP   = JSYMOP-1
+      ITIM   = -JTIMOP ! Time antisymmetric operator
+      IF((NPRPS+2*NOP).GT.MAXPRPS) THEN
+        WRITE(LUPRI,'(A,I5)') 
+     &        ' ** ERROR in BEDLEB **  Redimension MAXPRPS to ',
+     &        NPRPS+2*NOP
+        CALL QUIT('BEDLEB: Too may properties !')
+      ENDIF
+      II = 0
+      DO IC = 1,2
+        DO IOP = 1,NOP
+          II = II + 1
+          IOPTYP = 1 + IOP
+          IAIND  = JM4(1,IOPTYP)
+          IAREP  = JM4REP(IAIND)
+          IBSYM  = IBTXOR(IAREP,IREP)+1
+          WRITE(PRPNAM(NPRPS+II),'(A3,A1,I1,A7)')
+     &        'BED',CHRXYZ(IC),IC,REP(IREP)
+          IPRPSYM(NPRPS+II) = JSYMOP ! Total symmetry of operator
+          IPRPTIM(NPRPS+II) = ITIM   
+          IF(IPSYM2INT(IBSYM,IC).EQ.-1) THEN
+            PBUF(IOP,IC) = D0
+            IPRPTYP(NPRPS+II) = -1 ! Means that there is no contribution
+          ELSE
+            PBUF(IOP,IC)         = D1 ! factor 0.5 not included
+            IPRPTYP(NPRPS+II)    = IOPTYP
+            IPRPLBL(1,NPRPS+II)  = IPSYM2INT(IBSYM,IC)+NPRPLBL
+          ENDIF
+        ENDDO
+      ENDDO 
+      CALL PRSYMB(LUPRI,'=',80,0)
+      WRITE(LUPRI,'(/A,I2,A,A3/)')
+     &     ' *** Excitations of boson symmetry',JSYMOP,' : ',REP(IREP)
+      WRITE(6,*) 'BED rotational average. '
+      WRITE(6,*) '  Lmax    = ',NROTAV
+      WRITE(6,*) '  Npoints = ',NPOINTS
+C
+C     Prepare solution vectors
+C     ========================
+C
+C      - orbital (e-e) part      
+C
+      NPAR = 0
+      IF(NZXOPE.GT.0) THEN
+         allocate(XPOE(NZXOPEQ,NEXCNV))
+         allocate(BBUF(NZXOPEQ))
+         allocate(IVECS(NESIM))
+         NPAR = NPAR + 1
+         OPEN(LUBOE,FILE='PAMBOE',FORM='UNFORMATTED',
+     +         ACCESS='DIRECT',RECL=8*NZXOPEQ,STATUS='UNKNOWN')
+         CALL XRSXV1(ITIM,JBENDX,XPOE,EVECR,NEXCNV,IBTYP,
+     &        IBEVC,IVECS,BBUF)
+         CLOSE(LUBOE,STATUS = 'KEEP')
+         deallocate(BBUF)
+         deallocate(IVECS)         
+      ENDIF
+C
+C     - orbital (e-p) part      
+C
+      IF(NZXOPP.GT.0) THEN
+         allocate(XPOE(NZXOPPQ,NEXCNV))
+         allocate(BBUF(NZXOPPQ))
+         allocate(IVECS(NPSIM))         
+         NPAR = NPAR + 1
+         OPEN(LUBOP,FILE='PAMBOP',FORM='UNFORMATTED',
+     +         ACCESS='DIRECT',RECL=8*NZXOPPQ,STATUS='UNKNOWN')
+         CALL XRSXV1(ITIM,JBPNDX,XPOP,EVECR,NEXCNV,IBTYP,
+     &        IBPVC,IVECS,BBUF)
+         CLOSE(LUBOP,STATUS = 'KEEP')
+         deallocate(BBUF)
+         deallocate(IVECS)         
+      ENDIF
+C      
+C     Loop over quadrature points
+C     =============================
+C
+      allocate(TMOM(NOP,2,NPAR,NEXCNV))
+      allocate(TMOM2(NPAR,NEXCNV))
+      CALL DCOPY(NPAR*NEXCNV,D0,0,TMOM2,1)
+      IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,NOP))
+      IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,NOP))      
+      allocate( X(NPOINTS))
+      allocate( Y(NPOINTS))
+      allocate( Z(NPOINTS))
+      allocate(WT(NPOINTS))
+      CALL LEBEDEV(NROTAV,X,Y,Z,WT,NCOUNT)
+      IF(NCOUNT.NE.NPOINTS) CALL QUIT('BEDLEB: Grid inconsistency.')
+      DO IP = 1,NPOINTS
+C.......Set up chi-average over polarization directions        
+        EEWT(1) =  DP5*(Y(IP)*Y(IP)+Z(IP)*Z(IP)) ! (1,1)
+        EEWT(2) = -X(IP)*Y(IP)                   ! (2,1) ! factor 0.5 cancelled by triangular sum
+        EEWT(3) = -X(IP)*Z(IP)                   ! (3,1) ! factor 0.5 cancelled by triangular sum
+        EEWT(4) =  DP5*(X(IP)*X(IP)+Z(IP)*Z(IP)) ! (2,2)
+        EEWT(5) = -Y(IP)*Z(IP)                   ! (3,2) ! factor 0.5 cancelled by triangular sum
+        EEWT(6) =  DP5*(X(IP)*X(IP)+Y(IP)*Y(IP)) ! (3,3)
+        DO 10 IEXC = 1,NEXCNV
+          IF(ABS(OMEGA(IEXC)).LT.1.0D-3) THEN
+             WRITE(LUPRI,*)
+     &       'BEDLEB: Skipping excitation. Frequency too small: ',
+     &       OMEGA(IEXC)
+             GOTO 10
+          ENDIF
+C
+C         Length of wave vector
+C
+          FAC=OMEGA(IEXC)/CVAL
+          II = 0
+          DO IC = 1,2
+            DO IOP = 1,NOP
+              II = II + 1
+              WRITE(PRPNAM(NPRPS+II)(9:16),'(A4,I4)') '_exc',IEXC
+              FACPRP(1,NPRPS+II) = PBUF(IOP,IC)/FAC
+            ENDDO
+          ENDDO 
+C     
+C         Generate integrals
+C
+          WAVEVEC(1) = FAC*X(IP)
+          WAVEVEC(2) = FAC*Y(IP)
+          WAVEVEC(3) = FAC*Z(IP)          
+          CALL PR1IN2(WORK(KFREE),LFREE,PRPINT,INTTYP,
+     &       NPRPINT,INTREP,ANTI,SQUARE,DUMMY,LABINT,TRIANG,
+     &       TRASPH,.FALSE.,SOLVNT,0,0,DUMMY,
+     &       0,NBAST,NELMNT,IPRINT,DOINT,.FALSE.)
+          IF(IPRXPP.GE.5) THEN
+            DO ICOMP = 1,NPRPINT
+              WRITE(6,*) '* Integrals of ',LABINT(ICOMP),
+     &          '. Symmetry: ',REP(INTREP(ICOMP))
+              CALL OUTPAK(PRPINT(1,ICOMP),NBAST,1,LUPRI)
+            ENDDO
+          ENDIF
+C
+       IPAR = 0
+C
+C     Gradient - orbital (e-e) part
+C     ====================================
+       IF(NZXOPE.GT.0) THEN
+          IPAR = IPAR + 1
+          II = 0
+          TMP = D0
+          DO IC = 1,2
+            DO IOP = 1,NOP
+              II = II + 1
+              INDXPR = NPRPS+II
+              IF(IPRPTYP(INDXPR).NE.-1) THEN
+                CALL GPGET(INDXPR,GPOE(1,IOP),
+     &              get_orbital_rotation_indices_pp(),
+     &              NZXOPE,CMO,IBEIG,JBENDX,.FALSE.,PRPINT,
+     &              WORK,KFREE,LFREE,IPRXPP)
+                TMOM(IOP,IC,IPAR,IEXC)=D2*
+     &              DDOT(NZXOPEQ,GPOE(1,IOP),1,XPOE(1,IEXC),1)
+              ELSE
+                TMOM(IOP,IC,IPAR,IEXC) = D0
+              ENDIF
+            ENDDO
+            TMP = TMP
+     &     + EEWT(1)*TMOM(1,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
+     &     + EEWT(2)*TMOM(2,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
+     &     + EEWT(3)*TMOM(3,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
+     &     + EEWT(4)*TMOM(2,IC,IPAR,IEXC)*TMOM(2,IC,IPAR,IEXC)
+     &     + EEWT(5)*TMOM(3,IC,IPAR,IEXC)*TMOM(2,IC,IPAR,IEXC)
+     &     + EEWT(6)*TMOM(3,IC,IPAR,IEXC)*TMOM(3,IC,IPAR,IEXC)
+          ENDDO
+          TMOM2(IPAR,IEXC) = TMOM2(IPAR,IEXC) + WT(IP)*TMP
+        ENDIF
+C
+C     Gradient - orbital (e-p) part
+C     ====================================
+       IF(NZXOPP.GT.0) THEN
+          IPAR = IPAR + 1
+          II = 0
+          TMP = D0
+          DO IC = 1,2
+            DO IOP = 1,NOP
+              II = II + 1
+              INDXPR = NPRPS+II
+              IF(IPRPTYP(INDXPR).NE.-1) THEN
+                CALL GPGET(INDXPR,GPOP(1,IOP),
+     &              get_orbital_rotation_indices_pn(),
+     &              NZXOPP,CMO,IBEIG,JBPNDX,.FALSE.,PRPINT,
+     &              WORK,KFREE,LFREE,IPRXPP)
+                TMOM(IOP,IC,IPAR,IEXC)=D2*
+     &              DDOT(NZXOPEQ,GPOE(1,IOP),1,XPOE(1,IEXC),1)
+              ELSE
+                TMOM(IOP,IC,IPAR,IEXC) = D0
+              ENDIF
+            ENDDO
+            TMP = TMP
+     &     + EEWT(1)*TMOM(1,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
+     &     + EEWT(2)*TMOM(2,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
+     &     + EEWT(3)*TMOM(3,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
+     &     + EEWT(4)*TMOM(2,IC,IPAR,IEXC)*TMOM(2,IC,IPAR,IEXC)
+     &     + EEWT(5)*TMOM(3,IC,IPAR,IEXC)*TMOM(2,IC,IPAR,IEXC)
+     &     + EEWT(6)*TMOM(3,IC,IPAR,IEXC)*TMOM(3,IC,IPAR,IEXC)
+          ENDDO
+          TMOM2(IPAR,IEXC) = TMOM2(IPAR,IEXC) + WT(IP)*TMP
+        ENDIF
+   10   CONTINUE
+      ENDDO
+C
+C     Print section
+C
+      DO IEXC = 1,NEXCNV
+        WRITE(6,*) IEXC,OMEGA(IEXC),(TMOM2(IPAR,IEXC),IPAR = 1,NPAR)
+      ENDDO
+C            
+C     Memory deallocation
+      IF(NZXOPE.GT.0) THEN
+        deallocate(GPOE)
+        deallocate(XPOE)
+      ENDIF
+      IF(NZXOPP.GT.0) THEN
+        deallocate(GPOP)
+        deallocate(XPOP)         
+      ENDIF
+      deallocate(TMOM)
+      deallocate(TMOM2)
+      deallocate(PRPINT)
+      deallocate(LABINT)
+      deallocate(INTREP)
+      deallocate(IPSYM2INT)
+      deallocate(first)
+C     
       RETURN
       END
-C
 CCCCCCCCCCCCCCCCCCCCCCCCC
