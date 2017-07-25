@@ -362,7 +362,7 @@ Chj: MAXRM, MXLOAD
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-      DIMENSION WORK(LWORK),IBED(3,8)
+      DIMENSION WORK(LWORK)
 C
       SAVE SET
       DATA SET/.FALSE./
@@ -370,10 +370,10 @@ C
      &            '.EXCITA','.TRIPLE','.THRESH','.MAXITR',
      &            '.SKIPEP','.MAXRED','.E2CHEK','.NONORM',
      &            '.EPOLE ','.MPOLE ','.INTFLG','.INTENS',
-     &            '.OCCUP ','.VIRTUA','.ACTIVE','.BED   ',
+     &            '.OCCUP ','.VIRTUA','.ACTIVE','.BEDFIX',
      &            '.ITRINT','.CNVINT','.REAXVC','.ANGLES',
      &            '.RESFAC','.ORBANA','.ROTAV ','.SKIPEE',
-     &            '.MXLOAD','.ONLYSF','.ONLYSG','-------'/
+     &            '.MXLOAD','.ONLYSF','.ONLYSG','.BED   '/
 C
 #include "ibtfun.h"
 C
@@ -424,7 +424,8 @@ C
       XPPFIL     = 'NORXVC'
       ORBXPP     = .FALSE.
       DOBED      = .FALSE.
-Chj: initialize some parts of dcbxlr; (nov. 2000)
+      DOBEDFIX   = .FALSE.
+C     hj: initialize some parts of dcbxlr; (nov. 2000)
 Chj: dcbxlr includes some general information
 Chj: which should be moved to dcbxrs (?) or another one:
 Chj: MAXRM, MXLOAD
@@ -630,18 +631,10 @@ C&&&& ACTIVE: String of active orbitals in XPP module
                   ENDDO
                GO TO 100
  20            CONTINUE
-C&&&& BED: Full light-matter interaction
-               DOBED=.TRUE.
+C&&&& BEDFIX: Full light-matter interaction at fixed orientation
+               DOBEDFIX=.TRUE.
                READ(LUCMD,*) W1,W2,W3
                CALL ANGLES(W1,W2,W3,UWAVE,UPOL)
-C               CALL DEF_BEDCOMP(LPPAPU(NPPAPT+1),NCOMP,IPRXPP)
-C               NPPAPT = NPPAPT + 3*NCOMP
-C               IF((NPPAPT+NCOMP).GT.MAXLPP) THEN
-C                 WRITE(LUPRI,'(A,A)') 'XPPINP: Pointer array LPP',
-C     &           'APU out of bounds for BED integrals '
-C                 WRITE(LUPRI,'(A,I5)') 
-C     &           'Increase MAXEXP to ',(NPPAPT+NCOMP)
-C               ENDIF
                GO TO 100
  21            CONTINUE
 C&&& ITRINT: Number of iterations before adding SL- and SS-integrals
@@ -691,6 +684,8 @@ C&&&& ONLYSG: Only generate G matrix (Fock-matrix of modified density)
                   XPP_LSFG(2) = .FALSE.
                GO TO 100
  32            CONTINUE
+C&&&& BED: Full light-matter interaction
+                  DOBED = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -1072,15 +1067,17 @@ C
 C     BED: Beyond Electric Dipole Approximation
 C
       IF (DOBED) THEN
-         CALL GET_ED_LENGTH(OMEGA,ISSYM,WORK(KCMO),WORK(KIBRP),
-     &        EVECR,IBTYP,IBCVC,IBEVC,IBPVC,
-     &        WORK,KFREE,LFREE)
-         CALL GET_ED_VELOCITY(OMEGA,ISSYM,WORK(KCMO),WORK(KIBRP),
-     &        EVECR,IBTYP,IBCVC,IBEVC,IBPVC,
-     &        WORK,KFREE,LFREE)
+C         CALL GET_ED_LENGTH(OMEGA,ISSYM,WORK(KCMO),WORK(KIBRP),
+C     &        EVECR,IBTYP,IBCVC,IBEVC,IBPVC,
+C     &        WORK,KFREE,LFREE)
+C         CALL GET_ED_VELOCITY(OMEGA,ISSYM,WORK(KCMO),WORK(KIBRP),
+C     &        EVECR,IBTYP,IBCVC,IBEVC,IBPVC,
+C     &        WORK,KFREE,LFREE)
          CALL GET_BED(OMEGA,ISSYM,WORK(KCMO),WORK(KIBRP),
      &        EVECR,IBTYP,IBCVC,IBEVC,IBPVC,
      &        WORK,KFREE,LFREE)
+      ENDIF
+      IF(DOBEDFIX) THEN
          CALL BEDLEB(OMEGA,ISSYM,WORK(KCMO),WORK(KIBRP),
      &        EVECR,IBTYP,IBCVC,IBEVC,IBPVC,
      &        WORK,KFREE,LFREE)
@@ -2254,11 +2251,6 @@ C.......Isotropic contribution
       deallocate(ind)
       deallocate(ieerg)
 C
-C
-C     NANNA: Call bed integrals
-C
-C      CALL GET_BED(OMEGA,ISSYM,IPRXPP,WORK,KFREE,LFREE)
-C      CALL BEDLEB(OMEGA,ISSYM,IPRXPP,WORK,KFREE,LFREE)
       RETURN
       END
 

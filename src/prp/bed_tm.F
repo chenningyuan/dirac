@@ -36,7 +36,7 @@ C#include "cbiher.h"
       INTEGER LWORK, NCOMP, NOPTP,IBEIG(*)
       DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC),CMO(*),WORK(*)
       real(8), allocatable              :: PRPINT(:,:),BBUF(:)
-      real(8), allocatable              :: TMOM(:,:,:)
+      real(8), allocatable              :: TMOM(:,:,:),OSC(:,:)
       character (len=8),  allocatable   :: LABINT(:)
       integer, allocatable              :: INTREP(:),IPSYM2INT(:,:)
       integer, allocatable              :: IVECS(:)
@@ -174,6 +174,7 @@ C     Loop over excitation energies
 C     =============================
 C
       allocate(TMOM(NOP,NPAR,NEXCNV))
+      allocate(OSC(NPAR,NEXCNV))
       IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,NOP))
       IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,NOP))      
       DO 10 IEXC = 1,NEXCNV
@@ -196,23 +197,26 @@ C
 C
 C       Debug output
 C
-        DO IOP = 1,NOP
-          WRITE(6,*) PRPNAM(NPRPS+IOP),IPRPTYP(NPRPS+IOP),FAC
-          IF(IPRPTYP(NPRPS+IOP).EQ.-1) THEN
-            WRITE(6,*) ' - skipped'
-          ELSE
-            DO IMAT = 1,NMAT
-              II = IPRPLBL(IMAT,NPRPS+IOP)
-              WRITE(6,*) PRPLBL(II),FACPRP(IMAT,NPRPS+IOP)
-            ENDDO
-          ENDIF
-        ENDDO
+        IF(IPRXPP.GE.2) THEN
+          DO IOP = 1,NOP
+            WRITE(6,*) PRPNAM(NPRPS+IOP),IPRPTYP(NPRPS+IOP),FAC
+            IF(IPRPTYP(NPRPS+IOP).EQ.-1) THEN
+              WRITE(6,*) ' - skipped'
+            ELSE
+              DO IMAT = 1,NMAT
+                II = IPRPLBL(IMAT,NPRPS+IOP)
+                WRITE(6,*) PRPLBL(II),FACPRP(IMAT,NPRPS+IOP)
+              ENDDO
+            ENDIF
+          ENDDO
+        ENDIF
 C     
 C       Generate integrals
 C
         DO I = 1,3
           WAVEVEC(I) = FAC*UWAVE(I)
         ENDDO
+C       CALL DCOPY(3,D0,0,WAVEVEC,1) ! for testing electric dipole approximation
         CALL PR1IN2(WORK(KFREE),LFREE,PRPINT,INTTYP,
      &       NPRPINT,INTREP,ANTI,SQUARE,DUMMY,LABINT,TRIANG,
      &       TRASPH,.FALSE.,SOLVNT,0,0,DUMMY,
@@ -231,6 +235,7 @@ C     Gradient - orbital (e-e) part
 C     ====================================
        IF(NZXOPE.GT.0) THEN
           IPAR = IPAR + 1
+          TMP = D0
           DO IOP = 1,NOP
             INDXPR = NPRPS+IOP
             IF(IPRPTYP(INDXPR).NE.-1) THEN
@@ -243,9 +248,12 @@ C     ====================================
             ELSE
                TMOM(IOP,IPAR,IEXC)=D0
             ENDIF
-            WRITE(6,*) 'e-e TMOM:',PRPNAM(NPRPS+IOP),OMEGA(IEXC),
+            TMP = TMP + TMOM(IOP,IPAR,IEXC)*TMOM(IOP,IPAR,IEXC)
+            WRITE(6,'(A,1X,A16,F18.10,3X,F14.10)')
+     &             'e-e TMOM:',PRPNAM(NPRPS+IOP),OMEGA(IEXC),
      &              TMOM(IOP,IPAR,IEXC)
-           ENDDO
+          ENDDO
+          OSC(IPAR,IEXC) = D2*OMEGA(IEXC)*TMP
         ENDIF
 C
 C     Gradient - orbital (e-p) part
@@ -261,12 +269,24 @@ C     ====================================
      &              WORK,KFREE,LFREE,IPRXPP)
                TMOM(IOP,IPAR,IEXC)=D2*
      &              DDOT(NZXOPPQ,GPOP(1,IOP),1,XPOP(1,IEXC),1)
-               WRITE(6,*) 'e-p TMOM:',PRPNAM(NPRPS+IOP),OMEGA(IEXC),
+               TMP = TMP + TMOM(IOP,IPAR,IEXC)*TMOM(IOP,IPAR,IEXC)
+            WRITE(6,'(A,1X,A16,F18.10,3X,F14.10)')
+     &              'e-p TMOM:',PRPNAM(NPRPS+IOP),OMEGA(IEXC),
      &              TMOM(IOP,IPAR,IEXC)
             ENDIF
           ENDDO
+          OSC(IPAR,IEXC) = D2*OMEGA(IEXC)*TMP
         ENDIF
  10   CONTINUE
+C
+C     Print section
+C
+      WRITE(6,*) '* Oscillator strengths:'
+      DO IEXC = 1,NEXCNV
+         WRITE(6,'(I3,1X,F18.10,2(3X,F14.10))')
+     &     IEXC,OMEGA(IEXC),
+     &     (OSC(IPAR,IEXC),IPAR = 1,NPAR)
+      ENDDO
 C
 C     Memory deallocation
       IF(NZXOPE.GT.0) THEN
@@ -278,6 +298,7 @@ C     Memory deallocation
         deallocate(XPOP)         
       ENDIF
       deallocate(TMOM)
+      deallocate(OSC)
       deallocate(PRPINT)
       deallocate(LABINT)
       deallocate(INTREP)
@@ -453,17 +474,19 @@ C
 C
 C       Debug output
 C
-        DO IOP = 1,NOP
-          WRITE(6,*) PRPNAM(NPRPS+IOP),IPRPTYP(NPRPS+IOP)
-          IF(IPRPTYP(NPRPS+IOP).EQ.-1) THEN
-            WRITE(6,*) ' - skipped'
-          ELSE
-            DO IMAT = 1,1
-              II = IPRPLBL(IMAT,NPRPS+IOP)
-              WRITE(6,*) PRPLBL(II),FACPRP(IMAT,NPRPS+IOP)
-            ENDDO
-          ENDIF
-        ENDDO
+        IF(IPRXPP.GE.2) THEN
+          DO IOP = 1,NOP
+            WRITE(6,*) PRPNAM(NPRPS+IOP),IPRPTYP(NPRPS+IOP)
+            IF(IPRPTYP(NPRPS+IOP).EQ.-1) THEN
+              WRITE(6,*) ' - skipped'
+            ELSE
+              DO IMAT = 1,1
+                II = IPRPLBL(IMAT,NPRPS+IOP)
+                WRITE(6,*) PRPLBL(II),FACPRP(IMAT,NPRPS+IOP)
+              ENDDO
+            ENDIF
+          ENDDO
+        ENDIF
 C     
 C       Generate integrals
 C
@@ -694,17 +717,19 @@ C
 C
 C       Debug output
 C
-        DO IOP = 1,NOP
-          WRITE(6,*) PRPNAM(NPRPS+IOP),IPRPTYP(NPRPS+IOP)
-          IF(IPRPTYP(NPRPS+IOP).EQ.-1) THEN
-            WRITE(6,*) ' - skipped'
-          ELSE
-            DO IMAT = 1,1
-              II = IPRPLBL(IMAT,NPRPS+IOP)
-              WRITE(6,*) PRPLBL(II),FACPRP(IMAT,NPRPS+IOP)
-            ENDDO
-          ENDIF
-        ENDDO
+        IF(IPRXPP.GE.2) THEN
+          DO IOP = 1,NOP
+            WRITE(6,*) PRPNAM(NPRPS+IOP),IPRPTYP(NPRPS+IOP)
+            IF(IPRPTYP(NPRPS+IOP).EQ.-1) THEN
+              WRITE(6,*) ' - skipped'
+            ELSE
+              DO IMAT = 1,1
+                II = IPRPLBL(IMAT,NPRPS+IOP)
+                WRITE(6,*) PRPLBL(II),FACPRP(IMAT,NPRPS+IOP)
+              ENDDO
+            ENDIF
+          ENDDO
+        ENDIF
 C     
 C       Generate integrals
 C
@@ -799,7 +824,7 @@ C#include "cbiher.h"
       INTEGER LWORK, NCOMP, NOPTP,IBEIG(*)
       DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC),CMO(*),WORK(*)
       real(8), allocatable              :: PRPINT(:,:),BBUF(:)
-      real(8), allocatable              :: TMOM(:,:,:,:),TMOM2(:,:)
+      real(8), allocatable              :: TMOM(:,:,:,:),OSC(:,:)
       character (len=8),  allocatable   :: LABINT(:)
       integer, allocatable              :: INTREP(:),IPSYM2INT(:,:)
       integer, allocatable              :: IVECS(:)
@@ -941,8 +966,8 @@ C     Loop over quadrature points
 C     =============================
 C
       allocate(TMOM(NOP,2,NPAR,NEXCNV))
-      allocate(TMOM2(NPAR,NEXCNV))
-      CALL DCOPY(NPAR*NEXCNV,D0,0,TMOM2,1)
+      allocate(OSC(NPAR,NEXCNV))
+      CALL DCOPY(NPAR*NEXCNV,D0,0,OSC,1)
       IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,NOP))
       IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,NOP))      
       allocate( X(NPOINTS))
@@ -983,7 +1008,8 @@ C         Generate integrals
 C
           WAVEVEC(1) = FAC*X(IP)
           WAVEVEC(2) = FAC*Y(IP)
-          WAVEVEC(3) = FAC*Z(IP)          
+          WAVEVEC(3) = FAC*Z(IP)
+C          CALL DCOPY(3,D0,0,WAVEVEC,1) ! for testing electric dipole approximation
           CALL PR1IN2(WORK(KFREE),LFREE,PRPINT,INTTYP,
      &       NPRPINT,INTREP,ANTI,SQUARE,DUMMY,LABINT,TRIANG,
      &       TRASPH,.FALSE.,SOLVNT,0,0,DUMMY,
@@ -1027,7 +1053,7 @@ C     ====================================
      &     + EEWT(5)*TMOM(3,IC,IPAR,IEXC)*TMOM(2,IC,IPAR,IEXC)
      &     + EEWT(6)*TMOM(3,IC,IPAR,IEXC)*TMOM(3,IC,IPAR,IEXC)
           ENDDO
-          TMOM2(IPAR,IEXC) = TMOM2(IPAR,IEXC) + WT(IP)*TMP
+          OSC(IPAR,IEXC) = OSC(IPAR,IEXC) + WT(IP)*TMP
         ENDIF
 C
 C     Gradient - orbital (e-p) part
@@ -1059,15 +1085,26 @@ C     ====================================
      &     + EEWT(5)*TMOM(3,IC,IPAR,IEXC)*TMOM(2,IC,IPAR,IEXC)
      &     + EEWT(6)*TMOM(3,IC,IPAR,IEXC)*TMOM(3,IC,IPAR,IEXC)
           ENDDO
-          TMOM2(IPAR,IEXC) = TMOM2(IPAR,IEXC) + WT(IP)*TMP
+          OSC(IPAR,IEXC) = OSC(IPAR,IEXC) + WT(IP)*TMP
         ENDIF
    10   CONTINUE
       ENDDO
 C
-C     Print section
+C     Final values for oscillator strengths
 C
       DO IEXC = 1,NEXCNV
-        WRITE(6,*) IEXC,OMEGA(IEXC),(TMOM2(IPAR,IEXC),IPAR = 1,NPAR)
+         DO IPAR = 1,NPAR
+           OSC(IPAR,IEXC) = D2*OMEGA(IEXC)*OSC(IPAR,IEXC)
+         ENDDO
+      ENDDO
+C
+C     Print section
+C
+      WRITE(6,*) '* Isotropic oscillator strengths:'
+      DO IEXC = 1,NEXCNV
+         WRITE(6,'(I3,1X,F18.10,2(3X,F14.10))')
+     &     IEXC,OMEGA(IEXC),
+     &     (OSC(IPAR,IEXC),IPAR = 1,NPAR)
       ENDDO
 C            
 C     Memory deallocation
@@ -1080,7 +1117,7 @@ C     Memory deallocation
         deallocate(XPOP)         
       ENDIF
       deallocate(TMOM)
-      deallocate(TMOM2)
+      deallocate(OSC)
       deallocate(PRPINT)
       deallocate(LABINT)
       deallocate(INTREP)
