@@ -38,6 +38,7 @@ C#include "cbiher.h"
       real(8), allocatable              :: PRPINT(:,:),BBUF(:)
       real(8), allocatable              :: TMOM(:,:,:),OSC(:,:)
       character (len=8),  allocatable   :: LABINT(:)
+      character (len=5)                 :: TPAR(3)
       integer, allocatable              :: INTREP(:),IPSYM2INT(:,:)
       integer, allocatable              :: IVECS(:)
       real(8)             :: PBUF(3,2),EVECR(NREDM,*)
@@ -145,6 +146,7 @@ C
          allocate(BBUF(NZXOPEQ))
          allocate(IVECS(NESIM))
          NPAR = NPAR + 1
+         TPAR(NPAR) = ' e-e '
          OPEN(LUBOE,FILE='PAMBOE',FORM='UNFORMATTED',
      +         ACCESS='DIRECT',RECL=8*NZXOPEQ,STATUS='UNKNOWN')
          CALL XRSXV1(ITIM,JBENDX,XPOE,EVECR,NEXCNV,IBTYP,
@@ -157,10 +159,11 @@ C
 C     - orbital (e-p) part      
 C
       IF(NZXOPP.GT.0) THEN
-         allocate(XPOE(NZXOPPQ,NEXCNV))
+         allocate(XPOP(NZXOPPQ,NEXCNV))
          allocate(BBUF(NZXOPPQ))
          allocate(IVECS(NPSIM))         
          NPAR = NPAR + 1
+         TPAR(NPAR) = ' e-p '
          OPEN(LUBOP,FILE='PAMBOP',FORM='UNFORMATTED',
      +         ACCESS='DIRECT',RECL=8*NZXOPPQ,STATUS='UNKNOWN')
          CALL XRSXV1(ITIM,JBPNDX,XPOP,EVECR,NEXCNV,IBTYP,
@@ -169,12 +172,13 @@ C
          deallocate(BBUF)
          deallocate(IVECS)         
       ENDIF
+      TPAR(NPAR+1) = 'Total'
 C      
 C     Loop over excitation energies
 C     =============================
 C
       allocate(TMOM(NOP,NPAR,NEXCNV))
-      allocate(OSC(NPAR,NEXCNV))
+      allocate(OSC(NPAR+1,NEXCNV))
       IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,NOP))
       IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,NOP))      
       DO 10 IEXC = 1,NEXCNV
@@ -229,6 +233,7 @@ C       CALL DCOPY(3,D0,0,WAVEVEC,1) ! for testing electric dipole approximation
           ENDDO
        ENDIF
 C
+       OSC(NPAR+1,IEXC) = D0
        IPAR = 0
 C
 C     Gradient - orbital (e-e) part
@@ -254,12 +259,14 @@ C     ====================================
      &              TMOM(IOP,IPAR,IEXC)
           ENDDO
           OSC(IPAR,IEXC) = D2*OMEGA(IEXC)*TMP
-        ENDIF
+          OSC(NPAR+1,IEXC) = OSC(NPAR+1,IEXC) + OSC(IPAR,IEXC)
+       ENDIF
 C
 C     Gradient - orbital (e-p) part
 C     ====================================
         IF(NZXOPP.GT.0) THEN       
           IPAR = IPAR + 1
+          TMP = D0
           DO IOP = 1,NOP
             INDXPR = NPRPS+IOP
             IF(IPRPTYP(INDXPR).NE.-1) THEN
@@ -276,16 +283,19 @@ C     ====================================
             ENDIF
           ENDDO
           OSC(IPAR,IEXC) = D2*OMEGA(IEXC)*TMP
+          OSC(NPAR+1,IEXC) = OSC(NPAR+1,IEXC) + OSC(IPAR,IEXC)
         ENDIF
  10   CONTINUE
 C
 C     Print section
 C
       WRITE(6,*) '* Oscillator strengths:'
+      WRITE(6,'(A4,1X,A18,3(3X,A5,9X))')     
+     &  'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
       DO IEXC = 1,NEXCNV
-         WRITE(6,'(I3,1X,F18.10,2(3X,F14.10))')
+         WRITE(6,'(I4,1X,F18.10,3(3X,F14.10))')
      &     IEXC,OMEGA(IEXC),
-     &     (OSC(IPAR,IEXC),IPAR = 1,NPAR)
+     &     (OSC(IPAR,IEXC),IPAR = 1,NPAR+1)
       ENDDO
 C
 C     Memory deallocation
@@ -441,13 +451,14 @@ C
      &        IBEVC,IVECS,BBUF)
          CLOSE(LUBOE,STATUS = 'KEEP')
          deallocate(BBUF)
+
          deallocate(IVECS)         
       ENDIF
 C
 C     - orbital (e-e) part      
 C
       IF(NZXOPP.GT.0) THEN
-         allocate(XPOE(NZXOPPQ,NEXCNV))
+         allocate(XPOP(NZXOPPQ,NEXCNV))
          allocate(BBUF(NZXOPPQ))
          allocate(IVECS(NPSIM))         
          OPEN(LUBOP,FILE='PAMBOP',FORM='UNFORMATTED',
@@ -513,10 +524,14 @@ C     ====================================
      &              NZXOPE,CMO,IBEIG,JBENDX,.FALSE.,PRPINT,
      &              WORK,KFREE,LFREE,IPRXPP)
                TMP=D2*DDOT(NZXOPEQ,GPOE(1,IOP),1,XPOE(1,IEXC),1)
-               WRITE(6,*) 'e-e TMOM:',PRPNAM(NPRPS+IOP),OMEGA(IEXC),TMP
+               WRITE(6,'(A,1X,A16,F18.10,3X,F14.10)')
+     &            'e-e TMOM:',PRPNAM(NPRPS+IOP),OMEGA(IEXC),TMP
             ENDIF
           ENDDO
         ENDIF
+C
+C     Gradient - orbital (e-p) part
+C     ====================================
         IF(NZXOPP.GT.0) THEN       
           DO IOP = 1,NOP
             INDXPR = NPRPS+IOP
@@ -526,7 +541,8 @@ C     ====================================
      &              NZXOPP,CMO,IBEIG,JBPNDX,.FALSE.,PRPINT,
      &              WORK,KFREE,LFREE,IPRXPP)
                TMP=D2*DDOT(NZXOPPQ,GPOP(1,IOP),1,XPOP(1,IEXC),1)
-               WRITE(6,*) 'e-p TMOM:',PRPNAM(NPRPS+IOP),TMP
+               WRITE(6,'(A,1X,A16,F18.10,3X,F14.10)')
+     &            'e-p TMOM:',PRPNAM(NPRPS+IOP),OMEGA(IEXC),TMP
             ENDIF
           ENDDO
         ENDIF
@@ -690,7 +706,7 @@ C
 C     - orbital (e-e) part      
 C
       IF(NZXOPP.GT.0) THEN
-         allocate(XPOE(NZXOPPQ,NEXCNV))
+         allocate(XPOP(NZXOPPQ,NEXCNV))
          allocate(BBUF(NZXOPPQ))
          allocate(IVECS(NPSIM))         
          OPEN(LUBOP,FILE='PAMBOP',FORM='UNFORMATTED',
@@ -756,10 +772,14 @@ C     ====================================
      &              NZXOPE,CMO,IBEIG,JBENDX,.FALSE.,PRPINT,
      &              WORK,KFREE,LFREE,IPRXPP)
                TMP=D2*DDOT(NZXOPEQ,GPOE(1,IOP),1,XPOE(1,IEXC),1)
-               WRITE(6,*) 'e-e TMOM:',PRPNAM(NPRPS+IOP),OMEGA(IEXC),TMP
+               WRITE(6,'(A,1X,A16,F18.10,3X,F14.10)')
+     &            'e-e TMOM:',PRPNAM(NPRPS+IOP),OMEGA(IEXC),TMP
             ENDIF
           ENDDO
         ENDIF
+C
+C     Gradient - orbital (e-e) part
+C     ====================================
         IF(NZXOPP.GT.0) THEN       
           DO IOP = 1,NOP
             INDXPR = NPRPS+IOP
@@ -769,7 +789,8 @@ C     ====================================
      &              NZXOPP,CMO,IBEIG,JBPNDX,.FALSE.,PRPINT,
      &              WORK,KFREE,LFREE,IPRXPP)
                TMP=D2*DDOT(NZXOPPQ,GPOP(1,IOP),1,XPOP(1,IEXC),1)
-               WRITE(6,*) 'e-p TMOM:',PRPNAM(NPRPS+IOP),TMP
+               WRITE(6,'(A,1X,A16,F18.10,3X,F14.10)')
+     &            'e-p TMOM:',PRPNAM(NPRPS+IOP),OMEGA(IEXC),TMP
             ENDIF
           ENDDO
         ENDIF
@@ -826,6 +847,7 @@ C#include "cbiher.h"
       real(8), allocatable              :: PRPINT(:,:),BBUF(:)
       real(8), allocatable              :: TMOM(:,:,:,:),OSC(:,:)
       character (len=8),  allocatable   :: LABINT(:)
+      character (len=5)                 :: TPAR(3)
       integer, allocatable              :: INTREP(:),IPSYM2INT(:,:)
       integer, allocatable              :: IVECS(:)
       real(8)             :: PBUF(3,2),EEWT(6),EVECR(NREDM,*)
@@ -937,6 +959,7 @@ C
          allocate(BBUF(NZXOPEQ))
          allocate(IVECS(NESIM))
          NPAR = NPAR + 1
+         TPAR(NPAR) = ' e-e '
          OPEN(LUBOE,FILE='PAMBOE',FORM='UNFORMATTED',
      +         ACCESS='DIRECT',RECL=8*NZXOPEQ,STATUS='UNKNOWN')
          CALL XRSXV1(ITIM,JBENDX,XPOE,EVECR,NEXCNV,IBTYP,
@@ -949,10 +972,11 @@ C
 C     - orbital (e-p) part      
 C
       IF(NZXOPP.GT.0) THEN
-         allocate(XPOE(NZXOPPQ,NEXCNV))
+         allocate(XPOP(NZXOPPQ,NEXCNV))
          allocate(BBUF(NZXOPPQ))
          allocate(IVECS(NPSIM))         
          NPAR = NPAR + 1
+         TPAR(NPAR) = ' e-p '
          OPEN(LUBOP,FILE='PAMBOP',FORM='UNFORMATTED',
      +         ACCESS='DIRECT',RECL=8*NZXOPPQ,STATUS='UNKNOWN')
          CALL XRSXV1(ITIM,JBPNDX,XPOP,EVECR,NEXCNV,IBTYP,
@@ -961,13 +985,14 @@ C
          deallocate(BBUF)
          deallocate(IVECS)         
       ENDIF
-C      
+      TPAR(NPAR+1) = 'Total'
+C     
 C     Loop over quadrature points
 C     =============================
 C
       allocate(TMOM(NOP,2,NPAR,NEXCNV))
-      allocate(OSC(NPAR,NEXCNV))
-      CALL DCOPY(NPAR*NEXCNV,D0,0,OSC,1)
+      allocate(OSC(NPAR+1,NEXCNV))
+      CALL DCOPY((NPAR+1)*NEXCNV,D0,0,OSC,1)
       IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,NOP))
       IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,NOP))      
       allocate( X(NPOINTS))
@@ -1054,7 +1079,7 @@ C     ====================================
      &     + EEWT(6)*TMOM(3,IC,IPAR,IEXC)*TMOM(3,IC,IPAR,IEXC)
           ENDDO
           OSC(IPAR,IEXC) = OSC(IPAR,IEXC) + WT(IP)*TMP
-        ENDIF
+       ENDIF
 C
 C     Gradient - orbital (e-p) part
 C     ====================================
@@ -1072,7 +1097,7 @@ C     ====================================
      &              NZXOPP,CMO,IBEIG,JBPNDX,.FALSE.,PRPINT,
      &              WORK,KFREE,LFREE,IPRXPP)
                 TMOM(IOP,IC,IPAR,IEXC)=D2*
-     &              DDOT(NZXOPEQ,GPOE(1,IOP),1,XPOE(1,IEXC),1)
+     &              DDOT(NZXOPPQ,GPOP(1,IOP),1,XPOP(1,IEXC),1)
               ELSE
                 TMOM(IOP,IC,IPAR,IEXC) = D0
               ENDIF
@@ -1093,18 +1118,22 @@ C
 C     Final values for oscillator strengths
 C
       DO IEXC = 1,NEXCNV
+         OSC(NPAR+1,IEXC) = D0
          DO IPAR = 1,NPAR
-           OSC(IPAR,IEXC) = D2*OMEGA(IEXC)*OSC(IPAR,IEXC)
-         ENDDO
+           OSC(IPAR  ,IEXC) = D2*OMEGA(IEXC)*OSC(IPAR,IEXC)
+           OSC(NPAR+1,IEXC) = OSC(NPAR+1,IEXC) + OSC(IPAR,IEXC)
+        ENDDO
       ENDDO
 C
 C     Print section
 C
       WRITE(6,*) '* Isotropic oscillator strengths:'
+      WRITE(6,'(A4,1X,A18,3(3X,A5,9X))')     
+     &  'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
       DO IEXC = 1,NEXCNV
-         WRITE(6,'(I3,1X,F18.10,2(3X,F14.10))')
+         WRITE(6,'(I4,1X,F18.10,3(3X,F14.8))')
      &     IEXC,OMEGA(IEXC),
-     &     (OSC(IPAR,IEXC),IPAR = 1,NPAR)
+     &     (OSC(IPAR,IEXC),IPAR = 1,NPAR+1)
       ENDDO
 C            
 C     Memory deallocation
