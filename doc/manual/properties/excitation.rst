@@ -100,7 +100,7 @@ We now choose to align the wave vector with the :math:`\mathbf{e}_r` unit vector
    \mathbf{k} = k\mathbf{e}_r
 
 This means that the polarization vector :math:`\boldsymbol{\epsilon}` is in the plane spanned by the
-unit vectors :math:`\mathbf{e}_{\Theta}` and :math:`\mathbf{e}_{\phi}`. We therefore set
+unit vectors :math:`\mathbf{e}_{\theta}` and :math:`\mathbf{e}_{\phi}`. We therefore set
 
 .. math::
 
