@@ -1334,7 +1334,7 @@ Chj: MAXRM, MXLOAD
 #include "dcbxrs.h"
 #include "dcbxpr.h"
 C
-      CHARACTER MXFORM*6,PFMT*15,TTYP(-1:1)*2,SYMLAB*5
+      CHARACTER MXFORM*6,PFMT*6,TTYP(-1:1)*2,SYMLAB*5
       DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),OMEGA(MAXEXC,NBSYM),
      &          EIG(*),RCNV(MAXEXC,NBSYM),IBUF(2),ISSYM(MAXEXC,NBSYM),
      &          WORK(*)
@@ -1490,14 +1490,10 @@ C           end do iopa = 1,nopa
 C
 C              Dipole oscillator strengths
 C
-               IF (OSCIL .GE. 1.0D-3) THEN
-                   PFMT = '(/5X,A,F12.8)'
-                ELSE
-                   PFMT = '(/5X,A,1P,E16.8)'
-                END IF
-                WRITE(LUPRI,PFMT)
+                PFMT = MXFORM(OSCIL,15)
+                WRITE(LUPRI,'(/5X,A,'//PFMT//')')
      &             '-> dipole oscillator strength (length)   :',OSCILL
-                WRITE(LUPRI,PFMT)
+                WRITE(LUPRI,'(/5X,A,'//PFMT//')')
      &             '-> dipole oscillator strength (velocity) :',OSCILV
 c
 c hj TODO : mixed require code with XMOML(3), XMOMV(3) to be sure the
