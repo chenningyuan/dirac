@@ -177,10 +177,12 @@ C
 C     Loop over excitation energies
 C     =============================
 C
-      allocate(TMOM(NOP,NPAR,NEXCNV))
+      allocate(TMOM(NOP,NPAR+1,NEXCNV))
       allocate(OSC(NPAR+1,NEXCNV))
       IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,NOP))
       IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,NOP))      
+      WRITE(6,'(A18,10X,A9,8X,A5)')
+     &   'Transition moments','Freq(au)','Value'
       DO 10 IEXC = 1,NEXCNV
         IF(ABS(OMEGA(IEXC)).LT.1.0D-3) THEN
            WRITE(LUPRI,*)
@@ -233,7 +235,9 @@ C       CALL DCOPY(3,D0,0,WAVEVEC,1) ! for testing electric dipole approximation
           ENDDO
        ENDIF
 C
-       OSC(NPAR+1,IEXC) = D0
+       OSC(NPAR+1,IEXC)    = D0
+       TMOM(1,NPAR+1,IEXC) = D0
+       TMOM(2,NPAR+1,IEXC) = D0
        IPAR = 0
 C
 C     Gradient - orbital (e-e) part
@@ -253,9 +257,11 @@ C     ====================================
             ELSE
                TMOM(IOP,IPAR,IEXC)=D0
             ENDIF
+            TMOM(IOP,NPAR+1,IEXC)=TMOM(IOP,NPAR+1,IEXC)
+     &                           +TMOM(IOP,IPAR,IEXC)
             TMP = TMP + TMOM(IOP,IPAR,IEXC)*TMOM(IOP,IPAR,IEXC)
             WRITE(6,'(A,1X,A16,F18.10,3X,F14.10)')
-     &             'e-e TMOM:',PRPNAM(NPRPS+IOP),OMEGA(IEXC),
+     &             'e-e :',PRPNAM(NPRPS+IOP),OMEGA(IEXC),
      &              TMOM(IOP,IPAR,IEXC)
           ENDDO
           OSC(IPAR,IEXC) = D2*OMEGA(IEXC)*TMP
@@ -276,11 +282,15 @@ C     ====================================
      &              WORK,KFREE,LFREE,IPRXPP)
                TMOM(IOP,IPAR,IEXC)=D2*
      &              DDOT(NZXOPPQ,GPOP(1,IOP),1,XPOP(1,IEXC),1)
-               TMP = TMP + TMOM(IOP,IPAR,IEXC)*TMOM(IOP,IPAR,IEXC)
-            WRITE(6,'(A,1X,A16,F18.10,3X,F14.10)')
-     &              'e-p TMOM:',PRPNAM(NPRPS+IOP),OMEGA(IEXC),
-     &              TMOM(IOP,IPAR,IEXC)
+            ELSE
+               TMOM(IOP,IPAR,IEXC)=D0
             ENDIF
+            TMOM(IOP,NPAR+1,IEXC)=TMOM(IOP,NPAR+1,IEXC)
+     &                           +TMOM(IOP,IPAR,IEXC)
+            TMP = TMP + TMOM(IOP,IPAR,IEXC)*TMOM(IOP,IPAR,IEXC)
+            WRITE(6,'(A,1X,A16,F18.10,3X,F14.10)')
+     &              'e-p :',PRPNAM(NPRPS+IOP),OMEGA(IEXC),
+     &              TMOM(IOP,IPAR,IEXC)
           ENDDO
           OSC(IPAR,IEXC) = D2*OMEGA(IEXC)*TMP
           OSC(NPAR+1,IEXC) = OSC(NPAR+1,IEXC) + OSC(IPAR,IEXC)
@@ -289,6 +299,17 @@ C     ====================================
 C
 C     Print section
 C
+      WRITE(6,*) '* Transition moments:'
+      WRITE(6,'(A4,1X,A18,3(3X,A5,9X))')     
+     &  'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
+      DO IEXC = 1,NEXCNV
+         WRITE(6,'(I4,1X,F18.10,A,3(3X,F16.10))')
+     &     IEXC,OMEGA(IEXC),' real part : ',
+     &     (TMOM(2,IPAR,IEXC),IPAR = 1,NPAR+1)
+         WRITE(6,'(23X,A,3(3X,F14.10))')
+     &     ' imag. part: ',
+     &     (-TMOM(1,IPAR,IEXC),IPAR = 1,NPAR+1)
+      ENDDO
       WRITE(6,*) '* Oscillator strengths:'
       WRITE(6,'(A4,1X,A18,3(3X,A5,9X))')     
      &  'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
@@ -475,6 +496,8 @@ C     =============================
 C     
       IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,NOP))
       IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,NOP))      
+      WRITE(6,'(A18,10X,A9,8X,A5)')
+     &   'Transition moments','Freq(au)','Value'
       DO 10 IEXC = 1,KEXCNV(JSYMOP)
         IF(ABS(OMEGA(IEXC)).LT.1.0D-3) THEN
            WRITE(LUPRI,*)
@@ -525,7 +548,7 @@ C     ====================================
      &              WORK,KFREE,LFREE,IPRXPP)
                TMP=D2*DDOT(NZXOPEQ,GPOE(1,IOP),1,XPOE(1,IEXC),1)
                WRITE(6,'(A,1X,A16,F18.10,3X,F14.10)')
-     &            'e-e TMOM:',PRPNAM(NPRPS+IOP),OMEGA(IEXC),TMP
+     &            'e-e :',PRPNAM(NPRPS+IOP),OMEGA(IEXC),TMP
             ENDIF
           ENDDO
         ENDIF
@@ -542,7 +565,7 @@ C     ====================================
      &              WORK,KFREE,LFREE,IPRXPP)
                TMP=D2*DDOT(NZXOPPQ,GPOP(1,IOP),1,XPOP(1,IEXC),1)
                WRITE(6,'(A,1X,A16,F18.10,3X,F14.10)')
-     &            'e-p TMOM:',PRPNAM(NPRPS+IOP),OMEGA(IEXC),TMP
+     &            'e-p :',PRPNAM(NPRPS+IOP),OMEGA(IEXC),TMP
             ENDIF
           ENDDO
         ENDIF
@@ -723,6 +746,8 @@ C     =============================
 C     
       IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,NOP))
       IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,NOP))      
+      WRITE(6,'(A18,10X,A9,8X,A5)')
+     &   'Transition moments','Freq(au)','Value'
       DO 10 IEXC = 1,KEXCNV(JSYMOP)
         IF(ABS(OMEGA(IEXC)).LT.1.0D-3) THEN
            WRITE(LUPRI,*)
@@ -773,7 +798,7 @@ C     ====================================
      &              WORK,KFREE,LFREE,IPRXPP)
                TMP=D2*DDOT(NZXOPEQ,GPOE(1,IOP),1,XPOE(1,IEXC),1)
                WRITE(6,'(A,1X,A16,F18.10,3X,F14.10)')
-     &            'e-e TMOM:',PRPNAM(NPRPS+IOP),OMEGA(IEXC),TMP
+     &            'e-e :',PRPNAM(NPRPS+IOP),OMEGA(IEXC),TMP
             ENDIF
           ENDDO
         ENDIF
@@ -790,7 +815,7 @@ C     ====================================
      &              WORK,KFREE,LFREE,IPRXPP)
                TMP=D2*DDOT(NZXOPPQ,GPOP(1,IOP),1,XPOP(1,IEXC),1)
                WRITE(6,'(A,1X,A16,F18.10,3X,F14.10)')
-     &            'e-p TMOM:',PRPNAM(NPRPS+IOP),OMEGA(IEXC),TMP
+     &            'e-p :',PRPNAM(NPRPS+IOP),OMEGA(IEXC),TMP
             ENDIF
           ENDDO
         ENDIF
