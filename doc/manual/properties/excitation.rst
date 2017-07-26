@@ -60,6 +60,7 @@ orbital level.
 keyword(INTENS)
 
 Invoke calculation of oscillator strengths. Followed by oscillator strengths to order k in the wave vector, which must be zero.
+Presently, only :math:`O(k^0)` is available, corresponding to the electric dipole approximation.
 
 *Example:* 
 
@@ -67,6 +68,88 @@ Invoke calculation of oscillator strengths. Followed by oscillator strengths to 
 
      .INTENS
      0
+
+keyword(BED)
+
+Invoke calculation of oscillator strengths using the full operator coupling the molecule to an electromagnetic plane wave. The oscillator strength is then given by
+
+.. math::
+
+   f_{n\leftarrow 0}=\frac{2\omega}{\hbar e^{2}}\left|\langle n|T\left(\omega\right)|0\rangle\right|^2
+
+where appears the effective interaction operator
+
+.. math::
+
+   T\left(\omega\right)=\frac{ec}{\omega}\left(\boldsymbol{\alpha}\cdot\boldsymbol{\epsilon}\right)e^{+i\left(\mathbf{k}\cdot\mathbf{r}\right)}.
+
+In the above expression :math:`\mathbf{k}` refers to the wave vector of length :math:`k=\omega/c` and direction :math:`\mathbf{m}`, whereas the polarization of the electric component is specificed by :math:`\boldsymbol{\epsilon}`.
+
+Since experiment is typically carried out in an isotropic medium, rotational average is performed.
+Rather than rotate the molecule we shall rotate the experimental apparatus.
+To rotate we use the unit vectors of the spherical coordinates
+
+.. math::
+
+   \begin{array}{lcl} \mathbf{e}_{r} & = & \mathbf{e}_{x}\sin\theta\cos\phi+\mathbf{e}_{y}\sin\theta\sin\phi+\mathbf{e}_{z}\cos\theta\\
+   \mathbf{e}_{\theta} & = & \mathbf{e}_{x}\cos\theta\cos\phi+\mathbf{e}_{y}\cos\theta\sin\phi-\mathbf{e}_{z}\sin\theta\\ \mathbf{e}_{\phi} & = & -\mathbf{e}_{x}\sin\phi+\mathbf{e}_{y}\cos\phi \end{array}   
+We now choose to align the wave vector with the :math:`\mathbf{e}_r` unit vector, that is
+
+.. math::
+
+   \mathbf{k} = k\mathbf{e}_r
+
+This means that the polarization vector :math:`\boldsymbol{\epsilon}` is in the plane spanned by the
+unit vectors :math:`\mathbf{e}_{\Theta}` and :math:`\mathbf{e}_{\phi}`. We therefore set
+
+.. math::
+
+   \boldsymbol{\epsilon} = \cos\chi \mathbf{e}_{\theta}+\sin\chi\mathbf{e}_{\phi}
+
+We see the solid angle :math:`\left(\theta,\phi\right)` gives all possible
+directions of the wave vector :math:`\mathbf{k}`, wheras the angle
+:math:`\chi` provides all possible orientations of the polarization vector
+:math:`\boldsymbol{\epsilon}` in the plane perpendicular to :math:`\mathbf{k}`. 
+
+The general expression for the rotational average will be      
+
+.. math::
+
+   \left\langle f\left(\boldsymbol{r}\right)\right\rangle _{\theta,\phi,\chi}=\frac{1}{8\pi^{2}}\int_{0}^{2\pi}\int_{0}^{2\pi}\int_{0}^{\pi}f\left(\boldsymbol{r}\right)\sin\theta d\theta d\phi d\chi.
+
+
+In our case we have   
+
+.. math::
+
+   \left\langle f_{n\leftarrow 0}\right\rangle _{\theta,\phi,\chi} = \frac{2\omega}{\hbar e^{2}}\left\langle \epsilon_{\alpha}\epsilon_{\beta}\langle f|\frac{ec}{\omega}\alpha_{\alpha}e^{+i\left(\boldsymbol{k}\cdot\boldsymbol{r}\right)}|i\rangle\langle f|\frac{ec}{\omega}\alpha_{\beta}e^{+i\left(\boldsymbol{k}\cdot\boldsymbol{r}\right)}|i\rangle^{\ast}\right\rangle _{\theta,\phi,\chi},
+
+which simplifies to   
+
+.. math::
+
+   \left\langle f_{n\leftarrow 0}\right\rangle _{\theta,\phi,\chi} = \frac{2\omega}{\hbar e^{2}}\left\langle \left\langle\epsilon_{\alpha}\epsilon_{\beta}\right\rangle _{\chi}\langle f|\frac{ec}{\omega}\alpha_{\alpha}e^{+i\left(\boldsymbol{k}\cdot\boldsymbol{r}\right)}|i\rangle\langle f|\frac{ec}{\omega}\alpha_{\beta}e^{+i\left(\boldsymbol{k}\cdot\boldsymbol{r}\right)}|i\rangle^{\ast}\right\rangle _{\theta,\phi},
+
+since only the polarization vectors depend on the angle :math:`\chi`. The average over the angle :math:`\chi` can be expressed compactly in terms of the wave unit vector :math:`\mathbf{k}`
+
+.. math::
+
+  \left\langle\epsilon_{\alpha}\epsilon_{\beta}\right\rangle _{\chi}=\frac{1}{2}\left(\delta_{\alpha\beta}-m_{\alpha}m_{\beta}\right),
+
+whereas the average over angles :math:`\theta` and :math:`\phi` is handled by `Lebedev quadrature <https://en.wikipedia.org/wiki/Lebedev_quadrature>`_ .
+
+keyword(BEDFIX)
+
+Invoke calculation of oscillator strengths using the full operator coupling the molecule to an electromagnetic plane wave at fixed experimental configuration (no rotational average). The orientation of the wave and polarization vector is given by specification of the angles :math:`\theta`, :math:`\phi` and :math:`\chi`, see the above .BED keyword for more details. For instance, to specify that the wave vector is along the :math:`z` -axis  and the polarization vector along the :math:`y` - axis, we set
+
+::
+
+    .BEDFIX
+    0.0 0.0 0.0
+
+keyword(NROTAV)
+
+As described under the .BED keyword,  `Lebedev quadrature <https://en.wikipedia.org/wiki/Lebedev_quadrature>`_ is employed for rotational average. This quadrature over the solid angles can integrate a spherical harmonic to high accuracy with a maximum angular momentum :math:`L_\mbox{max}`. The default value of :math:`L_\mbox{max}`is presently 5, but can be reset with this keyword.
 
 Control variational parameters
 ==============================
