@@ -14,9 +14,8 @@ because of the z-oriented dipole perturbation operator.
 
 Molecule in electric field
 --------------------------
-When a molecular system is placed in a homogenous static electric field F=[Fx,Fy,Fz] (p,q-components),
-its energy
-may be expanded in a Taylor serie as follows:
+When a molecular system is placed in a homogenous static electric field, F=[Fx,Fy,Fz] (p,q-components),
+its energy may be expanded in a Taylor serie as follows:
 
 .. math:: E=E_{0}-\mu_{p}F_{p} - \frac{1}{2}\alpha_{pq}F_{p}F_{q} ...
  :label: expansion
@@ -24,19 +23,19 @@ may be expanded in a Taylor serie as follows:
 We keep only z-component of the field, F=Fz, and the dipole moment is obtained as the first numerical 
 derivative of the energy according to the electric field at zero field strength:
 
-.. math:: mu_{z}=\bigl( \frac{\partial E(F_{z})}{\partial F_{z}} \bigr)_{F_{z}=0}
+.. math:: \mu_{z}=-\Bigl( \frac{\partial E(F_{z})}{\partial F_{z}} \Bigr)_{F_{z}=0}
    :label: mu
 
-The polarizability (zz-component) is calculated via second numerical derivative 
+The polarizability (for simplicity, here the zz-component) is calculated via second numerical derivative 
 of the energy according to the electric field at zero field strength:
 
-.. math:: alpha_{zz}=\bigl( \frac{\partial^{2} E(F_{z})}{\partial F^{2}_{z}} \bigr)_{F_{z}=0}
+.. math:: alpha_{zz}=-\Bigl( \frac{\partial^{2} E(F_{z})}{\partial F^{2}_{z}} \Bigr)_{F_{z}=0}
    :label: alpha
 
 
 Method of computation
 ---------------------
-Let us first compute the total energies in few electric field strength. 
+Let us first compute the total energies of few electric field strength. 
 This can be done through replacing the string in the DIRAC input file by the field strength:
 
 ::
@@ -50,9 +49,10 @@ This can be done through replacing the string in the DIRAC input file by the fie
 :download:`DFPCMO.BeH.x2c_scf_sto-2g.C2v <../../../../test/ffpt_dipmom_polariz_relcc/DFPCMO.BeH.x2c_scf_sto-2g.C2v>` .)
 
 The total SCF and CCSD(T) energies varrying on field strengths are sorted in the following Table:
+.. _mytable:
 
 =======    ===================    ===================
-zfield          E(SCF)                 E(CCSD(T))
+ Fz             E(SCF,Fz)             E(CCSD(T),Fz)
 =======    ===================    ===================
 +0.0010    -14.424976681856371    -14.461324673372751
 +0.0005    -14.425860788235255    -14.462193434302819
@@ -68,23 +68,25 @@ NOTE: In this quick DIRAC test, only two output files are provided for Coupled C
 
 Spreadsheet
 ~~~~~~~~~~~
-In the spreadsheet, we interpolate five [F,E(F)] pairs of the Table with the 4th-degree polynomial:
+In the spreadsheet (Gnumerics, Libre Office Calc, MS Excel), we interpolate five pairs, [F,E(F)], of the Table ref:`mytable` 
+ with the 4th-degree polynomial:
 
 .. math:: E(F)=a_{0}+a_{1}F+a_{2}F^{2}+a_3F{3}+a_{4}F^{4}
    :label: expansion4
 
-In the polynomial, equation eq:`alpha`, the first derivative is 
+The negative first derivative of the polynomial, equation eq:`alpha`, at zero field is the dipole moment, equation eq:`mu`:
 
-.. math:: \bigl( \frac{\partial E(F)}{\partial F} \bigr)_{F=0} = a_{1} = -mu_{z}
+.. math:: \mu_{z} = - \Bigl( \frac{\partial E(F)}{\partial F} \Bigr)_{F=0} = -a_{1} 
    :label: mu_polyn
 
-and the second derivative is
+The second derivative (with minus sign) is the polarizability, equation eq:`alpha`:
 
-.. math:: alpha_{zz}=\bigl( \frac{\partial^{2} E(F)}{\partial F^{2}} \bigr)_{F=0} = 2a_{2} = - alpha_{zz}
+.. math:: \alpha_{zz} =- \Bigl( \frac{\partial^{2} E(F)}{\partial F^{2}} \Bigr)_{F=0} = -2a_{2}
    :label: alpha_polyn
 
-In the spreadsheet we employ the function LINEST,
-for which we also prepare columns with finite-field stregth powered to 1st, 2nd, 3rd and 4th degree.
+In the spreadsheet we employ the function LINEST.
+For that you have to prepare columns with finite-field stregths powered to 1, 2, 3 and 4.
+
 See the binary spreadsheet file available for download is
 :download:`data.ods <../../../../test/ffpt_dipmom_polariz_relcc/data.ods>`.
 
@@ -98,8 +100,8 @@ We provide here the electronic part of the z-component of the dipole moment.
 
 Expectation value
 ~~~~~~~~~~~~~~~~~
-The SCF expectation value dipole moment - zz-electronic contribution - is -1.77324745 au.
-The input file for download, :download:`BeH.x2c_scf_dipmom.inp  <../../../../test/ffpt_dipmom_polariz_relcc/BeH.x2c_scf_dipmom.inp>` and the
+The SCF expectation value dipole moment - its zz-electronic contribution - is -1.77324745 au.
+(The input file for download, :download:`BeH.x2c_scf_dipmom.inp  <../../../../test/ffpt_dipmom_polariz_relcc/BeH.x2c_scf_dipmom.inp>` and the
 the corresponding output file, :download:`BeH.x2c_scf_dipmom_BeH.sto-2g.C2v.out  <../../../../test/ffpt_dipmom_polariz_relcc/result/BeH.x2c_scf_dipmom_BeH.sto-2g.C2v.out>`.)
 
 Finite-field values
@@ -107,14 +109,14 @@ Finite-field values
 From the spreadsheet function table, we obtain the value of :math:`-a_{1}` =1.7732474 a.u.,
  which is the expansion coefficient of the first order field.
 
-Simple first order numerical derivation of the SCF perturbed energy according to the applied electric field, equation :eq:`mu`,
+Simple first numerical derivation of the SCF perturbed energy according to the applied electric field, equation :eq:`mu`,
 
-.. math:: mu_{z} = - \bigl( \frac{E(+F)-E(E-F)}{2F} \bigr),
+.. math:: \mu_{z} = - \Bigl( \frac{E(+F)-E(-F)}{2F} \Bigr),
    :label: mu_deriv
 
 gives -1.771568 au for F=0.0005. For the field strength of F=0.001 it is -1.76989 a.u.
 
-The zero field (F=0) derivative of the fourth order polynomial is more precise
+The zero field derivative of the fourth order polynomial, equation :eq:`mu_polyn` is more precise
 when comparing against the above mentioned SCF expectation value, though finite field evaluation is still capable
 to give value accurate to two decimal places.
 
@@ -125,17 +127,23 @@ gives all components of the polarizability tensor.
 For systems with unpaired electrons like this one, however, we have to resort to the finite-field perturbative calculations.
 For simplicity, we focus on the zz-component of the polarizability.
 
+SCF
+~~~
 For our molecule, the simple numerical second derivate calculation for given F=0.0005 at SCF level, equation eq:`alpha`
 
-.. math:: alpha_{zz} = - \bigl( \frac{E(+F)+E(E-F)-2E(0)}{F^{2}} \bigr),
+.. math:: \alpha_{zz} = - \Bigl( \frac{E(+F)+E(-F)-2E(0)}{F^{2}} \Bigr),
    :label: alpha_deriv
 
 gives 6.71996 a.u.. This is close to the 
 second order expansion coefficient, multiplied by 2, 
 giving  the value of :math:`-2a_{2}` =(-2)*(-3.3599745995852954)=6.71994919 a.u.
 
+CCSD(T)
+~~~~~~~
 Similar numerical derivation for CCSD(T), F=0.0005, equation eq:`alpha_deriv`,
 gives the value of 7.147401232 a.u.
-The corresponding expansion coefficient (multiplied by factor two) makes 7.14738420 a.u. 
+The corresponding expansion coefficient (multiplied by factor two), equation eq:`alpha_polyn`, makes 7.14738420 a.u. 
+
 One can conclude that
-the F=0.0005 field is sufficient to obtain polarizability accurate to 3 decimal places by simple numerical second derivation.
+the F=0.0005 field is sufficient to obtain polarizability accurate to 3 decimal places by simple numerical second derivation,
+equation eq:`alpha_deriv`.
