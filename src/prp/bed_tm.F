@@ -300,10 +300,10 @@ C
 C     Print section
 C
       WRITE(6,*) '* Transition moments:'
-      WRITE(6,'(A4,1X,A18,3(3X,A5,9X))')     
+      WRITE(6,'(A4,1X,A18,14X,3(3X,A5,9X))')     
      &  'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
       DO IEXC = 1,NEXCNV
-         WRITE(6,'(I4,1X,F18.10,A,3(3X,F16.10))')
+         WRITE(6,'(I4,1X,F18.10,A,3(3X,F14.10))')
      &     IEXC,OMEGA(IEXC),' real part : ',
      &     (TMOM(2,IPAR,IEXC),IPAR = 1,NPAR+1)
          WRITE(6,'(23X,A,3(3X,F14.10))')
