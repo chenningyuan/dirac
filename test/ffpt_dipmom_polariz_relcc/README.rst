@@ -43,7 +43,7 @@ NOTE: In this quick DIRAC test, only two output files are provided for Coupled C
 Spreadsheet
 ~~~~~~~~~~~
 In the spreadsheet, we interpolate the 4th-degree polynomial over this data - see the binary
-:download:`data.odf file <../../../../test/ffpt_dipmom_polariz_relcc/data.ods>` file. For that, we employ function LINEST,
+:download:`data.ods file <../../../../test/ffpt_dipmom_polariz_relcc/data.ods>` file. For that, we employ function LINEST,
 where we also prepare columns with 1st,2nd and 3rd finite-fields.
 
 Dipole moment
