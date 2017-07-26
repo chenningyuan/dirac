@@ -130,7 +130,7 @@ which simplifies to
 
    \left\langle f_{n\leftarrow 0}\right\rangle _{\theta,\phi,\chi} = \frac{2\omega}{\hbar e^{2}}\left\langle \left\langle\epsilon_{\alpha}\epsilon_{\beta}\right\rangle _{\chi}\langle n|\frac{ec}{\omega}\alpha_{\alpha}e^{+i\left(\boldsymbol{k}\cdot\boldsymbol{r}\right)}|0\rangle\langle n|\frac{ec}{\omega}\alpha_{\beta}e^{+i\left(\boldsymbol{k}\cdot\boldsymbol{r}\right)}|0\rangle^{\ast}\right\rangle _{\theta,\phi},
 
-since only the polarization vectors depend on the angle :math:`\chi`. The average over the angle :math:`\chi` can be expressed compactly in terms of the wave unit vector :math:`\mathbf{k}`
+since only the polarization vectors depend on the angle :math:`\chi`. The average over the angle :math:`\chi` can be expressed compactly in terms of the wave unit vector :math:`\mathbf{m}` (:math:`\mathbf{k}=k\mathbf{m}`)
 
 .. math::
 
