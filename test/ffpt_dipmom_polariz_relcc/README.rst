@@ -3,8 +3,8 @@ BeH electric properties
 
 This toy molecule in the very small STO-2G decontracted basis
 demonstrates the use of finite-field perturbation theory for 
-calculating the dipole moment (:math:`\mu_z`) and the polarizability (:math:`\alpha_zz`) both at the Hartree-Fock
-and the highly correlated Coupled Cluster level. Molecule is oriented in the z-axis.
+calculating the dipole moment (:math:`\mu_{z}`) and the polarizability (:math:`\alpha_{zz}`) both at the Hartree-Fock
+and the highly correlated Coupled Cluster level. Our molecule is oriented in the z-axis.
 
 Because BeH is open-shell system, we can not employ MP2 and CCSD gradients, which are available
 only for closed-shell systems. We have to resort to the finite-field perturbation scheme, 
@@ -23,13 +23,13 @@ its energy may be expanded in a Taylor serie as follows:
 We keep only z-component of the field, F=Fz, and the dipole moment is obtained as the first numerical 
 derivative of the energy according to the electric field at zero field strength:
 
-.. math:: \mu_{z}=-\Bigl( \frac{\partial E(F_{z})}{\partial F_{z}} \Bigr)_{F_{z}=0}
+.. math:: \mu_{z}=-\Biggl( \frac{\partial E(F_{z})}{\partial F_{z}} \Biggr)_{F_{z}=0}
    :label: mu
 
 The polarizability (for simplicity, here the zz-component) is calculated via second numerical derivative 
 of the energy according to the electric field at zero field strength:
 
-.. math:: alpha_{zz}=-\Bigl( \frac{\partial^{2} E(F_{z})}{\partial F^{2}_{z}} \Bigr)_{F_{z}=0}
+.. math:: \alpha_{zz}=-\Biggl( \frac{\partial^{2} E(F_{z})}{\partial F^{2}_{z}} \Biggr)_{F_{z}=0}
    :label: alpha
 
 
@@ -68,18 +68,18 @@ NOTE: In this quick DIRAC test, only two output files are provided for Coupled C
 
 Spreadsheet
 ~~~~~~~~~~~
-In the spreadsheet (Gnumerics, Libre Office Calc, MS Excel), we interpolate five pairs, [F,E(F)], of the Table ref:`mytable` 
- with the 4th-degree polynomial:
+In the spreadsheet (Gnumerics, Libre Office Calc, MS Excel), we interpolate five pairs, [F,E(F)], of the Table :ref:`mytable` 
+with the 4th-degree polynomial:
 
 .. math:: E(F)=a_{0}+a_{1}F+a_{2}F^{2}+a_3F{3}+a_{4}F^{4}
    :label: expansion4
 
-The negative first derivative of the polynomial, equation eq:`alpha`, at zero field is the dipole moment, equation eq:`mu`:
+The negative first derivative of the polynomial, equation :eq:`alpha`, at zero field is the dipole moment, equation :eq:`mu`:
 
 .. math:: \mu_{z} = - \Bigl( \frac{\partial E(F)}{\partial F} \Bigr)_{F=0} = -a_{1} 
    :label: mu_polyn
 
-The second derivative (with minus sign) is the polarizability, equation eq:`alpha`:
+The second derivative (with minus sign) is the polarizability, equation :eq:`alpha`:
 
 .. math:: \alpha_{zz} =- \Bigl( \frac{\partial^{2} E(F)}{\partial F^{2}} \Bigr)_{F=0} = -2a_{2}
    :label: alpha_polyn
@@ -100,7 +100,7 @@ We provide here the electronic part of the z-component of the dipole moment.
 
 Expectation value
 ~~~~~~~~~~~~~~~~~
-The SCF expectation value dipole moment - its zz-electronic contribution - is -1.77324745 au.
+The SCF expectation value dipole moment - its zz-electronic contribution - is math:`\mu{z}` =-1.77324745 au.
 (The input file for download, :download:`BeH.x2c_scf_dipmom.inp  <../../../../test/ffpt_dipmom_polariz_relcc/BeH.x2c_scf_dipmom.inp>` and the
 the corresponding output file, :download:`BeH.x2c_scf_dipmom_BeH.sto-2g.C2v.out  <../../../../test/ffpt_dipmom_polariz_relcc/result/BeH.x2c_scf_dipmom_BeH.sto-2g.C2v.out>`.)
 
@@ -129,21 +129,22 @@ For simplicity, we focus on the zz-component of the polarizability.
 
 SCF
 ~~~
-For our molecule, the simple numerical second derivate calculation for given F=0.0005 at SCF level, equation eq:`alpha`
+For our molecule, the simple numerical second derivate calculation for given F=0.0005 at SCF level, equation :eq:`alpha`
 
 .. math:: \alpha_{zz} = - \Bigl( \frac{E(+F)+E(-F)-2E(0)}{F^{2}} \Bigr),
    :label: alpha_deriv
 
 gives 6.71996 a.u.. This is close to the 
 second order expansion coefficient, multiplied by 2, 
-giving  the value of :math:`-2a_{2}` =(-2)*(-3.3599745995852954)=6.71994919 a.u.
+giving  the value of :math:`\alpha_{zz}=-2a_{2}` =(-2)*(-3.3599745995852954)=6.71994919 a.u.
 
 CCSD(T)
 ~~~~~~~
-Similar numerical derivation for CCSD(T), F=0.0005, equation eq:`alpha_deriv`,
-gives the value of 7.147401232 a.u.
-The corresponding expansion coefficient (multiplied by factor two), equation eq:`alpha_polyn`, makes 7.14738420 a.u. 
+Similar numerical derivation for CCSD(T), F=0.0005, equation :eq:`alpha_deriv`,
+gives the value of :math:`alpha_{zz}` =7.147401232 a.u.
+The corresponding expansion coefficient (multiplied by the factor of two), equation :eq:`alpha_polyn`,
+ makes :math:`alpha_{zz}` =7.14738420 a.u. 
 
 One can conclude that
 the F=0.0005 field is sufficient to obtain polarizability accurate to 3 decimal places by simple numerical second derivation,
-equation eq:`alpha_deriv`.
+equation :eq:`alpha_deriv`.
