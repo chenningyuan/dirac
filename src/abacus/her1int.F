@@ -6007,11 +6007,11 @@ CC     Imaginary part: eq. 45
         TMPARR(INT,7) = TMPARR(INT,7) + SX*CY*CZ ! Sym x
         TMPARR(INT,8) = TMPARR(INT,8) - SX*SY*SZ ! Sym xyz
  100  CONTINUE
-      IOFF = NOPTYP/2
+      IOFF = NINTS/2
       IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
 C     accumulating real part on symmetries
       II = IBTOSF(0,1)
-      SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,1)  ! Sym 0
+      SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,1) ! Sym 0
       II = IBTOSF(ISYMAX(1,2),1)
       SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,2)  ! Sym yz
       II = IBTOSF(ISYMAX(2,2),1)
@@ -6019,11 +6019,11 @@ C     accumulating real part on symmetries
       II = IBTOSF(ISYMAX(3,2),1)
       SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,4)  ! Sym xy
 C     accumulating imaginary part on symmetries
-      II = IBTOSF(ISYMAX(3,1),1) + IOFF
+      II = IBTOSF(ISYMAX(3,1),2) + IOFF
       SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,5)  ! Sym z
-      II = IBTOSF(ISYMAX(2,1),1) + IOFF
+      II = IBTOSF(ISYMAX(2,1),2) + IOFF
       SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,6)  ! Sym y
-      II = IBTOSF(ISYMAX(1,1),1) + IOFF
+      II = IBTOSF(ISYMAX(1,1),2) + IOFF
       SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,7)  ! Sym x
       II = IBTOSF(IXYZ,2) + IOFF
       SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,8)  ! Sym xyz
