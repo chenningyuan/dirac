@@ -2356,7 +2356,7 @@ C     Read vectors
         ENDIF
         CALL READT(LUINP,LEN,BVEC(1,1,I))
         IF(IPRINT.GE.4) THEN
-          WRITE(LUPRI,'(3X,A2,A,F10.6)')
+          WRITE(LUPRI,'(3X,A2,A,F15.8)')
      &      TYP1,' vector at frequency: ', FREQ(I)
           CALL PRQMAT(BVEC(1,1,I),NBDIM,1,NBDIM,1,
      &                NZ,IPQTOQ(1,IREP),LUPRI)
@@ -2405,7 +2405,7 @@ C       Calculate norm
           D2TOT = D2TOT + BUF2(J)
         ENDDO
         DNTOT = SQRT(D2TOT)
-        WRITE(LUPRI,'(A8,F10.6,A,E16.8,A,E10.2)')
+        WRITE(LUPRI,'(A8,F15.8,A,E16.8,A,E10.2)')
      &        ' Freq.: ',FREQ(I),' Norm: ',DNTOT,
      &        ' Residual norm: ',RNORM(I)
         IF(DNTOT.LT.DTOL2) THEN
