@@ -51,16 +51,17 @@ This can be done through replacing the string in the DIRAC input file by the fie
 The total SCF and CCSD(T) energies varrying on field strengths are sorted in the following Table:
 
 .. _mytable:
+.. table:: Perturbed energies
 
-=======    ===================    ===================
- Fz             E(SCF,Fz)             E(CCSD(T),Fz)
-=======    ===================    ===================
-+0.0010    -14.424976681856371    -14.461324673372751
-+0.0005    -14.425860788235255    -14.462193434302819
-+0.0000    -14.426746572346620    -14.463063980838802
--0.0005    -14.427634036448282    -14.463936314225093
--0.0010    -14.428523182834038    -14.464810435757153
-=======    ===================    ===================
+  =======    ===================    ===================
+   Fz             E(SCF,Fz)             E(CCSD(T),Fz)
+  =======    ===================    ===================
+  +0.0010    -14.424976681856371    -14.461324673372751
+  +0.0005    -14.425860788235255    -14.462193434302819
+  +0.0000    -14.426746572346620    -14.463063980838802
+  -0.0005    -14.427634036448282    -14.463936314225093
+  -0.0010    -14.428523182834038    -14.464810435757153
+  =======    ===================    ===================
 
 NOTE: In this quick DIRAC test, only two output files are provided for Coupled Cluster method,
 :download:`BeH.x2c_scf_relcc_-0.0005_BeH.sto-2g.C2v.out  <../../../../test/ffpt_dipmom_polariz_relcc/result/BeH.x2c_scf_relcc_-0.0005_BeH.sto-2g.C2v.out>` ,
@@ -99,16 +100,16 @@ We calculate here the electronic part of the z-component of the dipole moment.
 Expectation value
 ~~~~~~~~~~~~~~~~~
 For the SCF method, we can obtain the dipole moment - both for closed and open-shell systems -
-via the expectation value, which gives all three components, :math:`\mu{x}`,:math:`\mu{y}` and :math:`\mu{z}` .
-Subsequent finite-field calculations should be verified against expectation value. 
+via the expectation value, which gives all three components, :math:`\mu_{x}`, :math:`\mu_{y}` and :math:`\mu_{z}` .
+A good practise is that dipole moment finite-field calculations are verified against the SCF/DFT expectation value. 
 
-The SCF expectation value dipole moment - its zz-electronic contribution - is :math:`\mu{z}` =-1.77324745 au.
+The SCF expectation value dipole moment - its zz-electronic contribution - is :math:`\mu_{z}` =-1.77324745 au.
 (The input file for download, :download:`BeH.x2c_scf_dipmom.inp  <../../../../test/ffpt_dipmom_polariz_relcc/BeH.x2c_scf_dipmom.inp>` and the
 the corresponding output file, :download:`BeH.x2c_scf_dipmom_BeH.sto-2g.C2v.out  <../../../../test/ffpt_dipmom_polariz_relcc/result/BeH.x2c_scf_dipmom_BeH.sto-2g.C2v.out>`.)
 
 Finite-field values
 ~~~~~~~~~~~~~~~~~~~
-From the spreadsheet function table, we obtain the value of :math:`-a_{1}` =1.7732474 a.u.,
+From the spreadsheet function table, we obtain the value of :math:`a_{1}` =-1.7732474 a.u.,
 which is the expansion coefficient of the first order field.
 
 Simple first numerical derivation of the SCF perturbed energy according to the applied electric field, equation :eq:`mu`,
