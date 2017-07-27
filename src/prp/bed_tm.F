@@ -33,6 +33,7 @@ C
 #include "dcbwav.h"
 C#include "cbiher.h"
       LOGICAL DOINT(2,2)
+      CHARACTER*6 MXFORM, FMT
       INTEGER LWORK, NCOMP, NOPTP,IBEIG(*)
       DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC),CMO(*),WORK(*)
       real(8), allocatable              :: PRPINT(:,:),BBUF(:)
@@ -303,10 +304,12 @@ C
       WRITE(6,'(A4,1X,A18,14X,3(3X,A5,9X))')     
      &  'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
       DO IEXC = 1,NEXCNV
-         WRITE(6,'(I4,1X,F18.10,A,3(3X,F14.10))')
+         TMP=MAX(ABS(TMOM(1,NPAR+1,IEXC)),ABS(TMOM(2,NPAR+1,IEXC)))
+         FMT=MXFORM(TMP,14)
+         WRITE(6,'(I4,1X,F18.10,A,3(3X,'//FMT//'))')
      &     IEXC,OMEGA(IEXC),' real part : ',
      &     (TMOM(2,IPAR,IEXC),IPAR = 1,NPAR+1)
-         WRITE(6,'(23X,A,3(3X,F14.10))')
+         WRITE(6,'(23X,A,3(3X,'//FMT//'))')
      &     ' imag. part: ',
      &     (-TMOM(1,IPAR,IEXC),IPAR = 1,NPAR+1)
       ENDDO
@@ -314,7 +317,7 @@ C
       WRITE(6,'(A4,1X,A18,3(3X,A5,9X))')     
      &  'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
       DO IEXC = 1,NEXCNV
-         WRITE(6,'(I4,1X,F18.10,3(3X,F14.10))')
+         WRITE(6,'(I4,1X,F18.10,3(3X,'//FMT//'))')
      &     IEXC,OMEGA(IEXC),
      &     (OSC(IPAR,IEXC),IPAR = 1,NPAR+1)
       ENDDO
@@ -867,6 +870,7 @@ C
 #include "dcbwav.h"
 C#include "cbiher.h"
       LOGICAL DOINT(2,2)
+      CHARACTER*6 MXFORM, FMT
       INTEGER LWORK, NCOMP, NOPTP,IBEIG(*)
       DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC),CMO(*),WORK(*)
       real(8), allocatable              :: PRPINT(:,:),BBUF(:)
@@ -1156,7 +1160,8 @@ C
       WRITE(6,'(A4,1X,A18,3(3X,A5,9X))')     
      &  'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
       DO IEXC = 1,NEXCNV
-         WRITE(6,'(I4,1X,F18.10,3(3X,F14.8))')
+         FMT=MXFORM(OSC(NPAR+1,IEXC),14)
+         WRITE(6,'(I4,1X,F18.10,3(3X,'//FMT//'))')
      &     IEXC,OMEGA(IEXC),
      &     (OSC(IPAR,IEXC),IPAR = 1,NPAR+1)
       ENDDO
