@@ -1,6 +1,7 @@
 **DIRAC                                                                                             
 #.WAVE FUNCTION                                                                                      
 #.ANALYZE                                                                                            
+.PROPERTIES
 **HAMILTONIAN                                                                                       
 .SPINFREE                                                                                           
 .DFT                                                                                                
