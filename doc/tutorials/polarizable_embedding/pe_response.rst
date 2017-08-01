@@ -1,11 +1,14 @@
 :orphan:
 
+
+.. _pe_response:
+
 Properties in solution: TDDFT calculations of excitation energies and solvent shifts
 ===================================================================================
 
 In this tutorial we investigate property calculations in solution through 
-polarizable embedding (PE). The tutorial builds on the implementation reported in 
-:cite:`Hedegaard2017`. This implementation allows calculation of electric properties 
+polarizable embedding (PE). The tutorial builds on the implementation reported 
+in :cite:`Hedegaard2017`. This implementation allows calculation of electric properties 
 up to linear response, including an explicit environment (this corresponds to electric 
 properties up to second order). Examples include electric dipole moments and 
 polarizabilities. In addition, the linear response module allows calculation of 
@@ -21,18 +24,19 @@ The generalized eigenvalue problems that is solved when solving the response equ
 
 .. math::
 
-   \left(E_{\text{tot}}^{[2]} -\hbar\lambda S^{[2]}\right)X_m=0
+   \left(E^{[2]} -\hbar\lambda S^{[2]}\right)X_m=0
 
-is modified by the pressence of an environment. The modification is manifested in an 
-additional term, `E_{\text{pe}}^{[2]}`, to the electronic Hessian, `E_0^{[2]}` 
-(cf. Eqs. 36-38) in :cite:`Hedegaard2017`
+which is completely equivalent to what is done in a vacuum calculation. The main difference 
+is in the electronic Hessian, :math:`E^{[2]}`, which is modified by the pressence of an 
+environment (cf. Eqs. 36-38) in :cite:`Hedegaard2017`. The Hessian has the structure
 
 .. math::
- E^{[2]} =  E_0^{[2]} + E_{\text{pe}}^{[2]} = \left(\begin{array}{cc}
+ E^{[2]} =  \left(\begin{array}{cc}
                                  \mathbf{A} & \mathbf{B} \\
                                  \mathbf{B}^* & \mathbf{A}^{*} 
                                  \end{array} \right) , 
-with the matrix elements
+                              
+with matrix elements 
 
 .. math::
 
@@ -41,14 +45,24 @@ with the matrix elements
  B_{ai;bj} = \langle 0 \vert [\hat{q}_{ai},[\hat{q}_{bj},\hat{f}_0 + \hat{v}^{\mathrm{PE}}]] \vert 0 \rangle + 
    \langle 0 \vert [\hat{q}_{ai},\hat{v}^{\mathrm{ind}}] \vert 0 \rangle . 
 
-A derivation and more thorough explaination of the `E_{\text{pe}}^{[2]}` term can be 
-found in cite:`Hedegaard2017`. cf. Eqs. 36-38) in :cite:`Hedegaard2017`) 
+The modification is manifested in the additional terms :math:`\hat{v}^{\mathrm{PE}}` and 
+:math:`\hat{v}^{\mathrm{ind}}`, while :math:`\hat{f}_0` is the usual Fock (or Kohn-Sham)
+operator. A brief, physical explaination of the the two additional terms is given below
+
+* :math:`\hat{v}^{\mathrm{PE}}` accounts for interaction between multipoles and ground-state 
+  density as well as  the mutual polarization of the ground-state and the environment. 
+  the ground-state density. 
+* :math:`\hat{v}^{\mathrm{ind}}` accounts for the different interaction of the ground- 
+  and excited states with a polarizable environment. 
+  
+A derivation and more thorough explaination of the :math:`E^{[2]}` term can be 
+found in :cite:`Hedegaard2017` (cf. Eqs. 36-38). 
 
 To demonstrate how to calculate the effect of the environment with PE, we use the same 
-system as in the `PE-HF <pe_scf.rst>` tutorial. The employed h2o.mol file and potential 
+system as in the :ref:`PE-HF <pe_scf.rst>` tutorial. The employed h2o.mol file and potential 
 3_h2o.pot can be found in this tutorial. The input pe_response.inp is similar to a 
 regular TD-DFT calculation but with `.PEQM` under the `**HAMILTONIAN` flag, just as for 
-`PE-HF <pe_scf.rst>` ::
+:ref:`PE-HF <pe_scf.rst>` ::
 
    **DIRAC
    .TITLE
@@ -82,10 +96,11 @@ regular TD-DFT calculation but with `.PEQM` under the `**HAMILTONIAN` flag, just
    **END OF
 
 As for the case of PE-HF, specification of `.PEQM` will thus make the program calculate the 
-PE-specific terms; in case of linear response that is the `E_{\text{pe}}^{[2]}` term. 
-Note that use of the `.GSPOL` keyword under the `*PEQM` flag will result in a calculation 
-where only the term involving `\hat{v}^{\text{pe}}` is included (physcally, this corresponds 
-to only allow polarization of the ground-state during the excitation process). Now we have 
+PE-specific terms; in case of linear response that is the additional 
+:math:`\hat{v}^{\mathrm{PE}}` and :math:`\hat{v}^{\mathrm{ind}}` terms. Note that use of the 
+`.GSPOL` keyword under the `*PEQM` flag will result in a calculation where only the term 
+involving :math:`\hat{v}^{\text{PE}}` is included (physcally, this corresponds to only allow 
+polarization of the ground-state during the excitation process). Now we have 
 all ingredients for starting the calculation::
 
 
@@ -112,79 +127,83 @@ The summary will look identical to a vacuum calculation ::
 
 Note that the first three excitations have very low oscillator strength. These excitations 
 corresponds to triplet excitations, which are automatically included in a relativistic 
-framework. The fourth excitation is the observed one. To obtain the solvent shift, a 
-calculation without PE must also be conducted. We collect the result of such a calculation 
-in the table below together with the calculated and experimental solvent shifts. 
+framework. The fourth excitation is the observed one.  We can calculate the electronic part 
+of the solvent shift, by calculating the corresponding excitation energy without PE 
+and substracting the result from the PE result.   
+We collect results with and without PE (and the obtained solvent shift) in the table below. 
 
++----------------------------------------+-------------+-------+-------+-------+
+| QM method (potential method)           | Potential   | PE    | vac.  | shift |
++========================================+=============+=======+=======+=======+
+| B3LYP (B3LYP/A-6-31PGP)                | 3 H2O       | 7.30  | 6.69  | 0.61  |
++----------------------------------------+-------------+-------+-------+-------+
+| Experimental                           |             | 8.2   | 7.4   | 0.8   |
++----------------------------------------+-------------+-------+-------+-------+
+The experimental value is taken from discussion given in :cite`Christiansen2000`. We note that 
 
+* The shift is a bit below the experimental one 
+* The excitation energies are somewhat understimated (mainly due to the B3LYP functional). 
+
+To improve the model, we can either (i) expand the environment, 
+(ii) describe the environment more accurately or (iii) describe the QM system more accurately 
+(but currently DIRAC only includes PE with HF and DFT). 
+Finally, we might also (iv) expand the QM system. Performing these calculations will be not be 
+part of this tutorial. A table with selected results from  larger environments, 
+potentials obtained with a more accurate basis set (A-AUG-PVTZ) and a more accurate QM method are 
+compiled below. All these calculations are non-relativiatic calculations carried out 
+with the DALTON program and taken from :cite:`Hedegaard2016`. The "full CI" 
+calculations are obtained with the density matrix renormalization group (DMRG). 
+
++----------------------------------------+-------------+-------+-------+-------+
+| QM method (potential method)           | Potential   | PE    | vac.  | shift |
++========================================+=============+=======+=======+=======+
+| Non. rel. B3LYP (B3LYP/A-6-31PGP)      | 127 H2O     | 7.65  | 6.69  | 0.96  |
++----------------------------------------+-------------+-------+-------+-------+
+| Non. rel. full CI (B3LYP/A-6-31PGP)    | 3 H2O       | 7.90  | 7.46  | 0.44  |
++----------------------------------------+-------------+-------+-------+-------+
+| Non. rel. full CI (B3LYP/A-6-31PGP)    | 127 H2O     | 8.17  | 7.46  | 0.71  |
++----------------------------------------+-------------+-------+-------+-------+
+| Non. rel. B3LYP (B3LYP/A-AUG-PTVZ)     | 3 H2O       | 7.42  | 6.69  | 0.73  |
++----------------------------------------+-------------+-------+-------+-------+
+| Non. rel. B3LYP (B3LYP/A-AUG-PTVZ)     | 127 H2O     | 7.89  | 6.69  | 1.20  |
++----------------------------------------+-------------+-------+-------+-------+
+| Non. rel. full CI (B3LYP/A-AUG-PTVZ)   | 3 H2O       | 7.95  | 7.46  | 0.49  |
++----------------------------------------+-------------+-------+-------+-------+
+| Non. rel. full CI (B3LYP/A-AUG-PTVZ)   | 127 H2O     | 8.36  | 7.46  | 0.90  |
++----------------------------------------+-------------+-------+-------+-------+
 
 
 Electric dipole moments and polarizabilities
 --------------------------------------------
 
-Calculation of dipole moments and polarizabilities with PE is quite straightforward. We just need to add the PCM section to
-a dipole moment calculation input file, e.g., for a ::
+It is also possible to simple expectation values or other linear response properties with the polarizable embedding module.
+The work-flow is straightforward, and we only need to add the .PEQM section as done for the TD-DFT calculation above. 
+The input related to the property is identical to a vacuum calculation. 
+Examples of simple expectation values and linear response properties that are currently implemented with PE is the 
+(electric) dipole moment and static or frequency-dependent polarizabilities.
+Unlike in a non-relativistic framework, the relativistic framework allow many magnetic properties to be obtained  simply as 
+expectation values (e.g. properties related to electron paramagnetic spectroscopy). All PE contriubtions to these properties 
+will be automatically included from the wave function optimization and will follow in a furture release of an EPR module.
+Note also that linear response properties that requires London orbitals are also not currently possible with PE. 
+An example is given below for a dipole moment calculation input file ::
 
    **DIRAC
    .WAVE FUNCTION
    .PROPERTIES
    **HAMILTONIAN
-   .PCM
+   .PEQM     
+   *PEQM     
+   .POTENT   
+   3_h2o.pot 
    **WAVE FUNCTION
    .SCF
    **PROPERTIES
    .DIPOLE
    *END OF
 
-This PCMSolver input file requires the CPCM model with cyclohexane as solvent. The solute is enclosed
-in a cavity made from a single sphere, centered at the origin and with a 20 angstrom radius.
+Things to note
+--------------
 
-The output for the dipole moment calculation looks just like usual::
-
-Electric dipole moment polarizabilities
----------------------------------------
-
-We recall that the electric dipole polarizability is a second order property as is defined as
-the second derivative, at zero field strength, of the energy:
-
-Again, we just need to add the PCM section to an electric dipole polarizability calculation input file::
-
-   **DIRAC
-   .PROPERTIES
-   **HAMILTONIAN
-   .PCM
-   **WAVE FUNCTION
-   .SCF
-   **PROPERTIES
-   .POLARIZABILITY
-   *END OF
-
-the same .mol file as above for water is used in this example. The following PCMSolver input file is used::   
-
-The output for the dipole moment calculation looks just like usual::
-
-                         +--------------------------------+
-                         ! Electric dipole polarizability !
-                         +--------------------------------+
-      
-      
-      
-     @   Elements of the electric dipole polarizability tensor
-     
-     @   xx            7.76376447 a.u.   (converged)      
-     @   yy            3.21397401 a.u.   (converged)      
-     @   zz            5.57773363 a.u.   (converged)      
-     
-     @   average       5.51849070 a.u.
-     @   anisotropy    3.941      a.u.
-     
-     @   xx            1.15047118 angstrom**3
-     @   yy            0.47626180 angstrom**3
-     @   zz            0.82653484 angstrom**3
-     
-     @   average       0.81775594 angstrom**3
-     @   anisotropy    0.584      angstrom**3
-
-----------------------------------------------
-
+* Calculations with transformed two-component Hamiltonians are generally possibly by supplying the program with the requested model under `**HAMILTONIAN`. In such a calculation, :math:`\hat{v}^{\mathrm{PE}}` is not transformed 
+  
 

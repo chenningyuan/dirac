@@ -1,5 +1,8 @@
 :orphan:
 
+
+.. _pe_scf:
+
 A Hartree-Fock calculation with the polarizable embedding model
 ==================================================================================
 
