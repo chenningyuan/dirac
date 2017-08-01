@@ -16,19 +16,21 @@ steps:
 
   system_info:
     title: print system info
+    image_name: node:5
     commands:
-    - lscpu
-    - echo nproc=$(nproc)
-    - pwd
-    - df -h
-    - free -g -h
-    - cmake --version
-    - python -V
-    - mpif90 --version
-    - mpirun --version
+      - lscpu
+      - echo nproc=$(nproc)
+      - pwd
+      - df -h
+      - free -g -h
+      - cmake --version
+      - python -V
+      - mpif90 --version
+      - mpirun --version
 
   dirac_build:
     title: own build of DIRAC
+    image_name: node:5
     working_directory: ${{main_clone}}
     environment:
       - DIRAC_MPI_COMMAND="mpirun -np 2"
