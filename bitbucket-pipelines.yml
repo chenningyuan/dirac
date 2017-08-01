@@ -12,8 +12,6 @@ branches:
 # environment variable for Dirac MPI command
 env:
     - DIRAC_MPI_COMMAND="mpirun -np 2"
-
-env:
     - CTEST_PROJECT_NAME="DIRACext"
     
 # language settings - prepare Python environment
