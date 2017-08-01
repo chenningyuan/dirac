@@ -162,7 +162,7 @@ Tutorials and walkthrus
   :doc:`First step with polarizable embedding: Hartree-Fock calculation on micro-solvated H2O <tutorials/polarizable_embedding/pe_scf>` |
   :doc:`TDDFT calculation on micro-solvated H2O  <tutorials/polarizable_embedding/pe_response>`
 
-  '* **Davidson corrections for relCI (LUCITA and KRCI):**
+* **Davidson corrections for relCI (LUCITA and KRCI):**
   :doc:`+Q corrections <tutorials/relci_q_corrections/q_corrections>`
 
 * **Utility programs:**
