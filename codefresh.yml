@@ -19,8 +19,9 @@ steps:
     commands:
     - lscpu
     - echo nproc=$(nproc)
+    - pwd
     - df -h
-    - free -m
+    - free -g -h
     - cmake --version
     - python -V
     - mpif90 --version
