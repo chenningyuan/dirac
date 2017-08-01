@@ -15,8 +15,6 @@
 .SCF
 #.RESOLVE
 *SCF
-.MAXITR 
-55  
 # W(74 electrons): [Xe] 4f(14) 5d(4) 6s(2)
 .CLOSED SHELL !  [Xe] 4f(14) 6s(2)
  30 40
@@ -30,6 +28,9 @@
 #.NODIIS
 #.DAMP
 #0.9
+# ... should be enough to get convergence
+.MAXITR 
+18  
 **ANALYZE
 .MULPOP
 *MULPOP

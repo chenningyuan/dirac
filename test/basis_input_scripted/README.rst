@@ -64,6 +64,8 @@ Nonworking cases
 ~~~~~~~~~~~~~~~~
 
 Because of many basis set files (more than 300), one can not expect all of them working.
-There are cases of wrong basis sets, let us mention few:
-- does not work for basi set files like "basis_dalton/aug-pc-0_emsl" where the proton number can not be extracted.
-- ...
+
+There are cases of wrong basis sets, for example, 
+does not work for basis set files like "basis_dalton/aug-pc-0_emsl" where the proton number can not be extracted.
+
+For all cases, see the DIRAC gitlab issue #250.

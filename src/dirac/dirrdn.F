@@ -717,6 +717,8 @@ C
     2 CONTINUE
 #if defined (VAR_MPI)
       CALL PRLINP(WORD)
+#else
+      CALL QUIT('*PARALLEL in input, but this is a non_MPI version')
 #endif
         GO TO 200
     3 CONTINUE
@@ -4978,7 +4980,9 @@ C ... get integral flags in advance
 !mi:  by default do not allow mixing T+ with T-
       TRS_MIX=.FALSE.
 !jmho: deafult - no polarizable embedding
+#ifdef HAS_PELIB
       PEQM = .FALSE.
+#endif
 !mi:  by default, do not save Jz_MO matrices
       WRITE_Jz_MATRIX = .FALSE.
 
@@ -6491,11 +6495,13 @@ C
           ENDDO
         ENDIF
       ENDIF
+#ifdef HAS_PELIB
       IF (PEQM) THEN
         WRITE(LUPRI,'(1X,A,A)')
      &  '* Environment is modeled using polarizable embedding scheme'//
      &  ' (PE library)'
       END IF
+#endif
       IF (NOINPUT) GOTO 500
 C
 C     Process input for various program sections
