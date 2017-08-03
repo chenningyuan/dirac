@@ -479,7 +479,7 @@ C***********************************************************************
       INTEGER IWRITE_BYTE
 #endif
       INTEGER(KIND=df_MPI_OFFSET_KIND) IS_BYTE8 
-      INTEGER(KIND=df_MPI_OFFSET_KIND) IS_LENGHT8
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IS_LENGTH8
 #endif
 #include "parluci.h"
 #include "typesz_mpi2.h"
@@ -488,7 +488,7 @@ C***********************************************************************
 C
 
       IS_BYTE8   = 0
-      IS_LENGHT8 = 0
+      IS_LENGTH8 = 0
 C     local memory
       IDUM = 0
       call memmar(KDUM,  IDUM,    'MARK  ',IDUM,'T_DIAG')
@@ -527,9 +527,9 @@ C
       IWRITE_BYTE = 0 
       IOFFSET     = IOFF_T_IJKL
       IS_BYTE8    = ISIZE_dp
-      IS_LENGHT8  = NTOOB
+      IS_LENGTH8  = NTOOB
 #if defined (INT_STAR8)
-      IWRITE_BYTE = IS_BYTE8 * IS_LENGHT8
+      IWRITE_BYTE = IS_BYTE8 * IS_LENGTH8
 #else
       IWRITE_BYTE = ISIZE_dp * NTOOB
 #endif
@@ -542,9 +542,9 @@ C     CALL WRTMAT(WORK(KLH1DA),1,NTOOB,1,NTOOB)
 C
       IOFFSET     = IOFFSET + IWRITE_BYTE
       IS_BYTE8    = ISIZE_dp
-      IS_LENGHT8  = NTOOB
+      IS_LENGTH8  = NTOOB
 #if defined (INT_STAR8)
-      IWRITE_BYTE = IS_BYTE8 * IS_LENGHT8
+      IWRITE_BYTE = IS_BYTE8 * IS_LENGTH8
 #else
       IWRITE_BYTE = ISIZE_dp * NTOOB
 #endif
@@ -557,9 +557,9 @@ C     CALL WRTMAT(WORK(KLH1DB),1,NTOOB,1,NTOOB)
 C
       IOFFSET     = IOFFSET + IWRITE_BYTE
       IS_BYTE8    = ISIZE_dp
-      IS_LENGHT8  = NTOOB**2
+      IS_LENGTH8  = NTOOB**2
 #if defined (INT_STAR8)
-      IWRITE_BYTE = IS_BYTE8 * IS_LENGHT8
+      IWRITE_BYTE = IS_BYTE8 * IS_LENGTH8
 #else
       IWRITE_BYTE = ISIZE_dp * NTOOB**2
 #endif
@@ -571,9 +571,9 @@ C     CALL WRTMAT(WORK(KLJ),1,NTOOB**2,1,NTOOB**2)
 C
       IOFFSET     = IOFFSET + IWRITE_BYTE
       IS_BYTE8    = ISIZE_dp
-      IS_LENGHT8  = NTOOB**2
+      IS_LENGTH8  = NTOOB**2
 #if defined (INT_STAR8)
-      IWRITE_BYTE = IS_BYTE8 * IS_LENGHT8
+      IWRITE_BYTE = IS_BYTE8 * IS_LENGTH8
 #else
       IWRITE_BYTE = ISIZE_dp * NTOOB**2
 #endif
@@ -582,9 +582,9 @@ C
 C     
       IOFFSET     = IOFFSET + IWRITE_BYTE
       IS_BYTE8    = ISIZE_dp
-      IS_LENGHT8  = NTOOB**2
+      IS_LENGTH8  = NTOOB**2
 #if defined (INT_STAR8)
-      IWRITE_BYTE = IS_BYTE8 * IS_LENGHT8
+      IWRITE_BYTE = IS_BYTE8 * IS_LENGTH8
 #else
       IWRITE_BYTE = ISIZE_dp * NTOOB**2
 #endif

@@ -459,13 +459,13 @@ C
          IIDX(IFSYM) = IT
          DO I = 1, NORB(IFSYM)
             IA = IA + 1
-            IF (.NOT. USENOROT .OR. NOROT(IA) .EQ. 0) THEN
+            IF (IDXFLG) THEN
+               IG = IDX(IA)
+            ELSE
+               IG = IA
+            END IF
+            IF (.NOT. USENOROT .OR. NOROT(IG) .EQ. 0) THEN
                IT = IT + 1
-               IF (IDXFLG) THEN
-                  IG = IDX(IA)
-               ELSE
-                  IG = IA
-               END IF
                IDXT2G(IT) = IG
             END IF
          END DO
@@ -798,7 +798,7 @@ C         ... -1 tells NUMLST to _not_ reorder orbital list
           NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
           NSTRT(I) = NSTRT(I) +  NSTR(IFRP,0,I)
           CALL MEMREL('PAMTRA',WORK,KFRSAV,KVEC(IFRP,I),KFREE,LFREE)
-          CALL MEMGET('INTE',KVEC(IFRP,I),NSTR(IFRP,0,I),
+          CALL MEMGET2('INTE','VEC',KVEC(IFRP,I),NSTR(IFRP,0,I),
      &                WORK,KFREE,LFREE)
         ENDDO
       ENDDO

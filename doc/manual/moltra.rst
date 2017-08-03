@@ -37,7 +37,7 @@ Specify the active set of spinors.
 
 ::
 
-    energy -20.0 10.0 1.0
+    energy -10.0 20.0 1.0
 
 **Advanced options**
 

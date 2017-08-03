@@ -344,6 +344,16 @@ else()
 endif()
 message(STATUS "srDFT module: ${ENABLE_SRDFT}")
 
+
+# pelib interface routines added as module
+if(ENABLE_PELIB)
+    add_subdirectory(${PROJECT_SOURCE_DIR}/src/pelib)
+    set(EXTERNAL_LIBS pelib_interface ${EXTERNAL_LIBS})
+    dirac_test(pe_energy "short;scf;pelib")
+    dirac_test(pe_response "short;polarizabilities;pelib")
+    dirac_test(pe_exc "short;pelib")
+endif()
+
 #  dirac sources as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/dirac)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:dirac> ${EXTERNAL_OBJECTS})

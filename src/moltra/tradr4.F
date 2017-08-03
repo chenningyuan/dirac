@@ -19,7 +19,8 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-C
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR4T */
       SUBROUTINE TRDR4T(WORK,KFREE,LFREE,IPRINT,INTFLG,KGAB,KDRIJ,
@@ -103,7 +104,7 @@ C
 C       Get hold of the slaves
 C       ( ITASK = 2 for parallel integral transformation )
 C
-        CALL DIRAC_PARCTL( 2 )
+        CALL DIRAC_PARCTL( MOLTRA_PAR )
 C       
 C       Initialize
 C
@@ -354,7 +355,7 @@ C
 C     Release the slaves if we run in parallel.
 C        ( ITASK = -1 )
 C
-      IF (PARCAL) CALL DIRAC_PARCTL( -1 )
+      IF (PARCAL) CALL DIRAC_PARCTL( EXIT_NODEMENU )
 C
 #if defined (VAR_PFS)
 C

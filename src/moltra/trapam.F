@@ -19,7 +19,8 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-C
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck PAMTRA */
       SUBROUTINE PAMTRA()
@@ -438,7 +439,6 @@ C
             CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,
      &                  IBEIG,TOTERG,14,WORK,KFREE,LFREE)
          ENDIF
-         print *,' PAMTRA: CMO read from DFCOEF...'
       END IF
 C
 C     Select the set of MOs that we need for core transformation
@@ -660,6 +660,7 @@ C
      &              NSTR(IFRP,2,2),NSTR(IFRP,1,2))
         NSTR(IFRP,0,2)   = NSTR(IFRP,1,2) + NSTR(IFRP,2,2)
       ENDDO
+      
 C
 C     If energy threshold, truncate virtual space
 C     ===========================================
@@ -720,8 +721,15 @@ C
       Allocate (CMO(N2BBASXQ))
       Allocate (EIG(NORBT))
       Allocate (IBEIG(NORBT))
-      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,
-     &            ESCF,14,WORK,KFREE,LFREE)
+      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+      IF (.NOT.TOBE) THEN
+         WRITE(LUPRI,'(/A)') 'MO coefficient file not present'
+         CALL QUIT('PSIMP2: No MO coefficient file !')
+      ELSE
+         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PSIMP2')
+         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,
+     &               IBEIG,ESCF,14,WORK,KFREE,LFREE)
+      ENDIF
       CLOSE(LUCOEF,STATUS='KEEP')
       WRITE(LUPRI,'(A,F18.10,/)')
      &  'Coefficients imported. Total DHF energy:', ESCF
@@ -3412,7 +3420,7 @@ C
 C       Get hold of the slaves if we run in parallel.
 C        ( ITASK = 1 for Fock matrices )
 C
-        IF (PARCAL) CALL DIRAC_PARCTL( 1 )
+        IF (PARCAL) CALL DIRAC_PARCTL( HERFCK_PAR )
 C
         NELM = 0
         DO IFRP = 1,NFSYM
@@ -3430,7 +3438,7 @@ C
 C       Release the slaves if we run in parallel.
 C        ( ITASK = -1 )
 C
-        IF (PARCAL) CALL DIRAC_PARCTL( -1 )
+        IF (PARCAL) CALL DIRAC_PARCTL( EXIT_NODEMENU )
       END IF
 C
       CALL QEXIT('VIRCAN')
@@ -3999,7 +4007,7 @@ C
 C       Get hold of the slaves if we run in parallel.
 C        ( ITASK = 1 for Fock matrices )
 C
-        IF (PARCAL) CALL DIRAC_PARCTL( 1 )
+        IF (PARCAL) CALL DIRAC_PARCTL( HERFCK_PAR )
 C
 C       Transform core-fock matrix to active MO basis
 C       ---------------------------------------------
@@ -4024,7 +4032,7 @@ C
 C       Release the slaves if we run in parallel.
 C        ( ITASK = -1 )
 C
-        IF (PARCAL) CALL DIRAC_PARCTL( -1 )
+        IF (PARCAL) CALL DIRAC_PARCTL( EXIT_NODEMENU )
       ENDIF
 C
 C     Release buffer memory
@@ -4363,7 +4371,7 @@ C
 C       Get hold of the slaves if we run in parallel.
 C        ( ITASK = 1 for Fock matrices )
 C
-!@d     IF (PARCAL) CALL DIRAC_PARCTL( 1 )
+!@d     IF (PARCAL) CALL DIRAC_PARCTL( HERFCK_PAR )
 C
 C       Transform core-fock matrix to active MO basis
 C       ---------------------------------------------
@@ -4387,7 +4395,7 @@ C
 C       Release the slaves if we run in parallel.
 C        ( ITASK = -1 )
 C
-!@d     IF (PARCAL) CALL DIRAC_PARCTL( -1 )
+!@d     IF (PARCAL) CALL DIRAC_PARCTL( EXIT_NODEMENU )
 !@d   ENDIF
 C
 C     Release buffer memory

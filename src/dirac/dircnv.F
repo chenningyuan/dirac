@@ -576,14 +576,14 @@ C
            IF(SUB_BL) THEN
              IBO = 0
              DO ISUB = 1,N_SUB_BL(I)
-             NBO = NORB_SUB(ISUB,I,0)
+             NBO = NTMO_SUB(ISUB,I,0)
              IF(NBO.GT.0) THEN
                IMAT = I2TMOT(I) + (NTMO(I)+1)*IBO + 1
                CALL QGEMM(NBO,NBO,NBO,D1,
      &         'N','N',IPQTOQ(1,0),FMO(IMAT),NTMO(I),NTMO(I),1,
      &         'N','N',IPQTOQ(1,0),EBUF(IMAT),NTMO(I),NTMO(I),1,
      &         D0,IPQTOQ(1,0),EVEC(IMAT),NTMO(I),NTMO(I),1)
-               IBO = IBO + NORB_SUB(ISUB,I,0)
+               IBO = IBO + NTMO_SUB(ISUB,I,0)
              ENDIF
              ENDDO
            ELSE

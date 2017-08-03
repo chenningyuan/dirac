@@ -19,6 +19,9 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck NMRINP */
       SUBROUTINE NMRINP(WORD,RESET,WORK,LWORK)
@@ -1953,7 +1956,7 @@ C
 C     Check what type of two-electron integrals to include
 C
 #if defined (VAR_MPI) || defined (VAR_PVM)
-      MTOTTK(1) = NLRGBL*(NLRGBL+1)/2 ! MI...hm..some lenght...
+      MTOTTK(1) = NLRGBL*(NLRGBL+1)/2 ! MI...hm..some length...
       MTOTTK(2) = NLRGBL*(NLRGBL+1)/2
       MTOTTK(3) = NSMLBL*(NSMLBL+1)/2
       FIRST1 = .TRUE.
@@ -1966,7 +1969,7 @@ C
 #if defined (VAR_MPI) || defined (VAR_PVM)
          IF (PARCAL) THEN
            CALL MEMGET('INTE',KNPOS,MTOTTK(I2TYP),WORK,KFREE,LFREE)
-           CALL DIRAC_PARCTL( 1 )
+           CALL DIRAC_PARCTL( HERFCK_PAR )
            CALL HER_PARDRV(WORK(KFREE),LFREE,DUMMY,WORK(KDMAT),
      &          NDMAT,WORK(KIREP),WORK(KIFCT),
      &          ITYPE,MAXDIF,IATOM,.TRUE.,.TRUE.,.FALSE.,

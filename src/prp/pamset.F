@@ -19,6 +19,9 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck getfck */
       SUBROUTINE GETFCK(FMO,IPRINT,WORK,KFREE,LFREE)
@@ -115,7 +118,11 @@ C***********************************************************************
        use num_grid_cfg
 #ifdef HAS_PCMSOLVER
       use pcm_linear_response, only: compute_mep_asc, pcm_oper_ao_driver
-#endif      
+#endif
+#ifdef HAS_PELIB
+      use polarizable_embedding, only: pe_master
+      use pe_variables, only: peqm
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -252,7 +259,7 @@ C          Hermitian operator
            end if
 #endif
 #ifdef VAR_MPI
-            if (parcal) call dirac_parctl(4)
+            if (parcal) call dirac_parctl( XCINT_PAR )
 #endif
            allocate(xc_matrix(ntbas(0), ntbas(0), nz))
            xc_matrix = 0.0d0
@@ -322,6 +329,16 @@ CJTH check this
            deallocate(fock_pcm)
         endif 
 #endif
+
+#ifdef HAS_PELIB
+! edh: As the solvent methods before us (see above) we need
+! to construct the (static) PE contributions from environment
+! before starting a response calculation from DFCOEF
+      IF (PEQM) THEN
+        call genden(fao, cmo, 1, iprint)
+        call pelib_ifc_fock(fao, fmo, tot_nrg, el_nrg)
+      ENDIF
+#endif 
 
 C
 C     3. Get one-electron Fock matrix

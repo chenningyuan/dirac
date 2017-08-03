@@ -109,9 +109,10 @@ C
 C
       use interface_to_mpi
 #include "implicit.h"
-C
-C
 #include "priunit.h"
+C
+C dirac_partask.h : symbols for DIRAC_PARCTL codes
+C
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
@@ -119,6 +120,7 @@ C
 #include "molinp.h"
 #include "twocom.h"
 #if defined (PRG_DIRAC)
+#include "dirac_partask.h"
 #include "dcbgen.h"
 #else
 #include "gnrinf.h"
@@ -243,8 +245,7 @@ C     Release nodes from this task
 C     and let them return to main menu.
 C--------------------------------------
 C
-      ITASK = - 1
-      CALL DIRAC_PARCTL( -1 )
+      CALL DIRAC_PARCTL( EXIT_NODEMENU )
 C
 C-----------------------------------------
 C     Sort the integral-calculation times.
