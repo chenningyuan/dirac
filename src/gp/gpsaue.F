@@ -1390,7 +1390,7 @@ C     generate the Hermitian conjugate matrix
 C     of the general matrix AMAT;
 C
 C     return the new general matrix in AMAT 
-C       (so AMAT is owerwritten !)
+C       (so AMAT is overwritten !)
 C
 C     Written by Miro Ilias, July 2003
 C     (based on QGETHE)
