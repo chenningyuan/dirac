@@ -71,15 +71,20 @@ add_library(
 )
 
 # add intermodule dependendencies
+
+if(ENABLE_EXATENSOR)
+    add_dependencies(dirac exatensor)
+endif()
+
+add_dependencies(dirac interface_mpi)
+add_dependencies(dirac gp)
 add_dependencies(dirac main)
 add_dependencies(dirac abacus)
-add_dependencies(dirac gp)
 add_dependencies(dirac xcfun_fortran_bindings)
 add_dependencies(dirac embedding)
 add_dependencies(dirac localization)
 add_dependencies(dirac visual)
 add_dependencies(dirac x2c)
-add_dependencies(dirac interface_mpi)
 if (ENABLE_INTEREST)
     add_dependencies(dirac interest)
 endif()
@@ -98,8 +103,4 @@ if (ENABLE_QCORR)
 endif()
 if (ENABLE_KRCC)
     add_dependencies(dirac krcc)
-endif()
-
-if(ENABLE_EXATENSOR)
-    add_dependencies(dirac exatensor)
 endif()
