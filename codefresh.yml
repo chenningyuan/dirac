@@ -8,6 +8,7 @@ version: '1.0'
 steps:
   build_image:
     title: preparing worker
+    image: image/5
     image_name: node:5
     commands:
       - sudo apt-get install gcc g++ gfortran make zlib1g-dev
@@ -16,6 +17,7 @@ steps:
 
   system_info:
     title: print system info
+    image: image/5
     image_name: node:5
     commands:
       - lscpu
@@ -30,6 +32,7 @@ steps:
 
   dirac_build:
     title: own build of DIRAC
+    image: image/5
     image_name: node:5
     working_directory: ${{main_clone}}
     environment:
