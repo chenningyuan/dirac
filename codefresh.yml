@@ -7,9 +7,8 @@
 version: '1.0'
 steps:
   build_image:
-    title: preparing worker
-    image: image/5
-    image_name: node:5
+    title: preparing worker 
+    image: codefresh/base-image:latest
     commands:
       - sudo apt-get install gcc g++ gfortran make zlib1g-dev
       - sudo apt-get remove openmpi-bin libopenmpi-dev
@@ -17,8 +16,7 @@ steps:
 
   system_info:
     title: print system info
-    image: image/5
-    image_name: node:5
+    image: codefresh/base-image:latest
     commands:
       - lscpu
       - echo nproc=$(nproc)
@@ -32,8 +30,7 @@ steps:
 
   dirac_build:
     title: own build of DIRAC
-    image: image/5
-    image_name: node:5
+    image: codefresh/base-image:latest
     working_directory: ${{main_clone}}
     environment:
       - DIRAC_MPI_COMMAND="mpirun -np 2"
