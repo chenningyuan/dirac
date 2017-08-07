@@ -318,7 +318,8 @@ C
       DIMENSION NSTR(2,0:2,2),PRCMO(NSTRT1*2,NSTRT2*2,2)
       DIMENSION PROPMO(NSTRT1,NSTRT2,NZ)
       DIMENSION IOFF1(2,2),IOFF2(2,2),IOFF3(2,2)
-      DIMENSION IBE11(*),IBE21(*),IBE12(*),IBE(22)
+      DIMENSION IBE11(*),IBE21(*),IBE12(*),IBE22(*)
+!
 C
       IF (IPRINT.GE.3) THEN
          WRITE(LUPRI,'(/3X,3A/)') '*** Property matrix :',ACHAR,' ***'
@@ -445,16 +446,24 @@ C       active quaternion unit.
                 IF (JFRP.EQ.2) IREPIB = IBE21(I)
                 IQI = IPQTOQ(1,IREPIB)
                 IQ  = IQMULT (IQI,IQJ,IQPRP)
-                IQS = IQPHASE(IQI,IQJ,IQPRP)*IQSIGN(IQJ,2,1)
+! LV
+!   first amendment to make MO transformation of property integrals
+!   work for the spinfree case:
+! LV
+! LV            IQS = IQPHASE(IQI,IQJ,IQPRP)*IQSIGN(IQJ,2,1)
+                IQS = IQPHASE(IQI,IQJ,1)*IQSIGN(IQJ,2,1)
 C
 C The code is to be debugged. The MOLTRA part is probably OK but the
 C phase transformed integrals do not give the correct answer when fed
 C into RELCCSD. If you use this transformation with another code, you 
 C can proceed at your own risk by uncommenting the stop.
+!
+! LV second amendment: we do not stop here, since it should work.
+!
 C Stop now when we find non-symmetric operators.
 C  
-                IF (IQ.NE.IQS)
-     &          CALL QUIT ("This does not work with spinfree !")
+! LV                IF (IQ.NE.IQS)
+! LV      &          CALL QUIT ("This does not work with spinfree !")
 C
 C               Scale the matrix element
                 PRPME = PROPMO(II1,JJ1,IZ) * IQS

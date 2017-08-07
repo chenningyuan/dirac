@@ -1273,8 +1273,14 @@ C
          CALL GASCIP_NODE()
 
       ELSE IF (ITASK .EQ. 12) THEN
-
+C
+C        start the PELIB slave.
+C
+#ifdef HAS_PELIB
          CALL PELIB_IFC_SLAVE()
+#else
+         call quit('ERROR: Pelib lib not available')
+#endif
 
       ELSE
 C

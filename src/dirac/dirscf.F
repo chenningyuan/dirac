@@ -1569,11 +1569,13 @@ C
      &      '* PCM Fock matrix contribution  (CPU):', pcm_cputid
          endif 
 #endif
+#ifdef HAS_PELIB
           IF (PEQM) THEN
             CPUTID = SECTID(PE_TIME)
             WRITE(LUPRI,'(3X,A,A12)')
      &      '* PE Fock matrix            (CPU):',CPUTID
           END IF
+#endif
           CPUTID = SECTID(TDDG)
           IF(NZ.EQ.1) WRITE(LUPRI,'(3X,A,A12)')
      &      '* Real diagonalization      (CPU):',CPUTID
@@ -1956,8 +1958,10 @@ CMI      ... print out matrixes ...
      +       'Polarization energy                :  ',get_pcm_energy()
 #endif
         ! later this will be replaced by a get energy routine
+#ifdef HAS_PELIB
         IF (PEQM) WRITE(LUPRI,'(A,'//FMT//')')
      +       'Embedding energy                   :  ',PE_TOT_NRG
+#endif
          WRITE(LUPRI,'(A,'//FMT//')')
      +       'Total energy                       :  ',DHFERG
          IF(IPRSCF.GE.2) THEN

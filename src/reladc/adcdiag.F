@@ -29,6 +29,8 @@
 !      ****  Diagonalization Routines for the RELADC package  ****
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+! this is the real version of a full diagonaliation routine
+!
       SUBROUTINE FULLDIAR(IOUNIT, FILEN4, FILEN5, INTBUF, LADC, KREP)
 
       implicit none

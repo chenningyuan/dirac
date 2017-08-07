@@ -3,7 +3,6 @@ module london_utils
 
   use memory_allocator 
   use dirac_cfg
-  use dft_cfg
   use num_grid_gen
   use dirac_interface
 
