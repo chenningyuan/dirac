@@ -14,8 +14,6 @@ branches:
 # environment variable for Dirac MPI command
 env:
     - DIRAC_MPI_COMMAND="mpirun -np 2"
-
-env:
     - CTEST_PROJECT_NAME="DIRACext"
     
 # language settings - prepare Python environment
@@ -52,6 +50,12 @@ before_script:
     - cmake --version
 # show Python version
     - python -V
+#number of available processors/jobs for test will be 2 times less because we use "mpirun -np 2"
+    - TEST_N_PROC=$(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 2)
+# print
+    - echo "Number of processors/jobs for build step is $(nproc)."
+    - echo "Number of processors/jobs for test step is $TEST_N_PROC ."
+
     
 # update submodule; configure, build optimized code and run tests (Dirac 64-bit with MPICH2)
 script:
@@ -63,7 +67,8 @@ script:
 # ldd : show dependencies
     - ldd dirac.x
 # if some tests fail build/ctest can continue because of: || true
-    - ctest -j $(nproc)  -D ExperimentalTest -L short || true
+   # - ctest -j $(nproc)  -D ExperimentalTest -L short || true
+    - ctest -j $TEST_N_PROC  -D ExperimentalTest -L short || true
     - ctest -D ExperimentalSubmit
 # now check the release subset
     - make -j $(nproc) release
