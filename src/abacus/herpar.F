@@ -158,7 +158,7 @@ C
       TIMING = .TRUE.
 C
 C     Determine total number of tasks - MTOTTK.
-      CALL DET_TASK (I2TYP,1,MTOTTK,NPOS)
+      CALL HERPAR_DET_TASK (I2TYP,1,MTOTTK,NPOS,WORK(KFREE))
       IF(MTOTTK.GT.NTOTTK) THEN
         WRITE(LUPRI,'(A,I8)') 'HER_PARDRV: Inconsistent MTOTTK:',MTOTTK
         WRITE(LUPRI,'(3X,A,I8,A,I8)') ' - should be less or equal to',
@@ -171,9 +171,9 @@ C
       KWORK = 1
       KFREE = KWORK
       LFREE = LWORK
-      CALL MEMGET('INTE',KNSTAT,NODES ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KINDEX,MTOTTK,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KTIMES,MTOTTK,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','NSTAT',KNSTAT,NODES ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','INDEX',KINDEX,MTOTTK,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','TIMES',KTIMES,MTOTTK,WORK,KFREE,LFREE)
 C
 C     Test of work space allocation.
 C
@@ -218,7 +218,8 @@ C--------------------------
 C     Make the index array.
 C--------------------------
 C
-      CALL INDEKS(FIRST,WORK(KINDEX),ITYPE,MTOTTK,NBATCH,NPOS,I2TYP)
+      CALL HERPAR_INDEKS(FIRST,WORK(KINDEX),WORK(KTIMES),
+     &   ITYPE,MTOTTK,NBATCH,NPOS,I2TYP)
 C
 C---------------------------------------
 C     Send initialization data to nodes.
@@ -235,10 +236,16 @@ C-----------------------
 C     Start calculation.
 C-----------------------
 C
-      CALL DOPAR(WORK(KINDEX),MTOTTK,NBATCH,WORK(KNSTAT))
+      CALL DO_HERPAR(WORK(KINDEX),MTOTTK,NBATCH,WORK(KNSTAT))
 C.....Get results from nodes
       CALL RVRES(WORK(KFREE),FMAT,ITYPE,MTOTTK,NREQUI,
      &           NUMGRA,NUMHES,MAXDIF,WORK(KTIMES),DINTSKP,LDINTSKP)
+C
+C-------------------------------------
+C     Get timing results if requested.
+C-------------------------------------
+C
+      IF (IPRPAR .GT. 0) CALL TIMRES(WORK(KNSTAT))
 C
 C--------------------------------------
 C     Release nodes from this task
@@ -254,12 +261,6 @@ C
       IF(TIMING) CALL PARSR2(MTOTTK,NPOS,WORK(KTIMES),
      &                       WORK(KINDEX),IPRPAR)
 C
-C-------------------------------------
-C     Get timing results if requested.
-C-------------------------------------
-C
-      IF (IPRPAR .GT. 0) CALL TIMRES(WORK(KNSTAT))
-C
       IF (FIRST)  FIRST  = .FALSE.
       IF (NEWBAS) NEWBAS = .FALSE.
 C
@@ -269,9 +270,9 @@ C
       CALL QEXIT('HER_PARDRV')
       RETURN
       END
-C  /* Deck indeks */
-      SUBROUTINE INDEKS(FIRST,INDEX,ITYPE,MTOTTK,NBATCH,
-     &                  NPOS,I2TYP)
+C  /* Deck herpar_indeks */
+      SUBROUTINE HERPAR_INDEKS(FIRST,INDEX_IJ,TIMES,
+     &   ITYPE,MTOTTK,NBATCH,NPOS,I2TYP)
 C
 C     Written by Paal Dahle May 1994.
 C     Revised Oct 1996 by T.Saue
@@ -289,7 +290,8 @@ C
 #include "blocks.h"
 #include "dcbfir.h"
 C
-      DIMENSION INDEX(MTOTTK), NPOS(MTOTTK)
+      INTEGER INDEX_IJ(MTOTTK), NPOS(MTOTTK)
+      REAL*8  TIMES(MTOTTK)
       LOGICAL FIRST,DOFIRST
 C
 C     If new run, make initial guess as to run times
@@ -313,7 +315,10 @@ C
       ENDIF
 C
       IF (NEWBAS .OR. DOFIRST) THEN
-         CALL DET_TASK (I2TYP,2,MTOTTK,NPOS)
+         ! make a list of tasks in INDEX_IJ and a task weight for each in TIMES
+         CALL HERPAR_DET_TASK(I2TYP,2,MTOTTK,INDEX_IJ,TIMES)
+         ! make a sorted list of tasks in NPOS based on the weights in TIMES
+         CALL PARSR2(MTOTTK,NPOS,TIMES,INDEX_IJ,IPRPAR)
       ENDIF
 C
 C     Distribute jobs on nodes
@@ -325,7 +330,7 @@ C
         MORE2  = MOD(ICOUNT,NODES)*NTASK
         MORE3  = ((ICOUNT-MORE1)/NODES) + 1
         IPLACE = MORE1+MORE2+MORE3
-        INDEX(IPLACE) = NPOS(I)
+        INDEX_IJ(IPLACE) = NPOS(I)
         ICOUNT=ICOUNT+1
       ENDDO
 C
@@ -351,13 +356,13 @@ C
      &        '(rest =',NREST,')'
       END IF
 C
-C     Print the index array.
+C     Print the INDEX_IJ array.
 C
       IF (IPRPAR .GE. 10) THEN
          WRITE(LUPRI,'(/5X,A/)') 'The order of task-distribution :'
          DO 400 I=1, NBATCH*NTASK
             WRITE(LUPRI,'(5X,A3,I5,A15,I5)')
-     &           'i =',I,'index(i) =',INDEX(I)
+     &           'i =',I,'index_ij(i) =',INDEX_IJ(I)
  400      CONTINUE
       END IF
 C
@@ -622,8 +627,8 @@ C         ... broadcast screening matrix
 #endif
       RETURN
       END
-C  /* Deck dopar */
-      SUBROUTINE DOPAR(INDEX,MTOTTK,NBATCH,NSTAT)
+C  /* Deck do_herpar */
+      SUBROUTINE DO_HERPAR(INDEX_IJ,MTOTTK,NBATCH,NSTAT)
 C
 C     Written by Henrik Koch and Paal Dahle Nov-1993
 C
@@ -636,7 +641,7 @@ C
 #include "priunit.h"
 #include "maxorb.h"
 C
-      DIMENSION INDEX(MTOTTK), NSTAT(NODES), ISHELL(2)
+      DIMENSION INDEX_IJ(MTOTTK), NSTAT(NODES), ISHELL(2)
 C
 
       CALL IZERO(NSTAT,NODES)
@@ -668,7 +673,7 @@ C
          DO 200 J = 1,NTASK
             IPLACE = IPLACE + 1
             NUMTSK = NUMTSK + 1
-            ISHELL(1) = INDEX(IPLACE)
+            ISHELL(1) = INDEX_IJ(IPLACE)
             ISHELL(2) = IPLACE
 C
 #if defined (VAR_MPI)
@@ -678,7 +683,7 @@ C
 C
 C           Pack only one null-task.
 C
-            IF (INDEX(IPLACE) .EQ. 0) THEN
+            IF (INDEX_IJ(IPLACE) .EQ. 0) THEN
                IPLACE = IPLACE + NTASK - J
                NUMTSK = NUMTSK - 1
                GO TO 300
@@ -686,7 +691,7 @@ C
 C
             IF (IPRPAR .GT. 10) THEN
                WRITE(LUPRI,'(5X,I5,A10,I5,A8,I4)')
-     &              NUMTSK, 'Send task', INDEX(IPLACE), 'to node', NODE
+     &         NUMTSK, 'Send task', INDEX_IJ(IPLACE), 'to node', NODE
             END IF
   200    CONTINUE
 C
@@ -705,9 +710,9 @@ C     Instruct nodes to return the final results.
 C------------------------------------------------
 C
       NTEST = -1
-      DO 400 I = 1,NODES
+      DO I = 1,NODES
 C
-C           Ready to receive request from any node.
+C        Ready to receive request from any node.
 C
 #if defined (VAR_MPI)
          CAll interface_mpi_RECV(NODE,1,df_MPI_ANY_SOURCE,20,
@@ -717,7 +722,7 @@ C
      &                 global_communicator)
 #endif
 C
-  400 CONTINUE
+      END DO ! I
       RETURN
       END
 C  /* Deck rvres */
@@ -850,7 +855,7 @@ C
      &       MTOTTK
         WRITE(LUPRI,'(5X,A,I5)') 'Number of tasks    calculated : ',
      &       ICOUNT
-        CALL QUIT('Inconsistence in RVRES -> MTOTTK .NE. ICOUNT')
+        CALL QUIT('Inconsistence in RVRES : MTOTTK .NE. ICOUNT')
       ENDIF
 C
       RETURN
@@ -948,34 +953,46 @@ C
 #include "dcbgrd.h"
 #endif
 C
-      DIMENSION NSTAT(NODES),CPUS(MAXNOD),WALLS(MAXNOD),RBUF(2)
+      INTEGER   NSTAT(NODES)
+
+      REAL*8    RBUF(4), TTOT, WTOT
       CHARACTER SECTID*12, INTTID*12
+
+      REAL*8, SAVE        :: TSOFAR=0.0D0, WSOFAR=0.0D0
+      REAL*8, ALLOCATABLE :: CPUS(:,:),WALLS(:,:)
 C
-      SAVE TSOFAR
-      DATA TSOFAR/0.0D0/
-C
+      IF (NODES .LE. 0) RETURN
+
+#if defined (VAR_MPI)
+
+      allocate( CPUS(2,NODES), WALLS(2,NODES) )
 #ifdef PRG_DIRAC
       IF (RELGRD) DMXCPU = D0
       IF (RELGRD) DMXWLL = D0
 #endif
-      DO 100 I = 1,NODES
-#if defined (VAR_MPI)
-         CAll interface_mpi_RECV(RBUF,2,df_mpi_any_source,
+      TTOT = 0.0D0
+      WTOT = 0.0D0
+      DO I = 1,NODES
+         CAll interface_mpi_RECV(RBUF,4,df_mpi_any_source,
      &                 50,global_communicator,istat)
          NODE = ISTAT(df_MPI_SOURCE)
-         CPUS(NODE)  = RBUF(1)
-         WALLS(NODE) = RBUF(2)
+         CPUS(1,NODE)  = RBUF(1)
+         CPUS(2,NODE)  = RBUF(2)
+         WALLS(1,NODE) = RBUF(3)
+         WALLS(2,NODE) = RBUF(4)
 C
-         TSOFAR = TSOFAR + CPUS(NODE)
+         TTOT = TTOT + CPUS(1,NODE)
+         WTOT = WTOT + WALLS(1,NODE) + WALLS(2,NODE)
 #ifdef PRG_DIRAC
          IF ( RELGRD ) THEN
-            DMXCPU = MAX(DMXCPU,CPUS(NODE))
-            DMXWLL = MAX(DMXWLL,WALLS(NODE))
+            DMXCPU = MAX(DMXCPU,CPUS(1,NODE))
+            DMXWLL = MAX(DMXWLL,WALLS(2,NODE))
          END IF
 #endif
 C
-#endif
-  100 CONTINUE
+      END DO ! I
+      TSOFAR = TSOFAR + TTOT
+      WSOFAR = WSOFAR + WTOT
 C
       IF (IPRPAR .GT. 2) THEN
          CALL AROUND('Overall statistics for distribution of batches')
@@ -992,17 +1009,17 @@ C
      &                                  '----------'
 C
          DO 200 NODE = 1, NODES
-            IF (WALLS(NODE) .NE. 0.0D0) THEN
-               EFFI = (CPUS(NODE)/WALLS(NODE))*100
+            WALLS_TOT = WALLS(1,NODE)+WALLS(2,NODE)
+            IF (WALLS_TOT .NE. 0.0D0) THEN
+               EFFI = (CPUS(1,NODE)/WALLS_TOT)*100
             ELSE
                EFFI = 0.0D0
             END IF
-            WRITE(LUPRI,'(11X,I3,4X,I6,6X,F8.2,5X,F8.2,6X,F6.2)')
-     &                  NODE,NSTAT(NODE),CPUS(NODE),WALLS(NODE),EFFI
+            WRITE(LUPRI,'(I14,I10,F24.2,F13.2,F12.2)')
+     &         NODE,NSTAT(NODE),CPUS(1,NODE),WALLS_TOT,EFFI
  200     CONTINUE
       END IF
 C
-      INTTID = SECTID(TSOFAR)
 #ifdef PRG_DIRAC
       IF ( RELGRD ) THEN
          DMXWLT = DMXWLL
@@ -1010,10 +1027,29 @@ C
       END IF
 #endif
 C
-      WRITE(LUPRI,'(/A,A12)')
-     &     '>>>> Total CPU  time used in Hermit nodes so far :',
-     &     INTTID
+      INTTID = SECTID(TTOT)
+      WRITE(LUPRI,'(/A,A12,A)')
+     &     '>>>> Total CPU  time used in all Hermit nodes this call :',
+     &     INTTID, ' (MPI wait excluded)'
+      INTTID = SECTID(WTOT)
+      WRITE(LUPRI,'(A,A12/A,F12.2)')
+     &     '>>>> Total WALL time used in all Hermit nodes this call :',
+     &     INTTID,
+     &     '>>>> Efficiency this call :', (TTOT/WTOT) * 100.0D0
+
+      INTTID = SECTID(TSOFAR)
+      WRITE(LUPRI,'(/A,A12,A)')
+     &     '>>>> Total CPU  time used in all Hermit nodes so far    :',
+     &     INTTID, ' (MPI wait excluded)'
+      INTTID = SECTID(WSOFAR)
+      WRITE(LUPRI,'(A,A12/A,F12.2)')
+     &     '>>>> Total WALL time used in all Hermit nodes so far    :',
+     &     INTTID,
+     &     '>>>> Efficiency so far    :', (TSOFAR/WSOFAR) * 100.0D0
+
 C
+      deallocate( CPUS, WALLS )
+#endif    /* VAR_MPI */
       RETURN
       END
 C  /* Deck hernod */
@@ -1121,10 +1157,10 @@ C
       END IF
 C
 C     Determine total number of tasks - MTOTTK.
-      CALL DET_TASK (I2TYP,1,MTOTTK,NPOS)
+      CALL HERPAR_DET_TASK (I2TYP,1,MTOTTK,NPOS,WORK(KFREE))
 C
-      CALL MEMGET('INTE',KINDEX,MTOTTK,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KTIMES,MTOTTK,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','INDEX',KINDEX,MTOTTK,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','TIMES',KTIMES,MTOTTK,WORK,KFREE,LFREE)
 C
 C     ********************************
 C     ***** Initialize workspace *****
@@ -1160,7 +1196,7 @@ C     ****************************************
 C     ***** Send final results to master *****
 C     ****************************************
 C
-      
+
       CALL SDRES(WORK(KFMAT),LFMAT,NUMGRA,MAXDIF,
      &     NUMHES,NUMSUS,CPU1,WALL1,ITYPE,DINTSKP,
      &     WORK(KINDEX),WORK(KTIMES))
@@ -1350,13 +1386,13 @@ C
       END IF
 C
       IF (NEWGEO) RDINPC = .FALSE.
-C     
+C
       CALL SETHER(0,NEWGEO,RELCAL,WORK(KFREE),LFREE)
 C
-C     ... xyz input reader fails/gives wrong results from now on 
-C         in parallel if there is no update 
+C     ... xyz input reader fails/gives wrong results from now on
+C         in parallel if there is no update
 C         for primitives. Does it change because of reordered geoemtry?
-C         FIXME: check enabling reordered geoemtry instead of broadcast of 
+C         FIXME: check enabling reordered geoemtry instead of broadcast of
 C         primit.h. - SK 14 Sep 08
       IF( NEWGEO )THEN
 #if defined (VAR_MPI)
@@ -1385,7 +1421,7 @@ C
 
       LFMAT = NFMAT*N2BASX
 
-      IF(NFMAT.GT.0) THEN       
+      IF(NFMAT.GT.0) THEN
         CALL MEMGET('REAL',KFMAT,LFMAT,WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KIRD,NDMAT,WORK,KFREE,LFREE)
         call interface_mpi_bcast_i1_work_f77(WORK(KIRD),NDMAT,MPARID,
@@ -1479,7 +1515,7 @@ C  /* Deck parlop */
      &     SQ12EL,INDHER,INDHSQ,IODDHR,
      &     IREPDM,IFCTYP,ADISTR,I2TYP,ICEDIF,SCREEN,
      &     GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,GENCNT,
-     &     INDEX,TIMES)
+     &     INDEX_IJ,TIMES)
 C
 C     Copied from TWOLOP and rewritten by Paal Dahle Nov.1994
 C     Minor revisions Oct 1996 T.Saue
@@ -1505,7 +1541,7 @@ CMI changes from TEC for LAO
       DIMENSION DMAT(*), FMAT(*), GMAT(*), INDHSQ(*), IODDHR(*),
      &          INDHER(*), WORK(LWORK), IREPDM(*), IFCTYP(*),
      &          GABRAO(*),DMRAO(*),DMRSO(*),DINTSKP(*),
-     &          IJSHEL(2),INDEX(*),TIMES(*)
+     &          IJSHEL(2),INDEX_IJ(*),TIMES(*)
 C
 #include "cbisol.h"
 #include "twocom.h"
@@ -1775,9 +1811,9 @@ C
 C
                IF (RETUR) THEN
                   IF (ISHELA .EQ. IPRNTA .AND.
-     &                 ISHELB .EQ. IPRNTB .AND.
-     &                 ISHELC .EQ. IPRNTC .AND.
-     &                 ISHELD .EQ. IPRNTD) RETURN
+     &                ISHELB .EQ. IPRNTB .AND.
+     &                ISHELC .EQ. IPRNTC .AND.
+     &                ISHELD .EQ. IPRNTD) RETURN
                END IF
  500        CONTINUE
  400     CONTINUE
@@ -1787,7 +1823,7 @@ C
             CPUTSK = CPUTK2 - CPUTK1
             IPLACE = ICOUNT + I
 C
-            INDEX(IPLACE) = IJSHEL(2)
+            INDEX_IJ(IPLACE) = IJSHEL(2)
             TIMES(IPLACE) = CPUTSK
          END IF
  200  CONTINUE
@@ -1885,7 +1921,7 @@ C
 C  /* Deck sdres */
       SUBROUTINE SDRES(FMAT,LFMAT,NUMGRA,MAXDIF,
      &                 NUMHES,NUMSUS,CPU1,WALL1,ITYPE,
-     &                 DINTSKP,INDEX,TIMES)
+     &                 DINTSKP,INDEX_IJ,TIMES)
 C
 C           ITYPE  - Calc. type: 2 = expectation values.
 C                                3 = direct SCF (AO-basis)
@@ -1914,11 +1950,12 @@ C
 #include "infpar.h"
 #include "inforb.h"
 C
-      DIMENSION FMAT(LFMAT), DINTSKP(*),INDEX(*),TIMES(*),SUS2ELBUF(9)
+      REAL*8    FMAT(LFMAT), DINTSKP(*), TIMES(*)
+      INTEGER   INDEX_IJ(*)
 #if defined (VAR_MPI)
-      DIMENSION RBUF(2)
-#endif
-#if defined (VAR_MPI)
+      REAL*8    RBUF(4)
+
+      CALL GETTIM(CPU2,WALL2)
       CAll interface_mpi_SEND(ICOUNT,1,MPARID,40,
      &                 global_communicator)
       IF(ITYPE.EQ.3.OR.ITYPE.EQ.9) THEN
@@ -1933,46 +1970,41 @@ C
      &                 global_communicator)
       ELSE IF(ITYPE.EQ.-5) THEN
          IF(MAXDIF.EQ.1) THEN
-           CALL interface_mpi_SEND(FMAT,LFMAT,MPARID,40,
+           Call interface_mpi_SEND(FMAT,LFMAT,MPARID,40,
      &          global_communicator)
          ELSEIF(MAXDIF.EQ.2) THEN
-          CALL DCOPY(9,SUS2EL,1,SUS2ELBUF,1)
-          CAll interface_mpi_SEND(SUS2ELBUF,9,MPARID,40,
-     &                 global_communicator)
+           Call interface_mpi_SEND(SUS2EL,9,MPARID,40,
+     &          global_communicator)
         ENDIF
       ENDIF
 C
 C
       IF (TIMING) THEN
-         DO 200, I = 1, ICOUNT
-C
-            CAll interface_mpi_SEND(INDEX(I),1,MPARID,40,
+
+         DO I = 1, ICOUNT
+            Call interface_mpi_SEND(INDEX_IJ(I),1,MPARID,40,
      &                    global_communicator)
-            CAll interface_mpi_SEND(TIMES(I),1,MPARID,40,
+            Call interface_mpi_SEND(TIMES(I),1,MPARID,40,
      &                    global_communicator)
-C
-  200    CONTINUE
+         END DO
+
       END IF
-#endif
 C
 C----------------------------------------------
 C     Send general timing results if requested.
 C----------------------------------------------
 C
       IF (IPRPAR .GT. 0) THEN
-         CALL GETTIM(CPU2,WALL2)
-C
-         CPU  = CPU2 - CPU1
-         WALL = WALL2 - WALL1
-C
-#if defined (VAR_MPI)
-         RBUF(1) = CPU
-         RBUF(2) = WALL
-         CAll interface_mpi_SEND(RBUF,2,MPARID,50,
+         CALL GETTIM(CPU3,WALL3)
+         RBUF(1) = CPU2 - CPU1
+         RBUF(2) = CPU3 - CPU2
+         RBUF(3) = WALL2 - WALL1
+         RBUF(4) = WALL3 - WALL2
+         CAll interface_mpi_SEND(RBUF,4,MPARID,50,
      &                 global_communicator)
-#endif
 C
       END IF
+#endif
 C
       RETURN
       END
@@ -2079,39 +2111,60 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Parsr2 */
-      SUBROUTINE PARSR2(NDIM,NPOS,TIMES,INDEX,IPRINT)
+      SUBROUTINE PARSR2(NDIM,NPOS,TIMES,INDEX_IJ,IPRINT)
 C*****************************************************************************
 C
 C     Sort IJ-indices according to increasing run time...
 C     Written by T.Saue Oct 3 1996
+C     Rewritten 3-Aug-2017 by hjaaj because old code sorted after decreasing run time
 C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(THRES = 1.0D-2)
-      DIMENSION NPOS(NDIM),TIMES(NDIM),INDEX(NDIM)
-      CALL FNDAMX(TIMES,NDIM,NDIM,NPOS,NDIM,0,THRES)
-CTROND FNDAMX sorts by absolute values, but unless we hope
-C      for negative run times, this will be no problem...
+      DIMENSION NPOS(NDIM),TIMES(NDIM),INDEX_IJ(NDIM)
+      INTEGER, ALLOCATABLE :: IPLACE(:)
+
+
+!     Sort IPLACE pointer array
+!     such that TIMES( IPLACE(I) ) .le. TIMES( IPLACE(I+1) )
+      allocate(IPLACE(NDIM))
+      DO I = 1, NDIM
+         IPLACE(I) = I
+         TI = TIMES( I )
+         DO J = 1,(I-1)
+            TJ = TIMES( IPLACE(J) )
+            IF (TJ .GT. TI) THEN
+               DO K = I, (J+1), -1
+                  IPLACE(K) = IPLACE(K-1)
+               END DO ! K
+               IPLACE(J) = I
+               EXIT ! exit loop, found the right place to put it in
+            END IF
+         END DO ! J
+      END DO ! I
+
       IF (IPRINT .GE. 10) THEN
-        DO I = 1, NDIM
-          WRITE(LUPRI,'(15X,A10,I5,A9,F8.3)')
-     &           'IJ-shell =', INDEX(NPOS(I)),
-     &           '   time =', TIMES(NPOS(I))
+         DO I = 1, NDIM
+           WRITE(LUPRI,'(15X,A,I8,A,F8.3)')
+     &           'IJ-shell =', INDEX_IJ(IPLACE(I)),
+     &           '   time =', TIMES(IPLACE(I))
         ENDDO
       ENDIF
+
 C
-C     Transfer INDEX to NPOS
+C     Transfer sorted order of INDEX_IJ to NPOS
 C
       DO I = 1,NDIM
-        NPOS(I) = INDEX(NPOS(I))
+         NPOS(I) = INDEX_IJ(IPLACE(I))
       ENDDO
 C
+      deallocate(IPLACE)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck det_task */
-      SUBROUTINE DET_TASK (I2TYP,IMODE,MTOTTK,NPOS)
+C  /* Deck HERPAR_det_task */
+      SUBROUTINE HERPAR_DET_TASK (I2TYP,IMODE,MTOTTK,NPOS,TIMES)
 C*****************************************************************************
 C
 C     Determine tasks that are to be distributed.
@@ -2131,7 +2184,8 @@ C*****************************************************************************
 #endif
 #include "blocks.h"
 C
-      DIMENSION NPOS(*)
+      INTEGER  NPOS(*)
+      REAL*8   TIMES(*)
 C
       IF(I2TYP.EQ.0) THEN
         IASTRT = 1
@@ -2172,6 +2226,7 @@ C
 C
          ICA    = LCLASH(ISHELA)
          NCENTA = NCNTSH(ISHELA)
+         NORBA  = NORBSH(ISHELA) * KHKTSH(ISHELA)
 C
 C        ******************************
 C        ***** Second Shell Index *****
@@ -2183,6 +2238,7 @@ C
 C
             ICB    = LCLASH(ISHELB)
             NCENTB = NCNTSH(ISHELB)
+            NORBB  = NORBSH(ISHELB) * KHKTSH(ISHELB)
 C
 C           Skip two-center SS contributions if requested
 C           This test is provisory, in SYMLOP we take out more integrals
@@ -2195,7 +2251,15 @@ C
             ENDIF
 C
             IJ  = (ISHELA*(ISHELA-1))/2 + ISHELB
-            IF (IMODE.EQ.2) NPOS(MTOTTK-IND) = IJ
+            IF (IMODE.EQ.2) THEN
+               NPOS(MTOTTK-IND) = IJ
+               ! hjaaj Aug 2017: assume time proportional to number of (ij/ functions for this (IJ/ shell combination
+               IF (ISHELB .EQ. ISHELA) THEN
+                  TIMES(MTOTTK-IND) = (NORBA*(NORBA+1))/2
+               ELSE
+                  TIMES(MTOTTK-IND) = NORBA*NORBB
+               END IF
+            END IF
             IND = IND + 1
 C
   200    CONTINUE
