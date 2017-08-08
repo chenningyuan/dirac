@@ -140,15 +140,7 @@ C
      &('program error: parallel code called but MPI not activated')
 #endif
 C
-C     Ensure that NODES .LE. MAXNOD
-C
-      IF (NODES .GT. MAXNOD) THEN
-         WRITE(LUPRI,'(/5X,A,/12X,A,/5X,A16,I8,/5X,A16,I8)')
-     &    'ERROR: Number of nodes allocated has exceeded hardcoded',
-     &    'limit. Reduce number of nodes or recompile program. ',
-     &    'Allocated (NODES) :',NODES,'Limit (MAXNOD) :',MAXNOD
-         CALL QUIT('Number of nodes requested/allocated is too large.')
-      ELSE IF (IPRPAR .GT. 0) THEN
+      IF (IPRPAR .GT. 0) THEN
          WRITE(LUPRI,'(/5X,A,I5/)')
      &    'HER_PARDRV: Number of nodes allocated:', NODES
       ENDIF
@@ -489,10 +481,7 @@ C     ... not used any more (was used for PVM)
 C
       CALL IZERO(JDOSYM,8)
       CALL IZERO(JDOREP,8)
-      CALL IZERO(JTIDS,MAXNOD)
       CALL IZERO(JDOCOR,MXCOOR)
-C
-      CALL ICOPY(NODES,MTIDS,1,JTIDS,1)
 C
       DO 100 I = 0, MAXREP
          IF (DOREPS(I))  JDOREP(I+1) = 1
@@ -696,7 +685,6 @@ C
   200    CONTINUE
 C
   300    CONTINUE
-         NWHO = MTIDS(NODE)
 C
 C
 C        Who-got-the-last-batch statistics
@@ -1335,12 +1323,6 @@ C
       LEVYLE = JLEVYL .EQ. 1
       TWOCOMP = JTWOCOMP .EQ. 1
       ICEDIF = JCEDIF
-C
-      CALL IZERO(MTIDS,MAXNOD)
-      CALL ICOPY(NODES,JTIDS,1,MTIDS,1)
-      DO 100 I = 1, NODES
-         IF (MTIDS(I) .EQ. MYTI) NODE = I
- 100  CONTINUE
 C
       DO 200 I = 0, MAXREP
          DOREPS(I)  = JDOREP(I+1) .EQ. 1
