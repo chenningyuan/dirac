@@ -653,7 +653,7 @@ module gen1int_shell
           if (ierr/=0) then
             stop "Gen1IntShellGetIntExpt>> failed to allocate unique_expt!"
           end if
-          unique_expt = 0.0_REALK
+          unique_expt = 0.0_8
         else
           unique_expt => val_expt
         end if
@@ -680,7 +680,7 @@ module gen1int_shell
         if (ierr/=0) then
           stop "Gen1IntShellGetIntExpt>> failed to allocate unique_expt on worker processor!"
         end if
-        unique_expt = 0.0_REALK
+        unique_expt = 0.0_8
       end if
     end if
     ! calculations with more than one processor
@@ -1433,7 +1433,7 @@ module gen1int_shell
         if (ierr/=0) then
           stop "Gen1IntShellGetFunExpt>> failed to allocate unique_expt on worker processor!"
         end if
-        unique_expt = 0.0_REALK
+        unique_expt = 0.0_8
       end if
     end if
     ! calculations with more than one processor
