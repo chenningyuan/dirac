@@ -4,6 +4,13 @@ min_cmake_version: 2.8.10
 
 url_root: https://github.com/coderefinery/autocmake/raw/master/
 
+language:
+  - Fortran
+  - C
+  - CXX
+
+default_build_type: debug
+
 modules:
 - compilers:
   - source:
