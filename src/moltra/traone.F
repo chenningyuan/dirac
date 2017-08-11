@@ -1401,38 +1401,38 @@ C
       IF (nz.NE.4) THEN
 
          if(nfsym == 1)then
-           orbc = 1
+           norbc = 1
         if (spinfr) then
            do j = 1, nbsym
-             CALL MATGAT_symm_relcc(xmom(orbc,1),nv(j),no(j),
+             CALL MATGAT_symm_relcc(xmom(norbc,1),nv(j),no(j),
      &                              xmo,norbt,norbt,idxu2g(1,j),
      &                              idyu2g(1,j),nz)
-           orbc = orbc + no(j)*nv(j)
+           norbc = norbc + no(j)*nv(j)
            end do
         else
            do j = 1, nrep,2
-             CALL MATGAT_symm_relcc(xmom(orbc,1),nv(j),no(j),
+             CALL MATGAT_symm_relcc(xmom(norbc,1),nv(j),no(j),
      &                              xmo,norbt,norbt,idxu2g(1,j),
      &                              idyu2g(1,j),nz)
-           orbc = orbc + 2*nv(j)*no(j)
+           norbc = norbc + 2*nv(j)*no(j)
            end do
         endif
          else if(nfsym == 2)then
            do k = 1, nfsym 
              if(k == 1)then
-               orbc = 1
+               norbc = 1
                do j = 1, nrep/2,2
-                 CALL MATGAT_symm_relcc(xmom(orbc,1),nv(j),no(j),
+                 CALL MATGAT_symm_relcc(xmom(norbc,1),nv(j),no(j),
      &                                  xmo,norbt,norbt,idxu2g(1,j),
      &                                  idyu2g(1,j),nz)
-                 orbc = orbc + 2*nv(j)*no(j)
+                 norbc = norbc + 2*nv(j)*no(j)
                end do
              else if(k == 2)then
                do j = nrep/2+1,nrep,2
-                 CALL MATGAT_symm_relcc(xmom(orbc,1),nv(j),no(j),
+                 CALL MATGAT_symm_relcc(xmom(norbc,1),nv(j),no(j),
      &                                  xmo,norbt,norbt,idxu2g(1,j),
      &                                  idyu2g(1,j),nz)
-                 orbc = orbc + 2*nv(j)*no(j)
+                 norbc = norbc + 2*nv(j)*no(j)
                end do
              end if
            end do
@@ -1549,42 +1549,42 @@ C
       IF (nz.NE.4) THEN
 
          if(nfsym == 1)then
-           orbc = 1
+           norbc = 1
        if (spinfr) then
 
            do j = 1, nbsym
-             CALL MATGAT_symm_relcc(xmom(orbc,1),no(j),nv(j),
+             CALL MATGAT_symm_relcc(xmom(norbc,1),no(j),nv(j),
      &                              xmo,norbt,norbt,idxu2g(1,j),
      &                              idyu2g(1,j),nz)
-           orbc = orbc + no(j)*nv(j)
+           norbc = norbc + no(j)*nv(j)
            end do
 
        else
 
            do j = 1, nrep,2
-             CALL MATGAT_symm_relcc(xmom(orbc,1),no(j),nv(j),
+             CALL MATGAT_symm_relcc(xmom(norbc,1),no(j),nv(j),
      &                              xmo,norbt,norbt,idxu2g(1,j),
      &                              idyu2g(1,j),nz)
-           orbc = orbc + 2*nv(j)*no(j)
+           norbc = norbc + 2*nv(j)*no(j)
            end do
        endif
 
          else if(nfsym == 2)then
            do k = 1, nfsym 
              if(k == 1)then
-               orbc = 1
+               norbc = 1
                do j = 1, nrep/2,2
-                 CALL MATGAT_symm_relcc(xmom(orbc,1),no(j),nv(j),
+                 CALL MATGAT_symm_relcc(xmom(norbc,1),no(j),nv(j),
      &                                  xmo,norbt,norbt,idxu2g(1,j),
      &                                  idyu2g(1,j),nz)
-                 orbc = orbc + 2*nv(j)*no(j)
+                 norbc = norbc + 2*nv(j)*no(j)
                end do
              else if(k == 2)then
                do j = nrep/2+1,nrep,2
-                 CALL MATGAT_symm_relcc(xmom(orbc,1),no(j),nv(j),
+                 CALL MATGAT_symm_relcc(xmom(norbc,1),no(j),nv(j),
      &                                  xmo,norbt,norbt,idxu2g(1,j),
      &                                  idyu2g(1,j),nz)
-                 orbc = orbc + 2*nv(j)*no(j)
+                 norbc = norbc + 2*nv(j)*no(j)
                end do
              end if
            end do
@@ -1701,43 +1701,43 @@ C
          IOFF2 = 0
          IOFF4 = 0
          if(nfsym == 1)then
-           orbc = 1
+           norbc = 1
 
         if (spinfr) then
 
            do j = 1, nbsym
-             CALL MATGAT_symm_relcc(dmom(orbc,1),no(j),no(j),
+             CALL MATGAT_symm_relcc(dmom(norbc,1),no(j),no(j),
      &                              dmo,norbt,norbt,idxu2g(1,j),
      &                              idxu2g(1,j),nz)
-           orbc = orbc + no(j)**2
+           norbc = norbc + no(j)**2
            end do
 
         else
 
            do j = 1, nrep,2
-             CALL MATGAT_symm_relcc(dmom(orbc,1),no(j),no(j),
+             CALL MATGAT_symm_relcc(dmom(norbc,1),no(j),no(j),
      &                              dmo,norbt,norbt,idxu2g(1,j),
      &                              idxu2g(1,j),nz)
-           orbc = orbc + 2*no(j)**2
+           norbc = norbc + 2*no(j)**2
            end do
         endif
 
          else if(nfsym == 2)then
            do k = 1, nfsym 
              if(k == 1)then
-               orbc = 1
+               norbc = 1
                do j = 1, nrep/2,2
-                 CALL MATGAT_symm_relcc(dmom(orbc,1),no(j),no(j),
+                 CALL MATGAT_symm_relcc(dmom(norbc,1),no(j),no(j),
      &                                  dmo,norbt,norbt,idxu2g(1,j),
      &                                  idxu2g(1,j),nz)
-                 orbc = orbc + 2*no(j)**2
+                 norbc = norbc + 2*no(j)**2
                end do
              else if(k == 2)then
                do j = nrep/2+1,nrep,2
-                 CALL MATGAT_symm_relcc(dmom(orbc,1),no(j),no(j),
+                 CALL MATGAT_symm_relcc(dmom(norbc,1),no(j),no(j),
      &                                  dmo,norbt,norbt,idxu2g(1,j),
      &                                  idxu2g(1,j),nz)
-                 orbc = orbc + 2*no(j)**2
+                 norbc = norbc + 2*no(j)**2
                end do
              end if
            end do
@@ -1829,24 +1829,24 @@ C
          IOFF2 = 0
          IOFF4 = 0
          if(nfsym == 1)then
-           orbc = 1
+           norbc = 1
 
         if (spinfr) then
 
            do j = 1, nbsym
-             CALL MATGAT_symm_relcc(dmom(orbc,1),nv(j),nv(j),
+             CALL MATGAT_symm_relcc(dmom(norbc,1),nv(j),nv(j),
      &                              dmo,norbt,norbt,idxu2g(1,j),
      &                              idxu2g(1,j),nz)
-           orbc = orbc + nv(j)**2
+           norbc = norbc + nv(j)**2
            end do
 
         else
 
            do j = 1, nrep,2
-             CALL MATGAT_symm_relcc(dmom(orbc,1),nv(j),nv(j),
+             CALL MATGAT_symm_relcc(dmom(norbc,1),nv(j),nv(j),
      &                              dmo,norbt,norbt,idxu2g(1,j),
      &                              idxu2g(1,j),nz)
-           orbc = orbc + 2*nv(j)**2
+           norbc = norbc + 2*nv(j)**2
            end do
       
         endif
@@ -1855,19 +1855,19 @@ C
          else if(nfsym == 2)then
            do k = 1, nfsym 
              if(k == 1)then
-               orbc = 1
+               norbc = 1
                do j = 1, nrep/2,2
-                 CALL MATGAT_symm_relcc(dmom(orbc,1),nv(j),nv(j),
+                 CALL MATGAT_symm_relcc(dmom(norbc,1),nv(j),nv(j),
      &                                  dmo,norbt,norbt,idxu2g(1,j),
      &                                  idxu2g(1,j),nz)
-                 orbc = orbc + 2*nv(j)**2
+                 norbc = norbc + 2*nv(j)**2
                end do
              else if(k == 2)then
                do j = nrep/2+1,nrep,2
-                 CALL MATGAT_symm_relcc(dmom(orbc,1),nv(j),nv(j),
+                 CALL MATGAT_symm_relcc(dmom(norbc,1),nv(j),nv(j),
      &                                  dmo,norbt,norbt,idxu2g(1,j),
      &                                  idxu2g(1,j),nz)
-                 orbc = orbc + 2*nv(j)**2
+                 norbc = norbc + 2*nv(j)**2
                end do
              end if
            end do
@@ -2028,7 +2028,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         do j = 1, nrep,2
           indx_loop = indx_loop + 1
           if(orb_dim(j) > 0)then
-            orbc = 0
+            norbc = 0
             is_symm = 0
             if(linear)then
               !> get mj-value
@@ -2047,12 +2047,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                                npsh(1)       + 
      &                                NDMOQC(2,1,1) +
      &                                i))then
-                    orbc = orbc + 1
+                    norbc = norbc + 1
                     if (spinfr) then
                     if (indx_loop.le.nbsym) 
-     &          IDXU2G(orbc,indx_loop) = iorb(1)+npsh(1)+NDMOQC(2,1,1)+i
+     &      IDXU2G(norbc,indx_loop) = iorb(1)+npsh(1)+NDMOQC(2,1,1)+i
                     else
-                    IDXU2G(orbc,j) = iorb(1)+npsh(1)+NDMOQC(2,1,1)+i
+                    IDXU2G(norbc,j) = iorb(1)+npsh(1)+NDMOQC(2,1,1)+i
                     endif
 
                   end if
@@ -2062,13 +2062,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                            npsh(1)       + 
      &                            nocc(1)       +
      &                            i))then
-                orbc = orbc + 1
+                norbc = norbc + 1
 
                 if (spinfr) then
                 if (indx_loop.le.nbsym) 
-     &          IDXU2G(orbc,indx_loop) = iorb(1)+npsh(1)+nocc(1)+i
+     &          IDXU2G(norbc,indx_loop) = iorb(1)+npsh(1)+nocc(1)+i
                 else
-                IDXU2G(orbc,j) = iorb(1)+npsh(1)+nocc(1)+i
+                IDXU2G(norbc,j) = iorb(1)+npsh(1)+nocc(1)+i
                 endif
 
               end if
@@ -2084,7 +2084,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
             do j = 1, nrep/2,2
               indx_loop = indx_loop + 1
               if(orb_dim(j) > 0)then
-                orbc = 0
+                norbc = 0
                 is_symm = 0
                 if(linear)then
                   !> get mj-value
@@ -2103,14 +2103,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                                npsh(k)       + 
      &                                NDMOQC(2,k,1) +
      &                                i))then
-                    orbc = orbc + 1
+                    norbc = norbc + 1
 
 
                 if (spinfr) then
                 if (indx_loop.le.nbsym) 
-     &          IDXU2G(orbc,indx_loop) = iorb(k)+npsh(k)+NDMOQC(2,k,1)+i
+     &  IDXU2G(norbc,indx_loop) = iorb(k)+npsh(k)+NDMOQC(2,k,1)+i
                 else
-                IDXU2G(orbc,j) = iorb(k)+npsh(k)+NDMOQC(2,k,1)+i
+                IDXU2G(norbc,j) = iorb(k)+npsh(k)+NDMOQC(2,k,1)+i
                 endif
 
                   end if
@@ -2120,13 +2120,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                            npsh(k)       + 
      &                            nocc(k)       +
      &                            i))then
-                orbc = orbc + 1
+                norbc = norbc + 1
 
                 if (spinfr) then
                 if (indx_loop.le.nbsym) 
-     &          IDXU2G(orbc,indx_loop) = iorb(k)+npsh(k)+nocc(k)+i
+     &  IDXU2G(norbc,indx_loop) = iorb(k)+npsh(k)+nocc(k)+i
                 else
-                IDXU2G(orbc,j) = iorb(k)+npsh(k)+nocc(k)+i
+                IDXU2G(norbc,j) = iorb(k)+npsh(k)+nocc(k)+i
                 endif
 
               end if
@@ -2139,7 +2139,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
             do j = nrep/2+1,nrep,2
               indx_loop = indx_loop + 1
               if(orb_dim(j) > 0)then
-                orbc = 0
+                norbc = 0
                 is_symm = 0
                 if(linear)then
                   !> get mj-value
@@ -2158,13 +2158,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                                npsh(k)       + 
      &                                NDMOQC(2,k,1) +
      &                                i))then
-                    orbc = orbc + 1
+                    norbc = norbc + 1
 
                 if (spinfr) then
                 if (indx_loop.le.nbsym) 
-     &          IDXU2G(orbc,indx_loop) = iorb(k)+npsh(k)+NDMOQC(2,k,1)+i
+     &  IDXU2G(norbc,indx_loop) = iorb(k)+npsh(k)+NDMOQC(2,k,1)+i
                 else
-                IDXU2G(orbc,j) = iorb(k)+npsh(k)+NDMOQC(2,k,1)+i
+                IDXU2G(norbc,j) = iorb(k)+npsh(k)+NDMOQC(2,k,1)+i
                 endif
 
                   end if
@@ -2174,13 +2174,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                            npsh(k)       + 
      &                            nocc(k)       +
      &                            i))then
-                orbc = orbc + 1
+                norbc = norbc + 1
 
                 if (spinfr) then
                 if (indx_loop.le.nbsym) 
-     &          IDXU2G(orbc,indx_loop) = iorb(k)+npsh(k)+nocc(k)+i
+     &          IDXU2G(norbc,indx_loop) = iorb(k)+npsh(k)+nocc(k)+i
                 else
-                IDXU2G(orbc,j) = iorb(k)+npsh(k)+nocc(k)+i
+                IDXU2G(norbc,j) = iorb(k)+npsh(k)+nocc(k)+i
                 endif
 
               end if

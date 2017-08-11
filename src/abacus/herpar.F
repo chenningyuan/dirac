@@ -996,16 +996,18 @@ C
      &                                  '---------',
      &                                  '----------'
 C
-         DO 200 NODE = 1, NODES
+         DO NODE = 1, NODES
             WALLS_TOT = WALLS(1,NODE)+WALLS(2,NODE)
             IF (WALLS_TOT .NE. 0.0D0) THEN
                EFFI = (CPUS(1,NODE)/WALLS_TOT)*100
             ELSE
                EFFI = 0.0D0
             END IF
-            WRITE(LUPRI,'(I14,I10,F24.2,F13.2,F12.2)')
+            WRITE(LUPRI,'(I14,I10,3F13.2)')
      &         NODE,NSTAT(NODE),CPUS(1,NODE),WALLS_TOT,EFFI
- 200     CONTINUE
+         END DO ! NODE
+         WRITE(LUPRI,'(/11X,A)')
+     &   'Note: CPU time is without CPU time used in MPI.'
       END IF
 C
 #ifdef PRG_DIRAC

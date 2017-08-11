@@ -50,7 +50,7 @@ C  Major surgery Aug 26 1996 by T.Saue
 C
 C  Written by Trygve Helgaker and Henrik Koch  93-93 ??
 C
-C  All IFCTYP's added and partly optimized Nov. 1994 by
+C  All IFCTYPs added and partly optimized Nov. 1994 by
 C  Hans Joergen Aa. Jensen
 C
 C*****************************************************************************
@@ -76,20 +76,12 @@ C
       CALL QENTER('INTFCK')
 #include "memint.h"
 C
-C     Scanning for zero integrals; this is done twice, but
-C     saves quite a bit of memory
-C
-      NBUF = 0
       IF(DOSCRN) THEN
         FCKTOL = MAX((SCRTHR/DNSMAX),1.00D-15)
       ELSE
         FCKTOL = 1.00D-15
       ENDIF
-      DO I = 1,NCCINT
-        IF(ABS(AOINT(I,1)).GT.FCKTOL) NBUF = NBUF + 1
-      ENDDO
-      IF(NBUF.EQ.0) GOTO 999
-      CALL MEMGET('INTE',KIND ,4*NBUF  ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IND',KIND ,4*NCCINT,WORK,KFREE,LFREE)
 C
       CALL INTFC1(FMAT,AOINT,DMAT,NDMAT,NCCINT,NINTYP,
      &                  ICORBA,ICORBB,ICORBC,ICORBD,FCKTOL,SYMFAC,
@@ -97,7 +89,6 @@ C
      &                  DNSBUF,DINTSKP,HFXFAC,WORK(KIND))
 C
       CALL MEMREL('INTFCK',WORK,KWORK,KWORK,KFREE,LFREE)
- 999  CONTINUE
       CALL QEXIT('INTFCK')
       RETURN
 C
@@ -116,7 +107,7 @@ C  Revised Aug 26 1996 by T.Saue
 C
 C  Written by Trygve Helgaker and Henrik Koch  93-93 ??
 C
-C  All IFCTYP's added and partly optimized Nov. 1994 by
+C  All IFCTYPs added and partly optimized Nov. 1994 by
 C  Hans Joergen Aa. Jensen
 C
 C*****************************************************************************
