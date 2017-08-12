@@ -2090,6 +2090,8 @@ C
 C       fill temporary matrix
 C       =====================
 C
+        ! edh: ABLRF appears to have different dim. for damped response?
+        ! Check if this output still works... 
         DO I = 1,3
           DO J = 1,3
             KI = IPEPOLAR(I,1)

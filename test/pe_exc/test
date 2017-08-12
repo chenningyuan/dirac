@@ -10,18 +10,15 @@ from runtest_dirac import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
-f.add(from_string  = 'Excitation no.   1',
-      rel_tolerance    = 1.0e-5)
-f.add(from_string  = 'Excitation no.   2',
-      rel_tolerance    = 1.0e-5)
-f.add(from_string  = 'Excitation no.   3',
-      rel_tolerance    = 1.0e-5)
-f.add(from_string  = 'Excitation no.   4',
-      rel_tolerance    = 1.0e-5)
+f.add(from_string = ' Energy eigenvalues in atomic units',
+      to_re       = 'Relative real eigenvalues in other units;',
+      rel_tolerance   = 2.0e-5)
 f.add(from_string  = '-> dipole oscillator strength (length)',
-      rel_tolerance    = 1.0e-5)
+      num_lines    = 1,
+      rel_tolerance    = 1.0e-4)
 f.add(from_string  = '-> dipole oscillator strength (velocity)',
-      rel_tolerance    = 1.0e-5)
+      num_lines    = 1,
+      rel_tolerance    = 1.0e-4)
 
 test.run(['pe-dc-exc.inp'], ['lih.mol'], args='--put peqm.pot')
 test.run(['pe-sf-exc.inp'], ['lih.mol'], f, args='--put peqm.pot')
