@@ -11,7 +11,7 @@ set(DART_TESTING_TIMEOUT
     CACHE STRING
     "Set timeout in seconds for every single test"
     )
-message(STATUS "Set CDash timeout for every single test set to ${DART_TESTING_TIMEOUT} seconds. Owerwritten by pam timeout setting.")
+message(STATUS "Set CDash timeout for every single test set to ${DART_TESTING_TIMEOUT} seconds. Overwritten by pam timeout setting.")
 
 macro(dirac_test _name _label)
     add_test(${_name} ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/test/${_name}/test --binary-dir=${PROJECT_BINARY_DIR} --work-dir=${PROJECT_BINARY_DIR}/test/${_name} --verbose)

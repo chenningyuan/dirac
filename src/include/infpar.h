@@ -11,18 +11,17 @@
 #endif
 
 #if defined(__CVERSION__)
-#define MAXNOD 60000
 #define MAXCL2 10000
 #define nodtot numnod
 extern struct common_diracinfpar {
     double totval;
 #if defined (INT_STAR8)
     long iprpar, ntask, ncode, ndegdi, mynum, mytid;
-    long numnod, icount, mtids[MAXNOD+1], mparid, node, nodes, iparex;
+    long numnod, icount, mparid, node, nodes, iparex;
     long parher, slave, timing, debug, pario;
 #else
     int  iprpar, ntask, ncode, ndegdi, mynum, mytid;
-    int  numnod, icount, mtids[MAXNOD+1], mparid, node, nodes, iparex;
+    int  numnod, icount, mparid, node, nodes, iparex;
     int  parher, slave, timing, debug, pario;
 #endif 
 } diracinfpar_;
@@ -31,18 +30,16 @@ extern struct common_diracinfpar {
 !     .. mpi variables (used to be in an infmpi.h /hjaaj Jan 2003):
 !        NODTOT = NUMNOD = number of slaves = number of nodes - 1 (from MPI_Comm_rank)
 !        MYTID  = mpi ID of this process (from MPI_Comm_rank)
-      INTEGER MAXNOD, MAXCL2
-      PARAMETER (MAXNOD = 60000, MAXCL2 = 10000)
+      INTEGER MAXCL2
+      PARAMETER (MAXCL2 = 10000)
       REAL*8 TOTWAL
       INTEGER IPRPAR, NTASK, NCODE, NDEGDI, MYNUM, MYTID, NODTOT
-      INTEGER NUMNOD, ICOUNT,MTIDS(0:MAXNOD), MPARID,NODE,NODES,IPAREX
+      INTEGER NUMNOD, ICOUNT,MPARID,NODE,NODES,IPAREX
       LOGICAL PARHER, SLAVE, TIMING, DEBUG, PARIO
-      CHARACTER*20   NODNAM(0:MAXNOD), MYNAME
       COMMON /DIRACINFPAR/ TOTWAL                                        &
      &       ,IPRPAR, NTASK, NCODE, NDEGDI, MYNUM, MYTID, NODTOT         &
-     &       ,ICOUNT, MTIDS, MPARID, NODE, NODES, IPAREX                 &
-     &       ,PARHER, SLAVE, TIMING, DEBUG, PARIO                        &
-     &       ,NODNAM, MYNAME
+     &       ,ICOUNT, MPARID, NODE, NODES, IPAREX                        &
+     &       ,PARHER, SLAVE, TIMING, DEBUG, PARIO
 
       EQUIVALENCE (NODTOT, NUMNOD)
 !     ... for some obscure reason NODTOT in Dalton is called NUMNOD in Dirac.
