@@ -1,5 +1,4 @@
 :orphan:
- 
 
 .. _DIRRCI:
 
@@ -9,8 +8,8 @@ DIRRCI -- Direct CI module
 
 *Relativistic RASCI module* written by Lucas Visscher
 
-This section allows for relativistic configuration interaction
-calculations.
+This section allows for Kramers unrestricted relativistic Configuration Interaction
+calculations, Ref. :cite:`MOLFDIR`.
 
 Note that when the namelist :ref:`goscip`
 is also present in
