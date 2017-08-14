@@ -1,0 +1,3592 @@
+DIRAC serial starts by allocating 64000000 words (488 MB) of memory
+             out of the allowed maximum of 2147483648 words (16384 MB)
+
+Note: maximum allocatable memory for serial run can be set by pam --aw
+
+ *******************************************************************************
+ *                                                                             *
+ *                                O U T P U T                                  *
+ *                                   from                                      *
+ *                                                                             *
+ *                   @@@@@    @@   @@@@@     @@@@     @@@@@                    *
+ *                   @@  @@        @@  @@   @@  @@   @@                        *
+ *                   @@  @@   @@   @@@@@    @@@@@@   @@                        *
+ *                   @@  @@   @@   @@ @@    @@  @@   @@                        *
+ *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                    *
+ *                                                                             *
+ *                                                                             *
+ %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:%
+ $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::$
+ (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::(
+ $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:$
+ SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.S
+ SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::S
+ ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::?
+ S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.S
+ (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.(
+ $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/$
+ S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:iS
+ c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::c
+ S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::S
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::$
+ $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::$
+ ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::(
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:Z
+ (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|(
+ SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||S
+ $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:$
+ %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::%
+ $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:$
+ $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::$
+ )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/)
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii$
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////$
+ Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/Z
+ $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::$
+ &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::&
+ =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/=
+ $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|$
+ MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>M
+ MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:M
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%M
+ MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;M
+ MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<SM
+ MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$SM
+ MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<M
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></M
+ MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&M
+ MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SFM
+ MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]ZkM
+ MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&M
+ MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&M
+ MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&FM
+ MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&M
+ MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6M
+ MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969kM
+ MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&M
+ MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1M
+ MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&M
+ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9ZM
+ MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6M
+ MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][FM
+ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&M
+ *******************************************************************************
+ *                                                                             *
+ *         =========================================================           *
+ *                     Program for Atomic and Molecular                        *
+ *          Direct Iterative Relativistic All-electron Calculations            *
+ *         =========================================================           *
+ *                                                                             *
+ *                                                                             *
+ *    Written by:                                                              *
+ *                                                                             *
+ *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
+ *    Radovan Bast             UiT The Arctic University of      Norway        *
+ *    Trond Saue               Universite Toulouse III           France        *
+ *                                                                             *
+ *    with contributions from:                                                 *
+ *                                                                             *
+ *    Vebjoern Bakken          University of Oslo                Norway        *
+ *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *
+ *    Sebastien Dubillard      University of Strasbourg          France        *
+ *    Ulf Ekstroem             University of Oslo                Norway        *
+ *    Ephraim Eliav            University of Tel Aviv            Israel        *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
+ *    Elke Fasshauer           University of Copenhagen          Denmark       *
+ *    Timo Fleig               Universite Toulouse III           France        *
+ *    Olav Fossgaard           UiT The Arctic University of      Norway        *
+ *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
+ *    Erik D. Hedegård         Lund University                   Sweden        
+ *
+ *    Trygve Helgaker          University of Oslo                Norway        *
+ *    Johan Henriksson         Linkoeping University             Sweden        *
+ *    Miroslav Ilias           Matej Bel University              Slovakia      *
+ *    Christoph R. Jacob       TU Braunschweig                   Germany       *
+ *    Stefan Knecht            ETH Zuerich                       Switzerland   *
+ *    Stanislav Komorovsky     UiT The Arctic University of      Norway        *
+ *    Ossama Kullie            University of Kassel              Germany       *
+ *    Jon K. Laerdahl          University of Oslo                Norway        *
+ *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
+ *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
+ *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
+ *    Malaya Kumar Nayak       Bhabha Atomic Research Centre     India         *
+ *    Patrick Norman           Linkoeping University             Sweden        *
+ *    Malgorzata Olejniczak    CNRS/Universite de Lille          France        *
+ *    Jeppe Olsen              Aarhus University                 Denmark       *
+ *    Jógvan Magnus H. Olsen   University of Southern Denmark    Denmark       
+ *
+ *    Young Choon Park         KAIST, Daejeon                    South Korea   *
+ *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
+ *    Markus Pernpointner      University of Heidelberg          Germany       *
+ *    Roberto Di Remigio       UiT The Arctic University of      Norway        *
+ *    Kenneth Ruud             UiT The Arctic University of      Norway        *
+ *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
+ *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
+ *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
+ *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
+ *    Joern Thyssen            University of Southern Denmark    Denmark       *
+ *    Joost van Stralen        Vrije Universiteit Amsterdam      Netherlands   *
+ *    Sebastien Villaume       Linkoeping University             Sweden        *
+ *    Olivier Visser           University of Groningen           Netherlands   *
+ *    Toke Winther             University of Southern Denmark    Denmark       *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan         *
+ *                                                                             *
+ *    For the complete list of contributors to the DIRAC code see our          *
+ *    website http://www.diracprogram.org                                      *
+ *                                                                             *
+ *    This is an experimental code. The authors accept no responsibility       *
+ *    for the performance of the code or for the correctness of the results.   *
+ *                                                                             *
+ *    The code (in whole or part) is not to be reproduced for further          *
+ *    distribution without the written permission of the authors or            *
+ *    their representatives.                                                   *
+ *                                                                             *
+ *    If results obtained with this code are published, an                     *
+ *    appropriate citation would be:                                           *
+ *                                                                             *
+ *    DIRAC, a relativistic ab initio electronic structure program,            *
+ *    Release DIRAC17 (2017),                                                  *
+ *    written by L. Visscher, H. J. Aa. Jensen, R. Bast, and T. Saue,          *
+ *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,            *
+ *    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *
+ *    O. Fossgaard, A. S. P. Gomes, T. Helgaker, J. Henriksson, M. Ilias,      *
+ *    Ch. R. Jacob, S. Knecht, S. Komorovsky, O. Kullie, J. K. Laerdahl,       *
+ *    C. V. Larsen, Y. S. Lee, H. S. Nataraj, M. K. Nayak, P. Norman,          *
+ *    G. Olejniczak, J. Olsen, Y. C. Park, J. K. Pedersen, M. Pernpointner,    *
+ *    R. Di Remigio, K. Ruud, P. Salek, B. Schimmelpfennig, J. Sikkema,        *
+ *    A. J. Thorvaldsen, J. Thyssen, J. van Stralen, S. Villaume, O. Visser,   *
+ *    T. Winther, and S. Yamamoto (see http://www.diracprogram.org).           *
+ *                                                                             *
+ *******************************************************************************
+
+
+Version information
+-------------------
+
+Branch        | master
+Commit hash   | c8312f5
+Commit author | Miroslav Ilias
+Commit date   | Thu Aug 17 18:59:47 2017 +0200
+
+
+Configuration and build information
+-----------------------------------
+
+Who compiled             | milias
+Compiled on server       | lxg1239
+Operating system         | Linux-3.16.0-4-amd64
+CMake version            | 3.5.0
+CMake generator          | Unix Makefiles
+CMake build type         | release
+Configuration time       | 2017-08-17 18:49:25.926989
+Python version           | 2.7.9
+Fortran compiler         | /cvmfs/it.gsi.de/compiler/intel/15.0/bin/ifort
+Fortran compiler version | 15.0
+Fortran compiler flags   |  -xHost -w -assume byterecl -g -traceback -DVAR_IFORT -i8 -xHost -w -assume byterecl -g -traceback -DVAR_IFORT -i8
+C compiler               | /cvmfs/it.gsi.de/compiler/intel/15.0/bin/icc
+C compiler version       | 15.0
+C compiler flags         |  -xHost -g -wd981 -wd279 -wd383 -wd1572 -wd177 -xHost -g -wd981 -wd279 -wd383 -wd1572 -wd177
+C++ compiler             | /cvmfs/it.gsi.de/compiler/intel/15.0/bin/icpc
+C++ compiler version     | 2015.3.187
+C++ compiler flags       |  -xHost -Wno-unknown-pragmas -xHost -Wno-unknown-pragmas
+Static linking           | False
+64-bit integers          | True
+MPI parallelization      | False
+MPI launcher             | unknown
+Math libraries           | -Wl,--start-group;/cvmfs/it.gsi.de/compiler/intel/15.0/composer_xe_2015.3.187/mkl/lib/intel64/libmkl_lapack95_ilp64.a;/cvmfs/it.gsi.de/compiler/intel/15.0/composer_xe_2015.3.187/mkl/lib/intel64/libmkl_intel_ilp64.so;-openmp;-Wl,--end-group;-Wl,--start-group;/cvmfs/it.gsi.de/compiler/intel/15.0/composer_xe_2015.3.187/mkl/lib/intel64/libmkl_intel_ilp64.so;/cvmfs/it.gsi.de/compiler/intel/15.0/composer_xe_2015.3.187/mkl/lib/intel64/libmkl_intel_thread.so;/cvmfs/it.gsi.de/compiler/intel/15.0/composer_xe_2015.3.187/mkl/lib/intel64/libmkl_core.so;/usr/lib/x86_64-linux-gnu/libpthread.so;/usr/lib/x86_64-linux-gnu/libm.so;-openmp;-Wl,--end-group
+Builtin BLAS library     | OFF
+Builtin LAPACK library   | OFF
+Explicit libraries       | unknown
+Compile definitions      | MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INT_STAR8;INSTALL_WRKMEM=64000000;HAS_PCMSOLVER;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT
+
+
+ Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
+
+Execution time and host
+-----------------------
+
+ 
+     Date and time (Linux)  : Thu Aug 17 21:16:06 2017
+     Host name              : lxir127                                 
+
+
+Contents of the input file
+--------------------------
+
+**DIRAC                                                                                             
+.TITLE                                                                                              
+  Xe atom                                                                                           
+.WAVE F ! Activate integral and wave functions module                                               
+#.ANALYZE                                                                                           
+.4INDEX                                                                                             
+**GENERAL                                                                                           
+.DIRECT                                                                                             
+1 1 1                                                                                               
+.PCMOUT                                                                                             
+**INTEGRALS                                                                                         
+.PRINT                                                                                              
+0                                                                                                   
+.NUCMOD ! 1-Point nucleus, 2-gaussian                                                               
+2                                                                                                   
+*READIN                                                                                             
+.UNCONTRACTED                                                                                       
+**HAMILTONIAN                                                                                       
+.PRINT                                                                                              
+0                                                                                                   
+.INTFLG                                                                                             
+1 1 0                                                                                               
+**INTEGRALS                                                                                         
+*READIN                                                                                             
+.UNCONTRACTED                                                                                       
+**WAVE FUNCTIONS ! What method (DHF,MP2,CC..)                                                       
+.SCF                                                                                                
+*SCF                                                                                                
+# Xe atom (Z=54)                                                                                    
+.CLOSED SHELL                                                                                       
+30  24                                                                                              
+.EVCCNV ! Energy convergence...                                                                     
+1.0D-9  1.0D-7                                                                                      
+# read starting MOs                                                                                 
+.MAXITR                                                                                             
+2                                                                                                   
+#################################################                                                   
+**ANALYZE                                                                                           
+.MULPOP                                                                                             
+*MULPOP                                                                                             
+.VECPOP                                                                                             
+all                                                                                                 
+all                                                                                                 
+**MOLTRA                                                                                            
+.NO2IND                                                                                             
+.NO4IND                                                                                             
+.NOMDCI                                                                                             
+# all occupied shells                                                                               
+.ACTIVE                                                                                             
+1..15                                                                                               
+1..12                                                                                               
+.PRPTRA                                                                                             
+*PRPTRA                                                                                             
+# we need this print level to get all MO mtx elements                                               
+.PRINT                                                                                              
+2                                                                                                   
+# W_A operator ...                                                                                  
+.OPERATOR                                                                                           
+ 'xalpha_fc Xe'                                                                                     
+ XALPHA                                                                                             
+ 'FC Xe 01'                                                                                         
+ COMFACTOR                                                                                          
+ 1.00D0                                                                                             
+.OPERATOR                                                                                           
+ 'yalpha_fc Xe'                                                                                     
+ YALPHA                                                                                             
+ 'FC Xe 01'                                                                                         
+ COMFACTOR                                                                                          
+ 1.0D00                                                                                             
+.OPERATOR                                                                                           
+ 'zalpha_fc Xe'                                                                                     
+ ZALPHA                                                                                             
+ 'FC Xe 01'                                                                                         
+ COMFACTOR                                                                                          
+ 1.0D00                                                                                             
+*END OF                                                                                             
+
+
+Contents of the molecule file
+-----------------------------
+
+INTGRL                                                                                              
+ Xe atom                                                                                            
+ dyall.v2z                                                                                          
+C   1                                                                                               
+      54.0    1                                                                                     
+Xe    0.0000000000        0.0000000000         0.0000000                                            
+LARGE BASIS dyall.v2z                                                                               
+FINISH                                                                                              
+
+
+    *************************************************************************
+    *******************************   Xe atom *******************************
+    *************************************************************************
+
+ Jobs in this run:
+   * Wave function
+   * Transformation to Molecular Spinor basis
+
+
+    **************************************************************************
+    ************************** General DIRAC set-up **************************
+    **************************************************************************
+
+   CODATA Recommended Values of the Fundamental Physical Constants: 1998  
+                Peter J. Mohr and Barry N. Taylor                         
+   Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
+ * The speed of light :        137.0359998
+ * Running in four-component mode
+ * Direct evaluation of the following two-electron integrals:
+   - LL-integrals
+   - SL-integrals
+   - SS-integrals
+   - GT-integrals
+ * Spherical transformation embedded in MO-transformation
+   for large components
+ * Transformation to scalar RKB basis embedded in
+   MO-transformation for small components
+ * Thresholds for linear dependence:
+   Large components:   1.00D-06
+   Small components:   1.00D-08
+ * MO-coefficients written to formatted file DFPCMO
+ * General print level   :   0
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+ Default print level:        0
+ Nuclear model: Gaussian charge distribution.
+
+ Two-electron integrals not calculated.
+
+
+ Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
+
+
+
+ Changes of defaults for *READIN
+ -------------------------------
+
+
+ Uncontracted basis forced, irrespective of basis input file.
+
+  Nuclear Gaussian exponent for atom of charge  54.000 :    1.8030529331D+08
+
+
+                     SYMADD: Detection of molecular symmetry
+                     ---------------------------------------
+
+ Symmetry test threshold:  5.00E-06
+
+ Symmetry point group found: D(oo,h)        
+
+ The following elements were found: X  Y  Z  
+
+  QM-QM nuclear repulsion energy :      0.000000000000
+
+
+
+   ***************************************************************************
+   *************************** Hamiltonian defined ***************************
+   ***************************************************************************
+
+ * Print level:    0
+ * Dirac-Coulomb Hamiltonian
+ * SS integrals neglected:
+   Interatomic Coulombic SS-contributions modelled by
+   classical repulsion of small component atomic charges
+   using tabulated charges.
+ * Default integral flags passed to all modules
+   - LL-integrals:     1
+   - LS-integrals:     1
+   - SS-integrals:     0
+   - GT-integrals:     0
+ * Basis set:
+   - uncontracted large component basis set
+   - uncontracted small component basis set
+
+
+ Information about the restricted kinetic balance scheme:
+ * Default RKB projection:
+   1: Pre-projection in scalar basis
+   2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
+
+
+    **************************************************************************
+    ************************** Wave function module **************************
+    **************************************************************************
+
+ Wave function types requested (in input order):
+     HF        
+
+ Wave function jobs in execution order (expanded):
+ * Hartree-Fock calculation
+===========================================================================
+ *SCF: Set-up for Hartree-Fock calculation:
+===========================================================================
+ * Number of fermion irreps: 2
+ * Closed shell SCF calculation with    54 electrons in
+      15 orbitals in Fermion irrep 1 and   12 orbitals in Fermion irrep 2
+ * Sum of atomic potentials used for start guess
+ * General print level   :   0
+
+ ***** INITIAL TRIAL SCF FUNCTION *****
+ * Trial vectors read from file DFCOEF
+ * Scaling of active-active block correction to open shell Fock operator    0.500000
+   to improve convergence (default value).
+   The final open-shell orbital energies are recalculated with 1.0 scaling,
+   such that all occupied orbital energies correspond to Koopmans' theorem ionization energies.
+
+ ***** SCF CONVERGENCE CRITERIA *****
+ * Convergence on norm of error vector (gradient).
+   Desired convergence:1.000D-09
+   Allowed convergence:1.000D-07
+
+ ***** CONVERGENCE CONTROL *****
+ * Fock matrix constructed using differential density matrix
+    with optimal parameter.
+ * DIIS (in MO basis)
+ * DIIS will be activated when convergence reaches : 1.00D+20
+   - Maximum size of B-matrix:   10
+ * Damping of Fock matrix when DIIS is not activated. 
+   Weight of old matrix    : 0.250
+ * Maximum number of SCF iterations  :    2
+ * No quadratic convergent Hartree-Fock
+ * Contributions from 2-electron integrals to Fock matrix:
+   LL-integrals.
+   SL-integrals from iteration    1
+    ---> this is default setting from Hamiltonian input
+ ***** OUTPUT CONTROL *****
+ * Only electron eigenvalues written out.
+===========================================================================
+ TRPINP: Property integral transformation
+===========================================================================
+ * Print level:    2
+ *The following operators will be transformed:
+    1  XDIPLEN              B3u     T+
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : XDIPLEN  +00+     1.0000000000000 (real)     
+...........................................................................
+    2  YDIPLEN              B2u     T+
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : YDIPLEN  +00+     1.0000000000000 (real)     
+...........................................................................
+    3  ZDIPLEN              B1u     T+
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : ZDIPLEN  +00+     1.0000000000000 (real)     
+...........................................................................
+    4  xalpha_fc Xe         B3u     T-
+...........................................................................
+      Operator type XALPHA   : [alpha_x]P
+      Labels and factors     : FC Xe 01 0++0     1.0000000000000 (real)     
+...........................................................................
+    5  yalpha_fc Xe         B2u     T-
+...........................................................................
+      Operator type YALPHA   : [alpha_y]P
+      Labels and factors     : FC Xe 01 0++0     1.0000000000000 (real)     
+...........................................................................
+    6  zalpha_fc Xe         B1u     T-
+...........................................................................
+      Operator type ZALPHA   : [alpha_z]P
+      Labels and factors     : FC Xe 01 0++0     1.0000000000000 (real)     
+...........................................................................
+---------------------------------------------------------------------------
+
+
+
+===========================================================================
+ TRAINP: Set-up for index transformation
+===========================================================================
+
+ * General print level   :   0
+ * Electronic orbitals only.
+ * Skip 2-index transformation.
+ * Skip 4-index transformation.
+ * MDCINT is not going to be written, 4IND1* is kept.
+ * Total active space.
+    Fermion ircop:E1g
+    1..15                                                                   
+    Fermion ircop:E1u
+    1..12                                                                   
+
+ * Set-up for 2-index transformation
+ * SS Integrals not included in core Fock-matrix
+ * Active spaces:
+    Fermion ircop:E1g
+    - Index  1:  1..15                                                                   
+    - Index  2:  1..15                                                                   
+    Fermion ircop:E1u
+    - Index  1:  1..12                                                                   
+    - Index  2:  1..12                                                                   
+
+ * Set-up for 4-index transformation
+ * Following scheme      :   6
+ - write half-transformed integrals (ij|rs) to disk
+ - sorting of intermediate 1HT integrals is disabled
+ * Screening threshold :1.00E-14
+ * MO integral threshold :1.00E-14
+ * SS Integrals not transformed.
+ * Gaunt Integrals not transformed.
+ * 4-index transformed integrals written to file.
+ * Active spaces:
+    Fermion ircop:E1g
+    - Index  1:  1..15                                                                   
+    - Index  2:  1..15                                                                   
+    - Index  3:  1..15                                                                   
+    - Index  4:  1..15                                                                   
+    Fermion ircop:E1u
+    - Index  1:  1..12                                                                   
+    - Index  2:  1..12                                                                   
+    - Index  3:  1..12                                                                   
+    - Index  4:  1..12                                                                   
+
+
+ ********************************************************************************
+ *************************** Input consistency checks ***************************
+ ********************************************************************************
+
+
+
+    *************************************************************************
+    ************************ End of input processing ************************
+    *************************************************************************
+
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                    All dipole components are zero by symmetry
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+   L   Ag    * Deleted:         11(Proj:         11, Lindep:          0) Smin: 0.47E-03
+   L   B1g   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.79E-02
+   L   B2g   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.79E-02
+   L   B3g   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.79E-02
+   S   B3u   * Deleted:         11(Proj:         11, Lindep:          0) Smin: 0.15E-06
+   S   B2u   * Deleted:         11(Proj:         11, Lindep:          0) Smin: 0.15E-06
+   S   B1u   * Deleted:         11(Proj:         11, Lindep:          0) Smin: 0.15E-06
+   S   Au    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.18E-01
+   L   B3u   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.36E-02
+   L   B2u   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.36E-02
+   L   B1u   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.36E-02
+   S   Ag    * Deleted:         15(Proj:         15, Lindep:          0) Smin: 0.41E-02
+   S   B1g   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.11E-01
+   S   B2g   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.11E-01
+   S   B3g   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.11E-01
+
+
+                                Output from MODHAM
+                                ------------------
+
+ * Applied strict kinetic balance !
+ * Applied SL-regrouping on AO2MO tranf.matrix in SLSORT.
+
+
+                                Output from LINSYM
+                                ------------------
+
+
+ Parity   MJ  Functions(total) Functions(LC) Functions(SC)
+     1    1/2         86           43           43
+     1   -3/2         44           22           22
+     1    5/2         22           11           11
+    -1    1/2         60           30           30
+    -1   -3/2         30           15           15
+
+
+      **********************************************************************
+      ************************* Orbital dimensions *************************
+      **********************************************************************
+
+                                   Irrep 1 Irrep 2   Sum
+No. of electronic orbitals (NESH):    76      45     121
+No. of positronic orbitals (NPSH):    76      45     121
+Total no. of orbitals      (NORB):   152      90     242
+ >>> Time used in PAMSET is   0.18 seconds
+  Reading formatted DFPCMO file...Done.
+===========================================================================
+* PCMOIN: Coefficients read from formatted DFPCMO 
+          and written to unformatted DFCOEF
+===========================================================================
+
+
+   ****************************************************************************
+   ************************* Hartree-Fock calculation *************************
+   ****************************************************************************
+
+
+########## START ITERATION NO.   1 ##########   Thu Aug 17 21:16:06 2017
+
+
+* REACMO: Coefficients read from file DFCOEF - Total energy: -7447.11988170618042
+* Heading :  Xe atom                                         Thu Aug 17 21:16:06 2017
+
+* GETGAB: label "GABAO1XX" not found; calling GABGEN.
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    5.09%    1.20%   19.53%   0.16399997s
+SOfock:SL  1.00D-12    0.00%   12.32%    0.75%   19.19%   1.09200001s
+E_HOMO...E_LUMO, symmetry 1:    91  -1.00756   92   0.53678
+E_HOMO...E_LUMO, symmetry 2:   209  -0.43719  210   0.59554
+It.    1    -7447.119881706      7.45D+03  0.00D+00  3.76D-06               1.64800000s   LL SL          Thu Aug 17
+
+########## START ITERATION NO.   2 ##########   Thu Aug 17 21:16:08 2017
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    5.09%    1.20%   19.63%   0.19999993s
+SOfock:SL  1.00D-12    0.00%   12.32%    0.75%   19.19%   1.18000007s
+E_HOMO...E_LUMO, symmetry 1:    91  -1.00756   92   0.53678
+E_HOMO...E_LUMO, symmetry 2:   209  -0.43719  210   0.59554
+>>> Total wall time: 1.40616012s, and total CPU time : 1.40000000s
+
+########## END ITERATION NO.   2 ##########   Thu Aug 17 21:16:09 2017
+
+It.    2    -7447.119881706      1.82D-12 -1.30D-09  2.28D-09               1.40000000s   LL SL          Thu Aug 17
+
+ ** Exit SCF because maximum number of iterations reached.
+
+
+                                   SCF - CYCLE
+                                   -----------
+
+* Convergence on norm of error vector (gradient).
+  Desired convergence:1.000D-09
+  Allowed convergence:1.000D-07
+
+* ERGVAL - convergence in total energy
+* FCKVAL - convergence in maximum change in total Fock matrix
+* EVCVAL - convergence in error vector (gradient)
+--------------------------------------------------------------------------------------------------------------------------------
+           Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
+--------------------------------------------------------------------------------------------------------------------------------
+It.    1    -7447.119881706      7.45D+03  0.00D+00  3.76D-06               1.64800000s   LL SL          Thu Aug 17
+It.    2    -7447.119881706      1.82D-12 -1.30D-09  2.28D-09               1.40000000s   LL SL          Thu Aug 17
+--------------------------------------------------------------------------------------------------------------------------------
+* Desired convergence limit not reached after    2 iterations but the current convergence is acceptable.
+* Average elapsed time per iteration: 
+      LL SL        :    1.53118551s
+
+
+                                   TOTAL ENERGY
+                                   ------------
+
+   Electronic energy                        :    -7447.1198817061359
+
+   Other contributions to the total energy
+   Nuclear repulsion energy                 :        0.0000000000000
+   SS Coulombic correction                  :        0.0000000000000
+
+   Sum of all contributions to the energy
+   Total energy                             :    -7447.1198817061359
+
+
+                                   Eigenvalues
+                                   -----------
+
+
+* Block   1 in E1g:  Omega =  1/2
+  * Closed shell, f = 1.0000
+   -1277.359716443  ( 2)       -202.478357970  ( 2)        -43.010753954  ( 2)        -26.021493715  ( 2)        -25.533642125  ( 2)
+      -8.427485477  ( 2)         -2.708319463  ( 2)         -2.630537534  ( 2)         -1.007555276  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+       0.536779287  ( 2)          0.602443567  ( 2)          0.611998706  ( 2)          3.147316067  ( 2)          3.191313697  ( 2)
+       5.516517488  ( 2)         11.116112009  ( 2)         11.240196565  ( 2)         30.660263812  ( 2)         33.218533264  ( 2)
+      33.546874940  ( 2)         90.887695091  ( 2)         91.760191286  ( 2)        124.519070220  ( 2)        237.531822057  ( 2)
+     240.014180950  ( 2)        407.308048615  ( 2)        619.749670663  ( 2)        627.760584919  ( 2)       1169.034923178  ( 2)
+    1693.990184222  ( 2)       1724.447156411  ( 2)       3020.315226133  ( 2)       5245.669866629  ( 2)       5414.045093449  ( 2)
+    7030.224220039  ( 2)      14928.233684031  ( 2)      29481.579909157  ( 2)      55491.679878800  ( 2)     102142.634450685  ( 2)
+  188309.671939703  ( 2)     355908.790257324  ( 2)     708328.409207502  ( 2)    1579129.631253647  ( 2)
+
+* Block   2 in E1g:  Omega =  3/2
+  * Closed shell, f = 1.0000
+     -26.021493715  ( 2)        -25.533642125  ( 2)         -2.708319463  ( 2)         -2.630537534  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+       0.602443567  ( 2)          0.611998706  ( 2)          3.147316067  ( 2)          3.191313696  ( 2)         11.116112009  ( 2)
+      11.240196565  ( 2)         33.218533264  ( 2)         33.546874940  ( 2)         90.887695091  ( 2)         91.760191286  ( 2)
+     237.531822057  ( 2)        240.014180950  ( 2)        619.749670663  ( 2)        627.760584919  ( 2)       1693.990184222  ( 2)
+    1724.447156411  ( 2)       5245.669866629  ( 2)       5414.045093449  ( 2)
+
+* Block   3 in E1g:  Omega =  5/2
+  * Closed shell, f = 1.0000
+     -25.533642125  ( 2)         -2.630537534  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+       0.611998706  ( 2)          3.191313696  ( 2)         11.240196565  ( 2)         33.546874940  ( 2)         91.760191286  ( 2)
+     240.014180950  ( 2)        627.760584919  ( 2)       1724.447156411  ( 2)       5414.045093449  ( 2)
+
+* Block   1 in E1u:  Omega =  1/2
+  * Closed shell, f = 1.0000
+    -189.698290068  ( 2)       -177.710224049  ( 2)        -37.660717275  ( 2)        -35.323817182  ( 2)         -6.449839261  ( 2)
+      -5.979800434  ( 2)         -0.489341016  ( 2)         -0.437189884  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+       0.595540405  ( 2)          0.644215262  ( 2)          4.863516544  ( 2)          5.211140628  ( 2)         24.488096578  ( 2)
+      25.878892875  ( 2)         91.340377810  ( 2)         95.764521882  ( 2)        289.168429073  ( 2)        301.935076226  ( 2)
+     830.554676687  ( 2)        867.101490488  ( 2)       2257.381589946  ( 2)       2368.349618158  ( 2)       5948.939254859  ( 2)
+    6304.267825444  ( 2)      15361.299257453  ( 2)      16513.175824869  ( 2)      39875.229353499  ( 2)      43640.802591681  ( 2)
+  113319.344492471  ( 2)     127368.833612295  ( 2)
+
+* Block   2 in E1u:  Omega =  3/2
+  * Closed shell, f = 1.0000
+    -177.710224049  ( 2)        -35.323817182  ( 2)         -5.979800434  ( 2)         -0.437189884  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+       0.644215262  ( 2)          5.211140628  ( 2)         25.878892875  ( 2)         95.764521882  ( 2)        301.935076226  ( 2)
+     867.101490489  ( 2)       2368.349618159  ( 2)       6304.267825444  ( 2)      16513.175824868  ( 2)      43640.802591681  ( 2)
+  127368.833612296  ( 2)
+
+* Occupation in fermion symmetry E1g
+  * Inactive orbitals
+     1/2 1/2 1/2 1/2 3/2 1/2 5/2 3/2 1/2 3/2 1/2 3/2 1/2 5/2 1/2
+  * Virtual orbitals
+     1/2 3/2 1/2 5/2 1/2 3/2 1/2 3/2 5/2 3/2 1/2 1/2 1/2 3/2 3/2 5/2 1/2 1/2
+     1/2 3/2 3/2 5/2 1/2 3/2 1/2 1/2 3/2 5/2 1/2 1/2 3/2 1/2 5/2 3/2 1/2 1/2
+     3/2 1/2 5/2 3/2 1/2 3/2 1/2 5/2 3/2 1/2 1/2 1/2 3/2 1/2 5/2 3/2 1/2 1/2
+     1/2 1/2 1/2 1/2 1/2 1/2 1/2
+
+* Occupation in fermion symmetry E1u
+  * Inactive orbitals
+     1/2 1/2 3/2 1/2 1/2 3/2 1/2 3/2 1/2 1/2 1/2 3/2
+  * Virtual orbitals
+     1/2 1/2 3/2 1/2 3/2 1/2 1/2 3/2 1/2 1/2 1/2 3/2 1/2 1/2 3/2 1/2 1/2 3/2
+     1/2 1/2 3/2 1/2 3/2 1/2 1/2 3/2 1/2 1/2 1/2 3/2 1/2 1/2 3/2
+
+* Occupation of subblocks
+                       E1g:  1/2  3/2  5/2                                                                  
+  closed shells (f=1.0000):    9    4    2
+ virtual shells (f=0.0000):   34   18    9
+tot.num. of pos.erg shells:   43   22   11
+                       E1u:  1/2  3/2                                                                       
+  closed shells (f=1.0000):    8    4
+ virtual shells (f=0.0000):   22   11
+tot.num. of pos.erg shells:   30   15
+
+
+* HOMO - LUMO gap:
+
+    E(LUMO) :     0.53677929 au (symmetry E1g)
+  - E(HOMO) :    -0.43718988 au (symmetry E1u)
+  ------------------------------------------
+    gap     :     0.97396917 au
+
+===========================================================================
+* PCMOUT: Coefficients read from unformatted DFCOEF 
+          and written to formatted DFPCMO
+===========================================================================
+
+
+    **************************************************************************
+    **************** Transformation to Molecular Spinor Basis ****************
+    **************************************************************************
+
+
+          Written by Luuk Visscher, Jon Laerdahl & Trond Saue
+          Odense, 1997
+
+
+
+
+     ************************************************************************
+     **************** Transformation of 2-electron integrals ****************
+     ************************************************************************
+
+
+ Transformation started at : Thu Aug 17 21:16:09 2017
+
+* REACMO: Coefficients read from file DFCOEF - Total energy: -7447.11988170613586
+* Heading :  Xe atom                                         Thu Aug 17 21:16:09 2017
+
+* Orbital ranges for 4-index transformation:
+
+
+ * Fermion ircop E1g
+
+      Index 1   15 orbitals
+          1    2    3    4    5    6    7    8    9   10   11   12
+         13   14   15
+
+      Index 2   15 orbitals
+          1    2    3    4    5    6    7    8    9   10   11   12
+         13   14   15
+
+      Index 3   15 orbitals
+          1    2    3    4    5    6    7    8    9   10   11   12
+         13   14   15
+
+      Index 4   15 orbitals
+          1    2    3    4    5    6    7    8    9   10   11   12
+         13   14   15
+
+
+ * Fermion ircop E1u
+
+      Index 1   12 orbitals
+          1    2    3    4    5    6    7    8    9   10   11   12
+
+      Index 2   12 orbitals
+          1    2    3    4    5    6    7    8    9   10   11   12
+
+      Index 3   12 orbitals
+          1    2    3    4    5    6    7    8    9   10   11   12
+
+      Index 4   12 orbitals
+          1    2    3    4    5    6    7    8    9   10   11   12
+
+* Core orbital ranges for 2-index transformation:
+
+
+ * Fermion ircop E1g
+
+      No orbitals for index 1
+
+
+ * Fermion ircop E1u
+
+      No orbitals for index 1
+
+
+    **************************************************************************
+    **************** Transformation to Molecular Spinor Basis ****************
+    **************************************************************************
+
+
+          Written by Luuk Visscher, Jon Laerdahl & Trond Saue
+          Odense, 1997
+
+
+
+
+      **********************************************************************
+      **************** Transformation of property integrals ****************
+      **********************************************************************
+
+
+ Transformation started at : Thu Aug 17 21:16:09 2017
+
+* REACMO: Coefficients read from file DFCOEF - Total energy: -7447.11988170613586
+* Heading :  Xe atom                                         Thu Aug 17 21:16:09 2017
+
+
+ * Fermion ircop E1g
+
+      Index 1   15 orbitals
+          1    2    3    4    5    6    7    8    9   10   11   12
+         13   14   15
+
+      Index 2   15 orbitals
+          1    2    3    4    5    6    7    8    9   10   11   12
+         13   14   15
+
+
+ * Fermion ircop E1u
+
+      Index 1   12 orbitals
+          1    2    3    4    5    6    7    8    9   10   11   12
+
+      Index 2   12 orbitals
+          1    2    3    4    5    6    7    8    9   10   11   12
+
+Nonzero diagonal elements of XDIPLEN  operator in Kramers paired molecular spinor basis:
+
+            Real part           Imaginary Part
+    zero threshold=0.100D-10
+ 
+
+All nonzero property elements of XDIPLEN  operator in Kramers paired molecular spinor basis:
+
+    zero threshold=0.100D-10
+    1   43      0.0000000000        0.0072010028
+    1   44      0.0000000000       -0.0050371382
+    1   45      0.0000000000       -0.0087245793
+    1   46      0.0000000000       -0.0024563417
+    1   47      0.0000000000        0.0017938907
+    1   48      0.0000000000        0.0031071098
+    1   49      0.0000000000        0.0010250318
+    1   50      0.0000000000        0.0013052894
+    1   51      0.0000000000       -0.0007536092
+    1   52      0.0000000000        0.0003159587
+    1   53      0.0000000000        0.0002275416
+    1   54      0.0000000000       -0.0003941136
+    2   43      0.0000000000       -0.0335187955
+    2   44      0.0000000000        0.0246505072
+    2   45      0.0000000000        0.0426959310
+    2   46      0.0000000000       -0.0164947463
+    2   47      0.0000000000        0.0102231168
+    2   48      0.0000000000        0.0177069577
+    2   49      0.0000000000        0.0057535937
+    2   50      0.0000000000        0.0063892186
+    2   51      0.0000000000       -0.0036888171
+    2   52      0.0000000000        0.0017203374
+    2   53      0.0000000000        0.0010849042
+    2   54      0.0000000000       -0.0018791091
+    3   43      0.0000000000       -0.0072945002
+    3   44      0.0000000000        0.0065215172
+    3   45      0.0000000000        0.0112955991
+    3   46      0.0000000000       -0.0992578982
+    3   47      0.0000000000        0.0717112745
+    3   48      0.0000000000        0.1242075709
+    3   49      0.0000000000       -0.0267646376
+    3   50      0.0000000000       -0.0266120787
+    3   51      0.0000000000        0.0153644908
+    3   52      0.0000000000       -0.0070902091
+    3   53      0.0000000000       -0.0041181516
+    3   54      0.0000000000        0.0071328479
+    4   43      0.0000000000       -0.0180495434
+    4   44      0.0000000000       -0.0110809398
+    4   45      0.0000000000        0.0095963754
+    4   46      0.0000000000       -0.0645329743
+    4   47      0.0000000000       -0.0367987091
+    4   48      0.0000000000        0.0318686169
+    4   49      0.0000000000       -0.0198548892
+    4   50      0.0000000000       -0.0083939045
+    4   51      0.0000000000       -0.0096924461
+    4   52      0.0000000000       -0.0042777386
+    4   53      0.0000000000        0.0021158378
+    4   54      0.0000000000        0.0018323693
+    5   43      0.0000000000       -0.0312627262
+    5   44      0.0000000000        0.0095963754
+    5   46      0.0000000000       -0.1117743903
+    5   47      0.0000000000        0.0318686169
+    5   49      0.0000000000       -0.0343896769
+    5   51      0.0000000000        0.0083939045
+    5   52      0.0000000000       -0.0074092605
+    5   53      0.0000000000       -0.0018323693
+    6   44      0.0000000000       -0.0203102396
+    6   45      0.0000000000       -0.0117261223
+    6   47      0.0000000000       -0.0682703472
+    6   48      0.0000000000       -0.0394159033
+    6   50      0.0000000000        0.0108562488
+    6   51      0.0000000000       -0.0188035745
+    6   53      0.0000000000        0.0040715191
+    6   54      0.0000000000       -0.0023506926
+    7   45      0.0000000000       -0.0370812546
+    7   48      0.0000000000       -0.1246440305
+    7   50      0.0000000000        0.0343304731
+    7   54      0.0000000000       -0.0074335428
+    8   44      0.0000000000       -0.0287230163
+    8   47      0.0000000000       -0.0965488509
+    8   51      0.0000000000       -0.0265922701
+    8   53      0.0000000000        0.0057579975
+    9   43      0.0000000000        0.0024258374
+    9   44      0.0000000000       -0.0020987534
+    9   45      0.0000000000       -0.0036351475
+    9   46      0.0000000000       -0.0256069713
+    9   47      0.0000000000        0.0222495048
+    9   48      0.0000000000        0.0385372728
+    9   49      0.0000000000       -0.2430124106
+    9   50      0.0000000000       -0.3009717699
+    9   51      0.0000000000        0.1737661324
+    9   52      0.0000000000        0.0276828893
+    9   53      0.0000000000        0.0132664647
+    9   54      0.0000000000       -0.0229781908
+   10   43      0.0000000000       -0.0095697832
+   10   44      0.0000000000        0.0028556168
+   10   46      0.0000000000        0.0323532810
+   10   47      0.0000000000       -0.0110171550
+   10   49      0.0000000000        0.3169986893
+   10   51      0.0000000000       -0.0921260195
+   10   52      0.0000000000       -0.1678646363
+   10   53      0.0000000000       -0.0429370846
+   11   43      0.0000000000        0.0055251169
+   11   44      0.0000000000        0.0032973823
+   11   45      0.0000000000       -0.0028556168
+   11   46      0.0000000000       -0.0186791755
+   11   47      0.0000000000       -0.0127215148
+   11   48      0.0000000000        0.0110171550
+   11   49      0.0000000000       -0.1830192786
+   11   50      0.0000000000       -0.0921260194
+   11   51      0.0000000000       -0.1063779643
+   11   52      0.0000000000        0.0969166929
+   11   53      0.0000000000       -0.0495794747
+   11   54      0.0000000000       -0.0429370846
+   12   44      0.0000000000        0.0086129121
+   12   47      0.0000000000       -0.0316090882
+   12   49      0.0000000000       -0.0000000000
+   12   51      0.0000000000       -0.2771833637
+   12   52      0.0000000000        0.0000000000
+   12   53      0.0000000000       -0.1349658079
+   13   44      0.0000000000        0.0060902486
+   13   45      0.0000000000        0.0035162067
+   13   47      0.0000000000       -0.0223510006
+   13   48      0.0000000000       -0.0129043562
+   13   50      0.0000000000        0.1131596344
+   13   51      0.0000000000       -0.1959982361
+   13   53      0.0000000000       -0.0954352380
+   13   54      0.0000000000        0.0550995604
+   14   45      0.0000000000       -0.0111192217
+   14   48      0.0000000000        0.0408071574
+   14   50      0.0000000000       -0.3578421839
+   14   54      0.0000000000       -0.1742401088
+   15   43      0.0000000000       -0.0008054428
+   15   44      0.0000000000        0.0006938664
+   15   45      0.0000000000        0.0012018119
+   15   46      0.0000000000        0.0066064413
+   15   47      0.0000000000       -0.0055648564
+   15   48      0.0000000000       -0.0096386139
+   15   49      0.0000000000       -0.0717037739
+   15   50      0.0000000000       -0.1055558092
+   15   51      0.0000000000        0.0609426749
+   15   52      0.0000000000        0.6658978552
+   15   53      0.0000000000        0.4719868770
+   15   54      0.0000000000       -0.8175052515
+   16   31      0.0000000000        0.0072010028
+   16   32      0.0000000000       -0.0050371382
+   16   33      0.0000000000       -0.0087245793
+   16   34      0.0000000000       -0.0024563417
+   16   35      0.0000000000        0.0017938907
+   16   36      0.0000000000        0.0031071098
+   16   37      0.0000000000        0.0010250318
+   16   38      0.0000000000        0.0013052894
+   16   39      0.0000000000       -0.0007536092
+   16   40      0.0000000000        0.0003159587
+   16   41      0.0000000000        0.0002275416
+   16   42      0.0000000000       -0.0003941136
+   17   31      0.0000000000       -0.0335187955
+   17   32      0.0000000000        0.0246505072
+   17   33      0.0000000000        0.0426959310
+   17   34      0.0000000000       -0.0164947463
+   17   35      0.0000000000        0.0102231168
+   17   36      0.0000000000        0.0177069577
+   17   37      0.0000000000        0.0057535937
+   17   38      0.0000000000        0.0063892186
+   17   39      0.0000000000       -0.0036888171
+   17   40      0.0000000000        0.0017203374
+   17   41      0.0000000000        0.0010849042
+   17   42      0.0000000000       -0.0018791091
+   18   31      0.0000000000       -0.0072945002
+   18   32      0.0000000000        0.0065215172
+   18   33      0.0000000000        0.0112955991
+   18   34      0.0000000000       -0.0992578982
+   18   35      0.0000000000        0.0717112745
+   18   36      0.0000000000        0.1242075709
+   18   37      0.0000000000       -0.0267646376
+   18   38      0.0000000000       -0.0266120787
+   18   39      0.0000000000        0.0153644908
+   18   40      0.0000000000       -0.0070902091
+   18   41      0.0000000000       -0.0041181516
+   18   42      0.0000000000        0.0071328479
+   19   31      0.0000000000       -0.0180495434
+   19   32      0.0000000000       -0.0110809398
+   19   33      0.0000000000        0.0095963754
+   19   34      0.0000000000       -0.0645329743
+   19   35      0.0000000000       -0.0367987091
+   19   36      0.0000000000        0.0318686169
+   19   37      0.0000000000       -0.0198548892
+   19   38      0.0000000000       -0.0083939045
+   19   39      0.0000000000       -0.0096924461
+   19   40      0.0000000000       -0.0042777386
+   19   41      0.0000000000        0.0021158378
+   19   42      0.0000000000        0.0018323693
+   20   31      0.0000000000       -0.0312627262
+   20   32      0.0000000000        0.0095963754
+   20   34      0.0000000000       -0.1117743903
+   20   35      0.0000000000        0.0318686169
+   20   37      0.0000000000       -0.0343896769
+   20   39      0.0000000000        0.0083939045
+   20   40      0.0000000000       -0.0074092605
+   20   41      0.0000000000       -0.0018323693
+   21   32      0.0000000000       -0.0203102396
+   21   33      0.0000000000       -0.0117261223
+   21   35      0.0000000000       -0.0682703472
+   21   36      0.0000000000       -0.0394159033
+   21   38      0.0000000000        0.0108562488
+   21   39      0.0000000000       -0.0188035745
+   21   41      0.0000000000        0.0040715191
+   21   42      0.0000000000       -0.0023506926
+   22   33      0.0000000000       -0.0370812546
+   22   36      0.0000000000       -0.1246440305
+   22   38      0.0000000000        0.0343304731
+   22   42      0.0000000000       -0.0074335428
+   23   32      0.0000000000       -0.0287230163
+   23   35      0.0000000000       -0.0965488509
+   23   39      0.0000000000       -0.0265922701
+   23   41      0.0000000000        0.0057579975
+   24   31      0.0000000000        0.0024258374
+   24   32      0.0000000000       -0.0020987534
+   24   33      0.0000000000       -0.0036351475
+   24   34      0.0000000000       -0.0256069713
+   24   35      0.0000000000        0.0222495048
+   24   36      0.0000000000        0.0385372728
+   24   37      0.0000000000       -0.2430124106
+   24   38      0.0000000000       -0.3009717699
+   24   39      0.0000000000        0.1737661324
+   24   40      0.0000000000        0.0276828893
+   24   41      0.0000000000        0.0132664647
+   24   42      0.0000000000       -0.0229781908
+   25   31      0.0000000000       -0.0095697832
+   25   32      0.0000000000        0.0028556168
+   25   34      0.0000000000        0.0323532810
+   25   35      0.0000000000       -0.0110171550
+   25   37      0.0000000000        0.3169986893
+   25   39      0.0000000000       -0.0921260195
+   25   40      0.0000000000       -0.1678646363
+   25   41      0.0000000000       -0.0429370846
+   26   31      0.0000000000        0.0055251169
+   26   32      0.0000000000        0.0032973823
+   26   33      0.0000000000       -0.0028556168
+   26   34      0.0000000000       -0.0186791755
+   26   35      0.0000000000       -0.0127215148
+   26   36      0.0000000000        0.0110171550
+   26   37      0.0000000000       -0.1830192786
+   26   38      0.0000000000       -0.0921260194
+   26   39      0.0000000000       -0.1063779643
+   26   40      0.0000000000        0.0969166929
+   26   41      0.0000000000       -0.0495794747
+   26   42      0.0000000000       -0.0429370846
+   27   32      0.0000000000        0.0086129121
+   27   35      0.0000000000       -0.0316090882
+   27   37      0.0000000000       -0.0000000000
+   27   39      0.0000000000       -0.2771833637
+   27   40      0.0000000000        0.0000000000
+   27   41      0.0000000000       -0.1349658079
+   28   32      0.0000000000        0.0060902486
+   28   33      0.0000000000        0.0035162067
+   28   35      0.0000000000       -0.0223510006
+   28   36      0.0000000000       -0.0129043562
+   28   38      0.0000000000        0.1131596344
+   28   39      0.0000000000       -0.1959982361
+   28   41      0.0000000000       -0.0954352380
+   28   42      0.0000000000        0.0550995604
+   29   33      0.0000000000       -0.0111192217
+   29   36      0.0000000000        0.0408071574
+   29   38      0.0000000000       -0.3578421839
+   29   42      0.0000000000       -0.1742401088
+   30   31      0.0000000000       -0.0008054428
+   30   32      0.0000000000        0.0006938664
+   30   33      0.0000000000        0.0012018119
+   30   34      0.0000000000        0.0066064413
+   30   35      0.0000000000       -0.0055648564
+   30   36      0.0000000000       -0.0096386139
+   30   37      0.0000000000       -0.0717037739
+   30   38      0.0000000000       -0.1055558092
+   30   39      0.0000000000        0.0609426749
+   30   40      0.0000000000        0.6658978552
+   30   41      0.0000000000        0.4719868770
+   30   42      0.0000000000       -0.8175052515
+   31   16      0.0000000000       -0.0072010028
+   31   17      0.0000000000        0.0335187955
+   31   18      0.0000000000        0.0072945002
+   31   19      0.0000000000        0.0180495434
+   31   20      0.0000000000        0.0312627262
+   31   24      0.0000000000       -0.0024258374
+   31   25      0.0000000000        0.0095697832
+   31   26      0.0000000000       -0.0055251169
+   31   30      0.0000000000        0.0008054428
+   32   16      0.0000000000        0.0050371382
+   32   17      0.0000000000       -0.0246505072
+   32   18      0.0000000000       -0.0065215172
+   32   19      0.0000000000        0.0110809398
+   32   20      0.0000000000       -0.0095963754
+   32   21      0.0000000000        0.0203102396
+   32   23      0.0000000000        0.0287230163
+   32   24      0.0000000000        0.0020987534
+   32   25      0.0000000000       -0.0028556168
+   32   26      0.0000000000       -0.0032973823
+   32   27      0.0000000000       -0.0086129121
+   32   28      0.0000000000       -0.0060902486
+   32   30      0.0000000000       -0.0006938664
+   33   16      0.0000000000        0.0087245793
+   33   17      0.0000000000       -0.0426959310
+   33   18      0.0000000000       -0.0112955991
+   33   19      0.0000000000       -0.0095963754
+   33   21      0.0000000000        0.0117261223
+   33   22      0.0000000000        0.0370812546
+   33   24      0.0000000000        0.0036351475
+   33   26      0.0000000000        0.0028556168
+   33   28      0.0000000000       -0.0035162067
+   33   29      0.0000000000        0.0111192217
+   33   30      0.0000000000       -0.0012018119
+   34   16      0.0000000000        0.0024563417
+   34   17      0.0000000000        0.0164947463
+   34   18      0.0000000000        0.0992578982
+   34   19      0.0000000000        0.0645329743
+   34   20      0.0000000000        0.1117743903
+   34   24      0.0000000000        0.0256069713
+   34   25      0.0000000000       -0.0323532810
+   34   26      0.0000000000        0.0186791755
+   34   30      0.0000000000       -0.0066064413
+   35   16      0.0000000000       -0.0017938907
+   35   17      0.0000000000       -0.0102231168
+   35   18      0.0000000000       -0.0717112745
+   35   19      0.0000000000        0.0367987091
+   35   20      0.0000000000       -0.0318686169
+   35   21      0.0000000000        0.0682703472
+   35   23      0.0000000000        0.0965488509
+   35   24      0.0000000000       -0.0222495048
+   35   25      0.0000000000        0.0110171550
+   35   26      0.0000000000        0.0127215148
+   35   27      0.0000000000        0.0316090882
+   35   28      0.0000000000        0.0223510006
+   35   30      0.0000000000        0.0055648564
+   36   16      0.0000000000       -0.0031071098
+   36   17      0.0000000000       -0.0177069577
+   36   18      0.0000000000       -0.1242075709
+   36   19      0.0000000000       -0.0318686169
+   36   21      0.0000000000        0.0394159033
+   36   22      0.0000000000        0.1246440305
+   36   24      0.0000000000       -0.0385372728
+   36   26      0.0000000000       -0.0110171550
+   36   28      0.0000000000        0.0129043562
+   36   29      0.0000000000       -0.0408071574
+   36   30      0.0000000000        0.0096386139
+   37   16      0.0000000000       -0.0010250318
+   37   17      0.0000000000       -0.0057535937
+   37   18      0.0000000000        0.0267646376
+   37   19      0.0000000000        0.0198548892
+   37   20      0.0000000000        0.0343896769
+   37   24      0.0000000000        0.2430124106
+   37   25      0.0000000000       -0.3169986893
+   37   26      0.0000000000        0.1830192786
+   37   27      0.0000000000        0.0000000000
+   37   30      0.0000000000        0.0717037739
+   38   16      0.0000000000       -0.0013052894
+   38   17      0.0000000000       -0.0063892186
+   38   18      0.0000000000        0.0266120787
+   38   19      0.0000000000        0.0083939045
+   38   21      0.0000000000       -0.0108562488
+   38   22      0.0000000000       -0.0343304731
+   38   24      0.0000000000        0.3009717699
+   38   26      0.0000000000        0.0921260194
+   38   28      0.0000000000       -0.1131596344
+   38   29      0.0000000000        0.3578421839
+   38   30      0.0000000000        0.1055558092
+   39   16      0.0000000000        0.0007536092
+   39   17      0.0000000000        0.0036888171
+   39   18      0.0000000000       -0.0153644908
+   39   19      0.0000000000        0.0096924461
+   39   20      0.0000000000       -0.0083939045
+   39   21      0.0000000000        0.0188035745
+   39   23      0.0000000000        0.0265922701
+   39   24      0.0000000000       -0.1737661324
+   39   25      0.0000000000        0.0921260195
+   39   26      0.0000000000        0.1063779643
+   39   27      0.0000000000        0.2771833637
+   39   28      0.0000000000        0.1959982361
+   39   30      0.0000000000       -0.0609426749
+   40   16      0.0000000000       -0.0003159587
+   40   17      0.0000000000       -0.0017203374
+   40   18      0.0000000000        0.0070902091
+   40   19      0.0000000000        0.0042777386
+   40   20      0.0000000000        0.0074092605
+   40   24      0.0000000000       -0.0276828893
+   40   25      0.0000000000        0.1678646363
+   40   26      0.0000000000       -0.0969166929
+   40   27      0.0000000000       -0.0000000000
+   40   30      0.0000000000       -0.6658978552
+   41   16      0.0000000000       -0.0002275416
+   41   17      0.0000000000       -0.0010849042
+   41   18      0.0000000000        0.0041181516
+   41   19      0.0000000000       -0.0021158378
+   41   20      0.0000000000        0.0018323693
+   41   21      0.0000000000       -0.0040715191
+   41   23      0.0000000000       -0.0057579975
+   41   24      0.0000000000       -0.0132664647
+   41   25      0.0000000000        0.0429370846
+   41   26      0.0000000000        0.0495794747
+   41   27      0.0000000000        0.1349658079
+   41   28      0.0000000000        0.0954352380
+   41   30      0.0000000000       -0.4719868770
+   42   16      0.0000000000        0.0003941136
+   42   17      0.0000000000        0.0018791091
+   42   18      0.0000000000       -0.0071328479
+   42   19      0.0000000000       -0.0018323693
+   42   21      0.0000000000        0.0023506926
+   42   22      0.0000000000        0.0074335428
+   42   24      0.0000000000        0.0229781908
+   42   26      0.0000000000        0.0429370846
+   42   28      0.0000000000       -0.0550995604
+   42   29      0.0000000000        0.1742401088
+   42   30      0.0000000000        0.8175052515
+   43    1      0.0000000000       -0.0072010028
+   43    2      0.0000000000        0.0335187955
+   43    3      0.0000000000        0.0072945002
+   43    4      0.0000000000        0.0180495434
+   43    5      0.0000000000        0.0312627262
+   43    9      0.0000000000       -0.0024258374
+   43   10      0.0000000000        0.0095697832
+   43   11      0.0000000000       -0.0055251169
+   43   15      0.0000000000        0.0008054428
+   44    1      0.0000000000        0.0050371382
+   44    2      0.0000000000       -0.0246505072
+   44    3      0.0000000000       -0.0065215172
+   44    4      0.0000000000        0.0110809398
+   44    5      0.0000000000       -0.0095963754
+   44    6      0.0000000000        0.0203102396
+   44    8      0.0000000000        0.0287230163
+   44    9      0.0000000000        0.0020987534
+   44   10      0.0000000000       -0.0028556168
+   44   11      0.0000000000       -0.0032973823
+   44   12      0.0000000000       -0.0086129121
+   44   13      0.0000000000       -0.0060902486
+   44   15      0.0000000000       -0.0006938664
+   45    1      0.0000000000        0.0087245793
+   45    2      0.0000000000       -0.0426959310
+   45    3      0.0000000000       -0.0112955991
+   45    4      0.0000000000       -0.0095963754
+   45    6      0.0000000000        0.0117261223
+   45    7      0.0000000000        0.0370812546
+   45    9      0.0000000000        0.0036351475
+   45   11      0.0000000000        0.0028556168
+   45   13      0.0000000000       -0.0035162067
+   45   14      0.0000000000        0.0111192217
+   45   15      0.0000000000       -0.0012018119
+   46    1      0.0000000000        0.0024563417
+   46    2      0.0000000000        0.0164947463
+   46    3      0.0000000000        0.0992578982
+   46    4      0.0000000000        0.0645329743
+   46    5      0.0000000000        0.1117743903
+   46    9      0.0000000000        0.0256069713
+   46   10      0.0000000000       -0.0323532810
+   46   11      0.0000000000        0.0186791755
+   46   15      0.0000000000       -0.0066064413
+   47    1      0.0000000000       -0.0017938907
+   47    2      0.0000000000       -0.0102231168
+   47    3      0.0000000000       -0.0717112745
+   47    4      0.0000000000        0.0367987091
+   47    5      0.0000000000       -0.0318686169
+   47    6      0.0000000000        0.0682703472
+   47    8      0.0000000000        0.0965488509
+   47    9      0.0000000000       -0.0222495048
+   47   10      0.0000000000        0.0110171550
+   47   11      0.0000000000        0.0127215148
+   47   12      0.0000000000        0.0316090882
+   47   13      0.0000000000        0.0223510006
+   47   15      0.0000000000        0.0055648564
+   48    1      0.0000000000       -0.0031071098
+   48    2      0.0000000000       -0.0177069577
+   48    3      0.0000000000       -0.1242075709
+   48    4      0.0000000000       -0.0318686169
+   48    6      0.0000000000        0.0394159033
+   48    7      0.0000000000        0.1246440305
+   48    9      0.0000000000       -0.0385372728
+   48   11      0.0000000000       -0.0110171550
+   48   13      0.0000000000        0.0129043562
+   48   14      0.0000000000       -0.0408071574
+   48   15      0.0000000000        0.0096386139
+   49    1      0.0000000000       -0.0010250318
+   49    2      0.0000000000       -0.0057535937
+   49    3      0.0000000000        0.0267646376
+   49    4      0.0000000000        0.0198548892
+   49    5      0.0000000000        0.0343896769
+   49    9      0.0000000000        0.2430124106
+   49   10      0.0000000000       -0.3169986893
+   49   11      0.0000000000        0.1830192786
+   49   12      0.0000000000        0.0000000000
+   49   15      0.0000000000        0.0717037739
+   50    1      0.0000000000       -0.0013052894
+   50    2      0.0000000000       -0.0063892186
+   50    3      0.0000000000        0.0266120787
+   50    4      0.0000000000        0.0083939045
+   50    6      0.0000000000       -0.0108562488
+   50    7      0.0000000000       -0.0343304731
+   50    9      0.0000000000        0.3009717699
+   50   11      0.0000000000        0.0921260194
+   50   13      0.0000000000       -0.1131596344
+   50   14      0.0000000000        0.3578421839
+   50   15      0.0000000000        0.1055558092
+   51    1      0.0000000000        0.0007536092
+   51    2      0.0000000000        0.0036888171
+   51    3      0.0000000000       -0.0153644908
+   51    4      0.0000000000        0.0096924461
+   51    5      0.0000000000       -0.0083939045
+   51    6      0.0000000000        0.0188035745
+   51    8      0.0000000000        0.0265922701
+   51    9      0.0000000000       -0.1737661324
+   51   10      0.0000000000        0.0921260195
+   51   11      0.0000000000        0.1063779643
+   51   12      0.0000000000        0.2771833637
+   51   13      0.0000000000        0.1959982361
+   51   15      0.0000000000       -0.0609426749
+   52    1      0.0000000000       -0.0003159587
+   52    2      0.0000000000       -0.0017203374
+   52    3      0.0000000000        0.0070902091
+   52    4      0.0000000000        0.0042777386
+   52    5      0.0000000000        0.0074092605
+   52    9      0.0000000000       -0.0276828893
+   52   10      0.0000000000        0.1678646363
+   52   11      0.0000000000       -0.0969166929
+   52   12      0.0000000000       -0.0000000000
+   52   15      0.0000000000       -0.6658978552
+   53    1      0.0000000000       -0.0002275416
+   53    2      0.0000000000       -0.0010849042
+   53    3      0.0000000000        0.0041181516
+   53    4      0.0000000000       -0.0021158378
+   53    5      0.0000000000        0.0018323693
+   53    6      0.0000000000       -0.0040715191
+   53    8      0.0000000000       -0.0057579975
+   53    9      0.0000000000       -0.0132664647
+   53   10      0.0000000000        0.0429370846
+   53   11      0.0000000000        0.0495794747
+   53   12      0.0000000000        0.1349658079
+   53   13      0.0000000000        0.0954352380
+   53   15      0.0000000000       -0.4719868770
+   54    1      0.0000000000        0.0003941136
+   54    2      0.0000000000        0.0018791091
+   54    3      0.0000000000       -0.0071328479
+   54    4      0.0000000000       -0.0018323693
+   54    6      0.0000000000        0.0023506926
+   54    7      0.0000000000        0.0074335428
+   54    9      0.0000000000        0.0229781908
+   54   11      0.0000000000        0.0429370846
+   54   13      0.0000000000       -0.0550995604
+   54   14      0.0000000000        0.1742401088
+   54   15      0.0000000000        0.8175052515
+End of printout of nonzero property elements
+ 
+
+Nonzero diagonal elements of YDIPLEN  operator in Kramers paired molecular spinor basis:
+
+            Real part           Imaginary Part
+    zero threshold=0.100D-10
+ 
+
+All nonzero property elements of YDIPLEN  operator in Kramers paired molecular spinor basis:
+
+    zero threshold=0.100D-10
+    1   43      0.0072010028        0.0000000000
+    1   44     -0.0050371382        0.0000000000
+    1   45      0.0087245793        0.0000000000
+    1   46     -0.0024563417        0.0000000000
+    1   47      0.0017938907        0.0000000000
+    1   48     -0.0031071098        0.0000000000
+    1   49      0.0010250318        0.0000000000
+    1   50     -0.0013052894        0.0000000000
+    1   51     -0.0007536092        0.0000000000
+    1   52      0.0003159587        0.0000000000
+    1   53      0.0002275416        0.0000000000
+    1   54      0.0003941136        0.0000000000
+    2   43     -0.0335187955        0.0000000000
+    2   44      0.0246505072        0.0000000000
+    2   45     -0.0426959310        0.0000000000
+    2   46     -0.0164947463        0.0000000000
+    2   47      0.0102231168        0.0000000000
+    2   48     -0.0177069577        0.0000000000
+    2   49      0.0057535937        0.0000000000
+    2   50     -0.0063892186        0.0000000000
+    2   51     -0.0036888171        0.0000000000
+    2   52      0.0017203374        0.0000000000
+    2   53      0.0010849042        0.0000000000
+    2   54      0.0018791091        0.0000000000
+    3   43     -0.0072945002        0.0000000000
+    3   44      0.0065215172        0.0000000000
+    3   45     -0.0112955991        0.0000000000
+    3   46     -0.0992578982        0.0000000000
+    3   47      0.0717112745        0.0000000000
+    3   48     -0.1242075709        0.0000000000
+    3   49     -0.0267646376        0.0000000000
+    3   50      0.0266120787        0.0000000000
+    3   51      0.0153644908        0.0000000000
+    3   52     -0.0070902091        0.0000000000
+    3   53     -0.0041181516        0.0000000000
+    3   54     -0.0071328479        0.0000000000
+    4   43     -0.0180495434        0.0000000000
+    4   44     -0.0110809398        0.0000000000
+    4   45     -0.0095963754        0.0000000000
+    4   46     -0.0645329743        0.0000000000
+    4   47     -0.0367987091        0.0000000000
+    4   48     -0.0318686169        0.0000000000
+    4   49     -0.0198548892        0.0000000000
+    4   50      0.0083939045        0.0000000000
+    4   51     -0.0096924461        0.0000000000
+    4   52     -0.0042777386        0.0000000000
+    4   53      0.0021158378        0.0000000000
+    4   54     -0.0018323693        0.0000000000
+    5   43      0.0312627262        0.0000000000
+    5   44     -0.0095963754        0.0000000000
+    5   46      0.1117743903        0.0000000000
+    5   47     -0.0318686169        0.0000000000
+    5   49      0.0343896769        0.0000000000
+    5   51     -0.0083939045        0.0000000000
+    5   52      0.0074092605        0.0000000000
+    5   53      0.0018323693        0.0000000000
+    6   44     -0.0203102396        0.0000000000
+    6   45      0.0117261223        0.0000000000
+    6   47     -0.0682703472        0.0000000000
+    6   48      0.0394159033        0.0000000000
+    6   50     -0.0108562488        0.0000000000
+    6   51     -0.0188035745        0.0000000000
+    6   53      0.0040715191        0.0000000000
+    6   54      0.0023506926        0.0000000000
+    7   45     -0.0370812546        0.0000000000
+    7   48     -0.1246440305        0.0000000000
+    7   50      0.0343304731        0.0000000000
+    7   54     -0.0074335428        0.0000000000
+    8   44      0.0287230163        0.0000000000
+    8   47      0.0965488509        0.0000000000
+    8   51      0.0265922701        0.0000000000
+    8   53     -0.0057579975        0.0000000000
+    9   43      0.0024258374        0.0000000000
+    9   44     -0.0020987534        0.0000000000
+    9   45      0.0036351475        0.0000000000
+    9   46     -0.0256069713        0.0000000000
+    9   47      0.0222495048        0.0000000000
+    9   48     -0.0385372728        0.0000000000
+    9   49     -0.2430124106        0.0000000000
+    9   50      0.3009717699        0.0000000000
+    9   51      0.1737661324        0.0000000000
+    9   52      0.0276828893        0.0000000000
+    9   53      0.0132664647        0.0000000000
+    9   54      0.0229781908        0.0000000000
+   10   43      0.0095697832        0.0000000000
+   10   44     -0.0028556168        0.0000000000
+   10   46     -0.0323532810        0.0000000000
+   10   47      0.0110171550        0.0000000000
+   10   49     -0.3169986893        0.0000000000
+   10   51      0.0921260195        0.0000000000
+   10   52      0.1678646363        0.0000000000
+   10   53      0.0429370846        0.0000000000
+   11   43      0.0055251169        0.0000000000
+   11   44      0.0032973823        0.0000000000
+   11   45      0.0028556168        0.0000000000
+   11   46     -0.0186791755        0.0000000000
+   11   47     -0.0127215148        0.0000000000
+   11   48     -0.0110171550        0.0000000000
+   11   49     -0.1830192786        0.0000000000
+   11   50      0.0921260194        0.0000000000
+   11   51     -0.1063779643        0.0000000000
+   11   52      0.0969166929        0.0000000000
+   11   53     -0.0495794747        0.0000000000
+   11   54      0.0429370846        0.0000000000
+   12   44     -0.0086129121        0.0000000000
+   12   47      0.0316090882        0.0000000000
+   12   49      0.0000000000        0.0000000000
+   12   51      0.2771833637        0.0000000000
+   12   52     -0.0000000000        0.0000000000
+   12   53      0.1349658079        0.0000000000
+   13   44      0.0060902486        0.0000000000
+   13   45     -0.0035162067        0.0000000000
+   13   47     -0.0223510006        0.0000000000
+   13   48      0.0129043562        0.0000000000
+   13   50     -0.1131596344        0.0000000000
+   13   51     -0.1959982361        0.0000000000
+   13   53     -0.0954352380        0.0000000000
+   13   54     -0.0550995604        0.0000000000
+   14   45     -0.0111192217        0.0000000000
+   14   48      0.0408071574        0.0000000000
+   14   50     -0.3578421839        0.0000000000
+   14   54     -0.1742401088        0.0000000000
+   15   43     -0.0008054428        0.0000000000
+   15   44      0.0006938664        0.0000000000
+   15   45     -0.0012018119        0.0000000000
+   15   46      0.0066064413        0.0000000000
+   15   47     -0.0055648564        0.0000000000
+   15   48      0.0096386139        0.0000000000
+   15   49     -0.0717037739        0.0000000000
+   15   50      0.1055558092        0.0000000000
+   15   51      0.0609426749        0.0000000000
+   15   52      0.6658978552        0.0000000000
+   15   53      0.4719868770        0.0000000000
+   15   54      0.8175052515        0.0000000000
+   16   31     -0.0072010028        0.0000000000
+   16   32      0.0050371382        0.0000000000
+   16   33     -0.0087245793        0.0000000000
+   16   34      0.0024563417        0.0000000000
+   16   35     -0.0017938907        0.0000000000
+   16   36      0.0031071098        0.0000000000
+   16   37     -0.0010250318        0.0000000000
+   16   38      0.0013052894        0.0000000000
+   16   39      0.0007536092        0.0000000000
+   16   40     -0.0003159587        0.0000000000
+   16   41     -0.0002275416        0.0000000000
+   16   42     -0.0003941136        0.0000000000
+   17   31      0.0335187955        0.0000000000
+   17   32     -0.0246505072        0.0000000000
+   17   33      0.0426959310        0.0000000000
+   17   34      0.0164947463        0.0000000000
+   17   35     -0.0102231168        0.0000000000
+   17   36      0.0177069577        0.0000000000
+   17   37     -0.0057535937        0.0000000000
+   17   38      0.0063892186        0.0000000000
+   17   39      0.0036888171        0.0000000000
+   17   40     -0.0017203374        0.0000000000
+   17   41     -0.0010849042        0.0000000000
+   17   42     -0.0018791091        0.0000000000
+   18   31      0.0072945002        0.0000000000
+   18   32     -0.0065215172        0.0000000000
+   18   33      0.0112955991        0.0000000000
+   18   34      0.0992578982        0.0000000000
+   18   35     -0.0717112745        0.0000000000
+   18   36      0.1242075709        0.0000000000
+   18   37      0.0267646376        0.0000000000
+   18   38     -0.0266120787        0.0000000000
+   18   39     -0.0153644908        0.0000000000
+   18   40      0.0070902091        0.0000000000
+   18   41      0.0041181516        0.0000000000
+   18   42      0.0071328479        0.0000000000
+   19   31      0.0180495434        0.0000000000
+   19   32      0.0110809398        0.0000000000
+   19   33      0.0095963754        0.0000000000
+   19   34      0.0645329743        0.0000000000
+   19   35      0.0367987091        0.0000000000
+   19   36      0.0318686169        0.0000000000
+   19   37      0.0198548892        0.0000000000
+   19   38     -0.0083939045        0.0000000000
+   19   39      0.0096924461        0.0000000000
+   19   40      0.0042777386        0.0000000000
+   19   41     -0.0021158378        0.0000000000
+   19   42      0.0018323693        0.0000000000
+   20   31     -0.0312627262        0.0000000000
+   20   32      0.0095963754        0.0000000000
+   20   34     -0.1117743903        0.0000000000
+   20   35      0.0318686169        0.0000000000
+   20   37     -0.0343896769        0.0000000000
+   20   39      0.0083939045        0.0000000000
+   20   40     -0.0074092605        0.0000000000
+   20   41     -0.0018323693        0.0000000000
+   21   32      0.0203102396        0.0000000000
+   21   33     -0.0117261223        0.0000000000
+   21   35      0.0682703472        0.0000000000
+   21   36     -0.0394159033        0.0000000000
+   21   38      0.0108562488        0.0000000000
+   21   39      0.0188035745        0.0000000000
+   21   41     -0.0040715191        0.0000000000
+   21   42     -0.0023506926        0.0000000000
+   22   33      0.0370812546        0.0000000000
+   22   36      0.1246440305        0.0000000000
+   22   38     -0.0343304731        0.0000000000
+   22   42      0.0074335428        0.0000000000
+   23   32     -0.0287230163        0.0000000000
+   23   35     -0.0965488509        0.0000000000
+   23   39     -0.0265922701        0.0000000000
+   23   41      0.0057579975        0.0000000000
+   24   31     -0.0024258374        0.0000000000
+   24   32      0.0020987534        0.0000000000
+   24   33     -0.0036351475        0.0000000000
+   24   34      0.0256069713        0.0000000000
+   24   35     -0.0222495048        0.0000000000
+   24   36      0.0385372728        0.0000000000
+   24   37      0.2430124106        0.0000000000
+   24   38     -0.3009717699        0.0000000000
+   24   39     -0.1737661324        0.0000000000
+   24   40     -0.0276828893        0.0000000000
+   24   41     -0.0132664647        0.0000000000
+   24   42     -0.0229781908        0.0000000000
+   25   31     -0.0095697832        0.0000000000
+   25   32      0.0028556168        0.0000000000
+   25   34      0.0323532810        0.0000000000
+   25   35     -0.0110171550        0.0000000000
+   25   37      0.3169986893        0.0000000000
+   25   39     -0.0921260195        0.0000000000
+   25   40     -0.1678646363        0.0000000000
+   25   41     -0.0429370846        0.0000000000
+   26   31     -0.0055251169        0.0000000000
+   26   32     -0.0032973823        0.0000000000
+   26   33     -0.0028556168        0.0000000000
+   26   34      0.0186791755        0.0000000000
+   26   35      0.0127215148        0.0000000000
+   26   36      0.0110171550        0.0000000000
+   26   37      0.1830192786        0.0000000000
+   26   38     -0.0921260194        0.0000000000
+   26   39      0.1063779643        0.0000000000
+   26   40     -0.0969166929        0.0000000000
+   26   41      0.0495794747        0.0000000000
+   26   42     -0.0429370846        0.0000000000
+   27   32      0.0086129121        0.0000000000
+   27   35     -0.0316090882        0.0000000000
+   27   37     -0.0000000000        0.0000000000
+   27   39     -0.2771833637        0.0000000000
+   27   40      0.0000000000        0.0000000000
+   27   41     -0.1349658079        0.0000000000
+   28   32     -0.0060902486        0.0000000000
+   28   33      0.0035162067        0.0000000000
+   28   35      0.0223510006        0.0000000000
+   28   36     -0.0129043562        0.0000000000
+   28   38      0.1131596344        0.0000000000
+   28   39      0.1959982361        0.0000000000
+   28   41      0.0954352380        0.0000000000
+   28   42      0.0550995604        0.0000000000
+   29   33      0.0111192217        0.0000000000
+   29   36     -0.0408071574        0.0000000000
+   29   38      0.3578421839        0.0000000000
+   29   42      0.1742401088        0.0000000000
+   30   31      0.0008054428        0.0000000000
+   30   32     -0.0006938664        0.0000000000
+   30   33      0.0012018119        0.0000000000
+   30   34     -0.0066064413        0.0000000000
+   30   35      0.0055648564        0.0000000000
+   30   36     -0.0096386139        0.0000000000
+   30   37      0.0717037739        0.0000000000
+   30   38     -0.1055558092        0.0000000000
+   30   39     -0.0609426749        0.0000000000
+   30   40     -0.6658978552        0.0000000000
+   30   41     -0.4719868770        0.0000000000
+   30   42     -0.8175052515        0.0000000000
+   31   16     -0.0072010028        0.0000000000
+   31   17      0.0335187955        0.0000000000
+   31   18      0.0072945002        0.0000000000
+   31   19      0.0180495434        0.0000000000
+   31   20     -0.0312627262        0.0000000000
+   31   24     -0.0024258374        0.0000000000
+   31   25     -0.0095697832        0.0000000000
+   31   26     -0.0055251169        0.0000000000
+   31   30      0.0008054428        0.0000000000
+   32   16      0.0050371382        0.0000000000
+   32   17     -0.0246505072        0.0000000000
+   32   18     -0.0065215172        0.0000000000
+   32   19      0.0110809398        0.0000000000
+   32   20      0.0095963754        0.0000000000
+   32   21      0.0203102396        0.0000000000
+   32   23     -0.0287230163        0.0000000000
+   32   24      0.0020987534        0.0000000000
+   32   25      0.0028556168        0.0000000000
+   32   26     -0.0032973823        0.0000000000
+   32   27      0.0086129121        0.0000000000
+   32   28     -0.0060902486        0.0000000000
+   32   30     -0.0006938664        0.0000000000
+   33   16     -0.0087245793        0.0000000000
+   33   17      0.0426959310        0.0000000000
+   33   18      0.0112955991        0.0000000000
+   33   19      0.0095963754        0.0000000000
+   33   21     -0.0117261223        0.0000000000
+   33   22      0.0370812546        0.0000000000
+   33   24     -0.0036351475        0.0000000000
+   33   26     -0.0028556168        0.0000000000
+   33   28      0.0035162067        0.0000000000
+   33   29      0.0111192217        0.0000000000
+   33   30      0.0012018119        0.0000000000
+   34   16      0.0024563417        0.0000000000
+   34   17      0.0164947463        0.0000000000
+   34   18      0.0992578982        0.0000000000
+   34   19      0.0645329743        0.0000000000
+   34   20     -0.1117743903        0.0000000000
+   34   24      0.0256069713        0.0000000000
+   34   25      0.0323532810        0.0000000000
+   34   26      0.0186791755        0.0000000000
+   34   30     -0.0066064413        0.0000000000
+   35   16     -0.0017938907        0.0000000000
+   35   17     -0.0102231168        0.0000000000
+   35   18     -0.0717112745        0.0000000000
+   35   19      0.0367987091        0.0000000000
+   35   20      0.0318686169        0.0000000000
+   35   21      0.0682703472        0.0000000000
+   35   23     -0.0965488509        0.0000000000
+   35   24     -0.0222495048        0.0000000000
+   35   25     -0.0110171550        0.0000000000
+   35   26      0.0127215148        0.0000000000
+   35   27     -0.0316090882        0.0000000000
+   35   28      0.0223510006        0.0000000000
+   35   30      0.0055648564        0.0000000000
+   36   16      0.0031071098        0.0000000000
+   36   17      0.0177069577        0.0000000000
+   36   18      0.1242075709        0.0000000000
+   36   19      0.0318686169        0.0000000000
+   36   21     -0.0394159033        0.0000000000
+   36   22      0.1246440305        0.0000000000
+   36   24      0.0385372728        0.0000000000
+   36   26      0.0110171550        0.0000000000
+   36   28     -0.0129043562        0.0000000000
+   36   29     -0.0408071574        0.0000000000
+   36   30     -0.0096386139        0.0000000000
+   37   16     -0.0010250318        0.0000000000
+   37   17     -0.0057535937        0.0000000000
+   37   18      0.0267646376        0.0000000000
+   37   19      0.0198548892        0.0000000000
+   37   20     -0.0343896769        0.0000000000
+   37   24      0.2430124106        0.0000000000
+   37   25      0.3169986893        0.0000000000
+   37   26      0.1830192786        0.0000000000
+   37   27     -0.0000000000        0.0000000000
+   37   30      0.0717037739        0.0000000000
+   38   16      0.0013052894        0.0000000000
+   38   17      0.0063892186        0.0000000000
+   38   18     -0.0266120787        0.0000000000
+   38   19     -0.0083939045        0.0000000000
+   38   21      0.0108562488        0.0000000000
+   38   22     -0.0343304731        0.0000000000
+   38   24     -0.3009717699        0.0000000000
+   38   26     -0.0921260194        0.0000000000
+   38   28      0.1131596344        0.0000000000
+   38   29      0.3578421839        0.0000000000
+   38   30     -0.1055558092        0.0000000000
+   39   16      0.0007536092        0.0000000000
+   39   17      0.0036888171        0.0000000000
+   39   18     -0.0153644908        0.0000000000
+   39   19      0.0096924461        0.0000000000
+   39   20      0.0083939045        0.0000000000
+   39   21      0.0188035745        0.0000000000
+   39   23     -0.0265922701        0.0000000000
+   39   24     -0.1737661324        0.0000000000
+   39   25     -0.0921260195        0.0000000000
+   39   26      0.1063779643        0.0000000000
+   39   27     -0.2771833637        0.0000000000
+   39   28      0.1959982361        0.0000000000
+   39   30     -0.0609426749        0.0000000000
+   40   16     -0.0003159587        0.0000000000
+   40   17     -0.0017203374        0.0000000000
+   40   18      0.0070902091        0.0000000000
+   40   19      0.0042777386        0.0000000000
+   40   20     -0.0074092605        0.0000000000
+   40   24     -0.0276828893        0.0000000000
+   40   25     -0.1678646363        0.0000000000
+   40   26     -0.0969166929        0.0000000000
+   40   27      0.0000000000        0.0000000000
+   40   30     -0.6658978552        0.0000000000
+   41   16     -0.0002275416        0.0000000000
+   41   17     -0.0010849042        0.0000000000
+   41   18      0.0041181516        0.0000000000
+   41   19     -0.0021158378        0.0000000000
+   41   20     -0.0018323693        0.0000000000
+   41   21     -0.0040715191        0.0000000000
+   41   23      0.0057579975        0.0000000000
+   41   24     -0.0132664647        0.0000000000
+   41   25     -0.0429370846        0.0000000000
+   41   26      0.0495794747        0.0000000000
+   41   27     -0.1349658079        0.0000000000
+   41   28      0.0954352380        0.0000000000
+   41   30     -0.4719868770        0.0000000000
+   42   16     -0.0003941136        0.0000000000
+   42   17     -0.0018791091        0.0000000000
+   42   18      0.0071328479        0.0000000000
+   42   19      0.0018323693        0.0000000000
+   42   21     -0.0023506926        0.0000000000
+   42   22      0.0074335428        0.0000000000
+   42   24     -0.0229781908        0.0000000000
+   42   26     -0.0429370846        0.0000000000
+   42   28      0.0550995604        0.0000000000
+   42   29      0.1742401088        0.0000000000
+   42   30     -0.8175052515        0.0000000000
+   43    1      0.0072010028        0.0000000000
+   43    2     -0.0335187955        0.0000000000
+   43    3     -0.0072945002        0.0000000000
+   43    4     -0.0180495434        0.0000000000
+   43    5      0.0312627262        0.0000000000
+   43    9      0.0024258374        0.0000000000
+   43   10      0.0095697832        0.0000000000
+   43   11      0.0055251169        0.0000000000
+   43   15     -0.0008054428        0.0000000000
+   44    1     -0.0050371382        0.0000000000
+   44    2      0.0246505072        0.0000000000
+   44    3      0.0065215172        0.0000000000
+   44    4     -0.0110809398        0.0000000000
+   44    5     -0.0095963754        0.0000000000
+   44    6     -0.0203102396        0.0000000000
+   44    8      0.0287230163        0.0000000000
+   44    9     -0.0020987534        0.0000000000
+   44   10     -0.0028556168        0.0000000000
+   44   11      0.0032973823        0.0000000000
+   44   12     -0.0086129121        0.0000000000
+   44   13      0.0060902486        0.0000000000
+   44   15      0.0006938664        0.0000000000
+   45    1      0.0087245793        0.0000000000
+   45    2     -0.0426959310        0.0000000000
+   45    3     -0.0112955991        0.0000000000
+   45    4     -0.0095963754        0.0000000000
+   45    6      0.0117261223        0.0000000000
+   45    7     -0.0370812546        0.0000000000
+   45    9      0.0036351475        0.0000000000
+   45   11      0.0028556168        0.0000000000
+   45   13     -0.0035162067        0.0000000000
+   45   14     -0.0111192217        0.0000000000
+   45   15     -0.0012018119        0.0000000000
+   46    1     -0.0024563417        0.0000000000
+   46    2     -0.0164947463        0.0000000000
+   46    3     -0.0992578982        0.0000000000
+   46    4     -0.0645329743        0.0000000000
+   46    5      0.1117743903        0.0000000000
+   46    9     -0.0256069713        0.0000000000
+   46   10     -0.0323532810        0.0000000000
+   46   11     -0.0186791755        0.0000000000
+   46   15      0.0066064413        0.0000000000
+   47    1      0.0017938907        0.0000000000
+   47    2      0.0102231168        0.0000000000
+   47    3      0.0717112745        0.0000000000
+   47    4     -0.0367987091        0.0000000000
+   47    5     -0.0318686169        0.0000000000
+   47    6     -0.0682703472        0.0000000000
+   47    8      0.0965488509        0.0000000000
+   47    9      0.0222495048        0.0000000000
+   47   10      0.0110171550        0.0000000000
+   47   11     -0.0127215148        0.0000000000
+   47   12      0.0316090882        0.0000000000
+   47   13     -0.0223510006        0.0000000000
+   47   15     -0.0055648564        0.0000000000
+   48    1     -0.0031071098        0.0000000000
+   48    2     -0.0177069577        0.0000000000
+   48    3     -0.1242075709        0.0000000000
+   48    4     -0.0318686169        0.0000000000
+   48    6      0.0394159033        0.0000000000
+   48    7     -0.1246440305        0.0000000000
+   48    9     -0.0385372728        0.0000000000
+   48   11     -0.0110171550        0.0000000000
+   48   13      0.0129043562        0.0000000000
+   48   14      0.0408071574        0.0000000000
+   48   15      0.0096386139        0.0000000000
+   49    1      0.0010250318        0.0000000000
+   49    2      0.0057535937        0.0000000000
+   49    3     -0.0267646376        0.0000000000
+   49    4     -0.0198548892        0.0000000000
+   49    5      0.0343896769        0.0000000000
+   49    9     -0.2430124106        0.0000000000
+   49   10     -0.3169986893        0.0000000000
+   49   11     -0.1830192786        0.0000000000
+   49   12      0.0000000000        0.0000000000
+   49   15     -0.0717037739        0.0000000000
+   50    1     -0.0013052894        0.0000000000
+   50    2     -0.0063892186        0.0000000000
+   50    3      0.0266120787        0.0000000000
+   50    4      0.0083939045        0.0000000000
+   50    6     -0.0108562488        0.0000000000
+   50    7      0.0343304731        0.0000000000
+   50    9      0.3009717699        0.0000000000
+   50   11      0.0921260194        0.0000000000
+   50   13     -0.1131596344        0.0000000000
+   50   14     -0.3578421839        0.0000000000
+   50   15      0.1055558092        0.0000000000
+   51    1     -0.0007536092        0.0000000000
+   51    2     -0.0036888171        0.0000000000
+   51    3      0.0153644908        0.0000000000
+   51    4     -0.0096924461        0.0000000000
+   51    5     -0.0083939045        0.0000000000
+   51    6     -0.0188035745        0.0000000000
+   51    8      0.0265922701        0.0000000000
+   51    9      0.1737661324        0.0000000000
+   51   10      0.0921260195        0.0000000000
+   51   11     -0.1063779643        0.0000000000
+   51   12      0.2771833637        0.0000000000
+   51   13     -0.1959982361        0.0000000000
+   51   15      0.0609426749        0.0000000000
+   52    1      0.0003159587        0.0000000000
+   52    2      0.0017203374        0.0000000000
+   52    3     -0.0070902091        0.0000000000
+   52    4     -0.0042777386        0.0000000000
+   52    5      0.0074092605        0.0000000000
+   52    9      0.0276828893        0.0000000000
+   52   10      0.1678646363        0.0000000000
+   52   11      0.0969166929        0.0000000000
+   52   12     -0.0000000000        0.0000000000
+   52   15      0.6658978552        0.0000000000
+   53    1      0.0002275416        0.0000000000
+   53    2      0.0010849042        0.0000000000
+   53    3     -0.0041181516        0.0000000000
+   53    4      0.0021158378        0.0000000000
+   53    5      0.0018323693        0.0000000000
+   53    6      0.0040715191        0.0000000000
+   53    8     -0.0057579975        0.0000000000
+   53    9      0.0132664647        0.0000000000
+   53   10      0.0429370846        0.0000000000
+   53   11     -0.0495794747        0.0000000000
+   53   12      0.1349658079        0.0000000000
+   53   13     -0.0954352380        0.0000000000
+   53   15      0.4719868770        0.0000000000
+   54    1      0.0003941136        0.0000000000
+   54    2      0.0018791091        0.0000000000
+   54    3     -0.0071328479        0.0000000000
+   54    4     -0.0018323693        0.0000000000
+   54    6      0.0023506926        0.0000000000
+   54    7     -0.0074335428        0.0000000000
+   54    9      0.0229781908        0.0000000000
+   54   11      0.0429370846        0.0000000000
+   54   13     -0.0550995604        0.0000000000
+   54   14     -0.1742401088        0.0000000000
+   54   15      0.8175052515        0.0000000000
+End of printout of nonzero property elements
+ 
+
+Nonzero diagonal elements of ZDIPLEN  operator in Kramers paired molecular spinor basis:
+
+            Real part           Imaginary Part
+    zero threshold=0.100D-10
+ 
+
+All nonzero property elements of ZDIPLEN  operator in Kramers paired molecular spinor basis:
+
+    zero threshold=0.100D-10
+    1   31      0.0000000000        0.0072010028
+    1   32      0.0000000000        0.0100742764
+    1   34      0.0000000000       -0.0024563417
+    1   35      0.0000000000       -0.0035877814
+    1   37      0.0000000000        0.0010250318
+    1   39      0.0000000000        0.0015072184
+    1   40      0.0000000000        0.0003159587
+    1   41      0.0000000000       -0.0004550831
+    2   31      0.0000000000       -0.0335187955
+    2   32      0.0000000000       -0.0493010145
+    2   34      0.0000000000       -0.0164947463
+    2   35      0.0000000000       -0.0204462336
+    2   37      0.0000000000        0.0057535937
+    2   39      0.0000000000        0.0073776341
+    2   40      0.0000000000        0.0017203374
+    2   41      0.0000000000       -0.0021698083
+    3   31      0.0000000000       -0.0072945002
+    3   32      0.0000000000       -0.0130430343
+    3   34      0.0000000000       -0.0992578982
+    3   35      0.0000000000       -0.1434225490
+    3   37      0.0000000000       -0.0267646376
+    3   39      0.0000000000       -0.0307289816
+    3   40      0.0000000000       -0.0070902091
+    3   41      0.0000000000        0.0082363033
+    4   31      0.0000000000        0.0360990868
+    4   32      0.0000000000        0.0055404699
+    4   34      0.0000000000        0.1290659486
+    4   35      0.0000000000        0.0183993546
+    4   37      0.0000000000        0.0397097784
+    4   39      0.0000000000        0.0048462230
+    4   40      0.0000000000        0.0085554771
+    4   41      0.0000000000       -0.0010579189
+    5   33      0.0000000000       -0.0166214098
+    5   36      0.0000000000       -0.0551980637
+    5   38      0.0000000000        0.0145386691
+    5   42      0.0000000000       -0.0031737567
+    6   32      0.0000000000       -0.0406204792
+    6   35      0.0000000000       -0.1365406943
+    6   39      0.0000000000       -0.0376071490
+    6   41      0.0000000000        0.0081430381
+    8   33      0.0000000000       -0.0331664824
+    8   36      0.0000000000       -0.1114850101
+    8   38      0.0000000000        0.0307061086
+    8   42      0.0000000000       -0.0066487628
+    9   31      0.0000000000        0.0024258374
+    9   32      0.0000000000        0.0041975068
+    9   34      0.0000000000       -0.0256069713
+    9   35      0.0000000000       -0.0444990096
+    9   37      0.0000000000       -0.2430124105
+    9   39      0.0000000000       -0.3475322647
+    9   40      0.0000000000        0.0276828893
+    9   41      0.0000000000       -0.0265329293
+   10   33      0.0000000000       -0.0049460734
+   10   36      0.0000000000        0.0190822722
+   10   38      0.0000000000       -0.1595669464
+   10   42      0.0000000000       -0.0743692120
+   11   31      0.0000000000       -0.0110502338
+   11   32      0.0000000000       -0.0016486911
+   11   34      0.0000000000        0.0373583510
+   11   35      0.0000000000        0.0063607574
+   11   37      0.0000000000        0.3660385572
+   11   39      0.0000000000        0.0531889821
+   11   40      0.0000000000       -0.1938333859
+   11   41      0.0000000000        0.0247897373
+   12   33      0.0000000000        0.0099453343
+   12   36      0.0000000000       -0.0364990312
+   12   38      0.0000000000        0.3200637794
+   12   42      0.0000000000        0.1558450911
+   13   32      0.0000000000        0.0121804971
+   13   35      0.0000000000       -0.0447020012
+   13   39      0.0000000000       -0.3919964723
+   13   40      0.0000000000        0.0000000000
+   13   41      0.0000000000       -0.1908704761
+   15   31      0.0000000000       -0.0008054428
+   15   32      0.0000000000       -0.0013877329
+   15   34      0.0000000000        0.0066064413
+   15   35      0.0000000000        0.0111297127
+   15   37      0.0000000000       -0.0717037738
+   15   39      0.0000000000       -0.1218853497
+   15   40      0.0000000000        0.6658978552
+   15   41      0.0000000000       -0.9439737540
+   16   43      0.0000000000       -0.0072010028
+   16   44      0.0000000000       -0.0100742764
+   16   46      0.0000000000        0.0024563417
+   16   47      0.0000000000        0.0035877814
+   16   49      0.0000000000       -0.0010250318
+   16   51      0.0000000000       -0.0015072184
+   16   52      0.0000000000       -0.0003159587
+   16   53      0.0000000000        0.0004550831
+   17   43      0.0000000000        0.0335187955
+   17   44      0.0000000000        0.0493010145
+   17   46      0.0000000000        0.0164947463
+   17   47      0.0000000000        0.0204462336
+   17   49      0.0000000000       -0.0057535937
+   17   51      0.0000000000       -0.0073776341
+   17   52      0.0000000000       -0.0017203374
+   17   53      0.0000000000        0.0021698083
+   18   43      0.0000000000        0.0072945002
+   18   44      0.0000000000        0.0130430343
+   18   46      0.0000000000        0.0992578982
+   18   47      0.0000000000        0.1434225490
+   18   49      0.0000000000        0.0267646376
+   18   51      0.0000000000        0.0307289816
+   18   52      0.0000000000        0.0070902091
+   18   53      0.0000000000       -0.0082363033
+   19   43      0.0000000000       -0.0360990868
+   19   44      0.0000000000       -0.0055404699
+   19   46      0.0000000000       -0.1290659486
+   19   47      0.0000000000       -0.0183993546
+   19   49      0.0000000000       -0.0397097784
+   19   51      0.0000000000       -0.0048462230
+   19   52      0.0000000000       -0.0085554771
+   19   53      0.0000000000        0.0010579189
+   20   45      0.0000000000        0.0166214098
+   20   48      0.0000000000        0.0551980637
+   20   50      0.0000000000       -0.0145386691
+   20   54      0.0000000000        0.0031737567
+   21   44      0.0000000000        0.0406204792
+   21   47      0.0000000000        0.1365406943
+   21   51      0.0000000000        0.0376071490
+   21   53      0.0000000000       -0.0081430381
+   23   45      0.0000000000        0.0331664824
+   23   48      0.0000000000        0.1114850101
+   23   50      0.0000000000       -0.0307061086
+   23   54      0.0000000000        0.0066487628
+   24   43      0.0000000000       -0.0024258374
+   24   44      0.0000000000       -0.0041975068
+   24   46      0.0000000000        0.0256069713
+   24   47      0.0000000000        0.0444990096
+   24   49      0.0000000000        0.2430124105
+   24   51      0.0000000000        0.3475322647
+   24   52      0.0000000000       -0.0276828893
+   24   53      0.0000000000        0.0265329293
+   25   45      0.0000000000        0.0049460734
+   25   48      0.0000000000       -0.0190822722
+   25   50      0.0000000000        0.1595669464
+   25   54      0.0000000000        0.0743692120
+   26   43      0.0000000000        0.0110502338
+   26   44      0.0000000000        0.0016486911
+   26   46      0.0000000000       -0.0373583510
+   26   47      0.0000000000       -0.0063607574
+   26   49      0.0000000000       -0.3660385572
+   26   51      0.0000000000       -0.0531889821
+   26   52      0.0000000000        0.1938333859
+   26   53      0.0000000000       -0.0247897373
+   27   45      0.0000000000       -0.0099453343
+   27   48      0.0000000000        0.0364990312
+   27   50      0.0000000000       -0.3200637794
+   27   54      0.0000000000       -0.1558450911
+   28   44      0.0000000000       -0.0121804971
+   28   47      0.0000000000        0.0447020012
+   28   51      0.0000000000        0.3919964723
+   28   52      0.0000000000       -0.0000000000
+   28   53      0.0000000000        0.1908704761
+   30   43      0.0000000000        0.0008054428
+   30   44      0.0000000000        0.0013877329
+   30   46      0.0000000000       -0.0066064413
+   30   47      0.0000000000       -0.0111297127
+   30   49      0.0000000000        0.0717037738
+   30   51      0.0000000000        0.1218853497
+   30   52      0.0000000000       -0.6658978552
+   30   53      0.0000000000        0.9439737540
+   31    1      0.0000000000       -0.0072010028
+   31    2      0.0000000000        0.0335187955
+   31    3      0.0000000000        0.0072945002
+   31    4      0.0000000000       -0.0360990868
+   31    9      0.0000000000       -0.0024258374
+   31   11      0.0000000000        0.0110502338
+   31   15      0.0000000000        0.0008054428
+   32    1      0.0000000000       -0.0100742764
+   32    2      0.0000000000        0.0493010145
+   32    3      0.0000000000        0.0130430343
+   32    4      0.0000000000       -0.0055404699
+   32    6      0.0000000000        0.0406204792
+   32    9      0.0000000000       -0.0041975068
+   32   11      0.0000000000        0.0016486911
+   32   13      0.0000000000       -0.0121804971
+   32   15      0.0000000000        0.0013877329
+   33    5      0.0000000000        0.0166214098
+   33    8      0.0000000000        0.0331664824
+   33   10      0.0000000000        0.0049460734
+   33   12      0.0000000000       -0.0099453343
+   34    1      0.0000000000        0.0024563417
+   34    2      0.0000000000        0.0164947463
+   34    3      0.0000000000        0.0992578982
+   34    4      0.0000000000       -0.1290659486
+   34    9      0.0000000000        0.0256069713
+   34   11      0.0000000000       -0.0373583510
+   34   15      0.0000000000       -0.0066064413
+   35    1      0.0000000000        0.0035877814
+   35    2      0.0000000000        0.0204462336
+   35    3      0.0000000000        0.1434225490
+   35    4      0.0000000000       -0.0183993546
+   35    6      0.0000000000        0.1365406943
+   35    9      0.0000000000        0.0444990096
+   35   11      0.0000000000       -0.0063607574
+   35   13      0.0000000000        0.0447020012
+   35   15      0.0000000000       -0.0111297127
+   36    5      0.0000000000        0.0551980637
+   36    8      0.0000000000        0.1114850101
+   36   10      0.0000000000       -0.0190822722
+   36   12      0.0000000000        0.0364990312
+   37    1      0.0000000000       -0.0010250318
+   37    2      0.0000000000       -0.0057535937
+   37    3      0.0000000000        0.0267646376
+   37    4      0.0000000000       -0.0397097784
+   37    9      0.0000000000        0.2430124105
+   37   11      0.0000000000       -0.3660385572
+   37   15      0.0000000000        0.0717037738
+   38    5      0.0000000000       -0.0145386691
+   38    8      0.0000000000       -0.0307061086
+   38   10      0.0000000000        0.1595669464
+   38   12      0.0000000000       -0.3200637794
+   39    1      0.0000000000       -0.0015072184
+   39    2      0.0000000000       -0.0073776341
+   39    3      0.0000000000        0.0307289816
+   39    4      0.0000000000       -0.0048462230
+   39    6      0.0000000000        0.0376071490
+   39    9      0.0000000000        0.3475322647
+   39   11      0.0000000000       -0.0531889821
+   39   13      0.0000000000        0.3919964723
+   39   15      0.0000000000        0.1218853497
+   40    1      0.0000000000       -0.0003159587
+   40    2      0.0000000000       -0.0017203374
+   40    3      0.0000000000        0.0070902091
+   40    4      0.0000000000       -0.0085554771
+   40    9      0.0000000000       -0.0276828893
+   40   11      0.0000000000        0.1938333859
+   40   13      0.0000000000       -0.0000000000
+   40   15      0.0000000000       -0.6658978552
+   41    1      0.0000000000        0.0004550831
+   41    2      0.0000000000        0.0021698083
+   41    3      0.0000000000       -0.0082363033
+   41    4      0.0000000000        0.0010579189
+   41    6      0.0000000000       -0.0081430381
+   41    9      0.0000000000        0.0265329293
+   41   11      0.0000000000       -0.0247897373
+   41   13      0.0000000000        0.1908704761
+   41   15      0.0000000000        0.9439737540
+   42    5      0.0000000000        0.0031737567
+   42    8      0.0000000000        0.0066487628
+   42   10      0.0000000000        0.0743692120
+   42   12      0.0000000000       -0.1558450911
+   43   16      0.0000000000        0.0072010028
+   43   17      0.0000000000       -0.0335187955
+   43   18      0.0000000000       -0.0072945002
+   43   19      0.0000000000        0.0360990868
+   43   24      0.0000000000        0.0024258374
+   43   26      0.0000000000       -0.0110502338
+   43   30      0.0000000000       -0.0008054428
+   44   16      0.0000000000        0.0100742764
+   44   17      0.0000000000       -0.0493010145
+   44   18      0.0000000000       -0.0130430343
+   44   19      0.0000000000        0.0055404699
+   44   21      0.0000000000       -0.0406204792
+   44   24      0.0000000000        0.0041975068
+   44   26      0.0000000000       -0.0016486911
+   44   28      0.0000000000        0.0121804971
+   44   30      0.0000000000       -0.0013877329
+   45   20      0.0000000000       -0.0166214098
+   45   23      0.0000000000       -0.0331664824
+   45   25      0.0000000000       -0.0049460734
+   45   27      0.0000000000        0.0099453343
+   46   16      0.0000000000       -0.0024563417
+   46   17      0.0000000000       -0.0164947463
+   46   18      0.0000000000       -0.0992578982
+   46   19      0.0000000000        0.1290659486
+   46   24      0.0000000000       -0.0256069713
+   46   26      0.0000000000        0.0373583510
+   46   30      0.0000000000        0.0066064413
+   47   16      0.0000000000       -0.0035877814
+   47   17      0.0000000000       -0.0204462336
+   47   18      0.0000000000       -0.1434225490
+   47   19      0.0000000000        0.0183993546
+   47   21      0.0000000000       -0.1365406943
+   47   24      0.0000000000       -0.0444990096
+   47   26      0.0000000000        0.0063607574
+   47   28      0.0000000000       -0.0447020012
+   47   30      0.0000000000        0.0111297127
+   48   20      0.0000000000       -0.0551980637
+   48   23      0.0000000000       -0.1114850101
+   48   25      0.0000000000        0.0190822722
+   48   27      0.0000000000       -0.0364990312
+   49   16      0.0000000000        0.0010250318
+   49   17      0.0000000000        0.0057535937
+   49   18      0.0000000000       -0.0267646376
+   49   19      0.0000000000        0.0397097784
+   49   24      0.0000000000       -0.2430124105
+   49   26      0.0000000000        0.3660385572
+   49   30      0.0000000000       -0.0717037738
+   50   20      0.0000000000        0.0145386691
+   50   23      0.0000000000        0.0307061086
+   50   25      0.0000000000       -0.1595669464
+   50   27      0.0000000000        0.3200637794
+   51   16      0.0000000000        0.0015072184
+   51   17      0.0000000000        0.0073776341
+   51   18      0.0000000000       -0.0307289816
+   51   19      0.0000000000        0.0048462230
+   51   21      0.0000000000       -0.0376071490
+   51   24      0.0000000000       -0.3475322647
+   51   26      0.0000000000        0.0531889821
+   51   28      0.0000000000       -0.3919964723
+   51   30      0.0000000000       -0.1218853497
+   52   16      0.0000000000        0.0003159587
+   52   17      0.0000000000        0.0017203374
+   52   18      0.0000000000       -0.0070902091
+   52   19      0.0000000000        0.0085554771
+   52   24      0.0000000000        0.0276828893
+   52   26      0.0000000000       -0.1938333859
+   52   28      0.0000000000        0.0000000000
+   52   30      0.0000000000        0.6658978552
+   53   16      0.0000000000       -0.0004550831
+   53   17      0.0000000000       -0.0021698083
+   53   18      0.0000000000        0.0082363033
+   53   19      0.0000000000       -0.0010579189
+   53   21      0.0000000000        0.0081430381
+   53   24      0.0000000000       -0.0265329293
+   53   26      0.0000000000        0.0247897373
+   53   28      0.0000000000       -0.1908704761
+   53   30      0.0000000000       -0.9439737540
+   54   20      0.0000000000       -0.0031737567
+   54   23      0.0000000000       -0.0066487628
+   54   25      0.0000000000       -0.0743692120
+   54   27      0.0000000000        0.1558450911
+End of printout of nonzero property elements
+ 
+
+Nonzero diagonal elements of xalpha_f operator in Kramers paired molecular spinor basis:
+
+            Real part           Imaginary Part
+    zero threshold=0.100D-10
+ 
+
+All nonzero property elements of xalpha_f operator in Kramers paired molecular spinor basis:
+
+    zero threshold=0.100D-10
+    1   43      0.0000000000    47628.3308658946
+    1   44      0.0000000000       -0.0000000155
+    1   45      0.0000000000       -0.0000000050
+    1   46      0.0000000000   -22339.7286903799
+    1   47      0.0000000000        0.0000000336
+    1   48      0.0000000000        0.0000000076
+    1   49      0.0000000000     9902.2311853956
+    1   50      0.0000000000        0.0000000068
+    1   51      0.0000000000        0.0000000436
+    1   52      0.0000000000     3088.7901584012
+    1   53      0.0000000000        0.0000000479
+    1   54      0.0000000000       -0.0000000020
+    2   43      0.0000000000    16580.8517078539
+    2   44      0.0000000000       -0.0000000054
+    2   45      0.0000000000       -0.0000000017
+    2   46      0.0000000000    -7777.1301633860
+    2   47      0.0000000000        0.0000000117
+    2   48      0.0000000000        0.0000000026
+    2   49      0.0000000000     3447.2639262591
+    2   50      0.0000000000        0.0000000024
+    2   51      0.0000000000        0.0000000152
+    2   52      0.0000000000     1075.3005751416
+    2   53      0.0000000000        0.0000000167
+    2   54      0.0000000000       -0.0000000007
+    3   43      0.0000000000    -7446.9579145319
+    3   44      0.0000000000        0.0000000024
+    3   45      0.0000000000        0.0000000008
+    3   46      0.0000000000     3492.9424641763
+    3   47      0.0000000000       -0.0000000053
+    3   48      0.0000000000       -0.0000000012
+    3   49      0.0000000000    -1548.2696444945
+    3   50      0.0000000000       -0.0000000011
+    3   51      0.0000000000       -0.0000000068
+    3   52      0.0000000000     -482.9497464692
+    3   53      0.0000000000       -0.0000000075
+    3   54      0.0000000000        0.0000000003
+    4   43      0.0000000000       -0.0000000051
+    4   46      0.0000000000        0.0000000024
+    4   49      0.0000000000       -0.0000000011
+    4   52      0.0000000000       -0.0000000003
+    5   43      0.0000000000        0.0000000041
+    5   46      0.0000000000       -0.0000000019
+    5   49      0.0000000000        0.0000000008
+    5   52      0.0000000000        0.0000000003
+    6   43      0.0000000000        0.0000000018
+    6   46      0.0000000000       -0.0000000008
+    6   49      0.0000000000        0.0000000004
+    6   52      0.0000000000        0.0000000001
+    7   43      0.0000000000       -0.0000000112
+    7   46      0.0000000000        0.0000000052
+    7   49      0.0000000000       -0.0000000023
+    7   52      0.0000000000       -0.0000000007
+    8   43      0.0000000000       -0.0000000020
+    8   46      0.0000000000        0.0000000010
+    8   49      0.0000000000       -0.0000000004
+    8   52      0.0000000000       -0.0000000001
+    9   43      0.0000000000     3395.9238464565
+    9   44      0.0000000000       -0.0000000011
+    9   45      0.0000000000       -0.0000000004
+    9   46      0.0000000000    -1592.8338449784
+    9   47      0.0000000000        0.0000000024
+    9   48      0.0000000000        0.0000000005
+    9   49      0.0000000000      706.0340432734
+    9   50      0.0000000000        0.0000000005
+    9   51      0.0000000000        0.0000000031
+    9   52      0.0000000000      220.2322853839
+    9   53      0.0000000000        0.0000000034
+    9   54      0.0000000000       -0.0000000001
+   10   43      0.0000000000       -0.0000000043
+   10   46      0.0000000000        0.0000000020
+   10   49      0.0000000000       -0.0000000009
+   10   52      0.0000000000       -0.0000000003
+   11   43      0.0000000000        0.0000000147
+   11   46      0.0000000000       -0.0000000069
+   11   49      0.0000000000        0.0000000031
+   11   52      0.0000000000        0.0000000010
+   12   43      0.0000000000       -0.0000000022
+   12   46      0.0000000000        0.0000000010
+   12   49      0.0000000000       -0.0000000004
+   12   52      0.0000000000       -0.0000000001
+   13   43      0.0000000000       -0.0000000123
+   13   46      0.0000000000        0.0000000057
+   13   49      0.0000000000       -0.0000000025
+   13   52      0.0000000000       -0.0000000008
+   14   43      0.0000000000       -0.0000000015
+   14   46      0.0000000000        0.0000000007
+   14   49      0.0000000000       -0.0000000003
+   14   52      0.0000000000       -0.0000000001
+   15   43      0.0000000000    -1211.1009329164
+   15   44      0.0000000000        0.0000000004
+   15   45      0.0000000000        0.0000000001
+   15   46      0.0000000000      568.0582494944
+   15   47      0.0000000000       -0.0000000009
+   15   48      0.0000000000       -0.0000000002
+   15   49      0.0000000000     -251.7955428746
+   15   50      0.0000000000       -0.0000000002
+   15   51      0.0000000000       -0.0000000011
+   15   52      0.0000000000      -78.5422578204
+   15   53      0.0000000000       -0.0000000012
+   15   54      0.0000000000        0.0000000001
+   16   31      0.0000000000    47628.3308658946
+   16   32      0.0000000000       -0.0000000155
+   16   33      0.0000000000       -0.0000000050
+   16   34      0.0000000000   -22339.7286903799
+   16   35      0.0000000000        0.0000000336
+   16   36      0.0000000000        0.0000000076
+   16   37      0.0000000000     9902.2311853956
+   16   38      0.0000000000        0.0000000068
+   16   39      0.0000000000        0.0000000436
+   16   40      0.0000000000     3088.7901584012
+   16   41      0.0000000000        0.0000000479
+   16   42      0.0000000000       -0.0000000020
+   17   31      0.0000000000    16580.8517078539
+   17   32      0.0000000000       -0.0000000054
+   17   33      0.0000000000       -0.0000000017
+   17   34      0.0000000000    -7777.1301633860
+   17   35      0.0000000000        0.0000000117
+   17   36      0.0000000000        0.0000000026
+   17   37      0.0000000000     3447.2639262591
+   17   38      0.0000000000        0.0000000024
+   17   39      0.0000000000        0.0000000152
+   17   40      0.0000000000     1075.3005751416
+   17   41      0.0000000000        0.0000000167
+   17   42      0.0000000000       -0.0000000007
+   18   31      0.0000000000    -7446.9579145319
+   18   32      0.0000000000        0.0000000024
+   18   33      0.0000000000        0.0000000008
+   18   34      0.0000000000     3492.9424641763
+   18   35      0.0000000000       -0.0000000053
+   18   36      0.0000000000       -0.0000000012
+   18   37      0.0000000000    -1548.2696444945
+   18   38      0.0000000000       -0.0000000011
+   18   39      0.0000000000       -0.0000000068
+   18   40      0.0000000000     -482.9497464692
+   18   41      0.0000000000       -0.0000000075
+   18   42      0.0000000000        0.0000000003
+   19   31      0.0000000000       -0.0000000051
+   19   34      0.0000000000        0.0000000024
+   19   37      0.0000000000       -0.0000000011
+   19   40      0.0000000000       -0.0000000003
+   20   31      0.0000000000        0.0000000041
+   20   34      0.0000000000       -0.0000000019
+   20   37      0.0000000000        0.0000000008
+   20   40      0.0000000000        0.0000000003
+   21   31      0.0000000000        0.0000000018
+   21   34      0.0000000000       -0.0000000008
+   21   37      0.0000000000        0.0000000004
+   21   40      0.0000000000        0.0000000001
+   22   31      0.0000000000       -0.0000000112
+   22   34      0.0000000000        0.0000000052
+   22   37      0.0000000000       -0.0000000023
+   22   40      0.0000000000       -0.0000000007
+   23   31      0.0000000000       -0.0000000020
+   23   34      0.0000000000        0.0000000010
+   23   37      0.0000000000       -0.0000000004
+   23   40      0.0000000000       -0.0000000001
+   24   31      0.0000000000     3395.9238464565
+   24   32      0.0000000000       -0.0000000011
+   24   33      0.0000000000       -0.0000000004
+   24   34      0.0000000000    -1592.8338449784
+   24   35      0.0000000000        0.0000000024
+   24   36      0.0000000000        0.0000000005
+   24   37      0.0000000000      706.0340432734
+   24   38      0.0000000000        0.0000000005
+   24   39      0.0000000000        0.0000000031
+   24   40      0.0000000000      220.2322853839
+   24   41      0.0000000000        0.0000000034
+   24   42      0.0000000000       -0.0000000001
+   25   31      0.0000000000       -0.0000000043
+   25   34      0.0000000000        0.0000000020
+   25   37      0.0000000000       -0.0000000009
+   25   40      0.0000000000       -0.0000000003
+   26   31      0.0000000000        0.0000000147
+   26   34      0.0000000000       -0.0000000069
+   26   37      0.0000000000        0.0000000031
+   26   40      0.0000000000        0.0000000010
+   27   31      0.0000000000       -0.0000000022
+   27   34      0.0000000000        0.0000000010
+   27   37      0.0000000000       -0.0000000004
+   27   40      0.0000000000       -0.0000000001
+   28   31      0.0000000000       -0.0000000123
+   28   34      0.0000000000        0.0000000057
+   28   37      0.0000000000       -0.0000000025
+   28   40      0.0000000000       -0.0000000008
+   29   31      0.0000000000       -0.0000000015
+   29   34      0.0000000000        0.0000000007
+   29   37      0.0000000000       -0.0000000003
+   29   40      0.0000000000       -0.0000000001
+   30   31      0.0000000000    -1211.1009329164
+   30   32      0.0000000000        0.0000000004
+   30   33      0.0000000000        0.0000000001
+   30   34      0.0000000000      568.0582494944
+   30   35      0.0000000000       -0.0000000009
+   30   36      0.0000000000       -0.0000000002
+   30   37      0.0000000000     -251.7955428746
+   30   38      0.0000000000       -0.0000000002
+   30   39      0.0000000000       -0.0000000011
+   30   40      0.0000000000      -78.5422578204
+   30   41      0.0000000000       -0.0000000012
+   30   42      0.0000000000        0.0000000001
+   31   16      0.0000000000    47628.3308658946
+   31   17      0.0000000000    16580.8517078539
+   31   18      0.0000000000    -7446.9579145319
+   31   19      0.0000000000       -0.0000000051
+   31   20      0.0000000000        0.0000000041
+   31   21      0.0000000000        0.0000000018
+   31   22      0.0000000000       -0.0000000112
+   31   23      0.0000000000       -0.0000000020
+   31   24      0.0000000000     3395.9238464565
+   31   25      0.0000000000       -0.0000000043
+   31   26      0.0000000000        0.0000000147
+   31   27      0.0000000000       -0.0000000022
+   31   28      0.0000000000       -0.0000000123
+   31   29      0.0000000000       -0.0000000015
+   31   30      0.0000000000    -1211.1009329164
+   32   16      0.0000000000       -0.0000000155
+   32   17      0.0000000000       -0.0000000054
+   32   18      0.0000000000        0.0000000024
+   32   24      0.0000000000       -0.0000000011
+   32   30      0.0000000000        0.0000000004
+   33   16      0.0000000000       -0.0000000050
+   33   17      0.0000000000       -0.0000000017
+   33   18      0.0000000000        0.0000000008
+   33   24      0.0000000000       -0.0000000004
+   33   30      0.0000000000        0.0000000001
+   34   16      0.0000000000   -22339.7286903799
+   34   17      0.0000000000    -7777.1301633860
+   34   18      0.0000000000     3492.9424641763
+   34   19      0.0000000000        0.0000000024
+   34   20      0.0000000000       -0.0000000019
+   34   21      0.0000000000       -0.0000000008
+   34   22      0.0000000000        0.0000000052
+   34   23      0.0000000000        0.0000000010
+   34   24      0.0000000000    -1592.8338449784
+   34   25      0.0000000000        0.0000000020
+   34   26      0.0000000000       -0.0000000069
+   34   27      0.0000000000        0.0000000010
+   34   28      0.0000000000        0.0000000057
+   34   29      0.0000000000        0.0000000007
+   34   30      0.0000000000      568.0582494944
+   35   16      0.0000000000        0.0000000336
+   35   17      0.0000000000        0.0000000117
+   35   18      0.0000000000       -0.0000000053
+   35   24      0.0000000000        0.0000000024
+   35   30      0.0000000000       -0.0000000009
+   36   16      0.0000000000        0.0000000076
+   36   17      0.0000000000        0.0000000026
+   36   18      0.0000000000       -0.0000000012
+   36   24      0.0000000000        0.0000000005
+   36   30      0.0000000000       -0.0000000002
+   37   16      0.0000000000     9902.2311853956
+   37   17      0.0000000000     3447.2639262591
+   37   18      0.0000000000    -1548.2696444945
+   37   19      0.0000000000       -0.0000000011
+   37   20      0.0000000000        0.0000000008
+   37   21      0.0000000000        0.0000000004
+   37   22      0.0000000000       -0.0000000023
+   37   23      0.0000000000       -0.0000000004
+   37   24      0.0000000000      706.0340432734
+   37   25      0.0000000000       -0.0000000009
+   37   26      0.0000000000        0.0000000031
+   37   27      0.0000000000       -0.0000000004
+   37   28      0.0000000000       -0.0000000025
+   37   29      0.0000000000       -0.0000000003
+   37   30      0.0000000000     -251.7955428746
+   38   16      0.0000000000        0.0000000068
+   38   17      0.0000000000        0.0000000024
+   38   18      0.0000000000       -0.0000000011
+   38   24      0.0000000000        0.0000000005
+   38   30      0.0000000000       -0.0000000002
+   39   16      0.0000000000        0.0000000436
+   39   17      0.0000000000        0.0000000152
+   39   18      0.0000000000       -0.0000000068
+   39   24      0.0000000000        0.0000000031
+   39   30      0.0000000000       -0.0000000011
+   40   16      0.0000000000     3088.7901584012
+   40   17      0.0000000000     1075.3005751416
+   40   18      0.0000000000     -482.9497464692
+   40   19      0.0000000000       -0.0000000003
+   40   20      0.0000000000        0.0000000003
+   40   21      0.0000000000        0.0000000001
+   40   22      0.0000000000       -0.0000000007
+   40   23      0.0000000000       -0.0000000001
+   40   24      0.0000000000      220.2322853839
+   40   25      0.0000000000       -0.0000000003
+   40   26      0.0000000000        0.0000000010
+   40   27      0.0000000000       -0.0000000001
+   40   28      0.0000000000       -0.0000000008
+   40   29      0.0000000000       -0.0000000001
+   40   30      0.0000000000      -78.5422578204
+   41   16      0.0000000000        0.0000000479
+   41   17      0.0000000000        0.0000000167
+   41   18      0.0000000000       -0.0000000075
+   41   24      0.0000000000        0.0000000034
+   41   30      0.0000000000       -0.0000000012
+   42   16      0.0000000000       -0.0000000020
+   42   17      0.0000000000       -0.0000000007
+   42   18      0.0000000000        0.0000000003
+   42   24      0.0000000000       -0.0000000001
+   42   30      0.0000000000        0.0000000001
+   43    1      0.0000000000    47628.3308658946
+   43    2      0.0000000000    16580.8517078539
+   43    3      0.0000000000    -7446.9579145319
+   43    4      0.0000000000       -0.0000000051
+   43    5      0.0000000000        0.0000000041
+   43    6      0.0000000000        0.0000000018
+   43    7      0.0000000000       -0.0000000112
+   43    8      0.0000000000       -0.0000000020
+   43    9      0.0000000000     3395.9238464565
+   43   10      0.0000000000       -0.0000000043
+   43   11      0.0000000000        0.0000000147
+   43   12      0.0000000000       -0.0000000022
+   43   13      0.0000000000       -0.0000000123
+   43   14      0.0000000000       -0.0000000015
+   43   15      0.0000000000    -1211.1009329164
+   44    1      0.0000000000       -0.0000000155
+   44    2      0.0000000000       -0.0000000054
+   44    3      0.0000000000        0.0000000024
+   44    9      0.0000000000       -0.0000000011
+   44   15      0.0000000000        0.0000000004
+   45    1      0.0000000000       -0.0000000050
+   45    2      0.0000000000       -0.0000000017
+   45    3      0.0000000000        0.0000000008
+   45    9      0.0000000000       -0.0000000004
+   45   15      0.0000000000        0.0000000001
+   46    1      0.0000000000   -22339.7286903799
+   46    2      0.0000000000    -7777.1301633860
+   46    3      0.0000000000     3492.9424641763
+   46    4      0.0000000000        0.0000000024
+   46    5      0.0000000000       -0.0000000019
+   46    6      0.0000000000       -0.0000000008
+   46    7      0.0000000000        0.0000000052
+   46    8      0.0000000000        0.0000000010
+   46    9      0.0000000000    -1592.8338449784
+   46   10      0.0000000000        0.0000000020
+   46   11      0.0000000000       -0.0000000069
+   46   12      0.0000000000        0.0000000010
+   46   13      0.0000000000        0.0000000057
+   46   14      0.0000000000        0.0000000007
+   46   15      0.0000000000      568.0582494944
+   47    1      0.0000000000        0.0000000336
+   47    2      0.0000000000        0.0000000117
+   47    3      0.0000000000       -0.0000000053
+   47    9      0.0000000000        0.0000000024
+   47   15      0.0000000000       -0.0000000009
+   48    1      0.0000000000        0.0000000076
+   48    2      0.0000000000        0.0000000026
+   48    3      0.0000000000       -0.0000000012
+   48    9      0.0000000000        0.0000000005
+   48   15      0.0000000000       -0.0000000002
+   49    1      0.0000000000     9902.2311853956
+   49    2      0.0000000000     3447.2639262591
+   49    3      0.0000000000    -1548.2696444945
+   49    4      0.0000000000       -0.0000000011
+   49    5      0.0000000000        0.0000000008
+   49    6      0.0000000000        0.0000000004
+   49    7      0.0000000000       -0.0000000023
+   49    8      0.0000000000       -0.0000000004
+   49    9      0.0000000000      706.0340432734
+   49   10      0.0000000000       -0.0000000009
+   49   11      0.0000000000        0.0000000031
+   49   12      0.0000000000       -0.0000000004
+   49   13      0.0000000000       -0.0000000025
+   49   14      0.0000000000       -0.0000000003
+   49   15      0.0000000000     -251.7955428746
+   50    1      0.0000000000        0.0000000068
+   50    2      0.0000000000        0.0000000024
+   50    3      0.0000000000       -0.0000000011
+   50    9      0.0000000000        0.0000000005
+   50   15      0.0000000000       -0.0000000002
+   51    1      0.0000000000        0.0000000436
+   51    2      0.0000000000        0.0000000152
+   51    3      0.0000000000       -0.0000000068
+   51    9      0.0000000000        0.0000000031
+   51   15      0.0000000000       -0.0000000011
+   52    1      0.0000000000     3088.7901584012
+   52    2      0.0000000000     1075.3005751416
+   52    3      0.0000000000     -482.9497464692
+   52    4      0.0000000000       -0.0000000003
+   52    5      0.0000000000        0.0000000003
+   52    6      0.0000000000        0.0000000001
+   52    7      0.0000000000       -0.0000000007
+   52    8      0.0000000000       -0.0000000001
+   52    9      0.0000000000      220.2322853839
+   52   10      0.0000000000       -0.0000000003
+   52   11      0.0000000000        0.0000000010
+   52   12      0.0000000000       -0.0000000001
+   52   13      0.0000000000       -0.0000000008
+   52   14      0.0000000000       -0.0000000001
+   52   15      0.0000000000      -78.5422578204
+   53    1      0.0000000000        0.0000000479
+   53    2      0.0000000000        0.0000000167
+   53    3      0.0000000000       -0.0000000075
+   53    9      0.0000000000        0.0000000034
+   53   15      0.0000000000       -0.0000000012
+   54    1      0.0000000000       -0.0000000020
+   54    2      0.0000000000       -0.0000000007
+   54    3      0.0000000000        0.0000000003
+   54    9      0.0000000000       -0.0000000001
+   54   15      0.0000000000        0.0000000001
+End of printout of nonzero property elements
+ 
+
+Nonzero diagonal elements of yalpha_f operator in Kramers paired molecular spinor basis:
+
+            Real part           Imaginary Part
+    zero threshold=0.100D-10
+ 
+
+All nonzero property elements of yalpha_f operator in Kramers paired molecular spinor basis:
+
+    zero threshold=0.100D-10
+    1   43  47628.3308658946        0.0000000000
+    1   44     -0.0000000155        0.0000000000
+    1   45     -0.0000000050        0.0000000000
+    1   46 -22339.7286903799        0.0000000000
+    1   47      0.0000000336        0.0000000000
+    1   48      0.0000000076        0.0000000000
+    1   49   9902.2311853956        0.0000000000
+    1   50      0.0000000068        0.0000000000
+    1   51      0.0000000436        0.0000000000
+    1   52   3088.7901584012        0.0000000000
+    1   53      0.0000000479        0.0000000000
+    1   54     -0.0000000020        0.0000000000
+    2   43  16580.8517078539        0.0000000000
+    2   44     -0.0000000054        0.0000000000
+    2   45     -0.0000000017        0.0000000000
+    2   46  -7777.1301633860        0.0000000000
+    2   47      0.0000000117        0.0000000000
+    2   48      0.0000000026        0.0000000000
+    2   49   3447.2639262591        0.0000000000
+    2   50      0.0000000024        0.0000000000
+    2   51      0.0000000152        0.0000000000
+    2   52   1075.3005751416        0.0000000000
+    2   53      0.0000000167        0.0000000000
+    2   54     -0.0000000007        0.0000000000
+    3   43  -7446.9579145319        0.0000000000
+    3   44      0.0000000024        0.0000000000
+    3   45      0.0000000008        0.0000000000
+    3   46   3492.9424641763        0.0000000000
+    3   47     -0.0000000053        0.0000000000
+    3   48     -0.0000000012        0.0000000000
+    3   49  -1548.2696444945        0.0000000000
+    3   50     -0.0000000011        0.0000000000
+    3   51     -0.0000000068        0.0000000000
+    3   52   -482.9497464692        0.0000000000
+    3   53     -0.0000000075        0.0000000000
+    3   54      0.0000000003        0.0000000000
+    4   43     -0.0000000051        0.0000000000
+    4   46      0.0000000024        0.0000000000
+    4   49     -0.0000000011        0.0000000000
+    4   52     -0.0000000003        0.0000000000
+    5   43      0.0000000041        0.0000000000
+    5   46     -0.0000000019        0.0000000000
+    5   49      0.0000000008        0.0000000000
+    5   52      0.0000000003        0.0000000000
+    6   43      0.0000000018        0.0000000000
+    6   46     -0.0000000008        0.0000000000
+    6   49      0.0000000004        0.0000000000
+    6   52      0.0000000001        0.0000000000
+    7   43     -0.0000000112        0.0000000000
+    7   46      0.0000000052        0.0000000000
+    7   49     -0.0000000023        0.0000000000
+    7   52     -0.0000000007        0.0000000000
+    8   43     -0.0000000020        0.0000000000
+    8   46      0.0000000010        0.0000000000
+    8   49     -0.0000000004        0.0000000000
+    8   52     -0.0000000001        0.0000000000
+    9   43   3395.9238464565        0.0000000000
+    9   44     -0.0000000011        0.0000000000
+    9   45     -0.0000000004        0.0000000000
+    9   46  -1592.8338449784        0.0000000000
+    9   47      0.0000000024        0.0000000000
+    9   48      0.0000000005        0.0000000000
+    9   49    706.0340432734        0.0000000000
+    9   50      0.0000000005        0.0000000000
+    9   51      0.0000000031        0.0000000000
+    9   52    220.2322853839        0.0000000000
+    9   53      0.0000000034        0.0000000000
+    9   54     -0.0000000001        0.0000000000
+   10   43     -0.0000000043        0.0000000000
+   10   46      0.0000000020        0.0000000000
+   10   49     -0.0000000009        0.0000000000
+   10   52     -0.0000000003        0.0000000000
+   11   43      0.0000000147        0.0000000000
+   11   46     -0.0000000069        0.0000000000
+   11   49      0.0000000031        0.0000000000
+   11   52      0.0000000010        0.0000000000
+   12   43     -0.0000000022        0.0000000000
+   12   46      0.0000000010        0.0000000000
+   12   49     -0.0000000004        0.0000000000
+   12   52     -0.0000000001        0.0000000000
+   13   43     -0.0000000123        0.0000000000
+   13   46      0.0000000057        0.0000000000
+   13   49     -0.0000000025        0.0000000000
+   13   52     -0.0000000008        0.0000000000
+   14   43     -0.0000000015        0.0000000000
+   14   46      0.0000000007        0.0000000000
+   14   49     -0.0000000003        0.0000000000
+   14   52     -0.0000000001        0.0000000000
+   15   43  -1211.1009329164        0.0000000000
+   15   44      0.0000000004        0.0000000000
+   15   45      0.0000000001        0.0000000000
+   15   46    568.0582494944        0.0000000000
+   15   47     -0.0000000009        0.0000000000
+   15   48     -0.0000000002        0.0000000000
+   15   49   -251.7955428746        0.0000000000
+   15   50     -0.0000000002        0.0000000000
+   15   51     -0.0000000011        0.0000000000
+   15   52    -78.5422578204        0.0000000000
+   15   53     -0.0000000012        0.0000000000
+   15   54      0.0000000001        0.0000000000
+   16   31 -47628.3308658946        0.0000000000
+   16   32      0.0000000155        0.0000000000
+   16   33      0.0000000050        0.0000000000
+   16   34  22339.7286903799        0.0000000000
+   16   35     -0.0000000336        0.0000000000
+   16   36     -0.0000000076        0.0000000000
+   16   37  -9902.2311853956        0.0000000000
+   16   38     -0.0000000068        0.0000000000
+   16   39     -0.0000000436        0.0000000000
+   16   40  -3088.7901584012        0.0000000000
+   16   41     -0.0000000479        0.0000000000
+   16   42      0.0000000020        0.0000000000
+   17   31 -16580.8517078539        0.0000000000
+   17   32      0.0000000054        0.0000000000
+   17   33      0.0000000017        0.0000000000
+   17   34   7777.1301633860        0.0000000000
+   17   35     -0.0000000117        0.0000000000
+   17   36     -0.0000000026        0.0000000000
+   17   37  -3447.2639262591        0.0000000000
+   17   38     -0.0000000024        0.0000000000
+   17   39     -0.0000000152        0.0000000000
+   17   40  -1075.3005751416        0.0000000000
+   17   41     -0.0000000167        0.0000000000
+   17   42      0.0000000007        0.0000000000
+   18   31   7446.9579145319        0.0000000000
+   18   32     -0.0000000024        0.0000000000
+   18   33     -0.0000000008        0.0000000000
+   18   34  -3492.9424641763        0.0000000000
+   18   35      0.0000000053        0.0000000000
+   18   36      0.0000000012        0.0000000000
+   18   37   1548.2696444945        0.0000000000
+   18   38      0.0000000011        0.0000000000
+   18   39      0.0000000068        0.0000000000
+   18   40    482.9497464692        0.0000000000
+   18   41      0.0000000075        0.0000000000
+   18   42     -0.0000000003        0.0000000000
+   19   31      0.0000000051        0.0000000000
+   19   34     -0.0000000024        0.0000000000
+   19   37      0.0000000011        0.0000000000
+   19   40      0.0000000003        0.0000000000
+   20   31     -0.0000000041        0.0000000000
+   20   34      0.0000000019        0.0000000000
+   20   37     -0.0000000008        0.0000000000
+   20   40     -0.0000000003        0.0000000000
+   21   31     -0.0000000018        0.0000000000
+   21   34      0.0000000008        0.0000000000
+   21   37     -0.0000000004        0.0000000000
+   21   40     -0.0000000001        0.0000000000
+   22   31      0.0000000112        0.0000000000
+   22   34     -0.0000000052        0.0000000000
+   22   37      0.0000000023        0.0000000000
+   22   40      0.0000000007        0.0000000000
+   23   31      0.0000000020        0.0000000000
+   23   34     -0.0000000010        0.0000000000
+   23   37      0.0000000004        0.0000000000
+   23   40      0.0000000001        0.0000000000
+   24   31  -3395.9238464565        0.0000000000
+   24   32      0.0000000011        0.0000000000
+   24   33      0.0000000004        0.0000000000
+   24   34   1592.8338449784        0.0000000000
+   24   35     -0.0000000024        0.0000000000
+   24   36     -0.0000000005        0.0000000000
+   24   37   -706.0340432734        0.0000000000
+   24   38     -0.0000000005        0.0000000000
+   24   39     -0.0000000031        0.0000000000
+   24   40   -220.2322853839        0.0000000000
+   24   41     -0.0000000034        0.0000000000
+   24   42      0.0000000001        0.0000000000
+   25   31      0.0000000043        0.0000000000
+   25   34     -0.0000000020        0.0000000000
+   25   37      0.0000000009        0.0000000000
+   25   40      0.0000000003        0.0000000000
+   26   31     -0.0000000147        0.0000000000
+   26   34      0.0000000069        0.0000000000
+   26   37     -0.0000000031        0.0000000000
+   26   40     -0.0000000010        0.0000000000
+   27   31      0.0000000022        0.0000000000
+   27   34     -0.0000000010        0.0000000000
+   27   37      0.0000000004        0.0000000000
+   27   40      0.0000000001        0.0000000000
+   28   31      0.0000000123        0.0000000000
+   28   34     -0.0000000057        0.0000000000
+   28   37      0.0000000025        0.0000000000
+   28   40      0.0000000008        0.0000000000
+   29   31      0.0000000015        0.0000000000
+   29   34     -0.0000000007        0.0000000000
+   29   37      0.0000000003        0.0000000000
+   29   40      0.0000000001        0.0000000000
+   30   31   1211.1009329164        0.0000000000
+   30   32     -0.0000000004        0.0000000000
+   30   33     -0.0000000001        0.0000000000
+   30   34   -568.0582494944        0.0000000000
+   30   35      0.0000000009        0.0000000000
+   30   36      0.0000000002        0.0000000000
+   30   37    251.7955428746        0.0000000000
+   30   38      0.0000000002        0.0000000000
+   30   39      0.0000000011        0.0000000000
+   30   40     78.5422578204        0.0000000000
+   30   41      0.0000000012        0.0000000000
+   30   42     -0.0000000001        0.0000000000
+   31   16  47628.3308658946        0.0000000000
+   31   17  16580.8517078539        0.0000000000
+   31   18  -7446.9579145319        0.0000000000
+   31   19     -0.0000000051        0.0000000000
+   31   20      0.0000000041        0.0000000000
+   31   21      0.0000000018        0.0000000000
+   31   22     -0.0000000112        0.0000000000
+   31   23     -0.0000000020        0.0000000000
+   31   24   3395.9238464565        0.0000000000
+   31   25     -0.0000000043        0.0000000000
+   31   26      0.0000000147        0.0000000000
+   31   27     -0.0000000022        0.0000000000
+   31   28     -0.0000000123        0.0000000000
+   31   29     -0.0000000015        0.0000000000
+   31   30  -1211.1009329164        0.0000000000
+   32   16     -0.0000000155        0.0000000000
+   32   17     -0.0000000054        0.0000000000
+   32   18      0.0000000024        0.0000000000
+   32   24     -0.0000000011        0.0000000000
+   32   30      0.0000000004        0.0000000000
+   33   16     -0.0000000050        0.0000000000
+   33   17     -0.0000000017        0.0000000000
+   33   18      0.0000000008        0.0000000000
+   33   24     -0.0000000004        0.0000000000
+   33   30      0.0000000001        0.0000000000
+   34   16 -22339.7286903799        0.0000000000
+   34   17  -7777.1301633860        0.0000000000
+   34   18   3492.9424641763        0.0000000000
+   34   19      0.0000000024        0.0000000000
+   34   20     -0.0000000019        0.0000000000
+   34   21     -0.0000000008        0.0000000000
+   34   22      0.0000000052        0.0000000000
+   34   23      0.0000000010        0.0000000000
+   34   24  -1592.8338449784        0.0000000000
+   34   25      0.0000000020        0.0000000000
+   34   26     -0.0000000069        0.0000000000
+   34   27      0.0000000010        0.0000000000
+   34   28      0.0000000057        0.0000000000
+   34   29      0.0000000007        0.0000000000
+   34   30    568.0582494944        0.0000000000
+   35   16      0.0000000336        0.0000000000
+   35   17      0.0000000117        0.0000000000
+   35   18     -0.0000000053        0.0000000000
+   35   24      0.0000000024        0.0000000000
+   35   30     -0.0000000009        0.0000000000
+   36   16      0.0000000076        0.0000000000
+   36   17      0.0000000026        0.0000000000
+   36   18     -0.0000000012        0.0000000000
+   36   24      0.0000000005        0.0000000000
+   36   30     -0.0000000002        0.0000000000
+   37   16   9902.2311853956        0.0000000000
+   37   17   3447.2639262591        0.0000000000
+   37   18  -1548.2696444945        0.0000000000
+   37   19     -0.0000000011        0.0000000000
+   37   20      0.0000000008        0.0000000000
+   37   21      0.0000000004        0.0000000000
+   37   22     -0.0000000023        0.0000000000
+   37   23     -0.0000000004        0.0000000000
+   37   24    706.0340432734        0.0000000000
+   37   25     -0.0000000009        0.0000000000
+   37   26      0.0000000031        0.0000000000
+   37   27     -0.0000000004        0.0000000000
+   37   28     -0.0000000025        0.0000000000
+   37   29     -0.0000000003        0.0000000000
+   37   30   -251.7955428746        0.0000000000
+   38   16      0.0000000068        0.0000000000
+   38   17      0.0000000024        0.0000000000
+   38   18     -0.0000000011        0.0000000000
+   38   24      0.0000000005        0.0000000000
+   38   30     -0.0000000002        0.0000000000
+   39   16      0.0000000436        0.0000000000
+   39   17      0.0000000152        0.0000000000
+   39   18     -0.0000000068        0.0000000000
+   39   24      0.0000000031        0.0000000000
+   39   30     -0.0000000011        0.0000000000
+   40   16   3088.7901584012        0.0000000000
+   40   17   1075.3005751416        0.0000000000
+   40   18   -482.9497464692        0.0000000000
+   40   19     -0.0000000003        0.0000000000
+   40   20      0.0000000003        0.0000000000
+   40   21      0.0000000001        0.0000000000
+   40   22     -0.0000000007        0.0000000000
+   40   23     -0.0000000001        0.0000000000
+   40   24    220.2322853839        0.0000000000
+   40   25     -0.0000000003        0.0000000000
+   40   26      0.0000000010        0.0000000000
+   40   27     -0.0000000001        0.0000000000
+   40   28     -0.0000000008        0.0000000000
+   40   29     -0.0000000001        0.0000000000
+   40   30    -78.5422578204        0.0000000000
+   41   16      0.0000000479        0.0000000000
+   41   17      0.0000000167        0.0000000000
+   41   18     -0.0000000075        0.0000000000
+   41   24      0.0000000034        0.0000000000
+   41   30     -0.0000000012        0.0000000000
+   42   16     -0.0000000020        0.0000000000
+   42   17     -0.0000000007        0.0000000000
+   42   18      0.0000000003        0.0000000000
+   42   24     -0.0000000001        0.0000000000
+   42   30      0.0000000001        0.0000000000
+   43    1 -47628.3308658946        0.0000000000
+   43    2 -16580.8517078539        0.0000000000
+   43    3   7446.9579145319        0.0000000000
+   43    4      0.0000000051        0.0000000000
+   43    5     -0.0000000041        0.0000000000
+   43    6     -0.0000000018        0.0000000000
+   43    7      0.0000000112        0.0000000000
+   43    8      0.0000000020        0.0000000000
+   43    9  -3395.9238464565        0.0000000000
+   43   10      0.0000000043        0.0000000000
+   43   11     -0.0000000147        0.0000000000
+   43   12      0.0000000022        0.0000000000
+   43   13      0.0000000123        0.0000000000
+   43   14      0.0000000015        0.0000000000
+   43   15   1211.1009329164        0.0000000000
+   44    1      0.0000000155        0.0000000000
+   44    2      0.0000000054        0.0000000000
+   44    3     -0.0000000024        0.0000000000
+   44    9      0.0000000011        0.0000000000
+   44   15     -0.0000000004        0.0000000000
+   45    1      0.0000000050        0.0000000000
+   45    2      0.0000000017        0.0000000000
+   45    3     -0.0000000008        0.0000000000
+   45    9      0.0000000004        0.0000000000
+   45   15     -0.0000000001        0.0000000000
+   46    1  22339.7286903799        0.0000000000
+   46    2   7777.1301633860        0.0000000000
+   46    3  -3492.9424641763        0.0000000000
+   46    4     -0.0000000024        0.0000000000
+   46    5      0.0000000019        0.0000000000
+   46    6      0.0000000008        0.0000000000
+   46    7     -0.0000000052        0.0000000000
+   46    8     -0.0000000010        0.0000000000
+   46    9   1592.8338449784        0.0000000000
+   46   10     -0.0000000020        0.0000000000
+   46   11      0.0000000069        0.0000000000
+   46   12     -0.0000000010        0.0000000000
+   46   13     -0.0000000057        0.0000000000
+   46   14     -0.0000000007        0.0000000000
+   46   15   -568.0582494944        0.0000000000
+   47    1     -0.0000000336        0.0000000000
+   47    2     -0.0000000117        0.0000000000
+   47    3      0.0000000053        0.0000000000
+   47    9     -0.0000000024        0.0000000000
+   47   15      0.0000000009        0.0000000000
+   48    1     -0.0000000076        0.0000000000
+   48    2     -0.0000000026        0.0000000000
+   48    3      0.0000000012        0.0000000000
+   48    9     -0.0000000005        0.0000000000
+   48   15      0.0000000002        0.0000000000
+   49    1  -9902.2311853956        0.0000000000
+   49    2  -3447.2639262591        0.0000000000
+   49    3   1548.2696444945        0.0000000000
+   49    4      0.0000000011        0.0000000000
+   49    5     -0.0000000008        0.0000000000
+   49    6     -0.0000000004        0.0000000000
+   49    7      0.0000000023        0.0000000000
+   49    8      0.0000000004        0.0000000000
+   49    9   -706.0340432734        0.0000000000
+   49   10      0.0000000009        0.0000000000
+   49   11     -0.0000000031        0.0000000000
+   49   12      0.0000000004        0.0000000000
+   49   13      0.0000000025        0.0000000000
+   49   14      0.0000000003        0.0000000000
+   49   15    251.7955428746        0.0000000000
+   50    1     -0.0000000068        0.0000000000
+   50    2     -0.0000000024        0.0000000000
+   50    3      0.0000000011        0.0000000000
+   50    9     -0.0000000005        0.0000000000
+   50   15      0.0000000002        0.0000000000
+   51    1     -0.0000000436        0.0000000000
+   51    2     -0.0000000152        0.0000000000
+   51    3      0.0000000068        0.0000000000
+   51    9     -0.0000000031        0.0000000000
+   51   15      0.0000000011        0.0000000000
+   52    1  -3088.7901584012        0.0000000000
+   52    2  -1075.3005751416        0.0000000000
+   52    3    482.9497464692        0.0000000000
+   52    4      0.0000000003        0.0000000000
+   52    5     -0.0000000003        0.0000000000
+   52    6     -0.0000000001        0.0000000000
+   52    7      0.0000000007        0.0000000000
+   52    8      0.0000000001        0.0000000000
+   52    9   -220.2322853839        0.0000000000
+   52   10      0.0000000003        0.0000000000
+   52   11     -0.0000000010        0.0000000000
+   52   12      0.0000000001        0.0000000000
+   52   13      0.0000000008        0.0000000000
+   52   14      0.0000000001        0.0000000000
+   52   15     78.5422578204        0.0000000000
+   53    1     -0.0000000479        0.0000000000
+   53    2     -0.0000000167        0.0000000000
+   53    3      0.0000000075        0.0000000000
+   53    9     -0.0000000034        0.0000000000
+   53   15      0.0000000012        0.0000000000
+   54    1      0.0000000020        0.0000000000
+   54    2      0.0000000007        0.0000000000
+   54    3     -0.0000000003        0.0000000000
+   54    9      0.0000000001        0.0000000000
+   54   15     -0.0000000001        0.0000000000
+End of printout of nonzero property elements
+ 
+
+Nonzero diagonal elements of zalpha_f operator in Kramers paired molecular spinor basis:
+
+            Real part           Imaginary Part
+    zero threshold=0.100D-10
+ 
+
+All nonzero property elements of zalpha_f operator in Kramers paired molecular spinor basis:
+
+    zero threshold=0.100D-10
+    1   31      0.0000000000    47628.3308658946
+    1   32      0.0000000000       -0.0000000155
+    1   33      0.0000000000       -0.0000000050
+    1   34      0.0000000000   -22339.7286903799
+    1   35      0.0000000000        0.0000000336
+    1   36      0.0000000000        0.0000000076
+    1   37      0.0000000000     9902.2311853956
+    1   38      0.0000000000        0.0000000068
+    1   39      0.0000000000        0.0000000436
+    1   40      0.0000000000     3088.7901584012
+    1   41      0.0000000000        0.0000000479
+    1   42      0.0000000000       -0.0000000020
+    2   31      0.0000000000    16580.8517078539
+    2   32      0.0000000000       -0.0000000054
+    2   33      0.0000000000       -0.0000000017
+    2   34      0.0000000000    -7777.1301633860
+    2   35      0.0000000000        0.0000000117
+    2   36      0.0000000000        0.0000000026
+    2   37      0.0000000000     3447.2639262591
+    2   38      0.0000000000        0.0000000024
+    2   39      0.0000000000        0.0000000152
+    2   40      0.0000000000     1075.3005751416
+    2   41      0.0000000000        0.0000000167
+    2   42      0.0000000000       -0.0000000007
+    3   31      0.0000000000    -7446.9579145319
+    3   32      0.0000000000        0.0000000024
+    3   33      0.0000000000        0.0000000008
+    3   34      0.0000000000     3492.9424641763
+    3   35      0.0000000000       -0.0000000053
+    3   36      0.0000000000       -0.0000000012
+    3   37      0.0000000000    -1548.2696444945
+    3   38      0.0000000000       -0.0000000011
+    3   39      0.0000000000       -0.0000000068
+    3   40      0.0000000000     -482.9497464692
+    3   41      0.0000000000       -0.0000000075
+    3   42      0.0000000000        0.0000000003
+    4   31      0.0000000000       -0.0000000051
+    4   34      0.0000000000        0.0000000024
+    4   37      0.0000000000       -0.0000000011
+    4   40      0.0000000000       -0.0000000003
+    5   31      0.0000000000        0.0000000041
+    5   34      0.0000000000       -0.0000000019
+    5   37      0.0000000000        0.0000000008
+    5   40      0.0000000000        0.0000000003
+    6   31      0.0000000000        0.0000000018
+    6   34      0.0000000000       -0.0000000008
+    6   37      0.0000000000        0.0000000004
+    6   40      0.0000000000        0.0000000001
+    7   31      0.0000000000       -0.0000000112
+    7   34      0.0000000000        0.0000000052
+    7   37      0.0000000000       -0.0000000023
+    7   40      0.0000000000       -0.0000000007
+    8   31      0.0000000000       -0.0000000020
+    8   34      0.0000000000        0.0000000010
+    8   37      0.0000000000       -0.0000000004
+    8   40      0.0000000000       -0.0000000001
+    9   31      0.0000000000     3395.9238464565
+    9   32      0.0000000000       -0.0000000011
+    9   33      0.0000000000       -0.0000000004
+    9   34      0.0000000000    -1592.8338449784
+    9   35      0.0000000000        0.0000000024
+    9   36      0.0000000000        0.0000000005
+    9   37      0.0000000000      706.0340432734
+    9   38      0.0000000000        0.0000000005
+    9   39      0.0000000000        0.0000000031
+    9   40      0.0000000000      220.2322853839
+    9   41      0.0000000000        0.0000000034
+    9   42      0.0000000000       -0.0000000001
+   10   31      0.0000000000       -0.0000000043
+   10   34      0.0000000000        0.0000000020
+   10   37      0.0000000000       -0.0000000009
+   10   40      0.0000000000       -0.0000000003
+   11   31      0.0000000000        0.0000000147
+   11   34      0.0000000000       -0.0000000069
+   11   37      0.0000000000        0.0000000031
+   11   40      0.0000000000        0.0000000010
+   12   31      0.0000000000       -0.0000000022
+   12   34      0.0000000000        0.0000000010
+   12   37      0.0000000000       -0.0000000004
+   12   40      0.0000000000       -0.0000000001
+   13   31      0.0000000000       -0.0000000123
+   13   34      0.0000000000        0.0000000057
+   13   37      0.0000000000       -0.0000000025
+   13   40      0.0000000000       -0.0000000008
+   14   31      0.0000000000       -0.0000000015
+   14   34      0.0000000000        0.0000000007
+   14   37      0.0000000000       -0.0000000003
+   14   40      0.0000000000       -0.0000000001
+   15   31      0.0000000000    -1211.1009329164
+   15   32      0.0000000000        0.0000000004
+   15   33      0.0000000000        0.0000000001
+   15   34      0.0000000000      568.0582494944
+   15   35      0.0000000000       -0.0000000009
+   15   36      0.0000000000       -0.0000000002
+   15   37      0.0000000000     -251.7955428746
+   15   38      0.0000000000       -0.0000000002
+   15   39      0.0000000000       -0.0000000011
+   15   40      0.0000000000      -78.5422578204
+   15   41      0.0000000000       -0.0000000012
+   15   42      0.0000000000        0.0000000001
+   16   43      0.0000000000   -47628.3308658946
+   16   44      0.0000000000        0.0000000155
+   16   45      0.0000000000        0.0000000050
+   16   46      0.0000000000    22339.7286903799
+   16   47      0.0000000000       -0.0000000336
+   16   48      0.0000000000       -0.0000000076
+   16   49      0.0000000000    -9902.2311853956
+   16   50      0.0000000000       -0.0000000068
+   16   51      0.0000000000       -0.0000000436
+   16   52      0.0000000000    -3088.7901584012
+   16   53      0.0000000000       -0.0000000479
+   16   54      0.0000000000        0.0000000020
+   17   43      0.0000000000   -16580.8517078539
+   17   44      0.0000000000        0.0000000054
+   17   45      0.0000000000        0.0000000017
+   17   46      0.0000000000     7777.1301633860
+   17   47      0.0000000000       -0.0000000117
+   17   48      0.0000000000       -0.0000000026
+   17   49      0.0000000000    -3447.2639262591
+   17   50      0.0000000000       -0.0000000024
+   17   51      0.0000000000       -0.0000000152
+   17   52      0.0000000000    -1075.3005751416
+   17   53      0.0000000000       -0.0000000167
+   17   54      0.0000000000        0.0000000007
+   18   43      0.0000000000     7446.9579145319
+   18   44      0.0000000000       -0.0000000024
+   18   45      0.0000000000       -0.0000000008
+   18   46      0.0000000000    -3492.9424641763
+   18   47      0.0000000000        0.0000000053
+   18   48      0.0000000000        0.0000000012
+   18   49      0.0000000000     1548.2696444945
+   18   50      0.0000000000        0.0000000011
+   18   51      0.0000000000        0.0000000068
+   18   52      0.0000000000      482.9497464692
+   18   53      0.0000000000        0.0000000075
+   18   54      0.0000000000       -0.0000000003
+   19   43      0.0000000000        0.0000000051
+   19   46      0.0000000000       -0.0000000024
+   19   49      0.0000000000        0.0000000011
+   19   52      0.0000000000        0.0000000003
+   20   43      0.0000000000       -0.0000000041
+   20   46      0.0000000000        0.0000000019
+   20   49      0.0000000000       -0.0000000008
+   20   52      0.0000000000       -0.0000000003
+   21   43      0.0000000000       -0.0000000018
+   21   46      0.0000000000        0.0000000008
+   21   49      0.0000000000       -0.0000000004
+   21   52      0.0000000000       -0.0000000001
+   22   43      0.0000000000        0.0000000112
+   22   46      0.0000000000       -0.0000000052
+   22   49      0.0000000000        0.0000000023
+   22   52      0.0000000000        0.0000000007
+   23   43      0.0000000000        0.0000000020
+   23   46      0.0000000000       -0.0000000010
+   23   49      0.0000000000        0.0000000004
+   23   52      0.0000000000        0.0000000001
+   24   43      0.0000000000    -3395.9238464565
+   24   44      0.0000000000        0.0000000011
+   24   45      0.0000000000        0.0000000004
+   24   46      0.0000000000     1592.8338449784
+   24   47      0.0000000000       -0.0000000024
+   24   48      0.0000000000       -0.0000000005
+   24   49      0.0000000000     -706.0340432734
+   24   50      0.0000000000       -0.0000000005
+   24   51      0.0000000000       -0.0000000031
+   24   52      0.0000000000     -220.2322853839
+   24   53      0.0000000000       -0.0000000034
+   24   54      0.0000000000        0.0000000001
+   25   43      0.0000000000        0.0000000043
+   25   46      0.0000000000       -0.0000000020
+   25   49      0.0000000000        0.0000000009
+   25   52      0.0000000000        0.0000000003
+   26   43      0.0000000000       -0.0000000147
+   26   46      0.0000000000        0.0000000069
+   26   49      0.0000000000       -0.0000000031
+   26   52      0.0000000000       -0.0000000010
+   27   43      0.0000000000        0.0000000022
+   27   46      0.0000000000       -0.0000000010
+   27   49      0.0000000000        0.0000000004
+   27   52      0.0000000000        0.0000000001
+   28   43      0.0000000000        0.0000000123
+   28   46      0.0000000000       -0.0000000057
+   28   49      0.0000000000        0.0000000025
+   28   52      0.0000000000        0.0000000008
+   29   43      0.0000000000        0.0000000015
+   29   46      0.0000000000       -0.0000000007
+   29   49      0.0000000000        0.0000000003
+   29   52      0.0000000000        0.0000000001
+   30   43      0.0000000000     1211.1009329164
+   30   44      0.0000000000       -0.0000000004
+   30   45      0.0000000000       -0.0000000001
+   30   46      0.0000000000     -568.0582494944
+   30   47      0.0000000000        0.0000000009
+   30   48      0.0000000000        0.0000000002
+   30   49      0.0000000000      251.7955428746
+   30   50      0.0000000000        0.0000000002
+   30   51      0.0000000000        0.0000000011
+   30   52      0.0000000000       78.5422578204
+   30   53      0.0000000000        0.0000000012
+   30   54      0.0000000000       -0.0000000001
+   31    1      0.0000000000    47628.3308658946
+   31    2      0.0000000000    16580.8517078539
+   31    3      0.0000000000    -7446.9579145319
+   31    4      0.0000000000       -0.0000000051
+   31    5      0.0000000000        0.0000000041
+   31    6      0.0000000000        0.0000000018
+   31    7      0.0000000000       -0.0000000112
+   31    8      0.0000000000       -0.0000000020
+   31    9      0.0000000000     3395.9238464565
+   31   10      0.0000000000       -0.0000000043
+   31   11      0.0000000000        0.0000000147
+   31   12      0.0000000000       -0.0000000022
+   31   13      0.0000000000       -0.0000000123
+   31   14      0.0000000000       -0.0000000015
+   31   15      0.0000000000    -1211.1009329164
+   32    1      0.0000000000       -0.0000000155
+   32    2      0.0000000000       -0.0000000054
+   32    3      0.0000000000        0.0000000024
+   32    9      0.0000000000       -0.0000000011
+   32   15      0.0000000000        0.0000000004
+   33    1      0.0000000000       -0.0000000050
+   33    2      0.0000000000       -0.0000000017
+   33    3      0.0000000000        0.0000000008
+   33    9      0.0000000000       -0.0000000004
+   33   15      0.0000000000        0.0000000001
+   34    1      0.0000000000   -22339.7286903799
+   34    2      0.0000000000    -7777.1301633860
+   34    3      0.0000000000     3492.9424641763
+   34    4      0.0000000000        0.0000000024
+   34    5      0.0000000000       -0.0000000019
+   34    6      0.0000000000       -0.0000000008
+   34    7      0.0000000000        0.0000000052
+   34    8      0.0000000000        0.0000000010
+   34    9      0.0000000000    -1592.8338449784
+   34   10      0.0000000000        0.0000000020
+   34   11      0.0000000000       -0.0000000069
+   34   12      0.0000000000        0.0000000010
+   34   13      0.0000000000        0.0000000057
+   34   14      0.0000000000        0.0000000007
+   34   15      0.0000000000      568.0582494944
+   35    1      0.0000000000        0.0000000336
+   35    2      0.0000000000        0.0000000117
+   35    3      0.0000000000       -0.0000000053
+   35    9      0.0000000000        0.0000000024
+   35   15      0.0000000000       -0.0000000009
+   36    1      0.0000000000        0.0000000076
+   36    2      0.0000000000        0.0000000026
+   36    3      0.0000000000       -0.0000000012
+   36    9      0.0000000000        0.0000000005
+   36   15      0.0000000000       -0.0000000002
+   37    1      0.0000000000     9902.2311853956
+   37    2      0.0000000000     3447.2639262591
+   37    3      0.0000000000    -1548.2696444945
+   37    4      0.0000000000       -0.0000000011
+   37    5      0.0000000000        0.0000000008
+   37    6      0.0000000000        0.0000000004
+   37    7      0.0000000000       -0.0000000023
+   37    8      0.0000000000       -0.0000000004
+   37    9      0.0000000000      706.0340432734
+   37   10      0.0000000000       -0.0000000009
+   37   11      0.0000000000        0.0000000031
+   37   12      0.0000000000       -0.0000000004
+   37   13      0.0000000000       -0.0000000025
+   37   14      0.0000000000       -0.0000000003
+   37   15      0.0000000000     -251.7955428746
+   38    1      0.0000000000        0.0000000068
+   38    2      0.0000000000        0.0000000024
+   38    3      0.0000000000       -0.0000000011
+   38    9      0.0000000000        0.0000000005
+   38   15      0.0000000000       -0.0000000002
+   39    1      0.0000000000        0.0000000436
+   39    2      0.0000000000        0.0000000152
+   39    3      0.0000000000       -0.0000000068
+   39    9      0.0000000000        0.0000000031
+   39   15      0.0000000000       -0.0000000011
+   40    1      0.0000000000     3088.7901584012
+   40    2      0.0000000000     1075.3005751416
+   40    3      0.0000000000     -482.9497464692
+   40    4      0.0000000000       -0.0000000003
+   40    5      0.0000000000        0.0000000003
+   40    6      0.0000000000        0.0000000001
+   40    7      0.0000000000       -0.0000000007
+   40    8      0.0000000000       -0.0000000001
+   40    9      0.0000000000      220.2322853839
+   40   10      0.0000000000       -0.0000000003
+   40   11      0.0000000000        0.0000000010
+   40   12      0.0000000000       -0.0000000001
+   40   13      0.0000000000       -0.0000000008
+   40   14      0.0000000000       -0.0000000001
+   40   15      0.0000000000      -78.5422578204
+   41    1      0.0000000000        0.0000000479
+   41    2      0.0000000000        0.0000000167
+   41    3      0.0000000000       -0.0000000075
+   41    9      0.0000000000        0.0000000034
+   41   15      0.0000000000       -0.0000000012
+   42    1      0.0000000000       -0.0000000020
+   42    2      0.0000000000       -0.0000000007
+   42    3      0.0000000000        0.0000000003
+   42    9      0.0000000000       -0.0000000001
+   42   15      0.0000000000        0.0000000001
+   43   16      0.0000000000   -47628.3308658946
+   43   17      0.0000000000   -16580.8517078539
+   43   18      0.0000000000     7446.9579145319
+   43   19      0.0000000000        0.0000000051
+   43   20      0.0000000000       -0.0000000041
+   43   21      0.0000000000       -0.0000000018
+   43   22      0.0000000000        0.0000000112
+   43   23      0.0000000000        0.0000000020
+   43   24      0.0000000000    -3395.9238464565
+   43   25      0.0000000000        0.0000000043
+   43   26      0.0000000000       -0.0000000147
+   43   27      0.0000000000        0.0000000022
+   43   28      0.0000000000        0.0000000123
+   43   29      0.0000000000        0.0000000015
+   43   30      0.0000000000     1211.1009329164
+   44   16      0.0000000000        0.0000000155
+   44   17      0.0000000000        0.0000000054
+   44   18      0.0000000000       -0.0000000024
+   44   24      0.0000000000        0.0000000011
+   44   30      0.0000000000       -0.0000000004
+   45   16      0.0000000000        0.0000000050
+   45   17      0.0000000000        0.0000000017
+   45   18      0.0000000000       -0.0000000008
+   45   24      0.0000000000        0.0000000004
+   45   30      0.0000000000       -0.0000000001
+   46   16      0.0000000000    22339.7286903799
+   46   17      0.0000000000     7777.1301633860
+   46   18      0.0000000000    -3492.9424641763
+   46   19      0.0000000000       -0.0000000024
+   46   20      0.0000000000        0.0000000019
+   46   21      0.0000000000        0.0000000008
+   46   22      0.0000000000       -0.0000000052
+   46   23      0.0000000000       -0.0000000010
+   46   24      0.0000000000     1592.8338449784
+   46   25      0.0000000000       -0.0000000020
+   46   26      0.0000000000        0.0000000069
+   46   27      0.0000000000       -0.0000000010
+   46   28      0.0000000000       -0.0000000057
+   46   29      0.0000000000       -0.0000000007
+   46   30      0.0000000000     -568.0582494944
+   47   16      0.0000000000       -0.0000000336
+   47   17      0.0000000000       -0.0000000117
+   47   18      0.0000000000        0.0000000053
+   47   24      0.0000000000       -0.0000000024
+   47   30      0.0000000000        0.0000000009
+   48   16      0.0000000000       -0.0000000076
+   48   17      0.0000000000       -0.0000000026
+   48   18      0.0000000000        0.0000000012
+   48   24      0.0000000000       -0.0000000005
+   48   30      0.0000000000        0.0000000002
+   49   16      0.0000000000    -9902.2311853956
+   49   17      0.0000000000    -3447.2639262591
+   49   18      0.0000000000     1548.2696444945
+   49   19      0.0000000000        0.0000000011
+   49   20      0.0000000000       -0.0000000008
+   49   21      0.0000000000       -0.0000000004
+   49   22      0.0000000000        0.0000000023
+   49   23      0.0000000000        0.0000000004
+   49   24      0.0000000000     -706.0340432734
+   49   25      0.0000000000        0.0000000009
+   49   26      0.0000000000       -0.0000000031
+   49   27      0.0000000000        0.0000000004
+   49   28      0.0000000000        0.0000000025
+   49   29      0.0000000000        0.0000000003
+   49   30      0.0000000000      251.7955428746
+   50   16      0.0000000000       -0.0000000068
+   50   17      0.0000000000       -0.0000000024
+   50   18      0.0000000000        0.0000000011
+   50   24      0.0000000000       -0.0000000005
+   50   30      0.0000000000        0.0000000002
+   51   16      0.0000000000       -0.0000000436
+   51   17      0.0000000000       -0.0000000152
+   51   18      0.0000000000        0.0000000068
+   51   24      0.0000000000       -0.0000000031
+   51   30      0.0000000000        0.0000000011
+   52   16      0.0000000000    -3088.7901584012
+   52   17      0.0000000000    -1075.3005751416
+   52   18      0.0000000000      482.9497464692
+   52   19      0.0000000000        0.0000000003
+   52   20      0.0000000000       -0.0000000003
+   52   21      0.0000000000       -0.0000000001
+   52   22      0.0000000000        0.0000000007
+   52   23      0.0000000000        0.0000000001
+   52   24      0.0000000000     -220.2322853839
+   52   25      0.0000000000        0.0000000003
+   52   26      0.0000000000       -0.0000000010
+   52   27      0.0000000000        0.0000000001
+   52   28      0.0000000000        0.0000000008
+   52   29      0.0000000000        0.0000000001
+   52   30      0.0000000000       78.5422578204
+   53   16      0.0000000000       -0.0000000479
+   53   17      0.0000000000       -0.0000000167
+   53   18      0.0000000000        0.0000000075
+   53   24      0.0000000000       -0.0000000034
+   53   30      0.0000000000        0.0000000012
+   54   16      0.0000000000        0.0000000020
+   54   17      0.0000000000        0.0000000007
+   54   18      0.0000000000       -0.0000000003
+   54   24      0.0000000000        0.0000000001
+   54   30      0.0000000000       -0.0000000001
+End of printout of nonzero property elements
+ 
+
+
+ Total wall time used in PAMTRA :   00:00:00
+ Total CPU  time used in PAMTRA (master only) :   00:00:00
+
+ Transformation ended at : Thu Aug 17 21:16:09 2017
+
+
+*****************************************************
+********** E N D   of   D I R A C  output  **********
+*****************************************************
+
+
+ 
+     Date and time (Linux)  : Thu Aug 17 21:16:09 2017
+     Host name              : lxir127                                 
+
+  
+  Dynamical Memory Usage Summary for Master
+  
+  Mean allocation size (Mb) :        53.38
+  
+  Largest                    10  allocations
+  
+      488.28 Mb at subroutine pamtra_+0x17b                              for WORK in PAMTRA                            
+      488.28 Mb at subroutine psiscf_+0xa9                               for WORK in PSISCF                            
+      488.28 Mb at subroutine pamset_+0x1b3d                             for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine gmotra_+0x6045                             for WORK in GMOTRA                            
+      488.28 Mb at subroutine pamset_+0xa8                               for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine MAIN__+0x295                               for test allocation of work array in DIRAC mai
+        1.50 Mb at subroutine pcmout_+0x109                              for CMO in PCMOUT                             
+        1.50 Mb at subroutine pcmoin_+0x16c                              for CMO in PCMOIN                             
+        1.50 Mb at subroutine butobs_no_work_+0x8f                       for buf in butobs                             
+        0.76 Mb at subroutine paminp_+0x8a                               for PAMINP WORK array                         
+  
+  Peak memory usage    (Mb) :       490.00
+       reached at subroutine : butobs_no_work_+0x8f                      
+              for variable   : buf in butobs                             
+  
+ MEMGET high-water mark:     0.00 MB
+
+*****************************************************
+>>>> Node 0, utime: 3, stime: 0, minflt: 22063, majflt: 93, nvcsw: 400, nivcsw: 70, maxrss: 60776
+>>>> Total WALL time used in DIRAC: 3s
+DIRAC pam run in /u/milias/Work/qch/software/dirac/trunk/test/operators_mo_elements

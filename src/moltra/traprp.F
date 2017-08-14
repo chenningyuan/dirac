@@ -442,8 +442,8 @@ C       active quaternion unit.
                 II1 = II1 + 1
                 II2 = II2 + 1
                 II3 = II3 + 1
-                IF (JFRP.EQ.1) IREPIB = IBE11(I)
-                IF (JFRP.EQ.2) IREPIB = IBE21(I)
+                IF (IFRP.EQ.1) IREPIB = IBE11(I)
+                IF (IFRP.EQ.2) IREPIB = IBE21(I)
                 IQI = IPQTOQ(1,IREPIB)
                 IQ  = IQMULT (IQI,IQJ,IQPRP)
 ! LV
@@ -513,6 +513,8 @@ C
                 ENDIF
                ENDDO
             ENDDO
+            WRITE(LUPRI,"(A)")
+     &      "End of printout of nonzero property elements"
             WRITE (6,*)
          ENDIF
       ENDIF
