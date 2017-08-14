@@ -4,7 +4,7 @@
 .. _pe_scf:
 
 A Hartree-Fock calculation with the polarizable embedding model
-==================================================================================
+===============================================================
 
 In this tutorial we will cover the set up of an Hartree-Fock calculation using the
 polarizable embedding model (PE) to include effects from a surrounding environment. 
