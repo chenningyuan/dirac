@@ -652,6 +652,11 @@ C
           character*6           :: c1,c2
         END SUBROUTINE
 
+        SUBROUTINE mpi_davidson_accel_r(i1,i2,i3,i4,i5,c1)
+          integer               :: i1,i2,i3,i4,i5
+          character*6           :: c1
+        END SUBROUTINE
+
         SUBROUTINE mpi_task_server (i1,i2)
           integer               :: i1,i2
         END SUBROUTINE
@@ -970,15 +975,33 @@ C
      &                                     MVO(desrep))
           else
 !           call fulldia_r3(iobase,namematfil,intbuf,ladc,desrep)
-            call mpi_davidson_master_ext_r(iw,
-     &                                     iobase,
-     &                                     desrep,
-     &                                     intbuf,
-     &                                     namematfil,
-     &                                     namecnffil,
-     &                                     irecl,
-     &                                     ladc,
-     &                                     MVO(desrep))
+
+            write(*,*) ' **ATT new davidson !!!*****'
+            write(*,*) ' **ATT new davidson !!!*****'
+            write(*,*) ' **ATT new davidson !!!*****'
+            write(*,*) ' **ATT new davidson !!!*****'
+            write(*,*) ' **ATT new davidson !!!*****'
+            write(*,*) ' **ATT new davidson !!!*****'
+            write(*,*) ' **ATT new davidson !!!*****'
+            write(*,*) ' **ATT new davidson !!!*****'
+            write(*,*) ' **ATT new davidson !!!*****'
+
+            call mpi_davidson_accel_r(iobase,
+     &                                intbuf,
+     &                                ladc,
+     &                                MVO(desrep),
+     &                                desrep,
+     &                                namematfil)
+
+!           call mpi_davidson_master_ext_r(iw,
+!    &                                     iobase,
+!    &                                     desrep,
+!    &                                     intbuf,
+!    &                                     namematfil,
+!    &                                     namecnffil,
+!    &                                     irecl,
+!    &                                     ladc,
+!    &                                     MVO(desrep))
           endif
 
 ! Main ADC matrix file is deleted

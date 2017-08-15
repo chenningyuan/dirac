@@ -1075,7 +1075,7 @@ C
         write(*,*) ' *** No free file handle available. Terminating.'
         call quit('I/O problem')
       else
-        write(*,*) 'Obtained file handle',lu
+!       write(*,*) 'Obtained file handle',lu
       endif
       get_file_unit = lu
       return
