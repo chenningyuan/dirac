@@ -10,16 +10,13 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = ' Vectors available for symm.        2   B3ua',
-      num_lines    = 8,
+      num_lines    = 6,
       rel_tolerance   = 1.0e-7)
 f.add(from_string = ' Vectors available for symm.        3   B2ua',
-      num_lines    = 8,
+      num_lines    = 6,
       rel_tolerance   = 1.0e-7)
 f.add(from_string = ' Vectors available for symm.        5   B1ua',
-      num_lines    = 8,
-      rel_tolerance   = 1.0e-7)
-f.add(from_string = 'Eigenvalues (lowest 20):',
-      num_lines    = 10,
+      num_lines    = 6,
       rel_tolerance   = 1.0e-7)
 
 test.run(['be.inp'], ['be_s.mol'], f, accepted_errors=[])

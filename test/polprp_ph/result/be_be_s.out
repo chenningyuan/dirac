@@ -1,4 +1,3 @@
-DIRAC pam run in /home/markus/dirac_final_test/test/reladc_exci
 DIRAC serial starts by allocating 64000000 words (488 MB) of memory
              out of the allowed maximum of 2147483648 words (16384 MB)
 
@@ -81,10 +80,10 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
  *                                                                             *
  *    Written by:                                                              *
  *                                                                             *
+ *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
  *    Radovan Bast             UiT The Arctic University of      Norway        *
  *    Trond Saue               Universite Toulouse III           France        *
- *    Lucas Visscher           VU University Amsterdam           Netherlands   *
- *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
  *                                                                             *
  *    with contributions from:                                                 *
  *                                                                             *
@@ -94,10 +93,11 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
  *    Ulf Ekstroem             University of Oslo                Norway        *
  *    Ephraim Eliav            University of Tel Aviv            Israel        *
  *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
- *    Elke Fasshauer           UiT The Arctic University of      Norway        *
+ *    Elke Fasshauer           University of Copenhagen          Denmark       *
  *    Timo Fleig               Universite Toulouse III           France        *
  *    Olav Fossgaard           UiT The Arctic University of      Norway        *
  *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
+ *    Erik D. Hedegård         Lund University                   Sweden        *
  *    Trygve Helgaker          University of Oslo                Norway        *
  *    Johan Henriksson         Linkoeping University             Sweden        *
  *    Miroslav Ilias           Matej Bel University              Slovakia      *
@@ -113,6 +113,7 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
  *    Patrick Norman           Linkoeping University             Sweden        *
  *    Malgorzata Olejniczak    CNRS/Universite de Lille          France        *
  *    Jeppe Olsen              Aarhus University                 Denmark       *
+ *    Jógvan Magnus H. Olsen   University of Southern Denmark    Denmark       *
  *    Young Choon Park         KAIST, Daejeon                    South Korea   *
  *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
  *    Markus Pernpointner      University of Heidelberg          Germany       *
@@ -120,10 +121,10 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
  *    Kenneth Ruud             UiT The Arctic University of      Norway        *
  *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
  *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
- *    Jetze Sikkema            VU University Amsterdam           Netherlands   *
+ *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
  *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
  *    Joern Thyssen            University of Southern Denmark    Denmark       *
- *    Joost van Stralen        VU University Amsterdam           Netherlands   *
+ *    Joost van Stralen        Vrije Universiteit Amsterdam      Netherlands   *
  *    Sebastien Villaume       Linkoeping University             Sweden        *
  *    Olivier Visser           University of Groningen           Netherlands   *
  *    Toke Winther             University of Southern Denmark    Denmark       *
@@ -143,8 +144,8 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
  *    appropriate citation would be:                                           *
  *                                                                             *
  *    DIRAC, a relativistic ab initio electronic structure program,            *
- *    Release DIRAC15 (2015),                                                  *
- *    written by R. Bast, T. Saue, L. Visscher, and H. J. Aa. Jensen,          *
+ *    Release DIRAC17 (2017),                                                  *
+ *    written by L. Visscher, H. J. Aa. Jensen, R. Bast, and T. Saue,          *
  *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,            *
  *    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *
  *    O. Fossgaard, A. S. P. Gomes, T. Helgaker, J. Henriksson, M. Ilias,      *
@@ -157,40 +158,47 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
  *                                                                             *
  *******************************************************************************
 
- ---  Git version information  ---
-                Git branch : polprp
-      Last git commit hash : 19ea8d7
-    Last git commit author : markus
-      Last git commit date : Wed Nov 2 14:28:42 2016 +0100
 
----  Configuration and build info  ---
-              Who compiled : markus
-        Compiled on server : cluster-pci
-          Operating system : Linux-2.6.18-274.18.1.el5
-            Python version : 2.7.2
-             CMake version : 3.1.3
-           CMake generator : Unix Makefiles
-          CMake build type : release
-       MPI parallelization : False
-              MPI launcher : unknown
-           64-bit integers : False
-          Fortran compiler : /cvos/shared/apps/gcc/5.2.0/bin/gfortran
-  Fortran compiler version : 5.2.0
-    Fortran compiler flags :   -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS
-                C compiler : /cvos/shared/apps/gcc/5.2.0/bin/gcc
-        C compiler version : 5.2.0
-          C compiler flags :   -g  -g
-              C++ compiler : /cvos/shared/apps/gcc/5.2.0/bin/g++
-      C++ compiler version : 5.2.0
-        C++ compiler flags :   -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused
-            Static linking : False
-      Builtin BLAS library : OFF
-    Builtin LAPACK library : OFF
-    Mathematical libraries : -Wl,--start-group;/cvos/shared/apps/intel/mkl/10.1.3.027/lib/em64t/libmkl_lapack.so;-fopenmp;-Wl,--end-group;-Wl,--start-group;/cvos/shared/apps/intel/mkl/10.1.3.027/lib/em64t/libmkl_gf_lp64.so;/cvos/shared/apps/intel/mkl/10.1.3.027/lib/em64t/libmkl_gnu_thread.so;/cvos/shared/apps/intel/mkl/10.1.3.027/lib/em64t/libmkl_core.so;/cvos/shared/apps/intel/mkl/10.1.3.027/lib/em64t/libmkl_def.so;/cvos/shared/apps/intel/mkl/10.1.3.027/lib/em64t/libmkl_mc.so;/cvos/shared/apps/intel/mkl/10.1.3.027/lib/em64t/libguide.so;/usr/lib64/libpthread.so;/usr/lib64/libm.so;-fopenmp;-Wl,--end-group
-        Explicit libraries : unknown
-       Modules definitions : MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;MOD_QCORR;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT
-       Configuration time :  2016-11-02 14:09:18.274109
------------------------------------------------------------------
+Version information
+-------------------
+
+Branch        | master
+Commit hash   | 8866848
+Commit author | markus
+Commit date   | Wed Aug 16 14:12:32 2017 +0200
+
+
+Configuration and build information
+-----------------------------------
+
+Who compiled             | markus
+Compiled on server       | cluster-pci
+Operating system         | Linux-2.6.18-274.18.1.el5
+CMake version            | 3.1.3
+CMake generator          | Unix Makefiles
+CMake build type         | release
+Configuration time       | 2017-08-16 12:58:02.711137
+Python version           | 3.5.1
+Fortran compiler         | /cvos/shared/apps/gcc/5.2.0/bin/gfortran
+Fortran compiler version | 5.2.0
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS
+C compiler               | /cvos/shared/apps/gcc/5.2.0/bin/gcc
+C compiler version       | 5.2.0
+C compiler flags         |  -g -g
+C++ compiler             | /cvos/shared/apps/gcc/5.2.0/bin/g++
+C++ compiler version     | 5.2.0
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused
+Static linking           | False
+64-bit integers          | False
+MPI parallelization      | False
+MPI launcher             | unknown
+Math libraries           | -Wl,--start-group;/cvos/shared/apps/intel/mkl/10.1.3.027/lib/em64t/libmkl_lapack.so;-fopenmp;-Wl,--end-group;-Wl,--start-group;/cvos/shared/apps/intel/mkl/10.1.3.027/lib/em64t/libmkl_gf_lp64.so;/cvos/shared/apps/intel/mkl/10.1.3.027/lib/em64t/libmkl_gnu_thread.so;/cvos/shared/apps/intel/mkl/10.1.3.027/lib/em64t/libmkl_core.so;/cvos/shared/apps/intel/mkl/10.1.3.027/lib/em64t/libmkl_def.so;/cvos/shared/apps/intel/mkl/10.1.3.027/lib/em64t/libmkl_mc.so;/cvos/shared/apps/intel/mkl/10.1.3.027/lib/em64t/libguide.so;/usr/lib64/libpthread.so;/usr/lib64/libm.so;-fopenmp;-Wl,--end-group
+Builtin BLAS library     | OFF
+Builtin LAPACK library   | OFF
+Explicit libraries       | unknown
+Compile definitions      | MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;BUILD_GEN1INT;MOD_QCORR;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT
+
+
  Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
  ++++ calling dirac with           0           0           0           0
 
@@ -198,7 +206,7 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Wed Nov  2 15:59:24 2016
+     Date and time (Linux)  : Wed Aug 16 15:46:02 2017
      Host name              : cluster-pci                             
   +++++ entering dirac/DIRCTL ++++++
 
@@ -505,17 +513,17 @@ Be     0.0000000000   0.0000000000   0.0000000000
   Number of coordinates in each symmetry:     0    1    1    0    1    0    0    0
 
 
-  Symmetry 2
+  Symmetry  B3u( 2)
 
     1   Be    x    1
 
 
-  Symmetry 3
+  Symmetry  B2u( 3)
 
     2   Be    y    2
 
 
-  Symmetry 5
+  Symmetry  B1u( 5)
 
     3   Be    z    3
 
@@ -751,15 +759,15 @@ Total no. of orbitals      (NORB):     3       6       9
              Improved by a sum of atomic screening potentials.
 
 
-########## START ITERATION NO.   1 ##########   Wed Nov  2 15:59:24 2016
+########## START ITERATION NO.   1 ##########   Wed Aug 16 15:46:02 2017
 
 E_HOMO...E_LUMO, symmetry 1:     2  -0.20604    3   0.28237
 E_HOMO...E_LUMO, symmetry 2:     4  -0.07292
 
 => Calculating sum of orbital energies
-It.    1    -8.082406536563      0.00D+00  0.00D+00  0.00D+00               0.00699900s   Scr. nuclei    Wed Nov  2
+It.    1    -8.082406536563      0.00D+00  0.00D+00  0.00D+00               0.00699900s   Scr. nuclei    Wed Aug 16
 
-########## START ITERATION NO.   2 ##########   Wed Nov  2 15:59:24 2016
+########## START ITERATION NO.   2 ##########   Wed Aug 16 15:46:02 2017
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
@@ -767,61 +775,61 @@ SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12   53.33%   23.83%    0.00%   13.91%   0.00100000s
 E_HOMO...E_LUMO, symmetry 1:     2  -0.30004    3   0.44060
 E_HOMO...E_LUMO, symmetry 2:     4   0.08414
->>> Total wall time: 0.01800000s, and total CPU time : 0.00300000s
+>>> Total wall time: 0.01400000s, and total CPU time : 0.00299900s
 
-########## END ITERATION NO.   2 ##########   Wed Nov  2 15:59:24 2016
+########## END ITERATION NO.   2 ##########   Wed Aug 16 15:46:02 2017
 
-It.    2    -14.56536128405      6.48D+00 -7.83D-01  1.12D-01               0.00300000s   LL             Wed Nov  2
+It.    2    -14.56536128405      6.48D+00 -7.83D-01  1.12D-01               0.00299900s   LL             Wed Aug 16
 
-########## START ITERATION NO.   3 ##########   Wed Nov  2 15:59:24 2016
+########## START ITERATION NO.   3 ##########   Wed Aug 16 15:46:02 2017
 
     3 *** Differential density matrix. DCOVLP     = 1.0012
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   53.33%   23.83%    0.00%   13.91%   0.00000000s
+SOfock:LL  1.00D-12   53.33%   23.83%    0.00%   13.91%   0.00100000s
 E_HOMO...E_LUMO, symmetry 1:     2  -0.30104    3   0.43995
 E_HOMO...E_LUMO, symmetry 2:     4   0.08277
->>> Total wall time: 0.01100000s, and total CPU time : 0.00299900s
+>>> Total wall time: 0.01000000s, and total CPU time : 0.00200000s
 
-########## END ITERATION NO.   3 ##########   Wed Nov  2 15:59:24 2016
+########## END ITERATION NO.   3 ##########   Wed Aug 16 15:46:02 2017
 
-It.    3    -14.56675069466      1.39D-03 -2.90D-03  8.36D-03   DIIS   2    0.00299900s   LL             Wed Nov  2
+It.    3    -14.56675069466      1.39D-03 -2.90D-03  8.36D-03   DIIS   2    0.00200000s   LL             Wed Aug 16
 
-########## START ITERATION NO.   4 ##########   Wed Nov  2 15:59:24 2016
+########## START ITERATION NO.   4 ##########   Wed Aug 16 15:46:02 2017
 
     4 *** Differential density matrix. DCOVLP     = 1.0012
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12   53.33%   23.83%    0.00%   13.91%   0.00100000s
 E_HOMO...E_LUMO, symmetry 1:     2  -0.30130    3   0.43975
 E_HOMO...E_LUMO, symmetry 2:     4   0.08244
->>> Total wall time: 0.00500000s, and total CPU time : 0.00100000s
+>>> Total wall time: 0.00700000s, and total CPU time : 0.00300000s
 
-########## END ITERATION NO.   4 ##########   Wed Nov  2 15:59:24 2016
+########## END ITERATION NO.   4 ##########   Wed Aug 16 15:46:02 2017
 
-It.    4    -14.56676333367      1.26D-05 -1.08D-03  4.40D-04   DIIS   3    0.00100000s   LL             Wed Nov  2
+It.    4    -14.56676333367      1.26D-05 -1.08D-03  4.40D-04   DIIS   3    0.00300000s   LL             Wed Aug 16
 
-########## START ITERATION NO.   5 ##########   Wed Nov  2 15:59:24 2016
+########## START ITERATION NO.   5 ##########   Wed Aug 16 15:46:02 2017
 
     5 *** Differential density matrix. DCOVLP     = 1.0003
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   53.33%   23.83%    0.00%   13.91%   0.00100000s
+SOfock:LL  1.00D-12   53.33%   23.83%    0.00%   13.91%   0.00000000s
 E_HOMO...E_LUMO, symmetry 1:     2  -0.30130    3   0.43975
 E_HOMO...E_LUMO, symmetry 2:     4   0.08244
->>> Total wall time: 0.00400000s, and total CPU time : 0.00100000s
+>>> Total wall time: 0.00500000s, and total CPU time : 0.00199900s
 
-########## END ITERATION NO.   5 ##########   Wed Nov  2 15:59:24 2016
+########## END ITERATION NO.   5 ##########   Wed Aug 16 15:46:02 2017
 
-It.    5    -14.56676350070      1.67D-07 -2.36D-04  2.04D-06   DIIS   4    0.00100000s   LL             Wed Nov  2
+It.    5    -14.56676350070      1.67D-07 -2.36D-04  2.04D-06   DIIS   4    0.00199900s   LL             Wed Aug 16
 
-########## START ITERATION NO.   6 ##########   Wed Nov  2 15:59:24 2016
+########## START ITERATION NO.   6 ##########   Wed Aug 16 15:46:02 2017
 
     6 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   53.33%   23.83%    0.00%   13.91%   0.00099900s
->>> Total wall time: 0.00500000s, and total CPU time : 0.00299900s
+SOfock:LL  1.00D-12   53.33%   23.83%    0.00%   13.91%   0.00099999s
+>>> Total wall time: 0.00500000s, and total CPU time : 0.00200000s
 
-########## END ITERATION NO.   6 ##########   Wed Nov  2 15:59:24 2016
+########## END ITERATION NO.   6 ##########   Wed Aug 16 15:46:02 2017
 
-It.    6    -14.56676350071      2.26D-12 -8.58D-07  2.48D-10   DIIS   4    0.00299900s   LL             Wed Nov  2
+It.    6    -14.56676350071      2.26D-12 -8.58D-07  2.48D-10   DIIS   4    0.00200000s   LL             Wed Aug 16
 
 
                                    SCF - CYCLE
@@ -837,17 +845,17 @@ It.    6    -14.56676350071      2.26D-12 -8.58D-07  2.48D-10   DIIS   4    0.00
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -8.082406536563      0.00D+00  0.00D+00  0.00D+00               0.00699900s   Scr. nuclei    Wed Nov  2
-It.    2    -14.56536128405      6.48D+00 -7.83D-01  1.12D-01               0.00300000s   LL             Wed Nov  2
-It.    3    -14.56675069466      1.39D-03 -2.90D-03  8.36D-03   DIIS   2    0.00299900s   LL             Wed Nov  2
-It.    4    -14.56676333367      1.26D-05 -1.08D-03  4.40D-04   DIIS   3    0.00100000s   LL             Wed Nov  2
-It.    5    -14.56676350070      1.67D-07 -2.36D-04  2.04D-06   DIIS   4    0.00100000s   LL             Wed Nov  2
-It.    6    -14.56676350071      2.26D-12 -8.58D-07  2.48D-10   DIIS   4    0.00299900s   LL             Wed Nov  2
+It.    1    -8.082406536563      0.00D+00  0.00D+00  0.00D+00               0.00699900s   Scr. nuclei    Wed Aug 16
+It.    2    -14.56536128405      6.48D+00 -7.83D-01  1.12D-01               0.00299900s   LL             Wed Aug 16
+It.    3    -14.56675069466      1.39D-03 -2.90D-03  8.36D-03   DIIS   2    0.00200000s   LL             Wed Aug 16
+It.    4    -14.56676333367      1.26D-05 -1.08D-03  4.40D-04   DIIS   3    0.00300000s   LL             Wed Aug 16
+It.    5    -14.56676350070      1.67D-07 -2.36D-04  2.04D-06   DIIS   4    0.00199900s   LL             Wed Aug 16
+It.    6    -14.56676350071      2.26D-12 -8.58D-07  2.48D-10   DIIS   4    0.00200000s   LL             Wed Aug 16
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    6 iterations.
 * Average elapsed time per iteration: 
       No 2-ints    :    0.00700000s
-      LL           :    0.00860000s
+      LL           :    0.00820000s
 
 
                                    TOTAL ENERGY
@@ -868,9 +876,9 @@ It.    6    -14.56676350071      2.26D-12 -8.58D-07  2.48D-10   DIIS   4    0.00
 
 * Boson symmetry Ag 
   * Closed shell, f = 1.0000
--4.706890257325690  ( 2)   -0.301295376425132  ( 2)
+-4.706890256767181  ( 2)   -0.301295376223227  ( 2)
   * Virtual eigenvalues, f = 0.0000
- 0.439754310638798  ( 2)
+ 0.439754310797928  ( 2)
 
 * Boson symmetry B1g
   * No eigenvalues.
@@ -883,15 +891,15 @@ It.    6    -14.56676350071      2.26D-12 -8.58D-07  2.48D-10   DIIS   4    0.00
 
 * Boson symmetry B3u
   * Virtual eigenvalues, f = 0.0000
- 0.082435339734129  ( 2)    0.464931004720219  ( 2)
+ 0.082435339821021  ( 2)    0.464931004934369  ( 2)
 
 * Boson symmetry B2u
   * Virtual eigenvalues, f = 0.0000
- 0.082435339734129  ( 2)    0.464931004720218  ( 2)
+ 0.082435339821021  ( 2)    0.464931004934368  ( 2)
 
 * Boson symmetry B1u
   * Virtual eigenvalues, f = 0.0000
- 0.082435339734129  ( 2)    0.464931004720218  ( 2)
+ 0.082435339821021  ( 2)    0.464931004934368  ( 2)
 
 * Boson symmetry Au 
   * No eigenvalues.
@@ -942,10 +950,10 @@ tot.num. of pos.erg shells:    2    2    2    0
      ************************************************************************
 
 
- Transformation started at : Wed Nov  2 15:59:24 2016
+ Transformation started at : Wed Aug 16 15:46:02 2017
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -14.5667635007039262
-* Heading :Be mit 4Z-Basis nicht relativistisch              Wed Nov  2 15:59:24 2016
+* Heading :Be mit 4Z-Basis nicht relativistisch              Wed Aug 16 15:46:02 2017
      Energy selection of active orbitals :       -5.00 < Eps. <        20.00 with a mininum gap of     0.0100 au.
      Energy selection of active orbitals :       -5.00 < Eps. <        20.00 with a mininum gap of     0.0100 au.
      Energy selection of active orbitals :       -5.00 < Eps. <        20.00 with a mininum gap of     0.0100 au.
@@ -998,7 +1006,6 @@ tot.num. of pos.erg shells:    2    2    2    0
  * Fermion ircop E1u
 
       No orbitals for index 1
-  PAMTRA: CMO read from DFCOEF...
 
 
     **************************************************************************
@@ -1017,13 +1024,13 @@ tot.num. of pos.erg shells:    2    2    2    0
        ********************************************************************
 
 
- Transformation started at : Wed Nov  2 15:59:24 2016
+ Transformation started at : Wed Aug 16 15:46:02 2017
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -14.5667635007039262
-* Heading :Be mit 4Z-Basis nicht relativistisch              Wed Nov  2 15:59:24 2016
+* Heading :Be mit 4Z-Basis nicht relativistisch              Wed Aug 16 15:46:02 2017
 
 * REAFCK: Fock matrix read from file DFFCK1                                                      
-* Heading :Be mit 4Z-Basis nicht relativistisch              Wed Nov  2 15:59:24 2016
+* Heading :Be mit 4Z-Basis nicht relativistisch              Wed Aug 16 15:46:02 2017
 
 
  Core energy (includes nuclear repulsion) :              0.0000000000
@@ -1040,25 +1047,23 @@ tot.num. of pos.erg shells:    2    2    2    0
    (LL|LL)ints :   0.00%
    Total       :   0.00%
 
- - Starting symmetrization after           0.01 seconds
- - Finished symmetrization after           0.01 seconds
+ - Starting symmetrization after           0.00 seconds
+ - Finished symmetrization after           0.00 seconds
 
  - Binary  file MDCINT was written.
 
 ------ Timing report (in CPU seconds) of module  integral transformation      
 
- Time in  Initializing MS4IND file            0.004 seconds
- Time in  Computing+transform. integral       0.009 seconds
+ Time in  Initializing MS4IND file            0.001 seconds
+ Time in  Computing+transform. integral       0.003 seconds
 
 
  Total wall time used in PAMTRA :   00:00:00
  Total CPU  time used in PAMTRA (master only) :   00:00:00
 
- Transformation ended at : Wed Nov  2 15:59:24 2016
+ Transformation ended at : Wed Aug 16 15:46:02 2017
 
   Current Dirac interface: DIRAC6    
- +++++ in PAMPOLPRP, parcal:  F
- +++++ trying to wake up slaves.
 
 
     ******************************************************************************************
@@ -1100,6 +1105,10 @@ tot.num. of pos.erg shells:    2    2    2    0
                                         Ag a B3ua B2ua B1ua Ag b B3ub B2ub B1ub
  Spinor class : occupied                   2    0    0    0    2    0    0    0
  Spinor class : virtual                    1    2    2    2    1    2    2    2
+ NSP  :          18
+ MAXSP:        1000
+ MXREP:          32
+ Length of irepspi array:       64000  integers
 
 
  Number of electrons :                     4
@@ -1116,26 +1125,28 @@ tot.num. of pos.erg shells:    2    2    2    0
  Type VOVV :             208 integrals
  Type VVVV :             547 integrals
 
- Start sorting of integral classes at   2 Nov 16 15:59:24
+ Start sorting of integral classes at  16 Aug 17 15:46:02
 
 
- Sorting of first 4 classes done at   2 Nov 16 15:59:24
+ Sorting of first 4 classes done at  16 Aug 17 15:46:02
 
  Need      1 passes to sort VOVV integrals
 
- Pass     1 ended at   2 Nov 16 15:59:24
+ Pass     1 ended at  16 Aug 17 15:46:02
 
- VOVV sorting done at   2 Nov 16 15:59:24
+ VOVV sorting done at  16 Aug 17 15:46:02
 
  Need      1 passes to sort VVVV integrals
 
- Pass     1 ended at   2 Nov 16 15:59:24
+ Pass     1 ended at  16 Aug 17 15:46:02
 
- VVVV sorting done at   2 Nov 16 15:59:24
+ VVVV sorting done at  16 Aug 17 15:46:02
+*** Qstack info: Created 20 stacks.
+*** Qstack info: Verbose mode is on
 
  Reading Coulomb integrals :
- File date :       2 Nov 16
- File time :       15:59:24
+ File date :      16 Aug 17
+ File time :       15:46:02
  # of integrals                 627
 
  Finished sorting of integrals
@@ -1187,10 +1198,11 @@ tot.num. of pos.erg shells:    2    2    2    0
  POLPRP control variables:
  -------------------------
 
- we do extended calculation:  F
- threshold for writing elements to ADC matrix:   0.0000000000000000     
- we perform a Davidson diagonalization: T
- The way final state symmetries are chosen is:
+ Extended ADC-2 calculation:  F
+ Compute transition moments :  F
+ Complex arithmetic:  F
+ Threshold for matrix elements:    0.00000
+ Davidson diagonalization: T
  User has selected the following final
  state symmetries:
     No:            1   symmetry:            2
@@ -1199,41 +1211,40 @@ tot.num. of pos.erg shells:    2    2    2    0
  ---------------------------
 
  Number of eigenstates to be calculated (roots)          12
- Size of Krylov space:          400
- Number of Davidson macro iterations:           10
+ Maximum subspace size:          400
+ Number of Davidson iterations:           10
  Requested energy conv.:           0.1000E-05
+
   ________________________________________________ 
  |                                                |
  |           Calculation section                  |
  |________________________________________________|
 
-   ** Warning ***
-   ** Property integrals (MDPROP) do not exist.
-   ** No transition moments are calculated.
-   ** Continuing with energy-only calculations.
+ Stack system initialized with          20  stacks
 
- #############################                                   
- ###
- ### Building real HP/HP block                                   
- ###
- #############################                                   
 
- ubound of eps:        1000
- lbound of eps:           1
-
- ############################################                    
+ ##############################################                  
  ###
- ### Generating (real) Davidson start vectors                    
+ ### Building real PH/PH block (all symmetries)                  
  ###
- ############################################                    
+ ##############################################                  
 
- Vectors available for symm.        1   Ag a
+
+ ####################################################            
+ ###
+ ### Generating (real) Dav. start vectors (all symm.)            
+ ###
+ ####################################################            
+
+
+ Vectors available for symm.        1   Ag a  (max. 10 are printed)
 
     1        0.458959433442       12.488926753648  Ag a @X
     2        0.554350634117       15.084654461511  Ag a @X
     3        4.723284780367      128.527171162367  Ag a @X
     4        4.764625423038      129.652107748561  Ag a @X
- Vectors available for symm.        2   B3ua
+
+ Vectors available for symm.        2   B3ua  (max. 10 are printed)
 
     1        0.084496553489        2.299269152287  B3ua @X
     2        0.225820072612        6.144879352844  B3ua @X
@@ -1243,7 +1254,8 @@ tot.num. of pos.erg shells:    2    2    2    0
     6        4.348596248725      118.331373263580  B3ua @X
     7        4.707197619579      128.089417064473  B3ua @X
     8        4.732622644092      128.781267467179  B3ua @X
- Vectors available for symm.        3   B2ua
+
+ Vectors available for symm.        3   B2ua  (max. 10 are printed)
 
     1        0.084496553489        2.299269152287  B2ua @X
     2        0.225820072612        6.144879352844  B2ua @X
@@ -1254,7 +1266,8 @@ tot.num. of pos.erg shells:    2    2    2    0
     7        4.707197619579      128.089417064473  B2ua @X
     8        4.732622644092      128.781267467179  B2ua @X
        No states in symmetry        4   B1ga
- Vectors available for symm.        5   B1ua
+
+ Vectors available for symm.        5   B1ua  (max. 10 are printed)
 
     1        0.084496553489        2.299269152287  B1ua @X
     2        0.225820072612        6.144879352844  B1ua @X
@@ -1275,24 +1288,28 @@ tot.num. of pos.erg shells:    2    2    2    0
        No states in symmetry       14   B2gb
        No states in symmetry       15   B3gb
        No states in symmetry       16   Au b
- Vectors available for symm.       17   Ag 3
+
+ Vectors available for symm.       17   Ag 3  (max. 10 are printed)
 
     1        0.458959433442       12.488926753648  Ag 3 @X
     2        4.723284780367      128.527171162367  Ag 3 @X
- Vectors available for symm.       18   B3u3
+
+ Vectors available for symm.       18   B3u3  (max. 10 are printed)
 
     1        0.084496553489        2.299269152287  B3u3 @X
     2        0.458146984249       12.466818877151  B3u3 @X
     3        4.312639704334      117.352945506166  B3u3 @X
     4        4.707197619579      128.089417064473  B3u3 @X
- Vectors available for symm.       19   B2u3
+
+ Vectors available for symm.       19   B2u3  (max. 10 are printed)
 
     1        0.084496553489        2.299269152287  B2u3 @X
     2        0.458146984249       12.466818877151  B2u3 @X
     3        4.312639704334      117.352945506166  B2u3 @X
     4        4.707197619579      128.089417064473  B2u3 @X
        No states in symmetry       20   B1g3
- Vectors available for symm.       21   B1u3
+
+ Vectors available for symm.       21   B1u3  (max. 10 are printed)
 
     1        0.084496553489        2.299269152287  B1u3 @X
     2        0.458146984249       12.466818877151  B1u3 @X
@@ -1301,24 +1318,30 @@ tot.num. of pos.erg shells:    2    2    2    0
        No states in symmetry       22   B2g3
        No states in symmetry       23   B3g3
        No states in symmetry       24   Au 3
- Vectors available for symm.       25   Ag 3
+
+ Vectors available for symm.       25   Ag 3  (max. 10 are printed)
 
     1        0.458959433442       12.488926753648  Ag 3 @X
     2        4.723284780367      128.527171162367  Ag 3 @X
- Vectors available for symm.       26   B3u3
+
+ Vectors available for symm.       26   B3u3  (max. 10 are printed)
 
     1        0.084496553489        2.299269152287  B3u3 @X
     2        0.458146984249       12.466818877151  B3u3 @X
     3        4.312639704334      117.352945506166  B3u3 @X
     4        4.707197619579      128.089417064473  B3u3 @X
- Vectors available for symm.       27   B2u3
+
+ Vectors available for symm.       27   B2u3  (max. 10 are printed)
 
     1        0.084496553489        2.299269152287  B2u3 @X
     2        0.458146984249       12.466818877151  B2u3 @X
     3        4.312639704334      117.352945506166  B2u3 @X
     4        4.707197619579      128.089417064473  B2u3 @X
        No states in symmetry       28   B1g3
- Vectors available for symm.       29   B1u3
+
+ Vectors available for symm.       29   B1u3  (max. 10 are printed)
+*** Qstack info: PUSH: Stack #5 has now 1 vectors stored.
+*** Qstack info: POPF: Stack # 5 has now 0 vectors stored.
 
     1        0.084496553489        2.299269152287  B1u3 @X
     2        0.458146984249       12.466818877151  B1u3 @X
@@ -1328,71 +1351,51 @@ tot.num. of pos.erg shells:    2    2    2    0
        No states in symmetry       31   B3g3
        No states in symmetry       32   Au 3
  ...success.
-
- ####################################                            
- ###
- ### Performing (real) precontraction                            
- ###
- ####################################                            
-
+  **) Performing (real) precontraction
  Master allocated                  547  words for VVVV buffer.
- PRECONTRACTION finished.
+ File VVVVXVVOO generated.
+ Precontraction finished.
 
- ##################################################              
- ###
- ### Starting calculation of Coupling and SAT block              
- ###
- ##################################################              
 
-Curr. symmetry:   2 B3ua
-Used main matrix file name: PP_ELE
-Current I/O buffer size:         204800
-Real/complex word:              1
 
- Configuration data written to ADCXCF
- Wcondat info:          28  conf recs written.
- Record length in configuration file:          56
+
+ ----------------------------------------------------------------------------------------------
+ ----------------------------------------------------------------------------------------------
+ ------  Now doing final state symmetry             2
+ ----------------------------------------------------------------------------------------------
+ ----------------------------------------------------------------------------------------------
+
+
+ Configuration data written to XCONFI
+ Record length in configuration file:          70
  Number of records (=matrix dimension):          28
+ ADC-2s sat energies written. Length check passed.
+
+ **) Entering serial driver for
+ **) real coupling and satellite block.
+
+ BUILD_X_COUSAT_R: VOVV stream complete.
     *)) Current symmetry:                     2
     *)) Block length of main block:           8
     *)) Block length of coupling block:          20
     *)) Matrix dimension: [      28 ]**2
+
+ ####################################                            
+ ###
+ ### Constructing real satellite part                            
+ ###
+ ####################################                            
+
+ for restricted ADC-2
+ energy diagonal written.
  --------------------------------------------
  ---- Coupling and Satellite blocks finished.
  ---- Number of required buffers:           1
  --------------------------------------------
 
  Serial run information:
- ADC matrix has           1  buffers of length      204800
+ ADC matrix has           1  buffers of length       20480
 
-
- ##########################################                      
- ###
- ### Entering POLPRP REAL FULL diagonalizer                      
- ###
- ##########################################                      
-
- Eigenvalues (lowest 20):
-           1   8.3379563294810291E-002   2.2688742901082786     
-           2  0.22155586107004169        6.0288442052311302     
-           3  0.45745980844618400        12.448119864475315     
-           4  0.48780638716956037        13.273892626258311     
-           5   1.1252892446153573        30.620690912182582     
-           6   1.1414689257554491        31.060962617985449     
-           7   1.5081958209104864        41.040113275881581     
-           8   1.5118974598946595        41.140840039018464     
-           9   4.2887308498123415        116.70235220504090     
-          10   4.3232762295891334        117.64238020375396     
-          11   4.6608102054442169        126.82715078294088     
-          12   4.6853497957416028        127.49490728483893     
-          13   5.5303752836093567        150.48923021179394     
-          14   5.5304080252849301        150.49012115848384     
-          15   5.5333941731448864        150.57137840951981     
-          16   5.5341306114459012        150.59141792353736     
-          17   5.5642878833018825        151.41203938124295     
-          18   5.5663430825889471        151.46796422228562     
-          19   5.9128709487226994        160.89747110872779     
-          20   5.9130434131671112        160.90216410696885     
 
  #############################################                   
  ###
@@ -1406,41 +1409,57 @@ Real/complex word:              1
   --------------------------------------
 
  *** serial run
+ *** all Davidson vectors are externalized.
 
  Number of Davidson roots:                   12
  Maximum Davidson subspace:                 400
  Number of Macro iterations:                 10
-Eigenvalue convergence up to:        0.10000E-05
- Do out-of-core calculation:        T
+ Eigenvalue convergence up to:      0.10000E-05
 
   ------------------------------------
   ------ Matrix parameters -----------
   ------------------------------------
 
- Write buffer length is:                 204800
+ Write buffer length is:                  20480
  Final states have symmetry:                  2
  ADC matrix dimension (# of rows):           28
  Packed partial matrix stored in:  PP_ELE    
- Configuration data stored in:     ADCXCF
- Record length of Config file:               56
+ Configuration data stored in:     XCONFI
+ Record length of Config file:               70
  Size of main space:                          8
 
- Found           8  Start vectors on file DAVSTART.02
+
+  ------------------------------------
+  ------ File information  -----------
+  ------------------------------------
+
+ Diagonal elements read into memory.
+ ADC file PP_ELE     opened.
+
+  ------------------------------------
+  ------ Restart information ---------
+  ------------------------------------
+
+ Using DAVSTART.02 as restart file.
+ Found           8  Start vectors.
  You request more states than there are in the Main space.
  Adapting requested roots          12  to           8
+           8  start vectors read.
+ Length of start vectors:           8
+ Orthogonality:   5.3290705182007514E-015
+ Restart check finalized.
    
- ADC file PP_ELE     opened.
    ****   MACRO iteration           1
 
- Deviation from orthogonality of the           8  Davidson start vectors:   5.3290705182007514E-015
 
    root    dim       exc.energy       error     status
---------------------------------------------------------
+----------------------------------------------------------------------
       1       8       0.0844966       0.0465951 o    OK      
       2       8       0.2258201       0.0773434 o    OK      
       3       8       0.4581470       0.0446297 o    OK      
       4       8       0.5053638       0.1169264 o    OK      
       5       8       4.3126397       0.2212846 o    OK      
+*** Qstack info: Shutting down stack system. Clearing heap space.
       6       8       4.3485962       0.2366471 o    OK      
       7       8       4.7071976       0.2668199 o    OK      
       8       8       4.7326226       0.2748080 o    OK      
@@ -1463,18 +1482,15 @@ Eigenvalue convergence up to:        0.10000E-05
  **WARNING: Not all vectors converged to desired
  **         Threshold. Check residual errors!
  Master node has deleted file PP_ELE    
- Opening config file ADCXCF
- for reading with record length          56
  ++++++++++++
- ++++++ time in davidson:   0.55591599999999997     
+ ++++++ time in davidson:    5.4991999999999999E-002
  ++++++++++++
- No transition moments for irep           2  can be calculated.
 
  Statistics for the word-addressable I/O
  Number of write calls                                   4.
- Number of read calls                                   63.
+ Number of read calls                                   40.
  Megabytes written                                    0.009
- Megabytes read                                       0.019
+ Megabytes read                                       0.012
  Seconds spent in reads                               0.000
  Seconds spent in writes                              0.000
  average I/O speed for write (Mb/s)                   0.000
@@ -1487,11 +1503,11 @@ Eigenvalue convergence up to:        0.10000E-05
 
 
  
-     Date and time (Linux)  : Wed Nov  2 15:59:25 2016
+     Date and time (Linux)  : Wed Aug 16 15:46:02 2017
      Host name              : cluster-pci                             
 
->>>> Node 0, utime: 0, stime: 0, minflt: 6510, majflt: 1, nvcsw: 21, nivcsw: 38, maxrss: 21288
->>>> Total WALL time used in DIRAC: 1s
+>>>> Node 0, utime: 0, stime: 0, minflt: 5847, majflt: 0, nvcsw: 20, nivcsw: 19, maxrss: 18400
+>>>> Total WALL time used in DIRAC: 0s
   
   Dynamical Memory Usage Summary for Master
   
@@ -1517,3 +1533,4 @@ Eigenvalue convergence up to:        0.10000E-05
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
+DIRAC pam run in /home/markus/dirac_final_merge/build_gcc52_serial/test/reladc_exci
