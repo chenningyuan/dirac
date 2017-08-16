@@ -976,32 +976,24 @@ C
           else
 !           call fulldia_r3(iobase,namematfil,intbuf,ladc,desrep)
 
-            write(*,*) ' **ATT new davidson !!!*****'
-            write(*,*) ' **ATT new davidson !!!*****'
-            write(*,*) ' **ATT new davidson !!!*****'
-            write(*,*) ' **ATT new davidson !!!*****'
-            write(*,*) ' **ATT new davidson !!!*****'
-            write(*,*) ' **ATT new davidson !!!*****'
-            write(*,*) ' **ATT new davidson !!!*****'
-            write(*,*) ' **ATT new davidson !!!*****'
-            write(*,*) ' **ATT new davidson !!!*****'
+!           write(*,*) ' **ATT new davidson !!!*****'
 
-            call mpi_davidson_accel_r(iobase,
-     &                                intbuf,
-     &                                ladc,
-     &                                MVO(desrep),
-     &                                desrep,
-     &                                namematfil)
+!           call mpi_davidson_accel_r(iobase,
+!    &                                intbuf,
+!    &                                ladc,
+!    &                                MVO(desrep),
+!    &                                desrep,
+!    &                                namematfil)
 
-!           call mpi_davidson_master_ext_r(iw,
-!    &                                     iobase,
-!    &                                     desrep,
-!    &                                     intbuf,
-!    &                                     namematfil,
-!    &                                     namecnffil,
-!    &                                     irecl,
-!    &                                     ladc,
-!    &                                     MVO(desrep))
+            call mpi_davidson_master_ext_r(iw,
+     &                                     iobase,
+     &                                     desrep,
+     &                                     intbuf,
+     &                                     namematfil,
+     &                                     namecnffil,
+     &                                     irecl,
+     &                                     ladc,
+     &                                     MVO(desrep))
           endif
 
 ! Main ADC matrix file is deleted

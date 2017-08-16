@@ -36,7 +36,6 @@ set(FREE_RELADC_FORTRAN_SOURCES
     polprp_mpiserver.F
     polprp_prpint.F
     polprp_qstackm.F90
-    new_davidson.F90
 )
 
 set(C_RELADC_SOURCES
