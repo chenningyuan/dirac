@@ -30,6 +30,7 @@ C     for diis ...
       REAL*8 CC1(*)
       REAL*8 BB1(*),BB2(*)
 
+      real(8), parameter :: rms_limit = 1.D4
       REAL*8 RMS,CONV
       REAL*8 DIAG
       INTEGER MAXIT,NBUF2,NBUF3
@@ -250,6 +251,10 @@ C
 C
 C
       IF(RMS.LT.CONV) GO TO 2000
+      IF(RMS.GT.rms_limit) THEN
+        WRITE (IW,*) ' WARNING: aborted CC iterations (divergence)'
+        GO TO 2000
+      END IF
       GO TO 1000
 C
  2000 CONTINUE
