@@ -14,7 +14,7 @@ lscpu
 echo "Disk, df -h :"
 df -h
 echo "Memory, free -m :"
-free -m
+free -g -h
 
 echo "git whereabouts:"
 which git

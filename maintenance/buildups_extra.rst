@@ -40,4 +40,9 @@ fetch the DIRAC code from his private gitlab and bitbucket repositories.
 
 * codefresh
 
+|Codefresh build status|
+
+.. |Codefresh build status| image:: https://g.codefresh.io/api/badges/build?repoOwner=miro.ilias&repoName=dirac&branch=master&pipelineName=dirac&accountName=miroilias&key=eyJhbGciOiJIUzI1NiJ9.NTk3MDg0MzZmNjdjMGEwMDAxMjc4MTk2.lCkFjZSdnRbGR8dHIjM3lLdo-DEteme2R4ykF_8S39M&type=cf-1
+   :target: https://g.codefresh.io/repositories/miro.ilias/dirac/builds?filter=trigger:build;branch:master;service:597088ef26998d0001219c2c~dirac
+
 * bitbucket-pipelines

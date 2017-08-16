@@ -1752,8 +1752,8 @@ C
         IVOFF = IVOFF + NFBAS(IFRP,0)*NFORB(IFRP,0)
       ENDDO
       IF(NLINDEP.GT.0) THEN
-        WRITE(LUPRI,'(A)')
-     &  '*** WARNING *** : Functions deleted due to linear dependence.'
+        WRITE(LUPRI,'(A,I0,A)') '*** WARNING *** : ',NLINDEP,
+     &    ' functions deleted due to numerical linear dependence.'
       ENDIF
 
       CALL QEXIT('LOWDI1')
