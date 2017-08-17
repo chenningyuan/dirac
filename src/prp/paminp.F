@@ -1529,12 +1529,11 @@ CMI ... inform about the assigned PCOMB
          WRITE(LUPRI,'(1X,A,A4)')
      &   'for this operator assigned PCOMB:',PCOMB
       END IF
-
-!     ...  assign proper factor for EDM  ...
+!     ...  assign proper factor for EDM  ... accordingto E.D.Commins
       IF (PLABEL(1).EQ.'EDM') THEN
-        PFAC(1) = -4.0D0 * CVAL * PFAC(1)
+        PFAC(1)=+4.0D0 * CVAL * PFAC(1)
         WRITE(LUPRI,'(2X,A,D12.6)') 
-     &  '4c EDM2 operator: strength multiplied by -4*CVAL,'
+     &  '4c EDM2 operator: strength multiplied by +4*CVAL,'
      & //' PFAC(1)=', PFAC(1)
       ENDIF
 
@@ -2156,7 +2155,7 @@ C
         IF (PLABEL.EQ.'EDM') THEN
           PLABEL='KINENERG'
           WRITE(LUPRI,*)
-     &     'EDM: PLABEL SET to KINENERG, factor -4*c*field_strength'
+     &     'EDM: PLABEL SET to KINENERG, factor +4*c*field_strength'
         ENDIF
 
         IF (IPRINT.GE.5) THEN
@@ -2261,6 +2260,7 @@ C     Written by T.Saue, January 1995
 C     Last revision: tsaue - May 14 1996
 C
 C    MI,HJAaJ(TEC),2003 - added changes for LAO-based  integrals
+C    MKN, MI, 2017 - added exception for the EDM operator
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -2314,6 +2314,15 @@ C     If the scalar operator is anti-symmetric, then it is imaginary
 C     and time anti-symmetric
 C     However, if the operator has no symmetry about the diagonal 
 C     we can not use this argument and has to add exceptions
+C
+CMKN/MI Exception for i*BETA*GAMMA5 operator: Malaya K. Nayak (09-07-15)
+      IF (ITYP.EQ.21) THEN
+         IATIM = -1
+         WRITE(LUPRI,'(2X,A)')
+     &   'exception: i*BETA*GAMMA5 operator, setting IATIM = -1'
+      END IF
+CMKN/MI Because the operator i*BETA*GAMMA5 is a T-odd by its definion
+
       IBTIM = IPRLTYP(IBIND)
       IF(IBTIM.EQ.0) IBTIM = ISCALAROP_TSYM(PRPLBL(IBIND))
 C     Total time reversal symmetry of the 4-comp.operator
