@@ -962,10 +962,10 @@ C
                DO A = 1, NV(AREP)
                   AA = IREPSPI(A,AREP,2)
                   if(AA.gt.nsp) then
-                    stop('Internal error IDXCoverage')
+                    stop 'Internal error IDXCoverage' 
                   endif
                   if(II.gt.nsp) then
-                    stop('Internal error IDXCoverage')
+                    stop 'Internal error IDXCoverage' 
                   endif
                   acv(AA,II)=0
                   acv(II,AA)=0
