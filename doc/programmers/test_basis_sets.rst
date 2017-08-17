@@ -64,20 +64,22 @@ Read all elements basis sets from selected files:
 
 Run only selected elements in selected basis set file(s):
 
- ::
+::
 
  export BSFILE="basis_ecp/ECPDS28SDFSF"
  export ZELEM="30 35"
  ./test -b <BUILDIR> 
 
 Run all elements in two randomly selected basis set files:
- ::
+
+::
 
  export RANDOM_BSF_Z="2"
  ./test -b <BUILDIR> 
 
 Run three elements in three randomly selected basis set file:
- ::
+
+::
 
  export RANDOM_BSF_Z="3 3"
  ./test -b <BUILDIR> 
