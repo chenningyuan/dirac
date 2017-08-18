@@ -11,7 +11,6 @@ set(FIXED_RELADC_FORTRAN_SOURCES
     adccore.F
     adcdble.F
     adcdiag.F
-    adcexci.F
     adcsort.F
 )
 
@@ -26,9 +25,22 @@ set(FREE_RELADC_FORTRAN_SOURCES
     adc_fano_matmul.F90
     adc_fano.F90
     adcutil.F90
+    polprp_buildtm.F
+    polprp_cfg.F90
+    polprp_cousat.F
+    polprp_davidson.F
+    polprp_driver.F
+    polprp_helpers.F
+    polprp_mainblk.F
+    polprp_mpimaster.F
+    polprp_mpiserver.F
+    polprp_prpint.F
+    polprp_qstackm.F90
 )
 
-set(C_RELADC_SOURCES)
+set(C_RELADC_SOURCES
+    polprp_qstack.c
+)
 
 if (ENABLE_STIELTJES)
   #miro: needs extra sources !

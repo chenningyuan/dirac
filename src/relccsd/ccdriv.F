@@ -1143,6 +1143,7 @@ C
                         NO(IREP) = NO(IREP) + 1
                         IREPSP(I,3) = NO(IREP)
                         IREPSPI(NO(IREP),IREP,1) = I
+!        write(*,*) 'occ:',NO(IREP),IREP,IREPSPI(NO(IREP),IREP,1)
                         IF (.not.IFROZ_set_in_input) THEN
                            IF (NO(IREP).GT.MAXFROZ)
      &                        CALL QUIT("INCREASE MAXFROZ")
@@ -1161,6 +1162,7 @@ C
                         NV(IREP) = NV(IREP) + 1
                         IREPSP(I,3) = - NV(IREP)
                         IREPSPI(NV(IREP),IREP,2) = I
+!        write(*,*) 'vir:',NV(IREP),IREP,IREPSPI(NV(IREP),IREP,2)
                      ENDIF
                   ENDIF
                ENDDO
@@ -1447,9 +1449,21 @@ C     LL arrays are symmetry pointers for tensors in which the rightmost indices
 C
       DO KREP = 1, NREP
          DO IJREP = 1, NREP
+!
+!  discussion with luuk
+!  for consistency IJREP is a bra and the order in the MULTB
+!  array may be swapped to maintain consistency with the definitions
+!
+!  original:
+!
             IJKREP = MULTB(KREP,IJREP+NREP,2)
+!
+!  possible alternative in case of totally symmetric products:
+!           IJKREP = MULTB(IJREP+NREP,KREP,2)
+!
 C           Here we use that (i) KLREP = IJREP, (ii) LREP = MULTB(KREP,KLREP,2), (iii) Ordering should be
 C           such that we can contract with an array to the right in which the leftmost index is ordered on LREP.
+
             KKOOOT(IJREP,KREP) = NOOOT(IJKREP)
             KKVVOT(IJREP,KREP) = NVVOT(IJKREP)
             KKOOVT(IJREP,KREP) = NOOVT(IJKREP)
@@ -4472,22 +4486,26 @@ C
       ENDDO
        write(*,*) (REPNA(IREP),IREP=1,2*NREP)
 
-!     write(*,*)
-!     write(*,*) '--------------------------------------------'
-!     write(*,*) '---  multiplication table  -----------------'
-!     write(*,*) '--------------------------------------------'
-!     write(*,*)
-!     DO IREP = 1, 2*NREP
-!       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
-!     ENDDO
-!     write(*,*)
-!     write(*,*) '--------------------------------------------'
-!     write(*,*) '---  inverse multiplication table  ---------'
-!     write(*,*) '--------------------------------------------'
-!     write(*,*)
-!     DO IREP = 1, 2*NREP
-!       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*nrep)
-!     ENDDO
+C     write(*,*)
+C     write(*,*) '--------------------------------------------'
+C     write(*,*) '---  multiplication table (full) -----------'
+C     write(*,*) '--------------------------------------------'
+C     write(*,*)
+C     DO IREP = 1, NREP
+C       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+C     ENDDO
+C     write(*,*) '-------------------------------------'
+C     DO IREP = NREP+1, 2*NREP
+C       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+C     ENDDO
+C     write(*,*)
+C     write(*,*) '--------------------------------------------'
+C     write(*,*) '---  inverse multiplication table (full) ---'
+C     write(*,*) '--------------------------------------------'
+C     write(*,*)
+C     DO IREP = 1, 2*NREP
+C       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*nrep)
+C     ENDDO
 
 C
 C     Get rid of offset for boson reps
@@ -4505,32 +4523,26 @@ C
          ENDDO
       ENDDO
 
-c     write(*,*)
-c     write(*,*) '--------------------------------------------'
-c     write(*,*) '---  multiplication table (no offset) ------'
-c     write(*,*) '--------------------------------------------'
-c     write(*,*)
-c     DO IREP = 1, 2*NREP
-c       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
-c     ENDDO
-c     write(*,*)
-c     write(*,*) '-------------------------------------- ------------'
-c     write(*,*) '---  inverse multiplication table (no offset) -----'
-c     write(*,*) '---------------------------------------------------'
-c     write(*,*)
-c     DO IREP = 1, 2*NREP
-c       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*NREP)
-c     ENDDO
-
-c     write(*,*)
-c     write(*,*) '-------------------------------------- ------------'
-c     write(*,*) '---  forward multiplication table (no offset) -----'
-c     write(*,*) '---------------------------------------------------'
-c     write(*,*)
-c     DO IREP = 1, 2*NREP
-c       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*NREP)
-c     ENDDO
-
+C     write(*,*)
+C     write(*,*) '--------------------------------------------'
+C     write(*,*) '---  multiplication table (rebased) --------'
+C     write(*,*) '--------------------------------------------'
+C     write(*,*)
+C     DO IREP = 1, NREP
+C       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+C     ENDDO
+C     write(*,*) '-------------------------------------'
+C     DO IREP = NREP+1, 2*NREP
+C       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+C     ENDDO
+C     write(*,*)
+C     write(*,*) '-------------------------------------- ------------'
+C     write(*,*) '---  inverse multiplication table (rebased) -------'
+C     write(*,*) '---------------------------------------------------'
+C     write(*,*)
+C     DO IREP = 1, 2*NREP
+C       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*NREP)
+C     ENDDO
 C
 C     Distribute the information read from MRCONEE
 C
