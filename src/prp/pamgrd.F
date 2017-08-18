@@ -438,7 +438,6 @@ C
       DIMENSION PRPMO(*),CMO(*),IBEIG(*),IPCMO(*),NPMO(*),WORK(*)
 C
       CALL QENTER('PRPMAT')
-      write(*,*) '********** in PRPMAT **********'
       KFRSAV = KFREE
 C     Determine whether integrals are fetched on triangular or square form;
 C     check if first scalar property operator is has diagonal symmetry or not
@@ -452,7 +451,6 @@ C     check if first scalar property operator is has diagonal symmetry or not
      &  (IPCMO(I),NPMO(I),I = 1,NFSYM)
         WRITE(LUPRI,*)' NPMOT,N2PMOX:',NPMOT,N2PMOX
       ENDIF
-      write(*,*) 'N2BBASXQ:',N2BBASXQ
 C
 C     Memory allocation
 C

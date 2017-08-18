@@ -1,6 +1,6 @@
 **DIRAC
 .TITLE
-  Xe atom
+  Ne atom
 .WAVE F ! Activate integral and wave functions module
 #.ANALYZE
 .4INDEX
@@ -16,6 +16,7 @@
 *READIN
 .UNCONTRACTED
 **HAMILTONIAN
+.SPINFREE
 .PRINT
 0
 .INTFLG
@@ -26,14 +27,14 @@
 **WAVE FUNCTIONS ! What method (DHF,MP2,CC..)
 .SCF
 *SCF
-# Xe atom (Z=54)
+# Ne atom (10 el)
 .CLOSED SHELL
-30  24
+4 6 
 .EVCCNV ! Energy convergence...
 1.0D-9  1.0D-7
 # read starting MOs
-.MAXITR
-2
+#.MAXITR
+#2
 #################################################
 **ANALYZE
 .MULPOP
@@ -47,30 +48,26 @@ all
 .NOMDCI
 # all occupied shells
 .ACTIVE
-1..15
-1..12
+1..2
+1..3
 .PRPTRA
 *PRPTRA
-# we need this print level to get all MO mtx elements
+# we need this print level to get all MO mtx elements printed
 .PRINT
-2
-# W_A operator ...
+3
+# dipole mom. operator ...
 .OPERATOR
- 'xalpha_fc Xe' 
- XALPHA
- 'FC Xe 01'
+ XDIPLEN
  COMFACTOR
  1.00D0
+#
 .OPERATOR
- 'yalpha_fc Xe'
- YALPHA
- 'FC Xe 01'
+ YDIPLEN
  COMFACTOR
- 1.0D00
+ 1.00D0
+#
 .OPERATOR
- 'zalpha_fc Xe'
- ZALPHA
- 'FC Xe 01'
+ ZDIPLEN
  COMFACTOR
- 1.0D00
+ 1.00D0
 *END OF

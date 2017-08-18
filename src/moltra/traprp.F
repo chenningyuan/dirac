@@ -321,7 +321,7 @@ C
       DIMENSION IBE11(*),IBE21(*),IBE12(*),IBE22(*)
 !
 C
-      IF (IPRINT.GE.3) THEN
+      IF (IPRINT.GE.5) THEN
          WRITE(LUPRI,'(/3X,3A/)') '*** Property matrix :',ACHAR,' ***'
          CALL PRQMAT(PROPMO,NSTRT1,NSTRT2,NSTRT1,NSTRT2,
      &               NZ,IPQTOQ(1,ISYM-1),LUPRI)
@@ -491,36 +491,32 @@ C               Translate to the complex (bar/unbar) notation.
       ENDIF
 C
 ! Printout of complex matrix elements of the transformed operator
-      IF (IPRINT.GE.1) THEN
-         IF (NSTRT1.EQ.NSTRT2) THEN
-            ! print out NONZERO diagonal matrix elements
-            WRITE (LUPRI,1010) ACHAR(25:32)
-            WRITE(LUPRI,'(4x,a,d9.3)') 'zero threshold=',ZEROTHRS
-            DO I = 1, 2*NSTRT1
-             IF ( (DABS(PRCMO(I,I,1)).GT.ZEROTHRS).OR.
-     &            (DABS(PRCMO(I,I,2)).GT.ZEROTHRS) ) THEN
-               WRITE (LUPRI,1011) I,PRCMO(I,I,1),PRCMO(I,I,2)
-             ENDIF
-            ENDDO
-            WRITE (LUPRI,*)
-         ENDIF
          IF (IPRINT.GE.2) THEN
            ! print out all NONZERO matrix elements
-            WRITE (LUPRI,1012) ACHAR(25:32)
-            WRITE(LUPRI,'(4x,a,d9.3)') 'zero threshold=',ZEROTHRS
+            IF ( IPRINT.EQ.2) THEN
+              ! print nonzero elemenys
+              WRITE (LUPRI,1012) ACHAR(25:32)
+              WRITE(LUPRI,'(4x,a,d9.3)') 'zero threshold=',ZEROTHRS
+            ELSE
+              WRITE(LUPRI,"(A)")
+     &        "Printout of all property elements"
+            ENDIF
             DO I = 1, NSTRT1*2
                DO J = 1, NSTRT2*2
-                IF ( (DABS(PRCMO(I,J,1)).GT.ZEROTHRS).OR.
-     &               (DABS(PRCMO(I,J,2)).GT.ZEROTHRS) ) THEN
-                  WRITE (LUPRI,1013) I,J,PRCMO(I,J,1),PRCMO(I,J,2)
+                IF (IPRINT.EQ.2) THEN
+                  IF ( (DABS(PRCMO(I,J,1)).GT.ZEROTHRS).OR.
+     &                 (DABS(PRCMO(I,J,2)).GT.ZEROTHRS) ) THEN
+                    WRITE (LUPRI,1013) I,J,PRCMO(I,J,1),PRCMO(I,J,2)
+                  ENDIF
+                ELSE  ! print all elements
+                    WRITE (LUPRI,1013) I,J,PRCMO(I,J,1),PRCMO(I,J,2)
                 ENDIF
                ENDDO
             ENDDO
             WRITE(LUPRI,"(A)")
-     &      "End of printout of nonzero property elements"
+     &      "End of property elements printout."
             WRITE (6,*)
          ENDIF
-      ENDIF
 C
 C     WRITE PRCMO TO FILE
 C
