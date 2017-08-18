@@ -516,6 +516,8 @@ C
                 ENDIF
                ENDDO
             ENDDO
+            WRITE(LUPRI,"(A)")
+     &      "End of printout of nonzero property elements"
             WRITE (6,*)
          ENDIF
       ENDIF
