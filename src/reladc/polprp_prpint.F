@@ -394,28 +394,10 @@
       integer                  :: irow,icol,retcode
       integer                  :: loopcount
       Real*8, allocatable      :: GOV(:)    !generic order OV propints
+
+      Integer                  :: qst_auxline
 !
 !---------------Executable code--------------------------------------
-!
-!
-!  debugging:  check irepspi organization
-!
-!       WRITE(*,*)
-!       WRITE(*,*) '|| IREPSPI organization: ||'
-!       WRITE(*,*)
-!       WRITE(*,*) 'occupied:'
-!       Do qrep=1,nrep
-!         Do n1=1,NO(qrep)
-!           write(*,*) 'G,i,absi:',qrep,n1,irepspi(n1,qrep,1)
-!         Enddo
-!       Enddo
-!       WRITE(*,*) 'virtual:'
-!       Do qrep=1,nrep
-!         Do n1=1,NV(qrep)
-!           write(*,*) 'G,a,absa:',qrep,n1,irepspi(n1,qrep,2)
-!         Enddo
-!       Enddo
-
 !
 !     Read symmetry information (master node only) from MDPROP
 !     The file is organized in a way that after a label identifying the
@@ -751,7 +733,9 @@ C
             ENDDO  !A
          ENDDO  !AREP
       ENDDO  !IAREP
-      if(qstack_push(AUX_STACKLINE,dimpov*rcw,GOV).ne.dimpov*rcw) 
+
+      qst_auxline = AUX_STACKLINE
+      if(qstack_push(qst_auxline,dimpov*rcw,GOV).ne.dimpov*rcw) 
      &   stop 'QPE'
       deallocate(GOV)
 

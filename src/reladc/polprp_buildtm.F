@@ -124,6 +124,9 @@
       Integer                                :: ialloc,iat
       
       Integer*8                              :: n8
+
+      Integer                                :: qst_prpline
+      Integer                                :: qst_auxline
 !
 !---------------interface region --------------------------------------
 !
@@ -221,17 +224,22 @@
       write(*,*) '   Final state Symmetry: ',desrep
       write(*,*) '   *******************************'
       write(*,*)
-
+!
+!  assign stack line numbers in order to avoid direct integers
+!  as actual parameters for the qstack calls.
+!
+      qst_prpline = PRP_STACKLINE
+      qst_auxline = AUX_STACKLINE
 
       write(*,*) '   *******************************'
-      write(*,*) '   Stack line used:',PRP_STACKLINE
+      write(*,*) '   Stack line used:',qst_prpline
       write(*,*) '   *******************************'
 !
 ! clear stack line for pushing intermediates
 ! if stack line is cleared, no action is taken.
 ! return value i is irrelevant.
 !
-      i = qstack_drop(PRP_STACKLINE)
+      i = qstack_drop(qst_prpline)
 !
 ! initialization of constant variables
 !
@@ -487,9 +495,9 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
-      if(qstack_push(PRP_STACKLINE,lp1,faipx).ne.lp1) stop 'QE' 
-      if(qstack_push(PRP_STACKLINE,lp1,faipy).ne.lp1) stop 'QE' 
-      if(qstack_push(PRP_STACKLINE,lp1,faipz).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipx).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipy).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipz).ne.lp1) stop 'QE' 
 !
 !------------------------
 !------  F_ai(1)
@@ -530,9 +538,9 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
-      if(qstack_push(PRP_STACKLINE,lp1,faipx).ne.lp1) stop 'QE' 
-      if(qstack_push(PRP_STACKLINE,lp1,faipy).ne.lp1) stop 'QE' 
-      if(qstack_push(PRP_STACKLINE,lp1,faipz).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipx).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipy).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipz).ne.lp1) stop 'QE' 
 
 !
 !  enter calculation for second-order contributions
@@ -593,9 +601,9 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
-      if(qstack_push(PRP_STACKLINE,lp1,faipx).ne.lp1) stop 'QE' 
-      if(qstack_push(PRP_STACKLINE,lp1,faipy).ne.lp1) stop 'QE' 
-      if(qstack_push(PRP_STACKLINE,lp1,faipz).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipx).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipy).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipz).ne.lp1) stop 'QE' 
 
 !
 !------------------------
@@ -651,9 +659,9 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
-      if(qstack_push(PRP_STACKLINE,lp1,faipx).ne.lp1) stop 'QE' 
-      if(qstack_push(PRP_STACKLINE,lp1,faipy).ne.lp1) stop 'QE' 
-      if(qstack_push(PRP_STACKLINE,lp1,faipz).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipx).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipy).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipz).ne.lp1) stop 'QE' 
 
 !
 !------------------------
@@ -724,9 +732,9 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
-      if(qstack_push(PRP_STACKLINE,lp1,faipx).ne.lp1) stop 'QE' 
-      if(qstack_push(PRP_STACKLINE,lp1,faipy).ne.lp1) stop 'QE' 
-      if(qstack_push(PRP_STACKLINE,lp1,faipz).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipx).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipy).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipz).ne.lp1) stop 'QE' 
 !
 !
 !--------------------------------------
@@ -800,9 +808,9 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
-      if(qstack_push(PRP_STACKLINE,lp1,faipx).ne.lp1) stop 'QE' 
-      if(qstack_push(PRP_STACKLINE,lp1,faipy).ne.lp1) stop 'QE' 
-      if(qstack_push(PRP_STACKLINE,lp1,faipz).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipx).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipy).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipz).ne.lp1) stop 'QE' 
 
 !     write(*,*) '------  F_ai(2,1) finished'
       
@@ -867,9 +875,9 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
-      if(qstack_push(PRP_STACKLINE,lp1,faipx).ne.lp1) stop 'QE' 
-      if(qstack_push(PRP_STACKLINE,lp1,faipy).ne.lp1) stop 'QE' 
-      if(qstack_push(PRP_STACKLINE,lp1,faipz).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipx).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipy).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipz).ne.lp1) stop 'QE' 
       
 !     write(*,*) '------  F_ai(2,2) finished'
 !
@@ -931,9 +939,9 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
-      if(qstack_push(PRP_STACKLINE,lp1,faipx).ne.lp1) stop 'QE' 
-      if(qstack_push(PRP_STACKLINE,lp1,faipy).ne.lp1) stop 'QE' 
-      if(qstack_push(PRP_STACKLINE,lp1,faipz).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipx).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipy).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipz).ne.lp1) stop 'QE' 
 
 !     write(*,*) '------  F_ai(2,3) finished'
 !
@@ -1004,9 +1012,9 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
-      if(qstack_push(PRP_STACKLINE,lp1,faipx).ne.lp1) stop 'QE' 
-      if(qstack_push(PRP_STACKLINE,lp1,faipy).ne.lp1) stop 'QE' 
-      if(qstack_push(PRP_STACKLINE,lp1,faipz).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipx).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipy).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipz).ne.lp1) stop 'QE' 
 
 !     write(*,*) '------  F_ai(2,4) finished'
 !
@@ -1096,9 +1104,9 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
-      if(qstack_push(PRP_STACKLINE,lp1,faipx).ne.lp1) stop 'QE' 
-      if(qstack_push(PRP_STACKLINE,lp1,faipy).ne.lp1) stop 'QE' 
-      if(qstack_push(PRP_STACKLINE,lp1,faipz).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipx).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipy).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipz).ne.lp1) stop 'QE' 
 
 !     write(*,*) '------  F_ai(2,5) finished'
 !
@@ -1183,9 +1191,9 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
-      if(qstack_push(PRP_STACKLINE,lp1,faipx).ne.lp1) stop 'QE' 
-      if(qstack_push(PRP_STACKLINE,lp1,faipy).ne.lp1) stop 'QE' 
-      if(qstack_push(PRP_STACKLINE,lp1,faipz).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipx).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipy).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipz).ne.lp1) stop 'QE' 
 
 !     write(*,*) '------  F_ai(2,6) finished'
 !
@@ -1200,14 +1208,14 @@
 ! in a FIFO manner! Since the push was done only once we have to
 ! repush the data back one stack
 !
-      if(qstack_popf(AUX_STACKLINE,dovxg).ne.idaov*rcw) stop 'Qpferr'
-      if(qstack_popf(AUX_STACKLINE,dovyg).ne.idaov*rcw) stop 'Qpferr'
-      if(qstack_popf(AUX_STACKLINE,dovzg).ne.idaov*rcw) stop 'Qpferr'
-      if(qstack_push(AUX_STACKLINE,idaov*rcw,dovxg).ne.idaov*rcw)
+      if(qstack_popf(qst_auxline,dovxg).ne.idaov*rcw) stop 'Qpferr'
+      if(qstack_popf(qst_auxline,dovyg).ne.idaov*rcw) stop 'Qpferr'
+      if(qstack_popf(qst_auxline,dovzg).ne.idaov*rcw) stop 'Qpferr'
+      if(qstack_push(qst_auxline,idaov*rcw,dovxg).ne.idaov*rcw)
      &   stop 'Qpferr'
-      if(qstack_push(AUX_STACKLINE,idaov*rcw,dovyg).ne.idaov*rcw)
+      if(qstack_push(qst_auxline,idaov*rcw,dovyg).ne.idaov*rcw)
      &   stop 'Qpferr'
-      if(qstack_push(AUX_STACKLINE,idaov*rcw,dovzg).ne.idaov*rcw)
+      if(qstack_push(qst_auxline,idaov*rcw,dovzg).ne.idaov*rcw)
      &   stop 'Qpferr'
 !
       n1 = max(ivovo(nrep+1),jvovo(nrep+1))
@@ -1295,9 +1303,9 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
-      if(qstack_push(PRP_STACKLINE,lp1,faipx).ne.lp1) stop 'QE' 
-      if(qstack_push(PRP_STACKLINE,lp1,faipy).ne.lp1) stop 'QE' 
-      if(qstack_push(PRP_STACKLINE,lp1,faipz).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipx).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipy).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipz).ne.lp1) stop 'QE' 
 
       deallocate(vovo1,vovo2,vovo3)
 
@@ -1386,9 +1394,9 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
-      if(qstack_push(PRP_STACKLINE,lp1,faipx).ne.lp1) stop 'QE' 
-      if(qstack_push(PRP_STACKLINE,lp1,faipy).ne.lp1) stop 'QE' 
-      if(qstack_push(PRP_STACKLINE,lp1,faipz).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipx).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipy).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipz).ne.lp1) stop 'QE' 
 
       deallocate(vovo1,vovo2,vovo3)
 
@@ -1443,9 +1451,9 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
-      if(qstack_push(PRP_STACKLINE,lp1,faipx).ne.lp1) stop 'QE' 
-      if(qstack_push(PRP_STACKLINE,lp1,faipy).ne.lp1) stop 'QE' 
-      if(qstack_push(PRP_STACKLINE,lp1,faipz).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipx).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipy).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipz).ne.lp1) stop 'QE' 
 
       deallocate(vvoop)
       deallocate(vovo3)
@@ -1503,9 +1511,9 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
-      if(qstack_push(PRP_STACKLINE,lp1,faipx).ne.lp1) stop 'QE' 
-      if(qstack_push(PRP_STACKLINE,lp1,faipy).ne.lp1) stop 'QE' 
-      if(qstack_push(PRP_STACKLINE,lp1,faipz).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipx).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipy).ne.lp1) stop 'QE' 
+      if(qstack_push(qst_prpline,lp1,faipz).ne.lp1) stop 'QE' 
 
       deallocate(oooo)
       deallocate(vovo3)
@@ -1684,21 +1692,21 @@
      &                LVVONO,KKVVOT,vabijx,vvoop,desrep,n2)
       CALL rca_negate(nabxij,vvoop)
       call rcaxpy(nabxij,carith,pphasex,vvoop,fabijtx)
-      if(qstack_push(PRP_STACKLINE,lp2,vvoop).ne.lp2) stop 'QE' 
+      if(qstack_push(qst_prpline,lp2,vvoop).ne.lp2) stop 'QE' 
 
       vvoop = 0.0d0
       CALL SRT1T3_NTS (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,
      &                LVVONO,KKVVOT,vabijy,vvoop,desrep,n2)
       CALL rca_negate(nabxij,vvoop)
       call rcaxpy(nabxij,carith,pphasey,vvoop,fabijty)
-      if(qstack_push(PRP_STACKLINE,lp2,vvoop).ne.lp2) stop 'QE' 
+      if(qstack_push(qst_prpline,lp2,vvoop).ne.lp2) stop 'QE' 
 
       vvoop = 0.0d0
       CALL SRT1T3_NTS (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,
      &                LVVONO,KKVVOT,vabijz,vvoop,desrep,n2)
       CALL rca_negate(nabxij,vvoop)
       call rcaxpy(nabxij,carith,pphasez,vvoop,fabijtz)
-      if(qstack_push(PRP_STACKLINE,lp2,vvoop).ne.lp2) stop 'QE' 
+      if(qstack_push(qst_prpline,lp2,vvoop).ne.lp2) stop 'QE' 
 
       iorder='0th-2nd order ph + 2p2h (part A)'
       incsat = nabxij
@@ -1807,19 +1815,19 @@
       CALL SRT1T2_NTS (NREP,MULTB,LTR,NVVT,NV,NV,NOOT,
      &                 LVNVOO,LLVOOT,vabijx,vvoop,desrep)
       call rcaxpy(nabxij,carith,pphasex,vvoop,fabijtx)
-      if(qstack_push(PRP_STACKLINE,lp2,vvoop).ne.lp2) stop 'QE' 
+      if(qstack_push(qst_prpline,lp2,vvoop).ne.lp2) stop 'QE' 
 
       vvoop=0
       CALL SRT1T2_NTS (NREP,MULTB,LTR,NVVT,NV,NV,NOOT,
      &                 LVNVOO,LLVOOT,vabijy,vvoop,desrep)
       call rcaxpy(nabxij,carith,pphasey,vvoop,fabijty)
-      if(qstack_push(PRP_STACKLINE,lp2,vvoop).ne.lp2) stop 'QE' 
+      if(qstack_push(qst_prpline,lp2,vvoop).ne.lp2) stop 'QE' 
 
       vvoop=0
       CALL SRT1T2_NTS (NREP,MULTB,LTR,NVVT,NV,NV,NOOT,
      &                 LVNVOO,LLVOOT,vabijz,vvoop,desrep)
       call rcaxpy(nabxij,carith,pphasez,vvoop,fabijtz)
-      if(qstack_push(PRP_STACKLINE,lp2,vvoop).ne.lp2) stop 'QE' 
+      if(qstack_push(qst_prpline,lp2,vvoop).ne.lp2) stop 'QE' 
 
       iorder='0th-2nd order ph + 2p2h (part A+B)'
       incsat = nabxij
@@ -2184,6 +2192,9 @@
       real*8, parameter                       :: D0=0.0d0
       complex*16, parameter                   :: A0=(D0,D0)
       character(len=11),dimension(18)         :: iorder
+
+      Integer                                 :: qst_prpline
+      Integer                                 :: aux_prpline
 !
 !  executable
 !
@@ -2206,6 +2217,11 @@
       iorder(16) = '2nd 2p2h A '
       iorder(17) = '2nd 2p2h B '
       iorder(18) = 'total      '
+!
+!  assign number of stacklines in order to avoid direct integer assignments
+!
+      qst_prpline = PRP_STACKLINE
+      aux_prpline = AUX_STACKLINE
 !
 ! generate symmetry-specific file name for eigenvectors
 !
@@ -2296,16 +2312,16 @@
 ! Stackline is PRP_STACKLINE.
 !
       Do k=1,FAI_CONTRIBS
-        if(qstack_popf(PRP_STACKLINE,faipx(:,k)).ne.nmain*rcw) stop 'QE'
-        if(qstack_popf(PRP_STACKLINE,faipy(:,k)).ne.nmain*rcw) stop 'QE'
-        if(qstack_popf(PRP_STACKLINE,faipz(:,k)).ne.nmain*rcw) stop 'QE'
+        if(qstack_popf(qst_prpline,faipx(:,k)).ne.nmain*rcw) stop 'QE'
+        if(qstack_popf(qst_prpline,faipy(:,k)).ne.nmain*rcw) stop 'QE'
+        if(qstack_popf(qst_prpline,faipz(:,k)).ne.nmain*rcw) stop 'QE'
       EndDo
       Do k=1,FABIJ_CONTRIBS
-        if(qstack_popf(PRP_STACKLINE,fabijpx(:,k)).ne.n2p2h*rcw)
+        if(qstack_popf(qst_prpline,fabijpx(:,k)).ne.n2p2h*rcw)
      &        stop 'QE'
-        if(qstack_popf(PRP_STACKLINE,fabijpy(:,k)).ne.n2p2h*rcw)
+        if(qstack_popf(qst_prpline,fabijpy(:,k)).ne.n2p2h*rcw)
      &        stop 'QE'
-        if(qstack_popf(PRP_STACKLINE,fabijpz(:,k)).ne.n2p2h*rcw)
+        if(qstack_popf(qst_prpline,fabijpz(:,k)).ne.n2p2h*rcw)
      &        stop 'QE'
       EndDo
 

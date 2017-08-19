@@ -543,6 +543,8 @@ C
       integer                 :: serialindicator
       integer                 :: i
       logical                 :: propertyints
+      integer                 :: qst_numofstacks
+      integer                 :: qst_verbose
 !  
 !  variables for rdprop_adc integral testing
 !
@@ -722,7 +724,9 @@ C
 !
 ! initialize stack system (only master does this)
 !
-        if(qstack_init(NUM_OF_STACKS,1).ne.NUM_OF_STACKS) 
+        qst_numofstacks = NUM_OF_STACKS
+        qst_verbose = 0
+        if(qstack_init(qst_numofstacks,qst_verbose).ne.NUM_OF_STACKS) 
      &     call quit('Qstack problem')
         WRITE(IW,*)'Stack system initialized with',
      &             NUM_OF_STACKS,' stacks'

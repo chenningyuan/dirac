@@ -696,6 +696,7 @@
       Real*8, allocatable,dimension (:)     :: ecdkl
       Real*8                                :: ec,ed,ek,el
       Integer                               :: icntrl
+      Integer                               :: qst_eneline
 !
 !---------------interface region --------------------------------------
 !
@@ -714,6 +715,8 @@
 !
 !---------------Executable code--------------------------------------
 !
+      qst_eneline = ENE_STACKLINE
+
       icntrl = xcoldet(desrep)
 
       allocate(ecdkl(icntrl))
@@ -756,7 +759,7 @@
 
       if(icnt.ne.icntrl) stop 'Internal error XKENEDIAG!'
 
-      if(qstack_push(ENE_STACKLINE,icnt,ecdkl).ne.icnt) stop 'QE'
+      if(qstack_push(qst_eneline,icnt,ecdkl).ne.icnt) stop 'QE'
 
       deallocate(ecdkl)
 
@@ -1267,6 +1270,8 @@
 
       Integer                              :: kenelen
       REAL*8, allocatable, dimension(:)    :: eabij
+
+      Integer                              :: qst_eneline
 !
 !---------------Interface area --------------------------------------
 !
@@ -1286,6 +1291,8 @@
 !---------------Start execution--------------------------------------
 !
       call pst('Constructing real satellite part+')
+
+      qst_eneline = ENE_STACKLINE
 !
 ! fetch diagonal energies of the satellite block from stack
 ! (always done since it was pushed by XKENEDIAG)
@@ -1293,7 +1300,7 @@
       kenelen = xcoldet(desrep)
       allocate(eabij(kenelen))
       eabij = 0.0d0
-      if(qstack_popf(ENE_STACKLINE,eabij).ne.kenelen) stop 'QE'
+      if(qstack_popf(qst_eneline,eabij).ne.kenelen) stop 'QE'
 
 !______________________________________________________
 !|
@@ -1770,6 +1777,8 @@
 
       Integer                              :: kenelen
       REAL*8, allocatable, dimension(:)    :: eabij
+
+      Integer                              :: qst_eneline
 !
 !---------------Interface area --------------------------------------
 !
@@ -1789,6 +1798,8 @@
 !---------------Start execution--------------------------------------
 !
       call pst('Constructing complex satellite part+')
+
+      qst_eneline = ENE_STACKLINE
 !
 ! fetch diagonal energies of the satellite block from stack
 ! (always done since it was pushed by XKENEDIAG)
@@ -1796,7 +1807,7 @@
       kenelen = xcoldet(desrep)
       allocate(eabij(kenelen))
       eabij = 0.0d0
-      if(qstack_popf(ENE_STACKLINE,eabij).ne.kenelen) stop 'QE'
+      if(qstack_popf(qst_eneline,eabij).ne.kenelen) stop 'QE'
 !______________________________________________________
 !|
 !|  if we do a restricted calculation only we just add
