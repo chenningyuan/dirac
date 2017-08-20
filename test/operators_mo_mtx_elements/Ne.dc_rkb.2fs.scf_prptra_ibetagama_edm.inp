@@ -8,6 +8,9 @@
 .DIRECT
 1 1 1
 .PCMOUT
+# employ Jacobi diagonalization
+#.DOJACO
+.QJACO
 **INTEGRALS
 .PRINT
 0

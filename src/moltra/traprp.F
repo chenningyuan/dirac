@@ -493,9 +493,9 @@ C
 ! Printout of complex matrix elements of the transformed operator
          IF (IPRINT.GE.2) THEN
            ! print out all NONZERO matrix elements
+            WRITE (LUPRI,1012) ACHAR(25:32)
             IF ( IPRINT.EQ.2) THEN
               ! print nonzero elemenys
-              WRITE (LUPRI,1012) ACHAR(25:32)
               WRITE(LUPRI,'(4x,a,d9.3)') 'zero threshold=',ZEROTHRS
             ELSE
               WRITE(LUPRI,"(A)")
@@ -530,7 +530,7 @@ C
      & ' operator in Kramers paired molecular spinor basis:'
      & //12X,'Real part',11X,'Imaginary Part')
  1011 FORMAT (I6,2X,F18.10,2X,F18.10)
- 1012 FORMAT (/'All nonzero property elements of ',A8,' operator',
+ 1012 FORMAT (/'Property elements of the "',A8,'" operator',
      &' in Kramers paired molecular spinor basis:'/)
  1013 FORMAT (2I5,F18.10,2X,F18.10)
       RETURN
