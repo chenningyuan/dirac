@@ -1,8 +1,23 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include<stdint.h>
 
 #define MAXNUMSTACK 100
+/*
+ * the following type definitions are introduced to provide
+ * functionality with integer*4 and integer*8 compilations.
+ *
+ * The same took place in the fortran module interface
+ * polprp_qstackm.F90
+ *
+ */
+
+#if defined (INT_STAR8)
+#define CINT48  int64_t
+#else
+#define CINT48  int
+#endif
 
 /*
  *     Local variables managing the heap space for the vector stack.
@@ -11,12 +26,12 @@
  *     All data are on the heap.
  */
 
-static unsigned int initialized = 0;
-static unsigned int numofstacks = 0;
-static int verbose = 0;
+static CINT48 initialized = 0;
+static CINT48 numofstacks = 0;
+static CINT48 verbose = 0;
 static double *** qsbase = NULL;    /* stack distributor */
-static int ** qslen = NULL;  /* length of each vector on each stack */
-static int * qsdep = NULL; /* depth of stack #i */
+static CINT48 ** qslen = NULL;  /* length of each vector on each stack */
+static CINT48 * qsdep = NULL; /* depth of stack #i */
 
 /*
  * local variable for string output
@@ -31,10 +46,10 @@ const char *tagnit = "*** Qstack runtime error: Please initialize before use.";
  *               function qstack_init
  *&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  */
-int qstack_init(int *nost, int *vbflag){
+CINT48 qstack_init(CINT48 *nost, CINT48 *vbflag){
 
-  int i;
-  int nos;
+  CINT48 i;
+  CINT48 nos;
 
   if(initialized){
     printf("%s Stack already initialized. No action taken.\n",taginf);
@@ -54,12 +69,16 @@ int qstack_init(int *nost, int *vbflag){
  * array
  */
 
-  qsdep = (int *) malloc(nos*sizeof(int));
-  memset(qsdep, 0, nos*sizeof(int));
+  qsdep = (CINT48 *) malloc(nos*sizeof(CINT48));
+  memset(qsdep, 0, nos*sizeof(CINT48));
 
-  qslen = (int **)malloc(nos*sizeof(int *));
+  qslen = (CINT48 **)malloc(nos*sizeof(CINT48 *));
   if(qslen == NULL){
+#if defined (INT_STAR8)
+    printf("%s Could not generate %lld stacks.\n",tagerr,nos);
+#else
     printf("%s Could not generate %d stacks.\n",tagerr,nos);
+#endif
     return -1;
   }
   for(i=0;i<nos;i++){
@@ -68,17 +87,25 @@ int qstack_init(int *nost, int *vbflag){
 
   qsbase = (double ***)malloc(nos*sizeof(double **));
   if(qsbase==NULL){
+#if defined (INT_STAR8)
+    printf("%s Could not generate %lld stacks.\n",tagerr,nos);
+#else
     printf("%s Could not generate %d stacks.\n",tagerr,nos);
+#endif
     return -1;
   }
   for(i=0;i<nos;i++){
     qsbase[i] = NULL;
   }
   initialized = 1;
-  numofstacks = (unsigned int)nos;
+  numofstacks = (CINT48)nos;
   verbose = (*vbflag)?1:0;
 
+#if defined (INT_STAR8)
+  printf("%s Created %lld stacks.\n",taginf,nos);
+#else
   printf("%s Created %d stacks.\n",taginf,nos);
+#endif
   printf("%s Verbose mode is ",taginf);
   printf((verbose)?"on\n":"off\n");
   return nos;
@@ -90,11 +117,11 @@ int qstack_init(int *nost, int *vbflag){
  *               function qstack_push
  *&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  */
-int qstack_push(int *stack, int *len, double *arr){ 
+CINT48 qstack_push(CINT48 *stack, CINT48 *len, double *arr){ 
 
-  int i,stackn;
-  int curdep;
-  int * newlen;
+  CINT48 i,stackn;
+  CINT48 curdep;
+  CINT48 * newlen;
   double * curvec;
   double ** newvp;
 
@@ -132,7 +159,7 @@ int qstack_push(int *stack, int *len, double *arr){
   curdep = qsdep[stackn];
   curdep++;
   newvp = (double **)malloc(curdep*sizeof(double *));
-  newlen = (int *)malloc(curdep*sizeof(int));
+  newlen = (CINT48 *)malloc(curdep*sizeof(CINT48));
 
   for(i=0;i<curdep-1;i++) {
     newvp[i]  = qsbase[stackn][i];   
@@ -146,7 +173,11 @@ int qstack_push(int *stack, int *len, double *arr){
   qslen[stackn]  = newlen;
 
   qsdep[stackn] = curdep;
+#if defined (INT_STAR8)
+  if(verbose) printf("%s PUSH: Stack #%lld has now %lld vectors stored.\n",taginf,*stack,curdep);
+#else
   if(verbose) printf("%s PUSH: Stack #%d has now %d vectors stored.\n",taginf,*stack,curdep);
+#endif
 
   return *len;
 }
@@ -156,13 +187,13 @@ int qstack_push(int *stack, int *len, double *arr){
  *               function qstack_popf
  *&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  */
-int qstack_popf(int *stack, double *retvec){
-  int i;
-  int stackn;
-  int curlen;
-  int curdep;
+CINT48 qstack_popf(CINT48 *stack, double *retvec){
+  CINT48 i;
+  CINT48 stackn;
+  CINT48 curlen;
+  CINT48 curdep;
   double ** newvp;
-  int * newlen;
+  CINT48 * newlen;
 
   if(!initialized) {
     printf("*** Qstack runtime problem: Please initialize stack\n");
@@ -205,7 +236,7 @@ int qstack_popf(int *stack, double *retvec){
     qslen[stackn] = NULL;
   } else {
     newvp = (double **)malloc(curdep*sizeof(double *));
-    newlen = (int *)malloc(curdep*sizeof(int));
+    newlen = (CINT48 *)malloc(curdep*sizeof(CINT48));
     for(i=0;i<curdep;i++) {
       newvp[i]  = qsbase[stackn][i+1];
       newlen[i] = qslen[stackn][i+1];
@@ -216,7 +247,11 @@ int qstack_popf(int *stack, double *retvec){
     qslen[stackn] = newlen;
   }
   qsdep[stackn] = curdep;
-  if(verbose) printf("%s POPF: Stack # %d has now %d vectors stored.\n",taginf,*stack,curdep);
+#if defined (INT_STAR8)
+  if(verbose) printf("%s POPF: Stack #%lld has now %lld vectors stored.\n",taginf,*stack,curdep);
+#else
+  if(verbose) printf("%s POPF: Stack #%d has now %d vectors stored.\n",taginf,*stack,curdep);
+#endif
   return curlen;
 }
 
@@ -226,13 +261,13 @@ int qstack_popf(int *stack, double *retvec){
  *               function qstack_popl
  *&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  */
-int qstack_popl(int *stack, double *retvec){
-  int i;
-  int stackn;
-  int curlen;
-  int curdep;
+CINT48 qstack_popl(CINT48 *stack, double *retvec){
+  CINT48 i;
+  CINT48 stackn;
+  CINT48 curlen;
+  CINT48 curdep;
   double ** newvp;
-  int * newlen;
+  CINT48 * newlen;
 
   if(!initialized) {
     printf("*** Qstack runtime problem: Please initialize stack\n");
@@ -275,7 +310,7 @@ int qstack_popl(int *stack, double *retvec){
     qslen[stackn] = NULL;
   } else {
     newvp = (double **)malloc(curdep*sizeof(double *));
-    newlen = (int *)malloc(curdep*sizeof(int));
+    newlen = (CINT48 *)malloc(curdep*sizeof(CINT48));
     for(i=0;i<curdep;i++) {
       newvp[i]  = qsbase[stackn][i];
       newlen[i] = qslen[stackn][i];
@@ -286,7 +321,11 @@ int qstack_popl(int *stack, double *retvec){
     qslen[stackn] = newlen;
   }
   qsdep[stackn] = curdep;
+#if defined (INT_STAR8)
+  if(verbose) printf("%s POPL: Stack # %lld has now %lld vectors stored.\n",taginf,*stack,curdep);
+#else
   if(verbose) printf("%s POPL: Stack # %d has now %d vectors stored.\n",taginf,*stack,curdep);
+#endif
   return curlen;
 }
 
@@ -297,9 +336,9 @@ int qstack_popl(int *stack, double *retvec){
  *               function qstack_peekf
  *&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  */
-int qstack_peekf(int *stack, double *retvec){
-  int stackn;
-  int curlen;
+CINT48 qstack_peekf(CINT48 *stack, double *retvec){
+  CINT48 stackn;
+  CINT48 curlen;
 
   if(!initialized) {
     printf("*** Qstack runtime problem: Please initialize stack\n");
@@ -334,10 +373,10 @@ int qstack_peekf(int *stack, double *retvec){
  *               function qstack_peekl
  *&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  */
-int qstack_peekl(int *stack, double *retvec){
-  int stackn;
-  int curlen;
-  int curdep;
+CINT48 qstack_peekl(CINT48 *stack, double *retvec){
+  CINT48 stackn;
+  CINT48 curlen;
+  CINT48 curdep;
 
   if(!initialized) {
     printf("*** Qstack runtime problem: Please initialize stack\n");
@@ -376,10 +415,10 @@ int qstack_peekl(int *stack, double *retvec){
  *               function qstack_compl
  *&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  */
-int qstack_compl(int *stack, double *retvec){
-  int stackn;
-  int curlen;
-  int curdep;
+CINT48 qstack_compl(CINT48 *stack, double *retvec){
+  CINT48 stackn;
+  CINT48 curlen;
+  CINT48 curdep;
 
   if(!initialized) {
     printf("*** Qstack runtime problem: Please initialize stack\n");
@@ -415,8 +454,8 @@ int qstack_compl(int *stack, double *retvec){
  *               function qstack_getinf
  *&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  */
-int qstack_getinf(void){
-   return (int) numofstacks;
+CINT48 qstack_getinf(void){
+   return (CINT48) numofstacks;
 }
 
 
@@ -430,8 +469,8 @@ int qstack_getinf(void){
 double qstack_meminf(void){
 
   double usedmem=0.0;
-  unsigned long int umem=0;
-  int i,stackn;
+  uint64_t umem=0;
+  CINT48 i,stackn;
 
   if(!initialized){
     printf("*** Qstack runtime problem: Stack not initialized!\n");
@@ -452,16 +491,16 @@ double qstack_meminf(void){
 // contribution from qslen
 
   for(stackn=0;stackn < numofstacks;stackn++){
-    umem+=qsdep[stackn]*sizeof(int);
+    umem+=qsdep[stackn]*sizeof(CINT48);
   }
-  umem+=numofstacks*sizeof(int *);
+  umem+=numofstacks*sizeof(CINT48 *);
 
 // contribution from qsdep
 
-  umem+=numofstacks*sizeof(int);
+  umem+=numofstacks*sizeof(CINT48);
 
   usedmem=(double)(umem)/(1024.0 * 1024.0);  // mem in MB as a double
-  if(verbose) printf("%s total allocated memory: %lu bytes = (%.2f Megabytes).\n",taginf,umem,usedmem);
+  if(verbose) printf("%s total allocated memory: %llu bytes = (%.2f Megabytes).\n",taginf,umem,usedmem);
 
   return usedmem;
 }
@@ -472,9 +511,9 @@ double qstack_meminf(void){
  *               function qstack_drop
  *&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  */
-int qstack_drop(int * stack){
+CINT48 qstack_drop(CINT48 * stack){
 
-  int stackn,i,curdep;
+  CINT48 stackn,i,curdep;
   double ** curstack;
 
   if(!initialized) {
@@ -509,7 +548,11 @@ int qstack_drop(int * stack){
   qsbase[stackn] = NULL;
   qslen[stackn] = NULL;
 
+#if defined (INT_STAR8)
+  if(verbose) printf("%s dropped %lld elements from stack %lld\n",taginf,curdep,stackn);
+#else
   if(verbose) printf("%s dropped %d elements from stack %d\n",taginf,curdep,stackn);
+#endif
 
   return curdep;
 }
@@ -523,7 +566,7 @@ int qstack_drop(int * stack){
  */
 void qstack_shutdown(void){
 
-  int i,stackn;
+  CINT48 i,stackn;
   double ** curstack;
 
   if(!initialized){
