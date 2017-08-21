@@ -98,19 +98,19 @@ C
 C  EVALUATE T1 EQUATIONS
 C  CHECK FOR CASES WITH NO NON_ZERO T1'S TO AVOID CRASHES
 C
-      print*,"T1 amplitudes ",zdotu(ndimt1,t1,1,t1,1)
-      print*,"T2 amplitudes ",zdotu(ndimt2,t2,1,t2,1)
+c     print*,"T1 amplitudes ",zdotu(ndimt1,t1,1,t1,1)
+c     print*,"T2 amplitudes ",zdotu(ndimt2,t2,1,t2,1)
       CALL XTIME(5,1,'- T1 equations                  ')
       CALL HOINTM (FOO,EPS,T1,T2,BUF1,BUF2,BUF3,HO)
-      print*,"HO intermediate ",zdotu(nfoo,ho,1,ho,1)
+c     print*,"HO intermediate ",zdotu(nfoo,ho,1,ho,1)
       CALL HVINTM (FVV,EPS,T1,T2,BUF1,BUF2,BUF3,HV)
-      print*,"HV intermediate ",zdotu(nfvv,hv,1,hv,1)
+c     print*,"HV intermediate ",zdotu(nfvv,hv,1,hv,1)
            
       IF (NDIMT1.GT.0) THEN
           CALL HOVINTM (FVO,T1,BUF1,BUF2,HOV)
           CALL amplitude_equation_T1 (FVO,EPS,T1,T2,HO,HV,HOV,H,CZ,GOO,
      &                 GVV,BUF1,BUF2,NBUF2,BUF3,NBUF3,S1)
-      print*,"HOV intermediate ",zdotu(ndimt1,hov,1,hov,1)
+c     print*,"HOV intermediate ",zdotu(ndimt1,hov,1,hov,1)
       ENDIF
       CALL XTIME(5,2,'- T1 equations                  ')
 
@@ -125,19 +125,19 @@ C  EVALUATE T2 INTERMEDIATES
 C
          CALL XTIME(0,1,'-- GOINTM                        ')
          CALL GOINTM (FVO,T1,BUF1,BUF2,HO)
-         print*,"GO intermediate ",zdotu(nfoo,ho,1,ho,1)
+c        print*,"GO intermediate ",zdotu(nfoo,ho,1,ho,1)
          CALL XTIME(0,2,'-- GOINTM                        ')
          CALL XTIME(0,1,'-- GVINTM                        ')
          CALL GVINTM (FVO,T1,BUF3,NBUF3,BUF2,NBUF2,HV)
-         print*,"GV intermediate ",zdotu(nfvv,hv,1,hv,1)
+c        print*,"GV intermediate ",zdotu(nfvv,hv,1,hv,1)
          CALL XTIME(0,2,'-- GVINTM                        ')
          CALL XTIME(0,1,'-- AINTM                         ')
          CALL AINTM (T1,T2,BUF1,BUF2,AZ)
-         print*,"A intermediate ",zdotu(nv1,az,1,az,1)
+c        print*,"A intermediate ",zdotu(nv1,az,1,az,1)
          CALL XTIME(0,2,'-- AINTM                         ')
          CALL XTIME(0,1,'-- HINTM                         ')
          CALL HINTM (T1,T2,BUF1,BUF2,BUF3,NBUF3,H)
-         print*,"H intermediate ",zdotu(nv4,h,1,h,1)
+c        print*,"H intermediate ",zdotu(nv4,h,1,h,1)
          CALL XTIME(0,2,'-- HINTM                         ')
 
 #if defined (VAR_MPI)
