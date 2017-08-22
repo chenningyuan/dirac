@@ -1,5 +1,4 @@
 :orphan:
- 
 
 star(EXCITATION ENERGIES)
 

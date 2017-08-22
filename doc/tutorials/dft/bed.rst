@@ -31,8 +31,10 @@ The full molecular symmetry is :math:`T_d`, but DIRAC will work in the :math:`D_
 +--------------+---------------------------------+-----------------------+--------------------------------+
 | :math:`T_1`  | :math:`B_1\oplus B_2\oplus B_3` | :math:`(R_x,R_y,R_z)` |                                |
 +--------------+---------------------------------+-----------------------+--------------------------------+
-| :math:`T_2`  | :math:`B_1\oplus  B2 \oplus B3` | :math:`(x,y,z)`       | :math:`(xy,xz,yz)`             |
+| :math:`T_2`  | :math:`B_1\oplus B_2\oplus B_3` | :math:`(x,y,z)`       | :math:`(xy,xz,yz)`             |
 +--------------+---------------------------------+-----------------------+--------------------------------+
+
+The table also shows that the components of the electric dipole operator transforms as :math:`T_2`.
 
 We first perform a spin-orbit free DFT/PBE0 calculation of the molecule using the input file
 
