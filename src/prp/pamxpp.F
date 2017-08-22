@@ -371,7 +371,7 @@ C
      &            '.SKIPEP','.MAXRED','.E2CHEK','.NONORM',
      &            '.EPOLE ','.MPOLE ','.INTFLG','.INTENS',
      &            '.OCCUP ','.VIRTUA','.ACTIVE','.BEDFIX',
-     &            '.ITRINT','.CNVINT','.REAXVC','.ANGLES',
+     &            '.ITRINT','.CNVINT','.REAXVC','.BEDCHK',
      &            '.RESFAC','.ORBANA','.ROTAV ','.SKIPEE',
      &            '.MXLOAD','.ONLYSF','.ONLYSG','.BED   '/
 C
@@ -425,6 +425,7 @@ C
       ORBXPP     = .FALSE.
       DOBED      = .FALSE.
       DOBEDFIX   = .FALSE.
+      BEDCHK     = .FALSE.
 C     hj: initialize some parts of dcbxlr; (nov. 2000)
 Chj: dcbxlr includes some general information
 Chj: which should be moved to dcbxrs (?) or another one:
@@ -649,9 +650,8 @@ C&&&& REAXVC: Read solution vectors from file XPPFIL
                   READ(LUCMD,'(A6)') XPPFIL
                GO TO 100
  24            CONTINUE
-C&&&& ANGLES: Read the angles (\Theta,\Phi,\Chi) which defines the experimental configuration
-               READ(LUCMD,*) W1,W2,W3
-               CALL ANGLES(W1,W2,W3,UWAVE,UPOL)
+C&&&& BEDCHK: check limit BED -> ED
+               BEDCHK=.TRUE.
                GO TO 100
  25            CONTINUE
 C&&&& RESFAC:  New trial vectors only for parameters whose residual
