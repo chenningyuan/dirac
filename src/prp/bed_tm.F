@@ -220,10 +220,14 @@ C
 C     
 C       Generate integrals
 C
-        DO I = 1,3
-          WAVEVEC(I) = FAC*UWAVE(I)
-        ENDDO
-C       CALL DCOPY(3,D0,0,WAVEVEC,1) ! for testing electric dipole approximation
+        IF(BEDCHK) THEN
+          CALL DCOPY(3,D0,0,WAVEVEC,1)
+        ELSE
+          DO I = 1,3
+             WAVEVEC(I) = FAC*UWAVE(I)
+          ENDDO
+        ENDIF
+C       
         CALL PR1IN2(WORK(KFREE),LFREE,PRPINT,INTTYP,
      &       NPRPINT,INTREP,ANTI,SQUARE,DUMMY,LABINT,TRIANG,
      &       TRASPH,.FALSE.,SOLVNT,0,0,DUMMY,
@@ -1060,10 +1064,13 @@ C
 C     
 C         Generate integrals
 C
-          WAVEVEC(1) = FAC*X(IP)
-          WAVEVEC(2) = FAC*Y(IP)
-          WAVEVEC(3) = FAC*Z(IP)
-C          CALL DCOPY(3,D0,0,WAVEVEC,1) ! for testing electric dipole approximation
+          IF(BEDCHK) THEN
+            CALL DCOPY(3,D0,0,WAVEVEC,1)
+          ELSE
+            WAVEVEC(1) = FAC*X(IP)
+            WAVEVEC(2) = FAC*Y(IP)
+            WAVEVEC(3) = FAC*Z(IP)
+          ENDIF
           CALL PR1IN2(WORK(KFREE),LFREE,PRPINT,INTTYP,
      &       NPRPINT,INTREP,ANTI,SQUARE,DUMMY,LABINT,TRIANG,
      &       TRASPH,.FALSE.,SOLVNT,0,0,DUMMY,
