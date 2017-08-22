@@ -112,7 +112,8 @@ Tutorials and walkthrus
 * **Property calculations:**
   :doc:`Calculation of NMR shieldings using simple magnetic balance <tutorials/simple_magnetic_balance/tutorial>` |
   :doc:`An introduction to complex reponse <tutorials/properties/complex_response>` |
-  :doc:`Magnetizabilities with London Atomic Orbitals <tutorials/lao_magnetizabilities/lao-magnetizabilities>`
+  :doc:`Magnetizabilities with London Atomic Orbitals <tutorials/lao_magnetizabilities/lao-magnetizabilities>` |
+  :doc:`Dipole moment and polarizability of open-shell molecule <tutorials/properties/dipmom-polariz>` 
 
 * **Spectroscopy:**
   :doc:`X-ray spectroscopy: water <tutorials/dft/water_Kedge>`
@@ -156,6 +157,10 @@ Tutorials and walkthrus
   :doc:`Basics <tutorials/pcm/pcm_basics>` |
   :doc:`Hartree-Fock and DFT calculations in solution with the polarizable continuum model <tutorials/pcm/pcm_scf>` |
   :doc:`Calculation of polarizabilities in solution: response theory approach <tutorials/pcm/pcm_response>`
+
+* **Polarizable embedding model:**
+  :doc:`First step with polarizable embedding: Hartree-Fock calculation on micro-solvated H2O <tutorials/polarizable_embedding/pe_scf>` |
+  :doc:`TDDFT calculation on micro-solvated H2O  <tutorials/polarizable_embedding/pe_response>`
 
 * **Davidson corrections for relCI (LUCITA and KRCI):**
   :doc:`+Q corrections <tutorials/relci_q_corrections/q_corrections>`

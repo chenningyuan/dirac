@@ -66,6 +66,23 @@ hartree (a.u.) are included, this can be modified in the
 :ref:`**MOLTRA` section.
 
 
+keyword(RELADC)
+
+Activates the :ref:`RELADC` and
+calculates the single and double ionization spectra by the (A)lgebraic (D)iagrammatic
+(C)onstruction ADC. Also activates the :ref:`**MOLTRA`
+module to get 4-index
+transformed integrals.
+
+
+keyword(POLPRP)
+
+Activates the :ref:`**POLPRP` module for
+calculation of the excitation spectrum by the strict or extended second order
+(A)lgebraic (D)iagrammatic (C)onstruction ADC. Also activates the :ref:`**MOLTRA`
+module to get 4-index transformed integrals.
+
+
 keyword(DIRRCI)
 
 Activates the MOLFDIR CI module (and also the
@@ -140,15 +157,6 @@ keyword(PHCOEF)
 
 Phase adjustment of coefficients DFCOEF: make the largest element of a
 given orbital real and positive.
-
-
-keyword(RELADC)
-
-Activates the :ref:`RELADC` and
-calculates the ionization spectrum by the (A)lgebraic (D)iagrammatic
-(C)onstruction ADC. Also activates the :ref:`**MOLTRA`
-module to get 4-index
-transformed integrals.
 
 
 keyword(KRCI)

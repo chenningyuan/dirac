@@ -73,12 +73,18 @@ C
 C
       CALL QENTER('RGETNO')
       KFRSAV = KFREE
+
+      IF (NATORB) THEN
+         CALL QUIT('FATAL ERROR in RGETNO:'//
+     &      ' Input option NATORB not implemented yet.')
+      END IF
 C
 C     Calculate DV density matrix
 C     ---------------------------
 C
-      CALL MEMGET('REAL',KDV,N2ASHXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG,NASHT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','DV',KDV,N2ASHXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EIG',KEIG,NASHT,WORK,KFREE,LFREE)
+
 #if defined MCSCF_DEBUG
 
       iread_from_mc_file = 0
@@ -173,8 +179,7 @@ C     --------------------------
 
 !     zero out coupling blocks between non-equivalent GA spaces
       if(.not.save_1pdens)then
-        if(save_reordered_nos)then
-!         to not destroy some U2 MCSCF/GASCI stuff...
+        if(NATORB)then
           if(ngas_dc > 2) call gasno(work(kdv))
         end if
       end if
@@ -187,14 +192,14 @@ C     --------------------------
             CALL RSJACO(NASHT,NASHT,NASHT,WORK(KDV),WORK(KEIG),
      &           IJOB,IORDER,IPACK,UNO)
          ELSE
-            MATZ = 1
-            IF( NATOLCR ) MATZ = 0
+            MATZ = 1 ! eigenvalues and eigenvectors
+            IF ( NATOLCR ) MATZ = 0 ! only eigenvalues
             CALL QDIAG(NZ,NASHT,WORK(KDV),NASHT,NASHT,
      &           WORK(KEIG),MATZ,UNO,NASHT,NASHT,WORK(KFREE),LFREE,IERR)
             IF (IERR .NE. 0) THEN
-               WRITE(LUPRI,'(/,1X,2A,I4)')
-     &              '*** ERROR in RGETNO ***: ',
-     &              'QDIAG failed with error code ',IERR
+               WRITE(LUPRI,'(/A,I5)')
+     &            ' *** ERROR in RGETNO ***: '//
+     &            'QDIAG failed with error code',IERR
                CALL QUIT('*** ERROR in RGETNO ***')
             END IF
          END IF
@@ -421,10 +426,9 @@ C
           call alloc(reorder_fermion,2)
           call alloc(reorder_list,nesht,2)
 
-          reorder_fermion = -1
-          reorder_list    =  0
+          reorder_fermion(1:2) = nesh(1:2)
+
 !         restore unsorted NO numbers in occno
-          call dzero(occno,norbt)
           call dcopy(norbt,WORK(KOCCNO2),1,occno,1)
 !         create list for reordering in descending order according to occupation numbers
 !         ------------------------------------------------------------------------------
@@ -435,46 +439,33 @@ C
 !    &                     NISH(I)+1, ' ... to ... ', 
 !    &                     NISH(I)+NASH(I)
 
-!           a. inactive shells
-            icount = 1
-            do jj = 1, nish(i)
-              reorder_list(icount,i) = icount
-              icount                 = icount + 1
-            end do
+!           a. initialize inactive, active and secondary shells to no reordering
 
-!           do jj = 1, nish(i)
-!             write(lupri,*) ' inactive electronic shell # ',jj,
-!    &                         ' goes to ',reorder_list(jj,i)
-!           end do
-
-!           b. active shells
-!           ----------------
-!           b. 1. initialize
-!           ----------------
-            do jj = 1, nash(i)
-              reorder_list(icount,i) = icount
-              icount                 = icount + 1
+            do jj = 1, nesh(i)
+              reorder_list(jj,i) = jj
             end do
 
 !           -------------
-!           b. 2. reorder
+!           b. reorder active shells after no. isvrono(i)
 !           -------------
+
+            iash_ro = nish(i) + isvrono(i)    ! off-set in reorder_list to orbitals to reorder
+            nash_ro = nash(i) - isvrono(i)    ! no. of orbitals to reorder
+            jash_ro = iorb(i)+npsh(i)+iash_ro ! off-set to first to reorder in total orbital list
 
             myturn = 1
             do 
 !             write(lupri,*) 'myturn,nash(i) ', myturn,nash(i)
 !             exit condition
-              if(myturn > nash(i)-isvrono(i)) exit
+              if (myturn > nash_ro) exit
 
-              mymax  = idamax(nash(i)-isvrono(i),
-     &                 occno(iorb(i)+npsh(i)+nish(i)+isvrono(i)+1),1)
+              mymax  = idamax(nash_ro,occno(jash_ro+1),1)
 !             write(lupri,*) '  max index and value',
 !    &        mymax, occno(iorb(i)+npsh(i)+nish(i)+mymax)
 
 !             new max index
-              reorder_list(nish(i)+isvrono(i)+myturn,i) 
-     &        = mymax + nish(i) + isvrono(i)
-              occno(iorb(i)+npsh(i)+nish(i)+isvrono(i)+mymax) = 0.0d0
+              reorder_list(iash_ro+myturn,i) = iash_ro + mymax
+              occno(jash_ro+mymax) = 0.0d0
 
               myturn = myturn + 1
             end do
@@ -486,14 +477,7 @@ C
 !    &                         reorder_list(nish(i)+jj,i)
 !           end do
 
-!           c. secondary shells
-            icount = nish(i) + nash(i) + 1
-            do jj = 1, nesh(i) - nish(i) + nash(i)
-              reorder_list(icount,i) = icount
-              icount                 = icount + 1
-            end do
-            reorder_fermion(i) = nesh(i)
-          end do
+          end do ! i = 1,nfsym
 
 !         write(lupri,*) 'reorder list'
 !         do i = 1, nfsym

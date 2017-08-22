@@ -1102,24 +1102,7 @@ C                            Check for zero denominators
                    T2(ABIJ) = T2(ABIJ)/FAC
                  ENDIF
                 ENDIF
-C-----------------------------------------------------------------------
-CThis may cause large output : activate when debugging..
-C                            Check for large amplitudes
-C                            IF (CARITH) THEN
-C                               VALUE = CDABS(CT2(ABIJ))
-C                            ELSE
-C                               VALUE = ABS(T2(ABIJ))
-C                            ENDIF
-C                            IF (VALUE.GT.0.1D0) THEN
-C                               WRITE (IW,1001) IRP,JRP,ARP,BRP,
-C    &                          I,J,A,B,
-C    &                          CLASS(ICO,1),CLASS(JCO,1),
-C    &                          CLASS(ACV,2),CLASS(BCV,2),
-C    &                          EPS(II),EPS(JJ),EPS(AA),EPS(BB),VALUE
-C                            ENDIF
-C-----------------------------------------------------------------------
               ENDIF
-C
 C
                            IF (ZERO.OR.(OPTION.EQ.3.AND.IHZERO)) THEN
                              IF (CARITH) THEN
@@ -1128,6 +1111,22 @@ C
                                 T2(ABIJ) = A0
                              ENDIF
                            ENDIF
+C-----------------------------------------------------------------------
+CThis may cause large output : activate when debugging..
+C                            Check for large amplitudes
+C                            IF (CARITH) THEN
+C                               VALUE = CDABS(CT2(ABIJ))
+C                            ELSE
+C                               VALUE = ABS(T2(ABIJ))
+C                            ENDIF
+C                            IF (VALUE.GT.0.1D0.AND.OPTION.EQ.2) THEN
+C                               WRITE (IW,1001) IRP,JRP,ARP,BRP,
+C    &                          I,J,A,B,
+C    &                          CLASS(ICO,1),CLASS(JCO,1),
+C    &                          CLASS(ACV,2),CLASS(BCV,2),
+C    &                          EPS(II),EPS(JJ),EPS(AA),EPS(BB),VALUE
+C                            ENDIF
+C-----------------------------------------------------------------------
                         ENDDO
                         enddo
                   ENDDO

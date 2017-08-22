@@ -2069,8 +2069,8 @@ C
 
 C
 C     EMD - i* Electronic kinetic energy
-C     -------------------------
-C
+C     ----------------------------------
+C     Miro Ilias, Malaya K Nayak
  83   CONTINUE
          IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
      &' Calculation of EDM - i*KINENERG_LS(electronic kinetic energy)'
@@ -2081,12 +2081,7 @@ C
          LABINT(1) = 'KINENERG'
          ! full symmetry ....
          INTREP(1) = 0
-         ! force the symmetry of the Im(ab) quaternion component - wrong !
-         !INTREP(1) = ISYMAX(1,1)
-
-         !ANTI = .FALSE.
-         ANTI = .TRUE. ! it's pure imaginary !....
-
+         ANTI = .FALSE. 
       GO TO 200
 
  84   continue
