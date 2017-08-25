@@ -161,14 +161,14 @@ end interface
      if ( parcal ) call selftest_mpi()
 #endif
 #endif
-     print*,'++++ calling dirac with',iparcal,mytid,mparid,numnod
+! debug     print*,'++++ calling dirac with',iparcal,mytid,mparid,numnod
      call dirac(iparcal,mytid,mparid,numnod)
   else
 #ifdef VAR_MPI
      ! test if memory is available by allocating and deallocating
      call alloc(memory,WORK_memsize, id="test allocation of work array at main for slave")
      call dealloc(memory)
-     print*,'++++ calling dirnod with',iparcal,mytid,mparid,numnod
+! debug     print*,'++++ calling dirnod with',iparcal,mytid,mparid,numnod
      call dirnod(iparcal,mytid,mparid,numnod)
 #else
      call quit('Internal error in main.F90. Quitting.')
