@@ -2453,22 +2453,21 @@ C       Give major virtual orbitals
         ENDDO
  4      CONTINUE
 C       Give major orbital rotations in excitations
-        THR   = SQRT(D2TOT/NBDIM)
         CALL INDEXX (NBDIM,BUF2,INDX)
-        WRITE(LUPRI,'(3X,A,E10.2/)')
-     &   'Excitation amplitudes larger than threshold ',THR
-        THR = THR*THR
+        WRITE(LUPRI,'(3X,A,F6.2,A1/)')
+     &   'Excitation amplitudes larger than weight ',THR,'%'
         DO J = NBDIM,1,-1
           JJ = INDX(J)
-          IF(ABS(BUF2(JJ)).LT.THR) GOTO 5
+          WT = FAC*BUF2(JJ)
+          IF(WT.LT.THR) GOTO 5
           I1 = JXOP(1,JJ)
           I2 = JXOP(2,JJ)
-          WRITE(LUPRI,'(3X,I6,3A1,A3,A1,A,I6,3A1,A3,A1,E16.8)')
+          WRITE(LUPRI,'(3X,I6,3A1,A3,A1,A,I6,3A1,A3,A1,F6.2,A1)')
      &      IORBCL(2,I1),'(',TYP(IORBCL(1,I1)),':',
      &      FREP(IORBCL(3,I1)),')',
      &      ' ---> ',
      &      IORBCL(2,I2),'(',TYP(IORBCL(1,I2)),':',
-     &      FREP(IORBCL(3,I2)),')',SQRT(BUF2(JJ))
+     &      FREP(IORBCL(3,I2)),')',WT,'%'
         ENDDO
  5      CONTINUE
         IF(IPRINT.GE.4) THEN
