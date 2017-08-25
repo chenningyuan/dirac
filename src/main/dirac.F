@@ -1171,7 +1171,7 @@ C
 Csk      write(6,*) 'node will recieve itask',MYTID
          CALL interface_MPI_RECV(ITASK,1,MPARID,27,
      &                           global_communicator)
-         print*,'node',mytid,' has recieved itask',itask
+! debug         print*,'node',mytid,' has recieved itask',itask
 #endif
 C
 C     check for proper LUCITA / LUCIAREL installation
