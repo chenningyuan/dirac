@@ -132,14 +132,15 @@ end interface
   if (.not. parcal) then
 #endif
     call legacy_lwork_set(WORK_memsize)
-    print '(a,i0,a,i0,a)', 'DIRAC serial starts by allocating ',WORK_memsize,' words (',WORK_memsize/2**17,' MB) of memory'
+    print '(a,i0,a,f8.0,a,f6.2,a)', 'DIRAC serial starts by allocating ',WORK_memsize, &
+    ' words (',DFLOAT(WORK_memsize)/DFLOAT(2**17),' MB - ', DFLOAT(WORK_memsize)/DFLOAT(2**27),' GB)' ,' of memory'
     if (maxsize.gt.0) then
-       print '(a,i0,a,i0,a)', '             out of the allowed maximum of ',  &
-          maxsize,' words (',maxsize/2**17,' MB)'
+       print '(a,i0,a,f8.0,a,f6.2,a)', '             out of the allowed maximum of ',  &
+          maxsize,' words (',DFLOAT(maxsize)/DFLOAT(2**17),' MB - ',DFLOAT(maxsize)/DFLOAT(2**27),' GB)'
     else
        print '(a)', 'DIRAC serial has no limitations in place for the amount of dynamically allocated memory'
     endif
-    print '(/a/)','Note: maximum allocatable memory for serial run can be set by pam --aw'
+    print '(/a/)','Note: maximum allocatable memory for serial run can be set by pam --aw/--ag'
   end if
   if (mytid == 0) then
      ! test if memory is available by allocating and deallocating
