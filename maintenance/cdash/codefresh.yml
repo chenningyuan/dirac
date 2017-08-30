@@ -8,17 +8,9 @@
 
 version: '1.0'
 steps:
-  prepare_worker:
-    title: install packages
-    image: image/id
-    commands:
-      - sudo apt-get install gcc g++ gfortran make zlib1g-dev
-      - sudo apt-get remove openmpi-bin libopenmpi-dev
-      - sudo apt-get install mpich2
-
   system_info:
     title: print system info
-    image: image/id
+    image: ubuntu:16.04
     commands:
       - lscpu
       - echo nproc=$(nproc)
@@ -32,7 +24,7 @@ steps:
 
   dirac_build:
     title: own build of DIRAC
-    image: image/id
+    image: ubuntu:16.04
     working_directory: ${{main_clone}}
     environment:
       - DIRAC_MPI_COMMAND="mpirun -np 2"
