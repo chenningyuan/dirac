@@ -3,22 +3,20 @@
 ## Simple DIRAC buildup configuration file for the codefresh.io CI service 
 ## .. reads repo from private bitbucket repo of Miro Ilias
 ##
-## see https://docs.codefresh.io/docs/freestyle
+##       see https://docs.codefresh.io/docs/freestyle
 ##
 
 version: '1.0'
 steps:
-  build_image:
-    title: preparing worker 
+  prepare_worker:
+    title: install packages
     commands:
-    image: image/5
       - sudo apt-get install gcc g++ gfortran make zlib1g-dev
       - sudo apt-get remove openmpi-bin libopenmpi-dev
       - sudo apt-get install mpich2
 
   system_info:
     title: print system info
-    image: image/5
     commands:
       - lscpu
       - echo nproc=$(nproc)
@@ -32,7 +30,6 @@ steps:
 
   dirac_build:
     title: own build of DIRAC
-    image: codefresh/base-image:latest
     working_directory: ${{main_clone}}
     environment:
       - DIRAC_MPI_COMMAND="mpirun -np 2"
