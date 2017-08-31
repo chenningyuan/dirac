@@ -15,7 +15,9 @@ RUN apt-get install -y sudo
 # remove locks, fix management of packages
 RUN rm -rf /var/lib/apt/lists/* && sudo rm /var/cache/apt/archives/lock 
 RUN sudo dpkg --configure -a
-# needs CMake
+# needs CMake (some problems with this package)
+RUN sudo apt-get update
+RUN sudo apt-cache search cmake
 RUN sudo apt-get install cmake 
 # needs Fortran,C, C++
 RUN sudo apt-get install gcc g++ gfortran
