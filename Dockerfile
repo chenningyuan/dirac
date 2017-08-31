@@ -24,6 +24,8 @@ RUN sudo apt-get install -y gcc g++ gfortran
 RUN sudo apt-get install -y zlib1g-dev 
 # remove OpenMPI and install MPICH parallelization libraries
 RUN sudo apt-get remove openmpi-bin libopenmpi-dev 
+RUN sudo apt-get update
+RUN sudo apt-cache search mpich2
 RUN sudo apt-get install -y mpich2
 # clean packages at the end
 RUN sudo apt-get autoclean
