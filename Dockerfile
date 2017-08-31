@@ -17,14 +17,14 @@ RUN rm -rf /var/lib/apt/lists/* && sudo rm /var/cache/apt/archives/lock
 RUN sudo dpkg --configure -a
 # needs CMake (some problems with this package)
 RUN sudo apt-get update
-RUN sudo apt-cache search cmake
-RUN sudo apt-get install cmake 
+#RUN sudo apt-cache search cmake
+RUN sudo apt-get install -y cmake 
 # needs Fortran,C, C++
-RUN sudo apt-get install gcc g++ gfortran
-RUN sudo apt-get install zlib1g-dev 
+RUN sudo apt-get install -y gcc g++ gfortran
+RUN sudo apt-get install -y zlib1g-dev 
 # remove OpenMPI and install MPICH parallelization libraries
 RUN sudo apt-get remove openmpi-bin libopenmpi-dev 
-RUN sudo apt-get install mpich2
+RUN sudo apt-get install -y mpich2
 # clean packages at the end
 RUN sudo apt-get autoclean
 RUN sudo apt-get clean
