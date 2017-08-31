@@ -13,7 +13,7 @@ steps:
     commands:
       - lscpu
       - echo nproc=$(nproc)
-      - let "nproc_div2=$(nproc)/2"
+      - bash -c 'let "nproc_div2=$(nproc)/2"'
       - echo nproc_div2=$(nproc_div2)
       - pwd
       - df -h
