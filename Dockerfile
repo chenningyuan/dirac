@@ -1,6 +1,6 @@
 #################################################################################
 #
-# DIRAC (testing) Docker for buildups with CI connected to private GitLab rep
+# Docker for CI buildups  connected to private DIRAC GitLab repo
 #
 # Written by Miro Ilias, GSI/Darmstadt, August-September,2017
 #
@@ -11,15 +11,19 @@
 FROM ubuntu:16.04
 #
 RUN apt-get update 
-RUN apt-get install -y sudo 
+RUN apt-get install -y sudo
+# remove locks, fix management of packages
 RUN rm -rf /var/lib/apt/lists/* && sudo rm /var/cache/apt/archives/lock 
 RUN sudo dpkg --configure -a
-RUN sudo apt-get install cmake make
+# needs CMake
+RUN sudo apt-get install cmake 
+# needs Fortran,C, C++
 RUN sudo apt-get install gcc g++ gfortran
 RUN sudo apt-get install zlib1g-dev 
+# remove OpenMPI and install MPICH parallelization libraries
 RUN sudo apt-get remove openmpi-bin libopenmpi-dev 
 RUN sudo apt-get install mpich2
-# clean packages
+# clean packages at the end
 RUN sudo apt-get autoclean
 RUN sudo apt-get clean
 RUN sudo apt-get autoremove
