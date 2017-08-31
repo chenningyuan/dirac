@@ -4,6 +4,10 @@
 ## .. reads private gitlab repo of Miro Ilias
 ## .. public docker image from https://hub.docker.com/r/miroilias/docker_repo/builds/
 ##
+##
+## NOTE: free pricing plan has limitation to 30 minutes (and to poor 2CPU server),
+##       within this limit DIRAC does not even compile.
+##
 
 version: '1.0'
 steps:
@@ -13,8 +17,6 @@ steps:
     commands:
       - lscpu
       - echo nproc=$(nproc)
-      - bash -c 'let "nproc_div2=$(nproc)/2"'
-      - echo nproc_div2=$(nproc_div2)
       - pwd
       - df -h
       - free -g -h
@@ -30,6 +32,7 @@ steps:
     environment:
       - DIRAC_MPI_COMMAND="mpirun -np 2"
       - CTEST_PROJECT_NAME="DIRAC"
+      - TEST_N_PROC=$(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 2)
     when:
       branch:
         only: [ master ]
@@ -41,6 +44,6 @@ steps:
       - ctest -j $(nproc) -D ExperimentalBuild
       - ldd dirac.x
 # if some tests fail build/ctest can continue because of: || true
-      - ctest -j $(nproc_div2)  -D ExperimentalTest -L short || true
+      - ctest -j $TEST_N_PROC  -D ExperimentalTest -L short || true
       - ctest -D ExperimentalSubmit
 
