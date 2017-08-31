@@ -5,8 +5,8 @@
 ## .. public docker image from https://hub.docker.com/r/miroilias/docker_repo/builds/
 ##
 ##
-## NOTE: free pricing plan has limitation to 30 minutes (and to poor 2CPU server),
-##       within this limit DIRAC does not even compile.
+## NOTE: free pricing plan has limitation to 30 minutes 
+##       within this limit DIRAC sometimes does not even compile.
 ##
 
 version: '1.0'
@@ -44,6 +44,6 @@ steps:
       - ctest -j $(nproc) -D ExperimentalBuild
       - ldd dirac.x
 # if some tests fail build/ctest can continue because of: || true
-      - ctest -j $TEST_N_PROC  -D ExperimentalTest -L short || true
+  #   - ctest -j $TEST_N_PROC  -D ExperimentalTest -L short || true
       - ctest -D ExperimentalSubmit
 
