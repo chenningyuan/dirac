@@ -7,11 +7,11 @@ miroilias/DIRACbuild
 
 
 # environment variable for Dirac MPI command
-Env:
+  Env:
     - DIRAC_MPI_COMMAND=mpirun -np 2
     - CTEST_PROJECT_NAME=DIRAC
     
-Exec:
+  Exec:
 # show info about available processors
     - lscpu
     - echo nproc=$(nproc)
