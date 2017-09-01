@@ -37,8 +37,9 @@ steps:
       branch:
         only: [ master ]
     commands:
+      - /bin/rm -rf build
       - git submodule update --init --recursive
-      - python ./setup --fc=mpif90 --cc=mpicc --cxx=mpicxx --int64 --mpi --cmake-options="-D BUILDNAME='gnu-mpich-i8-codefreshCI' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_UNIT_TESTS=ON -D ENABLE_BASIS_SETS_CHECK=OFF" build
+      - python ./setup --fc=mpif90 --cc=mpicc --cxx=mpicxx --int64 --mpi --cmake-options="-D BUILDNAME='gnu-mpich-i8-codefreshCI' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_UNIT_TESTS=ON -D ENABLE_BASIS_SETS_CHECK=OFF" --type=debug build
       - cd build
       - ctest -D ExperimentalConfigure
       - ctest -j $(nproc) -D ExperimentalBuild
