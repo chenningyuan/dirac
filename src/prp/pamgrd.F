@@ -543,6 +543,9 @@ C     =================================================================
 C         
       CALL DZERO(PRPMO,N2PMOX*NZ)
       IOPSY = JBTOF(IREP,1)
+!     write(*,*) 'N2PMOX,NZ:', N2PMOX,NZ
+!     write(*,*) 'IOPSY:', IOPSY
+!     write(*,*) 'IREP:', IREP
       QBTR = .FALSE.
       DO I1 = 1,NFSYM
         I2  = MOD(I1+IOPSY,2) + 1

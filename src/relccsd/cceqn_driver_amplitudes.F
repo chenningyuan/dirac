@@ -207,6 +207,10 @@ C
       CALL XCOPY (NDIMT2,S2,1,T2,1)
 C
       IF (FOCKSP) THEN
+C       Remove wave function amplitudes from higher sectors
+        CALL DELFCK ('VO',DELS1,T1)
+        CALL DELINT ('VVOO',DELS2,T2,0,0,0)
+C       Scale with denominators
         CALL DENOMF (EPS,T1,T2,T1,T2,1)
 C       Remove the Hamiltonian elements, T1 and T2 should only contain
 C       the wave function (amplitudes) appropriate for this sector.
@@ -226,8 +230,6 @@ C
 C  EXTRAPOLATE THE AMPLITUDES
 C
       CALL XTIME(5,1,'- DIIS extrapolation            ')
-      CALL DELFCK ('VO',DELS1,T1)
-      CALL DELINT ('VVOO',DELS2,T2,0,0,0)
       CALL DIISX(NDIMT1,NDIMT2,T1,T2,
      &           IT,CC1,BB1,ITC,BB2,RMS)
       CALL XTIME(5,2,'- DIIS extrapolation            ')
