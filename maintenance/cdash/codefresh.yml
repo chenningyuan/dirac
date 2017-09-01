@@ -46,5 +46,6 @@ steps:
       - ldd dirac.x
 # if some tests fail build/ctest can continue because of: || true
   #   - ctest -j $TEST_N_PROC  -D ExperimentalTest -L short || true
+      - ctest -j $TEST_N_PROC  -D ExperimentalTest -R cosci || true
       - ctest -D ExperimentalSubmit
 
