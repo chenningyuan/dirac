@@ -30,7 +30,7 @@ steps:
     image: miroilias/docker_repo
     working_directory: ${{main_clone}}
     environment:
-      - DIRAC_MPI_COMMAND="mpirun -np 2"
+      - DIRAC_MPI_COMMAND=mpirun -np 2
       - CTEST_PROJECT_NAME=DIRAC
       - TEST_N_PROC=$(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 2)
     when:
@@ -44,8 +44,10 @@ steps:
       - ctest -D ExperimentalConfigure
       - ctest -j $(nproc) -D ExperimentalBuild
       - ldd dirac.x
+      - echo "DIRAC_MPI_COMMAD=$DIRAC_MPI_COMMAND"
+      - echo "TEST_N_PROC=$TEST_N_PROC"
 # if some tests fail build/ctest can continue because of: || true
   #   - ctest -j $TEST_N_PROC  -D ExperimentalTest -L short || true
-      - ctest -j $TEST_N_PROC  -D ExperimentalTest -R cosci || true
+      - ctest -j $TEST_N_PROC  -V -D ExperimentalTest -R cosci || true
       - ctest -D ExperimentalSubmit
 
