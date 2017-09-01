@@ -45,6 +45,10 @@
       real*8                                :: resnorm
       real*8                                :: prenorm1,prenorm2
       real*8                                :: ocheck
+      real*8                                :: time_root_s, time_root_e
+      real*8                                :: time_kryl_s, time_kryl_e
+      real*8                                :: time_resi_s, time_resi_e
+      real*8                                :: time_cur
       real*8,allocatable,dimension(:)       :: lambda
       real*8,allocatable,dimension(:)       :: bv,bw
       real*8,allocatable,dimension(:)       :: prc
@@ -218,8 +222,8 @@
       krydim = nroots
 
       WRITE(*,*)
-      WRITE(*,'(3X,A,4X,A,7X,A,7X,A,5X,A)') 'root','dim',  &
-                 'exc.energy','error','status'
+      WRITE(*,'(3X,A,4X,A,7X,A,7X,A,5X,A,A)') 'root','dim',  &
+                 'exc.energy','error','status','  time/root (s)'
       WRITE(*,'(70A1)') ('-',i=1,70)
       allconverged = .false.
 !_______________________________________________________________
@@ -230,6 +234,7 @@
 !|
       DO WHILE (allconverged.eqv..false.)
 
+
       allocate(hbv(ladc,krydim),stat=iallocstat) ! start dimension only!
          hbv = rzero
       if(iallocstat.ne.0) stop 'allocation problem'
@@ -238,9 +243,29 @@
 ! Step X: Form subspace Hamiltonian,n current Krylov
 ! space dimension:   H * b_old is stored
 ! Will go away: orthogonality check of current space
+!
+! development steps to be finalized:
+! 1) transfer calculation of costly H-vectors to stack, do **not**
+!    recalculate complete subspace projection each time! This here was just
+!    for testing functionality. Store H*b_old on stack. Implement qstack_peekn
+!    routine (possibly make all stack functions routines. Easier handling)
+! 2) Keep track of already calculated H*b_old during a *macroiteration*
+!    that means as  long as the approximation manifold will only be extended
+!    but not collapsed!
+! 3) Implement subspace collapse. Here the approximation manifold is completely
+!    Regenerated and the corresponding stack line has to be *dumped* !
+!    krydim has to be set to number of new subspace and the whole projection
+!    is to be recalculated.
+! 4) Check writeout of long eigenvectors.   
+! 5) If this is done, include parallelization of matrix * vector.
+!    Stack handling is only done by master, will not interfere with slave nodes.
+! 6) If all the above works, duplicate routine and complexify.
+!
 !*******************************************************
 
-      ocheck = 0.0d0
+!     ocheck = 0.0d0
+
+      call cpu_time(time_kryl_s)
       do j=1,krydim
 
         read(io_bold,rec=j,iostat=ida_iostat) bw
@@ -257,6 +282,11 @@
         enddo
 
       enddo
+      call cpu_time(time_kryl_e)
+      time_cur = time_kryl_e - time_kryl_s
+      write(*,'(A,F10.2)') 'Time for constructing Krylov projection', &
+                           time_cur
+
 !     ocheck = ocheck - dble(krydim)
 !     write(*,*) 'Orthogonality dev. of Krylov space:',ocheck
 
@@ -281,8 +311,14 @@
 ! Current dimension of Krylov space!
 !*******************************************************
 
+      call cpu_time(time_resi_s)
       call calc_resvec_r(io_bold,ladc,nroots,krydim, &
                          hijcal,hbv,lambda,res)
+      call cpu_time(time_resi_e)
+      time_cur = time_resi_e - time_resi_s
+      write(*,'(A,F10.2)') 'Time for constructing residual vectors', &
+                           time_cur
+      write(*,*)
 
 !*******************************************************
 ! Step X+Y: Enter loop over the roots. Form residual vector
@@ -293,6 +329,8 @@
 !*******************************************************
 
       do kroot = 1,nroots
+
+        call cpu_time(time_root_s)
 
         resnorm=sqrt(dot_product(res(:,kroot),res(:,kroot)))
 
@@ -305,7 +343,9 @@
           converged(kroot) = .true.
           listout(47:48) =  ' *'
           listout(52:54) = '   '
-          write(*,*) listout
+          call cpu_time(time_root_e)
+          time_cur = time_root_e - time_root_s
+          write(*,'(A60,4X,F10.2)') listout,time_cur
           cycle
 
         else
@@ -331,7 +371,9 @@
             listout(52:54) = ' NX'
 
           endif
-          write(*,*) listout
+          call cpu_time(time_root_e)
+          time_cur = time_root_e - time_root_s
+          write(*,'(A60,4X,F10.2)') listout,time_cur
 
         endif
 
@@ -391,8 +433,8 @@
       deallocate(adiag)
       deallocate(converged)
 
-      close(iobase,status='delete')
-      close(io_bold,status='delete')
+      close(iobase,status='delete')    !delete ADC matrix
+      close(io_bold,status='delete')   !delete file for old vectors
 
       write(*,*)
       write(*,'(70A1)') ('-',i=1,70)
