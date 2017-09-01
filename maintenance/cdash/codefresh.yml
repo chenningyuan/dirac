@@ -31,7 +31,7 @@ steps:
     working_directory: ${{main_clone}}
     environment:
       - DIRAC_MPI_COMMAND="mpirun -np 2"
-      - CTEST_PROJECT_NAME="DIRAC"
+      - CTEST_PROJECT_NAME=DIRAC
       - TEST_N_PROC=$(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 2)
     when:
       branch:
