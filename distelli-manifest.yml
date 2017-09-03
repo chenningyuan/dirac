@@ -8,8 +8,8 @@ miroilias/dirac:
 
 # environment variable for Dirac MPI command
   Env:
-    - DIRAC_MPI_COMMAND=mpirun -np 2
-    - CTEST_PROJECT_NAME=DIRAC
+    - DIRAC_MPI_COMMAND: mpirun -np 2
+    - CTEST_PROJECT_NAME: DIRAC
     
   Exec:
 # show info about available processors
