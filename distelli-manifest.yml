@@ -27,8 +27,8 @@ miroilias/DIRACbuild:
 # ldd : show dependencies
     - ldd dirac.x
 # if some tests fail build/ctest can continue because of: || true
-#    - ctest -j $(nproc)  -D ExperimentalTest -L short || true
-     - ctest -D ExperimentalSubmit
+    - ctest -j $(nproc)  -D ExperimentalTest -L short || true
+    - ctest -D ExperimentalSubmit
 
 # now check the release subset
 #    - make -j $(nproc) release
