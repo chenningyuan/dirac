@@ -1,4 +1,4 @@
-miroilias/DIRACbuild
+miroilias/DIRACbuild:
 ##
 ## DIRAC buildup for distelli.yml
 ##
@@ -28,7 +28,8 @@ miroilias/DIRACbuild
     - ldd dirac.x
 # if some tests fail build/ctest can continue because of: || true
 #    - ctest -j $(nproc)  -D ExperimentalTest -L short || true
-    - ctest -D ExperimentalSubmit
+     - ctest -D ExperimentalSubmit
+
 # now check the release subset
 #    - make -j $(nproc) release
 #    - tar xzf DIRAC-16.0-Source.tar.gz
