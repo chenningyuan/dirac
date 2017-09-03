@@ -5,11 +5,10 @@ miroilias/dirac:
 ## uses Docker ... https://hub.docker.com/r/miroilias/docker_repo/
 ##
 
-
 # environment variable for Dirac MPI command
   Env:
-    - DIRAC_MPI_COMMAND: mpirun -np 2
-    - CTEST_PROJECT_NAME: DIRAC
+    - DIRAC_MPI_COMMAND: "mpirun -np 2"
+    - CTEST_PROJECT_NAME: "DIRAC"
     
   Exec:
 # show info about available processors
@@ -27,7 +26,7 @@ miroilias/dirac:
 # ldd : show dependencies
     - ldd dirac.x
 # if some tests fail build/ctest can continue because of: || true
-    - ctest -j $(nproc)  -D ExperimentalTest -L short || true
+    - ctest -j $(nproc) -D ExperimentalTest -L short || true
     - ctest -D ExperimentalSubmit
 
 # now check the release subset
