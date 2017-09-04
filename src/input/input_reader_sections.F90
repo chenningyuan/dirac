@@ -839,6 +839,10 @@
          relcc_do_sort = .false.
       end if
 
+      if (kw_matches(word, '.COUNTMEM')) then
+         relcc_do_count_memory = .true.
+      end if
+
       if (kw_matches(word, '.ENERGY')) then
          relcc_do_energy = .true.
          explicitly_set_energy = .true.

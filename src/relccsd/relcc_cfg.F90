@@ -48,6 +48,7 @@ module relcc_cfg
   logical, public :: relcc_timing                  = .false.
   logical, public :: relcc_do_sort                 = .true.
   logical, public :: relcc_do_restart              = .false.
+  logical, public :: relcc_do_count_memory         = .false.
   logical, public :: relcc_do_energy               = .true.
   logical, public :: relcc_do_gradient             = .false.
   logical, public :: relcc_do_hessian              = .false. ! this currently only relates to the old Hartree-Fock MO response code 
@@ -57,7 +58,7 @@ module relcc_cfg
   integer, public :: relcc_max_dimension_diis      = 8
   integer, public :: relcc_max_iterations          = 30
   integer, public :: relcc_desired_convergence     = 12
- 
+
 
 ! Information relevant for the integral sorting and setup stage
   logical, public :: relcc_breit                    = .false.
@@ -172,6 +173,7 @@ contains
   call interface_mpi_bcast_l0(relcc_timing             ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_sort            ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_restart         ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_do_count_memory    ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_energy          ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_gradient        ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_hessian         ,1,0,global_communicator)
