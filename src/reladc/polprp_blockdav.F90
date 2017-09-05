@@ -11,6 +11,7 @@
 #if defined (VAR_MPI)
       use interface_to_mpi
 #endif
+      use qstack    ! activate stack system
       use polprp_cfg   ! make davidson control variables accessible.
 
       Implicit none
@@ -33,10 +34,12 @@
 
 #if defined (VAR_MPI)
 
-#include  "polprp_servercodes.h"
 #include  "../relccsd/ccpar.inc"
+#include  "polprp_servercodes.h"
 
 #endif
+
+#include  "polprp_stacklines.h"
 !
 !  local variables
 !
@@ -49,6 +52,7 @@
       real*8                                :: time_kryl_s, time_kryl_e
       real*8                                :: time_resi_s, time_resi_e
       real*8                                :: time_cur
+      real*8                                :: hdx
       real*8,allocatable,dimension(:)       :: lambda
       real*8,allocatable,dimension(:)       :: bv,bw
       real*8,allocatable,dimension(:)       :: prc
@@ -56,15 +60,16 @@
       real*8,allocatable,dimension(:)       :: work
       real*8,allocatable,dimension(:)       :: adiag
       real*8,allocatable,dimension(:,:)     :: res
-      real*8,allocatable,dimension(:,:)     :: hbv
       real*8,allocatable,dimension(:,:)     :: hij,hijcal
 
-      integer                               :: i,j,krydim
+      integer                               :: i,j
+      integer                               :: krydim,krysav
       integer                               :: io_bold
       integer                               :: lwork,info
       integer                               :: kroot
       integer                               :: ida_iostat
       integer                               :: iallocstat
+      Integer                               :: qst_hboline
 
       logical                               :: allconverged
       logical,allocatable,dimension(:)      :: converged
@@ -85,12 +90,11 @@
           real*8, dimension(:)             :: ra1,ra2
         END SUBROUTINE
 
-        SUBROUTINE calc_resvec_r(i1,i2,i3,i4,ra1,ra2,ra3,ra4)
+        SUBROUTINE calc_resvec_r(i1,i2,i3,i4,ra1,ra2,ra3)
           integer                      :: i1,i2,i3,i4
           real*8, dimension(:,:)       :: ra1
-          real*8, dimension(:,:)       :: ra2
-          real*8, dimension(:)         :: ra3
-          real*8, dimension(:,:)       :: ra4
+          real*8, dimension(:)         :: ra2
+          real*8, dimension(:,:)       :: ra3
         END SUBROUTINE
 
         SUBROUTINE calc_precon_r(i1,ra1,r1,ra2,ra3)
@@ -118,6 +122,11 @@
 ! say hello
 !
       Call PST('Entering real (S/P) Davidson diagonalizer+')
+!         
+!  assign stack line number in order to avoid direct integers
+!  as actual parameters for the qstack calls (I8!)
+!       
+      qst_hboline = HBO_STACKLINE
 !
 ! initialize davidson control variables from POLPRP input
 !
@@ -220,6 +229,7 @@
 
       call init_krylov_r(io_bold,desrep,nroots,maxdavsp,ladc)
       krydim = nroots
+      krysav = 0
 
       WRITE(*,*)
       WRITE(*,'(3X,A,4X,A,7X,A,7X,A,5X,A,A)') 'root','dim',  &
@@ -234,24 +244,11 @@
 !|
       DO WHILE (allconverged.eqv..false.)
 
-
-      allocate(hbv(ladc,krydim),stat=iallocstat) ! start dimension only!
-         hbv = rzero
-      if(iallocstat.ne.0) stop 'allocation problem'
-
 !*******************************************************
-! Step X: Form subspace Hamiltonian,n current Krylov
-! space dimension:   H * b_old is stored
-! Will go away: orthogonality check of current space
+! Step X: Form subspace Hamiltonian, <b_I|H|b_J>
+! space dimension:   H * b_old is stored on stack
 !
 ! development steps to be finalized:
-! 1) transfer calculation of costly H-vectors to stack, do **not**
-!    recalculate complete subspace projection each time! This here was just
-!    for testing functionality. Store H*b_old on stack. Implement qstack_peekn
-!    routine (possibly make all stack functions routines. Easier handling)
-! 2) Keep track of already calculated H*b_old during a *macroiteration*
-!    that means as  long as the approximation manifold will only be extended
-!    but not collapsed!
 ! 3) Implement subspace collapse. Here the approximation manifold is completely
 !    Regenerated and the corresponding stack line has to be *dumped* !
 !    krydim has to be set to number of new subspace and the whole projection
@@ -266,23 +263,44 @@
 !     ocheck = 0.0d0
 
       call cpu_time(time_kryl_s)
-      do j=1,krydim
 
-        read(io_bold,rec=j,iostat=ida_iostat) bw
-        call xmvmul_sp_r(iobase,intbuf,ladc,bw(:),hbv(:,j))
+! new H*b_old
 
-        do i=j,krydim
-
-          read(io_bold,rec=i) bv
-          hij(i,j) = dot_product(bv,hbv(:,j))
-          hij(j,i) = hij(i,j)
-
-!         ocheck=ocheck + dot_product(bw,bv)
-
-        enddo
-
+      write(*,*) 'Generating H*b_old between',krysav,' and ',krydim
+      do j=krysav+1,krydim
+        read(io_bold,rec=j,iostat=ida_iostat) bv    
+        call xmvmul_sp_r(iobase,intbuf,ladc,bv,bw)
+        if(qstack_push(qst_hboline,ladc,bw).ne.ladc) stop 'QE'
       enddo
+
+! form additional contribution
+! call dot_product routine that directly accesses C stack.
+! this routine is also written in C (necessarily)
+
+      do i=1,krydim
+        read(io_bold,rec=i) bv
+        do j=krysav+i,krydim
+          if(qstack_directx_r(qst_hboline,ladc,bv,j,hdx).ne.0) stop 'QE'
+          hij(i,j) = hdx
+          hij(j,i) = hdx
+        enddo
+      enddo
+
       call cpu_time(time_kryl_e)
+
+! OLD
+!     do j=1,krydim
+!       read(io_bold,rec=j,iostat=ida_iostat) bw
+!       call xmvmul_sp_r(iobase,intbuf,ladc,bw(:),hbv(:,j))
+!       do i=j,krydim
+!         read(io_bold,rec=i) bv
+!         hij(i,j) = dot_product(bv,hbv(:,j))
+!         hij(j,i) = hij(i,j)
+!         ocheck=ocheck + dot_product(bw,bv)
+!       enddo
+!     enddo
+!     call cpu_time(time_kryl_e)
+
       time_cur = time_kryl_e - time_kryl_s
       write(*,'(A,F10.2)') 'Time for constructing Krylov projection', &
                            time_cur
@@ -313,7 +331,7 @@
 
       call cpu_time(time_resi_s)
       call calc_resvec_r(io_bold,ladc,nroots,krydim, &
-                         hijcal,hbv,lambda,res)
+                         hijcal,lambda,res)
       call cpu_time(time_resi_e)
       time_cur = time_resi_e - time_resi_s
       write(*,'(A,F10.2)') 'Time for constructing residual vectors', &
@@ -389,11 +407,8 @@
         endif
       enddo
 !
-!  deallocate large HBV array and
 !  check if dimensionality extension is still in allowed range.
 !
-      deallocate(hbv)
-
       if( (krydim + nroots).gt.maxdavsp) then
         write(*,*) 'Maximum Davidson space reached. Exiting'
         exit
@@ -559,10 +574,14 @@
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine calc_resvec_r(iu,ladc,nroots,krydim, &
-                               cji,hbv,lambda,res)
+                               cji,lambda,res)
 !
 !  compute residual vectors res, filled within this routine.
+!  Addresses the corresponding H*b_old vector from stack.
 !
+      use polprp_cfg   ! make davidson control variables accessible.
+      use qstack
+
       implicit none
 !
 ! formal arguments
@@ -572,21 +591,28 @@
       integer                               :: nroots
       integer                               :: krydim
       real*8,dimension(:,:)                 :: cji
-      real*8,dimension(:,:)                 :: hbv
       real*8,dimension(:)                   :: lambda
       real*8,dimension(:,:)                 :: res
 !
 ! local variables
 !
       integer                               :: j,kroot
+      Integer                               :: qst_hboline
+
       real*8,parameter                      :: rzero = 0.0d0
-      real*8,allocatable,dimension(:)       :: aux,bv
+      real*8,allocatable,dimension(:)       :: aux,bv,hbo
+
+#include  "polprp_stacklines.h"
 !
 ! executable code
+!
+      qst_hboline = HBO_STACKLINE
+!
 ! form sum_j (C_ji*(H*b_j - lambda_i*b_j))
 !
-      allocate(bv(ladc))
       allocate(aux(ladc))
+      allocate(bv(ladc))
+      allocate(hbo(ladc))
 !
 ! first loop over Krylov space (minimize disk reads!)
 ! Inner loop: over nroots
@@ -594,8 +620,9 @@
       res = rzero
       Do j=1,krydim
         read(iu,rec=j) bv
+        if(qstack_peekn(qst_hboline,hbo,j).ne.ladc) stop 'QE'
         Do kroot=1,nroots
-          aux(:) = hbv(:,j) - lambda(kroot)*bv(:)
+          aux(:) = hbo - lambda(kroot)*bv(:)
           aux(:) = aux(:)*cji(j,kroot)
           res(:,kroot) = res(:,kroot) + aux(:)
         Enddo  !kroot
@@ -603,6 +630,7 @@
 
       deallocate(aux)
       deallocate(bv)
+      deallocate(hbo)
 
       return
       end
