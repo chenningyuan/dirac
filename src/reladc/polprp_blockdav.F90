@@ -47,7 +47,6 @@
       real*8,parameter                      :: prethr = 0.001d0
       real*8                                :: resnorm
       real*8                                :: prenorm1,prenorm2
-      real*8                                :: ocheck
       real*8                                :: time_root_s, time_root_e
       real*8                                :: time_kryl_s, time_kryl_e
       real*8                                :: time_resi_s, time_resi_e
@@ -64,6 +63,7 @@
 
       integer                               :: i,j
       integer                               :: krydim,krysav
+      integer                               :: maciter
       integer                               :: io_bold
       integer                               :: lwork,info
       integer                               :: kroot
@@ -213,23 +213,31 @@
       open(iobase,FILE=fileadc,FORM='UNFORMATTED',STATUS='UNKNOWN')
       write(*,*) 'ADC file ',fileadc,' opened.'
 
+      maciter = 1
+      io_bold = iobase + 1
+
+!*******************************************************
+!  ENTRY POINT FOR MACROITERATIONS
+!*******************************************************
+
+ 9999 CONTINUE
+      write(*,*) 'Starting macroiteration #',maciter
+
 !*******************************************************
 ! Open direct access file for current Krylov space
 !*******************************************************
 
-      io_bold = iobase + 1
       open(io_bold,file='DAVXBO',access='direct', &
            recl=ladc*8,status='unknown')
-      write(*,*) 'Direct access file for Krylov space opened.'
+      write(*,*) 'Empty direct access file for Krylov space opened.'
 
 !*******************************************************
-! Fill Krylov space with start vectors
-! Initial dimension is equal to number of roots
+! Initialize Krylov space with (restart) vectors.
 !*******************************************************
 
-      call init_krylov_r(io_bold,desrep,nroots,maxdavsp,ladc)
       krydim = nroots
       krysav = 0
+      call init_krylov_r(io_bold,desrep,nroots,maxdavsp,ladc)
 
       WRITE(*,*)
       WRITE(*,'(3X,A,4X,A,7X,A,7X,A,5X,A,A)') 'root','dim',  &
@@ -247,66 +255,40 @@
 !*******************************************************
 ! Step X: Form subspace Hamiltonian, <b_I|H|b_J>
 ! space dimension:   H * b_old is stored on stack
-!
-! development steps to be finalized:
-! 3) Implement subspace collapse. Here the approximation manifold is completely
-!    Regenerated and the corresponding stack line has to be *dumped* !
-!    krydim has to be set to number of new subspace and the whole projection
-!    is to be recalculated.
-! 4) Check writeout of long eigenvectors.   
-! 5) If this is done, include parallelization of matrix * vector.
-!    Stack handling is only done by master, will not interfere with slave nodes.
-! 6) If all the above works, duplicate routine and complexify.
-!
 !*******************************************************
-
-!     ocheck = 0.0d0
 
       call cpu_time(time_kryl_s)
 
 ! new H*b_old
 
-      write(*,*) 'Generating H*b_old between',krysav,' and ',krydim
+      write(*,*) 'Generating H*b_old between',krysav+1,' and ',krydim
       do j=krysav+1,krydim
         read(io_bold,rec=j,iostat=ida_iostat) bv    
         call xmvmul_sp_r(iobase,intbuf,ladc,bv,bw)
-        if(qstack_push(qst_hboline,ladc,bw).ne.ladc) stop 'QE'
+        if(qstack_push(qst_hboline,ladc,bw).ne.ladc) stop 'QE push'
       enddo
 
 ! form additional contribution
 ! call dot_product routine that directly accesses C stack.
-! this routine is also written in C (necessarily)
+! also written in C (necessarily) and correct krysav
 
       do i=1,krydim
         read(io_bold,rec=i) bv
-        do j=krysav+i,krydim
-          if(qstack_directx_r(qst_hboline,ladc,bv,j,hdx).ne.0) stop 'QE'
+        do j=krysav+1,krydim
+!         write(*,*) '   additional <i|H|j> i,j:',i,j
+          if(qstack_directx_r(qst_hboline,ladc,bv,j,hdx).ne.ladc) &
+             stop 'QE x_r'
           hij(i,j) = hdx
           hij(j,i) = hdx
         enddo
       enddo
 
       call cpu_time(time_kryl_e)
-
-! OLD
-!     do j=1,krydim
-!       read(io_bold,rec=j,iostat=ida_iostat) bw
-!       call xmvmul_sp_r(iobase,intbuf,ladc,bw(:),hbv(:,j))
-!       do i=j,krydim
-!         read(io_bold,rec=i) bv
-!         hij(i,j) = dot_product(bv,hbv(:,j))
-!         hij(j,i) = hij(i,j)
-!         ocheck=ocheck + dot_product(bw,bv)
-!       enddo
-!     enddo
-!     call cpu_time(time_kryl_e)
-
       time_cur = time_kryl_e - time_kryl_s
       write(*,'(A,F10.2)') 'Time for constructing Krylov projection', &
                            time_cur
 
-!     ocheck = ocheck - dble(krydim)
-!     write(*,*) 'Orthogonality dev. of Krylov space:',ocheck
+      krysav = krydim
 
 !*******************************************************
 ! Step X+Y: Diagonalize current subspace Hamiltonian
@@ -327,6 +309,7 @@
 !*******************************************************
 ! Step X+Y: calculate nroots residual vectors. Use
 ! Current dimension of Krylov space!
+! resvec_r accesses C stack!
 !*******************************************************
 
       call cpu_time(time_resi_s)
@@ -339,11 +322,9 @@
       write(*,*)
 
 !*******************************************************
-! Step X+Y: Enter loop over the roots. Form residual vector
-! on the fly once it is needed. 
-! If convergence is not reached determine a preconditioner
-! and enlarge space if preconditioner possesses "enough
-! new dimensionality".
+! Step X+Y: Enter loop over the roots.
+! If convergence is not reached determine root-specific
+! preconditioner, possibly enlarge space
 !*******************************************************
 
       do kroot = 1,nroots
@@ -423,13 +404,53 @@
 !|
 !|______________________________________________________
 
+
+!#############################################################
+!############ Check break conditions for macroiterations #####
+!############ and clear up things                        #####
+!#############################################################
+
+      write(*,*) 'Macroiteration',maciter,' ended with'
+      write(*,*) 'Krylov space dimension:',krydim
+
+! clear stack (essential! large memory demands)
+
+      i=qstack_drop(qst_hboline)
+      write(*,*) 'Cleared',i,' elements from stackline',qst_hboline
+
+! write out eigenvectors or restart vectors from B_old file.
+! If not all roots converged we collapse subspace again to
+! krydim = nroots.
+
       if(allconverged) then
-        write(*,*) 'All roots converged.'
-        call write_davevecs_r(io_bold,desrep,nroots,nmain,ladc, &
-                              krydim,lambda,hijcal)
+        write(*,*) 'All roots converged. Writing eigenvectors'
       else
-        write(*,*) 'Nonconverged roots remain.'
+        write(*,*) 'Nonconverged roots remain. Collapsing subspace.'
       endif
+      call write_davevecs_r(io_bold,desrep,nroots,nmain,ladc, &
+                            krydim,lambda,hijcal)
+
+! in both cases we have to get rid off the large B old file
+
+      close(io_bold,status='DELETE')
+
+! now check if we should enter the next macroiteration.
+! If yes we start over
+
+      if(.not.allconverged) then
+        maciter = maciter + 1
+        if(maciter.gt.maxdavit) then
+          write(*,*) 'Entering macroiteration',maciter
+          Goto 9999
+        else
+          write(*,*) 'User limit of macroiterations reached.'
+          write(*,*) 'Check convergence of remaining roots and'
+          write(*,*) 'be careful with further eigenvectorso usage.'
+        endif
+      else
+          write(*,*) 'Overall Davidson convergence reached.'
+      endif
+      write(*,*) 'Macroiterations used:',maciter
 !
 !  cleanup
 !  deallocate arrays
@@ -466,17 +487,20 @@
 !---------------Description--------------------------------------------
 !
 !   This routine checks the existence of some restart files and tries to fit
-!   found restart vectors into the vector array.
+!   found restart vectors into the vector array. The order of importance is:
+!
+!   ADCEVECS.XX
+!   DAVSTART.XX
+!   Unity matrix
 !
 !------------------------ calling variables -------------------------
 !
-      integer                    :: io_bold
-      integer                    :: desrep,nroots,maxdavsp,ladc
+      integer                    :: io_bold,desrep,nroots,maxdavsp,ladc
 !
 !------------------------ local variables -------------------------
 !
       logical                                :: isthere
-      integer                                :: io
+      integer                                :: fileavail,io
       integer                                :: i,j,k,ix,nsiz
       integer                                :: ida_iostat
       Character*11                           :: filename_d,filename_e
@@ -487,6 +511,7 @@
       integer                                :: unroots,uladc
       integer                                :: jdummy
       Real*8                                 :: rdummy
+      character*8                            :: hp_name,ev_name
 !
 !------------------------ interface -------------------------
 !
@@ -500,23 +525,98 @@
 !
 !------------------------ executable code -------------------------
 !
+      fileavail = 0
+      hp_name = 'DAVSTART'
+      ev_name = 'ADCEVECS'
 !
 ! check availability of DAVSTART.XX file
 !
       IF(desrep.GT.9) THEN
-        WRITE(filename_d,'(A8,A1,I2)') 'DAVSTART','.',desrep
+        WRITE(filename_d,'(A8,A1,I2)') hp_name,'.',desrep
       ELSE
-        WRITE(filename_d,'(A8,A2,I1)') 'DAVSTART','.0',desrep
+        WRITE(filename_d,'(A8,A2,I1)') hp_name,'.0',desrep
       ENDIF
       inquire(file=filename_d,exist=isthere)
-      if(.not.isthere) stop 'Missing Davidson start vectors!'
+      if(isthere) fileavail = fileavail + 1
 !
-!  read file
+! check availability of ADCEVECS.XX file
+!
+      IF(desrep.GT.9) THEN
+        WRITE(filename_e,'(A8,A1,I2)') ev_name,'.',desrep
+      ELSE
+        WRITE(filename_e,'(A8,A2,I1)') ev_name,'.0',desrep
+      ENDIF
+      inquire(file=filename_e,exist=isthere)
+      if(isthere) fileavail = fileavail + 1
+!
+!  read corresponding file or pack in unity matrix
 !
       io = get_file_unit()
 
-      write(*,*) 'Reading start vectors from ',filename_d
-      OPEN(io,file=filename_d,access='sequential', &
+      Select case(fileavail)
+
+!------------------------------------------------------------
+
+      case(2)                 !  ADCEVECS is present
+
+      write(*,*) 'Using ',filename_e,' as restart file.'
+      OPEN(io,file=filename_e,access='sequential', &
+           status='unknown',form='unformatted')
+      READ(io) xnroots
+      READ(io) xnmain
+      READ(io) xladc
+      write(*,*) 'There are',nroots,' vectors on the file'
+      write(*,*) 'Vectors have length',xladc
+
+      unroots = nroots
+      if(nroots.gt.xnroots) then
+        write(*,*) 'Only',xnroots,' available and used.'
+        unroots = xnroots
+      endif
+
+      uladc = ladc
+      if(ladc.ne.xladc) then
+        write(*,*) 'Vector length does not match.'
+        write(*,*) 'It will be adjusted but convergence can suffer!'
+        uladc = min(ladc,xladc)
+      endif
+
+      allocate(qm(ladc))
+      allocate(ec(xladc))
+      Do k=1,unroots
+        read(io) jdummy
+        read(io) rdummy
+        read(io) rdummy
+        read(io) (ec(ix),ix=1,xladc)
+        qm = 0.0d0
+        qm(1:uladc) = ec(1:uladc)  !rest is zero if xladc .lt. ladc
+        write(io_bold,rec=k,iostat=ida_iostat) qm
+        if(ida_iostat.ne.0) call  &
+           quit('Error writing direct access file for bold')
+      Enddo
+      write(*,*) 'Wrote',unroots,' start vectors into initial block.'
+
+! filling the remaining start vectors with diagonal one
+
+      Do k=unroots+1,nroots
+        write(*,*) 'Writing defective vector #',k
+        qm = 0.0d0
+        qm(k) = 1.0d0
+        write(io_bold,rec=k,iostat=ida_iostat) qm
+        if(ida_iostat.ne.0) call  &
+           quit('Error writing direct access file for bold')
+      Enddo
+      deallocate(ec)
+      deallocate(qm)
+
+      Close(io)
+
+!------------------------------------------------------------
+
+      case(1)                 !  DAVSTART is present
+
+      write(*,*) 'Using ',filename_d,' as restart file.'
+      OPEN(io,file=filename_d,access='sequential',  &
            status='unknown',form='unformatted')
       READ(io) nsiz
       WRITE(*,*) 'Found',nsiz,' Start vectors.'
@@ -526,7 +626,7 @@
       Endif
 
       If(nroots.gt.nsiz) then
-        Write(*,*) 'You request more states than there', &
+        Write(*,*) 'You request more states than there',  &
                    ' are in the Main space.'
         Write(*,*) 'Adapting requested roots',nroots,' to',nsiz
         nroots = nsiz
@@ -540,7 +640,6 @@
       enddo
       write(*,*) nroots,' start vectors read.'
       write(*,*) 'Length of start vectors:',nsiz
-      Close(io)
 
 ! check orthogonality of the start vectors
 
@@ -552,7 +651,7 @@
       Enddo
       Enddo
       ortho = ortho - dble(nroots)
-      WRITE(*,*) 'Orthogonality of start vectors:',ortho
+      WRITE(*,*) 'Orthogonality:',ortho
 !
 ! now make start vectors the initial Davidson vectors for the first 
 ! macro iteration
@@ -562,13 +661,37 @@
         qm(1:nsiz) = bstart(1:nsiz,i)
         qm(nsiz+1:ladc) = 0.0d0
         write(io_bold,rec=i,iostat=ida_iostat) qm
-        if(ida_iostat.ne.0) call &
+        if(ida_iostat.ne.0) call  &
            quit('Error writing direct access file for bold')
       Enddo
 
       deallocate(qm)
       deallocate(bstart)
 
+      Close(io)
+
+!------------------------------------------------------------
+
+      case(0)                 !  no file. Unity matrix
+
+      write(*,*) 'No restart file found. Using unity matrix.'
+
+      allocate(qm(ladc))
+      qm = 0.0d0
+      Do i=1,nroots
+        qm(i) = 1.0d0
+        write(io_bold,rec=i,iostat=ida_iostat) qm
+        if(ida_iostat.ne.0) call  &
+           quit('Error writing direct access file for bold')
+        qm(i) = 0.0d0
+      Enddo
+      deallocate(qm)
+
+
+
+!------------------------------------------------------------
+
+      End select
 
       RETURN
       END
@@ -711,7 +834,11 @@
       SUBROUTINE write_davevecs_r(io_bold,desrep,nroots,nmain,ladc, &
                                   krydim,lambda,cji)
 
+      use qstack 
+
       implicit none
+
+#include  "polprp_stacklines.h"
 !
 !---------------Description--------------------------------------------
 !
@@ -726,12 +853,15 @@
 !
 !------------------------ local variables -------------------------
 !
-      integer                                :: k,j
+      integer                                :: i,j,k
       integer                                :: iu
+      integer                                :: qst_evcline
       real*8                                 :: a1,enorm
+      real*8                                 :: ortho
       real*8,parameter                       :: rzero=(0.0d0)
       real*8,allocatable,dimension(:)        :: aux,bv
       character*11                           :: davevcname
+
 !
 !------------------------ local variables -------------------------
 !
@@ -745,6 +875,8 @@
 !
 !------------------------ executable code -------------------------
 !
+      qst_evcline = EVC_STACKLINE
+
       allocate(aux(ladc))
       allocate(bv(ladc))
 
@@ -775,13 +907,14 @@
         write(iu) k
         write(iu) lambda(k)
 
-! *** build kth eigenvector
+! *** build kth eigenvector and push it on stack
 
         aux = rzero
         Do j=1,krydim
           read(io_bold,rec=j) bv
           aux = aux + cji(j,k)*bv
         Enddo
+        if(qstack_push(qst_evcline,ladc,aux).ne.ladc) stop 'QE'
 
 ! *** normalize kth eigenvector
 
@@ -797,9 +930,24 @@
         write(iu) a1
         write(iu) (aux(j),j=1,ladc)
 
-      Enddo   !k
-!
+      Enddo   !k. 
       close(iu)
+
+!   All vectors are now on the stack. We check ortho.
+
+      ortho = 0.0d0
+      do i=1,nroots
+        if(qstack_peekn(qst_evcline,bv,i).ne.ladc) stop 'QE'
+        do j=i,nroots
+          if(qstack_peekn(qst_evcline,aux,j).ne.ladc) stop 'QE'
+          ortho = ortho + dabs(dot_product(bv,aux))
+        enddo
+      enddo
+      ortho = ortho - dble(nroots)
+      i = qstack_drop(qst_evcline)
+      write(*,*) 'Dropped',i,' elements from stack line',qst_evcline
+      write(*,*) 'Orthogonality of written vectors:',ortho
+      write(*,*)
 
       deallocate(aux)
       deallocate(bv)

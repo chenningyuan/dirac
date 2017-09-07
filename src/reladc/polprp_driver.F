@@ -725,7 +725,7 @@ C
 ! initialize stack system (only master does this)
 !
         qst_numofstacks = NUM_OF_STACKS
-        qst_verbose = 0
+        qst_verbose = 1
         if(qstack_init(qst_numofstacks,qst_verbose).ne.NUM_OF_STACKS) 
      &     call quit('Qstack problem')
         WRITE(IW,*)'Stack system initialized with',

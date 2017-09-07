@@ -408,6 +408,50 @@ CINT48 qstack_peekl(CINT48 *stack, double *retvec){
 
 
 
+/*
+ *               function qstack_peekn
+ *&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+ */
+CINT48 qstack_peekn(CINT48 *stack, double *retvec, CINT48 *shard){
+  CINT48 stackn;
+  CINT48 curlen;
+  CINT48 curdep;
+
+  if(!initialized) {
+    printf("*** Qstack runtime problem: Please initialize stack\n");
+    printf("*** before use! No action taken.\n");
+    return -1;
+  }
+
+  if(*stack < 1 || *stack > numofstacks){
+    printf("*** Qstack runtime problem: Stack number out of range!\n");
+    printf("*** No action taken.\n");
+    return -1;
+  }
+
+  stackn = *stack - 1;  // C indexing starts at zero!
+
+/* if there are no elements on stack, return and do not touch retvec array */
+
+  if(qsdep[stackn] == 0) return 0;
+
+/* copy >>last<< vector from stack (LIFO) to retvec, do not adjust stack */
+
+  curdep = qsdep[stackn];      /* number of shards on stack stackn */
+  if(*shard < 1  ||  *shard > curdep){
+    printf("*** Qstack runtime problem: Shard number out of range!\n");
+    printf("*** No action taken.\n");
+    return -1;
+  }
+  curdep = *shard;
+  curlen = qslen[stackn][curdep-1];
+  memcpy(retvec,qsbase[stackn][curdep-1],curlen*sizeof(double));
+
+  return curlen;
+}
+
+
+
 
 
 
@@ -549,13 +593,82 @@ CINT48 qstack_drop(CINT48 * stack){
   qslen[stackn] = NULL;
 
 #if defined (INT_STAR8)
-  if(verbose) printf("%s dropped %lld elements from stack %lld\n",taginf,curdep,stackn);
+  if(verbose) printf("%s dropped %lld elements from stack %lld\n",taginf,curdep,*stack);
 #else
-  if(verbose) printf("%s dropped %d elements from stack %d\n",taginf,curdep,stackn);
+  if(verbose) printf("%s dropped %d elements from stack %d\n",taginf,curdep,*stack);
 #endif
 
   return curdep;
 }
+
+
+
+
+
+
+/*
+ *               function qstack_directx_r
+ *&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+ */
+CINT48 qstack_directx_r(CINT48 *stack, CINT48 *lenv, double *bravec, CINT48 *shard, double *result){
+  CINT48 stackn;
+  CINT48 curlen;
+  CINT48 curdep;
+  CINT48 i;
+  double * ketadd;
+
+  if(!initialized) {
+    printf("*** Qstack runtime problem: Please initialize stack\n");
+    printf("*** before use! No action taken.\n");
+    return -1;
+  }
+
+  if(*stack < 1 || *stack > numofstacks){
+    printf("*** Qstack runtime problem: Stack number out of range!\n");
+    printf("*** No action taken.\n");
+    return -1;
+  }
+
+  stackn = *stack - 1;  // C indexing starts at zero!
+
+/* if there are no elements on stack, return and set result to zero */
+
+  if(qsdep[stackn] == 0){
+    printf("*** Qstack runtime problem: No ket vectors available!\n");
+    *result = 0.0;
+    return -1;
+  }
+
+/* do consistency checks */
+
+  curdep = qsdep[stackn];      /* number of shards on stack stackn */
+  if(*shard < 1  ||  *shard > curdep){
+    printf("*** Qstack runtime problem: Shard number out of range!\n");
+    *result = 0.0;
+    return -1;
+  }
+  curdep = *shard;
+  curlen = qslen[stackn][curdep-1];
+  if(*lenv != curlen){
+    printf("*** Qstack runtime problem: bra/ket lengths do not match!\n");
+    *result = 0.0;
+    return -1;
+  }
+
+/* do bra/ket multiplication */
+
+  ketadd = qsbase[stackn][curdep-1];
+  *result = 0.0;
+  for(i=0;i<*lenv;i++){
+    *result += *bravec++ * *ketadd++;
+  }
+  
+  return *lenv;
+}
+
+
+
+
 
 
 
