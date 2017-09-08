@@ -47,13 +47,14 @@
       real*8,parameter                      :: prethr = 0.001d0
       real*8                                :: resnorm
       real*8                                :: prenorm1,prenorm2
+      real*8                                :: time_totl_s, time_totl_e
       real*8                                :: time_root_s, time_root_e
       real*8                                :: time_kryl_s, time_kryl_e
       real*8                                :: time_resi_s, time_resi_e
       real*8                                :: time_cur
       real*8                                :: hdx
       real*8,allocatable,dimension(:)       :: lambda
-      real*8,allocatable,dimension(:)       :: bv,bw
+      real*8,allocatable,dimension(:)       :: bv,bw,bx
       real*8,allocatable,dimension(:)       :: prc
       real*8,allocatable,dimension(:)       :: pro
       real*8,allocatable,dimension(:)       :: work
@@ -119,9 +120,10 @@
 
       end interface
 !
-! say hello
+! say hello and mark start time
 !
       Call PST('Entering real (S/P) Davidson diagonalizer+')
+      call cpu_time(time_totl_s)
 !         
 !  assign stack line number in order to avoid direct integers
 !  as actual parameters for the qstack calls (I8!)
@@ -148,6 +150,8 @@
          bv = rzero
       allocate(bw(ladc))
          bw = rzero
+      allocate(bx(ladc))
+         bx = rzero
       allocate(res(ladc,nroots))
          res = rzero
       allocate(prc(ladc))
@@ -192,7 +196,7 @@
 
 
 !*******************************************************
-! Start Davidson run. First read ADC matrix diagonal
+! Read ADC matrix diagonal
 !*******************************************************
 
       open(unit=iobase,file='ADCDGTMP', access='SEQUENTIAL', &
@@ -254,21 +258,36 @@
 
 !*******************************************************
 ! Step X: Form subspace Hamiltonian, <b_I|H|b_J>
-! space dimension:   H * b_old is stored on stack
+!         This is the only place where the large matrix is 
+!         accessed --> parallelization.
 !*******************************************************
 
       call cpu_time(time_kryl_s)
 
-! new H*b_old
 
-      write(*,*) 'Generating H*b_old between',krysav+1,' and ',krydim
+#if defined (VAR_MPI)
+      do j=krysav+1,krydim
+        call interface_mpi_bcast(SERVER_MATMUL,1,MASTER, &
+                                 global_communicator)
+        call interface_mpi_bcast(ladc,1,MASTER,global_communicator)
+        read(io_bold,rec=j,iostat=ida_iostat) bv    
+        call interface_mpi_bcast(bv,ladc,MASTER,global_communicator)
+        call xmvmul_sp_r(iobase,intbuf,ladc,bv,bx)  !master's own share --> bx
+        bw = 0.0d0    ! this is the array that accepts the reduced contributions
+        call interface_mpi_reduce(bx,bw,ladc, &
+                       op_MPI_SUM,MASTER,global_communicator)
+        if(qstack_push(qst_hboline,ladc,bw).ne.ladc) stop 'QE push'
+      enddo
+#else
       do j=krysav+1,krydim
         read(io_bold,rec=j,iostat=ida_iostat) bv    
         call xmvmul_sp_r(iobase,intbuf,ladc,bv,bw)
         if(qstack_push(qst_hboline,ladc,bw).ne.ladc) stop 'QE push'
       enddo
+#endif
 
-! form additional contribution
+
+! form additional contributions to subspace projected Hamiltonian
 ! call dot_product routine that directly accesses C stack.
 ! also written in C (necessarily) and correct krysav
 
@@ -299,11 +318,6 @@
       call dsyev('V','L',krydim,hijcal,maxdavsp,lambda,work,lwork,info)
       if(info.ne.0) then
         call quit('Error in DSYEV (real Davidson!)')
-      else
-!       write(*,*) 'Eigenvalues of hij matrix:'
-!       do i=1,krydim
-!         write(*,*) i,lambda(i)
-!       enddo
       endif
 
 !*******************************************************
@@ -416,7 +430,6 @@
 ! clear stack (essential! large memory demands)
 
       i=qstack_drop(qst_hboline)
-      write(*,*) 'Cleared',i,' elements from stackline',qst_hboline
 
 ! write out eigenvectors or restart vectors from B_old file.
 ! If not all roots converged we collapse subspace again to
@@ -439,23 +452,22 @@
 
       if(.not.allconverged) then
         maciter = maciter + 1
-        if(maciter.gt.maxdavit) then
+        if(maciter.le.maxdavit) then
           write(*,*) 'Entering macroiteration',maciter
           Goto 9999
         else
           write(*,*) 'User limit of macroiterations reached.'
           write(*,*) 'Check convergence of remaining roots and'
-          write(*,*) 'be careful with further eigenvectorso usage.'
+          write(*,*) 'be careful with further eigenvector usage.'
         endif
       else
           write(*,*) 'Overall Davidson convergence reached.'
+          write(*,*) 'Macroiterations used:',maciter
       endif
-      write(*,*) 'Macroiterations used:',maciter
 !
 !  cleanup
 !  deallocate arrays
 !  close and delete ADC matrix file
-!  close and delete direct access file
 !
       deallocate(hij)
       deallocate(hijcal)
@@ -470,11 +482,14 @@
       deallocate(converged)
 
       close(iobase,status='delete')    !delete ADC matrix
-      close(io_bold,status='delete')   !delete file for old vectors
+
+      call cpu_time(time_totl_e)
 
       write(*,*)
       write(*,'(70A1)') ('-',i=1,70)
       write(*,*) 'Davidson finished.'
+      time_cur = time_totl_e - time_totl_s
+      write(*,'(A,F10.2)') 'Total time spent in Davidson: ',time_cur
       write(*,'(70A1)') ('-',i=1,70)
 
       return
@@ -702,7 +717,6 @@
 !  compute residual vectors res, filled within this routine.
 !  Addresses the corresponding H*b_old vector from stack.
 !
-      use polprp_cfg   ! make davidson control variables accessible.
       use qstack
 
       implicit none
@@ -916,11 +930,6 @@
         Enddo
         if(qstack_push(qst_evcline,ladc,aux).ne.ladc) stop 'QE'
 
-! *** normalize kth eigenvector
-
-        enorm = sqrt(dot_product(aux,aux))
-        write(*,*) 'Norm of',k,'th eigenvector:',enorm
-
 ! *** compute pole strength of kth eigenvector
 
         a1 = 0.0d0
@@ -938,6 +947,8 @@
       ortho = 0.0d0
       do i=1,nroots
         if(qstack_peekn(qst_evcline,bv,i).ne.ladc) stop 'QE'
+        enorm = sqrt(dot_product(bv,bv))
+        write(*,*) 'Norm of',i,'th eigenvector:',enorm
         do j=i,nroots
           if(qstack_peekn(qst_evcline,aux,j).ne.ladc) stop 'QE'
           ortho = ortho + dabs(dot_product(bv,aux))
@@ -945,7 +956,6 @@
       enddo
       ortho = ortho - dble(nroots)
       i = qstack_drop(qst_evcline)
-      write(*,*) 'Dropped',i,' elements from stack line',qst_evcline
       write(*,*) 'Orthogonality of written vectors:',ortho
       write(*,*)
 

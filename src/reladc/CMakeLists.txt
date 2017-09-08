@@ -38,6 +38,7 @@ set(FREE_RELADC_FORTRAN_SOURCES
     polprp_cfg.F90
     polprp_qstackm.F90
     polprp_blockdav.F90
+    polprp_blockdav_c.F90
 )
 
 set(C_RELADC_SOURCES
