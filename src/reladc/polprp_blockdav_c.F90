@@ -43,86 +43,98 @@
 !
 !  local variables
 !
-      real*8,parameter                      :: rzero = 0.0d0
-      real*8,parameter                      :: prethr = 0.001d0
-      real*8                                :: resnorm
-      real*8                                :: prenorm1,prenorm2
-      real*8                                :: time_totl_s, time_totl_e
-      real*8                                :: time_root_s, time_root_e
-      real*8                                :: time_kryl_s, time_kryl_e
-      real*8                                :: time_resi_s, time_resi_e
-      real*8                                :: time_cur
-      real*8                                :: hdx
-      real*8,allocatable,dimension(:)       :: lambda
-      real*8,allocatable,dimension(:)       :: bv,bw,bx
-      real*8,allocatable,dimension(:)       :: prc
-      real*8,allocatable,dimension(:)       :: pro
-      real*8,allocatable,dimension(:)       :: work
-      real*8,allocatable,dimension(:)       :: adiag
-      real*8,allocatable,dimension(:,:)     :: res
-      real*8,allocatable,dimension(:,:)     :: hij,hijcal
-
-      integer                               :: i,j
-      integer                               :: krydim,krysav
-      integer                               :: maciter
-      integer                               :: io_bold
-      integer                               :: lwork,info
-      integer                               :: kroot
-      integer                               :: ida_iostat
-      integer                               :: iallocstat
-      Integer                               :: qst_hboline
-
-      logical                               :: allconverged
-      logical,allocatable,dimension(:)      :: converged
-
-      character*10                          :: fileadc
-      character*60                          :: listout
+      real*8,parameter                       :: rzero = 0.0d0
+      real*8,parameter                       :: prethr = 0.001d0
+      real*8                                 :: resnorm
+      real*8                                 :: prenorm1,prenorm2
+      real*8                                 :: time_totl_s,time_totl_e
+      real*8                                 :: time_root_s,time_root_e
+      real*8                                 :: time_kryl_s,time_kryl_e
+      real*8                                 :: time_resi_s,time_resi_e
+      real*8                                 :: time_cur
+      real*8,allocatable,dimension(:)        :: lambda
+      real*8,allocatable,dimension(:)        :: rwork
+      real*8,allocatable,dimension(:)        :: mpiaux
+      real*8,allocatable,dimension(:)        :: mpires1,mpires2
+      real*8,allocatable,dimension(:)        :: bwc   ! aux array for qstack interoperability
+                                             
+      complex*16,parameter                   :: czero = (rzero,rzero)
+      complex*16                             :: hdx
+      complex*16,allocatable,dimension(:)    :: adiag
+      complex*16,allocatable,dimension(:)    :: bv,bw,bx
+      complex*16,allocatable,dimension(:,:)  :: hij,hijcal
+      complex*16,allocatable,dimension(:)    :: prc
+      complex*16,allocatable,dimension(:)    :: pro
+      complex*16,allocatable,dimension(:,:)  :: res
+      complex*16,allocatable,dimension(:)    :: work
+                                             
+      integer                                :: i,j,ix
+      integer                                :: krydim,krysav
+      integer                                :: maciter
+      integer                                :: io_bold
+      integer                                :: lwork,info
+      integer                                :: kroot
+      integer                                :: ida_iostat
+      integer                                :: iallocstat
+      Integer                                :: qst_hboline
+                                             
+      logical                                :: allconverged
+      logical,allocatable,dimension(:)       :: converged
+                                             
+      character*10                           :: fileadc
+      character*60                           :: listout
 !
 !  interfaces for subroutines
 !
       interface
 
-        SUBROUTINE init_krylov_r(i1,i2,i3,i4,i5)
+        SUBROUTINE init_krylov_c(i1,i2,i3,i4,i5)
           integer                          :: i1,i2,i3,i4,i5
         END SUBROUTINE
 
-        SUBROUTINE xmvmul_sp_r(i1,i2,i3,ra1,ra2)
+        SUBROUTINE xmvmul_sp_c(i1,i2,i3,ca1,ca2)
           integer                          :: i1,i2,i3
-          real*8, dimension(:)             :: ra1,ra2
+          complex*16, dimension(:)         :: ca1,ca2
         END SUBROUTINE
 
-        SUBROUTINE calc_resvec_r(i1,i2,i3,i4,ra1,ra2,ra3)
+        SUBROUTINE calc_resvec_c(i1,i2,i3,i4,ca1,ra1,ca2)
           integer                      :: i1,i2,i3,i4
-          real*8, dimension(:,:)       :: ra1
-          real*8, dimension(:)         :: ra2
-          real*8, dimension(:,:)       :: ra3
+          complex*16, dimension(:,:)   :: ca1
+          real*8, dimension(:)         :: ra1
+          complex*16, dimension(:,:)   :: ca2
         END SUBROUTINE
 
-        SUBROUTINE calc_precon_r(i1,ra1,r1,ra2,ra3)
+        FUNCTION rzvecnorm(i1,ca1)
+          real*8                           :: rzvecnorm
+          integer                          :: i1
+          complex*16, dimension(:)         :: ca1
+        END FUNCTION
+
+        SUBROUTINE calc_precon_c(i1,ca1,r1,ca2,ca3)
           integer                      :: i1
-          real*8, dimension(:)         :: ra1
+          complex*16, dimension(:)     :: ca1
           real*8                       :: r1
-          real*8, dimension(:)         :: ra2
-          real*8, dimension(:)         :: ra3
+          complex*16, dimension(:)     :: ca2
+          complex*16, dimension(:)     :: ca3
         END SUBROUTINE
 
-        SUBROUTINE calc_preort_r(i1,i2,i3,ra1,ra2)
+        SUBROUTINE calc_preort_c(i1,i2,i3,ca1,ca2)
           integer                      :: i1,i2,i3
-          real*8, dimension(:)         :: ra1
-          real*8, dimension(:)         :: ra2
+          complex*16, dimension(:)     :: ca1
+          complex*16, dimension(:)     :: ca2
         END SUBROUTINE
 
-        SUBROUTINE write_davevecs_r(i1,i2,i3,i4,i5,i6,ra1,ra2)
+        SUBROUTINE write_davevecs_c(i1,i2,i3,i4,i5,i6,ra1,ca1)
           integer                      :: i1,i2,i3,i4,i5,i6
           real*8, dimension(:)         :: ra1
-          real*8, dimension(:,:)       :: ra2
+          complex*16, dimension(:,:)   :: ca1
         END SUBROUTINE
 
       end interface
 !
 ! say hello and mark start time
 !
-      Call PST('Entering real (S/P) Davidson diagonalizer+')
+      Call PST('Entering complex (S/P) Davidson diagonalizer+')
       call cpu_time(time_totl_s)
 !         
 !  assign stack line number in order to avoid direct integers
@@ -139,29 +151,42 @@
 !
 ! allocate and initialize arrays according to calculation dimensions
 !
-      lwork = 3*maxdavsp
-      allocate(hij(maxdavsp,maxdavsp))
-         hij = rzero
-      allocate(hijcal(maxdavsp,maxdavsp))
-         hijcal = rzero
-      allocate(lambda(maxdavsp))
-         lambda = 0.0d0
-      allocate(bv(ladc))
-         bv = rzero
-      allocate(bw(ladc))
-         bw = rzero
-      allocate(bx(ladc))
-         bx = rzero
-      allocate(res(ladc,nroots))
-         res = rzero
-      allocate(prc(ladc))
-         prc = rzero
-      allocate(pro(ladc))
-         pro = rzero
-      allocate(work(lwork))
-         work = rzero
+! complex arrays:
+
       allocate(adiag(ladc))
-         adiag = rzero
+         adiag = czero
+      allocate(bv(ladc))
+         bv = czero
+      allocate(bw(ladc))
+         bw = czero
+      allocate(bx(ladc))
+         bx = czero
+      allocate(hij(maxdavsp,maxdavsp))
+         hij = czero
+      allocate(hijcal(maxdavsp,maxdavsp))
+         hijcal = czero
+      allocate(prc(ladc))
+         prc = czero
+      allocate(pro(ladc))
+         pro = czero
+      allocate(res(ladc,nroots))
+         res = czero
+
+! real arrays:
+
+      allocate(lambda(maxdavsp))
+         lambda = rzero
+      lwork = 3*maxdavsp
+      allocate(work(lwork))
+         work = czero
+      allocate(rwork(lwork))
+         rwork = rzero
+      allocate(mpiaux(lwork))
+         mpiaux = rzero
+      allocate(mpires1(lwork))
+         mpires1 = rzero
+      allocate(bwc(2*ladc))
+         bwc = rzero
       allocate(converged(nroots))
          converged = .false.
 
@@ -196,7 +221,7 @@
 
 
 !*******************************************************
-! Read ADC matrix diagonal
+! Read ADC matrix diagonal (is complex but imag part is zero)
 !*******************************************************
 
       open(unit=iobase,file='ADCDGTMP', access='SEQUENTIAL', &
@@ -232,8 +257,9 @@
 !*******************************************************
 
       open(io_bold,file='DAVXBO',access='direct', &
-           recl=ladc*8,status='unknown')
-      write(*,*) 'Empty direct access file for Krylov space opened.'
+           recl=ladc*16,status='unknown')
+      write(*,*) 'Empty direct access file for complex ', &
+                 'Krylov space opened.'
 
 !*******************************************************
 ! Initialize Krylov space with (restart) vectors.
@@ -241,7 +267,7 @@
 
       krydim = nroots
       krysav = 0
-      call init_krylov_r(io_bold,desrep,nroots,maxdavsp,ladc)
+      call init_krylov_c(io_bold,desrep,nroots,maxdavsp,ladc)
 
       WRITE(*,*)
       WRITE(*,'(3X,A,4X,A,7X,A,7X,A,5X,A,A)') 'root','dim',  &
@@ -271,34 +297,58 @@
                                  global_communicator)
         call interface_mpi_bcast(ladc,1,MASTER,global_communicator)
         read(io_bold,rec=j,iostat=ida_iostat) bv    
-        call interface_mpi_bcast(bv,ladc,MASTER,global_communicator)
-        call xmvmul_sp_r(iobase,intbuf,ladc,bv,bx)  !master's own share --> bx
-        bw = 0.0d0    ! this is the array that accepts the reduced contributions
-        call interface_mpi_reduce(bx,bw,ladc, &
+
+        mpiaux = real(bv)  ! communicate real part
+        call interface_mpi_bcast(mpiaux,ladc,MASTER,global_communicator)
+        mpiaux = aimag(bv)  ! communicate imaginary part
+        call interface_mpi_bcast(mpiaux,ladc,MASTER,global_communicator)
+
+        call xmvmul_sp_c(iobase,intbuf,ladc,bv,bx)  !master's own share --> bx
+
+        mpires1 = rzero    ! this is the array that accepts the reduced contributions
+        mpiaux = real(bx)
+        call interface_mpi_reduce(mpiaux,mpires1,ladc, &
                        op_MPI_SUM,MASTER,global_communicator)
-        if(qstack_push(qst_hboline,ladc,bw).ne.ladc) stop 'QE push'
+        mpires2 = rzero    ! this is the array that accepts the reduced contributions
+        mpiaux = aimag(bx)
+        call interface_mpi_reduce(mpiaux,mpires2,ladc, &
+                       op_MPI_SUM,MASTER,global_communicator)
+
+        do ix=1,ladc
+          bwc(2*ix-1) = mpires1(ix)   !real part
+          bwc(2*ix)   = mpires2(ix)   !imag part
+        enddo
+
+        if(qstack_push(qst_hboline,2*ladc,bwc).ne.2*ladc) stop 'QE push'
       enddo
 #else
       do j=krysav+1,krydim
         read(io_bold,rec=j,iostat=ida_iostat) bv    
-        call xmvmul_sp_r(iobase,intbuf,ladc,bv,bw)
-        if(qstack_push(qst_hboline,ladc,bw).ne.ladc) stop 'QE push'
+        call xmvmul_sp_c(iobase,intbuf,ladc,bv,bw)
+        do ix=1,ladc
+          bwc(2*ix-1) = real(bw(ix))   !real part
+          bwc(2*ix)   = aimag(bw(ix))   !imag part
+        enddo
+        if(qstack_push(qst_hboline,2*ladc,bwc).ne.2*ladc) stop 'QE push'
       enddo
 #endif
 
 
-! form additional contributions to subspace projected Hamiltonian
+! form incremental contributions to subspace projected Hamiltonian
 ! call dot_product routine that directly accesses C stack.
 ! also written in C (necessarily) and correct krysav
 
       do i=1,krydim
         read(io_bold,rec=i) bv
+        do ix=1,ladc
+          bwc(2*ix-1) = real(bv(ix))    !real part
+          bwc(2*ix)   = aimag(bv(ix))   !imag part
+        enddo
         do j=krysav+1,krydim
-!         write(*,*) '   additional <i|H|j> i,j:',i,j
-          if(qstack_directx_r(qst_hboline,ladc,bv,j,hdx).ne.ladc) &
+          if(qstack_directx_c(qst_hboline,ladc,bwc,j,hdx).ne.ladc) &
              stop 'QE x_r'
           hij(i,j) = hdx
-          hij(j,i) = hdx
+          hij(j,i) = dconjg(hdx)
         enddo
       enddo
 
@@ -315,19 +365,21 @@
 !*******************************************************
 
       hijcal = hij
-      call dsyev('V','L',krydim,hijcal,maxdavsp,lambda,work,lwork,info)
+      call zheev('V','L',krydim,hijcal,maxdavsp,lambda, &
+                 work,lwork,rwork,info)
       if(info.ne.0) then
-        call quit('Error in DSYEV (real Davidson!)')
+        write(*,*) 'ZHEEV problem in complex Davidson, code:',info
+        call quit()
       endif
 
 !*******************************************************
-! Step X+Y: calculate nroots residual vectors. Use
+! Step X+Y: calculate nroots residual vectors (kets!)
 ! Current dimension of Krylov space!
-! resvec_r accesses C stack!
+! resvec_c accesses C stack!
 !*******************************************************
 
       call cpu_time(time_resi_s)
-      call calc_resvec_r(io_bold,ladc,nroots,krydim, &
+      call calc_resvec_c(io_bold,ladc,nroots,krydim, &
                          hijcal,lambda,res)
       call cpu_time(time_resi_e)
       time_cur = time_resi_e - time_resi_s
@@ -345,7 +397,7 @@
 
         call cpu_time(time_root_s)
 
-        resnorm=sqrt(dot_product(res(:,kroot),res(:,kroot)))
+        resnorm=rzvecnorm(ladc,res(:,kroot))
 
         write(listout,'(A3,I3,A3,I5,6X,F10.7,6X,F10.7)') '   ',  &
             kroot,'   ',krydim,lambda(kroot),resnorm
@@ -366,15 +418,15 @@
           converged(kroot) = .false.
           listout(47:48) =  ' o'
 
-          call calc_precon_r(ladc,adiag,lambda(kroot),res(:,kroot),prc)
-          prenorm1=sqrt(dot_product(prc,prc))
+          call calc_precon_c(ladc,adiag,lambda(kroot),res(:,kroot),prc)
+          prenorm1=rzvecnorm(ladc,prc)
 
-          call calc_preort_r(io_bold,ladc,krydim,prc,pro)
-          prenorm2=sqrt(dot_product(pro,pro))
+          call calc_preort_c(io_bold,ladc,krydim,prc,pro)
+          prenorm2=rzvecnorm(ladc,pro)
 
           if( (prenorm2/prenorm1).ge.prethr) then
 
-            pro = pro/prenorm2
+            pro = pro/dcmplx(prenorm2,rzero)
             krydim = krydim + 1
             write(io_bold,rec=krydim) pro  !extend trial space
             listout(52:54) = ' XT'
@@ -440,7 +492,7 @@
       else
         write(*,*) 'Nonconverged roots remain. Collapsing subspace.'
       endif
-      call write_davevecs_r(io_bold,desrep,nroots,nmain,ladc, &
+      call write_davevecs_c(io_bold,desrep,nroots,nmain,ladc, &
                             krydim,lambda,hijcal)
 
 ! in both cases we have to get rid off the large B old file
@@ -465,21 +517,30 @@
           write(*,*) 'Macroiterations used:',maciter
       endif
 !
-!  cleanup
-!  deallocate arrays
-!  close and delete ADC matrix file
+!  deallocate complex arrays
 !
-      deallocate(hij)
-      deallocate(hijcal)
-      deallocate(lambda)
+      deallocate(adiag)
       deallocate(bv)
       deallocate(bw)
-      deallocate(res)
+      deallocate(bx)
+      deallocate(hij)
+      deallocate(hijcal)
       deallocate(prc)
       deallocate(pro)
+      deallocate(res)
+
+!  deallocate real arrays
+
+      deallocate(lambda)
       deallocate(work)
-      deallocate(adiag)
+      deallocate(rwork)
+      deallocate(mpiaux)
+      deallocate(mpires1)
+      deallocate(mpires2)
+      deallocate(bwc)
       deallocate(converged)
+
+!  close and delete ADC matrix file
 
       close(iobase,status='delete')    !delete ADC matrix
 
@@ -520,13 +581,17 @@
       integer                                :: ida_iostat
       Character*11                           :: filename_d,filename_e
       Real*8                                 :: ortho,a1
-      Real*8,allocatable,dimension(:)        :: qm,ec
-      Real*8,allocatable,dimension(:,:)      :: bstart
+      complex*16,allocatable,dimension(:)        :: qm,ec
+      complex*16,allocatable,dimension(:,:)      :: bstart
       integer                                :: xnroots,xnmain,xladc
       integer                                :: unroots,uladc
       integer                                :: jdummy
       Real*8                                 :: rdummy
       character*8                            :: hp_name,ev_name
+      Real*8,parameter                       :: rzero=0.0d0
+      complex*16                             :: cax
+      complex*16,parameter                   :: czero=(rzero,rzero)
+      complex*16,parameter                   :: cone=(1.0d0,rzero)
 !
 !------------------------ interface -------------------------
 !
@@ -534,6 +599,12 @@
 
         function get_file_unit()
            Integer    :: get_file_unit
+        end function
+
+        function pp_zdotc(i1,ca1,ca2)
+          double complex                   :: pp_zdotc
+          INTEGER                          :: i1
+          double complex, dimension(:)     :: ca1,ca2
         end function
 
       End interface
@@ -603,7 +674,7 @@
         read(io) rdummy
         read(io) rdummy
         read(io) (ec(ix),ix=1,xladc)
-        qm = 0.0d0
+        qm = czero
         qm(1:uladc) = ec(1:uladc)  !rest is zero if xladc .lt. ladc
         write(io_bold,rec=k,iostat=ida_iostat) qm
         if(ida_iostat.ne.0) call  &
@@ -615,8 +686,8 @@
 
       Do k=unroots+1,nroots
         write(*,*) 'Writing defective vector #',k
-        qm = 0.0d0
-        qm(k) = 1.0d0
+        qm = czero
+        qm(k) = cone
         write(io_bold,rec=k,iostat=ida_iostat) qm
         if(ida_iostat.ne.0) call  &
            quit('Error writing direct access file for bold')
@@ -648,7 +719,7 @@
       Endif
 
       allocate(bstart(nsiz,nroots))
-      bstart = 0.0d0
+      bstart = czero
 
       do i=1,nroots
         Read(io) (bstart(j,i),j=1,nsiz)
@@ -661,8 +732,8 @@
       ortho = 0.0d0
       Do i=1,nroots
       Do j=1,nroots
-        a1 = dot_product(bstart(:,i),bstart(:,j))
-        ortho = ortho + abs(a1)
+        cax = pp_zdotc(nsiz,bstart(:,i),bstart(:,j))
+        ortho = ortho + abs(cax)
       Enddo
       Enddo
       ortho = ortho - dble(nroots)
@@ -692,13 +763,13 @@
       write(*,*) 'No restart file found. Using unity matrix.'
 
       allocate(qm(ladc))
-      qm = 0.0d0
+      qm = czero
       Do i=1,nroots
-        qm(i) = 1.0d0
+        qm(i) = cone
         write(io_bold,rec=i,iostat=ida_iostat) qm
         if(ida_iostat.ne.0) call  &
            quit('Error writing direct access file for bold')
-        qm(i) = 0.0d0
+        qm(i) = czero
       Enddo
       deallocate(qm)
 
@@ -727,17 +798,22 @@
       integer                               :: ladc
       integer                               :: nroots
       integer                               :: krydim
-      real*8,dimension(:,:)                 :: cji
+      complex*16,dimension(:,:)             :: cji
       real*8,dimension(:)                   :: lambda
-      real*8,dimension(:,:)                 :: res
+      complex*16,dimension(:,:)             :: res
 !
 ! local variables
 !
-      integer                               :: j,kroot
+      integer                               :: ix,j,kroot
       Integer                               :: qst_hboline
 
       real*8,parameter                      :: rzero = 0.0d0
-      real*8,allocatable,dimension(:)       :: aux,bv,hbo
+      real*8,allocatable,dimension(:)       :: hrc
+
+      complex*16,parameter                  :: czero = (rzero,rzero)
+      complex*16,allocatable,dimension(:)   :: aux
+      complex*16,allocatable,dimension(:)   :: bv
+      complex*16,allocatable,dimension(:)   :: hbo
 
 #include  "polprp_stacklines.h"
 !
@@ -747,6 +823,9 @@
 !
 ! form sum_j (C_ji*(H*b_j - lambda_i*b_j))
 !
+      allocate(hrc(2*ladc))
+      hrc = rzero
+
       allocate(aux(ladc))
       allocate(bv(ladc))
       allocate(hbo(ladc))
@@ -754,17 +833,24 @@
 ! first loop over Krylov space (minimize disk reads!)
 ! Inner loop: over nroots
 !
-      res = rzero
+      res = czero
       Do j=1,krydim
         read(iu,rec=j) bv
-        if(qstack_peekn(qst_hboline,hbo,j).ne.ladc) stop 'QE'
+        if(qstack_peekn(qst_hboline,hrc,j).ne.2*ladc) stop 'QE'
+
+! reconstruct complex vector from real stack line
+
+        do ix=1,ladc
+          hbo(ix) = dcmplx(hrc(2*ix-1),hrc(2*ix))
+        enddo
         Do kroot=1,nroots
-          aux(:) = hbo - lambda(kroot)*bv(:)
+          aux(:) = hbo - dcmplx(lambda(kroot),rzero)*bv(:)
           aux(:) = aux(:)*cji(j,kroot)
           res(:,kroot) = res(:,kroot) + aux(:)
         Enddo  !kroot
       Enddo  !j
 
+      deallocate(hrc)
       deallocate(aux)
       deallocate(bv)
       deallocate(hbo)
@@ -781,10 +867,10 @@
 ! formal arguments
 !
       integer                               :: ladc
-      real*8,dimension(:)                   :: adiag
+      complex*16,dimension(:)               :: adiag
       real*8                                :: lambdai
-      real*8,dimension(:)                   :: res
-      real*8,dimension(:)                   :: prc
+      complex*16,dimension(:)               :: res
+      complex*16,dimension(:)               :: prc
 !
 ! local variables
 !
@@ -795,11 +881,11 @@
 !
 
       Do j=1,ladc
-        a1=lambdai - adiag(j)
+        a1=lambdai - real(adiag(j))
         if(dabs(a1).lt.1.0e-03) then
-          prc(j) = 100.0d0 * res(j)
+          prc(j) = (100.0d0,0.0d0) * res(j)
         else
-          prc(j)=res(j)/a1
+          prc(j)=res(j)/dcmplx(a1,0.0d0)
         endif
       Enddo
 
@@ -819,14 +905,24 @@
       integer                               :: iu
       integer                               :: ladc
       integer                               :: krydim
-      real*8,dimension(:)                   :: prc
-      real*8,dimension(:)                   :: pro
+      complex*16,dimension(:)               :: prc
+      complex*16,dimension(:)               :: pro
+
+      Interface
+
+        function pp_zdotc(i1,ca1,ca2)
+          double complex                   :: pp_zdotc
+          INTEGER                          :: i1
+          double complex, dimension(:)     :: ca1,ca2
+        end function
+
+      End interface
 !
 ! local variables
 !
       integer                               :: j
-      real*8                                :: a1
-      real*8,allocatable,dimension(:)       :: aux
+      complex*16                            :: a1
+      complex*16,allocatable,dimension(:)   :: aux
 !
 ! executable code
 !
@@ -836,7 +932,7 @@
       pro = prc
       Do j = 1,krydim
         read(iu,rec=j) aux
-        a1=dot_product(aux,prc)
+        a1=pp_zdotc(ladc,aux,prc)
         pro(:) = pro(:) - a1*aux(:)
       Enddo
 
@@ -848,11 +944,7 @@
       SUBROUTINE write_davevecs_c(io_bold,desrep,nroots,nmain,ladc, &
                                   krydim,lambda,cji)
 
-      use qstack 
-
       implicit none
-
-#include  "polprp_stacklines.h"
 !
 !---------------Description--------------------------------------------
 !
@@ -860,10 +952,11 @@
 !
 !------------------------ calling variables -------------------------
 !
-      integer                    :: io_bold
-      integer                    :: desrep,nroots,nmain,ladc,krydim
-      real*8,dimension(:)        :: lambda
-      real*8,dimension(:,:)      :: cji
+      integer                         :: io_bold
+      integer                         :: desrep,nroots
+      integer                         :: nmain,ladc,krydim
+      real*8,dimension(:)             :: lambda
+      complex*16,dimension(:,:)       :: cji
 !
 !------------------------ local variables -------------------------
 !
@@ -873,7 +966,10 @@
       real*8                                 :: a1,enorm
       real*8                                 :: ortho
       real*8,parameter                       :: rzero=(0.0d0)
-      real*8,allocatable,dimension(:)        :: aux,bv
+      complex*16,parameter                   :: czero=(rzero,rzero)
+      complex*16,allocatable,dimension(:)    :: aux
+      complex*16,allocatable,dimension(:)    :: bv
+      complex*16,allocatable,dimension(:,:)  :: evc
       character*11                           :: davevcname
 
 !
@@ -885,6 +981,19 @@
           integer                      :: get_file_unit
         END Function
 
+        FUNCTION rzvecnorm(i1,ca1)
+          real*8                           :: rzvecnorm
+          INTEGER                          :: i1
+          complex*16, dimension(:)         :: ca1
+        END FUNCTION
+
+        FUNCTION pp_zdotc(i1,ca1,ca2)
+          double complex                   :: pp_zdotc
+          INTEGER                          :: i1
+          double complex, dimension(:)     :: ca1,ca2
+        END FUNCTION
+
+
       end interface
 !
 !------------------------ executable code -------------------------
@@ -893,6 +1002,9 @@
 
       allocate(aux(ladc))
       allocate(bv(ladc))
+      allocate(evc(ladc,nroots))
+
+      evc = czero
 
 ! *** open file
 
@@ -923,18 +1035,18 @@
 
 ! *** build kth eigenvector and push it on stack
 
-        aux = rzero
+        aux = czero
         Do j=1,krydim
           read(io_bold,rec=j) bv
           aux = aux + cji(j,k)*bv
         Enddo
-        if(qstack_push(qst_evcline,ladc,aux).ne.ladc) stop 'QE'
+        evc(k,:) = aux
 
 ! *** compute pole strength of kth eigenvector
 
         a1 = 0.0d0
         do j=1,nmain
-          a1 = a1 + aux(j)*aux(j)
+          a1 = a1 + real(dconjg(aux(j))*aux(j))
         enddo
         write(iu) a1
         write(iu) (aux(j),j=1,ladc)
@@ -942,25 +1054,21 @@
       Enddo   !k. 
       close(iu)
 
-!   All vectors are now on the stack. We check ortho.
+!   All vectors are determined, we check ortho.
 
       ortho = 0.0d0
       do i=1,nroots
-        if(qstack_peekn(qst_evcline,bv,i).ne.ladc) stop 'QE'
-        enorm = sqrt(dot_product(bv,bv))
-        write(*,*) 'Norm of',i,'th eigenvector:',enorm
         do j=i,nroots
-          if(qstack_peekn(qst_evcline,aux,j).ne.ladc) stop 'QE'
-          ortho = ortho + dabs(dot_product(bv,aux))
+          ortho = ortho + abs(pp_zdotc(ladc,evc(i,:),evc(j,:)))
         enddo
       enddo
       ortho = ortho - dble(nroots)
-      i = qstack_drop(qst_evcline)
       write(*,*) 'Orthogonality of written vectors:',ortho
       write(*,*)
 
       deallocate(aux)
       deallocate(bv)
+      deallocate(evc)
 
       return
       end

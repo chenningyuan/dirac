@@ -2,6 +2,7 @@
 #include<stdlib.h>
 #include<string.h>
 #include<stdint.h>
+#include<complex.h>
 
 #define MAXNUMSTACK 100
 /*
@@ -181,6 +182,7 @@ CINT48 qstack_push(CINT48 *stack, CINT48 *len, double *arr){
 
   return *len;
 }
+
 
 
 /*

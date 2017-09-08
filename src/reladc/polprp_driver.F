@@ -968,15 +968,23 @@ C
 
           if(carith) then
 !           call fulldia_c3(iobase,namematfil,intbuf,ladc)
-            call mpi_davidson_master_ext_c(iw,
-     &                                     iobase,
-     &                                     desrep,
-     &                                     intbuf,
-     &                                     namematfil,
-     &                                     namecnffil,
-     &                                     irecl,
-     &                                     ladc,
-     &                                     MVO(desrep))
+
+            call mpi_block_davidson_c(iobase,
+     &                                intbuf,
+     &                                ladc,
+     &                                MVO(desrep),
+     &                                desrep,
+     &                                namematfil)
+
+!           call mpi_davidson_master_ext_c(iw,
+!    &                                     iobase,
+!    &                                     desrep,
+!    &                                     intbuf,
+!    &                                     namematfil,
+!    &                                     namecnffil,
+!    &                                     irecl,
+!    &                                     ladc,
+!    &                                     MVO(desrep))
           else
 !           call fulldia_r3(iobase,namematfil,intbuf,ladc,desrep)
 

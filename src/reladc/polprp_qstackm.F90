@@ -89,6 +89,16 @@ module qstack
            real (c_double)          :: r1
          END FUNCTION
        
+         FUNCTION qstack_directx_c (i1, i2, ra1, i3, c1) bind(c, name="qstack_directx_c")
+           use, intrinsic ::  iso_c_binding
+           integer (CINT48)                :: qstack_directx_c
+           integer (CINT48)                :: i1
+           integer (CINT48)                :: i2
+           real (c_double)                 :: ra1(*)
+           integer (CINT48)                :: i3
+           complex (c_double_complex)      :: c1
+         END FUNCTION
+       
          SUBROUTINE qstack_shutdown () bind(c, name="qstack_shutdown")
            use, intrinsic :: iso_c_binding
          END SUBROUTINE
