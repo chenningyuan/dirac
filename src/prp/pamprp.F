@@ -9800,9 +9800,9 @@ C
       CALL DZERO(SPRNUC,NCMAT)
 C
 c**** iaa: Only most abundant isotopes are considered
-      DO I = 1, MXCENT
-            ISOTOP(I) = 1
-      END DO
+c      DO I = 1, MXCENT
+c            ISOTOP(I) = 1
+c      END DO
 c****
 C
       CALL CMMASS(GEOM,MASS,NAT,ISOTOP,IPRPRP)
@@ -10178,28 +10178,35 @@ C
      &        SCTRA,NATTYP,NUMIS,IBTAND,IBTOR,
      &        IBTSHL,IBTSHR,IBTXOR
 C
-      double precision D1,D2,D3,D4,THRESH,DP5,FAC,
+      double precision D1,D2,D3,D4,THRESH,DP5,FAC,FACPPM,
      &                 GEOM(KATOM,3),AMASS(KATOM),GVAL(KATOM),
      &                 PMATL(3,3,KATOM,2),PMATS(3,3,KATOM,2),
-     &                 DMAT(3,3,KATOM),
-     &                 ANGUMOM(3),NSREXV,NSRLR,NSRNUC,
-     &                 NSRTOT,CONST,EIGVAL(3),EIGVEC(3,3),
-     &                 FACTOT,OMEGA(3,3),SIGMAS,TINERT(9),DISOTP,
+     &                 DMAT(3,3,KATOM),ANGUMOM(3),
+     &                 NSREXV,NSRLR,NSRNUC,NSRTOT,
      &                 NSRLRLEE,NSRLRLEP,NSRLRSEE,NSRLRSEP,
+     &                 NSREXVPPM,NSRLRPPM,NSRNUCPPM,NSRTOTPPM,
+     &                 NSRLRLEEPPM,NSRLRLEPPPM,NSRLRSEEPPM,NSRLRSEPPPM,
+     &                 CONST,CONST2,EIGVAL(3),EIGVEC(3,3),
+     &                 FACTOT,OMEGA(3,3),SIGMAS,TINERT(9),DISOTP,
      &                 GTRANPLEE(3,3,KATOM),GTRANPLEP(3,3,KATOM),
      &                 GTRANPSEE(3,3,KATOM),GTRANPSEP(3,3,KATOM),
      &                 GTRANP(3,3,KATOM),GTRAND(3,3,KATOM),
-     &                 GTRANN(3,3,KATOM)
+     &                 GTRANN(3,3,KATOM),
+     &                 GTRANPLEEPPM(3,3,KATOM),GTRANPLEPPPM(3,3,KATOM),
+     &                 GTRANPSEEPPM(3,3,KATOM),GTRANPSEPPPM(3,3,KATOM),
+     &                 GTRANPPPM(3,3,KATOM),GTRANDPPM(3,3,KATOM),
+     &                 GTRANNPPM(3,3,KATOM),GTRANTPPM(3,3,KATOM)
 C
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
      &           THRESH = 1.0D-5, DP5 = 1/D2)
       PARAMETER (FAC = ALPHA2/(2.D0*PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
+      PARAMETER (FACPPM = ALPHA2/2.D0*1.0D+6)
       LOGICAL PLANAR, LINMOL
 C
 C**** iaa: Only most abundant isotopes are considered
-      DO I = 1, MXCENT
-            ISOTOP(I) = 1
-      END DO
+c      DO I = 1, MXCENT
+c            ISOTOP(I) = 1
+c      END DO
 C****
 C
       CALL DZERO(TOTSPR,3*MXCOOR)
@@ -10345,6 +10352,35 @@ C
      & '           M^S(e-e) :',NSRLRSEE,
      & '           M^L(e-p) :',NSRLRLEP,
      & '           M^S(e-p) :',NSRLRSEP
+C
+C       Values in ppm
+C
+              NSRTOTPPM = TOTSPR(1,1,IATOM)*FACPPM
+              NSRNUCPPM = SPRNUC(1,1,IATOM)*FACPPM
+              NSREXVPPM = DMAT(1,1,IATOM)*FACPPM
+              NSRLRLEEPPM = PMATL(1,1,IATOM,1)*FACPPM
+              NSRLRLEPPPM = PMATL(1,1,IATOM,2)*FACPPM
+              NSRLRSEEPPM = PMATS(1,1,IATOM,1)*FACPPM
+              NSRLRSEPPPM = PMATS(1,1,IATOM,2)*FACPPM
+C
+              NSRLRPPM=NSRLRLEEPPM+NSRLRLEPPPM+NSRLRSEEPPM+NSRLRSEPPPM
+C
+              IF (IPRINT .GE. 2) THEN
+                CALL HEADER('Spin-rotation constants (in ppm) for '//
+     &                          NAMDEP(IATOM),-1)
+         WRITE(LUPRI,'((1X,A,F16.8,/),/,2(1X,A,F16.8,/),(1X,A,F16.8))')
+     & ' Total spin-rotation constant (SRC)      :',NSRTOTPPM,
+     & '   Nuclear contribution to SRC           :',NSRNUCPPM,
+     & '   Expectation value contribution to SRC :',NSREXVPPM,
+     & '   Linear response contribution to SRC   :',NSRLRPPM
+C
+                 IF (IPRINT .GE. 3) WRITE(LUPRI,'(4(1X,A,F16.8,/))')
+     & '           M^L(e-e) :',NSRLRLEEPPM,
+     & '           M^S(e-e) :',NSRLRSEEPPM,
+     & '           M^L(e-p) :',NSRLRLEPPPM,
+     & '           M^S(e-p) :',NSRLRSEPPPM
+C
+              END IF
  98      CONTINUE
 C
 !     If linear symmetry is not detected:
@@ -10409,7 +10445,51 @@ C
      &                       + GTRANPSEP(I,J,IATOM)
  60               CONTINUE
  50            CONTINUE
+C
+C   To calculate values in ppm
+C
+               CALL DZERO(GTRANNPPM,9*NUCDEP)
+               CALL DZERO(GTRANDPPM,9*NUCDEP)
+               CALL DZERO(GTRANPPPM,9*NUCDEP)
+               CALL DZERO(GTRANPLEEPPM,9*NUCDEP)
+               CALL DZERO(GTRANPLEPPPM,9*NUCDEP)
+               CALL DZERO(GTRANPSEEPPM,9*NUCDEP)
+               CALL DZERO(GTRANPSEPPPM,9*NUCDEP)
+               DO 70 I = 1, 3
+               DO 70 J = 1, 3
+                  DO 80 IX = 1, 3
+                  DO 80 IY = 1, 3
+                        JX = IPTAX(IX,2)
+                        JY = IPTAX(IY,2)
+                        CONST2 = FACPPM
+                GTRANTPPM(I,J,IATOM)=GTRANTPPM(I,J,IATOM)+EIGVEC(IX,I)
+     &                *TOTSPR(JX,JY,IATOM)*EIGVEC(IY,J)*CONST2
+                GTRANNPPM(I,J,IATOM)=GTRANNPPM(I,J,IATOM)+EIGVEC(IX,I)
+     &                *SPRNUC(JX,JY,IATOM)*EIGVEC(IY,J)*CONST2
+                GTRANDPPM(I,J,IATOM)=GTRANDPPM(I,J,IATOM)+EIGVEC(IX,I)
+     &                *DMAT(JX,JY,IATOM)*EIGVEC(IY,J)*CONST2
+                GTRANPLEEPPM(I,J,IATOM) = GTRANPLEEPPM(I,J,IATOM)
+     &                + EIGVEC(IX,I)
+     &                 *PMATL(JX,JY,IATOM,1)*EIGVEC(IY,J)*CONST2
+                GTRANPLEPPPM(I,J,IATOM) = GTRANPLEPPPM(I,J,IATOM) 
+     &                + EIGVEC(IX,I)
+     &                 *PMATL(JX,JY,IATOM,2)*EIGVEC(IY,J)*CONST2
+                GTRANPSEEPPM(I,J,IATOM) = GTRANPSEEPPM(I,J,IATOM)
+     &                + EIGVEC(IX,I)
+     &                 *PMATS(JX,JY,IATOM,1)*EIGVEC(IY,J)*CONST2
+                GTRANPSEPPPM(I,J,IATOM) = GTRANPSEPPPM(I,J,IATOM) 
+     &                + EIGVEC(IX,I)
+     &                 *PMATS(JX,JY,IATOM,2)*EIGVEC(IY,J)*CONST2
+                 GTRANPPPM(I,J,IATOM) = GTRANPLEEPPM(I,J,IATOM) 
+     &                + GTRANPLEPPPM(I,J,IATOM)
+     &                + GTRANPSEEPPM(I,J,IATOM) 
+     &                + GTRANPSEPPPM(I,J,IATOM)
+ 80               CONTINUE
+ 70            CONTINUE
+C
+C
 ! If there is at least one inertia tensor eigenvalue equal to zero (linear molecule):
+C
 C
                  IF(LINMOL) THEN
                    IF(EIGVAL(1).NE.0) THEN
@@ -10432,7 +10512,32 @@ C
      &  '           M^L(e-p) :',GTRANPLEP(3,3,IATOM),
      &  '           M^S(e-p) :',GTRANPSEP(3,3,IATOM)
 C
+C    Print values in ppm
+C
+                   IF (IPRINT .GE. 2) THEN
+         CALL HEADER('Spin-rotation constants (in ppm) for '//
+     &                      NAMDEP(IATOM),-1)
+        WRITE(LUPRI,'((1X,A,F16.8,/),/,2(1X,A,F16.8,/),(1X,A,F16.8))'),
+     &  ' Total spin-rotation constant (SRC)      :',
+     & GTRANTPPM(3,3,IATOM),
+     &  '   Nuclear contribution to SRC           :',
+     & GTRANNPPM(3,3,IATOM),
+     &  '   Expectation value contribution to SRC :',
+     & GTRANDPPM(3,3,IATOM),
+     &  '   Linear response contribution to SRC   :',
+     & GTRANPPPM(3,3,IATOM)
+C
+         IF (IPRINT .GE. 3) WRITE(LUPRI,'(4(1X,A,F16.8,/))')
+     &  '           M^L(e-e) :',GTRANPLEEPPM(3,3,IATOM),
+     &  '           M^S(e-e) :',GTRANPSEEPPM(3,3,IATOM),
+     &  '           M^L(e-p) :',GTRANPLEPPPM(3,3,IATOM),
+     &  '           M^S(e-p) :',GTRANPSEPPPM(3,3,IATOM)
+                   END IF
+C
+C
 ! If the inertia tensor corresponds to a non-linear molecule (with and without symmetry):
+C
+C
                  ELSE
                     IF (IPRINT .GE. 0) THEN
                       CALL HEADER
@@ -10488,6 +10593,53 @@ C
      &                 'A', (GTRANT(I,1,IATOM),I = 1,3),
      &                 'B', (GTRANT(I,2,IATOM),I = 1,3),
      &                 'C', (GTRANT(I,3,IATOM),I = 1,3)
+C
+C    Print values in ppm
+C
+                    IF (IPRINT .GE. 2) THEN
+                      CALL HEADER('Nuclear contribution',-1)
+                      WRITE (LUPRI,'(3X,A,6X,3F16.8)')
+     &                    'A', (GTRANNPPM(I,1,IATOM),I = 1,3),
+     &                    'B', (GTRANNPPM(I,2,IATOM),I = 1,3),
+     &                    'C', (GTRANNPPM(I,3,IATOM),I = 1,3)
+                      CALL HEADER('Expectation value contribution',-1)
+                      WRITE (LUPRI,'(3X,A,6X,3F16.8)')
+     &                    'A', (GTRANDPPM(I,1,IATOM),I = 1,3),
+     &                    'B', (GTRANDPPM(I,2,IATOM),I = 1,3),
+     &                    'C', (GTRANDPPM(I,3,IATOM),I = 1,3)
+                      CALL HEADER('Linear response contribution',-1)
+                      WRITE (LUPRI,'(3X,A,6X,3F16.8)')
+     &                    'A', (GTRANPPPM(I,1,IATOM),I = 1,3),
+     &                    'B', (GTRANPPPM(I,2,IATOM),I = 1,3),
+     &                    'C', (GTRANPPPM(I,3,IATOM),I = 1,3)
+C
+                      CALL HEADER('M^L(e-e)',-1)
+                      WRITE (LUPRI,'(3X,A,6X,3F16.8)')
+     &                    'A', (GTRANPLEEPPM(I,1,IATOM),I = 1,3),
+     &                    'B', (GTRANPLEEPPM(I,2,IATOM),I = 1,3),
+     &                    'C', (GTRANPLEEPPM(I,3,IATOM),I = 1,3)
+                      CALL HEADER('M^S(e-e)',-1)
+                      WRITE (LUPRI,'(3X,A,6X,3F16.8)')
+     &                    'A', (GTRANPSEEPPM(I,1,IATOM),I = 1,3),
+     &                    'B', (GTRANPSEEPPM(I,2,IATOM),I = 1,3),
+     &                    'C', (GTRANPSEEPPM(I,3,IATOM),I = 1,3)
+                      CALL HEADER('M^L(e-p)',-1)
+                      WRITE (LUPRI,'(3X,A,6X,3F16.8)')
+     &                    'A', (GTRANPLEPPPM(I,1,IATOM),I = 1,3),
+     &                    'B', (GTRANPLEPPPM(I,2,IATOM),I = 1,3),
+     &                    'C', (GTRANPLEPPPM(I,3,IATOM),I = 1,3)
+                      CALL HEADER('M^S(e-p)',-1)
+                      WRITE (LUPRI,'(3X,A,6X,3F16.8)')
+     &                    'A', (GTRANPSEPPPM(I,1,IATOM),I = 1,3),
+     &                    'B', (GTRANPSEPPPM(I,2,IATOM),I = 1,3),
+     &                    'C', (GTRANPSEPPPM(I,3,IATOM),I = 1,3)
+C
+                      CALL HEADER('Total spin-rotation constant',-1)
+                    END IF
+                    WRITE (LUPRI,'(3X,A,6X,3F16.8)')
+     &                 'A', (GTRANTPPM(I,1,IATOM),I = 1,3),
+     &                 'B', (GTRANTPPM(I,2,IATOM),I = 1,3),
+     &                 'C', (GTRANTPPM(I,3,IATOM),I = 1,3)
                  END IF
  45      CONTINUE
       END IF
