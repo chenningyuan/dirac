@@ -185,6 +185,8 @@
          mpiaux = rzero
       allocate(mpires1(lwork))
          mpires1 = rzero
+      allocate(mpires2(lwork))
+         mpires2 = rzero
       allocate(bwc(2*ladc))
          bwc = rzero
       allocate(converged(nroots))
@@ -346,7 +348,7 @@
         enddo
         do j=krysav+1,krydim
           if(qstack_directx_c(qst_hboline,ladc,bwc,j,hdx).ne.ladc) &
-             stop 'QE x_r'
+             stop 'QE x_c'
           hij(i,j) = hdx
           hij(j,i) = dconjg(hdx)
         enddo
@@ -1040,7 +1042,7 @@
           read(io_bold,rec=j) bv
           aux = aux + cji(j,k)*bv
         Enddo
-        evc(k,:) = aux
+        evc(:,k) = aux
 
 ! *** compute pole strength of kth eigenvector
 
@@ -1059,7 +1061,7 @@
       ortho = 0.0d0
       do i=1,nroots
         do j=i,nroots
-          ortho = ortho + abs(pp_zdotc(ladc,evc(i,:),evc(j,:)))
+          ortho = ortho + abs(pp_zdotc(ladc,evc(:,i),evc(:,j)))
         enddo
       enddo
       ortho = ortho - dble(nroots)

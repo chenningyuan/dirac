@@ -1,3 +1,20 @@
+/*-----------------------------------------------------------------------------------------------------
+  ------                                                                                         ------
+  ------     This C module is a 'behind-the-curtain' stack system that only works                ------
+  ------     with **real** numbers which is sufficient in most cases because complex arrays      ------
+  ------     are simply stored as real streams of twice the length.                              ------
+  ------                                                                                         ------
+  ------     Extending the module beyond one simple data type would take away much of the        ------
+  ------     code coherence.                                                                     ------
+  ------                                                                                         ------
+  ------     There is one special case in this module, namely the routine 'qstack_directx_c'     ------
+  ------     where two real number streams of length n are interpreted as two complex            ------
+  ------     streams of length n/2. These two streams are internally multiplied in the form      ------
+  ------     sum_i dconjg(a(i)) * b(i) and the resulting complex number is returned.             ------
+  ------     This was done for minimizing transactions with large vectors.                       ------
+  ------                                                                                         ------
+  -----------------------------------------------------------------------------------------------------*/
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
@@ -669,6 +686,88 @@ CINT48 qstack_directx_r(CINT48 *stack, CINT48 *lenv, double *bravec, CINT48 *sha
 }
 
 
+
+
+/*
+ *               function qstack_directx_c
+ *&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+ */
+CINT48 qstack_directx_c(CINT48 *stack, CINT48 *lenv, double *bravec, CINT48 *shard, double complex *result){
+  CINT48 stackn;
+  CINT48 curlen;
+  CINT48 curdep;
+  CINT48 i;
+  double xb,yb,xk,yk;
+  double * ketadd;
+  double complex zb,zk,zsum;
+
+  if(!initialized) {
+    printf("*** Qstack runtime problem: Please initialize stack\n");
+    printf("*** before use! No action taken.\n");
+    return -1;
+  }
+
+  if(*stack < 1 || *stack > numofstacks){
+    printf("*** Qstack runtime problem: Stack number out of range!\n");
+    printf("*** No action taken.\n");
+    return -1;
+  }
+
+  stackn = *stack - 1;  // C indexing starts at zero!
+
+/* if there are no elements on stack, return and set result to zero */
+
+  if(qsdep[stackn] == 0){
+    printf("*** Qstack runtime problem: No ket vectors available!\n");
+    *result = 0.0;
+    return -1;
+  }
+
+/* do consistency checks */
+
+  curdep = qsdep[stackn];      /* number of shards on stack stackn */
+  if(*shard < 1  ||  *shard > curdep){
+    printf("*** Qstack runtime problem: Shard number out of range!\n");
+    *result = 0.0;
+    return -1;
+  }
+
+/* this is for safety purposes. The transferred number *lenv is the number of 
+   --> complex numbers <-- on the stack stored as a real stream of twice the size.
+   directx_c therefore only applies if the transferred length is exactly half of the
+   storage length in the addressed shard  */
+
+  curdep = *shard;
+  curlen = qslen[stackn][curdep-1];
+  if(  (curlen%2)  || (*lenv != curlen/2)){
+    printf("*** Qstack runtime problem: vector lengths inappropriate for complex multiplication!\n");
+    *result = 0.0;
+    return -1;
+  }
+
+/* do complex bra/ket multiplication. ketadd and bravec point to double numbers. 
+   That's why an auxiliary real array needs to be defined in the F90 caller. 
+   Offsetting by unity therefore advances in steps of double numbers!  */
+
+  ketadd = qsbase[stackn][curdep-1];
+
+  zsum = 0.0;
+  for(i=0;i<*lenv;i++){
+    xb=*bravec++;
+    yb=*bravec++;
+    zb=(xb-yb*I);  // minus sign since the bra is to be complex conjugated!
+
+    xk=*ketadd++;
+    yk=*ketadd++;
+    zk=(xk+yk*I);
+    
+    zsum += zb*zk;
+  }
+  
+  *result = zsum;
+
+  return *lenv;
+}
 
 
 
