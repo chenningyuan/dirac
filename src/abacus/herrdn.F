@@ -5288,19 +5288,26 @@ C     Calculate spherical harmonic transformation coefficients
 C     or, if DOOWN true, read user specified coefficients.
 C
 C     Modifications to DIRAC by Trond Saue Aug 18 2006
+C
+C     Miro,Sept.2017 - parallel job was setting LUINFO value to 0 for GNU compilers 
+C     upon fixing I also made routine "implicit none" style
+C
 C=======================================================================
-#include "implicit.h"
+      implicit none
 #include "priunit.h"
-      PARAMETER (D1 = 1.0D0)
+      real*8, parameter :: D1 = 1.0D0
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "sphtrm.h"
 #include "molinp.h"
 #include "ccom.h"
 #include "cbirea.h"
+      integer, intent(in) :: LUINFO
       CHARACTER*1 KEY
       LOGICAL DOOWN
-      DIMENSION WORK(LWORK)
+      integer :: LWORK,i,j,IOFF,IOS,KCKI,KHKI,MXSPD
+      real*8 :: WORK(LWORK)
+
 C
       IF (DOOWN) THEN
          WRITE(LUPRI,'(/A)')
@@ -5310,6 +5317,7 @@ C
      &   '  Calculation of transformation matrices for spherical GTOs.'
       END IF
 C
+!Miro      integer MXQN is in include/maxaqn.h
       MXSPD = MXQN
 C
       IOFF = 1
@@ -5331,6 +5339,7 @@ C
       END DO
 C
       SPHNRM = .TRUE.
+
 C
 C     Always make Cartesian transformation matrix
 C     
@@ -5393,6 +5402,7 @@ C
         CALL FLSHFO(LUPRI)
       END IF
       IF (DOCART) CALL CARLAB(MXQN-1,GTOTYP)
+
       RETURN
       END
 C  /* Deck rdcsp */
@@ -5401,6 +5411,7 @@ C  /* Deck rdcsp */
 #include "priunit.h"
 #include "mxcent.h"
 #include "molinp.h"
+      integer, intent(in) :: LUINFO
       CHARACTER*4 GTOTYP(*)
       DIMENSION CSP(KHKI,KCKI)
       DO 100 I = 1, KHKI
@@ -5440,6 +5451,7 @@ C
       DATA       NMLN_LASTREAD /0/
       SAVE       NMLN_LASTREAD
       INTEGER :: NMLINE_STORED(1:2)=0
+      integer, intent(in) :: LUINFO
 C
 C     If NMLINE is zero, reset NMLN_LASTREAD since this is a new call of readin,
 C     e.g. during a geometry optimization.
@@ -5462,7 +5474,10 @@ C
 
       IF (NMLINE.GT.NMLN_LASTREAD.AND
      &   .NMLINE_STORED(1).NE.NMLINE_STORED(2)) THEN
+
          READ (LUINFO,'(A)',END=12,IOSTAT=IOS) MLINE(NMLINE)
+
+!miro print lenghty error message for debug purposes
          IF (IOS.NE.0) THEN
           WRITE(LUPRI,*) 
      &    'ERROR(subroutine RDLINE): Error in reading molecule.MOL. '
@@ -5471,10 +5486,10 @@ C
           WRITE(LUPRI,*) 'NMLINE, line no:', NMLINE
           WRITE(LUPRI,*) 'NMLN_LASTREAD',NMLN_LASTREAD
           WRITE(LUPRI,*) 'read MLINE(NMLINE)=',MLINE(NMLINE)
-		  WRITE(LUPRI,*) 'LEN(MLINE(NMLINE))=',LEN(MLINE(NMLINE))
+          WRITE(LUPRI,*) 'LEN(MLINE(NMLINE))=',LEN(MLINE(NMLINE))
           WRITE(LUPRI,*) 'NMLINE_STORED(1),(2):',
      &    NMLINE_STORED(1),NMLINE_STORED(2)
-          IF (NMLINE>1) THEN
+          IF (NMLINE.GT.1) THEN
             WRITE(LUPRI,*) 'Previous line:',MLINE(NMLINE-1)
           ENDIF
          ENDIF

@@ -115,6 +115,10 @@ Print level.
     .PRINT
      0
 
+keyword(COUNTMEM)
+
+Stop CC module after counting the total memory demand. Needs only MRCONEE. 
+
 keyword(TIMING)
 
 Print detailed timing information.
@@ -315,13 +319,13 @@ Other Intermediate Hamiltonian (IH) input parameters
  
 For *experts* only.
 
-Following keyowrds belong to the CCIH namelist section.
+Following keywords belong to the CCIH namelist section.
  
 keyword(IHSCHEME)
 
 Choose particular IH scheme. Arguments: Integer IHSCHEME =  1,  or 2.
  
-The IHSCHEME =1 corresponds to the extrapolated IH
+The IHSCHEME=1 corresponds to the extrapolated IH
 (XIH) approach, described in the paper :cite:`Eliav2005`.
 
 Main idea: proper modification of the energetic denominators,
@@ -339,7 +343,7 @@ could be used in the procedure of the extrapolation of
 the "exact" effective Hamiltonian solutions from
 corresponding IH CC energies and wave functions.
  
-IHSCHEME =2 corresponds to the simplified IH-2 approach, described in
+The IHSCHEME=2 corresponds to the simplified IH-2 approach, described in
 the paper :cite:`Landau2004`.
  
 Here the problematic denominators :math:`1/(E_{Pi}  -  E_{Q})` are

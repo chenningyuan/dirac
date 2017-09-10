@@ -359,8 +359,8 @@
      &          ' for '//memTracking%largeMem(i)%label(1:42) 
                  enddo
                 write (*,*) ' '
-                write (*,'(a,f12.2)') '  Peak memory usage    (Mb) : ',PeakMB
-                write (*,'(a,f6.2)')  '  Peak memory usage    (Gb) : ',PeakGB
+                write (*,'(2x,a,f12.2,a)') 'Peak memory usage: ',PeakMB,' MB'
+                write (*,'(2x,a,f12.3,a)') 'Peak memory usage: ',PeakGB,' GB'
                 write (*,*) '      reached at subroutine : '//memTracking%peakMem%at(1:42)
                 write (*,*) '             for variable   : '//memTracking%peakMem%label(1:42)
                 write (*,*) ' '
