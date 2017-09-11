@@ -25,7 +25,7 @@ Example
 Demonstration of this feature is in the DIRAC *test/count_cc_memory*, see
 :download:`test  <../../../../test/count_cc_memory/test>`
 
-We found that minimal memory setting (via the --ag flag) for the memory counting run:
+We found that minimal memory setting (via the *--ag* flag) for the memory counting run:
 
 ::
 
@@ -42,22 +42,24 @@ We are to look the "Peak memory usage" to get reasonable estimate of dynamic mem
  Peak memory usage    (Gb) :   0.363
 
 Next is the sharp run based on previous relcc memory conuting.
-The serial run 
+First, the serial run 
 needs at least 0.366 GB , rounding to 0.4 GB of the total memory:
 
 ::
 
  pam --noarch --gb=0.20 --ag=0.366 --inp=H2O.ae4z.x2c.scf_relcc.inp  --mol=H2O.xyz --put "DFPCMO.H2O.x2c.ae4z=DFPCMO"
 
-The parallel run
-must have the  memory of at least 16*0.366 = 5.856 , rounding to 5.9 GB, which is be free at the running machine with at least 16 CPUs:
+The following parallel run
+must have the  memory of at least 16*0.366 = 5.856 GB, rounding to 5.9 GB, 
+which must be free at the running machine with at least 16 CPUs:
 
 ::
+
  pam --noarch --mpi=16 --gb=0.20 --ag=0.366 --inp=H2O.ae4z.x2c.scf_relcc.inp  --mol=H2O.xyz --put "DFPCMO.H2O.x2c.ae4z=DFPCMO"  
 
-giving output 
+giving the output 
 :download:`file  <../../../../test/count_cc_memory/result/H2O.ae4z.x2c.scf_relcc_H2O.out>`.
-We check the peak memory usage which is cca 91.5% of the ag parameter.
+We check the peak memory usage which is cca 91.5% of the *--ag* parameter.
 
 ::
 
