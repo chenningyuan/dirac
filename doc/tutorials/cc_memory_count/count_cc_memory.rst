@@ -8,16 +8,17 @@ the memory needed for a high memory and time demanding  RelCC job.
 
 SCF
 ---
-The first step is the  SCF run with saving  molecular orbitals, preferably as DFPCMO.
-Afterward, prepare the active space for MOLTRA and RelCC.
+The first step is the SCF run with saving  molecular orbitals, preferably as DFPCMO text file.
+Afterwards, using obtained molecular orbitals, prepare the active space for MOLTRA and RelCC.
 
 MOLTRA & RelCC
 --------------
-Equip the MOLTRA input with the ".NO4INDX" keyword and RelCC with the .COUNTMEMORY keyword.
-Run SCF with saved molecular orbitals. The job passes quickly through MOLTRA as it does only
-two-index transformations.
+Equip the MOLTRA input with the :ref:`_MOLTRA_.NO4IND` keyword and RelCC input with the :ref:`_RELCC_.COUNTMEM` keyword.
+Run SCF part with previously saved converged molecular orbitals, with one iteration. 
+The job passes quickly through MOLTRA integrals transformations as it produces only
+two-index quantities in the MRCONEE file.
 
-In the RelCC module, the program count the memory and leave. 
+In the RelCC module, the program counts the memory need and leaves. 
 
 Example
 -------
@@ -25,7 +26,7 @@ Example
 Demonstration of this feature is in the DIRAC *test/count_cc_memory*, see
 :download:`test  <../../../../test/count_cc_memory/test>`
 
-We found that minimal memory setting (via the *--ag* flag) for the memory counting run:
+We found the almost minimal setting - via the *--ag* parameter flag -  for the memory counting run:
 
 ::
 
@@ -66,6 +67,7 @@ We search there the peak memory usage which is cca 99.2% of the *--ag* parameter
  Predicted RelCC memory demand:        0.335 GB
              Peak memory usage:        0.363 GB
 
-Therefore in practical RelCC memory demanding calculations watch for the **Peak memory usage** value and set **--ag** parameter
-accordingly.  Don't forget to multiply your memory demands with number of threads in parallel calculations.
+Therefore in practical RelCC memory demanding calculations watch for the **Peak memory usage** value and set the **--ag** parameter
+accordingly. This may take few iterations, especially when you want to find the real "minimum".  
+Don't forget to multiply your memory demands with number of threads in parallel calculations.
 
