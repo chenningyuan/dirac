@@ -534,7 +534,7 @@ C
       real*8, allocatable     :: daibj(:)
       integer                 :: irploop,desrep
       CHARACTER*6             :: namematfil = 'PP_ELE'  !name of the main ADC matrix file
-      CHARACTER*6             :: namecnffil = 'XCONFIG'  !name of the configuration file
+      CHARACTER*6             :: namecnffil = 'XCONFG'  !name of the configuration file
       integer                 :: irecl, ireccnt, intbuf
       integer                 :: ladc
       integer                 :: lencouplbl = 0

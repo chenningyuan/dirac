@@ -45,7 +45,6 @@
 !
       real*8,parameter                       :: rzero = 0.0d0
       real*8,parameter                       :: prethr = 0.001d0
-      real*8                                 :: resnorm
       real*8                                 :: prenorm1,prenorm2
       real*8                                 :: time_totl_s,time_totl_e
       real*8                                 :: time_root_s,time_root_e
@@ -53,6 +52,7 @@
       real*8                                 :: time_resi_s,time_resi_e
       real*8                                 :: time_cur
       real*8,allocatable,dimension(:)        :: lambda
+      real*8,allocatable,dimension(:)        :: resnorm
       real*8,allocatable,dimension(:)        :: rwork
       real*8,allocatable,dimension(:)        :: mpiaux
       real*8,allocatable,dimension(:)        :: mpires1,mpires2
@@ -124,9 +124,10 @@
           complex*16, dimension(:)     :: ca2
         END SUBROUTINE
 
-        SUBROUTINE write_davevecs_c(i1,i2,i3,i4,i5,i6,ra1,ca1)
+        SUBROUTINE write_davevecs_c(i1,i2,i3,i4,i5,i6,ra1,ra2,ca1)
           integer                      :: i1,i2,i3,i4,i5,i6
           real*8, dimension(:)         :: ra1
+          real*8, dimension(:)         :: ra2
           complex*16, dimension(:,:)   :: ca1
         END SUBROUTINE
 
@@ -176,6 +177,8 @@
 
       allocate(lambda(maxdavsp))
          lambda = rzero
+      allocate(resnorm(nroots))
+         resnorm = rzero
       lwork = 3*maxdavsp
       allocate(work(lwork))
          work = czero
@@ -399,13 +402,13 @@
 
         call cpu_time(time_root_s)
 
-        resnorm=rzvecnorm(ladc,res(:,kroot))
+        resnorm(kroot)=rzvecnorm(ladc,res(:,kroot))
 
         write(listout,'(A3,I3,A3,I5,6X,F10.7,6X,F10.7)') '   ',  &
-            kroot,'   ',krydim,lambda(kroot),resnorm
+            kroot,'   ',krydim,lambda(kroot),resnorm(kroot)
 
 
-        if(resnorm.le.convthr) then
+        if(resnorm(kroot).le.convthr) then
 
           converged(kroot) = .true.
           listout(47:48) =  ' *'
@@ -495,7 +498,7 @@
         write(*,*) 'Nonconverged roots remain. Collapsing subspace.'
       endif
       call write_davevecs_c(io_bold,desrep,nroots,nmain,ladc, &
-                            krydim,lambda,hijcal)
+                            krydim,lambda,resnorm,hijcal)
 
 ! in both cases we have to get rid off the large B old file
 
@@ -944,7 +947,7 @@
       end
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE write_davevecs_c(io_bold,desrep,nroots,nmain,ladc, &
-                                  krydim,lambda,cji)
+                                  krydim,lambda,resnorm,cji)
 
       implicit none
 !
@@ -958,21 +961,28 @@
       integer                         :: desrep,nroots
       integer                         :: nmain,ladc,krydim
       real*8,dimension(:)             :: lambda
+      real*8,dimension(:)             :: resnorm
       complex*16,dimension(:,:)       :: cji
 !
 !------------------------ local variables -------------------------
 !
       integer                                :: i,j,k
-      integer                                :: iu
-      integer                                :: qst_evcline
+      integer                                :: iu,iocnf
+      integer                                :: irecl,istat
+      integer,allocatable,dimension(:)       :: ievec
       real*8                                 :: a1,enorm
       real*8                                 :: ortho
+      real*8,parameter                       :: autoev = 27.2113957D0
       real*8,parameter                       :: rzero=(0.0d0)
+      complex*16                             :: cax
       complex*16,parameter                   :: czero=(rzero,rzero)
       complex*16,allocatable,dimension(:)    :: aux
       complex*16,allocatable,dimension(:)    :: bv
       complex*16,allocatable,dimension(:,:)  :: evc
+      character*6,parameter                  :: filecnf='XCONFG'
       character*11                           :: davevcname
+      character*70                           :: field
+      logical                                :: isthere
 
 !
 !------------------------ local variables -------------------------
@@ -1000,13 +1010,15 @@
 !
 !------------------------ executable code -------------------------
 !
-      qst_evcline = EVC_STACKLINE
-
+      allocate(ievec(ladc))
+      ievec = 0
       allocate(aux(ladc))
+      aux = czero
       allocate(bv(ladc))
+      bv = czero
       allocate(evc(ladc,nroots))
-
       evc = czero
+
 
 ! *** open file
 
@@ -1068,6 +1080,92 @@
       write(*,*) 'Orthogonality of written vectors:',ortho
       write(*,*)
 
+!   All eigenvectors are still in evc array
+!__________________________________________________________
+!|
+!|
+!|                We perform state analysis
+!|
+!|
+
+!   first check validity of configuration file, otherwise no reasonable 
+!   analysis possible. get record length of configuration file and open it
+
+      Inquire(file=filecnf,exist=isthere,recl=irecl,iostat=istat)
+      if(.not.isthere) then
+        write(*,*) '******  warning  *******'
+        write(*,*) 'No configuration data available. State'
+        write(*,*) 'analysis not possible.'
+        write(*,*) '******  warning  *******'
+        deallocate(ievec)
+        deallocate(aux)
+        deallocate(bv)
+        deallocate(evc)
+        return
+      endif
+
+      irecl = 70
+      iocnf = get_file_unit()
+      OPEN(iocnf,file=filecnf,ACCESS='DIRECT',RECL=IRECL, &
+           STATUS='UNKNOWN')
+      write(*,*) 'Config file opened with',iocnf
+
+      iu = get_file_unit()
+      IF(desrep.GT.9) THEN
+        WRITE(davevcname,'(A8,A1,I2)') 'ADCSTATE','.',desrep
+      ELSE
+        WRITE(davevcname,'(A8,A2,I1)') 'ADCSTATE','.0',desrep
+      ENDIF
+      OPEN(iu,file=davevcname,access='sequential', &
+           status='unknown',form='formatted')
+      write(*,*) 'State analysis file opened with',iu
+
+! now loop over states and collect most contributing configurations
+
+      Do k = 1,nroots
+        a1 = rzero
+        do j=1,nmain
+          a1 = a1 + real(dconjg(evc(j,k))*evc(j,k))
+        enddo
+
+        Write(iu,'(A14,X,I4)') 'Excited state:',k
+        Write(iu,'(A19)') '-----------------'
+        Write(iu,'(A12,F10.6,A4,F10.6,A8,F10.6,A5,F10.6,A5,I4)')  &
+         'Exc. energy:', &
+         lambda(k),' au ',lambda(k)*autoev, &
+         ' eV  PS:',a1,' Err:',resnorm(k),' Sym:',desrep
+        Write(iu,'(A28,F15.6)') 'Norm^2 of double exc. contr:', &
+               1.0d0 - a1
+        Write(iu,'(A)') ' '
+!
+! determine 20 most relevant configurations
+! sort the corresponding eigenvector with respect to coeffs.
+!
+        do j=1,ladc
+          ievec(j)=j
+        enddo
+        aux=-abs(evc(:,k))
+        Call DISORT(ladc,aux,ievec)  !sorts from smallest to largest
+        Do j=1,min(20,ladc)
+          Read(iocnf,rec=ievec(j)) field
+          cax = evc(ievec(j),k)
+          Write(iu,'(A70,2F15.6,3X,F15.6)') field,cax, &
+                  real(dconjg(cax)*cax)
+        Enddo
+        Write(iu,'(A17)') '-----------------'
+        Write(iu,'(A)') ' '
+
+      Enddo ! nroots
+!|
+!|
+!|_______________________________________________
+!
+
+! cleanup. Close files, deallocate arrays
+
+      close(iu)
+      close(iocnf)
+      deallocate(ievec)
       deallocate(aux)
       deallocate(bv)
       deallocate(evc)

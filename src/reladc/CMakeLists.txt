@@ -14,7 +14,6 @@ set(FIXED_RELADC_FORTRAN_SOURCES
     adcsort.F
     polprp_buildtm.F
     polprp_cousat.F
-    polprp_davidson.F
     polprp_driver.F
     polprp_helpers.F
     polprp_mainblk.F
