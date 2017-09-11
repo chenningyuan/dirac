@@ -13,7 +13,7 @@ Afterwards, using obtained molecular orbitals, prepare the active space for MOLT
 
 MOLTRA & RelCC
 --------------
-Equip the MOLTRA input with the :ref:`_MOLTRA_.NO4IND` keyword and RelCC input with the :ref:`_RELCC_.COUNTMEM` keyword.
+Equip the MOLTRA input with the :ref:`MOLTRA_.NO4IND` keyword and RelCC input with the :ref:`RELCC_.COUNTMEM` keyword.
 Run SCF part with previously saved converged molecular orbitals, with one iteration. 
 The job passes quickly through MOLTRA integrals transformations as it produces only
 two-index quantities in the MRCONEE file.
@@ -68,6 +68,6 @@ We search there the peak memory usage which is cca 99.2% of the *--ag* parameter
              Peak memory usage:        0.363 GB
 
 Therefore in practical RelCC memory demanding calculations watch for the **Peak memory usage** value and set the **--ag** parameter
-accordingly. This may take few iterations, especially when you want to find the real "minimum".  
-Don't forget to multiply your memory demands with number of threads in parallel calculations.
+accordingly. This may take few iterations, especially when you want to find the real memory minimum.  
+Don't forget to multiply your memory amount with the number of threads in parallel calculations.
 
