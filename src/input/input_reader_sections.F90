@@ -1629,7 +1629,6 @@
 
       if (kw_matches(word, '.DVINCORE')) then
          reladc_davooc = .false.
-         polprp_davooc = .false.
       end if
 
       call check_whether_kw_found(word, kw_section)

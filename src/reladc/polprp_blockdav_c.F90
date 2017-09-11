@@ -184,11 +184,11 @@
          work = czero
       allocate(rwork(lwork))
          rwork = rzero
-      allocate(mpiaux(lwork))
+      allocate(mpiaux(ladc))
          mpiaux = rzero
-      allocate(mpires1(lwork))
+      allocate(mpires1(ladc))
          mpires1 = rzero
-      allocate(mpires2(lwork))
+      allocate(mpires2(ladc))
          mpires2 = rzero
       allocate(bwc(2*ladc))
          bwc = rzero

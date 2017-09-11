@@ -538,11 +538,6 @@ C
         WRITE(IW,*) 'Number of Davidson iterations: ',
      &     polprp_davmaxit
         WRITE(IW,'(A,E20.4)') ' Requested energy conv.: ',polprp_davconv
-        IF(polprp_davooc.eqv..false.) THEN
-           WRITE(IW,*) 'Trying full incore storage of Davidson vectors.'
-           WRITE(IW,*) 'Will default to out-of-core if resources are'
-           WRITE(IW,*) 'not available.'
-        ENDIF
       endif
 
       return
