@@ -41,28 +41,31 @@ We are to look the "Peak memory usage" to get reasonable estimate of dynamic mem
  Predicted RelCC memory demand:           0.335 GB
  Peak memory usage    (Gb) :   0.363
 
-Next is the sharp run based on previous relcc memory conuting.
-First, the serial run 
-needs at least 0.366 GB , rounding to 0.4 GB of the total memory:
+Next step is the sharp run based on the previous RelCC memory conuting.
+The serial job
+needs at least 0.366 GB, rounding to 0.4 GB of the total memory:
 
 ::
 
  pam --noarch --gb=0.20 --ag=0.366 --inp=H2O.ae4z.x2c.scf_relcc.inp  --mol=H2O.xyz --put "DFPCMO.H2O.x2c.ae4z=DFPCMO"
 
-The following parallel run
-must have the  memory of at least 16*0.366 = 5.856 GB, rounding to 5.9 GB, 
-which must be free at the running machine with at least 16 CPUs:
+We also perform the parallel run, which
+consumes at least 16*0.366 = 5.856 GB of the memory, rounding to 5.9 GB.
+This amount of  memory must be free at the running machine equiped with at least 16 CPUs:
 
 ::
 
  pam --noarch --mpi=16 --gb=0.20 --ag=0.366 --inp=H2O.ae4z.x2c.scf_relcc.inp  --mol=H2O.xyz --put "DFPCMO.H2O.x2c.ae4z=DFPCMO"  
 
-giving the output 
-:download:`file  <../../../../test/count_cc_memory/result/H2O.ae4z.x2c.scf_relcc_H2O.out>`.
-We check the peak memory usage which is cca 91.5% of the *--ag* parameter.
+Have a look at the 
+:download:`output  <../../../../test/count_cc_memory/result/H2O.ae4z.x2c.scf_relcc_H2O.out>` file.
+We search there the peak memory usage which is cca 99.2% of the *--ag* parameter.
 
 ::
 
- Predicted RelCC memory demand:           0.335 GB
-                Peak memory usage:        0.335 GB
+ Predicted RelCC memory demand:        0.335 GB
+             Peak memory usage:        0.363 GB
+
+Therefore in practical RelCC memory demanding calculations watch for the **Peak memory usage** value and set **--ag** parameter
+accordingly.  Don't forget to multiply your memory demands with number of threads in parallel calculations.
 
