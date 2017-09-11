@@ -42,215 +42,62 @@ included in the 2p2h (satellite) block. This often helps to localize states havi
 of double excitation character because those will alter their energy considerably when calculated in the extended scheme.
 
 
+keyword(WRITET)
 
+Determines the threshold for writing matrix elements into the ADC matrix (default = 0.0). Can save considerable
+numerical effort with negligible loss of accuracy. Thresholds of 1.0E-06 are in order but it also depends
+a bit on the system. Value follows the keyword.
 
-star(CCFSPC)
+keyword(NODIAG)
 
-Perform a Fock space MRCC calculation in which a model space is
-correlated and then diagonalized to give CC energies for a set of
-states.
+Diagonalization is skipped if keyword is present and only the eigenvectors of the particle-hole block 
+are written to disk. This is mainly for test
+purposes since getting full eigenvectors is required for the calculation of transition moments.
 
-keyword(DOIH)
+keyword(DOTRMO)
 
-Use the Intermediate Hamiltonian formalism in which an auxiliary space
-is used to prevent the "intruder state" problem. Default: IH formalism
-not used.
+Transition moments are calculated if keyword is present, otherwise no TMs are calculated.
 
-keyword(DOEA)
+keyword(PRINT)
 
-Calculate electron affinities (add one electron to the reference state,
-allowing occupation of the active virtual orbitals)
+Printlevel (default = 0) number follows the keyword. More output is produced if print level > 0.
 
-keyword(DOIE)
 
-Calculate ionization energies (remove one electron from the reference
-state, allowing depletion of the active occupied orbitals)
+starstar(DAVIDSON)
 
-keyword(DOEA2)
+Specifications for the Davidson diagonalizer. Holds for POLPRP and for other propagators if activated. POLPRP 
+relies on Davidson exclusively and does not address other diagonalizers such as Lanczos.
 
-Calculate second electron affinities (add two electrons to the reference
-state, allowing occupation of the active virtual orbitals)
+keyword(DVROOTS)
 
-keyword(DOIE2)
+Number of desired roots. Remember that Davidson is an iterative diagonalizer that will not be able to generate
+thousands of roots. Normally one asks for 10 to 50 roots at the spectral boundary that will be well converged. This
+is a typical situation occurring for the valence excitation spectra.
 
-Calculate second ionization energies (remove two electrons from the
-reference state, allowing depletion of the active occupied orbitals)
+keyword(DVMAXSP)
 
-keyword(DOEXC)
+This is the maximum size of the Krylov space generated internally and where the full Hamiltonian is projected on, 
+in other words, this is the dimension of your trial space. If the dimension is reached during the iterations one 
+macroiteration cycle is finalized and the subspace will be collapsed to the number of roots. The resulting new
+set of vectors is already a much better approximation to the true eigenvectors entering the next macrocycle.
 
-Calculate excitation energies (allow excitation from the set of active
-occupied orbitals to the set of active virtual orbitals)
+keyword(DVMAXIT)
 
-keyword(NACTH)
+Number of macrocycles you want to allow. For large problems requiring a lot of memory, DVMAXSP can be reduced 
+leading to more macrocycles. If convergence is still unsatisfactory one slowly increases DVMAXSP. 
 
-Specification of the set of active hole orbitals (from which
-ionization/excitation takes place)
+keyword(DVCONV)
 
-keyword(NACTP)
+Requested convergence of the eigenvalues. Usually a convergence of 1.0E-06 is absolutely sufficient.
 
-Specification of the set of active particle orbitals (to which electron
-attachment/excitation takes place)
+The default values are
 
-keyword(MAXIT)
+DVROOTS 5
+DVMAXSP 200
+DVMAXIT 5
+DVCONV 1.0E-05
 
-Maximum number of iterations allowed to solve the FSCC equations
 
-keyword(MAXDIM)
 
-Set maximum number of amplitude vectors used in the DIIS extrapolation.
 
-keyword(NTOL)
 
-Specify requested convergence (10^-NTOL) in the amplitudes.
-
-keyword(GESTAT)
-
-Specify the state number in the last active sector to pick the energy 
-from (remember to account for degeneracies) for a state-specific FSCC 
-geometry optimization based on a numerical gradient. 
-
-star(CCIH)
-
-Options for intermediate hamiltonian in FSCC.
-
-keyword(EHMIN)
-
-Minimum orbital energy of occupied orbitals forming the auxiliary (Pi)
-space. Orbitals with energies lower than this energy are taken in the
-secundary (Q) space and do not contribute to the model space.
-
-low limit of orbital energies of active occupied
-orbitals, which constitute the secondary Pi space. Could be
-used in (1,0), (2,0) and (1,1) sectors. Arguments: real.
-
-keyword(EHMAX)
-
-Maximum orbital energy of occupied orbitals forming the auxiliary (Pi)
-space. Orbitals with energies higher than this energy are taken in the
-primary (Pm) space.
-
-This is upper limit of one-electronic energies of
-active occupied orbitals, which constitute the secondary Pi space.
-Could be used in (1,0), (2,0) and (1,1) sectors. Arguments: real.
-
-keyword(EPMIN)
-
-Minimum orbital energy of virtual orbitals forming the auxiliary (Pi)
-space. Orbitals with energies lower than this energy are taken in the
-primary (Pm) space.
-
-This is the low limit of orbital energies of active virtual
-orbitals, which constitute the secondary Pi space.
-Could be used in (0,1), (0,2) and (1,1) sectors. Arguments: real.
-
-keyword(EPMAX)
-
-Maximum orbital energy of virtual orbitals forming the auxiliary (Pi)
-space. Orbitals with energies higher than this energy are taken in the
-secundary (Q) space and do not contribute to the model space.
-
-This is the upper limit of one-electronic energies of active virtual
-orbitals, which constitute the secondary Pi space. Could be
-used in (0,1), (0,2) and (1,1) sectors. Arguments: real.
- 
-Other Intermediate Hamiltonian (IH) input parameters
-====================================================
- 
-For *experts* only.
-
-Following keyowrds belong to the CCIH namelist section.
- 
-keyword(IHSCHEME)
-
-Choose particular IH scheme. Arguments: Integer IHSCHEME =  1,  or 2.
- 
-The IHSCHEME =1 corresponds to the extrapolated IH
-(XIH) approach, described in the paper :cite:`Eliav2005`.
-
-Main idea: proper modification of the energetic denominators,
-containing problematic Pi  -> Q transition.
-The original denominator 1/(E_Pi  -  E_Q) , used during CC
-iterations, is substituted by the following expression (1)
-
-.. math::
-
- \frac{(1-[\frac{AIH*SHIFT}{(E_{Pi} - E_{Q} + SHIFT)}]^{NIH})}{\frac{(1-AIH*SHIFT}{(E_{Pi}  -  E_{Q} + SHIFT))}},
-
-here AIH, SHIFT,NIH are parameters, specially chosen for
-overcoming of the intruder states problem. These parameters
-could be used in the procedure of the extrapolation of
-the "exact" effective Hamiltonian solutions from
-corresponding IH CC energies and wave functions.
- 
-IHSCHEME =2 corresponds to the simplified IH-2 approach, described in
-the paper :cite:`Landau2004`.
- 
-Here the problematic denominators :math:`1/(E_{Pi}  -  E_{Q})` are
-substituted simply by the factor 0.
- 
-Default: IHSCHEME = 2
- 
-Next key options are used only in case of XIH (IHSCHEME = 1).
- 
-keyword(SHIFTH11)
-
-Energy shift for the one-electronic excitations in (1,0) sector. Arguments: real.
-
-keyword(SHIFTH12)
-
-Energy shift for the two-electronic excitations in (1,0) sector. Arguments: real.
-
-keyword(SHIFTH2)
-
-Energy shift for the two-electronic excitations in (2,0) sector. Arguments: real.
-
-keyword(SHIFTP11)
-
-Energy shift for the one-electronic excitations in (0,1) sector. Arguments: real.
-
-keyword(SHIFTP12)
-
-Energy shift for the two-electronic excitations in (0,1) sector. Arguments: real.
-
-keyword(SHIFTP2)
-
-Energy shift for the two-electronic excitations in (0,2) sector. Arguments: real.
-Usually we choose the approximate difference between the highest orbital energy belonging to Pi and the lowest
-orbital energy belonging to the Pm space. 
-Works only with the old style of RELCC input.
-
-keyword(SHIFTHP)
-
-Energy shift for the two-electronic excitations in (1,1) sector. Arguments: real
-
-keyword(AIH)
-
-Compensation factor, used in expression (1). Arguments: real positive, not greater then 1.0.
- 
-keyword(NIH)
-
-Compensation power, used in expression (1). Arguments: integer.
- 
-In the case of the limit: AIH=1.0 and NIH -> "infinity" ( NIH>100, in practice)
-we have so called "full compensation" method, corresponding to the
-extrapolation of the effective Hamiltonian from the intermediate one.
-
-star(CCSORT)
-
-Specialist options related to the sorting of two-electron integrals
-and the calculation of the reference Fock matrix.
-
-keyword(NORECMP)
-
-Do not recompute the Fock matrix, but assume a diagonal matrix with the orbital energies 
-taken from the SCF program on the dioagonal. This is usually not recommended as the latter
-correspond to a restricted open shell expression and RELCCSD uses an unrestricted formalism.
-For closed shell systems the two expressions are identical and this option merely suppresses
-a build-in check on the accuracy of transformed integrals.
-
-keyword(USEOE)
-
-Ignore recomputed Fock matrix and use orbital energies supplied by the SCF program. This option is
-sometimes useful for degenerate open shell cases in which case the perturbation theory for the unrestricted formalism
-is not invariant for rotations among degenerate orbitals. It should only change the outcome
-of the [T], (T) and -T energy corrections.
