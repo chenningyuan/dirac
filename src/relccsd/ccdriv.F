@@ -140,6 +140,10 @@ C---------------Description--------------------------------------------
 C
 C     Reads input for relativistic Coupled Cluster program
 C
+C   Routine is called twice - first from PSIINP/dirrd.F as part of input reading
+C and second time from own RelCC module. To minimize the amount of output we
+C need to distinguish between calls.
+C
 C---------------Routines called----------------------------------------
 C
 C---------------Last modified------------------------------------------
@@ -179,6 +183,8 @@ C
       INTEGER MAXIT00,MAXIT01,MAXIT10,MAXIT11,MAXIT20,MAXIT02,I,IFREQ,
      &        ISECT,IPRP_WF,IOPER,MAXDIM,MAXIT,TSHOLD
 
+      Logical, SAVE :: FirstCall=.TRUE.
+
 C
 C---------------Executable code--------------------------------------
 
@@ -205,6 +211,7 @@ C
       DOFSPC  = relcc_do_fspc
       DOIH    = relcc_fs_do_ih
       DORESTART = relcc_do_restart
+      DOMEMCOUNT = relcc_do_count_memory
       DEBUG   = relcc_debug
       TIMING  = relcc_timing
       MWORD   = relcc_memory_in_mw
@@ -215,10 +222,19 @@ C
       WRITE(IW,'(A)')
      & ' **RELCC: Set-up for Coupled Cluster calculations'
       CALL PRSYMB(IW,'=',75,0)
-      WRITE(IW,'(1X,A,I3)') '* General print level   : ',IPRNT
-      IF (IPRNT.GE.1) THEN
-        WRITE(IW,"(1X,A,16I3)") "NEL_F1:",(NELEC_F1(I),I=1,16)
-      ENDIF
+
+      If (.NOT.FirstCall)  then
+        WRITE(IW,'(1X,A,I3)') '* General print level   : ',IPRNT
+        IF (IPRNT.GE.1) THEN
+          WRITE(IW,"(1X,A,16I3)") "NEL_F1:",(NELEC_F1(I),I=1,16)
+        ENDIF
+      EndIf
+
+!MI  deal with memory count demand
+      if (DOMEMCOUNT.AND.FirstCall)  then
+        print *,
+     &'Asked for RelCC memory consumption count. Afterwards leave.'
+      endif
 C
 C     Input for the energy calculation.
 C
@@ -489,11 +505,8 @@ C
       ADD_FINITE_FIELD = relcc_ADD_FINITE_FIELD
       NFFOPER = relcc_NFFOPER
       DO IOPER = 1, MAXOP
-         !FF_PROP_NAMES(IOPER) = '        '
          FF_PROP_NAMES(IOPER) = relcc_FF_PROP_NAMES(IOPER)
-         !FF_PROP_STRENGTHS(1,IOPER) = 0.D0
          FF_PROP_STRENGTHS(1,IOPER) = relcc_FF_PROP_STRENGTHS(1,IOPER)
-         !FF_PROP_STRENGTHS(2,IOPER) = 0.D0
          FF_PROP_STRENGTHS(2,IOPER) = relcc_FF_PROP_STRENGTHS(2,IOPER)
       ENDDO
 !
@@ -525,7 +538,7 @@ C
       endif
 
       IF (DOFSPC) THEN
-!     mi: print out range of intermediate Hamilt.spaces
+!     mi: print out range of intermediate Hamilt.spaces ... later ...
         write(IW,'(/,2X,A,F12.5,1X,A,F12.5)')
      &    'EHMIN:',ER_IH(1,1),'EHMAX:',ER_IH(2,1)
         write(IW,'(2X,A,F12.5,1X,A,F12.5)')
@@ -536,8 +549,13 @@ C     IF( MP2_DENRUN )THEN
 C       IN = IN_SAVE
 C     END IF
 C
+
+!MI   After the first call of this routine reset the control variable
+      FirstCall = .FALSE.
+
       RETURN
       END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCMAIN (IUNIN,IUNUT,CA,INTFCE)
 c
@@ -692,9 +710,10 @@ C
 C     Report memory in megaBytes
 C
       if ( maxcor .gt. 0 ) then
-         WRITE (IW,1000) MAXCOR / (128 * 1024)
+        WRITE (IW,1000) DFLOAT(MAXCOR)/DFLOAT((128*1024)), 
+     &  DFLOAT(MAXCOR)/DFLOAT(128*1024*1024)
       else
-         WRITE (IW,1410)
+        WRITE (IW,1410)
       endif
 C
 C     General setup
@@ -740,6 +759,11 @@ C
      &                DOFOPR,
      &                DOSOPR,DEBUG,TIMING,IPRNT,INTERFACE
       endif
+      
+!miro: printout info about the RelCC memory count
+      write(IW,"(1X,A,10X,L1)")
+     & "Leave after calculating the total memory demand :",
+     &  DOMEMCOUNT
 
 !miro: printout of changed DHOLU limit, with warning
       if (relcc_ccener_dholu_limit_set) then
@@ -806,6 +830,17 @@ C
       WALLI = WALLI + WALL2 - WALL1
       WALL1 = WALL2
       CALL FLSHFO (IW)
+
+!MI show the total memory demand in MB/GB:
+         WRITE(IW,"(/,1X,A,F15.2,A)")
+     &    'Predicted RelCC memory demand: ',
+     &    DFLOAT(MXCORR)/DFLOAT(2**17)," MB"
+         WRITE(IW,"(1X,A,F15.3,A)")
+     &    'Predicted RelCC memory demand: ',
+     &    DFLOAT(MXCORR)/DFLOAT(2**27)," GB"
+
+!MI leave RelCC calculations after memory demand counted
+       if (DOMEMCOUNT) GOTO 77 ! jump to the end section
 C
 C     Start the calculations
 C     ----------------------
@@ -876,6 +911,10 @@ C
 C
       CALL CCSUMM
       CALL FLSHFO (IW)
+
+! MI: jump here if only the RelCC memory count needed
+
+ 77   CONTINUE 
 C
 C     Print timings
 C
@@ -905,7 +944,7 @@ C
 
       RETURN
 C
-1000  FORMAT (/" Total memory available :",T50,I15," MB")
+1000  FORMAT (/" Total memory available :",F15.2," MB",1X,F8.3," GB")
 1410  FORMAT (/" Total memory available has not been determined")
 1001  FORMAT (" Memory used for active modules :",
      &        T50,I15," 8-byte words")
@@ -1143,6 +1182,7 @@ C
                         NO(IREP) = NO(IREP) + 1
                         IREPSP(I,3) = NO(IREP)
                         IREPSPI(NO(IREP),IREP,1) = I
+!        write(*,*) 'occ:',NO(IREP),IREP,IREPSPI(NO(IREP),IREP,1)
                         IF (.not.IFROZ_set_in_input) THEN
                            IF (NO(IREP).GT.MAXFROZ)
      &                        CALL QUIT("INCREASE MAXFROZ")
@@ -1161,6 +1201,7 @@ C
                         NV(IREP) = NV(IREP) + 1
                         IREPSP(I,3) = - NV(IREP)
                         IREPSPI(NV(IREP),IREP,2) = I
+!        write(*,*) 'vir:',NV(IREP),IREP,IREPSPI(NV(IREP),IREP,2)
                      ENDIF
                   ENDIF
                ENDDO
@@ -1447,9 +1488,21 @@ C     LL arrays are symmetry pointers for tensors in which the rightmost indices
 C
       DO KREP = 1, NREP
          DO IJREP = 1, NREP
+!
+!  discussion with luuk
+!  for consistency IJREP is a bra and the order in the MULTB
+!  array may be swapped to maintain consistency with the definitions
+!
+!  original:
+!
             IJKREP = MULTB(KREP,IJREP+NREP,2)
+!
+!  possible alternative in case of totally symmetric products:
+!           IJKREP = MULTB(IJREP+NREP,KREP,2)
+!
 C           Here we use that (i) KLREP = IJREP, (ii) LREP = MULTB(KREP,KLREP,2), (iii) Ordering should be
 C           such that we can contract with an array to the right in which the leftmost index is ordered on LREP.
+
             KKOOOT(IJREP,KREP) = NOOOT(IJKREP)
             KKVVOT(IJREP,KREP) = NVVOT(IJKREP)
             KKOOVT(IJREP,KREP) = NOOVT(IJKREP)
@@ -4472,22 +4525,26 @@ C
       ENDDO
        write(*,*) (REPNA(IREP),IREP=1,2*NREP)
 
-!     write(*,*)
-!     write(*,*) '--------------------------------------------'
-!     write(*,*) '---  multiplication table  -----------------'
-!     write(*,*) '--------------------------------------------'
-!     write(*,*)
-!     DO IREP = 1, 2*NREP
-!       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
-!     ENDDO
-!     write(*,*)
-!     write(*,*) '--------------------------------------------'
-!     write(*,*) '---  inverse multiplication table  ---------'
-!     write(*,*) '--------------------------------------------'
-!     write(*,*)
-!     DO IREP = 1, 2*NREP
-!       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*nrep)
-!     ENDDO
+C     write(*,*)
+C     write(*,*) '--------------------------------------------'
+C     write(*,*) '---  multiplication table (full) -----------'
+C     write(*,*) '--------------------------------------------'
+C     write(*,*)
+C     DO IREP = 1, NREP
+C       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+C     ENDDO
+C     write(*,*) '-------------------------------------'
+C     DO IREP = NREP+1, 2*NREP
+C       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+C     ENDDO
+C     write(*,*)
+C     write(*,*) '--------------------------------------------'
+C     write(*,*) '---  inverse multiplication table (full) ---'
+C     write(*,*) '--------------------------------------------'
+C     write(*,*)
+C     DO IREP = 1, 2*NREP
+C       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*nrep)
+C     ENDDO
 
 C
 C     Get rid of offset for boson reps
@@ -4505,32 +4562,26 @@ C
          ENDDO
       ENDDO
 
-c     write(*,*)
-c     write(*,*) '--------------------------------------------'
-c     write(*,*) '---  multiplication table (no offset) ------'
-c     write(*,*) '--------------------------------------------'
-c     write(*,*)
-c     DO IREP = 1, 2*NREP
-c       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
-c     ENDDO
-c     write(*,*)
-c     write(*,*) '-------------------------------------- ------------'
-c     write(*,*) '---  inverse multiplication table (no offset) -----'
-c     write(*,*) '---------------------------------------------------'
-c     write(*,*)
-c     DO IREP = 1, 2*NREP
-c       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*NREP)
-c     ENDDO
-
-c     write(*,*)
-c     write(*,*) '-------------------------------------- ------------'
-c     write(*,*) '---  forward multiplication table (no offset) -----'
-c     write(*,*) '---------------------------------------------------'
-c     write(*,*)
-c     DO IREP = 1, 2*NREP
-c       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*NREP)
-c     ENDDO
-
+C     write(*,*)
+C     write(*,*) '--------------------------------------------'
+C     write(*,*) '---  multiplication table (rebased) --------'
+C     write(*,*) '--------------------------------------------'
+C     write(*,*)
+C     DO IREP = 1, NREP
+C       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+C     ENDDO
+C     write(*,*) '-------------------------------------'
+C     DO IREP = NREP+1, 2*NREP
+C       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+C     ENDDO
+C     write(*,*)
+C     write(*,*) '-------------------------------------- ------------'
+C     write(*,*) '---  inverse multiplication table (rebased) -------'
+C     write(*,*) '---------------------------------------------------'
+C     write(*,*)
+C     DO IREP = 1, 2*NREP
+C       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*NREP)
+C     ENDDO
 C
 C     Distribute the information read from MRCONEE
 C

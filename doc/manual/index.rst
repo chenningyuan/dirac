@@ -35,7 +35,8 @@ Keyword reference
    - :doc:`KR CI <wave_function/krci>` --- Kramers-restricted relativistic large-scale CI module
    - :doc:`KRMCSCF <wave_function/krmcscf>` --- Kramers-restricted relativistic large-scale MCSCF module
    - :doc:`RELCCSD <wave_function/relccsd>` --- Coupled cluster module
-   - :doc:`RELADC <wave_function/reladc>` --- Propagator module (Green's functions) for ionizations
+   - :doc:`RELADC <wave_function/reladc>` --- Propagator module (ADC) for single and double ionizations
+   - :doc:`POLPRP <wave_function/polprp>` --- Polarization Propagator module (ADC) for excitations
    - :doc:`MVOCAL <wave_function/mvocal>` --- Modified virtual orbitals
    - :doc:`MP2 NO <wave_function/mp2no>` --- MP2 natural orbitals module
 

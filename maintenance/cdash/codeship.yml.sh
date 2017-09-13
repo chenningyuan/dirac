@@ -28,6 +28,10 @@
 #
 # But it is possible to ignore or run specific command on branch: 
 # see https://codeship.com/documentation/faq/ignore-command-on-branch/
+#
+# Written by Ivan Hrasko, Miroslav Ilias
+#
+#
 
 # export number of processors as environment variable N_PROC
 export N_PROC=$(cat /proc/cpuinfo | grep processor | wc -l)

@@ -22,9 +22,14 @@ set(ExternalProjectCMakeArgs
     -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
     -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
+    -DPARENT_INCLUDE_DIR=${PROJECT_BINARY_DIR}/modules
     -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
     -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
     )
+
+# added -DPARENT_INCLUDE_DIR line above;
+# we need to add the module directory to the include directories explicitly,
+# otherwise the IBM xlf compiler will not find the .mod files. /hjaaj Aug 2017
 
     add_external(gen1int)
 
