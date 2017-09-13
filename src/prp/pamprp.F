@@ -10597,6 +10597,8 @@ C
 C    Print values in ppm
 C
                     IF (IPRINT .GE. 2) THEN
+         CALL HEADER('Spin-rotation constants (in ppm) for '//
+     &                      NAMDEP(IATOM),-1)
                       CALL HEADER('Nuclear contribution',-1)
                       WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                    'A', (GTRANNPPM(I,1,IATOM),I = 1,3),
