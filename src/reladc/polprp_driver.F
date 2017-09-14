@@ -545,6 +545,7 @@ C
       logical                 :: propertyints
       integer                 :: qst_numofstacks
       integer                 :: qst_verbose
+      logical                 :: isthere
 !  
 !  variables for rdprop_adc integral testing
 !
@@ -869,6 +870,11 @@ C
 
 #if defined (VAR_MPI)
 !
+          inquire(file=namematfil,exist=isthere)
+          if(isthere) then
+            open(unit=iobase,file=namematfil,status='OLD')
+            close(iobase,status='DELETE')
+          endif
           open(unit=iobase,file=namematfil, access='SEQUENTIAL',
      &         form='UNFORMATTED',status='NEW')
           n2 = jvovo(nrep+1)
@@ -906,6 +912,8 @@ C
             write(*,*) '**) Used buffers of bufsize',intbuf,': ',nbufs
           endif
 
+! ADC matrix is on disk and corresponding file is closed.
+
           close(iobase)
 
 #else
@@ -913,6 +921,11 @@ C
 ! remind: in the serial case the number of buffers (NBUFS) is known
 !         after matrix construction.
 
+          inquire(file=namematfil,exist=isthere)
+          if(isthere) then
+            open(unit=iobase,file=namematfil,status='OLD')
+            close(iobase,status='DELETE')
+          endif
           OPEN(UNIT=IOBASE,FILE=namematfil, ACCESS='SEQUENTIAL',
      &       FORM='UNFORMATTED',STATUS='NEW')
           serialindicator = -654321
@@ -936,6 +949,9 @@ C
             CALL XDIAG_INI_R(iobase,INTBUF,NBUFS,
      &                       lencouplbl + MVO(desrep))
           ENDIF
+
+! ADC matrix is on disk and corresponding file is closed.
+
           CLOSE(iobase)
 
           Write(*,*)
@@ -967,7 +983,6 @@ C
 !  slaves perform partial matrix/vector multiplication.
 
           if(carith) then
-!           call fulldia_c3(iobase,namematfil,intbuf,ladc)
 
             call mpi_block_davidson_c(iobase,
      &                                intbuf,
@@ -986,9 +1001,6 @@ C
 !    &                                     ladc,
 !    &                                     MVO(desrep))
           else
-!           call fulldia_r3(iobase,namematfil,intbuf,ladc,desrep)
-
-!           write(*,*) ' **ATT new davidson !!!*****'
 
             call mpi_block_davidson_r(iobase,
      &                                intbuf,
