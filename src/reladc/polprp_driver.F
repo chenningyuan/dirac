@@ -726,7 +726,7 @@ C
 ! initialize stack system (only master does this)
 !
         qst_numofstacks = NUM_OF_STACKS
-        qst_verbose = 1
+        qst_verbose = 0
         if(qstack_init(qst_numofstacks,qst_verbose).ne.NUM_OF_STACKS) 
      &     call quit('Qstack problem')
         WRITE(IW,*)'Stack system initialized with',
@@ -1031,7 +1031,9 @@ C
 !|
 
           if(polprp_dotrmo) then
-            write(*,*) 'User asks for TM calculation'
+            write(*,*) 'User asks for TM calculation',
+     &                  ' (symmetry',desrep,')'
+            write(*,*)
             if(propertyints) then
               call build_tramo(desrep,iobase,eps)
             else

@@ -215,25 +215,18 @@
         call pst('Transition moments (real run)+')
       endif
 
-      write(*,*)
-      write(*,*) '   Note: Even in SPINFREE/NONREL cases the TMs'
-      write(*,*) '   can be complex due to the quaternionic structure'
-      write(*,*) '   of the wave function.'
-      write(*,*)
-      write(*,*) '   *******************************'
-      write(*,*) '   Final state Symmetry: ',desrep
-      write(*,*) '   *******************************'
-      write(*,*)
-!
+!****************************************
+! important remark:
+!         Note: Even in SPINFREE/NONREL cases the TMs'
+!         can be complex due to the quaternionic structure'
+!         of the wave function.'
+!****************************************
+!     
 !  assign stack line numbers in order to avoid direct integers
 !  as actual parameters for the qstack calls.
 !
       qst_prpline = PRP_STACKLINE
       qst_auxline = AUX_STACKLINE
-
-      write(*,*) '   *******************************'
-      write(*,*) '   Stack line used:',qst_prpline
-      write(*,*) '   *******************************'
 !
 ! clear stack line for pushing intermediates
 ! if stack line is cleared, no action is taken.

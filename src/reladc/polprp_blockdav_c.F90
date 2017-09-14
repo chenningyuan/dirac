@@ -1037,6 +1037,7 @@
       real*8                                 :: ortho
       real*8,parameter                       :: autoev = 27.2113957D0
       real*8,parameter                       :: rzero=(0.0d0)
+      real*8,allocatable,dimension(:)        :: sx
       complex*16                             :: cax
       complex*16,parameter                   :: czero=(rzero,rzero)
       complex*16,allocatable,dimension(:)    :: aux
@@ -1068,13 +1069,14 @@
           double complex, dimension(:)     :: ca1,ca2
         END FUNCTION
 
-
       end interface
 !
 !------------------------ executable code -------------------------
 !
       allocate(ievec(ladc))
       ievec = 0
+      allocate(sx(ladc))
+      sx = rzero
       allocate(aux(ladc))
       aux = czero
       allocate(bv(ladc))
@@ -1159,6 +1161,7 @@
         write(*,*) '******  warning  *******'
         write(*,*) 'No configuration data available. State'
         write(*,*) 'analysis not possible.'
+        write(*,*) 'ADCSTATE.XX not created.'
         write(*,*) '******  warning  *******'
         deallocate(ievec)
         deallocate(aux)
@@ -1207,8 +1210,8 @@
         do j=1,ladc
           ievec(j)=j
         enddo
-        aux=-abs(evc(:,k))
-        Call DISORT(ladc,aux,ievec)  !sorts from smallest to largest
+        sx=-abs(evc(:,k))
+        Call DISORT(ladc,sx,ievec)  !sorts from smallest to largest
         Do j=1,min(20,ladc)
           Read(iocnf,rec=ievec(j)) field
           cax = evc(ievec(j),k)
@@ -1229,6 +1232,7 @@
       close(iu)
       close(iocnf)
       deallocate(ievec)
+      deallocate(sx)
       deallocate(aux)
       deallocate(bv)
       deallocate(evc)
