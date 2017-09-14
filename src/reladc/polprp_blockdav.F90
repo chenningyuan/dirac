@@ -82,8 +82,9 @@
 !
       interface
 
-        SUBROUTINE init_krylov_r(i1,i2,i3,i4,i5)
+        SUBROUTINE init_krylov_r(i1,i2,i3,i4,i5,l1)
           integer                          :: i1,i2,i3,i4,i5
+          logical                          :: l1
         END SUBROUTINE
 
         SUBROUTINE xmvmul_sp_r(i1,i2,i3,ra1,ra2)
@@ -244,7 +245,8 @@
 
       krydim = nroots
       krysav = 0
-      call init_krylov_r(io_bold,desrep,nroots,maxdavsp,ladc)
+      call init_krylov_r(io_bold,desrep,nroots,maxdavsp,ladc, &
+                         polprp_davreort)
 
       WRITE(*,*)
       WRITE(*,'(3X,A,4X,A,7X,A,7X,A,5X,A,A)') 'root','dim',  &
@@ -499,7 +501,7 @@
       return
       end
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE init_krylov_r(io_bold,desrep,nroots,maxdavsp,ladc)
+      SUBROUTINE init_krylov_r(io_bold,desrep,nroots,maxdavsp,ladc,dao)
 
       IMPLICIT NONE
 !
@@ -508,13 +510,14 @@
 !   This routine checks the existence of some restart files and tries to fit
 !   found restart vectors into the vector array. The order of importance is:
 !
-!   ADCEVECS.XX
+!   ADCEVECS.XX   (reorthogonalization possible)
 !   DAVSTART.XX
 !   Unity matrix
 !
 !------------------------ calling variables -------------------------
 !
       integer                    :: io_bold,desrep,nroots,maxdavsp,ladc
+      logical                    :: dao
 !
 !------------------------ local variables -------------------------
 !
@@ -539,6 +542,10 @@
         function get_file_unit()
            Integer    :: get_file_unit
         end function
+
+        subroutine reortho_ext_r(i1,i2,i3)
+           Integer    :: i1,i2,i3
+        end subroutine
 
       End interface
 !
@@ -628,6 +635,11 @@
       deallocate(ec)
       deallocate(qm)
 
+! reorthogonalize start vectors if user asks for it
+
+      if(dao) write(*,*) 'Reorthogonalizing ADCEVECS.'
+      if(dao) call reortho_ext_r(io_bold,ladc,nroots)
+
       Close(io)
 
 !------------------------------------------------------------
@@ -712,6 +724,45 @@
 
       End select
 
+      RETURN
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine reortho_ext_r(io_bold,ladc,nroots)
+!
+      IMPLICIT NONE
+!
+!------------------------ calling variables -------------------------
+!
+      INTEGER                        :: io_bold,ladc,nroots
+!
+!------------------------ local variables -------------------------
+!
+      REAL*8,  allocatable, dimension(:)     :: x,ax
+      REAL*8                                 :: a1
+      INTEGER                                :: i,k,ida_iostat
+
+!
+!---------------Executable ----------------------------------------
+!
+! reorthogonalize nvec vectors stored columnwise in the array a
+!
+      allocate(x(ladc))
+      allocate(ax(ladc))
+
+      Do k=1,nroots
+        read(io_bold,rec=k,iostat=ida_iostat) x
+        Do i=1,k-1
+          read(io_bold,rec=i,iostat=ida_iostat) ax
+          a1 = dot_product(x(:),ax(:))
+          x = x - a1*ax(:)
+        Enddo
+        a1 = sqrt(dot_product(x,x))
+        ax  =  x/a1
+        write(io_bold,rec=k,iostat=ida_iostat) ax
+      Enddo
+
+      deallocate(x)
+      deallocate(ax)
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

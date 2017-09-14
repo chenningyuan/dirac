@@ -46,5 +46,6 @@ module polprp_cfg
   integer, public                  :: polprp_davmaxsp   = 200
   integer, public                  :: polprp_davmaxit   = 5
   real*8,  public                  :: polprp_davconv    = 1.0E-05
+  logical, public                  :: polprp_davreort   = .false.
   
 end module

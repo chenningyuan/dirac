@@ -88,8 +88,9 @@
 !
       interface
 
-        SUBROUTINE init_krylov_c(i1,i2,i3,i4,i5)
+        SUBROUTINE init_krylov_c(i1,i2,i3,i4,i5,l1)
           integer                          :: i1,i2,i3,i4,i5
+          logical                          :: l1
         END SUBROUTINE
 
         SUBROUTINE xmvmul_sp_c(i1,i2,i3,ca1,ca2)
@@ -272,7 +273,8 @@
 
       krydim = nroots
       krysav = 0
-      call init_krylov_c(io_bold,desrep,nroots,maxdavsp,ladc)
+      call init_krylov_c(io_bold,desrep,nroots,maxdavsp,ladc, &
+                         polprp_davreort)
 
       WRITE(*,*)
       WRITE(*,'(3X,A,4X,A,7X,A,7X,A,5X,A,A)') 'root','dim',  &
@@ -561,7 +563,7 @@
       return
       end
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE init_krylov_c(io_bold,desrep,nroots,maxdavsp,ladc)
+      SUBROUTINE init_krylov_c(io_bold,desrep,nroots,maxdavsp,ladc,dao)
 
       IMPLICIT NONE
 !
@@ -577,6 +579,7 @@
 !------------------------ calling variables -------------------------
 !
       integer                    :: io_bold,desrep,nroots,maxdavsp,ladc
+      logical                    :: dao
 !
 !------------------------ local variables -------------------------
 !
@@ -700,6 +703,9 @@
       deallocate(ec)
       deallocate(qm)
 
+      if(dao) write(*,*) 'Reorthogonalizing ADCEVECS.'
+      if(dao) call reortho_ext_c(io_bold,ladc,nroots)
+
       Close(io)
 
 !------------------------------------------------------------
@@ -786,6 +792,63 @@
 
       RETURN
       END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine reortho_ext_c(io_bold,ladc,nroots)
+!
+      IMPLICIT NONE
+!
+!------------------------ calling variables -------------------------
+!
+      INTEGER                        :: io_bold,ladc,nroots
+!
+!------------------------ local variables -------------------------
+!
+      complex*16, allocatable, dimension(:)   :: x,ax
+      complex*16                              :: ca5
+      real*8                                  :: rn
+      INTEGER                                 :: i,k,ida_iostat
+!
+!------------------------ interfaces -------------------------------
+!
+      interface
+
+        FUNCTION pp_zdotc(i1,ca1,ca2)
+          double complex                   :: pp_zdotc
+          INTEGER                          :: i1
+          double complex, dimension(:)     :: ca1,ca2
+        END FUNCTION
+
+        FUNCTION rzvecnorm(i1,ca1)
+          real*8                           :: rzvecnorm
+          integer                          :: i1
+          double complex, dimension(:)     :: ca1
+        END FUNCTION
+
+      end interface
+!
+!---------------Executable ----------------------------------------
+!
+! reorthogonalize nroots vectors stored columnwise in the array v
+!
+      allocate(x(ladc))
+      allocate(ax(ladc))
+
+      Do k=1,nroots
+        read(io_bold,rec=k,iostat=ida_iostat) x
+        Do i=1,k-1
+          read(io_bold,rec=i,iostat=ida_iostat) ax
+          ca5 = pp_zdotc(ladc,x(:),ax(:))
+          x = x - ca5*ax(:)
+        Enddo
+        rn = rzvecnorm(ladc,x)
+        ax = x/dcmplx(rn,0.0d0)
+        write(io_bold,rec=k,iostat=ida_iostat) ax
+      Enddo
+
+      deallocate(x)
+      deallocate(ax)
+      return
+      end
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine calc_resvec_c(iu,ladc,nroots,krydim, &
                                cji,lambda,res)

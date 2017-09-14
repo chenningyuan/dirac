@@ -1627,6 +1627,10 @@
          polprp_davconv = reladc_davconv
       end if
 
+      if (kw_matches(word, '.DVREORT')) then
+         polprp_davreort = .true.
+      end if
+
       if (kw_matches(word, '.DVINCORE')) then
          reladc_davooc = .false.
       end if
