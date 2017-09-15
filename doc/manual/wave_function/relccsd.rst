@@ -139,6 +139,27 @@ Print debug information.
 
     Debug information is not printed.
 
+keyword(RESTART)
+
+Reuses information from prior calculations to resume the calculation from the last sucessfully recorded checkpoint. In order for a restart to be possible, the appropriate files from both the 4-index transformation - e.g. MRCONEE, MDCINT (and MDCINX* for parallel runs), eventually MDPROP - and from the previous coupled cluster run (ft.* for the sorting of integrals, MCCRES* for the amplitudes) have to be present at the scratch directory. Given the size and number of these files, this means in practice one must request the the scratch directory is kept at the end of the runs (see the pam script options for details)
+
+*Default:*
+
+::
+
+    No restart is performed.
+
+keyword(NOSORT)
+
+Forces the code to skip the sorting of integrals coming from the 4-index transformation into six integral classes. Using this option without the integral sorting stap having been properly carried out may produce incorrect results. 
+
+*Default:*
+
+::
+
+    Sorting of integrals into classes is performed.
+
+
 star(CCENER)
 
 Covers options related to energy.
@@ -415,3 +436,115 @@ Ignore recomputed Fock matrix and use orbital energies supplied by the SCF progr
 sometimes useful for degenerate open shell cases in which case the perturbation theory for the unrestricted formalism
 is not invariant for rotations among degenerate orbitals. It should only change the outcome
 of the [T], (T) and -T energy corrections.
+
+star(CCRESTART)
+
+Control parameters for the restart option. The default behavior of the restart option is to verify whether in the RELCCSD the successive 
+checkpoints have been passed, and restart the calculation at the first one which it not flagged as "Completed, restartable", for example
+
+::
+
+ Status of the calculations
+ Integral sort # 1 :                   Completed, restartable
+ Integral sort # 2 :                   Completed, restartable
+ Fock matrix build :                   Completed, restartable
+ MP2 energy calculation :              Completed, restartable
+ CCSD energy calculation :             Completed, restartable
+ CCSD(T) energy calculation :          Completed, restartable
+
+For the single-reference calculations the restart is straightforward and in general no additional keywords are necessary. Users must nevertheless be careful that the restart is performed for exactly the same calculation, as there are no interla consistency checks in place in the case of a restart: this means that, for example, if either the geometry or the number of corrlated electrons or virtual spinors has been changed after the initial calculations, if the RESTART option is on the code will proceed with the old checkpoint data (sorted integrals, etc) and any results will be erroneous. 
+
+Fock-space calculations can also be restarted, but for these additional care must be taken:
+(1) One must redo the integral sorting steps if the model (P) or correlation (Q) spaces change dimension. 
+A change in the values that define the partition between main (Pm) and intermediate (Pi) model spaces, on the other hand, 
+does not require the integral sorting to be redone.
+(2) One has to specifically indentify which which sectors of Fock space are to be (re)calculated and which should be skipped. Some examples of such a procedure can be found in the test set. 
+
+
+keyword(UNCONVERGED)
+
+Forces results from unconverged iterative procedures to be considered as converged. 
+
+*Default:*
+
+::
+
+    False
+
+keyword(FORCER)
+
+Forces restart even if setup is potentially different (number of electrons, active/inactive spinors  etc).
+
+*Default:*
+
+::
+      
+      False
+    
+keyword(REDOCCSD)
+
+Forces the iterative procedure to solve the CCSD (or CCD or CCS) equations to be performed, even if in a prior run it has been marked as completed.
+
+*Default:*
+
+::
+
+      False 
+     
+
+keyword(REDOSECT)
+
+In the case of fock-space calculations, indicate which sectors are to be relcalculated during the restart.
+
+This keyword expects two lines as input; on the first line, an integer specifying how many sectors are recalculated
+and in the second line a list of the sectors in question in the RELCC notation. 
+
+::
+
+    .REDOSECT
+     2
+     00 01
+
+will redo sectors 0h0p and 0h1p 
+
+*Default:*
+
+::
+
+    All sectors are recalculated 
+
+keyword(SKIPSECT)
+
+In the case of fock-space calculations, indicate which sectors are to be skipped during the restart
+
+This keyword expects two lines as input; on the first line, an integer specifying how many sectors are recalculated
+and in the second line a list of the sectors in question in the RELCC notation.
+
+::
+
+    .SKIPSECT
+     2
+     00 01
+
+will bypass the calculation of sectors 0h0p and 0h1p.
+
+
+*Default:*
+
+::
+
+    No sectors are skipped
+
+
+keyword(REDOSORT)
+
+Forces the sorting into the six integral classes to be performed again, even if prior sorting was completed. 
+
+*Default:*
+
+::
+
+    False. integrals are not resorted if the prior sorting was completed.
+
+
+
