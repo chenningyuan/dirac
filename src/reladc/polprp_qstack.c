@@ -236,11 +236,6 @@ CINT48 qstack_popf(CINT48 *stack, double *retvec){
 
   curlen = qslen[stackn][0];
   memcpy(retvec,*qsbase[stackn],curlen*sizeof(double));
-/*
-  for(i=0;i<curlen;i++) {
-    retvec[i] = *(*qsbase[stackn] + i);
-  }
-*/
 
 /* shrink stack from below and check special case for 1 vector
    on stack */
