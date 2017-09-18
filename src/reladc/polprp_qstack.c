@@ -692,9 +692,8 @@ CINT48 qstack_directx_c(CINT48 *stack, CINT48 *lenv, double *bravec, CINT48 *sha
   CINT48 curlen;
   CINT48 curdep;
   CINT48 i;
-  double xb,yb,xk,yk;
-  double * ketadd;
-  double complex zb,zk,zsum;
+  double complex zsum;
+  double complex * zbra, * zket;
 
   if(!initialized) {
     printf("*** Qstack runtime problem: Please initialize stack\n");
@@ -727,7 +726,7 @@ CINT48 qstack_directx_c(CINT48 *stack, CINT48 *lenv, double *bravec, CINT48 *sha
     return -1;
   }
 
-/* this is for safety purposes. The transferred number *lenv is the number of 
+/* The transferred number *lenv is the number of 
    --> complex numbers <-- on the stack stored as a real stream of twice the size.
    directx_c therefore only applies if the transferred length is exactly half of the
    storage length in the addressed shard  */
@@ -740,23 +739,17 @@ CINT48 qstack_directx_c(CINT48 *stack, CINT48 *lenv, double *bravec, CINT48 *sha
     return -1;
   }
 
-/* do complex bra/ket multiplication. ketadd and bravec point to double numbers. 
-   That's why an auxiliary real array needs to be defined in the F90 caller. 
-   Offsetting by unity therefore advances in steps of double numbers!  */
+/* do complex bra/ket multiplication by pointer recast. Tested for
+   GNU and INTEL compilers. Storage order is real/imaginary part in the data stream. 
+   zket and zbra point to double complex numbers, offsetting by unity 
+   therefore advances in steps of double complex numbers!  */
 
-  ketadd = qsbase[stackn][curdep-1];
+  zket = (double complex *) qsbase[stackn][curdep-1];
+  zbra = (double complex *) bravec;
 
   zsum = 0.0;
   for(i=0;i<*lenv;i++){
-    xb=*bravec++;
-    yb=*bravec++;
-    zb=(xb-yb*I);  // minus sign since the bra is to be complex conjugated!
-
-    xk=*ketadd++;
-    yk=*ketadd++;
-    zk=(xk+yk*I);
-    
-    zsum += zb*zk;
+    zsum += conj(*zbra++) * *zket++;
   }
   
   *result = zsum;
