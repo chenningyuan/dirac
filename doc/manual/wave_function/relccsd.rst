@@ -141,7 +141,7 @@ Print debug information.
 
 keyword(RESTART)
 
-Reuses information from prior calculations to resume the calculation from the last sucessfully recorded checkpoint. In order for a restart to be possible, the appropriate files from both the 4-index transformation - e.g. MRCONEE, MDCINT (and MDCINX* for parallel runs), eventually MDPROP - and from the previous coupled cluster run (ft.* for the sorting of integrals, MCCRES* for the amplitudes) have to be present at the scratch directory. Given the size and number of these files, this means in practice one must request the the scratch directory is kept at the end of the runs (see the pam script options for details)
+Reuses information from prior calculations to resume the calculation from the last sucessfully recorded checkpoint. In order for a restart to be possible, the appropriate files from both the 4-index transformation - e.g. MRCONEE, MDCINT (and MDCINX* for parallel runs) and, if the transformation of property operators was requested, MDPROP - and from the previous coupled cluster run (ft.* for the sorting of integrals, MCCRES* for the amplitudes) have to be present at the scratch directory. Given the size and number of these files, this means in practice one must request the the scratch directory is kept at the end of the runs (see the pam script options for details)
 
 *Default:*
 
@@ -440,7 +440,9 @@ of the [T], (T) and -T energy corrections.
 star(CCRESTART)
 
 Control parameters for the restart option. The default behavior of the restart option is to verify whether in the RELCCSD the successive 
-checkpoints have been passed, and restart the calculation at the first one which it not flagged as "Completed, restartable", for example
+checkpoints have been passed, and restart the calculation at the first one which is not flagged as "Completed, restartable". 
+
+For example, one would have 
 
 ::
 
@@ -451,6 +453,8 @@ checkpoints have been passed, and restart the calculation at the first one which
  MP2 energy calculation :              Completed, restartable
  CCSD energy calculation :             Completed, restartable
  CCSD(T) energy calculation :          Completed, restartable
+
+if a calculations has successfully has passed through all checkpoints.
 
 For the single-reference calculations the restart is straightforward and in general no additional keywords are necessary. Users must nevertheless be careful that the restart is performed for exactly the same calculation, as there are no interla consistency checks in place in the case of a restart: this means that, for example, if either the geometry or the number of corrlated electrons or virtual spinors has been changed after the initial calculations, if the RESTART option is on the code will proceed with the old checkpoint data (sorted integrals, etc) and any results will be erroneous. 
 
