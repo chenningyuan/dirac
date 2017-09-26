@@ -56,6 +56,8 @@ C                    Added CI keywords NMQM,GTENSR  Malaya Nayak  2015
 C
 C                    Merge with eEDM branch    Timo Fleig     04.03.2016
 C
+C                    Added CI keyword TERSE    Timo Fleig     29.03.2016
+C
 C***********************************************************************
       use symmetry_setup_krci
       use krci_cfg
@@ -64,7 +66,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "dummy.h"
 #include "maxash.h"
-      PARAMETER (NTABLE = 51)
+      PARAMETER (NTABLE = 52)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00)
 C
       LOGICAL SET, NEWDEF, RESET, LBIT
@@ -80,6 +82,7 @@ C
 #include "dcbopt.h"
 #include "dcbprp.h"
 #include "dcbxpr.h"
+#include "nuclei.h"
 #include "krciprop.h"
 #include "dcborb.h"
 #include "dcbkrci.h"
@@ -100,7 +103,7 @@ C
      &            '.USE PB','.GENFOC','.TRA NO','.LOWSRT','.SEL ST',
      &            '.DIPMOM','.MCANA ','.GAS SH','.SVRONO','.SVRONX',
      &            '.EEDM  ','.MHYP  ','.ENSPS ','.NANAM ','.NMQM  ',
-     &            '.GTENSR'/
+     &            '.GTENSR','.TERSE '/
       DATA SET/.FALSE./
       character (len= 4)              :: symmetry_str
       character (len= 4)              :: symmetry_str1
@@ -161,6 +164,7 @@ C
          NKRCI_SELOM(I)   = 0
       END DO
       NKRCI_MAX_SYM   = -1
+      ITERSEOUT = 0
 
       IPRKRCI   = IPRGEN
       ILLINT    = IBTAND(INTGEN,1)
@@ -183,7 +187,11 @@ C
       DKRCI_CNVINT(1) = DUMMY
       DKRCI_CNVINT(2) = DUMMY
       DKRCI_THRPCI = 1.0D-3
-      DKRCI_THRECI = 1.0d-8
+CTF   DKRCI_THRECI = 1.0d-8
+CTF   DKRCI_THRECI = 0.3d-10   ! Seems to converge P,T-odd properties
+C                                sufficiently well. More testing
+C                                required.
+      DKRCI_THRECI = 0.8d-12
 C
 C     Initialize /DCOKRCI/
 C     ===================
@@ -287,7 +295,7 @@ C
      &                     21,22,23,24,25,26,27,28,29,30,
      &                     31,32,33,34,35,36,37,38,39,40,
      &                     41,42,43,44,45,46,47,48,49,50,
-     &                     51)
+     &                     51,52)
      &                     , I
                   END IF
   200          CONTINUE
@@ -858,6 +866,8 @@ C&&&  MHYP  : calculate magnetic hyperfine structure constants
 C           : alpha X electric field matrix elements
                doprop_krci   = .true.
                domhyp_krci = .true.
+               READ(LUCMD,*) (VKRCI_NUCSPIN(IATOM),IATOM=1,NUCIND,1)
+               READ(LUCMD,*) (VKRCI_NUCMAGMOM(IATOM),IATOM=1,NUCIND,1)
                GO TO 100
 CMKN The mHYP is newly implemented following eEDM
    48          CONTINUE
@@ -886,6 +896,10 @@ C&&& GTENSR : calculate the G-tensor components
 C           : L_z + gS_z (g=2.00231930436182)
                doprop_krci   = .true.
                dogtensr_krci = .true.
+               GO TO 100
+   52          CONTINUE
+C&&& TERSE  : Old LUCIAREL output for iterations and final info
+               ITERSEOUT = 1
                GO TO 100
 CMKN The g-tensor is newly implemented following nMQM
             ELSE IF (PROMPT .EQ. '*') THEN
