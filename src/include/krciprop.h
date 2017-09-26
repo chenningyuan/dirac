@@ -46,6 +46,7 @@
 !     defined in luciarel/mxpdim.inc which is the max. number of roots 
 !     per irrep.
       PARAMETER(MXPRPE_KRCI=750)
+      PARAMETER(MAXNUCLEI=15)
       PARAMETER(IPROPPRINT=30)
 !     max symmetry irreps - this value has to be equal to 
 !     PARAMETER (MAX_NKRCI_MAX_SYM = 128) in dcbkrci.h - SK Oct 2008
@@ -72,3 +73,6 @@
      &                 donmqm_krci, dogtensr_krci
       CHARACTER XSYMFLAB*3, XREPEIG*4
 	COMMON/LUCICPRP/XSYMFLAB(MXPROPKRCI_SYM),XREPEIG(MXPROPKRCI_SYM)
+!
+      COMMON/LUCIPROPNUC/VKRCI_NUCSPIN(MAXNUCLEI),
+     &                   VKRCI_NUCMAGMOM(MAXNUCLEI)

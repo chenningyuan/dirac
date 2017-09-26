@@ -1563,7 +1563,7 @@ C     Input: property matrix XPROPMAT
 C
 C     Written by S. Knecht - Nov 2008
 C
-C     Last revision : T. Fleig - Mar 2016
+C                     T. Fleig - Mar 2016
 C                     Introduced all properties programmed by MKN and TF
 C
 C***********************************************************************
@@ -1574,6 +1574,7 @@ C***********************************************************************
       PARAMETER ( XTHRESH = 1.0D-7 )
       PARAMETER ( DEGEN   = 1.0D-10 )
 C
+#include "propconst.h"
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dcbgen.h"
@@ -1582,16 +1583,21 @@ C
 #include "krciprop.h"
 #include "dcbkrci.h"
 #include "dcbxpr.h"
+#include "dcbprl.h"
 #include "mxcent.h"
 #include "dipole.h"
+C#include "nuclei.h"
+C#include "chrnos.h"
       DOUBLE COMPLEX XMOM
       REAL*8 OSCL, OSCLABS
       DIMENSION XPROPMAT(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,
      &                   NPROP_KRCI,MZ)
-      DIMENSION GTENSOR(NPROP_ROOTS_KRCI),GTENSORNORM(NPROP_ROOTS_KRCI)
+      DIMENSION GTENSOR(NPROP_ROOTS_KRCI),GTENSORNORM(NPROP_ROOTS_KRCI),
+     &          ENSPSMOM(NPROP_ROOTS_KRCI),HYFENFIN(NPROP_ROOTS_KRCI),
+     &          HYFEDMFIN(NPROP_ROOTS_KRCI),EEFFAU(NPROP_ROOTS_KRCI)
       DIMENSION WORK(*), OSCL(3), EVECS(*), EPROP_CORE(*), OSCLABS(3)
       INTEGER IND_DIP(3), IND_PRP(12)
-      CHARACTER XLABEL*16
+      CHARACTER XLABEL*16,OPTYPE*12
       LOGICAL PRINT_EV
 !     dynamic memory allocation
       integer, allocatable :: indx(:)
@@ -1600,10 +1606,16 @@ C
 #include "memint.h"
       CALL QENTER('XKRCIPRPANA')
 C
+      IZERO = 0
+      ZERO = 0.0d0
+      IONE = 1
+      ONE = 1.0d0
+C
 CTF   Initialize
       do IL = 1,NPROP_ROOTS_KRCI,1
-        GTENSOR(IL) = 0.
-        GTENSORNORM(IL) = 0.
+        GTENSOR(IL) = ZERO
+        GTENSORNORM(IL) = ZERO
+        EEFFAU(IL) = ZERO
       end do
 C
 C     print the list of states if available otherwise skip it.
@@ -1712,7 +1724,7 @@ C       ---------
         DO 201 IVEC=1,NPROP_ROOTS_KRCI
          DO 101 JVEC= IVEC+1, NPROP_ROOTS_KRCI
             DEIG  = EVECS(IVEC) - EVECS(JVEC)
-            IF( DEIG < 0.0d0 )THEN
+            IF( DEIG < ZERO )THEN
               INIST = IVEC
               JFLST = JVEC
             ELSE
@@ -1981,7 +1993,7 @@ C       print eEDM expectation value
 C       ----------------------------
         write(lupri,'(/a,A6,a/a)')
      & '  <state| ',XLABEL,'  2*ic gamma0 gamma5 p^2 | state >  '//
-     & '    Eff. Electric Field [a.u.]     Norm [a.u.]'
+     & '  E_eff [a.u.]             E_eff [GV/cm]   '
         write(lupri,'(a)')
      & '  __________________       _________________'//
      & '    ___________________________________________________'//
@@ -1992,14 +2004,15 @@ C       ----------------------------
           JFLST = JVEC
           ISYMST_IN = ISYMEIG_KRCI(INIST)
           ISYMST_FL = ISYMEIG_KRCI(JFLST)
-          EDMMOM = DCMPLX(XPROPMAT(INIST,JFLST,IND_EDM,1),
+          EEFFAU(IVEC) = DCMPLX(XPROPMAT(INIST,JFLST,IND_EDM,1),
      &                    XPROPMAT(INIST,JFLST,IND_EDM,2))
-          EDMNORM = sqrt(EDMMOM**2)
+CTF          EDMNORM = sqrt(EDMMOM**2)
+          EEFFGVCM = ( EEFFAU(IVEC) * EFAUMKSA )
 C
           write(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F20.12,5X,1F20.12)')
      &    '   * state',INIST,'(',XREPEIG(ISYMST_IN),')         * state',
      &      JFLST,'(',XREPEIG(ISYMST_FL),')   ',
-     &      EDMMOM,EDMNORM
+     &      EEFFAU(IVEC),EEFFGVCM
         end do
         write(lupri,'(a)')
      & '  __________________________________________'//
@@ -2011,6 +2024,7 @@ C
 C     =======================================================
 C     5. Magnetic Hyperfine Structure Constants
 C     Written by Malaya K. Nayak, Sept 13, 2013
+C            and Timo Fleig, April 7-8, 2016
 C     =======================================================
       if (domhyp_krci) then
 C
@@ -2032,7 +2046,7 @@ C       print mHYP expectation value
 C       ----------------------------
         write(lupri,'(/a,A6,a/a)')
      & '    < state | ',XLABEL,' [alpha x E] | state >  '//
-     & '     Hyperfine Constants [a.u.]     Norm [a.u.]'
+     & '     Hyperfine Const. [a.u.]     Delta E_HypFin [a.u.]   '
         write(lupri,'(a)')
      & '  __________________       _________________'//
      & '    ___________________________________________________'//
@@ -2044,14 +2058,23 @@ C
           JFLST = JVEC
           ISYMST_IN = ISYMEIG_KRCI(INIST)
           ISYMST_FL = ISYMEIG_KRCI(JFLST)
-          EDMMOM = DCMPLX(XPROPMAT(INIST,JFLST,IND_PRP(I),1),
+         HFCONST = DCMPLX(XPROPMAT(INIST,JFLST,IND_PRP(I),1),
      &                    XPROPMAT(INIST,JFLST,IND_PRP(I),2))
-          EDMNORM = SQRT(EDMMOM**2)
+CTF
+C   prefactor = mu / ( 2c I mp )
+         read(XLABEL(2:2),*) INUC
+         PREFACNUC = VKRCI_NUCMAGMOM(INUC) /
+     &               ( 2 * CVAL * VKRCI_NUCSPIN(INUC) * XFMP )
+         if (IVEC.eq.IONE) print*,' PREFACNUC = ',PREFACNUC
+C   The hyperfine energy splitting:
+         HFENERGY = HFCONST * PREFACNUC
+C   For a level energy, multiply by 1/2[F(F+1)-J(J+1)-I(I+1)]
+C   and add to the electronic energy
 C
           write(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F20.12,5X,1F20.12)')
      &    '   * state',INIST,'(',XREPEIG(ISYMST_IN),')         * state',
      &      JFLST,'(',XREPEIG(ISYMST_FL),')   ',
-     &      EDMMOM,EDMNORM
+     &     HFCONST,HFENERGY
        END DO
         write(lupri,'(a)')
      & '  __________________________________________'//
@@ -2084,7 +2107,7 @@ C       ----------------------------
 C       print eNSPS expectation value
 C       ----------------------------
         write(lupri,'(/a,A6,a/a)')
-     & '  <state| ',XLABEL,' i[beta gamma5]rho_N |state>'//
+     & '  <state| ',XLABEL,' i[gamma0 gamma5]rho_N |state>'//
      & '    e-N S-PS Parameter [a.u.]        Norm [a.u.]'
         write(lupri,'(a)')
      & '  __________________       _________________'//
@@ -2097,14 +2120,14 @@ C
           JFLST = JVEC
           ISYMST_IN = ISYMEIG_KRCI(INIST)
           ISYMST_FL = ISYMEIG_KRCI(JFLST)
-          EDMMOM = DCMPLX(XPROPMAT(INIST,JFLST,IND_PRP(I),1),
+         ENSPSMOM(IVEC) = DCMPLX(XPROPMAT(INIST,JFLST,IND_PRP(I),1),
      &                    XPROPMAT(INIST,JFLST,IND_PRP(I),2))
-          EDMNORM = SQRT(EDMMOM**2)
+         EDMNORM = SQRT(ENSPSMOM(IVEC)**2)
 C
           write(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F20.12,5X,1F20.12)')
      &    '   * state',INIST,'(',XREPEIG(ISYMST_IN),')         * state',
      &      JFLST,'(',XREPEIG(ISYMST_FL),')   ',
-     &      EDMMOM,EDMNORM
+     &     ENSPSMOM(IVEC),EDMNORM
        END DO
         write(lupri,'(a)')
      & '  __________________________________________'//
