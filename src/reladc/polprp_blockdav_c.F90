@@ -1084,6 +1084,16 @@
       allocate(evc(ladc,nroots))
       evc = czero
 
+! *** calculate eigenvector approximations from trial space
+! *** this is done with a temporary array in order to minimize
+! *** read operations from direct access file
+
+      Do j = 1,krydim
+        read(io_bold,rec=j) aux
+        Do k = 1,nroots
+          evc(:,k) = evc(:,k) + cji(j,k)*aux
+        Enddo
+      Enddo
 
 ! *** open file
 
@@ -1112,28 +1122,19 @@
         write(iu) k
         write(iu) lambda(k)
 
-! *** build kth eigenvector and push it on stack
-
-        aux = czero
-        Do j=1,krydim
-          read(io_bold,rec=j) bv
-          aux = aux + cji(j,k)*bv
-        Enddo
-        evc(:,k) = aux
-
-! *** compute pole strength of kth eigenvector
+! *** compute pole strength of kth eigenvector and write it out
 
         a1 = 0.0d0
         do j=1,nmain
-          a1 = a1 + real(dconjg(aux(j))*aux(j))
+          a1 = a1 + real(dconjg(evc(j,k))*evc(j,k))
         enddo
         write(iu) a1
-        write(iu) (aux(j),j=1,ladc)
+        write(iu) (evc(j,k),j=1,ladc)
 
       Enddo   !k. 
       close(iu)
 
-!   All vectors are determined, we check ortho.
+!   We check orthonormality of all eigenvectors
 
       ortho = 0.0d0
       do i=1,nroots
@@ -1145,7 +1146,6 @@
       write(*,*) 'Orthogonality of written vectors:',ortho
       write(*,*)
 
-!   All eigenvectors are still in evc array
 !__________________________________________________________
 !|
 !|

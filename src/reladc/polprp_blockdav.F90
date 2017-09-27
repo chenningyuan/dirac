@@ -902,12 +902,7 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE write_davevecs_r(io_bold,desrep,nroots,nmain,ladc, &
                                   krydim,lambda,resnorm,cji)
-
-      use qstack 
-
       implicit none
-
-#include  "polprp_stacklines.h"
 !
 !---------------Description--------------------------------------------
 !
@@ -925,14 +920,14 @@
 !
       integer                                :: i,j,k
       integer                                :: iu,iocnf
-      integer                                :: qst_evcline
       integer                                :: irecl,istat
       integer,allocatable,dimension(:)       :: ievec
-      real*8                                 :: a1,enorm
+      real*8                                 :: a1
       real*8                                 :: ortho
       real*8,parameter                       :: rzero=(0.0d0)
       real*8,parameter                       :: autoev = 27.2113957D0
-      real*8,allocatable,dimension(:)        :: aux,bv
+      real*8,allocatable,dimension(:)        :: aux
+      real*8,allocatable,dimension(:,:)      :: evc
       character*11                           :: davevcname
       character*6,parameter                  :: filecnf='XCONFG'
       character*70                           :: field
@@ -951,12 +946,22 @@
 !
 !------------------------ executable code -------------------------
 !
-      qst_evcline = EVC_STACKLINE
-
       allocate(ievec(ladc))
-      ievec = 0
       allocate(aux(ladc))
-      allocate(bv(ladc))
+      allocate(evc(ladc,nroots))
+      ievec = 0
+
+! *** calculate eigenvector approximations from trial space
+! *** this is done with a temporary array in order to minimize
+! *** read operations from direct access file
+
+      evc = rzero
+      Do j = 1,krydim
+        read(io_bold,rec=j) aux
+        Do k = 1,nroots
+          evc(:,k) = evc(:,k) + cji(j,k)*aux
+        Enddo
+      Enddo
 
 ! *** open file
 
@@ -985,44 +990,30 @@
         write(iu) k
         write(iu) lambda(k)
 
-! *** build kth eigenvector and push it on stack
-
-        aux = rzero
-        Do j=1,krydim
-          read(io_bold,rec=j) bv
-          aux = aux + cji(j,k)*bv
-        Enddo
-        if(qstack_push(qst_evcline,ladc,aux).ne.ladc) stop 'QE'
-
-! *** compute pole strength of kth eigenvector
+! *** compute pole strength of kth eigenvector and write it out
 
         a1 = 0.0d0
         do j=1,nmain
-          a1 = a1 + aux(j)*aux(j)
+          a1 = a1 + evc(j,k)*evc(j,k)
         enddo
         write(iu) a1
-        write(iu) (aux(j),j=1,ladc)
+        write(iu) (evc(j,k),j=1,ladc)
 
       Enddo   !k. 
       close(iu)   ! file descriptor available again!
 
-!   All eigenvectors are now on the stack. We check ortho.
+!   We check orthonormality of all eigenvectors
 
       ortho = 0.0d0
       do i=1,nroots
-        if(qstack_peekn(qst_evcline,bv,i).ne.ladc) stop 'QE'
-        enorm = sqrt(dot_product(bv,bv))
-        write(*,*) 'Norm of',i,'th eigenvector:',enorm
         do j=i,nroots
-          if(qstack_peekn(qst_evcline,aux,j).ne.ladc) stop 'QE'
-          ortho = ortho + dabs(dot_product(bv,aux))
+          ortho = ortho + dabs(dot_product(evc(:,i),evc(:,j)))
         enddo
       enddo
       ortho = ortho - dble(nroots)
       write(*,*) 'Orthogonality of written vectors:',ortho
       write(*,*)
 
-!   All eigenvectors are still on the stack.
 !__________________________________________________________
 !|
 !|
@@ -1039,10 +1030,9 @@
         write(*,*) 'No configuration data available. State'
         write(*,*) 'analysis not possible.'
         write(*,*) '******  warning  *******'
-        i = qstack_drop(qst_evcline)
         deallocate(ievec)
         deallocate(aux)
-        deallocate(bv)
+        deallocate(evc)
         return
       endif
 
@@ -1065,10 +1055,9 @@
 ! now loop over states and collect most contributing configurations
 
       Do k = 1,nroots
-        if(qstack_peekn(qst_evcline,bv,k).ne.ladc) stop 'QE'
         a1 = rzero
         do j=1,nmain
-          a1 = a1 + bv(j)*bv(j)
+          a1 = a1 + evc(j,k)*evc(j,k)
         enddo
 
         Write(iu,'(A14,X,I4)') 'Excited state:',k
@@ -1087,11 +1076,11 @@
         do j=1,ladc
           ievec(j)=j
         enddo
-        aux=-abs(bv(:))
+        aux=-abs(evc(:,k))
         Call DISORT(ladc,aux,ievec)  !sorts from smallest to largest
         Do j=1,min(20,ladc)
           Read(iocnf,rec=ievec(j)) field
-          a1 = bv(ievec(j))
+          a1 = evc(ievec(j),k)
           Write(iu,'(A70,F15.6,3X,F15.6)') field,a1,a1*a1
         Enddo
         Write(iu,'(A17)') '-----------------'
@@ -1107,10 +1096,9 @@
 
       close(iu)
       close(iocnf)
-      i = qstack_drop(qst_evcline)
       deallocate(ievec)
       deallocate(aux)
-      deallocate(bv)
+      deallocate(evc)
 
       return
       end
