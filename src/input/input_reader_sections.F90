@@ -1493,6 +1493,10 @@
          polprp_dotrmo = .true.
       end if
 
+      if (kw_matches(word, '.SKIPCC')) then
+         polprp_skipccseti = .true.
+      end if
+
       if (kw_matches(word, '.PRINT ')) then
          call kw_read(word, polprp_printlev)
       end if

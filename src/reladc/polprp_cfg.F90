@@ -32,13 +32,12 @@ module polprp_cfg
 !  polarization propagator control variables
 !
   integer, dimension(1:32), public :: polprp_statesym     = 0  
-  integer, dimension(1:32), public :: polprp_inforeqest   = -99
   logical, public                  :: polprp_doextended   = .false.
   real*8,  public                  :: polprp_writethr     = 0.0
   logical, public                  :: polprp_dodiag       = .true.
   logical, public                  :: polprp_dotrmo       = .false.
   integer, public                  :: polprp_printlev     = 0
-  character(LEN=120), bind(C,name="ppinfo_code")  ::  polprp_infostring = char(0)
+  logical, public                  :: polprp_skipccseti   = .false.
 !
 !  davidson control variables
 !

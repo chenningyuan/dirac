@@ -191,9 +191,7 @@ C     Get the correct arithmetic (NZ is not initialized on slaves if you do not 
 C
 #if defined (VAR_MPI)
       IF (NMPROC .GT. 1) THEN
-         print*,'+++++ node',MYPROC,' entering mpi_bcast1.'
          call interface_mpi_BCAST_l0(CA,1,MASTER,global_communicator)
-         print*,'+++++ node',MYPROC,' entering mpi_bcast2.'
          call interface_mpi_BCAST_l0(MP2_DENRUN,1,MASTER,
      &                  global_communicator)
       END IF
@@ -236,7 +234,9 @@ C     to the corresponding output file.
 C
       OPEN(LUCMD,FILE = 'DIRAC.INP')
       OPEN(MSLVOUT,FILE = CCFILN(1:LCCFIL))
+
       CALL POLPRP_MAIN(LUCMD,MSLVOUT,CA,INTFCE)
+
       CLOSE (MSLVOUT,STATUS='KEEP')
       CLOSE (LUCMD,STATUS='KEEP')
       write(*,*) 'Node',MYPROC,' has arrived after POLPRP_MAIN!'
@@ -264,6 +264,7 @@ C
 
       use memory_allocator
       use interface_to_mpi
+      use polprp_cfg
 
       IMPLICIT INTEGER (A-Z)
 !
@@ -306,6 +307,8 @@ C
       integer     :: MAXCORE    ! contains --mw * 1000 * 1000 (number of words, decimal mega)
       integer     :: maxcore_info(2)
       character*6 :: maxcore_infc(2)
+
+      logical     :: skip_ccseti
 !
 !---------------interface region --------------------------------------
 !
@@ -325,6 +328,15 @@ C
 !
       maxcore_info = 0
       maxcore_infc = (/'CCSETI','POLPRP'/)
+
+#if defined (VAR_MPI)
+      IF(MYPROC.eq.MASTER) then
+        skip_ccseti = polprp_skipccseti
+        write(*,*) 'Master will communicate skip flag.'
+      ENDIF
+#else
+      skip_ccseti = polprp_skipccseti
+#endif
 
       call legacy_lwork_get(MAXCORE)
 
@@ -412,10 +424,10 @@ C
       CALL SYMTAB (NELEC,NFROZ,NINACT,NACT,NSP,EPS1,EPS,IREPSP,
      &             IREPSPI,.FALSE.,.TRUE.,NELEC_F1,NELEC_F2)
 
-      write(*,*) 'NSP  :',NSP
-      write(*,*) 'MAXSP:',maxsp
-      write(*,*) 'MXREP:',mxrep
-      write(*,*) 'Length of irepspi array:',MAXSP*MXREP*2,' integers'
+      write(iw,*) 'NSP  :',NSP
+      write(iw,*) 'MAXSP:',maxsp
+      write(iw,*) 'MXREP:',mxrep
+      write(iw,*) 'Length of irepspi array:',MAXSP*MXREP*2,' integers'
 !
 !  determine number of electrons and print general information
 !
@@ -456,17 +468,51 @@ C
         if(USEOE) WRITE (IW,*) 'Orbital energies from HF are used'
       end if
 
-!
-!  call integral preparation routine from RELCCSD
-!  Sort 2E-Ints into the six classes OOOO,VOOO,VVOO,VOVO,VVVO,VVVV
-!  
-!       ICALC = 1
-!       CALL CCSETI (ICALC,maxcore_info(1),EPS,NSP,IREPSP,IREPSPI)
-
       ICALC = 2
-      CALL CCSETI (ICALC,maxcore_info(1),EPS,NSP,IREPSP,IREPSPI)
-      WRITE(IW,*) 'Memory requirements of ',
-     &             maxcore_infc(1),maxcore_info(1)
+!
+! we offer to skip ccseti completely. This is provided because for really
+! large files this step can take unexpectedly large amount of time.
+! If the user provides the ftxx.yy files on the shared scratch file
+! system, it should work. Attention: the files are opened in CCSETI on the
+! master and slave. Therefore we have to open them explicitly, if CCSETI
+! is to be skipped.
+!
+
+! Input variables only set for master. In case of parallel run we have
+! to communicate the flag.
+
+#if defined (VAR_MPI)
+      IF (NMPROC .GT. 1) THEN
+         call interface_mpi_BCAST_l0(skip_ccseti,1,MASTER,
+     &                               global_communicator)
+      END IF
+!     print*,'+++++ node',MYPROC,' has skip flag:',skip_ccseti
+#endif
+      
+      if(.not.skip_ccseti) then
+        write(iw,*) 'Entering CCSETI'
+        CALL CCSETI (ICALC,maxcore_info(1),EPS,NSP,IREPSP,IREPSPI)
+      else
+        write(iw,*)
+        write(iw,*) 'Skipping CCSETI, opening files explicitly.'
+        write(iw,*)
+        write(iw,*) '*** All the ftXX.YY files have to be on the'
+        write(iw,*) '*** shared scratch file system. This option'
+        write(iw,*) '*** will not work on strictly distributed'
+        write(iw,*) '*** file systems.'
+        write(iw,*)
+        write(iw,*)
+        CALL WAIO_OPEN(ITAPT+0)
+        CALL WAIO_OPEN(ITAPT+1)
+        CALL WAIO_OPEN(ITAPT+2)
+        CALL WAIO_OPEN(ITAPT+3)
+        CALL WAIO_OPEN(ITAPT+4)
+        CALL WAIO_OPEN(ITAPT+5)
+        CALL WAIO_OPEN(ITAPT+6)
+      endif
+
+!     WRITE(IW,*) 'Memory requirements of ',
+!    &             maxcore_infc(1),maxcore_info(1)
 !
 !  call *parallel* polarization propagator code
 !  
