@@ -1559,19 +1559,6 @@
          !call kw_read(word, reladc_dipeigv, user_req_symmetries)
       end if
 
-!     if (kw_matches(word, '.EXCEIGV')) then
-!        call kw_read(word, user_req_symmetries)
-!        print *, 'lower and upper energy boundaries for ADC excitation eigenvectors'
-!        do i = 1, user_req_symmetries
-!           ! read every line
-!           read(get_file_unit(), '(a)') line
-!           read(line,*) (reladc_md_exc_eeigv(i,j), j = 1, 2)
-!           print *, (reladc_md_exc_eeigv(i,j), j=1,2)
-!        end do
-!        !read(get_file_unit(),'(i8)') user_req_symmetries
-!        !call kw_read(word, reladc_exceigv, user_req_symmetries)
-!     end if
-
       if (kw_matches(word, '.SIPPRNT')) then
          read(get_file_unit(),'(f18.6)') reladc_sipprnt
       end if
