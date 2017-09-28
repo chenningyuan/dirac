@@ -2146,7 +2146,7 @@
           integer                      :: get_file_unit
         END Function
 
-        Subroutine WrtTMLine(l1,ch1,i1,c1,c2,c3)
+        Subroutine writetmln(l1,ch1,i1,c1,c2,c3)
           logical                      :: l1
           Character(len=11)            :: ch1
           integer                      :: i1
@@ -2191,7 +2191,7 @@
 !
 !  executable
 !
-      call pst('Calculating transition moments (all contribs)+')
+      call pst('Calculating transition moments (ADCTRMOM file)+')
       iorder(1)  = '0th        '
       iorder(2)  = '1st        '
       iorder(3)  = '2ndA       '
@@ -2266,15 +2266,13 @@
       READ(io1,iostat=ioresult) ladc
       n2p2h = ladc-nmain
 
-      write(*,*) '       -----------------------------'
-      write(*,*) '       |    TMOUT characteristics  |'
-      write(*,*) '       -----------------------------'
       write(*,*)
       write(*,*) 'Treating symmetry:',desrep
       write(*,*) 'Found',nroots,' states in the eigenvector file.'
       write(*,*) 'Length of ADC matrix (from file):',ladc
       write(*,*) 'Length of main space (from file):',nmain
       write(*,*) 'Length of sat space:',n2p2h
+      write(*,*)
 !
 ! allocate required coefficient arrays (not possible earlier)
 !
@@ -2298,7 +2296,6 @@
       allocate(fabijpx(n2p2h*rcw,FABIJ_CONTRIBS))
       allocate(fabijpy(n2p2h*rcw,FABIJ_CONTRIBS))
       allocate(fabijpz(n2p2h*rcw,FABIJ_CONTRIBS))
-      write(*,*) 'Required arrays allocated.'
 !
 ! pull contribs from stack, use popf so we get a FIFO type
 ! and we can stick to natural ordering.
@@ -2317,6 +2314,8 @@
         if(qstack_popf(qst_prpline,fabijpz(:,k)).ne.n2p2h*rcw)
      &        stop 'QE'
       EndDo
+
+! ****************** start writing to ADCTRMOM *******************
 
       write(io2,'(A)') ' '
       write(io2,'(A)') '*********************************************'
@@ -2387,7 +2386,7 @@
          tmy = tmy + ay
          tmz = tmz + az
 
-         Call WrtTMLine(.false.,iorder(k),io2,tmx,tmy,tmz)
+         Call writetmln(.false.,iorder(k),io2,tmx,tmy,tmz)
 
         Enddo   !k for P/H contribs
 
@@ -2421,12 +2420,12 @@
          tmy = tmy + ay
          tmz = tmz + az
 
-         Call WrtTMLine(.false.,iorder(k+FAI_CONTRIBS),
+         Call writetmln(.false.,iorder(k+FAI_CONTRIBS),
      &                  io2,tmx,tmy,tmz)
 
         Enddo   !k for 2P2H contribs
 
-        Call WrtTMLine(.true.,iorder(18),io2,tmx,tmy,tmz)
+        Call writetmln(.true.,iorder(18),io2,tmx,tmy,tmz)
         fosc = tmx*dconjg(tmx) + tmy*dconjg(tmy) + tmz*dconjg(tmz)
         if(dabs(dimag(fosc)).gt.1.0E-14)
      %   write(io2,'(A)') '*** Oscill. strength acquires imag contribs!'
@@ -2462,7 +2461,7 @@
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE WRTTMLINE(last,iorder,io,tx,ty,tz)
+      SUBROUTINE writetmln(last,iorder,io,tx,ty,tz)
 !
 ! this routine writes out a contribution line to the transition moments
 ! If last line then it sums up and also calculates the oscillator strength
