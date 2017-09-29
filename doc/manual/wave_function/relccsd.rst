@@ -228,8 +228,14 @@ density matrix. This is computationally less expensive, but also less accurate.
 
 star(CCFSPC)
 
-Perform a Fock space MRCC calculation in which a model space is
-correlated and then diagonalized to give CC energies for a set of
+Perform a Fock space MRCC calculation. Fock space allows variable
+particle number. Sectors :math:`(m,n)` in Fock space corresponds to
+:math:`N+n-m` - electron states obtained by the generation of
+:math:`m` holes (electron removal) and :math:`n` particles
+(electron attachment)  with respect to
+a closed-shell reference determinant, the :math:`(0,0)` sector. 
+Within each specified sector (and the lower ones), an effective Hamiltonian
+is built and diagonalized to give CC energies for a set of
 states.
 
 keyword(DOIH)
@@ -241,27 +247,31 @@ not used.
 keyword(DOEA)
 
 Calculate electron affinities (add one electron to the reference state,
-allowing occupation of the active virtual orbitals)
+allowing occupation of the active virtual orbitals, corresponding to the
+:math:`(0,1)` sector).
 
 keyword(DOIE)
 
 Calculate ionization energies (remove one electron from the reference
-state, allowing depletion of the active occupied orbitals)
+state, allowing depletion of the active occupied orbitals, corresponding to the
+:math:`(1,0)` sector).
 
 keyword(DOEA2)
 
 Calculate second electron affinities (add two electrons to the reference
-state, allowing occupation of the active virtual orbitals)
+state, allowing occupation of the active virtual orbitals, corresponding to the
+:math:`(0,2)` sector).
 
 keyword(DOIE2)
 
 Calculate second ionization energies (remove two electrons from the
-reference state, allowing depletion of the active occupied orbitals)
+reference state, allowing depletion of the active occupied orbitals, corresponding to the :math:`(2,0)` sector).
 
 keyword(DOEXC)
 
 Calculate excitation energies (allow excitation from the set of active
-occupied orbitals to the set of active virtual orbitals)
+occupied orbitals to the set of active virtual orbitals, corresponding to the
+:math:`(1,1)` sector).
 
 keyword(NACTH)
 
