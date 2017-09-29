@@ -19,13 +19,13 @@ def check(filter_list, out_name, ref_name, log_dir, verbose=False):
         - out_name.diff      -- difference between the two above
 
     Raises:
-        - TestFailedError
+        - FailedTestError
     """
     import os
     from .tuple_comparison import tuple_matches
     from .extract import extract_numbers
     from .scissors import cut_sections
-    from .exceptions import FilterKeywordError, TestFailedError, BadFilterError
+    from .exceptions import FilterKeywordError, FailedTestError, BadFilterError
 
     def _tuple_matches(t):
         if f.tolerance_is_relative:
@@ -87,6 +87,10 @@ def check(filter_list, out_name, ref_name, log_dir, verbose=False):
                     if f.mask is not None and ref_numbers == []:
                         raise FilterKeywordError('ERROR: mask %s did not extract any numbers\n' % f.mask)
 
+                    if f.ignore_order:
+                        out_numbers = sorted(out_numbers)
+                        ref_numbers = sorted(ref_numbers)
+
                     if out_numbers == [] and ref_numbers == []:
                         # no numbers are extracted
                         if out_filtered != ref_filtered:
@@ -130,21 +134,21 @@ def check(filter_list, out_name, ref_name, log_dir, verbose=False):
         message = "ERROR: test %s failed\n" % out_name
         if verbose:
             message += diff
-        raise TestFailedError(message)
+        raise FailedTestError(message)
 
 
 def test_check():
     import os
     import pytest
-    from .exceptions import FilterKeywordError, TestFailedError
+    from .exceptions import FilterKeywordError, FailedTestError
     from .check import check
     from .filter_constructor import get_filter
 
-    HERE = os.path.abspath(os.path.dirname(__file__))
-
-    out_name = os.path.join(HERE, 'test', 'out.txt')
-    ref_name = os.path.join(HERE, 'test', 'ref.txt')
-    log_dir = os.path.join(HERE, 'test')
+    _here = os.path.abspath(os.path.dirname(__file__))
+    test_dir = os.path.join(_here, 'test', 'generic')
+    out_name = os.path.join(test_dir, 'out.txt')
+    ref_name = os.path.join(test_dir, 'ref.txt')
+    log_dir = test_dir
 
     filters = [get_filter(abs_tolerance=0.1)]
     check(filter_list=filters,
@@ -163,40 +167,40 @@ def test_check():
     assert 'ERROR: for floats you have to specify either rel_tolerance or abs_tolerance\n' in str(e.value)
 
     filters = [get_filter(rel_tolerance=0.01)]
-    with pytest.raises(TestFailedError) as e:
+    with pytest.raises(FailedTestError) as e:
         check(filter_list=filters,
               out_name=out_name,
               ref_name=ref_name,
               log_dir=log_dir,
               verbose=False)
     assert 'ERROR: test %s failed\n' % out_name in str(e.value)
-    with open(os.path.join(HERE, 'test', 'out.txt.diff'), 'r') as f:
+    with open(os.path.join(test_dir, 'out.txt.diff'), 'r') as f:
         assert f.read() == '''
 .       1.0 2.0 3.0
 ERROR           ### expected: 3.05 (rel diff: 1.64e-02)\n'''
 
     filters = [get_filter(abs_tolerance=0.01)]
-    with pytest.raises(TestFailedError) as e:
+    with pytest.raises(FailedTestError) as e:
         check(filter_list=filters,
               out_name=out_name,
               ref_name=ref_name,
               log_dir=log_dir,
               verbose=False)
     assert 'ERROR: test %s failed\n' % out_name in str(e.value)
-    with open(os.path.join(HERE, 'test', 'out.txt.diff'), 'r') as f:
+    with open(os.path.join(test_dir, 'out.txt.diff'), 'r') as f:
         assert f.read() == '''
 .       1.0 2.0 3.0
 ERROR           ### expected: 3.05 (abs diff: 5.00e-02)\n'''
 
     filters = [get_filter(abs_tolerance=0.01, ignore_sign=True)]
-    with pytest.raises(TestFailedError) as e:
+    with pytest.raises(FailedTestError) as e:
         check(filter_list=filters,
               out_name=out_name,
               ref_name=ref_name,
               log_dir=log_dir,
               verbose=False)
     assert 'ERROR: test %s failed\n' % out_name in str(e.value)
-    with open(os.path.join(HERE, 'test', 'out.txt.diff'), 'r') as f:
+    with open(os.path.join(test_dir, 'out.txt.diff'), 'r') as f:
         assert f.read() == '''
 .       1.0 2.0 3.0
 ERROR           ### expected: 3.05 (abs diff: 5.00e-02 ignoring signs)\n'''
@@ -209,11 +213,11 @@ def test_check_bad_filter():
     from .check import check
     from .filter_constructor import get_filter
 
-    HERE = os.path.abspath(os.path.dirname(__file__))
-
-    out_name = os.path.join(HERE, 'test', 'out.txt')
-    ref_name = os.path.join(HERE, 'test', 'ref.txt')
-    log_dir = os.path.join(HERE, 'test')
+    _here = os.path.abspath(os.path.dirname(__file__))
+    test_dir = os.path.join(_here, 'test', 'generic')
+    out_name = os.path.join(test_dir, 'out.txt')
+    ref_name = os.path.join(test_dir, 'ref.txt')
+    log_dir = test_dir
 
     filters = [get_filter(from_string='does not exist', num_lines=4)]
     with pytest.raises(BadFilterError) as e:
@@ -237,25 +241,25 @@ def test_check_bad_filter():
 def test_check_different_length():
     import os
     import pytest
-    from .exceptions import TestFailedError
+    from .exceptions import FailedTestError
     from .check import check
     from .filter_constructor import get_filter
 
-    HERE = os.path.abspath(os.path.dirname(__file__))
-
-    out_name = os.path.join(HERE, 'test', 'out2.txt')
-    ref_name = os.path.join(HERE, 'test', 'ref.txt')
-    log_dir = os.path.join(HERE, 'test')
+    _here = os.path.abspath(os.path.dirname(__file__))
+    test_dir = os.path.join(_here, 'test', 'different_length')
+    out_name = os.path.join(test_dir, 'out.txt')
+    ref_name = os.path.join(test_dir, 'ref.txt')
+    log_dir = test_dir
 
     filters = [get_filter(abs_tolerance=0.1)]
-    with pytest.raises(TestFailedError) as e:
+    with pytest.raises(FailedTestError) as e:
         check(filter_list=filters,
               out_name=out_name,
               ref_name=ref_name,
               log_dir=log_dir,
               verbose=False)
     assert 'ERROR: test %s failed\n' % out_name in str(e.value)
-    with open(os.path.join(HERE, 'test', 'out2.txt.diff'), 'r') as f:
+    with open(os.path.join(test_dir, 'out.txt.diff'), 'r') as f:
         assert f.read() == '''ERROR: extracted sizes do not match
 own gave 4 numbers:
 1.0 2.0 3.0 4.0
@@ -263,6 +267,36 @@ own gave 4 numbers:
 reference gave 3 numbers:
 1.0 2.0 3.05
 \n'''
+
+
+def test_check_ignore_order():
+    import os
+    import pytest
+    from .exceptions import FailedTestError
+    from .check import check
+    from .filter_constructor import get_filter
+
+    _here = os.path.abspath(os.path.dirname(__file__))
+    test_dir = os.path.join(_here, 'test', 'ignore_order')
+    out_name = os.path.join(test_dir, 'out.txt')
+    ref_name = os.path.join(test_dir, 'ref.txt')
+    log_dir = test_dir
+
+    filters = [get_filter(abs_tolerance=0.1)]
+    with pytest.raises(FailedTestError) as e:
+        check(filter_list=filters,
+              out_name=out_name,
+              ref_name=ref_name,
+              log_dir=log_dir,
+              verbose=False)
+    assert 'ERROR: test %s failed\n' % out_name in str(e.value)
+
+    filters = [get_filter(abs_tolerance=0.1, ignore_order=True)]
+    check(filter_list=filters,
+          out_name=out_name,
+          ref_name=ref_name,
+          log_dir=log_dir,
+          verbose=False)
 
 
 def test_bad_keywords():
@@ -290,11 +324,11 @@ def test_only_string():
     from .check import check
     from .filter_constructor import get_filter
 
-    HERE = os.path.abspath(os.path.dirname(__file__))
-
-    out_name = os.path.join(HERE, 'test', 'only_string_out.txt')
-    ref_name = os.path.join(HERE, 'test', 'only_string_ref.txt')
-    log_dir = os.path.join(HERE, 'test')
+    _here = os.path.abspath(os.path.dirname(__file__))
+    test_dir = os.path.join(_here, 'test', 'only_string')
+    out_name = os.path.join(test_dir, 'out.txt')
+    ref_name = os.path.join(test_dir, 'ref.txt')
+    log_dir = test_dir
 
     filters = [get_filter(string='raboof')]
     check(filter_list=filters,
