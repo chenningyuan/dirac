@@ -2431,39 +2431,41 @@ C         for debug
          end if
 C
          IF ( USE_CIPROGRAM .EQ. 'GASCIP' ) THEN
-C
+
 C           Generate determinants
-C
+
             KFRSAV = KFREE
+
 C           HJAaJ : re size of MAXSTR ....
 C               .... size KISTR ca. sqrt size KIDET ??? No, not when GAS
             MAXSTR = 10 000 000
             MAXDET = MIN(500 000 000, (LFREE-MAXSTR-20 000)/2 )
-                         !max 500,000,000 determinants in this version
-            CALL MEMGET2('INT8','IDET',KIDET ,2*MAXDET,WORK,KFREE,LFREE)
-            CALL MEMGET2('INT8','ISTR',KISTR,   MAXSTR,WORK,KFREE,LFREE)
+                    !max 500,000,000 determinants in this version
+            CALL MEMGET2('INT8','IDETx',KIDET,2*MAXDET,WORK,KFREE,LFREE)
+            CALL MEMGET2('INT8','ISTRx',KISTR,  MAXSTR,WORK,KFREE,LFREE)
 
             CALL GASCIP_GENDET(NZCONF,WORK(KIDET),WORK(KISTR),
-     &                        MAXDET,MAXSTR,OPT_UCIBOS,
-     &                        IOPT_SYMMETRY,IPROPT)
+     &                         MAXDET,MAXSTR,OPT_UCIBOS,
+     &                         IOPT_SYMMETRY,IPROPT)
             IF (NZCONF .GT. MAXDET) THEN
                WRITE(LUPRI,'(/A,I15,A,I15/A)')
      &   'FATAL ERROR, more determinants than predifined maximum:',
-     &   NZCONF,' > ',MAXDET,
+     &      NZCONF,' > ',MAXDET,
      &   'Increase MAXDET in krmcopt.F or reduce GAS specifications.'
                CALL QUIT('Too many determinants; '//
      &         ' increase MAXDET or reduce GAS specifications.')
             END IF
+C
+C           Note: Determinant information will be saved by GASCIP_GENDET in WORK(KFRSAV:).
+C                 We release work memeory and reallocate with MEMGET2 because
+C                 after GASCIP_GENDET normally NZCONF < MAXDET.
+C                 KZCONF is saved in dcbopt.h and is used in other GASCIP routines
+C                 to retrieve determinant information.
+C                 (LZCONF = 2 * NZCONF because "INTEGER*8 IDET(2,NZCONF)")
+C
             CALL MEMREL('RSETCI.GASCIP',WORK,1,KFRSAV,KFREE,LFREE)
-C
-C           Note: the above memory release should make sure that KZCONF .eq. KIDET,
-C           where determinant information is already saved inside GASCIP_GENDET,
-C           KZCONF is saved in dcbopt.h and is used in other GASCIP routines
-C           to obtain determinant information.
-C           (LZCONF = 2 * NCONF because "INTEGER*8 IDET(NZCONF,2)")
-C
             LZCONF = 2 * NZCONF
-            CALL MEMGET('INT8',KZCONF,LZCONF,WORK,KFREE,LFREE)
+            CALL MEMGET2('INT8','IDET',KZCONF,LZCONF,WORK,KFREE,LFREE)
             IF (KZCONF .NE. KIDET) CALL QUIT(
      &         'KZCONF .ne. KIDET -- indicates programming error!')
 C
