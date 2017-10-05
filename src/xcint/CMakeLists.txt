@@ -55,4 +55,5 @@ add_library(
 # add dependencies 
 if(ENABLE_XCFUN)
     add_dependencies(xcint xcfun_fortran_bindings)
+    add_dependencies(xcint interface_mpi)
 endif()
