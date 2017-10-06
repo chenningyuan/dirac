@@ -675,7 +675,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GASCIP_GENDET_RESTORE( RESTART_OK,
      &   NDET,IDET,JSTR,MAXDET,MAXSTR, IPRINT)
-!
+
 ! 6. Oct. 2017 Hans Joergen Aagaard Jensen
 !
 ! Is determinant information available for restart on GASCIP.RST ?
@@ -684,7 +684,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 ! If RESTART_OK is true, then
 !    relevant info in dcbgascip.h is restored from GASCIP.RST
 !    NDET, IDET(2,1:NDET), JSTR(1:NEL_STR_T) is restored from GASCIP.RST
-!
+
 
       implicit none
       LOGICAL RESTART_OK
@@ -794,14 +794,21 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  7300 continue
       write(lupri,'(/A)') 'INFO: old GASCIP.RST file deleted because '//
      &    'GAS specifications are not compatible with this calculation.'
+
  8000 continue
       close(LUGASCIP, status='DELETE')
+      LUGASCIP = -1
+
  9000 continue
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE GASCIP_GENDET_SAVE(
-     &   IDET, NDET, JSTR, IPRINT)
+      SUBROUTINE GASCIP_GENDET_SAVE( IDET, NDET, JSTR, IPRINT )
+
+! 6. Oct. 2017 Hans Joergen Aagaard Jensen
+!
+! Save GASCIP determinant information on GASCIP.RST for restart.
+! The saved information is restored, when compatible, in GASCIP_GENDET_RESTORE.
 
       implicit none
       INTEGER   NDET, IPRINT
@@ -812,14 +819,16 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !               NEL_STR_T, IEL_STR(), NEL_STR(),
 !               MINMK2, MAXMK2, IMK2(), NMK2(),
 !               IPTA2O(), IPTB2O(), IPTO2A(), IPTO2B()
-! dcborb.h :    NASHT, NASH(2)
+! dcborb.h :    NASHT, NASH(2), NCMOTQ
+! dgroup.h :    NZ_in_CI
 #include "priunit.h"
 #include "dcbgascip.h"
 #include "dcborb.h"
+#include "dgroup.h"
 
       LOGICAL is_open, file_exists
       LOGICAL LU_NOT_USED ! logical function
-      INTEGER LUGASCIP
+      INTEGER LUGASCIP, NDETQ
 
       inquire(file='GASCIP.RST',opened=is_open,exist=file_exists,
      &              number=LUGASCIP)
@@ -837,6 +846,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &      status='OLD',form='UNFORMATTED')
       end if
 
+      ! save info
+
       rewind (LUGASCIP)
       call NEWLAB('GASCIP a',LUGASCIP,LUPRI) ! GASCIP version identifier
       call NEWLAB('DETINFO ',LUGASCIP,LUPRI)
@@ -852,11 +863,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       write (LUGASCIP) IEL_STR(0:NASHT), NEL_STR(0:NASHT),
      &   IMK2(-NASHT:NASHT,3), NMK2(-NASHT:NASHT,3)
 
+      call NEWLAB('SODLABEL',LUGASCIP,LUPRI)
+      NDETQ = NZ_in_CI * NDET
+      write (LUGASCIP) NCMOTQ, NDET, NDETQ, 0,0,0,0,0
+      call NEWLAB('EODLABEL',LUGASCIP,LUPRI)
       rewind (LUGASCIP)
 
-      ! save info
-
- 8000 CONTINUE
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2577,7 +2589,7 @@ C     for QGEMM etc with complex matrices:
       DIMENSION IQINDX(NZCMPLX)
       SAVE IQINDX
       DATA IQINDX /1,2/
-      LOGICAL   is_open,file_exists
+      LOGICAL   is_open,file_exists, FNDLAB
 C
 #include "memint.h"
 C
@@ -2744,6 +2756,15 @@ C
      &         status='OLD',form='UNFORMATTED')
          END IF
          REWIND (LUGASCIP)
+         IF (.NOT.FNDLAB('SODLABEL',LUGASCIP)) THEN
+            write (LUPRI,'(/A)')
+     &      'INFO: old GASCIP.RST file without SODLABEL label deleted.'
+            file_exists = .false.
+            close(LUGASCIP,status='DELETE')
+         END IF
+      END IF
+
+      IF (file_exists) THEN
          READ (LUGASCIP) NCMOTQ_r, NDET_r, NDETQ_r, N_CVEC
          IF (N_CVEC .GT. 0 .AND. NCMOTQ .EQ. NCMOTQ_r .AND.
      &      NDET .EQ. NDET_r .AND. NDETQ_r .EQ. NDETQ) THEN
@@ -2779,8 +2800,13 @@ C
          LUGASCIP = LU_NOT_USED(51)
          open(LUGASCIP,file='GASCIP.RST',
      &      status='NEW',form='UNFORMATTED')
+         REWIND(LUGASCIP)
+         CALL NEWLAB('SODLABEL',LUGASCIP,LUPRI)
          N_CVEC = 0
+         write (LUGASCIP) NCMOTQ, NDET, NDETQ, N_CVEC, 0,0,0,0
+         CALL NEWLAB('EODLABEL',LUGASCIP,LUPRI)
       END IF
+      REWIND (LUGASCIP)
 
       ! if here: no or not enough restart CI vectors
 C
@@ -3326,7 +3352,13 @@ C
            ! will save one CI iteration at restart ..
 
          REWIND (LUGASCIP)
-         WRITE (LUGASCIP) NCMOTQ, NDET, NDETQ, N_ROOTS
+         IF (.not. FNDLAB('SODLABEL',LUGASCIP)) THEN
+            write(LUPRI,'(/A)')
+     &         ' INFO, GASCIP.RST corrupted, recreating file.'
+            REWIND (LUGASCIP)
+            CALL NEWLAB('SODLABEL',LUGASCIP,LUPRI)
+         END IF
+         WRITE (LUGASCIP) NCMOTQ, NDET, NDETQ, N_ROOTS, 0,0,0,0
          CALL WRITT(LUGASCIP,N_ROOTS*NDETQ,CVECS)
 
          ! 3) multipy with -ECIA(i_root) (note: real eigenvalues) and save in BCVECS
@@ -3370,6 +3402,7 @@ C
 
          WRITE (LUGASCIP) DNRES(1:N_ROOTS)
          WRITE (LUGASCIP) ECIA(1:N_ROOTS)
+         CALL NEWLAB('EODLABEL',LUGASCIP,LUPRI)
          REWIND (LUGASCIP)
 
          ! 6) print
