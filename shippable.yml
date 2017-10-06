@@ -14,7 +14,7 @@ branches:
 # environment variable for Dirac MPI command
 env:
     - DIRAC_MPI_COMMAND="mpirun -np 2"
-    - CTEST_PROJECT_NAME="DIRACext"
+    - CTEST_PROJECT_NAME="DIRAC"
     
 # language settings - prepare Python environment
 language: python
@@ -26,7 +26,7 @@ install:
 # remove Open MPI installation if any
     - sudo apt-get remove openmpi-bin libopenmpi-dev
 # install MPICH2
-    - sudo apt-get install mpich2
+    - sudo apt-get install mpich
 # get newest cmake
     - wget --no-check-certificate https://cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.tar.gz
     - tar xzf cmake-3.5.2-Linux-x86_64.tar.gz
@@ -71,14 +71,15 @@ script:
     - ctest -j $TEST_N_PROC  -D ExperimentalTest -L short || true
     - ctest -D ExperimentalSubmit
 # now check the release subset
-    - make -j $(nproc) release
-    - tar xzf DIRAC-16.0-Source.tar.gz
-    - cd DIRAC-16.0-Source
-    - python ./setup --type=debug build_release
-    - cd build_release
-    - ctest -D ExperimentalConfigure
-    - ctest -j $(nproc) -D ExperimentalBuild
-    - ctest -D ExperimentalSubmit
+
+#    - make -j $(nproc) release
+#    - tar xzf DIRAC-16.0-Source.tar.gz
+#    - cd DIRAC-16.0-Source
+#    - python ./setup --type=debug build_release
+#    - cd build_release
+#    - ctest -D ExperimentalConfigure
+#    - ctest -j $(nproc) -D ExperimentalBuild
+#    - ctest -D ExperimentalSubmit
 
 # turn off email notifications
 notifications:

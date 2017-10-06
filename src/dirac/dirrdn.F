@@ -6566,7 +6566,7 @@ C       if *CAP in input but MOD_CAP is not defined !!!
       GO TO 200
     6 CONTINUE
 CMI  ... reading input routine for AMFI+RELSCF
-        IF((IBSS.GT.999.or.x2c).AND..NOT.NOAMFI) THEN
+        IF((IBSS.GT.999.or.x2c).AND..NOT.NOAMFI.AND..NOT.SPINFR) THEN
           CALL AMFI_RELSCF_INP(WORD,.FALSE.)
         ELSE
           GO TO 1
