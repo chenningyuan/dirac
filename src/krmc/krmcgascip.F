@@ -78,6 +78,7 @@ C
 
       IF (NASHT .LE. 0)
      &   CALL QUIT('GASCIP_SETUP error: no active orbitals.')
+
 C
 C     Setup symmetry mult. table
 C     --------------------------
@@ -275,7 +276,7 @@ C***********************************************************************
 #include "priunit.h"
 C
 C Used from include files:
-C  dcbgascipo.h : NGAS_DC
+C  dcbgascip.h : NGAS_DC
 C  dcborb.h : NAELEC,NASHT, NGSH(), ?
 C
 #include "dcbgascip.h"
@@ -287,6 +288,7 @@ C
       INTEGER*8 IDET(2,*), IASTR, IBSTR
       INTEGER*8 JSTR(*)
       LOGICAL   GASCIP_GASOK, GASCIP_SYMOK, UCIBOS, MK_symmetric
+      LOGICAL   RESTART_OK
 C
       INTEGER*8 MSKGAS(MXGAS), L
       INTEGER   IBTAB(0:255)
@@ -295,9 +297,9 @@ C
       INTEGER, allocatable :: NG_STR(:,:), SYM_STR(:,:)
 
       iprint = max(GASCIP_DEBUG,iprint_in)
-C
+
 C     Setup necessary information for GASCIP in dcbgascip.h:
-C
+
       CALL GASCIP_SETUP(UCIBOS,ICIREP,IPRINT)
 C
       IF ( IPRINT .GE. 1 ) THEN
@@ -429,6 +431,22 @@ C
          MK_symmetric = .false.
       ELSE
          MK_symmetric = (MAXMK2 + MINMK2 .EQ. 0)
+      END IF
+
+C     Restart ?
+C     Check if determinant info already avaliable on GASCIP.RST
+C     ---------------------------------------------------------
+
+      CALL GASCIP_GENDET_RESTORE( RESTART_OK,
+     &   NDET,IDET,JSTR,MAXDET,MAXSTR, IPRINT )
+
+      IF ( RESTART_OK ) THEN
+
+         WRITE(LUPRI,'(/A)')
+     &   ' INFO: restarting from determinant information on GASCIP.RST'
+
+         GO TO 200 ! skip generate string info and generate determinants
+
       END IF
 
 C     Generate strings and string information:
@@ -567,10 +585,22 @@ C
 
          END DO
       END IF
-C
-C
+
+C     Save information for restart
+
+      CALL GASCIP_GENDET_SAVE(
+     &   IDET, NDET, JSTR, IPRINT)
+
+      deallocate(NG_STR, SYM_STR)
+
+!     ==========================
+!     if ( RESTART_OK) GO TO 200 from above
+!     ==========================
+
+  200 CONTINUE
+
 C     Write statistics about determinants
-C
+
       IF (IPRINT .GE. 0) THEN
          WRITE(LUPRI,9100)
          DO MK2 = MINMK2, MAXMK2
@@ -639,9 +669,195 @@ C
  9006 FORMAT(1X,79('='))
 C
 C
-      deallocate(NG_STR, SYM_STR)
       RETURN
  1010 FORMAT(I6,I10,32I2)
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GASCIP_GENDET_RESTORE( RESTART_OK,
+     &   NDET,IDET,JSTR,MAXDET,MAXSTR, IPRINT)
+!
+! 6. Oct. 2017 Hans Joergen Aagaard Jensen
+!
+! Is determinant information available for restart on GASCIP.RST ?
+! If yes, then RESTART_OK is true on return; if no, then it is false.
+!
+! If RESTART_OK is true, then
+!    relevant info in dcbgascip.h is restored from GASCIP.RST
+!    NDET, IDET(2,1:NDET), JSTR(1:NEL_STR_T) is restored from GASCIP.RST
+!
+
+      implicit none
+      LOGICAL RESTART_OK
+      INTEGER NDET, MAXDET, MAXSTR, IPRINT
+      INTEGER*8 IDET(2, MAXDET), JSTR(1:MAXSTR)
+
+! priunit.h :   LUPRI
+! dcbgascip.h : IRRP, IRP, NREP, N5, MULTB,
+!               NEL_STR_T, IEL_STR(), NEL_STR(),
+!               MINMK2, MAXMK2, IMK2(), NMK2(),
+!               IPTA2O(), IPTB2O(), IPTO2A(), IPTO2B()
+! dcborb.h :    NASHT, NASH(2), NGAS_DC
+#include "priunit.h"
+#include "dcbgascip.h"
+#include "dcborb.h"
+
+      LOGICAL LU_NOT_USED ! logical function
+      LOGICAL is_open, file_exists, FNDLAB
+      INTEGER LUGASCIP
+
+! dcbgascip. variables + "_S" for comparisons
+      INTEGER N5_S,
+     &     IRRP_S, IRP_S, NREP_S, MULTB_S(N5,0:N5),
+     &     MINMK2_S, MAXMK2_S
+! dcborb.h variables + "_S" for comparisons
+      INTEGER NASH_S(2), NGAS_DC_S, NGSH_S(2,MXGAS), NGASSP_S(2,MXGAS)
+
+      RESTART_OK = .FALSE.
+
+      ! Find out if restart is possible
+      inquire(file='GASCIP.RST',opened=is_open,exist=file_exists,
+     &              number=LUGASCIP)
+      if (.not. file_exists) go to 9000
+
+      if (.not. is_open) then
+         LUGASCIP = LU_NOT_USED(51)
+         open(LUGASCIP,file='GASCIP.RST',
+     &      status='OLD',form='UNFORMATTED')
+      end if
+
+      rewind (LUGASCIP)
+      if ( .not. FNDLAB('GASCIP a',LUGASCIP) ) go to 7000 ! GASCIP version identifier
+      if ( .not. FNDLAB('DETINFO ',LUGASCIP) ) go to 7000 ! file corrupted check, and file pointer positioning
+      read (LUGASCIP) N5_S, NDET, NEL_STR_T,
+     &   IRRP_S, IRP_S, NREP_S, MINMK2_S, MAXMK2_S,          ! dcbgascip.h info check
+     &   NASH_S, NGAS_DC_S                                   ! dcborb.h info check
+      if (N5_S .ne. N5) go to 7100
+      if (IRRP_S .ne. IRRP .or. IRP_S .ne. IRP .or. NREP_S .ne. NREP)
+     &   go to 7100
+      if (MINMK2_S .ne. MINMK2 .or. MAXMK2_S .ne. MAXMK2) go to 7100
+      if (NASH_S(1) .ne. NASH(1) .or. NASH_S(2) .ne. NASH(2)) go to 7100
+      if (NGAS_DC_S .ne. NGAS_DC) go to 7100
+
+      read (LUGASCIP) MULTB_S
+      if ( all(MULTB_S .ne. MULTB) ) go to 7200
+
+      read (LUGASCIP)
+     &   NGSH_S(1:2,1:NGAS_DC), NGASSP_S(1:2,1:NGAS_DC) ! more dcborb.h info check
+      if ( all(NGSH_S(1:2,1:NGAS_DC)   .ne. NGSH(1:2,1:NGAS_DC))   )
+     &   go to 7300
+      if ( all(NGASSP_S(1:2,1:NGAS_DC) .ne. NGASSP(1:2,1:NGAS_DC)) )
+     &   go to 7300
+
+!     All tests passed, determinant info on GASCIP.RST is OK.
+
+!     Enough memory allocated?
+      if (NDET .gt. MAXDET .or. NEL_STR_T .gt. MAXSTR) then
+         write(lupri,'(//A/A,2I20/A,2I10)')
+     &    'FATAL ERROR: old GASCIP.RST file read, '//
+     &    'but number of determinants/strings too big.',
+     &    ' NDET, max(NDET) : ',NDET,MAXDET,
+     &    ' NSTR, max(NSTR) : ',NEL_STR_T,MAXSTR
+         call QUIT('ERROR: '//
+     &      'insufficient memory allocation for determinants/strings')
+      end if
+
+!     RESTART is OK, restore information
+
+      read (LUGASCIP) IDET(1:2,1:NDET)
+      read (LUGASCIP) JSTR(1:NEL_STR_T)
+      read (LUGASCIP) IEL_STR(0:NASHT), NEL_STR(0:NASHT),
+     &   IMK2(-NASHT:NASHT,3), NMK2(-NASHT:NASHT,3)
+      RESTART_OK = .true.
+      go to 9000
+
+
+ 7000 continue
+      write(lupri,'(/A)') 'INFO: old GASCIP.RST file deleted because '//
+     &    'it did not contain restart information.'
+      go to 8000
+ 7100 continue
+      write(lupri,'(/A)') 'INFO: old GASCIP.RST file deleted because '//
+     &    'content is not compatible with this calculation.'
+      if (IPRINT .ge. 5) then
+         write(lupri,'(/A/20I5)')
+     &   ' NASH(1:2), IRRP, IRP, NREP, MINMK2, MAXMK2, NGAS_DC:',
+     &   ' on GASCIP.RST:',
+     &   NASH_S,IRRP_S,IRP_S,NREP_S,MINMK2_S,MAXMK2_S,NGAS_DC_S,
+     &   ' in this job  :',
+     &   NASH  ,IRRP  ,IRP  ,NREP  ,MINMK2  ,MAXMK2  ,NGAS_DC
+      end if
+      go to 8000
+ 7200 continue
+      write(lupri,'(/A)') 'INFO: old GASCIP.RST file deleted because '//
+     &    'symmetry table is not compatible with this calculation.'
+      go to 8000
+ 7300 continue
+      write(lupri,'(/A)') 'INFO: old GASCIP.RST file deleted because '//
+     &    'GAS specifications are not compatible with this calculation.'
+ 8000 continue
+      close(LUGASCIP, status='DELETE')
+ 9000 continue
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GASCIP_GENDET_SAVE(
+     &   IDET, NDET, JSTR, IPRINT)
+
+      implicit none
+      INTEGER   NDET, IPRINT
+      INTEGER*8 IDET(2, NDET), JSTR(*)
+
+! priunit.h :   LUPRI
+! dcbgascip.h : IRRP, IRP, NREP, N5, MULTB,
+!               NEL_STR_T, IEL_STR(), NEL_STR(),
+!               MINMK2, MAXMK2, IMK2(), NMK2(),
+!               IPTA2O(), IPTB2O(), IPTO2A(), IPTO2B()
+! dcborb.h :    NASHT, NASH(2)
+#include "priunit.h"
+#include "dcbgascip.h"
+#include "dcborb.h"
+
+      LOGICAL is_open, file_exists
+      LOGICAL LU_NOT_USED ! logical function
+      INTEGER LUGASCIP
+
+      inquire(file='GASCIP.RST',opened=is_open,exist=file_exists,
+     &              number=LUGASCIP)
+
+      if (.not.file_exists) then
+         LUGASCIP = LU_NOT_USED(51)
+         open(LUGASCIP,file='GASCIP.RST',
+     &      status='NEW',form='UNFORMATTED')
+         is_open = .TRUE.
+      end if
+
+      if (.not.is_open) then
+         LUGASCIP = LU_NOT_USED(51)
+         open(LUGASCIP,file='GASCIP.RST',
+     &      status='OLD',form='UNFORMATTED')
+      end if
+
+      rewind (LUGASCIP)
+      call NEWLAB('GASCIP a',LUGASCIP,LUPRI) ! GASCIP version identifier
+      call NEWLAB('DETINFO ',LUGASCIP,LUPRI)
+
+      write (LUGASCIP) N5, NDET, NEL_STR_T,
+     &   IRRP, IRP, NREP, MINMK2, MAXMK2,    ! dcbgascip.h info check
+     &   NASH, NGAS_DC                       ! dcborb.h info check
+      write (LUGASCIP) MULTB
+      write (LUGASCIP)
+     &   NGSH(1:2,1:NGAS_DC), NGASSP(1:2,1:NGAS_DC) ! more dcborb.h info check
+      write (LUGASCIP) IDET(1:2,1:NDET)
+      write (LUGASCIP) JSTR(1:NEL_STR_T)
+      write (LUGASCIP) IEL_STR(0:NASHT), NEL_STR(0:NASHT),
+     &   IMK2(-NASHT:NASHT,3), NMK2(-NASHT:NASHT,3)
+
+      rewind (LUGASCIP)
+
+      ! save info
+
+ 8000 CONTINUE
+      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GASCIP_STR_GASINFO(NSTR, JSTR, NG_STR,
@@ -1911,8 +2127,6 @@ C
       KFREE = KWORK
       LFREE = LWORK
 C
-
-
        CALL MEMGET2('REAL','SVECPRP',KSVECPRP ,NZ_in_CI*NDET*N_CIVEC,
      &      WORK,KFREE,LFREE)
        CALL MEMGET2('REAL','BVECPRP',KBVECPRP ,NZ_in_CI*NDET,
@@ -2801,7 +3015,7 @@ C        New sigma vectors * Old trial vectors
 C
          DO J = N_CRED_OLD+1, N_CRED  ! New sigma vectors
             DO I = 1, N_CRED_OLD   ! Old trial vectors
-            
+
                WORK(KHRED+(J-1)*MAX_HRED+(I-1)) =
      &              DDOT(NDETQ,WORK(KBCVEC+(I-1)*NDETQ),1,
      &                         WORK(KSCVEC+(J-1)*NDETQ),1)
@@ -3773,7 +3987,7 @@ C
 #include "dgroup.h"
 
 #include "dcborb.h"
-!from dcborb.h NAELEC, NGAS_DC
+!from dcborb.h NAELEC, NGAS_DC, NGSHT(:), NGASSP(2,:)
 
 #include "dcbgascip.h"
 C
