@@ -3848,17 +3848,14 @@ C
             IF (DI .GT. DMN .AND. DI .LE. DMX) THEN
                K = K + 1
                IF (NZ_in_CI .EQ. 1) THEN
-!                 WRITE(LUPRI,'(3X,A,I8,A,1P,D20.10,A,0P,F10.8)')
-                  WRITE(LUPRI,'(3X,A,I8,A,F20.10,A,F10.8)')
-     &                 'Determinant no. ',I,' coeff. ',
-     &                 CREF(I,1),'; weight ',DI
+                  WRITE(LUPRI,'(3X,A,I13,A,F15.10,A,F12.8)')
+     &                 'Determinant no.',I,'; coeff.',
+     &                 CREF(I,1),'; weight',DI
                ELSE
-!                 WRITE(LUPRI,
-!    &                 '(3X,A,I8,A,1P,D20.10,A,D20.10,A,0P,F10.8)')
                   WRITE(LUPRI,
-     &                 '(3X,A,I8,2(A,F20.10),A,F10.8)')
-     &                 'Determinant no. ',I,' coeff. ',
-     &                 CREF(I,1),' + ',CREF(I,2),' i; weight ',DI
+     &                 '(3X,A,I13,2(A,F15.10),A,F12.8)')
+     &                 'Determinant no.',I,'; coeff.',
+     &                 CREF(I,1),' + ',CREF(I,2),' i; weight',DI
                END IF
                CALL IDET2STR(IDET(1,I),IDET(2,I),JASTR,JBSTR,IA,IB)
                WRITE(LUPRI,'(3X,A,(T21,40I4))')
