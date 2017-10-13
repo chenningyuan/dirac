@@ -213,9 +213,10 @@ C       theory, also if the orbitals are generated with a DFT functional.
       HFXMU_save  = HFXMU
       HFXFAC  = 1.0D0
       HFXMU   = 0.0D0
-      IF (MAX_CI_IT .GT. 0) THEN
+      IF (MAX_CI_IT .GE. 0) THEN
 C
 C        MAX_CI_IT Davidson CI iterations.
+C        ( MAX_CI_IT < 0 means do FULL CI )
 C
          L_EIGVAL = N_CIROOTS
          L_EIGVEC = N_CIROOTS*NZCONF*NZ_in_CI ! final CI eigen vectors

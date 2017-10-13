@@ -79,10 +79,10 @@ C
       NESRP     = 0
       MULTIPESR = 0
       N_CIESR   = -1
-      MAX_CIESR_IT = 0
+      MAX_CIESR_IT = 20
       THR_CVEC_ESR = 1.0D-4 ! trial vector threshold
       THRPCI_ESR   = 1.0D-3 ! print of CI vector threshold
-      THR_CIESR    = 1.0D-6 ! based on 1 ppm = 10**(-6)
+      THR_CIESR    = 1.0D-4 ! based on 0.1 ppt = 10**(-4)
 
 C     variables for spin polarization and correlation in CI
       NGAS_CIESR(1)  = 0  ! RAS1_GAS
@@ -175,7 +175,9 @@ C&&&& Singles and doubles CI
                   READ(LUCMD,*) (NGSH_CIESR(I,1,3),I=1,NFSYM) ! electron orbitals
                GO TO 100
 C&&&& MAX CI ITERATIONS
-    7          CONTINUE ! .MAX CI ITERATIONS
+    7          CONTINUE ! .MAX CI ITERATIONS 
+                  ! negative value is code for doing full CI
+                  ! zero value is code for generate list of determinants but no CI
                   READ(LUCMD,*) MAX_CIESR_IT
                GO TO 100
 C&&&& CI ROOTS to calculate
@@ -283,11 +285,23 @@ C
       IF (NGAS_CIESR_T .gt. 0 .OR. MULTIPESR .ne. 2) THEN
       !  NGAS_CIESR_T test because o.k. with no CI if just doublet one open-shell DHF or DFT
          IF (N_CIESR < 0) N_CIESR = MULTIPESR
-         WRITE(LUPRI,'(/A,I5)')
-     &   '* Number of roots to converge in CI:', N_CIESR
+         WRITE(LUPRI,'(/A,I8)')
+     & '* Number of roots to converge in CI:', N_CIESR
          IF (N_CIESR .lt. MULTIPESR) THEN
             WRITE(LUPRI,*) 'INPUT ERROR: .MULTIP > .CI ROOTS'
             INPERR = INPERR + 1
+         END IF
+         IF (MAX_CIESR_IT .gt. 0) THEN
+            WRITE(LUPRI,'(A,I8/A,1P,D8.1)')
+     & '* Max number of CI iterations      :', MAX_CIESR_IT,
+     & '* CI convergence threshold         :', THR_CIESR
+                  READ(LUCMD,*) THR_CIESR
+         ELSE IF (MAX_CIESR_IT .eq. 0) THEN
+            WRITE(LUPRI,'(A)')
+     & '* Generate determinant list but no CI iterations.'
+         ELSE
+            WRITE(LUPRI,'(A)')
+     & '* Diagonalize CI Hamiltonian matrix completely.'
          END IF
       END IF
       IF (NGAS_CIESR_T .GT. 0) THEN
@@ -419,20 +433,22 @@ C
      &   ' WARNING: .ESR request is ignored !'
          GO TO 9999
       END IF
-C
-C **  Retrieve molecular orbitals
-C
-      CALL MEMGET2('REAL','CMO',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL ESR_READ_CMO(WORK(KCMO),IPRESR,WORK,KFREE,LFREE)
 
 !     write (lupri,*) 'hj1 N_CIESR MAX_CIESR_IT NZCONF',
 !    &                     N_CIESR,MAX_CIESR_IT,NZCONF
+C
+C ** Some parameter checking
+C
       IF (N_CIESR .GE. 0) THEN
          !
       IF (MULTIPESR .gt. NZCONF) THEN
          CALL QUIT('.MULTIPESR specification > # determinants')
       END IF
-      IF (MAX_CIESR_IT .GT. 0) THEN
+      IF (MAX_CIESR_IT .EQ. 0) THEN
+         CALL HEADER(
+     & 'INFO: Calculation stops now as requested with ".MAX CI" of 0',1)
+         GO TO 9000
+      ELSE IF (MAX_CIESR_IT .GT. 0) THEN
          ! Davidson iterations
 !        N_CIESR = MIN(NZCONF, MULTIPESR + 1)
          N_CIESR = MULTIPESR
@@ -444,6 +460,11 @@ C
       END IF
 !d    write (lupri,*) 'hj2 N_CIESR MAX_CIESR_IT NZCONF',
 !d   &                     N_CIESR,MAX_CIESR_IT,NZCONF
+C
+C **  Retrieve molecular orbitals
+C
+      CALL MEMGET2('REAL','CMO',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL ESR_READ_CMO(WORK(KCMO),IPRESR,WORK,KFREE,LFREE)
 C
 C **  Solve ESR CI problem
 C     on exit: WORK(KEIGVL) - N_CIESR CI eigenvalues
@@ -811,7 +832,7 @@ C
 C
 C     Memory deallocation
 C
-      CALL MEMREL('PRPESR',WORK,1,KFRSAV,KFREE,LFREE)
+ 9000 CALL MEMREL('PRPESR',WORK,1,KFRSAV,KFREE,LFREE)
  9999 CALL QEXIT('PRPESR')
       RETURN
 C
