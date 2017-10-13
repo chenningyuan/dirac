@@ -14,5 +14,7 @@
 #define GASCIP_PAR        11
 #define PELIB_PAR         12
 #define POLPRP_PAR        13
-
-
+#define GEN1INT_INIT      14
+#define GEN1INT_GET_INT   15
+#define GEN1INT_GET_EXPT  16
+#define GEN1INT_GET_CUBE  17
