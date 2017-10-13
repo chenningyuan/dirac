@@ -1426,6 +1426,9 @@ C***********************************************************************
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
+#ifdef HAS_PELIB
+        use pe_variables, only: peqm, pe_gspol, pe_lf
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1549,6 +1552,18 @@ C
       IF (OPTROT) THEN
         CALL PRP_OPTROT(ABLRF,ABCNV,WORK,KFREE,LFREE)
       ENDIF
+#ifdef HAS_PELIB
+      if (peqm) then
+         print*,'INFO: Properties calculated with full inclusion of'
+         print*,'polarizable environment in linear response calculation'
+         print*,'Environment included using PElib'
+         if (pe_gspol) then 
+            print*, 'INFO: Properties calculated with dynamical'
+            print*, 'polarizable embedding disabled (.GSPOL)'
+         endif 
+         if (pe_lf) print*,'INFO: EEF correction applied'
+      endif
+#endif
 C
 C     Memory deallocation
 C     -------------------

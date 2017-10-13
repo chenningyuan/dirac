@@ -399,8 +399,10 @@
           integer :: i
           call qenter('pelib_ifc_localfield')
           if (.not. peqm) call quit('PElib not active')
-          print *, 'Local field corrections to dipole integrals applied'
-          print *, 'TODO: improve output wrt EEF'
+          print *,'                                                    '
+          print *,'INFO: EEF correction is applied to dipole integrals '
+          print *,'Note: This correction alters *all* properties (incl.'
+          print *,'static properties) that depend on dipole integrals  '
           if (noptyp /= 3) then
              call quit('ERROR: inconsistent dimension')
           end if
