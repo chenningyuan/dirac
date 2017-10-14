@@ -71,9 +71,7 @@ C
       write(lupri,'(/a/a)') 'Execution time and host',
      &                       '-----------------------'
       CALL TSTAMP(' ',LUPRI)
-      print*,' +++++ entering dirac/DIRCTL ++++++'
       CALL DIRCTL()
-      print*,' +++++ returning from  dirac/DIRCTL ++++++'
 C
 C     Send finish signal to slaves
 C
