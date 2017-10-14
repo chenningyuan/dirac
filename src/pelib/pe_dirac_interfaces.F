@@ -393,16 +393,18 @@
           use polarizable_embedding, only: pe_master
           use pe_variables, only: peqm
           implicit none
+#include "priunit.h"
           integer :: nbast, nelmnt, noptyp
           real*8, dimension(nelmnt,noptyp), intent(inout) :: soint
           real*8, dimension(:), allocatable :: intmats
           integer :: i
           call qenter('pelib_ifc_localfield')
           if (.not. peqm) call quit('PElib not active')
-          print *,'                                                    '
-          print *,'INFO: EEF correction is applied to dipole integrals '
-          print *,'Note: This correction alters *all* properties (incl.'
-          print *,'static properties) that depend on dipole integrals  '
+          write(lupri,'(/A/A)')
+     &       'Effective external field (EEF) correction'//
+     &       ' is applied to dipole integrals.',
+     &       'Note: This correction alters *all* properties (incl.'//
+     &       'static properties) that depend on dipole integrals.'
           if (noptyp /= 3) then
              call quit('ERROR: inconsistent dimension')
           end if

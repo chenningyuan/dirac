@@ -4178,14 +4178,14 @@ C
 #endif      
 #ifdef HAS_PELIB
         if (peqm .and. .not. pe_gspol) then
+           if (IPRXRS .gt. 3) then
+              write(lupri,'(/A)') ' Polarizable embedding'//
+     &        ' contributions included in linear response.'
+           endif
            call pelib_ifc_response(fao, fmo, ndmat, ihrmop)
-           if (IPRXRS .gt. 3) then 
-              write(lupri,*)'Polarizable embedding '//
-     &        ' contributions included in linear response'
-           endif 
         endif
 #endif
- 
+
 C
 C
 C     *******************************************

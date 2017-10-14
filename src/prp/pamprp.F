@@ -1554,14 +1554,20 @@ C
       ENDIF
 #ifdef HAS_PELIB
       if (peqm) then
-         print*,'INFO: Properties calculated with full inclusion of'
-         print*,'polarizable environment in linear response calculation'
-         print*,'Environment included using PElib'
-         if (pe_gspol) then 
-            print*, 'INFO: Properties calculated with dynamical'
-            print*, 'polarizable embedding disabled (.GSPOL)'
-         endif 
-         if (pe_lf) print*,'INFO: EEF correction applied'
+         write(lupri,'(/A)')
+     &      'Polarizable environment included using PElib'//
+     &      ' (https://gitlab.com/pe-software/pelib-public).'
+         if (pe_gspol) then
+            write(lupri,'(/A)')
+     &      'Response properties calculated with dynamical'//
+     &      ' polarizable embedding disabled (.GSPOL)'
+         else
+            write(lupri,'(/A)')
+     &      'Response properties calculated with full inclusion of'//
+     &      ' polarizable environment.'
+         endif
+         if (pe_lf) write(lupri,'(/A)')
+     &   'Effective external field (EEF) correction applied.'
       endif
 #endif
 C
@@ -1799,7 +1805,7 @@ C
       ENDIF
  100  CONTINUE
       IF(IATOMS.EQ.0) THEN
-        WRITE(6,'(2X,A)') 
+        WRITE(LUPRI,'(2X,A)')
      & 'No active atoms with quadrupole moment.'
       ENDIF
       CALL PRSYMB(LUPRI,'-',72,2)
