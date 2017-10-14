@@ -6,18 +6,21 @@ hjaaj-esr branch:
 New features:
 - .MAXMK2 for \*ESR
 
-17.alpha
---------
+=======
+17.0 (2017-12-12)
+-----------------
 
 New features:
-- New and numerically stable procedure for elimination/freezing of orbitals at SCF level
-- .MVOFAC for \*KRMC
+- Polarizable embedding using pelib (https://gitlab.com/pe-software/pelib-public). Activated with .PEQM, options under \*PEQM.
+ - Reference: E. D. Hedegård, R. Bast, J. Kongsted, J. M. H. Olsen, and H. J. Aa. Jensen.  Relativistic Polarizable Embedding.
+   J. Chem. Theory Comput. 13, 2870–2880 (2017); http://doi.org/10.1021/acs.jctc.7b00162
+- New and numerically stable procedure for elimination/freezing of orbitals at SCF level.
+- New .MVOFAC for \*KRMC.
 - Added the RPF-4Z and aug-RPF-4Z basis sets for f-elements to the already existing files with sets for s, p and d elements. Deleted the aug-RPF-3Z set as that was not an official set.
   
 (Do not change anything below this text on the master branch,
 the lines below should only be changed on the release branch.)
 
------------------------------------------------------------------------------------------------------
 16.1 (???)
 -----------------
 
@@ -35,6 +38,7 @@ New defaults:
 Performance improvements:
 - restored integral screening behavior from DIRAC15
 
+-----------------------------------------------------------------------------------------------------
 
 16.0 (2016-12-12)
 -----------------
@@ -87,7 +91,6 @@ Bug fixes:
 - Bugfix: restored "make install" target.
 - Bugfix: Test reladc_fano does not report failure if Stieltjes is deactivated.
 
--------------------------------------------------------------------------------------------------------
 
 15.0 (2015-12-16)
 -----------------
