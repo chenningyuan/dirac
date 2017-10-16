@@ -85,9 +85,11 @@ C     Initialize the work arrays to zero.
       CALL XCOPY (NBUF2,A0,0,BUF2,1)
       CALL XCOPY (NBUF3,A0,0,BUF3,1)
 
-C     Initialize DIIS.
+C     Initialize DIIS for this sector, first zeroing amplitudes from higher sectors.
 
       IT = -1
+      CALL DELFCK ('VO',DELS1,T1)
+      CALL DELINT ('VVOO',DELS2,T2,0,0,0)
       CALL DIISX(NDIMT1,NDIMT2,T1,T2,
      &           IT,CC1,BB1,ITC,BB2,RMS)
 

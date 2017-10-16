@@ -299,12 +299,13 @@
 ! printStats display different statistic related to the use of memory
 !
             subroutine track_PrintStats(mytid, verbose)
+               implicit None
                integer :: mytid, verbose, i, j, actualTopListSize
                real (kind=kreal) :: totalActive
                real (kind=kreal) :: totalFreed 
                real (kind=kreal) :: totalMemory 
                real (kind=kreal) :: meanMemory 
-               real (kind=kreal) :: Peak, small, large
+               real (kind=kreal) :: PeakMB, PeakGB, small, large
 
                totalActive = nint(memTracking%aL%nbytes/(1024*1024))
                totalFreed  = nint(memTracking%dL%nbytes/(1024*1024))
@@ -312,7 +313,8 @@
 
                meanMemory  = totalMemory/(memTracking%n_created) 
 
-               Peak = nint(memTracking%peakMem%bytes/(1024*1024))
+               PeakMB = memTracking%peakMem%bytes/DFLOAT(1024*1024)
+               PeakGB = memTracking%peakMem%bytes/DFLOAT(1024*1024*1024)
 
                if (verbose.gt.0) then
                   call track_ShowMemoryUsage(memTracking%aL,'alloc') 
@@ -357,7 +359,8 @@
      &          ' for '//memTracking%largeMem(i)%label(1:42) 
                  enddo
                 write (*,*) ' '
-                write (*,'(a,f12.2)') '  Peak memory usage    (Mb) : ',Peak
+                write (*,'(2x,a,f12.2,a)') 'Peak memory usage: ',PeakMB,' MB'
+                write (*,'(2x,a,f12.3,a)') 'Peak memory usage: ',PeakGB,' GB'
                 write (*,*) '      reached at subroutine : '//memTracking%peakMem%at(1:42)
                 write (*,*) '             for variable   : '//memTracking%peakMem%label(1:42)
                 write (*,*) ' '

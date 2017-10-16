@@ -4,7 +4,7 @@
 .. _pe_response:
 
 Properties in solution: TDDFT calculations of excitation energies and solvent shifts
-===================================================================================
+====================================================================================
 
 In this tutorial we investigate property calculations in solution through 
 polarizable embedding (PE). The tutorial builds on the implementation reported 
@@ -15,11 +15,12 @@ polarizabilities. In addition, the linear response module allows calculation of
 excitation energies and transition momements, including the effect of a surrounding 
 environment. Here we focus on TD-DFT includinga solvent. A few comments regarding 
 calculation the solvent effect on dipole moments and polarizabilities are given in 
-the end of this tutorial. ::  
+the end of this tutorial. 
 
 
 TDDFT including an explicit environment with PE
 -----------------------------------------------
+
 The generalized eigenvalue problems that is solved when solving the response equations 
 
 .. math::
@@ -31,6 +32,7 @@ is in the electronic Hessian, :math:`E^{[2]}`, which is modified by the pressenc
 environment (cf. Eqs. 36-38) in :cite:`Hedegaard2017`. The Hessian has the structure
 
 .. math::
+
  E^{[2]} =  \left(\begin{array}{cc}
                                  \mathbf{A} & \mathbf{B} \\
                                  \mathbf{B}^* & \mathbf{A}^{*} 
@@ -59,10 +61,10 @@ A derivation and more thorough explaination of the :math:`E^{[2]}` term can be
 found in :cite:`Hedegaard2017` (cf. Eqs. 36-38). 
 
 To demonstrate how to calculate the effect of the environment with PE, we use the same 
-system as in the :ref:`PE-HF <pe_scf.rst>` tutorial. The employed h2o.mol file and potential 
+system as in the :ref:`pe_scf` tutorial. The employed h2o.mol file and potential 
 3_h2o.pot can be found in this tutorial. The input pe_response.inp is similar to a 
 regular TD-DFT calculation but with `.PEQM` under the `**HAMILTONIAN` flag, just as for 
-:ref:`PE-HF <pe_scf.rst>` ::
+:ref:`pe_scf` ::
 
    **DIRAC
    .TITLE
@@ -139,7 +141,8 @@ We collect results with and without PE (and the obtained solvent shift) in the t
 +----------------------------------------+-------------+-------+-------+-------+
 | Experimental                           |             | 8.2   | 7.4   | 0.8   |
 +----------------------------------------+-------------+-------+-------+-------+
-The experimental value is taken from discussion given in :cite`Christiansen2000`. We note that 
+
+The experimental value is taken from discussion given in :cite:`Christiansen2000`. We note that 
 
 * The shift is a bit below the experimental one 
 * The excitation energies are somewhat understimated (mainly due to the B3LYP functional). 

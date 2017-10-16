@@ -8,20 +8,14 @@ We shall investigate UF6 as the closed-shell (singlet) state
 and in the highest D2h* computational symmetry 
 (:download:`UF6.v2z.D2h.mol <../../../../../test/tutorial_UF6/UF6.v2z.D2h.mol>`).
 
-How do we obtain converged molecular orbitals with the all-electron method ? 
-
-The default SCF automatic occupation scheme does not work.
-SCF iterations are interrupted with message about too many changes in the SCF occupation, meaning
-that no convergence was achieved. Another route has to be taken.
-
-Note that is tutorial shows different way for obtaining convergence than another one for :math:`UF_6^{-}`, :ref:`UF6anion`, 
+Note that is tutorial shows different ways for obtaining convergence than another one for :math:`UF_6^{-}`, :ref:`UF6anion`, 
 which is based upon relativistic effective core potentials.
 
-Atomic start and the autooccupation 
------------------------------------
+Atomic start
+------------
 
 We demostrate the atomic start combined with the automatic occupation scheme,
-which successfully give converged state with the occupation of (E1g,E1u)=(72,74),
+which successfully gives converged state with the occupation of (E1g,E1u)=(72,74),
 see the input file, 
 :download:`x2c_a4p.atstart_scf_autoocc_2fs.inp <../../../../../test/tutorial_UF6/x2c_a4p.atstart_scf_autoocc_2fs.inp>`, and 
 the :download:`output file <../../../../../test/tutorial_UF6/result/x2c_a4p.atstart_scf_autoocc_2fs_UF6.v2z.D2h.out>`.
@@ -37,6 +31,18 @@ Output files from these (F,U) atomic runs are
 
 Note that it is not necessary to specify proper atomic configuration of the U atom as the auto-occupation 
 scheme does the job and produces suitable starting MOs.
+
+Autooccupation
+--------------
+
+It is possible to obtain proper orbital occupation thanks to the implemented atomic potential start and avoid 
+the lenghty atomic start procedure given above.
+
+The autooccupation gives the lowest SCF energy, see the output file
+:download:`x2c_a4p.scf_autoocc_UF6.v2z.D2h.out <../../../../../test/tutorial_UF6/result/x2c_a4p.scf_autoocc_UF6.v2z.D2h.out>`,
+the input file, :download:`x2c_a4p.scf_autoocc.inp <../../../../../test/tutorial_UF6/x2c_a4p.scf_autoocc.inp>`, 
+and resulting MO coefficients, :download:`DFPCMO.UF6.x2c_a4p.scf.v2z <../../../../../test/tutorial_UF6/DFPCMO.UF6.x2c_a4p.scf.v2z>`.
+
 
 Verification of the occupation
 ------------------------------

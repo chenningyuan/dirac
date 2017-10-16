@@ -5,8 +5,8 @@ star(KRCI)
 
 or the (deprecated) \*KRCICALC.
 
-*2- and 4-component relativistic GASCI module*
-==============================================
+**2- and 4-component relativistic GASCI module**
+================================================
 Written by Timo Fleig, 
 based on LUCIA by Jeppe Olsen, parallelization by Stefan Knecht and Hans Joergen Aagaard Jensen.
 
@@ -300,17 +300,11 @@ The KR-CI property module :cite:`Knecht2009` takes
 advantage of the 2- and 4-component KRCI module. It can be used for the
 computation of:
 
-::
+   - permanent dipole moments in ground and excited states,
 
-    - permanent dipole moments in ground and excited states,
+   - transition dipole moments
 
-::
-
-    - transition dipole moments
-
-::
-
-    - computation of :math:`\hat{l}_z`, :math:`\hat{s}_z` and :math:`\hat{j}_z (\Omega)` expectation values (only for linear molecules).
+   - computation of :math:`\hat{l}_z`, :math:`\hat{s}_z` and :math:`\hat{j}_z (\Omega)` expectation values (only for linear molecules).
 
 Upon request the analysis of other one-electron properties may also be
 implemented. The module could in principle be used for each one-electron

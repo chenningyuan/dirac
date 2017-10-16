@@ -55,7 +55,6 @@ module adc_mat
 
   real, public, dimension(32,2)    ::  reladc_md_sip_eeigv= 0.0 !upper bound to eigenvalue for analysis
   real, public, dimension(32,2)    ::  reladc_md_dip_eeigv= 0.0 !upper bound to eigenvalue for analysis
-  real, public, dimension(32,2)    ::  reladc_md_exc_eeigv= 0.0 !upper bound to eigenvalue for analysis
   real, public                     ::  reladc_md_eeigv_lower = 0.0
   real, public                     ::  reladc_md_eeigv_upper = 0.0
 

@@ -40,17 +40,20 @@ is one of the following :math:`4 \times 4` matrices:
 Operator types
 --------------
 
-There are 19 basic operator types used in DIRAC, liste in this Table:
+There are 22 basic operator types used in DIRAC, listed in this Table:
 
 ===========  ============================================================================= ===============
 **Keyword**  **Operator form**                                                             **Nr. factors**
 ===========  ============================================================================= ===============
 DIAGONAL     :math:`f I_{4 \times 4} \Omega`                                               1
-GAMMA5       :math:`f \gamma_5 \Omega`                                                     1
-BETAGAMMA5   :math:`f i \beta \gamma_5 \Omega`                                             1
 XALPHA       :math:`f \alpha_x \Omega`                                                     1
 YALPHA       :math:`f \alpha_y \Omega`                                                     1
 ZALPHA       :math:`f \alpha_z \Omega`                                                     1
+XAVECTOR     :math:`f_1 \alpha_y \Omega_z - f_2 \alpha_z \Omega_y`                         2
+YAVECTOR     :math:`f_1 \alpha_z \Omega_x - f_2 \alpha_x \Omega_z`                         2
+ZAVECTOR     :math:`f_1 \alpha_x \Omega_y - f_2 \alpha_y \Omega_x`                         2
+ALPHADOT     :math:`f_1 \alpha_x \Omega_x + f_2 \alpha_y \Omega_y + f_3 \alpha_z \Omega_z` 3
+GAMMA5       :math:`f \gamma_5 \Omega`                                                     1
 XSIGMA       :math:`f \Sigma_x \Omega`                                                     1
 YSIGMA       :math:`f \Sigma_y \Omega`                                                     1
 ZSIGMA       :math:`f \Sigma_z \Omega`                                                     1
@@ -60,10 +63,10 @@ ZBETASIG     :math:`f \beta \Sigma_z \Omega`                                    
 XiBETAAL     :math:`f i \beta \alpha_x \Omega`                                             1
 YiBETAAL     :math:`f i \beta \alpha_y \Omega`                                             1
 ZiBETAAL     :math:`f i \beta \alpha_z \Omega`                                             1
-XAVECTOR     :math:`f_1 \alpha_y \Omega_z - f_2 \alpha_z \Omega_y`                         2
-YAVECTOR     :math:`f_1 \alpha_z \Omega_x - f_2 \alpha_x \Omega_z`                         2
-ZAVECTOR     :math:`f_1 \alpha_x \Omega_y - f_2 \alpha_y \Omega_x`                         2
-ALPHADOT     :math:`f_1 \alpha_x \Omega_x + f_2 \alpha_y \Omega_y + f_3 \alpha_z \Omega_z` 3
+BETA         :math:`f \beta \Omega`                                                        1
+SIGMADOT     :math:` add me       `                                                        x
+BETAGAMMA5   :math:`f i \beta \gamma_5 \Omega`                                             1
+DSIGMADOT    :math:`f_1 \sigma_x \Omega_x + f_2 \sigma_y \Omega_y + f_3 \sigma_z \Omega_z` 1
 ===========  ============================================================================= ===============
 
 

@@ -69,9 +69,9 @@
     real(REALK), intent(in) :: ucontr_coefs(KPRIM,KPRIM,KBLOCK,num_comp)
     integer :: ierr  !error information
     logical :: mpi_sync = .true.
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
 #include "mpif.h"
-#include "iprtyp.h"
+#include "dirac_partask.h"
 #endif
     ! in case of initializing the interface multiple times
     if (Gen1IntAPIInited()) mpi_sync = .false.
@@ -79,20 +79,20 @@
     call Gen1IntAPICreate(num_comp, num_atom_type, KATOM, num_sym_atom, &
                           ang_numbers, NBLCK, KANG, num_cgto, KBLOCK,   &
                           num_prim, num_contr, KPRIM, exponents, ucontr_coefs)
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
     if (mpi_sync) then
       ! wakes up workers
-      call MPI_Bcast(GEN1INT_INIT, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-      ! broadcasts level of print
-      call MPI_Bcast(0, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+      call dirac_parctl(GEN1INT_INIT)
       ! broadcasts information of API of Gen1Int
       call Gen1IntAPIBcast(MANAGER, MPI_COMM_WORLD)
+      ! release workers
+      call dirac_parctl(RELEASE_NODES)
     end if
 #endif
     return
   end subroutine gen1int_host_init
 
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
   !> \brief initializes Gen1Int interface, for instance, creates the AO sub-shells
   !>        of host program (based on \fn(ORBPRO) subroutine by getting the unnormalized
   !>        contraction coefficients); should be called before any calculation
@@ -216,16 +216,18 @@
     type(nary_tree_t) nary_tree_ket    !N-ary tree for partial geometric derivatives on ket center
     type(nary_tree_t) nary_tree_total  !N-ary tree for total geometric derivatives
     integer ierr                       !error information
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
 #include "mpif.h"
-#include "iprtyp.h"
+#include "dirac_partask.h"
 #endif
     ! gets the start time
     call xtimer_set(start_time)
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
     ! wakes up workers
-    call MPI_Bcast(GEN1INT_GET_INT, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    ! broadcasts level of print
+    call dirac_parctl(GEN1INT_GET_INT)
+    ! broadcast logical unit number of output file
+    call MPI_Bcast(io_viewer, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    ! broadcast print level
     call MPI_Bcast(level_print, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     ! broadcasts number of property integral matrices including various derivatives
     call MPI_Bcast(num_ints, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
@@ -257,7 +259,7 @@
                                   nary_tree_bra=nary_tree_bra,     &
                                   nary_tree_ket=nary_tree_ket,     &
                                   nary_tree_total=nary_tree_total, &
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
                                   api_comm=MPI_COMM_WORLD,         &
 #endif
                                   num_ints=num_ints,               &
@@ -271,30 +273,25 @@
     call Gen1IntAPINaryTreeDestroy(nary_tree=nary_tree_bra)
     call Gen1IntAPINaryTreeDestroy(nary_tree=nary_tree_ket)
     call Gen1IntAPINaryTreeDestroy(nary_tree=nary_tree_total)
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
     ! blocks until all processors have finished
     call MPI_Barrier(MPI_COMM_WORLD, ierr)
+    call dirac_parctl(RELEASE_NODES)
 #endif
     ! prints the CPU elapsed time
     call xtimer_view(start_time, trim(prop_name)//"@gen1int_host_get_int", io_viewer)
     return
   end subroutine gen1int_host_get_int
 
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
   !> \brief evaluates the one-electron property integral matrices on worker processors
   !> \author Bin Gao
   !> \date 2012-05-09
-  !> \param len_work is the length of Dalton/Dirac workspace
-  !> \param wrk_space is the Dalton/Dirac workspace
-  !> \param io_viewer is the logical unit number of the viewer
-  !> \param level_print is the level of print
-  subroutine gen1int_worker_get_int(len_work, wrk_space, io_viewer, level_print)
+  subroutine gen1int_worker_get_int()
     use gen1int_api
     implicit none
-    integer, intent(in) :: len_work
-    real(REALK), intent(inout) :: wrk_space(len_work)
-    integer, intent(in) :: io_viewer
-    integer, intent(in) :: level_print
+    integer :: io_viewer
+    integer :: level_print
     integer order_geo_bra              !order of geometric derivatives on bra center
     integer order_geo_ket              !order of geometric derivatives on ket center
     integer order_geo_total            !order of total geometric derivatives
@@ -305,6 +302,10 @@
     type(nary_tree_t) nary_tree_total  !N-ary tree for total geometric derivatives
     integer ierr                       !error information
 #include "mpif.h"
+    ! receive broadcast of logical unit number of output file from manager
+    call MPI_Bcast(io_viewer, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    ! receive broadcast of print level from manager
+    call MPI_Bcast(level_print, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     ! gets the number of property integral matrices including various derivatives
     call MPI_Bcast(num_ints, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     ! creates the operator of property integrals and N-ary trees for geometric
@@ -405,16 +406,18 @@
     type(nary_tree_t) nary_tree_total  !N-ary tree for total geometric derivatives
     integer idens                      !incremental recorder over AO density matrices
     integer ierr                       !error information
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
 #include "mpif.h"
-#include "iprtyp.h"
+#include "dirac_partask.h"
 #endif
     ! gets the start time
     call xtimer_set(start_time)
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
     ! wakes up workers
-    call MPI_Bcast(GEN1INT_GET_EXPT, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    ! broadcasts level of print
+    call dirac_parctl(GEN1INT_GET_EXPT)
+    ! broadcast logical unit number of output file
+    call MPI_Bcast(io_viewer, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    ! broadcast print level
     call MPI_Bcast(level_print, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     ! broadcasts the number of AO density matrices
     call MPI_Bcast(num_dens, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
@@ -452,7 +455,7 @@
                                   nary_tree_bra=nary_tree_bra,     &
                                   nary_tree_ket=nary_tree_ket,     &
                                   nary_tree_total=nary_tree_total, &
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
                                   api_comm=MPI_COMM_WORLD,         &
 #endif
                                   num_dens=num_dens,               &
@@ -467,30 +470,25 @@
     call Gen1IntAPINaryTreeDestroy(nary_tree=nary_tree_bra)
     call Gen1IntAPINaryTreeDestroy(nary_tree=nary_tree_ket)
     call Gen1IntAPINaryTreeDestroy(nary_tree=nary_tree_total)
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
     ! blocks until all processors have finished
     call MPI_Barrier(MPI_COMM_WORLD, ierr)
+    call dirac_parctl(RELEASE_NODES)
 #endif
     ! prints the CPU elapsed time
     call xtimer_view(start_time, trim(prop_name)//"@gen1int_host_get_expt", io_viewer)
     return
   end subroutine gen1int_host_get_expt
 
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
   !> \brief evaluates the one-electron property expectation values on worker processors
   !> \author Bin Gao
   !> \date 2012-05-09
-  !> \param len_work is the length of Dalton/Dirac workspace
-  !> \param wrk_space is the Dalton/Dirac workspace
-  !> \param io_viewer is the logical unit number of the viewer
-  !> \param level_print is the level of print
-  subroutine gen1int_worker_get_expt(len_work, wrk_space, io_viewer, level_print)
+  subroutine gen1int_worker_get_expt()
     use gen1int_api
     implicit none
-    integer, intent(in) :: len_work
-    real(REALK), intent(inout) :: wrk_space(len_work)
-    integer, intent(in) :: io_viewer
-    integer, intent(in) :: level_print
+    integer :: io_viewer
+    integer :: level_print
     integer order_geo_total                  !order of total geometric derivatives
     integer num_ints                         !number of property integral matrices including various derivatives
     integer num_dens                         !number of AO density matrices
@@ -502,6 +500,10 @@
     type(nary_tree_t) nary_tree_total        !N-ary tree for total geometric derivatives
     integer ierr                             !error information
 #include "mpif.h"
+    ! receive broadcast of logical unit number of output file from manager
+    call MPI_Bcast(io_viewer, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    ! receive broadcast of print level from manager
+    call MPI_Bcast(level_print, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     ! gets the number of AO density matrices
     call MPI_Bcast(num_dens, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     ! allocates memory for AO density matrices
@@ -717,12 +719,14 @@
     logical found                                     !if found required data from SIRIFC
     integer start_ao, end_ao                          !start and end addresses of AOs
     integer imo                                       !incremental recorder over MOs
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
 #include "mpif.h"
-#include "iprtyp.h"
+#include "dirac_partask.h"
     ! wakes up workers
-    call MPI_Bcast(GEN1INT_GET_CUBE, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    ! broadcasts level of print
+    call dirac_parctl(GEN1INT_GET_CUBE)
+    ! broadcast logical unit number of output file
+    call MPI_Bcast(io_viewer, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    ! broadcast print level
     call MPI_Bcast(level_print, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
 #endif
     ! sets the XYZ coordinates of points in cube file
@@ -998,21 +1002,29 @@
     end if
     ! frees spaces
     deallocate(grid_points)
+#if defined(VAR_MPI)
+    ! blocks until all processors have finished
+    call MPI_Barrier(MPI_COMM_WORLD, ierr)
+    call dirac_parctl(RELEASE_NODES)
+#endif
     return
 100 format("gen1int_host_get_cube>> ",A,I8)
   end subroutine gen1int_host_get_cube
 
-#if defined(VAR_MPInotdef)
-  subroutine gen1int_worker_get_cube(len_work, wrk_space, io_viewer, level_print)
+#if defined(VAR_MPI)
+  subroutine gen1int_worker_get_cube()
     use gen1int_matrix
     use gen1int_api
     use gen1int_cube
     implicit none
-    integer, intent(in) :: len_work
-    real(REALK), intent(inout) :: wrk_space(len_work)
-    integer, intent(in) :: io_viewer
-    integer, intent(in) :: level_print
+    integer :: io_viewer
+    integer :: level_print
+    integer :: ierr
 #include "mpif.h"
+    ! receive broadcast of logical unit number of output file from manager
+    call MPI_Bcast(io_viewer, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+    ! receive broadcast of print level from manager
+    call MPI_Bcast(level_print, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     return
   end subroutine gen1int_worker_get_cube
 #endif
@@ -1427,7 +1439,7 @@
     type(prop_comp_t), intent(inout) :: prop_comp
     integer len_name  !length of property name
     integer ierr      !error information
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
 #include "mpif.h"
     ! broadcasts input arguments
     call MPI_Bcast(gto_type, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
@@ -1469,7 +1481,7 @@
     return
   end subroutine gen1int_host_prop_create
 
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
   !> \brief creates the operator of property integrals on worker processors by the arguments from manager
   !> \author Bin Gao
   !> \date 2012-05-09
@@ -1581,7 +1593,7 @@
     type(nary_tree_t), intent(inout) :: nary_tree_ket
     type(nary_tree_t), intent(inout) :: nary_tree_total
     integer ierr  !error information
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
 #include "mpif.h"
     ! broadcasts information of N-ary trees
     call MPI_Bcast(max_ncent_bra, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
@@ -1627,7 +1639,7 @@
     return
   end subroutine gen1int_host_geom_create
 
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
   !> \brief creates N-ary tree for geometric derivatives on worker processors by the arguments from manager
   !> \author Bin Gao
   !> \date 2012-05-09
