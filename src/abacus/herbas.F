@@ -130,7 +130,7 @@ C
 
 C
 C     turn on splitting of primitive shells only for methods that
-C     perform and integral transformation to the spinor basis
+C     perform an integral transformation to the spinor basis
 C
       DOSPLT = (DOTRA .OR. DOKRMC .OR. DOMP2 .OR. DOMP2NO)
       dosplt = .true.

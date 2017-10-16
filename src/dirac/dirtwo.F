@@ -4176,7 +4176,7 @@ C
            WALL   = WALL2 - WALL1
            TOTWAL = TOTWAL + WALL
            CALL SCRSTA(SOTEXT,DNTSKP,WALL)
-           IF (IPRINT .GT. 0) THEN
+           IF (IPRINT .GT. 1) THEN
               TOTTID = SECTID(TOTWAL)
               WRITE(LUPRI,'(A,A12)')
      &             '>>>> Total wall time used in HER_PARDRV so far   :',
