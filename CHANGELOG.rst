@@ -11,11 +11,14 @@ New features:
 -----------------
 
 New features:
-- Polarizable embedding using pelib (https://gitlab.com/pe-software/pelib-public). Activated with .PEQM, options under \*PEQM.
+- Kramers restricted Polarization Propagator in the ADC framework for electronic excitations, activated with ".POLPRP".
+ - Reference: M. Pernpointner. The relativistic polarization propagator for the calculation of electronic excitations in heavy systems.
+   J. Chem. Phys. 140, 084108 (2014); http://dx.doi.org/10.1063/1.4865964
+- Polarizable embedding using pelib (https://gitlab.com/pe-software/pelib-public). Activated with ".PEQM", options under \*PEQM.
  - Reference: E. D. Hedegård, R. Bast, J. Kongsted, J. M. H. Olsen, and H. J. Aa. Jensen.  Relativistic Polarizable Embedding.
-   J. Chem. Theory Comput. 13, 2870–2880 (2017); http://doi.org/10.1021/acs.jctc.7b00162
-- New and numerically stable procedure for elimination/freezing of orbitals at SCF level.
-- New .MVOFAC for \*KRMC.
+   J. Chem. Theory Comput. 13, 2870-2880 (2017); http://doi.org/10.1021/acs.jctc.7b00162
+- New and numerically stable procedure for elimination/freezing of orbitals at SCF level. Author: T. Saue.
+- New ".MVOFAC" option in \*KRMC input section. Author: H. J. Aa. Jensen.
 - Added the RPF-4Z and aug-RPF-4Z basis sets for f-elements to the already existing files with sets for s, p and d elements. Deleted the aug-RPF-3Z set as that was not an official set.
   
 (Do not change anything below this text on the master branch,
