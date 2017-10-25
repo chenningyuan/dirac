@@ -720,6 +720,11 @@ C
           real*8, dimension(:)  :: ra1
         END SUBROUTINE
 
+        SUBROUTINE PRECONTRACT_PAR(i1,i2,ra1)
+          integer               :: i1,i2
+          real*8, dimension(:)  :: ra1
+        END SUBROUTINE
+
       end interface
 !
 !---------------Execution ---------------------------------
@@ -792,6 +797,12 @@ C
           write(*,*) 'TMs requested, entering property handler.'
           CALL property_handler(iobase,iobase+1,
      &                          propertyints,NSP,IREPSPI)
+          inquire(file='ADCTRMOM',exist=isthere)
+          if(isthere) then
+            open(unit=iobase,file='ADCTRMOM',status='OLD')
+            close(iobase,status='DELETE')
+            write(*,*) 'Old ADCTRMOM file cleared.'
+          endif
         endif
 !|
 !|
@@ -847,7 +858,7 @@ C
 ! |   integrals from the nodes. Otherwise all are on one node.
 ! |   Files will be written to 'VVVVXVVOO'
 
-        write(iw,*) 'Master indicates start.'
+!       write(iw,*) 'Master indicates start.'
         call interface_mpi_bcast(SERVER_HELLO,1,MASTER,
      &                           global_communicator)
 
@@ -855,7 +866,9 @@ C
 !
 !  precontract is only executed by master in case of a par run
 !
-        CALL PRECONTRACT_NEW(iobase,iw,eps)
+!       CALL PRECONTRACT_NEW(iobase,iw,eps)
+        write(*,*) 'Entering precontraction.'
+        CALL PRECONTRACT_PAR(iobase,iw,eps)
         write(*,*) 'Precontraction finished.'
 
 ! ______________ SYMMETRY LOOP FOR COUPLING + SAT BLOCK___________

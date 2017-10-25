@@ -543,13 +543,17 @@ C
       return
       end
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE PRECONTRACT_NEW(iounit,iw,eps)
+      SUBROUTINE PRECONTRACT_PAR(iounit,iw,eps)
 !
 !
-!  this routine is called by master only. If we have a parallel run
-!  then the nodes provide integrals.
-!  The routine calculates <ab||cd> * <cd||ji>/(ec + ed - ej - ei)
-!  contracted over cd.
+!  this routine is called by master only. 
+!  If we have a parallel run the nodes do their share of the contraction
+!        <ab||cd> * <cd||ji>/(ec + ed - ej - ei)
+!  and send the partial result back to master where it is combined and
+!  stored on disk. Allocation of large VVVV buffers is hereby avoided.
+!
+!  In serial run it can be assumed that the VVVV integrals fit into a
+!  single buffer, otherwise parallel execution is advised.
 !
 
 #if defined (VAR_MPI)
@@ -567,10 +571,12 @@ C
       real*8, allocatable, dimension(:)        :: vvvvz
       real*8, allocatable, dimension(:)        :: vvoo1
       real*8, allocatable, dimension(:)        :: vvoop
-      integer                                  :: n1,ixx
+      real*8, allocatable, dimension(:)        :: vvoos
+      integer                                  :: n1,ixx,inode
       integer                                  :: ialloc
       integer                                  :: signal
       integer*8                                :: n8,i8
+      real*8                                   :: R0
       COMPLEX*16                               :: A0,A1
       character*9                              :: preconfn='VVVVXVVOO'
       logical                                  :: isthere
@@ -579,6 +585,7 @@ C
 #include  "../relccsd/symm.inc"
 #include  "../relccsd/complex.inc"
 #include  "../relccsd/ccpar.inc"
+#include  "polprp_servercodes.h"
 !
 !   function interfaces
 !
@@ -588,80 +595,97 @@ C
           real*8, dimension(:)         :: ra1,ra2
         END SUBROUTINE
 
-        SUBROUTINE mpi_master_vvvv_complete(ra1,i1)
-          real*8, dimension(:)            :: ra1
-          integer*8                       :: i1
-        END SUBROUTINE mpi_master_vvvv_complete
+        SUBROUTINE do_partial_precon(ra1,ra2)
+          real*8, dimension(:)         :: ra1,ra2
+        END SUBROUTINE
 
       end interface
 !
 ! execution
 !
       if(carith.and.rcw.eq.2) then
-        write(iw,*) ' **) Performing (complex) precontraction'
+        write(iw,*) ' -> Performing (complex) precontraction'
       else if(.not.carith.and.rcw.eq.1) then
-        write(iw,*) ' **) Performing (real) precontraction'
+        write(iw,*) ' -> Performing (real) precontraction'
       else
         write(iw,*) ' Control error in precontract_new!'
         call quit('error')
       endif
+      R0=0.0d0
       A0=(0.0D00,0.0D00)
       A1=(1.0D00,0.0D00)
 
-! allocate buffers and read in integrals
+! allocate buffers and get integrals needed in serial and parallel
 
       n1 = ivvoott(nrep+1)
       allocate(vvoo1(n1*rcw))
       allocate(vvoop(n1*rcw))
 
+      vvoop = R0
+
+      call getvvoo(vvoo1)
+      call denomvvoo_pp(eps,vvoo1)
+!____________________________________________________________________
+!|
+!|  Do parallel execution with partial contractions for each VVVV batch
+!|
+#if defined (VAR_MPI)
+      write(iw,*) ' -> in parallel mode.'
+      call interface_mpi_bcast(SERVER_PRECON,1,MASTER,
+     &                         global_communicator)
+
+!  sending  <cd||ji>/(ec + ed - ej - ei) to the slaves
+
+      do inode=master+1,nmproc-1
+        write(*,*) 'Sending vvoo stream to node',inode
+        call interface_mpi_send(vvoo1,n1*rcw,inode,
+     &                          MSGN,global_communicator)
+      enddo
+
+! also perform local partial contraction
+
+      vvoop = 0.0d0
+      call do_partial_precon(vvoo1,vvoop)
+
+! collect the partial streams from the slaves
+
+      allocate(vvoos(n1*rcw))
+      do inode=master+1,nmproc-1
+        vvoos = R0
+        write(*,*) 'Fetching vvoo stream from node',inode
+        call interface_mpi_recv(vvoos,n1*rcw,inode,MSGN,
+     &                          global_communicator)
+        vvoop = vvoop + vvoos
+      enddo
+      deallocate(vvoos)
+
+#else
+!____________________________________________________________________
+!|
+!|  Do serial execution using complete VVVV batch
+!|
+      write(iw,*) ' -> in serial mode.'
       n8 = ivvvvtt(nrep+1)
       allocate(vvvvz(n8*rcw),stat=ialloc)
       if(ialloc.ne.0) then
         STOP 'VVVV buffer could not be allocated.'
       else
-        write(*,*) 'Master allocated',n8,' words for VVVV buffer.'
+        write(*,*) n8,' words for VVVV buffer were allocated.'
       endif
-!____________________________________________________________________
-!|
-!|  fetching integrals in serial/parallel mode
-!|
-#if defined (VAR_MPI)
-      do i8=1,n8*rcw
-        vvvvz(i8) = -4096.0d0
-      enddo
-      call rdvvvv(vvvvz)  ! master reads its own chunks
-      call mpi_master_vvvv_complete(vvvvz,n8*rcw)  !fetch integrals from slaves
-      do i8=1,n8*rcw
-        if(vvvvz(i8).eq. -4096.0d0)
-     &    call quit('Internal error: gap in the VVVV stream!')
-      enddo
-      write(*,*) 'Master: <VV||VV> stream ready.'
-#else
       call rdvvvv(vvvvz)  ! master reads complete stream in serial mode
-#endif
-!     write(*,*) '################# int list ##################'
-!     do i8=1,n8*rcw
-!        write(*,*) ' ### vvvv integral',i8,vvvvz(i8)
-!     enddo
-!     write(*,*) '################# int list ##################'
-!     write(*,*) 'Master VVVV chksum:',dot_product(vvvvz,vvvvz)
-!|
-!|  
-!|___________________________________________________________________
-
-      call getvvoo(vvoo1)
-      call denomvvoo_pp(eps,vvoo1)
-!
-!  do the contraction over all symmetries
-!
       CALL CNTRCT('N','N',NVVT,NOOT,NVVT,A1,vvvvz,vvoo1,A0,vvoop,NREP)
-!     write(*,*) 'Master: after CNTRCT.Chksum:',dot_product(vvoop,vvoop)
+      deallocate(vvvvz)
+#endif
+!|  
+!|    from here the internal state is identical in ser/par:
+!|    contracted integrals sit in vvoop array and are written to disk
+!|___________________________________________________________________
 !
-!  check if file already present. If yes, delete it.
-!
+      write(*,*) 'Precontracted VVOO stream chksum:',
+     &    dot_product(vvoop,vvoop)
       Inquire(file=preconfn,exist=isthere)
       If(isthere) then
-         write(*,*) 'Deleting previous precontraction data.'
+         write(*,*) 'Deleting previous precontraction file.'
          open(unit=iounit, file=preconfn, status='old')
          close(iounit, status='delete')
       Endif
@@ -674,11 +698,88 @@ C
       close(iounit)
       write(*,*) 'File ',preconfn,' generated.'
 !
-!  free buffers immediately 
+!  free buffers used in ser/par mode.
 !
       deallocate(vvoop)
       deallocate(vvoo1)
-      deallocate(vvvvz)
+
+      return
+      end
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine do_partial_precon(vvoo_in,vvoo_ou)
+      implicit none
+!
+      real*8,allocatable,dimension (:)    :: vvoo_in, vvoo_ou
+
+#include  "polprp_servercodes.h"
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/ccpar.inc"
+#include  "../relccsd/complex.inc"
+!
+! local variables
+! 
+      integer                             :: irp,istart,mint,nbatch
+      integer                             :: n2,nint,m,n,k,localstart
+      integer                             :: off1,off2,off3
+      real*8,allocatable,dimension(:)     :: bufr
+      logical                             :: done,deb
+      complex*16,parameter                :: cone=(1.0d0,0.0d0)
+!
+! executable code
+! 
+      deb = .false.
+      If(SERVER_TRACE.ne.0) deb = .true.
+
+      if(deb) then
+        n2 = idist(1,1,irp)
+        write(*,*) 'ioff start on node',myproc,n2
+        n2 = idist(2,1,irp)
+        write(*,*) 'ioff end on node',myproc,n2
+        n2 = idist(2,1,irp) - idist(1,1,irp)
+        write(*,*) '# of NVVT batches on node',myproc,n2
+        n2 = idist(3,1,irp)
+        write(*,*) 'absolute start add. of this batch: ',myproc,n2
+        n2 = idist(4,1,irp)
+        write(*,*) 'absolute end add. of this batch: ',myproc,n2
+        n2 = idist(5,1,irp)
+        write(*,*) 'relative start add. of this batch: ',myproc,n2
+        n2 = idist(6,1,irp)
+        write(*,*) 'relative end add. of this batch: ',myproc,n2
+      endif
+
+      Do irp = 1,nrep
+
+        istart = 0
+        mint = nvvt(irp)  !maximum number of batches in this irrep
+        nbatch = idist(2,1,irp) - idist(1,1,irp) !current batches on this node
+        n2 = nbatch * nvvt(irp) ! number of VVVV integrals on this node
+
+        allocate(bufr(n2*rcw))
+        CALL GETVVVV (irp,istart,nint,done,bufr,mint)
+        if(nint.ne.nbatch.or.(.not.done)) then
+          write(*,*) 'Serious batch distribution error!'
+          write(*,*) 'Contact programmer of the module.'
+          call quit()
+        else
+          if(deb) write(*,*) 'Node',myproc,' local VVVV checksum:',
+     &      dot_product(bufr,bufr)
+        endif
+
+        m = nvvt(irp)
+        n = noot(irp)
+        k = nbatch
+        localstart = idist(1,1,irp)
+        off1 = 1
+        off2 = (ivvoott(irp) + localstart)*rcw + 1
+        off3 = ivvoott(irp)*rcw + 1
+        CALL XGEMM ('N','N',m,n,k,cone,bufr(off1),m,
+     &              vvoo_in(off2),m,cone,vvoo_ou(off3),m)
+
+        deallocate(bufr)
+        if(deb) write(*,*) 'Node',myproc,'$$ loc. precon checksum:',
+     &     dot_product(vvoo_ou,vvoo_ou)
+
+        enddo  !irp
 
       return
       end

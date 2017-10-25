@@ -31,7 +31,14 @@
       logical                           :: done
       INTEGER                           :: irp,istart,nint,mint
       INTEGER                           :: ialloc,locoff,istat
-      INTEGER                           :: efflen
+      INTEGER                           :: efflen,n1,n2
+      INTEGER                           :: m,n,k
+!
+! variables for partial precontraction
+!
+      real*8,allocatable,dimension(:)       :: vvoo_in,vvoo_ou
+      integer                               :: nbatch,localstart
+      integer                               :: off1,off2,off3
 !
 ! variables for matrix distribution
 !
@@ -50,13 +57,14 @@
       REAL*8,allocatable,dimension(:)       :: veco,vecn
       REAL*8,allocatable,dimension(:)       :: vecr,veci
       REAL*8,allocatable,dimension(:)       :: dumarr
-      Integer                               :: ladc,k
+      Integer                               :: ladc
       Integer                               :: irow,icol
       Integer                               :: nbufsloc
       Complex*16                            :: a
       Real*8                                :: b
 
       complex*16, parameter  :: czero=(0.0d0,0.0d0)
+      complex*16, parameter  :: cone =(1.0d0,0.0d0)
       real*8, parameter      :: rzero=0.0d0
 
      
@@ -105,6 +113,83 @@
 
 
 !----------------------------------------------------------------
+!-----  TASK: perform local share of precontraction
+!----------------------------------------------------------------
+
+
+          case(SERVER_PRECON)
+          write(*,*) 'Node',MYPROC,' starts partial precontraction.'
+
+          n1 = ivvoott(nrep+1)
+          allocate(vvoo_in(n1*rcw))
+          allocate(vvoo_ou(n1*rcw))
+          vvoo_in = 0.0d0
+          vvoo_ou = 0.0d0
+          call interface_mpi_recv(vvoo_in,n1*rcw,MASTER,MSGN,
+     &                            global_communicator)
+!
+!                        entering contraction loop
+!
+          do irp=1,nrep
+
+! print info in this irep, if debug mode is activated
+
+            if(deb) then
+              n2 = idist(1,1,irp)
+              write(*,*) 'ioff start on node',myproc,n2
+              n2 = idist(2,1,irp)
+              write(*,*) 'ioff end on node',myproc,n2
+              n2 = idist(2,1,irp) - idist(1,1,irp)
+              write(*,*) '# of NVVT batches on node',myproc,n2
+              n2 = idist(3,1,irp)
+              write(*,*) 'absolute start add. of this batch: ',myproc,n2
+              n2 = idist(4,1,irp)
+              write(*,*) 'absolute end add. of this batch: ',myproc,n2
+              n2 = idist(5,1,irp)
+              write(*,*) 'relative start add. of this batch: ',myproc,n2
+              n2 = idist(6,1,irp)
+              write(*,*) 'relative end add. of this batch: ',myproc,n2
+            endif
+
+! read in VV batches on this node (bufr)
+
+            istart = 0
+            mint = nvvt(irp)  !maximum number of batches in this irrep
+            nbatch = idist(2,1,irp) - idist(1,1,irp) !current batches on this node
+            n2 = nbatch * nvvt(irp) ! number of VVVV integrals on this node
+
+            allocate(bufr(n2*rcw))
+            CALL GETVVVV (irp,istart,nint,done,bufr,mint)
+            if(nint.ne.nbatch.or.(.not.done)) then
+              write(*,*) 'Serious batch distribution error!'
+              write(*,*) 'Contact programmer of the module.'
+              call quit()
+            endif
+
+            m = nvvt(irp)
+            n = noot(irp)
+            k = nbatch
+            localstart = idist(1,1,irp)
+            off1 = 1
+            off2 = (ivvoott(irp) + localstart)*rcw + 1
+            off3 = ivvoott(irp)*rcw + 1
+            CALL XGEMM ('N','N',m,n,k,cone,bufr(off1),m,
+     &                  vvoo_in(off2),m,cone,vvoo_ou(off3),m)
+
+            deallocate(bufr)
+            if(deb) write(*,*) 'Node',myproc,'$$ loc. precon checksum:',
+     &          dot_product(vvoo_ou,vvoo_ou)
+
+          enddo  !irp
+
+          call interface_mpi_send(vvoo_ou,n1*rcw,MASTER,MSGN,
+     &                            global_communicator)
+          if(deb) write(*,*) 'Node',myproc,' has sent output ints.'
+          deallocate(vvoo_in)
+          deallocate(vvoo_ou)
+
+
+!----------------------------------------------------------------
 !-----  TASK: provide local share of VVVV integrals in irep IRP
 !----------------------------------------------------------------
 
@@ -127,10 +212,13 @@
 
             istart = 0
 
-            MINT = NVVT(IRP)  !maximum number of possible batches
+            if(deb) write(*,*) 'Istart before:',istart
+            MINT = NVVT(IRP)  !maximum number of possible batches (last indices count)
             CALL GETVVVV (irp,istart,nint,done,buf,mint)
 
-            if(deb) write(*,*) 'Recovered ',nint,' batches on',MYPROC
+            if(deb) write(*,*) 'Recovered ',nint,' batches from',
+     &        mint,' requested ones on node',MYPROC,' istart now',
+     &        istart
 !
 ! NINT contains the actual number of batches on *this* node.
 !
