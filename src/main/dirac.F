@@ -71,9 +71,7 @@ C
       write(lupri,'(/a/a)') 'Execution time and host',
      &                       '-----------------------'
       CALL TSTAMP(' ',LUPRI)
-      print*,' +++++ entering dirac/DIRCTL ++++++'
       CALL DIRCTL()
-      print*,' +++++ returning from  dirac/DIRCTL ++++++'
 C
 C     Send finish signal to slaves
 C
@@ -1279,7 +1277,7 @@ C
 #ifdef HAS_PELIB
          CALL PELIB_IFC_SLAVE()
 #else
-         call quit('ERROR: Pelib lib not available')
+         call quit('ERROR: PElib not available')
 #endif
 
       ELSE IF (ITASK .EQ. 13) THEN
@@ -1287,6 +1285,46 @@ C
 C        start the Polarization propagator node
 C
          CALL POLPRP_NODE()
+
+      ELSE IF (ITASK .EQ. 14) THEN
+C
+C        initialize Gen1Int workers
+C
+#ifdef BUILD_GEN1INT
+         call gen1int_worker_init()
+#else
+         call quit('ERROR: Gen1Int not available')
+#endif
+
+      ELSE IF (ITASK .EQ. 15) THEN
+C
+C        start Gen1Int parallel integral evaluation
+C
+#ifdef BUILD_GEN1INT
+         call gen1int_worker_get_int()
+#else
+         call quit('ERROR: Gen1Int not available')
+#endif
+
+      ELSE IF (ITASK .EQ. 16) THEN
+C
+C        start Gen1Int parallel expectation value evaluation
+C
+#ifdef BUILD_GEN1INT
+         call gen1int_worker_get_expt()
+#else
+         call quit('ERROR: Gen1Int not available')
+#endif
+
+      ELSE IF (ITASK .EQ. 17) THEN
+C
+C        start Gen1Int parallel cube generation
+C
+#ifdef BUILD_GEN1INT
+         call gen1int_worker_get_cube()
+#else
+         call quit('ERROR: Gen1Int not available')
+#endif
 
       ELSE
 C

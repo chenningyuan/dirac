@@ -30,20 +30,24 @@ steps:
     image: miroilias/docker_repo
     working_directory: ${{main_clone}}
     environment:
-      - DIRAC_MPI_COMMAND="mpirun -np 2"
-      - CTEST_PROJECT_NAME="DIRAC"
+      - DIRAC_MPI_COMMAND=mpirun -np 2
+      - CTEST_PROJECT_NAME=DIRAC
       - TEST_N_PROC=$(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 2)
     when:
       branch:
         only: [ master ]
     commands:
+      - /bin/rm -rf build
       - git submodule update --init --recursive
-      - python ./setup --fc=mpif90 --cc=mpicc --cxx=mpicxx --int64 --mpi --cmake-options="-D BUILDNAME='gnu-mpich-i8-codefreshCI' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_UNIT_TESTS=ON -D ENABLE_BASIS_SETS_CHECK=OFF" build
+      - python ./setup --fc=mpif90 --cc=mpicc --cxx=mpicxx --int64 --mpi --cmake-options="-D BUILDNAME='gnu-mpich-i8-codefreshCI' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_UNIT_TESTS=ON -D ENABLE_BASIS_SETS_CHECK=OFF" --type=debug build
       - cd build
       - ctest -D ExperimentalConfigure
       - ctest -j $(nproc) -D ExperimentalBuild
       - ldd dirac.x
+      - echo "DIRAC_MPI_COMMAD=$DIRAC_MPI_COMMAND"
+      - echo "TEST_N_PROC=$TEST_N_PROC"
 # if some tests fail build/ctest can continue because of: || true
   #   - ctest -j $TEST_N_PROC  -D ExperimentalTest -L short || true
+      - ctest -j $TEST_N_PROC  -V -D ExperimentalTest -R cosci || true
       - ctest -D ExperimentalSubmit
 

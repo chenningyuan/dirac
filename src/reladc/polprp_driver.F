@@ -9,6 +9,9 @@
 !                       AUTHOR: M.Pernpointner
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
+
       SUBROUTINE PAMPOLPRP ()
 !
 !---------------Description-----------------------------------------------
@@ -82,7 +85,7 @@
 !
 !     print*, '+++++ in PAMPOLPRP, parcal: ',PARCAL
 !     print*, '+++++ trying to wake up slaves.'
-      IF (PARCAL) CALL DIRAC_PARCTL( 13 )
+      IF (PARCAL) CALL DIRAC_PARCTL( POLPRP_PAR )
 
 #if defined (VAR_MPI)
       IF (NMPROC .GT. 1) THEN
@@ -130,7 +133,7 @@
 !
 !     Let the slaves sleep (if relevant for this operating system)
 !
-      CALL DIRAC_PARCTL( 0 )
+      CALL DIRAC_PARCTL( RELEASE_NODES )
 
       CALL CPUUSED(SEC)
       WRITE (IW,1000) SEC-SEC0,SEC0,SEC
