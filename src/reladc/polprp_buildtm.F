@@ -2439,6 +2439,8 @@
          write(io2,'(A)') ' '
          write(io2,'(A)') ' '
 
+         write(*,*) 'Root #',iroot,' written to ',out_fname
+
       Enddo   ! iroot
       CLOSE(io1)
       CLOSE(io2)
