@@ -779,7 +779,7 @@ C
         if(deb) write(*,*) 'Node',myproc,'$$ loc. precon checksum:',
      &     dot_product(vvoo_ou,vvoo_ou)
 
-        enddo  !irp
+      Enddo  !irp
 
       return
       end
