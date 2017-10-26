@@ -244,6 +244,114 @@
          
         end subroutine compute_ao_integrals
 
+        subroutine tens_init_ao_integrals(ao_tens,nao,first_ao,ierr)
+
+         use exacorr_datatypes
+         use module_interest_eri
+
+!Initialization routine that is used to fill a tensor with AO integrals
+
+         implicit none
+
+         integer, intent(in):: nao(4)
+         complex(8),intent(out) :: ao_tens(nao(1),nao(2),nao(3),nao(4))
+         integer, intent(in):: first_ao(1:4)
+         integer, intent(out), optional:: ierr
+
+         integer :: nshells(4)
+         type(basis_func_info_t), allocatable :: gto1(:), gto2(:), gto3(:), gto4(:)  ! arrays with basis function information
+
+         integer :: i, j, k, l, ish, jsh, ksh, lsh, ioff, joff, koff, loff, ijkl
+         integer :: li,lj,lk,ll,ni,nj,nk,nl
+         real(8) :: ei,ej,ek,el,ci,cj,ck,cl,xi,yi,zi,xj,yj,zj,xk,yk,zk,xl,yl,zl
+         real(8) :: gout(21*21*21*21) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
+         real(8), parameter :: fijkl = 1.0
+         integer, parameter :: l_max = 6
+         integer            :: ncartesian(l_max)
+
+!        calculate number of Cartesian functions for each l-value
+         ncartesian(1) = 1
+         do i = 2, l_max
+            ncartesian(i) = ncartesian(i-1) + i
+         end do
+
+!        Allocate and get shell information for all shells that we will treat
+         call fetch_gtos(first_ao(1),nao(1),gto1,nshells(1))
+         call fetch_gtos(first_ao(2),nao(2),gto2,nshells(2))
+         call fetch_gtos(first_ao(3),nao(3),gto3,nshells(3))
+         call fetch_gtos(first_ao(4),nao(4),gto4,nshells(4))
+
+!        Intranode parallelization should be possible in the loops below because Interest is thread safe
+
+         loff = 0
+         do lsh = 1, nshells(4)
+            ll   =  gto4(lsh)%orb_momentum
+            el   =  gto4(lsh)%exponent(1)
+            xl   =  gto4(lsh)%coord(1)
+            yl   =  gto4(lsh)%coord(2)
+            zl   =  gto4(lsh)%coord(3)
+            cl   =  gto4(lsh)%coefficient(1)
+            nl   =  ncartesian(ll)
+            koff = 0
+            do ksh = 1, nshells(3)
+               lk   =  gto3(ksh)%orb_momentum
+               ek   =  gto3(ksh)%exponent(1)
+               xk   =  gto3(ksh)%coord(1)
+               yk   =  gto3(ksh)%coord(2)
+               zk   =  gto3(ksh)%coord(3)
+               ck   =  gto3(ksh)%coefficient(1)
+               nk   =  ncartesian(lk)
+               joff = 0
+               do jsh = 1, nshells(2)
+                  lj   =  gto2(jsh)%orb_momentum
+                  ej   =  gto2(jsh)%exponent(1)
+                  xj   =  gto2(jsh)%coord(1)
+                  yj   =  gto2(jsh)%coord(2)
+                  zj   =  gto2(jsh)%coord(3)
+                  cj   =  gto2(jsh)%coefficient(1)
+                  nj   =  ncartesian(lj)
+                  ioff = 0
+                  do ish = 1, nshells(1)
+                     li   =  gto1(ish)%orb_momentum
+                     ei   =  gto1(ish)%exponent(1)
+                     xi   =  gto1(ish)%coord(1)
+                     yi   =  gto1(ish)%coord(2)
+                     zi   =  gto1(ish)%coord(3)
+                     ci   =  gto1(ish)%coefficient(1)
+                     ni   =  ncartesian(li)
+!                    output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
+                     call interest_eri('llll',fijkl,gout,&
+                                  lk,ek,xk,yk,zk,ck,&
+                                  ll,el,xl,yl,zl,cl,&
+                                  li,ei,xi,yi,zi,ci,&
+                                  lj,ej,xj,yj,zj,cj )
+                     ijkl = 0
+                     do l = 1, nl
+                        do k = 1, nk
+                           do j = 1, nj
+                              do i = 1, ni
+                                 ijkl = ijkl + 1
+                                 ao_tens(i+ioff,j+joff,k+koff,l+loff) = dcmplx(gout(ijkl),0.D0)
+                              end do
+                           end do
+                        end do
+                     end do
+                     ioff = ioff + ni
+                  end do
+                  joff = joff + nj
+               end do
+               koff = koff + nk
+            end do
+            loff = loff + nl
+         end do
+
+         deallocate(gto1)
+         deallocate(gto2)
+         deallocate(gto3)
+         deallocate(gto4)
+         
+        end subroutine tens_init_ao_integrals
+
         subroutine aomo_transform (aoint_tensor,moint_tensor,nmo,mo_list)
 
 !        Transform integral tensor from ao-basis to mo-basis 
