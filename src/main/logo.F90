@@ -121,7 +121,7 @@ print *, '*    Elke Fasshauer           University of Copenhagen          Denmar
 print *, '*    Timo Fleig               Universite Toulouse III           France        *'
 print *, '*    Olav Fossgaard           UiT The Arctic University of      Norway        *'
 print *, '*    Andre S. P. Gomes        CNRS/Universite de Lille          France        *'
-print *, '*    Erik D. Hedegård         Lund University                   Sweden        *'
+print *, '*    Erik D. Hedegaard        Lund University                   Sweden        *'
 print *, '*    Trygve Helgaker          University of Oslo                Norway        *'
 print *, '*    Johan Henriksson         Linkoeping University             Sweden        *'
 print *, '*    Miroslav Ilias           Matej Bel University              Slovakia      *'
