@@ -90,14 +90,25 @@ keyword(DVCONV)
 
 Requested convergence of the eigenvalues. Usually a convergence of 1.0E-06 is absolutely sufficient.
 
+keyword(DVREORT)
+
+Force reorthogonalization of ADCEVEC.XX start vectors initially and in each macrocycle. This may be useful if
+eigenvectors of a previous incomplete run that are not perfectly orthogonal shall be reused. This is 
+unnecessary in a regular run since the trial spece during a Davidson
+run is kept strictly orthogonal and serves as the construction space for the true eigenvectors of the
+Hamilton matrix.
+
+keyword(SKIPCC)
+
+With this keyword you can restart the calculation at a very advanced stage after the sorting step of the
+two-electron integrals. Therefore you skip SCF, MOLTRA and integral sorting (OOOO, VOOO, ...). This is if
+ a POLPRP run only needs to be executed. Works in serial and parallel. The only files you should provide are the ftXX.YY files containing the sorted integral batches, MDPROP (needed for transition moments) and MRCONEE among the .inp and .mol file. In parallel run this works only if you have an underlying shared file system, so each node can access their own ftXX.nodenumber file.
+
 The default values are
 
 DVROOTS 5
 DVMAXSP 200
 DVMAXIT 5
 DVCONV 1.0E-05
-
-
-
-
-
+DVREORT = .false.
+SKIPCC = .false.
