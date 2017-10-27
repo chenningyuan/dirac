@@ -222,7 +222,10 @@ C
 
        end
 
-       subroutine Initialize_Shells (shell)
+       subroutine Initialize_Shells (shell,ierr)
+
+!      get information from common blocks about the basis set
+!      raise an error for contracted sets that can not yet be handled by Interest
 
        use exacorr_datatypes
 
@@ -232,7 +235,7 @@ C
 #include "aovec.h"
 #include "primit.h"
 
-       integer ishell, iPrimStart, iPrimEnd, k
+       integer ishell, iPrimStart, iPrimEnd, k, ierr
        type(basis_func_info_t) :: shell(*)
 
        do ishell = 1, nlrgsh
@@ -249,6 +252,8 @@ C
          shell(ishell)%exponent = priexp(iPrimStart:iPrimEnd)
          shell(ishell)%coefficient = priccf(iPrimStart:iPrimEnd,k)
          shell(ishell)%coord = cent(ishell,1:3,1)
+!        In DIRAC uncontracted shells are stored as quasi-contracted, fix this.
+         call compress_unc_shell (shell(ishell),ierr)
        end do
 
        return 

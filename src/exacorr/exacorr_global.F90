@@ -1,0 +1,132 @@
+!This module controls storage and interaction with the global data used in ExaCorr
+       module exacorr_global
+
+          use exacorr_datatypes
+
+        implicit none
+        private
+
+!       Global data (should limit this to the minimum required to function)
+        integer, allocatable :: shell_indices(:)  ! for each basis function the index of the shell to which it belongs
+        type(basis_func_info_t), allocatable :: gtos(:)  ! list of all shells
+
+!       Functions and routines to interact with these data
+        public initialize_global_data
+        public delete_global_data
+        public get_gto
+        public get_shell_index
+
+       contains
+
+         integer function ncartesian(l_value)
+
+!        calculate number of Cartesian functions for a particular l-value
+
+         integer :: i, l_value
+
+         ncartesian = 1
+         do i = 2, l_value
+            ncartesian = ncartesian + i
+         end do
+ 
+         end function ncartesian
+
+         subroutine initialize_global_data
+ 
+             integer :: number_aos, number_aoshells, nao, nshells
+             integer :: ish, iao, ibas, ierr
+
+             ! store basis set definitions
+             nshells = number_aoshells()  ! basis functions are organized in shells, this is their number
+             allocate(gtos(nshells))
+             call initialize_shells(gtos,ierr)
+             if (ierr == 1) call quit ('This version can not handle contracted functions')
+             print*, " Retrieved basis set information from DIRAC common blocks"
+
+             ! make array with pointers from a basis function index to its shell
+             nao     = number_aos(1)
+             allocate(shell_indices(nao))
+             
+             iao = 0
+             do ish = 1, nshells
+                do ibas = 1, ncartesian(gtos(ish)%orb_momentum)
+                   iao = iao + 1
+                   if (iao.gt.nao) call quit ('Error in initialize_global_data routine')
+                   shell_indices(iao) = ish
+                end do
+             end do
+
+             if (iao.ne.nao) call quit ('Error in initialize_global_data routine')
+ 
+         end subroutine initialize_global_data
+
+         subroutine delete_global_data
+             deallocate(shell_indices)
+             deallocate(gtos)
+         end subroutine delete_global_data
+
+         integer function get_shell_index(ifun)
+             integer, intent(in) :: ifun
+             get_shell_index = shell_indices(ifun)
+         end function get_shell_index
+
+         type(basis_func_info_t) function get_gto(ish)
+             integer, intent(in) :: ish
+             get_gto = gtos(ish)
+         end  function get_gto
+
+!-------------------------------------------------------------------------------------------
+        subroutine generate_ao_segments(num_large_ao,num_small_ao,desired_seg_size,ao_info,&
+                                       &num_large_segs,num_small_segs,segs_large,segs_small,ierr)
+!This subroutine partitions the range of large/small basis functions into segments
+!such that the size of each segment is close to the <desired_seg_size> as much as possible.
+!Different segments may have different sizes in order to align the segments to atomic shell boundaries.
+         implicit none
+         integer, intent(in):: num_large_ao                !in: total number of large component basis functions
+         integer, intent(in):: num_small_ao                !in: total number of small component basis functions
+         integer, intent(in):: desired_seg_size(0:2)       !in: desired size of a segment (0: target value, 1: minimal value, 2: maximum value)
+         type(basis_func_info_t), intent(in):: ao_info(1:) !in: information on each basis function
+         integer, intent(out):: num_large_segs             !out: number of large component segments
+         integer, intent(out):: num_small_segs             !out: number of small component segments
+         integer, intent(out), allocatable:: segs_large(:) !out: size of each segment in the large component range
+         integer, intent(out), allocatable:: segs_small(:) !out: size of each segment in the small component range
+         integer, intent(out):: ierr                       !out: error code (0:success)
+
+!        place holder initializations for testing compilation and cmake inclusion of of this module
+         num_large_segs = 1 
+         allocate (segs_large(num_large_segs))
+         segs_large(1) = num_large_ao
+         num_small_segs = 0 
+         ierr=0
+         return
+        end subroutine generate_ao_segments
+!----------------------------------------------------------------------------------
+        subroutine generate_mo_segments(num_occ,num_virt,desired_seg_size,mo_info,&
+                                       &num_occ_segs,num_virt_segs,segs_occ,segs_virt,ierr)
+!This subroutine partitions the range of occupied/virtual molecular spinors into segments
+!such that the size of each segement is close to the <desired_seg_size> as much as possible.
+!Different segements may have different sizes in order to align the segements by symmetry IR.
+         implicit none
+
+         integer, intent(in):: num_occ                    !in: total number of occupied spinors
+         integer, intent(in):: num_virt                   !in: total number of virtual spinors
+         integer, intent(in):: desired_seg_size(0:2)      !in: desired size of a segment (0: target value, 1: minimal value, 2: maximum value)
+         type(mo_spinor_info_t), intent(in):: mo_info(1:) !in: information on each molecular spinor
+         integer, intent(out):: num_occ_segs              !out: number of segments in the occupied range
+         integer, intent(out):: num_virt_segs             !out: number of segments in the virtual range
+         integer, intent(out), allocatable:: segs_occ(:)  !out: size of each segment in the occupied range
+         integer, intent(out), allocatable:: segs_virt(:) !out: size of each segment in the virtual range
+         integer, intent(out):: ierr                      !out: error code (0:success)
+
+!        place holder initializations for testing compilation and cmake inclusion of of this module
+         num_occ_segs  = 1 
+         allocate (segs_occ(num_occ_segs))
+         segs_occ(1) = num_occ
+         num_virt_segs = 1 
+         allocate (segs_virt(num_virt_segs))
+         segs_virt(1) = num_virt
+         ierr=0
+         return
+        end subroutine generate_mo_segments
+
+       end module exacorr_global

@@ -21,6 +21,7 @@
  
          use dirac_MO
          use exacorr_datatypes
+         use exacorr_global
          use tensor_algebra
          use talsh
          use, intrinsic:: ISO_C_BINDING
@@ -34,7 +35,6 @@
 
          integer             :: i, ierr
          integer             :: nao, number_aos            ! the size of the atomic orbital basis
-         integer             :: nshells, number_aoshells   ! number of AO shells
          type(basis_func_info_t), allocatable :: shell(:)  ! array with basis function information
 
          integer(C_SIZE_T), parameter:: BUF_SIZE=1_8*1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
@@ -59,18 +59,11 @@
          write(*,'(" Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,host_buf_size,host_arg_max
          call interest_initialize
          print*, " Initialized interest library"
+         call initialize_global_data
+         print*, " Initialized global data"
 
 !        Retrieve basis set information from DIRAC common blocks
          nao     = number_aos(1)
-         nshells = number_aoshells()
-         allocate(shell(nshells))
-         print*, " Allocated ",nshells," shell variables"
-         call initialize_shells(shell)
-         do i = 1, nshells
-            call compress_unc_shell(shell(i),ierr)
-            if (ierr == 1) call quit ('This version can not handle contracted functions')
-         enddo
-         print*, " Retrieved basis set information from DIRAC common blocks"
          
 !        Set tensor dimensions for the index transformation (simple brute-force algorithm)
          aoint_dims      = nao
@@ -81,7 +74,7 @@
 !        Initialize AO integral tensors (ideally via an initialization routine, for now via direct access)
          ierr=talsh_tensor_get_body_access(aoint_tensor,body_p,C8,0,DEV_HOST)
          call c_f_pointer(body_p,ao_tens,aoint_dims(1:4)) ! to use <ao_tens> as a regular Fortran 4d array
-         call compute_ao_integrals (nao,ao_tens,nshells,shell)
+         call compute_ao_integrals (nao,ao_tens)
 
 !        Transform to MO basis
          ierr=talsh_tensor_construct(moint_tensor,C8,moint_dims,init_val=zero)
@@ -96,6 +89,9 @@
          ierr=talsh_tensor_destruct(aoint_tensor)
          ierr=talsh_tensor_destruct(moint_tensor)
          ierr = talsh_shutdown()
+
+!        Clean up global data used to interact with DIRAC/Interest
+         call delete_global_data
 
 !        Make some noise so that we know we are leaving
          print*, " Leaving compute_mo_integrals routine"
@@ -154,18 +150,19 @@
          return
         end subroutine get_mocoef_tensor
 
-        subroutine compute_ao_integrals (nao,ao_tens,nshells,gto)
+        subroutine compute_ao_integrals (nao,ao_tens)
 
 !This subroutine drives the generation of AO integrals by InteRest
 !
          use exacorr_datatypes
+         use exacorr_global
          use module_interest_eri
 
          implicit none
-         integer, intent(in) :: nao, nshells ! number of basis functions and basis function shells
+         integer, intent(in) :: nao ! number of basis functions
          complex(8),intent(out) :: ao_tens(nao,nao,nao,nao)
-         type(basis_func_info_t), intent(in) :: gto(:)  ! array with basis function information
 
+         integer :: ierr
          integer :: i, j, k, l, ish, jsh, ksh, lsh, ioff, joff, koff, loff, ijkl
          integer :: li,lj,lk,ll,ni,nj,nk,nl
          real(8) :: ei,ej,ek,el,ci,cj,ck,cl,xi,yi,zi,xj,yj,zj,xk,yk,zk,xl,yl,zl
@@ -173,6 +170,10 @@
          real(8), parameter :: fijkl = 1.0
          integer, parameter :: l_max = 6
          integer            :: ncartesian(l_max)
+         integer            :: nshells, number_aoshells   ! number of AO shells
+         type(basis_func_info_t), allocatable :: gto(:)   ! array with basis function information
+
+         call fetch_gtos(1,nao,gto,nshells)
 
 !        calculate number of Cartesian function for each l-value
          ncartesian(1) = 1
@@ -242,6 +243,8 @@
             loff = loff + nl
          end do
          
+         deallocate(gto)
+
         end subroutine compute_ao_integrals
 
         subroutine tens_init_ao_integrals(ao_tens,nao,first_ao,ierr)
@@ -523,5 +526,30 @@
 !        end work-round
 
         end subroutine mulliken_to_dirac_sort
+
+
+       subroutine fetch_gtos(first_ao,nao,gto,nshells)
+
+         use exacorr_datatypes
+         use exacorr_global
+
+         implicit none
+
+         integer, intent(in):: first_ao, nao
+         type(basis_func_info_t), intent(inout), allocatable :: gto(:)
+         integer, intent(out) :: nshells
+
+         integer :: ish, first_shell, last_shell
+
+         first_shell = get_shell_index (first_ao)
+         last_shell  = get_shell_index (first_ao+nao-1)
+         nshells = last_shell - first_shell + 1
+
+         allocate (gto(nshells))
+         do ish = 1, nshells
+            gto(ish) = get_gto(first_shell+ish-1)
+         end do
+
+       end subroutine fetch_gtos
 
        end module exacorr_ao_to_mo

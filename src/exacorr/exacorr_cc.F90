@@ -29,6 +29,8 @@
  
 !        Written by Lucas Visscher, winter 2016/2017
  
+         use exacorr_global
+
          integer, intent(in) :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
          integer, intent(in) :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
 
@@ -74,6 +76,8 @@
          write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,host_buf_size,host_arg_max
          call interest_initialize
          print*, " Initialized interest library"
+         call initialize_global_data
+         print*, " Initialized global data"
 
 !        Initialize scalars that are to be used as tensors in contractions
          one_dims(1) = 1
@@ -372,6 +376,9 @@
          deallocate (eps_occ)
          deallocate (eps_vir)
 
+!        Free global data used to interact with DIRAC/Interest
+         call delete_global_data
+
 !        Make some noise so that we know we are leaving
          print*," Final CCSD energy = ",ccsd_energy
          print*, " Leaving cc_driver routine"
@@ -434,8 +441,6 @@
          complex(8), pointer, contiguous:: ao_tens(:,:,:,:)
          type(C_PTR):: body_p
 
-         integer             :: nshells, number_aoshells   ! number of AO shells
-         type(basis_func_info_t), allocatable :: shell(:)  ! array with basis function information
          integer             :: nao, number_aos
 
 !        auxilliary integral tensors (only needed inside this routine)
@@ -453,14 +458,6 @@
 
 !        Retrieve basis set information from DIRAC common blocks
          nao     = number_aos(1)      ! number of basis functions
-         nshells = number_aoshells()  ! basis function are organized in shells, this is their number
-         allocate(shell(nshells))
-         call initialize_shells(shell)
-         do i = 1, nshells
-            call compress_unc_shell(shell(i),ierr)
-            if (ierr == 1) call quit ('This version can not handle contracted functions')
-         enddo
-         print*, " Retrieved basis set information from DIRAC common blocks"
 
 !        Get tensor with AO integrals
          aoint_dims      = nao
@@ -468,7 +465,7 @@
 !        Initialize AO integral tensors (ideally via an initialization routine, for now via direct access)
          ierr=talsh_tensor_get_body_access(aoint_tensor,body_p,C8,0,DEV_HOST)
          call c_f_pointer(body_p,ao_tens,aoint_dims(1:4)) ! to use <ao_tens> as a regular Fortran 4d array
-         call compute_ao_integrals (nao,ao_tens,nshells,shell)
+         call compute_ao_integrals (nao,ao_tens)
 
 !        Get antisymmetric oovv tensor
 !        Note that the dimensions for the tensor are given in physicists notation <12||34>
