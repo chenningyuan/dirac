@@ -137,7 +137,7 @@ print *, '*    Malaya Kumar Nayak       Bhabha Atomic Research Centre     India 
 print *, '*    Patrick Norman           Linkoeping University             Sweden        *'
 print *, '*    Malgorzata Olejniczak    CNRS/Universite de Lille          France        *'
 print *, '*    Jeppe Olsen              Aarhus University                 Denmark       *'
-print *, '*    Jógvan Magnus H. Olsen   University of Southern Denmark    Denmark       *'
+print *, '*    Jogvan Magnus H. Olsen   University of Southern Denmark    Denmark       *'
 print *, '*    Young Choon Park         KAIST, Daejeon                    South Korea   *'
 print *, '*    Jesper K. Pedersen       University of Southern Denmark    Denmark       *'
 print *, '*    Markus Pernpointner      University of Heidelberg          Germany       *'
