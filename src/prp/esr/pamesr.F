@@ -295,7 +295,6 @@ C
             WRITE(LUPRI,'(A,I8/A,1P,D8.1)')
      & '* Max number of CI iterations      :', MAX_CIESR_IT,
      & '* CI convergence threshold         :', THR_CIESR
-                  READ(LUCMD,*) THR_CIESR
          ELSE IF (MAX_CIESR_IT .eq. 0) THEN
             WRITE(LUPRI,'(A)')
      & '* Generate determinant list but no CI iterations.'
