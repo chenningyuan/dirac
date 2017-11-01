@@ -2117,6 +2117,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
+! dcbgen.h : PARCAL
 #include "dcbgascip.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -2589,7 +2590,7 @@ C     for QGEMM etc with complex matrices:
       DIMENSION IQINDX(NZCMPLX)
       SAVE IQINDX
       DATA IQINDX /1,2/
-      LOGICAL   is_open,file_exists, FNDLAB
+      LOGICAL   is_open,file_exists, FNDLAB, have_SCVECS
 C
 #include "memint.h"
 C
@@ -2717,6 +2718,7 @@ C
      &     WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','SCVEC',KSCVEC,MAX_HRED * NDETQ,
      &     WORK,KFREE,LFREE)
+      HAVE_SCVECS = .FALSE.
 C
 C
 C     ********************************
@@ -2770,6 +2772,8 @@ C
      &      NDET .EQ. NDET_r .AND. NDETQ_r .EQ. NDETQ) THEN
          ! GASCIP.RST seems to be OK for restart
             CALL READT(LUGASCIP,NDETQ*N_CVEC,WORK(KBCVEC))
+            CALL READT(LUGASCIP,NDETQ*N_CVEC,WORK(KSCVEC))
+            HAVE_SCVECS = .TRUE.
             READ (LUGASCIP) DNRES(1:N_CVEC)
             N_CSIM = N_CVEC
             WRITE(LUPRI,'(/I5,A/,(1P,10D10.2))') N_CVEC,
@@ -2923,6 +2927,12 @@ C
      &         ' FATAL ERROR: no new trial vectors',N_CSIM
             CALL QUIT(' FATAL ERROR: no new trial vectors')
          END IF
+         IF (HAVE_SCVECS) THEN
+            WRITE(LUPRI,'(/A)')
+     &        '                 Sigma vectors available from restart.'
+            HAVE_SCVECS = .FALSE.
+            GO TO 150 ! skip calculation of sigma vectors
+         END IF
          CALL FLSHFO(LUPRI)
 C
 C        Calculate sigma vector(s)
@@ -2932,13 +2942,10 @@ C
             CALL GASCIP_PAR_CISIG(N_CSIM,NDET,
      &            WORK(KSCVEC+N_CRED_OLD*NDETQ),
      &            WORK(KBCVEC+N_CRED_OLD*NDETQ),IPRINT_slaves)
-         END IF
-
-         IHRM = 1
-         DO I = 1, N_CSIM
-
-            IF (.NOT. PAR_GASCIP) THEN ! if PAR_GASCIP then SCVEC is calculated above
-            I_TOT = N_CRED_OLD + I
+         ELSE
+            IHRM = 1
+            DO I = 1, N_CSIM
+               I_TOT = N_CRED_OLD + I
             IF (NDET .GT. 1000) THEN
 C hj 16-jun-2004 new sigma code with screening
                CALL GASCIP_CISIG_SCREEN(1,NDET,
@@ -2960,9 +2967,13 @@ C                 DODEN,CL,CR,DV,PV,
 C                 DO2EL,NDET,IDET,IHRM,IPRINT)
 C
             END IF
-            END IF ! (.NOT. PAR_GASCIP)
-c
-            IF (IPRINT .GE. 10) THEN
+            END DO
+         END IF ! IF (PAR_GASCIP) ... ELSE ...
+
+  150    CONTINUE ! if (HAVE_SCVECS) go to 150
+
+         IF (IPRINT .GE. 10) THEN
+            DO I = 1, N_CSIM
 C
 C              Trial vector
 C
@@ -2970,9 +2981,6 @@ C
      &              ' (GASCIP_RCISTD) Trial vector no. ',I,' of ',N_CSIM
                CALL GASCIP_ANACI(WORK(KBCVEC+(I_TOT-1)*NDETQ),
      &                     NDET,IDET,THR_PCI,WORK(KFREE),LFREE)
-               IF (IPRINT .GE. 41)
-     &            CALL OUTPUT(WORK(KBCVEC+(I_TOT-1)*NDETQ),
-     &              1,NDET,1,NZ_in_CI,NDET,NZ_in_CI,1,LUPRI)
 C
 C              Sigma vector
 C
@@ -2980,21 +2988,18 @@ C
      &              ' (GASCIP_RCISTD) Sigma vector no. ',I,' of ',N_CSIM
                CALL GASCIP_ANACI(WORK(KSCVEC+(I_TOT-1)*NDETQ),
      &                     NDET,IDET,THR_PCI,WORK(KFREE),LFREE)
-               IF (IPRINT .GE. 41)
-     &            CALL OUTPUT(WORK(KSCVEC+(I_TOT-1)*NDETQ),
-     &              1,NDET,1,NZ_in_CI,NDET,NZ_in_CI,1,LUPRI)
-            END IF
-         END DO
-      IF (IPRINT .GE. 3) THEN
-         CALL GETTIM(CPU_end,WALL_end)
-         CPUTID  = SECTID(CPU_end-CPU_st)
-         WALLTID = SECTID(WALL_end-WALL_st)
-         WRITE(LUPRI,'(/5A)')
+            END DO
+         END IF
+         IF (IPRINT .GE. 3) THEN
+            CALL GETTIM(CPU_end,WALL_end)
+            CPUTID  = SECTID(CPU_end-CPU_st)
+            WALLTID = SECTID(WALL_end-WALL_st)
+            WRITE(LUPRI,'(/5A)')
      &        ' (GASCIP_RCISTD) CPU (Wall) time for sigma vectors :',
      &        CPUTID,' (',WALLTID,')'
-         CPU_st = CPU_end
-         WALL_st = WALL_end
-      END IF
+            CPU_st = CPU_end
+            WALL_st = WALL_end
+         END IF
 C
 C        Extend reduced Hamiltonian and reduced metric:
 C        ----------------------------------------------
@@ -3347,9 +3352,7 @@ C
      &        1.0D0,CVECS,NDETQ)           ! subtract from real part
          END IF
 
-         ! 2) save them for restart
-           ! hjaaj: ought to also save the corresponding SVECS ...
-           ! will save one CI iteration at restart ..
+         ! 2) save current best solution vectors for restart
 
          REWIND (LUGASCIP)
          IF (.not. FNDLAB('SODLABEL',LUGASCIP)) THEN
@@ -3361,22 +3364,15 @@ C
          WRITE (LUGASCIP) NCMOTQ, NDET, NDETQ, N_ROOTS, 0,0,0,0
          CALL WRITT(LUGASCIP,N_ROOTS*NDETQ,CVECS)
 
-         ! 3) multipy with -ECIA(i_root) (note: real eigenvalues) and save in BCVECS
-         JBCVEC = KBCVEC + N_CRED*NDETQ - 1
-         DO I_ROOT = 1, N_ROOTS
-           WORK(JBCVEC+1:JBCVEC+NDETQ) =
-     &        -ECIA(I_ROOT)*CVECS(1:NDETQ,I_ROOT)
-           JBCVEC = JBCVEC + NDETQ
-         END DO
-
-         ! 4) add SUM_J C(J,I_ROOT) SCVEC(J) to finish residual
-         ! 4a) the real part of eigen vectors C(:,:)
+         ! 4) construct sigma vectors SUM_J C(J,I_ROOT) SCVEC(J) for each solution vector,
+         !    save in BCVECS locations for next trial vectors
+         ! 4a) the real part of sigma vectors S(:,:)
          JBCVEC = KBCVEC + N_CRED*NDETQ
          CALL DGEMM('N','N',NDETQ,N_ROOTS,N_CRED,1.0D0,
      &        WORK(KSCVEC),NDETQ,          ! real + imag. part
      &        WORK(KEIGVC),MAX_HRED,       ! real part
-     &        1.0D0,WORK(JBCVEC),NDETQ)    ! add to real + imag. part
-         ! 4b) the imaginary part of eigen vectors C(:,:)
+     &        0.0D0,WORK(JBCVEC),NDETQ)    ! add to real + imag. part
+         ! 4b) the imaginary part of sigma vectors S(:,:)
          IF (NZ_in_CI .gt. 1) THEN
            CALL DGEMM('N','N',NDET,N_ROOTS,N_CRED,1.0D0,
      &        WORK(KSCVEC),NDETQ,          ! real part
@@ -3387,6 +3383,16 @@ C
      &        WORK(KEIGVCI),MAX_HRED,      ! imaginary part
      &        1.0D0,WORK(JBCVEC),NDETQ)    ! subtract from real part
          END IF
+
+         ! 5) save sigma vectors of current best solution vectors for restart
+         CALL WRITT(LUGASCIP,N_ROOTS*NDETQ,WORK(JBCVEC))
+
+         ! 6) subtract -ECIA(1:n_roots) times solution vectors from sigma vectors to finish residual
+         DO I_ROOT = 1, N_ROOTS
+           CALL DAXPY(NDETQ,-ECIA(I_ROOT),CVECS(1,I_ROOT),1,
+     &        WORK(JBCVEC),1)
+           JBCVEC = JBCVEC + NDETQ
+         END DO
 
          ! 5) calculate norms of residuals and check if converged
          ICONV_TOT = 1
@@ -3400,8 +3406,8 @@ C
            IF ( DNRES(I_STATE) .LE. THR_CONV ) ICONV_TOT = 1 ! the requested state is converged
          END IF
 
-         WRITE (LUGASCIP) DNRES(1:N_ROOTS)
-         WRITE (LUGASCIP) ECIA(1:N_ROOTS)
+         WRITE (LUGASCIP) DNRES(1:MAX_ROOTS) ! use MAX_ROOTS instead of N_ROOTS, to make sure record length > 32 bytes
+         WRITE (LUGASCIP) ECIA(1:MAX_ROOTS)
          CALL NEWLAB('EODLABEL',LUGASCIP,LUPRI)
          REWIND (LUGASCIP)
 
@@ -3456,12 +3462,13 @@ C
             IF ( DNRES(I_ROOT) .LE. THR_CONV ) CYCLE ! this one is converged
             N_ROOTS_NOT_CONVERGED = N_ROOTS_NOT_CONVERGED + 1
             ECIA_I = ECIA(I_ROOT)
+            JBCVEC_I = KBCVEC + (N_CRED+I_ROOT-1)*NDETQ - 1
             DO I = 1, NDET
                HD = WORK(KHDIAG+I-1) - ECIA_I
                IF (ABS(HD) .LE. THRZER) HD = 1.0D0
-               WORK(JBCVEC      + I) = - WORK(JBCVEC      + I) / HD
+               WORK(JBCVEC      + I) = - WORK(JBCVEC_I      + I) / HD
                IF (NZ_in_CI .EQ. 2)
-     &         WORK(JBCVEC+NDET + I) = - WORK(JBCVEC+NDET + I) / HD
+     &         WORK(JBCVEC+NDET + I) = - WORK(JBCVEC_I+NDET + I) / HD
             END DO
             IF (IPRINT .GE. 41) THEN
               write (lupri,*) 'trial vector',N_ROOTS_NOT_CONVERGED,
@@ -3608,16 +3615,16 @@ C
 C      write (lupri,*) 'All trial vectors test output after Gram-Schmidt'
 C                 call output(work(kbcvec),1,ndetq,1,J_NEW,
 C     &                    ndetq,J_NEW,-1,lupri)
-      IF (IPRINT .GE. 3) THEN
-         CALL GETTIM(CPU_end,WALL_end)
-         CPUTID  = SECTID(CPU_end-CPU_st)
-         WALLTID = SECTID(WALL_end-WALL_st)
-         WRITE(LUPRI,'(/5A)')
+         IF (IPRINT .GE. 3) THEN
+            CALL GETTIM(CPU_end,WALL_end)
+            CPUTID  = SECTID(CPU_end-CPU_st)
+            WALLTID = SECTID(WALL_end-WALL_st)
+            WRITE(LUPRI,'(/5A)')
      &     ' (GASCIP_RCISTD) CPU (Wall) time for orthonormalization :',
      &     CPUTID,' (',WALLTID,')'
-         CPU_st = CPU_end
-         WALL_st = WALL_end
-      END IF
+            CPU_st = CPU_end
+            WALL_st = WALL_end
+         END IF
 
 C
 C        Print timings
@@ -4815,15 +4822,17 @@ C
 C
                JSTRT = IMK2(MK2J,3) + 1
                JEND  = IMK2(MK2J,3) + NMK2(MK2J,3)
+               JSTRT = MAX(JSTRT, IS_START)
+               JEND  = MIN(JEND,  IS_END)
+
                MXNDAV = ITMAX - ABS(MK2J - MK2I)/2
 C              ... we know that NDBV .ge. ABS(MK2I-MK2J)/2
 C
 !d          write(lupri,*) '(GASCIP_CISIG_SCREEN) MK2I MK2J JSTRT JEND='
 !d   &         ,MK2I,MK2J,JSTRT,JEND
 !d             call flshfo(lupri)
+
                JDAOLD = -1
-               JSTRT = MAX(JSTRT, IS_START)
-               JEND  = MIN(JEND,  IS_END)
                DO 200 J = JSTRT, JEND
 C
                   JDA = IDET(1,J)
