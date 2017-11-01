@@ -11,10 +11,10 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = 'g values (x, y, z, iso)',
       num_lines = 3,
-      rel_tolerance = 1.0e-5)
+      abs_tolerance = 1.0e-4)
 f.add(from_string = 'g shifts in ppm (x, y, z, iso)',
       num_lines = 3,
-      rel_tolerance = 1.0e-4)
+      abs_tolerance = 10.0)
 
 test.run(['esr.inp','esr_mp2.inp'], ['CN.mol'], f, args='--mw=80 --aw=120')
 
