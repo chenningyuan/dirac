@@ -1,4 +1,5 @@
 #define SERVER_HELLO    01
+#define SERVER_PRECON   12
 #define SERVER_VOVV     20
 #define SERVER_VVVV     30
 #define SERVER_MATDIS   34

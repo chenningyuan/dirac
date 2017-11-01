@@ -878,6 +878,8 @@
       real*8, allocatable, dimension (:)      :: adcdiagonal
       complex*16,allocatable, dimension (:)   :: cadcdiagonal
 
+      logical                                 :: isthere
+
       real*8,parameter        :: rzero=0.0d0
       complex*16,parameter    :: czero=(rzero,rzero)
 
@@ -953,6 +955,12 @@
          CALL QUIT("NMPROC.GT.1000! EXTEND mpi_xmat_dist routine!")
       ENDIF
       write(*,*) 'Master opens ',locfn,' for writing ADC matrix.'
+
+      inquire(file=locfn,exist=isthere)
+      if(isthere) then
+        open(unit=iobase,file=locfn,status='old')
+        close(iobase,status='delete')
+      endif
       open(unit=iobase,file=locfn, access='SEQUENTIAL',
      &     form='UNFORMATTED',status='new')
 
@@ -1126,8 +1134,8 @@
 
       return 
 
- 888  call quit('problem R/W ADC diagonal matrix in mpi_xmat_dist !')
- 889  call quit('problem R/W master ADC matrix in mpi_xmat_dist !')
+ 888  call quit('problem R/W ADC diagonal in mpi_master_mat_dist !')
+ 889  call quit('problem R/W ADC matrix in mpi_master_xmat_dist !')
 
       end
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

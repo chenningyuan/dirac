@@ -538,23 +538,22 @@ C
         WRITE(IW,*) 'Number of Davidson iterations: ',
      &     polprp_davmaxit
         WRITE(IW,'(A,E20.4)') ' Requested energy conv.: ',polprp_davconv
-        IF(polprp_davooc.eqv..false.) THEN
-           WRITE(IW,*) 'Trying full incore storage of Davidson vectors.'
-           WRITE(IW,*) 'Will default to out-of-core if resources are'
-           WRITE(IW,*) 'not available.'
-        ENDIF
       endif
 
       return
       end
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE PRECONTRACT_NEW(iounit,iw,eps)
+      SUBROUTINE PRECONTRACT_PAR(iounit,iw,eps)
 !
 !
-!  this routine is called by master only. If we have a parallel run
-!  then the nodes provide integrals.
-!  The routine calculates <ab||cd> * <cd||ji>/(ec + ed - ej - ei)
-!  contracted over cd.
+!  this routine is called by master only. 
+!  If we have a parallel run the nodes do their share of the contraction
+!        <ab||cd> * <cd||ji>/(ec + ed - ej - ei)
+!  and send the partial result back to master where it is combined and
+!  stored on disk. Allocation of large VVVV buffers is hereby avoided.
+!
+!  In serial run it can be assumed that the VVVV integrals fit into a
+!  single buffer, otherwise parallel execution is advised.
 !
 
 #if defined (VAR_MPI)
@@ -572,10 +571,12 @@ C
       real*8, allocatable, dimension(:)        :: vvvvz
       real*8, allocatable, dimension(:)        :: vvoo1
       real*8, allocatable, dimension(:)        :: vvoop
-      integer                                  :: n1,ixx
+      real*8, allocatable, dimension(:)        :: vvoos
+      integer                                  :: n1,ixx,inode
       integer                                  :: ialloc
       integer                                  :: signal
       integer*8                                :: n8,i8
+      real*8                                   :: R0
       COMPLEX*16                               :: A0,A1
       character*9                              :: preconfn='VVVVXVVOO'
       logical                                  :: isthere
@@ -584,6 +585,7 @@ C
 #include  "../relccsd/symm.inc"
 #include  "../relccsd/complex.inc"
 #include  "../relccsd/ccpar.inc"
+#include  "polprp_servercodes.h"
 !
 !   function interfaces
 !
@@ -593,80 +595,97 @@ C
           real*8, dimension(:)         :: ra1,ra2
         END SUBROUTINE
 
-        SUBROUTINE mpi_master_vvvv_complete(ra1,i1)
-          real*8, dimension(:)            :: ra1
-          integer*8                       :: i1
-        END SUBROUTINE mpi_master_vvvv_complete
+        SUBROUTINE do_partial_precon(ra1,ra2)
+          real*8, dimension(:)         :: ra1,ra2
+        END SUBROUTINE
 
       end interface
 !
 ! execution
 !
       if(carith.and.rcw.eq.2) then
-        write(iw,*) ' **) Performing (complex) precontraction'
+        write(iw,*) ' -> Performing (complex) precontraction'
       else if(.not.carith.and.rcw.eq.1) then
-        write(iw,*) ' **) Performing (real) precontraction'
+        write(iw,*) ' -> Performing (real) precontraction'
       else
         write(iw,*) ' Control error in precontract_new!'
         call quit('error')
       endif
+      R0=0.0d0
       A0=(0.0D00,0.0D00)
       A1=(1.0D00,0.0D00)
 
-! allocate buffers and read in integrals
+! allocate buffers and get integrals needed in serial and parallel
 
       n1 = ivvoott(nrep+1)
       allocate(vvoo1(n1*rcw))
       allocate(vvoop(n1*rcw))
 
+      vvoop = R0
+
+      call getvvoo(vvoo1)
+      call denomvvoo_pp(eps,vvoo1)
+!____________________________________________________________________
+!|
+!|  Do parallel execution with partial contractions for each VVVV batch
+!|
+#if defined (VAR_MPI)
+      write(iw,*) ' -> in parallel mode.'
+      call interface_mpi_bcast(SERVER_PRECON,1,MASTER,
+     &                         global_communicator)
+
+!  sending  <cd||ji>/(ec + ed - ej - ei) to the slaves
+
+      do inode=master+1,nmproc-1
+        write(*,*) 'Sending vvoo stream to node',inode
+        call interface_mpi_send(vvoo1,n1*rcw,inode,
+     &                          MSGN,global_communicator)
+      enddo
+
+! also perform local partial contraction
+
+      vvoop = 0.0d0
+      call do_partial_precon(vvoo1,vvoop)
+
+! collect the partial streams from the slaves
+
+      allocate(vvoos(n1*rcw))
+      do inode=master+1,nmproc-1
+        vvoos = R0
+        write(*,*) 'Fetching vvoo stream from node',inode
+        call interface_mpi_recv(vvoos,n1*rcw,inode,MSGN,
+     &                          global_communicator)
+        vvoop = vvoop + vvoos
+      enddo
+      deallocate(vvoos)
+
+#else
+!____________________________________________________________________
+!|
+!|  Do serial execution using complete VVVV batch
+!|
+      write(iw,*) ' -> in serial mode.'
       n8 = ivvvvtt(nrep+1)
       allocate(vvvvz(n8*rcw),stat=ialloc)
       if(ialloc.ne.0) then
         STOP 'VVVV buffer could not be allocated.'
       else
-        write(*,*) 'Master allocated',n8,' words for VVVV buffer.'
+        write(*,*) n8,' words for VVVV buffer were allocated.'
       endif
-!____________________________________________________________________
-!|
-!|  fetching integrals in serial/parallel mode
-!|
-#if defined (VAR_MPI)
-      do i8=1,n8*rcw
-        vvvvz(i8) = -4096.0d0
-      enddo
-      call rdvvvv(vvvvz)  ! master reads its own chunks
-      call mpi_master_vvvv_complete(vvvvz,n8*rcw)  !fetch integrals from slaves
-      do i8=1,n8*rcw
-        if(vvvvz(i8).eq. -4096.0d0)
-     &    call quit('Internal error: gap in the VVVV stream!')
-      enddo
-      write(*,*) 'Master: <VV||VV> stream ready.'
-#else
       call rdvvvv(vvvvz)  ! master reads complete stream in serial mode
-#endif
-!     write(*,*) '################# int list ##################'
-!     do i8=1,n8*rcw
-!        write(*,*) ' ### vvvv integral',i8,vvvvz(i8)
-!     enddo
-!     write(*,*) '################# int list ##################'
-!     write(*,*) 'Master VVVV chksum:',dot_product(vvvvz,vvvvz)
-!|
-!|  
-!|___________________________________________________________________
-
-      call getvvoo(vvoo1)
-      call denomvvoo_pp(eps,vvoo1)
-!
-!  do the contraction over all symmetries
-!
       CALL CNTRCT('N','N',NVVT,NOOT,NVVT,A1,vvvvz,vvoo1,A0,vvoop,NREP)
-!     write(*,*) 'Master: after CNTRCT.Chksum:',dot_product(vvoop,vvoop)
+      deallocate(vvvvz)
+#endif
+!|  
+!|    from here the internal state is identical in ser/par:
+!|    contracted integrals sit in vvoop array and are written to disk
+!|___________________________________________________________________
 !
-!  check if file already present. If yes, delete it.
-!
+      write(*,*) 'Precontracted VVOO stream chksum:',
+     &    dot_product(vvoop,vvoop)
       Inquire(file=preconfn,exist=isthere)
       If(isthere) then
-         write(*,*) 'Deleting previous precontraction data.'
+         write(*,*) 'Deleting previous precontraction file.'
          open(unit=iounit, file=preconfn, status='old')
          close(iounit, status='delete')
       Endif
@@ -679,11 +698,88 @@ C
       close(iounit)
       write(*,*) 'File ',preconfn,' generated.'
 !
-!  free buffers immediately 
+!  free buffers used in ser/par mode.
 !
       deallocate(vvoop)
       deallocate(vvoo1)
-      deallocate(vvvvz)
+
+      return
+      end
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine do_partial_precon(vvoo_in,vvoo_ou)
+      implicit none
+!
+      real*8,allocatable,dimension (:)    :: vvoo_in, vvoo_ou
+
+#include  "polprp_servercodes.h"
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/ccpar.inc"
+#include  "../relccsd/complex.inc"
+!
+! local variables
+! 
+      integer                             :: irp,istart,mint,nbatch
+      integer                             :: n2,nint,m,n,k,localstart
+      integer                             :: off1,off2,off3
+      real*8,allocatable,dimension(:)     :: bufr
+      logical                             :: done,deb
+      complex*16,parameter                :: cone=(1.0d0,0.0d0)
+!
+! executable code
+! 
+      deb = .false.
+      If(SERVER_TRACE.ne.0) deb = .true.
+
+      if(deb) then
+        n2 = idist(1,1,irp)
+        write(*,*) 'ioff start on node',myproc,n2
+        n2 = idist(2,1,irp)
+        write(*,*) 'ioff end on node',myproc,n2
+        n2 = idist(2,1,irp) - idist(1,1,irp)
+        write(*,*) '# of NVVT batches on node',myproc,n2
+        n2 = idist(3,1,irp)
+        write(*,*) 'absolute start add. of this batch: ',myproc,n2
+        n2 = idist(4,1,irp)
+        write(*,*) 'absolute end add. of this batch: ',myproc,n2
+        n2 = idist(5,1,irp)
+        write(*,*) 'relative start add. of this batch: ',myproc,n2
+        n2 = idist(6,1,irp)
+        write(*,*) 'relative end add. of this batch: ',myproc,n2
+      endif
+
+      Do irp = 1,nrep
+
+        istart = 0
+        mint = nvvt(irp)  !maximum number of batches in this irrep
+        nbatch = idist(2,1,irp) - idist(1,1,irp) !current batches on this node
+        n2 = nbatch * nvvt(irp) ! number of VVVV integrals on this node
+
+        allocate(bufr(n2*rcw))
+        CALL GETVVVV (irp,istart,nint,done,bufr,mint)
+        if(nint.ne.nbatch.or.(.not.done)) then
+          write(*,*) 'Serious batch distribution error!'
+          write(*,*) 'Contact programmer of the module.'
+          call quit()
+        else
+          if(deb) write(*,*) 'Node',myproc,' local VVVV checksum:',
+     &      dot_product(bufr,bufr)
+        endif
+
+        m = nvvt(irp)
+        n = noot(irp)
+        k = nbatch
+        localstart = idist(1,1,irp)
+        off1 = 1
+        off2 = (ivvoott(irp) + localstart)*rcw + 1
+        off3 = ivvoott(irp)*rcw + 1
+        CALL XGEMM ('N','N',m,n,k,cone,bufr(off1),m,
+     &              vvoo_in(off2),m,cone,vvoo_ou(off3),m)
+
+        deallocate(bufr)
+        if(deb) write(*,*) 'Node',myproc,'$$ loc. precon checksum:',
+     &     dot_product(vvoo_ou,vvoo_ou)
+
+      Enddo  !irp
 
       return
       end
@@ -1080,5 +1176,553 @@ C
       get_file_unit = lu
       return
       end Function
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE DISORT(n,arr,brr)
+!
+! adapted from numerical recipes in fortran 77
+! to simultaneously shuffle the index array brr
+! with the sorted array arr
+!
+      implicit none
+      INTEGER n,M,NSTACK
+      REAL*8 arr(n)
+      INTEGER brr(n)
+      PARAMETER (M=7,NSTACK=50)
+      INTEGER i,ir,j,jstack,k,l,istack(NSTACK)
+      REAL*8 a,atemp
+      INTEGER b,btemp
+      jstack=0
+      l=1
+      ir=n
+1     if(ir-l.lt.M)then
+        do 12 j=l+1,ir
+          a=arr(j)
+          b=brr(j)
+          do 11 i=j-1,1,-1
+            if(arr(i).le.a)goto 2
+            arr(i+1)=arr(i)
+            brr(i+1)=brr(i)
+11        continue
+          i=0
+2         arr(i+1)=a
+          brr(i+1)=b
+12      continue
+        if(jstack.eq.0)return
+        ir=istack(jstack)
+        l=istack(jstack-1)
+        jstack=jstack-2
+      else
+        k=(l+ir)/2
+        atemp=arr(k)
+        arr(k)=arr(l+1)
+        arr(l+1)=atemp
+        btemp=brr(k)
+        brr(k)=brr(l+1)
+        brr(l+1)=btemp
+        if(arr(l+1).gt.arr(ir))then
+          atemp=arr(l+1)
+          arr(l+1)=arr(ir)
+          arr(ir)=atemp
+          btemp=brr(l+1)
+          brr(l+1)=brr(ir)
+          brr(ir)=btemp
+        endif
+        if(arr(l).gt.arr(ir))then
+          atemp=arr(l)
+          arr(l)=arr(ir)
+          arr(ir)=atemp
+          btemp=brr(l)
+          brr(l)=brr(ir)
+          brr(ir)=btemp
+        endif
+        if(arr(l+1).gt.arr(l))then
+          atemp=arr(l+1)
+          arr(l+1)=arr(l)
+          arr(l)=atemp
+          btemp=brr(l+1)
+          brr(l+1)=brr(l)
+          brr(l)=btemp
+        endif
+        i=l+1
+        j=ir
+        a=arr(l)
+        b=brr(l)
+3       continue
+          i=i+1
+        if(arr(i).lt.a)goto 3
+4       continue
+          j=j-1
+        if(arr(j).gt.a)goto 4
+        if(j.lt.i)goto 5
+        atemp=arr(i)
+        arr(i)=arr(j)
+        arr(j)=atemp
+        btemp=brr(i)
+        brr(i)=brr(j)
+        brr(j)=btemp
+        goto 3
+5       arr(l)=arr(j)
+        arr(j)=a
+        brr(l)=brr(j)
+        brr(j)=b
+        jstack=jstack+2
+        if(jstack.gt.NSTACK)then
+          stop 'increase NSTACK in DISORT'
+        endif
+        if(ir-i+1.ge.j-l)then
+          istack(jstack)=ir
+          istack(jstack-1)=i
+          ir=j-1
+        else
+          istack(jstack)=j-1
+          istack(jstack-1)=l
+          l=i
+        endif
+      endif
+      goto 1
+      END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      double complex function pp_zdotc(n,zx,zy)
 
+      integer                           :: n
+      double complex, dimension(:)      :: zx,zy
+!
+!   local variables
+!
+      double complex                    :: a
+      integer                           :: i
+      double complex,parameter          :: czero = (0.0d0,0.0d0)
+!
+!   executable code
+!
+      a = czero
+
+      do i=1,n
+        a = a + dconjg(zx(i)) * zy(i)
+      enddo
+
+      pp_zdotc = a
+
+      return
+      end
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      real*8 function rzvecnorm(n,z)
+!
+! this function calculates the (real) norm of a complex vector of length n.
+!
+      integer                     :: n
+      complex*16, dimension (:)   :: z
+
+      integer          :: i
+      complex*16       :: sum,x
+
+      sum = (0.0d0,0.0d0)
+      do i=1,n
+        x = z(i)
+        sum = sum + dconjg(x) * x
+      enddo
+      if(abs(aimag(sum)).gt.1.0E-10) then
+        write(*,*) 'Too large imaginary part in rzvecnorm!'
+        call quit('numerical problem')
+      endif
+      rzvecnorm = sqrt(real(sum))
+
+      return
+      end
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE xmvmul_sp_r(iobase,intbuf,ladc,PO,PN)
+!
+      IMPLICIT NONE
+!
+!------------------------ calling variables -------------------------
+!
+      integer                        :: iobase,intbuf,ladc
+      real*8,dimension(:)            :: PO,PN
+!
+!------------------------ local variables -------------------------
+!
+      REAL*8,  allocatable, dimension(:)      :: BUF
+      INTEGER, allocatable, dimension(:)      :: IOI,IOJ
+      INTEGER                                 :: I,K,IXX
+      INTEGER                                 :: NACT,JDUMMY,IROW,ICOL
+      REAL*8                                  :: A
+      integer                                 :: nbufsloc
+      integer                                 :: ioresult
+
+!
+!---------------Description--------------------------------------------
+!
+!  Perform the real symmetric multiplication of the partial or complete
+!  ADC matrix with PO and store the result in the vector PN
+!
+!---------------Executable code--------------------------------------
+!
+!  for the matrix elements we note that only the lower triangular
+!  part *AND* the diagonal of the ADC-matrix is stored. 
+!  the if takes care of not double counting the diagonal.
+
+      allocate(buf(intbuf))
+      allocate(ioi(intbuf))
+      allocate(ioj(intbuf))
+!
+!  nbufsloc is an indicator if the ADC matrix is complete or partial
+!  In serial mode it is complete and has -1 at the beginning. Here we need the
+!  iostat mechanism to determine the file end
+!
+!  In parallel mode nbufsloc contains the actual number of buffers. This is known due
+!  to the matrix distribution procedure.
+!
+!  By this we avoid an awkward handling of the number of buffers as arguments, or common blocks...
+!
+      pn = 0.0d0
+
+      rewind(iobase)
+      read(iobase) nbufsloc
+
+      If(nbufsloc.lt.0) then  !any negative number indicates serial
+!___________________________________________________________
+!|
+!|   serial case, exact buffer number is not known
+!|   we read stream blocks until end of file is reached.
+
+      Do
+
+        READ(iobase,iostat=ioresult) (BUF(IXX),IXX=1,INTBUF),
+     &                               (IOI(IXX),IXX=1,INTBUF),
+     &                               (IOJ(IXX),IXX=1,INTBUF),
+     &                               NACT,JDUMMY
+        if (ioresult > 0) then
+           call quit('ADC matrix read error (real). Terminating')
+        endif
+        if (ioresult < 0) then  ! EOF detected
+           exit    !leave infinite do loop
+        endif
+
+! useful data in buffer
+
+        DO K = 1, NACT
+          IROW = IOI(K)
+          ICOL = IOJ(K)
+          A    = BUF(K)
+
+          PN(IROW) = PN(IROW) + PO(ICOL) * A
+          IF(IROW.NE.ICOL) PN(ICOL) = PN(ICOL) + PO(IROW) * A
+        ENDDO
+
+      Enddo
+!|
+!|   
+!|__________________________________________________________
+      else
+!___________________________________________________________
+!|
+!|   parallel case, exact buffer number is known
+!|
+        DO I = 1,nbufsloc
+          READ(iobase,ERR=889) (BUF(IXX),IXX=1,INTBUF),
+     &                         (IOI(IXX),IXX=1,INTBUF),
+     &                         (IOJ(IXX),IXX=1,INTBUF),
+     &                          NACT,JDUMMY
+          DO K = 1, NACT
+            IROW = IOI(K)
+            ICOL = IOJ(K)
+            A    = BUF(K)
+
+            PN(IROW) = PN(IROW) + PO(ICOL) * A
+            IF(IROW.NE.ICOL) PN(ICOL) = PN(ICOL) + PO(IROW) * A
+          ENDDO
+        ENDDO
+!|
+!|   
+!|__________________________________________________________
+
+      endif
+
+      deallocate(ioj)
+      deallocate(ioi)
+      deallocate(buf)
+
+      RETURN
+
+ 889  CALL QUIT('Matrix read error in xmvmul_sp_r')
+
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE xmvmul_sp_c(iobase,intbuf,ladc,PO,PN)
+!
+      IMPLICIT NONE
+!
+!------------------------ calling variables -------------------------
+!
+      integer                        :: iobase,intbuf,ladc
+      complex*16,dimension(:)        :: PO,PN
+!
+!------------------------ local variables -------------------------
+!
+      complex*16, allocatable, dimension(:)   :: BUF
+      INTEGER, allocatable, dimension(:)      :: IOI,IOJ
+      INTEGER                                 :: I,K,IXX
+      INTEGER                                 :: NACT,JDUMMY,IROW,ICOL
+      complex*16                              :: A
+      integer                                 :: nbufsloc
+      integer                                 :: ioresult
+
+!
+!---------------Description--------------------------------------------
+!
+!  Perform the hermitian multiplication of the external partial 
+!  ADC matrix with PO and store the result in the vector PN
+!
+!---------------Executable code--------------------------------------
+!
+!  for the matrix elements we note that only the lower triangular
+!  part *AND* the diagonal of the ADC-matrix is stored. 
+!  the if takes care of not double counting the diagonal.
+
+      allocate(buf(intbuf))
+      allocate(ioi(intbuf))
+      allocate(ioj(intbuf))
+!
+!  nbufsloc is an indicator if the ADC matrix is complete or partial
+!  In serial mode it is complete and has -1 at the beginning. Here we need the
+!  iostat mechanism to determine the file end
+!
+!  In parallel mode nbufsloc contains the actual number of buffers. This is known due
+!  to the matrix distribution procedure.
+!
+!  By this we avoid an awkward handling of the number of buffers as arguments, or common blocks...
+!
+      pn = (0.0d0,0.0d0)
+
+      rewind(iobase)
+      read(iobase) nbufsloc
+
+      If(nbufsloc.lt.0) then  !any negative number indicates serial
+!___________________________________________________________
+!|
+!|   serial case, exact buffer number is not known
+!|   we read stream blocks until end of file is reached.
+
+        Do
+
+          READ(iobase,iostat=ioresult) (BUF(IXX),IXX=1,INTBUF),
+     &                                 (IOI(IXX),IXX=1,INTBUF),
+     &                                 (IOJ(IXX),IXX=1,INTBUF),
+     &                                 NACT,JDUMMY
+          if (ioresult > 0) then
+             call quit('ADC matrix read error (complex). Terminating')
+          endif
+          if (ioresult < 0) then  ! EOF detected
+             exit    !leave infinite do loop
+          endif
+
+! useful data in buffer
+
+          DO K = 1, NACT
+            IROW = IOI(K)
+            ICOL = IOJ(K)
+            A    = BUF(K)
+
+             PN(IROW) = PN(IROW) + PO(ICOL) * A
+            IF(IROW.NE.ICOL) PN(ICOL) = PN(ICOL) + PO(IROW)*dconjg(A)
+          ENDDO
+
+        Enddo
+!|
+!|   
+!|__________________________________________________________
+      else
+!___________________________________________________________
+!|
+!|   parallel case, exact buffer number is known
+!|
+        DO I = 1,nbufsloc
+          READ(iobase,ERR=889) (BUF(IXX),IXX=1,INTBUF),
+     &                         (IOI(IXX),IXX=1,INTBUF),
+     &                         (IOJ(IXX),IXX=1,INTBUF),
+     &                          NACT,JDUMMY
+          DO K = 1, NACT
+            IROW = IOI(K)
+            ICOL = IOJ(K)
+            A    = BUF(K)
+
+            PN(IROW) = PN(IROW) + PO(ICOL) * A
+            IF(IROW.NE.ICOL) PN(ICOL) = PN(ICOL) + PO(IROW)*dconjg(A)
+          ENDDO
+        ENDDO
+!|
+!|   
+!|__________________________________________________________
+
+      endif
+
+      deallocate(ioj)
+      deallocate(ioi)
+      deallocate(buf)
+
+      RETURN
+
+ 889  CALL QUIT('Matrix read error in xmvmul_sp_c')
+
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE XDIAG_INI_R(iobase,intbuf,nbufs,ladc)
+
+!  Fetch the diagonal entries of the sparse matrix A, needed for the
+!  Davidson iterations.
+!  This routine is only called in the serial case and obtains NBUFS.
+!  It generates a local file handle and writes out diagonal.
+
+      IMPLICIT NONE
+!
+!------------------------ calling variables -------------------------
+!
+      integer                        :: iobase
+      integer                        :: intbuf,nbufs,ladc
+!
+!------------------------ local variables -------------------------
+!
+      Character*8,parameter                   :: diagfile='ADCDGTMP'
+      integer                                 :: serialindicator
+      REAL*8,  allocatable, dimension(:)      :: BUF
+      INTEGER, allocatable, dimension(:)      :: IOI,IOJ
+      REAL*8,  allocatable, dimension(:)      :: adiag
+      INTEGER                                 :: I,K,IXX
+      INTEGER                                 :: NACT,JDUMMY,IROW,ICOL
+      REAL*8                                  :: A
+      INTEGER                                 :: io_out
+
+!
+!--------------- Interfaces --------------------------------------------
+!
+      interface
+
+        Function get_file_unit()
+          integer                      :: get_file_unit
+        END Function
+
+      end interface
+!
+!---------------Executable code--------------------------------------
+!
+      allocate(buf(intbuf))
+      allocate(ioi(intbuf))
+      allocate(ioj(intbuf))
+      allocate(adiag(ladc))
+
+!  .. read elements
+
+      REWIND(iobase)
+      read(iobase) serialindicator   !discarded, but should be less than zero!
+
+      DO I = 1,NBUFS
+        READ(iobase,ERR=889) (BUF(IXX),IXX=1,INTBUF),
+     &                       (IOI(IXX),IXX=1,INTBUF),
+     &                       (IOJ(IXX),IXX=1,INTBUF),
+     &                        NACT,JDUMMY
+        DO K = 1, NACT
+          IROW = IOI(K)
+          ICOL = IOJ(K)
+          A    = BUF(K)
+
+          IF(IROW.EQ.ICOL) adiag(irow) = A
+
+        ENDDO
+      ENDDO
+
+      io_out = get_file_unit()
+      open(unit=io_out,file=diagfile, access='SEQUENTIAL',
+     &     form='UNFORMATTED',status='NEW')
+      write(io_out,ERR=887) (adiag(ixx),ixx=1,ladc)
+      close(io_out)
+
+      deallocate(adiag)
+      deallocate(ioj)
+      deallocate(ioi)
+      deallocate(buf)
+
+      RETURN
+
+ 887  CALL QUIT('Matrix write error in XDIAG_INI_R')
+ 889  CALL QUIT('Matrix read error in XDIAG_INI_R')
+
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE XDIAG_INI_C(iobase,intbuf,nbufs,ladc)
+
+! complex extension of XDIAG_INI_R
+
+      IMPLICIT NONE
+!
+!------------------------ calling variables -------------------------
+!
+      integer                        :: iobase
+      integer                        :: intbuf,nbufs,ladc
+!
+!------------------------ local variables -------------------------
+!
+      Character*8,parameter                     :: diagfile='ADCDGTMP'
+      integer                                   :: serialindicator
+      complex*16, allocatable, dimension(:)     :: BUF
+      INTEGER, allocatable, dimension(:)        :: IOI,IOJ
+      complex*16, allocatable, dimension(:)     :: adiag
+      INTEGER                                   :: I,K,IXX
+      INTEGER                                   :: NACT,JDUMMY,IROW,ICOL
+      complex*16                                :: A
+      INTEGER                                   :: io_out
+!
+!--------------- Interfaces --------------------------------------------
+!
+      interface
+
+        Function get_file_unit()
+          integer                      :: get_file_unit
+        END Function
+
+      end interface
+!
+!---------------Executable code--------------------------------------
+!
+      allocate(buf(intbuf))
+      allocate(ioi(intbuf))
+      allocate(ioj(intbuf))
+      allocate(adiag(ladc))
+
+c  .. read elements
+
+      REWIND(iobase)
+      read(iobase) serialindicator   !discarded, but should be less than zero!
+
+      DO I = 1,NBUFS
+        READ(iobase,ERR=889) (BUF(IXX),IXX=1,INTBUF),
+     &                       (IOI(IXX),IXX=1,INTBUF),
+     &                       (IOJ(IXX),IXX=1,INTBUF),
+     &                        NACT,JDUMMY
+        DO K = 1, NACT
+          IROW = IOI(K)
+          ICOL = IOJ(K)
+          A    = BUF(K)
+
+          IF(IROW.EQ.ICOL) adiag(irow) = A
+
+        ENDDO
+      ENDDO
+
+      io_out = get_file_unit()
+      open(unit=io_out,file=diagfile, access='SEQUENTIAL',
+     &     form='UNFORMATTED',status='NEW')
+       write(io_out,ERR=887) (adiag(ixx),ixx=1,ladc)
+       close(io_out)
+
+      deallocate(adiag)
+      deallocate(ioj)
+      deallocate(ioi)
+      deallocate(buf)
+
+      RETURN
+
+ 887  CALL QUIT('Matrix write error in XDIAG_INI_C')
+ 889  CALL QUIT('Matrix read error in XDIAG_INI_C')
+
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

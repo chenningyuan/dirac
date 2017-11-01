@@ -194,9 +194,7 @@ C     Get the correct arithmetic (NZ is not initialized on slaves if you do not 
 C
 #if defined (VAR_MPI)
       IF (NMPROC .GT. 1) THEN
-         print*,'+++++ node',MYPROC,' entering mpi_bcast1.'
          call interface_mpi_BCAST_l0(CA,1,MASTER,global_communicator)
-         print*,'+++++ node',MYPROC,' entering mpi_bcast2.'
          call interface_mpi_BCAST_l0(MP2_DENRUN,1,MASTER,
      &                  global_communicator)
       END IF
@@ -239,7 +237,9 @@ C     to the corresponding output file.
 C
       OPEN(LUCMD,FILE = 'DIRAC.INP')
       OPEN(MSLVOUT,FILE = CCFILN(1:LCCFIL))
+
       CALL POLPRP_MAIN(LUCMD,MSLVOUT,CA,INTFCE)
+
       CLOSE (MSLVOUT,STATUS='KEEP')
       CLOSE (LUCMD,STATUS='KEEP')
       write(*,*) 'Node',MYPROC,' has arrived after POLPRP_MAIN!'
@@ -267,6 +267,7 @@ C
 
       use memory_allocator
       use interface_to_mpi
+      use polprp_cfg
 
       IMPLICIT INTEGER (A-Z)
 !
@@ -309,6 +310,8 @@ C
       integer     :: MAXCORE    ! contains --mw * 1000 * 1000 (number of words, decimal mega)
       integer     :: maxcore_info(2)
       character*6 :: maxcore_infc(2)
+
+      logical     :: skip_ccseti
 !
 !---------------interface region --------------------------------------
 !
@@ -328,6 +331,15 @@ C
 !
       maxcore_info = 0
       maxcore_infc = (/'CCSETI','POLPRP'/)
+
+#if defined (VAR_MPI)
+      IF(MYPROC.eq.MASTER) then
+        skip_ccseti = polprp_skipccseti
+        write(*,*) 'Master will communicate skip flag.'
+      ENDIF
+#else
+      skip_ccseti = polprp_skipccseti
+#endif
 
       call legacy_lwork_get(MAXCORE)
 
@@ -415,10 +427,10 @@ C
       CALL SYMTAB (NELEC,NFROZ,NINACT,NACT,NSP,EPS1,EPS,IREPSP,
      &             IREPSPI,.FALSE.,.TRUE.,NELEC_F1,NELEC_F2)
 
-      write(*,*) 'NSP  :',NSP
-      write(*,*) 'MAXSP:',maxsp
-      write(*,*) 'MXREP:',mxrep
-      write(*,*) 'Length of irepspi array:',MAXSP*MXREP*2,' integers'
+      write(iw,*) 'NSP  :',NSP
+      write(iw,*) 'MAXSP:',maxsp
+      write(iw,*) 'MXREP:',mxrep
+      write(iw,*) 'Length of irepspi array:',MAXSP*MXREP*2,' integers'
 !
 !  determine number of electrons and print general information
 !
@@ -459,17 +471,51 @@ C
         if(USEOE) WRITE (IW,*) 'Orbital energies from HF are used'
       end if
 
-!
-!  call integral preparation routine from RELCCSD
-!  Sort 2E-Ints into the six classes OOOO,VOOO,VVOO,VOVO,VVVO,VVVV
-!  
-!       ICALC = 1
-!       CALL CCSETI (ICALC,maxcore_info(1),EPS,NSP,IREPSP,IREPSPI)
-
       ICALC = 2
-      CALL CCSETI (ICALC,maxcore_info(1),EPS,NSP,IREPSP,IREPSPI)
-      WRITE(IW,*) 'Memory requirements of ',
-     &             maxcore_infc(1),maxcore_info(1)
+!
+! we offer to skip ccseti completely. This is provided because for really
+! large files this step can take unexpectedly large amount of time.
+! If the user provides the ftxx.yy files on the shared scratch file
+! system, it should work. Attention: the files are opened in CCSETI on the
+! master and slave. Therefore we have to open them explicitly, if CCSETI
+! is to be skipped.
+!
+
+! Input variables only set for master. In case of parallel run we have
+! to communicate the flag.
+
+#if defined (VAR_MPI)
+      IF (NMPROC .GT. 1) THEN
+         call interface_mpi_BCAST_l0(skip_ccseti,1,MASTER,
+     &                               global_communicator)
+      END IF
+!     print*,'+++++ node',MYPROC,' has skip flag:',skip_ccseti
+#endif
+      
+      if(.not.skip_ccseti) then
+        write(iw,*) 'Entering CCSETI'
+        CALL CCSETI (ICALC,maxcore_info(1),EPS,NSP,IREPSP,IREPSPI)
+      else
+        write(iw,*)
+        write(iw,*) 'Skipping CCSETI, opening files explicitly.'
+        write(iw,*)
+        write(iw,*) '*** All the ftXX.YY files have to be on the'
+        write(iw,*) '*** shared scratch file system. This option'
+        write(iw,*) '*** will not work on strictly distributed'
+        write(iw,*) '*** file systems.'
+        write(iw,*)
+        write(iw,*)
+        CALL WAIO_OPEN(ITAPT+0)
+        CALL WAIO_OPEN(ITAPT+1)
+        CALL WAIO_OPEN(ITAPT+2)
+        CALL WAIO_OPEN(ITAPT+3)
+        CALL WAIO_OPEN(ITAPT+4)
+        CALL WAIO_OPEN(ITAPT+5)
+        CALL WAIO_OPEN(ITAPT+6)
+      endif
+
+!     WRITE(IW,*) 'Memory requirements of ',
+!    &             maxcore_infc(1),maxcore_info(1)
 !
 !  call *parallel* polarization propagator code
 !  
@@ -537,7 +583,7 @@ C
       real*8, allocatable     :: daibj(:)
       integer                 :: irploop,desrep
       CHARACTER*6             :: namematfil = 'PP_ELE'  !name of the main ADC matrix file
-      CHARACTER*6             :: namecnffil = 'XCONFIG'  !name of the configuration file
+      CHARACTER*6             :: namecnffil = 'XCONFG'  !name of the configuration file
       integer                 :: irecl, ireccnt, intbuf
       integer                 :: ladc
       integer                 :: lencouplbl = 0
@@ -548,6 +594,7 @@ C
       logical                 :: propertyints
       integer                 :: qst_numofstacks
       integer                 :: qst_verbose
+      logical                 :: isthere
 !  
 !  variables for rdprop_adc integral testing
 !
@@ -560,11 +607,6 @@ C
 !-----------------------interface section---------------------
 !
       interface
-
-        SUBROUTINE detoptintbuf(i1,r1)
-          integer                  :: i1
-          real*8                   :: r1
-        END SUBROUTINE
 
         SUBROUTINE print_input_info(i1,i2)
           integer                  :: i1,i2
@@ -657,7 +699,7 @@ C
           character*6           :: c1,c2
         END SUBROUTINE
 
-        SUBROUTINE mpi_davidson_accel_r(i1,i2,i3,i4,i5,c1)
+        SUBROUTINE mpi_block_davidson_r(i1,i2,i3,i4,i5,c1)
           integer               :: i1,i2,i3,i4,i5
           character*6           :: c1
         END SUBROUTINE
@@ -671,7 +713,7 @@ C
           real*8, dimension(:)  :: ra1
         END SUBROUTINE
 
-        SUBROUTINE PRECONTRACT_NEW(i1,i2,ra1)
+        SUBROUTINE PRECONTRACT_PAR(i1,i2,ra1)
           integer               :: i1,i2
           real*8, dimension(:)  :: ra1
         END SUBROUTINE
@@ -748,6 +790,12 @@ C
           write(*,*) 'TMs requested, entering property handler.'
           CALL property_handler(iobase,iobase+1,
      &                          propertyints,NSP,IREPSPI)
+          inquire(file='ADCTRMOM',exist=isthere)
+          if(isthere) then
+            open(unit=iobase,file='ADCTRMOM',status='OLD')
+            close(iobase,status='DELETE')
+            write(*,*) 'Old ADCTRMOM file cleared.'
+          endif
         endif
 !|
 !|
@@ -780,38 +828,29 @@ C
 
 !__________________________________________________
 !|
-!|  determine optimal buffer length
-!|  (executed by all cores)
-!|  total_mem_new is the number of bytes. We transfer the number of
-!|  real*8 words.
+!|  in this version the size of the buffer is fiexed
 !|
-
-!       write(*,*) 'Calling detopt.. with',total_mem_new/8.0d0
-!       Call detoptintbuf(intbuf,total_mem_new/8.0d0)
-
-        INTBUF = 20*1024   !buffer size for matrix R/W buffers
-!|
+        INTBUF = 20*1024
 !|
 !|_________________________________________________
 
 
 #if defined (VAR_MPI)
       if(MYPROC.EQ.MASTER) then 
-! ______________ PRECONTRACTION of the VVVV and the VVOO integrals
-! |
-! |   In case of parallel execution we have to collect the VVVV
-! |   integrals from the nodes. Otherwise all are on one node.
-! |   Files will be written to 'VVVVXVVOO'
-
-        write(iw,*) 'Master indicates start.'
+!
+!  trigger slaves. Check if all are awake.
+!
         call interface_mpi_bcast(SERVER_HELLO,1,MASTER,
      &                           global_communicator)
-
 #endif
 !
-!  precontract is only executed by master in case of a par run
+! ______________ PRECONTRACTION of the VVVV and the VVOO integrals
+! |
+! |  precontract is only executed by master in case of a par run
+! |  Slaves do their share in the service loop.
 !
-        CALL PRECONTRACT_NEW(iobase,iw,eps)
+        write(*,*) 'Entering precontraction.'
+        CALL PRECONTRACT_PAR(iobase,iw,eps)
         write(*,*) 'Precontraction finished.'
 
 ! ______________ SYMMETRY LOOP FOR COUPLING + SAT BLOCK___________
@@ -872,6 +911,11 @@ C
 
 #if defined (VAR_MPI)
 !
+          inquire(file=namematfil,exist=isthere)
+          if(isthere) then
+            open(unit=iobase,file=namematfil,status='OLD')
+            close(iobase,status='DELETE')
+          endif
           open(unit=iobase,file=namematfil, access='SEQUENTIAL',
      &         form='UNFORMATTED',status='NEW')
           n2 = jvovo(nrep+1)
@@ -909,6 +953,8 @@ C
             write(*,*) '**) Used buffers of bufsize',intbuf,': ',nbufs
           endif
 
+! ADC matrix is on disk and corresponding file is closed.
+
           close(iobase)
 
 #else
@@ -916,6 +962,11 @@ C
 ! remind: in the serial case the number of buffers (NBUFS) is known
 !         after matrix construction.
 
+          inquire(file=namematfil,exist=isthere)
+          if(isthere) then
+            open(unit=iobase,file=namematfil,status='OLD')
+            close(iobase,status='DELETE')
+          endif
           OPEN(UNIT=IOBASE,FILE=namematfil, ACCESS='SEQUENTIAL',
      &       FORM='UNFORMATTED',STATUS='NEW')
           serialindicator = -654321
@@ -939,6 +990,9 @@ C
             CALL XDIAG_INI_R(iobase,INTBUF,NBUFS,
      &                       lencouplbl + MVO(desrep))
           ENDIF
+
+! ADC matrix is on disk and corresponding file is closed.
+
           CLOSE(iobase)
 
           Write(*,*)
@@ -970,37 +1024,23 @@ C
 !  slaves perform partial matrix/vector multiplication.
 
           if(carith) then
-!           call fulldia_c3(iobase,namematfil,intbuf,ladc)
-            call mpi_davidson_master_ext_c(iw,
-     &                                     iobase,
-     &                                     desrep,
-     &                                     intbuf,
-     &                                     namematfil,
-     &                                     namecnffil,
-     &                                     irecl,
-     &                                     ladc,
-     &                                     MVO(desrep))
+
+            call mpi_block_davidson_c(iobase,
+     &                                intbuf,
+     &                                ladc,
+     &                                MVO(desrep),
+     &                                desrep,
+     &                                namematfil)
+
           else
-!           call fulldia_r3(iobase,namematfil,intbuf,ladc,desrep)
 
-!           write(*,*) ' **ATT new davidson !!!*****'
+            call mpi_block_davidson_r(iobase,
+     &                                intbuf,
+     &                                ladc,
+     &                                MVO(desrep),
+     &                                desrep,
+     &                                namematfil)
 
-!           call mpi_davidson_accel_r(iobase,
-!    &                                intbuf,
-!    &                                ladc,
-!    &                                MVO(desrep),
-!    &                                desrep,
-!    &                                namematfil)
-
-            call mpi_davidson_master_ext_r(iw,
-     &                                     iobase,
-     &                                     desrep,
-     &                                     intbuf,
-     &                                     namematfil,
-     &                                     namecnffil,
-     &                                     irecl,
-     &                                     ladc,
-     &                                     MVO(desrep))
           endif
 
 ! Main ADC matrix file is deleted
@@ -1014,7 +1054,9 @@ C
 !|
 
           if(polprp_dotrmo) then
-            write(*,*) 'User asks for TM calculation'
+            write(*,*) 'User asks for TM calculation',
+     &                  ' (symmetry',desrep,')'
+            write(*,*)
             if(propertyints) then
               call build_tramo(desrep,iobase,eps)
             else
@@ -1090,108 +1132,3 @@ C
       return
       end 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DETOPTINTBUF(intbuf,cdmem)
-
-      use interface_to_mpi
-
-      implicit none
-
-      integer                        :: intbuf
-      real*8                         :: cdmem
-!
-!  includes
-!
-#include  "../relccsd/ccpar.inc"
-#include  "../relccsd/symm.inc"
-
-      interface
-        
-        function xcoldet(i1)
-          integer         :: xcoldet
-          integer         :: i1
-        end function
-
-      end interface
-!
-!  local variables
-!
-      integer                        :: maxrow,crow
-      integer                        :: i,desrep
-      real*8                         :: rnzele,bufmem
-
-!------------------------------------------------------
-!   execution part
-!------------------------------------------------------
-
-      intbuf = 0
-
-#if defined (VAR_MPI)
-      if(MYPROC.EQ.MASTER) then 
-
-! max matrix dimension
-
-        maxrow = 0
-        do desrep=1,nrep
-          crow = xcoldet(desrep) + MVO(DESREP)
-          if(crow.ge.maxrow) maxrow = crow
-        enddo
-        write(*,*) 'Maximum matrix length',maxrow
-        write(*,*) 'Number of nodes:',nmproc
-        
-! number of nonzero elements concerning sparsity of 98 percent
-
-        rnzele = dble(maxrow) * 0.02d0 * dble(maxrow)
-
-! number of elements per core
-
-        rnzele = rnzele / dble(nmproc)
-
-! considering storage of row/column indices
-
-        rnzele = 2.0d0 * rnzele
-
-! 30 percent of local max. dynamical memory (in r*8 words) should be used as buffer
-
-        bufmem = 0.3d0 * cdmem
-
-        write(*,*) 'Number of real*8 words to be stored p. node:',rnzele
-        write(*,*) 'Available memory for buffers:',bufmem
-        if(rnzele.le.bufmem) then
-          intbuf = aint(rnzele)
-        else
-          intbuf = aint(bufmem)
-        endif
-        write(*,*) 'Master determined INTBUF as',INTBUF
-        call interface_mpi_bcast(intbuf,1,MASTER,
-     &                           global_communicator)
-      else
-        call interface_mpi_bcast(intbuf,1,MASTER,
-     &                           global_communicator)
-        write(*,*) 'Core',myproc,' obtained INTBUF as',INTBUF
-      endif
-
-#else
-
-      maxrow = 0
-      do desrep=1,nrep
-        crow = xcoldet(desrep) + MVO(DESREP)
-        if(crow.ge.maxrow) maxrow = crow
-      enddo
-      write(*,*) 'Maximum matrix length',maxrow
-      rnzele = dble(maxrow) * 0.02d0 * dble(maxrow)
-      rnzele = 2.0d0 * rnzele
-      bufmem = 0.3d0 * cdmem
-      write(*,*) 'Number of real*8 words to be stored:',rnzele
-      write(*,*) 'Available memory for buffers:',bufmem
-      if(rnzele.le.bufmem) then
-        intbuf = aint(rnzele)
-      else
-        intbuf = aint(bufmem)
-      endif
-      write(*,*) 'determined INTBUF as',INTBUF
-#endif
-      
-      return
-      END SUBROUTINE
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-
