@@ -4837,11 +4837,30 @@ C
 C
                   JDA = IDET(1,J)
                   IF (JDA .NE. JDAOLD) THEN
-                     JDAOLD = JDA
 C                    ... outer loop in gascip_gendet is over A-strings
                      IDAV = IEOR(IDA, JDA)
                      CALL FNBITS(NDAV,IDAV,IBTAB)
-                     IF (NDAV .GT. MXNDAV) GOTO 200
+                  END IF
+                  IF (NDAV .GT. MXNDAV) GOTO 200
+C                 ... see note above about MXNDAV
+
+                  JDB  = IDET(2,J)
+                  IF (NDAV .EQ. ITMAX) THEN
+                     IF (JDB .NE. IDB) GO TO 200
+                  ELSE
+                     IDBV = IEOR(IDB, JDB)
+                     CALL FNBITS(NDBV,IDBV,IBTAB)
+C
+                     IT = NDAV + NDBV
+                     IF (IT .GT. ITMAX) GOTO 200
+C                    ... IT = number of different spinors
+C                          in det(I) and det(J)
+                  END IF
+                  ! OK, a hit, we must now calculate coupling
+
+                  IF (JDA .NE. JDAOLD) THEN
+                  ! calculate A-string det(J) info if not already done
+                     JDAOLD = JDA
                      NEW_HMAT = .TRUE. ! new HR, HI from GASCIP_HMAT
 C
                      JAELEC = 0
@@ -4864,28 +4883,18 @@ C
                         END IF
                      END DO
                   END IF
-                  IF (NDAV .GT. MXNDAV) GOTO 200
-C                 ... see note above about MXNDAV
 C
-                  JDB  = IDET(2,J)
+                  ! calculate B-string det(J) info 
                   IF (NDAV .EQ. ITMAX) THEN
-                     IF (JDB .NE. IDB) GO TO 200
-                     IT = NDAV
-                     IBI = 0
-                     IBJ = 0
-                     K = KA
-                     M = MA
-                     DO IELEC = JAELEC + 1, NAELEC
-                        JOCCI(IELEC) = IOCCI(IELEC)
-                     END DO
+                     IF (NEW_HMAT) THEN
+                        IT = NDAV
+                        K = KA
+                        M = MA
+                        DO IELEC = JAELEC + 1, NAELEC
+                           JOCCI(IELEC) = IOCCI(IELEC)
+                        END DO
+                     END IF
                   ELSE
-                     IDBV = IEOR(IDB, JDB)
-                     CALL FNBITS(NDBV,IDBV,IBTAB)
-C
-                     IT = NDAV + NDBV
-                     IF (IT .GT. ITMAX) GOTO 200
-C                    ... IT = number of different spinors
-C                          in det(I) and det(J)
 C
                      NEW_HMAT = .TRUE.
                      IELEC = JAELEC
