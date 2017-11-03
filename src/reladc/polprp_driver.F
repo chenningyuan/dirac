@@ -608,11 +608,6 @@ C
 !
       interface
 
-        SUBROUTINE detoptintbuf(i1,r1)
-          integer                  :: i1
-          real*8                   :: r1
-        END SUBROUTINE
-
         SUBROUTINE print_input_info(i1,i2)
           integer                  :: i1,i2
         END SUBROUTINE
@@ -714,11 +709,6 @@ C
         END SUBROUTINE
 
         SUBROUTINE build_tramo(i1,i2,ra1)
-          integer               :: i1,i2
-          real*8, dimension(:)  :: ra1
-        END SUBROUTINE
-
-        SUBROUTINE PRECONTRACT_NEW(i1,i2,ra1)
           integer               :: i1,i2
           real*8, dimension(:)  :: ra1
         END SUBROUTINE
@@ -838,38 +828,27 @@ C
 
 !__________________________________________________
 !|
-!|  determine optimal buffer length
-!|  (executed by all cores)
-!|  total_mem_new is the number of bytes. We transfer the number of
-!|  real*8 words.
+!|  in this version the size of the buffer is fiexed
 !|
-
-!       write(*,*) 'Calling detopt.. with',total_mem_new/8.0d0
-!       Call detoptintbuf(intbuf,total_mem_new/8.0d0)
-
-        INTBUF = 20*1024   !buffer size for matrix R/W buffers
-!|
+        INTBUF = 20*1024
 !|
 !|_________________________________________________
 
 
 #if defined (VAR_MPI)
       if(MYPROC.EQ.MASTER) then 
-! ______________ PRECONTRACTION of the VVVV and the VVOO integrals
-! |
-! |   In case of parallel execution we have to collect the VVVV
-! |   integrals from the nodes. Otherwise all are on one node.
-! |   Files will be written to 'VVVVXVVOO'
-
-!       write(iw,*) 'Master indicates start.'
+!
+!  trigger slaves. Check if all are awake.
+!
         call interface_mpi_bcast(SERVER_HELLO,1,MASTER,
      &                           global_communicator)
-
 #endif
 !
-!  precontract is only executed by master in case of a par run
+! ______________ PRECONTRACTION of the VVVV and the VVOO integrals
+! |
+! |  precontract is only executed by master in case of a par run
+! |  Slaves do their share in the service loop.
 !
-!       CALL PRECONTRACT_NEW(iobase,iw,eps)
         write(*,*) 'Entering precontraction.'
         CALL PRECONTRACT_PAR(iobase,iw,eps)
         write(*,*) 'Precontraction finished.'
@@ -1053,15 +1032,6 @@ C
      &                                desrep,
      &                                namematfil)
 
-!           call mpi_davidson_master_ext_c(iw,
-!    &                                     iobase,
-!    &                                     desrep,
-!    &                                     intbuf,
-!    &                                     namematfil,
-!    &                                     namecnffil,
-!    &                                     irecl,
-!    &                                     ladc,
-!    &                                     MVO(desrep))
           else
 
             call mpi_block_davidson_r(iobase,
@@ -1071,15 +1041,6 @@ C
      &                                desrep,
      &                                namematfil)
 
-!           call mpi_davidson_master_ext_r(iw,
-!    &                                     iobase,
-!    &                                     desrep,
-!    &                                     intbuf,
-!    &                                     namematfil,
-!    &                                     namecnffil,
-!    &                                     irecl,
-!    &                                     ladc,
-!    &                                     MVO(desrep))
           endif
 
 ! Main ADC matrix file is deleted
@@ -1171,108 +1132,3 @@ C
       return
       end 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DETOPTINTBUF(intbuf,cdmem)
-
-      use interface_to_mpi
-
-      implicit none
-
-      integer                        :: intbuf
-      real*8                         :: cdmem
-!
-!  includes
-!
-#include  "../relccsd/ccpar.inc"
-#include  "../relccsd/symm.inc"
-
-      interface
-        
-        function xcoldet(i1)
-          integer         :: xcoldet
-          integer         :: i1
-        end function
-
-      end interface
-!
-!  local variables
-!
-      integer                        :: maxrow,crow
-      integer                        :: i,desrep
-      real*8                         :: rnzele,bufmem
-
-!------------------------------------------------------
-!   execution part
-!------------------------------------------------------
-
-      intbuf = 0
-
-#if defined (VAR_MPI)
-      if(MYPROC.EQ.MASTER) then 
-
-! max matrix dimension
-
-        maxrow = 0
-        do desrep=1,nrep
-          crow = xcoldet(desrep) + MVO(DESREP)
-          if(crow.ge.maxrow) maxrow = crow
-        enddo
-        write(*,*) 'Maximum matrix length',maxrow
-        write(*,*) 'Number of nodes:',nmproc
-        
-! number of nonzero elements concerning sparsity of 98 percent
-
-        rnzele = dble(maxrow) * 0.02d0 * dble(maxrow)
-
-! number of elements per core
-
-        rnzele = rnzele / dble(nmproc)
-
-! considering storage of row/column indices
-
-        rnzele = 2.0d0 * rnzele
-
-! 30 percent of local max. dynamical memory (in r*8 words) should be used as buffer
-
-        bufmem = 0.3d0 * cdmem
-
-        write(*,*) 'Number of real*8 words to be stored p. node:',rnzele
-        write(*,*) 'Available memory for buffers:',bufmem
-        if(rnzele.le.bufmem) then
-          intbuf = aint(rnzele)
-        else
-          intbuf = aint(bufmem)
-        endif
-        write(*,*) 'Master determined INTBUF as',INTBUF
-        call interface_mpi_bcast(intbuf,1,MASTER,
-     &                           global_communicator)
-      else
-        call interface_mpi_bcast(intbuf,1,MASTER,
-     &                           global_communicator)
-        write(*,*) 'Core',myproc,' obtained INTBUF as',INTBUF
-      endif
-
-#else
-
-      maxrow = 0
-      do desrep=1,nrep
-        crow = xcoldet(desrep) + MVO(DESREP)
-        if(crow.ge.maxrow) maxrow = crow
-      enddo
-      write(*,*) 'Maximum matrix length',maxrow
-      rnzele = dble(maxrow) * 0.02d0 * dble(maxrow)
-      rnzele = 2.0d0 * rnzele
-      bufmem = 0.3d0 * cdmem
-      write(*,*) 'Number of real*8 words to be stored:',rnzele
-      write(*,*) 'Available memory for buffers:',bufmem
-      if(rnzele.le.bufmem) then
-        intbuf = aint(rnzele)
-      else
-        intbuf = aint(bufmem)
-      endif
-      write(*,*) 'determined INTBUF as',INTBUF
-#endif
-      
-      return
-      END SUBROUTINE
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-
