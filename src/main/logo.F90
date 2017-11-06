@@ -123,6 +123,7 @@ print *, '*    Olav Fossgaard           UiT The Arctic University of      Norway
 print *, '*    Andre S. P. Gomes        CNRS/Universite de Lille          France        *'
 print *, '*    Erik D. Hedegaard        Lund University                   Sweden        *'
 print *, '*    Trygve Helgaker          University of Oslo                Norway        *'
+print *, '*    Benjamin Helmich-Paris   Vrije Universiteit Amsterdam      Netherlands   *'
 print *, '*    Johan Henriksson         Linkoeping University             Sweden        *'
 print *, '*    Miroslav Ilias           Matej Bel University              Slovakia      *'
 print *, '*    Christoph R. Jacob       TU Braunschweig                   Germany       *'
