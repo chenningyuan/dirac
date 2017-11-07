@@ -18,7 +18,7 @@
 !     decrease/increase when running smaller/larger systems
       INTEGER :: MXPSTT
 !TF   PARAMETER (MXPSTT = 12500 )
-      PARAMETER (MXPSTT = 40000 )
+      PARAMETER (MXPSTT = 150000 )
 
 !     MXINT_TP == max. number of SO-integral types 
       INTEGER MXINT_TP
