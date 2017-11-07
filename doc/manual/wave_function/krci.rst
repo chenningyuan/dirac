@@ -333,3 +333,8 @@ operator in z-direction and print the total
 :math:`\hat{j}_z` = :math:`\hat{s}_z` + :math:`\hat{l}_z` 
 expectation value (:math:`\Omega` value) for each electronic state.
 
+keyword(MHYP)
+
+compute magnetic hyperfine interaction constants as expectation values over
+the operator
+:math: `\left(\alpha\right)`
