@@ -81,10 +81,8 @@
 !  to the corresponding POLPRP section.
 !
 !
-!     ITASK = 13 for parallel POLPRP
+!     ITASK = POLPRP_PAR
 !
-!     print*, '+++++ in PAMPOLPRP, parcal: ',PARCAL
-!     print*, '+++++ trying to wake up slaves.'
       IF (PARCAL) CALL DIRAC_PARCTL( POLPRP_PAR )
 
 #if defined (VAR_MPI)
@@ -369,6 +367,12 @@ C
       WRITE(IW,*)
       WRITE(IW,*) ' M. Pernpointner, J. Chem. Phys. 140, 084108 (2014).'
       WRITE(IW,*) ' doi: 10.1063/1.4865964'
+      WRITE(IW,*)
+      WRITE(IW,*) ' The parallelization and transition moments'
+      WRITE(IW,*) ' are described in'
+      WRITE(IW,*)
+      WRITE(IW,*) ' M. Pernpointner, L. Visscher and A. B. Trofimov,'
+      WRITE(IW,*) ' J. Chem. Theory Comput. 2017 (submitted)'
       WRITE(IW,*)
       WRITE(IW,*)
       WRITE(IW,*)' ________________________________________________ '
