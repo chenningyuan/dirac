@@ -832,9 +832,9 @@ C
 
 !__________________________________________________
 !|
-!|  in this version the size of the buffer is fiexed
+!|  in this version the size of the buffer is fixed
 !|
-        INTBUF = 20*1024
+        INTBUF = 40*1024
 !|
 !|_________________________________________________
 
