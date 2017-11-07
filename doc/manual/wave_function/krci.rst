@@ -336,8 +336,9 @@ expectation value (:math:`\Omega` value) for each electronic state.
 keyword(MHYP)
 
 compute magnetic hyperfine interaction constants as expectation values over
-Fermi's four-component operator (Z. Phys. 60 (1930) 332)
+Fermi's four-component operator (Z. Phys. 60 (1930) 332).
 Example for the hydrogen atom (proton nucleus):
+ 
  ::
  
   .MHYP
