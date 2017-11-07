@@ -54,6 +54,7 @@ add_dependencies(krmc gp)
 add_dependencies(krmc dirac)
 add_dependencies(krmc main)
 add_dependencies(krmc luciarel)
+add_dependencies(krmc interface_mpi)
 if(ENABLE_QCORR)
 #   it's module qcorr_cfg
     add_dependencies(krmc qcorr)

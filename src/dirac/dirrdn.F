@@ -737,6 +737,8 @@ C
     2 CONTINUE
 #if defined (VAR_MPI)
       CALL PRLINP(WORD)
+#else
+      CALL QUIT('*PARALLEL in input, but this is a non_MPI version')
 #endif
         GO TO 200
     3 CONTINUE
@@ -2622,7 +2624,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 19, NTABLE = 23)
+      PARAMETER (NDIR = 19, NTABLE = 24)
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,CTEMP*90
@@ -2645,7 +2647,7 @@ C
      &             '.RESOLV','.ORBROT','.LUCIAR','.KRMCSC',
      &             '.PHCOEF','.MP2 NO','.RELADC','.KR CI ',
      &             '.KR CC ','.COSCI ','.GASCIP','.HSFS  ',
-     &             '.ARDUCC','.SCF   ','.KRCI  '/
+     &             '.ARDUCC','.SCF   ','.KRCI  ','.POLPRP'/
 C
       N_WF = 0
 C
@@ -2669,6 +2671,7 @@ C
       DOCOSCI = .FALSE.
       DOGASCIP= .FALSE.
       DOHSFS  = .FALSE.
+      DOPOLPRP= .FALSE.
 C
 C *** Initialize /CBIREO/ in dcbreo.h
 C     ===================
@@ -2713,7 +2716,7 @@ C
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (101,102,103,104,105,106,107,108,
      &                109,110,111,112,113,114,115,116,
-     &                117,118,119,120,121,122,123),I
+     &                117,118,119,120,121,122,123,124),I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -2892,6 +2895,13 @@ C&&&& SCF
 C&&&& KRCI :  alternative spelling of KR CI
   123    CONTINUE
             GO TO 116
+C&&&& POLPRP: Calculate polarization propagator for excitations
+  124    CONTINUE
+            IF (.NOT.NOTRA) DOTRA = .TRUE.
+            DOPOLPRP   = .TRUE.
+            N_WF = N_WF + 1
+            DIRAC_WF(N_WF) = 'POLPRP'
+            GO TO 100
 
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
@@ -2948,6 +2958,7 @@ C hj aug03: TODO: idea was/is to maybe follow MCSCF by big CI
       IF(DOLUCT)   WRITE(LUPRI,'(A)') ' * Run LUCITA CI code'
       IF(DOARDUC)  WRITE(LUPRI,'(A)') ' * Run ARDUCCA CC code'
       IF(DOADC)    WRITE(LUPRI,'(A)') ' * Run RELADC code'
+      IF(DOPOLPRP) WRITE(LUPRI,'(A)') ' * Run POLPRP code'
       IF(DOKRCI)   WRITE(LUPRI,'(A)')
      &   ' * Kramers restricted CI calculation'
       IF(DOKRCC)   WRITE(LUPRI,'(A)')
@@ -3181,7 +3192,7 @@ C
             write (*,*) ' Warning! Warning! Warning! Warning! Warning!'
             write (*,*) ' '
             write (*,*) '  RELADC does not run in parallel. To avoid'
-            write (*,*) '  inconsitencies, it is suggested that jobs'
+            write (*,*) '  inconsistencies, it is suggested that jobs'
             write (*,*) '  such as this are rerun setting the number'
             write (*,*) '  of MPI processes to one (e.g. in calling'
             write (*,*) '  pam with the argument -mpi 1)'
@@ -4998,7 +5009,9 @@ C ... get integral flags in advance
 !mi:  by default do not allow mixing T+ with T-
       TRS_MIX=.FALSE.
 !jmho: deafult - no polarizable embedding
+#ifdef HAS_PELIB
       PEQM = .FALSE.
+#endif
 !mi:  by default, do not save Jz_MO matrices
       WRITE_Jz_MATRIX = .FALSE.
 
@@ -5589,10 +5602,6 @@ C..TODO: check for inconsistencies and add stops
 !&&&& .PEQM: polarizable embedding
   166     CONTINUE
 #ifdef HAS_PELIB
-            IF (LEVYLE) THEN 
-               CALL QUIT('PE libray and Levy-Leblond'//
-     &         ' Hamiltonian have not been tested => Therefore QUIT!')
-            END IF 
             WRITE(LUPRI,*) 'PE library will be used.'
             PEQM = .TRUE.
 #else
@@ -6511,11 +6520,13 @@ C
           ENDDO
         ENDIF
       ENDIF
+#ifdef HAS_PELIB
       IF (PEQM) THEN
         WRITE(LUPRI,'(1X,A,A)')
      &  '* Environment is modeled using polarizable embedding scheme'//
      &  ' (PE library)'
       END IF
+#endif
       IF (NOINPUT) GOTO 500
 C
 C     Process input for various program sections
@@ -6571,7 +6582,7 @@ C       if *CAP in input but MOD_CAP is not defined !!!
       GO TO 200
     6 CONTINUE
 CMI  ... reading input routine for AMFI+RELSCF
-        IF((IBSS.GT.999.or.x2c).AND..NOT.NOAMFI) THEN
+        IF((IBSS.GT.999.or.x2c).AND..NOT.NOAMFI.AND..NOT.SPINFR) THEN
           CALL AMFI_RELSCF_INP(WORD,.FALSE.)
         ELSE
           GO TO 1

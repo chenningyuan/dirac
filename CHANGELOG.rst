@@ -1,17 +1,23 @@
 :orphan:
 
-17.alpha
---------
+17.0 (2017-12-12)
+-----------------
 
 New features:
-- New and numerically stable procedure for elimination/freezing of orbitals at SCF level
-- .MVOFAC for \*KRMC
+- Kramers restricted Polarization Propagator in the ADC framework for electronic excitations, activated with ".POLPRP".
+ - Reference: M. Pernpointner. The relativistic polarization propagator for the calculation of electronic excitations in heavy systems.
+   J. Chem. Phys. 140, 084108 (2014); http://dx.doi.org/10.1063/1.4865964 and M. Pernpointner, L. Visscher and A. B. Trofimov. 
+   Four-component Polarization Propagator Calculations of Electron Excitations: Spectroscopic Implications of Spin-Orbit Coupling Effects. J. Chem. Theory Comput. (2017) submitted.
+- Polarizable embedding using pelib (https://gitlab.com/pe-software/pelib-public). Activated with ".PEQM", options under \*PEQM.
+ - Reference: E. D. Hedegård, R. Bast, J. Kongsted, J. M. H. Olsen, and H. J. Aa. Jensen.  Relativistic Polarizable Embedding.
+   J. Chem. Theory Comput. 13, 2870-2880 (2017); http://doi.org/10.1021/acs.jctc.7b00162
+- New and numerically stable procedure for elimination/freezing of orbitals at SCF level. Author: T. Saue.
+- New ".MVOFAC" option in \*KRMC input section. Author: H. J. Aa. Jensen.
 - Added the RPF-4Z and aug-RPF-4Z basis sets for f-elements to the already existing files with sets for s, p and d elements. Deleted the aug-RPF-3Z set as that was not an official set.
   
 (Do not change anything below this text on the master branch,
 the lines below should only be changed on the release branch.)
 
------------------------------------------------------------------------------------------------------
 16.1 (???)
 -----------------
 
@@ -29,6 +35,7 @@ New defaults:
 Performance improvements:
 - restored integral screening behavior from DIRAC15
 
+-----------------------------------------------------------------------------------------------------
 
 16.0 (2016-12-12)
 -----------------
@@ -81,7 +88,6 @@ Bug fixes:
 - Bugfix: restored "make install" target.
 - Bugfix: Test reladc_fano does not report failure if Stieltjes is deactivated.
 
--------------------------------------------------------------------------------------------------------
 
 15.0 (2015-12-16)
 -----------------

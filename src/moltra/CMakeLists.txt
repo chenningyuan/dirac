@@ -45,3 +45,4 @@ add_library(
 add_dependencies(moltra main)
 add_dependencies(moltra dirac)
 add_dependencies(moltra dirrci)
+add_dependencies(moltra interface_mpi)

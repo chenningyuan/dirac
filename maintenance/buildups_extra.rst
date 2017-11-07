@@ -1,9 +1,9 @@
-The DIRAC program suite build results of Miro Ilias
----------------------------------------------------
+The DIRAC program suite buildup results of Miro Ilias
+-----------------------------------------------------
 
 
-CDash diverse testing
-~~~~~~~~~~~~~~~~~~~~~
+CDash diverse testings
+~~~~~~~~~~~~~~~~~~~~~~
 
 `DIRAC on testboard.org <https://testboard.org/cdash/index.php?project=DIRACext>`_
 
@@ -12,12 +12,7 @@ The CI workers build status badges
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Complete CI buildups are visible only to Miro Ilias, because these CI services 
-fetch the DIRAC code from his private github and bitbucket repositories.
-
-* magnum-ci
-
-.. image:: https://magnum-ci.com/status/99965d25e6e85b28dbc64884c9ea0f38.png
-       :target: https://magnum-ci.com/public/e5dfa5d9804238a8377e/builds
+fetch the DIRAC code from his private gitlab and bitbucket repositories.
 
 * codeship
 
@@ -38,3 +33,16 @@ fetch the DIRAC code from his private github and bitbucket repositories.
 
 .. image:: https://semaphoreci.com/api/v1/projects/b5752e42-3309-4871-a7ef-d96be17c439d/379656/badge.svg
        :target: https://semaphoreci.com/miro_ilias/my-dirac
+
+* bitrise
+
+* nevercode
+
+* codefresh
+
+|Codefresh build status|
+
+.. |Codefresh build status| image:: https://g.codefresh.io/api/badges/build?repoOwner=miro.ilias&repoName=dirac&branch=master&pipelineName=dirac&accountName=miroilias&key=eyJhbGciOiJIUzI1NiJ9.NTk3MDg0MzZmNjdjMGEwMDAxMjc4MTk2.lCkFjZSdnRbGR8dHIjM3lLdo-DEteme2R4ykF_8S39M&type=cf-1
+   :target: https://g.codefresh.io/repositories/miro.ilias/dirac/builds?filter=trigger:build;branch:master;service:597088ef26998d0001219c2c~dirac
+
+* bitbucket-pipelines

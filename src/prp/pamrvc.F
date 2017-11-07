@@ -4177,12 +4177,15 @@ C
         endif 
 #endif      
 #ifdef HAS_PELIB
-        if (pe_gspol) write(lupri,*)'Dynamical response is disabled'
         if (peqm .and. .not. pe_gspol) then
+           if (IPRXRS .gt. 3) then
+              write(lupri,'(/A)') ' Polarizable embedding'//
+     &        ' contributions included in linear response.'
+           endif
            call pelib_ifc_response(fao, fmo, ndmat, ihrmop)
         endif
 #endif
- 
+
 C
 C
 C     *******************************************

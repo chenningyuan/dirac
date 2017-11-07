@@ -22,6 +22,7 @@
 #ifdef HAS_PELIB
       logical function use_pelib()
           use pe_variables, only: peqm
+          implicit none
           if (peqm) then
              use_pelib = .true.
           else
@@ -31,6 +32,7 @@
 
       logical function pelib_ifc_gspol()
           use pe_variables, only: pe_gspol
+          implicit none
           if (pe_gspol) then
               pelib_ifc_gspol = .true.
           else
@@ -40,6 +42,7 @@
 
       logical function pelib_ifc_dolf()
         use pe_variables, only: pe_lf
+        implicit none
         if (pe_lf) then
             pelib_ifc_dolf = .true.
         else
@@ -50,6 +53,7 @@
       subroutine pelib_ifc_input_reader(word)
         use pe_variables, only: peqm
         use polarizable_embedding, only: pe_input_reader
+        implicit none
 #include "priunit.h"
         character(len=7), intent(inout) :: word
         call qenter('pelib_ifc_input_reader')
@@ -60,6 +64,7 @@
 
       subroutine pelib_ifc_init()
         use polarizable_embedding, only: pe_init
+        implicit none
 #include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
@@ -70,6 +75,7 @@
 
       subroutine pelib_ifc_finalize()
         use polarizable_embedding, only: pe_finalize
+        implicit none
         call qenter('pelib_ifc_finalize')
         call pe_finalize()
         call qexit('pelib_ifc_finalize')
@@ -80,6 +86,7 @@
         implicit none
 #include "priunit.h"
 #include "dcbbas.h"
+#include "dcbham.h"
         real*8, dimension(n2bbasx), intent(in) :: dmat
         real*8, dimension(n2bbasx), intent(inout) :: fmat
         real*8, intent(out) :: tot_nrg, el_nrg
@@ -111,6 +118,8 @@
         end do
         ! SS block
         do i = ntbas(1) + 1, ntbas(0)
+        ! no need for SS if Levy-Leblond
+           if (levyle) exit
            do j = 1, i
               if (j > ntbas(1)) then
                  if (i == j) then
@@ -153,6 +162,7 @@
         end do
         ! SS block
         do i = ntbas(1) + 1, ntbas(0)
+           if (levyle) exit
            do j = 1, i
               if (j > ntbas(1)) then
                   if (i == j) then
@@ -177,7 +187,9 @@
 
       subroutine pelib_ifc_energy(dmat)
         use polarizable_embedding, only: pe_master
+        implicit none
 #include "dcbbas.h"
+#include "dcbham.h"
         real*8, dimension(n2bbasx), intent(in) :: dmat
         integer :: i, j, k, l
         real*8, dimension(1) :: nrg
@@ -200,6 +212,7 @@
         end do
         ! SS block
         do i = ntbas(1) + 1, ntbas(0)
+           if (levyle) exit
            do j = 1, i
               if (j > ntbas(1)) then
                  if (i == j) then
@@ -348,7 +361,9 @@
 
       end subroutine pelib_ifc_response
       subroutine pelib_ifc_london(fckmats)
+! edh modify for DIRAC 
           use polarizable_embedding, only: pe_master
+          implicit none
 #include "inforb.h"
           real*8, dimension(3*n2basx), intent(out) :: fckmats
           integer :: i, j, k, l, m
@@ -374,29 +389,32 @@
          call qexit('pelib_ifc_london')
       end subroutine pelib_ifc_london
 
-      subroutine pelib_ifc_localfield(soint, nelmnt, noptyp)
+      subroutine pelib_ifc_localfield(soint, nbast, nelmnt, noptyp)
           use polarizable_embedding, only: pe_master
           use pe_variables, only: peqm
-#include "inforb.h"
-          integer :: nelmnt, noptyp
+          implicit none
+#include "priunit.h"
+          integer :: nbast, nelmnt, noptyp
           real*8, dimension(nelmnt,noptyp), intent(inout) :: soint
           real*8, dimension(:), allocatable :: intmats
-          integer :: i, ndim
+          integer :: i
           call qenter('pelib_ifc_localfield')
           if (.not. peqm) call quit('PElib not active')
-          print *, 'Local field corrections to dipole integrals applied'
-          print *, 'TODO: improve output wrt EEF'
+          write(lupri,'(/A/A)')
+     &       'Effective external field (EEF) correction'//
+     &       ' is applied to dipole integrals.',
+     &       'Note: This correction alters *all* properties (incl.'//
+     &       'static properties) that depend on dipole integrals.'
           if (noptyp /= 3) then
              call quit('ERROR: inconsistent dimension')
           end if
-          allocate(intmats(3*nelmnt))
-          ndim = int(0.5 * (sqrt(1.0 + 8.0 * nelmnt) - 1.0))
+          allocate(intmats(noptyp*nelmnt))
 #if defined(VAR_MPI)
           call pelib_ifc_start_slaves(8)
 #endif
           call pe_master(runtype='effdipole',
      &                   triang=.true.,
-     &                   ndim=ndim,
+     &                   ndim=nbast,
      &                   fckmats=intmats)
           do i = 1, 3
             soint(:,i) = soint(:,i) + intmats((i-1)*nelmnt+1:i*nelmnt)
@@ -408,6 +426,7 @@
       subroutine pelib_ifc_slave()
           use interface_to_mpi
           use polarizable_embedding, only: pe_slave
+          implicit none
 #include "infpar.h"
           integer :: runtype
           call qenter('pelib_ifc_slave')
@@ -433,13 +452,16 @@
 #if defined(VAR_MPI)
       subroutine pelib_ifc_start_slaves(runtyp)
           use interface_to_mpi
+          implicit none
           integer :: runtyp
 #include "infpar.h"
+#include "dirac_partask.h"
           call qenter('pelib_ifc_start_slaves')
               !if (.not. use_pelib()) call quit('PElib not active')
-          call dirac_parctl(12)
+          call dirac_parctl(PELIB_PAR)
           CALL interface_MPI_BCAST(RUNTYP,1,MPARID,
      &                            global_communicator)
+          call dirac_parctl(RELEASE_NODES)
           call qexit('pelib_ifc_start_slaves')
       end subroutine pelib_ifc_start_slaves
 #endif

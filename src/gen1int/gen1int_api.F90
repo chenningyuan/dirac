@@ -85,13 +85,13 @@ module gen1int_api
   integer, save, private :: api_num_atoms = 0                      !number of atoms
   real(REALK), save, allocatable, private :: api_coord_atoms(:,:)  !coordinates of atoms
   real(REALK), save, allocatable, private :: api_charge_atoms(:)   !charges of atoms
-  real(REALK), save, private :: api_dipole_origin(3) = 0.0_REALK   !coordinates of dipole origin
-  real(REALK), save, private :: api_gauge_origin(3) = 0.0_REALK    !coordinates of gauge origin
-  real(REALK), save, private :: api_origin_LPF(3) = 0.0_REALK      !coordinates of origin of London phase factor
+  real(REALK), save, private :: api_dipole_origin(3) = 0.0_8   !coordinates of dipole origin
+  real(REALK), save, private :: api_gauge_origin(3) = 0.0_8    !coordinates of gauge origin
+  real(REALK), save, private :: api_origin_LPF(3) = 0.0_8      !coordinates of origin of London phase factor
 
   ! \fn(Gen1IntAPICreate) might be the only program specific subroutine (depends on common blocks)
   public :: Gen1IntAPICreate
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
   public :: Gen1IntAPIBcast
 #endif
   public :: Gen1IntAPIInited
@@ -326,7 +326,7 @@ module gen1int_api
     api_inited = .true.
   end subroutine Gen1IntAPICreate
 
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
   !> \brief broadcasts AO sub-shells
   !> \author Bin Gao
   !> \date 2012-05-13
@@ -534,7 +534,7 @@ module gen1int_api
     integer, optional, intent(in) :: order_geo
     integer icomp, jcomp  !incremental recorders over components
     ! initializes
-    val_mo = 0.0_REALK
+    val_mo = 0.0_8
     ! loops over components
     do icomp = 1, size(comp_shell)
       jcomp = comp_shell(icomp)
@@ -575,9 +575,9 @@ module gen1int_api
       api_num_atoms = 0              !number of atoms
       deallocate(api_coord_atoms)    !coordinates of atoms
       deallocate(api_charge_atoms)   !charges of atoms
-      api_dipole_origin = 0.0_REALK  !coordinates of dipole origin
-      api_gauge_origin = 0.0_REALK   !coordinates of gauge origin
-      api_origin_LPF = 0.0_REALK     !coordinates of origin of the London phase factor
+      api_dipole_origin = 0.0_8  !coordinates of dipole origin
+      api_gauge_origin = 0.0_8   !coordinates of gauge origin
+      api_origin_LPF = 0.0_8     !coordinates of origin of the London phase factor
     end if
     api_inited = .false.
   end subroutine Gen1IntAPIDestroy

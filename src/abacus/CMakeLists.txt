@@ -133,4 +133,7 @@ add_dependencies(abacus gp)
 add_dependencies(abacus ecp)
 add_dependencies(abacus xcint)  
 add_dependencies(abacus grid)  
-add_dependencies(abacus pelib)  
+if (ENABLE_PELIB)
+    add_dependencies(abacus pelib)  
+endif()
+

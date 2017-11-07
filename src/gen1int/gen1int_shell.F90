@@ -89,7 +89,7 @@ module gen1int_shell
   end type sub_shell_t
 
   public :: Gen1IntShellCreate
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
   public :: Gen1IntShellBcast
 #endif
   public :: Gen1IntShellView
@@ -202,7 +202,7 @@ module gen1int_shell
     end if
   end subroutine Gen1IntShellCreate
 
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
   !> \brief broadcasts AO sub-shells
   !> \author Bin Gao
   !> \date 2012-05-13
@@ -479,7 +479,7 @@ module gen1int_shell
     integer start_ints, end_ints                    !start and end addresses of contracted integrals
     integer ishell, idens, bgeo, kgeo, tgeo, iprop  !incremental recorders
     integer ierr                                    !error information
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
 #include "mpif.h"
     integer rank_proc                               !rank of processor
     integer num_proc                                !number of processors
@@ -614,7 +614,7 @@ module gen1int_shell
     if (ierr/=0) then
       stop "Gen1IntShellGetIntExpt>> failed to allocate contr_ints!"
     end if
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
     ! gets the rank of this processor and the number of processors
     if (present(api_comm)) then
       call MPI_Comm_rank(api_comm, rank_proc, ierr)
@@ -653,12 +653,12 @@ module gen1int_shell
           if (ierr/=0) then
             stop "Gen1IntShellGetIntExpt>> failed to allocate unique_expt!"
           end if
-          unique_expt = 0.0_REALK
+          unique_expt = 0.0_8
         else
           unique_expt => val_expt
         end if
       end if
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
       ! broadcasts what kind of jobs to do
       if (present(api_comm)) then
         call MPI_Bcast(do_integral, 1, MPI_LOGICAL, MANAGER, api_comm, ierr)
@@ -680,7 +680,7 @@ module gen1int_shell
         if (ierr/=0) then
           stop "Gen1IntShellGetIntExpt>> failed to allocate unique_expt on worker processor!"
         end if
-        unique_expt = 0.0_REALK
+        unique_expt = 0.0_8
       end if
     end if
     ! calculations with more than one processor
@@ -1136,7 +1136,7 @@ module gen1int_shell
         ! decreases the number of remaining pairs
         remaining_jobs = remaining_jobs-1
       end do
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
     end if
 #endif
     ! frees spaces
@@ -1144,12 +1144,12 @@ module gen1int_shell
     if (do_expectation) then
 !FIXME
       ! writes expectation values \var(unique_expt) on file
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
       if (rank_proc==MANAGER) then
 #endif
         if (p_write_expt) then
         end if
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
       end if
 #endif
       if (.not.present(val_expt)) then
@@ -1157,7 +1157,7 @@ module gen1int_shell
       end if
       nullify(unique_expt)
     end if
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
     ! blocks until all processors have finished
     if (present(api_comm)) call MPI_Barrier(api_comm, ierr)
 #endif
@@ -1262,7 +1262,7 @@ module gen1int_shell
     integer ishell, idens, bgeo, kgeo, tgeo, &        !incremental recorders
             iprop, ipoint
     integer ierr                                      !error information
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
 #include "mpif.h"
     integer rank_proc                                 !rank of processor
     integer num_proc                                  !number of processors
@@ -1397,7 +1397,7 @@ module gen1int_shell
     if (ierr/=0) then
       stop "Gen1IntShellGetFunExpt>> failed to allocate contr_ints!"
     end if
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
     ! gets the rank of this processor and the number of processors
     if (present(api_comm)) then
       call MPI_Comm_rank(api_comm, rank_proc, ierr)
@@ -1415,7 +1415,7 @@ module gen1int_shell
       if (do_expectation) then
         unique_expt => val_expt
       end if
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
       ! broadcasts what kind of jobs to do
       if (present(api_comm)) then
         call MPI_Bcast(do_expectation, 1, MPI_LOGICAL, MANAGER, api_comm, ierr)
@@ -1433,7 +1433,7 @@ module gen1int_shell
         if (ierr/=0) then
           stop "Gen1IntShellGetFunExpt>> failed to allocate unique_expt on worker processor!"
         end if
-        unique_expt = 0.0_REALK
+        unique_expt = 0.0_8
       end if
     end if
     ! calculations with more than one processor
@@ -1837,7 +1837,7 @@ module gen1int_shell
         ! decreases the number of remaining pairs
         remaining_jobs = remaining_jobs-1
       end do
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
     end if
 #endif
     ! frees spaces
@@ -1845,7 +1845,7 @@ module gen1int_shell
     if (do_expectation) then
       nullify(unique_expt)
     end if
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
     ! blocks until all processors have finished
     if (present(api_comm)) call MPI_Barrier(api_comm, ierr)
 #endif
@@ -1902,7 +1902,7 @@ module gen1int_shell
     integer min_row_idx, max_row_idx                !minimum and maximum indices of AOs
     integer imo, iopt, icontr, iao                  !incremental recorders
     integer ierr                                    !error information
-#if defined(VAR_MPInotdef)
+#if defined(VAR_MPI)
 #include "mpif.h"
     integer rank_proc                               !rank of processor
     integer num_proc                                !number of processors
