@@ -53,3 +53,4 @@ add_library(
 
 # deal with intermodule dependencies
 add_dependencies(luciarel gp)
+add_dependencies(luciarel interface_mpi)
