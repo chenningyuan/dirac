@@ -346,4 +346,4 @@ Example for the hydrogen atom (proton nucleus):
    2.793     nuclear magnetic moment \mu
    
 In the molecular case add a column with I and :math:`\mu` for every atom in
-the order given by the basis file.
+the order given by the basis file. Reference: :cite:`Fleig2014`
