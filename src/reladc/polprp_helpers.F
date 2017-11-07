@@ -1726,3 +1726,41 @@ c  .. read elements
 
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE ortho_warn()
+
+      implicit none
+!
+!---------------Description--------------------------------------------
+!
+! prints out a descriptive warning message for the user
+!
+
+      write(*,*)
+      write(*,*)
+      write(*,*) '*****************************************************'
+      write(*,*) '*'
+      write(*,*) '*           W A R N I N G'
+      write(*,*) '*'
+      write(*,*) '*  Orthogonality of ADC eigenvectors starts to'
+      write(*,*) '*  disappear!'
+      write(*,*) '*'
+      write(*,*) '*  This is due to the fact that the current Krylov'
+      write(*,*) '*  space dimension becomes insufficient in order to'
+      write(*,*) '*  provide enough information for the vector search.'
+      write(*,*) '*'
+      write(*,*) '*  We stop the iterations here. Otherwise'
+      write(*,*) '*  the already converged vectors lose significance.'
+      write(*,*) '*'
+      write(*,*) '*  You should restart the calculation with an'
+      write(*,*) '*  increased value for DVMAXSP.'
+      write(*,*) '*'
+      write(*,*) '*  We set number of macroiterations to maximum value.'
+      write(*,*) '*  You will see this in the corresponding output.'
+      write(*,*) '*'
+      write(*,*) '*****************************************************'
+      write(*,*)
+      write(*,*)
+
+      return
+      end
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

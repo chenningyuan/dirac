@@ -51,6 +51,7 @@
       real*8                                :: time_kryl_s, time_kryl_e
       real*8                                :: time_resi_s, time_resi_e
       real*8                                :: time_cur
+      real*8                                :: ortho_cur
       real*8                                :: hdx
       real*8,allocatable,dimension(:)       :: lambda
       real*8,allocatable,dimension(:)       :: resnorm
@@ -113,11 +114,12 @@
           real*8, dimension(:)         :: ra2
         END SUBROUTINE
 
-        SUBROUTINE write_davevecs_r(i1,i2,i3,i4,i5,i6,ra1,ra2,ra3)
+        SUBROUTINE write_davevecs_r(i1,i2,i3,i4,i5,i6,ra1,ra2,ra3,r1)
           integer                      :: i1,i2,i3,i4,i5,i6
           real*8, dimension(:)         :: ra1
           real*8, dimension(:)         :: ra2
           real*8, dimension(:,:)       :: ra3
+          real*8                       :: r1
         END SUBROUTINE
 
       end interface
@@ -446,11 +448,19 @@
         write(*,*) 'Nonconverged roots remain. Collapsing subspace.'
       endif
       call write_davevecs_r(io_bold,desrep,nroots,nmain,ladc, &
-                            krydim,lambda,resnorm,hijcal)
+                            krydim,lambda,resnorm,hijcal,ortho_cur)
 
 ! in both cases we have to get rid off the large B old file
 
       close(io_bold,status='DELETE')
+
+! check if Krylov space becomes insufficent. This is indicated by
+! deteriorating orthogonality of the (long) eigenvectors.
+
+      if(abs(ortho_cur).gt.1.0d-10) then
+        call ortho_warn()
+        maciter = maxdavit  !forcing maximum macro iterations, leads to loop break
+      endif
 
 ! now check if we should enter the next macroiteration.
 ! If yes we start over
@@ -901,7 +911,7 @@
       end
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE write_davevecs_r(io_bold,desrep,nroots,nmain,ladc, &
-                                  krydim,lambda,resnorm,cji)
+                                  krydim,lambda,resnorm,cji,ortho)
       implicit none
 !
 !---------------Description--------------------------------------------
@@ -915,6 +925,7 @@
       real*8,dimension(:)        :: lambda
       real*8,dimension(:)        :: resnorm
       real*8,dimension(:,:)      :: cji
+      real*8                     :: ortho
 !
 !------------------------ local variables -------------------------
 !
@@ -923,7 +934,6 @@
       integer                                :: irecl,istat
       integer,allocatable,dimension(:)       :: ievec
       real*8                                 :: a1
-      real*8                                 :: ortho
       real*8,parameter                       :: rzero=(0.0d0)
       real*8,parameter                       :: autoev = 27.2113957D0
       real*8,allocatable,dimension(:)        :: aux
@@ -1040,7 +1050,7 @@
       iocnf = get_file_unit()
       OPEN(iocnf,file=filecnf,ACCESS='DIRECT',RECL=IRECL, &
            STATUS='UNKNOWN')
-      write(*,*) 'Config file opened with',iocnf
+!     write(*,*) 'Config file opened with',iocnf
 
       iu = get_file_unit()
       IF(desrep.GT.9) THEN
@@ -1050,7 +1060,7 @@
       ENDIF
       OPEN(iu,file=davevcname,access='sequential', &
            status='unknown',form='formatted')
-      write(*,*) 'State analysis file opened with',iu
+!     write(*,*) 'State analysis file opened with',iu
 
 ! now loop over states and collect most contributing configurations
 
