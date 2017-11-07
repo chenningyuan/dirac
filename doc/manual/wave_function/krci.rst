@@ -338,11 +338,11 @@ keyword(MHYP)
 compute magnetic hyperfine interaction constants as expectation values over
 Fermi's four-component operator (Z. Phys. 60 (1930) 332)
 Example:
-
  ::
+ 
   .MHYP
    0.5       nuclear spin quantum number I
-   1.17      nuclear magnetic moment :math:`\mu`:math:
+   1.17      nuclear magnetic moment \mu
    
 In the molecular case add a column with I and :math:`\mu` for every atom in
 the order given by the basis file.
