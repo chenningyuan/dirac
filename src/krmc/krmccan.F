@@ -1307,7 +1307,9 @@ C               1              4
       NPROP_ROOTS_KRCI = 0
       DO I = 1, NKRCI_MAX_SYM
          NPROP_ROOTS_KRCI = NPROP_ROOTS_KRCI + NKRCI_CIROOTS(I)
-         WRITE(LUPRI,'(I7,I15)') I, NKRCI_CIROOTS(I)
+         if (NPROP_ROOTS_KRCI.ne.0) then
+           WRITE(LUPRI,'(I7,I15)') I, NKRCI_CIROOTS(I)
+         end if
       END DO
          WRITE(LUPRI,'(A/A,I15/)')
      &   '  _________________________________',
