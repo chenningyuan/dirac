@@ -2010,7 +2010,7 @@ CTF          EDMNORM = sqrt(EDMMOM**2)
           EEFFGVCM = ( EEFFAU(IVEC) * EFAUMKSA )
 C
           write(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F20.12,5X,1F20.12)')
-     &    '   * state',INIST,'(',XREPEIG(ISYMST_IN),')         * state',
+     & ' EEDM  state',INIST,'(',XREPEIG(ISYMST_IN),')         state ',
      &      JFLST,'(',XREPEIG(ISYMST_FL),')   ',
      &      EEFFAU(IVEC),EEFFGVCM
         end do
@@ -2072,7 +2072,7 @@ C   For a level energy, multiply by 1/2[F(F+1)-J(J+1)-I(I+1)]
 C   and add to the electronic energy
 C
           write(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F20.12,5X,1F20.12)')
-     &    '   * state',INIST,'(',XREPEIG(ISYMST_IN),')         * state',
+     & ' MHYP  state',INIST,'(',XREPEIG(ISYMST_IN),')         state ',
      &      JFLST,'(',XREPEIG(ISYMST_FL),')   ',
      &     HFCONST,HFENERGY
        END DO
@@ -2125,7 +2125,7 @@ C
          EDMNORM = SQRT(ENSPSMOM(IVEC)**2)
 C
           write(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F20.12,5X,1F20.12)')
-     &    '   * state',INIST,'(',XREPEIG(ISYMST_IN),')         * state',
+     &    ' ENSPS  state',INIST,'(',XREPEIG(ISYMST_IN),')        state',
      &      JFLST,'(',XREPEIG(ISYMST_FL),')   ',
      &     ENSPSMOM(IVEC),EDMNORM
        END DO
