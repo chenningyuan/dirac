@@ -207,7 +207,7 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Tue Nov  7 17:57:18 2017
+     Date and time (Linux)  : Fri Nov 10 17:51:38 2017
      Host name              : dirac                                   
 
 
@@ -216,6 +216,7 @@ Contents of the input file
 
 **DIRAC                                                                                             
 .WAVE FUNCTION                                                                                      
+.ANALYZE                                                                                            
 **INTEGRALS                                                                                         
 *READIN                                                                                             
 .CONTRA                                                                                             
@@ -235,8 +236,12 @@ Contents of the input file
  1                                                                                                  
  1/2                                                                                                
 .OVLSEL                                                                                             
-# to get the convergence remove all damping                                                         
-.NODAMP                                                                                             
+.NODYNSEL                                                                                           
+**ANALYZE                                                                                           
+.MULPOP                                                                                             
+*MULPOP                                                                                             
+.LABEL                                                                                              
+ATOM                                                                                                
 *END OF                                                                                             
 
 
@@ -244,16 +249,14 @@ Contents of the molecule file
 -----------------------------
 
 INTGRL                                                                                              
-                                                                                                    
-                                                                                                    
-C   2    0                                                                                          
+LiH-molecule                                                                                        
+at experimental bond distance                                                                       
+C   2    0         A                                                                                
        3.     1                                                                                     
 Li     0.0                 0.0                 0.0                                                  
 LARGE BASIS aug-cc-pVDZ                                                                             
-       1.     3                                                                                     
-H      0.9                 1.0                 1.1                                                  
-H      3.9                 0.0                 -0.4                                                 
-H      3.9                 0.0                 0.4                                                  
+       1.     1                                                                                     
+H      0.0                 0.0                 1.5957                                               
 LARGE BASIS aug-cc-pVDZ                                                                             
 FINISH                                                                                              
 
@@ -264,6 +267,7 @@ FINISH
 
  Jobs in this run:
    * Wave function
+   * Analysis
 
 
     **************************************************************************
@@ -320,8 +324,12 @@ FINISH
   Title Cards
   -----------
 
-                                                                          
-                                                                          
+  LiH-molecule                                                            
+  at experimental bond distance                                           
+
+  Coordinates are entered in Angstroms and converted to atomic units.
+          - Conversion factor : 1 bohr = 0.52917721 A
+
   Nuclear Gaussian exponent for atom of charge   3.000 :    8.9266848806D+08
   Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248239171D+09
 
@@ -372,7 +380,7 @@ Point group: C1
     -----------------------------
     A    1  i  j  k
 
-  QM-QM nuclear repulsion energy :      5.101207041685
+  QM-QM nuclear repulsion energy :      0.994881008272
 
 
 
@@ -381,32 +389,30 @@ Point group: C1
 
                            Li          7.016005
                            H           1.007825
-                           H           1.007825
-                           H           1.007825
 
-                       Total mass:    10.039480 amu
-                       Natural abundance:  92.458 %
+                       Total mass:     8.023830 amu
+                       Natural abundance:  92.486 %
 
- Center-of-mass coordinates (a.u.):    0.873360    0.100386    0.110425
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.378751
 
 
   Atoms and basis sets
   --------------------
 
   Number of atom types :    2
-  Total number of atoms:    4
+  Total number of atoms:    2
 
   label    atoms   charge   prim    cont     basis   
   ----------------------------------------------------------------------
   Li          1       3      37      25      L  - [10s5p2d|4s3p2d]                                               
                              91      91      S  - [5s12p5d2f|5s12p5d2f]                                          
-  H           3       1      11       9      L  - [5s2p|3s2p]                                                    
+  H           1       1      11       9      L  - [5s2p|3s2p]                                                    
                              29      29      S  - [2s5p2d|2s5p2d]                                                
   ----------------------------------------------------------------------
-                             70      52      L  - large components
-                            178     178      S  - small components
+                             48      34      L  - large components
+                            120     120      S  - small components
   ----------------------------------------------------------------------
-  total:      4       6     248     230
+  total:      2       4     168     154
 
   Cartesian basis used.
   Threshold for integrals (to be written to file):  1.00D-15
@@ -431,47 +437,35 @@ Point group: C1
   Cartesian Coordinates (bohr)
   ----------------------------
 
-  Total number of coordinates: 12
+  Total number of coordinates:  6
 
 
    1   Li       x      0.0000000000
    2            y      0.0000000000
    3            z      0.0000000000
 
-   4   H        x      0.9000000000
-   5            y      1.0000000000
-   6            z      1.1000000000
-
-   7   H        x      3.9000000000
-   8            y      0.0000000000
-   9            z     -0.4000000000
-
-  10   H        x      3.9000000000
-  11            y      0.0000000000
-  12            z      0.4000000000
+   4   H        x      0.0000000000
+   5            y      0.0000000000
+   6            z      3.0154359919
 
 
 
   Cartesian coordinates in XYZ format (Angstrom)
   ----------------------------------------------
 
-    4
+    2
 
 Li     0.0000000000   0.0000000000   0.0000000000
-H      0.4762594875   0.5291772083   0.5820949291
-H      2.0637911124   0.0000000000  -0.2116708833
-H      2.0637911124   0.0000000000   0.2116708833
+H      0.0000000000   0.0000000000   1.5957000000
 
 
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            Li          H           H           H   
+            Li          H   
 
    Li      0.000000
-   H       0.919612    0.000000
-   H       2.074618    1.852120    0.000000
-   H       2.074618    1.713913    0.423342    0.000000
+   H       1.595700    0.000000
 
 
 
@@ -481,54 +475,34 @@ H      2.0637911124   0.0000000000   0.2116708833
 
                   atom 1     atom 2                           distance
                   ------     ------                           --------
-  bond distance:    H          Li                             0.919612
-  bond distance:    H          Li                             2.074618
-  bond distance:    H          Li                             2.074618
-  bond distance:    H          H                              0.423342
-
-
-  Bond angles (degrees):
-  ----------------------
-
-                  atom 1     atom 2     atom 3                   angle
-                  ------     ------     ------                   -----
-  bond angle:       H          Li         H                     63.217
-  bond angle:       H          Li         H                     54.566
-  bond angle:       H          Li         H                     11.712
-  bond angle:       H          H          Li                    84.144
-  bond angle:       H          H          Li                    84.144
+  bond distance:    H          Li                             1.595700
 
 
 
-   Nuclear repulsion energy :    5.101207041685 Hartree
+   Nuclear repulsion energy :    0.994881008272 Hartree
 
 
                                 GETLAB: AO-labels
                                 -----------------
 
-   * Large components:   22
+   * Large components:   14
      1  L Li  1 s        2  L Li  1 px       3  L Li  1 py       4  L Li  1 pz       5  L Li  1 dxx      6  L Li  1 dxy 
      7  L Li  1 dxz      8  L Li  1 dyy      9  L Li  1 dyz     10  L Li  1 dzz     11  L H   1 s       12  L H   1 px  
-    13  L H   1 py      14  L H   1 pz      15  L H   1 s       16  L H   1 px      17  L H   1 py      18  L H   1 pz  
-    19  L H   1 s       20  L H   1 px      21  L H   1 py      22  L H   1 pz  
-   * Small components:   50
-    23  S Li  1 s       24  S Li  1 px      25  S Li  1 py      26  S Li  1 pz      27  S Li  1 dxx     28  S Li  1 dxy 
-    29  S Li  1 dxz     30  S Li  1 dyy     31  S Li  1 dyz     32  S Li  1 dzz     33  S Li  1 fxxx    34  S Li  1 fxxy
-    35  S Li  1 fxxz    36  S Li  1 fxyy    37  S Li  1 fxyz    38  S Li  1 fxzz    39  S Li  1 fyyy    40  S Li  1 fyyz
-    41  S Li  1 fyzz    42  S Li  1 fzzz    43  S H   1 s       44  S H   1 px      45  S H   1 py      46  S H   1 pz  
-    47  S H   1 dxx     48  S H   1 dxy     49  S H   1 dxz     50  S H   1 dyy     51  S H   1 dyz     52  S H   1 dzz 
-    53  S H   1 s       54  S H   1 px      55  S H   1 py      56  S H   1 pz      57  S H   1 dxx     58  S H   1 dxy 
-    59  S H   1 dxz     60  S H   1 dyy     61  S H   1 dyz     62  S H   1 dzz     63  S H   1 s       64  S H   1 px  
-    65  S H   1 py      66  S H   1 pz      67  S H   1 dxx     68  S H   1 dxy     69  S H   1 dxz     70  S H   1 dyy 
-    71  S H   1 dyz     72  S H   1 dzz 
+    13  L H   1 py      14  L H   1 pz  
+   * Small components:   30
+    15  S Li  1 s       16  S Li  1 px      17  S Li  1 py      18  S Li  1 pz      19  S Li  1 dxx     20  S Li  1 dxy 
+    21  S Li  1 dxz     22  S Li  1 dyy     23  S Li  1 dyz     24  S Li  1 dzz     25  S Li  1 fxxx    26  S Li  1 fxxy
+    27  S Li  1 fxxz    28  S Li  1 fxyy    29  S Li  1 fxyz    30  S Li  1 fxzz    31  S Li  1 fyyy    32  S Li  1 fyyz
+    33  S Li  1 fyzz    34  S Li  1 fzzz    35  S H   1 s       36  S H   1 px      37  S H   1 py      38  S H   1 pz  
+    39  S H   1 dxx     40  S H   1 dxy     41  S H   1 dxz     42  S H   1 dyy     43  S H   1 dyz     44  S H   1 dzz 
 
 
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:          230
-  Number of large orbitals in each symmetry:     52
-  Number of small orbitals in each symmetry:    178
+  Number of orbitals in each symmetry:          154
+  Number of large orbitals in each symmetry:     34
+  Number of small orbitals in each symmetry:    120
 
 * Large component functions
 
@@ -544,14 +518,6 @@ H      2.0637911124   0.0000000000   0.2116708833
         2 functions:    Li dyy 
         2 functions:    Li dyz 
         2 functions:    Li dzz 
-        3 functions:    H  s   
-        2 functions:    H  px  
-        2 functions:    H  py  
-        2 functions:    H  pz  
-        3 functions:    H  s   
-        2 functions:    H  px  
-        2 functions:    H  py  
-        2 functions:    H  pz  
         3 functions:    H  s   
         2 functions:    H  px  
         2 functions:    H  py  
@@ -581,26 +547,6 @@ H      2.0637911124   0.0000000000   0.2116708833
         2 functions:    Li fyyz
         2 functions:    Li fyzz
         2 functions:    Li fzzz
-        2 functions:    H  s   
-        5 functions:    H  px  
-        5 functions:    H  py  
-        5 functions:    H  pz  
-        2 functions:    H  dxx 
-        2 functions:    H  dxy 
-        2 functions:    H  dxz 
-        2 functions:    H  dyy 
-        2 functions:    H  dyz 
-        2 functions:    H  dzz 
-        2 functions:    H  s   
-        5 functions:    H  px  
-        5 functions:    H  py  
-        5 functions:    H  pz  
-        2 functions:    H  dxx 
-        2 functions:    H  dxy 
-        2 functions:    H  dxz 
-        2 functions:    H  dyy 
-        2 functions:    H  dyz 
-        2 functions:    H  dzz 
         2 functions:    H  s   
         5 functions:    H  px  
         5 functions:    H  py  
@@ -691,16 +637,34 @@ H      2.0637911124   0.0000000000   0.2116708833
  * DIIS (in MO basis)
  * DIIS will be activated when convergence reaches : 1.00D+20
    - Maximum size of B-matrix:   10
+ * Damping of Fock matrix when DIIS is not activated. 
+   Weight of old matrix    : 0.250
  * Maximum number of SCF iterations  :   50
  * No quadratic convergent Hartree-Fock
- * Vector selection based on overlap 
-   (dynamic update of overlap-selection matrix)
+ * Vector selection based on overlap
  * Contributions from 2-electron integrals to Fock matrix:
    LL-integrals.
    SL-integrals from iteration    1
     ---> this is default setting from Hamiltonian input
  ***** OUTPUT CONTROL *****
  * Only electron eigenvalues written out.
+
+
+   ***************************************************************************
+   ***************************** Analysis module *****************************
+   ***************************************************************************
+
+ Jobs in this run:
+ * Mulliken population analysis
+===========================================================================
+ POPINP: Mulliken population analysis
+===========================================================================
+ * Gross populations
+ * Label defined for individual atoms
+ * Label definitions based on AO-labels
+ * Number of spinors analyzed:
+    - Orbitals in fermion ircop E1  :   1..   2                                                              
+ * Print level:    0
 
 
  ********************************************************************************
@@ -720,9 +684,9 @@ H      2.0637911124   0.0000000000   0.2116708833
 
                                au             Debye
 
-                    x      8.70000000     22.11339900
-                    y      1.00000000      2.54177000
-                    z      1.10000000      2.79594700
+                    x      0.00000000      0.00000000
+                    y      0.00000000      0.00000000
+                    z      3.01543599      7.66454474
 
                         1 Debye =   2.54177000 a.u. 
 
@@ -730,8 +694,8 @@ H      2.0637911124   0.0000000000   0.2116708833
                        Generating Lowdin canonical matrix:
                        -----------------------------------
 
-   L   A     * Deleted:          2(Proj:          2, Lindep:          0) Smin: 0.89E-04
-   S   A     * Deleted:         17(Proj:         17, Lindep:          0) Smin: 0.30E-04
+   L   A     * Deleted:          2(Proj:          2, Lindep:          0) Smin: 0.40E-02
+   S   A     * Deleted:         13(Proj:         13, Lindep:          0) Smin: 0.16E-02
 
 
                                 Output from MODHAM
@@ -745,9 +709,9 @@ H      2.0637911124   0.0000000000   0.2116708833
       ************************* Orbital dimensions *************************
       **********************************************************************
 
-No. of positive energy orbitals (NESH):    50
-No. of negative energy orbitals (NPSH):    50
-Total no. of orbitals           (NORB):   100
+No. of positive energy orbitals (NESH):    32
+No. of negative energy orbitals (NPSH):    32
+Total no. of orbitals           (NORB):    64
 
  -> Reordering orbitals as requested
 
@@ -757,976 +721,419 @@ Total no. of orbitals           (NORB):   100
    ****************************************************************************
 
 
-########## START ITERATION NO.   1 ##########   Tue Nov  7 17:57:18 2017
+########## START ITERATION NO.   1 ##########   Fri Nov 10 17:51:38 2017
 
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -11.6288851893639524
-* Heading :DIRAC: No title specified !!!                     Tue Nov  7 17:57:18 2017
+* REACMO: Coefficients read from file DFCOEF - Total energy: -10.2543388443666004
+* Heading :DIRAC: No title specified !!!                     Fri Nov 10 17:51:38 2017
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   22.45%    0.00%    0.00%   0.17199999s
-SOfock:SL  1.00D-12    0.00%   25.06%    0.00%    0.00%   1.61199999s
+SOfock:LL  1.00D-12    0.00%   71.47%    0.00%    0.06%   0.02400002s
+SOfock:SL  1.00D-12    0.00%   73.56%    0.00%    0.09%   0.16000000s
 
 
             SMOSEL: Reordered (electronic) vectors in fermion ircop 1
             ---------------------------------------------------------
 
-    3 -->     1 OVERLAP:        0.6094561814
-    1 -->     2 OVERLAP:        0.9886090508
-    2 -->     3 OVERLAP:        0.5620572163
-   27 -->     4 OVERLAP:        0.1919603564
-   31 -->     5 OVERLAP:        0.6310366841
-   29 -->     6 OVERLAP:        0.3149060275
-   30 -->     7 OVERLAP:        0.3263724633
-    9 -->     8 OVERLAP:        0.2264201956
-   14 -->     9 OVERLAP:        0.3675485393
-   17 -->    10 OVERLAP:        0.1418816824
-   16 -->    11 OVERLAP:        0.1148882094
-   22 -->    12 OVERLAP:        0.2239729034
-   35 -->    13 OVERLAP:        0.0707088983
-   15 -->    14 OVERLAP:        0.2179199154
-    4 -->    15 OVERLAP:        0.2446241874
-    5 -->    16 OVERLAP:        0.3720508173
-   24 -->    17 OVERLAP:        0.2046569669
-   21 -->    18 OVERLAP:        0.1763270786
-    6 -->    19 OVERLAP:        0.4516699147
-   33 -->    20 OVERLAP:        0.1403311227
-   36 -->    21 OVERLAP:        0.0816066381
-   19 -->    22 OVERLAP:        0.1548271121
-   38 -->    23 OVERLAP:        0.1114991288
-    7 -->    24 OVERLAP:        0.3710575927
-   37 -->    25 OVERLAP:        0.0389402111
-   23 -->    26 OVERLAP:        0.2177391920
-   34 -->    27 OVERLAP:        0.3871611692
-   26 -->    28 OVERLAP:        0.0959914685
-    8 -->    29 OVERLAP:        0.1534647775
-   10 -->    30 OVERLAP:        0.1513873873
-   12 -->    31 OVERLAP:        0.1125454076
-   25 -->    32 OVERLAP:        0.0458717709
-   28 -->    33 OVERLAP:        0.0737746861
-   13 -->    34 OVERLAP:        0.1316804636
-   39 -->    35 OVERLAP:        0.1625747015
-   20 -->    36 OVERLAP:        0.0725917645
-   42 -->    37 OVERLAP:        0.0465644685
-   40 -->    38 OVERLAP:        0.4284402448
-   18 -->    39 OVERLAP:        0.0767260357
-   41 -->    40 OVERLAP:        0.0292239318
-   44 -->    41 OVERLAP:        0.8637824634
-   45 -->    42 OVERLAP:        0.7770689470
-   46 -->    43 OVERLAP:        0.7729054556
-   32 -->    44 OVERLAP:        0.0127167587
-   43 -->    45 OVERLAP:        0.0349862971
-   11 -->    46 OVERLAP:        0.0231889789
-E_HOMO...E_LUMO, symmetry 1:    51  -1.52770   52  -6.21380   53  -1.73969
-It.    1    -5.645873435713      5.65D+00  0.00D+00  6.59D-01               2.07600000s   LL SL          Tue Nov  7
+    2 -->     1 OVERLAP:        0.9551694781
+    1 -->     2 OVERLAP:        0.9950990984
+    8 -->     4 OVERLAP:        0.4909249619
+    9 -->     5 OVERLAP:        0.5875400216
+   11 -->     6 OVERLAP:        0.7115159602
+   10 -->     7 OVERLAP:        0.4398426781
+   12 -->     8 OVERLAP:        0.4034007372
+   13 -->     9 OVERLAP:        0.4350203390
+    7 -->    10 OVERLAP:        0.2732511013
+   19 -->    11 OVERLAP:        0.3881593082
+    4 -->    12 OVERLAP:        0.1992324742
+   20 -->    13 OVERLAP:        0.0618457760
+    5 -->    14 OVERLAP:        0.5096239100
+   18 -->    17 OVERLAP:        0.9613256795
+   17 -->    18 OVERLAP:        0.8091844274
+   21 -->    19 OVERLAP:        0.1590842050
+   14 -->    20 OVERLAP:        0.2009004964
+   27 -->    21 OVERLAP:        0.1626224033
+   26 -->    22 OVERLAP:        0.5008859764
+   28 -->    23 OVERLAP:        0.4862914450
+   22 -->    24 OVERLAP:        0.7127092492
+   23 -->    25 OVERLAP:        0.5733322019
+   25 -->    26 OVERLAP:        0.9613221262
+   24 -->    27 OVERLAP:        0.5670279393
+    6 -->    28 OVERLAP:        0.0341684446
+E_HOMO...E_LUMO, symmetry 1:    33  -0.73171   34  -5.10435   35  -0.42742
+It.    1    -6.741382873762      6.74D+00  0.00D+00  4.52D-01               0.29600000s   LL SL          Fri Nov 10
 
-########## START ITERATION NO.   2 ##########   Tue Nov  7 17:57:20 2017
+########## START ITERATION NO.   2 ##########   Fri Nov 10 17:51:38 2017
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   22.45%    0.00%    0.00%   0.17200017s
-SOfock:SL  1.00D-12    0.00%   24.94%    0.00%    0.00%   1.60799980s
+SOfock:LL  1.00D-12    0.00%   71.47%    0.00%    0.35%   0.01999998s
+SOfock:SL  1.00D-12    0.00%   73.56%    0.00%    0.11%   0.15600002s
 
 
             SMOSEL: Reordered (electronic) vectors in fermion ircop 1
             ---------------------------------------------------------
 
-    2 -->     1 OVERLAP:        0.9410549550
-    1 -->     2 OVERLAP:        0.9996410899
-   27 -->     4 OVERLAP:        0.3125778762
-   31 -->     5 OVERLAP:        0.8049927817
-   29 -->     6 OVERLAP:        0.6316917060
-   30 -->     7 OVERLAP:        0.5958614815
-    9 -->     8 OVERLAP:        0.5829093755
-   15 -->     9 OVERLAP:        0.7706771020
-   17 -->    10 OVERLAP:        0.4271493991
-   14 -->    11 OVERLAP:        0.3901873720
-   20 -->    12 OVERLAP:        0.3422994940
-   34 -->    13 OVERLAP:        0.4481860534
-   16 -->    14 OVERLAP:        0.5109691321
-    4 -->    15 OVERLAP:        0.9917755023
-    5 -->    16 OVERLAP:        0.9363021426
-   24 -->    17 OVERLAP:        0.5081413962
-   23 -->    18 OVERLAP:        0.4194325533
-    6 -->    19 OVERLAP:        0.9365574414
-   35 -->    20 OVERLAP:        0.6261492553
-   36 -->    21 OVERLAP:        0.3578714643
-   18 -->    22 OVERLAP:        0.2889532447
-   37 -->    23 OVERLAP:        0.5055031965
-    7 -->    24 OVERLAP:        0.8737358186
-   39 -->    25 OVERLAP:        0.4480017465
-   21 -->    26 OVERLAP:        0.1313062322
-   33 -->    27 OVERLAP:        0.2964451694
-   26 -->    28 OVERLAP:        0.1769779673
-    8 -->    29 OVERLAP:        0.7281486341
-   11 -->    30 OVERLAP:        0.6301777554
-   12 -->    31 OVERLAP:        0.4861367447
-   25 -->    32 OVERLAP:        0.2358612642
-   28 -->    33 OVERLAP:        0.5510247289
-   13 -->    34 OVERLAP:        0.6907549084
-   38 -->    35 OVERLAP:        0.7335212287
-   22 -->    36 OVERLAP:        0.2415872950
-   42 -->    37 OVERLAP:        0.8699272910
-   40 -->    38 OVERLAP:        0.5547418287
-   19 -->    39 OVERLAP:        0.2436631859
-   41 -->    40 OVERLAP:        0.8442487502
-   44 -->    41 OVERLAP:        0.9640919653
-   45 -->    42 OVERLAP:        0.9037432995
-   46 -->    43 OVERLAP:        0.9121297088
-   32 -->    44 OVERLAP:        0.3550876378
-   43 -->    45 OVERLAP:        0.8795472432
-   10 -->    46 OVERLAP:        0.2999813938
-E_HOMO...E_LUMO, symmetry 1:    51  -1.70821   52  -5.64234   53  -1.56275
->>> Total wall time: 1.93900000s, and total CPU time : 1.94000000s
+    2 -->     1 OVERLAP:        0.9228646638
+    1 -->     2 OVERLAP:        0.9961920381
+    8 -->     4 OVERLAP:        0.3972662035
+    9 -->     5 OVERLAP:        0.6488771709
+   11 -->     6 OVERLAP:        0.7199624778
+   14 -->     7 OVERLAP:        0.3306750534
+   12 -->     8 OVERLAP:        0.4407745070
+   13 -->     9 OVERLAP:        0.4802984982
+    7 -->    10 OVERLAP:        0.3537647724
+   10 -->    11 OVERLAP:        0.2218508246
+    4 -->    12 OVERLAP:        0.1970945830
+   20 -->    13 OVERLAP:        0.0555299761
+    5 -->    14 OVERLAP:        0.4683800704
+   16 -->    15 OVERLAP:        0.5448545584
+   15 -->    16 OVERLAP:        0.9028444185
+   18 -->    17 OVERLAP:        0.9722589702
+   17 -->    18 OVERLAP:        0.5328539186
+   21 -->    20 OVERLAP:        0.3414572992
+   27 -->    21 OVERLAP:        0.1543999102
+   28 -->    27 OVERLAP:        0.8027489883
+    6 -->    28 OVERLAP:        0.0172240419
+E_HOMO...E_LUMO, symmetry 1:    33  -0.76049   34  -4.63772   35  -0.39726
+>>> Total wall time: 0.23500000s, and total CPU time : 0.23600000s
 
-########## END ITERATION NO.   2 ##########   Tue Nov  7 17:57:22 2017
+########## END ITERATION NO.   2 ##########   Fri Nov 10 17:51:38 2017
 
-It.    2    -5.640612905572     -5.26D-03 -3.24D-01  1.83D-01               1.94000000s   LL SL          Tue Nov  7
+It.    2    -6.780048213355      3.87D-02  2.57D-01  9.64D-02               0.23600000s   LL SL          Fri Nov 10
 
-########## START ITERATION NO.   3 ##########   Tue Nov  7 17:57:22 2017
+########## START ITERATION NO.   3 ##########   Fri Nov 10 17:51:38 2017
 
-    3 *** Differential density matrix. DCOVLP     = 1.2100
-    3 *** Differential density matrix. DVOVLP( 1) = 0.9990
+    3 *** Differential density matrix. DCOVLP     = 1.3682
+    3 *** Differential density matrix. DVOVLP( 1) = 1.0051
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   22.45%    0.00%    0.00%   0.16800022s
-SOfock:SL  1.00D-12    0.00%   25.60%    0.00%    0.00%   1.64400005s
+SOfock:LL  1.00D-12    0.00%   71.47%    0.00%    0.30%   0.01999998s
+SOfock:SL  1.00D-12    0.00%   73.84%    0.00%    0.10%   0.14399999s
 
 
             SMOSEL: Reordered (electronic) vectors in fermion ircop 1
             ---------------------------------------------------------
 
-    2 -->     1 OVERLAP:        0.9863539379
-    1 -->     2 OVERLAP:        0.9999776478
-   27 -->     4 OVERLAP:        0.7174829420
-   30 -->     5 OVERLAP:        0.7181981954
-   29 -->     6 OVERLAP:        0.7855176203
-   31 -->     7 OVERLAP:        0.6458604939
-    9 -->     8 OVERLAP:        0.5837752545
-   15 -->     9 OVERLAP:        0.9650262549
-   17 -->    10 OVERLAP:        0.6998304861
-   14 -->    11 OVERLAP:        0.8150074828
-   20 -->    12 OVERLAP:        0.6775488202
-   33 -->    13 OVERLAP:        0.4792397810
-   16 -->    14 OVERLAP:        0.7627384142
-    4 -->    15 OVERLAP:        0.9980374608
-    5 -->    16 OVERLAP:        0.9833110636
-   24 -->    17 OVERLAP:        0.3554513150
-   23 -->    18 OVERLAP:        0.5368595013
-    6 -->    19 OVERLAP:        0.9826593045
-   35 -->    20 OVERLAP:        0.8824458365
-   36 -->    21 OVERLAP:        0.6045514964
-   18 -->    22 OVERLAP:        0.8636240841
-   37 -->    23 OVERLAP:        0.5305803439
-    7 -->    24 OVERLAP:        0.9276038229
-   39 -->    25 OVERLAP:        0.6331702264
-   21 -->    26 OVERLAP:        0.7763173099
-   34 -->    27 OVERLAP:        0.7078823081
-   25 -->    28 OVERLAP:        0.5159812160
-    8 -->    29 OVERLAP:        0.7729226921
-   11 -->    30 OVERLAP:        0.7607755688
-   12 -->    31 OVERLAP:        0.7061991158
-   26 -->    32 OVERLAP:        0.2884370869
-   28 -->    33 OVERLAP:        0.8173059189
-   13 -->    34 OVERLAP:        0.6413417542
-   38 -->    35 OVERLAP:        0.7618720949
-   22 -->    36 OVERLAP:        0.8058763859
-   43 -->    37 OVERLAP:        0.7803432080
-   40 -->    38 OVERLAP:        0.6617699059
-   19 -->    39 OVERLAP:        0.6511103122
-   41 -->    40 OVERLAP:        0.9608215188
-   42 -->    41 OVERLAP:        0.6620333622
-   45 -->    42 OVERLAP:        0.9468984043
-   46 -->    43 OVERLAP:        0.9484143342
-   32 -->    44 OVERLAP:        0.6826520504
-   44 -->    45 OVERLAP:        0.8181640321
-   10 -->    46 OVERLAP:        0.6839961366
-E_HOMO...E_LUMO, symmetry 1:    51  -1.72743   52  -5.54877   53  -1.54728
->>> Total wall time: 1.98200000s, and total CPU time : 1.97600000s
+    2 -->     1 OVERLAP:        0.9092737107
+    1 -->     2 OVERLAP:        0.9963227459
+   12 -->     4 OVERLAP:        0.3192038439
+    9 -->     5 OVERLAP:        0.6692063306
+   11 -->     6 OVERLAP:        0.6928349092
+   14 -->     7 OVERLAP:        0.3572665996
+    4 -->     8 OVERLAP:        0.4090602351
+   13 -->     9 OVERLAP:        0.4858237810
+    7 -->    10 OVERLAP:        0.3959450310
+    8 -->    11 OVERLAP:        0.2663655020
+   20 -->    12 OVERLAP:        0.0726857003
+   10 -->    13 OVERLAP:        0.1897284226
+    5 -->    14 OVERLAP:        0.4457595035
+   17 -->    15 OVERLAP:        0.5361649716
+   15 -->    16 OVERLAP:        0.9103892785
+   18 -->    17 OVERLAP:        0.9758349565
+   16 -->    18 OVERLAP:        0.4571753649
+   21 -->    20 OVERLAP:        0.2797775673
+   27 -->    21 OVERLAP:        0.1141424809
+   28 -->    27 OVERLAP:        0.9252586070
+    6 -->    28 OVERLAP:        0.0109536439
+E_HOMO...E_LUMO, symmetry 1:    33  -0.76536   34  -4.59438   35  -0.38548
+>>> Total wall time: 0.23100000s, and total CPU time : 0.22800000s
 
-########## END ITERATION NO.   3 ##########   Tue Nov  7 17:57:24 2017
+########## END ITERATION NO.   3 ##########   Fri Nov 10 17:51:39 2017
 
-It.    3    -5.656829915190      1.62D-02 -2.62D-01  1.70D-01   DIIS   2    1.97600000s   LL SL          Tue Nov  7
+It.    3    -6.786254199680      6.21D-03  4.12D-02  2.71D-02   DIIS   2    0.22800000s   LL SL          Fri Nov 10
 
-########## START ITERATION NO.   4 ##########   Tue Nov  7 17:57:24 2017
+########## START ITERATION NO.   4 ##########   Fri Nov 10 17:51:39 2017
 
-    4 *** Differential density matrix. DCOVLP     = 0.8974
-    4 *** Differential density matrix. DVOVLP( 1) = 1.0011
+    4 *** Differential density matrix. DCOVLP     = 1.1053
+    4 *** Differential density matrix. DVOVLP( 1) = 1.0024
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   22.45%    0.00%    0.00%   0.17999983s
-SOfock:SL  1.00D-12    0.00%   25.86%    0.00%    0.00%   1.64800072s
+SOfock:LL  1.00D-12    0.00%   71.47%    0.00%    0.39%   0.01999998s
+SOfock:SL  1.00D-12    0.00%   73.97%    0.00%    0.14%   0.14000005s
 
 
             SMOSEL: Reordered (electronic) vectors in fermion ircop 1
             ---------------------------------------------------------
 
-    2 -->     1 OVERLAP:        0.9928146267
-    1 -->     2 OVERLAP:        0.9999938364
-   27 -->     4 OVERLAP:        0.9967747275
-   30 -->     5 OVERLAP:        0.9914209273
-   29 -->     6 OVERLAP:        0.9958745507
-   31 -->     7 OVERLAP:        0.9895286140
-    9 -->     8 OVERLAP:        0.9863685813
-   15 -->     9 OVERLAP:        0.9976614494
-   17 -->    10 OVERLAP:        0.9894321587
-   14 -->    11 OVERLAP:        0.9980146976
-   20 -->    12 OVERLAP:        0.9950066641
-   33 -->    13 OVERLAP:        0.9835412510
-   16 -->    14 OVERLAP:        0.9928950354
-    4 -->    15 OVERLAP:        0.9998912662
-    5 -->    16 OVERLAP:        0.9987748790
-   24 -->    17 OVERLAP:        0.9871205228
-   23 -->    18 OVERLAP:        0.9878021787
-    6 -->    19 OVERLAP:        0.9990227814
-   35 -->    20 OVERLAP:        0.9964489161
-   36 -->    21 OVERLAP:        0.9953773636
-   18 -->    22 OVERLAP:        0.9933165368
-   37 -->    23 OVERLAP:        0.9949719779
-    7 -->    24 OVERLAP:        0.9893595922
-   39 -->    25 OVERLAP:        0.9982130143
-   21 -->    26 OVERLAP:        0.9983453693
-   34 -->    27 OVERLAP:        0.9954260221
-   25 -->    28 OVERLAP:        0.9934573084
-    8 -->    29 OVERLAP:        0.9879336968
-   11 -->    30 OVERLAP:        0.9883615688
-   12 -->    31 OVERLAP:        0.9866401627
-   26 -->    32 OVERLAP:        0.9919659188
-   28 -->    33 OVERLAP:        0.9969710631
-   13 -->    34 OVERLAP:        0.9899510712
-   38 -->    35 OVERLAP:        0.9948739571
-   22 -->    36 OVERLAP:        0.9987562277
-   43 -->    37 OVERLAP:        0.7519301009
-   40 -->    38 OVERLAP:        0.9987864500
-   19 -->    39 OVERLAP:        0.9949144404
-   41 -->    40 OVERLAP:        0.9981659123
-   42 -->    41 OVERLAP:        0.7507228024
-   45 -->    42 OVERLAP:        0.9967623969
-   46 -->    43 OVERLAP:        0.9972239734
-   32 -->    44 OVERLAP:        0.9854565456
-   44 -->    45 OVERLAP:        0.9898889384
-   10 -->    46 OVERLAP:        0.9875007853
-E_HOMO...E_LUMO, symmetry 1:    51  -1.72855   52  -5.54227   53  -1.53694
->>> Total wall time: 2.10100000s, and total CPU time : 2.09600000s
+    2 -->     1 OVERLAP:        0.9067524456
+    1 -->     2 OVERLAP:        0.9963553303
+   10 -->     4 OVERLAP:        0.3247321460
+    9 -->     5 OVERLAP:        0.6708057087
+   11 -->     6 OVERLAP:        0.6889761117
+   14 -->     7 OVERLAP:        0.3608550592
+   12 -->     8 OVERLAP:        0.4348221971
+   13 -->     9 OVERLAP:        0.4857088656
+    7 -->    10 OVERLAP:        0.4042275084
+    8 -->    11 OVERLAP:        0.2734131511
+    4 -->    12 OVERLAP:        0.1947426489
+   20 -->    13 OVERLAP:        0.0454355318
+    5 -->    14 OVERLAP:        0.4430345109
+   17 -->    15 OVERLAP:        0.5380155195
+   15 -->    16 OVERLAP:        0.9114801318
+   18 -->    17 OVERLAP:        0.9761727299
+   16 -->    18 OVERLAP:        0.4595872257
+   21 -->    20 OVERLAP:        0.2727645582
+   27 -->    21 OVERLAP:        0.1093256173
+   28 -->    27 OVERLAP:        0.9315305242
+    6 -->    28 OVERLAP:        0.0103483827
+E_HOMO...E_LUMO, symmetry 1:    33  -0.76511   34  -4.58959   35  -0.38427
+>>> Total wall time: 0.22300000s, and total CPU time : 0.22000000s
 
-########## END ITERATION NO.   4 ##########   Tue Nov  7 17:57:26 2017
+########## END ITERATION NO.   4 ##########   Fri Nov 10 17:51:39 2017
 
-It.    4    -5.666736010808      9.91D-03  1.72D-01  4.80D-02   DIIS   3    2.09600000s   LL SL          Tue Nov  7
+It.    4    -6.786992878632      7.39D-04  1.10D-02  5.20D-03   DIIS   3    0.22000000s   LL SL          Fri Nov 10
 
-########## START ITERATION NO.   5 ##########   Tue Nov  7 17:57:26 2017
+########## START ITERATION NO.   5 ##########   Fri Nov 10 17:51:39 2017
 
-    5 *** Differential density matrix. DCOVLP     = 1.0652
-    5 *** Differential density matrix. DVOVLP( 1) = 0.9987
+    5 *** Differential density matrix. DCOVLP     = 1.0175
+    5 *** Differential density matrix. DVOVLP( 1) = 1.0003
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   22.45%    0.00%    0.00%   0.17599964s
-SOfock:SL  1.00D-12    0.00%   26.18%    0.00%    0.00%   1.64000034s
+SOfock:LL  1.00D-12    0.00%   71.47%    0.00%    0.86%   0.01999998s
+SOfock:SL  1.00D-12    0.00%   74.23%    0.00%    0.33%   0.15200007s
 
 
             SMOSEL: Reordered (electronic) vectors in fermion ircop 1
             ---------------------------------------------------------
 
-    2 -->     1 OVERLAP:        0.9996927912
-    1 -->     2 OVERLAP:        0.9999978863
-   27 -->     4 OVERLAP:        0.9618724824
-   30 -->     5 OVERLAP:        0.9272927925
-   29 -->     6 OVERLAP:        0.9840487524
-   31 -->     7 OVERLAP:        0.9088188381
-    9 -->     8 OVERLAP:        0.9327788238
-   15 -->     9 OVERLAP:        0.9973369714
-   17 -->    10 OVERLAP:        0.9703773464
-   14 -->    11 OVERLAP:        0.9942845749
-   20 -->    12 OVERLAP:        0.9798760369
-   33 -->    13 OVERLAP:        0.9623668979
-   16 -->    14 OVERLAP:        0.9830324111
-    4 -->    15 OVERLAP:        0.9998965899
-    5 -->    16 OVERLAP:        0.9988493693
-   24 -->    17 OVERLAP:        0.8676221318
-   23 -->    18 OVERLAP:        0.8696303517
-    6 -->    19 OVERLAP:        0.9987610655
-   35 -->    20 OVERLAP:        0.9833481018
-   36 -->    21 OVERLAP:        0.9827869650
-   18 -->    22 OVERLAP:        0.9817808266
-   37 -->    23 OVERLAP:        0.9691771131
-    7 -->    24 OVERLAP:        0.9858853018
-   39 -->    25 OVERLAP:        0.9900578745
-   21 -->    26 OVERLAP:        0.9905512391
-   34 -->    27 OVERLAP:        0.9919863595
-   25 -->    28 OVERLAP:        0.9537078398
-    8 -->    29 OVERLAP:        0.9814132058
-   11 -->    30 OVERLAP:        0.9471625177
-   12 -->    31 OVERLAP:        0.9375150770
-   26 -->    32 OVERLAP:        0.9319028845
-   28 -->    33 OVERLAP:        0.9919193015
-   13 -->    34 OVERLAP:        0.9559988390
-   38 -->    35 OVERLAP:        0.9679405984
-   22 -->    36 OVERLAP:        0.9914086954
-   43 -->    37 OVERLAP:        0.5405571060
-   40 -->    38 OVERLAP:        0.9936486289
-   19 -->    39 OVERLAP:        0.9820222828
-   41 -->    40 OVERLAP:        0.9832250628
-   42 -->    41 OVERLAP:        0.5313650688
-   45 -->    42 OVERLAP:        0.9890988643
-   46 -->    43 OVERLAP:        0.9938768912
-   32 -->    44 OVERLAP:        0.9505465891
-   44 -->    45 OVERLAP:        0.9665679581
-   10 -->    46 OVERLAP:        0.9362248736
-E_HOMO...E_LUMO, symmetry 1:    51  -1.73283   52  -5.52133   53  -1.53660
->>> Total wall time: 1.98600000s, and total CPU time : 1.98400000s
+    2 -->     1 OVERLAP:        0.9066095589
+    1 -->     2 OVERLAP:        0.9963544609
+   10 -->     4 OVERLAP:        0.3213206945
+    9 -->     5 OVERLAP:        0.6705192115
+   11 -->     6 OVERLAP:        0.6891111965
+   14 -->     7 OVERLAP:        0.3608185188
+   12 -->     8 OVERLAP:        0.4347313188
+   13 -->     9 OVERLAP:        0.4856183423
+    7 -->    10 OVERLAP:        0.4050324494
+    8 -->    11 OVERLAP:        0.2708547720
+    4 -->    12 OVERLAP:        0.1948418383
+   20 -->    13 OVERLAP:        0.0455191156
+    5 -->    14 OVERLAP:        0.4432254245
+   17 -->    15 OVERLAP:        0.5344783592
+   15 -->    16 OVERLAP:        0.9117903795
+   18 -->    17 OVERLAP:        0.9761265717
+   16 -->    18 OVERLAP:        0.4564980347
+   21 -->    20 OVERLAP:        0.2735517514
+   27 -->    21 OVERLAP:        0.1100772651
+   28 -->    27 OVERLAP:        0.9301807405
+    6 -->    28 OVERLAP:        0.0104028966
+E_HOMO...E_LUMO, symmetry 1:    33  -0.76488   34  -4.58985   35  -0.38437
+>>> Total wall time: 0.25400000s, and total CPU time : 0.25200000s
 
-########## END ITERATION NO.   5 ##########   Tue Nov  7 17:57:28 2017
+########## END ITERATION NO.   5 ##########   Fri Nov 10 17:51:39 2017
 
-It.    5    -5.669898111623      3.16D-03 -9.70D-02  3.81D-02   DIIS   4    1.98400000s   LL SL          Tue Nov  7
+It.    5    -6.787020493364      2.76D-05  2.09D-03  1.00D-03   DIIS   4    0.25200000s   LL SL          Fri Nov 10
 
-########## START ITERATION NO.   6 ##########   Tue Nov  7 17:57:28 2017
+########## START ITERATION NO.   6 ##########   Fri Nov 10 17:51:39 2017
 
-    6 *** Differential density matrix. DCOVLP     = 0.9950
+    6 *** Differential density matrix. DCOVLP     = 1.0011
     6 *** Differential density matrix. DVOVLP( 1) = 0.9999
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   22.45%    0.00%    0.00%   0.17599964s
-SOfock:SL  1.00D-12    0.00%   26.32%    0.00%    0.00%   1.72799969s
+SOfock:LL  1.00D-12    0.00%   71.47%    0.00%    0.20%   0.02000010s
+SOfock:SL  1.00D-12    0.00%   74.59%    0.00%    0.15%   0.15199995s
 
 
             SMOSEL: Reordered (electronic) vectors in fermion ircop 1
             ---------------------------------------------------------
 
-    2 -->     1 OVERLAP:        0.9999858442
-    1 -->     2 OVERLAP:        0.9999999685
-   27 -->     4 OVERLAP:        0.9988680890
-   30 -->     5 OVERLAP:        0.9992834238
-   29 -->     6 OVERLAP:        0.9996561433
-   31 -->     7 OVERLAP:        0.9984454043
-    9 -->     8 OVERLAP:        0.9983163954
-   15 -->     9 OVERLAP:        0.9999065918
-   17 -->    10 OVERLAP:        0.9989471300
-   14 -->    11 OVERLAP:        0.9998440567
-   20 -->    12 OVERLAP:        0.9995885573
-   33 -->    13 OVERLAP:        0.9990056362
-   16 -->    14 OVERLAP:        0.9995616878
-    4 -->    15 OVERLAP:        0.9999950468
-    5 -->    16 OVERLAP:        0.9999263203
-   24 -->    17 OVERLAP:        0.9984754658
-   23 -->    18 OVERLAP:        0.9986041727
-    6 -->    19 OVERLAP:        0.9999223767
-   35 -->    20 OVERLAP:        0.9987792333
-   36 -->    21 OVERLAP:        0.9987681557
-   18 -->    22 OVERLAP:        0.9992250041
-   37 -->    23 OVERLAP:        0.9991897625
-    7 -->    24 OVERLAP:        0.9991327853
-   39 -->    25 OVERLAP:        0.9997489004
-   21 -->    26 OVERLAP:        0.9997748796
-   34 -->    27 OVERLAP:        0.9997944431
-   25 -->    28 OVERLAP:        0.9990371956
-    8 -->    29 OVERLAP:        0.9990490740
-   11 -->    30 OVERLAP:        0.9987589046
-   12 -->    31 OVERLAP:        0.9987564896
-   26 -->    32 OVERLAP:        0.9984648574
-   28 -->    33 OVERLAP:        0.9998686550
-   13 -->    34 OVERLAP:        0.9992386372
-   38 -->    35 OVERLAP:        0.9991106108
-   22 -->    36 OVERLAP:        0.9997577176
-   43 -->    37 OVERLAP:        0.9990592443
-   40 -->    38 OVERLAP:        0.9998803681
-   19 -->    39 OVERLAP:        0.9996409064
-   41 -->    40 OVERLAP:        0.9989082865
-   42 -->    41 OVERLAP:        0.9980640258
-   45 -->    42 OVERLAP:        0.9992877962
-   46 -->    43 OVERLAP:        0.9997596135
-   32 -->    44 OVERLAP:        0.9983962619
-   44 -->    45 OVERLAP:        0.9991759903
-   10 -->    46 OVERLAP:        0.9983784443
-E_HOMO...E_LUMO, symmetry 1:    51  -1.73342   52  -5.51787   53  -1.53679
->>> Total wall time: 2.08500000s, and total CPU time : 2.08000000s
+    2 -->     1 OVERLAP:        0.9065564881
+    1 -->     2 OVERLAP:        0.9963545636
+   10 -->     4 OVERLAP:        0.3222669767
+    9 -->     5 OVERLAP:        0.6705652753
+   11 -->     6 OVERLAP:        0.6890105124
+   14 -->     7 OVERLAP:        0.3608477365
+   12 -->     8 OVERLAP:        0.4346344596
+   13 -->     9 OVERLAP:        0.4856343880
+    7 -->    10 OVERLAP:        0.4051085843
+    8 -->    11 OVERLAP:        0.2716113358
+    4 -->    12 OVERLAP:        0.1948821287
+   20 -->    13 OVERLAP:        0.0454829678
+    5 -->    14 OVERLAP:        0.4431600078
+   17 -->    15 OVERLAP:        0.5354835303
+   15 -->    16 OVERLAP:        0.9118126583
+   18 -->    17 OVERLAP:        0.9761302078
+   16 -->    18 OVERLAP:        0.4574274450
+   21 -->    20 OVERLAP:        0.2731690475
+   27 -->    21 OVERLAP:        0.1099057598
+   28 -->    27 OVERLAP:        0.9304507647
+    6 -->    28 OVERLAP:        0.0103768585
+E_HOMO...E_LUMO, symmetry 1:    33  -0.76496   34  -4.58977   35  -0.38436
+>>> Total wall time: 0.23700000s, and total CPU time : 0.23600000s
 
-########## END ITERATION NO.   6 ##########   Tue Nov  7 17:57:30 2017
+########## END ITERATION NO.   6 ##########   Fri Nov 10 17:51:39 2017
 
-It.    6    -5.670611316850      7.13D-04  1.68D-02  6.23D-03   DIIS   5    2.08000000s   LL SL          Tue Nov  7
+It.    6    -6.787021953218      1.46D-06  5.99D-05  3.15D-04   DIIS   5    0.23600000s   LL SL          Fri Nov 10
 
-########## START ITERATION NO.   7 ##########   Tue Nov  7 17:57:30 2017
+########## START ITERATION NO.   7 ##########   Fri Nov 10 17:51:39 2017
 
-    7 *** Differential density matrix. DCOVLP     = 0.9997
+    7 *** Differential density matrix. DCOVLP     = 1.0004
     7 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   22.45%    0.00%    0.00%   0.17999935s
-SOfock:SL  1.00D-12    0.00%   27.06%    0.00%    0.00%   1.63600063s
+SOfock:LL  1.00D-12    0.00%   71.47%    0.00%    0.29%   0.01999998s
+SOfock:SL  1.00D-12    0.00%   74.80%    0.00%    0.19%   0.15600002s
 
 
             SMOSEL: Reordered (electronic) vectors in fermion ircop 1
             ---------------------------------------------------------
 
-    2 -->     1 OVERLAP:        0.9999960206
-    1 -->     2 OVERLAP:        0.9999999987
-   27 -->     4 OVERLAP:        0.9999929651
-   30 -->     5 OVERLAP:        0.9999964824
-   29 -->     6 OVERLAP:        0.9999981864
-   31 -->     7 OVERLAP:        0.9999905505
-    9 -->     8 OVERLAP:        0.9999917641
-   15 -->     9 OVERLAP:        0.9999995420
-   17 -->    10 OVERLAP:        0.9999958681
-   14 -->    11 OVERLAP:        0.9999991744
-   20 -->    12 OVERLAP:        0.9999980096
-   33 -->    13 OVERLAP:        0.9999967019
-   16 -->    14 OVERLAP:        0.9999983689
-    4 -->    15 OVERLAP:        0.9999999591
-    5 -->    16 OVERLAP:        0.9999998671
-   24 -->    17 OVERLAP:        0.9999917511
-   23 -->    18 OVERLAP:        0.9999925160
-    6 -->    19 OVERLAP:        0.9999998683
-   35 -->    20 OVERLAP:        0.9999940210
-   36 -->    21 OVERLAP:        0.9999941149
-   18 -->    22 OVERLAP:        0.9999968039
-   37 -->    23 OVERLAP:        0.9999958732
-    7 -->    24 OVERLAP:        0.9999965375
-   39 -->    25 OVERLAP:        0.9999987461
-   21 -->    26 OVERLAP:        0.9999987125
-   34 -->    27 OVERLAP:        0.9999985941
-   25 -->    28 OVERLAP:        0.9999944519
-    8 -->    29 OVERLAP:        0.9999960771
-   11 -->    30 OVERLAP:        0.9999934650
-   12 -->    31 OVERLAP:        0.9999941524
-   26 -->    32 OVERLAP:        0.9999906368
-   28 -->    33 OVERLAP:        0.9999988302
-   13 -->    34 OVERLAP:        0.9999964982
-   38 -->    35 OVERLAP:        0.9999954754
-   22 -->    36 OVERLAP:        0.9999985523
-   43 -->    37 OVERLAP:        0.9999968944
-   40 -->    38 OVERLAP:        0.9999993878
-   19 -->    39 OVERLAP:        0.9999983651
-   41 -->    40 OVERLAP:        0.9999937291
-   42 -->    41 OVERLAP:        0.9999913415
-   45 -->    42 OVERLAP:        0.9999957431
-   46 -->    43 OVERLAP:        0.9999987881
-   32 -->    44 OVERLAP:        0.9999920137
-   44 -->    45 OVERLAP:        0.9999951702
-   10 -->    46 OVERLAP:        0.9999920683
-E_HOMO...E_LUMO, symmetry 1:    51  -1.73358   52  -5.51754   53  -1.53671
->>> Total wall time: 1.98500000s, and total CPU time : 1.98000000s
+    2 -->     1 OVERLAP:        0.9065566716
+    1 -->     2 OVERLAP:        0.9963546100
+   10 -->     4 OVERLAP:        0.3223776686
+    9 -->     5 OVERLAP:        0.6705663204
+   11 -->     6 OVERLAP:        0.6890100732
+   14 -->     7 OVERLAP:        0.3608691424
+   12 -->     8 OVERLAP:        0.4346296979
+   13 -->     9 OVERLAP:        0.4856365821
+    7 -->    10 OVERLAP:        0.4050811887
+    8 -->    11 OVERLAP:        0.2716916108
+    4 -->    12 OVERLAP:        0.1948876638
+   20 -->    13 OVERLAP:        0.0454809440
+    5 -->    14 OVERLAP:        0.4431586686
+   17 -->    15 OVERLAP:        0.5356403707
+   15 -->    16 OVERLAP:        0.9118070219
+   18 -->    17 OVERLAP:        0.9761303076
+   16 -->    18 OVERLAP:        0.4575654678
+   21 -->    20 OVERLAP:        0.2731383489
+   27 -->    21 OVERLAP:        0.1098853341
+   28 -->    27 OVERLAP:        0.9304673431
+    6 -->    28 OVERLAP:        0.0103747999
+E_HOMO...E_LUMO, symmetry 1:    33  -0.76497   34  -4.58977   35  -0.38437
+>>> Total wall time: 0.24400000s, and total CPU time : 0.24000000s
 
-########## END ITERATION NO.   7 ##########   Tue Nov  7 17:57:32 2017
+########## END ITERATION NO.   7 ##########   Fri Nov 10 17:51:40 2017
 
-It.    7    -5.670633930437      2.26D-05  3.25D-03  9.17D-04   DIIS   6    1.98000000s   LL SL          Tue Nov  7
+It.    7    -6.787022123997      1.71D-07 -5.82D-05  3.87D-05   DIIS   6    0.24000000s   LL SL          Fri Nov 10
 
-########## START ITERATION NO.   8 ##########   Tue Nov  7 17:57:32 2017
+########## START ITERATION NO.   8 ##########   Fri Nov 10 17:51:40 2017
 
-    8 *** Differential density matrix. DCOVLP     = 1.0001
+    8 *** Differential density matrix. DCOVLP     = 1.0000
     8 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   22.45%    0.00%    0.00%   0.17199993s
-SOfock:SL  1.00D-12    0.00%   27.96%    0.00%    0.00%   1.71600056s
+SOfock:LL  1.00D-12    0.00%   71.47%    0.00%    0.32%   0.01999998s
+SOfock:SL  1.00D-12    0.00%   75.42%    0.00%    0.21%   0.14400005s
 
 
             SMOSEL: Reordered (electronic) vectors in fermion ircop 1
             ---------------------------------------------------------
 
-    2 -->     1 OVERLAP:        0.9999785424
-    1 -->     2 OVERLAP:        0.9999999963
-   27 -->     4 OVERLAP:        0.9999993400
-   30 -->     5 OVERLAP:        0.9999995677
-   29 -->     6 OVERLAP:        0.9999998101
-   31 -->     7 OVERLAP:        0.9999986126
-    9 -->     8 OVERLAP:        0.9999988882
-   15 -->     9 OVERLAP:        0.9999999503
-   17 -->    10 OVERLAP:        0.9999993354
-   14 -->    11 OVERLAP:        0.9999998418
-   20 -->    12 OVERLAP:        0.9999997210
-   33 -->    13 OVERLAP:        0.9999995954
-   16 -->    14 OVERLAP:        0.9999997812
-    4 -->    15 OVERLAP:        0.9999999736
-    5 -->    16 OVERLAP:        0.9999999516
-   24 -->    17 OVERLAP:        0.9999991107
-   23 -->    18 OVERLAP:        0.9999992646
-    6 -->    19 OVERLAP:        0.9999999670
-   35 -->    20 OVERLAP:        0.9999993458
-   36 -->    21 OVERLAP:        0.9999993448
-   18 -->    22 OVERLAP:        0.9999994877
-   37 -->    23 OVERLAP:        0.9999996660
-    7 -->    24 OVERLAP:        0.9999996455
-   39 -->    25 OVERLAP:        0.9999998844
-   21 -->    26 OVERLAP:        0.9999998222
-   34 -->    27 OVERLAP:        0.9999998603
-   25 -->    28 OVERLAP:        0.9999992042
-    8 -->    29 OVERLAP:        0.9999995358
-   11 -->    30 OVERLAP:        0.9999993789
-   12 -->    31 OVERLAP:        0.9999993981
-   26 -->    32 OVERLAP:        0.9999988427
-   28 -->    33 OVERLAP:        0.9999998688
-   13 -->    34 OVERLAP:        0.9999995015
-   38 -->    35 OVERLAP:        0.9999996340
-   22 -->    36 OVERLAP:        0.9999998320
-   43 -->    37 OVERLAP:        0.9999994574
-   40 -->    38 OVERLAP:        0.9999999415
-   19 -->    39 OVERLAP:        0.9999997549
-   41 -->    40 OVERLAP:        0.9999992004
-   42 -->    41 OVERLAP:        0.9999987305
-   45 -->    42 OVERLAP:        0.9999995632
-   46 -->    43 OVERLAP:        0.9999997925
-   32 -->    44 OVERLAP:        0.9999987723
-   44 -->    45 OVERLAP:        0.9999994983
-   10 -->    46 OVERLAP:        0.9999989554
-E_HOMO...E_LUMO, symmetry 1:    51  -1.73363   52  -5.51746   53  -1.53668
->>> Total wall time: 2.06400000s, and total CPU time : 2.06000000s
+    2 -->     1 OVERLAP:        0.9065580401
+    1 -->     2 OVERLAP:        0.9963545939
+   10 -->     4 OVERLAP:        0.3223190983
+    9 -->     5 OVERLAP:        0.6705647833
+   11 -->     6 OVERLAP:        0.6890118748
+   14 -->     7 OVERLAP:        0.3608597456
+   12 -->     8 OVERLAP:        0.4346313101
+   13 -->     9 OVERLAP:        0.4856360451
+    7 -->    10 OVERLAP:        0.4050724908
+    8 -->    11 OVERLAP:        0.2716444264
+    4 -->    12 OVERLAP:        0.1948881875
+   20 -->    13 OVERLAP:        0.0454813269
+    5 -->    14 OVERLAP:        0.4431624561
+   17 -->    15 OVERLAP:        0.5356233678
+   15 -->    16 OVERLAP:        0.9118095597
+   18 -->    17 OVERLAP:        0.9761302552
+   16 -->    18 OVERLAP:        0.4575499988
+   21 -->    20 OVERLAP:        0.2731612413
+   27 -->    21 OVERLAP:        0.1098967884
+   28 -->    27 OVERLAP:        0.9304477327
+    6 -->    28 OVERLAP:        0.0103763798
+E_HOMO...E_LUMO, symmetry 1:    33  -0.76496   34  -4.58977   35  -0.38437
+>>> Total wall time: 0.22700000s, and total CPU time : 0.22400000s
 
-########## END ITERATION NO.   8 ##########   Tue Nov  7 17:57:34 2017
+########## END ITERATION NO.   8 ##########   Fri Nov 10 17:51:40 2017
 
-It.    8    -5.670638003455      4.07D-06  1.50D-04  1.26D-03   DIIS   7    2.06000000s   LL SL          Tue Nov  7
+It.    8    -6.787022126176      2.18D-09 -3.02D-06  8.35D-06   DIIS   7    0.22400000s   LL SL          Fri Nov 10
 
-########## START ITERATION NO.   9 ##########   Tue Nov  7 17:57:34 2017
+########## START ITERATION NO.   9 ##########   Fri Nov 10 17:51:40 2017
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
     9 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   22.45%    0.00%    0.00%   0.17200089s
-SOfock:SL  1.00D-12    0.00%   27.55%    0.00%    0.00%   1.59199905s
+SOfock:LL  1.00D-12    0.00%   71.47%    0.00%    1.49%   0.01600003s
+SOfock:SL  1.00D-12    0.00%   75.86%    0.00%    0.12%   0.14400005s
 
 
             SMOSEL: Reordered (electronic) vectors in fermion ircop 1
             ---------------------------------------------------------
 
-    2 -->     1 OVERLAP:        0.9999984860
-    1 -->     2 OVERLAP:        0.9999999998
-   27 -->     4 OVERLAP:        0.9999994493
-   30 -->     5 OVERLAP:        0.9999997011
-   29 -->     6 OVERLAP:        0.9999998766
-   31 -->     7 OVERLAP:        0.9999991732
-    9 -->     8 OVERLAP:        0.9999993689
-   15 -->     9 OVERLAP:        0.9999999606
-   17 -->    10 OVERLAP:        0.9999996418
-   14 -->    11 OVERLAP:        0.9999999472
-   20 -->    12 OVERLAP:        0.9999997978
-   33 -->    13 OVERLAP:        0.9999998028
-   16 -->    14 OVERLAP:        0.9999998197
-    4 -->    15 OVERLAP:        0.9999999817
-    5 -->    16 OVERLAP:        0.9999999834
-   24 -->    17 OVERLAP:        0.9999992829
-   23 -->    18 OVERLAP:        0.9999993654
-    6 -->    19 OVERLAP:        0.9999999914
-   35 -->    20 OVERLAP:        0.9999995327
-   36 -->    21 OVERLAP:        0.9999995263
-   18 -->    22 OVERLAP:        0.9999997696
-   37 -->    23 OVERLAP:        0.9999998201
-    7 -->    24 OVERLAP:        0.9999997604
-   39 -->    25 OVERLAP:        0.9999999220
-   21 -->    26 OVERLAP:        0.9999998882
-   34 -->    27 OVERLAP:        0.9999998824
-   25 -->    28 OVERLAP:        0.9999995841
-    8 -->    29 OVERLAP:        0.9999997326
-   11 -->    30 OVERLAP:        0.9999994455
-   12 -->    31 OVERLAP:        0.9999994812
-   26 -->    32 OVERLAP:        0.9999992823
-   28 -->    33 OVERLAP:        0.9999999251
-   13 -->    34 OVERLAP:        0.9999997057
-   38 -->    35 OVERLAP:        0.9999997951
-   22 -->    36 OVERLAP:        0.9999998814
-   43 -->    37 OVERLAP:        0.9999996311
-   40 -->    38 OVERLAP:        0.9999999585
-   19 -->    39 OVERLAP:        0.9999998348
-   41 -->    40 OVERLAP:        0.9999991634
-   42 -->    41 OVERLAP:        0.9999988830
-   45 -->    42 OVERLAP:        0.9999994673
-   46 -->    43 OVERLAP:        0.9999998617
-   32 -->    44 OVERLAP:        0.9999993511
-   44 -->    45 OVERLAP:        0.9999994093
-   10 -->    46 OVERLAP:        0.9999993925
-E_HOMO...E_LUMO, symmetry 1:    51  -1.73357   52  -5.51752   53  -1.53672
->>> Total wall time: 1.93300000s, and total CPU time : 1.93200000s
+    2 -->     1 OVERLAP:        0.9065578404
+    1 -->     2 OVERLAP:        0.9963545961
+   10 -->     4 OVERLAP:        0.3223251910
+    9 -->     5 OVERLAP:        0.6705650797
+   11 -->     6 OVERLAP:        0.6890115457
+   14 -->     7 OVERLAP:        0.3608604636
+   12 -->     8 OVERLAP:        0.4346309898
+   13 -->     9 OVERLAP:        0.4856360655
+    7 -->    10 OVERLAP:        0.4050722296
+    8 -->    11 OVERLAP:        0.2716493853
+    4 -->    12 OVERLAP:        0.1948881895
+   20 -->    13 OVERLAP:        0.0454812204
+    5 -->    14 OVERLAP:        0.4431619705
+   17 -->    15 OVERLAP:        0.5356295819
+   15 -->    16 OVERLAP:        0.9118094246
+   18 -->    17 OVERLAP:        0.9761303076
+   16 -->    18 OVERLAP:        0.4575556272
+   21 -->    20 OVERLAP:        0.2731595979
+   27 -->    21 OVERLAP:        0.1098954390
+   28 -->    27 OVERLAP:        0.9304498555
+    6 -->    28 OVERLAP:        0.0103762587
+E_HOMO...E_LUMO, symmetry 1:    33  -0.76496   34  -4.58977   35  -0.38437
+>>> Total wall time: 0.22100000s, and total CPU time : 0.21600000s
 
-########## END ITERATION NO.   9 ##########   Tue Nov  7 17:57:36 2017
+########## END ITERATION NO.   9 ##########   Fri Nov 10 17:51:40 2017
 
-It.    9    -5.670631165878     -6.84D-06  3.47D-04  3.20D-04   DIIS   8    1.93200000s   LL SL          Tue Nov  7
+It.    9    -6.787022126260      8.41D-11  1.60D-06  8.57D-07   DIIS   8    0.21600000s   LL SL          Fri Nov 10
 
-########## START ITERATION NO.  10 ##########   Tue Nov  7 17:57:36 2017
+########## START ITERATION NO.  10 ##########   Fri Nov 10 17:51:40 2017
 
-   10 *** Differential density matrix. DCOVLP     = 1.0001
+   10 *** Differential density matrix. DCOVLP     = 1.0000
    10 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   22.46%    0.00%    0.00%   0.17599869s
-SOfock:SL  1.00D-12    0.00%   28.41%    0.00%    0.00%   1.58000183s
+SOfock:LL  1.00D-12    0.00%   71.47%    0.00%    2.52%   0.01999998s
+SOfock:SL  1.00D-12    0.00%   77.06%    0.00%    0.22%   0.13999987s
 
 
             SMOSEL: Reordered (electronic) vectors in fermion ircop 1
             ---------------------------------------------------------
 
-    2 -->     1 OVERLAP:        0.9999999967
-    1 -->     2 OVERLAP:        1.0000000000
-   27 -->     4 OVERLAP:        0.9999999900
-   30 -->     5 OVERLAP:        0.9999999948
-   29 -->     6 OVERLAP:        0.9999999957
-   31 -->     7 OVERLAP:        0.9999999829
-    9 -->     8 OVERLAP:        0.9999999846
-   15 -->     9 OVERLAP:        0.9999999992
-   17 -->    10 OVERLAP:        0.9999999939
-   14 -->    11 OVERLAP:        0.9999999984
-   20 -->    12 OVERLAP:        0.9999999967
-   33 -->    13 OVERLAP:        0.9999999931
-   16 -->    14 OVERLAP:        0.9999999975
-    4 -->    15 OVERLAP:        0.9999999989
-    5 -->    16 OVERLAP:        0.9999999996
-   24 -->    17 OVERLAP:        0.9999999867
-   23 -->    18 OVERLAP:        0.9999999878
-    6 -->    19 OVERLAP:        0.9999999996
-   35 -->    20 OVERLAP:        0.9999999918
-   36 -->    21 OVERLAP:        0.9999999920
-   18 -->    22 OVERLAP:        0.9999999950
-   37 -->    23 OVERLAP:        0.9999999926
-    7 -->    24 OVERLAP:        0.9999999967
-   39 -->    25 OVERLAP:        0.9999999981
-   21 -->    26 OVERLAP:        0.9999999975
-   34 -->    27 OVERLAP:        0.9999999974
-   25 -->    28 OVERLAP:        0.9999999908
-    8 -->    29 OVERLAP:        0.9999999957
-   11 -->    30 OVERLAP:        0.9999999890
-   12 -->    31 OVERLAP:        0.9999999900
-   26 -->    32 OVERLAP:        0.9999999850
-   28 -->    33 OVERLAP:        0.9999999969
-   13 -->    34 OVERLAP:        0.9999999932
-   38 -->    35 OVERLAP:        0.9999999921
-   22 -->    36 OVERLAP:        0.9999999973
-   43 -->    37 OVERLAP:        0.9999999953
-   40 -->    38 OVERLAP:        0.9999999990
-   19 -->    39 OVERLAP:        0.9999999974
-   41 -->    40 OVERLAP:        0.9999999916
-   42 -->    41 OVERLAP:        0.9999999880
-   45 -->    42 OVERLAP:        0.9999999943
-   46 -->    43 OVERLAP:        0.9999999976
-   32 -->    44 OVERLAP:        0.9999999836
-   44 -->    45 OVERLAP:        0.9999999942
-   10 -->    46 OVERLAP:        0.9999999855
-E_HOMO...E_LUMO, symmetry 1:    51  -1.73358   52  -5.51750   53  -1.53672
->>> Total wall time: 1.92100000s, and total CPU time : 1.92000000s
+    2 -->     1 OVERLAP:        0.9065578759
+    1 -->     2 OVERLAP:        0.9963545957
+   10 -->     4 OVERLAP:        0.3223248168
+    9 -->     5 OVERLAP:        0.6705650148
+   11 -->     6 OVERLAP:        0.6890116612
+   14 -->     7 OVERLAP:        0.3608604819
+   12 -->     8 OVERLAP:        0.4346310276
+   13 -->     9 OVERLAP:        0.4856360495
+    7 -->    10 OVERLAP:        0.4050721198
+    8 -->    11 OVERLAP:        0.2716490758
+    4 -->    12 OVERLAP:        0.1948881953
+   20 -->    13 OVERLAP:        0.0454812570
+    5 -->    14 OVERLAP:        0.4431620310
+   17 -->    15 OVERLAP:        0.5356292661
+   15 -->    16 OVERLAP:        0.9118094333
+   18 -->    17 OVERLAP:        0.9761302966
+   16 -->    18 OVERLAP:        0.4575553362
+   21 -->    20 OVERLAP:        0.2731598521
+   27 -->    21 OVERLAP:        0.1098955783
+   28 -->    27 OVERLAP:        0.9304496174
+    6 -->    28 OVERLAP:        0.0103762777
+E_HOMO...E_LUMO, symmetry 1:    33  -0.76496   34  -4.58977   35  -0.38437
+>>> Total wall time: 0.21700000s, and total CPU time : 0.21600000s
 
-########## END ITERATION NO.  10 ##########   Tue Nov  7 17:57:38 2017
+########## END ITERATION NO.  10 ##########   Fri Nov 10 17:51:40 2017
 
-It.   10    -5.670630850245     -3.16D-07 -9.04D-05  3.47D-05   DIIS   9    1.92000000s   LL SL          Tue Nov  7
+It.   10    -6.787022126261      5.81D-13 -1.93D-07  1.38D-07   DIIS   9    0.21600000s   LL SL          Fri Nov 10
 
-########## START ITERATION NO.  11 ##########   Tue Nov  7 17:57:38 2017
+########## START ITERATION NO.  11 ##########   Fri Nov 10 17:51:40 2017
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
    11 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   22.48%    0.00%    0.00%   0.17199898s
-SOfock:SL  1.00D-12    0.00%   30.82%    0.00%    0.00%   1.58400154s
+SOfock:LL  1.00D-12    0.00%   71.50%    0.00%    3.17%   0.02000022s
+SOfock:SL  1.00D-12    0.00%   78.02%    0.00%    0.41%   0.13599992s
+>>> Total wall time: 0.20700000s, and total CPU time : 0.20800000s
 
+########## END ITERATION NO.  11 ##########   Fri Nov 10 17:51:40 2017
 
-            SMOSEL: Reordered (electronic) vectors in fermion ircop 1
-            ---------------------------------------------------------
-
-    2 -->     1 OVERLAP:        0.9999999999
-    1 -->     2 OVERLAP:        1.0000000000
-   27 -->     4 OVERLAP:        1.0000000000
-   30 -->     5 OVERLAP:        1.0000000000
-   29 -->     6 OVERLAP:        1.0000000000
-   31 -->     7 OVERLAP:        0.9999999999
-    9 -->     8 OVERLAP:        1.0000000000
-   15 -->     9 OVERLAP:        1.0000000000
-   17 -->    10 OVERLAP:        1.0000000000
-   14 -->    11 OVERLAP:        1.0000000000
-   20 -->    12 OVERLAP:        1.0000000000
-   33 -->    13 OVERLAP:        0.9999999999
-   16 -->    14 OVERLAP:        1.0000000000
-    4 -->    15 OVERLAP:        0.9999999999
-    5 -->    16 OVERLAP:        1.0000000000
-   24 -->    17 OVERLAP:        1.0000000000
-   23 -->    18 OVERLAP:        1.0000000000
-    6 -->    19 OVERLAP:        1.0000000000
-   35 -->    20 OVERLAP:        1.0000000000
-   36 -->    21 OVERLAP:        1.0000000000
-   18 -->    22 OVERLAP:        1.0000000000
-   37 -->    23 OVERLAP:        1.0000000000
-    7 -->    24 OVERLAP:        1.0000000000
-   39 -->    25 OVERLAP:        1.0000000000
-   21 -->    26 OVERLAP:        1.0000000000
-   34 -->    27 OVERLAP:        1.0000000000
-   25 -->    28 OVERLAP:        1.0000000000
-    8 -->    29 OVERLAP:        1.0000000000
-   11 -->    30 OVERLAP:        1.0000000000
-   12 -->    31 OVERLAP:        1.0000000000
-   26 -->    32 OVERLAP:        1.0000000000
-   28 -->    33 OVERLAP:        1.0000000000
-   13 -->    34 OVERLAP:        1.0000000000
-   38 -->    35 OVERLAP:        1.0000000000
-   22 -->    36 OVERLAP:        1.0000000000
-   43 -->    37 OVERLAP:        1.0000000000
-   40 -->    38 OVERLAP:        1.0000000000
-   19 -->    39 OVERLAP:        1.0000000000
-   41 -->    40 OVERLAP:        1.0000000000
-   42 -->    41 OVERLAP:        1.0000000000
-   45 -->    42 OVERLAP:        1.0000000000
-   46 -->    43 OVERLAP:        1.0000000000
-   32 -->    44 OVERLAP:        0.9999999999
-   44 -->    45 OVERLAP:        1.0000000000
-   10 -->    46 OVERLAP:        1.0000000000
-E_HOMO...E_LUMO, symmetry 1:    51  -1.73358   52  -5.51750   53  -1.53672
->>> Total wall time: 1.92000000s, and total CPU time : 1.92000000s
-
-########## END ITERATION NO.  11 ##########   Tue Nov  7 17:57:40 2017
-
-It.   11    -5.670630850760      5.15D-10 -3.32D-06  7.29D-06   DIIS   9    1.92000000s   LL SL          Tue Nov  7
-
-########## START ITERATION NO.  12 ##########   Tue Nov  7 17:57:40 2017
-
-   12 *** Differential density matrix. DCOVLP     = 1.0000
-   12 *** Differential density matrix. DVOVLP( 1) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   22.55%    0.00%    0.00%   0.16799927s
-SOfock:SL  1.00D-12    0.00%   33.45%    0.00%    0.01%   1.53199959s
-
-
-            SMOSEL: Reordered (electronic) vectors in fermion ircop 1
-            ---------------------------------------------------------
-
-    2 -->     1 OVERLAP:        1.0000000000
-    1 -->     2 OVERLAP:        1.0000000000
-   27 -->     4 OVERLAP:        1.0000000000
-   30 -->     5 OVERLAP:        1.0000000000
-   29 -->     6 OVERLAP:        1.0000000000
-   31 -->     7 OVERLAP:        1.0000000000
-    9 -->     8 OVERLAP:        1.0000000000
-   15 -->     9 OVERLAP:        1.0000000000
-   17 -->    10 OVERLAP:        1.0000000000
-   14 -->    11 OVERLAP:        1.0000000000
-   20 -->    12 OVERLAP:        1.0000000000
-   33 -->    13 OVERLAP:        1.0000000000
-   16 -->    14 OVERLAP:        1.0000000000
-    4 -->    15 OVERLAP:        1.0000000000
-    5 -->    16 OVERLAP:        1.0000000000
-   24 -->    17 OVERLAP:        1.0000000000
-   23 -->    18 OVERLAP:        1.0000000000
-    6 -->    19 OVERLAP:        1.0000000000
-   35 -->    20 OVERLAP:        1.0000000000
-   36 -->    21 OVERLAP:        1.0000000000
-   18 -->    22 OVERLAP:        1.0000000000
-   37 -->    23 OVERLAP:        1.0000000000
-    7 -->    24 OVERLAP:        1.0000000000
-   39 -->    25 OVERLAP:        1.0000000000
-   21 -->    26 OVERLAP:        1.0000000000
-   34 -->    27 OVERLAP:        1.0000000000
-   25 -->    28 OVERLAP:        1.0000000000
-    8 -->    29 OVERLAP:        1.0000000000
-   11 -->    30 OVERLAP:        1.0000000000
-   12 -->    31 OVERLAP:        1.0000000000
-   26 -->    32 OVERLAP:        1.0000000000
-   28 -->    33 OVERLAP:        1.0000000000
-   13 -->    34 OVERLAP:        1.0000000000
-   38 -->    35 OVERLAP:        1.0000000000
-   22 -->    36 OVERLAP:        1.0000000000
-   43 -->    37 OVERLAP:        1.0000000000
-   40 -->    38 OVERLAP:        1.0000000000
-   19 -->    39 OVERLAP:        1.0000000000
-   41 -->    40 OVERLAP:        1.0000000000
-   42 -->    41 OVERLAP:        1.0000000000
-   45 -->    42 OVERLAP:        1.0000000000
-   46 -->    43 OVERLAP:        1.0000000000
-   32 -->    44 OVERLAP:        1.0000000000
-   44 -->    45 OVERLAP:        1.0000000000
-   10 -->    46 OVERLAP:        1.0000000000
-E_HOMO...E_LUMO, symmetry 1:    51  -1.73358   52  -5.51750   53  -1.53672
->>> Total wall time: 1.86800000s, and total CPU time : 1.86800000s
-
-########## END ITERATION NO.  12 ##########   Tue Nov  7 17:57:42 2017
-
-It.   12    -5.670630850810      5.07D-11 -5.19D-07  1.31D-06   DIIS   9    1.86800000s   LL SL          Tue Nov  7
-
-########## START ITERATION NO.  13 ##########   Tue Nov  7 17:57:42 2017
-
-   13 *** Differential density matrix. DCOVLP     = 1.0000
-   13 *** Differential density matrix. DVOVLP( 1) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   23.04%    0.10%    0.27%   0.17199898s
-SOfock:SL  1.00D-12    0.00%   38.25%    0.11%    0.32%   1.51600075s
-
-
-            SMOSEL: Reordered (electronic) vectors in fermion ircop 1
-            ---------------------------------------------------------
-
-    2 -->     1 OVERLAP:        1.0000000000
-    1 -->     2 OVERLAP:        1.0000000000
-   27 -->     4 OVERLAP:        1.0000000000
-   30 -->     5 OVERLAP:        1.0000000000
-   29 -->     6 OVERLAP:        1.0000000000
-   31 -->     7 OVERLAP:        1.0000000000
-    9 -->     8 OVERLAP:        1.0000000000
-   15 -->     9 OVERLAP:        1.0000000000
-   17 -->    10 OVERLAP:        1.0000000000
-   14 -->    11 OVERLAP:        1.0000000000
-   20 -->    12 OVERLAP:        1.0000000000
-   33 -->    13 OVERLAP:        1.0000000000
-   16 -->    14 OVERLAP:        1.0000000000
-    4 -->    15 OVERLAP:        1.0000000000
-    5 -->    16 OVERLAP:        1.0000000000
-   24 -->    17 OVERLAP:        1.0000000000
-   23 -->    18 OVERLAP:        1.0000000000
-    6 -->    19 OVERLAP:        1.0000000000
-   35 -->    20 OVERLAP:        1.0000000000
-   36 -->    21 OVERLAP:        1.0000000000
-   18 -->    22 OVERLAP:        1.0000000000
-   37 -->    23 OVERLAP:        1.0000000000
-    7 -->    24 OVERLAP:        1.0000000000
-   39 -->    25 OVERLAP:        1.0000000000
-   21 -->    26 OVERLAP:        1.0000000000
-   34 -->    27 OVERLAP:        1.0000000000
-   25 -->    28 OVERLAP:        1.0000000000
-    8 -->    29 OVERLAP:        1.0000000000
-   11 -->    30 OVERLAP:        1.0000000000
-   12 -->    31 OVERLAP:        1.0000000000
-   26 -->    32 OVERLAP:        1.0000000000
-   28 -->    33 OVERLAP:        1.0000000000
-   13 -->    34 OVERLAP:        1.0000000000
-   38 -->    35 OVERLAP:        1.0000000000
-   22 -->    36 OVERLAP:        1.0000000000
-   43 -->    37 OVERLAP:        1.0000000000
-   40 -->    38 OVERLAP:        1.0000000000
-   19 -->    39 OVERLAP:        1.0000000000
-   41 -->    40 OVERLAP:        1.0000000000
-   42 -->    41 OVERLAP:        1.0000000000
-   45 -->    42 OVERLAP:        1.0000000000
-   46 -->    43 OVERLAP:        1.0000000000
-   32 -->    44 OVERLAP:        1.0000000000
-   44 -->    45 OVERLAP:        1.0000000000
-   10 -->    46 OVERLAP:        1.0000000000
-E_HOMO...E_LUMO, symmetry 1:    51  -1.73358   52  -5.51750   53  -1.53672
->>> Total wall time: 1.85500000s, and total CPU time : 1.85600000s
-
-########## END ITERATION NO.  13 ##########   Tue Nov  7 17:57:44 2017
-
-It.   13    -5.670630850812      1.21D-12  1.13D-07  2.35D-07   DIIS   9    1.85600000s   LL SL          Tue Nov  7
-
-########## START ITERATION NO.  14 ##########   Tue Nov  7 17:57:44 2017
-
-   14 *** Differential density matrix. DCOVLP     = 1.0000
-   14 *** Differential density matrix. DVOVLP( 1) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   24.70%    1.10%    2.00%   0.17200089s
-SOfock:SL  1.00D-12    0.00%   45.30%    0.78%    1.42%   1.43199921s
-
-
-            SMOSEL: Reordered (electronic) vectors in fermion ircop 1
-            ---------------------------------------------------------
-
-    2 -->     1 OVERLAP:        1.0000000000
-    1 -->     2 OVERLAP:        1.0000000000
-   27 -->     4 OVERLAP:        1.0000000000
-   30 -->     5 OVERLAP:        1.0000000000
-   29 -->     6 OVERLAP:        1.0000000000
-   31 -->     7 OVERLAP:        1.0000000000
-    9 -->     8 OVERLAP:        1.0000000000
-   15 -->     9 OVERLAP:        1.0000000000
-   17 -->    10 OVERLAP:        1.0000000000
-   14 -->    11 OVERLAP:        1.0000000000
-   20 -->    12 OVERLAP:        1.0000000000
-   33 -->    13 OVERLAP:        1.0000000000
-   16 -->    14 OVERLAP:        1.0000000000
-    4 -->    15 OVERLAP:        1.0000000000
-    5 -->    16 OVERLAP:        1.0000000000
-   24 -->    17 OVERLAP:        1.0000000000
-   23 -->    18 OVERLAP:        1.0000000000
-    6 -->    19 OVERLAP:        1.0000000000
-   35 -->    20 OVERLAP:        1.0000000000
-   36 -->    21 OVERLAP:        1.0000000000
-   18 -->    22 OVERLAP:        1.0000000000
-   37 -->    23 OVERLAP:        1.0000000000
-    7 -->    24 OVERLAP:        1.0000000000
-   39 -->    25 OVERLAP:        1.0000000000
-   21 -->    26 OVERLAP:        1.0000000000
-   34 -->    27 OVERLAP:        1.0000000000
-   25 -->    28 OVERLAP:        1.0000000000
-    8 -->    29 OVERLAP:        1.0000000000
-   11 -->    30 OVERLAP:        1.0000000000
-   12 -->    31 OVERLAP:        1.0000000000
-   26 -->    32 OVERLAP:        1.0000000000
-   28 -->    33 OVERLAP:        1.0000000000
-   13 -->    34 OVERLAP:        1.0000000000
-   38 -->    35 OVERLAP:        1.0000000000
-   22 -->    36 OVERLAP:        1.0000000000
-   43 -->    37 OVERLAP:        1.0000000000
-   40 -->    38 OVERLAP:        1.0000000000
-   19 -->    39 OVERLAP:        1.0000000000
-   41 -->    40 OVERLAP:        1.0000000000
-   42 -->    41 OVERLAP:        1.0000000000
-   45 -->    42 OVERLAP:        1.0000000000
-   46 -->    43 OVERLAP:        1.0000000000
-   32 -->    44 OVERLAP:        1.0000000000
-   44 -->    45 OVERLAP:        1.0000000000
-   10 -->    46 OVERLAP:        1.0000000000
-E_HOMO...E_LUMO, symmetry 1:    51  -1.73358   52  -5.51750   53  -1.53672
->>> Total wall time: 1.77000000s, and total CPU time : 1.76800000s
-
-########## END ITERATION NO.  14 ##########   Tue Nov  7 17:57:46 2017
-
-It.   14    -5.670630850814      2.72D-12 -6.85D-08  1.40D-07   DIIS   9    1.76800000s   LL SL          Tue Nov  7
-
-########## START ITERATION NO.  15 ##########   Tue Nov  7 17:57:46 2017
-
-   15 *** Differential density matrix. DCOVLP     = 1.0000
-   15 *** Differential density matrix. DVOVLP( 1) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   29.32%   10.78%    7.70%   0.16799927s
-SOfock:SL  1.00D-12    0.00%   54.67%    6.11%    5.55%   1.30800056s
-
-
-            SMOSEL: Reordered (electronic) vectors in fermion ircop 1
-            ---------------------------------------------------------
-
-    2 -->     1 OVERLAP:        1.0000000000
-    1 -->     2 OVERLAP:        1.0000000000
-   27 -->     4 OVERLAP:        1.0000000000
-   30 -->     5 OVERLAP:        1.0000000000
-   29 -->     6 OVERLAP:        1.0000000000
-   31 -->     7 OVERLAP:        1.0000000000
-    9 -->     8 OVERLAP:        1.0000000000
-   15 -->     9 OVERLAP:        1.0000000000
-   17 -->    10 OVERLAP:        1.0000000000
-   14 -->    11 OVERLAP:        1.0000000000
-   20 -->    12 OVERLAP:        1.0000000000
-   33 -->    13 OVERLAP:        1.0000000000
-   16 -->    14 OVERLAP:        1.0000000000
-    4 -->    15 OVERLAP:        1.0000000000
-    5 -->    16 OVERLAP:        1.0000000000
-   24 -->    17 OVERLAP:        1.0000000000
-   23 -->    18 OVERLAP:        1.0000000000
-    6 -->    19 OVERLAP:        1.0000000000
-   35 -->    20 OVERLAP:        1.0000000000
-   36 -->    21 OVERLAP:        1.0000000000
-   18 -->    22 OVERLAP:        1.0000000000
-   37 -->    23 OVERLAP:        1.0000000000
-    7 -->    24 OVERLAP:        1.0000000000
-   39 -->    25 OVERLAP:        1.0000000000
-   21 -->    26 OVERLAP:        1.0000000000
-   34 -->    27 OVERLAP:        1.0000000000
-   25 -->    28 OVERLAP:        1.0000000000
-    8 -->    29 OVERLAP:        1.0000000000
-   11 -->    30 OVERLAP:        1.0000000000
-   12 -->    31 OVERLAP:        1.0000000000
-   26 -->    32 OVERLAP:        1.0000000000
-   28 -->    33 OVERLAP:        1.0000000000
-   13 -->    34 OVERLAP:        1.0000000000
-   38 -->    35 OVERLAP:        1.0000000000
-   22 -->    36 OVERLAP:        1.0000000000
-   43 -->    37 OVERLAP:        1.0000000000
-   40 -->    38 OVERLAP:        1.0000000000
-   19 -->    39 OVERLAP:        1.0000000000
-   41 -->    40 OVERLAP:        1.0000000000
-   42 -->    41 OVERLAP:        1.0000000000
-   45 -->    42 OVERLAP:        1.0000000000
-   46 -->    43 OVERLAP:        1.0000000000
-   32 -->    44 OVERLAP:        1.0000000000
-   44 -->    45 OVERLAP:        1.0000000000
-   10 -->    46 OVERLAP:        1.0000000000
-E_HOMO...E_LUMO, symmetry 1:    51  -1.73358   52  -5.51750   53  -1.53672
->>> Total wall time: 1.67300000s, and total CPU time : 1.67600000s
-
-########## END ITERATION NO.  15 ##########   Tue Nov  7 17:57:47 2017
-
-It.   15    -5.670630850823      8.99D-12 -2.07D-08  1.70D-07   DIIS   5    1.67600000s   LL SL          Tue Nov  7
-
-########## START ITERATION NO.  16 ##########   Tue Nov  7 17:57:47 2017
-
-   16 *** Differential density matrix. DCOVLP     = 1.0000
-   16 *** Differential density matrix. DVOVLP( 1) = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   24.92%    3.01%    3.31%   0.24399948s
-SOfock:SL  1.00D-12    0.00%   45.59%    2.54%    3.16%   1.42800140s
->>> Total wall time: 1.92100000s, and total CPU time : 1.92000000s
-
-########## END ITERATION NO.  16 ##########   Tue Nov  7 17:57:49 2017
-
-It.   16    -5.670630850828      5.17D-12  4.45D-08  5.73D-08   DIIS   5    1.92000000s   LL SL          Tue Nov  7
+It.   11    -6.787022126261     -7.82D-14 -2.93D-08  2.04D-08   DIIS   9    0.20800000s   LL SL          Fri Nov 10
 
 
                                    SCF - CYCLE
@@ -1742,39 +1149,34 @@ It.   16    -5.670630850828      5.17D-12  4.45D-08  5.73D-08   DIIS   5    1.92
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -5.645873435713      5.65D+00  0.00D+00  6.59D-01               2.07600000s   LL SL          Tue Nov  7
-It.    2    -5.640612905572     -5.26D-03 -3.24D-01  1.83D-01               1.94000000s   LL SL          Tue Nov  7
-It.    3    -5.656829915190      1.62D-02 -2.62D-01  1.70D-01   DIIS   2    1.97600000s   LL SL          Tue Nov  7
-It.    4    -5.666736010808      9.91D-03  1.72D-01  4.80D-02   DIIS   3    2.09600000s   LL SL          Tue Nov  7
-It.    5    -5.669898111623      3.16D-03 -9.70D-02  3.81D-02   DIIS   4    1.98400000s   LL SL          Tue Nov  7
-It.    6    -5.670611316850      7.13D-04  1.68D-02  6.23D-03   DIIS   5    2.08000000s   LL SL          Tue Nov  7
-It.    7    -5.670633930437      2.26D-05  3.25D-03  9.17D-04   DIIS   6    1.98000000s   LL SL          Tue Nov  7
-It.    8    -5.670638003455      4.07D-06  1.50D-04  1.26D-03   DIIS   7    2.06000000s   LL SL          Tue Nov  7
-It.    9    -5.670631165878     -6.84D-06  3.47D-04  3.20D-04   DIIS   8    1.93200000s   LL SL          Tue Nov  7
-It.   10    -5.670630850245     -3.16D-07 -9.04D-05  3.47D-05   DIIS   9    1.92000000s   LL SL          Tue Nov  7
-It.   11    -5.670630850760      5.15D-10 -3.32D-06  7.29D-06   DIIS   9    1.92000000s   LL SL          Tue Nov  7
-It.   12    -5.670630850810      5.07D-11 -5.19D-07  1.31D-06   DIIS   9    1.86800000s   LL SL          Tue Nov  7
-It.   13    -5.670630850812      1.21D-12  1.13D-07  2.35D-07   DIIS   9    1.85600000s   LL SL          Tue Nov  7
-It.   14    -5.670630850814      2.72D-12 -6.85D-08  1.40D-07   DIIS   9    1.76800000s   LL SL          Tue Nov  7
-It.   15    -5.670630850823      8.99D-12 -2.07D-08  1.70D-07   DIIS   5    1.67600000s   LL SL          Tue Nov  7
-It.   16    -5.670630850828      5.17D-12  4.45D-08  5.73D-08   DIIS   5    1.92000000s   LL SL          Tue Nov  7
+It.    1    -6.741382873762      6.74D+00  0.00D+00  4.52D-01               0.29600000s   LL SL          Fri Nov 10
+It.    2    -6.780048213355      3.87D-02  2.57D-01  9.64D-02               0.23600000s   LL SL          Fri Nov 10
+It.    3    -6.786254199680      6.21D-03  4.12D-02  2.71D-02   DIIS   2    0.22800000s   LL SL          Fri Nov 10
+It.    4    -6.786992878632      7.39D-04  1.10D-02  5.20D-03   DIIS   3    0.22000000s   LL SL          Fri Nov 10
+It.    5    -6.787020493364      2.76D-05  2.09D-03  1.00D-03   DIIS   4    0.25200000s   LL SL          Fri Nov 10
+It.    6    -6.787021953218      1.46D-06  5.99D-05  3.15D-04   DIIS   5    0.23600000s   LL SL          Fri Nov 10
+It.    7    -6.787022123997      1.71D-07 -5.82D-05  3.87D-05   DIIS   6    0.24000000s   LL SL          Fri Nov 10
+It.    8    -6.787022126176      2.18D-09 -3.02D-06  8.35D-06   DIIS   7    0.22400000s   LL SL          Fri Nov 10
+It.    9    -6.787022126260      8.41D-11  1.60D-06  8.57D-07   DIIS   8    0.21600000s   LL SL          Fri Nov 10
+It.   10    -6.787022126261      5.81D-13 -1.93D-07  1.38D-07   DIIS   9    0.21600000s   LL SL          Fri Nov 10
+It.   11    -6.787022126261     -7.82D-14 -2.93D-08  2.04D-08   DIIS   9    0.20800000s   LL SL          Fri Nov 10
 --------------------------------------------------------------------------------------------------------------------------------
-* Convergence after   16 iterations.
+* Convergence after   11 iterations.
 * Average elapsed time per iteration: 
-      LL SL        :    1.94250000s
+      LL SL        :    0.23609091s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -10.771837895648062
+   Electronic energy                        :    -7.7819031353950194
 
    Other contributions to the total energy
-   Nuclear repulsion energy                 :      5.101207041685355
-   SS Coulombic correction                  :      0.000000003134222
+   Nuclear repulsion energy                 :     0.9948810082722318
+   SS Coulombic correction                  :     0.0000000008622302
 
    Sum of all contributions to the energy
-   Total energy                             :     -5.670630850828484
+   Total energy                             :    -6.7870221262605579
 
 
                                    Eigenvalues
@@ -1783,27 +1185,66 @@ It.   16    -5.670630850828      5.17D-12  4.45D-08  5.73D-08   DIIS   5    1.92
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
--1.733582883850650  ( 2)
+-0.764962525189205  ( 2)
   * Open shell #1, f = 0.5000
--5.517502563532799  ( 2)
+-4.589771639281012  ( 2)
   * Virtual eigenvalues, f = 0.0000
--1.536718704208046  ( 2)   -0.215583470593561  ( 2)   -0.180629582294627  ( 2)   -0.193403752191314  ( 2)   -0.177821548129166  ( 2)
--0.529491553043768  ( 2)   -0.366898787460646  ( 2)   -0.339513841877709  ( 2)   -0.406138603920280  ( 2)   -0.297456911271405  ( 2)
--0.168966560216870  ( 2)   -0.356919129046733  ( 2)   -1.045074293596093  ( 2)   -0.803412276757880  ( 2)   -0.240500563093275  ( 2)
--0.248223219157474  ( 2)   -0.757704609898018  ( 2)   -0.136859763717174  ( 2)   -0.127207958267461  ( 2)   -0.329278599906550  ( 2)
--0.100181146607383  ( 2)   -0.611866861759742  ( 2)   -0.063136267690966  ( 2)   -0.277622138874298  ( 2)   -0.160856431915718  ( 2)
--0.230458049647658  ( 2)   -0.584025025974433  ( 2)   -0.471904486770082  ( 2)   -0.453979840478022  ( 2)   -0.223862121473563  ( 2)
--0.200194008515748  ( 2)   -0.438813098485839  ( 2)   -0.088488187483518  ( 2)   -0.269459798209511  ( 2)    0.277062993610711  ( 2)
--0.035711206682193  ( 2)   -0.312490233378817  ( 2)    0.209532103304722  ( 2)    0.250207393982868  ( 2)    0.353477976909854  ( 2)
- 0.369597145381896  ( 2)   -0.174362671001767  ( 2)    0.316110250129959  ( 2)   -0.511080764978370  ( 2)    0.718282589572585  ( 2)
- 0.849083928924305  ( 2)    0.879719863164105  ( 2)    2.121862599816128  ( 2)
+-0.384366586640860  ( 2)   -0.071030778719863  ( 2)   -0.071669593421731  ( 2)   -0.044892567030113  ( 2)   -0.029550764045499  ( 2)
+-0.035911215009123  ( 2)   -0.033699178841543  ( 2)   -0.088422003498994  ( 2)   -0.079458213574292  ( 2)   -0.225355156799161  ( 2)
+ 0.052250748156009  ( 2)   -0.202214395439465  ( 2)   -0.003625273843097  ( 2)   -0.011554619874376  ( 2)   -0.000372682584007  ( 2)
+-0.009642093351781  ( 2)    0.000537247005325  ( 2)    0.094375586159863  ( 2)    0.241504778955731  ( 2)    0.196039744906178  ( 2)
+ 0.203788416213733  ( 2)    0.224103857103247  ( 2)    0.226144233719892  ( 2)    0.239860229095265  ( 2)    0.244519236107526  ( 2)
+-0.112135000470953  ( 2)    0.478367581098872  ( 2)    1.094048571987670  ( 2)    1.190731134856077  ( 2)    1.221000006477092  ( 2)
 * HOMO - LUMO gap:
 
-    E(LUMO) :    -1.53671870 au (symmetry E1 )
-  - E(HOMO) :    -1.73358288 au (symmetry E1 )
+    E(LUMO) :    -0.38436659 au (symmetry E1 )
+  - E(HOMO) :    -0.76496253 au (symmetry E1 )
   ------------------------------------------
-    gap     :     0.19686418 au
+    gap     :     0.38059594 au
 
+
+
+    **************************************************************************
+    ********************** Mulliken population analysis **********************
+    **************************************************************************
+
+
+
+                                 Fermion ircop E1
+                                 ----------------
+
+
+
+                                 Fermion ircop E1
+                                 ----------------
+
+
+* Electronic eigenvalue no.  1: -0.7649625251892       (Occupation : f = 1.0000)           
+==========================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Li  1        L H   1        Li  1 _small   H   1 _small
+-----------------------------------------------------------------------------------
+ alpha    0.9731  |     -1.4205         2.3785        -0.0054         0.0206
+ beta     0.0269  |      0.0000         0.0000        -0.0136         0.0404
+
+* Electronic eigenvalue no.  2: -4.5897716392810       (Occupation : f = 0.5000)           
+==========================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L Li  1        L H   1        Li  1 _small   H   1 _small
+-----------------------------------------------------------------------------------
+ alpha    0.8054  |      0.9750        -0.2699         0.1033        -0.0030
+ beta     0.1946  |      0.0000        -0.0000         0.1933         0.0014
+
+
+*** Total gross population ***
+
+Gross      Total    |    L Li  1        L H   1        Li  1 _small   H   1 _small
+-----------------------------------------------------------------------------------
+ total     3.00000  |     -1.86599        4.48704        0.25856        0.12039
 
 *****************************************************
 ********** E N D   of   D I R A C  output  **********
@@ -1811,30 +1252,30 @@ It.   16    -5.670630850828      5.17D-12  4.45D-08  5.73D-08   DIIS   5    1.92
 
 
  
-     Date and time (Linux)  : Tue Nov  7 17:57:49 2017
+     Date and time (Linux)  : Fri Nov 10 17:51:40 2017
      Host name              : dirac                                   
 
->>>> Node 0, utime: 31, stime: 0, minflt: 4995, majflt: 0, nvcsw: 7, nivcsw: 117, maxrss: 95140
->>>> Total WALL time used in DIRAC: 31s
+>>>> Node 0, utime: 2, stime: 0, minflt: 5381, majflt: 0, nvcsw: 10, nivcsw: 6, maxrss: 86072
+>>>> Total WALL time used in DIRAC: 2s
   
   Dynamical Memory Usage Summary for Master
   
-  Mean allocation size (Mb) :       143.71
+  Mean allocation size (Mb) :       133.23
   
   Largest          10  allocations
   
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMANA                            
       488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PSISCF                            
       488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 2                        
       488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA                            
       488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 1                        
       488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for test allocation of work array in DIRAC mai
         0.76 Mb at subroutine __allocator_track_if_MOD_allocator_registe for PAMINP WORK array                         
-        0.40 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
-        0.20 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
-        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTADR in XPLDEF                          
-        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTREP in XPLDEF                          
+        0.18 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
+        0.18 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
+        0.09 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
   
-  Peak memory usage:       488.68 MB
+  Peak memory usage:       488.46 MB
   Peak memory usage:        0.477 GB
        reached at subroutine : __allocator_track_if_MOD_allocator_registe
               for variable   : buf in butobs                             

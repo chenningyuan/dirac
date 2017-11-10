@@ -1,5 +1,6 @@
 **DIRAC
 .WAVE FUNCTION
+.ANALYZE
 **INTEGRALS
 *READIN
 .CONTRA
@@ -19,6 +20,10 @@
  1
  1/2
 .OVLSEL
-# to get the convergence remove all damping
-.NODAMP
+.NODYNSEL
+**ANALYZE
+.MULPOP
+*MULPOP
+.LABEL
+ATOM
 *END OF
