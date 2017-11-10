@@ -3,6 +3,7 @@
 .TITLE
 BeH
 .WAVE FUNCTION
+.ANALYZE
 ##################################
 **HAMILTONIAN
 .DOSSSS
@@ -10,9 +11,12 @@ BeH
 **INTEGRALS
 .NUCMOD
 1
-############
-*READINP
-.UNCONTRACT
+##################################
+**ANALYZE
+.MULPOP
+*MULPOP
+.VECPOP
+ 1..30
 ##################################
 **WAVE FUNCTIONS
 .SCF
@@ -24,11 +28,11 @@ LUCIAREL
 .TERSE
 .GASSH
  3
-  6
- 11
- 16
+  2
+  1
+ 21
 .GASSPC
-  3  5
+  2  4
   3  5
   5  5
 .MK2REF
@@ -39,8 +43,6 @@ LUCIAREL
  1  1
 .MAX CI
  50
-#.PRINT
-# 6
 .RSTRCI
  0
 .IJKLRO
@@ -53,3 +55,4 @@ LUCIAREL
  -1.177432  2.79284734   # \mu(^9Be)  and \mu(^1H) 
 ##################################
 *END OF
+
