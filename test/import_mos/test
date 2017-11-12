@@ -97,4 +97,26 @@ os.unlink('ReSpect.txt')
 ## remove copy
 #os.unlink('ReSpect.txt')
 
+#---------------------------------------#
+#
+# Test 5:  Turbomole non relativistic
+#
+#---------------------------------------#
+
+f = Filter()
+
+# check energy
+f.add(from_string = 'checksum of imported and converted MOs:',
+      num_lines   = 1,
+      rel_tolerance = 1.0e-11)
+ 
+# copy MOs
+shutil.copy('scf-nr-h2o-cc-pV5Z-nosym.mos', 'mos')
+
+# run test
+test.run(['scf-nr-turbomole.inp'], ['h2o-cc-pV5Z-nosym-tm.mol'], f, args='--put="mos"')
+
+# remove copy
+os.unlink('mos')
+
 sys.exit(test.return_code)
