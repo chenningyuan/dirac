@@ -1,5 +1,5 @@
 !==============================================================================!
-subroutine impmos(qcpack,filimp)
+subroutine impmos()
 !------------------------------------------------------------------------------!
 !
 ! import MO coefficients and energies from ASCII files of another QC package
@@ -10,13 +10,15 @@ subroutine impmos(qcpack,filimp)
 !       MOs need to be converted from the spherical Harmonic into the
 !       Cartesian AO basis
 !
-!   (2) ReSpect MOs for 1C and 2C Hamilonians. So far, the MO export is not
+!   (2) ReSpect MOs for 1C Hamilonians. So far, the MO export is not
 !       released at ReSpect side
+!
+!   (3) Turbomole MOs for 1C Hamiltonians
 !
 !
 ! Benjamin Helmich-Paris, fall 2016
 !
-! NOTE: works so far only in C1 symmetry since MOLCAS export MOs in SAO basis
+! NOTE: works so far only in C1 symmetry
 !
 !------------------------------------------------------------------------------!
 
@@ -40,23 +42,20 @@ subroutine impmos(qcpack,filimp)
 #include "shells.h"
 #include "nuclei.h"
 #include "blocks.h"
+#include "dcbimp.h"
 
 ! parameter:
  character(len=*), parameter :: chrdbg = "impmos>"
  logical, parameter :: locdbg = .false.
 
-! input:
- character(len=64), intent(in) :: qcpack, filimp
-
 ! local scalars:
- character(len=74) :: text
- integer :: idim(3,2), lucmo, luimp, ioff, ish, nhkti, nhktmx, iz
- integer :: itmp, mxscr, iofcar, iofsph, imo, ibf, jbf, nz0, minteg, ndeg, idx
- real(8) :: toterg, orbsum, chksum, trace, ddot
+ integer :: lucmo, ish, nhkti, nhktmx, iz
+ integer :: itmp, mxscr, iofcar, iofsph, imo, ibf, nz0, minteg, ndeg
+ real(8) :: toterg, orbsum, chksum
 
 ! local allocatables:
  integer, allocatable :: ibeig(:), norb0(:), nbbas0(:)
- real(8), allocatable :: cmosph(:,:,:), cmocar(:,:,:), eig(:), ctmp(:)
+ real(8), allocatable :: cmosph(:,:,:), cmocar(:,:,:), eig(:,:), ctmp(:)
 
  call qenter("impmos")
 
@@ -87,7 +86,7 @@ subroutine impmos(qcpack,filimp)
   mxscr = max(mxscr,itmp)
  end do
 
- allocate(cmocar(ntbas(0),ntbas(0),4),cmosph(norbt,norbt,nz0),eig(ndeg*norbt),ibeig(norbt),&
+ allocate(cmocar(ntbas(0),ntbas(0),4),cmosph(norbt,norbt,nz0),eig(norbt,ndeg),ibeig(norbt),&
           norb0(nbsym),nbbas0(nbsym),ctmp(mxscr))
 
  if (index(qcpack(1:6),'MOLCAS').gt.0) then
@@ -95,7 +94,7 @@ subroutine impmos(qcpack,filimp)
   ! ------------------------------------------------------ !
   ! import MOLCAS information
   ! ------------------------------------------------------ !
-  call rdinporb(cmosph,eig,norb0,nbbas0,filimp,nbsym,norbt,ntbas(0))
+  call rdinporb(cmosph,eig,norb0,nbbas0,filimp(1),nbsym,norbt,ntbas(0))
  
   if (locdbg) then
    write(lupri,"(a)") chrdbg//" imported MOs per irrep:"
@@ -121,14 +120,14 @@ subroutine impmos(qcpack,filimp)
  else if (index(qcpack(1:7),'RESPECT').gt.0) then
 
   call rdrespect(cmosph,eig, &! out
-                 filimp,kmax,natoms,&! inp
+                 filimp(1),kmax,natoms,&! inp
                  ndeg,norbt,nz0) ! dim
 
-  if (nz0.gt.1) then
-   do imo = 1,norbt-1
-    eig(imo+1) = eig(ndeg*imo+1)
-   end do
-  end if
+  !if (nz0.gt.1) then
+  ! do imo = 1,norbt-1
+  !  eig(imo+1) = eig(ndeg*imo+1)
+  ! end do
+  !end if
 
   if (locdbg) then
    write(lupri,"(a)") chrdbg//" imported MO energies:"
@@ -144,6 +143,32 @@ subroutine impmos(qcpack,filimp)
                        ncntsh,nhktsh,norbsh,& ! inp
                        maxshl,norbt,nz0,natoms)
 
+ else if (index(qcpack(1:9),'TURBOMOLE').gt.0) then
+
+  ! read MO coefficients from mos or spinor.r/i type files
+  call rdturbomole(cmosph,eig,filimp,nkrblk,norbt,nz0) ! dim
+
+
+  if (locdbg) then
+   write(lupri,"(a)") chrdbg//" imported MO energies:"
+   call output(eig,1,norbt,1,ndeg,norbt,ndeg,1,lupri)
+
+   do iz = 1,nz0
+    write(lupri,"(a,i1)") chrdbg//" imported MO coeffs in sph. Harm. basis.:",iz
+    call output(cmosph(1,1,iz),1,norbt,1,norbt,norbt,norbt,1,lupri)
+   end do
+  end if
+
+  ! reorder TODO
+  call reorder_turbomole(cmosph,& ! i/o
+                         ncntsh,nhktsh,norbsh,nhktmx,& ! inp
+                         maxshl,norbt,nz0)
+
+   do iz = 1,nz0
+    write(lupri,"(a,i1)") chrdbg//" resorted MO coeffs in sph. Harm. basis.:",iz
+    call output(cmosph(1,1,iz),1,norbt,1,norbt,norbt,norbt,1,lupri)
+   end do
+
  else 
   call quit(chrdbg//" MO import works so far only for MOLCAS and ReSpect!")
  end if
@@ -157,6 +182,10 @@ subroutine impmos(qcpack,filimp)
   minteg = 2
  else if (index(qcpack(1:8),'RESPECT ').gt.0) then
   minteg = 1
+ else if (index(qcpack(1:9),'TURBOMOLE').gt.0) then
+  minteg = 3
+ else
+  minteg = -1
  end if
 
  ! initialze carsph module
@@ -207,6 +236,7 @@ subroutine impmos(qcpack,filimp)
  end do
 
  write(lupri,"(/,a,E20.13,/)") "checksum of imported and converted MOs:",chksum
+ call flush(lupri)
 
  ! ------------------------------------------------------ !
  ! save imported and converted MOs to DFPCMO file
@@ -228,7 +258,7 @@ end subroutine impmos
 !==============================================================================!
 subroutine rdinporb(cmo,eig,norb,nbbas, &! out
                     filimp,&! inp
-                    nbsym,ntorb,ntbas) ! dim
+                    nbsym,norbt,ntbas) ! dim
 !------------------------------------------------------------------------------!
 !
 ! read from MOLCAS' InpOrb type of files
@@ -256,14 +286,14 @@ subroutine rdinporb(cmo,eig,norb,nbbas, &! out
  logical, parameter :: locdbg = .false.
 
 ! dimensions:
- integer, intent(in) :: nbsym, ntorb, ntbas
+ integer, intent(in) :: nbsym, norbt, ntbas
 
 ! input:
  character(len=64), intent(in) :: filimp
 
 ! output:
  integer, intent(out) :: norb(nbsym), nbbas(nbsym)
- real(8), intent(out) :: cmo(ntbas*ntorb), eig(ntorb)
+ real(8), intent(out) :: cmo(ntbas*norbt), eig(norbt)
 
 ! local scalars
  character(len=3)   :: chrver
@@ -435,7 +465,7 @@ end subroutine rdinporb
 !==============================================================================!
 subroutine rdrespect(cmo,eig, &! out
                      filimp,kmax,ncent,&! inp
-                     ndeg,ntorb,nz) ! dim
+                     ndeg,norbt,nz) ! dim
 !------------------------------------------------------------------------------!
 !
 ! read from ReSpect temporary file provided by Michal Repisky
@@ -459,14 +489,14 @@ subroutine rdrespect(cmo,eig, &! out
  logical, parameter :: locdbg = .false.
 
 ! dimensions:
- integer, intent(in) :: ntorb, nz, ndeg
+ integer, intent(in) :: norbt, nz, ndeg
 
 ! input:
  character(len=64), intent(in) :: filimp
  integer, intent(in) :: kmax, ncent
 
 ! output:
- real(8), intent(out) :: cmo(ntorb*ntorb,nz), eig(ndeg,ntorb)
+ real(8), intent(out) :: cmo(norbt*norbt,nz), eig(ndeg,norbt)
 
 ! local scalars:
  integer(4) :: i4dum, ndim4, ncent4, nbbas4
@@ -507,11 +537,11 @@ subroutine rdrespect(cmo,eig, &! out
  !-----------------
  read(luimp,*) ndim4
 
- if (int(ndim4).ne.ndeg*ntorb) then
+ if (int(ndim4).ne.ndeg*norbt) then
   call quit("Number of orbitals read from ReSpect do not match!")
  end if
 
- read(luimp,*) ((eig(ideg,idx),ideg=1,ndeg),idx = 1,ntorb)
+ read(luimp,*) ((eig(ideg,idx),ideg=1,ndeg),idx = 1,norbt)
 
  !MO coefficients
  !-----------------
@@ -526,6 +556,109 @@ subroutine rdrespect(cmo,eig, &! out
  call qexit("rdrespect")
 
 end subroutine rdrespect
+!==============================================================================!
+!==============================================================================!
+subroutine rdturbomole(cmo,eig,filimp,ndeg,norbt,nz)
+!------------------------------------------------------------------------------!
+!
+! read from TURBOMOLE MO coefficients
+!
+!  (1) MOs in spherical AO basis 
+!
+!  (2) MO energies
+!
+! Benjamin Helmich-Paris, fall 2017
+!
+!------------------------------------------------------------------------------!
+
+ use file_handler, only : open_seq, releaseunit
+
+ implicit none
+
+#include "priunit.h"
+
+! parameter
+ character(len=*), parameter :: chrdbg = "rdturbomole>"
+ logical, parameter :: locdbg = .false.
+ character(len=7), parameter :: cheader(2) = (/ "$scfmo " , "$spinor" /)
+ character(len=4), parameter :: creim(2) = (/ "real", "imag" /)
+
+! dimensions:
+ integer, intent(in) :: norbt, nz, ndeg
+
+! input:
+ character(len=64), intent(in) :: filimp(ndeg)
+
+! output:
+ real(8), intent(out) :: cmo(norbt,norbt*ndeg,nz), eig(norbt,ndeg)
+
+! local scalars:
+ character(len=80) :: line
+ character(len=12) :: check
+ integer :: ideg, luimp, nbscf, imo, idx, kdx, nlen
+
+! local alloctable:
+ real(8), allocatable :: suxx(:)
+
+ call qenter("rdturbomole")
+
+ allocate(suxx(norbt*ndeg))
+
+ do ideg = 1,ndeg
+
+  luimp = open_seq(filimp(ideg),cform="FORMATTED")
+
+  rewind(luimp)
+
+  read(luimp,'(a)') line 
+
+  check = adjustl(cheader(ndeg))
+  nlen = len_trim(check)
+  if (ndeg.gt.1) then
+   check(nlen+1:nlen+5) = "_"//creim(ideg)
+   nlen = nlen+5
+  end if
+  
+  if (line(1:nlen).ne.check) call quit("Header line wrong!")
+
+  imo = 0
+  do 
+
+   read(luimp,'(a)') line 
+   if(line(1:4).eq.'$end') exit
+   if (line(1:1).eq.'#')   cycle
+   kdx = index(line,'eigenvalue=')+11
+  
+   imo = imo+1
+
+   read(line(kdx:80),*) eig(imo,ideg)
+   kdx = index(line,'nsaos=')+6
+   read(line(kdx:kdx+6),*) nbscf
+   if (norbt*ndeg.ne.nbscf) &
+    call quit("Number of basis functions do not match!")
+
+   read(luimp,'(4d20.14)') (suxx(idx),idx=1,norbt*ndeg)
+
+   ! Re(a) / Im(a)
+   call dcopy(norbt,suxx         ,1,cmo(1,imo,  ideg),1)
+
+   ! Re(b) / Im(b)
+   if (ndeg.gt.1) then
+    call dcopy(norbt,suxx(1+norbt),1,cmo(1,imo,2+ideg),1)
+   end if
+
+  enddo
+
+  ! close file
+  call releaseunit(luimp)
+
+ end do
+
+ deallocate(suxx)
+
+ call qexit("rdturbomole")
+
+end subroutine rdturbomole
 !==============================================================================!
 !==============================================================================!
 subroutine reorder_molcas(cmosph,ctmp,& ! i/o
@@ -556,6 +689,8 @@ subroutine reorder_molcas(cmosph,ctmp,& ! i/o
  integer :: ioff, imo, ish, norbi, nhkti, khkti, idx, ideg
  integer :: jorb, nscr
 
+ call qenter("reorder_molcas")
+
  ioff = 0
  do imo = 1,norbt
   do ish = 1,maxshl
@@ -579,6 +714,8 @@ subroutine reorder_molcas(cmosph,ctmp,& ! i/o
   write(lupri,"(a)") chrdbg//" reordered MO coeffs in sph. Harm. basis.:"
   call output(cmosph,1,norbt,1,norbt,norbt,norbt,1,lupri)
  end if
+
+ call qexit("reorder_molcas")
 
 end subroutine reorder_molcas
 !==============================================================================!
@@ -609,11 +746,13 @@ subroutine reorder_respect(cmosph,scratch,& ! i/o
  real(8), intent(inout) :: scratch(norbt,norbt,nz), cmosph(norbt,norbt,nz)
 
 ! local scalars:
- integer :: ishel, jshel, iat, isum, itmp, ihkt, nktmx, lhkt, iz
- integer :: imo, khkti, nhkti, norbi, iorb, ioff, jmo
+ integer :: ishel, jshel, itmp, ihkt, nktmx, lhkt, iz
+ integer :: imo, khkti, nhkti, norbi, ioff
 
 ! local alloctables:
  integer, allocatable :: imask(:), ncent0(:), nhkt0(:), iofkt(:)
+
+ call qenter("reorder_respect")
 
  allocate(imask(maxshl),ncent0(maxshl),nhkt0(maxshl),iofkt(maxshl+1))
 
@@ -684,5 +823,133 @@ subroutine reorder_respect(cmosph,scratch,& ! i/o
 
  deallocate(imask,ncent0,nhkt0,iofkt)
 
+ call qexit("reorder_respect")
+
 end subroutine reorder_respect
+!==============================================================================!
+!==============================================================================!
+subroutine reorder_turbomole(cmosph,& ! i/o
+                             ncntsh,nhktsh,norbsh,nhktmx,& ! inp
+                             maxshl,norbt,nz)
+!------------------------------------------------------------------------------!
+! reorder Turbomole MOs to Dirac MO order
+!
+!  spherical Harmonics are order in 
+!
+!   Dirac :  -l, -l+1, ... , 0, 1, ..., +l (linear)
+!
+!      TM :  0, 1, -1, -2, +2, +3, -3, ... (sinuidal)
+!
+!------------------------------------------------------------------------------!
+
+ implicit none
+
+#include "priunit.h"
+#include "consts.h"
+#include "heapsort.h"
+
+! local parameter:
+ character(len=*), parameter :: chrdbg = "reorder_respect>"
+ logical, parameter :: locdbg = .false.
+
+! dimensions:
+ integer, intent(in) :: maxshl, norbt, nz
+
+! input:
+ integer, intent(in) :: nhktmx
+ integer, intent(in) :: nhktsh(maxshl), ncntsh(maxshl), norbsh(maxshl)
+
+! in/output:
+ real(8), intent(inout) :: cmosph(norbt,norbt,nz)
+
+! local scalars:
+ integer :: ish, iz, imo, ioff, ioff2, norbi, nhkti
+ integer :: khkti, jorb, idx, jdx, mval
+
+! local alloctables:
+ real(8), allocatable :: ctmp(:)
+
+ call qenter("reorder_turbomole")
+
+ allocate(ctmp(2*nhktmx-1))
+
+ do iz = 1,nz
+
+  do imo = 1,norbt
+
+   ioff2 = 0
+
+   do ish = 1,maxshl
+    norbi = norbsh(ish)
+    nhkti = nhktsh(ish)
+    khkti = 2*nhkti-1
+
+    ! only for d, f, g, .... functions
+    if (nhkti.ge.3) then
+
+     ! --------------------- !
+     !
+     ! flip phase for ... 
+     !
+     !  l = 3, m_l = -3     (position 7)
+     !
+     !  l = 4, m_l = +2, -3 (position 5, 7)
+     !
+     ! --------------------- !
+!     if (nhkti.eq.3) then
+!
+!      ioff = 0
+!      do jorb = 1,norbi
+!       cmosph(ioff2+ioff+7,imo,iz) = - cmosph(ioff2+ioff+7,imo,iz)
+!       ioff = ioff+khkti
+!      end do
+!
+!     else if (nhkti.eq.4) then
+!
+!      ioff = 0
+!      do jorb = 1,norbi
+!       cmosph(ioff2+ioff+5,imo,iz) = - cmosph(ioff2+ioff+5,imo,iz)
+!       cmosph(ioff2+ioff+7,imo,iz) = - cmosph(ioff2+ioff+7,imo,iz)
+!       ioff = ioff+khkti
+!      end do
+!
+!     end if
+
+     ioff = 0
+     do jorb = 1,norbi
+
+      jdx = 0
+      ! -l, -l+1, ..., 0
+      do mval = -nhkti+1,-1
+       jdx = jdx+1
+       idx = 2*abs(mval)+mod(abs(mval),2)
+       ctmp(jdx) = cmosph(ioff2+ioff+idx,imo,iz)
+      end do
+      ! 0, 1, ..., l
+      do mval = 0,nhkti-1
+       jdx = jdx+1
+       idx = 2*mval+mod(mval+1,2)
+       ctmp(jdx) = cmosph(ioff2+ioff+idx,imo,iz)
+      end do
+
+      call dcopy(khkti,ctmp,1,cmosph(ioff2+ioff+1,imo,iz),1)
+      ioff = ioff+khkti
+
+     end do
+
+    end if
+
+    ioff2 = ioff2+khkti*norbi
+
+   end do
+
+  end do
+
+ end do
+
+ deallocate(ctmp)
+
+ call qexit("reorder_turbomole")
+
+end subroutine reorder_turbomole
 !==============================================================================!

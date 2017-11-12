@@ -70,7 +70,7 @@ subroutine carsph_init(nhkt,mintg0)
  implicit none
 
 ! parameter:
- logical, parameter :: locdbg = .false.
+ logical, parameter :: locdbg = .true., debug_ortho = .true.
  character(len=*), parameter :: chrdbg = "carsph_init>"
 
 ! input:
@@ -78,7 +78,7 @@ subroutine carsph_init(nhkt,mintg0)
  integer, intent(in), optional :: mintg0
 
 ! local: 
- integer :: lval, mval, it, iu, iv, lx, ly, lz, nv, nt, ivm, mabs
+ integer :: lval, mval, it, iu, iv, nx, ny, nz, nv, nt, ivm, mabs
  integer :: ifct, irow, icol, ideg, irun, ltmp, ldx
  integer :: nsphr, ncart, mxcar, itrf, novl, ioff, ldim, ksph
  integer :: idx, jdx, kdx, lxi, lyi, lzi, lxj, lyj, lzj, ip, jp, kp, nu, nup
@@ -89,11 +89,16 @@ subroutine carsph_init(nhkt,mintg0)
  integer, allocatable :: icart(:), iovl(:), jovl(:)
  integer(8), allocatable :: factorial(:),  doubfact(:)
  real(8), allocatable :: ccart(:), smat(:)
+ real(8), allocatable :: scr1(:,:), scr2(:,:), scr3(:,:)
 
  if (present(mintg0)) then
   minteg = mintg0
  else
   minteg = 2
+ end if
+
+ if (minteg.lt.1 .or. minteg.gt.3 ) then
+  call quit("minteg should be 1, 2 or 3!")
  end if
 
  ! flag for initialization
@@ -208,7 +213,7 @@ subroutine carsph_init(nhkt,mintg0)
     ! --------------------------------------- !
     ! extra normalization for minteg = 2 case
     ! --------------------------------------- !
-    if (minteg.eq.2) deno = deno * sqrt(real(doubfact(2*lval-1),8))
+    if (minteg.eq.2 .or. minteg.eq.3) deno = deno * sqrt(real(doubfact(2*lval-1),8))
 
     dnorm = dnum / deno
  
@@ -228,12 +233,12 @@ subroutine carsph_init(nhkt,mintg0)
  
        coeff = dsgn*dfct*bilt*bitu*bimv
        
-       lx = 2*it+mabs-2*iu-iv
-       ly = 2*iu+iv
-       lz = lval-2*it-mabs
+       nx = 2*it+mabs-2*iu-iv
+       ny = 2*iu+iv
+       nz = lval-2*it-mabs
  
-       icol = (lval-lx+1)
-       irow = lz+1
+       icol = (lval-nx+1)
+       irow = nz+1
  
        ideg = irow+icol*(icol-1)/2
        
@@ -241,7 +246,7 @@ subroutine carsph_init(nhkt,mintg0)
        ccart(ideg) = ccart(ideg)+dnorm*coeff
 
        if (locdbg) then
-        write(6,"(a,2(i2,1x),ES25.18,3(1x,i2),1x,i3)") chrdbg,lval,mval,dnorm*coeff,lx,ly,lz,ideg
+        write(6,"(a,2(i2,1x),ES25.18,3(1x,i2),1x,i3)") chrdbg,lval,mval,dnorm*coeff,nx,ny,nz,ideg
        end if
  
       end do
@@ -305,6 +310,39 @@ subroutine carsph_init(nhkt,mintg0)
 
  end do run_loop
 
+ ! --------------------- !
+ !
+ ! flip phase for ... 
+ !
+ !  l = 3, m_l = -3     (position 7)
+ !
+ !  l = 4, m_l = +2, -3 (position 5, 7)
+ !
+ !  in Turbomole minteg = 3 case
+ ! --------------------- !
+ if (minteg.eq.3) then
+
+  if (lmax.ge.3) then
+   !  l = 3, m_l = -3
+   do jp = isph(iofsph(2)+1),isph(iofsph(2)+2)-1
+    csph(jp) = -csph(jp)
+   end do
+  end if
+
+  if (lmax.ge.4) then
+   !  l = 4, m_l = -3
+   do jp = isph(iofsph(3)+2),isph(iofsph(3)+3)-1
+    csph(jp) = -csph(jp)
+   end do
+ 
+   !  l = 4, m_l = +2
+   do jp = isph(iofsph(3)+7),isph(iofsph(3)+8)-1
+    csph(jp) = -csph(jp)
+   end do
+  end if
+
+ end if
+
  ! ---------------------------------- !
  ! compute the norm of trafo matrices
  ! ---------------------------------- !
@@ -321,11 +359,19 @@ subroutine carsph_init(nhkt,mintg0)
  end do
 
  if (locdbg) then
-  write(6,"(a,5(1x,i3))") chrdbg,(iofsph(lval),lval=1,lmax)
-  write(6,"(a,5(1x,i3))") chrdbg,(isph(itrf),itrf=1,ntsph+1)
-  write(6,"(a,5(1x,i3))") chrdbg,(jcar(itrf),itrf=1,nttrf)
-  write(6,"(a,5(1x,ES25.18))") chrdbg,(csph(itrf),itrf=1,nttrf)
-  write(6,"(a,5(1x,ES25.18))") chrdbg,(csnrm(lval),lval=1,lmax-1)
+  do lval = 3,nhkt
+   ldx  = lval-2
+!
+   write(6,"(/a,i3,1x,ES25.18)") chrdbg//" Spher. -> Cart. trafo matrix:",lval,csnrm(ldx)
+!
+   ioff = iofsph(ldx)
+   do idx = 1,2*lval-1
+    do jp = isph(ioff+idx),isph(ioff+idx+1)-1
+     jdx = jcar(jp)
+     write(6,"(i3,1x,i3,1x,ES25.18)") idx,jdx,csph(jp)
+    end do
+   end do
+  end do
  end if
 
  !------------------------------------------------!
@@ -371,10 +417,15 @@ subroutine carsph_init(nhkt,mintg0)
   novl = ip-1
 
   if (locdbg) then
+!
    write(6,"(/a,i3)") chrdbg//" Cartesian overlap",lval
-   write(6,"(a,5(1x,i3))") chrdbg,(iovl(itrf),itrf=1,ncart+1)
-   write(6,"(a,5(1x,i3))") chrdbg,(jovl(itrf),itrf=1,novl)
-   write(6,"(a,5(1x,ES25.18))") chrdbg,(smat(itrf),itrf=1,novl)
+!
+   do idx = 1,ncart
+    do kp = iovl(idx),iovl(idx+1)-1
+     jdx = jovl(kp)
+     write(6,"(i3,1x,i3,1x,ES25.18)") idx,jdx,smat(kp)
+    end do
+   end do
   end if
 
   !------------------------------------------------!
@@ -427,9 +478,56 @@ subroutine carsph_init(nhkt,mintg0)
  end do
 
  if (locdbg) then
-  write(6,"(/a)") chrdbg//" inverse trafo matrix:"
-  write(6,"(a,5(1x,ES25.18))") chrdbg,(cinv(itrf),itrf=1,nttrf)
-  write(6,"(a,5(1x,ES25.18))") chrdbg,(cinrm(lval),lval=1,lmax-1)
+  do lval = 3,nhkt
+   ldx  = lval-2
+!
+   write(6,"(/a,i3,1x,ES25.18)") chrdbg//" inverse Spher. -> Cart. trafo matrix:",lval,cinrm(ldx)
+!
+   ioff = iofsph(ldx)
+   do idx = 1,2*lval-1
+    do jp = isph(ioff+idx),isph(ioff+idx+1)-1
+     jdx = jcar(jp)
+     write(6,"(i3,1x,i3,1x,ES25.18)") idx,jdx,cinv(jp)
+    end do
+   end do
+  end do
+ end if
+
+ if (debug_ortho) then
+
+  do lval = 3,nhkt
+
+!
+   write(6,"(/a,i3)") chrdbg//" test:",lval
+!
+   ldx  = lval-2
+
+   ncart = (lval)*(lval+1)/2
+   nsphr = 2*lval-1
+
+   allocate(scr1(nsphr,ncart),scr2(nsphr,ncart),scr3(nsphr,nsphr))
+
+   scr1(:,:) = 0.d0
+   scr2(:,:) = 0.d0
+
+   ioff = iofsph(ldx)
+   do idx = 1,2*lval-1
+    do jp = isph(ioff+idx),isph(ioff+idx+1)-1
+     jdx = jcar(jp)
+     scr1(idx,jdx) = csph(jp)
+     scr2(idx,jdx) = cinv(jp)
+    end do
+   end do
+
+   call dgemm("n","t",nsphr,nsphr,ncart,&
+              1.d0,scr2,nsphr,scr1,nsphr,0.d0,scr3,nsphr)
+
+   call output(scr3,1,nsphr,1,nsphr,nsphr,nsphr,1,6)
+
+   deallocate(scr1,scr2,scr3)
+
+  end do
+
  end if
 
  ! release temporary memory

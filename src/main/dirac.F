@@ -262,7 +262,7 @@ C***********************************************************************
 C**** import MO coeff from different QC package ************************
 C****         and dump it on DFPCMO             ************************
 C***********************************************************************
-      IF (DOIMPMOS) CALL IMPMOS(QCPACK,FILIMP)
+      IF (DOIMPMOS) CALL IMPMOS()
 
 C     Attempt read of formatted MO coefficients
       CALL PCMOIN()

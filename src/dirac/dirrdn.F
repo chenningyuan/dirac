@@ -362,6 +362,7 @@ C
 #include "dcbprl.h"
 #include "dcb_rkbimp.h"
 #include "dcbimp.h"
+#include "dcborb.h"
 #include "logging.h"
 #include "infpar.h"
 C
@@ -535,9 +536,11 @@ C&&&& PRJTHR
   121    CONTINUE
 C&&&& IMPMOS
             DOIMPMOS = .TRUE.
-            READ(LUCMD,*) QCPACK, FILIMP
-            QCPACK = ADJUSTL(QCPACK)
-            FILIMP = ADJUSTL(FILIMP)
+            READ(LUCMD,*) NFILES
+            IF (NFILES.GT.2 .OR. NFILES.LT.1)  THEN
+             CALL QUIT('1 or 2 MO files to import!')
+            END IF
+            READ(LUCMD,*) QCPACK, (FILIMP(IDEG),IDEG=1,NFILES)
             GO TO 100
   122    CONTINUE
             GO TO 100
@@ -579,24 +582,47 @@ C
 
       IF (DOIMPMOS) THEN
 
+       IF (BSS .OR. X2C .OR. DKH1 .OR. DKH2) THEN
+        IF (INDEX(QCPACK,"TURBOMOLE") .GT. 0) THEN
+         NKRBLK = 2
+        END IF
+       ELSE
+        NKRBLK = 1
+       END IF
+
+       IF (NFILES .NE. NKRBLK) THEN
+        CALL QUIT("2 MO files (RE and IM) are needed!")
+       END IF
+
        QCPACK = ADJUSTL(QCPACK)
-       FILIMP = ADJUSTL(FILIMP)
+       FILIMP(1) = ADJUSTL(FILIMP(1))
+
+       if (nkrblk.eq.2) then
+        FILIMP(2) = ADJUSTL(FILIMP(2))
+       else
+        FILIMP(2) = ' -- unknown file name -- '
+       end if
 
        CALL UPCASE(QCPACK)
 
 !       IF (SPINFR .OR. NONREL .OR. LEVYLE) THEN
 
-        SELECT CASE (QCPACK(1:8))
-         CASE ('MOLCAS  ')
+        SELECT CASE (QCPACK(1:10))
+         CASE ('MOLCAS    ')
           WRITE (LUPRI,'(/,A)') 
      &     "import MO coefficients from"
           WRITE (LUPRI,'(/,A,/)') 
-     &     "  MOLCAS file "//TRIM(FILIMP)
-         CASE ('RESPECT ')
+     &     "  MOLCAS file "//TRIM(FILIMP(1))
+         CASE ('RESPECT   ')
           WRITE (LUPRI,'(/,A)') 
      &     "import MO coefficients from"
           WRITE (LUPRI,'(/,A,/)') 
-     &     "  ReSpect file "//TRIM(FILIMP)
+     &     "  ReSpect file "//TRIM(FILIMP(1))
+         CASE ('TURBOMOLE ')
+          WRITE (LUPRI,'(/,A)') 
+     &     "import MO coefficients from"
+          WRITE (LUPRI,'(/,A,/)') 
+     &     "  Turbomole file "// TRIM(FILIMP(1))
          CASE DEFAULT
           CALL QUIT("unknown QCPACK type! Available options: "// 
      &              "MOLCAS, ReSpect")
@@ -619,6 +645,9 @@ C
 !        CALL QUIT("imported MO calculation only works in"//
 !     &            " 1C and 2C modes!")
 !       END IF
+      ELSE
+       QCPACK    = 'DIRAC '
+       FILIMP(:) = ' -- unknown file name -- '
       END IF
 
 C
