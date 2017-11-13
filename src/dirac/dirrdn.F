@@ -5880,7 +5880,12 @@ C
 C
 C     NZC1 is the NZ value in C1 symmetry
 C
-      NZC1 = 4
+      IF (NONREL) THEN
+       NZC1 = 1
+      ELSE
+       NZC1 = 4
+      END IF
+C
 C.....Check RKBIMP
       IF (DORKBIMP) THEN
         IF (.NOT.URKBAL) THEN
