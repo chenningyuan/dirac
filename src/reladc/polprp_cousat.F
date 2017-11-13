@@ -1331,6 +1331,7 @@
         Enddo ! iene
 
         write(*,*) 'energy diagonal written.'
+        deallocate(eabij)
         return
       ENDIF  ! .not.DOX
 !|
@@ -1837,6 +1838,7 @@
         Enddo ! iene
 
         write(*,*) 'energy diagonal written.'
+        deallocate(eabij)
         return
       ENDIF  ! .not.DOX
 !|

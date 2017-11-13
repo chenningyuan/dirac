@@ -31,7 +31,12 @@
       logical                           :: done
       INTEGER                           :: irp,istart,nint,mint
       INTEGER                           :: ialloc,locoff,istat
-      INTEGER                           :: efflen
+      INTEGER                           :: efflen,n1,n2
+      INTEGER                           :: m,n,k
+!
+! variables for partial precontraction
+!
+      real*8,allocatable,dimension(:)       :: vvoo_in,vvoo_ou
 !
 ! variables for matrix distribution
 !
@@ -50,13 +55,14 @@
       REAL*8,allocatable,dimension(:)       :: veco,vecn
       REAL*8,allocatable,dimension(:)       :: vecr,veci
       REAL*8,allocatable,dimension(:)       :: dumarr
-      Integer                               :: ladc,k
+      Integer                               :: ladc
       Integer                               :: irow,icol
       Integer                               :: nbufsloc
       Complex*16                            :: a
       Real*8                                :: b
 
       complex*16, parameter  :: czero=(0.0d0,0.0d0)
+      complex*16, parameter  :: cone =(1.0d0,0.0d0)
       real*8, parameter      :: rzero=0.0d0
 
      
@@ -64,6 +70,10 @@
 !---------------Interface area --------------------------------------
 !
       interface
+
+        SUBROUTINE do_partial_precon(ra1,ra2)
+          real*8, dimension(:)         :: ra1,ra2
+        END SUBROUTINE
 
       end interface
 !
@@ -105,6 +115,33 @@
 
 
 !----------------------------------------------------------------
+!-----  TASK: perform local share of precontraction
+!----------------------------------------------------------------
+
+
+          case(SERVER_PRECON)
+          write(*,*) 'Node',MYPROC,' starts partial precontraction.'
+
+          n1 = ivvoott(nrep+1)
+          allocate(vvoo_in(n1*rcw))
+          allocate(vvoo_ou(n1*rcw))
+          vvoo_in = 0.0d0
+          vvoo_ou = 0.0d0
+          call interface_mpi_recv(vvoo_in,n1*rcw,MASTER,MSGN,
+     &                            global_communicator)
+!
+!             do the partial (local) precontraction
+!
+          call do_partial_precon(vvoo_in,vvoo_ou)
+
+          call interface_mpi_send(vvoo_ou,n1*rcw,MASTER,MSGN,
+     &                            global_communicator)
+          if(deb) write(*,*) 'Node',myproc,' has sent output ints.'
+          deallocate(vvoo_in)
+          deallocate(vvoo_ou)
+
+
+!----------------------------------------------------------------
 !-----  TASK: provide local share of VVVV integrals in irep IRP
 !----------------------------------------------------------------
 
@@ -127,10 +164,13 @@
 
             istart = 0
 
-            MINT = NVVT(IRP)  !maximum number of possible batches
+            if(deb) write(*,*) 'Istart before:',istart
+            MINT = NVVT(IRP)  !maximum number of possible batches (last indices count)
             CALL GETVVVV (irp,istart,nint,done,buf,mint)
 
-            if(deb) write(*,*) 'Recovered ',nint,' batches on',MYPROC
+            if(deb) write(*,*) 'Recovered ',nint,' batches from',
+     &        mint,' requested ones on node',MYPROC,' istart now',
+     &        istart
 !
 ! NINT contains the actual number of batches on *this* node.
 !

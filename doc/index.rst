@@ -84,7 +84,8 @@ Tutorials and walkthrus
 * **Restarting and multi-step jobs:**
   :doc:`SCF <tutorials/restart/scf>` |
   :doc:`X2C <tutorials/restart/x2c>` |
-  :doc:`Coupled cluster <tutorials/restart/coupled_cluster>` |
+  :doc:`Coupled Cluster restart <tutorials/restart/coupled_cluster>` |
+  :doc:`Coupled Cluster memory count <tutorials/cc_memory_count/count_cc_memory>` |
   :doc:`DFCOEF and DFPCMO <tutorials/restart/dfcoef_and_dfpcmo>` |
   :doc:`Troubleshooting <tutorials/restart/troubleshooting>`
 

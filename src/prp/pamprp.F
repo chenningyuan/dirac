@@ -1426,6 +1426,9 @@ C***********************************************************************
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
+#ifdef HAS_PELIB
+        use pe_variables, only: peqm, pe_gspol, pe_lf
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1549,6 +1552,24 @@ C
       IF (OPTROT) THEN
         CALL PRP_OPTROT(ABLRF,ABCNV,WORK,KFREE,LFREE)
       ENDIF
+#ifdef HAS_PELIB
+      if (peqm) then
+         write(lupri,'(/A)')
+     &      'Polarizable environment included using PElib'//
+     &      ' (https://gitlab.com/pe-software/pelib-public).'
+         if (pe_gspol) then
+            write(lupri,'(/A)')
+     &      'Response properties calculated with dynamical'//
+     &      ' polarizable embedding disabled (.GSPOL)'
+         else
+            write(lupri,'(/A)')
+     &      'Response properties calculated with full inclusion of'//
+     &      ' polarizable environment.'
+         endif
+         if (pe_lf) write(lupri,'(/A)')
+     &   'Effective external field (EEF) correction applied.'
+      endif
+#endif
 C
 C     Memory deallocation
 C     -------------------
@@ -1784,7 +1805,7 @@ C
       ENDIF
  100  CONTINUE
       IF(IATOMS.EQ.0) THEN
-        WRITE(6,'(2X,A)') 
+        WRITE(LUPRI,'(2X,A)')
      & 'No active atoms with quadrupole moment.'
       ENDIF
       CALL PRSYMB(LUPRI,'-',72,2)

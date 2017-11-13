@@ -6,13 +6,14 @@
 !     Define the unit numbers
 
       INTEGER MSLVOUT,MRCONEE,MDINT,MDPROP,MCCRES,MCCDENS,ITAMPL,ITAMPD,                  &
-     & IOAMPL,IOAMPS,ITAPT,ITAPL,ITAPADC
+     & IOAMPL,IOAMPS,ITAPT,ITAPL,ITAPADC,IUHEFF
       PARAMETER (MSLVOUT = 12) ! Output from slaves
       PARAMETER (MRCONEE = 13) ! Effective one-electron integrals
       PARAMETER (MDINT   = 14) ! Two-electron integrals
       PARAMETER (MDPROP  = 15) ! Property integrals
       PARAMETER (MCCRES  = 16) ! Restart information
       PARAMETER (MCCDENS = 17) ! Effective 1-electron density matrix
+      PARAMETER (IUHEFF  = 18) ! Effective Hamiltonian (Fock space)
       PARAMETER (ITAMPL  = 26) ! T1 and T2 amplitudes (used in DIIS only)
       PARAMETER (ITAMPD  = 27) ! Error vector for T1 and T2 amplitudes
       PARAMETER (IOAMPL  = 28) ! Orbital gradients

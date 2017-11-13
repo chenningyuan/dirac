@@ -34,9 +34,8 @@ keyword(EPOLE)
 Specification of electric Cartesian multipole operators of order L 
 for the calculation of transition moments. Specify order.
 
-*Example:* Electric dipole operators
-
-::
+*Example:* Electric dipole operators::
+  
       .EPOLE
       1
 
@@ -45,9 +44,8 @@ keyword(MPOLE)
 Specification of magnetic Cartesian multipole operators of order L 
 for the calculation of transition moments. Specify order.
 
-*Example:* Magnetic dipole operators
+*Example:* Magnetic dipole operators::
 
-::
       .MPOLE
       1
 
@@ -61,9 +59,7 @@ keyword(INTENS)
 Invoke calculation of oscillator strengths. Followed by oscillator strengths to order k in the wave vector, which must be zero.
 Presently, only :math:`O(k^0)` is available, corresponding to the electric dipole approximation.
 
-*Example:* 
-
-::
+*Example:* ::
 
      .INTENS
      0
@@ -159,9 +155,7 @@ For each fermion ircop give an :ref:`orbital_strings` of inactive orbitals from
 which excitations are allowed. By default excitations from all occupied
 orbitals are included in the generalized eigenvalue problem.
 
-Example:
-
-::
+Example: ::
 
     .OCCUP
     1..3
@@ -194,9 +188,7 @@ keyword(MAXITR)
 
 Maximum number of iterations.
 
-*Default:*
-
-::
+*Default:* ::
 
     .MAXITR
      30
@@ -205,9 +197,7 @@ keyword(MAXRED)
 
 Maximum dimension of matrix in reduced system.
 
-*Default:*
-
-::
+*Default:* ::
 
     .MAXRED
      200
@@ -216,9 +206,7 @@ keyword(THRESH)
 
 Threshold for convergence of reduced system.
 
-*Default:*
-
-::
+*Default:* ::
 
     .THRESH
      1.0D-5
@@ -239,9 +227,7 @@ keyword(CNVINT)
 Set threshold for convergence before adding SL and SS integrals to
 SCF-iterations.
 
-*2 (real) Arguments:*
-
-::
+*2 (real) Arguments:* ::
 
     .CNVINT
      CNVXQR(1) CNVXQR(2)
@@ -253,9 +239,7 @@ keyword(ITRINT)
 Set the number of iterations before adding SL and SS integrals to
 SCF-iterations.
 
-*Default:*
-
-::
+*Default:* ::
 
     .ITRINT
      1 1

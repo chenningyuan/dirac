@@ -14,4 +14,4 @@ You launch your operator test as: ::
 
 Input files of this test are supposed to be part of the web-tutorial. For this test, however, only few selected cases are run.
 
-Note that MO-matrix elements are checked only over s- and p- atomic shells.
+Note that MO-matrix elements are checked only over s- and p- atomic shells in this test.

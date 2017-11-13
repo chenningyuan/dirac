@@ -1,0 +1,45 @@
+miroilias/dirac:
+##
+## DIRAC buildup for distelli.yml
+##
+## uses Docker ... https://hub.docker.com/r/miroilias/docker_repo/
+##
+
+# environment variable for Dirac MPI command
+  Env:
+    - DIRAC_MPI_COMMAND: "mpirun -np 2"
+    - CTEST_PROJECT_NAME: "DIRAC"
+
+  PreInstall:
+# show info about available processors
+    - lscpu
+    - echo nproc=$(nproc)
+# show available disc space
+    - df -h
+# show available memory
+    - free -g -t
+    
+  PostInstall:
+    - git submodule update --init --recursive
+
+  Exec:
+    - python ./setup --fc=mpif90 --cc=mpicc --cxx=mpicxx --int64 --mpi --cmake-options="-D BUILDNAME='mpich.gnu.i8-distelli' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_UNIT_TESTS=ON -D ENABLE_BASIS_SETS_CHECK=ON" build
+    - cd build
+    - ctest -D ExperimentalConfigure
+    - ctest -j $(nproc) -D ExperimentalBuild
+# ldd : show dependencies
+    - ldd dirac.x
+# if some tests fail build/ctest can continue because of: || true
+    - ctest -j $(nproc) -D ExperimentalTest -L short || true
+    - ctest -D ExperimentalSubmit
+
+# now check the release subset
+#    - make -j $(nproc) release
+#    - tar xzf DIRAC-16.0-Source.tar.gz
+#    - cd DIRAC-16.0-Source
+#    - python ./setup --type=debug build_release
+#    - cd build_release
+#    - ctest -D ExperimentalConfigure
+#    - ctest -j $(nproc) -D ExperimentalBuild
+#    - ctest -D ExperimentalSubmit
+
