@@ -389,6 +389,9 @@ C
       DOIMPMOS   = .FALSE.
 C
       RKBIMP_PRJTHR = 2.0D-5
+
+      NKRBLK = 1
+
 C
 C     Look for 2c. Hamiltonians, MDIRAC and more
 C
@@ -586,8 +589,6 @@ C
         IF (INDEX(QCPACK,"TURBOMOLE") .GT. 0) THEN
          NKRBLK = 2
         END IF
-       ELSE
-        NKRBLK = 1
        END IF
 
        IF (NFILES .NE. NKRBLK) THEN
