@@ -9,18 +9,13 @@ from runtest_config import configure
 
 assert version_info.major == 2
 
-# miro: deactivate checking of numbers due to degeneracy causing them to be place in various places (example: px,py,pz shells)
-#f = [
-#    get_filter(from_string='Printout of all property elements',
-#               to_string   = 'End of property elements printout.',
-#               ignore_sign = True,
-#               rel_tolerance   = 1.0e-6)
-#]
-
+# miro: checking of degenerate numbers placed in various positions in the printout 
+# for example: mtx elements involving degenerate px,py,pz shells
 f = [
-    get_filter(from_string='Property elements of the',
-               to_string  = 'Printout of all property elements'
-               )
+    get_filter(from_string='Printout of all property elements',
+               to_string   = 'Transformation ended at',
+               ignore_sign = True, ignore_order=True,
+               rel_tolerance   = 1.0e-6)
 ]
 
 
