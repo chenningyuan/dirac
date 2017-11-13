@@ -717,7 +717,7 @@ C
      &                      E_THRE,C_THRE,E_CONV,C_CONV,ICLSSEL,NOCCLS,
      &                      IRC,IDCOMH,IHAM12,
      &                      WORK(KBLOCKLIST),WORK(KNODELIST),
-     &                      IPROCLIST,IGROUPLIST,eci_start
+     &                      IPROCLIST,IGROUPLIST,eci_start,ITERSEOUT
 #if defined (VAR_MPI2)
      &                      ,WORK(KILU1LIST),WORK(KILU2LIST),
      &                      WORK(KILU3LIST),WORK(KILU4LIST),

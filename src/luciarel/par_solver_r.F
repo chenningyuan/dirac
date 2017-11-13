@@ -31,7 +31,7 @@
      &                  LUCLIST,NBATV,
      &                  LBATV,LEBATV,I1BATV,IBATV,RCCTOS,SCRRED,
      &                  IGROUPLIST,IPROCLIST,IT_TTPL,IT_TTOL,
-     &                  AMATC,RWORK,EVL,eciold)
+     &                  AMATC,RWORK,EVL,eciold,ITERSEOUT)
 *
 *     Davidson algorithm , requires two blocks in core
 *     parallel Multi root version
@@ -149,7 +149,7 @@ C
 *
        KAPROJ = 1
        KFREE  = KAPROJ+ MAXVEC*(MAXVEC+1)/2
-       TEST   = 1.0D-5
+       TEST   = 1.0D-6
        CONVER = .FALSE.
        NZERO  = 0
 *
@@ -277,8 +277,14 @@ CSK       WRITE(LUWRT,*) 'NVEC, NINVEC' , NVEC, NINVEC
         WALLITR1 = interface_MPI_WTIME()
         starttime = interface_MPI_WTIME()
 *
+        if (ITERSEOUT.eq.1) then
+          write(LUWRT,'(/A,I6/A)') ' Iteration',ITER,
+     &                             '_________________'
+        else
         WRITE(LUWRT,'(//A,I4)')
      &        ' (MICDV4_ENLMD_REL_PAR) CI microiteration no.',ITER
+        end if
+*
         ITER        = ITER + 1
         ITER_CHECKP = ITER_CHECKP + 1
 *
@@ -381,21 +387,31 @@ CSK       WRITE(LUWRT,*) 'NVEC, NINVEC' , NVEC, NINVEC
      &      '                        Active energy      =',
      &                        EIG(1:NROOT,ITER-1)
        END IF
+      if (ITERSEOUT.eq.1) then
+        do I=1,NROOT
+          WRITE(LUWRT,'(A19,7X,I3,3X,1E18.13,3X,1F19.10)')
+     &    ' Iter RNORM EIGAPR ',
+     &      ITER-1,RNRM(ITER-1,I),EIG(I,ITER-1)+EIGSHF
+        end do
+      else
        WRITE(LUWRT,'(A,4F20.8/,(37X,4F20.8))')
      &      '                        Total energy       =',
      &                        (EIG(I,ITER-1)+EIGSHF,i=1,NROOT)
        WRITE(LUWRT,'(A,4F20.8/,(37X,4F20.8))')
      &      '                        Lowering of energy =',
      &      (eciold(i)-EIG(I,ITER-1)-EIGSHF,I=1,nroot)
+       end if
 
        do i = 1, nroot
          eciold(i) = EIG(i,ITER-1) + EIGSHF
        end do
 
+       if (ITERSEOUT.ne.1) then
        WRITE(LUWRT,'(/A,1P,D8.2,A/,(I15,D20.5))')
      &   '                        Norm of CI residuals'//
      &   ' (thr = ',test,')',
      &   (i,RNRM(ITER-1,i),i=1,NROOT)
+       end if
       IF( CONVER ) GOTO  901
       IF( ITER.GT. MAXIT) THEN
          ITER = MAXIT
@@ -458,8 +474,13 @@ CSK       WRITE(LUWRT,*) 'NVEC, NINVEC' , NVEC, NINVEC
 C       end of timing
         sigmatime2 = interface_MPI_WTIME()
         WALLTID = SECTID(sigmatime2-sigmatime)
+        if (ITERSEOUT.eq.1) then
+          if (IVEC.eq.1) WRITE(LUWRT,*)
+          WRITE(LUWRT,9401) WALLTID
+        else
         if(timing)then
           WRITE(LUWRT,9400) WALLTID
+        end if
         end if
 *
 *       augment projected matrix using batch structure of CI vector(s)
@@ -668,6 +689,85 @@ C
 * ( End of loop over iterations )
 *
 *
+      if (ITERSEOUT.eq.1) then
+*
+      IF( .NOT. CONVER ) THEN
+*        CONVERGENCE WAS NOT OBTAINED
+         IF(IPRT .GE. 2 )
+     &   WRITE(LUWRT,1170) MAXIT
+ 1170    FORMAT(/'  Convergence was not obtained in ',I3,' iterations')
+      ELSE
+*        CONVERGENCE WAS OBTAINED
+         ITER = ITER - 1
+         IF (IPRT .GE. 2 )
+     &   WRITE(LUWRT,1180) ITER
+ 1180    FORMAT(/,'  Convergence was obtained in ',I3,' iterations')
+        END IF
+*
+      IF ( IPRT .GT. 0 ) THEN
+        CALL REWINE(ILU1,LBLK)
+        DO IROOT = 1, NROOT
+          WRITE(LUWRT,*)
+          WRITE(LUWRT,'(A,I3)')
+     &  ' Information about convergence for root... ' ,IROOT
+          WRITE(LUWRT,*)
+     &    '============================================'
+          WRITE(LUWRT,*)
+          FINEIG(IROOT) = EIG(ITER,IROOT)
+          IF (RTCNV(IROOT)) THEN
+             WRITE(6,2190) IROOT,FINEIG(IROOT)+EIGSHF
+          ELSE
+             WRITE(6,2191) IROOT,FINEIG(IROOT)+EIGSHF
+          END IF
+ 2190 FORMAT(' The final eigenvalue',I5,F22.10,' (converged)')
+ 2191 FORMAT(' The final eigenvalue',I5,F22.10,' (NOT converged)')
+          IF(IPRT.GE.400) THEN
+            WRITE(LUWRT,2200)
+ 2200       FORMAT(' The final approximation to eigenvector ')
+            CALL WRTVCD(VEC1,ILU1,0,LBLK)
+          END IF
+          WRITE(LUWRT,2300)
+ 2300     FORMAT(/,'  Summary of iterations ',/,1H
+     +          ,' ----------------------')
+          WRITE(LUWRT,2310)
+ 2310     FORMAT
+     &    (/,'  Iteration point        Eigenvalue         Residual ')
+          DO I=1,ITER
+ 2330     WRITE(LUWRT,2340) I,EIG(I,IROOT)+EIGSHF,RNRM(I,IROOT)
+ 2340     FORMAT(1H ,6X,I4,8X,F20.13,2X,E12.5)
+        END DO
+        END DO
+      ELSE
+        CALL REWINE(ILU1,LBLK)
+        write(LUWRT,*)
+        write(LUWRT,*) '*++++++++++++++++++++++++++++++++++++++++++++*'
+        write(LUWRT,*)
+        DO IROOT = 1, NROOT
+C          FINEIG(IROOT) = EIG(ITER,IROOT)+EIGSHF
+          FINEIG(IROOT) = EIG(IROOT,ITER)+EIGSHF
+          IF (RTCNV(IROOT)) THEN
+             WRITE(6,2190) IROOT,FINEIG(IROOT)
+          ELSE
+             WRITE(6,2191) IROOT,FINEIG(IROOT)
+          END IF
+        END DO
+        write(LUWRT,*)
+        write(LUWRT,*) '*++++++++++++++++++++++++++++++++++++++++++++*'
+        write(LUWRT,*)
+      END IF
+*
+*
+      IF(IPRT .EQ. 1 ) THEN
+        DO IROOT = 1, NROOT
+          WRITE(LUWRT,'(A,2I3,E13.6,2E10.3)')
+     &    ' >>> CI-OPT Iter Root E g-norm g-red',
+     &                 ITER,IROOT,FINEIG(IROOT),RNRM(ITER,IROOT),
+     &                 RNRM(1,IROOT)/RNRM(ITER,IROOT)
+        END DO
+      END IF
+
+      else   ! new output
+*
       IF( .NOT. CONVER ) THEN
 *        CONVERGENCE WAS NOT OBTAINED
          WRITE(LUWRT,'(//A,I4,A)') ' (MICDV4_ENLMD_REL_PAR) '//
@@ -727,6 +827,7 @@ C
      &                 RNRM(1,IROOT)/RNRM(ITER,IROOT)
  1607   CONTINUE
       END IF
+      end if
 C
 C     store information about energies for each root on file
 C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
@@ -754,6 +855,7 @@ C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
  9300 FORMAT(' >>>  WALL TIME FOR CURRENT ITERATION            : ',A)
  9250 FORMAT(' >>>  WALL TIME IN STEP 1 OF CURRENT ITERATION   : ',A)
  9400 FORMAT(' >>>  WALL TIME FOR SIGMA VECTOR CALL            : ',A/)
+ 9401 FORMAT(' >>>  WALL TIME FOR SIGMA VECTOR CALL            : ',A)
  9600 FORMAT(' >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   : ',A)
  9350 FORMAT(' >>>  WALL TIME FOR PART 2.1 - 2.2               : ',A)
  9777 FORMAT(' >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    : ',A)
