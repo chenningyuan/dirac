@@ -60,6 +60,7 @@ C***********************************************************************
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dgroup.h"
+#include "dcbimp.h"
 #include "cbirea.h"
 
       integer, parameter   :: lwork = 100000
@@ -318,6 +319,17 @@ C
 C     Consistency checks
 C
       CALL CONINP
+
+
+C
+C     set number of blocks in case of import
+C     complex spinors from ReSpect (TODO) or Turbomole
+C
+      IF (DOIMPMOS) THEN
+       IF (NZC1.EQ.4 .AND. INDEX(QCPACK,"TURBOMOLE").GT.0) THEN
+        NKRBLK = 2
+       END IF
+      END IF
 C
       CALL TITLER('End of input processing','*',124)
 C
@@ -389,8 +401,6 @@ C
       DOIMPMOS   = .FALSE.
 C
       RKBIMP_PRJTHR = 2.0D-5
-
-      NKRBLK = 1
 
 C
 C     Look for 2c. Hamiltonians, MDIRAC and more
@@ -585,20 +595,10 @@ C
 
       IF (DOIMPMOS) THEN
 
-       IF (BSS .OR. X2C .OR. DKH1 .OR. DKH2) THEN
-        IF (INDEX(QCPACK,"TURBOMOLE") .GT. 0) THEN
-         NKRBLK = 2
-        END IF
-       END IF
-
-       IF (NFILES .NE. NKRBLK) THEN
-        CALL QUIT("2 MO files (RE and IM) are needed!")
-       END IF
-
        QCPACK = ADJUSTL(QCPACK)
        FILIMP(1) = ADJUSTL(FILIMP(1))
 
-       if (nkrblk.eq.2) then
+       if (nfiles.eq.2) then
         FILIMP(2) = ADJUSTL(FILIMP(2))
        else
         FILIMP(2) = ' -- unknown file name -- '
@@ -606,46 +606,27 @@ C
 
        CALL UPCASE(QCPACK)
 
-!       IF (SPINFR .OR. NONREL .OR. LEVYLE) THEN
+       SELECT CASE (QCPACK(1:10))
+        CASE ('MOLCAS    ')
+         WRITE (LUPRI,'(/,A)') 
+     &    "import MO coefficients from"
+         WRITE (LUPRI,'(/,A,/)') 
+     &    "  MOLCAS file "//TRIM(FILIMP(1))
+        CASE ('RESPECT   ')
+         WRITE (LUPRI,'(/,A)') 
+     &    "import MO coefficients from"
+         WRITE (LUPRI,'(/,A,/)') 
+     &    "  ReSpect file "//TRIM(FILIMP(1))
+        CASE ('TURBOMOLE ')
+         WRITE (LUPRI,'(/,A)') 
+     &    "import MO coefficients from"
+         WRITE (LUPRI,'(/,A,/)') 
+     &    "  Turbomole file "// TRIM(FILIMP(1))
+        CASE DEFAULT
+         CALL QUIT("unknown QCPACK type! Available options: "// 
+     &             "MOLCAS, ReSpect")
+       END SELECT
 
-        SELECT CASE (QCPACK(1:10))
-         CASE ('MOLCAS    ')
-          WRITE (LUPRI,'(/,A)') 
-     &     "import MO coefficients from"
-          WRITE (LUPRI,'(/,A,/)') 
-     &     "  MOLCAS file "//TRIM(FILIMP(1))
-         CASE ('RESPECT   ')
-          WRITE (LUPRI,'(/,A)') 
-     &     "import MO coefficients from"
-          WRITE (LUPRI,'(/,A,/)') 
-     &     "  ReSpect file "//TRIM(FILIMP(1))
-         CASE ('TURBOMOLE ')
-          WRITE (LUPRI,'(/,A)') 
-     &     "import MO coefficients from"
-          WRITE (LUPRI,'(/,A,/)') 
-     &     "  Turbomole file "// TRIM(FILIMP(1))
-         CASE DEFAULT
-          CALL QUIT("unknown QCPACK type! Available options: "// 
-     &              "MOLCAS, ReSpect")
-        END SELECT
-
-!       ELSE IF (BSS .OR. X2C .OR. DKH1 .OR. DKH2) THEN
-!
-!        SELECT CASE (QCPACK(1:8))
-!         CASE ('RESPECT ')
-!          WRITE (LUPRI,'(/,A)') 
-!     &     "import MO coefficients from"
-!          WRITE (LUPRI,'(/,A,/)') 
-!     &     "  ReSpect file "//TRIM(FILIMP)
-!         CASE DEFAULT
-!          CALL QUIT("unknown QCPACK type! Available options: "// 
-!     &              "ReSpect")
-!        END SELECT
-!
-!       ELSE
-!        CALL QUIT("imported MO calculation only works in"//
-!     &            " 1C and 2C modes!")
-!       END IF
       ELSE
        QCPACK    = 'DIRAC '
        FILIMP(:) = ' -- unknown file name -- '
