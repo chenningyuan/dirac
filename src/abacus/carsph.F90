@@ -70,7 +70,7 @@ subroutine carsph_init(nhkt,mintg0)
  implicit none
 
 ! parameter:
- logical, parameter :: locdbg = .true., debug_ortho = .true.
+ logical, parameter :: locdbg = .false., debug_ortho = .false.
  character(len=*), parameter :: chrdbg = "carsph_init>"
 
 ! input:

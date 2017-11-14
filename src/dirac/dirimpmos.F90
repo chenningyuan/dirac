@@ -50,12 +50,12 @@ subroutine impmos()
 
 ! local scalars:
  integer :: lucmo, ish, nhkti, nhktmx, iz
- integer :: itmp, mxscr, iofcar, iofsph, imo, ibf, nz0, minteg, ndeg
+ integer :: itmp, mxscr, iofcar, iofsph, imo, ibf, minteg
  real(8) :: toterg, orbsum, chksum
 
 ! local allocatables:
  integer, allocatable :: ibeig(:), norb0(:), nbbas0(:)
- real(8), allocatable :: cmosph(:,:,:), cmocar(:,:,:), eig(:,:), ctmp(:)
+ real(8), allocatable :: cmosph(:,:,:), cmocar(:,:,:), eig(:), ctmp(:)
 
  call qenter("impmos")
 
@@ -69,24 +69,17 @@ subroutine impmos()
   call quit(chrdbg//" MO import works so far only in C1 symmetry!")
  end if
 
- if (x2cmmf .or. x2c .or. bss .or. dkh1 .or.dkh2) then
-  nz0  = 4
-  ndeg = 2
- else if (nonrel .or. levyle .or. spinfr) then
-  nz0  = 1
-  ndeg = 1
- end if
- 
  ! determine dimension of scratch array
  mxscr = 0
  nhktmx = 0
- do ish = 1,maxshl
+ do ish = 1,nlrgbl
   itmp = (2*nhktsh(ish)-1)*norbsh(ish)
   nhktmx = max(nhktmx,nhktsh(ish))
   mxscr = max(mxscr,itmp)
  end do
 
- allocate(cmocar(ntbas(0),ntbas(0),4),cmosph(norbt,norbt,nz0),eig(norbt,ndeg),ibeig(norbt),&
+ allocate(cmocar(ntbas(0),ntbas(0)*nkrblk,4),cmosph(nesht,nesht*nkrblk,nzc1),&
+          eig(nesht*nkrblk),ibeig(nesht*nkrblk),&
           norb0(nbsym),nbbas0(nbsym),ctmp(mxscr))
 
  if (index(qcpack(1:6),'MOLCAS').gt.0) then
@@ -94,7 +87,7 @@ subroutine impmos()
   ! ------------------------------------------------------ !
   ! import MOLCAS information
   ! ------------------------------------------------------ !
-  call rdinporb(cmosph,eig,norb0,nbbas0,filimp(1),nbsym,norbt,ntbas(0))
+  call rdinporb(cmosph,eig,norb0,nbbas0,filimp(1),nbsym,nesht,ntbas(0))
  
   if (locdbg) then
    write(lupri,"(a)") chrdbg//" imported MOs per irrep:"
@@ -104,10 +97,10 @@ subroutine impmos()
    write(lupri,"(5I5)") nbbas0
  
    write(lupri,"(a)") chrdbg//" imported MO energies:"
-   call output(eig,1,norbt,1,1,norbt,1,2,lupri)
+   call output(eig,1,nesht,1,1,nesht,1,2,lupri)
  
    write(lupri,"(a)") chrdbg//" imported MO coeffs.:"
-   call output(cmosph,1,norbt,1,norbt,norbt,norbt,2,lupri)
+   call output(cmosph,1,nesht,1,nesht,nesht,nesht,2,lupri)
   end if
  
   ! ------------------------------------------------------ !
@@ -115,59 +108,60 @@ subroutine impmos()
   ! ------------------------------------------------------ !
   call reorder_molcas(cmosph,ctmp,& ! i/o
                       norbsh,nhktsh,& ! inp
-                      maxshl,norbt,mxscr)
+                      nlrgbl,nesht,mxscr)
  
  else if (index(qcpack(1:7),'RESPECT').gt.0) then
 
   call rdrespect(cmosph,eig, &! out
-                 filimp(1),kmax,natoms,&! inp
-                 ndeg,norbt,nz0) ! dim
+                 filimp(1),nlrgsh,natoms,&! inp
+                 nkrblk,nesht,nzc1) ! dim
 
-  !if (nz0.gt.1) then
-  ! do imo = 1,norbt-1
-  !  eig(imo+1) = eig(ndeg*imo+1)
+  !if (nzc1.gt.1) then
+  ! do imo = 1,nesht-1
+  !  eig(imo+1) = eig(nkrblk*imo+1)
   ! end do
   !end if
 
   if (locdbg) then
    write(lupri,"(a)") chrdbg//" imported MO energies:"
-   call output(eig,1,norbt,1,1,ndeg*norbt,1,2,lupri)
+   call output(eig,1,nkrblk*nesht,1,1,nkrblk*nesht,1,2,lupri)
 
-   do iz = 1,nz0
+   do iz = 1,nzc1
     write(lupri,"(a,i1)") chrdbg//" imported MO coeffs in sph. Harm. basis.:",iz
-    call output(cmosph(1,1,iz),1,norbt,1,norbt,norbt,norbt,1,lupri)
+    call output(cmosph(1,1,iz),1,nesht,1,nesht,nesht,nesht,1,lupri)
    end do
   end if
  
   call reorder_respect(cmosph,cmocar,& ! i/o
                        ncntsh,nhktsh,norbsh,& ! inp
-                       maxshl,norbt,nz0,natoms)
+                       nlrgbl,nesht,nzc1,natoms)
 
  else if (index(qcpack(1:9),'TURBOMOLE').gt.0) then
 
   ! read MO coefficients from mos or spinor.r/i type files
-  call rdturbomole(cmosph,eig,filimp,nkrblk,norbt,nz0) ! dim
-
+  call rdturbomole(cmosph,eig,filimp,nkrblk,nesht,nzc1) ! dim
 
   if (locdbg) then
    write(lupri,"(a)") chrdbg//" imported MO energies:"
-   call output(eig,1,norbt,1,ndeg,norbt,ndeg,1,lupri)
+   call output(eig,1,nesht*nkrblk,1,1,nesht*nkrblk,1,1,lupri)
 
-   do iz = 1,nz0
+   do iz = 1,nzc1
     write(lupri,"(a,i1)") chrdbg//" imported MO coeffs in sph. Harm. basis.:",iz
-    call output(cmosph(1,1,iz),1,norbt,1,norbt,norbt,norbt,1,lupri)
+    call output(cmosph(1,1,iz),1,nesht,1,nesht,nesht,nesht,1,lupri)
    end do
   end if
 
   ! reorder TODO
   call reorder_turbomole(cmosph,& ! i/o
                          ncntsh,nhktsh,norbsh,nhktmx,& ! inp
-                         maxshl,norbt,nz0)
+                         nlrgbl,nesht,nkrblk,nzc1)
 
-   do iz = 1,nz0
+  if (locdbg) then
+   do iz = 1,nzc1
     write(lupri,"(a,i1)") chrdbg//" resorted MO coeffs in sph. Harm. basis.:",iz
-    call output(cmosph(1,1,iz),1,norbt,1,norbt,norbt,norbt,1,lupri)
+    call output(cmosph(1,1,iz),1,nesht,1,nesht*nkrblk,nesht,nesht*nkrblk,1,lupri)
    end do
+  end if
 
  else 
   call quit(chrdbg//" MO import works so far only for MOLCAS and ReSpect!")
@@ -194,11 +188,11 @@ subroutine impmos()
  ! initialze CMOs with 0
  call dzero(cmocar,ncmotq)
 
- do iz = 1,nz0
-  do imo = 1,norbt
+ do iz = 1,nzc1
+  do imo = 1,nesht*nkrblk
    iofsph = 0
    iofcar = 0
-   do ish = 1,kmax
+   do ish = 1,nlrgsh
     nhkti = nhkt(ish)
     call sph2car(cmocar(iofcar+1,imo,iz),cmosph(iofsph+1,imo,iz),1,nhkti)
     iofsph = iofsph+(2*nhkti-1)
@@ -207,17 +201,17 @@ subroutine impmos()
   end do
  end do
 
- if (nz0.eq.4) then
-  call dscal(ntbas(0)*norbt,-1.d0,cmocar(1,1,3),1)
- end if
+ !if (nzc1.eq.4) then
+ ! call dscal(ntbas(0)*nesht*nkrblk,-1.d0,cmocar(1,1,3),1)
+ !end if
 
  ! destroy carsph module
  call carsph_clear()
 
  if (locdbg) then
-  do iz = 1,nz0
+  do iz = 1,nzc1
    write(lupri,"(a,i1)") chrdbg//" reordered MO coeffs. in Cart. basis:",iz
-   call output(cmocar(1,1,iz),1,ntbas(0),1,norbt,ntbas(0),norbt,1,lupri)
+   call output(cmocar(1,1,iz),1,ntbas(0),1,nesht*nkrblk,ntbas(0),nesht*nkrblk,1,lupri)
   end do
  end if
 
@@ -225,8 +219,8 @@ subroutine impmos()
  ! compute check sum that is printed / tested
  ! ------------------------------------------------------ !
  chksum = d0
- do iz = 1,nz0
-  do imo = 1,norbt
+ do iz = 1,nzc1
+  do imo = 1,nesht*nkrblk
    orbsum = d0
    do ibf = 1,ntbas(0)
     orbsum = orbsum+cmocar(ibf,imo,iz)
@@ -258,7 +252,7 @@ end subroutine impmos
 !==============================================================================!
 subroutine rdinporb(cmo,eig,norb,nbbas, &! out
                     filimp,&! inp
-                    nbsym,norbt,ntbas) ! dim
+                    nbsym,nesht,ntbas) ! dim
 !------------------------------------------------------------------------------!
 !
 ! read from MOLCAS' InpOrb type of files
@@ -286,14 +280,14 @@ subroutine rdinporb(cmo,eig,norb,nbbas, &! out
  logical, parameter :: locdbg = .false.
 
 ! dimensions:
- integer, intent(in) :: nbsym, norbt, ntbas
+ integer, intent(in) :: nbsym, nesht, ntbas
 
 ! input:
  character(len=64), intent(in) :: filimp
 
 ! output:
  integer, intent(out) :: norb(nbsym), nbbas(nbsym)
- real(8), intent(out) :: cmo(ntbas*norbt), eig(norbt)
+ real(8), intent(out) :: cmo(ntbas*nesht), eig(nesht)
 
 ! local scalars
  character(len=3)   :: chrver
@@ -464,8 +458,8 @@ end subroutine rdinporb
 !==============================================================================!
 !==============================================================================!
 subroutine rdrespect(cmo,eig, &! out
-                     filimp,kmax,ncent,&! inp
-                     ndeg,norbt,nz) ! dim
+                     filimp,nlrgsh,ncent,&! inp
+                     ndeg,nesht,nz) ! dim
 !------------------------------------------------------------------------------!
 !
 ! read from ReSpect temporary file provided by Michal Repisky
@@ -489,14 +483,14 @@ subroutine rdrespect(cmo,eig, &! out
  logical, parameter :: locdbg = .false.
 
 ! dimensions:
- integer, intent(in) :: norbt, nz, ndeg
+ integer, intent(in) :: nesht, nz, ndeg
 
 ! input:
  character(len=64), intent(in) :: filimp
- integer, intent(in) :: kmax, ncent
+ integer, intent(in) :: nlrgsh, ncent
 
 ! output:
- real(8), intent(out) :: cmo(norbt*norbt,nz), eig(ndeg,norbt)
+ real(8), intent(out) :: cmo(nesht*nesht,nz), eig(ndeg,nesht)
 
 ! local scalars:
  integer(4) :: i4dum, ndim4, ncent4, nbbas4
@@ -524,24 +518,24 @@ subroutine rdrespect(cmo,eig, &! out
  !----------------------------------
  read(luimp,*) nbbas4
 
- if (int(nbbas4).ne.kmax) then
+ if (int(nbbas4).ne.nlrgsh) then
   call quit("Number of shells read from ReSpect do not match!")
  end if
 
- read(luimp,*) (i4dum,idx = 1,kmax)
- read(luimp,*) (i4dum,idx = 1,kmax)
- read(luimp,*) (dummy,idx = 1,kmax)
- read(luimp,*) (dummy,idx = 1,kmax)
+ read(luimp,*) (i4dum,idx = 1,nlrgsh)
+ read(luimp,*) (i4dum,idx = 1,nlrgsh)
+ read(luimp,*) (dummy,idx = 1,nlrgsh)
+ read(luimp,*) (dummy,idx = 1,nlrgsh)
  
  !MO energies
  !-----------------
  read(luimp,*) ndim4
 
- if (int(ndim4).ne.ndeg*norbt) then
+ if (int(ndim4).ne.ndeg*nesht) then
   call quit("Number of orbitals read from ReSpect do not match!")
  end if
 
- read(luimp,*) ((eig(ideg,idx),ideg=1,ndeg),idx = 1,norbt)
+ read(luimp,*) ((eig(ideg,idx),ideg=1,ndeg),idx = 1,nesht)
 
  !MO coefficients
  !-----------------
@@ -558,7 +552,7 @@ subroutine rdrespect(cmo,eig, &! out
 end subroutine rdrespect
 !==============================================================================!
 !==============================================================================!
-subroutine rdturbomole(cmo,eig,filimp,ndeg,norbt,nz)
+subroutine rdturbomole(cmo,eig,filimp,ndeg,nesht,nz)
 !------------------------------------------------------------------------------!
 !
 ! read from TURBOMOLE MO coefficients
@@ -584,13 +578,13 @@ subroutine rdturbomole(cmo,eig,filimp,ndeg,norbt,nz)
  character(len=4), parameter :: creim(2) = (/ "real", "imag" /)
 
 ! dimensions:
- integer, intent(in) :: norbt, nz, ndeg
+ integer, intent(in) :: nesht, nz, ndeg
 
 ! input:
  character(len=64), intent(in) :: filimp(ndeg)
 
 ! output:
- real(8), intent(out) :: cmo(norbt,norbt*ndeg,nz), eig(norbt,ndeg)
+ real(8), intent(out) :: cmo(nesht,nesht*ndeg,nz), eig(nesht*ndeg)
 
 ! local scalars:
  character(len=80) :: line
@@ -602,7 +596,7 @@ subroutine rdturbomole(cmo,eig,filimp,ndeg,norbt,nz)
 
  call qenter("rdturbomole")
 
- allocate(suxx(norbt*ndeg))
+ allocate(suxx(nesht*ndeg))
 
  do ideg = 1,ndeg
 
@@ -619,7 +613,7 @@ subroutine rdturbomole(cmo,eig,filimp,ndeg,norbt,nz)
    nlen = nlen+5
   end if
   
-  if (line(1:nlen).ne.check) call quit("Header line wrong!")
+  if (line(1:nlen).ne.check) call quit("Header line "//line(1:nlen)//" wrong!")
 
   imo = 0
   do 
@@ -631,20 +625,23 @@ subroutine rdturbomole(cmo,eig,filimp,ndeg,norbt,nz)
   
    imo = imo+1
 
-   read(line(kdx:80),*) eig(imo,ideg)
+   !read(line(kdx:80),*) eig(imo,ideg)
+   read(line(kdx:80),*) eig(imo)
    kdx = index(line,'nsaos=')+6
    read(line(kdx:kdx+6),*) nbscf
-   if (norbt*ndeg.ne.nbscf) &
+   if (nesht*ndeg.ne.nbscf) then
+    write(lupri,*) line,nesht,ndeg,nbscf
     call quit("Number of basis functions do not match!")
+   end if
 
-   read(luimp,'(4d20.14)') (suxx(idx),idx=1,norbt*ndeg)
+   read(luimp,'(4d20.14)') (suxx(idx),idx=1,nesht*ndeg)
 
    ! Re(a) / Im(a)
-   call dcopy(norbt,suxx         ,1,cmo(1,imo,  ideg),1)
+   call dcopy(nesht,suxx         ,1,cmo(1,imo,  ideg),1)
 
    ! Re(b) / Im(b)
    if (ndeg.gt.1) then
-    call dcopy(norbt,suxx(1+norbt),1,cmo(1,imo,2+ideg),1)
+    call dcopy(nesht,suxx(1+nesht),1,cmo(1,imo,2+ideg),1)
    end if
 
   enddo
@@ -663,7 +660,7 @@ end subroutine rdturbomole
 !==============================================================================!
 subroutine reorder_molcas(cmosph,ctmp,& ! i/o
                           norbsh,nhktsh,& ! inp
-                          maxshl,norbt,mxscr)
+                          nlrgbl,nesht,mxscr)
 !------------------------------------------------------------------------------!
 ! reorder MOLCAS MOs to Dirac MO order
 !------------------------------------------------------------------------------!
@@ -677,13 +674,13 @@ subroutine reorder_molcas(cmosph,ctmp,& ! i/o
  logical, parameter :: locdbg = .false.
 
 ! dimensions:
- integer, intent(in) :: maxshl, norbt, mxscr
+ integer, intent(in) :: nlrgbl, nesht, mxscr
 
 ! input:
- integer, intent(in) :: norbsh(maxshl), nhktsh(maxshl)
+ integer, intent(in) :: norbsh(nlrgbl), nhktsh(nlrgbl)
 
 ! in/output:
- real(8), intent(inout) :: ctmp(mxscr), cmosph(norbt*norbt)
+ real(8), intent(inout) :: ctmp(mxscr), cmosph(nesht*nesht)
 
 ! local scalars:
  integer :: ioff, imo, ish, norbi, nhkti, khkti, idx, ideg
@@ -692,8 +689,8 @@ subroutine reorder_molcas(cmosph,ctmp,& ! i/o
  call qenter("reorder_molcas")
 
  ioff = 0
- do imo = 1,norbt
-  do ish = 1,maxshl
+ do imo = 1,nesht
+  do ish = 1,nlrgbl
    norbi = norbsh(ish)
    nhkti = nhktsh(ish)
    khkti = 2*nhkti-1
@@ -712,7 +709,7 @@ subroutine reorder_molcas(cmosph,ctmp,& ! i/o
 
  if (locdbg) then
   write(lupri,"(a)") chrdbg//" reordered MO coeffs in sph. Harm. basis.:"
-  call output(cmosph,1,norbt,1,norbt,norbt,norbt,1,lupri)
+  call output(cmosph,1,nesht,1,nesht,nesht,nesht,1,lupri)
  end if
 
  call qexit("reorder_molcas")
@@ -722,7 +719,7 @@ end subroutine reorder_molcas
 !==============================================================================!
 subroutine reorder_respect(cmosph,scratch,& ! i/o
                            ncntsh,nhktsh,norbsh,& ! inp
-                           maxshl,norbt,nz,natoms)
+                           nlrgbl,nesht,nz,natoms)
 !------------------------------------------------------------------------------!
 ! reorder ReSpect MOs to Dirac MO order
 !------------------------------------------------------------------------------!
@@ -737,13 +734,13 @@ subroutine reorder_respect(cmosph,scratch,& ! i/o
  logical, parameter :: locdbg = .false.
 
 ! dimensions:
- integer, intent(in) :: maxshl, norbt, nz, natoms
+ integer, intent(in) :: nlrgbl, nesht, nz, natoms
 
 ! input:
- integer, intent(in) :: nhktsh(maxshl), ncntsh(maxshl), norbsh(maxshl)
+ integer, intent(in) :: nhktsh(nlrgbl), ncntsh(nlrgbl), norbsh(nlrgbl)
 
 ! in/output:
- real(8), intent(inout) :: scratch(norbt,norbt,nz), cmosph(norbt,norbt,nz)
+ real(8), intent(inout) :: scratch(nesht,nesht,nz), cmosph(nesht,nesht,nz)
 
 ! local scalars:
  integer :: ishel, jshel, itmp, ihkt, nktmx, lhkt, iz
@@ -754,22 +751,22 @@ subroutine reorder_respect(cmosph,scratch,& ! i/o
 
  call qenter("reorder_respect")
 
- allocate(imask(maxshl),ncent0(maxshl),nhkt0(maxshl),iofkt(maxshl+1))
+ allocate(imask(nlrgbl),ncent0(nlrgbl),nhkt0(nlrgbl),iofkt(nlrgbl+1))
 
  ! --------------------------------------------------------- !
  ! 1.) determine order of shell blocks with ReSpect ordering
  ! --------------------------------------------------------- !
- call icopy(maxshl,nhktsh,1,nhkt0,1)
+ call icopy(nlrgbl,nhktsh,1,nhkt0,1)
 
- do ishel = 1,maxshl
+ do ishel = 1,nlrgbl
   imask(ishel) = ishel
  end do
 
- call heapsorti(nhkt0,maxshl,.false.,imask)
+ call heapsorti(nhkt0,nlrgbl,.false.,imask)
 
  itmp = 0
  ihkt = 0
- do ishel = 1,maxshl
+ do ishel = 1,nlrgbl
   if (nhkt0(ishel).ne.itmp) then
    itmp = nhkt0(ishel)
    ihkt = ihkt+1
@@ -777,7 +774,7 @@ subroutine reorder_respect(cmosph,scratch,& ! i/o
   end if
  end do
  nktmx = ihkt
- iofkt(nktmx+1) = maxshl
+ iofkt(nktmx+1) = nlrgbl
 
  do ihkt = 1,nktmx
   lhkt = iofkt(ihkt+1)-iofkt(ihkt)
@@ -791,19 +788,19 @@ subroutine reorder_respect(cmosph,scratch,& ! i/o
  ! 2.) re-order basis functions in Dirac order for each MO
  ! --------------------------------------------------------- !
  ioff = 0
- do ishel = 1,maxshl
+ do ishel = 1,nlrgbl
   nhkti = nhktsh(ishel)
   khkti = 2*nhkti-1
   norbi = norbsh(ishel)
   iofkt(ishel) = ioff
   ioff = ioff+khkti*norbi
  end do
- iofkt(maxshl+1) = ioff
+ iofkt(nlrgbl+1) = ioff
 
  do iz = 1,nz
-  do imo = 1,norbt
+  do imo = 1,nesht
    ioff = 0
-   do jshel = 1,maxshl
+   do jshel = 1,nlrgbl
     nhkti = nhkt0(jshel)
     khkti = 2*nhkti-1
     norbi = norbsh(imask(jshel))
@@ -816,10 +813,10 @@ subroutine reorder_respect(cmosph,scratch,& ! i/o
 
  if (locdbg) then
   write(lupri,"(a)") chrdbg//" reordered MO coeffs in sph. Harm. basis.:"
-  call output(scratch,1,norbt,1,norbt,norbt,norbt,1,lupri)
+  call output(scratch,1,nesht,1,nesht,nesht,nesht,1,lupri)
  end if
 
- call dcopy(nz*norbt*norbt,scratch,1,cmosph,1)
+ call dcopy(nz*nesht*nesht,scratch,1,cmosph,1)
 
  deallocate(imask,ncent0,nhkt0,iofkt)
 
@@ -830,7 +827,7 @@ end subroutine reorder_respect
 !==============================================================================!
 subroutine reorder_turbomole(cmosph,& ! i/o
                              ncntsh,nhktsh,norbsh,nhktmx,& ! inp
-                             maxshl,norbt,nz)
+                             nlrgbl,nesht,ndeg,nz)
 !------------------------------------------------------------------------------!
 ! reorder Turbomole MOs to Dirac MO order
 !
@@ -853,14 +850,14 @@ subroutine reorder_turbomole(cmosph,& ! i/o
  logical, parameter :: locdbg = .false.
 
 ! dimensions:
- integer, intent(in) :: maxshl, norbt, nz
+ integer, intent(in) :: nlrgbl, nesht, nz, ndeg
 
 ! input:
  integer, intent(in) :: nhktmx
- integer, intent(in) :: nhktsh(maxshl), ncntsh(maxshl), norbsh(maxshl)
+ integer, intent(in) :: nhktsh(nlrgbl), ncntsh(nlrgbl), norbsh(nlrgbl)
 
 ! in/output:
- real(8), intent(inout) :: cmosph(norbt,norbt,nz)
+ real(8), intent(inout) :: cmosph(nesht,nesht*ndeg,nz)
 
 ! local scalars:
  integer :: ish, iz, imo, ioff, ioff2, norbi, nhkti
@@ -875,45 +872,17 @@ subroutine reorder_turbomole(cmosph,& ! i/o
 
  do iz = 1,nz
 
-  do imo = 1,norbt
+  do imo = 1,nesht*ndeg
 
    ioff2 = 0
 
-   do ish = 1,maxshl
+   do ish = 1,nlrgbl
     norbi = norbsh(ish)
     nhkti = nhktsh(ish)
     khkti = 2*nhkti-1
 
     ! only for d, f, g, .... functions
     if (nhkti.ge.3) then
-
-     ! --------------------- !
-     !
-     ! flip phase for ... 
-     !
-     !  l = 3, m_l = -3     (position 7)
-     !
-     !  l = 4, m_l = +2, -3 (position 5, 7)
-     !
-     ! --------------------- !
-!     if (nhkti.eq.3) then
-!
-!      ioff = 0
-!      do jorb = 1,norbi
-!       cmosph(ioff2+ioff+7,imo,iz) = - cmosph(ioff2+ioff+7,imo,iz)
-!       ioff = ioff+khkti
-!      end do
-!
-!     else if (nhkti.eq.4) then
-!
-!      ioff = 0
-!      do jorb = 1,norbi
-!       cmosph(ioff2+ioff+5,imo,iz) = - cmosph(ioff2+ioff+5,imo,iz)
-!       cmosph(ioff2+ioff+7,imo,iz) = - cmosph(ioff2+ioff+7,imo,iz)
-!       ioff = ioff+khkti
-!      end do
-!
-!     end if
 
      ioff = 0
      do jorb = 1,norbi

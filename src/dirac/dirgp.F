@@ -166,8 +166,9 @@ C*****************************************************************************
 #include "dcbgen.h"
 
 C
-      INTEGER, INTENT(IN) :: IBEIG(NORBT), IUNIT
-      REAL*8 , INTENT(IN) :: CMO(NCMOTQ), EIG(NORBT), TOTERG
+      INTEGER, INTENT(IN) :: IBEIG(NORBT*NKRBLK), IUNIT
+      REAL*8 , INTENT(IN) :: CMO(NCMOTQ*NKRBLK), EIG(NORBT*NKRBLK)
+      REAL*8 , INTENT(IN) :: TOTERG
 C
       CHARACTER TEXT*74
       INTEGER  I, J, IDIM(3,2)

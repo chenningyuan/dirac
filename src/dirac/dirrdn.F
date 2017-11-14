@@ -61,6 +61,7 @@ C***********************************************************************
 #include "dcbham.h"
 #include "dgroup.h"
 #include "dcbimp.h"
+#include "dcborb.h"
 #include "cbirea.h"
 
       integer, parameter   :: lwork = 100000
@@ -320,13 +321,14 @@ C     Consistency checks
 C
       CALL CONINP
 
-
 C
 C     set number of blocks in case of import
 C     complex spinors from ReSpect (TODO) or Turbomole
 C
+      NKRBLK = 1
       IF (DOIMPMOS) THEN
-       IF (NZC1.EQ.4 .AND. INDEX(QCPACK,"TURBOMOLE").GT.0) THEN
+       IF ((FAKE2C .OR. NZC1.EQ.4) .AND.
+     &     INDEX(QCPACK,"TURBOMOLE").GT.0) THEN
         NKRBLK = 2
        END IF
       END IF
@@ -4905,7 +4907,7 @@ C
 !                   61        62        63        64
      &            '.ECP   ','.X2CMMF','.DOSSSS','.MDIRAC',
 !                   65        66        67        68
-     &            '.TRSMIX','.PEQM  ','.JZOUT','xxxxxxx'/
+     &            '.TRSMIX','.PEQM  ','.JZOUT', '.FAKE2C'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -4939,6 +4941,7 @@ C
       MDIRAC  = .FALSE.
       LEVYLE  = .FALSE.
       NONREL  = .FALSE.
+      FAKE2C  = .FALSE.
       SPINFR  = .FALSE.
       NOSPIN  = .FALSE.
       SPINFR2 = .FALSE.
@@ -5621,10 +5624,18 @@ C..TODO: check for inconsistencies and add stops
 #endif
             GO TO 100
   167     CONTINUE
-!!&&&& .JZOUT : save Jz_MO matrices into formatted files for analysis
+!&&&& .JZOUT : save Jz_MO matrices into formatted files for analysis
             WRITE_Jz_MATRIX = .TRUE.
           GO TO 100
   168     CONTINUE
+!&&&& .FAKE2C : do a 2C calculation without generating a 2C
+!               1-electron Hamilonian (can be used for correlated
+!                energy calculations)
+            FAKE2C  = .TRUE.
+            TWOCOMP = .TRUE.
+            NONREL  = .TRUE.
+            SPINFR  = .TRUE.
+            DOLVC   = .FALSE.
           GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
         GO TO 300
@@ -5861,7 +5872,7 @@ C
 C
 C     NZC1 is the NZ value in C1 symmetry
 C
-      IF (NONREL) THEN
+      IF (NONREL .AND. .NOT. FAKE2C) THEN
        NZC1 = 1
       ELSE
        NZC1 = 4
@@ -8343,7 +8354,7 @@ C............variable telling that this is a 2-component relativistic calculatio
            TWOCOMPBSS=.TRUE.
            CNTMAT=.TRUE.
          ENDIF
-         IF (WORD.EQ.'.NONREL') THEN
+         IF (WORD.EQ.'.NONREL' .OR. WORD.EQ.'.FAKE2C') THEN
             TWOCOMP=.TRUE.
             NONREL =.TRUE.
          ENDIF
