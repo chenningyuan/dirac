@@ -10,12 +10,13 @@ from runtest_config import configure
 assert version_info.major == 2
 
 # miro: checking of degenerate numbers placed in various positions in the printout 
-# for example: mtx elements involving degenerate px,py,pz shells
+# for example, matrix elements involving degenerate px,py,pz shells
 f = [
     get_filter(from_string='Printout of all property elements',
                to_string   = 'Transformation ended at',
                ignore_sign = True, ignore_order=True,
-               rel_tolerance   = 1.0e-6)
+               mask=[3, 4], # skip first two indexes
+               abs_tolerance   = 5.0e-8)
 ]
 
 
