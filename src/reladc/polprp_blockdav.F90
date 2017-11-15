@@ -245,10 +245,10 @@
 ! Initialize Krylov space with (restart) vectors.
 !*******************************************************
 
-      krydim = nroots
-      krysav = 0
       call init_krylov_r(io_bold,desrep,nroots,maxdavsp,ladc, &
                          polprp_davreort)
+      krydim = nroots
+      krysav = 0
 
       WRITE(*,*)
       WRITE(*,'(3X,A,4X,A,7X,A,7X,A,5X,A,A)') 'root','dim',  &
