@@ -60,6 +60,8 @@ C***********************************************************************
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dgroup.h"
+#include "dcbimp.h"
+#include "dcborb.h"
 #include "cbirea.h"
 
       integer, parameter   :: lwork = 100000
@@ -318,6 +320,18 @@ C
 C     Consistency checks
 C
       CALL CONINP
+
+C
+C     set number of blocks in case of import
+C     complex spinors from ReSpect (TODO) or Turbomole
+C
+      NKRBLK = 1
+      IF (DOIMPMOS) THEN
+       IF ((FAKE2C .OR. NZC1.EQ.4) .AND.
+     &     INDEX(QCPACK,"TURBOMOLE").GT.0) THEN
+        NKRBLK = 2
+       END IF
+      END IF
 C
       CALL TITLER('End of input processing','*',124)
 C
@@ -362,6 +376,7 @@ C
 #include "dcbprl.h"
 #include "dcb_rkbimp.h"
 #include "dcbimp.h"
+#include "dcborb.h"
 #include "logging.h"
 #include "infpar.h"
 C
@@ -388,6 +403,7 @@ C
       DOIMPMOS   = .FALSE.
 C
       RKBIMP_PRJTHR = 2.0D-5
+
 C
 C     Look for 2c. Hamiltonians, MDIRAC and more
 C
@@ -535,9 +551,11 @@ C&&&& PRJTHR
   121    CONTINUE
 C&&&& IMPMOS
             DOIMPMOS = .TRUE.
-            READ(LUCMD,*) QCPACK, FILIMP
-            QCPACK = ADJUSTL(QCPACK)
-            FILIMP = ADJUSTL(FILIMP)
+            READ(LUCMD,*) NFILES
+            IF (NFILES.GT.2 .OR. NFILES.LT.1)  THEN
+             CALL QUIT('1 or 2 MO files to import!')
+            END IF
+            READ(LUCMD,*) QCPACK, (FILIMP(IDEG),IDEG=1,NFILES)
             GO TO 100
   122    CONTINUE
             GO TO 100
@@ -579,26 +597,41 @@ C
 
       IF (DOIMPMOS) THEN
 
-       IF (SPINFR .OR. NONREL .OR. LEVYLE) THEN
+       QCPACK = ADJUSTL(QCPACK)
+       FILIMP(1) = ADJUSTL(FILIMP(1))
 
-        QCPACK = ADJUSTL(QCPACK)
-        FILIMP = ADJUSTL(FILIMP)
+       if (nfiles.eq.2) then
+        FILIMP(2) = ADJUSTL(FILIMP(2))
+       else
+        FILIMP(2) = ' -- unknown file name -- '
+       end if
 
-        CALL UPCASE(QCPACK)
+       CALL UPCASE(QCPACK)
 
-        SELECT CASE (QCPACK(1:6))
-         CASE ('MOLCAS')
-          WRITE (LUPRI,'(/,A)') 
-     &     "import scalar-relativistic MO coefficients from"
-          WRITE (LUPRI,'(/,A,/)') 
-     &     "  MOLCAS file "//TRIM(FILIMP)
-         CASE DEFAULT
-          CALL QUIT("unknown QCPACK type! Available options: MOLCAS")
-        END SELECT
+       SELECT CASE (QCPACK(1:10))
+        CASE ('MOLCAS    ')
+         WRITE (LUPRI,'(/,A)') 
+     &    "import MO coefficients from"
+         WRITE (LUPRI,'(/,A,/)') 
+     &    "  MOLCAS file "//TRIM(FILIMP(1))
+        CASE ('RESPECT   ')
+         WRITE (LUPRI,'(/,A)') 
+     &    "import MO coefficients from"
+         WRITE (LUPRI,'(/,A,/)') 
+     &    "  ReSpect file "//TRIM(FILIMP(1))
+        CASE ('TURBOMOLE ')
+         WRITE (LUPRI,'(/,A)') 
+     &    "import MO coefficients from"
+         WRITE (LUPRI,'(/,A,/)') 
+     &    "  Turbomole file "// TRIM(FILIMP(1))
+        CASE DEFAULT
+         CALL QUIT("unknown QCPACK type! Available options: "// 
+     &             "MOLCAS, ReSpect")
+       END SELECT
 
-       ELSE
-        CALL QUIT("imported MO calculation only works in 1C modes!")
-       END IF
+      ELSE
+       QCPACK    = 'DIRAC '
+       FILIMP(:) = ' -- unknown file name -- '
       END IF
 
 C
@@ -4874,7 +4907,7 @@ C
 !                   61        62        63        64
      &            '.ECP   ','.X2CMMF','.DOSSSS','.MDIRAC',
 !                   65        66        67        68
-     &            '.TRSMIX','.PEQM  ','.JZOUT','xxxxxxx'/
+     &            '.TRSMIX','.PEQM  ','.JZOUT', '.FAKE2C'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -4908,6 +4941,7 @@ C
       MDIRAC  = .FALSE.
       LEVYLE  = .FALSE.
       NONREL  = .FALSE.
+      FAKE2C  = .FALSE.
       SPINFR  = .FALSE.
       NOSPIN  = .FALSE.
       SPINFR2 = .FALSE.
@@ -5590,10 +5624,18 @@ C..TODO: check for inconsistencies and add stops
 #endif
             GO TO 100
   167     CONTINUE
-!!&&&& .JZOUT : save Jz_MO matrices into formatted files for analysis
+!&&&& .JZOUT : save Jz_MO matrices into formatted files for analysis
             WRITE_Jz_MATRIX = .TRUE.
           GO TO 100
   168     CONTINUE
+!&&&& .FAKE2C : do a 2C calculation without generating a 2C
+!               1-electron Hamilonian (can be used for correlated
+!                energy calculations)
+            FAKE2C  = .TRUE.
+            TWOCOMP = .TRUE.
+            NONREL  = .TRUE.
+            SPINFR  = .TRUE.
+            DOLVC   = .FALSE.
           GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
         GO TO 300
@@ -5830,7 +5872,12 @@ C
 C
 C     NZC1 is the NZ value in C1 symmetry
 C
-      NZC1 = 4
+      IF (NONREL .AND. .NOT. FAKE2C) THEN
+       NZC1 = 1
+      ELSE
+       NZC1 = 4
+      END IF
+C
 C.....Check RKBIMP
       IF (DORKBIMP) THEN
         IF (.NOT.URKBAL) THEN
@@ -8307,7 +8354,7 @@ C............variable telling that this is a 2-component relativistic calculatio
            TWOCOMPBSS=.TRUE.
            CNTMAT=.TRUE.
          ENDIF
-         IF (WORD.EQ.'.NONREL') THEN
+         IF (WORD.EQ.'.NONREL' .OR. WORD.EQ.'.FAKE2C') THEN
             TWOCOMP=.TRUE.
             NONREL =.TRUE.
          ENDIF

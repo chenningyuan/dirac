@@ -82,6 +82,7 @@ add_library(
 
 # add intermodule dependencies
 add_dependencies(reladc gp)
+add_dependencies(reladc interface_mpi)
 if (ENABLE_STIELTJES)
     add_dependencies(reladc stieltjes)
 endif()

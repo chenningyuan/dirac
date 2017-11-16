@@ -777,7 +777,7 @@ void qstack_shutdown(void){
     return;
   }
  
-  printf("%s Shutting down stack system. Clearing heap space.\n",taginf);
+  if(verbose) printf("%s Shutting down stack system. Clearing heap space.\n",taginf);
 
   for(stackn=0;stackn < numofstacks;stackn++){
     curstack = qsbase[stackn];       //clear now stack # stackn
