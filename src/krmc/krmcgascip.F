@@ -3185,7 +3185,13 @@ C
          ! calculate S**(-0.5) in WORK(KS_MHLF:)
          CALL DCOPY(LHRED,WORK(KEIGVC),1,WORK(KTMPRED),1)
          DO I = 1, N_CRED
-            FAC = 1.0D0 / SQRT(WORK(KSEIGVL-1+I))
+            SEIGVL_I = SQRT(WORK(KSEIGVL-1+I))
+            IF (SEIGVL_I .LT. 1.D-10) THEN
+               FAC = 0.0D0 ! remove this vector /Nov 2017 hjaaj
+               ! easier to make a zero vector than removing and reordering
+            ELSE
+               FAC = 1.0D0 / SEIGVL_I
+            END IF
             CALL DSCAL(N_CRED,FAC,WORK(KTMPRED+(I-1)*MAX_HRED),1)
             IF (NZ_in_CI .GT. 1) THEN
                CALL DSCAL(N_CRED,FAC,WORK(KTMPREDI+(I-1)*MAX_HRED),1)
@@ -3456,6 +3462,8 @@ C
 C        Construct N_ROOTS new trial vectors
 C        -----------------------------------
 C
+         IF (IPRINT .GE. 3) write(lupri,'(/A,1P,D10.2)')
+     &      'Threshold for removing element in trial vectors', THR_CVEC
          N_ROOTS_NOT_CONVERGED = 0   !! counter for new trial vectors (only add non-converged roots!)
          JBCVEC = KBCVEC + N_CRED*NDETQ - 1
          DO I_ROOT = 1,N_ROOTS
@@ -3463,13 +3471,48 @@ C
             N_ROOTS_NOT_CONVERGED = N_ROOTS_NOT_CONVERGED + 1
             ECIA_I = ECIA(I_ROOT)
             JBCVEC_I = KBCVEC + (N_CRED+I_ROOT-1)*NDETQ - 1
-            DO I = 1, NDET
-               HD = WORK(KHDIAG+I-1) - ECIA_I
-               IF (ABS(HD) .LE. THRZER) HD = 1.0D0
-               WORK(JBCVEC      + I) = - WORK(JBCVEC_I      + I) / HD
-               IF (NZ_in_CI .EQ. 2)
-     &         WORK(JBCVEC+NDET + I) = - WORK(JBCVEC_I+NDET + I) / HD
-            END DO
+            THR_CVEC_I = DNRES(I_ROOT) * THR_CVEC
+            I_ZERO = 0
+            I_REMOVED = 0
+            IF (N_in_CI .eq. 2) THEN
+               DO I = 1, NDET
+                  RNORM = ABS( WORK(JBCVEC      + I) )
+     &                  + ABS( WORK(JBCVEC+NDET + I) )
+                  IF (RNORM .EQ. 0.0D0) THEN
+                     I_ZERO = I_ZERO + 1
+                  ELSE IF (RNORM .LE. THR_CVEC_I) THEN
+                     I_REMOVED = I_REMOVED + 1
+                     WORK(JBCVEC     +I) = 0.0D0
+                     WORK(JBCVEC+NDET+I) = 0.0D0
+                  ELSE
+                     HD = WORK(KHDIAG+I-1) - ECIA_I
+                     IF (ABS(HD) .LE. 1.d-6) HD = 1.0D0
+                     WORK(JBCVEC     +I) = -WORK(JBCVEC_I     +I) / HD
+                     WORK(JBCVEC+NDET+I) = -WORK(JBCVEC_I+NDET+I) / HD
+                  END IF
+               END DO
+            ELSE
+               DO I = 1, NDET
+                  RNORM = ABS( WORK(JBCVEC      + I) )
+                  IF (RNORM .EQ. 0.0D0) THEN
+                     I_ZERO = I_ZERO + 1
+                  ELSE IF (RNORM .LE. THR_CVEC_I) THEN
+                     I_REMOVED = I_REMOVED + 1
+                     WORK(JBCVEC     +I) = 0.0D0
+                  ELSE
+                     HD = WORK(KHDIAG+I-1) - ECIA_I
+                     IF (ABS(HD) .LE. 1.d-6) HD = 1.0D0
+                     WORK(JBCVEC     +I) = -WORK(JBCVEC_I     +I) / HD
+                  END IF
+               END DO
+            END IF
+            IF (I_REMOVED .GT. 0) THEN
+               IF (IPRINT .GE. 1)
+     &            WRITE (LUPRI,'(A,I0,A,I0,A,I0,2X,I0)')
+     &            'Removed ',I_REMOVED,
+     &            ' elements in new CI trial vector no. ',I_ROOT,
+     &            '; zeroes, left : ', I_ZERO,NDET-I_REMOVED-I_ZERO
+            END IF
             IF (IPRINT .GE. 41) THEN
               write (lupri,*) 'trial vector',N_ROOTS_NOT_CONVERGED,
      &                        ' for root',i_root,' before renorm'
@@ -3513,6 +3556,7 @@ C
             IROUND = 0
  400        CONTINUE
 C
+            OVLP_tot  = 0.0D0
             OVLP_imag = 0.0D0
             DO I = 1, J - 1   ! loop over previous ("old") trial vectors
 C
@@ -3528,10 +3572,12 @@ C
      &              - DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ+NDET),1,   ! -i <B(old,imag)|B(new,real)>
      &                          WORK(KBCVEC+(J-1)*NDETQ),1)
                END IF
+               OVLP_tot = OVLP_tot + OVLP_real**2 + OVLP_imag**2
 C       write (lupri,*) 'old vector no. I, OVLP',I,OVLP_real,OVLP_imag
 C
 C              Calculate B(new) = B(new) - OVLP * B(old)
 C
+#ifdef NO_MORE_ORTHOGONALIZATION
                IF (ABS(OVLP_real) .GT. THRZER) THEN
                   CALL DAXPY(NDETQ,-OVLP_real,
      &                       WORK(KBCVEC+(I-1)*NDETQ),1,
@@ -3545,16 +3591,23 @@ C
      &                       WORK(KBCVEC+(I-1)*NDETQ+NDET),1,
      &                       WORK(KBCVEC+(J-1)*NDETQ),1)
                END IF
+#endif
             END DO  ! I = 1, J - 1 (previous trial vectors)
 C
+#ifdef NO_MORE_ORTHOGONALIZATION
             DNAFT = DNORM2(NDETQ,WORK(KBCVEC+(J-1)*NDETQ),1)
+#else
+            DNAFT = 1.0D0 - OVLP_tot
+#endif
 C           write(lupri,*) 'DN after', DNAFT
-            IF (ABS(DNAFT) .LE. THRZER) THEN
-               WRITE (LUPRI,'(/A,I4,A)') 'INFO: New CI trial vector no.'
-     &            ,J-N_CRED,' removed because of linear dependency'
+            IF (DNAFT .LE. THRZER) THEN
+               WRITE (LUPRI,'(/A,I0,A,1P,D10.2)')
+     &            'INFO: New CI trial vector no. ',J-N_CRED,
+     &            ' removed because of linear dependency',DNAFT
                CYCLE ! do not include this vector because of it is linear dependent!
             END IF
 
+#ifdef NO_MORE_ORTHOGONALIZATION
             DNAFT = 1.0D0 / DNAFT
             CALL DSCAL(NDETQ,DNAFT,WORK(KBCVEC+(J-1)*NDETQ),1)
 
@@ -3581,7 +3634,7 @@ C              screen away insignificant elements here ...
      &            WRITE (LUPRI,'(A,I10,A,I4,A,2I10)')
      &            'Removed',I_REMOVED,
      &            ' elements in new CI trial vector no.',J-N_CRED,
-     &            '; zeroes, left :', I_ZERO,NDETQ-I_REMOVED-I_ZERO
+     &            '; zeroes, left :', I_ZERO,NDET-I_REMOVED-I_ZERO
                   ! renormalize - we allow it to be non-orthogonal
                   DNAFT = DNORM2(NDETQ,WORK(KBCVEC+(J-1)*NDETQ),1)
                   write(lupri,*) 'DNAFT now', DNAFT
@@ -3605,6 +3658,7 @@ C
                   CALL QUIT('*** ERROR in GASCIP_RCISTD ***' //
      &              'IROUND .gt. 1')
             END IF
+#endif
 C
             N_CSIM = N_CSIM + 1
             J_NEW  = N_CRED + N_CSIM
@@ -3621,7 +3675,7 @@ C     &                    ndetq,J_NEW,-1,lupri)
             WALLTID = SECTID(WALL_end-WALL_st)
             WRITE(LUPRI,'(/5A)')
      &     ' (GASCIP_RCISTD) CPU (Wall) time for orthonormalization :',
-     &     CPUTID,' (',WALLTID,')'
+     &      CPUTID,' (',WALLTID,')'
             CPU_st = CPU_end
             WALL_st = WALL_end
          END IF
