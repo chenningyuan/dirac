@@ -1752,8 +1752,8 @@ C
         IVOFF = IVOFF + NFBAS(IFRP,0)*NFORB(IFRP,0)
       ENDDO
       IF(NLINDEP.GT.0) THEN
-        WRITE(LUPRI,'(A)')
-     &  '*** WARNING *** : Functions deleted due to linear dependence.'
+        WRITE(LUPRI,'(A,I0,A)') '*** WARNING *** : ',NLINDEP,
+     &    ' functions deleted due to numerical linear dependence.'
       ENDIF
 
       CALL QEXIT('LOWDI1')
@@ -6250,7 +6250,7 @@ C         If so, subtract from occupation number
             I1 = NISH(IFRP)
             DO IOPEN = 1,NOPEN
               I2 = I1 + NACSH(IFRP,IOPEN)
-              IF(IP.GT.I1.OR.IP.LE.I2) THEN
+              IF(IP.GT.I1.AND.IP.LE.I2) THEN
                 NACSHMF(IFRP,IOPEN) = NACSHMF(IFRP,IOPEN) - 1
                 GOTO 20
               ENDIF
@@ -6785,6 +6785,7 @@ C
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dgroup.h"
+#include "pgroup.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbdhf.h"
@@ -6802,7 +6803,10 @@ C
       IF(NFROT.GT.0) CALL OPNFIL(LUCOEF,'DFFROZ','UNKNOWN','PSIPR1')
 C.....For simplification , set subblock information, also 
 C     when there is no subblock ... allows single code
-      IF(.NOT.SUB_BL) THEN
+      IF(SUB_BL) THEN
+        NZMO = 1 ! in the spinfree and linear case arrays in orthonormal basis are real
+      ELSE
+        NZMO = NZ
         DO IFRP = 1,NFSYM
           N_SUB_BL(IFRP) = 1
           NORB_SUB(1,IFRP,0) = NORB(IFRP)
@@ -6819,6 +6823,18 @@ C     when there is no subblock ... allows single code
         WRITE(LUPRI,'(A,A3,A2)') '* Fermion ircop ',FREP(IFRP),' :'
         NQ(1) = 0
         NQ(2) = 0
+        IF(IPRINT.GE.5) THEN
+           WRITE(6,*) '* Energies and symmetry labels of coefficients:'
+           DO IVEC = 1,NVECS(IFRP)
+              WRITE(6,*) IVEC,ESEL(IVOFF+IVEC),ISEL(IVOFF+IVEC)
+           ENDDO
+           WRITE(6,*)
+     &       '  Input selected coefficients: '
+           CALL PRQMAT(CSEL(ICOFF+1),
+     &              NFBAS(IFRP,0),NVECS(IFRP),
+     &              NFBAS(IFRP,0),NVECS(IFRP),
+     &              NZ,IPQTOQ(1,0),LUPRI)
+        ENDIF
         allocate(NVECS_SUB(N_SUB_BL(IFRP)))
 C.......First find how the selected vectors are distributed on subblocks
         NREF = 0
@@ -6840,7 +6856,7 @@ C..............Negative-energy solution
             ENDIF
           ENDIF
           ENDDO
-          NREF = NREF+NORB_SUB(ISUB,IFRP,0)*NVECS_SUB(ISUB)*NZ
+          NREF = NREF+NORB_SUB(ISUB,IFRP,0)*NVECS_SUB(ISUB)*NZMO
         ENDIF
         ENDDO
 C.......Allocate an array to hold all vectors
@@ -6862,7 +6878,7 @@ C.........Transform vector of this subblock to orthonormal basis
      &           'N','N',IPQTOQ(1,0),CSEL(IMO),
      &                   NFBAS(IFRP,0),NVECS(IFRP),NZ,
      &           D0,IPQTOQ(1,0),WORK(JREF),NORB_SUB(ISUB,IFRP,0),
-     &           NVECS_SUB(ISUB),NZ)
+     &           NVECS_SUB(ISUB),NZMO)
                JREF = JREF + NORB_SUB(ISUB,IFRP,0)
             ENDIF
             IMO = IMO + NFBAS(IFRP,0)
@@ -6873,9 +6889,9 @@ C.........Transform vector of this subblock to orthonormal basis
               CALL PRQMAT(WORK(IREF),
      &              NORB_SUB(ISUB,IFRP,0),NVECS_SUB(ISUB),
      &              NORB_SUB(ISUB,IFRP,0),NVECS_SUB(ISUB),
-     &              NZ,IPQTOQ(1,0),LUPRI)
+     &              NZMO,IPQTOQ(1,0),LUPRI)
           ENDIF
-          IREF = IREF + NORB_SUB(ISUB,IFRP,0)*NVECS_SUB(ISUB)*NZ
+          IREF = IREF + NORB_SUB(ISUB,IFRP,0)*NVECS_SUB(ISUB)*NZMO
         ENDIF             
         IBORB = IBORB + NORB_SUB(ISUB,IFRP,0)
         ENDDO
@@ -6906,27 +6922,37 @@ C
           NEFF  = NORB_SUB(ISUB,IFRP,0) - NVECS_SUB(ISUB)
 C.........New matrix
           IF(NVECS_SUB(ISUB).GT.0) THEN
-            NPRJ = NORB_SUB(ISUB,IFRP,0)*NORB_SUB(ISUB,IFRP,0)*NZ
+            IF(SUB_BL) THEN
+              ID = ID_SUB_BL(ISUB,IFRP)
+              IF (SPINFR) THEN
+                WRITE(LUPRI,'(/2A)') '* Boson symmetry ',REP(ID)
+              ELSE
+                WRITE(LUPRI,'(/A,I4,3A,I2,A)')
+     &              '* Block',ISUB,' in ',FREP(IFRP),
+     &              ':  Omega = ',ABS(ID),'/2'
+              ENDIF
+            ENDIF
+            NPRJ = NORB_SUB(ISUB,IFRP,0)*NORB_SUB(ISUB,IFRP,0)*NZMO
             CALL MEMGET('REAL',KBUF,NPRJ,WORK,KFREE,LFREE)
 C...........Do projection
             CALL PRJORT(WORK(KBUF),WORK(IREF),NORB_SUB(ISUB,IFRP,0),
-     &           NVECS_SUB(ISUB),NZ,WORK,KFREE,LFREE)
+     &           NVECS_SUB(ISUB),NZMO,WORK,KFREE,LFREE)
             IF(IPRINT.GE.5) THEN
             WRITE(6,*)
      &         'PSIPR1: Eigenvectors from PRJORT for subblock ', ISUB
             CALL PRQMAT(WORK(KBUF),
      &              NORB_SUB(ISUB,IFRP,0),NORB_SUB(ISUB,IFRP,0),
      &              NORB_SUB(ISUB,IFRP,0),NORB_SUB(ISUB,IFRP,0),
-     &              NZ,IPQTOQ(1,0),LUPRI)
+     &              NZMO,IPQTOQ(1,0),LUPRI)
             ENDIF            
 C...........Backtransform new transformation matrix (TINV now contains this part of TMAT)
            CALL QGEMM(NFBAS(IFRP,0),NEFF,NORB_SUB(ISUB,IFRP,0),D1,
      &     'N','N',IPQTOQ(1,0),TINV(ITM),NFBAS(IFRP,0),NORB(IFRP),NZT,
      &     'N','N',IPQTOQ(1,0),WORK(KBUF),NORB_SUB(ISUB,IFRP,0),
-     &     NORB_SUB(ISUB,IFRP,0),NZ,D0,
+     &     NORB_SUB(ISUB,IFRP,0),NZMO,D0,
      &     IPQTOQ(1,0),TMAT(ITEFF),NFBAS(IFRP,0),NTMO(IFRP),NZ)
             CALL MEMREL('PSIPRJ.prj',WORK,KFRSAV,KBUF,KFREE,LFREE)
-            IREF  = IREF + NORB_SUB(ISUB,IFRP,0)*NVECS_SUB(ISUB)*NZ
+            IREF  = IREF + NORB_SUB(ISUB,IFRP,0)*NVECS_SUB(ISUB)*NZMO
             TOBE = .TRUE.
           ELSE
             IOFF = ITM
@@ -7158,13 +7184,13 @@ C.....Form density matrix
       KFRSAV = KFREE
       CALL MEMGET('REAL',KDMAT,NORB*NORB*NZ,WORK,KFREE,LFREE)
       CALL DENST1(WORK(KDMAT),NORB,NORB,NZ,D1,D0,
-     &              COEF,NORB,NVEC,1,NVEC,NORB)
+     &     COEF,NORB,NVEC,1,NVEC,NORB)
       CALL MEMGET('REAL',KEIG,NORB,WORK,KFREE,LFREE)
       CALL QDIAG(NZ,NORB,WORK(KDMAT),NORB,NORB,
      &           WORK(KEIG),1,VMO,NORB,
      &           NORB,WORK(KFREE),LFREE,IERR)
 CTROND
-      WRITE(6,*) 'Eigenvalues from PRJORT:'
+      WRITE(6,*) ' Eigenvalues from PRJORT: ',NVEC
       CALL OUTPUT(WORK(KEIG),1,NORB,1,1,
      &            NORB,NORB,-1,LUPRI)
       CALL MEMREL('PRJORT',WORK,1,KFRSAV,KFREE,LFREE)

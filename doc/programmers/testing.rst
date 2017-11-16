@@ -123,11 +123,7 @@ These tests are activated with *ctest -C benchmarks -L benchmark*.
 See and modify the :download:`cmake/custom/benchmarks.cmake file <../../../cmake/custom/benchmarks.cmake>`.
 
 
-2.4 Special test for testing all basis set files. Activated when *-D ENABLE_BASIS_SETS_CHECK=ON**.
-See the corresponding :download:`cmake/custom/basis_set_check.cmake file <../../../cmake/custom/basis_set_check.cmake>`.
-
-
-2.5 Unreleased and features restricted tests. 
+2.4 Unreleased and features restricted tests. 
 In the DIRAC development version, unreleased and preprocessor restricted
 features are accompanied with dedicated tests. 
 

@@ -23,8 +23,8 @@ Three separate transformations are considered:
 
 The output is written to the files MDCINT, MRCONEE, and MDPROP, respectively,
 and can be read in by the :ref:`**RELCC` and :ref:`DIRRCI` and programs to
-perform correlated calculations and by the :ref:`RELADC` program to perform
-propagator calculations. Some common input needs to be specified both in this
+perform correlated calculations and by the :ref:`RELADC` and :ref:`**POLPRP` modules
+to perform propagator calculations. Some common input needs to be specified both in this
 section and in the :ref:`DIRRCI` sections.
 
 keyword(ACTIVE)
@@ -37,7 +37,7 @@ Specify the active set of spinors.
 
 ::
 
-    energy -20.0 10.0 1.0
+    energy -10.0 20.0 1.0
 
 **Advanced options**
 

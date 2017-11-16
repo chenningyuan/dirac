@@ -51,3 +51,4 @@ add_library(
 )
 
 add_dependencies(lucita qcorr)
+add_dependencies(luciarel interface_mpi)

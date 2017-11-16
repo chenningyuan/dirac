@@ -23,7 +23,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCHEADER
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -133,11 +133,16 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !     All initialization should be done in relcc_cfg, ultimately all common
 !     blocks should go, keep them for the moment for compatibility with reladc
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
+      INTEGER IN,IW
 C
 C---------------Description--------------------------------------------
 C
 C     Reads input for relativistic Coupled Cluster program
+C
+C   Routine is called twice - first from PSIINP/dirrd.F as part of input reading
+C and second time from own RelCC module. To minimize the amount of output we
+C need to distinguish between calls.
 C
 C---------------Routines called----------------------------------------
 C
@@ -172,8 +177,14 @@ C
      &                 MAXIT,MAXDIM,NTOL
       DOUBLE PRECISION D0
       PARAMETER (D0 = 0.0D00)
+      INTEGER NACTH,NACTP,NACTHI,NACTPI,NTOL
       DIMENSION NACTH(16),NACTP(16)
       DIMENSION NACTHI(16),NACTPI(16)
+      INTEGER MAXIT00,MAXIT01,MAXIT10,MAXIT11,MAXIT20,MAXIT02,I,IFREQ,
+     &        ISECT,IPRP_WF,IOPER,MAXDIM,MAXIT,TSHOLD
+
+      Logical, SAVE :: FirstCall=.TRUE.
+
 C
 C---------------Executable code--------------------------------------
 
@@ -200,6 +211,7 @@ C
       DOFSPC  = relcc_do_fspc
       DOIH    = relcc_fs_do_ih
       DORESTART = relcc_do_restart
+      DOMEMCOUNT = relcc_do_count_memory
       DEBUG   = relcc_debug
       TIMING  = relcc_timing
       MWORD   = relcc_memory_in_mw
@@ -210,10 +222,19 @@ C
       WRITE(IW,'(A)')
      & ' **RELCC: Set-up for Coupled Cluster calculations'
       CALL PRSYMB(IW,'=',75,0)
-      WRITE(IW,'(1X,A,I3)') '* General print level   : ',IPRNT
-      IF (IPRNT.GE.1) THEN
-        WRITE(IW,"(1X,A,16I3)") "NEL_F1:",(NELEC_F1(I),I=1,16)
-      ENDIF
+
+      If (.NOT.FirstCall)  then
+        WRITE(IW,'(1X,A,I3)') '* General print level   : ',IPRNT
+        IF (IPRNT.GE.1) THEN
+          WRITE(IW,"(1X,A,16I3)") "NEL_F1:",(NELEC_F1(I),I=1,16)
+        ENDIF
+      EndIf
+
+!MI  deal with memory count demand
+      if (DOMEMCOUNT.AND.FirstCall)  then
+        print *,
+     &'Asked for RelCC memory consumption count. Afterwards leave.'
+      endif
 C
 C     Input for the energy calculation.
 C
@@ -484,11 +505,8 @@ C
       ADD_FINITE_FIELD = relcc_ADD_FINITE_FIELD
       NFFOPER = relcc_NFFOPER
       DO IOPER = 1, MAXOP
-         !FF_PROP_NAMES(IOPER) = '        '
          FF_PROP_NAMES(IOPER) = relcc_FF_PROP_NAMES(IOPER)
-         !FF_PROP_STRENGTHS(1,IOPER) = 0.D0
          FF_PROP_STRENGTHS(1,IOPER) = relcc_FF_PROP_STRENGTHS(1,IOPER)
-         !FF_PROP_STRENGTHS(2,IOPER) = 0.D0
          FF_PROP_STRENGTHS(2,IOPER) = relcc_FF_PROP_STRENGTHS(2,IOPER)
       ENDDO
 !
@@ -520,19 +538,24 @@ C
       endif
 
       IF (DOFSPC) THEN
-!     mi: print out range of intermediate Hamilt.spaces
+!     mi: print out range of intermediate Hamilt.spaces ... later ...
         write(IW,'(/,2X,A,F12.5,1X,A,F12.5)')
      &    'EHMIN:',ER_IH(1,1),'EHMAX:',ER_IH(2,1)
         write(IW,'(2X,A,F12.5,1X,A,F12.5)')
      &     'EPMIN:',ER_IH(1,2),'EPMAX:',ER_IH(2,2)
       ENDIF
 C
-      IF( MP2_DENRUN )THEN
-        IN = IN_SAVE
-      END IF
+C     IF( MP2_DENRUN )THEN
+C       IN = IN_SAVE
+C     END IF
 C
+
+!MI   After the first call of this routine reset the control variable
+      FirstCall = .FALSE.
+
       RETURN
       END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCMAIN (IUNIN,IUNUT,CA,INTFCE)
 c
@@ -542,7 +565,7 @@ c
       use relcc_cfg
       use xmlout
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -574,6 +597,7 @@ C     CC is the static memory  (when called as subroutine)
 C     CC is the dynamic memory (when used as stand-alone code)
 C
 C
+      INTEGER MAXSP
       PARAMETER (MAXSP=1000)
       INTEGER IREPSP(MAXSP*4),IREPSPI(MAXSP*MXREP*2)
       REAL*8 EPS(MAXSP),EPS1(MAXSP)
@@ -590,7 +614,8 @@ C
       integer(kind=klongint) :: mxcorr1
       integer(kind=klongint) :: mword_limit
       real(kind=kreal)       :: new_mword_limit = 0
-      integer :: word
+      integer :: word,mycharge,NELECT,NSP
+      integer :: jcode,IUNIN,IUNUT,I,ICALC,IERR
 C
 C---------------Executable code--------------------------------------
 C
@@ -659,7 +684,11 @@ C     Number of integer words for REAL*8 and
 C     number of REAL*8 words per variable (2 for complex groups,
 C     1 for real)
 C
-      IRW = INTOWP(1)
+#if  defined (INT_STAR8)
+      IRW = 1
+#else
+      IRW = 2
+#endif
       IF (CARITH) THEN
          RCW = 2
       ELSE
@@ -681,9 +710,10 @@ C
 C     Report memory in megaBytes
 C
       if ( maxcor .gt. 0 ) then
-         WRITE (IW,1000) MAXCOR / (128 * 1024)
+        WRITE (IW,1000) DFLOAT(MAXCOR)/DFLOAT((128*1024)), 
+     &  DFLOAT(MAXCOR)/DFLOAT(128*1024*1024)
       else
-         WRITE (IW,1410)
+        WRITE (IW,1410)
       endif
 C
 C     General setup
@@ -729,6 +759,11 @@ C
      &                DOFOPR,
      &                DOSOPR,DEBUG,TIMING,IPRNT,INTERFACE
       endif
+      
+!miro: printout info about the RelCC memory count
+      write(IW,"(1X,A,10X,L1)")
+     & "Leave after calculating the total memory demand :",
+     &  DOMEMCOUNT
 
 !miro: printout of changed DHOLU limit, with warning
       if (relcc_ccener_dholu_limit_set) then
@@ -795,6 +830,17 @@ C
       WALLI = WALLI + WALL2 - WALL1
       WALL1 = WALL2
       CALL FLSHFO (IW)
+
+!MI show the total memory demand in MB/GB:
+         WRITE(IW,"(/,1X,A,F15.2,A)")
+     &    'Predicted RelCC memory demand: ',
+     &    DFLOAT(MXCORR)/DFLOAT(2**17)," MB"
+         WRITE(IW,"(1X,A,F15.3,A)")
+     &    'Predicted RelCC memory demand: ',
+     &    DFLOAT(MXCORR)/DFLOAT(2**27)," GB"
+
+!MI leave RelCC calculations after memory demand counted
+       if (DOMEMCOUNT) GOTO 77 ! jump to the end section
 C
 C     Start the calculations
 C     ----------------------
@@ -862,9 +908,14 @@ C
       IF (DOCCSD.OR.DOCCSDT.OR.DOCCSDG) CALL WAIO_CLOSE(ITAPT+5,JCODE)
       JCODE = 3
       IF (DOCCSD.OR.DOCCSDG) CALL WAIO_CLOSE(ITAPT+6,JCODE)
+      IF (DOFSPC) CLOSE (IUHEFF)
 C
       CALL CCSUMM
       CALL FLSHFO (IW)
+
+! MI: jump here if only the RelCC memory count needed
+
+ 77   CONTINUE 
 C
 C     Print timings
 C
@@ -894,7 +945,7 @@ C
 
       RETURN
 C
-1000  FORMAT (/" Total memory available :",T50,I15," MB")
+1000  FORMAT (/" Total memory available :",F15.2," MB",1X,F8.3," GB")
 1410  FORMAT (/" Total memory available has not been determined")
 1001  FORMAT (" Memory used for active modules :",
      &        T50,I15," 8-byte words")
@@ -952,7 +1003,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                   NSP,EPS1,EPS,IREPSP,IREPSPI,
      &                   FOCKSP,REPORT,NELEC_F1,NELEC_F2)
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -981,12 +1032,12 @@ C
       INTEGER NFROZ(16),NINACT(16),NACT(16)
       REAL*8 EPS1(*),EPS(*)
       LOGICAL FOCKSP,REPORT
+      INTEGER NSP
 C
 C---------------Local variables--------------------------------------
 C
       CHARACTER*14 REPNT(16)
       INTEGER NVIRT(16)
-!      INTEGER NOOOT2(MXREP),NVVVT2(MXREP)
       CHARACTER*4 REPNA_ACT(MXREP)
       INTEGER NO_ACT(MXREP),NV_ACT(MXREP)
       INTEGER NIO_ACT(MXREP),NAO_ACT(MXREP)
@@ -995,6 +1046,8 @@ C
       INTEGER NAOPI_ACT(MXREP),NAVPI_ACT(MXREP)
       LOGICAL ASSREP
       INTEGER IOI(0:3), IVA(0:3)
+      integer i,ICURFSS,ii,IJKREP,IJREP,IREP,IRP,ISP,j,JKREP,JREP
+      integer KREP,NACT_REP,NREP1,NREP2
 
 C
 C---------------Executable code--------------------------------------
@@ -1130,6 +1183,7 @@ C
                         NO(IREP) = NO(IREP) + 1
                         IREPSP(I,3) = NO(IREP)
                         IREPSPI(NO(IREP),IREP,1) = I
+!        write(*,*) 'occ:',NO(IREP),IREP,IREPSPI(NO(IREP),IREP,1)
                         IF (.not.IFROZ_set_in_input) THEN
                            IF (NO(IREP).GT.MAXFROZ)
      &                        CALL QUIT("INCREASE MAXFROZ")
@@ -1148,6 +1202,7 @@ C
                         NV(IREP) = NV(IREP) + 1
                         IREPSP(I,3) = - NV(IREP)
                         IREPSPI(NV(IREP),IREP,2) = I
+!        write(*,*) 'vir:',NV(IREP),IREP,IREPSPI(NV(IREP),IREP,2)
                      ENDIF
                   ENDIF
                ENDDO
@@ -1381,13 +1436,17 @@ C           Write only active irreps (NO or NV > 0)
          ENDIF
       ENDIF
 C
-C
 C     Set up dimension arrays
+C
+C     Nxx(IREP) gives the total number of |ket>|ket> index pairs that have symmetry IREP
+C     Mxx(IREP) gives the total number of <bra |ket> index pairs that have symmetry IREP
+C     II arrays provide pointers to the start of irrep combinations for |ket>|ket> or <bra|<bra| index pairs
+C     JJ arrays provide pointers to the start of irrep combinations for <bra|ket> index pairs
 C
       DO JREP = 1, NREP
          DO IREP = 1, NREP
             IJREP = MULTB(IREP,JREP,1)
-            IIOO(IREP,JREP) = NOO(IJREP)  !new
+            IIOO(IREP,JREP) = NOO(IJREP)
             IIOV(IREP,JREP) = NOV(IJREP)
             IIVO(IREP,JREP) = NVO(IJREP)
             IIVV(IREP,JREP) = NVV(IJREP)
@@ -1404,9 +1463,10 @@ C
             MOV(IJREP) = MOV(IJREP) + NO(IREP)*NV(JREP)
             MVO(IJREP) = MVO(IJREP) + NV(IREP)*NO(JREP)
             MVV(IJREP) = MVV(IJREP) + NV(IREP)*NV(JREP)
-!           write(*,*) 'MVO irep,jrep,ijrep',irep,jrep,ijrep
          ENDDO
       ENDDO
+C
+C     Same M/N/II/JJ convention as used above, but now for triangular (I>J) arrays
 C
       DO JREP = 1, NREP
          IJREP = MULTB(JREP,JREP,1)
@@ -1423,9 +1483,27 @@ C
          ENDDO
       ENDDO
 C
+C     Dimension arrays for 3-index tensors, formed by combining a 2-index array with a 1-index array
+C     KK arrays are symmetry pointers for tensors in which the leftmost indices are first grouped together
+C     LL arrays are symmetry pointers for tensors in which the rightmost indices are first grouped together
+C
       DO KREP = 1, NREP
          DO IJREP = 1, NREP
+!
+!  discussion with luuk
+!  for consistency IJREP is a bra and the order in the MULTB
+!  array may be swapped to maintain consistency with the definitions
+!
+!  original:
+!
             IJKREP = MULTB(KREP,IJREP+NREP,2)
+!
+!  possible alternative in case of totally symmetric products:
+!           IJKREP = MULTB(IJREP+NREP,KREP,2)
+!
+C           Here we use that (i) KLREP = IJREP, (ii) LREP = MULTB(KREP,KLREP,2), (iii) Ordering should be
+C           such that we can contract with an array to the right in which the leftmost index is ordered on LREP.
+
             KKOOOT(IJREP,KREP) = NOOOT(IJKREP)
             KKVVOT(IJREP,KREP) = NVVOT(IJKREP)
             KKOOVT(IJREP,KREP) = NOOVT(IJKREP)
@@ -1434,7 +1512,6 @@ C
             KKVOV (IJREP,KREP) = NVOV (IJKREP)
             KKOVO (IJREP,KREP) = NOVO2(IJKREP)
             KKOVV (IJREP,KREP) = NOVV (IJKREP)
-
 
             NOOOT(IJKREP) = NOOOT(IJKREP) + NOOT(IJREP)*NO(KREP)
             NVVOT(IJKREP) = NVVOT(IJKREP) + NVVT(IJREP)*NO(KREP)
@@ -2003,7 +2080,7 @@ C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
 
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -2037,12 +2114,13 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 EPS(*)
-      INTEGER IREPSP(NSP,4),IREPSPI(NSP,MXREP,2)
+      INTEGER IREPSP(NSP,4),IREPSPI(NSP,MXREP,2),ICALC,NSP
 C
 C---------------Local variables--------------------------------------
 C
       LOGICAL ALLOC_ME,SRTALL
       INTEGER*8 NVT
+      integer minbuf,nbuf,nvf,nvtmin
 Caspg, replacing memget
       integer,       allocatable, target :: a_kr(:),
      &                              a_indk(:),   a_indl(:),
@@ -2200,7 +2278,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use allocator_parameters, only : klongint, kreal
       use xmlout
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -2222,7 +2300,7 @@ C
 C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
-C
+      integer icalc
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
@@ -2263,6 +2341,7 @@ c
       integer                :: freemem = 0
       integer                :: maxit_save
       logical                :: is_ccsd_converged = .false.
+      integer                :: dum,irp,nbuf1,nbuf2,nbuf3,nvovv
 C
 C---------------Executable code--------------------------------------
 C
@@ -2588,7 +2667,7 @@ C
       use interface_to_mpi
       use lambda_equation
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -2612,6 +2691,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       DIMENSION IREPSPI(*)
+      integer icalc,nsp,irepspi
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -2658,6 +2738,8 @@ C
       integer(kind=8)        :: mxcorr
       integer                :: freemem = 0
       integer                :: work_memsize
+      integer                :: eoff,eoper,iprint_no,irp,kfree
+      integer                :: lfree,nbuf1,nbuf2,nbuf3,NODE,NTEST
 C
 C---------------Executable code--------------------------------------
 C
@@ -3154,7 +3236,7 @@ C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -3178,6 +3260,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 EPS(*)
+      INTEGER ICALC,NSP,IREPSPI
       DIMENSION IREPSPI(*)
 C
 C---------------Common Blocks--------------------------------------
@@ -3212,6 +3295,7 @@ C
       integer(kind=8)        :: mxcr    = 0
       integer(kind=8)        :: mxcorr
       integer                :: freemem = 0
+      integer                :: aoff,aoper,boper,dum,ifreq,nbuf1
 C
 C---------------Executable code--------------------------------------
 C
@@ -3324,7 +3408,7 @@ C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -3348,6 +3432,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 EPS(*)
+      INTEGER ICALC,NSP,IREPSPI
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -3380,6 +3465,7 @@ C
       integer(kind=8)        :: mxcr    = 0
       integer(kind=8)        :: mxcorr
       integer                :: freemem = 0
+      integer                :: irep,nbuf1
 C
 C---------------Executable code--------------------------------------
 C
@@ -3473,7 +3559,7 @@ C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
 
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -3494,6 +3580,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 EPS1(*),EPS(*)
+      INTEGER ICALC,NSP,IREPSP,IREPSPI
       DIMENSION IREPSP(*),IREPSPI(*)
 C
 C---------------Common Blocks--------------------------------------
@@ -3528,6 +3615,7 @@ c
       integer(kind=8)        :: mxcorr, mxcorr1
       integer                :: maxit_save
       logical                :: is_ccsd_converged = .false.
+      integer                :: dum,ifstat,irp,nbuf1,nbuf2,nbuf3
 C
 C---------------Executable code--------------------------------------
 C
@@ -3803,7 +3891,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FS_PUTAMPT (ICURFSS,T1,T2,BUF1,BUF2)
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -3819,6 +3907,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 T1(*),T2(*),BUF1(*),BUF2(*)
+      INTEGER ICURFSS
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -3863,7 +3952,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCDINI(do_restart)
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -3896,6 +3985,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
+      INTEGER BUFF,I,IRECL,IRECLEN
       DIMENSION BUFF(RSRCLEN)
       LOGICAL do_restart, file_found
       LOGICAL restart_and_current_differ
@@ -4109,7 +4199,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCDUMP
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -4132,6 +4222,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
+      INTEGER BUFF,IRECL,IRECLEN
       DIMENSION BUFF(RSRCLEN)
 C
 C---------------Executable code--------------------------------------
@@ -4161,7 +4252,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCSUMM
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -4183,6 +4274,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
+      INTEGER BUFF,I,IRECL,IRECLEN
       DIMENSION BUFF(RSRCLEN)
       CHARACTER DATEX*10,TIMEX*8
       CHARACTER*30 STATCH(0:4)
@@ -4293,7 +4385,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RDSYMI (NSP,EPS1,IREPSP,ncore_elec)
 C
       use interface_to_mpi
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -4310,7 +4402,7 @@ C---------------Calling variables--------------------------------------
 C
       INTEGER IREPSP(*)
       REAL*8 EPS1(*)
-      integer ncore_elec
+      integer ncore_elec,NSP
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -4326,6 +4418,7 @@ C---------------Local variables--------------------------------------
 C
       CHARACTER*14 REPNT(16)
       integer   :: spinor_info(5,2)
+      integer   :: i,irep,irp,isp,j,jrep,krep,nfsym
 C
 C---------------Executable code--------------------------------------
 C
@@ -4433,22 +4526,26 @@ C
       ENDDO
        write(*,*) (REPNA(IREP),IREP=1,2*NREP)
 
-!     write(*,*)
-!     write(*,*) '--------------------------------------------'
-!     write(*,*) '---  multiplication table  -----------------'
-!     write(*,*) '--------------------------------------------'
-!     write(*,*)
-!     DO IREP = 1, 2*NREP
-!       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
-!     ENDDO
-!     write(*,*)
-!     write(*,*) '--------------------------------------------'
-!     write(*,*) '---  inverse multiplication table  ---------'
-!     write(*,*) '--------------------------------------------'
-!     write(*,*)
-!     DO IREP = 1, 2*NREP
-!       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*nrep)
-!     ENDDO
+C     write(*,*)
+C     write(*,*) '--------------------------------------------'
+C     write(*,*) '---  multiplication table (full) -----------'
+C     write(*,*) '--------------------------------------------'
+C     write(*,*)
+C     DO IREP = 1, NREP
+C       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+C     ENDDO
+C     write(*,*) '-------------------------------------'
+C     DO IREP = NREP+1, 2*NREP
+C       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+C     ENDDO
+C     write(*,*)
+C     write(*,*) '--------------------------------------------'
+C     write(*,*) '---  inverse multiplication table (full) ---'
+C     write(*,*) '--------------------------------------------'
+C     write(*,*)
+C     DO IREP = 1, 2*NREP
+C       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*nrep)
+C     ENDDO
 
 C
 C     Get rid of offset for boson reps
@@ -4466,32 +4563,26 @@ C
          ENDDO
       ENDDO
 
-c     write(*,*)
-c     write(*,*) '--------------------------------------------'
-c     write(*,*) '---  multiplication table (no offset) ------'
-c     write(*,*) '--------------------------------------------'
-c     write(*,*)
-c     DO IREP = 1, 2*NREP
-c       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
-c     ENDDO
-c     write(*,*)
-c     write(*,*) '-------------------------------------- ------------'
-c     write(*,*) '---  inverse multiplication table (no offset) -----'
-c     write(*,*) '---------------------------------------------------'
-c     write(*,*)
-c     DO IREP = 1, 2*NREP
-c       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*NREP)
-c     ENDDO
-
-c     write(*,*)
-c     write(*,*) '-------------------------------------- ------------'
-c     write(*,*) '---  forward multiplication table (no offset) -----'
-c     write(*,*) '---------------------------------------------------'
-c     write(*,*)
-c     DO IREP = 1, 2*NREP
-c       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*NREP)
-c     ENDDO
-
+C     write(*,*)
+C     write(*,*) '--------------------------------------------'
+C     write(*,*) '---  multiplication table (rebased) --------'
+C     write(*,*) '--------------------------------------------'
+C     write(*,*)
+C     DO IREP = 1, NREP
+C       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+C     ENDDO
+C     write(*,*) '-------------------------------------'
+C     DO IREP = NREP+1, 2*NREP
+C       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+C     ENDDO
+C     write(*,*)
+C     write(*,*) '-------------------------------------- ------------'
+C     write(*,*) '---  inverse multiplication table (rebased) -------'
+C     write(*,*) '---------------------------------------------------'
+C     write(*,*)
+C     DO IREP = 1, 2*NREP
+C       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*NREP)
+C     ENDDO
 C
 C     Distribute the information read from MRCONEE
 C
@@ -4534,7 +4625,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DISLIST
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -4560,7 +4651,9 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      INTEGER*8 JOFF,KOFF
+      INTEGER*8 JOFF,KOFF,I,IOFF,IREP,JREP,K,M,MI
+      integer MTOT,mvotot,n,nbtch,no33,nootot,nrest,ntot,nv33
+      integer nvoo33,nvotot,nvvo33,nvvtot,off1,off2,off3
 C
 C---------------Executable code--------------------------------------
 C

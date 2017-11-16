@@ -3,7 +3,7 @@
      &                 NBUF2,NBUF3,RMS,FOCKSP,DELS1,DELS2)
 
                              
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C     Intermediaries etc.
 
@@ -16,6 +16,8 @@ C     for diis ...
       REAL*8 BB1(*),BB2(*)
       REAL*8 RMS
       REAL*8 DIAG
+
+      integer maxit,nbuf2,nbuf3
 
 C---------------Common Blocks--------------------------------------
 #include "files.inc"
@@ -34,6 +36,7 @@ C---------------Local variables--------------------------------------
       LOGICAL TEQ,FOCKSP      
       CHARACTER*2 DELS1
       CHARACTER*4 DELS2
+      integer it,itc,nit
 C---------------Executable code--------------------------------------
 C
 C
@@ -82,9 +85,11 @@ C     Initialize the work arrays to zero.
       CALL XCOPY (NBUF2,A0,0,BUF2,1)
       CALL XCOPY (NBUF3,A0,0,BUF3,1)
 
-C     Initialize DIIS.
+C     Initialize DIIS for this sector, first zeroing amplitudes from higher sectors.
 
       IT = -1
+      CALL DELFCK ('VO',DELS1,T1)
+      CALL DELINT ('VVOO',DELS2,T2,0,0,0)
       CALL DIISX(NDIMT1,NDIMT2,T1,T2,
      &           IT,CC1,BB1,ITC,BB2,RMS)
 

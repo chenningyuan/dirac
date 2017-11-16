@@ -1,3 +1,6 @@
+# (c) https://github.com/coderefinery/autocmake/blob/master/AUTHORS.md
+# licensed under BSD-3: https://github.com/coderefinery/autocmake/blob/master/LICENSE
+
 #.rst:
 #
 # Detects and links to BLAS and LAPACK libraries.
@@ -515,4 +518,10 @@ if (ENABLE_STATIC_LINKING)
         # fix for MKL static linking
         set(MATH_LIBS ${MATH_LIBS} -ldl)
     endif()
+endif()
+
+if(MATH_LIB_SEARCH_ORDER)
+    # this print is here to avoid warning about MATH_LIB_SEARCH_ORDER which
+    # might be set but never used
+    message(STATUS "MATH_LIB_SEARCH_ORDER set to ${MATH_LIB_SEARCH_ORDER}")
 endif()

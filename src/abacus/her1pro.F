@@ -2067,8 +2067,8 @@ C
 
 C
 C     EMD - i* Electronic kinetic energy
-C     -------------------------
-C
+C     ----------------------------------
+C     Miro Ilias, Malaya K Nayak
  83   CONTINUE
          IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
      &' Calculation of EDM - i*KINENERG_LS(electronic kinetic energy)'
@@ -2079,12 +2079,7 @@ C
          LABINT(1) = 'KINENERG'
          ! full symmetry ....
          INTREP(1) = 0
-         ! force the symmetry of the Im(ab) quaternion component - wrong !
-         !INTREP(1) = ISYMAX(1,1)
-
-         !ANTI = .FALSE.
-         ANTI = .TRUE. ! it's pure imaginary !....
-
+         ANTI = .FALSE. 
       GO TO 200
 
  84   continue
@@ -2294,6 +2289,9 @@ C     (OV 08.03.90)
 C
 C     Solvent flag (22.01.91/HJAAJ+KM) (SOLVENT)
 C
+#ifdef HAS_PELIB
+      use pe_variables, only: peqm, pe_lf
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -2383,6 +2381,19 @@ C
          CALL DSOTST(SOINT,WORK(KDIFF),NBAST,NELMNT,NOPTYP,
      &               LABINT,DOATOM,NPQUAD,INTADR,IPRINT)
       END IF
+
+C
+C     *************************************************************
+C     ***** Local field corrections (EEF) to dipole integrals *****
+C     *************************************************************
+C
+#ifdef HAS_PELIB
+      IF (INTTYP .EQ. 2) THEN
+         IF (PEQM .AND. PE_LF) THEN
+            CALL PELIB_IFC_LOCALFIELD(SOINT, NBAST, NELMNT, NOPTYP)
+         END IF
+      END IF
+#endif
 C
 C     ***********************************
 C     ***** Write integrals on file *****
