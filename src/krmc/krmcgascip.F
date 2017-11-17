@@ -2531,7 +2531,7 @@ C  /* Deck gascip_rcistd */
       SUBROUTINE GASCIP_RCISTD(N_ROOTS_in,THR_CONV,MAX_CI_IT,
      &                         ECI_OUT,CVECS,NDET,IDET,CMO,
      &                         THR_CVEC,I_STATE,ICONV_TOT,
-     &                         THR_PCI,IPRINT,WORK,LWORK)
+     &                         THR_PCI,IPRINT_in,WORK,LWORK)
 C***********************************************************************
 C
 C     Do up to MAX_CI_IT CI iterations to converge the N_ROOTS lowest states
@@ -2597,6 +2597,7 @@ C
       CALL QENTER('GASCIP_RCISTD')
 
       N_ROOTS = abs(N_ROOTS_in)
+      IPRINT  = max(IPRINT_in, GASCIP_DEBUG )
 
       CALL GETTIM(CPU1,WALL1)
 
@@ -2775,10 +2776,23 @@ C
             CALL READT(LUGASCIP,NDETQ*N_CVEC,WORK(KSCVEC))
             HAVE_SCVECS = .TRUE.
             READ (LUGASCIP) DNRES(1:N_CVEC)
+            READ (LUGASCIP) ECIA(1:N_ROOTS)
+
             N_CSIM = N_CVEC
             WRITE(LUPRI,'(/I5,A/,(1P,10D10.2))') N_CVEC,
      &      ' restart CI vectors read from GASCIP.RST; residual norms:',
      &      DNRES(1:N_CVEC)
+#if GASCIP_DEBUG > 30
+            WRITE(LUPRI,'(/I5,A/,(1P,5D20.12))') N_CVEC,
+     &      ' restart CI vectors read from GASCIP.RST; active energies',
+     &      ECIA(1:N_CVEC)
+            write (lupri,*) N_CVEC,' restart CI vectors:'
+            call output(work(kbcvec),1,ndet,1,n_cvec,ndetq,n_cvec,
+     &         -1,lupri)
+            write (lupri,*) N_CVEC,' restart sigma vectors:'
+            call output(work(kscvec),1,ndet,1,n_cvec,ndetq,n_cvec,
+     &         -1,lupri)
+#endif
 
             IF (N_CSIM .LT. N_ROOTS) GO TO 20 ! need to converge more roots
 
@@ -2793,7 +2807,6 @@ C
 
             IF (ICONV_TOT .EQ. 1) THEN ! requested roots are already converged
                CALL DCOPY(NDETQ*N_ROOTS,WORK(KBCVEC),1,CVECS,1)
-               READ (LUGASCIP) ECIA(1:N_ROOTS)
                ITMIC = -1
                GO TO 210
             ELSE
@@ -2974,6 +2987,7 @@ C
 
          IF (IPRINT .GE. 10) THEN
             DO I = 1, N_CSIM
+               I_TOT = N_CRED_OLD + I
 C
 C              Trial vector
 C
@@ -3176,10 +3190,15 @@ C
             END IF
          END IF
 
-         IF (IPRINT .GE. 5) THEN
+         IF (IPRINT .GE. 5 .OR. WORK(KSEIGVL) .LE. 1.D-8) THEN
             WRITE(LUPRI,'(/A)')
      &      ' (GASCIP_RCISTD) Eigenvalues of reduced metric'
             CALL OUTPUT(WORK(KSEIGVL),1,1,1,N_CRED,1,MAX_HRED,-1,LUPRI)
+         END IF
+
+         IF (WORK(KSEIGVL) .LE. 1.D-8) THEN
+            CALL QUIT('ERROR: '//
+     &      'Numerical linear dependency among CI trial vectors')
          END IF
 
          ! calculate S**(-0.5) in WORK(KS_MHLF:)
@@ -3472,6 +3491,11 @@ C
             ECIA_I = ECIA(I_ROOT)
             JBCVEC_I = KBCVEC + (N_CRED+I_ROOT-1)*NDETQ - 1
             THR_CVEC_I = DNRES(I_ROOT) * THR_CVEC
+
+            IF (IPRINT .GE. 5) write(lupri,'(/A,I0,1P,D10.2)')
+     &      'Threshold for removing elements in trial vector',
+     &      I_ROOT, THR_CVEC_I
+
             I_ZERO = 0
             I_REMOVED = 0
             IF (N_in_CI .eq. 2) THEN
@@ -3546,6 +3570,11 @@ C        -----------------------------------
 C
 C        WRITE(LUPRI,*) 'N_CRED, N_ROOTS_NOT_CONVERGED'
 C     &                 ,N_CRED, N_ROOTS_NOT_CONVERGED
+#ifndef NO_MORE_ORTHOGONALIZATION
+         N_CSIM = N_ROOTS_NOT_CONVERGED
+#else
+! the code below here is only valid for orthonormal trial vectors in BCVECS !!!
+! i.e. it is only valid for old GASCIP code. /hjaaj Nove 2017
          N_CSIM = 0
          DO J = N_CRED + 1, N_CRED + N_ROOTS_NOT_CONVERGED
 C           loop over new trial vectors
@@ -3556,7 +3585,6 @@ C
             IROUND = 0
  400        CONTINUE
 C
-            OVLP_tot  = 0.0D0
             OVLP_imag = 0.0D0
             DO I = 1, J - 1   ! loop over previous ("old") trial vectors
 C
@@ -3572,12 +3600,11 @@ C
      &              - DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ+NDET),1,   ! -i <B(old,imag)|B(new,real)>
      &                          WORK(KBCVEC+(J-1)*NDETQ),1)
                END IF
-               OVLP_tot = OVLP_tot + OVLP_real**2 + OVLP_imag**2
-C       write (lupri,*) 'old vector no. I, OVLP',I,OVLP_real,OVLP_imag
+c              write (lupri,*) 'old vector no. I, OVLP real, imag',
+c    &         I,OVLP_real,OVLP_imag
 C
 C              Calculate B(new) = B(new) - OVLP * B(old)
 C
-#ifdef NO_MORE_ORTHOGONALIZATION
                IF (ABS(OVLP_real) .GT. THRZER) THEN
                   CALL DAXPY(NDETQ,-OVLP_real,
      &                       WORK(KBCVEC+(I-1)*NDETQ),1,
@@ -3591,14 +3618,9 @@ C
      &                       WORK(KBCVEC+(I-1)*NDETQ+NDET),1,
      &                       WORK(KBCVEC+(J-1)*NDETQ),1)
                END IF
-#endif
             END DO  ! I = 1, J - 1 (previous trial vectors)
 C
-#ifdef NO_MORE_ORTHOGONALIZATION
             DNAFT = DNORM2(NDETQ,WORK(KBCVEC+(J-1)*NDETQ),1)
-#else
-            DNAFT = 1.0D0 - OVLP_tot
-#endif
 C           write(lupri,*) 'DN after', DNAFT
             IF (DNAFT .LE. THRZER) THEN
                WRITE (LUPRI,'(/A,I0,A,1P,D10.2)')
@@ -3607,7 +3629,6 @@ C           write(lupri,*) 'DN after', DNAFT
                CYCLE ! do not include this vector because of it is linear dependent!
             END IF
 
-#ifdef NO_MORE_ORTHOGONALIZATION
             DNAFT = 1.0D0 / DNAFT
             CALL DSCAL(NDETQ,DNAFT,WORK(KBCVEC+(J-1)*NDETQ),1)
 
@@ -3658,7 +3679,6 @@ C
                   CALL QUIT('*** ERROR in GASCIP_RCISTD ***' //
      &              'IROUND .gt. 1')
             END IF
-#endif
 C
             N_CSIM = N_CSIM + 1
             J_NEW  = N_CRED + N_CSIM
@@ -3669,6 +3689,7 @@ C
 C      write (lupri,*) 'All trial vectors test output after Gram-Schmidt'
 C                 call output(work(kbcvec),1,ndetq,1,J_NEW,
 C     &                    ndetq,J_NEW,-1,lupri)
+#endif
          IF (IPRINT .GE. 3) THEN
             CALL GETTIM(CPU_end,WALL_end)
             CPUTID  = SECTID(CPU_end-CPU_st)
