@@ -9469,8 +9469,7 @@ C...common block for linear reponse
      &        INDXPR,IOP,IPTYP,IREP,IREP1,IREP2,IREPO,IS1,
      &        IS2,ISCOOR,ISCORD1,ISECND,
      &        ISYXPR,ITHIRD,ITOP,ITRXPR,ITYP,MXATM2,NPCOMP,
-     &        NSCOOR,IBTXOR,IAND,IOR,ISHFT,IEOR,IBTAND,IBTOR,
-     &        IBTSHL,IBTSHR,ISCOR1
+     &        NSCOOR,ISCOR1
 
       DOUBLE PRECISION PFAC,WORK,D1,DL,DS
 
@@ -9775,7 +9774,6 @@ C***********************************************************************
       use memory_allocator
 
       implicit none
-
 #include "priunit.h"
 #include "mxcent.h"
 #include "dcbprp.h"
@@ -9820,8 +9818,7 @@ C
      &        IATOM,IDEG,IDEP, IFREQ, INUC,ISO,ISYMOP,ITYP,IZ,J,
      &        JA, JATOM,JB1,JB2,K,KA,KB1,KB2,KFRSAV,KFREE,L,NA,
      &        NATOM,NB1,NB2,NCMAT,
-     &        NEXP,NISO,NSCOOR, NSPEC,
-     &        ICONVXYZ,IBTOR,IBTSHL,IBTSHR,IBTXOR,IEXP,IBTAND,
+     &        NEXP,NISO,NSCOOR, NSPEC,ICONVXYZ,IEXP,
      &        JEXP,KEXP,IBUFB1(3),IBUFB2(3),IATINF(3,NUCDEP)
 C
       double precision RATINF(3,5,NUCDEP),DISOTP,
@@ -10198,8 +10195,7 @@ C
       integer I,J,IPRINT,IATOM1,IATOM2,ISYM1,ISYM2,
      &        KK,LL,NATOM1
 C
-      double precision XDIF,YDIF,ZDIF,ZVAL2,PFAC,
-     &                 IBTAND,IBTOR,IBTSHL,IBTSHR,IBTXOR
+      double precision XDIF,YDIF,ZDIF,ZVAL2,PFAC
 C
       IF (IPRINT.GE.5) THEN
        CALL HEADER(
@@ -10286,8 +10282,7 @@ C
 !#include "helfey.h"
 #include "ibtfun.h"
 C
-      integer IPRINT,I,J,IATOM,ISYMOP,NATOM,NCMAT,
-     &        IBTAND,IBTOR,IBTSHL,IBTSHR,IBTXOR
+      integer IPRINT,I,J,IATOM,ISYMOP,NATOM,NCMAT
 C
       double precision EXPVAL(3*NUCDEP), ELFLD(3,NUCDEP),
      &                 CSTRA(3*NUCDEP,3*NUCDEP),
@@ -10372,8 +10367,7 @@ C
 C
       integer I,J,KATOM,IPRINT,IATOM,ICOOR,
      &        ISYMOP,IX,IY,JATOM,JX,JY,CSTRA,
-     &        SCTRA,NATTYP,NUMIS,IBTAND,IBTOR,
-     &        IBTSHL,IBTSHR,IBTXOR
+     &        SCTRA,NATTYP,NUMIS
 C
       double precision D1,D2,D3,D4,THRESH,DP5,FAC,FACPPM,
      &                 GEOM(KATOM,3),AMASS(KATOM),GVAL(KATOM),
