@@ -5120,7 +5120,6 @@ C     master: 1) send bc-vectors to all slaves
      &                 SCVEC(J_START,1,I),SLAVE_S_INTERVAL(3),
      &                 NWHO,40,global_communicator)
          IF (NZ_in_CI .eq. 2) THEN
-            J_START = J_START + NDET
             CAll interface_mpi_RECV(
      &                 SCVEC(J_START,2,I),SLAVE_S_INTERVAL(3),
      &                 NWHO,40,global_communicator)
