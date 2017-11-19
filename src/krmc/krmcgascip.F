@@ -377,15 +377,15 @@ C
      &     ' * Active orbitals       : ',(NASH(I),I=1,NFSYM)
          WRITE(LUPRI,'(A,I4)')
      &     ' * Active electrons      : ',NAELEC
-         WRITE(LUPRI,'(A,I3,A)')
+         WRITE(LUPRI,'(A,I0,A)')
      &     ' * GAS space setup for the ',NGAS_DC,' GAS space(s) :'
+         WRITE(LUPRI,'(A/A)')
+     &     '   GAS space   min/max electrons   orbitals',
+     &     '   ----------------------------------------'
          DO I = 1, NGAS_DC
-            WRITE(LUPRI,'(A,I3,A,2I4)')
-     &           '   - GAS space ',I,'       : ',
+            WRITE(LUPRI,'(I10,I12,A,I3,I13,I4)')
+     &           I, NGASSP(1,I),' /',NGASSP(2,I),
      &           (NGSH(J,I),J=1,NFSYM)
-            WRITE(LUPRI,'(A,I3,A1,I3,A)')
-     &      '    (constraints: min/max active electrons after space : ',
-     &           NGASSP(1,I),'/',NGASSP(2,I),')'
          END DO
          IF (IRRP .LE. 0) THEN
             WRITE(LUPRI,'(2A,I4,A,I3)')
@@ -481,8 +481,8 @@ C     ----------------------------------------
       allocate(SYM_STR(2,NEL_STR_T))
       CALL GASCIP_STR_SYMINFO(NEL_STR_T, JSTR, SYM_STR, UCIBOS)
 
-      IF (IPRINT .GT. 0) THEN
-         CALL GETTIM(CPU2,WLL2)
+      CALL GETTIM(CPU2,WLL2)
+      IF (IPRINT .GT. 0 .OR. CPU2-CPU1 .GT. 60.0D0) THEN
          CPUTID  = SECTID(CPU2-CPU1)
          WALLTID = SECTID(WLL2-WLL1)
 C
@@ -498,8 +498,8 @@ C
 C     Generate determinants:
 C     -----------------------
 
-      NASTR_T = 0
-      NBSTR_T = 0
+      IF (IPRINT.GT.2) WRITE(LUPRI,'(/A)') 
+     &' MK2, NASTR, NBSTR, NASTR*NBSTR, NMK2(MK2,3), MDPS, DOK, time'
       NDET    = 0
       IMK2(:,:) = -1234567890
       DO 10 IAEL = MINAEL, MAXAEL
@@ -522,9 +522,7 @@ C
          IF (NASTR .EQ. 0) GOTO 10
          IF (NBSTR .EQ. 0) GOTO 10
 C
-C HJ TODO : the next can easily be optimized by not redoing the IA
-C           for each IB in GASCIP_GASOK and GASCIP_SYMOK /aug 03
-C
+         CALL GETTIM(CPU1,WLL1)
          DO IA = 1, NASTR
             JASTR = IASTR_OFF + IA
             DO IB = 1, NBSTR
@@ -555,8 +553,21 @@ C
          NMK2(MK2,1) = NASTR
          NMK2(MK2,2) = NBSTR
          NMK2(MK2,3) = NDET - IMK2(MK2,3)
-         NASTR_T = NASTR_T + NASTR
-         NBSTR_T = NBSTR_T + NBSTR
+
+         CALL GETTIM(CPU2,WLL2)
+         IF (IPRINT .GT. 2 .OR. CPU2-CPU1 .GT. 60.0D0) THEN
+            CPUTID  = SECTID(CPU2-CPU1)
+            WALLTID = SECTID(WLL2-WLL1)
+C
+            xMDPS = (NASTR*NBSTR)*1.D-6 / (CPU2-CPU1)
+            DOK = 100.0D0*NMK2(MK2,3) / (NASTR*NBSTR)
+            IF (IPRINT.LE.2) WRITE(LUPRI,'(A)') 
+     &' MK2, NASTR, NBSTR, NASTR*NBSTR, NMK2(MK2,3), MDPS, DOK'
+            WRITE(LUPRI,'(I3,2I8,2I15,F10.2,F10.3,4A)') 
+     &  MK2, NASTR, NBSTR, NASTR*NBSTR, NMK2(MK2,3),xMDPS, DOK,
+     &      CPUTID,'(',WALLTID,')'
+         END IF
+
  10   CONTINUE
 
  11   CONTINUE
@@ -568,8 +579,6 @@ C
             IMK2(MK2,2) = IMK2(-MK2,1)
             NMK2(MK2,1) = NMK2(-MK2,2)
             NMK2(MK2,2) = NMK2(-MK2,1)
-            NASTR_T     = NASTR_T + NMK2(MK2,1)
-            NBSTR_T     = NBSTR_T + NMK2(MK2,2)
 
             NDET_MK2    = NMK2(-MK2,3)
 
@@ -603,8 +612,12 @@ C     Write statistics about determinants
 
       IF (IPRINT .GE. 0) THEN
          WRITE(LUPRI,9100)
+         NASTR_T = 0
+         NBSTR_T = 0
          DO MK2 = MINMK2, MAXMK2
             IF (NMK2(MK2,3) .GT. 0) THEN
+               NASTR_T = NASTR_T + NMK2(MK2,1)
+               NBSTR_T = NBSTR_T + NMK2(MK2,2)
                IF (MOD(MK2,2) .EQ. 0) THEN
                   WRITE(LUPRI,9101) MK2/2,NMK2(MK2,3),
      &                              NMK2(MK2,1), NMK2(MK2,2)
@@ -659,7 +672,6 @@ C
             END DO
          END DO
          WRITE(LUPRI,9006)
-         CALL FLSHFO(LUPRI)
       END IF
  9001 FORMAT(//1X,79('=')/' Determinant',T15,'Strings'/1X,79('='))
  9002 FORMAT(I10,T15,100I1)
@@ -669,6 +681,7 @@ C
  9006 FORMAT(1X,79('='))
 C
 C
+      CALL FLSHFO(LUPRI)
       RETURN
  1010 FORMAT(I6,I10,32I2)
       END
@@ -726,7 +739,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       end if
 
       rewind (LUGASCIP)
-      if ( .not. FNDLAB('GASCIP a',LUGASCIP) ) go to 7000 ! GASCIP version identifier
+      if ( .not. FNDLAB('GASCIP b',LUGASCIP) ) go to 7000 ! GASCIP version identifier
       if ( .not. FNDLAB('DETINFO ',LUGASCIP) ) go to 7000 ! file corrupted check, and file pointer positioning
       read (LUGASCIP) N5_S, NDET, NEL_STR_T,
      &   IRRP_S, IRP_S, NREP_S, MINMK2_S, MAXMK2_S,          ! dcbgascip.h info check
@@ -766,7 +779,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       read (LUGASCIP) IDET(1:2,1:NDET)
       read (LUGASCIP) JSTR(1:NEL_STR_T)
       read (LUGASCIP) IEL_STR(0:NASHT), NEL_STR(0:NASHT),
-     &   IMK2(-NASHT:NASHT,3), NMK2(-NASHT:NASHT,3)
+     &   IMK2(-NASHT:NASHT,1:3), NMK2(-NASHT:NASHT,1:3)
       RESTART_OK = .true.
       go to 9000
 
@@ -849,7 +862,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       ! save info
 
       rewind (LUGASCIP)
-      call NEWLAB('GASCIP a',LUGASCIP,LUPRI) ! GASCIP version identifier
+      call NEWLAB('GASCIP b',LUGASCIP,LUPRI) ! GASCIP version identifier
       call NEWLAB('DETINFO ',LUGASCIP,LUPRI)
 
       write (LUGASCIP) N5, NDET, NEL_STR_T,
@@ -861,7 +874,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       write (LUGASCIP) IDET(1:2,1:NDET)
       write (LUGASCIP) JSTR(1:NEL_STR_T)
       write (LUGASCIP) IEL_STR(0:NASHT), NEL_STR(0:NASHT),
-     &   IMK2(-NASHT:NASHT,3), NMK2(-NASHT:NASHT,3)
+     &   IMK2(-NASHT:NASHT,1:3), NMK2(-NASHT:NASHT,1:3)
 
       call NEWLAB('SODLABEL',LUGASCIP,LUPRI)
       NDETQ = NZ_in_CI * NDET
@@ -2606,7 +2619,7 @@ C     Set general parameters (which later maybe should be set by input?)
 C
 !d      write(lupri,*) 'THR_PCI, THR_CONV', THR_PCI,THR_CONV
       NDETQ  = NZ_in_CI*NDET
-      MAX_HRED = MAX(100,N_ROOTS*MAX_CI_IT)
+      MAX_HRED = N_ROOTS*(MAX_CI_IT+1) + NCSIM_EXTRA_START
       MAX_HRED = MIN(2000, MAX_HRED)
 C
       IF (N_ROOTS .LT. 1 .OR. N_ROOTS .GE. MAX_ROOTS) THEN
@@ -2633,10 +2646,10 @@ C
 C     The core Hamiltonian is the active-active part of FC,
 C     a.k.a. FCAC.
 C
-      CALL MEMGET2('REAL','FCACM',KFCACM,(2*NASHT)*(2*NASHT)*NZ_in_CI,
-     &     WORK,KFREE,LFREE)
-      CALL MEMGET2('REAL','FCAC',KFCAC,N2ASHXQ,WORK,KFREE,LFREE)
-      CALL MEMGET2('REAL','FC',  KFC,N2ORBXQ,WORK,KFREE,LFREE)
+      len_FCACM = (2*NASHT)*(2*NASHT)*NZ_in_CI
+      CALL MEMGET2('REAL','FCACM',KFCACM,len_FCACM,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FCAC', KFCAC, N2ASHXQ,  WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FC',   KFC,   N2ORBXQ,  WORK,KFREE,LFREE)
 C
 C     Calculate FCmo (TOFILE false: do not write to LUKRM3) :
 C
@@ -2702,8 +2715,8 @@ C
       CALL MEMGET2('REAL','HEIGVL',KEIGVL,MAX_HRED,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','HEIGVC',KEIGVC,LHRED,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KHRED),LHRED)
-      KHREDI  = KHRED + MAX_HRED*MAX_HRED
-      KEIGVCI = KEIGVC + MAX_HRED*MAX_HRED
+      KHREDI  = KHRED + MAX_HRED*MAX_HRED   ! off-set to imaginary part (if NZ_in_CI .eq. 2)
+      KEIGVCI = KEIGVC + MAX_HRED*MAX_HRED  ! off-set to imaginary part (if NZ_in_CI .eq. 2)
 
       CALL MEMGET2('REAL','SRED' ,KSRED,LHRED,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','SEIGVL',KSEIGVL,MAX_HRED,WORK,KFREE,LFREE)
@@ -2775,17 +2788,18 @@ C
             CALL READT(LUGASCIP,NDETQ*N_CVEC,WORK(KBCVEC))
             CALL READT(LUGASCIP,NDETQ*N_CVEC,WORK(KSCVEC))
             HAVE_SCVECS = .TRUE.
-            READ (LUGASCIP) DNRES(1:N_CVEC)
+            READ (LUGASCIP) DNRES(1:N_ROOTS)
             READ (LUGASCIP) ECIA(1:N_ROOTS)
 
-            N_CSIM = N_CVEC
             WRITE(LUPRI,'(/I5,A/,(1P,10D10.2))') N_CVEC,
      &      ' restart CI vectors read from GASCIP.RST; residual norms:',
      &      DNRES(1:N_CVEC)
-#if GASCIP_DEBUG > 30
+#if GASCIP_DEBUG > 3
             WRITE(LUPRI,'(/I5,A/,(1P,5D20.12))') N_CVEC,
      &      ' restart CI vectors read from GASCIP.RST; active energies',
      &      ECIA(1:N_CVEC)
+#endif
+#if GASCIP_DEBUG > 30
             write (lupri,*) N_CVEC,' restart CI vectors:'
             call output(work(kbcvec),1,ndet,1,n_cvec,ndetq,n_cvec,
      &         -1,lupri)
@@ -2794,7 +2808,8 @@ C
      &         -1,lupri)
 #endif
 
-            IF (N_CSIM .LT. N_ROOTS) GO TO 20 ! need to converge more roots
+            N_CSIM = N_CVEC
+            IF (N_CVEC .LT. N_ROOTS) GO TO 20 ! need to converge more roots
 
             ICONV_TOT = 1
             IF (I_STATE .GT. 0) THEN ! only converge this root
@@ -2903,7 +2918,7 @@ C
       N_CRED = 0
 C     GASCIP screening, a calculation in C2 symmetry showed that
 C     THRSCR = THR_CONV**2 was not good enough for the complex group /hjaaj July 04
-      THRSCR = MIN(1.0D-8, THR_CONV**2 * 0.01D0)
+      THRSCR = MIN(1.0D-12, THR_CONV**2 * 0.01D0)
 
       PAR_GASCIP = PARCAL .AND. NDET .GT. 10000
       IF (PAR_GASCIP) THEN
@@ -4239,7 +4254,7 @@ C
 C
       CALL GETTIM(CPU1,WALL1)
 
-      IF (IPRINT .GT. 1) WRITE (LUPRI,'(//A/A,3L10/A,L10,2I10)')
+      IF (IPRINT .GT. 2) WRITE (LUPRI,'(//A/A,3L10/A,L10,2I10)')
      &   ' --- Output from GASCIP_CI ---',
      &   ' DODIA, DOSIG, DODEN :',DODIA,DOSIG,DODEN,
      &   ' DO2EL, IHRM,  IPRINT:',DO2EL,IHRM,IPRINT
@@ -4733,7 +4748,7 @@ C        THRSCR - skip abs(BVEC(i)) .le. THRSCR
 C
 C     Output:
 C
-C        SVEC(IS:START,IS_END,NZ_in_CI)   - sigma vector
+C        SVEC(IS_START:IS_END,NZ_in_CI)   - sigma vector
 C
 C
 C     Written by J. Thyssen and H.J.Aa. Jensen - Jan-Mar 2001
@@ -4760,7 +4775,7 @@ C
       INTEGER*8 IDET(2,*), IDA, IDB, JDA, JDB, IDAOLD, JDAOLD
       INTEGER*8 IDAV, IDBV, IAI, IBI, IAJ, IBJ
 C
-      LOGICAL   DOIMAG, NEW_HMAT
+      LOGICAL   DOIMAG, NEW_HMAT, NEW_JDA
 C
       DIMENSION IOCCI(2*MAXASH_GASCIP), JOCCI(2*MAXASH_GASCIP)
       DIMENSION IBTAB(0:255)
@@ -4850,6 +4865,11 @@ C
 !d       write(lupri,*) '(GASCIP_CISIG_SCREEN), MK2J_STRT/END/STEP',
 !d   &                   MK2J_STRT,MK2J_END,MK2J_STEP
 
+         IF (MK2I .GE. 0) THEN
+            IDAOLD =  0 ! no A-orbitals occupied, cannot be the case when MK2I .ge. 0
+         ELSE
+            IDAOLD = -1 ! all 64 A-orbitals occupied, cannot be the case when MK2I .lt. 0
+         END IF
          DO 100 I = ISTRT, IEND
 C
 C        Screening:
@@ -4901,13 +4921,17 @@ C
                JEND  = MIN(JEND,  IS_END)
 
                MXNDAV = ITMAX - ABS(MK2J - MK2I)/2
-C              ... we know that NDBV .ge. ABS(MK2I-MK2J)/2
+C              ... we know that NDBV .ge. ABS(MK2J-MK2I)/2
 C
 !d          write(lupri,*) '(GASCIP_CISIG_SCREEN) MK2I MK2J JSTRT JEND='
 !d   &         ,MK2I,MK2J,JSTRT,JEND
 !d             call flshfo(lupri)
 
-               JDAOLD = -1
+               IF (MK2J .GE. 0) THEN
+                  JDAOLD =  0 ! no A-orbitals occupied, cannot be the case when MK2J .ge. 0
+               ELSE
+                  JDAOLD = -1 ! all 64 A-orbitals occupied, cannot be the case when MK2J .lt. 0
+               END IF
                DO 200 J = JSTRT, JEND
 C
                   JDA = IDET(1,J)
@@ -4915,6 +4939,8 @@ C
 C                    ... outer loop in gascip_gendet is over A-strings
                      IDAV = IEOR(IDA, JDA)
                      CALL FNBITS(NDAV,IDAV,IBTAB)
+                     JDAOLD = JDA
+                     NEW_JDA = .TRUE.
                   END IF
                   IF (NDAV .GT. MXNDAV) GOTO 200
 C                 ... see note above about MXNDAV
@@ -4933,9 +4959,9 @@ C                          in det(I) and det(J)
                   END IF
                   ! OK, a hit, we must now calculate coupling
 
-                  IF (JDA .NE. JDAOLD) THEN
+                  IF (NEW_JDA) THEN
                   ! calculate A-string det(J) info if not already done
-                     JDAOLD = JDA
+                     NEW_JDA  = .FALSE.
                      NEW_HMAT = .TRUE. ! new HR, HI from GASCIP_HMAT
 C
                      JAELEC = 0
@@ -5655,7 +5681,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE GASCIP_PAR_CISIG(N_CSIM,NDET,SCVEC, BCVEC, IPRINT)
+      SUBROUTINE GASCIP_PAR_CISIG(N_CSIM,NDET,SCVEC, BCVEC, IPRINT_in)
 C
 C     Written Aug. 2014 by Hans Joergen Aa. Jensen
 C
@@ -5679,6 +5705,7 @@ C
       REAL*8    SCVEC(NDET,NZ_in_CI,N_CSIM), BCVEC(*)
       INTEGER   SLAVE_S_INTERVAL(3)
 
+      IPRINT = MAX(IPRINT_in, GASCIP_DEBUG)
       IF (N_CSIM .LE. 0) GO TO 9000
 
       IF (IPRINT .GE. 4) THEN
@@ -5725,19 +5752,26 @@ C     master: 1) send bc-vectors to all slaves
 
       NEXT_TASK = NODTOT + 1 ! nodes start automatically with their first task
 
+      WAIT_MAX = 0.0D0
+      I_WAIT_MAX = 0
       DO I_TASK = 1, N_TASKS
+         CALL GETTIM(CPU2,WALL2)
          CAll interface_mpi_RECV(SLAVE_S_INTERVAL,3,
      &                 df_mpi_any_source,40,global_communicator,ISTAT)
+         CALL GETTIM(CPU3,WALL3)
+         IF (WALL3-WALL2 .GE. WAIT_MAX) THEN
+            WAIT_MAX = WALL3-WALL2
+            I_WAIT_MAX = I_TASK
+         END IF
          J_START = SLAVE_S_INTERVAL(1)
          NWHO = ISTAT(df_MPI_SOURCE)
         IF (IPRINT .GE. 4) THEN
-         CALL GETTIM(CPU3,WALL3)
-        IF ((WALL3-WALL2) .GT. 30.D0) THEN
+        IF ((WALL3-WALL2) .GT. 30.D0 .OR. I_TASK.EQ.N_TASKS) THEN
          CALL TIMDAT
-         WRITE(LUPRI,'(A,I6,A,I6,2F10.2)')
+         WRITE(LUPRI,'(A,I6,A,I6,2F10.2,A,I12)')
      &   'Master task',I_TASK,
      &   ': CPU and WALL time to start of receive from node',
-     &   NWHO,CPU3-CPU2, WALL3-WALL2
+     &   NWHO,CPU3-CPU2, WALL3-WALL2,'; start address',J_START
         END IF
         END IF
          DO I = 1, N_CSIM
@@ -5750,8 +5784,8 @@ C     master: 1) send bc-vectors to all slaves
      &                 NWHO,40,global_communicator)
          END IF
          END DO
+        CALL GETTIM(CPU2,WALL2)
         IF (IPRINT .GE. 4) THEN
-         CALL GETTIM(CPU2,WALL2)
         IF ((WALL2-WALL3) .GT. 30.D0) THEN
          CALL TIMDAT
          WRITE(LUPRI,'(A,I6,A,I6,2F10.2)')
@@ -5773,6 +5807,9 @@ C     master: 1) send bc-vectors to all slaves
          WRITE(LUPRI,'(A,2F10.2)')
      &   'Master: Total CPU and WALL time in GASCIP_PAR_CISIG',
      &   CPU2-CPU1, WALL2-WALL1
+         WRITE(LUPRI,'(A,F10.2,I10)')
+     &   'Master: Max WALL waiting time for node in GASCIP_PAR_CISIG',
+     &   WAIT_MAX,I_WAIT_MAX
       END IF
 
  9000 CONTINUE
@@ -5955,10 +5992,10 @@ C
 
 !     Get N_CSIM, number of simultaneous trial vectors
 
-  100 CONTINUE ! coming back to here for more batches
+  100 CONTINUE ! coming back to here for N_CSIM new trial vectors
 
       call interface_MPI_BCAST(N_CSIM,1,MPARID,global_communicator)
-#if GASCIP_DEBUG > 0
+#if GASCIP_DEBUG > 10
       write(lupri,*) MYTID,' GASCIP_NODE_CISIG: received N_CSIM',N_CSIM
       call flshfo(lupri)
 #endif
@@ -5982,7 +6019,7 @@ C
 
       MY_TASK = MYTID ! first task is equal to my node number
 
-  200 CONTINUE ! coming back here for more batches
+  200 CONTINUE ! coming back here for another sigma batch
       MY_S_INTERVAL(1) = 1 + (MY_TASK-1)*LEN_SCVEC_PER_TASK
       MY_S_INTERVAL(2) = MIN(MY_TASK*LEN_SCVEC_PER_TASK, NDET)
       MY_S_INTERVAL(3) = MY_S_INTERVAL(2) - MY_S_INTERVAL(1) + 1
