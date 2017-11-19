@@ -28,6 +28,7 @@ Error corrections:
 - Fixed the p exponents for Na in the dyall 4z basis sets to match the archive.
   The changes are small so should not significantly affect results.
 - Fixed compilation of XCFun on Mac OS X High Sierra.
+- Fixed error for parallel complex CI or MCSCF with GASCIP
 
 (Do not change anything below this text on the master branch,
 the lines below should only be changed on the release branch.)
