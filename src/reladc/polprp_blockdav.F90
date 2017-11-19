@@ -247,7 +247,7 @@
 
       call init_krylov_r(io_bold,desrep,nroots,maxdavsp,ladc, &
                          polprp_davreort)
-      krydim = nroots  !has to succede init_routine if nroots it adjusted.
+      krydim = nroots  !has to succeed init_routine if nroots it adjusted.
       krysav = 0
 
       WRITE(*,*)
