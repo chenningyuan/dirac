@@ -146,7 +146,7 @@ print *, '*    Roberto Di Remigio       UiT The Arctic University of      Norway
 print *, '*    Kenneth Ruud             UiT The Arctic University of      Norway        *'
 print *, '*    Pawel Salek              Stockholm Inst. of Technology     Sweden        *'
 print *, '*    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *'
-print *, '*    Avijit Shee              Univrsity of Michigan             USA           *'
+print *, '*    Avijit Shee              University of Michigan            USA           *'
 print *, '*    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *'
 print *, '*    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *'
 print *, '*    Joern Thyssen            University of Southern Denmark    Denmark       *'
@@ -156,8 +156,7 @@ print *, '*    Olivier Visser           University of Groningen           Nether
 print *, '*    Toke Winther             University of Southern Denmark    Denmark       *'
 print *, '*    Shigeyoshi Yamamoto      Chukyo University                 Japan         *'
 print *, '*                                                                             *'
-print *, '*    For the complete list of contributors to the DIRAC code see our          *'
-print *, '*    website http://www.diracprogram.org                                      *'
+print *, '*    For more information about the DIRAC code see http://diracprogram.org    *'
 print *, '*                                                                             *'
 print *, '*    This is an experimental code. The authors accept no responsibility       *'
 print *, '*    for the performance of the code or for the correctness of the results.   *'
@@ -181,7 +180,11 @@ print *, '*    M. K. Nayak, P. Norman, G. Olejniczak, J. Olsen, J. M. H. Olsen, 
 print *, '*    Y. C. Park, J. K. Pedersen, M. Pernpointner, R. Di Remigio, K. Ruud,     *'
 print *, '*    P. Salek, B. Schimmelpfennig, A. Shee, J. Sikkema, A. J. Thorvaldsen,    *'
 print *, '*    J. Thyssen, J. van Stralen, S. Villaume, O. Visser,T. Winther,           *'
+<<<<<<< HEAD
 print *, '*    and S. Yamamoto (see http://www.diracprogram.org).                       *'
+=======
+print *, '*    and S. Yamamoto (see http://diracprogram.org).                           *'
+>>>>>>> origin/release-17
 print *, '*                                                                             *'
 print *, '*******************************************************************************'
 end
