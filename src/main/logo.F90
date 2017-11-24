@@ -180,11 +180,7 @@ print *, '*    M. K. Nayak, P. Norman, G. Olejniczak, J. Olsen, J. M. H. Olsen, 
 print *, '*    Y. C. Park, J. K. Pedersen, M. Pernpointner, R. Di Remigio, K. Ruud,     *'
 print *, '*    P. Salek, B. Schimmelpfennig, A. Shee, J. Sikkema, A. J. Thorvaldsen,    *'
 print *, '*    J. Thyssen, J. van Stralen, S. Villaume, O. Visser,T. Winther,           *'
-<<<<<<< HEAD
-print *, '*    and S. Yamamoto (see http://www.diracprogram.org).                       *'
-=======
 print *, '*    and S. Yamamoto (see http://diracprogram.org).                           *'
->>>>>>> origin/release-17
 print *, '*                                                                             *'
 print *, '*******************************************************************************'
 end
