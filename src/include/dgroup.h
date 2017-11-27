@@ -29,11 +29,12 @@
      &        JMROI(4), JSPINR(4, 2, 2), JQBAS(0:7, 2), JFSYM(4, 2),    &
      &        IPQTOQ(4, 0:7), IQTOPQ(4, 0:7), IQPH(4, 2),IBTOSF(0:7,2), &
      &        IHQMAT(4,-1:1), IRQMAT(4, 0:7), IQDEF(4), ITOT,           &
-     &        NZC1, NZ_in_CI, IQMAP(4), I2_DGROUP
+     &        NZC1, NZ_in_CI, IQMAP(4), I2_DGROUP, ITERSEOUT, IBTOSF
       COMMON /DGROUP/ I1_DGROUP, NZ, NFSYM, NBSYM, IFDIRP, JBTOF, JMROI,&
      &                JSPINR, JQBAS, JFSYM, IPQTOQ, IQTOPQ, IQPH,       &
      &                IHQMAT, IRQMAT, IQDEF, ITOT, IBTOSF,              &
-     &                NZC1, NZ_in_CI, IQMAP, I2_DGROUP
+     &                NZC1, NZ_in_CI, IQMAP, I2_DGROUP, ITERSEOUT
+
 
 !     Do NOT add any variables after the end tag !
       LOGICAL LINEAR

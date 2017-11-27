@@ -39,6 +39,7 @@ C*****************************************************************************
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcborb.h"
+#include "dcbimp.h"
 C
       real(8), allocatable :: a_CMO(:),a_EIG(:)
       integer, allocatable :: a_IBG(:)
@@ -53,9 +54,9 @@ C
          return
       end if
 
-      call alloc(a_CMO, N2BBASXQ, id="CMO in PCMOIN")
-      call alloc(a_EIG, NORBT,    id="EIG in PCMOIN")
-      call alloc(a_IBG, NORBT,    id="IBG in PCMOIN")
+      call alloc(a_CMO, N2BBASXQ*NKRBLK, id="CMO in PCMOIN")
+      call alloc(a_EIG, NORBT*NKRBLK,    id="EIG in PCMOIN")
+      call alloc(a_IBG, NORBT*NKRBLK,    id="IBG in PCMOIN")
 
       CALL PCMOIN_1(a_CMO, a_EIG, a_IBG)
 
@@ -126,7 +127,8 @@ C*****************************************************************************
 #include "dcbbas.h"
 #include "dcbgen.h"
       CHARACTER TEXT*74
-      DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT),IDIM(3,2)
+      DIMENSION CMO(NCMOTQ*NKRBLK),EIG(NORBT*NKRBLK),IBEIG(NORBT*NKRBLK)
+      DIMENSION IDIM(3,2)
 C
       DO I = 1,NFSYM
         IDIM(1,I) = NPSH(I)
@@ -154,7 +156,7 @@ C
 C     IDIM(1,J) - number of positronic solutions
 C     IDIM(2,J) - number of electronic solutions
 C     IDIM(3,J) - number of AO-basis functions
-C
+
 C     Written by BHP (adapted from TS WRICMO)
 C
 C*****************************************************************************
@@ -164,8 +166,9 @@ C*****************************************************************************
 #include "dcbgen.h"
 
 C
-      INTEGER, INTENT(IN) :: IBEIG(NORBT), IUNIT
-      REAL*8 , INTENT(IN) :: CMO(NCMOTQ), EIG(NORBT), TOTERG
+      INTEGER, INTENT(IN) :: IBEIG(NORBT*NKRBLK), IUNIT
+      REAL*8 , INTENT(IN) :: CMO(NCMOTQ*NKRBLK), EIG(NORBT*NKRBLK)
+      REAL*8 , INTENT(IN) :: TOTERG
 C
       CHARACTER TEXT*74
       INTEGER  I, J, IDIM(3,2)
@@ -216,7 +219,7 @@ C
 #include "dgroup.h"
       LOGICAL INFO,LBIT,TEST
       CHARACTER TEXT*74,CMOFIL*6,FMT*6,MXFORM*6
-      DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT)
+      DIMENSION CMO(NCMOTQ*NKRBLK),EIG(NORBT*NKRBLK),IBEIG(NORBT*NKRBLK)
       DIMENSION IDIM(3,2)
       real(8), allocatable :: kc(:)
       real(8), allocatable :: ko(:)
@@ -411,8 +414,8 @@ C
 #include "dgroup.h"
       LOGICAL INFO,LBIT,TEST
       CHARACTER TEXT*74,CMOFIL*6,FMT*6,MXFORM*6
-      DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT),WORK(*)
-      DIMENSION IDIM(3,2)
+      DIMENSION CMO(NCMOTQ*NKRBLK),EIG(NORBT*NKRBLK),IBEIG(NORBT*NKRBLK)
+      DIMENSION WORK(*), IDIM(3,2)
 C
       IF(IOPT.EQ.0) RETURN
       REWIND IUNIT
@@ -595,7 +598,7 @@ C
 #include "dgroup.h"
       LOGICAL TOBE
       CHARACTER TEXT*74
-      DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT)
+      DIMENSION CMO(NCMOTQ*NKRBLK),EIG(NORBT*NKRBLK),IBEIG(NORBT*NKRBLK)
       DIMENSION IDIM(3,2)
 
       integer :: itest, ierr
@@ -616,86 +619,27 @@ C
       OPEN(LUCOEF,FILE='DFPCMO',STATUS='OLD',FORM='FORMATTED',
      +     ACCESS='SEQUENTIAL')
 
-      rewind lucoef
+      REWIND LUCOEF
 
-      ! read title line
-      read(lucoef, *, iostat=ierr) text
-      if (ierr /= 0) then
-         call quit('error reading DFPCMO: title line')
-      end if
+      READ(LUCOEF,'(A74)',iostat=ierr) TEXT
+      IF (IERR /= 0) CALL QUIT('error reading DFPCMO: title line')
 
-      read(lucoef, *, iostat=ierr) itest
-      if (ierr /= 0) then
-         call quit('error reading DFPCMO: symmetry information')
-      end if
-      backspace lucoef
+      READ(LUCOEF,*,iostat=ierr) NFSYM,
+     &                             ((IDIM(I,J),I = 1,3),J=1,NFSYM)
+      IF (IERR /= 0) CALL 
+     & QUIT('error reading DFPCMO: symmetry information')
 
-      read(lucoef, *, iostat=ierr) nsym, ((idim(i,j),i = 1,3),j=1,itest)
-      if (ierr /= 0) then
-         call quit('error reading DFPCMO: symmetry information')
-      end if
+      READ(LUCOEF,'(E24.16)',iostat=ierr) TOTERG
+      IF (IERR /= 0) CALL QUIT('error reading DFPCMO: energy')
 
-      read(lucoef, *, iostat=ierr) toterg
-      if (ierr /= 0) then
-         call quit('error reading DFPCMO: energy')
-      end if
+      READ(LUCOEF,'(6F22.16)',iostat=ierr) CMO
+      IF (IERR /= 0) CALL QUIT('error reading DFPCMO: coefficients')
 
-      n = ncmotq
-      l = 6
-      k = 0 
-      ! read full lines
-      do i = 1, int(n/l)
-         read(lucoef, *, iostat=ierr) cmo(k+1:k+l)
-         if (ierr /= 0) then
-            call quit('error reading DFPCMO: coefficients')
-         end if
-         k = k + l
-      end do
-      if (mod(n, l) > 0) then
-         ! read incomplete line
-         read(lucoef, *, iostat=ierr) cmo(k+1:k+mod(n, l))
-         if (ierr /= 0) then
-            call quit('error reading DFPCMO: coefficients')
-         end if
-      end if
+      READ(LUCOEF,'(6E22.12)',iostat=ierr) EIG
+      IF (IERR /= 0) CALL QUIT('error reading DFPCMO: eigenvalues')
 
-      n = norbt
-      l = 6
-      k = 0 
-      ! read full lines
-      do i = 1, int(n/l)
-         read(lucoef, *, iostat=ierr) eig(k+1:k+l)
-         if (ierr /= 0) then
-            call quit('error reading DFPCMO: eigenvalues')
-         end if
-         k = k + l
-      end do
-      if (mod(n, l) > 0) then
-         ! read incomplete line
-         read(lucoef, *, iostat=ierr) eig(k+1:k+mod(n, l))
-         if (ierr /= 0) then
-            call quit('error reading DFPCMO: eigenvalues')
-         end if
-      end if
-
-      n = norbt
-      l = 66
-      k = 0 
-      ! read full lines
-      do i = 1, int(n/l)
-         read(lucoef, *, iostat=ierr) ibeig(k+1:k+l)
-         if (ierr /= 0) then
-            call quit('error reading DFPCMO: ibeig')
-         end if
-         k = k + l
-      end do
-      if (mod(n, l) > 0) then
-         ! read incomplete line
-         read(lucoef, *, iostat=ierr) ibeig(k+1:k+mod(n, l))
-         if (ierr /= 0) then
-            call quit('error reading DFPCMO: ibeig')
-         end if
-      end if
+      READ(LUCOEF,*,iostat=ierr) IBEIG
+      IF (IERR /= 0) CALL QUIT('error reading DFPCMO: ibeig')
 
       CLOSE(LUCOEF,STATUS='KEEP')
       WRITE(LUPRI,'(A)') 'Done.'
@@ -704,7 +648,7 @@ C     Write coefficients to either KRMCOLD or DFCOEF
 C
       IF(DOKRMC.or.DOKRCI.or.DOKRCC)THEN
         CALL OPNFIL(LUKRMC,'KRMCOLD','UNKNOWN','PCMOIN')
-        CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
+        CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ*NKRBLK)
         CLOSE (LUKRMC,STATUS='KEEP')
         IWRTMO = 1
       ELSE

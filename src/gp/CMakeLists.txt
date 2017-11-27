@@ -50,6 +50,7 @@ set(FREE_GP_FORTRAN_SOURCES
     f77_work_interface.F90
     gp_q_diag.F90
     gpsk.F90
+    heapsort.F90
     include_h_modules.F90
     kinds.F90
     machine_parameters.F90

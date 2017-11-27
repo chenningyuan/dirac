@@ -1353,6 +1353,7 @@ C
 C================================================================
 C       Search for this property operator in existing list
 C================================================================
+CTF   print*,'Number of property operators : ',NPRPS
       DO 200 I = 1,NPRPS
 C        Check operator type
          IF (IPRPTYP(I) .NE. IPTYP) GO TO 200
@@ -1379,7 +1380,9 @@ C========================================================================
 C     This property operator has not been defined previously.
 C     Append the new property operator to /XCBPRP/ list.
 C=========================================================================
+CTF   print*,' Calling routine XPRADD, new operator.'
       CALL XPRADD(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,INDXPR,IPRINT)
+CTF   print*,' INDXPR after XPRADD: ',INDXPR
 C
  1000 CONTINUE
       IF(IPTYP.EQ.0) THEN
@@ -1390,6 +1393,11 @@ C       ... i.e. FOCKMAT
         ISYXPR = IPRPSYM(INDXPR)
         ITRXPR = IPRPTIM(INDXPR)
       ENDIF
+CTF   print*,' INDXPR,ISYXPR,ITRXPR :',INDXPR,ISYXPR,ITRXPR
+CTF   print*,' List IPRPTIM : '
+CTF   do IL = 1,22,1
+CTF     print*,' IPRPTIM(',IL,') = ',IPRPTIM(INDXPR)
+CTF   end do
 !     CALL QEXIT('XPRIND')
       RETURN
       END
@@ -2287,6 +2295,16 @@ C
 C
 C     Investigate property label no. INDXPR
 C
+CCTF
+C      do IL = 1,22,1
+C        print*,'JM4(1,',IL,') = ',JM4(1,IL)
+C      end do
+CCTF
+CCTF
+C      do IL = 0,7,1
+C        print*,'JM4TIM(',IL,') = ',JM4TIM(IL)
+C      end do
+CCTF
       ITYP     = IPRPTYP(INDXPR)
       NLBL     = MCMP(ITYP)
       DIFSYM   = .FALSE.
@@ -2309,6 +2327,14 @@ C     ======================
 C
 C     Matrix operator :
       IATIM = JM4TIM(IAIND)
+CTF
+      IF (ITYP.EQ.21) THEN
+        IATIM=-1 !
+         WRITE(LUPRI,'(2X,A)')
+     &    'i*BETA*GAMMA5 operator, setting IATIM=-1'
+!    &    'FYI: i*BETA*GAMMA5 operator' 
+CTF
+      ENDIF
 C     Scalar operator :
 C     Here we use the following indirect argument:
 C     The operator should be Hermitian, so if the scalar operator is
@@ -2329,6 +2355,7 @@ CMKN/MI Because the operator i*BETA*GAMMA5 is a T-odd by its definion
       IBTIM = IPRLTYP(IBIND)
       IF(IBTIM.EQ.0) IBTIM = ISCALAROP_TSYM(PRPLBL(IBIND))
 C     Total time reversal symmetry of the 4-comp.operator
+CTF   print*,'IATIM,IBTIM = ',IATIM,IBTIM
       ICTIM(1) = IATIM*IBTIM
       IF (IPRINT.GE.4) THEN
         CALL HEADER('Output from PRPSYM',-1)
@@ -2389,6 +2416,7 @@ C
 CMI   ... assign point group symmetry - only one !
       IPRPSYM(INDXPR) = ICREP(1)+1
 CMI   ... assign time rev.symmetry
+CTF   if (INDXPR.eq.7) print*,' ICTIM(1) = ',ICTIM(1)
       IPRPTIM(INDXPR) = ICTIM(1)
 
 CMI ... control printout is always worth 

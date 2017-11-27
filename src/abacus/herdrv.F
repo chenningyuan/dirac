@@ -64,7 +64,10 @@ C
 #include "huckel.h"
 #include "ccom.h"
 #include "hrunit.h"
+
+#ifdef BUILD_GEN1INT
 #include "gen1int.h"
+#endif
 C
       DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',
      &             '*SUPINT', '*XXXXXX'/
@@ -634,7 +637,9 @@ C&&& MAGCOR - print magnetic coordinates
             MGCOOR = .TRUE.
             GO TO 100
  179     CONTINUE
+#ifdef BUILD_GEN1INT
             TEST_GEN1INT = .true.
+#endif
             goto 100
  180     CONTINUE
       ELSE IF (PROMPT .EQ. '*') THEN

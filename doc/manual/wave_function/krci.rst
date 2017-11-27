@@ -327,3 +327,31 @@ operator in z-direction and print the total
 :math:`\hat{j}_z` = :math:`\hat{s}_z` + :math:`\hat{l}_z` 
 expectation value (:math:`\Omega` value) for each electronic state.
 
+keyword(MHYP)
+
+compute magnetic hyperfine interaction constants as expectation values over
+Fermi's four-component operator (Z. Phys. 60 (1930) 332).
+Example for the hydrogen atom (proton nucleus):
+ 
+ ::
+ 
+  .MHYP
+   0.5       nuclear spin quantum number I
+   2.793     nuclear magnetic moment \mu
+   
+In the molecular case add a column with I and :math:`\mu` for every atom in
+the order given by the basis file. Reference: :cite:`Fleig2014`
+
+keyword(EEDM)
+
+compute electron electric dipole moment effective electric field as an
+expectation value over the effective one-electron momentum-form operator
+(J. Phys. B: At. Mol. Opt. Phys. 22 (1989) 559, stratagem II). Reference:
+:cite:`Fleig2013`
+
+keyword(ENSPS)
+
+compute nucleon-electron scalar-pseudoscalar interaction constant as an
+expectation value over the corresponding effective four-fermion operator
+in the limit for an infinitely heavy nucleon (Sov. Phys. JETP 62 (1985) 872).
+Reference: :cite:`Fleig2015`

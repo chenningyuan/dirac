@@ -93,6 +93,9 @@
 !
 !     QDOTS      - use quantum dots harmonic potential instead of the electron-nuclei attraction potential
 !
+!     FAKE2C     - do not compute the 2C 1e-Hamiltonian and take the 2C spinors
+!                  from previous run or import from different QC package
+!
 !     LSCALE_DFT_GAUNT - If true the Gaunt contribution will be scaled together with exchange in DFT
 !                  calculations. If false 100% of the Gaunt contribution (if turned on) will be 
 !                  included in DFT calculations.
@@ -137,7 +140,7 @@
      &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP, CMPEIG,  &
      &        DKH1, DKH2, NOAMFI, QDOTS,LSCALE_DFT_GAUNT,NOSFMU,MOLMF,  &
      &        TRMO4C2C, X2CMMF, X2C, X2C_aba, ecpcalc,MDIRAC, TRS_MIX,  &
-     &        WRITE_Jz_MATRIX, NONREL
+     &        WRITE_Jz_MATRIX, NONREL, FAKE2C
 
       COMMON /DCLHAM/ I1_DCLHAM,                                        &
      &                QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL,      &
@@ -150,7 +153,7 @@
      &                DKH1, DKH2, NOAMFI, QDOTS, LSCALE_DFT_GAUNT,      &
      &                NOSFMU,MOLMF, TRMO4C2C, X2CMMF, X2C, X2C_aba,     &
      &                ecpcalc,MDIRAC,TRS_MIX,WRITE_Jz_MATRIX,NONREL,    &
-     &                I2_DCLHAM
+     &                FAKE2C, I2_DCLHAM
 
 !    Do NOT add any variables after the end tag !!!
 !
