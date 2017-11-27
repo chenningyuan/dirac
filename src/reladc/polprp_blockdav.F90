@@ -208,7 +208,7 @@
       open(unit=iobase,file='ADCDGTMP', access='SEQUENTIAL', &
            form='UNFORMATTED',status='unknown')
       read(iobase) (adiag(i),i=1,ladc)
-      close(iobase,status='DELETE')
+      close(iobase,status='delete')
       write(*,*) 'Diagonal elements read'
 
 !*******************************************************
@@ -247,7 +247,7 @@
 
       call init_krylov_r(io_bold,desrep,nroots,maxdavsp,ladc, &
                          polprp_davreort)
-      krydim = nroots  !has to succeed init_routine if nroots it adjusted.
+      krydim = nroots  !has to succeed init_routine if nroots is adjusted.
       krysav = 0
 
       WRITE(*,*)
@@ -434,7 +434,7 @@
       write(*,*) 'Macroiteration',maciter,' ended with'
       write(*,*) 'Krylov space dimension:',krydim
 
-! clear stack (essential! large memory demands)
+! clear hbo stack line (essential! large memory demands)
 
       i=qstack_drop(qst_hboline)
 
