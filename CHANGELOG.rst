@@ -5,6 +5,7 @@ hjaaj-esr branch:
 
 New features:
 - .MAXMK2 for \*ESR
+- .G10PPM for \*ESR : request g-shifts to 10 ppm accuracy instead of default of 1 ppt accuracy
 
 =======
 17.0 (2017-12-12)

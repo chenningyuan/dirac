@@ -44,17 +44,16 @@ C
 #include "dcborb.h"
 #include "orgcom.h"
 #include "dgroup.h"
-      PARAMETER (NTABLE = 17)
-      LOGICAL SET, NEWDEF, RESET, GORG_BY_USER
+      PARAMETER (NTABLE = 18)
+      LOGICAL SET, NEWDEF, RESET, GORG_BY_USER, g_10ppm
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION WORK(LWORK)
 C
       SAVE SET
-      DATA TABLE /'.GAUGEO','.PRINT ','.OPERAT','.MULTIP',
-     &            '.SPINPO','.SDCI  ','.MAX CI','.CI ROO',
-     &            '.THRCVE','.THRCI ','.SDTCI ','.SDT*CI',
-     &            '.ESR CI','.MY CI ','.THRPCI','.KR-CON',
-     &            '.MAXMK2'/
+      DATA TABLE /'.GAUGEO','.PRINT ','.OPERAT','.MULTIP','.SPINPO',
+     &            '.SDCI  ','.MAX CI','.CI ROO','.THRCVE','.THRCI ',
+     &            '.SDTCI ','.SDT*CI','.ESR CI','.MY CI ','.THRPCI',
+     &            '.KR-CON','.MAXMK2','.G10PPM'/
       DATA SET/.FALSE./
 C
       NEWDEF = (WORD .EQ. '*ESR   ')
@@ -80,9 +79,9 @@ C
       MULTIPESR = 0
       N_CIESR   = -1
       MAX_CIESR_IT = 20
-      THR_CVEC_ESR = 1.0D-4 ! trial vector threshold
-      THRPCI_ESR   = 1.0D-3 ! print of CI vector threshold
-      THR_CIESR    = 1.0D-4 ! based on 0.1 ppt = 10**(-4)
+      THR_CVEC_ESR = 1.0D-4  ! trial vector threshold
+      THRPCI_ESR   = 1.0D-3  ! print of CI vector threshold
+      THR_CIESR    = -1.0D0  ! default depends on g_10ppm true or false
 
 C     variables for spin polarization and correlation in CI
       NGAS_CIESR(1)  = 0  ! RAS1_GAS
@@ -107,6 +106,7 @@ C     Process input
 C     =========================
 C
       NEWDEF = (WORD .EQ. '*ESR   ')
+      g_10ppm = .FALSE. ! 1 ppt accuracy by default
       ICHANG = 0
       INPERR = 0
       IF (NEWDEF) THEN
@@ -123,7 +123,7 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO ( 1, 2, 3, 4, 5, 6, 7, 8, 9,10,
-     &                      11,12,13,14,15,16,17), I
+     &                      11,12,13,14,15,16,17,18), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -258,6 +258,9 @@ C&&&& use Kramers conjugation on CI vector
 C&&&& limit MK2 value
    17          CONTINUE ! .MAXMK2
                   READ(LUCMD,*) MAXMK2_ESR
+C&&&& calculate g tensor with 10 ppm accuracy
+   18          CONTINUE ! .G10PPM
+                  g_10ppm = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -290,6 +293,21 @@ C
          IF (N_CIESR .lt. MULTIPESR) THEN
             WRITE(LUPRI,*) 'INPUT ERROR: .MULTIP > .CI ROOTS'
             INPERR = INPERR + 1
+         END IF
+         IF (THR_CIESR .LT. 0.0D0) THEN
+            IF (g_10ppm) THEN
+               THR_CIESR = 1.D-6
+               WRITE(LUPRI,'(A)')
+     & '* g-tensor is solved for 10 ppm accuracy.'
+            ELSE
+               THR_CIESR = 1.D-4
+               WRITE(LUPRI,'(A)')
+     & '* g-tensor is solved for 1 ppt accuracy (default).'
+            END IF
+         ELSE IF (g_10ppm) THEN
+            WRITE(LUPRI,'(A)')
+     & '* INFO: both .THRCI and .G10PPM specified, smallest value used.'
+            THR_CIESR = MIN(1.D-6, THR_CIESR)
          END IF
          IF (MAX_CIESR_IT .gt. 0) THEN
             WRITE(LUPRI,'(A,I8/A,1P,D8.1)')
@@ -395,7 +413,7 @@ C     for PRQMAT print of complex matrices:
       DATA IQINDX /1,2/
 C
       DIMENSION ESRVAL(MULTIPESR,MULTIPESR,NZCMPLX,*),WORK(*)
-      CHARACTER WF*4
+      CHARACTER WF*4, PPM_OR_PPT*3
       LOGICAL   FILEX
       DIMENSION GTENSOR(3,3),GCORR(3,3),GMATRIX(3,3),GEIG(3),GSHIFT(3),
      &          GEVEC(3,3), GCOR(3),JMS(-5:5)
@@ -724,6 +742,22 @@ C
 C
       CALL HEADER(' ESR g shifts : ',1)
 C
+C     Tests indicated that convergence noise in g-tensors is approximately +/-10*THR_CIESR
+C
+      IF (THR_CIESR .LT. 1.D-5) THEN
+         PPM_OR_PPT = 'ppm'
+         FAC_GSHIFT = 1.D6
+         WRITE(LUPRI,'(/A,F5.1,A)')
+     &   '* g-shifts converged to approximately +/-',
+     &   (THR_CIESR/1.D-7),' ppm' ! 
+      ELSE
+         PPM_OR_PPT = 'ppt'
+         FAC_GSHIFT = 1.D3
+         WRITE(LUPRI,'(/A,F5.1,A)')
+     &   '* g-shifts converged to approximately +/-',
+     &   (THR_CIESR/1.D-4),' ppt' ! 
+      END IF
+C
       WRITE (LUPRI,'(/A/,3(/5X,3F18.8))')
      &   '* The g-tensor for H(Zeeman) = 1/2c B g Seff :',
      &   ((GTENSOR(I,K),K=1,3),I=1,3)
@@ -746,15 +780,16 @@ C
 
       DO I = 1,3
         GEIG(I) = SQRT(GEIG(I))
-        GSHIFT(I) = (GEIG(I) - 2.0D0)*1.D6
+        GSHIFT(I) = (GEIG(I) - 2.0D0)*FAC_GSHIFT
       ENDDO
       GISO = (GEIG(1) + GEIG(2) + GEIG(3)) / D3
       GSHFTISO = (GSHIFT(1) + GSHIFT(2) + GSHIFT(3)) / D3
-      WRITE (LUPRI,'(/A//A//5X,4F18.8//A//5X,4F18.1//A/,3(/5X,3F18.8))')
+      WRITE (LUPRI,
+     &   '(/A//A//5X,4F18.8//3A//5X,4F18.1//A/,3(/5X,3F18.8))')
      &   '* The Dirac equation g values corresponding to g_e = 2',
      &   '  The g values (x, y, z, iso):',
      &   (GEIG(I),I =1,3), GISO,
-     &   '  The g shifts in ppm (x, y, z, iso):',
+     &   '  The g shifts in ',PPM_OR_PPT,' (x, y, z, iso):',
      &   (GSHIFT(I),I =1,3), GSHFTISO,
      &   ' The corresponding eigenvectors:',
      &   ((GEVEC(I,K),K=1,3),I=1,3)
@@ -763,15 +798,15 @@ C     (2) Get the corrected g values by scaling
 C
       DO I = 1,3
         GCOR(I) = (GEIG(I)/2)*GFAC
-        GSHIFT(I) = (GCOR(I) - GFAC)*1.D6
+        GSHIFT(I) = (GCOR(I) - GFAC)*FAC_GSHIFT
       ENDDO
       GISO = (GCOR(1) + GCOR(2) + GCOR(3)) / D3
       GSHFTISO = (GSHIFT(1) + GSHIFT(2) + GSHIFT(3)) / D3
-      WRITE (LUPRI,'(/A,F13.10,A//A//5X,4F18.8//A//5X,4F18.1))')
+      WRITE (LUPRI,'(/A,F13.10,A//A//5X,4F18.8//3A//5X,4F18.1))')
      &   '* The corrected g values scaled with',GFAC,' / 2',
      &   '  The corrected g values (x, y, z, iso):',
      &   (GCOR(I),I =1,3), GISO,
-     &   '  The corrected g shifts in ppm (x, y, z, iso):',
+     &   '  The corrected g shifts in ',PPM_OR_PPT,' (x, y, z, iso):',
      &   (GSHIFT(I),I =1,3), GSHFTISO
 C
 C     (3) Get the corrected g values by adding correction term
@@ -805,17 +840,17 @@ C
 
       DO I = 1,3
         GEIG(I) = SQRT(GEIG(I))
-        GSHIFT(I) = (GEIG(I) - GFAC)*1.D6
+        GSHIFT(I) = (GEIG(I) - GFAC)*FAC_GSHIFT
       ENDDO
       GISO = (GEIG(1) + GEIG(2) + GEIG(3)) / D3
       GSHFTISO = (GSHIFT(1) + GSHIFT(2) + GSHIFT(3)) / D3
       WRITE (LUPRI,
-     &   '(/A,F13.10/A//5X,4F18.8//A//5X,4F18.1//A/,3(/5X,3F18.8))')
+     &   '(/A,F13.10/A//5X,4F18.8//3A//5X,4F18.1//A/,3(/5X,3F18.8))')
      &   '* The g_1 corrected Dirac eq. g values corresponding to g_e ='
      &   ,GFAC,
      &   '  The g values (x, y, z, iso):',
      &   (GEIG(I),I =1,3), GISO,
-     &   '  The g shifts in ppm (x, y, z, iso):',
+     &   '  The g shifts in ',PPM_OR_PPT,' (x, y, z, iso):',
      &   (GSHIFT(I),I =1,3), GSHFTISO,
      &   '  The corresponding eigenvectors:',
      &   ((GEVEC(I,K),K=1,3),I=1,3)
@@ -1401,9 +1436,10 @@ C     Allocate memory for property matrix in molfdir format:
 
       IF (INDEX(PRPNAM(INDXPR),'magnetic field') .gt. 0 .or.
      &    INDEX(PRPNAM(INDXPR),'g_1 MAGFLD') .gt. 0 ) THEN
-         ACCURACY = 1.D-6 ! for accuracy of about 10 ppm in g-shifts
+         ACCURACY = THR_CIESR ! does not make sense to request higher accuracy than CI convergence
+         ! NB! this defines g shifts in 10 ppm if THR_CIESR = 1.D-6, ppt if THR_CIESR = 1.D-4 (default)
       ELSE
-         ACCURACY = 1.D-4 ! 3 digits enough for HFI etc. - other errors are bigger
+         ACCURACY = MAX(THR_CIESR,1.D-4) ! 3 digits enough for HFI etc. - other errors are bigger
       END IF
 C
 C     Extract symmetry information
