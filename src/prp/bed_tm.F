@@ -315,7 +315,7 @@ C
      &     (TMOM(2,IPAR,IEXC),IPAR = 1,NPAR+1)
          WRITE(6,'(23X,A,3(3X,'//FMT//'))')
      &     ' imag. part: ',
-     &     (-TMOM(1,IPAR,IEXC),IPAR = 1,NPAR+1)
+     &     (TMOM(1,IPAR,IEXC),IPAR = 1,NPAR+1)
       ENDDO
       WRITE(6,*) '* Oscillator strengths:'
       WRITE(6,'(A4,1X,A18,3(3X,A5,9X))')     
