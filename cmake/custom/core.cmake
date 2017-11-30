@@ -8,11 +8,13 @@ include(autocmake_CMakeDependentOption)
 # FIXME re-introduce
 # set_source_files_properties(${PROJECT_BINARY_DIR}/config_info.F90 PROPERTIES GENERATED 1)
 
+#Miro: remove problematic linking library
 list(REMOVE_ITEM CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES  "pthread")
 
-# Ivan Hrasko's determination of compiler versions 
+# Ivan Hrasko's determination of compiler versions - very good tool !
 include(FindCompilerVersion)
-# Miro Ilias restrored CMake printout, associated with build_info.h generation
+
+# Miro Ilias restored CMake printout, associated with build_info.h generation
 include(build_info)
 
 set(_lisd_of_executables)
@@ -21,13 +23,21 @@ macro(compile_standalone _executable _source _list_of_executables)
         ${_executable}
         ${_source}
     )
+
+    # each executable is of Fortran language ...
     set_property(TARGET ${_executable} PROPERTY LINKER_LANGUAGE Fortran)
+
+    # extend list of executables
     set(_list_of_executables
         ${_list_of_executables}
         ${_executable}
     )
 endmacro()
+
 compile_standalone(dirac.x src/main/main.F90 "${_list_of_executables}")
+
+#synchronize basis set directories of trunk/basis* into the installation directory
+add_custom_command(TARGET dirac.x PRE_LINK COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/basis ${PROJECT_BINARY_DIR} COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/basis_ecp ${PROJECT_BINARY_DIR}  COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/basis_dalton ${PROJECT_BINARY_DIR})
 
 option(ENABLE_UTILITIES "Enable utilities" ON)
 if(ENABLE_UTILITIES)
