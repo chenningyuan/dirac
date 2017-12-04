@@ -345,7 +345,7 @@ C*****************************************************************************
 #include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 32,DRESFAC = 1.0D2)
+      PARAMETER (NTABLE = 36,DRESFAC = 1.0D2)
 C
 #include "dcbgen.h"
 #include "dcbprp.h"
@@ -373,7 +373,8 @@ C
      &            '.OCCUP ','.VIRTUA','.ACTIVE','.BEDFIX',
      &            '.ITRINT','.CNVINT','.REAXVC','.BEDCHK',
      &            '.RESFAC','.ORBANA','.ROTAV ','.SKIPEE',
-     &            '.MXLOAD','.ONLYSF','.ONLYSG','.BED   '/
+     &            '.MXLOAD','.ONLYSF','.ONLYSG','.BED   ',
+     &            '.BEDDER','.BEDSTP','.XXXXXX','.XXXXXX'/
 C
 #include "ibtfun.h"
 C
@@ -425,6 +426,8 @@ C
       ORBXPP     = .FALSE.
       DOBED      = .FALSE.
       DOBEDFIX   = .FALSE.
+      DOBEDDER   = .FALSE.
+      BEDSTP     = 0.001D0
       BEDCHK     = .FALSE.
 C     hj: initialize some parts of dcbxlr; (nov. 2000)
 Chj: dcbxlr includes some general information
@@ -473,7 +476,8 @@ C
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
      &                     11,12,13,14,15,16,17,18,19,20,
-     &                     21,22,23,24,25,26,27,28,29,30,31,32), I
+     &                     21,22,23,24,25,26,27,28,29,30,
+     &                     31,32,33,34,35,36), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -686,6 +690,18 @@ C&&&& ONLYSG: Only generate G matrix (Fock-matrix of modified density)
  32            CONTINUE
 C&&&& BED: Full light-matter interaction
                   DOBED = .TRUE.
+               GO TO 100
+ 33            CONTINUE
+C&&&& BEDDER: Calculate derivatives of oscillator strengths
+                  DOBEDDER = .TRUE.
+               GO TO 100
+ 34            CONTINUE
+C&&&& BEDSTP: Step length for numerical BED derivatives
+                  READ(LUCMD,*) BEDSTP
+               GO TO 100
+ 35            CONTINUE
+               GO TO 100
+ 36            CONTINUE
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300

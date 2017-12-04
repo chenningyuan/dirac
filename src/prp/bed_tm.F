@@ -19,7 +19,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 C
-      PARAMETER(D0=0.0D0,D2=2.0D0,DP5=0.5D0)
+      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0)
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "pgroup.h"
@@ -46,6 +46,10 @@ C#include "cbiher.h"
       integer             :: IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*)
       real(8), allocatable              :: GPOE(:,:),GPOP(:,:)
       real(8), allocatable              :: XPOE(:,:),XPOP(:,:)
+      real(8), allocatable              :: TMOM_P(:,:)
+      real(8), allocatable              :: TMOM_DE(:,:),TMOM_DOM(:,:)
+      real(8), allocatable              :: OSC_P(:)
+      real(8), allocatable              :: OSC_DE(:),OSC_DOM(:)
       logical, allocatable              :: first(:)
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
 C
@@ -182,6 +186,18 @@ C
       allocate(OSC(NPAR+1,NEXCNV))
       IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,NOP))
       IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,NOP))      
+      IF(DOBEDDER) THEN
+         IH = 4
+         H  = BEDSTP
+         allocate(TMOM_P(NOP,-IH:IH))
+         allocate(TMOM_DOM(NOP,4))
+         allocate(TMOM_DE(NOP,4))                  
+         allocate(OSC_P(-IH:IH))
+         allocate(OSC_DOM(4))
+         allocate(OSC_DE(4))                  
+      ELSE
+         IH = 0
+      ENDIF
       WRITE(6,'(A18,10X,A9,8X,A5)')
      &   'Transition moments','Freq(au)','Value'
       DO 10 IEXC = 1,NEXCNV
@@ -217,89 +233,219 @@ C
             ENDIF
           ENDDO
         ENDIF
+        DO K = -IH,IH
 C     
-C       Generate integrals
+C         Generate integrals
 C
-        IF(BEDCHK) THEN
-          CALL DCOPY(3,D0,0,WAVEVEC,1)
-        ELSE
-          DO I = 1,3
-             WAVEVEC(I) = FAC*UWAVE(I)
-          ENDDO
-        ENDIF
+          IF(BEDCHK) THEN
+             CALL DCOPY(3,D0,0,WAVEVEC,1)
+          ELSEIF(DOBEDDER) THEN
+            WRITE(6,*) 'DOBEDDER : ',H,H*FAC
+            DO I = 1,3
+              WAVEVEC(I) = K*H*FAC*UWAVE(I)
+            ENDDO
+          ELSE
+            DO I = 1,3
+              WAVEVEC(I) = FAC*UWAVE(I)
+            ENDDO
+          ENDIF
 C       
-        CALL PR1IN2(WORK(KFREE),LFREE,PRPINT,INTTYP,
+          CALL PR1IN2(WORK(KFREE),LFREE,PRPINT,INTTYP,
      &       NPRPINT,INTREP,ANTI,SQUARE,DUMMY,LABINT,TRIANG,
      &       TRASPH,.FALSE.,SOLVNT,0,0,DUMMY,
      &       0,NBAST,NELMNT,IPRINT,DOINT,.FALSE.)
-        IF(IPRXPP.GE.5) THEN
-          DO ICOMP = 1,NPRPINT
-            WRITE(6,*) '* Integrals of ',LABINT(ICOMP),
+          IF(IPRXPP.GE.5) THEN
+            DO ICOMP = 1,NPRPINT
+              WRITE(6,*) '* Integrals of ',LABINT(ICOMP),
      &        '. Symmetry: ',REP(INTREP(ICOMP))
-            CALL OUTPAK(PRPINT(1,ICOMP),NBAST,1,LUPRI)
-          ENDDO
-       ENDIF
+              CALL OUTPAK(PRPINT(1,ICOMP),NBAST,1,LUPRI)
+            ENDDO
+          ENDIF
 C
-       OSC(NPAR+1,IEXC)    = D0
-       TMOM(1,NPAR+1,IEXC) = D0
-       TMOM(2,NPAR+1,IEXC) = D0
-       IPAR = 0
+          OSC(NPAR+1,IEXC)    = D0
+          TMOM(1,NPAR+1,IEXC) = D0
+          TMOM(2,NPAR+1,IEXC) = D0
+          IPAR = 0
 C
-C     Gradient - orbital (e-e) part
-C     ====================================
-       IF(NZXOPE.GT.0) THEN
-          IPAR = IPAR + 1
-          TMP = D0
-          DO IOP = 1,NOP
-            INDXPR = NPRPS+IOP
-            IF(IPRPTYP(INDXPR).NE.-1) THEN
-               CALL GPGET(INDXPR,GPOE(1,IOP),
-     &              get_orbital_rotation_indices_pp(),
-     &              NZXOPE,CMO,IBEIG,JBENDX,.FALSE.,PRPINT,
-     &              WORK,KFREE,LFREE,IPRXPP)
-               TMOM(IOP,IPAR,IEXC)=D2*
-     &              DDOT(NZXOPEQ,GPOE(1,IOP),1,XPOE(1,IEXC),1)
-            ELSE
-               TMOM(IOP,IPAR,IEXC)=D0
-            ENDIF
-            TMOM(IOP,NPAR+1,IEXC)=TMOM(IOP,NPAR+1,IEXC)
-     &                           +TMOM(IOP,IPAR,IEXC)
-            TMP = TMP + TMOM(IOP,IPAR,IEXC)*TMOM(IOP,IPAR,IEXC)
-            WRITE(6,'(A,1X,A16,F18.10,3X,F14.10)')
+C         Gradient - orbital (e-e) part
+C         ====================================
+          IF(NZXOPE.GT.0) THEN
+            IPAR = IPAR + 1
+            TMP = D0
+            DO IOP = 1,NOP
+              INDXPR = NPRPS+IOP
+              IF(IPRPTYP(INDXPR).NE.-1) THEN
+                CALL GPGET(INDXPR,GPOE(1,IOP),
+     &               get_orbital_rotation_indices_pp(),
+     &               NZXOPE,CMO,IBEIG,JBENDX,.FALSE.,PRPINT,
+     &               WORK,KFREE,LFREE,IPRXPP)
+                TMOM(IOP,IPAR,IEXC)=D2*
+     &               DDOT(NZXOPEQ,GPOE(1,IOP),1,XPOE(1,IEXC),1)
+              ELSE
+                TMOM(IOP,IPAR,IEXC)=D0
+              ENDIF
+              TMOM(IOP,NPAR+1,IEXC)=TMOM(IOP,NPAR+1,IEXC)
+     &                             +TMOM(IOP,IPAR,IEXC)
+              TMP = TMP + TMOM(IOP,IPAR,IEXC)*TMOM(IOP,IPAR,IEXC)
+              WRITE(6,'(A,1X,A16,F18.10,3X,F14.10)')
      &             'e-e :',PRPNAM(NPRPS+IOP),OMEGA(IEXC),
      &              TMOM(IOP,IPAR,IEXC)
-          ENDDO
-          OSC(IPAR,IEXC) = D2*OMEGA(IEXC)*TMP
-          OSC(NPAR+1,IEXC) = OSC(NPAR+1,IEXC) + OSC(IPAR,IEXC)
-       ENDIF
+            ENDDO
+            OSC(IPAR,IEXC) = D2*OMEGA(IEXC)*TMP
+            OSC(NPAR+1,IEXC) = OSC(NPAR+1,IEXC) + OSC(IPAR,IEXC)
+          ENDIF
 C
-C     Gradient - orbital (e-p) part
-C     ====================================
-        IF(NZXOPP.GT.0) THEN       
-          IPAR = IPAR + 1
-          TMP = D0
-          DO IOP = 1,NOP
-            INDXPR = NPRPS+IOP
-            IF(IPRPTYP(INDXPR).NE.-1) THEN
-               CALL GPGET(INDXPR,GPOP(1,IOP),
-     &              get_orbital_rotation_indices_pn(),
-     &              NZXOPP,CMO,IBEIG,JBPNDX,.FALSE.,PRPINT,
-     &              WORK,KFREE,LFREE,IPRXPP)
-               TMOM(IOP,IPAR,IEXC)=D2*
-     &              DDOT(NZXOPPQ,GPOP(1,IOP),1,XPOP(1,IEXC),1)
-            ELSE
-               TMOM(IOP,IPAR,IEXC)=D0
-            ENDIF
-            TMOM(IOP,NPAR+1,IEXC)=TMOM(IOP,NPAR+1,IEXC)
-     &                           +TMOM(IOP,IPAR,IEXC)
-            TMP = TMP + TMOM(IOP,IPAR,IEXC)*TMOM(IOP,IPAR,IEXC)
-            WRITE(6,'(A,1X,A16,F18.10,3X,F14.10)')
+C         Gradient - orbital (e-p) part
+C         ====================================
+          IF(NZXOPP.GT.0) THEN       
+            IPAR = IPAR + 1
+            TMP = D0
+            DO IOP = 1,NOP
+              INDXPR = NPRPS+IOP
+              IF(IPRPTYP(INDXPR).NE.-1) THEN
+                CALL GPGET(INDXPR,GPOP(1,IOP),
+     &               get_orbital_rotation_indices_pn(),
+     &               NZXOPP,CMO,IBEIG,JBPNDX,.FALSE.,PRPINT,
+     &               WORK,KFREE,LFREE,IPRXPP)
+                TMOM(IOP,IPAR,IEXC)=D2*
+     &               DDOT(NZXOPPQ,GPOP(1,IOP),1,XPOP(1,IEXC),1)
+              ELSE
+                TMOM(IOP,IPAR,IEXC)=D0
+              ENDIF
+              TMOM(IOP,NPAR+1,IEXC)=TMOM(IOP,NPAR+1,IEXC)
+     &                             +TMOM(IOP,IPAR,IEXC)
+              TMP = TMP + TMOM(IOP,IPAR,IEXC)*TMOM(IOP,IPAR,IEXC)
+              WRITE(6,'(A,1X,A16,F18.10,3X,F14.10)')
      &              'e-p :',PRPNAM(NPRPS+IOP),OMEGA(IEXC),
      &              TMOM(IOP,IPAR,IEXC)
+            ENDDO
+            OSC(IPAR,IEXC)   = D2*OMEGA(IEXC)*TMP
+            OSC(NPAR+1,IEXC) = OSC(NPAR+1,IEXC) + OSC(IPAR,IEXC)
+          ENDIF
+          IF(DOBEDDER) THEN
+            DO IOP = 1,NOP
+              TMOM_P(IOP,K) = TMOM(IOP,NPAR+1,IEXC)
+            ENDDO
+            OSC_P(K) = OSC(NPAR+1,IEXC)
+          ENDIF
+        ENDDO
+        IF(DOBEDDER) THEN
+C.........Prepare derivatives of transition moments
+          DO IOP = 1,NOP
+            TMOM_DOM(IOP,1)=(TMOM_P(IOP,+1)-TMOM_P(IOP,-1))/D2
+            TMOM_DOM(IOP,2)=((TMOM_P(IOP,+2)-TMOM_P(IOP,-2))
+     &          -2.0D0*(TMOM_P(IOP,+1)-TMOM_P(IOP,-1)))/D2
+            TMOM_DOM(IOP,3)=((TMOM_P(IOP,+3)-TMOM_P(IOP,-3))
+     &           -4.0D0*(TMOM_P(IOP,+2)-TMOM_P(IOP,-2))
+     &           +5.0D0*(TMOM_P(IOP,+1)-TMOM_P(IOP,-1)))/D2
+            TMOM_DOM(IOP,4)=((TMOM_P(IOP,+4)-TMOM_P(IOP,-4))
+     &           -6.0D0*(TMOM_P(IOP,+3)-TMOM_P(IOP,-3))
+     &           +14.0D0*(TMOM_P(IOP,+2)-TMOM_P(IOP,-2))
+     &           -14.0D0*(TMOM_P(IOP,+1)-TMOM_P(IOP,-1)))/D2
+            TMOM_DE(IOP,1)=(TMOM_P(IOP,+1)+TMOM_P(IOP,-1))
+     &           -2.0D0*TMOM_P(IOP,0)
+            TMOM_DE(IOP,2)=(TMOM_P(IOP,+2)+TMOM_P(IOP,-2))
+     &           -4.0D0*(TMOM_P(IOP,+1)+TMOM_P(IOP,-1))
+     &           +6.0D0*TMOM_P(IOP,0)
+            TMOM_DE(IOP,3)=(TMOM_P(IOP,+3)+TMOM_P(IOP,-3))
+     &           -6.0D0*(TMOM_P(IOP,+2)+TMOM_P(IOP,-2))
+     &           +15.0D0*(TMOM_P(IOP,+1)+TMOM_P(IOP,-1))
+     &           -20.0D0*TMOM_P(IOP,0)
+            TMOM_DE(IOP,4)=(TMOM_P(IOP,+4)+TMOM_P(IOP,-4))
+     &           -8.0D0*(TMOM_P(IOP,+3)+TMOM_P(IOP,-3))
+     &           +28.0D0*(TMOM_P(IOP,+2)+TMOM_P(IOP,-2))
+     &           -56.0D0*(TMOM_P(IOP,+1)+TMOM_P(IOP,-1))
+     &           +70.0*TMOM_P(IOP,0)
+            WRITE(6,*) '* Transition moments - zeroth order:',IOP
+            WRITE(6,*) TMOM_P(IOP,0)
+            WRITE(6,*) '* Transition moments - first derivative:',IOPa
+            TFAC=FAC/H
+            DFAC=TFAC
+            TMP=TMOM_DOM(IOP,1)
+            WRITE(6,*) ' - 3p stencil:',DFAC*TMP
+            TMP=TMP-TMOM_DOM(IOP,2)/6.0D0
+            WRITE(6,*) ' - 5p stencil:',DFAC*TMP
+            TMP=TMP+TMOM_DOM(IOP,3)/30.0D0
+            WRITE(6,*) ' - 7p stencil:',DFAC*TMP
+            WRITE(6,*) '* Transition moments - second derivative:',IOP
+            DFAC=DFAC*TFAC/2.0D0
+            TMP=TMOM_DE(IOP,1)
+            WRITE(6,*) ' - 3p stencil:',DFAC*TMP
+            TMP=TMP-TMOM_DE(IOP,2)/12.0D0
+            WRITE(6,*) ' - 5p stencil:',DFAC*TMP
+            TMP=TMP+TMOM_DE(IOP,3)/90.0D0
+            WRITE(6,*) ' - 7p stencil:',DFAC*TMP
+            WRITE(6,*) '* Transition moments - third derivative:',IOP
+            DFAC=DFAC*TFAC/3.0D0
+            TMP=TMOM_DOM(IOP,2)
+            WRITE(6,*) ' - 3p stencil:',DFAC*TMP
+            TMP=TMP-TMOM_DOM(IOP,3)/4.0D0
+            WRITE(6,*) ' - 5p stencil:',DFAC*TMP
+            TMP=TMP+TMOM_DOM(IOP,4)*7.0D0/120.0D0
+            WRITE(6,*) ' - 7p stencil:',DFAC*TMP
+            WRITE(6,*) '* Transition moments - fourth derivative:',IOP
+            DFAC=DFAC*TFAC/4.0D0
+            TMP=TMOM_DE(IOP,2)
+            WRITE(6,*) ' - 3p stencil:',DFAC*TMP
+            TMP=TMP-TMOM_DE(IOP,3)/6.0D0
+            WRITE(6,*) ' - 5p stencil:',DFAC*TMP
+            TMP=TMP+TMOM_DE(IOP,4)*7.0D0/240.0D0
+            WRITE(6,*) ' - 7p stencil:',DFAC*TMP
           ENDDO
-          OSC(IPAR,IEXC) = D2*OMEGA(IEXC)*TMP
-          OSC(NPAR+1,IEXC) = OSC(NPAR+1,IEXC) + OSC(IPAR,IEXC)
-        ENDIF
+C.........Prepare derivatives of oscillator strenghts         
+          OSC_DOM(1)=(OSC_P(+1)-OSC_P(-1))/D2
+          OSC_DOM(2)=((OSC_P(+2)-OSC_P(-2))
+     &              -2.0D0*(OSC_P(+1)-OSC_P(-1)))/D2
+          OSC_DOM(3)=((OSC_P(+3)-OSC_P(-3))-4.0D0*(OSC_P(+2)-OSC_P(-2))
+     &              +5.0D0*(OSC_P(+1)-OSC_P(-1)))/D2
+          OSC_DOM(4)=((OSC_P(+4)-OSC_P(-4))-6.0D0*(OSC_P(+3)-OSC_P(-3))
+     &              +14.0D0*(OSC_P(+2)-OSC_P(-2))
+     &              -14.0D0*(OSC_P(+1)-OSC_P(-1)))/D2
+          OSC_DE(1)=(OSC_P(+1)+OSC_P(-1))-2.0D0*OSC_P(0)
+          OSC_DE(2)=(OSC_P(+2)+OSC_P(-2))-4.0D0*(OSC_P(+1)+OSC_P(-1))
+     &             +6.0D0*OSC_P(0)
+          OSC_DE(3)=(OSC_P(+3)+OSC_P(-3))-6.0D0*(OSC_P(+2)+OSC_P(-2))
+     &             +15.0D0*(OSC_P(+1)+OSC_P(-1))
+     &             -20.0D0*OSC_P(0)
+          OSC_DE(4)=(OSC_P(+4)+OSC_P(-4))-8.0D0*(OSC_P(+3)+OSC_P(-3))
+     &             +28.0D0*(OSC_P(+2)+OSC_P(-2))
+     &             -56.0D0*(OSC_P(+1)+OSC_P(-1))+70.0*OSC_P(0)
+          WRITE(6,*) '* Oscillator strengths - zeroth order:'
+          WRITE(6,*) OSC_P(0)
+          WRITE(6,*) '* Oscillator strengths - first derivative:'
+          TFAC=FAC/H
+          DFAC=TFAC
+          TMP=OSC_DOM(1)
+          WRITE(6,*) ' - 3p stencil:',DFAC*TMP
+          TMP=TMP-OSC_DOM(2)/6.0D0
+          WRITE(6,*) ' - 5p stencil:',DFAC*TMP
+          TMP=TMP+OSC_DOM(3)/30.0D0
+          WRITE(6,*) ' - 7p stencil:',DFAC*TMP
+          WRITE(6,*) '* Oscillator strengths - second derivative:'
+          DFAC=DFAC*TFAC/2.0D0
+          TMP=OSC_DE(1)
+          WRITE(6,*) ' - 3p stencil:',DFAC*TMP
+          TMP=TMP-OSC_DE(2)/12.0D0
+          WRITE(6,*) ' - 5p stencil:',DFAC*TMP
+          TMP=TMP+OSC_DE(3)/90.0D0
+          WRITE(6,*) ' - 7p stencil:',DFAC*TMP
+          WRITE(6,*) '* Oscillator strengths - third derivative:'
+          DFAC=DFAC*TFAC/3.0D0
+          TMP=OSC_DOM(2)
+          WRITE(6,*) ' - 3p stencil:',DFAC*TMP
+          TMP=TMP-OSC_DOM(3)/4.0D0
+          WRITE(6,*) ' - 5p stencil:',DFAC*TMP
+          TMP=TMP+OSC_DOM(4)*7.0D0/120.0D0
+          WRITE(6,*) ' - 7p stencil:',DFAC*TMP
+          WRITE(6,*) '* Oscillator strengths - fourth derivative:'
+          DFAC=DFAC*TFAC/4.0D0
+          TMP=OSC_DE(2)
+          WRITE(6,*) ' - 3p stencil:',DFAC*TMP
+          TMP=TMP-OSC_DE(3)/6.0D0
+          WRITE(6,*) ' - 5p stencil:',DFAC*TMP
+          TMP=TMP+OSC_DE(4)*7.0D0/240.0D0
+          WRITE(6,*) ' - 7p stencil:',DFAC*TMP
+       ENDIF
  10   CONTINUE
 C
 C     Print section
@@ -311,11 +457,11 @@ C
          TMP=MAX(ABS(TMOM(1,NPAR+1,IEXC)),ABS(TMOM(2,NPAR+1,IEXC)))
          FMT=MXFORM(TMP,14)
          WRITE(6,'(I4,1X,F18.10,A,3(3X,'//FMT//'))')
-     &     IEXC,OMEGA(IEXC),' real part : ',
+     &     IEXC,OMEGA(IEXC),' real part (sin [kr]): ',
      &     (TMOM(2,IPAR,IEXC),IPAR = 1,NPAR+1)
          WRITE(6,'(23X,A,3(3X,'//FMT//'))')
-     &     ' imag. part: ',
-     &     (TMOM(1,IPAR,IEXC),IPAR = 1,NPAR+1)
+     &     ' imag. part (cos[kr]) : ',
+     &     (-TMOM(1,IPAR,IEXC),IPAR = 1,NPAR+1)
       ENDDO
       WRITE(6,*) '* Oscillator strengths:'
       WRITE(6,'(A4,1X,A18,3(3X,A5,9X))')     
@@ -337,6 +483,14 @@ C     Memory deallocation
       ENDIF
       deallocate(TMOM)
       deallocate(OSC)
+      IF(DOBEDDER) THEN
+         deallocate(TMOM_P)
+         deallocate(TMOM_DOM)
+         deallocate(TMOM_DE)                  
+         deallocate(OSC_P)
+         deallocate(OSC_DOM)
+         deallocate(OSC_DE)                  
+      ENDIF
       deallocate(PRPINT)
       deallocate(LABINT)
       deallocate(INTREP)
