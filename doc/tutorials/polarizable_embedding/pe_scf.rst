@@ -7,11 +7,11 @@ A Hartree-Fock calculation with the polarizable embedding model
 ===============================================================
 
 In this tutorial we will cover the set up of an Hartree-Fock calculation using the
-polarizable embedding model (PE) to include effects from a surrounding environment. 
-Our example concerns a solvent effect, but the PE model is general and can also handle 
-other environments (e.g. proteins or mixed solvents). The implementation of the 
-algorithm in DIRAC is documented in the paper :cite:`Hedegaard2017`,and we reffer to 
-this paper for further technical details.
+polarizable embedding (PE) model (:cite:`Olsen2010`, :cite:`Olsen2011`) to include
+effects from a surrounding environment. Our example concerns a solvent effect, but the
+PE model is general and can also handle other environments (e.g. proteins or mixed
+solvents). The implementation of the algorithm in DIRAC is documented in the paper
+:cite:`Hedegaard2017`, and we refer to this paper for further technical details.
 Our target system for this tutorial is a water molecule surrounded (or "microsolvated") 
 by three other water molecules. The system is shown in the figure below. The molecule in 
 ball-and-stick representation is the one that is described with Hartree-Fock, and the 
@@ -24,12 +24,13 @@ system is sufficient to show how the setup works.
 .. image:: trimer.png
     :width: 300px
 
-The current implementation employs the external module "PElib" for the PE-related
-tasks. The module is activated through the key-word `.PEQM` under `**HAMILTONIAN` 
+The current implementation employs the external library
+`PElib <https://gitlab.com/pe-software/pelib-public>`_ for the PE-related tasks.
+The module is activated through the key-word `.PEQM` under `**HAMILTONIAN` 
 flag. A few additional (but also very simple) examples can be found in the test 
 directories.
 
-The .mol file (h2o.mol) for the central water molecule is shown belew. The more 
+The .mol file (h2o.mol) for the central water molecule is shown below. The more 
 experienced user will notice that the format is exactly the same as for a 
 vacuum calculation.::
 
@@ -74,11 +75,11 @@ key-word `.PEQM` under `**HAMILTONIAN` .::
 Specification of `.PEQM` will thus make the program calculate the PE-specific term of 
 the Fock (or Kohn-Sham) matrix and add them to the vacuum part (see Eqs. (19)-(22) 
 in :cite:`Hedegaard2017`). PE-related keywords are given under `*PEQM`. It is also 
-under this flag we specify the file containing the PE-potential (3_h2o.pot). 
+under this flag we specify the file containing the PE potential (3_h2o.pot). 
 This potential has to be generated but for now, we can use a pre-generated potential 
 given below. The potential contains coordinates for three water molecules surrounding 
 the central water. The three water molecules are represented by multipoles up to 2. 
-order and anisotropic polarizabilities::
+order and anisotropic dipole-dipole polarizabilities::
  
    ! potential: 3_h2o.pot
    ! ------------------
@@ -173,7 +174,7 @@ Now we have all ingredients for starting the calculation::
    pam --inp=pe-hf.inp --mol=h2o.mol --put="3_h2o.pot" 
 
 The output file will be named pe-hf_h2o.out. When the calculation is converged, the final 
-energy report contains and additional entry; the "Embedding energy". The total energy 
+energy report contains an additional entry; the "Embedding energy". The total energy 
 already includes this contribution::
 
                                    TOTAL ENERGY
