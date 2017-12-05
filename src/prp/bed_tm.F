@@ -46,9 +46,9 @@ C#include "cbiher.h"
       integer             :: IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*)
       real(8), allocatable              :: GPOE(:,:),GPOP(:,:)
       real(8), allocatable              :: XPOE(:,:),XPOP(:,:)
-      real(8), allocatable              :: TMOM_P(:,:)
+      real(8), allocatable              :: TMOM_P(:,:),TMOM_DER(:,:,:,:)
       real(8), allocatable              :: TMOM_DE(:,:),TMOM_DOM(:,:)
-      real(8), allocatable              :: OSC_P(:)
+      real(8), allocatable              :: OSC_P(:),OSC_DER(:,:,:)
       real(8), allocatable              :: OSC_DE(:),OSC_DOM(:)
       logical, allocatable              :: first(:)
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
@@ -190,11 +190,13 @@ C
          IH = 4
          H  = BEDSTP
          allocate(TMOM_P(NOP,-IH:IH))
+         allocate(TMOM_DER(NOP,4,3,NEXCNV))
          allocate(TMOM_DOM(NOP,4))
          allocate(TMOM_DE(NOP,4))                  
          allocate(OSC_P(-IH:IH))
          allocate(OSC_DOM(4))
-         allocate(OSC_DE(4))                  
+         allocate(OSC_DE(4))
+         allocate(OSC_DER(4,3,NEXCNV))
       ELSE
          IH = 0
       ENDIF
@@ -240,7 +242,6 @@ C
           IF(BEDCHK) THEN
              CALL DCOPY(3,D0,0,WAVEVEC,1)
           ELSEIF(DOBEDDER) THEN
-            WRITE(6,*) 'DOBEDDER : ',H,H*FAC
             DO I = 1,3
               WAVEVEC(I) = K*H*FAC*UWAVE(I)
             ENDDO
@@ -287,9 +288,6 @@ C         ====================================
               TMOM(IOP,NPAR+1,IEXC)=TMOM(IOP,NPAR+1,IEXC)
      &                             +TMOM(IOP,IPAR,IEXC)
               TMP = TMP + TMOM(IOP,IPAR,IEXC)*TMOM(IOP,IPAR,IEXC)
-              WRITE(6,'(A,1X,A16,F18.10,3X,F14.10)')
-     &             'e-e :',PRPNAM(NPRPS+IOP),OMEGA(IEXC),
-     &              TMOM(IOP,IPAR,IEXC)
             ENDDO
             OSC(IPAR,IEXC) = D2*OMEGA(IEXC)*TMP
             OSC(NPAR+1,IEXC) = OSC(NPAR+1,IEXC) + OSC(IPAR,IEXC)
@@ -315,9 +313,6 @@ C         ====================================
               TMOM(IOP,NPAR+1,IEXC)=TMOM(IOP,NPAR+1,IEXC)
      &                             +TMOM(IOP,IPAR,IEXC)
               TMP = TMP + TMOM(IOP,IPAR,IEXC)*TMOM(IOP,IPAR,IEXC)
-              WRITE(6,'(A,1X,A16,F18.10,3X,F14.10)')
-     &              'e-p :',PRPNAM(NPRPS+IOP),OMEGA(IEXC),
-     &              TMOM(IOP,IPAR,IEXC)
             ENDDO
             OSC(IPAR,IEXC)   = D2*OMEGA(IEXC)*TMP
             OSC(NPAR+1,IEXC) = OSC(NPAR+1,IEXC) + OSC(IPAR,IEXC)
@@ -325,8 +320,8 @@ C         ====================================
           IF(DOBEDDER) THEN
             DO IOP = 1,NOP
               TMOM_P(IOP,K) = TMOM(IOP,NPAR+1,IEXC)
-            ENDDO
-            OSC_P(K) = OSC(NPAR+1,IEXC)
+           ENDDO
+           OSC_P(K) = OSC(NPAR+1,IEXC)           
           ENDIF
         ENDDO
         IF(DOBEDDER) THEN
@@ -356,41 +351,54 @@ C.........Prepare derivatives of transition moments
      &           +28.0D0*(TMOM_P(IOP,+2)+TMOM_P(IOP,-2))
      &           -56.0D0*(TMOM_P(IOP,+1)+TMOM_P(IOP,-1))
      &           +70.0*TMOM_P(IOP,0)
-            WRITE(6,*) '* Transition moments - zeroth order:',IOP
-            WRITE(6,*) TMOM_P(IOP,0)
-            WRITE(6,*) '* Transition moments - first derivative:',IOPa
-            TFAC=FAC/H
+            WRITE(6,*) '* Transition moments --- tabulated points:',
+     &        IEXC,OMEGA(IEXC),IOP
+            DO K = -IH,IH
+               WRITE(6,*) K*H*FAC,TMOM_P(IOP,K)
+            ENDDO
+C...........Zeroth order            
+            TMOM(IOP,NPAR+1,IEXC)=TMOM_P(IOP,0)
+C...........First derivative
+            TFAC=D1/H
             DFAC=TFAC
-            TMP=TMOM_DOM(IOP,1)
-            WRITE(6,*) ' - 3p stencil:',DFAC*TMP
-            TMP=TMP-TMOM_DOM(IOP,2)/6.0D0
-            WRITE(6,*) ' - 5p stencil:',DFAC*TMP
-            TMP=TMP+TMOM_DOM(IOP,3)/30.0D0
-            WRITE(6,*) ' - 7p stencil:',DFAC*TMP
-            WRITE(6,*) '* Transition moments - second derivative:',IOP
+            TMOM_DER(IOP,1,1,IEXC)=TMOM_DOM(IOP,1)
+            TMOM_DER(IOP,1,2,IEXC)=TMOM_DER(IOP,1,1,IEXC)
+     &                            -TMOM_DOM(IOP,2)/6.0D0
+            TMOM_DER(IOP,1,3,IEXC)=TMOM_DER(IOP,1,2,IEXC)
+     &           +TMOM_DOM(IOP,3)/30.0D0
+            DO I = 1,3
+              TMOM_DER(IOP,1,I,IEXC)=DFAC*TMOM_DER(IOP,1,I,IEXC)
+            ENDDO
+C...........Second derivative
             DFAC=DFAC*TFAC/2.0D0
-            TMP=TMOM_DE(IOP,1)
-            WRITE(6,*) ' - 3p stencil:',DFAC*TMP
-            TMP=TMP-TMOM_DE(IOP,2)/12.0D0
-            WRITE(6,*) ' - 5p stencil:',DFAC*TMP
-            TMP=TMP+TMOM_DE(IOP,3)/90.0D0
-            WRITE(6,*) ' - 7p stencil:',DFAC*TMP
-            WRITE(6,*) '* Transition moments - third derivative:',IOP
+            TMOM_DER(IOP,2,1,IEXC)=TMOM_DE(IOP,1)
+            TMOM_DER(IOP,2,2,IEXC)=TMOM_DER(IOP,2,1,IEXC)
+     &                            -TMOM_DE(IOP,2)/12.0D0
+            TMOM_DER(IOP,2,3,IEXC)=TMOM_DER(IOP,2,2,IEXC)
+     &                            +TMOM_DE(IOP,3)/90.0D0
+            DO I = 1,3
+              TMOM_DER(IOP,2,I,IEXC)=DFAC*TMOM_DER(IOP,2,I,IEXC)
+            ENDDO
+C...........Third derivative
             DFAC=DFAC*TFAC/3.0D0
-            TMP=TMOM_DOM(IOP,2)
-            WRITE(6,*) ' - 3p stencil:',DFAC*TMP
-            TMP=TMP-TMOM_DOM(IOP,3)/4.0D0
-            WRITE(6,*) ' - 5p stencil:',DFAC*TMP
-            TMP=TMP+TMOM_DOM(IOP,4)*7.0D0/120.0D0
-            WRITE(6,*) ' - 7p stencil:',DFAC*TMP
-            WRITE(6,*) '* Transition moments - fourth derivative:',IOP
+            TMOM_DER(IOP,3,1,IEXC)=TMOM_DOM(IOP,2)
+            TMOM_DER(IOP,3,2,IEXC)=TMOM_DER(IOP,3,1,IEXC)
+     &                            -TMOM_DOM(IOP,3)/4.0D0
+            TMOM_DER(IOP,3,3,IEXC)=TMOM_DER(IOP,3,2,IEXC)
+     &                            +TMOM_DOM(IOP,4)*7.0D0/120.0D0
+            DO I = 1,3
+              TMOM_DER(IOP,3,I,IEXC)=DFAC*TMOM_DER(IOP,3,I,IEXC)
+            ENDDO
+C...........Fourth derivative
             DFAC=DFAC*TFAC/4.0D0
-            TMP=TMOM_DE(IOP,2)
-            WRITE(6,*) ' - 3p stencil:',DFAC*TMP
-            TMP=TMP-TMOM_DE(IOP,3)/6.0D0
-            WRITE(6,*) ' - 5p stencil:',DFAC*TMP
-            TMP=TMP+TMOM_DE(IOP,4)*7.0D0/240.0D0
-            WRITE(6,*) ' - 7p stencil:',DFAC*TMP
+            TMOM_DER(IOP,4,1,IEXC)=TMOM_DE(IOP,2)
+            TMOM_DER(IOP,4,2,IEXC)=TMOM_DER(IOP,4,1,IEXC)
+     &                            -TMOM_DE(IOP,3)/6.0D0
+            TMOM_DER(IOP,4,3,IEXC)=TMOM_DER(IOP,4,2,IEXC)
+     &                            +TMOM_DE(IOP,4)*7.0D0/240.0D0
+            DO I = 1,3
+              TMOM_DER(IOP,4,I,IEXC)=DFAC*TMOM_DER(IOP,4,I,IEXC)
+            ENDDO
           ENDDO
 C.........Prepare derivatives of oscillator strenghts         
           OSC_DOM(1)=(OSC_P(+1)-OSC_P(-1))/D2
@@ -410,68 +418,123 @@ C.........Prepare derivatives of oscillator strenghts
           OSC_DE(4)=(OSC_P(+4)+OSC_P(-4))-8.0D0*(OSC_P(+3)+OSC_P(-3))
      &             +28.0D0*(OSC_P(+2)+OSC_P(-2))
      &             -56.0D0*(OSC_P(+1)+OSC_P(-1))+70.0*OSC_P(0)
-          WRITE(6,*) '* Oscillator strengths - zeroth order:'
-          WRITE(6,*) OSC_P(0)
-          WRITE(6,*) '* Oscillator strengths - first derivative:'
-          TFAC=FAC/H
+            WRITE(6,*) '* Oscillator strengths --- tabulated points:',
+     &        IEXC,OMEGA(IEXC)
+            DO K = -IH,IH
+               WRITE(6,*) K*H*FAC,OSC_P(K)
+            ENDDO
+C.........Zeroth order
+          OSC(NPAR+1,IEXC)= OSC_P(0)
+C.........First derivative
+          TFAC=D1/H
           DFAC=TFAC
-          TMP=OSC_DOM(1)
-          WRITE(6,*) ' - 3p stencil:',DFAC*TMP
-          TMP=TMP-OSC_DOM(2)/6.0D0
-          WRITE(6,*) ' - 5p stencil:',DFAC*TMP
-          TMP=TMP+OSC_DOM(3)/30.0D0
-          WRITE(6,*) ' - 7p stencil:',DFAC*TMP
-          WRITE(6,*) '* Oscillator strengths - second derivative:'
+          OSC_DER(1,1,IEXC)=OSC_DOM(1)
+          OSC_DER(1,2,IEXC)=OSC_DER(1,1,IEXC)-OSC_DOM(2)/6.0D0
+          OSC_DER(1,3,IEXC)=OSC_DER(1,2,IEXC)+OSC_DOM(3)/30.0D0
+          DO I = 1,3
+            OSC_DER(1,I,IEXC)=DFAC*OSC_DER(1,I,IEXC)
+          ENDDO
+C.........Second derivative
           DFAC=DFAC*TFAC/2.0D0
-          TMP=OSC_DE(1)
-          WRITE(6,*) ' - 3p stencil:',DFAC*TMP
-          TMP=TMP-OSC_DE(2)/12.0D0
-          WRITE(6,*) ' - 5p stencil:',DFAC*TMP
-          TMP=TMP+OSC_DE(3)/90.0D0
-          WRITE(6,*) ' - 7p stencil:',DFAC*TMP
-          WRITE(6,*) '* Oscillator strengths - third derivative:'
+          OSC_DER(2,1,IEXC)=OSC_DE(1)
+          OSC_DER(2,2,IEXC)=OSC_DER(2,1,IEXC)-OSC_DE(2)/12.0D0
+          OSC_DER(2,3,IEXC)=OSC_DER(2,2,IEXC)+OSC_DE(3)/90.0D0
+          DO I = 1,3
+            OSC_DER(2,I,IEXC)=DFAC*OSC_DER(2,I,IEXC)
+          ENDDO
+C.........Third derivative
           DFAC=DFAC*TFAC/3.0D0
-          TMP=OSC_DOM(2)
-          WRITE(6,*) ' - 3p stencil:',DFAC*TMP
-          TMP=TMP-OSC_DOM(3)/4.0D0
-          WRITE(6,*) ' - 5p stencil:',DFAC*TMP
-          TMP=TMP+OSC_DOM(4)*7.0D0/120.0D0
-          WRITE(6,*) ' - 7p stencil:',DFAC*TMP
-          WRITE(6,*) '* Oscillator strengths - fourth derivative:'
+          OSC_DER(3,1,IEXC)=OSC_DOM(2)
+          OSC_DER(3,2,IEXC)=OSC_DER(3,1,IEXC)-OSC_DOM(3)/4.0D0
+          OSC_DER(3,3,IEXC)=OSC_DER(3,2,IEXC)+OSC_DOM(4)*7.0D0/120.0D0
+          DO I = 1,3
+            OSC_DER(3,I,IEXC)=DFAC*OSC_DER(3,I,IEXC)
+          ENDDO
+C.........Fourth derivative
           DFAC=DFAC*TFAC/4.0D0
-          TMP=OSC_DE(2)
-          WRITE(6,*) ' - 3p stencil:',DFAC*TMP
-          TMP=TMP-OSC_DE(3)/6.0D0
-          WRITE(6,*) ' - 5p stencil:',DFAC*TMP
-          TMP=TMP+OSC_DE(4)*7.0D0/240.0D0
-          WRITE(6,*) ' - 7p stencil:',DFAC*TMP
+          OSC_DER(4,1,IEXC)=OSC_DE(2)
+          OSC_DER(4,2,IEXC)=OSC_DER(4,1,IEXC)-OSC_DE(3)/6.0D0
+          OSC_DER(4,3,IEXC)=OSC_DER(4,2,IEXC)+OSC_DE(4)*7.0D0/240.0D0
+          DO I = 1,3
+            OSC_DER(4,I,IEXC)=DFAC*OSC_DER(4,I,IEXC)
+          ENDDO
        ENDIF
  10   CONTINUE
 C
 C     Print section
 C
-      WRITE(6,*) '* Transition moments:'
-      WRITE(6,'(A4,1X,A18,14X,3(3X,A5,9X))')     
+      IF(DOBEDDER) THEN
+         WRITE(6,*)
+     &   '* Transition moments expansion --- real part (sin [kr]):'
+         DO IP = 1,3
+           WRITE(6,*) '   Stencil: ',IP
+           WRITE(6,'(5X,A,14X,6(A6,9X))') 'Freq.','Tmom0 ','Tmom1 ',
+     &        'Tmom2 ','Tmom3 ','Tmom4 ','Ttotal'
+           DO IEXC = 1,NEXCNV
+             TMP=TMOM(2,NPAR+1,IEXC)
+             DO IDER = 1,4
+               TMP = TMP + TMOM_DER(2,IDER,IP,IEXC)
+             ENDDO
+           WRITE(6,'(I4,1X,F18.10,6(1X,E14.8))')
+     &            IEXC,OMEGA(IEXC),TMOM(2,NPAR+1,IEXC),
+     &           (TMOM_DER(2,IDER,IP,IEXC),IDER=1,4),TMP
+           ENDDO
+         ENDDO
+         WRITE(6,*)
+     &   '* Transition moments expansion --- imag. part (cos[kr]) :'
+         DO IP = 1,3
+           WRITE(6,*) '   Stencil: ',IP
+           WRITE(6,'(5X,A,14X,6(A6,9X))') 'Freq.','Tmom0 ','Tmom1 ',
+     &        'Tmom2 ','Tmom3 ','Tmom4 ','Ttotal'
+           DO IEXC = 1,NEXCNV
+             TMP=TMOM(1,NPAR+1,IEXC)
+             DO IDER = 1,4
+               TMP = TMP + TMOM_DER(1,IDER,IP,IEXC)
+             ENDDO
+             WRITE(6,'(I4,1X,F18.10,6(1X,E14.8))')
+     &            IEXC,OMEGA(IEXC),-TMOM(1,NPAR+1,IEXC),
+     &           (-TMOM_DER(1,IDER,IP,IEXC),IDER=1,4),-TMP
+           ENDDO
+         ENDDO
+         WRITE(6,*) '* Oscillator strengths expansion:'
+           DO IP = 1,3
+             WRITE(6,*) '   Stencil: ',IP
+             WRITE(6,'(5X,A,14X,6(A6,9X))') 'Freq.','Osc0  ','Osc1  ',
+     &        'Osc2  ','Osc3  ','Osc4  ','Ototal'
+             DO IEXC = 1,NEXCNV
+               TMP=OSC(NPAR+1,IEXC)
+               DO IDER = 1,4
+                 TMP = TMP + OSC_DER(IDER,IP,IEXC)
+             ENDDO
+             WRITE(6,'(I4,1X,F18.10,6(1X,E14.8))')
+     &            IEXC,OMEGA(IEXC),OSC(NPAR+1,IEXC),
+     &           (OSC_DER(IDER,IP,IEXC),IDER=1,4),TMP
+           ENDDO
+         ENDDO
+       ELSE
+         WRITE(6,*) '* Transition moments:'
+         WRITE(6,'(A4,1X,A18,14X,3(3X,A5,9X))')     
      &  'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
-      DO IEXC = 1,NEXCNV
-         TMP=MAX(ABS(TMOM(1,NPAR+1,IEXC)),ABS(TMOM(2,NPAR+1,IEXC)))
-         FMT=MXFORM(TMP,14)
-         WRITE(6,'(I4,1X,F18.10,A,3(3X,'//FMT//'))')
+         DO IEXC = 1,NEXCNV
+           TMP=MAX(ABS(TMOM(1,NPAR+1,IEXC)),ABS(TMOM(2,NPAR+1,IEXC)))
+           FMT=MXFORM(TMP,14)
+           WRITE(6,'(I4,1X,F18.10,A,3(3X,'//FMT//'))')
      &     IEXC,OMEGA(IEXC),' real part (sin [kr]): ',
      &     (TMOM(2,IPAR,IEXC),IPAR = 1,NPAR+1)
-         WRITE(6,'(23X,A,3(3X,'//FMT//'))')
+           WRITE(6,'(23X,A,3(3X,'//FMT//'))')
      &     ' imag. part (cos[kr]) : ',
      &     (-TMOM(1,IPAR,IEXC),IPAR = 1,NPAR+1)
-      ENDDO
-      WRITE(6,*) '* Oscillator strengths:'
-      WRITE(6,'(A4,1X,A18,3(3X,A5,9X))')     
+        ENDDO
+        WRITE(6,*) '* Oscillator strengths:'
+        WRITE(6,'(A4,1X,A18,3(3X,A5,9X))')     
      &  'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
-      DO IEXC = 1,NEXCNV
-         WRITE(6,'(I4,1X,F18.10,3(3X,'//FMT//'))')
+        DO IEXC = 1,NEXCNV
+          WRITE(6,'(I4,1X,F18.10,3(3X,'//FMT//'))')
      &     IEXC,OMEGA(IEXC),
      &     (OSC(IPAR,IEXC),IPAR = 1,NPAR+1)
-      ENDDO
-C
+        ENDDO
+      ENDIF
+C     
 C     Memory deallocation
       IF(NZXOPE.GT.0) THEN
         deallocate(GPOE)
@@ -485,9 +548,11 @@ C     Memory deallocation
       deallocate(OSC)
       IF(DOBEDDER) THEN
          deallocate(TMOM_P)
+         deallocate(TMOM_DER)                           
          deallocate(TMOM_DOM)
-         deallocate(TMOM_DE)                  
+         deallocate(TMOM_DE)
          deallocate(OSC_P)
+         deallocate(OSC_DER)
          deallocate(OSC_DOM)
          deallocate(OSC_DE)                  
       ENDIF
