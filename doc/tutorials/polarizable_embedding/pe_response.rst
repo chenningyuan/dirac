@@ -3,67 +3,68 @@
 
 .. _pe_response:
 
-Properties in solution: TDDFT calculations of excitation energies and solvent shifts
-====================================================================================
+Properties in solution: PE-TDDFT calculations of excitation energies and solvent shifts
+=======================================================================================
 
 In this tutorial we investigate property calculations in solution through the
 polarizable embedding (PE) model (:cite:`Olsen2010`, :cite:`Olsen2011`).
-The tutorial builds on the implementation reported 
-in :cite:`Hedegaard2017`. This implementation allows calculation of electric properties 
-up to linear response, including an explicit environment (this corresponds to electric 
-properties up to second order). Examples include electric dipole moments and 
-polarizabilities. In addition, the linear response module allows calculation of 
-excitation energies and transition momements, including the effect of a surrounding 
-environment. Here we focus on TD-DFT including a solvent. A few comments regarding 
-calculation the solvent effect on dipole moments and polarizabilities are given in 
-the end of this tutorial. 
+The tutorial builds on the implementation reported
+in :cite:`Hedegaard2017`. This implementation allows calculation of electric properties
+up to linear response, including an explicit environment (this corresponds to electric
+properties up to second order). Examples include electric dipole moments and
+polarizabilities. In addition, the linear response module allows calculation of
+excitation energies and transition momements, including the effect of a surrounding
+environment. Here we focus on TDDFT including a solvent. A few comments regarding
+calculation the solvent effect on dipole moments and polarizabilities are given in
+the end of this tutorial.
 
 
 TDDFT including an explicit environment through the PE model
 ------------------------------------------------------------
 
-The generalized eigenvalue problems that is solved when solving the response equations 
+The generalized eigenvalue problems that is solved when solving the response equations
 
 .. math::
 
    \left(E^{[2]} -\hbar\lambda S^{[2]}\right)X_m=0
 
-which is completely equivalent to what is done in a vacuum calculation. The main difference 
-is in the electronic Hessian, :math:`E^{[2]}`, which is modified by the pressence of an 
+which is completely equivalent to what is done in a vacuum calculation. The main difference
+is in the electronic Hessian, :math:`E^{[2]}`, which is modified by the presence of an
 environment (cf. Eqs. 36-38) in :cite:`Hedegaard2017`. The Hessian has the structure
 
 .. math::
 
  E^{[2]} =  \left(\begin{array}{cc}
                                  \mathbf{A} & \mathbf{B} \\
-                                 \mathbf{B}^* & \mathbf{A}^{*} 
-                                 \end{array} \right) , 
-                              
-with matrix elements 
+                                 \mathbf{B}^* & \mathbf{A}^{*}
+                                 \end{array} \right) ,
+
+with matrix elements
 
 .. math::
 
- A_{ai;bj} = \langle 0 \vert [\hat{q}^{\dagger}_{ai},[\hat{q}_{bj},\hat{f}_0 + \hat{v}^{\mathrm{PE}}]] \vert 0 \rangle + 
+ A_{ai;bj} = \langle 0 \vert [\hat{q}^{\dagger}_{ai},[\hat{q}_{bj},\hat{f}_0 + \hat{v}^{\mathrm{PE}}]] \vert 0 \rangle +
    \langle 0 \vert [\hat{q}^{\dagger}_{ai},\hat{v}^{\mathrm{ind}}]] \vert 0 \rangle \label{Hessian_2a} \\
- B_{ai;bj} = \langle 0 \vert [\hat{q}_{ai},[\hat{q}_{bj},\hat{f}_0 + \hat{v}^{\mathrm{PE}}]] \vert 0 \rangle + 
-   \langle 0 \vert [\hat{q}_{ai},\hat{v}^{\mathrm{ind}}] \vert 0 \rangle . 
+ B_{ai;bj} = \langle 0 \vert [\hat{q}_{ai},[\hat{q}_{bj},\hat{f}_0 + \hat{v}^{\mathrm{PE}}]] \vert 0 \rangle +
+   \langle 0 \vert [\hat{q}_{ai},\hat{v}^{\mathrm{ind}}] \vert 0 \rangle .
 
-The modification is manifested in the additional terms :math:`\hat{v}^{\mathrm{PE}}` and 
+The modification is manifested in the additional terms :math:`\hat{v}^{\mathrm{PE}}` and
 :math:`\hat{v}^{\mathrm{ind}}`, while :math:`\hat{f}_0` is the usual Fock (or Kohn-Sham)
 operator. A brief, physical explaination of the the two additional terms is given below
 
-* :math:`\hat{v}^{\mathrm{PE}}` accounts for interactions between multipoles and ground-state 
-  density as well as mutual polarization between the ground-state density and the environment. 
-* :math:`\hat{v}^{\mathrm{ind}}` accounts for the differential interaction between the ground- 
-  and excited states with a polarizable environment. 
-  
-A derivation and more thorough explanation of the :math:`E^{[2]}` term can be 
-found in :cite:`Hedegaard2017` (cf. Eqs. 36-38). 
+* :math:`\hat{v}^{\mathrm{PE}}=\hat{v}^{\mathrm{es}}+\hat{v}^{\mathrm{ind}}` accounts for
+  interactions between multipoles and ground-state density :math:`\hat{v}^{\mathrm{es}}`
+  as well as mutual polarization between the ground-state density and the environment :math:`\hat{v}^{\mathrm{ind}}`.
+* :math:`\hat{v}^{\mathrm{ind}}` accounts for the differential interaction between the ground-
+  and excited states with a polarizable environment.
 
-To demonstrate how to calculate the effect of the environment with PE, we use the same 
-system as in the :ref:`pe_scf` tutorial. The employed h2o.mol file and potential 
-3_h2o.pot can be found in this tutorial. The input pe_response.inp is similar to a 
-regular TD-DFT calculation but with `.PEQM` under the `**HAMILTONIAN` flag, just as for 
+A derivation and more thorough explanation of the :math:`E^{[2]}` term can be
+found in :cite:`Hedegaard2017` (cf. Eqs. 36-38).
+
+To demonstrate how to calculate the effect of the environment with PE, we use the same
+system as in the :ref:`pe_scf` tutorial. The employed h2o.mol file and potential
+3_h2o.pot can be found in this tutorial. The input pe_response.inp is similar to a
+regular TDDFT calculation but with `.PEQM` under the `**HAMILTONIAN` flag, just as for
 :ref:`pe_scf` ::
 
    **DIRAC
@@ -74,10 +75,10 @@ regular TD-DFT calculation but with `.PEQM` under the `**HAMILTONIAN` flag, just
    **HAMILTONIAN
    .DFT
    B3LYP
-   .PEQM     ! enable PElib 
-   *PEQM     ! PE-related keywords 
-   .POTENT   ! Specify what PE potential to use 
-   3_h2o.pot ! name of the used PE potential 
+   .PEQM     ! enable PElib
+   *PEQM     ! PE-related keywords
+   .POTENT   ! Specify what PE potential to use
+   3_h2o.pot ! name of the used PE potential
    **INTEGRALS
    *TWOINT
    .SCREEN
@@ -97,42 +98,42 @@ regular TD-DFT calculation but with `.PEQM` under the `**HAMILTONIAN` flag, just
    0
    **END OF
 
-As for the case of PE-HF, specification of `.PEQM` will thus make the program calculate the 
-PE-specific terms; in case of linear response that is the additional 
-:math:`\hat{v}^{\mathrm{PE}}` and :math:`\hat{v}^{\mathrm{ind}}` terms. Note that use of the 
-`.GSPOL` keyword under the `*PEQM` flag will result in a calculation where only the term 
+As for the case of PE-HF, specification of `.PEQM` will thus make the program calculate the
+PE-specific terms; in case of linear response that is the additional
+:math:`\hat{v}^{\mathrm{PE}}` and :math:`\hat{v}^{\mathrm{ind}}` terms. Note that use of the
+`.GSPOL` keyword under the `*PEQM` flag will result in a calculation where only the term
 involving :math:`\hat{v}^{\text{PE}}` is included (physically, this corresponds to a frozen
-environment during the excitation process). Now we have 
+environment during the excitation process). Now we have
 all ingredients for starting the calculation::
 
 
-   pam --inp=pe-hf.inp --mol=h2o.mol --put="3_h2o.pot" 
+   pam --inp=pe-hf.inp --mol=h2o.mol --put="3_h2o.pot"
 
 
 The summary will look identical to a vacuum calculation ::
 
-   * Isotropic DL-DL non-zero oscillator strengths (f)                                                      
-   ===================================================                                                      
-   DL = dipole length                                                                                       
-   Rate = Dipole radiation rate (s-1)   
+   * Isotropic DL-DL non-zero oscillator strengths (f)
+   ===================================================
+   DL = dipole length
+   Rate = Dipole radiation rate (s-1)
    Lifetime = corresponding radiation lifetime (s)
-       
-   Level  Frequency (eV)    f           Rate         Lifetime    Symmetry                                   
-   ------------------------------------------------------------------------                                 
-       1      7.00316    0.000001    1.26019E+03    7.93528E-04                                             
-       2      7.00317    0.000000    3.70356E+02    2.70010E-03       
-       3      7.00317    0.000002    3.30199E+03    3.02848E-04                                             
-       4      7.30170    0.049543    1.14615E+08    8.72484E-09                                             
-       5      8.53008    0.000000    5.32729E+01    1.87713E-02                                             
-   ------------------------------------------------------------------------                                 
+
+   Level  Frequency (eV)    f           Rate         Lifetime    Symmetry
+   ------------------------------------------------------------------------
+       1      7.00316    0.000001    1.26019E+03    7.93528E-04
+       2      7.00317    0.000000    3.70356E+02    2.70010E-03
+       3      7.00317    0.000002    3.30199E+03    3.02848E-04
+       4      7.30170    0.049543    1.14615E+08    8.72484E-09
+       5      8.53008    0.000000    5.32729E+01    1.87713E-02
+   ------------------------------------------------------------------------
    Sum of oscillator strengths:      0.04955
 
-Note that the first three excitations have very low oscillator strength. These excitations 
-corresponds to triplet excitations, which are automatically included in a relativistic 
-framework. The fourth excitation is the observed one.  We can calculate the electrostatic part 
+Note that the first three excitations have very low oscillator strength. These excitations
+corresponds to triplet excitations, which are automatically included in a relativistic
+framework. The fourth excitation is the observed one.  We can calculate the electrostatic part
 of the solvent shift (i.e. not including the solvent effect on the geometry), by calculating
 the corresponding excitation energy without PE and substracting the result from the PE result.
-We collect results with and without PE (and the obtained solvent shift) in the table below. 
+We collect results with and without PE (and the obtained solvent shift) in the table below.
 
 +----------------------------------------+-------------+-------+-------+-------+
 | QM method (potential method)           | Potential   | PE    | vac.  | shift |
@@ -142,20 +143,20 @@ We collect results with and without PE (and the obtained solvent shift) in the t
 | Experimental                           |             | 8.2   | 7.4   | 0.8   |
 +----------------------------------------+-------------+-------+-------+-------+
 
-The experimental value is taken from discussion given in :cite:`Christiansen2000`. We note that 
+The experimental value is taken from discussion given in :cite:`Christiansen2000`. We note that
 
-* The shift is a bit below the experimental one 
-* The excitation energies are somewhat underestimated (mainly due to the B3LYP functional). 
+* The shift is a bit below the experimental one
+* The excitation energies are somewhat underestimated (mainly due to the B3LYP functional).
 
-To improve the model, we can either (i) expand the environment, 
-(ii) describe the environment more accurately or (iii) describe the QM system more accurately 
-(but currently DIRAC only includes PE with HF and DFT). 
-Finally, we might also (iv) expand the QM system. Performing these calculations will be not be 
-part of this tutorial. A table with selected results from larger environments, 
-potentials obtained with a more accurate basis set (aug-cc-pVTZ) and a more accurate QM method are 
-compiled below. All these calculations are non-relativistic calculations carried out 
-with the Dalton program and taken from :cite:`Hedegaard2016`. The "full CI" 
-calculations are obtained with the density matrix renormalization group (DMRG). 
+To improve the model, we can either (i) expand the environment,
+(ii) describe the environment more accurately or (iii) describe the QM system more accurately
+(but currently DIRAC only includes PE with HF and DFT).
+Finally, we might also (iv) expand the QM system. Performing these calculations will be not be
+part of this tutorial. A table with selected results from larger environments,
+potentials obtained with a more accurate basis set (aug-cc-pVTZ) and a more accurate QM method are
+compiled below. All these calculations are non-relativistic calculations carried out
+with the Dalton program and taken from :cite:`Hedegaard2016`. The "full CI"
+calculations are obtained with the density matrix renormalization group (DMRG).
 
 +----------------------------------------+-------------+-------+-------+-------+
 | QM method (potential method)           | Potential   | PE    | vac.  | shift |
@@ -180,24 +181,24 @@ Electric dipole moments and polarizabilities
 --------------------------------------------
 
 It is also possible to calculate simple expectation values or other linear response properties with the PElib module.
-The work-flow is straightforward, and we only need to add the .PEQM section as done for the TD-DFT calculation above. 
-The input related to the property is identical to a vacuum calculation. 
-Examples of simple expectation values and linear response properties that are currently implemented with PE is the 
+The work-flow is straightforward, and we only need to add the .PEQM section as done for the TDDFT calculation above.
+The input related to the property is identical to a vacuum calculation.
+Examples of simple expectation values and linear response properties that are currently implemented with PE is the
 (electric) dipole moment and static or frequency-dependent polarizabilities.
-Unlike in a non-relativistic framework, the relativistic framework allow many magnetic properties to be obtained  simply as 
-expectation values (e.g. properties related to electron paramagnetic spectroscopy). All PE contributions to these properties 
+Unlike in a non-relativistic framework, the relativistic framework allow many magnetic properties to be obtained  simply as
+expectation values (e.g. properties related to electron paramagnetic spectroscopy). All PE contributions to these properties
 will be automatically included from the wave function optimization and will follow in a future release of an EPR module.
-Note also that linear response properties that require London orbitals are also not currently possible with PE. 
+Note also that linear response properties that require London orbitals are also not currently possible with PE.
 An example is given below for a dipole moment calculation input file ::
 
    **DIRAC
    .WAVE FUNCTION
    .PROPERTIES
    **HAMILTONIAN
-   .PEQM     
-   *PEQM     
-   .POTENT   
-   3_h2o.pot 
+   .PEQM
+   *PEQM
+   .POTENT
+   3_h2o.pot
    **WAVE FUNCTION
    .SCF
    **PROPERTIES
@@ -207,6 +208,6 @@ An example is given below for a dipole moment calculation input file ::
 Things to note
 --------------
 
-* Calculations with transformed two-component Hamiltonians are generally possibly by supplying the program with the requested model under `**HAMILTONIAN`. In such a calculation, :math:`\hat{v}^{\mathrm{PE}}` is not transformed 
-  
+* Calculations with transformed two-component Hamiltonians are generally possibly by supplying the program with the requested model under `**HAMILTONIAN`. In such a calculation, :math:`\hat{v}^{\mathrm{PE}}` is not transformed
+
 
