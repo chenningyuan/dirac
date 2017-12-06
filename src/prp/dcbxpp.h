@@ -20,7 +20,7 @@ C NROTAV = maxL for Lebedev quadrature for rotational averaging
 C
 C    dcbxpp.h -- Feb. 18, 1999, hjaaj
 C
-      PARAMETER ( MAXLPP = 40, MAXP = 3 )
+      PARAMETER ( MAXLPP = 70, MAXP = 3 )
       LOGICAL XPP_SKIPEE,XPP_SKIPEP,XPP_LSFG,
      &        XPPNRM,ORBXPP,XPPANA,XPP_TRIPLET,
      &        XPP_E2CHEK,DOBED,DOBEDFIX,BEDCHK,DOBEDDER
