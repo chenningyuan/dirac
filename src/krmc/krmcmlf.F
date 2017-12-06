@@ -69,8 +69,7 @@ C
       IOPSY = JBTOF(IREP,1)
 CSK   IPRINT = 30
       IF ( IPRINT .GE. 30 ) THEN
-         CALL HEADER('Output from QFC2MFC',-1)
-         CALL HEADER('Input matrix:',-1)
+         CALL HEADER('QFC2MFC: Input matrix:',-1)
          WRITE(LUPRI,'(A,3I5)')
      &   ' - Boson, Fermion, and Time reversal symmetry :',
      &   ISYM,IOPSY,ITIM
@@ -221,7 +220,7 @@ C
 #undef DMRG_DEBUG
 #endif
       IF ( IPRINT .GE. 30 ) THEN
-         CALL HEADER('Output matrix:',-1)
+         CALL HEADER('QFC2MFC: Output matrix:',-1)
          CALL PRQMAT(DMFC,2*NASHT,2*NASHT,2*NASHT,2*NASHT,MIN(NZ,2),
      $        IPQTOQ(1,0),LUPRI)
       END IF
@@ -264,8 +263,7 @@ C
 C
 csk   IPRINT = 30
       IF ( IPRINT .GE. 30 ) THEN
-         CALL HEADER('Output from MFC2QFC',-1)
-         CALL HEADER('Input matrix:',-1)
+         CALL HEADER('MFC2QFC: Input matrix:',-1)
          CALL PRQMAT(DMFC,2*NASHT,2*NASHT,2*NASHT,2*NASHT,MIN(NZ,2),
      &        IPQTOQ(1,0),LUPRI)
       END IF
@@ -355,7 +353,7 @@ C
 !     print section
 !     IPRINT = 30
       IF ( IPRINT .GE. 30 ) THEN
-         CALL HEADER('Output matrix:',-1)
+         CALL HEADER('MFC2QFC: Output matrix:',-1)
          CALL PRQMAT(DQFC,NASHT,NASHT,NASHT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
       END IF
 !     IPRINT = 00
@@ -911,7 +909,7 @@ C
       end if
 C
       IF (IPRINT .GE. 30) THEN
-         CALL HEADER('VUUUU matrix in Dirac (NZ,3) format',-1)
+         CALL HEADER('M2DNZ3: VUUUU matrix in Dirac (NZ,3) format',-1)
          CALL PRDNZ3(VDUUUU,NASHT,NNASHX,NZ,IPQTOQ(1,0),LUPRI)
       END IF
 C
