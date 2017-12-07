@@ -21,14 +21,14 @@
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck esr_init */
-      SUBROUTINE ESR_INIT(WF,IPRINT,N_CIESR,WORK,KFREE,LFREE)
+      SUBROUTINE ESR_INIT(WF,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Initialize ESR calculation: find out what to do
 C
 C     Input : WF - wave function type
 C
-C     Output: N_CIESR - dimension of CI space
+C     Output: in common blocks
 C
 C     Author: Hans Joergen Aa. Jensen
 C
@@ -57,7 +57,6 @@ C        ... special input for using old code for a single open shell
          IF (NOPEN .NE. 1) THEN
             CALL QUIT('"DHF1" is only for NOPEN .eq. 1')
          END IF
-         N_CIESR = 2
          GO TO 9999
       END IF
 C
@@ -113,11 +112,6 @@ C
 C     Write information to LUKRMC
 C
       CALL RSET_KRMC(WORK)
-C
-C     Transfer NZCONF to N_CIESR - dimension of ESR matrix
-C
-      N_CIESR = NZCONF
-      IF (N_CIESR .EQ. 0) CALL QUIT('N_CIESR = 0 !')
 C
  9999 CALL QEXIT('ESR_INIT')
       RETURN

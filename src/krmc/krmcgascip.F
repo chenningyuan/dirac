@@ -21,7 +21,7 @@
 !dirac_copyright_end
 
 ! FILE    : krmcgascip.F
-! main authors: H.J.Aa. Jensen & J. Thyssen
+! main authors: H. J. Aa. Jensen & J. Thyssen
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
 #include "dirac_partask.h"
@@ -2660,7 +2660,8 @@ C
       CALL RGETAC(WORK(KFC),WORK(KFCAC),IPRINT)
       IF (IPRINT.GE.6) THEN
          WRITE(LUPRI,'(A)') '(GASCIP_RCISTD) Active Fock matrix:'
-         CALL OUTPUT(WORK(KFCAC),1,NASHT,1,NASHT,NASHT,NASHT,-1,LUPRI)
+         CALL PRQMAT(WORK(KFCAC),NASHT,NASHT,NASHT,NASHT,
+     &      NZ,IPQTOQ(1,0),LUPRI)
       END IF
 C
 C     Transform quaternion FCACmo to molfdir type FCAC.
@@ -3006,14 +3007,14 @@ C
 C
 C              Trial vector
 C
-               WRITE(LUPRI,'(/A,I3,A,I3)')
+               WRITE(LUPRI,'(/A,I0,A,I0)')
      &              ' (GASCIP_RCISTD) Trial vector no. ',I,' of ',N_CSIM
                CALL GASCIP_ANACI(WORK(KBCVEC+(I_TOT-1)*NDETQ),
      &                     NDET,IDET,THR_PCI,WORK(KFREE),LFREE)
 C
 C              Sigma vector
 C
-               WRITE(LUPRI,'(/A,I3,A,I3)')
+               WRITE(LUPRI,'(/A,I0,A,I0)')
      &              ' (GASCIP_RCISTD) Sigma vector no. ',I,' of ',N_CSIM
                CALL GASCIP_ANACI(WORK(KSCVEC+(I_TOT-1)*NDETQ),
      &                     NDET,IDET,THR_PCI,WORK(KFREE),LFREE)
@@ -3119,26 +3120,14 @@ C        THRDHS = 1.0D-10
          IF (IPRINT .GE. 5 .OR. DHS .GT. THRDHS) THEN
 
             WRITE(LUPRI,'(/A)')
-     &           ' (GASCIP_RCISTD) Reduced Hamiltonian, real part'
-            CALL OUTPUT(WORK(KHRED),1,N_CRED,1,N_CRED,
-     &                  MAX_HRED,MAX_HRED,-1,LUPRI)
-           IF (NZ_in_CI .GT. 1) THEN
-               WRITE(LUPRI,'(/A)')
-     &           ' (GASCIP_RCISTD) Reduced Hamiltonian, imaginary part'
-               CALL OUTPUT(WORK(KHREDI),1,N_CRED,1,N_CRED,
-     &                  MAX_HRED,MAX_HRED,-1,LUPRI)
-           END IF
+     &           ' (GASCIP_RCISTD) Reduced Hamiltonian'
+            CALL PRQMAT(WORK(KHRED),N_CRED,N_CRED,MAX_HRED,MAX_HRED,
+     &         NZ_in_CI,IQINDX,LUPRI)
 
             WRITE(LUPRI,'(/A)')
-     &           ' (GASCIP_RCISTD) Reduced metric, real part'
-            CALL OUTPUT(WORK(KSRED),1,N_CRED,1,N_CRED,
-     &                  MAX_HRED,MAX_HRED,-1,LUPRI)
-           IF (NZ_in_CI .GT. 1) THEN
-               WRITE(LUPRI,'(/A)')
-     &           ' (GASCIP_RCISTD) Reduced metric, imaginary part'
-               CALL OUTPUT(WORK(KSREDI),1,N_CRED,1,N_CRED,
-     &                  MAX_HRED,MAX_HRED,-1,LUPRI)
-           END IF
+     &           ' (GASCIP_RCISTD) Reduced metric'
+            CALL PRQMAT(WORK(KSRED),N_CRED,N_CRED,MAX_HRED,MAX_HRED,
+     &         NZ_in_CI,IQINDX,LUPRI)
          END IF
          IF (IPRINT .GE. 5 .OR. DHS .GT. 0.01D0*THRDHS) THEN
             WRITE(LUPRI,'(/A,1P,2D10.3)') ' (GASCIP_RCISTD) '//
@@ -3151,23 +3140,25 @@ C        THRDHS = 1.0D-10
                   DO J = 1, I
                      DHSR = WORK(KHRED + (J-1) + (I-1)*MAX_HRED)
      &                    - WORK(KHRED + (I-1) + (J-1)*MAX_HRED)
-                     WORK(KHRED + (J-1) + (I-1)*MAX_HRED) = DHSR*0.5D0
-                     WORK(KHRED + (I-1) + (J-1)*MAX_HRED) = DHSR*0.5D0
+                     IF (ABS(DHSR) .LT. 0.01D0*THRDHS) DHSR = 0.0D0
+                     WORK(KHRED + (J-1) + (I-1)*MAX_HRED) = DHSR
+                     WORK(KHRED + (I-1) + (J-1)*MAX_HRED) = 0.0D0
                   IF (NZ_in_CI .GT. 1) THEN
                      DHSI = WORK(KHREDI + (J-1) + (I-1)*MAX_HRED)
      &                    + WORK(KHREDI + (I-1) + (J-1)*MAX_HRED)
-                     WORK(KHREDI + (J-1) + (I-1)*MAX_HRED) = DHSI*0.5D0
-                     WORK(KHREDI + (I-1) + (J-1)*MAX_HRED) = DHSI*0.5D0
+                     IF (ABS(DHSI) .LT. 0.01D0*THRDHS) DHSI = 0.0D0
+                     WORK(KHREDI + (J-1) + (I-1)*MAX_HRED) = DHSI
+                     WORK(KHREDI + (I-1) + (J-1)*MAX_HRED) = 0.0D0
                   END IF
                   END DO
                END DO
-               WRITE(LUPRI,'(/A)') ' (GASCIP_RCISTD) '//
-     &            'Antihermicity of reduced Hamiltonian, real part'
+               WRITE(LUPRI,'(/A)') ' (GASCIP_RCISTD) Largest '//
+     &   'antihermicity elements of reduced Hamiltonian, real part'
                CALL OUTPUT(WORK(KHRED),1,N_CRED,1,N_CRED,
      &                     MAX_HRED,MAX_HRED,-1,LUPRI)
                IF (NZ_in_CI .GT. 1) THEN
-                  WRITE(LUPRI,'(/A)') ' (GASCIP_RCISTD) '//
-     &            'Antihermicity of reduced Hamiltonian, imaginary part'
+                  WRITE(LUPRI,'(/A)') ' (GASCIP_RCISTD) Largest '//
+     &   'antihermicity elements of reduced Hamiltonian, imaginary part'
                   CALL OUTPUT(WORK(KHREDI),1,N_CRED,1,N_CRED,
      &                        MAX_HRED,MAX_HRED,-1,LUPRI)
                END IF
@@ -3253,9 +3244,9 @@ C
      &           WORK(KS_MHLF),MAX_HRED,MAX_HRED,NZ_in_CI,
      &           0.0D0,IQINDX,WORK(KH_TILDE),MAX_HRED,MAX_HRED,NZ_in_CI)
 
-         IF (IPRINT .GE. 11) THEN
+         IF (IPRINT .GE. 12) THEN
             WRITE(LUPRI,'(/A)')
-     &           ' (GASCIP_RCISTD) S**(-0.5) matrix'
+     &           ' (GASCIP_RCISTD) S**(-0.5) matrix, real part'
             CALL OUTPUT(WORK(KS_MHLF),1,N_CRED,1,N_CRED,
      &                  MAX_HRED,MAX_HRED,-1,LUPRI)
             IF (NZ_in_CI .GT. 1) THEN
@@ -3266,17 +3257,17 @@ C
             END IF
 
             WRITE(LUPRI,'(/A)')
-     &           ' (GASCIP_RCISTD) HRED  matrix'
+     &           ' (GASCIP_RCISTD) HRED matrix, real part'
             CALL OUTPUT(WORK(KHRED),1,N_CRED,1,N_CRED,
      &                  MAX_HRED,MAX_HRED,-1,LUPRI)
 
             WRITE(LUPRI,'(/A)')
-     &           ' (GASCIP_RCISTD) S**(-1/2) H  matrix'
+     &           ' (GASCIP_RCISTD) S**(-1/2) H  matrix, real part'
             CALL OUTPUT(WORK(KTMPRED),1,N_CRED,1,N_CRED,
      &                  MAX_HRED,MAX_HRED,-1,LUPRI)
 
             WRITE(LUPRI,'(/A)')
-     &           ' (GASCIP_RCISTD) H_TILDE matrix'
+     &           ' (GASCIP_RCISTD) H_TILDE matrix, real part'
             CALL OUTPUT(WORK(KH_TILDE),1,N_CRED,1,N_CRED,
      &                  MAX_HRED,MAX_HRED,-1,LUPRI)
             IF (NZ_in_CI .GT. 1) THEN
@@ -3589,7 +3580,7 @@ C     &                 ,N_CRED, N_ROOTS_NOT_CONVERGED
          N_CSIM = N_ROOTS_NOT_CONVERGED
 #else
 ! the code below here is only valid for orthonormal trial vectors in BCVECS !!!
-! i.e. it is only valid for old GASCIP code. /hjaaj Nove 2017
+! i.e. it is only valid for old GASCIP code. /hjaaj Nov 2017
          N_CSIM = 0
          DO J = N_CRED + 1, N_CRED + N_ROOTS_NOT_CONVERGED
 C           loop over new trial vectors
@@ -3667,13 +3658,14 @@ C              screen away insignificant elements here ...
                END DO
                IF (I_REMOVED .GT. 0) THEN
                   IF (IPRINT .GE. 3)
-     &            WRITE (LUPRI,'(A,I10,A,I4,A,2I10)')
-     &            'Removed',I_REMOVED,
-     &            ' elements in new CI trial vector no.',J-N_CRED,
-     &            '; zeroes, left :', I_ZERO,NDET-I_REMOVED-I_ZERO
-                  ! renormalize - we allow it to be non-orthogonal
+     &            WRITE (LUPRI,'(A,I0,A,I0,A,2I10)')
+     &            'Removed ',I_REMOVED,
+     &            ' elements in new CI trial vector no. ',J-N_CRED,
+     &            '; zeroes, left : ', I_ZERO,NDET-I_REMOVED-I_ZERO
+                  ! IROUND = IROUND + 1 ! need a 2. round because some elements has been removed
+                  ! no, renormalize instead - we now allow it to be non-orthogonal
                   DNAFT = DNORM2(NDETQ,WORK(KBCVEC+(J-1)*NDETQ),1)
-                  write(lupri,*) 'DNAFT now', DNAFT
+                  ! write(lupri,*) 'DNAFT now', DNAFT
                   DNAFT = 1.0D0 / DNAFT
                   CALL DSCAL(NDETQ,DNAFT,WORK(KBCVEC+(J-1)*NDETQ),1)
                END IF
@@ -3856,7 +3848,7 @@ C
 C     Transform bit packed IA and IB into alpha- and beta string.
 C
 C     Input :
-C        JDET - determinant
+C        IA, IB - A and B strings for a Slater determinant
 C
 C     Output:
 C        JASTR,  JBSTR  - alpha and beta strings
@@ -3874,7 +3866,7 @@ C
 #include "dgroup.h"
 C
       INTEGER*8 IA, IB
-      DIMENSION JASTR(*), JBSTR(*)
+      INTEGER   JASTR(*), JBSTR(*)
 C
       LOGICAL LBIT
 C
@@ -3897,16 +3889,19 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gascip_anaci */
-      SUBROUTINE GASCIP_ANACI(CREF,NDET,IDET,THR_PCI_in,WORK,LWORK)
+      SUBROUTINE GASCIP_ANACI(CVEC,NDET,IDET,THR_PCI_in,WORK,LWORK)
 C***********************************************************************
 C
 C     Print nice analysis of CI vector.
 C
 C     Input :
-C        CREF - CI ref. vector
-C        IDET - determintants
+C        CVEC - CI vector
+C        NDET - dimension of CI vector
+C        IDET - string information for the NDET elements of the CI vector
+C        THR_PCI_in - input threshold for printing elements
 C
 C     Output:
+C        text to LUPRI output unit
 C
 C     Written by J. Thyssen - Jan 5 2001
 C     Last revision :
@@ -3921,17 +3916,21 @@ C
 #include "dcborb.h"
 #include "dcbgascip.h"
 C
-      DIMENSION CREF(NDET,*), WORK(*)
+      REAL*8    CVEC(NDET,*), THR_PCI_in, WORK(*)
       INTEGER*8 IDET(2,*)
-C
-      INTEGER JASTR(2*MAXASH_GASCIP), JBSTR(2*MAXASH_GASCIP)
+      INTEGER   NDET, LWORK
+
+C     local variables:
+      INTEGER    JASTR(2*MAXASH_GASCIP), JBSTR(2*MAXASH_GASCIP)
+      REAL*8     CVEC_NORM, THR_PCI_local, DMX, DMN
 C
       CALL QENTER('GASCIP_ANACI')
 C
-      THR_PCI_local = max(THR_PCI_in,1.0D-15) * 1.0000001D0
+      DMX = DDOT(NZ_in_CI*NDET, CVEC, 1, CVEC, 1)
+      DMN = 0.1D0 * DMX
+      DMX = 1.0000001D0 * DMX
+      THR_PCI_local = max(THR_PCI_in,1.0D-15) * DMX
 C
-      DMX = 1.0D0
-      DMN = 0.1D0
  10   CONTINUE
          WRITE(LUPRI,'(/A,1P,D7.1,A,D7.1,A/)')
      &     ' Print of CI coefficients with weight in range ',
@@ -3940,28 +3939,32 @@ C
          DO I = 1, NDET
             DI = 0.0D0
             DO IZ = 1, NZ_in_CI
-               DI = DI + CREF(I,IZ) * CREF(I,IZ)
+               DI = DI + CVEC(I,IZ) * CVEC(I,IZ)
             END DO
             IF (DI .GT. DMN .AND. DI .LE. DMX) THEN
                K = K + 1
                IF (NZ_in_CI .EQ. 1) THEN
-                  WRITE(LUPRI,'(3X,A,I13,A,F15.10,A,F12.8)')
+                  WRITE(LUPRI,'(3X,A,I13,A,F15.10,A,F15.8)')
      &                 'Determinant no.',I,'; coeff.',
-     &                 CREF(I,1),'; weight',DI
+     &                 CVEC(I,1),'; weight',DI
                ELSE
                   WRITE(LUPRI,
-     &                 '(3X,A,I13,2(A,F15.10),A,F12.8)')
+     &                 '(3X,A,I13,2(A,F15.10),A,F15.8)')
      &                 'Determinant no.',I,'; coeff.',
-     &                 CREF(I,1),' + ',CREF(I,2),' i; weight',DI
+     &                 CVEC(I,1),' + ',CVEC(I,2),' i; weight',DI
                END IF
                CALL IDET2STR(IDET(1,I),IDET(2,I),JASTR,JBSTR,IA,IB)
                WRITE(LUPRI,'(3X,A,(T21,40I4))')
      &            '  P-string     : ',(JASTR(J),J=1,IA)
                WRITE(LUPRI,'(3X,A,(T21,40I4))')
      &            '  P(bar)-string: ',(JBSTR(J)-NASHT,J=1,IB)
+!              WRITE(LUPRI,'(3X,A,B64.64)')
+!    &            '  P-string     : ',IDET(1,I)
+!              WRITE(LUPRI,'(3X,A,B64.64)')
+!    &            '  P(bar)-string: ',IDET(2,I)
             END IF
          END DO
-         IF (K .EQ. 0) WRITE(LUPRI,'(3X,A/)')
+         IF (K .EQ. 0) WRITE(LUPRI,'(3X,A)')
      &      'No CI coefficients in this range.'
          DMX = DMN
          DMN = DMN * 0.1D0
@@ -3978,7 +3981,7 @@ C        ... MK2 is NAEL - NBEL
 C
          N_NONZERO = 0
          DO I = I_STRT, I_END
-            IF (CREF(I,1) .NE. 0.0D0 .OR. CREF(I,NZ_in_CI) .NE. 0.0D0)
+            IF (CVEC(I,1) .NE. 0.0D0 .OR. CVEC(I,NZ_in_CI) .NE. 0.0D0)
      &         N_NONZERO = N_NONZERO + 1
          END DO ! I
          N_NONZERO_TOT = N_NONZERO_TOT + N_NONZERO

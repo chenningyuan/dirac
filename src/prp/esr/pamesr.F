@@ -451,12 +451,12 @@ C
          GO TO 9999
       END IF
 
-!     write (lupri,*) 'hj1 N_CIESR MAX_CIESR_IT NZCONF',
-!    &                     N_CIESR,MAX_CIESR_IT,NZCONF
+!d    write (lupri,*) 'hj1 N_CIESR MAX_CIESR_IT MULTIPESR NZCONF',
+!d   &                     N_CIESR,MAX_CIESR_IT,MULTIPESR,NZCONF
 C
 C ** Some parameter checking
 C
-      IF (N_CIESR .GE. 0) THEN
+      IF (N_CIESR .GE. 0) THEN ! not DFT nor HF
          !
       IF (MULTIPESR .gt. NZCONF) THEN
          CALL QUIT('.MULTIPESR specification > # determinants')
@@ -467,16 +467,16 @@ C
          GO TO 9000
       ELSE IF (MAX_CIESR_IT .GT. 0) THEN
          ! Davidson iterations
-!        N_CIESR = MIN(NZCONF, MULTIPESR + 1)
-         N_CIESR = MULTIPESR
-!      write(lupri,*) 'N_CIESR,MULTIPESR is', N_CIESR,MULTIPESR
+         N_CIESR = MAX(N_CIESR,MULTIPESR)
+         N_CIESR = MIN(N_CIESR,NZCONF)
+!        write(lupri,*) 'N_CIESR,MULTIPESR is', N_CIESR,MULTIPESR
       ELSE
          ! full CI (now primarily for debugging Davidson iterations code)
          N_CIESR = NZCONF
       END IF
       END IF
-!d    write (lupri,*) 'hj2 N_CIESR MAX_CIESR_IT NZCONF',
-!d   &                     N_CIESR,MAX_CIESR_IT,NZCONF
+!d    write (lupri,*) 'hj2 N_CIESR MAX_CIESR_IT MULTIPESR NZCONF',
+!d   &                     N_CIESR,MAX_CIESR_ITMULTIPESR,,NZCONF
 C
 C **  Retrieve molecular orbitals
 C
