@@ -1110,11 +1110,12 @@ C
 C              Start with LARGE Component
 C              ==========================
 C
-C              The following seven possibilities exist:
+C              The following possibilities exist:
 C
 C              LARGE INTGRL    2    1    1  (IBSFLAG = 1)
 C              LARGE    2    1    1 (IBSFLAG = 1)
 C              LARGE EXPLICIT    2    1    1 (IBSFLAG = 1)
+
 C              LARGE MOLFBAS H.bas (IBSFLAG = 2)
 C              LARGE BASIS basisset (IBSFLAG = 3)
 C              LARGE GEOM alpha beta N 2 1 1 (IBSFLAG = 4)
@@ -1123,6 +1124,9 @@ c               (alias for LARGE GEOM)
 C              LARGE WELLTEMP alpha beta gamma delta N 2 1 1 (IBSFLAG = 4)
 C              LARGE FAMILY    N    2    1    1 (IBSFLAG = 4)
 C              LARGE DUALFAMILY    N    2    1    1 (IBSFLAG = 4)
+
+C              LARGE POINTCHARGE (IBSFLAG = 1)
+C              LARGE NOBASIS     (IBSFLAG = 1) (alias for LARGE POINTCHARGE)
 C
                CALL RDLINE(LUINFO)
                READ (MLINE(NMLINE),'(A5,1X,A14)',IOSTAT=IOS) 
@@ -1148,9 +1152,13 @@ C
 C
 C              Check what kind of basis set we have
 C
-               IF ( BSKEYWORD(1:6) .EQ. 'INTGRL' ) THEN
+               IF ( BSKEYWORD(1:6) .EQ. 'POINTC'  .OR.
+     &              BSKEYWORD(1:7) .EQ. 'NOBASIS') THEN
                   IBSFLAG = 1
-                  READ (MLINE(NMLINE),'(12X,12I5)',IOSTAT=IOS)
+                  IQM(I,1) = 0
+               ELSE IF ( BSKEYWORD(1:6) .EQ. 'INTGRL' ) THEN
+                  IBSFLAG = 1
+                  READ (MLINE(NMLINE)(13:),*,IOSTAT=IOS)
      &                 IQM(I,1),(JCO(K,I,1),K=1,IQM(I,1))
                   IF (IOS.NE.0)THEN
                     WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
@@ -1159,7 +1167,7 @@ C
                   ENDIF
                ELSE IF ( BSKEYWORD(1:8) .EQ. 'EXPLICIT') THEN
                   IBSFLAG = 1
-                  READ (MLINE(NMLINE),'(14X,12I5)',IOSTAT=IOS)
+                  READ (MLINE(NMLINE)(15:),*,IOSTAT=IOS)
      &                 IQM(I,1),(JCO(K,I,1),K=1,IQM(I,1))
                   IF (IOS.NE.0)THEN
                     WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
@@ -1178,8 +1186,9 @@ C
                   IBSFLAG = 3
                   IF(MLINE(NMLINE)(13:14).EQ.'Q=') THEN
                     READ (MLINE(NMLINE)(15:),*,IOSTAT=IOS) QB,BASFIL
-                    WRITE(LUPRI,*) '* WARNING: Reading basis ',BASFIL,
-     &                         ' using charge ',QB
+                    WRITE(LUPRI,*) '* INFO: Reading basis ',BASFIL,
+     &                 ' using requested charge Q=',QB,
+     &                 ' although this center has a charge of ',Q
                   ELSE
                     READ (MLINE(NMLINE),'(12X,A20)',IOSTAT=IOS) BASFIL
                   ENDIF
@@ -1234,7 +1243,7 @@ C
                ELSE
 C                 Assume it is 'LARGE   2    1....'
                   IBSFLAG = 1
-                  READ (MLINE(NMLINE),'(5X,12I5)',IOSTAT=IOS)
+                  READ (MLINE(NMLINE)(6:),*,IOSTAT=IOS)
      &                 IQM(I,1),(JCO(K,I,1),K=1,IQM(I,1))
                   IF (IOS.NE.0) THEN
                     WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
@@ -1715,7 +1724,6 @@ C
           WRITE(LUPRI,*) MLINE(NMLINE)
           CALL QUIT('Error in reading..csmxn')
         ENDIF
-
 C
 C       Initialize basis set flag
 C
@@ -1723,8 +1731,14 @@ C
 C
 C       Check whether the fit function set is specified in input
 C                 
-        IF ( BSET .NE. 'FTSET' ) THEN
-C
+        IF ( BSET.EQ.'FTLRG' .OR. BSET.EQ.'FTSML' ) THEN
+
+           WRITE(LUPRI,'(//2A)') BSET,
+     &     ' specified, but only FTSET is supported at the moment.'
+           CALL QUIT('Unsupported option in MOLECULE input')
+
+        ELSE IF ( BSET .NE. 'FTSET' ) THEN
+
 C          No 'FTSET' keyword given.
 C          Take standard set
 C
@@ -1732,11 +1746,7 @@ C          Discard the line we just read.
 C
            NMLINE = NMLINE - 1   
            IBSFLAG = 2     
-C
-        ELSEIF (BSET.EQ.'FTLRG'.OR.BSET.EQ.'FTSML') THEN
-           WRITE(LUPRI,*) 'Only FTSET is supported at the moment.' 
-           CALL QUIT('Unsupported option in MOLECULE input')
-C
+
         ELSE 
 C
 C          Check what kind of basis set we have
