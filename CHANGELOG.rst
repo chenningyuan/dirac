@@ -3,39 +3,39 @@
 17.0 (2017-12-12)
 -----------------
 
+- DIRAC17 release.
+
 New features:
 - Kramers restricted Polarization Propagator in the ADC framework for electronic excitations, activated with ".POLPRP".
- - Reference: M. Pernpointner. The relativistic polarization propagator for the calculation of electronic excitations in heavy systems.
-   J. Chem. Phys. 140, 084108 (2014); http://dx.doi.org/10.1063/1.4865964 and M. Pernpointner, L. Visscher and A. B. Trofimov. 
+  References: 
+ - M. Pernpointner. The relativistic polarization propagator for the calculation of electronic excitations in heavy systems.
+   J. Chem. Phys. 140, 084108 (2014); http://dx.doi.org/10.1063/1.4865964
+ - M. Pernpointner, L. Visscher and A. B. Trofimov. 
    Four-component Polarization Propagator Calculations of Electron Excitations: Spectroscopic Implications of Spin-Orbit Coupling Effects. J. Chem. Theory Comput. (2017) submitted.
 - Polarizable embedding using pelib (https://gitlab.com/pe-software/pelib-public). Activated with ".PEQM", options under \*PEQM.
- - Reference: E. D. Hedegård, R. Bast, J. Kongsted, J. M. H. Olsen, and H. J. Aa. Jensen.  Relativistic Polarizable Embedding.
+  Reference:
+ - E. D. Hedegård, R. Bast, J. Kongsted, J. M. H. Olsen, and H. J. Aa. Jensen.  Relativistic Polarizable Embedding.
    J. Chem. Theory Comput. 13, 2870-2880 (2017); http://doi.org/10.1021/acs.jctc.7b00162
 - New and numerically stable procedure for elimination/freezing of orbitals at SCF level. Author: T. Saue.
 - New ".MVOFAC" option in \*KRMC input section. Author: H. J. Aa. Jensen.
+- New easier options for point charges in the .mol file: "LARGE POINTCHARGE" or "LARGE NOBASIS" (the two choices are equivalent).
 - Added the RPF-4Z and aug-RPF-4Z basis sets for f-elements to the already existing files with sets for s, p and d elements. Deleted the aug-RPF-3Z set as that was not an official set.
 - Write out effective Hamiltonian in Fock space coupled cluster to a file for post processing. Can be used with external code of Andrei Zaitsevskii (St. Petersburg).
 -  Provided memory counter for RelCC calculations, what is suitable for memory consuming large scale Coupled Cluster calculations. See the web-documentation.
-
-Error corrections:
-- Fixed the p exponents for Na in the dyall 4z basis sets to match the archive.
-  The changes are small so should not significantly affect results.
-- Fixed compilation of XCFun on Mac OS X High Sierra.
-- Fixed error for parallel complex CI or MCSCF with GASCIP
-
-(Do not change anything below this text on the master branch,
-the lines below should only be changed on the release branch.)
-
-16.1 (???)
------------------
-
-New features:
-- updated basis_dalton/ with basis set updates in the Dalton distribution:
- - fix of errors in Ahlrichs-pVDZ (several diffuse exponents a factor 10 too big)
+- Updated basis_dalton/ with basis set updates in the Dalton distribution:
+ - fix of errors in Ahlrichs-pVDZ (several diffuse exponents were a factor 10 too big)
  - fix of errors for 2. row atoms in aug-cc-pCV5Z
  - added many atoms to aug-cc-PVTZ_J
  - added many Frank Jensen "pc" type basis sets
  - added Turbomole "def2" type basis sets
+
+Error corrections:
+- Fixed errors for quaternion symmetries in 2-electron MO integrals used in CI calculations with GASCIP
+ - it is now possible to do CI calculations with GASCIP for C1 symmetry (no symmetry).
+- Fixed the p exponents for Na in the dyall 4z basis sets to match the archive.
+  The changes are small so should not significantly affect results.
+- Fixed compilation of XCFun on Mac OS X High Sierra.
+- Fixed error for parallel complex CI or MCSCF with GASCIP
 
 New defaults:
 - .SKIPEP is now default for KR-MCSCF, new keyword .WITHEP to include e-p rotations

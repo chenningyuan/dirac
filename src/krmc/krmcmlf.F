@@ -974,7 +974,7 @@ C
 C
       DO II = 1, NASHT
          DO JJ = 1, II
-            IJ = MAX(II,JJ) * ( MAX(II,JJ) - 1 ) / 2 + MIN(II,JJ)
+            IJ = (II * (II - 1))/2 + JJ
             DO LL = 1, NASHT
                DO KK = 1, NASHT
                   I = KR(II)
@@ -1083,18 +1083,18 @@ C
                      VMUUUU(K,LTR,I,J,2) = VDUUUU(KK,LL,IJ,4,2)
                      IF (II .NE. JJ) THEN
 C                       (Lk|ji) = (kL|ij)^*
-                        VMUUUU(L,KTR,J,I,1) =   VDUUUU(KK,LL,IJ,3,2)
-                        VMUUUU(L,KTR,J,I,2) = - VDUUUU(KK,LL,IJ,4,2)
+                        VMUUUU(LTR,K,J,I,1) =   VDUUUU(KK,LL,IJ,3,2)
+                        VMUUUU(LTR,K,J,I,2) = - VDUUUU(KK,LL,IJ,4,2)
                      END IF
 C
 C                    (kl|Ij) = - (kl|Ji) = - (lk|iJ)^*
 C
-                     VMUUUU(K,L,ITR,J,1) = - VDUUUU(LL,KK,IJ,3,2)
-                     VMUUUU(K,L,ITR,J,2) =   VDUUUU(LL,KK,IJ,4,2)
+                     VMUUUU(K,L,ITR,J,1) = - VDUUUU(LL,KK,IJ,3,1)
+                     VMUUUU(K,L,ITR,J,2) =   VDUUUU(LL,KK,IJ,4,1)
                      IF (II .NE. JJ) THEN
 C                       (lk|jI) = - (lk|iJ)
-                        VMUUUU(L,KTR,J,I,1) = - VDUUUU(KK,LL,IJ,3,2)
-                        VMUUUU(L,KTR,J,I,2) = - VDUUUU(KK,LL,IJ,4,2)
+                        VMUUUU(L,K,J,ITR,1) = - VDUUUU(LL,KK,IJ,3,1)
+                        VMUUUU(L,K,J,ITR,2) = - VDUUUU(LL,KK,IJ,4,1)
                      END IF
 C
 C                    (kl|iJ) (canonical)
@@ -1110,44 +1110,60 @@ C
 C
 C                    (3 bars)
 C
-C                    (kL|IJ) = (kL|ji) = (Lk|ij)^*
+C                    (kL|IJ) = -(Kl|ij)^*
 C
-                     VMUUUU(K,LTR,ITR,JTR,1) =   VDUUUU(LL,KK,IJ,3,3)
-                     VMUUUU(K,LTR,ITR,JTR,2) = - VDUUUU(LL,KK,IJ,4,3)
+                     VMUUUU(K,LTR,ITR,JTR,1) = - VDUUUU(KK,LL,IJ,3,3)
+                     VMUUUU(K,LTR,ITR,JTR,2) =   VDUUUU(KK,LL,IJ,4,3)
                      IF (II .NE. JJ) THEN
-C                       (Lk|JI) = (Lk|ij)
-                        VMUUUU(LTR,K,JTR,ITR,1) = VDUUUU(KK,LL,IJ,3,3)
-                        VMUUUU(LTR,K,JTR,ITR,2) = VDUUUU(KK,LL,IJ,4,3)
+C                       (Lk|JI) = (kL|IJ)^* = -(Kl|ij)
+                        VMUUUU(LTR,K,JTR,ITR,1) = - VDUUUU(KK,LL,IJ,3,3)
+                        VMUUUU(LTR,K,JTR,ITR,2) = - VDUUUU(KK,LL,IJ,4,3)
                      END IF
 C
-C                    (Kl|IJ) = (Kl|ji) = (lK|ij)^*
+C                    (Kl|IJ) = -(kL|ij)^*
 C
-                     VMUUUU(KTR,L,ITR,JTR,1) =   VDUUUU(LL,KK,IJ,3,2)
-                     VMUUUU(KTR,L,ITR,JTR,2) = - VDUUUU(LL,KK,IJ,4,2)
+                     VMUUUU(KTR,L,ITR,JTR,1) = - VDUUUU(KK,LL,IJ,3,2)
+                     VMUUUU(KTR,L,ITR,JTR,2) =   VDUUUU(KK,LL,IJ,4,2)
                      IF (II .NE. JJ) THEN
-C                       (lK|JI) = (lK|ij)
-                        VMUUUU(L,KTR,J,I,1) = VDUUUU(KK,LL,IJ,3,2)
-                        VMUUUU(L,KTR,J,I,2) = VDUUUU(KK,LL,IJ,4,2)
+C                       (lK|JI) = (Kl|IJ)^* = -(kL|ij)
+                        VMUUUU(L,KTR,JTR,ITR,1) = - VDUUUU(KK,LL,IJ,3,2)
+                        VMUUUU(L,KTR,JTR,ITR,2) = - VDUUUU(KK,LL,IJ,4,2)
                      END IF
 C
-C                    (KL|iJ) = (lk|iJ)
+C                    (KL|Ij) = -(kl|iJ)^*
 C
-                     VMUUUU(K,L,ITR,J,1) = VDUUUU(KK,LL,IJ,3,1)
-                     VMUUUU(K,L,ITR,J,2) = VDUUUU(KK,LL,IJ,4,1)
+                        VMUUUU(KTR,LTR,ITR,J,1) = - VDUUUU(KK,LL,IJ,3,1)
+                        VMUUUU(KTR,LTR,ITR,J,2) =   VDUUUU(KK,LL,IJ,4,1)
                      IF (II .NE. JJ) THEN
-C                       (LK|Ji) = (kl|Ji) = (lk|iJ)^*
-                        VMUUUU(L,KTR,J,I,1) =   VDUUUU(LL,KK,IJ,3,1)
-                        VMUUUU(L,KTR,J,I,2) = - VDUUUU(LL,KK,IJ,4,1)
+C                       (KL|jI) = -(kl|Ji)^* = -(lk|iJ)
+                        VMUUUU(KTR,LTR,J,ITR,1) = - VDUUUU(LL,KK,IJ,3,1)
+                        VMUUUU(KTR,LTR,J,ITR,2) = - VDUUUU(LL,KK,IJ,4,1)
                      END IF
+
+                     IF (KK .GE. LL) THEN
+                        KL = (KK*(KK-1))/2 + LL
 C
-C                    (KL|Ij) = - (lk|Ji) = - (kl|iJ)^*
+C                    (KL|iJ) = -(kl|Ij)^* = -(Ij|kl)^*
 C
-                     VMUUUU(K,L,ITR,J,1) = - VDUUUU(KK,LL,IJ,3,1)
-                     VMUUUU(K,L,ITR,J,2) =   VDUUUU(KK,LL,IJ,4,1)
-                     IF (II .NE. JJ) THEN
-C                       (LK|jI) = - (kl|iJ)
-                        VMUUUU(L,K,JTR,I,1) = - VDUUUU(KK,LL,IJ,3,1)
-                        VMUUUU(L,K,JTR,I,2) = - VDUUUU(KK,LL,IJ,4,1)
+                        VMUUUU(KTR,LTR,I,JTR,1) = - VDUUUU(II,JJ,KL,3,3)
+                        VMUUUU(KTR,LTR,I,JTR,2) =   VDUUUU(II,JJ,KL,4,3)
+                       IF (II .NE. JJ) THEN
+C                       (KL|Ji) = -(kl|jI)^* = -(jI|kl)^*
+                        VMUUUU(KTR,LTR,JTR,I,1) = - VDUUUU(JJ,II,KL,3,2)
+                        VMUUUU(KTR,LTR,JTR,I,2) =   VDUUUU(JJ,II,KL,4,2)
+                       END IF
+                     ELSE ! KK .lt. LL
+                        LK = (LL*(LL-1))/2 + KK
+C
+C                    (KL|iJ) = -(kl|Ij)^* = -(Ij|kl)^* = -(jI|lk)
+C
+                        VMUUUU(KTR,LTR,I,JTR,1) = - VDUUUU(JJ,II,LK,3,2)
+                        VMUUUU(KTR,LTR,I,JTR,2) = - VDUUUU(JJ,II,LK,4,2)
+                       IF (II .NE. JJ) THEN
+C                       (KL|Ji) = -(kl|jI)^* = -(jI|kl)^* = -(Ij|lk)
+                        VMUUUU(KTR,LTR,JTR,I,1) = - VDUUUU(II,JJ,LK,3,3)
+                        VMUUUU(KTR,LTR,JTR,I,2) = - VDUUUU(II,JJ,LK,4,3)
+                       END IF
                      END IF
 C
                   END IF
