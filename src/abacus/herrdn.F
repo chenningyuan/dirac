@@ -1732,8 +1732,9 @@ C
 C       Check whether the fit function set is specified in input
 C                 
         IF ( BSET.EQ.'FTLRG' .OR. BSET.EQ.'FTSML' ) THEN
-           WRITE(LUPRI,*) BSET,
-       &   ' specified, but only FTSET is supported at the moment.' 
+
+           WRITE(LUPRI,'(//2A)') BSET,
+     &     ' specified, but only FTSET is supported at the moment.'
            CALL QUIT('Unsupported option in MOLECULE input')
 
         ELSE IF ( BSET .NE. 'FTSET' ) THEN
