@@ -115,33 +115,6 @@ exponent of 10.0D8::
   FINISH
 
 
-Fitting basis set
------------------
-
-In the development version of DIRAC it is now possible to make use of density
-fitting. In such calculations, it is mandatory to include a basis set used to
-expand the density.  This is done adding a line with the FTSET keyword after
-the coordinates for a given atom type.  Basically all the options available in
-the definition of large or small basis sets are applicable to the fit set (i.e.
-the use of a set from the library, explicitly typed basis, even/well-tempered
-etc). Here is an example::
-
-  DIRAC
-
-
-  C   2
-          1.    2
-  H1   -1.4523499293         .0000000000         .8996235720
-  H2    1.4523499293         .0000000000         .8996235720
-  LARGE BASIS cc-pVDZ
-  FTSET BASIS Ahlrichs-Coulomb-Fit
-          8.    1
-  O      .0000000000        0.0000000000        -.2249058930
-  LARGE BASIS cc-pVDZ
-  FTSET BASIS Ahlrichs-Coulomb-Fit
-  FINISH
-
-
 Multiple basis sets from the basis set library
 ----------------------------------------------
 
