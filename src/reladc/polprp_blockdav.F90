@@ -420,14 +420,12 @@
       enddo
 !
 !  check if orthogonality problems pertain after last root
-!  If yes, terminate the microiterations and enter a new macroiteration
 !
       if(oviol) then
         write(*,*) ' ****            Warning                  ****'
-        write(*,*) ' **** Orthogonality of preconditioner is weak!'
-        write(*,*) ' **** We enforce Krylov space extension.'
-        write(*,*) ' **** Quality of final result can be affected!'
-        write(*,*) ' *********************************************'
+        write(*,*) ' **** Orthogonality of preconditioner is weak.'
+        write(*,*) ' **** Check convergence of final results.'
+        write(*,*) ' ****                                     ****'
         write(*,*)
       endif
 !
