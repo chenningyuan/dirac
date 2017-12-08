@@ -2619,7 +2619,7 @@ C     Set general parameters (which later maybe should be set by input?)
 C
 !d      write(lupri,*) 'THR_PCI, THR_CONV', THR_PCI,THR_CONV
       NDETQ  = NZ_in_CI*NDET
-      MAX_HRED = N_ROOTS*(MAX_CI_IT+1) + NCSIM_EXTRA_START
+      MAX_HRED = N_ROOTS*(MAX_CI_IT+1) + N_CSIM_EXTRA_START
       MAX_HRED = MIN(2000, MAX_HRED)
 C
       IF (N_ROOTS .LT. 1 .OR. N_ROOTS .GE. MAX_ROOTS) THEN
