@@ -74,6 +74,7 @@
       Integer                               :: qst_hboline
 
       logical                               :: allconverged
+      logical                               :: oviol
       logical,allocatable,dimension(:)      :: converged
 
       character*10                          :: fileadc
@@ -140,6 +141,10 @@
       maxdavsp =   polprp_davmaxsp   !maximum dimension of Davidson space
       maxdavit =   polprp_davmaxit   !maximum number of Dav. iterations
       convthr  =   polprp_davconv    !convergence of Davidson eigenvectors
+!
+! the orthogonalization violation flag is false at the beginning
+!
+      oviol = .false.
 !
 ! allocate and initialize arrays according to calculation dimensions
 !
@@ -208,7 +213,7 @@
       open(unit=iobase,file='ADCDGTMP', access='SEQUENTIAL', &
            form='UNFORMATTED',status='unknown')
       read(iobase) (adiag(i),i=1,ladc)
-      close(iobase,status='DELETE')
+      close(iobase,status='delete')
       write(*,*) 'Diagonal elements read'
 
 !*******************************************************
@@ -247,7 +252,7 @@
 
       call init_krylov_r(io_bold,desrep,nroots,maxdavsp,ladc, &
                          polprp_davreort)
-      krydim = nroots
+      krydim = nroots  !has to succeed init_routine if nroots is adjusted.
       krysav = 0
 
       WRITE(*,*)
@@ -381,6 +386,7 @@
 
           if( (prenorm2/prenorm1).ge.prethr) then
 
+            oviol = .false.      !  preconditioner has large enough norm
             pro = pro/prenorm2
             krydim = krydim + 1
             write(io_bold,rec=krydim) pro  !extend trial space
@@ -388,6 +394,10 @@
 
           else
 
+            oviol = .true.      !  preconditioner norm is critical
+            pro = pro/prenorm2
+            krydim = krydim + 1
+            write(io_bold,rec=krydim) pro  !extend trial space
             listout(52:54) = ' NX'
 
           endif
@@ -408,6 +418,16 @@
           allconverged = .false.
         endif
       enddo
+!
+!  check if orthogonality problems pertain after last root
+!
+      if(oviol) then
+        write(*,*) ' ****            Warning                  ****'
+        write(*,*) ' **** Orthogonality of preconditioner is weak.'
+        write(*,*) ' **** Check convergence of final results.'
+        write(*,*) ' ****                                     ****'
+        write(*,*)
+      endif
 !
 !  check if dimensionality extension is still in allowed range.
 !
@@ -434,7 +454,7 @@
       write(*,*) 'Macroiteration',maciter,' ended with'
       write(*,*) 'Krylov space dimension:',krydim
 
-! clear stack (essential! large memory demands)
+! clear hbo stack line (essential! large memory demands)
 
       i=qstack_drop(qst_hboline)
 

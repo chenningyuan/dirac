@@ -120,12 +120,10 @@ CINT48 qstack_init(CINT48 *nost, CINT48 *vbflag){
   verbose = (*vbflag)?1:0;
 
 #if defined (INT_STAR8)
-  printf("%s Created %lld stacks.\n",taginf,nos);
+  if(verbose) printf("%s Created %lld stacks.\n",taginf,nos);
 #else
-  printf("%s Created %d stacks.\n",taginf,nos);
+  if(verbose) printf("%s Created %d stacks.\n",taginf,nos);
 #endif
-  printf("%s Verbose mode is ",taginf);
-  printf((verbose)?"on\n":"off\n");
   return nos;
 }
 
