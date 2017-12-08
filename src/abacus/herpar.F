@@ -410,7 +410,7 @@ C--------------------------------------
 C
       IF (ITYPE .EQ. 2 .OR. ITYPE .EQ. 4) THEN
          NFMAT  = 0
-      ELSE IF (ITYPE .EQ. 3 .OR. ITYPE. EQ. 9 .OR. ITYPE. EQ. 7) THEN
+      ELSE IF (ITYPE .EQ. 3 .OR. ITYPE .EQ. 9 .OR. ITYPE .EQ. 7) THEN
          NFMAT  = NDMAT
       ELSE IF (ITYPE .EQ. -5) THEN
          IF(MAXDIF.EQ.1) THEN

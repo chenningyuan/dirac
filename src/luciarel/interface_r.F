@@ -3121,7 +3121,7 @@ C
           NINT_TP = NINT_TP_X
 csk          write(LUWRT,*) ' NINT_TP is for IRUN and iRI',NINT_TP,IRUN,IRI
 *
-          IF( IRI. eq. 1 .and. IRUN .eq. (N1ELINT + 1) ) THEN
+          IF( IRI .eq. 1 .and. IRUN .eq. (N1ELINT + 1) ) THEN
 *
 *           real part finished
 *
@@ -3360,7 +3360,7 @@ csk               write(LUWRT,*) ' continuing ...'
           NINT_TP = NINT_TP_X
 csk          write(LUWRT,*) ' NINT_TP is for IRUN and iRI',NINT_TP,IRUN,IRI
 *
-          IF( IRI. eq. 1 .and. IRUN .eq. (N1ELINT + 1) ) THEN
+          IF( IRI .eq. 1 .and. IRUN .eq. (N1ELINT + 1) ) THEN
 *
 *           real part finished
 *
@@ -3653,7 +3653,7 @@ csk             CALL WRTMATMN(DENS_SCR,1,NINT_TP,1,NINT_TP,LUWRT)
           END IF
 *
 *
-          IF( IRI. eq. 1 .and. IRUN .eq. (N1ELINT + 1) ) THEN
+          IF( IRI .eq. 1 .and. IRUN .eq. (N1ELINT + 1) ) THEN
 *
 *           real part finished
 *

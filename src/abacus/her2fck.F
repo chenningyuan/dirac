@@ -1038,7 +1038,7 @@ C
 C        Construct full matrix from skeleton
 C
          CALL DCOPY(NMAT*(NBASIS**2),FMAT,1,SKLTON,1)
-         IF (IXYZ. EQ. 0) THEN
+         IF (IXYZ .EQ. 0) THEN
             DO 400 ISYMOP = 1, MAXREP
                DO 435 N = 1, NMAT
                   FP = PT(IBTAND(ISYMOP,ISYMDM(N)))
@@ -1315,7 +1315,7 @@ C
 C
 C        Construct full Hessian from skeleton
 C
-         IF (MAXDER. EQ. 2) THEN
+         IF (MAXDER .EQ. 2) THEN
             CALL DCOPY(MXCOOR**2,HESSEE,1,SKLTON,1)
             DO 400 ISYMOP = 1, MAXREP
                DO 410 A = 1, 3*NUCDEP

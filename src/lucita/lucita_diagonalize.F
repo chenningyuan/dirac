@@ -1223,7 +1223,7 @@ C?    call PRSYM(PHP,NP1DM)
 *. A bit of memory
 *
       I12 = 2
-      IF(I12.EQ.1. OR. I12. EQ.3 ) THEN
+      IF(I12.EQ.1. OR. I12.EQ.3 ) THEN
       KLFREE = 1
 *. Space for two local P-P matrix
       KLPP1 = KLFREE
@@ -1336,7 +1336,7 @@ C?         CALL WRTMAT(EIGVEC(1,IROOT),1,NPQDM,1,NPQDM)
 *
  1000 CONTINUE
        END IF
-       IF( I12. EQ.2 .OR. I12 .EQ.3 ) THEN
+       IF( I12.EQ.2 .OR. I12.EQ.3 ) THEN
 *
 *. Iterative scheme
 *
