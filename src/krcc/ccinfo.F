@@ -2843,7 +2843,7 @@ C?    WRITE(6,*) (ICMBSPC(II,ICISPC),II=1, LCMBSPC(ICISPC))
       IF(IOCOC(IA,IB).EQ.0) GOTO 1000
 *. Size of TT block ( all symmetries)
       LBLOCK_AS = 0
-      IF(ISIMSYM.EQ.1 .AND. ISM. EQ. 1 ) THEN
+      IF(ISIMSYM.EQ.1 .AND. ISM.EQ.1 ) THEN
         DO IASM = 1, NSMST
           IBSM = ISMOST(IASM)
           NSTA = NSSOA(IASM,IA)
