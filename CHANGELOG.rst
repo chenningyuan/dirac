@@ -11,6 +11,7 @@ New features:
   References:  
    M. Pernpointner. The relativistic polarization propagator for the calculation of electronic excitations in heavy systems.
    J. Chem. Phys. 140, 084108 (2014); http://dx.doi.org/10.1063/1.4865964  
+
    M. Pernpointner, L. Visscher and A. B. Trofimov. 
    Four-component Polarization Propagator Calculations of Electron Excitations: Spectroscopic Implications of Spin-Orbit Coupling Effects. J. Chem. Theory Comput. (2017) submitted.
 - Polarizable embedding using pelib (https://gitlab.com/pe-software/pelib-public). Activated with ".PEQM", options under \*PEQM.
@@ -22,7 +23,7 @@ New features:
 - New easier options for point charges in the .mol file: "LARGE POINTCHARGE" or "LARGE NOBASIS" (the two choices are equivalent).
 - Added the RPF-4Z and aug-RPF-4Z basis sets for f-elements to the already existing files with sets for s, p and d elements. Deleted the aug-RPF-3Z set as that was not an official set.
 - Write out effective Hamiltonian in Fock space coupled cluster to a file for post processing. Can be used with external code of Andrei Zaitsevskii (St. Petersburg).
--  Provided memory counter for RelCC calculations, what is suitable for memory consuming large scale Coupled Cluster calculations. See the web-documentation.
+- Provided memory counter for RelCC calculations, what is suitable for memory consuming large scale Coupled Cluster calculations. See the web-documentation.
 - Updated basis_dalton/ with basis set updates in the Dalton distribution:
  - fix of errors in Ahlrichs-pVDZ (several diffuse exponents were a factor 10 too big)
  - fix of errors for 2. row atoms in aug-cc-pCV5Z
@@ -92,6 +93,7 @@ Framework improvements:
 - Cache compiler flags.
 
 Bug fixes:
+
 - Bugfix: MCSCF and GASCIP was not correct for odd number of electrons.
 - Bugfix: now .CASSCF works again for KRMSCF input.
 - Bugfix: KRMSCF was not converging is some cases (problem reported by Miro Ilias for Os atom).
