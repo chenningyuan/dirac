@@ -3402,7 +3402,7 @@ C
          CALL DGEMM('N','N',NDETQ,N_ROOTS,N_CRED,1.0D0,
      &        WORK(KSCVEC),NDETQ,          ! real + imag. part
      &        WORK(KEIGVC),MAX_HRED,       ! real part
-     &        0.0D0,WORK(JBCVEC),NDETQ)    ! add to real + imag. part
+     &        0.0D0,WORK(JBCVEC),NDETQ)    ! store in real + imag. part
          ! 4b) the imaginary part of sigma vectors S(:,:)
          IF (NZ_in_CI .gt. 1) THEN
            CALL DGEMM('N','N',NDET,N_ROOTS,N_CRED,1.0D0,
@@ -3504,7 +3504,7 @@ C
 
             I_ZERO = 0
             I_REMOVED = 0
-            IF (N_in_CI .eq. 2) THEN
+            IF (NZ_in_CI .eq. 2) THEN
                DO I = 1, NDET
                   RNORM = ABS( WORK(JBCVEC      + I) )
      &                  + ABS( WORK(JBCVEC+NDET + I) )
