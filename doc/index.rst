@@ -119,6 +119,10 @@ Tutorials and walkthrus
 * **Spectroscopy:**
   :doc:`X-ray spectroscopy: water <tutorials/dft/water_Kedge>`
 
+* **Spectroscopy II:**
+  :doc:`Electronic excitations using the POLPRP module <tutorials/polprp/general>` |
+  :doc:`Full scope application: Excitation spectrum of an osmium complex <tutorials/polprp/osmium>`
+
 * **Analysis:**
   :doc:`Projection analysis <tutorials/analysis/projection_analysis>`
 
