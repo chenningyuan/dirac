@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -173,7 +173,7 @@ print *, '*    Release DIRAC17 (2017),                                          
 print *, '*    written by L. Visscher, H. J. Aa. Jensen, R. Bast, and T. Saue,          *'
 print *, '*    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,            *'
 print *, '*    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *'
-print *, '*    O. Fossgaard, A. S. P. Gomes, E. D. Hedegård, T. Helgaker,               *'
+print *, '*    O. Fossgaard, A. S. P. Gomes, E. D. Hedegrd, T. Helgaker,               *'
 print *, '*    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky,         *'
 print *, '*    O. Kullie, J. K. Laerdahl, C. V. Larsen, Y. S. Lee, H. S. Nataraj,       *'
 print *, '*    M. K. Nayak, P. Norman, G. Olejniczak, J. Olsen, J. M. H. Olsen,         *'
