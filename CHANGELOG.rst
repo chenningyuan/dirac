@@ -14,7 +14,7 @@ New features:
 
    M. Pernpointner, L. Visscher and A. B. Trofimov. 
    Four-component Polarization Propagator Calculations of Electron Excitations: Spectroscopic Implications of Spin-Orbit Coupling Effects. J. Chem. Theory Comput. (2017) submitted.
-- Polarizable embedding using pelib (https://gitlab.com/pe-software/pelib-public). Activated with ".PEQM", options under \*PEQM.
+- Polarizable embedding using PElib (https://gitlab.com/pe-software/pelib-public). Activated with ".PEQM", additional options under \*PEQM.
   Reference:  
    E. D. Hedegård, R. Bast, J. Kongsted, J. M. H. Olsen, and H. J. Aa. Jensen.  Relativistic Polarizable Embedding.
    J. Chem. Theory Comput. 13, 2870-2880 (2017); http://doi.org/10.1021/acs.jctc.7b00162
