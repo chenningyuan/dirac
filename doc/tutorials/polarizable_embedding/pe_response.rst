@@ -3,20 +3,21 @@
 
 .. _pe_response:
 
-Properties in solution: PE-TDDFT calculations of excitation energies and solvent shifts
+PE-TDDFT calculations of excitation energies and solvent shifts
 =======================================================================================
 
 In this tutorial we investigate property calculations in solution through the
 polarizable embedding (PE) model (:cite:`Olsen2010`, :cite:`Olsen2011`).
-The tutorial builds on the implementation reported
-in :cite:`Hedegaard2017`. This implementation allows calculation of electric properties
-up to linear response, including an explicit environment (this corresponds to electric
-properties up to second order). Examples include electric dipole moments and
+The tutorial builds on the implementation reported in :cite:`Hedegaard2017` which uses
+`PElib <https://gitlab.com/pe-software/pelib-public>`_ to calculate the environment
+contributions. This implementation allows calculation of electric properties
+up to linear response (this corresponds to electric properties up to second order),
+including an explicit environment. Examples include electric dipole moments and
 polarizabilities. In addition, the linear response module allows calculation of
-excitation energies and transition momements, including the effect of a surrounding
-environment. Here we focus on TDDFT including a solvent. A few comments regarding
-calculation the solvent effect on dipole moments and polarizabilities are given in
-the end of this tutorial.
+excitation energies and transition moments, including the effect of a surrounding
+environment through the PE model. Here we focus on TDDFT including a solvent.
+A few comments regarding calculations of environment effect on dipole moments and
+polarizabilities are given in the end of this tutorial.
 
 
 TDDFT including an explicit environment through the PE model
@@ -62,10 +63,10 @@ A derivation and more thorough explanation of the :math:`E^{[2]}` term can be
 found in :cite:`Hedegaard2017` (cf. Eqs. 36-38).
 
 To demonstrate how to calculate the effect of the environment with PE, we use the same
-system as in the :ref:`pe_scf` tutorial. The employed h2o.mol file and potential
-3_h2o.pot can be found in this tutorial. The input pe_response.inp is similar to a
-regular TDDFT calculation but with `.PEQM` under the `**HAMILTONIAN` flag, just as for
-:ref:`pe_scf` ::
+system as in the :ref:`PE-HF tutorial <pe_scf>`. The employed ``h2o.mol`` file and potential
+``3_h2o.pot`` can be found in that tutorial. The input ``pe_response.inp`` is similar to a
+regular TDDFT calculation but with an additional `.PEQM` keyword under the `**HAMILTONIAN`
+section::
 
    **DIRAC
    .TITLE
@@ -75,10 +76,7 @@ regular TDDFT calculation but with `.PEQM` under the `**HAMILTONIAN` flag, just 
    **HAMILTONIAN
    .DFT
    B3LYP
-   .PEQM     ! enable PElib
-   *PEQM     ! PE-related keywords
-   .POTENT   ! Specify what PE potential to use
-   3_h2o.pot ! name of the used PE potential
+   .PEQM        ! activate polarizable embedding
    **INTEGRALS
    *TWOINT
    .SCREEN
@@ -98,7 +96,7 @@ regular TDDFT calculation but with `.PEQM` under the `**HAMILTONIAN` flag, just 
    0
    **END OF
 
-As for the case of PE-HF, specification of `.PEQM` will thus make the program calculate the
+As for the case of PE-HF, the specification of `.PEQM` will thus make the program calculate the
 PE-specific terms; in case of linear response that is the additional
 :math:`\hat{v}^{\mathrm{PE}}` and :math:`\hat{v}^{\mathrm{ind}}` terms. Note that use of the
 `.GSPOL` keyword under the `*PEQM` flag will result in a calculation where only the term
@@ -107,10 +105,10 @@ environment during the excitation process). Now we have
 all ingredients for starting the calculation::
 
 
-   pam --inp=pe-hf.inp --mol=h2o.mol --put="3_h2o.pot"
+   pam --inp=pe_response.inp --mol=h2o.mol --pot=3_h2o.pot
 
 
-The summary will look identical to a vacuum calculation ::
+The summary will look identical to a vacuum calculation::
 
    * Isotropic DL-DL non-zero oscillator strengths (f)
    ===================================================
@@ -130,7 +128,7 @@ The summary will look identical to a vacuum calculation ::
 
 Note that the first three excitations have very low oscillator strength. These excitations
 corresponds to triplet excitations, which are automatically included in a relativistic
-framework. The fourth excitation is the observed one.  We can calculate the electrostatic part
+framework. The fourth excitation is the observed one. We can calculate the electrostatic part
 of the solvent shift (i.e. not including the solvent effect on the geometry), by calculating
 the corresponding excitation energy without PE and substracting the result from the PE result.
 We collect results with and without PE (and the obtained solvent shift) in the table below.
@@ -181,13 +179,13 @@ Electric dipole moments and polarizabilities
 --------------------------------------------
 
 It is also possible to calculate simple expectation values or other linear response properties with the PElib module.
-The work-flow is straightforward, and we only need to add the .PEQM section as done for the TDDFT calculation above.
+The work-flow is straightforward, and we only need to add the `.PEQM` keyword as done for the TDDFT calculation above.
 The input related to the property is identical to a vacuum calculation.
 Examples of simple expectation values and linear response properties that are currently implemented with PE is the
 (electric) dipole moment and static or frequency-dependent polarizabilities.
 Unlike in a non-relativistic framework, the relativistic framework allow many magnetic properties to be obtained  simply as
 expectation values (e.g. properties related to electron paramagnetic spectroscopy). All PE contributions to these properties
-will be automatically included from the wave function optimization and will follow in a future release of an EPR module.
+will be automatically included from the wave-function optimization and will follow in a future release of an EPR module.
 Note also that linear response properties that require London orbitals are also not currently possible with PE.
 An example is given below for a dipole moment calculation input file ::
 
@@ -196,9 +194,6 @@ An example is given below for a dipole moment calculation input file ::
    .PROPERTIES
    **HAMILTONIAN
    .PEQM
-   *PEQM
-   .POTENT
-   3_h2o.pot
    **WAVE FUNCTION
    .SCF
    **PROPERTIES

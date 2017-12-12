@@ -28,7 +28,7 @@ As you can see in the .mol file the complex has C2v symmetry and we use basis se
 In the input file a large number of labdef labels are visible. This is necessary later on if we want to analyze the
 eigenstate  composition in terms of atomic orbital contributions. Hereby the grouping occurs according to the angular
 momentum of the atomic basis functions. A further distinction is not made and would lead to an excess of information in
-larger systems. In order to generate the LABDEF labels we use the utility::
+larger systems. In order to generate the LABDEF labels we use the utility
 
 labdefmaker
 
