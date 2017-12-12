@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -469,6 +469,11 @@ C&&&  .GAS SH:  the new input format in accordance with Dalton LUCITA (and soon 
 C&&& .SYMMETRY: symmetry of the wave function
                   if(.not.linear) then
                     READ(LUCMD,*) IKRMC_SYMMETRY
+                    IF (IKRMC_SYMMETRY .LE. 0) THEN
+                       write(lupri,'(//A)') 'INPUT ERROR '//
+     &                 'for *KRMCSF .SYMMETRY :',IKRMC_SYMMETRY
+                       CALL QUIT('*KRMCSCF .SYMMETRY input error')
+                    END IF
                   else
 !                   read mij value and # roots in linear symmetry input format
                     read(lucmd,*) symmetry_str
@@ -758,24 +763,21 @@ C     Boson symmetry in the CI expansion
 C
       IF ((SPINFR).AND.KRMC_UCIBOS) THEN
          NREP = NBSYM
-         WRITE(LUPRI,'(A)')
-     &     ' * Boson spatial spinor symmetry used in CI expansion.'
-         WRITE(LUPRI,'(2A)')
+         WRITE(LUPRI,'(A/2A/A,I4,A,I3)')
+     &     ' * Boson spatial spinor symmetry used in CI expansion.',
      &     ' * Spatial symmetry (boson) of wave function : ',
-     &     REP ( IKRMC_SYMMETRY - 1 )
-         WRITE(LUPRI,'(A,I4,A,I3)')
+     &        REP ( IKRMC_SYMMETRY - 1 ),
      &     ' * Allowed interval of 2 * MS :',
-     &     NKRMC_MINMK2, ' to ', NKRMC_MAXMK2
+     &        NKRMC_MINMK2, ' to ', NKRMC_MAXMK2
       ELSE IF (.NOT.(SPINFR).AND.KRMC_UCIBOS) THEN
          NREP = NBSYM
-         WRITE(LUPRI,'(A)') ' * Approximate boson spatial spinor'//
-     &     ' symmetry (as non-rel) used in CI expansion.'
-         WRITE(LUPRI,'(2A)')
-     &    ' * Approximate spatial symmetry (boson) of wave function : ',
-     &     REP ( IKRMC_SYMMETRY - 1 )
-         WRITE(LUPRI,'(A,I4,A,I3)')
+         WRITE(LUPRI,'(A/2A/A,I4,A,I3)')
+     &     ' * Approximate boson spatial spinor'//
+     &        ' symmetry (as non-rel) used in CI expansion.',
+     &     ' * Approximate spatial symmetry (boson) of wave function : '
+     &        ,REP ( IKRMC_SYMMETRY - 1 ),
      &     ' * Allowed interval of approximate 2 * MS :',
-     &     NKRMC_MINMK2, ' to ', NKRMC_MAXMK2
+     &        NKRMC_MINMK2, ' to ', NKRMC_MAXMK2
       ELSE
          if(linear)then
 !          store on common block in krciprop.h
@@ -787,8 +789,7 @@ C
              ferm_lab = '/2'
            end if
            WRITE(LUPRI,'(a,i3,a,a4,a2)')
-     &        '    ** ', 1,' eigenstate'//
-     &        ' for MJ-value (doubled): ',
+     &        '    ** ', 1,' eigenstate for MJ-value (doubled): ',
      &          adjustr(xrepeig(ikrmc_symmetry)),ferm_lab
          else
            allocate(multb_tmp(64,64))
@@ -806,11 +807,12 @@ C
 C               store on common block in krciprop.h
                 XREPEIG(IKRMC_SYMMETRY) = REPNA(IRRP)
            ELSE
+              IRRP = IKRMC_SYMMETRY
               WRITE(LUPRI,'(2A)')
      &          ' * Symmetry (fermion) of wave function: ',
-     &          REPNA(IKRMC_SYMMETRY)
+     &          REPNA(IRRP)
 C               store on common block in krciprop.h
-                XREPEIG(IKRMC_SYMMETRY) = REPNA(IKRMC_SYMMETRY)
+                XREPEIG(IKRMC_SYMMETRY) = REPNA(IRRP)
            END IF
          end if
          if(.not.KRMC_full_ci)then
@@ -823,19 +825,29 @@ C               store on common block in krciprop.h
          end if
       END IF
 C
+      IF (IKRMC_SYMMETRY .GT. NREP) THEN
+         WRITE(LUPRI,'(/A//A,2I3)')
+     &      ' INPUT ERROR, requested .SYMMETRY is not valid!',
+     &      ' symmetry requested, max value of symmetry = ', 
+     &        IKRMC_SYMMETRY, NREP
+         IF (KRMC_UCIBOS) THEN
+            WRITE(LUPRI,'(I0, A,28(2X,A))')
+     &      NREP,' spin-free boson symmetries known:',REP(0:NREP-1)
+         ELSE
+            WRITE(LUPRI,'(I0, A,28(2X,A))')
+     &      NREP,' fermion symmetries known:',REPNA(1:NREP)
+            WRITE(LUPRI,'(I0, A,28(2X,A))')
+     &      NREP,' boson   symmetries known:',REPNA(NREP+1:2*NREP)
+         END IF
+         CALL QUIT('INPUT ERROR for *KRMCSCF  .SYMMETRY')
+      END IF
+C
       IF (KRMC_CIPROGRAM.EQ.'GASCIP  ') THEN
          if(linear)then
            call quit('*** error in KRMCINP: MCSCF calculations in'//
      &               ' linear symmetry are permitted only with the CI'//
      &               ' program LUCIAREL.***')
          end if
-         IF (IKRMC_SYMMETRY .GT. NREP) THEN
-            WRITE(LUPRI,'(/A//A,2I3)')
-     &         ' INPUT ERROR, requested .SYMMETRY is non-existent!',
-     &         ' symmetry, max value of symmetry = ', 
-     &           IKRMC_SYMMETRY, NREP
-            CALL QUIT('INPUT ERROR for *KRMCSCF  .SYMMETRY')
-         END IF
       END IF
 C
       IF (DKRMC_MVOFAC .NE. 1.0D0) THEN

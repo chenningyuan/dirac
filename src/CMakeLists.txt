@@ -10,7 +10,7 @@
 # Set all module options and definitions first
 # so they can be DEFINED for all source subdirectories below
 #----------------------------------------------------------------------------------
-option(ENABLE_RELCCSD_STANDALONE "Enable standalone RELCCSD" ON)
+option(ENABLE_RELCCSD_STANDALONE "Enable standalone RELCCSD" OFF)
 option(ENABLE_XCFUN "Enable XCFun library" ON)
 if(NOT ENABLE_XCFUN)
     add_definitions(-DEXCLUDE_XCFUN)

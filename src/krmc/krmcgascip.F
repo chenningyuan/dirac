@@ -1,6 +1,6 @@
 #define GASCIP_DEBUG -1
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -307,6 +307,25 @@ C
      &       ' (GASCIP_GENDET) Output from generation of determinants:'
          IF (UCIBOS) WRITE(LUPRI,'(10X,A)')
      &    'Using boson spinor symmetry (exact or approximate) in the CI'
+         IF (IRRP .LE. 0) THEN
+            IF (UCIBOS) THEN
+               WRITE(LUPRI,'(10X,A,I4,A,I3)')
+     &        'Generating determinants of all spatial symmetries',
+     &        ' and 2*MS interval:',MINMK2,' to',MAXMK2
+            ELSE
+               WRITE(LUPRI,'(10X,A,I4,A,I3)')
+     &        'Generating determinants of all symmetries',
+     &        ' and 2*MK interval:',MINMK2,' to',MAXMK2
+            END IF
+         ELSE IF (UCIBOS) THEN
+            WRITE(LUPRI,'(10X,3A,I4,A,I3)')
+     &        'Generating dets. with spatial symmetry ', REP(IRP-1),
+     &        ' and 2*MS interval:',MINMK2,' to',MAXMK2
+         ELSE
+            WRITE(LUPRI,'(10X,3A,I4,A,I3)')
+     &        'Generating dets. with symmetry ', REPNA(IRRP),
+     &        ' and 2*MK interval:',MINMK2,' to',MAXMK2
+         END IF
          WRITE(LUPRI,'(10X,A,I10)')
      &        'Max no. of determinants',MAXDET
       END IF
