@@ -1211,6 +1211,10 @@
 
       call getvvoo(array)
 
+    case (13)
+
+      call getvvov_incore(array)
+
     case (14)
 
       call getvvvo_incore(array)

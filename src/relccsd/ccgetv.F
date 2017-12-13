@@ -711,6 +711,44 @@ C
       END
 
 
+      SUBROUTINE GETVVOV_incore (VVVOV)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+
+C     Get VOVO part of two-electron integrals
+
+C---------------Calling variables--------------------------------------
+C
+      REAL*8             :: VVVOV(*)
+      REAL*8, ALLOCATABLE:: VOVVV(:)
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "files.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "eqns.inc"
+#include "param.inc"
+C
+C---------------Local variables--------------------------------------
+C
+C---------------Executable code--------------------------------------
+C
+
+      ALLOCATE(VOVVV(NV5*IRW*RCW))
+
+      CALL GETOVVV_incore (VOVVV)
+
+      CALL SRT1C1 (NREP,NOV,NVVT,VOVVV,VVVOV) 
+
+      DEALLOCATE(VOVVV)
+
+      RETURN
+      END
+
+
       SUBROUTINE GETVVVV (IREP,ISTART,NINT,DONE,VVVVV,MINT)
 C
       IMPLICIT INTEGER (A-Z)

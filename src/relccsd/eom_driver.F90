@@ -133,7 +133,7 @@
    real*8, pointer :: diag_H(:)
    integer :: icount, acount
 
-   integer :: abij, ijrp, abrp, jrp, jj, irp, ioff, imin, bb, amin, arp, brp, b
+   integer :: abij, ijrp, abrp, jrp, jj, irp, ioff, imin, bb, amin, arp, brp, b, iarep, airep
    real(kind=8) :: fac, fac3, fac2
    integer :: ndimr1, ndimr2, search_dimension, xroot
    real*8,allocatable :: R1_dum(:,:) 
@@ -172,17 +172,21 @@
     ai = 1
     ii = 0
     do irep = 1, nrep
-       arep = multb (irep,state_sym+nrep,1)
+        arep = multb (state_sym+nrep,irep,2)
+
+        iarep = multb(irep,arep,2)
+        airep = multb(arep,irep,2)
+
         do i = 1, no(irep)
          ii = ii + 1
          fac1 = eps(ii)
          aoff = io(nrep+1) + iv(arep)
           do a = 1, nv(arep)
              aa = aoff + a
-             iaai = (iovvo(state_sym) + (iivo(arep,irep)+(i-1)*nv(arep)+a-1)*nov(state_sym) + &
-       &      iiov(irep,arep) + (a-1)*no(irep))*rcw+i ! careful about the complex algebra  
-              H_II(ai) = -fac1 + eps(aa) - vbar_ss (iaai)
-             ai = ai + 1
+              iaai = (iovvo(state_sym) + (iivo(arep,irep)+(i-1)*nv(arep)+a-1)*nov(iarep) + &
+       &      iiov(irep,arep) + (a-1)*no(irep)+ i - 1)*rcw+1   
+              H_II(ai) = -fac1 + eps(aa)! - vbar_ss (iaai)
+              ai = ai + rcw
           enddo
         enddo
     enddo
@@ -190,7 +194,7 @@
 !aspg+as
       ABIJ = ai 
       DO IJRP = 1, NREP
-       abrp = multb (ijrp+nrep,state_sym+nrep,1)
+       abrp = multb (state_sym+nrep,ijrp+nrep,2)
       DO JRP = 1, NREP
       JJ = IO(JRP)
       IRP = MULTB(JRP,IJRP+NREP,2)
@@ -218,7 +222,7 @@
                   AA = AOFF + A
                   FAC = FAC3 - EPS(AA)
                   H_II(ABIJ) = -FAC
-                  ABIJ = ABIJ + 1
+                  ABIJ = ABIJ + rcw
                ENDDO
             ENDDO
             ENDDO
@@ -279,23 +283,20 @@
       if (relcc_mfd_trial_diagonal) then
           print *, '  Using (reordered) unit vectors as trial vectors'
 
-! In the following section we generate the guess vectors belonging to a particular state symmetry.
-! Thereby we avoid the sigma vector calculations of the degenerate roots.  
+! In the following section we generate the guess vectors for EE. Here we do not discard the degenerate determinants, since here diagonalization
+! will give rise to different energy roots.
 
-          allocate(diag_H(ndimr1*rcw))
-          diag_H = H_II(1:ndimr1*rcw)
+          allocate(diag_H(ndimr1))
+          diag_H = H_II(1:ndimr1*rcw:rcw)
 
-          xroot = 1
-
-          do iroot = 1, nroot*rcw, rcw
+          do iroot = 1, nroot
               k = minloc(diag_H)
-              if (iprnt.ge.3) write(iw,*)'roots',iroot,H_II(k(1)),k(1)
+              if (iprnt.ge.3) write(iw,*)'roots',iroot,diag_H(k(1)),k(1)
               i = k(1)
-              diag_H(i) = 8000.0d0
               jroot = i
               if (rcw.eq.2) jroot = 2*i - 1
-              R1(jroot,xroot) = 1.0d0
-              xroot = xroot + 1 
+              R1(jroot,iroot) = 1.0d0
+              diag_H(i) = 8000.0d0
           enddo
           deallocate(diag_H)
       end if  ! relcc_mfd_trial_diagonal
@@ -552,7 +553,7 @@
           do iroot = 1, fudge_factor*nroot
               k = minloc(diag_H)
 !             if (iprnt.ge.3) write(iw,*)'roots',iroot,H_II(k(1)),k(1)
-              write(iw,*)'roots',iroot,H_II(k(1)),k(1)
+              write(iw,*)'roots',iroot,diag_H(k(1)),k(1)
               i = k(1)
               diag_H(i) = 8000.0d0
               if (i <= search_dimension) then
@@ -577,7 +578,6 @@
   end select 
 
    end subroutine
-
 
    subroutine input_processor_left(Fbar_HH,Fbar_PP,Vbar_SS,eVectorsR,L1,L2,H_II)
 
@@ -770,36 +770,36 @@
     call alloc_array(e,nrep)
     call auto_symmetry_offset(e,nv,ncont,.false.,.false.)
 
- !   search_dimension = ncont(state_sym)*no(state_sym) 
+     search_dimension = ncont(state_sym)*no(state_sym) 
 
- !   allocate(diag_H(ndiml1))
- !   diag_H = H_II(1:ndiml1)
+     allocate(diag_H(ndiml1))
+     diag_H = H_II(1:ndiml1)
 
- !      xroot = 1 
+        xroot = 1 
 
- !     do iroot = 1, 2*nroot
- !      k = minloc(diag_H) 
-!!ashee        write(iw,*)'roots',iroot,H_II(k(1)),k(1) 
- !      i = k(1)
- !      diag_H(i) = 8000.0d0
+       do iroot = 1, 2*nroot
+        k = minloc(diag_H) 
+! ashee        write(iw,*)'roots',iroot,H_II(k(1)),k(1) 
+        i = k(1)
+        diag_H(i) = 8000.0d0
 
- !      if (i <= search_dimension) then
- !       L1(i,xroot) = 1.0d0
- !       xroot = xroot + 1
- !      endif
+        if (i <= search_dimension) then
+         L1(i,xroot) = 1.0d0
+         xroot = xroot + 1
+        endif
 
- !     enddo
- !   deallocate(diag_H)
+       enddo
+     deallocate(diag_H)
 
 
-    do iroot = 1, nroot
+!   do iroot = 1, nroot
 
-      call srt1c1 (nrep,ncont,no,eVectorsR(1:ndimL1,iroot:iroot), &
-     &             L1(1:ndimL1,iroot:iroot)) 
-      call srt1c1 (nrep,e%oneNonDirac,noot,eVectorsR(1+ndiml1:(ndiml1+ndiml2),iroot:iroot), &
-     &             L2(1:ndiml2,iroot:iroot)) 
+!     call srt1c1 (nrep,ncont,no,eVectorsR(1:ndimL1,iroot:iroot), &
+!    &             L1(1:ndimL1,iroot:iroot)) 
+!     call srt1c1 (nrep,e%oneNonDirac,noot,eVectorsR(1+ndiml1:(ndiml1+ndiml2),iroot:iroot), &
+!    &             L2(1:ndiml2,iroot:iroot)) 
 
-    enddo
+!   enddo
 
   call dealloc_array(e)
 
@@ -1033,6 +1033,8 @@
     right_vectors = .true.
     left_vectors =  .false.
     call eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL, davResultsR, B, eps)
+
+!    call free_buffers(buf1,buf2,buf3)
 
     if (relcc_do_eomprop) then
 
@@ -1344,7 +1346,7 @@
          nstate_sym(1,select_eom) = nstate_sym(1,select_eom) - 1
       ENDIF
 
-      call evector_analysis (select_eom,nstate_sym,eps,iprnt,e_off,eigenvalues(1:rcw,1:isize),eigenvectors)
+      call evector_analysis (state_sym,select_eom,nstate_sym,eps,iprnt,e_off,eigenvalues(1:rcw,1:isize),eigenvectors)
 
       DEALLOCATE (INDX_ALL,STAT=IERR)
       IF (IERR.NE.0) THEN
@@ -1360,7 +1362,7 @@
    end subroutine
 
 
-   subroutine evector_analysis (select_eom,nstate_sym,eps,ipr,e_off,ev_all,eigenvectors)
+   subroutine evector_analysis (state_sym,select_eom,nstate_sym,eps,ipr,e_off,ev_all,eigenvectors)
 
 !---------------Description--------------------------------------------
 !
@@ -1384,6 +1386,7 @@
 
    real*8, intent(in) :: eps(*),e_off
    real*8, intent(in) :: ev_all(rcw,nroot),eigenvectors(rcw,*) 
+   integer            :: state_sym  
    integer            :: select_eom,ipr,nstate_sym(nrep,nroot)
 
 !---------------Common Blocks--------------------------------------
@@ -1409,7 +1412,7 @@
       elseif (ipr.le.2) then
          tres = 0.01d0
       else
-         tres = 0.0d0
+         tres = 0.01d0
       end if
 
       i_eigenvalue = 0
@@ -1529,7 +1532,8 @@
 
 
   do ijrp = 1, nrep
-       abrp = multb (ijrp+nrep,1+nrep,1)
+!       abrp = multb (ijrp+nrep,1+nrep,1)
+       abrp = multb (1+nrep,ijrp+nrep,2)
     do jrp = 1, nrep
       jj = io(jrp)
       irp = multb(jrp,ijrp+nrep,2)
@@ -1574,7 +1578,7 @@
 
     jj = 0
   do irep = 1, nrep
-     arep = multb (irep,1+nrep,1)
+     arep = multb (state_sym+nrep,irep,2)
       do i = 1, no(irep)
        jj = jj + 1
           aoff = io(nrep+1) + iv(arep)
@@ -1597,7 +1601,7 @@
 
 
   do ijrp = 1, nrep
-       abrp = multb (ijrp+nrep,1+nrep,1)
+       abrp = multb (state_sym+nrep,ijrp+nrep,2)
     do jrp = 1, nrep
       jj = io(jrp)
       irp = multb(jrp,ijrp+nrep,2)
@@ -1761,14 +1765,13 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
  
       call dealloc_array(e,f,g,h)
 
-             call set_eom_ndet(1, ndimr1)
-             call set_eom_ndet(2, ndimr2)
-
              if (nroot.eq.-1) nroot = ndimr1 + ndimr2
 
              N1 = ndimr1*rcw
              N2 = ndimr2*rcw
              N =  N1 + N2 
+             call set_eom_ndet(1, N1)
+             call set_eom_ndet(2, N2)
 
              allocate (trial_vector(N,nroot), stat = AllocateStatus)
              IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
@@ -1815,7 +1818,6 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
              enddo
 
              do irep = 1, nrep
-                if (iprnt.ge.2) write(*,*)'continuous orbital ',irep,ncont(irep),nroot
                 ndimr1 = ndimr1 + ncont(irep)*no(irep)
              enddo
 

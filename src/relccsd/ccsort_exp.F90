@@ -99,7 +99,7 @@
 
       IJKL = 1
       DO KLREP = 1, NREP
-         IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
+         IJREP = MULTB(IRP_INPUT+NREP,KLREP+NREP,2)
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
         IF (KREP.LT.LREP) GOTO 10
@@ -237,7 +237,7 @@
 
       IJKL = 1
       DO KLREP = 1, NREP
-         IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
+         IJREP = MULTB(IRP_INPUT+NREP,KLREP+NREP,2)
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
         IF (KREP.LT.LREP) GOTO 10
@@ -383,7 +383,7 @@
 
       IJKL = 1
       DO KLREP = 1, NREP
-        IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
+        IJREP = MULTB(IRP_INPUT+NREP,KLREP+NREP,2)
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
         IF (KREP.LT.LREP) GOTO 10
@@ -487,7 +487,7 @@
 
       IJKL = 1
       DO KLREP = 1, NREP
-        IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
+        IJREP = MULTB(IRP_INPUT+NREP,KLREP+NREP,2)
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
         DO L = 1, LFIE(LREP)
@@ -575,7 +575,8 @@
 
       IJKL = 1
       DO KLREP = 1, NREP
-       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
+!       IJREP = MULTB(IRP_INPUT+NREP,KLREP+NREP,2)
+       IJREP = MULTB(IRP_INPUT+NREP,KLREP+NREP,2)
        N = f%oneNonDirac(IJREP)
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
@@ -666,7 +667,8 @@
 
       IJKL = 0
       DO KLREP = 1, NREP
-       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
+!       IJREP = MULTB(IRP_INPUT+NREP,KLREP+NREP,2)
+       IJREP = MULTB(IRP_INPUT+NREP,KLREP+NREP,2)
        M = e%onenonDirac(IJREP)
        N = f%onenonDirac(KLREP)
        IJ = 1
@@ -761,7 +763,7 @@
 
       IJKL = 0
       DO KLREP = 1, NREP
-       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
+       IJREP = MULTB(IRP_INPUT+NREP,KLREP+NREP,2)
        M = e%onenonDirac(IJREP)
        N = f%onenonDirac(KLREP)
        IJ = 1
@@ -845,7 +847,7 @@
 
       IJKL = 0
       DO KLREP = 1, NREP
-       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
+       IJREP = MULTB(IRP_INPUT+NREP,KLREP+NREP,2)
        M = e%onenonDirac(IJREP)
        N = f%onenonDirac(KLREP)
        IJ = 1
@@ -926,7 +928,7 @@
 
       IJKL = 0
       DO KLREP = 1, NREP
-       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
+       IJREP = MULTB(IRP_INPUT+NREP,KLREP+NREP,2)
        M = e%onenonDirac(IJREP)
        N = f%onenonDirac(KLREP)
        IJ = 1
@@ -988,7 +990,7 @@
 
       call alloc_array(e,nrep,f,g,h)
       call auto_symmetry_offset(e,IFIE,JFIE,.false.,.false.)
-      if (all(KFIE == LFIE)) then !this may be a rstriction since it may happen that the holes and particles are equal in number.
+      if (all(KFIE == LFIE)) then !this may be a restriction since it may happen that the holes and particles are equal in number.
       call auto_symmetry_offset_triangular(f,KFIE,LFIE)
       else
       call auto_symmetry_offset(f,KFIE,LFIE,.false.,.false.)
@@ -1008,7 +1010,7 @@
 
       IJKL = 0
       DO KLREP = 1, NREP
-       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
+       IJREP = MULTB(IRP_INPUT+NREP,KLREP+NREP,2)
        M = e%onenonDirac(IJREP)
        N = f%onenonDirac(KLREP)
        IJ = 1
@@ -1095,7 +1097,7 @@
       IJKL = 1
       DO KLREP = 1, NREP
 
-       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
+       IJREP = MULTB(IRP_INPUT+NREP,KLREP+NREP,2)
 
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
@@ -1184,7 +1186,7 @@
 
       IJKL = 1
       DO KLREP = 1, NREP
-       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
+       IJREP = MULTB(IRP_INPUT+NREP,KLREP+NREP,2)
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
         DO L = 1, LFIE(LREP)
@@ -1275,7 +1277,7 @@
 
       IJKL = 1
       DO KLREP = 1, NREP
-       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
+       IJREP = MULTB(IRP_INPUT+NREP,KLREP+NREP,2)
        N = f%oneNonDirac(IJREP)
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
@@ -1355,7 +1357,7 @@
 
       IJKL = 1
       DO KLREP = 1, NREP
-       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
+       IJREP = MULTB(IRP_INPUT+NREP,KLREP+NREP,2)
        N = f%oneNonDirac(IJREP)
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
@@ -1442,7 +1444,7 @@
 
       IJKL = 1
       DO KLREP = 1, NREP
-       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
+       IJREP = MULTB(IRP_INPUT+NREP,KLREP+NREP,2)
        N = f%oneNonDirac(IJREP)
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
@@ -1523,7 +1525,7 @@
 
       IJKL = 1
       DO KLREP = 1, NREP
-       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
+       IJREP = MULTB(IRP_INPUT+NREP,KLREP+NREP,2)
        N = f%oneNonDirac(IJREP)
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
@@ -1610,7 +1612,7 @@
 
       IJKL = 1
       DO KLREP = 1, NREP
-         IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
+         IJREP = MULTB(IRP_INPUT+NREP,KLREP+NREP,2)
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
         IF (KREP.LT.LREP) GOTO 10
@@ -1721,7 +1723,7 @@
 
       IJKL = 1
       DO KLREP = 1, NREP
-       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
+       IJREP = MULTB(IRP_INPUT+NREP,KLREP+NREP,2)
        DO 10 LREP = 1, NREP
          KREP = MULTB(LREP,KLREP+NREP,2)
         DO L = 1, LFIE(LREP)
@@ -1843,7 +1845,7 @@
 
       IJKL = 1
       DO KLREP = 1, NREP
-       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
+       IJREP = MULTB(IRP_INPUT+NREP,KLREP+NREP,2)
        DO 10 LREP = 1, NREP
          KREP = MULTB(LREP,KLREP+NREP,2)
         DO L = 1, LFIE(LREP)
@@ -1969,7 +1971,7 @@
 
       IJKL = 1
       DO KLREP = 1, NREP
-        IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
+        IJREP = MULTB(IRP_INPUT+NREP,KLREP+NREP,2)
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
         DO L = 1, LFIE(LREP)
@@ -2079,7 +2081,7 @@
       IF (.NOT.DOINV) CALL XCOPY(h%oneDirac(IRP_INPUT),A0,0,BUF2,1)
       IJKL = 0
       DO KLREP = 1, NREP
-       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
+       IJREP = MULTB(IRP_INPUT+NREP,KLREP+NREP,2)
        M = e%onenonDirac(IJREP)
        N = f%onenonDirac(KLREP)
        IJ = 1
@@ -2153,15 +2155,18 @@
       SELECT CASE(IRREP_PROD_TYPE_LOC)
       CASE(1)
        IF (SHIFT_BOSON) THEN
-        IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,1)
+        IJREP = MULTB(IRP_INPUT+NREP,KLREP+NREP,2)
        ELSE
-        IJREP = MULTB(KLREP,IRP_INPUT+NREP,1)
+        IJREP = MULTB(IRP_INPUT+NREP,KLREP,2)
+!        IJREP = MULTB(KLREP,IRP_INPUT+NREP,1)
        ENDIF
       CASE(2)
        IF (SHIFT_BOSON) THEN
-        IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,2)
+        IJREP = MULTB(IRP_INPUT+NREP,KLREP+NREP,2)
+ !       IJREP = MULTB(KLREP+NREP,IRP_INPUT+NREP,2)
        ELSE
-        IJREP = MULTB(KLREP,IRP_INPUT+NREP,2)
+ !       IJREP = MULTB(KLREP,IRP_INPUT+NREP,2)
+       IJREP = MULTB(IRP_INPUT+NREP,KLREP,2)
        ENDIF
       END SELECT
 

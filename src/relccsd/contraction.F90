@@ -78,6 +78,7 @@
    &                dia_sum_factor*A1,imTensor_temp,irrep_left_loc,irrep_right_loc,irrep_target,.false.) 
 
    allocate (ImTensor_temp_temp(dot_product(x_row,y_column)*rcw))
+    ImTensor_temp_temp = 0.0d0
 
     call SRT1C1_exp (irrep_target,.false.,x_row,y_column,imTensor_temp,imTensor_temp_temp,2)
 
@@ -188,7 +189,7 @@
    allocate (ImTensor_temp(dot_product(x_row,y_column)*rcw))
    ImTensor_temp = 0.0d0
      call cntrct_new (transA,transB,x_row,y_column,x_column,asym_factor_R*asym_factor_L*dia_factor*A1,v_sort, &
-    &              right_sorted,A0,imTensor_temp,irrep_left_loc,irrep_right_loc,irrep_target,.false.) 
+    &              right_sorted,A1,imTensor_temp,irrep_left_loc,irrep_right_loc,irrep_target,.false.) 
 
    allocate (ImTensor_temp_temp(dot_product(x_row,y_column)*rcw))
 
@@ -741,7 +742,7 @@
    im_temp = 0.0d0
 
     if (present(RightTensor)) call cntrct_new (transA,transB,x_row,y_column,x_column,asym_factor*dia_factor*A1,v_sort, &
-    &                                      RightTensor,A0,im_temp,irrep_left_loc,irrep_right_loc,irrep_target,.false.)
+    &                                      RightTensor,A1,im_temp,irrep_left_loc,irrep_right_loc,irrep_target,.false.)
 
 !  3) re-sort the arrays to align with the desired structure of the intermediate.
 
@@ -756,7 +757,10 @@
 
    allocate(im_temp_temp(dot_product(x_row,y_column)*rcw))
 
-!   call srt1c1n (nrep,x_row,y_column,im_temp,im_temp_temp)
+    im_temp_temp = 0.0d0
+
+  !  write(*,*)'possibility of mistake'
+  ! call srt1c1n (nrep,x_row,y_column,im_temp,im_temp_temp)
    call srt1c1_exp (irrep_target,.false.,x_row,y_column,im_temp,im_temp_temp,2)
 
    deallocate(im_temp)
@@ -856,7 +860,7 @@
 
 
   if (present(LeftTensor)) call cntrct_new (transA,transB,x_row,y_column,y_row,asym_factor*dia_factor*A1,LeftTensor,&
-  &        right_sort,A0,im_temp,irrep_left_loc,irrep_right_loc,irrep_target,.false.) 
+  &        right_sort,A1,im_temp,irrep_left_loc,irrep_right_loc,irrep_target,.false.) 
 
 !!   right_sort = 0.0d0
 !  4) re-sort the arrays to align with the desired structure of the imtermediate.
@@ -870,8 +874,8 @@
 
 !    write(*,*)'possibility of mistake',x_row(1),y_column(1),x_row(2),y_column(2)
   allocate(im_temp_temp(dot_product(x_row,y_column)*rcw))
-   call srt1c1_exp (irrep_target,.false.,x_row,y_column,im_temp,im_temp_temp,2)
-!   call srt1c1n (nrep,x_row,y_column,im_temp,im_temp_temp)
+!  call srt1c1_exp (irrep_target,.false.,x_row,y_column,im_temp,im_temp_temp,2)
+   call srt1c1n (nrep,x_row,y_column,im_temp,im_temp_temp)
 
  deallocate(im_temp)
    call sorting_for_blas(13,im_order,match_index,.true.,transA,right_sort,x_row,x_column,im_temp_temp,if_TotSym=.false., &
@@ -932,8 +936,8 @@
 
       call alloc_array(e,nrep,f,g)
 
-      irrepc = multb(irrepa+nrep,irrepb+nrep,2)
-
+      irrepc = multb(irrepa+nrep,irrepb+nrep,1)
+      
       shift = 0
       if(shift_for_boson) shift=nrep 
        if (transa.eq.'N'.or.transa.eq.'n') then
@@ -949,8 +953,10 @@
         call auto_symmetry_offset(g,mdim,ndim,shift_for_boson,shift_for_boson)
 
       do krp = 1, nrep
-         mrp = multb(krp+shift,irrepa+nrep,1)  
-         nrp = multb(krp+shift,irrepb+nrep,1)  
+!      mrp = multb(krp+shift,irrepa+nrep,1)  
+       nrp = multb(krp+shift,irrepb+nrep,1)  
+       mrp = multb(irrepa+nrep,krp+shift,2)  
+!        nrp = multb(irrepb+nrep,krp+shift,2)  
 
          m = mdim(mrp)
          n = ndim(nrp)
@@ -1029,8 +1035,7 @@
      type(Offset) :: e,f,g
 !---------------executable code--------------------------------------
 
-
-      irrepc = multb(irrepa+nrep,irrepb+nrep,2)
+      irrepc = multb(irrepa+nrep,irrepb+nrep,1)
 
       call alloc_array(e,nrep,f,g)
       shift = 0
@@ -1048,8 +1053,12 @@
        endif
         call auto_symmetry_offset(g,mdim,ndim,shift_for_boson,shift_for_boson)
 
-      do krp = 1, nrep
-         mrp = multb(krp+shift,irrepa+nrep,1)  
+!     do krp = 1, nrep
+!        mrp = multb(irrepa+nrep,krp+shift,2)  
+!        nrp = multb(krp+shift,irrepb+nrep,2)  
+
+      do mrp = 1, nrep
+         krp = multb(irrepa+nrep,mrp+shift,2)  
          nrp = multb(krp+shift,irrepb+nrep,2)  
 
          m = mdim(mrp)
@@ -1132,7 +1141,7 @@
 
       call alloc_array(e,nrep,f,g)
 
-      irrepc = multb(irrepa+nrep,irrepb+nrep,2)
+      irrepc = multb(irrepa+nrep,irrepb+nrep,1)
 
       shift = 0
       if(shift_for_boson) shift=nrep 
@@ -1149,9 +1158,12 @@
        endif
         call auto_symmetry_offset(g,mdim,ndim,shift_for_boson,shift_for_boson)
 
+
       do krp = 1, nrep
          mrp = multb(krp+shift,irrepa+nrep,2)  
+ !        mrp = multb(irrepa+nrep,krp+shift,1)  
          nrp = multb(krp+shift,irrepb+nrep,1)  
+ !        nrp = multb(irrepb+nrep,krp+shift,2)  
 
          m = mdim(mrp)
          n = ndim(nrp)
@@ -1233,7 +1245,7 @@
 
       call alloc_array(e,nrep,f,g)
 
-      irrepc = multb(irrepa+nrep,irrepb+nrep,2)
+      irrepc = multb(irrepa+nrep,irrepb+nrep,1)
 
       shift = 0
       if(shift_for_boson) shift=nrep 
@@ -1249,6 +1261,7 @@
         call auto_symmetry_offset(f,ndim,kdim,shift_for_boson,shift_for_boson)
        endif
         call auto_symmetry_offset(g,mdim,ndim,shift_for_boson,shift_for_boson)
+
 
       do krp = 1, nrep
          mrp = multb(krp+shift,irrepa+nrep,2)  
@@ -1333,7 +1346,7 @@
 
       call alloc_array(e,nrep,f,g)
 
-      irrepc = multb(irrepa+nrep,irrepb+nrep,2)
+      irrepc = multb(irrepa+nrep,irrepb+nrep,1)
 
       shift = 0
       if(shift_for_boson) shift=nrep 
@@ -1352,14 +1365,13 @@
        call auto_symmetry_offset(g,mdim,ndim,shift_for_boson,shift_for_boson)
 
          krp = irrepb
-         mrp = multb(krp+shift,irrepa+nrep,1)  
+         mrp = multb(irrepa+nrep,krp+shift,2)  
+!         mrp = multb(krp+shift,irrepa+nrep,1)  
          nrp = multb(krp+shift,irrepb+nrep,1)  
 
          m = mdim(mrp)
          n = ndim(nrp)
          k = kdim(krp)
-
-!         write(*,*)'write', mrp,krp,k,m 
 
          if (transa.eq.'N'.or.transa.eq.'n') then
             lda = m
@@ -1445,7 +1457,7 @@
 
       if(shift_for_boson) shift=nrep 
 
-      irrepc = multb(irrepa+shift,irrepb+shift,2)
+      irrepc = multb(irrepa+shift,irrepb+shift,1)
        if (transa.eq.'N'.or.transa.eq.'n') then
         call auto_symmetry_offset(e,mdim,kdim,shift_for_boson,shift_for_boson)
        else
@@ -1455,7 +1467,7 @@
   !      call auto_symmetry_offset(g,mdim,ndim,shift_for_boson,shift_for_boson)
 
          krp = irrepb
-         mrp = multb(krp+shift,irrepa+nrep,2)  
+         mrp = multb(krp+shift,irrepa+nrep,1)  
 
          m = mdim(mrp)
          n = ndim
@@ -1472,26 +1484,26 @@
          ldc = m
 
          if (transa.eq.'N'.or.transa.eq.'n') then
-          off1 = 1 + e%twononDirac(mrp,krp)*rcw
+       off1 = 1 + e%twoDirac(mrp,krp)*rcw
          else 
-          off1 = 1 + e%twononDirac(krp,mrp)*rcw
+       off1 = 1 + e%twoDirac(krp,mrp)*rcw
          endif
 
          off2 = 1 
 
          off3 = 1 
 
-!        if (k.eq.0) then
-!           call xscal (m*n,beta,c(off3),1)
-!        else
-!           call xgemm (transa,transb,m,n,k,alpha,a(off1),lda,b(off2),ldb,beta,c(off3),ldc)
-!        endif
+         if (k.eq.0) then
+            call xscal (m*n,beta,c(off3),1)
+         else
+            call xgemm (transa,transb,m,n,k,alpha,a(off1),lda,b(off2),ldb,beta,c(off3),ldc)
+         endif
 
-      if (transa.eq.'N'.or.transa.eq.'n') then
-       call xgemv (transa,m,k,alpha,a(off1),lda,b(off2),1,beta,c(off3),1) 
-      else
-       call xgemv (transa,k,m,alpha,a(off1),lda,b(off2),1,beta,c(off3),1) 
-      endif
+!     if (transa.eq.'N'.or.transa.eq.'n') then
+!      call xgemv (transa,m,k,alpha,a(off1),lda,b(off2),1,beta,c(off3),1) 
+!     else
+!      call xgemv (transa,k,m,alpha,a(off1),lda,b(off2),1,beta,c(off3),1) 
+!     endif
 
       call dealloc_array(e,f,g)
       end subroutine
