@@ -38,21 +38,19 @@ set(FIXED_RELCCSD_FORTRAN_SOURCES
 )
 
 set(FREE_RELCCSD_FORTRAN_SOURCES
-   eom_driver.F90
-   ccsort_exp.F90
+   relcc_cfg.F90
    auto_offset.F90
-   density.F90
-   relcc_cfg.F90
+   ccsort_exp.F90
+   wrapper_sorting.F90 
    contraction.F90
-   relcc_cfg.F90
    intermediates.F90
    lambda_equation.F90
-   relcc_cfg.F90
-   wrapper_sorting.F90 
-   trial_vectors_eom.F90
    sigma_eom.F90
-   eom_driver.F90 
    davidson/davidson.F90
+   density.F90
+   relcc_cfg.F90
+   trial_vectors_eom.F90
+   eom_driver.F90 
    # needs dependency
    ${PROJECT_SOURCE_DIR}/src/main/mpi_framework.F90
 )

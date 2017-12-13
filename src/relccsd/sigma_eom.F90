@@ -161,13 +161,12 @@ module sigma_eom
    function create_diagonal(A)
       real(kind=8), pointer :: create_diagonal(:)
       type(intermediates) :: A
-      integer :: N
-      integer :: ndimr1, ndimr2
+      integer :: N, N1, N2
 
-      ndimr1 = eom_ndet(1)
-      ndimr2 = eom_ndet(2)
+      N1 = eom_ndet(1)
+      N2 = eom_ndet(2)
 
-      N = ndimr1 + ndimr2
+      N = N1 + N2
 
       allocate(create_diagonal(N))
       create_diagonal = 1.0d0
@@ -192,7 +191,7 @@ module sigma_eom
       type(intermediates) :: A
       real(kind=8), intent(in) :: r(:,:)
       integer :: L, N, L_already_done
-      integer :: ndimr1, ndimr2
+      integer :: N1, N2
       integer :: start_r1, end_r1, start_r2, end_r2
       integer :: iroot
       integer, intent(in) :: state_sym
@@ -212,13 +211,13 @@ module sigma_eom
           L_already_done = 0
       endif
 
-      ndimr1 = eom_ndet(1)
-      ndimr2 = eom_ndet(2)
+      N1 = eom_ndet(1)
+      N2 = eom_ndet(2)
 
       start_r1 = 1
-      end_r1   = ndimr1
+      end_r1   = N1
       start_r2 = end_r1 + 1
-      end_r2   = end_r1 + ndimr2
+      end_r2   = end_r1 + N2
 
 
       select case (A%eomtype)
@@ -232,9 +231,7 @@ module sigma_eom
                  &             r(start_r2:end_r2, iroot), &
                  &             A,                               &
                  &             create_sigma_vector_left(start_r1:end_r1, iroot), &
-                 &             create_sigma_vector_left(start_r2:end_r2, iroot), &
-                 &             ndimr1, &
-                 &             ndimr2) 
+                 &             create_sigma_vector_left(start_r2:end_r2, iroot))
              enddo
 
          case ("EA")
@@ -247,8 +244,7 @@ module sigma_eom
 !                &             A,                               &
 !                &             create_sigma_vector_left(start_r1:end_r1, iroot:iroot), &
 !                &             create_sigma_vector_left(start_r2:end_r2, iroot:iroot), &
-!                &             ndimr1, &
-!                &             ndimr2,nbuf3) 
+!                &             nbuf3) 
 
 
              enddo
@@ -279,8 +275,7 @@ module sigma_eom
       real(kind=8), pointer :: old_sigma_vector(:,:)
       type(intermediates) :: A
       real(kind=8), intent(in) :: r(:,:)
-      integer :: L, N, L_already_done 
-      integer :: ndimr1, ndimr2
+      integer :: L, N, L_already_done, N1, N2
       integer :: start_r1, end_r1, start_r2, end_r2
       integer :: iroot,ierr
       integer, intent(in) :: state_sym
@@ -300,13 +295,13 @@ module sigma_eom
           L_already_done = 0
       endif
 
-      ndimr1 = eom_ndet(1)
-      ndimr2 = eom_ndet(2)
+      N1 = eom_ndet(1)
+      N2 = eom_ndet(2)
 
       start_r1 = 1
-      end_r1   = ndimr1
+      end_r1   = N1
       start_r2 = end_r1 + 1
-      end_r2   = end_r1 + ndimr2
+      end_r2   = end_r1 + N2
 
       select case (A%eomtype)
          case ('IP')
@@ -320,9 +315,7 @@ module sigma_eom
                  &             r(start_r2:end_r2, iroot), &
                  &             A,                               &
                  &             create_sigma_vector_right(start_r1:end_r1, iroot), &
-                 &             create_sigma_vector_right(start_r2:end_r2, iroot), &
-                 &             ndimr1, &
-                 &             ndimr2) 
+                 &             create_sigma_vector_right(start_r2:end_r2, iroot))
              enddo
 
          case ("EA")
@@ -335,10 +328,7 @@ module sigma_eom
                  &             r(start_r2:end_r2, iroot), &
                  &             A,                               &
                  &             create_sigma_vector_right(start_r1:end_r1, iroot), &
-                 &             create_sigma_vector_right(start_r2:end_r2, iroot), &
-                 &             ndimr1, &
-                 &             ndimr2) 
-
+                 &             create_sigma_vector_right(start_r2:end_r2, iroot)) 
 
              enddo
 
@@ -498,7 +488,8 @@ integer :: ierr
   real(8), allocatable :: tau(:)
   real(8), allocatable :: int_1b(:),sigma2_temp(:),lambda2_temp(:),w_vvvv(:),local_buffer(:) 
   integer :: off1,off2,irp,jrp,istart,mint,m,n,k,nint
-  integer :: off3,i,j,kstart,ntot,ierr,mrp,nrp,ndimr1,ndimr2
+  real(8), allocatable :: sigma2_local(:) 
+  integer :: off3,i,j,kstart,ntot,ierr,mrp,nrp,ndimr1,ndimr2, N1, N2
   logical :: done 
   real(8)              :: ddot
   type(Offset) :: f,g
@@ -506,8 +497,13 @@ integer :: ierr
 
 !--------------------------------------------------
 
-  ndimr1 = size(sigma1,1)/rcw
-  ndimr2 = size(sigma2,1)/rcw
+  N1 = size(sigma1,1)
+  N2 = size(sigma2,1)
+
+  ndimr1 = N1/rcw
+  ndimr2 = N2/rcw
+
+  sigma2(1:N2) = 0.0d0
 
 ! class : (HBar_SS*R)(a,i)
 !=========================
@@ -712,15 +708,14 @@ integer :: ierr
        if (iprnt.ge.2) &
     write(iw,*)'diagram 11 ', dot_product(sigma2,sigma2)
      
-! S(ab,ij) = S(ab,ij) - P(ij) f_bar_mi(m,j)*r2(ab,im) 
-!-----------------------------------------------------
+!!S(ab,ij) = S(ab,ij) - P(ij) f_bar_mi(m,j)*r2(ab,im) 
+!!----------------------------------------------------
 
     call contraction_424 ((/"p1","p2","o1","o3"/),(/"o3","o2"/), &
    & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2,irrep_left=state_sym,irrep_right=1)
 
        if (iprnt.ge.2) &
     write(iw,*)'diagram 12 ',dot_product(sigma2,sigma2)
-
 
 ! S(ab,ij) = S(ab,ij) + w_ijmn(mn,ij) * r2(ab,mn)
 !--------------------------------------------------
@@ -747,8 +742,8 @@ integer :: ierr
     allocate(int_1b(nfvv*rcw))
     int_1b = 0.0d0
 
-     call contraction_442 ((/"p1","p3","o4","o3"/),(/"o4","o3","p4","p3"/),(/"p1","p4"/),int_1b,-1.0d0,1.0d0,nrep,LeftTensor=r2, &
-         irrep_left=state_sym,irrep_right=1)
+     call contraction_442 ((/"p1","p3","o4","o3"/),(/"o4","o3","p4","p3"/),(/"p1","p4"/),int_1b,-1.0d0,1.0d0,nrep,&
+    &                     LeftTensor=r2,irrep_left=state_sym,irrep_right=1)
 
      call contraction_244 ((/"p1","p4"/),(/"p4","p2","o1","o2"/), &
     & (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=B%t2,irrep_left=state_sym,irrep_right=1)
@@ -765,8 +760,8 @@ integer :: ierr
     allocate(int_1b(nfoo*rcw))
     int_1b = 0.0d0
 
-    call contraction_442 ((/"o4","o3","p4","p3"/),(/"p4","p3","o1","o3"/),(/"o4","o1"/),int_1b,1.0d0,1.0d0,nrep,RightTensor=r2, &
-         irrep_left=1,irrep_right=state_sym)
+    call contraction_442 ((/"o4","o3","p4","p3"/),(/"p4","p3","o1","o3"/),(/"o4","o1"/),int_1b,1.0d0,1.0d0,nrep,&
+   &                      RightTensor=r2, irrep_left=1,irrep_right=state_sym)
 
     call contraction_424 ((/"p1","p2","o2","o4"/),(/"o4","o1"/), &
     & (/"p1","p2","o2","o1"/),sigma2,1.0d0,-1.0d0,nrep,RightTensor=int_1b,LeftTensor=B%t2,irrep_left=1,irrep_right=state_sym)
@@ -779,14 +774,13 @@ integer :: ierr
 ! S(ab,ij) = S(ab,ij) + w_vvvv(ab,ef)*r2(ef,ij)
 !------------------------------------------------
 
-      if (myproc.gt.0) then
-        sigma2(1:ndimr2*rcw) = 0.0d0
-      endif
-
       call alloc_array(f,nrep,g)
 
       call auto_symmetry_offset(f,nvvt,noot,.true.,.true.)
       call auto_symmetry_offset(g,nvvt,noot,.true.,.true.)
+
+      allocate(sigma2_local(N2))
+      sigma2_local = 0.0d0 
 
       do irp = 1, nrep
 
@@ -807,11 +801,12 @@ integer :: ierr
          n = noot(nrp)
          k = nint
 
-          off1 = 1 + f%twoDirac(irp,nrp)*rcw
-          off2 = 1 + g%twoDirac(mrp,nrp)*rcw
+         off1 = 1 + f%twoDirac(irp,nrp)*rcw
+         off2 = 1 + g%twoDirac(mrp,nrp)*rcw
 
          call xgemm ('n','n',m,n,k,a1,w_vvvv,m,r2(off1+istart*rcw),m, &
-     &               a1,sigma2(off2),m)
+     &               a1,sigma2_local(off2),m)
+!    &               a1,sigma2(off2),m)
          deallocate(w_vvvv)
          if (.not.done) then
             istart = istart + nint
@@ -819,33 +814,48 @@ integer :: ierr
          endif
       enddo
 
-      allocate (local_buffer(ndimr2*rcw))
-
 #if defined (VAR_MPI)
       if (nmproc .gt. 1) then
+        allocate (local_buffer(N2))
         call xcopy (ndimr2,a0,0,local_buffer,1)
         ierr = 0
 
-        call interface_mpi_allreduce(sigma2, &
-             local_buffer, ndimr2*rcw, &
+      if (iprnt.ge.2) &
+   write(*,*)'diagram 13a ', ddot(N2,sigma2_local,1,sigma2_local,1),myproc
+
+        call interface_mpi_allreduce(sigma2_local, &
+!       call interface_mpi_allreduce(sigma2, &
+             local_buffer, ndimr2, &
              op_mpi_sum,global_communicator)
+
+      if (iprnt.ge.2) &
+   write(*,*)'diagram 13b ', ddot(N2,sigma2_local,1,sigma2_local,1),myproc
 
         if(ierr.gt.0) then
            call quit('mpi_reduce error in collecting sigma2 !')
         endif
-        call xcopy(ndimr2,local_buffer,1,sigma2,1)
-        endif
+        call xcopy(ndimr2,local_buffer,1,sigma2_local,1)
+!       call xcopy(ndimr2,local_buffer,1,sigma2,1)
+        deallocate (local_buffer)
+     endif
 #endif
+      if (iprnt.ge.2) &
+   write(*,*)'diagram 13c', ddot(N2,sigma2_local,1,sigma2_local,1),myproc
+
+       call XAXPY (ndimr2,A1,sigma2_local,1,sigma2,1)
+     deallocate(sigma2_local)
+
+       if (iprnt.ge.2) &
+    write(*,*)'diagram 13d', ddot(N2,sigma2,1,sigma2,1),myproc
 
       call dealloc_array(f,g)
-      deallocate (local_buffer)
 
       if (iprnt.ge.2) &
     write(iw,*)'diagram 13 ', dot_product(sigma2,sigma2)
 
   end subroutine
 
-   subroutine sigma_IP(nvx,r1,r2,B,sigma1,sigma2,ndimr1,ndimr2)
+   subroutine sigma_IP(nvx,r1,r2,B,sigma1,sigma2)
 
 #include "param.inc"
 #include "symm.inc"
@@ -861,15 +871,24 @@ integer :: ierr
   real(8), intent(in),contiguous,target   :: r1(:), r2(:) ! R-Amplitudes
   type(intermediates), intent(in)  :: B      
   real(8), intent(inout),contiguous :: sigma1(:),sigma2(:)  ! sigma-vectors
-  integer, intent(in) :: ndimr1, ndimr2,nvx(nrep)
+  integer, intent(in) :: nvx(nrep)
 !---------------Local Variables--------------------
   real(8), allocatable :: tau(:)
   real(8), pointer,contiguous :: r1_ptr(:),r2_ptr(:)
   real(8), allocatable :: int_1b(:) 
   real(8)              :: ddot
+  integer              :: N1, N2, ndimr1, ndimr2
 !--------------------------------------------------
-  r1_ptr(1:ndimr1) => r1
-  r2_ptr(1:ndimr2) => r2
+
+  N1 = size(sigma1,1)
+  N2 = size(sigma2,1)
+
+  ndimr1 = N1/rcw
+  ndimr2 = N2/rcw
+
+  r1_ptr(1:N1) => r1
+  r2_ptr(1:N2) => r2
+
 !------------------------------------------
 ! S(a*,i) = S(a*,i) - Fbar_mi(m,i)*r(a*,m)
 !------------------------------------------
@@ -969,7 +988,7 @@ integer :: ierr
 
 !==============================================================================================================================================================================================================
 
-   subroutine sigma_EA(nox,r1,r2,B,sigma1,sigma2,ndimr1,ndimr2)
+   subroutine sigma_EA(nox,r1,r2,B,sigma1,sigma2)
 
 #include "param.inc"
 #include "symm.inc"
@@ -986,19 +1005,29 @@ integer :: ierr
   real(8), intent(in),contiguous,target   :: r1(:), r2(:) ! R-Amplitudes
   type(intermediates), intent(in)  :: B      
   real(8), intent(inout),contiguous :: sigma1(:),sigma2(:)  ! sigma-vectors
-  integer, intent(in) :: ndimr1, ndimr2,nox(nrep)
+  integer, intent(in) :: nox(nrep)
 !---------------Local Variables--------------------
   real(8), allocatable :: tau(:),w_vvvv(:)
+  real(8), allocatable :: sigma2_local(:)
   real(8), pointer :: r1_ptr(:),r2_ptr(:)
   real(8), allocatable :: int_1b(:),local_buffer(:) 
   real(8)              :: ddot
+  integer :: N1, N2, ndimr1, ndimr2
   integer :: off1,off2,irp,istart,kstart,mint,m,n,k,nint
   integer :: off3,i,j,ntot,ierr
   logical :: done 
 
 !--------------------------------------------------
-  r1_ptr(1:ndimr1) => r1
-  r2_ptr(1:ndimr2) => r2
+  N1 = size(sigma1,1)
+  N2 = size(sigma2,1)
+
+  ndimr1 = N1/rcw
+  ndimr2 = N2/rcw
+
+  r1_ptr(1:N1) => r1
+  r2_ptr(1:N2) => r2
+
+  sigma2(1:N2) = 0.0d0
 
 !S(a,i*) = S(a,i*) +  F(a,e)*R(e,i*)   
 !---------------------------
@@ -1006,7 +1035,7 @@ integer :: ierr
     call contraction_222 ((/"p1","p2"/),(/"p2","c1"/),(/"p1","c1"/),B%Fbar_ae,r1,sigma1,1.0d0,1.0d0,nrep)
 
     if (iprnt.ge.2) &
-    write(iw,*)'diagram 1 ', ddot(ndimr1,sigma1,1,sigma1,1)
+    write(iw,*)'diagram 1 ', ddot(N1,sigma1,1,sigma1,1)
 
 !S(a,i*) = S(a,i*) + F_bar_me(m,e)*r2(ae,i*m)
 !--------------------------------------
@@ -1018,7 +1047,7 @@ integer :: ierr
 !  &   (/"p1","c1"/),B%Fbar_me,sigma1,1.0d0,1.0d0,nrep,RightTensor=r2_ptr)
 
    if (iprnt.ge.2) &
-   write(iw,*)'diagram 2 ', ddot(ndimr1,sigma1,1,sigma1,1)
+   write(iw,*)'diagram 2 ', ddot(N1,sigma1,1,sigma1,1)
 
 !S(a,i*) = S(a,i*) + w_amef(am,ef) * r2(ef,i*m)
 !----------------------------------------
@@ -1029,7 +1058,6 @@ integer :: ierr
    if (iprnt.ge.2) &
    write(iw,*)'diagram 3 ', ddot(ndimr1,sigma1,1,sigma1,1)
 
-
 !S(ab,i*j) = S(ab,i*j) +  w_efam(ab,ej)*r1(e,i*)
 !--------------------------------------------------
 
@@ -1038,7 +1066,7 @@ integer :: ierr
    &    RightTensor=r1_ptr) 
 
    if (iprnt.ge.2) &
-    write(iw,*)'diagram 4 ', ddot(ndimr2,sigma2,1,sigma2,1)
+    write(iw,*)'diagram 4 ', ddot(N2,sigma2,1,sigma2,1)
 
 ! S(ab,i*j) = S(ab,i*j) + P(ab) f_bar_ae(b,e) * r2(ae,i*j)
 !-------------------------------------------------------
@@ -1047,7 +1075,7 @@ integer :: ierr
    & (/"p1","p2","c1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=B%Fbar_ae,LeftTensor=r2_ptr)
 
    if (iprnt.ge.2) &
-    write(iw,*)'diagram 5 ', ddot(ndimr2,sigma2,1,sigma2,1)
+    write(iw,*)'diagram 5 ', ddot(N2,sigma2,1,sigma2,1)
 
 ! S(ab,i*j) = S(ab,i*j) - P(ij) f_bar_mi(m,j)*r2(ab,i*m) 
 !-----------------------------------------------------
@@ -1056,7 +1084,7 @@ integer :: ierr
    & (/"p1","p2","c1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2_ptr)
 
        if (iprnt.ge.2) &
-    write(iw,*)'diagram 6 ', ddot(ndimr2,sigma2,1,sigma2,1)
+    write(iw,*)'diagram 6 ', ddot(N2,sigma2,1,sigma2,1)
 
 ! S(ab,i*j) = S(ab,i*j) + P(ab) w_mbej(mb,ej)*r2(ae,i*m)
 !----------------------------------------------------------
@@ -1071,7 +1099,7 @@ integer :: ierr
 !    &    (/"p1","p2","c1","o2"/),sigma2,1.0d0,0.0d0,nrep,RightTensor=r2_ptr,LeftTensor=B%W_ejmb)
 
    if (iprnt.ge.2) &
-    write(iw,*)'diagram 8 ', ddot(ndimr2,sigma2,1,sigma2,1)
+    write(iw,*)'diagram 8 ', ddot(N2,sigma2,1,sigma2,1)
 
 !int_1b(n,i*) = int_1b(n,i*) + V(nm,fe)*r2(fe,i*m)
 !S(ab,i*j) = S(ab,i*j) - int_1b(n,i*)*t(ba,jn)
@@ -1088,14 +1116,12 @@ integer :: ierr
     deallocate(int_1b)
 
        if (iprnt.ge.2) &
-    write(iw,*)'diagram 9 ', ddot(ndimr2,sigma2,1,sigma2,1)
-
-    if (myproc > 0) then
-      sigma2 = 0.0d0
-    endif
+    write(iw,*)'diagram 9 ', ddot(N2,sigma2,1,sigma2,1)
 
 ! S(ab,i*j) = S(ab,i*j) + w_vvvv(ab,ef)*r2(ef,i*j)
 !------------------------------------------------
+      allocate(sigma2_local(N2))
+      sigma2_local = 0.0d0
 
       off1 = 1
       off2 = 1
@@ -1114,7 +1140,8 @@ integer :: ierr
          n = nox(irp)
          k = nint
          call xgemm ('n','n',m,n,k,a1,w_vvvv,m,r2_ptr(off1+istart*rcw),m, &
-     &               a1,sigma2(off2),m)
+     &               a1,sigma2_local(off2),m)
+!    &               a1,sigma2(off2),m)
 
          deallocate(w_vvvv)
 
@@ -1126,32 +1153,44 @@ integer :: ierr
          off2 = off2 + m * n * rcw
       enddo
 
-      allocate (local_buffer(ndimr2))
-
+      allocate (local_buffer(N2))
 #if defined (VAR_MPI)
       if (nmproc .gt. 1) then
         call xcopy (ndimr2,a0,0,local_buffer,1)
         ierr = 0
 
-        call interface_mpi_allreduce(sigma2, &
-             local_buffer, ndimr2, &
+      if (iprnt.ge.2) &
+   write(*,*)'diagram 7a ', ddot(N2,sigma2_local,1,sigma2_local,1),myproc
+!  write(*,*)'diagram 7a ', ddot(N2,sigma2,1,sigma2,1),myproc
+
+        call interface_mpi_allreduce(sigma2_local, &
+!       call interface_mpi_allreduce(sigma2, &
+             local_buffer, N2, &
              op_mpi_sum,global_communicator)
+   write(*,*)'diagram 7b ', ddot(N2,sigma2_local,1,sigma2_local,1),myproc
+!  write(*,*)'diagram 7b ', ddot(N2,sigma2,1,sigma2,1),myproc
 
         if(ierr.gt.0) then
            call quit('mpi_reduce error in collecting sigma2 !')
         endif
-        call xcopy(ndimr2,local_buffer,1,sigma2,1)
-        endif
+        call xcopy(ndimr2,local_buffer,1,sigma2_local,1)
+!       call xcopy(ndimr2,local_buffer,1,sigma2,1)
+      endif
 #endif
-
       deallocate (local_buffer)
 
-    if (iprnt.ge.2) &
-    write(iw,*)'diagram 7 ', ddot(ndimr2,sigma2,1,sigma2,1)
+      if (iprnt.ge.2) &
+   write(*,*)'diagram 7c ', ddot(N2,sigma2_local,1,sigma2_local,1),myproc
+
+       call XAXPY (ndimr2,A1,sigma2_local,1,sigma2,1)
+     deallocate(sigma2_local)
+
+       if (iprnt.ge.2) &
+    write(*,*)'diagram 7d ', ddot(N2,sigma2,1,sigma2,1),myproc
 
  end subroutine
 
-   subroutine Lambda_IP(l1,l2,B,lambda1,lambda2,ndiml1,ndiml2)
+   subroutine Lambda_IP(l1,l2,B,lambda1,lambda2)
 
   use symmetry_offset
 #include "param.inc"
@@ -1168,15 +1207,22 @@ integer :: ierr
   real(8), intent(in),contiguous,target   :: L1(:), L2(:) ! R-Amplitudes
   type(intermediates), intent(in)  :: B      
   real(8), intent(inout),contiguous :: lambda1(:),lambda2(:)  ! sigma-vectors
-  integer, intent(in) :: ndiml1, ndiml2
 !---------------Local Variables--------------------
   real(8), pointer,contiguous :: l1_ptr(:),l2_ptr(:)
   real(8), allocatable :: int_1b(:), G(:) 
   real(8)              :: ddot
+  integer              :: N1, N2, ndiml1, ndiml2
   type(Offset)         :: e
 !--------------------------------------------------
-  l1_ptr(1:ndiml1) => l1
-  l2_ptr(1:ndiml2) => l2
+
+  N1 = size(lambda1,1)
+  N2 = size(lambda2,1)
+
+  ndiml1 = N1/rcw
+  ndiml2 = N2/rcw
+
+  l1_ptr(1:N1) => l1
+  l2_ptr(1:N2) => l2
 
 !------------------------------------------
 ! L(i,a*) = L(i,a*) - L(m,a*)*f_bar_mi(i,m)  
@@ -1186,7 +1232,7 @@ integer :: ierr
   &    L1_ptr,B%Fbar_mi,lambda1,-1.0d0,1.0d0,nrep)
 
        if (iprnt.ge.0) &
-    write(iw,*)'diagram 1 ', ddot(ndiml1,lambda1,1,lambda1,1)
+    write(iw,*)'diagram 1 ', ddot(N1,lambda1,1,lambda1,1)
 
 !-----------------------------------------------------
 ! L(i,a*) = L(i,a*) -  L2(mn,a*e)*W(ie,mn)
@@ -1202,7 +1248,7 @@ integer :: ierr
   &          LeftTensor=B%W_iemn)
 
        if (iprnt.ge.0) &
-    write(iw,*)'diagram 2 ', ddot(ndiml1,lambda1,1,lambda1,1)
+    write(iw,*)'diagram 2 ', ddot(N1,lambda1,1,lambda1,1)
 
 !-------------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) + L2 (ij,a*e)*f_bar_ae(e,b)
@@ -1213,7 +1259,7 @@ integer :: ierr
    &    RightTensor=B%Fbar_ae)
 
        if (iprnt.ge.0) &
-    write(iw,*)'diagram 3 ', ddot(ndiml2,lambda2,1,lambda2,1)
+    write(iw,*)'diagram 3 ', ddot(N2,lambda2,1,lambda2,1)
 
 !----------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) - P(ij) L2 (im,a*b)*f_bar_im (j,m)
@@ -1224,7 +1270,7 @@ integer :: ierr
      &    LeftTensor=L2_ptr,RightTensor=B%Fbar_mi)
 
        if (iprnt.ge.0) &
-    write(iw,*)'diagram 4 ', ddot(ndiml2,lambda2,1,lambda2,1)
+    write(iw,*)'diagram 4 ', ddot(N2,lambda2,1,lambda2,1)
 
 !--------------------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) + L2(mn,a*b) * W_ijmn(ij,mn)
@@ -1235,7 +1281,7 @@ integer :: ierr
 
 
        if (iprnt.ge.0) &
-    write(iw,*)'diagram 5 ', ddot(ndiml2,lambda2,1,lambda2,1)
+    write(iw,*)'diagram 5 ', ddot(N2,lambda2,1,lambda2,1)
 !--------------------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) + P(ij) L2(im,a*e) * W_bmej(je,bm)
 !--------------------------------------------------------
@@ -1245,7 +1291,7 @@ integer :: ierr
 
 
        if (iprnt.ge.0) &
-    write(iw,*)'diagram 6 ', ddot(ndiml2,lambda2,1,lambda2,1)
+    write(iw,*)'diagram 6 ', ddot(N2,lambda2,1,lambda2,1)
 !---------------------------------------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) + L1(m,a*) * w_mnie(ij,mb)
 !---------------------------------------------------------------------------
@@ -1256,7 +1302,7 @@ integer :: ierr
 
 
        if (iprnt.ge.0) &
-    write(iw,*)'diagram 7 ', ddot(ndiml2,lambda2,1,lambda2,1)
+    write(iw,*)'diagram 7 ', ddot(N2,lambda2,1,lambda2,1)
 !---------------------------------------------------------------
 !  G (e,a*)  = G(e,a*) + L2(mn,a*f) * t2(ef,mn) 
 !  L(ij,a*b) = L(ij,a*b) + V(ij,eb)*G (e,a*)  
@@ -1265,7 +1311,7 @@ integer :: ierr
     call alloc_array(e,nrep)
     call auto_symmetry_offset(e,nv,ncont,.false.,.false.)
 
-    allocate (G(e%oneNonDirac(1)))
+    allocate (G(e%oneNonDirac(1)*rcw))
 
      G = 0.0d0
 
@@ -1278,14 +1324,14 @@ integer :: ierr
     deallocate(G)
 
        if (iprnt.ge.0) &
-    write(iw,*)'diagram 8 ', ddot(ndiml2,lambda2,1,lambda2,1)
+    write(iw,*)'diagram 8 ', ddot(N2,lambda2,1,lambda2,1)
 
      call dealloc_array(e)
 
    call lambda2_disconnected_IP(L1_ptr,B%Fbar_me,lambda2)
 
        if (iprnt.ge.0) &
-    write(iw,*)'diagram 9 ', ddot(ndiml2,lambda2,1,lambda2,1)
+    write(iw,*)'diagram 9 ', ddot(N2,lambda2,1,lambda2,1)
 
  end subroutine
 
@@ -1316,13 +1362,20 @@ integer :: ierr
   real(8)              :: ddot
   logical              :: done
   integer     :: jklrep,m2,irep,jrep,abrep,jkloff,ij,ijkl,ijkl1,mint
-  integer     :: off2,i,j,istart,m,k,n,irp,ntot,nint,kstart,off1,ndimr1,ndimr2
+  integer     :: off2,i,j,istart,m,k,n,irp,ntot,nint,kstart,off1
+  integer              :: N1, N2, ndiml1, ndiml2
   type(Offset)         :: e
+!--------------------------------------------------
+
+  N1 = size(lambda1,1)
+  N2 = size(lambda2,1)
+
+  ndiml1 = N1/rcw
+  ndiml2 = N2/rcw
+
 !--------------------------------------------------
 ! l1_ptr(1:ndiml1) => l1
 ! l2_ptr(1:ndiml2) => l2
-      ndimr1 = size(l1)
-      ndimr2 = size(l2)
 
      allocate(G_vv(nfvv*rcw))
      allocate(G_oo(nfoo*rcw))
@@ -1443,7 +1496,7 @@ integer :: ierr
 !    term 10 : lambda2 = lambda2 + L2(ij,ef) * W_vvvv(ef,ab)
 !--------------------------------------------------------
 
-      allocate(tau(ndimr2*rcw))
+      allocate(tau(N2))
       call gettau(B%t1,B%t2,tau)
       off2 = 1
       off1 = 1
@@ -1480,7 +1533,7 @@ integer :: ierr
        if (iprnt.ge.1) &
      & write(iw,*)'lambda2 after term10',dot_product(lambda2,lambda2)
 
-      call xcopy (ndimr1,B%Fbar_me,1,lambda1,1)
+      call xcopy (ndiml1,B%Fbar_me,1,lambda1,1)
 
      if (iprnt.ge.1) &
      &   write(iw,*)'lambda1: init',dot_product(lambda1,lambda1)
