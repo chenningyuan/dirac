@@ -64,7 +64,8 @@
 ! 2. EA: maximum number of roots for irrepN is reset back to the number of virtual  spinors (nvirt), per symmetry 
 ! 3. EE: maximum number of roots for irrepN is reset back to  nocc(irrepM)*nvirt(irrepO) for irrepN = irrepM * irrepO
 
-          write (iw,'(2x,A,I6,2x,A,2x,I3)') "Requested",relcc_eom_nroots(state_sym),"root(s) for symmetry",state_sym
+           write (iw,'(2x,A,I6,2x,A,2x,A3,A1,I2,A1)') "Requested",relcc_eom_nroots(state_sym),"root(s) for symmetry", &
+                & REP(state_sym-1),"(",state_sym,")'"
           select case (eomtype)
              case ('IP')
                 if (relcc_eom_nroots(state_sym).gt.no(state_sym)) then
@@ -1878,7 +1879,7 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
 
        if (nroot.ne.0) then
           write (iw,*) ""
-          write (iw,'(2x,A42,2x,A3,A1,I2,A5)') "<<< SOLVING "//left_or_right(1:3)//" EOM-"//eomtype(1:2)// &
+          write (iw,'(2x,A,2x,A3,A1,I2,A5)') "<<< SOLVING "//left_or_right(1:3)//" EOM-"//eomtype(1:2)// &
           &   " EQUATIONS FOR SYMMETRY",REP(state_sym-1),"(",state_sym,") >>>"
           write (iw,*) ""
 
