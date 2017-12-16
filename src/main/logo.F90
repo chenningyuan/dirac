@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -117,7 +117,7 @@ print *, '*    Sebastien Dubillard      University of Strasbourg          France
 print *, '*    Ulf Ekstroem             University of Oslo                Norway        *'
 print *, '*    Ephraim Eliav            University of Tel Aviv            Israel        *'
 print *, '*    Thomas Enevoldsen        University of Southern Denmark    Denmark       *'
-print *, '*    Elke Fasshauer           University of Copenhagen          Denmark       *'
+print *, '*    Elke Fasshauer           University of Aarhus              Denmark       *'
 print *, '*    Timo Fleig               Universite Toulouse III           France        *'
 print *, '*    Olav Fossgaard           UiT The Arctic University of      Norway        *'
 print *, '*    Andre S. P. Gomes        CNRS/Universite de Lille          France        *'
@@ -146,6 +146,7 @@ print *, '*    Roberto Di Remigio       UiT The Arctic University of      Norway
 print *, '*    Kenneth Ruud             UiT The Arctic University of      Norway        *'
 print *, '*    Pawel Salek              Stockholm Inst. of Technology     Sweden        *'
 print *, '*    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *'
+print *, '*    Avijit Shee              University of Michigan            USA           *'
 print *, '*    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *'
 print *, '*    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *'
 print *, '*    Joern Thyssen            University of Southern Denmark    Denmark       *'
@@ -155,8 +156,7 @@ print *, '*    Olivier Visser           University of Groningen           Nether
 print *, '*    Toke Winther             University of Southern Denmark    Denmark       *'
 print *, '*    Shigeyoshi Yamamoto      Chukyo University                 Japan         *'
 print *, '*                                                                             *'
-print *, '*    For the complete list of contributors to the DIRAC code see our          *'
-print *, '*    website http://www.diracprogram.org                                      *'
+print *, '*    For more information about the DIRAC code see http://diracprogram.org    *'
 print *, '*                                                                             *'
 print *, '*    This is an experimental code. The authors accept no responsibility       *'
 print *, '*    for the performance of the code or for the correctness of the results.   *'
@@ -173,14 +173,14 @@ print *, '*    Release DIRAC17 (2017),                                          
 print *, '*    written by L. Visscher, H. J. Aa. Jensen, R. Bast, and T. Saue,          *'
 print *, '*    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,            *'
 print *, '*    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *'
-print *, '*    O. Fossgaard, A. S. P. Gomes, E. D. Hedegård, T. Helgaker,               *'
+print *, '*    O. Fossgaard, A. S. P. Gomes, E. D. Hedegrd, T. Helgaker,               *'
 print *, '*    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky,         *'
 print *, '*    O. Kullie, J. K. Laerdahl, C. V. Larsen, Y. S. Lee, H. S. Nataraj,       *'
 print *, '*    M. K. Nayak, P. Norman, G. Olejniczak, J. Olsen, J. M. H. Olsen,         *'
 print *, '*    Y. C. Park, J. K. Pedersen, M. Pernpointner, R. Di Remigio, K. Ruud,     *'
-print *, '*    P. Salek, B. Schimmelpfennig, J. Sikkema, A. J. Thorvaldsen, J. Thyssen, *'
-print *, '*    J. van Stralen, S. Villaume, O. Visser,T. Winther, and S. Yamamoto       *'
-print *, '*    (see http://www.diracprogram.org).                                       *'
+print *, '*    P. Salek, B. Schimmelpfennig, A. Shee, J. Sikkema, A. J. Thorvaldsen,    *'
+print *, '*    J. Thyssen, J. van Stralen, S. Villaume, O. Visser,T. Winther,           *'
+print *, '*    and S. Yamamoto (see http://diracprogram.org).                           *'
 print *, '*                                                                             *'
 print *, '*******************************************************************************'
 end

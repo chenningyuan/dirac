@@ -119,6 +119,10 @@ Tutorials and walkthrus
 * **Spectroscopy:**
   :doc:`X-ray spectroscopy: water <tutorials/dft/water_Kedge>`
 
+* **Spectroscopy II:**
+  :doc:`Electronic excitations using the POLPRP module <tutorials/polprp/general>` |
+  :doc:`Full scope application: Excitation spectrum of an osmium complex <tutorials/polprp/osmium>`
+
 * **Analysis:**
   :doc:`Projection analysis <tutorials/analysis/projection_analysis>`
 
@@ -159,9 +163,9 @@ Tutorials and walkthrus
   :doc:`Hartree-Fock and DFT calculations in solution with the polarizable continuum model <tutorials/pcm/pcm_scf>` |
   :doc:`Calculation of polarizabilities in solution: response theory approach <tutorials/pcm/pcm_response>`
 
-* **Polarizable embedding model:**
-  :doc:`First step with polarizable embedding: Hartree-Fock calculation on micro-solvated H2O <tutorials/polarizable_embedding/pe_scf>` |
-  :doc:`TDDFT calculation on micro-solvated H2O  <tutorials/polarizable_embedding/pe_response>`
+* **Polarizable embedding (PE) model:**
+  :doc:`PE-HF calculations on micro-solvated H2O <tutorials/polarizable_embedding/pe_scf>` |
+  :doc:`PE-TDDFT calculations on micro-solvated H2O <tutorials/polarizable_embedding/pe_response>`
 
 * **Davidson corrections for relCI (LUCITA and KRCI):**
   :doc:`+Q corrections <tutorials/relci_q_corrections/q_corrections>`

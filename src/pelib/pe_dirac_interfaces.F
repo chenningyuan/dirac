@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -9,8 +9,7 @@
 !
 !      In particular, no part of the source code or compiled modules may
 !      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the
-!      research
+!      This means also that persons (e.g. post-docs) leaving the research
 !      group of the license holder may not take any part of Dirac,
 !      including modified files, with him/her, unless that person has
 !      obtained his/her own license.
@@ -239,7 +238,7 @@
 
       subroutine pelib_ifc_response(fao, dens1, ndmat, dmat_ih_sym)
         use polarizable_embedding, only: pe_master
-!!     Written by: Erik Donovan Hedegård (edh) 
+!!     Written by: Erik Donovan Hedegrd (edh) 
 !!     Purpose   : Calculate dynamical pe response part and add it to the
 !!                 one index transformed fock matrix 
         implicit none
@@ -471,7 +470,7 @@
 ! PE-MCSCF (linear and quadratic response + energy). 
 !      subroutine pe_grad(cref, cmo, cindx, dv, grd, energy, wrk, nwrk)
 !!
-!!     Written by Erik Donovan Hedegård (edh) and Jógvan Magnus H. Olsen
+!!     Written by Erik Donovan Hedegrd (edh) and Jgvan Magnus H. Olsen
 !!                based on PCMGRAD
 !!
 !!     Purpose:  calculate (MCSCF) energy and gradient contribution
@@ -562,7 +561,7 @@
 !
 !      subroutine pe_fckmo(cmo, fckmo, energy, dv, wrk, nwrk)
 !!
-!!     Written by Erik Donovan Hedegård (edh) and Jógvan Magnus H. Olsen
+!!     Written by Erik Donovan Hedegrd (edh) and Jgvan Magnus H. Olsen
 !!
 !!     Purpose:  Get PE operator in MO basis using PE library
 !!
@@ -623,7 +622,7 @@
 !      subroutine pe_lin(ncsim, nosim, bcvecs, bovecs, cref, cmo, cindx,
 !     &                  dv, dtv, scvecs, sovecs, orblin, wrk, nwrk)
 !!
-!! Written by Erik Donovan Hedegård and Jógvan Magnus H. Olsen
+!! Written by Erik Donovan Hedegrd and Jgvan Magnus H. Olsen
 !!            after original code by  Hans Joergen Aa. Jensen
 !!
 !! Common driver for pe_lnc and pe_lno
@@ -672,8 +671,8 @@
 !      subroutine pe_lnc(ncsim, bcvecs, cref, cmo, cindx, dv, dtv,
 !     &                  scvecs, wrk, nwrk)
 !!
-!!  Written by Erik Donovan Hedegaard and Jógvan Magnus H. Olsen
-!!             after original routine by Hans Jørgen Aa. Jensen
+!!  Written by Erik Donovan Hedegaard and Jgvan Magnus H. Olsen
+!!             after original routine by Hans Jrgen Aa. Jensen
 !!
 !!  Purpose:  Calculate Hessian contribution from a polarizable
 !!            embedding potantial to a csf trial vector.
@@ -779,7 +778,7 @@
 !      subroutine pe_lno(nosim, bovecs, cref, cmo, cindx, dv,
 !     &                  sovecs, nso, wrk, nwrk)
 !!
-!!  Written by Erik Donovan Hedegaard and Jógvan Magnus H. Olsen
+!!  Written by Erik Donovan Hedegaard and Jgvan Magnus H. Olsen
 !!             after original code by Hans Jorgen Aa. Jensen
 !!
 !!  Purpose:  Calculate Hessian contribution from a

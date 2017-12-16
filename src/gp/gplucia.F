@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -3438,7 +3438,7 @@ C?      WRITE(6,*) ' IO1SM,IO2SM',IO1SM,IO2SM
           DO JPLACE = 1, IPLACE
             INUM(JPLACE) = 1
           END DO
-        ELSE IF ( IPLACE. EQ. NELMNT ) THEN
+        ELSE IF ( IPLACE .EQ. NELMNT ) THEN
           NONEW = 1
           GOTO 1001
         END IF
@@ -3497,7 +3497,7 @@ C?      WRITE(6,*) ' IO1SM,IO2SM',IO1SM,IO2SM
           DO JPLACE = 1, IPLACE
             INUM(JPLACE) = MINVAL(JPLACE)
           END DO
-        ELSE IF ( IPLACE. EQ. NELMNT ) THEN
+        ELSE IF ( IPLACE .EQ. NELMNT ) THEN
           NONEW = 1
           GOTO 1001
         END IF
@@ -3686,7 +3686,7 @@ CSK        WRITE(LUWRT,*) ' IBLOCK, NBLOCK are now',IBLOCK,NBLOCK
               ELSE
                 INUM(IPLACE) = INUM(IPLACE-1) + 1
               END IF
-        ELSE IF ( IPLACE. EQ. NELMNT ) THEN
+        ELSE IF ( IPLACE .EQ. NELMNT ) THEN
               NONEW = 1
               GOTO 1001
         END IF
@@ -5616,7 +5616,7 @@ C?      write(6,*) ' NOOS(IA,IB,ISM) ',NOOS(IAOCC,IBOCC,IASYM)
 * Partition a CI vector into batches of blocks.
 * The length of a batch must be atmost MXLNG
 *
-* IF ICOMP. eq. 1 the complete CI vector is constructed
+* IF ICOMP .eq. 1 the complete CI vector is constructed
 *
 *
 * Compared to PART_CIV, the NOOS arrays have been eliminated.
@@ -5781,7 +5781,7 @@ C?      WRITE(6,*) '====================='
 * Partition a CI vector into batches of blocks.
 * The length of a batch must be atmost MXLNG
 *
-* IF ICOMP. eq. 1 the complete CI vector is constructed
+* IF ICOMP .eq. 1 the complete CI vector is constructed
 *
 *
 * Compared to PART_CIV, the NOOS arrays have been eliminated.

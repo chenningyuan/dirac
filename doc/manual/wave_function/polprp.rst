@@ -100,15 +100,21 @@ Hamilton matrix.
 
 keyword(SKIPCC)
 
-With this keyword you can restart the calculation at a very advanced stage after the sorting step of the
-two-electron integrals. Therefore you skip SCF, MOLTRA and integral sorting (OOOO, VOOO, ...). This is if
- a POLPRP run only needs to be executed. Works in serial and parallel. The only files you should provide are the ftXX.YY files containing the sorted integral batches, MDPROP (needed for transition moments) and MRCONEE among the .inp and .mol file. In parallel run this works only if you have an underlying shared file system, so each node can access their own ftXX.nodenumber file.
+With this keyword you can restart the calculation at a very advanced stage
+after the sorting step of the two-electron integrals. Therefore you skip SCF,
+MOLTRA and integral sorting (OOOO, VOOO, ...). This is if a POLPRP run only
+needs to be executed. Works in serial and parallel. The only files you should
+provide are the ftXX.YY files containing the sorted integral batches, MDPROP
+(needed for transition moments) and MRCONEE among the .inp and .mol file. In
+parallel run this works only if you have an underlying shared file system, so
+each node can access their own ftXX.nodenumber file.
 
 The default values are
 
-DVROOTS 5
-DVMAXSP 200
-DVMAXIT 5
-DVCONV 1.0E-05
-DVREORT = .false.
-SKIPCC = .false.
+::
+ DVROOTS 5
+ DVMAXSP 200
+ DVMAXIT 5
+ DVCONV 1.0E-05
+ DVREORT = .false.
+ SKIPCC = .false.

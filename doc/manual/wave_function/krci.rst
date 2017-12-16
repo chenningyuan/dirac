@@ -57,7 +57,7 @@ number of states (roots) in symmetry X to optimize on. This keyword may be
 repeated several times for multi-root multi-symmetry calculations
 step-by-step. *default:* none.
 
-example for 5 roots in (boson/fermion) irrep 1:
+Example for 5 roots in (boson/fermion) irrep 1:
 
 ::
 
@@ -65,7 +65,7 @@ example for 5 roots in (boson/fermion) irrep 1:
     1 5
 
 If you run the calculation in **linear symmetry** you have to specify the **2 x OMEGA** value
-of the state to optimize on. The doubling (*2 x*) stems from the fact
+of the state to optimize on, and the .CI PROGRAM must be LUCIAREL. The doubling (*2 x*) stems from the fact
 that we want to avoid non-integer input, e.g. in case of an odd number
 of electrons we might have :math:`\Omega` = 1/2, 3/2, 5/2, etc. values and the
 corresponding input for one root with the :math:`\Omega` =1/2 would then read as

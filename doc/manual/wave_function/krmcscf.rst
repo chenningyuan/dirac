@@ -101,7 +101,7 @@ integer value giving the (boson/fermion) symmetry of the state to optimize on. *
     1
 
 If you run the calculation in **linear symmetry** you have to specify **2** :math:`\times \Omega` value
-of the state to optimize on. The doubling stems from the fact
+of the state to optimize on and use LUCIAREL as CI PROGRAM. The doubling stems from the fact
 that we want to avoid non-integer input, e.g. in case of an odd number
 of electrons we might have :math:`\Omega` = 1/2, 3/2, 5/2, etc. values and the
 corresponding input for the :math:`\Omega` = 1/2 would then read as
