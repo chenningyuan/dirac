@@ -1,7 +1,7 @@
 file(COPY ${PROJECT_SOURCE_DIR}/basis        DESTINATION ${PROJECT_BINARY_DIR})
 file(COPY ${PROJECT_SOURCE_DIR}/basis_dalton DESTINATION ${PROJECT_BINARY_DIR})
 file(COPY ${PROJECT_SOURCE_DIR}/basis_ecp    DESTINATION ${PROJECT_BINARY_DIR})
-message(STATUS "FYI: Synchronized (copied) DIRAC basis set directories into the install directory")
+message(STATUS "Copied DIRAC basis set directories into the build directory")
 
 foreach(
     EXECUTABLE
