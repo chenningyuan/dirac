@@ -309,9 +309,9 @@
           deallocate(diag_H)
 
       else if (relcc_mfd_trial_restart) then
-          stop('restart from prior RHS vectors not implemented')
+          stop ('restart from prior RHS vectors not implemented')
       else
-          stop('unknown RHS trial vectors generation scheme')
+          stop ('unknown RHS trial vectors generation scheme')
       end if ! if chain for trial vectors 
 
 
@@ -456,9 +456,9 @@
           deallocate(diag_H)
 
       else if (relcc_mfd_trial_restart) then
-          stop('restart from prior RHS vectors not implemented')
+          stop ('restart from prior RHS vectors not implemented')
       else
-          stop('unknown RHS trial vectors generation scheme')
+          stop ('unknown RHS trial vectors generation scheme')
       end if ! if chain for trial vectors 
 
 
@@ -603,9 +603,9 @@
           deallocate(diag_H)
 
       else if (relcc_mfd_trial_restart) then
-          stop('restart from prior RHS vectors not implemented')
+          stop ('restart from prior RHS vectors not implemented')
       else
-          stop('unknown RHS trial vectors generation scheme')
+          stop ('unknown RHS trial vectors generation scheme')
       end if ! if chain for trial vectors 
 
   end select 
@@ -925,9 +925,9 @@
               enddo
               deallocate(diag_H)
           else if (relcc_mfd_trial_restart) then
-              stop('restart from prior LHS vectors not implemented')
+              stop ('restart from prior LHS vectors not implemented')
           else
-              stop('unknown LHS trial vectors generation scheme')
+              stop ('unknown LHS trial vectors generation scheme')
           end if ! if chain for trial vectors 
 
       end if ! relcc_mfd_trial_lhs_use_rhs
@@ -1370,7 +1370,7 @@
            merge_arrays(:, 1:La) = a(:, 1:La) 
            merge_arrays(:, La+1:Ls) = b(:, 1:Lb)
        else
-           stop('mismatch in array dimensions')
+           stop ('mismatch in array dimensions')
        end if
 
    end function
