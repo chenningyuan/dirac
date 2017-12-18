@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -130,7 +130,7 @@ C
 
 C
 C     turn on splitting of primitive shells only for methods that
-C     perform and integral transformation to the spinor basis
+C     perform an integral transformation to the spinor basis
 C
       DOSPLT = (DOTRA .OR. DOKRMC .OR. DOMP2 .OR. DOMP2NO)
       dosplt = .true.

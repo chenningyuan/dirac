@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -23,7 +23,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FMTOFILE (PUT,FVO,FOO,FVV)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -50,6 +50,8 @@ C
 #include "waio.h"
 C
 C---------------Local variables--------------------------------------
+C
+      integer nsec, nsec0, nsec1, nsec2
 C
 C---------------Executable code--------------------------------------
 C
@@ -80,7 +82,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETOOOO (VOOOO)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -114,7 +116,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETVOOO (VVOOO)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -151,7 +153,7 @@ C
 
       SUBROUTINE GETOOVO (VOOVO)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -195,7 +197,7 @@ C---------------Executable code--------------------------------------
 
       SUBROUTINE GETOVOO (VOVOO)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -238,7 +240,7 @@ C---------------Executable code--------------------------------------
 !=======================================================================
       SUBROUTINE GETOOOV (VOOOV)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -281,7 +283,7 @@ C---------------Executable code--------------------------------------
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETVVOO (VVVOO)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -317,7 +319,7 @@ C
 
       SUBROUTINE GETOOVV (VOOVV)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -360,7 +362,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETVOVO (VVOVO)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -400,7 +402,7 @@ C
 
       SUBROUTINE GETVOOV (VVOOV)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -447,7 +449,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETVOVV (IREP,ISTART,NINT,DONE,VVOVV,MINT)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -470,7 +472,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 VVOVV(*)
-      INTEGER IREP,ISTART,NINT
+      INTEGER IREP,ISTART,NINT,MINT
       LOGICAL DONE
 C
 C---------------Common Blocks--------------------------------------
@@ -484,6 +486,7 @@ C
 C---------------Local variables--------------------------------------
 C
        INTEGER*8 JSTART
+       integer jint,mtot,ntot
 C
 C---------------Executable code--------------------------------------
 C
@@ -516,7 +519,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       SUBROUTINE GETVVVO_incore (VVVVO)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C     Get VOVO part of two-electron integrals
@@ -558,7 +561,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETVOVV_incore (VVOVV)
 
       use interface_to_mpi
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -586,14 +589,15 @@ C
 #include "eqns.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)
-     DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      integer istat
+      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 C
 C---------------Local variables--------------------------------------
       REAL*8, ALLOCATABLE :: VOVV_TEMP(:)
       INTEGER, ALLOCATABLE :: counter(:), displ(:)
       LOGICAL :: DONE
-      INTEGER :: totsize
+      INTEGER :: totsize, check, i, istart, mint, nint, off1, irp,IERR
 C---------------Executable code--------------------------------------
 C
        allocate(counter(0:nmproc-1))
@@ -674,7 +678,7 @@ C
 
       SUBROUTINE GETOVVV_incore (VOVVV)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 
@@ -751,7 +755,7 @@ C
 
       SUBROUTINE GETVVVV (IREP,ISTART,NINT,DONE,VVVVV,MINT)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -772,7 +776,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 VVVVV(*)
-      INTEGER IREP,ISTART,NINT
+      INTEGER IREP,ISTART,NINT,MINT
       LOGICAL DONE
 C
 C---------------Common Blocks--------------------------------------
@@ -786,6 +790,7 @@ C
 C---------------Local variables--------------------------------------
 C
        INTEGER*8 JSTART
+       integer jint,mtot,ntot
 C
 C---------------Executable code--------------------------------------
 C
@@ -820,7 +825,7 @@ C     Are we done with this IRREP ?
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PUTDZ (IREP,ISTART,NINT,DZ)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -850,6 +855,7 @@ C
 #include "ccpar.inc"
 C---------------Local variables--------------------------------------
        INTEGER*8 JSTART
+       integer jint,mtot
 C---------------Executable code--------------------------------------
       MTOT = NVVT(IREP)
       JSTART = IDIST(5,1,IREP)
@@ -871,7 +877,7 @@ C     The integrals may be complex, convert offset and length to real before rea
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETDZ (IREP,ISTART,NINT,DONE,DZ,MINT)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -904,6 +910,7 @@ C
 C---------------Local variables--------------------------------------
 C
        INTEGER*8 JSTART
+      integer jint,mtot,ntot
 C
 C---------------Executable code--------------------------------------
 C
@@ -938,7 +945,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PUTAMPT (T1,T2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -964,6 +971,7 @@ C---------------Local variables--------------------------------------
 C
       REAL*8 BUFF(RSRCLEN)
       DATA BUFF /RSRCLEN*0.D0/
+      integer ioff,irec,irecl,n,nbuf,ireclen
 C
 C---------------Executable code--------------------------------------
 C
@@ -1004,7 +1012,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETAMPT (T1,T2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1030,6 +1038,7 @@ C---------------Local variables--------------------------------------
 C
       REAL*8 BUFF(RSRCLEN)
       DATA BUFF /RSRCLEN*0.D0/
+      integer ioff,irec,irecl,n,nbuf,ireclen
 C
 C---------------Executable code--------------------------------------
 C

@@ -1,6 +1,6 @@
 /* dirac_copyright_start */
 /*
- *     Copyright (c) 2016 by the authors of DIRAC.
+ *     Copyright (c) 2017 by the authors of DIRAC.
  *     All Rights Reserved.
  *
  *     This source code is part of the DIRAC program package.
@@ -172,7 +172,7 @@ cgendet1( unsigned long long int anStr[], integer n, integer m,
        }
      }
      else {
-         printf("GAS :(, bit string: %64s \n", lli_to_b_format(prefix,pos));
+//       printf("GAS :(, bit string: %64s \n", lli_to_b_format(prefix,pos));
      }
    }
    else {

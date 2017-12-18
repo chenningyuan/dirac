@@ -6,7 +6,7 @@
       use interface_to_mpi
       use xmlout
       use intermediates_1b_2b
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 
 C---------------Description--------------------------------------------
 C
@@ -30,9 +30,10 @@ C     for diis ...
       REAL*8 CC1(*)
       REAL*8 BB1(*),BB2(*)
 
+      real(8), parameter :: rms_limit = 1.D4
       REAL*8 RMS,CONV
       REAL*8 DIAG
-      INTEGER MAXIT
+      INTEGER MAXIT,NBUF2,NBUF3
 
 C     for Fock space ...
 
@@ -50,6 +51,7 @@ C---------------Common Blocks--------------------------------------
 #include "complex.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)
+      integer ISTAT
       DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 
@@ -60,6 +62,7 @@ C---------------Local variables--------------------------------------
       CHARACTER*2 DELS1
       CHARACTER*4 DELS2
       REAL*8 DDOT
+      INTEGER it,itc,nit,IERR
 
 C---------------Executable code--------------------------------------
 C
@@ -204,6 +207,10 @@ C
       CALL XCOPY (NDIMT2,S2,1,T2,1)
 C
       IF (FOCKSP) THEN
+C       Remove wave function amplitudes from higher sectors
+        CALL DELFCK ('VO',DELS1,T1)
+        CALL DELINT ('VVOO',DELS2,T2,0,0,0)
+C       Scale with denominators
         CALL DENOMF (EPS,T1,T2,T1,T2,1)
 C       Remove the Hamiltonian elements, T1 and T2 should only contain
 C       the wave function (amplitudes) appropriate for this sector.
@@ -223,8 +230,6 @@ C
 C  EXTRAPOLATE THE AMPLITUDES
 C
       CALL XTIME(5,1,'- DIIS extrapolation            ')
-      CALL DELFCK ('VO',DELS1,T1)
-      CALL DELINT ('VVOO',DELS2,T2,0,0,0)
       CALL DIISX(NDIMT1,NDIMT2,T1,T2,
      &           IT,CC1,BB1,ITC,BB2,RMS)
       CALL XTIME(5,2,'- DIIS extrapolation            ')
@@ -248,6 +253,10 @@ C
 C
 C
       IF(RMS.LT.CONV) GO TO 2000
+      IF(RMS.GT.rms_limit) THEN
+        WRITE (IW,*) ' WARNING: aborted CC iterations (divergence)'
+        GO TO 2000
+      END IF
       GO TO 1000
 C
  2000 CONTINUE

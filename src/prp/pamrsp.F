@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1105,7 +1105,7 @@ C
 C
       IND = NZRED
 C
-C     Orbtial (e-e) type trial vector
+C     Orbital (e-e) type trial vector
 C     -------------------------------
 C
       IF(NESIM.GT.0) THEN

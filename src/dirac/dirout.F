@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -34,6 +34,10 @@ C***********************************************************************
 #ifdef HAS_PCMSOLVER
       use pcm_scf, only: get_pcm_energy, pcm_scf_finalize
 #endif      
+
+#ifdef HAS_PELIB
+      use pe_variables, only: peqm
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -159,7 +163,14 @@ C            leave this to authors of this part) Done, hjaaj.
           write(lupri,'(3X,A,'//FMT//')')
      +  'Solvation energy                         :   ',get_pcm_energy()
         end if 
-#endif        
+#endif
+#ifdef HAS_PELIB
+! edh should be replaced with energy routine
+        IF (PEQM) THEN
+            write(lupri,'(3X,A,'//FMT//')')
+     +  'Embedding energy                         :   ', E_PE
+        END IF
+#endif
 C       A one-center approximation may be used that gives a correction 
 C       to the electronic energy
         IF (ONECAP .AND. INTV1C.EQ.2) THEN

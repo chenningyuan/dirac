@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -24,7 +24,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCDENSC(IOPT,T1,S1,T2,S2,
      &                   BUF1,BUF2,BUF3,DOO,DVV,DVO,DOV,DMO)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -298,7 +298,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       SUBROUTINE CONVDM(BUF1,BUF2,DOO,DVV,DVO,DOV,dmo)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -334,7 +334,8 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-       real*8, allocatable :: DOO_TRANS(:),DVV_TRANS(:),D_TRANS(:) 
+       real*8, allocatable :: DOO_TRANS(:),DVV_TRANS(:),D_TRANS(:)
+      integer a, ab, ai,b,i,ia,ij,irep,j 
 
 C---------------Executable code--------------------------------------
 C
@@ -515,7 +516,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                   EVO,EOV,D2VO,D2OV,DG,CC1,BB1,BB2,CONV)
 C
       use interface_to_mpi
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -535,7 +536,7 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      INTEGER IOPT
+      INTEGER IOPT,NSP,IREPSPI,NBUF2,NBUF3,CC1,BB1,BB2,CONV
       REAL*8 T1(*),S1(*),T2(*),S2(*)
       REAL*8 DOO(*),DVO(*),DOV(*),DVV(*)
       REAL*8 D2VO(*),D2OV(*),DG(*)
@@ -558,6 +559,7 @@ C
       CHARACTER*8 NAME
       COMPLEX*16 EPHASE(MAXOP)
       LOGICAL BDONE,USEDZ,RIGHT
+      integer dum,eoff,eoper,jprnt,k,m,maxit,n
 C
 C---------------Executable code--------------------------------------
 C
@@ -646,7 +648,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE MP2ZVEC(T2,BUF1,BUF2,BUF3,NBUF3,XMO,DMO)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -667,6 +669,7 @@ C
       REAL*8 DMO(*)
       REAL*8 XMO(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)
+      INTEGER NBUF3
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -677,6 +680,8 @@ C
 #include "complex.inc"
 C
 C---------------Local variables--------------------------------------
+C
+      integer kfree, lfree
 C
 C---------------Executable code--------------------------------------
 C
@@ -735,7 +740,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CONVXM(BUF1,BUF2,XVO,XMO)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -763,6 +768,8 @@ C
 #include "dgroup.h"
 C
 C---------------Local variables--------------------------------------
+C
+       integer a, ai, i, irep
 C
 C---------------Executable code--------------------------------------
 C
@@ -819,7 +826,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXPVAL (DOO,DVV,DVO,DOV,EOO,EVV,EVO,EOV,EPHASE,CEXPA)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -849,6 +856,7 @@ C---------------Local variables--------------------------------------
 C
       COMPLEX*16 EXPA,EXPA_SUM
       REAL*8 DDOT,ZDOT
+      integer ii,irep
 C
 C---------------Executable code--------------------------------------
 C

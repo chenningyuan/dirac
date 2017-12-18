@@ -69,7 +69,7 @@ In order to run a (MR)CC calculation add also the following keyword(s) to the na
 or the new RELCCSD deck input::
 
     *CCSORT
-    .NORCMP
+    .NORECMP
 
 Dirac will automatically read the two-component coefficients from the file DFCOEF and proceed in two-component mode for
 any wave function analysis or post-HF step required for a (MR)CC calculation.

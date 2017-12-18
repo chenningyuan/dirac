@@ -84,7 +84,8 @@ Tutorials and walkthrus
 * **Restarting and multi-step jobs:**
   :doc:`SCF <tutorials/restart/scf>` |
   :doc:`X2C <tutorials/restart/x2c>` |
-  :doc:`Coupled cluster <tutorials/restart/coupled_cluster>` |
+  :doc:`Coupled Cluster restart <tutorials/restart/coupled_cluster>` |
+  :doc:`Coupled Cluster memory count <tutorials/cc_memory_count/count_cc_memory>` |
   :doc:`DFCOEF and DFPCMO <tutorials/restart/dfcoef_and_dfpcmo>` |
   :doc:`Troubleshooting <tutorials/restart/troubleshooting>`
 
@@ -112,7 +113,15 @@ Tutorials and walkthrus
 * **Property calculations:**
   :doc:`Calculation of NMR shieldings using simple magnetic balance <tutorials/simple_magnetic_balance/tutorial>` |
   :doc:`An introduction to complex reponse <tutorials/properties/complex_response>` |
-  :doc:`Magnetizabilities with London Atomic Orbitals <tutorials/lao_magnetizabilities/lao-magnetizabilities>`
+  :doc:`Magnetizabilities with London Atomic Orbitals <tutorials/lao_magnetizabilities/lao-magnetizabilities>` |
+  :doc:`Dipole moment and polarizability of open-shell molecule <tutorials/properties/dipmom-polariz>` 
+
+* **Spectroscopy:**
+  :doc:`X-ray spectroscopy: water <tutorials/dft/water_Kedge>`
+
+* **Spectroscopy II:**
+  :doc:`Electronic excitations using the POLPRP module <tutorials/polprp/general>` |
+  :doc:`Full scope application: Excitation spectrum of an osmium complex <tutorials/polprp/osmium>`
 
 * **Analysis:**
   :doc:`Projection analysis <tutorials/analysis/projection_analysis>`
@@ -153,6 +162,10 @@ Tutorials and walkthrus
   :doc:`Basics <tutorials/pcm/pcm_basics>` |
   :doc:`Hartree-Fock and DFT calculations in solution with the polarizable continuum model <tutorials/pcm/pcm_scf>` |
   :doc:`Calculation of polarizabilities in solution: response theory approach <tutorials/pcm/pcm_response>`
+
+* **Polarizable embedding (PE) model:**
+  :doc:`PE-HF calculations on micro-solvated H2O <tutorials/polarizable_embedding/pe_scf>` |
+  :doc:`PE-TDDFT calculations on micro-solvated H2O <tutorials/polarizable_embedding/pe_response>`
 
 * **Davidson corrections for relCI (LUCITA and KRCI):**
   :doc:`+Q corrections <tutorials/relci_q_corrections/q_corrections>`
@@ -204,6 +217,9 @@ Developers
   :doc:`Further development <programmers/further_development>` |
   :doc:`Good Fortran 90 practices <programmers/good_fortran_90_practices>` |
   :doc:`FAQ <programmers/faq>`
+
+* **Basis sets:**
+  :doc:`Testing basis sets in DIRAC <programmers/test_basis_sets>` 
 
 * **Moving code between machines:**
   :doc:`Transfering uncommitted code <programmers/transfering_uncommitted_code>`

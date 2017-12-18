@@ -8,7 +8,7 @@
       use intermediates_1b_2b
       use lambda_equation
 
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 
 C---------------Description--------------------------------------------
 C
@@ -23,7 +23,7 @@ C     Intermediaries etc.
       REAL*8 W_OOOO(*),W_VOOV(*),W_OVVO(*),W_OVOO(*),HO(*),HV(*),
      & HOV(*),BUF1(*),BUF2(*),BUF3(*)
       REAL*8 CZ(*) ! is only allocated for Lambda equations
-      INTEGER NBUF2,NBUF3 
+      INTEGER NBUF2,NBUF3,MAXIT
 
 C     for diis ...
 
@@ -47,6 +47,7 @@ C---------------Common Blocks--------------------------------------
 #include "complex.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)
+      integer istat
       DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
 
@@ -58,7 +59,7 @@ C---------------Local variables--------------------------------------
       real*8,allocatable :: l1_temp(:),l2_temp(:)
       integer            :: i !remove
       real*8             :: val  
-
+      integer            :: it, itc, nit,ierr
 C---------------Executable code--------------------------------------
 C
        buf2(1:nbuf2*rcw) = 0.0d0

@@ -6,7 +6,7 @@ module carsph
 !
 ! (1) Dalton type ordering of spherical basis functions -l,..., 0,...,+l
 !
-! (2) Contains transformation matrices up to l = 7  (as in InteRest)
+! (2) Contains open-ended transformation matrices 
 !
 ! (3) internal counting of l starts at 1 (not at 0)
 !
@@ -15,432 +15,568 @@ module carsph
 !
 ! BHP, fall 2016
 !
-! NOTE: tested so far up to H functions (TODO: I and K)
-!
 !------------------------------------------------------------------------------!
+
+ implicit none
 
  private
 
- integer, parameter :: iofsph(6) = (/ 0, 5 ,12, 21, 32, 45 /)
-  
- integer, parameter :: isph(61) = (/ &
-! d
-   1,   2,   3,   6,   7,&
-! f
-   9,  11,  12,  15,  18,  21,  23,&
-! g
-  25,  27,  29,  32,  35,  41,  44,  48,  50,&
-! h   
-  53,  56,  58,  63,  66,  72,  78,  84,  88,  93,  96,&
-! i
-  99, 102, 105, 109, 114, 120, 126, 136, 142, 150, 155, 162, 165,&
-! k
- 169, 173, 176, 183, 187, 196, 202, 212, 222, 232, 240, 249, 256, 263, 267,&
-! end
- 271 /)
-  
- integer, parameter :: jcar(270) = (/ &
-! d -2
-  2,&
-! d -1
-  5,&
-! d  0
-  1,  4,  6,&
-! d +1
-  3,&
-! d +2
-  1,  4,&
-! f -3
-  2,  7,&
-! f -2
-  5, &
-! f -1
-  2,  7,  9,&
-! f  0
-  3,  8, 10,&
-! f +1
-  1,  4,  6,&
-! f +2
-  3,  8,& 
-! f +3
-  1,  4,& 
-! g -4
-  2,  7,& 
-! g -3
-  5, 12,&
-! g -2
-  2,  7,  9,&
-! g -1
-  5, 12, 14,&
-! g  0
-  1,  4,  6, 11, 13, 15,&
-! g +1
-  3,  8, 10,&
-! g +2
-  1,  6, 11, 13,&
-! g +3
-  3,  8,& 
-! g +4
-  1,  4, 11,&
-! h -5
-  2,  7, 16,&
-! h -4  
-  5, 12,&
-! h -3  
-  2,  7,  9, 16, 18,&
-! h -2  
-  5, 12, 14,&
-! h -1  
-  2,  7,  9, 16, 18, 20,&
-! h  0  
-  3,  8, 10, 17, 19, 21,&
-! h +1  
-  1,  4,  6, 11, 13, 15,&
-! h +2  
-  3, 10, 17, 19,&
-! h +3  
-  1,  4,  6, 11, 13,&
-! h +4  
-  3,  8, 17,&
-! h +5  
-  1,  4, 11,&
-! i -6
-  2,  7, 16,&
-! i -5
-  5, 12, 23,&
-! i -4
-  2,  9, 16, 18,&
-! i -3
-  5, 12, 14, 23, 25,&
-! i -2
-  2,  7,  9, 16, 18, 20,&
-! i -1
-  5, 12, 14, 23, 25, 27,&
-! i  0
-  1,  4,  6, 11, 13, 15, 22, 24, 26, 28,&
-! i +1
-  3,  8, 10, 17, 19, 21,&
-! i +2
-  1,  4,  6, 11, 15, 22, 24, 26,&
-! i +3
-  3,  8, 10, 17, 19,&
-! i +4
-  1,  4,  6, 11, 13, 22, 24,&
-! i +5
-  3,  8, 17,&
-! i +6
-  1,  4, 11, 22,&
-! k -7
-  2,  7, 16, 29,&
-! k -6
-  5, 12, 23,&
-! k -5
-  3,  7,  9, 16, 18, 29, 31,&
-! k -4
-  5, 14, 23, 25,&
-! k -3
-  2,  7,  9, 16, 18, 20, 29, 31, 33,&
-! k -2
-  5, 12, 14, 23, 25, 27,&
-! k -1
-  2,  7,  9, 16, 18, 20, 29, 31, 33, 35,&
-! k  0
-  3,  8, 10, 17, 19, 21, 30, 32, 34, 36,&
-! k  1
-  1,  4,  6, 11, 13, 15, 22, 24, 26, 28,&
-! k  2
-  3,  8, 10, 17, 21, 30, 32, 34,&
-! k  3
-  1,  4,  6, 11, 13, 15, 22, 24, 26,&
-! k  4
-  3,  8, 10, 17, 19, 30, 32,&
-! k  5
-  1,  4,  6, 11, 13, 22, 24,&
-! k  6
-  3,  8, 17, 30,&
-! k  7
-  1,  4, 11, 22 &
-  /)
+ logical :: initialized = .false.
 
- real(8), parameter :: csph(270) = (/ &
-  +1.000000000000000000d+00,&! d -2
-  +1.000000000000000000d+00,&! d -1
-  -2.886751345948128655d-01,&! d  0
-  -2.886751345948128655d-01,&! d  0
-  +5.773502691896257311d-01,&! d  0
-  +1.000000000000000000d+00,&! d +1
-  +5.000000000000000000d-01,&! d +2
-  -5.000000000000000000d-01,&! d +2
-   6.123724356957944703d-01,&! f -3
-  -2.041241452319314809d-01,&! f -3
-   1.000000000000000000d+00,&! f -2
-  -1.581138830084189428d-01,&! f -1
-  -1.581138830084189428d-01,&! f -1
-   6.324555320336757713d-01,&! f -1
-  -3.872983346207415911d-01,&! f  0
-  -3.872983346207415911d-01,&! f  0
-   2.581988897471610422d-01,&! f  0
-  -1.581138830084189428d-01,&! f +1
-  -1.581138830084189428d-01,&! f +1
-   6.324555320336757713d-01,&! f +1
-   5.000000000000000000d-01,&! f +2
-  -5.000000000000000000d-01,&! f +2
-   2.041241452319314809d-01,&! f +2
-  -6.123724356957944703d-01,&! f +3
-   2.886751345948129210d-01,&! g -4
-  -2.886751345948129210d-01,&! g -4
-   6.123724356957944703d-01,&! g -3
-  -2.041241452319314809d-01,&! g -3
-  -1.091089451179961950d-01,&! g -2
-  -1.091089451179961950d-01,&! g -2
-   6.546536707079771977d-01,&! g -2
-  -2.314550249431378548d-01,&! g -1
-  -2.314550249431378548d-01,&! g -1
-   3.086066999241838249d-01,&! g -1
-   3.659625273556998959d-02,&! g  0
-   7.319250547113997918d-02,&! g  0
-  -2.927700218845599167d-01,&! g  0
-   3.659625273556998959d-02,&! g  0
-  -2.927700218845599167d-01,&! g  0
-   9.759000729485330095d-02,&! g  0
-  -2.314550249431378548d-01,&! g +1
-  -2.314550249431378548d-01,&! g +1
-   3.086066999241838249d-01,&! g +1
-  -5.455447255899809750d-02,&! g +2
-   3.273268353539885989d-01,&! g +2
-   5.455447255899809750d-02,&! g +2
-  -3.273268353539885989d-01,&! g +2
-   2.041241452319314809d-01,&! g +3
-  -6.123724356957944703d-01,&! g +3
-   7.216878364870323026d-02,&! g +4
-  -4.330127018922194093d-01,&! g +4
-   7.216878364870323026d-02,&! g +4
-   1.141088661469095988d-01,&! h -5
-  -2.282177322938191977d-01,&! h -5
-   2.282177322938191977d-02,&! h -5
-   2.886751345948129210d-01,&! h -4  
-  -2.886751345948129210d-01,&! h -4
-  -5.103103630798287021d-02,&! h -3  
-  -3.402069087198857783d-02,&! h -3  
-   4.082482904638629617d-01,&! h -3  
-   1.701034543599429238d-02,&! h -3
-  -1.360827634879543391d-01,&! h -3
-  -1.666666666666666574d-01,&! h -2  
-  -1.666666666666666574d-01,&! h -2
-   3.333333333333333148d-01,&! h -2
-   1.574851970871780221d-02,&! h -1  
-   3.149703941743560442d-02,&! h -1  
-  -1.889822365046135988d-01,&! h -1  
-   1.574851970871780221d-02,&! h -1
-  -1.889822365046135988d-01,&! h -1
-   1.259881576697424177d-01,&! h -1
-   6.099375455928332523d-02,&! h  0  
-   1.219875091185666505d-01,&! h  0  
-  -1.626500121580888580d-01,&! h  0
-   6.099375455928332523d-02,&! h  0
-  -1.626500121580888580d-01,&! h  0
-   3.253000243161777161d-02,&! h  0
-   1.574851970871780221d-02,&! h +1  
-   3.149703941743560442d-02,&! h +1  
-  -1.889822365046135988d-01,&! h +1  
-   1.574851970871780221d-02,&! h +1
-  -1.889822365046135988d-01,&! h +1
-   1.259881576697424177d-01,&! h +1
-  -8.333333333333332871d-02,&! h +2  
-   1.666666666666666574d-01,&! h +2
-   8.333333333333332871d-02,&! h +2
-  -1.666666666666666574d-01,&! h +2
-  -1.701034543599429238d-02,&! h +3  
-   3.402069087198857783d-02,&! h +3  
-   1.360827634879543391d-01,&! h +3  
-   5.103103630798287021d-02,&! h +3
-  -4.082482904638629617d-01,&! h +3
-   7.216878364870323026d-02,&! h +4  
-  -4.330127018922193538d-01,&! h +4  
-   7.216878364870323026d-02,&! h +4
-   2.282177322938191977d-02,&! h +5  
-  -2.282177322938191977d-01,&! h +5  
-   1.141088661469095988d-01,&! h +5
-   3.952847075210474265d-02,&! i -6
-  -1.317615691736824801d-01,&! i -6
-   3.952847075210474265d-02,&! i -6
-   1.141088661469096127d-01,&! i -5
-  -2.282177322938192254d-01,&! i -5
-   2.282177322938191977d-02,&! i -5
-  -1.946247360403807469d-01,&! i -4
-   1.946247360403807469d-01,&! i -4
-   1.946247360403807400d-02,&! i -4
-  -1.946247360403807400d-02,&! i -4
-  -7.995026863335391587d-02,&! i -3
-  -5.330017908890261405d-02,&! i -3
-   2.132007163556104146d-01,&! i -3
-   2.665008954445130182d-02,&! i -3
-  -7.106690545187013819d-02,&! i -3
-   8.883363181483769008d-03,&! i -2
-   1.776672636296753802d-02,&! i -2
-  -1.421338109037403041d-01,&! i -2
-   8.883363181483769008d-03,&! i -2
-  -1.421338109037403041d-01,&! i -2
-   1.421338109037403041d-01,&! i -2
-   2.809166093596842176d-02,&! i -1
-   5.618332187193684352d-02,&! i -1
-  -1.123666437438736870d-01,&! i -1
-   2.809166093596842176d-02,&! i -1
-  -1.123666437438736870d-01,&! i -1
-   4.494665749754947481d-02,&! i -1
-  -3.065051491335935539d-03,&! i  0
-  -9.195154474007805750d-03,&! i  0
-   5.517092684404683450d-02,&! i  0
-  -9.195154474007805750d-03,&! i  0
-   1.103418536880936690d-01,&! i  0
-  -7.356123579206244600d-02,&! i  0
-  -3.065051491335935539d-03,&! i  0
-   5.517092684404683450d-02,&! i  0
-  -7.356123579206244600d-02,&! i  0
-   9.808164772274993379d-03,&! i  0
-   2.809166093596842176d-02,&! i +1
-   5.618332187193684352d-02,&! i +1
-  -1.123666437438736870d-01,&! i +1
-   2.809166093596842176d-02,&! i +1
-  -1.123666437438736870d-01,&! i +1
-   4.494665749754947481d-02,&! i +1
-   4.441681590741884504d-03,&! i +2
-   4.441681590741884504d-03,&! i +2
-  -7.106690545187015207d-02,&! i +2
-  -4.441681590741884504d-03,&! i +2
-   7.106690545187015207d-02,&! i +2
-  -4.441681590741884504d-03,&! i +2
-   7.106690545187015207d-02,&! i +2
-  -7.106690545187015207d-02,&! i +2
-  -2.665008954445130182d-02,&! i +3
-   5.330017908890261405d-02,&! i +3
-   7.106690545187013819d-02,&! i +3
-   7.995026863335391587d-02,&! i +3
-  -2.132007163556104146d-01,&! i +3
-  -4.865618401009518500d-03,&! i +4
-   2.432809200504759076d-02,&! i +4
-   4.865618401009518673d-02,&! i +4
-   2.432809200504759076d-02,&! i +4
-  -2.919371040605711065d-01,&! i +4
-  -4.865618401009518500d-03,&! i +4
-   4.865618401009518673d-02,&! i +4
-   2.282177322938191977d-02,&! i +5
-  -2.282177322938192254d-01,&! i +5
-   1.141088661469096127d-01,&! i +5
-   6.588078458684123485d-03,&! i +6
-  -9.882117688026184621d-02,&! i +6
-   9.882117688026184621d-02,&! i +6
-  -6.588078458684123485d-03,&! i +6
-   1.232516621479086763d-02,&! k -7
-  -6.162583107395433468d-02,&! k -7
-   3.697549864437259942d-02,&! k -7
-  -1.760738030684409631d-03,&! k -7
-   3.952847075210474265d-02,&! k -6
-  -1.317615691736824801d-01,&! k -6
-   3.952847075210474265d-02,&! k -6
-  -6.460142426521274343d-03,&! k -5
-   6.460142426521274343d-03,&! k -5
-   7.752170911825528865d-02,&! k -5
-   1.162825636773829382d-02,&! k -5
-  -1.550434182365105773d-01,&! k -5
-  -1.292028485304254869d-03,&! k -5
-   1.550434182365105842d-02,&! k -5
-  -3.100868364730211685d-02,&! k -4
-   1.033622788243403895d-01,&! k -4
-   3.100868364730211685d-02,&! k -4
-  -1.033622788243403895d-01,&! k -4
-   3.506051212531714496d-03,&! k -3
-   5.843418687552857492d-03,&! k -3
-  -7.012102425063429512d-02,&! k -3
-   1.168683737510571499d-03,&! k -3
-  -4.674734950042286688d-02,&! k -3
-   9.349469900084571294d-02,&! k -3
-  -1.168683737510571499d-03,&! k -3
-   2.337367475021142824d-02,&! k -3
-  -3.116489966694857214d-02,&! k -3
-   1.652768391712328491d-02,&! k -2
-   3.305536783424656982d-02,&! k -2
-  -8.814764755799085749d-02,&! k -2
-   1.652768391712328491d-02,&! k -2
-  -8.814764755799085749d-02,&! k -2
-   5.288858853479451450d-02,&! k -2
-  -1.124566450748777299d-03,&! k -1
-  -3.373699352246331898d-03,&! k -1
-   2.698959481797065518d-02,&! k -1
-  -3.373699352246331898d-03,&! k -1
-   5.397918963594131037d-02,&! k -1
-  -5.397918963594131037d-02,&! k -1
-  -1.124566450748777299d-03,&! k -1
-   2.698959481797065518d-02,&! k -1
-  -5.397918963594131037d-02,&! k -1
-   1.439445056958434978d-02,&! k -1
-  -5.950646322895661137d-03,&! k  0
-  -1.785193896868698255d-02,&! k  0
-   3.570387793737396509d-02,&! k  0
-  -1.785193896868698255d-02,&! k  0
-   7.140775587474793018d-02,&! k  0
-  -2.856310234989917554d-02,&! k  0
-  -5.950646322895661137d-03,&! k  0
-   3.570387793737396509d-02,&! k  0
-  -2.856310234989917554d-02,&! k  0
-   2.720295461895159451d-03,&! k  0
-  -1.124566450748777299d-03,&! k +1
-  -3.373699352246331898d-03,&! k +1
-   2.698959481797065518d-02,&! k +1
-  -3.373699352246331898d-03,&! k +1
-   5.397918963594131037d-02,&! k +1
-  -5.397918963594131037d-02,&! k +1
-  -1.124566450748777299d-03,&! k +1
-   2.698959481797065518d-02,&! k +1
-  -5.397918963594131037d-02,&! k +1
-   1.439445056958434978d-02,&! k +1
-   8.263841958561642456d-03,&! k +2
-   8.263841958561642456d-03,&! k +2
-  -4.407382377899542875d-02,&! k +2
-  -8.263841958561642456d-03,&! k +2
-   2.644429426739725725d-02,&! k +2
-  -8.263841958561642456d-03,&! k +2
-   4.407382377899542875d-02,&! k +2
-  -2.644429426739725725d-02,&! k +2
-   1.168683737510571499d-03,&! k +3
-  -1.168683737510571499d-03,&! k +3
-  -2.337367475021142824d-02,&! k +3
-  -5.843418687552857492d-03,&! k +3
-   4.674734950042286688d-02,&! k +3
-   3.116489966694857214d-02,&! k +3
-  -3.506051212531714496d-03,&! k +3
-   7.012102425063429512d-02,&! k +3
-  -9.349469900084571294d-02,&! k +3
-  -7.752170911825529212d-03,&! k +4
-   3.876085455912764953d-02,&! k +4
-   2.584056970608509737d-02,&! k +4
-   3.876085455912764953d-02,&! k +4
-  -1.550434182365105773d-01,&! k +4
-  -7.752170911825529212d-03,&! k +4
-   2.584056970608509737d-02,&! k +4
-  -1.292028485304254869d-03,&! k +5
-   1.162825636773829382d-02,&! k +5
-   1.550434182365105842d-02,&! k +5
-   6.460142426521274343d-03,&! k +5
-  -1.550434182365105773d-01,&! k +5
-  -6.460142426521274343d-03,&! k +5
-   7.752170911825528865d-02,&! k +5
-   6.588078458684123485d-03,&! k +6
-  -9.882117688026186009d-02,&! k +6
-   9.882117688026186009d-02,&! k +6
-  -6.588078458684123485d-03,&! k +6
-   1.760738030684409631d-03,&! k +7
-  -3.697549864437259942d-02,&! k +7
-   6.162583107395433468d-02,&! k +7
-  -1.232516621479086763d-02 &! k +7
- /)
+ integer :: lmax   = 0
+ integer :: ntsph  = 0
+ integer :: nttrf  = 0
+ integer :: minteg = 0
 
- public :: car2sph, sph2car
+ integer, pointer :: iofsph(:) => null()
+ integer, pointer :: isph(:)   => null()
+ integer, pointer :: jcar(:)   => null()
 
-contains
+ real(8), pointer :: csph(:)   => null()
+ real(8), pointer :: cinv(:)   => null()
+
+ real(8), pointer :: csnrm(:)   => null()
+ real(8), pointer :: cinrm(:)   => null()
+
+ public  :: carsph_initialized, carsph_init, carsph_clear, car2sph, sph2car, getnorm
+
+ contains
 
 !==============================================================================!
- subroutine car2sph(sphbas,carbas,nhkt)
+logical function carsph_initialized()
+
+ implicit none
+
+ carsph_initialized = initialized
+
+end function carsph_initialized
+!==============================================================================!
+!==============================================================================!
+subroutine carsph_init(nhkt,mintg0)
+!------------------------------------------------------------------------------!
+!
+! generate the 
+!
+!  A) Cartesian -> spherical Harmonic  and
+!
+!  B) inverse  Cartesian -> spherical Harmonic 
+!
+! transformation matrices up to maximum angular momentum
+!
+! compute and store their norm for each angular momentum
+!
+!------------------------------------------------------------------------------!
+
+ implicit none
+
+! parameter:
+ logical, parameter :: locdbg = .false., debug_ortho = .false.
+ character(len=*), parameter :: chrdbg = "carsph_init>"
+
+! input:
+ integer, intent(in) :: nhkt
+ integer, intent(in), optional :: mintg0
+
+! local: 
+ integer :: lval, mval, it, iu, iv, nx, ny, nz, nv, nt, ivm, mabs
+ integer :: ifct, irow, icol, ideg, irun, ltmp, ldx
+ integer :: nsphr, ncart, mxcar, itrf, novl, ioff, ldim, ksph
+ integer :: idx, jdx, kdx, lxi, lyi, lzi, lxj, lyj, lzj, ip, jp, kp, nu, nup
+ real(8) :: dsgn, dfct, coeff, bilt, bitu, bimv, dnum, deno
+ real(8) :: dnorm, dtmp, ttmp, tmin
+
+! local allocatables:
+ integer, allocatable :: icart(:), iovl(:), jovl(:)
+ integer(8), allocatable :: factorial(:),  doubfact(:)
+ real(8), allocatable :: ccart(:), smat(:)
+ real(8), allocatable :: scr1(:,:), scr2(:,:), scr3(:,:)
+
+ if (present(mintg0)) then
+  minteg = mintg0
+ else
+  minteg = 2
+ end if
+
+ if (minteg.lt.1 .or. minteg.gt.3 ) then
+  call quit("minteg should be 1, 2 or 3!")
+ end if
+
+ ! flag for initialization
+ initialized = .true.
+
+ ! assign maximum angular momentum
+ lmax = nhkt-1
+
+ ! determine dimensions
+ mxcar = (lmax+1)*(lmax+2)/2
+
+ ntsph = 0
+ do lval = 2,lmax
+  ntsph = ntsph+2*lval+1
+ end do
+
+ ! module pointers
+ allocate(iofsph(lmax),isph(ntsph+1),csnrm(lmax-1),cinrm(lmax-1))
+
+ ! temporary arrays
+ allocate(icart(mxcar),ccart(mxcar),iovl(mxcar+1),jovl(mxcar*mxcar),&
+          smat(mxcar*mxcar),factorial(0:2*lmax),doubfact(-1:2*lmax-1))
+
+ !------------------------------------------------!
+ ! 1) determine offset array for the 
+ !    spherical Harmonic indeces
+ !------------------------------------------------!
+ iofsph(1) = 0
+ do lval = 2,lmax
+  iofsph(lval) = iofsph(lval-1)+2*lval+1
+ end do
+
+ itrf = 0
+ isph(1) = 1
+
+ !------------------------------------------------!
+ ! compute factorial
+ !------------------------------------------------!
+ factorial(0) = 1
+ do lval = 1,2*lmax
+  factorial(lval) = factorial(lval-1)*int(lval,8)
+ end do
+
+ !------------------------------------------------!
+ ! double factorial
+ !------------------------------------------------!
+ doubfact(-1) = 1
+ doubfact( 0) = 1
+ doubfact( 1) = 1
+
+ ldim = 2*lmax-1
+ ltmp = ldim/2
+ ltmp = 2*ltmp
+ do lval = 2,ltmp,2
+  doubfact(lval) = doubfact(lval-2)*int(lval,8)
+ end do
+
+ ltmp= ltmp+mod(ldim,2)
+ do lval = 3,ltmp,2
+  doubfact(lval) = doubfact(lval-2)*int(lval,8)
+ end do
+
+ !------------------------------------------------!
+ ! 2a) allocate all arrays
+ !  b) compute the Cart -> sph. Harm trafo matrices
+ !------------------------------------------------!
+ run_loop: do irun = 1,2
+
+  ! allocate arrays for row indeces and coefficients
+  if (irun.eq.2) then
+   allocate(jcar(nttrf),csph(nttrf),cinv(nttrf))
+  end if
+
+  nttrf = 0
+
+  traf_loop: do lval = 2,lmax
+
+   ncart = (lval+1)*(lval+2)/2
+
+   do mval = -lval,lval
+
+    ! initialize with 0
+    do ideg = 1,ncart
+     icart(ideg) = 0
+    end do
+    do ideg = 1,ncart
+     ccart(ideg) = 0.d0
+    end do
+
+    mabs = abs(mval)
+    nt = (lval-mabs)/2
+    if (mval.ge.0) then
+     ivm = 0
+     nv = mabs/2
+     nv = 2*nv
+    else
+     ivm = 1
+     nv = (mabs-ivm)/2
+     nv = 2*nv+ivm
+    end if
+ 
+    if (mval.eq.0) then
+     deno = sqrt(2.d0)
+    else
+     deno = 1.d0
+    end if
+ 
+    dnum = sqrt(real(2*factorial(lval+mabs)*factorial(lval-mabs),8))
+ 
+    deno = real(factorial(lval)*(2**mabs),8)*deno
+ 
+    ! --------------------------------------- !
+    ! extra normalization for minteg = 2 case
+    ! --------------------------------------- !
+    if (minteg.eq.2 .or. minteg.eq.3) deno = deno * sqrt(real(doubfact(2*lval-1),8))
+
+    dnorm = dnum / deno
+ 
+    do it = 0,nt
+     ifct = 4**it
+     dfct = 1.d0 / real(ifct,8)
+     bilt = binom(factorial,lval,it)*binom(factorial,lval-it,mabs+it)
+     do iu = 0,it
+      bitu = binom(factorial,it,iu)
+      do iv = ivm,nv,2
+       bimv = binom(factorial,mabs,iv)
+       if (mod(it+(iv-ivm)/2,2).eq.0) then
+        dsgn = +1.d0
+       else
+        dsgn = -1.d0
+       end if
+ 
+       coeff = dsgn*dfct*bilt*bitu*bimv
+       
+       nx = 2*it+mabs-2*iu-iv
+       ny = 2*iu+iv
+       nz = lval-2*it-mabs
+ 
+       icol = (lval-nx+1)
+       irow = nz+1
+ 
+       ideg = irow+icol*(icol-1)/2
+       
+       icart(ideg) = 1
+       ccart(ideg) = ccart(ideg)+dnorm*coeff
+
+       if (locdbg) then
+        write(6,"(a,2(i2,1x),ES25.18,3(1x,i2),1x,i3)") chrdbg,lval,mval,dnorm*coeff,nx,ny,nz,ideg
+       end if
+ 
+      end do
+     end do
+    end do
+ 
+    if (irun.eq.1) then
+     isph(itrf+1) = nttrf+1
+     itrf = itrf+1
+    end if
+
+    ! --------------------------------------- !
+    ! extra normalization for minteg = 1 case
+    ! --------------------------------------- !
+    if (minteg.eq.1 .and. irun.eq.2) then
+     ! initialize with maximum absolute value
+     tmin = 0.d0
+     do ideg = 1,ncart
+      ttmp = abs(ccart(ideg))
+      if (icart(ideg).gt.0 .and. ttmp.gt.1.D-13 .and. ttmp .gt.tmin) then
+       tmin = ttmp
+       idx = ideg
+      end if
+     end do
+     tmin = ccart(idx)
+
+     ! look for minimum value
+     do ideg = 1,ncart
+      ttmp = abs(ccart(ideg))
+      if (icart(ideg).gt.0 .and. ttmp.gt.1.D-13 .and. ttmp .lt.tmin) tmin = ttmp
+     end do
+     tmin = 1.d0 / tmin
+     do ideg = 1,ncart
+      ccart(ideg) = ccart(ideg) * tmin
+     end do
+    end if 
+
+    if (irun.eq.1) then
+     do ideg = 1,ncart
+      if (icart(ideg).gt.0 .and. abs(ccart(ideg)).gt.1.D-13) then
+       nttrf = nttrf+1
+      end if
+     end do
+    else if (irun.eq.2) then
+     do ideg = 1,ncart
+      if (icart(ideg).gt.0 .and. abs(ccart(ideg)).gt.1.D-13) then
+       nttrf = nttrf+1
+       jcar(nttrf) = ideg
+       csph(nttrf) = ccart(ideg)
+      end if
+     end do
+    end if
+
+   end do
+ 
+  end do traf_loop
+
+  if (irun.eq.1) then
+   isph(itrf+1) = nttrf+1
+  end if
+
+ end do run_loop
+
+ ! --------------------- !
+ !
+ ! flip phase for ... 
+ !
+ !  l = 3, m_l = -3     (position 7)
+ !
+ !  l = 4, m_l = +2, -3 (position 5, 7)
+ !
+ !  in Turbomole minteg = 3 case
+ ! --------------------- !
+ if (minteg.eq.3) then
+
+  if (lmax.ge.3) then
+   !  l = 3, m_l = -3
+   do jp = isph(iofsph(2)+1),isph(iofsph(2)+2)-1
+    csph(jp) = -csph(jp)
+   end do
+  end if
+
+  if (lmax.ge.4) then
+   !  l = 4, m_l = -3
+   do jp = isph(iofsph(3)+2),isph(iofsph(3)+3)-1
+    csph(jp) = -csph(jp)
+   end do
+ 
+   !  l = 4, m_l = +2
+   do jp = isph(iofsph(3)+7),isph(iofsph(3)+8)-1
+    csph(jp) = -csph(jp)
+   end do
+  end if
+
+ end if
+
+ ! ---------------------------------- !
+ ! compute the norm of trafo matrices
+ ! ---------------------------------- !
+ do lval = 3,nhkt
+  ldx  = lval-2
+  ioff = iofsph(ldx)
+  dtmp = 0.d0
+  do ksph = 1,2*lval-1
+   do jp = isph(ioff+ksph),isph(ioff+ksph+1)-1
+    dtmp = dtmp+csph(jp)*csph(jp)
+   end do
+  end do
+  csnrm(ldx) = sqrt(dtmp)
+ end do
+
+ if (locdbg) then
+  do lval = 3,nhkt
+   ldx  = lval-2
+!
+   write(6,"(/a,i3,1x,ES25.18)") chrdbg//" Spher. -> Cart. trafo matrix:",lval,csnrm(ldx)
+!
+   ioff = iofsph(ldx)
+   do idx = 1,2*lval-1
+    do jp = isph(ioff+idx),isph(ioff+idx+1)-1
+     jdx = jcar(jp)
+     write(6,"(i3,1x,i3,1x,ES25.18)") idx,jdx,csph(jp)
+    end do
+   end do
+  end do
+ end if
+
+ !------------------------------------------------!
+ ! 3) compute the inverse tranformation matrices
+ !------------------------------------------------!
+
+ inv_loop: do lval = 2,lmax
+
+  ncart = (lval+1)*(lval+2)/2
+  nsphr = 2*lval+1
+
+  !------------------------------------------------!
+  ! 3a) compute Cartesian overlap
+  !------------------------------------------------!
+  ip = 1
+
+  idx = 0
+  do lxi = lval,0,-1
+   do lzi = 0,lval-lxi 
+    lyi = lval-lxi-lzi
+    idx = idx+1
+
+    iovl(idx) = ip
+
+    jdx = 0
+    do lxj = lval,0,-1
+     do lzj = 0,lval-lxj
+      lyj = lval-lxj-lzj
+      jdx = jdx+1
+
+      if ((mod(lxi+lxj,2)+mod(lyi+lyj,2)+mod(lzi+lzj,2)) .eq.0) then
+       smat(ip) = doubfact(lxi+lxj-1)*doubfact(lyi+lyj-1)*doubfact(lzi+lzj-1)
+       jovl(ip) = jdx
+       ip = ip+1
+      end if 
+     end do
+    end do
+
+   end do
+  end do
+
+  iovl(ncart+1) = ip
+  novl = ip-1
+
+  if (locdbg) then
+!
+   write(6,"(/a,i3)") chrdbg//" Cartesian overlap",lval
+!
+   do idx = 1,ncart
+    do kp = iovl(idx),iovl(idx+1)-1
+     jdx = jovl(kp)
+     write(6,"(i3,1x,i3,1x,ES25.18)") idx,jdx,smat(kp)
+    end do
+   end do
+  end if
+
+  !------------------------------------------------!
+  ! 3b) comute (V^(-1))^T = S * V
+  !------------------------------------------------!
+  do nu = 1,ncart
+   icart(nu) = 0
+  end do
+ 
+  ioff = iofsph(lval-1)
+
+  do idx = 1,nsphr
+   do jp = isph(ioff+idx),isph(ioff+idx+1)-1
+    jdx = jcar(jp)
+    do kp = iovl(jdx),iovl(jdx+1)-1
+     kdx = jovl(kp)
+     if (icart(kdx) .ne. idx) then
+      icart(kdx) = idx
+      ccart(kdx) = csph(jp) * smat(kp)
+     else
+      ccart(kdx) = ccart(kdx) + csph(jp) * smat(kp)
+     end if
+ 
+    end do
+ 
+   end do
+ 
+   do nup = isph(ioff+idx),isph(ioff+idx+1)-1
+    nu = jcar(nup)
+    cinv(nup) = ccart(nu)
+   end do
+ 
+  end do
+
+ end do inv_loop
+
+ ! ---------------------------------- !
+ ! compute the norm of inverse trafo matrices
+ ! ---------------------------------- !
+ do lval = 3,nhkt
+  ldx  = lval-2
+  ioff = iofsph(ldx)
+  dtmp = 0.d0
+  do ksph = 1,2*lval-1
+   do jp = isph(ioff+ksph),isph(ioff+ksph+1)-1
+    dtmp = dtmp+cinv(jp)*cinv(jp)
+   end do
+  end do
+  cinrm(ldx) = sqrt(dtmp)
+ end do
+
+ if (locdbg) then
+  do lval = 3,nhkt
+   ldx  = lval-2
+!
+   write(6,"(/a,i3,1x,ES25.18)") chrdbg//" inverse Spher. -> Cart. trafo matrix:",lval,cinrm(ldx)
+!
+   ioff = iofsph(ldx)
+   do idx = 1,2*lval-1
+    do jp = isph(ioff+idx),isph(ioff+idx+1)-1
+     jdx = jcar(jp)
+     write(6,"(i3,1x,i3,1x,ES25.18)") idx,jdx,cinv(jp)
+    end do
+   end do
+  end do
+ end if
+
+ if (debug_ortho) then
+
+  do lval = 3,nhkt
+
+!
+   write(6,"(/a,i3)") chrdbg//" test:",lval
+!
+   ldx  = lval-2
+
+   ncart = (lval)*(lval+1)/2
+   nsphr = 2*lval-1
+
+   allocate(scr1(nsphr,ncart),scr2(nsphr,ncart),scr3(nsphr,nsphr))
+
+   scr1(:,:) = 0.d0
+   scr2(:,:) = 0.d0
+
+   ioff = iofsph(ldx)
+   do idx = 1,2*lval-1
+    do jp = isph(ioff+idx),isph(ioff+idx+1)-1
+     jdx = jcar(jp)
+     scr1(idx,jdx) = csph(jp)
+     scr2(idx,jdx) = cinv(jp)
+    end do
+   end do
+
+   call dgemm("n","t",nsphr,nsphr,ncart,&
+              1.d0,scr2,nsphr,scr1,nsphr,0.d0,scr3,nsphr)
+
+   call output(scr3,1,nsphr,1,nsphr,nsphr,nsphr,1,6)
+
+   deallocate(scr1,scr2,scr3)
+
+  end do
+
+ end if
+
+ ! release temporary memory
+ deallocate(icart,ccart,iovl,jovl,smat,factorial,doubfact)
+
+end subroutine carsph_init
+!==============================================================================!
+!==============================================================================!
+subroutine carsph_clear()
+!------------------------------------------------------------------------------!
+!
+! deallocate and nullify all internal arrays
+!
+!------------------------------------------------------------------------------!
+
+ implicit none
+
+ initialized = .false.
+
+ lmax  = 0
+ ntsph = 0
+ nttrf = 0
+
+ if (associated(iofsph)) deallocate(iofsph)
+ if (associated(isph))   deallocate(isph)
+ if (associated(jcar))   deallocate(jcar)
+ if (associated(csph))   deallocate(csph)
+ if (associated(cinv))   deallocate(cinv)
+ if (associated(csnrm))  deallocate(csnrm)
+ if (associated(cinrm))  deallocate(cinrm)
+ 
+ nullify(iofsph,isph,jcar,csph,cinv,csnrm,cinrm) 
+
+end subroutine carsph_clear
+!==============================================================================!
+real(8) function binom(factorial,nval,kval)
+
+ implicit none
+
+! input:
+ integer, intent(in) :: nval, kval
+ integer(8), intent(in) :: factorial(0:nval)
+
+ binom = real(factorial(nval),8)/real(factorial(kval)*factorial(nval-kval),8)
+
+end function binom
+!==============================================================================!
+!==============================================================================!
+ subroutine car2sph(sphbas,carbas,iopt,nhkt)
 !------------------------------------------------------------------------------!
 !
 ! transform one basis function from Cartesians to spherical Harmonics 
@@ -453,30 +589,45 @@ contains
  integer, intent(in) :: nhkt
 
 ! input:
+ integer, intent(in) :: iopt
  real(8), intent(in) :: carbas(nhkt*(nhkt+1)/2)
 
 ! output:
  real(8), intent(out) :: sphbas(2*nhkt-1)
 
 ! local scalars:
+ character(len=2) :: ctmp
  integer :: ksph, kcar, ioff, jp
  real(8) :: sphk
 
- if      (nhkt.eq.1) then
+! local pointer:
+ real(8), pointer :: cpnt(:)
+
+ select case (iopt)
+  case (1)
+   cpnt => csph
+  case (2)
+   cpnt => cinv
+  case default
+   call quit("Only iopt = 1,2 valid!")
+ end select
+
+ if (nhkt.gt.lmax+1) then
+  write(ctmp,"(i2)") nhkt
+  call quit("Angular momentum number "//ctmp//" too high!")
+ else if (nhkt.eq.1) then
   sphbas(1) = carbas(1)
  else if (nhkt.eq.2) then
   sphbas(1) = carbas(1)
   sphbas(2) = carbas(2)
   sphbas(3) = carbas(3)
- else if (nhkt.gt.8) then
-  stop "Sorry,works so far only up to k functions!"
  else
   ioff = iofsph(nhkt-2)
   do ksph = 1,2*nhkt-1
    sphk = 0.d0
    do jp = isph(ioff+ksph),isph(ioff+ksph+1)-1
     kcar = jcar(jp)
-    sphk = sphk+csph(jp)*carbas(kcar)
+    sphk = sphk+cpnt(jp)*carbas(kcar)
    end do
    sphbas(ksph) = sphk
   end do
@@ -485,7 +636,7 @@ contains
  end subroutine car2sph
 !==============================================================================!
 !==============================================================================!
- subroutine sph2car(carbas,sphbas,nhkt)
+ subroutine sph2car(carbas,sphbas,iopt,nhkt)
 !------------------------------------------------------------------------------!
 !
 ! transform one basis function from spherical Harmonics to Cartesians
@@ -498,23 +649,38 @@ contains
  integer, intent(in) :: nhkt
 
 ! input:
+ integer, intent(in) :: iopt
  real(8), intent(in) :: sphbas(2*nhkt-1)
 
 ! output:
  real(8), intent(out) :: carbas(nhkt*(nhkt+1)/2)
 
 ! local scalars:
+ character(len=2) :: ctmp
  integer :: ksph, kcar, ioff, jp
  real(8) :: sphk
 
- if      (nhkt.eq.1) then
+! local pointer:
+ real(8), pointer :: cpnt(:)
+
+ select case (iopt)
+  case (1)
+   cpnt => csph
+  case (2)
+   cpnt => cinv
+  case default
+   call quit("Only iopt = 1,2 valid!")
+ end select
+
+ if (nhkt.gt.lmax+1) then
+  write(ctmp,"(i2)") nhkt
+  call quit("Angular momentum number "//ctmp//" too high!")
+ else if (nhkt.eq.1) then
   carbas(1) = sphbas(1)
  else if (nhkt.eq.2) then
   carbas(1) = sphbas(1)
   carbas(2) = sphbas(2)
   carbas(3) = sphbas(3)
- else if (nhkt.gt.8) then
-  stop "Sorry,works so far only up to k functions!"
  else
   do kcar = 1,nhkt*(nhkt+1)/2
    carbas(kcar) = 0.d0
@@ -524,12 +690,48 @@ contains
    sphk = sphbas(ksph)
    do jp = isph(ioff+ksph),isph(ioff+ksph+1)-1
     kcar = jcar(jp)
-    carbas(kcar) = carbas(kcar)+csph(jp)*sphk
+    carbas(kcar) = carbas(kcar)+cpnt(jp)*sphk
    end do
   end do
  end if
 
  end subroutine sph2car
+!==============================================================================!
+!==============================================================================!
+real(8) function getnorm(nhkt,iopt)
+
+ implicit none
+
+! input:
+ integer,intent(in) :: nhkt, iopt
+
+! local scalars:
+ character(len=2) :: ctmp
+
+! local pointer:
+ real(8), pointer :: cpnt(:)
+
+ select case (iopt)
+  case (1)
+   cpnt => csnrm
+  case (2)
+   cpnt => cinrm
+  case default
+   call quit("Only iopt = 1,2 valid!")
+ end select
+
+ if      (nhkt.gt.lmax+1) then
+  write(ctmp,"(i2)") nhkt
+  call quit("Angular momentum number "//ctmp//" too high!")
+ else if (nhkt.eq.1) then
+  getnorm = 1.d0
+ else if (nhkt.eq.2) then
+  getnorm = 1.d0
+ else if (nhkt.ge.3) then
+  getnorm = cpnt(nhkt-2)
+ end if
+
+end function getnorm
 !==============================================================================!
 
 end module carsph

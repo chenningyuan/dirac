@@ -2,7 +2,7 @@
      &                   HO,HV,HOV,H,CZ,GOO,GVV,
      &                   BUF1,BUF2,NBUF2,BUF3,NBUF3,S1)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -57,6 +57,7 @@ C---------------Local variables--------------------------------------
 C
       LOGICAL DONE,TEQ,USEDZ,RIGHT
       REAL*8 SDOT,DDOT
+      INTEGER irp,k,k1,k2,m,n,off1,off2
 C
 C---------------Executable code--------------------------------------
 C

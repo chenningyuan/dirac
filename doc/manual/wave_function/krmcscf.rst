@@ -101,7 +101,7 @@ integer value giving the (boson/fermion) symmetry of the state to optimize on. *
     1
 
 If you run the calculation in **linear symmetry** you have to specify **2** :math:`\times \Omega` value
-of the state to optimize on. The doubling stems from the fact
+of the state to optimize on and use LUCIAREL as CI PROGRAM. The doubling stems from the fact
 that we want to avoid non-integer input, e.g. in case of an odd number
 of electrons we might have :math:`\Omega` = 1/2, 3/2, 5/2, etc. values and the
 corresponding input for the :math:`\Omega` = 1/2 would then read as
@@ -151,7 +151,7 @@ delete occupied-secondary e-e rotations (rotations between
 electronic-electronic spinors) in the gradient and Hessian calculation
 specified by an orbital string of virtual (secondary) orbitals for each fermion corep.
 *default*: include all active-secondary e-e rotations.
-*example:* Delete all e-e rotations for secondary orbitals 20,21 and
+*example*: Delete all e-e rotations for secondary orbitals 20,21 and
 22 in fermion corep 1 (*gerade*) and 24,25,26,27 and 28 in fermion corep 2 (*ungerade*):
 
 ::
@@ -171,6 +171,19 @@ include e-p rotations (rotations between electronic-positronic spinors) in the g
 keyword(SKIPEP)
 
 skip e-p rotations (rotations between electronic-positronic spinors) in the gradient and Hessian calculation. *default*: skip e-p rotations.
+
+keyword(MVOFAC)
+
+generate modified inactive and virtual orbitals based on block-diagonalization of FC + "MVOFAC"\*FV.
+The value does not change the MCSCF wave functions,
+but the non-active orbitals for post-MCSCF calculations (e.g. \*LUCITA or \*KRCI) are modified.
+*default*: MVOFAC = 1.0
+*example*: Mimic Bauchschlicher's MVOs for HF-CI for the MCSCF wave function:
+
+::
+
+   .MVOFAC
+   0.0
 
 keyword(PRINT)
 

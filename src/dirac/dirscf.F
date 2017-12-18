@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -106,10 +106,10 @@ C     Memory allocation
 C
 C     KCMO is N2BBASXQ because it is used for Fock matrix in PREDHF.
 C
-      CALL MEMGET('REAL',KCMO ,N2BBASXQ,      WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG ,NTBAS(0),      WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBRP,NTBAS(0),      WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFOCK,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CMO  ',KCMO ,N2BBASXQ,      WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EIG  ',KEIG ,NTBAS(0),      WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBEIG',KIBRP,NTBAS(0),      WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FOCK ',KFOCK,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
 C
 C     Solve DHF-equations
 C     ===================
@@ -155,10 +155,11 @@ C
      &            LFREE,IPRSCF)
 CMI  ....  after 2cIOTC-SCF prepare starting data for subsequent 4c SCF
       IF (DO2C4C.AND.(INI2C.EQ.3.OR.INI2C.EQ.4)) THEN
-        CALL MEMGET('REAL',K1,N2BBASXQ,      WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',K2,N2BBASXQ,      WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','TBUF',K1,N2BBASXQ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','TMAT',K2,N2BBASXQ,WORK,KFREE,LFREE)
         CALL CMOTR4C(WORK(K1),WORK(K2),WORK(KCMO),WORK(KEIG),
-     &                WORK(KIBRP),WORK(KFREE),LFREE)
+     &       WORK(KIBRP),WORK(KFREE),LFREE)
+        CALL MEMREL('PSISCF.CMOTR4C',WORK,KWORK,K1,KFREE,LFREE)
       ENDIF
 C
 C     Memory deallocation of the rest..
@@ -651,7 +652,7 @@ CMI   ... when (DO4C2C.AND..NOT.CONT2C)=.true.,  !
      &  ' using pict.change transformed Fock matrixes'//
      &  ' from LUFCK1 and LUFCK2.'
          ENDIF
-         CALL MEMGET('REAL',KFCK1,N2BBASXQ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','FCK1',KFCK1,N2BBASXQ,WORK,KFREE,LFREE)
          CALL REAFCK(LUFCK1,WORK(KFCK1),.TRUE.,1)
          CALL REAFCK(LUFCK2,FOCK,.TRUE.,NFMAT)
          CALL DENMAT(DMAT,CMO,IPRSCF)
@@ -971,6 +972,9 @@ C        ... before extracting of EIG print the Fock matrix
            CALL FLSHFO(LUPRI)
         ENDDO
       ENDIF
+C
+C     If converged, exit SCF here
+C
       IF (DHFEXIT) GOTO 9999      
 C
 C     Diagonalize Fock matrix
@@ -994,10 +998,6 @@ C     ====================
 C
       IF(DOBOSSEL) CALL BOSSEL(EIG,IBEIG,FAO,WORK(KFREE),LFREE)
 C
-C     If converged, do not select occupation or save orbitals
-C
-CTROND      IF (DHFEXIT) GOTO 9999
-C
 C     Automatic occupation
 C     ====================
 C
@@ -1018,10 +1018,11 @@ C
      &              WORK(KTMAT+I2TMT(I)),NFBAS(I,0),NTMO(I),NZT,
      &              IPRSCF)
         ELSE
-          CALL MEMGET('INTE',KIND,NFRO(I),WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KBUF,NFBAS(I,0)*NZ,WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KEBF,NTMO(I),WORK,KFREE,LFREE)
-          CALL MEMGET('INTE',KIBF,NTMO(I),WORK,KFREE,LFREE)
+          CALL MEMGET2('INTE','IBUF ',KIND,NFRO(I),WORK,KFREE,LFREE)
+          CALL MEMGET2('REAL','BUF  ',KBUF,NFBAS(I,0)*NZ,
+     &                 WORK,KFREE,LFREE)
+          CALL MEMGET2('REAL','EBUF ',KEBF,NTMO(I),WORK,KFREE,LFREE)
+          CALL MEMGET2('INTE','IBBUF',KIBF,NTMO(I),WORK,KFREE,LFREE)
           CALL BCKTRA_FRZ(I,LUTMAT,FMO(ICMOQ(I)+1),FAO(I2TMOT(I)+1),
      &                EIG(IORB(I)+1),IBEIG(IORB(I)+1),
      &                WORK(KTMAT+I2TMT(I)),WORK(KIND),WORK(KBUF),
@@ -1175,13 +1176,13 @@ C*****************************************************************************
 C
 C     Memory allocation
 C
-      CALL MEMGET('REAL',KDMAT,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBMAT,MXDIIS*MXDIIS,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','DMAT',KDMAT,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','BMAT',KBMAT,MXDIIS*MXDIIS,WORK,KFREE,LFREE)
 
       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
       call SetIntTaskArrayDimension(NPOS,PARCAL)
       if (NPOS.GT.0) THEN
-         CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+         CALL MEMGET2('INTE','NPOS',KPOS,NPOS,WORK,KFREE,LFREE)
       else
          KPOS = KFREE
       endif
@@ -1214,6 +1215,9 @@ C*****************************************************************************
 #ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
+#ifdef HAS_PELIB
+      use pe_variables, only: peqm
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1241,6 +1245,9 @@ C
       real(8)              :: time_pcm_fock
       character(12)        :: pcm_cputid
       real(8), allocatable :: fock_pcm(:, :, :)
+#endif
+#ifdef HAS_PELIB
+      REAL(8) :: PE_TOT_NRG, PE_EL_NRG, PE_TIME
 #endif
       CALL QENTER('SCFCYC_1')
 #include "memint.h"
@@ -1425,6 +1432,18 @@ C
      &                 WORK(KFREE),LFREE,IPRSOL)
          ENDIF
 C
+C        Polarizable embedding contribution
+C        ==================================
+C
+#ifdef HAS_PELIB
+         IF (PEQM) THEN
+            IF (IPRSCF >= 1) WRITE(LUPRI,'(A)') '* Calling PE library'
+            PE_TIME = SECOND()
+            CALL PELIB_IFC_FOCK(DMAT, FOCK, PE_TOT_NRG, PE_EL_NRG)
+            PE_TIME = SECOND() - PE_TIME
+         END IF
+#endif
+C
 C        Read one-electron Fock matrix from file into CMO
 C        ================================================
 C
@@ -1551,6 +1570,13 @@ C
            write(lupri,'(3X,A,A12)')
      &      '* PCM Fock matrix contribution  (CPU):', pcm_cputid
          endif 
+#endif
+#ifdef HAS_PELIB
+          IF (PEQM) THEN
+            CPUTID = SECTID(PE_TIME)
+            WRITE(LUPRI,'(3X,A,A12)')
+     &      '* PE Fock matrix            (CPU):',CPUTID
+          END IF
 #endif
           CPUTID = SECTID(TDDG)
           IF(NZ.EQ.1) WRITE(LUPRI,'(3X,A,A12)')
@@ -1734,6 +1760,9 @@ C*****************************************************************************
 #ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
+#ifdef HAS_PELIB
+      use pe_variables, only: peqm
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1760,6 +1789,8 @@ c     besterg is the lowest energy we encountered so far
 #ifdef HAS_PCMSOLVER
       real(8)      :: pcm_energy
 #endif
+      REAL(8) :: PE_TOT_NRG, PE_EL_NRG
+      REAL(8), DIMENSION(:), ALLOCATABLE :: PE_FMAT
       type(fde_import) :: itmp
       data besterg /1.0D100/
       save besterg
@@ -1848,6 +1879,20 @@ C
         dhferg = dhferg + pcm_energy
       endif 
 #endif
+#ifdef HAS_PELIB
+      IF (PEQM) THEN
+        ! The PE Fock matrix is added to F2 before entering ERGCAL
+        ! and the electronic PE energy is therefore added to E2PART.
+        ! Therefore we subtract it contribution from the total PE energy.
+        ALLOCATE(PE_FMAT(N2BBASX))
+        E_PE = 0.0D0
+        CALL PELIB_IFC_FOCK(DMAT, PE_FMAT, PE_TOT_NRG, PE_EL_NRG)
+        IF (IPRSCF >= 1) CALL PELIB_IFC_ENERGY(DMAT)
+        DHFERG = DHFERG + PE_TOT_NRG - 0.5d0 * PE_EL_NRG
+        E_PE = PE_TOT_NRG 
+        DEALLOCATE(PE_FMAT)
+      END IF
+#endif
       IF(LVCON) THEN
          IF (ONECAP .AND. (INTV1C.EQ.2)) THEN
             JPRINT=0
@@ -1913,6 +1958,11 @@ CMI      ... print out matrixes ...
 #ifdef HAS_PCMSOLVER
          IF(dirac_cfg_pcm) WRITE(LUPRI,'(A,'//FMT//')')
      +       'Polarization energy                :  ',get_pcm_energy()
+#endif
+        ! later this will be replaced by a get energy routine
+#ifdef HAS_PELIB
+        IF (PEQM) WRITE(LUPRI,'(A,'//FMT//')')
+     +       'Embedding energy                   :  ',PE_TOT_NRG
 #endif
          WRITE(LUPRI,'(A,'//FMT//')')
      +       'Total energy                       :  ',DHFERG
@@ -3150,17 +3200,17 @@ C
 
       CALL TITLER('Modified virtual orbitals','*',125)
 C
-      CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBRP,NTBAS(0),      WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFOCK,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CMO  ',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EIG  ',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBEIG',KIBRP,NTBAS(0),      WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FOCK ',KFOCK,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','DMAT ',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)
 C
       call SaveTaskDistribFlags(saveflags)
       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
       call SetIntTaskArrayDimension(NPOS,PARCAL)
       if (NPOS.GT.0) THEN
-         CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+         CALL MEMGET2('INTE','NPOS',KPOS,NPOS,WORK,KFREE,LFREE)
       else
          KPOS = KFREE
       endif
@@ -3374,7 +3424,8 @@ C
         IR(2,I) = NESH(I)
       ENDDO
       DO IFRP = 1,NFSYM
-        CALL MEMGET('INTE',KVEC(IFRP,1),NR(IFRP),WORK,KFREE,LFREE)
+         CALL MEMGET2('INTE','ILIST',KVEC(IFRP,1),NR(IFRP),
+     &                WORK,KFREE,LFREE)
         NVEC(IFRP,0) = 1
         CALL  NUMLST(VECMVO(IFRP),WORK(KVEC(IFRP,1)),
      &               NR(IFRP),IR(1,IFRP),IR(2,IFRP),
@@ -3384,7 +3435,7 @@ C
      &              NVEC(IFRP,2),NVEC(IFRP,1))
         NVEC(IFRP,0) = NVEC(IFRP,1) + NVEC(IFRP,2)
         CALL MEMREL('DENMVO',WORK,KFRSAV,KVEC(IFRP,1),KFREE,LFREE)
-        CALL MEMGET('INTE',KVEC(IFRP,1),NVEC(IFRP,0),
+        CALL MEMGET2('INTE','ILIST',KVEC(IFRP,1),NVEC(IFRP,0),
      &              WORK,KFREE,LFREE)
       ENDDO
 C
@@ -4256,8 +4307,8 @@ C
                 ENDIF
 #ifdef MOD_UNRELEASED
               ELSE
-                CALL MEMGET('REAL',KFMO,NBO*NBO,WORK,KFREE,LFREE)
-                CALL MEMGET('REAL',KFA, NBO*NBO,WORK,KFREE,LFREE)
+                CALL MEMGET2('REAL','FMO',KFMO,NBO*NBO,WORK,KFREE,LFREE)
+                CALL MEMGET2('REAL','FA ',KFA, NBO*NBO,WORK,KFREE,LFREE)
                 IPOS=0
                 DO II=1,NBO
                   DO JJ=1,NBO
@@ -4276,7 +4327,6 @@ C
                     IPOS=IPOS+1
                   ENDDO
                 ENDDO
-                CALL MEMREL('DFDIAG',WORK,KFA ,KFA ,KFREE,LFREE)
                 CALL MEMREL('DFDIAG',WORK,KFMO,KFMO,KFREE,LFREE)
               ENDIF
 #endif
@@ -4310,8 +4360,8 @@ C         the block identification. (Use FMO as scratch space for the
 C         vector sort)
 C
           CALL INIBOS(IBEIG(IORB(I)+1),I,.FALSE.,IPRHAM)
-          CALL MEMGET('INTE',KINDX,NORB(I),WORK,KFREE,LFREE)
-          CALL MEMGET('INTE',KIDUM,NORB(I),WORK,KFREE,LFREE)
+          CALL MEMGET2('INTE','INDX',KINDX,NORB(I),WORK,KFREE,LFREE)
+          CALL MEMGET2('INTE','IDUM',KIDUM,NORB(I),WORK,KFREE,LFREE)
           CALL SELBOS (I,NTMO(I),WORK(KINDX),EIG(IORB(I)+1),
      &                 IBEIG(IORB(I)+1),FAO(I2TMOT(I)+1),
      &                 FMO(I2TMOT(I)+1),WORK(KIDUM),IPRHAM)
@@ -4358,8 +4408,8 @@ C           the boson symmetry. (Use FMO as scratch space for the
 C           vector sort)
 C
           CALL INIBOS(IBEIG(IORB(I)+1),I,.FALSE.,IPRHAM)
-          CALL MEMGET('INTE',KINDX,NORB(I),WORK,KFREE,LFREE)
-          CALL MEMGET('INTE',KIDUM,NORB(I),WORK,KFREE,LFREE)
+          CALL MEMGET2('INTE','INDX',KINDX,NORB(I),WORK,KFREE,LFREE)
+          CALL MEMGET2('INTE','IDUM',KIDUM,NORB(I),WORK,KFREE,LFREE)
           CALL SELBOS (I,NORB(I),WORK(KINDX),EIG(IORB(I)+1),
      &                   IBEIG(IORB(I)+1),FAO(I2ORBT(I)+1),
      &                   FMO(I2ORBT(I)+1),WORK(KIDUM),IPRHAM)
@@ -5079,13 +5129,13 @@ C
 C
 C     Some memory allocation
 C
-      CALL MEMGET('REAL',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','DMAT',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)
 
       call SaveTaskDistribFlags(saveflags)
       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
       call SetIntTaskArrayDimension(NPOS,PARCAL)
       if (NPOS.GT.0) THEN
-         CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+         CALL MEMGET2('INTE','NPOS',KPOS,NPOS,WORK,KFREE,LFREE)
       else
          KPOS = KFREE
       endif
@@ -5180,12 +5230,12 @@ C
       NLS = NL * NS
       NSS = NS * NS
       NTT = NT * NT
-      CALL MEMGET('REAL',KFLL,NZ*NLL,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFLS,NZ*NLS,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFSS,NZ*NSS,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KVLL,NZ*NLL,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KVSL,NZ*NLS,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KVSS,NZ*NSS,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FLL',KFLL,NZ*NLL,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FLS',KFLS,NZ*NLS,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FSS',KFSS,NZ*NSS,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','VLL',KVLL,NZ*NLL,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','VSL',KVSL,NZ*NLS,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','VSS',KVSS,NZ*NSS,WORK,KFREE,LFREE)
 C
 C     Extract LL block of Fock matrix
       CALL EXTRSB (1,IFRP,NBORB,4,NBRP,NBORB,4,NBRP,
@@ -5343,8 +5393,8 @@ C
       ELSEIF(NVECMF.GT.0) THEN
         NDDIM = NVEC*NVEC*NZ
         NCDIM = NT*NVEC*NZ
-        CALL MEMGET('REAL',KD,NDDIM,WORK,KFREE,LFREE)      
-        CALL MEMGET('REAL',KC,NCDIM,WORK,KFREE,LFREE)      
+        CALL MEMGET2('REAL','D',KD,NDDIM,WORK,KFREE,LFREE)      
+        CALL MEMGET2('REAL','C',KC,NCDIM,WORK,KFREE,LFREE)      
         CALL QGEMM(NT,NVEC,NB,D1,
      &       'H','N',IPQTOQ(1,0),TMAT,NB,NT,NZT,
      &       'N','N',IPQTOQ(1,0),COFT,NB,NO,NZ,
@@ -5354,8 +5404,8 @@ C.......Form metric
      &       'H','N',IPQTOQ(1,0),WORK(KC),NT,NVEC,NZ,
      &       'N','N',IPQTOQ(1,0),WORK(KC),NT,NVEC,NZ,
      &            D0,IPQTOQ(1,0),WORK(KD),NVEC,NVEC,NZ)
-        CALL MEMGET('REAL',KV,NDDIM,WORK,KFREE,LFREE)      
-        CALL MEMGET('REAL',KE,NVEC,WORK,KFREE,LFREE)      
+        CALL MEMGET2('REAL','V',KV,NDDIM,WORK,KFREE,LFREE)      
+        CALL MEMGET2('REAL','E',KE,NVEC,WORK,KFREE,LFREE)      
 C.......Diagonalize metric; eigenvalues are in ascending order
         CALL QDIAG(NZ,NVEC,WORK(KD),NVEC,NVEC,WORK(KE),1,
      &             WORK(KV),NVEC,NVEC,WORK(KFREE),LFREE,IERR)
@@ -5405,11 +5455,11 @@ C.....Say hello
 C.....Initialize buffer density matrix
       NDMAT=NTBAS(0)*NTBAS(0)*NZ
       NDBUF=NTBAS(0)*NTBAS(0)*NZC1
-      CALL MEMGET('REAL',KDBUF,NDBUF,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','DBUF',KDBUF,NDBUF,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KDBUF),NDBUF)
 C.....Loop over atomic types
       LUATOM=137
-      CALL MEMGET('INTE',KINF,NTBAS(0),WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','INFO',KINF,NTBAS(0),WORK,KFREE,LFREE)
       ICENT = 1
       DO IATOM = 1,NONTYP
 C.......Find the total number of basis functions for this atom type
@@ -5443,13 +5493,13 @@ C.......Read atomic coefficients in C1 format
         NACMOQ = NACMO*NZC1
         NADEN  = NBAS*NBAS*NZC1
 C.......Allocate memory for atomic density matrix and coefficients
-        CALL MEMGET('REAL',KADE,NADEN ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KCMO,NACMOQ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','ADEN',KADE,NADEN ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','CMO ',KCMO,NACMOQ,WORK,KFREE,LFREE)
         CALL READT(LUATOM,NACMOQ,WORK(KCMO))
 C.......Loop over closed/open shells and construct contribution to atomic density matrix
-        CALL MEMGET('INTE',KVEC,NAORB,WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','VEC ',KVEC,NAORB,WORK,KFREE,LFREE)
         NDIM=MAX(NAORB+1,NBAS)
-        CALL MEMGET('INTE',KIBUF,NDIM,WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IBUF',KIBUF,NDIM,WORK,KFREE,LFREE)
         FAC = D0
         DO ISHELL = 1,NVECATOM(IATOM)
 C.........starting from orbital string VECATOM return index array WORK(KVEC) of selected orbitals
@@ -5459,7 +5509,8 @@ C.........starting from orbital string VECATOM return index array WORK(KVEC) of 
 C.........count number NPVEC and NEVEC of negative- and positive-energy orbitals, respectively
           CALL ORBCNT(WORK(KVEC),NSEL,NNEG,NPOS,NPVEC,NEVEC)
 C.........extract selected vectors from CMO and place in CBUF
-          CALL MEMGET('REAL',KCBUF,NBAS*NSEL*NZC1,WORK,KFREE,LFREE)
+          CALL MEMGET2('REAL','CBUF',KCBUF,NBAS*NSEL*NZC1,
+     &                 WORK,KFREE,LFREE)
           CALL INDEXFILL(WORK(KIBUF),NBAS,1,1)
           CALL SELOWC(NZC1,WORK(KCMO),NBAS,NAORB,NNEG,NPOS,
      &                 WORK(KCBUF),NBAS,NSEL,WORK(KVEC),WORK(KIBUF),
@@ -5486,10 +5537,10 @@ C.........Generate contribution to atomic density matrix from this shell
 C.......Now we have the atomic density matrix. 
 C       Put all contributions from this atomic type into the 
 C       molecular C1 density matrix
-        CALL MEMGET('INTE',KR1BUF,NTBAS(0),WORK,KFREE,LFREE)      
-        CALL MEMGET('INTE',KC1BUF,NTBAS(0),WORK,KFREE,LFREE)      
-        CALL MEMGET('INTE',KI1BUF,NBAS,WORK,KFREE,LFREE)      
-        CALL MEMGET('INTE',KJ1BUF,NBAS,WORK,KFREE,LFREE) 
+        CALL MEMGET2('INTE','R1BUF',KR1BUF,NTBAS(0),WORK,KFREE,LFREE)      
+        CALL MEMGET2('INTE','C1BUF',KC1BUF,NTBAS(0),WORK,KFREE,LFREE)      
+        CALL MEMGET2('INTE','I1BUF',KI1BUF,NBAS,WORK,KFREE,LFREE)      
+        CALL MEMGET2('INTE','J1BUF',KJ1BUF,NBAS,WORK,KFREE,LFREE) 
         CALL PUT_AOBLOCK(WORK(KDBUF),NTBAS(0),NTBAS(0),ICENT,
      &                   NONT(IATOM),NUCDEG(ICENT),NZC1,
      &                   WORK(KADE),NBAS,NBAS,-1,NBAS,NBAS,-1,
@@ -5572,7 +5623,7 @@ C
       DIMENSION NCATOM(0:2,MAXHOC),KCATOM(MAXHOC),NAO(MAXHOC),
      &          NATDEG(MAXHOC),CMO(*),EIG(*),IBEIG(*),WORK(*)
       KFRSAV = KFREE
-      CALL MEMGET('INTE',KINF,NTBAS(0),WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','INFO',KINF,NTBAS(0),WORK,KFREE,LFREE)
       IF(IPRINT.GE.2) THEN
         WRITE(6,'(A)') '** Output from ADHOC (atomic Huckel start)'
       ENDIF
@@ -5607,12 +5658,12 @@ C.............NPSH............NESH............NBAS...........TOTERG
 C.......Count the number of orbitals to read
         NCATOM(0,ITYP)=0
         NDIM=NCATOM(2,ITYP)+NCATOM(1,ITYP)+1
-        CALL MEMGET('INTE',KITMP,NDIM,WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','ITMP ',KITMP,NDIM,WORK,KFREE,LFREE)
         CALL NUMLS1(VECHOC(ITYP),IDUM,IDUM,
      &       -NCATOM(2,ITYP),NCATOM(1,ITYP),
      &       NCATOM(0,ITYP),WORK(KITMP))
         CALL MEMREL('ADHOC.ref',WORK,1,KITMP,KFREE,LFREE)
-        CALL MEMGET('INTE',KCATOM(ITYP),NCATOM(0,ITYP),
+        CALL MEMGET2('INTE','CATOM',KCATOM(ITYP),NCATOM(0,ITYP),
      &              WORK,KFREE,LFREE)
         NN = INDEP
         DO J = 0,NONT(ITYP)-1
@@ -5626,9 +5677,9 @@ C
 C     Calculate dimension of arrays
 C     =============================
 C
-      CALL MEMGET('REAL',KE,NVECS,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','E',KE,NVECS,WORK,KFREE,LFREE)
       NQ = NTBAS(0)*NVECS*NZC1
-      CALL MEMGET('REAL',KQ,NQ      ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','Q',KQ,NQ      ,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KQ),NQ)
 C
 C     Select atomic coefficients
@@ -5643,14 +5694,14 @@ C.......Read C1 coefficients and orbitalenergies
      &        NNEG,NPOS,NAO(ITYP),DUM
         NTOT = NNEG+NPOS
         NQA  = NAO(ITYP)*NTOT*NZC1
-        CALL MEMGET('REAL',KQA,NQA ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','QA',KQA,NQA ,WORK,KFREE,LFREE)
         CALL READT(LUHOC,NQA ,WORK(KQA))
-        CALL MEMGET('REAL',KEA,NTOT,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','EA',KEA,NTOT,WORK,KFREE,LFREE)
         CALL READT(LUHOC,NTOT,WORK(KEA))
         CLOSE(LUHOC,STATUS='KEEP')
 C.......Make pointer array to selected reference orbitals
         NDIM = NTOT+1
-        CALL MEMGET('INTE',KITMP,NDIM,WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','ITMP',KITMP,NDIM,WORK,KFREE,LFREE)
         CALL NUMLS1(VECHOC(ITYP),WORK(KCATOM(ITYP)),NCATOM(0,ITYP),
      &       -NNEG,NPOS,NCATOM(0,ITYP),WORK(KITMP))
         CALL MEMREL('ADHOC.refsel',WORK,1,KITMP,KFREE,LFREE)
@@ -5676,7 +5727,8 @@ C
 C     Get overlap matrix in fragment basis
 C     ====================================
 C
-      CALL MEMGET('REAL',KAMAT,NVECS*NVECS*NZC1,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','AMAT',KAMAT,NVECS*NVECS*NZC1,
+     &             WORK,KFREE,LFREE)
       CALL OVLFRAG(WORK(KAMAT),NVECS,NONTYP,HOCFIL,NCATOM,NATDEG,
      &             WORK(KQ),NTBAS(0),IPRINT,WORK,KFREE,LFREE)
 C
@@ -5725,7 +5777,7 @@ C***********************************************************************
      &          NCATOM(0:2,NONTYP),NATDEG(NONTYP),WORK(*)
       KFRSAV=KFREE
       N2DIM=NVECS*NVECS*NZ
-      CALL MEMGET('REAL',KSMAT,N2DIM,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','SMAT',KSMAT,N2DIM,WORK,KFREE,LFREE)
       CALL DCOPY(N2DIM,HMAT,1,WORK(KSMAT),1)
 C.....Construct extended Huckel Hamiltonian; hermiticity not exploited
       JAT = 0
@@ -5862,10 +5914,10 @@ CMI    ... prepare the starting 4c Fock MO matrix
 
       ELSE IF (INI2C.EQ.3.OR.INI2C.EQ.4) THEN
 C       .... prepare the DFCOEF file with staring MOs
-        CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',K1   ,N2BBASXQ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','CMO  ',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','TMAT ',K1   ,N2BBASXQ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','EIG  ',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IBEIG',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
 
         CALL CMOINI4C(WORK(KCMO),WORK(K1),WORK(KEIG),
      &                  WORK(KIBRP),WORK(KFREE),LFREE)
@@ -5914,10 +5966,10 @@ C       .... prepare the DFCOEF file with staring MOs
       BNCRON = .FALSE.
       BNSPON = .FALSE.
 
-      CALL MEMGET('REAL',KCMO ,N2BBASXQ,      WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG ,NTBAS(0),      WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBRP,NTBAS(0),      WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFOCK,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CMO  ',KCMO ,N2BBASXQ,      WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EIG  ',KEIG ,NTBAS(0),      WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBEIG',KIBRP,NTBAS(0),      WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FOCK ',KFOCK,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
 
       CALL SETDHF(IPRSCF)
       IF(dirac_cfg_dft_calculation) THEN
@@ -6003,10 +6055,14 @@ CMI    ...remove some files from the previous 4c-SCF cycle ...
         INQUIRE(FILE='DFCOEF',EXIST=EX)
         IF (EX) CALL SYSTEM('/bin/rm DFCOEF')
 
-        CALL MEMGET('REAL',KCMO ,N2BBASXQ,      WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KEIG ,NTBAS(0),      WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIBRP,NTBAS(0),      WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KFOCK,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','CMO  ',KCMO ,N2BBASXQ,
+     &               WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','EIG  ',KEIG ,NTBAS(0),
+     &               WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IBEIG',KIBRP,NTBAS(0),
+     &               WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','FOCK ',KFOCK,N2BBASXQ*NFMAT,
+     &               WORK,KFREE,LFREE)
 
         RESTFCK = .TRUE.
         CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFOCK),

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2283,6 +2283,9 @@ C
 #ifdef HAS_PCMSOLVER      
       use pcm_scf
 #endif      
+#ifdef HAS_PELIB
+      use pe_variables, only: peqm
+#endif 
 
 #include "implicit.h"
 #include "priunit.h"
@@ -2331,6 +2334,12 @@ C     Geometry optimization for Dirac
 C
 C     Execute Dirac, and retrieve energy.
 C
+#ifdef HAS_PELIB
+      if (peqm) then 
+         call quit('PELib geometry optimization '//
+     &   'not implemented in DIRAC')
+      endif 
+#endif 
       IF ( .NOT. EXSIR ) THEN
          CALL EXEDIR()
          IF (DOCCM) THEN

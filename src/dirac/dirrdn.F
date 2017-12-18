@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -46,7 +46,10 @@ C***********************************************************************
 #ifdef HAS_PCMSOLVER      
       use pcmmod_cfg
       use pcm_write
-#endif      
+#endif
+#ifdef HAS_PELIB
+      use pe_variables, only: peqm
+#endif
       use x2cmod_cfg
 #ifdef MOD_AOOSOC
       use atomic_oo_order_so_correction_cfg
@@ -57,6 +60,8 @@ C***********************************************************************
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dgroup.h"
+#include "dcbimp.h"
+#include "dcborb.h"
 #include "cbirea.h"
 
       integer, parameter   :: lwork = 100000
@@ -203,8 +208,14 @@ C
       OPEN(LUCMD,FILE='DIRAC.INP')
       CALL HAMINP(WORK,LWORK)
       CLOSE(LUCMD)
-
-
+C
+C     Initialize PE library
+C
+#ifdef HAS_PELIB
+      IF (PEQM) THEN
+        CALL PELIB_IFC_INIT()
+      END IF
+#endif
 !     this is the new input reader
 !     contains:
 !     *DFT
@@ -309,6 +320,18 @@ C
 C     Consistency checks
 C
       CALL CONINP
+
+C
+C     set number of blocks in case of import
+C     complex spinors from ReSpect (TODO) or Turbomole
+C
+      NKRBLK = 1
+      IF (DOIMPMOS) THEN
+       IF ((FAKE2C .OR. NZC1.EQ.4) .AND.
+     &     INDEX(QCPACK,"TURBOMOLE").GT.0) THEN
+        NKRBLK = 2
+       END IF
+      END IF
 C
       CALL TITLER('End of input processing','*',124)
 C
@@ -353,6 +376,7 @@ C
 #include "dcbprl.h"
 #include "dcb_rkbimp.h"
 #include "dcbimp.h"
+#include "dcborb.h"
 #include "logging.h"
 #include "infpar.h"
 C
@@ -379,6 +403,7 @@ C
       DOIMPMOS   = .FALSE.
 C
       RKBIMP_PRJTHR = 2.0D-5
+
 C
 C     Look for 2c. Hamiltonians, MDIRAC and more
 C
@@ -526,9 +551,11 @@ C&&&& PRJTHR
   121    CONTINUE
 C&&&& IMPMOS
             DOIMPMOS = .TRUE.
-            READ(LUCMD,*) QCPACK, FILIMP
-            QCPACK = ADJUSTL(QCPACK)
-            FILIMP = ADJUSTL(FILIMP)
+            READ(LUCMD,*) NFILES
+            IF (NFILES.GT.2 .OR. NFILES.LT.1)  THEN
+             CALL QUIT('1 or 2 MO files to import!')
+            END IF
+            READ(LUCMD,*) QCPACK, (FILIMP(IDEG),IDEG=1,NFILES)
             GO TO 100
   122    CONTINUE
             GO TO 100
@@ -570,26 +597,41 @@ C
 
       IF (DOIMPMOS) THEN
 
-       IF (SPINFR .OR. NONREL .OR. LEVYLE) THEN
+       QCPACK = ADJUSTL(QCPACK)
+       FILIMP(1) = ADJUSTL(FILIMP(1))
 
-        QCPACK = ADJUSTL(QCPACK)
-        FILIMP = ADJUSTL(FILIMP)
+       if (nfiles.eq.2) then
+        FILIMP(2) = ADJUSTL(FILIMP(2))
+       else
+        FILIMP(2) = ' -- unknown file name -- '
+       end if
 
-        CALL UPCASE(QCPACK)
+       CALL UPCASE(QCPACK)
 
-        SELECT CASE (QCPACK(1:6))
-         CASE ('MOLCAS')
-          WRITE (LUPRI,'(/,A)') 
-     &     "import scalar-relativistic MO coefficients from"
-          WRITE (LUPRI,'(/,A,/)') 
-     &     "  MOLCAS file "//TRIM(FILIMP)
-         CASE DEFAULT
-          CALL QUIT("unknown QCPACK type! Available options: MOLCAS")
-        END SELECT
+       SELECT CASE (QCPACK(1:10))
+        CASE ('MOLCAS    ')
+         WRITE (LUPRI,'(/,A)') 
+     &    "import MO coefficients from"
+         WRITE (LUPRI,'(/,A,/)') 
+     &    "  MOLCAS file "//TRIM(FILIMP(1))
+        CASE ('RESPECT   ')
+         WRITE (LUPRI,'(/,A)') 
+     &    "import MO coefficients from"
+         WRITE (LUPRI,'(/,A,/)') 
+     &    "  ReSpect file "//TRIM(FILIMP(1))
+        CASE ('TURBOMOLE ')
+         WRITE (LUPRI,'(/,A)') 
+     &    "import MO coefficients from"
+         WRITE (LUPRI,'(/,A,/)') 
+     &    "  Turbomole file "// TRIM(FILIMP(1))
+        CASE DEFAULT
+         CALL QUIT("unknown QCPACK type! Available options: "// 
+     &             "MOLCAS, ReSpect")
+       END SELECT
 
-       ELSE
-        CALL QUIT("imported MO calculation only works in 1C modes!")
-       END IF
+      ELSE
+       QCPACK    = 'DIRAC '
+       FILIMP(:) = ' -- unknown file name -- '
       END IF
 
 C
@@ -708,6 +750,8 @@ C
     2 CONTINUE
 #if defined (VAR_MPI)
       CALL PRLINP(WORD)
+#else
+      CALL QUIT('*PARALLEL in input, but this is a non_MPI version')
 #endif
         GO TO 200
     3 CONTINUE
@@ -2593,7 +2637,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 19, NTABLE = 23)
+      PARAMETER (NDIR = 19, NTABLE = 24)
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,CTEMP*90
@@ -2616,7 +2660,7 @@ C
      &             '.RESOLV','.ORBROT','.LUCIAR','.KRMCSC',
      &             '.PHCOEF','.MP2 NO','.RELADC','.KR CI ',
      &             '.KR CC ','.COSCI ','.GASCIP','.HSFS  ',
-     &             '.ARDUCC','.SCF   ','.KRCI  '/
+     &             '.ARDUCC','.SCF   ','.KRCI  ','.POLPRP'/
 C
       N_WF = 0
 C
@@ -2640,6 +2684,7 @@ C
       DOCOSCI = .FALSE.
       DOGASCIP= .FALSE.
       DOHSFS  = .FALSE.
+      DOPOLPRP= .FALSE.
 C
 C *** Initialize /CBIREO/ in dcbreo.h
 C     ===================
@@ -2684,7 +2729,7 @@ C
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (101,102,103,104,105,106,107,108,
      &                109,110,111,112,113,114,115,116,
-     &                117,118,119,120,121,122,123),I
+     &                117,118,119,120,121,122,123,124),I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -2863,6 +2908,13 @@ C&&&& SCF
 C&&&& KRCI :  alternative spelling of KR CI
   123    CONTINUE
             GO TO 116
+C&&&& POLPRP: Calculate polarization propagator for excitations
+  124    CONTINUE
+            IF (.NOT.NOTRA) DOTRA = .TRUE.
+            DOPOLPRP   = .TRUE.
+            N_WF = N_WF + 1
+            DIRAC_WF(N_WF) = 'POLPRP'
+            GO TO 100
 
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
@@ -2919,6 +2971,7 @@ C hj aug03: TODO: idea was/is to maybe follow MCSCF by big CI
       IF(DOLUCT)   WRITE(LUPRI,'(A)') ' * Run LUCITA CI code'
       IF(DOARDUC)  WRITE(LUPRI,'(A)') ' * Run ARDUCCA CC code'
       IF(DOADC)    WRITE(LUPRI,'(A)') ' * Run RELADC code'
+      IF(DOPOLPRP) WRITE(LUPRI,'(A)') ' * Run POLPRP code'
       IF(DOKRCI)   WRITE(LUPRI,'(A)')
      &   ' * Kramers restricted CI calculation'
       IF(DOKRCC)   WRITE(LUPRI,'(A)')
@@ -3152,7 +3205,7 @@ C
             write (*,*) ' Warning! Warning! Warning! Warning! Warning!'
             write (*,*) ' '
             write (*,*) '  RELADC does not run in parallel. To avoid'
-            write (*,*) '  inconsitencies, it is suggested that jobs'
+            write (*,*) '  inconsistencies, it is suggested that jobs'
             write (*,*) '  such as this are rerun setting the number'
             write (*,*) '  of MPI processes to one (e.g. in calling'
             write (*,*) '  pam with the argument -mpi 1)'
@@ -4780,6 +4833,9 @@ C***********************************************************************
 #ifdef HAS_PCMSOLVER      
       use pcmmod_cfg
 #endif
+#ifdef HAS_PELIB
+      use pe_variables, only: peqm
+#endif
 #ifdef MOD_AOOSOC
       use atomic_oo_order_so_correction_cfg
 #endif
@@ -4787,7 +4843,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 68,NDIR = 11)
+      PARAMETER (NTABLE = 68,NDIR = 12)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include "maxaqn.h"
@@ -4816,7 +4872,7 @@ C
       SAVE SETFUN
       DATA TABDIR /'*END OF','*SOLVEN','*DFT   ','*CAP   ',
      &             '*FDE   ','*AMFI  ','*X2C   ','*ECP   ',
-     &             '*PCM   ','*aooSOC','*PCMSOL'/
+     &             '*PCM   ','*aooSOC','*PEQM  ','*PCMSOL'/
 
 !                    1         2         3         4
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
@@ -4851,7 +4907,7 @@ C
 !                   61        62        63        64
      &            '.ECP   ','.X2CMMF','.DOSSSS','.MDIRAC',
 !                   65        66        67        68
-     &            '.TRSMIX','.JZOUT ','xxxxxxx','xxxxxxx'/
+     &            '.TRSMIX','.PEQM  ','.JZOUT', '.FAKE2C'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -4885,6 +4941,7 @@ C
       MDIRAC  = .FALSE.
       LEVYLE  = .FALSE.
       NONREL  = .FALSE.
+      FAKE2C  = .FALSE.
       SPINFR  = .FALSE.
       NOSPIN  = .FALSE.
       SPINFR2 = .FALSE.
@@ -4965,6 +5022,10 @@ C ... get integral flags in advance
       IGTINT    = IBTAND(INTGEN/8,1)
 !mi:  by default do not allow mixing T+ with T-
       TRS_MIX=.FALSE.
+!jmho: deafult - no polarizable embedding
+#ifdef HAS_PELIB
+      PEQM = .FALSE.
+#endif
 !mi:  by default, do not save Jz_MO matrices
       WRITE_Jz_MATRIX = .FALSE.
 
@@ -5549,16 +5610,32 @@ C&&& MDIRAC: use modified Dirac Hamiltonian as implemented in INTEREST integral 
             GO TO 100
 C..TODO: check for inconsistencies and add stops
   165     CONTINUE
-!&&&& .TRSMIX : allow mixing T+ Hamiltonian with added T- perturbation operaror
+!&&&& .TRSMIX : allow mixing T+ Hamiltonian with added T- perturbation operator
             TRS_MIX = .TRUE.
-            GO TO 100
+          GO TO 100
+!&&&& .PEQM: polarizable embedding
   166     CONTINUE
-!!&&&& .JZOUT : save Jz_MO matrices into formatted files for analysis
-            WRITE_Jz_MATRIX = .TRUE.
+#ifdef HAS_PELIB
+            WRITE(LUPRI,*) 'PE library will be used.'
+            PEQM = .TRUE.
+#else
+            WRITE(LUPRI,*) 'ERROR for .PEQM: PE library not enabled.'
+            CALL QUIT('ERROR for .PEQM: PE library not enabled.')
+#endif
             GO TO 100
   167     CONTINUE
+!&&&& .JZOUT : save Jz_MO matrices into formatted files for analysis
+            WRITE_Jz_MATRIX = .TRUE.
           GO TO 100
   168     CONTINUE
+!&&&& .FAKE2C : do a 2C calculation without generating a 2C
+!               1-electron Hamilonian (can be used for correlated
+!                energy calculations)
+            FAKE2C  = .TRUE.
+            TWOCOMP = .TRUE.
+            NONREL  = .TRUE.
+            SPINFR  = .TRUE.
+            DOLVC   = .FALSE.
           GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
         GO TO 300
@@ -5795,7 +5872,12 @@ C
 C
 C     NZC1 is the NZ value in C1 symmetry
 C
-      NZC1 = 4
+      IF (NONREL .AND. .NOT. FAKE2C) THEN
+       NZC1 = 1
+      ELSE
+       NZC1 = 4
+      END IF
+C
 C.....Check RKBIMP
       IF (DORKBIMP) THEN
         IF (.NOT.URKBAL) THEN
@@ -6465,6 +6547,13 @@ C
           ENDDO
         ENDIF
       ENDIF
+#ifdef HAS_PELIB
+      IF (PEQM) THEN
+        WRITE(LUPRI,'(1X,A,A)')
+     &  '* Environment is modeled using polarizable embedding scheme'//
+     &  ' (PE library)'
+      END IF
+#endif
       IF (NOINPUT) GOTO 500
 C
 C     Process input for various program sections
@@ -6476,7 +6565,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10,11), I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11,12), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -6520,7 +6609,7 @@ C       if *CAP in input but MOD_CAP is not defined !!!
       GO TO 200
     6 CONTINUE
 CMI  ... reading input routine for AMFI+RELSCF
-        IF((IBSS.GT.999.or.x2c).AND..NOT.NOAMFI) THEN
+        IF((IBSS.GT.999.or.x2c).AND..NOT.NOAMFI.AND..NOT.SPINFR) THEN
           CALL AMFI_RELSCF_INP(WORD,.FALSE.)
         ELSE
           GO TO 1
@@ -6549,8 +6638,16 @@ CMI  ... reading input routine for AMFI+RELSCF
       ! by new input reader
         call move_to_next_star(word, lucmd)
         go to 200
+!       *PEQM
+   11 CONTINUE
+#ifdef HAS_PELIB
+        CALL PELIB_IFC_INPUT_READER(WORD)
+#else
+        CALL QUIT('ERROR for *PEQM: PE library not enabled.')
+#endif
+        GO TO 200
 !       *PCMSOL
-   11 continue
+   12 continue
       ! this is a cheat so that *PCMSOL section is parsed
       ! by new input reader
         call move_to_next_star(word, lucmd)
@@ -8257,7 +8354,7 @@ C............variable telling that this is a 2-component relativistic calculatio
            TWOCOMPBSS=.TRUE.
            CNTMAT=.TRUE.
          ENDIF
-         IF (WORD.EQ.'.NONREL') THEN
+         IF (WORD.EQ.'.NONREL' .OR. WORD.EQ.'.FAKE2C') THEN
             TWOCOMP=.TRUE.
             NONREL =.TRUE.
          ENDIF

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -121,8 +121,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !     Enter the generic ADCMAIN routine (master becomes now primus inter pares)
 !
 
-!     CALL ADCMAIN(IN,IW,CA,INTFCE)
-
       CALL ADCMAIN_NEW(IN,IW,CA,INTFCE)
 
 !
@@ -153,7 +151,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Description--------------------------------------------
 !
-!     Driver for Relativistic Propagator Program (no standalone)
+!     Driver for Relativistic 1H/2H Propagators (no standalone)
+!     RELADC now comprises single/double ionization + Fano-Stieltjes
+!     in combination with Lanczos diagonalization.
+!
+!     Excitations based on the polarization propagator are now 
+!     completely independent and are accessible via the
+!     new (parallel) module POLPRP (see new manual entry)
 !
 !---------------Last modified------------------------------------------
 !
@@ -208,7 +212,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       character*4 :: maxcore_infc(4)
 
       maxcore_info = 0
-      maxcore_infc = (/'SETI','SIPS','DIPS','EXCI'/)
+      maxcore_infc = (/'SETI','SIPS','DIPS','    '/)
 
       call legacy_lwork_get(MAXCORE)
 
@@ -259,35 +263,29 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       adclevel = reladc_adclevel
       dosips   = reladc_dosips  
       dodips   = reladc_dodips  
-      doexci   = reladc_doexci  
       do i=1,32
          sipreps(i) = reladc_sipreps(i)
          dipreps(i) = reladc_dipreps(i)
-         excreps(i) = reladc_excreps(i)
       enddo
       readqkl  = reladc_readqkl 
       doconst  = reladc_doconst 
       doadcpop = reladc_doadcpop
-      doxext   = reladc_doxext  
       vconv    = reladc_vconv   
       adcthr   = reladc_adcthr  
 
 
       dofull   = reladc_dofull
       dolanc   = reladc_dolanc
-      dodavi   = reladc_dodavi
+!     dodavi   = reladc_dodavi
 
       sipiter  = reladc_sipiter 
       dipiter  = reladc_dipiter 
-      exciter  = reladc_exciter 
       do i=1,32
         sipeigv(i) = reladc_sipeigv(i) 
         dipeigv(i) = reladc_dipeigv(i) 
-        exceigv(i) = reladc_exceigv(i) 
       enddo
       sipprnt  = reladc_sipprnt 
       dipprnt  = reladc_dipprnt 
-      excprnt  = reladc_excprnt 
       doincore = reladc_doincore
       lancmem  = reladc_lancmem
       do i=1,8
@@ -305,14 +303,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       write(IW,*)
       if(dosips) write(IW,'(10X,A)') 'Single ionization.'
       if(dodips) write(IW,'(10X,A)') 'Double ionization.'
-      if(doexci) write(IW,'(10X,A)') 'Excitation.'
       write(IW,*)
       write(IW,'(T20,A)') 'Requested diagonalizers:'
       write(IW,'(T20,A)') '------------------------'
       write(IW,*)
       if(dofull) write(IW,'(10X,A)') 'Full (dim<5000!).'
       if(dolanc) write(IW,'(10X,A)') 'Lanczos.'
-      if(dodavi) write(IW,'(10X,A)') 'Davidson.'
+!     if(dodavi) write(IW,'(10X,A)') 'Davidson.'
 !
       WRITE (IW,*)
       WRITE (IW,*)
@@ -418,7 +415,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         if(USEOE) WRITE (IW,*) 'Orbital energies from HF are used'
       end if
 
-      IF(DOSIPS.OR.DODIPS.OR.DOEXCI) then
+      IF(DOSIPS.OR.DODIPS) then
          DOCCSETI=.TRUE.
       ENDIF
 !
@@ -449,11 +446,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &               maxcore_infc(3),maxcore_info(3)
       ENDIF
 
-      IF(DOEXCI) THEN
 !<<<<<<< HEAD
-!        WRITE(IW,*) 'Memory for excitation calculations is',
-!     &              ' dynamically allocated.'
-!      ENDIF
 !!
 !! MXCORR is a cumulative maximum of individual memory requirements
 !! ===> if any subroutine would need more core than MAXCORE we quit.
@@ -495,14 +488,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !        CALL ADCDBLE_MAIN (ICALC,CC,KFREE,LFREE,MXCORR,NSP,IREPSPI,EPS)
 !      ENDIF
 !
-!      IF(DOEXCI) THEN
-!        CALL ADCEXC_MAIN (IW,ITAPADC,EPS)
 !=======
-        CALL ADCEXC_MAIN (IW,maxcore_info(4),ITAPADC,EPS)
-        WRITE(IW,*) 'Memory requirements of ',
-     &               maxcore_infc(4),maxcore_info(4)
 !>>>>>>> master
-      ENDIF
 !
 !     return after closing low-level I/O files
 !
@@ -708,12 +695,6 @@ C              only. dimensions 2*MVO(1) * 2*MVO(1)
 c
 c   save the original memory space for the diagonalizers
 
-!     write(iw,*) '  #############################################'
-!     write(iw,*) '  #############################################'
-!     write(iw,*) '  #######  we are in adcsngl_main '
-!     write(iw,*) '  #############################################'
-!     write(iw,*) '  #############################################'
-!     write(iw,*) '  rcw:',rcw
 
       IONIZLEVEL=1
 c
@@ -6392,7 +6373,7 @@ C---------------Description--------------------------------------------
 C
 C     Computes deviation from symmetry of a quadratic matrix
 C
-      REAL*8 QMASYMR
+      REAL*8 QMASYMQ
       INTEGER LDE
       REAL*8 ASYM
       COMPLEX*16 E(LDE,LDE)
@@ -6668,9 +6649,7 @@ C
 C---------------Local variables--------------------------------------
 C
       LOGICAL DONE
-      complex*16 zdotc
-      real*8 ddot
-      integer*8 off1
+      integer*8 OFF1
 C
 C---------------Executable code--------------------------------------
 C
@@ -7105,7 +7084,7 @@ c
 
       return
       end
-
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #ifdef HAVE_MKL_BLAS
 !radovan: workaround for strange crash when using MKL zdotc
 !miro: restricted by preprocessor for IBM XL
@@ -7166,3 +7145,10 @@ c
       RETURN
       END
 #endif
+!&&&&&&&&&&& intermediate surrogate
+!     SUBROUTINE PAMPOLPRP ()
+!     write(*,*) 'Only strut! Nothing is done here'
+!     return
+!     end
+!&&&&&&&&&&& intermediate surrogate
+

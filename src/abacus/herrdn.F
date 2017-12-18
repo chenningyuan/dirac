@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -630,7 +630,7 @@ C     note: SPHINP will read additional input lines if DOOWN true
 C***********************************************************************
       DOCART = CRT .EQ. 'C' .OR. CRT .EQ. 'c'
       DOSPHE = CRT .EQ. 'S' .OR. CRT .EQ. 's'
-      DOOWN  = CRT. EQ. 'X'
+      DOOWN  = CRT .EQ. 'X'
       IF(DIRAC) THEN
          IF(TWOCOMP.AND.DOSPHE) THEN
 C        In 2-component mode spherical Gaussians can be used,
@@ -723,6 +723,9 @@ C
      &               CLASS,TOL_SYMADD,IPREAD,.true.)
          IF (CLASS(3:4).EQ.'oo') LINEAR = .TRUE.
       END IF
+
+C     Fix a problem with ADDSYM for some D(2) cases, also corrects for wrong user inputs (e.g. specifying X Y and XY as generators)
+      CALL FIX_DUPLICATE_GENERATORS (NSYMOP,KASYM)
 C
 C     ***************************************
 C     ***** Process symmetry input data *****
@@ -738,7 +741,7 @@ C
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM,
      &            DOOWN,blk)
 
-#if defined (BUILD_GEN1INT) && defined (BUILD_OPENRSP)
+#if(defined BUILD_GEN1INT && BUILD_GEN1INT)
 !     initialize basis sets (large and small components) used in Gen1Int interface
       call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM(:,1:2),
      &                       NBLCK(:,1:2), KANG, JCO(:,:,1:2), KBLOCK,
@@ -1107,11 +1110,12 @@ C
 C              Start with LARGE Component
 C              ==========================
 C
-C              The following seven possibilities exist:
+C              The following possibilities exist:
 C
 C              LARGE INTGRL    2    1    1  (IBSFLAG = 1)
 C              LARGE    2    1    1 (IBSFLAG = 1)
 C              LARGE EXPLICIT    2    1    1 (IBSFLAG = 1)
+
 C              LARGE MOLFBAS H.bas (IBSFLAG = 2)
 C              LARGE BASIS basisset (IBSFLAG = 3)
 C              LARGE GEOM alpha beta N 2 1 1 (IBSFLAG = 4)
@@ -1120,6 +1124,9 @@ c               (alias for LARGE GEOM)
 C              LARGE WELLTEMP alpha beta gamma delta N 2 1 1 (IBSFLAG = 4)
 C              LARGE FAMILY    N    2    1    1 (IBSFLAG = 4)
 C              LARGE DUALFAMILY    N    2    1    1 (IBSFLAG = 4)
+
+C              LARGE POINTCHARGE (IBSFLAG = 1)
+C              LARGE NOBASIS     (IBSFLAG = 1) (alias for LARGE POINTCHARGE)
 C
                CALL RDLINE(LUINFO)
                READ (MLINE(NMLINE),'(A5,1X,A14)',IOSTAT=IOS) 
@@ -1145,9 +1152,13 @@ C
 C
 C              Check what kind of basis set we have
 C
-               IF ( BSKEYWORD(1:6) .EQ. 'INTGRL' ) THEN
+               IF ( BSKEYWORD(1:6) .EQ. 'POINTC'  .OR.
+     &              BSKEYWORD(1:7) .EQ. 'NOBASIS') THEN
                   IBSFLAG = 1
-                  READ (MLINE(NMLINE),'(12X,12I5)',IOSTAT=IOS)
+                  IQM(I,1) = 0
+               ELSE IF ( BSKEYWORD(1:6) .EQ. 'INTGRL' ) THEN
+                  IBSFLAG = 1
+                  READ (MLINE(NMLINE)(13:),*,IOSTAT=IOS)
      &                 IQM(I,1),(JCO(K,I,1),K=1,IQM(I,1))
                   IF (IOS.NE.0)THEN
                     WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
@@ -1156,7 +1167,7 @@ C
                   ENDIF
                ELSE IF ( BSKEYWORD(1:8) .EQ. 'EXPLICIT') THEN
                   IBSFLAG = 1
-                  READ (MLINE(NMLINE),'(14X,12I5)',IOSTAT=IOS)
+                  READ (MLINE(NMLINE)(15:),*,IOSTAT=IOS)
      &                 IQM(I,1),(JCO(K,I,1),K=1,IQM(I,1))
                   IF (IOS.NE.0)THEN
                     WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
@@ -1175,8 +1186,9 @@ C
                   IBSFLAG = 3
                   IF(MLINE(NMLINE)(13:14).EQ.'Q=') THEN
                     READ (MLINE(NMLINE)(15:),*,IOSTAT=IOS) QB,BASFIL
-                    WRITE(LUPRI,*) '* WARNING: Reading basis ',BASFIL,
-     &                         ' using charge ',QB
+                    WRITE(LUPRI,*) '* INFO: Reading basis ',BASFIL,
+     &                 ' using requested charge Q=',QB,
+     &                 ' although this center has a charge of ',Q
                   ELSE
                     READ (MLINE(NMLINE),'(12X,A20)',IOSTAT=IOS) BASFIL
                   ENDIF
@@ -1231,7 +1243,7 @@ C
                ELSE
 C                 Assume it is 'LARGE   2    1....'
                   IBSFLAG = 1
-                  READ (MLINE(NMLINE),'(5X,12I5)',IOSTAT=IOS)
+                  READ (MLINE(NMLINE)(6:),*,IOSTAT=IOS)
      &                 IQM(I,1),(JCO(K,I,1),K=1,IQM(I,1))
                   IF (IOS.NE.0) THEN
                     WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
@@ -1712,7 +1724,6 @@ C
           WRITE(LUPRI,*) MLINE(NMLINE)
           CALL QUIT('Error in reading..csmxn')
         ENDIF
-
 C
 C       Initialize basis set flag
 C
@@ -1720,8 +1731,14 @@ C
 C
 C       Check whether the fit function set is specified in input
 C                 
-        IF ( BSET .NE. 'FTSET' ) THEN
-C
+        IF ( BSET.EQ.'FTLRG' .OR. BSET.EQ.'FTSML' ) THEN
+
+           WRITE(LUPRI,'(//2A)') BSET,
+     &     ' specified, but only FTSET is supported at the moment.'
+           CALL QUIT('Unsupported option in MOLECULE input')
+
+        ELSE IF ( BSET .NE. 'FTSET' ) THEN
+
 C          No 'FTSET' keyword given.
 C          Take standard set
 C
@@ -1729,11 +1746,7 @@ C          Discard the line we just read.
 C
            NMLINE = NMLINE - 1   
            IBSFLAG = 2     
-C
-        ELSEIF (BSET.EQ.'FTLRG'.OR.BSET.EQ.'FTSML') THEN
-           WRITE(LUPRI,*) 'Only FTSET is supported at the moment.' 
-           CALL QUIT('Unsupported option in MOLECULE input')
-C
+
         ELSE 
 C
 C          Check what kind of basis set we have
@@ -2869,7 +2882,7 @@ C           NUC - number of uncontracted shells in AO-block
 C           NRC - number of contracted shells in AO-block
 C
             CALL RDLINE(LUINFO)
-            IF (J. EQ. 1) THEN
+            IF (J .EQ. 1) THEN
                READ (MLINE(NMLINE),'(BN,A,I4,1I5)',IOSTAT=IOS)
      &              FRMT,NUCIJ,NRCIJ
                IF (IOS.NE.0) THEN
@@ -5285,19 +5298,26 @@ C     Calculate spherical harmonic transformation coefficients
 C     or, if DOOWN true, read user specified coefficients.
 C
 C     Modifications to DIRAC by Trond Saue Aug 18 2006
+C
+C     Miro,Sept.2017 - parallel job was setting LUINFO value to 0 for GNU compilers 
+C     upon fixing I also made routine "implicit none" style
+C
 C=======================================================================
-#include "implicit.h"
+      implicit none
 #include "priunit.h"
-      PARAMETER (D1 = 1.0D0)
+      real*8, parameter :: D1 = 1.0D0
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "sphtrm.h"
 #include "molinp.h"
 #include "ccom.h"
 #include "cbirea.h"
+      integer, intent(in) :: LUINFO
       CHARACTER*1 KEY
       LOGICAL DOOWN
-      DIMENSION WORK(LWORK)
+      integer :: LWORK,i,j,IOFF,IOS,KCKI,KHKI,MXSPD
+      real*8 :: WORK(LWORK)
+
 C
       IF (DOOWN) THEN
          WRITE(LUPRI,'(/A)')
@@ -5307,6 +5327,7 @@ C
      &   '  Calculation of transformation matrices for spherical GTOs.'
       END IF
 C
+!Miro      integer MXQN is in include/maxaqn.h
       MXSPD = MXQN
 C
       IOFF = 1
@@ -5328,6 +5349,7 @@ C
       END DO
 C
       SPHNRM = .TRUE.
+
 C
 C     Always make Cartesian transformation matrix
 C     
@@ -5390,6 +5412,7 @@ C
         CALL FLSHFO(LUPRI)
       END IF
       IF (DOCART) CALL CARLAB(MXQN-1,GTOTYP)
+
       RETURN
       END
 C  /* Deck rdcsp */
@@ -5398,6 +5421,7 @@ C  /* Deck rdcsp */
 #include "priunit.h"
 #include "mxcent.h"
 #include "molinp.h"
+      integer, intent(in) :: LUINFO
       CHARACTER*4 GTOTYP(*)
       DIMENSION CSP(KHKI,KCKI)
       DO 100 I = 1, KHKI
@@ -5437,6 +5461,7 @@ C
       DATA       NMLN_LASTREAD /0/
       SAVE       NMLN_LASTREAD
       INTEGER :: NMLINE_STORED(1:2)=0
+      integer, intent(in) :: LUINFO
 C
 C     If NMLINE is zero, reset NMLN_LASTREAD since this is a new call of readin,
 C     e.g. during a geometry optimization.
@@ -5459,7 +5484,10 @@ C
 
       IF (NMLINE.GT.NMLN_LASTREAD.AND
      &   .NMLINE_STORED(1).NE.NMLINE_STORED(2)) THEN
+
          READ (LUINFO,'(A)',END=12,IOSTAT=IOS) MLINE(NMLINE)
+
+!miro print lenghty error message for debug purposes
          IF (IOS.NE.0) THEN
           WRITE(LUPRI,*) 
      &    'ERROR(subroutine RDLINE): Error in reading molecule.MOL. '
@@ -5468,10 +5496,10 @@ C
           WRITE(LUPRI,*) 'NMLINE, line no:', NMLINE
           WRITE(LUPRI,*) 'NMLN_LASTREAD',NMLN_LASTREAD
           WRITE(LUPRI,*) 'read MLINE(NMLINE)=',MLINE(NMLINE)
-		  WRITE(LUPRI,*) 'LEN(MLINE(NMLINE))=',LEN(MLINE(NMLINE))
+          WRITE(LUPRI,*) 'LEN(MLINE(NMLINE))=',LEN(MLINE(NMLINE))
           WRITE(LUPRI,*) 'NMLINE_STORED(1),(2):',
      &    NMLINE_STORED(1),NMLINE_STORED(2)
-          IF (NMLINE>1) THEN
+          IF (NMLINE.GT.1) THEN
             WRITE(LUPRI,*) 'Previous line:',MLINE(NMLINE-1)
           ENDIF
          ENDIF
@@ -7038,5 +7066,33 @@ C
 C
       RETURN
       END
+
+      subroutine fix_duplicate_generators (nsymop,kasym)
+      implicit none
+      integer, intent(inout)    :: nsymop
+      character, intent(inout)  :: kasym(3,3)*1
+      integer :: i, j, k, igen12, igen(3)
+#include "ibtfun.h"
+
+C     We only need to check for 3 generators, 2 generators are always independent
+      if (nsymop.lt.3) return
+
+      do j = 1, nsymop
+        igen(j) = 0
+        do i = 1, 3
+C         Convert the string into a bit representation (e.g. "XY"  becomes 3 = 011) 
+          if (kasym(i,j).NE.' ') THEN
+            k = ICHAR(kasym(i,j)) - ICHAR('W')
+            igen(j) = igen(j) + 2**(k-1)
+          end if
+        end do
+      end do
+
+C     Check and correct for cases with redundant generators (generator 1 times generator 2 yields generator 3)
+      igen12 = IBTXOR(igen(1),igen(2))
+      if (igen12 .eq. igen(3)) then
+          nsymop = nsymop - 1
+      end if
+      end
 
 C --- end of herrdn.F ---

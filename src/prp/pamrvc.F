@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -4000,6 +4000,11 @@ C***********************************************************************
         use pcm_linear_response, only: pcm_oit_asc
         use pcmmod_cfg
 #endif
+
+#ifdef HAS_PELIB
+        use polarizable_embedding, only: pe_master
+        use pe_variables, only: peqm, pe_gspol
+#endif
         use orbital_rotation_indices
 
 
@@ -4170,8 +4175,17 @@ C
               deallocate(mep_oit_asc)
            endif
         endif 
+#endif      
+#ifdef HAS_PELIB
+        if (peqm .and. .not. pe_gspol) then
+           if (IPRXRS .gt. 3) then
+              write(lupri,'(/A)') ' Polarizable embedding'//
+     &        ' contributions included in linear response.'
+           endif
+           call pelib_ifc_response(fao, fmo, ndmat, ihrmop)
+        endif
 #endif
- 
+
 C
 C
 C     *******************************************

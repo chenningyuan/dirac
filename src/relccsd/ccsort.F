@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -44,7 +44,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                    IFIE,JFIE,KFIE,LFIE,NPAIR,
      &                    OFF,OFF1,OFF2,BUF1,BUF2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -72,6 +72,10 @@ C
 #include "param.inc"
 C
 C---------------Local variables--------------------------------------
+C
+      integer ijkl,ikjl,ikjl0,ikrep,iljk,iljk0,ilrep,imin,irep,j,jkil
+      integer jkil0,jkrep,jlik,jlik0,jlrep,jrep,k,klrep,kmin,krep,l
+      integer lrep,n,np
 C
 C---------------Executable code--------------------------------------
 C
@@ -177,7 +181,7 @@ C
      &                    IFIE,JFIE,KFIE,LFIE,NPAIR,
      &                    OFF,OFF1,OFF2,BUF1,BUF2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -203,6 +207,10 @@ C
 #include "param.inc"
 C
 C---------------Local variables--------------------------------------
+C
+       integer ijkl,iklj,iklj0,ikrep,ilkj,ilkj0,ilrep,imin,irep,j,jkli
+       integer jkli0,jkrep,jlki,jlki0,jlrep,jrep,k,klrep,kmin,krep,l
+       integer ljrep,lrep,n,np
 C
 C---------------Executable code--------------------------------------
 C
@@ -298,13 +306,151 @@ C
       RETURN
       END
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
+      SUBROUTINE SRT1TT6 (NREP,MULTB,FIRST,DOINV,
+     &                    IFIE,JFIE,KFIE,LFIE,NPAIR,
+     &                    OFF,OFF1,OFF2,BUF1,BUF2)
+C
+      implicit none
+C
+C---------------Description--------------------------------------------
+C
+C     BUF(I>J,K>L:KLREP) <--> BUF(IK,LJ)
+C     If (FIRST) take only the totally symmetric (first) irrep.
+C     If (DOINV) inverse sort.
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Avijit Shee, 05/05/15
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP),NPAIR(NREP)
+      INTEGER OFF(NREP+1),OFF1(32,32),OFF2(32,32)
+      LOGICAL FIRST,DOINV
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "complex.inc"
+#include "param.inc"
+C
+C---------------Local variables--------------------------------------
+C
+       integer ijkl,iklj,iklj0,ikrep,ilkj,ilkj0,ilrep,imin,irep,j,jkli
+       integer jkli0,jkrep,jlki,jlki0,jlrep,jrep,k,klrep,kmin,krep,l
+       integer ljrep,lrep,n,np,i
+C
+C---------------Executable code--------------------------------------
+C
+
+      IF (.NOT.DOINV) THEN
+         IF (FIRST) THEN
+            CALL XCOPY(OFF(2),A0,0,BUF2,1)
+         ELSE
+            CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
+         ENDIF
+      ENDIF
+C
+      IJKL = 1
+      DO KLREP = 1, NREP
+       DO 10 LREP = 1, NREP
+        KREP = MULTB(LREP,KLREP+NREP,2)
+        IF (KREP.LT.LREP) GOTO 10
+        DO L = 1, LFIE(LREP)
+         KMIN = 1
+         IF (KREP.EQ.LREP) KMIN = L + 1
+         DO K = KMIN, KFIE(KREP)
+          DO 20 JREP = 1, NREP
+           IREP = MULTB(JREP,KLREP+NREP,2)
+           IF (IREP.LT.JREP) GOTO 20
+           JLREP = MULTB(JREP,LREP,2)
+           LJREP = MULTB(LREP,JREP,2)
+           IKREP = MULTB(IREP,KREP,2)
+           ILREP = MULTB(IREP,LREP,2)
+           JKREP = MULTB(JREP,KREP,2)
+           IKLJ0 = OFF(IKREP) 
+     &          + (OFF2(LREP,JREP)+L-1)* NPAIR(IKREP)
+           IKLJ0 = IKLJ0 + OFF1(IREP,KREP) + (K-1)*IFIE(IREP)
+
+           ILKJ0 = OFF(ILREP) 
+     &          + (OFF2(KREP,JREP)+K-1) * NPAIR(ILREP)
+           ILKJ0 = ILKJ0 + OFF1(IREP,LREP) + (L-1)*IFIE(IREP)
+
+           JKLI0 = OFF(JKREP) 
+     &          + (OFF2(LREP,IREP)+L-1) * NPAIR(JKREP)
+           JKLI0 = JKLI0 + OFF1(JREP,KREP) + (K-1)*JFIE(JREP)
+           JLKI0 = OFF(JLREP) 
+     &          + (OFF2(KREP,IREP)+K-1) * NPAIR(JLREP)
+           JLKI0 = JLKI0 + OFF1(JREP,LREP) + (L-1)*JFIE(JREP)
+
+
+!!!             write(*,*)'LJREP,JLREP',LREp,JREP,LJREP,JLREP 
+
+           DO J = 1, JFIE(JREP)
+             IMIN = 1
+             IF (IREP.EQ.JREP) IMIN = J + 1
+              DO I = IMIN,IFIE(IREP) 
+
+             IKLJ = IKLJ0 + I
+             ILKJ = ILKJ0 + I
+             JKLI = (JKLI0+(I-1)*NPAIR(JKREP)*LFIE(LREP)+J-1)*RCW+1 
+             JLKI = (JLKI0+(I-1)*NPAIR(JLREP)*KFIE(KREP)+J-1)*RCW+1 
+
+
+
+             IF (DOINV) THEN
+
+                N = 1
+                CALL XCOPY (N,BUF1(IKLJ*RCW+1),1,BUF2(IJKL),1)
+                CALL XAXPY (N,-A1,BUF1(ILKJ*RCW),1,BUF2(IJKL),1)
+                NP = 1
+                CALL XAXPY(N,-A1,BUF1(JKLI*RCW),NP,BUF2(IJKL),1)
+                NP = 1
+                CALL XAXPY (N,A1,BUF1(JLKI*RCW),NP,BUF2(IJKL),1)
+             ELSE
+                IF ((.NOT.FIRST).OR.(IKREP.EQ.1))
+
+     &           BUF2(IKLJ*RCW) = BUF1(IJKL)
+
+                IF ((.NOT.FIRST).OR.(ILREP.EQ.1)) THEN
+                  BUF2(ILKJ*RCW) = -BUF1(IJKL)
+
+                ENDIF
+                IF ((.NOT.FIRST).OR.(JKREP.EQ.1)) THEN
+
+                   BUF2(JKLI) = -BUF1(IJKL)
+
+                ENDIF
+                IF ((.NOT.FIRST).OR.(JLREP.EQ.1))  THEN
+
+                  BUF2(JLKI) = BUF1(IJKL)
+                 
+                ENDIF
+             ENDIF
+             IJKL = IJKL + 1 
+           ENDDO
+             IKLJ0 = IKLJ0 + NPAIR(IKREP)*LFIE(LREP)
+             ILKJ0 = ILKJ0 + NPAIR(ILREP)*KFIE(KREP)
+!             JKLI0 = JKLI0 + 1
+!             JLKI0 = JLKI0 + 1
+           ENDDO
+ 20       CONTINUE
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+      ENDDO
+C
+      RETURN
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       SUBROUTINE SRT1ST4 (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,
      &                    NPAIR,OFF,OFF1,OFF2,BUF1,BUF2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -330,6 +476,10 @@ C
 #include "param.inc"
 C
 C---------------Local variables--------------------------------------
+C
+       integer ijkl,iklj,iklj0,ikrep,ilkj,ilkj0,ilrep,imin,irep,j,jkli
+       integer jkli0,jkrep,jlki,jlki0,jlrep,jrep,k,klrep,kmin,krep,l
+       integer ljrep,lrep,n,np,ikjl0,iljk0
 C
 C---------------Executable code--------------------------------------
 C
@@ -393,7 +543,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT1SS4 (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,
      &              NPAIR,OFF,OFF1,OFF2,BUF1,BUF2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -419,6 +569,8 @@ C
 #include "param.inc"
 C
 C---------------Local variables--------------------------------------
+C
+      integer ijkl,ikjl0,ikrep,irep,j,jlrep,jrep,k,klrep,krep,l,lrep
 C
 C---------------Executable code--------------------------------------
 C
@@ -464,7 +616,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT1T3 (NREP,MULTB,DOINV,NPAIR,KFIE,LFIE,NTRIPL,
      &                   OFF,OFF1,BUF1,BUF2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -491,6 +643,10 @@ C
 #include "param.inc"
 C
 C---------------Local variables--------------------------------------
+C
+      integer ijk,ijkl,ijkl1,ijl,ijlk1,ijrep,k,klrep,kmin,koff,krep,l
+      integer loff,lrep,n
+C
 C---------------Executable code--------------------------------------
 C
 
@@ -535,7 +691,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT1T2 (NREP,MULTB,DOINV,NPAIR1,IFIE,JFIE,NPAIR2,OFF,
      &                   OFF2,BUF1,BUF2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -562,6 +718,9 @@ C
 #include "param.inc"
 C
 C---------------Local variables--------------------------------------
+C
+      integer i,ij,ijkl,ijkl1,ijrep,ikloff,iklrep,imin,irep,j,jikl1
+      integer jkloff,jklrep,jrep,klrep,m,m2,n
 C
 C---------------Executable code--------------------------------------
 C
@@ -610,7 +769,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT6 (NREP,MULTB,DOINV,NPAIR1,IFIE,JFIE,NPAIR2,NTRIPL,
      &                 OFF,OFF1,BUF1,BUF2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -637,6 +796,8 @@ C
 #include "param.inc"
 C
 C---------------Local variables--------------------------------------
+C
+       integer i,ij,ijkl,ijrep,iklj1,irep,j,joff,jrep,klrep,m,n
 C
 C---------------Executable code--------------------------------------
 C
@@ -672,7 +833,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT9 (NREP,MULTB,DOINV,NPAIR1,IFIE,JFIE,NPAIR2,NTRIPL,
      &                 OFF,OFF1,BUF1,BUF2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -702,6 +863,8 @@ C
 #include "param.inc"
 C
 C---------------Local variables--------------------------------------
+C
+       integer i,ij,ijkl,ijrep,ioff,irep,j,jrep,klji,klrep,m,n
 C
 C---------------Executable code--------------------------------------
 C
@@ -736,7 +899,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT1L1 (NREP,MULTB,DOINV,NPAIR1,IFIE,JFIE,NPAIR2,
      &                   OFF,OFF1,BUF1,BUF2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -762,6 +925,8 @@ C
 #include "param.inc"
 C
 C---------------Local variables--------------------------------------
+C
+      integer i,ijkl,ijrep,irep,j,jikl,jikloff,jrep,klrep,m,n,nis,njs
 C
 C---------------Executable code--------------------------------------
 C
@@ -801,7 +966,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT1S2 (NREP,MULTB,DOINV,NPAIR1,IFIE,JFIE,NPAIR2,OFF,
      &                   OFF2,BUF1,BUF2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -827,6 +992,9 @@ C
 #include "param.inc"
 C
 C---------------Local variables--------------------------------------
+C
+      integer i,ij,ijkl,ijkl1,ijrep,irep,j,jkloff,jklrep,jrep,klrep,m,m2
+      integer n
 C
 C---------------Executable code--------------------------------------
 C
@@ -863,7 +1031,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT1C1 (NREP,NPAIR1,NPAIR2,BUF1,BUF2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -886,6 +1054,8 @@ C
 #include "param.inc"
 C
 C---------------Local variables--------------------------------------
+C
+      integer ij,ijkl,klij,klrep,m,n
 C
 C---------------Executable code--------------------------------------
 C
@@ -914,7 +1084,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT16 (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,
      &                  NPAIR,OFF,OFF1,OFF2,BUF1,BUF2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -941,6 +1111,8 @@ C
 #include "param.inc"
 C
 C---------------Local variables--------------------------------------
+C
+      integer ijkl,ilkj0,ilrep,irep,j,jrep,k,kjrep,klrep,krep,l,lrep
 C
 C---------------Executable code--------------------------------------
 C
@@ -984,7 +1156,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT19(NREP,MULTB,DOINV,NPAIR,KFIE,LFIE,NTRIPL,OFF,OFF1,
      &                  BUF1,BUF2)
  
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 !
 !---------------Description--------------------------------------------
 !
@@ -1010,6 +1182,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "param.inc"
 !
 !---------------Local variables--------------------------------------
+!
+      integer ijkl,ijl,ijlk1,ijrep,k,klrep,koff,krep,l,lrep,n
 !
 !---------------Executable code--------------------------------------
 !
@@ -1046,7 +1220,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT1LS1 (NREP,MULTB,NPAIR1A,NPAIR1B,IFIE,JFIE,NPAIR2,
      &                    OFF,OFF1,BUF1,BUF2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1072,6 +1246,8 @@ C
 #include "param.inc"
 C
 C---------------Local variables--------------------------------------
+C
+      integer i,ijkl1,ijkl2,ijrep,imin,irep,j,jikl2,jrep,klrep,m1,m2,n
 C
 C---------------Executable code--------------------------------------
 C
@@ -1109,7 +1285,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT22 (NREP,MULTB,DOINV,NPAIR,KFIE,LFIE,NTRIPL,OFF,OFF1
      &                  ,BUF1,BUF2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1135,6 +1311,8 @@ C
 #include "param.inc"
 C
 C---------------Local variables--------------------------------------
+C
+      integer ijkl,ijrep,k,kijl,klrep,kmin,koff,krep,l,lijk,loff,lrep,n 
 C
 C---------------Executable code--------------------------------------
 C
@@ -1177,7 +1355,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT32 (NREP,MULTB,DOINV,NPAIR,KFIE,LFIE,NTRIPL,OFF,OFF1
      &                  ,BUF1,BUF2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1203,6 +1381,8 @@ C
 #include "param.inc"
 C
 C---------------Local variables--------------------------------------
+C
+      integer ijkl,ijrep,k,klrep,koff,krep,l,lijk,lrep,n
 C
 C---------------Executable code--------------------------------------
 C
@@ -1237,7 +1417,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT23 (NREP,MULTB,NPAIR1,IFIE,JFIE,NPAIR2,NTRIPL,
      &                  OFF,OFF1,BUF1,BUF2,NBUF1)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1253,7 +1433,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 BUF1(*),BUF2(*)
-      INTEGER NREP, MULTB(64,64,2)
+      INTEGER NREP, MULTB(64,64,2),NBUF1
       INTEGER NPAIR1(NREP),IFIE(NREP),JFIE(NREP),NPAIR2(NREP)
       INTEGER NTRIPL(NREP)
       INTEGER OFF1(32,32)
@@ -1270,6 +1450,7 @@ C
       LOGICAL DONE
       INTEGER ISTART,NINT,MINT
       INTEGER*8 IKLJ1,JOFF
+      integer i,ij,ijrep,irep,j,jrep,kl1,klrep,m,n,nvvvo
 C
 C---------------Executable code--------------------------------------
 C
@@ -1317,7 +1498,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT33 (IRP,ISTART,NREP,MULTB,NPAIR1,IFIE,JFIE,NPAIR2,
      &              NTRIPL,OFF,OFF1,BUF2,NBUF1,OFF3,DONE)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1352,6 +1533,7 @@ C
       INTEGER MINT,NINT
       INTEGER IKLJ1,JOFF
       REAL*8, ALLOCATABLE :: BUF1(:)
+      integer i,ij,ijrep,irep,j,jrep,klrep,m,n,nvvvo
 C
 C---------------Executable code--------------------------------------
 
@@ -1395,7 +1577,7 @@ C
       SUBROUTINE SRT43 (IRP,ISTART,NREP,MULTB,DOINV,NPAIR1,IFIE,JFIE,
      &         NPAIR2,NTRIPL,OFF,OFF1,BUF1,BUF2,NBUF1,OFF3)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1429,6 +1611,7 @@ C
       LOGICAL DONE
       INTEGER MINT,NINT
       INTEGER IKLJ1,JOFF,JKLI1,IOFF
+      integer i,ij,ijrep,imin,irep,j,jrep,klrep,m,n,nvvvv
 C
 C---------------Executable code--------------------------------------
       NVVVV = OFF(IRP+1)
@@ -1481,7 +1664,7 @@ C
       SUBROUTINE SRT1S3 (NREP,MULTB,DOINV,NPAIR,KFIE,LFIE,NTRIPL,
      &                   OFF,OFF1,BUF1,BUF2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1508,6 +1691,8 @@ C
 #include "param.inc"
 C
 C---------------Local variables--------------------------------------
+C
+      integer ijk,ijkl,ijkl1,ijrep,k,klrep,krep,l,loff,lrep,n
 C
 C---------------Executable code--------------------------------------
 C
@@ -1541,7 +1726,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                  IFIE,JFIE,KFIE,LFIE,NPAIR,
      &                  OFF,OFF1,OFF2,BUF1,BUF2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1569,6 +1754,9 @@ C
 #include "param.inc"
 C
 C---------------Local variables--------------------------------------
+C
+       integer ijkl,iklj0,ijrep,ilkj0,ilrep,irep,j,jrep,k,kjrep,klrep
+       integer kmin,krep,l,ljrep,lrep,ikrep
 C
 C---------------Executable code--------------------------------------
 C
@@ -1632,7 +1820,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                    IFIE,JFIE,KFIE,LFIE,NPAIR,
      &                    OFF,OFF1,OFF2,BUF1,BUF2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1661,6 +1849,9 @@ C
 #include "files.inc"
 C
 C---------------Local variables--------------------------------------
+C
+      integer ijkl,ilkj,ilkj0,ilrep,imin,irep,j,jlki,jlki0,jlrep,k
+      integer kirep,kjrep,klrep,krep,l,lrep,n,np,jrep
 C
 C---------------Executable code--------------------------------------
 C
@@ -1736,7 +1927,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
        SUBROUTINE SRT1R1 (NREP,MULTB,DOINV,NPAIR1,KFIE,LFIE,NPAIR2,
      &                   OFF,OFF1,BUF1,BUF2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1762,6 +1953,8 @@ C
 #include "param.inc"
 C
 C---------------Local variables--------------------------------------
+C
+       integer ijkl,ijlk,ijlkoff,ijrep,k,klrep,krep,l,lrep,m,n,nks,nls
 C
 C---------------Executable code--------------------------------------
 C
@@ -1804,7 +1997,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                  NPAIR,OFF,OFF1,OFF2,BUF1,NBUF1,T1,GV,USEDZ,
      &                  RIGHT)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1840,7 +2033,9 @@ C
       REAL*8 TVAL(2)
       DATA TVAL /2*0.0D0/
 C ** control variable for counting upwards to the value of KLSTAR
-      INTEGER KCO
+      INTEGER KCO,i,ijkl,ijkl1,ik,ikrep,il,ilrep,irep,j,jrep,k,kj,kj0
+      integer kjrep,kl,klincr,klmax,klrep,klstar,kmin,krep,l,lj,lj0
+      integer ljrep,lrep,ik0,il0
 C
 C---------------Executable code--------------------------------------
 C
@@ -1977,7 +2172,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRTDIR(NREP,MULTB,NPAIR,OFF,OFF1,OFF2,BUF1,BUF2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -2007,6 +2202,10 @@ C#include "dmp2la.h"
 C
 C---------------Local variables--------------------------------------
 C
+       integer c,c1,c2,cirep1,cirep2,crep,crep1,crep2,d,d1t,d2t,drep
+       integer drep1,drep2,i,i1,i2,icidk,iq1,iq2,irep,irep1,irep2,irepc
+       integer irepci,irepd,irepi,irepk,ireprs,itdir,iz1,iz2,k,k1,k2
+       integer krep,krep1,krep2
 C
 C---------------Executable code--------------------------------------
 C

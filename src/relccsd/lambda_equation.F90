@@ -28,7 +28,7 @@
 
       subroutine lambda_equation_mp2 (eps,fvo,t1,s1,t2,s2)
 
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 
 !---------------Description--------------------------------------------
 !

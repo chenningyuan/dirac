@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -403,6 +403,9 @@ C***********************************************************************
       use codata
 #ifdef MOD_LAO_REARRANGED
       use london_helper
+#endif
+#ifdef HAS_PELIB
+      use pe_variables, only: peqm
 #endif
       use dirac_cfg
 #include "implicit.h"
@@ -809,10 +812,14 @@ C&&& STERNC: Sternheimer complement
  37            CONTINUE
 C&&& DAMPING: specify a damping parameter
                READ(LUCMD,*) DMPFRLR
+#ifdef HAS_PELIB
+               !edh testing...
+               IF (PEQM) CALL QUIT('PE damped response not enabled yet')
+#endif
                GO TO 100
  38            CONTINUE
 C&&& FREQ INTERVAL: specify frequencies with start, end, step values
-               FINTER = .TRUE.
+               FINTER = .TRUE.               
                READ(LUCMD,*) STARTFREQ,ENDFREQ,STEPFREQ
                GO TO 100
  39            CONTINUE

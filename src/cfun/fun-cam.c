@@ -1,6 +1,6 @@
 /* dirac_copyright_start */
 /*
- *     Copyright (c) 2016 by the authors of DIRAC.
+ *     Copyright (c) 2017 by the authors of DIRAC.
  *     All Rights Reserved.
  *
  *     This source code is part of the DIRAC program package.
@@ -45,6 +45,7 @@
 
 #include <ctype.h>
 #include <string.h>
+#include <strings.h>
 #include <stdio.h>
 #include <stdlib.h>
  

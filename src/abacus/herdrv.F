@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -64,7 +64,10 @@ C
 #include "huckel.h"
 #include "ccom.h"
 #include "hrunit.h"
+
+#ifdef BUILD_GEN1INT
 #include "gen1int.h"
+#endif
 C
       DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',
      &             '*SUPINT', '*XXXXXX'/
@@ -634,7 +637,9 @@ C&&& MAGCOR - print magnetic coordinates
             MGCOOR = .TRUE.
             GO TO 100
  179     CONTINUE
+#ifdef BUILD_GEN1INT
             TEST_GEN1INT = .true.
+#endif
             goto 100
  180     CONTINUE
       ELSE IF (PROMPT .EQ. '*') THEN

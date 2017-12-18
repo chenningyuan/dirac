@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1148,7 +1148,8 @@ C
 #include "dgroup.h"
 #include "dcbxpr.h"
 #include "dcbtra.h"
-#include "dcbham.h" ! Added temporarily to test for bss (where transform is not working)
+! Added temporarily to test for bss (where transform is not working)
+#include "dcbham.h"
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7

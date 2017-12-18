@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1353,6 +1353,7 @@ C
 C================================================================
 C       Search for this property operator in existing list
 C================================================================
+CTF   print*,'Number of property operators : ',NPRPS
       DO 200 I = 1,NPRPS
 C        Check operator type
          IF (IPRPTYP(I) .NE. IPTYP) GO TO 200
@@ -1379,7 +1380,9 @@ C========================================================================
 C     This property operator has not been defined previously.
 C     Append the new property operator to /XCBPRP/ list.
 C=========================================================================
+CTF   print*,' Calling routine XPRADD, new operator.'
       CALL XPRADD(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,INDXPR,IPRINT)
+CTF   print*,' INDXPR after XPRADD: ',INDXPR
 C
  1000 CONTINUE
       IF(IPTYP.EQ.0) THEN
@@ -1390,6 +1393,11 @@ C       ... i.e. FOCKMAT
         ISYXPR = IPRPSYM(INDXPR)
         ITRXPR = IPRPTIM(INDXPR)
       ENDIF
+CTF   print*,' INDXPR,ISYXPR,ITRXPR :',INDXPR,ISYXPR,ITRXPR
+CTF   print*,' List IPRPTIM : '
+CTF   do IL = 1,22,1
+CTF     print*,' IPRPTIM(',IL,') = ',IPRPTIM(INDXPR)
+CTF   end do
 !     CALL QEXIT('XPRIND')
       RETURN
       END
@@ -1529,12 +1537,11 @@ CMI ... inform about the assigned PCOMB
          WRITE(LUPRI,'(1X,A,A4)')
      &   'for this operator assigned PCOMB:',PCOMB
       END IF
-
-!     ...  assign proper factor for EDM  ...
+!     ...  assign proper factor for EDM  ... accordingto E.D.Commins
       IF (PLABEL(1).EQ.'EDM') THEN
-        PFAC(1) = -4.0D0 * CVAL * PFAC(1)
+        PFAC(1)=+4.0D0 * CVAL * PFAC(1)
         WRITE(LUPRI,'(2X,A,D12.6)') 
-     &  '4c EDM2 operator: strength multiplied by -4*CVAL,'
+     &  '4c EDM2 operator: strength multiplied by +4*CVAL,'
      & //' PFAC(1)=', PFAC(1)
       ENDIF
 
@@ -2156,7 +2163,7 @@ C
         IF (PLABEL.EQ.'EDM') THEN
           PLABEL='KINENERG'
           WRITE(LUPRI,*)
-     &     'EDM: PLABEL SET to KINENERG, factor -4*c*field_strength'
+     &     'EDM: PLABEL SET to KINENERG, factor +4*c*field_strength'
         ENDIF
 
         IF (IPRINT.GE.5) THEN
@@ -2261,6 +2268,7 @@ C     Written by T.Saue, January 1995
 C     Last revision: tsaue - May 14 1996
 C
 C    MI,HJAaJ(TEC),2003 - added changes for LAO-based  integrals
+C    MKN, MI, 2017 - added exception for the EDM operator
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -2284,6 +2292,16 @@ C
 C
 C     Investigate property label no. INDXPR
 C
+CCTF
+C      do IL = 1,22,1
+C        print*,'JM4(1,',IL,') = ',JM4(1,IL)
+C      end do
+CCTF
+CCTF
+C      do IL = 0,7,1
+C        print*,'JM4TIM(',IL,') = ',JM4TIM(IL)
+C      end do
+CCTF
       ITYP     = IPRPTYP(INDXPR)
       NLBL     = MCMP(ITYP)
       DIFSYM   = .FALSE.
@@ -2306,6 +2324,14 @@ C     ======================
 C
 C     Matrix operator :
       IATIM = JM4TIM(IAIND)
+CTF
+      IF (ITYP.EQ.21) THEN
+        IATIM=-1 !
+         WRITE(LUPRI,'(2X,A)')
+     &    'i*BETA*GAMMA5 operator, setting IATIM=-1'
+!    &    'FYI: i*BETA*GAMMA5 operator' 
+CTF
+      ENDIF
 C     Scalar operator :
 C     Here we use the following indirect argument:
 C     The operator should be Hermitian, so if the scalar operator is
@@ -2314,9 +2340,19 @@ C     If the scalar operator is anti-symmetric, then it is imaginary
 C     and time anti-symmetric
 C     However, if the operator has no symmetry about the diagonal 
 C     we can not use this argument and has to add exceptions
+C
+CMKN/MI Exception for i*BETA*GAMMA5 operator: Malaya K. Nayak (09-07-15)
+      IF (ITYP.EQ.21) THEN
+         IATIM = -1
+         WRITE(LUPRI,'(2X,A)')
+     &   'exception: i*BETA*GAMMA5 operator, setting IATIM = -1'
+      END IF
+CMKN/MI Because the operator i*BETA*GAMMA5 is a T-odd by its definion
+
       IBTIM = IPRLTYP(IBIND)
       IF(IBTIM.EQ.0) IBTIM = ISCALAROP_TSYM(PRPLBL(IBIND))
 C     Total time reversal symmetry of the 4-comp.operator
+CTF   print*,'IATIM,IBTIM = ',IATIM,IBTIM
       ICTIM(1) = IATIM*IBTIM
       IF (IPRINT.GE.4) THEN
         CALL HEADER('Output from PRPSYM',-1)
@@ -2377,6 +2413,7 @@ C
 CMI   ... assign point group symmetry - only one !
       IPRPSYM(INDXPR) = ICREP(1)+1
 CMI   ... assign time rev.symmetry
+CTF   if (INDXPR.eq.7) print*,' ICTIM(1) = ',ICTIM(1)
       IPRPTIM(INDXPR) = ICTIM(1)
 
 CMI ... control printout is always worth 
