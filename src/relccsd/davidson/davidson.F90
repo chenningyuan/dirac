@@ -416,52 +416,6 @@ contains
         call free_davidson_results(results)
     end subroutine
 
-
-    function new_subspace_vectors_R(new_L, N, old_subspace_vectors_R, verbose)
-!   new_L is the dimension of the subspace to be created 
-!   N is the dimension of the original problem
-!   new_subspace_vectors_R  is the subspace we create or update
-!   old_subspace_vectors_R (if present) is the old subspace
-        real(kind=8), pointer :: new_subspace_vectors_R(:,:)
-
-        integer, intent (in) :: new_L, N
-        real(kind=8), intent(inout), optional, pointer :: old_subspace_vectors_R(:,:)
-        logical, optional, intent(in) :: verbose
-
-        real(kind=8), pointer :: old_subspace_vectors_local(:,:)
-        integer :: i, j, old_L
-        logical :: verbose_local
-
-        if (present(verbose)) then
-            verbose_local = verbose
-        else
-            verbose_local = .false.
-        end if
-
-        allocate(new_subspace_vectors_R(N, new_L))
-        new_subspace_vectors_R = 0.0d0
-
-        if (.not.present(old_subspace_vectors_R)) then
-            do i = 1, N
-                do j = 1, new_L
-                    if (i .eq. j) then
-                        new_subspace_vectors_R(i,j) = 1.0d0
-                    end if
-                end do
-            end do
-        else
-            old_subspace_vectors_local => old_subspace_vectors_R
-            old_L = size(old_subspace_vectors_local,2)
-            do i = 1, old_L 
-                new_subspace_vectors_R(:,i) = old_subspace_vectors_local(:,i)
-            end do
-
-            nullify(old_subspace_vectors_local)
-            deallocate(old_subspace_vectors_R)
-            nullify(old_subspace_vectors_R)
-        end if
-    end function
-
     function updated_subspace_vectors_R(old_vectors_R, delta, orthogonalize_all,verbose)
         real(kind=8), pointer:: updated_subspace_vectors_R(:,:)
 
@@ -497,7 +451,14 @@ contains
         end if
 
         new_L = vectors_L + vectors_Ld
-        updated_subspace_vectors_R => new_subspace_vectors_R(new_L,vectors_N,old_subspace_vectors_R=old_vectors_R)
+        allocate(updated_subspace_vectors_R(vectors_N, new_L))
+        updated_subspace_vectors_R = 0.0d0
+
+        do i = 1, vectors_L
+            updated_subspace_vectors_R(:,i) = old_vectors_R(:,i)
+        end do 
+        deallocate(old_vectors_R)
+
         do i = 1, vectors_Ld  
            updated_subspace_vectors_R(:, vectors_L + i) = delta(:,i)
         end do
@@ -512,10 +473,6 @@ contains
 !           call orthonormalize_subspace(updated_subspace_vectors_R, start_from=ortho_from_vector, verbose=verbose_local)
 !       end if
 
-        if (associated(old_vectors_R)) then
-            deallocate(old_vectors_R)
-            nullify(old_vectors_R)
-        end if
     end function
 
     subroutine orthonormalize_subspace(b, start_from, method, verbose)
@@ -1907,7 +1864,6 @@ contains
            update_sigma_vector(:, i) = old_sigma_vector(:, i)  
         end do
         deallocate(old_sigma_vector)
-!ashee        nullify(old_sigma_vector)
 
         new_L = vectors_L - vectors_L_old
         if (davidson_complex_mode_with_reals) then
