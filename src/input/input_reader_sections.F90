@@ -291,12 +291,24 @@
          call read_input_visual_helper(iq_gamma5)
       end if
 
+      if (kw_matches(word, '.J     ')) then
+         call read_input_visual_helper(iq_j)
+      end if
+
       if (kw_matches(word, '.JDIA  ')) then
          call read_input_visual_helper(iq_jdia)
       end if
 
-      if (kw_matches(word, '.J     ')) then
-         call read_input_visual_helper(iq_j)
+      if (kw_matches(word, '.JX    ')) then
+         call read_input_visual_helper(iq_jx)
+      end if
+
+      if (kw_matches(word, '.JY    ')) then
+         call read_input_visual_helper(iq_jy)
+      end if
+
+      if (kw_matches(word, '.JZ    ')) then
+         call read_input_visual_helper(iq_jz)
       end if
 
       if (kw_matches(word, '.KIN   ')) then

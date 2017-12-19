@@ -73,7 +73,10 @@ module visual_cfg
    integer, public :: iq_kin_tau  = 35
    integer, public :: iq_kin_lap  = 36
    integer, public :: iq_kin_nr   = 37
-
+   integer, public :: iq_jx       = 38
+   integer, public :: iq_jy       = 39
+   integer, public :: iq_jz       = 40
+   
 !                     visualization in 2d
    logical, public :: visual_cfg_2d             = .false.
    real(8), public :: visual_cfg_2d_p_origin(3) = 0.0d0
