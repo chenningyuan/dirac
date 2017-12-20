@@ -13,7 +13,8 @@
     private
 
     character(8) :: eomtype
-    integer :: nroot,state_sym 
+    integer :: nroot,state_sym
+    integer :: irpoff = 0
 
    contains
 
@@ -21,7 +22,7 @@
 #include "symm.inc"
 #include "dcbham.h"
 #include "dgroup.h"
-     integer, intent(in) :: active_irrep
+    integer, intent(in) :: active_irrep
 
 !Assigning Dimension to the continuous orbital
 !===============================================
@@ -40,18 +41,19 @@
 #include "symm.inc"
 #include "dcbham.h"
 #include "dgroup.h"
-#include "pgroup.h"    
 #include "files.inc"
     logical :: reset_roots_in_symmetry = .false.
-
-    if (relcc_do_eomip) eomtype = 'IP'
-    if (relcc_do_eomea) eomtype = 'EA'
-    if (relcc_do_eomee) eomtype = 'EE'
-
+    
     if (    (relcc_do_eomip .and. relcc_do_eomea) &
         .or.(relcc_do_eomip .and. relcc_do_eomee) &
         .or.(relcc_do_eomea .and. relcc_do_eomee)) &
           call quit('Specifying more than one EOM kind of calculation at a time (IP/EE/EA)  not allowed !') 
+    if (relcc_do_eomip) eomtype = 'IP'
+    if (relcc_do_eomea) eomtype = 'EA'
+    if (relcc_do_eomee) then
+       eomtype = 'EE'
+       irpoff = nrep
+     endif
 
      do state_sym = 1, nrep 
         if (relcc_eom_nroots(state_sym).ne.0) then
@@ -64,8 +66,8 @@
 ! 2. EA: maximum number of roots for irrepN is reset back to the number of virtual  spinors (nvirt), per symmetry 
 ! 3. EE: maximum number of roots for irrepN is reset back to  nocc(irrepM)*nvirt(irrepO) for irrepN = irrepM * irrepO
 
-           write (iw,'(2x,A,I6,2x,A,2x,A3,A1,I2,A1)') "Requested",relcc_eom_nroots(state_sym),"root(s) for symmetry", &
-                & REP(state_sym-1),"(",state_sym,")'"
+           write (iw,'(2x,A,I6,2x,A,2x,A4,A1,I2,A1)') "Requested",relcc_eom_nroots(state_sym),"root(s) for symmetry: ", &
+                & REPNA(irpoff+state_sym),"(",state_sym,")'"
           select case (eomtype)
              case ('IP')
                 if (relcc_eom_nroots(state_sym).gt.no(state_sym)) then
@@ -1532,7 +1534,7 @@
 
 !---------------Local variables--------------------------------------
 
-   integer       :: i_eigenvalue, j_eigenvalue,ndt, irpoff
+   integer       :: i_eigenvalue, j_eigenvalue,ndt
    character*100 :: label
    real*8        :: value,tres
    integer       :: i,ii,irep,j,aoff,a,aa,ai,arep,ssym
@@ -1559,14 +1561,6 @@
  
          ndt = nstate_sym(ssym,select_eom) 
          if (ndt.eq.0) cycle
-
-!     add an offset for irrep names for bosonic irreps
-
-         if (select_eom.le.3) then
-          irpoff = 0
-         else
-          irpoff = nrep
-         endif
 
 !   Loop over the eigenvalues
 
@@ -1830,7 +1824,6 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
 #include "files.inc"
 #include "inpt.inc"
 #include "ccpar.inc"
-#include "pgroup.h"
 !--------------------------------------------------
    type(davidson_results), intent(inout) :: davResultsL(nrep)
    type(davidson_results), intent(inout) :: davResultsR(nrep)
@@ -1879,8 +1872,8 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
 
        if (nroot.ne.0) then
           write (iw,*) ""
-          write (iw,'(2x,A,2x,A3,A1,I2,A5)') "<<< SOLVING "//left_or_right(1:3)//" EOM-"//eomtype(1:2)// &
-          &   " EQUATIONS FOR SYMMETRY",REP(state_sym-1),"(",state_sym,") >>>"
+          write (iw,'(2x,A,2x,A4,A1,I2,A5)') "<<< SOLVING "//left_or_right(1:3)//" EOM-"//eomtype(1:2)// &
+          &   " EQUATIONS FOR SYMMETRY",REPNA(irpoff+state_sym),"(",state_sym,") >>>"
           write (iw,*) ""
 
 ! setting up information for continuous orbital. this is a trick to perform
