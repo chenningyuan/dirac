@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -76,7 +76,7 @@ contains
       real(8)              :: buffer(*)
       real(8), intent(out) :: result(0:3)
 !     --------------------------------------------------------------------------
-      integer              :: imat, i
+      integer              :: imat, i, icomp
       real(8)              :: v(3), v2(3)
       real(8)              :: matrix_33(3, 3)
       real(8)              :: temp_33(3, 3)
@@ -113,6 +113,61 @@ contains
                           D(imat)%elms,  &
                           buffer,        &
                           ao)
+               result(0) = result(0) + density
+            end if
+
+!           components of current density: -ec \psi^\dag \alpha_q \psi 
+            if (visual_cfg_property(imat) == iq_jx) then
+               icomp = 1
+               if (levyle) then
+                  print *, 'error: Levy-Leblond jx not implemented'
+                  stop
+               else
+                  call get_jcomp(density,  &
+                             icomp,        &
+                             cval,         &
+                             D(imat)%irep, &
+                             D(imat)%nrow, &
+                             D(imat)%elms, &
+                             buffer,       &
+                             ao)
+               end if
+               result(0) = result(0) + density
+            end if
+
+            if (visual_cfg_property(imat) == iq_jy) then
+               icomp = 2
+               if (levyle) then
+                  print *, 'error: Levy-Leblond jy not implemented'
+                  stop
+               else
+                  call get_jcomp(density,  &
+                             icomp,        &
+                             cval,         &
+                             D(imat)%irep, &
+                             D(imat)%nrow, &
+                             D(imat)%elms, &
+                             buffer,       &
+                             ao)
+               end if
+               result(0) = result(0) + density
+            end if
+
+            if (visual_cfg_property(imat) == iq_jz) then
+               icomp = 3
+               if (levyle) then
+                  print *, 'error: Levy-Leblond jz not implemented'
+                  stop
+               else
+                  call get_jcomp(density,  &
+                             icomp,        &
+                             cval,         &
+                             D(imat)%irep, &
+                             D(imat)%nrow, &
+                             D(imat)%elms, &
+                             buffer,       &
+                             ao)
+               end if
                result(0) = result(0) + density
             end if
 

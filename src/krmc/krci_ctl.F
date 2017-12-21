@@ -1056,8 +1056,6 @@ C
 C
 C     boson or fermion symmetries in the CI expansion
 C
-C     set default
-      IKRCI_SYMMETRY = NKRCI_MAX_SYM
       WRITE(LUPRI,'(A)')
      & ' * Convergence of CI function(s) in the following '//
      &     'symmetries:'

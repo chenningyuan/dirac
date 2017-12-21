@@ -99,9 +99,9 @@ Give the number of "left" and "right" states in each boson symmetry.
     5 5 5 5
     0 0 0 0
 
-Compute the transition moments \|\\langle i\|\\hat{A}\|i\\rangle|,
+Compute the excited state expectation values \|\\langle i\|\\hat{A}\|i\\rangle|,
 where i goes from 1 to 5 in each symmetry (four symmetries in this case). The
-zeros can be substituted for positive integers to generate elements \|\\langle i\|\\hat{A}\|j\\rangle|.
+zeros can be substituted with positive integers to generate transition state moments \|\\langle i\|\\hat{A}\|j\\rangle|.
 
 Control variational parameters
 ==============================
