@@ -29,13 +29,6 @@
     public G_intm
      private
 
-!     interface
-!        subroutine gettau(t1,t2,tau)
-!        real*8,intent(in) :: t1(*),t2(*)
-!        real*8,intent(out) :: tau(*)
-!        end subroutine gettau
-!     end interface
-
      contains
 
    subroutine f_bar_mi(foo,fvo,t1,t2,ho)
@@ -992,7 +985,7 @@
          mm(irrep) = mm(irrep)+ nint*nv(irep)
        enddo
 
-       allocate(w_vvvv_temp_temp(dot_product(mm,nv)*rcw))  
+       allocate(w_vvvv_temp_temp(dot_product(mm(1:nrep),nv(1:nrep))*rcw))  
 
        w_vvvv_temp_temp = 0.0d0
 

@@ -1408,7 +1408,7 @@
 !---------------Local variables -----------------------------------
       INTEGER , ALLOCATABLE :: INDX_ALL(:), IRPS_ALL(:)  
       INTEGER :: IERR, ISIZE, select_eom,dum2
-      REAL*8 :: IND(MXREP),dum1(rcw),eigenvalues_temp(1:rcw,0:nroot)
+      REAL*8 :: IND(MXREP),dum1(rcw),eigenvalues_temp(1:rcw,0:(nroot+1))
       REAL*8 :: E_OFF
       INTEGER :: nstate_sym(nrep,4)
 !---------------Executable code--------------------------------------
@@ -1469,8 +1469,8 @@
 !        This makes the routine print excitation energies
          nstate_sym(1,select_eom) = nstate_sym(1,select_eom) + 1
 
+         EIGENVALUES_temp(1:RCW,0:(nroot+1)) = 0.D0
          EIGENVALUES_temp(1:RCW,1:nroot)=eigenvalues(1:RCW,1:nroot)
-         EIGENVALUES_temp(1:RCW,0) = 0.D0
 
 !        Even electron case : boson irreps
          CALL PRT_EV (IW,NREP,nstate_sym(1,select_eom),REPNA(NREP+1), &
@@ -1522,7 +1522,7 @@
    real*8, intent(in) :: eps(*),e_off
    real*8, intent(in) :: ev_all(rcw,nroot),eigenvectors(rcw,*) 
    integer            :: state_sym  
-   integer            :: select_eom,ipr,nstate_sym(nrep,nroot)
+   integer            :: select_eom,ipr,nstate_sym(nrep,4)
 
 !---------------Common Blocks--------------------------------------
 
