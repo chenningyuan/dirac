@@ -1058,7 +1058,7 @@
    real*8, allocatable :: ev(:),evec(:,:) 
    real*8, allocatable, target :: buf1(:),buf2(:),buf3(:) ! may be not all of them are necessary. 
    real*8, allocatable:: sub_H(:,:) ! sub_H(nroot,nroot)
-   integer :: irp,iroot,jroot,i,j,irep,jrep,ijrep,nvx(nrep),nox(nrep)
+   integer :: irp,iroot,jroot,i,j,irep,jrep,ijrep
    integer :: ndimr1,ndimr2,sym
    integer :: AllocateStatus
 
@@ -1833,7 +1833,7 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
    logical, intent(in)                   :: right_vectors
 !--------------------------------------------------
    real*8, pointer :: trial_vector(:,:)
-   integer :: irp,iroot,jroot,i,j,irep,jrep,ijrep,nvx(nrep),nox(nrep)
+   integer :: irp,iroot,jroot,i,j,irep,jrep,ijrep
    integer :: ndimr1,ndimr2
    integer :: AllocateStatus
    integer :: N, N1, N2 ! size of determinantal space 
@@ -1937,18 +1937,9 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
 
              ndimr2 = 0
              ndimr1 = 0
-             nvx = 0
        
-             call create_eom_nvx(nrep)
-
-! this need a bit of explaining
-             do jrep = 1, nrep
-                do irep = 1, nrep
-                   ijrep = multb(irep,jrep,1)
-                   nvx(ijrep) = nvx(ijrep) + ncont(irep)*nv(jrep)
-                   call set_eom_nvx(ijrep, (get_eom_nvx(ijrep) + ncont(irep)*nv(jrep)))
-                enddo
-             enddo
+             call alloc_array(e,nrep)
+             call auto_symmetry_offset(e,nv,ncont,.false.,.false.)
 
              do irep = 1, nrep
                 if (iprnt.ge.3) write(*,*)'continuous orbital ',irep,ncont(irep),nroot
@@ -1956,8 +1947,9 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
              enddo
 
              do irep = 1, nrep
-                 ndimr2 = ndimr2 + get_eom_nvx(irep)*noot(irep)
+                 ndimr2 = ndimr2 + e%oneNonDirac(irep)*noot(irep)
              enddo
+            call dealloc_array(e)
 
              N1 = ndimr1*rcw
              N2 = ndimr2*rcw
@@ -1997,25 +1989,20 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
 
              ndimr2 = 0
              ndimr1 = 0
-             nox(1:nrep) = 0
-       
-             call create_eom_nvx(nrep)
 
-            do jrep = 1, nrep
-              do irep = 1, nrep
-              ijrep = multb(irep,jrep,1)
-              nox(ijrep) = nox(ijrep) + ncont(irep)*no(jrep)
-              call set_eom_nvx(ijrep, (get_eom_nvx(ijrep) + ncont(irep)*no(jrep)))
-              enddo
-            enddo
+             call alloc_array(f,nrep)
+             call auto_symmetry_offset(f,no,ncont,.false.,.false.)
+
 
               do irep = 1, nrep
                ndimr1 = ndimr1 + ncont(irep)*nv(irep)
               enddo
 
             do irep = 1, nrep
-                ndimr2 = ndimr2 + get_eom_nvx(irep)*nvvt(irep)
+                ndimr2 = ndimr2 + f%oneNonDirac(irep)*nvvt(irep)
             enddo
+
+            call dealloc_array(f)
 
              N1 = ndimr1*rcw
              N2 = ndimr2*rcw
@@ -2064,7 +2051,6 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
          end if
 
          call free_eom_ndet()
-         call free_eom_nvx()
 
          if (allocated(B%H_II)) deallocate(B%H_II)
 ! aspg: trial_vector should have been nullified inside davidson_driver, check

@@ -584,7 +584,7 @@
      call gettau (t1,t2,tau)
 
       do 30 irp = 1, nrep
-         if (nvvt(irp).eq.0) goto 30
+         if ((nvvt(irp).eq.0).or.(noot(irp).eq.0)) goto 30
          done = .false.
          istart = 0
          cco=0
