@@ -21,7 +21,7 @@ when such operators transformations were already carried out.
 
 keyword(DEBUG)
 
-raises the print level in the X2C module to print intermediate matrices and arrays. use with care as the output might
+raises the print level in the X2C module to print intermediate matrices and arrays. Use with care as the output might
 become filled with lots of numbers.
 
 keyword(freeh1)

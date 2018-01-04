@@ -145,6 +145,13 @@ Compute the electron chirality density. Example::
    DFCOEF
 
 
+keyword(J)
+
+Compute the current density. Example (use first response vector)::
+
+  .J
+   PAMXVC 1
+
 keyword(JDIA)
 
 Compute the nonrelativistic diamagnetic current density. Example::
@@ -153,13 +160,26 @@ Compute the nonrelativistic diamagnetic current density. Example::
    DFCOEF
 
 
-keyword(J)
+keyword(JX)
 
-Compute the current density. Example (use first response vector)::
+Compute the x-component of the current density. Example (use first response vector)::
 
-  .J
+  .JX
    PAMXVC 1
 
+keyword(JY)
+
+Compute the y-component of the current density. Example (use first response vector)::
+
+  .JY
+   PAMXVC 1
+
+keyword(JZ)
+
+Compute the z-component of the current density. Example (use first response vector)::
+
+  .JZ
+   PAMXVC 1
 
 keyword(DIVJ)
 
