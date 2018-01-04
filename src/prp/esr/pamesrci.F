@@ -156,12 +156,9 @@ C
 C
       CALL QENTER('ESR_RESOLVE')
 
-      IF (NZCONF .EQ. 2) THEN
+      IF (NZCONF .EQ. 2 .AND. N_CIROOTS .lt. 0) THEN
       ! avoid GASCIP -- this enables DFT calculations for doublet
-         IF (N_CIROOTS .gt. 2) THEN
-            N_CIROOTS = 2
-         END IF
-
+         N_CIROOTS = 2
          CALL ESR_RESOLVE_2(IPRINT,
      &           WORK,K_EIGVAL,K_EIGVEC,KFREE,LFREE)
          GO TO 9000

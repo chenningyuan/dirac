@@ -458,22 +458,22 @@ C ** Some parameter checking
 C
       IF (N_CIESR .GE. 0) THEN ! not DFT nor HF
          !
-      IF (MULTIPESR .gt. NZCONF) THEN
-         CALL QUIT('.MULTIPESR specification > # determinants')
-      END IF
-      IF (MAX_CIESR_IT .EQ. 0) THEN
-         CALL HEADER(
+         IF (MULTIPESR .gt. NZCONF) THEN
+            CALL QUIT('.MULTIPESR specification > # determinants')
+         END IF
+         IF (MAX_CIESR_IT .EQ. 0) THEN
+            CALL HEADER(
      & 'INFO: Calculation stops now as requested with ".MAX CI" of 0',1)
-         GO TO 9000
-      ELSE IF (MAX_CIESR_IT .GT. 0) THEN
-         ! Davidson iterations
-         N_CIESR = MAX(N_CIESR,MULTIPESR)
-         N_CIESR = MIN(N_CIESR,NZCONF)
+            GO TO 9000
+         ELSE IF (MAX_CIESR_IT .GT. 0) THEN
+            ! Davidson iterations
+            N_CIESR = MAX(N_CIESR,MULTIPESR)
+            N_CIESR = MIN(N_CIESR,NZCONF)
 !        write(lupri,*) 'N_CIESR,MULTIPESR is', N_CIESR,MULTIPESR
-      ELSE
-         ! full CI (now primarily for debugging Davidson iterations code)
-         N_CIESR = NZCONF
-      END IF
+         ELSE
+            ! full CI (now primarily for debugging Davidson iterations code)
+            N_CIESR = NZCONF
+         END IF
       END IF
 !d    write (lupri,*) 'hj2 N_CIESR MAX_CIESR_IT MULTIPESR NZCONF',
 !d   &                     N_CIESR,MAX_CIESR_ITMULTIPESR,,NZCONF
