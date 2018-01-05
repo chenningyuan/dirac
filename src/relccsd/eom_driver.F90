@@ -692,13 +692,13 @@
     ii = 0
 
       do arp = 1, nrep
-         irep = multb (arep,state_sym+nrep,1)
+         irp = multb (state_sym+nrep,arp,2)
          aa = io(nrep+1) + iv(arp)
       do a = 1, nv(arp)
          aa = aa + 1
          fac1 = eps(aa)
-         ioff = io(arp)
-         do i = 1, no(arp)
+         ioff = io(irp)
+         do i = 1, no(irp)
              ii = ioff + i
              h_ii(ia) = fac1 - eps(ii) ! I will add the missing two-electron term later 
              ia = ia + 1
@@ -709,6 +709,7 @@
 
       ijab = ia
       do abrp = 1, nrep
+         ijrp = multb (state_sym+nrep,abrp,2)
       do brp = 1, nrep
       bb = iv(brp) + io(nrep+1)
       arp = multb(brp,abrp+nrep,2)
@@ -724,7 +725,7 @@
             fac2 = eps(aa) + fac1
             do jrp = 1, nrep
             jj = io(jrp)
-            irp = multb(jrp,abrp+nrep,2)
+            irp = multb(jrp,ijrp+nrep,2)
             if (irp.lt.jrp) cycle
             ioff = io(irp)
             do j = 1, no(jrp)
@@ -748,12 +749,27 @@
 
     do iroot = 1, nroot
 
-      call srt1c1 (nrep,nv,no,eVectorsR(1:N1,iroot:iroot), &
-     &             L1(1:N1,iroot:iroot)) 
-      call srt1c1 (nrep,nvvt,noot,eVectorsR(N1+1:N,iroot:iroot), &
-     &             L2(1:N2,iroot:iroot)) 
+      call srt1c1 (nrep,nv,no,eVectorsR(1:N1,iroot), &
+     &             L1(1:N1,iroot)) 
+      call srt1c1 (nrep,nvvt,noot,eVectorsR(N1+1:N,iroot), &
+     &             L2(1:N2,iroot)) 
 
     enddo
+
+!         allocate(diag_H(N1))
+!         diag_H = H_II(1:N1:rcw)
+
+!         do iroot = 1, nroot
+!             k = minloc(diag_H)
+!             if (iprnt.ge.3) write(iw,*)'roots',iroot,diag_H(k(1)),k(1)
+!             i = k(1)
+!             jroot = i
+!             if (rcw.eq.2) jroot = 2*i - 1
+!             L1(jroot,iroot) = 1.0d0
+!             diag_H(i) = 8000.0d0
+!         enddo
+!         deallocate(diag_H)
+
 
    case ('IP')
 
@@ -1231,19 +1247,23 @@
                      allocate(l1_temp(N1))
                      allocate(l2_temp(N2))
 
-                     call srt1c1(nrep,no,ncont,davResultsL(sym)%eVectorsL(1:N1,iroot:iroot),l1_temp)
-                     call srt1c1(nrep,noot,e%oneNonDirac,davResultsL(sym)%eVectorsL(1+N1:N,iroot:iroot),l2_temp)
+                     call srt1c1(nrep,no,ncont,davResultsL(sym)%eVectorsL(1:N1,iroot),l1_temp)
+                     call srt1c1(nrep,noot,e%oneNonDirac,davResultsL(sym)%eVectorsL(1+N1:N,iroot),l2_temp)
 
                      call dealloc_array(e)
 
+!                    overlap = dot_product(davResultsL(sym)%eVectorsL(1:N1,iroot),davResultsR(sym)%eVectorsR(1:N1,iroot)) + &
+!   &                          dot_product(davResultsL(sym)%eVectorsL(1+N1:N,iroot),davResultsR(sym)%eVectorsR(1+N1:N,iroot))
+
                      overlap = dot_product(l1_temp,davResultsR(sym)%eVectorsR(1:N1,iroot)) + &
     &                          dot_product(l2_temp,davResultsR(sym)%eVectorsR(1+N1:N,iroot))
+
 
                      write(*,*)'overlap', overlap 
 
                      overlap = 1.0d0/overlap
 
-                     call dscal(N,overlap,davResultsL(sym)%eVectorsL(1:N,iroot:iroot),1)  
+                     call dscal(N,overlap,davResultsL(sym)%eVectorsL(:,iroot),1)  
                      call dscal(N1,overlap,l1_temp,1)  
                      call dscal(N2,overlap,l2_temp,1)  
 

@@ -62,7 +62,7 @@
 !   doo(j,i) = doo(j,i) - l2(jm,e*f) * r2(e*f,im)
 !-------------------------------------------------------------------
 
-  call contraction_442 ((/"o2","o3","c1","p2"/),(/"c1","p2","o1","o3"/),(/"o2","o1"/),doo,-1.0d0,1.0d0,nrep, &
+  call contraction_442 ((/"o2","o3","c1","p2"/),(/"c1","p2","o1","o3"/),(/"o2","o1"/),doo,1.0d0,1.0d0,nrep, &
  &  LeftTensor=l2,RightTensor=r2)
 
    write(*,*)'diagram1',dot_product(doo,doo)
@@ -71,7 +71,7 @@
 !    doo(j,i) = doo(j,i) - l1(j,e*)*r1(e*,i)
 !---------------------------------------------------------------------
 
-  call contraction_222 ((/"o2","c1"/),(/"c1","o1"/),(/"o2","o1"/),l1,r1,doo,-1.0d0,1.0d0,nrep)
+  call contraction_222 ((/"o2","c1"/),(/"c1","o1"/),(/"o2","o1"/),l1,r1,doo,1.0d0,1.0d0,nrep)
 
    write(*,*)'diagram2',dot_product(doo,doo) 
 !---------------------------------------------------------------------
@@ -85,7 +85,7 @@
 
   wop_temp = 0.0d0
 
-  call contraction_422 ((/"o1","o3","c1","p2"/),(/"c1","o3"/),(/"o1","p2"/),r1,wop_temp,1.0d0,1.0d0,nrep,LeftTensor=l2)
+  call contraction_422 ((/"o1","o3","c1","p2"/),(/"c1","o3"/),(/"o1","p2"/),r1,wop_temp,-1.0d0,1.0d0,nrep,LeftTensor=l2)
 
   call contraction_222 ((/"p2","o2"/),(/"o1","p2"/),(/"o2","o1"/),t1,wop_temp,doo,1.0d0,1.0d0,nrep)
 
@@ -127,11 +127,11 @@
 !     dvo(a,i) = dvo(a,i) + l1(m,b) * r(ba,im)
 !--------------------------------------------------------------------------
 
-!     call contraction_242 ((/"o2","p2"/),(/"p1","p2","o1","o2"/), 
-!    & (/"p1","o1"/),l1,dvo,1.0d0,1.0d0,nrep,RightTensor=t2)
+      call contraction_242 ((/"o2","c1"/),(/"c1","p1","o2","o1"/), & 
+     & (/"p1","o1"/),l1,dvo,-1.0d0,1.0d0,nrep,RightTensor=r2)
 
-      call contraction_422 ((/"c1","p1","o1","o2"/),(/"o2","c1"/), &
-     & (/"p1","o1"/),l1_ptr,dvo,-1.0d0,1.0d0,nrep,LeftTensor=r2_ptr)       
+!     call contraction_422 ((/"c1","p1","o1","o2"/),(/"o2","c1"/), &
+!    & (/"p1","o1"/),l1_ptr,dvo,-1.0d0,1.0d0,nrep,LeftTensor=r2_ptr)       
 
    write(*,*)'diagram7',dot_product(dvo,dvo)
 !----------------------------------------------------------
