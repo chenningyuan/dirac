@@ -117,8 +117,8 @@ module visual_cfg
 !                     radial distributions
    logical, public :: visual_cfg_radial          = .false.
    real(8), public :: visual_cfg_radial_from(3)  = 0.0d0
-   integer, public :: visual_cfg_line_nr_steps   = 0
-   integer, public :: visual_cfg_line_length     = 0
+   integer, public :: visual_cfg_radial_nr_steps = 0
+   real(8), public :: visual_cfg_radial_length   = 0
    
    real(8),       public :: visual_cfg_scale              = 1.0d0
    real(8),       public :: visual_cfg_gauge_origin(3)    = 0.0d0

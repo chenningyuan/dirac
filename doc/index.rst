@@ -130,7 +130,8 @@ Tutorials and walkthrus
   :doc:`General overview <tutorials/visual/general/tutorial>` |
   :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>` |
   :doc:`Magnetizability density <tutorials/visual/magnetizability_density/tutorial>` |
-  :doc:`Molecular electrostatic potential <tutorials/visual/mep/tutorial>`
+  :doc:`Molecular electrostatic potential <tutorials/visual/mep/tutorial>` |
+  :doc:`Radial distributions <tutorials/visual/radial_distributions/tutorial>`     
 
 * **Open-shell SCF:**
   :doc:`Basics <tutorials/open_shell_scf/aoc>` |

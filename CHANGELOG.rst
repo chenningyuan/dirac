@@ -1,5 +1,9 @@
 :orphan:
 
+New features:
+
+- The visualizatio module has been extended to generate various radial distributions using the keyword .RADIAL. Contributor: Trond Saue
+
 17.0 (2017-12-12)
 -----------------
 
