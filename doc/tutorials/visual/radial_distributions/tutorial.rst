@@ -24,17 +24,17 @@ to be discussed below. We run the job using the command ::
 
 such that we recover both the coefficient file DFCOEF and the file of solution vector PAMXVC.
 
-The magnesium atom is a light atom, so we expect relativistic effects, spin-orbit interaction in particular, to be quite weak, so we can assume more or less pure singlets and triplets. Single excitations :math:`3s\rightarrow 3p` lead to
+The magnesium atom is a light atom, so we expect relativistic effects, spin-orbit interaction in particular, to be quite weak, and we can assume more or less pure singlets and triplets. Single excitations :math:`3s\rightarrow 3p` lead to
 
 .. math::
 
-   \left(\begin{array}{c}2\\1\end{array}\right)\left(\begin{array}{c}2\\1\end{array}\right) = 12
+   \left(\begin{array}{c}2\\1\end{array}\right)\left(\begin{array}{c}6\\5\end{array}\right) = 12
 
 microstates, of which 9 are triplets and 3 are singlets. The atomic calculation will be run in the
 :math:`D_{2h}` subgroup and we shall focus on excitations :math:`3s\rightarrow 3p` in the irrep     
-:math:`B_{3u}`, which is the symmetry of the :math:`x`-coordinate. We start from a closed-shell reference, which is therefore totally symmetric, which means that the symmetry of the excitation is
+:math:`B_{3u}`, which is the symmetry of the :math:`x`-coordinate. We start from a closed-shell reference, which is therefore totally symmetric. This means that the symmetry of the excitation is
 also the symmetry of the excited state. One should note that the symmetry refers to the *total*	
-symmetry, including both spatial and spin symmetry. Singlets :mat:`S` are totally symmetric, whereas the components :math:`(T_x,T_y,T_z)` of the triplet transform as the rotations. From further symmetry analysis we deduce that there will be three :math:`3s\rightarrow 3p` excitations :math:`B_{3u}`:
+symmetry, including both spatial and spin symmetry. Singlets :math:`S` are totally symmetric, whereas the components :math:`(T_x,T_y,T_z)` of the triplet transform as the rotations. From further symmetry analysis we deduce that there will be three :math:`3s\rightarrow 3p` excitations :math:`B_{3u}`:
 i) a :math:`3s\rightarrow 3p_y` transition of the :math:`T_z` triplet component, 
 ii) a :math:`3s\rightarrow 3p_z` transition of the :math:`T_y` triplet component, and 
 iii) a :math:`3s\rightarrow 3p_x` transition of singlet character. From Hund's rules we expect the
@@ -52,10 +52,9 @@ The oscillator strength is given by
 
 .. math::
 
-   f_{fi}(\omega)=\frac{2\omega}{\hbar e^2}\left|\langle f|\hat{T}(\omega_{fi})|i\rangle\right|^2 f(\omega,\omega_{fi},\gamma_{fi})
+   f_{fi}=\frac{2\omega}{\hbar e^2}\left|\langle f|\hat{T}(\omega_{fi})|i\rangle\right|^2 
 
-where the excitation energy is given by :math:`\Delta E = \hbar\omega_{fi}` and :math:`f(\omega,\omega_{fi},\gamma_{fi})`
-is a lineshape function, e.g. a Lorentzian of width :math:`\gamma_{fi}`. Within the electric dipole approximation the 
+where the excitation energy is given by :math:`\Delta E = \hbar\omega_{fi}`. Within the electric dipole approximation the 
 reduced interaction operator :math:`\hat{T}` is given by 
 
 .. math::
@@ -77,7 +76,7 @@ before running our calculation, this part was not specified. The transition mome
 are therefore strikingly different. However, is we take the transition moment of 0.358852917641 a.u. in the
 velocity representation and divide by the excitation energy 0.14917197 a.u., we get 2.4056323560049524 a.u.,
 which is rather close to the transition moment of 2.403791564532 a.u. obtained in the length representation.
-It is close, but not identical, because we are using finite basis sets. The interaction operator in the two
+It is close, but not identical, because we are using *finite* basis sets. The interaction operator in the two
 representations may have different basis set requirements and this is what we shall investigate by looking at their
 radial distribution.
 
@@ -131,7 +130,7 @@ the keyword *.EDIPX* does not include the negative electron charge. For the velo
 
    The radial distribution integrates to:   0.98530240054333240
 
-The integration is not very precise since the radial integration uses an even-spaced grid. This is why we had also requested proper 3D integration using the (ultrafine) DFT grid. It shows::
+The integration is not very precise since the radial integration uses an even-spaced grid. This is why we have also requested proper 3D integration using the (ultrafine) DFT grid. It shows::
 
            scalar              x-component         y-component         z-component
    
@@ -140,7 +139,7 @@ The integration is not very precise since the radial integration uses an even-sp
 showing that the normalization is correct.
 
 We now have three formatted files containing the radial distributions on our specified grid and you may now plot them using your
-favourite plotting program.
+favourite plotting program (I used `xmgrace <http://plasma-gate.weizmann.ac.il/Grace/>`_ .)
 
 .. image:: tmom_rad.png
     :width: 600px
