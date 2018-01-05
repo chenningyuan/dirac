@@ -351,7 +351,22 @@ C     =================
 C     
 C     As proposed by 
 C     Roland Lindh, Per-Aake Malmqvist and Laura Gagliardi
+C     Theor. Chem. Acc. (2001) 106:178 
 C
+C     Radial point:         
+C     RADNDE(K) = GRDC(EXP[K*H] - 1)
+C               = (RADNDE(K-1)+GRDC)*EXP[H]-GRDC
+C
+C     where appears the constant
+C
+C          GRDC = RL/(EXP[H] - 1),         
+C                   
+C     calculated from the step size H and the inner point RL.
+C
+C     Radial weight:         
+C
+C     RADWT(K) = (RADNDE(K)+GRDC)*RADNDE(K)*RADNDE(K)*H
+C           
 
 C        Grid spacing....
          H = DUMMY
