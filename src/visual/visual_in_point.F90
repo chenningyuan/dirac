@@ -612,12 +612,7 @@ contains
          end if
       end do
 
-      f = visual_cfg_scale
-      if (visual_cfg_radial) then
-         distance_to_origin = dsqrt(px*px + py*py + pz*pz)
-         f = f*(distance_to_origin**2.0d0)*4.0d0*3.14159265358979323846d0
-      end if
-      result = f*result
+      result = visual_cfg_scale*result
 
    end subroutine
 

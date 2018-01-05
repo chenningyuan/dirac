@@ -34,6 +34,7 @@ module visual
   use visual_integrate
   use visual_in_point
   use electrostatic_potential
+  use num_grid_cfg
 
   implicit none
 
@@ -506,7 +507,7 @@ contains
       real(8)              :: vx(3), vx_norm
       real(8)              :: vy(3), vy_norm
       real(8)              :: vz(3), vz_norm
-      real(8)              :: r(3), v(3), s
+      real(8)              :: r(3), v(3), s, rad, wt, qbuf(0:3)
       integer              :: lunit_2d_scalar
       integer              :: lunit_2d_vector
       integer              :: lunit_2d_flow
@@ -516,6 +517,8 @@ contains
       integer              :: lunit_3d_vector_vtk
       integer              :: lunit_line_scalar
       integer              :: lunit_line_vector
+      integer              :: lunit_radial_scalar
+      integer              :: lunit_radial_vector
       real(8), allocatable :: temp(:, :)
       real(8), allocatable :: temp2(:, :, :, :)
       real(8), allocatable :: res(:)
@@ -541,6 +544,8 @@ contains
       lunit_3d_vector_vtk = 20
       lunit_line_scalar   = 21
       lunit_line_vector   = 22
+      lunit_radial_scalar = 23
+      lunit_radial_vector = 24
 
       if (visual_cfg_2d) then
          open(lunit_2d_scalar,           &
@@ -593,6 +598,19 @@ contains
               file   = 'plot.line.vector', &
               status = 'new',              &
               access = 'sequential',       &
+              form   = 'formatted')
+      end if
+
+      if (visual_cfg_radial) then
+         open(lunit_line_scalar,             &
+              file   = 'plot.radial.scalar', &
+              status = 'new',                &
+              access = 'sequential',         &
+              form   = 'formatted')
+         open(lunit_radial_vector,           &
+              file   = 'plot.radial.vector', &
+              status = 'new',                &
+              access = 'sequential',         &
               form   = 'formatted')
       end if
 
@@ -663,6 +681,55 @@ contains
                r(1),                              &
                r(2),                              &
                r(3),                              &
+               q(1:3, 1)
+
+         end do
+      end if
+
+      if (visual_cfg_radial) then
+
+!   Get angular points and weights
+!   ==============================
+
+         m = NLEB(num_grid_cfg_angint)
+         allocate(temp(m,4))
+         CALL LEBEDEV(num_grid_cfg_angint,temp(1,1),temp(1,2),temp(1,3),temp(1,4),n)
+
+!   Loop over radial points
+!   =======================
+
+         s = visual_cfg_radial_length/visual_cfg_radial_nr_steps
+         do istep = 0, visual_cfg_radial_nr_steps
+
+            rad = istep*s
+
+!           Angular integration
+!           ===================
+            q(0:3,1) = 0.0d0
+            do i = 1,m
+              r   = visual_cfg_radial_from + rad*temp(i,1:3)
+              call get_quantity_in_point(visual_cfg_nr_dmat, &
+                                         D,                  &
+                                         D_0,                &
+                                         r(1),               &
+                                         r(2),               &
+                                         r(3),               &
+                                         ao,                 &
+                                         buffer,             &
+                                         qbuf)
+              q(0:3,1) = q(0:3,1) + qbuf(0:3)*temp(i,4)
+            enddo
+            q(0:3,1) = q(0:3,1)*rad*rad
+            
+
+!           Write results
+!           =============
+
+            write(lunit_radial_scalar, '(2e18.10)') &
+               rad,                                 &
+               q(0, 1)
+            write(lunit_radial_vector, '(4e18.10)') &
+               rad,                                 &
                q(1:3, 1)
 
          end do
