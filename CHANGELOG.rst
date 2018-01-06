@@ -1,5 +1,13 @@
 :orphan:
 
+
+17.1 (unreleased)
+-----------------
+
+- Allow to compile with OpenMP support (this does not imply OpenMP parallelization of the code).
+- Update in CMake framework: pass compilers as cmake variables, not as environment variables.
+
+
 17.0 (2017-12-12)
 -----------------
 
