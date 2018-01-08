@@ -1457,7 +1457,8 @@ integer :: ierr
 !   term 9 : lambda2 = lambda2 + P(ij)P(ab) L1(i,a)*f_bar_me(j,b)
 !-------------------------------------------------------------------------
 
-      call lambda2_disconnected(l1,B%Fbar_me,lambda2,state_sym)
+!      call lambda2_disconnected(l1,B%Fbar_me,lambda2,state_sym)
+      call lambda2_disconnected(l1,B%Fbar_me,lambda2)
 
        if (iprnt.ge.1) &
      & write(iw,*)'lambda2 after term9',dot_product(lambda2,lambda2)

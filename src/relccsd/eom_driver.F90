@@ -32,6 +32,8 @@
         ncont(active_irrep+(nrep/4)) = 1 
      elseif (linear) then
         ncont(active_irrep+1) = 1 
+     elseif (nrep==1) then
+        ncont(active_irrep) = 1 
      else
         ncont(active_irrep+(nrep/2)) = 1 
      endif
@@ -293,8 +295,8 @@
 ! particular state symmetry.
 ! Thereby we avoid the sigma vector calculations of the degenerate roots.  
 
-          allocate(diag_H(N1))
-          diag_H = H_II(1:N1)
+          allocate(diag_H(ndimr1))
+          diag_H = H_II(1:N1:rcw)
 
           allocate(diag_H(ndimr1))
           diag_H = H_II(1:ndimr1*rcw:rcw)
@@ -324,13 +326,14 @@
     ai = 1
     ii = 0
     do irep = 1, nrep
-       arep = multb (irep,1+nrep,1)
+!       arep = multb (irep,1+nrep,1)
+        arep = multb (1+nrep,irep,2)
         do i = 1, no(irep)
          ii = ii + 1
          fac1 = eps(ii)
           do a = 1, ncont(arep)
              H_II(ai) = -fac1 
-             ai = ai + 1
+             ai = ai + rcw
           enddo
         enddo
     enddo
@@ -363,7 +366,7 @@
                DO A = 1, NCONT(ARP)
                   FAC = FAC3! - 100.0d0
                   H_II(ABIJ) = -FAC
-                  ABIJ = ABIJ + 1
+                  ABIJ = ABIJ + rcw
                ENDDO
             ENDDO
             ENDDO
@@ -429,30 +432,28 @@
 
           search_dimension = ncont(state_sym)*no(state_sym) 
 
-          allocate(diag_H(N1))
-          diag_H = H_II(1:N1)
+          allocate(diag_H(ndimr1))
+          diag_H = H_II(1:N1:rcw)
 
-          xroot = 1 
+          xroot = 0 
 
           fudge_factor = 2
 ! here we set the factor to 1 because for C1, with only one fermion irrep,
 ! we can't get around to working with the degenerate roots
           if (nrep.eq.1) fudge_factor = 1
 
+          write(*,*)'# of roots', fudge_factor*nroot
+
           do iroot = 1, fudge_factor*nroot
               k = minloc(diag_H) 
-              if (iprnt.ge.3) write(iw,*)'roots',iroot,H_II(k(1)),k(1) 
+              if (iprnt.ge.2) write(iw,*)'roots',iroot,diag_H(k(1)),k(1) 
               i = k(1)
               diag_H(i) = 8000.0d0
               if (i <= search_dimension) then
-                  jroot = i
-                  if (rcw.eq.2) jroot = 2*i - 1
-                  R1(jroot,xroot) = 1.0d0
-                  if (rcw.eq.2) then
-                      xroot = xroot + 1
-                  else
-                      xroot = xroot + 1
-                  endif
+                   xroot = xroot + 1
+                   jroot = i
+                   if (rcw.eq.2) jroot = 2*i - 1
+                   R1(jroot,xroot) = 1.0d0
               end if
           enddo
           deallocate(diag_H)
@@ -474,7 +475,7 @@
           do a = 1, nv(arep)
              aa = aoff + a
              H_II(ai) =  eps(aa) 
-             ai = ai + 1
+             ai = ai + rcw
           enddo
         enddo
     enddo
@@ -504,7 +505,7 @@
                   AA = AOFF + A
                   FAC = FAC3 - EPS(AA)
                   H_II(ABIJ) = -FAC
-                  ABIJ = ABIJ + 1
+                  ABIJ = ABIJ + rcw
                ENDDO
             ENDDO
             ENDDO
@@ -572,8 +573,9 @@
 
           search_dimension = ncont(state_sym)*nv(state_sym)
 
-          allocate(diag_H(N1))
-          diag_H = H_II(1:N1)
+
+          allocate(diag_H(ndimr1))
+          diag_H = H_II(1:N1:rcw)
 
           xroot = 1
 
@@ -590,16 +592,8 @@
               if (i <= search_dimension) then
                   jroot = i
                   if (rcw.eq.2) jroot = 2*i - 1
-                  if (jroot.le.N1) then
                       R1(jroot,xroot) = 1.0d0
-                  else if (jroot.le.N2) then
-                      R2(jroot,xroot) = 1.0d0
-                  end if
-                  if (rcw.eq.2) then
                       xroot = xroot + 1
-                  else
-                      xroot = xroot + 1
-                  endif
               end if
           enddo
           deallocate(diag_H)

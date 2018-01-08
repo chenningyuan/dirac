@@ -1044,13 +1044,13 @@ contains
                     do j = 1, vectors_N, 2
                         r = r + 1
 !                       if (davidson_debug) print *, 'debug, H_II(re,im) : ',j,M_diag(j),M_diag(j+1)
-                        form_preconditioner(j,k)   = eigenvalues(1,k) - M_diag(r)
+!                        form_preconditioner(j,k)   = eigenvalues(1,k) - M_diag(r)
 ! the diagonal appears not to have the complex part, so for debugging purposes i will set it to zero here
 ! and only construct the real part
-!                       form_preconditioner(j,k)   = eigenvectors(1,k) - M_diag(j)
-!                       form_preconditioner(j+1,k) = eigenvectors(2,k) - M_diag(j+1)
-
-                        form_preconditioner(j,k)   = eigenvalues(1,k) - M_diag(r)
+ !                      form_preconditioner(j,k)   = eigenvalues(1,k) - M_diag(j)
+ !                      form_preconditioner(j+1,k) = eigenvalues(2,k) - M_diag(j+1)
+                        
+                        form_preconditioner(j,k)   = eigenvalues(1,k) - M_diag(j)
                         form_preconditioner(j+1,k) = 0.0d0
 
 ! using the formula for calculating the reciprocal of the nonzero complex number z = x + yi 
@@ -1068,7 +1068,7 @@ contains
                         else
 !                           stop ('detected division by zero')
                             write (davidson_output_file_unit,*) 'Warning : numerator is small', &
-                                                             (1.0d0 / form_preconditioner(l,k)),& 
+                                                             (1.0d0 / form_preconditioner(j,k)),& 
 &                                    ' element of preconditioner set to 1'
 !                           form_preconditioner(j,k) = 1.0d0
 !                           form_preconditioner(j+1,k) = 1.0d0
@@ -1390,7 +1390,7 @@ contains
     end subroutine
  
 
-    subroutine get_values_vectors_davidson(nroots, A, results, b_guess,state_sym)
+    subroutine get_values_vectors_davidson(nroots, A, results, b_guess, state_sym)
 ! bad coupling between modules, to be replaced by an abstract class that the sigma vector module extends
 ! and that will have associated get_matrix_size, create_sigma_vector and create_diagonal
         use sigma_eom, only : intermediates, get_matrix_size, create_diagonal
@@ -1494,8 +1494,10 @@ contains
                                                         verbose=davidson_verbose)
 
 ! store old c_small vectors, that is, subspace vectors for the overlap selection in the next iterative step   
-            if (davidson_solve_rhs.and.davidson_overlap_sorting) c_small_r_old = c_small_r(1:nroots,1:nroots)
-            if (davidson_solve_lhs.and.davidson_overlap_sorting) c_small_l_old = c_small_l(1:nroots,1:nroots)
+            if (davidson_solve_rhs.and.davidson_overlap_sorting) c_small_r_old (1:nroots:(size(c_small_r_old,1)/nroots),:)= &
+                                                   c_small_r(1:nroots:(size(c_small_r_old,1)/nroots),1:nroots)
+            if (davidson_solve_lhs.and.davidson_overlap_sorting) c_small_l_old(1:nroots:(size(c_small_l_old,1)/nroots),:) = &
+                                                   c_small_l(1:nroots:(size(c_small_l_old,1)/nroots),1:nroots)
 
             if (associated(preconditioner)) deallocate(preconditioner)
             if (associated(delta)) deallocate(delta)
@@ -1609,14 +1611,14 @@ contains
             allocate(c_r_old(factor*nroots,nroots))
             c_r_old = 0.0d0
             do i = 1, nroots*factor, factor
-                c_r_old(i,i) = 1.0d0
+                c_r_old(i,(i+1)/2) = 1.0d0
             enddo
         endif
         if (solve_lhs) then
             allocate(c_l_old(factor*nroots,nroots))
             c_l_old = 0.0d0
             do i = 1, nroots*factor, factor
-                c_l_old(i,i) = 1.0d0
+                c_l_old(i,(i+1)/2) = 1.0d0
             enddo
         endif
 ! avijit
