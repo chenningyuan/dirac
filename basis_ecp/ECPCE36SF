@@ -8,7 +8,7 @@ $ Y,Zr,Nb,Mo,Tc,Ru,Rh,Pd,Ag,Cd,In,Sn,Sb,Te,I,Xe                      *
 $*********************************************************************
 $ Yttrium atom
 $ Y, 36 el. core, 3 valence el., spin-free
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 39
 ECP 36 4 0
@@ -52,7 +52,7 @@ $         d-f
 $*********************************************************************
 $ Zirconium atom
 $ Zr, 36 el. core, 4 valence el., spin-free
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 40
 ECP 36 4 0
@@ -95,7 +95,7 @@ $         d-f
 $*********************************************************************
 $ Niobium atom
 $ Nb, 36 el. core, 5 valence el., spin-free
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 41
 ECP 36 4 0
@@ -138,7 +138,7 @@ $         d-f
 $*********************************************************************
 $ Molybdenum atom
 $ Mo, 36 el. core, 6 valence el., spin-free
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 42
 ECP 36 4 0
@@ -181,7 +181,7 @@ $         d-f
 $*********************************************************************
 $ Technetium atom
 $ Tc, 36 el. core, 7 valence el., spin-free
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 43
 ECP 36 4 0
@@ -224,7 +224,7 @@ $         d-f
 $*********************************************************************
 $ Ruthenium atom
 $ Rh, 36 el. core, 8 valence el., spin-free
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 44
 ECP 36 4 0
@@ -267,7 +267,7 @@ $         d-f
 $*********************************************************************
 $ Rhodium atom
 $ Rh, 36 el. core, 9 valence el., spin-free
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 45
 ECP 36 4 0
@@ -310,7 +310,7 @@ $         d-f
 $*********************************************************************
 $ Palladium atom
 $ Pd, 36 el. core, 10 valence el., spin-free
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 46
 ECP 36 4 0
@@ -349,7 +349,7 @@ $      d-f
 $*********************************************************************
 $ Silver atom
 $ Ag, 36 el. core, 11 valence el., spin-free
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 47
 ECP 36 4 0
@@ -388,7 +388,7 @@ $      d-f
 $*********************************************************************
 $ Cadmium atom
 $ Cd, 36 el. core, 12 valence el., spin-free
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 48
 ECP 36 4 0
@@ -427,7 +427,7 @@ $      d-f
 $*********************************************************************
 $ Indium atom
 $ In, 36 el. core, 13 valence el., spin-free
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 49
 ECP 36 4 0
@@ -466,7 +466,7 @@ $      d-f
 $*********************************************************************
 $ Tin atom
 $ Sn, 36 el. core, 14 valence el., spin-free
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 50
 ECP 36 4 0
@@ -505,7 +505,7 @@ $      d-f
 $*********************************************************************
 $ Antimony atom
 $ Sb, 36 el. core, 15 valence el., spin-free
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 51
 ECP 36 4 0
@@ -544,7 +544,7 @@ $      d-f
 $*********************************************************************
 $ Tellurium atom
 $ Te, 36 el. core, 16 valence el., spin-free
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 52
 ECP 36 4 0
@@ -583,7 +583,7 @@ $      d-f
 $*********************************************************************
 $ Iodine atom
 $ I, 36 el. core, 17 valence el., spin-free
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 53
 ECP 36 4 0
@@ -622,7 +622,7 @@ $   f
 $*********************************************************************
 $ Xenon atom
 $ Xe, 36 el. core, 18 valence el., spin-free
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 54
 ECP 36 4 0

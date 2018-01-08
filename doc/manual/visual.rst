@@ -41,8 +41,28 @@ and should be saved after calculation, e.g. ::
 The first three columns of the output files gives the coordinates (x, y, z) of the point. 
 It is then followed by one/three columns giving the value of the scalar/vector density in that point.
 
+keyword(RADIAL)
 
+Compute radial distributions
 
+.. math::
+
+   f(r) = \int_{0}^{2\pi}\int_{0}^{\pi}f(\mathbf{r})r^2\sin\theta d\theta d\phi
+
+by performing Lebedev angular integration over a specified number of even-spaced radial shells out to some specified distance
+from a specified initial point. Example (coordinates and distance in bohr)::
+
+   .RADIAL
+   0.0 0.0 0.0
+   10.0
+   200
+
+The first line after the keyword specifies the initial point, here chosen to be the origin.
+The second and third line is the distance and step size, respectively.
+Scalar and vector densities are written to files ``plot.radial.scalar`` and ``plot.radial.vector``, respectively, 
+and should be saved after calculation, e.g. ::
+
+   pam --get=plot.radial.scalar ...
 
 keyword(2D)
 
@@ -145,6 +165,13 @@ Compute the electron chirality density. Example::
    DFCOEF
 
 
+keyword(J)
+
+Compute the current density. Example (use first response vector)::
+
+  .J
+   PAMXVC 1
+
 keyword(JDIA)
 
 Compute the nonrelativistic diamagnetic current density. Example::
@@ -153,13 +180,26 @@ Compute the nonrelativistic diamagnetic current density. Example::
    DFCOEF
 
 
-keyword(J)
+keyword(JX)
 
-Compute the current density. Example (use first response vector)::
+Compute the x-component of the current density. Example (use first response vector)::
 
-  .J
+  .JX
    PAMXVC 1
 
+keyword(JY)
+
+Compute the y-component of the current density. Example (use first response vector)::
+
+  .JY
+   PAMXVC 1
+
+keyword(JZ)
+
+Compute the z-component of the current density. Example (use first response vector)::
+
+  .JZ
+   PAMXVC 1
 
 keyword(DIVJ)
 
@@ -216,11 +256,6 @@ Specify gauge origin. Example::
 
   .GAUGE
    0.0 0.0 0.0
-
-
-keyword(RADIAL)
-
-Compute radial densities.
 
 
 keyword(SMALLAO)

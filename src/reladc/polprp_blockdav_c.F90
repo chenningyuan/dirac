@@ -80,6 +80,7 @@
       Integer                                :: qst_hboline
                                              
       logical                                :: allconverged
+      logical                                :: oviol
       logical,allocatable,dimension(:)       :: converged
                                              
       character*10                           :: fileadc
@@ -152,6 +153,10 @@
       maxdavsp =   polprp_davmaxsp   !maximum dimension of Davidson space
       maxdavit =   polprp_davmaxit   !maximum number of Dav. iterations
       convthr  =   polprp_davconv    !convergence of Davidson eigenvectors
+!
+! the orthogonalization violation flag is false at the beginning
+!
+      oviol = .false.
 !
 ! allocate and initialize arrays according to calculation dimensions
 !
@@ -435,6 +440,7 @@
 
           if( (prenorm2/prenorm1).ge.prethr) then
 
+            oviol = .false.    !  preconditioner has large enough norm
             pro = pro/dcmplx(prenorm2,rzero)
             krydim = krydim + 1
             write(io_bold,rec=krydim) pro  !extend trial space
@@ -442,6 +448,10 @@
 
           else
 
+            oviol = .true.    !  preconditioner norm is critical
+            pro = pro/dcmplx(prenorm2,rzero)
+            krydim = krydim + 1
+            write(io_bold,rec=krydim) pro  !extend trial space
             listout(52:54) = ' NX'
 
           endif
@@ -462,6 +472,16 @@
           allconverged = .false.
         endif
       enddo
+!
+!  check if orthogonality problems pertain after last root
+!
+      if(oviol) then
+        write(*,*) ' ****            Warning                  ****'
+        write(*,*) ' **** Orthogonality of preconditioner is weak.'
+        write(*,*) ' **** Check convergence of final results.'
+        write(*,*) ' ****                                     ****'
+        write(*,*)
+      endif
 !
 !  check if dimensionality extension is still in allowed range.
 !
