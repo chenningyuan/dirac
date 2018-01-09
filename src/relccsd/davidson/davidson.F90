@@ -1494,10 +1494,24 @@ contains
                                                         verbose=davidson_verbose)
 
 ! store old c_small vectors, that is, subspace vectors for the overlap selection in the next iterative step   
-            if (davidson_solve_rhs.and.davidson_overlap_sorting) c_small_r_old (1:nroots:(size(c_small_r_old,1)/nroots),:)= &
-                                                   c_small_r(1:nroots:(size(c_small_r_old,1)/nroots),1:nroots)
-            if (davidson_solve_lhs.and.davidson_overlap_sorting) c_small_l_old(1:nroots:(size(c_small_l_old,1)/nroots),:) = &
-                                                   c_small_l(1:nroots:(size(c_small_l_old,1)/nroots),1:nroots)
+!           if (davidson_solve_rhs.and.davidson_overlap_sorting) c_small_r_old (1:nroots:(size(c_small_r_old,1)/nroots),:)= &
+!                                                  c_small_r(1:nroots:(size(c_small_r_old,1)/nroots),1:nroots)
+!           if (davidson_solve_lhs.and.davidson_overlap_sorting) c_small_l_old(1:nroots:(size(c_small_l_old,1)/nroots),:) = &
+!                                                  c_small_l(1:nroots:(size(c_small_l_old,1)/nroots),1:nroots)
+            if (davidson_solve_rhs.and.davidson_overlap_sorting) then
+                if (davidson_complex_mode_with_reals) then
+                    c_small_r_old = c_small_r(1:2*nroots,1:nroots)
+                else
+                    c_small_r_old = c_small_r(1:nroots,1:nroots)
+                end if
+            end if
+            if (davidson_solve_lhs.and.davidson_overlap_sorting) then
+                if (davidson_complex_mode_with_reals) then
+                    c_small_l_old = c_small_l(1:2*nroots,1:nroots)
+                else
+                    c_small_l_old = c_small_l(1:nroots,1:nroots)
+                end if
+            end if
 
             if (associated(preconditioner)) deallocate(preconditioner)
             if (associated(delta)) deallocate(delta)
