@@ -10,7 +10,7 @@ reproducing a calculation reported by Jarvie and co-workers in 1973 :cite:`Jarvi
 
 The water molecule has a bond angle of 104.5 :math:`^{\circ}`. This is sometimes rationalized by invoking
 :math:`sp^3` hybridized oxygen. Perfect hybridization would, however, lead to a bond angle of
-109.5 :math:`^{\circ}=\mathrm{arccos}(-1/3)`, and so the deviation is rationalized by invoking
+109.5 :math:`^{\circ}` :math:`=\mathrm{arccos}(-1/3)`, and so the deviation is rationalized by invoking
 valence shell electron pair repulsion (VSEPR) theory and in particular the stronger repulsion between
 lone pairs.
 
@@ -49,10 +49,10 @@ The former file includes the :ref:`OPTIMIZE_.NUMGRA` keyword to activate geometr
 This will be needed here since we have included the constraint of a frozen orbital.
 
 Now let us look at the specification of the frozen orbital: We have to tell DIRAC that the orbital was not calculated in
-the full molecular basis, rather using only the basis of the oxygen atom. This information is indicated throught the keyword
+the full molecular basis, rather using only the basis of the oxygen atom. This information is indicated by the keyword
 :ref:`SCF_.OWNBAS`. Next, we have to tell where to find the orbital. This is specified using the keyword :ref:`SCF_.PROJECT`
 and its arguments. The oxygen :math:`2s` orbital is specified by the coefficients found on the file *DFCOEF* that we recovered
-in the atomic calculation and renamed *cf.O*. The oxygen atom is considered a fragment of the water molecule and the coefficient
+in the atomic calculation and renamed *cf.O*. The oxygen atom is considered a fragment of the water molecule, and the coefficient
 file therefore constitute a fragment file. The first argument of the :ref:`SCF_.PROJECT` keyword is the specification of the
 number of fragment files to read, which in this case is just one.
 
@@ -83,7 +83,7 @@ non-unitary transformation :math:`V` that will take us to an orthonormal basis, 
 
    V^{\dagger}SV = I
 
-where :math:`I` is the identity matrix. We insert :math:`VV^{-1}=I` in appropriate places and pre-multiply with :math:`V^{\dagger}` to give
+where :math:`I` is the identity matrix. We insert :math:`VV^{-1}=I` in front of the coefficients and pre-multiply with :math:`V^{\dagger}` to give
    
 .. math::   
      
@@ -93,19 +93,19 @@ Since the matrix :math:`V` transforms the overlap matrix to the identity matrix,
 
 .. math::
 
-   F^{\prime}\mathbf{c}^{\prime}=\mathbf{c}^{\prime}\varepsilon;\quad F^{\prime}=V^{\dagger}FV;\quad \mathbf{c}^{\prime}=V^{-1}\mathbf{c}
+   F^{\prime}\mathbf{c}^{\prime}=\mathbf{c}^{\prime}\varepsilon;\quad F^{\prime}=V^{\dagger}FV;\quad \mathbf{c}^{\prime}=V^{-1}\mathbf{c} .
 
 This is a normal eigenvalue problem and it suffices now to give the transformed Fock matrix :math:`F^{\prime}` to a standard
 routine for matrix diagonalization in order to obtain eigenvalues :math:`\varepsilon` and the transformed eigenvectors
-:math:`\mathbf{c}^{\prime}`. In a final step we get the AO-coefficients :math:`\mathbf{c}` by the backtransformation
+:math:`\mathbf{c}^{\prime}`. In a final step we get the MO-coefficients :math:`\mathbf{c}` by the backtransformation
 
 .. math::
 
    \mathbf{c}=V\mathbf{c}^{\prime}
 
-This diagonalization procedure is repeated in each SCF-cycle and provides the optimization of the molecular orbitals.
+This diagonalization procedure is repeated in each iteration of the SCF-cycle and provides the optimization of the molecular orbitals.
 
-The freezing of orbitals is done in the following manner: The imported fragments orbitals are projected out of the
+The freezing of orbitals is done in the following manner: The imported fragment orbitals are projected out of the
 transformation matrix :math:`V`, which means that they are not present in the orthonormal basis of the transformed
 Fock matrix :math:`F^{\prime}`. They have in other words been removed from the variational space. If this was our
 goal we could in fact have stopped here. This is for example what was done in :cite:`Fossgaard2003b` where the
