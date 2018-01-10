@@ -2,7 +2,13 @@
 
 New features:
 
-- The visualizatio module has been extended to generate various radial distributions using the keyword .RADIAL. Contributor: Trond Saue
+- The visualization module has been extended to generate various radial distributions using the keyword .RADIAL. Contributor: Trond Saue
+
+17.1 (unreleased)
+-----------------
+
+- Allow to compile with OpenMP support (this does not imply OpenMP parallelization of the code).
+- Update in CMake framework: pass compilers as cmake variables, not as environment variables.
 
 17.0 (2017-12-12)
 -----------------
@@ -12,16 +18,14 @@ New features:
 New features:
 
 - Kramers restricted Polarization Propagator in the ADC framework for electronic excitations, activated with ".POLPRP".
-  References:  
-
    M. Pernpointner. The relativistic polarization propagator for the calculation of electronic excitations in heavy systems.
-   J. Chem. Phys. 140, 084108 (2014); http://dx.doi.org/10.1063/1.4865964  
+   J. Chem. Phys. 140, 084108 (2014); http://dx.doi.org/10.1063/1.4865964
 
    M. Pernpointner, L. Visscher and A. B. Trofimov. 
    Four-component Polarization Propagator Calculations of Electron Excitations: Spectroscopic Implications of Spin-Orbit Coupling   Effects. J. Chem. Theory Comput. (2017) submitted.
 
 - Polarizable embedding using PElib (https://gitlab.com/pe-software/pelib-public). Activated with ".PEQM", additional options under \*PEQM.
-  Reference:  
+  Reference:
    E. D. Hedegård, R. Bast, J. Kongsted, J. M. H. Olsen, and H. J. Aa. Jensen.  Relativistic Polarizable Embedding.
    J. Chem. Theory Comput. 13, 2870-2880 (2017); http://doi.org/10.1021/acs.jctc.7b00162
 
@@ -40,7 +44,7 @@ New features:
 
 Error corrections:
 
-- Fixed errors for quaternion symmetries in 2-electron MO integrals used in CI calculations with GASCIP.  
+- Fixed errors for quaternion symmetries in 2-electron MO integrals used in CI calculations with GASCIP.
   It is now possible to do CI calculations with GASCIP for C1 symmetry (i.e. no symmetry).
 - Fixed the p exponents for Na in the dyall 4z basis sets to match the archive.
   The changes are small so should not significantly affect results.
