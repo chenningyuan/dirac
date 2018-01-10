@@ -1959,8 +1959,6 @@ C
 C---------------Executable code--------------------------------------
 C
 
-      write(*,*)'WARNING!!! i am here', DOINV
-
       CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
 
       IJLKOFF = 0
