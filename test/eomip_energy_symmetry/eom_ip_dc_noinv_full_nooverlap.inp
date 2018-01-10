@@ -29,8 +29,8 @@
 *EOMCC
 .IP
 1 6
-#.IP
-#2 6
+.IP
+2 6
 *CCENER
 .MAXIT
 45
