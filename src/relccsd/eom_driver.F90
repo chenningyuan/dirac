@@ -298,9 +298,6 @@
           allocate(diag_H(ndimr1))
           diag_H = H_II(1:N1:rcw)
 
-          allocate(diag_H(ndimr1))
-          diag_H = H_II(1:ndimr1*rcw:rcw)
-
           do iroot = 1, nroot
               k = minloc(diag_H)
               if (iprnt.ge.3) write(iw,*)'roots',iroot,diag_H(k(1)),k(1)
