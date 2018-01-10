@@ -279,6 +279,11 @@
          call kw_read(word, visual_cfg_scale)
       end if
 
+      if (kw_matches(word, '.DSCALE ')) then
+         call kw_read(word, visual_cfg_scale)
+         visual_cfg_scale=1.0D0/visual_cfg_scale
+      end if
+
       if (kw_matches(word, '.DENSIT')) then
          call read_input_visual_helper(iq_density)
       end if

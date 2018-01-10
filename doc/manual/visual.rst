@@ -134,6 +134,13 @@ Default::
   .SCALE
    1.0
 
+keyword(DSCALE)
+
+Scale densities *down* by a factor.
+Default::
+
+  .DSCALE
+   1.0
 
 keyword(DENSITY)
 
