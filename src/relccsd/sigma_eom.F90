@@ -324,6 +324,8 @@ module sigma_eom
 #include "complex.inc"
 #include "ccpar.inc"
 #include "files.inc"
+#include "inpt.inc"
+
 !-----------------------------------------------------------------------------   
 !  In this routine we calculate all the intermediates required for a specific
 !  problem (IP/EA/EE). 
@@ -357,40 +359,81 @@ integer :: ierr
      call fmtofile (.false.,fvo,foo,fvv) ! read one-body integrals from file.
 
      call f_bar_mi(foo,fvo,A%t1,A%t2,A%Fbar_mi)
-     write (iw,*) "    done with Fbar_mi",dot_product(A%Fbar_mi,A%Fbar_mi)
+     if (iprnt.ge.2) then 
+        write (iw,*) "    done with Fbar_mi",dot_product(A%Fbar_mi,A%Fbar_mi)
+     else
+        write (iw,*) "    done with Fbar_mi"
+     end if
 
      call f_bar_me(fvo,A%t1,A%Fbar_me)
-     write (iw,*) "    done with Fbar_me",dot_product(A%Fbar_me,A%Fbar_me)       
+     if (iprnt.ge.2) then 
+         write (iw,*) "    done with Fbar_me",dot_product(A%Fbar_me,A%Fbar_me)       
+     else
+         write (iw,*) "    done with Fbar_me"
+     end if
 
      call f_bar_ae(fvv,fvo,A%t1,A%t2,A%Fbar_ae)
-     write (iw,*) "    done with Fbar_ae",dot_product(A%Fbar_ae,A%Fbar_ae)
+     if (iprnt.ge.2) then 
+         write (iw,*) "    done with Fbar_ae",dot_product(A%Fbar_ae,A%Fbar_ae)
+     else
+         write (iw,*) "    done with Fbar_ae"
+     end if
 
      call w_ijmn(A%t1,A%t2,A%W_ijmn)
-     write (iw,*) "    done with W_ijmn",dot_product(A%W_ijmn,A%W_ijmn)
+     if (iprnt.ge.2) then 
+         write (iw,*) "    done with W_ijmn",dot_product(A%W_ijmn,A%W_ijmn)
+     else
+         write (iw,*) "    done with W_ijmn"
+     end if
 
      call wbar_mbej(A%t2,A%Wbar_mbej)
-     write (iw,*) "    done with Wbar_mbej",dot_product(A%Wbar_mbej,A%Wbar_mbej)
+     if (iprnt.ge.2) then 
+         write (iw,*) "    done with Wbar_mbej",dot_product(A%Wbar_mbej,A%Wbar_mbej)
+     else
+         write (iw,*) "    done with Wbar_mbej"
+     end if
 
      call w_mbej(A%t1,A%t2,A%W_mbej)
-     write (iw,*) "    done with W_mbej",dot_product(A%W_mbej,A%W_mbej)
+     if (iprnt.ge.2) then 
+         write (iw,*) "    done with W_mbej",dot_product(A%W_mbej,A%W_mbej)
+     else
+         write (iw,*) "    done with W_mbej"
+     end if
 
      call w_ejmb(A%t1,A%t2,A%W_ejmb)
+     if (iprnt.ge.2) then 
+         write (iw,*) "    done with W_ejmb",dot_product(A%W_ejmb,A%W_ejmb)
+     else
+         write (iw,*) "    done with W_ejmb"
+     end if
 
      call w_iemn(A%t1,A%t2,A%W_iemn,A%Wbar_mbej,A%W_ijmn,A%Fbar_me)
-     write (iw,*) "    done with W_iemn",dot_product(A%W_iemn,A%W_iemn)
+     if (iprnt.ge.2) then 
+         write (iw,*) "    done with W_iemn",dot_product(A%W_iemn,A%W_iemn)
+     else
+         write (iw,*) "    done with W_iemn"
+     end if
 
      if (eomtype /= "IP") then
 
 !      CALL XTIME(5,1,'-- "efam" Intermediate                     ')
-      call w_efam(A%t1,A%t2,A%Wbar_mbej,A%Fbar_me,A%W_efam)
-     write (iw,*) "    done with W_efam"
+         call w_efam(A%t1,A%t2,A%Wbar_mbej,A%Fbar_me,A%W_efam)
+         if (iprnt.ge.2) then 
+             write (iw,*) "    done with W_efam",dot_product(A%W_efam,A%W_efam)
+         else
+             write (iw,*) "    done with W_efam"
+         end if
 
-        if (myproc.gt.0) then
-          A%W_efam(1:nv5*rcw) = 0.0d0
-        endif
+         if (myproc.gt.0) then
+             A%W_efam(1:nv5*rcw) = 0.0d0
+         endif
 
-      call w_efam_diagram2 (A%t1,A%t2,local_buf2,local_buf3,nbuf3,A%W_efam)
-     write (iw,*) "    done with W_efam diagram #2"
+         call w_efam_diagram2 (A%t1,A%t2,local_buf2,local_buf3,nbuf3,A%W_efam)
+         if (iprnt.ge.2) then 
+             write (iw,*) "    done with W_efam diagram #2",dot_product(A%W_efam,A%W_efam)
+         else
+             write (iw,*) "    done with W_efam diagram #2"
+         end if
 
 !   synchronize all the w_efam contributions from different nodes to the master 
 
@@ -415,13 +458,21 @@ integer :: ierr
      endif 
 
      call w_mnie(A%t1,A%W_mnie)
-     write (iw,*) "    done with W_mnie"
+     if (iprnt.ge.2) then
+         write (iw,*) "    done with W_mnie",dot_product(A%W_mnie,A%W_mnie)
+     else
+         write (iw,*) "    done with W_mnie"
+     end if
 
 
      if (eomtype /= "IP") then
 
-      call w_amef(A%t1,A%W_amef)
-     write (iw,*) "    done with W_amef"
+         call w_amef(A%t1,A%W_amef)
+         if (iprnt.ge.2) then
+             write (iw,*) "    done with W_amef",dot_product(A%W_amef,A%W_amef)
+         else
+             write (iw,*) "    done with W_amef"
+         end if
 
      endif 
 
