@@ -99,7 +99,7 @@ Assuming the program is in your path, you read this information by running::
 
 The output is
 
-.. literalinclude:: rspread.output
+.. literalinclude:: rspread.snippet
 
 Although there are *3* excitations, there are in fact *12* entries. This is because each solution vector is split into 
 contributions :math:`E` corresponding to e-e rotations, and contributions :math:`P` corresponding to e-p rotations. 
