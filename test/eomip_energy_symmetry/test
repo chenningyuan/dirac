@@ -20,12 +20,19 @@ f.add(from_string = ' Energy eigenvalues in atomic units',
 # during the davidson procedure). 
 
 test.run(['eom_ip_dc_noinv_c_oo_v.inp'],   ['f2_c_oo_v.mol'], f, args='--mw=110')
+#test.run(['eom_ip_dc_noinv_c_oo_v_-Omega.inp'], ['f2_c_oo_v.mol'], f, args='--mw=110')
 test.run(['eom_ip_dc_noinv.inp'],   ['f2_d2.mol', 'f2_c2v.mol', 'f2_c2.mol', 'f2_cs.mol'], f, args='--mw=110')
 test.run(['eom_ip_dc_noinv_c1.inp'], ['f2_c1.mol'], f, args='--mw=110')
 
 test.run(['eom_ip_dc_inv_d_oo_h.inp'],   ['f2_d_oo_h.mol'], f, args='--mw=110')
+#test.run(['eom_ip_dc_inv_d_oo_h_-Omega.inp'],   ['f2_d_oo_h.mol'], f, args='--mw=110')
 test.run(['eom_ip_dc_inv.inp'],     ['f2_d2h.mol', 'f2_c2h.mol'], f, args='--mw=110')
 test.run(['eom_ip_dc_inv_ci.inp'],  ['f2_ci.mol'], f, args='--mw=110')
+
+# the following are crashing due to a bug in the trial vector construction
+# 
+#test.run(['eom_ip_dc_inv_ungerade.inp'],     ['f2_d2h.mol', 'f2_c2h.mol'], f, args='--mw=110')
+#test.run(['eom_ip_dc_inv_ungerade_ci.inp'],  ['f2_ci.mol'], f, args='--mw=110')
 
 # 2. the tests above but using the  unit vectors (1's along the diagonal)
 # and without enforcing overlap to the original trial vectors in the davidson 
@@ -35,10 +42,12 @@ test.run(['eom_ip_dc_inv_ci.inp'],  ['f2_ci.mol'], f, args='--mw=110')
 # constrains.
  
 test.run(['eom_ip_dc_noinv_full_nooverlap_c_oo_v.inp'],   ['f2_c_oo_v.mol'], f, args='--mw=110')
+test.run(['eom_ip_dc_noinv_full_nooverlap_c_oo_v_-Omega.inp'],   ['f2_c_oo_v.mol'], f, args='--mw=110')
 test.run(['eom_ip_dc_noinv_full_nooverlap.inp'],  ['f2_d2.mol', 'f2_c2v.mol', 'f2_c2.mol', 'f2_cs.mol'], f, args='--mw=110')
 test.run(['eom_ip_dc_noinv_full_nooverlap_c1.inp'], ['f2_c1.mol'], f, args='--mw=110')
 #
-test.run(['eom_ip_dc_inv_d_oo_h.inp'],   ['f2_d_oo_h.mol'], f, args='--mw=110')
+test.run(['eom_ip_dc_inv_full_nooverlap_d_oo_h.inp'],          ['f2_d_oo_h.mol'], f, args='--mw=110')
+test.run(['eom_ip_dc_inv_full_nooverlap_d_oo_h_-Omega.inp'],   ['f2_d_oo_h.mol'], f, args='--mw=110')
 test.run(['eom_ip_dc_inv_full_nooverlap.inp'],    ['f2_d2h.mol', 'f2_c2h.mol'], f, args='--mw=110')
 test.run(['eom_ip_dc_inv_full_nooverlap_ci.inp'], ['f2_ci.mol'], f, args='--mw=110')
 
