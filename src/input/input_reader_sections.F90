@@ -279,6 +279,12 @@
          call kw_read(word, visual_cfg_scale)
       end if
 
+      if (kw_matches(word, '.CARPOW')) then
+         call kw_read(word, visual_cfg_cartesian_power(1), &
+                            visual_cfg_cartesian_power(2), &
+                            visual_cfg_cartesian_power(3))
+      end if
+
       if (kw_matches(word, '.DSCALE ')) then
          call kw_read(word, visual_cfg_scale)
          visual_cfg_scale=1.0D0/visual_cfg_scale
