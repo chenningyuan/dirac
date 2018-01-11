@@ -847,11 +847,10 @@
          real(8), intent(in)                :: eps_occ(:),eps_vir(:)
          real(8), intent(out)               :: t_energy
 
-         integer:: t1_dims(1:2), t2_dims(1:4), vooo_dims(1:4), abc_dims(1:3), ab_dims(1:2), ai_dims(1:2), abi_dims(1:3)
+         integer:: t1_dims(2), t2_dims(4), abc_dims(3), ab_dims(2), ia_dims(2), abi_dims(3)
          type(talsh_tens_t):: w_tensor, y_tensor, we_tensor, wy_tensor
-         type(talsh_tens_t):: vooo_tensor
          type(talsh_tens_t):: vovv_i_tensor, vovv_j_tensor, vovv_k_tensor
-         type(talsh_tens_t):: vooo_ij_tensor, vooo_jk_tensor, vooo_ki_tensor
+         type(talsh_tens_t):: ooov_ij_tensor, ooov_jk_tensor, ooov_ki_tensor
          type(talsh_tens_t):: t2_ij_tensor, t2_jk_tensor, t2_ki_tensor
          type(talsh_tens_t):: t2_i_tensor, t2_j_tensor, t2_k_tensor
 
@@ -888,12 +887,6 @@
          ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,0,DEV_HOST)
          call c_f_pointer(body_p,result_tens,result_dims)
 
-!        Make vooo integrals by using <<ai||jk> = - <jk||ia>* permutational symmetry
-         vooo_dims(1)   = nvir
-         vooo_dims(2:4) = nocc
-         ierr=talsh_tensor_construct(vooo_tensor,C8,vooo_dims,init_val=ZERO)
-         ierr=talsh_tensor_contract("V(a,i,j,k)+=V+(j,k,i,a)",vooo_tensor,ooov_tensor,one_tensor,scale=MINUS_ONE) ! o(3)v(1)
-
 !        Allocate tensors of dimension nvir**3 to hold intermediates
          abc_dims = nvir
          ierr=talsh_tensor_construct(w_tensor,C8,abc_dims,init_val=ZERO)
@@ -902,8 +895,8 @@
 
 !        The following is a work-around, we need to implement contraction with restricted range for "inactive" indices
          ab_dims  = nvir
-         ai_dims(1) = nvir
-         ai_dims(2) = nocc
+         ia_dims(1) = nocc
+         ia_dims(2) = nvir
          abi_dims(1:2) = nvir
          abi_dims(3)   = nocc
          ierr=talsh_tensor_construct(vovv_i_tensor,C8,abc_dims,init_val=ZERO)
@@ -912,9 +905,9 @@
          ierr=talsh_tensor_construct(t2_jk_tensor,C8,ab_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(t2_ki_tensor,C8,ab_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(t2_ij_tensor,C8,ab_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(vooo_ij_tensor,C8,ai_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(vooo_jk_tensor,C8,ai_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(vooo_ki_tensor,C8,ai_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(ooov_ij_tensor,C8,ia_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(ooov_jk_tensor,C8,ia_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(ooov_ki_tensor,C8,ia_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(t2_i_tensor,C8,abi_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(t2_j_tensor,C8,abi_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(t2_k_tensor,C8,abi_dims,init_val=ZERO)
@@ -931,31 +924,32 @@
                call get_subtensor (vovv_tensor,vovv_j_tensor,432,j)
                call get_subtensor (t2_tensor,t2_j_tensor,433,j)
                call get_subtensor (t2_tensor,t2_jk_tensor,4334,j,k)
-               call get_subtensor (vooo_tensor,vooo_jk_tensor,4334,j,k)
+               call get_subtensor (ooov_tensor,ooov_jk_tensor,4312,j,k)
                do i = 1, j-1
                   call get_subtensor (vovv_tensor,vovv_i_tensor,432,i)
                   call get_subtensor (t2_tensor,t2_i_tensor,433,i)
                   call get_subtensor (t2_tensor,t2_ij_tensor,4334,i,j)
                   call get_subtensor (t2_tensor,t2_ki_tensor,4334,k,i)
-                  call get_subtensor (vooo_tensor,vooo_ij_tensor,4334,i,j)
-                  call get_subtensor (vooo_tensor,vooo_ki_tensor,4334,k,i)
-                  
+                  call get_subtensor (ooov_tensor,ooov_ij_tensor,4312,i,j)
+                  call get_subtensor (ooov_tensor,ooov_ki_tensor,4312,k,i)
+ 
                   ! Form w-intermediate
                   ierr=talsh_tensor_init(w_tensor)
-                  ierr=talsh_tensor_contract("W(a,b,c)+=V(a,l)*T(b,c,l)",w_tensor,vooo_ij_tensor,t2_k_tensor) ! o(4)v(3)
-                  ierr=talsh_tensor_contract("W(a,b,c)+=V(a,l)*T(b,c,l)",w_tensor,vooo_jk_tensor,t2_i_tensor) ! o(4)v(3)
-                  ierr=talsh_tensor_contract("W(a,b,c)+=V(a,l)*T(b,c,l)",w_tensor,vooo_ki_tensor,t2_j_tensor) ! o(4)v(3)
                   ! For this term we use the permutation symmetry <vv||ov> = - <vo||vv>*, with vvov(abe:i) = vovv*(eab:i)
-                  ierr=talsh_tensor_contract("W(a,b,c)+=V+(e,a,b)*T(e,c)",w_tensor,vovv_i_tensor,t2_jk_tensor,scale=MINUS_ONE) ! o(3)v(4)
-                  ierr=talsh_tensor_contract("W(a,b,c)+=V+(e,a,b)*T(e,c)",w_tensor,vovv_j_tensor,t2_ki_tensor,scale=MINUS_ONE) ! o(3)v(4)
-                  ierr=talsh_tensor_contract("W(a,b,c)+=V+(e,a,b)*T(e,c)",w_tensor,vovv_k_tensor,t2_ij_tensor,scale=MINUS_ONE) ! o(3)v(4)
+                  ierr=talsh_tensor_contract("W(a,b,c)+=V+(e,a,b)*T(e,c)",w_tensor,vovv_i_tensor,t2_jk_tensor) ! o(3)v(4)
+                  ierr=talsh_tensor_contract("W(a,b,c)+=V+(e,a,b)*T(e,c)",w_tensor,vovv_j_tensor,t2_ki_tensor) ! o(3)v(4)
+                  ierr=talsh_tensor_contract("W(a,b,c)+=V+(e,a,b)*T(e,c)",w_tensor,vovv_k_tensor,t2_ij_tensor) ! o(3)v(4)
+                  ! For this term we use the permutation symmetry <vo||oo> = - <oo||ov>*, with vooo(al:ij) = ooov*(la:ij)
+                  ierr=talsh_tensor_contract("W(a,b,c)+=V+(l,a)*T(b,c,l)",w_tensor,ooov_ij_tensor,t2_k_tensor) ! o(4)v(3)
+                  ierr=talsh_tensor_contract("W(a,b,c)+=V+(l,a)*T(b,c,l)",w_tensor,ooov_jk_tensor,t2_i_tensor) ! o(4)v(3)
+                  ierr=talsh_tensor_contract("W(a,b,c)+=V+(l,a)*T(b,c,l)",w_tensor,ooov_ki_tensor,t2_j_tensor) ! o(4)v(3)
 
-                  ! Copy into wy array to symmetrize
+                  ! Copy into wy array to symmetrize and add the minus sign omitted in the above contractions
                   ierr=talsh_tensor_init(wy_tensor)
                   ! symmetrization via contraction as addition with permutation is not implemented
-                  ierr=talsh_tensor_contract("W(a,b,c)+=W(a,b,c)",wy_tensor,w_tensor,one_tensor) 
-                  ierr=talsh_tensor_contract("W(a,b,c)+=W(b,c,a)",wy_tensor,w_tensor,one_tensor) 
-                  ierr=talsh_tensor_contract("W(a,b,c)+=W(c,a,b)",wy_tensor,w_tensor,one_tensor) 
+                  ierr=talsh_tensor_contract("W(a,b,c)+=W(a,b,c)",wy_tensor,w_tensor,one_tensor,scale=MINUS_ONE) 
+                  ierr=talsh_tensor_contract("W(a,b,c)+=W(b,c,a)",wy_tensor,w_tensor,one_tensor,scale=MINUS_ONE) 
+                  ierr=talsh_tensor_contract("W(a,b,c)+=W(c,a,b)",wy_tensor,w_tensor,one_tensor,scale=MINUS_ONE) 
 
                   ! Copy into we array and scale with denominators
                   ierr=talsh_tensor_init(we_tensor)
@@ -985,9 +979,9 @@
          ierr=talsh_tensor_destruct(vovv_i_tensor)
          ierr=talsh_tensor_destruct(vovv_j_tensor)
          ierr=talsh_tensor_destruct(vovv_k_tensor)
-         ierr=talsh_tensor_destruct(vooo_ij_tensor)
-         ierr=talsh_tensor_destruct(vooo_jk_tensor)
-         ierr=talsh_tensor_destruct(vooo_ki_tensor)
+         ierr=talsh_tensor_destruct(ooov_ij_tensor)
+         ierr=talsh_tensor_destruct(ooov_jk_tensor)
+         ierr=talsh_tensor_destruct(ooov_ki_tensor)
          ierr=talsh_tensor_destruct(w_tensor)
          ierr=talsh_tensor_destruct(we_tensor)
          ierr=talsh_tensor_destruct(wy_tensor)
@@ -1039,6 +1033,8 @@
             subtens3(:,:,:) = tens(:,:,i,:)
          elseif (mode .eq. 432) then
             subtens3(:,:,:) = tens(:,i,:,:)
+         elseif (mode .eq. 4312) then
+            subtens2(:,:)   = tens(i,j,:,:)
          elseif (mode .eq. 4334) then
             subtens2(:,:)   = tens(:,:,i,j)
          else
