@@ -803,11 +803,11 @@ integer :: ierr
       do irp = 1, nrep
 
          mrp = multb(irp+nrep,1+nrep,1)  
-         nrp = multb(irp+nrep,state_sym+nrep,1)  
+         nrp = multb(state_sym+nrep,irp+nrep,2) 
 
          istart = 0
          done =.false.
-         if ((nvvt(irp).eq.0).or.(noot(irp).eq.0)) cycle
+         if ((nvvt(irp).eq.0).or.(noot(nrp).eq.0)) cycle
          mint = nbuf3/nvvt(irp)
  10      kstart = istart
          if (idist(1,1,irp).gt.kstart) kstart=idist(1,1,irp)
@@ -822,7 +822,7 @@ integer :: ierr
          off1 = 1 + f%twoDirac(irp,nrp)*rcw
          off2 = 1 + g%twoDirac(mrp,nrp)*rcw
 
-         call xgemm ('n','n',m,n,k,a1,w_vvvv,m,r2(off1+istart*rcw),m, &
+         call xgemm ('n','n',m,n,k,a1,w_vvvv,m,r2(off1+istart*rcw),k, &
      &               a1,sigma2_local(off2),m)
 !    &               a1,sigma2(off2),m)
          deallocate(w_vvvv)
