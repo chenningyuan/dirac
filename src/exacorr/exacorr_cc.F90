@@ -20,6 +20,10 @@
            module procedure diis
         end interface
 
+        interface get_subtensor
+           module procedure get_subtensor
+        end interface
+
        contains
 !-------------------------------------------------------------------------------------------
         subroutine cc_driver (nocc,nvir,mo_occ,mo_vir)
@@ -62,7 +66,7 @@
          real(8), allocatable :: eps_occ(:),eps_vir(:)
 !        CCSD control and result variables
          integer :: iccsd, nccsd
-         real(8) :: mp2_energy, ccsd_energy, t_convergence
+         real(8) :: mp2_energy, ccsd_energy, t_energy, t_convergence
          real(8), parameter :: t_target_precision = 1.D-13
          logical, parameter :: debug=.false.
 
@@ -350,6 +354,11 @@
 
          end do
 
+!        Calculate (T) energy correction
+         call t3_energy (t_energy,eps_occ,eps_vir,t1_tensor,t2_tensor,ooov_tensor,vovv_tensor)
+         write (*,'(A,F20.15)') "  +T perturbative energy    = ",t_energy
+         write (*,'(A,F20.15)') "  CCSD+T correlation energy = ",ccsd_energy+t_energy
+
 !        Destruct tensors and shut down library
          call diis (t1_tensor,t2_tensor,mode=2)
          ierr=talsh_tensor_destruct(oooo_tensor)
@@ -482,7 +491,7 @@
          mo_list(nocc+1:nocc+nvir)            = mo_vir(1:nvir)
          mo_list(nocc+nvir+1:2*nocc+nvir)     = mo_occ(1:nvir)
          mo_list(2*nocc+nvir+1:2*nocc+2*nvir) = mo_vir(1:nvir)
-         call get_integral_tensor (aoint_tensor,oovv_tensor,.true.,nmo,mo_list)
+         call get_integral_tensor (aoint_tensor,oovv_tensor,12,nmo,mo_list)
          deallocate (mo_list)
 
 !        Get antisymmetric oooo tensor
@@ -494,7 +503,7 @@
          mo_list(nocc+1:2*nocc)   = mo_occ(1:nocc)
          mo_list(2*nocc+1:3*nocc) = mo_occ(1:nocc)
          mo_list(3*nocc+1:4*nocc) = mo_occ(1:nocc)
-         call get_integral_tensor (aoint_tensor,oooo_tensor,.true.,nmo,mo_list)
+         call get_integral_tensor (aoint_tensor,oooo_tensor,12,nmo,mo_list)
          deallocate (mo_list)
 
 !        Get anti-symmetrized vovo tensor, this needs to be done in two steps as two different classes contribute.
@@ -511,7 +520,7 @@
          mo_list(nvir+1:2*nvir)               = mo_vir(1:nvir)
          mo_list(2*nvir+1:2*nvir+nocc)        = mo_occ(1:nocc)
          mo_list(2*nvir+nocc+1:2*nvir+2*nocc) = mo_occ(1:nocc)
-         call get_integral_tensor (aoint_tensor,vovo_tensor,.false.,nmo,mo_list)
+         call get_integral_tensor (aoint_tensor,vovo_tensor,0,nmo,mo_list)
          deallocate (mo_list)
 !        Get ovvo tensor
          ovvo_dims(1) = nocc * 2
@@ -528,7 +537,7 @@
          mo_list(nocc+1:nocc+nvir)            = mo_vir(1:nvir)
          mo_list(nvir+nocc+1:2*nvir+nocc)     = mo_vir(1:nvir)
          mo_list(2*nvir+nocc+1:2*nvir+2*nocc) = mo_occ(1:nocc)
-         call get_integral_tensor (aoint_tensor,ovvo_tensor,.false.,nmo,mo_list)
+         call get_integral_tensor (aoint_tensor,ovvo_tensor,0,nmo,mo_list)
          deallocate (mo_list)
 !        Make anti-symmetrized vovo tensor
          minusone_dims(1) = 1
@@ -545,7 +554,7 @@
          mo_list(nvir+1:2*nvir)   = mo_vir(1:nvir)
          mo_list(2*nvir+1:3*nvir) = mo_vir(1:nvir)
          mo_list(3*nvir+1:4*nvir) = mo_vir(1:nvir)
-         call get_integral_tensor (aoint_tensor,vvvv_tensor,.true.,nmo,mo_list)
+         call get_integral_tensor (aoint_tensor,vvvv_tensor,12,nmo,mo_list)
          deallocate (mo_list)
 
 !        Get ooov tensor
@@ -559,7 +568,7 @@
          mo_list(nocc+1:2*nocc)        = mo_occ(1:nocc)
          mo_list(2*nocc+1:3*nocc)      = mo_occ(1:nocc)
          mo_list(3*nocc+1:3*nocc+nvir) = mo_vir(1:nvir)
-         call get_integral_tensor (aoint_tensor,ooov_tensor,.true.,nmo,mo_list)
+         call get_integral_tensor (aoint_tensor,ooov_tensor,12,nmo,mo_list)
          deallocate (mo_list)
 
 !        Get vovv tensor
@@ -576,7 +585,7 @@
          mo_list(nvir+1:2*nvir)             = mo_vir(1:nvir)
          mo_list(2*nvir+1:2*nvir+nocc)      = mo_occ(1:nocc)
          mo_list(2*nvir+nocc+1:3*nvir+nocc) = mo_vir(1:nvir)
-         call get_integral_tensor (aoint_tensor,vovv_tensor,.true.,nmo,mo_list)
+         call get_integral_tensor (aoint_tensor,vovv_tensor,34,nmo,mo_list)
          deallocate (mo_list)
 
 !        Clean-up
@@ -584,16 +593,19 @@
 
        end subroutine get_CC_integrals
 
-       subroutine scale_with_denominators (eps_occ,eps_vir,t1_tensor,t2_tensor)
+       subroutine scale_with_denominators (eps_occ,eps_vir,t1_tensor,t2_tensor,t3_tensor,eps_ijk)
 
-         type(talsh_tens_t), optional, intent(inout)  :: t1_tensor, t2_tensor
-         complex(8), pointer, contiguous:: t1_tens(:,:), t2_tens(:,:,:,:)
+         type(talsh_tens_t), optional, intent(inout)  :: t1_tensor, t2_tensor, t3_tensor
+         real(8), intent(in)                          :: eps_occ(:),eps_vir(:)
+         real(8), intent(in), optional                :: eps_ijk
+
+         real(8)  :: denominator
+         complex(8), pointer, contiguous:: t1_tens(:,:), t2_tens(:,:,:,:), t3_tens(:,:,:)
          type(C_PTR):: body_p
-         real(8) :: eps_occ(:),eps_vir(:),denominator
 
-         integer:: t1_dims(1:2), t2_dims(1:4)
+         integer:: t1_dims(1:2), t2_dims(1:4), t3_dims(1:3)
 
-         integer   :: ierr, tens_rank, a, b, i, j
+         integer   :: ierr, tens_rank, a, b, c, i, j
 
          if (present(t1_tensor)) then
 
@@ -625,6 +637,24 @@
                      denominator = eps_occ(i) + eps_occ(j) - eps_vir(a) - eps_vir(b)
                      t2_tens(a,b,i,j) = t2_tens(a,b,i,j) / denominator
                   end do
+                end do
+              end do
+            end do
+
+         end if
+
+         if (present(t3_tensor)) then
+
+            ierr = talsh_tensor_dimensions(t3_tensor,tens_rank,t3_dims)
+            if (ierr.ne.0 .or. tens_rank.ne.3) stop 'program error: t3 tensor corrupted'
+            ierr=talsh_tensor_get_body_access(t3_tensor,body_p,C8,0,DEV_HOST)
+            call c_f_pointer(body_p,t3_tens,t3_dims(1:3)) ! to use <t3_tens> as a regular Fortran 3d array
+
+            do c = 1, t3_dims(3)
+              do b = 1, t3_dims(2)
+                do a = 1, t3_dims(1)
+                   denominator = eps_ijk - eps_vir(a) - eps_vir(b) - eps_vir(c)
+                   t3_tens(a,b,c) = t3_tens(a,b,c) / denominator
                 end do
               end do
             end do
@@ -809,5 +839,213 @@
          call delete (qmo)
 
         end subroutine get_orbital_energies
+
+       subroutine t3_energy (t_energy,eps_occ,eps_vir,t1_tensor,t2_tensor,ooov_tensor,vovv_tensor)
+
+         type(talsh_tens_t), intent(inout)  :: t1_tensor, t2_tensor
+         type(talsh_tens_t), intent(inout)  :: ooov_tensor, vovv_tensor
+         real(8), intent(in)                :: eps_occ(:),eps_vir(:)
+         real(8), intent(out)               :: t_energy
+
+         integer:: t1_dims(1:2), t2_dims(1:4), vooo_dims(1:4), abc_dims(1:3), ab_dims(1:2), ai_dims(1:2), abi_dims(1:3)
+         type(talsh_tens_t):: w_tensor, y_tensor, we_tensor, wy_tensor
+         type(talsh_tens_t):: vooo_tensor
+         type(talsh_tens_t):: vovv_i_tensor, vovv_j_tensor, vovv_k_tensor
+         type(talsh_tens_t):: vooo_ij_tensor, vooo_jk_tensor, vooo_ki_tensor
+         type(talsh_tens_t):: t2_ij_tensor, t2_jk_tensor, t2_ki_tensor
+         type(talsh_tens_t):: t2_i_tensor, t2_j_tensor, t2_k_tensor
+
+!        scalars (need to be defined as tensor types)
+         type(C_PTR):: body_p
+         type(talsh_tens_t):: result_tensor, one_tensor
+         integer:: result_dims(1),one_dims(1)
+         complex(8), pointer :: energy(:),result_tens(:)
+
+         real(8)   :: eps_ijk
+         integer   :: ierr, tens_rank, nocc, nvir, i, j, k
+
+!        Get nocc and nvir from tensor information
+         ierr = talsh_tensor_dimensions(t2_tensor,tens_rank,t2_dims)
+         if (ierr.ne.0 .or. tens_rank.ne.4) stop 'error: t2 tensor corrupted'
+
+         if (t2_dims(1).eq.t2_dims(2)) then
+            nvir = t2_dims(1)
+         else
+            stop 'error: asymmetric tensor in t3_energy'
+         end if
+
+         if (t2_dims(3).eq.t2_dims(4)) then
+            nocc = t2_dims(3)
+         else
+            stop 'error: asymmetric tensor in t3_energy'
+         end if
+
+!        Initialize scalars that are to be used as tensors in contractions
+         one_dims(1) = 1
+         ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
+         result_dims(1) = 1
+         ierr=talsh_tensor_construct(result_tensor,C8,result_dims(1:0),init_val=ZERO)
+         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,0,DEV_HOST)
+         call c_f_pointer(body_p,result_tens,result_dims)
+
+!        Make vooo integrals by using <<ai||jk> = - <jk||ia>* permutational symmetry
+         vooo_dims(1)   = nvir
+         vooo_dims(2:4) = nocc
+         ierr=talsh_tensor_construct(vooo_tensor,C8,vooo_dims,init_val=ZERO)
+         ierr=talsh_tensor_contract("V(a,i,j,k)+=V+(j,k,i,a)",vooo_tensor,ooov_tensor,one_tensor,scale=MINUS_ONE) ! o(3)v(1)
+
+!        Allocate tensors of dimension nvir**3 to hold intermediates
+         abc_dims = nvir
+         ierr=talsh_tensor_construct(w_tensor,C8,abc_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(we_tensor,C8,abc_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(wy_tensor,C8,abc_dims,init_val=ZERO)
+
+!        The following is a work-around, we need to implement contraction with restricted range for "inactive" indices
+         ab_dims  = nvir
+         ai_dims(1) = nvir
+         ai_dims(2) = nocc
+         abi_dims(1:2) = nvir
+         abi_dims(3)   = nocc
+         ierr=talsh_tensor_construct(vovv_i_tensor,C8,abc_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(vovv_j_tensor,C8,abc_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(vovv_k_tensor,C8,abc_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(t2_jk_tensor,C8,ab_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(t2_ki_tensor,C8,ab_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(t2_ij_tensor,C8,ab_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(vooo_ij_tensor,C8,ai_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(vooo_jk_tensor,C8,ai_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(vooo_ki_tensor,C8,ai_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(t2_i_tensor,C8,abi_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(t2_j_tensor,C8,abi_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(t2_k_tensor,C8,abi_dims,init_val=ZERO)
+
+!        Get access to result 
+         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,0,DEV_HOST)
+         call c_f_pointer(body_p,result_tens,result_dims)
+
+         t_energy = ZERO
+         do k = 3, nocc
+            call get_subtensor (vovv_tensor,vovv_k_tensor,432,k)
+            call get_subtensor (t2_tensor,t2_k_tensor,433,k)
+            do j = 2, k-1
+               call get_subtensor (vovv_tensor,vovv_j_tensor,432,j)
+               call get_subtensor (t2_tensor,t2_j_tensor,433,j)
+               call get_subtensor (t2_tensor,t2_jk_tensor,4334,j,k)
+               call get_subtensor (vooo_tensor,vooo_jk_tensor,4334,j,k)
+               do i = 1, j-1
+                  call get_subtensor (vovv_tensor,vovv_i_tensor,432,i)
+                  call get_subtensor (t2_tensor,t2_i_tensor,433,i)
+                  call get_subtensor (t2_tensor,t2_ij_tensor,4334,i,j)
+                  call get_subtensor (t2_tensor,t2_ki_tensor,4334,k,i)
+                  call get_subtensor (vooo_tensor,vooo_ij_tensor,4334,i,j)
+                  call get_subtensor (vooo_tensor,vooo_ki_tensor,4334,k,i)
+                  
+                  ! Form w-intermediate
+                  ierr=talsh_tensor_init(w_tensor)
+                  ierr=talsh_tensor_contract("W(a,b,c)+=V(a,l)*T(b,c,l)",w_tensor,vooo_ij_tensor,t2_k_tensor) ! o(4)v(3)
+                  ierr=talsh_tensor_contract("W(a,b,c)+=V(a,l)*T(b,c,l)",w_tensor,vooo_jk_tensor,t2_i_tensor) ! o(4)v(3)
+                  ierr=talsh_tensor_contract("W(a,b,c)+=V(a,l)*T(b,c,l)",w_tensor,vooo_ki_tensor,t2_j_tensor) ! o(4)v(3)
+                  ! For this term we use the permutation symmetry <vv||ov> = - <vo||vv>*, with vvov(abe:i) = vovv*(eab:i)
+                  ierr=talsh_tensor_contract("W(a,b,c)+=V+(e,a,b)*T(e,c)",w_tensor,vovv_i_tensor,t2_jk_tensor,scale=MINUS_ONE) ! o(3)v(4)
+                  ierr=talsh_tensor_contract("W(a,b,c)+=V+(e,a,b)*T(e,c)",w_tensor,vovv_j_tensor,t2_ki_tensor,scale=MINUS_ONE) ! o(3)v(4)
+                  ierr=talsh_tensor_contract("W(a,b,c)+=V+(e,a,b)*T(e,c)",w_tensor,vovv_k_tensor,t2_ij_tensor,scale=MINUS_ONE) ! o(3)v(4)
+
+                  ! Copy into wy array to symmetrize
+                  ierr=talsh_tensor_init(wy_tensor)
+                  ! symmetrization via contraction as addition with permutation is not implemented
+                  ierr=talsh_tensor_contract("W(a,b,c)+=W(a,b,c)",wy_tensor,w_tensor,one_tensor) 
+                  ierr=talsh_tensor_contract("W(a,b,c)+=W(b,c,a)",wy_tensor,w_tensor,one_tensor) 
+                  ierr=talsh_tensor_contract("W(a,b,c)+=W(c,a,b)",wy_tensor,w_tensor,one_tensor) 
+
+                  ! Copy into we array and scale with denominators
+                  ierr=talsh_tensor_init(we_tensor)
+                  ierr=talsh_tensor_add("W(a,b,c)+=W(a,b,c)",we_tensor,wy_tensor)
+                  eps_ijk = eps_occ(i) + eps_occ(j) + eps_occ(k)
+                  call scale_with_denominators (eps_occ,eps_vir,t3_tensor=we_tensor,eps_ijk=eps_ijk)
+
+                  ! Add Y-intermediate (for now [T] formalism in which Y=0)
+
+                  ierr=talsh_tensor_init(result_tensor)
+                  ierr=talsh_tensor_contract("E()+=WE+(a,b,c)*WY(a,b,c)",result_tensor,we_tensor,wy_tensor) ! o(3)v(3)
+                  t_energy=t_energy + result_tens(1)
+               end do
+            end do
+         end do
+
+!        We looped over all (abc) combinations, scale with the factor of 1/6 needed to go to the unique ones.
+         t_energy = t_energy / 6.D0
+
+!        Destruct intermediate tensors
+         ierr=talsh_tensor_destruct(t2_i_tensor)
+         ierr=talsh_tensor_destruct(t2_j_tensor)
+         ierr=talsh_tensor_destruct(t2_k_tensor)
+         ierr=talsh_tensor_destruct(t2_ij_tensor)
+         ierr=talsh_tensor_destruct(t2_jk_tensor)
+         ierr=talsh_tensor_destruct(t2_ki_tensor)
+         ierr=talsh_tensor_destruct(vovv_i_tensor)
+         ierr=talsh_tensor_destruct(vovv_j_tensor)
+         ierr=talsh_tensor_destruct(vovv_k_tensor)
+         ierr=talsh_tensor_destruct(vooo_ij_tensor)
+         ierr=talsh_tensor_destruct(vooo_jk_tensor)
+         ierr=talsh_tensor_destruct(vooo_ki_tensor)
+         ierr=talsh_tensor_destruct(w_tensor)
+         ierr=talsh_tensor_destruct(we_tensor)
+         ierr=talsh_tensor_destruct(wy_tensor)
+        
+       end subroutine t3_energy
+
+       subroutine get_subtensor (tensor,subtensor,mode,i,j)
+
+!        Severely limited implementation of extraction of a subtensor, as needed in t3_energy routine.
+!        No shuffling of indices possible, only 4->3 (mode=1) and 4->2 (mode=2) extraction.
+!        Type of extraction defined by 3 or 4 digit integer mode:
+!        1st integer: dimension of source tensor
+!        2nd integer: dimension of target tensor
+!        3rd integer: passive index #1
+!        4th integer: passive index #2
+
+         type(talsh_tens_t), intent(inout) :: tensor, subtensor
+         integer, intent(in)               :: mode,i
+         integer, intent(in), optional     :: j
+
+         type(C_PTR):: body_p
+         integer              :: ierr, tens_rank, subtens_rank
+         complex(8), pointer  :: tens(:,:,:,:), subtens3(:,:,:), subtens2(:,:)
+         integer              :: tens_dims(4), subtens_dims(3)
+
+!        Determine source dimensions and get direct access to the tensor body to enable copying
+         tens_rank = talsh_tensor_rank(tensor)
+         if (tens_rank .ne. 4) stop 'Error: Only extraction from 4-dimensional tensors possible'
+         ierr = talsh_tensor_dimensions(tensor,tens_rank,tens_dims)
+         ierr=talsh_tensor_get_body_access(tensor,body_p,C8,0,DEV_HOST)
+         call c_f_pointer(body_p,tens,tens_dims)
+
+!        Determine target  dimensions and get direct access to the tensor body to enable copying
+         subtens_rank = talsh_tensor_rank(subtensor)
+         if (subtens_rank .eq. 3) then
+            ierr = talsh_tensor_dimensions(subtensor,subtens_rank,subtens_dims)
+            ierr=talsh_tensor_get_body_access(subtensor,body_p,C8,0,DEV_HOST)
+            call c_f_pointer(body_p,subtens3,subtens_dims)
+         elseif (subtens_rank .eq. 2) then
+            ierr = talsh_tensor_dimensions(subtensor,subtens_rank,subtens_dims)
+            ierr=talsh_tensor_get_body_access(subtensor,body_p,C8,0,DEV_HOST)
+            call c_f_pointer(body_p,subtens2,subtens_dims(1:2))
+         else
+            stop 'Error: Only insertion into 3- or 2-dimensional tensors possible'
+         end if
+
+!        Copy the data into the subtensor 
+         if (mode .eq. 433) then
+            subtens3(:,:,:) = tens(:,:,i,:)
+         elseif (mode .eq. 432) then
+            subtens3(:,:,:) = tens(:,i,:,:)
+         elseif (mode .eq. 4334) then
+            subtens2(:,:)   = tens(:,:,i,j)
+         else
+            write (*,*) mode,' type of tensor extraction is not implemented'
+            stop 'Error in get_subtensor'
+         end if
+ 
+       end subroutine get_subtensor
 
        end module exacorr_cc

@@ -452,7 +452,7 @@
 
          type(talsh_tens_t), intent(inout)  :: aoint_tensor,integral_tensor
          integer, intent(in)                :: nmo(4), mo_list(:)
-         logical, intent(in)                :: antisymmetrize
+         integer, intent(in)                :: antisymmetrize
 
          integer                            :: ierr, moint_dims(4)
          type(talsh_tens_t)                 :: moint_tensor
@@ -477,7 +477,7 @@
          complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0)
 
          type(talsh_tens_t), intent(inout)  :: mulliken_tensor,dirac_tensor
-         logical, intent(in)                :: antisymmetrize
+         integer, intent(in)                :: antisymmetrize
 
          integer:: mulliken_dims(1:4),dirac_dims(1:4)
 
@@ -501,23 +501,20 @@
          if (mulliken_dims(2) .ne. dirac_dims(3)) mismatch = mismatch + 1
          if (mulliken_dims(3) .ne. dirac_dims(2)) mismatch = mismatch + 1
          if (mulliken_dims(4) .ne. dirac_dims(4)) mismatch = mismatch + 1
-         if (antisymmetrize) then
-            if (dirac_dims(1) .ne. dirac_dims(2) .and. dirac_dims(3) .ne. dirac_dims(4)) mismatch = mismatch + 1
-         end if
+         if (antisymmetrize .eq. 12 .and. dirac_dims(1) .ne. dirac_dims(2)) mismatch = mismatch + 1
+         if (antisymmetrize .eq. 34 .and. dirac_dims(3) .ne. dirac_dims(4)) mismatch = mismatch + 1
          if (mismatch.gt.0) stop 'dimension mismatch in mulliken_to_dirac_sort'
 
          ierr=talsh_tensor_init(dirac_tensor)
 !shorter ierr=talsh_tensor_add("D(p,q,r,s)+=M(p,r,q,s)",dirac_tensor,mulliken_tensor)
          ierr=talsh_tensor_contract("D(p,q,r,s)+=M(p,r,q,s)*C()",dirac_tensor,mulliken_tensor,one_tensor)
 
-         if (antisymmetrize) then
-            if (dirac_dims(1) .eq. dirac_dims(2)) then
-!shorter        ierr=talsh_tensor_add("D(p,q,r,s)+=M(q,r,p,s)",dirac_tensor,mulliken_tensor,scale=MINUS_ONE)
-                ierr=talsh_tensor_contract("D(p,q,r,s)+=M(q,r,p,s)*C()",dirac_tensor,mulliken_tensor,minusone_tensor)
-            else
-!shorter        ierr=talsh_tensor_add("D(p,q,r,s)+=M(p,s,q,r)",dirac_tensor,mulliken_tensor,scale=MINUS_ONE)
-                ierr=talsh_tensor_contract("D(p,q,r,s)+=M(p,s,q,r)*C()",dirac_tensor,mulliken_tensor,minusone_tensor)
-            end if
+         if (antisymmetrize .eq. 12) then
+!shorter     ierr=talsh_tensor_add("D(p,q,r,s)+=M(q,r,p,s)",dirac_tensor,mulliken_tensor,scale=MINUS_ONE)
+             ierr=talsh_tensor_contract("D(p,q,r,s)+=M(q,r,p,s)*C()",dirac_tensor,mulliken_tensor,minusone_tensor)
+         elseif (antisymmetrize .eq. 34) then
+!shorter     ierr=talsh_tensor_add("D(p,q,r,s)+=M(p,s,q,r)",dirac_tensor,mulliken_tensor,scale=MINUS_ONE)
+              ierr=talsh_tensor_contract("D(p,q,r,s)+=M(p,s,q,r)*C()",dirac_tensor,mulliken_tensor,minusone_tensor)
          end if
 
 !        work-around: addition with permutation is not implemented
