@@ -612,6 +612,18 @@ contains
          end if
       end do
 
+!     Multiply with Cartesian powers
+      do i = 1,visual_cfg_cartesian_power(1)
+        result = px * result    
+      enddo
+      do i = 1,visual_cfg_cartesian_power(2)
+        result = py * result    
+      enddo
+      do i = 1,visual_cfg_cartesian_power(3)
+        result = pz * result    
+      enddo
+      
+!     Scale result 
       result = visual_cfg_scale*result
 
    end subroutine

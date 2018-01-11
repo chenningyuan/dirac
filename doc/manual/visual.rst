@@ -125,6 +125,17 @@ keyword(3D_INT)
 
 Integrate densities in 3D.
 
+keyword(CARPOW)
+
+Scale densities by Cartesian product :math:`x^iy^jz^k`. The keyword is followed by three integers specifying the exponents :math:`(i,j,k)`. Example::
+
+  .DENSITY
+  .CARPOW
+  1 0 0
+
+is equivalent to the specification::
+
+   .EDIPX
 
 keyword(SCALE)
 
