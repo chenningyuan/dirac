@@ -9,8 +9,8 @@ from runtest_dirac import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
-f.add(from_string = 'Final CCSD energy =',
-      num_lines   = 1,
+f.add(from_string = '4th order triples correction',
+      num_lines   = 8,
       rel_tolerance   = 1.0e-6)
 f.add(from_string = 'Electronic energy',
       num_lines   = 8,
@@ -23,5 +23,6 @@ f.add(from_string = ' Overview of calculated energies',
       rel_tolerance   = 1.0e-6)
 
 test.run(['cc.inp'], ['h2.xyz'], f)
+test.run(['be_cc.inp'], ['Be.xyz'], f)
 
 sys.exit(test.return_code)

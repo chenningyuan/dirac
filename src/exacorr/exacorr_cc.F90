@@ -6,8 +6,8 @@
 
         implicit none
         complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
-                                 ONE_HALF=(0.5D0,0.D0),MINUS_ONE_HALF=(-0.5D0,0.D0),ONE_QUARTER=(0.25D0,0.D0)
-
+                                 ONE_HALF=(0.5D0,0.D0),MINUS_ONE_HALF=(-0.5D0,0.D0),ONE_QUARTER=(0.25D0,0.D0), &
+                                 THREE=(3.0,0.0), SIX=(6.0,0.0)
         private
 
         public cc_driver
@@ -66,7 +66,7 @@
          real(8), allocatable :: eps_occ(:),eps_vir(:)
 !        CCSD control and result variables
          integer :: iccsd, nccsd
-         real(8) :: mp2_energy, ccsd_energy, t_energy, t_convergence
+         real(8) :: mp2_energy, ccsd_energy, t_energy(3), t_convergence
          real(8), parameter :: t_target_precision = 1.D-13
          logical, parameter :: debug=.false.
 
@@ -355,9 +355,13 @@
          end do
 
 !        Calculate (T) energy correction
-         call t3_energy (t_energy,eps_occ,eps_vir,t1_tensor,t2_tensor,ooov_tensor,vovv_tensor)
-         write (*,'(A,F20.15)') "  +T perturbative energy    = ",t_energy
-         write (*,'(A,F20.15)') "  CCSD+T correlation energy = ",ccsd_energy+t_energy
+         call t3_energy (t_energy,eps_occ,eps_vir,t1_tensor,t2_tensor,fov_tensor,ooov_tensor,vovv_tensor,oovv_tensor)
+         write (*,'(A,F20.15)') "  4th order triples correction :    ",t_energy(1)
+         write (*,'(A,F20.15)') "  5th order triples (T) correction :",t_energy(2)
+         write (*,'(A,F20.15)') "  5th order triples -T  correction :",t_energy(3)
+         write (*,'(A,F20.15)') "  CCSD+T  correlation energy :      ",ccsd_energy+t_energy(1)
+         write (*,'(A,F20.15)') "  CCSD(T) correlation energy :      ",ccsd_energy+t_energy(1)+t_energy(2)
+         write (*,'(A,F20.15)') "  CCSD-T  correlation energy :      ",ccsd_energy+t_energy(1)+t_energy(3)
 
 !        Destruct tensors and shut down library
          call diis (t1_tensor,t2_tensor,mode=2)
@@ -389,7 +393,8 @@
          call delete_global_data
 
 !        Make some noise so that we know we are leaving
-         print*," Final CCSD energy = ",ccsd_energy
+         print*," Final CCSD energy    = ",ccsd_energy
+         print*," Final CCSD(T) energy = ",ccsd_energy+t_energy(1)+t_energy(2)
          print*, " Leaving cc_driver routine"
          return
         end subroutine cc_driver
@@ -419,7 +424,7 @@
          fv_dims(1:2) = nvir * 2
          ierr=talsh_tensor_construct(fv_tensor,C8,fv_dims,init_val=ZERO)
 
-!        Get fo tensor
+!        Get fov tensor
          fov_dims(1) = nocc * 2
          fov_dims(2) = nvir * 2
          ierr=talsh_tensor_construct(fov_tensor,C8,fov_dims,init_val=ZERO)
@@ -489,7 +494,7 @@
          nmo(4) = nvir
          mo_list(1:nocc)                      = mo_occ(1:nocc)
          mo_list(nocc+1:nocc+nvir)            = mo_vir(1:nvir)
-         mo_list(nocc+nvir+1:2*nocc+nvir)     = mo_occ(1:nvir)
+         mo_list(nocc+nvir+1:2*nocc+nvir)     = mo_occ(1:nocc)
          mo_list(2*nocc+nvir+1:2*nocc+2*nvir) = mo_vir(1:nvir)
          call get_integral_tensor (aoint_tensor,oovv_tensor,12,nmo,mo_list)
          deallocate (mo_list)
@@ -840,15 +845,18 @@
 
         end subroutine get_orbital_energies
 
-       subroutine t3_energy (t_energy,eps_occ,eps_vir,t1_tensor,t2_tensor,ooov_tensor,vovv_tensor)
+       subroutine t3_energy (t_energy,eps_occ,eps_vir,t1_tensor,t2_tensor,fov_tensor,ooov_tensor,vovv_tensor,oovv_tensor)
+
+!        Evaluate +T, -T and (T) energy terms. 
+!        Definitions of terms: L. Visscher, T.J. Lee, K.G. Dyall, J Chem Phys. 105 (1996) 8769.
 
          type(talsh_tens_t), intent(inout)  :: t1_tensor, t2_tensor
-         type(talsh_tens_t), intent(inout)  :: ooov_tensor, vovv_tensor
+         type(talsh_tens_t), intent(inout)  :: fov_tensor, ooov_tensor, vovv_tensor, oovv_tensor
          real(8), intent(in)                :: eps_occ(:),eps_vir(:)
-         real(8), intent(out)               :: t_energy
+         real(8), intent(out)               :: t_energy(3)
 
          integer:: t1_dims(2), t2_dims(4), abc_dims(3), ab_dims(2), ia_dims(2), abi_dims(3)
-         type(talsh_tens_t):: w_tensor, y_tensor, we_tensor, wy_tensor
+         type(talsh_tens_t):: w_tensor, y_tensor, we_tensor
          type(talsh_tens_t):: vovv_i_tensor, vovv_j_tensor, vovv_k_tensor
          type(talsh_tens_t):: ooov_ij_tensor, ooov_jk_tensor, ooov_ki_tensor
          type(talsh_tens_t):: t2_ij_tensor, t2_jk_tensor, t2_ki_tensor
@@ -862,6 +870,7 @@
 
          real(8)   :: eps_ijk
          integer   :: ierr, tens_rank, nocc, nvir, i, j, k
+         complex(8), allocatable :: y(:,:,:) ! used in form_y_intermediate, but allocated here to have fewer alloc/dealloc calls
 
 !        Get nocc and nvir from tensor information
          ierr = talsh_tensor_dimensions(t2_tensor,tens_rank,t2_dims)
@@ -890,8 +899,9 @@
 !        Allocate tensors of dimension nvir**3 to hold intermediates
          abc_dims = nvir
          ierr=talsh_tensor_construct(w_tensor,C8,abc_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(y_tensor,C8,abc_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(we_tensor,C8,abc_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(wy_tensor,C8,abc_dims,init_val=ZERO)
+         allocate(y(nvir,nvir,nvir)) 
 
 !        The following is a work-around, we need to implement contraction with restricted range for "inactive" indices
          ab_dims  = nvir
@@ -933,43 +943,54 @@
                   call get_subtensor (ooov_tensor,ooov_ij_tensor,4312,i,j)
                   call get_subtensor (ooov_tensor,ooov_ki_tensor,4312,k,i)
  
-                  ! Form w-intermediate
-                  ierr=talsh_tensor_init(w_tensor)
-                  ! For this term we use the permutation symmetry <vv||ov> = - <vo||vv>*, with vvov(abe:i) = vovv*(eab:i)
-                  ierr=talsh_tensor_contract("W(a,b,c)+=V+(e,a,b)*T(e,c)",w_tensor,vovv_i_tensor,t2_jk_tensor) ! o(3)v(4)
-                  ierr=talsh_tensor_contract("W(a,b,c)+=V+(e,a,b)*T(e,c)",w_tensor,vovv_j_tensor,t2_ki_tensor) ! o(3)v(4)
-                  ierr=talsh_tensor_contract("W(a,b,c)+=V+(e,a,b)*T(e,c)",w_tensor,vovv_k_tensor,t2_ij_tensor) ! o(3)v(4)
-                  ! For this term we use the permutation symmetry <vo||oo> = - <oo||ov>*, with vooo(al:ij) = ooov*(la:ij)
-                  ierr=talsh_tensor_contract("W(a,b,c)+=V+(l,a)*T(b,c,l)",w_tensor,ooov_ij_tensor,t2_k_tensor) ! o(4)v(3)
-                  ierr=talsh_tensor_contract("W(a,b,c)+=V+(l,a)*T(b,c,l)",w_tensor,ooov_jk_tensor,t2_i_tensor) ! o(4)v(3)
-                  ierr=talsh_tensor_contract("W(a,b,c)+=V+(l,a)*T(b,c,l)",w_tensor,ooov_ki_tensor,t2_j_tensor) ! o(4)v(3)
-
-                  ! Copy into wy array to symmetrize and add the minus sign omitted in the above contractions
-                  ierr=talsh_tensor_init(wy_tensor)
-                  ! symmetrization via contraction as addition with permutation is not implemented
-                  ierr=talsh_tensor_contract("W(a,b,c)+=W(a,b,c)",wy_tensor,w_tensor,one_tensor,scale=MINUS_ONE) 
-                  ierr=talsh_tensor_contract("W(a,b,c)+=W(b,c,a)",wy_tensor,w_tensor,one_tensor,scale=MINUS_ONE) 
-                  ierr=talsh_tensor_contract("W(a,b,c)+=W(c,a,b)",wy_tensor,w_tensor,one_tensor,scale=MINUS_ONE) 
-
-                  ! Copy into we array and scale with denominators
+                  ! Form w-intermediate, first without symmetrization and minus sign in the auxilliary tensor array we
                   ierr=talsh_tensor_init(we_tensor)
-                  ierr=talsh_tensor_add("W(a,b,c)+=W(a,b,c)",we_tensor,wy_tensor)
-                  eps_ijk = eps_occ(i) + eps_occ(j) + eps_occ(k)
-                  call scale_with_denominators (eps_occ,eps_vir,t3_tensor=we_tensor,eps_ijk=eps_ijk)
+                  ! For this term we use the permutation symmetry <vv||ov> = - <vo||vv>*, with vvov(abe:i) = vovv*(eab:i)
+                  ierr=talsh_tensor_contract("W(a,b,c)+=V+(e,a,b)*T(e,c)",we_tensor,vovv_i_tensor,t2_jk_tensor) ! o(3)v(4)
+                  ierr=talsh_tensor_contract("W(a,b,c)+=V+(e,a,b)*T(e,c)",we_tensor,vovv_j_tensor,t2_ki_tensor) ! o(3)v(4)
+                  ierr=talsh_tensor_contract("W(a,b,c)+=V+(e,a,b)*T(e,c)",we_tensor,vovv_k_tensor,t2_ij_tensor) ! o(3)v(4)
+                  ! For this term we use the permutation symmetry <vo||oo> = - <oo||ov>*, with vooo(al:ij) = ooov*(la:ij)
+                  ierr=talsh_tensor_contract("W(a,b,c)+=V+(l,a)*T(b,c,l)",we_tensor,ooov_ij_tensor,t2_k_tensor) ! o(4)v(3)
+                  ierr=talsh_tensor_contract("W(a,b,c)+=V+(l,a)*T(b,c,l)",we_tensor,ooov_jk_tensor,t2_i_tensor) ! o(4)v(3)
+                  ierr=talsh_tensor_contract("W(a,b,c)+=V+(l,a)*T(b,c,l)",we_tensor,ooov_ki_tensor,t2_j_tensor) ! o(4)v(3)
 
-                  ! Add Y-intermediate (for now [T] formalism in which Y=0)
+                  ! Copy into w array to symmetrize and add the minus sign omitted in the above contractions
+                  ierr=talsh_tensor_init(w_tensor)
+                  ! symmetrization via contraction as addition with permutation is not implemented
+                  ierr=talsh_tensor_contract("W(a,b,c)+=W(a,b,c)",w_tensor,we_tensor,one_tensor,scale=MINUS_ONE)
+                  ierr=talsh_tensor_contract("W(a,b,c)+=W(b,c,a)",w_tensor,we_tensor,one_tensor,scale=MINUS_ONE)
+                  ierr=talsh_tensor_contract("W(a,b,c)+=W(c,a,b)",w_tensor,we_tensor,one_tensor,scale=MINUS_ONE)
 
+                  ! Form Y-intermediate and calculate 5th order -T energy contribution
+                  call form_y3_intermediate (i,j,k,t1_tensor,t2_tensor,y_tensor,y)
                   ierr=talsh_tensor_init(result_tensor)
-                  ierr=talsh_tensor_contract("E()+=WE+(a,b,c)*WY(a,b,c)",result_tensor,we_tensor,wy_tensor) ! o(3)v(3)
-                  t_energy=t_energy + result_tens(1)
+                  ierr=talsh_tensor_contract("E()+=W+(a,b,c)*Y(a,b,c)",result_tensor,w_tensor,y_tensor) ! o(3)v(3)
+                  t_energy(3)=t_energy(3) + result_tens(1)
+
+                  ! Form Y-intermediate and calculate 5th order (T) energy contribution
+                  call form_y2_intermediate (i,j,k,t1_tensor,t2_tensor,fov_tensor,oovv_tensor,y_tensor,y)
+                  eps_ijk = eps_occ(i) + eps_occ(j) + eps_occ(k)
+                  call scale_with_denominators (eps_occ,eps_vir,t3_tensor=y_tensor,eps_ijk=eps_ijk)
+                  ierr=talsh_tensor_init(result_tensor)
+                  ierr=talsh_tensor_contract("E()+=W+(a,b,c)*Y(a,b,c)",result_tensor,w_tensor,y_tensor) ! o(3)v(3)
+                  t_energy(2)=t_energy(2) + result_tens(1)
+
+                  ! Copy w into y array and calculate 4th order +T energy contribution
+                  ierr=talsh_tensor_init(y_tensor)
+                  ierr=talsh_tensor_add("W(a,b,c)+=W(a,b,c)",y_tensor,w_tensor)
+                  call scale_with_denominators (eps_occ,eps_vir,t3_tensor=y_tensor,eps_ijk=eps_ijk)
+                  ierr=talsh_tensor_init(result_tensor)
+                  ierr=talsh_tensor_contract("E()+=W+(a,b,c)*Y(a,b,c)",result_tensor,w_tensor,y_tensor) ! o(3)v(3)
+                  t_energy(1)=t_energy(1) + result_tens(1)
                end do
             end do
          end do
 
 !        We looped over all (abc) combinations, scale with the factor of 1/6 needed to go to the unique ones.
-         t_energy = t_energy / 6.D0
+         t_energy = t_energy / SIX
 
 !        Destruct intermediate tensors
+         deallocate(y) 
          ierr=talsh_tensor_destruct(t2_i_tensor)
          ierr=talsh_tensor_destruct(t2_j_tensor)
          ierr=talsh_tensor_destruct(t2_k_tensor)
@@ -982,11 +1003,150 @@
          ierr=talsh_tensor_destruct(ooov_ij_tensor)
          ierr=talsh_tensor_destruct(ooov_jk_tensor)
          ierr=talsh_tensor_destruct(ooov_ki_tensor)
-         ierr=talsh_tensor_destruct(w_tensor)
          ierr=talsh_tensor_destruct(we_tensor)
-         ierr=talsh_tensor_destruct(wy_tensor)
+         ierr=talsh_tensor_destruct(w_tensor)
+         ierr=talsh_tensor_destruct(y_tensor)
         
        end subroutine t3_energy
+
+       subroutine form_y2_intermediate (i,j,k,t1_tensor,t2_tensor,fov_tensor,oovv_tensor,y_tensor,y)
+
+!        Get y intermediate for -T fifth order energy correction.
+
+         type(talsh_tens_t), intent(inout) :: t1_tensor, t2_tensor, y_tensor
+         type(talsh_tens_t), intent(inout) :: fov_tensor, oovv_tensor
+         integer, intent(in)               :: i, j, k
+         complex(8), intent(inout)         :: y(:,:,:)
+
+         type(C_PTR):: body_p
+         integer              :: ierr, tens_rank
+         complex(8), pointer  :: t1_tens(:,:), t2_tens(:,:,:,:), y_tens(:,:,:)
+         complex(8), pointer  :: fov_tens(:,:),oovv_tens(:,:,:,:)
+         integer              :: t1_dims(2), t2_dims(4), y_dims(3), fov_dims(2), oovv_dims(4)
+         integer              :: nvir, a, b, c
+
+!        Determine source dimensions and get direct access to the tensor bodies
+
+         tens_rank = talsh_tensor_rank(t1_tensor)
+         if (tens_rank .ne. 2) stop 'Error: t1 tensor corrupted in form_y2_intermediate'
+         ierr = talsh_tensor_dimensions(t1_tensor,tens_rank,t1_dims)
+         ierr=talsh_tensor_get_body_access(t1_tensor,body_p,C8,0,DEV_HOST)
+         if (ierr.ne.0) stop 'error in y2_intermediate'
+         call c_f_pointer(body_p,t1_tens,t1_dims)
+
+         tens_rank = talsh_tensor_rank(t2_tensor)
+         if (tens_rank .ne. 4) stop 'Error: t2 tensor corrupted in form_y2_intermediate'
+         ierr = talsh_tensor_dimensions(t2_tensor,tens_rank,t2_dims)
+         ierr=talsh_tensor_get_body_access(t2_tensor,body_p,C8,0,DEV_HOST)
+         if (ierr.ne.0) stop 'error in y2_intermediate'
+         call c_f_pointer(body_p,t2_tens,t2_dims)
+
+         tens_rank = talsh_tensor_rank(y_tensor)
+         if (tens_rank .ne. 3) stop 'Error: y tensor corrupted in form_y2_intermediate'
+         ierr = talsh_tensor_dimensions(y_tensor,tens_rank,y_dims)
+         ierr=talsh_tensor_get_body_access(y_tensor,body_p,C8,0,DEV_HOST)
+         if (ierr.ne.0) stop 'error in y2_intermediate'
+         call c_f_pointer(body_p,y_tens,y_dims)
+
+         tens_rank = talsh_tensor_rank(fov_tensor)
+         if (tens_rank .ne. 2) stop 'Error: fo tensor corrupted in form_y2_intermediate'
+         ierr = talsh_tensor_dimensions(fov_tensor,tens_rank,fov_dims)
+         ierr=talsh_tensor_get_body_access(fov_tensor,body_p,C8,0,DEV_HOST)
+         if (ierr.ne.0) stop 'error in y2_intermediate'
+         call c_f_pointer(body_p,fov_tens,fov_dims)
+
+         tens_rank = talsh_tensor_rank(oovv_tensor)
+         if (tens_rank .ne. 4) stop 'Error: oovv tensor corrupted in form_y2_intermediate'
+         ierr = talsh_tensor_dimensions(oovv_tensor,tens_rank,oovv_dims)
+         ierr=talsh_tensor_get_body_access(oovv_tensor,body_p,C8,0,DEV_HOST)
+         if (ierr.ne.0) stop 'error in y2_intermediate'
+         call c_f_pointer(body_p,oovv_tens,oovv_dims)
+
+!        Form the intermediate 
+         nvir = t1_dims(1)
+
+!        Formula with only the P_ijk permutation operators
+         do c = 1, nvir
+            do b = 1, nvir
+               do a = 1, nvir
+                  y(a,b,c) =            dconjg(oovv_tens(i,j,a,b))*t1_tens(c,k) + t2_tens(a,b,i,j)*dconjg(fov_tens(k,c))
+                  y(a,b,c) = y(a,b,c) + dconjg(oovv_tens(j,k,a,b))*t1_tens(c,i) + t2_tens(a,b,j,k)*dconjg(fov_tens(i,c))
+                  y(a,b,c) = y(a,b,c) + dconjg(oovv_tens(k,i,a,b))*t1_tens(c,j) + t2_tens(a,b,k,i)*dconjg(fov_tens(j,c))
+               end do
+            end do
+         end do
+
+!        Do the P_abc permutation to fully symmetrize the expression
+         do c = 1, nvir
+            do b = 1, nvir
+               do a = 1, nvir
+                  y_tens(a,b,c)  = y(a,b,c) + y(c,a,b) + y(b,c,a)
+               end do
+            end do
+         end do
+         
+       end subroutine form_y2_intermediate
+
+       subroutine form_y3_intermediate (i,j,k,t1_tensor,t2_tensor,y_tensor,y)
+
+!        Get y intermediate for -T fifth order energy correction.
+
+         type(talsh_tens_t), intent(inout) :: t1_tensor, t2_tensor, y_tensor
+         integer, intent(in)               :: i, j, k
+         complex(8), intent(inout)         :: y(:,:,:)
+
+         type(C_PTR):: body_p
+         integer              :: ierr, tens_rank
+         complex(8), pointer  :: t1_tens(:,:), t2_tens(:,:,:,:), y_tens(:,:,:)
+         integer              :: t1_dims(2), t2_dims(4), y_dims(3)
+         integer              :: nvir, a, b, c
+
+!        Determine source dimensions and get direct access to the tensor bodies
+
+         tens_rank = talsh_tensor_rank(t1_tensor)
+         if (tens_rank .ne. 2) stop 'Error: t1 tensor corrupted in form_y_intermediate'
+         ierr = talsh_tensor_dimensions(t1_tensor,tens_rank,t1_dims)
+         ierr=talsh_tensor_get_body_access(t1_tensor,body_p,C8,0,DEV_HOST)
+         call c_f_pointer(body_p,t1_tens,t1_dims)
+
+         tens_rank = talsh_tensor_rank(t2_tensor)
+         if (tens_rank .ne. 4) stop 'Error: t2 tensor corrupted in form_y_intermediate'
+         ierr = talsh_tensor_dimensions(t2_tensor,tens_rank,t2_dims)
+         ierr=talsh_tensor_get_body_access(t2_tensor,body_p,C8,0,DEV_HOST)
+         call c_f_pointer(body_p,t2_tens,t2_dims)
+
+         tens_rank = talsh_tensor_rank(y_tensor)
+         if (tens_rank .ne. 3) stop 'Error: y tensor corrupted in form_y_intermediate'
+         ierr = talsh_tensor_dimensions(y_tensor,tens_rank,y_dims)
+         ierr=talsh_tensor_get_body_access(y_tensor,body_p,C8,0,DEV_HOST)
+         call c_f_pointer(body_p,y_tens,y_dims)
+
+!        Form the intermediate 
+         nvir = t1_dims(1)
+
+!        Formula with only the P_ijk and P_ij permutation operators
+         do c = 1, nvir
+            do b = 1, nvir
+               do a = 1, nvir
+                  y(a,b,c) =            t1_tens(a,i)*t1_tens(b,j)*t1_tens(c,k) - t1_tens(a,j)*t1_tens(b,i)*t1_tens(c,k)
+                  y(a,b,c) = y(a,b,c) + t1_tens(a,j)*t1_tens(b,k)*t1_tens(c,i) - t1_tens(a,k)*t1_tens(b,j)*t1_tens(c,i)
+                  y(a,b,c) = y(a,b,c) + t1_tens(a,k)*t1_tens(b,i)*t1_tens(c,j) - t1_tens(a,i)*t1_tens(b,k)*t1_tens(c,j)
+                  y(a,b,c) = y(a,b,c) / THREE
+                  y(a,b,c) = y(a,b,c) + t2_tens(a,b,i,j)*t1_tens(c,k)+t2_tens(a,b,j,k)*t1_tens(c,i)+t2_tens(a,b,k,i)*t1_tens(c,j)
+               end do
+            end do
+         end do
+
+!        Do the P_abc permutation to fully symmetrize the expression
+         do c = 1, nvir
+            do b = 1, nvir
+               do a = 1, nvir
+                  y_tens(a,b,c)  = y(a,b,c) + y(c,a,b) + y(b,c,a)
+               end do
+            end do
+         end do
+
+       end subroutine form_y3_intermediate
 
        subroutine get_subtensor (tensor,subtensor,mode,i,j)
 
