@@ -25,9 +25,9 @@ New features:
    Four-component Polarization Propagator Calculations of Electron Excitations: Spectroscopic Implications of Spin-Orbit Coupling   Effects. J. Chem. Theory Comput. (2017) submitted.
 
 - Polarizable embedding using PElib (https://gitlab.com/pe-software/pelib-public). Activated with ".PEQM", additional options under \*PEQM.
-  Reference:
-   E. D. Hedegård, R. Bast, J. Kongsted, J. M. H. Olsen, and H. J. Aa. Jensen.  Relativistic Polarizable Embedding.
-   J. Chem. Theory Comput. 13, 2870-2880 (2017); http://doi.org/10.1021/acs.jctc.7b00162
+
+ Reference:
+ E. D. Hedegård, R. Bast, J. Kongsted, J. M. H. Olsen, and H. J. Aa. Jense:  Relativistic Polarizable Embedding., J. Chem. Theory Comput. 13, 2870-2880 (2017); http://doi.org/10.1021/acs.jctc.7b00162
 
 - New and numerically stable procedure for elimination/freezing of orbitals at SCF level. Author: T. Saue.
 - New ".MVOFAC" option in \*KRMC input section. Author: H. J. Aa. Jensen.
@@ -36,11 +36,11 @@ New features:
 - Write out effective Hamiltonian in Fock space coupled cluster to a file for post processing. Can be used with external code of Andrei Zaitsevskii (St. Petersburg).
 - Provided memory counter for RelCC calculations, what is suitable for memory consuming large scale Coupled Cluster calculations. See the web-documentation.
 - Updated basis_dalton/ with basis set updates in the Dalton distribution:
- - fix of errors in Ahlrichs-pVDZ (several diffuse exponents were a factor 10 too big)
- - fix of errors for 2. row atoms in aug-cc-pCV5Z
- - added many atoms to aug-cc-PVTZ_J
- - added many Frank Jensen "pc" type basis sets
- - added Turbomole "def2" type basis sets
+- fix of errors in Ahlrichs-pVDZ (several diffuse exponents were a factor 10 too big)
+- fix of errors for 2. row atoms in aug-cc-pCV5Z
+- added many atoms to aug-cc-PVTZ_J
+- added many Frank Jensen "pc" type basis sets
+- added Turbomole "def2" type basis sets
 
 Error corrections:
 
