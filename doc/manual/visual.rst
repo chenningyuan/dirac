@@ -11,6 +11,9 @@
 
 starstar(VISUAL)
 
+Sampling
+========
+
 keyword(LIST)
 
 Calculate various densities in few points. Example (3 points; coordinates in
@@ -125,6 +128,9 @@ keyword(3D_INT)
 
 Integrate densities in 3D.
 
+Modification of densities
+=========================
+
 keyword(CARPOW)
 
 Scale densities by Cartesian product :math:`x^iy^jz^k`. The keyword is followed by three integers specifying the exponents :math:`(i,j,k)`. Example::
@@ -153,9 +159,12 @@ Default::
   .DSCALE
    1.0
 
+Densities
+=========   
+   
 keyword(DENSITY)
 
-Compute density.
+Compute number density :math:`n(\mathbf{r})` .
 Example (unperturbed density)::
 
   .DENSITY
@@ -185,7 +194,7 @@ Compute the electron chirality density. Example::
 
 keyword(J)
 
-Compute the current density. Example (use first response vector)::
+Compute the current density :math:`\mathbf{j}(\mathbf{r})=-e\psi_{i}^{\ast}c\boldsymbol{\alpha}\psi_{i}`. Example (use first response vector)::
 
   .J
    PAMXVC 1
@@ -200,21 +209,21 @@ Compute the nonrelativistic diamagnetic current density. Example::
 
 keyword(JX)
 
-Compute the x-component of the current density. Example (use first response vector)::
+Compute the x-component :math:`j_{x}(\mathbf{r})=-e\psi_{i}^{\ast}c\alpha_{x}\psi_{i}` of the current density. Example (use first response vector)::
 
   .JX
    PAMXVC 1
 
 keyword(JY)
 
-Compute the y-component of the current density. Example (use first response vector)::
+Compute the y-component :math:`j_{y}(\mathbf{r})=-e\psi_{i}^{\ast}c\alpha_{y}\psi_{i}` of the current density. Example (use first response vector)::
 
   .JY
    PAMXVC 1
 
 keyword(JZ)
 
-Compute the z-component of the current density. Example (use first response vector)::
+Compute the z-component :math:`j_{z}(\mathbf{r})=-e\psi_{i}^{\ast}c\alpha_{z}\psi_{i}` of the current density. Example (use first response vector)::
 
   .JZ
    PAMXVC 1
@@ -234,6 +243,38 @@ Compute the curl of the current density. Example (use first response vector)::
   .ROTJ
    PAMXVC 1
 
+keyword(BDIPX)
+
+Compute the x-component :math:`m^{[1]}_{x}(\mathbf{r})=-\frac{1}{2}(\mathbf{r}\times\mathbf{j})_{x}` of the magnetic dipole operator. Example (use first response vector)::
+
+  .BDIPX
+   PAMXVC 1
+
+keyword(BDIPY)
+
+Compute the y-component :math:`m^{[1]}_{y}(\mathbf{r})=-\frac{1}{2}(\mathbf{r}\times\mathbf{j})_{y}` of the magnetic dipole operator. Example (use first response vector)::
+
+  .BDIPY
+   PAMXVC 1
+
+keyword(BDIPZ)
+
+Compute the z-component :math:`m^{[1]}_{z}(\mathbf{r})=-\frac{1}{2}(\mathbf{r}\times\mathbf{j})_{z}` of the magnetic dipole operator. Example (use first response vector)::
+
+  .BDIPZ
+   PAMXVC 1
+
+keyword(EDIPX)
+
+Compute the x-component :math:`Q^{[1]}_{x}(\mathbf{r})=xn(\mathbf{r})` of the electric dipole.
+
+keyword(EDIPY)
+
+Compute the y-component :math:`Q^{[1]}_{y}(\mathbf{r})=yn(\mathbf{r})` of the electric dipole.
+
+keyword(EDIPZ)
+
+Compute the z-component :math:`Q^{[1]}_{z}(\mathbf{r})=zn(\mathbf{r})` of the electric dipole.
 
 keyword(ESP)
 
