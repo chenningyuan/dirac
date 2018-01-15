@@ -1772,7 +1772,7 @@
                   value = abs(eigenvectors(1,ii))
                   if (carith) value = value + abs(eigenvectors(2,ii))
                   if (carith .and. value.gt.tres) then
-                      write (iw,'(2f15.5,3x,a70)') & 
+                      write (iw,'(2f15.5,3x,a100)') & 
             &             eigenvectors(1,ii),eigenvectors(2,ii),label
                   else if (value.gt.tres) then              
                   write (iw,'(f15.5,3x,a100)') eigenvectors(1,ii),label
