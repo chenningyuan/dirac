@@ -533,7 +533,7 @@ contains
                result(0) = result(0) - &
                     (v(1)*visual_cfg_pol_vector(1)+  &
                      v(2)*visual_cfg_pol_vector(2)+  &
-                     v(1)*visual_cfg_pol_vector(1))*cos(f)/visual_cfg_freq
+                     v(3)*visual_cfg_pol_vector(3))*cos(f)/visual_cfg_freq
 
             end if
 
@@ -554,7 +554,7 @@ contains
                result(0) = result(0) - &
                     (v(1)*visual_cfg_pol_vector(1)+  &
                      v(2)*visual_cfg_pol_vector(2)+  &
-                     v(1)*visual_cfg_pol_vector(1))*sin(f)/visual_cfg_freq
+                     v(3)*visual_cfg_pol_vector(3))*sin(f)/visual_cfg_freq
 
             end if
 
