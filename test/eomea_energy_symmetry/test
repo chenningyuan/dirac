@@ -25,7 +25,7 @@ test.run(['eom_ea_dc_noinv_full_nooverlap_c_oo_v_Omega.inp','eom_ea_dc_noinv_ful
 
 test.run(['eom_ea_dc_inv_full_nooverlap.inp'], ['f2_d2h.mol', 'f2_c2h.mol'], f, args='--mw=110')
 test.run(['eom_ea_dc_inv_full_nooverlap_ci.inp'], ['f2_ci.mol'], f, args='--mw=110')
-test.run(['eom_ea_dc_inv_full_nooverlap_d_oo_h_Omega.inp','eom_ee_dc_inv_nooverlap_d_oo_h_-Omega.inp'], ['f2_d_oo_h.mol'], f, args='--mw=110')
+test.run(['eom_ea_dc_inv_full_nooverlap_d_oo_h_Omega.inp','eom_ea_dc_inv_nooverlap_d_oo_h_-Omega.inp'], ['f2_d_oo_h.mol'], f, args='--mw=110')
 
 # 2. runt tests with overlap and using pivoted unit vectors as trial vectors. for all but c1 and ci, calculate for the moment 
 # only the first of the doubly degenerate roots (due to incomplete code in the trial vector generation for the other member of the pair) 
