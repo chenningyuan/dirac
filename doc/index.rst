@@ -28,8 +28,8 @@ Setting up DIRAC
   :doc:`HPC cluster (Strasbourg) <installation/examples/hpc-unistra>`
 
 * **pam script:**
-  :doc:`How to set the scratch directory <pam/scratch>` |
-  :doc:`How to define an alternative MPI launcher <pam/mpi_command>` |
+  :doc:`Setting the scratch directory <pam/scratch>` |
+  :doc:`Alternative MPI launcher and passing arguments for it <pam/mpi_command>` |
   :doc:`String replacement <pam/replace>`
 
 
