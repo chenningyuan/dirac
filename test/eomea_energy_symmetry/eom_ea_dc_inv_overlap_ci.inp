@@ -29,8 +29,8 @@
 *EOMCC
 .EA
 1 6
-.EA
-2 6 
+#.EA
+#2 6 
 *CCENER
 .MAXIT
 45
