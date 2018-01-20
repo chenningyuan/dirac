@@ -884,12 +884,12 @@
                   jroot = i
                   L1_dum(iroot,jroot) = 1.0d0
               end do
-              if (iprnt.ge.3) call davidson_print_vectors(L1_dum, label="debug: L1_dum vector         ")
+              if (iprnt.ge.3) call davidson_print_vectors(L1_dum, label="debug: L1_dum vector          ")
 
 ! this is a temporary hack (as of 31/03/2017), since the routine below only returns the right-hand vectors
 ! to generalize
               call trial_vectors_ip(L1_dum,Fbar_HH) 
-              if (iprnt.ge.3) call davidson_print_vectors(L1_dum, label="debug: L1_dum vector  CD1    ",complex_dimension=1)
+              if (iprnt.ge.3) call davidson_print_vectors(L1_dum, label="debug: L1_dum vector  CD1     ",complex_dimension=1)
 
               L1 = L1_dum(:,1:nroot)
 
