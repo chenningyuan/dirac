@@ -1070,8 +1070,8 @@ contains
                             write (davidson_output_file_unit,*) 'Warning : numerator is small', &
                                                              (1.0d0 / form_preconditioner(j,k)),& 
 &                                    ' element of preconditioner set to 1'
-!                           form_preconditioner(j,k) = 1.0d0
-!                           form_preconditioner(j+1,k) = 1.0d0
+                            form_preconditioner(j,k) = 1.0d0
+                            form_preconditioner(j+1,k) = 0.0d0
                         end if
                     end do
                 end do
