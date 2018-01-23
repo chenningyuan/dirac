@@ -1071,7 +1071,7 @@ integer :: ierr
    &         LeftTensor=B%W_amef,RightTensor=r2)
 
    if (iprnt.ge.2) &
-   write(iw,*)'diagram 3 ', ddot(ndimr1,sigma1,1,sigma1,1)
+   write(iw,*)'diagram 3 ', ddot(N1,sigma1,1,sigma1,1)
 
 !S(ab,i*j) = S(ab,i*j) +  w_efam(ab,ej)*r1(e,i*)
 !--------------------------------------------------
