@@ -21,7 +21,7 @@
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck effqed */
-      SUBROUTINE EFFQED(WORK,KFREE,LFREE)
+      SUBROUTINE EFFQED(FOCK,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Build contribution from all-electron pseudopotential representing
@@ -40,7 +40,7 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcb_effqed.h"      
-      DIMENSION WORK(*)
+      DIMENSION FOCK(*),WORK(*)
       CHARACTER TEXT*74
       KFRSAV = KFREE
       CALL MEMGET2('INTE','KINF',KINF,NTBAS(0),WORK,KFREE,LFREE)
@@ -52,11 +52,10 @@ C     INDEP runs over symmetry dependent centers
       ININD=1
       DO ITYP = 1,NONTYP
 C.......Find the total number of basis functions for this atom type
-        CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ININD,1,-1)
+         CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ININD,1,-1)
 C.......Read C1 coefficients and orbitalenergies
-        CALL OPNFIL(LUCOEF,REFFIL(INDEP),'OLD','EFFQED')        
-        READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
-     &        NNEG,NPOS,NAO,DUM
+        CALL OPNFIL(LUCOEF,REFFIL(ITYP),'OLD','EFFQED')        
+        READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,NNEG,NPOS,NAO,DUM
         IF(NAO.NE.MBAS) THEN
            WRITE(LUPRI,'(A,A,I3,/,A,A6,A,I6)') 
      &     'Effective QED potential generation: ',
@@ -80,8 +79,13 @@ C        NN = INDEP
         ENDDO
         ININD = ININD + NONT(ITYP)
       ENDDO
-C
       CALL MEMREL('EFFQED',WORK,1,KFRSAV,KFREE,LFREE)
+      STOP 'End of test'
+C
       RETURN
+ 10   CONTINUE
+      CALL QUIT('EFFQED: END OF FILE reading TEXT')
+ 20   CONTINUE
+      CALL QUIT('EFFQED: ERROR reading TEXT')
       END
       

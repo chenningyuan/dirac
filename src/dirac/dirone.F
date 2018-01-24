@@ -933,6 +933,11 @@ C     =======================
 C
       CALL BUTOBS(FOCK,NZ,WORK(KFREE),LFREE)
 C
+C     Add effective QED potentials
+C     ----------------------------      
+C
+      IF(DOEFFQED) CALL EFFQED(FOCK,WORK,KFREE,LFREE)
+C
 C     Add Fock matrices when requested
 C
       IF(TOBE) THEN
