@@ -834,8 +834,8 @@ C
 C
 C     Initialize
 C
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
+      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
+     &      FILE='AOPROPER')
       allocate(ftri(nnbbasx,nz))
       allocate(op1int(nnbbasx))
       allocate(first(nz))
@@ -932,6 +932,11 @@ C     Reindex to sorted basis
 C     =======================
 C
       CALL BUTOBS(FOCK,NZ,WORK(KFREE),LFREE)
+C
+C     Add atomic shift projectors
+C     ---------------------------
+C
+      IF(DOASHIFT) CALL ASHIFT(FOCK,IPRHAM,WORK,KFREE,LFREE)      
 C
 C     Add effective QED potentials
 C     ----------------------------      

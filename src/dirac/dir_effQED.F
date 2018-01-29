@@ -20,6 +20,52 @@
 !dirac_copyright_end
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck ashift */
+      SUBROUTINE ASHIFT(FOCK,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Build contribution from all-electron pseudopotential representing
+C     QED effects.
+C
+C     Written by Trond Saue
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,D1=1.0D0)
+C     
+#include "mxcent.h"
+C
+#include "dcbgen.h"
+#include "nuclei.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcb_ashift.h"      
+      DIMENSION FOCK(*),WORK(*)
+      CHARACTER TEXT*74
+      KFRSAV = KFREE
+      NDIM=N2BBASX*NZ
+      CALL MEMGET2('REAL','KBUF',KBUF,NDIM,WORK,KFREE,LFREE)      
+      CALL ATOMIC_DENS(WORK(KBUF),MAXAREF,MAXAVAL,AREFFIL,AVECREF,
+     &     ASHIFT_NVAL,ASHIFT_PAR,IPRINT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','KSMAT',KSMAT,N2BAST,WORK,KFREE,LFREE)
+      CALL GTOVLT(WORK(KSMAT),SSMTRC,IPRINT)
+      DO I = 1,NFSYM
+         CALL QTRANS('AOMO','S',D1,
+     &              NFBAS(I,0),NFBAS(I,0),NFBAS(I,0),NFBAS(I,0),
+     &              WORK(I2BASX(I,I)+KBUF),NFBAS(I,0),NFBAS(I,0),
+     &                 NZ,IPQTOQ(1,0),
+     &              FOCK(I2BASX(I,I)+1),NFBAS(I,0),NFBAS(I,0),
+     &                 NZ,IPQTOQ(1,0),
+     &              WORK(I2BAST(I)+KSMAT),NFBAS(I,0),NFBAS(I,0),1,1,
+     &              WORK(I2BAST(I)+KSMAT),NFBAS(I,0),NFBAS(I,0),1,1,      
+     &              WORK(KFREE),LFREE,IPRINT)
+      ENDDO
+      CALL MEMREL('ASHIFT',WORK,1,KFRSAV,KFREE,LFREE)
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck effqed */
       SUBROUTINE EFFQED(FOCK,WORK,KFREE,LFREE)
 C***********************************************************************
@@ -46,20 +92,20 @@ C
       CALL MEMGET2('INTE','KINF',KINF,NTBAS(0),WORK,KFREE,LFREE)
 C      
 C.....Loop over atomic orbitals
-C     ININD runs over symmetry independent centers
+C     ICENT runs over symmetry independent centers
 C     INDEP runs over symmetry dependent centers
       INDEP=1
-      ININD=1
-      DO ITYP = 1,NONTYP
+      ICENT=1
+      DO IATOM = 1,NONTYP
 C.......Find the total number of basis functions for this atom type
-         CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ININD,1,-1)
+         CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ICENT,1,-1)
 C.......Read C1 coefficients and orbitalenergies
-        CALL OPNFIL(LUCOEF,REFFIL(ITYP),'OLD','EFFQED')        
+        CALL OPNFIL(LUCOEF,REFFIL(IATOM),'OLD','EFFQED')        
         READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,NNEG,NPOS,NAO,DUM
         IF(NAO.NE.MBAS) THEN
            WRITE(LUPRI,'(A,A,I3,/,A,A6,A,I6)') 
      &     'Effective QED potential generation: ',
-     &     '  Wrong number of basis function for atomic type ', ITYP,
+     &     '  Wrong number of basis function for atomic type ', IATOM,
      &     '  Number read from                     ',
      &     REFFIL(INDEP),' : '  ,MBAS
            WRITE(LUPRI,*) 'NAO, MBAS:',NAO, MBAS
@@ -74,10 +120,10 @@ C.......Read C1 coefficients and orbitalenergies
         CALL READT(LUCOEF,NTOT,WORK(KEA))
         CLOSE(LUCOEF,STATUS='KEEP')
 C        NN = INDEP
-        DO J = 0,NONT(ITYP)-1
-          INDEP = INDEP + NUCDEG(ININD+J)
+        DO J = 0,NONT(IATOM)-1
+          INDEP = INDEP + NUCDEG(ICENT+J)
         ENDDO
-        ININD = ININD + NONT(ITYP)
+        ICENT = ICENT + NONT(IATOM)
       ENDDO
       CALL MEMREL('EFFQED',WORK,1,KFRSAV,KFREE,LFREE)
       STOP 'End of test'

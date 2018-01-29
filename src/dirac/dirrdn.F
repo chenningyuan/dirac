@@ -4852,7 +4852,8 @@ C
 C
 #include "dcbgen.h"
 #include "dcbham.h"
-#include "dcb_effqed.h"      
+#include "dcb_effqed.h"
+#include "dcb_ashift.h"            
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
@@ -4910,7 +4911,7 @@ C
 !                   65        66        67        68
      &            '.TRSMIX','.PEQM  ','.JZOUT ','.FAKE2C',
 !                   69        70        71        72
-     &            '.EFFQED','.XXXXXX','.XXXXXX', '.XXXXXX'/
+     &            '.EFFQED','.ASHIFT','.XXXXXX', '.XXXXXX'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -4935,6 +4936,7 @@ C
       DOLVC   = .TRUE.
       QED     = .FALSE.
       DOEFFQED = .FALSE.
+      DOASHIFT = .FALSE.
       MOLMF   = .FALSE.
       X2CMMF  = .FALSE.
       ONESYS  = .FALSE.
@@ -5671,6 +5673,31 @@ C..TODO: check for inconsistencies and add stops
           ENDDO  
           GOTO 100
   170     CONTINUE
+!&&&& ASHIFT: include atomic projectors
+          DOASHIFT=.TRUE.
+          ICHANG = ICHANG + 1
+          NREFS=NUCDEP
+          IF(NREFS.GT.MAXREF) THEN
+             WRITE(LUPRI,'(A,I5)')
+     &       '* Number of atomic types specified  :',NREFS,
+     &       '* Current maximum no. of fragments  :',MAXREF
+             CALL QUIT('*ASHIFT input: Too many fragments !')
+          ENDIF
+          DO ITYP = 1,NONTYP
+            READ(LUCMD,'(A6)')  AREFFIL(ITYP)
+            READ(LUCMD,*) ASHIFT_NVAL(ITYP)
+            IF(ASHIFT_NVAL(ITYP).GT.MAXAVAL) THEN
+               WRITE(LUPRI,'(A,I5)')
+     &        '* Atom type nr.                     :',ITYP,
+     &        '* Number of shift values specified  :',ASHIFT_NVAL(ITYP),
+     &        '* Current maximum no. of shiftvals  :',MAXAVAL
+              CALL QUIT('*ASHIFT input: Too many shift values !')
+            ENDIF
+            DO IVAL = 1,ASHIFT_NVAL(ITYP)
+              READ(LUCMD,*) ASHIFT_PAR(IVAL,ITYP)
+              READ(LUCMD,'(A72)') AVECREF(IVAL,ITYP)
+            ENDDO
+          ENDDO  
           GOTO 100
   171     CONTINUE
           GOTO 100
@@ -6085,6 +6112,29 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
      &       ' - Exp. : ',EFFQED_PAR(2,IKAP,ITYP)
              WRITE(LUPRI,'(12X,A,A72)')
      &       ' Orbitals: ',VECREF(IKAP,ITYP)
+           ENDDO
+        ENDDO
+      ENDIF
+#endif      
+#ifdef MOD_UNRELEASED
+      IF(DOASHIFT) THEN
+        WRITE(LUPRI,'(3X,A)') 'Atomic shift projectors added.'
+        WRITE(LUPRI,'(6X,A)') 'Parameters:'
+        ININD=0
+        DO ITYP = 1,NONTYP
+           WRITE(LUPRI,'(6X,A,I5)')
+     &       '* Atomic type nr. :',ITYP
+           WRITE(LUPRI,'(9X,A,10(2X,A4))')
+     &       '- Symmetry-independent centers: ',
+     &       (NAMN(ININD+I),I=1,NONT(ITYP))
+           ININD = ININD + NONT(ITYP)
+           WRITE(LUPRI,'(9X,A,A6)')
+     &       '- C1-coefficients read from file: ',AREFFIL(ITYP)
+           DO IVAL=1,ASHIFT_NVAL(ITYP)
+             WRITE(LUPRI,'(8X,A,E16.10)')
+     &       ' - Shift parameter: ',ASHIFT_PAR(IVAL,ITYP)
+             WRITE(LUPRI,'(12X,A,A72)')
+     &       ' Orbitals: ',AVECREF(IVAL,ITYP)
            ENDDO
         ENDDO
       ENDIF
