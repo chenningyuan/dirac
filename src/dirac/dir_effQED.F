@@ -37,6 +37,7 @@ C
 #include "mxcent.h"
 C
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "nuclei.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -53,9 +54,9 @@ C
       DO I = 1,NFSYM
          CALL QTRANS('AOMO','S',D1,
      &              NFBAS(I,0),NFBAS(I,0),NFBAS(I,0),NFBAS(I,0),
-     &              WORK(I2BASX(I,I)+KBUF),NFBAS(I,0),NFBAS(I,0),
+     &              WORK(I2BASX(I,I)+KBUF),NTBAS(0),NTBAS(0),
      &                 NZ,IPQTOQ(1,0),
-     &              FOCK(I2BASX(I,I)+1),NFBAS(I,0),NFBAS(I,0),
+     &              FOCK(I2BASX(I,I)+1),NTBAS(0),NTBAS(0),
      &                 NZ,IPQTOQ(1,0),
      &              WORK(I2BAST(I)+KSMAT),NFBAS(I,0),NFBAS(I,0),1,1,
      &              WORK(I2BAST(I)+KSMAT),NFBAS(I,0),NFBAS(I,0),1,1,      
