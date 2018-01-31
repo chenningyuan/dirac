@@ -1477,7 +1477,7 @@ contains
             if (davidson_solve_lhs) M_small => create_reduced_problem(sigma_vector, b)
 
             if (davidson_debug) call davidson_print_vectors(M_small, label="debug:  small matrix M        ")
-            if (.true.) call dump_to_file(2222, "fullHbar_eomip.bin", M_small)
+            if (davidson_debug) call dump_to_file(2222, "M_small.bin", M_small)
 
             if (davidson_debug) print *,"niter, folow overlap",niter,(davidson_overlap_sorting.and.(niter.gt.1))
 
