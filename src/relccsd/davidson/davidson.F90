@@ -2301,7 +2301,7 @@ contains
 
     subroutine dump_to_file(fileno, filename, matrix)
         integer, intent(in) :: fileno
-        character(len=14), intent(in) :: filename
+        character(len=*), intent(in) :: filename
         real(kind=8) :: matrix(:,:)
         integer :: irec
  
