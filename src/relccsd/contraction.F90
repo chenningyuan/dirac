@@ -40,54 +40,54 @@
 #include "param.inc"
 #include "complex.inc"
 
- if (.not.present(irrep_left)) then
-   irrep_left_loc = 1
- else
-   irrep_left_loc = irrep_left
- endif 
+    if (.not.present(irrep_left)) then
+       irrep_left_loc = 1
+    else
+      irrep_left_loc = irrep_left
+    endif 
 
- if (.not.present(irrep_right)) then
-   irrep_right_loc = 1
- else
-   irrep_right_loc = irrep_right
- endif 
+    if (.not.present(irrep_right)) then
+      irrep_right_loc = 1
+    else
+      irrep_right_loc = irrep_right
+    endif 
 
     transA = 'N'  
     transB = 'N'  
 
 !  1) fetch the fixed arrays, properly sort to contract with BLAS.
    
-   call onebody_for_blas (left_order,im_order,right_order,transA,x_row,x_column,freeindex_left)
+    call onebody_for_blas (left_order,im_order,right_order,transA,x_row,x_column,freeindex_left)
 
-   call onebody_for_blas (right_order,left_order,im_order,transB,y_row,y_column,freeindex_right)
+    call onebody_for_blas (right_order,left_order,im_order,transB,y_row,y_column,freeindex_right)
    
-   array_equal = all((/freeindex_left(1),freeindex_right(2)/)==im_order)
+    array_equal = all((/freeindex_left(1),freeindex_right(2)/)==im_order)
 
-   if (array_equal) then
+    if (array_equal) then
 
-    call cntrct_new (transA,transB,x_row,y_column,x_column,dia_factor*A1,leftTensor,rightTensor, &
-   &                dia_sum_factor*A1,imTensor,irrep_left_loc,irrep_right_loc,irrep_target,.false.) 
+       call cntrct_new (transA,transB,x_row,y_column,x_column,dia_factor*A1,leftTensor,rightTensor, &
+   &                   dia_sum_factor*A1,imTensor,irrep_left_loc,irrep_right_loc,irrep_target,.false.) 
 
    else
 
-   allocate (ImTensor_temp(dot_product(x_row,y_column)*rcw))
+      allocate (ImTensor_temp(dot_product(x_row,y_column)*rcw))
 
-   ImTensor_temp = 0.0d0
+      ImTensor_temp = 0.0d0
 
-    call cntrct_new (transA,transB,x_row,y_column,x_column,dia_factor*A1,leftTensor,rightTensor, &
-   &                dia_sum_factor*A1,imTensor_temp,irrep_left_loc,irrep_right_loc,irrep_target,.false.) 
+      call cntrct_new (transA,transB,x_row,y_column,x_column,dia_factor*A1,leftTensor,rightTensor, &
+   &                   dia_sum_factor*A1,imTensor_temp,irrep_left_loc,irrep_right_loc,irrep_target,.false.) 
 
-   allocate (ImTensor_temp_temp(dot_product(x_row,y_column)*rcw))
-    ImTensor_temp_temp = 0.0d0
+      allocate (ImTensor_temp_temp(dot_product(x_row,y_column)*rcw))
+      ImTensor_temp_temp = 0.0d0
 
-    call SRT1C1_exp (irrep_target,.false.,x_row,y_column,imTensor_temp,imTensor_temp_temp,2)
+      call SRT1C1_exp (irrep_target,.false.,x_row,y_column,imTensor_temp,imTensor_temp_temp,2)
 
-!   call srt1c1n (nrep,x_row,y_column,imTensor_temp,imTensor_temp_temp)
+!     call srt1c1n (nrep,x_row,y_column,imTensor_temp,imTensor_temp_temp)
 
-   call daxpy (size(imTensor),dia_sum_factor*A1,imTensor_temp_temp,1,imTensor,1) 
+      call daxpy (size(imTensor),dia_sum_factor*A1,imTensor_temp_temp,1,imTensor,1) 
 
-   deallocate (ImTensor_temp)
-   deallocate (ImTensor_temp_temp)
+      deallocate (ImTensor_temp)
+      deallocate (ImTensor_temp_temp)
 
    endif
 
@@ -186,28 +186,28 @@
 
     else
 
-   allocate (ImTensor_temp(dot_product(x_row,y_column)*rcw))
-   ImTensor_temp = 0.0d0
-     call cntrct_new (transA,transB,x_row,y_column,x_column,asym_factor_R*asym_factor_L*dia_factor*A1,v_sort, &
-    &              right_sorted,A1,imTensor_temp,irrep_left_loc,irrep_right_loc,irrep_target,.false.) 
+      allocate (ImTensor_temp(dot_product(x_row,y_column)*rcw))
+      ImTensor_temp = 0.0d0
+        call cntrct_new (transA,transB,x_row,y_column,x_column,asym_factor_R*asym_factor_L*dia_factor*A1,v_sort, &
+    &                 right_sorted,A1,imTensor_temp,irrep_left_loc,irrep_right_loc,irrep_target,.false.) 
 
-   allocate (ImTensor_temp_temp(dot_product(x_row,y_column)*rcw))
+      allocate (ImTensor_temp_temp(dot_product(x_row,y_column)*rcw))
 
-   call srt1c1_exp (irrep_target,.false.,x_row,y_column,imTensor_temp,imTensor_temp_temp,2)
-!  call srt1c1n (nrep,x_row,y_column,imTensor_temp,imTensor_temp_temp)
+      call srt1c1_exp (irrep_target,.false.,x_row,y_column,imTensor_temp,imTensor_temp_temp,2)
+!     call srt1c1n (nrep,x_row,y_column,imTensor_temp,imTensor_temp_temp)
 
-   deallocate (ImTensor_temp)
+      deallocate (ImTensor_temp)
 
-   call daxpy (size(imTensor),dia_sum_factor*A1,imTensor_temp_temp,1,imTensor,1) 
+      call daxpy (size(imTensor),dia_sum_factor*A1,imTensor_temp_temp,1,imTensor,1) 
 
-   deallocate (ImTensor_temp_temp)
+      deallocate (ImTensor_temp_temp)
 
    endif
 
-  deallocate(v_sort)  
-  deallocate(right_sorted)  
+   deallocate(v_sort)  
+   deallocate(right_sorted)  
 
-    end subroutine
+   end subroutine
 
    subroutine contraction_422 (left_order,right_order,im_order,rightTensor,imTensor, &
            &                   dia_factor,dia_sum_factor,nrep,LeftTensor,irrep_left,irrep_right)

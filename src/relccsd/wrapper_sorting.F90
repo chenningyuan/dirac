@@ -1,5 +1,15 @@
   module wrapper_sorting
 
+! This module function as a wrapper around the original RELCCSD sorts that have been generalized to 
+! handle also non-symmetric operators (i.e. cases in which the irrep product of the orbital indices
+! need not be totally symmetric). 
+! Purpose of these sorts is to change the order in which tensor elements are stored such that 
+! contractions can be carried out by calls to a BLAS DGEMM or ZGEMM (for complex groups). After a
+! contraction, tensors need typically be sorted back to the standard "Dirac" order, which is why
+! most of them come with an inverse.
+
+! Module was written by Avijit Shee.
+
   use modified_sorting
   use symmetry_offset
 
@@ -50,6 +60,9 @@
        real*8,allocatable :: presorted(:) 
        real*8, pointer :: integral(:)
     endtype
+
+!  The list with the original sorters, which will be assigned on basis of the input arrays 
+!  and desired resorted order.
    external SRT1SS4
    external SRT1L1
    external SRT1C1
@@ -72,7 +85,8 @@
    external SRT6
    external SRT9
    external SRT1TS4
-
+!  subroutines to retrieve anti-symmetrized integrals from disk storage, used when sorting
+!  integrals that do not reside in memory
    external getvoov
    external getoovv
    external getooov
@@ -95,77 +109,68 @@
     type(sorting_list)           :: a
 ! --------------------------
 
-  save_index = 0
+    save_index = 0
 
-  select case(sortType)
+    select case(sortType)
     
-    case(13)
+     case(13)
 
-     shifted_array(1:3) =  reorder_array(2:4)
+        shifted_array(1:3) =  reorder_array(2:4)
+        temp = reorder_array(1)
+        allocate (P(6,3))
+        call permutate(shifted_array(1:3),P)
 
-     temp = reorder_array(1)
+        do i = 1, size(P,1)
+          a%num = toDecimal((/temp,P(i,:)/))
+          a%trans = toDecimal((/temp,P(i,:)/),.true.)    
+          call match_array (a%num, no_match, save_index, trans)  
+          if (no_match) call match_array_transpose (a%trans, no_match, save_index, trans)  
+          if (.not.no_match) then
+             reorder_array(2:4)=P(i,:)
+             exit
+          endif
+        enddo
 
-    allocate (P(6,3))
-
-    call permutate(shifted_array(1:3),P)
-
-    do i = 1, size(P,1)
-      a%num = toDecimal((/temp,P(i,:)/))
-      a%trans = toDecimal((/temp,P(i,:)/),.true.)    
-
-      call match_array (a%num, no_match, save_index, trans)  
-      if (no_match) call match_array_transpose (a%trans, no_match, save_index, trans)  
-
-      if (.not.no_match) then
-        reorder_array(2:4)=P(i,:)
-        exit
-      endif
-
-    enddo
-    deallocate(P)
+        deallocate(P)
 
      case(31) 
 
-     shifted_array(1:3) = reorder_array(1:3)
+        shifted_array(1:3) = reorder_array(1:3)
+        temp = reorder_array(4)
+        allocate (P(6,3))
+        call permutate(shifted_array(1:3),P)
 
-     temp = reorder_array(4)
+        do i = 1, size(P,1)
+          a%num = toDecimal((/P(i,:),temp/))
+          a%trans = toDecimal((/P(i,:),temp/),.true.)    
+          call match_array (a%num, no_match, save_index, trans)  
+          if (no_match) call match_array_transpose (a%trans, no_match, save_index, trans)  
+          if (.not.no_match) then
+             reorder_array(1:3)=P(i,:)
+             exit
+           endif
+        enddo
 
-    allocate (P(6,3))
+        deallocate(P)
 
-    call permutate(shifted_array(1:3),P)
+     case (22) 
 
-    do i = 1, size(P,1)
-    a%num = toDecimal((/P(i,:),temp/))
-    a%trans = toDecimal((/P(i,:),temp/),.true.)    
+        shifted_array(1:4) = reorder_array(1:4) 
+        i = 1
+        do
+          temp = reorder_array(i)
+          reorder_array(i) = reorder_array(i+1)
+          reorder_array(i+1) = temp
+          a%num = toDecimal(reorder_array)
+          a%trans = toDecimal(reorder_array,.true.)    
+          call match_array (a%num,no_match,save_index,trans)  
+          if (no_match) call match_array_transpose (a%trans,no_match,save_index,trans) 
+          if ((.not.no_match).or.(i>3)) exit
+          i = i+2
+          reorder_array(1:4) = shifted_array(1:4)
+        enddo
 
-    call match_array (a%num, no_match, save_index, trans)  
-    if (no_match) call match_array_transpose (a%trans, no_match, save_index, trans)  
-    if (.not.no_match) then
-    reorder_array(1:3)=P(i,:)
-    exit
-    endif
-    enddo
-    deallocate(P)
-
-   case (22) 
-
-     shifted_array(1:4) = reorder_array(1:4) 
-     i = 1
-   do
-     temp = reorder_array(i)
-     reorder_array(i) = reorder_array(i+1)
-     reorder_array(i+1) = temp
-
-    a%num = toDecimal(reorder_array)
-    a%trans = toDecimal(reorder_array,.true.)    
-
-    call match_array (a%num,no_match,save_index,trans)  
-    if (no_match) call match_array_transpose (a%trans,no_match,save_index,trans) 
-    if ((.not.no_match).or.(i>3)) exit
-    i = i+2
-    reorder_array(1:4) = shifted_array(1:4)
-   enddo
-  end select
+    end select
 
    end subroutine
 

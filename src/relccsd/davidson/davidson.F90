@@ -1070,8 +1070,8 @@ contains
                             write (davidson_output_file_unit,*) 'Warning : numerator is small', &
                                                              (1.0d0 / form_preconditioner(j,k)),& 
 &                                    ' element of preconditioner set to 1'
-!                           form_preconditioner(j,k) = 1.0d0
-!                           form_preconditioner(j+1,k) = 1.0d0
+                            form_preconditioner(j,k) = 1.0d0
+                            form_preconditioner(j+1,k) = 0.0d0
                         end if
                     end do
                 end do
@@ -1477,7 +1477,7 @@ contains
             if (davidson_solve_lhs) M_small => create_reduced_problem(sigma_vector, b)
 
             if (davidson_debug) call davidson_print_vectors(M_small, label="debug:  small matrix M        ")
-            if (.true.) call dump_to_file(2222, "fullHbar_eomip.bin", M_small)
+            if (davidson_debug) call dump_to_file(2222, "M_small.bin", M_small)
 
             if (davidson_debug) print *,"niter, folow overlap",niter,(davidson_overlap_sorting.and.(niter.gt.1))
 
@@ -2301,7 +2301,7 @@ contains
 
     subroutine dump_to_file(fileno, filename, matrix)
         integer, intent(in) :: fileno
-        character(len=14), intent(in) :: filename
+        character(len=*), intent(in) :: filename
         real(kind=8) :: matrix(:,:)
         integer :: irec
  
