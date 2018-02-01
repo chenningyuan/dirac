@@ -803,7 +803,7 @@ integer :: ierr
       do irp = 1, nrep
 
          mrp = multb(irp+nrep,1+nrep,1)  
-         nrp = multb(state_sym+nrep,irp+nrep,2) 
+         nrp = multb(irp+nrep,state_sym+nrep,1)
 
          istart = 0
          done =.false.
@@ -822,7 +822,7 @@ integer :: ierr
          off1 = 1 + f%twoDirac(irp,nrp)*rcw
          off2 = 1 + g%twoDirac(mrp,nrp)*rcw
 
-         call xgemm ('n','n',m,n,k,a1,w_vvvv,m,r2(off1+istart*rcw),k, &
+         call xgemm ('n','n',m,n,k,a1,w_vvvv,m,r2(off1+istart*rcw),m, &
      &               a1,sigma2_local(off2),m)
 !    &               a1,sigma2(off2),m)
          deallocate(w_vvvv)
@@ -935,9 +935,9 @@ integer :: ierr
 !  S(a*b,ij) = S(a*b,ij)-W(mb,ij)*r(a*,m)
 !--------------------------------------------
 
-    call contraction_244 ((/"c1","o3"/),(/"o3","p2","o1","o2"/), &
-   &    (/"c1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%W_iemn, &
-   &    LeftTensor=r1) 
+   call contraction_244 ((/"c1","o3"/),(/"o3","p2","o1","o2"/), &
+  &    (/"c1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%W_iemn, &
+  &    LeftTensor=r1) 
 
        if (iprnt.ge.2) &
   write(iw,*)'diagram 4 ',dot_product(sigma2,sigma2)
@@ -946,8 +946,12 @@ integer :: ierr
 ! S(a*b,ij) = S(a*b,ij) - P(ij) f_bar_mi(m,j)*r2(a*b,im) 
 !-----------------------------------------------------
 
-    call contraction_424 ((/"c1","p2","o1","o3"/),(/"o3","o2"/), &
-   & (/"c1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2)
+!   call contraction_424 ((/"c1","p2","o1","o3"/),(/"o3","o2"/), &
+!  & (/"c1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2)
+
+
+    call contraction_244 ((/"o3","o2"/),(/"c1","p2","o3","o1"/), &
+   & (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=B%Fbar_mi,RightTensor=r2)
 
        if (iprnt.ge.2) &
   write(iw,*)'diagram 5 ',dot_product(sigma2,sigma2)
@@ -1120,9 +1124,9 @@ integer :: ierr
 !S(ab,i*j) = S(ab,i*j) - int_1b(n,i*)*t(ba,jn)
 !------------------------------------------------
 
-      call alloc_array(f,nrep)
+    call alloc_array(f,nrep)
 
-      call auto_symmetry_offset(f,no,ncont,.false.,.false.)
+    call auto_symmetry_offset(f,no,ncont,.false.,.false.)
     allocate(int_1b(f%oneNonDirac(1)*rcw))
     int_1b = 0.0d0
 

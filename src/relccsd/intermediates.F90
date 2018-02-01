@@ -584,7 +584,7 @@
      call gettau (t1,t2,tau)
 
       do 30 irp = 1, nrep
-         if ((nvvt(irp).eq.0).or.(noot(irp).eq.0)) goto 30
+         if ((nvvt(irp).eq.0).or.(nvo(irp).eq.0)) goto 30
          done = .false.
          istart = 0
          cco=0
@@ -1025,14 +1025,14 @@
 !--------------------------------------
 
 !----------------------------------------------
-!    G_ea(e,a)  = -1/2 l2(mn,af) * t2(ef,mn)
+!    G_ea(e,a)  = - l2(mn,af) * t2(ef,mn)
 !----------------------------------------------
 
   call contraction_442 ((/"p2","p3","o1","o2"/),(/"o1","o2","p1","p3"/),(/"p2","p1"/),G_vv,-1.0d0,1.0d0,nrep,&
                         &  LeftTensor=t2,RightTensor=l2 )
 
 !---------------------------------------------
-!     G_im(i,m) = 1/2 l2(in,ef) * t2(ef,mn)
+!     G_im(i,m) = l2(in,ef) * t2(ef,mn)
 !---------------------------------------------
 
   call contraction_442 ((/"o1","o3","p1","p2"/),(/"p1","p2","o2","o3"/),(/"o1","o2"/),G_oo,1.0d0,1.0d0,nrep,&

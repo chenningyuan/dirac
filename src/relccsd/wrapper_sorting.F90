@@ -1124,8 +1124,8 @@
     if (present(array3)) then 
      do i = 1, size(array3)       ! loop over vorder 
         if (findloc(array1,array3(i)) > 0) then 
-          reorder_array(k) = findloc(array1,array3(i))
-          k=k+1
+          if (k<=4) reorder_array(k) = findloc(array1,array3(i))
+          if (k<4) k=k+1
         endif
      enddo
     endif
@@ -1302,7 +1302,7 @@
   else
    do_trans = .false.
   endif
- 
+
   if (do_trans) then
 
 ! it should not be case dependent. if possible try to modify it.

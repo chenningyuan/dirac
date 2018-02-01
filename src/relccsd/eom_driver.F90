@@ -28,15 +28,15 @@
 !===============================================
      ncont(1:nrep) = 0
      ncont(active_irrep) = 1
-     if (spinfr) then
-        ncont(active_irrep+(nrep/4)) = 1 
-     elseif (linear) then
-        ncont(active_irrep+1) = 1 
-     elseif (nrep==1) then
-        ncont(active_irrep) = 1 
-     else
-        ncont(active_irrep+(nrep/2)) = 1 
-     endif
+!    if (spinfr) then
+!       ncont(active_irrep+(nrep/4)) = 1 
+!    elseif (linear) then
+!       ncont(active_irrep+1) = 1 
+!    elseif (nrep==1) then
+!       ncont(active_irrep) = 1 
+!    else
+!       ncont(active_irrep+(nrep/2)) = 1 
+!    endif
   end subroutine
 
   subroutine verify_input()
@@ -323,7 +323,6 @@
     ai = 1
     ii = 0
     do irep = 1, nrep
-!       arep = multb (irep,1+nrep,1)
         arep = multb (1+nrep,irep,2)
         do i = 1, no(irep)
          ii = ii + 1
@@ -339,7 +338,7 @@
 
       ABIJ = ai 
       DO IJRP = 1, NREP
-       abrp = multb (ijrp+nrep,1+nrep,1)
+       abrp = multb (1+nrep,ijrp+nrep,2)
       DO JRP = 1, NREP
       JJ = IO(JRP)
       IRP = MULTB(JRP,IJRP+NREP,2)
@@ -441,17 +440,15 @@
 
           write(*,*)'# of roots', fudge_factor*nroot
 
-          do iroot = 1, fudge_factor*nroot
+          do iroot = 1, nroot
               k = minloc(diag_H) 
               if (iprnt.ge.2) write(iw,*)'roots',iroot,diag_H(k(1)),k(1) 
               i = k(1)
               diag_H(i) = 8000.0d0
-              if (i <= search_dimension) then
                    xroot = xroot + 1
                    jroot = i
                    if (rcw.eq.2) jroot = 2*i - 1
                    R1(jroot,xroot) = 1.0d0
-              end if
           enddo
           deallocate(diag_H)
 
@@ -570,29 +567,27 @@
 
           search_dimension = ncont(state_sym)*nv(state_sym)
 
-
           allocate(diag_H(ndimr1))
           diag_H = H_II(1:N1:rcw)
 
-          xroot = 1
+          xroot = 0
 
           fudge_factor = 2
 ! here we set the factor to 1 because for C1, with only one fermion irrep,
 ! we can't get around to working with the degenerate roots
           if (nrep.eq.1) fudge_factor = 1
 
-          do iroot = 1, fudge_factor*nroot
-              k = minloc(diag_H)
-              if (iprnt.ge.3) write(iw,*)'roots',iroot,H_II(k(1)),k(1)
+          do iroot = 1, nroot
+              k = minloc(diag_H) 
+              if (iprnt.ge.2) write(iw,*)'roots',iroot,diag_H(k(1)),k(1) 
               i = k(1)
               diag_H(i) = 8000.0d0
-              if (i <= search_dimension) then
-                  jroot = i
-                  if (rcw.eq.2) jroot = 2*i - 1
-                      R1(jroot,xroot) = 1.0d0
-                      xroot = xroot + 1
-              end if
+                   xroot = xroot + 1
+                   jroot = i
+                   if (rcw.eq.2) jroot = 2*i - 1
+                   R1(jroot,xroot) = 1.0d0
           enddo
+ 
           deallocate(diag_H)
 
       else if (relcc_mfd_trial_restart) then
