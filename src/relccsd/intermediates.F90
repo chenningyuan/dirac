@@ -953,7 +953,7 @@
 ! w(ef,ab) =  V(ef,ab) + V(mn,ab) * TAU(ef,mn)
 !          =  V(ef,ab) + TAU(ef,mn) * V'*(ab,mn)            
 !----------------------------------------------
-
+     if (noot(irp) > 0) then
        call getoovv (buf1)
        m = nvvt(irp)
        n = nint
@@ -963,6 +963,8 @@
 
         call xgemm ('n','n',m,n,k,a1,tau(off1),nvvt(irp),buf1(abmn),k, &
       &               a1,w_vvvv,m)
+
+     endif
 
 !-----------------------------------------------------
 ! w(ef,ab) = w(ef,ab) - V(em,ab)*t(f,m)
