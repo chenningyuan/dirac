@@ -344,7 +344,10 @@ class molecular_electronic_structure:
 					spinor_occupancy = occupied_or_not.match(l).group(1)	
 
 				elif symmetry_definition_so.match(l):
-                                           fermion_symmetry = symmetry_definition_so.match(l).group(1)+symmetry_definition_so.match(l).group(2)
+                                           if symmetry_definition_so.match(l).group(2) is not None:
+                                                      fermion_symmetry = symmetry_definition_so.match(l).group(1)+symmetry_definition_so.match(l).group(2)
+                                           else:
+                                                      fermion_symmetry = symmetry_definition_so.match(l).group(1)
 			   		   self.fermion_irreps.append(fermion_symmetry)
 
 				elif symmetry_definition_spinfree.match(l):
