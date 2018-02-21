@@ -76,7 +76,7 @@ contains
       real(8)              :: buffer(*)
       real(8), intent(out) :: result(0:3)
 !     --------------------------------------------------------------------------
-      integer              :: imat, i
+      integer              :: imat, i, icomp
       real(8)              :: v(3), v2(3)
       real(8)              :: matrix_33(3, 3)
       real(8)              :: temp_33(3, 3)
@@ -113,6 +113,61 @@ contains
                           D(imat)%elms,  &
                           buffer,        &
                           ao)
+               result(0) = result(0) + density
+            end if
+
+!           components of current density: -ec \psi^\dag \alpha_q \psi 
+            if (visual_cfg_property(imat) == iq_jx) then
+               icomp = 1
+               if (levyle) then
+                  print *, 'error: Levy-Leblond jx not implemented'
+                  stop
+               else
+                  call get_jcomp(density,  &
+                             icomp,        &
+                             cval,         &
+                             D(imat)%irep, &
+                             D(imat)%nrow, &
+                             D(imat)%elms, &
+                             buffer,       &
+                             ao)
+               end if
+               result(0) = result(0) + density
+            end if
+
+            if (visual_cfg_property(imat) == iq_jy) then
+               icomp = 2
+               if (levyle) then
+                  print *, 'error: Levy-Leblond jy not implemented'
+                  stop
+               else
+                  call get_jcomp(density,  &
+                             icomp,        &
+                             cval,         &
+                             D(imat)%irep, &
+                             D(imat)%nrow, &
+                             D(imat)%elms, &
+                             buffer,       &
+                             ao)
+               end if
+               result(0) = result(0) + density
+            end if
+
+            if (visual_cfg_property(imat) == iq_jz) then
+               icomp = 3
+               if (levyle) then
+                  print *, 'error: Levy-Leblond jz not implemented'
+                  stop
+               else
+                  call get_jcomp(density,  &
+                             icomp,        &
+                             cval,         &
+                             D(imat)%irep, &
+                             D(imat)%nrow, &
+                             D(imat)%elms, &
+                             buffer,       &
+                             ao)
+               end if
                result(0) = result(0) + density
             end if
 
@@ -557,12 +612,19 @@ contains
          end if
       end do
 
-      f = visual_cfg_scale
-      if (visual_cfg_radial) then
-         distance_to_origin = dsqrt(px*px + py*py + pz*pz)
-         f = f*(distance_to_origin**2.0d0)*4.0d0*3.14159265358979323846d0
-      end if
-      result = f*result
+!     Multiply with Cartesian powers
+      do i = 1,visual_cfg_cartesian_power(1)
+        result = px * result    
+      enddo
+      do i = 1,visual_cfg_cartesian_power(2)
+        result = py * result    
+      enddo
+      do i = 1,visual_cfg_cartesian_power(3)
+        result = pz * result    
+      enddo
+      
+!     Scale result 
+      result = visual_cfg_scale*result
 
    end subroutine
 

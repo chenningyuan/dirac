@@ -351,7 +351,22 @@ C     =================
 C     
 C     As proposed by 
 C     Roland Lindh, Per-Aake Malmqvist and Laura Gagliardi
+C     Theor. Chem. Acc. (2001) 106:178 
 C
+C     Radial point:         
+C     RADNDE(K) = GRDC(EXP[K*H] - 1)
+C               = (RADNDE(K-1)+GRDC)*EXP[H]-GRDC
+C
+C     where appears the constant
+C
+C          GRDC = RL/(EXP[H] - 1),         
+C                   
+C     calculated from the step size H and the inner point RL.
+C
+C     Radial weight:         
+C
+C     RADWT(K) = (RADNDE(K)+GRDC)*RADNDE(K)*RADNDE(K)*H
+C           
 
 C        Grid spacing....
          H = DUMMY
@@ -1625,5 +1640,79 @@ C=======================================================================
 
       CALL DSCAL(NR_POINTS,D2,W,1)
 
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck Lebedev */
+      SUBROUTINE LEBEDEV(NSCHEME,X,Y,Z,WT,NCOUNT)
+C***********************************************************************
+C     Wrapper routine for Lebedev quadrature
+C
+C***********************************************************************      
+#include "implicit.h"
+      DIMENSION X(*),Y(*),Z(*),WT(*)
+      IF(NSCHEME.GT.131)THEN
+         WRITE(6,*) 'Requested accuracy:        ',NSCHEME
+         WRITE(6,*) 'Maximum accuracy available:',131
+         CALL QUIT('LEBEDEV: Requested accuracy not available !')
+      ELSEIF(NSCHEME.LE.131.AND.NSCHEME.GT.125) THEN
+         CALL LD5810(X,Y,Z,WT,NCOUNT)
+      ELSEIF(NSCHEME.LE.125.AND.NSCHEME.GT.119) THEN
+         CALL LD5294(X,Y,Z,WT,NCOUNT)
+      ELSEIF(NSCHEME.LE.119.AND.NSCHEME.GT.113) THEN
+         CALL LD4802(X,Y,Z,WT,NCOUNT)
+      ELSEIF(NSCHEME.LE.113.AND.NSCHEME.GT.107) THEN
+         CALL LD4334(X,Y,Z,WT,NCOUNT)
+      ELSEIF(NSCHEME.LE.107.AND.NSCHEME.GT.101) THEN
+         CALL LD3890(X,Y,Z,WT,NCOUNT)
+      ELSEIF(NSCHEME.LE.101.AND.NSCHEME.GT.95) THEN
+         CALL LD3470(X,Y,Z,WT,NCOUNT)
+      ELSEIF(NSCHEME.LE.95.AND.NSCHEME.GT.89) THEN
+         CALL LD3074(X,Y,Z,WT,NCOUNT)
+      ELSEIF(NSCHEME.LE.89.AND.NSCHEME.GT.83) THEN
+         CALL LD2702(X,Y,Z,WT,NCOUNT)
+      ELSEIF(NSCHEME.LE.83.AND.NSCHEME.GT.77) THEN
+         CALL LD2354(X,Y,Z,WT,NCOUNT)
+      ELSEIF(NSCHEME.LE.77.AND.NSCHEME.GT.71) THEN
+         CALL LD2030(X,Y,Z,WT,NCOUNT)
+      ELSEIF(NSCHEME.LE.71.AND.NSCHEME.GT.65) THEN
+         CALL LD1730(X,Y,Z,WT,NCOUNT)
+      ELSEIF(NSCHEME.LE.65.AND.NSCHEME.GT.59) THEN
+         CALL LD1454(X,Y,Z,WT,NCOUNT)
+      ELSEIF(NSCHEME.LE.59.AND.NSCHEME.GT.53) THEN
+         CALL LD1202(X,Y,Z,WT,NCOUNT) 
+      ELSEIF(NSCHEME.LE.53.AND.NSCHEME.GT.47) THEN
+         CALL LD0974(X,Y,Z,WT,NCOUNT)
+      ELSEIF(NSCHEME.LE.47.AND.NSCHEME.GT.41) THEN
+         CALL LD0770(X,Y,Z,WT,NCOUNT)
+      ELSEIF(NSCHEME.LE.41.AND.NSCHEME.GT.35) THEN
+         CALL LD0590(X,Y,Z,WT,NCOUNT)
+      ELSEIF(NSCHEME.LE.35.AND.NSCHEME.GT.31) THEN
+         CALL LD0434(X,Y,Z,WT,NCOUNT)
+      ELSEIF(NSCHEME.LE.31.AND.NSCHEME.GT.29) THEN
+        CALL LD0350(X,Y,Z,WT,NCOUNT)
+      ELSEIF(NSCHEME.LE.29.AND.NSCHEME.GT.23) THEN
+        CALL LD0302(X,Y,Z,WT,NCOUNT)
+      ELSEIF(NSCHEME.LE.23.AND.NSCHEME.GT.21) THEN
+        CALL LD0194(X,Y,Z,WT,NCOUNT)
+      ELSEIF(NSCHEME.LE.21.AND.NSCHEME.GT.19) THEN
+        CALL LD0170(X,Y,Z,WT,NCOUNT)
+      ELSEIF(NSCHEME.LE.19.AND.NSCHEME.GT.17) THEN
+        CALL LD0146(X,Y,Z,WT,NCOUNT)
+      ELSEIF(NSCHEME.LE.17.AND.NSCHEME.GT.15) THEN
+        CALL LD0110(X,Y,Z,WT,NCOUNT)
+      ELSEIF(NSCHEME.LE.15.AND.NSCHEME.GT.11) THEN
+        CALL LD0086(X,Y,Z,WT,NCOUNT)
+      ELSEIF(NSCHEME.LE.11.AND.NSCHEME.GT.9) THEN
+        CALL LD0050(X,Y,Z,WT,NCOUNT)
+      ELSEIF(NSCHEME.LE.9.AND.NSCHEME.GT.7) THEN
+        CALL LD0038(X,Y,Z,WT,NCOUNT)
+      ELSEIF(NSCHEME.LE.7.AND.NSCHEME.GT.5) THEN
+        CALL LD0026(X,Y,Z,WT,NCOUNT)
+      ELSEIF(NSCHEME.LE.5.AND.NSCHEME.GT.3) THEN
+        CALL LD0014(X,Y,Z,WT,NCOUNT)
+      ELSEIF(NSCHEME.LE.3) THEN
+        CALL LD0006(X,Y,Z,WT,NCOUNT)
+      END IF
       RETURN
       END
