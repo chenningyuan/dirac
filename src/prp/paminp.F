@@ -2691,7 +2691,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-      CHARACTER OP1KEY*6
+      CHARACTER OP1KEY*(*) ! MI fix for gfortran4.9, instead of  OP1KEY*6
       DIMENSION IPOP1U(*),IPOP1S(*),NOP1(8,2),JOP1(8,2),WORK(LWORK)
 C
       CALL QENTER(OP1KEY)
