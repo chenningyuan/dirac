@@ -201,6 +201,9 @@ Exercises
 Developers
 ==========
 
+* **Code review:**
+  :doc:`Release preparation <programmers/code_review>`
+
 * **Releasing:**
   :doc:`Release preparation <programmers/release_preparation>` |
   :doc:`Beta testing <programmers/beta_testing>` |
