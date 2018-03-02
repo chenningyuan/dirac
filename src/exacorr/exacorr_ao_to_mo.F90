@@ -163,10 +163,12 @@
          complex(8),intent(out) :: ao_tens(nao,nao,nao,nao)
 
          integer :: ierr
-         integer :: i, j, k, l, ish, jsh, ksh, lsh, ioff, joff, koff, loff, ijkl
+         integer :: i, j, k, l, ish, jsh, ksh, lsh, ioff, joff, koff, loff, ijkl, ijkl2
          integer :: li,lj,lk,ll,ni,nj,nk,nl
          real(8) :: ei,ej,ek,el,ci,cj,ck,cl,xi,yi,zi,xj,yj,zj,xk,yk,zk,xl,yl,zl
          real(8) :: gout(21*21*21*21) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
+!lv      code marked lv is tested and functional but not needed yet as we don't have the code to transform the additional integral classes
+!lv      real(8) :: gout2(21*21*5*21*21*5) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
          real(8), parameter :: fijkl = 1.0
          integer, parameter :: l_max = 6
          integer            :: ncartesian(l_max)
@@ -217,21 +219,33 @@
                      zi   =  gto(ish)%coord(3)
                      ci   =  gto(ish)%coefficient(1)
                      ni   =  ncartesian(li)
-!                    output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
+!                    call interest and get only the (LL|LL) type integrals
+!                    output order of eri is (c,d,a,b), so input k,l first and then i,j to get the order that we want
                      call interest_eri('llll',fijkl,gout,&
                                   lk,ek,xk,yk,zk,ck,&
                                   ll,el,xl,yl,zl,cl,&
                                   li,ei,xi,yi,zi,ci,&
                                   lj,ej,xj,yj,zj,cj )
+!lv                  call interest and get (LL|LL), (SS|LL) and (SS|SS)  type integrals
+!lv                  output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
+!lv                  call interest_eri_rkb('ssss',fijkl,gout2,&
+!lv                               lk,ek,xk,yk,zk,ck,&
+!lv                               ll,el,xl,yl,zl,cl,&
+!lv                               li,ei,xi,yi,zi,ci,&
+!lv                               lj,ej,xj,yj,zj,cj )
                      ijkl = 0
+                     ijkl2 = 1
                      do l = 1, nl
                         do k = 1, nk
                            do j = 1, nj
                               do i = 1, ni
                                  ijkl = ijkl + 1
                                  ao_tens(i+ioff,j+joff,k+koff,l+loff) = dcmplx(gout(ijkl),0.D0)
+!lv                              ao_tens(i+ioff,j+joff,k+koff,l+loff) = dcmplx(gout2(ijkl2),0.D0)
+!lv                              ijkl2 = ijkl2 + 5
                               end do
                            end do
+!lv                        ijkl2 = ijkl2 + ni*nj*5*4
                         end do
                      end do
                      ioff = ioff + ni
