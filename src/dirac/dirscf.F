@@ -806,7 +806,7 @@ CMI ... perform all this only if we do not restart BSS from DC-SCF or DC-SCF fro
            CALL MEMGET2('REAL','EIG   ',KEIG   ,NORBT ,WORK,KFREE,LFREE)
            CALL MEMGET2('INTE','IBEIG ',KIBEIG ,NORBT ,WORK,KFREE,LFREE)
            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMOSAV),
-     &                WORK(KEIG),WORK(IBKEIG),TOTERG,6,WORK,KFREE,LFREE)
+     &                WORK(KEIG),WORK(KIBEIG),TOTERG,6,WORK,KFREE,LFREE)
           ELSE
            CALL MEMGET2('REAL','CMOSAV',KCMOSAV,0     ,WORK,KFREE,LFREE)
            CALL MEMGET2('REAL','EIG   ',KEIG   ,0     ,WORK,KFREE,LFREE)
