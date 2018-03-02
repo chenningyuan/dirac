@@ -202,7 +202,7 @@ Developers
 ==========
 
 * **Code review:**
-  :doc:`Release preparation <programmers/code_review>`
+  :doc:`Code review workflow <programmers/code_review>`
 
 * **Releasing:**
   :doc:`Release preparation <programmers/release_preparation>` |
