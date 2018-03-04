@@ -2192,6 +2192,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
           end if
         end do
       end if
+      deallocate(ibeig)
 
       end subroutine
 
