@@ -148,6 +148,8 @@ C
 C     Take calculation time of each IJ pair?
 C
       TIMING = .TRUE.
+! initialization
+      KFREE=1
 C
 C     Determine total number of tasks - MTOTTK.
       CALL HERPAR_DET_TASK (I2TYP,1,MTOTTK,NPOS,WORK(KFREE))

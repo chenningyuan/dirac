@@ -77,7 +77,7 @@ C
       Allocate (IBORB(NSTRT(1)))
 C
       I_KIBE21=KIBE(2,1)
-      IF (KIBE(2,1).EQ.0) I_KIBE21=1
+      IF (KIBE(2,1).LE.0) I_KIBE21=1 ! fix value for work
       CALL MRCONE(FMO,ORBE,WORK(KE(1,1)),WORK(KE(2,1)),
      &  IBORB,WORK(KIBE(1,1)),WORK(I_KIBE21),
      &  NSPC,NSTR,NSTRT,IPRTRA,TOTERG,WORK,KFREE,LFREE)
@@ -2192,6 +2192,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
           end if
         end do
       end if
+      deallocate(ibeig)
 
       end subroutine
 
