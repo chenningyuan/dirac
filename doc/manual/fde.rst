@@ -177,7 +177,7 @@ exporting the
 ===================================================
 
 In calculations of magnetic properties with London atomic orbitals (LAOs), additional contributions
-from FDE to the active subsystem should be added in the property gradient. 
+from FDE to the active subsystem should be added in the property gradient (:cite: `olejniczak2017`). 
 
 .. math::
 
