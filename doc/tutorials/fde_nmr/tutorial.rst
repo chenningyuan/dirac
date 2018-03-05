@@ -2,22 +2,24 @@
 
 .. _FDENMR:
 
-==============================================================================================
-Calculation of NMR shieldings in Frozen Density Embedding scheme (with London atomic orbitals)
-==============================================================================================
+==========================================================================================
+NMR shieldings in Frozen Density Embedding (FDE) scheme with London atomic orbitals (LAOs)
+==========================================================================================
 
-In this tutorial we will calculate the NMR shielding tensor with London atomic orbitals
+In this tutorial we will show how to calculate the NMR shielding tensor with London atomic orbitals
 within the FDE scheme. 
 
 
-Basic theory of NMR-LAO with FDE
-================================
+NMR shielding tensor in FDE scheme - theory overview
+====================================================
 
-In order to calculate the NMR properties with LAOs, one must take into account 
-modifications of the property gradient due to the use of perturbation-dependent basis sets.
-For the detailed explanations we encourage the reader to consults Ref. :cite:`Ilias2009`, :cite:`Olejniczak2012`.
+In order to calculate the NMR shielding tensor with LAOs, one must take into account 
+modifications of the property gradient due to the use of perturbation-dependent basis sets (see :cite:`Ilias2009`).
+In FDE scheme, further modifications are needed, since the property gradient includes not only terms from
+isolated subsystems (here marked as "I" and "II"), 
+but also a contribution from the interaction energy between these subsystems (see :cite:`Hofener2013`).
 
-The FDE contribution to the property gradient due to the use of perturbation-dependent basis sets:
+For instance, these new contributions to the property gradient of subsystem "I" can be written as (see :cite: `olejniczak2017`):
 
 .. math::
    :label: fde_pg
@@ -28,7 +30,7 @@ where :math:`\Omega_{pq}^{B}` is the first-order perturbed overlap distribution,
 
 .. math::
 
-    \Omega_{pq}^{B} = \frac{i}{2} (R_{MN} \times r) \Omega_{pq} + (T_{pt}^{B*} \Omega_{tq} + \Omega_{pt}T_{tq}^B)
+    \Omega_{pq}^{B} = \frac{i}{2} (R_{MN} \times r) \Omega_{pq} + (T_{pt}^{B*} \Omega_{tq} + \Omega_{pt}T_{tq}^B),
 
 "direct" LAO term (the first term) and "reorthonormalization" term (two last terms in brackets).
 The :math:`v_{emb}^I` is the embedding potential of subsystem I, :math:`w_{emb}^{I,I}` is the embedding kernel involving subsystem I and :math:`w_{emb}^{I,II}` is the embedding kernel coupling subsystem I and subsystem II.
@@ -66,18 +68,18 @@ Calculations without the FDE coupling terms
 
 Here we demonstrate how to include the first two terms in the property gradient in Eq. :eq:`fde_pg`.
 
-Before launching any calculations, one should think of the numerical grid that will be used
-for the system. In this tutorial, we use a coarse grid generated in DIRAC in preceeding calculations
-on SeH\ :sub:`2`\ - H\ :sub:`2`\ O supermolecule.
-In this case, the numerical grid was exported on a ``numerical_grid`` file which is divided into 
+In this tutorial, we use a coarse grid generated in DIRAC in preceeding calculations
+on SeH\ :sub:`2`\ - H\ :sub:`2`\ O supermolecule, which was then exported on a ``numerical_grid`` file.
+In DIRAC the ``numerical_grid`` file, which can be retrieved from DFT calculations, is divided into 
 batches of points. However, FDE module is able to read only the continuous list of grid points,
 therefore such ``numerical_grid`` file has to be reformatted.
-This can be done by the script, which can be found in ``utils`` directory of DIRAC:
-``dft_to_fde_grid_convert.py``, which should be used on a ``numerical_grid`` file exported from DIRAC:
+This can be done by the script which can be found in ``utils`` directory of DIRAC,
+``dft_to_fde_grid_convert.py``, which should be called from the directory where the ``numerical_grid`` file is:
 
 .. literalinclude:: grid_convert
 
-The original grid file is saved as ``numerical_grid.ORIG``
+This script will overwrite the ``numerical_grid`` and save its original version as ``numerical_grid.ORIG``.
+
 
 Step 1: SCF calculation on the subsystem II (frozen)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -96,14 +98,14 @@ which are copies of a numerical grid file, then to run the calculation as:
 
 .. literalinclude:: getfrozen.run
 
-After this calculation, the ``GRIDOUT`` file will be updated: additional columns on that file
+After this step, the ``GRIDOUT`` file will be updated: additional columns on that file
 correspond to the electrostatic potential and the density of subsystem II
 calculated in each of grid points on that file.
 
 Step 2: SCF and response calculation on the subsystem I (active)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Now we can use the information on the subsystem II written on the ``GRIDOUT`` file for constructing
+Now we can use the information about the subsystem II written on the ``GRIDOUT`` file for constructing
 the embedding potential, :math:`v_{emb}^{I}`, and embedding kernel, :math:`w_{emb}^{I,I}`.
 In order to do that, we use the ``GRIDOUT`` file saved from Step 1 and copy it to a ``FROZEN`` file,
 given as an argument to the :ref:`FRDENS` keyword.
@@ -146,7 +148,7 @@ The calculation on our test molecule give the following results for the isotropi
     v+w11                                2370.2488
     ===================================  =========
 
-``None`` in the table denotes calculation performed without any of presented FDE contributions in the property gradient (the gauge origin is in the center of mass of SeH2).
+``None`` in the table denotes calculation performed with no "new" FDE-LAO terms in the property gradient (the gauge origin is in the center of mass of SeH2).
 
 
 Calculations with the FDE coupling terms
@@ -169,12 +171,12 @@ with the ``pam`` command:
 .. literalinclude:: getfrozen.run
 
 (exactly as done in calculations without the FDE coupling terms presented above). 
-From this step we saved the ``GRIDOUT.h2o`` file.
+From this step we save the ``GRIDOUT.h2o`` file.
 In order to get the density perturbed by an external magnetic field in LAO basis, the following input can be used:
 
 .. literalinclude:: getfrozenpert.inp
 
-which used the keyword :ref:`EXPPED` (under :ref:`NMR` section) commanding the program to save the contributions to the perturbed density on two files ``pertden_direct_lao.FINAL`` and ``pertden_reorth_lao.FINAL``. The pam command is:
+with the keyword :ref:`EXPPED` (under :ref:`NMR` section) asking the program to save the contributions to the perturbed density on two files ``pertden_direct_lao.FINAL`` and ``pertden_reorth_lao.FINAL``. The corresponding pam command is:
 
 .. literalinclude:: getfrozenpert.run
 
