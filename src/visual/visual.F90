@@ -540,6 +540,10 @@ contains
 
       allocate(atom_xyz(4, nucdep))
 
+      if (visual_cfg_3d .and. visual_cfg_3d_gridimp) then
+          call quit('Mutually exclusive keywords found in the input: .3D and .3D_IMP, please choose one')
+      end if
+
       lunit_2d_scalar     = 14
       lunit_2d_vector     = 15
       lunit_2d_flow       = 16
