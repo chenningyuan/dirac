@@ -492,15 +492,15 @@ C
    10         CONTINUE
               CALL interface_MPI_PROBE(df_MPI_ANY_SOURCE,df_MPI_ANY_TAG,
      &                                 global_communicator,ISTAT)
+              NWHO = ISTAT(df_MPI_SOURCE)
               IF (ISTAT(df_MPI_TAG).EQ.20) THEN
-                 CALL interface_MPI_RECV(ITEST,1,df_MPI_ANY_SOURCE,20,
+                 CALL interface_MPI_RECV(ITEST,1,NWHO,20,
      &                                   global_communicator)
               ELSE
                  CALL BUFFER_FILE_RECV ()
                  GOTO 10
               ENDIF
               CALL XTIME(2,2,' Slave requesting task from master')
-              NWHO = ISTAT(df_MPI_SOURCE)
               IF (ITEST .EQ. 0) THEN
 C                ... slave wants new set of A,B shells
                  CALL GETTIM(CPUST,WALLST)
