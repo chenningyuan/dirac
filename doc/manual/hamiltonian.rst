@@ -389,6 +389,9 @@ ADF code (see the developer's website http://www.scm.com for further information
 or via the PyADF scripting framework (see :cite:`Jacob2011` or visit the developer's website http://pyadf.org 
 for further information).
 
+keyword(PEQM)
+
+Activates the polarizable embedding model. Options can be specified under the :ref:`\*PEQM` menu.
 
 keyword(CAP)
 
