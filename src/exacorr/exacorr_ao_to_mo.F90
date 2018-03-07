@@ -9,9 +9,14 @@
         public compute_mo_integrals
         public get_integral_tensor
 
+        interface compute_mo_integrals
+           module procedure talsh_compute_mo_integrals
+        end interface
+
+
        contains
 !-------------------------------------------------------------------------------------------
-        subroutine compute_mo_integrals (nmo, mo_list)
+        subroutine talsh_compute_mo_integrals (nmo, mo_list)
 
 !This subroutine drives the AO to MO integral transformation using AO integrals from InteRest and the tensor contraction library from ExaTensor
 !Currently everything is done in-core, purpose is to provide a working implementation that is suitable for debugging the production code
@@ -44,7 +49,6 @@
          integer(C_SIZE_T):: host_buf_size
          integer(C_INT):: host_arg_max
 
-         real(8)   :: vd,vl,vr
          complex(8):: zero=(0.D0,0.D0)
          complex(8), pointer, contiguous:: ao_tens(:,:,:,:),mo_tens(:,:,:,:)
          type(C_PTR):: body_p
@@ -96,7 +100,7 @@
 !        Make some noise so that we know we are leaving
          print*, " Leaving compute_mo_integrals routine"
          return
-        end subroutine compute_mo_integrals
+        end subroutine talsh_compute_mo_integrals
 
         subroutine get_mocoef_tensor (nao, nmo, mo_list, mocoefa_tensor, mocoefb_tensor)
 
@@ -261,19 +265,25 @@
 
         end subroutine compute_ao_integrals
 
-        subroutine tens_init_ao_integrals(ao_tens,nao,first_ao,ierr)
+        integer function tens_init_ao_integrals(tens_body, data_kind, tens_shape, tens_base) result (ierr)
 
          use exacorr_datatypes
          use module_interest_eri
+         use, intrinsic:: ISO_C_BINDING
+         use exatensor
 
 !Initialization routine that is used to fill a tensor with AO integrals
 
          implicit none
 
-         integer, intent(in):: nao(4)
-         complex(8),intent(out) :: ao_tens(nao(1),nao(2),nao(3),nao(4))
-         integer, intent(in):: first_ao(1:4)
-         integer, intent(out), optional:: ierr
+         type(C_PTR), value:: tens_body                    !in: C pointer to the tensor body (tensor elements)
+         integer(C_INT), value:: data_kind                 !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
+         integer(C_INT), intent(in):: tens_shape(1:*)      !in: tensor shape (extent of each tensor dimension)
+         integer(C_LONG_LONG), intent(in):: tens_base(1:*) !in: base offsets for each tensor dimension)
+
+         integer:: nao(4)
+         complex(8),pointer :: ao_tens(:,:,:,:)
+         integer :: first_ao(1:4)
 
          integer :: nshells(4)
          type(basis_func_info_t), allocatable :: gto1(:), gto2(:), gto3(:), gto4(:)  ! arrays with basis function information
@@ -285,6 +295,17 @@
          real(8), parameter :: fijkl = 1.0
          integer, parameter :: l_max = 6
          integer            :: ncartesian(l_max)
+
+         ierr=0 !set error code to success
+         if(data_kind /= EXA_DATA_KIND_C8) then
+           ierr=-1 !invalid data kind requested
+           return
+         endif
+
+         ! map the arguments to names used in the context of integral evaluation
+         nao(1:4) = tens_shape(1:4)
+         first_ao(1:4) = tens_base(1:4)
+         call c_f_pointer(tens_body,ao_tens,tens_shape(1:4)) !map C pointer to 4-dimensional array
 
 !        calculate number of Cartesian functions for each l-value
          ncartesian(1) = 1
@@ -367,7 +388,7 @@
          deallocate(gto3)
          deallocate(gto4)
          
-        end subroutine tens_init_ao_integrals
+        end function tens_init_ao_integrals
 
         subroutine aomo_transform (aoint_tensor,moint_tensor,nmo,mo_list)
 
@@ -539,7 +560,7 @@
         end subroutine mulliken_to_dirac_sort
 
 
-       subroutine fetch_gtos(first_ao,nao,gto,nshells)
+        subroutine fetch_gtos(first_ao,nao,gto,nshells)
 
          use exacorr_datatypes
          use exacorr_global
@@ -561,6 +582,126 @@
             gto(ish) = get_gto(first_shell+ish-1)
          end do
 
-       end subroutine fetch_gtos
+        end subroutine fetch_gtos
 
+        subroutine exa_compute_mo_integrals (nmo, mo_list)
+
+!This subroutine drives the AO to MO integral transformation using AO integrals from InteRest and the tensor contraction library from ExaTensor
+
+!        Written by Lucas Visscher, march 2018
+ 
+         use dirac_MO
+         use exacorr_datatypes
+         use exacorr_global
+         use module_interest_interface
+         use module_interest_eri
+         use exatensor
+         use mpi
+         use, intrinsic:: ISO_C_BINDING
+
+         implicit none
+         integer, intent(in) :: nmo(4)       ! the size of the mo basis for each of the 4 indices (mulliken ordering)
+         integer, intent(in) :: mo_list(:)   ! and their indices (4 lists consecutively)
+
+         integer             :: i, ierr
+         integer             :: number_aos                 ! the size of the atomic orbital basis
+         integer             :: nshells                    ! the number of shells (orbitals with the same center and l-value)
+         type(basis_func_info_t), allocatable :: shell(:)  ! array with information about the shells
+         integer, parameter :: l_max = 6
+         integer            :: ncartesian(l_max)
+
+         type(subspace_basis_t):: basis_ao
+         type(color_symmetry_t), allocatable :: color(:)
+         integer(INTL):: nao_l,labs, ao_space_root
+         class(h_space_t), pointer:: ao_space
+         integer:: mpi_th_provided, my_rank,my_role, ao_space_id
+         integer:: nao, lsh, l, nl
+
+         type(tens_rcrsv_t):: aoint_tensor
+!later   type(tens_rcrsv_t):: moint_tensor
+
+!        Make some noise so that we know we are here
+         print*, " Arrived in compute_mo_integrals_exa routine"
+
+!        Initialize libraries
+         call interest_initialize
+         print*, " Initialized interest library"
+         call initialize_global_data
+         print*, " Initialized global data"
+
+!        Retrieve basis set information from DIRAC common blocks
+         nao     = number_aos(1)
+         nao_l   = nao ! copy of nao to a long integer
+
+!        Get the basis set information
+         call fetch_gtos(1,nao,shell,nshells)
+!        calculate number of Cartesian functions for each l-value (todo: make this a function !)
+         ncartesian(1) = 1
+         do i = 2, l_max
+            ncartesian(i) = ncartesian(i-1) + i
+         end do
+         
+!        Finalize and restart MPI to make it threaded
+         call MPI_Finalize(ierr)
+         call MPI_Init_Thread(MPI_THREAD_MULTIPLE,mpi_th_provided,ierr)
+         if(mpi_th_provided.eq.MPI_THREAD_MULTIPLE) then
+         call MPI_Comm_rank(MPI_COMM_WORLD,my_rank,ierr)
+
+         !Create a basis for a vector space:
+         call basis_ao%subspace_basis_ctor(nao_l,ierr)
+         !This needs to be an array that is persistent on all nodes
+         allocate(color(nao))
+         if(ierr.ne.0) call quit(ierr,'subspace_basis_t.subspace_basis_ctor() failed!')
+
+         labs = 0
+         do lsh = 1, nshells !set basis functions
+            nl   =  ncartesian(lsh)
+            do  l = 1, nl
+                labs = labs + 1
+                call color(labs)%color_symmetry_ctor(lsh) ! for the moment take one shell as a color
+                call basis_ao%set_basis_func(labs,BASIS_ABSTRACT,ierr,symm=color(labs))
+                if(ierr.ne.0) call quit(ierr,'subspace_basis_t.set_basis_func() failed!')
+            end do
+         enddo
+
+         call basis_ao%finalize(ierr)
+         if(ierr.ne.0) call quit(ierr,'subspace_basis_t.finalize() failed!')
+
+         !Register a vector space:
+         ierr=exatns_space_register('AO_space',basis_ao,ao_space_id,ao_space)
+         if(ierr.ne.0) call quit(ierr,'exatns_space_register() failed!')
+
+!        Run ExaTENSOR within MPI_COMM_WORLD:
+         ierr=exatns_start(MPI_COMM_WORLD)
+         if(ierr.eq.EXA_SUCCESS) then
+          ierr=exatns_process_role(my_role)
+          if(my_role.eq.EXA_DRIVER) then
+
+           !Create ao-tensor:
+           ao_space_root=ao_space%get_root_id(ierr)
+           ierr=exatns_tensor_create(aoint_tensor,'ao_tensor',(/(ao_space_id,i=1,4)/),(/(ao_space_root,i=1,4)/),EXA_DATA_KIND_C8)
+
+           !Initialize ao-tensor:
+!          ierr=exatns_tensor_create(aoint_tensor,'ao_tensor',(/(ao_space_id,i=1,4)/),(/(ao_space_root,i=1,4)/),EXA_DATA_KIND_C8)
+
+           !Destroy ao-tensor:
+           ierr=exatns_tensor_destroy(aoint_tensor)
+          end if
+
+          !Stop ExaTENSOR runtime:
+          ierr=exatns_stop()
+
+         else
+          write(*,*) 'Process ',my_rank,' terminated with error ',ierr
+         endif
+         endif
+
+!        Clean up global data used to interact with DIRAC/Interest
+         call delete_global_data
+
+!        Make some noise so that we know we are leaving
+         print*, " Leaving compute_mo_integrals_exa routine"
+         return
+        end subroutine exa_compute_mo_integrals
+ 
        end module exacorr_ao_to_mo
