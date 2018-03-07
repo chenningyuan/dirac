@@ -1,6 +1,29 @@
 
-Non-relativistic results from Dirac:
-====================================
+Levy-Leblond results from Dirac:
+================================
+
+                                                                LDA,sc,go=(0,0,0)       LDA,nc,go=(0,0,0)    PBE,sc,go=(0,0,0)    PBE,nc,go=(0,0,0)
+
+Isotropic                                                          -2.1051                   -2.1051            -2.0884               -2.0884                                       
+Diamagnetic                                                        -6.6772                   -6.6772            -6.6564               -6.6564                                       
+Paramagnetic                                                        4.5721                    4.5721             4.5680                4.5680                                       
+Parallel                                                           -2.0301                   -2.0301            -2.0178               -2.0178                                       
+Perpendicular                                                      -2.1426                   -2.1426            -2.1237               -2.1237                                       
+Anisotropy                                                          0.1125                    0.1125             0.1060                0.1060                                       
+                                                                                                                                               
+One-electron expectation values (average)                           2.707990                  2.707990           2.667206              2.667206                                                  
+   2-el + dft                                                      -0.718297                 -0.718297          -0.698589             -0.698589
+Highest-order reorthonormalization (average)                       -0.109949                 -0.109949          -0.106654             -0.106654
+Lowest-order reorthonormalization (average)                         5.325702                  5.482021           5.300339              5.466566
+Relaxation (average)                                               -5.100370                 -5.256689          -5.073891             -5.240118
+   lowest order + relaxation                                        0.225332                  0.225332           0.226448              0.226448
+
+
+all values in [au]
+
+sc = symmetric connection
+nc = natural connection
+go = gauge origin
 
 
 
@@ -20,9 +43,11 @@ Anisotropy[au]                                                      0.1125      
 One-electron expectation values (average)                           2.707990                  2.707990           2.667206              2.667206
 Two-electron expectation values (average)                          -0.780471                 -0.780471          -0.757909             -0.757909
 DFT static contribution (average)                                   0.062175                  0.062175           0.059320              0.059320
+    2-el + dft (to compare with DIRAC)                             -0.718296                 -0.718296          -0.698589             -0.698589                                               
 Highest-order reorthonormalization (average)                       -0.109949                 -0.109949          -0.106654             -0.106654
 Lowest-order reorthonormalization (average)                         5.325703                  5.482021           5.300339              5.466566
 Relaxation (average)                                               -5.100370                 -5.256688          -5.073891             -5.240118
+    lowest order + relaxation (to compare with DIRAC)               0.225333                  0.225333           0.226448              0.226448
 
 
 all values in [au]
@@ -30,6 +55,10 @@ all values in [au]
 sc = symmetric connection
 nc = natural connection
 go = gauge origin
+
+
+
+
 
 
 
