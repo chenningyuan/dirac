@@ -629,6 +629,7 @@
 
          type(tens_rcrsv_t):: aoint_tensor
 !later   type(tens_rcrsv_t):: moint_tensor
+         type(compute_2e_ao_tensor_t) :: aoint_calculator
 
 !        Make some noise so that we know we are here
          print*, " Arrived in compute_mo_integrals_exa routine"
@@ -680,6 +681,9 @@
          !Register a vector space:
          ierr=exatns_space_register('AO_space',basis_ao,ao_space_id,ao_space)
          if(ierr.ne.0) call quit(ierr,'exatns_space_register() failed!')
+    
+         !Register the ao integral generation as a method
+         ierr=exatns_method_register('Aoint_calculator',aoint_calculator)
 
 !        Run ExaTENSOR within MPI_COMM_WORLD:
          ierr=exatns_start(MPI_COMM_WORLD)
@@ -692,7 +696,7 @@
            ierr=exatns_tensor_create(aoint_tensor,'ao_tensor',(/(ao_space_id,i=1,4)/),(/(ao_space_root,i=1,4)/),EXA_DATA_KIND_C8)
 
            !Initialize ao-tensor:
-!          ierr=exatns_tensor_create(aoint_tensor,'ao_tensor',(/(ao_space_id,i=1,4)/),(/(ao_space_root,i=1,4)/),EXA_DATA_KIND_C8)
+           ierr=exatns_tensor_init(aoint_tensor,'Aoint_calculator')
 
            !Destroy ao-tensor:
            ierr=exatns_tensor_destroy(aoint_tensor)
