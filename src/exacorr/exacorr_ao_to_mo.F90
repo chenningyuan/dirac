@@ -815,9 +815,27 @@
             do ksh = 1, lsh
                do jsh = 1, lsh
                   do ish = 1, jsh
-                     if (abs(batch_values(ish,jsh,ksh,lsh)-batch_values(jsh,ish,ksh,lsh)).gt.1.e-12) ierr = ierr + 1
-                     if (abs(batch_values(ish,jsh,ksh,lsh)-batch_values(ish,jsh,lsh,ksh)).gt.1.e-12) ierr = ierr + 1
-                     if (abs(batch_values(ish,jsh,ksh,lsh)-batch_values(ksh,lsh,ish,jsh)).gt.1.e-12) ierr = ierr + 1
+                     if (abs(batch_values(ish,jsh,ksh,lsh)-batch_values(jsh,ish,ksh,lsh)).gt.1.e-12) then
+                        ierr = ierr + 1
+                        write (*,'(a,3e20.10,4i4)') 'error in perm. symmetry #1',  &
+                        batch_values(ish,jsh,ksh,lsh),batch_values(jsh,ish,ksh,lsh), &
+                        batch_values(ish,jsh,ksh,lsh)-batch_values(jsh,ish,ksh,lsh), &
+                        ish,jsh,ksh,lsh
+                     end if
+                     if (abs(batch_values(ish,jsh,ksh,lsh)-batch_values(ish,jsh,lsh,ksh)).gt.1.e-12) then
+                        ierr = ierr + 1
+                        write (*,'(a,3e20.10,4i4)') 'error in perm. symmetry #2',  &
+                        batch_values(ish,jsh,ksh,lsh),batch_values(ish,jsh,lsh,ksh), &
+                        batch_values(ish,jsh,ksh,lsh)-batch_values(ish,jsh,lsh,ksh), &
+                        ish,jsh,ksh,lsh
+                     end if
+                     if (abs(batch_values(ish,jsh,ksh,lsh)-batch_values(ksh,lsh,ish,jsh)).gt.1.e-12) then
+                        ierr = ierr + 1
+                        write (*,'(a,3e20.10,4i4)') 'error in perm. symmetry #3',  &
+                        batch_values(ish,jsh,ksh,lsh),batch_values(ksh,lsh,ish,jsh), &
+                        batch_values(ish,jsh,ksh,lsh)-batch_values(ksh,lsh,ish,jsh), &
+                        ish,jsh,ksh,lsh
+                     end if
                   end do
                end do
             end do
