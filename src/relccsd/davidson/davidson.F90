@@ -26,9 +26,9 @@ private
 ! derived types
 
 type davidson_results
-    real(kind=8), pointer :: eValues(:,:) => NULL()
-    real(kind=8), pointer :: eVectorsR(:,:) => NULL()
-    real(kind=8), pointer :: eVectorsL(:,:) => NULL()
+    real(kind=8), pointer :: eValues(:,:) 
+    real(kind=8), pointer :: eVectorsR(:,:)
+    real(kind=8), pointer :: eVectorsL(:,:) 
 end type
 
 
@@ -139,6 +139,11 @@ contains
 ! left vectors, if asked, are ignored
         N_local = N
 
+        results%eValues => NULL()
+        results%eVectorsR => NULL()
+        results%eVectorsL => NULL()
+
+
         if (davidson_symmetric) then
             if (values) then 
                 allocate(results%eValues(1,nroots))
@@ -156,9 +161,15 @@ contains
             if (right) then
                 allocate(results%eVectorsR(N_local,nroots))
                 results%eVectorsR = 0.0d0
+            else
+                allocate(results%eVectorsR(1,nroots))
+                results%eVectorsR = 0.0d0
             end if
             if (left) then
                 allocate(results%eVectorsL(N_local,nroots))
+                results%eVectorsL = 0.0d0
+            else
+                allocate(results%eVectorsL(1,nroots))
                 results%eVectorsL = 0.0d0
             end if
         end if
@@ -1339,6 +1350,9 @@ contains
 !           do_right = 'N'
             allocate(eVectorsL(vectors_N,vectors_L))
             eVectorsL = 0.0d0
+        else
+            allocate(eVectorsL(1,vectors_L))
+            eVectorsL = 0.0d0
         end if
         allocate(eVectorsR(vectors_N,vectors_L))
         allocate(eValues(2,vectors_L))
@@ -1477,7 +1491,7 @@ contains
             if (davidson_solve_lhs) M_small => create_reduced_problem(sigma_vector, b)
 
             if (davidson_debug) call davidson_print_vectors(M_small, label="debug:  small matrix M        ")
-            if (davidson_debug) call dump_to_file(2222, "M_small.bin", M_small)
+            if (davidson_debug) call dump_to_file(2222, "M_small__.bin", M_small)
 
             if (davidson_debug) print *,"niter, folow overlap",niter,(davidson_overlap_sorting.and.(niter.gt.1))
 
@@ -2301,7 +2315,7 @@ contains
 
     subroutine dump_to_file(fileno, filename, matrix)
         integer, intent(in) :: fileno
-        character(len=*), intent(in) :: filename
+        character(len=14), intent(in) :: filename
         real(kind=8) :: matrix(:,:)
         integer :: irec
  
