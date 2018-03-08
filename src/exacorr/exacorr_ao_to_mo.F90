@@ -585,6 +585,7 @@
 
         end subroutine fetch_gtos
 
+#if defined (VAR_MPI)
         subroutine exa_compute_mo_integrals (nmo, mo_list)
 
 !This subroutine drives the AO to MO integral transformation using AO integrals from InteRest and the tensor contraction library from ExaTensor
@@ -704,6 +705,7 @@
          print*, " Leaving compute_mo_integrals_exa routine"
          return
         end subroutine exa_compute_mo_integrals
+#endif
  
         subroutine test_integral_generation (print_level)
 
