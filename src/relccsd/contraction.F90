@@ -119,6 +119,7 @@
     integer               :: irrep_left_loc,irrep_right_loc,irrep_target
     real(8),allocatable   :: ImTensor_temp(:) 
     real(8),allocatable   :: ImTensor_temp_temp(:) 
+    integer :: im_temp_size,  im_half_size_x,  im_half_size_y
 !--------------------------------------------------------------
 
 #include "param.inc"
@@ -186,8 +187,34 @@
 
     else
 
-      allocate (ImTensor_temp(dot_product(x_row,y_column)*rcw))
+   im_temp_size = dot_product(x_row,y_column)
+!
+! aspg: introduced below an additional "cross"-dot product to get the dimension of the work variable below.
+!
+!       just doing a dot product of x_row and y_column to get the total dimesion of the variable
+!       seems fine as far as i can see for groups without inversion symmetry. 
+!
+!       however, in the case of groups with inversion the dot product cannot allow for  calculating the dimensions of kind
+!
+!       x_row(irrep_g) * y_column(irrep_u) (and vice-versa) 
+!
+!       that may occur when one targets a "u" irrep. if the value for the "u" symmetry is smaller than the
+!       value coming from the application of the dot product there will be no consequences, otherwise the xgemm 
+!       call inside cntrct_new can show a segmentation fault. 
+!
+!       below, the final work variable dimension is then set to the maximum between the pure dot product
+!       and the "cross"-dot product
+!
+   im_half_size_x = size(x_row,1)/2     
+   im_half_size_y = size(y_column,1)/2     
+   im_temp_size = max(im_temp_size, &
+  &                   (dot_product(x_row(im_half_size_x+1:im_half_size_x*2),y_column(1:im_half_size_y)) &
+  &                   +dot_product(x_row(1:im_half_size_x),y_column(im_half_size_y+1:im_half_size_y*2))))
+
+   allocate(ImTensor_temp(im_temp_size*rcw))
+
       ImTensor_temp = 0.0d0
+
         call cntrct_new (transA,transB,x_row,y_column,x_column,asym_factor_R*asym_factor_L*dia_factor*A1,v_sort, &
     &                 right_sorted,A1,imTensor_temp,irrep_left_loc,irrep_right_loc,irrep_target,.false.) 
 
@@ -694,6 +721,7 @@
     integer :: maxdim 
     real(8),allocatable :: im_temp(:)
     real(8),allocatable :: im_temp_temp(:)
+    integer :: im_temp_size, im_half_size_x, im_half_size_y
 
 #include "param.inc"
 #include "complex.inc"
@@ -738,8 +766,33 @@
 
 !  2) matrix-matrix multiplication routine runs for each irreps.
 
-   allocate(im_temp(dot_product(x_row,y_column)*rcw))
+   im_temp_size = dot_product(x_row,y_column)
+!
+! aspg: introduced below an additional "cross"-dot product to get the dimension of the work variable below.
+!
+!       just doing a dot product of x_row and y_column to get the total dimesion of the variable
+!       seems fine as far as i can see for groups without inversion symmetry. 
+!
+!       however, in the case of groups with inversion the dot product cannot allow for  calculating the dimensions of kind
+!
+!       x_row(irrep_g) * y_column(irrep_u) (and vice-versa) 
+!
+!       that may occur when one targets a "u" irrep. if the value for the "u" symmetry is smaller than the
+!       value coming from the application of the dot product there will be no consequences, otherwise the xgemm 
+!       call inside cntrct_new can show a segmentation fault. 
+!
+!       below, the final work variable dimension is then set to the maximum between the pure dot product
+!       and the "cross"-dot product
+!
+   im_half_size_x = size(x_row,1)/2 
+   im_half_size_y = size(y_column,1)/2 
+   im_temp_size = max(im_temp_size, &
+  & (dot_product(x_row(im_half_size_x+1:im_half_size_x*2),y_column(1:im_half_size_y)) &
+  & +dot_product(x_row(1:im_half_size_x),y_column(im_half_size_y+1:im_half_size_y*2))))
+
+   allocate(im_temp(im_temp_size*rcw))
    im_temp = 0.0d0
+
 
     if (present(RightTensor)) call cntrct_new (transA,transB,x_row,y_column,x_column,asym_factor*dia_factor*A1,v_sort, &
     &                                      RightTensor,A1,im_temp,irrep_left_loc,irrep_right_loc,irrep_target,.false.)
@@ -807,6 +860,7 @@
     integer :: maxdim 
     real(8),allocatable :: im_temp(:)
     real(8),allocatable :: im_temp_temp(:)
+    integer :: im_temp_size,  im_half_size_x,  im_half_size_y
 
 #include "param.inc"
 #include "complex.inc"
@@ -852,12 +906,35 @@
 
 !  3) matrix-matrix multiplication routine runs over each irreps.
 
-   allocate(im_temp(dot_product(x_row,y_column)*rcw))
+   im_temp_size = dot_product(x_row,y_column)
+!
+! aspg: introduced below an additional "cross"-dot product to get the dimension of the work variable below.
+!
+!       just doing a dot product of x_row and y_column to get the total dimesion of the variable
+!       seems fine as far as i can see for groups without inversion symmetry. 
+!
+!       however, in the case of groups with inversion the dot product cannot allow for  calculating the dimensions of kind
+!
+!       x_row(irrep_g) * y_column(irrep_u) (and vice-versa) 
+!
+!       that may occur when one targets a "u" irrep. if the value for the "u" symmetry is smaller than the
+!       value coming from the application of the dot product there will be no consequences, otherwise the xgemm 
+!       call inside cntrct_new can show a segmentation fault. 
+!
+!       below, the final work variable dimension is then set to the maximum between the pure dot product
+!       and the "cross"-dot product
+!
+   im_half_size_x = size(x_row,1)/2     
+   im_half_size_y = size(y_column,1)/2     
+   im_temp_size = max(im_temp_size, &
+  & (dot_product(x_row(im_half_size_x+1:im_half_size_x*2),y_column(1:im_half_size_y)) &
+  & +dot_product(x_row(1:im_half_size_x),y_column(im_half_size_y+1:im_half_size_y*2))))
+
+   allocate(im_temp(im_temp_size*rcw))
    im_temp = 0.0d0
 
 ! if (present(LeftTensor)) call cntrct (transA,transB,x_row,y_column,y_row,asym_factor*dia_factor*A1,LeftTensor,&
 ! &        right_sort,A0,im_temp,nrep) 
-
 
   if (present(LeftTensor)) call cntrct_new (transA,transB,x_row,y_column,y_row,asym_factor*dia_factor*A1,LeftTensor,&
   &        right_sort,A1,im_temp,irrep_left_loc,irrep_right_loc,irrep_target,.false.) 
