@@ -2,6 +2,7 @@
 !integrating the ExaTensor library with the DIRAC code.
        module exacorr_ao_to_mo
 
+        use exatensor
 
         implicit none
         private
@@ -13,17 +14,24 @@
            module procedure talsh_compute_mo_integrals
         end interface
 
+!TYPES:
+ !Block-wise initializer for the 2e AO integral tensor:
+        type, extends(tens_method_uni_t), public:: compute_2e_ao_tensor_t
+         contains
+          procedure, public:: apply=>compute_2e_ao_tensor
+        end type compute_2e_ao_tensor_t
+
 
        contains
-!-------------------------------------------------------------------------------------------
+!-----------------------------------------------------------
         subroutine talsh_compute_mo_integrals (nmo, mo_list)
 
 !This subroutine drives the AO to MO integral transformation using AO integrals from InteRest and the tensor contraction library from ExaTensor
 !Currently everything is done in-core, purpose is to provide a working implementation that is suitable for debugging the production code
 !The integrals are written to MDCINT, to allow for testing with unmodified DIRAC correlation modules
- 
+
 !        Written by Lucas Visscher, winter 2016/2017
- 
+
          use dirac_MO
          use exacorr_datatypes
          use exacorr_global
@@ -68,7 +76,7 @@
 
 !        Retrieve basis set information from DIRAC common blocks
          nao     = number_aos(1)
-         
+
 !        Set tensor dimensions for the index transformation (simple brute-force algorithm)
          aoint_dims      = nao
          moint_dims(1:4) = 2 * nmo(1:4)
@@ -88,7 +96,7 @@
          ierr=talsh_tensor_get_body_access(moint_tensor,body_p,C8,0,DEV_HOST)
          call c_f_pointer(body_p,mo_tens,moint_dims(1:4))
          call write_to_mdcint (nmo,2,mo_tens)
-     
+
 !        Destruct remaining tensors and shut down library
          ierr=talsh_tensor_destruct(aoint_tensor)
          ierr=talsh_tensor_destruct(moint_tensor)
@@ -105,9 +113,9 @@
         subroutine get_mocoef_tensor (nao, nmo, mo_list, mocoefa_tensor, mocoefb_tensor)
 
 !This subroutine reads the desired subset of mo coefficients from DIRAC
- 
+
 !        Written by Lucas Visscher, winter 2016/2017 (but in Goa, India, temperature about 30 C)
- 
+
          use dirac_MO
          use tensor_algebra
          use talsh
@@ -260,7 +268,7 @@
             end do
             loff = loff + nl
          end do
-         
+
          deallocate(gto)
 
         end subroutine compute_ao_integrals
@@ -276,10 +284,10 @@
 
          implicit none
 
-         type(C_PTR), value:: tens_body                    !in: C pointer to the tensor body (tensor elements)
-         integer(C_INT), value:: data_kind                 !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
-         integer(C_INT), intent(in):: tens_shape(1:*)      !in: tensor shape (extent of each tensor dimension)
-         integer(C_LONG_LONG), intent(in):: tens_base(1:*) !in: base offsets for each tensor dimension)
+         type(C_PTR), value:: tens_body                     !in: C pointer to the tensor body (tensor elements)
+         integer(C_INT), value:: data_kind                  !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
+         integer(C_LONG_LONG), intent(in):: tens_shape(1:*) !in: tensor shape (extent of each tensor dimension)
+         integer(C_LONG_LONG), intent(in):: tens_base(1:*)  !in: base offsets for each tensor dimension)
 
          integer:: nao(4)
          complex(8),pointer :: ao_tens(:,:,:,:)
@@ -303,9 +311,9 @@
          endif
 
          ! map the arguments to names used in the context of integral evaluation
-         nao(1:4) = tens_shape(1:4)
          first_ao(1:4) = tens_base(1:4)
-         call c_f_pointer(tens_body,ao_tens,tens_shape(1:4)) !map C pointer to 4-dimensional array
+         nao(1:4) = tens_shape(1:4)
+         call c_f_pointer(tens_body,ao_tens,nao(1:4)) !map C pointer to 4-dimensional array
 
 !        calculate number of Cartesian functions for each l-value
          ncartesian(1) = 1
@@ -387,13 +395,13 @@
          deallocate(gto2)
          deallocate(gto3)
          deallocate(gto4)
-         
+
         end function tens_init_ao_integrals
 
         subroutine aomo_transform (aoint_tensor,moint_tensor,nmo,mo_list)
 
-!        Transform integral tensor from ao-basis to mo-basis 
- 
+!        Transform integral tensor from ao-basis to mo-basis
+
          use tensor_algebra
          use talsh
 
@@ -466,7 +474,7 @@
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=32; return; endif
          ierr=talsh_tensor_contract("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoefb_tensor(4))
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=42; return; endif
- 
+
 !        Destruct a2 and a3 integrals:
          ierr=talsh_tensor_destruct(a2int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=35; return; endif
          ierr=talsh_tensor_destruct(a3int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=45; return; endif
@@ -476,11 +484,11 @@
         end subroutine aomo_transform
 
         subroutine get_integral_tensor (aoint_tensor,integral_tensor,antisymmetrize,nmo,mo_list)
- 
+
 
          use tensor_algebra
          use talsh
-       
+
          implicit none
 
          complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0)
@@ -506,7 +514,7 @@
 
          use tensor_algebra
          use talsh
-       
+
          implicit none
 
          complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0)
@@ -590,7 +598,7 @@
 !This subroutine drives the AO to MO integral transformation using AO integrals from InteRest and the tensor contraction library from ExaTensor
 
 !        Written by Lucas Visscher, march 2018
- 
+
          use dirac_MO
          use exacorr_datatypes
          use exacorr_global
@@ -641,7 +649,7 @@
          do i = 2, l_max
             ncartesian(i) = ncartesian(i-1) + i
          end do
-         
+
 !        Finalize and restart MPI to make it threaded
          call MPI_Finalize(ierr)
          call MPI_Init_Thread(MPI_THREAD_MULTIPLE,mpi_th_provided,ierr)
@@ -705,5 +713,38 @@
          return
         end subroutine exa_compute_mo_integrals
 #endif
- 
+
+!---------------------------------------------------------------------
+        function compute_2e_ao_tensor(this,tensor,scalar) result(ierr)
+         use, intrinsic:: ISO_C_BINDING
+         implicit none
+         integer(INTD):: ierr
+         class(compute_2e_ao_tensor_t), intent(in):: this
+         class(tens_rcrsv_t), intent(inout):: tensor
+         complex(8), intent(inout), optional:: scalar
+         integer(INTL):: tens_shape(1:MAX_TENSOR_RANK)
+         integer(INTL):: tens_signa(1:MAX_TENSOR_RANK)
+         integer(INTD):: data_kind,n
+         type(C_PTR):: tens_body_p
+
+         ierr=0
+#if 0
+         data_kind=tensor%get_data_type(ierr)
+         if(ierr.ne.0) then; ierr=-6; return; endif
+         call tensor%get_dims(tens_shape,n,ierr)
+         if(ierr.ne.0) then; ierr=-5; return; endif
+         if(n.eq.4) then !order-4 tensor
+          call tensor%get_bases(tens_signa,n,ierr)
+          if(ierr.ne.0) then; ierr=-4; return; endif
+          call tensor%get_body_ptr(tens_body_p,ierr)
+          if(ierr.ne.0) then; ierr=-3; return; endif
+          ierr=tens_init_ao_integrals(tens_body_p,data_kind,tens_shape(1:n),tens_signa(1:n))
+          if(ierr.ne.0) then; ierr=-2; return; endif
+         else
+          ierr=-1
+         endif
+#endif
+         return
+        end function compute_2e_ao_tensor
+
        end module exacorr_ao_to_mo
