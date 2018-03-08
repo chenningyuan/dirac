@@ -78,7 +78,7 @@
          ierr=talsh_init(host_buf_size,host_arg_max)
          print*, " Initialized talsh library"
          write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,host_buf_size,host_arg_max
-         call interest_initialize
+         call interest_initialize(.true.)
          print*, " Initialized interest library"
          call initialize_global_data
          print*, " Initialized global data"

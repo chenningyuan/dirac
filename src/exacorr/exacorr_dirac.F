@@ -28,6 +28,9 @@ C***********************************************************************
       if (nfsym.ne.1) then
          call quit ('exacorr can not handle symmetry')
       end if
+
+C     Test the AO integral generation
+      call test_integral_generation (1)
 C
 C     Transfer necessary information from common blocks
       orbital_string = tra4_indstr(:,1) ! This is to be changed once we have an exacorr-specific input driver
@@ -50,6 +53,7 @@ C     Fill the array with orbital indices
      & (orbital_string(i),mo_list(imo),nmo(i),1,nesh(1),1,nmo(i))
        imo = imo + nmo(i)
       end do
+
 C
 C     Transformed AO to MO integrals are written to MDCINT
       call mdinti (0) 
