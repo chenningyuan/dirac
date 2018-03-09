@@ -16,11 +16,13 @@
         end interface
 
 !TYPES:
+#if defined (VAR_MPI)
  !Block-wise initializer for the 2e AO integral tensor:
         type, extends(tens_method_uni_t), public:: compute_2e_ao_tensor_t
          contains
           procedure, public:: apply=>compute_2e_ao_tensor
         end type compute_2e_ao_tensor_t
+#endif
 
 
        contains
@@ -145,7 +147,7 @@
 
          call get_dirac_mo_coefficients (ifrp,qmo,mo_list,nmo)
 
-!        Copy the coefficients into the alpha and beta tensors, using the quaternion relations as defined in 
+!        Copy the coefficients into the alpha and beta tensors, using the quaternion relations as defined in
 !        T. Saue, H. Jensen, J. Chem. Phys. 111 (1999) 6211–6222, Equation 16.
 !        The coefficients for the barred spinors (that start after the nmo(i) unbarred spinors) are generated
 !        using Kramers' symmetry.
@@ -681,7 +683,7 @@
          !Register a vector space:
          ierr=exatns_space_register('AO_space',basis_ao,ao_space_id,ao_space)
          if(ierr.ne.0) call quit(ierr,'exatns_space_register() failed!')
-    
+
          !Register the ao integral generation as a method
          ierr=exatns_method_register('Aoint_calculator',aoint_calculator)
 
@@ -732,7 +734,6 @@
          type(C_PTR):: tens_body_p
 
          ierr=0
-#if 0
          data_kind=tensor%get_data_type(ierr)
          if(ierr.ne.0) then; ierr=-6; return; endif
          call tensor%get_dims(tens_shape,n,ierr)
@@ -740,14 +741,13 @@
          if(n.eq.4) then !order-4 tensor
           call tensor%get_bases(tens_signa,n,ierr)
           if(ierr.ne.0) then; ierr=-4; return; endif
-          call tensor%get_body_ptr(tens_body_p,ierr)
+          tens_body_p=tensor%get_body_ptr(ierr)
           if(ierr.ne.0) then; ierr=-3; return; endif
           ierr=tens_init_ao_integrals(tens_body_p,data_kind,tens_shape(1:n),tens_signa(1:n))
           if(ierr.ne.0) then; ierr=-2; return; endif
          else
           ierr=-1
          endif
-#endif
          return
         end function compute_2e_ao_tensor
 
