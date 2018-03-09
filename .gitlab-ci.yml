@@ -1,0 +1,19 @@
+variables:
+  GIT_SSL_NO_VERIFY: "true"
+  GIT_STRATEGY: "clone"
+  GIT_SUBMODULE_STRATEGY: "recursive"
+
+ubuntu:
+  image: ubuntu
+  before_script:
+    - apt-get -qq update
+    - apt-get -qq -y install cmake
+    - apt-get -qq -y install gfortran
+    - apt-get -qq -y install gcc
+    - apt-get -qq -y install g++
+    - apt-get -qq -y install python
+  script:
+    - ./setup
+    - cd build
+    - make -j2
+    - ctest -j2
