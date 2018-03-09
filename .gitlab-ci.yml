@@ -16,4 +16,4 @@ ubuntu:
     - ./setup
     - cd build
     - make -j2
-    - ctest -j2
+    - ctest -j2 -L short
