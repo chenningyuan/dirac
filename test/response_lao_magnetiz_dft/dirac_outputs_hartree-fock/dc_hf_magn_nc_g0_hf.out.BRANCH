@@ -1,0 +1,2989 @@
+DIRAC pam run in /home/gosia/jobs/tests/dirac_tests/magnetizabilities/hf/hartree-fock/master/test
+  ** interface to 32-bit integer MPI enabled **
+
+DIRAC master    (u-5-3.local) starts by allocating            256000000 r*8 words (          1953 MB) of memory
+DIRAC nodes 1 to 7 starts by allocating            256000000 r*8 words (          1953 MB) of memory
+DIRAC master    (u-5-3.local) to allocate at most             500000000 r*8 words (          3814 MB) of memory
+ 
+Note: maximum allocatable memory for master+nodes can be set by -aw flag (MW) in pam
+ 
+DIRAC nodes 1 to 7 to allocate at most             500000000 r*8 words (          3814 MB) of memory
+ *******************************************************************************
+ *                                                                             *
+ *                                O U T P U T                                  *
+ *                                   from                                      *
+ *                                                                             *
+ *                   @@@@@    @@   @@@@@     @@@@     @@@@@                    *
+ *                   @@  @@        @@  @@   @@  @@   @@                        *
+ *                   @@  @@   @@   @@@@@    @@@@@@   @@                        *
+ *                   @@  @@   @@   @@ @@    @@  @@   @@                        *
+ *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                    *
+ *                                                                             *
+ *                                                                             *
+ %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:%
+ $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::$
+ (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::(
+ $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:$
+ SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.S
+ SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::S
+ ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::?
+ S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.S
+ (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.(
+ $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/$
+ S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:iS
+ c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::c
+ S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::S
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::$
+ $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::$
+ ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::(
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:Z
+ (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|(
+ SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||S
+ $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:$
+ %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::%
+ $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:$
+ $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::$
+ )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/)
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii$
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////$
+ Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/Z
+ $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::$
+ &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::&
+ =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/=
+ $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|$
+ MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>M
+ MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:M
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%M
+ MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;M
+ MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<SM
+ MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$SM
+ MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<M
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></M
+ MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&M
+ MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SFM
+ MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]ZkM
+ MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&M
+ MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&M
+ MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&FM
+ MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&M
+ MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6M
+ MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969kM
+ MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&M
+ MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1M
+ MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&M
+ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9ZM
+ MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6M
+ MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][FM
+ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&M
+ *******************************************************************************
+ *                                                                             *
+ *         =========================================================           *
+ *                     Program for Atomic and Molecular                        *
+ *          Direct Iterative Relativistic All-electron Calculations            *
+ *         =========================================================           *
+ *                                                                             *
+ *                                                                             *
+ *    Written by:                                                              *
+ *                                                                             *
+ *    Radovan Bast             UiT The Arctic University of      Norway        *
+ *    Trond Saue               Universite Toulouse III           France        *
+ *    Lucas Visscher           VU University Amsterdam           Netherlands   *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
+ *                                                                             *
+ *    with contributions from:                                                 *
+ *                                                                             *
+ *    Vebjoern Bakken          University of Oslo                Norway        *
+ *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *
+ *    Sebastien Dubillard      University of Strasbourg          France        *
+ *    Ulf Ekstroem             University of Oslo                Norway        *
+ *    Ephraim Eliav            University of Tel Aviv            Israel        *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
+ *    Elke Fasshauer           UiT The Arctic University of      Norway        *
+ *    Timo Fleig               Universite Toulouse III           France        *
+ *    Olav Fossgaard           UiT The Arctic University of      Norway        *
+ *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
+ *    Trygve Helgaker          University of Oslo                Norway        *
+ *    Johan Henriksson         Linkoeping University             Sweden        *
+ *    Miroslav Ilias           Matej Bel University              Slovakia      *
+ *    Christoph R. Jacob       TU Braunschweig                   Germany       *
+ *    Stefan Knecht            ETH Zuerich                       Switzerland   *
+ *    Stanislav Komorovsky     UiT The Arctic University of      Norway        *
+ *    Ossama Kullie            University of Kassel              Germany       *
+ *    Jon K. Laerdahl          University of Oslo                Norway        *
+ *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
+ *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
+ *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
+ *    Malaya Kumar Nayak       Bhabha Atomic Research Centre     India         *
+ *    Patrick Norman           Linkoeping University             Sweden        *
+ *    Malgorzata Olejniczak    CNRS/Universite de Lille          France        *
+ *    Jeppe Olsen              Aarhus University                 Denmark       *
+ *    Young Choon Park         KAIST, Daejeon                    South Korea   *
+ *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
+ *    Markus Pernpointner      University of Heidelberg          Germany       *
+ *    Roberto Di Remigio       UiT The Arctic University of      Norway        *
+ *    Kenneth Ruud             UiT The Arctic University of      Norway        *
+ *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
+ *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
+ *    Jetze Sikkema            VU University Amsterdam           Netherlands   *
+ *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
+ *    Joern Thyssen            University of Southern Denmark    Denmark       *
+ *    Joost van Stralen        VU University Amsterdam           Netherlands   *
+ *    Sebastien Villaume       Linkoeping University             Sweden        *
+ *    Olivier Visser           University of Groningen           Netherlands   *
+ *    Toke Winther             University of Southern Denmark    Denmark       *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan         *
+ *                                                                             *
+ *    For the complete list of contributors to the DIRAC code see our          *
+ *    website http://www.diracprogram.org                                      *
+ *                                                                             *
+ *    This is an experimental code. The authors accept no responsibility       *
+ *    for the performance of the code or for the correctness of the results.   *
+ *                                                                             *
+ *    The code (in whole or part) is not to be reproduced for further          *
+ *    distribution without the written permission of the authors or            *
+ *    their representatives.                                                   *
+ *                                                                             *
+ *    If results obtained with this code are published, an                     *
+ *    appropriate citation would be:                                           *
+ *                                                                             *
+ *    DIRAC, a relativistic ab initio electronic structure program,            *
+ *    Release DIRAC15 (2015),                                                  *
+ *    written by R. Bast, T. Saue, L. Visscher, and H. J. Aa. Jensen,          *
+ *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,            *
+ *    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *
+ *    O. Fossgaard, A. S. P. Gomes, T. Helgaker, J. Henriksson, M. Ilias,      *
+ *    Ch. R. Jacob, S. Knecht, S. Komorovsky, O. Kullie, J. K. Laerdahl,       *
+ *    C. V. Larsen, Y. S. Lee, H. S. Nataraj, M. K. Nayak, P. Norman,          *
+ *    G. Olejniczak, J. Olsen, Y. C. Park, J. K. Pedersen, M. Pernpointner,    *
+ *    R. Di Remigio, K. Ruud, P. Salek, B. Schimmelpfennig, J. Sikkema,        *
+ *    A. J. Thorvaldsen, J. Thyssen, J. van Stralen, S. Villaume, O. Visser,   *
+ *    T. Winther, and S. Yamamoto (see http://www.diracprogram.org).           *
+ *                                                                             *
+ *******************************************************************************
+
+ ---  Git version information  ---
+                Git branch : gosia-magnetic-all
+      Last git commit hash : 54ab939
+    Last git commit author : Andre Gomes
+      Last git commit date : Fri Apr 7 16:59:47 2017 +0200
+
+---  Configuration and build info  ---
+              Who compiled : gosia
+        Compiled on server : phlam-s-sakura.univ-lille1.fr
+          Operating system : Linux-2.6.32-504.16.2.el6.x86_64
+            Python version : 2.6.6
+             CMake version : 3.5.1
+           CMake generator : Unix Makefiles
+          CMake build type : release
+       MPI parallelization : True
+              MPI launcher : /share/apps/intel/impi/4.1.0.024/intel64/bin/mpiexec -np <np>
+           64-bit integers : False
+          Fortran compiler : /share/apps/intel/impi/4.1.0.024/intel64/bin/mpiifort
+  Fortran compiler version : 13.0
+    Fortran compiler flags :   -w -assume byterecl -g -traceback -DVAR_IFORT   -w -assume byterecl -g -traceback -DVAR_IFORT 
+                C compiler : /share/apps/intel/impi/4.1.0.024/intel64/bin/mpiicc
+        C compiler version : 13.0
+          C compiler flags :   -g -wd981 -wd279 -wd383 -wd1572 -wd177   -g -wd981 -wd279 -wd383 -wd1572 -wd177 
+              C++ compiler : /share/apps/intel/impi/4.1.0.024/intel64/bin/mpiicpc
+      C++ compiler version : 13.0.1
+        C++ compiler flags :   -Wno-unknown-pragmas   -Wno-unknown-pragmas 
+            Static linking : False
+      Builtin BLAS library : OFF
+    Builtin LAPACK library : OFF
+    Mathematical libraries : unknown
+        Explicit libraries : unknown
+       Modules definitions : HAVE_MKL_BLAS;HAVE_MKL_LAPACK;HAVE_MPI;VAR_MPI;VAR_MPI2;USE_MPI_MOD_F90;MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;MOD_QCORR;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT
+       Configuration time :  2018-03-09 18:11:04.014691
+-----------------------------------------------------------------
+ Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
+
+Execution time and host
+-----------------------
+
+ 
+     Date and time (Linux)  : Fri Mar  9 19:12:13 2018
+     Host name              : u-5-3.local                             
+
+
+Contents of the input file
+--------------------------
+
+**DIRAC                                                                                             
+.PROPERTIES                                                                                         
+**MOLECULE                                                                                          
+*BASIS                                                                                              
+.DEFAULT                                                                                            
+ cc-pVDZ                                                                                            
+*SYMMETRY                                                                                           
+.NOSYM                                                                                              
+**GENERAL                                                                                           
+.RKBIMP                                                                                             
+**HAMILTONIAN                                                                                       
+.URKBAL                                                                                             
+**INTEGRALS                                                                                         
+*READIN                                                                                             
+.UNCONTRACT                                                                                         
+**WAVE FUNCTIONS                                                                                    
+.SCF                                                                                                
+*SCF                                                                                                
+.CLOSED SHELL                                                                                       
+10                                                                                                  
+.EVCCNV                                                                                             
+1.0E-08  1.0E-07                                                                                    
+**PROPERTIES                                                                                        
+.PRINT                                                                                              
+2                                                                                                   
+.MAGNETIZ                                                                                           
+*NMR                                                                                                
+.LONDON                                                                                             
+.GAUGEO                                                                                             
+0.0 0.0 0.0                                                                                         
+*LINEAR RESPONSE                                                                                    
+.PRINT                                                                                              
+2                                                                                                   
+.THRESH                                                                                             
+1.0E-09                                                                                             
+.MAXITR                                                                                             
+100                                                                                                 
+*END OF                                                                                             
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+
+
+Contents of the molecule file
+-----------------------------
+
+2                                                                                                   
+                                                                                                    
+H         0.000000    0.000000    0.000000                                                          
+F         0.000000    0.000000    0.917000                                                          
+
+
+    *************************************************************************
+    ********************* DIRAC: No title specified !!! *********************
+    *************************************************************************
+
+ Jobs in this run:
+   * Properties
+
+
+    **************************************************************************
+    ************************** General DIRAC set-up **************************
+    **************************************************************************
+
+   CODATA Recommended Values of the Fundamental Physical Constants: 1998  
+                Peter J. Mohr and Barry N. Taylor                         
+   Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
+ * The speed of light :        137.0359998
+ * Running in four-component mode
+ * Parallel run with 7 slaves.
+ * Direct evaluation of the following two-electron integrals:
+   - LL-integrals
+   - SL-integrals
+   - SS-integrals
+   - GT-integrals
+ * Spherical transformation embedded in MO-transformation
+   for large components
+ * Transformation to scalar RKB basis embedded in
+   MO-transformation for small components
+ * Thresholds for linear dependence:
+   Large components:   1.00D-06
+   Small components:   1.00D-08
+ * Read RKB coefficients and extended with complementary UKB space
+    Projection threshold:  0.20E-04
+ * General print level   :   0
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+ Default print level:        1
+ Nuclear model: Gaussian charge distribution.
+
+ Two-electron integrals not calculated.
+
+
+ Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
+
+
+
+ Changes of defaults for *READIN
+ -------------------------------
+
+
+ Uncontracted basis forced, irrespective of basis input file.
+
+
+
+   ***************************************************************************
+   ****************** Output from MOLECULE input processing ******************
+   ***************************************************************************
+
+
+
+                          SYMGRP:Point group information
+                          ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                            **************************
+                            *** Output from DBLGRP ***
+                            **************************
+
+   * One fermion irrep:   E1 
+   * Quaternionic group. NZ = 4
+   * Direct product decomposition:
+          E1  x E1  : A   + A   + A   + A  
+
+
+                                 Spinor structure
+                                 ----------------
+
+
+   * Fermion irrep no.: 1
+      La  |  A  (1)  A  (1)  |
+      Sa  |  A  (1)  A  (1)  |
+      Lb  |  A  (1)  A  (1)  |
+      Sb  |  A  (1)  A  (1)  |
+
+
+                              Quaternion symmetries
+                              ---------------------
+
+    Rep  T(+)
+    -----------------------------
+    A    1  i  j  k
+
+  QM-QM nuclear repulsion energy :      5.193669438059
+
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:    2
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  H           1       1       7       7      L  - [4s1p|4s1p]                                                    
+                             19      19      S  - [1s4p1d|1s4p1d]                                                
+  F           1       9      27      27      L  - [9s4p1d|9s4p1d]                                                
+                             68      68      S  - [4s10p4d1f|4s10p4d1f]                                          
+  ----------------------------------------------------------------------
+                             34      34      L  - large components
+                             87      87      S  - small components
+  ----------------------------------------------------------------------
+  total:      2      10     121     121
+
+  Cartesian basis used.
+  Threshold for integrals (to be written to file):  1.00D-15
+
+
+  References for the basis sets
+  -----------------------------
+
+  Atom type   1   2
+   Elements                             References                                
+   --------                             ----------                                
+   H      : T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                     
+   He     : D.E. Woon and T.H. Dunning, Jr. J. Chem. Phys. 100, 2975 (1994).      
+   Li - Ne: T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                     
+   Na - Mg: D.E. Woon and T.H. Dunning, Jr.  (to be published)                    
+   Al - Ar: D.E. Woon and T.H. Dunning, Jr.  J. Chem. Phys. 98, 1358 (1993).      
+   Ca     : J. Koput and K.A. Peterson, J. Phys. Chem. A, 106, 9595 (2002).       
+   Ga - Kr: A.K. Wilson, D.E. Woon, K.A. Peterson, T.H. Dunning, Jr.,             
+            J. Chem. Phys., 110, 7667 (1999)                                      
+
+
+  Cartesian Coordinates (bohr)
+  ----------------------------
+
+  Total number of coordinates:  6
+
+
+   1   H        x      0.0000000000
+   2            y      0.0000000000
+   3            z      0.0000000000
+
+   4   F        x      0.0000000000
+   5            y      0.0000000000
+   6            z      1.7328788648
+
+
+
+  Cartesian coordinates in XYZ format (Angstrom)
+  ----------------------------------------------
+
+    2
+ 
+H      0.0000000000   0.0000000000   0.0000000000
+F      0.0000000000   0.0000000000   0.9170000000
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            H           F   
+
+   H       0.000000
+   F       0.917000    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    F          H                              0.917000
+
+
+
+   Nuclear repulsion energy :    5.193669438059 Hartree
+
+
+                                GETLAB: AO-labels
+                                -----------------
+
+   * Large components:   14
+     1  L H   1 s        2  L H   1 px       3  L H   1 py       4  L H   1 pz       5  L F   1 s        6  L F   1 px  
+     7  L F   1 py       8  L F   1 pz       9  L F   1 dxx     10  L F   1 dxy     11  L F   1 dxz     12  L F   1 dyy 
+    13  L F   1 dyz     14  L F   1 dzz 
+   * Small components:   30
+    15  S H   1 s       16  S H   1 px      17  S H   1 py      18  S H   1 pz      19  S H   1 dxx     20  S H   1 dxy 
+    21  S H   1 dxz     22  S H   1 dyy     23  S H   1 dyz     24  S H   1 dzz     25  S F   1 s       26  S F   1 px  
+    27  S F   1 py      28  S F   1 pz      29  S F   1 dxx     30  S F   1 dxy     31  S F   1 dxz     32  S F   1 dyy 
+    33  S F   1 dyz     34  S F   1 dzz     35  S F   1 fxxx    36  S F   1 fxxy    37  S F   1 fxxz    38  S F   1 fxyy
+    39  S F   1 fxyz    40  S F   1 fxzz    41  S F   1 fyyy    42  S F   1 fyyz    43  S F   1 fyzz    44  S F   1 fzzz
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          121
+  Number of large orbitals in each symmetry:     34
+  Number of small orbitals in each symmetry:     87
+
+* Large component functions
+
+  Symmetry  A  ( 1)
+
+        4 functions:    H  s   
+        1 functions:    H  px  
+        1 functions:    H  py  
+        1 functions:    H  pz  
+        9 functions:    F  s   
+        4 functions:    F  px  
+        4 functions:    F  py  
+        4 functions:    F  pz  
+        1 functions:    F  dxx 
+        1 functions:    F  dxy 
+        1 functions:    F  dxz 
+        1 functions:    F  dyy 
+        1 functions:    F  dyz 
+        1 functions:    F  dzz 
+
+* Small component functions
+
+  Symmetry  A  ( 1)
+
+        1 functions:    H  s   
+        4 functions:    H  px  
+        4 functions:    H  py  
+        4 functions:    H  pz  
+        1 functions:    H  dxx 
+        1 functions:    H  dxy 
+        1 functions:    H  dxz 
+        1 functions:    H  dyy 
+        1 functions:    H  dyz 
+        1 functions:    H  dzz 
+        4 functions:    F  s   
+       10 functions:    F  px  
+       10 functions:    F  py  
+       10 functions:    F  pz  
+        4 functions:    F  dxx 
+        4 functions:    F  dxy 
+        4 functions:    F  dxz 
+        4 functions:    F  dyy 
+        4 functions:    F  dyz 
+        4 functions:    F  dzz 
+        1 functions:    F  fxxx
+        1 functions:    F  fxxy
+        1 functions:    F  fxxz
+        1 functions:    F  fxyy
+        1 functions:    F  fxyz
+        1 functions:    F  fxzz
+        1 functions:    F  fyyy
+        1 functions:    F  fyyz
+        1 functions:    F  fyzz
+        1 functions:    F  fzzz
+
+
+   ***************************************************************************
+   *************************** Hamiltonian defined ***************************
+   ***************************************************************************
+
+ * Print level:    0
+ * Dirac-Coulomb Hamiltonian
+ * SS integrals neglected:
+   Interatomic Coulombic SS-contributions modelled by
+   classical repulsion of small component atomic charges
+   using tabulated charges.
+ * Default integral flags passed to all modules
+   - LL-integrals:     1
+   - LS-integrals:     1
+   - SS-integrals:     0
+   - GT-integrals:     0
+ * Basis set:
+   - uncontracted large component basis set
+   - uncontracted small component basis set
+
+
+ Information about the unrestricted kinetic balance scheme:
+ * RKB pre-projection in scalar basis
+  without removing unphysical solutions for no external field
+  This gives extended kinetic balance and is  only recommended for CONTRACTED LC basis sets
+
+
+    **************************************************************************
+    ************************** Wave function module **************************
+    **************************************************************************
+
+ Wave function types requested (in input order):
+     HF        
+
+ Wave function jobs in execution order (expanded):
+ * Hartree-Fock calculation
+===========================================================================
+ *SCF: Set-up for Hartree-Fock calculation:
+===========================================================================
+ * Number of fermion irreps: 1
+ * Closed shell SCF calculation with    10 electrons in    5 orbitals.
+ * Sum of atomic potentials used for start guess
+ * General print level   :   0
+
+ ***** INITIAL TRIAL SCF FUNCTION *****
+ * Trial vectors read from file DFCOEF
+ * Scaling of active-active block correction to open shell Fock operator    0.500000
+   to improve convergence (default value).
+   The final open-shell orbital energies are recalculated with 1.0 scaling,
+   such that all occupied orbital energies correspond to Koopmans' theorem ionization energies.
+
+ ***** SCF CONVERGENCE CRITERIA *****
+ * Convergence on norm of error vector (gradient).
+   Desired convergence:1.000D-08
+   Allowed convergence:1.000D-07
+
+ ***** CONVERGENCE CONTROL *****
+ * Fock matrix constructed using differential density matrix
+    with optimal parameter.
+ * DIIS (in MO basis)
+ * DIIS will be activated when convergence reaches : 1.00D+20
+   - Maximum size of B-matrix:   10
+ * Damping of Fock matrix when DIIS is not activated. 
+   Weight of old matrix    : 0.250
+ * Maximum number of SCF iterations  :   50
+ * No quadratic convergent Hartree-Fock
+ * Contributions from 2-electron integrals to Fock matrix:
+   LL-integrals.
+   SL-integrals from iteration    1
+    ---> this is default setting from Hamiltonian input
+ ***** OUTPUT CONTROL *****
+ * Only electron eigenvalues written out.
+
+
+   ***************************************************************************
+   ***************************** Property module *****************************
+   ***************************************************************************
+
+ * Print level:   2
+ * Input label: **PROPE
+ * Properties calculated for the following wave functions:
+     1: DHF 
+ These initial settings of center and origins might be changed later:
+ * Operator center (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * Gauge origin    (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * Dipole origin   (a.u.):      0.0000000000      0.0000000000      0.0000000000
+===========================================================================
+   Magnetic properties:
+===========================================================================
+===========================================================================
+   User defined gauge origin used (a.u.):    0.000000    0.000000    0.000000
+ : Natural (gauge dependent) connection used for LAO-PDBS.
+ : Include London magnet.prop.grad.contributions from the following two-electron integrals:
+      - LL-integrals
+      - SL-integrals
+  --> These are default values from the Hamiltonian input.
+ INFO: Used  full relativistic form of the RDSUSLL operator.
+===========================================================================
+ XLRINP: Electronic linear reponse properties
+===========================================================================
+ * Print level                 :    2
+ * e-e rotations are allowed in the linear response function.
+ * e-p rotations are allowed in the linear response function.
+ * Maximum number of iterations:  100
+ * Threshold for convergence   :1.000000D-09
+ * Max. size of reduced matrix :  200
+ * Include contributions from the following two-electron integrals:
+   - LL-integrals
+   - SL-integrals from iteration    1
+    ---> these are default values from Hamiltonian input
+ * Initial trial vectors will be preconditioned.
+ * Linear response functions evaluated at the following REAL frequencies:
+       0.00000E+00 a.u.
+===========================================================================
+ DEF_MSUSCP: Magnetic susceptibility
+ - with London atomic orbitals (LAO).
+===========================================================================
+
+
+ All individual operators for magnetic susceptibility (magnetizability) with LAO
+ -------------------------------------------------------------------------------
+
+    1  LAO-XRM1H1           A       T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : dS/dBX   000+    -37557.730487547 (imaginary)
+...........................................................................
+    2  LAO-XRM1H2           A       T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : XRM1H2   +00+     1.0000000000000 (imaginary)
+...........................................................................
+    2  LAO-XRM1H3           A       T-
+...........................................................................
+      Operator type ALPHADOT : [alpha.P]
+      Labels and factors     : XRM1H3X  0++0     137.03599980944 (complex)  
+                               XRM1H3Y  0++0     137.03599980944 (complex)  
+                               XRM1H3Z  0++0     137.03599980944 (complex)  
+...........................................................................
+    2  LAO-XRM1RN           A       T-
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : ZRM1RN   0++0     68.517999904721 (complex)  
+                               YRM1RN   0++0     68.517999904721 (complex)  
+...........................................................................
+    1  LAO-YRM1H1           A       T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : dS/dBY   000+    -37557.730487547 (imaginary)
+...........................................................................
+    2  LAO-YRM1H2           A       T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : YRM1H2   +00+     1.0000000000000 (imaginary)
+...........................................................................
+    3  LAO-YRM1H3           A       T-
+...........................................................................
+      Operator type ALPHADOT : [alpha.P]
+      Labels and factors     : YRM1H3X  0++0     137.03599980944 (complex)  
+                               YRM1H3Y  0++0     137.03599980944 (complex)  
+                               YRM1H3Z  0++0     137.03599980944 (complex)  
+...........................................................................
+    4  LAO-YRM1RN           A       T-
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : XRM1RN   0++0     68.517999904721 (complex)  
+                               ZRM1RN   0++0     68.517999904721 (complex)  
+...........................................................................
+    1  LAO-ZRM1H1           A       T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : dS/dBZ   000+    -37557.730487547 (imaginary)
+...........................................................................
+    2  LAO-ZRM1H2           A       T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : ZRM1H2   +00+     1.0000000000000 (imaginary)
+...........................................................................
+    3  LAO-ZRM1H3           A       T-
+...........................................................................
+      Operator type ALPHADOT : [alpha.P]
+      Labels and factors     : ZRM1H3X  0++0     137.03599980944 (complex)  
+                               ZRM1H3Y  0++0     137.03599980944 (complex)  
+                               ZRM1H3Z  0++0     137.03599980944 (complex)  
+...........................................................................
+    4  LAO-ZRM1RN           A       T-
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : YRM1RN   0++0     68.517999904721 (complex)  
+                               XRM1RN   0++0     68.517999904721 (complex)  
+...........................................................................
+    1  d|S>/dBX             A       T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : d|S>/dBX +00+    -1.0000000000000 (complex)  
+...........................................................................
+    2  d|S>/dBY             A       T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : d|S>/dBY +00+    -1.0000000000000 (complex)  
+...........................................................................
+    3  d|S>/dBZ             A       T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : d|S>/dBZ +00+    -1.0000000000000 (complex)  
+...........................................................................
+    1  dS/dBX               A       T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : dS/dBX   +00+     1.0000000000000 (imaginary)
+...........................................................................
+    2  dS/dBY               A       T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : dS/dBY   +00+     1.0000000000000 (imaginary)
+...........................................................................
+    3  dS/dBZ               A       T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : dS/dBZ   +00+     1.0000000000000 (imaginary)
+...........................................................................
+    1  d|S>/dBX             A       T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : d|S>/dBX +00+     1.0000000000000 (complex)  
+...........................................................................
+    2  d|S>/dBY             A       T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : d|S>/dBY +00+     1.0000000000000 (complex)  
+...........................................................................
+    3  d|S>/dBZ             A       T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : d|S>/dBZ +00+     1.0000000000000 (complex)  
+...........................................................................
+    1  dS/dB2XX             A       T+
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : dS/dB2XX +00+    -0.5000000000000 (real)     
+...........................................................................
+    2  dS/dB2XY             A       T+
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : dS/dB2XY +00+    -0.5000000000000 (real)     
+...........................................................................
+    3  dS/dB2XZ             A       T+
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : dS/dB2XZ +00+    -0.5000000000000 (real)     
+...........................................................................
+    4  dS/dB2YY             A       T+
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : dS/dB2YY +00+    -0.5000000000000 (real)     
+...........................................................................
+    5  dS/dB2YZ             A       T+
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : dS/dB2YZ +00+    -0.5000000000000 (real)     
+...........................................................................
+    6  dS/dB2ZZ             A       T+
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : dS/dB2ZZ +00+    -0.5000000000000 (real)     
+...........................................................................
+---------------------------------------------------------------------------
+ ** A operators for magnetic susceptibility **
+---------------------------------------------------------------------------
+      LAO-XRM1H1           A       T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : dS/dBX   000+    -37557.730487547 (imaginary)
+...........................................................................
+      LAO-XRM1H2           A       T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : XRM1H2   +00+     1.0000000000000 (imaginary)
+...........................................................................
+      LAO-XRM1H3           A       T-
+...........................................................................
+      Operator type ALPHADOT : [alpha.P]
+      Labels and factors     : XRM1H3X  0++0     137.03599980944 (complex)  
+                               XRM1H3Y  0++0     137.03599980944 (complex)  
+                               XRM1H3Z  0++0     137.03599980944 (complex)  
+...........................................................................
+      LAO-XRM1RN           A       T-
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : ZRM1RN   0++0     68.517999904721 (complex)  
+                               YRM1RN   0++0     68.517999904721 (complex)  
+...........................................................................
+  Including g(B) and {T(1),H(0)} terms. 
+      LAO-YRM1H1           A       T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : dS/dBY   000+    -37557.730487547 (imaginary)
+...........................................................................
+      LAO-YRM1H2           A       T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : YRM1H2   +00+     1.0000000000000 (imaginary)
+...........................................................................
+      LAO-YRM1H3           A       T-
+...........................................................................
+      Operator type ALPHADOT : [alpha.P]
+      Labels and factors     : YRM1H3X  0++0     137.03599980944 (complex)  
+                               YRM1H3Y  0++0     137.03599980944 (complex)  
+                               YRM1H3Z  0++0     137.03599980944 (complex)  
+...........................................................................
+      LAO-YRM1RN           A       T-
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : XRM1RN   0++0     68.517999904721 (complex)  
+                               ZRM1RN   0++0     68.517999904721 (complex)  
+...........................................................................
+  Including g(B) and {T(1),H(0)} terms. 
+      LAO-ZRM1H1           A       T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : dS/dBZ   000+    -37557.730487547 (imaginary)
+...........................................................................
+      LAO-ZRM1H2           A       T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : ZRM1H2   +00+     1.0000000000000 (imaginary)
+...........................................................................
+      LAO-ZRM1H3           A       T-
+...........................................................................
+      Operator type ALPHADOT : [alpha.P]
+      Labels and factors     : ZRM1H3X  0++0     137.03599980944 (complex)  
+                               ZRM1H3Y  0++0     137.03599980944 (complex)  
+                               ZRM1H3Z  0++0     137.03599980944 (complex)  
+...........................................................................
+      LAO-ZRM1RN           A       T-
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : YRM1RN   0++0     68.517999904721 (complex)  
+                               XRM1RN   0++0     68.517999904721 (complex)  
+...........................................................................
+  Including g(B) and {T(1),H(0)} terms. 
+---------------------------------------------------------------------------
+ ** B operators for magnetic susceptibility **
+---------------------------------------------------------------------------
+      LAO-XRM1H1           A       T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : dS/dBX   000+    -37557.730487547 (imaginary)
+...........................................................................
+      LAO-XRM1H2           A       T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : XRM1H2   +00+     1.0000000000000 (imaginary)
+...........................................................................
+      LAO-XRM1H3           A       T-
+...........................................................................
+      Operator type ALPHADOT : [alpha.P]
+      Labels and factors     : XRM1H3X  0++0     137.03599980944 (complex)  
+                               XRM1H3Y  0++0     137.03599980944 (complex)  
+                               XRM1H3Z  0++0     137.03599980944 (complex)  
+...........................................................................
+      LAO-XRM1RN           A       T-
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : ZRM1RN   0++0     68.517999904721 (complex)  
+                               YRM1RN   0++0     68.517999904721 (complex)  
+...........................................................................
+  Including g(B) and {T(1),H(0)} terms. 
+      LAO-YRM1H1           A       T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : dS/dBY   000+    -37557.730487547 (imaginary)
+...........................................................................
+      LAO-YRM1H2           A       T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : YRM1H2   +00+     1.0000000000000 (imaginary)
+...........................................................................
+      LAO-YRM1H3           A       T-
+...........................................................................
+      Operator type ALPHADOT : [alpha.P]
+      Labels and factors     : YRM1H3X  0++0     137.03599980944 (complex)  
+                               YRM1H3Y  0++0     137.03599980944 (complex)  
+                               YRM1H3Z  0++0     137.03599980944 (complex)  
+...........................................................................
+      LAO-YRM1RN           A       T-
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : XRM1RN   0++0     68.517999904721 (complex)  
+                               ZRM1RN   0++0     68.517999904721 (complex)  
+...........................................................................
+  Including g(B) and {T(1),H(0)} terms. 
+      LAO-ZRM1H1           A       T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : dS/dBZ   000+    -37557.730487547 (imaginary)
+...........................................................................
+      LAO-ZRM1H2           A       T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : ZRM1H2   +00+     1.0000000000000 (imaginary)
+...........................................................................
+      LAO-ZRM1H3           A       T-
+...........................................................................
+      Operator type ALPHADOT : [alpha.P]
+      Labels and factors     : ZRM1H3X  0++0     137.03599980944 (complex)  
+                               ZRM1H3Y  0++0     137.03599980944 (complex)  
+                               ZRM1H3Z  0++0     137.03599980944 (complex)  
+...........................................................................
+      LAO-ZRM1RN           A       T-
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : YRM1RN   0++0     68.517999904721 (complex)  
+                               XRM1RN   0++0     68.517999904721 (complex)  
+...........................................................................
+  Including g(B) and {T(1),H(0)} terms. 
+  *** Expectation value terms for magnetizabilities with LAO ***
+...........................................................................
+    Component no.  1:   LAO-XXRM2H1     
+...........................................................................
+    1  LAO-XXRM2H1          A       T+
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : dS/dB2XX 000+    -37557.730487547 (real)     
+...........................................................................
+...........................................................................
+    Component no.  2:   LAO-XYRM2H1     
+...........................................................................
+    2  LAO-XYRM2H1          A       T+
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : dS/dB2XY 000+    -37557.730487547 (real)     
+...........................................................................
+...........................................................................
+    Component no.  3:   LAO-XZRM2H1     
+...........................................................................
+    3  LAO-XZRM2H1          A       T+
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : dS/dB2XZ 000+    -37557.730487547 (real)     
+...........................................................................
+...........................................................................
+    Component no.  4:   LAO-YYRM2H1     
+...........................................................................
+    4  LAO-YYRM2H1          A       T+
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : dS/dB2YY 000+    -37557.730487547 (real)     
+...........................................................................
+...........................................................................
+    Component no.  5:   LAO-YZRM2H1     
+...........................................................................
+    5  LAO-YZRM2H1          A       T+
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : dS/dB2YZ 000+    -37557.730487547 (real)     
+...........................................................................
+...........................................................................
+    Component no.  6:   LAO-ZZRM2H1     
+...........................................................................
+    6  LAO-ZZRM2H1          A       T+
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : dS/dB2ZZ 000+    -37557.730487547 (real)     
+...........................................................................
+...........................................................................
+    Component no.  7:   LAO-XXRM2H2     
+...........................................................................
+    7  LAO-XXRM2H2          A       T+
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : XXRM2H2  +00+     1.0000000000000 (real)     
+...........................................................................
+...........................................................................
+    Component no.  8:   LAO-XYRM2H2     
+...........................................................................
+    8  LAO-XYRM2H2          A       T+
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : XYRM2H2  +00+     1.0000000000000 (real)     
+...........................................................................
+...........................................................................
+    Component no.  9:   LAO-XZRM2H2     
+...........................................................................
+    9  LAO-XZRM2H2          A       T+
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : XZRM2H2  +00+     1.0000000000000 (real)     
+...........................................................................
+...........................................................................
+    Component no. 10:   LAO-YYRM2H2     
+...........................................................................
+   10  LAO-YYRM2H2          A       T+
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : YYRM2H2  +00+     1.0000000000000 (real)     
+...........................................................................
+...........................................................................
+    Component no. 11:   LAO-YZRM2H2     
+...........................................................................
+   11  LAO-YZRM2H2          A       T+
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : YZRM2H2  +00+     1.0000000000000 (real)     
+...........................................................................
+...........................................................................
+    Component no. 12:   LAO-ZZRM2H2     
+...........................................................................
+   12  LAO-ZZRM2H2          A       T+
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : ZZRM2H2  +00+     1.0000000000000 (real)     
+...........................................................................
+...........................................................................
+    Component no. 13:   LAO-XXRM2H3     
+...........................................................................
+   13  LAO-XXRM2H3          A       T+
+...........................................................................
+      Operator type ALPHADOT : [alpha.P]
+      Labels and factors     : XXRM2H3X 0++0     137.03599980944 (complex)  
+                               XXRM2H3Y 0++0     137.03599980944 (complex)  
+                               XXRM2H3Z 0++0     137.03599980944 (complex)  
+...........................................................................
+...........................................................................
+    Component no. 14:   LAO-XYRM2H3     
+...........................................................................
+   14  LAO-XYRM2H3          A       T+
+...........................................................................
+      Operator type ALPHADOT : [alpha.P]
+      Labels and factors     : XYRM2H3X 0++0     137.03599980944 (complex)  
+                               XYRM2H3Y 0++0     137.03599980944 (complex)  
+                               XYRM2H3Z 0++0     137.03599980944 (complex)  
+...........................................................................
+...........................................................................
+    Component no. 15:   LAO-XZRM2H3     
+...........................................................................
+   15  LAO-XZRM2H3          A       T+
+...........................................................................
+      Operator type ALPHADOT : [alpha.P]
+      Labels and factors     : XZRM2H3X 0++0     137.03599980944 (complex)  
+                               XZRM2H3Y 0++0     137.03599980944 (complex)  
+                               XZRM2H3Z 0++0     137.03599980944 (complex)  
+...........................................................................
+...........................................................................
+    Component no. 16:   LAO-YYRM2H3     
+...........................................................................
+   16  LAO-YYRM2H3          A       T+
+...........................................................................
+      Operator type ALPHADOT : [alpha.P]
+      Labels and factors     : YYRM2H3X 0++0     137.03599980944 (complex)  
+                               YYRM2H3Y 0++0     137.03599980944 (complex)  
+                               YYRM2H3Z 0++0     137.03599980944 (complex)  
+...........................................................................
+...........................................................................
+    Component no. 17:   LAO-YZRM2H3     
+...........................................................................
+   17  LAO-YZRM2H3          A       T+
+...........................................................................
+      Operator type ALPHADOT : [alpha.P]
+      Labels and factors     : YZRM2H3X 0++0     137.03599980944 (complex)  
+                               YZRM2H3Y 0++0     137.03599980944 (complex)  
+                               YZRM2H3Z 0++0     137.03599980944 (complex)  
+...........................................................................
+...........................................................................
+    Component no. 18:   LAO-ZZRM2H3     
+...........................................................................
+   18  LAO-ZZRM2H3          A       T+
+...........................................................................
+      Operator type ALPHADOT : [alpha.P]
+      Labels and factors     : ZZRM2H3X 0++0     137.03599980944 (complex)  
+                               ZZRM2H3Y 0++0     137.03599980944 (complex)  
+                               ZZRM2H3Z 0++0     137.03599980944 (complex)  
+...........................................................................
+...........................................................................
+    Component no. 19:   LAO-XXRDSUSLL   
+...........................................................................
+   19  LAO-XXRDSUSLL        A       T+
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : XXRDSULZ 0++0    -137.03599980944 (complex)  
+                               XXRDSULY 0++0    -137.03599980944 (complex)  
+...........................................................................
+...........................................................................
+    Component no. 20:   LAO-XYRDSUSLL   
+...........................................................................
+   20  LAO-XYRDSUSLL        A       T+
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : XYRDSULX 0++0    -137.03599980944 (complex)  
+                               XYRDSULZ 0++0    -137.03599980944 (complex)  
+...........................................................................
+...........................................................................
+    Component no. 21:   LAO-XZRDSUSLL   
+...........................................................................
+   21  LAO-XZRDSUSLL        A       T+
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : XZRDSULY 0++0    -137.03599980944 (complex)  
+                               XZRDSULX 0++0    -137.03599980944 (complex)  
+...........................................................................
+...........................................................................
+    Component no. 22:   LAO-YXRDSUSLL   
+...........................................................................
+   22  LAO-YXRDSUSLL        A       T+
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : YXRDSULZ 0++0    -137.03599980944 (complex)  
+                               YXRDSULY 0++0    -137.03599980944 (complex)  
+...........................................................................
+...........................................................................
+    Component no. 23:   LAO-YYRDSUSLL   
+...........................................................................
+   23  LAO-YYRDSUSLL        A       T+
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : YYRDSULX 0++0    -137.03599980944 (complex)  
+                               YYRDSULZ 0++0    -137.03599980944 (complex)  
+...........................................................................
+...........................................................................
+    Component no. 24:   LAO-YZRDSUSLL   
+...........................................................................
+   24  LAO-YZRDSUSLL        A       T+
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : YZRDSULY 0++0    -137.03599980944 (complex)  
+                               YZRDSULX 0++0    -137.03599980944 (complex)  
+...........................................................................
+...........................................................................
+    Component no. 25:   LAO-ZXRDSUSLL   
+...........................................................................
+   25  LAO-ZXRDSUSLL        A       T+
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : ZXRDSULZ 0++0    -137.03599980944 (complex)  
+                               ZXRDSULY 0++0    -137.03599980944 (complex)  
+...........................................................................
+...........................................................................
+    Component no. 26:   LAO-ZYRDSUSLL   
+...........................................................................
+   26  LAO-ZYRDSUSLL        A       T+
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : ZYRDSULX 0++0    -137.03599980944 (complex)  
+                               ZYRDSULZ 0++0    -137.03599980944 (complex)  
+...........................................................................
+...........................................................................
+    Component no. 27:   LAO-ZZRDSUSLL   
+...........................................................................
+   27  LAO-ZZRDSUSLL        A       T+
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : ZZRDSULY 0++0    -137.03599980944 (complex)  
+                               ZZRDSULX 0++0    -137.03599980944 (complex)  
+...........................................................................
+  No Aucars diamagnetic terms for magnetizabilities with LAO. Good so.
+
+
+ ********************************************************************************
+ *************************** Input consistency checks ***************************
+ ********************************************************************************
+
+
+
+    *************************************************************************
+    ************************ End of input processing ************************
+    *************************************************************************
+
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                               au             Debye
+
+                    x      0.00000000      0.00000000
+                    y      0.00000000      0.00000000
+                    z     15.59590978     39.64121561
+
+                        1 Debye =   2.54177000 a.u. 
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+   L   A     * Deleted:          1(Proj:          1, Lindep:          0) Smin: 0.15E-01
+   S   A     * Deleted:          8(Proj:          8, Lindep:          0) Smin: 0.10E-01
+
+
+      **********************************************************************
+      ************************* Orbital dimensions *************************
+      **********************************************************************
+
+No. of positive energy orbitals (NESH):    33
+No. of negative energy orbitals (NPSH):    79
+Total no. of orbitals           (NORB):   112
+* RKBIMP: Import of RKB coefficients (pre/post):
+   Number of RKB electronic solutions:     33    33
+   Number of RKB positronic solutions:     33    33
+   UKB complement                    :     46    46
+
+
+       *******************************************************************
+       ************************* Property module *************************
+       *******************************************************************
+
+
+
+   This is output from the Dirac property module:
+
+   HF & DFT first order properties
+      Trond Saue
+
+   First-order ESR properties
+      Hans Joergen Aa. Jensen et al.
+
+   MP2 first order properties:
+      J. N. P. van Stralen, L. Visscher, C. V. Larsen and H. J. Aa Jensen, Chem. Phys. 311 (2005) 81.
+
+   KR-RPA second-order properties
+      Hans Joergen Aa. Jensen and Trond Saue
+
+   KR-QR third order properties
+      Patrick Norman and Hans Joergen Aa. Jensen
+
+   Molecular gradient
+      Joern Thyssen
+
+   Additional contributions from:
+      Thomas Enevoldsen, Miroslav Ilias (London orbitals)
+
+
+
+
+             *******************************************************
+             ********** Properties for DHF  wave function **********
+             *******************************************************
+
+
+
+    **************************************************************************
+    *************************** Expectation values ***************************
+    **************************************************************************
+
+                                                   s0 t0
+----------------------------------------------------------------------------
+    LAO-XXRM2H1      :     0.266016132611 a.u.      F   F
+    LAO-XYRM2H1      :    -0.27899046E-12 a.u.      F   F
+    LAO-XZRM2H1      :     0.00000000E+00 a.u.      F   F
+    LAO-YYRM2H1      :     0.266016132609 a.u.      F   F
+    LAO-YZRM2H1      :     0.00000000E+00 a.u.      F   F
+    LAO-ZZRM2H1      :     0.00000000E+00 a.u.      F   F
+    LAO-XXRM2H2      :     1.199931414755 a.u.      F   F
+    LAO-XYRM2H2      :    -0.56752808E-11 a.u.      F   F
+    LAO-XZRM2H2      :     0.00000000E+00 a.u.      F   F
+    LAO-YYRM2H2      :     1.199931414759 a.u.      F   F
+    LAO-YZRM2H2      :     0.00000000E+00 a.u.      F   F
+    LAO-ZZRM2H2      :     0.00000000E+00 a.u.      F   F
+    LAO-XXRM2H3      :    -0.297583039467 a.u.      F   F
+    LAO-XYRM2H3      :     0.40040777E-12 a.u.      F   F
+    LAO-XZRM2H3      :     0.00000000E+00 a.u.      F   F
+    LAO-YYRM2H3      :    -0.297583039465 a.u.      F   F
+    LAO-YZRM2H3      :     0.00000000E+00 a.u.      F   F
+    LAO-ZZRM2H3      :     0.00000000E+00 a.u.      F   F
+    LAO-XXRDSUSLL    :     0.76824120E-01 a.u.      F   F
+    LAO-XYRDSUSLL    :     0.28733940E-11 a.u.      F   F
+    LAO-XZRDSUSLL    :    -0.10868949E-11 a.u.      F   F
+    LAO-YXRDSUSLL    :    -0.73554095E-11 a.u.      F   F
+    LAO-YYRDSUSLL    :     0.76824120E-01 a.u.      F   F
+    LAO-YZRDSUSLL    :    -0.58049928E-11 a.u.      F   F
+    LAO-ZXRDSUSLL    :     0.00000000E+00 a.u.      F   F
+    LAO-ZYRDSUSLL    :     0.00000000E+00 a.u.      F   F
+    LAO-ZZRDSUSLL    :     0.00000000E+00 a.u.      F   F
+----------------------------------------------------------------------------
+    s0 = T : Expectation value zero by point group symmetry.
+    t0 = T : Expectation value zero by time reversal symmetry.
+
+    * Orbital classes:
+    Fermion ircop:E1 
+    - Inactive orbitals  :      1..     5                                          
+    - Active orbitals    : No electrons
+    - Secondary orbitals :    -79..-1,     6..    33                               
+
+* REACMO: Coefficients read from file DFCOEF - Total energy:  0.0000000000000E+00
+* Heading :DIRAC: No title specified !!!                     Fri Mar  9 19:12:14 2018
+
+
+                                Output from SETFCK
+                                ------------------
+
+* Exchange factor:     1.0000
+* Mu factor      :     0.0000
+* Attenuation    :     0.0000
+* Fock matrix no.    1    -    Operator irrep: A  
+Matrix symmetry:  A    A    A    A  
+    Mat.  IFC  SYM  Coulomb Exchange Irrep
+    1(1)   22   A      0       1      A  
+    2(i)   12   S      0       1      A  
+    3(j)   12   S      0       1      A  
+    4(k)   12   S      0       1      A  
+* Fock matrix no.    2    -    Operator irrep: A  
+Matrix symmetry:  A    A    A    A  
+    Mat.  IFC  SYM  Coulomb Exchange Irrep
+    1(1)   22   A      0       1      A  
+    2(i)   12   S      0       1      A  
+    3(j)   12   S      0       1      A  
+    4(k)   12   S      0       1      A  
+* Fock matrix no.    3    -    Operator irrep: A  
+Matrix symmetry:  A    A    A    A  
+    Mat.  IFC  SYM  Coulomb Exchange Irrep
+    1(1)   22   A      0       1      A  
+    2(i)   12   S      0       1      A  
+    3(j)   12   S      0       1      A  
+    4(k)   12   S      0       1      A  
+
+cpu time:       1.6078 wall time:       1.6090 used in call to twoint(in get_ao_fock_2el_lao).
+
+ symmetry check in london_direct  6.514647549142367E-019
+ symmetry check in london_direct -1.320233988888709E-018
+ symmetry check in london_direct  0.000000000000000E+000
+ epreorth in getmdm = T
+ epreorth in getmdm = T
+ epreorth in getmdm = T
+
+* GETGAB: label "GABAO1XX" not found; calling GABGEN.
+
+
+                                Output from SETFCK
+                                ------------------
+
+* Exchange factor:     1.0000
+* Mu factor      :     0.0000
+* Attenuation    :     0.0000
+* Fock matrix no.    1    -    Operator irrep: A  
+Matrix symmetry:  A    A    A    A  
+    Mat.  IFC  SYM  Coulomb Exchange Irrep
+    1(1)   22   A      0       1      A  
+    2(i)   12   S      0       1      A  
+    3(j)   12   S      0       1      A  
+    4(k)   12   S      0       1      A  
+* Fock matrix no.    2    -    Operator irrep: A  
+Matrix symmetry:  A    A    A    A  
+    Mat.  IFC  SYM  Coulomb Exchange Irrep
+    1(1)   22   A      0       1      A  
+    2(i)   12   S      0       1      A  
+    3(j)   12   S      0       1      A  
+    4(k)   12   S      0       1      A  
+* Fock matrix no.    3    -    Operator irrep: A  
+Matrix symmetry:  A    A    A    A  
+    Mat.  IFC  SYM  Coulomb Exchange Irrep
+    1(1)   22   A      0       1      A  
+    2(i)   12   S      0       1      A  
+    3(j)   12   S      0       1      A  
+    4(k)   12   S      0       1      A  
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-12    0.00%   68.00%    0.00%   12.10%   0.00800000s
+>>>> Total wall time used in HER_PARDRV so far   : 0.00800000s
+SOfock:SL  1.00D-12    0.00%   72.99%    0.00%    9.35%   0.01740000s
+>>>> Total wall time used in HER_PARDRV so far   : 0.02540000s
+
+*** WARNING *** GETFCK: No 2-Fock found. Regenerating with .INTFLG = 1 1 0 0
+
+
+                                Output from SETFCK
+                                ------------------
+
+* Exchange factor:     1.0000
+* Mu factor      :     0.0000
+* Attenuation    :     0.0000
+* Fock matrix no.    1    -    Operator irrep: A  
+Matrix symmetry:  A    A    A    A  
+    Mat.  IFC  SYM  Coulomb Exchange Irrep
+    1(1)   13   S      1       1      A  
+    2(i)   22   A      0       1      A  
+    3(j)   22   A      0       1      A  
+    4(k)   22   A      0       1      A  
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-12    0.00%   67.99%    0.00%    1.53%   0.00410000s
+>>>> Total wall time used in HER_PARDRV so far   : 0.02950000s
+SOfock:SL  1.00D-12    0.00%   73.16%    0.00%    1.23%   0.01180000s
+>>>> Total wall time used in HER_PARDRV so far   : 0.04130000s
+
+*** WARNING *** GETFCK: No 1-Fock found. Regenerating.
+ symmetry check in london_reorth -3.050454149418611E-014
+ symmetry check in london_reorth -2.334861270520466E-014
+ symmetry check in london_reorth  0.000000000000000E+000
+
+
+                                Output from SETXEE
+                                ------------------
+
+# of e-e rotations (non-redundant):        140
+# of extra e-e rotations (redundant):          0
+
+
+                                Output from SETXEP
+                                ------------------
+
+# of e-p rotations:        395
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTY >>>
+LAO-XRM1H1       - Symmetry: A    T-
+
+E(-)-vector no.  1 not accepted
+P(-)-vector no.  1 accepted. Norm :  1.18358D+03
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  8.26D-13
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 1.21D+03
+* Screening threshold in LR solver scaled with norm of property vector:  5.9219D+02
+  and changed to:  4.8941D-10
+
+########## START MICROITERATION NO.   1 ##########   Fri Mar  9 19:12:15 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  4.89D-10    0.00%   68.29%    0.00%    2.94%   0.00380000s
+>>>> Total wall time used in HER_PARDRV so far   : 0.04510000s
+SOfock:SL  4.89D-10    0.00%   72.91%    0.00%    0.24%   0.01160000s
+>>>> Total wall time used in HER_PARDRV so far   : 0.05670000s
+* Trial vectors in this micro iteration:  E-:  0  P-:  1
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    0/    0/    1);   +- (ep) trial vectors:    1
+
+<<B;B>> at iteration:    1
+--------------------------------------------
+   Freq.:     0.00000000         -9.30907227
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  7.87E-03  0.00E+00  7.87E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  2.17E+01  2.17E+01  5.26E-01
+E(-)-vector no.  1 accepted. Norm :  4.33615D+01
+P(-)-vector no.  1 accepted. Norm :  1.05152D+00
+
+* End of microiteration no.    1 after  0.02199697s
+
+########## START MICROITERATION NO.   2 ##########   Fri Mar  9 19:12:16 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  4.89D-10    0.00%   68.26%    0.00%    1.45%   0.00590000s
+>>>> Total wall time used in HER_PARDRV so far   : 0.06260000s
+SOfock:SL  4.89D-10    0.00%   73.42%    0.00%    0.30%   0.01660000s
+>>>> Total wall time used in HER_PARDRV so far   : 0.07920000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  1
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    1/    0/    2);   +- (ep) trial vectors:    2
+
+<<B;B>> at iteration:    2
+--------------------------------------------
+   Freq.:     0.00000000         -1.47395675
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  7.09E-01  7.09E-01  7.87E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  4.14E+00  4.14E+00  4.38E-02
+E(-)-vector no.  1 accepted. Norm :  8.27403D+00
+P(-)-vector no.  1 accepted. Norm :  8.76118D-02
+
+* End of microiteration no.    2 after  0.03299499s
+
+########## START MICROITERATION NO.   3 ##########   Fri Mar  9 19:12:16 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  4.89D-10    0.00%   68.50%    0.00%    1.17%   0.58630000s
+>>>> Total wall time used in HER_PARDRV so far   : 0.66550000s
+SOfock:SL  4.89D-10    0.00%   73.96%    0.00%    0.27%   0.81550000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.48100000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  1
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    2/    0/    3);   +- (ep) trial vectors:    3
+
+<<B;B>> at iteration:    3
+--------------------------------------------
+   Freq.:     0.00000000         -1.41527228
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  7.59E-01  7.59E-01  7.87E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  7.35E-01  7.35E-01  3.01E-03
+E(-)-vector no.  1 accepted. Norm :  1.46921D+00
+P(-)-vector no.  1 not accepted
+
+* End of microiteration no.    3 after  1.34179616s
+
+########## START MICROITERATION NO.   4 ##########   Fri Mar  9 19:12:17 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  4.89D-10    0.00%   68.72%    0.00%    0.94%   0.00380000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.48480000s
+SOfock:SL  4.89D-10    0.00%   74.43%    0.00%    0.41%   0.01310000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.49790000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  0
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    3/    0/    3);   +- (ep) trial vectors:    3
+
+<<B;B>> at iteration:    4
+--------------------------------------------
+   Freq.:     0.00000000         -1.41396920
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  7.63E-01  7.63E-01  7.87E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  1.26E-01  1.26E-01  2.55E-03
+E(-)-vector no.  1 accepted. Norm :  2.52276D-01
+P(-)-vector no.  1 accepted. Norm :  5.10758D-03
+
+* End of microiteration no.    4 after  0.02399588s
+
+########## START MICROITERATION NO.   5 ##########   Fri Mar  9 19:12:17 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  4.89D-10    0.00%   69.19%    0.00%    2.43%   0.00540000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.50330000s
+SOfock:SL  4.89D-10    0.00%   75.26%    0.00%    0.36%   0.01680000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.52010000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  1
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    4/    0/    4);   +- (ep) trial vectors:    4
+
+<<B;B>> at iteration:    5
+--------------------------------------------
+   Freq.:     0.00000000         -1.41393011
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  7.63E-01  7.62E-01  7.87E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  4.78E-02  4.78E-02  7.40E-05
+E(-)-vector no.  1 accepted. Norm :  9.55225D-02
+P(-)-vector no.  1 not accepted
+
+* End of microiteration no.    5 after  0.03299499s
+
+########## START MICROITERATION NO.   6 ##########   Fri Mar  9 19:12:17 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  4.89D-10    0.00%   69.33%    0.00%    1.10%   0.00420000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.52430000s
+SOfock:SL  4.89D-10    0.00%   75.38%    0.00%    0.43%   0.01290000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.53720000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  0
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    5/    0/    4);   +- (ep) trial vectors:    4
+
+<<B;B>> at iteration:    6
+--------------------------------------------
+   Freq.:     0.00000000         -1.41392666
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  7.62E-01  7.62E-01  7.87E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  3.90E-03  3.90E-03  5.99E-05
+E(-)-vector no.  1 accepted. Norm :  7.79538D-03
+P(-)-vector no.  1 accepted. Norm :  1.19781D-04
+
+* End of microiteration no.    6 after  0.02299714s
+
+########## START MICROITERATION NO.   7 ##########   Fri Mar  9 19:12:17 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  4.89D-10    0.00%   70.34%    0.00%    3.76%   0.00550000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.54270000s
+SOfock:SL  4.89D-10    0.00%   76.80%    0.00%    0.51%   0.01670000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.55940000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  1
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    6/    0/    5);   +- (ep) trial vectors:    5
+
+<<B;B>> at iteration:    7
+--------------------------------------------
+   Freq.:     0.00000000         -1.41392661
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  7.62E-01  7.62E-01  7.87E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  3.97E-04  3.97E-04  9.49E-07
+E(-)-vector no.  1 accepted. Norm :  7.94201D-04
+P(-)-vector no.  1 not accepted
+
+* End of microiteration no.    7 after  0.03199482s
+
+########## START MICROITERATION NO.   8 ##########   Fri Mar  9 19:12:17 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  4.89D-10    0.00%   72.00%    0.00%    1.74%   0.00380000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.56320000s
+SOfock:SL  4.89D-10    0.00%   78.92%    0.00%    0.69%   0.01260000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.57580000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  0
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    7/    0/    5);   +- (ep) trial vectors:    5
+
+<<B;B>> at iteration:    8
+--------------------------------------------
+   Freq.:     0.00000000         -1.41392661
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  7.62E-01  7.62E-01  7.87E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  2.07E-04  2.07E-04  1.01E-06
+E(-)-vector no.  1 accepted. Norm :  4.13160D-04
+P(-)-vector no.  1 not accepted
+
+* End of microiteration no.    8 after  0.02199697s
+
+########## START MICROITERATION NO.   9 ##########   Fri Mar  9 19:12:17 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  4.89D-10    0.00%   72.70%    0.00%    0.64%   0.00400000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.57980000s
+SOfock:SL  4.89D-10    0.00%   79.11%    0.00%    0.67%   0.01230000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.59210000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  0
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    8/    0/    5);   +- (ep) trial vectors:    5
+
+<<B;B>> at iteration:    9
+--------------------------------------------
+   Freq.:     0.00000000         -1.41392661
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  7.62E-01  7.62E-01  7.87E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  6.30E-05  6.30E-05  1.02E-06
+E(-)-vector no.  1 accepted. Norm :  1.26071D-04
+P(-)-vector no.  1 accepted. Norm :  2.03394D-06
+
+* End of microiteration no.    9 after  0.02399611s
+
+########## START MICROITERATION NO.  10 ##########   Fri Mar  9 19:12:17 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  4.89D-10    0.00%   73.90%    0.00%    8.70%   0.00540000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.59750000s
+SOfock:SL  4.89D-10    0.00%   80.54%    0.00%    1.76%   0.57380000s
+>>>> Total wall time used in HER_PARDRV so far   : 2.17130000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  1
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    9/    0/    6);   +- (ep) trial vectors:    6
+
+<<B;B>> at iteration:   10
+--------------------------------------------
+   Freq.:     0.00000000         -1.41392661
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  7.62E-01  7.62E-01  7.87E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  8.05E-06  8.05E-06  1.48E-08
+E(-)-vector no.  1 accepted. Norm :  1.60955D-05
+P(-)-vector no.  1 not accepted
+
+* End of microiteration no.   10 after  0.55891490s
+
+########## START MICROITERATION NO.  11 ##########   Fri Mar  9 19:12:18 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  4.89D-10    0.00%   77.35%    0.00%    2.96%   0.00390000s
+>>>> Total wall time used in HER_PARDRV so far   : 2.17520000s
+SOfock:SL  4.89D-10    0.34%   84.74%    0.00%    3.46%   0.01140000s
+>>>> Total wall time used in HER_PARDRV so far   : 2.18660000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  0
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (   10/    0/    6);   +- (ep) trial vectors:    6
+
+<<B;B>> at iteration:   11
+--------------------------------------------
+   Freq.:     0.00000000         -1.41392661
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  7.62E-01  7.62E-01  7.87E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  3.36E-06  3.36E-06  1.41E-08
+E(-)-vector no.  1 accepted. Norm :  6.72544D-06
+P(-)-vector no.  1 not accepted
+
+* End of microiteration no.   11 after  0.02199697s
+
+########## START MICROITERATION NO.  12 ##########   Fri Mar  9 19:12:18 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  4.89D-10    0.00%   78.72%    0.00%    1.88%   0.00370000s
+>>>> Total wall time used in HER_PARDRV so far   : 2.19030000s
+SOfock:SL  4.89D-10    1.12%   85.00%    0.00%    5.31%   0.01070000s
+>>>> Total wall time used in HER_PARDRV so far   : 2.20100000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  0
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (   11/    0/    6);   +- (ep) trial vectors:    6
+
+<<B;B>> at iteration:   12
+--------------------------------------------
+   Freq.:     0.00000000         -1.41392661
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  7.62E-01  7.62E-01  7.87E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  4.36E-07  4.36E-07  1.44E-08
+
+* End of microiteration no.   12 after  0.02199602s
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after 12 microiterations
+
+            Freq.(au)   Total norm    E- norm   P- norm 
+========================================================
+* It.  1   0.02199697s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.17D+01 |   2.17D+01  5.26D-01
+========================================================
+* It.  2   0.03299499s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   4.14D+00 |   4.14D+00  4.38D-02
+========================================================
+* It.  3   1.34179616s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   7.35D-01 |   7.35D-01  3.01D-03
+========================================================
+* It.  4   0.02399588s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   1.26D-01 |   1.26D-01  2.55D-03
+========================================================
+* It.  5   0.03299499s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   4.78D-02 |   4.78D-02  7.40D-05
+========================================================
+* It.  6   0.02299714s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   3.90D-03 |   3.90D-03  5.99D-05
+========================================================
+* It.  7   0.03199482s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   3.97D-04 |   3.97D-04  9.49D-07
+========================================================
+* It.  8   0.02199697s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   2.07D-04 |   2.07D-04  1.01D-06
+========================================================
+* It.  9   0.02399611s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   6.30D-05 |   6.30D-05  1.02D-06
+========================================================
+* It. 10   0.55891490s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   8.05D-06 |   8.05D-06  1.48D-08
+========================================================
+* It. 11   0.02199697s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   3.36D-06 |   3.36D-06  1.41D-08
+========================================================
+* It. 12   0.02199602s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   4.36D-07 |   4.36D-07  1.44D-08
+========================================================
+
+
+                                Output from GETLR1
+                                ------------------
+
+
+<< 1, 1>>: -0.78952645E+01 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+
+<< 2, 1>>:  0.24569340E-11 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+
+<< 3, 1>>: -0.73915732E-13 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+
+
+                                Output from GETLR1
+                                ------------------
+
+
+<< 1, 1>>:  0.93091911E+01 a.u.,     P--contribution at frequency    0.0000000000 a.u.
+
+<< 2, 1>>: -0.16379217E-11 a.u.,     P--contribution at frequency    0.0000000000 a.u.
+
+<< 3, 1>>:  0.67281540E-12 a.u.,     P--contribution at frequency    0.0000000000 a.u.
+
+
+                                Output from SETXEE
+                                ------------------
+
+# of e-e rotations (non-redundant):        140
+# of extra e-e rotations (redundant):          0
+
+
+                                Output from SETXEP
+                                ------------------
+
+# of e-p rotations:        395
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTY >>>
+LAO-YRM1H1       - Symmetry: A    T-
+
+E(-)-vector no.  1 not accepted
+P(-)-vector no.  1 accepted. Norm :  1.18358D+03
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  8.26D-13
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 1.21D+03
+* Screening threshold in LR solver scaled with norm of property vector:  5.9219D+02
+  and changed to:  4.8941D-10
+
+########## START MICROITERATION NO.   1 ##########   Fri Mar  9 19:12:18 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  4.89D-10    0.00%   68.29%    0.00%    2.94%   0.00410000s
+>>>> Total wall time used in HER_PARDRV so far   : 2.20510000s
+SOfock:SL  4.89D-10    0.00%   72.91%    0.00%    0.24%   0.01170000s
+>>>> Total wall time used in HER_PARDRV so far   : 2.21680000s
+* Trial vectors in this micro iteration:  E-:  0  P-:  1
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    0/    0/    1);   +- (ep) trial vectors:    1
+
+<<B;B>> at iteration:    1
+--------------------------------------------
+   Freq.:     0.00000000         -9.30907229
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  7.87E-03  0.00E+00  7.87E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  2.17E+01  2.17E+01  5.25E-01
+E(-)-vector no.  1 accepted. Norm :  4.33615D+01
+P(-)-vector no.  1 accepted. Norm :  1.05013D+00
+
+* End of microiteration no.    1 after  0.02099681s
+
+########## START MICROITERATION NO.   2 ##########   Fri Mar  9 19:12:18 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  4.89D-10    0.00%   68.26%    0.00%    1.42%   0.00570000s
+>>>> Total wall time used in HER_PARDRV so far   : 2.22250000s
+SOfock:SL  4.89D-10    0.00%   73.42%    0.00%    0.30%   0.01680000s
+>>>> Total wall time used in HER_PARDRV so far   : 2.23930000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  1
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    1/    0/    2);   +- (ep) trial vectors:    2
+
+<<B;B>> at iteration:    2
+--------------------------------------------
+   Freq.:     0.00000000         -1.47395675
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  7.09E-01  7.09E-01  7.87E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  4.14E+00  4.14E+00  4.38E-02
+E(-)-vector no.  1 accepted. Norm :  8.27403D+00
+P(-)-vector no.  1 accepted. Norm :  8.76537D-02
+
+* End of microiteration no.    2 after  0.03499532s
+
+########## START MICROITERATION NO.   3 ##########   Fri Mar  9 19:12:18 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  4.89D-10    0.00%   68.50%    0.00%    1.17%   0.00590000s
+>>>> Total wall time used in HER_PARDRV so far   : 2.24520000s
+SOfock:SL  4.89D-10    0.00%   73.96%    0.00%    0.27%   0.01670000s
+>>>> Total wall time used in HER_PARDRV so far   : 2.26190000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  1
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    2/    0/    3);   +- (ep) trial vectors:    3
+
+<<B;B>> at iteration:    3
+--------------------------------------------
+   Freq.:     0.00000000         -1.41527228
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  7.59E-01  7.59E-01  7.87E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  7.35E-01  7.35E-01  3.01E-03
+E(-)-vector no.  1 accepted. Norm :  1.46921D+00
+P(-)-vector no.  1 not accepted
+
+* End of microiteration no.    3 after  0.03399372s
+
+########## START MICROITERATION NO.   4 ##########   Fri Mar  9 19:12:18 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  4.89D-10    0.00%   68.72%    0.00%    0.93%   0.00390000s
+>>>> Total wall time used in HER_PARDRV so far   : 2.26580000s
+SOfock:SL  4.89D-10    0.00%   74.43%    0.00%    0.41%   0.01160000s
+>>>> Total wall time used in HER_PARDRV so far   : 2.27740000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  0
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    3/    0/    3);   +- (ep) trial vectors:    3
+
+<<B;B>> at iteration:    4
+--------------------------------------------
+   Freq.:     0.00000000         -1.41396920
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  7.63E-01  7.63E-01  7.87E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  1.26E-01  1.26E-01  2.55E-03
+E(-)-vector no.  1 accepted. Norm :  2.52276D-01
+P(-)-vector no.  1 accepted. Norm :  5.10701D-03
+
+* End of microiteration no.    4 after  0.01999712s
+
+########## START MICROITERATION NO.   5 ##########   Fri Mar  9 19:12:18 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  4.89D-10    0.00%   69.19%    0.00%    2.33%   0.00540000s
+>>>> Total wall time used in HER_PARDRV so far   : 2.28280000s
+SOfock:SL  4.89D-10    0.00%   75.26%    0.00%    0.36%   0.63810000s
+>>>> Total wall time used in HER_PARDRV so far   : 2.92090000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  1
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    4/    0/    4);   +- (ep) trial vectors:    4
+
+<<B;B>> at iteration:    5
+--------------------------------------------
+   Freq.:     0.00000000         -1.41393011
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  7.63E-01  7.62E-01  7.87E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  4.78E-02  4.78E-02  7.40E-05
+E(-)-vector no.  1 accepted. Norm :  9.55225D-02
+P(-)-vector no.  1 not accepted
+
+* End of microiteration no.    5 after  0.63690376s
+
+########## START MICROITERATION NO.   6 ##########   Fri Mar  9 19:12:19 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  4.89D-10    0.00%   69.33%    0.00%    0.64%   0.00390000s
+>>>> Total wall time used in HER_PARDRV so far   : 2.92480000s
+SOfock:SL  4.89D-10    0.00%   75.38%    0.00%    0.40%   0.55930000s
+>>>> Total wall time used in HER_PARDRV so far   : 3.48410000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  0
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    5/    0/    4);   +- (ep) trial vectors:    4
+
+<<B;B>> at iteration:    6
+--------------------------------------------
+   Freq.:     0.00000000         -1.41392666
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  7.62E-01  7.62E-01  7.87E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  3.90E-03  3.90E-03  5.99E-05
+E(-)-vector no.  1 accepted. Norm :  7.79538D-03
+P(-)-vector no.  1 accepted. Norm :  1.19762D-04
+
+* End of microiteration no.    6 after  0.54791594s
+
+########## START MICROITERATION NO.   7 ##########   Fri Mar  9 19:12:19 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  4.89D-10    0.00%   70.34%    0.00%    3.77%   0.00540000s
+>>>> Total wall time used in HER_PARDRV so far   : 3.48950000s
+SOfock:SL  4.89D-10    0.00%   76.80%    0.00%    0.51%   0.01540000s
+>>>> Total wall time used in HER_PARDRV so far   : 3.50490000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  1
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    6/    0/    5);   +- (ep) trial vectors:    5
+
+<<B;B>> at iteration:    7
+--------------------------------------------
+   Freq.:     0.00000000         -1.41392661
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  7.62E-01  7.62E-01  7.87E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  3.97E-04  3.97E-04  9.48E-07
+E(-)-vector no.  1 accepted. Norm :  7.94201D-04
+P(-)-vector no.  1 not accepted
+
+* End of microiteration no.    7 after  0.03299522s
+
+########## START MICROITERATION NO.   8 ##########   Fri Mar  9 19:12:19 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  4.89D-10    0.00%   72.00%    0.00%    2.29%   0.00380000s
+>>>> Total wall time used in HER_PARDRV so far   : 3.50870000s
+SOfock:SL  4.89D-10    0.00%   78.92%    0.00%    0.73%   0.01200000s
+>>>> Total wall time used in HER_PARDRV so far   : 3.52070000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  0
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    7/    0/    5);   +- (ep) trial vectors:    5
+
+<<B;B>> at iteration:    8
+--------------------------------------------
+   Freq.:     0.00000000         -1.41392661
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  7.62E-01  7.62E-01  7.87E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  2.07E-04  2.07E-04  1.01E-06
+E(-)-vector no.  1 accepted. Norm :  4.13160D-04
+P(-)-vector no.  1 not accepted
+
+* End of microiteration no.    8 after  0.02099705s
+
+########## START MICROITERATION NO.   9 ##########   Fri Mar  9 19:12:19 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  4.89D-10    0.00%   72.70%    0.00%    2.23%   0.00360000s
+>>>> Total wall time used in HER_PARDRV so far   : 3.52430000s
+SOfock:SL  4.89D-10    0.00%   79.11%    0.00%    0.86%   0.01250000s
+>>>> Total wall time used in HER_PARDRV so far   : 3.53680000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  0
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    8/    0/    5);   +- (ep) trial vectors:    5
+
+<<B;B>> at iteration:    9
+--------------------------------------------
+   Freq.:     0.00000000         -1.41392661
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  7.62E-01  7.62E-01  7.87E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  6.30E-05  6.30E-05  1.02E-06
+E(-)-vector no.  1 accepted. Norm :  1.26071D-04
+P(-)-vector no.  1 accepted. Norm :  2.03306D-06
+
+* End of microiteration no.    9 after  0.02399588s
+
+########## START MICROITERATION NO.  10 ##########   Fri Mar  9 19:12:19 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  4.89D-10    0.00%   73.90%    0.00%    9.04%   0.00530000s
+>>>> Total wall time used in HER_PARDRV so far   : 3.54210000s
+SOfock:SL  4.89D-10    0.00%   80.54%    0.00%    1.79%   0.01530000s
+>>>> Total wall time used in HER_PARDRV so far   : 3.55740000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  1
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    9/    0/    6);   +- (ep) trial vectors:    6
+
+<<B;B>> at iteration:   10
+--------------------------------------------
+   Freq.:     0.00000000         -1.41392661
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  7.62E-01  7.62E-01  7.87E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  8.05E-06  8.05E-06  1.48E-08
+E(-)-vector no.  1 accepted. Norm :  1.60955D-05
+P(-)-vector no.  1 not accepted
+
+* End of microiteration no.   10 after  0.03299522s
+
+########## START MICROITERATION NO.  11 ##########   Fri Mar  9 19:12:19 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  4.89D-10    0.00%   77.35%    0.00%    2.63%   0.00360000s
+>>>> Total wall time used in HER_PARDRV so far   : 3.56100000s
+SOfock:SL  4.89D-10    0.34%   84.74%    0.00%    3.37%   0.01190000s
+>>>> Total wall time used in HER_PARDRV so far   : 3.57290000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  0
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (   10/    0/    6);   +- (ep) trial vectors:    6
+
+<<B;B>> at iteration:   11
+--------------------------------------------
+   Freq.:     0.00000000         -1.41392661
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  7.62E-01  7.62E-01  7.87E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  3.36E-06  3.36E-06  1.41E-08
+E(-)-vector no.  1 accepted. Norm :  6.72544D-06
+P(-)-vector no.  1 not accepted
+
+* End of microiteration no.   11 after  0.02099705s
+
+########## START MICROITERATION NO.  12 ##########   Fri Mar  9 19:12:19 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  4.89D-10    0.00%   78.72%    0.00%    1.91%   0.00350000s
+>>>> Total wall time used in HER_PARDRV so far   : 3.57640000s
+SOfock:SL  4.89D-10    1.12%   85.00%    0.00%    5.31%   0.01170000s
+>>>> Total wall time used in HER_PARDRV so far   : 3.58810000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  0
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (   11/    0/    6);   +- (ep) trial vectors:    6
+
+<<B;B>> at iteration:   12
+--------------------------------------------
+   Freq.:     0.00000000         -1.41392661
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  7.62E-01  7.62E-01  7.87E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  4.36E-07  4.36E-07  1.44E-08
+
+* End of microiteration no.   12 after  0.02199697s
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after 12 microiterations
+
+            Freq.(au)   Total norm    E- norm   P- norm 
+========================================================
+* It.  1   0.02099681s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.17D+01 |   2.17D+01  5.25D-01
+========================================================
+* It.  2   0.03499532s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   4.14D+00 |   4.14D+00  4.38D-02
+========================================================
+* It.  3   0.03399372s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   7.35D-01 |   7.35D-01  3.01D-03
+========================================================
+* It.  4   0.01999712s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   1.26D-01 |   1.26D-01  2.55D-03
+========================================================
+* It.  5   0.63690376s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   4.78D-02 |   4.78D-02  7.40D-05
+========================================================
+* It.  6   0.54791594s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   3.90D-03 |   3.90D-03  5.99D-05
+========================================================
+* It.  7   0.03299522s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   3.97D-04 |   3.97D-04  9.48D-07
+========================================================
+* It.  8   0.02099705s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   2.07D-04 |   2.07D-04  1.01D-06
+========================================================
+* It.  9   0.02399588s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   6.30D-05 |   6.30D-05  1.02D-06
+========================================================
+* It. 10   0.03299522s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   8.05D-06 |   8.05D-06  1.48D-08
+========================================================
+* It. 11   0.02099705s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   3.36D-06 |   3.36D-06  1.41D-08
+========================================================
+* It. 12   0.02199697s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   4.36D-07 |   4.36D-07  1.44D-08
+========================================================
+
+
+                                Output from GETLR1
+                                ------------------
+
+
+<< 1, 2>>:  0.24079397E-11 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+
+<< 2, 2>>: -0.78952645E+01 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+
+<< 3, 2>>: -0.55297050E-12 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+
+
+                                Output from GETLR1
+                                ------------------
+
+
+<< 1, 2>>: -0.16704528E-11 a.u.,     P--contribution at frequency    0.0000000000 a.u.
+
+<< 2, 2>>:  0.93091911E+01 a.u.,     P--contribution at frequency    0.0000000000 a.u.
+
+<< 3, 2>>:  0.73741785E-12 a.u.,     P--contribution at frequency    0.0000000000 a.u.
+
+
+                                Output from SETXEE
+                                ------------------
+
+# of e-e rotations (non-redundant):        140
+# of extra e-e rotations (redundant):          0
+
+
+                                Output from SETXEP
+                                ------------------
+
+# of e-p rotations:        395
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTY >>>
+LAO-ZRM1H1       - Symmetry: A    T-
+
+E(-)-vector no.  1 not accepted
+P(-)-vector no.  1 accepted. Norm :  5.18089D+02
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  8.26D-13
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 1.21D+03
+* Screening threshold in LR solver scaled with norm of property vector:  2.5904D+02
+  and changed to:  2.1409D-10
+
+########## START MICROITERATION NO.   1 ##########   Fri Mar  9 19:12:19 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  2.14D-10    0.00%   68.47%    0.00%    4.06%   0.57920000s
+>>>> Total wall time used in HER_PARDRV so far   : 4.16730000s
+SOfock:SL  2.14D-10    0.00%   72.96%    0.00%    0.63%   0.01210000s
+>>>> Total wall time used in HER_PARDRV so far   : 4.17940000s
+* Trial vectors in this micro iteration:  E-:  0  P-:  1
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    0/    0/    1);   +- (ep) trial vectors:    1
+
+<<B;B>> at iteration:    1
+--------------------------------------------
+   Freq.:     0.00000000         -1.78658877
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  3.45E-03  0.00E+00  3.45E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  2.72E-01  3.94E-03  2.72E-01
+E(-)-vector no.  1 accepted. Norm :  7.87039D-03
+P(-)-vector no.  1 accepted. Norm :  5.44073D-01
+
+* End of microiteration no.    1 after  0.58991003s
+
+########## START MICROITERATION NO.   2 ##########   Fri Mar  9 19:12:20 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  2.14D-10    0.00%   70.69%    0.00%    3.46%   0.00530000s
+>>>> Total wall time used in HER_PARDRV so far   : 4.18470000s
+SOfock:SL  2.14D-10    0.00%   74.29%    0.00%    1.02%   0.01580000s
+>>>> Total wall time used in HER_PARDRV so far   : 4.20050000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  1
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    1/    0/    2);   +- (ep) trial vectors:    2
+
+<<B;B>> at iteration:    2
+--------------------------------------------
+   Freq.:     0.00000000         -1.78658729
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  3.65E-03  1.21E-03  3.45E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  2.90E-03  2.82E-03  6.60E-04
+E(-)-vector no.  1 accepted. Norm :  5.63859D-03
+P(-)-vector no.  1 accepted. Norm :  1.32005D-03
+
+* End of microiteration no.    2 after  0.03299475s
+
+########## START MICROITERATION NO.   3 ##########   Fri Mar  9 19:12:20 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  2.14D-10    0.00%   70.73%    0.00%    3.85%   0.58780000s
+>>>> Total wall time used in HER_PARDRV so far   : 4.78830000s
+SOfock:SL  2.14D-10    0.00%   76.92%    0.00%    0.87%   0.01570000s
+>>>> Total wall time used in HER_PARDRV so far   : 4.80400000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  1
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    2/    0/    3);   +- (ep) trial vectors:    3
+
+<<B;B>> at iteration:    3
+--------------------------------------------
+   Freq.:     0.00000000         -1.78658691
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  3.74E-03  1.46E-03  3.45E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  1.05E-03  1.05E-03  1.20E-05
+E(-)-vector no.  1 accepted. Norm :  2.10046D-03
+P(-)-vector no.  1 accepted. Norm :  2.39401D-05
+
+* End of microiteration no.    3 after  0.59391022s
+
+########## START MICROITERATION NO.   4 ##########   Fri Mar  9 19:12:21 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  2.14D-10    0.00%   71.10%    0.00%    6.54%   0.00560000s
+>>>> Total wall time used in HER_PARDRV so far   : 4.80960000s
+SOfock:SL  2.14D-10    0.00%   77.60%    0.00%    1.19%   0.01580000s
+>>>> Total wall time used in HER_PARDRV so far   : 4.82540000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  1
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    3/    0/    4);   +- (ep) trial vectors:    4
+
+<<B;B>> at iteration:    4
+--------------------------------------------
+   Freq.:     0.00000000         -1.78658690
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  3.74E-03  1.46E-03  3.45E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  1.42E-04  1.42E-04  9.55E-07
+E(-)-vector no.  1 accepted. Norm :  2.83055D-04
+P(-)-vector no.  1 not accepted
+
+* End of microiteration no.    4 after  0.03199482s
+
+########## START MICROITERATION NO.   5 ##########   Fri Mar  9 19:12:21 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  2.14D-10    0.00%   72.62%    0.00%    3.17%   0.00360000s
+>>>> Total wall time used in HER_PARDRV so far   : 4.82900000s
+SOfock:SL  2.14D-10    0.00%   79.74%    0.00%    1.59%   0.01170000s
+>>>> Total wall time used in HER_PARDRV so far   : 4.84070000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  0
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    4/    0/    4);   +- (ep) trial vectors:    4
+
+<<B;B>> at iteration:    5
+--------------------------------------------
+   Freq.:     0.00000000         -1.78658690
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  3.74E-03  1.46E-03  3.45E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  6.07E-05  6.07E-05  9.31E-07
+E(-)-vector no.  1 accepted. Norm :  1.21428D-04
+P(-)-vector no.  1 accepted. Norm :  1.86125D-06
+
+* End of microiteration no.    5 after  0.02199697s
+
+########## START MICROITERATION NO.   6 ##########   Fri Mar  9 19:12:21 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  2.14D-10    0.00%   73.74%    0.00%    9.02%   0.00560000s
+>>>> Total wall time used in HER_PARDRV so far   : 4.84630000s
+SOfock:SL  2.14D-10    0.00%   80.59%    0.00%    2.21%   0.01630000s
+>>>> Total wall time used in HER_PARDRV so far   : 4.86260000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  1
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    5/    0/    5);   +- (ep) trial vectors:    5
+
+<<B;B>> at iteration:    6
+--------------------------------------------
+   Freq.:     0.00000000         -1.78658690
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  3.74E-03  1.46E-03  3.45E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  2.21E-05  2.21E-05  3.33E-08
+E(-)-vector no.  1 accepted. Norm :  4.42634D-05
+P(-)-vector no.  1 not accepted
+
+* End of microiteration no.    6 after  0.03299522s
+
+########## START MICROITERATION NO.   7 ##########   Fri Mar  9 19:12:21 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  2.14D-10    0.00%   74.56%    0.00%    2.98%   0.00370000s
+>>>> Total wall time used in HER_PARDRV so far   : 4.86630000s
+SOfock:SL  2.14D-10    0.00%   81.94%    0.00%    2.19%   0.17640000s
+>>>> Total wall time used in HER_PARDRV so far   : 5.04270000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  0
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    6/    0/    5);   +- (ep) trial vectors:    5
+
+<<B;B>> at iteration:    7
+--------------------------------------------
+   Freq.:     0.00000000         -1.78658690
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  3.74E-03  1.46E-03  3.45E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  4.26E-06  4.26E-06  3.56E-08
+E(-)-vector no.  1 accepted. Norm :  8.52242D-06
+P(-)-vector no.  1 not accepted
+
+* End of microiteration no.    7 after  0.18197203s
+
+########## START MICROITERATION NO.   8 ##########   Fri Mar  9 19:12:21 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  2.14D-10    0.00%   76.61%    0.00%    2.91%   0.00390000s
+>>>> Total wall time used in HER_PARDRV so far   : 5.04660000s
+SOfock:SL  2.14D-10    0.12%   84.70%    0.00%    3.72%   0.01070000s
+>>>> Total wall time used in HER_PARDRV so far   : 5.05730000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  0
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    7/    0/    5);   +- (ep) trial vectors:    5
+
+<<B;B>> at iteration:    8
+--------------------------------------------
+   Freq.:     0.00000000         -1.78658690
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  3.74E-03  1.46E-03  3.45E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  1.34E-06  1.34E-06  3.66E-08
+E(-)-vector no.  1 accepted. Norm :  2.67234D-06
+P(-)-vector no.  1 not accepted
+
+* End of microiteration no.    8 after  0.02299595s
+
+########## START MICROITERATION NO.   9 ##########   Fri Mar  9 19:12:21 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  2.14D-10    0.00%   78.74%    0.00%    2.78%   0.00380000s
+>>>> Total wall time used in HER_PARDRV so far   : 5.06110000s
+SOfock:SL  2.14D-10    1.42%   85.47%    0.00%    5.32%   0.01110000s
+>>>> Total wall time used in HER_PARDRV so far   : 5.07220000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  0
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    8/    0/    5);   +- (ep) trial vectors:    5
+
+<<B;B>> at iteration:    9
+--------------------------------------------
+   Freq.:     0.00000000         -1.78658690
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  3.74E-03  1.46E-03  3.45E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  3.95E-07  3.94E-07  3.66E-08
+E(-)-vector no.  1 accepted. Norm :  7.87071D-07
+P(-)-vector no.  1 not accepted
+
+* End of microiteration no.    9 after  0.01999664s
+
+########## START MICROITERATION NO.  10 ##########   Fri Mar  9 19:12:21 2018
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  2.14D-10    0.00%   81.47%    0.00%    2.71%   0.00370000s
+>>>> Total wall time used in HER_PARDRV so far   : 5.07590000s
+SOfock:SL  2.14D-10    6.94%   82.24%    0.00%    9.32%   0.36360000s
+>>>> Total wall time used in HER_PARDRV so far   : 5.43950000s
+* Trial vectors in this micro iteration:  E-:  1  P-:  0
+   * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    9/    0/    5);   +- (ep) trial vectors:    5
+
+<<B;B>> at iteration:   10
+--------------------------------------------
+   Freq.:     0.00000000         -1.78658690
+
+* XRSNEX: Norm of resultant vectors:
+* Frequency      Total     E- part   P- part 
+     0.00000000  3.74E-03  1.46E-03  3.45E-03
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part   P- part 
+     0.00000000  1.00E-09  4.90E-08  3.26E-08  3.66E-08
+
+* End of microiteration no.   10 after  0.36294508s
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after 10 microiterations
+
+            Freq.(au)   Total norm    E- norm   P- norm 
+========================================================
+* It.  1   0.58991003s  (LL SL    )     [  0]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.72D-01 |   3.94D-03  2.72D-01
+========================================================
+* It.  2   0.03299475s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.90D-03 |   2.82D-03  6.60D-04
+========================================================
+* It.  3   0.59391022s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   1.05D-03 |   1.05D-03  1.20D-05
+========================================================
+* It.  4   0.03199482s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   1.42D-04 |   1.42D-04  9.55D-07
+========================================================
+* It.  5   0.02199697s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   6.07D-05 |   6.07D-05  9.31D-07
+========================================================
+* It.  6   0.03299522s  (LL SL    )     [  1]     [  1]
+--------------------------------------------------------
+            0.000000 :   2.21D-05 |   2.21D-05  3.33D-08
+========================================================
+* It.  7   0.18197203s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   4.26D-06 |   4.26D-06  3.56D-08
+========================================================
+* It.  8   0.02299595s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   1.34D-06 |   1.34D-06  3.66D-08
+========================================================
+* It.  9   0.01999664s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   3.96D-07 |   3.94D-07  3.66D-08
+========================================================
+* It. 10   0.36294508s  (LL SL    )     [  1]     [  0]
+--------------------------------------------------------
+            0.000000 :   4.90D-08 |   3.26D-08  3.66D-08
+========================================================
+
+
+                                Output from GETLR1
+                                ------------------
+
+
+<< 1, 3>>: -0.41593074E-11 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+
+<< 2, 3>>: -0.99528782E-11 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+
+<< 3, 3>>: -0.38464804E-05 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+
+
+                                Output from GETLR1
+                                ------------------
+
+
+<< 1, 3>>:  0.71025220E-12 a.u.,     P--contribution at frequency    0.0000000000 a.u.
+
+<< 2, 3>>:  0.74017747E-12 a.u.,     P--contribution at frequency    0.0000000000 a.u.
+
+<< 3, 3>>:  0.17865908E+01 a.u.,     P--contribution at frequency    0.0000000000 a.u.
+
+
+                          Linear response; final output
+                          -----------------------------
+
+
+<<A( 1),B( 1)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - LAO-XRM1H1           A    T-
+   B - LAO-XRM1H1           A    T-
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.    1.413926612869 a.u.                       7.37E-10   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 1),B( 2)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - LAO-XRM1H1           A    T-
+   B - LAO-YRM1H1           A    T-
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.    0.73748684E-12 a.u.                       7.37E-10   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 1),B( 3)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - LAO-XRM1H1           A    T-
+   B - LAO-ZRM1H1           A    T-
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.   -0.34490553E-11 a.u.                       1.89E-10   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 2),B( 1)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - LAO-YRM1H1           A    T-
+   B - LAO-XRM1H1           A    T-
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.    0.81901234E-12 a.u.                       7.37E-10   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 2),B( 2)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - LAO-YRM1H1           A    T-
+   B - LAO-YRM1H1           A    T-
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.    1.413926612875 a.u.                       7.37E-10   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 2),B( 3)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - LAO-YRM1H1           A    T-
+   B - LAO-ZRM1H1           A    T-
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.   -0.92127007E-11 a.u.                       1.89E-10   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 3),B( 1)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - LAO-ZRM1H1           A    T-
+   B - LAO-XRM1H1           A    T-
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.    0.59889967E-12 a.u.                       7.37E-10   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 3),B( 2)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - LAO-ZRM1H1           A    T-
+   B - LAO-YRM1H1           A    T-
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.    0.18444735E-12 a.u.                       7.37E-10   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 3),B( 3)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - LAO-ZRM1H1           A    T-
+   B - LAO-ZRM1H1           A    T-
+-----------------------------------------------------------------------------------------------
+ Frequency (real)     Real part                                     Convergence
+-----------------------------------------------------------------------------------------------
+  0.00000000 a.u.    1.786586903623 a.u.                       1.89E-10   (converged)
+-----------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------
+
+
+                                Output from SETFCK
+                                ------------------
+
+* Exchange factor:     1.0000
+* Mu factor      :     0.0000
+* Attenuation    :     0.0000
+* Fock matrix no.    1    -    Operator irrep: A  
+Matrix symmetry:  A    A    A    A  
+    Mat.  IFC  SYM  Coulomb Exchange Irrep
+    1(1)   13   S      1       1      A  
+    2(i)   22   A      0       1      A  
+    3(j)   22   A      0       1      A  
+    4(k)   22   A      0       1      A  
+* Fock matrix no.    2    -    Operator irrep: A  
+Matrix symmetry:  A    A    A    A  
+    Mat.  IFC  SYM  Coulomb Exchange Irrep
+    1(1)   13   S      1       1      A  
+    2(i)   22   A      0       1      A  
+    3(j)   22   A      0       1      A  
+    4(k)   22   A      0       1      A  
+* Fock matrix no.    3    -    Operator irrep: A  
+Matrix symmetry:  A    A    A    A  
+    Mat.  IFC  SYM  Coulomb Exchange Irrep
+    1(1)   13   S      1       1      A  
+    2(i)   22   A      0       1      A  
+    3(j)   22   A      0       1      A  
+    4(k)   22   A      0       1      A  
+* Fock matrix no.    4    -    Operator irrep: A  
+Matrix symmetry:  A    A    A    A  
+    Mat.  IFC  SYM  Coulomb Exchange Irrep
+    1(1)   13   S      1       1      A  
+    2(i)   22   A      0       1      A  
+    3(j)   22   A      0       1      A  
+    4(k)   22   A      0       1      A  
+* Fock matrix no.    5    -    Operator irrep: A  
+Matrix symmetry:  A    A    A    A  
+    Mat.  IFC  SYM  Coulomb Exchange Irrep
+    1(1)   13   S      1       1      A  
+    2(i)   22   A      0       1      A  
+    3(j)   22   A      0       1      A  
+    4(k)   22   A      0       1      A  
+* Fock matrix no.    6    -    Operator irrep: A  
+Matrix symmetry:  A    A    A    A  
+    Mat.  IFC  SYM  Coulomb Exchange Irrep
+    1(1)   13   S      1       1      A  
+    2(i)   22   A      0       1      A  
+    3(j)   22   A      0       1      A  
+    4(k)   22   A      0       1      A  
+
+
+             Two-electron expectation values, before adding XC terms
+             -------------------------------------------------------
+
+                                 Bx                  By                  Bz
+
+
+            Bx        -0.985856478139      0.000000000005      0.000000000000
+            By         0.000000000005     -0.985856478142      0.000000000000
+            Bz         0.000000000000      0.000000000000      0.000000000000
+
+
+
+       Average value:   -0.657238
+
+
+                     Two-electron expectation values (total)
+                     ---------------------------------------
+
+                                 Bx                  By                  Bz
+
+
+            Bx        -0.985856478139      0.000000000005      0.000000000000
+            By         0.000000000005     -0.985856478142      0.000000000000
+            Bz         0.000000000000      0.000000000000      0.000000000000
+
+
+
+       Average value:   -0.657238
+
+Cpu time       0.1180Wall time       0.1469in call to TWOINT(SUSC2EL).
+
+
+
+       *******************************************************************
+       ************************ MAGNETIZABILITIES ************************
+       *******************************************************************
+
+
+
+                         One-electron expectation values
+                         -------------------------------
+
+                                 Bx                  By                  Bz
+
+
+            Bx         1.245188628052     -0.000000000008     -0.000000000001
+            By        -0.000000000008      1.245188628061     -0.000000000003
+            Bz        -0.000000000001     -0.000000000003      0.000000000000
+
+
+
+       Average value:            0.830126
+
+
+                         Two-electron expectation values
+                         -------------------------------
+
+                                 Bx                  By                  Bz
+
+
+            Bx        -0.985856478139      0.000000000005      0.000000000000
+            By         0.000000000005     -0.985856478142      0.000000000000
+            Bz         0.000000000000      0.000000000000      0.000000000000
+
+
+
+       Average value:           -0.657238
+
+
+                        Highest-order reorthonormalization
+                        ----------------------------------
+
+                                 Bx                  By                  Bz
+
+
+            Bx        -0.225793805350     -0.000000000001      0.000000000000
+            By        -0.000000000001     -0.225793805349      0.000000000000
+            Bz         0.000000000000      0.000000000000      0.000000000000
+
+
+
+       Average value:           -0.150529
+
+
+                        Lowest-order reorthonormalization
+                        ---------------------------------
+
+                                 Bx                  By                  Bz
+
+
+            Bx         0.515900106231      0.000000000004     -0.000000000000
+            By         0.000000000004      0.515900106229      0.000000000002
+            Bz        -0.000000000000      0.000000000002      0.000000000000
+
+
+
+       Average value:            0.343933
+  ------------------------------------------------------------------------
+
+
+                       Relaxation part of susceptibilities
+                       -----------------------------------
+
+                                 Bx                  By                  Bz
+
+
+            Bx         1.413926612869      0.000000000001      0.000000000001
+            By         0.000000000001      1.413926612875      0.000000000000
+            Bz        -0.000000000003     -0.000000000009      1.786586903623
+
+
+
+       Average value:            1.538147
+
+
+  e-p "diamagnetic" and e-e "paramagnetic" contributions (au):
+  ------------------------------------------------------------
+
+  1       9.309191083267     -0.000000000002      0.000000000001        -7.895264470398      0.000000000002     -0.000000000000
+  2      -0.000000000002      9.309191083281      0.000000000001         0.000000000002     -7.895264470406     -0.000000000001
+  3       0.000000000001      0.000000000001      1.786590750104        -0.000000000004     -0.000000000010     -0.000003846480
+
+ e-p "diamagnetic" contribution:            6.801658    e-e "paramagnetic":           -5.263511
+
+  Units:  JT**(-2)/(10**(-30))   (SI) 
+          ppm cm**(3) mol**(-1)  (cgs)
+
+    1 au=  4.75209416901981 (cgs).
+    1 au= 78.91036406831407 (SI)
+
+  London atomic orbitals used in calculations.
+
+
+  Magnetizabilities                     au                       SI                      cgs
+  ------------------------------------------------------------------------------------------
+
+  Isotropic magnetizability:              -1.9044           -150.2800             -9.0501
+  Diamagnetic contribution:               -6.8017           -536.7213            -32.3221
+  Paramagnetic contribution:               4.8972            386.4413             23.2720
+  Parallel component:                     -1.7866           -140.9802             -8.4900
+  Perpendicular component:                -1.9634           -154.9299             -9.3301
+  Anisotropy:                              0.1768             13.9496              0.8401
+
+  Magnetizability is cylindrical.
+
+
+  Principal values (au, SI, and cgs) and axes:
+  --------------------------------------------
+
+  khi_aa      -1.7866   -140.9802     -8.4900      0.0000    0.0000    1.0000
+  khi_bb      -1.9634   -154.9299     -9.3301      0.9973   -0.0730   -0.0000
+  khi_cc      -1.9634   -154.9299     -9.3301      0.0730    0.9973   -0.0000
+
+
+                        Total magnetizability tensor (au)
+                        ---------------------------------
+
+                                 Bx                  By                  Bz
+
+
+            Bx        -1.963365063664     -0.000000000001      0.000000000000
+            By        -0.000000000001     -1.963365063674      0.000000000000
+            Bz         0.000000000004      0.000000000010     -1.786586903623
+
+
+
+
+                     Diamagnetic magnetizability tensor (au)
+                     ---------------------------------------
+
+                                 Bx                  By                  Bz
+
+
+            Bx        -9.309191083267      0.000000000002     -0.000000000001
+            By         0.000000000002     -9.309191083281     -0.000000000001
+            Bz        -0.000000000001     -0.000000000001     -1.786590750104
+
+
+
+
+                     Paramagnetic magnetizability tensor (au)
+                     ----------------------------------------
+
+                                 Bx                  By                  Bz
+
+
+            Bx         7.345826019603     -0.000000000002      0.000000000001
+            By        -0.000000000002      7.345826019608      0.000000000001
+            Bz         0.000000000005      0.000000000010      0.000003846480
+
+
+
+*****************************************************
+********** E N D   of   D I R A C  output  **********
+*****************************************************
+
+
+ 
+     Date and time (Linux)  : Fri Mar  9 19:12:22 2018
+     Host name              : u-5-3.local                             
+
+>>>> Node 0, utime: 7, stime: 0, minflt: 9314, majflt: 0, nvcsw: 104, nivcsw: 309, maxrss: 36100
+>>>> Total WALL time used in DIRAC: 9s
+  
+  Dynamical Memory Usage Summary for Master
+  
+  Mean allocation size (Mb) :        73.52
+  
+  Largest          10  allocations
+  
+     1953.12 Mb at subroutine pamprp_+0x375                              for WORK in PAMPRP_1                          
+     1953.12 Mb at subroutine pamset_+0x1b83                             for WORK in PAMSET - 2                        
+     1953.12 Mb at subroutine gmotra_+0x6474                             for WORK in GMOTRA                            
+     1953.12 Mb at subroutine pamset_+0xab                               for WORK in PAMSET - 1                        
+     1953.12 Mb at subroutine MAIN__+0x573                               for test allocation of work array in DIRAC mai
+        1.34 Mb at subroutine london_reorth_hb_mp_london_reort_hb_+0x9b5 for unnamed variable                          
+        1.34 Mb at subroutine london_reorth_hb_mp_london_reort_hb_+0x1e8 for unnamed variable                          
+        1.15 Mb at subroutine london_reorth_hb_mp_london_reort_hb_+0xa31 for unnamed variable                          
+        0.76 Mb at subroutine paminp_+0xa3                               for PAMINP WORK array                         
+        0.45 Mb at subroutine london_reorth_hb_mp_london_reort_hb_+0x128 for unnamed variable                          
+  
+  Peak memory usage    (Mb) :      1956.00
+       reached at subroutine : qtrans90_+0x2a4                           
+              for variable   : QTRANS90-buffer-space                     
+  
+ MEMGET high-water mark:     0.00 MB
+
+*****************************************************
