@@ -702,20 +702,20 @@ c
             WRITE(SYMLAB,'("m_j=",I3,"/2")') ID
             IF (KRMC_FLG.EQ.1) THEN
               IF( ID .eq. 0) THEN 
-                WRITE(LUPRI,'(/A,I3,A)')
+                WRITE(LUPRI,'(/A,I4,A)')
      &          '* Electronic eigenvalue no.',JVEC(I),': '
               ELSE
-                WRITE(LUPRI,'(/A,I3,A,2X,A9)')
+                WRITE(LUPRI,'(/A,I4,A,2X,A9)')
      &          '* Electronic eigenvalue no.',JVEC(I),': ',SYMLAB
               END IF
             ELSE
 C             ... CI-NOs, MP2-NOs,...
               IF( ID .eq. 0) THEN 
-                WRITE(LUPRI,'(/A,I3,A,A,F12.8)')
+                WRITE(LUPRI,'(/A,I4,A,A,F12.8)')
      &          '* Electronic eigenvalue no.',JVEC(I),': ',
      &          '      Occupation :',OCC2(I)
               ELSE
-                WRITE(LUPRI,'(/A,I3,A,A,F12.8,2X,A9)')
+                WRITE(LUPRI,'(/A,I4,A,A,F12.8,2X,A9)')
      &          '* Electronic eigenvalue no.',JVEC(I),': ',
      &          '      Occupation :',OCC2(I),SYMLAB
               END IF
@@ -728,7 +728,7 @@ C             ... CI-NOs, MP2-NOs,...
                ID = IBEIG(II)
                WRITE(SYMLAB,'("m_j=",I3,"/2")') ID
              ENDIF
-             WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A,2X,A9)')
+             WRITE(LUPRI,'(/A,I4,A,'//FMT//',A,F6.4,A,2X,A9)')
      &          '* Electronic eigenvalue no.',JVEC(I),': ',
      &          EIG(II),'       (Occupation : f = ',OCC2(I),')',
      &          SYMLAB
@@ -740,7 +740,7 @@ C             ... CI-NOs, MP2-NOs,...
              WRITE(LUPRI,'(/A,I3)')
      &       '* Positronic eigenvalue no.',II
           ELSE
-             WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A,2X,A9)')
+             WRITE(LUPRI,'(/A,I4,A,'//FMT//',A,F6.4,A,2X,A9)')
      &          '* Positronic eigenvalue no.',II,': ',
      &          EIG(II),'       (Occupation : f = ',OCC2(I),')',
      &          SYMLAB
@@ -1722,25 +1722,25 @@ C
         IF(IP.EQ.1) THEN
 C...    Positive-energy (electronic) orbital
           IF( IOPT .lt. 14 )THEN
-            WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A)')
+            WRITE(LUPRI,'(/A,I4,A,'//FMT//',A,F6.4,A)')
      +         '* Electronic eigenvalue nr.',JMOL(1,K),': ',
      &         EMOL(K),'       (Occupation : f = ',OCC(K),')'
           ELSE
             ID = IBMOL(K)
             WRITE(SYMLAB,'("m_j=",I3,"/2")') ID
             IF( ID .eq. 0) THEN
-              WRITE(LUPRI,'(/A,I3,A,A,F12.8)')
+              WRITE(LUPRI,'(/A,I4,A,A,F12.8)')
      &         '* Electronic eigenvalue nr.',JMOL(1,K),': ',
      &            '      Occupation :',OCC(K)
             ELSE
-                  WRITE(LUPRI,'(/A,I3,A,A,F12.8,2X,A9)')
+                  WRITE(LUPRI,'(/A,I4,A,A,F12.8,2X,A9)')
      &            '* Electronic eigenvalue no.',JMOL(1,K),': ',
      &            '      Occupation :',OCC(K),SYMLAB
             END IF
           END IF
         ELSE
 C...    Negative-energy (positronic) orbital
-          WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A)')
+          WRITE(LUPRI,'(/A,I4,A,'//FMT//',A,F6.4,A)')
      +       '* Positronic eigenvalue nr.',JMOL(1,K),': ',
      &       EMOL(K),'       (Occupation : f = ',OCC(K),')'
         ENDIF

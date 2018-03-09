@@ -1,8 +1,8 @@
 option(ENABLE_GEN1INT "Enable Gen1Int library" ON)
 
-add_definitions(-DBUILD_GEN1INT)
-
 if(ENABLE_GEN1INT)
+
+add_definitions(-DBUILD_GEN1INT)
 
 include_directories(${PROJECT_BINARY_DIR}/external/gen1int-build)
 

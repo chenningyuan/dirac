@@ -171,6 +171,11 @@ class molecular_electronic_structure:
 		epmin		= 0
 		symchk_hole     = {}
 		symchk_part     = {}
+
+                Ehmin_delta_to_next = 0
+                ehmax_delta_to_next = 0
+                epmin_delta_to_next = 0
+                epmax_delta_to_next = 0
 	
 		for i,irr in enumerate(self.fermion_irreps):
 			total_ih    = int(npmh[2*i])  + total_ih
@@ -259,7 +264,7 @@ class molecular_electronic_structure:
 			self.active_per_irrep[irrep] = 0
 			self.active_occ_per_irrep[irrep] = 0
 			self.active_vir_per_irrep[irrep] = 0
-                        print "#debug, irrep:",irrep,"  ",self.fermion_irreps
+#                       print "#debug, irrep:",irrep,"  ",self.fermion_irreps
 
 		for spinor in self.spinor_list:
                         print spinor.fermion
@@ -344,7 +349,10 @@ class molecular_electronic_structure:
 					spinor_occupancy = occupied_or_not.match(l).group(1)	
 
 				elif symmetry_definition_so.match(l):
-                                           fermion_symmetry = symmetry_definition_so.match(l).group(1)+symmetry_definition_so.match(l).group(2)
+                                           if symmetry_definition_so.match(l).group(2) is not None:
+                                                      fermion_symmetry = symmetry_definition_so.match(l).group(1)+symmetry_definition_so.match(l).group(2)
+                                           else:
+                                                      fermion_symmetry = symmetry_definition_so.match(l).group(1)
 			   		   self.fermion_irreps.append(fermion_symmetry)
 
 				elif symmetry_definition_spinfree.match(l):
