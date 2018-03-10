@@ -38,6 +38,8 @@ How to do code review
 * Be polite.
 * Check that code is submitted to the right branch.
 * Check that commit messages are clear.
+* Wait until the test runner reports before merging.
+* If test runner result is red, investigate what happened.
 * Changelog entry needed?
 * Documentation needed?
 * Tests preserved and new functionality tested?
