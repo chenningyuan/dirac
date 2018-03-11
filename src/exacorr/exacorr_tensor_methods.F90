@@ -13,6 +13,12 @@ module exacorr_tensor_methods
           procedure, public:: apply=>compute_2e_ao_tensor
         end type compute_2e_ao_tensor_t
 
+        !Initializer for the mo coefficients tensor:
+        type, extends(tens_method_uni_t), public:: initialize_mocoef_tensor_t
+         contains
+          procedure, public:: apply=>initialize_mocoef_tensor
+        end type initialize_mocoef_tensor_t
+
        contains
 
         function compute_2e_ao_tensor(this,tensor,scalar) result(ierr)
@@ -184,5 +190,74 @@ module exacorr_tensor_methods
          end do
 
         end subroutine fetch_gtos
+
+        function initialize_mocoef_tensor(this,tensor,scalar) result(ierr)
+         use, intrinsic:: ISO_C_BINDING
+         implicit none
+         integer(INTD):: ierr
+         class(initialize_mocoef_tensor_t), intent(in):: this
+         class(tens_rcrsv_t), intent(inout):: tensor
+         complex(8), intent(inout), optional:: scalar
+         integer(INTL):: tens_shape(1:MAX_TENSOR_RANK)
+         integer(INTL):: tens_signa(1:MAX_TENSOR_RANK)
+         integer(INTD):: data_kind,n
+         type(C_PTR):: tens_body_p
+
+         ierr=0
+         data_kind=tensor%get_data_type(ierr)
+         if(ierr.ne.0) then; ierr=-6; return; endif
+         call tensor%get_dims(tens_shape,n,ierr)
+         if(ierr.ne.0) then; ierr=-5; return; endif
+         if(n.eq.2) then !order-2 tensor
+          call tensor%get_bases(tens_signa,n,ierr)
+          if(ierr.ne.0) then; ierr=-4; return; endif
+          tens_body_p=tensor%get_body_ptr(ierr)
+          if(ierr.ne.0) then; ierr=-3; return; endif
+          ierr=tens_init_mocoef(tens_body_p,data_kind,tens_shape(1:n),tens_signa(1:n))
+          if(ierr.ne.0) then; ierr=-2; return; endif
+         else
+          ierr=-1
+         endif
+         return
+        end function initialize_mocoef_tensor
+
+        integer function tens_init_mocoef(tens_body, data_kind, tens_shape, tens_base) result (ierr)
+        !Initialization routine that is used to fill a tensor with mo coefficients
+
+         use exacorr_datatypes
+         use exacorr_global
+         use, intrinsic:: ISO_C_BINDING
+
+         implicit none
+
+         type(C_PTR), value:: tens_body                     !in: C pointer to the tensor body (tensor elements)
+         integer(C_INT), value:: data_kind                  !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
+         integer(C_LONG_LONG), intent(in):: tens_shape(1:*) !in: tensor shape (extent of each tensor dimension)
+         integer(C_LONG_LONG), intent(in):: tens_base(1:*)  !in: base offsets for each tensor dimension)
+
+         integer:: dimensions(2),nao,nmo
+         integer :: first_ao, first_mo
+         complex(8),pointer :: mocoef_tens(:,:)
+         complex(8),parameter :: ZERO=(0.D0,0.D0)
+
+         ierr=0 !set error code to success
+         if(data_kind /= EXA_DATA_KIND_C8) then
+           ierr=-1 !invalid data kind requested
+           return
+         endif
+
+         ! map the arguments to names used in the context of mocoef retrieval
+         first_ao = tens_base(1)
+         nao = tens_shape(1)
+         first_mo = tens_base(2)
+         nmo = tens_shape(2)
+         dimensions(1) = nao
+         dimensions(2) = nmo
+         call c_f_pointer(tens_body,mocoef_tens,dimensions) !map C pointer to 2-dimensional array
+
+!        Placeholder: just initialize to zero
+         mocoef_tens = ZERO
+
+        end function tens_init_mocoef
 
 end module exacorr_tensor_methods
