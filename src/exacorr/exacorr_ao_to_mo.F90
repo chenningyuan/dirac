@@ -1,6 +1,7 @@
+module exacorr_ao_to_mo
+
 !This module drives the index transformation of two electron integrals
 !integrating the ExaTensor library with the DIRAC code.
-       module exacorr_ao_to_mo
 
         use exatensor
 
@@ -103,6 +104,8 @@
 !        Destruct remaining tensors and shut down library
          ierr=talsh_tensor_destruct(aoint_tensor)
          ierr=talsh_tensor_destruct(moint_tensor)
+!        Get statistics
+         ierr=talsh_stats()
          ierr = talsh_shutdown()
 
 !        Clean up global data used to interact with DIRAC/Interest
@@ -185,18 +188,10 @@
 !lv      code marked lv is tested and functional but not needed yet as we don't have the code to transform the additional integral classes
 !lv      real(8) :: gout2(21*21*5*21*21*5) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
          real(8), parameter :: fijkl = 1.0
-         integer, parameter :: l_max = 6
-         integer            :: ncartesian(l_max)
          integer            :: nshells, number_aoshells   ! number of AO shells
          type(basis_func_info_t), allocatable :: gto(:)   ! array with basis function information
 
          call fetch_gtos(1,nao,gto,nshells)
-
-!        calculate number of Cartesian function for each l-value
-         ncartesian(1) = 1
-         do i = 2, l_max
-            ncartesian(i) = ncartesian(i-1) + i
-         end do
 
          loff = 0
          do lsh = 1, nshells
@@ -279,6 +274,7 @@
         integer function tens_init_ao_integrals(tens_body, data_kind, tens_shape, tens_base) result (ierr)
 
          use exacorr_datatypes
+         use exacorr_global
          use module_interest_eri
          use, intrinsic:: ISO_C_BINDING
          use exatensor
@@ -304,8 +300,6 @@
          real(8) :: ei,ej,ek,el,ci,cj,ck,cl,xi,yi,zi,xj,yj,zj,xk,yk,zk,xl,yl,zl
          real(8) :: gout(21*21*21*21) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
          real(8), parameter :: fijkl = 1.0
-         integer, parameter :: l_max = 6
-         integer            :: ncartesian(l_max)
 
          ierr=0 !set error code to success
          if(data_kind /= EXA_DATA_KIND_C8) then
@@ -317,12 +311,6 @@
          first_ao(1:4) = tens_base(1:4)
          nao(1:4) = tens_shape(1:4)
          call c_f_pointer(tens_body,ao_tens,nao(1:4)) !map C pointer to 4-dimensional array
-
-!        calculate number of Cartesian functions for each l-value
-         ncartesian(1) = 1
-         do i = 2, l_max
-            ncartesian(i) = ncartesian(i-1) + i
-         end do
 
 !        Allocate and get shell information for all shells that we will treat
          call fetch_gtos(first_ao(1),nao(1),gto1,nshells(1))
@@ -422,6 +410,7 @@
          complex(8):: zero=(0.D0,0.D0)
          integer   :: ierr, tens_rank, i, imo, nao
 
+         call print_date('entered aomo_transform')
 !        Get tensor dimension of input and output tensors
          ierr = talsh_tensor_dimensions(aoint_tensor,tens_rank,aoint_dims)
          if (ierr.ne.0 .or. tens_rank.ne.4) stop 'program error: aoint tensor corrupted'
@@ -441,6 +430,7 @@
             call get_mocoef_tensor (nao, nmo(i), mo_list(imo+1:imo+nmo(i)), mocoefa_tensor(i), mocoefb_tensor(i))
             imo = imo + nmo(i)
          end do
+         call print_date('initialized mo-coefficients')
 
 !        Set tensor dimensions for the index transformation (simple brute-force algorithm)
          a1int_dims(1)   = moint_dims(1)
@@ -453,6 +443,7 @@
 !        Do 1st and 2nd quarter-transformation
          ierr=talsh_tensor_construct(a1int_tensor,C8,a1int_dims,init_val=zero)
          ierr=talsh_tensor_construct(a2int_tensor,C8,a2int_dims,init_val=zero)
+         call print_date('constructed a1 and a2')
          ierr=talsh_tensor_contract("D(i,q,r,s)+=R+(p,i)*L(p,q,r,s)",a1int_tensor,mocoefa_tensor(1),aoint_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=11; return; endif
          ierr=talsh_tensor_contract("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoefa_tensor(2))
@@ -462,12 +453,14 @@
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=12; return; endif
          ierr=talsh_tensor_contract("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoefb_tensor(2))
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=22; return; endif
+         call print_date('first ht done')
 
 !        Destruct a1 and a1 integrals:
          ierr=talsh_tensor_destruct(a1int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=25; return; endif
 
 !        Do 3rd and 4th quarter-transformation
          ierr=talsh_tensor_construct(a3int_tensor,C8,a3int_dims,init_val=zero)
+         call print_date('constructed a3')
          ierr=talsh_tensor_contract("D(i,j,k,s)+=R+(r,k)*L(i,j,r,s)",a3int_tensor,mocoefa_tensor(3),a2int_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=31; return; endif
          ierr=talsh_tensor_contract("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoefa_tensor(4))
@@ -477,10 +470,12 @@
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=32; return; endif
          ierr=talsh_tensor_contract("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoefb_tensor(4))
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=42; return; endif
+         call print_date('second ht done')
 
 !        Destruct a2 and a3 integrals:
          ierr=talsh_tensor_destruct(a2int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=35; return; endif
          ierr=talsh_tensor_destruct(a3int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=45; return; endif
+         call print_date('leaving aomo_transform')
 
          return
 
@@ -619,8 +614,6 @@
          integer             :: number_aos                 ! the size of the atomic orbital basis
          integer             :: nshells                    ! the number of shells (orbitals with the same center and l-value)
          type(basis_func_info_t), allocatable :: shell(:)  ! array with information about the shells
-         integer, parameter :: l_max = 6
-         integer            :: ncartesian(l_max)
 
          type(subspace_basis_t):: basis_ao
          type(color_symmetry_t), allocatable :: color(:)
@@ -648,11 +641,6 @@
 
 !        Get the basis set information
          call fetch_gtos(1,nao,shell,nshells)
-!        calculate number of Cartesian functions for each l-value (todo: make this a function !)
-         ncartesian(1) = 1
-         do i = 2, l_max
-            ncartesian(i) = ncartesian(i-1) + i
-         end do
 
 !        Finalize and restart MPI to make it threaded
          call MPI_Finalize(ierr)
@@ -782,8 +770,6 @@
          real(8), parameter :: fijkl = 1.0
          real(8) :: batch_value, ddot
          real(8), allocatable :: batch_values(:,:,:,:)
-         integer, parameter :: l_max = 6
-         integer            :: ncartesian(l_max)
          integer            :: nshells, number_aoshells   ! number of AO shells
          type(basis_func_info_t), allocatable :: gto(:)   ! array with basis function information
 
@@ -802,12 +788,6 @@
 !        Get AOs and allocate array to store batch values
          call fetch_gtos(1,nao,gto,nshells)
          allocate(batch_values(nshells,nshells,nshells,nshells))
-
-!        calculate number of Cartesian function for each l-value
-         ncartesian(1) = 1
-         do i = 2, l_max
-            ncartesian(i) = ncartesian(i-1) + i
-         end do
 
          do lsh = 1, nshells
             ll   =  gto(lsh)%orb_momentum
@@ -862,21 +842,21 @@
             do ksh = 1, lsh
                do jsh = 1, lsh
                   do ish = 1, jsh
-                     if (abs(batch_values(ish,jsh,ksh,lsh)-batch_values(jsh,ish,ksh,lsh)).gt.1.e-12) then
+                     if (relative_error(batch_values(ish,jsh,ksh,lsh),batch_values(jsh,ish,ksh,lsh)).gt.1.e-10) then
                         ierr = ierr + 1
                         write (*,'(a,3e20.10,4i4)') 'error in perm. symmetry #1',  &
                         batch_values(ish,jsh,ksh,lsh),batch_values(jsh,ish,ksh,lsh), &
                         batch_values(ish,jsh,ksh,lsh)-batch_values(jsh,ish,ksh,lsh), &
                         ish,jsh,ksh,lsh
                      end if
-                     if (abs(batch_values(ish,jsh,ksh,lsh)-batch_values(ish,jsh,lsh,ksh)).gt.1.e-12) then
+                     if (relative_error(batch_values(ish,jsh,ksh,lsh),batch_values(ish,jsh,lsh,ksh)).gt.1.e-10) then
                         ierr = ierr + 1
                         write (*,'(a,3e20.10,4i4)') 'error in perm. symmetry #2',  &
                         batch_values(ish,jsh,ksh,lsh),batch_values(ish,jsh,lsh,ksh), &
                         batch_values(ish,jsh,ksh,lsh)-batch_values(ish,jsh,lsh,ksh), &
                         ish,jsh,ksh,lsh
                      end if
-                     if (abs(batch_values(ish,jsh,ksh,lsh)-batch_values(ksh,lsh,ish,jsh)).gt.1.e-12) then
+                     if (relative_error(batch_values(ish,jsh,ksh,lsh),batch_values(ksh,lsh,ish,jsh)).gt.1.e-10) then
                         ierr = ierr + 1
                         write (*,'(a,3e20.10,4i4)') 'error in perm. symmetry #3',  &
                         batch_values(ish,jsh,ksh,lsh),batch_values(ksh,lsh,ish,jsh), &
@@ -906,4 +886,29 @@
 
         end subroutine test_integral_generation
 
-       end module exacorr_ao_to_mo
+        real function relative_error(quantity_1,quantity_2)
+
+        real(8),intent(in):: quantity_1,quantity_2
+        real(8)           :: error
+
+        error = quantity_1 - quantity_2
+
+        if (abs(quantity_1).gt.1.0) then
+           relative_error = abs (error / quantity_1)
+        else
+           relative_error = abs (error)
+        end if
+
+        end function relative_error
+           
+        subroutine print_date(text)
+         character(len=10) :: datex
+         character(len=8)  :: timex
+         character(len=*)  :: text
+         integer           :: lentext
+         lentext = len(text)
+         call daytime(datex,timex)
+         write (*,'(1x,a10,1x,a8,1x,a)') datex,timex,text(1:lentext)
+        end subroutine print_date
+
+end module exacorr_ao_to_mo

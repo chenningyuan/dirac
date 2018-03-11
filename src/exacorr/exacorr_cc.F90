@@ -1,5 +1,5 @@
+module exacorr_cc
 !This module contains the routines needed to calculate ae coupled cluster wave function
-       module exacorr_cc
 
         use tensor_algebra
         use talsh
@@ -385,6 +385,8 @@
          ierr=talsh_tensor_destruct(aint_tensor)
          ierr=talsh_tensor_destruct(cint_tensor)
          ierr=talsh_tensor_destruct(hint_tensor)
+!        Get statistics 
+         ierr=talsh_stats()
          ierr = talsh_shutdown()
          deallocate (eps_occ)
          deallocate (eps_vir)
@@ -1204,4 +1206,4 @@
  
        end subroutine get_subtensor
 
-       end module exacorr_cc
+end module exacorr_cc

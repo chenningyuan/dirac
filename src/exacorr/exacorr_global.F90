@@ -1,7 +1,8 @@
-!This module controls storage and interaction with the global data used in ExaCorr
-       module exacorr_global
+module exacorr_global
 
-          use exacorr_datatypes
+!This module controls storage and interaction with the global data used in ExaCorr
+
+        use exacorr_datatypes
 
         implicit none
         private
@@ -15,20 +16,17 @@
         public delete_global_data
         public get_gto
         public get_shell_index
+        public ncartesian
 
        contains
-
+         
          integer function ncartesian(l_value)
-
-!        calculate number of Cartesian functions for a particular l-value
-
-         integer :: i, l_value
-
-         ncartesian = 1
-         do i = 2, l_value
-            ncartesian = ncartesian + i
-         end do
- 
+             integer, intent(in) :: l_value
+             integer :: i
+             ncartesian = 1
+             do i = 2, l_value
+                ncartesian = ncartesian + i
+             end do
          end function ncartesian
 
          subroutine initialize_global_data
@@ -129,4 +127,4 @@
          return
         end subroutine generate_mo_segments
 
-       end module exacorr_global
+end module exacorr_global
