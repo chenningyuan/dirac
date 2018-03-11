@@ -16,16 +16,6 @@ module exacorr_ao_to_mo
            module procedure talsh_compute_mo_integrals
         end interface
 
-!TYPES:
-#if defined (VAR_MPI)
- !Block-wise initializer for the 2e AO integral tensor:
-        type, extends(tens_method_uni_t), public:: compute_2e_ao_tensor_t
-         contains
-          procedure, public:: apply=>compute_2e_ao_tensor
-        end type compute_2e_ao_tensor_t
-#endif
-
-
        contains
 !-----------------------------------------------------------
         subroutine talsh_compute_mo_integrals (nmo, mo_list)
@@ -271,124 +261,6 @@ module exacorr_ao_to_mo
 
         end subroutine compute_ao_integrals
 
-        integer function tens_init_ao_integrals(tens_body, data_kind, tens_shape, tens_base) result (ierr)
-
-         use exacorr_datatypes
-         use exacorr_global
-         use module_interest_eri
-         use, intrinsic:: ISO_C_BINDING
-         use exatensor
-
-!Initialization routine that is used to fill a tensor with AO integrals
-
-         implicit none
-
-         type(C_PTR), value:: tens_body                     !in: C pointer to the tensor body (tensor elements)
-         integer(C_INT), value:: data_kind                  !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
-         integer(C_LONG_LONG), intent(in):: tens_shape(1:*) !in: tensor shape (extent of each tensor dimension)
-         integer(C_LONG_LONG), intent(in):: tens_base(1:*)  !in: base offsets for each tensor dimension)
-
-         integer:: nao(4)
-         complex(8),pointer :: ao_tens(:,:,:,:)
-         integer :: first_ao(1:4)
-
-         integer :: nshells(4)
-         type(basis_func_info_t), allocatable :: gto1(:), gto2(:), gto3(:), gto4(:)  ! arrays with basis function information
-
-         integer :: i, j, k, l, ish, jsh, ksh, lsh, ioff, joff, koff, loff, ijkl
-         integer :: li,lj,lk,ll,ni,nj,nk,nl
-         real(8) :: ei,ej,ek,el,ci,cj,ck,cl,xi,yi,zi,xj,yj,zj,xk,yk,zk,xl,yl,zl
-         real(8) :: gout(21*21*21*21) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
-         real(8), parameter :: fijkl = 1.0
-
-         ierr=0 !set error code to success
-         if(data_kind /= EXA_DATA_KIND_C8) then
-           ierr=-1 !invalid data kind requested
-           return
-         endif
-
-         ! map the arguments to names used in the context of integral evaluation
-         first_ao(1:4) = tens_base(1:4)
-         nao(1:4) = tens_shape(1:4)
-         call c_f_pointer(tens_body,ao_tens,nao(1:4)) !map C pointer to 4-dimensional array
-
-!        Allocate and get shell information for all shells that we will treat
-         call fetch_gtos(first_ao(1),nao(1),gto1,nshells(1))
-         call fetch_gtos(first_ao(2),nao(2),gto2,nshells(2))
-         call fetch_gtos(first_ao(3),nao(3),gto3,nshells(3))
-         call fetch_gtos(first_ao(4),nao(4),gto4,nshells(4))
-
-!        Intranode parallelization should be possible in the loops below because Interest is thread safe
-
-         loff = 0
-         do lsh = 1, nshells(4)
-            ll   =  gto4(lsh)%orb_momentum
-            el   =  gto4(lsh)%exponent(1)
-            xl   =  gto4(lsh)%coord(1)
-            yl   =  gto4(lsh)%coord(2)
-            zl   =  gto4(lsh)%coord(3)
-            cl   =  gto4(lsh)%coefficient(1)
-            nl   =  ncartesian(ll)
-            koff = 0
-            do ksh = 1, nshells(3)
-               lk   =  gto3(ksh)%orb_momentum
-               ek   =  gto3(ksh)%exponent(1)
-               xk   =  gto3(ksh)%coord(1)
-               yk   =  gto3(ksh)%coord(2)
-               zk   =  gto3(ksh)%coord(3)
-               ck   =  gto3(ksh)%coefficient(1)
-               nk   =  ncartesian(lk)
-               joff = 0
-               do jsh = 1, nshells(2)
-                  lj   =  gto2(jsh)%orb_momentum
-                  ej   =  gto2(jsh)%exponent(1)
-                  xj   =  gto2(jsh)%coord(1)
-                  yj   =  gto2(jsh)%coord(2)
-                  zj   =  gto2(jsh)%coord(3)
-                  cj   =  gto2(jsh)%coefficient(1)
-                  nj   =  ncartesian(lj)
-                  ioff = 0
-                  do ish = 1, nshells(1)
-                     li   =  gto1(ish)%orb_momentum
-                     ei   =  gto1(ish)%exponent(1)
-                     xi   =  gto1(ish)%coord(1)
-                     yi   =  gto1(ish)%coord(2)
-                     zi   =  gto1(ish)%coord(3)
-                     ci   =  gto1(ish)%coefficient(1)
-                     ni   =  ncartesian(li)
-!                    output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
-                     call interest_eri('llll',fijkl,gout,&
-                                  lk,ek,xk,yk,zk,ck,&
-                                  ll,el,xl,yl,zl,cl,&
-                                  li,ei,xi,yi,zi,ci,&
-                                  lj,ej,xj,yj,zj,cj )
-                     ijkl = 0
-                     do l = 1, nl
-                        do k = 1, nk
-                           do j = 1, nj
-                              do i = 1, ni
-                                 ijkl = ijkl + 1
-                                 ao_tens(i+ioff,j+joff,k+koff,l+loff) = dcmplx(gout(ijkl),0.D0)
-                              end do
-                           end do
-                        end do
-                     end do
-                     ioff = ioff + ni
-                  end do
-                  joff = joff + nj
-               end do
-               koff = koff + nk
-            end do
-            loff = loff + nl
-         end do
-
-         deallocate(gto1)
-         deallocate(gto2)
-         deallocate(gto3)
-         deallocate(gto4)
-
-        end function tens_init_ao_integrals
-
         subroutine aomo_transform (aoint_tensor,moint_tensor,nmo,mo_list)
 
 !        Transform integral tensor from ao-basis to mo-basis
@@ -600,6 +472,7 @@ module exacorr_ao_to_mo
          use dirac_MO
          use exacorr_datatypes
          use exacorr_global
+         use exacorr_tensor_methods
          use module_interest_interface
          use module_interest_eri
          use exatensor
@@ -708,39 +581,7 @@ module exacorr_ao_to_mo
          return
         end subroutine exa_compute_mo_integrals
 
-
-        function compute_2e_ao_tensor(this,tensor,scalar) result(ierr)
-         use, intrinsic:: ISO_C_BINDING
-         implicit none
-         integer(INTD):: ierr
-         class(compute_2e_ao_tensor_t), intent(in):: this
-         class(tens_rcrsv_t), intent(inout):: tensor
-         complex(8), intent(inout), optional:: scalar
-         integer(INTL):: tens_shape(1:MAX_TENSOR_RANK)
-         integer(INTL):: tens_signa(1:MAX_TENSOR_RANK)
-         integer(INTD):: data_kind,n
-         type(C_PTR):: tens_body_p
-
-         ierr=0
-         data_kind=tensor%get_data_type(ierr)
-         if(ierr.ne.0) then; ierr=-6; return; endif
-         call tensor%get_dims(tens_shape,n,ierr)
-         if(ierr.ne.0) then; ierr=-5; return; endif
-         if(n.eq.4) then !order-4 tensor
-          call tensor%get_bases(tens_signa,n,ierr)
-          if(ierr.ne.0) then; ierr=-4; return; endif
-          tens_body_p=tensor%get_body_ptr(ierr)
-          if(ierr.ne.0) then; ierr=-3; return; endif
-          ierr=tens_init_ao_integrals(tens_body_p,data_kind,tens_shape(1:n),tens_signa(1:n))
-          if(ierr.ne.0) then; ierr=-2; return; endif
-         else
-          ierr=-1
-         endif
-         return
-        end function compute_2e_ao_tensor
-
 #endif
-
 
         subroutine test_integral_generation (print_level)
 
