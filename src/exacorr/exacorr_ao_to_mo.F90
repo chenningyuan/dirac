@@ -183,6 +183,9 @@ module exacorr_ao_to_mo
 
          call fetch_gtos(1,nao,gto,nshells)
 
+         ![eric] OpenMP task-based parallelism
+         !$omp parallel
+         !$omp single
          loff = 0
          do lsh = 1, nshells
             ll   =  gto(lsh)%orb_momentum
@@ -221,11 +224,15 @@ module exacorr_ao_to_mo
                      ni   =  ncartesian(li)
 !                    call interest and get only the (LL|LL) type integrals
 !                    output order of eri is (c,d,a,b), so input k,l first and then i,j to get the order that we want
+
+                     ![eric]
+                     !$omp task
                      call interest_eri('llll',fijkl,gout,&
                                   lk,ek,xk,yk,zk,ck,&
                                   ll,el,xl,yl,zl,cl,&
                                   li,ei,xi,yi,zi,ci,&
                                   lj,ej,xj,yj,zj,cj )
+
 !lv                  call interest and get (LL|LL), (SS|LL) and (SS|SS)  type integrals
 !lv                  output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
 !lv                  call interest_eri_rkb('ssss',fijkl,gout2,&
@@ -248,6 +255,8 @@ module exacorr_ao_to_mo
 !lv                        ijkl2 = ijkl2 + ni*nj*5*4
                         end do
                      end do
+                     !$omp end task
+
                      ioff = ioff + ni
                   end do
                   joff = joff + nj
@@ -256,6 +265,8 @@ module exacorr_ao_to_mo
             end do
             loff = loff + nl
          end do
+         !$omp end single
+         !$omp end parallel
 
          deallocate(gto)
 
