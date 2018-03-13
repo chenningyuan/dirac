@@ -185,7 +185,7 @@ module exacorr_ao_to_mo
 
          ![eric] OpenMP task-based parallelism
          !$omp parallel
-         !$omp single
+         !$omp single nowait
          loff = 0
          do lsh = 1, nshells
             ll   =  gto(lsh)%orb_momentum
