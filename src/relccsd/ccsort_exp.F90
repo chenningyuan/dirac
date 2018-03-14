@@ -575,7 +575,6 @@
 
       IJKL = 1
       DO KLREP = 1, NREP
-!       IJREP = MULTB(IRP_INPUT+NREP,KLREP+NREP,2)
        IJREP = MULTB(IRP_INPUT+NREP,KLREP+NREP,2)
        N = f%oneNonDirac(IJREP)
        DO 10 LREP = 1, NREP

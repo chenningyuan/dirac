@@ -29,10 +29,10 @@
 !            here we have dealt with four different type of offsets 
 !            oneDirac ->  bra(k)*ket(l) = ket(kl) !multb(*,*,2)
 !                      or,ket(k)*bra(l) = bra(kl)
-!            twoDirac ->  bra(k)*ket(l) = ket(k,l)!multb(*,*,1) 
+!            twoDirac ->  bra(k)*ket(l) = ket(k,l)!multb(*,*,2) 
 !                      or,ket(k)*bra(l) = bra(k,l)
 
-!            oneNonDirac ->  bra(k)*bra(l) = bra(kl) !multb(*,*,2)
+!            oneNonDirac ->  bra(k)*bra(l) = bra(kl) !multb(*,*,1)
 !                      or,ket(k)*ket(l) = ket(kl)
 !            twoNonDirac ->  bra(k)*bra(l) = bra(k,l)!multb(*,*,1) 
 !                      or,ket(k)*ket(l) = ket(k,l)

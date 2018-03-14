@@ -726,12 +726,10 @@
 
    call sorting_for_blas(31,left_order,match_index,.false.,transA,v_sort,x_row,x_column,presorted=LeftTensor, &
          irrep_input=irrep_left_loc)
- 
  else
 
    call sorting_for_blas(31,left_order,match_index,.false.,transA,v_sort,x_row,x_column, &
           irrep_input=irrep_left_loc)
-
  endif
 
    call onebody_for_blas (right_order,sorted_opArray,im_order,transB,y_row,y_column,FreeIndx)
@@ -741,8 +739,15 @@
    allocate(im_temp(dot_product(x_row,y_column)*rcw))
    im_temp = 0.0d0
 
-    if (present(RightTensor)) call cntrct_new (transA,transB,x_row,y_column,x_column,asym_factor*dia_factor*A1,v_sort, &
+    if (match_index == 0) then
+      if (present(RightTensor)) call cntrct_2 (transA,transB,x_row,y_column,x_column,asym_factor*dia_factor*A1,v_sort, &
     &                                      RightTensor,A1,im_temp,irrep_left_loc,irrep_right_loc,irrep_target,.false.)
+
+    else
+      if (present(RightTensor)) call cntrct_new (transA,transB,x_row,y_column,x_column,asym_factor*dia_factor*A1,v_sort, &
+    &                                      RightTensor,A1,im_temp,irrep_left_loc,irrep_right_loc,irrep_target,.false.)
+    endif
+
 
 !  3) re-sort the arrays to align with the desired structure of the intermediate.
 
@@ -757,9 +762,9 @@
 
    allocate(im_temp_temp(dot_product(x_row,y_column)*rcw))
 
-    im_temp_temp = 0.0d0
+   im_temp_temp = 0.0d0
 
-  !  write(*,*)'possibility of mistake'
+  ! write(*,*)'possibility of mistake'
   ! call srt1c1n (nrep,x_row,y_column,im_temp,im_temp_temp)
    call srt1c1_exp (irrep_target,.false.,x_row,y_column,im_temp,im_temp_temp,2)
 
@@ -1158,12 +1163,15 @@
        endif
         call auto_symmetry_offset(g,mdim,ndim,shift_for_boson,shift_for_boson)
 
+  !   do krp = 1, nrep
+  !      mrp = multb(krp+shift,irrepa+nrep,2)  
+ !!       mrp = multb(irrepa+nrep,krp+shift,1)  
+  !      nrp = multb(krp+shift,irrepb+nrep,1)  
+ !!       nrp = multb(irrepb+nrep,krp+shift,2)  
 
-      do krp = 1, nrep
-         mrp = multb(krp+shift,irrepa+nrep,2)  
- !        mrp = multb(irrepa+nrep,krp+shift,1)  
-         nrp = multb(krp+shift,irrepb+nrep,1)  
- !        nrp = multb(irrepb+nrep,krp+shift,2)  
+      do nrp = 1, nrep
+         krp = multb(irrepb+nrep,nrp,2)  
+         mrp = multb(krp,irrepa+nrep,2)  
 
          m = mdim(mrp)
          n = ndim(nrp)

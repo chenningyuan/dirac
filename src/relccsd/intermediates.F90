@@ -215,8 +215,10 @@
 !   w_voov(ej,mb) = w_voov(ej,mb) - V(nj,mb)*T1(e,n)
 !---------------------------------------------------
 
-   call contraction_424 ((/"o3","o1","o2","p1"/),(/"p2","o3"/),(/"p2","o1","o2","p1"/),w_voov, &
-            &      -1.0d0,1.0d0,nrep,RightTensor=t1)
+   call contraction_244 ((/"p2","o3"/),(/"o3","o1","o2","p1"/),(/"p2","o1","o2","p1"/),w_voov, &
+            &      -1.0d0,1.0d0,nrep,LeftTensor=t1)
+
+  write(*,*)'dot product diagram1', dot_product(w_voov(1:rcw*ivoov(nrep+1)),w_voov(1:rcw*ivoov(nrep+1))) 
 
 !----------------------------------------------------------------------
 !   w_voov(ej,mb) = w_voov(ej,mb) + V(nj,fb)*(T2(ef,mn)-T1(f,m)*T1(e,n)
@@ -233,8 +235,8 @@
   call contraction_424 ((/"o3","o1","p1","p3"/),(/"p3","o2"/),(/"o3","o1","o2","p1"/),array_temp, &
              &      -1.0d0,1.0d0,nrep,RightTensor=t1)
 
-  call contraction_424 ((/"o3","o1","o2","p1"/),(/"p2","o3"/),(/"p2","o1","o2","p1"/),w_voov, &
-             &      -1.0d0,1.0d0,nrep,RightTensor=t1,LeftTensor=array_temp)
+  call contraction_244 ((/"p2","o3"/),(/"o3","o1","o2","p1"/),(/"p2","o1","o2","p1"/),w_voov, &
+             &      -1.0d0,1.0d0,nrep,LeftTensor=t1,RightTensor=array_temp)
 
   deallocate(array_temp)
 
@@ -948,12 +950,10 @@
          enddo
 #endif
 
-
 !----------------------------------------------
 ! w(ef,ab) =  V(ef,ab) + V(mn,ab) * TAU(ef,mn)
 !          =  V(ef,ab) + TAU(ef,mn) * V'*(ab,mn)            
 !----------------------------------------------
-     if (noot(irp) > 0) then
        call getoovv (buf1)
        m = nvvt(irp)
        n = nint
@@ -961,9 +961,11 @@
        abmn = (ivvoott(irp)+displ(myproc))*rcw+1
        off1 = off1 + ivvoott(irp)*rcw  
 
+     if (noot(irp) == 0) then
+        call xscal (m*n,a1,w_vvvv,1)
+     else 
         call xgemm ('n','n',m,n,k,a1,tau(off1),nvvt(irp),buf1(abmn),k, &
       &               a1,w_vvvv,m)
-
      endif
 
 !-----------------------------------------------------
