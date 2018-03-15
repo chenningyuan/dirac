@@ -1156,41 +1156,41 @@ integer :: ierr
 ! S(ab,i*j) = S(ab,i*j) - P(ij) f_bar_mi(m,j)*r2(ab,i*m) 
 !-----------------------------------------------------
 
-!!  call contraction_424 ((/"p1","p2","c1","o3"/),(/"o3","o2"/), &
-!! & (/"p1","p2","c1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2)
+    call contraction_424 ((/"p1","p2","c1","o3"/),(/"o3","o2"/), &
+   & (/"p1","p2","c1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2)
 
-         row(1:nrep) = 0
-         column(1:nrep) = 0
+!!       row(1:nrep) = 0
+!!       column(1:nrep) = 0
 
-        call srt1s3_exp (1,nrep,multb,.false.,nv,nv,ncont,no,r2,local_buf2,row,column)
+!!      call srt1s3_exp (1,nrep,multb,.false.,nv,nv,ncont,no,r2,local_buf2,row,column)
 
-        call alloc_array(f,nrep,g)
-        call auto_symmetry_offset(f,row,no,.false.,.false.)
-        call auto_symmetry_offset(g,row,no,.false.,.false.)
+!!      call alloc_array(f,nrep,g)
+!!      call auto_symmetry_offset(f,row,no,.false.,.false.)
+!!      call auto_symmetry_offset(g,row,no,.false.,.false.)
 
-        local_buf3(1:g%onenonDirac(1)) = 0.0d0
+!!      local_buf3(1:g%onenonDirac(1)) = 0.0d0
 
-      do nrp = 1, nrep
-         irp = multb(1+nrep,nrp,2)  
-         mrp = multb(irp,1+nrep,2)  
+!!    do nrp = 1, nrep
+!!       irp = multb(1+nrep,nrp,2)  
+!!       mrp = multb(irp,1+nrep,2)  
 
-         if (no(irp) == 0) cycle 
+!!       if (no(irp) == 0) cycle 
 
-         m    = row(mrp)
-         n    = no(nrp)
-         k    = no(irp)
+!!       m    = row(mrp)
+!!       n    = no(nrp)
+!!       k    = no(irp)
 
-         off1 = 1 + JJOO(irp,nrp)*rcw 
-         off2 = 1 + f%twononDirac(mrp,irp)*rcw
-         off3 = 1 + g%twononDirac(mrp,nrp)*rcw
-         call xgemm ('n','n',m,n,k,-a1,local_buf2(off2),m,B%Fbar_mi(off1),k, &
-     &              a0,local_buf3(off3),m)
-      enddo
+!!       off1 = 1 + JJOO(irp,nrp)*rcw 
+!!       off2 = 1 + f%twononDirac(mrp,irp)*rcw
+!!       off3 = 1 + g%twononDirac(mrp,nrp)*rcw
+!!       call xgemm ('n','n',m,n,k,-a1,local_buf2(off2),m,B%Fbar_mi(off1),k, &
+!!   &              a0,local_buf3(off3),m)
+!!    enddo
 
-     call dealloc_array(f,g)
+!!   call dealloc_array(f,g)
 
-   call srt1s3_exp (1,nrep,multb,.true.,nv,nv,ncont,no,local_buf3,local_buf2,row,column)
-   call xaxpy (ndimr2,a1,local_buf2,1,sigma2,1)
+!! call srt1s3_exp (1,nrep,multb,.true.,nv,nv,ncont,no,local_buf3,local_buf2,row,column)
+!! call xaxpy (ndimr2,a1,local_buf2,1,sigma2,1)
 
        if (iprnt.ge.2) &
     write(iw,*)'diagram 6 ', ddot(N2,sigma2,1,sigma2,1)

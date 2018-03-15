@@ -1789,7 +1789,7 @@
  1000 FORMAT (//' Analysis of EOM eigenvectors' &
      &/' First line  :  State Energy, Eigenvalue' &
      &/' other lines : Largest R1 and R2 Vectors',&
-     & ' (above a treshold of ',E6.1,')')
+     & ' (above a threshold of ',E6.1,')')
  1010 FORMAT (/' Irrep ',A4,' State ',I5,2F16.8)
 
 !for R1 of IP and EA
