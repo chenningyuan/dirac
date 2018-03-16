@@ -303,6 +303,7 @@ C        ... IOLD .ge. I after CALL SRTOLD
          IZATOM(I) = IZATOM(IOLD)
          ISOTOP(I) = ISOTOP(IOLD)
          GNUEXP(I) = GNUEXP(IOLD)
+         NOORBT(I) = NOORBT(IOLD)         
 #ifndef PRG_DIRAC
          RSPH(I)   = RSPH(IOLD)
          IDXSPH(I) = IDXSPH(IOLD)
