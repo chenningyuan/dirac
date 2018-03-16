@@ -32,11 +32,11 @@ test.run(['eom_ea_dc_inv_full_nooverlap_d_oo_h_Omega.inp','eom_ea_dc_inv_full_no
 
 test.run(['eom_ea_dc_noinv_overlap_6roots.inp'], ['f2_c2v.mol', 'f2_d2.mol', 'f2_c2.mol', 'f2_cs.mol'], f, args='--mw=110')
 test.run(['eom_ea_dc_noinv_overlap_c1_6roots.inp'], ['f2_c1.mol'], f, args='--mw=110')
-test.run(['eom_ea_dc_noinv_overlap_c_oo_v_Omega.inp'], ['f2_c_oo_v.mol'], f, args='--mw=110')
+test.run(['eom_ea_dc_noinv_overlap_c_oo_v_Omega.inp', 'eom_ea_dc_noinv_overlap_c_oo_v_-Omega.inp'], ['f2_c_oo_v.mol'], f, args='--mw=110')
 
 test.run(['eom_ea_dc_inv_overlap_6roots.inp'], ['f2_d2h.mol', 'f2_c2h.mol'], f, args='--mw=110')
 test.run(['eom_ea_dc_inv_overlap_ci.inp'], ['f2_ci.mol'], f, args='--mw=110')
-test.run(['eom_ea_dc_inv_overlap_d_oo_h_Omega.inp'], ['f2_d_oo_h.mol'], f, args='--mw=110')
+test.run(['eom_ea_dc_inv_overlap_d_oo_h_Omega.inp','eom_ea_dc_inv_overlap_d_oo_h_-Omega.inp'], ['f2_d_oo_h.mol'], f, args='--mw=110')
 
 #
 # below are test runs that take too much time for the standard timeout. they could be used for a finer comparison or in setting up longer tests. 
