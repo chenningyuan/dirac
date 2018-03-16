@@ -140,4 +140,5 @@ dirac_test(eomcc "short;cc" "")
 dirac_test(eomip_energy_symmetry "medium;cc" "")
 dirac_test(eomea_energy_symmetry "medium;cc" "")
 dirac_test(eomee_energy_symmetry "medium;cc" "")
-dirac_test(eomcc_expval "short;cc" "")
+# disabing eomcc expectation value test until the code is verified
+#dirac_test(eomcc_expval "short;cc" "")
