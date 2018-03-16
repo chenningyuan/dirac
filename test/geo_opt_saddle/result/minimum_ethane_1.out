@@ -8815,7 +8815,7 @@ Weights:
   
   Largest          10  allocations
   
-      488.28 Mb at subroutine  <žunknown                                for work array at main                        
+      488.28 Mb at subroutine                                            for work array at main                        
         0.17 Mb at subroutine gtovlx_+0x195                              for buf in butobs                             
         0.17 Mb at subroutine lowdi1_.+0x84                              for unnamed variable                          
         0.17 Mb at subroutine gtovlx_+0x195                              for buf in butobs                             
