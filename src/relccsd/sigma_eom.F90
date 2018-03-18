@@ -547,11 +547,11 @@ integer :: ierr
 !S_ai = S_ai + w_mbej(ma,ei)*r1(e,m)
 !------------------------------------ 
 
- !!  call contraction_422 ((/"o2","p1","p2","o1"/),(/"p2","o2"/),(/"p1","o1"/),r1,sigma1,1.0d0,1.0d0,nrep,B%W_mbej, &
- !!                     irrep_left=1,irrep_right=state_sym)
+ !!    call contraction_422 ((/"o2","p1","p2","o1"/),(/"p2","o2"/),(/"p1","o1"/),r1,sigma1,1.0d0,1.0d0,nrep,B%W_mbej, &
+ !!                       irrep_left=1,irrep_right=state_sym)
 
-   call contraction_422 ((/"p1","o2","o1","p2"/),(/"p2","o2"/),(/"p1","o1"/),r1,sigma1,1.0d0,1.0d0,nrep,B%W_ejmb, &
-                    irrep_left=1,irrep_right=state_sym)
+       call contraction_422 ((/"p1","o2","o1","p2"/),(/"p2","o2"/),(/"p1","o1"/),r1,sigma1,1.0d0,1.0d0,nrep,B%W_ejmb, &
+                  irrep_left=1,irrep_right=state_sym)
 
 !   call contraction_242 ((/"p2","o2"/),(/"o2","p1","p2","o1"/),(/"p1","o1"/),r1,sigma1,1.0d0,1.0d0,nrep,B%W_mbej, &
 !                      irrep_left=state_sym,irrep_right=1)
@@ -594,50 +594,9 @@ integer :: ierr
 !!S(ab,ij) = S(ab,ij) - P(ab) w_iemn(mb,ij)*r1(a,m)
 !!-------------------------------------------------
 
-!    call contraction_244 ((/"p1","o3"/),(/"o3","p2","o1","o2"/), &
-!   &    (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,righttensor=b%w_iemn, &
-!   &   LeftTensor=r1,irrep_left=state_sym,irrep_right=1) 
-
-    row(1:nrep) = 0
-    column(1:nrep) = 0
-
-    call srt1s2_exp (1,nrep,multb,.false.,no,nv,no,no,b%w_iemn,local_buf2,row,column)
-
-        call alloc_array(f,nrep,g)
-        call auto_symmetry_offset(f,no,column,.false.,.false.)
-        call auto_symmetry_offset(g,nv,column,.false.,.false.)
-
-        local_buf3(1:g%oneDirac(state_sym)*rcw) = 0.0d0
-
-     do irp = 1, nrep
-
-
-         jrp = multb(state_sym+nrep,irp,2)
-         mrp = multb(irp,state_sym+nrep,1)
-         m    = nv(jrp)
-         n    = column(irp)
-         k    = no(irp)
-
-       if ((no(irp) > 0).and.(nv(jrp) > 0))  then
-!         write(*,*)'print state_sym', multb(jrp,irp,2) 
-         write(*,*)'print state_sym', multb(irp,mrp,2) 
-
-         off1 = 1 + JJVO(jrp,irp)*rcw 
-         off2 = 1 + f%twoDirac(irp,irp)*rcw
-         off3 = 1 + g%twoDirac(jrp,irp)*rcw
-         call xgemm ('n','n',m,n,k,-a1,r1(off1),m,local_buf2(off2),k, &
-     &                a0,local_buf3(off3),m)
-
-        endif
-      enddo
-
-      call dealloc_array(f,g)
-      call srt1t2_exp (state_sym,nrep,multb,.true.,nv,nv,no,no,local_buf3,local_buf2,row,column)
-      call xaxpy (ndimr2,a1,local_buf2,1,sigma2,1)
-
-!   call contraction_424 ((/"o3","p2","o1","o2"/),(/"p1","o3"/), &
-!  &    (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,lefttensor=b%w_iemn, &
-!  &   rightTensor=r1,irrep_right=state_sym,irrep_left=1) 
+     call contraction_244 ((/"p1","o3"/),(/"o3","p2","o1","o2"/), &
+    &    (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,righttensor=b%w_iemn, &
+    &   LeftTensor=r1,irrep_left=state_sym,irrep_right=1) 
 
     if (iprnt.ge.2) &
     write(iw,*)'diagram 7 ', dot_product(sigma2,sigma2)
@@ -663,7 +622,6 @@ integer :: ierr
 ! int_1b(b,f) = int_1b(b,f) + w_amef (bm,fe)*r1(e,m)
 ! S(ab,ij) = S(ab,ij) + P(ab) int_1b(b,f)*t2(af,ij)
 !---------------------------------------------------
-
 
       call alloc_array(f,nrep)
 
@@ -960,49 +918,6 @@ integer :: ierr
     call contraction_424 ((/"c1","p2","o1","o3"/),(/"o3","o2"/), &
    & (/"c1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2)
 
-!        row(1:nrep) = 0
-!        column(1:nrep) = 0
-
-!        allocate(some_buf2(ndimt2))
-!        allocate(some_buf3(ndimt2))
-
-!        some_buf2 = 0.0
-!        some_buf3 = 0.0
-
-!       call srt1t3_exp (1,nrep,multb,.false.,ncont,nv,no,no,r2,some_buf2,row,column)
-
-!       call alloc_array(f,nrep,g)
-!       call auto_symmetry_offset(f,row,no,.false.,.false.)
-!       call auto_symmetry_offset(g,row,no,.false.,.false.)
-
-!     do nrp = 1, nrep
-!        irp = multb(1+nrep,nrp,2)  
-!        mrp = multb(irp,1+nrep,2)  
-
-!        if (no(irp) == 0) cycle 
-
-!        m    = row(mrp)
-!        n    = no(nrp)
-!        k    = no(irp)
-
-!        off1 = 1 + JJOO(irp,nrp)*rcw 
-!        off2 = 1 + f%twononDirac(mrp,irp)*rcw
-!        off3 = 1 + g%twononDirac(mrp,nrp)*rcw
-!        call xgemm ('n','n',m,n,k,-a1,some_buf2(off2),m,B%Fbar_mi(off1),k, &
-!    &               a0,some_buf3(off3),m)
-!     enddo
-
-!    call dealloc_array(f,g)
-
-!    some_buf2 = 0.0d0  
-
-!  call srt1t3_exp (1,nrep,multb,.true.,ncont,nv,no,no,some_buf3,some_buf2,row,column)
-!  call xaxpy (ndimr2,a1,some_buf2,1,sigma2,1)
-
-
-!     deallocate(some_buf2)
-!     deallocate(some_buf3)
-
 !   call contraction_244 ((/"o3","o2"/),(/"c1","p2","o3","o1"/), &
 !  & (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=B%Fbar_mi,RightTensor=r2)
 
@@ -1158,39 +1073,6 @@ integer :: ierr
 
     call contraction_424 ((/"p1","p2","c1","o3"/),(/"o3","o2"/), &
    & (/"p1","p2","c1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2)
-
-!!       row(1:nrep) = 0
-!!       column(1:nrep) = 0
-
-!!      call srt1s3_exp (1,nrep,multb,.false.,nv,nv,ncont,no,r2,local_buf2,row,column)
-
-!!      call alloc_array(f,nrep,g)
-!!      call auto_symmetry_offset(f,row,no,.false.,.false.)
-!!      call auto_symmetry_offset(g,row,no,.false.,.false.)
-
-!!      local_buf3(1:g%onenonDirac(1)) = 0.0d0
-
-!!    do nrp = 1, nrep
-!!       irp = multb(1+nrep,nrp,2)  
-!!       mrp = multb(irp,1+nrep,2)  
-
-!!       if (no(irp) == 0) cycle 
-
-!!       m    = row(mrp)
-!!       n    = no(nrp)
-!!       k    = no(irp)
-
-!!       off1 = 1 + JJOO(irp,nrp)*rcw 
-!!       off2 = 1 + f%twononDirac(mrp,irp)*rcw
-!!       off3 = 1 + g%twononDirac(mrp,nrp)*rcw
-!!       call xgemm ('n','n',m,n,k,-a1,local_buf2(off2),m,B%Fbar_mi(off1),k, &
-!!   &              a0,local_buf3(off3),m)
-!!    enddo
-
-!!   call dealloc_array(f,g)
-
-!! call srt1s3_exp (1,nrep,multb,.true.,nv,nv,ncont,no,local_buf3,local_buf2,row,column)
-!! call xaxpy (ndimr2,a1,local_buf2,1,sigma2,1)
 
        if (iprnt.ge.2) &
     write(iw,*)'diagram 6 ', ddot(N2,sigma2,1,sigma2,1)

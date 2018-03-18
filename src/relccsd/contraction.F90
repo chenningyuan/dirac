@@ -1135,10 +1135,6 @@
        endif
         call auto_symmetry_offset(g,mdim,ndim,shift_for_boson,shift_for_boson)
 
-!     do krp = 1, nrep
-!        mrp = multb(irrepa+nrep,krp+shift,2)  
-!        nrp = multb(krp+shift,irrepb+nrep,2)  
-
       do mrp = 1, nrep
          krp = multb(irrepa+nrep,mrp+shift,2)  
          nrp = multb(krp+shift,irrepb+nrep,2)  
@@ -1239,12 +1235,6 @@
         call auto_symmetry_offset(f,ndim,kdim,shift_for_boson,shift_for_boson)
        endif
         call auto_symmetry_offset(g,mdim,ndim,shift_for_boson,shift_for_boson)
-
-  !   do krp = 1, nrep
-  !      mrp = multb(krp+shift,irrepa+nrep,2)  
- !!       mrp = multb(irrepa+nrep,krp+shift,1)  
-  !      nrp = multb(krp+shift,irrepb+nrep,1)  
- !!       nrp = multb(irrepb+nrep,krp+shift,2)  
 
       do nrp = 1, nrep
          krp = multb(irrepb+nrep,nrp,2)  

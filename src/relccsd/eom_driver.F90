@@ -1163,13 +1163,11 @@
     call ccdump
     call getampt(B%t1,B%t2)
     call IM_container(eomtype,B)
-!    call free_buffers(buf1,buf2,buf3)
+    call free_buffers(buf1,buf2,buf3)
 
     right_vectors = .true.
     left_vectors =  .false.
     call eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL, davResultsR, B, eps)
-
-    call free_buffers(buf1,buf2,buf3)
 
     if (relcc_do_eomprop) then
 
