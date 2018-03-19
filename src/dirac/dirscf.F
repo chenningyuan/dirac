@@ -5461,9 +5461,10 @@ C.....Loop over atomic types
       LUATOM=137
       CALL MEMGET2('INTE','INFO',KINF,NTBAS(0),WORK,KFREE,LFREE)
       ICENT = 1
-      DO IATOM = 1,NONTYP
+      DO 10 IATOM = 1,NONTYP
 C.......Find the total number of basis functions for this atom type
         CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ICENT,1,-1)
+        IF(MBAS.EQ.0) GOTO 10
 C.......Read atomic coefficients in C1 format
         INQUIRE(FILE=ATOMFIL(IATOM),EXIST=TOBE)         
         IF(.NOT.TOBE) THEN
@@ -5550,7 +5551,7 @@ C.......Release memory
         CALL MEMREL('ATOMIC_START',WORK,1,KCMO,KFREE,LFREE)
         CLOSE(LUATOM,STATUS='KEEP')
         ICENT = ICENT+NONT(IATOM)
-      ENDDO
+   10 CONTINUE
 C
       IF(NBSYM.EQ.1) THEN
         CALL DCOPY(NDMAT,WORK(KDBUF),1,DMAT,1)
