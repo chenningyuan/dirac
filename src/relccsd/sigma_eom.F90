@@ -619,8 +619,6 @@ integer :: ierr
          k    = no(irp)
 
        if ((no(irp) > 0).and.(nv(jrp) > 0))  then
-!         write(*,*)'print state_sym', multb(jrp,irp,2) 
-         write(*,*)'print state_sym', multb(irp,mrp,2) 
 
          off1 = 1 + JJVO(jrp,irp)*rcw 
          off2 = 1 + f%twoDirac(irp,irp)*rcw
