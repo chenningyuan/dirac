@@ -1,6 +1,5 @@
-      SUBROUTINE amplitude_equation_T1 (FVO,EPS,T1,T2,
-     &                   HO,HV,HOV,H,CZ,GOO,GVV,
-     &                   BUF1,BUF2,NBUF2,BUF3,NBUF3,S1)
+      SUBROUTINE amplitude_equation_T1 (FVO,T1,T2,
+     &        HO,HV,HOV,H,BUF1,BUF2,NBUF2,BUF3,NBUF3,S1)
 C
       implicit none
 C
@@ -29,11 +28,10 @@ C
      
 
       INTEGER NBUF2,NBUF3
-      REAL*8 EPS(*),FVO(*)
+      REAL*8 FVO(*)
       REAL*8 T1(*),T2(*)
       REAL*8 S1(*)
       REAL*8 HO(*),HV(*),HOV(*),H(*)
-      REAL*8 GOO(*),GVV(*),CZ(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)
 C
 C---------------Common Blocks--------------------------------------

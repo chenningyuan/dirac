@@ -2325,8 +2325,7 @@ C
      &                                     a_S1(:),  a_S2(:)
 c
       real(kind=kreal), allocatable, target :: a_AZ(:), a_H(:), a_HO(:),
-     &                             a_HV(:),  a_HOV(:),  a_GOO(:),
-     &                             a_GVV(:), a_CCC(:),  a_BB1(:),
+     &                         a_HV(:),  a_HOV(:),a_CCC(:),  a_BB1(:),
      &                             a_BB2(:), a_BUF1(:), a_BUF2(:)
 c
       real(kind=kreal), allocatable, target :: a_VOOO(:),a_T2S(:),
@@ -2378,8 +2377,6 @@ C
          call alloc( a_HO   ,    NFOO*RCW             , id="ho" )
          call alloc( a_HV   ,    NFVV*RCW             , id="hv" )
          call alloc( a_HOV  ,   NFVO*RCW              , id="hov" )
-         call alloc( a_GOO  ,   NFOO*RCW              , id="goo" )
-         call alloc( a_GVV  ,   NFVV*RCW              , id="gvv" )
          call alloc( a_CCC  ,   MAXDIM                , id="ccc" )
          call alloc( a_BB1  ,   (MAXDIM+1)*(MAXDIM+2) , id="bb1" )
          call alloc( a_BB2  ,   (MAXDIM+1)*(MAXDIM+2) , id="bb2" )
@@ -2511,8 +2508,8 @@ C
 
          maxit_save = MAXIT
          CALL cceqn_driver_amplitudes(MAXIT_SAVE,EPS,a_FOO,a_FVO,a_FVV,
-     &           a_T1,a_S1,a_T2 ,a_S2 ,a_AZ,DUM,a_H,a_HO,a_HV,a_HOV,
-     &           a_GOO,a_GVV,a_BUF1,a_BUF2,a_BUF3,
+     &           a_T1,a_S1,a_T2 ,a_S2 ,a_AZ,a_H,a_HO,a_HV,a_HOV,
+     &           a_BUF1,a_BUF2,a_BUF3,
      &           a_CCC,a_BB1,a_BB2,
      &           TOL,NBUF2,NBUF3,DUM,DUM,DUM)
          CALL XTIME(5,2,'CCSD equations                ')
@@ -2547,8 +2544,6 @@ C
          call dealloc(a_HO  )
          call dealloc(a_HV  )
          call dealloc(a_HOV )
-         call dealloc(a_GOO )
-         call dealloc(a_GVV )
          call dealloc(a_CCC )
          call dealloc(a_BB1 )
          call dealloc(a_BB2 )
@@ -2726,8 +2721,8 @@ C
      &                             a_DG(:),  a_DMO(:),  a_XMO(:),
      &                             a_BUF1(:),a_CBUF(:), a_BUF2(:),
      &                    a_BUF3(:),a_FVV(:),a_AZ(:),a_H(:),a_Hbar(:),
-     &                    wovoo(:),a_HO(:), a_HV(:),a_HOV(:),a_GOO(:),
-     &                    wvvvo(:),a_GVV(:), a_CCC(:),  a_BB1(:),
+     &                    wovoo(:),a_HO(:), a_HV(:),a_HOV(:),
+     &                    wvvvo(:), a_CCC(:),  a_BB1(:),
      &                             a_BB2(:),l1_sort(:),l2_sort(:)
 
 
@@ -3606,7 +3601,7 @@ c
      &                             a_T1  (:), a_T2  (:), a_S1  (:),
      &                             a_S2  (:), a_AZ  (:), a_H   (:),
      &                             a_HO  (:), a_HV  (:), a_HOV (:),
-     &                             a_GOO (:), a_GVV (:), a_CCC (:),
+     &                             a_CCC (:),
      &                             a_BB1 (:), a_BB2 (:), a_BUF1(:),
      &                             a_BUF2(:), a_BUF3(:),
      &                             a_HEFF(:,:), a_EIGENVALUES(:,:),
@@ -3673,8 +3668,6 @@ C
       call alloc( a_HO  , NFOO*RCW              , id="ho")
       call alloc( a_HV  , NFVV*RCW              , id="hv")
       call alloc( a_HOV , NFVO*RCW              , id="hov")
-      call alloc( a_GOO , NFOO*RCW              , id="goo")
-      call alloc( a_GVV , NFVV*RCW              , id="gvv")
       call alloc( a_CCC , MAXDIM                , id="ccc")
       call alloc( a_BB1 , (MAXDIM+1)*(MAXDIM+2) , id="bb1")
       call alloc( a_BB2 , (MAXDIM+1)*(MAXDIM+2) , id="bb2")
@@ -3809,9 +3802,9 @@ C
            maxit_save = MAXIT_SECT(ICURFSS)
         CALL cceqn_driver_amplitudes(maxit_save,EPS,
      &             a_FOO , a_FVO , a_FVV  , a_T1   , a_S1   ,
-     &             a_T2  , a_S2  , a_AZ   , DUM    , a_H,
+     &             a_T2  , a_S2  , a_AZ   ,a_H,
      &             a_HO  , a_HV  , a_HOV  ,
-     &             a_GOO , a_GVV , a_BUF1 , a_BUF2 , a_BUF3 ,
+     &             a_BUF1 , a_BUF2 , a_BUF3 ,
      &             a_CCC , a_BB1 , a_BB2 ,
      &             TOL, NBUF2, NBUF3,
      &             a_HEFF,a_EIGENVALUES,a_EIGENVECTORS)
@@ -3867,8 +3860,6 @@ C
       call dealloc( a_HO  , id="ho" )
       call dealloc( a_HV  , id="hv" )
       call dealloc( a_HOV , id="hov" )
-      call dealloc( a_GOO , id="goo" )
-      call dealloc( a_GVV , id="gvv" )
       call dealloc( a_CCC , id="ccc" )
       call dealloc( a_BB1 , id="bb1" )
       call dealloc( a_BB2 , id="bb2" )
