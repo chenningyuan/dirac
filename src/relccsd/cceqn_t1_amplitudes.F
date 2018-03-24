@@ -1,5 +1,5 @@
       SUBROUTINE amplitude_equation_T1 (FVO,T1,T2,
-     &        HO,HV,HOV,BUF1,BUF2,NBUF2,BUF3,NBUF3,S1)
+     &        HO,HV,HOV,BUF1,BUF2,BUF3,NBUF3,S1)
 C
       implicit none
 C
@@ -27,7 +27,7 @@ C
       external t1eqn2
      
 
-      INTEGER NBUF2,NBUF3
+      INTEGER NBUF3
       REAL*8 FVO(*)
       REAL*8 T1(*),T2(*)
       REAL*8 S1(*)
