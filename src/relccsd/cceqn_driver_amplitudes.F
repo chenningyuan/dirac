@@ -1,5 +1,5 @@
       SUBROUTINE cceqn_driver_amplitudes(MAXIT,EPS,FOO,FVO,FVV,
-     &                 T1,S1,T2,S2,AZ,CZ,H,HO,HV,HOV,GOO,GVV,
+     &                 T1,S1,T2,S2,AZ,H,HO,HV,HOV,
      &                 BUF1,BUF2,BUF3,CC1,BB1,BB2,CONV,
      &                 NBUF2,NBUF3,HEFF,EIGENVALUES,EIGENVECTORS)
 
@@ -22,8 +22,6 @@ C     Intermediaries etc.
 
       REAL*8 EPS(*),FOO(*),FVO(*),FVV(*),T1(*),S1(*),T2(*),S2(*)
       REAL*8 AZ(*),H(*),HO(*),HV(*),HOV(*),BUF1(*),BUF2(*),BUF3(*)
-      REAL*8 CZ(*) ! is only allocated for Lambda equations
-      REAL*8 GOO(*),GVV(*)
 
 C     for diis ...
 
@@ -104,8 +102,8 @@ C
            
       IF (NDIMT1.GT.0) THEN
           CALL HOVINTM (FVO,T1,BUF1,BUF2,HOV)
-          CALL amplitude_equation_T1 (FVO,EPS,T1,T2,HO,HV,HOV,H,CZ,GOO,
-     &                 GVV,BUF1,BUF2,NBUF2,BUF3,NBUF3,S1)
+          CALL amplitude_equation_T1 (FVO,T1,T2,HO,HV,HOV,
+     &                 BUF1,BUF2,BUF3,NBUF3,S1)
       ENDIF
       CALL XTIME(5,2,'- T1 equations                  ')
 
@@ -164,7 +162,7 @@ C
 C  INTERMEDIATES FORMED --- START T2 EQUATIONS
 C
       CALL XTIME(5,1,'-- T2 EQNS                     ')
-      CALL amplitude_equation_T2 (EPS,T1,T2,HO,HV,HOV,H,AZ,CZ,GOO,GVV,
+      CALL amplitude_equation_T2 (T1,T2,HO,HV,HOV,H,AZ,
      &             BUF1,BUF2,BUF3,NBUF3,S2)
       CALL XTIME(5,2,'-- T2 EQNS                     ')
 C
