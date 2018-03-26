@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -18,6 +18,9 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
+
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 
 module london_reorth_hb
 
@@ -463,7 +466,7 @@ contains
 
       call generate_num_grid(dmat)
 #ifdef VAR_MPI
-      if (parcal) call dirac_parctl(4)
+      if (parcal) call dirac_parctl( XCINT_PAR )
 #endif
 
 !     tb_dmat has been antisymmetrized in getmdm, ih = -1

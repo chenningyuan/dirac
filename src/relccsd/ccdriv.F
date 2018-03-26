@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -23,7 +23,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCHEADER
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -58,7 +58,7 @@ C
      &//" Written by :",/"    Lucas Visscher"/
      &/"    NASA Ames Research Center    (1994)"
      &/"    Rijks Universiteit Groningen (1995)"
-     &/"    Odense Universitet           (1996-1997)" 
+     &/"    Odense Universitet           (1996-1997)"
      &/"    VU University Amsterdam      (1998-present)")
  1001 FORMAT (//" Today is :",T15,A10/" The time is :",T17,A8)
  1002 FORMAT (//" This module is documented in"
@@ -90,38 +90,38 @@ C     Final version should contain energies and 1st and 2nd order
 C     properties at all the available levels of theory
 C     Improved memory management (thanks to H-J Aa Jensens routines)
 C--------------------------------------------------------------------
-C     Aug  6 1997 :  
-C     Implemented excitation energy module. 
+C     Aug  6 1997 :
+C     Implemented excitation energy module.
 C--------------------------------------------------------------------
-C     Apr 16 1997 :  
-C     Interfaced with DIRAC, reorganized code. 
+C     Apr 16 1997 :
+C     Interfaced with DIRAC, reorganized code.
 C--------------------------------------------------------------------
-C     Jul 10 1996 :  
-C     Added RPA module, changed output format, 
+C     Jul 10 1996 :
+C     Added RPA module, changed output format,
 C     added NOCCSD (MP2) option
-C     Note that the RPA is not very optimized : needs complex 
+C     Note that the RPA is not very optimized : needs complex
 C     arithmetics for completely imaginary operators, does not
 C     consider symmetry of the operators
 C--------------------------------------------------------------------
-C     Oct 5 1995 :  
+C     Oct 5 1995 :
 C     Corrected errors in complex arithmetic, implemented -T correction
 C     Frozen option was also implemented somewhat earlier
 C--------------------------------------------------------------------
-C     Aug 13 1995 :  
+C     Aug 13 1995 :
 C     Implemented triples correction in symmetry-adapted version
 C--------------------------------------------------------------------
-C     Jun 29 1995 :  
+C     Jun 29 1995 :
 C     Dynamic memory allocation & incore files for CRAY
 C--------------------------------------------------------------------
-C     Jan 10 1995 : 
+C     Jan 10 1995 :
 C     Real/complex arithmetic possible
 C     Symmetry packed version
 C--------------------------------------------------------------------
-C     Oct 19 1994 : 
+C     Oct 19 1994 :
 C     Writes integrals out on disk
 C     Otherwise identical to previous version
 C--------------------------------------------------------------------
-C     Sep 22 1994 : First numbered version of program 
+C     Sep 22 1994 : First numbered version of program
 C     Keeps all integrals in core.
 C     Does not use any symmetry.
 C     But is vectorized by using matrix multiplies where ever possible
@@ -133,20 +133,25 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !     All initialization should be done in relcc_cfg, ultimately all common
 !     blocks should go, keep them for the moment for compatibility with reladc
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
+      INTEGER IN,IW
 C
 C---------------Description--------------------------------------------
 C
 C     Reads input for relativistic Coupled Cluster program
+C
+C   Routine is called twice - first from PSIINP/dirrd.F as part of input reading
+C and second time from own RelCC module. To minimize the amount of output we
+C need to distinguish between calls.
 C
 C---------------Routines called----------------------------------------
 C
 C---------------Last modified------------------------------------------
 C
 C     Author : Luuk Visscher
-C              Miro Ilias, July/2015 - add control printouts      
-C      
-C      
+C              Miro Ilias, July/2015 - add control printouts
+C
+C
 C---------------Calling variables--------------------------------------
 C
 C---------------Common Blocks--------------------------------------
@@ -172,8 +177,14 @@ C
      &                 MAXIT,MAXDIM,NTOL
       DOUBLE PRECISION D0
       PARAMETER (D0 = 0.0D00)
+      INTEGER NACTH,NACTP,NACTHI,NACTPI,NTOL
       DIMENSION NACTH(16),NACTP(16)
       DIMENSION NACTHI(16),NACTPI(16)
+      INTEGER MAXIT00,MAXIT01,MAXIT10,MAXIT11,MAXIT20,MAXIT02,I,IFREQ,
+     &        ISECT,IPRP_WF,IOPER,MAXDIM,MAXIT,TSHOLD
+
+      Logical, SAVE :: FirstCall=.TRUE.
+
 C
 C---------------Executable code--------------------------------------
 
@@ -200,6 +211,7 @@ C
       DOFSPC  = relcc_do_fspc
       DOIH    = relcc_fs_do_ih
       DORESTART = relcc_do_restart
+      DOMEMCOUNT = relcc_do_count_memory
       DEBUG   = relcc_debug
       TIMING  = relcc_timing
       MWORD   = relcc_memory_in_mw
@@ -210,16 +222,25 @@ C
       WRITE(IW,'(A)')
      & ' **RELCC: Set-up for Coupled Cluster calculations'
       CALL PRSYMB(IW,'=',75,0)
-      WRITE(IW,'(1X,A,I3)') '* General print level   : ',IPRNT
-      IF (IPRNT.GE.1) THEN
-        WRITE(IW,"(1X,A,16I3)") "NEL_F1:",(NELEC_F1(I),I=1,16)
-      ENDIF
+
+      If (.NOT.FirstCall)  then
+        WRITE(IW,'(1X,A,I3)') '* General print level   : ',IPRNT
+        IF (IPRNT.GE.1) THEN
+          WRITE(IW,"(1X,A,16I3)") "NEL_F1:",(NELEC_F1(I),I=1,16)
+        ENDIF
+      EndIf
+
+!MI  deal with memory count demand
+      if (DOMEMCOUNT.AND.FirstCall)  then
+        print *,
+     &'Asked for RelCC memory consumption count. Afterwards leave.'
+      endif
 C
 C     Input for the energy calculation.
 C
-      MAXDIM  = relcc_ccener_max_dimension_diis    
-      MAXIT   = relcc_ccener_max_iterations        
-      NTOL    = relcc_ccener_desired_convergence     
+      MAXDIM  = relcc_ccener_max_dimension_diis
+      MAXIT   = relcc_ccener_max_iterations
+      NTOL    = relcc_ccener_desired_convergence
       DOMP2   = relcc_do_mp2
       DOCCSD  = relcc_do_ccsd
       DOCCSDT = relcc_do_ccsd_t
@@ -232,8 +253,8 @@ C
 C     Input for the gradient calculation.
 C
       DOMP2G    = relcc_do_mp2gradient
-      DOMP2GOLD = relcc_do_oldmp2gradient 
-      DOCCSDG   = relcc_do_ccsdgradient 
+      DOMP2GOLD = relcc_do_oldmp2gradient
+      DOCCSDG   = relcc_do_ccsdgradient
       DOCCSDTG  = relcc_do_ccsdtgradient
       NOZG      = .not.relcc_do_relaxed
       DONATORB  = relcc_do_naturalorbitals
@@ -264,7 +285,7 @@ C     Switch on evaluation of property output if necessary
           END IF
       END IF
 
-!     following section is for switching on coupled cluster property evaluation. 
+!     following section is for switching on coupled cluster property evaluation.
       IF (DOCCSDG) THEN
           DOEXP = .TRUE.
           IPRP_WF = 0
@@ -281,7 +302,6 @@ C     Switch on evaluation of property output if necessary
              PRP_WF(IPRP_WF) = 'CCSD'
           END IF
       END IF
-
 
       MXDIMGR = MAXDIM
       MXITGR = MAXIT
@@ -300,9 +320,9 @@ C
       DO IFREQ = 1, MAXFR
          EFREQ(IFREQ) = D0
       ENDDO
-      MAXDIM =  relcc_max_dimension_diis      
-      MAXIT  =  relcc_max_iterations         
-      NTOL   =  relcc_desired_convergence   
+      MAXDIM =  relcc_max_dimension_diis
+      MAXIT  =  relcc_max_iterations
+      NTOL   =  relcc_desired_convergence
       REWIND (IN)
       READ (IN,CCSOPR,END=8,ERR=7)
       GOTO 8
@@ -317,18 +337,18 @@ C
       DO I = 1, 16
          NEXC(I) = 1
       ENDDO
-      MAXDIM =  relcc_max_dimension_diis      
-      MAXIT  =  relcc_max_iterations         
-      NTOL   =  relcc_desired_convergence   
+      MAXDIM =  relcc_max_dimension_diis
+      MAXIT  =  relcc_max_iterations
+      NTOL   =  relcc_desired_convergence
       MXDIMEX = MAXDIM
       MXITEX = MAXIT
       NTOLEX = NTOL
 C
 C     Input for the Fock-Space CCSD energy calculation.
 C
-      MAXDIM =  relcc_fs_max_dimension_diis      
-      MAXIT  =  relcc_fs_max_iterations         
-      NTOL   =  relcc_fs_desired_convergence   
+      MAXDIM =  relcc_fs_max_dimension_diis
+      MAXIT  =  relcc_fs_max_iterations
+      NTOL   =  relcc_fs_desired_convergence
       TSHOLD =  relcc_fs_tshold
       DO I = 1, 16
           NACTH(I)     = relcc_fs_nacth(I)
@@ -344,7 +364,17 @@ C
           FSSECT(ISECT) = relcc_fs_fssect(ISECT)
       ENDDO
 
-! in case we want to jump to a given sector 
+      if ((DOIE .eqv. .true.).and.( ALL(NACTH == 0) ) ) then
+        write(IW,*) 'WARNING: you did not specify the set of active 
+     &hole orbitals from which electron ionization takes place .NACTH!'
+      endif
+
+      if ((DOEA .eqv. .true.).and.( ALL(NACTP == 0) ) ) then
+        write(IW,*) 'WARNING: you did not specify the set of active 
+     &particle orbitals to which electron attachment takes place .NACTP'
+      endif
+      
+! in case we want to jump to a given sector
       do isect = 1, 6
          FS_SKIP_SECT(isect) = relcc_restart_skipsect(isect)
          FS_REDO_SECT(isect) = relcc_restart_redosect(isect)
@@ -359,13 +389,13 @@ C
       restart_ignore_check = relcc_restart_ignore_check
 
 CMI   ...provide with default values
-      MAXIT02=relcc_fs_max02_iterations 
-      MAXIT01=relcc_fs_max01_iterations 
-      MAXIT00=relcc_fs_max00_iterations 
-      MAXIT10=relcc_fs_max10_iterations 
-      MAXIT11=relcc_fs_max11_iterations 
-      MAXIT20=relcc_fs_max20_iterations 
-!     stefan: select state sorted by energy for numerical gradient calculation   
+      MAXIT02=relcc_fs_max02_iterations
+      MAXIT01=relcc_fs_max01_iterations
+      MAXIT00=relcc_fs_max00_iterations
+      MAXIT10=relcc_fs_max10_iterations
+      MAXIT11=relcc_fs_max11_iterations
+      MAXIT20=relcc_fs_max20_iterations
+!     stefan: select state sorted by energy for numerical gradient calculation
       STATE_E_FSCC = relcc_fs_select_state_for_numgrad_energy
       MXDIMFS = MAXDIM
       MXITFS = MAXIT
@@ -426,7 +456,7 @@ C
       EPMAX    = relcc_ih_ep_max
       DO I = 1, 16
          NACTH(I)     = relcc_fs_nacth(I)! it's 0 for (0,2) sector
-         NACTP(I)     = relcc_fs_nactp(I) 
+         NACTP(I)     = relcc_fs_nactp(I)
       ENDDO
       IHSCHEME = relcc_ih_scheme
 C
@@ -475,20 +505,17 @@ C
       ADD_FINITE_FIELD = relcc_ADD_FINITE_FIELD
       NFFOPER = relcc_NFFOPER
       DO IOPER = 1, MAXOP
-         !FF_PROP_NAMES(IOPER) = '        '
          FF_PROP_NAMES(IOPER) = relcc_FF_PROP_NAMES(IOPER)
-         !FF_PROP_STRENGTHS(1,IOPER) = 0.D0
          FF_PROP_STRENGTHS(1,IOPER) = relcc_FF_PROP_STRENGTHS(1,IOPER)
-         !FF_PROP_STRENGTHS(2,IOPER) = 0.D0
          FF_PROP_STRENGTHS(2,IOPER) = relcc_FF_PROP_STRENGTHS(2,IOPER)
       ENDDO
 !
 !     X2Cmmf hamiltonian in use - by default always set USEOE and NORECMP to .true.
 !     everything else results in nonsense energies - if overwritten by user input for example...
       if(X2CMMF)then
-        if(.not.relcc_use_orbital_energies) 
+        if(.not.relcc_use_orbital_energies)
      &          relcc_use_orbital_energies = .true.
-        if(.not.relcc_no_recompute) 
+        if(.not.relcc_no_recompute)
      &          relcc_no_recompute = .true.
         USEOE   = .true.
         NORECMP = .true.
@@ -497,7 +524,7 @@ C
      &  ' *** molecular-mean-field X2C Hamiltonan (X2Cmmf) active  ***',
      &  ' *** use of SCF orbital energies and no re-computation of ***',
      &  ' *** Fock matrix elements set explicitly                  ***',
-     &  ' ************************************************************' 
+     &  ' ************************************************************'
       end if
 !
 C
@@ -511,29 +538,34 @@ C
       endif
 
       IF (DOFSPC) THEN
-!     mi: print out range of intermediate Hamilt.spaces
-        write(IW,'(/,2X,A,F12.5,1X,A,F12.5)') 
+!     mi: print out range of intermediate Hamilt.spaces ... later ...
+        write(IW,'(/,2X,A,F12.5,1X,A,F12.5)')
      &    'EHMIN:',ER_IH(1,1),'EHMAX:',ER_IH(2,1)
-        write(IW,'(2X,A,F12.5,1X,A,F12.5)') 
+        write(IW,'(2X,A,F12.5,1X,A,F12.5)')
      &     'EPMIN:',ER_IH(1,2),'EPMAX:',ER_IH(2,2)
       ENDIF
 C
-      IF( MP2_DENRUN )THEN
-        IN = IN_SAVE
-      END IF
+C     IF( MP2_DENRUN )THEN
+C       IN = IN_SAVE
+C     END IF
 C
+
+!MI   After the first call of this routine reset the control variable
+      FirstCall = .FALSE.
+
       RETURN
       END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCMAIN (IUNIN,IUNUT,CA,INTFCE)
 c
       use memory_allocator
-      use allocator_parameters, only : klongint, kreal 
+      use allocator_parameters, only : klongint, kreal
       use interface_to_mpi
       use relcc_cfg
       use xmlout
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -565,14 +597,15 @@ C     CC is the static memory  (when called as subroutine)
 C     CC is the dynamic memory (when used as stand-alone code)
 C
 C
+      INTEGER MAXSP
       PARAMETER (MAXSP=1000)
       INTEGER IREPSP(MAXSP*4),IREPSPI(MAXSP*MXREP*2)
       REAL*8 EPS(MAXSP),EPS1(MAXSP)
       LOGICAL ALLOC_ME,CA
       REAL*8 CPU0,CPU1,CPU2,CPUTOT,CPUI,CPUS
       REAL*8 CPUE,CPUFO,CPUSO,CPUFS,CPUVAR
-      REAL*8 WALL0,WALL1,WALL2,WALLTOT,WALLI,WALLS
-      REAL*8 WALLE,WALLFO,WALLSO,WALLFS,WALLVAR
+      REAL*8 WALL0,WALL1,WALL2,WALLTOT,WALLI,WALLS,TIME_SYNC_TOT
+      REAL*8 WALLE,WALLFO,WALLSO,WALLFS,WALLVAR,TIME_SYNC
       CHARACTER*10 INTFCE
       integer :: verbose    = 0
       integer :: ncore_elec = 0
@@ -581,7 +614,8 @@ C
       integer(kind=klongint) :: mxcorr1
       integer(kind=klongint) :: mword_limit
       real(kind=kreal)       :: new_mword_limit = 0
-      integer :: word
+      integer :: word,mycharge,NELECT,NSP
+      integer :: jcode,IUNIN,IUNUT,I,ICALC,IERR
 C
 C---------------Executable code--------------------------------------
 C
@@ -646,11 +680,15 @@ C     Read input from file (old namelist) / transfer input (new style) from relc
 C
       CALL CCINPT (IN,IW)
 C
-C     Number of integer words for REAL*8 and 
-C     number of REAL*8 words per variable (2 for complex groups, 
+C     Number of integer words for REAL*8 and
+C     number of REAL*8 words per variable (2 for complex groups,
 C     1 for real)
 C
-      IRW = INTOWP(1)
+#if  defined (INT_STAR8)
+      IRW = 1
+#else
+      IRW = 2
+#endif
       IF (CARITH) THEN
          RCW = 2
       ELSE
@@ -671,10 +709,11 @@ C
 C
 C     Report memory in megaBytes
 C
-      if ( maxcor .gt. 0 ) then 
-         WRITE (IW,1000) MAXCOR / (128 * 1024)
+      if ( maxcor .gt. 0 ) then
+        WRITE (IW,1000) DFLOAT(MAXCOR)/DFLOAT((128*1024)), 
+     &  DFLOAT(MAXCOR)/DFLOAT(128*1024*1024)
       else
-         WRITE (IW,1410)
+        WRITE (IW,1410)
       endif
 C
 C     General setup
@@ -720,22 +759,27 @@ C
      &                DOFOPR,
      &                DOSOPR,DEBUG,TIMING,IPRNT,INTERFACE
       endif
+      
+!miro: printout info about the RelCC memory count
+      write(IW,"(1X,A,10X,L1)")
+     & "Leave after calculating the total memory demand :",
+     &  DOMEMCOUNT
 
 !miro: printout of changed DHOLU limit, with warning
       if (relcc_ccener_dholu_limit_set) then
         write(IW,*) 'WARNING: you have altered the DHOLU limit !'
         write(IW,*) 'new value=',relcc_ccener_dholu_limit
-        write(IW,*) 
+        write(IW,*)
      & 'Decreasing DHOLU does not solve CC convergence problems !'
       endif
 
-C     
+C
 C     Check the memory requirements of the active modules
 C     ---------------------------------------------------
 C
       ICALC = 1
       ALLOC_ME = .FALSE.
-C 
+C
       MXCORR1 = 0
 
       CALL CCSETI (ICALC,MXCORR1,EPS,NSP,IREPSP,IREPSPI)
@@ -786,6 +830,17 @@ C
       WALLI = WALLI + WALL2 - WALL1
       WALL1 = WALL2
       CALL FLSHFO (IW)
+
+!MI show the total memory demand in MB/GB:
+         WRITE(IW,"(/,1X,A,F15.2,A)")
+     &    'Predicted RelCC memory demand: ',
+     &    DFLOAT(MXCORR)/DFLOAT(2**17)," MB"
+         WRITE(IW,"(1X,A,F15.3,A)")
+     &    'Predicted RelCC memory demand: ',
+     &    DFLOAT(MXCORR)/DFLOAT(2**27)," GB"
+
+!MI leave RelCC calculations after memory demand counted
+       if (DOMEMCOUNT) GOTO 77 ! jump to the end section
 C
 C     Start the calculations
 C     ----------------------
@@ -850,18 +905,25 @@ C
       JCODE = 3
       CALL WAIO_CLOSE(ITAPT+4,JCODE)
       JCODE = 3
-      IF (DOCCSD.OR.DOCCSDT) CALL WAIO_CLOSE(ITAPT+5,JCODE)
+      IF (DOCCSD.OR.DOCCSDT.OR.DOCCSDG) CALL WAIO_CLOSE(ITAPT+5,JCODE)
       JCODE = 3
-      IF (DOCCSD) CALL WAIO_CLOSE(ITAPT+6,JCODE)
+      IF (DOCCSD.OR.DOCCSDG) CALL WAIO_CLOSE(ITAPT+6,JCODE)
+      IF (DOFSPC) CLOSE (IUHEFF)
 C
       CALL CCSUMM
       CALL FLSHFO (IW)
-C   
+
+! MI: jump here if only the RelCC memory count needed
+
+ 77   CONTINUE 
+C
 C     Print timings
 C
+!!      IF (.NOT.DOCCSDG)
       CALL XTIME(0,4,' RELCCSD                         ')
       CALL FLSHFO (IW)
       CALL GETTIM(CPUTOT,WALLTOT)
+
       CPUTOT = CPUTOT - CPU0
       CPUVAR = CPUTOT-CPUI-CPUS-CPUE-CPUFO-CPUSO-CPUFS
       WALLTOT = WALLTOT-WALL0
@@ -869,9 +931,10 @@ C
       WRITE(IW,1010) WALL0,CPU0,WALLI,CPUI,WALLS,CPUS,WALLE,CPUE,
      & WALLFO,CPUFO,WALLSO,CPUSO,WALLFS,CPUFS,
      & WALLVAR,CPUVAR,WALLTOT,CPUTOT
-C
+
+
 C     Print I/O statistics
-C
+
       CALL WAIO_PRST (IW)
       CALL FLSHFO (IW)
 C
@@ -879,31 +942,10 @@ C
          call xml_end('output')
          call xml_end('task')
       endif
-C
-C     Let us synchronize all processes! 
-C
-C SK-- 21-08-07: jobs on my x86-64 platform finish now properly when
-C introducing the following synchronization. 
-C
-#if defined (VAR_MPI)
-      TIME_SYNC     = 0.0D0
-      TIME_SYNC_TOT = 0.0D0
-      DO 8888 I = 1, 2
-        call interface_mpi_BARRIER(global_communicator)
-        TIME_SYNC = interface_MPI_WTIME()
-        IF (IPRNT .GT. 10)
-     &     WRITE(IW,*) 'I AM IN SYNC PROC., MYPROC = ', MYPROC
-        call interface_mpi_BARRIER(global_communicator)
-        TIME_SYNC_TOT = interface_MPI_WTIME() - TIME_SYNC
- 8888 CONTINUE
-C
-      IF (IPRNT .GT. 10)
-     &  WRITE(IW,*) 'SYNC. PROCESS HAS USED', TIME_SYNC_TOT, 'SEC.'
-#endif
-C
+
       RETURN
 C
-1000  FORMAT (/" Total memory available :",T50,I15," MB")
+1000  FORMAT (/" Total memory available :",F15.2," MB",1X,F8.3," GB")
 1410  FORMAT (/" Total memory available has not been determined")
 1001  FORMAT (" Memory used for active modules :",
      &        T50,I15," 8-byte words")
@@ -950,7 +992,7 @@ C
      &/' First order properties :',T30,F12.2,T55,F12.2
      &/' Second order properties :',T30,F12.2,T55,F12.2
      &/' Fock space energies :',T30,F12.2,T55,F12.2
-     &/' Untimed parts :',T30,F12.2,T55,F12.2 
+     &/' Untimed parts :',T30,F12.2,T55,F12.2
      &/' Total time in CC driver :',T30,F12.0,T55,F12.2)
  1011 FORMAT (/'---< Process ',I5,' of ',I5,'----<'/)
  1015 FORMAT (/' Checking ',A,'MXCORR1,MXCORR',2I10)
@@ -961,7 +1003,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                   NSP,EPS1,EPS,IREPSP,IREPSPI,
      &                   FOCKSP,REPORT,NELEC_F1,NELEC_F2)
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -990,20 +1032,22 @@ C
       INTEGER NFROZ(16),NINACT(16),NACT(16)
       REAL*8 EPS1(*),EPS(*)
       LOGICAL FOCKSP,REPORT
+      INTEGER NSP
 C
 C---------------Local variables--------------------------------------
 C
       CHARACTER*14 REPNT(16)
       INTEGER NVIRT(16)
-!      INTEGER NOOOT2(MXREP),NVVVT2(MXREP)
       CHARACTER*4 REPNA_ACT(MXREP)
       INTEGER NO_ACT(MXREP),NV_ACT(MXREP)
       INTEGER NIO_ACT(MXREP),NAO_ACT(MXREP)
       INTEGER NAV_ACT(MXREP),NIV_ACT(MXREP)
       !MI: for the IH-FSCC method in linear symmetry
-      INTEGER NAOPI_ACT(MXREP),NAVPI_ACT(MXREP)   
+      INTEGER NAOPI_ACT(MXREP),NAVPI_ACT(MXREP)
       LOGICAL ASSREP
       INTEGER IOI(0:3), IVA(0:3)
+      integer i,ICURFSS,ii,IJKREP,IJREP,IREP,IRP,ISP,j,JKREP,JREP
+      integer KREP,NACT_REP,NREP1,NREP2
 
 C
 C---------------Executable code--------------------------------------
@@ -1025,12 +1069,6 @@ C
          MOV(IREP) = 0
          MVO(IREP) = 0
          MVV(IREP) = 0
-
-         POO(IREP) = 0
-         POV(IREP) = 0
-         PVO(IREP) = 0
-         PVV(IREP) = 0
-
          NOO(IREP) = 0
          NOV(IREP) = 0
          NVO(IREP) = 0
@@ -1060,14 +1098,14 @@ C ** additional arrays for parallel triples
 C
 C     Convert input information to abelian subgroup
 C
-      ASSREP = .FALSE. 
+      ASSREP = .FALSE.
       IF (.NOT.FOCKSP) THEN
 C
 C     Single reference calculation : we need only to distinguish
 C     between occupied and virtual, no active orbitals.
 C
 C     Check if we go through a manual or automatic assignment
-C    
+C
 C
          DO I = 1, 16
             IF (NELEC_F1(I).NE.0.OR.NELEC_F2(I).NE.0) THEN
@@ -1077,9 +1115,9 @@ C
          IF (ASSREP) THEN
 C
 C     Manual assignment for each abelian subgroup (Ivan Infante jan04)
-C    
 C
-C...........Loop over parent group 
+C
+C...........Loop over parent group
             DO IRP = 1, NSYMRP
                NELEC(IRP) = 0
                NVIRT(IRP) = 0
@@ -1092,13 +1130,13 @@ C..............Loop over Abelian subgroup
                         IN = IN + 1
                         IF (IREP.LE.(NREP/2)) THEN
 C
-C     In the case of a molecule with an inversion center (NFSYM=2), 
+C     In the case of a molecule with an inversion center (NFSYM=2),
 C     we perform two separate assignments according to the gerade
 C     (NELEC_F1) and ungerade symmetry (NELEC_F2).
-C     For a molecule without inversion centre, we performe one single  
+C     For a molecule without inversion centre, we performe one single
 C     assignment (NELEC_F1).
 C
-                           IF (IN.LE.NELEC_F1(IREP)) THEN 
+                           IF (IN.LE.NELEC_F1(IREP)) THEN
                               NELEC(IRP) = NELEC(IRP) + 1
                               NO(IREP) = NO(IREP) + 1
                               IREPSP(I,3) = NO(IREP)
@@ -1145,8 +1183,9 @@ C
                         NO(IREP) = NO(IREP) + 1
                         IREPSP(I,3) = NO(IREP)
                         IREPSPI(NO(IREP),IREP,1) = I
+!        write(*,*) 'occ:',NO(IREP),IREP,IREPSPI(NO(IREP),IREP,1)
                         IF (.not.IFROZ_set_in_input) THEN
-                           IF (NO(IREP).GT.MAXFROZ) 
+                           IF (NO(IREP).GT.MAXFROZ)
      &                        CALL QUIT("INCREASE MAXFROZ")
                            IF (IN.LE.NFROZ(IRP)) THEN
                               NC(IREP) = NC(IREP) + 1
@@ -1163,6 +1202,7 @@ C
                         NV(IREP) = NV(IREP) + 1
                         IREPSP(I,3) = - NV(IREP)
                         IREPSPI(NV(IREP),IREP,2) = I
+!        write(*,*) 'vir:',NV(IREP),IREP,IREPSPI(NV(IREP),IREP,2)
                      ENDIF
                   ENDIF
                ENDDO
@@ -1213,7 +1253,7 @@ C
                      IREPSPI(NO(IREP),IREP,1) = I
 C                    Check for frozen core orbitals
                      IF (.not.IFROZ_set_in_input) THEN
-                        IF (NO(IREP).GT.MAXFROZ) 
+                        IF (NO(IREP).GT.MAXFROZ)
      &                  CALL QUIT("INCREASE MAXFROZ")
                         IF (IN.LE.NFROZ(IRP)) THEN
                            NC(IREP) = NC(IREP) + 1
@@ -1396,13 +1436,17 @@ C           Write only active irreps (NO or NV > 0)
          ENDIF
       ENDIF
 C
-C
 C     Set up dimension arrays
+C
+C     Nxx(IREP) gives the total number of |ket>|ket> index pairs that have symmetry IREP
+C     Mxx(IREP) gives the total number of <bra |ket> index pairs that have symmetry IREP
+C     II arrays provide pointers to the start of irrep combinations for |ket>|ket> or <bra|<bra| index pairs
+C     JJ arrays provide pointers to the start of irrep combinations for <bra|ket> index pairs
 C
       DO JREP = 1, NREP
          DO IREP = 1, NREP
             IJREP = MULTB(IREP,JREP,1)
-            IIOO(IREP,JREP) = NOO(IJREP)  !new
+            IIOO(IREP,JREP) = NOO(IJREP)
             IIOV(IREP,JREP) = NOV(IJREP)
             IIVO(IREP,JREP) = NVO(IJREP)
             IIVV(IREP,JREP) = NVV(IJREP)
@@ -1419,29 +1463,11 @@ C
             MOV(IJREP) = MOV(IJREP) + NO(IREP)*NV(JREP)
             MVO(IJREP) = MVO(IJREP) + NV(IREP)*NO(JREP)
             MVV(IJREP) = MVV(IJREP) + NV(IREP)*NV(JREP)
-!           write(*,*) 'MVO irep,jrep,ijrep',irep,jrep,ijrep
          ENDDO
       ENDDO
 C
-
-
-      DO JREP = 1, NREP
-         DO IREP = 1, NREP
-            IJREP = MULTB(IREP,JREP,3)
-            KKOO(IREP,JREP) = POO(IJREP)
-            KKOV(IREP,JREP) = POV(IJREP)
-            KKVO(IREP,JREP) = PVO(IJREP)
-            KKVV(IREP,JREP) = PVV(IJREP)
-            POO(IJREP) = POO(IJREP) + NO(IREP)*NO(JREP)
-            POV(IJREP) = POV(IJREP) + NO(IREP)*NV(JREP)
-            PVO(IJREP) = PVO(IJREP) + NV(IREP)*NO(JREP)
-            PVV(IJREP) = PVV(IJREP) + NV(IREP)*NV(JREP)
-         ENDDO
-      ENDDO
+C     Same M/N/II/JJ convention as used above, but now for triangular (I>J) arrays
 C
-
-
-
       DO JREP = 1, NREP
          IJREP = MULTB(JREP,JREP,1)
          IIOOT(JREP,JREP) = NOOT(IJREP)
@@ -1457,9 +1483,27 @@ C
          ENDDO
       ENDDO
 C
+C     Dimension arrays for 3-index tensors, formed by combining a 2-index array with a 1-index array
+C     KK arrays are symmetry pointers for tensors in which the leftmost indices are first grouped together
+C     LL arrays are symmetry pointers for tensors in which the rightmost indices are first grouped together
+C
       DO KREP = 1, NREP
          DO IJREP = 1, NREP
+!
+!  discussion with luuk
+!  for consistency IJREP is a bra and the order in the MULTB
+!  array may be swapped to maintain consistency with the definitions
+!
+!  original:
+!
             IJKREP = MULTB(KREP,IJREP+NREP,2)
+!
+!  possible alternative in case of totally symmetric products:
+!           IJKREP = MULTB(IJREP+NREP,KREP,2)
+!
+C           Here we use that (i) KLREP = IJREP, (ii) LREP = MULTB(KREP,KLREP,2), (iii) Ordering should be
+C           such that we can contract with an array to the right in which the leftmost index is ordered on LREP.
+
             KKOOOT(IJREP,KREP) = NOOOT(IJKREP)
             KKVVOT(IJREP,KREP) = NVVOT(IJKREP)
             KKOOVT(IJREP,KREP) = NOOVT(IJKREP)
@@ -1468,7 +1512,6 @@ C
             KKVOV (IJREP,KREP) = NVOV (IJKREP)
             KKOVO (IJREP,KREP) = NOVO2(IJKREP)
             KKOVV (IJREP,KREP) = NOVV (IJKREP)
-
 
             NOOOT(IJKREP) = NOOOT(IJKREP) + NOOT(IJREP)*NO(KREP)
             NVVOT(IJKREP) = NVVOT(IJKREP) + NVVT(IJREP)*NO(KREP)
@@ -1742,7 +1785,7 @@ C
       IF (IVVVT(NREP+1,IJKREP).GT.IVVVTMX) IVVVTMX=IVVVT(NREP+1,IJKREP)
       ENDDO
 
-C ** here all symm arrays are set up and we can call the 
+C ** here all symm arrays are set up and we can call the
 C ** parallel distribution list generator
 
       CALL DISLIST
@@ -1892,7 +1935,7 @@ C
           LAOVOOT(IREP+1) = LAOVOOT(IREP)+NAO(IREP)*NVOOT(IREP)
           LAOAOSOSOT(IREP+1) = LAOAOSOSOT(IREP)+NAO(IREP)*NAOSOSOT(IREP)
          ENDDO
- 
+
 C        Set dimension of effective Hamiltonian for Fock space
 
          DO IREP = 1, NREP
@@ -1904,7 +1947,7 @@ C        Set dimension of effective Hamiltonian for Fock space
             NFS_HE(IREP,6) = NAOAOT(IREP)
          ENDDO
 
-C        Set offset for addressing symmetry blocks of effective Hamiltonian (IFS_HE) 
+C        Set offset for addressing symmetry blocks of effective Hamiltonian (IFS_HE)
 C        or its eigenvalues (IFS_EV)
 
          DO ICURFSS = 1, 6
@@ -1938,7 +1981,7 @@ C
           DO IREP = 1, NREP
             NAOPI(IREP) = 0
             NAVPI(IREP) = 0
-          ENDDO 
+          ENDDO
 !        ENDIF
 
          DO ISP = 1, NSP
@@ -1991,8 +2034,8 @@ CMI ..... write only active irreps
                IF (NIO(I)+NAO(I)+NAV(I)+NIV(I).GT.0) THEN
                   ! ... move nonzero values to new arrays ...
                   NACT_REP = NACT_REP + 1
-                  NAOPI_ACT(NACT_REP) = NAOPI(I) 
-                  NAVPI_ACT(NACT_REP) = NAVPI(I) 
+                  NAOPI_ACT(NACT_REP) = NAOPI(I)
+                  NAVPI_ACT(NACT_REP) = NAVPI(I)
                ENDIF
             ENDDO
 
@@ -2037,7 +2080,7 @@ C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
 
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -2071,22 +2114,23 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 EPS(*)
-      INTEGER IREPSP(NSP,4),IREPSPI(NSP,MXREP,2)
+      INTEGER IREPSP(NSP,4),IREPSPI(NSP,MXREP,2),ICALC,NSP
 C
 C---------------Local variables--------------------------------------
 C
       LOGICAL ALLOC_ME,SRTALL
       INTEGER*8 NVT
+      integer minbuf,nbuf,nvf,nvtmin
 Caspg, replacing memget
-      integer,       allocatable, target :: a_kr(:),     
-     &                              a_indk(:),   a_indl(:), 
+      integer,       allocatable, target :: a_kr(:),
+     &                              a_indk(:),   a_indl(:),
      &                              a_ibuf(:),   a_index(:)
-      real (kind=kreal), allocatable, target :: a_cbuf(:),   
-     &                              a_buf1(:), 
-     &                              a_buf2(:),   a_foo(:), 
-     &                              a_fvv(:),    a_v1(:), 
-     &                              a_v2(:),     a_v2a(:), 
-     &                              a_v3a(:),    a_vt(:), 
+      real (kind=kreal), allocatable, target :: a_cbuf(:),
+     &                              a_buf1(:),
+     &                              a_buf2(:),   a_foo(:),
+     &                              a_fvv(:),    a_v1(:),
+     &                              a_v2(:),     a_v2a(:),
+     &                              a_v3a(:),    a_vt(:),
      &                              a_fvo(:),    a_v1a(:),
      &                              a_v3(:),     a_vta(:)
       real (kind=kreal), pointer ::     a_v4(:),     a_v4a(:)
@@ -2207,7 +2251,7 @@ C
       call dealloc(a_INDK, id="indk" )
       call dealloc(a_INDL, id="indl" )
       call dealloc(a_CBUF, id="cbuf" )
-      call dealloc(a_IBUF, id="ibuf" )  
+      call dealloc(a_IBUF, id="ibuf" )
       call dealloc(a_BUF1, id="buf1" )
       call dealloc(a_BUF2, id="buf2" )
       call dealloc(a_FOO , id="foo" )
@@ -2234,7 +2278,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use allocator_parameters, only : klongint, kreal
       use xmlout
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -2256,7 +2300,7 @@ C
 C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
-C
+      integer icalc
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
@@ -2275,28 +2319,28 @@ C
       LOGICAL ALLOC_ME
       INTEGER*8 NV5IRP,NV6IRP,NVIRP
 C
-      real(kind=kreal), allocatable, target :: a_FVO(:), a_FOO(:),  
+      real(kind=kreal), allocatable, target :: a_FVO(:), a_FOO(:),
      &                                     a_FVV(:),
-     &                                     a_T1(:),  a_T2(:), 
+     &                                     a_T1(:),  a_T2(:),
      &                                     a_S1(:),  a_S2(:)
 c
       real(kind=kreal), allocatable, target :: a_AZ(:), a_H(:), a_HO(:),
-     &                             a_HV(:),  a_HOV(:),  a_GOO(:),
-     &                             a_GVV(:), a_CCC(:),  a_BB1(:),
+     &                         a_HV(:),  a_HOV(:),a_CCC(:),  a_BB1(:),
      &                             a_BB2(:), a_BUF1(:), a_BUF2(:)
 c
-      real(kind=kreal), allocatable, target :: a_VOOO(:),a_T2S(:), 
+      real(kind=kreal), allocatable, target :: a_VOOO(:),a_T2S(:),
      &                             a_VVOO(:),a_VVVO(:), a_BUF3(:),
      &                             a_TAU3(:), a_T2T(:)
 c
       integer(kind=8)        :: current_mem_use = 0
       integer(kind=8)        :: start_mem_use   = 0
-      integer(kind=8)        :: mxcor   = 0 
+      integer(kind=8)        :: mxcor   = 0
       integer(kind=8)        :: mxcr    = 0
-      integer(kind=8)        :: mxcorr  
+      integer(kind=8)        :: mxcorr
       integer                :: freemem = 0
       integer                :: maxit_save
       logical                :: is_ccsd_converged = .false.
+      integer                :: dum,irp,nbuf1,nbuf2,nbuf3,nvovv
 C
 C---------------Executable code--------------------------------------
 C
@@ -2333,11 +2377,9 @@ C
          call alloc( a_HO   ,    NFOO*RCW             , id="ho" )
          call alloc( a_HV   ,    NFVV*RCW             , id="hv" )
          call alloc( a_HOV  ,   NFVO*RCW              , id="hov" )
-         call alloc( a_GOO  ,   NFOO*RCW              , id="goo" )
-         call alloc( a_GVV  ,   NFVV*RCW              , id="gvv" )
          call alloc( a_CCC  ,   MAXDIM                , id="ccc" )
-         call alloc( a_BB1  ,   (MAXDIM+1)*(MAXDIM+2) , id="bb1" ) 
-         call alloc( a_BB2  ,   (MAXDIM+1)*(MAXDIM+2) , id="bb2" ) 
+         call alloc( a_BB1  ,   (MAXDIM+1)*(MAXDIM+2) , id="bb1" )
+         call alloc( a_BB2  ,   (MAXDIM+1)*(MAXDIM+2) , id="bb2" )
          call alloc( a_BUF1 ,  NBUF1*RCW              , id="buf1" )
          call alloc( a_BUF2 ,  NBUF2*RCW              , id="buf2" )
 
@@ -2378,7 +2420,7 @@ C
 C
       IF (ICALC.EQ.1) THEN
          WRITE (IW,1001) "calculating amplitudes",mxcorr
-         GOTO 420 
+         GOTO 420
       ENDIF
 C
       WRITE (IW,1007) DOMP2,DOCCSD,DOCCSDT
@@ -2446,7 +2488,7 @@ C           Use MP2 amplitudes
 C
             CALL GETAMPT (a_T1,a_T2)
 C
-         ELSE   
+         ELSE
 C
 C           Use standard initialization
 C
@@ -2466,8 +2508,8 @@ C
 
          maxit_save = MAXIT
          CALL cceqn_driver_amplitudes(MAXIT_SAVE,EPS,a_FOO,a_FVO,a_FVV,
-     &           a_T1,a_S1,a_T2 ,a_S2 ,a_AZ,DUM,a_H,a_HO,a_HV,a_HOV,
-     &           a_GOO,a_GVV,a_BUF1,a_BUF2,a_BUF3,
+     &           a_T1,a_S1,a_T2 ,a_S2 ,a_AZ,a_H,a_HO,a_HV,a_HOV,
+     &           a_BUF1,a_BUF2,a_BUF3,
      &           a_CCC,a_BB1,a_BB2,
      &           TOL,NBUF2,NBUF3,DUM,DUM,DUM)
          CALL XTIME(5,2,'CCSD equations                ')
@@ -2502,8 +2544,6 @@ C
          call dealloc(a_HO  )
          call dealloc(a_HV  )
          call dealloc(a_HOV )
-         call dealloc(a_GOO )
-         call dealloc(a_GVV )
          call dealloc(a_CCC )
          call dealloc(a_BB1 )
          call dealloc(a_BB2 )
@@ -2622,7 +2662,7 @@ C
       use interface_to_mpi
       use lambda_equation
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -2646,6 +2686,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       DIMENSION IREPSPI(*)
+      integer icalc,nsp,irepspi
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -2670,7 +2711,7 @@ C
       INTEGER*8 NV5IRP,NV6IRP,NVIRP
 C
 C
-      real(kind=kreal), allocatable, target :: a_FOO(:), a_FVO(:), 
+      real(kind=kreal), allocatable, target :: a_FOO(:), a_FVO(:),
      &                             a_T1(:),  a_T2(:),   a_S1(:),
      &                             a_S2(:),  a_DOO(:),  a_DVV(:),
      &                             a_XOO(:), a_XVV(:),  a_DVO(:),
@@ -2680,8 +2721,8 @@ C
      &                             a_DG(:),  a_DMO(:),  a_XMO(:),
      &                             a_BUF1(:),a_CBUF(:), a_BUF2(:),
      &                    a_BUF3(:),a_FVV(:),a_AZ(:),a_H(:),a_Hbar(:),
-     &                    wovoo(:),a_HO(:), a_HV(:),a_HOV(:),a_GOO(:),
-     &                    wvvvo(:),a_GVV(:), a_CCC(:),  a_BB1(:),
+     &                    wovoo(:),a_HO(:), a_HV(:),a_HOV(:),
+     &                    wvvvo(:), a_CCC(:),  a_BB1(:),
      &                             a_BB2(:),l1_sort(:),l2_sort(:)
 
 
@@ -2692,6 +2733,8 @@ C
       integer(kind=8)        :: mxcorr
       integer                :: freemem = 0
       integer                :: work_memsize
+      integer                :: eoff,eoper,iprint_no,irp,kfree
+      integer                :: lfree,nbuf1,nbuf2,nbuf3,NODE,NTEST
 C
 C---------------Executable code--------------------------------------
 C
@@ -2699,12 +2742,7 @@ C
       call legacy_lwork_get(work_memsize)
 C
       if (doccsdg) then
-        if (nmproc.gt.1) then
-          call quit('CC-Gradient is not parallelized')
-        else
           WRITE (IW,*) 'Calculate CCSD gradient'
-          doccsdg = .true.
-        endif
       endif
 
       if (domp2g) then
@@ -2730,15 +2768,15 @@ C
       NBUF1 = MAX(JOOOO(NREP+1),JVOOO(NREP+1),
      &            JVVOO(NREP+1),JVOVO(NREP+1))
 
-C     Calculate the size of the array needed for the sorted T2 array that      
-C     is used in MOLTRA. In spinfree calculations this will be larger than     
-C     the dimension used in RELCCSD (was a nasty bug in DIRAC08)           
-C     This initialization does not fix the problem with spinfree calculations, 
-C     however, various routines (e.g. DOOTODIR and DVVTODIR) do need to be     
-C     adapted to the fact that in spinfree calculations there is a many-to-1   
-C     correspondence between the list of irreps used by RELCCSD and the        
-C     fermion irreps of DIRAC. Probably the best solution is to rewrite these  
-C     routines using an index vector that gives the correspondence.            
+C     Calculate the size of the array needed for the sorted T2 array that
+C     is used in MOLTRA. In spinfree calculations this will be larger than
+C     the dimension used in RELCCSD (was a nasty bug in DIRAC08)
+C     This initialization does not fix the problem with spinfree calculations,
+C     however, various routines (e.g. DOOTODIR and DVVTODIR) do need to be
+C     adapted to the fact that in spinfree calculations there is a many-to-1
+C     correspondence between the list of irreps used by RELCCSD and the
+C     fermion irreps of DIRAC. Probably the best solution is to rewrite these
+C     routines using an index vector that gives the correspondence.
 
       CALL INIT_T1(a_T2,.FALSE.)
       CALL INIT_T2(a_T2,.FALSE.)
@@ -2794,7 +2832,7 @@ C     Calculate size of the 3rd work array that is passed on to the
 C     response module as work, we make it as large as possible.
 C
       call allocator_get_maxbuff(freemem,kind(a_BUF3))
-C aspg: the subtraction of work_memsize here is due to the 
+C aspg: the subtraction of work_memsize here is due to the
 C       fact that later on in the call to dirnod2 there will
 C       be allocation(s) of the same size for the integral
 C       drivers etc; so this is in a way a hack, because of
@@ -2854,9 +2892,9 @@ C
          CALL CCDENSC (1,a_T1,  a_S1,  a_T2,  a_S2,
      &                   a_BUF1,a_BUF2,a_BUF3,a_DOO,a_DVV,
      &                   a_DVO, a_DOV, a_DMO)
-C        Solve Z-vector equations 
+C        Solve Z-vector equations
 C
-         IF (.NOT. NOZG) THEN 
+         IF (.NOT. NOZG) THEN
             TOL = 10.0D0**(-NTOLGR)
             MAXIT  = MXITGR
             MAXDIM = MXDIMGR
@@ -2913,7 +2951,7 @@ C     Calculate size of the 3rd work array that is passed on to the
 C     response module as work, we make it as large as possible.
 C
       call allocator_get_maxbuff(freemem,kind(a_BUF3))
-C aspg: the subtraction of work_memsize here is due to the 
+C aspg: the subtraction of work_memsize here is due to the
 C       fact that later on in the call to dirnod2 there will
 C       be allocation(s) of the same size for the integral
 C       drivers etc; so this is in a way a hack, because of
@@ -2935,18 +2973,18 @@ C
 
       IF (ICALC.EQ.1) THEN
          WRITE (IW,1001) "Gradient Calculation",MXCORR
-         GOTO 431 
+         GOTO 431
       ENDIF
 
           IF (NOZG) THEN
-             WRITE (IW,1008) 
+             WRITE (IW,1008)
           ELSE
-             WRITE (IW,1018) 
+             WRITE (IW,1018)
           ENDIF
 C
 C         Slaves will only help in the integral calculation.
 C
-C         this means that, for the time being, we can deallocate everything? 
+C         this means that, for the time being, we can deallocate everything?
 #if defined (VAR_MPI)
           IF (MYPROC.NE.MASTER) THEN
              IF (ICALC.EQ.2) CALL DIRNOD2()
@@ -2964,7 +3002,7 @@ C
      &                    a_BUF1, a_BUF2, a_BUF3, a_DOO,
      &                    a_DVV , a_DVO , a_DOV , a_DMO)
 C
-C        Solve Z-vector equations 
+C        Solve Z-vector equations
 C
          IF (.NOT.NOZG)
      &      CALL MP2ZVEC( a_T2, a_BUF1, a_BUF2, a_BUF3,
@@ -2984,7 +3022,7 @@ C
 C         MP2 - nat. orb. and nat. orb. occ. num.
 C
           IPRINT_NO = 1
-          call dealloc(a_BUF3, id="buf3") 
+          call dealloc(a_BUF3, id="buf3")
 C
           CALL MP2_NATORB( a_DMO,IPRINT_NO,NOZG)
          END IF
@@ -3015,7 +3053,7 @@ C     Calculate size of the 3rd work array that is passed on to the
 C     response module as work, we make it as large as possible.
 C
       call allocator_get_maxbuff(freemem,kind(a_BUF3))
-C aspg: the subtraction of work_memsize here is due to the 
+C aspg: the subtraction of work_memsize here is due to the
 C       fact that later on in the call to dirnod2 there will
 C       be allocation(s) of the same size for the integral
 C       drivers etc; so this is in a way a hack, because of
@@ -3028,12 +3066,20 @@ C       limitations elsewhere. 20120720
             NV6IRP = MAX(NV6IRP,INT(NVVT(IRP),8)*INT(NVVT(IRP),8))
          ENDDO
 
-
 C        Check the minimum size for the general use of this array
 
          NVIRP = MAX(NV5IRP,NV6IRP)
 
          NBUF3 = MIN(NVIRP,INT(NBUF3,8))
+
+         IF (NV5IRP.GT.NBUF3) THEN
+
+           write(iw,*) 'The calculation may Fail because of very high
+     &                  memory requirement. Increase mw'
+           NBUF3 = NV5IRP
+         
+         ENDIF
+
          NBUF3 = MAX(NBUF1,NBUF3)
 
 C     Allocate now also this remaining work array
@@ -3048,15 +3094,14 @@ C     Allocate now also this remaining work array
          call alloc( a_H    , ivoov(nrep+1)*RCW              , id="h" )
          call alloc( a_Hbar , iovvo(nrep+1)*RCW           , id="hbar" )
          call alloc( wovoo  , iovoot(nrep+1)*RCW   , id="w1v" )
-!         following array consumes too much memory 
-!        call alloc( wvvvo  ,    NV5*RCW            , id="w3v" ) 
+!        call alloc( wvvvo  ,    NV5*RCW            , id="w3v" )
          allocate(wvvvo(nv5*RCW)) !consumes too much memory
          call alloc( a_HO   ,   NFOO*RCW             , id="ho" )
          call alloc( a_HV   ,   NFVV*RCW             , id="hv" )
          call alloc( a_HOV  ,   NFVO*RCW              , id="hov" )
          call alloc( a_CCC  ,   MAXDIM                , id="ccc" )
-         call alloc( a_BB1  ,   (MAXDIM+1)*(MAXDIM+2) , id="bb1" ) 
-         call alloc( a_BB2  ,   (MAXDIM+1)*(MAXDIM+2) , id="bb2" ) 
+         call alloc( a_BB1  ,   (MAXDIM+1)*(MAXDIM+2) , id="bb1" )
+         call alloc( a_BB2  ,   (MAXDIM+1)*(MAXDIM+2) , id="bb2" )
 
 
 
@@ -3072,13 +3117,12 @@ C     Allocate now also this remaining work array
 C
 C         Slaves will only help in the integral calculation.
 C
-C         this means that, for the time being, we can deallocate everything? 
-#if defined (VAR_MPI)
-          IF (MYPROC.NE.MASTER) THEN
-             IF (ICALC.EQ.2) CALL DIRNOD2()
-             goto 451
-          ENDIF
-#endif
+C         this means that, for the time being, we can deallocate everything?
+!#if defined (VAR_MPI)
+!         IF (MYPROC.NE.MASTER) THEN
+!            IF (ICALC.EQ.2) CALL DIRNOD2()
+!         ENDIF
+!#endif
 
 !--------------------------------------------------
 **ashee
@@ -3097,7 +3141,7 @@ C         this means that, for the time being, we can deallocate everything?
 
          CALL CCDUMP
 
-    5   format(10f10.6)  
+    5   format(10f10.6)
 
          TOL = 10.0D0**(-NTOLCC)
 
@@ -3108,26 +3152,12 @@ C         this means that, for the time being, we can deallocate everything?
      &           TOL,NBUF2,NBUF3)
 
 
-!     Get amplitude part of density matrix
-!!!     allocate(l1_sort(ndimt1*rcw))
-!!!     allocate(l2_sort(ndimt2*rcw))
-
-!!!      call srt1c1n(nrep,no,nv,a_T1,l1_sort)
-!!!      call srt1c1n(nrep,noot,nvvt,a_T2,l2_sort)
-
-!!!      CALL CCDENSC (2, a_S1  , l1_sort  , a_S2, l2_sort,
-!!!  &                    a_BUF1, a_BUF2, a_BUF3, a_DOO,
-!!!  &                    a_DVV , a_DVO , a_DOV , a_DMO)
-
-!!!     deallocate(l1_sort)
-!!!     deallocate(l2_sort)
-
-       call cc_density (a_T1,a_T2,a_S1,a_S2,a_doo,a_dvv,a_buf1,a_buf2, 
+       call cc_density (a_T1,a_T2,a_S1,a_S2,a_doo,a_dvv,a_buf1,a_buf2,
      &                   a_dmo)
 
-C
-C        Solve Z-vector equations 
-C
+
+C        Solve Z-vector equations
+
          IF (.NOT.NOZG)
      &      CALL MP2ZVEC( a_S2, a_BUF1, a_BUF2, a_BUF3,
      &                   NBUF3, a_XMO , a_DMO)
@@ -3137,20 +3167,15 @@ C
 !!         CALL QHMRST( a_DMO, NORBT,NZ,NORBT,NORBT)
 C        Write density matrix to file for later processing
 C
-         CALL STORE_CC_DENSITY ('CCSD', a_DMO )
+         if (myproc==0) then 
 
-C        Release the slaves (in case of parallel runs)
-C
-#if defined (VAR_MPI)
-         NTEST = -1
-         DO NODE = 1,NMPROC-1
-            call interface_mpi_SEND(NTEST,1,NODE,27,
-     &                     global_communicator)
-         ENDDO
-#endif
+           CALL STORE_CC_DENSITY ('CCSD', a_DMO )
+
+         endif
+
  451  CONTINUE
          if(allocated(a_BUF3)) call dealloc(a_BUF3, id="buf3")
-      
+
          call dealloc( a_AZ )
          call dealloc( a_H  )
          call dealloc( a_Hbar  )
@@ -3161,8 +3186,8 @@ C
          call dealloc( a_HV )
          call dealloc( a_HOV)
          call dealloc( a_CCC)
-         call dealloc( a_BB1) 
-         call dealloc( a_BB2) 
+         call dealloc( a_BB1)
+         call dealloc( a_BB2)
 
       ENDIF
 C
@@ -3206,7 +3231,7 @@ C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -3230,6 +3255,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 EPS(*)
+      INTEGER ICALC,NSP,IREPSPI
       DIMENSION IREPSPI(*)
 C
 C---------------Common Blocks--------------------------------------
@@ -3254,9 +3280,9 @@ C
      &                                         a_DG(:),   a_CCC(:),
      &                                         a_BB1(:),  a_BB2(:),
      &                                         a_BUF1(:), a_BUF2(:),
-     &                                         a_CBUF(:) 
+     &                                         a_CBUF(:)
 
-      real(kind=kreal), allocatable, target :: a_AVO(:), a_AOV(:) 
+      real(kind=kreal), allocatable, target :: a_AVO(:), a_AOV(:)
 
       integer(kind=8)        :: current_mem_use = 0
       integer(kind=8)        :: start_mem_use   = 0
@@ -3264,6 +3290,7 @@ C
       integer(kind=8)        :: mxcr    = 0
       integer(kind=8)        :: mxcorr
       integer                :: freemem = 0
+      integer                :: aoff,aoper,boper,dum,ifreq,nbuf1
 C
 C---------------Executable code--------------------------------------
 C
@@ -3376,7 +3403,7 @@ C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -3400,6 +3427,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 EPS(*)
+      INTEGER ICALC,NSP,IREPSPI
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -3432,6 +3460,7 @@ C
       integer(kind=8)        :: mxcr    = 0
       integer(kind=8)        :: mxcorr
       integer                :: freemem = 0
+      integer                :: irep,nbuf1
 C
 C---------------Executable code--------------------------------------
 C
@@ -3476,7 +3505,7 @@ C
       TOL = 10.0D0**(-NTOLRP)
 C
 C     This is very old code and..not well tested : better warn
-      WRITE (IW,*) 
+      WRITE (IW,*)
      & " WARNING : This module is obsolete and is not tested anymore"
       WRITE (IW,*) " Use it at your own risk....."
 C
@@ -3525,7 +3554,7 @@ C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
 
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -3546,6 +3575,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 EPS1(*),EPS(*)
+      INTEGER ICALC,NSP,IREPSP,IREPSPI
       DIMENSION IREPSP(*),IREPSPI(*)
 C
 C---------------Common Blocks--------------------------------------
@@ -3566,12 +3596,12 @@ C
       REAL*8 TOL
       INTEGER*8 NV5IRP,NV6IRP,NVIRP
 c
-      real(kind=kreal), allocatable, target :: a_FVO (:), a_FOO (:), 
-     &                             a_FVV (:), 
+      real(kind=kreal), allocatable, target :: a_FVO (:), a_FOO (:),
+     &                             a_FVV (:),
      &                             a_T1  (:), a_T2  (:), a_S1  (:),
      &                             a_S2  (:), a_AZ  (:), a_H   (:),
      &                             a_HO  (:), a_HV  (:), a_HOV (:),
-     &                             a_GOO (:), a_GVV (:), a_CCC (:),
+     &                             a_CCC (:),
      &                             a_BB1 (:), a_BB2 (:), a_BUF1(:),
      &                             a_BUF2(:), a_BUF3(:),
      &                             a_HEFF(:,:), a_EIGENVALUES(:,:),
@@ -3580,6 +3610,7 @@ c
       integer(kind=8)        :: mxcorr, mxcorr1
       integer                :: maxit_save
       logical                :: is_ccsd_converged = .false.
+      integer                :: dum,ifstat,irp,nbuf1,nbuf2,nbuf3
 C
 C---------------Executable code--------------------------------------
 C
@@ -3589,7 +3620,7 @@ C
       FOCKSP = .TRUE.
       REPORT = ICALC.GT.1
       IF (REPORT) WRITE (IW,1007)
-     
+
 CMI ... more print out
       IF (FOCKSP.AND.DOIH.AND.REPORT) THEN
         WRITE(IW,'(/A)') ' Intermediate Hamiltonian version !'
@@ -3637,8 +3668,6 @@ C
       call alloc( a_HO  , NFOO*RCW              , id="ho")
       call alloc( a_HV  , NFVV*RCW              , id="hv")
       call alloc( a_HOV , NFVO*RCW              , id="hov")
-      call alloc( a_GOO , NFOO*RCW              , id="goo")
-      call alloc( a_GVV , NFVV*RCW              , id="gvv")
       call alloc( a_CCC , MAXDIM                , id="ccc")
       call alloc( a_BB1 , (MAXDIM+1)*(MAXDIM+2) , id="bb1")
       call alloc( a_BB2 , (MAXDIM+1)*(MAXDIM+2) , id="bb2")
@@ -3714,7 +3743,7 @@ C
          write (iw,*) 'INFO: Reading restartable amplitudes!'
          call getampt(a_t1,a_t2)
       ELSE
-!        otherwise, we start from mp2 amplitudes  
+!        otherwise, we start from mp2 amplitudes
          CALL XCOPY (NDIMT1, a_FVO ,1, a_T1 ,1)
          CALL GETVVOO ( a_T2 )
          CALL DENOMF(EPS, a_T1 , a_T2 , a_T1 , a_T2 ,1)
@@ -3738,9 +3767,9 @@ C
       DO ICURFSS = 1, 6
       IFSTAT=7+ICURFSS
       IF (FSSECT(ICURFSS).NE.0) THEN
-        IF (ICALC.LE.1) GOTO 441 
+        IF (ICALC.LE.1) GOTO 441
         WRITE (IW,1009) IFSS(ICURFSS)
-        IF (((IMSTAT(IFSTAT).eq.3).and..not.FS_REDO_SECT(ICURFSS)) 
+        IF (((IMSTAT(IFSTAT).eq.3).and..not.FS_REDO_SECT(ICURFSS))
      &      .or.FS_SKIP_SECT(ICURFSS)) THEN
            WRITE (IW,*) '... restarting: sector converged or skipped'
         ELSE
@@ -3751,31 +3780,31 @@ C
               write (IW,*)
               write (IW,'(5X,A)') 'INFO: sector previously '//
      &          'marked as converged but user asked to recalculate it'
-           endif 
+           endif
         ENDIF
 C       Allocate space for the effective Hamiltonian and its eigenvalues and eigenvectors
 C
  441    CONTINUE
 C
-C       skip sectors which have converged, or that we specifically asked to skip 
+C       skip sectors which have converged, or that we specifically asked to skip
 C       conversely calculate sectors we asked to be recalculated even if previously converged
 C
         IF (((IMSTAT(IFSTAT).ne.3).and..not.FS_SKIP_SECT(ICURFSS)).or.
      &      FS_REDO_SECT(ICURFSS)) THEN
            call alloc (a_HEFF, RCW , IFS_HE2(NREP+1,ICURFSS), id="heff")
-           call alloc (a_EIGENVALUES,  RCW, (IFS_HE(NREP+1,ICURFSS)+1), 
+           call alloc (a_EIGENVALUES,  RCW, (IFS_HE(NREP+1,ICURFSS)+1),
      &                 id="eigenvalues" )
            call alloc (a_EIGENVECTORS, RCW, IFS_HE2(NREP+1,ICURFSS)  ,
      &              id="eigenvectors" )
-           IF (ICALC.LE.1) GOTO 442 
+           IF (ICALC.LE.1) GOTO 442
 C
 
            maxit_save = MAXIT_SECT(ICURFSS)
-        CALL cceqn_driver_amplitudes(maxit_save,EPS, 
+        CALL cceqn_driver_amplitudes(maxit_save,EPS,
      &             a_FOO , a_FVO , a_FVV  , a_T1   , a_S1   ,
-     &             a_T2  , a_S2  , a_AZ   , DUM    , a_H,  
+     &             a_T2  , a_S2  , a_AZ   ,a_H,
      &             a_HO  , a_HV  , a_HOV  ,
-     &             a_GOO , a_GVV , a_BUF1 , a_BUF2 , a_BUF3 ,
+     &             a_BUF1 , a_BUF2 , a_BUF3 ,
      &             a_CCC , a_BB1 , a_BB2 ,
      &             TOL, NBUF2, NBUF3,
      &             a_HEFF,a_EIGENVALUES,a_EIGENVECTORS)
@@ -3786,7 +3815,7 @@ C
               is_ccsd_converged = .true.
            endif
 
-           if (ICURFSS.GT.1)  
+           if (ICURFSS.GT.1)
 C          Print the Fock space eigenvalues, compute transition moments
 C          except for the 00 sector, obviously
      &     CALL FS_ANALYSIS1(ICURFSS,EPS,a_EIGENVALUES,a_EIGENVECTORS,
@@ -3796,7 +3825,7 @@ C          Save the updated wave function
            CALL FS_PUTAMPT (ICURFSS, a_T1 , a_T2 , a_BUF1 , a_BUF2 )
 
            if (is_ccsd_converged.or.restart_unconverged) then
-              IMSTAT(IFSTAT) = 3 
+              IMSTAT(IFSTAT) = 3
               write (IW,*)
               write (IW,'(1X,A)') 'INFO:   converged (unconverged'//
      &                            ' if .UNCONVERGED used) amplitudes'//
@@ -3831,8 +3860,6 @@ C
       call dealloc( a_HO  , id="ho" )
       call dealloc( a_HV  , id="hv" )
       call dealloc( a_HOV , id="hov" )
-      call dealloc( a_GOO , id="goo" )
-      call dealloc( a_GVV , id="gvv" )
       call dealloc( a_CCC , id="ccc" )
       call dealloc( a_BB1 , id="bb1" )
       call dealloc( a_BB2 , id="bb2" )
@@ -3855,7 +3882,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FS_PUTAMPT (ICURFSS,T1,T2,BUF1,BUF2)
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -3871,6 +3898,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 T1(*),T2(*),BUF1(*),BUF2(*)
+      INTEGER ICURFSS
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -3881,9 +3909,9 @@ C---------------Local variables--------------------------------------
 C
       CHARACTER*2 DELS1
       CHARACTER*4 DELS2
-C    
+C
 C---------------Executable code--------------------------------------
-C    
+C
       DELS1 = 'DD'
       IF (ICURFSS.EQ. 2) DELS1 = 'DK'
       IF (ICURFSS.EQ. 3) DELS1 = 'KD'
@@ -3915,7 +3943,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCDINI(do_restart)
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -3948,16 +3976,17 @@ C
 C
 C---------------Local variables--------------------------------------
 C
+      INTEGER BUFF,I,IRECL,IRECLEN
       DIMENSION BUFF(RSRCLEN)
-      LOGICAL do_restart, file_found 
+      LOGICAL do_restart, file_found
       LOGICAL restart_and_current_differ
       INTEGER RST_NEL(16)
       INTEGER RST_NFRZ(16)
       INTEGER RST_NACT(16)
       INTEGER RST_NINACT(16)
-      INTEGER nelec_tot, RST_nelec_tot 
-      INTEGER act_tot, RST_act_tot   
-      INTEGER inact_tot, RST_inact_tot 
+      INTEGER nelec_tot, RST_nelec_tot
+      INTEGER act_tot, RST_act_tot
+      INTEGER inact_tot, RST_inact_tot
 C
 C---------------Executable code--------------------------------------
 C
@@ -3966,7 +3995,7 @@ C     otherwise use file name without further extension.
 C     the global quit routine can be found in gp/gptrygve.F
 C
 C     set generic RESTART file name
-C  
+C
       RSBASF='MCCRES'
 C
 #if defined (VAR_MPI)
@@ -3997,7 +4026,7 @@ C
       IF (file_found) THEN
          if (do_restart) then
 C
-C        ...and we want to restart we go ahead 
+C        ...and we want to restart we go ahead
 C
          write (IW,*)
          write (IW,*) 'INFO: Found restart file(s)!'
@@ -4009,8 +4038,8 @@ C           Read the input information from the previous run
 C
              READ(MCCRES,REC=1) RST_NEL,RST_NFRZ,RST_NACT,RST_NINACT
 
-             nelec_tot     = 0 
-             RST_nelec_tot = 0 
+             nelec_tot     = 0
+             RST_nelec_tot = 0
 
              act_tot       = 0
              RST_act_tot   = 0
@@ -4038,23 +4067,23 @@ C
              END DO
 
              if (restart_and_current_differ) then
-                write (IW,*) 
-                write (IW,*) 'INFO: Current setup and restart differ' 
-                write (IW,*) 
+                write (IW,*)
+                write (IW,*) 'INFO: Current setup and restart differ'
+                write (IW,*)
                 if (RST_nelec_tot .NE. nelec_tot) then
                 write (IW,*) ' # of electrons   (rst):',RST_nelec_tot
                 write (IW,*) '                  (now):',nelec_tot
-                write (IW,*) 
+                write (IW,*)
                 endif
                 if (RST_act_tot .NE. act_tot ) then
                 write (IW,*) ' #   act. spinors (rst):',RST_act_tot
                 write (IW,*) '                  (now):',act_tot
-                write (IW,*) 
+                write (IW,*)
                 endif
                 if (RST_inact_tot .NE. inact_tot) then
                 write (IW,*) ' # inact. spinors (rst):',RST_inact_tot
                 write (IW,*) '                  (now):',inact_tot
-                write (IW,*) 
+                write (IW,*)
                 endif
 
                 if (restart_ignore_check) then
@@ -4074,13 +4103,13 @@ C
              READ (MCCRES,REC=3) BUFF
              CALL DCOPY(8,BUFF,1,ETOT,1)
 
-         else 
+         else
 C
-C        ... if we don't want to restart we trash any existing files and start over 
+C        ... if we don't want to restart we trash any existing files and start over
 C
-            write (IW,*) 
+            write (IW,*)
             write (IW,*) 'INFO: Restart file(s) will be overwriten!'
-            write (IW,*) 
+            write (IW,*)
             OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
      &            STATUS='REPLACE',RECL=IRECL)
             CALL DCOPY(8,A0,0,ETOT,1)
@@ -4092,9 +4121,9 @@ C
 C ... if the restart files don't exist, we create them
 C
       else
-         write (IW,*) 
+         write (IW,*)
          write (IW,*) 'INFO: No old restart file(s) found!'
-         write (IW,*) 
+         write (IW,*)
          OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
      &         STATUS='NEW',RECL=IRECL)
          CALL DCOPY(8,A0,0,ETOT,1)
@@ -4151,7 +4180,7 @@ C
 C
 C since a unique restart file name was created in CCDINI we do not
 C want to regenerate it in CCDUMP ==> we keep this file name in the
-C COMMON BLOCK 
+C COMMON BLOCK
 C
       CALL CCDUMP
 C
@@ -4161,7 +4190,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCDUMP
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -4184,6 +4213,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
+      INTEGER BUFF,IRECL,IRECLEN
       DIMENSION BUFF(RSRCLEN)
 C
 C---------------Executable code--------------------------------------
@@ -4213,7 +4243,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCSUMM
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -4235,6 +4265,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
+      INTEGER BUFF,I,IRECL,IRECLEN
       DIMENSION BUFF(RSRCLEN)
       CHARACTER DATEX*10,TIMEX*8
       CHARACTER*30 STATCH(0:4)
@@ -4284,9 +4315,9 @@ C
 C     Write energies
 C
       if (domp2.or.doccsd) then
-         WRITE (IW,1003) 
+         WRITE (IW,1003)
          WRITE (IW,1070) ESCF
-         if (domp2) 
+         if (domp2)
      &      WRITE (IW,1072) EMP2
          if (doccsd) then
             WRITE (IW,1073) ECCSD
@@ -4296,10 +4327,10 @@ C
                WRITE (IW,1076) ET3
             endif
          endif
-   
+
          if (domp2)
      &      WRITE (IW,1080) ESCF+EMP2
-      
+
          if (doccsd) then
             WRITE (IW,1081) ESCF+ECCSD
             if (doccsdt) then
@@ -4310,7 +4341,7 @@ C
          endif
       else
          WRITE (IW,1004)
-         if (.not.dofspc) WRITE (IW,1005) 
+         if (.not.dofspc) WRITE (IW,1005)
       endif
 C
       WRITE (IW,1000) ('-',I=1,80)
@@ -4345,7 +4376,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RDSYMI (NSP,EPS1,IREPSP,ncore_elec)
 C
       use interface_to_mpi
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -4362,7 +4393,7 @@ C---------------Calling variables--------------------------------------
 C
       INTEGER IREPSP(*)
       REAL*8 EPS1(*)
-      integer ncore_elec
+      integer ncore_elec,NSP
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -4378,6 +4409,7 @@ C---------------Local variables--------------------------------------
 C
       CHARACTER*14 REPNT(16)
       integer   :: spinor_info(5,2)
+      integer   :: i,irep,irp,isp,j,jrep,krep,nfsym
 C
 C---------------Executable code--------------------------------------
 C
@@ -4389,12 +4421,12 @@ C
        OPEN (MRCONEE,FILE='MRCONEE',FORM='UNFORMATTED')
        READ (MRCONEE,END=10,ERR=10) NSP,BREIT,ECORE,
      &                              NFSYM,NZ,SPFR,NORBT
-       READ (MRCONEE,END=10,ERR=10) NSYMRP,(REPNT(IRP),IRP=1,NSYMRP), 
+       READ (MRCONEE,END=10,ERR=10) NSYMRP,(REPNT(IRP),IRP=1,NSYMRP),
      &                 (NELEC(IRP),IRP=1,NSYMRP),
-     &                 (spinor_info(1,irp),irp=1,nfsym), 
-     &                 (spinor_info(2,irp),irp=1,nfsym), 
-     &                 (spinor_info(3,irp),irp=1,nfsym), 
-     &                 (spinor_info(4,irp),irp=1,nfsym), 
+     &                 (spinor_info(1,irp),irp=1,nfsym),
+     &                 (spinor_info(2,irp),irp=1,nfsym),
+     &                 (spinor_info(3,irp),irp=1,nfsym),
+     &                 (spinor_info(4,irp),irp=1,nfsym),
      &                 (spinor_info(5,irp),irp=1,nfsym)
        ncore_elec = 0
        ncore_elec = ncore_elec + spinor_info(3,1)*2 + spinor_info(3,2)*2
@@ -4405,7 +4437,7 @@ C---- Keep OLD (MOLFDIR) format here for compatibility
           INTERFACE='MOLFDIR'
           REWIND(MRCONEE)
           READ (MRCONEE) NSP,BREIT,ECORE
-          READ (MRCONEE) NSYMRP,(REPNT(IRP),IRP=1,NSYMRP) 
+          READ (MRCONEE) NSYMRP,(REPNT(IRP),IRP=1,NSYMRP)
           DO IRP = 1, NSYMRP
              NELEC(IRP) = 0
           ENDDO
@@ -4485,22 +4517,26 @@ C
       ENDDO
        write(*,*) (REPNA(IREP),IREP=1,2*NREP)
 
-!     write(*,*)
-!     write(*,*) '--------------------------------------------'
-!     write(*,*) '---  multiplication table  -----------------'
-!     write(*,*) '--------------------------------------------'
-!     write(*,*)
-!     DO IREP = 1, 2*NREP
-!       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
-!     ENDDO
-!     write(*,*)
-!     write(*,*) '--------------------------------------------'
-!     write(*,*) '---  inverse multiplication table  ---------'
-!     write(*,*) '--------------------------------------------'
-!     write(*,*)
-!     DO IREP = 1, 2*NREP
-!       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*nrep)
-!     ENDDO
+C     write(*,*)
+C     write(*,*) '--------------------------------------------'
+C     write(*,*) '---  multiplication table (full) -----------'
+C     write(*,*) '--------------------------------------------'
+C     write(*,*)
+C     DO IREP = 1, NREP
+C       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+C     ENDDO
+C     write(*,*) '-------------------------------------'
+C     DO IREP = NREP+1, 2*NREP
+C       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+C     ENDDO
+C     write(*,*)
+C     write(*,*) '--------------------------------------------'
+C     write(*,*) '---  inverse multiplication table (full) ---'
+C     write(*,*) '--------------------------------------------'
+C     write(*,*)
+C     DO IREP = 1, 2*NREP
+C       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*nrep)
+C     ENDDO
 
 C
 C     Get rid of offset for boson reps
@@ -4518,38 +4554,26 @@ C
          ENDDO
       ENDDO
 
-      DO JREP = 1, 2*NREP
-         DO IREP = 1, 2*NREP
-            MULTB(IREP,JREP,3) =  MULTB(JREP,IREP,2)
-         ENDDO
-      ENDDO
- 
-c     write(*,*)
-c     write(*,*) '--------------------------------------------'
-c     write(*,*) '---  multiplication table (no offset) ------'
-c     write(*,*) '--------------------------------------------'
-c     write(*,*)
-c     DO IREP = 1, 2*NREP
-c       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
-c     ENDDO
-c     write(*,*)
-c     write(*,*) '-------------------------------------- ------------'
-c     write(*,*) '---  inverse multiplication table (no offset) -----'
-c     write(*,*) '---------------------------------------------------'
-c     write(*,*)
-c     DO IREP = 1, 2*NREP
-c       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*NREP)
-c     ENDDO
-
-c     write(*,*)
-c     write(*,*) '-------------------------------------- ------------'
-c     write(*,*) '---  forward multiplication table (no offset) -----'
-c     write(*,*) '---------------------------------------------------'
-c     write(*,*)
-c     DO IREP = 1, 2*NREP
-c       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*NREP)
-c     ENDDO
-
+C     write(*,*)
+C     write(*,*) '--------------------------------------------'
+C     write(*,*) '---  multiplication table (rebased) --------'
+C     write(*,*) '--------------------------------------------'
+C     write(*,*)
+C     DO IREP = 1, NREP
+C       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+C     ENDDO
+C     write(*,*) '-------------------------------------'
+C     DO IREP = NREP+1, 2*NREP
+C       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+C     ENDDO
+C     write(*,*)
+C     write(*,*) '-------------------------------------- ------------'
+C     write(*,*) '---  inverse multiplication table (rebased) -------'
+C     write(*,*) '---------------------------------------------------'
+C     write(*,*)
+C     DO IREP = 1, 2*NREP
+C       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*NREP)
+C     ENDDO
 C
 C     Distribute the information read from MRCONEE
 C
@@ -4592,7 +4616,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DISLIST
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
 C
@@ -4618,7 +4642,9 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      INTEGER*8 JOFF,KOFF
+      INTEGER*8 JOFF,KOFF,I,IOFF,IREP,JREP,K,M,MI
+      integer MTOT,mvotot,n,nbtch,no33,nootot,nrest,ntot,nv33
+      integer nvoo33,nvotot,nvvo33,nvvtot,off1,off2,off3
 C
 C---------------Executable code--------------------------------------
 C
@@ -4724,13 +4750,13 @@ C
          IOFF = J2VOVO(IREP)*RCW + 1
          JOFF = J2VOVO(JREP)*RCW + 1
          DO I = 1, NMPROC
- 
+
 C           Create even distribution, the higher nodes get the remains
- 
+
             IF (NMPROC-NREST+1.EQ.I) NBTCH = NBTCH + 1
- 
+
 C           Process-local information
- 
+
             IF (I.EQ.MYPROC+1) THEN
                IDIST(1,4,JREP) = NBTCH
                IDIST(2,4,JREP) = IOFF
@@ -4808,7 +4834,7 @@ C           Process-local information
 C
 C ****************************************************************
 C ***  distr. for the contraction TAU * VOOO in T1EQN1.
-C ***  the arrays are organised according to 
+C ***  the arrays are organised according to
 C ***  NV(IREP),NVOOT(IREP) * NVOOT(IREP),NO(IREP)
 C ***  Both arrays have an equal symmetry structure G(i) = G(j)
 C ***  suitable for the usage of the CNTRCT call.===> we use this here.
@@ -4844,7 +4870,7 @@ C           Process-local information
 C
 C ****************************************************************
 C ***  distr. for the contraction T2 * GOINTM in T2EQNS
-C ***  the arrays are organised according to 
+C ***  the arrays are organised according to
 C ***  NVVOT(IREP),NO(IREP) * NO(IREP),NO(IREP)
 C ***  Both arrays have an equal symmetry structure G(i) = G(j)
 C ***  suitable for the usage of the CNTRCT call.===> we use this here.
@@ -4879,7 +4905,7 @@ C           Process-local information
 
 C ****************************************************************
 C ***  distr. for the contraction T1(A,K) * W(KB,IJ)
-C ***  the arrays are organised according to 
+C ***  the arrays are organised according to
 C ***  NV(IREP),NO(IREP) * NO(IREP)*NVOOT(IREP)
 C ***  Both arrays have an equal symmetry structure G(i) = G(j)
 C ***  suitable for the usage of the CNTRCT call.===> we use this here.
@@ -5003,4 +5029,3 @@ C
 !     print *, 'charge, ncore_elec_cc, nelect_cc, mycharge',
 !    & charge, ncore_elec_cc, nelect_cc, mycharge
       end subroutine
-

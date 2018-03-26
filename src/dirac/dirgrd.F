@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,6 +19,8 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rmolgrd */
@@ -296,7 +298,7 @@ c        ... Calculate and add correction.
          deallocate(cmo)
 
 #ifdef VAR_MPI
-         if (parcal) call dirac_parctl(4)
+         if (parcal) call dirac_parctl( XCINT_PAR )
 #endif
 !fixme: there is some issue with one-step - investigate later
 !       not correct for gga
@@ -320,7 +322,7 @@ c        ... Calculate and add correction.
      &                     xc_fmat              = work(kh1ao),
      &                     xc_do_potential      = .true.)
 #ifdef VAR_MPI
-         if (parcal) call dirac_parctl(4)
+         if (parcal) call dirac_parctl( XCINT_PAR )
 #endif
          call integrate_xc(xc_mat_dim           = ntbas(0),
      &                     xc_nz                = nz,
@@ -1379,7 +1381,7 @@ C
       CALL FLSHFO(LUPRI)
 #if defined (VAR_MPI)
       IF (PARCAL) THEN
-         CALL DIRAC_PARCTL(1)
+         CALL DIRAC_PARCTL( HERFCK_PAR )
          CALL MEMGET('INTE',KNPOS,MTOTTK,WORK,KFREE,LFREE)
          CALL HER_PARDRV(WORK(KFREE),LFREE,DUMMY,WORK(KDAO),NDMAT,
      &        IDUMMY,IFCTYP,ITYPE,MAXDIF,JATOM,NODV,NOPV,NOCONT,TKTIME,
@@ -1488,7 +1490,7 @@ C
       CALL FLSHFO(LUPRI)
 #if defined (VAR_MPI)
       IF (PARCAL) THEN
-         CALL DIRAC_PARCTL(1)
+         CALL DIRAC_PARCTL( HERFCK_PAR )
          CALL MEMGET('INTE',KNPOS,MTOTTK,WORK,KFREE,LFREE)
          CALL HER_PARDRV(WORK(KFREE),LFREE,DUMMY,WORK(KDAO),NDMAT,
      &        IDUMMY,IFCTYP,ITYPE,MAXDIF,JATOM,NODV,NOPV,NOCONT,TKTIME,
@@ -1606,7 +1608,7 @@ C
       CALL FLSHFO(LUPRI)
 #if defined (VAR_MPI)
       IF (PARCAL) THEN
-         CALL DIRAC_PARCTL(1)
+         CALL DIRAC_PARCTL( HERFCK_PAR )
          CALL MEMGET('INTE',KNPOS,MTOTTK,WORK,KFREE,LFREE)
          CALL HER_PARDRV(WORK(KFREE),LFREE,DUMMY,WORK(KDAO),NDMAT,
      &        IDUMMY,IFCTYP,ITYPE,MAXDIF,JATOM,NODV,NOPV,NOCONT,TKTIME,

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,7 +19,8 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-C
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR2T */
       SUBROUTINE TRDR2T(WORK,KFREE,LFREE,IPRINT,INTFLG,NDMOBF,ICMOIJ,
@@ -131,7 +132,7 @@ C
 C     Get hold of the slaves
 C     ( ITASK = 2 for parallel integral transformation )
 C
-         CALL DIRAC_PARCTL( 2 )
+         CALL DIRAC_PARCTL( MOLTRA_PAR )
 C     
 C     Initialize
 C     
@@ -190,7 +191,7 @@ C
 C     Release the slaves...
 C     (ITASK = -1)
 C     
-         CALL DIRAC_PARCTL( -1 )
+         CALL DIRAC_PARCTL( EXIT_NODEMENU )
 #if defined (VAR_PFS)
 C
 C       close global file (opened in TRAPARI)
@@ -2592,7 +2593,7 @@ C     Initialize
 C        Get hold of the slaves and initialize them
 C        (ITASK = 2 for parallel integral transformation)
 C     
-      CALL DIRAC_PARCTL(2)
+      CALL DIRAC_PARCTL( MOLTRA_PAR )
       KFRSAV = KFREE
       TMMP2 = 0.D0
       CALL MKNSTT(NSTR,NSTRT)
@@ -2851,7 +2852,7 @@ CTROND
       END DO
 CTROND
       WRITE(6,*) 'After4 CONMP2...'
-      CALL DIRAC_PARCTL( -1 )
+      CALL DIRAC_PARCTL( EXIT_NODEMENU )
 #if defined (VAR_PFS)
 C
 C       close global file (opened in TRAPARI)

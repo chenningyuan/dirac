@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -40,6 +40,7 @@
       CHARACTER*80 ELINE
 
       RECPIN1 = 51
+      ECPLIB = .FALSE.
 
 !     Save NONT0 
       ECPNONT(NUC1) = NONT0
@@ -78,7 +79,6 @@
 
 !     Check types of RECP read
 !     ========================
-      ECPLIB = .FALSE.
       IF (MLINE(NMLINE)(4:6).EQ.'LIB') THEN
 
 !        Read From library
@@ -91,7 +91,7 @@
          INTQ0  = NINT(CHARGE(ECPNUC+1)) ! charge index for search
          LUBAS  = 20                     ! file unit for open
          CALL RECP_LNK_FINDEL(ECPTMP,INTQ0,LUBAS)
-         CALL RECP_LNK_RDECPLINE(ELINE,LUBAS)  
+         CALL RECP_LNK_RDECPLINE(ELINE,LUBAS)
          READ (ELINE,'(3X,I3,I2,I2)',IOSTAT=IOS) 
      &        RECP_CORE(NUC1), AREP_ANG(NUC1), SOREP_ANG(NUC1)
          IF (IOS.NE.0) GOTO 8000
@@ -248,6 +248,7 @@
       WRITE(LUPRI,*) 'Number of core elecron : ',RECP_CORE(NUC1)
       CALL QUIT('Wrong charge or core-electron number')
  9000 CONTINUE
+      IF(ECPLIB) CLOSE(UNIT=LUBAS,STATUS='KEEP')
       END SUBROUTINE RECP_LNK_READCP
 
       SUBROUTINE RECP_LNK_CHECKMOL(DOCART)

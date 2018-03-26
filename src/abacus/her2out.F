@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -643,7 +643,7 @@ C             G = 0 Coulomb
 C             G = 1 Gaunt
 C
         DO 400 K = 1,NDMAT
-          IF(IFCTYP(K). EQ. 0) GOTO 400
+          IF(IFCTYP(K) .EQ. 0) GOTO 400
 C         Unpack the bitcode
           IX = IFCTYP(K)/10
           IY = MOD(IFCTYP(K),10)

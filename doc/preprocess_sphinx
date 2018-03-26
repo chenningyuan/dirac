@@ -87,7 +87,8 @@ def main(argv):
                 print re.sub(STAR_REGEX,
                              ('.. index:: *\g<1>\n.. _*\g<1>:\n\n'+str('='*(line.find(')')-line.find('(')+1))+'\n\\*\g<1>\n'+str('='*(line.find(')')-line.find('(')+1))),line[0:len(line)-1])
 
-    subprocess.call('sphinx-build -b html %s %s' % (DIR_TEMP, DIR_FINAL), shell=True)
+    # Miro: use quiet mode to keep only warnings and errors
+    subprocess.call('sphinx-build -q -b html %s %s' % (DIR_TEMP, DIR_FINAL), shell=True)
 
 
 if __name__ == '__main__':

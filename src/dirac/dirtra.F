@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -3384,18 +3384,18 @@ C
       CALL DZERO(FMO(I2TMOT(IFRP)+1),NDIM)
       IBORB = 0    
       DO ISUB = 1,N_SUB_BL(IFRP)
-      IF(NORB_SUB(ISUB,IFRP,0).GT.0) THEN
+      IF(NTMO_SUB(ISUB,IFRP,0).GT.0) THEN
         IAO = I2BASX(IFRP,IFRP)+1
         IMO = I2TMOT(IFRP) + (NTMO(IFRP)+1)*IBORB + 1
         ITM = I2TMT(IFRP)  + NFBAS(IFRP,0)*IBORB + 1
         CALL QTRANS('AOMO','S',0.0d0,NFBAS(IFRP,0),NFBAS(IFRP,0),
-     &         NORB_SUB(ISUB,IFRP,0),NORB_SUB(ISUB,IFRP,0),
+     &         NTMO_SUB(ISUB,IFRP,0),NTMO_SUB(ISUB,IFRP,0),
      &         FAO(IAO),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
      &         FMO(IMO),NTMO(IFRP),NTMO(IFRP),1,IPQTOQ(1,0),
      &         TM1(ITM),NFBAS(IFRP,0),NTMO(IFRP),NZT,IPQTOQ(1,0),
      &         TM2(ITM),NFBAS(IFRP,0),NTMO(IFRP),NZT,IPQTOQ(1,0),
      &         BUF,LBUF,IPRINT)
-          IBORB = IBORB + NORB_SUB(ISUB,IFRP,0)
+          IBORB = IBORB + NTMO_SUB(ISUB,IFRP,0)
       ENDIF
       ENDDO
 C
@@ -4201,7 +4201,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck Bcktr2 */
-      SUBROUTINE BCKTR2(IFRP,IUNIT,COFT,COFU,EIG,IBEIG,
+      SUBROUTINE BCKTRA_FRZ(IFRP,IUNIT,COFT,COFU,EIG,IBEIG,
      &                  TMAT,IBUF,BUF,EBUF,IBBUF,IPRINT)
 C***********************************************************************
 C
@@ -4221,10 +4221,10 @@ C***********************************************************************
 C   ...Define internal print level 
       IBPRNT = 12 
       IF(IPRINT.GE.IBPRNT) THEN
-        CALL HEADER('BCKTR2: Nontransformed coefficients',-1)
+        CALL HEADER('BCKTRA_FRZ: Nontransformed coefficients',-1)
         CALL PRQMAT(COFU,NTMO(IFRP),NTMO(IFRP),
      &            NTMO(IFRP),NTMO(IFRP),NZ,IPQTOQ(1,0),LUPRI)
-        CALL HEADER('BCKTR2: Transformation matrix:',-1)
+        CALL HEADER('BCKTRA_FRZ: Transformation matrix:',-1)
         CALL PRQMAT(TMAT,NFBAS(IFRP,0),NTMO(IFRP),
      &              NFBAS(IFRP,0),NTMO(IFRP),NZT,IPQTOQ(1,0),LUPRI)
       ENDIF
@@ -4282,7 +4282,7 @@ C
       ENDIF
 C
       IF(IPRINT.GE.IBPRNT) THEN
-        CALL HEADER('BCKTR2: Backtransformed coefficients',-1)
+        CALL HEADER('BCKTRA_FRZ: Backtransformed coefficients',-1)
         CALL PRQMAT(COFT,NFBAS(IFRP,0),NORB(IFRP),
      &            NFBAS(IFRP,0),NORB(IFRP),NZ,IPQTOQ(1,0),LUPRI)
       ENDIF

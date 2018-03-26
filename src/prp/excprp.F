@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -23,7 +23,7 @@ C***********************************************************************
 C
 C     Driver routine for computing matrix norm.
 C
-C     Written by Ulf Ekström
+C     Written by Ulf Ekstrom
 C***********************************************************************
       SUBROUTINE QMATNORM(NAME,A,ROWS,COLS,NZ)
       IMPLICIT NONE

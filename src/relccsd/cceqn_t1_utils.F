@@ -1,6 +1,6 @@
       SUBROUTINE T1EQN1 (TAU,S1)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -74,7 +74,7 @@ C
       END
       SUBROUTINE T1EQN2 (TAU,BUF3,NBUF3,S1)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -104,6 +104,8 @@ C---------------Local variables--------------------------------------
 C
       LOGICAL DONE
       REAL*8 SDOT,DDOT
+      integer a,ai,ak,cdik,i,ik,imin,irep,irp,istart,k,krep,nint
+      integer t1ai,t1ak
 C
 C---------------Executable code--------------------------------------
 C

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1071,7 +1071,7 @@ C              WRT_SPOX_TP(IEX_TP,NEX_TP)
 *
 * Jeppe Olsen, August 1999    
 * Timo Fleig, June 2001, modified for relativistic case
-*             cont´d, 11th of July, Mallorca, around noon (I´m crazy)
+*             cont'd, 11th of July, Mallorca, around noon (I'm crazy)
 *                     15th of July
 *                     August 2001
 *                     August 2003, ISMDST 

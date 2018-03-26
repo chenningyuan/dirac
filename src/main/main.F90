@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -45,9 +45,8 @@ use iso_c_binding
 #endif
 
 interface
-!miro: long strings can be printed out only by C function
-  subroutine print_info() bind(c)
-  end subroutine
+   subroutine print_info() bind(c)
+   end subroutine
 end interface
 
 #include "priunit.h"
@@ -133,14 +132,15 @@ end interface
   if (.not. parcal) then
 #endif
     call legacy_lwork_set(WORK_memsize)
-    print '(a,i0,a,i0,a)', 'DIRAC serial starts by allocating ',WORK_memsize,' words (',WORK_memsize/2**17,' MB) of memory'
+    print '(a,i0,a,f10.2,a,f6.3,a,$)', 'DIRAC serial starts by allocating ',WORK_memsize, &
+    ' words (',DFLOAT(WORK_memsize)/DFLOAT(2**17),' MB - ', DFLOAT(WORK_memsize)/DFLOAT(2**27),' GB)' ,' of memory'
     if (maxsize.gt.0) then
-       print '(a,i0,a,i0,a)', '             out of the allowed maximum of ',  &
-          maxsize,' words (',maxsize/2**17,' MB)'
+       print '(a,i0,a,f10.2,a,f6.3,a)', '    out of the allowed maximum of ',  &
+          maxsize,' words (',DFLOAT(maxsize)/DFLOAT(2**17),' MB - ',DFLOAT(maxsize)/DFLOAT(2**27),' GB)'
     else
        print '(a)', 'DIRAC serial has no limitations in place for the amount of dynamically allocated memory'
     endif
-    print '(/a/)','Note: maximum allocatable memory for serial run can be set by pam --aw'
+    print '(/a/)','Note: maximum allocatable memory for serial run can be set by pam --aw/--ag'
   end if
   if (mytid == 0) then
      ! test if memory is available by allocating and deallocating
@@ -151,7 +151,7 @@ end interface
      call printsubtitle
      call flush(lupri)
      ! print out git_info & build_info by the executable
-     call print_info
+     call print_info()
      call flush(lupri)
 ! miro: do the self-tests after printing dirac system info
 #ifndef NO_SELFTEST
@@ -162,12 +162,14 @@ end interface
      if ( parcal ) call selftest_mpi()
 #endif
 #endif
+! debug     print*,'++++ calling dirac with',iparcal,mytid,mparid,numnod
      call dirac(iparcal,mytid,mparid,numnod)
   else
 #ifdef VAR_MPI
      ! test if memory is available by allocating and deallocating
      call alloc(memory,WORK_memsize, id="test allocation of work array at main for slave")
      call dealloc(memory)
+! debug     print*,'++++ calling dirnod with',iparcal,mytid,mparid,numnod
      call dirnod(iparcal,mytid,mparid,numnod)
 #else
      call quit('Internal error in main.F90. Quitting.')

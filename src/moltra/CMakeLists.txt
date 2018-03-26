@@ -36,8 +36,8 @@ endif()
 add_library(
     moltra
     OBJECT
-    ${FIXED_MOLTRA_FORTRAN_SOURCES}
     ${FREE_MOLTRA_FORTRAN_SOURCES}
+    ${FIXED_MOLTRA_FORTRAN_SOURCES}
 )
 
 # deal with intermodule dependencies
@@ -45,3 +45,4 @@ add_library(
 add_dependencies(moltra main)
 add_dependencies(moltra dirac)
 add_dependencies(moltra dirrci)
+add_dependencies(moltra interface_mpi)

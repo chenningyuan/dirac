@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -543,6 +543,9 @@ C     =================================================================
 C         
       CALL DZERO(PRPMO,N2PMOX*NZ)
       IOPSY = JBTOF(IREP,1)
+!     write(*,*) 'N2PMOX,NZ:', N2PMOX,NZ
+!     write(*,*) 'IOPSY:', IOPSY
+!     write(*,*) 'IREP:', IREP
       QBTR = .FALSE.
       DO I1 = 1,NFSYM
         I2  = MOD(I1+IOPSY,2) + 1
@@ -563,7 +566,7 @@ C
      &         NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,IREP),LUPRI)
               CALL FLSHFO(LUPRI)
             ENDIF
-          ENDIF		
+          ENDIF
 
           IF(SPINFR.AND.((ITIM.EQ.1).OR.NOSPIN)) THEN
             CALL QBTRANS(IREP,'AOMO','S',D0,

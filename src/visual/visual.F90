@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -34,6 +34,7 @@ module visual
   use visual_integrate
   use visual_in_point
   use electrostatic_potential
+  use num_grid_cfg
 
   implicit none
 
@@ -513,7 +514,7 @@ contains
       real(8)              :: vx(3), vx_norm
       real(8)              :: vy(3), vy_norm
       real(8)              :: vz(3), vz_norm
-      real(8)              :: r(3), v(3), w(0:3), s
+      real(8)              :: r(3), v(3), w(0:3), s, rad, radtot, qbuf(0:3)
       integer              :: lunit_2d_scalar
       integer              :: lunit_2d_vector
       integer              :: lunit_2d_flow
@@ -524,12 +525,16 @@ contains
       integer              :: lunit_line_scalar
       integer              :: lunit_line_vector
       integer              :: lunit_3d_gridimp
+      integer              :: lunit_radial_scalar
+      integer              :: lunit_radial_vector
       real(8), allocatable :: temp(:, :)
       real(8), allocatable :: temp2(:, :, :, :)
       real(8), allocatable :: res(:)
       real(8), allocatable :: res_temp(:)
       real(8), allocatable :: xyz(:, :)
       real(8), allocatable :: xyzk(:, :)
+      real(8)              :: acos,dsum
+      integer              :: nleb
 !     --------------------------------------------------------------------------
 
       i = 1
@@ -554,6 +559,8 @@ contains
       lunit_line_scalar   = 21
       lunit_line_vector   = 22
       lunit_3d_gridimp    = 23
+      lunit_radial_scalar = 23
+      lunit_radial_vector = 24
 
       if (visual_cfg_2d) then
          open(lunit_2d_scalar,           &
@@ -622,6 +629,19 @@ contains
               file   = 'plot.line.vector', &
               status = 'new',              &
               access = 'sequential',       &
+              form   = 'formatted')
+      end if
+
+      if (visual_cfg_radial) then
+         open(lunit_radial_scalar,           &
+              file   = 'plot.radial.scalar', &
+              status = 'new',                &
+              access = 'sequential',         &
+              form   = 'formatted')
+         open(lunit_radial_vector,           &
+              file   = 'plot.radial.vector', &
+              status = 'new',                &
+              access = 'sequential',         &
               form   = 'formatted')
       end if
 
@@ -695,6 +715,59 @@ contains
                q(1:3, 1)
 
          end do
+      end if
+
+      if (visual_cfg_radial) then
+
+!   Get angular points and weights
+!   ==============================
+
+         m = NLEB(num_grid_cfg_angint)
+         allocate(temp(m,4))
+         CALL LEBEDEV(num_grid_cfg_angint,temp(1,1),temp(1,2),temp(1,3),temp(1,4),n)
+         CALL DSCAL(m,4*ACOS(-1.0D0),temp(1,4),1)
+
+!   Loop over radial points
+!   =======================
+
+         radtot = 0.0D0
+         s = visual_cfg_radial_length/visual_cfg_radial_nr_steps
+         do istep = 0, visual_cfg_radial_nr_steps
+
+            rad = istep*s
+
+!           Angular integration
+!           ===================
+            q(0:3,1) = 0.0d0
+            do i = 1,m
+              r   = visual_cfg_radial_from + rad*temp(i,1:3)
+              call get_quantity_in_point(visual_cfg_nr_dmat, &
+                                         D,                  &
+                                         D_0,                &
+                                         r(1),               &
+                                         r(2),               &
+                                         r(3),               &
+                                         ao,                 &
+                                         buffer,             &
+                                         qbuf)
+              q(0:3,1) = q(0:3,1) + qbuf(0:3)*temp(i,4)
+            end do
+            q(0:3,1) = q(0:3,1)*rad*rad
+            radtot = radtot + q(0,1)
+            
+!           Write results
+!           =============
+
+            write(lunit_radial_scalar, '(2e18.10)') &
+               rad,                                 &
+               q(0, 1)
+            write(lunit_radial_vector, '(4e18.10)') &
+               rad,                                 &
+               q(1:3, 1)
+
+         end do
+         write(lupri,*) '  The radial distribution integrates to: ',radtot*s
+         deallocate(temp)
       end if
 
       if (visual_cfg_2d) then
@@ -1023,6 +1096,9 @@ contains
       if (visual_cfg_line) close(lunit_line_scalar, status = 'keep')
       if (visual_cfg_line) close(lunit_line_vector, status = 'keep')
 
+      if (visual_cfg_radial) close(lunit_radial_scalar, status = 'keep')
+      if (visual_cfg_radial) close(lunit_radial_vector, status = 'keep')
+
       if (visual_cfg_2d) close(lunit_2d_scalar, status = 'keep')
       if (visual_cfg_2d) close(lunit_2d_vector, status = 'keep')
       if (visual_cfg_2d) close(lunit_2d_flow,   status = 'keep')
@@ -1257,9 +1333,9 @@ contains
         end if
 
 !              row
-!              ¦
-!              ¦  column
-!              ¦  ¦
+!              |
+!              |  column
+!              |  |
         matrix(s, i, iz) = matrix(s, i, iz) &
                          +     response_vector(is, iz)
         matrix(i, s, iz) = matrix(i, s, iz) &

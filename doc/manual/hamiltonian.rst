@@ -111,12 +111,12 @@ Hartree--Fock and DFT. For using Gaunt in combination with DFT see the
 :ref:`*DFT` section of the
 manual. Transformation of the Gaunt part of the two electron operator to
 the MO basis is not yet implemented, for this purpose we recommend the
-use of the molecular mean field approximation. This can be used for
+use of a molecular mean field approximation. This can be used for
 example in MP2/CC/FSCC/IHFSCC calculations with RELCCSD by means of the
-:ref:`HAMILTONIAN_.X2Cmmf` Hamiltonian (see also our FAQ/Tutorial pages)
+:ref:`HAMILTONIAN_.X2Cmmf` Hamiltonian (see also our FAQ/Tutorial pages).
 
 For the relativistic two-component mode (see :ref:`HAMILTONIAN_.X2C` keyword)
-with AMFI contributions it uses both spin-same and spin-other orbit
+with AMFI contributions it uses both the spin-same and the spin-other orbit
 mean-field parts.
 
 
@@ -222,12 +222,14 @@ keyword(SPINF2)
 
 keyword(FREEPJ)
 
-Project out all negative-energy solutions of the free-particle Dirac Hamiltonian from the MO space.
+Project out all negative-energy solutions of the free-particle one-electron Dirac Hamiltonian from the MO space.
+This corresponds to the Feynmann (1948) basis for QED and no-pair Hamiltonians.
 
 
 keyword(VEXTPJ)
 
-Project out all negative-energy solutions of the bare-nucleus Dirac Hamiltonian from the MO space.
+Project out all negative-energy solutions of the bare-nucleus one-electron Dirac Hamiltonian from the MO space.
+This corresponds to the Furry (1951) basis for QED and no-pair Hamiltonians.
 
 
 **Exact 2-component (X2C) Hamiltonians**
@@ -235,16 +237,19 @@ Project out all negative-energy solutions of the bare-nucleus Dirac Hamiltonian 
 
 keyword(X2C)
 
-This keyword activates the Exact 2-Component
+This keyword activates the Exact 2-Component one-electron
 Hamiltonian :cite:`Ilias2007` based on its implementation in the module X2Cmod, Refs. :cite:`Knecht2010` and :cite:`Knecht2014`.
+It yields exactly the same energies as the 4-component one-electron Hamiltonian in the same large component basis set with restricted
+kinetic balance, and it yields the same division in spinfree (scalar relativistic) and spin-orbit like contributions as the
+4-component one-electron Hamiltonian. The two-electron part of the Hamiltonian is treated on a non-relativistic level.
 
-In the default spin-orbit case one should combine this option with an
-AMFI correction to the unscreened one-electron spin-orbit operator. This is the
-default in Dirac unless :ref:`HAMILTONIAN_.NOAMFI` is specified which will turn off any two-electron spin-orbit corrections.
-To use the spinfree version of X2C (which numerically yields the same numbers as in the quantum chemistry packages CFour, Turbomole and Molcas) 
-one needs to add the keyword :ref:`HAMILTONIAN_.SPINFREE`.
+One should therefore combine X2C with a correction to the unscreened one-electron spin-orbit operator.
+It is default with .X2C to include the atomic mean field two-electron spin-orbit correction "AMFI", 
+unless :ref:`HAMILTONIAN_.NOAMFI` is specified.
+To use the spinfree version of X2C with only scalar relativistic terms
+one needs to add the keyword :ref:`HAMILTONIAN_.SPINFREE` (.SPINFREE implies .NOAMFI).
+The spinfree X2C is equivalent to and numerically yields the same numbers as X2C in the quantum chemistry packages CFour, Turbomole, and Molcas. 
 
-See this documentation for more options, including a local X2C scheme. 
 An overview of the (local) X2C approach is given in the corresponding tutorial 
 section :ref:`X2Clocal`.
 
@@ -266,7 +271,7 @@ section :ref:`mmf_X2C`, for further information.
 keyword(BSS)
 
 Use the 2-component relativistic Hamiltonian obtained after the
-Barysz--Sadlej--Snijders transformation of the Dirac Hamiltonian in the finite`
+Barysz--Sadlej--Snijders transformation of the Dirac Hamiltonian in the finite
 basis set, see Ref. :cite:`Ilias2005`. Calculations using the 2-component BSS
 Hamiltonian are running only with large component basis functions.
 
@@ -383,6 +388,9 @@ ADF code (see the developer's website http://www.scm.com for further information
 or via the PyADF scripting framework (see :cite:`Jacob2011` or visit the developer's website http://pyadf.org 
 for further information).
 
+keyword(PEQM)
+
+Activates the polarizable embedding model. Options can be specified under the :ref:`\*PEQM` menu.
 
 keyword(CAP)
 

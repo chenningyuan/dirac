@@ -1,10 +1,10 @@
 !dalton_copyright_start
-!      Copyright (c) 2015 by the authors of Dalton (see below).
+!      Copyright (c) 2017 by the authors of Dalton (see below).
 !      All Rights Reserved.
 !
 !      The source code in this file is part of
 !      "Dalton, a molecular electronic structure program,
-!       Release DALTON2015 (2015), see http://daltonprogram.org"
+!       Release DALTON2017 (2017), see http://daltonprogram.org"
 !
 !      This source code is provided under a written licence and may be
 !      used, copied, transmitted, or stored only in accord with that
@@ -2271,7 +2271,6 @@ C
 #include "abainf.h"
 #include "nuctap.h"
 #include "cbivib.h"
-#include "cbinum.h"
 #include "cbiwlk.h"
 #include "gnrinf.h"
 #include "ibtfun.h"
@@ -2326,10 +2325,16 @@ C
       END DO
       ELSE
          CALL DCOPY(NCORD*NCORD*NCORD,FMATF,1,FMATT,1)
-         IF (.NOT.NUMVIB) THEN
-            FAC = D1/XFAMU
-            CALL DSCAL(NCORD*NCORD*NCORD,FAC,FMATT,1)
-         END IF
+Cbhp>
+Cbhp> NUMVIB is never set to any value ???
+Cbhp>
+C        IF (.NOT.NUMVIB) THEN
+C           FAC = D1/XFAMU
+C           CALL DSCAL(NCORD*NCORD*NCORD,FAC,FMATT,1)
+C        END IF
+Cbhp>
+Cbhp> NUMVIB is never set to any value ???
+Cbhp>
       END IF
       
 C
@@ -4155,9 +4160,9 @@ C
          END IF
       END IF
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-  180 FORMAT (3X,I3,1H.,4X,A4,5X,4(A6,2X),F10.5,F12.6)
+  180 FORMAT (I6,'.',4X,A4,5X,4(A6,2X),F10.5,F12.6)
 #else
-  180 FORMAT (3X,I3,1H.,A8,5X,4(A6,2X),F10.5,F12.6)
+  180 FORMAT (I6,'.',A8,5X,4(A6,2X),F10.5,F12.6)
 #endif
   181 FORMAT (20X,            4(A6,2X),F10.5,F12.6)
 C

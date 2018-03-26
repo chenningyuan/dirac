@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -753,7 +753,7 @@ C***********************************************************************
 C
 C     Read VECTOR from LUNIT under label LABEL.
 C
-C     Open & close files if necesary.
+C     Open & close files if necessary.
 C
 C     Input:
 C
@@ -1194,6 +1194,8 @@ C  /* Deck setdbcidx */
 C***********************************************************************
 C
 C     Set common block DCBIDX (index vectors, orbital symmetries etc.)
+C
+C     See include/dcbidx.h for the definition of the index vectors.
 C
 C     Written by J. Thyssen - Nov 22 2000
 C     Last revision :

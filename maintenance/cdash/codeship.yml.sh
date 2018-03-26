@@ -28,6 +28,10 @@
 #
 # But it is possible to ignore or run specific command on branch: 
 # see https://codeship.com/documentation/faq/ignore-command-on-branch/
+#
+# Written by Ivan Hrasko, Miroslav Ilias
+#
+#
 
 # export number of processors as environment variable N_PROC
 export N_PROC=$(cat /proc/cpuinfo | grep processor | wc -l)
@@ -74,12 +78,12 @@ doxygen --version
 git submodule update --init --recursive
 
 # Do the 32-bit Integer build
-python ./setup --cmake-options="-D BUILDNAME='gnu.i4-codeship-ci'" build_codeship_i4
+python ./setup --cmake-options="-D BUILDNAME='gnu.i4-codeship-ci' -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_UNIT_TESTS=ON" build_codeship_i4
 cd build_codeship_i4
 ctest -D ExperimentalConfigure
 ctest -j $N_PROC -D ExperimentalBuild
-#echo "$(ctest -j $N_PROC  -D ExperimentalTest -L short)"
-echo "$(ctest -j $N_PROC -D ExperimentalTest)"
+echo "$(ctest -j $N_PROC  -D ExperimentalTest -L short)"
+#echo "$(ctest -j $N_PROC -D ExperimentalTest)"
 if [ "$CI_BRANCH" == "master" ]; then ctest -D ExperimentalSubmit; fi
 
 # Back to the source dir
@@ -90,8 +94,10 @@ python ./setup --int64 --blas=off --lapack=off --cmake-options="-D BUILDNAME='gn
 cd build_codeship_i8
 ctest -D ExperimentalConfigure
 ctest -j $N_PROC -D ExperimentalBuild
-#echo "$(ctest -j $N_PROC -D ExperimentalTest -L short)"
-echo "$(ctest -j $N_PROC -D ExperimentalTest)"
+
+echo "$(ctest -j $N_PROC -D ExperimentalTest -L short)"
+#echo "$(ctest -j $N_PROC -D ExperimentalTest)"
+
 if [ "$CI_BRANCH" == "master" ]; then ctest -D ExperimentalSubmit; fi
 
 # finally do the documentation buildup in the build_codeship_i8 directory

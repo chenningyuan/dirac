@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -18,6 +18,9 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
+
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 
 module london_direct_hb
 
@@ -337,7 +340,11 @@ contains
         if (parcal) then
            call alloc(npos, mtottk(i2typ))
            npos = 0
-           call dirac_parctl(1)
+           call dirac_parctl( HERFCK_PAR )
+
+           lwork = len_f77_work
+           call di_select_wrk(work, lwork)
+
            call her_pardrv(work,lwork,fmat,dmat,nr_mat,irepdm,                   &
                            ifock_type,itype,max_deriv,iatom,nodv,nopv,nocont,   &
                            tktime,.false.,first, npos,mtottk(i2typ),          &
@@ -431,7 +438,7 @@ contains
     call generate_num_grid(dmat)
 
 #ifdef VAR_MPI
-    if (parcal) call dirac_parctl(4)
+            if (parcal) call dirac_parctl( XCINT_PAR )
 #endif
 !     no spin contributions for closed-shell (xc potential)
       call integrate_xc(xc_mat_dim              = ntbas(0),        &

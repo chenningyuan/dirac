@@ -2640,24 +2640,8 @@ c  ATT the AIK(*) is declared as REAL! We cannot use an operation
 c  which assumes AIK to be complex! Special operation routine!
 c
       NX = NO(KREP)*NO(KREP)
-      CALL XNEGATE(NX,AIK14,AIK14)
+      CALL XSCAL(NX,-A1,AIK14,1)
 
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE XNEGATE(N,RA,CA)
-      IMPLICIT INTEGER (A-Z)
-      INTEGER N
-      REAL*8 RA(*)
-      COMPLEX*16 CA(*)
-#include  "../relccsd/complex.inc"
-      DO I=1,N
-        IF(CARITH) THEN
-          CA(I) = (-1.0D0,0.0D0)*CA(I)
-        ELSE
-          RA(I) = -1.0D0*RA(I)
-        ENDIF
-      ENDDO
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

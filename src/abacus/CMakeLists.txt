@@ -94,6 +94,7 @@ twoao.h
 )
 
 set(FREE_ABACUS_FORTRAN_SOURCES
+   carsph.F90
    hermodules.F90
    filemodule.F90
 )
@@ -132,3 +133,6 @@ add_dependencies(abacus gp)
 add_dependencies(abacus ecp)
 add_dependencies(abacus xcint)  
 add_dependencies(abacus grid)  
+if (ENABLE_PELIB)
+    add_dependencies(abacus pelib)  
+endif()

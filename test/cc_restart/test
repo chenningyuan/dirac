@@ -18,11 +18,17 @@ if os.path.lexists(my_scratchdir):
 f = Filter()
 
 f.add(from_string = ' Overview of calculated energies',
-      to_string   = '@ Total CCSD-T  energy',
-      rel_tolerance   = 1.0e-7)
+      to_string   = '@ MP2 correlation energy',
+      rel_tolerance   = 1.0e-6)
 
 inputs = ['ccsd_integrals.inp', 'ccsd_restart.inp']
 test.run(inputs, ['H2O.mol'], f, args='--mw=64 --aw=130 --keep_scratch --scratchful='+my_scratchdir)
+
+f = Filter()
+
+f.add(from_string = ' Overview of calculated energies',
+      to_string   = '@ Total CCSD-T  energy',
+      rel_tolerance   = 1.0e-7)
 
 test.run(['ccsd_restart_othergeo.inp'], ['H2O_2.mol'], f, args='--mw=64 --aw=130 --keep_scratch --scratchful='+my_scratchdir)
 

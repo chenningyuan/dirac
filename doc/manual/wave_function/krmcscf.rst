@@ -16,23 +16,12 @@ For more details on the theory and actual implementation see :cite:`Jensen1996`,
 Mandatory keywords  under \*KRMCSCF
 ===================================
 
-keyword(CI PROGRAM)
-
-specifies the CI module behind KRMCSCF, choices are *LUCIAREL* and *GASCIP*. 
-*Note*: GASCIP does not work with linear symmetry and for large-scale MCSCF (> :math:`1.0 \times 10^7` determinants) only
-LUCIAREL can be used efficiently. *default*:
-
-::
-
-    .CI PROGRAM
-    GASCIP
-
 keyword(GAS SHELLS)
 
 Specification of CI calculation with electron distribution in orbital (GAS) spaces. 
 The first line contains the number of GA spaces to be used (1-7), 
 followed by one line per GAS with a separation by a "/" of the min/max number of electrons in each GAS and the 
-number of orbitals per fermion correp (either one (no inversion symmetry) or two (inversion
+number of orbitals per fermion corep (either one (no inversion symmetry) or two (inversion
 symmetry: *gerade* *ungerade*) entries per line). 
 
 The first entry before the "/" gives the minimal number of accumulated (!) electrons
@@ -41,7 +30,7 @@ number, separated by blanks. The minimum and maximum accumulated
 occupations allow for a very flexible parameterization of the wave
 function. All determinants fulfilling the occupation constraints will be
 constructed. The second entry after the "/" gives  the 
-number of orbitals per fermion correp. See also the open-shell input in :ref:`*SCF` which is similar to the syntax used
+number of orbitals per fermion corep. See also the open-shell input in :ref:`*SCF` which is similar to the syntax used
 here. The design of a GAS scheme is non-trivial and should be motivated by the electronic structure of the system (e.g.
 inner core, outer core, valence, virtual space). Sometimes it is useful to subdivide the valence space, for scientific reasons, or/and the
 virtual space, for technical reasons (save core memory). See reference :cite:`Fleig2006a`,
@@ -66,7 +55,7 @@ if all orbitals (fullMCSCF, feasible only for systems with 2-3 active electrons)
 
 keyword(INACTIVE)
 
-Inactive orbitals per fermion correp. *default*: all orbitals are active. The example below for a molecule with inversion
+Inactive orbitals per fermion corep. *default*: all orbitals are active. The example below for a molecule with inversion
 center marks the lowest 4 *gerade* and 2 *ungerade* orbitals as inactive, i.e. they are always kept doubly occupied in all determinants
 of the CI expansion:
 
@@ -81,6 +70,17 @@ space are included.
 
 Optional keywords under \*KRMCSCF
 =================================
+
+keyword(CI PROGRAM)
+
+specifies the CI module behind KRMCSCF, choices are *LUCIAREL* and *GASCIP*. 
+*Note*: GASCIP does not work with linear symmetry and for large-scale MCSCF (> :math:`1.0 \times 10^7` determinants) only
+LUCIAREL can be used efficiently. *default*:
+
+::
+
+    .CI PROGRAM
+    GASCIP
 
 keyword(THRESH)
 
@@ -101,7 +101,7 @@ integer value giving the (boson/fermion) symmetry of the state to optimize on. *
     1
 
 If you run the calculation in **linear symmetry** you have to specify **2** :math:`\times \Omega` value
-of the state to optimize on. The doubling stems from the fact
+of the state to optimize on and use LUCIAREL as CI PROGRAM. The doubling stems from the fact
 that we want to avoid non-integer input, e.g. in case of an odd number
 of electrons we might have :math:`\Omega` = 1/2, 3/2, 5/2, etc. values and the
 corresponding input for the :math:`\Omega` = 1/2 would then read as
@@ -133,14 +133,26 @@ integer value giving the maximum number of MICRO iterations in the MCSCF optimiz
 
     50
 
+keyword(FROZEN)
+
+specifies how many of the inactive orbitals for each fermion corep should be *frozen*, that is, not change during the KRMCSCF optimization.
+The frozen orbitals are not included in 2-electron integral transformation, which saves some CPU time.
+*default*: include all inactive orbital rotations.
+*example:* Freeze the first two inactive orbitals in fermion corep 1 (*gerade*) and the first inactive orbital in fermion corep 2 (*ungerade*):
+
+::
+
+    .FROZEN
+     2 1
+
 keyword(DELETE)
 
-delete active-secondary e-e rotations (rotations between
+delete occupied-secondary e-e rotations (rotations between
 electronic-electronic spinors) in the gradient and Hessian calculation
-specified by an orbital string of virtual (secondary) orbitals for each
-fermion correp. *default*: include all active-secondary e-e rotations. *example:* (deleting all e-e rotations for secondary orbitals 20,21 and
-22 in fermion correp 1 (*gerade*) and 24,25,26,27 and 28 in fermion
-correp 2 (*ungerade*)):
+specified by an orbital string of virtual (secondary) orbitals for each fermion corep.
+*default*: include all active-secondary e-e rotations.
+*example*: Delete all e-e rotations for secondary orbitals 20,21 and
+22 in fermion corep 1 (*gerade*) and 24,25,26,27 and 28 in fermion corep 2 (*ungerade*):
 
 ::
 
@@ -152,15 +164,31 @@ keyword(SKIPEE)
 
 skip e-e rotations (rotations between electronic-electronic spinors) in the gradient and Hessian calculation. *default*: include e-e rotations.
 
+keyword(WITHEP)
+
+include e-p rotations (rotations between electronic-positronic spinors) in the gradient and Hessian calculation. *default*: skip e-p rotations.
+
 keyword(SKIPEP)
 
-skip e-p rotations (rotations between electronic-positronic spinors) in the gradient and Hessian calculation. *default*: include e-p rotations.
+skip e-p rotations (rotations between electronic-positronic spinors) in the gradient and Hessian calculation. *default*: skip e-p rotations.
+
+keyword(MVOFAC)
+
+generate modified inactive and virtual orbitals based on block-diagonalization of FC + "MVOFAC"\*FV.
+The value does not change the MCSCF wave functions,
+but the non-active orbitals for post-MCSCF calculations (e.g. \*LUCITA or \*KRCI) are modified.
+*default*: MVOFAC = 1.0
+*example*: Mimic Bauchschlicher's MVOs for HF-CI for the MCSCF wave function:
+
+::
+
+   .MVOFAC
+   0.0
 
 keyword(PRINT)
 
 raise default print level to the given integer value. Please use with
-care as you may get millions of output lines if you choose a too high
-value. *default*:
+care as you may get millions of output lines if you choose a too high value. *default*:
 
 ::
 

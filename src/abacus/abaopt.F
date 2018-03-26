@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2283,6 +2283,9 @@ C
 #ifdef HAS_PCMSOLVER      
       use pcm_scf
 #endif      
+#ifdef HAS_PELIB
+      use pe_variables, only: peqm
+#endif 
 
 #include "implicit.h"
 #include "priunit.h"
@@ -2331,6 +2334,12 @@ C     Geometry optimization for Dirac
 C
 C     Execute Dirac, and retrieve energy.
 C
+#ifdef HAS_PELIB
+      if (peqm) then 
+         call quit('PELib geometry optimization '//
+     &   'not implemented in DIRAC')
+      endif 
+#endif 
       IF ( .NOT. EXSIR ) THEN
          CALL EXEDIR()
          IF (DOCCM) THEN
@@ -7009,9 +7018,9 @@ C        hjaaj Jan 2014
 C           We want to find the RNU for which the step length SL is TRUSTR
 C           We want RNU = 0 (Newton step) or RNU > 0 (restricted step)
 C           We know that SL = norm(- (Hess + RNU)^-1 grad )
-C               SL ≤ contribution if all eigenvalues where equal to EVAL(1)
+C               SL  contribution if all eigenvalues where equal to EVAL(1)
 C                  = GRD_ASUM  / (EVAL(1) + RNU)
-C               SL ≥ contribution from first eigenvector
+C               SL  contribution from first eigenvector
 C                  = GRDDIA(1) / (EVAL(1) + RNU)
 C           From this you can derive the formulas for XMIN and XMAX,
 C           when we also remember that if RNU corresponding to trust

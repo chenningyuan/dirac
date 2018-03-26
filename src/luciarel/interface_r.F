@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2424,7 +2424,7 @@ C     in list LPROP_KRCI in LUCIAREL sub-double group notation.
 C     
 C     symmetry of property operator IVOP according to
 C      _           _              _      
-C     | (IVOP) =  | (IBSP_KRCI) x | (IASP_KRCI)⁺
+C     | (IVOP) =  | (IBSP_KRCI) x | (IASP_KRCI)*
 C
 C     final symmetry stored in ISYMOPPRP_KRCI (krciprop.h).
 C     
@@ -3121,7 +3121,7 @@ C
           NINT_TP = NINT_TP_X
 csk          write(LUWRT,*) ' NINT_TP is for IRUN and iRI',NINT_TP,IRUN,IRI
 *
-          IF( IRI. eq. 1 .and. IRUN .eq. (N1ELINT + 1) ) THEN
+          IF( IRI .eq. 1 .and. IRUN .eq. (N1ELINT + 1) ) THEN
 *
 *           real part finished
 *
@@ -3360,7 +3360,7 @@ csk               write(LUWRT,*) ' continuing ...'
           NINT_TP = NINT_TP_X
 csk          write(LUWRT,*) ' NINT_TP is for IRUN and iRI',NINT_TP,IRUN,IRI
 *
-          IF( IRI. eq. 1 .and. IRUN .eq. (N1ELINT + 1) ) THEN
+          IF( IRI .eq. 1 .and. IRUN .eq. (N1ELINT + 1) ) THEN
 *
 *           real part finished
 *
@@ -3653,7 +3653,7 @@ csk             CALL WRTMATMN(DENS_SCR,1,NINT_TP,1,NINT_TP,LUWRT)
           END IF
 *
 *
-          IF( IRI. eq. 1 .and. IRUN .eq. (N1ELINT + 1) ) THEN
+          IF( IRI .eq. 1 .and. IRUN .eq. (N1ELINT + 1) ) THEN
 *
 *           real part finished
 *

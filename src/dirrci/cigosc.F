@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -3437,7 +3437,7 @@ c#include "dcbbas.h"
         WRITE(*,"(/1X,'Dump TODM real part')")
         CALL OUTPUT(TODM(1,1,KREAL),1,NOCCSP,1,NOCCSP,
      &    NOCCSP,NOCCSP,1,LUPRI)
-        IF( KRANDI. EQ. KIMAG ) THEN
+        IF( KRANDI .EQ. KIMAG ) THEN
           WRITE(*,"(/1X,'Dump TODM imaginary part')")
           CALL OUTPUT(TODM(1,1,KIMAG),1,NOCCSP,1,NOCCSP,
      &      NOCCSP,NOCCSP,1,LUPRI)

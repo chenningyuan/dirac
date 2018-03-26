@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -28,7 +28,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                  EPS,FOO,FVO,FVV,BREIT_LOC,SRTALL,INTERFACE_LOC)
 C
       use interface_to_mpi
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -59,7 +59,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       INTEGER*8 NVT
-      INTEGER NSP
+      INTEGER NSP,iprnt_loc
       INTEGER KR(-NSP:NSP),INDK(*),INDL(*)
       INTEGER INDEX(NSP,NSP,4,*),IBUF(7,*)
       INTEGER IREPSP(NSP,4),IREPSPI(NSP,MXREP,2)
@@ -79,6 +79,9 @@ C
       LOGICAL FOCKSP
       INTEGER*8 N5F,N5L,N6F,N6L,IND,ICOUNT
       CHARACTER*10 FNODE,LFNAM
+      integer dummy,i,idum,idummy,ind1,ind2,inze,ipass,irep,itrs,itrsgn
+      integer ityp,jtrs,mreader,n5,n6,nkr,nkr2,nonzr,npass,nsec,nsec5
+      integer nsec6,nze
 C
 C---------------Executable code--------------------------------------
 C
@@ -180,7 +183,8 @@ C
 C
       CALL DAYTIME (DATEX,TIMEX)
       WRITE(IW,*)
-      WRITE(IW,*) 'Start sorting of integral classes at '//datex//timex
+      WRITE(IW,*) 
+     &     'Start sorting of integral classes at '//datex//' '//timex
       WRITE(IW,*)
 C
   100 CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,1,INDK,INDL,
@@ -281,7 +285,8 @@ C        call relcc_restart_check('OOOO to VOVO sorted integrals ',IW)
       ELSE
          CALL DAYTIME (DATEX,TIMEX)
          WRITE(IW,*)
-         WRITE(IW,*) 'Sorting of first 4 classes done at '//datex//timex
+         WRITE(IW,*) 
+     &         'Sorting of first 4 classes done at '//datex//' '//timex
       ENDIF
       CALL FLSHFO (IW)
 C
@@ -406,7 +411,7 @@ C
 C  end of IPASS LOOP
 C ----------------------
       CALL DAYTIME (DATEX,TIMEX)
-      WRITE(IW,'(A,I6,A)') '  Pass',ipass,' ended at '//datex//timex
+      WRITE(IW,'(A,I6,A)') ' Pass',ipass,' ended at '//datex//' '//timex
       CALL FLSHFO (IW)
       ENDDO
 C ----------------------
@@ -423,7 +428,7 @@ C        call relcc_restart_check('VOVV sorted integrals        ',IW)
       ELSE
          CALL DAYTIME (DATEX,TIMEX)
          WRITE(IW,*)
-         WRITE(IW,*) 'VOVV sorting done at '//datex//timex
+         WRITE(IW,*) 'VOVV sorting done at '//datex//' '//timex
       ENDIF
       CALL FLSHFO (IW)
 
@@ -541,7 +546,7 @@ C
 C     end of IPASS loop for the VVVV
 C --------------------------
       CALL DAYTIME (DATEX,TIMEX)
-      WRITE(IW,'(A,I6,A)') '  Pass',ipass,' ended at '//datex//timex
+      WRITE(IW,'(A,I6,A)') ' Pass',ipass,' ended at '//datex//' '//timex
       CALL FLSHFO (IW)
       ENDDO
 C --------------------------
@@ -549,7 +554,7 @@ C
   500 CLOSE(MDINT)
       CALL DAYTIME (DATEX,TIMEX)
       write(iw,*)
-      WRITE(IW,*) 'VVVV sorting done at '//datex//timex
+      WRITE(IW,*) 'VVVV sorting done at '//datex//' '//timex
       CALL FLSHFO (IW)
 C
 C
@@ -672,7 +677,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADDPROP (PROP_NAME,FF_STRENGTH,NSP,FOCKR,FOCKI,
      &                    PROPR,PROPI)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -708,6 +713,7 @@ C
       REAL*8 AH_CHECK
       PARAMETER (AH_CHECK=1.D-5)
       CHARACTER*32 ACHAR
+      integer i,j,inop
 C
 C---------------Executable code--------------------------------------
 C
@@ -766,7 +772,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                  AVO,AOV,AOO,AVV)
 C
       use interface_to_mpi
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -790,7 +796,7 @@ C
 C
 C---------------Calling variables--------------------------------------
 C
-      INTEGER NSP,IREPSPI(NSP,MXREP,2)
+      INTEGER NSP,IREPSPI(NSP,MXREP,2),iprnt
       REAL*8 AVO(*),AOV(*),AOO(*),AVV(*)
       REAL*8 PROP(2,NSP,NSP)
       REAL*8 APHASE(2)
@@ -801,6 +807,8 @@ C---------------Local variables--------------------------------------
 C
       CHARACTER*32 ACHAR
       REAL*8 AVOI,AOVI,AMAXR,AMAXI,ANORM
+      integer a,aa,ab,ai,airep,arep,b,bb,brep,i,ii,iimax,ij,inop,irep
+      integer j,jj,jrep,aamax
 C
 C---------------Executable code--------------------------------------
 C
@@ -960,7 +968,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                     NONZR,NZE,CBUF,IBUF,MREADER)
 C
       use interface_to_mpi
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -982,12 +990,6 @@ C---------------Last modified------------------------------------------
 C
 C     Author : Luuk Visscher
 C
-C---------------Calling variables--------------------------------------
-C
-      INTEGER KR(-NSP:NSP),INDK(*),INDL(*)
-      REAL*8 CBUF(RCW,*)
-      INTEGER IBUF(7,*)
-      INTEGER INDEX(NSP,NSP,4,*)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -999,14 +1001,23 @@ C
 #include "dgroup.h"
 #include "dcbham.h"
 C
+C---------------Calling variables--------------------------------------
+C
+      INTEGER KR(-NSP:NSP),INDK(*),INDL(*),MREADER
+      REAL*8 CBUF(RCW,*)
+      INTEGER IBUF(7,*)
+      INTEGER INDEX(NSP,NSP,4,*),MDINT,NSP,ITRSGN,IATYP,NONZR,NZE
+C
 C---------------Local variables--------------------------------------
 C
       INTEGER IKR,JKR,KKR,LKR
-      integer   INZ
+      integer   INZ,l1,j1
 
       REAL*8 RDUM
       LOGICAL FOCKSP, CHECK_INTS
       CHARACTER*10 NEXTFIL
+      integer i,i0,i1,icase,icc,ijsg,ijsign,ikind,iktyp,ipi,itr1,itr2
+      integer ityp,j,j0,jcase,jlind,jltyp,k,k0,k1,kiind,kityp,klsg,l,l0
 C
 C---------------Executable code--------------------------------------
 C
@@ -1290,7 +1301,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                  FOO,FVO,FVV,E0,E1)
 C
       use interface_to_mpi
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1309,7 +1320,7 @@ C
       REAL*8 E0,E1,EPS(*)
       REAL*8 FOO(*),FVO(*),FVV(*)
       REAL*8 BUF1(*),BUF2(*),VBUF1(*),VBUF2(*)
-      INTEGER INDEX(NSP,NSP,4,*)
+      INTEGER NSP,INDEX(NSP,NSP,4,*)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1332,6 +1343,7 @@ C
       CHARACTER*2 ORBTYP
       REAL*8 FF_STRENGTH(2)
       CHARACTER*8 PROP_NAME
+      integer i,icase,ii,ij,ijoo,ijvo,ind,ioper,irep,ityp,j,ncase,nspq
 C
 C---------------Executable code--------------------------------------
 C
@@ -1644,7 +1656,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE MAKEFM (BUF1,BUF2,FOO,FVO,FVV,E0,E1)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1674,6 +1686,7 @@ C
 C---------------Local variables--------------------------------------
 C
       REAL*8 CSUM(2)
+      integer ii,irep,k,kk,krep
 C
 C---------------Executable code--------------------------------------
 C
@@ -1751,7 +1764,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE MKINDEX (NSP,IREPSP,IREPSPI,INDEX)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1775,10 +1788,11 @@ C
 C
 C---------------Calling variables--------------------------------------
 C
-      INTEGER IREPSP(NSP,4),IREPSPI(NSP,MXREP,2),INDEX(NSP,NSP,4)
+      INTEGER NSP,IREPSP(NSP,4),IREPSPI(NSP,MXREP,2),INDEX(NSP,NSP,4)
 C
 C---------------Local variables--------------------------------------
 C
+      integer i,ii,ij,ijrep,imin,irep,j,jj,jrep
 C
 C---------------Executable code--------------------------------------
 C
@@ -1913,7 +1927,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FKINDEX (NSP,IREPSP,IREPSPI,INDEX)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1937,10 +1951,11 @@ C
 C
 C---------------Calling variables--------------------------------------
 C
-      INTEGER IREPSP(NSP,4),IREPSPI(NSP,MXREP,2),INDEX(NSP,NSP,4,4)
+      INTEGER NSP,IREPSP(NSP,4),IREPSPI(NSP,MXREP,2),INDEX(NSP,NSP,4,4)
 C
 C---------------Local variables--------------------------------------
 C
+      integer i,icase,ii,ij,ijcase,ijrep,imin,irep,j,jcase,jj,jrep
 C
 C---------------Executable code--------------------------------------
 C

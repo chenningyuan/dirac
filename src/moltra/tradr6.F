@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,6 +19,8 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR6T */
       SUBROUTINE TRDR6T(WORK,KFREE,LFREE,IPRINT,INTFLG,KGAB,KDRIJ,
@@ -258,7 +260,7 @@ C
 C
 C     It is the masters duty to release the slaves
 C
-      IF (PARCAL.AND.MYTID.EQ.MPARID) CALL DIRAC_PARCTL( -1 )
+      IF (PARCAL.AND.MYTID.EQ.MPARID) CALL DIRAC_PARCTL( EXIT_NODEMENU )
 C
       CALL MEMREL('TRDR6T',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('TRDR6T')
@@ -430,7 +432,7 @@ C
 C       Get hold of the slaves
 C       ( ITASK = 2 for parallel integral transformation )
 C
-        CALL DIRAC_PARCTL( 2 )
+        CALL DIRAC_PARCTL( MOLTRA_PAR )
 C       
 C       Initialize (for the slave this is done in TRANOD)
 C
@@ -491,15 +493,15 @@ C
    10         CONTINUE
               CALL interface_MPI_PROBE(df_MPI_ANY_SOURCE,df_MPI_ANY_TAG,
      &                                 global_communicator,ISTAT)
+              NWHO = ISTAT(df_MPI_SOURCE)
               IF (ISTAT(df_MPI_TAG).EQ.20) THEN
-                 CALL interface_MPI_RECV(ITEST,1,df_MPI_ANY_SOURCE,20,
+                 CALL interface_MPI_RECV(ITEST,1,NWHO,20,
      &                                   global_communicator)
               ELSE
                  CALL BUFFER_FILE_RECV ()
                  GOTO 10
               ENDIF
               CALL XTIME(2,2,' Slave requesting task from master')
-              NWHO = ISTAT(df_MPI_SOURCE)
               IF (ITEST .EQ. 0) THEN
 C                ... slave wants new set of A,B shells
                  CALL GETTIM(CPUST,WALLST)

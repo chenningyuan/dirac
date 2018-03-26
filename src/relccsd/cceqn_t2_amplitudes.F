@@ -1,8 +1,7 @@
-      SUBROUTINE amplitude_equation_T2 (EPS,T1,T2,
-     &                   GO,GV,HOV,H,AZ,CZ,GOO,GVV,
-     &                   BUF1,BUF2,BUF3,NBUF3,S2)
+      SUBROUTINE amplitude_equation_T2 (T1,T2,
+     &          GO,GV,HOV,H,AZ,BUF1,BUF2,BUF3,NBUF3,S2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -19,12 +18,10 @@ C
 C---------------Calling variables--------------------------------------
 C
       INTEGER NBUF3
-      REAL*8 EPS(*)
       REAL*8 T1(*),T2(*)
       REAL*8 S2(*)
       REAL*8 GO(*),GV(*),HOV(*)
-      REAL*8 GOO(*),GVV(*)
-      REAL*8 AZ(*),H(*),CZ(*)
+      REAL*8 AZ(*),H(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)
 C
 C---------------Common Blocks--------------------------------------
@@ -50,6 +47,8 @@ C
       DATA T1VAL /2*0.0D0/
       complex*16 zdotc
       real*8 ddot
+      integer abji,c,cj,crep,i,imin,irep,irp,istart,j,ij,jmin,jrep,k,kld
+      integer m,mint,n,nint,off1,off2,off3,t1ci,abij,ji
 C
 C---------------Executable code--------------------------------------
 C

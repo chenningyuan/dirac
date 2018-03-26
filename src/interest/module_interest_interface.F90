@@ -38,6 +38,10 @@
 ! ------------------------------------------------------------------------------------
 
 #ifdef MOD_INTEREST
+
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
+
 MODULE MODULE_INTEREST_INTERFACE
 
   use module_interest_eri
@@ -227,7 +231,7 @@ CONTAINS
 
 
 #ifdef VAR_MPI
-    call dirac_parctl( 8 ) 
+    call dirac_parctl( INTEREST_INIT_PAR ) 
 #endif
 
     call initialize_interest_herd
@@ -657,7 +661,7 @@ CONTAINS
 
 #ifdef VAR_MPI
     !> send the AO-density matrix
-    call dirac_parctl( 10 ) 
+    call dirac_parctl( INTEREST_2C_PAR ) 
     call mpi_bcast( hfxfac, 1,           mpi_real8,          0, mpi_comm_world, ier )
     call mpi_bcast( dP,     4*nrow*nrow, mpi_double_complex, 0, mpi_comm_world, ier )
 #endif
@@ -988,7 +992,7 @@ CONTAINS
 
 #ifdef VAR_MPI
     !> send the AO-density matrix
-    call dirac_parctl( 9 ) 
+    call dirac_parctl( INTEREST_4C_PAR ) 
     call mpi_bcast( eri_class, 4,            mpi_character,      0, mpi_comm_world, ier )
     call mpi_bcast( hfxfac,    1,            mpi_real8,          0, mpi_comm_world, ier )
     call mpi_bcast( dP,        16*nrow*nrow, mpi_double_complex, 0, mpi_comm_world, ier )

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -229,7 +229,7 @@ C       keep track of correct offset
         IOFFSET_INT_IN  = IOFFSET_INT_IN  + NUM_BLK
  501  CONTINUE
 C
-      IF( MYPROC. eq. MASTER )THEN
+      IF( MYPROC .eq. MASTER )THEN
 C       write an EOF-mark
         CALL ITODS(-1,1,-1,LUOUT)
       ENDIF
@@ -390,7 +390,7 @@ C         keep track of correct offset
           IOFFSET_INT_IN  = IOFFSET_INT_IN  + NUM_BLK
  601    CONTINUE
 C
-        IF( MYPROC. eq. MASTER )THEN
+        IF( MYPROC .eq. MASTER )THEN
 C         write an EOF-mark
           CALL ITODS(-1,1,-1,LUOUT)
         ENDIF
@@ -547,7 +547,7 @@ C       keep track of correct offset
         IOFFSET_IN_LUIN = IOFFSET_IN_LUIN + IOFFSET_SCRATCH
  501  CONTINUE
 C
-      IF( MYPROC. eq. MASTER )THEN
+      IF( MYPROC .eq. MASTER )THEN
 C       write an EOF-mark
         CALL ITODS(-1,1,-1,LUOUT)
       ENDIF
@@ -3326,7 +3326,7 @@ C
      &                          LBATCH(ISBATCH)
         WRITE(LUPRINT,*) '      Length of batch           ',
      &                          LEBATCH(ISBATCH)
-        WRITE(LUPRINT,*) '      TTSS and offsets and lenghts of
+        WRITE(LUPRINT,*) '      TTSS and offsets and lengths of
      &                          each block '
         DO IBLOCK = I1BATCH(ISBATCH),I1BATCH(ISBATCH)+ LBATCH(ISBATCH)-1
           WRITE(LUPRINT,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
@@ -5188,7 +5188,7 @@ C     Partition a CI vector into batches of blocks. The length of a
 C     batch must be atmost MXLNG.
 C     S-vector routine.
 C
-C     IF ICOMP. eq. 1: the complete CI vector is constructed in just one
+C     IF ICOMP .eq. 1: the complete CI vector is constructed in just one
 C     batch.
 C
 C     OUTPUT
@@ -5341,7 +5341,7 @@ C       only s-blocks corresponding to distribution
           WRITE(6,*) ' *********************** '
           WRITE(6,*)
           WRITE(6,*) '      Number of blocks included ', LBATCH(JBATCH)
-          WRITE(6,*) '      TTSS and offsets and lenghts of each block '
+          WRITE(6,*) '      TTSS and offsets and lengths of each block '
           DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
             WRITE(6,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
           END DO
@@ -5364,7 +5364,7 @@ C     Partition a CI vector into batches of blocks. The length of a
 C     batch must be atmost MXLNG.
 C     C-vector routine.
 C
-C     IF ICOMP. eq. 1: the complete CI vector is constructed in just one
+C     IF ICOMP .eq. 1: the complete CI vector is constructed in just one
 C     batch.
 C
 C     OUTPUT
@@ -5545,7 +5545,7 @@ C
           WRITE(6,*)
           WRITE(6,*) '      Length of batch           ', LEBATCH(JBATCH)
           WRITE(6,*) '      Number of blocks included ', LBATCH(JBATCH)
-          WRITE(6,*) '      TTSS and offsets and lenghts of each block '
+          WRITE(6,*) '      TTSS and offsets and lengths of each block '
           DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
             WRITE(6,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
           END DO
@@ -5587,7 +5587,7 @@ C
           WRITE(6,*) ' '
           WRITE(6,*) ' Number of blocks included ', LBATC(JBATCH)
         END IF
-CSK        WRITE(6,*) '   TTSS and offsets and lenghts of each block '
+CSK        WRITE(6,*) '   TTSS and offsets and lengths of each block '
         DO IBLOCK =I1BATC(JBATCH),I1BATC(JBATCH)+ LBATC(JBATCH)-1
 CSK          WRITE(6,'(10X,4I3,4I8)') (IBATC(II,IBLOCK),II=1,8)
 CSK          IF(IBATC(8,IBLOCK).NE.0.AND.MYPROC.EQ.MASTER.AND.NTEST.GE.10) 
@@ -5642,7 +5642,7 @@ C THE LOWER HALF OF THE MATRIX IS SUPPOSED TO BE IN VECTOR A.
         WRITE(LUWRT,1010) I,(A(J),J=JSTART,JSTOP)
   100 CONTINUE
       RETURN
- 1010 FORMAT(1H0,2X,I3,5(1X,E13.7),/,(1H ,5X,5(1X,E13.7)))
+ 1010 FORMAT(/I6,5E14.7,/,(6X,5E14.7))
       END
 ***********************************************************************
 *                                                                     *

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -461,15 +461,17 @@ C   ON OUTPUT:A - full matrix
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck sectid */
-      FUNCTION SECTID(TID)
+      CHARACTER*12 FUNCTION SECTID(TID)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Given time in seconds this function return a character string
 C     with time in suitable units
+C     Revised 4-aug-2017 hjaaj: input TID is not modified any more.
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include "implicit.h"
-      CHARACTER*12 SECTID
+      IMPLICIT NONE
+      REAL*8   TID, TID_rest
+      INTEGER  ITID, IMIN, IHOUR, IDAY
 C
       ITID = TID
       IF(ITID.GE.86400) GOTO 3
@@ -485,8 +487,8 @@ C     Format: Minutes and seconds
 C
     1 CONTINUE
       IMIN = ITID/60
-      TID  = TID - IMIN*60
-      WRITE(SECTID,'(I2,A3,F6.3,A1)') IMIN,'min',TID,'s'
+      TID_rest  = TID - IMIN*60
+      WRITE(SECTID,'(I2,A3,F6.3,A1)') IMIN,'min',TID_rest,'s'
       RETURN
 C
 C     Format: Hours, minutes and seconds
@@ -1423,7 +1425,7 @@ C     generate the Hermitian conjugate matrix
 C     of the general matrix AMAT;
 C
 C     return the new general matrix in AMAT 
-C       (so AMAT is owerwritten !)
+C       (so AMAT is overwritten !)
 C
 C     Written by Miro Ilias, July 2003
 C     (based on QGETHE)
@@ -4351,3 +4353,20 @@ C***********************************************************************
       CALL ICOPY(NDIM,IA(IA1),IASTEP,IB(IB1),IBSTEP)
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE CHECK_FOR_OPEN_FILES
+C***********************************************************************
+C
+C     Check for open files within some range of unit numbers
+C
+C***********************************************************************
+      INTEGER I
+      LOGICAL ITSOPEN
+      DO I = 1,300
+         INQUIRE(UNIT=I,OPENED=ITSOPEN)
+         IF(ITSOPEN) THEN
+           WRITE(6,*) 'Open file. Unit = ',I
+         ENDIF
+      ENDDO
+      END
+      

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -742,9 +742,9 @@ C
 C
       IF(NTEST.GE.3) THEN
        WRITE(6,1020)
- 1020  FORMAT(1H0,'*** OUTPUT FROM TRANMAT')
+ 1020  FORMAT(/' *** OUTPUT FROM TRANMAT')
        WRITE(6,1030)
- 1030  FORMAT(1H0,'A- AND X-MATRIX')
+ 1030  FORMAT(/' A- AND X-MATRIX')
        CALL WRTMAT(A,NDIM,NDIM,MATDIM,MATDIM)
        CALL WRTMAT(X,NDIM,NDIM,MATDIM,MATDIM)
       END IF
@@ -762,7 +762,7 @@ C A*X
 C
       IF(NTEST.GE.2) THEN
        WRITE(6,1040)
- 1040  FORMAT(1H0,' AX MATRIX')
+ 1040  FORMAT(/' AX MATRIX')
        CALL WRTMAT(SCRA,NDIM,NDIM,MATDIM,MATDIM)
       END IF
 C
@@ -779,7 +779,7 @@ C X(TRANS)*(A*X)
 C
       IF(NTEST.GE.2) THEN
        WRITE(6,1010)
- 1010  FORMAT(1H0,' TRANSFORMED MATRIX')
+ 1010  FORMAT(/' TRANSFORMED MATRIX')
        CALL WRTMAT(A,NDIM,NDIM,MATDIM,MATDIM)
       END IF
 C
@@ -840,7 +840,7 @@ C
       DIMENSION VEC(1   )
 C
       WRITE(6,1010) (VEC(I),I=1,NDIM)
- 1010 FORMAT(1H0,2X,4(2X,E15.8),/,(1H ,2X,4(2X,E15.8)))
+ 1010 FORMAT(/2X,4(2X,E15.8),/,(3X,4(2X,E15.8)))
       RETURN
       END
 ***********************************************************************

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -90,7 +90,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-      PARAMETER(D0 = 0.0D0,D1=1.0D0,DTOL=1.0D-16)
+      PARAMETER(D0 = 0.0D0,D1=1.0D0,DTOL=1.0D-16,D2=2.0D0)
       
 C
 #include "cbihr1.h"
@@ -259,8 +259,6 @@ C
       IF(.NOT.ORBANA) THEN
 
         CALL TITLER('Expectation values','*',127)
-        WRITE(LUPRI,'(51X,2(A2,1X))') 's0','t0'
-        CALL PRSYMB(LUPRI,'-',76,0)
 
         DO I = 1,NEXPP
           INDXPR = LEXPP(I)
@@ -281,23 +279,23 @@ C.........Transform property matrix to fragment orbital basis
      &                  WORK,KFREE,LFREE)
           ENDIF
           FMT = MXFORM(EXPVAL(I),15)
-          WRITE(LUPRI,'(4X,A16,A3,3X,'//FMT//',1X,A4,3X,2(3X,L1))')
+          WRITE(LUPRI,'(4X,A16,A3,3X,'//FMT//',1X,A4,3X,2(3X,A,L1))')
      &       PRPNAM(INDXPR),' : ',EXPVAL(I),'a.u.',
-     &       LEXPST(1,I),LEXPST(2,I)
+     &     's0 = ',LEXPST(1,I),'t0 = ',LEXPST(2,I)
           CALL FLSHFO(LUPRI)
           IF(PRJANA.AND.ABS(EXPVAL(I)).GT.DTOL) THEN
             CALL PRJEX2(EXPVAL(I),WORK(KPFMT),WORK(KDFMT),WORK(KBVEC),
      &                  WORK(KIBUF),INDXPR,NP(1,0),NP(1,2),
      &                  WORK(KNR),NTOT,WORK(KFMAT),WORK(KPM),
      &                  WORK(KINDX),IPREXP,PRPAO,WORK,KFREE,LFREE)
-            CALL PRSYMB(LUPRI,'-',76,0)
+            CALL PRSYMB(LUPRI,'-',75,4)
           ENDIF
           IF(PRPCAN) THEN
             CALL EXPCAN(INDXPR,PRPAO,CMO,IPREXP,WORK,KFREE,LFREE)
           ENDIF
         ENDDO
 
-        CALL PRSYMB(LUPRI,'-',76,0)
+        CALL PRSYMB(LUPRI,'-',75,4)
         WRITE(LUPRI,'(4X,A)')
      &   's0 = T : Expectation value zero by point group symmetry.'
         WRITE(LUPRI,'(4X,A)')
@@ -308,15 +306,14 @@ C     ====================================================
 C
       ELSE
         CALL TITLER('Expectation values','*',127)
-        WRITE(LUPRI,'(51X,2(A2,1X))') 's0','t0'
-        CALL PRSYMB(LUPRI,'-',76,0)
         DO I = 1,NEXPP
           INDXPR = LEXPP(I)
           IREP = IPRPSYM(INDXPR)-1
           ITIM = IPRPTIM(INDXPR)
-          CALL PRSYMB(LUPRI,'-',60,4)
+C          CALL PRSYMB(LUPRI,'-',85,4)
           CALL HEADER('Operator '//PRPNAM(INDXPR)//':',0)            
           CALL HEADER('Expectation value for individual orbitals',-1)
+          WRITE(LUPRI,'(/16X,A)') 'Matrix element     Occ.  '
           EXPVAL(I) = D0
           DO 10 IFRP = 1,NFSYM
             IF(NORB(IFRP).EQ.0) GOTO 10
@@ -331,11 +328,10 @@ C.............calculate expectation value
               CALL PRPEX3(EXPBUF,INDXPR,DMAT,PRPAO,FIRST,
      &          WORK,KFREE,LFREE,IPREXP)
               IOPEN = GETIOPEN(J,IFRP)
-              EXPBUF = EXPBUF*DF(IOPEN)
-              EXPVAL(I) = EXPVAL(I) + EXPBUF
+              EXPVAL(I) = EXPVAL(I) + EXPBUF*DF(IOPEN)
               FMT = MXFORM(EXPBUF,15)
-              WRITE(LUPRI,'(4X,A3,I5,3X,'//FMT//',1X,A4)')
-     &          FREP(IFRP),J,EXPBUF,'a.u.'
+              WRITE(LUPRI,'(4X,A3,I5,3X,'//FMT//',5X,F6.4,5X'//FMT//')')
+     &          FREP(IFRP),J,EXPBUF/D2,D2*DF(IOPEN),EXPBUF*DF(IOPEN)
               CALL FLSHFO(LUPRI)
             ENDDO
 
@@ -347,12 +343,12 @@ C...........Transform property matrix to fragment orbital basis
             ENDIF
  10       CONTINUE
  20       CONTINUE
-          CALL PRSYMB(LUPRI,'-',60,4)
+          CALL PRSYMB(LUPRI,'-',85,4)
           FMT = MXFORM(EXPVAL(I),15)
-          WRITE(LUPRI,'(4X,A8,3X,'//FMT//',1X,A4,3X,2(3X,L1))')
+          WRITE(LUPRI,'(4X,A8,34X,'//FMT//',1X,A4,3X,2(3X,A,L1))')
      &     'Total : ',EXPVAL(I),'a.u.',
-     &     LEXPST(1,I),LEXPST(2,I)
-          CALL PRSYMB(LUPRI,'-',60,4)
+     &     's0 = ',LEXPST(1,I),'t0 = ',LEXPST(2,I)
+          CALL PRSYMB(LUPRI,'-',85,4)
           IF(PRPCAN) THEN
             CALL EXPCAN(INDXPR,PRPAO,CMO,IPREXP,WORK,KFREE,LFREE)
           ENDIF
@@ -361,7 +357,7 @@ C...........Transform property matrix to fragment orbital basis
      &                  WORK(KIBUF),INDXPR,NP(1,0),NP(1,2),
      &                  WORK(KNR),NTOT,WORK(KFMAT),WORK(KPM),
      &                  WORK(KINDX),IPREXP,PRPAO,WORK,KFREE,LFREE)
-            CALL PRSYMB(LUPRI,'-',76,0)
+            CALL PRSYMB(LUPRI,'-',85,4)
           ENDIF
         ENDDO
         WRITE(LUPRI,'(4X,A)')

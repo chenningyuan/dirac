@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -516,6 +516,10 @@ C*****************************************************************************
 C
       DIMENSION DMAT(LRD,LCD,NZ),CMO(LRC,LCC,NZ),IQ(4)
       DATA IQ/1,2,3,4/
+      IF(NVEC.LT.0) THEN
+        WRITE(6,*) 'DENST1: Negative number of vectors: ', NVEC
+        CALL QUIT('DENST1: Negative number of vectors !')
+      ENDIF
       CALL QGEMM(NBAS,NBAS,NVEC,ALPHA,
      &     'N','N',IQ,CMO(1,JVEC,1),LRC,LCC,NZ,
      &     'H','N',IQ,CMO(1,JVEC,1),LRC,LCC,NZ,
