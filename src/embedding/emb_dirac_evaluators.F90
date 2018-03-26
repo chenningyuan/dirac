@@ -217,7 +217,7 @@ module fde_evaluators_dirac
          call fde_dirac_set_ihrmop(ihrmop)
 #ifdef VAR_MPI
          if (fde_mpi_get_nr_proc() > 1) then
-            call dirac_parctl(12)
+            call dirac_parctl(FDE_PAR)
          end if 
 #endif
          call fde_dirac_emb_matrices_via_integration(         &
