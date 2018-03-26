@@ -451,7 +451,7 @@ contains
     if (.not. dft_cfg_no_sdft) then
 
 #ifdef VAR_MPI
-      if (parcal) call dirac_parctl(4)
+      if (parcal) call dirac_parctl(XCINT_PAR)
 #endif
       if (expped) then
 !        s_b_lao and gs_b_lao export (used in fde)

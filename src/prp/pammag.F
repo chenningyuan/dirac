@@ -2083,7 +2083,7 @@ C
 
         call generate_num_grid(dmat_0)
 #ifdef VAR_MPI
-        if (parcal) call dirac_parctl(4)
+        if (parcal) call dirac_parctl(XCINT_PAR)
 #endif
 
 !       charge density contribution dependent on XC potential
@@ -2113,7 +2113,7 @@ C
         if (.not. dft_cfg_no_sdft) then
 !         spin density contribution dependent on XC kernel
 #ifdef VAR_MPI
-          if (parcal) call dirac_parctl(4)
+          if (parcal) call dirac_parctl(XCINT_PAR)
 #endif
           sus2el_xc = 0.0d0
           call integrate_xc(xc_mat_dim   = ntbas(0),
