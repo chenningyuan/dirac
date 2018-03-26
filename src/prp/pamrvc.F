@@ -4121,7 +4121,7 @@ C     --------------------------
               call fde_dirac_set_isymop(isymop)
               call fde_dirac_set_ihrmop(ihrmop)
 #ifdef VAR_MPI
-          if (parcal) call dirac_parctl(12)
+          if (parcal) call dirac_parctl( FDE_PAR )
 #endif
               call fde_dirac_emb_matrices_via_integration(       
      &                       fde_mat_dim            = ntbas(0),
