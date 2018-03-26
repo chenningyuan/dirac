@@ -1436,7 +1436,7 @@ C
 C        start GASCIP MPI calculation
 C
          CALL GASCIP_NODE()
-      ELSE IF (ITASK .EQ. 12) THEN
+      ELSE IF (ITASK .EQ. 18) THEN
 C
 C        start FDE MPI calculation
 C
