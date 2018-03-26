@@ -342,9 +342,6 @@ contains
            npos = 0
            call dirac_parctl( HERFCK_PAR )
 
-           lwork = len_f77_work
-           call di_select_wrk(work, lwork)
-
            call her_pardrv(work,lwork,fmat,dmat,nr_mat,irepdm,                   &
                            ifock_type,itype,max_deriv,iatom,nodv,nopv,nocont,   &
                            tktime,.false.,first, npos,mtottk(i2typ),          &
