@@ -1,4 +1,4 @@
-
+#include "dirac_partask.h"
 
 module fde_evaluators_dirac
 
