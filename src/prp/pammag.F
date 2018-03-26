@@ -2160,7 +2160,7 @@ C
           write(*, *) 'FDE 2-el contribution to expectation value ' //
      &                'dependent on embedding potential included'
 #ifdef VAR_MPI
-          if (parcal) call dirac_parctl(12)
+          if (parcal) call dirac_parctl( FDE_PAR )
 #endif
           sus2el_fde_1 = 0.0d0
           if (itmp%im_vemb) then
@@ -2201,7 +2201,7 @@ C
           write(*, *) 'FDE 2-el contribution to expectation value ' //
      &       'dependent on embedding kernel included (uncoupled)'
 #ifdef VAR_MPI
-          if (parcal) call dirac_parctl(12)
+          if (parcal) call dirac_parctl( FDE_PAR )
 #endif     
           sus2el_fde_2 = 0.0d0
           call fde_dirac_emb_matrices_via_integration(
@@ -2239,7 +2239,7 @@ C
      &       'dependent on embedding kernel and coupling '          //
      &       'two subsystems included'
 #ifdef VAR_MPI
-            if (parcal) call dirac_parctl(12)
+            if (parcal) call dirac_parctl( FDE_PAR )
 #endif    
             sus2el_fde_3 = 0.0d0
             call fde_dirac_emb_matrices_via_integration(
@@ -2953,7 +2953,7 @@ C ...  Store expect. values from resulting matrix WORK(KSWMAT)
 !           end do
 ! 
 ! #ifdef VAR_MPI
-!           if (parcal) call dirac_parctl(12)
+!           if (parcal) call dirac_parctl( FDE_PAR )
 ! #endif     
 ! !         inside fde_dirac_emb_matrices_via_integration subroutine
 ! !         we will calculate two coupling contributions

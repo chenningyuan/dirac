@@ -732,7 +732,7 @@ module fde_evaluators_dirac
          call dcopy(ndim*ndim*nz, dmat, 1, buffer, 1)
 
 #ifdef VAR_MPI
-        if (parcal) call dirac_parctl(12)
+        if (parcal) call dirac_parctl(FDE_PAR)
 #endif
 
           call fde_dirac_emb_matrices_via_integration(     &

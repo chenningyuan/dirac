@@ -643,7 +643,7 @@ contains
         write(*, *) 'LAO-direct contribution to property gradient (embpot)'
 
 #ifdef VAR_MPI
-        if (parcal) call dirac_parctl(12)
+        if (parcal) call dirac_parctl(FDE_PAR)
 #endif
 
         if (itmp%im_vemb) then
@@ -682,7 +682,7 @@ contains
         write(*, *) 'LAO-direct contribution to property gradient (embker)'
 
 #ifdef VAR_MPI
-        if (parcal) call dirac_parctl(12)
+        if (parcal) call dirac_parctl(FDE_PAR)
 #endif
 
         call fde_dirac_emb_matrices_via_integration(       &   
@@ -710,7 +710,7 @@ contains
        write(*, *) 'LAO kernel-like contribution to property gradient '// &
                    'from frozen perturbed density (non-additive xc and kin terms)'
 #ifdef VAR_MPI
-       if (parcal) call dirac_parctl(12)
+       if (parcal) call dirac_parctl(FDE_PAR)
 #endif
 
        call fde_dirac_emb_matrices_via_integration(       &

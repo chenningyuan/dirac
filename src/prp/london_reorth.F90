@@ -525,7 +525,7 @@ contains
           call genden(dmat, cmo, 1, iprprp)
 
 #ifdef VAR_MPI
-          if (parcal) call dirac_parctl(12)
+          if (parcal) call dirac_parctl(FDE_PAR)
 #endif
 
           call fde_dirac_emb_matrices_via_integration(          &
@@ -562,7 +562,7 @@ contains
          call genden(dmat, cmo, 1, iprprp)
 
 #ifdef VAR_MPI
-         if (parcal) call dirac_parctl(12)
+         if (parcal) call dirac_parctl(FDE_PAR)
 #endif
 
          call fde_dirac_emb_matrices_via_integration(       &   

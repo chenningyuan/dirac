@@ -291,7 +291,7 @@ C          Hermitian operator
 
 !             call fde_set_nz(nz)
 #ifdef VAR_MPI
-            if (parcal) call dirac_parctl(12)
+            if (parcal) call dirac_parctl( FDE_PAR )
 #endif
               call fde_calculate_emb_pot_mat(ntbas(0),fao,fmo)
 
