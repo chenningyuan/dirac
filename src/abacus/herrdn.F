@@ -743,10 +743,9 @@ C
 
 #ifdef BUILD_GEN1INT
 !     initialize basis sets (large and small components) used in Gen1Int interface
-      call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM(:,1:2),
-     &                       NBLCK(:,1:2), KANG, JCO(:,:,1:2), KBLOCK,
-     &                       NUC(:,1:2), NRC(:,1:2), KPRIM,
-     &                       ALPHA(:,:,1:2), CPRIMU(:,:,:,1:2))
+      call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM,
+     &                       NBLCK, KANG, JCO, KBLOCK,
+     &                       NUC, NRC, KPRIM, ALPHA, CPRIMU)
 #endif
 
 C
