@@ -279,6 +279,17 @@
          call kw_read(word, visual_cfg_scale)
       end if
 
+      if (kw_matches(word, '.CARPOW')) then
+         call kw_read(word, visual_cfg_cartesian_power(1), &
+                            visual_cfg_cartesian_power(2), &
+                            visual_cfg_cartesian_power(3))
+      end if
+
+      if (kw_matches(word, '.DSCALE ')) then
+         call kw_read(word, visual_cfg_scale)
+         visual_cfg_scale=1.0D0/visual_cfg_scale
+      end if
+
       if (kw_matches(word, '.DENSIT')) then
          call read_input_visual_helper(iq_density)
       end if
@@ -432,6 +443,11 @@
 
       if (kw_matches(word, '.RADIAL')) then
          visual_cfg_radial = .true.
+         call kw_read(word, visual_cfg_radial_from(1), &
+                            visual_cfg_radial_from(2), &
+                            visual_cfg_radial_from(3))
+         call kw_read(word, visual_cfg_radial_length)         
+         call kw_read(word, visual_cfg_radial_nr_steps)
       end if
 
       if (kw_matches(word, '.SMALLA')) then

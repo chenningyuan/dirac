@@ -2648,7 +2648,7 @@ C     Written by T.Saue June 28 1996
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      CHARACTER OP1KEY*(*)
+      CHARACTER OP1KEY*(*) ! MI: instead of previous OP1KEY*6; fix for gfortran 4.9
       DIMENSION IPR1OP(MAX1OP)
 C
 C     Search for INDXPR
@@ -2691,7 +2691,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-      CHARACTER OP1KEY*6
+      CHARACTER OP1KEY*(*) ! MI fix for gfortran4.9, instead of  OP1KEY*6
       DIMENSION IPOP1U(*),IPOP1S(*),NOP1(8,2),JOP1(8,2),WORK(LWORK)
 C
       CALL QENTER(OP1KEY)

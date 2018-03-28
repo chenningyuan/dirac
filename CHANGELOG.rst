@@ -5,9 +5,26 @@ hjaaj-esr branch:
 
 New features:
 - .MAXMK2 for \*ESR
-- .G10PPM for \*ESR : request g-shifts to 10 ppm accuracy instead of default of 1 ppt accuracy
+- .G10PPM for \*ESR : request g-shifts to 10 ppm accuracy instead of default of 1 ppt = 1000 ppm accuracy
 
-=======
+-----------------------------------------------------------------------------------------------------
+
+18.alpha (unreleased)
+---------------------
+
+New features:
+
+- The visualization module has been extended to generate various radial distributions using the keyword .RADIAL. Contributor: Trond Saue
+
+-----------------------------------------------------------------------------------------------------
+
+17.1 (unreleased)
+-----------------
+
+- Allow to compile with OpenMP support (this does not imply OpenMP parallelization of the code).
+- Update in CMake framework: pass compilers as cmake variables, not as environment variables.
+- Bugfix in KRCI module (subroutine STRTYP_GAS_REL), reported by Shigeyoshi Yamamoto.
+
 17.0 (2017-12-12)
 -----------------
 
@@ -16,18 +33,16 @@ New features:
 New features:
 
 - Kramers restricted Polarization Propagator in the ADC framework for electronic excitations, activated with ".POLPRP".
-  References:  
-
    M. Pernpointner. The relativistic polarization propagator for the calculation of electronic excitations in heavy systems.
-   J. Chem. Phys. 140, 084108 (2014); http://dx.doi.org/10.1063/1.4865964  
+   J. Chem. Phys. 140, 084108 (2014); http://dx.doi.org/10.1063/1.4865964
 
    M. Pernpointner, L. Visscher and A. B. Trofimov. 
    Four-component Polarization Propagator Calculations of Electron Excitations: Spectroscopic Implications of Spin-Orbit Coupling   Effects. J. Chem. Theory Comput. (2017) submitted.
 
 - Polarizable embedding using PElib (https://gitlab.com/pe-software/pelib-public). Activated with ".PEQM", additional options under \*PEQM.
-  Reference:  
-   E. D. Hedegård, R. Bast, J. Kongsted, J. M. H. Olsen, and H. J. Aa. Jensen.  Relativistic Polarizable Embedding.
-   J. Chem. Theory Comput. 13, 2870-2880 (2017); http://doi.org/10.1021/acs.jctc.7b00162
+
+ Reference:
+ E. D. Hedegård, R. Bast, J. Kongsted, J. M. H. Olsen, and H. J. Aa. Jense:  Relativistic Polarizable Embedding., J. Chem. Theory Comput. 13, 2870-2880 (2017); http://doi.org/10.1021/acs.jctc.7b00162
 
 - New and numerically stable procedure for elimination/freezing of orbitals at SCF level. Author: T. Saue.
 - New ".MVOFAC" option in \*KRMC input section. Author: H. J. Aa. Jensen.
@@ -36,15 +51,15 @@ New features:
 - Write out effective Hamiltonian in Fock space coupled cluster to a file for post processing. Can be used with external code of Andrei Zaitsevskii (St. Petersburg).
 - Provided memory counter for RelCC calculations, what is suitable for memory consuming large scale Coupled Cluster calculations. See the web-documentation.
 - Updated basis_dalton/ with basis set updates in the Dalton distribution:
- - fix of errors in Ahlrichs-pVDZ (several diffuse exponents were a factor 10 too big)
- - fix of errors for 2. row atoms in aug-cc-pCV5Z
- - added many atoms to aug-cc-PVTZ_J
- - added many Frank Jensen "pc" type basis sets
- - added Turbomole "def2" type basis sets
+- fix of errors in Ahlrichs-pVDZ (several diffuse exponents were a factor 10 too big)
+- fix of errors for 2. row atoms in aug-cc-pCV5Z
+- added many atoms to aug-cc-PVTZ_J
+- added many Frank Jensen "pc" type basis sets
+- added Turbomole "def2" type basis sets
 
 Error corrections:
 
-- Fixed errors for quaternion symmetries in 2-electron MO integrals used in CI calculations with GASCIP.  
+- Fixed errors for quaternion symmetries in 2-electron MO integrals used in CI calculations with GASCIP.
   It is now possible to do CI calculations with GASCIP for C1 symmetry (i.e. no symmetry).
 - Fixed the p exponents for Na in the dyall 4z basis sets to match the archive.
   The changes are small so should not significantly affect results.

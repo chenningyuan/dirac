@@ -28,8 +28,8 @@ Setting up DIRAC
   :doc:`HPC cluster (Strasbourg) <installation/examples/hpc-unistra>`
 
 * **pam script:**
-  :doc:`How to set the scratch directory <pam/scratch>` |
-  :doc:`How to define an alternative MPI launcher <pam/mpi_command>` |
+  :doc:`Setting the scratch directory <pam/scratch>` |
+  :doc:`Alternative MPI launcher and passing arguments for it <pam/mpi_command>` |
   :doc:`String replacement <pam/replace>`
 
 
@@ -106,6 +106,9 @@ Tutorials and walkthrus
   :doc:`BSSE <tutorials/dft/bsse>` |
   :doc:`CAM functional <tutorials/dft/cam>` |
   :doc:`Troubleshooting <tutorials/dft/troubleshooting>`
+  
+* **Frozen orbitals:**
+  :doc:`Frozen orbitals <tutorials/frozen_orbitals/tutorial>` 
 
 * **Long-range WFT/short-range DFT:**
   :doc:`General <tutorials/srDFT/general>`
@@ -130,7 +133,8 @@ Tutorials and walkthrus
   :doc:`General overview <tutorials/visual/general/tutorial>` |
   :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>` |
   :doc:`Magnetizability density <tutorials/visual/magnetizability_density/tutorial>` |
-  :doc:`Molecular electrostatic potential <tutorials/visual/mep/tutorial>`
+  :doc:`Molecular electrostatic potential <tutorials/visual/mep/tutorial>` |
+  :doc:`Radial distributions <tutorials/visual/radial_distributions/tutorial>`     
 
 * **Open-shell SCF:**
   :doc:`Basics <tutorials/open_shell_scf/aoc>` |
@@ -196,6 +200,9 @@ Exercises
 
 Developers
 ==========
+
+* **Code review:**
+  :doc:`Code review workflow <programmers/code_review>`
 
 * **Releasing:**
   :doc:`Release preparation <programmers/release_preparation>` |

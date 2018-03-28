@@ -1527,6 +1527,16 @@ C
 #else
         CALL GETENV ('BASDIR',BASDIR)
 #endif
+        LEN_BASDIR = LEN_TRIM(BASDIR)
+!
+!       If string is empty add current directory
+!
+        IF ( LEN_BASDIR .eq. 0 ) THEN
+           BASDIR(1:1) = '.'
+           LEN_BASDIR   = 1
+        END IF
+!       add a trailing blank to avoid problems
+        BASDIR(LEN_BASDIR+1:LEN_BASDIR+1) = ' '
 #if defined (VAR_MPI)
       ENDIF
 #endif /* VAR_MPI */

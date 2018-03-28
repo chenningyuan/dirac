@@ -612,12 +612,19 @@ contains
          end if
       end do
 
-      f = visual_cfg_scale
-      if (visual_cfg_radial) then
-         distance_to_origin = dsqrt(px*px + py*py + pz*pz)
-         f = f*(distance_to_origin**2.0d0)*4.0d0*3.14159265358979323846d0
-      end if
-      result = f*result
+!     Multiply with Cartesian powers
+      do i = 1,visual_cfg_cartesian_power(1)
+        result = px * result    
+      enddo
+      do i = 1,visual_cfg_cartesian_power(2)
+        result = py * result    
+      enddo
+      do i = 1,visual_cfg_cartesian_power(3)
+        result = pz * result    
+      enddo
+      
+!     Scale result 
+      result = visual_cfg_scale*result
 
    end subroutine
 

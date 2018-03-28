@@ -806,7 +806,7 @@ CMI ... perform all this only if we do not restart BSS from DC-SCF or DC-SCF fro
            CALL MEMGET2('REAL','EIG   ',KEIG   ,NORBT ,WORK,KFREE,LFREE)
            CALL MEMGET2('INTE','IBEIG ',KIBEIG ,NORBT ,WORK,KFREE,LFREE)
            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMOSAV),
-     &                WORK(KEIG),WORK(IBKEIG),TOTERG,6,WORK,KFREE,LFREE)
+     &                WORK(KEIG),WORK(KIBEIG),TOTERG,6,WORK,KFREE,LFREE)
           ELSE
            CALL MEMGET2('REAL','CMOSAV',KCMOSAV,0     ,WORK,KFREE,LFREE)
            CALL MEMGET2('REAL','EIG   ',KEIG   ,0     ,WORK,KFREE,LFREE)
@@ -5464,6 +5464,7 @@ C.....Loop over atomic types
       DO IATOM = 1,NONTYP
 C.......Find the total number of basis functions for this atom type
         CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ICENT,1,-1)
+        IF (MBAS == 0) CYCLE
 C.......Read atomic coefficients in C1 format
         INQUIRE(FILE=ATOMFIL(IATOM),EXIST=TOBE)         
         IF(.NOT.TOBE) THEN
