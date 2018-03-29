@@ -5616,6 +5616,10 @@ C..TODO: check for inconsistencies and add stops
 !&&&& .PEQM: polarizable embedding
   166     CONTINUE
 #ifdef HAS_PELIB
+           IF(NBSYM.GT.1) THEN
+             CALL QUIT('Polarized embedding '//
+     &       'does not work with symmetry yet.')
+            ENDIF
             WRITE(LUPRI,*) 'PE library will be used.'
             PEQM = .TRUE.
 #else
