@@ -1,4 +1,4 @@
-#define GASCIP_DEBUG 10
+#define GASCIP_DEBUG -1
 !dirac_copyright_start
 !      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
