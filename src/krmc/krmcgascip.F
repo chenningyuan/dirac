@@ -1,4 +1,4 @@
-#define GASCIP_DEBUG -1
+#define GASCIP_DEBUG 10
 !dirac_copyright_start
 !      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
@@ -26,7 +26,7 @@
 ! define task symbols for CALL DIRAC_PARCTL( task )
 #include "dirac_partask.h"
 
-! Outlay of parallel GASCIP: (Written May 2017, hjaaj)
+! Layout of parallel GASCIP: (Written May 2017, hjaaj)
 ! On Master:
 !   var PAR_GASCIP = PARCAL .and. NDET > 10000
 !   GASCIP_WAKE_NODES -> DIRAC_PARCTL(GASCIP_PAR) + transfers common block info
@@ -474,6 +474,7 @@ C     ----------------------------------------
       CALL GETTIM(CPU1,WLL1)
 #if GASCIP_DEBUG > 1
       write(lupri,*) 'minmk2, maxmk2',minmk2,maxmk2
+      write(lupri,*) 'minocc, maxocc',minocc,maxocc
       write(lupri,*) 'NAELEC, NASHT ',NAELEC, NASHT
       write(lupri,*) 'MK_symmetric  ',MK_symmetric
 #endif
@@ -1117,7 +1118,7 @@ C***********************************************************************
       LOGICAL   UCIBOS
 C
 C dcbgascip.h : IRRP, *
-C    dcborb.h : NASHT
+C    dcborb.h : NASHT, MULTB, NREP
 #include "dcbgascip.h"
 #include "dcborb.h"
 
@@ -1130,9 +1131,10 @@ C    dcborb.h : NASHT
       IF (.NOT. UCIBOS) THEN
 C
 C        The normal symmetry scheme.
+C        Irrep number "nrep+1" is always the totally symmetric boson symmetry.
 C
-         JRRP_A = 0
-         JRRP_B = 0
+         JRRP_A = NREP+1 ! symmetry of vacuum (no a electrons)
+         JRRP_B = NREP+1 ! symmetry of vacuum (no b electrons)
          DO I = 1, NASHT
             IF (MOD(ID,2_8) .EQ. 1) THEN
                JRRP_A = MULTB(IRPAMO(IPTA2O(I)),JRRP_A)
