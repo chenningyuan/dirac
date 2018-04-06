@@ -2721,15 +2721,9 @@ C     CALL QEXIT('OCCLS')
 #ifdef LUCI_DEBUG
          IF(NTEST.GE.100) WRITE(6,*) ' MNAB,MXAB',MNAB,MXAB
 #endif
-         IF(IMS2.EQ.1) THEN
-           MNELFGP(IGAS) = MNAB
-           MXELFGP(IGAS) = MXAB
-           MXELFGP(IGAS) = MIN(2*NOBPT(IGAS),MXELFGP(IGAS))
-         ELSE
-           MNELFGP(IGAS) = MIN(MNELFGP(IGAS),MNAB)
-           MXELFGP(IGAS) = MAX(MXELFGP(IGAS),MXAB)
-           MXELFGP(IGAS) = MIN(2*NOBPT(IGAS),MXELFGP(IGAS))
-         END IF
+         MNELFGP(IGAS) = MIN(MNELFGP(IGAS),MNAB)
+         MXELFGP(IGAS) = MAX(MXELFGP(IGAS),MXAB)
+         MXELFGP(IGAS) = MIN(2*NOBPT(IGAS),MXELFGP(IGAS))
         END DO
 C       ^ End of loop over gasspaces
       END DO

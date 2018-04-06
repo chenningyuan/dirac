@@ -5464,6 +5464,7 @@ C.....Loop over atomic types
       DO IATOM = 1,NONTYP
 C.......Find the total number of basis functions for this atom type
         CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ICENT,1,-1)
+        IF (MBAS == 0) CYCLE
 C.......Read atomic coefficients in C1 format
         INQUIRE(FILE=ATOMFIL(IATOM),EXIST=TOBE)         
         IF(.NOT.TOBE) THEN

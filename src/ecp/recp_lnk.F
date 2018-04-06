@@ -40,6 +40,7 @@
       CHARACTER*80 ELINE
 
       RECPIN1 = 51
+      ECPLIB = .FALSE.
 
 !     Save NONT0 
       ECPNONT(NUC1) = NONT0
@@ -78,7 +79,6 @@
 
 !     Check types of RECP read
 !     ========================
-      ECPLIB = .FALSE.
       IF (MLINE(NMLINE)(4:6).EQ.'LIB') THEN
 
 !        Read From library
