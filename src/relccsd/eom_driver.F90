@@ -28,15 +28,7 @@
 !===============================================
      ncont(1:nrep) = 0
      ncont(active_irrep) = 1
-!    if (spinfr) then
-!       ncont(active_irrep+(nrep/4)) = 1 
-!    elseif (linear) then
-!       ncont(active_irrep+1) = 1 
-!    elseif (nrep==1) then
-!       ncont(active_irrep) = 1 
-!    else
-!       ncont(active_irrep+(nrep/2)) = 1 
-!    endif
+
   end subroutine
 
   subroutine verify_input()
@@ -423,22 +415,10 @@
       else if (relcc_mfd_trial_diagonal) then
           write (iw,*) '  Using (reordered) unit vectors as trial vectors'
 
-! In the following section we generate the guess vectors belonging to a particular state symmetry.
-! Thereby we avoid the sigma vector calculations of the degenerate roots.  
-
-          search_dimension = ncont(state_sym)*no(state_sym) 
-
           allocate(diag_H(ndimr1))
           diag_H = H_II(1:N1:rcw)
 
           xroot = 0 
-
-          fudge_factor = 2
-! here we set the factor to 1 because for C1, with only one fermion irrep,
-! we can't get around to working with the degenerate roots
-          if (nrep.eq.1) fudge_factor = 1
-
-          write(*,*)'# of roots', fudge_factor*nroot
 
           do iroot = 1, nroot
               k = minloc(diag_H) 
@@ -809,31 +789,24 @@
       enddo
       enddo
 
-! In the following section we generate the guess vectors belonging to a particular state symmetry.
-! Thereby we avoid the sigma vector calculations of the degenerate roots.  
-
     call alloc_array(e,nrep)
     call auto_symmetry_offset(e,nv,ncont,.false.,.false.)
 
-     search_dimension = ncont(state_sym)*no(state_sym) 
- !   search_dimension = ncont(state_sym)*no(state_sym) 
-
      allocate(diag_H(ndiml1))
-     diag_H = H_II(1:ndiml1)
+     diag_H = H_II(1:ndiml1:rcw)
 
-        xroot = 1 
+        xroot = 0 
 
-       do iroot = 1, 2*nroot
+       do iroot = 1, nroot
         k = minloc(diag_H) 
-! ashee        write(iw,*)'roots',iroot,H_II(k(1)),k(1) 
         i = k(1)
         diag_H(i) = 8000.0d0
 
-        if (i <= search_dimension) then
-         L1(i,xroot) = 1.0d0
          xroot = xroot + 1
-        endif
+         jroot = i
+         if (rcw.eq.2) jroot = 2*i - 1
 
+         L1(jroot,xroot) = 1.0d0
        enddo
      deallocate(diag_H)
 
@@ -841,12 +814,12 @@
          write (iw,*) '  Using RHS eigenvectors as LHS trial vectors'
 ! if we are reusing the right-hand side eigenvectors, we resort them
 
-          do iroot = 1, nroot
-              call srt1c1 (nrep,ncont,no,eVectorsR(1:N1,iroot:iroot), &
-     &                     L1(1:N1,iroot:iroot))
-              call srt1c1 (nrep,e%oneNonDirac,noot,eVectorsR(N1+1:N,iroot:iroot), &
-     &                     L2(1:N2,iroot:iroot))
-          enddo
+!         do iroot = 1, nroot
+!             call srt1c1 (nrep,ncont,no,eVectorsR(1:N1,iroot:iroot), &
+!    &                     L1(1:N1,iroot:iroot))
+!             call srt1c1 (nrep,e%oneNonDirac,noot,eVectorsR(N1+1:N,iroot:iroot), &
+!    &                     L2(1:N2,iroot:iroot))
+!         enddo
 
       else
 ! otherwise, we are going to generate trial vectors for the lhs
@@ -904,30 +877,20 @@
               allocate(diag_H(N1))
               diag_H = H_II(1:N1)
 
-              xroot = 1
+          xroot = 0 
 
-              fudge_factor = 2
-! here we set the factor to 1 because for C1, with only one fermion irrep,
-! we can't get around to working with the degenerate roots
-              if (nrep.eq.1) fudge_factor = 1
+          do iroot = 1, nroot
+              k = minloc(diag_H) 
+              if (iprnt.ge.2) write(iw,*)'roots',iroot,diag_H(k(1)),k(1) 
+              i = k(1)
+              diag_H(i) = 8000.0d0
+                   xroot = xroot + 1
+                   jroot = i
+                   if (rcw.eq.2) jroot = 2*i - 1
+                   L1(jroot,xroot) = 1.0d0
+          enddo
+          deallocate(diag_H)
 
-              do iroot = 1, fudge_factor*nroot
-                  k = minloc(diag_H)
-                  if (iprnt.ge.3) write(iw,*)'roots',iroot,H_II(k(1)),k(1)
-                  i = k(1)
-                  diag_H(i) = 8000.0d0
-                  if (i <= search_dimension) then
-                      jroot = i
-                      if (rcw.eq.2) jroot = 2*i - 1
-                      L1(jroot,xroot) = 1.0d0
-                      if (rcw.eq.2) then
-                          xroot = xroot + 1
-                      else
-                          xroot = xroot + 1
-                      endif
-                  end if
-              enddo
-              deallocate(diag_H)
           else if (relcc_mfd_trial_restart) then
               stop ('restart from prior LHS vectors not implemented')
           else
@@ -992,28 +955,6 @@
 ! calculate the orbital dimension within which our desired root should belong..
 
   search_dimension = ncont(state_sym)*nv(state_sym) 
-
-!! allocate (r1_dum(ndimr1,ndimr1))
-!!   r1_dum = 0.0d0
-
-!!   do iroot = 1, ndimr1
-!!       r1_dum(iroot,iroot) = 1.0d0
-!!   end do
-
-!!    call trial_vectors_EA(R1_dum,Fbar_PP)
-!!    
-!!    r1 = r1_dum(:,1:nroot) 
-
-!!  deallocate(R1_dum)
-
- !  if (nroot.eq.(ndimr1+ndimr2)) then
- !   do iroot = 1, ndimr1
- !       R1(iroot,iroot) = 1.0d0
- !   end do
- !   do iroot = 1, ndimr2
- !       R2(iroot,ndimr1+iroot) = 1.0d0
- !   end do
- !  else
 
      allocate(diag_H(N1))
      diag_H = H_II(1:N1)
