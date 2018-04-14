@@ -2207,8 +2207,6 @@ C
       NVT = NBUF * MINBUF
 C
 C     We must be able to store at least a NV4 size array, check that.
-C     Since we use this array as work in MAKEFM we also need to store the
-C     first representation of the sorted (non-triangular) OOOO and VOOO ints
 C
       NVTMIN = MAX(NVT,INT(NV4,8))
       NVTMIN = MAX(NVTMIN,JOOOO(2))

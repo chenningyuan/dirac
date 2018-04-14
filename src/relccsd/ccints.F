@@ -592,8 +592,7 @@ C        call relcc_restart_check('VVVV sorted integrals         ',IW)
 C
   600 WRITE (IW,1006)
 C
-      CALL GETFM (INDEX,NSP,EPS,BUF1,BUF2,
-     &            VVOVO,VVOVOA,FOO,FVO,FVV,E0,E1)
+      CALL GETFM (INDEX,NSP,EPS,FOO,FVO,FVV,E0,E1)
 C
 C     This is a restart point : save the files and update status.
 C
@@ -674,8 +673,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       end subroutine
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ADDPROP (PROP_NAME,FF_STRENGTH,NSP,FOCKR,FOCKI,
-     &                    PROPR,PROPI)
+      SUBROUTINE ADDPROP (PROP_NAME,FF_STRENGTH,NSP,FOCKR,FOCKI)
 C
       implicit none
 C
@@ -703,7 +701,6 @@ C
 C---------------Calling variables--------------------------------------
 C
       INTEGER NSP,NSPQ
-      REAL*8 PROPR(NSP,NSP),PROPI(NSP,NSP)
       REAL*8 FOCKR(NSP,NSP),FOCKI(NSP,NSP)
       REAL*8 FF_STRENGTH(2), F_ANTI_HERMITIAN
       CHARACTER*8 PROP_NAME
@@ -712,6 +709,7 @@ C---------------Local variables--------------------------------------
 C
       REAL*8 AH_CHECK
       PARAMETER (AH_CHECK=1.D-5)
+      REAL*8 PROPR(NSP,NSP),PROPI(NSP,NSP)
       CHARACTER*32 ACHAR
       integer i,j,inop
 C
@@ -1297,8 +1295,7 @@ C
       CALL QUIT('ERROR READING 2-E INTEGRALS')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE GETFM (INDEX,NSP,EPS,BUF1,BUF2,VBUF1,VBUF2,
-     &                  FOO,FVO,FVV,E0,E1)
+      SUBROUTINE GETFM (INDEX,NSP,EPS,FOO,FVO,FVV,E0,E1)
 C
       use interface_to_mpi
       implicit none
@@ -1319,7 +1316,6 @@ C---------------Calling variables--------------------------------------
 C
       REAL*8 E0,E1,EPS(*)
       REAL*8 FOO(*),FVO(*),FVV(*)
-      REAL*8 BUF1(*),BUF2(*),VBUF1(*),VBUF2(*)
       INTEGER NSP,INDEX(NSP,NSP,4,*)
 C
 C---------------Common Blocks--------------------------------------
@@ -1344,6 +1340,7 @@ C
       REAL*8 FF_STRENGTH(2)
       CHARACTER*8 PROP_NAME
       integer i,icase,ii,ij,ijoo,ijvo,ind,ioper,irep,ityp,j,ncase,nspq
+      real*8, allocatable :: buf1(:),buf2(:)
 C
 C---------------Executable code--------------------------------------
 C
@@ -1351,6 +1348,7 @@ C
       FOCKSP = EQNS.EQ.'FOCKSP'
 C
       IF (NORECMP) GOTO 100
+      allocate (buf1(nspq),buf2(nspq)) ! scratch arrays for unsorted hamiltonian matrix elements
 C
 C  READ ONE ELECTRON INTEGRALS
 C
@@ -1367,8 +1365,6 @@ C
 C       We may add a property operator here, scaled with a field strength
 C       Note that the input can supply a list of operators, here we just assume
 C       that only one is added.
-C       Use the VBUF arrays as scratch arrays, they will always be large enough
-C
 !MI,EE (Aug2013) extended as we need to more propety operators, each scaled with own 
 !       field strength
         IF (ADD_FINITE_FIELD) THEN
@@ -1378,8 +1374,7 @@ C
            FF_STRENGTH(1) = FF_PROP_STRENGTHS(1,IOPER)
            FF_STRENGTH(2) = FF_PROP_STRENGTHS(2,IOPER)
            PROP_NAME = FF_PROP_NAMES(IOPER)
-           CALL ADDPROP (PROP_NAME,FF_STRENGTH,NSP,
-     &                   BUF1,BUF2,VBUF1,VBUF2)
+           CALL ADDPROP (PROP_NAME,FF_STRENGTH,NSP,BUF1,BUF2)
           ENDDO
         ENDIF
       ENDIF
@@ -1449,6 +1444,7 @@ C-----------------------------------------------------------------------
             ENDDO
          ENDDO
       ENDDO
+      deallocate (buf1,buf2)
 C
   100 CONTINUE
 C
@@ -1461,7 +1457,7 @@ C        We calculate the 1-determinant energy, which can be compared
 C        to the value given by the DHF code as a check on the correctness
 C        of the index transformations.
 C
-         CALL MAKEFM (VBUF1,VBUF2,FOO,FVO,FVV,E0,E1)
+         CALL MAKEFM (FOO,FVO,FVV,E0,E1)
 C
       ELSE
 C
@@ -1476,7 +1472,7 @@ C
          CALL XCOPY (NFOO,A0,0,FOO,1)
          CALL XCOPY (NFVO,A0,0,FVO,1)
          CALL XCOPY (NFVV,A0,0,FVV,1)
-         CALL MAKEFM (VBUF1,VBUF2,FOO,FVO,FVV,E0,E1)
+         CALL MAKEFM (FOO,FVO,FVV,E0,E1)
          CALL XCOPY (NFOO,A0,0,FOO,1)
          CALL XCOPY (NFVO,A0,0,FVO,1)
          CALL XCOPY (NFVV,A0,0,FVV,1)
@@ -1654,7 +1650,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE MAKEFM (BUF1,BUF2,FOO,FVO,FVV,E0,E1)
+      SUBROUTINE MAKEFM (FOO,FVO,FVV,E0,E1)
 C
       implicit none
 C
@@ -1674,7 +1670,6 @@ C---------------Calling variables--------------------------------------
 C
       REAL*8 E0,E1
       REAL*8 FOO(*),FVO(*),FVV(*)
-      REAL*8 BUF1(*),BUF2(*)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1686,10 +1681,27 @@ C
 C---------------Local variables--------------------------------------
 C
       REAL*8 CSUM(2)
+      real*8, allocatable :: buf1(:),buf2(:)
       integer ii,irep,k,kk,krep
+      integer*8 nvtdim1, nvtdim2
 C
 C---------------Executable code--------------------------------------
 C
+
+C     Calculate size needed for buffer array 1: should be able to hold all unsorted integrals of types 1, 2, and 4
+      nvtdim1 = INT(NV1,8)
+      nvtdim1 = MAX(nvtdim1,INT(NV2,8))
+      nvtdim1 = MAX(nvtdim1,INT(NV4,8))
+C     Calculate size needed for buffer array 2: should be able to hold all sorted integrals of types 1, 2, and 4
+C     for which the product irrep is totally symmetric. This is usually a smaller number, but due to less permutation
+C     symmetry it may become larger than nvtdim1 in case of no point group symmetry.
+      nvtdim2 = INT(JOOOO(2),8)
+      nvtdim2 = MAX(nvtdim2,INT(JVOOO(2),8))
+      nvtdim2 = MAX(nvtdim2,INT(JVVOO(2),8))
+
+      allocate(buf1(rcw*nvtdim1))
+      allocate(buf2(rcw*nvtdim2))
+
       E0 = AR0
       E1 = AR0
 C
@@ -1759,6 +1771,8 @@ C---------------------------------------------------------------------
          KK = KK - NO(KREP) * NFVV * RCW
       ENDDO
 C
+      deallocate(buf1)
+      deallocate(buf2)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
