@@ -1407,11 +1407,17 @@ Options are also read from ~/.diracrc"""
             # additional valgrind flags to be read from files ~/.valgrindrc and ./.valgrindrc
             if self.vg_debug:
                 # master the final command launcher (as std debugger); TODO: adapt for Windows
-                self.dirac_cmd =  self.dirac_cmd + \
-                   ' valgrind --log-fd=1 ' + dirac_executable + ' | tee ' + self.output_file_full
+                if self.dirac_cmd:
+                    self.dirac_cmd =  self.dirac_cmd + \
+                       ' valgrind --log-fd=1 ' + dirac_executable + ' | tee ' + self.output_file_full
+                else:
+                    self.dirac_cmd=' valgrind --log-fd=1 ' + dirac_executable + ' | tee ' + self.output_file_full
             else:
                # no valgrind debugging, standard parallel run
-                self.dirac_cmd =  self.dirac_cmd + dirac_executable
+                if self.dirac_cmd:
+                    self.dirac_cmd =  self.dirac_cmd + dirac_executable
+                else:
+                    self.dirac_cmd =  dirac_executable
 
         else:
             # serial run (also in debugger)

@@ -1,6 +1,5 @@
-      SUBROUTINE amplitude_equation_T2 (EPS,T1,T2,
-     &                   GO,GV,HOV,H,AZ,CZ,GOO,GVV,
-     &                   BUF1,BUF2,BUF3,NBUF3,S2)
+      SUBROUTINE amplitude_equation_T2 (T1,T2,
+     &          GO,GV,HOV,H,AZ,BUF1,BUF2,BUF3,NBUF3,S2)
 C
       implicit none
 C
@@ -19,12 +18,10 @@ C
 C---------------Calling variables--------------------------------------
 C
       INTEGER NBUF3
-      REAL*8 EPS(*)
       REAL*8 T1(*),T2(*)
       REAL*8 S2(*)
       REAL*8 GO(*),GV(*),HOV(*)
-      REAL*8 GOO(*),GVV(*)
-      REAL*8 AZ(*),H(*),CZ(*)
+      REAL*8 AZ(*),H(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)
 C
 C---------------Common Blocks--------------------------------------

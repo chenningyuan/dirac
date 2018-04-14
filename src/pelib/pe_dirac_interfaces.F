@@ -238,26 +238,25 @@
 
       subroutine pelib_ifc_response(fao, dens1, ndmat, dmat_ih_sym)
         use polarizable_embedding, only: pe_master
-!!     Written by: Erik Donovan Hedegrd (edh) 
+!!     Written by: Erik Donovan Hedegrd (edh)
 !!     Purpose   : Calculate dynamical pe response part and add it to the
-!!                 one index transformed fock matrix 
+!!                 one index transformed fock matrix
         implicit none
 #include "priunit.h"
 #include "dcbbas.h"
 #include "dcborb.h"
         ! input: (ndmat = number of b-vectors; dmat_ih_sym = symmetry
-        ! wrt. hermicity; dens1 = one-index-transformed density matrix) 
-        ! Note: dens1 should have dim. n2bbasxq, but is passed
-        ! from routine GMOLITX1 with N2ORBXQ(for reasons of memory re-use) - 
-        ! for this reason, ioff is defined
+        ! wrt. hermicity; dens1 = one-index-transformed density matrix)
+        ! Note: dens1 set to dim. n2bbasxq, but is passed
+        ! from routine GMOLITX1 with N2ORBXQ (for reasons of memory re-use) -
         integer, intent(in)                       :: ndmat
         integer, intent(in)                       :: dmat_ih_sym(ndmat)
-        real*8, dimension(n2orbxq,*),  intent(in) :: dens1
-        ! output (fao = total one-index transformed fock matrix) 
-        real*8, dimension(n2bbasxq,*), intent(inout) :: fao 
+        real*8, dimension(n2bbasxq,*),  intent(in) :: dens1
+        ! output (fao = total one-index transformed fock matrix)
+        real*8, dimension(n2bbasxq,*), intent(inout) :: fao
         ! local
-        integer                           :: i, j, k, l, ioff
-        real*8, dimension(:), allocatable :: dlmat_triangle 
+        integer                           :: i, j, k, l
+        real*8, dimension(:), allocatable :: dlmat_triangle
         real*8, dimension(:), allocatable :: flmat_triangle
 
         call qenter('pelib_ifc_response')
@@ -268,20 +267,19 @@
         dlmat_triangle = 0.0d0
         flmat_triangle = 0.0d0
         k = 1
-! edh: We only construct dlmat_triangle for the hermitic part
+! edh: We only construct dlmat_triangle for the symmetric real part of dens1
 ! ihrmop(l)=1 of dens1 (i.e. transformed density matrix)
         ! LL block
         do l = 1, ndmat
            if (dmat_ih_sym(l) == -1) cycle
-           ioff = (l-1)*n2bbasxq
            do i = 1, ntbas(1)
               do j = 1, i
                  if (i == j) then
                     dlmat_triangle(k) =
-     &              2.0d0*dens1((ioff+(i-1)*ntbas(0) + j), 1)
+     &              2.0d0*dens1(((i-1)*ntbas(0) + j), l)
                  else
                     dlmat_triangle(k) =
-     &              4.0d0*dens1((ioff+(i-1)*ntbas(0) + j), 1)
+     &              4.0d0*dens1(((i-1)*ntbas(0) + j), l)
                  end if
                  k = k + 1
               end do
@@ -292,16 +290,16 @@
                  if (j > ntbas(1)) then
                     if (i == j) then
                        dlmat_triangle(k) =
-     &                 2.0d0*dens1((ioff+(i-1)*ntbas(0) + j), 1)
+     &                 2.0d0*dens1(((i-1)*ntbas(0) + j), l)
                     else
                        dlmat_triangle(k) =
-     &                 4.0d0*dens1((ioff+(i-1)*ntbas(0) + j), 1)
+     &                 4.0d0*dens1(((i-1)*ntbas(0) + j), l)
                     end if
                  end if
                  k = k + 1
               end do
            end do
-        end do         
+        end do
 #if defined(VAR_MPI)
         call pelib_ifc_start_slaves(3)
 #endif
@@ -318,7 +316,7 @@
            if (dmat_ih_sym(l) == -1) cycle
            do i = 1, ntbas(1)
               do j = 1, i
-                 if (i == j) then 
+                 if (i == j) then
                     fao(((i-1)*ntbas(0) + j), l) =
      &              fao(((i-1)*ntbas(0) + j), l)
      &              + flmat_triangle(k)
@@ -360,7 +358,7 @@
 
       end subroutine pelib_ifc_response
       subroutine pelib_ifc_london(fckmats)
-! edh modify for DIRAC 
+! edh modify for DIRAC
           use polarizable_embedding, only: pe_master
           implicit none
 #include "inforb.h"
@@ -467,7 +465,7 @@
 
 !
 ! edh: The remaining is left-over from dalton: quadratic and cubic response,
-! PE-MCSCF (linear and quadratic response + energy). 
+! PE-MCSCF (linear and quadratic response + energy).
 !      subroutine pe_grad(cref, cmo, cindx, dv, grd, energy, wrk, nwrk)
 !!
 !!     Written by Erik Donovan Hedegrd (edh) and Jgvan Magnus H. Olsen
