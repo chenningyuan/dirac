@@ -63,7 +63,8 @@ contains
                                     pz,      &
                                     ao,      &
                                     buffer,  &
-                                    result)
+                                    result,  &
+                                    jb_input)
 
 !     --------------------------------------------------------------------------
       integer, intent(in)  :: nr_dmat
@@ -75,6 +76,7 @@ contains
       real(8)              :: ao(*)
       real(8)              :: buffer(*)
       real(8), intent(out) :: result(0:3)
+      real(8), intent(in), optional    :: jb_input(3)
 !     --------------------------------------------------------------------------
       integer              :: imat, i, icomp
       real(8)              :: v(3), v2(3)
@@ -491,13 +493,17 @@ contains
                 (visual_cfg_property(imat) == iq_bdipy) .or. &
                 (visual_cfg_property(imat) == iq_bdipz)) then
 
-               call get_j(v,            &
-                          cval,         &
-                          D(imat)%irep, &
-                          D(imat)%nrow, &
-                          D(imat)%elms, &
-                          buffer,       &
-                          ao)
+               if (present(jb_input)) then
+                 v = jb_input
+               else
+                 call get_j(v,            &
+                            cval,         &
+                            D(imat)%irep, &
+                            D(imat)%nrow, &
+                            D(imat)%elms, &
+                            buffer,       &
+                            ao)
+               end if
 
                rx = px - visual_cfg_gauge_origin(1)
                ry = py - visual_cfg_gauge_origin(2)
@@ -531,6 +537,9 @@ contains
                               ao)
                   v = -0.5d0*v
                else
+                  if (present(jb_input)) then
+                    v = jb_input
+                  else
                   call get_j(v,            &
                              cval,         &
                              D(imat)%irep, &
@@ -538,6 +547,7 @@ contains
                              D(imat)%elms, &
                              buffer,       &
                              ao)
+               end if
                end if
                if (visual_cfg_london .and. .not. visual_cfg_london_skip_direct) then
                   if (levyle) then

@@ -453,6 +453,11 @@
                             visual_cfg_nics_origin(3))
       end if
 
+      if (kw_matches(word, '.READJB')) then
+         visual_cfg_3d_readjb = .true.
+         read(get_file_unit(), *) visual_cfg_3d_jbfile
+      end if
+
       if (kw_matches(word, '.RADIAL')) then
          visual_cfg_radial = .true.
          call kw_read(word, visual_cfg_radial_from(1), &

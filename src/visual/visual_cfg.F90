@@ -100,7 +100,9 @@ module visual_cfg
    integer, public :: visual_cfg_ncube(1:3) = 0
    real(8), public :: visual_cfg_add_3d     = 4.0d0
    logical, public :: visual_cfg_3d_gridimp = .false.
+   logical, public :: visual_cfg_3d_readjb  = .false.
    character(80), public :: visual_cfg_3d_gridfil
+   character(80), public :: visual_cfg_3d_jbfile
 
 !                     integration in 3d
    logical, public :: visual_cfg_3d_integration = .false.
