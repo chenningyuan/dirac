@@ -1883,7 +1883,7 @@ C
       IF (PEQM) THEN
         ! The PE Fock matrix is added to F2 before entering ERGCAL
         ! and the electronic PE energy is therefore added to E2PART.
-        ! Therefore we subtract it contribution from the total PE energy.
+        ! Therefore we subtract its' contribution from the total PE energy.
         ALLOCATE(PE_FMAT(N2BBASX))
         E_PE = 0.0D0
         CALL PELIB_IFC_FOCK(DMAT, PE_FMAT, PE_TOT_NRG, PE_EL_NRG)
@@ -1921,6 +1921,13 @@ C
       end if
 
       DHFERG = DHFERG + ELERGY
+      
+#ifdef HAS_PELIB
+      ! edh: Correct also elergy for printing...
+      if (peqm) then 
+        elergy = elergy - 0.5d0 * pe_el_nrg
+      end if
+#endif
 C
       IF(IPRSCF.GE.1) THEN
          CALL HEADER('Output from ERGCAL',-1)
