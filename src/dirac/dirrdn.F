@@ -4370,26 +4370,28 @@ C&&& POLNRM: Normalize polarization contribution
  11            CONTINUE
 C&&& ATOMS : Do projection analysis using atomic fragments
                   PATOMS = .TRUE.
-                  NREFS=NUCDEP
-                  IF((NREFS+1).GT.MAXREF) THEN
+                  IREFS=1
+                  ININD=1
+                  DO ITYP = 1,NONTYP
+                    IF(.NOT.NOORBT(ININD)) THEN
+                      READ(LUCMD,'(A6)') REFFIL(IREFS)
+                      READ(LUCMD,'(A72)') VECREF(1,IREFS)
+                      NPROJNUC(IREFS)=1
+                      DO J = 0,NONT(ITYP)-1
+                        IREFS = IREFS + NUCDEG(ININD+J)
+                      ENDDO
+                    ENDIF
+                    ININD = ININD + NONT(ITYP)
+                  ENDDO
+                  IF(IREFS.GT.MAXREF) THEN
                     WRITE(LUPRI,'(A,I5)')
-     &         '* Number of atomic types specified  :',NREFS,
+     &         '* Number of atomic types specified  :',IREFS,
      &         '* Current maximum no. of fragments  :',MAXREF
                     CALL QUIT('*PROJECT input: Too many fragments !')
                   ENDIF
-                  INDEP=1
-                  ININD=1
-                  DO ITYP = 1,NONTYP
-                    READ(LUCMD,'(A6)') REFFIL(INDEP)
-                    NPROJNUC(INDEP)=1
-                    READ(LUCMD,'(A72)') VECREF(1,INDEP)
-                    DO J = 0,NONT(ITYP)-1
-                      INDEP = INDEP + NUCDEG(ININD+J)
-                    ENDDO
-                    ININD = ININD + NONT(ITYP)
-                  ENDDO
-                  REFFIL(INDEP) = 'Polari'
-               GO TO 100
+                  REFFIL(IREFS) = 'Polari'
+                  NREFS=IREFS-1
+                  GO TO 100
  12            CONTINUE
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
@@ -4479,13 +4481,15 @@ C
         WRITE(LUPRI,'(1X,A)')
      &   '* Projection analysis based on atomic fragments, ',
      &   '  calculated in their individual bases'
-        INDEP=1
+        IREFS=1
         ININD=1
         DO ITYP = 1,NONTYP
-          WRITE(LUPRI,'(A6,3X,A72)') REFFIL(INDEP),VECREF(1,INDEP)
-          DO J = 0,NONT(ITYP)-1
-            INDEP = INDEP + NUCDEG(ININD+J)
-          ENDDO
+          IF(.NOT.NOORBT(ININD)) THEN
+            WRITE(LUPRI,'(6X,A6,3X,A72)') REFFIL(IREFS),VECREF(1,IREFS)
+            DO J = 0,NONT(ITYP)-1
+              IREFS = IREFS + NUCDEG(ININD+J)
+            ENDDO
+          ENDIF 
           ININD = ININD + NONT(ITYP)
         ENDDO
       ELSE
