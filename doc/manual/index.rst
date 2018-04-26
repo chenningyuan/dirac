@@ -23,7 +23,8 @@ Keyword reference
    - :doc:`*FDE <fde>` --- Frozen Density Embedding directives
    - :doc:`*PCM <pcm>` --- Polarizable Continuum Model directives
    - :doc:`*PCMSOL <pcmsolver>` --- PCMSolver module directives
-
+   - :doc:`*PEQM <peqm>` --- Polarizable embedding model directives
+    
 * :doc:`**WAVE FUNCTION <wave_function>` --- Method specification
    - :doc:`SCF <wave_function/scf>` --- SCF module (Hartree-Fock/Kohn-Sham)
    - :doc:`MP2CAL <wave_function/mp2cal>` --- second-order Møller-Plesset perturbation theory

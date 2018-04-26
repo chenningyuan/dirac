@@ -235,7 +235,7 @@ Contents of the molecule file
 -----------------------------
  
 INTGRL                                                                                              
-Projection CH4 pour différentes bases :                                                             
+
 DunningDZ                                                                                           
 C   2    0                                                                                          
         6.    1                                                                                     
@@ -299,7 +299,7 @@ FINISH
   Title Cards
   -----------
 
-  Projection CH4 pour différentes bases :                                 
+  Projection CH4 pour diff?rentes bases :                                 
   DunningDZ                                                               
 
   Nuclear Gaussian exponent for atom of charge   6.000 :    6.8077502929D+08

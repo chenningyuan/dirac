@@ -4320,3 +4320,20 @@ C***********************************************************************
       CALL ICOPY(NDIM,IA(IA1),IASTEP,IB(IB1),IBSTEP)
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE CHECK_FOR_OPEN_FILES
+C***********************************************************************
+C
+C     Check for open files within some range of unit numbers
+C
+C***********************************************************************
+      INTEGER I
+      LOGICAL ITSOPEN
+      DO I = 1,300
+         INQUIRE(UNIT=I,OPENED=ITSOPEN)
+         IF(ITSOPEN) THEN
+           WRITE(6,*) 'Open file. Unit = ',I
+         ENDIF
+      ENDDO
+      END
+      

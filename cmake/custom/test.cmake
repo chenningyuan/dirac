@@ -136,9 +136,11 @@ dirac_test(lucita_q_corrections "short;qcorr;ci" "")
 dirac_test(x2c-SCF_to_4c-SCF "short;x2c;4c;scf" "")
 dirac_test(import_mos "short;import;scf;mcscf" "")
 dirac_test(operators_mo_mtx_elements "short;operators" "")
+dirac_test(diagonalization "short;external" "")
 dirac_test(eomcc "short;cc" "")
 dirac_test(eomip_energy_symmetry "medium;cc" "")
 dirac_test(eomea_energy_symmetry "medium;cc" "")
 dirac_test(eomee_energy_symmetry "medium;cc" "")
 # disabing eomcc expectation value test until the code is verified
 #dirac_test(eomcc_expval "short;cc" "")
+

@@ -404,10 +404,17 @@ class TestRun:
         if self.debug:
             print('\nlaunching command: %s' % ' '.join(command))
 
-        process = subprocess.Popen(command,
-                                   stdin=subprocess.PIPE,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE)
+        if sys.version_info[0] == 2:
+            process = subprocess.Popen(command,
+                                       stdin=subprocess.PIPE,
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.PIPE)
+        else:
+            process = subprocess.Popen(command,
+                                       stdin=subprocess.PIPE,
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.PIPE,
+                                       encoding='utf8')
         stdout, stderr = process.communicate()
 
         if self.debug:

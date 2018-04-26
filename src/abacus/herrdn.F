@@ -741,12 +741,11 @@ C
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM,
      &            DOOWN,blk)
 
-#if(defined BUILD_GEN1INT && BUILD_GEN1INT)
+#ifdef BUILD_GEN1INT
 !     initialize basis sets (large and small components) used in Gen1Int interface
-      call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM(:,1:2),
-     &                       NBLCK(:,1:2), KANG, JCO(:,:,1:2), KBLOCK,
-     &                       NUC(:,1:2), NRC(:,1:2), KPRIM,
-     &                       ALPHA(:,:,1:2), CPRIMU(:,:,:,1:2))
+      call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM,
+     &                       NBLCK, KANG, JCO, KBLOCK,
+     &                       NUC, NRC, KPRIM, ALPHA, CPRIMU)
 #endif
 
 C
@@ -2628,13 +2627,13 @@ C
               CALL ORBOUT(4,IQM(1,4),NBLCK(1,4),JCO(1,1,4),
      &                  NUC(1,4),NRC(1,4),SEG(1,4),
      &                  WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
-     &                  CPRIMU(1,1,1,4),NRMPRI)
+     &                  ALPHA(1,1,4),CPRIMU(1,1,1,4),NRMPRI)
                IF (IPREAD .GT. 2) THEN
                   NRMPRI = .TRUE.
               CALL ORBOUT(4,IQM(1,4),NBLCK(1,4),JCO(1,1,4),
      &                     NUC(1,4),NRC(1,4),SEG(1,4),
      &                     WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
-     &                     CPRIMU(1,1,1,4),NRMPRI)
+     &                     ALPHA(1,1,4),CPRIMU(1,1,1,4),NRMPRI)
                END IF
             ENDIF
          ENDIF

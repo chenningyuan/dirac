@@ -1474,16 +1474,26 @@ C       ***************************************************
 C
         CALL RSETWOP(WFTYP,WORK,KFREE,LFREE)
         CALL FLSHFO(LUPRI)
-        IF (NZCONF .LE. 0) GO TO 100
+        IF (NZCONF .LE. 0) THEN
+           WRITE(LUPRI,'(/A)')
+     &      'INFO: CI skipped because no determinants in this symmetry'
+           GO TO 100
+        ELSE IF (NZCONF .LT. NCIROOT) THEN
+           WRITE(LUPRI,'(/A,I0,A/A,I0)')
+     &        'INFO: Only ',NZCONF,' determinants in this symmetry',
+     %        'INFO: Number of CI roots therefore reduced to ',NZCONF
+           NCIROOT = NZCONF
+        END IF
 C
 C       ***************************************************
 C       *** Memory allocation *****************************
 C       ***************************************************
 C
         IF (OPT_CIPROGRAM .EQ. 'LUCIAREL') THEN
-           CALL MEMGET('REAL',KCREF ,0       ,WORK,KFREE,LFREE)
+           CALL MEMGET2('REAL','CVECS',KCVECS,0, WORK,KFREE,LFREE)
         ELSE
-           CALL MEMGET('REAL',KCREF ,NZCONFQ ,WORK,KFREE,LFREE)
+           CALL MEMGET2('REAL','CVECS',KCVECS,NCIROOT*NZCONFQ,
+     &        WORK,KFREE,LFREE)
         END IF
 !       disable all actions related to a spinfree MCSCF run
         spinfr_krmc = .false.
@@ -1493,7 +1503,7 @@ C       ***************************************************
 C       *** Call DRIVER for CI calculation ****************
 C       ***************************************************
 C
-        CALL KRCI_CALC_1(WORK(KCMO),WORK(KCREF),WORK(KIBEIG),
+        CALL KRCI_CALC_1(WORK(KCMO),WORK(KCVECS),WORK(KIBEIG),
      &                   WFTYP,WFCONV,WORK,KFREE,LFREE)
 C
         CALL MEMREL('KRCI_CALC_1',WORK,KWORK,KFREE_100_LOOP,
@@ -1561,7 +1571,7 @@ C
       END
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE KRCI_CALC_1(CMO,CREF,IBEIG,WFTYP,WFCONV,WORK,
+      SUBROUTINE KRCI_CALC_1(CMO,CVECS,IBEIG,WFTYP,WFCONV,WORK,
      &                       KFREE,LFREE)
 C***********************************************************************
 C
@@ -1589,7 +1599,7 @@ C
 #include "krciprop.h"
 C
       LOGICAL   WFCONV, DO4INDEX, TOBE
-      DIMENSION WORK(*), CMO(*), CREF(*), IBEIG(*)
+      DIMENSION WORK(*), CMO(*), CVECS(*), IBEIG(*)
       CHARACTER WFTYP*(*), SECTID*12, CPUTID*12, WALLTID*12
 C
       CALL QENTER('KRCI_CALC_1')
@@ -1643,8 +1653,8 @@ C     Do not write orbitals to file KRMCSCF in ROPTST.
 C     KRMCSCF may not be opened.
       IWRT = 0
 
-      CALL ROPTST(IOPTST,IWRT,CMO,CREF,IBEIG,IPROPT,WORK,KFREE,LFREE)
-C     CALL ROPTST(ISTART,IWRT,CMO,CREF,IBEIG,IPRINT,WORK,KFREE,LFREE)
+      CALL ROPTST(IOPTST,IWRT,CMO,CVECS,IBEIG,IPROPT,WORK,KFREE,LFREE)
+C     CALL ROPTST(ISTART,IWRT,CMO,CREF ,IBEIG,IPRINT,WORK,KFREE,LFREE)
 C
       IF (KTRLVL.eq.5) GOTO 3000
 C
@@ -1659,7 +1669,7 @@ C
       WFCONV = .TRUE.
 C
       CALL GETTIM(CPUTOT2,WALLTOT2)
-      CPUTID = SECTID(CPUTOT2-CPUTOT1)
+      CPUTID  = SECTID(CPUTOT2-CPUTOT1)
       WALLTID = SECTID(WALLTOT2-WALLTOT1)
       WRITE(LUPRI,9300) CPUTID,WALLTID
 C

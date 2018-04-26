@@ -93,13 +93,13 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    Ulf Ekstroem             University of Oslo                Norway        *
  *    Ephraim Eliav            University of Tel Aviv            Israel        *
  *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
- *    Elke Fasshauer           University of Copenhagen          Denmark       *
+ *    Elke Fasshauer           University of Aarhus              Denmark       *
  *    Timo Fleig               Universite Toulouse III           France        *
  *    Olav Fossgaard           UiT The Arctic University of      Norway        *
  *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
- *    Erik D. Hedegård         Lund University                   Sweden        
- *
+ *    Erik D. Hedegaard        Lund University                   Sweden        *
  *    Trygve Helgaker          University of Oslo                Norway        *
+ *    Benjamin Helmich-Paris   Vrije Universiteit Amsterdam      Netherlands   *
  *    Johan Henriksson         Linkoeping University             Sweden        *
  *    Miroslav Ilias           Matej Bel University              Slovakia      *
  *    Christoph R. Jacob       TU Braunschweig                   Germany       *
@@ -114,8 +114,7 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    Patrick Norman           Linkoeping University             Sweden        *
  *    Malgorzata Olejniczak    CNRS/Universite de Lille          France        *
  *    Jeppe Olsen              Aarhus University                 Denmark       *
- *    Jógvan Magnus H. Olsen   University of Southern Denmark    Denmark       
- *
+ *    Jogvan Magnus H. Olsen   University of Southern Denmark    Denmark       *
  *    Young Choon Park         KAIST, Daejeon                    South Korea   *
  *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
  *    Markus Pernpointner      University of Heidelberg          Germany       *
@@ -123,6 +122,7 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    Kenneth Ruud             UiT The Arctic University of      Norway        *
  *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
  *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
+ *    Avijit Shee              University of Michigan            USA           *
  *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
  *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
  *    Joern Thyssen            University of Southern Denmark    Denmark       *
@@ -132,8 +132,7 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    Toke Winther             University of Southern Denmark    Denmark       *
  *    Shigeyoshi Yamamoto      Chukyo University                 Japan         *
  *                                                                             *
- *    For the complete list of contributors to the DIRAC code see our          *
- *    website http://www.diracprogram.org                                      *
+ *    For more information about the DIRAC code see http://diracprogram.org    *
  *                                                                             *
  *    This is an experimental code. The authors accept no responsibility       *
  *    for the performance of the code or for the correctness of the results.   *
@@ -150,13 +149,14 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    written by L. Visscher, H. J. Aa. Jensen, R. Bast, and T. Saue,          *
  *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,            *
  *    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *
- *    O. Fossgaard, A. S. P. Gomes, T. Helgaker, J. Henriksson, M. Ilias,      *
- *    Ch. R. Jacob, S. Knecht, S. Komorovsky, O. Kullie, J. K. Laerdahl,       *
- *    C. V. Larsen, Y. S. Lee, H. S. Nataraj, M. K. Nayak, P. Norman,          *
- *    G. Olejniczak, J. Olsen, Y. C. Park, J. K. Pedersen, M. Pernpointner,    *
- *    R. Di Remigio, K. Ruud, P. Salek, B. Schimmelpfennig, J. Sikkema,        *
- *    A. J. Thorvaldsen, J. Thyssen, J. van Stralen, S. Villaume, O. Visser,   *
- *    T. Winther, and S. Yamamoto (see http://www.diracprogram.org).           *
+ *    O. Fossgaard, A. S. P. Gomes, E. D. Hedegrd, T. Helgaker,               *
+ *    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky,         *
+ *    O. Kullie, J. K. Laerdahl, C. V. Larsen, Y. S. Lee, H. S. Nataraj,       *
+ *    M. K. Nayak, P. Norman, G. Olejniczak, J. Olsen, J. M. H. Olsen,         *
+ *    Y. C. Park, J. K. Pedersen, M. Pernpointner, R. Di Remigio, K. Ruud,     *
+ *    P. Salek, B. Schimmelpfennig, A. Shee, J. Sikkema, A. J. Thorvaldsen,    *
+ *    J. Thyssen, J. van Stralen, S. Villaume, O. Visser,T. Winther,           *
+ *    and S. Yamamoto (see http://diracprogram.org).                           *
  *                                                                             *
  *******************************************************************************
 
@@ -164,41 +164,41 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 Version information
 -------------------
 
-Branch        | master
-Commit hash   | 36d6799
-Commit author | Miroslav Ilias
-Commit date   | Mon Sep 11 19:33:16 2017 +0200
+Branch        | master-format-change
+Commit hash   | eaf8256
+Commit author | Hans Jørgen Aagaard Jensen
+Commit date   | Fri Mar 9 17:50:53 2018 +0000
 
 
 Configuration and build information
 -----------------------------------
 
 Who compiled             | milias
-Compiled on server       | lxir127
-Operating system         | Linux-3.16.0-4-amd64
-CMake version            | 3.5.0
+Compiled on server       | lxi082
+Operating system         | Linux-3.16.0-5-amd64
+CMake version            | 3.0.2
 CMake generator          | Unix Makefiles
-CMake build type         | release
-Configuration time       | 2017-09-12 08:00:46.217377
+CMake build type         | debug
+Configuration time       | 2018-03-09 19:07:51.805506
 Python version           | 2.7.9
-Fortran compiler         | /cvmfs/it.gsi.de/compiler/intel/15.0/bin/ifort
-Fortran compiler version | 15.0
-Fortran compiler flags   |  -xHost -w -assume byterecl -g -traceback -DVAR_IFORT -i8 -xHost -w -assume byterecl -g -traceback -DVAR_IFORT -i8
-C compiler               | /cvmfs/it.gsi.de/compiler/intel/15.0/bin/icc
-C compiler version       | 15.0
-C compiler flags         |  -xHost -g -wd981 -wd279 -wd383 -wd1572 -wd177 -xHost -g -wd981 -wd279 -wd383 -wd1572 -wd177
-C++ compiler             | /cvmfs/it.gsi.de/compiler/intel/15.0/bin/icpc
-C++ compiler version     | 15.0.3
-C++ compiler flags       |  -xHost -Wno-unknown-pragmas -xHost -Wno-unknown-pragmas
+Fortran compiler         | /cvmfs/it.gsi.de/compiler/intel/17.0/compilers_and_libraries_2017.0.098/linux/bin/intel64/ifort
+Fortran compiler version | 17.0
+Fortran compiler flags   |  -w -assume byterecl -g -traceback -DVAR_IFORT -w -assume byterecl -g -traceback -DVAR_IFORT
+C compiler               | /usr/bin/gcc
+C compiler version       | 4.9.2
+C compiler flags         |  -g -g
+C++ compiler             | /usr/bin/g++
+C++ compiler version     | 4.9.2
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused
 Static linking           | False
-64-bit integers          | True
+64-bit integers          | False
 MPI parallelization      | False
 MPI launcher             | unknown
-Math libraries           | -Wl,--start-group;/cvmfs/it.gsi.de/compiler/intel/15.0/composer_xe_2015.3.187/mkl/lib/intel64/libmkl_lapack95_ilp64.a;/cvmfs/it.gsi.de/compiler/intel/15.0/composer_xe_2015.3.187/mkl/lib/intel64/libmkl_intel_ilp64.so;-openmp;-Wl,--end-group;-Wl,--start-group;/cvmfs/it.gsi.de/compiler/intel/15.0/composer_xe_2015.3.187/mkl/lib/intel64/libmkl_intel_ilp64.so;/cvmfs/it.gsi.de/compiler/intel/15.0/composer_xe_2015.3.187/mkl/lib/intel64/libmkl_intel_thread.so;/cvmfs/it.gsi.de/compiler/intel/15.0/composer_xe_2015.3.187/mkl/lib/intel64/libmkl_core.so;/usr/lib/x86_64-linux-gnu/libpthread.so;/usr/lib/x86_64-linux-gnu/libm.so;-openmp;-Wl,--end-group
+Math libraries           | -Wl,--start-group;/cvmfs/it.gsi.de/compiler/intel/17.0/compilers_and_libraries_2017.0.098/linux/mkl/lib/intel64/libmkl_lapack95_lp64.a;/cvmfs/it.gsi.de/compiler/intel/17.0/compilers_and_libraries_2017.0.098/linux/mkl/lib/intel64/libmkl_intel_lp64.so;-openmp;-Wl,--end-group;-Wl,--start-group;/cvmfs/it.gsi.de/compiler/intel/17.0/compilers_and_libraries_2017.0.098/linux/mkl/lib/intel64/libmkl_intel_lp64.so;/cvmfs/it.gsi.de/compiler/intel/17.0/compilers_and_libraries_2017.0.098/linux/mkl/lib/intel64/libmkl_intel_thread.so;/cvmfs/it.gsi.de/compiler/intel/17.0/compilers_and_libraries_2017.0.098/linux/mkl/lib/intel64/libmkl_core.so;/usr/lib/x86_64-linux-gnu/libpthread.so;/usr/lib/x86_64-linux-gnu/libm.so;-openmp;-Wl,--end-group
 Builtin BLAS library     | OFF
 Builtin LAPACK library   | OFF
 Explicit libraries       | unknown
-Compile definitions      | MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INT_STAR8;INSTALL_WRKMEM=64000000;HAS_PCMSOLVER;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT
+Compile definitions      | MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;HAS_PCMSOLVER;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT
 
 
  Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
@@ -207,9 +207,8 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Sun Nov 12 21:09:49 2017
-     Host name              : lxi098                                  
-  +++++ entering dirac/DIRCTL ++++++
+     Date and time (Linux)  : Fri Mar  9 20:13:18 2018
+     Host name              : lxi082                                  
 
 
 Contents of the input file
@@ -372,7 +371,7 @@ FINISH
 
  Symmetry point group found: D(oo,h)        
 
- The following elements were found: X  Y  Z  
+ The following symmetry elements were found: X  Y  Z  
 
   QM-QM nuclear repulsion energy :      0.000000000000
 
@@ -608,7 +607,7 @@ Total no. of orbitals      (NORB):    16      15      31
              Improved by a sum of atomic screening potentials.
 
 
-########## START ITERATION NO.   1 ##########   Sun Nov 12 21:09:49 2017
+########## START ITERATION NO.   1 ##########   Fri Mar  9 20:13:19 2018
 
  
  
@@ -621,14 +620,14 @@ E_HOMO...E_LUMO, symmetry 1:     2 951.40666    31344.62011
 E_HOMO...E_LUMO, symmetry 2:    19-357.51357   203445.58847
 
 => Calculating sum of orbital energies
-It.    1    -6564.596078656      0.00D+00  0.00D+00  0.00D+00               0.02400000s   Scr. nuclei    Sun Nov 12
+It.    1    -6564.596078656      0.00D+00  0.00D+00  0.00D+00               0.08800000s   Scr. nuclei    Fri Mar  9
 
-########## START ITERATION NO.   2 ##########   Sun Nov 12 21:09:49 2017
+########## START ITERATION NO.   2 ##########   Fri Mar  9 20:13:19 2018
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   10.26%    3.63%    2.78%   27.73%   0.00399999s
+SOfock:LL  1.00D-12   10.26%    3.63%    2.78%   27.73%   0.01199999s
  
  
  
@@ -638,17 +637,17 @@ SOfock:LL  1.00D-12   10.26%    3.63%    2.78%   27.73%   0.00399999s
  
 E_HOMO...E_LUMO, symmetry 1:     2 692.93539    31108.86453
 E_HOMO...E_LUMO, symmetry 2:    19-611.92928   203223.42937
->>> Total wall time: 0.12433100s, and total CPU time : 0.04000000s
+>>> Total wall time: 0.14090000s, and total CPU time : 0.09200000s
 
-########## END ITERATION NO.   2 ##########   Sun Nov 12 21:09:50 2017
+########## END ITERATION NO.   2 ##########   Fri Mar  9 20:13:19 2018
 
-It.    2    -10199.26814281      3.63D+03 -2.30D+02  2.10D+01               0.04000000s   LL             Sun Nov 12
+It.    2    -10199.26814281      3.63D+03 -2.30D+02  2.10D+01               0.09200000s   LL             Fri Mar  9
 
-########## START ITERATION NO.   3 ##########   Sun Nov 12 21:09:50 2017
+########## START ITERATION NO.   3 ##########   Fri Mar  9 20:13:19 2018
 
     3 *** Differential density matrix. DCOVLP     = 1.0003
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   10.26%    3.63%    2.78%   27.73%   0.00000000s
+SOfock:LL  1.00D-12   10.26%    3.63%    2.78%   27.73%   0.01199999s
  
  
  
@@ -658,17 +657,17 @@ SOfock:LL  1.00D-12   10.26%    3.63%    2.78%   27.73%   0.00000000s
  
 E_HOMO...E_LUMO, symmetry 1:     2 692.85543    31108.82725
 E_HOMO...E_LUMO, symmetry 2:    19-611.96556   203223.34771
->>> Total wall time: 0.04989409s, and total CPU time : 0.00800000s
+>>> Total wall time: 0.07010000s, and total CPU time : 0.02400000s
 
-########## END ITERATION NO.   3 ##########   Sun Nov 12 21:09:50 2017
+########## END ITERATION NO.   3 ##########   Fri Mar  9 20:13:19 2018
 
-It.    3    -10199.30839980      4.03D-02 -1.55D-01  7.90D-02   DIIS   2    0.00800000s   LL             Sun Nov 12
+It.    3    -10199.30839980      4.03D-02 -1.55D-01  7.90D-02   DIIS   2    0.02400000s   LL             Fri Mar  9
 
-########## START ITERATION NO.   4 ##########   Sun Nov 12 21:09:50 2017
+########## START ITERATION NO.   4 ##########   Fri Mar  9 20:13:19 2018
 
     4 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   10.26%    3.63%    2.78%   27.73%   0.00399999s
+SOfock:LL  1.00D-12   10.26%    3.63%    2.78%   27.73%   0.01199999s
  
  
  
@@ -678,17 +677,17 @@ SOfock:LL  1.00D-12   10.26%    3.63%    2.78%   27.73%   0.00399999s
  
 E_HOMO...E_LUMO, symmetry 1:     2 692.85559    31108.82731
 E_HOMO...E_LUMO, symmetry 2:    19-611.96549   203223.34792
->>> Total wall time: 0.03992200s, and total CPU time : 0.00800000s
+>>> Total wall time: 0.07140000s, and total CPU time : 0.01600000s
 
-########## END ITERATION NO.   4 ##########   Sun Nov 12 21:09:50 2017
+########## END ITERATION NO.   4 ##########   Fri Mar  9 20:13:19 2018
 
-It.    4    -10199.30840002      2.25D-07  5.40D-04  1.24D-04   DIIS   3    0.00800000s   LL             Sun Nov 12
+It.    4    -10199.30840002      2.25D-07  5.40D-04  1.24D-04   DIIS   3    0.01600000s   LL             Fri Mar  9
 
-########## START ITERATION NO.   5 ##########   Sun Nov 12 21:09:50 2017
+########## START ITERATION NO.   5 ##########   Fri Mar  9 20:13:19 2018
 
     5 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   10.26%    4.45%    2.69%   27.63%   0.00400001s
+SOfock:LL  1.00D-12   10.26%    4.45%    2.69%   27.63%   0.01199999s
  
  
  
@@ -698,22 +697,62 @@ SOfock:LL  1.00D-12   10.26%    4.45%    2.69%   27.63%   0.00400001s
  
 E_HOMO...E_LUMO, symmetry 1:     2 692.85559    31108.82731
 E_HOMO...E_LUMO, symmetry 2:    19-611.96549   203223.34792
->>> Total wall time: 0.01520610s, and total CPU time : 0.00800000s
+>>> Total wall time: 0.02970000s, and total CPU time : 0.02000000s
 
-########## END ITERATION NO.   5 ##########   Sun Nov 12 21:09:50 2017
+########## END ITERATION NO.   5 ##########   Fri Mar  9 20:13:19 2018
 
-It.    5    -10199.30840002     -1.64D-11 -1.13D-06  1.31D-07   DIIS   4    0.00800000s   LL             Sun Nov 12
+It.    5    -10199.30840002     -5.64D-11 -1.13D-06  1.31D-07   DIIS   4    0.02000000s   LL             Fri Mar  9
 
-########## START ITERATION NO.   6 ##########   Sun Nov 12 21:09:50 2017
+########## START ITERATION NO.   6 ##########   Fri Mar  9 20:13:19 2018
 
     6 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   10.26%   37.11%    1.63%   21.10%   0.00399999s
->>> Total wall time: 0.01365089s, and total CPU time : 0.00400000s
+SOfock:LL  1.00D-12   10.26%   37.11%    1.63%   21.10%   0.01199999s
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+E_HOMO...E_LUMO, symmetry 1:     2 692.85559    31108.82731
+E_HOMO...E_LUMO, symmetry 2:    19-611.96549   203223.34792
+>>> Total wall time: 0.03170000s, and total CPU time : 0.02000000s
 
-########## END ITERATION NO.   6 ##########   Sun Nov 12 21:09:50 2017
+########## END ITERATION NO.   6 ##########   Fri Mar  9 20:13:19 2018
 
-It.    6    -10199.30840002      3.64D-12 -9.31D-10  4.99D-10   DIIS   4    0.00400000s   LL             Sun Nov 12
+It.    6    -10199.30840002     -1.64D-11  7.57D-10  1.06D-09   DIIS   4    0.02000000s   LL             Fri Mar  9
+
+########## START ITERATION NO.   7 ##########   Fri Mar  9 20:13:19 2018
+
+    7 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   48.30%   48.28%    0.57%   17.62%   0.00799999s
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+E_HOMO...E_LUMO, symmetry 1:     2 692.85559    31108.82731
+E_HOMO...E_LUMO, symmetry 2:    19-611.96549   203223.34792
+>>> Total wall time: 0.02750000s, and total CPU time : 0.01600000s
+
+########## END ITERATION NO.   7 ##########   Fri Mar  9 20:13:19 2018
+
+It.    7    -10199.30840002     -1.64D-11 -1.75D-10  1.08D-09   DAMP 25%    0.01600000s   LL             Fri Mar  9
+
+########## START ITERATION NO.   8 ##########   Fri Mar  9 20:13:19 2018
+
+    8 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   85.95%   14.03%    0.00%    3.62%   0.00400001s
+>>> Total wall time: 0.01980000s, and total CPU time : 0.00800000s
+
+########## END ITERATION NO.   8 ##########   Fri Mar  9 20:13:19 2018
+
+It.    8    -10199.30840002     -2.91D-11  1.16D-10  8.74D-10   DAMP 25%    0.00800000s   LL             Fri Mar  9
 
 
                                    SCF - CYCLE
@@ -729,29 +768,31 @@ It.    6    -10199.30840002      3.64D-12 -9.31D-10  4.99D-10   DIIS   4    0.00
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -6564.596078656      0.00D+00  0.00D+00  0.00D+00               0.02400000s   Scr. nuclei    Sun Nov 12
-It.    2    -10199.26814281      3.63D+03 -2.30D+02  2.10D+01               0.04000000s   LL             Sun Nov 12
-It.    3    -10199.30839980      4.03D-02 -1.55D-01  7.90D-02   DIIS   2    0.00800000s   LL             Sun Nov 12
-It.    4    -10199.30840002      2.25D-07  5.40D-04  1.24D-04   DIIS   3    0.00800000s   LL             Sun Nov 12
-It.    5    -10199.30840002     -1.64D-11 -1.13D-06  1.31D-07   DIIS   4    0.00800000s   LL             Sun Nov 12
-It.    6    -10199.30840002      3.64D-12 -9.31D-10  4.99D-10   DIIS   4    0.00400000s   LL             Sun Nov 12
+It.    1    -6564.596078656      0.00D+00  0.00D+00  0.00D+00               0.08800000s   Scr. nuclei    Fri Mar  9
+It.    2    -10199.26814281      3.63D+03 -2.30D+02  2.10D+01               0.09200000s   LL             Fri Mar  9
+It.    3    -10199.30839980      4.03D-02 -1.55D-01  7.90D-02   DIIS   2    0.02400000s   LL             Fri Mar  9
+It.    4    -10199.30840002      2.25D-07  5.40D-04  1.24D-04   DIIS   3    0.01600000s   LL             Fri Mar  9
+It.    5    -10199.30840002     -5.64D-11 -1.13D-06  1.31D-07   DIIS   4    0.02000000s   LL             Fri Mar  9
+It.    6    -10199.30840002     -1.64D-11  7.57D-10  1.06D-09   DIIS   4    0.02000000s   LL             Fri Mar  9
+It.    7    -10199.30840002     -1.64D-11 -1.75D-10  1.08D-09   DAMP 25%    0.01600000s   LL             Fri Mar  9
+It.    8    -10199.30840002     -2.91D-11  1.16D-10  8.74D-10   DAMP 25%    0.00800000s   LL             Fri Mar  9
 --------------------------------------------------------------------------------------------------------------------------------
-* Convergence after    6 iterations.
+* Convergence after    8 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.03353381s
-      LL           :    0.04860082s
+      No 2-ints    :    0.09360000s
+      LL           :    0.05587143s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -10199.308400022876
+   Electronic energy                        :    -10199.308400022772
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :         0.000000000000
 
    Sum of all contributions to the energy
-   Total energy                             :    -10199.308400022876
+   Total energy                             :    -10199.308400022772
 
 
                                    Eigenvalues
@@ -762,38 +803,38 @@ It.    6    -10199.30840002      3.64D-12 -9.31D-10  4.99D-10   DIIS   4    0.00
   * Closed shell, f = 1.0000
   -3426.6789883278  ( 2)       692.8555868126  ( 2)
   * Virtual eigenvalues, f = 0.0000
-   1108.8273124029  ( 4)      7422.9014103941  ( 4)     12679.6236295467  ( 2)     67911.3486224425  ( 2)    242594.6812283308  ( 2)
- 690715.0881129864  ( 2)
+   1108.8273124029  ( 4)      7422.9014103940  ( 4)     12679.6236295467  ( 2)     67911.3486224417  ( 2)    242594.6812283297  ( 2)
+ 690715.0881129777  ( 2)
 
 * Boson symmetry B1g
   * Virtual eigenvalues, f = 0.0000
-   1108.8273124029  ( 2)      7422.9014103941  ( 2)
+   1108.8273124029  ( 2)      7422.9014103940  ( 2)
 
 * Boson symmetry B2g
   * Virtual eigenvalues, f = 0.0000
-   1108.8273124029  ( 2)      7422.9014103941  ( 2)
+   1108.8273124029  ( 2)      7422.9014103940  ( 2)
 
 * Boson symmetry B3g
   * Virtual eigenvalues, f = 0.0000
-   1108.8273124029  ( 2)      7422.9014103941  ( 2)
+   1108.8273124029  ( 2)      7422.9014103940  ( 2)
 
 * Boson symmetry B3u
   * Closed shell, f = 1.0000
    -611.9654850373  ( 2)
   * Virtual eigenvalues, f = 0.0000
-   3223.3479157441  ( 2)     20271.1359016480  ( 2)    124109.5512017153  ( 2)    405328.2179296890  ( 2)
+   3223.3479157441  ( 2)     20271.1359016479  ( 2)    124109.5512017154  ( 2)    405328.2179296894  ( 2)
 
 * Boson symmetry B2u
   * Closed shell, f = 1.0000
    -611.9654850373  ( 2)
   * Virtual eigenvalues, f = 0.0000
-   3223.3479157442  ( 2)     20271.1359016480  ( 2)    124109.5512017150  ( 2)    405328.2179296878  ( 2)
+   3223.3479157441  ( 2)     20271.1359016479  ( 2)    124109.5512017154  ( 2)    405328.2179296893  ( 2)
 
 * Boson symmetry B1u
   * Closed shell, f = 1.0000
    -611.9654850373  ( 2)
   * Virtual eigenvalues, f = 0.0000
-   3223.3479157442  ( 2)     20271.1359016480  ( 2)    124109.5512017151  ( 2)    405328.2179296876  ( 2)
+   3223.3479157441  ( 2)     20271.1359016479  ( 2)    124109.5512017149  ( 2)    405328.2179296882  ( 2)
 
 * Boson symmetry Au 
   * No eigenvalues.
@@ -802,13 +843,13 @@ It.    6    -10199.30840002      3.64D-12 -9.31D-10  4.99D-10   DIIS   4    0.00
   * Inactive orbitals
     Ag  Ag  
   * Virtual orbitals
-    B1g B2g Ag  B3g Ag  B2g B1g Ag  B3g Ag  Ag  Ag  Ag  Ag  
+    B3g B2g B1g Ag  Ag  B1g B3g B2g Ag  Ag  Ag  Ag  Ag  Ag  
 
 * Occupation in fermion symmetry E1u
   * Inactive orbitals
-    B1u B3u B2u 
+    B3u B1u B2u 
   * Virtual orbitals
-    B3u B1u B2u B3u B2u B1u B2u B1u B3u B1u B2u B3u 
+    B2u B1u B3u B1u B2u B3u B1u B3u B2u B1u B2u B3u 
 
 * Occupation of subblocks
                        E1g:  Ag   B1g  B2g  B3g                                                             
@@ -823,7 +864,7 @@ tot.num. of pos.erg shells:    5    5    5    0
 
 * HOMO - LUMO gap:
 
-    E(LUMO) :  1108.82731240 au (symmetry B1g)
+    E(LUMO) :  1108.82731240 au (symmetry B3g)
   - E(HOMO) :   692.85558681 au (symmetry Ag )
   ------------------------------------------
     gap     :   415.97172559 au
@@ -850,10 +891,10 @@ tot.num. of pos.erg shells:    5    5    5    0
      ************************************************************************
 
 
- Transformation started at : Sun Nov 12 21:09:50 2017
+ Transformation started at : Fri Mar  9 20:13:19 2018
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -10199.3084000228719
-* Heading :  Ne atom                                         Sun Nov 12 21:09:50 2017
+* REACMO: Coefficients read from file DFCOEF - Total energy: -10199.3084000228009
+* Heading :  Ne atom                                         Fri Mar  9 20:13:19 2018
 
 * Orbital ranges for 4-index transformation:
 
@@ -916,7 +957,7 @@ tot.num. of pos.erg shells:    5    5    5    0
       **********************************************************************
 
 
- Transformation started at : Sun Nov 12 21:09:50 2017
+ Transformation started at : Fri Mar  9 20:13:19 2018
 
 
           SETDC2: Distribution of symmetry orbitals among fermion ircops
@@ -926,8 +967,8 @@ tot.num. of pos.erg shells:    5    5    5    0
 E1g       56   18   38
 E1u       50   15   35
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -10199.3084000228719
-* Heading :  Ne atom                                         Sun Nov 12 21:09:50 2017
+* REACMO: Coefficients read from file DFCOEF - Total energy: -10199.3084000228009
+* Heading :  Ne atom                                         Fri Mar  9 20:13:19 2018
 
 
  * Fermion ircop E1g
@@ -950,424 +991,424 @@ E1u       50   15   35
 Property elements of the "XDIPLEN " operator in Kramers paired molecular spinor basis:
 
 Printout of all property elements
-    1    1      0.0000000000        0.0000000000
-    1    2      0.0000000000        0.0000000000
-    1    3      0.0000000000        0.0000000000
-    1    4      0.0000000000        0.0000000000
-    1    5      0.0000000000        0.0000000000
-    1    6     -0.0097639040        0.0000000000
-    1    7      0.0000000000        0.0000000000
-    1    8      0.0000000000        0.0000000000
-    1    9      0.0000000000        0.0000000000
-    1   10      0.0000000000        0.0000000000
-    2    1      0.0000000000        0.0000000000
-    2    2      0.0000000000        0.0000000000
-    2    3      0.0000000000        0.0000000000
-    2    4      0.0000000000        0.0000000000
-    2    5      0.0000000000        0.0000000000
-    2    6      0.0180407317        0.0000000000
-    2    7      0.0000000000        0.0000000000
-    2    8      0.0000000000        0.0000000000
-    2    9      0.0000000000        0.0000000000
-    2   10      0.0000000000        0.0000000000
-    3    1      0.0000000000        0.0000000000
-    3    2      0.0000000000        0.0000000000
-    3    3      0.0000000000        0.0000000000
-    3    4      0.0000000000        0.0000000000
-    3    5      0.0000000000        0.0000000000
-    3    6      0.0000000000        0.0000000000
-    3    7      0.0000000000        0.0000000000
-    3    8      0.0000000000        0.0000000000
-    3    9     -0.0097639040        0.0000000000
-    3   10      0.0000000000        0.0000000000
-    4    1      0.0000000000        0.0000000000
-    4    2      0.0000000000        0.0000000000
-    4    3      0.0000000000        0.0000000000
-    4    4      0.0000000000        0.0000000000
-    4    5      0.0000000000        0.0000000000
-    4    6      0.0000000000        0.0000000000
-    4    7      0.0000000000        0.0000000000
-    4    8      0.0000000000        0.0000000000
-    4    9      0.0180407317        0.0000000000
-    4   10      0.0000000000        0.0000000000
-    5    1      0.0000000000        0.0000000000
-    5    2      0.0000000000        0.0000000000
-    5    3      0.0000000000        0.0000000000
-    5    4      0.0000000000        0.0000000000
-    5    5      0.0000000000        0.0000000000
-    5    6      0.0000000000        0.0000000000
-    5    7      0.0000000000        0.0000000000
-    5    8      0.0000000000        0.0000000000
-    5    9      0.0000000000        0.0000000000
-    5   10      0.0000000000        0.0000000000
-    6    1     -0.0097639040        0.0000000000
-    6    2      0.0180407317        0.0000000000
-    6    3      0.0000000000        0.0000000000
-    6    4      0.0000000000        0.0000000000
-    6    5      0.0000000000        0.0000000000
-    6    6      0.0000000000        0.0000000000
-    6    7      0.0000000000        0.0000000000
-    6    8      0.0000000000        0.0000000000
-    6    9      0.0000000000        0.0000000000
-    6   10      0.0000000000        0.0000000000
-    7    1      0.0000000000        0.0000000000
-    7    2      0.0000000000        0.0000000000
-    7    3      0.0000000000        0.0000000000
-    7    4      0.0000000000        0.0000000000
-    7    5      0.0000000000        0.0000000000
-    7    6      0.0000000000        0.0000000000
-    7    7      0.0000000000        0.0000000000
-    7    8      0.0000000000        0.0000000000
-    7    9      0.0000000000        0.0000000000
-    7   10      0.0000000000        0.0000000000
-    8    1      0.0000000000        0.0000000000
-    8    2      0.0000000000        0.0000000000
-    8    3      0.0000000000        0.0000000000
-    8    4      0.0000000000        0.0000000000
-    8    5      0.0000000000        0.0000000000
-    8    6      0.0000000000        0.0000000000
-    8    7      0.0000000000        0.0000000000
-    8    8      0.0000000000        0.0000000000
-    8    9      0.0000000000        0.0000000000
-    8   10      0.0000000000        0.0000000000
-    9    1      0.0000000000        0.0000000000
-    9    2      0.0000000000        0.0000000000
-    9    3     -0.0097639040        0.0000000000
-    9    4      0.0180407317        0.0000000000
-    9    5      0.0000000000        0.0000000000
-    9    6      0.0000000000        0.0000000000
-    9    7      0.0000000000        0.0000000000
-    9    8      0.0000000000        0.0000000000
-    9    9      0.0000000000        0.0000000000
-    9   10      0.0000000000        0.0000000000
-   10    1      0.0000000000        0.0000000000
-   10    2      0.0000000000        0.0000000000
-   10    3      0.0000000000        0.0000000000
-   10    4      0.0000000000        0.0000000000
-   10    5      0.0000000000        0.0000000000
-   10    6      0.0000000000        0.0000000000
-   10    7      0.0000000000        0.0000000000
-   10    8      0.0000000000        0.0000000000
-   10    9      0.0000000000        0.0000000000
-   10   10      0.0000000000        0.0000000000
+    1    1   0.000000E+00   0.000000E+00
+    1    2   0.000000E+00   0.000000E+00
+    1    3   0.000000E+00   0.000000E+00
+    1    4   0.000000E+00   0.000000E+00
+    1    5  -9.763904E-03   0.000000E+00
+    1    6   0.000000E+00   0.000000E+00
+    1    7   0.000000E+00   0.000000E+00
+    1    8   0.000000E+00   0.000000E+00
+    1    9   0.000000E+00   0.000000E+00
+    1   10   0.000000E+00   0.000000E+00
+    2    1   0.000000E+00   0.000000E+00
+    2    2   0.000000E+00   0.000000E+00
+    2    3   0.000000E+00   0.000000E+00
+    2    4   0.000000E+00   0.000000E+00
+    2    5   1.804073E-02   0.000000E+00
+    2    6   0.000000E+00   0.000000E+00
+    2    7   0.000000E+00   0.000000E+00
+    2    8   0.000000E+00   0.000000E+00
+    2    9   0.000000E+00   0.000000E+00
+    2   10   0.000000E+00   0.000000E+00
+    3    1   0.000000E+00   0.000000E+00
+    3    2   0.000000E+00   0.000000E+00
+    3    3   0.000000E+00   0.000000E+00
+    3    4   0.000000E+00   0.000000E+00
+    3    5   0.000000E+00   0.000000E+00
+    3    6   0.000000E+00   0.000000E+00
+    3    7   0.000000E+00   0.000000E+00
+    3    8  -9.763904E-03   0.000000E+00
+    3    9   0.000000E+00   0.000000E+00
+    3   10   0.000000E+00   0.000000E+00
+    4    1   0.000000E+00   0.000000E+00
+    4    2   0.000000E+00   0.000000E+00
+    4    3   0.000000E+00   0.000000E+00
+    4    4   0.000000E+00   0.000000E+00
+    4    5   0.000000E+00   0.000000E+00
+    4    6   0.000000E+00   0.000000E+00
+    4    7   0.000000E+00   0.000000E+00
+    4    8   1.804073E-02   0.000000E+00
+    4    9   0.000000E+00   0.000000E+00
+    4   10   0.000000E+00   0.000000E+00
+    5    1  -9.763904E-03   0.000000E+00
+    5    2   1.804073E-02   0.000000E+00
+    5    3   0.000000E+00   0.000000E+00
+    5    4   0.000000E+00   0.000000E+00
+    5    5   0.000000E+00   0.000000E+00
+    5    6   0.000000E+00   0.000000E+00
+    5    7   0.000000E+00   0.000000E+00
+    5    8   0.000000E+00   0.000000E+00
+    5    9   0.000000E+00   0.000000E+00
+    5   10   0.000000E+00   0.000000E+00
+    6    1   0.000000E+00   0.000000E+00
+    6    2   0.000000E+00   0.000000E+00
+    6    3   0.000000E+00   0.000000E+00
+    6    4   0.000000E+00   0.000000E+00
+    6    5   0.000000E+00   0.000000E+00
+    6    6   0.000000E+00   0.000000E+00
+    6    7   0.000000E+00   0.000000E+00
+    6    8   0.000000E+00   0.000000E+00
+    6    9   0.000000E+00   0.000000E+00
+    6   10   0.000000E+00   0.000000E+00
+    7    1   0.000000E+00   0.000000E+00
+    7    2   0.000000E+00   0.000000E+00
+    7    3   0.000000E+00   0.000000E+00
+    7    4   0.000000E+00   0.000000E+00
+    7    5   0.000000E+00   0.000000E+00
+    7    6   0.000000E+00   0.000000E+00
+    7    7   0.000000E+00   0.000000E+00
+    7    8   0.000000E+00   0.000000E+00
+    7    9   0.000000E+00   0.000000E+00
+    7   10   0.000000E+00   0.000000E+00
+    8    1   0.000000E+00   0.000000E+00
+    8    2   0.000000E+00   0.000000E+00
+    8    3  -9.763904E-03   0.000000E+00
+    8    4   1.804073E-02   0.000000E+00
+    8    5   0.000000E+00   0.000000E+00
+    8    6   0.000000E+00   0.000000E+00
+    8    7   0.000000E+00   0.000000E+00
+    8    8   0.000000E+00   0.000000E+00
+    8    9   0.000000E+00   0.000000E+00
+    8   10   0.000000E+00   0.000000E+00
+    9    1   0.000000E+00   0.000000E+00
+    9    2   0.000000E+00   0.000000E+00
+    9    3   0.000000E+00   0.000000E+00
+    9    4   0.000000E+00   0.000000E+00
+    9    5   0.000000E+00   0.000000E+00
+    9    6   0.000000E+00   0.000000E+00
+    9    7   0.000000E+00   0.000000E+00
+    9    8   0.000000E+00   0.000000E+00
+    9    9   0.000000E+00   0.000000E+00
+    9   10   0.000000E+00   0.000000E+00
+   10    1   0.000000E+00   0.000000E+00
+   10    2   0.000000E+00   0.000000E+00
+   10    3   0.000000E+00   0.000000E+00
+   10    4   0.000000E+00   0.000000E+00
+   10    5   0.000000E+00   0.000000E+00
+   10    6   0.000000E+00   0.000000E+00
+   10    7   0.000000E+00   0.000000E+00
+   10    8   0.000000E+00   0.000000E+00
+   10    9   0.000000E+00   0.000000E+00
+   10   10   0.000000E+00   0.000000E+00
 End of property elements printout.
  
 
 Property elements of the "YDIPLEN " operator in Kramers paired molecular spinor basis:
 
 Printout of all property elements
-    1    1      0.0000000000        0.0000000000
-    1    2      0.0000000000        0.0000000000
-    1    3      0.0000000000        0.0000000000
-    1    4      0.0000000000        0.0000000000
-    1    5      0.0000000000        0.0000000000
-    1    6      0.0000000000        0.0000000000
-    1    7     -0.0097639040        0.0000000000
-    1    8      0.0000000000        0.0000000000
-    1    9      0.0000000000        0.0000000000
-    1   10      0.0000000000        0.0000000000
-    2    1      0.0000000000        0.0000000000
-    2    2      0.0000000000        0.0000000000
-    2    3      0.0000000000        0.0000000000
-    2    4      0.0000000000        0.0000000000
-    2    5      0.0000000000        0.0000000000
-    2    6      0.0000000000        0.0000000000
-    2    7      0.0180407317        0.0000000000
-    2    8      0.0000000000        0.0000000000
-    2    9      0.0000000000        0.0000000000
-    2   10      0.0000000000        0.0000000000
-    3    1      0.0000000000        0.0000000000
-    3    2      0.0000000000        0.0000000000
-    3    3      0.0000000000        0.0000000000
-    3    4      0.0000000000        0.0000000000
-    3    5      0.0000000000        0.0000000000
-    3    6      0.0000000000        0.0000000000
-    3    7      0.0000000000        0.0000000000
-    3    8      0.0000000000        0.0000000000
-    3    9      0.0000000000        0.0000000000
-    3   10     -0.0097639040        0.0000000000
-    4    1      0.0000000000        0.0000000000
-    4    2      0.0000000000        0.0000000000
-    4    3      0.0000000000        0.0000000000
-    4    4      0.0000000000        0.0000000000
-    4    5      0.0000000000        0.0000000000
-    4    6      0.0000000000        0.0000000000
-    4    7      0.0000000000        0.0000000000
-    4    8      0.0000000000        0.0000000000
-    4    9      0.0000000000        0.0000000000
-    4   10      0.0180407317        0.0000000000
-    5    1      0.0000000000        0.0000000000
-    5    2      0.0000000000        0.0000000000
-    5    3      0.0000000000        0.0000000000
-    5    4      0.0000000000        0.0000000000
-    5    5      0.0000000000        0.0000000000
-    5    6      0.0000000000        0.0000000000
-    5    7      0.0000000000        0.0000000000
-    5    8      0.0000000000        0.0000000000
-    5    9      0.0000000000        0.0000000000
-    5   10      0.0000000000        0.0000000000
-    6    1      0.0000000000        0.0000000000
-    6    2      0.0000000000        0.0000000000
-    6    3      0.0000000000        0.0000000000
-    6    4      0.0000000000        0.0000000000
-    6    5      0.0000000000        0.0000000000
-    6    6      0.0000000000        0.0000000000
-    6    7      0.0000000000        0.0000000000
-    6    8      0.0000000000        0.0000000000
-    6    9      0.0000000000        0.0000000000
-    6   10      0.0000000000        0.0000000000
-    7    1     -0.0097639040        0.0000000000
-    7    2      0.0180407317        0.0000000000
-    7    3      0.0000000000        0.0000000000
-    7    4      0.0000000000        0.0000000000
-    7    5      0.0000000000        0.0000000000
-    7    6      0.0000000000        0.0000000000
-    7    7      0.0000000000        0.0000000000
-    7    8      0.0000000000        0.0000000000
-    7    9      0.0000000000        0.0000000000
-    7   10      0.0000000000        0.0000000000
-    8    1      0.0000000000        0.0000000000
-    8    2      0.0000000000        0.0000000000
-    8    3      0.0000000000        0.0000000000
-    8    4      0.0000000000        0.0000000000
-    8    5      0.0000000000        0.0000000000
-    8    6      0.0000000000        0.0000000000
-    8    7      0.0000000000        0.0000000000
-    8    8      0.0000000000        0.0000000000
-    8    9      0.0000000000        0.0000000000
-    8   10      0.0000000000        0.0000000000
-    9    1      0.0000000000        0.0000000000
-    9    2      0.0000000000        0.0000000000
-    9    3      0.0000000000        0.0000000000
-    9    4      0.0000000000        0.0000000000
-    9    5      0.0000000000        0.0000000000
-    9    6      0.0000000000        0.0000000000
-    9    7      0.0000000000        0.0000000000
-    9    8      0.0000000000        0.0000000000
-    9    9      0.0000000000        0.0000000000
-    9   10      0.0000000000        0.0000000000
-   10    1      0.0000000000        0.0000000000
-   10    2      0.0000000000        0.0000000000
-   10    3     -0.0097639040        0.0000000000
-   10    4      0.0180407317        0.0000000000
-   10    5      0.0000000000        0.0000000000
-   10    6      0.0000000000        0.0000000000
-   10    7      0.0000000000        0.0000000000
-   10    8      0.0000000000        0.0000000000
-   10    9      0.0000000000        0.0000000000
-   10   10      0.0000000000        0.0000000000
+    1    1   0.000000E+00   0.000000E+00
+    1    2   0.000000E+00   0.000000E+00
+    1    3   0.000000E+00   0.000000E+00
+    1    4   0.000000E+00   0.000000E+00
+    1    5   0.000000E+00   0.000000E+00
+    1    6   0.000000E+00   0.000000E+00
+    1    7  -9.763904E-03   0.000000E+00
+    1    8   0.000000E+00   0.000000E+00
+    1    9   0.000000E+00   0.000000E+00
+    1   10   0.000000E+00   0.000000E+00
+    2    1   0.000000E+00   0.000000E+00
+    2    2   0.000000E+00   0.000000E+00
+    2    3   0.000000E+00   0.000000E+00
+    2    4   0.000000E+00   0.000000E+00
+    2    5   0.000000E+00   0.000000E+00
+    2    6   0.000000E+00   0.000000E+00
+    2    7   1.804073E-02   0.000000E+00
+    2    8   0.000000E+00   0.000000E+00
+    2    9   0.000000E+00   0.000000E+00
+    2   10   0.000000E+00   0.000000E+00
+    3    1   0.000000E+00   0.000000E+00
+    3    2   0.000000E+00   0.000000E+00
+    3    3   0.000000E+00   0.000000E+00
+    3    4   0.000000E+00   0.000000E+00
+    3    5   0.000000E+00   0.000000E+00
+    3    6   0.000000E+00   0.000000E+00
+    3    7   0.000000E+00   0.000000E+00
+    3    8   0.000000E+00   0.000000E+00
+    3    9   0.000000E+00   0.000000E+00
+    3   10  -9.763904E-03   0.000000E+00
+    4    1   0.000000E+00   0.000000E+00
+    4    2   0.000000E+00   0.000000E+00
+    4    3   0.000000E+00   0.000000E+00
+    4    4   0.000000E+00   0.000000E+00
+    4    5   0.000000E+00   0.000000E+00
+    4    6   0.000000E+00   0.000000E+00
+    4    7   0.000000E+00   0.000000E+00
+    4    8   0.000000E+00   0.000000E+00
+    4    9   0.000000E+00   0.000000E+00
+    4   10   1.804073E-02   0.000000E+00
+    5    1   0.000000E+00   0.000000E+00
+    5    2   0.000000E+00   0.000000E+00
+    5    3   0.000000E+00   0.000000E+00
+    5    4   0.000000E+00   0.000000E+00
+    5    5   0.000000E+00   0.000000E+00
+    5    6   0.000000E+00   0.000000E+00
+    5    7   0.000000E+00   0.000000E+00
+    5    8   0.000000E+00   0.000000E+00
+    5    9   0.000000E+00   0.000000E+00
+    5   10   0.000000E+00   0.000000E+00
+    6    1   0.000000E+00   0.000000E+00
+    6    2   0.000000E+00   0.000000E+00
+    6    3   0.000000E+00   0.000000E+00
+    6    4   0.000000E+00   0.000000E+00
+    6    5   0.000000E+00   0.000000E+00
+    6    6   0.000000E+00   0.000000E+00
+    6    7   0.000000E+00   0.000000E+00
+    6    8   0.000000E+00   0.000000E+00
+    6    9   0.000000E+00   0.000000E+00
+    6   10   0.000000E+00   0.000000E+00
+    7    1  -9.763904E-03   0.000000E+00
+    7    2   1.804073E-02   0.000000E+00
+    7    3   0.000000E+00   0.000000E+00
+    7    4   0.000000E+00   0.000000E+00
+    7    5   0.000000E+00   0.000000E+00
+    7    6   0.000000E+00   0.000000E+00
+    7    7   0.000000E+00   0.000000E+00
+    7    8   0.000000E+00   0.000000E+00
+    7    9   0.000000E+00   0.000000E+00
+    7   10   0.000000E+00   0.000000E+00
+    8    1   0.000000E+00   0.000000E+00
+    8    2   0.000000E+00   0.000000E+00
+    8    3   0.000000E+00   0.000000E+00
+    8    4   0.000000E+00   0.000000E+00
+    8    5   0.000000E+00   0.000000E+00
+    8    6   0.000000E+00   0.000000E+00
+    8    7   0.000000E+00   0.000000E+00
+    8    8   0.000000E+00   0.000000E+00
+    8    9   0.000000E+00   0.000000E+00
+    8   10   0.000000E+00   0.000000E+00
+    9    1   0.000000E+00   0.000000E+00
+    9    2   0.000000E+00   0.000000E+00
+    9    3   0.000000E+00   0.000000E+00
+    9    4   0.000000E+00   0.000000E+00
+    9    5   0.000000E+00   0.000000E+00
+    9    6   0.000000E+00   0.000000E+00
+    9    7   0.000000E+00   0.000000E+00
+    9    8   0.000000E+00   0.000000E+00
+    9    9   0.000000E+00   0.000000E+00
+    9   10   0.000000E+00   0.000000E+00
+   10    1   0.000000E+00   0.000000E+00
+   10    2   0.000000E+00   0.000000E+00
+   10    3  -9.763904E-03   0.000000E+00
+   10    4   1.804073E-02   0.000000E+00
+   10    5   0.000000E+00   0.000000E+00
+   10    6   0.000000E+00   0.000000E+00
+   10    7   0.000000E+00   0.000000E+00
+   10    8   0.000000E+00   0.000000E+00
+   10    9   0.000000E+00   0.000000E+00
+   10   10   0.000000E+00   0.000000E+00
 End of property elements printout.
  
 
 Property elements of the "ZDIPLEN " operator in Kramers paired molecular spinor basis:
 
 Printout of all property elements
-    1    1      0.0000000000        0.0000000000
-    1    2      0.0000000000        0.0000000000
-    1    3      0.0000000000        0.0000000000
-    1    4      0.0000000000        0.0000000000
-    1    5     -0.0097639040        0.0000000000
-    1    6      0.0000000000        0.0000000000
-    1    7      0.0000000000        0.0000000000
-    1    8      0.0000000000        0.0000000000
-    1    9      0.0000000000        0.0000000000
-    1   10      0.0000000000        0.0000000000
-    2    1      0.0000000000        0.0000000000
-    2    2      0.0000000000        0.0000000000
-    2    3      0.0000000000        0.0000000000
-    2    4      0.0000000000        0.0000000000
-    2    5      0.0180407317        0.0000000000
-    2    6      0.0000000000        0.0000000000
-    2    7      0.0000000000        0.0000000000
-    2    8      0.0000000000        0.0000000000
-    2    9      0.0000000000        0.0000000000
-    2   10      0.0000000000        0.0000000000
-    3    1      0.0000000000        0.0000000000
-    3    2      0.0000000000        0.0000000000
-    3    3      0.0000000000        0.0000000000
-    3    4      0.0000000000        0.0000000000
-    3    5      0.0000000000        0.0000000000
-    3    6      0.0000000000        0.0000000000
-    3    7      0.0000000000        0.0000000000
-    3    8     -0.0097639040        0.0000000000
-    3    9      0.0000000000        0.0000000000
-    3   10      0.0000000000        0.0000000000
-    4    1      0.0000000000        0.0000000000
-    4    2      0.0000000000        0.0000000000
-    4    3      0.0000000000        0.0000000000
-    4    4      0.0000000000        0.0000000000
-    4    5      0.0000000000        0.0000000000
-    4    6      0.0000000000        0.0000000000
-    4    7      0.0000000000        0.0000000000
-    4    8      0.0180407317        0.0000000000
-    4    9      0.0000000000        0.0000000000
-    4   10      0.0000000000        0.0000000000
-    5    1     -0.0097639040        0.0000000000
-    5    2      0.0180407317        0.0000000000
-    5    3      0.0000000000        0.0000000000
-    5    4      0.0000000000        0.0000000000
-    5    5      0.0000000000        0.0000000000
-    5    6      0.0000000000        0.0000000000
-    5    7      0.0000000000        0.0000000000
-    5    8      0.0000000000        0.0000000000
-    5    9      0.0000000000        0.0000000000
-    5   10      0.0000000000        0.0000000000
-    6    1      0.0000000000        0.0000000000
-    6    2      0.0000000000        0.0000000000
-    6    3      0.0000000000        0.0000000000
-    6    4      0.0000000000        0.0000000000
-    6    5      0.0000000000        0.0000000000
-    6    6      0.0000000000        0.0000000000
-    6    7      0.0000000000        0.0000000000
-    6    8      0.0000000000        0.0000000000
-    6    9      0.0000000000        0.0000000000
-    6   10      0.0000000000        0.0000000000
-    7    1      0.0000000000        0.0000000000
-    7    2      0.0000000000        0.0000000000
-    7    3      0.0000000000        0.0000000000
-    7    4      0.0000000000        0.0000000000
-    7    5      0.0000000000        0.0000000000
-    7    6      0.0000000000        0.0000000000
-    7    7      0.0000000000        0.0000000000
-    7    8      0.0000000000        0.0000000000
-    7    9      0.0000000000        0.0000000000
-    7   10      0.0000000000        0.0000000000
-    8    1      0.0000000000        0.0000000000
-    8    2      0.0000000000        0.0000000000
-    8    3     -0.0097639040        0.0000000000
-    8    4      0.0180407317        0.0000000000
-    8    5      0.0000000000        0.0000000000
-    8    6      0.0000000000        0.0000000000
-    8    7      0.0000000000        0.0000000000
-    8    8      0.0000000000        0.0000000000
-    8    9      0.0000000000        0.0000000000
-    8   10      0.0000000000        0.0000000000
-    9    1      0.0000000000        0.0000000000
-    9    2      0.0000000000        0.0000000000
-    9    3      0.0000000000        0.0000000000
-    9    4      0.0000000000        0.0000000000
-    9    5      0.0000000000        0.0000000000
-    9    6      0.0000000000        0.0000000000
-    9    7      0.0000000000        0.0000000000
-    9    8      0.0000000000        0.0000000000
-    9    9      0.0000000000        0.0000000000
-    9   10      0.0000000000        0.0000000000
-   10    1      0.0000000000        0.0000000000
-   10    2      0.0000000000        0.0000000000
-   10    3      0.0000000000        0.0000000000
-   10    4      0.0000000000        0.0000000000
-   10    5      0.0000000000        0.0000000000
-   10    6      0.0000000000        0.0000000000
-   10    7      0.0000000000        0.0000000000
-   10    8      0.0000000000        0.0000000000
-   10    9      0.0000000000        0.0000000000
-   10   10      0.0000000000        0.0000000000
+    1    1   0.000000E+00   0.000000E+00
+    1    2   0.000000E+00   0.000000E+00
+    1    3   0.000000E+00   0.000000E+00
+    1    4   0.000000E+00   0.000000E+00
+    1    5   0.000000E+00   0.000000E+00
+    1    6  -9.763904E-03   0.000000E+00
+    1    7   0.000000E+00   0.000000E+00
+    1    8   0.000000E+00   0.000000E+00
+    1    9   0.000000E+00   0.000000E+00
+    1   10   0.000000E+00   0.000000E+00
+    2    1   0.000000E+00   0.000000E+00
+    2    2   0.000000E+00   0.000000E+00
+    2    3   0.000000E+00   0.000000E+00
+    2    4   0.000000E+00   0.000000E+00
+    2    5   0.000000E+00   0.000000E+00
+    2    6   1.804073E-02   0.000000E+00
+    2    7   0.000000E+00   0.000000E+00
+    2    8   0.000000E+00   0.000000E+00
+    2    9   0.000000E+00   0.000000E+00
+    2   10   0.000000E+00   0.000000E+00
+    3    1   0.000000E+00   0.000000E+00
+    3    2   0.000000E+00   0.000000E+00
+    3    3   0.000000E+00   0.000000E+00
+    3    4   0.000000E+00   0.000000E+00
+    3    5   0.000000E+00   0.000000E+00
+    3    6   0.000000E+00   0.000000E+00
+    3    7   0.000000E+00   0.000000E+00
+    3    8   0.000000E+00   0.000000E+00
+    3    9  -9.763904E-03   0.000000E+00
+    3   10   0.000000E+00   0.000000E+00
+    4    1   0.000000E+00   0.000000E+00
+    4    2   0.000000E+00   0.000000E+00
+    4    3   0.000000E+00   0.000000E+00
+    4    4   0.000000E+00   0.000000E+00
+    4    5   0.000000E+00   0.000000E+00
+    4    6   0.000000E+00   0.000000E+00
+    4    7   0.000000E+00   0.000000E+00
+    4    8   0.000000E+00   0.000000E+00
+    4    9   1.804073E-02   0.000000E+00
+    4   10   0.000000E+00   0.000000E+00
+    5    1   0.000000E+00   0.000000E+00
+    5    2   0.000000E+00   0.000000E+00
+    5    3   0.000000E+00   0.000000E+00
+    5    4   0.000000E+00   0.000000E+00
+    5    5   0.000000E+00   0.000000E+00
+    5    6   0.000000E+00   0.000000E+00
+    5    7   0.000000E+00   0.000000E+00
+    5    8   0.000000E+00   0.000000E+00
+    5    9   0.000000E+00   0.000000E+00
+    5   10   0.000000E+00   0.000000E+00
+    6    1  -9.763904E-03   0.000000E+00
+    6    2   1.804073E-02   0.000000E+00
+    6    3   0.000000E+00   0.000000E+00
+    6    4   0.000000E+00   0.000000E+00
+    6    5   0.000000E+00   0.000000E+00
+    6    6   0.000000E+00   0.000000E+00
+    6    7   0.000000E+00   0.000000E+00
+    6    8   0.000000E+00   0.000000E+00
+    6    9   0.000000E+00   0.000000E+00
+    6   10   0.000000E+00   0.000000E+00
+    7    1   0.000000E+00   0.000000E+00
+    7    2   0.000000E+00   0.000000E+00
+    7    3   0.000000E+00   0.000000E+00
+    7    4   0.000000E+00   0.000000E+00
+    7    5   0.000000E+00   0.000000E+00
+    7    6   0.000000E+00   0.000000E+00
+    7    7   0.000000E+00   0.000000E+00
+    7    8   0.000000E+00   0.000000E+00
+    7    9   0.000000E+00   0.000000E+00
+    7   10   0.000000E+00   0.000000E+00
+    8    1   0.000000E+00   0.000000E+00
+    8    2   0.000000E+00   0.000000E+00
+    8    3   0.000000E+00   0.000000E+00
+    8    4   0.000000E+00   0.000000E+00
+    8    5   0.000000E+00   0.000000E+00
+    8    6   0.000000E+00   0.000000E+00
+    8    7   0.000000E+00   0.000000E+00
+    8    8   0.000000E+00   0.000000E+00
+    8    9   0.000000E+00   0.000000E+00
+    8   10   0.000000E+00   0.000000E+00
+    9    1   0.000000E+00   0.000000E+00
+    9    2   0.000000E+00   0.000000E+00
+    9    3  -9.763904E-03   0.000000E+00
+    9    4   1.804073E-02   0.000000E+00
+    9    5   0.000000E+00   0.000000E+00
+    9    6   0.000000E+00   0.000000E+00
+    9    7   0.000000E+00   0.000000E+00
+    9    8   0.000000E+00   0.000000E+00
+    9    9   0.000000E+00   0.000000E+00
+    9   10   0.000000E+00   0.000000E+00
+   10    1   0.000000E+00   0.000000E+00
+   10    2   0.000000E+00   0.000000E+00
+   10    3   0.000000E+00   0.000000E+00
+   10    4   0.000000E+00   0.000000E+00
+   10    5   0.000000E+00   0.000000E+00
+   10    6   0.000000E+00   0.000000E+00
+   10    7   0.000000E+00   0.000000E+00
+   10    8   0.000000E+00   0.000000E+00
+   10    9   0.000000E+00   0.000000E+00
+   10   10   0.000000E+00   0.000000E+00
 End of property elements printout.
  
 
 Property elements of the "CM010203" operator in Kramers paired molecular spinor basis:
 
 Printout of all property elements
-    1    1      0.0000000000        0.0000000000
-    1    2      0.0000000000        0.0000000000
-    1    3      0.0000000000        0.0000000000
-    1    4      0.0000000000        0.0000000000
-    1    5      0.0000000000        0.0000000000
-    1    6      0.0000000000        0.0000000000
-    1    7      0.0000000000        0.0000000000
-    1    8      0.0000000000        0.0000000000
-    1    9      0.0000000000        0.0000000000
-    1   10      0.0000000000        0.0000000000
-    2    1      0.0000000000        0.0000000000
-    2    2      0.0000000000        0.0000000000
-    2    3      0.0000000000        0.0000000000
-    2    4      0.0000000000        0.0000000000
-    2    5      0.0000000000        0.0000000000
-    2    6      0.0000000000        0.0000000000
-    2    7      0.0000000000        0.0000000000
-    2    8      0.0000000000        0.0000000000
-    2    9      0.0000000000        0.0000000000
-    2   10      0.0000000000        0.0000000000
-    3    1      0.0000000000        0.0000000000
-    3    2      0.0000000000        0.0000000000
-    3    3      0.0000000000        0.0000000000
-    3    4      0.0000000000        0.0000000000
-    3    5      0.0000000000        0.0000000000
-    3    6      0.0000000000        0.0000000000
-    3    7      0.0000000000        0.0000000000
-    3    8      0.0000000000        0.0000000000
-    3    9      0.0000000000        0.0000000000
-    3   10      0.0000000000        0.0000000000
-    4    1      0.0000000000        0.0000000000
-    4    2      0.0000000000        0.0000000000
-    4    3      0.0000000000        0.0000000000
-    4    4      0.0000000000        0.0000000000
-    4    5      0.0000000000        0.0000000000
-    4    6      0.0000000000        0.0000000000
-    4    7      0.0000000000        0.0000000000
-    4    8      0.0000000000        0.0000000000
-    4    9      0.0000000000        0.0000000000
-    4   10      0.0000000000        0.0000000000
-    5    1      0.0000000000        0.0000000000
-    5    2      0.0000000000        0.0000000000
-    5    3      0.0000000000        0.0000000000
-    5    4      0.0000000000        0.0000000000
-    5    5      0.0000000000        0.0000000000
-    5    6      0.0000000003        0.0000000000
-    5    7      0.0000000000        0.0000000000
-    5    8      0.0000000000        0.0000000000
-    5    9      0.0000000000        0.0000000000
-    5   10      0.0000000000        0.0000000000
-    6    1      0.0000000000        0.0000000000
-    6    2      0.0000000000        0.0000000000
-    6    3      0.0000000000        0.0000000000
-    6    4      0.0000000000        0.0000000000
-    6    5      0.0000000003        0.0000000000
-    6    6      0.0000000000        0.0000000000
-    6    7      0.0000000000        0.0000000000
-    6    8      0.0000000000        0.0000000000
-    6    9      0.0000000000        0.0000000000
-    6   10      0.0000000000        0.0000000000
-    7    1      0.0000000000        0.0000000000
-    7    2      0.0000000000        0.0000000000
-    7    3      0.0000000000        0.0000000000
-    7    4      0.0000000000        0.0000000000
-    7    5      0.0000000000        0.0000000000
-    7    6      0.0000000000        0.0000000000
-    7    7      0.0000000000        0.0000000000
-    7    8      0.0000000000        0.0000000000
-    7    9      0.0000000000        0.0000000000
-    7   10      0.0000000000        0.0000000000
-    8    1      0.0000000000        0.0000000000
-    8    2      0.0000000000        0.0000000000
-    8    3      0.0000000000        0.0000000000
-    8    4      0.0000000000        0.0000000000
-    8    5      0.0000000000        0.0000000000
-    8    6      0.0000000000        0.0000000000
-    8    7      0.0000000000        0.0000000000
-    8    8      0.0000000000        0.0000000000
-    8    9      0.0000000003        0.0000000000
-    8   10      0.0000000000        0.0000000000
-    9    1      0.0000000000        0.0000000000
-    9    2      0.0000000000        0.0000000000
-    9    3      0.0000000000        0.0000000000
-    9    4      0.0000000000        0.0000000000
-    9    5      0.0000000000        0.0000000000
-    9    6      0.0000000000        0.0000000000
-    9    7      0.0000000000        0.0000000000
-    9    8      0.0000000003        0.0000000000
-    9    9      0.0000000000        0.0000000000
-    9   10      0.0000000000        0.0000000000
-   10    1      0.0000000000        0.0000000000
-   10    2      0.0000000000        0.0000000000
-   10    3      0.0000000000        0.0000000000
-   10    4      0.0000000000        0.0000000000
-   10    5      0.0000000000        0.0000000000
-   10    6      0.0000000000        0.0000000000
-   10    7      0.0000000000        0.0000000000
-   10    8      0.0000000000        0.0000000000
-   10    9      0.0000000000        0.0000000000
-   10   10      0.0000000000        0.0000000000
+    1    1   0.000000E+00   0.000000E+00
+    1    2   0.000000E+00   0.000000E+00
+    1    3   0.000000E+00   0.000000E+00
+    1    4   0.000000E+00   0.000000E+00
+    1    5   0.000000E+00   0.000000E+00
+    1    6   0.000000E+00   0.000000E+00
+    1    7   0.000000E+00   0.000000E+00
+    1    8   0.000000E+00   0.000000E+00
+    1    9   0.000000E+00   0.000000E+00
+    1   10   0.000000E+00   0.000000E+00
+    2    1   0.000000E+00   0.000000E+00
+    2    2   0.000000E+00   0.000000E+00
+    2    3   0.000000E+00   0.000000E+00
+    2    4   0.000000E+00   0.000000E+00
+    2    5   0.000000E+00   0.000000E+00
+    2    6   0.000000E+00   0.000000E+00
+    2    7   0.000000E+00   0.000000E+00
+    2    8   0.000000E+00   0.000000E+00
+    2    9   0.000000E+00   0.000000E+00
+    2   10   0.000000E+00   0.000000E+00
+    3    1   0.000000E+00   0.000000E+00
+    3    2   0.000000E+00   0.000000E+00
+    3    3   0.000000E+00   0.000000E+00
+    3    4   0.000000E+00   0.000000E+00
+    3    5   0.000000E+00   0.000000E+00
+    3    6   0.000000E+00   0.000000E+00
+    3    7   0.000000E+00   0.000000E+00
+    3    8   0.000000E+00   0.000000E+00
+    3    9   0.000000E+00   0.000000E+00
+    3   10   0.000000E+00   0.000000E+00
+    4    1   0.000000E+00   0.000000E+00
+    4    2   0.000000E+00   0.000000E+00
+    4    3   0.000000E+00   0.000000E+00
+    4    4   0.000000E+00   0.000000E+00
+    4    5   0.000000E+00   0.000000E+00
+    4    6   0.000000E+00   0.000000E+00
+    4    7   0.000000E+00   0.000000E+00
+    4    8   0.000000E+00   0.000000E+00
+    4    9   0.000000E+00   0.000000E+00
+    4   10   0.000000E+00   0.000000E+00
+    5    1   0.000000E+00   0.000000E+00
+    5    2   0.000000E+00   0.000000E+00
+    5    3   0.000000E+00   0.000000E+00
+    5    4   0.000000E+00   0.000000E+00
+    5    5   0.000000E+00   0.000000E+00
+    5    6   2.583371E-10   0.000000E+00
+    5    7   0.000000E+00   0.000000E+00
+    5    8   0.000000E+00   0.000000E+00
+    5    9   0.000000E+00   0.000000E+00
+    5   10   0.000000E+00   0.000000E+00
+    6    1   0.000000E+00   0.000000E+00
+    6    2   0.000000E+00   0.000000E+00
+    6    3   0.000000E+00   0.000000E+00
+    6    4   0.000000E+00   0.000000E+00
+    6    5   2.583371E-10   0.000000E+00
+    6    6   0.000000E+00   0.000000E+00
+    6    7   0.000000E+00   0.000000E+00
+    6    8   0.000000E+00   0.000000E+00
+    6    9   0.000000E+00   0.000000E+00
+    6   10   0.000000E+00   0.000000E+00
+    7    1   0.000000E+00   0.000000E+00
+    7    2   0.000000E+00   0.000000E+00
+    7    3   0.000000E+00   0.000000E+00
+    7    4   0.000000E+00   0.000000E+00
+    7    5   0.000000E+00   0.000000E+00
+    7    6   0.000000E+00   0.000000E+00
+    7    7   0.000000E+00   0.000000E+00
+    7    8   0.000000E+00   0.000000E+00
+    7    9   0.000000E+00   0.000000E+00
+    7   10   0.000000E+00   0.000000E+00
+    8    1   0.000000E+00   0.000000E+00
+    8    2   0.000000E+00   0.000000E+00
+    8    3   0.000000E+00   0.000000E+00
+    8    4   0.000000E+00   0.000000E+00
+    8    5   0.000000E+00   0.000000E+00
+    8    6   0.000000E+00   0.000000E+00
+    8    7   0.000000E+00   0.000000E+00
+    8    8   0.000000E+00   0.000000E+00
+    8    9   2.583371E-10   0.000000E+00
+    8   10   0.000000E+00   0.000000E+00
+    9    1   0.000000E+00   0.000000E+00
+    9    2   0.000000E+00   0.000000E+00
+    9    3   0.000000E+00   0.000000E+00
+    9    4   0.000000E+00   0.000000E+00
+    9    5   0.000000E+00   0.000000E+00
+    9    6   0.000000E+00   0.000000E+00
+    9    7   0.000000E+00   0.000000E+00
+    9    8   2.583371E-10   0.000000E+00
+    9    9   0.000000E+00   0.000000E+00
+    9   10   0.000000E+00   0.000000E+00
+   10    1   0.000000E+00   0.000000E+00
+   10    2   0.000000E+00   0.000000E+00
+   10    3   0.000000E+00   0.000000E+00
+   10    4   0.000000E+00   0.000000E+00
+   10    5   0.000000E+00   0.000000E+00
+   10    6   0.000000E+00   0.000000E+00
+   10    7   0.000000E+00   0.000000E+00
+   10    8   0.000000E+00   0.000000E+00
+   10    9   0.000000E+00   0.000000E+00
+   10   10   0.000000E+00   0.000000E+00
 End of property elements printout.
  
 
@@ -1375,9 +1416,8 @@ End of property elements printout.
  Total wall time used in PAMTRA :   00:00:00
  Total CPU  time used in PAMTRA (master only) :   00:00:00
 
- Transformation ended at : Sun Nov 12 21:09:50 2017
+ Transformation ended at : Fri Mar  9 20:13:19 2018
 
-  +++++ returning from  dirac/DIRCTL ++++++
 
 *****************************************************
 ********** E N D   of   D I R A C  output  **********
@@ -1385,35 +1425,35 @@ End of property elements printout.
 
 
  
-     Date and time (Linux)  : Sun Nov 12 21:09:50 2017
-     Host name              : lxi098                                  
+     Date and time (Linux)  : Fri Mar  9 20:13:19 2018
+     Host name              : lxi082                                  
 
   
   Dynamical Memory Usage Summary for Master
   
   Mean allocation size (Mb) :        56.37
   
-  Largest                    10  allocations
+  Largest          10  allocations
   
-      488.28 Mb at subroutine pamtra_+0x17b                              for WORK in PAMTRA                            
-      488.28 Mb at subroutine psiscf_+0xa9                               for WORK in PSISCF                            
-      488.28 Mb at subroutine pamset_+0x1b3d                             for WORK in PAMSET - 2                        
-      488.28 Mb at subroutine gmotra_+0x6045                             for WORK in GMOTRA                            
-      488.28 Mb at subroutine pamset_+0xa8                               for WORK in PAMSET - 1                        
-      488.28 Mb at subroutine MAIN__+0x295                               for test allocation of work array in DIRAC mai
-        0.76 Mb at subroutine paminp_+0x8a                               for PAMINP WORK array                         
-        0.09 Mb at subroutine pcmout_+0x109                              for CMO in PCMOUT                             
-        0.09 Mb at subroutine butobs_no_work_+0x8f                       for buf in butobs                             
-        0.04 Mb at subroutine gtovlx_+0x179                              for unnamed variable                          
+      488.28 Mb at subroutine pamtra_+0x121                              for WORK in PAMTRA                            
+      488.28 Mb at subroutine psiscf_+0xb0                               for WORK in PSISCF                            
+      488.28 Mb at subroutine pamset_+0x3e0                              for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine gmotra_+0x233                              for WORK in GMOTRA                            
+      488.28 Mb at subroutine pamset_+0x87                               for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine MAIN__+0xa55                               for test allocation of work array in DIRAC mai
+        0.76 Mb at subroutine paminp_+0x76                               for PAMINP WORK array                         
+        0.09 Mb at subroutine pcmout_+0xc3                               for CMO in PCMOUT                             
+        0.09 Mb at subroutine butobs_no_work_+0x90                       for buf in butobs                             
+        0.04 Mb at subroutine gtovlx_+0x158                              for unnamed variable                          
   
   Peak memory usage:       488.37 MB
   Peak memory usage:        0.477 GB
-       reached at subroutine : butobs_no_work_+0x8f                      
+       reached at subroutine : butobs_no_work_+0x90                      
               for variable   : buf in butobs                             
   
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
->>>> Node 0, utime: 0, stime: 0, minflt: 4461, majflt: 107, nvcsw: 539, nivcsw: 82, maxrss: 33276
+>>>> Node 0, utime: 0, stime: 0, minflt: 4233, majflt: 80, nvcsw: 535, nivcsw: 90, maxrss: 34948
 >>>> Total WALL time used in DIRAC: 1s
-DIRAC pam run in /u/milias/Work/qch/software/dirac/trunk/test/operators_mo_mtx_elements
+DIRAC pam run in /u/milias/Work/qch/software/dirac/devel_trunk/test/operators_mo_mtx_elements
