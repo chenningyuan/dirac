@@ -328,7 +328,7 @@ C     ========================================
 C ... skip the generation of 2-el.Fock matrix when RESTFCK=.true. 
       IF (.NOT.RESTFCK) THEN
       IF(ATHUCK) THEN
-        DHF_INTTYP='Atom. Huckel'
+        DHF_INTTYP = 'Atom. Huckel'
         CALL ADHOC(CMO,EIG,IBEIG,DHFERG,IPRSCF,WORK,KFREE,LFREE)
         CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
         GOTO 100
@@ -337,10 +337,11 @@ C     2) - atomic start
 C     -------------------------
       ELSEIF(ATOMST) THEN
 C.......In the open-shell case use fractional occupation in first iteration; reset at the end
-        AOCBUF   = AOC
-        AOC      = .FALSE.
-        NFMATBUF = NFMAT
-        NFMAT    = 1
+        DHF_INTTYP = 'Atomic s'
+        AOCBUF     = AOC
+        AOC        = .FALSE.
+        NFMATBUF   = NFMAT
+        NFMAT      = 1
         CALL ATOMIC_START(DMAT,IPRSCF,WORK,KFREE,LFREE)
         !fixme: michal for InteRest                            
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
@@ -3547,7 +3548,6 @@ C     ------------------------------------------------
 C
       IF(ATOMST) THEN
         BARNUC = .FALSE.
-        CACC    = 'Atomic s'
       ENDIF
 C
 C     * TRIFCK: Looking for old 2-electron Fock matrix
@@ -3582,7 +3582,7 @@ CMI/May05 Do not use old DFCOEF when DO4C2C=.TRUE. !
       IF(TRIVEC.AND..NOT.RESTFCK) THEN
         INQUIRE(FILE='DFCOEF',EXIST=TOBE)
         IF(TOBE) THEN
-          BARNUC = .FALSE.
+          BARNUC   = .FALSE.
           DOHUCKEL = .FALSE.
         ELSE
           WRITE(LUPRI,'(/A)') '*** INFO *** No trial vectors found.'

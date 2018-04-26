@@ -1031,7 +1031,7 @@ C
      &            '.NODIIS','.MXDIIS','.CNVINT','.ITRINT','.INTFLG',
      &            '.MOSTAR','.XXXXXX','.CLOSED','.EIGPRI','.OPEN S',      ! 20
      &            '.AUTOCC','.OWNBAS','.NOBNCR','.DIISTH','.DAMPFC',
-     &            '.OVLSEL','.NODYNS','.XXXXXX','.DIISMO','.DIISAO',      ! 30
+     &            '.OVLSEL','.NODYNS','.BNCORR','.DIISMO','.DIISAO',      ! 30
      &            '.XXXXXX','.MAX MA','.MAX MI','.2NDOPT','.SKIPEE',
      &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.BOSONS',      ! 40
      &            '.MJSELE','.AOC   ','.FOCC  ','.LSHIFT','.MAXIT2',
@@ -1081,7 +1081,7 @@ C     initial molecular orbitals:
       TRIFCK    = .FALSE.
       BARNUC    = .TRUE.
       BNCRON    = .FALSE.
-      force_bnc = .false.
+      FORCE_BNC = .false.
       BNSPON    = .TRUE.  ! use either this or BNCRON
       SIRIFC    = .FALSE.
       DOHUCKEL  = .false.  
@@ -1407,6 +1407,7 @@ C&&& MOSTARt: How to obtain initial MOs [ default: 1) TRIVEC, 2) BNCORR ]
      &                  INDEX(LINE,'BARE NUC').ne.0) THEN
                   BARNUC = .TRUE.
                   BNCRON = .FALSE.
+                  BNSPON = .FALSE.
                ELSE IF (INDEX(LINE,'BNCORR').ne.0) THEN
                   BARNUC = .TRUE.
                   BNCRON = .TRUE.
@@ -1606,6 +1607,9 @@ C            (new overlap selection matrix formed in each iteration)
                   DYNSEL = .FALSE.
                GO TO 100
    28          CONTINUE
+C&&& BNCORR: Bare nucleus screening (based on Slaters rules)
+                  BNCRON = .TRUE.
+                  BNSPON = .FALSE.
                GO TO 100
    29          CONTINUE
 C&&& DIISMO: Do DIIS in MO-basis
@@ -1806,7 +1810,7 @@ C&&& OPENFA: extra factor on active-active correction block to open shell Fock m
  54            CONTINUE
 C&&& BNC_FO: force bare nucleus correction (usefull for charged systems)
 C    PBS+MI/Aug2014
-               force_bnc = .true.
+               FORCE_BNC = .true.
                GOTO 100
  55            CONTINUE
 !&&& FOMOUT: print out the Fock MO matrices for diagonalization for each
@@ -2106,33 +2110,36 @@ C
 
       IF(.NOT.dirac_cfg_scf_calculation) GOTO 999
 C
-      IF (BNCRON) THEN
-         WRITE (LUPRI,'(A)')
-     &      ' * Bare nucleus screening correction used for start guess'
-!     psb 1/13/10 (psb+mi Aug2014) New parameter force_bnc (.BNC_FORCE) force input for
-!        bncron variable w/o checking value of molecular charge
-         if (force_bnc) write (lupri,'(5x,a)')
-     1   'the bare nuclear correction used independently of '//
-     2   'the system charge'
+      IF (BNCRON.OR.BNSPON) THEN
 C     hjaaj nov 2004: bare nucleus correction is
 C     designed for approx. neutral molecules,
 C     and it will give very poor start guess for e.g.
 C     a U(+90) calculation.
-         CALL RMOLCHR(ICHRG)
-         KCHARG = ICHRG - NELECT_DHF - NAELEC_DHF
-         IF (ABS(KCHARG) .GT. 10 .and. .not.force_bnc) THEN
+        IF (FORCE_BNC) THEN
+           WRITE (LUPRI,'(A)')
+     &     ' - INFO: bare nucleus correction used independently of '//
+     &  'the system charge'
+        ELSE
+          CALL RMOLCHR(ICHRG)
+          KCHARG = ICHRG - NELECT_DHF - NAELEC_DHF
+          IF (ABS(KCHARG) .GT. 10) THEN
+            BNCRON = .FALSE.
             BNCRON = .FALSE.
             WRITE (LUPRI,'(A)')
      &      ' - INFO: bare nucleus correction disabled because'//
      &      ' abs(molecular charge) .gt. 10'
-         END IF
-      END IF
-      IF (BNSPON) THEN
+          END IF
+        END IF
+        IF (BNCRON) THEN
+          DHF_INTTYP='Scr. nuclei'
          WRITE (LUPRI,'(A)')
+     &     ' * Bare nucleus screening correction used for start guess'
+        END IF
+        IF (BNSPON) THEN
+          DHF_INTTYP='Atom. scrpot'
+          WRITE (LUPRI,'(A)')
      &      ' * Sum of atomic potentials used for start guess'
-      END IF
-      IF(BNCRON.OR.BNSPON) THEN
-        DHF_INTTYP= 'Scr. nuclei '
+        END IF
       ENDIF
 C
       IF (DOBOSSEL) THEN
