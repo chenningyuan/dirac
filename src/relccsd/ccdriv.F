@@ -2581,8 +2581,6 @@ C
       call dealloc(a_HO  )
       call dealloc(a_HV  )
       call dealloc(a_HOV )
-      call dealloc(a_GOO )
-      call dealloc(a_GVV )
       call dealloc(a_CCC )
       call dealloc(a_BB1 )
       call dealloc(a_BB2 )
