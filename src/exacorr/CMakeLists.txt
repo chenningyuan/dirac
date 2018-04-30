@@ -15,6 +15,8 @@ if(ENABLE_EXATENSOR)
    exacorr_tensor_methods.F90
    exacorr_ao_to_mo.F90
    exacorr_cc.F90
+   talsh_ao_to_mo.F90
+   talsh_cc.F90
   )
 
   if(CMAKE_Fortran_COMPILER_ID MATCHES XL)

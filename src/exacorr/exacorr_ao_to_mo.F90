@@ -12,99 +12,7 @@ module exacorr_ao_to_mo
         public get_integral_tensor
         public test_integral_generation
 
-        interface compute_mo_integrals
-           module procedure talsh_compute_mo_integrals
-        end interface
-
        contains
-!-----------------------------------------------------------
-        subroutine talsh_compute_mo_integrals (nmo, mo_list)
-
-!This subroutine drives the AO to MO integral transformation using AO integrals from InteRest and the tensor contraction library from ExaTensor
-!Currently everything is done in-core, purpose is to provide a working implementation that is suitable for debugging the production code
-!The integrals are written to MDCINT, to allow for testing with unmodified DIRAC correlation modules
-
-!        Written by Lucas Visscher, winter 2016/2017
-
-         use dirac_MO
-         use exacorr_datatypes
-         use exacorr_global
-         use tensor_algebra
-         use talsh
-         use, intrinsic:: ISO_C_BINDING
-         use module_interest_interface
-         use module_interest_eri
-
-
-         implicit none
-         integer, intent(in) :: nmo(4)       ! the size of the mo basis for each of the 4 indices (mulliken ordering)
-         integer, intent(in) :: mo_list(:)   ! and their indices (4 lists consecutively)
-
-         integer             :: i, ierr
-         integer             :: nao, number_aos            ! the size of the atomic orbital basis
-         type(basis_func_info_t), allocatable :: shell(:)  ! array with basis function information
-
-         integer(C_SIZE_T), parameter:: BUF_SIZE=1_8*1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
-         type(talsh_tens_t):: aoint_tensor
-         type(talsh_tens_t):: moint_tensor
-         integer(C_INT):: aoint_dims(1:4),moint_dims(1:4)
-         integer(C_SIZE_T):: host_buf_size
-         integer(C_INT):: host_arg_max
-
-         complex(8):: zero=(0.D0,0.D0)
-         complex(8), pointer, contiguous:: ao_tens(:,:,:,:),mo_tens(:,:,:,:)
-         type(C_PTR):: body_p
-
-!        Make some noise so that we know we are here
-         print*, " Arrived in compute_mo_integrals routine"
-
-!        Initialize libraries
-         host_buf_size=BUF_SIZE
-         ierr=talsh_init(host_buf_size,host_arg_max)
-         print*, " Initialized talsh library"
-         write(*,'(" Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,host_buf_size,host_arg_max
-         call interest_initialize(.true.)
-         print*, " Initialized interest library"
-         call initialize_global_data
-         print*, " Initialized global data"
-
-!        Retrieve basis set information from DIRAC common blocks
-         nao     = number_aos(1)
-
-!        Set tensor dimensions for the index transformation (simple brute-force algorithm)
-         aoint_dims      = nao
-         moint_dims(1:4) = 2 * nmo(1:4)
-
-!        Get tensor for AO integrals
-         ierr=talsh_tensor_construct(aoint_tensor,C8,aoint_dims,init_val=zero)
-!        Initialize AO integral tensors (ideally via an initialization routine, for now via direct access)
-         ierr=talsh_tensor_get_body_access(aoint_tensor,body_p,C8,0,DEV_HOST)
-         call c_f_pointer(body_p,ao_tens,aoint_dims(1:4)) ! to use <ao_tens> as a regular Fortran 4d array
-         call compute_ao_integrals (nao,ao_tens)
-
-!        Transform to MO basis
-         ierr=talsh_tensor_construct(moint_tensor,C8,moint_dims,init_val=zero)
-         call aomo_transform (aoint_tensor,moint_tensor,nmo,mo_list)
-
-!        Write to old format MO-integrals file to allow for easy debugging of the integral transform
-         ierr=talsh_tensor_get_body_access(moint_tensor,body_p,C8,0,DEV_HOST)
-         call c_f_pointer(body_p,mo_tens,moint_dims(1:4))
-         call write_to_mdcint (nmo,2,mo_tens)
-
-!        Destruct remaining tensors and shut down library
-         ierr=talsh_tensor_destruct(aoint_tensor)
-         ierr=talsh_tensor_destruct(moint_tensor)
-!        Get statistics
-         ierr=talsh_stats()
-         ierr = talsh_shutdown()
-
-!        Clean up global data used to interact with DIRAC/Interest
-         call delete_global_data
-
-!        Make some noise so that we know we are leaving
-         print*, " Leaving compute_mo_integrals routine"
-         return
-        end subroutine talsh_compute_mo_integrals
 
         subroutine get_mocoef_tensor (nao, nmo, mo_list, mocoefa_tensor, mocoefb_tensor)
 
@@ -474,7 +382,7 @@ module exacorr_ao_to_mo
         end subroutine fetch_gtos
 
 #if defined (VAR_MPI)
-        subroutine exa_compute_mo_integrals (nmo, mo_list)
+        subroutine compute_mo_integrals (nmo, mo_list)
 
 !This subroutine drives the AO to MO integral transformation using AO integrals from InteRest and the tensor contraction library from ExaTensor
 
@@ -590,7 +498,17 @@ module exacorr_ao_to_mo
 !        Make some noise so that we know we are leaving
          print*, " Leaving compute_mo_integrals_exa routine"
          return
-        end subroutine exa_compute_mo_integrals
+        end subroutine compute_mo_integrals
+
+#else
+        subroutine compute_mo_integrals (nmo, mo_list)
+         implicit none
+         integer, intent(in) :: nmo(4)       ! the size of the mo basis for each of the 4 indices (mulliken ordering)
+         integer, intent(in) :: mo_list(:)   ! and their indices (4 lists consecutively)
+         print*,  'called exatensor version of compute_mo_integrals in a serial version'
+         print*,  'this functionality only works with MPI, we need to stop here'
+         stop ' activate MPI'
+        end subroutine compute_mo_integrals
 
 #endif
 

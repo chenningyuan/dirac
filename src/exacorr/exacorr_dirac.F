@@ -13,7 +13,7 @@ C     Written by L.Visscher Jan 2017
 C
 C***********************************************************************
 
-      Use exacorr_ao_to_mo
+      Use talsh_ao_to_mo
 
 #include "implicit.h"! because common blocks may assume this
 #include "../moltra/dcbtra.h"  ! to access tra4_indstr
@@ -74,7 +74,7 @@ C
 C***********************************************************************
 
       Use exacc_cfg
-      Use exacorr_cc
+      Use talsh_cc
 
 #include "implicit.h"! because common blocks may assume this
 #include "dcborb.h"  ! to access nesh (number of positive energy "electronlike" orbitals)
