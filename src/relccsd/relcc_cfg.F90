@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -210,6 +210,10 @@ contains
   call interface_mpi_bcast(relcc_ccener_max_dimension_diis ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_ccener_max_iterations     ,1,0,global_communicator) 
   call interface_mpi_bcast(relcc_ccener_desired_convergence,1,0,global_communicator)
+
+! Information relevant for RelCC convergence (miro,luuk)
+  call interface_mpi_bcast(relcc_ccener_dholu_limit,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_ccener_dholu_limit_set   ,1,0,global_communicator)
 
 ! Information relevant for the gradient calculation
   call interface_mpi_bcast_l0(relcc_do_mp2gradient       ,1,0,global_communicator)

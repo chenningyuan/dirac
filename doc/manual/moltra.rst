@@ -10,7 +10,7 @@ molecular spinor basis. The algorithm is not yet described in detail but it may
 be helpful to read Ref. :cite:`Visscher2002` to find information about the double
 quaternion formalism that is used. This module is usually invoked by one of the
 correlation modules but can also be run as a stand-alone module by specifying
-:ref:`GENERAL_.4INDEX` in the :ref:`**DIRAC` section of input. The input serves to
+:ref:`DIRAC_.4INDEX` in the :ref:`**DIRAC` section of input. The input serves to
 change the default active space and to specify special wishes (e.g modification
 of :ref:`MOLTRA_.INTFLG`).
 

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -262,7 +262,7 @@ C***********************************************************************
 C**** import MO coeff from different QC package ************************
 C****         and dump it on DFPCMO             ************************
 C***********************************************************************
-      IF (DOIMPMOS) CALL IMPMOS(QCPACK,FILIMP)
+      IF (DOIMPMOS) CALL IMPMOS()
 
 C     Attempt read of formatted MO coefficients
       CALL PCMOIN()
@@ -1525,6 +1525,16 @@ C
 #else
         CALL GETENV ('BASDIR',BASDIR)
 #endif
+        LEN_BASDIR = LEN_TRIM(BASDIR)
+!
+!       If string is empty add current directory
+!
+        IF ( LEN_BASDIR .eq. 0 ) THEN
+           BASDIR(1:1) = '.'
+           LEN_BASDIR   = 1
+        END IF
+!       add a trailing blank to avoid problems
+        BASDIR(LEN_BASDIR+1:LEN_BASDIR+1) = ' '
 #if defined (VAR_MPI)
       ENDIF
 #endif /* VAR_MPI */

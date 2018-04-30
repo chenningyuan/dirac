@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -250,7 +250,7 @@ C
  6001 FORMAT(2X,I3,5X,2F20.15,13X,E10.5)
  6002 FORMAT(3X,'MP2   =',F20.15/3X,'EMP2  =',F20.15/)
  6003 FORMAT(//3X,'NIT',12X,' << ',A8,' ; ',A8,' >>',20X, 'RMS')
- 6004 FORMAT (//' WARNING: Requested convergence not reached in RPA :'
+ 6004 FORMAT (//' WARNING: Requested convergence not reached in RPA :',
      &        ' RMS = ',F20.15)
  6071 FORMAT(//,'  RPA results',//3X,'Propagator',12X,'Frequency',13X,
      & 'Real part',8X,'Imaginary part')

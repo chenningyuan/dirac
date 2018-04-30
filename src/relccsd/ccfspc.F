@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -409,6 +409,10 @@ C       Make the effective Hamiltonian in the full array.
 C       Extract the Hamiltonian
         CALL EXTRT2T(BUF2,HEFF,3,3,2,2,LFA)
       ENDIF
+
+C     Write effective Hamiltonian to file for post-processing
+      CALL DUMP_HEFF(ICURFSS,HEFF)
+
 C
 C.... Diagonalize the effective Hamiltonian (blocked by symmetry).
 C
@@ -601,6 +605,77 @@ C
       IF (IERR.NE.0) THEN
        CALL QUIT('Error in INDX deallocation !')
       ENDIF
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE DUMP_HEFF(ICURFSS,HEFF)
+C
+      implicit none
+C---------------Description--------------------------------------------
+C
+C     Write the effective Hamiltonian to file for post-processing
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "param.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "files.inc"
+
+      integer, intent(in) :: icurfss
+      real(8), intent(in) :: heff(*)
+      integer :: irp, i, istart, nelements
+      logical :: hefffile_open
+      character*4 :: sector
+
+c
+c     open file if this is the first sector
+c
+      inquire(unit=iuheff,opened=hefffile_open)
+      write(IW,'(/1X,A/)')
+     &     'Writing effective Hamiltonian to formatted HEFF file'
+      if(.NOT.hefffile_open) then
+         open(unit=iuheff, form='FORMATTED',file='HEFFF')
+         if(CARITH)then
+            write(iuheff,'(A)') 'complex      # arithmetic'
+         else
+            write(iuheff,'(A)')  'real         # arithmetic'
+         endif
+      endif
+
+      select case (icurfss)
+      case (1)
+       sector = '0h0p'
+       return
+      case (2)
+       sector = '0h1p'
+      case (3)
+       sector = '1h0p'
+      case (4)
+       sector = '1h1p'
+      case (5)
+       sector = '0h2p'
+      case (6)
+       sector = '2h0p'
+      case default
+       call quit ('Error in call to dump_heff')
+      end select
+
+      write(iuheff,'(2A)') sector,'         # sector'
+      write(iuheff,'(i4,A)') NREP,'         # number of reps'
+C
+C.... Loop over irreps and write the Hamiltonian.
+C
+      DO IRP=1,NREP
+         IF (NFS_HE(IRP,ICURFSS).EQ.0) CYCLE
+         write(iuheff,'(i4,i6,a)')
+     &         irp,NFS_HE(irp,ICURFSS),'   # rep No & heff size'
+         ISTART = IFS_HE2(IRP,ICURFSS)*RCW
+         NELEMENTS = NFS_HE(IRP,ICURFSS)**2 * RCW
+         write (iuheff,1000) (HEFF(ISTART+I),I=1,NELEMENTS)
+      END DO
+
+ 1000 FORMAT (4e21.12)
+
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FS_ANALYSIS1(ICURFSS,EPS,EIGENVALUES,EIGENVECTORS,

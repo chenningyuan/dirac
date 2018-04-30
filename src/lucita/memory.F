@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -209,7 +209,8 @@ CADDE
       INTEGER*8 KFREES, KFREEL, NWORD, IMARK, IBASE, JBASE,
      &          JBASEN, IBASE_L
 !               for addressing of WORK
-      CHARACTER*6 TASK,IDENT,IIDENT,MARKC
+      CHARACTER*6 TASK,IIDENT,MARKC
+      CHARACTER IDENT*(*)
       integer, parameter :: npad = 1
       PARAMETER(MAXLVL = 1024 )
       PARAMETER(MAXMRK = 1024)
@@ -305,6 +306,7 @@ CADDE
         KFREEL         = KFREES
         IBASE(NS)      = KBASE
 
+!     Miro: KBASE out-of-bounds , needs fix (gfortran4.9)
         work(KBASE-1)  = PAD1
         work(KFREEL-1) = PAD2
         call setvec(work(KBASE-1), PAD1,1)

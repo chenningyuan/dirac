@@ -28,8 +28,8 @@ Setting up DIRAC
   :doc:`HPC cluster (Strasbourg) <installation/examples/hpc-unistra>`
 
 * **pam script:**
-  :doc:`How to set the scratch directory <pam/scratch>` |
-  :doc:`How to define an alternative MPI launcher <pam/mpi_command>` |
+  :doc:`Setting the scratch directory <pam/scratch>` |
+  :doc:`Alternative MPI launcher and passing arguments for it <pam/mpi_command>` |
   :doc:`String replacement <pam/replace>`
 
 
@@ -106,6 +106,9 @@ Tutorials and walkthrus
   :doc:`BSSE <tutorials/dft/bsse>` |
   :doc:`CAM functional <tutorials/dft/cam>` |
   :doc:`Troubleshooting <tutorials/dft/troubleshooting>`
+  
+* **Frozen orbitals:**
+  :doc:`Frozen orbitals <tutorials/frozen_orbitals/tutorial>` 
 
 * **Long-range WFT/short-range DFT:**
   :doc:`General <tutorials/srDFT/general>`
@@ -119,6 +122,10 @@ Tutorials and walkthrus
 * **Spectroscopy:**
   :doc:`X-ray spectroscopy: water <tutorials/dft/water_Kedge>`
 
+* **Spectroscopy II:**
+  :doc:`Electronic excitations using the POLPRP module <tutorials/polprp/general>` |
+  :doc:`Full scope application: Excitation spectrum of an osmium complex <tutorials/polprp/osmium>`
+
 * **Analysis:**
   :doc:`Projection analysis <tutorials/analysis/projection_analysis>`
 
@@ -126,7 +133,8 @@ Tutorials and walkthrus
   :doc:`General overview <tutorials/visual/general/tutorial>` |
   :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>` |
   :doc:`Magnetizability density <tutorials/visual/magnetizability_density/tutorial>` |
-  :doc:`Molecular electrostatic potential <tutorials/visual/mep/tutorial>`
+  :doc:`Molecular electrostatic potential <tutorials/visual/mep/tutorial>` |
+  :doc:`Radial distributions <tutorials/visual/radial_distributions/tutorial>`     
 
 * **Open-shell SCF:**
   :doc:`Basics <tutorials/open_shell_scf/aoc>` |
@@ -159,9 +167,9 @@ Tutorials and walkthrus
   :doc:`Hartree-Fock and DFT calculations in solution with the polarizable continuum model <tutorials/pcm/pcm_scf>` |
   :doc:`Calculation of polarizabilities in solution: response theory approach <tutorials/pcm/pcm_response>`
 
-* **Polarizable embedding model:**
-  :doc:`First step with polarizable embedding: Hartree-Fock calculation on micro-solvated H2O <tutorials/polarizable_embedding/pe_scf>` |
-  :doc:`TDDFT calculation on micro-solvated H2O  <tutorials/polarizable_embedding/pe_response>`
+* **Polarizable embedding (PE) model:**
+  :doc:`PE-HF calculations on micro-solvated H2O <tutorials/polarizable_embedding/pe_scf>` |
+  :doc:`PE-TDDFT calculations on micro-solvated H2O <tutorials/polarizable_embedding/pe_response>`
 
 * **Davidson corrections for relCI (LUCITA and KRCI):**
   :doc:`+Q corrections <tutorials/relci_q_corrections/q_corrections>`
@@ -192,6 +200,9 @@ Exercises
 
 Developers
 ==========
+
+* **Code review:**
+  :doc:`Code review workflow <programmers/code_review>`
 
 * **Releasing:**
   :doc:`Release preparation <programmers/release_preparation>` |

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -684,7 +684,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck SCDENS_2 */
-      SUBROUTINE SCDENS_2(Q,SCQ,N,IPRINT)
+      SUBROUTINE SCDENS_2(SCQ,ISTART,ISTOP,IPRINT)
 C***********************************************************************
 C
 C     INPUT:  Charge of atom
@@ -725,11 +725,12 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
       PARAMETER(DTOL = 1.0D-3,D0=0.0D0)
-      LOGICAL XPOL,IPOL
-      DIMENSION SCCHRG(103),BFIT(6),Q(N),SCQ(N)
+      DIMENSION SCCHRG(103),BFIT(6),SCQ(ISTART:ISTOP)
       SAVE SCCHRG,BFIT
-C
+C     
       DATA (SCCHRG(I),I = 1,103)
      +/ 0.000013D0, 0.0001D0, 0.0002D0, 0.0004D0, 0.0007D0, 
      1  0.0010D0, 0.0014D0, 0.0020D0, 0.0026D0, 0.0034D0, 
@@ -762,19 +763,11 @@ C
 C
 C     Check that charge is on list
 C            
-      DO I = 1,N
-        IQ   = NINT(Q(I))
-        XPOL = IQ.GT.103
-c       IPOL = (ABS(Q(I)-dble(IQ)).GT.DTOL).AND.(.NOT.XPOL)
-        IPOL = ABS(Q(I)-dble(IQ)).GT.DTOL .OR. IQ.GT.150
-c       IF(XPOL.OR.IPOL) THEN
-        IF(IPOL) THEN
-C       ... non-integer nuclear charge, assume this is a point charge
-C           However, integer point charges are corrected erroneously !! /HJAaJ
-C           (but if charge is 1.0 then it will be OK because SCQ(1) = 0 !)
-          SCQ(I) = D0
-        ELSEIF(XPOL) THEN
-          SCQ(I) = - POLVAL(5,BFIT,Q(I))
+      DO 10 I = ISTART,ISTOP
+        IF(NOORBT(I)) GOTO 10
+        IQ   = NINT(CHARGE(I))
+        IF(IQ.GT.103) THEN
+          SCQ(I) = - POLVAL(5,BFIT,CHARGE(I))
         ELSEIF(IQ.GT.0) THEN
           SCQ(I) = - SCCHRG(IQ)
         ELSE
@@ -782,23 +775,18 @@ C       ... this takes care of floating orbitals ! /HJAaJ
           SCQ(I) = D0
         ENDIF
         IF(IPRINT.GE.1) THEN
-          IF    (XPOL) THEN
+          IF    (IQ.GT.103) THEN
             WRITE(LUPRI,'(A,F9.4,A,F12.8,A)')
-     &        'Charge : ',Q(I),' --> Small component charge : ',SCQ(I),
-     &        '(extrapolation)'
-          ELSEIF(IPOL) THEN
-c           WRITE(LUPRI,'(A,F9.4,A,F12.8,A)')
-c    &        'Charge : ',Q(I),' --> Small component charge : ',SCQ(I),
-c    &        '(interpolation)'
-            WRITE(LUPRI,'(A,F9.4,A,F12.8,A)')
-     &        'Charge : ',Q(I),' --> Small component charge : ',SCQ(I),
-     &        '(INFO: assumes this is a point charge)'
+     &            'Charge : ',CHARGE(I),
+     &            ' --> Small component charge : ',SCQ(I),
+     &            '(extrapolation)'
           ELSE
             WRITE(LUPRI,'(A,F9.4,A,F12.8)')
-     &        'Charge : ',Q(I),' --> Small component charge : ',SCQ(I)
+     &            'Charge : ',CHARGE(I),
+     &            ' --> Small component charge : ',SCQ(I)
           ENDIF
         ENDIF            
-      ENDDO
+ 10   CONTINUE
       RETURN
 C
       ENTRY SCQSET(IZ,SCQVAL)
@@ -877,16 +865,6 @@ C
         CALL LVCORR_1(WORK(KSCQ),IPRINT)
         CALL MEMREL('LVCORR',WORK,KWORK,KWORK,KFREE,LFREE)  
       ENDIF
-C
-C     Print section (this is now printed in LVCORR_1)
-C
-C     IF(IPRINT.GE.1) THEN
-C       CALL HEADER('Output from LVCORR',-1)
-C        WRITE(LUPRI,'(1X,A,F18.12)')
-C     &    '* Classical repulsion of small component atomic charges:',
-C     &    CORRLV
-C     ENDIF
-C
       RETURN
       
       END
@@ -931,7 +909,7 @@ c     ... when to use tabulated charges :
 C       ... use tabulated small component charges
          IF(IPRINT.GE.1) WRITE(LUPRI,'(A/)')
      &      ' * Using tabulated small component atomic charges:'
-         CALL SCDENS_2(CHARGE,SCQ,NUCIND,IPRINT)
+         CALL SCDENS_2(SCQ,1,NUCIND,IPRINT)
        ELSE
 C       ... use Mulliken small component charges
          CALL MEMGET('REAL',KSMAT,NTBAS(0)*NTBAS(0),WORK,KFREE,LFREE)

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -702,20 +702,20 @@ c
             WRITE(SYMLAB,'("m_j=",I3,"/2")') ID
             IF (KRMC_FLG.EQ.1) THEN
               IF( ID .eq. 0) THEN 
-                WRITE(LUPRI,'(/A,I3,A)')
+                WRITE(LUPRI,'(/A,I4,A)')
      &          '* Electronic eigenvalue no.',JVEC(I),': '
               ELSE
-                WRITE(LUPRI,'(/A,I3,A,2X,A9)')
+                WRITE(LUPRI,'(/A,I4,A,2X,A9)')
      &          '* Electronic eigenvalue no.',JVEC(I),': ',SYMLAB
               END IF
             ELSE
 C             ... CI-NOs, MP2-NOs,...
               IF( ID .eq. 0) THEN 
-                WRITE(LUPRI,'(/A,I3,A,A,F12.8)')
+                WRITE(LUPRI,'(/A,I4,A,A,F12.8)')
      &          '* Electronic eigenvalue no.',JVEC(I),': ',
      &          '      Occupation :',OCC2(I)
               ELSE
-                WRITE(LUPRI,'(/A,I3,A,A,F12.8,2X,A9)')
+                WRITE(LUPRI,'(/A,I4,A,A,F12.8,2X,A9)')
      &          '* Electronic eigenvalue no.',JVEC(I),': ',
      &          '      Occupation :',OCC2(I),SYMLAB
               END IF
@@ -728,7 +728,7 @@ C             ... CI-NOs, MP2-NOs,...
                ID = IBEIG(II)
                WRITE(SYMLAB,'("m_j=",I3,"/2")') ID
              ENDIF
-             WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A,2X,A9)')
+             WRITE(LUPRI,'(/A,I4,A,'//FMT//',A,F6.4,A,2X,A9)')
      &          '* Electronic eigenvalue no.',JVEC(I),': ',
      &          EIG(II),'       (Occupation : f = ',OCC2(I),')',
      &          SYMLAB
@@ -740,7 +740,7 @@ C             ... CI-NOs, MP2-NOs,...
              WRITE(LUPRI,'(/A,I3)')
      &       '* Positronic eigenvalue no.',II
           ELSE
-             WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A,2X,A9)')
+             WRITE(LUPRI,'(/A,I4,A,'//FMT//',A,F6.4,A,2X,A9)')
      &          '* Positronic eigenvalue no.',II,': ',
      &          EIG(II),'       (Occupation : f = ',OCC2(I),')',
      &          SYMLAB
@@ -1722,25 +1722,25 @@ C
         IF(IP.EQ.1) THEN
 C...    Positive-energy (electronic) orbital
           IF( IOPT .lt. 14 )THEN
-            WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A)')
+            WRITE(LUPRI,'(/A,I4,A,'//FMT//',A,F6.4,A)')
      +         '* Electronic eigenvalue nr.',JMOL(1,K),': ',
      &         EMOL(K),'       (Occupation : f = ',OCC(K),')'
           ELSE
             ID = IBMOL(K)
             WRITE(SYMLAB,'("m_j=",I3,"/2")') ID
             IF( ID .eq. 0) THEN
-              WRITE(LUPRI,'(/A,I3,A,A,F12.8)')
+              WRITE(LUPRI,'(/A,I4,A,A,F12.8)')
      &         '* Electronic eigenvalue nr.',JMOL(1,K),': ',
      &            '      Occupation :',OCC(K)
             ELSE
-                  WRITE(LUPRI,'(/A,I3,A,A,F12.8,2X,A9)')
+                  WRITE(LUPRI,'(/A,I4,A,A,F12.8,2X,A9)')
      &            '* Electronic eigenvalue no.',JMOL(1,K),': ',
      &            '      Occupation :',OCC(K),SYMLAB
             END IF
           END IF
         ELSE
 C...    Negative-energy (positronic) orbital
-          WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A)')
+          WRITE(LUPRI,'(/A,I4,A,'//FMT//',A,F6.4,A)')
      +       '* Positronic eigenvalue nr.',JMOL(1,K),': ',
      &       EMOL(K),'       (Occupation : f = ',OCC(K),')'
         ENDIF
@@ -1840,7 +1840,7 @@ C
         CALL GROSSC(GROSS,NREFS,IFRP,NREF,D1,GVEC(1,2),JREF,REFFIL)
         FACTOR  = OCC(K)*Dno_occ
         CALL DAXPY((NREF+1),FACTOR,GVEC(1,2),1,GVEC(1,1),1)
-  10  CONTINUE
+ 10   CONTINUE
       CALL PRSYMB(LUPRI,'=',48,0)
       WRITE(LUPRI,'(/A)')
      &    '* Total reference orbital contributions:'
@@ -4269,6 +4269,7 @@ C
      &          NAO(MAXREF),WORK(*)
       DIMENSION IOFF(2)
       CHARACTER TEXT*74
+C
       KFRSAV = KFREE
       IF(IPRPRJ.GE.2) WRITE(6,'(A/)') '** Output from PRJAOB:'
       CALL MEMGET('INTE',KINF,NTBAS(0),WORK,KFREE,LFREE)
@@ -4276,47 +4277,50 @@ C
 C     Find total number of reference orbitals
 C     =======================================
 C     ININD runs over symmetry independent centers
-C     INDEP runs over symmetry dependent centers
+C     IREFS runs over symmetry dependent centers, exluding centers without basis functions
       NVECS(1,1)=0
-      INDEP=1
+      IREFS=1
       ININD=1
       DO ITYP = 1,NONTYP
-C.......Find the total number of basis functions for this atom type
-        CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ININD,1,-1)
-C.......Read information from coefficient file
-        CALL OPNFIL(LUCOEF,REFFIL(INDEP),'OLD','PRJAOB')        
-        READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
-     &        NSTR(1,2,INDEP),NSTR(1,1,INDEP),NAO(INDEP),DUM
-C.............NPSH............NESH............NBAS...........TOTERG
-        CLOSE(LUCOEF,STATUS='KEEP')
-        IF(NAO(INDEP).NE.MBAS) THEN
-           WRITE(LUPRI,'(A,A,I3,/,A,A6,A,I6)') 
-     &     'Atomic projection analysis: ',
-     &     '  Wrong number of basis function for atomic type ', ITYP,
-     &     '  Number read from                     ',
-     &     REFFIL(INDEP),' : '  ,MBAS
-           write(LUPRI,*) 'NAO(INDEP), MBAS:',NAO(INDEP), MBAS
-           CALL QUIT
-     &     ('PRJAOB: Wrong number of basis functions !')
-        ENDIF
-C.......Count the number of orbitals to read: 
-C       NCATOM(1,0,INDEP) is the total number of orbitals per atom of this type
-C       The number is multiplied with total number of atoms of this type and
-C       added to NVECS(1,1)
-        NSTR(1,0,INDEP)=0
-        NDIM=NSTR(1,2,INDEP)+NSTR(1,1,INDEP)+1
-        CALL MEMGET('INTE',KITMP,NDIM,WORK,KFREE,LFREE)
-        CALL NUMLS1(VECREF(1,INDEP),IDUM,IDUM,
-     &       -NSTR(1,2,INDEP),NSTR(1,1,INDEP),
-     &       NSTR(1,0,INDEP),WORK(KITMP))
-        CALL MEMREL('PRJAOB.ref',WORK,1,KITMP,KFREE,LFREE)
-        CALL MEMGET('INTE',KVEC(1,INDEP),NSTR(1,0,INDEP),
-     &              WORK,KFREE,LFREE)
-        NN = INDEP
-        DO J = 0,NONT(ITYP)-1
-          INDEP = INDEP + NUCDEG(ININD+J)
-        ENDDO
-        NVECS(1,1) = NVECS(1,1) + (INDEP-NN)*NSTR(1,0,NN)
+        IF(.NOT.NOORBT(ININD)) THEN ! Skip centers with no orbitals
+C.........Find the total number of basis functions for this atom type
+          CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ININD,1,-1)
+C.........Read information from coefficient file
+          CALL OPNFIL(LUCOEF,REFFIL(IREFS),'OLD','PRJAOB')        
+          READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
+     &          NSTR(1,2,IREFS),NSTR(1,1,IREFS),NAO(IREFS),DUM
+C...............NPSH............NESH............NBAS...........TOTERG
+          CLOSE(LUCOEF,STATUS='KEEP')
+          IF(NAO(IREFS).NE.MBAS) THEN
+             WRITE(LUPRI,'(A,A,I3,/,A,A6,A,I6)') 
+     &       'Atomic projection analysis: ',
+     &       '  Wrong number of basis function for atomic type ', ITYP,
+     &       '  Number read from                     ',
+     &       REFFIL(IREFS),' : '  ,MBAS
+             write(LUPRI,*) 'NAO(IREFS), MBAS:',NAO(IREFS), MBAS
+             CALL QUIT
+     &       ('PRJAOB: Wrong number of basis functions !')
+          ENDIF
+C.........Count the number of orbitals to read: 
+C         NCATOM(1,0,IREFS) is the total number of orbitals per atom of this type
+C         The number is multiplied with total number of atoms of this type and
+C         added to NVECS(1,1)
+          NSTR(1,0,IREFS)=0
+          NDIM=NSTR(1,2,IREFS)+NSTR(1,1,IREFS)+1
+          CALL MEMGET('INTE',KITMP,NDIM,WORK,KFREE,LFREE)
+          CALL NUMLS1(VECREF(1,IREFS),IDUM,IDUM,
+     &         -NSTR(1,2,IREFS),NSTR(1,1,IREFS),
+     &         NSTR(1,0,IREFS),WORK(KITMP))
+          CALL MEMREL('PRJAOB.ref',WORK,1,KITMP,KFREE,LFREE)
+          CALL MEMGET('INTE',KVEC(1,IREFS),NSTR(1,0,IREFS),
+     &         WORK,KFREE,LFREE)
+          NDEP = 0
+          DO J = 0,NONT(ITYP)-1
+            NDEP = NDEP + NUCDEG(ININD+J)
+          ENDDO
+          NVECS(1,1) = NVECS(1,1) + NDEP*NSTR(1,0,IREFS)
+          IREFS=IREFS+NDEP
+        ENDIF  
         ININD = ININD + NONT(ITYP)
       ENDDO
 C
@@ -4346,70 +4350,72 @@ C
 C     Select atomic coefficients
 C     ==========================
       JVEC  = 1
-      INDEP = 0
+      IREFS = 0
       ININD = 1
       IVOFF = 0
       DO ITYP = 1,NONTYP
-        INDEP = INDEP + 1
-C.......Read C1 coefficients and orbitalenergies
-        CALL OPNFIL(LUCOEF,REFFIL(INDEP),'OLD','PRJAOB')        
-        READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
-     &        NNEG,NPOS,NAO(INDEP),DUM
-        NTOT = NNEG+NPOS
-        NQA  = NAO(INDEP)*NTOT*NZC1
-        CALL MEMGET('REAL',KQA,NQA ,WORK,KFREE,LFREE)
-        CALL READT(LUCOEF,NQA,WORK(KQA))
-        CALL MEMGET('REAL',KEA,NTOT,WORK,KFREE,LFREE)
-        CALL READT(LUCOEF,NTOT,WORK(KEA))
-        CLOSE(LUCOEF,STATUS='KEEP')
-C.......Make pointer array to selected reference orbitals
-        NDIM = NTOT+1
-        CALL MEMGET('INTE',KITMP,NDIM,WORK,KFREE,LFREE)
-        CALL NUMLS1(VECREF(1,INDEP),WORK(KVEC(1,INDEP)),NSTR(1,0,INDEP),
-     &       -NNEG,NPOS,NSTR(1,0,INDEP),WORK(KITMP))
-        CALL MEMREL('PRJAOB.refsel',WORK,1,KITMP,KFREE,LFREE)
-        CALL ORBCNT(WORK(KVEC(1,INDEP)),NSTR(1,0,INDEP),NNEG,NPOS,
-     &             NSTR(1,2,INDEP),NSTR(1,1,INDEP))
-C.....Extract coefficients and orbital energies (JVEC updated inside)
-        CALL SELATOM(WORK(KCSEL),WORK(KESEL),NTBAS(0),NVECS(1,0),NZC1,
-     &               WORK(KQA),WORK(KEA),NAO(INDEP),NTOT,NNEG,NPOS,
-     &               ININD,NONT(ITYP),NUCDEG(ININD),
-     &               WORK(KVEC(1,INDEP)),NSTR(1,1,INDEP),
-     &               NSTR(1,2,INDEP),JVEC,WORK,KFREE,LFREE)
-        CALL MEMREL('PRJAOB.atom',WORK,1,KQA,KFREE,LFREE)
-        IF(IPRPRJ.GE.2) THEN
-          WRITE(6,'(A,I5,A,3X,A6/A,2I6/A,I6)') 
-     &     '  Atomic type ',ITYP,'  ',REFFIL(INDEP),
-     &     '  NPSH/NESH       :',NSTR(1,2,INDEP),NSTR(1,1,INDEP),
-     &     '  Basis set size  :',NAO(INDEP)
-          WRITE(6,*) 'Selected coefficients:'
-          KCOFF = KCSEL+NTBAS(0)*IVOFF
-          NVDIM = NSTR(1,0,INDEP)
-          CALL PRQMAT(WORK(KCOFF),NTBAS(0),NVDIM,NTBAS(0),
-     &                NVECS(1,0),NZC1,IQDEF,LUPRI)
-          WRITE(6,*) 'Selected eigenvalues:'
-          KEOFF = KESEL+IVOFF
-          CALL OUTPUT(WORK(KEOFF),1,NVDIM,1,1,NVDIM,1,-1,LUPRI)
-        ENDIF
-C.......Duplicate information for other atoms of this type
-        NNATOM=0
-        DO J = 0,NONT(ITYP)-1
-          NNATOM = NNATOM + NUCDEG(ININD+J)
-        ENDDO
-        NN = INDEP
-        WRITE(REFFIL(NN)(5:6),'(I2)') 1
-        DO IDEP = 2,NNATOM
-          INDEP = INDEP + 1
-          WRITE(REFFIL(INDEP),'(A4,I2)') REFFIL(NN)(1:4),IDEP
-          NSTR(1,0,INDEP) = NSTR(1,0,NN)
-          NSTR(1,1,INDEP) = NSTR(1,1,NN)
-          NSTR(1,2,INDEP) = NSTR(1,2,NN)
-          CALL MEMGET('INTE',KVEC(1,INDEP),NSTR(1,0,INDEP),
-     &              WORK,KFREE,LFREE)
-          CALL ICOPY(NSTR(1,0,INDEP),WORK(KVEC(1,NN)),1,
-     &                               WORK(KVEC(1,INDEP)),1)
-        ENDDO
-        IVOFF = IVOFF + NNATOM*NSTR(1,0,INDEP)
+        IF(.NOT.NOORBT(ININD)) THEN
+          IREFS = IREFS + 1
+C.........Read C1 coefficients and orbitalenergies
+          CALL OPNFIL(LUCOEF,REFFIL(IREFS),'OLD','PRJAOB')        
+          READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
+     &        NNEG,NPOS,NAO(IREFS),DUM
+          NTOT = NNEG+NPOS
+          NQA  = NAO(IREFS)*NTOT*NZC1
+          CALL MEMGET('REAL',KQA,NQA ,WORK,KFREE,LFREE)
+          CALL READT(LUCOEF,NQA,WORK(KQA))
+          CALL MEMGET('REAL',KEA,NTOT,WORK,KFREE,LFREE)
+          CALL READT(LUCOEF,NTOT,WORK(KEA))
+          CLOSE(LUCOEF,STATUS='KEEP')
+C.........Make pointer array to selected reference orbitals
+          NDIM = NTOT+1
+          CALL MEMGET('INTE',KITMP,NDIM,WORK,KFREE,LFREE)
+          CALL NUMLS1(VECREF(1,IREFS),WORK(KVEC(1,IREFS)),
+     &         NSTR(1,0,IREFS),-NNEG,NPOS,NSTR(1,0,IREFS),WORK(KITMP))
+          CALL MEMREL('PRJAOB.refsel',WORK,1,KITMP,KFREE,LFREE)
+          CALL ORBCNT(WORK(KVEC(1,IREFS)),NSTR(1,0,IREFS),NNEG,NPOS,
+     &               NSTR(1,2,IREFS),NSTR(1,1,IREFS))
+C.......Extract coefficients and orbital energies (JVEC updated inside)
+          CALL SELATOM(WORK(KCSEL),WORK(KESEL),NTBAS(0),NVECS(1,0),NZC1,
+     &                 WORK(KQA),WORK(KEA),NAO(IREFS),NTOT,NNEG,NPOS,
+     &                 ININD,NONT(ITYP),NUCDEG(ININD),
+     &                 WORK(KVEC(1,IREFS)),NSTR(1,1,IREFS),
+     &                 NSTR(1,2,IREFS),JVEC,WORK,KFREE,LFREE)
+          CALL MEMREL('PRJAOB.atom',WORK,1,KQA,KFREE,LFREE)
+          IF(IPRPRJ.GE.2) THEN
+            WRITE(6,'(A,I5,A,3X,A6/A,2I6/A,I6)') 
+     &       '  Atomic type ',ITYP,'  ',REFFIL(IREFS),
+     &       '  NPSH/NESH       :',NSTR(1,2,IREFS),NSTR(1,1,IREFS),
+     &       '  Basis set size  :',NAO(IREFS)
+            WRITE(6,*) 'Selected coefficients:'
+            KCOFF = KCSEL+NTBAS(0)*IVOFF
+            NVDIM = NSTR(1,0,IREFS)
+            CALL PRQMAT(WORK(KCOFF),NTBAS(0),NVDIM,NTBAS(0),
+     &                  NVECS(1,0),NZC1,IQDEF,LUPRI)
+            WRITE(6,*) 'Selected eigenvalues:'
+            KEOFF = KESEL+IVOFF
+            CALL OUTPUT(WORK(KEOFF),1,NVDIM,1,1,NVDIM,1,-1,LUPRI)
+          ENDIF
+C.........Duplicate information for other atoms of this type
+          NDEP=0
+          DO J = 0,NONT(ITYP)-1
+            NDEP = NDEP + NUCDEG(ININD+J)
+          ENDDO
+          NN = IREFS
+          WRITE(REFFIL(NN)(5:6),'(I2)') 1
+          DO IDEP = 2,NDEP
+            IREFS = IREFS + 1
+            WRITE(REFFIL(IREFS),'(A4,I2)') REFFIL(NN)(1:4),IDEP
+            NSTR(1,0,IREFS) = NSTR(1,0,NN)
+            NSTR(1,1,IREFS) = NSTR(1,1,NN)
+            NSTR(1,2,IREFS) = NSTR(1,2,NN)
+            CALL MEMGET('INTE',KVEC(1,IREFS),NSTR(1,0,IREFS),
+     &                WORK,KFREE,LFREE)
+            CALL ICOPY(NSTR(1,0,IREFS),WORK(KVEC(1,NN)),1,
+     &                                 WORK(KVEC(1,IREFS)),1)
+          ENDDO
+          IVOFF = IVOFF + NDEP*NSTR(1,0,IREFS)
+        ENDIF 
         ININD = ININD+NONT(ITYP)
       ENDDO
 C

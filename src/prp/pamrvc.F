@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -536,7 +536,7 @@ C     ------------------------------------------------
 C
       NDIM = NCSIM + NOSIM
       IF (NASHT .GT. 0) NDIM = NDIM + NOSIM
-      CALL MEMGET('REAL',KF,NDIM*N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','F',KF,NDIM*N2BBASXQ,WORK,KFREE,LFREE)
 C
       IF (LSVCFG(1)) THEN
         CALL GMOLITX(WORK(KF),WORK(KDVT),WORK(KDV),
@@ -3856,7 +3856,9 @@ C        IBCVC, IBEVC, IBPVC: index stuff
 C        NPOS   : something needed for the call to TWOFCK
 C
 C     Output:
-C        FMO    :  Fock matrices.
+C        FMO    : Fock matrices in MO basis: FMO(N2ORBXQ,NDSIM)
+C                 NOTE: FMO is used as scratch space for AO matrices and
+C                 it should therefore be allocated with NDSIM*NBBASXQ.
 C
 C     Written by J. Thyssen - Nov 24 2000
 C     Replaces GMOLI by T.Saue Sep 1996

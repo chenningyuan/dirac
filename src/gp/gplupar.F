@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -229,7 +229,7 @@ C       keep track of correct offset
         IOFFSET_INT_IN  = IOFFSET_INT_IN  + NUM_BLK
  501  CONTINUE
 C
-      IF( MYPROC. eq. MASTER )THEN
+      IF( MYPROC .eq. MASTER )THEN
 C       write an EOF-mark
         CALL ITODS(-1,1,-1,LUOUT)
       ENDIF
@@ -390,7 +390,7 @@ C         keep track of correct offset
           IOFFSET_INT_IN  = IOFFSET_INT_IN  + NUM_BLK
  601    CONTINUE
 C
-        IF( MYPROC. eq. MASTER )THEN
+        IF( MYPROC .eq. MASTER )THEN
 C         write an EOF-mark
           CALL ITODS(-1,1,-1,LUOUT)
         ENDIF
@@ -547,7 +547,7 @@ C       keep track of correct offset
         IOFFSET_IN_LUIN = IOFFSET_IN_LUIN + IOFFSET_SCRATCH
  501  CONTINUE
 C
-      IF( MYPROC. eq. MASTER )THEN
+      IF( MYPROC .eq. MASTER )THEN
 C       write an EOF-mark
         CALL ITODS(-1,1,-1,LUOUT)
       ENDIF
@@ -5188,7 +5188,7 @@ C     Partition a CI vector into batches of blocks. The length of a
 C     batch must be atmost MXLNG.
 C     S-vector routine.
 C
-C     IF ICOMP. eq. 1: the complete CI vector is constructed in just one
+C     IF ICOMP .eq. 1: the complete CI vector is constructed in just one
 C     batch.
 C
 C     OUTPUT
@@ -5364,7 +5364,7 @@ C     Partition a CI vector into batches of blocks. The length of a
 C     batch must be atmost MXLNG.
 C     C-vector routine.
 C
-C     IF ICOMP. eq. 1: the complete CI vector is constructed in just one
+C     IF ICOMP .eq. 1: the complete CI vector is constructed in just one
 C     batch.
 C
 C     OUTPUT

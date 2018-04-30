@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -58,6 +58,7 @@ C
       LOGICAL LBIT,LVCON
       CHARACTER CPUTID*12,FMT*6,MXFORM*6,SECTID*12,DAYTID*10
       DIMENSION CMO(*),EIG(*),IBEIG(*),WORK(LWORK)
+      INTEGER ITER
 #include "memint.h"
 C
 C     Summary of calculation
@@ -94,9 +95,9 @@ C
      &              FORM = 'FORMATTED')
         REWIND LUCYCL
         DO 10 I = 1,NITER
-          READ(LUCYCL,1020) NITER,DHFTMP,ERGVAL,FCKVAL,EVCVAL,
+          READ(LUCYCL,1020) ITER,DHFTMP,ERGVAL,FCKVAL,EVCVAL,
      &                 CACC,CPUTID,DHF_INTTYP,DAYTID
-          WRITE(LUPRI,1010) NITER,DHFTMP,ERGVAL,FCKVAL,EVCVAL,
+          WRITE(LUPRI,1010) ITER,DHFTMP,ERGVAL,FCKVAL,EVCVAL,
      &                CACC,CPUTID,DHF_INTTYP,DAYTID
    10   CONTINUE
         CLOSE(LUCYCL,STATUS='KEEP')

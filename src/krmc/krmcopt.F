@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -3546,7 +3546,7 @@ C     Generate CI start vectors.
 C
 C     Input : CMO - MO coefficents
 C
-C     Output: CREF - CI vector
+C     Output: CREF - CI vectors
 C
 C
 C     Written by J. Thyssen - Jun 27 2000
@@ -3591,9 +3591,9 @@ C
       end if
 
       IF (MAXCIT .LT. 0 .AND. NZCONF .GT. 100000) THEN
-         WRITE(LUPRI,'(//A,I9,A/A)')
-     &      ' Are you mad? Full CI with',NZCONF,' determinants?',
-     &      ' Using MAXCIT = 3 instead!'
+         WRITE(LUPRI,'(//A,I0,A/A)')
+     &      'INFO: Are you mad? Full CI with ',NZCONF,' determinants?',
+     &      'INFO: Using MAXCIT = 3 instead!'
          MAXCIT = 3
       END IF
 C

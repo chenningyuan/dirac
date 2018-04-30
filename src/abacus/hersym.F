@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -239,12 +239,13 @@ C
          IF (NINT(DMRPLN(1,0)) .EQ. 0) THEN
             WRITE(LUPRI,'(/A)') ' No mirror planes were found.'
          ELSE
-            CALL PRNARR('Mirror planes: 2=h, 1=v, 0=other',
-     &         MAXMIR, DMRPLN)
+            CALL PRNMIR(MAXMIR, DMRPLN)
          END IF
       END IF
       END IF
 
+C ::: Find symmetry operations which can be used by Dalton/Dirac
+C ::: and remove symmetry-dependent atoms
       CALL SYM_REDUCE(MXCENT, ATMARR,TMPARR, TMP2AR, SYMM,
      &      internal_file)
       IF (IPRSYM .GE. MIN(3,IPRTHR)) THEN
@@ -267,15 +268,15 @@ C ::: If there is any Aangstroem mark, it is removed. :::
         WRITE(TMPLN(10:10), '(I1)') NSYMOP
         WRITE(TMPLN(11:20), '(A9,A1)') SYMM, ' '
       end if
-      IF( MYTID .eq. MPARID .OR. IPRSYM .GE. 1) THEN
+      IF (MYTID .eq. MPARID .OR. IPRSYM .GE. 1) THEN
          IF (NSYMOP .EQ. 0) THEN
             WRITE(LUPRI, '(/A)') ' No symmetry elements were found.'
          ELSE IF (NSYMOP .EQ. 1) THEN
             WRITE(LUPRI, '(/2A)')
-     &         ' The following element was found:   ',SYMM
+     &         ' The following symmetry element was found:   ',SYMM
          ELSE
             WRITE(LUPRI, '(/2A)')
-     &         ' The following elements were found: ',SYMM
+     &         ' The following symmetry elements were found: ',SYMM
          END IF
       END IF
 
@@ -303,6 +304,7 @@ C        ... IOLD .ge. I after CALL SRTOLD
          IZATOM(I) = IZATOM(IOLD)
          ISOTOP(I) = ISOTOP(IOLD)
          GNUEXP(I) = GNUEXP(IOLD)
+         NOORBT(I) = NOORBT(IOLD)         
 #ifndef PRG_DIRAC
          RSPH(I)   = RSPH(IOLD)
          IDXSPH(I) = IDXSPH(IOLD)
@@ -406,6 +408,34 @@ C ::::::::::::::::::::::::::::::::::::::::::::::
      &                    NINT(ARR(6,I))
       END DO
    11 FORMAT (I8, ' : ', 3F15.8,'  Isotope',I3)
+      RETURN
+      END
+C  /* Deck prnmir */
+      SUBROUTINE PRNMIR(MXM, MIRPLN)
+C ::::::::::::::::::::::::::::::::::::::::::::::
+C ::                                          ::
+C ::       Prints all mirror planes           ::
+C ::       (based on PRNARR)                  ::
+C ::                                          ::
+C ::::::::::::::::::::::::::::::::::::::::::::::
+#include "implicit.h"
+#include "priunit.h"
+      REAL*8    MIRPLN(6,0:MXM)
+
+      WRITE(LUPRI,'(6(/A))')
+     &   ' Mirror planes',
+     &   ' -----------------------------',
+     &   ' #1 = Type: 2=h, 1=v, 0=other',
+     &   ' #2 = Number of atoms in plane',
+     &   ' #3-5 = normal vector of plane',
+     &   ' -----------------------------'
+      DO I=1,NINT(MIRPLN(1,0))
+         IT = NINT(MIRPLN(4,I))
+         N  = MOD(IZ,100000)
+         IT = IT / 100000
+         WRITE (LUPRI,11) IT,N,(MIRPLN(J,I), J=1,3)
+      END DO
+   11 FORMAT (I2,I6, ' : ', 3F15.8)
       RETURN
       END
 C  /* Deck prnarr2 */

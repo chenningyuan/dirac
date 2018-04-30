@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1460,7 +1460,7 @@ C
                IF (OSCIL .GE. 1.0D-3) THEN
                    PFMT = '(/5X,A,F12.8)'
                 ELSE
-                   PFMT = '(/5X,A,1P,E16.8)'
+                   PFMT = '(/5X,A,E16.8)'
                 END IF
                 WRITE(LUPRI,PFMT)
      &             '-> dipole oscillator strength (length)   :',OSCILL

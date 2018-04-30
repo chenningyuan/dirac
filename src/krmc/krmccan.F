@@ -1272,6 +1272,14 @@ C     introduce property task
 C
       CALL TITLER('KR-CI property calculation ','*',199)
 C
+      IF (OPT_CIPROGRAM .ne. 'LUCIAREL') THEN
+         WRITE(LUPRI,'(/A/A/2A)')
+     &   'WARNING: Requested KR-CI property calculations skipped',
+     &   'WARNING: because they are only implemented for LUCIAREL',
+     &   'WARNING: and you have requested ',OPT_CIPROGRAM
+         RETURN
+      END IF
+
       WRITE(LUPRI,9000)
  9000 FORMAT(
      &     3X,'This is output from the DIRAC KR-CI property module',/,
@@ -1279,17 +1287,24 @@ C
      &     3X,'Written by: ',/,
      &     3X,'  Stefan Knecht and Hans Joergen Aa. Jensen ',//,
      &     3X,'With contributions from: ',/,
-     &     3X,'  Malaya K. Nayak and Timo Fleig ',
-     &     3X,'       (Magnetic hyperfine interaction) ',//,
+     &     3X,'  Malaya K. Nayak and Timo Fleig ')
+      CALL TITLER(
+     &'(P-odd, P,T-odd properties and magnetic hyperfine interaction)',
+     & ' ',199)
+      WRITE(LUPRI,9005)
+ 9005 FORMAT(
      &     1X,79('*'))
 !
-      WRITE(LUPRI,9001)
- 9001 FORMAT(/3X,'Proper citations:',//,
+      WRITE(LUPRI,9006)
+ 9006 FORMAT(/3X,'Proper citations:',//,
      & 4X,'S.R. Knecht, PhD thesis, University of Duesseldorf, 2009.',/,
 C    & 4X,'    Parallel Relativistic Multiconfiguration Methods:',/,
 C    & 8X,'New Powerful Tools for Heavy-Element
 C    & Electronic-Structure Studies,',
-     & 4X,'T. Fleig, M.K. Nayak, J. Mol. Spectrosc 300 (2014) 16',/,
+     & 4X,'T. Fleig, M.K. Nayak, Phys. Rev. A  88 (2013) 032514',/,
+     & 4X,'T. Fleig, M.K. Nayak, J. Mol. Spectrosc.  300 (2014) 16',/,
+     & 4X,'M. Denis et al., New J. Phys.  7 (2015) 043005',/,
+     & 4X,'T. Fleig et al., Phys. Rev. A  93 (2016) 012505',/,
      &     //,
      & 1X,79('*'),/)
 
@@ -1301,9 +1316,11 @@ C               1              4
       NPROP_ROOTS_KRCI = 0
       DO I = 1, NKRCI_MAX_SYM
          NPROP_ROOTS_KRCI = NPROP_ROOTS_KRCI + NKRCI_CIROOTS(I)
-         WRITE(LUPRI,'(I7,I15)') I, NKRCI_CIROOTS(I)
+         if (NPROP_ROOTS_KRCI.ne.0) then
+           WRITE(LUPRI,'(I7,I15)') I, NKRCI_CIROOTS(I)
+         end if
       END DO
-         WRITE(LUPRI,'(A/A,I15/)')
+      WRITE(LUPRI,'(A/A,I15/)')
      &   '  _________________________________',
      &   '  Total', NPROP_ROOTS_KRCI
 C
@@ -1439,7 +1456,7 @@ C
         iprintjz = 0
       end if
 #endif
-        
+
 C
 C     ***************************************************
 C     *** Get property matrices *************************
@@ -1557,7 +1574,8 @@ C     Input: property matrix XPROPMAT
 C
 C     Written by S. Knecht - Nov 2008
 C
-C     Last revision :
+C         T. Fleig - Mar 2016
+C         Introduced .EEDM, .MHYP, .ENSPS flags programmed by MKN and TF
 C
 C***********************************************************************
       use codata
@@ -1567,6 +1585,7 @@ C***********************************************************************
       PARAMETER ( XTHRESH = 1.0D-7 )
       PARAMETER ( DEGEN   = 1.0D-10 )
 C
+#include "propconst.h"
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dcbgen.h"
@@ -1575,15 +1594,21 @@ C
 #include "krciprop.h"
 #include "dcbkrci.h"
 #include "dcbxpr.h"
+#include "dcbprl.h"
 #include "mxcent.h"
 #include "dipole.h"
+C#include "nuclei.h"
+C#include "chrnos.h"
       DOUBLE COMPLEX XMOM
       REAL*8 OSCL, OSCLABS
       DIMENSION XPROPMAT(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,
      &                   NPROP_KRCI,MZ)
+      DIMENSION GTENSOR(NPROP_ROOTS_KRCI),GTENSORNORM(NPROP_ROOTS_KRCI),
+     &          ENSPSMOM(NPROP_ROOTS_KRCI),HYFENFIN(NPROP_ROOTS_KRCI),
+     &          HYFEDMFIN(NPROP_ROOTS_KRCI),EEFFAU(NPROP_ROOTS_KRCI)
       DIMENSION WORK(*), OSCL(3), EVECS(*), EPROP_CORE(*), OSCLABS(3)
       INTEGER IND_DIP(3), IND_PRP(12)
-      CHARACTER XLABEL*16
+      CHARACTER XLABEL*16,OPTYPE*12
       LOGICAL PRINT_EV
 !     dynamic memory allocation
       integer, allocatable :: indx(:)
@@ -1591,6 +1616,18 @@ C
 C
 #include "memint.h"
       CALL QENTER('XKRCIPRPANA')
+C
+      IZERO = 0
+      ZERO = 0.0d0
+      IONE = 1
+      ONE = 1.0d0
+C
+CTF   Initialize
+      do IL = 1,NPROP_ROOTS_KRCI,1
+        GTENSOR(IL) = ZERO
+        GTENSORNORM(IL) = ZERO
+        EEFFAU(IL) = ZERO
+      end do
 C
 C     print the list of states if available otherwise skip it.
       PRINT_EV = .FALSE.
@@ -1698,7 +1735,7 @@ C       ---------
         DO 201 IVEC=1,NPROP_ROOTS_KRCI
          DO 101 JVEC= IVEC+1, NPROP_ROOTS_KRCI
             DEIG  = EVECS(IVEC) - EVECS(JVEC)
-            IF( DEIG < 0.0d0 )THEN
+            IF( DEIG < ZERO )THEN
               INIST = IVEC
               JFLST = JVEC
             ELSE
@@ -1945,19 +1982,71 @@ C       release memory
         CALL MEMREL('XKRCIPRPANA',WORK,KWORK,KWORK,KFREE,LFREE)
       END IF
 !
-!     4. Magnetic hyperfine interaction constants
-!     ===========================================
-!
-      if (domhyp_krci) then
-C       CALL FLIP_BLOCK(WORK(KRPRPMOACM),FILELAB,IPRINT)
-
+C
+C     =======================================================
+C     4. electron electric dipole moment
+C        (effective electric field)
+C     =======================================================
+      if(doeedm_krci)then
+C
+C       print title
         write(lupri,*)
         write(lupri,'(/28x,a/28x,a/28x,a)')
+     & ' ********************************************************',
+     & ' ********* electron Electric Dipole Moment **************',
+     & ' ********************************************************'
+C
+         XLABEL = 'P2-EDM'
+         IND_EDM = IXPRPINDEX(PRPNAM,LPROP_KRCI,NPROP_KRCI,XLABEL)
+C
+C       ----------------------------
+C       print eEDM expectation value
+C       ----------------------------
+        write(lupri,'(/a,A6,a/a)')
+     & '  <state| ',XLABEL,'  2*ic gamma0 gamma5 p^2 | state >  '//
+     & '  E_eff [a.u.]             E_eff [GV/cm]   '
+        write(lupri,'(a)')
+     & '  __________________       _________________'//
+     & '    ___________________________________________________'//
+     & '_______'
+        do IVEC = 1,NPROP_ROOTS_KRCI,1
+          JVEC  = IVEC
+          INIST = IVEC
+          JFLST = JVEC
+          ISYMST_IN = ISYMEIG_KRCI(INIST)
+          ISYMST_FL = ISYMEIG_KRCI(JFLST)
+          EEFFAU(IVEC) = DCMPLX(XPROPMAT(INIST,JFLST,IND_EDM,1),
+     &                    XPROPMAT(INIST,JFLST,IND_EDM,2))
+CTF          EDMNORM = sqrt(EDMMOM**2)
+          EEFFGVCM = ( EEFFAU(IVEC) * EFAUMKSA )
+C
+          write(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F20.12,5X,1F20.12)')
+     & ' EEDM  state',INIST,'(',XREPEIG(ISYMST_IN),')         state ',
+     &      JFLST,'(',XREPEIG(ISYMST_FL),')   ',
+     &      EEFFAU(IVEC),EEFFGVCM
+        end do
+        write(lupri,'(a)')
+     & '  __________________________________________'//
+     & '    ___________________________________________________'//
+     & '_______'
+C
+      end if
+C
+C     =======================================================
+C     5. Magnetic Hyperfine Structure Constants
+C     Written by Malaya K. Nayak, Sept 13, 2013
+C            and Timo Fleig, April 7-8, 2016
+C     =======================================================
+      if (domhyp_krci) then
+C
+C       print title
+        write(lupri,*)
+        write(lupri,'(/28x,a/28x,a/28x,a)') 
      & ' ********************************************************',
      & ' *********  Hyperfine Structure Constants  **************',
      & ' ********************************************************'
 C
-       DO I = 1, NPROP_KRCI
+      DO I = 1, NPROP_KRCI
          INDXPR  = LPROP_KRCI(I)
          XLABEL = PRPNAM(INDXPR)(1:8)
          IF (XLABEL(4:6).EQ.'HYP') THEN
@@ -1968,7 +2057,7 @@ C       print mHYP expectation value
 C       ----------------------------
         write(lupri,'(/a,A6,a/a)')
      & '    < state | ',XLABEL,' [alpha x E] | state >  '//
-     & '     Hyperfine Constants [a.u.]     Norm [a.u.]'
+     & '     Hyperfine Const. [a.u.]     Delta E_HypFin [a.u.]   '
         write(lupri,'(a)')
      & '  __________________       _________________'//
      & '    ___________________________________________________'//
@@ -1980,14 +2069,23 @@ C
           JFLST = JVEC
           ISYMST_IN = ISYMEIG_KRCI(INIST)
           ISYMST_FL = ISYMEIG_KRCI(JFLST)
-          EDMMOM = DCMPLX(XPROPMAT(INIST,JFLST,IND_PRP(I),1),
+         HFCONST = DCMPLX(XPROPMAT(INIST,JFLST,IND_PRP(I),1),
      &                    XPROPMAT(INIST,JFLST,IND_PRP(I),2))
-          EDMNORM = SQRT(EDMMOM**2)
+CTF
+C   prefactor = mu / ( 2c I mp )
+         read(XLABEL(2:2),*) INUC
+         PREFACNUC = VKRCI_NUCMAGMOM(INUC) /
+     &               ( 2 * CVAL * VKRCI_NUCSPIN(INUC) * XFMP )
+         if (IVEC.eq.IONE) print*,' PREFACNUC = ',PREFACNUC
+C   The hyperfine energy splitting:
+         HFENERGY = HFCONST * PREFACNUC
+C   For a level energy, multiply by 1/2[F(F+1)-J(J+1)-I(I+1)]
+C   and add to the electronic energy
 C
           write(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F20.12,5X,1F20.12)')
-     &    '   * state',INIST,'(',XREPEIG(ISYMST_IN),')         * state',
+     & ' MHYP  state',INIST,'(',XREPEIG(ISYMST_IN),')         state ',
      &      JFLST,'(',XREPEIG(ISYMST_FL),')   ',
-     &      EDMMOM,EDMNORM
+     &     HFCONST,HFENERGY
        END DO
         write(lupri,'(a)')
      & '  __________________________________________'//
@@ -1995,7 +2093,62 @@ C
      & '_______'
          END IF
        END DO
+C
       end if
+C     =======================================================
+C     6. electron-Nucleus scalar-pseudoscalar interaction
+C     Written by Malaya K. Nayak, Feb 28, 2014
+C     =======================================================
+      if (doensps_krci) then
+C
+C       print title
+        write(lupri,*)
+        write(lupri,'(/28x,a/28x,a/28x,a)') 
+     & ' ********************************************************',
+     & ' *********  e-N S-PS interaction Parameter  *************',
+     & ' ********************************************************'
+C
+      DO I = 1, NPROP_KRCI
+         INDXPR = LPROP_KRCI(I)
+         XLABEL = PRPNAM(INDXPR)(1:8)
+         IF (XLABEL(4:6).EQ.'SPS') THEN
+         IND_PRP(I) = IXPRPINDEX(PRPNAM,LPROP_KRCI,NPROP_KRCI,XLABEL)
+C
+C       ----------------------------
+C       print eNSPS expectation value
+C       ----------------------------
+        write(lupri,'(/a,A6,a/a)')
+     & '  <state| ',XLABEL,' i[gamma0 gamma5]rho_N |state>'//
+     & '    e-N S-PS Parameter [a.u.]        Norm [a.u.]'
+        write(lupri,'(a)')
+     & '  __________________       _________________'//
+     & '    ___________________________________________________'//
+     & '_______'
+C
+       DO IVEC  = 1,NPROP_ROOTS_KRCI
+          JVEC  = IVEC
+          INIST = IVEC
+          JFLST = JVEC
+          ISYMST_IN = ISYMEIG_KRCI(INIST)
+          ISYMST_FL = ISYMEIG_KRCI(JFLST)
+         ENSPSMOM(IVEC) = DCMPLX(XPROPMAT(INIST,JFLST,IND_PRP(I),1),
+     &                    XPROPMAT(INIST,JFLST,IND_PRP(I),2))
+         EDMNORM = SQRT(ENSPSMOM(IVEC)**2)
+C
+          write(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F20.12,5X,1F20.12)')
+     &    ' ENSPS  state',INIST,'(',XREPEIG(ISYMST_IN),')        state',
+     &      JFLST,'(',XREPEIG(ISYMST_FL),')   ',
+     &     ENSPSMOM(IVEC),EDMNORM
+       END DO
+        write(lupri,'(a)')
+     & '  __________________________________________'//
+     & '    ___________________________________________________'//
+     & '_______'
+         END IF
+       END DO
+C
+      end if
+C     =======================================================
 C
 C     release dynamically allocated memory
       if(print_ev) call dealloc(INDX)

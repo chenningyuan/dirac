@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -326,19 +326,27 @@ C
       MZ_NUM = 0
       MZ_NUM = MIN(NZ,2)
       MIN_ONE = - 1
-C
-C     Compute offset from WRK to WORK
-C
+
+C     Compute offset from WRK in parameter list
+C     to WORK in common in wrkspc.inc. WORK is used internally in LUCIAREL.
+C     This offset is added to all Ksomething addresses in WORK(Ksomething)
+C     so that WRK(1:LWRK) are the memory addresses really used.
+
+C     Note that K_OFFSET is in ipoist8.inc and is always i*8
+C     because the offset can be bigger than what can be stored in i*4.
+C     ** All Ksomething used in WORK(Ksomething) must always be i*8 and declared in ipoist8.inc **
+C     See also subroutine MEMMAR.
+
       CALL COMPOFF(WRK,WORK,K_OFFSET)
-C
 C     *k_offset = (long) (wrk-work+1);
-C
+
       MXPWRD = LWRK
       KADD = MXPWRD
+
 C     initialize memory
       call memmar(K_OFFSET,KADD,'INI   ',IDUMMY,'DUMMY')
+
 !     write(luwrt,*) 'K_OFFSET ==> ',K_OFFSET
-C
 !     IDUM = 0
 !     CALL MEMMAR(KDUM,IDUM,'MARK ',IDUM,'GROUPL')
 !     call memmar(kbla_blubb,4,'ADDS  ',1,'BLABLU')

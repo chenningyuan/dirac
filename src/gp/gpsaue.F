@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -4320,3 +4320,20 @@ C***********************************************************************
       CALL ICOPY(NDIM,IA(IA1),IASTEP,IB(IB1),IBSTEP)
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE CHECK_FOR_OPEN_FILES
+C***********************************************************************
+C
+C     Check for open files within some range of unit numbers
+C
+C***********************************************************************
+      INTEGER I
+      LOGICAL ITSOPEN
+      DO I = 1,300
+         INQUIRE(UNIT=I,OPENED=ITSOPEN)
+         IF(ITSOPEN) THEN
+           WRITE(6,*) 'Open file. Unit = ',I
+         ENDIF
+      ENDDO
+      END
+      

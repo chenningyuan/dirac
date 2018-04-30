@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -630,7 +630,7 @@ C     note: SPHINP will read additional input lines if DOOWN true
 C***********************************************************************
       DOCART = CRT .EQ. 'C' .OR. CRT .EQ. 'c'
       DOSPHE = CRT .EQ. 'S' .OR. CRT .EQ. 's'
-      DOOWN  = CRT. EQ. 'X'
+      DOOWN  = CRT .EQ. 'X'
       IF(DIRAC) THEN
          IF(TWOCOMP.AND.DOSPHE) THEN
 C        In 2-component mode spherical Gaussians can be used,
@@ -741,12 +741,11 @@ C
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM,
      &            DOOWN,blk)
 
-#if(defined BUILD_GEN1INT && BUILD_GEN1INT)
+#ifdef BUILD_GEN1INT
 !     initialize basis sets (large and small components) used in Gen1Int interface
-      call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM(:,1:2),
-     &                       NBLCK(:,1:2), KANG, JCO(:,:,1:2), KBLOCK,
-     &                       NUC(:,1:2), NRC(:,1:2), KPRIM,
-     &                       ALPHA(:,:,1:2), CPRIMU(:,:,:,1:2))
+      call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM,
+     &                       NBLCK, KANG, JCO, KBLOCK,
+     &                       NUC, NRC, KPRIM, ALPHA, CPRIMU)
 #endif
 
 C
@@ -1110,11 +1109,12 @@ C
 C              Start with LARGE Component
 C              ==========================
 C
-C              The following seven possibilities exist:
+C              The following possibilities exist:
 C
 C              LARGE INTGRL    2    1    1  (IBSFLAG = 1)
 C              LARGE    2    1    1 (IBSFLAG = 1)
 C              LARGE EXPLICIT    2    1    1 (IBSFLAG = 1)
+
 C              LARGE MOLFBAS H.bas (IBSFLAG = 2)
 C              LARGE BASIS basisset (IBSFLAG = 3)
 C              LARGE GEOM alpha beta N 2 1 1 (IBSFLAG = 4)
@@ -1123,6 +1123,9 @@ c               (alias for LARGE GEOM)
 C              LARGE WELLTEMP alpha beta gamma delta N 2 1 1 (IBSFLAG = 4)
 C              LARGE FAMILY    N    2    1    1 (IBSFLAG = 4)
 C              LARGE DUALFAMILY    N    2    1    1 (IBSFLAG = 4)
+
+C              LARGE POINTCHARGE (IBSFLAG = 1)
+C              LARGE NOBASIS     (IBSFLAG = 1) (alias for LARGE POINTCHARGE)
 C
                CALL RDLINE(LUINFO)
                READ (MLINE(NMLINE),'(A5,1X,A14)',IOSTAT=IOS) 
@@ -1148,9 +1151,13 @@ C
 C
 C              Check what kind of basis set we have
 C
-               IF ( BSKEYWORD(1:6) .EQ. 'INTGRL' ) THEN
+               IF ( BSKEYWORD(1:6) .EQ. 'POINTC'  .OR.
+     &              BSKEYWORD(1:7) .EQ. 'NOBASIS') THEN
                   IBSFLAG = 1
-                  READ (MLINE(NMLINE),'(12X,12I5)',IOSTAT=IOS)
+                  IQM(I,1) = 0
+               ELSE IF ( BSKEYWORD(1:6) .EQ. 'INTGRL' ) THEN
+                  IBSFLAG = 1
+                  READ (MLINE(NMLINE)(13:),*,IOSTAT=IOS)
      &                 IQM(I,1),(JCO(K,I,1),K=1,IQM(I,1))
                   IF (IOS.NE.0)THEN
                     WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
@@ -1159,7 +1166,7 @@ C
                   ENDIF
                ELSE IF ( BSKEYWORD(1:8) .EQ. 'EXPLICIT') THEN
                   IBSFLAG = 1
-                  READ (MLINE(NMLINE),'(14X,12I5)',IOSTAT=IOS)
+                  READ (MLINE(NMLINE)(15:),*,IOSTAT=IOS)
      &                 IQM(I,1),(JCO(K,I,1),K=1,IQM(I,1))
                   IF (IOS.NE.0)THEN
                     WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
@@ -1178,8 +1185,9 @@ C
                   IBSFLAG = 3
                   IF(MLINE(NMLINE)(13:14).EQ.'Q=') THEN
                     READ (MLINE(NMLINE)(15:),*,IOSTAT=IOS) QB,BASFIL
-                    WRITE(LUPRI,*) '* WARNING: Reading basis ',BASFIL,
-     &                         ' using charge ',QB
+                    WRITE(LUPRI,*) '* INFO: Reading basis ',BASFIL,
+     &                 ' using requested charge Q=',QB,
+     &                 ' although this center has a charge of ',Q
                   ELSE
                     READ (MLINE(NMLINE),'(12X,A20)',IOSTAT=IOS) BASFIL
                   ENDIF
@@ -1234,7 +1242,7 @@ C
                ELSE
 C                 Assume it is 'LARGE   2    1....'
                   IBSFLAG = 1
-                  READ (MLINE(NMLINE),'(5X,12I5)',IOSTAT=IOS)
+                  READ (MLINE(NMLINE)(6:),*,IOSTAT=IOS)
      &                 IQM(I,1),(JCO(K,I,1),K=1,IQM(I,1))
                   IF (IOS.NE.0) THEN
                     WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
@@ -1715,7 +1723,6 @@ C
           WRITE(LUPRI,*) MLINE(NMLINE)
           CALL QUIT('Error in reading..csmxn')
         ENDIF
-
 C
 C       Initialize basis set flag
 C
@@ -1723,8 +1730,14 @@ C
 C
 C       Check whether the fit function set is specified in input
 C                 
-        IF ( BSET .NE. 'FTSET' ) THEN
-C
+        IF ( BSET.EQ.'FTLRG' .OR. BSET.EQ.'FTSML' ) THEN
+
+           WRITE(LUPRI,'(//2A)') BSET,
+     &     ' specified, but only FTSET is supported at the moment.'
+           CALL QUIT('Unsupported option in MOLECULE input')
+
+        ELSE IF ( BSET .NE. 'FTSET' ) THEN
+
 C          No 'FTSET' keyword given.
 C          Take standard set
 C
@@ -1732,11 +1745,7 @@ C          Discard the line we just read.
 C
            NMLINE = NMLINE - 1   
            IBSFLAG = 2     
-C
-        ELSEIF (BSET.EQ.'FTLRG'.OR.BSET.EQ.'FTSML') THEN
-           WRITE(LUPRI,*) 'Only FTSET is supported at the moment.' 
-           CALL QUIT('Unsupported option in MOLECULE input')
-C
+
         ELSE 
 C
 C          Check what kind of basis set we have
@@ -2618,13 +2627,13 @@ C
               CALL ORBOUT(4,IQM(1,4),NBLCK(1,4),JCO(1,1,4),
      &                  NUC(1,4),NRC(1,4),SEG(1,4),
      &                  WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
-     &                  CPRIMU(1,1,1,4),NRMPRI)
+     &                  ALPHA(1,1,4),CPRIMU(1,1,1,4),NRMPRI)
                IF (IPREAD .GT. 2) THEN
                   NRMPRI = .TRUE.
               CALL ORBOUT(4,IQM(1,4),NBLCK(1,4),JCO(1,1,4),
      &                     NUC(1,4),NRC(1,4),SEG(1,4),
      &                     WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
-     &                     CPRIMU(1,1,1,4),NRMPRI)
+     &                     ALPHA(1,1,4),CPRIMU(1,1,1,4),NRMPRI)
                END IF
             ENDIF
          ENDIF
@@ -2872,7 +2881,7 @@ C           NUC - number of uncontracted shells in AO-block
 C           NRC - number of contracted shells in AO-block
 C
             CALL RDLINE(LUINFO)
-            IF (J. EQ. 1) THEN
+            IF (J .EQ. 1) THEN
                READ (MLINE(NMLINE),'(BN,A,I4,1I5)',IOSTAT=IOS)
      &              FRMT,NUCIJ,NRCIJ
                IF (IOS.NE.0) THEN

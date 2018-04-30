@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2016 by the authors of DIRAC.
+!      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -148,6 +148,8 @@ C
 C     Take calculation time of each IJ pair?
 C
       TIMING = .TRUE.
+! initialization
+      KFREE=1
 C
 C     Determine total number of tasks - MTOTTK.
       CALL HERPAR_DET_TASK (I2TYP,1,MTOTTK,NPOS,WORK(KFREE))
@@ -410,7 +412,7 @@ C--------------------------------------
 C
       IF (ITYPE .EQ. 2 .OR. ITYPE .EQ. 4) THEN
          NFMAT  = 0
-      ELSE IF (ITYPE .EQ. 3 .OR. ITYPE. EQ. 9 .OR. ITYPE. EQ. 7) THEN
+      ELSE IF (ITYPE .EQ. 3 .OR. ITYPE .EQ. 9 .OR. ITYPE .EQ. 7) THEN
          NFMAT  = NDMAT
       ELSE IF (ITYPE .EQ. -5) THEN
          IF(MAXDIF.EQ.1) THEN
@@ -913,7 +915,7 @@ C
          END IF
  100  CONTINUE
 C
-      IF (IPRPAR .GE. 10) THEN
+      IF (IPRPAR .GE. 9) THEN
          DO 400 I = 1, ITEMS
             WRITE(LUPRI,'(15X,A10,I5,A9,F8.3)')
      &           'IJ-shell =', NPOS(I), '   time =', SORTED(I)
@@ -985,29 +987,39 @@ C
       IF (IPRPAR .GT. 2) THEN
          CALL AROUND('Overall statistics for distribution of batches')
 C
-         WRITE(LUPRI,'(11X,5(A,4X))')   'Node',
+         WRITE(LUPRI,'(11X,7(A,4X))')   'Node',
      &                                  'Batches',
      &                                  'CPU time',
      &                                  'Wall time',
-     &                                  'Efficiency'
-         WRITE(LUPRI,'(11X,5(A,4X)/)')  '----',
+     &                                  'Efficiency',
+     &                                  'Wall time w/o MPI',
+     &                                  'Efficiency w/o MPI'
+         WRITE(LUPRI,'(11X,7(A,4X)/)')  '----',
      &                                  '-------',
      &                                  '--------',
      &                                  '---------',
-     &                                  '----------'
+     &                                  '----------',
+     &                                  '-----------------',
+     &                                  '------------------'
 C
          DO NODE = 1, NODES
             WALLS_TOT = WALLS(1,NODE)+WALLS(2,NODE)
             IF (WALLS_TOT .NE. 0.0D0) THEN
-               EFFI = (CPUS(1,NODE)/WALLS_TOT)*100
+               EFFI_T = (CPUS(1,NODE)/WALLS_TOT)*100.D0
             ELSE
-               EFFI = 0.0D0
+               EFFI_T = 0.0D0
             END IF
-            WRITE(LUPRI,'(I14,I10,3F13.2)')
-     &         NODE,NSTAT(NODE),CPUS(1,NODE),WALLS_TOT,EFFI
+            IF (WALLS(1,NODE) .NE. 0.0D0) THEN
+               EFFI_1 = (CPUS(1,NODE)/WALLS(1,NOD))*100.D0
+            ELSE
+               EFFI_1 = 0.0D0
+            END IF
+            WRITE(LUPRI,'(I14,I10,F12.2,F13.2,F12.2,2F20.2)')
+     &         NODE,NSTAT(NODE),CPUS(1,NODE),WALLS_TOT,EFFI_T,
+     &         WALLS(1,NODE),EFFI_1
          END DO ! NODE
          WRITE(LUPRI,'(/11X,A)')
-     &   'Note: CPU time is without CPU time used in MPI.'
+     &   'Note: CPU times are without CPU time used in MPI.'
       END IF
 C
 #ifdef PRG_DIRAC
@@ -2128,11 +2140,11 @@ C*****************************************************************************
          END DO ! J
       END DO ! I
 
-      IF (IPRINT .GE. 10) THEN
+      IF (IPRINT .GE. 6) THEN
          DO I = 1, NDIM
            WRITE(LUPRI,'(15X,A,I8,A,F8.3)')
      &           'IJ-shell =', INDEX_IJ(IPLACE(I)),
-     &           '   time =', TIMES(IPLACE(I))
+     &           '    time =', TIMES(IPLACE(I))
         ENDDO
       ENDIF
 
