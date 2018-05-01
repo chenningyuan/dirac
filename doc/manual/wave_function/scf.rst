@@ -537,6 +537,9 @@ keyword(NODYNSEL)
 No dynamic update of overlap selection vectors. The default is
 dynamic update.
 
+ .. note:: Overlap selection is nowadays marketed hard as MOM (Maximum Orbital Method, see :cite:`Gilbert_JPCA2008`), but this method has been included in DIRAC for at least two decades and goes back to the pioneering work of `Paul Bagus <http://cascam.unt.edu/people/psbagus.htm>`_ It was used in :cite:`Bagus_JCP1971`, but not reported explicitly. However, it is for instance documented in the `1975 manual of the ALCHEMY program <http://k-sek01.t-komazawa.ac.jp/msekiya/alchemy/scfm.pdf>`_ (On pdf page 15 you find a description of keyword MOORDR using a "maximum overlap criterion").
+
+
 Iteration speedup
 =================
 
