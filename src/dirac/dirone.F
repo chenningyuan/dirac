@@ -1725,7 +1725,7 @@ C
      &                    STOL(IC),IPRINT,EIG,WORK,LWORK)
               NDEL  = NBBAS(IREP,IC) - NEFF
               NLINDEP=NLINDEP+NDEL
-              WRITE(LUPRI,'(3X,A1,3X,A3,3X,A,I10)')
+              WRITE(LUPRI,'(3X,A1,3X,A3,3X,A,I10,38X,A,E10.2)')
      &           COMP(IC),REP(IREP),'* Deleted: ',NDEL,
      &          ' *Smin: ',EIG(NBBAS(IREP,IC))
             ENDIF

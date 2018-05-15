@@ -328,7 +328,7 @@ C     ========================================
 C ... skip the generation of 2-el.Fock matrix when RESTFCK=.true. 
       IF (.NOT.RESTFCK) THEN
       IF(ATHUCK) THEN
-        DHF_INTTYP='Atom. Huckel'
+        DHF_INTTYP = 'Atom. Huckel'
         CALL ADHOC(CMO,EIG,IBEIG,DHFERG,IPRSCF,WORK,KFREE,LFREE)
         CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
         GOTO 100
@@ -337,10 +337,11 @@ C     2) - atomic start
 C     -------------------------
       ELSEIF(ATOMST) THEN
 C.......In the open-shell case use fractional occupation in first iteration; reset at the end
-        AOCBUF   = AOC
-        AOC      = .FALSE.
-        NFMATBUF = NFMAT
-        NFMAT    = 1
+        DHF_INTTYP = 'Atomic s'
+        AOCBUF     = AOC
+        AOC        = .FALSE.
+        NFMATBUF   = NFMAT
+        NFMAT      = 1
         CALL ATOMIC_START(DMAT,IPRSCF,WORK,KFREE,LFREE)
         !fixme: michal for InteRest                            
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
@@ -806,7 +807,7 @@ CMI ... perform all this only if we do not restart BSS from DC-SCF or DC-SCF fro
            CALL MEMGET2('REAL','EIG   ',KEIG   ,NORBT ,WORK,KFREE,LFREE)
            CALL MEMGET2('INTE','IBEIG ',KIBEIG ,NORBT ,WORK,KFREE,LFREE)
            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMOSAV),
-     &                WORK(KEIG),WORK(IBKEIG),TOTERG,6,WORK,KFREE,LFREE)
+     &                WORK(KEIG),WORK(KIBEIG),TOTERG,6,WORK,KFREE,LFREE)
           ELSE
            CALL MEMGET2('REAL','CMOSAV',KCMOSAV,0     ,WORK,KFREE,LFREE)
            CALL MEMGET2('REAL','EIG   ',KEIG   ,0     ,WORK,KFREE,LFREE)
@@ -1883,7 +1884,7 @@ C
       IF (PEQM) THEN
         ! The PE Fock matrix is added to F2 before entering ERGCAL
         ! and the electronic PE energy is therefore added to E2PART.
-        ! Therefore we subtract it contribution from the total PE energy.
+        ! Therefore we subtract its' contribution from the total PE energy.
         ALLOCATE(PE_FMAT(N2BBASX))
         E_PE = 0.0D0
         CALL PELIB_IFC_FOCK(DMAT, PE_FMAT, PE_TOT_NRG, PE_EL_NRG)
@@ -1921,6 +1922,13 @@ C
       end if
 
       DHFERG = DHFERG + ELERGY
+      
+#ifdef HAS_PELIB
+      ! edh: Correct also elergy for printing...
+      if (peqm) then 
+        elergy = elergy - 0.5d0 * pe_el_nrg
+      end if
+#endif
 C
       IF(IPRSCF.GE.1) THEN
          CALL HEADER('Output from ERGCAL',-1)
@@ -3540,7 +3548,6 @@ C     ------------------------------------------------
 C
       IF(ATOMST) THEN
         BARNUC = .FALSE.
-        CACC    = 'Atomic s'
       ENDIF
 C
 C     * TRIFCK: Looking for old 2-electron Fock matrix
@@ -3575,7 +3582,7 @@ CMI/May05 Do not use old DFCOEF when DO4C2C=.TRUE. !
       IF(TRIVEC.AND..NOT.RESTFCK) THEN
         INQUIRE(FILE='DFCOEF',EXIST=TOBE)
         IF(TOBE) THEN
-          BARNUC = .FALSE.
+          BARNUC   = .FALSE.
           DOHUCKEL = .FALSE.
         ELSE
           WRITE(LUPRI,'(/A)') '*** INFO *** No trial vectors found.'
@@ -5464,6 +5471,7 @@ C.....Loop over atomic types
       DO IATOM = 1,NONTYP
 C.......Find the total number of basis functions for this atom type
         CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ICENT,1,-1)
+        IF (MBAS == 0) CYCLE
 C.......Read atomic coefficients in C1 format
         INQUIRE(FILE=ATOMFIL(IATOM),EXIST=TOBE)         
         IF(.NOT.TOBE) THEN

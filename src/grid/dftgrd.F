@@ -117,7 +117,7 @@ C
       CALL alloc(KRBC  ,N2AT     )
       CALL alloc(KRVEC ,3*IVECL  )
 C..added for density-based atomic size estimates
-      CALL alloc(KCHIMT,NATOMS*NATOMS)
+      CALL alloc(KCHIMT,NAT*NAT)
 C..added for the MOLCAS scheme:
       NDIM=2*NHTYP*NUCIND
       CALL alloc(KAA  ,2*NDIM)
@@ -226,12 +226,12 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbbas.h"
 #include "dcbham.h"
 
-      DIMENSION ZAN(*), C(3,NUCDEP)
+      DIMENSION ZAN(*), C(3,NAT)
       DIMENSION WRKSP(4*NUM),
      &          ACCUM(IVECL),XMUIJN(IVECL),XMUIJ2(IVECL),
      &          PSMU(IVECL,NAT),RJ(IVECL,NAT)
       DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND),
-     &     DMAT(*),CHIMT(NATOMS,NATOMS)
+     &     DMAT(*),CHIMT(NAT,NAT)
 C
 C     CARE: Some equivalencing through argument list!
 C
@@ -251,8 +251,8 @@ C
 C
 C     Initialize CHIMT with Bragg-Slater data
 C
-      DO I = 1,NATOMS
-         DO J = 1,NATOMS
+      DO I = 1,NAT
+         DO J = 1,NAT
             CHIMT(I,J) = BRAGG(NINT(ZAN(I)))/BRAGG(NINT(ZAN(J)))
          END DO
       END DO
@@ -1118,12 +1118,10 @@ C***********************************************************************
 #include "priunit.h"
 C
       DIMENSION DMAT(*)
-      DIMENSION C(3,NUCDEP)
-#include "mxcent.h"
+      DIMENSION C(3,NAT)
 #include "dcbgen.h"
-#include "nuclei.h"
 C
-      DIMENSION CHIMT(NATOMS,NATOMS)
+      DIMENSION CHIMT(NAT,NAT)
       real(8), allocatable :: kcoor(:)
       real(8), allocatable :: kdmtao(:)
       real(8), allocatable :: kgao(:)
@@ -1151,7 +1149,7 @@ C
       call alloc(KDMTAO , N2BBASX           )
       call alloc(KGAO   , NTBAS(0)          )
       call alloc(KSMAT  , NTBAS(1)*NTBAS(1) )
-      call alloc(KASMAT , NATOMS*NATOMS     )
+      call alloc(KASMAT , NAT*NAT           )
       call alloc(KICLAB , NTBAS(0)          )
 C
 C     Transform density matrix to unsorted basis, then to AO basis
@@ -1199,27 +1197,22 @@ C***********************************************************************
 
 #include "priunit.h"
 #include "maxorb.h"
-#include "mxcent.h"
 #include "maxaqn.h"
-#include "symmet.h"
-#include "nuclei.h"
 #include "dcbbas.h"
-      DIMENSION C(3,NUCDEP)
+      DIMENSION C(3,NAT)
 #if defined (VAR_G77) || defined (SYS_SX)
 C     g77 fails in the complicated dimension statement that was used
 C     in the original version, make things easier for the compiler with an
 C     equivalence statment
       EQUIVALENCE (NBAST,NTBAS(0)),(NBASL,NTBAS(1))
-      DIMENSION COORD(3,2),CHIMT(NATOMS,NATOMS),DMAT(NBAST,NBAST),
-     &     GAO(NBAST),SMAT(NBASL,NBASL),ASMAT(NATOMS,NATOMS),
+      DIMENSION COORD(3,2),CHIMT(NAT,NAT),DMAT(NBAST,NBAST),
+     &     GAO(NBAST),SMAT(NBASL,NBASL),ASMAT(NAT,NAT),
      &     ICLAB(NBAST)
 #else
-      DIMENSION COORD(3,2),CHIMT(NATOMS,NATOMS),DMAT(NTBAS(0),NTBAS(0)),
-     &     GAO(NTBAS(0)),SMAT(NTBAS(1),NTBAS(1)),ASMAT(NATOMS,NATOMS),
+      DIMENSION COORD(3,2),CHIMT(NAT,NAT),DMAT(NTBAS(0),NTBAS(0)),
+     &     GAO(NTBAS(0)),SMAT(NTBAS(1),NTBAS(1)),ASMAT(NAT,NAT),
      &     ICLAB(NTBAS(0))
 #endif
-C
-C     
 #include "ibtfun.h"
 C
       WRITE(LUPRI,*)
@@ -1237,15 +1230,14 @@ C
             COORD(1,2) = C(1,J)
             COORD(2,2) = C(2,J)
             COORD(3,2) = C(3,J)
-            CALL CHI2(CHIMT,DMAT,GAO,SMAT,ASMAT,ICLAB,I,J,COORD,
+            CALL CHI2(CHIMT,NAT,DMAT,GAO,SMAT,ASMAT,ICLAB,I,J,COORD,
      &              IPRINT)
  20      END DO
  10   END DO
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C                                                                      C   
-      SUBROUTINE CHI2(CHIMT,DMAT,GAO,SMAT,ASMAT,ICLAB,ICENTA,ICENTB,
+      SUBROUTINE CHI2(CHIMT,NAT,DMAT,GAO,SMAT,ASMAT,ICLAB,ICENTA,ICENTB,
      &     COORD,IPRINT)
 C                                                                      C
 C     Get atomic size estimates by analyzing pairwise partial densities
@@ -1259,9 +1251,6 @@ C***********************************************************************
 #include "priunit.h"
 
       PARAMETER(D0=0.0D0,D2=2.0D0)
-
-#include "mxcent.h"
-#include "nuclei.h"
 #include "dcbbas.h"
 C
 #if defined (VAR_G77) || defined (SYS_SX)
@@ -1269,12 +1258,12 @@ C     g77 fails in the complicated dimension statement that was used
 C     in the original version, make things easier for the compiler with an
 C     equiavelence statment
       EQUIVALENCE (NBAST,NTBAS(0)),(NBASL,NTBAS(1))
-      DIMENSION CHIMT(NATOMS,NATOMS),COORD(3,2),DMAT(NBAST,NBAST),
-     &     GAO(NBAST),SMAT(NBASL,NBASL),ASMAT(NATOMS,NATOMS),
+      DIMENSION CHIMT(NAT,NAT),COORD(3,2),DMAT(NBAST,NBAST),
+     &     GAO(NBAST),SMAT(NBASL,NBASL),ASMAT(NAT,NAT),
      &     ICLAB(NBAST)
 #else
-      DIMENSION CHIMT(NATOMS,NATOMS),COORD(3,2),DMAT(NTBAS(0),NTBAS(0)),
-     &     GAO(NTBAS(0)),SMAT(NTBAS(1),NTBAS(1)),ASMAT(NATOMS,NATOMS),
+      DIMENSION CHIMT(NAT,NAT),COORD(3,2),DMAT(NTBAS(0),NTBAS(0)),
+     &     GAO(NTBAS(0)),SMAT(NTBAS(1),NTBAS(1)),ASMAT(NAT,NAT),
      &     ICLAB(NTBAS(0))
 #endif
 C
@@ -1304,37 +1293,37 @@ C
       IF(MOD(NPOINT,2).EQ.1) NPOINT = NPOINT+1
       ASTEP  = DISTAN/dble(NPOINT)
 
-      RHOA = 0.0D0
-      RHOB = 0.0D0
+      RHOA   = 0.0D0
+      RHOB   = 0.0D0
       TOTRHO = 0.0D0
-      SUM = 0.0D0
+      SUM    = 0.0D0
       SUMOLD = 0.0D0
 C
 C     Start between nuclei and get sum of partial densities for
 C     atom pair (ICENTA,ICENTB).
 
-      IP = NPOINT/2
+      IP  = NPOINT/2
       PP  = dble(IP)*ASTEP
       PX  = COORD(1,1) + PP*DX
       PY  = COORD(2,1) + PP*DY
       PZ  = COORD(3,1) + PP*DZ
 C
       CALL CHI3(PX,PY,PZ,RHOA,RHOB,TOTRHO,GAO,DMAT,ICENTA,ICENTB,SMAT,
-     &     ASMAT,ICLAB,IPRINT)
+     &     ASMAT,ICLAB,NAT,IPRINT)
 
       PPOLD = PP
       SUMOLD = RHOA +RHOB
 C
 C     Take one step towards ICENTB
 C
-      IP = IP + 1
+      IP  = IP + 1
       PP  = dble(IP)*ASTEP
       PX  = COORD(1,1) + PP*DX
       PY  = COORD(2,1) + PP*DY
       PZ  = COORD(3,1) + PP*DZ
 C
       CALL CHI3(PX,PY,PZ,RHOA,RHOB,TOTRHO,GAO,DMAT,ICENTA,ICENTB,SMAT,
-     &     ASMAT,ICLAB,IPRINT)
+     &     ASMAT,ICLAB,NAT,IPRINT)
 
       SUM = RHOA + RHOB
 C
@@ -1343,14 +1332,14 @@ C     on the grid.
 C
       IF(SUM.LT.SUMOLD) THEN
          ISTART = NPOINT/2 + 1
-         IEND = NPOINT
-         INCR = 1
-         IBAK = -1
+         IEND   = NPOINT
+         INCR   =  1
+         IBAK   = -1
       ELSE
          ISTART = NPOINT/2 - 1
-         IEND = 0
-         INCR = -1
-         IBAK = 1
+         IEND   =  0
+         INCR   = -1
+         IBAK   =  1
       ENDIF
 
       DO 1 IP = ISTART,IEND,INCR
@@ -1360,7 +1349,7 @@ C
          PZ  = COORD(3,1) + PP*DZ
 C
          CALL CHI3(PX,PY,PZ,RHOA,RHOB,TOTRHO,GAO,DMAT,ICENTA,ICENTB,
-     &        SMAT,ASMAT,ICLAB,IPRINT)
+     &        SMAT,ASMAT,ICLAB,NAT,IPRINT)
 
          SUM = RHOA + RHOB
          IF(SUM.LE.SUMOLD) THEN
@@ -1385,7 +1374,7 @@ C
          PZ  = COORD(3,1) + PP*DZ
 C     
          CALL CHI3(PX,PY,PZ,RHOA,RHOB,TOTRHO,GAO,DMAT,ICENTA,ICENTB,
-     &        SMAT,ASMAT,ICLAB,IPRINT)
+     &        SMAT,ASMAT,ICLAB,NAT,IPRINT)
 C
          X(K) = PP
          Y(K) = RHOA + RHOB
@@ -1425,7 +1414,7 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
       SUBROUTINE CHI3(X,Y,Z,RHOA,RHOB,TOTRHO,GAO,DMAT,ICENTA,ICENTB,
-     &     SMAT,ASMAT,ICLAB,IPRINT)
+     &     SMAT,ASMAT,ICLAB,NAT,IPRINT)
 
 C     Get atomic size estimates by analyzing pairwise partial densities
 C     in one dimension, along bonds.
@@ -1436,8 +1425,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use codata
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "nuclei.h"
 #include "dcbbas.h"
 
       PARAMETER(ZERO=0.0D0,ONE=1.0D0)
@@ -1448,17 +1435,15 @@ C     in the original version, make things easier for the compiler with an
 C     equiavelence statment
       EQUIVALENCE (NBAST,NTBAS(0)),(NBASL,NTBAS(1))
       DIMENSION GAO(NBAST),DMAT(NBAST,NBAST),
-     &     SMAT(NBASL,NBASL),ASMAT(NATOMS,NATOMS),
+     &     SMAT(NBASL,NBASL),ASMAT(NAT,NAT),
      &     ICLAB(NBAST)
 #else
       DIMENSION GAO(NTBAS(0)),DMAT(NTBAS(0),NTBAS(0)),
-     &     SMAT(NTBAS(1),NTBAS(1)),ASMAT(NATOMS,NATOMS),
+     &     SMAT(NTBAS(1),NTBAS(1)),ASMAT(NAT,NAT),
      &     ICLAB(NTBAS(0))
 #endif
-
-
-      GAO = 0.0d0
-      SMAT = 0.0d0
+      GAO   = 0.0d0
+      SMAT  = 0.0d0
       ASMAT = 0.0d0
       iclab = 0
 C
@@ -1487,7 +1472,7 @@ C
 C     Group SMAT matrix elements onto atomic centers. Overlap
 c     elements are ignored.
 C
-      CALL GATMAT(1,NTBAS(1),NTBAS(1),SMAT,ASMAT,ICLAB,NATOMS)
+      CALL GATMAT(1,NTBAS(1),NTBAS(1),SMAT,ASMAT,ICLAB,NAT)
 C
 C     Calculate partial densities.
 C
@@ -1497,8 +1482,8 @@ C
 C     Calculate total density for comparison with RHO1
 C
       TOTRHO = 0.0D0
-      DO I = 1,NATOMS
-         DO J = 1,NATOMS
+      DO I = 1,NAT
+         DO J = 1,NAT
             TOTRHO = TOTRHO + ASMAT(I,J)
          END DO
       END DO
@@ -1582,17 +1567,17 @@ C
       DO ICENT = 1, NUCIND
         MULCNT = ISTBNU(ICENT)
         ZCNT   = CHARGE(ICENT)
-        IF(NAMN(ICENT)(1:2).NE.'Gh') THEN
-          DO ISYMOP = 0, MAXOPR
-          IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
-            NAT = NAT + 1
-            ZAN(NAT) = ZCNT
-            C(1,NAT)= PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
-            C(2,NAT)= PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
-            C(3,NAT)= PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
-          ENDIF
-          ENDDO
+        IF(NAMN(ICENT)(1:2).EQ.'Gh') CYCLE
+        IF(NOORBT(ICENT)) CYCLE
+        DO ISYMOP = 0, MAXOPR
+        IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+          NAT = NAT + 1
+          ZAN(NAT) = ZCNT
+          C(1,NAT)= PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+          C(2,NAT)= PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+          C(3,NAT)= PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
         ENDIF
+        ENDDO
       ENDDO
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

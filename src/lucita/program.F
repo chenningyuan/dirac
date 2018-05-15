@@ -1043,7 +1043,8 @@ C     character line and machinename
       CHARACTER*72 CARD
       CHARACTER*255 MACHINENAME
       INTEGER NAMELENGTH, MIN_ONE
-      INTEGER*8 K_OFFSET, K8BASE_LUCITA
+      INTEGER*8 K8_OFFSET, K8_END
+      INTEGER   K_OFFSET,  K_END
       integer global_scratch_disk
 
       real(8), allocatable :: WRK(:)
@@ -1066,24 +1067,30 @@ C     No floating point underflow
 C     Assign diskunits
 C
       CALL DISKUN
-C
+
 C     Static memory, initialization and allocation
-C
-C     Compute offset from WRK to WORK
-C
-      CALL COMPOFF(WRK,WORK,K_OFFSET)
-      KBASE_LUCITA  = K_OFFSET
-      KADD          = KBASE_LUCITA + LWRK ! i*4 evaluation
-      K8BASE_LUCITA = K_OFFSET     + LWRK ! i*8 evaluation
-      IF (K8BASE_LUCITA .ne. KADD) THEN
-         print *, 'controlled stop: only int64'
+
+C     Compute offset from WRK in parameter list
+C     to WORK in common in wrkspc.inc. WORK is used internally in LUCITA.
+C     This offset is added to all Ksomething addresses in WORK(Ksomething)
+C     so that WRK(1:LWRK) are the memory addresses really used.
+
+C     However, the offset K_OFFSET may be too big for i*4.
+C     We test for that and quit if this is the case.
+
+      CALL COMPOFF(WRK,WORK,K8_OFFSET)
+C     *k_offset = (long) (wrk-work+1);
+      K_OFFSET  = K8_OFFSET
+      K_END     = K_OFFSET  + LWRK ! maybe i*4 evaluation
+      K8_END    = K8_OFFSET + LWRK ! i*8 evaluation
+      IF (K8_END .ne. K_END) THEN
          CALL QUIT(
-     &   'LUCITA WORK(MXPWRD) memory off-set too big for INTEGER*4')
+     &   'LUCITA WORK(MXPWRD) memory off-set is too big for INTEGER*4')
       END IF
 C
       MXPWRD = LWRK
       KADD   = MXPWRD
-      CALL MEMMAN(KBASE_LUCITA,KADD,'INI   ',IDUMMY,'DUMMY')
+      CALL MEMMAN(K_OFFSET,KADD,'INI   ',IDUMMY,'DUMMY')
 C
 C     Call input conversion program MOLUC (subroutine now)
 C

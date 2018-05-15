@@ -250,7 +250,6 @@ To use the spinfree version of X2C with only scalar relativistic terms
 one needs to add the keyword :ref:`HAMILTONIAN_.SPINFREE` (.SPINFREE implies .NOAMFI).
 The spinfree X2C is equivalent to and numerically yields the same numbers as X2C in the quantum chemistry packages CFour, Turbomole, and Molcas. 
 
-See section :ref:`X2C` for more options, in particular a local X2C scheme. 
 An overview of the (local) X2C approach is given in the corresponding tutorial 
 section :ref:`X2Clocal`.
 
@@ -389,6 +388,9 @@ ADF code (see the developer's website http://www.scm.com for further information
 or via the PyADF scripting framework (see :cite:`Jacob2011` or visit the developer's website http://pyadf.org 
 for further information).
 
+keyword(PEQM)
+
+Activates the polarizable embedding model. Options can be specified under the :ref:`\*PEQM` menu.
 
 keyword(CAP)
 

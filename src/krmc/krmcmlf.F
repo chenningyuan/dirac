@@ -396,8 +396,6 @@ C
 C
       LOGICAL PSYMM, KSYMM, TSYMM
 C
-#include "ibtfun.h"
-C
       NCLASS = NZ * NZ * NBSYM / NFSYM
       CALL DZERO(VDUUUU,NASHT * NASHT * NNASHX * NZ * 3)
 C
@@ -413,7 +411,7 @@ C
          JJ = JJ + NASH(IFSYM)
       ENDDO
 C
- 9001 FORMAT(4I5,5X,2F20.10)
+ 9001 FORMAT(4I5,5X,4F20.10)
 C
       IF (IPRINT .GE. 30) THEN
          THR_PRINT = 1.0D-12
@@ -944,8 +942,6 @@ C
       DIMENSION DINT(8,2)
       real*8, allocatable :: vmuuuu_tmp(:,:,:,:,:)
 C
-#include "ibtfun.h"
-C
       NCLASS = NZ * NZ * NBSYM / NFSYM
       CALL DZERO(VMUUUU, (2*NASHT)**4 * MIN(NZ,2))
 C
@@ -989,7 +985,7 @@ C
 C                 Canonical integrals (I>=J)
 C                 (kl|ij), (kL|iJ), (Kl|iJ)
 C
-                  VMUUUU(K,L,I,J,1) = VDUUUU(KK,LL,IJ,1,1)
+                  VMUUUU(K,L,I,J,1)     = VDUUUU(KK,LL,IJ,1,1)
                   VMUUUU(K,LTR,I,JTR,1) = VDUUUU(KK,LL,IJ,1,2)
                   VMUUUU(KTR,L,I,JTR,1) = VDUUUU(KK,LL,IJ,1,3)
 C
@@ -1172,11 +1168,6 @@ C
          END DO
       END DO
 C
-C
-C
-!9001 FORMAT(1P,1X,4I3,4X,2(D14.7,1X))
- 9001 FORMAT(4I5,5X,2F20.10)
-C
 
 !#define DMRG_DEBUG
 #ifdef DMRG_DEBUG
@@ -1203,10 +1194,18 @@ C
 #undef DMRG_DEBUG
 #endif
 
+C
+!9001 FORMAT(1P,1X,4I3,4X,2(D14.7,1X))
+ 9001 FORMAT(4I5,5X,4F20.10)
       IF (iprint_local .GE. 30) THEN
          WRITE(LUPRI,'(A,1P,D10.2)')
      &   ' (DNZ32M) Output VUUUU matrix in Molfdir format,'//
      &   ' print threshold =',THROUT
+#ifdef old_code
+! hjaaj mar 2018: new code below groups the 2-electron integrals,
+! making it easier to spot some problems (particle symmetry, hermiticity)
+! but not Kramers conjugation problems - that requires 2**4=16 times lot more
+! lines for each quadruplet, but with "DO I = 1,NASHT" instead.
          DO L = 1,2*NASHT
             DO K = 1,2*NASHT
                DO J = 1,2*NASHT
@@ -1215,6 +1214,26 @@ C
      &                    ABS(VMUUUU(I,J,K,L,NZ_in_CI)) .GT. THROUT)
      &                    WRITE(LUPRI,9001)
      &                    I,J,K,L,(VMUUUU(I,J,K,L,IZ),IZ=1,NZ_in_CI)
+                  END DO
+               END DO
+            END DO
+         END DO
+      ELSE IF (iprint_local .GE. 10) THEN
+#endif
+         DO I = 1, 2*NASHT
+            DO J = 1, I
+               DO L = 1, I
+                  DO K = 1, L
+                  WRITE(LUPRI,'(A)')
+     & 'New quadruplet re(ij|kl), re(kl|ij), im(ij|kl), im(kl|ij)'
+                  WRITE(LUPRI,9001)
+     & I,J,K,L,(VMUUUU(I,J,K,L,IZ),VMUUUU(K,L,I,J,IZ),IZ=1,NZ_in_CI)
+                  WRITE(LUPRI,9001)
+     & J,I,L,K,(VMUUUU(J,I,L,K,IZ),VMUUUU(L,K,J,I,IZ),IZ=1,NZ_in_CI)
+                  WRITE(LUPRI,9001)
+     & I,J,L,K,(VMUUUU(I,J,L,K,IZ),VMUUUU(L,K,I,J,IZ),IZ=1,NZ_in_CI)
+                  WRITE(LUPRI,9001)
+     & J,I,K,L,(VMUUUU(J,I,K,L,IZ),VMUUUU(K,L,J,I,IZ),IZ=1,NZ_in_CI)
                   END DO
                END DO
             END DO
@@ -1392,8 +1411,8 @@ C        INDL, INDK: (KL) indeces
 C        IOFF12: offset for (IJ) into INDL and INDK
 C        NUMINT: number of integrals for (IJ)
 C        NUMINTT: total number of integrals
-C        KR: KR(I)  gives unparred orbital number
-C            KR(-I) gives parrred orbital number
+C        KR: KR(I)  gives unbarred orbital number
+C            KR(-I) gives barrred orbital number
 C
 C     Written by J. Thyssen - Jan 18 2001
 C     Last revision :
@@ -1413,8 +1432,6 @@ C
       DIMENSION KR(-2 * NASHT: 2 * NASHT)
       DIMENSION NUMINT(2*NASHT,2*NASHT), IOFF12(2*NASHT,2*NASHT)
       DIMENSION INDL(*), INDK(*)
-C
-#include "ibtfun.h"
 C
       NCLASS = NZ * NZ * NBSYM / NFSYM
 C
@@ -1730,7 +1747,6 @@ C
       integer, allocatable  :: orb_sym_vec(:)
       integer, allocatable  :: ibosym(:)
       logical :: ex_mcdf, ex_mcol, isopen
-#include "ibtfun.h"
 
 !     set up symmetry information
       IF (GROUP.eq.'C1 ') THEN

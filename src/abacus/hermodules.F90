@@ -1226,6 +1226,12 @@
 !     ***** Print orbital and geometry input data *****
 !     *************************************************
 !
+#ifdef BUILD_GEN1INT
+!     initialize basis sets (large and small components) used in Gen1Int interface
+      call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM,               &
+     &                       NBLCK, KANG, JCO, KBLOCK,                  &
+     &                       NUC, NRC, KPRIM, ALPHA, CPRIMU)
+#endif
 
       CALL BASOUT(WORK,LWORK,IQM,NBLCK,JCO,BASREF,                      &
      &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,      &
