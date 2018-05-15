@@ -1319,7 +1319,7 @@ C     X2C module: picture change transformed property integrals reside
 C                 on file X2CMAT
 C ========================================================================================
       IF((TWOCOMP.AND.BSS).or.x2c) THEN
-        IF(ONFILE) CALL QUIT('PRPMSAO:2c not implemented yet !')
+        IF(.NOT.ONFILE) CALL QUIT('PRPMSAO:2c not implemented yet !')
         IPRINT2 = MAX(IPRHAM,IPRINT)
         IF (N2BBASXQ.NE.(NTBAS(1)*NTBAS(1)*NZ)) THEN
           write(lupri,*) 'PRPMSAO error output:'
@@ -1394,7 +1394,7 @@ C     ... do resort PBUF to DIRAC sorting
         ENDDO
 CMI   ----  Do the picture change transformation -----
         IF (BSS) THEN
-         IF(ONFILE) CALL QUIT('PRPMSAO: BSS not implemented yet !')
+         IF(.NOT.ONFILE) CALL QUIT('PRPMSAO: BSS not implemented yet !')
          IPRINT1 = MAX(IPRHAM,IPRPRP)
 C     ... decide if the picture change transformation is needed
          CALL DECIDEPCTR(YESPCTRA,PRPNAM(INDXPR),IPRINT1)
