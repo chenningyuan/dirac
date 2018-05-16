@@ -1272,6 +1272,14 @@ C     introduce property task
 C
       CALL TITLER('KR-CI property calculation ','*',199)
 C
+      IF (OPT_CIPROGRAM .ne. 'LUCIAREL') THEN
+         WRITE(LUPRI,'(/A/A/2A)')
+     &   'WARNING: Requested KR-CI property calculations skipped',
+     &   'WARNING: because they are only implemented for LUCIAREL',
+     &   'WARNING: and you have requested ',OPT_CIPROGRAM
+         RETURN
+      END IF
+
       WRITE(LUPRI,9000)
  9000 FORMAT(
      &     3X,'This is output from the DIRAC KR-CI property module',/,
@@ -1312,7 +1320,7 @@ C               1              4
            WRITE(LUPRI,'(I7,I15)') I, NKRCI_CIROOTS(I)
          end if
       END DO
-         WRITE(LUPRI,'(A/A,I15/)')
+      WRITE(LUPRI,'(A/A,I15/)')
      &   '  _________________________________',
      &   '  Total', NPROP_ROOTS_KRCI
 C
@@ -1448,7 +1456,7 @@ C
         iprintjz = 0
       end if
 #endif
-        
+
 C
 C     ***************************************************
 C     *** Get property matrices *************************

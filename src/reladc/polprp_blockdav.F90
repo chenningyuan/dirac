@@ -237,6 +237,7 @@
 
  9999 CONTINUE
       write(*,*) 'Starting macroiteration #',maciter
+      hij = rzero
 
 !*******************************************************
 ! Open direct access file for current Krylov space
@@ -467,8 +468,10 @@
       else
         write(*,*) 'Nonconverged roots remain. Collapsing subspace.'
       endif
+!     call write_davevecs_r(io_bold,desrep,nroots,nmain,ladc, &
+!                           krydim,lambda,resnorm,hijcal,ortho_cur)
       call write_davevecs_r(io_bold,desrep,nroots,nmain,ladc, &
-                            krydim,lambda,resnorm,hijcal,ortho_cur)
+                            krysav,lambda,resnorm,hijcal,ortho_cur)
 
 ! in both cases we have to get rid off the large B old file
 

@@ -2207,8 +2207,6 @@ C
       NVT = NBUF * MINBUF
 C
 C     We must be able to store at least a NV4 size array, check that.
-C     Since we use this array as work in MAKEFM we also need to store the
-C     first representation of the sorted (non-triangular) OOOO and VOOO ints
 C
       NVTMIN = MAX(NVT,INT(NV4,8))
       NVTMIN = MAX(NVTMIN,JOOOO(2))
@@ -2535,22 +2533,19 @@ C  Calculate T3 corrections
 C
 C
  420  CONTINUE
-      IF (DOCCSDT) THEN
-         IF (ICALC.EQ.1) GOTO 421
-C
- 421     CONTINUE
-         call dealloc(a_AZ  )
-         call dealloc(a_H   )
-         call dealloc(a_HO  )
-         call dealloc(a_HV  )
-         call dealloc(a_HOV )
-         call dealloc(a_CCC )
-         call dealloc(a_BB1 )
-         call dealloc(a_BB2 )
-         call dealloc(a_BUF1)
-         call dealloc(a_BUF2)
-         call dealloc(a_BUF3)
+      call dealloc(a_AZ  )
+      call dealloc(a_H   )
+      call dealloc(a_HO  )
+      call dealloc(a_HV  )
+      call dealloc(a_HOV )
+      call dealloc(a_CCC )
+      call dealloc(a_BB1 )
+      call dealloc(a_BB2 )
+      call dealloc(a_BUF1)
+      call dealloc(a_BUF2)
+      call dealloc(a_BUF3)
 
+      IF (DOCCSDT) THEN
 ! aspg changed
          IF (IMSTAT(7).EQ.3) THEN
             WRITE (IW,1012)
