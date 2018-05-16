@@ -135,7 +135,7 @@ whereas the average over angles :math:`\theta` and :math:`\phi` is handled by `L
 
 keyword(BEDFIX)
 
-Invoke calculation of oscillator strengths using the full operator coupling the molecule to an electromagnetic plane wave at fixed experimental configuration (no rotational average). The orientation of the wave and polarization vector is given by specification of the angles :math:`\theta`, :math:`\phi` and :math:`\chi`, see the above .BED keyword for more details. For instance, to specify that the wave vector is along the :math:`z` -axis  and the polarization vector along the :math:`x` - axis, we set
+Invoke calculation of oscillator strengths using the full operator coupling the molecule to an electromagnetic plane wave at fixed experimental configuration (no rotational average). The orientation of the wave and polarization vector is given by specification of the angles :math:`\theta`, :math:`\phi` and :math:`\chi`, see the :ref:`EXCITATION_ENERGIES_.BED` keyword for more details. For instance, to specify that the wave vector is along the :math:`z` -axis  and the polarization vector along the :math:`x` - axis, we set
 
 ::
 
