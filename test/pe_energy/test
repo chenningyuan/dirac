@@ -22,5 +22,6 @@ f.add(from_string  = '   Total energy',
 
 #test.run(['nonrel.inp'], ['ch2o.mol'], f, args='--put peqm.pot')
 test.run(['dc.inp', 'x2c.inp', 'dc-pbe.inp','levy.inp' ,'spinfree.inp', 'nonrel.inp'], ['ch2o.mol'], f, args='--put peqm.pot')
+test.run(['dc_xyz.inp'], ['ch2o.xyz'], f, args='--put peqm.pot')
 
 sys.exit(test.return_code)
