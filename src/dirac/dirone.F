@@ -5752,7 +5752,9 @@ C
            CALL HEADER('LINSYM: Jz_LL eigenvalues / eigenvectors',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
      &     '*** Fermion corep ',I,'/',NFSYM
-           write(lupri,*) (EIG(IEIGE+II),II=0,NL-1)
+           DO II = 1,NL
+             WRITE(LUPRI,*) II,EIG(IEIGE+II-1)
+           ENDDO
            CALL PRQMAT(WORK(KVLL),NL,NL,NL,NL,1,
      &          IPQTOQ(1,0),LUPRI)
            CALL FLSHFO(LUPRI)
@@ -5826,8 +5828,10 @@ C
           IF (IPRHAM.GE.5) THEN
            CALL HEADER('LINSYM: Jz_SS eigenvalues/eigenvectors',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
-     &     '*** Fermion corep ',I,'/',NFSYM
-           write(lupri,*) (EIG(IEIGP+II),II=0,NS-1)
+     &          '*** Fermion corep ',I,'/',NFSYM
+           DO II = 1,NS
+             WRITE(LUPRI,*) II,EIG(IEIGP+II-1)
+           ENDDO
            CALL PRQMAT(WORK(KVSS),NS,NS,NS,NS,1,
      &          IPQTOQ(1,0),LUPRI)
            CALL FLSHFO(LUPRI)

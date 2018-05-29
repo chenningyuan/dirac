@@ -4646,9 +4646,9 @@ C
        write(lupri,'(2X,A,I1,A,I3,A,I3,A,I3)')
      & 'IBOS for IFRP=',IFRP,' NTMO(IFRP)=',NTMO(IFRP),
      & ' positr.orbs:',NPSH(IFRP),' electr.orbs:',NESH(IFRP)
-       write(lupri,'(2X,A,/,4X,25I3)')
-     & 'boson irreps of each MO (from pos. to el.):',
-     &                (IBOS(J),J=1,NTMO(IFRP))
+       write(lupri,'(2X,A)')
+     &      'boson irreps of each MO (from pos. to el.):'
+       write(lupri,'(4X,25I3)') (IBOS(J),J=1,NTMO(IFRP))
       ENDIF
 
       RETURN
