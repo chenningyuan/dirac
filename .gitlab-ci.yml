@@ -46,7 +46,7 @@ ubuntu_parallel32:
     - apt-get -qq -y install gfortran
     - apt-get -qq -y install gcc
     - apt-get -qq -y install g++
-    - apt-get -qq -y install openmpi-bin libopenmpi-dev
+    - apt-get -qq -y install openmpi-bin libopenmpi-dev openssh-client openssh-server
     - apt-get -qq -y install python 
   script:
 #   do the parallel buildup here
