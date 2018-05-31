@@ -21,7 +21,6 @@ set(FIXED_PRP_FORTRAN_SOURCES
    pamexp.F
    pamfck.F
    pamgrd.F
-   paminp.F
    pammag.F
    pamogrd.F
    pamprp.F
@@ -44,6 +43,7 @@ set(FREE_PRP_FORTRAN_SOURCES
    london_utils.F90
    london_direct.F90
    london_reorth.F90
+   paminp.F90
    pamxqr.F90
 )
 
