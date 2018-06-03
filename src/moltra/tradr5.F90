@@ -718,7 +718,7 @@
 !     
       INDAR1 = 0
 !
-      DO20 INDAR = 1, NINSHA
+      DO 20 INDAR = 1, NINSHA
          CALL IZERO(INDXBS,8)
          DO 10 INDBR = 1, NINSHB
             INDAB  = INDXAB(INDAR,INDBR,1)
