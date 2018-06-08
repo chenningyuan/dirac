@@ -5020,7 +5020,8 @@ C
 C.....transform coefficients to orthonormal basis --> COFU
 C     Frozen orbitals must be projected out, see ADJCMO
       DO IFRP = 1,NFSYM
-        IF(NFRO(IFRP).EQ.0) THEN
+         IF(NORB(IFRP).EQ.0) CYCLE
+         IF(NFRO(IFRP).EQ.0) THEN
           CALL QGEMM(NTMO(IFRP),NTMO(IFRP),NFBAS(IFRP,0),D1,
      &         'H','N',IPQTOQ(1,0),TMAT(I2TMT(IFRP)+1),
      &                 NFBAS(IFRP,0),NTMO(IFRP),NZT,
