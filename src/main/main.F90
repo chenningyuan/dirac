@@ -190,7 +190,7 @@ end interface
      CALL FLSHFO(LUPRI)
   endif
 #ifdef VAR_MPI
-  if (iparcal .eq. 1 ) call mpixfinalize()
+  if (iparex .gt. 0) call mpixfinalize()
 #endif
 
  call allocator_report(mytid,0)
