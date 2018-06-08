@@ -859,13 +859,13 @@ C    4. ZALPHA
 C       [alpha_z]P    * z-component of alpha times scalar operator
 C
 C    5. XAVECTOR
-C       [Alpha x P]_x * vector product of alpha and vector operator,
+C       [alpha x P]_x * vector product of alpha and vector operator,
 C                       x-component    
 C    6. YAVECTOR
-C       [Alpha x P]_y * vector product of alpha and vector operator,
+C       [alpha x P]_y * vector product of alpha and vector operator,
 C                       y-component    
 C    7. ZAVECTOR
-C       [Alpha x P]_z * vector product of alpha and vector operator,
+C       [alpha x P]_z * vector product of alpha and vector operator,
 C                       z-component    
 C    8. ALPHADOT
 C       A.P           * dot-product of alpha and vector operator
@@ -905,14 +905,11 @@ C   19. BETA
 C       [beta]P * beta times scalar operator
 C
 C   20 .SIGMADOT 
-C       iS.P * OFF-DIAGONAL dot-product of sigma and vector operator
+C       iS.P * dot-product of sigma matrix and vector operator
 C
 C   21. iBETAGAM
 C       i[beta*gamma5] P           * i beta*gamma5 times scalar operator
 C
-C   22 .DSIGMADOT 
-C       iS.P * DIAGONAL dot-product of sigma and vector operator
-C   
 C
 C  Operator types 5,6 and 7 form the components of a vectorproduct 
 C  of the alpha matrices and some scalar operator.
@@ -957,7 +954,7 @@ C
      &           'ALPHADOT', 'GAMMA5  ', 'XSIGMA  ', 'YSIGMA  ',
      &           'ZSIGMA  ', 'XBETASIG', 'YBETASIG', 'ZBETASIG',
      &           'XiBETAAL', 'YiBETAAL', 'ZiBETAAL', 'BETA    ',
-     &           'SIGMADOT', 'iBETAGAM', 'DSIGMADO', 'XXXXXXXX',
+     &           'SIGMADOT', 'iBETAGAM', 'XXXXXXXX', 'XXXXXXXX',
      &           'XXXXXXXX', 'XXXXXXXX', 'XXXXXXXX'            /
 C
       CALL QENTER('XPRINP')
@@ -1092,7 +1089,7 @@ C
 !mi     ...jump on operator types according to the variable I prepared above, I : 1-27
 !           4-8 are operators characteritics, TABKW(1-5)
            GO TO (4,5,6,7,8,1,1,1,1,1,2,2,2,3,
-     &            1,1,1,1,1,1,1,1,1,1,1,3,1,3), I
+     &            1,1,1,1,1,1,1,1,1,1,1,3,1), I
          END IF
          END DO
          INPERR = INPERR + 1
@@ -1111,7 +1108,7 @@ C&&&&    Two components: [XYZ]AVECTOR
 C          note that the minus in the second component
 C          is introduced later
          GO TO 300
-C&&&&    Three components: ALPHADOT, SIGMADOT, DSIGMADOT
+C&&&&    Three components: ALPHADOT, SIGMADOT
     3    CONTINUE
            NPCOMP = 3
          GO TO 300
@@ -2506,7 +2503,7 @@ C
       GOTO 30
       ENDIF
       GO TO (1,2,3,4,5,6,7,8,9,10,11,12,
-     &       13,14,15,16,17,18,19,20,21,22), ITYP
+     &       13,14,15,16,17,18,19,20,21), ITYP
         WRITE(LUPRI,'(6X,A,I5)')
      &  'Program error: unknown operator type:',ITYP
         CALL QUIT('WRIXPR: unknown operator type')
@@ -2588,15 +2585,11 @@ C
       GOTO 200
    20 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
-     &   'SIGMADOT, offdiagonal : [sigma.P]'
+     &   'SIGMADOT : [sigma.P]'
       GOTO 200
    21 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'BETAGAMMA5 : i[beta gamma5]P'
-      GOTO 200
-   22 CONTINUE
-        WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
-     &   'SIGMADOT, diagonal : [sigma.P]'
       GOTO 200
 C
   200 CONTINUE
