@@ -8,6 +8,7 @@ module exacorr_global
         private
 
 !       Global data (should limit this to the minimum required to function)
+        integer :: my_MPI_master=0 ! Define the MPI master proces (is always zero in the DIRAC MPI environment)
         integer, allocatable :: shell_indices(:)  ! for each basis function the index of the shell to which it belongs
         type(basis_func_info_t), allocatable :: gtos(:)  ! list of all shells
 
@@ -30,10 +31,22 @@ module exacorr_global
          end function ncartesian
 
          subroutine initialize_global_data
- 
+
+#if defined (VAR_MPI)
+             use interface_to_mpi
+             integer :: my_MPI_rank
+#endif
              integer :: number_aos, number_aoshells, nao, nshells
              integer :: ish, iao, ibas, ierr
 
+#if defined (VAR_MPI)
+             call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
+             if (my_MPI_rank /= my_MPI_master) then
+!               Not all information in common blocks is initialized for the slaves, directly go to the sync and get all that is necessary from master
+                call synchronize_global_data
+                return
+             end if 
+#endif
              ! store basis set definitions
              nshells = number_aoshells()  ! basis functions are organized in shells, this is their number
              allocate(gtos(nshells))
@@ -55,8 +68,60 @@ module exacorr_global
              end do
 
              if (iao.ne.nao) call quit ('Error in initialize_global_data routine')
+             call synchronize_global_data
  
          end subroutine initialize_global_data
+
+         subroutine synchronize_global_data
+ 
+#if defined (VAR_MPI)
+             use interface_to_mpi
+             integer :: number_aos, number_aoshells, nao, nshells
+             integer :: ish
+             integer :: my_MPI_rank
+
+             call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
+             if (my_MPI_rank == my_MPI_master) nao = number_aos(1)
+             if (my_MPI_rank == my_MPI_master) nshells = number_aoshells() 
+
+             call interface_mpi_bcast (nshells,1,my_MPI_master,global_communicator)
+             call interface_mpi_bcast (nao,1,my_MPI_master,global_communicator)
+   
+             if (my_MPI_rank /= my_MPI_master) allocate(gtos(nshells))
+             if (my_MPI_rank /= my_MPI_master) allocate(shell_indices(nao))
+             
+!            Note that this communication step could be speeded up by packing and unpacking the data for all shells
+!            Assuming that the time for this step is insignificant, a simpler option is chosen here.
+             do ish = 1, nshells
+                call interface_mpi_bcast (gtos(ish)%orb_momentum,1,my_MPI_master,global_communicator)
+                call interface_mpi_bcast (gtos(ish)%atom_number,1,my_MPI_master,global_communicator)
+                call interface_mpi_bcast (gtos(ish)%n_primitives,1,my_MPI_master,global_communicator)
+             end do
+
+!            We now know the size of the shells, the exponents and coefficients are already allocated on master,
+!            but not on the slaves, so do this first before starting the next communication loop
+             if (my_MPI_rank /= my_MPI_master) then
+                do ish = 1, nshells
+                   nullify  (gtos(ish)%exponent)
+                   allocate (gtos(ish)%exponent(gtos(ish)%n_primitives))
+                   nullify  (gtos(ish)%coefficient)
+                   allocate (gtos(ish)%coefficient(gtos(ish)%n_primitives))
+                end do
+             end if
+ 
+             do ish = 1, nshells
+                call interface_mpi_bcast (gtos(ish)%coord,3,my_MPI_master,global_communicator)
+                call interface_mpi_bcast (gtos(ish)%exponent,gtos(ish)%n_primitives,my_MPI_master,global_communicator)
+                call interface_mpi_bcast (gtos(ish)%coefficient,gtos(ish)%n_primitives,my_MPI_master,global_communicator)
+             end do
+
+!            We finally broadcast the pointers from a basis function index to its shell that were determined on master
+             call interface_mpi_bcast (shell_indices,nao,my_MPI_master,global_communicator)
+#else
+             return ! For running a serial version no action is required.
+#endif
+ 
+         end subroutine synchronize_global_data
 
          subroutine delete_global_data
              deallocate(shell_indices)

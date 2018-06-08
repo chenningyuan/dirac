@@ -14,9 +14,13 @@ C
 C***********************************************************************
 
       Use talsh_ao_to_mo
+#if defined (VAR_MPI)
+      Use interface_to_mpi
+#endif
 
 #include "implicit.h"! because common blocks may assume this
 #include "../moltra/dcbtra.h"  ! to access tra4_indstr
+#include "infpar.h"  ! we need to broadcast tra4_indstr
 #include "dcborb.h"  ! to access nesh (number of positive energy "electronlike" orbitals)
 #include "dgroup.h"  ! to access nfsym (should be 1)
 
@@ -28,12 +32,19 @@ C***********************************************************************
       if (nfsym.ne.1) then
          call quit ('exacorr can not handle symmetry')
       end if
-
-C     Test the AO integral generation
-      call test_integral_generation (1)
-C
+#if defined (VAR_MPI)
 C     Transfer necessary information from common blocks
+      if (mytid == 0) then
+         orbital_string = tra4_indstr(:,1) ! This is to be changed once we have an exacorr-specific input driver
+         call dirac_parctl( 2 )
+      end if
+      call interface_mpi_bcast(orbital_string,72*4,mparid,
+     &                         global_communicator)
+      call interface_mpi_bcast(nesh,1,mparid,global_communicator)
+#else
       orbital_string = tra4_indstr(:,1) ! This is to be changed once we have an exacorr-specific input driver
+#endif
+
 C
 C     Loop over indices to convert string information to list of orbitals
 C

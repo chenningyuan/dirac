@@ -4979,6 +4979,13 @@ C
       DIMENSION DINTSKP(8),TIM1(7)
       real(8), allocatable :: WORK(:)
 C
+C     Temporary hack to call the exacorr module (hardwired for the moment, because tra_exacorr is not broadcasted)
+      tra_exacorr = .true.
+      if (tra_exacorr) then
+          call exa_moltra()
+          return ! skip conventional 4-index transformation
+      end if
+
       CALL QENTER('TRANOD')
       call legacy_lwork_get(LWORK)
       call alloc(WORK,LWORK,id='WORK in TRANOD')

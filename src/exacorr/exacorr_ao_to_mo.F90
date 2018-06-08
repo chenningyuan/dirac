@@ -86,7 +86,7 @@ module exacorr_ao_to_mo
 !lv      code marked lv is tested and functional but not needed yet as we don't have the code to transform the additional integral classes
 !lv      real(8) :: gout2(21*21*5*21*21*5) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
          real(8), parameter :: fijkl = 1.0
-         integer            :: nshells, number_aoshells   ! number of AO shells
+         integer            :: nshells  ! number of AO shells
          type(basis_func_info_t), allocatable :: gto(:)   ! array with basis function information
 
          call fetch_gtos(1,nao,gto,nshells)
@@ -405,7 +405,7 @@ module exacorr_ao_to_mo
          integer             :: i, ierr
          integer             :: number_aos                 ! the size of the atomic orbital basis
          integer             :: nshells                    ! the number of shells (orbitals with the same center and l-value)
-         type(basis_func_info_t), allocatable :: shell(:)  ! array with information about the shells
+         type(basis_func_info_t), allocatable :: gto(:)    ! array with information about the shells
 
          type(subspace_basis_t):: basis_ao
          type(color_symmetry_t), allocatable :: color(:)
@@ -419,50 +419,49 @@ module exacorr_ao_to_mo
          type(compute_2e_ao_tensor_t) :: aoint_calculator
 
 !        Make some noise so that we know we are here
-         print*, " Arrived in compute_mo_integrals_exa routine"
+         call MPI_Comm_rank(MPI_COMM_WORLD,my_rank,ierr)
+         print*, " Process", my_rank," arrived in compute_mo_integrals_exa routine"
 
 !        Initialize libraries
          call interest_initialize
-         print*, " Initialized interest library"
          call initialize_global_data
-         print*, " Initialized global data"
 
 !        Retrieve basis set information from DIRAC common blocks
          nao     = number_aos(1)
          nao_l   = nao ! copy of nao to a long integer
 
 !        Get the basis set information
-         call fetch_gtos(1,nao,shell,nshells)
+         call fetch_gtos(1,nao,gto,nshells)
 
-!        Finalize and restart MPI to make it threaded
-         call MPI_Finalize(ierr)
-         call MPI_Init_Thread(MPI_THREAD_MULTIPLE,mpi_th_provided,ierr)
-         if(mpi_th_provided.eq.MPI_THREAD_MULTIPLE) then
-         call MPI_Comm_rank(MPI_COMM_WORLD,my_rank,ierr)
+!        Temporary: leave here because the exatensor library is not yet working
+         print*, " WARNING: we quit the index transform because exatensor is not yet operational"
+         call delete_global_data
+         print*, " Process ",my_rank, " leaving compute_mo_integrals_exa routine"
+         return
 
          !Create a basis for a vector space:
          call basis_ao%subspace_basis_ctor(nao_l,ierr)
          !This needs to be an array that is persistent on all nodes
          allocate(color(nao))
-         if(ierr.ne.0) call quit(ierr,'subspace_basis_t.subspace_basis_ctor() failed!')
+         if(ierr.ne.0) call quit('subspace_basis_t.subspace_basis_ctor() failed!')
 
          labs = 0
          do lsh = 1, nshells !set basis functions
-            nl   =  ncartesian(lsh)
+            nl   =  ncartesian(gto(lsh)%orb_momentum)
             do  l = 1, nl
                 labs = labs + 1
                 call color(labs)%color_symmetry_ctor(lsh) ! for the moment take one shell as a color
                 call basis_ao%set_basis_func(labs,BASIS_ABSTRACT,ierr,symm=color(labs))
-                if(ierr.ne.0) call quit(ierr,'subspace_basis_t.set_basis_func() failed!')
+                if(ierr.ne.0) call quit('subspace_basis_t.set_basis_func() failed!')
             end do
          enddo
 
          call basis_ao%finalize(ierr)
-         if(ierr.ne.0) call quit(ierr,'subspace_basis_t.finalize() failed!')
+         if(ierr.ne.0) call quit('subspace_basis_t.finalize() failed!')
 
          !Register a vector space:
          ierr=exatns_space_register('AO_space',basis_ao,ao_space_id,ao_space)
-         if(ierr.ne.0) call quit(ierr,'exatns_space_register() failed!')
+         if(ierr.ne.0) call quit('exatns_space_register() failed!')
 
          !Register the ao integral generation as a method
          ierr=exatns_method_register('Aoint_calculator',aoint_calculator)
@@ -488,15 +487,14 @@ module exacorr_ao_to_mo
           ierr=exatns_stop()
 
          else
-          write(*,*) 'Process ',my_rank,' terminated with error ',ierr
-         endif
+          write(*,*) ' Process ',my_rank,' terminated with error ',ierr
          endif
 
 !        Clean up global data used to interact with DIRAC/Interest
          call delete_global_data
 
 !        Make some noise so that we know we are leaving
-         print*, " Leaving compute_mo_integrals_exa routine"
+         print*, " Process ",my_rank, " leaving compute_mo_integrals_exa routine"
          return
         end subroutine compute_mo_integrals
 
@@ -530,7 +528,6 @@ module exacorr_ao_to_mo
                                              ! 2: print information for each batch
 
          integer             :: nao, number_aos            ! the size of the atomic orbital basis
-         type(basis_func_info_t), allocatable :: shell(:)  ! array with basis function information
 
          integer :: ierr
          integer :: i, j, k, l, ish, jsh, ksh, lsh, ijkl
@@ -540,7 +537,7 @@ module exacorr_ao_to_mo
          real(8), parameter :: fijkl = 1.0
          real(8) :: batch_value, ddot
          real(8), allocatable :: batch_values(:,:,:,:)
-         integer            :: nshells, number_aoshells   ! number of AO shells
+         integer            :: nshells ! number of AO shells
          type(basis_func_info_t), allocatable :: gto(:)   ! array with basis function information
 
 !        Make some noise so that we know we are here
