@@ -1490,15 +1490,15 @@ C ... fix the LS block for the LevyLe option
 C          ... for FOCKMAT
            PCOMB = 'xxxx'
            GOTO 200           
-         ELSEIF (IPTYP.LT.0 .OR. IPTYP.GT.22) THEN
+         ELSEIF (IPTYP.LT.0 .OR. IPTYP.GT.21) THEN
            WRITE(LUPRI,*)  'IPTYP out of the range, IPTYP=',IPTYP
            CALL QUIT('XPRADD: Illegal IPTYP (not 1-22)!')
          ENDIF
          GO TO (1,2,2,2,2,2,2,2,2,
-     &          1,1,1,3,3,3,4,4,4,3,4,4),IPTYP
+     &          1,1,1,3,3,3,4,4,4,3,1,4),IPTYP
 C
 C
-C        DIAGONAL and SIGMA:
+C        Operator types: DIAGONAL, SIGMA
 C
     1    PCOMB = '+00+'
 CJTH DEBUG!!
@@ -1511,18 +1511,18 @@ CJTH DEBUG!!
 #endif
          GO TO 100
 C
-C        ALPHA and GAMMA5:
+C        Operator types: ALPHA, GAMMA5
 C
     2    PCOMB = '0++0'
          GO TO 100
 C
-C        "BETA" and "BETA SIGMA":
+C        Operator types: BETA, BETA SIGMA
 C
     3    PCOMB = '+00-'
          IF (LEVYLE) PCOMB = '+000'
          GO TO 100
 C
-C        "i BETA ALPHA" and "i BETA GAMMA5" , miro: also SIGMADOT
+C        Operator types: i BETA ALPHA, i BETA GAMMA5
 C
     4    PCOMB = '0+-0'
          GO TO 100
