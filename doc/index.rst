@@ -85,7 +85,6 @@ Tutorials and walkthrus
   :doc:`SCF <tutorials/restart/scf>` |
   :doc:`X2C <tutorials/restart/x2c>` |
   :doc:`Coupled Cluster restart <tutorials/restart/coupled_cluster>` |
-  :doc:`Coupled Cluster memory count <tutorials/cc_memory_count/count_cc_memory>` |
   :doc:`DFCOEF and DFPCMO <tutorials/restart/dfcoef_and_dfpcmo>` |
   :doc:`Troubleshooting <tutorials/restart/troubleshooting>`
 
@@ -141,8 +140,10 @@ Tutorials and walkthrus
   :doc:`Nb atom <tutorials/open_shell_scf/nb>` |
   :doc:`Np atom <tutorials/open_shell_scf/np>`
 
-* **High-spin open-shell Coupled-Cluster:**
-  :doc:`The oxygen molecule <tutorials/highspin_cc/O2>`
+* **Coupled-Cluster:**
+  :doc:`The high spin oxygen molecule <tutorials/highspin_cc/O2>` |
+  :doc:`Coupled Cluster memory count <tutorials/cc_memory_count/count_cc_memory>` |
+  :doc:`Hybrid-parallel run <tutorials/hybrid_parallel_cc_run/hybrid_parallel_cc_run>` 
 
 * **Case studies:**
   :doc:`W atom <tutorials/case_studies/W>` |

@@ -10,9 +10,7 @@ endif()
 set(FIXED_MOLTRA_FORTRAN_SOURCES
    tradr1.F
    tradr2.F
-   tradr3.F
    tradr4.F
-   tradr5.F
    tradr6.F
    trainp.F
    traone.F
@@ -25,6 +23,8 @@ set(FIXED_MOLTRA_FORTRAN_SOURCES
 
 set(FREE_MOLTRA_FORTRAN_SOURCES
     dcbtra_h.F90
+    tradr3.F90
+    tradr5.F90
     moltra_mocoefficients.F90
 )
 
