@@ -1295,7 +1295,8 @@ C     occupies (as imaginary elements) off-diagonal block (0+-0)
 C     carries symmetry of gamma5 (xyz)
 C
       MCMP(21)    =  1
-      JM4 (1,21)  =  9
+CTROND      JM4 (1,21)  =  9
+      JM4 (1,21)  =  4
       JCOM(1,21)  =  1
 
       RETURN
