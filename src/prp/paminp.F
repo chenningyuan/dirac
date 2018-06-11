@@ -904,7 +904,7 @@ C
 C   19. BETA   
 C       [beta]P * beta times scalar operator
 C
-C   20 .SIGMADOT 
+C   20. SIGMADOT 
 C       iS.P * dot-product of sigma matrix and vector operator
 C
 C   21. iBETAGAM
@@ -937,7 +937,7 @@ C***********************************************************************
 #include "dcbgen.h"
       CHARACTER*7 WORD
 C
-      PARAMETER (NTABKW = 32)
+      PARAMETER (NTABKW = 28)
       CHARACTER*8 TABKW(NTABKW)
       CHARACTER   LINE*80, KEYWD*8, TOKEN16*16, BLANK8*8, BLANK16*16
       DIMENSION PFAC(3)
@@ -948,14 +948,12 @@ C
       PARAMETER (BLANK8='        ', BLANK16='                ' )
       SAVE TABKW
       DATA TABKW/'CLASS   ', 'FACTORS ', 'COMFACTO', 'CMULT   ',
-     &           '        ',
      &           'FOCKMAT ', 'DIAGONAL', 'XALPHA  ', 'YALPHA  ',
      &           'ZALPHA  ', 'XAVECTOR', 'YAVECTOR', 'ZAVECTOR',
      &           'ALPHADOT', 'GAMMA5  ', 'XSIGMA  ', 'YSIGMA  ',
      &           'ZSIGMA  ', 'XBETASIG', 'YBETASIG', 'ZBETASIG',
      &           'XiBETAAL', 'YiBETAAL', 'ZiBETAAL', 'BETA    ',
-     &           'SIGMADOT', 'iBETAGAM', 'XXXXXXXX', 'XXXXXXXX',
-     &           'XXXXXXXX', 'XXXXXXXX', 'XXXXXXXX'            /
+     &           'SIGMADOT', 'iBETAGAM', 'XXXXXXXX', 'XXXXXXXX'/
 C
       CALL QENTER('XPRINP')
 C
@@ -970,7 +968,7 @@ C
       PFAC(3) = D1
       CLABEL  = .FALSE.
       !mi - position of the Fock operator in the TABKW list, or "border" index
-      I_FOCKMAT=6
+      I_FOCKMAT=5
 C
       IKW = 0
 C
@@ -1029,8 +1027,7 @@ C
 C     Read property name
 C     ==================
 C
-      IF (IKW .EQ. 0) THEN
-C        IKW .eq. 0 :  Property name
+      IF (IKW .EQ. 0) THEN ! * Property name
 C
          PNAME     = BLANK16
          LTKNR     = MIN(16,LTKN)
@@ -1041,8 +1038,7 @@ C        default diagonal operator name = label
          NPCOMP    = 1
          NFAC      = 0
          IKW       = 1
-      ELSE IF (IKW .EQ. 1) THEN
-C        IKW .eq. 1 :  Property operator keywords
+      ELSE IF (IKW .EQ. 1) THEN  ! * Property operator keywords
          LKW = MIN(8,LTKN)
          READ(LINE(ITKN:80),'(A)') KEYWD(1:LKW)
          IF (LKW .LT. 3) THEN
@@ -1074,7 +1070,7 @@ CMI      ---- assignement of the IPTYP is needed in other routines -----
 C
 C          If keyword Fock defines matrix read, then initialize
 C          ====================================================
-C          (the matrix is assumed totally symmetric 
+C          (the matrix is assumed totally symmetric   
 C           under point group and time reversal symmetry)
 C
            IF (I .EQ. I_FOCKMAT) THEN
@@ -1086,10 +1082,32 @@ C
               ITRXPR = 1
            END IF
  
-!mi     ...jump on operator types according to the variable I prepared above, I : 1-27
-!           4-8 are operators characteritics, TABKW(1-5)
-           GO TO (4,5,6,7,8,1,1,1,1,1,2,2,2,3,
-     &            1,1,1,1,1,1,1,1,1,1,1,3,1), I
+           GO TO (4,    ! CLASS
+     &            5,    ! FACTORS
+     &            6,    ! COMFACTOR
+     &            7,    ! CMULT
+     &            1,    ! FOCKMAT
+     &            1,    ! DIAGONAL
+     &            1,    ! XALPHA
+     &            1,    ! YALPHA
+     &            1,    ! ZALPHA
+     &            2,    ! XAVECTOR
+     &            2,    ! YAVECTOR
+     &            2,    ! ZAVECTOR
+     &            3,    ! ALPHADOT
+     &            1,    ! GAMMA5
+     &            1,    ! XSIGMA
+     &            1,    ! YSIGMA
+     &            1,    ! ZSIGMA
+     &            1,    ! XBETASIG
+     &            1,    ! YBETASIG
+     &            1,    ! ZBETASIG
+     &            1,    ! XiBETAAL
+     &            1,    ! YiBETAAL
+     &            1,    ! ZiBETAAL
+     &            1,    ! BETA
+     &            3,    ! SIGMADOT
+     &            1), I ! iBETAGAM
          END IF
          END DO
          INPERR = INPERR + 1
@@ -1139,8 +1157,7 @@ C
 C     Read property labels for each component
 C     =======================================
 C
-      ELSE IF (IKW .EQ. 2) THEN
-C        IKW .eq. 2 :  Property labels (to be found on file)
+      ELSE IF (IKW .EQ. 2) THEN ! * Property labels (to be found on file)
          NLABEL = NLABEL + 1
          PLABEL(NLABEL) = BLANK8
          LTKNR = MIN(8,LTKN)
@@ -1150,16 +1167,14 @@ C
 C     Read class keyword
 C     ==================
 C
-      ELSE IF (IKW .EQ. 3) THEN
-C        IKW .eq. 3 :  Class label
+      ELSE IF (IKW .EQ. 3) THEN ! * Class label
 CHJMAERKE: implement interpretation of class keyword
 !miro - missing field, HJJ has an idea...
 C
 C     FACTORS, read factor for each component
 C     ==================================================
 C
-      ELSE IF (IKW .EQ. 4) THEN
-C        IKW .eq. 4 :  Separate factor for each component
+      ELSE IF (IKW .EQ. 4) THEN ! * Separate factor for each component
          NFAC = NFAC + 1
          JTKN = ITKN - 1 + LTKN
          I    = 16 - LTKN + 1
@@ -1171,8 +1186,7 @@ C        IKW .eq. 4 :  Separate factor for each component
 C
 C     COMFACTOR, read a common factor for all components
 C     =======================================
-      ELSE IF (IKW .EQ. 5) THEN
-C        IKW .eq. 5 :  Common factor for all components
+      ELSE IF (IKW .EQ. 5) THEN ! * Common factor for all components
          JTKN = ITKN - 1 + LTKN
          I    = 16 - LTKN + 1
          TOKEN16 = BLANK16
