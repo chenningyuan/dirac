@@ -106,6 +106,15 @@ Example (coordinates in bohr)::
    40 40 40          ! 40 x 40 x 40 points
 
 
+keyword(3D_IMP)
+
+Calculate various densities in 3D on an imported grid and write to text file format (imported grid does not have to be regular).
+Example:
+
+  .3D_IMP
+   numerical_grid    ! a grid file on which various densities will be calculated; the file should have 3 columns with x, y, z coordinates of grid points 
+
+
 keyword(3DFAST)
 
 Fast evaluation of the molecular electrostatic potential.
