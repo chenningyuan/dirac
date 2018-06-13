@@ -299,6 +299,10 @@
          call read_input_visual_helper(iq_density)
       end if
 
+      if (kw_matches(word, '.DENGRA')) then
+         call read_input_visual_helper(iq_density_gradient)
+      end if
+
       if (kw_matches(word, '.ELF   ')) then
          call read_input_visual_helper(iq_elf)
       end if

@@ -118,6 +118,19 @@ contains
                result(0) = result(0) + density
             end if
 
+!           electron density gradient
+            if (visual_cfg_property(imat) == iq_density_gradient) then
+               call get_gn(density,          &
+                           density_gradient, &
+                           D(imat)%irep,     &
+                           D(imat)%nrow,     &
+                           D(imat)%elms,     &
+                           buffer,           &
+                           ao)               
+               result(0)   = result(0) + density
+               result(1:3) = result(1:3) + density_gradient
+            end if
+
 !           components of current density: -ec \psi^\dag \alpha_q \psi 
             if (visual_cfg_property(imat) == iq_jx) then
                icomp = 1

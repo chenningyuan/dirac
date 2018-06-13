@@ -76,6 +76,7 @@ module visual_cfg
    integer, public :: iq_jx       = 38
    integer, public :: iq_jy       = 39
    integer, public :: iq_jz       = 40
+   integer, public :: iq_density_gradient  =  41
    
 !                     visualization in 2d
    logical, public :: visual_cfg_2d             = .false.
