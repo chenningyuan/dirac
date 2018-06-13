@@ -60,7 +60,7 @@ all
 # eEDM operators
 .OPERATOR
  'e_EDM' 
- DSIGMADOT
+ SIGMADOT
  'XNUCFIEL'
  'YNUCFIEL'
  'ZNUCFIEL'

@@ -859,13 +859,13 @@
 !       [alpha_z]P    * z-component of alpha times scalar operator
 !
 !    5. XAVECTOR
-!       [Alpha x P]_x * vector product of alpha and vector operator,
+!       [alpha x P]_x * vector product of alpha and vector operator,
 !                       x-component    
 !    6. YAVECTOR
-!       [Alpha x P]_y * vector product of alpha and vector operator,
+!       [alpha x P]_y * vector product of alpha and vector operator,
 !                       y-component    
 !    7. ZAVECTOR
-!       [Alpha x P]_z * vector product of alpha and vector operator,
+!       [alpha x P]_z * vector product of alpha and vector operator,
 !                       z-component    
 !    8. ALPHADOT
 !       A.P           * dot-product of alpha and vector operator
@@ -904,15 +904,12 @@
 !   19. BETA   
 !       [beta]P * beta times scalar operator
 !
-!   20 .SIGMADOT 
-!       iS.P * OFF-DIAGONAL dot-product of sigma and vector operator
+!   20. SIGMADOT 
+!       iS.P * dot-product of sigma matrix and vector operator
 !
 !   21. iBETAGAM
 !       i[beta*gamma5] P           * i beta*gamma5 times scalar operator
 !
-!   22 .DSIGMADOT 
-!       iS.P * DIAGONAL dot-product of sigma and vector operator
-!   
 !
 !  Operator types 5,6 and 7 form the components of a vectorproduct 
 !  of the alpha matrices and some scalar operator.
@@ -940,7 +937,7 @@
 #include "dcbgen.h"
       CHARACTER*7 WORD
 !
-      PARAMETER (NTABKW = 32)
+      PARAMETER (NTABKW = 28)
       CHARACTER*8 TABKW(NTABKW)
       CHARACTER   LINE*80, KEYWD*8, TOKEN16*16, BLANK8*8, BLANK16*16
       DIMENSION PFAC(3)
@@ -951,14 +948,12 @@
       PARAMETER (BLANK8='        ', BLANK16='                ' )
       SAVE TABKW
       DATA TABKW/'CLASS   ', 'FACTORS ', 'COMFACTO', 'CMULT   ',        &
-     &           '        ',                                            &
      &           'FOCKMAT ', 'DIAGONAL', 'XALPHA  ', 'YALPHA  ',        &
      &           'ZALPHA  ', 'XAVECTOR', 'YAVECTOR', 'ZAVECTOR',        &
      &           'ALPHADOT', 'GAMMA5  ', 'XSIGMA  ', 'YSIGMA  ',        &
      &           'ZSIGMA  ', 'XBETASIG', 'YBETASIG', 'ZBETASIG',        &
      &           'XiBETAAL', 'YiBETAAL', 'ZiBETAAL', 'BETA    ',        &
-     &           'SIGMADOT', 'iBETAGAM', 'DSIGMADO', 'XXXXXXXX',        &
-     &           'XXXXXXXX', 'XXXXXXXX', 'XXXXXXXX'            /
+     &           'SIGMADOT', 'iBETAGAM', 'XXXXXXXX', 'XXXXXXXX'/
 !
       CALL QENTER('XPRINP')
 !
@@ -973,7 +968,7 @@
       PFAC(3) = D1
       CLABEL  = .FALSE.
       !mi - position of the Fock operator in the TABKW list, or "border" index
-      I_FOCKMAT=6
+      I_FOCKMAT=5
 !
       IKW = 0
 !
@@ -1032,8 +1027,7 @@
 !     Read property name
 !     ==================
 !
-      IF (IKW .EQ. 0) THEN
-!        IKW .eq. 0 :  Property name
+      IF (IKW .EQ. 0) THEN ! * Property name
 !
          PNAME     = BLANK16
          LTKNR     = MIN(16,LTKN)
@@ -1044,8 +1038,7 @@
          NPCOMP    = 1
          NFAC      = 0
          IKW       = 1
-      ELSE IF (IKW .EQ. 1) THEN
-!        IKW .eq. 1 :  Property operator keywords
+      ELSE IF (IKW .EQ. 1) THEN  ! * Property operator keywords
          LKW = MIN(8,LTKN)
          READ(LINE(ITKN:80),'(A)') KEYWD(1:LKW)
          IF (LKW .LT. 3) THEN
@@ -1066,14 +1059,13 @@
 !          =================================================
 !
            IF ( I .GT. I_FOCKMAT ) THEN
-!             (the first five entries in TABKW are not operator types)
+!             (the first fOUR entries in TABKW are not operator types)
 !MI      ---- assignement of the IPTYP is needed in other routines -----
               IPTYP = I - I_FOCKMAT
               NLABEL= 0
               NFAC  = 0
               IKW = 2
            END IF
-
 !
 !          If keyword Fock defines matrix read, then initialize
 !          ====================================================
@@ -1089,10 +1081,32 @@
               ITRXPR = 1
            END IF
  
-!mi     ...jump on operator types according to the variable I prepared above, I : 1-27
-!           4-8 are operators characteritics, TABKW(1-5)
-           GO TO (4,5,6,7,8,1,1,1,1,1,2,2,2,3,                          &
-     &            1,1,1,1,1,1,1,1,1,1,1,3,1,3), I
+           GO TO (4, &   ! CLASS
+     &            5, &   ! FACTORS
+     &            6, &   ! COMFACTOR
+     &            7, &   ! CMULT
+     &            1, &   ! FOCKMAT
+     &            1, &   ! DIAGONAL
+     &            1, &   ! XALPHA
+     &            1, &   ! YALPHA
+     &            1, &   ! ZALPHA
+     &            2, &   ! XAVECTOR
+     &            2, &   ! YAVECTOR
+     &            2, &   ! ZAVECTOR
+     &            3, &   ! ALPHADOT
+     &            1, &   ! GAMMA5
+     &            1, &   ! XSIGMA
+     &            1, &   ! YSIGMA
+     &            1, &   ! ZSIGMA
+     &            1, &   ! XBETASIG
+     &            1, &   ! YBETASIG
+     &            1, &   ! ZBETASIG
+     &            1, &   ! XiBETAAL
+     &            1, &   ! YiBETAAL
+     &            1, &   ! ZiBETAAL
+     &            1, &   ! BETA
+     &            3, &   ! SIGMADOT
+     &            1), I ! iBETAGAM
          END IF
          END DO
          INPERR = INPERR + 1
@@ -1111,7 +1125,7 @@
 !          note that the minus in the second component
 !          is introduced later
          GO TO 300
-!&&&&    Three components: ALPHADOT, SIGMADOT, DSIGMADOT
+!&&&&    Three components: ALPHADOT, SIGMADOT
     3    CONTINUE
            NPCOMP = 3
          GO TO 300
@@ -1142,8 +1156,7 @@
 !     Read property labels for each component
 !     =======================================
 !
-      ELSE IF (IKW .EQ. 2) THEN
-!        IKW .eq. 2 :  Property labels (to be found on file)
+      ELSE IF (IKW .EQ. 2) THEN ! * Property labels (to be found on file)
          NLABEL = NLABEL + 1
          PLABEL(NLABEL) = BLANK8
          LTKNR = MIN(8,LTKN)
@@ -1153,16 +1166,14 @@
 !     Read class keyword
 !     ==================
 !
-      ELSE IF (IKW .EQ. 3) THEN
-!        IKW .eq. 3 :  Class label
+      ELSE IF (IKW .EQ. 3) THEN ! * Class label
 !HJMAERKE: implement interpretation of class keyword
 !miro - missing field, HJJ has an idea...
 !
 !     FACTORS, read factor for each component
 !     ==================================================
 !
-      ELSE IF (IKW .EQ. 4) THEN
-!        IKW .eq. 4 :  Separate factor for each component
+      ELSE IF (IKW .EQ. 4) THEN ! * Separate factor for each component
          NFAC = NFAC + 1
          JTKN = ITKN - 1 + LTKN
          I    = 16 - LTKN + 1
@@ -1174,8 +1185,7 @@
 !
 !     COMFACTOR, read a common factor for all components
 !     =======================================
-      ELSE IF (IKW .EQ. 5) THEN
-!        IKW .eq. 5 :  Common factor for all components
+      ELSE IF (IKW .EQ. 5) THEN ! * Common factor for all components
          JTKN = ITKN - 1 + LTKN
          I    = 16 - LTKN + 1
          TOKEN16 = BLANK16
@@ -1479,15 +1489,15 @@
 !          ... for FOCKMAT
            PCOMB = 'xxxx'
            GOTO 200           
-         ELSEIF (IPTYP.LT.0 .OR. IPTYP.GT.22) THEN
+         ELSEIF (IPTYP.LT.0 .OR. IPTYP.GT.21) THEN
            WRITE(LUPRI,*)  'IPTYP out of the range, IPTYP=',IPTYP
            CALL QUIT('XPRADD: Illegal IPTYP (not 1-22)!')
          ENDIF
          GO TO (1,2,2,2,2,2,2,2,2,                                      &
-     &          1,1,1,3,3,3,4,4,4,3,4,4),IPTYP
+     &          1,1,1,3,3,3,4,4,4,3,1,4),IPTYP
 !
 !
-!        DIAGONAL and SIGMA:
+!        Operator types: DIAGONAL, SIGMA
 !
     1    PCOMB = '+00+'
 !JTH DEBUG!!
@@ -1500,18 +1510,18 @@
 #endif
          GO TO 100
 !
-!        ALPHA and GAMMA5:
+!        Operator types: ALPHA, GAMMA5
 !
     2    PCOMB = '0++0'
          GO TO 100
 !
-!        "BETA" and "BETA SIGMA":
+!        Operator types: BETA, BETA SIGMA
 !
     3    PCOMB = '+00-'
          IF (LEVYLE) PCOMB = '+000'
          GO TO 100
 !
-!        "i BETA ALPHA" and "i BETA GAMMA5" , miro: also SIGMADOT
+!        Operator types: i BETA ALPHA, i BETA GAMMA5
 !
     4    PCOMB = '0+-0'
          GO TO 100
@@ -2506,7 +2516,7 @@
       GOTO 30
       ENDIF
       GO TO (1,2,3,4,5,6,7,8,9,10,11,12,                                &
-     &       13,14,15,16,17,18,19,20,21,22), ITYP
+     &       13,14,15,16,17,18,19,20,21), ITYP
         WRITE(LUPRI,'(6X,A,I5)')                                        &
      &  'Program error: unknown operator type:',ITYP
         CALL QUIT('WRIXPR: unknown operator type')
@@ -2588,15 +2598,11 @@
       GOTO 200
    20 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
-     &   'SIGMADOT, offdiagonal : [sigma.P]'
+     &   'SIGMADOT : [sigma.P]'
       GOTO 200
    21 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
      &   'BETAGAMMA5 : i[beta gamma5]P'
-      GOTO 200
-   22 CONTINUE
-        WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
-     &   'SIGMADOT, diagonal : [sigma.P]'
       GOTO 200
 !
   200 CONTINUE
