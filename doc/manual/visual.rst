@@ -175,6 +175,15 @@ Another example (perturbed density, first response vector)::
   .DENSITY
    PAMXVC 1
 
+   
+keyword(DENGRA)
+
+Compute number density gradient :math:`\grad n(\mathbf{r})` in addition to the number density :math:`n(\mathbf{r})`.
+Example (unperturbed density gradient)::
+
+  .DENGRA
+   DFCOEF
+
 
 keyword(ELF)
 
