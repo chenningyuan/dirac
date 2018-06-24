@@ -10576,6 +10576,20 @@ C
 C
 !     If linear symmetry is not detected:
       ELSE
+C
+          IF(LINMOL) THEN
+            IF (IPRINT .GE. 0) THEN
+              WRITE (LUPRI,'(/,1X,A)') ' The molecule is linear.'
+              IF(EIGVAL(1).NE.0) THEN
+                WRITE (LUPRI,'(2X,A,F14.8,/)')
+     &            'Moment of inertia (a.u.): ', XFAMU/EIGVAL(1)
+              ELSE
+                WRITE (LUPRI,'(2X,A,F14.8,/)')
+     &            'Moment of inertia (a.u.): ', XFAMU/EIGVAL(2)
+              END IF
+            END IF
+          END IF
+C
          DO 45 IATOM = 1, NUCDEP
             IF (GVAL(IATOM) .NE. 0.0D0) THEN
                FACTOT = GVAL(IATOM)*FAC
@@ -10683,13 +10697,6 @@ C
 C
 C
                  IF(LINMOL) THEN
-                   IF(EIGVAL(1).NE.0) THEN
-                      WRITE (LUPRI,'(2X,A,F14.8,/)')
-     &               'Moment of inertia (a.u.): ', XFAMU/EIGVAL(1)
-                   ELSE
-                      WRITE (LUPRI,'(2X,A,F14.8,/)')
-     &               'Moment of inertia (a.u.): ', XFAMU/EIGVAL(2)
-                   END IF
                    IF (IPRINT .GE. 0)
      &   WRITE(LUPRI,'((1X,A,F16.8,/),/,2(1X,A,F16.8,/),(1X,A,F16.8))')
      &  ' Total spin-rotation constant (SRC)      :',GTRANT(3,3,IATOM),
