@@ -10588,6 +10588,15 @@ C
      &            'Moment of inertia (a.u.): ', XFAMU/EIGVAL(2)
               END IF
             END IF
+          ELSE
+            IF (IPRINT .GE. 0) THEN
+              CALL HEADER
+     &    ('Principal moments of inertia (a.u.) and principal axes',0)
+              WRITE (LUPRI,'(3X,A,F16.8,6X,3F16.8)')
+     &       'IA',XFAMU/EIGVAL(1), (EIGVEC(I,1),I = 1,3),
+     &       'IB',XFAMU/EIGVAL(2), (EIGVEC(I,2),I = 1,3),
+     &       'IC',XFAMU/EIGVAL(3), (EIGVEC(I,3),I = 1,3)
+            END IF
           END IF
 C
          DO 45 IATOM = 1, NUCDEP
@@ -10737,14 +10746,6 @@ C
 C
 C
                  ELSE
-                    IF (IPRINT .GE. 0) THEN
-                      CALL HEADER
-     &    ('Principal moments of inertia (a.u.) and principal axes',0)
-                      WRITE (LUPRI,'(3X,A,F16.8,6X,3F16.8)')
-     &           'IA',XFAMU/EIGVAL(1), (EIGVEC(I,1),I = 1,3),
-     &           'IB',XFAMU/EIGVAL(2), (EIGVEC(I,2),I = 1,3),
-     &           'IC',XFAMU/EIGVAL(3), (EIGVEC(I,3),I = 1,3)
-                    END IF
                     WRITE (LUPRI,'(2X,A,/)') 'Components in the '//
      &              'principal axis system'
                     IF (IPRINT .GT. 1) THEN
