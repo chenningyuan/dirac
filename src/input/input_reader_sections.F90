@@ -61,6 +61,9 @@
         case ('*EOMPROP')
            call read_input_eomprop(word, kw_section)
 
+        case ('*CCPROJ')
+           call read_input_ccproj(word, kw_section)
+
         case ('*CCDIAG')
            call read_input_ccdiag(word, kw_section)
 
@@ -1117,6 +1120,45 @@
 
    end subroutine
 
+
+   subroutine read_input_ccproj(word, kw_section)
+
+      use relcc_cfg
+      use input_reader
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.REW_OCC')) then
+         relcc_projectors_do_restricted_excitation_window = .true.
+         call kw_read(word,  relcc_projectors_rew_occ_min_energy)
+         call kw_read(word,  relcc_projectors_rew_occ_max_energy)
+      end if
+
+      if (kw_matches(word, '.REW_VIRT')) then
+         relcc_projectors_do_restricted_excitation_window = .true.
+         call kw_read(word,  relcc_projectors_rew_virt_min_energy)
+         call kw_read(word,  relcc_projectors_rew_virt_max_energy)
+      end if
+
+      if (kw_matches(word, '.CVS_CORE')) then
+         relcc_projectors_do_core_valence_separation = .true.
+         call kw_read(word,  relcc_projectors_cvs_energy_threshold)
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+
+      if (relcc_projectors_do_restricted_excitation_window.and.relcc_projectors_do_core_valence_separation) & 
+          call quit('Only one projection scheme (CVS/REW) allowed at a time !')
+
+
+   end subroutine
 
 
    subroutine read_input_ccdiag(word, kw_section)

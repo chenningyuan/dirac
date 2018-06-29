@@ -1404,7 +1404,7 @@ contains
     end subroutine
  
 
-    subroutine get_values_vectors_davidson(nroots, A, results, b_guess, state_sym)
+    subroutine get_values_vectors_davidson(nroots, A, results, b_guess, state_sym, projector)
 ! bad coupling between modules, to be replaced by an abstract class that the sigma vector module extends
 ! and that will have associated get_matrix_size, create_sigma_vector and create_diagonal
         use sigma_eom, only : intermediates, get_matrix_size, create_diagonal
@@ -1412,6 +1412,7 @@ contains
 ! back to general stuff
         type(davidson_results), intent(inout) :: results
         real(kind=8), intent(inout), pointer :: b_guess(:,:)
+        logical, intent(in), pointer :: projector(:)
         integer, intent(in) :: nroots
         integer, intent(in) :: state_sym
 !
@@ -1478,6 +1479,10 @@ contains
         do niter = 1, davidson_max_iterations
             write(davidson_output_file_unit,*) "Iteration ", niter
             write(davidson_output_file_unit,*) ""
+
+! aspg, WIP june/july 2018
+            if (associated(projector)) call apply_projector(projector,b)
+! aspg, WIP june/july 2018
 
             if (associated(M_small)) deallocate(M_small)
 
@@ -2437,6 +2442,38 @@ contains
 
     end subroutine
 
+! aspg, WIP june/july 2018
+    subroutine apply_projector(projector,b)
+        logical, intent(in) :: projector(:)
+        real(kind=8), intent(inout)  :: b(:,:)
+        integer :: vectors_L, vectors_N, i, j, k 
+
+! the values of projector mean 
+!  .true. : the entry will remain as is
+! .false. : the entre will be set to zero
+
+        vectors_N = size(b,1)
+        vectors_L = size(b,2)
+
+        if (davidson_complex_mode_with_reals) vectors_N = vectors_N / 2
+
+!       call davidson_print_vectors(b, label="debug:  b before projector    ")
+        do i = 1, vectors_N
+           if (projector(i).eqv..false.) then
+              if (davidson_complex_mode_with_reals) then
+                 j = 2*(i-1) + 1
+                 k = j + 1
+!                print *, 'indexes of b, complex: i',i,'j',j,'k',k
+                 b(j,:) = 0.0d0
+                 b(k,:) = 0.0d0
+              else 
+                 b(i,:) = 0.0d0
+              end if
+           end if
+        end do
+!       call davidson_print_vectors(b, label="debug:  b after  projector    ")
+    end subroutine
+! aspg, WIP june/july 2018
 
 end module
 
