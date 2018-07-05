@@ -2120,36 +2120,30 @@ function create_projector(eom_type, ndet, eps)
    integer :: i, j
    logical :: spinors_in_occupied_window
    logical :: spinors_in_virtuals_window
-   logical :: core_from_ss_block_only
 
    if (.not.(relcc_projectors_do_core_valence_separation.or.relcc_projectors_do_restricted_excitation_window)) then
       create_projector => NULL()
       return
 
    else
-      core_from_ss_block_only = .false. ! .true.
       call mapping_spinors_configurations (det_map, eom_type, ndet, eps)
 
       allocate(create_projector(ndet))
-      create_projector = .false.
+      create_projector = .true.
 
       if (relcc_projectors_do_core_valence_separation) then
           do i = 1, ndet
              if (allocated(det_map%det(i)%occupied_energies)) then
-                if (core_from_ss_block_only) then
-                   if ( (size(det_map%det(i)%occupied_energies,1).eq.1).and. &
-                        (det_map%det(i)%occupied_energies(1).le.relcc_projectors_cvs_energy_threshold) ) & 
-                     &   create_projector(i) = .true. ! we keep determinants having at least one spinor belonging to the core 
-                else
-                   do j = 1, size(det_map%det(i)%occupied_energies,1)
-                      if (det_map%det(i)%occupied_energies(j).le.relcc_projectors_cvs_energy_threshold) &
-                     &   create_projector(i) = .true. ! we keep determinants having at least one spinor belonging to the core 
-                   end do
-                end if
+                do j = 1, size(det_map%det(i)%occupied_energies,1)
+                   if (det_map%det(i)%occupied_energies(j).gt.relcc_projectors_cvs_energy_threshold) then
+                      create_projector(i) = .false.
+                      cycle
+                   end if
+                end do 
                 if (create_projector(i)) then
-          write (iw,*) 'determinant ',i,' has at least a core spinor :',det_map%det(i)%occupied_energies,create_projector(i) 
+          write (iw,*) 'determinant ',i,' has all spinors in core       :',det_map%det(i)%occupied_energies,create_projector(i) 
                 else
-          write (iw,*) 'determinant ',i,' has no core spinors :',det_map%det(i)%occupied_energies,create_projector(i) 
+          write (iw,*) 'determinant ',i,' has at least a valence spinor :',det_map%det(i)%occupied_energies,create_projector(i) 
                 end if
              else
                 create_projector(i) = .false.
