@@ -1239,6 +1239,14 @@
          relcc_mfd_overlap_sorting = .false.
       end if
 
+      if (kw_matches(word, '.EV_Re_SHIFT')) then
+         call kw_read(word, relcc_mfd_eigenvalues_energy_shift(1))
+      end if
+
+      if (kw_matches(word, '.EV_Im_SHIFT')) then
+         call kw_read(word, relcc_mfd_eigenvalues_energy_shift(2))
+      end if
+
       call check_whether_kw_found(word, kw_section)
 
 

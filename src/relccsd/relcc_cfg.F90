@@ -116,7 +116,8 @@ module relcc_cfg
   integer, public, dimension(1:32) :: relcc_eom_nroots_right = 0 
 
 ! Information relevant for matrix-free diagonalization (Davidson etc)
-  real*8, public  :: relcc_mfd_convergence_threshold = 1.0d-5
+  real*8, public  :: relcc_mfd_convergence_threshold = 1.0d-8
+  real*8, public  :: relcc_mfd_eigenvalues_energy_shift(2) = (/0.0d0, 0.0d0/)
   integer, public :: relcc_mfd_max_subspace_size = 128
   integer, public :: relcc_mfd_max_iterations = 80
   integer, public :: relcc_mfd_refresh_rate = 0
@@ -130,11 +131,11 @@ module relcc_cfg
 
   logical, public :: relcc_projectors_do_restricted_excitation_window = .false. 
   logical, public :: relcc_projectors_do_core_valence_separation = .false.
-  real*8, public  :: relcc_projectors_rew_occ_min_energy = -100000000.0
-  real*8, public  :: relcc_projectors_rew_occ_max_energy = -100000000.0
-  real*8, public  :: relcc_projectors_rew_virt_min_energy = 100000000.0
-  real*8, public  :: relcc_projectors_rew_virt_max_energy = 100000000.0 
-  real*8, public  :: relcc_projectors_cvs_energy_threshold = 0.0
+  real*8, public  :: relcc_projectors_rew_occ_min_energy = -huge(relcc_projectors_rew_occ_min_energy)
+  real*8, public  :: relcc_projectors_rew_occ_max_energy = -huge(relcc_projectors_rew_occ_max_energy)
+  real*8, public  :: relcc_projectors_rew_virt_min_energy = huge(relcc_projectors_rew_virt_min_energy)
+  real*8, public  :: relcc_projectors_rew_virt_max_energy = huge(relcc_projectors_rew_virt_max_energy)
+  real*8, public  :: relcc_projectors_cvs_energy_threshold = 0.0d0
 
 ! will add filenames etc here too
 
@@ -243,6 +244,7 @@ contains
 ! Information relevant to the davidson or other type of matrix-free diagonalization methods
 
   call interface_mpi_bcast(relcc_mfd_convergence_threshold ,1,0,global_communicator)
+  call interface_mpi_bcast(relcc_mfd_eigenvalues_energy_shift,1,0,global_communicator)
   call interface_mpi_bcast(relcc_mfd_max_subspace_size     ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_mfd_max_iterations        ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_mfd_refresh_rate          ,1,0,global_communicator)
