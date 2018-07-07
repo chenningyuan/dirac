@@ -76,7 +76,7 @@ module trial_vectors_eom
 ! note: we are forcing the CCS vectors to be sorted here according to the lowest
 ! energy, but perhaps we need to perform such sorting at a higher level, at the
 ! routines generating the different kinds of trial vectors
-   call sort_values_vectors(1, ev, evec, evec, .true., .false.)
+   call sort_values_vectors(1, ev, evec, evec, .true., .false.,.false., (/ 0.0d0, 0.0d0 /))
 !
    if (iprnt.ge.3) then
        print *,'CCS right eigenvalues in (real, imaginary) format'
@@ -144,7 +144,7 @@ module trial_vectors_eom
 ! note: we are forcing the CCS vectors to be sorted here according to the lowest
 ! energy, but perhaps we need to perform such sorting at a higher level, at the
 ! routines generating the different kinds of trial vectors
-   call sort_values_vectors(1, ev, evec, evec, .true., .false.)
+   call sort_values_vectors(1, ev, evec, evec, .true., .false.,.false., (/ 0.0d0, 0.0d0 /))
    if (iprnt.ge.3) then
        print *,'CCS eigenvalues in (real, imaginary) format'
        do i = 1, nroot
@@ -213,7 +213,8 @@ module trial_vectors_eom
 ! note: we are forcing the CCS vectors to be sorted here according to the lowest
 ! energy, but perhaps we need to perform such sorting at a higher level, at the
 ! routines generating the different kinds of trial vectors
-   call sort_values_vectors(1, ev, evec, evec, .true., .false.)
+! also, we are hardcoding not using any shift
+   call sort_values_vectors(1, ev, evec, evec, .true., .false., .false., (/ 0.0d0, 0.0d0 /))
    if (iprnt.ge.3) then
        print *,'CCS eigenvalues in (real, imaginary) format'
        do i = 1, nroot

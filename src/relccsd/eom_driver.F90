@@ -477,6 +477,12 @@
 
               xroot = 0 
 
+              if ((relcc_mfd_eigenvalues_energy_shift(1).gt.(1.0d-3))) then
+                 do i = 1, size(diag_H,1)
+                    diag_H(i) = abs(diag_H(i) - relcc_mfd_eigenvalues_energy_shift(1))
+                 end do
+              end if
+
               do iroot = 1, nroot
                   k = minloc(diag_H) 
                   if (iprnt.ge.2) write(iw,*)'roots',iroot,diag_H(k(1)),k(1) 
@@ -1856,7 +1862,8 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
                         convergence_threshold = relcc_mfd_convergence_threshold, &
                         max_subspace_size = relcc_mfd_max_subspace_size, &
                         max_iterations = relcc_mfd_max_iterations, &
-                        overlap_sorting = relcc_mfd_overlap_sorting)
+                        overlap_sorting = relcc_mfd_overlap_sorting, &
+                        energy_shift=relcc_mfd_eigenvalues_energy_shift)
 
     if (left_vectors .and. right_vectors) call quit('EOM does left OR right vectors for now')
 

@@ -3,6 +3,7 @@ module davidson
 
 implicit none
 
+public davidson_get_eigenvalue_shift
 public davidson_setup
 public davidson_cleanup
 public davidson_driver
@@ -2628,6 +2629,15 @@ contains
 !       call davidson_print_vectors(b, label="debug:  b after  projector    ")
     end subroutine
 ! aspg, WIP june/july 2018
+
+    subroutine davidson_get_eigenvalue_shift(apply_shift,shift)
+       logical, intent(inout)      :: apply_shift
+       real(kind=8), intent(inout) :: shift(2)
+
+       shift = davidson_eigenvalues_shift
+       apply_shift = davidson_apply_eigenvalues_shift 
+
+    end subroutine
 
 end module
 
