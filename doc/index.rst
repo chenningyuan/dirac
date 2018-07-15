@@ -19,6 +19,7 @@ Setting up DIRAC
 * **64-bit integer support:**
   :doc:`Do I need it? <installation/int64/faq>` |
   :doc:`Math libraries <installation/int64/math>` |
+  :doc:`64-bit OpenMPI <installation/int64/mpi64>` |
   :doc:`Troubleshooting <installation/int64/troubleshooting>`
 
 * **Testing:**
