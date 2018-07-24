@@ -3,6 +3,7 @@ module davidson
 
 implicit none
 
+public davidson_get_eigenvalue_shift
 public davidson_setup
 public davidson_cleanup
 public davidson_driver
@@ -36,12 +37,14 @@ end type
 
 integer, parameter :: max_label_length = 30
 integer, parameter :: nr_max_irreps = 32
+real(kind=8), parameter :: davidson_eigenvalues_shift_threshold = 1.0e-3
 
 ! module variables, should be set with a call to davidson_setup
 
 real(kind=8), save :: safe_minimum = 1.0d-36
 
 real(kind=8), save :: davidson_convergence_threshold 
+real(kind=8), save :: davidson_eigenvalues_shift(2)
 
 integer, save      :: davidson_max_subspace_size 
 integer, save      :: davidson_max_iterations
@@ -53,6 +56,7 @@ integer, save      :: davidson_overlap_sorting_scheme
 integer, save      :: davidson_trial_vector_refresh_rate
 integer, save      :: davidson_maximum_trial_vector_refresh_rate = 10
 
+logical, save      :: davidson_apply_eigenvalues_shift
 logical, save      :: davidson_solve_rhs 
 logical, save      :: davidson_solve_lhs 
 logical, save      :: davidson_solve_values
@@ -204,9 +208,11 @@ contains
                               overlap_sorting_scheme,  &
                               save_results,      &
                               save_sigmas,       &
-                              save_subspaces)
+                              save_subspaces,    &
+                              energy_shift)
 
         real(kind=8), intent(in), optional :: convergence_threshold
+        real(kind=8), intent(in), optional :: energy_shift(2)
         integer, intent(in), optional :: max_subspace_size 
         integer, intent(in), optional :: max_iterations
         integer, intent(in), optional :: unit_output
@@ -232,7 +238,28 @@ contains
         if (present(convergence_threshold)) then
             davidson_convergence_threshold = convergence_threshold
         else
-            davidson_convergence_threshold = 1.0d-5 
+            davidson_convergence_threshold = 1.0d-8 
+        end if
+
+        if (present(energy_shift)) then
+            write (unit_output,*) 'shift is defined'
+            davidson_eigenvalues_shift = energy_shift
+            davidson_apply_eigenvalues_shift = .true.
+
+            if (abs(davidson_eigenvalues_shift(1)).lt.davidson_eigenvalues_shift_threshold) &
+               davidson_eigenvalues_shift(1) = 0.0d0 
+ 
+            if (abs(davidson_eigenvalues_shift(2)).lt.davidson_eigenvalues_shift_threshold) &
+               davidson_eigenvalues_shift(2) = 0.0d0 
+
+            if ((abs(davidson_eigenvalues_shift(1)).lt.davidson_eigenvalues_shift_threshold).and. &
+                (abs(davidson_eigenvalues_shift(2)).lt.davidson_eigenvalues_shift_threshold)) then
+               davidson_apply_eigenvalues_shift = .false.
+            end if
+        else
+            write (unit_output,*) 'shift is not defined'
+            davidson_eigenvalues_shift = (/0.0d0, 0.0d0/) 
+            davidson_apply_eigenvalues_shift = .false.
         end if
 
         if (present(max_subspace_size)) then
@@ -409,6 +436,11 @@ contains
         if (davidson_overlap_sorting) then
             write(davidson_output_file_unit, *) "     overlap following scheme   : ", davidson_overlap_sorting_scheme
         end if
+        write(davidson_output_file_unit, *) "  energy shift in eigval sorting: ",davidson_apply_eigenvalues_shift
+!       if (davidson_apply_eigenvalues_shift) then
+           write(davidson_output_file_unit, *) "     shift value, real  part    : ",davidson_eigenvalues_shift(1)
+           write(davidson_output_file_unit, *) "     shift value, imag. part    : ",davidson_eigenvalues_shift(2)
+!       end if
 
         write(davidson_output_file_unit, *) ""
 
@@ -1404,7 +1436,7 @@ contains
     end subroutine
  
 
-    subroutine get_values_vectors_davidson(nroots, A, results, b_guess, state_sym)
+    subroutine get_values_vectors_davidson(nroots, A, results, b_guess, state_sym, projector)
 ! bad coupling between modules, to be replaced by an abstract class that the sigma vector module extends
 ! and that will have associated get_matrix_size, create_sigma_vector and create_diagonal
         use sigma_eom, only : intermediates, get_matrix_size, create_diagonal
@@ -1412,6 +1444,7 @@ contains
 ! back to general stuff
         type(davidson_results), intent(inout) :: results
         real(kind=8), intent(inout), pointer :: b_guess(:,:)
+        logical, intent(in), pointer :: projector(:)
         integer, intent(in) :: nroots
         integer, intent(in) :: state_sym
 !
@@ -1423,6 +1456,7 @@ contains
         real(kind=8), pointer :: preconditioner(:,:) => NULL()
         real(kind=8), pointer :: sigma_vector(:,:)   => NULL()
         real(kind=8), pointer :: b(:,:)              => NULL()
+        real(kind=8), pointer :: b_proj(:,:)         => NULL()
         real(kind=8), pointer :: M_small(:,:)        => NULL()
         real(kind=8), pointer :: c_small_r(:,:)      => NULL()
         real(kind=8), pointer :: c_small_l(:,:)      => NULL()
@@ -1479,14 +1513,25 @@ contains
             write(davidson_output_file_unit,*) "Iteration ", niter
             write(davidson_output_file_unit,*) ""
 
+! aspg, WIP june/july 2018
+!           allocate(b_proj(size(b,1),size(b,2)))
+!           b_proj = b
+!           if (associated(projector)) call apply_projector(projector,b_proj)
+            if (associated(projector)) call apply_projector(projector,b)
+! aspg, WIP june/july 2018
+
             if (associated(M_small)) deallocate(M_small)
 
             if (davidson_debug) call davidson_print_vectors(b, label="debug:  b     vector          ")
 
+!           sigma_vector => create_sigma_vector(A, b_proj, sigma_vector, state_sym)
             sigma_vector => create_sigma_vector(A, b, sigma_vector, state_sym)
 
             if (davidson_debug) call davidson_print_vectors(sigma_vector, label="debug:  sigma vector          ")
 
+!           if (davidson_solve_rhs) M_small => create_reduced_problem(b_proj, sigma_vector)
+!           if (davidson_solve_lhs) M_small => create_reduced_problem(sigma_vector, b_proj)
+!           deallocate(b_proj)
             if (davidson_solve_rhs) M_small => create_reduced_problem(b, sigma_vector)
             if (davidson_solve_lhs) M_small => create_reduced_problem(sigma_vector, b)
 
@@ -1500,8 +1545,10 @@ contains
                                                         e_small,                      &
                                                         c_small_r, c_small_l,         &
                                                         c_small_r_old, c_small_l_old, &
+                                                        davidson_eigenvalues_shift,   &
                                                         follow_overlap=(davidson_overlap_sorting.and.(niter.gt.1)),  &
                                                         follow_overlap_scheme=davidson_overlap_sorting_scheme, &
+                                                        apply_evalues_shift=davidson_apply_eigenvalues_shift, &
                                                         left=davidson_solve_lhs,      &
                                                         right=davidson_solve_rhs,     &
                                                         nroots=nroots,                &
@@ -1575,6 +1622,14 @@ contains
                 end if
                 deallocate(sigma_vector)
             else
+
+! aspg, WIP june/july 2018
+!           allocate(b_proj(size(b,1),size(b,2)))
+!           b_proj = b
+!           if (associated(projector)) call apply_projector(projector,b_proj)
+!            if (associated(projector)) call apply_projector(projector,b)
+! aspg, WIP june/july 2018
+
                b => updated_subspace_vectors_R(b, delta, verbose=davidson_debug)
 
                if (davidson_verbose) then
@@ -1663,20 +1718,27 @@ contains
 
 
 
-    subroutine calculate_eigenvalues_and_eigenvectors(output_file_unit, M, eValues, & 
-                                eVectorsR, eVectorsL, eVectorsR_old, eVectorsL_old, left, right,    &
-                                sorting_order, nroots, verbose, follow_overlap, follow_overlap_scheme)
+    subroutine calculate_eigenvalues_and_eigenvectors(output_file_unit, M, eValues, eVectorsR, eVectorsL, &
+                                eVectorsR_old, eVectorsL_old, eValuesShift, left, right,    &
+                                sorting_order, nroots, verbose, follow_overlap, follow_overlap_scheme, apply_evalues_shift)
         real(kind=8), intent(inout), pointer   :: M(:,:)
         real(kind=8), intent(inout), pointer   :: eValues(:,:)
         real(kind=8), intent(inout), pointer   :: eVectorsR(:,:), eVectorsL(:,:)
         real(kind=8), intent(in)   :: eVectorsR_old(:,:), eVectorsL_old(:,:) !old vectors
-        logical, optional, intent(in) :: left, right, verbose, follow_overlap
+        real(kind=8), intent(in)   :: eValuesShift(2)
+        logical, optional, intent(in) :: left, right, verbose, follow_overlap, apply_evalues_shift
         integer, optional, intent(in) :: sorting_order, nroots, follow_overlap_scheme
         integer, intent(in) :: output_file_unit 
 
-        logical :: left_local, right_local, verbose_local, follow_overlap_local
+        logical :: left_local, right_local, verbose_local, follow_overlap_local, apply_evalues_shift_local
         integer :: sorting_order_local, M_nroots, nroot, nroots_to_print, follow_overlap_scheme_local
         real(kind=8), allocatable :: overlap(:,:)
+
+        if (present(apply_evalues_shift)) then
+            apply_evalues_shift_local = apply_evalues_shift
+        else
+            apply_evalues_shift_local = .false.
+        end if
 
         if (present(follow_overlap)) then
             follow_overlap_local = follow_overlap
@@ -1785,7 +1847,7 @@ contains
         else
             if (davidson_debug) print *, "not following overlap !"
             call sort_values_vectors(sorting_order_local, eValues, eVectorsR, eVectorsL, &
-                                     right_local, left_local)
+                                     right_local, left_local, apply_evalues_shift, eValuesShift)
         end if
 
         if (davidson_verbose) then 
@@ -1930,13 +1992,15 @@ contains
         end if
     end function
 
-    subroutine sort_values_vectors(order, e_small, c_small_r, c_small_l, right, left) 
+    subroutine sort_values_vectors(order, e_small, c_small_r, c_small_l, right, left, apply_shift, energy_shift) 
         integer, intent(in) :: order ! 1: ascending, -1: descending
         logical, intent(in) :: right ! if true, sort also the right eigenvectors
         logical, intent(in) :: left  ! if true, sort also the left eigenvectors
+        logical, intent(in) :: apply_shift ! if true, sort values of |e_small - energy_shift| instead of e_small
         real(kind=8), intent(inout) :: e_small(:,:)
         real(kind=8), intent(inout) :: c_small_r(:,:)
         real(kind=8), intent(inout) :: c_small_l(:,:)
+        real(kind=8), intent(in) :: energy_shift(2)
 
         real(kind=8), allocatable :: temp_vector(:,:)
         real(kind=8) :: temp
@@ -1955,10 +2019,18 @@ contains
 
         if (davidson_complex_mode_with_reals) then
             vectors_N = 2*vectors_L
-            call quicksort_vector_complex_as_real(e_small, indices_sorted_array, 1, vectors_L)
+            if (apply_shift) then
+               call quicksort_vector_complex_as_real_shifted(energy_shift, e_small, indices_sorted_array, 1, vectors_L)
+            else
+               call quicksort_vector_complex_as_real(e_small, indices_sorted_array, 1, vectors_L)
+            end if
         else
             vectors_N = vectors_L
-            call quicksort_vector_real(e_small(1,:), indices_sorted_array, 1, vectors_L)
+            if (apply_shift) then
+               call quicksort_vector_real_shifted(energy_shift(1), e_small(1,:), indices_sorted_array, 1, vectors_L)
+            else
+               call quicksort_vector_real(e_small(1,:), indices_sorted_array, 1, vectors_L)
+            end if
 
        ! we sort the indices that would sort the eigenvalues array, and apply the change to all other arrays
             do i = 1, vectors_L
@@ -2134,6 +2206,42 @@ contains
         end do
         if (first < i-1) call quicksort_vector_real(v, indices_sorted, first, i-1)
         if (j+1 < last)  call quicksort_vector_real(v, indices_sorted, j+1, last)
+    end subroutine
+
+    recursive subroutine quicksort_vector_real_shifted(shift, v, indices_sorted, first, last)
+        real(kind=8), intent(inout) ::  v(:)
+        real(kind=8), intent(in) ::  shift
+        integer, intent(inout) :: indices_sorted(:)
+        integer, intent(in)  :: first, last
+
+        real(kind=8) :: x, t
+        integer :: i, j, ti
+
+        x = abs(v( (first + last) / 2 ) - shift)
+        i = first
+        j = last
+        do
+           do while (abs(v(i)-shift) < x)
+              i = i + 1
+           end do
+           do while (x < abs(v(j)-shift))
+              j = j - 1
+           end do
+           if (i >= j) exit
+
+           t = v(i)
+           v(i) = v(j)
+           v(j) = t
+
+           ti = indices_sorted(i)
+           indices_sorted(i) = indices_sorted(j)
+           indices_sorted(j) = ti
+
+           i = i + 1
+           j = j - 1
+        end do
+        if (first < i-1) call quicksort_vector_real_shifted(shift, v, indices_sorted, first, i-1)
+        if (j+1 < last)  call quicksort_vector_real_shifted(shift, v, indices_sorted, j+1, last)
     end subroutine 
 
     recursive subroutine quicksort_vector_complex_as_real(v, indices_sorted, first, last)
@@ -2180,6 +2288,58 @@ contains
         end if
         if (j+1 < last)  then
             call quicksort_vector_complex_as_real(v, indices_sorted, j+1, last)
+        end if
+    end subroutine
+
+    recursive subroutine quicksort_vector_complex_as_real_shifted(shift, v, indices_sorted, first, last)
+        real(kind=8), intent(inout) ::  v(:,:)
+        real(kind=8), intent(in) :: shift(2) 
+        integer, intent(inout) :: indices_sorted(:)
+        integer, intent(in)  :: first, last
+
+        real(kind=8) :: x, t, value
+        integer :: i, j, ti, start_index
+
+        start_index = (first + last) / 2
+
+        x = sqrt(abs(v(1,start_index)-shift(1))*abs(v(1,start_index)-shift(1)) &
+             & + abs(v(2,start_index)-shift(2))*abs(v(2,start_index)-shift(2))) 
+
+        i = first
+        j = last
+
+        do
+           do while (( sqrt( abs(v(1,i)-shift(1)) * abs(v(1,i)-shift(1)) &
+                       &   + abs(v(2,i)-shift(2)) * abs(v(2,i)-shift(2))) < x ))
+
+              i = i + 1
+           end do
+           do while (( x < sqrt( abs(v(1,i)-shift(1)) * abs(v(1,i)-shift(1)) &
+                           &   + abs(v(2,i)-shift(2)) * abs(v(2,i)-shift(2))) ))
+              j = j - 1
+           end do
+           if (i >= j) exit
+
+           t = v(1,i)
+           v(1,i) = v(1,j)
+           v(1,j) = t
+
+           t = v(2,i)
+           v(2,i) = v(2,j)
+           v(2,j) = t
+
+           ti = indices_sorted(i)
+           indices_sorted(i) = indices_sorted(j)
+           indices_sorted(j) = ti
+
+           i = i + 1
+           j = j - 1
+        end do
+        if (first < i-1) then
+            call quicksort_vector_complex_as_real_shifted(shift, v, indices_sorted, first, i-1)
+        end if
+        if (j+1 < last)  then
+            call quicksort_vector_complex_as_real_shifted(shift, v, indices_sorted, j+1, last)
         end if
     end subroutine
 
@@ -2437,6 +2597,47 @@ contains
 
     end subroutine
 
+! aspg, WIP june/july 2018
+    subroutine apply_projector(projector,b)
+        logical, intent(in) :: projector(:)
+        real(kind=8), intent(inout)  :: b(:,:)
+        integer :: vectors_L, vectors_N, i, j, k 
+
+! the values of projector mean 
+!  .true. : the entry will remain as is
+! .false. : the entre will be set to zero
+
+        vectors_N = size(b,1)
+        vectors_L = size(b,2)
+
+        if (davidson_complex_mode_with_reals) vectors_N = vectors_N / 2
+
+!       call davidson_print_vectors(b, label="debug:  b before projector    ")
+        do i = 1, vectors_N
+           if (projector(i).eqv..false.) then
+              if (davidson_complex_mode_with_reals) then
+                 j = 2*(i-1) + 1
+                 k = j + 1
+!                print *, 'indexes of b, complex: i',i,'j',j,'k',k
+                 b(j,:) = 0.0d0
+                 b(k,:) = 0.0d0
+              else 
+                 b(i,:) = 0.0d0
+              end if
+           end if
+        end do
+!       call davidson_print_vectors(b, label="debug:  b after  projector    ")
+    end subroutine
+! aspg, WIP june/july 2018
+
+    subroutine davidson_get_eigenvalue_shift(apply_shift,shift)
+       logical, intent(inout)      :: apply_shift
+       real(kind=8), intent(inout) :: shift(2)
+
+       shift = davidson_eigenvalues_shift
+       apply_shift = davidson_apply_eigenvalues_shift 
+
+    end subroutine
 
 end module
 

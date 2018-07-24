@@ -16,6 +16,34 @@
     integer :: nroot,state_sym
     integer :: irpoff = 0
 
+! aspg, WIP june/july 2018
+! the excited determinant derived type holds the information on occupied/virtual spinor energies, irreps and position within
+! the irreps, for the spinors making up a given excited state determinant
+!
+! what's still to be done, if found necessary/useful, is to have functions which inquire the variable of this type and provide
+! information on this excited determinant: whether it is a 1h/1p/2h1p/2p1h/1p1h/2p2h etc (which one can get by the dimensions
+! of the "occupied_energies" and "virtuals_energies" variables), the irrep to which it belongs to etc
+   public excited_determinant
+   type excited_determinant
+      real*8,  allocatable :: occupied_energies(:)
+      integer, allocatable :: occupied_irreps(:)
+      integer, allocatable :: occupied_indexes_in_irreps(:)
+
+      real*8,  allocatable :: virtuals_energies(:)
+      integer, allocatable :: virtuals_irreps(:)
+      integer, allocatable :: virtuals_indexes_in_irreps(:)
+   end type excited_determinant
+
+! the mapping derived type is meant to collect the different determinants into an array, and with that the position of the
+! determinant on the hamiltonian would be provided by its index in the "det" variable. having a derived type has the advantage of
+! being able to keep track of multiple mappings if needed.
+   public mapping
+   type mapping
+       type(excited_determinant), allocatable :: det(:)
+   endtype mapping
+! aspg, WIP june/july 2018
+ 
+
    contains
 
   subroutine set_continuous_orbital(active_irrep)
@@ -144,7 +172,6 @@
    integer :: ndimr1, ndimr2, search_dimension, xroot, N1, N2, N
    real*8,allocatable :: R1_dum(:,:) 
    integer :: fudge_factor
-
 
 !initialize the R-vector
 !=======================
@@ -302,9 +329,9 @@
           deallocate(diag_H)
 
       else if (relcc_mfd_trial_restart) then
-          stop ('restart from prior RHS vectors not implemented')
+          call quit ('restart from prior RHS vectors not implemented')
       else
-          stop ('unknown RHS trial vectors generation scheme')
+          call quit ('unknown RHS trial vectors generation scheme')
       end if ! if chain for trial vectors 
 
 
@@ -323,6 +350,7 @@
              H_II(ai) = -fac1 
              ai = ai + rcw
           enddo
+
         enddo
     enddo
 
@@ -418,24 +446,60 @@
           allocate(diag_H(ndimr1))
           diag_H = H_II(1:N1:rcw)
 
-          xroot = 0 
+          if (relcc_projectors_do_restricted_excitation_window) then ! find the lowest elements of the diagonal within the given excitation window
+             print *, 'write me for relcc_projectors_do_restricted_excitation_window'
+             call quit('not implemented')
 
-          do iroot = 1, nroot
-              k = minloc(diag_H) 
-              if (iprnt.ge.2) write(iw,*)'roots',iroot,diag_H(k(1)),k(1) 
-              i = k(1)
-              diag_H(i) = 8000.0d0
-                   xroot = xroot + 1
-                   jroot = i
-                   if (rcw.eq.2) jroot = 2*i - 1
-                   R1(jroot,xroot) = 1.0d0
-          enddo
+          else if (relcc_projectors_do_core_valence_separation) then ! find the lowest elements of the diagonal involving core electrons only
+
+              xroot = 0
+
+          write (iw,*) 'debug, diag(Hbar_SS): ',diag_H
+! aspg, WIP june/july 2018
+! what is below is a simple hack for testing for water, will not work in general
+              do iroot = 1, nroot
+                  k = minloc(diag_H, MASK=((diag_H > abs(relcc_projectors_cvs_energy_threshold)) &
+                             .and.(diag_H < 100*(abs(relcc_projectors_cvs_energy_threshold)))))
+                  if (iprnt.ge.2) write(iw,*)'roots',iroot,diag_H(k(1)),k(1)
+                  write(iw,*)'roots',iroot,diag_H(k(1)),k(1)
+                  i = k(1)
+                  diag_H(i) = huge(diag_H)
+                  xroot = xroot + 1
+                  jroot = i
+                  if (rcw.eq.2) jroot = 2*i - 1
+                  R1(jroot,xroot) = 1.0d0
+              enddo
+
+              call davidson_print_vectors(R1, label="debug:  R1 vector             ")
+! aspg WIP june/july 2018
+
+          else ! this is the standard way of doing it, find the lowest elements of the diagonal
+
+              xroot = 0 
+
+              if ((relcc_mfd_eigenvalues_energy_shift(1).gt.(1.0d-3))) then
+                 do i = 1, size(diag_H,1)
+                    diag_H(i) = abs(diag_H(i) - relcc_mfd_eigenvalues_energy_shift(1))
+                 end do
+              end if
+
+              do iroot = 1, nroot
+                  k = minloc(diag_H) 
+                  if (iprnt.ge.2) write(iw,*)'roots',iroot,diag_H(k(1)),k(1) 
+                  i = k(1)
+                  diag_H(i) = 8000.0d0
+                  xroot = xroot + 1
+                  jroot = i
+                  if (rcw.eq.2) jroot = 2*i - 1
+                  R1(jroot,xroot) = 1.0d0
+              enddo
+          end if
           deallocate(diag_H)
 
       else if (relcc_mfd_trial_restart) then
-          stop ('restart from prior RHS vectors not implemented')
+          call quit ('restart from prior RHS vectors not implemented')
       else
-          stop ('unknown RHS trial vectors generation scheme')
+          call quit ('unknown RHS trial vectors generation scheme')
       end if ! if chain for trial vectors 
 
 
@@ -571,9 +635,9 @@
           deallocate(diag_H)
 
       else if (relcc_mfd_trial_restart) then
-          stop ('restart from prior RHS vectors not implemented')
+          call quit ('restart from prior RHS vectors not implemented')
       else
-          stop ('unknown RHS trial vectors generation scheme')
+          call quit ('unknown RHS trial vectors generation scheme')
       end if ! if chain for trial vectors 
 
   end select 
@@ -892,9 +956,9 @@
           deallocate(diag_H)
 
           else if (relcc_mfd_trial_restart) then
-              stop ('restart from prior LHS vectors not implemented')
+              call quit ('restart from prior LHS vectors not implemented')
           else
-              stop ('unknown LHS trial vectors generation scheme')
+              call quit ('unknown LHS trial vectors generation scheme')
           end if ! if chain for trial vectors 
 
       end if ! relcc_mfd_trial_lhs_use_rhs
@@ -993,7 +1057,7 @@
  integer(kind=klongint), intent(inout) :: mxcorr
  real*8                                :: eps(*)
 !--------------------------------------------------
-
+! what is ndt here should be the dimension of t1+t2 for the irrep in question
    type(intermediates) :: B
    real*8, allocatable :: sigma1(:,:),sigma2(:,:),sigma(:,:) 
    real*8, allocatable :: R1(:,:),R2(:,:)
@@ -1317,7 +1381,7 @@
            merge_arrays(:, 1:La) = a(:, 1:La) 
            merge_arrays(:, La+1:Ls) = b(:, 1:Lb)
        else
-           stop ('mismatch in array dimensions')
+           call quit ('mismatch in array dimensions')
        end if
 
    end function
@@ -1460,7 +1524,6 @@
 !
 !     Author : Avijit Shee from FS_ANALYSIS routine by Luuk.
 !
-!
 !---------------Calling variables--------------------------------------
 
 #include "complex.inc"
@@ -1504,7 +1567,7 @@
  
 !     get the dimension of the space
  
-         ndt = nstate_sym(ssym,select_eom) 
+         ndt = nstate_sym(ssym,select_eom)
          if (ndt.eq.0) cycle
 
 !   Loop over the eigenvalues
@@ -1784,7 +1847,7 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
    integer :: N, N1, N2 ! size of determinantal space 
    character(len=3) :: left_or_right
    type(Offset) :: e,f,g,h
-
+   logical, pointer :: projector(:) => NULL()
 ! 
 !  we set the state for the diagonalizer, as this should not change within a given type of calculation,
 ! e.g. excitation energies
@@ -1799,7 +1862,8 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
                         convergence_threshold = relcc_mfd_convergence_threshold, &
                         max_subspace_size = relcc_mfd_max_subspace_size, &
                         max_iterations = relcc_mfd_max_iterations, &
-                        overlap_sorting = relcc_mfd_overlap_sorting)
+                        overlap_sorting = relcc_mfd_overlap_sorting, &
+                        energy_shift=relcc_mfd_eigenvalues_energy_shift)
 
     if (left_vectors .and. right_vectors) call quit('EOM does left OR right vectors for now')
 
@@ -1929,6 +1993,12 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
       &                               B%H_II)
 
              end if
+          
+             projector => create_projector(3, (ndimr1 + ndimr2), eps)  
+!aspg, WIP
+! debug      
+!            write (iw,*) projector
+!aspg, WIP
 
           case('EA')
 
@@ -1986,18 +2056,19 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
          end select 
 
          if (right_vectors) then
-             call davidson_driver(nroot, B, davResultsR(state_sym), trial_vector,state_sym)
+             call davidson_driver(nroot, B, davResultsR(state_sym), trial_vector,state_sym,projector)
              call eom_analysis(davResultsR(state_sym)%eValues(1:rcw,:),davResultsR(state_sym)%eVectorsR,eps) ! Fock-Space like output for EA, EE and IP
 
          else if (left_vectors) then
 
-             call davidson_driver(nroot, B, davResultsL(state_sym), trial_vector,state_sym)
+             call davidson_driver(nroot, B, davResultsL(state_sym), trial_vector,state_sym,projector)
 
          end if
 
          call free_eom_ndet()
 
          if (allocated(B%H_II)) deallocate(B%H_II)
+         if (associated(projector)) deallocate(projector)
 ! aspg: trial_vector should have been nullified inside davidson_driver, check
 ! why this crashes
 !        if (associated(trial_vector)) deallocate(trial_vector)
@@ -2035,6 +2106,97 @@ subroutine eom_initialize_HII(H_II)
 
 end subroutine
 
+! aspg, WIP, june/july 2018
+! function to create the operator to project out certain lines of the trial vectors in the
+! davidson procedure
+! it returs an array of logical variables, where the entries are set to false if a given line is
+! to be suppressed. we determine these lines by creating a mapping between the composition of the 
+! excited determinants in terms of the orbital energies and and their position on the similarity
+! transformed hamiltonian with a call to mapping_spinors_configurations(), which works quite similarly
+! to the routines to print out the solution vectors.
+! aspg, WIP, june/july 2018
+function create_projector(eom_type, ndet, eps)
+#include "files.inc"
+   logical, pointer :: create_projector(:) 
+
+   integer, intent(in) :: eom_type
+   integer, intent(in) :: ndet
+   real(kind=8), intent(in) :: eps(*)
+
+   type(mapping) :: det_map
+   integer :: i, j
+   logical :: spinors_in_occupied_window
+   logical :: spinors_in_virtuals_window
+
+   if (.not.(relcc_projectors_do_core_valence_separation.or.relcc_projectors_do_restricted_excitation_window)) then
+      create_projector => NULL()
+      return
+
+   else
+      call mapping_spinors_configurations (det_map, eom_type, ndet, eps)
+
+      allocate(create_projector(ndet))
+      create_projector = .true.
+
+      if (relcc_projectors_do_core_valence_separation) then
+          do i = 1, ndet
+             if (allocated(det_map%det(i)%occupied_energies)) then
+                do j = 1, size(det_map%det(i)%occupied_energies,1)
+                   if (det_map%det(i)%occupied_energies(j).gt.relcc_projectors_cvs_energy_threshold) then
+                      create_projector(i) = .false.
+                      cycle
+                   end if
+                end do 
+                if (create_projector(i)) then
+          write (iw,*) 'determinant ',i,' has all spinors in core       :',det_map%det(i)%occupied_energies,create_projector(i) 
+                else
+          write (iw,*) 'determinant ',i,' has at least a valence spinor :',det_map%det(i)%occupied_energies,create_projector(i) 
+                end if
+             else
+                create_projector(i) = .false.
+                write (iw,*) 'determinant ',i,' has no occupied spinors and hence no core spinors',create_projector(i) 
+             end if
+          end do
+       end if
+      
+       if (relcc_projectors_do_restricted_excitation_window) then
+! for restricted excitation window, in what goes below we either have all occupied indices and/or all virtual indices within the respective windows 
+          do i = 1, ndet
+             spinors_in_occupied_window = .true.
+             spinors_in_virtuals_window = .true.
+
+             if (allocated(det_map%det(i)%occupied_energies)) then 
+                spinors_in_occupied_window = .true.
+                do j = 1, size(det_map%det(i)%occupied_energies,1)
+                   if ( (det_map%det(i)%occupied_energies(j).lt.relcc_projectors_rew_occ_min_energy).or. &
+                      & (det_map%det(i)%occupied_energies(j).gt.relcc_projectors_rew_occ_max_energy) ) then
+                      spinors_in_occupied_window = .false.
+                   end if
+                end do
+             else
+! there are no occupied in this excited determinant so the occupied  are outside any window..
+                spinors_in_occupied_window = .false.
+             end if
+
+            if (allocated(det_map%det(i)%virtuals_energies)) then
+                spinors_in_virtuals_window = .true.
+                do j = 1, size(det_map%det(i)%virtuals_energies,1)
+                   if ( (det_map%det(i)%virtuals_energies(j).lt.relcc_projectors_rew_virt_min_energy).or. &
+                      & (det_map%det(i)%virtuals_energies(j).gt.relcc_projectors_rew_virt_max_energy) ) then
+                         spinors_in_virtuals_window = .false.
+                   end if
+                end do
+             else
+! there are no virtuals in this excited determinant so the occupied  are outside any window..
+                spinors_in_virtuals_window = .false.
+             end if
+
+             create_projector(i) = spinors_in_occupied_window.and.spinors_in_virtuals_window
+          end do
+       end if
+   end if
+end function 
+
 
 
 subroutine eom_analysis_allirreps(davResults, eps)
@@ -2049,5 +2211,301 @@ subroutine eom_analysis_allirreps(davResults, eps)
 !--------------------------------------------------
    write (iw,*) "Analysis of all EOM roots not implemented yet !"
 end subroutine
+
+! aspg, WIP june/july 2018
+   subroutine mapping_spinors_configurations (map, select_eom, ndt, eps)
+
+!---------------Description--------------------------------------------
+!
+!     create a mapping between the index of a determinant (i.e. its position on R/L (eigen)vectors Analyze the excited states and calculate transition moments
+!     
+!---------------Arguments----------------------------------------------
+!     mapping    : derived type storing information on the determinants
+!     select_eom : selection of eomtype
+!     eps        : orbital energies
+!     print_level: print level
+!
+!---------------Last modified------------------------------------------
+!
+!     Author : Andre Gomes, adapting from Avijit Shee's evector_analysis 
+!
+!---------------Calling variables--------------------------------------
+
+#include "complex.inc"
+#include "symm.inc"
+
+   real*8,  intent(in) :: eps(*)
+   integer, intent(in) :: select_eom 
+   integer, intent(in) :: ndt
+   type(mapping), intent(inout) :: map 
+
+   integer            :: nstate_sym(nrep,4)
+
+!---------------Common Blocks--------------------------------------
+
+#include "files.inc"
+#include "param.inc"
+#include "ccpar.inc"
+
+!---------------Local variables--------------------------------------
+
+   integer       :: i,ii,irep,j,aoff,a,aa,ai,arep,ssym
+   integer       :: ijrp, abrp, jrp, jj, kk, irp, ioff, imin, bb, amin, arp, brp, b
+
+!---------------Executable code--------------------------------------
+ 
+    ii = 1
+
+    allocate(map%det(ndt))
+    write (iw,*) 'debug, we have ndt',ndt
+    write (iw,*) 'debug, allocated map ?',allocated(map%det),size(map%det,1)
+
+    select case(eomtype)
+
+      case('EA')
+
+         do irep=1,nrep
+            arep = multb (irep,1+nrep,1)
+            do i = 1, ncont(irep)
+               aoff = io(nrep+1) + iv(arep)
+               do a = 1, nv(arep)
+                  aa = aoff + a
+
+                  allocate(map%det(ii)%virtuals_energies(1))
+                  allocate(map%det(ii)%virtuals_irreps(1))
+                  allocate(map%det(ii)%virtuals_indexes_in_irreps(1))
+
+                  map%det(ii)%virtuals_energies(1) = eps(aa)
+                  map%det(ii)%virtuals_irreps(1) = arep
+                  map%det(ii)%virtuals_indexes_in_irreps(1) = a+no(arep)
+
+                  ii = ii + 1
+               enddo
+            enddo
+         enddo
+
+         do irep=1,nrep
+            ijrp = irep
+            abrp = multb (ijrp+nrep,1+nrep,1)
+            do jrp = 1, nrep
+               jj = io(jrp)
+               irp = multb(jrp,ijrp+nrep,2)
+               do j = 1, no(jrp)
+                  jj = jj + 1
+                  do i = 1, ncont(irp)
+                     do brp = 1, nrep
+                        bb = iv(brp) + io(nrep+1)
+                        arp = multb(brp,abrp+nrep,2)
+                        if (arp.lt.brp) cycle
+                           aoff = iv(arp) + io(nrep+1)
+                           do b = 1, nv(brp)
+                              bb = bb + 1
+                              amin = 1
+                              if (arp.eq.brp) amin = b + 1
+                              do a = amin, nv(arp)
+                                 aa = aoff + a
+
+                                 allocate(map%det(ii)%occupied_energies(1))
+                                 allocate(map%det(ii)%occupied_irreps(1))
+                                 allocate(map%det(ii)%occupied_indexes_in_irreps(1))
+
+
+                                 map%det(ii)%virtuals_energies(1) = eps(jj)
+                                 map%det(ii)%virtuals_irreps(1) = jrp 
+                                 map%det(ii)%virtuals_indexes_in_irreps(1) = j 
+
+                                 allocate(map%det(ii)%virtuals_energies(2))
+                                 allocate(map%det(ii)%virtuals_irreps(2))
+                                 allocate(map%det(ii)%virtuals_indexes_in_irreps(2))
+
+                                 map%det(ii)%virtuals_energies(1) = eps(aa)
+                                 map%det(ii)%virtuals_energies(2) = eps(bb)
+
+                                 map%det(ii)%virtuals_irreps(1) = arp
+                                 map%det(ii)%virtuals_irreps(2) = brp
+
+                                 map%det(ii)%virtuals_indexes_in_irreps(1) = a+no(arp)
+                                 map%det(ii)%virtuals_indexes_in_irreps(2) = b+no(brp)
+
+                                 ii = ii + 1
+                              enddo
+                           enddo
+                        enddo
+                     enddo
+                  enddo
+               enddo
+            enddo
+
+      case('IP')
+
+         jj = 0
+         do irep = 1, nrep
+            arep = multb (irep,1+nrep,1)
+            do i = 1, no(irep)
+               jj = jj + 1
+               do a = 1, ncont(arep)
+
+                  allocate(map%det(ii)%occupied_energies(1))
+                  allocate(map%det(ii)%occupied_irreps(1))
+                  allocate(map%det(ii)%occupied_indexes_in_irreps(1))
+
+                  map%det(ii)%occupied_energies(1) = eps(jj)
+                  map%det(ii)%occupied_irreps(1) = irep
+                  map%det(ii)%occupied_indexes_in_irreps(1) = i
+
+                  ii = ii + 1
+               enddo
+            enddo
+         enddo
+
+         do ijrp = 1, nrep
+!           abrp = multb (ijrp+nrep,1+nrep,1)
+            abrp = multb (1+nrep,ijrp+nrep,2)
+            do jrp = 1, nrep
+               jj = io(jrp)
+               irp = multb(jrp,ijrp+nrep,2)
+               if (irp.lt.jrp) cycle
+               ioff = io(irp)
+               do j = 1, no(jrp)
+                  jj = jj + 1
+                  imin = 1
+                  if (irp.eq.jrp) imin = j + 1
+                  do i = imin, no(irp)
+                     kk = ioff + i
+                     do brp = 1, nrep
+                        bb = iv(brp) + io(nrep+1)
+                        arp = multb(brp,abrp+nrep,2)
+                        aoff = iv(arp) + io(nrep+1)
+                        do b = 1, nv(brp)
+                           bb = bb + 1
+                           do a = 1, ncont(arp)
+
+                              allocate(map%det(ii)%occupied_energies(2))
+                              allocate(map%det(ii)%occupied_irreps(2))
+                              allocate(map%det(ii)%occupied_indexes_in_irreps(2))
+
+                              map%det(ii)%occupied_energies(1) = eps(kk)
+                              map%det(ii)%occupied_energies(2) = eps(jj)
+
+                              map%det(ii)%occupied_irreps(1) = irp
+                              map%det(ii)%occupied_irreps(2) = jrp
+
+                              map%det(ii)%occupied_indexes_in_irreps(1) = i
+                              map%det(ii)%occupied_indexes_in_irreps(2) = j
+
+                              allocate(map%det(ii)%virtuals_energies(1))
+                              allocate(map%det(ii)%virtuals_irreps(1))
+                              allocate(map%det(ii)%virtuals_indexes_in_irreps(1))
+
+                              map%det(ii)%virtuals_energies(1) = eps(bb)
+                              map%det(ii)%virtuals_irreps(1) = brp
+                              map%det(ii)%virtuals_indexes_in_irreps(1) = b+no(brp)
+
+                              ii = ii + 1
+                           enddo
+                        enddo
+                     enddo
+                  enddo
+               enddo
+            enddo
+         enddo
+
+
+      case('EE')
+
+         jj = 0
+         do irep = 1, nrep
+            arep = multb (state_sym+nrep,irep,2)
+            do i = 1, no(irep)
+               jj = jj + 1
+               aoff = io(nrep+1) + iv(arep)
+               do a = 1, nv(arep)
+                  aa = aoff + a
+
+                  allocate(map%det(ii)%occupied_energies(1))
+                  allocate(map%det(ii)%occupied_irreps(1))
+                  allocate(map%det(ii)%occupied_indexes_in_irreps(1))
+                  
+                  map%det(ii)%virtuals_energies(1) = eps(jj)
+                  map%det(ii)%virtuals_irreps(1) = irep
+                  map%det(ii)%virtuals_indexes_in_irreps(1) = i
+               
+                  allocate(map%det(ii)%virtuals_energies(1))
+                  allocate(map%det(ii)%virtuals_irreps(1))
+                  allocate(map%det(ii)%virtuals_indexes_in_irreps(1))
+      
+                  map%det(ii)%virtuals_energies(1) = eps(aa)
+                  map%det(ii)%virtuals_irreps(1) = arep
+                  map%det(ii)%virtuals_indexes_in_irreps(1) = a+no(arep)
+
+                  ii = ii + 1
+               enddo
+            enddo
+         enddo
+
+         do ijrp = 1, nrep
+            abrp = multb (state_sym+nrep,ijrp+nrep,2)
+            do jrp = 1, nrep
+               jj = io(jrp)
+               irp = multb(jrp,ijrp+nrep,2)
+               if (irp.lt.jrp) cycle
+               ioff = io(irp)
+               do j = 1, no(jrp)
+                  jj = jj + 1
+                  imin = 1
+                  if (irp.eq.jrp) imin = j + 1
+                  do i = imin, no(irp)
+                     kk = ioff + i
+                     do brp = 1, nrep
+                        bb = iv(brp) + io(nrep+1)
+                        arp = multb(brp,abrp+nrep,2)
+                        if (arp.lt.brp) cycle
+                        aoff = iv(arp) + io(nrep+1)
+                        do b = 1, nv(brp)
+                           bb = bb + 1
+                           amin = 1
+                           if (arp.eq.brp) amin = b + 1
+                           do a = amin, nv(arp)
+                              aa = aoff + a
+
+                              allocate(map%det(ii)%occupied_energies(2))
+                              allocate(map%det(ii)%occupied_irreps(2))
+                              allocate(map%det(ii)%occupied_indexes_in_irreps(2))
+
+                              map%det(ii)%virtuals_energies(1) = eps(kk)
+                              map%det(ii)%virtuals_energies(2) = eps(jj)
+
+                              map%det(ii)%virtuals_irreps(1) = irp
+                              map%det(ii)%virtuals_irreps(2) = jrp
+
+                              map%det(ii)%virtuals_indexes_in_irreps(1) = i
+                              map%det(ii)%virtuals_indexes_in_irreps(2) = j
+
+                              allocate(map%det(ii)%virtuals_energies(2))
+                              allocate(map%det(ii)%virtuals_irreps(2))
+                              allocate(map%det(ii)%virtuals_indexes_in_irreps(2))
+
+                              map%det(ii)%virtuals_energies(1) = eps(aa)
+                              map%det(ii)%virtuals_energies(2) = eps(bb)
+
+                              map%det(ii)%virtuals_irreps(1) = arp
+                              map%det(ii)%virtuals_irreps(2) = brp
+
+                              map%det(ii)%virtuals_indexes_in_irreps(1) = a+no(arp)
+                              map%det(ii)%virtuals_indexes_in_irreps(2) = b+no(brp)
+
+                              ii = ii + 1
+                           enddo
+                        enddo
+                     enddo
+                  enddo
+               enddo
+            enddo
+         enddo
+
+      end select
+ 
+  end subroutine
+! aspg, WIP june/july 2018
 
    end module 
