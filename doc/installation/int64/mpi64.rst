@@ -5,7 +5,10 @@ How to build MPI libraries for 64-bit integers
 
 If you want to use 64-bit integers in parallel DIRAC, you also need 64-bit integers in your MPI installation.
 
-Please check the integer type of your currently available Open MPI installation (perhaps it can do 64-bit integers already).
+64-bit OpenMPI
+~~~~~~~~~~~~~~
+
+Please check the integer type of your currently available OpenMPI installation (perhaps it can do 64-bit integers already).
 For this, type:
 
 ::
@@ -18,11 +21,12 @@ if the output contains 8 for 64-bit integers
 
   Fort integer size: 8
 
-then you have a suitable 64-bit Open MPI installation which uses 64-bit integers by default. If the outpus shows 4, you have 32-bit integers.
+then you have a suitable 64-bit OpenMPI installation which uses 64-bit (or 8-bytes) integers by default. 
+If the outpus shows 4, you have 32-bit integers.
 
-If you decided that you want to build one yourself (not difficult),
+If you decided that you want to build 64-bit OpenMPI yourself (what is not difficult),
 then download the latest stable source from http://www.open-mpi.org/ and extract it.
-Then enter the directory and configure Open MPI (edit prefix path).
+Then enter the directory and configure OpenMPI (edit prefix path).
 
 For Intel compilers use:
 
