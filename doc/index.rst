@@ -120,6 +120,7 @@ Tutorials and walkthrus
   :doc:`Dipole moment and polarizability of open-shell molecule <tutorials/properties/dipmom-polariz>` 
 
 * **X-ray spectroscopy:**
+  :doc:`Core ionization in the CO and N2 molecules <tutorials/x_ray/CO_N2_IP1s/tutorial>` |
   :doc:`Core electron excitations and ionization in water at the HF and DFT levels <tutorials/x_ray/water_Kedge/tutorial>`
 
 * **Spectroscopy:**
