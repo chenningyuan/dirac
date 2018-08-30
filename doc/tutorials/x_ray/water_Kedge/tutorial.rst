@@ -108,7 +108,7 @@ Localizing the K edge
 ---------------------
 
 An interesting question is how to localize the K edge in the XANES spectrum.
-A first approximation to the 1s ionization energy is provided by Koopman's 
+A first approximation to the 1s ionization energy is provided by Koopmans' 
 theorem. We find :math:`IP_{1s}\approx -\varepsilon_{1s} =` 20.581089 :math:`E_h` = 560.04 eV.
 This is singificantly off the value 539.7 eV reported by Kai Siegbahn and co-workers
 [*ESCA applied to free molecules* (1969)] :cite:`Siegbahn1969` 
