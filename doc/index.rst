@@ -119,10 +119,10 @@ Tutorials and walkthrus
   :doc:`Magnetizabilities with London Atomic Orbitals <tutorials/lao_magnetizabilities/lao-magnetizabilities>` |
   :doc:`Dipole moment and polarizability of open-shell molecule <tutorials/properties/dipmom-polariz>` 
 
-* **Spectroscopy:**
-  :doc:`X-ray spectroscopy: water <tutorials/dft/water_Kedge>`
+* **X-ray spectroscopy:**
+  :doc:`Core electron excitations and ionization in water at the HF and DFT levels <tutorials/x_ray/water_Kedge/tutorial>`
 
-* **Spectroscopy II:**
+* **Spectroscopy:**
   :doc:`Electronic excitations using the POLPRP module <tutorials/polprp/general>` |
   :doc:`Full scope application: Excitation spectrum of an osmium complex <tutorials/polprp/osmium>`
 
