@@ -8,6 +8,7 @@ if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fort
 endif()
 
 set(FREE_KRCC_FORTRAN_SOURCES
+        krcc_inp.F90
 )
 
 set(FIXED_KRCC_FORTRAN_SOURCES
@@ -19,7 +20,6 @@ set(FIXED_KRCC_FORTRAN_SOURCES
         contraction_analyze.F
         len_for_tf_r.F
         dim_t1t2_to_t12_map_r.F
-        krcc_inp.F
         krcc_exc_e.F
         contraction_performer.F
         diagonal.F
