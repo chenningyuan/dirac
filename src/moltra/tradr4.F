@@ -1198,6 +1198,8 @@ C
       CALL MEMGET('INTE',KDXKR12,NFPCK12T*2,WORK,KFREE,LFREE)
       CALL MKINDXKR (NSTR,TRIAN(1),WORK(KDXKR12))
       CALL MEMGET('INTE',KDXB12,2*NFPCK12T,WORK,KFREE,LFREE)
+!Fortran runtime error: Index '0' of dimension 1 of array 'work' below lower bound of 1
+!Miro: this means KIBE(:) values can be 0, must be fixed 
       CALL MKINDXB (NSTR,WORK(KIBE(1,1)),WORK(KIBE(2,1)),
      &              WORK(KIBE(1,2)),WORK(KIBE(2,2)),
      &              TRIAN(1),WORK(KDXB12))

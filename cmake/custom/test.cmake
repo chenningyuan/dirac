@@ -19,7 +19,7 @@ macro(dirac_test _name _label _timeout)
         #miro: test's TIMEOUT marker goes after the LABEL marker
         if(NOT "${_timeout}" STREQUAL "")
             set_tests_properties(${_name} PROPERTIES LABELS "${_label}" TIMEOUT "${_timeout}")
-            message(STATUS "Test's '${_name}' timeout set to ${_timeout} seconds. Overwritten by pam timeout setting.")
+            message(STATUS "Test's '${_name}' timeout set to ${_timeout} seconds. Can be overwritten by pam's timeout setting.")
         else()
             set_tests_properties(${_name} PROPERTIES LABELS "${_label}")
         endif()

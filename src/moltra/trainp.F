@@ -1533,6 +1533,7 @@ C
             WRITE(LUPRI,"(2X,A)")
      &      "Only core-density for Vxc in Fij terms ... approximation "
          ENDIF
+         IF (PARCAL) CALL QUIT('DFT-COSCI not parallelized')
       ENDIF
       IF ((NOVXC.OR.COREDENS).AND..NOT.dirac_cfg_dft_calculation) THEN
           WRITE(LUPRI,"(2X,A)")
