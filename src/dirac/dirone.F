@@ -2658,16 +2658,6 @@ C
         I2TMOT(IFRP) = N2TMOTQ
         N2TMO(IFRP)  = NTMO(IFRP)*NTMO(IFRP)
         N2TMOTQ      = N2TMOTQ + N2TMO(IFRP)*NZ
-        write(*,*)"NESHMF" , NESHMF(IFRP)
-        write(*,*)"NPSHMF" , NPSHMF(IFRP)
-        write(*,*)"NISHMF" , NISHMF(IFRP)
-        write(*,*)"NOCCMF" , NOCCMF(IFRP)
-        write(*,*)"I2TMT", I2TMT(IFRP) 
-        write(*,*)"N2TMT  ", N2TMT       
-        write(*,*)"I2TMOT", I2TMOT(IFRP)
-        write(*,*)"N2TMO", N2TMO(IFRP) 
-        write(*,*)"N2TMOTQ", N2TMOTQ
-        write(*,*)""     
       ENDDO
 C
 C     Copy information from NBORB to the subblock array if we have not
@@ -2679,7 +2669,6 @@ C
       ENDIF
 
       if(linear.and..not.gmotra_case3)then
-         write(*,*)"sunaga1"
 C.......SUB_BL will be set true if linear symmetry works
         CALL DCOPY(N2TMT,WORK(KTMAT),1,WORK(KTBUF),1)
 !       in:  KTMAT + KTBUF
@@ -2704,7 +2693,6 @@ C.......SUB_BL will be set true if linear symmetry works
         ELSE
            CALL GLINSM(WORK(KTMAT),WORK(KTBUF),WORK(KTBUF2),WORK(KEIG),
      &                 WORK(KFREE),LFREE)
-         write(*,*)"sunaga2"
         ENDIF
 !     sunaga
 
@@ -2723,7 +2711,6 @@ C.......SUB_BL will be set true if linear symmetry works
 !         skip rec # 1
           read(99)
           call readt(99,N2TMT,work(KTMAT))
-          write(*,*)"sunaga3"
   !sunaga
       IF(IPRHAM.GE.5) THEN
           CALL HEADER(
@@ -3393,7 +3380,6 @@ CMI     they are in the order "S1 S2 ... S(nbsym) L1 L2 ... L(nbsym)" instead of
           call writt(99,ISIZE2,TBUF)
 !         AO2MO lin
           call writt(99,ISIZE, TMAT)
-          write(*,*)"writt,TMAT" !sunaga
         end if
 !       AO2MO
         call writt(99,ISIZE, WORK(KBUF1))
@@ -5690,17 +5676,10 @@ C     sunaga
          CALL MEMGET('REAL',KSMAT,N2BBASXQ,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KTCUF,N2BBASXQ,WORK,KFREE,LFREE)
 C
-         CALL LINSYM(WORK(KSMAT),VMAT,WORK(KTCUF),EIG,WORK(KFREE),LFREE)        
          CALL ATMSYM(TMAT,VMAT,TBUF,WORK(KSMAT),WORK(KTCUF),
      &                EIG,WORK(KFREE),LFREE)
-!         CALL ATMSYM(TMAT,WORK(KSMAT),TBUF,WORK(KSMAT),WORK(KTCUF),
-!     &                EIG,WORK(KFREE),LFREE)
-C
 !          CALL MEMREL('GATMSM',WORK,KSMAT,KSMAT,KFREE,LFREE)
 !          CALL MEMREL('GATMSM',WORK,KTCUF,KTCUF,KFREE,LFREE)
-C     CALL ATMSYM(KMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
-C         CALL DZERO(TBUF,N2BBASXQ)
-C         CALL LINSYM(TMAT,KMAT,TBUF,EIG,WORK(KFREE),LFREE)
       ENDIF
 Csunaga
 
@@ -6303,23 +6282,14 @@ C
       IOFV = 1
       DO 10 I = 1,NFSYM
         IF(NORB(I).EQ.0) GOTO 10
-        IOFTB = I2BASX(I,I) + 1
-C     from   ** End of branching **
-        I2TMT(I)  = N2TMT
-        N2TMT     = N2TMT + NFBAS(I,0)*NORB(I)*NZT
-        I2TMOT(I) = N2TMOTQ
-        N2TMO(I)  = NTMO(I)*NTMO(I)
-        N2TMOTQ   = N2TMOTQ + N2TMO(I)*NZ
-        
-          CALL TSUBBL(I,TBUF,TMAT,SMAT,SMAT,WORK(KFREE),LFREE,12)
-!          CALL TSUBBL(I,FAO,FMO,TMAT,TMAT,WORK(KFREE),LFREE,IPRSCF)     
-!        CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
-!     &            NORB(I),NORB(I),
-!     &            TBUF(IOFTB),NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),
-!     &            TMAT(IOFT),NORB(I),NORB(I),1,IPQTOQ(1,0),
-!     &            VMAT(IOFV),NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),
-!     &            VMAT(IOFV),NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),
-!     &            WORK,LWORK,IPRHAM)
+        IOFTB = I2BASX(I,I) + 1        
+        CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
+     &            NORB(I),NORB(I),
+     &            TBUF(IOFTB),NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),
+     &            TMAT(IOFT),NORB(I),NORB(I),1,IPQTOQ(1,0),
+     &            VMAT(IOFV),NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),
+     &            VMAT(IOFV),NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),
+     &            WORK,LWORK,IPRHAM)
 
         IF (IPRHAM.GE.12) THEN
 
@@ -6356,7 +6326,7 @@ C     the rest here). Also initialize the array that counts the number of functi
 C     each k value.
 C
       CALL DZERO (TBUF,N2TMT)
-
+      CALL IZERO (ID_SUB_BL,MAX_SUB_BL*2)
       CALL IZERO (NORB_SUB,MAX_SUB_BL*3*2)
       WRITE (LUPRI,1000)
 
@@ -6396,22 +6366,11 @@ C
         CALL MEMGET('REAL',KVLL,NLL,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KVSS,NSS,WORK,KFREE,LFREE)
 CCCCCCCCCCCCCCCCCCCCCCC
-C LL part
+C LL Extract and Diagonalization
 CCCCCCCCCCCCCCCCCCCCCCC
 C
 C       Extract LL block of Kappa matrix
 C
-        write(*,*)""
-        write(*,*)"NBRP", NBRP
-        Do Ia =0,2
-        Do III =1,2
-           Do II =1,4
-              write(*,*)"NBORB II III Ia"
-              write(*,*)NBORB(II,III,Ia), II, III, Ia
-              write(*,*)NORB_SUB(II,III,Ia), II, III, Ia
-        Enddo
-        Enddo
-        Enddo
         CALL EXTRSB (1,I,NBORB,4,NBRP,NBORB,4,NBRP,0,0,1,1,1,NZ,
      &               WORK(KFLL),NL,NL,1,
      &               TMAT(IOFT),NT,NT,NZ)
@@ -6419,7 +6378,7 @@ C
 C       Find eigenvalues of Kappa
 C
         IF (NL.GT.0) THEN
-          IF (IPRHAM.GE.5) THEN
+          IF (IPRHAM.GE.6) THEN
            CALL HEADER('ATMSYM: Kappa_LL to be diagonalized',-1)
            WRITE(LUPRI,'(2X,A,L1)') 'DOJACO=',DOJACO
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
@@ -6473,22 +6432,30 @@ C
             DO II=1,NL
               EIG(IEIGE+II-1)=WORK(KFLL+NL*(II-1)+II-1) ! store eigenvalues
             ENDDO
-          ENDIF
+         ENDIF
+         KPMAXL = NINT( MAX( ABS(EIG(IEIGE)), ABS(EIG(IEIGE+NL-1)) ) )
 #endif
-          IF (IPRHAM.GE.5) THEN
-           CALL HEADER('ATMSYM: Kappa_LL eigenvalues / eigenvectors',-1)
-           WRITE(LUPRI,'(3X,A,I1,A,I1/)')
-     &     '*** Fermion corep ',I,'/',NFSYM
-           DO II = 1,NL
-             WRITE(LUPRI,*) II,EIG(IEIGE+II-1)
-           ENDDO
-           CALL PRQMAT(WORK(KVLL),NL,NL,NL,NL,1,
-     &          IPQTOQ(1,0),LUPRI)
-           CALL FLSHFO(LUPRI)
+          IF (IPRHAM.GE.2) THEN
+            CALL HEADER('ATMSYM: Kappa_LL eigenvalues',-1)
+            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &      '*** Fermion corep ',I,'/',NFSYM
+            WRITE(LUPRI,'(A,I2)') ' * Max ABS(kappa_large):', KPMAXL
+            DO II = 1,NL
+              WRITE(LUPRI,*) II,EIG(IEIGE+II-1)
+            ENDDO
+            CALL FLSHFO(LUPRI)
           ENDIF
-        ENDIF
+          IF (IPRHAM.GE.5) THEN
+            CALL HEADER('ATMSYM: Kappa_LL eigenvectors',-1)
+            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &      '*** Fermion corep ',I,'/',NFSYM
+            CALL PRQMAT(WORK(KVLL),NL,NL,NL,NL,1,
+     &           IPQTOQ(1,0),LUPRI)
+            CALL FLSHFO(LUPRI)
+          ENDIF
+        ENDIF  ! IF (NL.GT.0) THEN
 CCCCCCCCCCCCCCCCCCCCCCC
-C SS part
+C SS Extract and Diagonalization
 CCCCCCCCCCCCCCCCCCCCCCC
 C     
 C       Extract SS block of Kappa matrix
@@ -6498,7 +6465,7 @@ C
      &               TMAT(IOFT),NT,NT,NZ)
 C
         IF (NS.GT.0) THEN
-          IF (IPRHAM.GE.5) THEN
+          IF (IPRHAM.GE.6) THEN
            CALL HEADER('ATMSYM: Kappa_SS to be diagonalized',-1)
            WRITE(LUPRI,'(2X,A,L1)') 'DOJACO=',DOJACO
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
@@ -6527,7 +6494,6 @@ C
                enddo
              close(luhm,status="keep")
           ENDIF
-!       write(6,*)"test ",DOQJACO, DOJACO !sunaga
 #ifdef MOD_UNRELEASED
           IF (.NOT.DOQJACO) THEN
 #endif
@@ -6539,7 +6505,6 @@ C
      &                EIG(IEIGP),1,
      &                WORK(KVSS),NS,NS,
      &              WORK(KFREE),LFREE,IERR)
-!              WRITE(6,*) 'more test..',(EIG(IEIGP+K-1),K=1,NS) !sunaga
               IF (IERR.NE.0) THEN
                 WRITE(LUPRI,'(2X,A)')
      &         'ATMSYM: Errorneous QDIAG diagonalization of Kappa_SS!'
@@ -6554,58 +6519,57 @@ C
             DO II=1,NS
               EIG(IEIGP+II-1)=  WORK(KFSS+NS*(II-1)+II-1) ! store eigenvalues
             ENDDO
-          ENDIF
+         ENDIF
+         KPMAXS=NINT(MAX(ABS(EIG(IEIGP)),ABS(EIG(IEIGP+NS-1))))
 #endif
-          IF (IPRHAM.GE.5) THEN
-           CALL HEADER('ATMSYM: Kappa_SS eigenvalues/eigenvectors',-1)
-           WRITE(LUPRI,'(3X,A,I1,A,I1/)')
-     &          '*** Fermion corep ',I,'/',NFSYM
-           DO II = 1,NS
-             WRITE(LUPRI,*) II,EIG(IEIGP+II-1)
-           ENDDO
-           CALL PRQMAT(WORK(KVSS),NS,NS,NS,NS,1,
-     &          IPQTOQ(1,0),LUPRI)
-           CALL FLSHFO(LUPRI)
+          IF (IPRHAM.GE.2) THEN
+            CALL HEADER('ATMSYM: Kappa_SS eigenvalues',-1)
+            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &           '*** Fermion corep ',I,'/',NFSYM
+            WRITE(LUPRI,'(A,I2)') ' * Max ABS(kappa_small):', KPMAXS
+            DO II = 1,NS
+              WRITE(LUPRI,*) II,EIG(IEIGP+II-1)
+            ENDDO
+            CALL FLSHFO(LUPRI)
           ENDIF
-        ENDIF
+          IF (IPRHAM.GE.5) THEN
+            CALL HEADER('ATMSYM: Kappa_SS eigenvectors',-1)
+            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &           '*** Fermion corep ',I,'/',NFSYM
+            CALL PRQMAT(WORK(KVSS),NS,NS,NS,NS,1,
+     &           IPQTOQ(1,0),LUPRI)
+            CALL FLSHFO(LUPRI)
+          ENDIF
+        ENDIF  !IF (NS.GT.0) THEN
 C        
 C       Count the kappa-values.
 C       We will either find a negative or a positive value for each k.
 C
-        KPMAX      = 0
-        KPNUM_LAST = 0
-        KPNUM      = 0
+        KPMAX = MAX(KPMAXL,KPMAXS)
+        WRITE(LUPRI,'(A,I2)') ' * Max ABS(Kappa):', KPMAX
+        MAXSUB = KPMAX*(KPMAX+1)/2
+        IF (MAXSUB.GT.MAX_SUB_BL) THEN
+          write(lupri,*) 'MAX_SUB_BL:',MAX_SUB_BL,
+     &       ' max value of Kappa:',KPMAX,
+     &       ' increase max_sub_bl to ', MAXSUB        
+          CALL QUIT ("increase max_sub_bl")
+        ENDIF      
+        N_SUB_BL(I) = MAXSUB
+CCCCCCCCCCCCCCCCCCCCCCC
+C LL counting and sorting
+CCCCCCCCCCCCCCCCCCCCCCC
+        KPBUF = 0
         DO IX = IEIGE, IEIGE+NL-1
            KP = NINT(EIG(IX))
-           KPABS = ABS(KP)
-           IF (KPABS.GT.MAX_SUB_BL) THEN
-             write(lupri,*) 'MAX_SUB_BL:',MAX_SUB_BL,
-     &       ' actual Kappa:',KPABS,' max value of Kappa:',
-     &       (ABS( NINT(D2*EIG(IEIGE+NL-1)))+1)/2
-             CALL QUIT ("increase max_sub_bl")
+           IF(KP.NE.KPBUF) THEN
+              KPBUF = KP
+              KPABS = ABS(KP)
+              KPADD = KPABS*(KPABS-1)/2 + 1
+              ID_SUB_BL(KPADD,I)  = KP
            ENDIF
-!     miro: for spin-free ensure the KPABS index not to be out-of-bounds
-!     IF (KPABS.GT.0) THEN  ! there is no case that KPBAS=0
-           ID_SUB_BL(KPABS,I)  = KP
-           NORB_SUB(KPABS,I,1) = NORB_SUB(KPABS,I,1) + 1
-           NORB_SUB(KPABS,I,0) = NORB_SUB(KPABS,I,0) + 1
-           KPMAX = MAX(KPABS,KPMAX)
-!           ENDIF
+           NORB_SUB(KPADD,I,1) = NORB_SUB(KPADD,I,1) + 1
+           NORB_SUB(KPADD,I,0) = NORB_SUB(KPADD,I,0) + 1
         ENDDO
-C
-C        CALL MEMGET('REAL',KTBUF3,N2BBASXQ,WORK,KFREE,LFREE)
-C        CALL BKDIAG(WORK(KTBUF3),EIG(IEIGE),WORK(KVLL),VMAT,WORK(KFLL),
-C     &               NL,1,I,WORK(KFREE),LWORK)
-C
-        DO KPABS = KPMAX, 1, -1 ! Here KPABS is the absolute of Kappa. 
-          KPNUM_LAST = KPABS*(KPABS-1)/2
-          KPNUM      = KPABS*(KPABS+1)/2
-          DO IY = KPNUM, KPNUM_LAST+1, -1
-             IYY = IY - KPNUM_LAST
-             ID_SUB_BL(IY,I)  = -(-1)**IYY * (2*IYY-1)
-             NORB_SUB(IY,I,1) = NORB_SUB(KPABS,I,1)
-          ENDDO
-       ENDDO
 C
 C       Same thing for the positive energy solutions
 C
@@ -6621,30 +6585,23 @@ C
      &               WORK(KIBEI),WORK(KVLL),
      &               WORK(KFLL),WORK(KIDUM),IPRHAM)
         CALL MEMREL('ATMSYM',WORK,KINDX,KINDX,KFREE,LFREE)
-        
+C
+CCCCCCCCCCCCCCCCCCCCCCC
+C SS counting and sorting
+CCCCCCCCCCCCCCCCCCCCCCC        
+        KPBUF = 0
         DO IX = IEIGP, IEIGP+NS-1
            KP = -NINT(EIG(IX))
-           KPABS = ABS(KP)
-           IF (KPABS.GT.MAX_SUB_BL) THEN
-             write(lupri,*) 'MAX_SUB_BL:',MAX_SUB_BL,
-     &        ' max value of K:',
-     &       (ABS( NINT(D2*EIG(IEIGE+NL-1)))+1)/2
-             CALL QUIT ("increase max_sub_bl")
+           IF(KP.NE.KPBUF) THEN
+              KPBUF = KP
+              KPABS = ABS(KP)
+              KPADD = KPABS*(KPABS-1)/2 + 1
+              ID_SUB_BL(KPADD,I)  = KP
            ENDIF
-!        miro: for spin-free avoid KPABS index out-of-bounds
-           IF (KPABS.GT.0) THEN
-C             ID_SUB_BL(KPABS,I)  = KP
-             NORB_SUB(KPABS,I,2) = NORB_SUB(KPABS,I,2) + 1
-             NORB_SUB(KPABS,I,0) = NORB_SUB(KPABS,I,0) + 1
-             KPMAX = MAX(KPABS,KPMAX)
-           ENDIF
+           NORB_SUB(KPADD,I,2) = NORB_SUB(KPADD,I,2) + 1
+           NORB_SUB(KPADD,I,0) = NORB_SUB(KPADD,I,0) + 1
         ENDDO
-C
-C        CALL MEMGET('REAL',KTBUF3,N2BBASXQ,WORK,KFREE,LFREE)
-C        CALL BKDIAG(WORK(KTBUF3),EIG(IEIGE),WORK(KVSS),VMAT,WORK(KFSS),
-C     &              NL,2,I,WORK(KFREE),LWORK)
-!        CALL MEMREL('ATMSYM',WORK,KTBUF3,KTBUF3,KFREE,LFREE)
-C
+C     
 C       We need to be careful now. In making NORB_SUB we chose to
 C       use the absolute value of K because this gives the most logical
 C       block structure. The eigenvectors and solutions are, however,
@@ -6671,8 +6628,13 @@ C
      &               WORK(KFSS),WORK(KIDUM),IPRHAM)
         CALL MEMREL('ATMSYM',WORK,KINDX,KINDX,KFREE,LFREE)
 C
-        N_SUB_BL(I) = KPMAX*(KPMAX+1)/2
-C
+C     Write information to output
+C        
+        DO KPADD = 1, MAXSUB
+           WRITE (LUPRI,1010) 3-2*I,ID_SUB_BL(KPADD,I),
+     &                       (NORB_SUB(KPADD,I,IC),IC=0,2)
+        ENDDO
+C            
 C       Put the MO vectors in TBUF
 C
 C       We now have the solutions ordered on on the right index
@@ -6680,8 +6642,7 @@ C       by absolute mj-value and at the left index on boson irreps.
 C       Keep this ordering when inserting into the full matrix so
 C       that the new transformation matrix (generated below) will
 C       give an ordering on KP values.
-C
-        
+C        
         CALL DZERO(TBUF(IOFT),NT*NT)
 
         CALL EXTRSB (2,I,NBORB,4,NBRP,
@@ -6723,23 +6684,23 @@ C
          CALL FLSHFO(LUPRI)
         ENDIF
 C
-        DO KPABS =  KPMAX, 1, -1     ! Here KPABS is the absolute of Kappa. 
-          KPNUM_LAST = KPABS*(KPABS-1)/2
-          KPNUM      = KPABS*(KPABS+1)/2
-          DO IY =  KPNUM, KPNUM_LAST+1, -1
-             NORB_SUB(IY,I,2) = NORB_SUB(KPABS,I,2)
-             NORB_SUB(IY,I,0) = NORB_SUB(KPABS,I,0)
-             NORB_SUB(IY,I,:) = NORB_SUB(IY,I,:)/KPABS
-             WRITE (LUPRI,1010) 3-2*I,(-1)**(I+KPABS-1)*KPABS,
-     &        ID_SUB_BL(IY,I), (NORB_SUB(IY,I,IC),IC=0,2)
-          ENDDO
-        ENDDO
+!        DO KPABS =  KPMAX, 1, -1     ! Here KPABS is the absolute of Kappa. 
+!          KPNUM_LAST = KPABS*(KPABS-1)/2
+!          KPNUM      = KPABS*(KPABS+1)/2
+!          DO IY =  KPNUM, KPNUM_LAST+1, -1
+!             NORB_SUB(IY,I,2) = NORB_SUB(KPABS,I,2)
+!             NORB_SUB(IY,I,0) = NORB_SUB(KPABS,I,0)
+!             NORB_SUB(IY,I,:) = NORB_SUB(IY,I,:)/KPABS
+!             WRITE (LUPRI,1010) 3-2*I,(-1)**(I+KPABS-1)*KPABS,
+!     &        ID_SUB_BL(IY,I), (NORB_SUB(IY,I,IC),IC=0,2)
+!          ENDDO
+!        ENDDO
 C
-        write(*,*)"NORB_SUB",(NORB_SUB(KPABS,I,0),KPABS=1,KPMAX)
+!        write(*,*)"NORB_SUB",(NORB_SUB(KPABS,I,0),KPABS=1,KPMAX)
 C
 C       Done; release the extra memory used for diagonalization
 C
-!        CALL MEMREL('ATMSYM',WORK,KFLL,KFLL,KFREE,LFREE)
+        CALL MEMREL('ATMSYM',WORK,KFLL,KFLL,KFREE,LFREE)
 C
 C       Update offset
 C
@@ -6747,188 +6708,6 @@ C
 C        
    20 CONTINUE
 C         
-c$$$C
-c$$$      IOFT = 1
-c$$$      DO 25 I = 1,NFSYM
-c$$$C
-c$$$        IF(NORB(I).EQ.0) GOTO 25
-c$$$C       Count the kappa-values.
-c$$$C       We will either find a negative or a positive value for each k.
-c$$$C
-c$$$        KPMAX      = 0
-c$$$        KPNUM_LASR = 0
-c$$$        KPNUM      = 0
-c$$$        DO IX = IEIGE, IEIGE+NL-1
-c$$$           KP = NINT(EIG(IX))
-c$$$           KPABS = ABS(KP)
-c$$$           IF (KPABS.GT.MAX_SUB_BL) THEN
-c$$$             write(lupri,*) 'MAX_SUB_BL:',MAX_SUB_BL,
-c$$$     &       ' actual Kappa:',KPABS,' max value of Kappa:',
-c$$$     &       (ABS( NINT(D2*EIG(IEIGE+NL-1)))+1)/2
-c$$$             CALL QUIT ("increase max_sub_bl")
-c$$$           ENDIF
-c$$$!     miro: for spin-free ensure the KPABS index not to be out-of-bounds
-c$$$!     IF (KPABS.GT.0) THEN  ! there is no case that KPBAS=0
-c$$$           ID_SUB_BL(KPABS,I)  = KP
-c$$$           NORB_SUB(KPABS,I,1) = NORB_SUB(KPABS,I,1) + 1
-c$$$           NORB_SUB(KPABS,I,0) = NORB_SUB(KPABS,I,0) + 1
-c$$$           KPMAX = MAX(KPABS,KPMAX)
-c$$$!           ENDIF
-c$$$        ENDDO
-c$$$C
-c$$$C        CALL MEMGET('REAL',KTBUF3,N2BBASXQ,WORK,KFREE,LFREE)
-c$$$C        CALL BKDIAG(WORK(KTBUF3),EIG(IEIGE),WORK(KVLL),VMAT,WORK(KFLL),
-c$$$C     &               NL,1,I,WORK(KFREE),LWORK)
-c$$$C
-c$$$        DO KPABS = KPMAX, 1, -1 ! Here KPABS is the absolute of Kappa. 
-c$$$          KPNUM_LAST = KPABS*(KPABS-1)/2
-c$$$          KPNUM      = KPABS*(KPABS+1)/2
-c$$$          DO IY = KPNUM, KPNUM_LAST+1, -1
-c$$$             IYY = IY - KPNUM_LAST
-c$$$             ID_SUB_BL(IY,I)  = -(-1)**IYY * (2*IYY-1)
-c$$$             NORB_SUB(IY,I,1) = NORB_SUB(KPABS,I,1)
-c$$$          ENDDO
-c$$$       ENDDO
-c$$$C
-c$$$C       Same thing for the positive energy solutions
-c$$$C
-c$$$        DO IX = IEIGE, IEIGE+NL-1
-c$$$           EIG(IX) = ABS(EIG(IX))
-c$$$        ENDDO
-c$$$        CALL MEMGET('INTE',KINDX,NL,WORK,KFREE,LFREE)
-c$$$        CALL MEMGET('INTE',KIDUM,NL,WORK,KFREE,LFREE)
-c$$$        CALL MEMGET('INTE',KIBEI,NL,WORK,KFREE,LFREE)
-c$$$        KP = 0
-c$$$        CALL ICOPY (NL,KP,0,WORK(KIBEI),1)
-c$$$        CALL SELBOS (I,NL,WORK(KINDX),EIG(IEIGE),
-c$$$     &               WORK(KIBEI),WORK(KVLL),
-c$$$     &               WORK(KFLL),WORK(KIDUM),IPRHAM)
-c$$$        CALL MEMREL('ATMSYM',WORK,KINDX,KINDX,KFREE,LFREE)
-c$$$        
-c$$$        DO IX = IEIGP, IEIGP+NS-1
-c$$$           KP = -NINT(EIG(IX))
-c$$$           KPABS = ABS(KP)
-c$$$           IF (KPABS.GT.MAX_SUB_BL) THEN
-c$$$             write(lupri,*) 'MAX_SUB_BL:',MAX_SUB_BL,
-c$$$     &        ' max value of K:',
-c$$$     &       (ABS( NINT(D2*EIG(IEIGE+NL-1)))+1)/2
-c$$$             CALL QUIT ("increase max_sub_bl")
-c$$$           ENDIF
-c$$$!        miro: for spin-free avoid KPABS index out-of-bounds
-c$$$           IF (KPABS.GT.0) THEN
-c$$$C             ID_SUB_BL(KPABS,I)  = KP
-c$$$             NORB_SUB(KPABS,I,2) = NORB_SUB(KPABS,I,2) + 1
-c$$$             NORB_SUB(KPABS,I,0) = NORB_SUB(KPABS,I,0) + 1
-c$$$             KPMAX = MAX(KPABS,KPMAX)
-c$$$           ENDIF
-c$$$        ENDDO
-c$$$C
-c$$$C        CALL MEMGET('REAL',KTBUF3,N2BBASXQ,WORK,KFREE,LFREE)
-c$$$C        CALL BKDIAG(WORK(KTBUF3),EIG(IEIGE),WORK(KVSS),VMAT,WORK(KFSS),
-c$$$C     &              NL,2,I,WORK(KFREE),LWORK)
-c$$$!        CALL MEMREL('ATMSYM',WORK,KTBUF3,KTBUF3,KFREE,LFREE)
-c$$$C
-c$$$C       We need to be careful now. In making NORB_SUB we chose to
-c$$$C       use the absolute value of K because this gives the most logical
-c$$$C       block structure. The eigenvectors and solutions are, however,
-c$$$C       still ordered by the signed value. Reorder them first before
-c$$$C       continuing.
-c$$$C
-c$$$        DO IX = IEIGP, IEIGP+NS-1
-c$$$           EIG(IX) = ABS(EIG(IX))
-c$$$        ENDDO
-c$$$C
-c$$$C       The SELBOS routine does just the reordering that we want,
-c$$$C       use work(kfss) as scratch, and allocate a few other small
-c$$$C       scratch arrays. The IBEIG part will not be used but we will
-c$$$C       initialize it to prevent problems with uninitialized data while
-c$$$C       sorting it.
-c$$$C
-c$$$        CALL MEMGET('INTE',KINDX,NS,WORK,KFREE,LFREE)
-c$$$        CALL MEMGET('INTE',KIDUM,NS,WORK,KFREE,LFREE)
-c$$$        CALL MEMGET('INTE',KIBEI,NS,WORK,KFREE,LFREE)
-c$$$        KP = 0
-c$$$        CALL ICOPY (NS,KP,0,WORK(KIBEI),1)
-c$$$        CALL SELBOS (I,NS,WORK(KINDX),EIG(IEIGP),
-c$$$     &               WORK(KIBEI),WORK(KVSS),
-c$$$     &               WORK(KFSS),WORK(KIDUM),IPRHAM)
-c$$$        CALL MEMREL('ATMSYM',WORK,KINDX,KINDX,KFREE,LFREE)
-c$$$C
-c$$$        N_SUB_BL(I) = KPMAX*(KPMAX+1)/2
-c$$$C
-c$$$C       Put the MO vectors in TBUF
-c$$$C
-c$$$C       We now have the solutions ordered on on the right index
-c$$$C       by absolute mj-value and at the left index on boson irreps.
-c$$$C       Keep this ordering when inserting into the full matrix so
-c$$$C       that the new transformation matrix (generated below) will
-c$$$C       give an ordering on KP values.
-c$$$C
-c$$$        
-c$$$        CALL DZERO(TBUF(IOFT),NT*NT)
-c$$$
-c$$$        CALL EXTRSB (2,I,NBORB,4,NBRP,
-c$$$     &               NORB_SUB,MAX_SUB_BL,N_SUB_BL(I),0,0,1,1,1,1,
-c$$$     &               WORK(KVLL),NL,NL,1,
-c$$$     &               TBUF(IOFT),NT,NT,1)
-c$$$
-c$$$        if(do4c2c)then ! x2c-mmf approach
-c$$$          call writt(13,NL**2,WORK(KVLL))
-c$$$        end if
-c$$$
-c$$$        IF (IPRHAM.GE.5) THEN
-c$$$         CALL HEADER('ATMSYM: MO vectors in TBUF,LL',-1)
-c$$$         WRITE(LUPRI,'(3X,A,I1,A,I1)')
-c$$$     &   '*** Fermion corep ',I,'/',NFSYM
-c$$$         CALL PRQMAT(TBUF(IOFT),NT,NT,NT,NT,1,
-c$$$     &   IPQTOQ(1,0),LUPRI)
-c$$$         CALL FLSHFO(LUPRI)
-c$$$
-c$$$         CALL HEADER('ATMSYM: MO vectors in buffer space,LL',-1)
-c$$$         WRITE(LUPRI,'(3X,A,I1,A,I1)')
-c$$$     &   '*** Fermion corep ',I,'/',NFSYM
-c$$$         CALL PRQMAT(WORK(KVLL),NL,NL,NL,NL,1,
-c$$$     &   IPQTOQ(1,0),LUPRI)
-c$$$         CALL FLSHFO(LUPRI)
-c$$$        ENDIF
-c$$$
-c$$$        CALL EXTRSB (2,I,NBORB,4,NBRP,
-c$$$     &               NORB_SUB,MAX_SUB_BL,N_SUB_BL(I),0,0,2,2,1,1,
-c$$$     &               WORK(KVSS),NS,NS,1,
-c$$$     &               TBUF(IOFT),NT,NT,1)
-c$$$
-c$$$        IF (IPRHAM.GE.5) THEN
-c$$$         CALL HEADER('ATMSYM: MO vectors in TBUF,SS',-1)
-c$$$         WRITE(LUPRI,'(3X,A,I1,A,I1)')
-c$$$     &   '*** Fermion corep ',I,'/',NFSYM
-c$$$         CALL PRQMAT(TBUF(IOFT),NT,NT,NT,NT,1,
-c$$$     &   IPQTOQ(1,0),LUPRI)
-c$$$         CALL FLSHFO(LUPRI)
-c$$$        ENDIF
-c$$$C
-c$$$        DO KPABS =  KPMAX, 1, -1     ! Here KPABS is the absolute of Kappa. 
-c$$$          KPNUM_LAST = KPABS*(KPABS-1)/2
-c$$$          KPNUM      = KPABS*(KPABS+1)/2
-c$$$          DO IY =  KPNUM, KPNUM_LAST+1, -1
-c$$$             NORB_SUB(IY,I,2) = NORB_SUB(KPABS,I,2)
-c$$$             NORB_SUB(IY,I,0) = NORB_SUB(KPABS,I,0)
-c$$$             NORB_SUB(IY,I,:) = NORB_SUB(IY,I,:)/KPABS
-c$$$             WRITE (LUPRI,1010) 3-2*I,(-1)**(I+KPABS-1)*KPABS,
-c$$$     &        ID_SUB_BL(IY,I), (NORB_SUB(IY,I,IC),IC=0,2)
-c$$$          ENDDO
-c$$$        ENDDO
-c$$$C
-c$$$        write(*,*)"NORB_SUB",(NORB_SUB(KPABS,I,0),KPABS=1,KPMAX)
-c$$$C
-c$$$C       Done; release the extra memory used for diagonalization
-c$$$C
-c$$$!        CALL MEMREL('ATMSYM',WORK,KFLL,KFLL,KFREE,LFREE)
-c$$$C
-c$$$C       Update offset
-c$$$C
-c$$$        IOFT = IOFT + NORB(I)*NORB(I)
-c$$$C
-c$$$   25 CONTINUE
 
       if(do4c2c)then ! x2c-mmf approach
         close(13,status='keep')
@@ -6959,7 +6738,7 @@ C
      &              TBUF(IOFU),NORB(I),NORB(I),
      &              NORB(I),1,
      &              NORB(I),1,NFBAS(I,0),
-     &              SMAT(IOFV),NFBAS(I,0),NORB(I),1,
+     &              VMAT(IOFV),NFBAS(I,0),NORB(I),1,
      &              IPRHAM)
 C
         IF (IPRHAM.GE.5) THEN
@@ -6988,46 +6767,15 @@ C
         IOFU = IOFU + NORB(I)*NORB(I)
         IOFV = IOFV + NORB(I)*NFBAS(I,0)
  30   CONTINUE
-c$$$C
-c$$$!        CALL LINSYM(TMAT,SMAT,TCUF,EIG,WORK(KFREE),LFREE)
-c$$$C
-c$$$      IOFT = 1
-c$$$      IOFU = 1
-c$$$      IOFV = 1
-c$$$      DO 40 I = 1,NFSYM       
-c$$$C     
-c$$$        CALL BCKTRA(TMAT(IOFT),NFBAS(I,0),NORB(I),
-c$$$     &              TCUF(IOFU),NORB(I),NORB(I),
-c$$$     &              NORB(I),1,
-c$$$     &              NORB(I),1,NFBAS(I,0),
-c$$$     &              SMAT(IOFV),NFBAS(I,0),NORB(I),1,
-c$$$     &              IPRHAM)
-c$$$
-c$$$        IF (IPRHAM.GE.5) THEN
-c$$$         CALL HEADER(
-c$$$     &'ATMSYM: Final (symm.blocked) transformation'//
-c$$$     &' matrix (AO->MO),TMAT',-1)
-c$$$         WRITE(LUPRI,'(3X,A,I1,A,I1)')
-c$$$     &   '*** Fermion corep ',I,'/',NFSYM
-c$$$         CALL PRQMAT(TMAT(IOFT),NFBAS(I,0),NORB(I),
-c$$$     &         NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),LUPRI)
-c$$$         CALL FLSHFO(LUPRI)
-c$$$        ENDIF
-c$$$C
-c$$$        IOFT = IOFT + NFBAS(I,0)*NORB(I)
-c$$$        IOFU = IOFU + NORB(I)*NORB(I)
-c$$$        IOFV = IOFV + NORB(I)*NFBAS(I,0)
-c$$$ 40   CONTINUE        
-C.....Also initialize NTMO_SUB which will be the number of orbitals in each subblock in orthonormal basis
+C.....Also initialize NTMO_SUB which will be the number of orbitals in each subblock in orthonormal basis      
       CALL ICOPY(MAX_SUB_BL*3*2,NORB_SUB,1,NTMO_SUB,1)
 C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('ATMSYM')
       RETURN
  1000 FORMAT
-     & (/' Parity  Kappa  Mj  Functions(total)
-     & Functions(LC) Functions(SC)')
- 1010 FORMAT (T5,I2,T11,I3,T16,I2,'/2',T23,I5,T38,I5,T51,I5)
+     & (/' Parity  Kappa  Functions(total) Functions(LC) Functions(SC)')
+ 1010 FORMAT (T5,I2,T9,I3,T20,I5,T33,I5,T46,I5)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck amjmat */

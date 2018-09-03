@@ -1693,15 +1693,26 @@ C
       CALL DCOPY(MZ*N2BBASX,AMAT,1,WORK(KBUF),1)
       IZOFF = 0
       DO IZ = 1,MZ
+         write(*,*)"MZ",MZ
+         write(*,*)"MAXREP",MAXREP
+         write(*,*)"NTBAS", NTBAS(0)
+         write(*,*)"N2BBASX", N2BBASX
         DO JC = 1,2
           DO JREP = 0,MAXREP
             DO J = 0,NBBAS(JREP,JC)-1
               JSOFF = IZOFF + (IBBAS(JREP  ,JC)+J)*NTBAS(0)
               JUOFF = IZOFF + (ICOS (JREP+1,JC)+J)*NTBAS(0)
+              write(*,*)""
+              write(*,*)"JREP"," JC",JREP,JC
+              write(*,*)"NBBAS",NBBAS(JREP,JC)
               DO IC = 1,2
                 DO IREP = 0,MAXREP
                   IUOFF = JUOFF + ICOS (IREP+1,IC)
                   ISOFF = JSOFF + IBBAS(IREP  ,IC)
+!                  write(*,*)""
+!                  write(*,*)"IREP", IREP
+!                  write(*,*)"IUOFF",IUOFF
+!                  write(*,*)"ISOFF",ISOFF
                   IF(NBBAS(IREP,IC).GT.0) 
      &              CALL DCOPY(NBBAS(IREP,IC),WORK(KBUF+IUOFF),1,
      &                                        AMAT(ISOFF+1)   ,1)
@@ -3385,16 +3396,29 @@ C
       IBORB = 0    
       DO ISUB = 1,N_SUB_BL(IFRP)
       IF(NTMO_SUB(ISUB,IFRP,0).GT.0) THEN
+        write(*,*)""
+        write(*,*)""
+        write(*,*)"NTMO",NTMO(I)            
+        write(*,*)"NTMO_SUB",NTMO_SUB(ISUB,IFRP,0) !sunaga
+        write(*,*)"ISUB",ISUB
+        write(*,*)"IFRP",IFRP
         IAO = I2BASX(IFRP,IFRP)+1
         IMO = I2TMOT(IFRP) + (NTMO(IFRP)+1)*IBORB + 1
         ITM = I2TMT(IFRP)  + NFBAS(IFRP,0)*IBORB + 1
+        write(*,*)""
+        write(*,*)"IAO", IAO
+        write(*,*)"IMO", IMO
+        write(*,*)"I2TMOT", I2TMOT(IFRP)
+        write(*,*)"IBORB", IBORB
+        write(*,*)"ITM", ITM
+
         CALL QTRANS('AOMO','S',0.0d0,NFBAS(IFRP,0),NFBAS(IFRP,0),
      &         NTMO_SUB(ISUB,IFRP,0),NTMO_SUB(ISUB,IFRP,0),
      &         FAO(IAO),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
      &         FMO(IMO),NTMO(IFRP),NTMO(IFRP),1,IPQTOQ(1,0),
      &         TM1(ITM),NFBAS(IFRP,0),NTMO(IFRP),NZT,IPQTOQ(1,0),
      &         TM2(ITM),NFBAS(IFRP,0),NTMO(IFRP),NZT,IPQTOQ(1,0),
-     &         BUF,LBUF,IPRINT)
+     &         BUF,LBUF,13)
           IBORB = IBORB + NTMO_SUB(ISUB,IFRP,0)
       ENDIF
       ENDDO

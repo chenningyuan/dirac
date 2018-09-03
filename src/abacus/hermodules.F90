@@ -417,6 +417,7 @@
         use codata
 #include "infpar.h"
 #include "cbirea.h"
+#include "dgroup.h" !sunaga
 
 ! using OPTIMI
 #include "dcbgen.h"
@@ -460,6 +461,7 @@
 
           NSYMOP=0
           ADDSYM=.TRUE.
+          LINLIN=.FALSE. !sunaga
           KASYM(:,:)=' '
           KCHARG=0
 
@@ -495,7 +497,13 @@
               ELSE IF (section(2)=='*SYMMETRY'.AND.                     &
      &                 section(3)=='.NOSYM') THEN
                        ADDSYM=.FALSE.
-
+!sunaga
+!            Symmetry specification (Only NOSYM supported, otherwise automatic recognition)
+              ELSE IF (section(2)=='*SYMMETRY'.AND.                     &
+     &                 section(3)=='.LINLIN') THEN
+                       LINLIN=.true.
+!sunaga
+                       
 !             Basis specification
               ELSE IF (section(2)=='*BASIS'.AND.                        &
      &                 section(3)=='.DEFAULT') THEN
@@ -900,7 +908,7 @@
 #include "dgroup.h"
 #else
 #include "gnrinf.h"
-      LOGICAL LINEAR
+      LOGICAL LINEAR, ATOMIC
 #endif
       
       katom=count_types(firstatomtype)
@@ -1191,6 +1199,7 @@
 
 
       LINEAR = .FALSE.
+      ATOMIC = .FALSE.
       CLASS = 'N/A'
       IF (ADDSYM) THEN
          CALL SYMADD(WORK,LWORK,NSYMOP,KATOM,KASYM,                     &
@@ -1221,6 +1230,7 @@
       CALL BASPRO(WORK,LWORK,NSYMOP,IQM,NBLCK,JCO,NUC,NRC,              &
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM, &
      &            DOOWN, blk)
+      IF (LINEAR .EQV. .TRUE. .and. NUCDEP .Eq. 1) ATOMIC = .TRUE. !sunaga
 !
 !     *************************************************
 !     ***** Print orbital and geometry input data *****

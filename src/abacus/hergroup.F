@@ -758,7 +758,7 @@ C
           IQTOPQ(IQ,IREP) = IPQ
         ENDDO
       ENDDO
-C
+C     
 C     Assign JQBAS - gives quaternion vector for given
 C     component and bosonirrep
 C     ================================================

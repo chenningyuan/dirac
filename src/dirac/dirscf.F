@@ -796,6 +796,7 @@ C
 C         read AO2MO transformation matrix TMAT
       CALL READT(LUTMAT,N2TMT,TMAT)
 C         read LUTMAT rec#2 with SAOMO
+          write(*,*)"LUTMAT",LUTMAT !sunaga
       CALL READT(LUTMAT,N2TMT,SAOMO)
       CLOSE(LUTMAT,STATUS='KEEP')
 
@@ -4287,7 +4288,15 @@ C
             IF(NBO.GT.0) THEN
               IMAT = I2TMOT(I) + (NTMO(I)+1)*IBO + 1
               IEIG = IORB(I) + IBO + 1
-
+!     sunaga
+!              write(*,*)"IMAT",IMAT
+!              write(*,*)"I2TMOT",I2TMOT(I)
+!              write(*,*)"NTMO",NTMO(I)
+!              write(*,*)"IBO",IBO
+!              write(*,*)"IEIG",IEIG
+!              write(*,*)"IORB",IORB(I)
+!              write(*,*)""
+!sunaga
               IF (DODBG.AND.IPRHAM.GE.5) THEN
                 CALL HEADER(
      &          'DFDIAG: MO matrix (subblocks) to be diagonalized',-1)

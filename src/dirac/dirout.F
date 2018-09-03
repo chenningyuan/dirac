@@ -1152,7 +1152,7 @@ C...........No eigenvalues
             ENDIF
           END DO
         END DO
-C
+C     
 C       Print occupation string for each fermion symmetry
 C
         IF (NBSYM.GT.1) THEN

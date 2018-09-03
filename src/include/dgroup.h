@@ -35,8 +35,8 @@
      &                NZC1, NZ_in_CI, IQMAP, I2_DGROUP, ITERSEOUT
 
 !     Do NOT add any variables after the end tag !
-      LOGICAL LINEAR
-      COMMON /DGRPL/ LINEAR
+      LOGICAL LINEAR, ATOMIC, LINLIN
+      COMMON /DGRPL/ LINEAR, ATOMIC, LINLIN
 
 ! =========================================================
 ! ... number of operator types in DIRAC is now in NOPTYP

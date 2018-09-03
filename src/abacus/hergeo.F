@@ -234,7 +234,15 @@ C
       IPAK(I,J) = MAX(I,J)*(MAX(I,J)-1)/2 + MIN(I,J)
 C
       NBONDS = 0
-      IF (NUCDEP .EQ. 1) RETURN
+Csunaga      IF (NUCDEP .EQ. 1) RETURN
+      IF (NUCDEP .EQ. 1) THEN !sunaga
+!         ATOMIC = .TRUE.
+          ATOMIC = 1.0d0
+         RETURN
+      ELSE
+!         ATOMIC = .FALSE.
+          ATOMIC = 0.0d0
+      END IF !sunaga
 C
 C     set up bond vectors
 C

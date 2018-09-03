@@ -4854,7 +4854,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 68,NDIR = 12)
+      PARAMETER (NTABLE = 69,NDIR = 12)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include "maxaqn.h"
@@ -4918,7 +4918,9 @@ C
 !                   61        62        63        64
      &            '.ECP   ','.X2CMMF','.DOSSSS','.MDIRAC',
 !                   65        66        67        68
-     &            '.TRSMIX','.PEQM  ','.JZOUT', '.FAKE2C'/
+     &            '.TRSMIX','.PEQM  ','.JZOUT', '.FAKE2C',
+!                   69
+     &            '.KOUT'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -4979,6 +4981,7 @@ C
       IPKINERG = -1
       IPANGMOM = -1
       IPSPNMOM = -1
+      IPSPNORB = -1
       IPVEMB0  = -1
       SSMTRC  = D1
       BSS     = .FALSE.
@@ -5039,6 +5042,7 @@ C ... get integral flags in advance
 #endif
 !mi:  by default, do not save Jz_MO matrices
       WRITE_Jz_MATRIX = .FALSE.
+      WRITE_K_MATRIX = .FALSE. !added by sunaga
 
       NOINPUT   = .FALSE.
 C
@@ -5085,7 +5089,7 @@ C     Keep track of number of changes and added finite field operators
      &                131,132,133,134,135,136,137,138,139,140,
      &                141,142,143,144,145,146,147,148,149,150,
      &                151,152,153,154,155,156,157,158,159,160,
-     &                161,162,163,164,165,166,167,168),I
+     &                161,162,163,164,165,166,167,168,169),I
             END IF
   99    CONTINUE
         IF (WORD .EQ. '.OPTION') THEN
@@ -5651,6 +5655,10 @@ C..TODO: check for inconsistencies and add stops
             NONREL  = .TRUE.
             SPINFR  = .TRUE.
             DOLVC   = .FALSE.
+          GO TO 100
+  169     CONTINUE
+!&&&& .KOUT : save Kappa_MO matrices into formatted files for analysis
+            WRITE_K_MATRIX = .TRUE.
           GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
         GO TO 300
@@ -6840,7 +6848,6 @@ C
       IPKINERG         = INDXPR
 
       ENDIF
-
 CMI   ... this is common
       IF (LINEAR) THEN
 C
@@ -6866,8 +6873,28 @@ C
      &                  INDXPR,ISYXPR,ITRXPR,IPRHAM)
          IPSPNMOM         = INDXPR
       ENDIF
+Csunaga
+      IF (ATOMIC) THEN
+C
+C        Spin-orbit integrals (used in case of atomic symmetry !)
+C        ============================================================
+C
+         PNAME            = 'Spin-orbit matrix'
+         IPTYP            = 20
+         NPCOMP           = 3
+         PFAC(1)          = -D1
+         PFAC(2)          = -D1
+         PFAC(3)          = -D1
+         PLABEL(1)        = 'XANGMOM '
+         PLABEL(2)        = 'YANGMOM '
+         PLABEL(3)        = 'ZANGMOM '
+         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &                  INDXPR,ISYXPR,ITRXPR,IPRHAM)
+         IPSPNORB         = INDXPR
+      ENDIF
 C
       CALL QEXIT('OP1INI')
+Csunaga
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
