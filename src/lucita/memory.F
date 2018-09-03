@@ -270,6 +270,7 @@ CADDE
 **. Static memory
 *
       ELSE IF(TASK(1:4).EQ.'ADDS') THEN
+!Miro: KFREEL is too big, causing out-of-bounds !
         KBASE = KFREEL+NPAD
         IF( IR .EQ. 1 ) THEN
           KFREES = KFREEL +(KADD+1)/RtoI + 2*NPAD
@@ -306,7 +307,8 @@ CADDE
         KFREEL         = KFREES
         IBASE(NS)      = KBASE
 
-!     Miro: KBASE out-of-bounds , needs fix (gfortran4.9)
+!     Miro: indexes "KBASE-1","KFREEL-1" are out-of-bounds , see
+!     wrkspc.inc; runtime check flags report problem
         work(KBASE-1)  = PAD1
         work(KFREEL-1) = PAD2
         call setvec(work(KBASE-1), PAD1,1)

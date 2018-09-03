@@ -52,6 +52,7 @@
 #include "mxpdim.inc"
 #include "crun.inc"
       logical mcscf, run_wo_t_buff
+      character*6 CIRUN
  
       if(.not.run_wo_t_buff)then
         call integral_distribution_driver(ISPINFREE,NL2D,IUB2D,ISM2D,

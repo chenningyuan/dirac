@@ -59,6 +59,7 @@ C
       dimension pfac(3)
       character plabel(3)*8
       character tmp(4)*4
+      CHARACTER PNAME*16
 
       call qenter('PRPXLR_MPG')
 CMI   .. add this

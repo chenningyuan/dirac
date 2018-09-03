@@ -4,8 +4,8 @@ The Nuclear Magnetic Quadrupole Moment (NMQM) operator
 
 The NMQM operator is built of the EFG integrals that are already coded in DIRAC program package.
 
-NMQM it is the cross product of the alpha matrix and the EFG integrals.
-The EFG integrals by definition contain an extra factor of "3"
+The NMQM operator is the cross product of the alpha matrix and the EFG integrals.
+The EFG integrals by definition contain an extra factor of "3",
 which to be taken care in the form of COMFACTOR or at the end with a
 proper sign, if you use the .OPERATOR technique.
 

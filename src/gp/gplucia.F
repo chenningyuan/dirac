@@ -3106,7 +3106,8 @@ C     call iwrtma(minval,1,ngasl,1,ngasl)
         IMULT = IMULT*(MAXVAL(IGAS)-MINVAL(IGAS)+1)
 C       write(6,*) ' igas i imult ',igas,i,imult
       END DO
-      IOFF_SYM_DIST=IOFF(I)
+      ! Miro: fix due to runtimecheck, I should be nonzero
+      IF (I.GT.0) IOFF_SYM_DIST=IOFF(I) 
 *
       NTEST = 000
       IF(NTEST.GE.100) THEN

@@ -547,9 +547,6 @@ C*****************************************************************************
       CHARACTER OPNAME*16
 !
       CALL QENTER('EXCPRPINP')
-!     Set index limits of free working memory
-      KFREE = 1
-      LFREE = LWRK
 !     Do consistency check if KEYWID == 4
       IF (KEYWID .eq. 4) THEN
          DOFLAG = .false.

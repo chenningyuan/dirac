@@ -572,6 +572,7 @@ C
 #include "memint.h"
       call alloc(WORK,LWORK,id='WORK in PSIMP2')
       KFRSAV = KFREE
+      TRANOP = .false.
       CALL MP2HI(IPRMP2)
 C
 C     Check to see if coefficients are there
@@ -4158,6 +4159,12 @@ C
 #include "memint.h"
       call alloc(WORK,LWORK,id='WORK in SY_COSCI')
 
+! .. definitions to satisfy ifort runtime check
+      TRANOP = .false.
+      SCRBUF = 0.0D0
+      THRBUF = 0.0D0
+      IPRBUF = 0
+      ISTBUF = 0
       KFRSAV = KFREE
 !@m   CALL TITLER('Resolution of open-shell states','*',120)
       CALL TITLER('Stand-alone COS_CI','*',120)

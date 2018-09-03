@@ -4825,7 +4825,6 @@ C-----------------------------------------------------------------------
 #include "nuclei.h"
 C
       logical, allocatable :: DOATOM(:)
-#include "memint.h"
 C
 C
       allocate(DOATOM(NUCIND))
@@ -5172,7 +5171,6 @@ C
       DIMENSION PFAC(3)
       logical, allocatable :: DOATOM(:)
 C
-#include "memint.h"
       allocate(DOATOM(NUCIND))
 C     NSTDIACGO: INTTYP = 38
 C     (-38: accept .SELECT specification)

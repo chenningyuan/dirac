@@ -3889,7 +3889,11 @@ C        number of start trial vectors is increased with
 C        the vectors which are nearly degenerate with
 C        the last requested, i.e. number NEXSTV.
 C
-         HDGSTV = HDIAG(IVEC(NEXSTV))
+
+!Miro: Subscript #1 of the array HDIAG has value 0 which is less than the lower bound of 1 !
+! here is naive fix:
+         IF (IVEC(NEXSTV).GE.1) HDGSTV = HDIAG(IVEC(NEXSTV))
+!
   210    IF (NEXST2 .GT. NEXSTV) THEN
             HDGDIF = HDIAG(IVEC(NEXST2)) - HDGSTV
             IF ( HDGDIF .GT. 0.01D0) THEN

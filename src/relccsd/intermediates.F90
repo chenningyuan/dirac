@@ -623,6 +623,7 @@
 
       DO IREP = 1, NREP
          JREP = MULTB(IREP+NREP,1+NREP,2)
+         if (mvo(jrep) == 0) cycle
          M = MVV(IREP)
          N = MVO(IREP)
          K = MVO(JREP)
@@ -712,7 +713,7 @@
      call gettau (t1,t2,tau)
 
       do 30 irp = 1, nrep
-         if (nvvt(irp).eq.0) goto 30
+         if ((nvvt(irp).eq.0).or.(nvo(irp).eq.0)) goto 30
          done = .false.
          istart = 0
          cco=0
@@ -1487,8 +1488,13 @@
        abmn = (ivvoott(irp)+displ(myproc))*rcw+1
        off1 = off1 + ivvoott(irp)*rcw  
 
+
+       if (noot(irp) == 0) then
+         call xscal (m*n,a1,w_vvvv,1)
+       else 
         call xgemm ('n','n',m,n,k,a1,tau(off1),nvvt(irp),buf1(abmn),k, &
       &               a1,w_vvvv,m)
+       endif
 
 !-----------------------------------------------------
 ! w(ef,ab) = w(ef,ab) - V(em,ab)*t(f,m)
