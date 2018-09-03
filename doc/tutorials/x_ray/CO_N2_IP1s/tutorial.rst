@@ -94,17 +94,16 @@ of 409.9 eV !
 
 Bagus and Schaefer found a similar discrepancy in their study of the :math:`O_2^+` molecule
 :cite:`Bagus_JCP1972` and found that results improved dramatically by *localization* of the core hole,
-so let us try this. We set up the menu file `N2loc.inp`
-
-.. literalinclude:: N2loc.inp
-
-for Pipek-Mezey localization. Note a little trick: We set the occupation to four electron, so only the N1s orbitals get localized.
-This breaks molecular symmetry, so we go down to :math:`C_1` using the molecule input file `N2_C1.mol` 
+so let us try this. Localization breaks molecular symmetry, so we go down to :math:`C_1` using the molecule input file `N2_C1.mol` 
 
 .. literalinclude:: N2_C1.mol
 
 This is the reason why we saved the :math:`C_1` coefficients in the initial calculation !
-We now localize using the command::
+We next set up the menu file `N2loc.inp`
+
+.. literalinclude:: N2loc.inp
+
+for Pipek-Mezey localization. Note that we select only the a little trick: We select only the :math:`1s\sigma_g` and :math:`1s\sigma_u` orbitals for localization. We now localize using the command::
 
   pam --inp=N2loc --mol=N2_C1 --put "ac.N2=DFCOEF" --get "DFCOEF=ac.N2loc"
 
