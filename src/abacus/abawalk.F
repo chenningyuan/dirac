@@ -2072,7 +2072,7 @@ C
 C
 C     Coordinates written are always in atomic units
 C
-      MLINE(NMLAU)(20:20) = ' '
+      IF (NMLAU.GE.1) MLINE(NMLAU)(20:20) = ' '
       DO 100 N = 1, NUCIND
          CRX = COONEW(1,N) - CCAVX
          CRY = COONEW(2,N) - CCAVY

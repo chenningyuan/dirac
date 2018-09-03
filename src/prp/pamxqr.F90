@@ -67,8 +67,8 @@
 !
 #include "ibtfun.h"
 !
-      LFREE = LWRK
-      KFREE = 1
+    !  LFREE = LWRK
+    !  KFREE = 1
 !
       NEWDEF = (WORD .EQ. '*QUADRA')
       IF (SET) THEN
@@ -2637,8 +2637,8 @@
 !
       CALL QENTER('QDENS1')
 !
-      KFREE = 1
-      LFREE = LWRK
+      !KFREE = 1
+      !LFREE = LWRK
 !
 !     D_{ab} = C_{ai} W1_{iu} C+_{bu} - C_{au} W1_{ui} C+_{bi}
 !
@@ -2689,8 +2689,8 @@
 !
       CALL QENTER('QDEN1')
 !
-      KFREE = 1
-      LFREE = LWRK
+      !KFREE = 1
+      !LFREE = LWRK
 !
       IF (ITIM1.EQ.1) THEN
          T='S'
@@ -2793,8 +2793,8 @@
 !
       CALL QENTER('QDENS2')
 !
-      KFREE = 1
-      LFREE = LWRK
+      !KFREE = 1
+      !LFREE = LWRK
 !
 !     D_{ab} = C_{ai} W1_{iu} W2_{uv} C+_{bv}
 !            + C_{av} W2_{vu} W1_{ui} C+_{bi}
@@ -2864,8 +2864,8 @@
 !
       CALL QENTER('QDEN2')
 !
-      KFREE = 1
-      LFREE = LWRK
+      !KFREE = 1
+      !LFREE = LWRK
 !
 !     Zero temporary storage DTMP
 !

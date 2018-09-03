@@ -205,7 +205,7 @@
 
       do i = 1, nrep
          J = MULTB(i+NREP,1+NREP,2)
-
+          if (mov(i) == 0) cycle
           M = mov(i)
 !          N = mov(j)
           N = mov(i)
@@ -300,7 +300,7 @@
       do irp = 1, nrep
          istart = 0
          totsize = 0
-         if (nvvt(irp).eq.0) cycle
+         if ((nvvt(irp).eq.0).or.(noot(irp).eq.0)) cycle
          mint = nbuf3/nvvt(irp)
  10      kstart = istart
          if (idist(1,1,irp).gt.kstart) kstart=idist(1,1,irp)
@@ -414,8 +414,10 @@
                   IF (IREP.EQ.JREP) IMIN = J + 1
                   IA = (IVO(AREP) + (A-1) * NO(AREP) + IMIN - 1)*RCW + 1
                   NI = NO(IREP) - IMIN + 1
-                  CALL XAXPY (NI,f_bar(jb),L1(ia),1,RESL2(IJABOFF+IJ),1)
-                  CALL XAXPY (NI,L1(JB),f_bar(IA),1,RESL2(IJABOFF+IJ),1)
+                  if (NI > 0) then
+                   CALL XAXPY (NI,f_bar(jb),L1(ia),1,RESL2(IJABOFF+IJ),1)
+                   CALL XAXPY (NI,L1(JB),f_bar(IA),1,RESL2(IJABOFF+IJ),1)
+                  endif
                   IJ = IJ + NI * RCW
                   JB = JB + RCW
                ENDDO
@@ -431,12 +433,14 @@
                   IF (IREP.EQ.JREP) IMIN = J + 1
                   IB = (IVO(BREP) + (B-1) * NO(BREP) + IMIN - 1)*RCW + 1
                   NI = NO(IREP) - IMIN + 1
+                  if (NI > 0) then
                    T1MIN(1) = -f_bar(JA)
                    IF (CARITH) T1MIN(2) = -f_bar(JA+1)
                   CALL XAXPY (NI,T1MIN,L1(IB),1,ResL2(IJABOFF+IJ),1)
                    T1MIN(1) = -L1(JA)
                    IF (CARITH) T1MIN(2) = -L1(JA+1)
                   CALL XAXPY (NI,T1MIN,f_bar(IB),1,ResL2(IJABOFF+IJ),1)
+                  endif
                   IJ = IJ + NI * RCW
                   JA = JA + RCW
                ENDDO

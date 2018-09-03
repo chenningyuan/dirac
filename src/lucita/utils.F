@@ -298,7 +298,7 @@
 *     Find smallest (MINMAX=1) or largest (MINMAX=2)
 *     absolute value of elements in integer vector IVEC
 *
-      DIMENSION IVEC(1)
+      DIMENSION IVEC(*) ! Miro: instead of IVEC(1)
 *
       IF(NDIM.GT.0) THEN
         IX = -1

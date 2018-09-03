@@ -25,16 +25,20 @@ set(FIXED_PRP_FORTRAN_SOURCES
    pamogrd.F
    pamprp.F
    pamrsp.F
-   pamrvc.F
    pamset.F
-   pamstex.F
    pamtpa.F
    pamxlr.F
-   pamxpp.F
    rspmpg.F
    van_der_waals.F
    # fix missing rmolgrd
    ${PROJECT_SOURCE_DIR}/src/dirac/dirgrd.F
+)
+
+#Miro: volunteers are welcome to fix runtimecheck flaws !
+set(FIXED_PRP_FORTRAN_SOURCES_noruntimecheck
+   pamrvc.F
+   pamxpp.F
+   pamstex.F
 )
 
 set(FREE_PRP_FORTRAN_SOURCES
@@ -42,21 +46,36 @@ set(FREE_PRP_FORTRAN_SOURCES
    london_helper.F90
    london_utils.F90
    london_direct.F90
-   london_reorth.F90
    paminp.F90
-   pamxqr.F90
+)
+
+#Miro: volunteers are welcome to fix runtimecheck flaws !
+set(FREE_PRP_FORTRAN_SOURCES_noruntimecheck
+   london_reorth.F90
+   pamxqr.F90 # Attempt to fetch from allocatable variable VECAEP when it is not allocated
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FREE_PRP_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
+    set_source_files_properties(${FREE_PRP_FORTRAN_SOURCES_noruntimecheck}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
     set_source_files_properties(${FIXED_PRP_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
+    set_source_files_properties(${FIXED_PRP_FORTRAN_SOURCES_noruntimecheck} PROPERTIES COMPILE_FLAGS "-qfixed")
+endif()
+
+# enable runtimechecking flags only to SELECTED source-files
+if(ENABLE_RUNTIMECHECK)
+    message(STATUS "runtime-check flags activated for the 'prp' module, with some source files excluded from checking")
+    set_source_files_properties(${FREE_PRP_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+    set_source_files_properties(${FIXED_PRP_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
 endif()
 
 add_library(
     prp
     OBJECT
     ${FREE_PRP_FORTRAN_SOURCES}
+    ${FREE_PRP_FORTRAN_SOURCES_noruntimecheck}
     ${FIXED_PRP_FORTRAN_SOURCES}
+    ${FIXED_PRP_FORTRAN_SOURCES_noruntimecheck}
 )
 
 # deal with dependencies

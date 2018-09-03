@@ -4297,7 +4297,7 @@ C
                 CALL PRQMAT(FMO(IMAT),NBO,NBO,NTMO(I),NTMO(I),
      &                      1,IPQTOQ(1,0),LUPRI)
               ENDIF
-              IF (WRITE_FMO_MATRIX) CALL FMO_WRITE(FMO,I,ISUB,NBO)
+              IF (WRITE_FMO_MATRIX) CALL FMO_WRITE(FMO,IMAT,I,ISUB,NBO)
 C
 C             Diagonalize the isub'th block of parity i
 C
@@ -5833,7 +5833,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE FMO_WRITE(FMO,IFRP,ISUB,NBO)
+      SUBROUTINE FMO_WRITE(FMO,IMAT,IFRP,ISUB,NBO)
 C***********************************************************************
 C      miro: save the matrix for diagonalization, FMO(IMAT), into formatted, unique files
 C      -----------------------------------------------------------------------------------

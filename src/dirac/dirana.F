@@ -583,7 +583,10 @@ C
            end do
         end if
         IF(DONETP) THEN
-          CALL DAXPY(N2LAB,D1,PNTOT(1,1,2),1,PNTOT(1,1,1),1)
+! Miro: PNTOT's 3rd index is 2, fix needed wrt NFSYM
+          IF (NFSYM.GT.1) THEN
+            CALL DAXPY(N2LAB,D1,PNTOT(1,1,2),1,PNTOT(1,1,1),1)
+          ENDIF
           WRITE(LUPRI,'(//A)') '*** Total net population ***'
           CALL WRPOPN(PNTOT(1,1,1),PGTOT(1,1),
      &                POPLAB,NPOPLAB,IEFF,'total')
@@ -1497,7 +1500,8 @@ C
 C
 C     Mulliken-type population analysis
 C
-      CALL MEMGET('REAL',KGVEC,(NREF+1)*2,WORK,KFREE,LFREE)
+      !Miro-fix out-of-bounds, array size increased 
+      CALL MEMGET('REAL',KGVEC,(NREF+2)*2,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPMAT,NREF*NREF ,WORK,KFREE,LFREE)
       CALL ANAPR2(DOPOP,NREF,NMOL,NTOT,WORK(KPMAT),WORK(KGVEC),
      &            WORK(KAMAT),BVEC,FREP,
@@ -1690,7 +1694,7 @@ C
       CHARACTER*3 FREP(2)
       CHARACTER FMT*6,MXFORM*6,OTYP*1,SYMLAB*9
       DIMENSION GROSS(2,0:2,MAXREF),IPQ(*)
-      DIMENSION PMAT(NREF,NREF),GVEC(NREF+1,2),AMAT(NTOT,NTOT,NZ),
+      DIMENSION PMAT(NREF,NREF),GVEC(NREF+2,2),AMAT(NTOT,NTOT,NZ),
      &          BVEC(NTOT,NMOL,NZ),JMOL(3,*),EMOL(*),IBMOL(*),
      &          NSTR(2,0:2,0:MAXREF),JREF(3,*),EREF(*),OCC(*)
       DIMENSION P(4),OTYP(2)
@@ -1701,7 +1705,7 @@ C
 C
 C     Initialization
 C
-      CALL DZERO(GVEC,(NREF+1))
+      CALL DZERO(GVEC,(NREF+2))
       CALL DCOPY(4,D0,0,P,1)
 C
 C     Loop over molecular orbitals

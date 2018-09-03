@@ -84,13 +84,13 @@ twoao.h
     hergp.F
     hergroup.F
     hermem.F
-    herpar.F
     herrdn.F
     herrdn_dirac.F
     hersol.F
     hersym.F
     hertst.F
     vibnor.F
+    herpar.F # Miro: I left the file here
 )
 
 set(FREE_ABACUS_FORTRAN_SOURCES
@@ -99,9 +99,17 @@ set(FREE_ABACUS_FORTRAN_SOURCES
    filemodule.F90
 )
 
+
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FREE_ABACUS_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
     set_source_files_properties(${FIXED_ABACUS_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
+endif()
+
+
+if(ENABLE_RUNTIMECHECK)
+    message(STATUS "runtime-check flags activated for the whole 'abacus' module without exceptions")
+    set_source_files_properties(${FREE_ABACUS_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+    set_source_files_properties(${FIXED_ABACUS_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
 endif()
 
 # fix for Windows with 64bit integers on and build type release
@@ -113,7 +121,7 @@ if(     (CMAKE_SYSTEM_NAME MATCHES "Windows")
     AND (CMAKE_BUILD_TYPE MATCHES "release"))
     set_source_files_properties(
         ${PROJECT_SOURCE_DIR}/src/abacus/hermodules.F90
-        PROPERTIES COMPILE_FLAGS "-O1"
+        PROPERTIES COMPILE_FLAGS "-O1" # added compiler flag overrides previous optimization flags
         )
     message(STATUS "src/abacus/hermodules.F90: assigned -O1 optimization flag to fix the compilation")
 endif()

@@ -6821,6 +6821,7 @@ C     when there is no subblock ... allows single code
       N2TMT   = 0
       N2TMOTQ = 0      
       ICOFF   = 0
+      IEOFF   = 0
       IVOFF   = 0
       ITEFF = 1
       DO 10 IFRP =  1,NFSYM
@@ -7293,7 +7294,8 @@ c        ... Get charges and exponents for the electrons in this group
             n_charge = NINT(CHARGE(I))
             n_exp = -1 ! signal the routine to provide the number of exponents only
             CALL Read_screening_parameters
-     &           (n_charge,n_exp,fit_exp,fit_coef)
+     &           (n_charge,n_exp,DUMMY,DUMMY)
+!    &           (n_charge,n_exp,fit_exp,fit_coef)
             Allocate (fit_exp(n_exp))
             Allocate (fit_coef(n_exp))
             CALL Read_screening_parameters 
