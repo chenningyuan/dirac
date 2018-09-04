@@ -75,7 +75,7 @@ we run a Hartree-Fock calculation of the ground electronic state of the nitrogen
 
 (note that we are also getting the :math:`C_1` coefficients; we shall come back to that). We find that :math:`-\varepsilon (1s\sigma_g)=15.6942\,E_h=427.1` eV and :math:`-\varepsilon (1s\sigma_u)=15.6907 \,E_h=427.0` eV. This is significantly off the value of **409.9 eV** reported by Kai Siegbahn and co-workers :cite:`Siegbahn1969` ; the :math:`1s\sigma_g` and :math:`1s\sigma_u` are indistinguishable in the X-ray PES study (see also :cite:`Wight_JEPRP1972`).
 
-We therefore proceed to :math:\Delta SCF` calculations: for the :math:`1s\sigma_g` ionization we use the menu file `N2_Kg.inp`
+We therefore proceed to :math:`\Delta SCF` calculations: for the :math:`1s\sigma_g` ionization we use the menu file `N2_Kg.inp`
 
 .. literalinclude:: N2_Kg.inp
 
@@ -83,7 +83,7 @@ and the command::
 
   pam --inp=N2_Kg --mol=N2 --put "cf.N2=DFCOEF"
 
-and equivalent for the :math:`1s\sigma_g` ionization:
+and equivalent menu file `N2_Ku.inp` for the :math:`1s\sigma_u` ionization:
   
 .. literalinclude:: N2_Ku.inp
 
@@ -94,17 +94,16 @@ of 409.9 eV !
 
 Bagus and Schaefer found a similar discrepancy in their study of the :math:`O_2^+` molecule
 :cite:`Bagus_JCP1972` and found that results improved dramatically by *localization* of the core hole,
-so let us try this. We set up the menu file `N2loc.inp`
-
-.. literalinclude:: N2loc.inp
-
-for Pipek-Mezey localization. Note a little trick: We set the occupation to four electron, so only the N1s orbitals get localized.
-This breaks molecular symmetry, so we go down to :math:`C_1` using the molecule input file `N2_C1.mol` 
+so let us try this. Localization breaks molecular symmetry, so we go down to :math:`C_1` using the molecule input file `N2_C1.mol` 
 
 .. literalinclude:: N2_C1.mol
 
 This is the reason why we saved the :math:`C_1` coefficients in the initial calculation !
-We now localize using the command::
+We next set up the menu file `N2loc.inp`
+
+.. literalinclude:: N2loc.inp
+
+for Pipek-Mezey localization. Note that we select only the a little trick: We select only the :math:`1s\sigma_g` and :math:`1s\sigma_u` orbitals for localization. We now localize using the command::
 
   pam --inp=N2loc --mol=N2_C1 --put "ac.N2=DFCOEF" --get "DFCOEF=ac.N2loc"
 
@@ -117,7 +116,7 @@ and the command::
   pam --inp=N2_K --mol=N2_C1 --put "ac.N2loc=DFCOEF"
 
 In fact, we can do slightly better because we can go up to :math:`C_{2v}` symmetry using that DIRAC allows
-the import coefficients in :math:`C_1` symmetry from the unformatted file DFACMO to current symmetry.
+the import of coefficients in :math:`C_1` symmetry from the unformatted file DFACMO to current symmetry.
 This assumes that the current symmetry is lower than the symmetry used for obtaining the original coefficients,
 which is the case here. We now calculate the system with a localized core hole using the menu file  `N2_KC2v.inp`
 
