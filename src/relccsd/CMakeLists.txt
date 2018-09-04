@@ -42,27 +42,28 @@ set(FIXED_RELCCSD_FORTRAN_SOURCES_noruntimecheck
 
 set(FREE_RELCCSD_FORTRAN_SOURCES
    relcc_cfg.F90
-   auto_offset.F90
+#  auto_offset.F90
    ccsort_exp.F90
-   contraction.F90
+#  contraction.F90
+#  wrapper_sorting.F90 
+#  intermediates.F90
+   lambda_equation.F90
    sigma_eom.F90
    davidson/davidson.F90
-   density.F90
-   relcc_cfg.F90
    trial_vectors_eom.F90
+   density.F90
    eom_driver.F90 
    # needs dependency
    ${PROJECT_SOURCE_DIR}/src/main/mpi_framework.F90
 # Miro: previously "problematic" source files wrt runtime check
-   #intermediates.F90
-   lambda_equation.F90
-   #wrapper_sorting.F90 
 )
 
 set(FREE_RELCCSD_FORTRAN_SOURCES_noruntimecheck
   # Miro: indeed, I had to return the file back, unfortunately
-   wrapper_sorting.F90  
-   intermediates.F90
+    auto_offset.F90
+    wrapper_sorting.F90  
+    contraction.F90
+    intermediates.F90
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
