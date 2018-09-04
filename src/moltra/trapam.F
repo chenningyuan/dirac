@@ -4940,6 +4940,7 @@ C       Receive orbital energies
      &                   MPARID,global_communicator)
         ENDDO
 C       Receive orbital (single group) info
+        KIBE = 1 ! initialize these memory locations to avoid bound check errors if nfsym = 1
         DO I = 1,4
           DO J = 1,NFSYM
             CALL MEMGET2('REAL','KIBE',KIBE(J,I),NSTR(J,0,I),
