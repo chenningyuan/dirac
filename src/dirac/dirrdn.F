@@ -6795,7 +6795,7 @@ c     Spin-orbit integrals for ECP centres ...
 c     ========================================
 c
         PNAME            = 'Spin-orbit Pseudopotentials'
-        IPTYP            = 22 ! for the new definition
+        IPTYP            = 20 ! for the new definition
         NPCOMP           = 3
         PFAC(1)          = +1.0
         PFAC(2)          = +1.0
@@ -7045,6 +7045,7 @@ C.....Individual atoms
         ILABDF = 1
         NLAB   = 0
 C.......consider only large component labels
+        ICLS=1 ! Miro: runtimecheck fix
         DO ILAB1 = 1,NPLAB(1)
           IC     = IGET(IATTR(ILAB1,ILABDF))          
           ICENT  = JGET(IATTR(ILAB1,ILABDF))          
@@ -7079,6 +7080,7 @@ C     First make pointer to orbital angular momentum
         ILABDF = 1
         NLAB   = 0
 C.......consider only large component labels
+        ICLS=1 ! Miro: runtimecheck fix
         DO ILAB1 = 1,NPLAB(1)
           IC     = IGET(IATTR(ILAB1,ILABDF))          
           ICENT  = JGET(IATTR(ILAB1,ILABDF))          

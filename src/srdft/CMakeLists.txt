@@ -20,6 +20,12 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FIXED_SRDFT_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
 endif()
 
+if(ENABLE_RUNTIMECHECK)
+    message(STATUS "runtime-check flags activated for the 'srdft' module without exceptions")
+    set_source_files_properties(${FREE_SRDFT_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+    set_source_files_properties(${FIXED_SRDFT_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+endif()
+
 add_library(
     srdft
     OBJECT

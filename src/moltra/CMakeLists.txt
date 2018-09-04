@@ -10,12 +10,9 @@ endif()
 set(FIXED_MOLTRA_FORTRAN_SOURCES
    tradr1.F
    tradr2.F
-   tradr3.F
-   tradr4.F
-   tradr5.F
    tradr6.F
    trainp.F
-   traone.F
+   #traone.F
    traout.F
    trapam.F
    traprp.F
@@ -23,14 +20,30 @@ set(FIXED_MOLTRA_FORTRAN_SOURCES
    ${PROJECT_SOURCE_DIR}/src/dirac/dirspf.F
 )
 
+# Miro: I had to exclude these source files from runtime checking, please help me to fix them
+set(FIXED_MOLTRA_FORTRAN_SOURCES_noruntimecheck
+   tradr4.F
+   traone.F #Miro: plenty of rt-failure in this source file!
+)
+
 set(FREE_MOLTRA_FORTRAN_SOURCES
     dcbtra_h.F90
+    tradr3.F90
+    tradr5.F90
     moltra_mocoefficients.F90
 )
+
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FREE_MOLTRA_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
     set_source_files_properties(${FIXED_MOLTRA_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
+    set_source_files_properties(${FIXED_MOLTRA_FORTRAN_SOURCES_noruntimecheck} PROPERTIES COMPILE_FLAGS "-qfixed")
+endif()
+
+if(ENABLE_RUNTIMECHECK)
+    message(STATUS "runtime-check flags activated for the 'moltra' module with some exceptions")
+    set_source_files_properties(${FREE_MOLTRA_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+    set_source_files_properties(${FIXED_MOLTRA_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
 endif()
 
 add_library(
@@ -38,6 +51,7 @@ add_library(
     OBJECT
     ${FREE_MOLTRA_FORTRAN_SOURCES}
     ${FIXED_MOLTRA_FORTRAN_SOURCES}
+    ${FIXED_MOLTRA_FORTRAN_SOURCES_noruntimecheck}
 )
 
 # deal with intermodule dependencies

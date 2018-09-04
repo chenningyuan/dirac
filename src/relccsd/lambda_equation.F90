@@ -397,8 +397,8 @@
                   IF (IREP.EQ.JREP) IMIN = J + 1
                   IB = (IVO(BREP) + (B-1) * NO(BREP) + IMIN - 1)*RCW + 1
                   NI = NO(IREP) - IMIN + 1
-                   T1MIN(1) = -f_bar(JA)
-                   IF (CARITH) T1MIN(2) = -f_bar(JA+1)
+                  T1MIN(1) = -f_bar(JA)
+                  IF (CARITH) T1MIN(2) = -f_bar(JA+1)
                   if (NI > 0) then
                   CALL XAXPY (NI,T1MIN,L1(IB),1,ResL2(IJABOFF+IJ),1)
                    T1MIN(1) = -L1(JA)

@@ -59,6 +59,7 @@ C
       dimension pfac(3)
       character plabel(3)*8
       character tmp(4)*4
+      CHARACTER PNAME*16
 
       call qenter('PRPXLR_MPG')
 CMI   .. add this
@@ -151,7 +152,7 @@ C
       pfac(1)=-1.d0
       plabel(1)='OVERLAP'
       call xprind('Lagrangian rhs. ',iptyp,npcomp,pfac,plabel,
-     &     indxpr,isyxpr,itrxpr,work(kfree),lfree,iprxlr)
+     &     indxpr,isyxpr,itrxpr,iprxlr)
       call op1ind('NLRBPT',ind1op,llrbpu,nlrbpt,indxpr,maxllr)
 C
 C     Allocate memory
