@@ -61,15 +61,15 @@ set(FREE_RELCCSD_FORTRAN_SOURCES
 
 set(FREE_RELCCSD_FORTRAN_SOURCES_noruntimecheck
   # Miro: indeed, I had to return the file back, unfortunately
-   intermediates.F90
    wrapper_sorting.F90  
+   intermediates.F90
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
-    set_source_files_properties(${FREE_RELCCSD_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
     set_source_files_properties(${FREE_RELCCSD_FORTRAN_SOURCES_noruntimecheck}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
-    set_source_files_properties(${FIXED_RELCCSD_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
+    set_source_files_properties(${FREE_RELCCSD_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
     set_source_files_properties(${FIXED_RELCCSD_FORTRAN_SOURCES_noruntimecheck} PROPERTIES COMPILE_FLAGS "-qfixed")
+    set_source_files_properties(${FIXED_RELCCSD_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
 endif()
 
 if(ENABLE_RUNTIMECHECK)
@@ -84,10 +84,10 @@ endif()
 add_library(
     relccsd
     OBJECT
-    ${FREE_RELCCSD_FORTRAN_SOURCES}
     ${FREE_RELCCSD_FORTRAN_SOURCES_noruntimecheck}
-    ${FIXED_RELCCSD_FORTRAN_SOURCES}
+    ${FREE_RELCCSD_FORTRAN_SOURCES}
     ${FIXED_RELCCSD_FORTRAN_SOURCES_noruntimecheck}
+    ${FIXED_RELCCSD_FORTRAN_SOURCES}
 )
 
 # add intermodule dependencies
