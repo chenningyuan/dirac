@@ -334,10 +334,10 @@ C
            JKREP = MULTB(JREP,KREP,2)
            ILREP = MULTB(IREP,LREP,2)
            JLREP = MULTB(JREP,LREP,2)
-           IKJL0 = OFF(IKREP) 
+           IKJL0 = OFF(JLREP) 
      &          + (OFF2(JREP,LREP)+(L-1)*JFIE(JREP)) * NPAIR(IKREP)
            IKJL0 = IKJL0 + OFF1(IREP,KREP) + (K-1)*IFIE(IREP)
-           JKIL0 = OFF(JKREP) 
+           JKIL0 = OFF(ILREP) 
      &          + (OFF2(IREP,LREP)+(L-1)*IFIE(IREP)) * NPAIR(JKREP)
            JKIL0 = JKIL0 + OFF1(JREP,KREP) + (K-1)*JFIE(JREP)
            DO J = 1, JFIE(JREP)
@@ -374,6 +374,7 @@ c           write(iw,*) JKIL,jkrep,ilrep
 C
       RETURN
       END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT20M (NREP,MULTB,IJPAIR,IFIE,JFIE,KFIE,LFIE,
      &                   NPAIR,OFF,OFF1,OFF2,BUF1,BUF2)
@@ -626,4 +627,3 @@ C
 
       RETURN
       END
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

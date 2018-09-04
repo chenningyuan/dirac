@@ -1411,9 +1411,11 @@ C
            end do
         else
            do j = 1, nrep,2
+           if ((nv(j) > 0).and.(no(j) > 0)) then 
              CALL MATGAT_symm_relcc(xmom(norbc,1),nv(j),no(j),
      &                              xmo,norbt,norbt,idxu2g(1,j),
      &                              idyu2g(1,j),nz)
+           endif
            norbc = norbc + 2*nv(j)*no(j)
            end do
         endif
@@ -1562,9 +1564,11 @@ C
        else
 
            do j = 1, nrep,2
+            if ((nv(j) > 0).and.(no(j) > 0)) then  
              CALL MATGAT_symm_relcc(xmom(norbc,1),no(j),nv(j),
      &                              xmo,norbt,norbt,idxu2g(1,j),
      &                              idyu2g(1,j),nz)
+            endif
            norbc = norbc + 2*nv(j)*no(j)
            end do
        endif
@@ -1715,9 +1719,12 @@ C
         else
 
            do j = 1, nrep,2
+
+           if (no(j) > 0) then
              CALL MATGAT_symm_relcc(dmom(norbc,1),no(j),no(j),
      &                              dmo,norbt,norbt,idxu2g(1,j),
      &                              idxu2g(1,j),nz)
+           endif
            norbc = norbc + 2*no(j)**2
            end do
         endif
@@ -1843,9 +1850,11 @@ C
         else
 
            do j = 1, nrep,2
+            if (nv(j) > 0) then
              CALL MATGAT_symm_relcc(dmom(norbc,1),nv(j),nv(j),
      &                              dmo,norbt,norbt,idxu2g(1,j),
      &                              idxu2g(1,j),nz)
+            endif
            norbc = norbc + 2*nv(j)**2
            end do
       

@@ -522,7 +522,6 @@ C
       implicit none
 C
 C---------------Description--------------------------------------------
-
 C     Get VOVO part of two-electron integrals
 
 C---------------Calling variables--------------------------------------
@@ -533,16 +532,18 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
+#include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
 #include "eqns.inc"
-#include "param.inc"
 C
 C---------------Local variables--------------------------------------
-C
+      REAL*8, ALLOCATABLE :: VOVV_TEMP(:)
+      INTEGER, ALLOCATABLE :: counter(:), displ(:)
+      LOGICAL :: DONE
+      INTEGER :: totsize
 C---------------Executable code--------------------------------------
 C
-
       ALLOCATE(VVOVV(NV5*IRW*RCW))
 
       CALL GETVOVV_incore (VVOVV)
@@ -553,7 +554,7 @@ C
 
       RETURN
       END
-
+!=================================================================
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
@@ -606,7 +607,6 @@ C
 
        OFF1 = 1
        DO  30 IRP = 1, NREP
-
          check = IRP
          totsize = 0
          IF (NVO(IRP).EQ.0) GOTO 30
@@ -710,6 +710,44 @@ C
      &             VVOVV,VOVVV)
 
       DEALLOCATE(VVOVV)
+
+      RETURN
+      END
+
+
+      SUBROUTINE GETVVOV_incore (VVVOV)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+
+C     Get VOVO part of two-electron integrals
+
+C---------------Calling variables--------------------------------------
+C
+      REAL*8             :: VVVOV(*)
+      REAL*8, ALLOCATABLE:: VOVVV(:)
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "files.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "eqns.inc"
+#include "param.inc"
+C
+C---------------Local variables--------------------------------------
+C
+C---------------Executable code--------------------------------------
+C
+
+      ALLOCATE(VOVVV(NV5*IRW*RCW))
+
+      CALL GETOVVV_incore (VOVVV)
+
+      CALL SRT1C1 (NREP,NOV,NVVT,VOVVV,VVVOV) 
+
+      DEALLOCATE(VOVVV)
 
       RETURN
       END

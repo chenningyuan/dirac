@@ -26,6 +26,7 @@ set(FIXED_RELCCSD_FORTRAN_SOURCES
    ccmain.F
    ccpam.F
    ccrpa.F
+   ccsort.F
    ccxblas.F
    waio.F
    ${PROJECT_SOURCE_DIR}/src/prp/mp2lag.F
@@ -40,10 +41,16 @@ set(FIXED_RELCCSD_FORTRAN_SOURCES_noruntimecheck
 )
 
 set(FREE_RELCCSD_FORTRAN_SOURCES
-   ccsort.F90
+   relcc_cfg.F90
+   auto_offset.F90
+   ccsort_exp.F90
    contraction.F90
+   sigma_eom.F90
+   davidson/davidson.F90
+   density.F90
    relcc_cfg.F90
-   relcc_cfg.F90
+   trial_vectors_eom.F90
+   eom_driver.F90 
    # needs dependency
    ${PROJECT_SOURCE_DIR}/src/main/mpi_framework.F90
 # Miro: previously "problematic" source files wrt runtime check

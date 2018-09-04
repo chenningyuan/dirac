@@ -50,6 +50,40 @@ see :cite:`Shee2016`.
 
     No gradient calculation.
 
+keyword(EOMCC)
+
+Activate the equation of motion (EOMCC) module. This option can be used to obtain
+excitation energies (EOM-EE), singly ionized (EOM-IP) and electron attached (EOM-EA)
+states starting from a closed shell reference and at the CCSD level, by solving for
+the right-hand eigenvalues and eigenvectors of the appropriate similarity-transformed 
+Hamiltonian.  
+
+Unlike in Fock-space calculations, where the full model Hamiltonian for each sector
+is diagonalized, in EOMCC the user must specify the desired number of roots per symmetry,
+(see :ref:`*EOMCC` for further details) and these are determined via matrix-free 
+diagonalization procedures such as the Davidson method (see :ref:`*CCDIAG` for the 
+options available). 
+
+*Default:*
+
+::
+
+    No EOM-CC calculation.
+
+keyword(EOMPROP)
+
+Activate the calculation of excited-state first-order properties for the EOMCC module for
+CCSD wavefunctions, by solving for the left-hand eigenvectors of the corresponding 
+similarity-transformed Hamiltonian. It should be specified along with  :ref:`RELCC_.EOMCC` 
+as it requires the right-hand eigenvectors and, as such, the same type of calculation 
+(EOM-EE/IP/EA) will be performed. See :ref:`*EOMPROP` for further details.
+
+*Default:*
+
+::
+
+    No EOM-CC excited-state expectation value calculation.
+
 keyword(NELEC)
 
 Number of correlated electrons. This variable determines the reference determinant to be used in the exponential expansion of the wave function. 
@@ -222,6 +256,67 @@ Use orbital-relaxed density matrix (currently only for MP2).
 The current default for MP2 and CC wave functions is to use the unrelaxed 
 density matrix. This is computationally less expensive, but also less accurate.
 
+
+
+star(EOMCC)
+
+write me
+
+keyword(EE)
+
+write me
+
+Arguments: two integers, the first specifying the state symmetry and the second the number of states for this symmetry
+
+keyword(IP)
+
+write me
+
+Arguments: two integers, the first specifying the state symmetry and the second the number of states for this symmetry
+
+keyword(EA)
+
+write me
+
+Arguments: two integers, the first specifying the state symmetry and the second the number of states for this symmetry
+
+
+star(EOMPROP)
+
+keyword(EXCPRP)
+
+number of excited states to calculate expectation values for, on a given symmetry.
+
+Arguments: two integers, the first specifying the state symmetry and the second the number of states for this symmetry
+
+star(CCDIAG)
+
+write me
+
+keyword(MAXITER)
+
+Controls the maximum number of iterations in the Davidson procedure
+
+keyword(NOR2L)
+
+Do not use the right-hand side vectors as guess for the left-hand side, but rather
+one of the TRV options.
+
+keyword(NOOVERLAP)
+
+Disables overlap in sorting the left/right-hand side eigenvalues and eigenvectors.
+
+keyword(TRV_I)
+
+Creates trial vectors based on unit vectors sorted by lowest energy.
+
+keyword(TRV_FU)
+
+Creates unit trial vectors.
+
+keyword(TRV_CCS)
+
+Creates trial vectors from the eigenvectors of the singles-singles EOM-EE/IP/EA blocks.
 
 
 
@@ -559,6 +654,5 @@ Forces the sorting into the six integral classes to be performed again, even if 
 ::
 
     False. integrals are not resorted if the prior sorting was completed.
-
 
 
