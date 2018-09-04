@@ -11,7 +11,6 @@ set(FIXED_RELCCSD_FORTRAN_SOURCES
    cceqn_diis.F
    cceqn_driver_amplitudes.F
    cceqn_driver_initialization.F
-   cceqn_driver_lambda.F
    cceqn_mp2_amplitudes.F
    cceqn_t1_amplitudes.F
    cceqn_t1_utils.F
@@ -21,7 +20,6 @@ set(FIXED_RELCCSD_FORTRAN_SOURCES
    ccfspc.F
    ccgenp.F
    ccgetv.F
-   ccgrad.F
    ccintm.F
    ccmain.F
    ccpam.F
@@ -37,22 +35,24 @@ set(FIXED_RELCCSD_FORTRAN_SOURCES
 
 set(FIXED_RELCCSD_FORTRAN_SOURCES_noruntimecheck
    ccints.F
-   ccdriv.F # Attempt to fetch from allocatable variable A_HEFF when it is not allocated
 )
 
 set(FREE_RELCCSD_FORTRAN_SOURCES
    relcc_cfg.F90
-#  auto_offset.F90
+   auto_offset.F90
    ccsort_exp.F90
-#  contraction.F90
-#  wrapper_sorting.F90 
-#  intermediates.F90
+   wrapper_sorting.F90 
+   contraction.F90
+   intermediates.F90
    lambda_equation.F90
    sigma_eom.F90
    davidson/davidson.F90
    trial_vectors_eom.F90
    density.F90
    eom_driver.F90 
+   ccdriv.F # Attempt to fetch from allocatable variable A_HEFF when it is not allocated
+   cceqn_driver_lambda.F
+   ccgrad.F
    # needs dependency
    ${PROJECT_SOURCE_DIR}/src/main/mpi_framework.F90
 # Miro: previously "problematic" source files wrt runtime check
@@ -60,10 +60,10 @@ set(FREE_RELCCSD_FORTRAN_SOURCES
 
 set(FREE_RELCCSD_FORTRAN_SOURCES_noruntimecheck
   # Miro: indeed, I had to return the file back, unfortunately
-    auto_offset.F90
-    wrapper_sorting.F90  
-    contraction.F90
-    intermediates.F90
+#   auto_offset.F90
+#   wrapper_sorting.F90  
+#   contraction.F90
+#   intermediates.F90
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)

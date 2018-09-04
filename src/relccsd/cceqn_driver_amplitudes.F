@@ -5,7 +5,6 @@
 
       use interface_to_mpi
       use xmlout
-      use intermediates_1b_2b
       implicit none
 
 C---------------Description--------------------------------------------
