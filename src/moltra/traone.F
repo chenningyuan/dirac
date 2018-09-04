@@ -1367,7 +1367,15 @@ C***********************************************************************
 C     
 C     Joost van Stralen, april 2002
 C
-C     XMO - The Lagrangian in Dirac format, this matrix is not sym. packed
+C     Input:  XMOM - symmetry packed matrix in RELCCSD format (using supersymmetry for linear molecules)
+C     Output: XMO  - The Lagrangian in Dirac format, this matrix is not sym. packed
+C
+C     Auxilliaries (all input and unchanged)
+C     NFVO - total size of packed VO blocks (is identical to size of T1 amplitude array)
+C     IRCW - real or complex arithmetic used in RELCCSD (1:real, 2:complex)
+C     NREP - number of irreps used in RELCCSD
+C     NV   - for each irrep the number of virtual spinors
+C     NO   - for each irrep the number of occupied spinors
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1398,44 +1406,37 @@ C
 
       call Super_Symmetry(nrep,no,idyu2g,'hole') 
 
-      IF (nz.NE.4) THEN
+      IF (nz.NE.4) THEN ! The most common case for small molecules "real" or complex" double groups
 
-         if(nfsym == 1)then
+         if(nfsym == 1)then ! no inversion symmetry
            norbc = 1
-        if (spinfr) then
-           do j = 1, nbsym
-             CALL MATGAT_symm_relcc(xmom(norbc,1),nv(j),no(j),
-     &                              xmo,norbt,norbt,idxu2g(1,j),
-     &                              idyu2g(1,j),nz)
-           norbc = norbc + no(j)*nv(j)
-           end do
-        else
-           do j = 1, nrep,2
-             CALL MATGAT_symm_relcc(xmom(norbc,1),nv(j),no(j),
-     &                              xmo,norbt,norbt,idxu2g(1,j),
-     &                              idyu2g(1,j),nz)
-           norbc = norbc + 2*nv(j)*no(j)
-           end do
-        endif
-         else if(nfsym == 2)then
-           do k = 1, nfsym 
-             if(k == 1)then
-               norbc = 1
-               do j = 1, nrep/2,2
-                 CALL MATGAT_symm_relcc(xmom(norbc,1),nv(j),no(j),
-     &                                  xmo,norbt,norbt,idxu2g(1,j),
-     &                                  idyu2g(1,j),nz)
-                 norbc = norbc + 2*nv(j)*no(j)
-               end do
-             else if(k == 2)then
-               do j = nrep/2+1,nrep,2
-                 CALL MATGAT_symm_relcc(xmom(norbc,1),nv(j),no(j),
-     &                                  xmo,norbt,norbt,idxu2g(1,j),
-     &                                  idyu2g(1,j),nz)
-                 norbc = norbc + 2*nv(j)*no(j)
-               end do
-             end if
-           end do
+           if (spinfr) then
+              do j = 1, nbsym
+                CALL MATGAT_symm_relcc(xmom(norbc,1),nv(j),no(j),
+     &                                 xmo,norbt,norbt,idxu2g(1,j),
+     &                                 idyu2g(1,j),nz)
+                 norbc = norbc + no(j)*nv(j)
+              end do
+           else
+              do j = 1, nrep,2
+                if (nv(j)>0 .and. no(j)>0) 
+     &          CALL MATGAT_symm_relcc(xmom(norbc,1),nv(j),no(j),
+     &                                 xmo,norbt,norbt,idxu2g(1,j),
+     &                                 idyu2g(1,j),nz)
+              norbc = norbc + 2*nv(j)*no(j)
+              end do
+           endif
+         else if(nfsym == 2)then ! inversion symmetry
+!           LV: this code is incomplete, should be checked for spinfree with inversion
+!           LV: non-spinfree code is identical to non-inversion code, can be simplified further
+            norbc = 1
+            do j = 1, nrep,2
+              if (nv(j)>0 .and. no(j)>0) 
+     &        CALL MATGAT_symm_relcc(xmom(norbc,1),nv(j),no(j),
+     &                               xmo,norbt,norbt,idxu2g(1,j),
+     &                               idyu2g(1,j),nz)
+              norbc = norbc + 2*nv(j)*no(j)
+            end do
          end if
 
          deallocate(idxu2g,idyu2g)
@@ -1445,72 +1446,69 @@ C
          IOFF3 = 0
          IOFF4 = 0
 
-         IF (NZ.GE.2.AND.(.NOT.SPINFR)) THEN
+! Complex groups unless when they are run in spinfree (so that the algebra could be chosen as real)
+         IF (NZ.GE.2.AND.(.NOT.SPINFR)) THEN 
 
-      DO IFSYM = 1, NFSYM
-         IOFF1 = IOFF1 + NPSH(IFSYM) + NOCC(IFSYM)
-         IOFF2 = IOFF2 + NPSH(IFSYM) + NDMOQC(2,IFSYM,1)
-          IAI = 1
-          DO I = 1, NO(IFSYM+IOFF4)
-              CALL DCOPY(NV(IFSYM+IOFF4),     XMOM(IAI+IOFF3,2),1,
-     &                                XMO(1+IOFF1,I+IOFF2,2),1)
-          IAI = IAI + NV(IFSYM+IOFF4)
-          ENDDO
-        IOFF1 = IOFF1 - NPSH(IFSYM) - NOCC(IFSYM) + NORB(IFSYM)
-        IOFF2 = IOFF2 - NPSH(IFSYM) - NDMOQC(2,IFSYM,1) + NORB(IFSYM)
-        IOFF3 = IOFF3 + 2*NV(IFSYM)*NO(IFSYM)
-        IOFF4 = IOFF4 + 1
-      ENDDO
-      ENDIF
+            DO IFSYM = 1, NFSYM
+               IOFF1 = IOFF1 + NPSH(IFSYM) + NOCC(IFSYM)
+               IOFF2 = IOFF2 + NPSH(IFSYM) + NDMOQC(2,IFSYM,1)
+                IAI = 1
+                DO I = 1, NO(IFSYM+IOFF4)
+                    CALL DCOPY(NV(IFSYM+IOFF4),     XMOM(IAI+IOFF3,2),1,
+     &                                      XMO(1+IOFF1,I+IOFF2,2),1)
+                    IAI = IAI + NV(IFSYM+IOFF4)
+                ENDDO
+                IOFF1 = IOFF1 - NPSH(IFSYM) - NOCC(IFSYM) + NORB(IFSYM)
+                IOFF2 = IOFF2 - NPSH(IFSYM) - NDMOQC(2,IFSYM,1) 
+     &                                      + NORB(IFSYM)
+                IOFF3 = IOFF3 + 2*NV(IFSYM)*NO(IFSYM)
+                IOFF4 = IOFF4 + 1
+            ENDDO
+         ENDIF
 
-      ELSE
+      ELSE ! branching for NZ, next comes the code for NZ=4 (quaternion groups, at most inversion symmetry)
 
-      IOFF1 = 0
-      IOFF2 = 0
-      IOFF3 = 0
-      DO IFSYM = 1, NFSYM
-        IOFF1 = IOFF1 + NPSH(IFSYM) + NOCC(IFSYM)
-        IOFF2 = IOFF2 + NPSH(IFSYM) + NDMOQC(2,IFSYM,1)
-        IAI = 1
-        DO I = 1, NAOCC(IFSYM)
+         IOFF1 = 0
+         IOFF2 = 0
+         IOFF3 = 0
+         DO IFSYM = 1, NFSYM
+           IOFF1 = IOFF1 + NPSH(IFSYM) + NOCC(IFSYM)
+           IOFF2 = IOFF2 + NPSH(IFSYM) + NDMOQC(2,IFSYM,1)
+           IAI = 1
+           DO I = 1, NAOCC(IFSYM)
 C    Re
-           CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,1),1,
-     &                             XMO(1+IOFF1,I+IOFF2,1),1)
+              CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,1),1,
+     &                                XMO(1+IOFF1,I+IOFF2,1),1)
 
 C    i
-           CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,2),1,
-     &                             XMO(1+IOFF1,I+IOFF2,2),1)
+              CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,2),1,
+     &                                XMO(1+IOFF1,I+IOFF2,2),1)
 
-           IAI = IAI + 2*NAVIR(IFSYM)
-        ENDDO
-        IAI = 2*NAVIR(IFSYM)*NAOCC(IFSYM) + 1
-        DO I = 1, NAOCC(IFSYM)
+              IAI = IAI + 2*NAVIR(IFSYM)
+           ENDDO
+           IAI = 2*NAVIR(IFSYM)*NAOCC(IFSYM) + 1
+           DO I = 1, NAOCC(IFSYM)
 C    j
-             CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,1),1,
-     &                               XMO(1+IOFF1,I+IOFF2,3),1)
+                CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,1),1,
+     &                                  XMO(1+IOFF1,I+IOFF2,3),1)
 
 
 C    k
-             CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,2),1,
-     &                               XMO(1+IOFF1,I+IOFF2,4),1)
-
+                CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,2),1,
+     &                                  XMO(1+IOFF1,I+IOFF2,4),1)
 
              IAI = IAI + 2*NAVIR(IFSYM)
-        ENDDO
-        IOFF1 = IOFF1 - NPSH(IFSYM) - NOCC(IFSYM) + NORB(IFSYM)
-        IOFF2 = IOFF2 - NPSH(IFSYM) - NDMOQC(2,IFSYM,1) + NORB(IFSYM)
-        IOFF3 = IOFF3 + 4*NAVIR(IFSYM)*NAOCC(IFSYM)
-      ENDDO
+           ENDDO
+           IOFF1 = IOFF1 - NPSH(IFSYM) - NOCC(IFSYM) + NORB(IFSYM)
+           IOFF2 = IOFF2 - NPSH(IFSYM) - NDMOQC(2,IFSYM,1) + NORB(IFSYM)
+           IOFF3 = IOFF3 + 4*NAVIR(IFSYM)*NAOCC(IFSYM)
+         ENDDO
 C
       ENDIF
 C
-      ioff1 = 0
-      ioff2 = 0
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
-C/* Deck moltodir */
       SUBROUTINE DOVTODIR(XMO,XMOM,NFVO,IRCW,NREP,NO,NV)
 C***********************************************************************
 C     
@@ -1553,7 +1551,8 @@ C
        if (spinfr) then
 
            do j = 1, nbsym
-             CALL MATGAT_symm_relcc(xmom(norbc,1),no(j),nv(j),
+             if (nv(j)>0 .and. no(j)>0) 
+     &       CALL MATGAT_symm_relcc(xmom(norbc,1),no(j),nv(j),
      &                              xmo,norbt,norbt,idxu2g(1,j),
      &                              idyu2g(1,j),nz)
            norbc = norbc + no(j)*nv(j)
@@ -1562,7 +1561,8 @@ C
        else
 
            do j = 1, nrep,2
-             CALL MATGAT_symm_relcc(xmom(norbc,1),no(j),nv(j),
+             if (nv(j)>0 .and. no(j)>0) 
+     &       CALL MATGAT_symm_relcc(xmom(norbc,1),no(j),nv(j),
      &                              xmo,norbt,norbt,idxu2g(1,j),
      &                              idyu2g(1,j),nz)
            norbc = norbc + 2*nv(j)*no(j)
@@ -1574,14 +1574,16 @@ C
              if(k == 1)then
                norbc = 1
                do j = 1, nrep/2,2
-                 CALL MATGAT_symm_relcc(xmom(norbc,1),no(j),nv(j),
+                 if (nv(j)>0 .and. no(j)>0) 
+     &           CALL MATGAT_symm_relcc(xmom(norbc,1),no(j),nv(j),
      &                                  xmo,norbt,norbt,idxu2g(1,j),
      &                                  idyu2g(1,j),nz)
                  norbc = norbc + 2*nv(j)*no(j)
                end do
              else if(k == 2)then
                do j = nrep/2+1,nrep,2
-                 CALL MATGAT_symm_relcc(xmom(norbc,1),no(j),nv(j),
+                 if (nv(j)>0 .and. no(j)>0) 
+     &           CALL MATGAT_symm_relcc(xmom(norbc,1),no(j),nv(j),
      &                                  xmo,norbt,norbt,idxu2g(1,j),
      &                                  idyu2g(1,j),nz)
                  norbc = norbc + 2*nv(j)*no(j)
@@ -1715,7 +1717,8 @@ C
         else
 
            do j = 1, nrep,2
-             CALL MATGAT_symm_relcc(dmom(norbc,1),no(j),no(j),
+             if (no(j)>0) 
+     &       CALL MATGAT_symm_relcc(dmom(norbc,1),no(j),no(j),
      &                              dmo,norbt,norbt,idxu2g(1,j),
      &                              idxu2g(1,j),nz)
            norbc = norbc + 2*no(j)**2
@@ -1727,14 +1730,16 @@ C
              if(k == 1)then
                norbc = 1
                do j = 1, nrep/2,2
-                 CALL MATGAT_symm_relcc(dmom(norbc,1),no(j),no(j),
+                 if (no(j)>0) 
+     &           CALL MATGAT_symm_relcc(dmom(norbc,1),no(j),no(j),
      &                                  dmo,norbt,norbt,idxu2g(1,j),
      &                                  idxu2g(1,j),nz)
                  norbc = norbc + 2*no(j)**2
                end do
              else if(k == 2)then
                do j = nrep/2+1,nrep,2
-                 CALL MATGAT_symm_relcc(dmom(norbc,1),no(j),no(j),
+                 if (no(j)>0) 
+     &           CALL MATGAT_symm_relcc(dmom(norbc,1),no(j),no(j),
      &                                  dmo,norbt,norbt,idxu2g(1,j),
      &                                  idxu2g(1,j),nz)
                  norbc = norbc + 2*no(j)**2
@@ -1834,7 +1839,8 @@ C
         if (spinfr) then
 
            do j = 1, nbsym
-             CALL MATGAT_symm_relcc(dmom(norbc,1),nv(j),nv(j),
+             if (nv(j)>0) 
+     &       CALL MATGAT_symm_relcc(dmom(norbc,1),nv(j),nv(j),
      &                              dmo,norbt,norbt,idxu2g(1,j),
      &                              idxu2g(1,j),nz)
            norbc = norbc + nv(j)**2
@@ -1843,7 +1849,8 @@ C
         else
 
            do j = 1, nrep,2
-             CALL MATGAT_symm_relcc(dmom(norbc,1),nv(j),nv(j),
+             if (nv(j)>0) 
+     &       CALL MATGAT_symm_relcc(dmom(norbc,1),nv(j),nv(j),
      &                              dmo,norbt,norbt,idxu2g(1,j),
      &                              idxu2g(1,j),nz)
            norbc = norbc + 2*nv(j)**2
@@ -1857,14 +1864,16 @@ C
              if(k == 1)then
                norbc = 1
                do j = 1, nrep/2,2
-                 CALL MATGAT_symm_relcc(dmom(norbc,1),nv(j),nv(j),
+                 if (nv(j)>0) 
+     &           CALL MATGAT_symm_relcc(dmom(norbc,1),nv(j),nv(j),
      &                                  dmo,norbt,norbt,idxu2g(1,j),
      &                                  idxu2g(1,j),nz)
                  norbc = norbc + 2*nv(j)**2
                end do
              else if(k == 2)then
                do j = nrep/2+1,nrep,2
-                 CALL MATGAT_symm_relcc(dmom(norbc,1),nv(j),nv(j),
+                 if (nv(j)>0) 
+     &           CALL MATGAT_symm_relcc(dmom(norbc,1),nv(j),nv(j),
      &                                  dmo,norbt,norbt,idxu2g(1,j),
      &                                  idxu2g(1,j),nz)
                  norbc = norbc + 2*nv(j)**2
@@ -1986,23 +1995,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       ibeig(1:norbt)         = 0
       nash_x(1:nfsym)        = 0
 
-      if(nfsym == 1)then
-        do j = 1, nrep,2
-          nash_x(1) = nash_x(1) + orb_dim(j)
-        end do
-      else if(nfsym == 2)then
-        do i = 1, nfsym 
-          if(i == 1)then
-             do j = 1, nrep/2,2
-               nash_x(i) = nash_x(i) + orb_dim(j)
-             end do
-          else if(i == 2)then
-             do j = nrep/2+1,nrep,2
-               nash_x(i) = nash_x(i) + orb_dim(j)
-             end do
-          end if
-        end do
-      end if
+      do j = 1, nrep,2
+         nash_x(1) = nash_x(1) + orb_dim(j)
+      end do
+
+!     special case for quaternion groups, because then both Kramers partners are in the same irrep
+      if (nz.eq.4) nash_x = nash_x / 2
 
       if (spinfr) then
         do ifsym = 1,nfsym
@@ -2014,6 +2012,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
           end select 
         enddo
       endif
+
 
       if( linear .or. spinfr )then
         call opnfil(lucoef,'DFCOEF','OLD','RIBEIG ')

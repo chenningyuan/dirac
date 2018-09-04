@@ -10,20 +10,15 @@ endif()
 set(FIXED_MOLTRA_FORTRAN_SOURCES
    tradr1.F
    tradr2.F
+   tradr4.F
    tradr6.F
    trainp.F
-   #traone.F
+   traone.F
    traout.F
    trapam.F
    traprp.F
    # traone.F depends on spfao
    ${PROJECT_SOURCE_DIR}/src/dirac/dirspf.F
-)
-
-# Miro: I had to exclude these source files from runtime checking, please help me to fix them
-set(FIXED_MOLTRA_FORTRAN_SOURCES_noruntimecheck
-   tradr4.F
-   traone.F #Miro: plenty of rt-failure in this source file!
 )
 
 set(FREE_MOLTRA_FORTRAN_SOURCES
@@ -51,7 +46,6 @@ add_library(
     OBJECT
     ${FREE_MOLTRA_FORTRAN_SOURCES}
     ${FIXED_MOLTRA_FORTRAN_SOURCES}
-    ${FIXED_MOLTRA_FORTRAN_SOURCES_noruntimecheck}
 )
 
 # deal with intermodule dependencies
