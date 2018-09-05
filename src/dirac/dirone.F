@@ -5752,7 +5752,9 @@ C
            CALL HEADER('LINSYM: Jz_LL eigenvalues / eigenvectors',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
      &     '*** Fermion corep ',I,'/',NFSYM
-           write(lupri,*) (EIG(IEIGE+II),II=0,NL-1)
+           DO II = 1,NL
+             WRITE(LUPRI,*) II,EIG(IEIGE+II-1)
+           ENDDO
            CALL PRQMAT(WORK(KVLL),NL,NL,NL,NL,1,
      &          IPQTOQ(1,0),LUPRI)
            CALL FLSHFO(LUPRI)
@@ -5826,8 +5828,10 @@ C
           IF (IPRHAM.GE.5) THEN
            CALL HEADER('LINSYM: Jz_SS eigenvalues/eigenvectors',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
-     &     '*** Fermion corep ',I,'/',NFSYM
-           write(lupri,*) (EIG(IEIGP+II),II=0,NS-1)
+     &          '*** Fermion corep ',I,'/',NFSYM
+           DO II = 1,NS
+             WRITE(LUPRI,*) II,EIG(IEIGP+II-1)
+           ENDDO
            CALL PRQMAT(WORK(KVSS),NS,NS,NS,NS,1,
      &          IPQTOQ(1,0),LUPRI)
            CALL FLSHFO(LUPRI)
@@ -6817,6 +6821,7 @@ C     when there is no subblock ... allows single code
       N2TMT   = 0
       N2TMOTQ = 0      
       ICOFF   = 0
+      IEOFF   = 0
       IVOFF   = 0
       ITEFF = 1
       DO 10 IFRP =  1,NFSYM
@@ -7289,7 +7294,8 @@ c        ... Get charges and exponents for the electrons in this group
             n_charge = NINT(CHARGE(I))
             n_exp = -1 ! signal the routine to provide the number of exponents only
             CALL Read_screening_parameters
-     &           (n_charge,n_exp,fit_exp,fit_coef)
+     &           (n_charge,n_exp,DUMMY,DUMMY)
+!    &           (n_charge,n_exp,fit_exp,fit_coef)
             Allocate (fit_exp(n_exp))
             Allocate (fit_coef(n_exp))
             CALL Read_screening_parameters 

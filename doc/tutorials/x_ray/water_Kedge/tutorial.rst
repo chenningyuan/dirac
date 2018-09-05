@@ -108,7 +108,7 @@ Localizing the K edge
 ---------------------
 
 An interesting question is how to localize the K edge in the XANES spectrum.
-A first approximation to the 1s ionization energy is provided by Koopman's 
+A first approximation to the 1s ionization energy is provided by Koopmans' 
 theorem. We find :math:`IP_{1s}\approx -\varepsilon_{1s} =` 20.581089 :math:`E_h` = 560.04 eV.
 This is singificantly off the value 539.7 eV reported by Kai Siegbahn and co-workers
 [*ESCA applied to free molecules* (1969)] :cite:`Siegbahn1969` 
@@ -137,6 +137,13 @@ This is the energy of the core-ionized system obtained using the orbitals of the
 obtained by subtracting this energy from the energy of the neutral system. For the neutral system we obtained 
 -76.115149  :math:`E_h`, so by taking the difference we obtain 20.581089 :math:`E_h`, which is exactly the *1s* orbital energy 
 in the neutral system. 
+
+You should also note that we easily converge to the core-ionized system using reordering and overlap selection: In the input we have specified eight electrons in four inactive (closed) orbitals, followed
+by a single electron in an active (open) orbital. We want the O1s to be the active orbital, but this is not achieved automatically since DIRAC will normally order orbitals according to their energy.
+We therefore start be reordering the orbitals such that the O1s orbital from the previous calculation on the neutral system comes out on top of the occupied orbitals. However, this is not enough to converge to the desired state since after the first diagonalization DIRAC will again by default order orbitals according to their energy. This is why we use *overlap selection*, that is, we ask DIRAC to
+rather order orbitals according to their overlap with some reference orbitals. By default (dynamic overlap selection) this will be the orbitals from the previous iteration. However, in this case we activate *non-dynamic* overlap selection, which means that we order orbitals according to their overlap with the starting orbitals.
+
+ .. note:: Overlap selection is nowadays marketed hard as MOM (Maximum Orbital Method, see :cite:`Gilbert_JPCA2008`), but this method has been included in DIRAC for at least two decades and goes back to the pioneering work of `Paul Bagus <http://cascam.unt.edu/people/psbagus.htm>`_ It was used in :cite:`Bagus_JCP1971`, but not reported explicitly. However, it is for instance documented in the `1975 manual of the ALCHEMY program <http://k-sek01.t-komazawa.ac.jp/msekiya/alchemy/scfm.pdf>`_ (On pdf page 15 you find a description of keyword MOORDR using a "maximum overlap criterion").
 
 The  K edge obtained by :math:`\Delta SCF` does not correspond to that of our TD-HF or complex reponse calculations since they 
 only allow linear reponse (orbital relaxation). 
@@ -172,9 +179,15 @@ followed by the 1s core-ionized state::
 
    pam --mol=H2O_C1 --inp=H2O_1s --incmo --get "DFCOEF=DFCOEF.ION"
 
+
+   
 We now run STEX using the input
 
 .. literalinclude:: stex.inp
+
+and the command::
+
+    pam --inp=stex --mol=H2O_C1 --put "DFCOEF DFCOEF.ION"
 
 We have plotted the STEX spectrum below together with the experimental one
 

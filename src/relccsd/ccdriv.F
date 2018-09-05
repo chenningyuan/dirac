@@ -503,13 +503,13 @@ C     Array with as first dimension 1e/2e shift
 C                   second dimension sector number
 C
 C     Shifts for particles should be negative
-      SHIFT_IH(1,1) = -DABS(SHIFTP11)
-      SHIFT_IH(2,1) = -DABS(SHIFTP12)
+      SHIFT_IH(1,2) = -DABS(SHIFTP11)
+      SHIFT_IH(2,2) = -DABS(SHIFTP12)
       SHIFT_IH(2,5) = -DABS(SHIFTP2)
 CEE     Shifts for holes must be negative (not positive)
 !----------------------------------------------------------
-      SHIFT_IH(1,2) =  -DABS(SHIFTH11)
-      SHIFT_IH(2,2) =  -DABS(SHIFTH12)
+      SHIFT_IH(1,3) =  -DABS(SHIFTH11)
+      SHIFT_IH(2,3) =  -DABS(SHIFTH12)
       SHIFT_IH(2,6) =  -DABS(SHIFTH2)
 C     Shifts for hole-particle excitations may be either negative or positive
       SHIFT_IH(2,4) =  SHIFTHP

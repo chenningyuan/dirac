@@ -516,7 +516,6 @@
 
   call contraction_444 ((/"p2","o2","p4","p1"/),(/"p3","p4","o1","o2"/),(/"p2","p3","p1","o1"/),w_vvvo, &
              &      -1.0d0,0.0d0,nrep,RightTensor=t2)
-
        write(iw,*)'dot product efam:dia1',dot_product(w_vvvo,w_vvvo)
 
 !------------------------------------------------------------
