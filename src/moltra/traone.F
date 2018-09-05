@@ -1970,9 +1970,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       subroutine Super_Symmetry(nrep,orb_dim,idxu2g,orbital_type)
 
-!------------------------------------------------------------
-!
-!------------------------------------------------------------
+!------------------------------------------------------------------
+! Make index array to map RELCCSD MO ordering on DIRAC MO ordering
+!------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
 #include "dcborb.h"
@@ -1989,18 +1989,21 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       integer, allocatable :: ibeig(:)
       integer              :: nash_x(1:nfsym)
 
-
 !     !> read ibeig (info array on boson irreps) from DFCOEF
       allocate(ibeig(norbt))
       ibeig(1:norbt)         = 0
       nash_x(1:nfsym)        = 0
 
-      do j = 1, nrep,2
-         nash_x(1) = nash_x(1) + orb_dim(j)
+!     Start by counting the number of spinors in each fermion irrep
+      i = 1
+      do j = 1, nrep
+         if ( nfsym==2 .and.  j > nrep/2) i = 2
+         nash_x(i) = nash_x(i) + orb_dim(j)
       end do
 
-!     special case for quaternion groups, because then both Kramers partners are in the same irrep
-      if (nz.eq.4) nash_x = nash_x / 2
+      ! but we want nash (meaning number of active shells = active Kramers pairs) so we need to
+      ! divide by 2. Note that this will NOT work for unrestricted calculations.
+      nash_x = nash_x/2
 
       if (spinfr) then
         do ifsym = 1,nfsym
@@ -2020,7 +2023,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         close(lucoef,STATUS='KEEP')
       end if
 
-!      write(*,*)'index checking',iimax(norbt,ibeig,1),nrep,nrep/2
 
       if(nfsym == 1)then
         indx_loop = 0
