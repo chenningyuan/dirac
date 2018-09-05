@@ -218,8 +218,6 @@
    call contraction_244 ((/"p2","o3"/),(/"o3","o1","o2","p1"/),(/"p2","o1","o2","p1"/),w_voov, &
             &      -1.0d0,1.0d0,nrep,LeftTensor=t1)
 
-  write(*,*)'dot product diagram1', dot_product(w_voov(1:rcw*ivoov(nrep+1)),w_voov(1:rcw*ivoov(nrep+1))) 
-
 !----------------------------------------------------------------------
 !   w_voov(ej,mb) = w_voov(ej,mb) + V(nj,fb)*(T2(ef,mn)-T1(f,m)*T1(e,n)
 !----------------------------------------------------------------------
@@ -516,7 +514,6 @@
 
   call contraction_444 ((/"p2","o2","p4","p1"/),(/"p3","p4","o1","o2"/),(/"p2","p3","p1","o1"/),w_vvvo, &
              &      -1.0d0,0.0d0,nrep,RightTensor=t2)
-       write(iw,*)'dot product efam:dia1',dot_product(w_vvvo,w_vvvo)
 
 !------------------------------------------------------------
 !  diagram2 : w_vvvo(ef,am) =  w_vvvo(ef,am) + w (ef,ag)*t(g,m) 

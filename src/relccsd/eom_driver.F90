@@ -447,31 +447,10 @@
           diag_H = H_II(1:N1:rcw)
 
           if (relcc_projectors_do_restricted_excitation_window) then ! find the lowest elements of the diagonal within the given excitation window
-             print *, 'write me for relcc_projectors_do_restricted_excitation_window'
-             call quit('not implemented')
+             call quit('REW not implemented')
 
           else if (relcc_projectors_do_core_valence_separation) then ! find the lowest elements of the diagonal involving core electrons only
-
-              xroot = 0
-
-          write (iw,*) 'debug, diag(Hbar_SS): ',diag_H
-! aspg, WIP june/july 2018
-! what is below is a simple hack for testing for water, will not work in general
-              do iroot = 1, nroot
-                  k = minloc(diag_H, MASK=((diag_H > abs(relcc_projectors_cvs_energy_threshold)) &
-                             .and.(diag_H < 100*(abs(relcc_projectors_cvs_energy_threshold)))))
-                  if (iprnt.ge.2) write(iw,*)'roots',iroot,diag_H(k(1)),k(1)
-                  write(iw,*)'roots',iroot,diag_H(k(1)),k(1)
-                  i = k(1)
-                  diag_H(i) = huge(diag_H)
-                  xroot = xroot + 1
-                  jroot = i
-                  if (rcw.eq.2) jroot = 2*i - 1
-                  R1(jroot,xroot) = 1.0d0
-              enddo
-
-              call davidson_print_vectors(R1, label="debug:  R1 vector             ")
-! aspg WIP june/july 2018
+             call quit('CVS not implemented')
 
           else ! this is the standard way of doing it, find the lowest elements of the diagonal
 
@@ -1247,17 +1226,11 @@
                      overlap = dot_product(l1_temp,davResultsR(sym)%eVectorsR(1:N1,iroot)) + &
     &                          dot_product(l2_temp,davResultsR(sym)%eVectorsR(1+N1:N,iroot))
 
-
-                     write(*,*)'overlap', overlap 
-
                      overlap = 1.0d0/overlap
 
                      call dscal(N,overlap,davResultsL(sym)%eVectorsL(:,iroot),1)  
                      call dscal(N1,overlap,l1_temp,1)  
                      call dscal(N2,overlap,l2_temp,1)  
-
-                     write(*,*) dot_product(l1_temp,davResultsR(sym)%eVectorsR(1:N1,iroot)) + &
-    &                           dot_product(l2_temp,davResultsR(sym)%eVectorsR(1+N1:N,iroot))
 
                      deallocate(l1_temp,l2_temp)
 
@@ -1284,18 +1257,11 @@
                      overlap = dot_product(l1_temp,davResultsR(sym)%eVectorsR(1:N1,iroot)) + &
     &                          dot_product(l2_temp,davResultsR(sym)%eVectorsR(1+N1:N,iroot))
 
-                     write(*,*)'overlap', overlap 
-
                      overlap = 1.0d0/overlap
 
                      call dscal(N,overlap,davResultsL(sym)%eVectorsL(1:N,iroot:iroot),1)  
                      call dscal(N1,overlap,l1_temp,1)  
                      call dscal(N2,overlap,l2_temp,1)  
-
-                     write(*,*) dot_product(l1_temp,davResultsR(sym)%eVectorsR(1:N1,iroot)) + &
-    &                           dot_product(l2_temp,davResultsR(sym)%eVectorsR(1+N1:N,iroot))
- 
-!                    write(*,*)dot_product(davResultsR(sym)%eVectorsR(1:,iroot),davResultsR(sym)%eVectorsR(1:,iroot))
 
                      deallocate(l1_temp,l2_temp)
 
@@ -1305,13 +1271,12 @@
   &                                  davResultsR(sym)%eVectorsR(1+N1:N,iroot),B%t1,B%t2,dmo)
 
                  case ('EA')
-                   write(*,*)'Not yet implemented'
+                    call quit ('LHS EOM-EA Not yet implemented')
 
                end select
 
-               write (iw,*) "debug, before store_eom_density for state",state
                call store_eom_density ('EOM ',state,dmo)
-               write (iw,*) "debug,  after store_eom_density for state",state
+
                state = state + 1
            enddo ! loop over roots 
        enddo ! loop over symmetries
@@ -1995,10 +1960,6 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
              end if
           
              projector => create_projector(3, (ndimr1 + ndimr2), eps)  
-!aspg, WIP
-! debug      
-!            write (iw,*) projector
-!aspg, WIP
 
           case('EA')
 
@@ -2117,6 +2078,7 @@ end subroutine
 ! aspg, WIP, june/july 2018
 function create_projector(eom_type, ndet, eps)
 #include "files.inc"
+#include "inpt.inc"
    logical, pointer :: create_projector(:) 
 
    integer, intent(in) :: eom_type
@@ -2148,13 +2110,16 @@ function create_projector(eom_type, ndet, eps)
                    end if
                 end do 
                 if (create_projector(i)) then
-          write (iw,*) 'determinant ',i,' has all spinors in core       :',det_map%det(i)%occupied_energies,create_projector(i) 
+                   if (iprnt.ge.2) write (iw,*) 'determinant ',i,' has all spinors in core       :', &
+    &                                           det_map%det(i)%occupied_energies,create_projector(i) 
                 else
-          write (iw,*) 'determinant ',i,' has at least a valence spinor :',det_map%det(i)%occupied_energies,create_projector(i) 
+                   if (iprnt.ge.2) write (iw,*) 'determinant ',i,' has at least a valence spinor :', &
+    &                                           det_map%det(i)%occupied_energies,create_projector(i) 
                 end if
              else
                 create_projector(i) = .false.
-                write (iw,*) 'determinant ',i,' has no occupied spinors and hence no core spinors',create_projector(i) 
+                if (iprnt.ge.2) &
+    &              write (iw,*) 'determinant ',i,' has no occupied spinors and hence no core spinors',create_projector(i) 
              end if
           end do
        end if
@@ -2257,8 +2222,6 @@ end subroutine
     ii = 1
 
     allocate(map%det(ndt))
-    write (iw,*) 'debug, we have ndt',ndt
-    write (iw,*) 'debug, allocated map ?',allocated(map%det),size(map%det,1)
 
     select case(eomtype)
 

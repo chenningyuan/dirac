@@ -76,9 +76,6 @@ C
 
          call w_ijmn(S1,S2,w_oooo)
 
-         write(*,*)'dot product w_ijmn', 
-     &  dot_product(w_oooo(1:nv1*rcw),w_oooo(1:nv1*rcw))
-
          call f_bar_me(fvo,S1,hov)
 
          call wbar_mbej(S2,w_ovvo)
@@ -92,11 +89,6 @@ C
          call w_mbej(s1,s2,w_voov)
 
          call w_iemn(s1,s2,w_ovoo,w_ovvo,w_oooo,hov)
-
-         write(*,*)'dot product w_iemn', 
-     &  dot_product(w_ovoo(1:iovoot(nrep+1)*rcw),
-     &     w_ovoo(1:iovoot(nrep+1)*rcw))
-
 
       CALL XTIME(5,1,'-- "efam" Intermediate                     ')
 
@@ -275,11 +267,6 @@ C
       call srt1c1 (nrep,noot,nvvt,l2,l2_temp) 
 
       call gettau(s1,s2,buf2)
-
-      write(*,*)'overlap <L|R>',
-     & dot_product(l1_temp(1:ndimt1),s1(1:ndimt1)) 
-     & + dot_product(l2_temp(1:ndimt2),buf2(1:ndimt2))
-
 
       deallocate(l1_temp)
       deallocate(l2_temp)
