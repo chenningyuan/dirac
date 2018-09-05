@@ -89,4 +89,4 @@ ubuntu_parallel64-check:
     - ldd dirac.x
     - export DIRAC_MPI_COMMAND="mpirun --allow-run-as-root -np 2"
     - echo "The command DIRAC_MPI_COMMAND=$DIRAC_MPI_COMMAND"
-    - ctest -VV -j $TEST_N_PROC -E "(basis_input_scripted|bss_energy|lucita_short|lucita_q_corrections|atomic_x2c_2esoc_models_energy|pe_energy|pe_response|pe_exc|lucita_large|cc_gradient)" -L short
+    - ctest -VV -j $TEST_N_PROC -E "(basis_input_scripted|bss_energy|lucita_short|lucita_q_corrections|atomic_x2c_2esoc_models_energy|pe_energy|pe_response|pe_exc|lucita_large)" -L short
