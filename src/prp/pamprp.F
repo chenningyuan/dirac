@@ -10424,22 +10424,22 @@ C
      &                         + SPRNUC(I,J,IATOM)
  200        CONTINUE
 CTROND: some test statements..to be removed later
-         CALL HEADER('Raw data for  '//
-     &                          NAMDEP(IATOM),-1)
-         CALL HEADER('DMAT in spinrot',-1)
-         CALL OUTPUT(DMAT(1,1,IATOM),1,3,1,3,3,3,1,LUPRI)
-         CALL HEADER('PMATL1 in spinrot',-1)
-         CALL OUTPUT(PMATL(1,1,IATOM,1),1,3,1,3,3,3,1,LUPRI)
-         CALL HEADER('PMATL2 in spinrot',-1)
-         CALL OUTPUT(PMATL(1,1,IATOM,2),1,3,1,3,3,3,1,LUPRI)
-         CALL HEADER('PMATS1 in spinrot',-1)
-         CALL OUTPUT(PMATS(1,1,IATOM,1),1,3,1,3,3,3,1,LUPRI)
-         CALL HEADER('PMATS2 in spinrot',-1)
-         CALL OUTPUT(PMATS(1,1,IATOM,2),1,3,1,3,3,3,1,LUPRI)
-         CALL HEADER('SPRNUC in spinrot',-1)
-         CALL OUTPUT(SPRNUC(1,1,IATOM),1,3,1,3,3,3,1,LUPRI)
-         CALL HEADER('TOTSPR in spinrot',-1)
-         CALL OUTPUT(TOTSPR(1,1,IATOM),1,3,1,3,3,3,1,LUPRI)
+c         CALL HEADER('Raw data for  '//
+c     &                          NAMDEP(IATOM),-1)
+c         CALL HEADER('DMAT in spinrot',-1)
+c         CALL OUTPUT(DMAT(1,1,IATOM),1,3,1,3,3,3,1,LUPRI)
+c         CALL HEADER('PMATL1 in spinrot',-1)
+c         CALL OUTPUT(PMATL(1,1,IATOM,1),1,3,1,3,3,3,1,LUPRI)
+c         CALL HEADER('PMATL2 in spinrot',-1)
+c         CALL OUTPUT(PMATL(1,1,IATOM,2),1,3,1,3,3,3,1,LUPRI)
+c         CALL HEADER('PMATS1 in spinrot',-1)
+c         CALL OUTPUT(PMATS(1,1,IATOM,1),1,3,1,3,3,3,1,LUPRI)
+c         CALL HEADER('PMATS2 in spinrot',-1)
+c         CALL OUTPUT(PMATS(1,1,IATOM,2),1,3,1,3,3,3,1,LUPRI)
+c         CALL HEADER('SPRNUC in spinrot',-1)
+c         CALL OUTPUT(SPRNUC(1,1,IATOM),1,3,1,3,3,3,1,LUPRI)
+c         CALL HEADER('TOTSPR in spinrot',-1)
+c         CALL OUTPUT(TOTSPR(1,1,IATOM),1,3,1,3,3,3,1,LUPRI)
 C
 C
  99   CONTINUE
@@ -10662,6 +10662,7 @@ C
 C
 C   To calculate values in ppm
 C
+               CALL DZERO(GTRANTPPM,9*NUCDEP)
                CALL DZERO(GTRANNPPM,9*NUCDEP)
                CALL DZERO(GTRANDPPM,9*NUCDEP)
                CALL DZERO(GTRANPPPM,9*NUCDEP)
