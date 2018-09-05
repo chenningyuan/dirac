@@ -453,6 +453,12 @@ integer :: ierr
         call xcopy(ivovvt(nrep+1),local_buf3,1,A%W_efam,1)
 
       endif
+         if (iprnt.ge.2) then
+             write (iw,*) "  Sync done   W_efam diagram #2",dot_product(A%W_efam,A%W_efam)
+         else
+             write (iw,*) "  Sync done   W_efam diagram #2"
+         end if
+
 #endif
 !      CALL XTIME(5,2,'-- "efam" Intermediate                     ')
      endif 
