@@ -609,7 +609,7 @@ C
        DO  30 IRP = 1, NREP
          check = IRP
          totsize = 0
-         IF (NVO(IRP).EQ.0) GOTO 30
+         IF ((NVO(IRP).EQ.0).OR.(NVVT(IRP).EQ.0)) GOTO 30
          ALLOCATE(VOVV_TEMP(NVO(IRP)*NVVT(IRP)*RCW))
 
          VOVV_TEMP = 0.0d0
