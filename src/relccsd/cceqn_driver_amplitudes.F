@@ -79,13 +79,13 @@ C
       IT = 0
       ITC = 0
       NIT = 0
- 1000 CONTINUE
+      do
       NIT = NIT + 1
       IF (NIT.GT.MAXIT) THEN
          maxit = maxit + 1
          NIT = NIT - 1
          WRITE(IW,6004) RMS
-         GO TO 2000
+         exit
       ENDIF
 C
 C  EVALUATE T1 EQUATIONS
@@ -235,14 +235,13 @@ C
       CALL FLSHFO(IW)
 C
 C
-      IF(RMS.LT.CONV) GO TO 2000
+      IF(RMS.LT.CONV) exit
       IF(RMS.GT.rms_limit) THEN
         WRITE (IW,*) ' WARNING: aborted CC iterations (divergence)'
-        GO TO 2000
+        exit
       END IF
-      GO TO 1000
+      end do
 C
- 2000 CONTINUE
       CALL T1DIAG (DIAG,T1,BUF1)
       WRITE(IW,6071)
 C
