@@ -1,7 +1,7 @@
       SUBROUTINE cceqn_driver_amplitudes(MAXIT,EPS,FOO,FVO,FVV,
      &                 T1,S1,T2,S2,AZ,H,HO,HV,HOV,
      &                 BUF1,BUF2,BUF3,CC1,BB1,BB2,CONV,
-     &                 NBUF2,NBUF3,HEFF,EIGENVALUES,EIGENVECTORS)
+     &                 NBUF2,NBUF3)
 
       use interface_to_mpi
       use xmlout
@@ -31,10 +31,6 @@ C     for diis ...
       REAL*8 RMS,CONV
       REAL*8 DIAG
       INTEGER MAXIT,NBUF2,NBUF3
-
-C     for Fock space ...
-
-      REAL*8 HEFF(*),EIGENVECTORS(*),EIGENVALUES(0:*)
 
 C---------------Common Blocks--------------------------------------
 
@@ -290,12 +286,6 @@ C
          call xml_quantity('CC convergence',RMS,' ')
          call xml_quantity('T1 diagnostic',DIAG,' ')
       end if
-C
-      IF (FOCKSP) THEN
-C        Calculate the energies for this sector
-         CALL HEFF1(ICURFSS,IPRNT,S1,S2,FVO,EPS,BUF1,BUF2,BUF3,
-     &              HEFF,EIGENVALUES,EIGENVECTORS)
-      ENDIF
 C
 C     Read out timers for the most important contractions
 C

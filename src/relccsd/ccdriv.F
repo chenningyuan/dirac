@@ -2558,7 +2558,7 @@ C
      &           a_T1,a_S1,a_T2 ,a_S2 ,a_AZ,a_H,a_HO,a_HV,a_HOV,
      &           a_BUF1,a_BUF2,a_BUF3,
      &           a_CCC,a_BB1,a_BB2,
-     &           TOL,NBUF2,NBUF3,DUM,DUM,DUM)
+     &           TOL,NBUF2,NBUF3)
          CALL XTIME(5,2,'CCSD equations                ')
          if (maxit_save.le.maxit) is_ccsd_converged = .true.
 
@@ -3849,8 +3849,11 @@ C
      &             a_HO  , a_HV  , a_HOV  ,
      &             a_BUF1 , a_BUF2 , a_BUF3 ,
      &             a_CCC , a_BB1 , a_BB2 ,
-     &             TOL, NBUF2, NBUF3,
-     &             a_HEFF,a_EIGENVALUES,a_EIGENVECTORS)
+     &             TOL, NBUF2, NBUF3)
+
+C        Calculate the energies for this sector
+         CALL HEFF1(ICURFSS,IPRNT,a_S1,a_S2,a_FVO,EPS,a_BUF1,a_BUF2,
+     &              a_BUF3,a_HEFF,a_EIGENVALUES,a_EIGENVECTORS)
 
            if (maxit_save.gt.maxit_SECT(ICURFSS)) then
               is_ccsd_converged = .false.
