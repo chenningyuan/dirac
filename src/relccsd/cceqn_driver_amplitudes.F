@@ -158,18 +158,8 @@ C  INTERMEDIATES FORMED --- START T2 EQUATIONS
 C
       CALL XTIME(5,1,'-- T2 EQNS                     ')
       CALL amplitude_equation_T2 (T1,T2,HO,HV,HOV,H,AZ,
-     &             BUF1,BUF2,BUF3,NBUF3,S2)
+     &        BUF1,BUF2,BUF3,NBUF2,NBUF3,S2)
       CALL XTIME(5,2,'-- T2 EQNS                     ')
-C
-C
-C  MUST NOW ADD IN B INTERMEDIATE CONTRIBUTION
-C
-C
-      CALL XTIME(5,1,'-- BINTM                       ')
-      CALL BINTM (T1,T2,BUF1,BUF2,NBUF2,BUF3,NBUF3,S2,IW)
-      CALL XTIME(5,2,'-- BINTM                       ')
-
-      CALL XTIME(5,2,'- T2 equations                  ')
 C
  100  CONTINUE
 C
