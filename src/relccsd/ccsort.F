@@ -175,6 +175,7 @@ C
       RETURN
       END
 
+
 !======================================================================================================================
       SUBROUTINE SRT1TT5 (NREP,MULTB,FIRST,DOINV,
      &                    IFIE,JFIE,KFIE,LFIE,NPAIR,
@@ -444,9 +445,7 @@ C
 C
       RETURN
       END
-
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-
 
       SUBROUTINE SRT1ST4 (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,
      &                    NPAIR,OFF,OFF1,OFF2,BUF1,BUF2)
@@ -506,11 +505,11 @@ C
            IKREP = MULTB(IREP,KREP,2)
            ILREP = MULTB(IREP,LREP,2)
            JKREP = MULTB(JREP,KREP,2)
-           IKJL0 = OFF(JLREP) 
+           IKJL0 = OFF(IKREP) 
      &          + (OFF2(JREP,LREP)+(L-1)*JFIE(JREP)) * NPAIR(IKREP)
            IKJL0 = IKJL0 + OFF1(IREP,KREP) + (K-1)*IFIE(IREP)
            IKJL0 = IKJL0 * RCW + 1
-           ILJK0 = OFF(JKREP) 
+           ILJK0 = OFF(ILREP) 
      &          + (OFF2(JREP,KREP)+(K-1)*JFIE(JREP)) * NPAIR(ILREP)
            ILJK0 = ILJK0 + OFF1(IREP,LREP) + (L-1)*IFIE(IREP)
            ILJK0 = ILJK0 * RCW + 1
@@ -538,6 +537,8 @@ C
 C
       RETURN
       END
+
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT1SS4 (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,
      &              NPAIR,OFF,OFF1,OFF2,BUF1,BUF2)
@@ -592,6 +593,7 @@ C
            IKJL0 = OFF(JLREP) 
      &          + (OFF2(JREP,LREP)+(L-1)*JFIE(JREP)) * NPAIR(IKREP)
            IKJL0 = IKJL0 + OFF1(IREP,KREP) + (K-1)*IFIE(IREP)
+
             DO J = 1, JFIE(JREP)
             IF (DOINV) THEN
               CALL XCOPY (IFIE(IREP),BUF1(IKJL0*RCW+1),1,BUF2(IJKL),1)
@@ -653,7 +655,7 @@ C
       ENDIF
       IJKL = 1
       DO KLREP = 1, NREP
-       IJREP = KLREP
+       IJREP = MULTB(KLREP+NREP,1+NREP,1)
        N = NPAIR(IJREP)
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)
@@ -685,6 +687,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
       SUBROUTINE SRT1T2 (NREP,MULTB,DOINV,NPAIR1,IFIE,JFIE,NPAIR2,OFF,
      &                   OFF2,BUF1,BUF2)
 C
@@ -726,7 +729,7 @@ C
       ENDIF
       IJKL = 0
       DO KLREP = 1, NREP
-       IJREP = KLREP
+       IJREP = MULTB(KLREP+NREP,1+NREP,1)
        M = NPAIR1(IJREP)
        N = NPAIR2(KLREP)
        IJ = 1
@@ -761,6 +764,7 @@ C
 C
       RETURN
       END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT6 (NREP,MULTB,DOINV,NPAIR1,IFIE,JFIE,NPAIR2,NTRIPL,
      &                 OFF,OFF1,BUF1,BUF2)
@@ -801,7 +805,7 @@ C
       CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
       IJKL = 0
       DO KLREP = 1, NREP
-       IJREP = KLREP
+       IJREP = MULTB(KLREP+NREP,1+NREP,1)
        M = NPAIR1(IJREP)
        N = NPAIR2(KLREP)
        IJ = 1
@@ -833,13 +837,16 @@ C
 C
 C---------------Description--------------------------------------------
 C
-C     Sort array BUF1(I,J;KL:KLREP) to array -BUF2*(KL J,I:IREP)
+C     Sort array BUF1(I,J;KL:KLREP) to array BUF2(KL J,I:IREP)
 C
 C---------------Routines called----------------------------------------
 C
 C---------------Last modified------------------------------------------
 C
-C     Author : Luuk Visscher
+C     Author : Luuk Visscher ; modified by Avijit Shee, so that now 
+C                              it can do only the sorting, c.c. and
+C                              anti-symmetrization should be done
+C                              later if needed, that is a separate task.
 C
 C---------------Calling variables--------------------------------------
 C
@@ -865,7 +872,7 @@ C
       CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
       IJKL = 0
       DO KLREP = 1, NREP
-       IJREP = KLREP
+       IJREP = MULTB(KLREP+NREP,1+NREP,1)
        M = NPAIR1(IJREP)
        N = NPAIR2(KLREP)
        IJ = 1
@@ -886,9 +893,6 @@ C
  10    CONTINUE
        IJKL = IJKL + M * N * RCW
       ENDDO
-      CALL XSCAL (OFF(NREP+1),-A1,BUF2,1)
-      IF (CARITH) CALL CONJUGA (OFF(NREP+1),BUF2,1)
-C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1785,6 +1789,7 @@ C
            IKLJ0 = OFF(LJREP) 
      &          + (OFF2(LREP,JREP)+L-1)*NPAIR(IKREP)
            IKLJ0 = IKLJ0 + OFF1(IREP,KREP) + (K-1)*IFIE(IREP)
+
             DO J = 1, JFIE(JREP)
             IF (DOINV) THEN
              CALL XCOPY(IFIE(IREP),BUF1(ILKJ0*RCW+1),1,BUF2(IJKL),1)
@@ -1809,6 +1814,7 @@ C
 C
       RETURN
       END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT36 (NREP,MULTB,FIRST,DOINV,
      &                    IFIE,JFIE,KFIE,LFIE,NPAIR,
@@ -1872,7 +1878,6 @@ C
            JLREP = MULTB(JREP,LREP,2)
            ILREP = MULTB(IREP,LREP,2)
            KIREP = MULTB(KREP,IREP,2)
-
 
            ILKJ0 = OFF(KJREP) 
      &          + (OFF2(KREP,JREP)+K-1)*NPAIR(ILREP)
@@ -1953,8 +1958,6 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-
-      write(*,*)'WARNING!!! i am here', DOINV
 
       CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
 

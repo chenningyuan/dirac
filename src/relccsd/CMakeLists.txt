@@ -11,7 +11,6 @@ set(FIXED_RELCCSD_FORTRAN_SOURCES
    cceqn_diis.F
    cceqn_driver_amplitudes.F
    cceqn_driver_initialization.F
-   cceqn_driver_lambda.F
    cceqn_mp2_amplitudes.F
    cceqn_t1_amplitudes.F
    cceqn_t1_utils.F
@@ -21,11 +20,11 @@ set(FIXED_RELCCSD_FORTRAN_SOURCES
    ccfspc.F
    ccgenp.F
    ccgetv.F
-   ccgrad.F
    ccintm.F
    ccmain.F
    ccpam.F
    ccrpa.F
+   ccsort.F
    ccxblas.F
    waio.F
    ${PROJECT_SOURCE_DIR}/src/prp/mp2lag.F
@@ -36,33 +35,42 @@ set(FIXED_RELCCSD_FORTRAN_SOURCES
 
 set(FIXED_RELCCSD_FORTRAN_SOURCES_noruntimecheck
    ccints.F
-   ccdriv.F # Attempt to fetch from allocatable variable A_HEFF when it is not allocated
 )
 
 set(FREE_RELCCSD_FORTRAN_SOURCES
-   ccsort.F90
+   relcc_cfg.F90
+   auto_offset.F90
+   ccsort_exp.F90
+   wrapper_sorting.F90 
    contraction.F90
-   relcc_cfg.F90
-   relcc_cfg.F90
+   intermediates.F90
+   lambda_equation.F90
+   sigma_eom.F90
+   davidson/davidson.F90
+   trial_vectors_eom.F90
+   density.F90
+   eom_driver.F90 
+   ccdriv.F # Attempt to fetch from allocatable variable A_HEFF when it is not allocated
+   cceqn_driver_lambda.F
+   ccgrad.F
    # needs dependency
    ${PROJECT_SOURCE_DIR}/src/main/mpi_framework.F90
 # Miro: previously "problematic" source files wrt runtime check
-   #intermediates.F90
-   lambda_equation.F90
-   #wrapper_sorting.F90 
 )
 
 set(FREE_RELCCSD_FORTRAN_SOURCES_noruntimecheck
   # Miro: indeed, I had to return the file back, unfortunately
-   intermediates.F90
-   wrapper_sorting.F90  
+#   auto_offset.F90
+#   wrapper_sorting.F90  
+#   contraction.F90
+#   intermediates.F90
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
-    set_source_files_properties(${FREE_RELCCSD_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
     set_source_files_properties(${FREE_RELCCSD_FORTRAN_SOURCES_noruntimecheck}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
-    set_source_files_properties(${FIXED_RELCCSD_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
+    set_source_files_properties(${FREE_RELCCSD_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
     set_source_files_properties(${FIXED_RELCCSD_FORTRAN_SOURCES_noruntimecheck} PROPERTIES COMPILE_FLAGS "-qfixed")
+    set_source_files_properties(${FIXED_RELCCSD_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
 endif()
 
 if(ENABLE_RUNTIMECHECK)
@@ -77,10 +85,10 @@ endif()
 add_library(
     relccsd
     OBJECT
-    ${FREE_RELCCSD_FORTRAN_SOURCES}
     ${FREE_RELCCSD_FORTRAN_SOURCES_noruntimecheck}
-    ${FIXED_RELCCSD_FORTRAN_SOURCES}
+    ${FREE_RELCCSD_FORTRAN_SOURCES}
     ${FIXED_RELCCSD_FORTRAN_SOURCES_noruntimecheck}
+    ${FIXED_RELCCSD_FORTRAN_SOURCES}
 )
 
 # add intermodule dependencies

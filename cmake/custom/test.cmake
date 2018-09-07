@@ -29,7 +29,6 @@ endmacro()
 # activate ctest
 include(CTest)
 enable_testing()
-
 dirac_test(dft_alda_xcfun "long;dft" "")
 dirac_test(dft_alda "long;dft" "")
 dirac_test(stex "long" "")
@@ -140,3 +139,10 @@ dirac_test(import_mos "short;import;scf;mcscf" "")
 dirac_test(operators_mo_mtx_elements "short;operators" "")
 dirac_test(nmqm_operator "short;operators" "")
 dirac_test(diagonalization "short;external" "")
+dirac_test(eomcc "short;cc" "")
+dirac_test(eomip_energy_symmetry "short;cc" "")
+dirac_test(eomea_energy_symmetry "short;cc" "")
+dirac_test(eomee_energy_symmetry "short;cc" "")
+# disabing eomcc expectation value test until the code is verified
+#dirac_test(eomcc_expval "short;cc" "")
+

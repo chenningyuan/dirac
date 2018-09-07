@@ -2586,7 +2586,7 @@ C           Loop over the coefficients and print the interesting ones
  1000 FORMAT (//' Analysis of eigenvectors of the effective Hamiltonian'
      &/' First line  :  Energy, Eigenvalue'
      &/' other lines : Coefficients of contributing determinants',
-     & ' (above a treshold of ',E6.1,')')
+     & ' (above a threshold of ',E6.1,')')
  1010 FORMAT (/' Irrep ',A4,' State ',I5,2F16.8)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
