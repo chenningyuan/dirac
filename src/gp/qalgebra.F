@@ -442,29 +442,11 @@ C
 #include "priunit.h"
       DIMENSION A(LRA,LCA,NZ),EIG(N),VEC(LRV,LCV,NZ),WORK(LWORK)
       CHARACTER SECTID*12,CPUTID*12,WALLTID*12
-      logical   DO_THIS
-      character*40  ENV_VALUE
       CALL QENTER('QDIAG')
 #include "memint.h"
       IF(MATZ.EQ.1.AND.(NZ.EQ.1.OR.NZ.EQ.2).AND.(LRA.NE.LRV)) THEN
         CALL QUIT('QDIAG: LRA.ne.LRV')
       ENDIF
-
-      write(lupri,*) 'Hello from QDIAG: NZ,N',NZ,N; flush(lupri)
-      call getenv('QDIAGMAT',ENV_VALUE)
-      write(lupri,*) 'env QDIAGMAT=',ENV_VALUE
-      DO_THIS = ENV_VALUE(1:1) .EQ. 'Y'
-      iF (DO_THIS) write(lupri,*) 'writing wdiagmat ...'
-      if (DO_THIS .and. nz.eq.4) then
-      open(2, file='qdiagmat',form='unformatted')
-      write(2) NZ,N,LRA,LCA
-      write(2) A
-      close(2)
-      end if
-      call getenv('QDIAG',ENV_VALUE)
-      write(lupri,*) 'env QDIAG=',ENV_VALUE
-      DO_THIS = ENV_VALUE(1:3) .EQ. 'OLD'
-      iF (DO_THIS) write(lupri,*) 'using OLD qdiag'
 
 #ifdef LAPACK_QDIAG
 C     Use the fast DSYEVR for real case
@@ -510,13 +492,8 @@ C       ==========================================================
 C
       CALL GETTIM(CPU1,WALL1)
       IF (NZ.EQ.4) THEN
-      IF (DO_THIS) THEN
-        CALL  QHTRID(A,N,LRA,LCA,EIG,
+        CALL  QHTRID_new(A,N,LRA,LCA,EIG,
      &               WORK(KFV1),WORK(KFV2),WORK(KTAU))
-      ELSE
-        CALL  QHTRID_2(A,N,LRA,LCA,EIG,
-     &               WORK(KFV1),WORK(KFV2),WORK(KTAU))
-      END IF
         IF(MATZ.NE.0) GO TO 10
       ELSEIF(NZ.EQ.2) THEN
         CALL  HTRIDI(LRA,N,A(1,1,1),A(1,1,2),EIG,
@@ -560,17 +537,15 @@ C       Backtransform to find eigenvectors of
 C       quaternion Hermitian matrix
 C
       IF    (NZ.EQ.4) THEN
-      IF (DO_THIS) THEN
-        CALL  QHTRBK(A,N,LRA,LCA,WORK(KTAU),VEC,N,LRV,LCV)
-      ELSE
-        CALL  QHTRBK_2(A,N,LRA,LCA,WORK(KTAU),VEC,N,LRV,LCV)
-      END IF
+        CALL  QHTRBK_new(A,N,LRA,LCA,WORK(KTAU),VEC,N,LRV,LCV)
       ELSEIF(NZ.EQ.2) THEN
         CALL  HTRIBK(LRA,N,A(1,1,1),A(1,1,2),WORK(KTAU),N,
      &               VEC(1,1,1),VEC(1,1,2))
       ENDIF
    30 CONTINUE
 
+#ifdef QDIAG_TIMING
+         write(lupri,'(/A,I2,2X,I0)') 'QDIAG timings. NZ,N =',NZ,N
          CALL GETTIM(CPU4,WALL4)
          CPUTID = SECTID(CPU2-CPU1)
          WALLTID = SECTID(WALL2-WALL1)
@@ -581,10 +556,12 @@ C
          CPUTID = SECTID(CPU4-CPU3)
          WALLTID = SECTID(WALL4-WALL3)
          WRITE(LUPRI,9022) CPUTID,WALLTID
+         flush(LUPRI)
 
  9020 FORMAT(/'QDIAG: QHTRDI CPU (WALL) time: ',A12,' (',A12,')')
  9021 FORMAT( 'QDIAG: TQL2   CPU (WALL) time: ',A12,' (',A12,')')
  9022 FORMAT( 'QDIAG: QHTRBK CPU (WALL) time: ',A12,' (',A12,')')
+#endif
 C
 C     Memory deallocation
 C
@@ -657,437 +634,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck qhtrid */
-      SUBROUTINE QHTRID(A,N,LRA,LCA,D,E,E2,TAU)
-C
-#include "implicit.h"
-      PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
-      DIMENSION A(LRA,LCA,4),D(N),E(N),E2(N),TAU(4,N)
-C***********************************************************************
-C
-
-C       Trond Saue, University of Tromsoe, Norway , December 1993
-C
-C       This subroutine is a quaternionc analogue of the
-C       EISPACK routine HTRIDI. QHTRID reduces a quaternionic
-C       Hermitian matrix to a realsymmetric tridiagonal matrix.
-C       The unitary transformation is done in two steps:
-C
-C       1. Reduction to quaternionic Hermitian tridiagonal
-C       matrix using (N-2) Householder matrices.
-C
-C       2.Reduction to real symmetric tridiagonal matrix
-C       using a quaternionic diagonal matrix TAU.
-C
-C       Householder matrices has the general form:
-C
-C       P = 1 - (uu(+))/H       ;       H = u(+)u/2
-C
-C       INPUT:
-C
-C       [AR+iAJ+jAJ+kAK]        is a quaternionic Hermitian matrix of
-C                               order N and with leading dimension LRA.
-C
-C       OUTPUT:
-C
-C       The lower triangle of A contains the row vectors u
-C       from the (n-2) Householder matrices. The strict upper
-C       triangle and the diagonal of A is unaltered.
-C
-C       D       diagonal elements of the tridiagonal matrix
-C       E       off-diagonal elements of tridiagonal matrix
-C       E2      squares of elements in E
-C       TAU     the diagonal of TAU
-C     ------------------------------------------------------------------
-C
-      TAU(1,N) = D1
-      TAU(2,N) = D0
-      TAU(3,N) = D0
-      TAU(4,N) = D0
-C
-C       Store diagonal elements of A temporarily in D
-C
-      DO 100 I = 1,N
-        D(I) = A(I,I,1)
-  100 CONTINUE
-C
-C     For I = N step -1 until 1 DO
-C
-      DO 300 II = 1,N
-         I = N + 1 - II
-         L = I - 1
-         H = D0
-         SCALE = D0
-         IF (L.LT.1) GO TO 130
-C
-C     Evaluate scale factor SCALE
-C
-         DO 120 K = 1, L
-            SCALE = SCALE + ABS(A(I,K,1)) + ABS(A(I,K,2))
-     +                    + ABS(A(I,K,3)) + ABS(A(I,K,4))
-  120    CONTINUE
-C
-         IF (SCALE.NE.D0) GO TO 140
-C
-C     SCALE = 0: Skip transformation
-C
-         TAU(1,L) = D1
-         TAU(2,L) = D0
-         TAU(3,L) = D0
-         TAU(4,L) = D0
-  130    CONTINUE
-         E(I)  = D0
-         E2(I) = D0
-         GO TO 290
-C
-C     SCALE.NE.0 : Do transformation
-C
-  140    CONTINUE
-         SCLINV = D1/SCALE
-C
-C     Scale row and evaluate its norm
-C
-         DO 150 K = 1, L
-            A(I,K,1) = SCLINV*A(I,K,1)
-            A(I,K,2) = SCLINV*A(I,K,2)
-            A(I,K,3) = SCLINV*A(I,K,3)
-            A(I,K,4) = SCLINV*A(I,K,4)
-            H = H+A(I,K,1)*A(I,K,1)+A(I,K,2)*A(I,K,2)
-     +           +A(I,K,3)*A(I,K,3)+A(I,K,4)*A(I,K,4)
-  150    CONTINUE
-C
-         GR    = SQRT(H)
-         E(I)  = SCALE*GR
-         E2(I) = SCALE*SCALE*H
-C
-C     Form next diagonal element of matrix T: TAU(L) = - TAU(I)*A(I,L)/F
-C     where F is the absolute value of A(I,L)
-C
-         FR = PYTHAG(PYTHAG(A(I,L,1),A(I,L,2)),
-     &               PYTHAG(A(I,L,3),A(I,L,4)))
-         IF (FR.EQ.D0) GO TO 160
-         FRINV = D1/FR
-         TAU(1,L) = FRINV*(TAU(4,I)*A(I,L,4)+TAU(3,I)*A(I,L,3)
-     +                    +TAU(2,I)*A(I,L,2)-TAU(1,I)*A(I,L,1))
-         SI       = FRINV*(TAU(1,I)*A(I,L,2)+TAU(2,I)*A(I,L,1)
-     +                    +TAU(3,I)*A(I,L,4)-TAU(4,I)*A(I,L,3))
-         SJ       = FRINV*(TAU(1,I)*A(I,L,3)-TAU(2,I)*A(I,L,4)
-     +                    +TAU(3,I)*A(I,L,1)+TAU(4,I)*A(I,L,2))
-         SK       = FRINV*(TAU(1,I)*A(I,L,4)+TAU(2,I)*A(I,L,3)
-     +                    -TAU(3,I)*A(I,L,2)+TAU(4,I)*A(I,L,1))
-         IF (L .EQ. 1) THEN
-           TAU(1,L) = -TAU(1,L)
-           SI       = -SI
-           SJ       = -SJ
-           SK       = -SK
-           GO TO 270
-         ENDIF
-C
-C     Form element L in vector U
-C        U(L) = A(I,L) + A(I,L)[SQRT(H)/QVAL(A(I,L))]
-C
-
-         H       = H  + FR   *GR
-         GR      = D1 + FRINV*GR
-         A(I,L,1) = GR * A(I,L,1)
-         A(I,L,2) = GR * A(I,L,2)
-         A(I,L,3) = GR * A(I,L,3)
-         A(I,L,4) = GR * A(I,L,4)
-C         IF (L .EQ. 1) GO TO 270
-         GO TO 170
-  160    CONTINUE
-         TAU(1,L) = -TAU(1,I)
-         SI       =  TAU(2,I)
-         SJ       =  TAU(3,I)
-         SK       =  TAU(4,I)
-         A(I,L,1)  = GR
-  170    CONTINUE
-         FR = D0
-C
-         DO 240 J = 1, L
-            GR = D0
-            GI = D0
-            GJ = D0
-            GK = D0
-C
-C     Form element of A*U
-C       (A*U)(j) is stored in (GR,GI,GJ,GK)
-C
-            DO 180 K = 1, J
-               GR = GR+A(J,K,1)*A(I,K,1)+A(J,K,2)*A(I,K,2)
-     +                +A(J,K,3)*A(I,K,3)+A(J,K,4)*A(I,K,4)
-               GI = GI-A(J,K,1)*A(I,K,2)+A(J,K,2)*A(I,K,1)
-     +                -A(J,K,3)*A(I,K,4)+A(J,K,4)*A(I,K,3)
-               GJ = GJ-A(J,K,1)*A(I,K,3)+A(J,K,2)*A(I,K,4)
-     +                +A(J,K,3)*A(I,K,1)-A(J,K,4)*A(I,K,2)
-               GK = GK-A(J,K,1)*A(I,K,4)-A(J,K,2)*A(I,K,3)
-     +                +A(J,K,3)*A(I,K,2)+A(J,K,4)*A(I,K,1)
-  180       CONTINUE
-C
-            JP1 = J+1
-            IF(L.LT.JP1) GO TO 220
-C
-C     Exploiting Hermitian symmetry to avoid using upper triangle
-C
-            DO 200 K = JP1, L
-               GR = GR+A(K,J,1)*A(I,K,1)-A(K,J,2)*A(I,K,2)
-     +                -A(K,J,3)*A(I,K,3)-A(K,J,4)*A(I,K,4)
-               GI = GI-A(K,J,1)*A(I,K,2)-A(K,J,2)*A(I,K,1)
-     +                +A(K,J,3)*A(I,K,4)-A(K,J,4)*A(I,K,3)
-               GJ = GJ-A(K,J,1)*A(I,K,3)-A(K,J,2)*A(I,K,4)
-     +                -A(K,J,3)*A(I,K,1)+A(K,J,4)*A(I,K,2)
-               GK = GK-A(K,J,1)*A(I,K,4)+A(K,J,2)*A(I,K,3)
-     +                -A(K,J,3)*A(I,K,2)-A(K,J,4)*A(I,K,1)
-  200       CONTINUE
-C
-C     Form element of P
-C        P(j) = (A*U)(j)/H
-C             - stored in (E(j),TAU(2,j),TAU(3,j),TAU(4,j))
-C
-  220       CONTINUE
-            E(J)     = GR/H
-            TAU(2,J) = GI/H
-            TAU(3,J) = GJ/H
-            TAU(4,J) = GK/H
-            FR       = FR+A(I,J,1)*E(J) -A(I,J,2)*TAU(2,J)
-     +               - A(I,J,3)*TAU(3,J)-A(I,J,4)*TAU(4,J)
-  240    CONTINUE
-C
-C     Evaluate HH = SUM[j](U*(j)P(j)/H)
-C
-         HH=FR/(H+H)
-C
-C     Form reduced A
-C
-C     Computational formula: A'(j,k) = A(j,k)-Q(j)U*(k)-U(j)Q*(k)
-C        where Q(j) = P(j) - HH*U(j)
-C
-         DO 260 J = 1,L
-C
-C     Q(j) is stored in (GR,GI,GJ,GK)
-C     Q*(k) is stored in (E(k),TAU(2,j),TAU(3,j),TAU(4,j))
-C     U(j) is stored in (FR,FI,FJ,FK)
-C     U*(k) is stored in (AR(i,k),AI(i,k),AJ(i,k),AK(i,k))
-C
-            FR       =  A(I,J,1)
-            GR       =  E(J)     - HH*FR
-            E(J)     =  GR
-            FI       = -A(I,J,2)
-            GI       =  TAU(2,J) - HH*FI
-            TAU(2,J) = -GI
-            FJ       = -A(I,J,3)
-            GJ       =  TAU(3,J) - HH*FJ
-            TAU(3,J) = -GJ
-            FK       = -A(I,J,4)
-            GK       =  TAU(4,J) - HH*FK
-            TAU(4,J) = -GK
-C
-            DO 260 K = 1, J
-              A(J,K,1) = A(J,K,1)
-     +            -FR*E(K)+FI*TAU(2,K)+FJ*TAU(3,K)+FK*TAU(4,K)
-     +            -GR*A(I,K,1)+GI*A(I,K,2)+GJ*A(I,K,3)+GK*A(I,K,4)
-              A(J,K,2) = A(J,K,2)
-     +            -FR*TAU(2,K)-FI*E(K)-FJ*TAU(4,K)+FK*TAU(3,K)
-     +            -GR*A(I,K,2)-GI*A(I,K,1)-GJ*A(I,K,4)+GK*A(I,K,3)
-              A(J,K,3) = A(J,K,3)
-     +            -FR*TAU(3,K)+FI*TAU(4,K)-FJ*E(K)-FK*TAU(2,K)
-     +            -GR*A(I,K,3)+GI*A(I,K,4)-GJ*A(I,K,1)-GK*A(I,K,2)
-              A(J,K,4) = A(J,K,4)
-     +            -FR*TAU(4,K)-FI*TAU(3,K)+FJ*TAU(2,K)-FK*E(K)
-     +            -GR*A(I,K,4)-GI*A(I,K,3)+GJ*A(I,K,2)-GK*A(I,K,1)
-  260    CONTINUE
-C
-  270    CONTINUE
-         DO 280 K = 1,L
-            A(I,K,1) = SCALE*A(I,K,1)
-            A(I,K,2) = SCALE*A(I,K,2)
-            A(I,K,3) = SCALE*A(I,K,3)
-            A(I,K,4) = SCALE*A(I,K,4)
-  280    CONTINUE
-C
-         TAU(2,L) = -SI
-         TAU(3,L) = -SJ
-         TAU(4,L) = -SK
-  290    CONTINUE
-         HH      = D(I)
-         D(I)    = A(I,I,1)
-         A(I,I,1) = HH
-         A(I,I,2) = SCALE*SQRT(H)
-  300 CONTINUE
-C
-      RETURN
-      END
-C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck qhtrbk */
-      SUBROUTINE QHTRBK(A,N,LRA,LCA,TAU,Z,M,LRZ,LCZ)
-C
-#include "implicit.h"
-      PARAMETER(D0 = 0.0D0)
-      DIMENSION A(LRA,LCA,4),TAU(4,N),Z(LRZ,LCZ,4)
-C***********************************************************************
-C
-C       Trond Saue, University of Tromsoe, Norway , December 1993
-C
-C       This subroutine is a quaternionic analogue of the
-C       EISPLACK routine HTRIBK. It forms the eigenvectors
-C       of a quaternionic Hermitian matrix by backtransforming
-C       those of the corresponding real symmetric matrix
-C       determined by QHTRID.
-C
-C       INPUT:
-C
-C       [AR+iAJ+jAJ+kAK]        is a quaternionic Hermitian matrix of
-C                               order N and with leading dimension LRA.
-C                               The lower triangle contains the
-C                               u-vectors of the (N-2) Householder
-C                               matrices used in the reduction of
-C                               A to a quaternionic Hermitian tridiagonal
-C                               matrix. The diagonal and upper triangle
-C                               of the original matrix is preserved.
-C       TAU                     TAU is the diagonal quaternionic elements
-C                               of the diagonal matrix transforming
-C                               the quaternionic Hermitian tridiagonal
-C                               matrix to a real tridiagonal matrix.
-C       OUTPUT:
-C
-C       [ZR+iZI+jZJ+kZK]        eigenvectors
-C
-C     Note that the last component of each returned vector
-C     is real and that vector Euclidean norms are preserved.
-C
-C     ------------------------------------------------------------------
-C
-      IF (M .EQ. 0) GO TO 200
-C
-C     Transform the eigenvector of the real symmetric tridiagonal matrix
-C     to those of the quaternionic Hermitian tridiagonal matrix
-C
-      DO 50 K = 1, N
-         DO 50 J = 1, M
-            Z(K,J,4) = -TAU(4,K)*Z(K,J,1)
-            Z(K,J,3) = -TAU(3,K)*Z(K,J,1)
-            Z(K,J,2) = -TAU(2,K)*Z(K,J,1)
-            Z(K,J,1) =  TAU(1,K)*Z(K,J,1)
-   50 CONTINUE
-C
-      IF(N.EQ.1) GO TO 200
-C
-C     Recover and apply the Householder matrices
-C
-      DO 140 I = 3,N
-         L = I-1
-         H = A(I,I,2)
-         IF (H.EQ.D0) GO TO 140
-C
-         DO 130 J = 1,M
-            SR = D0
-            SI = D0
-            SJ = D0
-            SK = D0
-            DO 110 K = 1,L
-               SR = SR+A(I,K,1)*Z(K,J,1)-A(I,K,2)*Z(K,J,2)
-     +                -A(I,K,3)*Z(K,J,3)-A(I,K,4)*Z(K,J,4)
-               SI = SI+A(I,K,1)*Z(K,J,2)+A(I,K,2)*Z(K,J,1)
-     +                +A(I,K,3)*Z(K,J,4)-A(I,K,4)*Z(K,J,3)
-               SJ = SJ+A(I,K,1)*Z(K,J,3)-A(I,K,2)*Z(K,J,4)
-     +                +A(I,K,3)*Z(K,J,1)+A(I,K,4)*Z(K,J,2)
-               SK = SK+A(I,K,1)*Z(K,J,4)+A(I,K,2)*Z(K,J,3)
-     +                -A(I,K,3)*Z(K,J,2)+A(I,K,4)*Z(K,J,1)
-  110       CONTINUE
-C
-C     Double divisions to avoid possible underflow
-C
-            SR = (SR/H)/H
-            SI = (SI/H)/H
-            SJ = (SJ/H)/H
-            SK = (SK/H)/H
-C
-C     Do second part
-C
-            DO 120 K = 1, L
-               Z(K,J,1) = Z(K,J,1)-SR*A(I,K,1)-SI*A(I,K,2)
-     +                            -SJ*A(I,K,3)-SK*A(I,K,4)
-               Z(K,J,2) = Z(K,J,2)+SR*A(I,K,2)-SI*A(I,K,1)
-     +                            -SJ*A(I,K,4)+SK*A(I,K,3)
-               Z(K,J,3) = Z(K,J,3)+SR*A(I,K,3)+SI*A(I,K,4)
-     +                            -SJ*A(I,K,1)-SK*A(I,K,2)
-               Z(K,J,4) = Z(K,J,4)+SR*A(I,K,4)-SI*A(I,K,3)
-     +                            +SJ*A(I,K,2)-SK*A(I,K,1)
-  120       CONTINUE
-  130    CONTINUE
-  140 CONTINUE
-C
-  200 RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck qopvec */
-      SUBROUTINE QOPVEC(FA,TA,IQPA,A,N,NZA)
-C***********************************************************************
-C
-C     Modify quaternion vector as follows:
-C
-C     FA:
-C       FA = 'N'        Normal array
-C       FA = 'C'        Complex conjugate
-C     and TA
-C       TA = 'N'        No transform    a+bj
-C       TA = 'I'        i-transform   -i(a+bj)i = a - bj
-C       TA = 'J'        j-transform   -j(a+bj)j = a*+b*j
-C       TA = 'K'        k-transform   -k(a+bj)k = a*-b*j
-C
-C     Written by T.Saue July 1996
-C     Last revision: July 14 196 - tsaue
-C     
-C***********************************************************************
-      use quaternion_algebra
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D1 = 1.0D0)
-C
-      CHARACTER FA*1, TA*1
-      DIMENSION A(N,NZA),IQPA(*)
-C
-C
-C     Determine FA:
-C     =============
-C     Normal ARRAY...
-      IF    (FA.EQ.'N') THEN
-        IFA = 1
-C     Complex conjugate....
-      ELSEIF(FA.EQ.'C') THEN
-        IFA = 2
-      ELSE
-        CALL QUIT('QVECOP:Unknown FA '//FA//' of matrix A!')
-      ENDIF
-C
-C     Determine TA:
-C     =============
-C     No transform
-      IF    (TA.EQ.'N') THEN
-        ITA = 1
-C     i-transform
-      ELSEIF(TA.EQ.'I') THEN
-        ITA = 2
-C     j-transform
-      ELSEIF(TA.EQ.'J') THEN
-        ITA = 3
-C     k-transform
-      ELSEIF(TA.EQ.'K') THEN
-        ITA = 4
-      ELSE
-        CALL QUIT('QVECOP:Unknown TA '//TA//' of matrix A!')
-      ENDIF
-C
-      DO IZA = 1,NZA
-        IQA = IQPA(IZA)
-        FACA = IQSIGN(IQA,IFA,ITA)
-        IF(FACA.NE.D1) CALL DSCAL(N,FACA,A(1,IZA),1)
-      ENDDO      
-C
-      RETURN
-      END
-      SUBROUTINE QHTRID_2(A,N,LRA,LCA,D,E,E2,TAU)
+      SUBROUTINE QHTRID_new(A,N,LRA,LCA,D,E,E2,TAU)
 C
       IMPLICIT NONE
       INTEGER ::  N, LRA, LCA
@@ -1098,6 +645,9 @@ C
 C       Trond Saue, University of Tromsoe, Norway , December 1993
 C
 C       Rewritten by Hans Joergen Aa. Jensen, December 2017.
+C       - optimized loop structure (the inner loops were good for algol (or C), but bad in Fortran)
+C       - some additional restructuring for performance
+C       - implemented openMP parallelization
 C       (The old EISPACK routines went through a matrix A(i,j) with j in
 C       the inner loop, good for algol (or C), but bad in Fortran.)
 C
@@ -1353,7 +903,7 @@ C
 C
       RETURN
       END
-      SUBROUTINE QHTRBK_2(A,N,LRA,LCA, TAU, Z,M,LRZ,LCZ)
+      SUBROUTINE QHTRBK_new(A,N,LRA,LCA, TAU, Z,M,LRZ,LCZ)
 C
       IMPLICIT NONE
       INTEGER  :: N, LRA, LCA, M, LRZ,LCZ
@@ -1363,11 +913,12 @@ C
 C       Trond Saue, University of Tromsoe, Norway , December 1993
 C
 C       Rewritten by Hans Joergen Aa. Jensen, December 2017.
-C       the inner loop, good for algol (or C), but bad in Fortran.)
-C
+C       - optimized loop structure (the inner loops were good for algol (or C), but bad in Fortran)
+C       - some additional restructuring for performance
+C       - implemented openMP parallelization
 C
 C       This subroutine is a quaternion analogue of the
-C       EISPLACK routine HTRIBK. It forms the eigenvectors
+C       EISPACK routine HTRIBK. It forms the eigenvectors
 C       of a quaternion Hermitian matrix by backtransforming
 C       those of the corresponding real symmetric matrix
 C       determined by QHTRID.
@@ -1420,7 +971,7 @@ C     Recover and apply the Householder matrices
 C
          DO I = 3,N
             H  = A(I,I,2)
-         IF (H .EQ. 0.0D0) CYCLE ! see QHTRID_2
+         IF (H .EQ. 0.0D0) CYCLE ! see QHTRID_new
 C
          ! s(j) = sum(k) u*(k) Z(k,j) / H
             SR = 0.0D0
@@ -1460,6 +1011,73 @@ C
       END DO ! J = 1,M
 !$OMP END DO
 !$OMP END PARALLEL
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck qopvec */
+      SUBROUTINE QOPVEC(FA,TA,IQPA,A,N,NZA)
+C***********************************************************************
+C
+C     Modify quaternion vector as follows:
+C
+C     FA:
+C       FA = 'N'        Normal array
+C       FA = 'C'        Complex conjugate
+C     and TA
+C       TA = 'N'        No transform    a+bj
+C       TA = 'I'        i-transform   -i(a+bj)i = a - bj
+C       TA = 'J'        j-transform   -j(a+bj)j = a*+b*j
+C       TA = 'K'        k-transform   -k(a+bj)k = a*-b*j
+C
+C     Written by T.Saue July 1996
+C     Last revision: July 14 196 - tsaue
+C     
+C***********************************************************************
+      use quaternion_algebra
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1 = 1.0D0)
+C
+      CHARACTER FA*1, TA*1
+      DIMENSION A(N,NZA),IQPA(*)
+C
+C
+C     Determine FA:
+C     =============
+C     Normal ARRAY...
+      IF    (FA.EQ.'N') THEN
+        IFA = 1
+C     Complex conjugate....
+      ELSEIF(FA.EQ.'C') THEN
+        IFA = 2
+      ELSE
+        CALL QUIT('QVECOP:Unknown FA '//FA//' of matrix A!')
+      ENDIF
+C
+C     Determine TA:
+C     =============
+C     No transform
+      IF    (TA.EQ.'N') THEN
+        ITA = 1
+C     i-transform
+      ELSEIF(TA.EQ.'I') THEN
+        ITA = 2
+C     j-transform
+      ELSEIF(TA.EQ.'J') THEN
+        ITA = 3
+C     k-transform
+      ELSEIF(TA.EQ.'K') THEN
+        ITA = 4
+      ELSE
+        CALL QUIT('QVECOP:Unknown TA '//TA//' of matrix A!')
+      ENDIF
+C
+      DO IZA = 1,NZA
+        IQA = IQPA(IZA)
+        FACA = IQSIGN(IQA,IFA,ITA)
+        IF(FACA.NE.D1) CALL DSCAL(N,FACA,A(1,IZA),1)
+      ENDDO      
 C
       RETURN
       END
