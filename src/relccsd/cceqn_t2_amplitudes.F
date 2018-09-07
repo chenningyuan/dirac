@@ -1,5 +1,5 @@
       SUBROUTINE amplitude_equation_T2 (T1,T2,
-     &          GO,GV,HOV,H,AZ,BUF1,BUF2,BUF3,NBUF2,NBUF3,S2)
+     &          GO,GV,HOV,H,AZ,BUF1,BUF2,BUF3,NBUF3,S2)
 C
       implicit none
 C
@@ -17,7 +17,7 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      INTEGER NBUF2,NBUF3
+      INTEGER NBUF3
       REAL*8 T1(*),T2(*)
       REAL*8 S2(*)
       REAL*8 GO(*),GV(*),HOV(*)
@@ -276,7 +276,7 @@ C
 C  MUST NOW ADD IN B INTERMEDIATE CONTRIBUTION
 C
 C
-      CALL BINTM (T1,T2,BUF1,BUF2,NBUF2,BUF3,NBUF3,S2)
+      CALL BINTM (T1,T2,BUF1,BUF2,BUF3,NBUF3,S2)
 
       CALL XTIME(0,2,'--- T2EQNS: HINTM*T2           ')
 
