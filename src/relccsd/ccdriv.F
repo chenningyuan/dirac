@@ -835,6 +835,12 @@ C
 !! Activate EOMCC calculation 
 
       IF (relcc_do_eomcc) THEN
+
+      ! aspg: temporary solution to make a controlled stop in the case of eom-ee parallel runs complex groups
+         if (carith.and.relcc_do_eomee.and.(nmproc.gt.1)) then
+            call quit('parallel EOMEE with complex groups unavailable')
+         end if
+
          MXCORR1 = 0
          CALL eom_ee(ICALC,MXCORR1,eps)
          MXCORR = MAX(MXCORR,MXCORR1)
