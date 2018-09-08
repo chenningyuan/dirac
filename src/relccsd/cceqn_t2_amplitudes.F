@@ -271,6 +271,13 @@ C-----------------------------------------------------------------------
       CALL SRT1TT4 (NREP,MULTB,LFA,LTR,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
      &              BUF2,BUF1)
       CALL XAXPY (NDIMT2,A1,BUF1,1,S2,1)
+C
+C
+C  MUST NOW ADD IN B INTERMEDIATE CONTRIBUTION
+C
+C
+      CALL BINTM (T1,T2,BUF1,BUF2,BUF3,NBUF3,S2)
+
       CALL XTIME(0,2,'--- T2EQNS: HINTM*T2           ')
 
       END

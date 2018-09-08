@@ -1,7 +1,7 @@
       SUBROUTINE cceqn_driver_amplitudes(MAXIT,EPS,FOO,FVO,FVV,
      &                 T1,S1,T2,S2,AZ,H,HO,HV,HOV,
      &                 BUF1,BUF2,BUF3,CC1,BB1,BB2,CONV,
-     &                 NBUF2,NBUF3,HEFF,EIGENVALUES,EIGENVECTORS)
+     &                 NBUF2,NBUF3)
 
       use interface_to_mpi
       use xmlout
@@ -31,10 +31,6 @@ C     for diis ...
       REAL*8 RMS,CONV
       REAL*8 DIAG
       INTEGER MAXIT,NBUF2,NBUF3
-
-C     for Fock space ...
-
-      REAL*8 HEFF(*),EIGENVECTORS(*),EIGENVALUES(0:*)
 
 C---------------Common Blocks--------------------------------------
 
@@ -83,13 +79,13 @@ C
       IT = 0
       ITC = 0
       NIT = 0
- 1000 CONTINUE
+      do
       NIT = NIT + 1
       IF (NIT.GT.MAXIT) THEN
          maxit = maxit + 1
          NIT = NIT - 1
          WRITE(IW,6004) RMS
-         GO TO 2000
+         exit
       ENDIF
 C
 C  EVALUATE T1 EQUATIONS
@@ -162,18 +158,8 @@ C  INTERMEDIATES FORMED --- START T2 EQUATIONS
 C
       CALL XTIME(5,1,'-- T2 EQNS                     ')
       CALL amplitude_equation_T2 (T1,T2,HO,HV,HOV,H,AZ,
-     &             BUF1,BUF2,BUF3,NBUF3,S2)
+     &        BUF1,BUF2,BUF3,NBUF3,S2)
       CALL XTIME(5,2,'-- T2 EQNS                     ')
-C
-C
-C  MUST NOW ADD IN B INTERMEDIATE CONTRIBUTION
-C
-C
-      CALL XTIME(5,1,'-- BINTM                       ')
-      CALL BINTM (T1,T2,BUF1,BUF2,NBUF2,BUF3,NBUF3,S2,IW)
-      CALL XTIME(5,2,'-- BINTM                       ')
-
-      CALL XTIME(5,2,'- T2 equations                  ')
 C
  100  CONTINUE
 C
@@ -249,14 +235,13 @@ C
       CALL FLSHFO(IW)
 C
 C
-      IF(RMS.LT.CONV) GO TO 2000
+      IF(RMS.LT.CONV) exit
       IF(RMS.GT.rms_limit) THEN
         WRITE (IW,*) ' WARNING: aborted CC iterations (divergence)'
-        GO TO 2000
+        exit
       END IF
-      GO TO 1000
+      end do
 C
- 2000 CONTINUE
       CALL T1DIAG (DIAG,T1,BUF1)
       WRITE(IW,6071)
 C
@@ -290,12 +275,6 @@ C
          call xml_quantity('CC convergence',RMS,' ')
          call xml_quantity('T1 diagnostic',DIAG,' ')
       end if
-C
-      IF (FOCKSP) THEN
-C        Calculate the energies for this sector
-         CALL HEFF1(ICURFSS,IPRNT,S1,S2,FVO,EPS,BUF1,BUF2,BUF3,
-     &              HEFF,EIGENVALUES,EIGENVECTORS)
-      ENDIF
 C
 C     Read out timers for the most important contractions
 C
