@@ -597,7 +597,7 @@ C---------------Local variables--------------------------------------
       REAL*8, ALLOCATABLE :: VOVV_TEMP(:)
       INTEGER, ALLOCATABLE :: counter(:), displ(:)
       LOGICAL :: DONE
-      INTEGER :: totsize, check, i, istart, mint, nint, off1, irp,IERR
+      INTEGER :: totsize, check, i, istart, mint, nint, off1, irp
 C---------------Executable code--------------------------------------
 C
        allocate(counter(0:nmproc-1))
@@ -637,16 +637,13 @@ C
 #if defined (VAR_MPI)
       IF (nmproc .GT. 1) THEN
 
-      CALL XTIME(4,1,'-- combining VOVV via MPI_GATHER')
+        CALL XTIME(4,1,'-- combining VOVV via MPI_GATHER')
 
-      call interface_mpi_allgatherv(vovv_temp(1),counter(myproc),
+        call interface_mpi_allgatherv(vovv_temp(1),counter(myproc),
      &    VVOVV(totsize+off1),counter,displ,global_communicator)
 
-      CALL XTIME(4,2,'-- combining VOVV via MPI_GATHER')
+        CALL XTIME(4,2,'-- combining VOVV via MPI_GATHER')
 
-        IF(IERR.GT.0) THEN
-           CALL QUIT('MPI_GATHER ERROR in collecting VOVV Integrals !')
-        ENDIF
       ENDIF
 #endif
 
@@ -655,8 +652,6 @@ C
        call xcopy(nvo(irp)*nvvt(irp),vovv_temp(1),1,VVOVV(off1),1)
     
       endif
-
-
 
          totsize = totsize + sum(counter)
 
