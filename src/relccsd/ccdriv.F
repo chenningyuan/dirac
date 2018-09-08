@@ -2424,9 +2424,6 @@ C
          call alloc( a_HO   ,    NFOO*RCW             , id="ho" )
          call alloc( a_HV   ,    NFVV*RCW             , id="hv" )
          call alloc( a_HOV  ,   NFVO*RCW              , id="hov" )
-         call alloc( a_CCC  ,   MAXDIM                , id="ccc" )
-         call alloc( a_BB1  ,   (MAXDIM+1)*(MAXDIM+2) , id="bb1" )
-         call alloc( a_BB2  ,   (MAXDIM+1)*(MAXDIM+2) , id="bb2" )
          call alloc( a_BUF1 ,  NBUF1*RCW              , id="buf1" )
          call alloc( a_BUF2 ,  NBUF2*RCW              , id="buf2" )
 
@@ -2554,11 +2551,10 @@ C
          CALL XTIME(5,1,'CCSD equations                ')
 
          maxit_save = MAXIT
-         CALL cceqn_driver_amplitudes(MAXIT_SAVE,EPS,a_FOO,a_FVO,a_FVV,
-     &           a_T1,a_S1,a_T2 ,a_S2 ,a_AZ,a_H,a_HO,a_HV,a_HOV,
-     &           a_BUF1,a_BUF2,a_BUF3,
-     &           a_CCC,a_BB1,a_BB2,
-     &           TOL,NBUF2,NBUF3)
+         CALL cceqn_driver_amplitudes(maxdim,MAXIT_SAVE,EPS,a_FOO,
+     &        a_FVO,a_FVV,a_T1,a_S1,a_T2,a_S2,a_AZ,a_H,a_HO,a_HV,a_HOV,
+     &        a_BUF1,a_BUF2,a_BUF3,
+     &        TOL,NBUF2,NBUF3)
          CALL XTIME(5,2,'CCSD equations                ')
          if (maxit_save.le.maxit) is_ccsd_converged = .true.
 
@@ -3711,9 +3707,6 @@ C
       call alloc( a_HO  , NFOO*RCW              , id="ho")
       call alloc( a_HV  , NFVV*RCW              , id="hv")
       call alloc( a_HOV , NFVO*RCW              , id="hov")
-      call alloc( a_CCC , MAXDIM                , id="ccc")
-      call alloc( a_BB1 , (MAXDIM+1)*(MAXDIM+2) , id="bb1")
-      call alloc( a_BB2 , (MAXDIM+1)*(MAXDIM+2) , id="bb2")
       call alloc( a_BUF1,NBUF1*RCW              , id="buf1")
       call alloc( a_BUF2,NBUF2*RCW              , id="buf2")
 C
@@ -3843,12 +3836,11 @@ C
 C
 
            maxit_save = MAXIT_SECT(ICURFSS)
-        CALL cceqn_driver_amplitudes(maxit_save,EPS,
+        CALL cceqn_driver_amplitudes(maxdim, maxit_save,EPS,
      &             a_FOO , a_FVO , a_FVV  , a_T1   , a_S1   ,
      &             a_T2  , a_S2  , a_AZ   ,a_H,
      &             a_HO  , a_HV  , a_HOV  ,
      &             a_BUF1 , a_BUF2 , a_BUF3 ,
-     &             a_CCC , a_BB1 , a_BB2 ,
      &             TOL, NBUF2, NBUF3)
 
 C        Calculate the energies for this sector
@@ -4561,7 +4553,7 @@ C
             MULTB(IREP,KREP,2) = JREP
          ENDDO
       ENDDO
-       write(*,*) (REPNA(IREP),IREP=1,2*NREP)
+C      write(*,*) (REPNA(IREP),IREP=1,2*NREP)
 
 C     write(*,*)
 C     write(*,*) '--------------------------------------------'
