@@ -777,11 +777,11 @@ integer :: ierr
          done =.false.
          if ((nvvt(irp).eq.0).or.(noot(nrp).eq.0)) cycle
          mint = nbuf3/nvvt(irp)
+         allocate(w_vvvv(nvvt(irp)*mint*rcw))
  10      kstart = istart
          if (idist(1,1,irp).gt.kstart) kstart=idist(1,1,irp)
          ntot = idist(2,1,irp)
          nint = min0(mint,ntot-kstart)
-         allocate(w_vvvv(nvvt(irp)*nint*rcw))
          call getdz (irp,istart,nint,done,w_vvvv,mint)
          m = nvvt(mrp)
          n = noot(nrp)
@@ -792,11 +792,12 @@ integer :: ierr
 
          call xgemm ('n','n',m,n,k,a1,w_vvvv,m,r2(off1+istart*rcw),m, &
      &               a1,sigma2_local(off2),m)
-         deallocate(w_vvvv)
+!    &               a1,sigma2(off2),m)
          if (.not.done) then
             istart = istart + nint
             goto 10
          endif
+         deallocate(w_vvvv)
       enddo
 
 #if defined (VAR_MPI)
