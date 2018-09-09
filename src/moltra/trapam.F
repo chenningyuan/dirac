@@ -36,7 +36,9 @@ C***********************************************************************
 
       Use memory_allocator
       Use moltra_labeling
+#ifdef MOD_EXACORR
       Use exacorr_ao_to_mo
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -121,8 +123,13 @@ C
 
 C     Temporary hack to call the exacorr module
       if (tra_exacorr) then
+#ifndef MOD_EXACORR
+          call quit(
+     &    'moltra error: tra_exacorr not included in this version')
+#else
           call exa_moltra()
           no4ind = .true. ! skip conventional 4-index transformation
+#endif
       end if
 
       KFRSAV = KFREE
@@ -4990,8 +4997,13 @@ C
 C     Temporary hack to call the exacorr module (hardwired for the moment, because tra_exacorr is not broadcasted)
       tra_exacorr = .true.
       if (tra_exacorr) then
+#ifndef MOD_EXACORR
+          call quit(
+     &    'moltra error: tra_exacorr not included in this version')
+#else
           call exa_moltra()
           return ! skip conventional 4-index transformation
+#endif
       end if
 
       CALL QENTER('TRANOD')

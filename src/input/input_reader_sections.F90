@@ -821,7 +821,9 @@
 
    subroutine read_input_exacc(word, kw_section)
 
+#ifdef MOD_EXACORR
       use exacc_cfg
+#endif
       use input_reader
 
       implicit none
@@ -831,6 +833,9 @@
       character(kw_length), intent(in) :: kw_section
 !     --------------------------------------------------------------------------
 
+#ifndef MOD_EXACORR
+      call quit(kw_section//' not available in this version')
+#else
       call reset_available_kw_list()
 
       if (kw_matches(word, '.OCCUPIED')) then
@@ -842,6 +847,7 @@
       end if
 
       call check_whether_kw_found(word, kw_section)
+#endif
 
    end subroutine
 

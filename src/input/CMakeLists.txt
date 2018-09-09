@@ -20,8 +20,13 @@ set(FREE_INPUT_FORTRAN_SOURCES
    ${PROJECT_SOURCE_DIR}/src/grid/num_grid_cfg.F90
    ${PROJECT_SOURCE_DIR}/src/visual/visual_cfg.F90
    ${PROJECT_SOURCE_DIR}/src/relccsd/relcc_cfg.F90
+)
+if(ENABLE_EXATENSOR)
+set(FREE_INPUT_FORTRAN_SOURCES
+   ${FREE_INPUT_FORTRAN_SOURCES}
    ${PROJECT_SOURCE_DIR}/src/exacorr/exacorr_cfg.F90
 )
+endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FREE_INPUT_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
@@ -52,5 +57,7 @@ add_dependencies(input dirac)
 add_dependencies(input main)
 add_dependencies(input visual)
 add_dependencies(input relccsd)
+if(ENABLE_EXATENSOR)
 add_dependencies(input exacorr)
+endif()
 add_dependencies(input grid)
