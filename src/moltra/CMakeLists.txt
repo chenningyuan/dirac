@@ -36,7 +36,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
 endif()
 
 if(ENABLE_RUNTIMECHECK)
-    message(STATUS "runtime-check flags activated for the 'moltra' module with some exceptions")
+    message(STATUS "runtime-check flags activated for the 'moltra' module")
     set_source_files_properties(${FREE_MOLTRA_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
     set_source_files_properties(${FIXED_MOLTRA_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
 endif()

@@ -1537,7 +1537,6 @@ C
 C
 C---------------Executable code--------------------------------------
 
-      allocate(buf1(npair1(irp)*npair2(irp)*rcw))
 
        NVVVO = OFF(NREP+1)
        buf2(1:NVVVO*rcw) = 0.0d0 
@@ -1546,6 +1545,8 @@ C---------------Executable code--------------------------------------
        IJREP = KLREP
        M = NPAIR1(IJREP)
        N = NPAIR2(KLREP)
+       if (M*N*rcw.eq.0) return ! no integrals on this node, we're done
+       allocate(buf1(M*N*rcw))
 C
 C      We can only fetch integrals that are present on our node, ISTART will be 
 C      modified by GETVOVV to represent the first value of KL that is present on

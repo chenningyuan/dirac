@@ -322,6 +322,8 @@ C
        if (DORES.AND.dirac_cfg_dft_calculation.AND.NOVXC) then
           dirac_cfg_dft_calculation_save=.true.
           dirac_cfg_dft_calculation=.false.   !Miro: do we have interest in absolute energies of multiplet states ?
+       else 
+          dirac_cfg_dft_calculation_save=.false.
        endif
 #endif
       CALL ERGCAL(FAO,FMO,DMAT,WORK(KFREE),LFREE)
