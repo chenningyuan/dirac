@@ -518,7 +518,6 @@ integer :: ierr
   real(8)              :: ddot
   type(Offset) :: f,g
   integer  ::row(nrep), column(nrep)
-
 !--------------------------------------------------
 
   N1 = size(sigma1,1)
@@ -793,7 +792,6 @@ integer :: ierr
 
          call xgemm ('n','n',m,n,k,a1,w_vvvv,m,r2(off1+istart*rcw),m, &
      &               a1,sigma2_local(off2),m)
-!    &               a1,sigma2(off2),m)
          deallocate(w_vvvv)
          if (.not.done) then
             istart = istart + nint
@@ -811,8 +809,7 @@ integer :: ierr
    write(*,*)'diagram 13a ', ddot(N2,sigma2_local,1,sigma2_local,1),myproc
 
         call interface_mpi_allreduce(sigma2_local, &
-!       call interface_mpi_allreduce(sigma2, &
-             local_buffer, ndimr2, &
+             local_buffer, N2, &
              op_mpi_sum,global_communicator)
 
       if (iprnt.ge.2) &
@@ -822,8 +819,8 @@ integer :: ierr
            call quit('mpi_reduce error in collecting sigma2 !')
         endif
         call xcopy(ndimr2,local_buffer,1,sigma2_local,1)
-!       call xcopy(ndimr2,local_buffer,1,sigma2,1)
         deallocate (local_buffer)
+
      endif
 #endif
       if (iprnt.ge.2) &
