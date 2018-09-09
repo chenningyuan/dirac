@@ -36,7 +36,7 @@ ubuntu_serial32-check:
     - make
 #    Parallel build deactivated till dependency problem is solved
 #    - make -j $N_PROC
-    - ctest -VV -j $N_PROC -E basis_input_scripted # exclude long (failing) test
+    - ctest -VV -j $N_PROC -E basis_input_scripted -L short # exclude long (failing) test
 #  do the documentation buildup
     - make -j $N_PROC html
 
