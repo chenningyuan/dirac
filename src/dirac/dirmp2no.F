@@ -302,7 +302,6 @@ C
 C
       CALL QENTER('MP2NOGEN')
 
-#include "memint.h"
       CALL TITLER('MP2 natural orbitals','*',125)
 C
         WRITE(LUPRI,'(//A/A/A/)')

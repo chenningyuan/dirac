@@ -1153,7 +1153,7 @@ C
       DIMENSION WORK(LWORK)
 C
       SAVE SET
-      DATA TABLE /'.PRINT ','.OPERAT','.MORANG','.XXXXXX',
+      DATA TABLE /'.PRINT ','.OPERAT','.MORANG','.NMQM  ', !MKN
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
@@ -1172,6 +1172,9 @@ C
 C     Initialize /CBIEXP/
 C     ===================
 C
+CMKN
+      DONMQM = .FALSE.
+CMKN
       IPRTRP   = IPRTRA
 !     Always transform the dipole length operator
       IF (.NOT. BSS) THEN
@@ -1238,6 +1241,11 @@ C&&&& OPERATOR: Define operator
 !.q
                GO TO 100
     4          CONTINUE
+CMKN NMQM: Define operator Nuclear Magnetic Quadruple Moment
+                  DONMQM = .TRUE.
+                  PRPTRA = .TRUE.
+                  ICHANG = ICHANG + 1
+CMKN NMQM: Defination added by M. K. Nayak on July 19 2018
                GO TO 100
     5          CONTINUE
                GO TO 100
@@ -1257,6 +1265,11 @@ C&&&& OPERATOR: Define operator
             END IF
       END IF
   300 CONTINUE
+CMKN
+      IF(DONMQM) THEN
+        CALL DEF_PRP_NMQM(LTRPP,NTRPP,MAXTRP,IPRTRP)
+      ENDIF
+CMKN
 C
 C     Print section
 C     =============
@@ -1288,6 +1301,10 @@ C
       IF(NQCC) THEN
         CALL PRSYMB(LUPRI,'-',75,0)
         WRITE(LUPRI,'(4X,A)')'- Nuclear Quadrupole Coupling Constant'
+      ENDIF
+      IF(DONMQM) THEN
+        CALL PRSYMB(LUPRI,'-',75,0)
+        WRITE(LUPRI,'(4X,A)')'- Nuclear Magnetic Quadruple Moment'
       ENDIF
 C
       CALL PRSYMB(LUPRI,'-',75,0)
@@ -1511,6 +1528,7 @@ C
             WRITE(LUPRI,"(2X,A)")
      &      "Only core-density for Vxc in Fij terms ... approximation "
          ENDIF
+         IF (PARCAL) CALL QUIT('DFT-COSCI not parallelized')
       ENDIF
       IF ((NOVXC.OR.COREDENS).AND..NOT.dirac_cfg_dft_calculation) THEN
           WRITE(LUPRI,"(2X,A)")

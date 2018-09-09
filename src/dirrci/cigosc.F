@@ -1942,7 +1942,7 @@ C
       DIMENSION IXDET(NDETMX)
       CHARACTER*11 VECFIL
       DATA K8BYTE/8/
-!SK   DATA K4BYTE/4/, K1WORD/1/, K4WORD/4/
+      DATA K4BYTE/4/, K1WORD/1/, K4WORD/4/ ! Miro: necessary to fix runtimecheck
       INTEGER KXBYTE
       DATA LUCIVC/10/
 !----------------------------------------------------------------------
@@ -1957,9 +1957,7 @@ C
 !#    LENREC = LEN * 2 * 8
       LENW   = NDETMX
       LENR0  = LENW * NRIVEC * K8BYTE 
-!radovan: K1WORD is not initialized
       LENR2  = (K1WORD + NDETMX) * KXBYTE
-!radovan: K4WORD is not initialized
       LENR1  = K4WORD * KXBYTE + NDETMX * K8BYTE
       LENREC = MAX(LENR0,LENR2,LENR1)
 !.q

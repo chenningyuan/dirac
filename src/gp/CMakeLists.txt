@@ -15,8 +15,6 @@ set(FIXED_GP_FORTRAN_SOURCES
    gpjeppe.F
    gpjth.F
    gpkrmc.F
-   gplucia.F
-   gplucia_io.F
    gplupar.F
    gpluuk.F
    gpsaue.F
@@ -37,6 +35,12 @@ set(FIXED_GP_FORTRAN_SOURCES
    vcraypack.F
    # gpsaue.F needs disotp
    ${PROJECT_SOURCE_DIR}/src/abacus/hergp.F
+)
+
+set(FIXED_GP_FORTRAN_SOURCES_noruntimecheck
+# Miro: I moved problematic source files here
+   gplucia_io.F
+   gplucia.F
 )
 
 set(FREE_GP_FORTRAN_SOURCES
@@ -98,12 +102,21 @@ set(GP_C_SOURCES
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FREE_GP_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
     set_source_files_properties(${FIXED_GP_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
+    set_source_files_properties(${FIXED_GP_FORTRAN_SOURCES_noruntimecheck} PROPERTIES COMPILE_FLAGS "-qfixed")
+endif()
+
+if(ENABLE_RUNTIMECHECK)
+    message(STATUS "runtime-check flags activated for the 'gp' module with some source files excluded")
+    set_source_files_properties(${FREE_GP_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+    set_source_files_properties(${FIXED_GP_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+    set_source_files_properties(${GP_C_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_C_FLAGS_runtimecheck})
 endif()
 
 add_library(
     gp
     OBJECT
     ${FIXED_GP_FORTRAN_SOURCES}
+    ${FIXED_GP_FORTRAN_SOURCES_noruntimecheck}
     ${FREE_GP_FORTRAN_SOURCES}
     ${GP_C_SOURCES}
 )

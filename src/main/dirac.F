@@ -651,7 +651,8 @@ C        Set min and max accumulated no. of electrons in each gas space
          NGAS_DC = NGAS_DC + 1 ! RAS2-GAS space
          DO J = 1,NFSYM
             NGSH(J,NGAS_DC) = NASH(J)
-            NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NASH(I)
+            !miro: fix out-of-bounds index for NASH(I) .. it should ne NASH(J), right HJJ ?
+            NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NASH(J)
          END DO
 
          IF (NGAS_CIESR(3) > 0) THEN
@@ -777,6 +778,7 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbkrmc.h"
+#include "dcbkrci.h"
 #include "dcbopt.h"
 #include "dcbgascip.h"
 #include "dcbdhf.h"

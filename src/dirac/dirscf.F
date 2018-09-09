@@ -328,7 +328,7 @@ C     ========================================
 C ... skip the generation of 2-el.Fock matrix when RESTFCK=.true. 
       IF (.NOT.RESTFCK) THEN
       IF(ATHUCK) THEN
-        DHF_INTTYP='Atom. Huckel'
+        DHF_INTTYP = 'Atom. Huckel'
         CALL ADHOC(CMO,EIG,IBEIG,DHFERG,IPRSCF,WORK,KFREE,LFREE)
         CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
         GOTO 100
@@ -337,10 +337,11 @@ C     2) - atomic start
 C     -------------------------
       ELSEIF(ATOMST) THEN
 C.......In the open-shell case use fractional occupation in first iteration; reset at the end
-        AOCBUF   = AOC
-        AOC      = .FALSE.
-        NFMATBUF = NFMAT
-        NFMAT    = 1
+        DHF_INTTYP = 'Atomic s'
+        AOCBUF     = AOC
+        AOC        = .FALSE.
+        NFMATBUF   = NFMAT
+        NFMAT      = 1
         CALL ATOMIC_START(DMAT,IPRSCF,WORK,KFREE,LFREE)
         !fixme: michal for InteRest                            
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
@@ -3547,7 +3548,6 @@ C     ------------------------------------------------
 C
       IF(ATOMST) THEN
         BARNUC = .FALSE.
-        CACC    = 'Atomic s'
       ENDIF
 C
 C     * TRIFCK: Looking for old 2-electron Fock matrix
@@ -3582,7 +3582,7 @@ CMI/May05 Do not use old DFCOEF when DO4C2C=.TRUE. !
       IF(TRIVEC.AND..NOT.RESTFCK) THEN
         INQUIRE(FILE='DFCOEF',EXIST=TOBE)
         IF(TOBE) THEN
-          BARNUC = .FALSE.
+          BARNUC   = .FALSE.
           DOHUCKEL = .FALSE.
         ELSE
           WRITE(LUPRI,'(/A)') '*** INFO *** No trial vectors found.'
@@ -4297,7 +4297,7 @@ C
                 CALL PRQMAT(FMO(IMAT),NBO,NBO,NTMO(I),NTMO(I),
      &                      1,IPQTOQ(1,0),LUPRI)
               ENDIF
-              IF (WRITE_FMO_MATRIX) CALL FMO_WRITE(FMO,I,ISUB,NBO)
+              IF (WRITE_FMO_MATRIX) CALL FMO_WRITE(FMO,IMAT,I,ISUB,NBO)
 C
 C             Diagonalize the isub'th block of parity i
 C
@@ -4646,9 +4646,9 @@ C
        write(lupri,'(2X,A,I1,A,I3,A,I3,A,I3)')
      & 'IBOS for IFRP=',IFRP,' NTMO(IFRP)=',NTMO(IFRP),
      & ' positr.orbs:',NPSH(IFRP),' electr.orbs:',NESH(IFRP)
-       write(lupri,'(2X,A,/,4X,25I3)')
-     & 'boson irreps of each MO (from pos. to el.):',
-     &                (IBOS(J),J=1,NTMO(IFRP))
+       write(lupri,'(2X,A)')
+     &      'boson irreps of each MO (from pos. to el.):'
+       write(lupri,'(4X,25I3)') (IBOS(J),J=1,NTMO(IFRP))
       ENDIF
 
       RETURN
@@ -5020,7 +5020,8 @@ C
 C.....transform coefficients to orthonormal basis --> COFU
 C     Frozen orbitals must be projected out, see ADJCMO
       DO IFRP = 1,NFSYM
-        IF(NFRO(IFRP).EQ.0) THEN
+         IF(NORB(IFRP).EQ.0) CYCLE
+         IF(NFRO(IFRP).EQ.0) THEN
           CALL QGEMM(NTMO(IFRP),NTMO(IFRP),NFBAS(IFRP,0),D1,
      &         'H','N',IPQTOQ(1,0),TMAT(I2TMT(IFRP)+1),
      &                 NFBAS(IFRP,0),NTMO(IFRP),NZT,
@@ -5832,7 +5833,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE FMO_WRITE(FMO,IFRP,ISUB,NBO)
+      SUBROUTINE FMO_WRITE(FMO,IMAT,IFRP,ISUB,NBO)
 C***********************************************************************
 C      miro: save the matrix for diagonalization, FMO(IMAT), into formatted, unique files
 C      -----------------------------------------------------------------------------------

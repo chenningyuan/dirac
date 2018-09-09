@@ -4657,6 +4657,7 @@ C
 C
 #include "memint.h"
       NCOOR = 3*NUCDEP
+      NWARN = 0
 C
 C     *********************************
 C     ***** Cartesian Coordinates *****
