@@ -1887,13 +1887,15 @@ contains
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
 #ifdef VAR_MPI_32BIT_INT
-    integer(kind=4)           :: ndim_i4
-    integer(kind=4) , pointer  :: disp_i4(:)
-    integer(kind=4) , pointer  :: counter_i4(:)
-    integer(kind=4)            :: root_proc_i4
-    integer(kind=4)            :: communicator_i4
-    integer(kind=4)            :: ierr_i4
+    integer(kind=4) :: ndim_i4
+    integer(kind=4) :: root_proc_i4
+    integer(kind=4) :: communicator_i4
+    integer(kind=4) :: ierr_i4
+    integer(kind=4), allocatable :: disp_i4(:)
+    integer(kind=4), allocatable  :: counter_i4(:)
 !-------------------------------------------------------------------------------
+    allocate (disp_i4(size(disp)))
+    allocate (counter_i4(size(counter)))
     ndim_i4         = ndim
     disp_i4         = disp
     counter_i4      = counter
@@ -1901,6 +1903,8 @@ contains
     communicator_i4 = communicator
     if (.not. MPI_INIT_called) return
     call MPI_Gatherv(x,ndim_i4,MPI_REAL8,y,counter_i4,disp_i4,MPI_REAL8,root_proc_i4,communicator_i4,ierr_i4)
+    deallocate (disp_i4)
+    deallocate (counter_i4)
 #else
     if (.not. MPI_INIT_called) return
     call MPI_Gatherv(x, ndim   , MPI_REAL8, y,counter,disp,MPI_REAL8,root_proc,communicator,ierr )
@@ -1923,18 +1927,22 @@ contains
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
 #ifdef VAR_MPI_32BIT_INT
-    integer(kind=4)            :: ndim_i4
-    integer(kind=4) , pointer  :: disp_i4(:)
-    integer(kind=4) , pointer  :: counter_i4(:)
-    integer(kind=4)            :: communicator_i4
-    integer(kind=4)            :: ierr_i4
+    integer(kind=4) :: ndim_i4
+    integer(kind=4) :: communicator_i4
+    integer(kind=4) :: ierr_i4
+    integer(kind=4), allocatable :: disp_i4(:)
+    integer(kind=4), allocatable  :: counter_i4(:)
 !-------------------------------------------------------------------------------
+    allocate (disp_i4(size(disp)))
+    allocate (counter_i4(size(counter)))
+    if (.not. MPI_INIT_called) return
     ndim_i4         = ndim
     disp_i4         = disp
     counter_i4      = counter
     communicator_i4 = communicator
-    if (.not. MPI_INIT_called) return
     call MPI_AllGatherv(x,ndim_i4,MPI_REAL8,y,counter_i4,disp_i4,MPI_REAL8,communicator_i4,ierr_i4)
+    deallocate (disp_i4)
+    deallocate (counter_i4)
 #else
     if (.not. MPI_INIT_called) return
     call MPI_AllGatherv(x, ndim   , MPI_REAL8, y,counter,disp,MPI_REAL8,communicator,ierr )
@@ -3305,7 +3313,6 @@ contains
 #endif
     if (.not. MPI_INIT_called) return
     call mpi_type_extent(datatype   , extent   , ierr   )
-!   print *, 'extent ',extent
 #endif
 
   end subroutine
