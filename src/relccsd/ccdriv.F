@@ -3638,7 +3638,8 @@ c
      &                             a_BB1 (:), a_BB2 (:), a_BUF1(:),
      &                             a_BUF2(:), a_BUF3(:),
      &                             a_HEFF(:,:), a_EIGENVALUES(:,:),
-     &                             a_EIGENVECTORS(:,:)
+     &                             a_EIGENVECTORS_LEFT(:,:),
+     &                             a_EIGENVECTORS_RIGHT(:,:)
       integer                :: freemem = 0
       integer(kind=8)        :: mxcorr, mxcorr1
       integer                :: maxit_save
@@ -3824,8 +3825,10 @@ C
            call alloc (a_HEFF, RCW , IFS_HE2(NREP+1,ICURFSS), id="heff")
            call alloc (a_EIGENVALUES,  RCW, (IFS_HE(NREP+1,ICURFSS)+1),
      &                 id="eigenvalues" )
-           call alloc (a_EIGENVECTORS, RCW, IFS_HE2(NREP+1,ICURFSS)  ,
-     &              id="eigenvectors" )
+           call alloc (a_EIGENVECTORS_LEFT, RCW,
+     &                  IFS_HE2(NREP+1,ICURFSS))
+           call alloc (a_EIGENVECTORS_RIGHT, RCW,
+     &             IFS_HE2(NREP+1,ICURFSS), id="eigenvectors" )
            IF (ICALC.LE.1) GOTO 442
 C
 
@@ -3838,8 +3841,9 @@ C
      &             TOL, NBUF2, NBUF3)
 
 C        Calculate the energies for this sector
-         CALL HEFF1(ICURFSS,IPRNT,a_S1,a_S2,a_FVO,EPS,a_BUF1,a_BUF2,
-     &              a_BUF3,a_HEFF,a_EIGENVALUES,a_EIGENVECTORS)
+              CALL HEFF1(ICURFSS,IPRNT,a_S1,a_S2,a_FVO,EPS,a_BUF1,
+     &    a_BUF2,a_BUF3,a_HEFF,a_EIGENVALUES,
+     &    a_EIGENVECTORS_LEFT,a_EIGENVECTORS_RIGHT)
 
            if (maxit_save.gt.maxit_SECT(ICURFSS)) then
               is_ccsd_converged = .false.
@@ -3847,11 +3851,12 @@ C        Calculate the energies for this sector
               is_ccsd_converged = .true.
            endif
 
-           if (ICURFSS.GT.1)
+           if (ICURFSS.GT.1) then
 C          Print the Fock space eigenvalues, compute transition moments
 C          except for the 00 sector, obviously
-     &     CALL FS_ANALYSIS1(ICURFSS,EPS,a_EIGENVALUES,a_EIGENVECTORS,
-     &                    NSP,IREPSPI)
+             CALL FS_ANALYSIS1(ICURFSS,EPS,a_EIGENVALUES,
+     &     a_EIGENVECTORS_LEFT,a_EIGENVECTORS_RIGHT,NSP,IREPSPI)
+           endif
 
 C          Save the updated wave function
            CALL FS_PUTAMPT (ICURFSS, a_T1 , a_T2 , a_BUF1 , a_BUF2 )
@@ -3873,7 +3878,8 @@ C          Deallocate space for the effective Hamiltonian
  442       CONTINUE
            call dealloc (a_HEFF, id="heff")
            call dealloc (a_EIGENVALUES, id="eigenvalues")
-           call dealloc (a_EIGENVECTORS, id="eigenvectors")
+           call dealloc (a_EIGENVECTORS_LEFT)
+           call dealloc (a_EIGENVECTORS_RIGHT, id="eigenvectors")
         ENDIF
 C
       ENDIF
