@@ -428,6 +428,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+#include "dummy.h"
 C
       DIMENSION VECTOR(ISIZE)
       CHARACTER LABEL*8

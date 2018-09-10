@@ -779,6 +779,7 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbkrmc.h"
+#include "dcbkrci.h"
 #include "dcbopt.h"
 #include "dcbgascip.h"
 #include "dcbdhf.h"

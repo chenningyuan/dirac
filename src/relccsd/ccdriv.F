@@ -302,6 +302,24 @@ C     Switch on evaluation of property output if necessary
              PRP_WF(IPRP_WF) = 'CCSD'
           END IF
       END IF
+! the following section is to activate excited state property evaluation module
+
+      if (relcc_do_eomprop) then
+        DOEXP = .TRUE.
+          IPRP_WF = 0
+          DO I = 1, NPRP_WF
+             IF (PRP_WF(I).EQ.'EOM ') IPRP_WF = I
+          END DO
+          IF (IPRP_WF.EQ.0) THEN
+             IF (NPRP_WF .GE. MXPRP_WF) THEN
+                IPRP_WF = 1 ! Unlikely that this happens, just skip the HF print out in this case
+             ELSE
+                NPRP_WF = NPRP_WF + 1
+                IPRP_WF = NPRP_WF
+             END IF
+             PRP_WF(IPRP_WF) = 'EOM '
+          END IF
+      END IF
 
       MXDIMGR = MAXDIM
       MXITGR = MAXIT
@@ -564,6 +582,7 @@ c
       use interface_to_mpi
       use relcc_cfg
       use xmlout
+      use eom_driver
 C
       IMPLICIT NONE
 C
@@ -603,9 +622,9 @@ C
       REAL*8 EPS(MAXSP),EPS1(MAXSP)
       LOGICAL ALLOC_ME,CA
       REAL*8 CPU0,CPU1,CPU2,CPUTOT,CPUI,CPUS
-      REAL*8 CPUE,CPUFO,CPUSO,CPUFS,CPUVAR
+      REAL*8 CPUE,CPUFO,CPUSO,CPUFS,CPUVAR,CPUEOM
       REAL*8 WALL0,WALL1,WALL2,WALLTOT,WALLI,WALLS,TIME_SYNC_TOT
-      REAL*8 WALLE,WALLFO,WALLSO,WALLFS,WALLVAR,TIME_SYNC
+      REAL*8 WALLE,WALLFO,WALLSO,WALLFS,WALLVAR,WALLEOM,TIME_SYNC
       CHARACTER*10 INTFCE
       integer :: verbose    = 0
       integer :: ncore_elec = 0
@@ -644,6 +663,7 @@ C
       CPUE = 0
       CPUFO = 0
       CPUFS = 0
+      CPUEOM = 0
       CPUSO = 0
       CPUTOT = 0
       WALL1 = WALL0
@@ -652,6 +672,7 @@ C
       WALLE = 0
       WALLFO = 0
       WALLFS = 0
+      WALLEOM = 0
       WALLSO = 0
       WALLTOT = 0
 C
@@ -810,6 +831,15 @@ C
          CALL CCFSPC(ICALC,MXCORR1,EPS1,EPS,NSP,IREPSP,IREPSPI)
          MXCORR = MAX(MXCORR,MXCORR1)
       ENDIF
+
+!! Activate EOMCC calculation 
+
+      IF (relcc_do_eomcc) THEN
+         MXCORR1 = 0
+         CALL eom_ee(ICALC,MXCORR1,eps)
+         MXCORR = MAX(MXCORR,MXCORR1)
+      ENDIF
+
 C
 C excitation energy code (e.g. rpa) is disabled
 C     IF (DOEXCIT) THEN
@@ -891,7 +921,15 @@ C
       WALLFS = WALLFS + CPU2 - CPU1
       WALL1 = WALL2
       CALL FLSHFO (IW)
-C
+
+      IF (relcc_do_eomcc) CALL eom_ee(ICALC,MXCORR,eps)
+      CALL GETTIM(CPU2,WALL2)
+      CPUEOM = CPUEOM + CPU2 - CPU1
+      CPU1 = CPU2
+      WALLEOM = WALLEOM + CPU2 - CPU1
+      WALL1 = WALL2
+      CALL FLSHFO (IW)
+
 C  FINISHED; RETURN AFTER CLOSING FILES
 C
       JCODE = 3
@@ -905,9 +943,11 @@ C
       JCODE = 3
       CALL WAIO_CLOSE(ITAPT+4,JCODE)
       JCODE = 3
-      IF (DOCCSD.OR.DOCCSDT.OR.DOCCSDG) CALL WAIO_CLOSE(ITAPT+5,JCODE)
+      IF (DOCCSD.OR.DOCCSDT.OR.DOCCSDG.OR.relcc_do_eomcc) 
+     &       CALL WAIO_CLOSE(ITAPT+5,JCODE)
       JCODE = 3
-      IF (DOCCSD.OR.DOCCSDG) CALL WAIO_CLOSE(ITAPT+6,JCODE)
+      IF (DOCCSD.OR.DOCCSDG.OR.relcc_do_eomcc)
+     &  CALL WAIO_CLOSE(ITAPT+6,JCODE)
       IF (DOFSPC) CLOSE (IUHEFF)
 C
       CALL CCSUMM
@@ -922,14 +962,15 @@ C
 !!      IF (.NOT.DOCCSDG)
       CALL XTIME(0,4,' RELCCSD                         ')
       CALL FLSHFO (IW)
+
       CALL GETTIM(CPUTOT,WALLTOT)
 
       CPUTOT = CPUTOT - CPU0
-      CPUVAR = CPUTOT-CPUI-CPUS-CPUE-CPUFO-CPUSO-CPUFS
+      CPUVAR = CPUTOT-CPUI-CPUS-CPUE-CPUFO-CPUSO-CPUFS-CPUEOM
       WALLTOT = WALLTOT-WALL0
-      WALLVAR = WALLTOT-WALLI-WALLS-WALLE-WALLFO-WALLSO-WALLFS
+      WALLVAR = WALLTOT-WALLI-WALLS-WALLE-WALLFO-WALLSO-WALLFS-WALLEOM
       WRITE(IW,1010) WALL0,CPU0,WALLI,CPUI,WALLS,CPUS,WALLE,CPUE,
-     & WALLFO,CPUFO,WALLSO,CPUSO,WALLFS,CPUFS,
+     & WALLFO,CPUFO,WALLSO,CPUSO,WALLFS,CPUFS,WALLEOM,CPUEOM,
      & WALLVAR,CPUVAR,WALLTOT,CPUTOT
 
 
@@ -992,7 +1033,8 @@ C
      &/' First order properties :',T30,F12.2,T55,F12.2
      &/' Second order properties :',T30,F12.2,T55,F12.2
      &/' Fock space energies :',T30,F12.2,T55,F12.2
-     &/' Untimed parts :',T30,F12.2,T55,F12.2
+     &/' EOMCC energies :',T30,F12.2,T55,F12.2
+     &/' Untimed parts :',T30,F12.2,T55,F12.2 
      &/' Total time in CC driver :',T30,F12.0,T55,F12.2)
  1011 FORMAT (/'---< Process ',I5,' of ',I5,'----<'/)
  1015 FORMAT (/' Checking ',A,'MXCORR1,MXCORR',2I10)
@@ -1059,6 +1101,7 @@ C
          NO(IREP) = 0
          NV(IREP) = 0
          NC(IREP) = 0
+!         NCONT(IREP) = 0
          NIO(IREP) = 0
          NIV(IREP) = 0
          NAO(IREP) = 0
@@ -1721,7 +1764,7 @@ C
          KVOOV  (IREP+1) = KVOOV  (IREP) + NVOO (IREP)*NV(IREP)
          KOVOO  (IREP+1) = KOVOO  (IREP) + NOVO (IREP)*NO(IREP)
          KOVOV  (IREP+1) = KOVOO  (IREP) + NOVO (IREP)*NV(IREP)
-         KOVVOT  (IREP+1) = KOVVOT  (IREP) + NOVVT (IREP)*NO(IREP)
+         KOVVOT (IREP+1) = KOVVOT (IREP) + NOVVT (IREP)*NO(IREP)
          KVOVV  (IREP+1) = KVOVV  (IREP) + NVOV (IREP)*NV(IREP)
          KVOVO  (IREP+1) = KVOVO  (IREP) + NVOV (IREP)*NO(IREP)
          KVOOO  (IREP+1) = KVOOO  (IREP) + NVOO (IREP)*NO(IREP)
@@ -2375,9 +2418,6 @@ C
          call alloc( a_HO   ,    NFOO*RCW             , id="ho" )
          call alloc( a_HV   ,    NFVV*RCW             , id="hv" )
          call alloc( a_HOV  ,   NFVO*RCW              , id="hov" )
-         call alloc( a_CCC  ,   MAXDIM                , id="ccc" )
-         call alloc( a_BB1  ,   (MAXDIM+1)*(MAXDIM+2) , id="bb1" )
-         call alloc( a_BB2  ,   (MAXDIM+1)*(MAXDIM+2) , id="bb2" )
          call alloc( a_BUF1 ,  NBUF1*RCW              , id="buf1" )
          call alloc( a_BUF2 ,  NBUF2*RCW              , id="buf2" )
 
@@ -2505,11 +2545,10 @@ C
          CALL XTIME(5,1,'CCSD equations                ')
 
          maxit_save = MAXIT
-         CALL cceqn_driver_amplitudes(MAXIT_SAVE,EPS,a_FOO,a_FVO,a_FVV,
-     &           a_T1,a_S1,a_T2 ,a_S2 ,a_AZ,a_H,a_HO,a_HV,a_HOV,
-     &           a_BUF1,a_BUF2,a_BUF3,
-     &           a_CCC,a_BB1,a_BB2,
-     &           TOL,NBUF2,NBUF3,DUM,DUM,DUM)
+         CALL cceqn_driver_amplitudes(maxdim,MAXIT_SAVE,EPS,a_FOO,
+     &        a_FVO,a_FVV,a_T1,a_S1,a_T2,a_S2,a_AZ,a_H,a_HO,a_HV,a_HOV,
+     &        a_BUF1,a_BUF2,a_BUF3,
+     &        TOL,NBUF2,NBUF3)
          CALL XTIME(5,2,'CCSD equations                ')
          if (maxit_save.le.maxit) is_ccsd_converged = .true.
 
@@ -2551,7 +2590,6 @@ C
             WRITE (IW,1012)
             GOTO 30
          ENDIF
-
 C
 C        now we start reallocating
 C
@@ -2692,6 +2730,7 @@ C
 #include "eqns.inc"
 #include "results.inc"
 #include "symm.inc"
+#include "dgroup.h"
 #include "complex.inc"
 #include "ccpar.inc"
 #include "dcbmp2no.h"
@@ -3069,7 +3108,7 @@ C        Check the minimum size for the general use of this array
 
          IF (NV5IRP.GT.NBUF3) THEN
 
-           write(iw,*) 'The calculation may Fail because of very high
+           write(iw,*) 'The calculation may Fail because of very high //
      &                  memory requirement. Increase mw'
            NBUF3 = NV5IRP
          
@@ -3079,6 +3118,7 @@ C        Check the minimum size for the general use of this array
 
 C     Allocate now also this remaining work array
         call alloc( a_BUF3  , NBUF3*RCW             , id="buf3" )
+
 
          MAXDIM = MXDIMCC
          MAXIT  = MXITCC
@@ -3134,6 +3174,8 @@ C         this means that, for the time being, we can deallocate everything?
 
 !        get coupled cluster lambdas
 
+
+
          CALL CCDUMP
 
     5   format(10f10.6)
@@ -3152,16 +3194,12 @@ C         this means that, for the time being, we can deallocate everything?
 
 
 C        Solve Z-vector equations
-
          IF (.NOT.NOZG)
      &      CALL MP2ZVEC( a_S2, a_BUF1, a_BUF2, a_BUF3,
      &                   NBUF3, a_XMO , a_DMO)
-C
-C        Create upper triangle of density matrix
-C
-!!         CALL QHMRST( a_DMO, NORBT,NZ,NORBT,NORBT)
+
+
 C        Write density matrix to file for later processing
-C
          if (myproc==0) then 
 
            CALL STORE_CC_DENSITY ('CCSD', a_DMO )
@@ -3600,7 +3638,8 @@ c
      &                             a_BB1 (:), a_BB2 (:), a_BUF1(:),
      &                             a_BUF2(:), a_BUF3(:),
      &                             a_HEFF(:,:), a_EIGENVALUES(:,:),
-     &                             a_EIGENVECTORS(:,:)
+     &                             a_EIGENVECTORS_LEFT(:,:),
+     &                             a_EIGENVECTORS_RIGHT(:,:)
       integer                :: freemem = 0
       integer(kind=8)        :: mxcorr, mxcorr1
       integer                :: maxit_save
@@ -3663,9 +3702,6 @@ C
       call alloc( a_HO  , NFOO*RCW              , id="ho")
       call alloc( a_HV  , NFVV*RCW              , id="hv")
       call alloc( a_HOV , NFVO*RCW              , id="hov")
-      call alloc( a_CCC , MAXDIM                , id="ccc")
-      call alloc( a_BB1 , (MAXDIM+1)*(MAXDIM+2) , id="bb1")
-      call alloc( a_BB2 , (MAXDIM+1)*(MAXDIM+2) , id="bb2")
       call alloc( a_BUF1,NBUF1*RCW              , id="buf1")
       call alloc( a_BUF2,NBUF2*RCW              , id="buf2")
 C
@@ -3789,20 +3825,25 @@ C
            call alloc (a_HEFF, RCW , IFS_HE2(NREP+1,ICURFSS), id="heff")
            call alloc (a_EIGENVALUES,  RCW, (IFS_HE(NREP+1,ICURFSS)+1),
      &                 id="eigenvalues" )
-           call alloc (a_EIGENVECTORS, RCW, IFS_HE2(NREP+1,ICURFSS)  ,
-     &              id="eigenvectors" )
+           call alloc (a_EIGENVECTORS_LEFT, RCW,
+     &                  IFS_HE2(NREP+1,ICURFSS))
+           call alloc (a_EIGENVECTORS_RIGHT, RCW,
+     &             IFS_HE2(NREP+1,ICURFSS), id="eigenvectors" )
            IF (ICALC.LE.1) GOTO 442
 C
 
            maxit_save = MAXIT_SECT(ICURFSS)
-        CALL cceqn_driver_amplitudes(maxit_save,EPS,
+        CALL cceqn_driver_amplitudes(maxdim, maxit_save,EPS,
      &             a_FOO , a_FVO , a_FVV  , a_T1   , a_S1   ,
      &             a_T2  , a_S2  , a_AZ   ,a_H,
      &             a_HO  , a_HV  , a_HOV  ,
      &             a_BUF1 , a_BUF2 , a_BUF3 ,
-     &             a_CCC , a_BB1 , a_BB2 ,
-     &             TOL, NBUF2, NBUF3,
-     &             a_HEFF,a_EIGENVALUES,a_EIGENVECTORS)
+     &             TOL, NBUF2, NBUF3)
+
+C        Calculate the energies for this sector
+              CALL HEFF1(ICURFSS,IPRNT,a_S1,a_S2,a_FVO,EPS,a_BUF1,
+     &    a_BUF2,a_BUF3,a_HEFF,a_EIGENVALUES,
+     &    a_EIGENVECTORS_LEFT,a_EIGENVECTORS_RIGHT)
 
            if (maxit_save.gt.maxit_SECT(ICURFSS)) then
               is_ccsd_converged = .false.
@@ -3810,11 +3851,12 @@ C
               is_ccsd_converged = .true.
            endif
 
-           if (ICURFSS.GT.1)
+           if (ICURFSS.GT.1) then
 C          Print the Fock space eigenvalues, compute transition moments
 C          except for the 00 sector, obviously
-     &     CALL FS_ANALYSIS1(ICURFSS,EPS,a_EIGENVALUES,a_EIGENVECTORS,
-     &                    NSP,IREPSPI)
+             CALL FS_ANALYSIS1(ICURFSS,EPS,a_EIGENVALUES,
+     &     a_EIGENVECTORS_LEFT,a_EIGENVECTORS_RIGHT,NSP,IREPSPI)
+           endif
 
 C          Save the updated wave function
            CALL FS_PUTAMPT (ICURFSS, a_T1 , a_T2 , a_BUF1 , a_BUF2 )
@@ -3836,7 +3878,8 @@ C          Deallocate space for the effective Hamiltonian
  442       CONTINUE
            call dealloc (a_HEFF, id="heff")
            call dealloc (a_EIGENVALUES, id="eigenvalues")
-           call dealloc (a_EIGENVECTORS, id="eigenvectors")
+           call dealloc (a_EIGENVECTORS_LEFT)
+           call dealloc (a_EIGENVECTORS_RIGHT, id="eigenvectors")
         ENDIF
 C
       ENDIF
@@ -4404,7 +4447,7 @@ C---------------Local variables--------------------------------------
 C
       CHARACTER*14 REPNT(16)
       integer   :: spinor_info(5,2)
-      integer   :: i,irep,irp,isp,j,jrep,krep,nfsym
+      integer   :: i,irep,irp,isp,j,jrep,krep,nfsym,nz
 C
 C---------------Executable code--------------------------------------
 C
@@ -4510,7 +4553,7 @@ C
             MULTB(IREP,KREP,2) = JREP
          ENDDO
       ENDDO
-       write(*,*) (REPNA(IREP),IREP=1,2*NREP)
+C      write(*,*) (REPNA(IREP),IREP=1,2*NREP)
 
 C     write(*,*)
 C     write(*,*) '--------------------------------------------'

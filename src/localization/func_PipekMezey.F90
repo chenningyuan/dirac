@@ -112,7 +112,7 @@ contains
   read(iunit,*) chdum,PM%iprloc
   read(iunit,*) chdum,PM%prjloc
   read(iunit,*) chdum,var%lupri
-  read(iunit,*) selmos
+  read(iunit,'(A72)') selmos
   ! dcbgen.h
   read(iunit,*) var%title
   read(iunit,*) chdum,var%lucoef

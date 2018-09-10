@@ -261,7 +261,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE HEFF1(ICURFSS,IPR,S1,S2,FVO,EPS,BUF1,BUF2,BUF3,
-     &                 HEFF,EIGENVALUES,EIGENVECTORS)
+     &  HEFF,EIGENVALUES,EIGENVECTORS_LEFT,EIGENVECTORS_RIGHT)
 
 C
       implicit none
@@ -274,7 +274,8 @@ C     problem. Finish by analyzing the eigenvectors and computing the
 C     transition moments.
 C---------------Calling variables--------------------------------------
 C
-      REAL*8 HEFF(*),EIGENVALUES(0:*),EIGENVECTORS(*)
+      REAL*8 HEFF(*),EIGENVALUES(0:*)
+      REAL*8 EIGENVECTORS_LEFT(*),EIGENVECTORS_RIGHT(*)
       REAL*8 S1(*),S2(*),FVO(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)
       CHARACTER*40 TIT
@@ -419,190 +420,133 @@ C
          IF (NFS_HE(IRP,ICURFSS).EQ.0) GOTO 100
          CALL SOLVE_CG (NFS_HE(IRP,ICURFSS),
      &                  HEFF(IFS_HE2(IRP,ICURFSS)*RCW+1),
-     &                  EIGENVECTORS(IFS_HE2(IRP,ICURFSS)*RCW+1),
+     &                  EIGENVECTORS_LEFT(IFS_HE2(IRP,ICURFSS)*RCW+1),
+     &                  EIGENVECTORS_RIGHT(IFS_HE2(IRP,ICURFSS)*RCW+1),
      &                  EIGENVALUES(IFS_HE(IRP,ICURFSS)*RCW+RCW))
 100   CONTINUE
 
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SOLVE_CG (NDT,H,EVEC,EV)
-C
+      SUBROUTINE SOLVE_CG (NDT,H,EVEC_LEFT,EVEC_RIGHT,EV)
+!
       implicit none
-C
-C---------------Description--------------------------------------------
-C
-C     Find eigenvalues and eigenvectors of a complex or real general matrix
-C     NDT : Dimension of the matrix
-C     H   : Matrix (complex or real, square)
-C     EV  : Eigenvalues (real part, if carith=T also imaginary)
-C     EVEC: Eigenvectors (complex)
-C
-C---------------Routines called----------------------------------------
-C
-C      CG or RG (from EISPACK) if complex or real case, respectively
-C
-C---------------Last modified------------------------------------------
-C
-C     Author : Luuk Visscher
-C            Miro Ilias - complex eingenenergies carried in EV, more output
-C
-C---------------Common Blocks--------------------------------------
-C
+!
+!---------------Description--------------------------------------------
+!
+!     Find eigenvalues and left and right eigenvectors of a complex or real general matrix
+!     NDT : Dimension of the matrix
+!     H   : Matrix (complex or real, square)
+!     EV  : Eigenvalues (real part, if carith=T also imaginary)
+!     EVEC_LEFT: Left eigenvectors (complex)
+!     EVEC_RIGHT: Right eigenvectors (complex)
+!
+!---------------Routines called----------------------------------------
+!
+!      ZGEEV or DGEEV (from LAPACK) if complex or real case, respectively
+!
+!---------------Common Blocks--------------------------------------
+!
 #include "files.inc"
 #include "complex.inc"
 #include "inpt.inc"
-C
-C---------------Calling variables--------------------------------------
+!
+!---------------Calling variables--------------------------------------
 
-      REAL*8 H(RCW,NDT,NDT),EVEC(RCW,NDT,NDT),EV(RCW,NDT)
+      REAL*8 H(RCW,NDT,NDT),EVEC_LEFT(RCW,NDT,NDT),
+     &       EVEC_RIGHT(RCW,NDT,NDT),EV(RCW,NDT)
       INTEGER NDT
-C---------------Local variables -----------------------------------
-      REAL*8, ALLOCATABLE :: EVR(:),EVI(:)
-      REAL*8, ALLOCATABLE :: HR(:,:),HI(:,:)
-      REAL*8, ALLOCATABLE :: VECR(:,:),VECI(:,:)
-      REAL*8, ALLOCATABLE :: SCR(:,:)
+!---------------Local variables -----------------------------------
+      INTEGER :: IERR,NDT2,I,J
+      real*8, allocatable :: QQWORK(:,:),QQRWORK(:),H_FULL(:,:,:)
+      real*8, allocatable :: EVR(:), EVI(:)
       INTEGER , ALLOCATABLE :: INDX(:)
-      INTEGER :: IERR,I,J,NDT2
-      REAL*8 FNOR(RCW),E_OFF
-C---------------Executable code--------------------------------------
-C
-C....... Allocate memory for the diagonalization routine
-C
-      ALLOCATE (EVR(NDT),STAT=IERR)
+      real*8 :: RVEC(RCW,NDT,NDT),LVEC(RCW,NDT,NDT)
+!---------------Executable code--------------------------------------
+!
+!....... Allocate memory for the diagonalization routine
+!
+      ALLOCATE (QQWORK(RCW,4*NDT),STAT=IERR)
       IF (IERR.NE.0) THEN
-         CALL QUIT('Error in EVR allocation !')
+        CALL QUIT('Error in QQWORK allocation !')
       ENDIF
-      ALLOCATE (EVI(NDT),STAT=IERR)
+      ALLOCATE (QQRWORK(2*NDT),STAT=IERR)
       IF (IERR.NE.0) THEN
-        CALL QUIT('Error in EVI allocation !')
+        CALL QUIT('Error in QQRWORK allocation !')
       ENDIF
-      ALLOCATE (VECR(NDT,NDT),STAT=IERR)
+      allocate (EVR(NDT))
+      allocate (INDX(NDT))
+!
+!....... Diagonalize effective Hamiltonian.
+!
+      NDT2=NDT*NDT
+      allocate (H_FULL(RCW,NDT,NDT),STAT=IERR)
       IF (IERR.NE.0) THEN
-        CALL QUIT('Error in VECR allocation !')
+        CALL QUIT('Error in H_FULL allocation !')
       ENDIF
-      ALLOCATE (SCR(NDT,3),STAT=IERR)
-      IF (IERR.NE.0) THEN
-        CALL QUIT('Error in SCR allocation !')
-      ENDIF
-      ALLOCATE (INDX(NDT),STAT=IERR)
-      IF (IERR.NE.0) THEN
-        CALL QUIT('Error in INDX allocation !')
-      ENDIF
-
-C
-C....... Diagonalize effective Hamiltonian.
-C
+      call xcopy (NDT2,H,1,H_FULL,1)
       IF  (CARITH) THEN
-C        The diagonalization routine expects separate real and imaginary blocks,
-C        make a local copy
-         NDT2=NDT*NDT
-         ALLOCATE (HR(NDT,NDT),STAT=IERR)
-         IF (IERR.NE.0) THEN
-           CALL QUIT('Error in HR allocation !')
-         ENDIF
-         ALLOCATE (HI(NDT,NDT),STAT=IERR)
-         IF (IERR.NE.0) THEN
-           CALL QUIT('Error in HI allocation !')
-         ENDIF
-         ALLOCATE (VECI(NDT,NDT),STAT=IERR)
-         IF (IERR.NE.0) THEN
-           CALL QUIT('Error in VECI allocation !')
-         ENDIF
-         CALL DCOPY (NDT2,H,2,HR,1)
-         CALL DCOPY (NDT2,H(2,1,1),2,HI,1)
-
-         IF (IPRNT.GE.10) THEN
-CMI    ... control print out
-           WRITE(IW,'(2X,A)')
-     &'Output from SOLVE_CG - complex matrix (RCW=2) to be diagonalized'
-           CALL OUTPUT(HR,1,NDT,1,NDT,NDT,NDT,1,IW)
-           WRITE(IW,'(/2X,A)') 'Imaginary part'
-           CALL OUTPUT(HI,1,NDT,1,NDT,NDT,NDT,1,IW)
-         ENDIF
-
-         CALL CG(NDT,NDT,HR,HI,EVR,EVI,1,VECR,VECI,
-     &           SCR,SCR(1,2),SCR(1,3),IERR)
-         DEALLOCATE (HR,STAT=IERR)
-         IF (IERR.NE.0) THEN
-            CALL QUIT('Error in HR deallocation !')
-         ENDIF
-         DEALLOCATE (HI,STAT=IERR)
-         IF (IERR.NE.0) THEN
-           CALL QUIT('Error in HI deallocation !')
-         ENDIF
+        CALL ZGEEV('V','V', NDT, H_FULL, NDT, EV, EVEC_LEFT, NDT,
+     &         EVEC_RIGHT, NDT, QQWORK, 4*NDT, QQRWORK, IERR )
+        DO I = 1, NDT
+           EVR(I) = EV(1,I)
+        ENDDO
       ELSE
-            IF (IPRNT.GE.10) THEN
-CMI    ... control print out
+        IF (IPRNT.GE.10) THEN
+!MI    ... control print out
            WRITE(IW,'(2X,A)')
      &'Output from SOLVE_CG - real matrix to be diagonalized'
-             CALL OUTPUT(H,1,NDT,1,NDT,NDT,NDT,1,IW)
-            ENDIF
-            CALL RG(NDT,NDT,H,EVR,EVI,1,VECR,SCR,SCR(1,2),IERR)
+            CALL OUTPUT(H,1,NDT,1,NDT,NDT,NDT,1,IW)
+        ENDIF
+        allocate (EVI(NDT))
+        CALL DGEEV('V','V', NDT, H_FULL, NDT, EVR,EVI,EVEC_LEFT, NDT,
+     &         EVEC_RIGHT, NDT, QQWORK, 4*NDT, IERR )
+        deallocate (EVI)
       ENDIF
-C
-C.....Check for errors
-C
+      deallocate (H_FULL,STAT=IERR)
+      IF (IERR.NE.0) THEN
+        CALL QUIT('Error in H_FULL deallocation !')
+      ENDIF
+!
+!.....Check for errors
+!
       IF (IERR.NE.0) THEN
          WRITE (IW,'('' CG/RG IERR='',I4)') IERR
          CALL QUIT('Error in diagonalization of matrix')
       ENDIF
-C
-C.....Sort eigenvalues
-C
-      CALL INDEXX (NDT,EVR,INDX)
-C
-C.....Store the eigenvalues 
-      DO I = 1, NDT
-       EV(1,I) = EVR(INDX(I))
-       IF (CARITH) EV(2,I) = EVI(INDX(I))
-      ENDDO
-C
-C.....Store the eigenvectors in EVEC
-C     
-      DO I = 1, NDT
-         DO J = 1, NDT
-            EVEC(1,J,I) = VECR(J,INDX(I))
-            IF (CARITH) EVEC(2,J,I) = VECI(J,INDX(I))
-         ENDDO
-      ENDDO
-C
-C.....Normalize the eigenvectors
-C
-      DO I = 1, NDT
-         CALL XDOTC(FNOR,NDT,EVEC(1,1,I),1,EVEC(1,1,I),1)
-         FNOR(1) = SQRT(1.D0 / FNOR(1))
-         IF (CARITH) FNOR(2) = 0.D0
-         CALL XSCAL(NDT,FNOR,EVEC(1,1,I),1)
-      ENDDO
-C
-C.....Release the memory
-C
-      DEALLOCATE (EVR,STAT=IERR)
+!
+        CALL INDEXX (NDT,EVR,INDX)
+        DO I = 1, NDT
+           EV(1,I) = EVR(INDX(I))
+        ENDDO
+        RVEC(:,:,:) = EVEC_RIGHT(:,:,:)
+        LVEC(:,:,:) = EVEC_LEFT(:,:,:)
+
+        DO I = 1, NDT
+           DO J = 1, NDT
+              EVEC_RIGHT(1,J,I) = RVEC(1,J,INDX(I))
+              IF (CARITH) EVEC_RIGHT(2,J,I) = RVEC(2,J,INDX(I))
+           ENDDO
+        ENDDO
+        DO I = 1, NDT
+           DO J = 1, NDT
+              EVEC_LEFT(1,J,I) = LVEC(1,J,INDX(I))
+              IF (CARITH) EVEC_LEFT(2,J,I) = LVEC(2,J,INDX(I))
+           ENDDO
+        ENDDO
+
+!
+!.....Release the memory
+!
+      deallocate (EVR)
+      deallocate (INDX)
+      DEALLOCATE (QQWORK,STAT=IERR)
       IF (IERR.NE.0) THEN
-       CALL QUIT('Error in EVR deallocation !')
+       CALL QUIT('Error in QQWORK deallocation !')
       ENDIF
-      DEALLOCATE (EVI,STAT=IERR)
+      DEALLOCATE (QQRWORK,STAT=IERR)
       IF (IERR.NE.0) THEN
-       CALL QUIT('Error in EVI deallocation !')
-      ENDIF
-      DEALLOCATE (VECR,STAT=IERR)
-      IF (IERR.NE.0) THEN
-       CALL QUIT('Error in VECR deallocation !')
-      ENDIF
-      IF (CARITH) THEN
-        DEALLOCATE (VECI,STAT=IERR)
-        IF (IERR.NE.0) THEN
-          CALL QUIT('Error in VECI deallocation !')
-        ENDIF
-      ENDIF
-      DEALLOCATE (SCR,STAT=IERR)
-      IF (IERR.NE.0) THEN
-       CALL QUIT('Error in SCR deallocation !')
-      ENDIF
-      DEALLOCATE (INDX,STAT=IERR)
-      IF (IERR.NE.0) THEN
-       CALL QUIT('Error in INDX deallocation !')
+       CALL QUIT('Error in QQRWORK deallocation !')
       ENDIF
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -699,8 +643,8 @@ C
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE FS_ANALYSIS1(ICURFSS,EPS,EIGENVALUES,EIGENVECTORS,
-     &  NSP,IREPSPI)      
+      SUBROUTINE FS_ANALYSIS1(ICURFSS,EPS,EIGENVALUES,
+     &  EIGENVECTORS_LEFT,EIGENVECTORS_RIGHT,NSP,IREPSPI)
 C
       implicit none
 C---------------Description--------------------------------------------
@@ -720,7 +664,8 @@ C
 C
 C---------------Calling variables--------------------------------------
 C
-      REAL*8 EPS(*),EIGENVALUES(RCW,0:*),EIGENVECTORS(*) 
+      REAL*8 EPS(*),EIGENVALUES(RCW,0:*)
+      REAL*8 EIGENVECTORS_RIGHT(*),EIGENVECTORS_LEFT(*)
       INTEGER ICURFSS,NSP,IREPSPI
 C
 C---------------Local variables -----------------------------------
@@ -774,7 +719,8 @@ C        Even electron case : boson irreps
       ENDIF
 C     Detailed print-out including oscillator strengths
       CALL FS_ANALYSIS (ICURFSS,EPS,IPRNT,IFS_HE(NREP+1,ICURFSS),
-     &                E_OFF,EIGENVALUES(1,1),EIGENVECTORS,NSP,IREPSPI)
+     &                  E_OFF,EIGENVALUES(1,1),EIGENVECTORS_LEFT,
+     &                  EIGENVECTORS_RIGHT,NSP,IREPSPI)
       DEALLOCATE (INDX_ALL,STAT=IERR)
       IF (IERR.NE.0) THEN
        CALL QUIT('Error in INDX_ALL deallocation !')
@@ -2465,7 +2411,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FS_ANALYSIS (ICURFSS,EPS,IPR,NDT_TOT,E_OFF,
-     &                        EV_ALL,H,NSP,IREPSPI)
+     &                   EV_ALL,H_left,H,NSP,IREPSPI)
 C
       implicit none
 C
@@ -2499,6 +2445,7 @@ C
 #include "symm.inc"
       REAL*8 TRES,EPS(*),E_OFF
       REAL*8 EV_ALL(RCW,NDT_TOT),H(RCW,*) 
+      real*8 H_left(RCW,*)
       INTEGER ICURFSS,IPR,NSP
       DIMENSION IREPSPI(NSP,MXREP,2)
 C
@@ -2520,7 +2467,7 @@ C---------------Executable code--------------------------------------
  
 !     At the moment only sector 4 has intensities
       IF (ICURFSS.EQ.4) THEN
-      CALL FS_COMPUTE_INTENSITY (ICURFSS,H,
+      CALL FS_COMPUTE_INTENSITY (ICURFSS,H_left,H,
      &                           NDT_TOT,IREPSPI,NSP,E_OFF,EV_ALL)
       END IF ! Intensities for excitation energies
 C
@@ -2586,13 +2533,13 @@ C           Loop over the coefficients and print the interesting ones
  1000 FORMAT (//' Analysis of eigenvectors of the effective Hamiltonian'
      &/' First line  :  Energy, Eigenvalue'
      &/' other lines : Coefficients of contributing determinants',
-     & ' (above a treshold of ',E6.1,')')
+     & ' (above a threshold of ',E6.1,')')
  1010 FORMAT (/' Irrep ',A4,' State ',I5,2F16.8)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE FS_COMPUTE_INTENSITY (ICURFSS,EIGENVECTORS,
-     &                                 NDT_TOT,IREPSPI,NSP,
-     &                                 E_OFF,EV_ALL) 
+      SUBROUTINE FS_COMPUTE_INTENSITY (ICURFSS,EIGENVECTORS_LEFT,
+     &                EIGENVECTORS_RIGHT,NDT_TOT,IREPSPI,NSP,
+     &                                 E_OFF,EV_ALL)
 c
       implicit none
 C
@@ -2619,15 +2566,13 @@ c
 c---------------Calling Variables-----------------------------------
 c 
       INTEGER ICURFSS,NSP,NDT_TOT,IREPSPI(NSP,MXREP,2)
-      REAL*8 EIGENVECTORS(RCW,IFS_HE2(NREP+1,ICURFSS))
+      REAL*8 EIGENVECTORS_LEFT(RCW,IFS_HE2(NREP+1,ICURFSS))
+      REAL*8 EIGENVECTORS_RIGHT(RCW,IFS_HE2(NREP+1,ICURFSS))
       REAL*8 E_OFF,EV_ALL(RCW,NDT_TOT)
 !output
       REAL*8, ALLOCATABLE ::   INTENSITY(:),TRANS_DIPOLE(:,:,:)
 c
 c---------------Local Variables-----------------------------------------------
-c
-c    NB: note that this scheme is treating a H-eff as were it a Hermitian CI matrix, a probably better approach
-c        is to use the left and righthand side eigenvectors, but this needs to be worked out more carefully.
 c
       REAL*8, ALLOCATABLE:: PROP(:,:,:)
       integer eoper,i,ierr,irp,ix,iy,j_eigenvalue,i_eigenvalue,ndt
@@ -2659,16 +2604,17 @@ c  Transition dipole moments for (0,1) or (1,0) sector
 c
       IF ((ICURFSS.EQ.2).OR.(ICURFSS.EQ.3)) THEN 
   
-       CALL TRANSITION_EA_IP (ICURFSS,EOPER,PROP,
-     &                        EIGENVECTORS,NDT_TOT,IREPSPI,NSP)
+         CALL TRANSITION_EA_IP (ICURFSS,EOPER,PROP,
+     &     EV_ALL,EIGENVECTORS_LEFT,
+     &     EIGENVECTORS_RIGHT,NDT_TOT,IREPSPI,NSP)
        CYCLE  ! Transition dipoles are only written to xml output, as there are too many to print in human-readable form
 c
 c  Transition dipole moments for (1,1) sector
 c 
       ELSEIF (ICURFSS.EQ.4) THEN         
 
-      CALL TRANSITION_ONEONE (EOPER,PROP,TRANS_DIPOLE,
-     &                        EIGENVECTORS,NDT_TOT,IREPSPI,NSP)
+        CALL TRANSITION_ONEONE (EOPER,PROP,TRANS_DIPOLE,
+     &            EIGENVECTORS_RIGHT,NDT_TOT,IREPSPI,NSP)
 
       ENDIF
 c
@@ -2754,8 +2700,8 @@ c
       RETURN
       END 
 !C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE TRANSITION_EA_IP (ICURFSS,EOPER,PROP,
-     &                             EIGENVECTORS,NDT_TOT,IREPSPI,NSP)
+      SUBROUTINE TRANSITION_EA_IP (ICURFSS,EOPER,PROP,EV_ALL,
+     &         EIGENVECTORS_LEFT,EIGENVECTORS_RIGHT,NDT_TOT,IREPSPI,NSP)
       implicit none
 c
 c     Contraction of dipole integrals with coefficients for sector (0,1) or (1,0)
@@ -2773,15 +2719,21 @@ c
 c-------------------Calling Variables-------------------------------------------------
 c
       INTEGER NSP,NDT_TOT,EOPER,IREPSPI(NSP,MXREP,2),ICURFSS
-      REAL*8 EIGENVECTORS(RCW,IFS_HE2(NREP+1,ICURFSS))
+      REAL*8 EIGENVECTORS_LEFT(RCW,IFS_HE2(NREP+1,ICURFSS))
+      REAL*8 EIGENVECTORS_RIGHT(RCW,IFS_HE2(NREP+1,ICURFSS))
       REAL*8 PROP(RCW,NSP,NSP)
+      REAL*8 EV_ALL(RCW,NDT_TOT)
 c
 c-------------------Local Variables--------------------------------------------------
 c
       REAL*8, ALLOCATABLE::  DIP_RHS(:,:,:),DIP_SUB(:,:,:),
      &                       TDIP_SUB(:,:,:)
-      REAL*8 DDOT
-      INTEGER i, ircw,irep,j,jrep,ndtl,ndtr
+      REAL*8 DDOT, TDIPA2, TR_ENERGY
+!     Conversion factor for spontaneous emission in MHz = 10^6 s^(-1) based on values of E and mu in atomic units
+!     See e.g Atkins for equation for A = (4 / 3) * E_fi^3 * mu_fi^2 / (4 pi epsilon_0 hbar^4 c^3)
+!     Constants used (NIST 2017): c = 137.035999139 au = 299792458 m/s; Bohr radius = 1.0 au = 5.2917721067E-11 m
+      REAL*8, PARAMETER :: A_CONVERSION = 21420.007784D0
+      INTEGER i, ircw,irep,j,jrep,ndtl,ndtr,ii,jj
 c
 c------------------------------------------------------------------------------------
 c
@@ -2794,10 +2746,12 @@ c
 c to keep things simple in storage we do not care about symmetry zeroes in the resulting
 c trans_dipole array
 c
+      JJ = 0 ! offset for index state of symmetry JREP in list of all eigenstates
       DO JREP = 1, NREP  ! loop over symmetry of the right-hand vector
          NDTR = NFS_HE(JREP,ICURFSS) 
          IF (NDTR.EQ.0) CYCLE ! no need to process irreps with no states
 
+         II = 0 ! offset for index state of symmetry JREP in list of all eigenstates
          DO IREP = 1, NREP  ! loop over symmetry of the left-hand vector
             NDTL = NFS_HE(IREP,ICURFSS) 
             IF (NDTL.EQ.0) CYCLE
@@ -2823,19 +2777,37 @@ c
 
 !              Form | dipole | rhs > for the symmetry pair (irep,jrep)
                CALL XGEMM ('N','N',NDTL,NDTR,NDTR,A1,DIP_SUB,NDTL,
-     &              EIGENVECTORS(1,IFS_HE2(JREP,ICURFSS)+1),NDTR,
+     &         EIGENVECTORS_RIGHT(1,IFS_HE2(JREP,ICURFSS)+1),NDTR,
      &              A0,DIP_RHS,NDTL)
 
 !              Form < lhs | dipole | rhs > for the symmetry pair (irep,jrep)
                CALL XGEMM ('N','N',NDTL,NDTR,NDTL,A1,
-     &              EIGENVECTORS(1,IFS_HE2(IREP,ICURFSS)+1),NDTL,
+     &         EIGENVECTORS_LEFT(1,IFS_HE2(IREP,ICURFSS)+1),NDTL,
      &              DIP_RHS,NDTL,A0,TDIP_SUB,NDTL)
 
 !              Write output (wll be xml after the testing phase is done)
-               Print*, "Transition dipoles for ",eoper,irep,jrep
+               WRITE (IW,1000) NAMEE(EOPER)
                DO J = 1, NDTR
                   DO I = 1, NDTL
-                  WRITE (*,*) I,J,(TDIP_SUB(IRCW,I,J),IRCW=1,RCW)
+                    TR_ENERGY = EV_ALL(1,JJ+J) - EV_ALL(1,II+I)
+                    IF (TR_ENERGY.LE.1.D-6) CYCLE ! print only transitions to higher energies
+                    TDIPA2 = A0
+                    DO IRCW = 1, RCW
+                       TDIPA2 = TDIPA2
+     &                        + TDIP_SUB(IRCW,I,J) * TDIP_SUB(IRCW,I,J)
+                    ENDDO
+                    IF (TDIPA2.LE.1.D-15) CYCLE ! don't print transitions with zero intensity
+                    IF (RCW.EQ.1) THEN
+                       WRITE (IW,1001) irep,I,jrep,J,
+     &                 TDIP_SUB(1,I,J),TR_ENERGY,
+     &                 TDIPA2 * TR_ENERGY * 2.0D0/3.0D0,
+     &                 TDIPA2 * TR_ENERGY**3 * A_CONVERSION
+                     ELSE
+                       WRITE (IW,1002) irep,I,jrep,J,
+     &                 (TDIP_SUB(IRCW,I,J),IRCW=1,RCW),TR_ENERGY,
+     &                 TDIPA2 * TR_ENERGY * 2.0D0/3.0D0,
+     &                 TDIPA2 * TR_ENERGY**3 * A_CONVERSION
+                     ENDIF
                   ENDDO
                ENDDO
                
@@ -2845,6 +2817,12 @@ c
              
          ENDDO !irreps in lhs
        enddo ! irreps on rhs
+
+ 1000 Format (/' Transition dipoles and partial intensities for ',A,/
+     & ' Final state Init. State    Transition moment   ',
+     & 'Trans. Energy  Osc. Strength     A (MHz)')
+ 1001 Format (I3,I5,' <-',I3,I5,3X,F12.6,12X,F14.8,E16.6,2X,F16.6)
+ 1002 Format (I3,I5,' <-',I3,I5,3X,2F12.6,F14.8,E16.6,2x,F12.6)
 
       RETURN
       END

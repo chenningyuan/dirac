@@ -9,22 +9,28 @@ New features:
 
 -----------------------------------------------------------------------------------------------------
 
-18.alpha (unreleased)
----------------------
+18.0 (unreleased)
+-----------------
 
 New features:
 
-- The visualization module has been extended to generate various radial distributions using the keyword .RADIAL. Contributor: Trond Saue
+- The visualization module has been extended to generate various radial distributions using the keyword .RADIAL. Contributor: Trond Saue.
 
------------------------------------------------------------------------------------------------------
+Error corrections:
 
-17.1 (unreleased)
------------------
-
-- Allow to compile with OpenMP support (this does not imply OpenMP parallelization of the code).
-- Update in CMake framework: pass compilers as cmake variables, not as environment variables.
 - Bugfix in KRCI module (subroutine STRTYP_GAS_REL), reported by Shigeyoshi Yamamoto.
 - Bugfix in polarizable embedding (the printed electronic part of the energy was not corrected with PE contributions)
+
+Performance improvements:
+
+- New much more efficient quaternion diagonalization routine using openMP for performance. Contributor: Hans Joergen Aa. Jensen.
+
+Framework changes:
+
+- Allow to compile with OpenMP support.
+- Update in CMake framework: pass compilers as cmake variables, not as environment variables.
+
+-----------------------------------------------------------------------------------------------------
 
 17.0 (2017-12-12)
 -----------------
