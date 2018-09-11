@@ -6628,6 +6628,7 @@ C
      &               WORK(KFSS),WORK(KIDUM),IPRHAM)
         CALL MEMREL('ATMSYM',WORK,KINDX,KINDX,KFREE,LFREE)
 C
+C     
 C     Write information to output
 C        
         DO KPADD = 1, MAXSUB
@@ -6684,20 +6685,6 @@ C
          CALL FLSHFO(LUPRI)
         ENDIF
 C
-!        DO KPABS =  KPMAX, 1, -1     ! Here KPABS is the absolute of Kappa. 
-!          KPNUM_LAST = KPABS*(KPABS-1)/2
-!          KPNUM      = KPABS*(KPABS+1)/2
-!          DO IY =  KPNUM, KPNUM_LAST+1, -1
-!             NORB_SUB(IY,I,2) = NORB_SUB(KPABS,I,2)
-!             NORB_SUB(IY,I,0) = NORB_SUB(KPABS,I,0)
-!             NORB_SUB(IY,I,:) = NORB_SUB(IY,I,:)/KPABS
-!             WRITE (LUPRI,1010) 3-2*I,(-1)**(I+KPABS-1)*KPABS,
-!     &        ID_SUB_BL(IY,I), (NORB_SUB(IY,I,IC),IC=0,2)
-!          ENDDO
-!        ENDDO
-C
-!        write(*,*)"NORB_SUB",(NORB_SUB(KPABS,I,0),KPABS=1,KPMAX)
-C
 C       Done; release the extra memory used for diagonalization
 C
         CALL MEMREL('ATMSYM',WORK,KFLL,KFLL,KFREE,LFREE)
@@ -6706,7 +6693,7 @@ C       Update offset
 C
         IOFT = IOFT + NORB(I)*NORB(I)
 C        
-   20 CONTINUE
+ 20   CONTINUE
 C         
 
       if(do4c2c)then ! x2c-mmf approach
@@ -6767,6 +6754,196 @@ C
         IOFU = IOFU + NORB(I)*NORB(I)
         IOFV = IOFV + NORB(I)*NFBAS(I,0)
  30   CONTINUE
+      CALL ICOPY(MAX_SUB_BL*3*2,NORB_SUB,1,NTMO_SUB,1)
+C
+CCCCCCCCCCCCCCCCCC
+C.....Here we can start MJ-part
+CCCCCCCCCCCCCCCCCC
+C.....First make MJ-matrix
+C
+      CALL DZERO (TBUF,N2TMT)
+C
+C     Construct mj matrix in AO basis
+C
+      CALL AMJMAT(TBUF,IPRHAM,WORK,LWORK)
+C
+      IOFT = 1
+      IOFV = 1
+      DO 40 I = 1,NFSYM
+         IF(NORB(I).EQ.0) GOTO 40
+         NLL=0
+         NSS=0
+         DO IKAP = 1,KPMAX
+            KPADD = IKAP*(IKAP-1)/2 + 1
+            NLL=MAX(NLL,NORB_SUB(KPADD,I,1)*NORB_SUB(KPADD,I,1))
+            NSS=MAX(NSS,NORB_SUB(KPADD,I,2)*NORB_SUB(KPADD,I,2))            
+         ENDDO
+         WRITE(6,*) '* Max dimensions..',NLL,NSS
+C
+C........allocate KFLL,KVLL,KFSS,KVSS once and for all
+C
+         CALL MEMGET('REAL',KFLL,NLL,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KFSS,NSS,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KVLL,NLL,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KVSS,NSS,WORK,KFREE,LFREE)
+C
+C        from   ** End of branching ** @/dirone.F/GMOTRA
+C
+         I2TMT(I)  = N2TMT
+         N2TMT     = N2TMT + NFBAS(I,0)*NORB(I)*NZT
+         I2TMOT(I) = N2TMOTQ
+         N2TMO(I)  = NTMO(I)*NTMO(I)
+         N2TMOTQ   = N2TMOTQ + N2TMO(I)*NZ        
+C         
+C........Here you tranaform the MJ-matrix for particular kappa; look TSUBBL
+!         IF(I.eq.2)THEN !sunaga
+         NL = 0  
+         NS = 0  
+         DO IKAP = 1,KPMAX
+           KPADD = IKAP*(IKAP-1)/2 + 1
+           NL = NORB_SUB(KPADD,I,1)
+           NS = NORB_SUB(KPADD,I,2)
+           IEIGP = IORB(I) + 1
+           IEIGE = IEIGP + NS
+C
+CCCCCCCCCCCCCCCCCC         
+C Large AO-MO transformation
+CCCCCCCCCCCCCCCCCC         
+           IF (NL.GT.0) THEN
+           CALL TSBBL2(I,1,IKAP,TBUF,WORK(KFLL),TMAT,TMAT,
+     &                  WORK(KFREE),LFREE,12)
+CCCCCCCCCCCCCCCCCC         
+C Large diagonalization
+CCCCCCCCCCCCCCCCCC         
+C
+          IF (IPRHAM.GE.6) THEN
+           CALL HEADER('ATMSYM: Mj_LL to be diagonalized',-1)
+           WRITE(LUPRI,'(2X,A,L1)') 'DOJACO=',DOJACO
+           WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &     '*** Fermion corep ',I,'/',NFSYM
+           CALL PRQMAT(WORK(KFLL),NL,NL,NL,NL,1,
+     &          IPQTOQ(1,0),LUPRI)
+          ENDIF
+C        
+#ifdef MOD_UNRELEASED
+          IF (.NOT.DOQJACO) THEN
+#endif
+            IF(DOJACO) THEN
+              CALL RSJACO(NL,NL,NL,WORK(KFLL),EIG(IEIGE),1,1,0,
+     &                  WORK(KVLL))
+            ELSE
+              CALL QDIAG(1,NL,WORK(KFLL),NL,NL,
+     &                EIG(IEIGE),1,
+     &                WORK(KVLL),NL,NL,
+     &                WORK(KFREE),LFREE,IERR)
+              IF (IERR.NE.0) THEN
+                WRITE(LUPRI,'(2X,A)')
+     &         'ATMSYM: Errorneous QDIAG diagonalization of Mj_LL!'
+               CALL QUIT(
+     &        'ATMSYM: Errorneous QDIAG diagonalization of Mj_LL !')
+              ENDIF
+            ENDIF
+#ifdef MOD_UNRELEASED
+          ELSE
+            CALL QJACOBI(WORK(KFLL),WORK(KVLL),NL,1,0,
+     &                   IDUMMY,.TRUE.,IPRHAM)
+            DO II=1,NL
+              EIG(IEIGE+II-1)=WORK(KFLL+NL*(II-1)+II-1) ! store eigenvalues
+            ENDDO
+         ENDIF
+!         KPMAXL = NINT( MAX( ABS(EIG(IEIGE)), ABS(EIG(IEIGE+NL-1)) ) )
+#endif
+          IF (IPRHAM.GE.2) THEN
+            CALL HEADER('ATMSYM: Mj_LL eigenvalues',-1)
+            WRITE(LUPRI,'(A,I2)') ' * Kappa:', ID_SUB_BL(KPADD,I)
+            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &      '*** Fermion corep ',I,'/',NFSYM
+            DO II = 1,NL
+              WRITE(LUPRI,*) II,EIG(IEIGE+II-1)
+            ENDDO
+            CALL FLSHFO(LUPRI)
+          ENDIF
+          IF (IPRHAM.GE.5) THEN
+            CALL HEADER('ATMSYM: Mj_LL eigenvectors',-1)
+            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &      '*** Fermion corep ',I,'/',NFSYM
+            CALL PRQMAT(WORK(KVLL),NL,NL,NL,NL,1,
+     &           IPQTOQ(1,0),LUPRI)
+            CALL FLSHFO(LUPRI)
+          ENDIF
+        ENDIF                    !NL.ne.0
+C
+CCCCCCCCCCCCCCCCCC         
+C Small AO-MO transformation
+CCCCCCCCCCCCCCCCCC         
+        IF (NS.GT.0) THEN
+        WRITE(6,*) '* Small TSBBL2, I', I
+        CALL TSBBL2(I,2,IKAP,TBUF,WORK(KFSS),TMAT,TMAT,
+     &          WORK(KFREE),LFREE,12)
+CCCCCCCCCCCCCCCCCC         
+C Small diagonalization
+CCCCCCCCCCCCCCCCCC         
+C
+          IF (IPRHAM.GE.6) THEN
+           CALL HEADER('ATMSYM: Mj_SS to be diagonalized',-1)
+           WRITE(LUPRI,'(2X,A,L1)') 'DOJACO=',DOJACO
+           WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &     '*** Fermion corep ',I,'/',NFSYM
+           CALL PRQMAT(WORK(KFSS),NS,NS,NS,NS,1,
+     &          IPQTOQ(1,0),LUPRI)
+          ENDIF
+C     
+#ifdef MOD_UNRELEASED
+          IF (.NOT.DOQJACO) THEN
+#endif
+            IF(DOJACO) THEN
+              CALL RSJACO(NS,NS,NS,WORK(KFSS),EIG(IEIGP),1,1,0,
+     &                  WORK(KVSS))
+            ELSE
+              CALL QDIAG(1,NS,WORK(KFSS),NS,NS,
+     &                EIG(IEIGP),1,
+     &                WORK(KVSS),NS,NS,
+     &                WORK(KFREE),LFREE,IERR)
+              IF (IERR.NE.0) THEN
+                WRITE(LUPRI,'(2X,A)')
+     &         'ATMSYM: Errorneous QDIAG diagonalization of Mj_SS!'
+               CALL QUIT(
+     &        'ATMSYM: Errorneous QDIAG diagonalization of Mj_SS !')
+              ENDIF
+            ENDIF
+#ifdef MOD_UNRELEASED
+          ELSE
+            CALL QJACOBI(WORK(KFSS),WORK(KVSS),NS,1,0,IDUMMY,
+     &                   .TRUE.,IPRHAM)
+            DO II=1,NS
+              EIG(IEIGP+II-1)=  WORK(KFSS+NS*(II-1)+II-1) ! store eigenvalues
+            ENDDO
+         ENDIF
+#endif
+          IF (IPRHAM.GE.2) THEN
+            CALL HEADER('ATMSYM: Mj_SS eigenvalues',-1)
+            WRITE(LUPRI,'(A,I2)') ' * Kappa:', ID_SUB_BL(KPADD,I)
+            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &           '*** Fermion corep ',I,'/',NFSYM
+            DO II = 1,NS
+              WRITE(LUPRI,*) II,EIG(IEIGP+II-1)
+            ENDDO
+            CALL FLSHFO(LUPRI)
+          ENDIF
+          IF (IPRHAM.GE.5) THEN
+            CALL HEADER('ATMSYM: Mj_SS eigenvectors',-1)
+            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &           '*** Fermion corep ',I,'/',NFSYM
+            CALL PRQMAT(WORK(KVSS),NS,NS,NS,NS,1,
+     &           IPQTOQ(1,0),LUPRI)
+            CALL FLSHFO(LUPRI)
+          ENDIF
+        ENDIF  !NS.GT.0
+      ENDDO    !KPADD
+!      CALL MEMREL('ATMSYM',WORK,KFLL,KFLL,KFREE,LFREE)      
+!      ENDIF ! IF(I.eq.2)THEN
+C         
+ 40   CONTINUE !IFRP
 C.....Also initialize NTMO_SUB which will be the number of orbitals in each subblock in orthonormal basis      
       CALL ICOPY(MAX_SUB_BL*3*2,NORB_SUB,1,NTMO_SUB,1)
 C

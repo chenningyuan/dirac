@@ -1693,18 +1693,11 @@ C
       CALL DCOPY(MZ*N2BBASX,AMAT,1,WORK(KBUF),1)
       IZOFF = 0
       DO IZ = 1,MZ
-         write(*,*)"MZ",MZ
-         write(*,*)"MAXREP",MAXREP
-         write(*,*)"NTBAS", NTBAS(0)
-         write(*,*)"N2BBASX", N2BBASX
         DO JC = 1,2
           DO JREP = 0,MAXREP
             DO J = 0,NBBAS(JREP,JC)-1
               JSOFF = IZOFF + (IBBAS(JREP  ,JC)+J)*NTBAS(0)
               JUOFF = IZOFF + (ICOS (JREP+1,JC)+J)*NTBAS(0)
-              write(*,*)""
-              write(*,*)"JREP"," JC",JREP,JC
-              write(*,*)"NBBAS",NBBAS(JREP,JC)
               DO IC = 1,2
                 DO IREP = 0,MAXREP
                   IUOFF = JUOFF + ICOS (IREP+1,IC)
@@ -3418,10 +3411,67 @@ C
      &         FMO(IMO),NTMO(IFRP),NTMO(IFRP),1,IPQTOQ(1,0),
      &         TM1(ITM),NFBAS(IFRP,0),NTMO(IFRP),NZT,IPQTOQ(1,0),
      &         TM2(ITM),NFBAS(IFRP,0),NTMO(IFRP),NZT,IPQTOQ(1,0),
-     &         BUF,LBUF,13)
+     &         BUF,LBUF,IPRINT)
           IBORB = IBORB + NTMO_SUB(ISUB,IFRP,0)
       ENDIF
       ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck tsbbl2 */
+      SUBROUTINE TSBBL2(IFRP,IC,IKAP,FAO,FMO,TM1,TM2,BUF,LBUF,IPRINT)
+C***********************************************************************
+C 
+C     Perform AO->MO transformation separatly Large and Small
+C     (TSUBBL can transoform only total  )
+C
+C     Modified from TSUBBL
+C     A Sunaga 2018
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C      
+#include "dcbbas.h"
+#include "dcborb.h"  
+#include "dcbdhf.h"  
+#include "dgroup.h" 
+      DIMENSION FAO(*),FMO(*),TM1(*),TM2(*),BUF(LBUF)
+C
+      NDIM = NTMO(IFRP)*NTMO(IFRP)*NZ
+      CALL DZERO(FMO(I2TMOT(IFRP)+1),NDIM)
+C      
+      ISUB = IKAP*(IKAP-1)/2 + 1
+      IF(IKAP.GE.1)THEN
+        IBORB = 0 
+        DO IK = 1, IKAP-1
+           IBORB = IBORB + NTMO_SUB(IK,IFRP,0)
+        ENDDO   
+      ELSE
+        IBORB    = 0
+      ENDIF
+C      
+      IF(NTMO_SUB(ISUB,IFRP,IC).GT.0) THEN
+        IF(IC.EQ.1)THEN
+          NTMO_BUF=NTMO_SUB(ISUB,IFRP,2)
+        ELSEIF(IC.EQ.2)THEN
+          NTMO_BUF=0
+        ENDIF
+        IAO = I2BASX(IFRP,IFRP)+1
+        IMO = 1
+        ITM = I2TMT(IFRP)  +
+     &        NFBAS(IFRP,0)*(IBORB+NTMO_BUF) + 1
+C
+        CALL QTRANS('AOMO','S',0.0d0,NFBAS(IFRP,0),NFBAS(IFRP,0),
+     &         NTMO_SUB(ISUB,IFRP,IC),NTMO_SUB(ISUB,IFRP,IC),
+     &         FAO(IAO),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
+     &         FMO(IMO),NTMO_SUB(ISUB,IFRP,IC),NTMO_SUB(ISUB,IFRP,IC),
+     &         1,IPQTOQ(1,0),
+     &         TM1(ITM),NFBAS(IFRP,0),NTMO(IFRP),NZT,IPQTOQ(1,0),
+     &         TM2(ITM),NFBAS(IFRP,0),NTMO(IFRP),NZT,IPQTOQ(1,0),
+     &         BUF,LBUF,IPRINT)
+      ENDIF
 C
       RETURN
       END
