@@ -6733,7 +6733,7 @@ C   .... prevent segmentation of L shells...
             NDEG  = NUCDEG(ICENT)
             KBCH  = JBLOCK
 CMI         ... charge, highest angular momentum
-!          skip AMFI contributions with l > 5 (h, i, ... functions)
+!          skip AMFI contributions with l > 4 (h, i, ... functions)
 !          stefan - nov 2011: simple fix/approximation for the time
 !                             being...
            imax_l = min(IQM(I)-1,4)
