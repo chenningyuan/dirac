@@ -6796,7 +6796,6 @@ C
          N2TMOTQ   = N2TMOTQ + N2TMO(I)*NZ        
 C         
 C........Here you tranaform the MJ-matrix for particular kappa; look TSUBBL
-!         IF(I.eq.2)THEN !sunaga
          NL = 0  
          NS = 0  
          DO IKAP = 1,KPMAX
@@ -6810,7 +6809,7 @@ CCCCCCCCCCCCCCCCCC
 C Large AO-MO transformation
 CCCCCCCCCCCCCCCCCC         
            IF (NL.GT.0) THEN
-           CALL TSBBL2(I,1,IKAP,TBUF,WORK(KFLL),TMAT,TMAT,
+           CALL TSBBL2(I,1,KPADD,TBUF,WORK(KFLL),TMAT,TMAT,
      &                  WORK(KFREE),LFREE,12)
 CCCCCCCCCCCCCCCCCC         
 C Large diagonalization
@@ -6838,9 +6837,9 @@ C
      &                WORK(KFREE),LFREE,IERR)
               IF (IERR.NE.0) THEN
                 WRITE(LUPRI,'(2X,A)')
-     &         'ATMSYM: Errorneous QDIAG diagonalization of Mj_LL!'
+     &         'ATMSYM: Erroneous QDIAG diagonalization of Mj_LL!'
                CALL QUIT(
-     &        'ATMSYM: Errorneous QDIAG diagonalization of Mj_LL !')
+     &        'ATMSYM: Erroneous QDIAG diagonalization of Mj_LL !')
               ENDIF
             ENDIF
 #ifdef MOD_UNRELEASED
@@ -6851,7 +6850,7 @@ C
               EIG(IEIGE+II-1)=WORK(KFLL+NL*(II-1)+II-1) ! store eigenvalues
             ENDDO
          ENDIF
-!         KPMAXL = NINT( MAX( ABS(EIG(IEIGE)), ABS(EIG(IEIGE+NL-1)) ) )
+         MJMAXL = NINT(MAX(2*ABS(EIG(IEIGE)), 2*ABS(EIG(IEIGE+NL-1))))
 #endif
           IF (IPRHAM.GE.2) THEN
             CALL HEADER('ATMSYM: Mj_LL eigenvalues',-1)
@@ -6871,14 +6870,14 @@ C
      &           IPQTOQ(1,0),LUPRI)
             CALL FLSHFO(LUPRI)
           ENDIF
-        ENDIF                    !NL.ne.0
+        ENDIF !NL.GT.0
 C
 CCCCCCCCCCCCCCCCCC         
 C Small AO-MO transformation
 CCCCCCCCCCCCCCCCCC         
         IF (NS.GT.0) THEN
         WRITE(6,*) '* Small TSBBL2, I', I
-        CALL TSBBL2(I,2,IKAP,TBUF,WORK(KFSS),TMAT,TMAT,
+        CALL TSBBL2(I,2,KPADD,TBUF,WORK(KFSS),TMAT,TMAT,
      &          WORK(KFREE),LFREE,12)
 CCCCCCCCCCCCCCCCCC         
 C Small diagonalization
@@ -6906,9 +6905,9 @@ C
      &                WORK(KFREE),LFREE,IERR)
               IF (IERR.NE.0) THEN
                 WRITE(LUPRI,'(2X,A)')
-     &         'ATMSYM: Errorneous QDIAG diagonalization of Mj_SS!'
+     &         'ATMSYM: Erroneous QDIAG diagonalization of Mj_SS!'
                CALL QUIT(
-     &        'ATMSYM: Errorneous QDIAG diagonalization of Mj_SS !')
+     &        'ATMSYM: Erroneous QDIAG diagonalization of Mj_SS !')
               ENDIF
             ENDIF
 #ifdef MOD_UNRELEASED
@@ -6919,6 +6918,7 @@ C
               EIG(IEIGP+II-1)=  WORK(KFSS+NS*(II-1)+II-1) ! store eigenvalues
             ENDDO
          ENDIF
+         MJMAXS = NINT(MAX(2*ABS(EIG(IEIGE)), 2*ABS(EIG(IEIGE+NL-1))))
 #endif
           IF (IPRHAM.GE.2) THEN
             CALL HEADER('ATMSYM: Mj_SS eigenvalues',-1)
@@ -6938,10 +6938,64 @@ C
      &           IPQTOQ(1,0),LUPRI)
             CALL FLSHFO(LUPRI)
           ENDIF
-        ENDIF  !NS.GT.0
-      ENDDO    !KPADD
-!      CALL MEMREL('ATMSYM',WORK,KFLL,KFLL,KFREE,LFREE)      
-!      ENDIF ! IF(I.eq.2)THEN
+          MJMAX = MAX(MJMAXL,MJMAXS)
+          WRITE(LUPRI,'(A,I2)') ' * Max ABS(Mj*2):', MJMAX
+        ENDIF                    !NS.GT.0
+C       
+        IF (MJMAX.GT.MAX_SUB_BL) THEN
+          write(lupri,*) 'MAX_SUB_BL:',MAX_SUB_BL,
+     &       ' max value of Mj:',MJMAX,
+     &       ' increase max_sub_bl to ', MAXSUB        
+          CALL QUIT ("increase max_sub_bl")
+        ENDIF         
+C
+C       We need to be careful now. In making NORB_SUB we chose to
+C       use the absolute value of MJ because this gives the most logical
+C       block structure. The eigenvectors and solutions are, however,
+C       still ordered by the signed value. Reorder them first before
+C       continuing.
+C
+        IF(NL.GT.0.)THEN
+          DO IX = IEIGP, IEIGP+NS-1
+             EIG(IX) = ABS(EIG(IX))
+          ENDDO
+C
+C         The SELBOS routine does just the reordering that we want,
+C         use work(kfss) as scratch, and allocate a few other small
+C         scratch arrays. The IBEIG part will not be used but we will
+C         initialize it to prevent problems with uninitialized data while
+C         sorting it.
+C
+          CALL MEMGET('INTE',KINDX,NS,WORK,KFREE,LFREE)
+          CALL MEMGET('INTE',KIDUM,NS,WORK,KFREE,LFREE)
+          CALL MEMGET('INTE',KIBEI,NS,WORK,KFREE,LFREE)
+          MJ = 0
+          CALL ICOPY (NS,MJ,0,WORK(KIBEI),1)
+          CALL SELBOS (I,NS,WORK(KINDX),EIG(IEIGP),
+     &                 WORK(KIBEI),WORK(KVSS),
+     &                 WORK(KFSS),WORK(KIDUM),IPRHAM)
+          CALL MEMREL('ATMSYM',WORK,KINDX,KINDX,KFREE,LFREE)
+        ENDIF !  IF(NL.GT.0.)THEN
+C
+C         Same thing for the positive energy solutions
+C
+        IF(NS.GT.0)THEN
+          DO IX = IEIGE, IEIGE+NL-1
+             EIG(IX) = ABS(EIG(IX))
+          ENDDO
+          CALL MEMGET('INTE',KINDX,NL,WORK,KFREE,LFREE)
+          CALL MEMGET('INTE',KIDUM,NL,WORK,KFREE,LFREE)
+          CALL MEMGET('INTE',KIBEI,NL,WORK,KFREE,LFREE)
+          MJ = 0
+          CALL ICOPY (NL,MJ,0,WORK(KIBEI),1)
+          CALL SELBOS (I,NL,WORK(KINDX),EIG(IEIGE),
+     &                 WORK(KIBEI),WORK(KVLL),
+     &                 WORK(KFLL),WORK(KIDUM),IPRHAM)
+          CALL MEMREL('ATMSYM',WORK,KINDX,KINDX,KFREE,LFREE)
+        ENDIF !        IF(NS.GT.0)THEN
+      ENDDO                     !KPADD
+C        
+      CALL MEMREL('ATMSYM',WORK,KFLL,KFLL,KFREE,LFREE)      
 C         
  40   CONTINUE !IFRP
 C.....Also initialize NTMO_SUB which will be the number of orbitals in each subblock in orthonormal basis      
@@ -7212,302 +7266,6 @@ C
       CALL QEXIT('AMKMA1')
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck bkdiag */
-      SUBROUTINE BKDIAG(TCUF,EIG,TMAT,VMAT,KMAT,NM,IP,I,WORK,LWORK)
-C*****************************************************************************
-C
-C TCUF is AO matrix, which is made in AMJMAT
-C EIG is the eigenvalue (out)      
-C TMAT is thy eigenvector (out), which is made in
-C VMAT is transformation AO->MO
-C KMAT is Mj-MO matrix, which will be diagonalize.
-C
-C      
-c$$$C     Construct matrix Jz(x,y,z) and transform to eigenvectors of this operator
-c$$$C
-c$$$C     Routine based on MODHAM and parts of the ZORA diagonalization routine
-c$$$C
-c$$$C     Called from GLINSM, LOWD2C
-c$$$C
-c$$$C     On input:  VMAT 4c AO-MO RKB transformation matrix
-c$$$C
-c$$$C     On output: TMAT - new 4c AO-MO RKB transf.matrix adapted for the linear symmetry
-c$$$C                TBUF - MO to MO transformation matrix adapted for linear symmetry...
-c$$$C
-c$$$C     Written by L.Visscher, october 2003
-c$$$C     Last changes: M.Ilias, Strasbourg, 2005
-c$$$C                  M.Ilias, Tel Aviv, April 2009 - extended with QJACOBI
-c$$$!                 MI, July 2014 - option to print out J_z matrices for
-c$$$!                 diagonalization
-C
-C*****************************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER (D0=0.D0, D1=1.D0, D2=2.D0)
-C
-C Used from COMMON blocks
-C  CBIPAM:
-C  DCBBAS:
-C  DCBORB:
-C  DGROUP:
-#include "dcbgen.h"
-#include "dcbham.h"
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dgroup.h"
-#include "cbihr1.h"
-#include "dummy.h"
-#include "dcbdhf.h" 
-! dcbdhf is added by sunaga
-C     
-      DIMENSION TMAT(*),TCUF(*),VMAT(*),KMAT(*),EIG(*),WORK(LWORK)
-      DIMENSION IQBF(4),IQW(4)
-      LOGICAL :: DOJACO_SAVE
-      character*100 :: hfile_format,hfile_name
-
-      CALL QENTER('BKDIAG')
-
-#include "memint.h"
-C
-      CALL HEADER('Output from BKDIAG',-1)
-      NBRP = 4 / NZ
-c$$$C
-c$$$C     Construct mj matrix in AO basis
-c$$$C
-c$$$      CALL AMJMAT(TCUF,IPRHAM,WORK,LWORK)
-c$$$C
-c$$$C     Transform to MO-basis
-c$$$C     =====================
-c$$$C
-c$$$C Note : It's tempting to use I2ORBT to find the start of a block, but this is not
-c$$$C possible as this array is not yet set (is done in dirset). Took me half an hour to
-c$$$C figure this one out (LV).
-c$$$C
-c$$$      IF(I.eq.1)THEN
-c$$$        IOFT = 1
-c$$$        IOFV = 1
-c$$$      ELSE IF(I.eq.2)THEN
-c$$$        IOFT = 1 + NORB(1)*NORB(1)
-c$$$        IOFV = 1 + NORB(1)*NFBAS(1,0)
-c$$$      ELSE
-c$$$         STOP "I should be 1 or 2"
-c$$$      ENDIF
-c$$$        IOFTB = I2BASX(I,I) + 1
-c$$$        CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
-c$$$     &            NORB(I),NORB(I),
-c$$$     &            TCUF(IOFTB),NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),
-c$$$     &            TMAT(IOFT),NORB(I),NORB(I),1,IPQTOQ(1,0),
-c$$$     &            VMAT(IOFV),NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),
-c$$$     &            VMAT(IOFV),NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),
-c$$$     &            WORK,LWORK,IPRHAM)
-c$$$c$$$      DO ISUB = 1,KPMAX
-c$$$c$$$      IF(NORB_SUB(ISUB,I,IP).GT.0) THEN
-c$$$c$$$        IOFTB = I2BASX(I,I) + 1      
-c$$$c$$$        IAO = I2BASX(I,I)+1
-c$$$c$$$        IMO = I2TMOT(I) + (NTMO(I)+1)*IBORB + 1
-c$$$c$$$        ITM = I2TMT(I)  + NFBAS(I,0)*IBORB + 1
-c$$$c$$$        CALL QTRANS('AOMO','S',0.0d0,NFBAS(I,0),NFBAS(I,0),
-c$$$c$$$     &         NORB_SUB(ISUB,I,IP),NORB_SUB(ISUB,I,IP),
-c$$$c$$$     &         TCUF(IAO),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
-c$$$c$$$     &         TMAT(IMO),NTMO(I),NTMO(I),1,IPQTOQ(1,0),
-c$$$c$$$     &         VMAT(ITM),NFBAS(I,0),NTMO(I),NZT,IPQTOQ(1,0),
-c$$$c$$$     &         VMAT(ITM),NFBAS(I,0),NTMO(I),NZT,IPQTOQ(1,0),
-c$$$c$$$     &         BUF,LBUF,12)
-c$$$c$$$          IBORB = IBORB + NORB_SUB(ISUB,I,IP)
-c$$$c$$$      ENDIF
-c$$$c$$$      ENDDO
-c$$$      
-c$$$        IF (IPRHAM.GE.12) THEN
-c$$$         write(*,*)"IP",IP,"I",I
-c$$$         write(*,*)"IOFTB",IOFTB
-c$$$         CALL HEADER(
-c$$$     &    'BKDIAG: Entering AO->MO transformation matrix',-1)
-c$$$         WRITE(LUPRI,'(3X,A,I1,A,I1)')
-c$$$     &   '*** Fermion corep ',I,'/',NFSYM
-c$$$         CALL PRQMAT(VMAT(IOFV),NFBAS(I,0),NORB(I),
-c$$$     &   NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),LUPRI)
-c$$$
-c$$$         CALL HEADER('BKDIAG: MJ matrix in AO basis',-1)
-c$$$         WRITE(LUPRI,'(3X,A,I1,A,I1)')
-c$$$     &   '*** Fermion corep ',I,'/',NFSYM
-c$$$         CALL PRQMAT(TCUF(IOFTB),NFBAS(I,0),NFBAS(I,0),
-c$$$     &   NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),LUPRI)
-c$$$
-c$$$         CALL HEADER('BKDIAG: MJ matrix in MO basis',-1)
-c$$$         WRITE(LUPRI,'(3X,A,I1,A,I1)')
-c$$$     &   '*** Fermion corep ',I,'/',NFSYM
-c$$$         CALL PRQMAT(TMAT(IOFT),NORB(I),NORB(I),
-c$$$     &   NORB(I),NORB(I),1,IPQTOQ(1,0),LUPRI)
-c$$$
-c$$$         CALL FLSHFO(LUPRI)
-c$$$
-c$$$        ENDIF
-c$$$
-c$$$        
-c$$$C
-c$$$C     Initialize TBUF to zero (we will fill in parts later and its easier to initialize
-c$$$C     the rest here). Also initialize the array that counts the number of functions for
-c$$$C     each Mj value.
-c$$$C
-c$$$      CALL DZERO (TCUF,N2TMT)
-c$$$
-c$$$!     stefan - june 2011: save LL block of <j_z>-eigenvectors (temporary) on file
-c$$$!                         this block is needed to transform the 2c-LOWDIN matrix
-c$$$!                         in the x2c-mmf approach (thus ensuring numerical stability by not re-doing this step).
-c$$$      if(do4c2c)then
-c$$$        open(13,file='JzMOLLb',status='replace',form='unformatted',
-c$$$     &       access='sequential',action='readwrite',
-c$$$     &       position='rewind')
-c$$$      end if
-c$$$C
-c$$$      IF(I.eq.1)THEN
-c$$$        IOFT = 1
-c$$$      ELSE IF(I.eq.2)THEN
-c$$$        IOFT = 1 + NORB(1)*NORB(1)
-c$$$      ELSE
-c$$$         STOP "I should be 1 or 2"
-c$$$      ENDIF
-c$$$C     
-c$$$C      IOFT = 1
-c$$$C
-c$$$C       Set dimensions
-c$$$C
-c$$$        NL = NESH(I)
-c$$$        NS = NPSH(I)
-c$$$        NT = NORB(I)
-c$$$        NLL = NL * NL
-c$$$        NSS = NS * NS
-c$$$        NTT = NT * NT
-c$$$        NMM = NM * NM
-c$$$        IF(IP.eq.2)THEN
-c$$$           IEIG = IORB(I) + 1
-c$$$        ELSEIF(IP.eq.1)THEN   
-c$$$           IEIG = IEIGP + NS
-c$$$        ELSE
-c$$$           stop "IP should be 1 or 2"
-c$$$        Endif
-c$$$C
-c$$$C       Allocate memory for the diagonalization. We want to
-c$$$C       have the LL and SS blocks in separate blocks.
-c$$$C
-c$$$c$$$        CALL MEMGET('REAL',KFSS,NSS,WORK,KFREE,LFREE)
-c$$$c$$$        CALL MEMGET('REAL',KVLL,NLL,WORK,KFREE,LFREE)
-c$$$c$$$        CALL MEMGET('REAL',KVSS,NSS,WORK,KFREE,LFREE)
-c$$$C
-c$$$C       Extract LL block of Jz matrix
-c$$$C
-c$$$        CALL EXTRSB (1,I,NBORB,4,NBRP,NBORB,4,NBRP,0,0,IP,IP,1,NZ,
-c$$$     &               KMAT,NM,NM,1,
-c$$$     &               TMAT(IOFT),NT,NT,NZ)
-C
-C       Find eigenvalues of Jz
-C
-        IF (NM.GT.0) THEN
-          IF (IPRHAM.GE.5) THEN
-           CALL HEADER('BKDIAG: Jz_LL to be diagonalized',-1)
-           WRITE(LUPRI,'(2X,A,L1)') 'DOJACO=',DOJACO
-           WRITE(LUPRI,'(3X,A,I1,A,I1/)')
-     &     '*** Fermion corep ',I,'/',NFSYM
-           CALL PRQMAT(KMAT,NM,NM,NM,NM,1,
-     &          IPQTOQ(1,0),LUPRI)
-          ENDIF
-          write(*,*)"sunaga"
-          IF (WRITE_Jz_MATRIX) THEN
-! get the file name first, containing symmetry
-            hfile_format="(A13,A7,I1,A1,I1)"
-            write(hfile_name,hfile_format)
-     &       "Jz_LL_matrix.","fermirp",I,"-",NFSYM
-! open the unique file and write the matrix
-             luhm=95
-             open(luhm,file=trim(hfile_name),access="sequential",
-     &         form="formatted",status="unknown")
-               write(luhm,*) NM,1 ! this is pure real matrix (NZ=1)
-               ic=0
-               do ii=1,NM
-               do jj=1,NM
-                 write(luhm,*) ii,jj,KMAT(ic)
-                 ic = ic + 1
-               enddo
-               enddo
-             close(luhm,status="keep")
-          ENDIF
-          write(*,*)"sunaga1"
-CCCCCCCCCCCCCCCCCCCCCCCCCCC      
-C diagonalize
-CCCCCCCCCCCCCCCCCCCCCCCCCCC
-          
-          IBO = 0
-          DO ISUB = 1, N_SUB_BL(I)
-            NBO = NORB_SUB(ISUB,I,IP)
-            write(*,*)""
-            write(*,*)"IMAT",IMAT
-            write(*,*)"NBO",NBO
-            write(*,*)"ISUB",ISUB
-            write(*,*)"IP",IP
-            IF(NBO.GT.0) THEN
-              IMAT =  I2TMOT(I) + (NTMO(I)/2+1)*IBO + 1
-              IEIG = IORB(I) + IBO + 1
-          write(*,*)"IMAT2",IMAT
-C
-C             Diagonalize the isub'th block of parity i
-C
-#ifdef MOD_UNRELEASED
-              IF (.NOT.DOQJACO) THEN
-#endif
-                IF (DOJACO) THEN
-                  CALL RSJACO(NBO,NBO,NBO,KMAT(IMAT),
-     &                      EIG(IEIG),1,1,0,TMAT(IMAT))
-                ELSE
-                write(*,*)""
-                write(*,*)"IMAT3",IMAT
-                write(*,*)"NTMO",NTMO(I)
-                write(*,*)"NBO",NBO
-                write(*,*)"IMAT3",IMAT
-                  CALL QDIAG(1,NBO,KMAT(IMAT),NBO,NBO,
-     &                   EIG(IEIG),1,TMAT(IMAT),NBO,NBO,
-     &                   WORK(KFREE),LFREE,IERR)
-                write(*,*)"IMAT4",IMAT
-                ENDIF
-#ifdef MOD_UNRELEASED
-              ELSE
-               CALL MEMGET2('REAL','KMAT',KFMO,NBO*NBO,WORK,KFREE,LFREE)
-               CALL MEMGET2('REAL','FA ',KFA, NBO*NBO,WORK,KFREE,LFREE)
-                IPOS=0
-                DO II=1,NBO
-                  DO JJ=1,NBO
-                    WORK(KFMO+IPOS)=WORK(IMAT+(NBO*(II-1))+JJ-1)
-                    IPOS=IPOS+1
-                  ENDDO
-                ENDDO
-                CALL QJACOBI(WORK(KFMO),WORK(KFA),NBO,1,0,
-     &                       IDUMMY,.TRUE.,IPRSCF)
-                IPOS=0
-                DO II=1,NBO
-                  EIG(IEIG+II-1)=WORK(KFMO+(NBO*(II-1)+II-1))
-                  DO JJ=1,NBO ! store eigenvectors
-                    TMAT( IMAT+ (NBO*(II-1)+JJ-1) ) =
-     &              WORK(KFA+(NBO*(II-1))+JJ-1)
-                    IPOS=IPOS+1
-                  ENDDO
-                ENDDO
-                CALL MEMREL('DFDIAG',WORK,KFMO,KFMO,KFREE,LFREE)
-              ENDIF
-#endif
-              Do IE = IBO+1, IBO + NORB_SUB(ISUB,I,IP)
-                 write(*,*)"EIG",EIG(IE),IE
-                 EIG(IE) = EIG(IE) + 100 * ID_SUB_BL(ISUB,I)
-              Enddo
-              IBO = IBO + NORB_SUB(ISUB,I,IP)
-            ENDIF ! IF(NBO.GT.0) THEN
-          ENDDO   ! ISUB = 1, N_SUB_BL(I)
-      ENDIF       ! IF (NM.GT.0) THEN
-
-      CALL FLSHFO(LUPRI)
-      CALL QEXIT('BKDIAG')
-      RETURN      
-      END
-      
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck Wrifrz */
       SUBROUTINE WRIFRZ(IUNIT,IFRP,CSEL,ESEL,ISEL,IVEC,BUF,IBUF,
