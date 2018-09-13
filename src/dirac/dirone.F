@@ -5599,7 +5599,9 @@ C figure this one out (LV).
 C
       IOFT = 1
       IOFV = 1
+      N2TMT   = 0
       DO 10 I = 1,NFSYM
+        N2TMT = N2TMT + NFBAS(I,0)*NORB(I)*NZT
         IF(NORB(I).EQ.0) GOTO 10
         IOFTB = I2BASX(I,I) + 1
         CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
