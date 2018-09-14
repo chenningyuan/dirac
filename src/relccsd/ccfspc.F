@@ -261,9 +261,10 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE HEFF1(ICURFSS,IPR,S1,S2,FVO,EPS,BUF1,BUF2,BUF3,
-     &  HEFF,EIGENVALUES,EIGENVECTORS_LEFT,EIGENVECTORS_RIGHT)
+     &                 NSP,IREPSPI)
 
 C
+      use memory_allocator
       implicit none
 C---------------Description--------------------------------------------
 C
@@ -274,12 +275,10 @@ C     problem. Finish by analyzing the eigenvectors and computing the
 C     transition moments.
 C---------------Calling variables--------------------------------------
 C
-      REAL*8 HEFF(*),EIGENVALUES(0:*)
-      REAL*8 EIGENVECTORS_LEFT(*),EIGENVECTORS_RIGHT(*)
       REAL*8 S1(*),S2(*),FVO(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)
       CHARACTER*40 TIT
-      INTEGER ICURFSS
+      INTEGER ICURFSS,NSP,IREPSPI
 C---------------Common Blocks--------------------------------------
 C
 #include "param.inc"
@@ -295,6 +294,18 @@ C---------------Local variables -----------------------------------
       DIMENSION INDX_ALL(NDIMH*MXREP),IRPS_ALL(NDIMH*MXREP)
       DIMENSION IND(MXREP),NDT_ALL(MXREP)
       REAL*8 E_OFF
+      real*8, allocatable ::  HEFF(:), EIGENVALUES(:),
+     &                             EIGENVECTORS_LEFT(:),
+     &                             EIGENVECTORS_RIGHT(:)
+
+           call alloc (HEFF, RCW*IFS_HE2(NREP+1,ICURFSS), id="heff")
+           call alloc (EIGENVALUES,  RCW*(IFS_HE(NREP+1,ICURFSS)+1),
+     &                 id="eigenvalues" )
+           call alloc (EIGENVECTORS_LEFT, RCW*IFS_HE2(NREP+1,ICURFSS),
+     &                 id="eigenvectors_left" )
+           call alloc (EIGENVECTORS_RIGHT, RCW*IFS_HE2(NREP+1,ICURFSS),
+     &                 id="eigenvectors_right" )
+
 C---------------Executable code--------------------------------------
       IF (ICURFSS.EQ.1) THEN
 C-------------------------------------------
@@ -416,14 +427,28 @@ C     Write effective Hamiltonian to file for post-processing
 C
 C.... Diagonalize the effective Hamiltonian (blocked by symmetry).
 C
-      DO 100 IRP=1,NREP
-         IF (NFS_HE(IRP,ICURFSS).EQ.0) GOTO 100
+      DO IRP = 1, NREP
+         IF (NFS_HE(IRP,ICURFSS).EQ.0) CYCLE
          CALL SOLVE_CG (NFS_HE(IRP,ICURFSS),
      &                  HEFF(IFS_HE2(IRP,ICURFSS)*RCW+1),
      &                  EIGENVECTORS_LEFT(IFS_HE2(IRP,ICURFSS)*RCW+1),
      &                  EIGENVECTORS_RIGHT(IFS_HE2(IRP,ICURFSS)*RCW+1),
-     &                  EIGENVALUES(IFS_HE(IRP,ICURFSS)*RCW+RCW))
-100   CONTINUE
+     &                  EIGENVALUES(IFS_HE(IRP,ICURFSS)*RCW+RCW+1))
+       END DO
+
+      if (ICURFSS.GT.1) then
+C        Print the Fock space eigenvalues, compute transition moments
+C        except for the 00 sector, obviously
+         CALL FS_ANALYSIS1(ICURFSS,EPS,EIGENVALUES,
+     &     EIGENVECTORS_LEFT,EIGENVECTORS_RIGHT,NSP,IREPSPI)
+      endif
+
+!     Deallocate space for the effective Hamiltonian
+
+      call dealloc (HEFF, id="heff")
+      call dealloc (EIGENVALUES, id="eigenvalues")
+      call dealloc (EIGENVECTORS_LEFT, id="eigenvectors_left")
+      call dealloc (EIGENVECTORS_RIGHT, id="eigenvectors_right")
 
       RETURN
       END
