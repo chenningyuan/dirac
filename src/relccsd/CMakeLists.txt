@@ -24,7 +24,6 @@ set(FIXED_RELCCSD_FORTRAN_SOURCES
    ccmain.F
    ccpam.F
    ccrpa.F
-   ccsort.F
    ccxblas.F
    waio.F
    ${PROJECT_SOURCE_DIR}/src/prp/mp2lag.F
@@ -40,6 +39,7 @@ set(FIXED_RELCCSD_FORTRAN_SOURCES_noruntimecheck
 set(FREE_RELCCSD_FORTRAN_SOURCES
    relcc_cfg.F90
    auto_offset.F90
+   ccsort.F90
    ccsort_exp.F90
    wrapper_sorting.F90 
    contraction.F90
