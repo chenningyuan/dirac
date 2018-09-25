@@ -26,9 +26,9 @@ is one of the following :math:`4 \times 4` matrices:
 
 .. math::
 
-  I_{4 \times 4}, \gamma_5, i \beta \gamma_5,
+  I_{4 \times 4}, \gamma_5, \beta \gamma_5,
 
-  \alpha_x, \alpha_y, \alpha_z
+  i\alpha_x, i\alpha_y, i\alpha_z
 
   \Sigma_x, \Sigma_y,  \Sigma_z
 
@@ -36,11 +36,13 @@ is one of the following :math:`4 \times 4` matrices:
 
   i \beta \alpha_x, i \beta \alpha_y, i \beta \alpha_z
 
+One thing to notice is that an imaginary :math:`i` is added to the time-antisymmetric Dirac :math:`\boldsymbol{\alpha}` - matrices and their derivatives to make them time symmetric and hence fit into the
+quaternion symmetry scheme of DIRAC (see :cite:`Saue1999` and :cite:`Salek2005` for more information).
 
 Operator types
 --------------
 
-There are 22 basic operator types used in DIRAC, listed in this Table:
+There are 21 basic operator types used in DIRAC, listed in this Table:
 
 ===========  ============================================================================= ===============
 **Keyword**  **Operator form**                                                             **Nr. factors**
@@ -64,9 +66,8 @@ XiBETAAL     :math:`f i \beta \alpha_x \Omega`                                  
 YiBETAAL     :math:`f i \beta \alpha_y \Omega`                                             1
 ZiBETAAL     :math:`f i \beta \alpha_z \Omega`                                             1
 BETA         :math:`f \beta \Omega`                                                        1
-SIGMADOT     :math:` add me       `                                                        x
-BETAGAMMA5   :math:`f i \beta \gamma_5 \Omega`                                             1
-DSIGMADOT    :math:`f_1 \sigma_x \Omega_x + f_2 \sigma_y \Omega_y + f_3 \sigma_z \Omega_z` 1
+SIGMADOT     :math:`f_1 \Sigma_x \Omega_x + f_2 \Sigma_y \Omega_y + f_3 \Sigma_z \Omega_z` 1
+iBETAGAMMA5  :math:`f i \beta \gamma_5 \Omega`                                             1
 ===========  ============================================================================= ===============
 
 

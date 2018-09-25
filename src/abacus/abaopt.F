@@ -7571,7 +7571,7 @@ C
 C
 C     Update geometry in common block
 C
-         MLINE(NMLAU)(20:20) = ' '
+         IF (NMLAU.GE.1) MLINE(NMLAU)(20:20) = ' ' 
          DO 100 N = 1, NUCIND
             CRX = COOR(1,N)
             CRY = COOR(2,N)

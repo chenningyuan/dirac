@@ -15,7 +15,7 @@ f = [
                rel_tolerance=1.0e-5),
     get_filter(from_string='Peak memory usage:',
                to_string='reached at subroutine :',
-               abs_tolerance=1.0e-4),
+               rel_tolerance=0.50), # different memory peaks for serial / parallel runs
 ]
 
 options = cli()

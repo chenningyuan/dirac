@@ -24,7 +24,7 @@
 ! ::: HERSYM_DEBUG - Debug print if > 0 + IPRSYM set to HERSYM_DEBUG
 #define HERSYM_DEBUG -1
 ! ::: IPRTHR - Print level threshold for verbose output
-#define IPRTHR 3
+!#define IPRTHR 3 ! Miro: I had to deactivate it due to runtime checks !
 !
 !========================================================================
 !950208-Vebjoern Bakken
@@ -59,6 +59,7 @@ C*****************************************************************************
 
       CALL QENTER('SYMADD')
 
+      IPRTHR = 3 ! Miro: for runtime check it must be defined as variable
       IPRSYM = MAX(HERSYM_DEBUG, IPRSYM_input)
 
 C     Set control variables in "mxsymm.h"
@@ -133,6 +134,8 @@ C ***********************************************************
       CHARACTER*1 KASYM(3,3)
       CHARACTER SYMM*9, TMPLN*80
       CHARACTER POINT_GROUP*15, TEXT*43
+
+      IPRTHR = 3 ! Miro: for runtime check it must be defined as variable
 C
 C     Just to make sure, we zero all temporary arrays
 C
@@ -431,7 +434,7 @@ C ::::::::::::::::::::::::::::::::::::::::::::::
      &   ' -----------------------------'
       DO I=1,NINT(MIRPLN(1,0))
          IT = NINT(MIRPLN(4,I))
-         N  = MOD(IZ,100000)
+         N  = MOD(IT,100000) 
          IT = IT / 100000
          WRITE (LUPRI,11) IT,N,(MIRPLN(J,I), J=1,3)
       END DO
@@ -846,6 +849,7 @@ C    - do it twice to minimize round-off errors
 C
 #include "implicit.h"
 #include "priunit.h"
+#include "mxsymm.h"
       DIMENSION ATMARR(6,0:*), CMXYZ(3)
       DIMENSION CINRTP(6),VPCMOM(3,3), TMP(3), ITMP(3)
 
@@ -1083,6 +1087,8 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       DIMENSION DIRAXS(6,0:MAXAXS), DMRPLN (6,0:MAXMIR)
       DIMENSION V1(3), V2(3), V3(3), TMPARR(6,0:LENTMP)
       LOGICAL   LINMOL
+
+      IPRTHR = 3 ! Miro: for runtime check it must be defined as variable
 C
       N_ROTAXS = NINT(DRTAXS(1,0))
       N_MIRROR = NINT(DMRPLN(1,0))

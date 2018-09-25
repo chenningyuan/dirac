@@ -1166,7 +1166,7 @@ C
 *
       IMPLICIT REAL*8(A-H,O-Z)
       DIMENSION VEC1(1),VEC2(1)
-      DIMENSION FAC(1)
+      DIMENSION FAC(*) ! Miro: instead of FAC(1)
 *
       IF(IREW .NE. 0 ) REWIND LUIN
 *

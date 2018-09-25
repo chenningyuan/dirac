@@ -522,7 +522,6 @@ C
       implicit none
 C
 C---------------Description--------------------------------------------
-
 C     Get VOVO part of two-electron integrals
 
 C---------------Calling variables--------------------------------------
@@ -533,16 +532,18 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
+#include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
 #include "eqns.inc"
-#include "param.inc"
 C
 C---------------Local variables--------------------------------------
-C
+      REAL*8, ALLOCATABLE :: VOVV_TEMP(:)
+      INTEGER, ALLOCATABLE :: counter(:), displ(:)
+      LOGICAL :: DONE
+      INTEGER :: totsize
 C---------------Executable code--------------------------------------
 C
-
       ALLOCATE(VVOVV(NV5*IRW*RCW))
 
       CALL GETVOVV_incore (VVOVV)
@@ -553,7 +554,7 @@ C
 
       RETURN
       END
-
+!=================================================================
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
@@ -596,7 +597,7 @@ C---------------Local variables--------------------------------------
       REAL*8, ALLOCATABLE :: VOVV_TEMP(:)
       INTEGER, ALLOCATABLE :: counter(:), displ(:)
       LOGICAL :: DONE
-      INTEGER :: totsize, check, i, istart, mint, nint, off1, irp,IERR
+      INTEGER :: totsize, check, i, istart, mint, nint, off1, irp
 C---------------Executable code--------------------------------------
 C
        allocate(counter(0:nmproc-1))
@@ -606,10 +607,9 @@ C
 
        OFF1 = 1
        DO  30 IRP = 1, NREP
-
          check = IRP
          totsize = 0
-         IF (NVO(IRP).EQ.0) GOTO 30
+         IF ((NVO(IRP).EQ.0).OR.(NVVT(IRP).EQ.0)) GOTO 30
          ALLOCATE(VOVV_TEMP(NVO(IRP)*NVVT(IRP)*RCW))
 
          VOVV_TEMP = 0.0d0
@@ -637,16 +637,13 @@ C
 #if defined (VAR_MPI)
       IF (nmproc .GT. 1) THEN
 
-      CALL XTIME(4,1,'-- combining VOVV via MPI_GATHER')
+        CALL XTIME(4,1,'-- combining VOVV via MPI_GATHER')
 
-      call interface_mpi_allgatherv(vovv_temp(1),counter(myproc),
+        call interface_mpi_allgatherv(vovv_temp(1),counter(myproc),
      &    VVOVV(totsize+off1),counter,displ,global_communicator)
 
-      CALL XTIME(4,2,'-- combining VOVV via MPI_GATHER')
+        CALL XTIME(4,2,'-- combining VOVV via MPI_GATHER')
 
-        IF(IERR.GT.0) THEN
-           CALL QUIT('MPI_GATHER ERROR in collecting VOVV Integrals !')
-        ENDIF
       ENDIF
 #endif
 
@@ -655,8 +652,6 @@ C
        call xcopy(nvo(irp)*nvvt(irp),vovv_temp(1),1,VVOVV(off1),1)
     
       endif
-
-
 
          totsize = totsize + sum(counter)
 
@@ -710,6 +705,44 @@ C
      &             VVOVV,VOVVV)
 
       DEALLOCATE(VVOVV)
+
+      RETURN
+      END
+
+
+      SUBROUTINE GETVVOV_incore (VVVOV)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+
+C     Get VOVO part of two-electron integrals
+
+C---------------Calling variables--------------------------------------
+C
+      REAL*8             :: VVVOV(*)
+      REAL*8, ALLOCATABLE:: VOVVV(:)
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "files.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "eqns.inc"
+#include "param.inc"
+C
+C---------------Local variables--------------------------------------
+C
+C---------------Executable code--------------------------------------
+C
+
+      ALLOCATE(VOVVV(NV5*IRW*RCW))
+
+      CALL GETOVVV_incore (VOVVV)
+
+      CALL SRT1C1 (NREP,NOV,NVVT,VOVVV,VVVOV) 
+
+      DEALLOCATE(VOVVV)
 
       RETURN
       END

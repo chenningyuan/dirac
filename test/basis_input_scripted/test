@@ -18,6 +18,7 @@
 #############################################################################################
 
 import os
+import glob
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -65,16 +66,21 @@ def parse_environment_variables(testday):
     n_bsf=None
     if os.environ.get('BSFILE'):
         #print "BSFILE defined = ",os.environ.get('BSFILE')
-        print("...user provided (BSFILE envirom.variable) basis set files: ",os.environ.get('BSFILE').split())
+        #print "BSFILE glob = ",glob.glob(os.environ.get('BSFILE'))
+        #print("...user provided (BSFILE envirom.variable) basis set files: ",os.environ.get('BSFILE').split())
         # check and accumulate the list of basis set files for testing
         for bsf in (os.environ.get('BSFILE').split()):
-            #print "bsf=",bsf
-            if os.path.isfile(os.path.join(dirac_top_dir,bsf)):
-                #print "This is valid basis set file =",(os.path.join(dirac_top_dir,bsf))
-                basis_set_files.append(bsf)
-            else: 
-                print("You provided  (in BSFILE env.var.) INVALID basis set file ! Check it ... ",(os.path.join(dirac_top_dir,bsf)))
-                sys.exit("invalid basis set file !"+bsf)
+            #print("bsf=",bsf)
+            #print("os.path.join(dirac_top_dir,bsf)=",os.path.join(dirac_top_dir,bsf))
+            #print("glob.glob(os.path.join(dirac_top_dir,bsf))=",glob.glob(os.path.join(dirac_top_dir,bsf)))
+            for bsf_glob in glob.glob(os.path.join(dirac_top_dir,bsf)):
+                #print("bsf_glob=",bsf_glob)
+                if os.path.isfile(bsf_glob):
+                    print("This is valid basis set file =",bsf_glob)
+                    basis_set_files.append(bsf_glob)
+                else: 
+                    print("You provided  (in BSFILE env.var.) INVALID basis set file ! Check it ... ",(os.path.join(dirac_top_dir,bsf)))
+                    sys.exit("invalid basis set file !"+bsf)
 
     if os.environ.get('ZELEM'):
         #print "ZELEM defined = ",os.environ.get('ZELEM').split()
@@ -148,7 +154,7 @@ def run_through_selected_basis_set_files(n_bsf, n_Zelem, Znumbers, basis_set_fil
     icount=0
     #print "run_through_selected_basis_set_files: basis_set_files=",len(basis_set_files)
     for bf in basis_set_files:
-       infile = open(os.path.join(dirac_top_dir,bf), 'r')
+       infile = open(bf, 'r')
        data=infile.readlines()
        if n_Zelem: Znumbers=collect_Znumbers_from_bsfile(bf,data,n_Zelem)
        for line in data:
