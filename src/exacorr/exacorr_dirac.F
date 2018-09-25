@@ -36,11 +36,11 @@ C***********************************************************************
 C     Transfer necessary information from common blocks
       if (mytid == 0) then
          orbital_string = tra4_indstr(:,1) ! This is to be changed once we have an exacorr-specific input driver
-         call dirac_parctl( 2 )
+!        call dirac_parctl( 2 )
       end if
-      call interface_mpi_bcast(orbital_string,72*4,mparid,
-     &                         global_communicator)
-      call interface_mpi_bcast(nesh,1,mparid,global_communicator)
+!     call interface_mpi_bcast(orbital_string,72*4,mparid,
+!    &                         global_communicator)
+!     call interface_mpi_bcast(nesh,1,mparid,global_communicator)
 #else
       orbital_string = tra4_indstr(:,1) ! This is to be changed once we have an exacorr-specific input driver
 #endif

@@ -665,6 +665,7 @@ C
     6          CONTINUE
 C&&&& Use exacorr transformation routine
                   TRA_EXACORR = .TRUE.
+                  ISTRAT = 4 ! This corresponds to non-distributed integrals
                GO TO 100
     7          CONTINUE
 C&&&& POSITRONS - allow positronic solutions

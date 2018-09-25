@@ -11,6 +11,7 @@ module exacorr_global
         integer :: my_MPI_master=0 ! Define the MPI master proces (is always zero in the DIRAC MPI environment)
         integer, allocatable :: shell_indices(:)  ! for each basis function the index of the shell to which it belongs
         type(basis_func_info_t), allocatable :: gtos(:)  ! list of all shells
+        logical :: TALSH_VERSION = .TRUE. ! switch off synchronization as this is not required and does not work for TALSH
 
 !       Functions and routines to interact with these data
         public initialize_global_data
@@ -80,6 +81,7 @@ module exacorr_global
              integer :: ish
              integer :: my_MPI_rank
 
+             if (TALSH_VERSION) return
              call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
              if (my_MPI_rank == my_MPI_master) nao = number_aos(1)
              if (my_MPI_rank == my_MPI_master) nshells = number_aoshells() 

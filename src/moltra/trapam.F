@@ -121,17 +121,6 @@ C
  
       CALL Make_Kramer_to_SpinorIndex (NFSYM,NSTR)
 
-C     Temporary hack to call the exacorr module
-      if (tra_exacorr) then
-#ifndef MOD_EXACORR
-          call quit(
-     &    'moltra error: tra_exacorr not included in this version')
-#else
-          call exa_moltra()
-          no4ind = .true. ! skip conventional 4-index transformation
-#endif
-      end if
-
       KFRSAV = KFREE
 C
 C     Print section
@@ -142,6 +131,7 @@ C
          CALL TRAPRI(4,I,WORK(KVEC(I,1)),WORK(KVEC(I,2)),
      &                 WORK(KVEC(I,3)),WORK(KVEC(I,4)),NSTR)
       ENDDO
+
 C
 C     Calculate dimensions of coefficient arrays
 C     The coefficients are stored as 4 arrays of two matrices each
@@ -478,6 +468,17 @@ C
       ENDIF
 C
       CALL FLSHFO(LUPRI)
+
+      if (tra_exacorr) then
+#ifndef MOD_EXACORR
+          call quit(
+     &    'moltra error: tra_exacorr not included in this version')
+#else
+          call exa_moltra()
+          no4ind = .true. ! skip conventional 4-index transformation
+#endif
+      end if
+
 C
 C     Call driver for 4-index transformation
 C     --------------------------------------
@@ -4835,6 +4836,9 @@ C
       NUMELM = 8
       CALL interface_MPI_BCAST(ICMOQR,NUMELM,MPARID,
      &               global_communicator)
+      NUMELM = 1
+      call interface_mpi_bcast_l0(tra_exacorr,NUMELM,MPARID,
+     &                                global_communicator)
 C
 C
 C
@@ -4994,23 +4998,22 @@ C
       DIMENSION DINTSKP(8),TIM1(7)
       real(8), allocatable :: WORK(:)
 C
-C     Temporary hack to call the exacorr module (hardwired for the moment, because tra_exacorr is not broadcasted)
-      tra_exacorr = .true.
+      CALL QENTER('TRANOD')
+      call legacy_lwork_get(LWORK)
+#include "memint.h"
+      call alloc(WORK,LWORK,id='WORK in TRANOD')
+      KFRSAV = KFREE
+      CALL DZERO(DINTSKP,8)
+
       if (tra_exacorr) then
 #ifndef MOD_EXACORR
           call quit(
      &    'moltra error: tra_exacorr not included in this version')
 #else
           call exa_moltra()
-          return ! skip conventional 4-index transformation
+          return  ! skip conventional 4-index transformation
 #endif
       end if
-
-      CALL QENTER('TRANOD')
-      call legacy_lwork_get(LWORK)
-      call alloc(WORK,LWORK,id='WORK in TRANOD')
-#include "memint.h"
-      KFRSAV = KFREE
 C
 C     Initialize the common blocks.
 C
@@ -5018,7 +5021,6 @@ C
       CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
      &             KINDX,KGAB,KDRIJ,
      &             INTFLG,NSTR,ANTIS,LMP2)
-      CALL DZERO(DINTSKP,8)
 C
       IF (ISTRAT.EQ.1) THEN
          WRITE(LUPRI,'(A)')
