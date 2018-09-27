@@ -1,0 +1,28 @@
+
+        real function relative_error(quantity_1,quantity_2)
+
+         implicit none
+         real(8),intent(in):: quantity_1,quantity_2
+         real(8)           :: error
+
+         error = quantity_1 - quantity_2
+
+         if (abs(quantity_1).gt.1.0) then
+            relative_error = abs (error / quantity_1)
+         else
+            relative_error = abs (error)
+         end if
+
+        end function relative_error
+           
+        subroutine print_date(text)
+         implicit none
+         character(len=10) :: datex
+         character(len=8)  :: timex
+         character(len=*)  :: text
+         integer           :: lentext
+         lentext = len(text)
+         call daytime(datex,timex)
+         write (*,'(1x,a10,1x,a8,1x,a)') datex,timex,text(1:lentext)
+        end subroutine print_date
+
