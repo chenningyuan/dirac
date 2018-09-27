@@ -6,8 +6,9 @@ module talsh_cc
 
         implicit none
         complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
-                                 ONE_HALF=(0.5D0,0.D0),MINUS_ONE_HALF=(-0.5D0,0.D0),ONE_QUARTER=(0.25D0,0.D0), &
+                                 ONE_HALF=(0.5D0,0.D0),MINUS_ONE_HALF=(-0.5D0,0.D0), &
                                  THREE=(3.0,0.0), SIX=(6.0,0.0)
+        real(8), parameter    :: ONE_QUARTER=0.25D0
         private
 
         public cc_driver
@@ -71,17 +72,17 @@ module talsh_cc
          logical, parameter :: debug=.false.
 
 !        Make some noise so that we know we are here
-         print*, " Arrived in cc_driver routine"
+         call print_date('Entered cc_driver routine')
 
 !        Initialize libraries
          host_buf_size=BUF_SIZE
          ierr=talsh_init(host_buf_size,host_arg_max)
-         print*, " Initialized talsh library"
+         call print_date('Initialized talsh library')
          write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,host_buf_size,host_arg_max
          call interest_initialize(.true.)
-         print*, " Initialized interest library"
+         call print_date('Initialized interest library')
          call initialize_global_data
-         print*, " Initialized global data"
+         call print_date('Initialized global data')
 
 !        Initialize scalars that are to be used as tensors in contractions
          one_dims(1) = 1
@@ -166,10 +167,14 @@ module talsh_cc
          ierr=talsh_tensor_construct(s2_tensor,C8,s2_dims,init_val=ZERO)
          call diis (t1_tensor,t2_tensor,mode=1)
          if (ierr.eq.TALSH_SUCCESS) then
-            print*," ccdriver: allocated all tensors"
+            call print_date('Succesfully allocated all tensors')
          else
             print*," ccdriver: error in tensor allocation, code=",ierr
             return
+         end if
+
+         if (debug) then
+            print*, "Voovv = ",talshTensorImageNorm1_cpu(oovv_tensor)
          end if
 
          do iccsd = 1, nccsd
@@ -255,40 +260,17 @@ module talsh_cc
          end if
 
          if (debug) then
-!        For debugging: print quasi-norm (NOT using complex conjugation so that we can also see whether tensors are imaginary)
-            ierr=talsh_tensor_init(result_tensor)
-            ierr=talsh_tensor_contract("S()+=T(a,i)*T(a,i)",result_tensor,t1_tensor,t1_tensor)
-            print*, "T1amp = ",result_tens(1)
-            ierr=talsh_tensor_init(result_tensor)
-            ierr=talsh_tensor_contract("S()+=T(a,b,i,j)*T(a,b,i,j)",result_tensor,t2_tensor,t2_tensor,scale=ONE_QUARTER)
-            print*, "T2amp = ",result_tens(1)
-            ierr=talsh_tensor_init(result_tensor)
-            ierr=talsh_tensor_contract("S()+=T(a,b,i,j)*T(a,b,i,j)",result_tensor,tau_tensor,tau_tensor,scale=ONE_QUARTER)
-            print*, "Tau   = ",result_tens(1)
-            ierr=talsh_tensor_init(result_tensor)
-            ierr=talsh_tensor_contract("S()+=H(k,j)*H(k,j)",result_tensor,hoint_tensor,hoint_tensor)
-            print*, "hoint = ",result_tens(1)
-            ierr=talsh_tensor_init(result_tensor)
-            ierr=talsh_tensor_contract("S()+=G(k,j)*G(k,j)",result_tensor,goint_tensor,goint_tensor)
-            print*, "goint = ",result_tens(1)
-            ierr=talsh_tensor_init(result_tensor)
-            ierr=talsh_tensor_contract("S()+=H(a,c)*H(a,c)",result_tensor,hvint_tensor,hvint_tensor)
-            print*, "hvint = ",result_tens(1)
-            ierr=talsh_tensor_init(result_tensor)
-            ierr=talsh_tensor_contract("S()+=G(a,c)*G(a,c)",result_tensor,gvint_tensor,gvint_tensor)
-            print*, "gvint = ",result_tens(1)
-            ierr=talsh_tensor_init(result_tensor)
-            ierr=talsh_tensor_contract("S()+=H(k,c)*H(k,c)",result_tensor,hovint_tensor,hovint_tensor)
-            print*, "hovint = ",result_tens(1)
-            ierr=talsh_tensor_init(result_tensor)
-            ierr=talsh_tensor_contract("S()+=A(k,l,i,j)*A(k,l,i,j)",result_tensor,aint_tensor,aint_tensor)
-            print*, "a int = ",result_tens(1)/4.D0
-            ierr=talsh_tensor_init(result_tensor)
-            ierr=talsh_tensor_contract("S()+=H(a,i,c,k)*H(a,i,c,k)",result_tensor,hint_tensor,hint_tensor)
-            print*, "h int = ",result_tens(1)
-            ierr=talsh_tensor_init(result_tensor)
-            ierr=talsh_tensor_contract("S()+=C(k,b,i,j)*C(k,b,i,j)",result_tensor,cint_tensor,cint_tensor)
-            print*, "c int = ",result_tens(1)
+            print*, "T1amp  = ",talshTensorImageNorm1_cpu(t1_tensor)
+            print*, "T2amp  = ",talshTensorImageNorm1_cpu(t2_tensor)*ONE_QUARTER
+            print*, "Tau    = ",talshTensorImageNorm1_cpu(tau_tensor)*ONE_QUARTER
+            print*, "hoint  = ",talshTensorImageNorm1_cpu(hoint_tensor)
+            print*, "goint  = ",talshTensorImageNorm1_cpu(goint_tensor)
+            print*, "hvint  = ",talshTensorImageNorm1_cpu(hvint_tensor)
+            print*, "gvint  = ",talshTensorImageNorm1_cpu(gvint_tensor)
+            print*, "hovint = ",talshTensorImageNorm1_cpu(hovint_tensor)
+            print*, "a int  = ",talshTensorImageNorm1_cpu(aint_tensor)*ONE_QUARTER
+            print*, "h int  = ",talshTensorImageNorm1_cpu(hint_tensor)
+            print*, "c int  = ",talshTensorImageNorm1_cpu(cint_tensor)
          end if
 
 !        This term appears twice as we need to permute i and j
@@ -394,11 +376,12 @@ module talsh_cc
 !        Free global data used to interact with DIRAC/Interest
          call delete_global_data
 
-!        Make some noise so that we know we are leaving
          print*," Final CCSD energy    = ",ccsd_energy
          print*," Final CCSD(T) energy = ",ccsd_energy+t_energy(1)+t_energy(2)
-         print*, " Leaving cc_driver routine"
-         return
+
+!        Make some noise so that we know we are leaving
+         call print_date('Leaving cc_driver routine')
+
         end subroutine cc_driver
 
         subroutine get_CC_fockmatrix (nocc,nvir,eps_occ,eps_vir,fo_tensor,fov_tensor,fv_tensor)
@@ -445,7 +428,7 @@ module talsh_cc
 !        Written by Lucas Visscher, summer 2017
  
          use exacorr_datatypes
-         use exacorr_ao_to_mo
+         use talsh_ao_to_mo
 
          integer, intent(in)               :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
          integer, intent(in)               :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals

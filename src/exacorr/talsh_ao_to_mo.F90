@@ -11,7 +11,6 @@ module talsh_ao_to_mo
         public compute_ao_integrals
         public compute_mo_integrals
         public get_integral_tensor
-        public test_integral_generation
 
         interface compute_mo_integrals
            module procedure talsh_compute_mo_integrals
@@ -55,7 +54,7 @@ module talsh_ao_to_mo
          type(C_PTR):: body_p
 
 !        Make some noise so that we know we are here
-         print*, " Arrived in compute_mo_integrals routine"
+         call print_date('Entered compute_mo_integrals routine')
 
 !        Initialize libraries
          host_buf_size=BUF_SIZE
@@ -102,8 +101,8 @@ module talsh_ao_to_mo
          call delete_global_data
 
 !        Make some noise so that we know we are leaving
-         print*, " Leaving compute_mo_integrals routine"
-         return
+         call print_date('Leaving compute_mo_integrals routine')
+
         end subroutine talsh_compute_mo_integrals
 
         subroutine get_mocoef_tensor (nao, nmo, mo_list, mocoefa_tensor, mocoefb_tensor)
@@ -129,7 +128,6 @@ module talsh_ao_to_mo
          complex(8), pointer, contiguous:: camo_tens(:,:),cbmo_tens(:,:)
          type(C_PTR):: body_p
 
-
          ierr=talsh_tensor_dimensions(mocoefa_tensor,tens_rank,mocoef_dims)
          ierr=talsh_tensor_get_body_access(mocoefa_tensor,body_p,C8,0,DEV_HOST)
          call c_f_pointer(body_p,camo_tens,mocoef_dims(1:2)) ! to use camo_tens as a regular Fortran 2d array
@@ -153,7 +151,6 @@ module talsh_ao_to_mo
          end do
          call delete (qmo)
 
-         return
         end subroutine get_mocoef_tensor
 
         subroutine compute_ao_integrals (nao,ao_tens)
@@ -181,9 +178,9 @@ module talsh_ao_to_mo
 
          call fetch_gtos(1,nao,gto,nshells)
 
-         ![eric] OpenMP task-based parallelism
-         !$omp parallel
-         !$omp single 
+         !OpenMP task-based parallelism defined by Eric does not work, deactivated [LV]
+         !deactivatedopenmp parallel
+         !deactivatedopenmp single 
          loff = 0
          do lsh = 1, nshells
             ll   =  gto(lsh)%orb_momentum
@@ -224,7 +221,7 @@ module talsh_ao_to_mo
 !                    output order of eri is (c,d,a,b), so input k,l first and then i,j to get the order that we want
 
                      ![eric]
-                     !$omp task
+                     !deactivatedopenmp task
                      call interest_eri('llll',fijkl,gout,&
                                   lk,ek,xk,yk,zk,ck,&
                                   ll,el,xl,yl,zl,cl,&
@@ -253,7 +250,7 @@ module talsh_ao_to_mo
 !lv                        ijkl2 = ijkl2 + ni*nj*5*4
                         end do
                      end do
-                     !$omp end task
+                     !deactivatedopenmp end task
 
                      ioff = ioff + ni
                   end do
@@ -263,8 +260,8 @@ module talsh_ao_to_mo
             end do
             loff = loff + nl
          end do
-         !$omp end single nowait
-         !$omp end parallel
+         !deactivatedopenmp end single nowait
+         !deactivatedopenmp end parallel
 
          deallocate(gto)
 
@@ -354,8 +351,6 @@ module talsh_ao_to_mo
          ierr=talsh_tensor_destruct(a2int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=35; return; endif
          ierr=talsh_tensor_destruct(a3int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=45; return; endif
          call print_date('leaving aomo_transform')
-
-         return
 
         end subroutine aomo_transform
 
@@ -460,174 +455,5 @@ module talsh_ao_to_mo
          end do
 
         end subroutine fetch_gtos
-
-        subroutine test_integral_generation (print_level)
-
-!This subroutine tests the parallel AO integral generation
-
-!        Written by Lucas Visscher, march 2018
-
-         use dirac_MO
-         use exacorr_datatypes
-         use exacorr_global
-         use module_interest_interface
-         use module_interest_eri
-
-         implicit none
-         integer, intent(in) :: print_level  ! 0: only show that we running this test
-                                             ! 1: print only overall summary
-                                             ! 2: print information for each batch
-
-         integer             :: nao, number_aos            ! the size of the atomic orbital basis
-         type(basis_func_info_t), allocatable :: shell(:)  ! array with basis function information
-
-         integer :: ierr
-         integer :: i, j, k, l, ish, jsh, ksh, lsh, ijkl
-         integer :: li,lj,lk,ll,ni,nj,nk,nl
-         real(8) :: ei,ej,ek,el,ci,cj,ck,cl,xi,yi,zi,xj,yj,zj,xk,yk,zk,xl,yl,zl
-         real(8) :: gout(21*21*21*21) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
-         real(8), parameter :: fijkl = 1.0
-         real(8) :: batch_value, ddot
-         real(8), allocatable :: batch_values(:,:,:,:)
-         integer            :: nshells, number_aoshells   ! number of AO shells
-         type(basis_func_info_t), allocatable :: gto(:)   ! array with basis function information
-
-!        Make some noise so that we know we are here
-         print*, " Testing AO integral generation by calculating all integrals once"
-
-!        Initialize libraries
-         call interest_initialize(print_level.gt.1)
-         if (print_level > 0) print*, " Initialized interest library"
-         call initialize_global_data
-         if (print_level > 0) print*, " Initialized global data"
-
-!        Retrieve basis set information from DIRAC common blocks
-         nao     = number_aos(1)
-
-!        Get AOs and allocate array to store batch values
-         call fetch_gtos(1,nao,gto,nshells)
-         allocate(batch_values(nshells,nshells,nshells,nshells))
-
-         do lsh = 1, nshells
-            ll   =  gto(lsh)%orb_momentum
-            el   =  gto(lsh)%exponent(1)
-            xl   =  gto(lsh)%coord(1)
-            yl   =  gto(lsh)%coord(2)
-            zl   =  gto(lsh)%coord(3)
-            cl   =  gto(lsh)%coefficient(1)
-            nl   =  ncartesian(ll)
-            do ksh = 1, nshells
-               lk   =  gto(ksh)%orb_momentum
-               ek   =  gto(ksh)%exponent(1)
-               xk   =  gto(ksh)%coord(1)
-               yk   =  gto(ksh)%coord(2)
-               zk   =  gto(ksh)%coord(3)
-               ck   =  gto(ksh)%coefficient(1)
-               nk   =  ncartesian(lk)
-               do jsh = 1, nshells
-                  lj   =  gto(jsh)%orb_momentum
-                  ej   =  gto(jsh)%exponent(1)
-                  xj   =  gto(jsh)%coord(1)
-                  yj   =  gto(jsh)%coord(2)
-                  zj   =  gto(jsh)%coord(3)
-                  cj   =  gto(jsh)%coefficient(1)
-                  nj   =  ncartesian(lj)
-                  do ish = 1, nshells
-                     li   =  gto(ish)%orb_momentum
-                     ei   =  gto(ish)%exponent(1)
-                     xi   =  gto(ish)%coord(1)
-                     yi   =  gto(ish)%coord(2)
-                     zi   =  gto(ish)%coord(3)
-                     ci   =  gto(ish)%coefficient(1)
-                     ni   =  ncartesian(li)
-                     call interest_eri('llll',fijkl,gout,&
-                                  lk,ek,xk,yk,zk,ck,&
-                                  ll,el,xl,yl,zl,cl,&
-                                  li,ei,xi,yi,zi,ci,&
-                                  lj,ej,xj,yj,zj,cj )
-                     batch_value = ddot(ni*nj*nk*nl,gout,1,gout,1)
-                     batch_values(ish,jsh,ksh,lsh) = batch_value
-                     if (print_level > 1) then
-                        write (*,'(a,4i6,e20.8)') 'batch',ish,jsh,ksh,lsh,batch_value 
-                     endif
-                  end do
-               end do
-            end do
-         end do
-
-!        Test correctness by checking permutational symmetry
-         ierr = 0
-         do lsh = 1, nshells
-            do ksh = 1, lsh
-               do jsh = 1, lsh
-                  do ish = 1, jsh
-                     if (relative_error(batch_values(ish,jsh,ksh,lsh),batch_values(jsh,ish,ksh,lsh)).gt.1.e-10) then
-                        ierr = ierr + 1
-                        write (*,'(a,3e20.10,4i4)') 'error in perm. symmetry #1',  &
-                        batch_values(ish,jsh,ksh,lsh),batch_values(jsh,ish,ksh,lsh), &
-                        batch_values(ish,jsh,ksh,lsh)-batch_values(jsh,ish,ksh,lsh), &
-                        ish,jsh,ksh,lsh
-                     end if
-                     if (relative_error(batch_values(ish,jsh,ksh,lsh),batch_values(ish,jsh,lsh,ksh)).gt.1.e-10) then
-                        ierr = ierr + 1
-                        write (*,'(a,3e20.10,4i4)') 'error in perm. symmetry #2',  &
-                        batch_values(ish,jsh,ksh,lsh),batch_values(ish,jsh,lsh,ksh), &
-                        batch_values(ish,jsh,ksh,lsh)-batch_values(ish,jsh,lsh,ksh), &
-                        ish,jsh,ksh,lsh
-                     end if
-                     if (relative_error(batch_values(ish,jsh,ksh,lsh),batch_values(ksh,lsh,ish,jsh)).gt.1.e-10) then
-                        ierr = ierr + 1
-                        write (*,'(a,3e20.10,4i4)') 'error in perm. symmetry #3',  &
-                        batch_values(ish,jsh,ksh,lsh),batch_values(ksh,lsh,ish,jsh), &
-                        batch_values(ish,jsh,ksh,lsh)-batch_values(ksh,lsh,ish,jsh), &
-                        ish,jsh,ksh,lsh
-                     end if
-                  end do
-               end do
-            end do
-         end do
-
-         if (ierr == 0) Then
-            print*," passed permutational symmetry test"
-         else
-            print*,ierr," failures in permutational symmetry test"
-         end if
-
-         deallocate(gto)
-         deallocate(batch_values)
-
-!        Clean up global data used to interact with DIRAC/Interest
-         call delete_global_data
-
-!        Make some noise so that we know we are leaving
-         print*, " Leaving test_integral_generation routine"
-         return
-
-        end subroutine test_integral_generation
-
-        real function relative_error(quantity_1,quantity_2)
-
-        real(8),intent(in):: quantity_1,quantity_2
-        real(8)           :: error
-
-        error = quantity_1 - quantity_2
-
-        if (abs(quantity_1).gt.1.0) then
-           relative_error = abs (error / quantity_1)
-        else
-           relative_error = abs (error)
-        end if
-
-        end function relative_error
-           
-        subroutine print_date(text)
-         character(len=10) :: datex
-         character(len=8)  :: timex
-         character(len=*)  :: text
-         integer           :: lentext
-         lentext = len(text)
-         call daytime(datex,timex)
-         write (*,'(1x,a10,1x,a8,1x,a)') datex,timex,text(1:lentext)
-        end subroutine print_date
 
 end module talsh_ao_to_mo

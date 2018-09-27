@@ -544,6 +544,7 @@ module exacorr_ao_to_mo
          real(8), allocatable :: batch_values(:,:,:,:)
          integer            :: nshells ! number of AO shells
          type(basis_func_info_t), allocatable :: gto(:)   ! array with basis function information
+         real(8) :: relative_error
 
 !        Make some noise so that we know we are here
          print*, " Testing AO integral generation by calculating all integrals once"
@@ -657,30 +658,5 @@ module exacorr_ao_to_mo
          return
 
         end subroutine test_integral_generation
-
-        real function relative_error(quantity_1,quantity_2)
-
-        real(8),intent(in):: quantity_1,quantity_2
-        real(8)           :: error
-
-        error = quantity_1 - quantity_2
-
-        if (abs(quantity_1).gt.1.0) then
-           relative_error = abs (error / quantity_1)
-        else
-           relative_error = abs (error)
-        end if
-
-        end function relative_error
-           
-        subroutine print_date(text)
-         character(len=10) :: datex
-         character(len=8)  :: timex
-         character(len=*)  :: text
-         integer           :: lentext
-         lentext = len(text)
-         call daytime(datex,timex)
-         write (*,'(1x,a10,1x,a8,1x,a)') datex,timex,text(1:lentext)
-        end subroutine print_date
 
 end module exacorr_ao_to_mo
