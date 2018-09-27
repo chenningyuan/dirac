@@ -397,12 +397,12 @@ module exacorr_ao_to_mo
          use exatensor
          use, intrinsic:: ISO_C_BINDING
 
-         implicit none
 #ifdef USE_MPI_MOD_F90
          use mpi
 #else
 #include "mpif.h"
 #endif
+         implicit none
 
          integer, intent(in) :: nmo(4)       ! the size of the mo basis for each of the 4 indices (mulliken ordering)
          integer, intent(in) :: mo_list(:)   ! and their indices (4 lists consecutively)
