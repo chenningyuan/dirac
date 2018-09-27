@@ -3,6 +3,7 @@ module talsh_ao_to_mo
 !This module drives the index transformation of two electron integrals
 !integrating the ExaTensor library with the DIRAC code.
 
+        use tensor_algebra
         use talsh
 
         implicit none
@@ -29,8 +30,6 @@ module talsh_ao_to_mo
          use dirac_MO
          use exacorr_datatypes
          use exacorr_global
-         use tensor_algebra
-         use talsh
          use, intrinsic:: ISO_C_BINDING
          use module_interest_interface
          use module_interest_eri
@@ -61,12 +60,12 @@ module talsh_ao_to_mo
 !        Initialize libraries
          host_buf_size=BUF_SIZE
          ierr=talsh_init(host_buf_size,host_arg_max)
-         print*, " Initialized talsh library"
+         call print_date('Initialized talsh library')
          write(*,'(" Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,host_buf_size,host_arg_max
          call interest_initialize(.true.)
-         print*, " Initialized interest library"
+         call print_date('Initialized interest library')
          call initialize_global_data
-         print*, " Initialized global data"
+         call print_date('Initialized global data')
 
 !        Retrieve basis set information from DIRAC common blocks
          nao     = number_aos(1)
@@ -81,6 +80,7 @@ module talsh_ao_to_mo
          ierr=talsh_tensor_get_body_access(aoint_tensor,body_p,C8,0,DEV_HOST)
          call c_f_pointer(body_p,ao_tens,aoint_dims(1:4)) ! to use <ao_tens> as a regular Fortran 4d array
          call compute_ao_integrals (nao,ao_tens)
+         call print_date('Calculated AO integrals')
 
 !        Transform to MO basis
          ierr=talsh_tensor_construct(moint_tensor,C8,moint_dims,init_val=zero)
@@ -113,8 +113,6 @@ module talsh_ao_to_mo
 !        Written by Lucas Visscher, winter 2016/2017 (but in Goa, India, temperature about 30 C)
 
          use dirac_MO
-         use tensor_algebra
-         use talsh
 
          implicit none
          integer, intent(in) :: nao          ! the length of the ao basis
@@ -185,7 +183,7 @@ module talsh_ao_to_mo
 
          ![eric] OpenMP task-based parallelism
          !$omp parallel
-         !$omp single nowait
+         !$omp single 
          loff = 0
          do lsh = 1, nshells
             ll   =  gto(lsh)%orb_momentum
@@ -265,7 +263,7 @@ module talsh_ao_to_mo
             end do
             loff = loff + nl
          end do
-         !$omp end single
+         !$omp end single nowait
          !$omp end parallel
 
          deallocate(gto)
@@ -275,9 +273,6 @@ module talsh_ao_to_mo
         subroutine aomo_transform (aoint_tensor,moint_tensor,nmo,mo_list)
 
 !        Transform integral tensor from ao-basis to mo-basis
-
-         use tensor_algebra
-         use talsh
 
          implicit none
 
@@ -366,10 +361,6 @@ module talsh_ao_to_mo
 
         subroutine get_integral_tensor (aoint_tensor,integral_tensor,antisymmetrize,nmo,mo_list)
 
-
-         use tensor_algebra
-         use talsh
-
          implicit none
 
          complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0)
@@ -392,9 +383,6 @@ module talsh_ao_to_mo
         end subroutine get_integral_tensor
 
         subroutine mulliken_to_dirac_sort  (mulliken_tensor,dirac_tensor,antisymmetrize)
-
-         use tensor_algebra
-         use talsh
 
          implicit none
 
