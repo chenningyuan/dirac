@@ -13,10 +13,11 @@ C     Written by L.Visscher Jan 2017
 C
 C***********************************************************************
 
-      Use talsh_ao_to_mo
-!     Use exacorr_ao_to_mo
+      use exacorr_global,only   : get_talsh_only
+      use exacorr_ao_to_mo,only : exacorr_compute_mo_integrals
+      use talsh_ao_to_mo,only   : talsh_compute_mo_integrals
 #if defined (VAR_MPI)
-      Use interface_to_mpi
+      use interface_to_mpi
 #endif
 
 #include "implicit.h"! because common blocks may assume this
@@ -34,17 +35,31 @@ C***********************************************************************
          call quit ('exacorr can not handle symmetry')
       end if
 #if defined (VAR_MPI)
+      ! parallel version of DIRAC
 C     Transfer necessary information from common blocks
       if (mytid == 0) then
          orbital_string = tra4_indstr(:,1) ! This is to be changed once we have an exacorr-specific input driver
+         ! instruct slaves to go to the current routine (exa_moltra) as well
          call dirac_parctl( 18 )
       end if
+      ! slaves get input on a need-to-know basis, this is needed to determine nmo and mo_list
+      ! TODO: better is to broadcast nmo and mo_list instead 
       call interface_mpi_bcast(orbital_string,72*4,mparid,
      &                         global_communicator)
       call interface_mpi_bcast(nesh,1,mparid,global_communicator)
-      if (mytid /= 0) return ! Needed for TALSH, keep going for exatensor
+      if (get_talsh_only()) then
+         if (mytid /= 0) return ! Needed for TALSH, keep going for exatensor
+      end if
 #else
-      orbital_string = tra4_indstr(:,1) ! This is to be changed once we have an exacorr-specific input driver
+      ! serial version of DIRAC
+      if (get_talsh_only()) then
+         ! TALSH version works fine with serial version of DIRAC
+         orbital_string = tra4_indstr(:,1) ! This is to be changed once we have an exacorr-specific input driver
+      else
+         ! EXATENSOR version does not work with serial version of DIRAC
+         print*, "Attempting to use exatensor with a non MPI version"
+         call quit ("error in setup: exatensor requires MPI")
+      end if
 #endif
 
 C
@@ -68,10 +83,14 @@ C     Fill the array with orbital indices
       end do
 
 C
-C     Transformed AO to MO integrals are written to MDCINT
-      call mdinti (0) 
-      call compute_mo_integrals (nmo, mo_list)
-      call mdintf
+      if (get_talsh_only()) then
+C        Transformed AO to MO integrals are written to MDCINT
+         call mdinti (0) 
+         call talsh_compute_mo_integrals (nmo, mo_list)
+         call mdintf
+      else
+         call exacorr_compute_mo_integrals (nmo, mo_list)
+      end if
 C
       deallocate (mo_list)
 
@@ -111,6 +130,7 @@ C
       allocate (mo_vir(nvir))
       call numlst (string_virtual,mo_vir,nvir,1,nesh(1),1,nvir)
 
+      !TODO: make TALSH/EXACORR switch similar to the one in exa_moltra
       call cc_driver (noccu,nvir,mo_occ,mo_vir)
 
       deallocate (mo_occ)

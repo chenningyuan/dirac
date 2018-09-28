@@ -8,13 +8,9 @@ module talsh_ao_to_mo
 
         implicit none
         private
+        public talsh_compute_mo_integrals
         public compute_ao_integrals
-        public compute_mo_integrals
         public get_integral_tensor
-
-        interface compute_mo_integrals
-           module procedure talsh_compute_mo_integrals
-        end interface
 
        contains
 !-----------------------------------------------------------

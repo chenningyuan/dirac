@@ -7,13 +7,13 @@ module exacorr_ao_to_mo
 
         implicit none
         private
-        public compute_mo_integrals
+        public exacorr_compute_mo_integrals
         public test_integral_generation
 
        contains
 
 #if defined (VAR_MPI)
-        subroutine compute_mo_integrals (nmo, mo_list)
+        subroutine exacorr_compute_mo_integrals (nmo, mo_list)
 
 !This subroutine drives the AO to MO integral transformation using AO integrals from InteRest and the tensor contraction library from ExaTensor
 
@@ -131,17 +131,17 @@ module exacorr_ao_to_mo
 !        Make some noise so that we know we are leaving
          print*, " Process ",my_rank, " leaving compute_mo_integrals_exa routine"
          return
-        end subroutine compute_mo_integrals
+        end subroutine exacorr_compute_mo_integrals
 
 #else
-        subroutine compute_mo_integrals (nmo, mo_list)
+        subroutine exacorr_compute_mo_integrals (nmo, mo_list)
          implicit none
          integer, intent(in) :: nmo(4)       ! the size of the mo basis for each of the 4 indices (mulliken ordering)
          integer, intent(in) :: mo_list(:)   ! and their indices (4 lists consecutively)
          print*,  'called exatensor version of compute_mo_integrals in a serial version'
          print*,  'this functionality only works with MPI, we need to stop here'
          stop ' activate MPI'
-        end subroutine compute_mo_integrals
+        end subroutine exacorr_compute_mo_integrals
 
 #endif
 

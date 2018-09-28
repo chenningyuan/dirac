@@ -11,9 +11,11 @@ module exacorr_global
         integer :: my_MPI_master=0 ! Define the MPI master proces (is always zero in the DIRAC MPI environment)
         integer, allocatable :: shell_indices(:)  ! for each basis function the index of the shell to which it belongs
         type(basis_func_info_t), allocatable :: gtos(:)  ! list of all shells
-        logical :: TALSH_VERSION = .TRUE. ! switch off synchronization as this is not required and does not work for TALSH
+        logical :: TALSH_ONLY = .TRUE. ! use single-node TALSH library instead of the full EXATENSOR library
 
 !       Functions and routines to interact with these data
+        public get_talsh_only
+        public set_talsh_only
         public initialize_global_data
         public delete_global_data
         public ncartesian
@@ -23,6 +25,15 @@ module exacorr_global
 
        contains
          
+         subroutine set_talsh_only(new_value)
+             logical, intent(in) :: new_value
+             TALSH_ONLY = new_value
+         end subroutine set_talsh_only
+
+         logical function get_talsh_only()
+             get_talsh_only = TALSH_ONLY
+         end function get_talsh_only
+
          subroutine initialize_global_data
 
 #if defined (VAR_MPI)
@@ -73,7 +84,7 @@ module exacorr_global
              integer :: ish
              integer :: my_MPI_rank
 
-             if (TALSH_VERSION) return
+             if (TALSH_ONLY) return
              call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
              if (my_MPI_rank == my_MPI_master) nao = number_aos(1)
              if (my_MPI_rank == my_MPI_master) nshells = number_aoshells() 
