@@ -9,11 +9,13 @@ module exacorr_global
 
 !       Global data (should limit this to the minimum required to function)
         integer :: my_MPI_master=0 ! Define the MPI master proces (is always zero in the DIRAC MPI environment)
+        integer :: number_of_aos=0 ! This is set by master and communicated in the initialization step. 
         integer, allocatable :: shell_indices(:)  ! for each basis function the index of the shell to which it belongs
         type(basis_func_info_t), allocatable :: gtos(:)  ! list of all shells
         logical :: TALSH_ONLY = .TRUE. ! use single-node TALSH library instead of the full EXATENSOR library
 
 !       Functions and routines to interact with these data
+        public get_nao
         public get_talsh_only
         public set_talsh_only
         public initialize_global_data
@@ -33,6 +35,15 @@ module exacorr_global
          logical function get_talsh_only()
              get_talsh_only = TALSH_ONLY
          end function get_talsh_only
+
+         subroutine set_nao(new_value)
+             integer, intent(in) :: new_value
+             number_of_aos = new_value
+         end subroutine set_nao
+
+         integer function get_nao()
+             get_nao = number_of_aos
+         end function get_nao
 
          subroutine initialize_global_data
 
@@ -56,12 +67,12 @@ module exacorr_global
              allocate(gtos(nshells))
              call initialize_shells(gtos,ierr)
              if (ierr == 1) call quit ('This version can not handle contracted functions')
+             nao     = number_aos(1)      ! retrieve number of aos from the host code (e.g. DIRAC common block)
+             call set_nao(nao)            ! store in global data
              print*, " Retrieved basis set information from DIRAC common blocks"
-
-             ! make array with pointers from a basis function index to its shell
-             nao     = number_aos(1)
-             allocate(shell_indices(nao))
              
+             ! make array with pointers from a basis function index to its shell
+             allocate(shell_indices(nao))
              iao = 0
              do ish = 1, nshells
                 do ibas = 1, ncartesian(gtos(ish)%orb_momentum)
@@ -86,12 +97,14 @@ module exacorr_global
 
              if (TALSH_ONLY) return
              call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
-             if (my_MPI_rank == my_MPI_master) nao = number_aos(1)
+             if (my_MPI_rank == my_MPI_master) nao = get_nao()
              if (my_MPI_rank == my_MPI_master) nshells = number_aoshells() 
 
              call interface_mpi_bcast (nshells,1,my_MPI_master,global_communicator)
              call interface_mpi_bcast (nao,1,my_MPI_master,global_communicator)
    
+             if (my_MPI_rank /= my_MPI_master) call set_nao(nao)
+
              if (my_MPI_rank /= my_MPI_master) allocate(gtos(nshells))
              if (my_MPI_rank /= my_MPI_master) allocate(shell_indices(nao))
              

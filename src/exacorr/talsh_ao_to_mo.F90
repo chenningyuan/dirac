@@ -35,7 +35,7 @@ module talsh_ao_to_mo
          integer, intent(in) :: mo_list(:)   ! and their indices (4 lists consecutively)
 
          integer             :: i, ierr
-         integer             :: nao, number_aos            ! the size of the atomic orbital basis
+         integer             :: nao                        ! the size of the atomic orbital basis
          type(basis_func_info_t), allocatable :: shell(:)  ! array with basis function information
 
          integer(C_SIZE_T), parameter:: BUF_SIZE=1_8*1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
@@ -62,8 +62,8 @@ module talsh_ao_to_mo
          call initialize_global_data
          call print_date('Initialized global data')
 
-!        Retrieve basis set information from DIRAC common blocks
-         nao     = number_aos(1)
+!        Retrieve basis set information
+         nao     = get_nao()
 
 !        Set tensor dimensions for the index transformation (simple brute-force algorithm)
          aoint_dims      = nao
@@ -169,7 +169,7 @@ module talsh_ao_to_mo
 !lv      code marked lv is tested and functional but not needed yet as we don't have the code to transform the additional integral classes
 !lv      real(8) :: gout2(21*21*5*21*21*5) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
          real(8), parameter :: fijkl = 1.0
-         integer            :: nshells, number_aoshells   ! number of AO shells
+         integer            :: nshells                    ! number of AO shells
          type(basis_func_info_t), allocatable :: gto(:)   ! array with basis function information
 
          call fetch_gtos(1,nao,gto,nshells)

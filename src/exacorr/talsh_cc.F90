@@ -428,6 +428,7 @@ module talsh_cc
 !        Written by Lucas Visscher, summer 2017
  
          use exacorr_datatypes
+         use exacorr_global
          use talsh_ao_to_mo
 
          integer, intent(in)               :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
@@ -440,7 +441,7 @@ module talsh_cc
          complex(8), pointer, contiguous:: ao_tens(:,:,:,:)
          type(C_PTR):: body_p
 
-         integer             :: nao, number_aos
+         integer             :: nao
 
 !        auxilliary integral tensors (only needed inside this routine)
          type(talsh_tens_t):: aoint_tensor, ovvo_tensor
@@ -455,8 +456,8 @@ module talsh_cc
          type(talsh_tens_t):: minusone_tensor
          integer:: minusone_dims(1)
 
-!        Retrieve basis set information from DIRAC common blocks
-         nao     = number_aos(1)      ! number of basis functions
+!        Retrieve basis set information
+         nao     = get_nao()      ! number of basis functions
 
 !        Get tensor with AO integrals
          aoint_dims      = nao

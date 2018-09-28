@@ -40,7 +40,6 @@ module exacorr_ao_to_mo
          integer, intent(in) :: mo_list(:)   ! and their indices (4 lists consecutively)
 
          integer             :: i, ierr
-         integer             :: number_aos                 ! the size of the atomic orbital basis
          integer             :: nshells                    ! the number of shells (orbitals with the same center and l-value)
          type(basis_func_info_t), allocatable :: gto(:)    ! array with information about the shells
 
@@ -63,12 +62,7 @@ module exacorr_ao_to_mo
          call interest_initialize
          call initialize_global_data
 
-         print*, " Process", my_rank," leaves compute_mo_integrals_exa routine"
-         call delete_global_data
-         return ! quit here because the stuff below still requires debugging 
-
-!        Retrieve basis set information from DIRAC common blocks
-         nao     = number_aos(1)
+         nao     = get_nao()
          nao_l   = nao ! copy of nao to a long integer
 
 !        Get the basis set information
@@ -97,6 +91,10 @@ module exacorr_ao_to_mo
          !Register a vector space:
          ierr=exatns_space_register('AO_space',basis_ao,ao_space_id,ao_space)
          if(ierr.ne.0) call quit('exatns_space_register() failed!')
+
+         print*, " Process", my_rank," leaves compute_mo_integrals_exa routine"
+         call delete_global_data
+         return ! quit here because the stuff below still requires debugging 
 
          !Register the ao integral generation as a method
          ierr=exatns_method_register('Aoint_calculator',aoint_calculator)
@@ -162,7 +160,7 @@ module exacorr_ao_to_mo
                                              ! 1: print only overall summary
                                              ! 2: print information for each batch
 
-         integer             :: nao, number_aos            ! the size of the atomic orbital basis
+         integer             :: nao           ! the size of the atomic orbital basis
 
          integer :: ierr
          integer :: i, j, k, l, ish, jsh, ksh, lsh, ijkl
@@ -185,8 +183,8 @@ module exacorr_ao_to_mo
          call initialize_global_data
          if (print_level > 0) print*, " Initialized global data"
 
-!        Retrieve basis set information from DIRAC common blocks
-         nao     = number_aos(1)
+!        Retrieve basis set information
+         nao     = get_nao()
 
 !        Get AOs and allocate array to store batch values
          call fetch_gtos(1,nao,gto,nshells)

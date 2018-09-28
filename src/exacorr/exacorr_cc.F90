@@ -446,6 +446,7 @@ module exacorr_cc
  
          use exacorr_datatypes
          use exacorr_ao_to_mo
+         use exacorr_global
 
          integer, intent(in)               :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
          integer, intent(in)               :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
@@ -457,7 +458,7 @@ module exacorr_cc
          complex(8), pointer, contiguous:: ao_tens(:,:,:,:)
          type(C_PTR):: body_p
 
-         integer             :: nao, number_aos
+         integer             :: nao
 
 !        auxilliary integral tensors (only needed inside this routine)
          type(talsh_tens_t):: aoint_tensor, ovvo_tensor
@@ -472,8 +473,8 @@ module exacorr_cc
          type(talsh_tens_t):: minusone_tensor
          integer:: minusone_dims(1)
 
-!        Retrieve basis set information from DIRAC common blocks
-         nao     = number_aos(1)      ! number of basis functions
+!        Retrieve basis set information
+         nao     = get_nao()      ! number of basis functions
 
 !        Get tensor with AO integrals
          aoint_dims      = nao
