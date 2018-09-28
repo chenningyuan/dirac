@@ -431,29 +431,4 @@ module talsh_ao_to_mo
 
         end subroutine mulliken_to_dirac_sort
 
-
-        subroutine fetch_gtos(first_ao,nao,gto,nshells)
-
-         use exacorr_datatypes
-         use exacorr_global
-
-         implicit none
-
-         integer, intent(in):: first_ao, nao
-         type(basis_func_info_t), intent(inout), allocatable :: gto(:)
-         integer, intent(out) :: nshells
-
-         integer :: ish, first_shell, last_shell
-
-         first_shell = get_shell_index (first_ao)
-         last_shell  = get_shell_index (first_ao+nao-1)
-         nshells = last_shell - first_shell + 1
-
-         allocate (gto(nshells))
-         do ish = 1, nshells
-            gto(ish) = get_gto(first_shell+ish-1)
-         end do
-
-        end subroutine fetch_gtos
-
 end module talsh_ao_to_mo

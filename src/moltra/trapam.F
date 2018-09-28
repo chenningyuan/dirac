@@ -4836,9 +4836,6 @@ C
       NUMELM = 8
       CALL interface_MPI_BCAST(ICMOQR,NUMELM,MPARID,
      &               global_communicator)
-      NUMELM = 1
-      call interface_mpi_bcast_l0(tra_exacorr,NUMELM,MPARID,
-     &                                global_communicator)
 C
 C
 C
@@ -5005,15 +5002,6 @@ C
       KFRSAV = KFREE
       CALL DZERO(DINTSKP,8)
 
-      if (tra_exacorr) then
-#ifndef MOD_EXACORR
-          call quit(
-     &    'moltra error: tra_exacorr not included in this version')
-#else
-          call exa_moltra()
-          return  ! skip conventional 4-index transformation
-#endif
-      end if
 C
 C     Initialize the common blocks.
 C

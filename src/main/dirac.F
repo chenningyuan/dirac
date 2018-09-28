@@ -1336,6 +1336,9 @@ C
          call quit('ERROR: Gen1Int not available')
 #endif
 
+      ELSE IF (ITASK .EQ. 18) THEN
+         call exa_moltra()
+
       ELSE
 C
 C        Unknown task. Abort execution.

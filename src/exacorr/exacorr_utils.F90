@@ -1,5 +1,7 @@
+!  Collection of simple utility functions used in exacorr
 
         real function relative_error(quantity_1,quantity_2)
+        ! Gives percentage error for values > 1, otherwise absolute error
 
          implicit none
          real(8),intent(in):: quantity_1,quantity_2
@@ -16,6 +18,7 @@
         end function relative_error
            
         subroutine print_date(text)
+        ! Prints time and date with a string
          implicit none
          character(len=10) :: datex
          character(len=8)  :: timex

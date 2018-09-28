@@ -16,21 +16,13 @@ module exacorr_global
 !       Functions and routines to interact with these data
         public initialize_global_data
         public delete_global_data
-        public get_gto
-        public get_shell_index
         public ncartesian
+        public get_gto
+        public fetch_gtos
+        public get_shell_index
 
        contains
          
-         integer function ncartesian(l_value)
-             integer, intent(in) :: l_value
-             integer :: i
-             ncartesian = 1
-             do i = 2, l_value
-                ncartesian = ncartesian + i
-             end do
-         end function ncartesian
-
          subroutine initialize_global_data
 
 #if defined (VAR_MPI)
@@ -130,6 +122,16 @@ module exacorr_global
              deallocate(gtos)
          end subroutine delete_global_data
 
+         integer function ncartesian(l_value)
+         ! Computes number of Cartesian functions for a given l-value
+             integer, intent(in) :: l_value
+             integer :: i
+             ncartesian = 1
+             do i = 2, l_value
+                ncartesian = ncartesian + i
+             end do
+         end function ncartesian
+
          integer function get_shell_index(ifun)
              integer, intent(in) :: ifun
              get_shell_index = shell_indices(ifun)
@@ -140,6 +142,23 @@ module exacorr_global
              get_gto = gtos(ish)
          end  function get_gto
 
+         subroutine fetch_gtos(first_ao,nao,gto,nshells)
+
+          integer, intent(in):: first_ao, nao
+          type(basis_func_info_t), intent(inout), allocatable :: gto(:)
+          integer, intent(out) :: nshells
+          integer :: ish, first_shell, last_shell
+
+          first_shell = get_shell_index (first_ao)
+          last_shell  = get_shell_index (first_ao+nao-1)
+          nshells = last_shell - first_shell + 1
+
+          allocate (gto(nshells))
+          do ish = 1, nshells
+             gto(ish) = get_gto(first_shell+ish-1)
+          end do
+
+         end subroutine fetch_gtos
 !-------------------------------------------------------------------------------------------
         subroutine generate_ao_segments(num_large_ao,num_small_ao,desired_seg_size,ao_info,&
                                        &num_large_segs,num_small_segs,segs_large,segs_small,ierr)

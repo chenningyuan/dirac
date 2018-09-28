@@ -14,6 +14,7 @@ C
 C***********************************************************************
 
       Use talsh_ao_to_mo
+!     Use exacorr_ao_to_mo
 #if defined (VAR_MPI)
       Use interface_to_mpi
 #endif
@@ -36,11 +37,12 @@ C***********************************************************************
 C     Transfer necessary information from common blocks
       if (mytid == 0) then
          orbital_string = tra4_indstr(:,1) ! This is to be changed once we have an exacorr-specific input driver
-!        call dirac_parctl( 2 )
+         call dirac_parctl( 18 )
       end if
-!     call interface_mpi_bcast(orbital_string,72*4,mparid,
-!    &                         global_communicator)
-!     call interface_mpi_bcast(nesh,1,mparid,global_communicator)
+      call interface_mpi_bcast(orbital_string,72*4,mparid,
+     &                         global_communicator)
+      call interface_mpi_bcast(nesh,1,mparid,global_communicator)
+      if (mytid /= 0) return ! Needed for TALSH, keep going for exatensor
 #else
       orbital_string = tra4_indstr(:,1) ! This is to be changed once we have an exacorr-specific input driver
 #endif
