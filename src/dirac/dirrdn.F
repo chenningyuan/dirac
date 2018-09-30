@@ -6048,6 +6048,10 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb Hamiltonian'
       ENDIF
 
+      if (x2c.and.ecpcalc) then
+         call quit('Incompatible options: X2C and ECP')
+      end if
+
       IF (ICHANG.GT.0) WRITE(LUPRI,'(3X,A)')
      &    'with the following modifications:'
 

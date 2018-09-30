@@ -85,6 +85,14 @@ end interface
     call stopwatch(1,numnod)
   endif
 #else
+! check for parallel run with sequential executable 
+! this may happen if the user has set --mpi in the .diracrc file
+! we should then quit and report an error message
+  iparex = get_environment_integer('DIRPAR',0)
+  if (iparex .ne. 0) then
+     print*, ' This is a serial executable, do not set --mpi in pam or .diracrc '
+     call quit (' Attempted parallel run with serial executable')
+  end if
   call stopwatch(1,numnod)
 #endif
   iparcal = 0
