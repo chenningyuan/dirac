@@ -9,6 +9,7 @@ if(ENABLE_EXATENSOR)
   )
 
   set(FREE_EXACORR_FORTRAN_SOURCES
+   exacorr_main.F90
    exacorr_datatypes.F90
    exacorr_global.F90
    exacorr_cfg.F90

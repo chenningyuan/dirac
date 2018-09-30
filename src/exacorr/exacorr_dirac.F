@@ -84,10 +84,7 @@ C     Fill the array with orbital indices
 
 C
       if (get_talsh_only()) then
-C        Transformed AO to MO integrals are written to MDCINT
-         call mdinti (0) 
          call talsh_compute_mo_integrals (nmo, mo_list)
-         call mdintf
       else
          call exacorr_compute_mo_integrals (nmo, mo_list)
       end if
@@ -366,6 +363,9 @@ C
 
        iprint = 0
 
+!      Open the MDCINT file
+       call mdinti (0) 
+
 !      We use no symmetry, but may have both scalar and spin-orbit tensors as input
        irepij = 1
        if (rcw == 1) then
@@ -472,6 +472,8 @@ C
           end do
        end do
 
+!      Close the MDCINT file
+       call mdintf 
        deallocate(fmat)
        deallocate(rkl)
        deallocate(indk)
