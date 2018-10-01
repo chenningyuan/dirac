@@ -108,6 +108,7 @@ module talsh_ao_to_mo
 !        Written by Lucas Visscher, winter 2016/2017 (but in Goa, India, temperature about 30 C)
 
          use dirac_MO
+         use exacorr_global
 
          implicit none
          integer, intent(in) :: nao          ! the length of the ao basis
@@ -117,8 +118,6 @@ module talsh_ao_to_mo
 
          integer             :: j, k, ierr
          type(MO)            :: qmo
-         integer             :: ifrp = 1     ! we do not use symmetry, so ifrp (g/u) is always 1
-         integer             :: nz = 4       ! we do not use symmetry, so nz is always 4
          integer             :: tens_rank, mocoef_dims(1:2)
 
          complex(8), pointer, contiguous:: camo_tens(:,:),cbmo_tens(:,:)
@@ -130,7 +129,7 @@ module talsh_ao_to_mo
          ierr=talsh_tensor_get_body_access(mocoefb_tensor,body_p,C8,0,DEV_HOST)
          call c_f_pointer(body_p,cbmo_tens,mocoef_dims(1:2)) ! to use cbmo_tens as a regular Fortran 2d array
 
-         call get_dirac_mo_coefficients (ifrp,qmo,mo_list,nmo)
+         call get_mo_coefficients (qmo,mo_list,nmo)
 
 !        Copy the coefficients into the alpha and beta tensors, using the quaternion relations as defined in
 !        T. Saue, H. Jensen, J. Chem. Phys. 111 (1999) 6211–6222, Equation 16.
@@ -172,7 +171,7 @@ module talsh_ao_to_mo
          integer            :: nshells                    ! number of AO shells
          type(basis_func_info_t), allocatable :: gto(:)   ! array with basis function information
 
-         call fetch_gtos(1,nao,gto,nshells)
+         call get_gtos(1,nao,gto,nshells)
 
          !OpenMP task-based parallelism defined by Eric does not work, deactivated [LV]
          !deactivatedopenmp parallel

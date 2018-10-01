@@ -66,7 +66,7 @@ module exacorr_ao_to_mo
          nao_l   = nao ! copy of nao to a long integer
 
 !        Get the basis set information
-         call fetch_gtos(1,nao,gto,nshells)
+         call get_gtos(1,nao,gto,nshells)
 
          !Create a basis for a vector space:
          call basis_ao%subspace_basis_ctor(nao_l,ierr)
@@ -187,7 +187,7 @@ module exacorr_ao_to_mo
          nao     = get_nao()
 
 !        Get AOs and allocate array to store batch values
-         call fetch_gtos(1,nao,gto,nshells)
+         call get_gtos(1,nao,gto,nshells)
          allocate(batch_values(nshells,nshells,nshells,nshells))
 
          do lsh = 1, nshells

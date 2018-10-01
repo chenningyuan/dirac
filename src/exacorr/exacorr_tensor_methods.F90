@@ -91,10 +91,10 @@ module exacorr_tensor_methods
          call c_f_pointer(tens_body,ao_tens,nao(1:4)) !map C pointer to 4-dimensional array
 
 !        Allocate and get shell information for all shells that we will treat
-         call fetch_gtos(first_ao(1),nao(1),gto1,nshells(1))
-         call fetch_gtos(first_ao(2),nao(2),gto2,nshells(2))
-         call fetch_gtos(first_ao(3),nao(3),gto3,nshells(3))
-         call fetch_gtos(first_ao(4),nao(4),gto4,nshells(4))
+         call get_gtos(first_ao(1),nao(1),gto1,nshells(1))
+         call get_gtos(first_ao(2),nao(2),gto2,nshells(2))
+         call get_gtos(first_ao(3),nao(3),gto3,nshells(3))
+         call get_gtos(first_ao(4),nao(4),gto4,nshells(4))
 
 !        Intranode parallelization should be possible in the loops below because Interest is thread safe
 

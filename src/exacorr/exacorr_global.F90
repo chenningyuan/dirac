@@ -3,6 +3,7 @@ module exacorr_global
 !This module controls storage and interaction with the global data used in ExaCorr
 
         use exacorr_datatypes
+        use dirac_mo
 
         implicit none
         private
@@ -12,18 +13,18 @@ module exacorr_global
         integer :: number_of_aos=0 ! This is set by master and communicated in the initialization step. 
         integer, allocatable :: shell_indices(:)  ! for each basis function the index of the shell to which it belongs
         type(basis_func_info_t), allocatable :: gtos(:)  ! list of all shells
+        type(MO):: qmo_all ! Stores all MO-coefficients and energies obtained from the parent code 
         logical :: TALSH_ONLY = .TRUE. ! use single-node TALSH library instead of the full EXATENSOR library
 
 !       Functions and routines to interact with these data
+        public ncartesian
         public get_nao
         public get_talsh_only
         public set_talsh_only
         public initialize_global_data
         public delete_global_data
-        public ncartesian
-        public get_gto
-        public fetch_gtos
-        public get_shell_index
+        public get_gtos
+        public get_mo_coefficients
 
        contains
          
@@ -69,7 +70,7 @@ module exacorr_global
              if (ierr == 1) call quit ('This version can not handle contracted functions')
              nao     = number_aos(1)      ! retrieve number of aos from the host code (e.g. DIRAC common block)
              call set_nao(nao)            ! store in global data
-             print*, " Retrieved basis set information from DIRAC common blocks"
+             call print_date ("retrieved basis set information from DIRAC common blocks")
              
              ! make array with pointers from a basis function index to its shell
              allocate(shell_indices(nao))
@@ -81,8 +82,11 @@ module exacorr_global
                    shell_indices(iao) = ish
                 end do
              end do
-
              if (iao.ne.nao) call quit ('Error in initialize_global_data routine')
+
+             ! read MO coefficients and store them in qmo_all
+             call get_DIRAC_MO_coefficients (qmo_all)
+
              call synchronize_global_data
  
          end subroutine initialize_global_data
@@ -144,6 +148,7 @@ module exacorr_global
          subroutine delete_global_data
              deallocate(shell_indices)
              deallocate(gtos)
+             call delete(qmo_all)
          end subroutine delete_global_data
 
          integer function ncartesian(l_value)
@@ -166,7 +171,7 @@ module exacorr_global
              get_gto = gtos(ish)
          end  function get_gto
 
-         subroutine fetch_gtos(first_ao,nao,gto,nshells)
+         subroutine get_gtos(first_ao,nao,gto,nshells)
 
           integer, intent(in):: first_ao, nao
           type(basis_func_info_t), intent(inout), allocatable :: gto(:)
@@ -182,59 +187,49 @@ module exacorr_global
              gto(ish) = get_gto(first_shell+ish-1)
           end do
 
-         end subroutine fetch_gtos
-!-------------------------------------------------------------------------------------------
-        subroutine generate_ao_segments(num_large_ao,num_small_ao,desired_seg_size,ao_info,&
-                                       &num_large_segs,num_small_segs,segs_large,segs_small,ierr)
-!This subroutine partitions the range of large/small basis functions into segments
-!such that the size of each segment is close to the <desired_seg_size> as much as possible.
-!Different segments may have different sizes in order to align the segments to atomic shell boundaries.
-         implicit none
-         integer, intent(in):: num_large_ao                !in: total number of large component basis functions
-         integer, intent(in):: num_small_ao                !in: total number of small component basis functions
-         integer, intent(in):: desired_seg_size(0:2)       !in: desired size of a segment (0: target value, 1: minimal value, 2: maximum value)
-         type(basis_func_info_t), intent(in):: ao_info(1:) !in: information on each basis function
-         integer, intent(out):: num_large_segs             !out: number of large component segments
-         integer, intent(out):: num_small_segs             !out: number of small component segments
-         integer, intent(out), allocatable:: segs_large(:) !out: size of each segment in the large component range
-         integer, intent(out), allocatable:: segs_small(:) !out: size of each segment in the small component range
-         integer, intent(out):: ierr                       !out: error code (0:success)
+         end subroutine get_gtos
 
-!        place holder initializations for testing compilation and cmake inclusion of of this module
-         num_large_segs = 1 
-         allocate (segs_large(num_large_segs))
-         segs_large(1) = num_large_ao
-         num_small_segs = 0 
-         ierr=0
-         return
-        end subroutine generate_ao_segments
-!----------------------------------------------------------------------------------
-        subroutine generate_mo_segments(num_occ,num_virt,desired_seg_size,mo_info,&
-                                       &num_occ_segs,num_virt_segs,segs_occ,segs_virt,ierr)
-!This subroutine partitions the range of occupied/virtual molecular spinors into segments
-!such that the size of each segement is close to the <desired_seg_size> as much as possible.
-!Different segements may have different sizes in order to align the segements by symmetry IR.
-         implicit none
+     subroutine get_MO_coefficients (qmo,mo_list,nmo)
+!***********************************************************************
+!
+!     Fill array with subset of MO coefficients and related information
+!     Retrives this from the qmo_all array that should be synced
+!
+!     Input
+!        nmo     : number of selected MOs
+!        mo_list : indices of selected MOs
+!
+!     Output
+!        QMO  : MOs (coefficients, energies, etc.)
+!
+!
+!     Written by L.Visscher Sep 2018
+!
+!
+!***********************************************************************
 
-         integer, intent(in):: num_occ                    !in: total number of occupied spinors
-         integer, intent(in):: num_virt                   !in: total number of virtual spinors
-         integer, intent(in):: desired_seg_size(0:2)      !in: desired size of a segment (0: target value, 1: minimal value, 2: maximum value)
-         type(mo_spinor_info_t), intent(in):: mo_info(1:) !in: information on each molecular spinor
-         integer, intent(out):: num_occ_segs              !out: number of segments in the occupied range
-         integer, intent(out):: num_virt_segs             !out: number of segments in the virtual range
-         integer, intent(out), allocatable:: segs_occ(:)  !out: size of each segment in the occupied range
-         integer, intent(out), allocatable:: segs_virt(:) !out: size of each segment in the virtual range
-         integer, intent(out):: ierr                      !out: error code (0:success)
+      use dirac_mo
 
-!        place holder initializations for testing compilation and cmake inclusion of of this module
-         num_occ_segs  = 1 
-         allocate (segs_occ(num_occ_segs))
-         segs_occ(1) = num_occ
-         num_virt_segs = 1 
-         allocate (segs_virt(num_virt_segs))
-         segs_virt(1) = num_virt
-         ierr=0
-         return
-        end subroutine generate_mo_segments
+      integer, intent(in)     :: nmo,mo_list(nmo)
+      type(MO), intent(inout) :: qmo
+
+      integer  :: i, nao, nmo_all, nz
+
+      nao     = qmo_all%nao
+      nmo_all = qmo_all%nmo
+      nz      = qmo_all%nz 
+
+      ! allocate arrays in qmo to hold the active MO's specified in mo_list
+      call create (qmo,nao,nmo,nz)
+
+      ! copy the requested mo's
+      do i = 1, nmo
+         qmo%index(i)   = mo_list(i)
+         qmo%coeff(:,i,:) = qmo_all%coeff(:,mo_list(i),:)
+         qmo%energy(i) = qmo_all%energy(mo_list(i))
+         qmo%boson_irrep(i) = qmo_all%boson_irrep(mo_list(i))
+      enddo
+
+      end
 
 end module exacorr_global

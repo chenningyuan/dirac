@@ -811,17 +811,16 @@ module talsh_cc
 !        Written by Lucas Visscher, winter 2016/2017 (but in Goa, India, temperature about 25 C)
 
          use dirac_MO
+         use exacorr_global
 
          integer, intent(in) :: nmo          ! the length of the mo basis
          integer, intent(in) :: mo_list(:)   ! and their indices
          real(8) :: eps(:)
 
-         integer             :: j, k, ierr
+         integer             :: k
          type(MO)            :: qmo
-         integer             :: ifrp = 1     ! we do not use symmetry, so ifrp (g/u) is always 1
-         integer             :: nz = 4       ! we do not use symmetry, so nz is always 4
 
-         call get_dirac_mo_coefficients (ifrp,qmo,mo_list,nmo)
+         call get_mo_coefficients (qmo,mo_list,nmo)
 
          do k = 1, nmo
             eps(k)     = qmo%energy(k)

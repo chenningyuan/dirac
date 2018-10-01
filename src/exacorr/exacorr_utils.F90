@@ -29,3 +29,20 @@
          write (*,'(1x,a10,1x,a8,1x,a)') datex,timex,text(1:lentext)
         end subroutine print_date
 
+        subroutine get_free_fileunit(unit)
+        ! idea from http://fortranwiki.org, will become obsolete once fortran2008 is supported everywhere
+        ! gets free file unit
+          integer, intent(out) :: unit
+          integer, parameter   :: LUN_MIN=100, LUN_MAX=1000
+          logical :: opened
+          integer :: lun
+          unit=-1
+          do lun=LUN_MIN,LUN_MAX
+            inquire(unit=lun,opened=opened)
+            if (.not. opened) then
+              unit=lun
+              exit
+            end if
+          end do
+        end subroutine get_free_fileunit
+

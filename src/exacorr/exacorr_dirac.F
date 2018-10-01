@@ -135,103 +135,30 @@ C
 
       end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE Get_DIRAC_MO_coefficients (IFRP,QMO,MO_LIST,NMO)
+      subroutine get_DIRAC_MO_coefficients (qmo_all)
 C***********************************************************************
 C
-C     Fill array with subset of MO coefficients and related information
-C     Reads from either DFCOEF or KRMC file
-C
-C     Input
-C        IFRP : Fermion irrep (1 gerade, 2 ungerade)
+C     Get all "electronic" MO coefficients into global memory
+C     Reads from DFCOEF file
 C
 C     Output
 C        QMO  : MOs (coefficients, energies, etc.)
 C
 C
-C     Written by L.Visscher May 2011
-C
+C     Written by L.Visscher Sep 2018
 C
 C***********************************************************************
 
-      Use Dirac_MO
+      use dirac_mo
 
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "maxorb.h"
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dgroup.h"
-      Integer, Intent(in) :: MO_LIST(NMO)
-      Type(MO), intent(inout) :: QMO
+      type(MO), intent(inout) :: qmo_all
+      integer  :: ierr
 
-      Real(8), Allocatable :: CMO(:),EIG(:)
-      Integer, Allocatable :: IBEIG(:)
-      Integer :: NAO,IR(2),NR
-      LOGICAL TOBE,TOBEK
+      ! read all coefficients from file
+      call read_from_dfcoef (qmo_all,ierr)
+      if (ierr /= 0) call quit ("Error reading from DFCOEF")
 
-      NAO = NFBAS(IFRP,0)
-C     Allocate the arrays inside QMO
-      call create (QMO,NAO,NMO,NZ)
-C     Fill the index part of QMO
-      do i = 1, nmo
-         QMO%index(i) = mo_list(i)
-      enddo
-
-C
-C     Read all coefficients from file
-C
-      Allocate (CMO(NCMOTQ))
-      Allocate (EIG(NORBT))
-      Allocate (IBEIG(NORBT))
-      INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
-
-      IF (TOBEK) THEN
-         CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','PAMTRA')
-         JRDMO = -1
-         CALL RREADMO(CMO,JRDMO,1,LUKRMC)
-         IF (JRDMO .EQ. 0) THEN
-            IF (IPRTRA .GE. 0) THEN
-               WRITE(LUPRI,'(/A)')
-     &              ' (PAMTRA)  Orbitals read from' //
-     &              ' label NEWORB on file KRMCSCF'
-            END IF
-         END IF
-         CLOSE (LUKRMC)
-      ELSE
-         INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-         IF (.NOT.TOBE) THEN
-            WRITE(LUPRI,'(/A)')
-     &        'PAMTRA ERROR: MO coefficient file not present'
-            CALL QUIT('PAMTRA: No MO coefficient file !')
-         ELSE
-            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMTRA')
-            CALL REACMO_no_work(LUCOEF,'DFCOEF',CMO,EIG,
-     &                  IBEIG,TOTERG,14)
-            CLOSE(LUCOEF,STATUS='KEEP')
-         END IF
-      END IF
-C
-C     Get the coefficients from the full list and place them in coeff
-C
-      CALL SELCFS (CMO(1+ICMOQ(IFRP)),IFRP,QMO%coeff,
-     &             QMO%NMO,QMO%index,
-     &             0,QMO%NMO,NAO,NORB(IFRP))
-C
-C     Get the eigenvalues and their idenfication in terms of boson irreps (for spinfree)
-C
-      CALL SELEIG(EIG(1+IORB(IFRP)),IFRP,QMO%energy,
-     &            QMO%index,0,QMO%NMO)
-      CALL SELIBEIG(IBEIG,IORB(IFRP),IFRP,QMO%boson_irrep,
-     &              QMO%index,0,QMO%NMO)
-C
-C     Throw away the complete set, keep only the selected sets
-C
-      DeAllocate (CMO)
-      DeAllocate (EIG)
-      DeAllocate (IBEIG)
-C
-      END
+      end
 
        integer function Number_AOShells()
 
@@ -343,6 +270,94 @@ C
           deallocate (coefficients)
 
        end subroutine compress_unc_shell
+  
+       subroutine read_from_dfcoef (qmo,ierr)
+  
+       use dirac_mo
+
+!      read all positive energy mo coefficients present on DFCOEF file
+!      check for imcompatibiklities (use of symmetry) as well and provide
+!      dimensions of the coefficent array (nao,nmo) to allow further checking
+
+       type(MO), intent(inout):: qmo
+       integer, intent(out)   :: ierr 
+       integer, parameter     :: NOERROR  = 0 ! no error
+       integer, parameter     :: NOTFOUND = 1 ! file not found
+       integer, parameter     :: CORRUPT  = 2 ! file unreadable
+       integer, parameter     :: SYMMETRY = 3 ! calculation used symmetry
+       character              :: text*74
+       integer                :: nsym
+       integer                :: idim(3,2)
+       real(8)                :: total_energy
+       logical                :: tobe
+       integer                :: lucoef
+       integer                :: nao, nmo, npo, nto
+       integer, parameter     :: nz = 4 ! we use no symmetry, so always have this
+       real(8), allocatable   :: coeff(:,:,:),eig(:)
+       integer, allocatable   :: ibeig(:),index(:)
+
+       ierr = NOERROR
+
+       ! open file and read dimension info
+       inquire (file='DFCOEF',exist=tobe)
+       if (.not.tobe) then
+          print*, "error: MO coefficient file DFCOEF not found"
+          ierr = NOTFOUND
+          return
+       else
+          call get_free_fileunit(lucoef)
+          open (lucoef,file='DFCOEF',status='OLD',FORM='UNFORMATTED',
+     &     access='SEQUENTIAL')
+          read (lucoef,end=10,err=10) text,nsym,
+     &         ((idim(i,j),i=1,3),j=1,nsym),total_energy
+       end if
+
+       ! check symmetry and get dimensions of the coefficient array
+       if (nsym > 1) then
+          ierr = SYMMETRY
+          return
+       else
+          nao = idim(3,1) ! number of basis functions
+          npo = idim(1,1) ! "positronic" (= negative energy) solutions (can be thrown away for our purposes)
+          if (npo > 0) print*, "warning: reading from 4C DFCOEF file" ! this warning will go once we have the full index transform implementedd
+          nmo = idim(2,1) ! "electronic" (= positive energy) solutions (we only need these)
+          nto = npo+nmo   ! total number of solutions on this file
+       end if
+
+       allocate(coeff(nao,nmo,nz))
+       allocate(eig(nmo))
+       allocate(ibeig(nmo))
+       allocate(index(nmo))
+        
+       ! read the data
+       read (lucoef,end=10,err=10) coeff
+       read (lucoef,end=10,err=10) eig
+       ! fill in index values
+       do i = 1, nmo
+          index(i) = i ! we set the index compatible with the fact that we store all mo's
+          ibeig(i) = 1 ! as we have no symmetry all of these can be set to 1
+       end do
+
+       ! put in qmo
+       call create (qmo,nao,nmo,nz)
+       qmo%index       = index
+       qmo%coeff       = coeff(:,npo+1:nto,1:nz)
+       qmo%energy      = eig(npo+1:nto)
+       qmo%boson_irrep = ibeig(npo+1:nto)
+
+       close (lucoef,status='KEEP')
+       deallocate(coeff)
+       deallocate(eig)
+       deallocate(ibeig)
+       deallocate(index)
+
+       call print_date("read from DFCOEF:"//text)
+       return
+
+  10   ierr = CORRUPT
+       return
+
+       end subroutine read_from_dfcoef
 
        subroutine Write_To_Mdcint (nmo,rcw,mo_tens)
 
