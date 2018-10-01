@@ -52,7 +52,8 @@ module exacorr_global
              use interface_to_mpi
              integer :: my_MPI_rank
 #endif
-             integer :: number_aos, number_aoshells, nao, nshells
+             integer :: Number_AOShells, Number_AOs
+             integer :: nao, nshells
              integer :: ish, iao, ibas, ierr
 
 #if defined (VAR_MPI)
@@ -63,14 +64,23 @@ module exacorr_global
                 return
              end if 
 #endif
-             ! store basis set definitions
-             nshells = number_aoshells()  ! basis functions are organized in shells, this is their number
+             ! Get dimension information and allocate gtos. 
+             ! TODO: figure out how to allocate inside read_from_dfcoef
+             ! TODO: neither passing an allocatable array nor a pointer array seems to work
+             nshells = Number_AOShells()
+             nao = Number_AOs(1)
+             call set_nao(nao)
              allocate(gtos(nshells))
-             call initialize_shells(gtos,ierr)
-             if (ierr == 1) call quit ('This version can not handle contracted functions')
-             nao     = number_aos(1)      ! retrieve number of aos from the host code (e.g. DIRAC common block)
-             call set_nao(nao)            ! store in global data
-             call print_date ("retrieved basis set information from DIRAC common blocks")
+
+             ! read MO coefficients and all other necessary data from DFCOEF
+             call read_from_dfcoef (nao,nshells,gtos,qmo_all,ierr)
+
+             if (ierr == 0) then
+                call print_date ("retrieved basis set information from DIRAC common blocks")
+             else
+                print*, "Error code",ierr," while reading DFCOEF"
+                call quit ('Could not read DFCOEF')
+             end if
              
              ! make array with pointers from a basis function index to its shell
              allocate(shell_indices(nao))
@@ -83,9 +93,6 @@ module exacorr_global
                 end do
              end do
              if (iao.ne.nao) call quit ('Error in initialize_global_data routine')
-
-             ! read MO coefficients and store them in qmo_all
-             call get_DIRAC_MO_coefficients (qmo_all)
 
              call synchronize_global_data
  

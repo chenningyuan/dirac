@@ -143,9 +143,49 @@ C
       WRITE(IUNIT) CMO
       WRITE(IUNIT) EIG
       WRITE(IUNIT) IBEIG
+!     Add additional information about basis set to create a simple interface file
+!     for correlated calculations (like exacorr)
+      call append_basisinfo_to_dfcoef (IUNIT)
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine append_basisinfo_to_dfcoef (IUNIT)
+
+!      L. Visscher, October 2018
+!      add basis set info to the end of dfcoef to not infere with normal usage
+!      a better solution is to use a keyed-file system, but this is quite some
+!      work to implement everywhere in DIRAC
+
+!      IUNIT should be open and positioned at the right place (i.e. after IBEIG)
+
+#include "implicit.h"
+#include "maxorb.h"
+#include "shells.h"
+#include "aovec.h"
+#include "primit.h"
+#include "dcbbas.h"
+
+       integer npriexp
+
+!      First calculate and write dimensions so that we can allocate when reading this back
+!      number of aos, number of shells (LC only)
+       npriexp = jstrt(nlrgsh)+nuco(nlrgsh)
+       write (IUNIT) ntbas(1),nlrgsh,npriexp,MXCONT
+
+!      Now write arrays with basis set information
+!      orb_momentum, atom_number, n_primives for all shells
+       write (IUNIT) nhkt(1:nlrgsh),ncent(1:nlrgsh),nuco(1:nlrgsh)
+!      start of exponent values, number of contracted for all shells
+       write (IUNIT) jstrt(1:nlrgsh),numcf(1:nlrgsh)
+!      coordinates (x, y, z) of center for all shells
+       write (IUNIT) cent(1:nlrgsh,1:3,1)
+!      values of the exponents for all shells (packed into a 1-d array)
+       write (IUNIT) priexp(1:npriexp)
+!      values of the contraction coefficients for all shells (packed into a 1-d array)
+       write (IUNIT) priccf(1:npriexp,1:MXCONT)
+
+       end subroutine append_basisinfo_to_dfcoef
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wripcmo */
       SUBROUTINE WRIPCMO(IUNIT,CMO,EIG,IBEIG,TOTERG)
