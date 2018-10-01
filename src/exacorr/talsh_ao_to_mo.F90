@@ -144,7 +144,7 @@ module talsh_ao_to_mo
                 cbmo_tens(j,k+nmo) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
             end do
          end do
-         call delete (qmo)
+         call delete_qmo (qmo)
 
         end subroutine get_mocoef_tensor
 

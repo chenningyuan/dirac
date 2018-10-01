@@ -32,7 +32,7 @@ module dirac_MO
   
 !  Private
 
-  Public :: create, delete, set_coefficients, get_coefficients, sync_coefficients
+  Public :: create_qmo, delete_qmo, sync_qmo
 
   type MO
      
@@ -42,8 +42,11 @@ module dirac_MO
       nmo,      &          ! number of mos
       nz                   ! number of active quaternion units
 
+    real(8) :: &
+      total_energy         ! total (SCF) energy as stored on the coefficient file
+
     real(8), pointer ::  &
-      energy    (:),     & ! energy
+      energy    (:),     & ! orbital energies
       coeff (:,:,:)        ! coefficients (AO,MO,IZ)
      
     integer, pointer ::  &
@@ -52,24 +55,16 @@ module dirac_MO
 
   end type MO
 
-  interface create
+  interface create_qmo
     module procedure AllocMO
   end interface  
 
-  interface delete
+  interface delete_qmo
     module procedure DeAllocMO
   end interface  
   
-  interface set_coefficients
-    module procedure SetMOcoefficients
-  end interface  
-
-  interface get_coefficients
-    module procedure GetMOcoefficients
-  end interface  
-
-  interface sync_coefficients
-    module procedure SyncMOcoefficients
+  interface sync_qmo
+    module procedure SyncMO
   end interface  
 
 contains
@@ -129,33 +124,9 @@ contains
     
   end subroutine DeAllocMO
 
-  subroutine SetMOcoefficients (M, coefficients)
-   
-!   Fill the block of MOcoefficients with values
-!   Presently this is a simple copy, but more advanced routines that
-!   operate on subsets of coefficients are also conceivable
-!
-    type (MO), intent (inout) :: M
-    real(8), intent(in)       :: coefficients(M%nao,M%nmo,M%nz)
-
-    M%coeff = coefficients
-
-  end subroutine SetMOcoefficients
-
-  subroutine GetMOcoefficients (M, coefficients)
-   
-!   Get a block of MOcoefficients
- 
-    type (MO), intent (in)   :: M
-    real(8), intent(inout)   :: coefficients(M%nao,M%nmo,M%nz)
-
-    coefficients = M%coeff
-
-  end subroutine GetMOcoefficients
-
 #if defined (VAR_MPI)
 
-  subroutine SyncMOcoefficients (M, mparid)
+  subroutine SyncMO (M, mparid)
    
 !   Synchronize an already allocated block of MOcoefficients
  
@@ -171,18 +142,18 @@ contains
     n_coef = M%nao * M%nmo * M%nz
     call mpi_bcast (M%coeff,n_coef,mpi_double_precision,mparid,mpi_comm_world,ierr)
 
-  end subroutine SyncMOcoefficients
+  end subroutine SyncMO
 
 #else
 
-  subroutine SyncMOcoefficients (M, mparid)
+  subroutine SyncMO (M, mparid)
  
 !   do nothing, makes it possible to call sync also in serial runs
 
     type (MO), intent (inout)   :: M
     integer, intent(in)         :: mparid
 
-  end subroutine SyncMOcoefficients
+  end subroutine SyncMO
 
 #endif
 

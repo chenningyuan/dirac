@@ -826,7 +826,7 @@ module talsh_cc
             eps(k)     = qmo%energy(k)
             eps(k+nmo) = qmo%energy(k)
          end do
-         call delete (qmo)
+         call delete_qmo (qmo)
 
         end subroutine get_orbital_energies
 

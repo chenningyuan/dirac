@@ -339,7 +339,7 @@ C***********************************************************************
        end do
 
        ! put in qmo
-       call create (qmo,nao,nmo,nz)
+       call create_qmo (qmo,nao,nmo,nz)
        qmo%index       = index
        qmo%coeff       = coeff(:,npo+1:nto,1:nz)
        qmo%energy      = eig(npo+1:nto)

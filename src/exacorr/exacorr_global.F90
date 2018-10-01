@@ -148,7 +148,7 @@ module exacorr_global
          subroutine delete_global_data
              deallocate(shell_indices)
              deallocate(gtos)
-             call delete(qmo_all)
+             call delete_qmo (qmo_all)
          end subroutine delete_global_data
 
          integer function ncartesian(l_value)
@@ -220,7 +220,7 @@ module exacorr_global
       nz      = qmo_all%nz 
 
       ! allocate arrays in qmo to hold the active MO's specified in mo_list
-      call create (qmo,nao,nmo,nz)
+      call create_qmo (qmo,nao,nmo,nz)
 
       ! copy the requested mo's
       do i = 1, nmo
