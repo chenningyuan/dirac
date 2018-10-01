@@ -2979,14 +2979,16 @@ C
      &          TMAT(LR1,LC1,NZT)
 
 C   ...Define internal print level 
-      IBPRNT = 12 
+      IBPRNT = 12
 C
       IF(NVEC.EQ.0) RETURN
       IF(IPRINT.GE.IBPRNT) THEN
         CALL HEADER('BCKTRA: Nontransformed coefficients',-1)
         WRITE(LUPRI,'(2(3X,A,I5))')
      +    'Start index: ',JVEC,'No. of vectors:',NVEC
-        CALL PRQMAT(COFU,NORB,NORB,LRU,LCU,NZC,IPQTOQ(1,0),LUPRI)
+        IF(ATOMIC .eqv. .FALSE.)THEN   !sunaga  Error appear for ATOMIC, 
+          CALL PRQMAT(COFU,NORB,NORB,LRU,LCU,NZC,IPQTOQ(1,0),LUPRI)
+        ENDIF   
         CALL HEADER('BCKTRA: Transformation matrix:',-1)
         CALL PRQMAT(TMAT,NBAS,NORB,LR1,LC1,NZT,IPQTOQ(1,0),LUPRI)
       ENDIF
@@ -3389,21 +3391,21 @@ C
       IBORB = 0    
       DO ISUB = 1,N_SUB_BL(IFRP)
       IF(NTMO_SUB(ISUB,IFRP,0).GT.0) THEN
-        write(*,*)""
-        write(*,*)""
-        write(*,*)"NTMO",NTMO(I)            
-        write(*,*)"NTMO_SUB",NTMO_SUB(ISUB,IFRP,0) !sunaga
-        write(*,*)"ISUB",ISUB
-        write(*,*)"IFRP",IFRP
+!        write(*,*)""
+!        write(*,*)""
+!        write(*,*)"NTMO",NTMO(I)            
+!        write(*,*)"NTMO_SUB",NTMO_SUB(ISUB,IFRP,0) !sunaga
+!        write(*,*)"ISUB",ISUB
+!        write(*,*)"IFRP",IFRP
         IAO = I2BASX(IFRP,IFRP)+1
         IMO = I2TMOT(IFRP) + (NTMO(IFRP)+1)*IBORB + 1
         ITM = I2TMT(IFRP)  + NFBAS(IFRP,0)*IBORB + 1
-        write(*,*)""
-        write(*,*)"IAO", IAO
-        write(*,*)"IMO", IMO
-        write(*,*)"I2TMOT", I2TMOT(IFRP)
-        write(*,*)"IBORB", IBORB
-        write(*,*)"ITM", ITM
+!        write(*,*)""
+!        write(*,*)"IAO", IAO
+!        write(*,*)"IMO", IMO
+!        write(*,*)"I2TMOT", I2TMOT(IFRP)
+!        write(*,*)"IBORB", IBORB
+!        write(*,*)"ITM", ITM
 
         CALL QTRANS('AOMO','S',0.0d0,NFBAS(IFRP,0),NFBAS(IFRP,0),
      &         NTMO_SUB(ISUB,IFRP,0),NTMO_SUB(ISUB,IFRP,0),
@@ -3420,7 +3422,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck tsbbl2 */
-      SUBROUTINE TSBBL2(IFRP,IC,IKAP,FAO,FMO,TM1,TM2,BUF,LBUF,IPRINT)
+      SUBROUTINE TSBBL2(IFRP,IC,ISUB,FAO,FMO,TM1,TM2,BUF,LBUF,IPRINT)
 C***********************************************************************
 C 
 C     Perform AO->MO transformation separatly Large and Small
@@ -3439,24 +3441,20 @@ C
 #include "dgroup.h" 
       DIMENSION FAO(*),FMO(*),TM1(*),TM2(*),BUF(LBUF)
 C
-      NDIM = NTMO(IFRP)*NTMO(IFRP)*NZ
-      CALL DZERO(FMO(I2TMOT(IFRP)+1),NDIM)
-C      
-      ISUB = IKAP*(IKAP-1)/2 + 1
-      IF(IKAP.GE.1)THEN
+      IF(ISUB.GE.1)THEN
         IBORB = 0 
-        DO IK = 1, IKAP-1
-           IBORB = IBORB + NTMO_SUB(IK,IFRP,0)
+        DO IS = 1, ISUB-1
+           IBORB = IBORB + NTMO_SUB(IS,IFRP,0)
         ENDDO   
       ELSE
-        IBORB    = 0
+        IBORB = 0
       ENDIF
 C      
       IF(NTMO_SUB(ISUB,IFRP,IC).GT.0) THEN
         IF(IC.EQ.1)THEN
-          NTMO_BUF=NTMO_SUB(ISUB,IFRP,2)
+          NTMO_BUF = NTMO_SUB(ISUB,IFRP,2)
         ELSEIF(IC.EQ.2)THEN
-          NTMO_BUF=0
+          NTMO_BUF = 0
         ENDIF
         IAO = I2BASX(IFRP,IFRP)+1
         IMO = 1

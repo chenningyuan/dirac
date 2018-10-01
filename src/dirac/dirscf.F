@@ -796,7 +796,6 @@ C
 C         read AO2MO transformation matrix TMAT
       CALL READT(LUTMAT,N2TMT,TMAT)
 C         read LUTMAT rec#2 with SAOMO
-          write(*,*)"LUTMAT",LUTMAT !sunaga
       CALL READT(LUTMAT,N2TMT,SAOMO)
       CLOSE(LUTMAT,STATUS='KEEP')
 

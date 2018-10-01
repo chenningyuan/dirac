@@ -3355,8 +3355,6 @@ CMI     they are in the order "S1 S2 ... S(nbsym) L1 L2 ... L(nbsym)" instead of
 !       out: AO2MO linear symmetry adapted --> TMAT
 !       out: AO2MO                         --> VMAT
 !       out: MO2MO linear symmetry adapted --> TBUF (discarded if not x2c-mmf)
-!     sunaga
-        write(*,*)"LINLIN",LINLIN
         IF(ATOMIC)THEN
         IF(LINLIN .eqv. .false.)THEN             
 !          CALL MEMGET('REAL',KSMAT,N2BBASXQ,WORK,KFREE,LFREE)
@@ -5701,8 +5699,7 @@ C     sunaga
          CALL MEMGET('REAL',KSMAT,N2BBASXQ,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KTCUF,N2BBASXQ,WORK,KFREE,LFREE)
 C
-         CALL ATMSYM(TMAT,VMAT,TBUF,WORK(KSMAT),WORK(KTCUF),
-     &                EIG,WORK(KFREE),LFREE)
+         CALL ATMSYM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
 !          CALL MEMREL('GATMSM',WORK,KSMAT,KSMAT,KFREE,LFREE)
 !          CALL MEMREL('GATMSM',WORK,KTCUF,KTCUF,KFREE,LFREE)
       ENDIF
@@ -6239,10 +6236,7 @@ C
         IOFV = IOFV + NORB(I)*NFBAS(I,0)
  30   CONTINUE
 C.....Also initialize NTMO_SUB which will be the number of orbitals in each subblock in orthonormal basis
-!      IF(LINLIN)Then !sunaga
-!         write(*,*)"ICOPY, NTMO_SUB", NTMO_SUB
       CALL ICOPY(MAX_SUB_BL*3*2,NORB_SUB,1,NTMO_SUB,1)
-!      ENDIF !sunaga
 C     
       CALL FLSHFO(LUPRI)
       CALL QEXIT('LINSYM')
@@ -6253,7 +6247,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck atmsym */
-      SUBROUTINE ATMSYM(TMAT,VMAT,TBUF,SMAT,TCUF,EIG,WORK,LWORK)
+      SUBROUTINE ATMSYM(TMAT,VMAT,TBUF,EIG,WORK,LWORK)
 C*****************************************************************************
 C
 C     Construct matrix Kappa and transform to eigenvectors of this operator
@@ -6287,10 +6281,10 @@ C  DGROUP:
 #include "dgroup.h"
 #include "cbihr1.h"
 #include "dummy.h"
-#include "dcbdhf.h" !sunaga      
+#include "dcbdhf.h"             !sunaga
+#include "dcbibt.h"      
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
-      DIMENSION SMAT(*),TCUF(*) !sunaga
       DIMENSION IQBF(4),IQW(4),KPMAX(2)
       LOGICAL :: DOJACO_SAVE
       character*100 :: hfile_format,hfile_name
@@ -6339,7 +6333,7 @@ C
      &    'ATMSYM: Entering AO->MO transformation matrix',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &   '*** Fermion corep ',I,'/',NFSYM
-         CALL PRQMAT(SMAT(IOFV),NFBAS(I,0),NORB(I),
+         CALL PRQMAT(VMAT(IOFV),NFBAS(I,0),NORB(I),
      &   NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),LUPRI)
 
          CALL HEADER('ATMSYM: K matrix in AO basis',-1)
@@ -6370,8 +6364,9 @@ C
       CALL DZERO (TBUF,N2TMT)
       CALL IZERO (ID_SUB_BL,MAX_SUB_BL*2)
       CALL IZERO (NORB_SUB,MAX_SUB_BL*3*2)
-      WRITE (LUPRI,1000)
-
+      IF (IPRHAM.GE.6) THEN
+        WRITE (LUPRI,1000)
+      ENDIF
 !     stefan - june 2011: save LL block of <j_z>-eigenvectors (temporary) on file
 !                         this block is needed to transform the 2c-LOWDIN matrix
 !                         in the x2c-mmf approach (thus ensuring numerical stability by not re-doing this step).
@@ -6588,7 +6583,7 @@ C       Count the kappa-values.
 C       We will either find a negative or a positive value for each k.
 C
         KPMAX(I) = MAX(KPMAXL,KPMAXS)
-        WRITE(LUPRI,'(A,I2)') ' * Max ABS(Kappa):', KPMAX
+!        WRITE(LUPRI,'(A,I2)') ' * Max ABS(Kappa):', KPMAX
         MAXSUB = KPMAX(I)*(KPMAX(I)+1)/2
         IF (MAXSUB.GT.MAX_SUB_BL) THEN
           write(lupri,*) 'MAX_SUB_BL:',MAX_SUB_BL,
@@ -6670,13 +6665,14 @@ C
      &               WORK(KFSS),WORK(KIDUM),IPRHAM)
         CALL MEMREL('ATMSYM',WORK,KINDX,KINDX,KFREE,LFREE)
 C
-C     
 C     Write information to output
-C        
+C
+      IF (IPRHAM.GE.6) THEN
         DO KPADD = 1, MAXSUB
            WRITE (LUPRI,1010) 3-2*I,ID_SUB_BL(KPADD,I),
      &                       (NORB_SUB(KPADD,I,IC),IC=0,2)
         ENDDO
+      ENDIF  
 C            
 C       Put the MO vectors in TBUF
 C
@@ -6772,11 +6768,11 @@ C
 C
         IF (IPRHAM.GE.5) THEN
          CALL HEADER(
-     &'ATMSYM: SMAT (symm.blocked) transformation'//
+     &'ATMSYM: TMAT (symm.blocked) transformation'//
      &' matrix (AO->MO),TMAT',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &   '*** Fermion corep ',I,'/',NFSYM
-         CALL PRQMAT(SMAT(IOFT),NFBAS(I,0),NORB(I),
+         CALL PRQMAT(TMAT(IOFT),NFBAS(I,0),NORB(I),
      &         NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),LUPRI)
          CALL FLSHFO(LUPRI)
         ENDIF
@@ -6832,27 +6828,34 @@ C     Construct mj matrix in AO basis
 C
       CALL AMJMAT(TBUF,IPRHAM,WORK,LWORK)
 C
-      IOFT = 1
-      IOFVS = 1
-      IOFVL = 1
+C     output    
+C  
+      WRITE (LUPRI,'(/A)')
+     &' Parity  Kappa  MJ  Functions(total) Functions(LC) Functions(SC)'
+C      
+      IOFT    = 1
+      IOFVS   = 1
+      IOFVL   = 1
       N2TMT   = 0
       N2TMOTQ = 0
       DO 40 I = 1,NFSYM
+C
+C        output for ABS(Kappa)=1,
+C        which is not included in the below loop (IKAP = 2,KPMAX(I))
+C         
+         WRITE (LUPRI,1020) 3-2*I,(-1)**I,1,(NORB_SUB(1,I,IC),IC=0,2)
+C
          IOFVS = IOFVS + NFBAS(I,0)*NORB_SUB(1,I,0)
          IOFVL = IOFVL + NFBAS(I,0)*NORB_SUB(1,I,0)
          IOFT  = IOFT  + NFBAS(I,0)*NORB_SUB(1,I,0)
-         write(*,*)"I", I
-         write(*,*)"IOFV",IOFV
          IF(NORB(I).EQ.0) GOTO 40
          NLL=0
          NSS=0
-         DO IKAP = 1,KPMAX(I)
+         DO IKAP = 2,KPMAX(I)
             KPADD = IKAP*(IKAP-1)/2 + 1
             NLL=MAX(NLL,NORB_SUB(KPADD,I,1)*NORB_SUB(KPADD,I,1))
             NSS=MAX(NSS,NORB_SUB(KPADD,I,2)*NORB_SUB(KPADD,I,2))            
          ENDDO
-         WRITE(6,*) '* Max dimensions..',NLL,NSS
-         WRITE(6,*) '* I', I
 C
 C........allocate KFLL,KVLL,KFSS,KVSS once and for all
 C
@@ -6860,18 +6863,10 @@ C
          CALL MEMGET('REAL',KFSS,NSS,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KVLL,NLL,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KVSS,NSS,WORK,KFREE,LFREE)
-C
-C        from   ** End of branching ** @/dirone.F/GMOTRA
-C
-         I2TMT(I)  = N2TMT
-         N2TMT     = N2TMT + NFBAS(I,0)*NORB(I)*NZT
-         I2TMOT(I) = N2TMOTQ
-         N2TMO(I)  = NTMO(I)*NTMO(I)
-         N2TMOTQ   = N2TMOTQ + N2TMO(I)*NZ
 C         
 C........Here you tranaform the MJ-matrix for particular kappa; look TSUBBL
          NL = 0  
-         NS = 0  
+         NS = 0
          DO IKAP = 2,KPMAX(I)
            KPADD = IKAP*(IKAP-1)/2 + 1
            NL = NORB_SUB(KPADD,I,1)
@@ -6883,237 +6878,235 @@ CCCCCCCCCCCCCCCCCC
 C Large AO-MO transformation
 CCCCCCCCCCCCCCCCCC         
            IF (NL.GT.0) THEN
-           CALL TSBBL2(I,1,KPADD,TBUF,WORK(KFLL),VMAT,VMAT,
-     &                  WORK(KFREE),LFREE,12)
+             CALL TSBBL2(I,1,KPADD,TBUF,WORK(KFLL),VMAT,VMAT,
+     &                    WORK(KFREE),LFREE,IPRHAM)
 CCCCCCCCCCCCCCCCCC         
 C Large diagonalization
 CCCCCCCCCCCCCCCCCC         
 C
-          IF (IPRHAM.GE.6) THEN
-           CALL HEADER('ATMSYM: Mj_LL to be diagonalized',-1)
-           WRITE(LUPRI,'(2X,A,L1)') 'DOJACO=',DOJACO
-           WRITE(LUPRI,'(3X,A,I1,A,I1/)')
-     &     '*** Fermion corep ',I,'/',NFSYM
-           CALL PRQMAT(WORK(KFLL),NL,NL,NL,NL,1,
-     &          IPQTOQ(1,0),LUPRI)
-          ENDIF
+            IF (IPRHAM.GE.6) THEN
+              CALL HEADER('ATMSYM: Mj_LL to be diagonalized',-1)
+              WRITE(LUPRI,'(2X,A,L1)') 'DOJACO=',DOJACO
+              WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &        '*** Fermion corep ',I,'/',NFSYM
+              CALL PRQMAT(WORK(KFLL),NL,NL,NL,NL,1,
+     &                    IPQTOQ(1,0),LUPRI)
+            ENDIF
 C        
 #ifdef MOD_UNRELEASED
-          IF (.NOT.DOQJACO) THEN
+            IF (.NOT.DOQJACO) THEN
 #endif
-            IF(DOJACO) THEN
-              CALL RSJACO(NL,NL,NL,WORK(KFLL),EIG(IEIGE),1,1,0,
-     &                  WORK(KVLL))
-            ELSE
-              CALL QDIAG(1,NL,WORK(KFLL),NL,NL,
-     &                EIG(IEIGE),1,
-     &                WORK(KVLL),NL,NL,
-     &                WORK(KFREE),LFREE,IERR)
-              IF (IERR.NE.0) THEN
-                WRITE(LUPRI,'(2X,A)')
-     &         'ATMSYM: Erroneous QDIAG diagonalization of Mj_LL!'
-               CALL QUIT(
-     &        'ATMSYM: Erroneous QDIAG diagonalization of Mj_LL !')
+              IF(DOJACO) THEN
+                CALL RSJACO(NL,NL,NL,WORK(KFLL),EIG(IEIGE),1,1,0,
+     &                       WORK(KVLL))
+              ELSE
+                CALL QDIAG(1,NL,WORK(KFLL),NL,NL,
+     &                     EIG(IEIGE),1,
+     &                     WORK(KVLL),NL,NL,
+     &                     WORK(KFREE),LFREE,IERR)
+                IF (IERR.NE.0) THEN
+                  WRITE(LUPRI,'(2X,A)')
+     &            'ATMSYM: Erroneous QDIAG diagonalization of Mj_LL!'
+                  CALL QUIT(
+     &            'ATMSYM: Erroneous QDIAG diagonalization of Mj_LL !')
+                ENDIF
               ENDIF
-            ENDIF
 #ifdef MOD_UNRELEASED
-          ELSE
-            CALL QJACOBI(WORK(KFLL),WORK(KVLL),NL,1,0,
-     &                   IDUMMY,.TRUE.,IPRHAM)
-            DO II=1,NL
-              EIG(IEIGE+II-1)=WORK(KFLL+NL*(II-1)+II-1) ! store eigenvalues
-            ENDDO
-         ENDIF
-         MJMAXL = NINT(MAX(2*ABS(EIG(IEIGE)), 2*ABS(EIG(IEIGE+NL-1))))
+            ELSE
+              CALL QJACOBI(WORK(KFLL),WORK(KVLL),NL,1,0,
+     &                     IDUMMY,.TRUE.,IPRHAM)
+              DO II=1,NL
+                EIG(IEIGE+II-1)=WORK(KFLL+NL*(II-1)+II-1) ! store eigenvalues
+              ENDDO
+           ENDIF
+           MJMAXL = NINT( MAX( ABS(EIG(IEIGE)), ABS(EIG(IEIGE+NL-1)) ) )
 #endif
-          IF (IPRHAM.GE.2) THEN
-            CALL HEADER('ATMSYM: Mj_LL eigenvalues',-1)
-            WRITE(LUPRI,'(A,I2)') ' * Kappa:', ID_SUB_BL(KPADD,I)
-            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
-     &      '*** Fermion corep ',I,'/',NFSYM
-            DO II = 1,NL
-              WRITE(LUPRI,*) II,EIG(IEIGE+II-1)
-            ENDDO
-            CALL FLSHFO(LUPRI)
-          ENDIF
-          IF (IPRHAM.GE.5) THEN
-            CALL HEADER('ATMSYM: Mj_LL eigenvectors',-1)
-            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
-     &      '*** Fermion corep ',I,'/',NFSYM
-            CALL PRQMAT(WORK(KVLL),NL,NL,NL,NL,1,
-     &           IPQTOQ(1,0),LUPRI)
-            CALL FLSHFO(LUPRI)
-          ENDIF
-        ENDIF !NL.GT.0
+           IF (IPRHAM.GE.2) THEN
+             CALL HEADER('ATMSYM: Mj_LL eigenvalues',-1)
+             WRITE(LUPRI,'(A,I2)') ' * Kappa:', ID_SUB_BL(KPADD,I)
+             WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &       '*** Fermion corep ',I,'/',NFSYM
+             DO II = 1,NL
+               WRITE(LUPRI,*) II,EIG(IEIGE+II-1)
+             ENDDO
+             CALL FLSHFO(LUPRI)
+           ENDIF
+           IF (IPRHAM.GE.5) THEN
+             CALL HEADER('ATMSYM: Mj_LL eigenvectors',-1)
+             WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &       '*** Fermion corep ',I,'/',NFSYM
+             CALL PRQMAT(WORK(KVLL),NL,NL,NL,NL,1,
+     &            IPQTOQ(1,0),LUPRI)
+             CALL FLSHFO(LUPRI)
+           ENDIF
+         ENDIF !NL.GT.0
 C
 CCCCCCCCCCCCCCCCCC         
 C Small AO-MO transformation
 CCCCCCCCCCCCCCCCCC         
-        IF (NS.GT.0) THEN
-        WRITE(6,*) '* Small TSBBL2, I', I
-        CALL TSBBL2(I,2,KPADD,TBUF,WORK(KFSS),VMAT,VMAT,
-     &               WORK(KFREE),LFREE,12)
+       IF (NS.GT.0) THEN
+         CALL TSBBL2(I,2,KPADD,TBUF,WORK(KFSS),VMAT,VMAT,
+     &                WORK(KFREE),LFREE,IPRHAM)
 CCCCCCCCCCCCCCCCCC         
 C Small diagonalization
 CCCCCCCCCCCCCCCCCC         
 C
-          IF (IPRHAM.GE.6) THEN
+         IF (IPRHAM.GE.6) THEN
            CALL HEADER('ATMSYM: Mj_SS to be diagonalized',-1)
            WRITE(LUPRI,'(2X,A,L1)') 'DOJACO=',DOJACO
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
      &     '*** Fermion corep ',I,'/',NFSYM
            CALL PRQMAT(WORK(KFSS),NS,NS,NS,NS,1,
-     &          IPQTOQ(1,0),LUPRI)
-          ENDIF
+     &                  IPQTOQ(1,0),LUPRI)
+         ENDIF
 C     
 #ifdef MOD_UNRELEASED
-          IF (.NOT.DOQJACO) THEN
+         IF (.NOT.DOQJACO) THEN
 #endif
-            IF(DOJACO) THEN
-              CALL RSJACO(NS,NS,NS,WORK(KFSS),EIG(IEIGP),1,1,0,
-     &                  WORK(KVSS))
-            ELSE
-              CALL QDIAG(1,NS,WORK(KFSS),NS,NS,
-     &                EIG(IEIGP),1,
-     &                WORK(KVSS),NS,NS,
-     &                WORK(KFREE),LFREE,IERR)
-              IF (IERR.NE.0) THEN
+           IF(DOJACO) THEN
+             CALL RSJACO(NS,NS,NS,WORK(KFSS),EIG(IEIGP),1,1,0,
+     &                    WORK(KVSS))
+           ELSE
+             CALL QDIAG(1,NS,WORK(KFSS),NS,NS,
+     &                  EIG(IEIGP),1,
+     &                  WORK(KVSS),NS,NS,
+     &                  WORK(KFREE),LFREE,IERR)
+             IF (IERR.NE.0) THEN
                 WRITE(LUPRI,'(2X,A)')
-     &         'ATMSYM: Erroneous QDIAG diagonalization of Mj_SS!'
-               CALL QUIT(
-     &        'ATMSYM: Erroneous QDIAG diagonalization of Mj_SS !')
-              ENDIF
-            ENDIF
+     &          'ATMSYM: Erroneous QDIAG diagonalization of Mj_SS!'
+                CALL QUIT(
+     &         'ATMSYM: Erroneous QDIAG diagonalization of Mj_SS !')
+             ENDIF
+           ENDIF
 #ifdef MOD_UNRELEASED
-          ELSE
-            CALL QJACOBI(WORK(KFSS),WORK(KVSS),NS,1,0,IDUMMY,
-     &                   .TRUE.,IPRHAM)
-            DO II=1,NS
-              EIG(IEIGP+II-1)=  WORK(KFSS+NS*(II-1)+II-1) ! store eigenvalues
-            ENDDO
-         ENDIF
-         MJMAXS = NINT(MAX(2*ABS(EIG(IEIGE)), 2*ABS(EIG(IEIGE+NL-1))))
-#endif
-          IF (IPRHAM.GE.2) THEN
-            CALL HEADER('ATMSYM: Mj_SS eigenvalues',-1)
-            WRITE(LUPRI,'(A,I2)') ' * Kappa:', ID_SUB_BL(KPADD,I)
-            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
-     &           '*** Fermion corep ',I,'/',NFSYM
-            DO II = 1,NS
-              WRITE(LUPRI,*) II,EIG(IEIGP+II-1)
-            ENDDO
-            CALL FLSHFO(LUPRI)
-          ENDIF
-          IF (IPRHAM.GE.5) THEN
-            CALL HEADER('ATMSYM: Mj_SS eigenvectors',-1)
-            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
-     &           '*** Fermion corep ',I,'/',NFSYM
-            CALL PRQMAT(WORK(KVSS),NS,NS,NS,NS,1,
-     &           IPQTOQ(1,0),LUPRI)
-            CALL FLSHFO(LUPRI)
-          ENDIF
-        ENDIF         !NS.GT.0
-        MJMAX = MAX(MJMAXL,MJMAXS)
-        WRITE(LUPRI,'(A,I2)') ' * Max ABS(Mj*2):', MJMAX
-        IF (MJMAX.GT.MAX_SUB_BL) THEN
-          write(lupri,*) 'MAX_SUB_BL:',MAX_SUB_BL,
-     &       ' max value of Mj:',MJMAX,
-     &       ' increase max_sub_bl to ', MAXSUB        
-          CALL QUIT ("increase max_sub_bl")
-        ENDIF         
-        DO IX = IEIGP, IEIGP+NS-1
-           EIG(IX) = ABS(EIG(IX))
-        ENDDO
-C       The SELBOS routine does just the reordering that we want,
-C       use work(kfss) as scratch, and allocate a few other small
-C       scratch arrays. The IBEIG part will not be used but we will
-C       initialize it to prevent problems with uninitialized data while
-C       sorting it.
-C
-        CALL MEMGET('INTE',KINDX,NS,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIDUM,NS,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIBEI,NS,WORK,KFREE,LFREE)
-        MJ = 0
-        CALL ICOPY (NS,MJ,0,WORK(KIBEI),1)
-        CALL SELBOS (I,NS,WORK(KINDX),EIG(IEIGP),
-     &                WORK(KIBEI),WORK(KVSS),
-     &                WORK(KFSS),WORK(KIDUM),IPRHAM)
-        CALL MEMREL('ATMSYM',WORK,KINDX,KINDX,KFREE,LFREE)
-C
-        DO IX = IEIGP, IEIGP+NS-1
-           MJ = NINT(D2*EIG(IX))
-           IF(MJ.NE.MJBUF) THEN
-              MJBUF = MJ
-              MJABS = (ABS(MJ)+1)/2
-              ID_SUB_BL(KPADD+MJABS-1,I)  = MJ
-           ENDIF
-        ENDDO        
-C
-C        Same thing for the positive energy solutions
-C
-        DO IX = IEIGE, IEIGE+NL-1
-           EIG(IX) = ABS(EIG(IX))
-        ENDDO
-        CALL MEMGET('INTE',KINDX,NL,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIDUM,NL,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIBEI,NL,WORK,KFREE,LFREE)
-        MJ = 0
-        CALL ICOPY (NL,MJ,0,WORK(KIBEI),1)
-        CALL SELBOS (I,NL,WORK(KINDX),EIG(IEIGE),
-     &                WORK(KIBEI),WORK(KVLL),
-     &                WORK(KFLL),WORK(KIDUM),IPRHAM)
-        CALL MEMREL('ATMSYM',WORK,KINDX,KINDX,KFREE,LFREE)
-C
-        DO IX = IEIGE, IEIGE+NL-1
-           MJ = NINT(D2*EIG(IX))
-           IF(MJ.NE.MJBUF) THEN
-              MJBUF = MJ
-              MJABS = (ABS(MJ)+1)/2
-              ID_SUB_BL(KPADD+MJABS-1,I)  = MJ
-           ENDIF
-        ENDDO        
-C
-        KPBUF1 = NORB_SUB(KPADD,I,1)
-        KPBUF2 = NORB_SUB(KPADD,I,2)
-        DO IC = 0,2
-           NDIM = NORB_SUB(KPADD,I,IC)/IKAP 
-           DO IK = 1,IKAP
-              NORB_SUB(KPADD+IK-1,I,IC) = NDIM
+         ELSE
+           CALL QJACOBI(WORK(KFSS),WORK(KVSS),NS,1,0,IDUMMY,
+     &                  .TRUE.,IPRHAM)
+           DO II=1,NS
+             EIG(IEIGP+II-1)=  WORK(KFSS+NS*(II-1)+II-1) ! store eigenvalues
            ENDDO
-        ENDDO
+         ENDIF
+         MJMAXS=NINT(MAX(ABS(EIG(IEIGP)),ABS(EIG(IEIGP+NS-1))))
+#endif
+         IF (IPRHAM.GE.2) THEN
+           CALL HEADER('ATMSYM: Mj_SS eigenvalues',-1)
+           WRITE(LUPRI,'(A,I2)') ' * Kappa:', ID_SUB_BL(KPADD,I)
+           WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &          '*** Fermion corep ',I,'/',NFSYM
+           DO II = 1,NS
+             WRITE(LUPRI,*) II,EIG(IEIGP+II-1)
+           ENDDO
+           CALL FLSHFO(LUPRI)
+         ENDIF
+         IF (IPRHAM.GE.5) THEN
+           CALL HEADER('ATMSYM: Mj_SS eigenvectors',-1)
+           WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &          '*** Fermion corep ',I,'/',NFSYM
+           CALL PRQMAT(WORK(KVSS),NS,NS,NS,NS,1,
+     &          IPQTOQ(1,0),LUPRI)
+             CALL FLSHFO(LUPRI)
+         ENDIF
+       ENDIF                     !NS.GT.0
+C      
+       MJBUF = 0
+       DO IX = IEIGP, IEIGP+NS-1
+          MJ = NINT(D2*EIG(IX))
+          IF(MJ.NE.MJBUF) THEN
+             MJBUF = MJ
+             MJABS = (ABS(MJ)+1)/2
+             ID_SUB_BL(KPADD+MJABS-1,I) = (-1)**(I+1) * (KPADD+MJABS-1)
+          ENDIF
+       ENDDO        
 C
-         IOFS = 0
-         IOFL = 0
-            WRITE(*,*)"IOFVL", IOFVL
-            WRITE(*,*)"IOFVS", IOFVS
-         IOFVL = IOFVL + NFBAS(I,0)*NL
-         DO IK = 1,IKAP
-            WRITE(*,*)"NORB_SUB",NORB_SUB(KPADD,I,2)
-            WRITE(*,*)"IKAP", IKAP
-            WRITE(*,*)"IOFVL", IOFVL
-            WRITE(*,*)"IOFVS", IOFVS
-            CALL BCKTRA(TMAT(IOFT),NFBAS(I,0),NORB_SUB(KPADD+IK-1,I,2),
+       DO IX = IEIGP, IEIGP+NS-1
+          EIG(IX) = ABS(EIG(IX))
+       ENDDO
+C      The SELBOS routine does just the reordering that we want,
+C      use work(kfss) as scratch, and allocate a few other small
+C      scratch arrays. The IBEIG part will not be used but we will
+C      initialize it to prevent problems with uninitialized data while
+C      sorting it.
+C
+       CALL MEMGET('INTE',KINDX,NS,WORK,KFREE,LFREE)
+       CALL MEMGET('INTE',KIDUM,NS,WORK,KFREE,LFREE)
+       CALL MEMGET('INTE',KIBEI,NS,WORK,KFREE,LFREE)
+       MJ = 0
+       CALL ICOPY (NS,MJ,0,WORK(KIBEI),1)
+       CALL SELBOS (I,NS,WORK(KINDX),EIG(IEIGP),
+     &               WORK(KIBEI),WORK(KVSS),
+     &               WORK(KFSS),WORK(KIDUM),IPRHAM)
+       CALL MEMREL('ATMSYM',WORK,KINDX,KINDX,KFREE,LFREE)
+C
+C       Same thing for the positive energy solutions
+C
+       MJBUF = 0
+       DO IX = IEIGE, IEIGE+NL-1
+          MJ = NINT(D2*EIG(IX))
+          IF(MJ.NE.MJBUF) THEN
+             MJBUF = MJ
+             MJABS = (ABS(MJ)+1)/2
+             ID_SUB_BL(KPADD+MJABS-1,I)  = (-1)**(I+1) * (KPADD+MJABS-1)
+          ENDIF
+       ENDDO        
+C
+       DO IX = IEIGE, IEIGE+NL-1
+          EIG(IX) = ABS(EIG(IX))
+       ENDDO
+       CALL MEMGET('INTE',KINDX,NL,WORK,KFREE,LFREE)
+       CALL MEMGET('INTE',KIDUM,NL,WORK,KFREE,LFREE)
+       CALL MEMGET('INTE',KIBEI,NL,WORK,KFREE,LFREE)
+       MJ = 0
+       CALL ICOPY (NL,MJ,0,WORK(KIBEI),1)
+       CALL SELBOS (I,NL,WORK(KINDX),EIG(IEIGE),
+     &               WORK(KIBEI),WORK(KVLL),
+     &               WORK(KFLL),WORK(KIDUM),IPRHAM)
+       CALL MEMREL('ATMSYM',WORK,KINDX,KINDX,KFREE,LFREE)
+C       
+       DO IC = 0,2
+          NDIM = NORB_SUB(KPADD,I,IC)/IKAP 
+          DO IK = 1,IKAP
+             NORB_SUB(KPADD+IK-1,I,IC) = NDIM
+          ENDDO
+       ENDDO
+C
+C     Write information to output
+C
+       KP = IKAP * (-1)**(I+IKAP+1)
+       DO IK = 1,IKAP
+         ID     = ID_SUB_BL(KPADD+IK-1,I)
+         INDEX1 = INT(SQRT(dble(2*ABS(ID)) + 0.25D0) + 0.4999D0)
+         INDEX2 = ABS(ID) - INDEX1*(INDEX1-1)/2
+         MJ     = (2*INDEX2 - 1) * (-1)**(INDEX2+1)              
+         WRITE (LUPRI,1020) 3-2*I,KP,MJ,
+     &          (NORB_SUB(KPADD+IK-1,I,IC),IC=0,2)
+       ENDDO       
+C
+       IOFS = 0
+       IOFL = 0
+       IOFVL = IOFVL + NFBAS(I,0)*NS
+       DO IK = 1,IKAP
+          CALL BCKTRA(TMAT(IOFT),NFBAS(I,0),NORB_SUB(KPADD+IK-1,I,2),
      &                 WORK(KVSS+IOFS),NS,NORB_SUB(KPADD+IK-1,I,2),
      &                 NS,1,
      &                 NORB_SUB(KPADD+IK-1,I,2),1,NFBAS(I,0),
      &                 VMAT(IOFVS),NFBAS(I,0),NS,1,
      &                 IPRHAM)
 C...  Update small here: : WORK(KVSS+IOFS),VMAT(IOFV),TMAT(IOFV)
-            IOFS = IOFS + NS*NORB_SUB(KPADD+IK-1,I,2)
-            IOFT = IOFT + NFBAS(I,0)*NORB_SUB(KPADD+IK-1,I,2)
-            CALL BCKTRA(TMAT(IOFT),NFBAS(I,0),NORB_SUB(KPADD+IK-1,I,1),
+          IOFS = IOFS + NS*NORB_SUB(KPADD+IK-1,I,2)
+          IOFT = IOFT + NFBAS(I,0)*NORB_SUB(KPADD+IK-1,I,2)
+          CALL BCKTRA(TMAT(IOFT),NFBAS(I,0),NORB_SUB(KPADD+IK-1,I,1),
      &                 WORK(KVLL+IOFL),NL,NORB_SUB(KPADD+IK-1,I,1),
      &                 NL,1,
      &                 NORB_SUB(KPADD+IK-1,I,1),1,NFBAS(I,0),
      &                 VMAT(IOFVL),NFBAS(I,0),NL,1,
      &                 IPRHAM)
 C...  Update large here: : WORK(KVLL+IOFL),VMAT(IOFV),TMAT(IOFV)
-            IOFL = IOFL + NL*NORB_SUB(KPADD+IK-1,I,1)
-            IOFT = IOFT + NFBAS(I,0)*NORB_SUB(KPADD+IK-1,I,1)
-         ENDDO                  ! IK = 1,IKAP        
-         IOFVS = IOFVS + NFBAS(I,0)*(NL+NS)
-         IOFVL = IOFVL + NFBAS(I,0)*NS
-      ENDDO                     ! IKAP = 2,KPMAX(I)
+          IOFL = IOFL + NL*NORB_SUB(KPADD+IK-1,I,1)
+          IOFT = IOFT + NFBAS(I,0)*NORB_SUB(KPADD+IK-1,I,1)
+        ENDDO  ! IK = 1,IKAP        
+        IOFVS = IOFVS + NFBAS(I,0)*(NL+NS)
+        IOFVL = IOFVL + NFBAS(I,0)*NS
+      ENDDO  ! IKAP = 2,KPMAX(I)
 C        
       CALL MEMREL('ATMSYM',WORK,KFLL,KFLL,KFREE,LFREE)      
 C         
@@ -7127,6 +7120,7 @@ C
  1000 FORMAT
      & (/' Parity  Kappa  Functions(total) Functions(LC) Functions(SC)')
  1010 FORMAT (T5,I2,T9,I3,T20,I5,T33,I5,T46,I5)
+ 1020 FORMAT (T5,I2,T9,I3,T13,I4,'/2',T25,I5,T39,I5,T53,I5)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck amjmat */
@@ -7220,7 +7214,6 @@ C
      &        OP1INT,FIRST,IPRHAM)
       CALL MEMGET('REAL',KBUF,N2BBASX,WORK,KFREE,LFREE)
       CALL DSPTSI(NTBAS(0),FTRI,WORK(KBUF))
-!      write(*,*)"IPSPNMOM",IPSPNMOM !sunaga
 C     
 C     Make the Jz operator (in case of spinfree we make Lz)
 C     =====================================================
@@ -7335,8 +7328,6 @@ C     Get integrals of component of the Spin-orbit operatar
 C
       FIRST = .TRUE.
       IOP =  IPSPNORB
-      write(*,*)"IPSPNORB",IPSPNORB
-      write(*,*)""
       CALL PRPMAO(LU1INT,IOP,.TRUE.,NNBBASX,FTRI,
      &        OP1INT,FIRST,IPRHAM)
       CALL DSPTSI(NTBAS(0),FTRI,FOCK)
@@ -7346,8 +7337,6 @@ C     ===============================================
 C
       FIRST = .TRUE.
       IOP =  IPOVRLAP
-      write(*,*)"IPOVRLAP",IPOVRLAP
-      write(*,*)""
       CALL PRPMAO(LU1INT,IOP,.TRUE.,NNBBASX,FTRI,
      &         OP1INT,FIRST,IPRHAM)
       CALL MEMGET('REAL',KBUF,N2BBASX,WORK,KFREE,LFREE)
@@ -8618,4 +8607,4 @@ C***********************************************************************
       rewind (lupot)
 
       end
-! -- end of dirone.F --
+! -- end of diro

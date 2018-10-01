@@ -649,7 +649,8 @@ C
 #else
       DIMENSION SMAT(NTBAS(0),NTBAS(0))
 #endif
-      CHARACTER FMT*6,MXFORM*6,SYMLAB*9
+      CHARACTER FMT*6,MXFORM*6,SYMLAB*9,SYMLAB2*11
+      CHARACTER SPDCAR*1 ! type declaration for external function      
       DIMENSION PMAT(NPOPLAB,NPOPLAB,2),JVEC(*),OCC(*),OCC2(*),
      &          CMO(NCBAS,NPVECS+NEVECS,NZ),EIG(*),IBEIG(*),IPGRS(*),
      &          POPG(NPOPLAB,2),IEFF(NPOPLAB),
@@ -694,7 +695,7 @@ C       ... CI-NOs
 CSKdebug CALL WRTMATMN(OCC,1,NORBT,1,NORBT,LUPRI)
 c
        IF (IPRPOP .GE. 0) THEN
-        IF(I.GT.NPVECS) THEN
+        IF(I.GT.NPVECS) THEN  !!!!
           II = NPSH(IFRP)+JVEC(I)
           FMT = MXFORM(EIG(II),16)
           IF (KRMC_FLG.gt.0 )THEN
@@ -721,31 +722,56 @@ C             ... CI-NOs, MP2-NOs,...
               END IF
             END IF
           ELSE
-             IF(SPINFR) THEN
-               ID = IBEIG(II)
-               WRITE(SYMLAB,'("sym= ",A3,1X)') REP(ID)
-             ELSEIF(LINEAR) THEN
-               ID = IBEIG(II)
-               WRITE(SYMLAB,'("m_j=",I3,"/2")') ID
-             ENDIF
-             WRITE(LUPRI,'(/A,I4,A,'//FMT//',A,F6.4,A,2X,A9)')
-     &          '* Electronic eigenvalue no.',JVEC(I),': ',
-     &          EIG(II),'       (Occupation : f = ',OCC2(I),')',
-     &          SYMLAB
-          END IF
-        ELSE
+            INDEX1 = 0 
+            INDEX2 = 0 
+            KP = 0 
+            MJ = 0             
+            IF(SPINFR) THEN
+              ID = IBEIG(II)
+              WRITE(SYMLAB,'("sym= ",A3,1X)') REP(ID)
+            ELSEIF(ATOMIC) THEN
+              ID = IBEIG(II)
+C...from dirac/dirout.F  SUBROUTINE PREIGN1       
+              INDEX1 = INT(SQRT(dble(2*ABS(ID)) + 0.25D0) + 0.4999D0)
+              INDEX2 = ABS(ID) - INDEX1*(INDEX1-1)/2
+              KP     = INDEX1         * (-1)**(IFRP+INDEX1+1)
+              MJ     = (2*INDEX2 - 1) * (-1)**(INDEX2+1)
+              J      = 2*ABS(KP) - 1
+              IF(KP.GT.0)THEN
+                 LL = ABS(KP)
+              ELSE   
+                 LL = ABS(KP)-1
+              ENDIF
+              WRITE(SYMLAB2,'(A,I2,"/2",";",I3,"/2")') SPDCAR(LL),J,MJ
+            ELSEIF(LINEAR) THEN
+              ID = IBEIG(II)
+              WRITE(SYMLAB,'("m_j=",I3,"/2")') ID
+            ENDIF
+C           
+            IF(ATOMIC)THEN
+              WRITE(LUPRI,'(/A,I4,A,'//FMT//',A,F6.4,A,2X,A11)')
+     &           '* Electronic eigenvalue no.',JVEC(I),': ',
+     &           EIG(II),'   (Occupation : f = ',OCC2(I),')',
+     &           SYMLAB2
+            ELSE
+              WRITE(LUPRI,'(/A,I4,A,'//FMT//',A,F6.4,A,2X,A9)')
+     &           '* Electronic eigenvalue no.',JVEC(I),': ',
+     &           EIG(II),'       (Occupation : f = ',OCC2(I),')',
+     &           SYMLAB
+            ENDIF   
+          END IF   !  IF (KRMC_FLG.gt.0 )
+        ELSE       !  IF(I.GT.NPVECS)
           II  = NPSH(IFRP)+1+JVEC(I)
           FMT = MXFORM(EIG(II),16)
           IF (KRMC_FLG.GT.0) THEN
              WRITE(LUPRI,'(/A,I3)')
      &       '* Positronic eigenvalue no.',II
           ELSE
-             WRITE(LUPRI,'(/A,I4,A,'//FMT//',A,F6.4,A,2X,A9)')
-     &          '* Positronic eigenvalue no.',II,': ',
-     &          EIG(II),'       (Occupation : f = ',OCC2(I),')',
-     &          SYMLAB
-          END IF
-        END IF
+            WRITE(LUPRI,'(/A,I4,A,'//FMT//',A,F6.4,A,2X,A8)')
+     &         '* Positronic eigenvalue no.',II,': ',
+     &         EIG(II),'       (Occupation : f = ',OCC2(I),')'
+          END IF  
+        END IF    ! IF(I.GT.NPVECS)
         CALL PRSYMB(LUPRI,'=',90,0)
        END IF ! (IPRPOP .GE. 0)
 C
@@ -1894,6 +1920,8 @@ C- omit point charges
           IPOPLAB(I)         = ICENT_DEP
           CHRGNUC(ICENT_DEP) = CHARGE(ICENT)
           POPLAB(ICENT_DEP)  = '    '//NAMDEP(ICENT_DEP)
+!!!     sunaga
+          write(*,*)"NAMDEP(ICENT_DEP)1 ",NAMDEP(ICENT_DEP),ICENT_DEP
           IF (.NOT. NOORBT(ICENT)) THEN   ! omit point charges
             NPOPLAB = MAX(NPOPLAB, ICENT_DEP)
           END IF
@@ -1910,6 +1938,8 @@ C- combine all large and small component types for each center
         NPOPLAB = NUCDEP
         DO I = 1,NPOPLAB
            POPLAB(I) = '    '//NAMDEP(I)
+!!!     sunaga
+           write(*,*)"NAMDEP2 ",NAMDEP(ICENT_DEP),ICENT_DEP
         END DO
         GO TO 8000
       END IF
@@ -1917,6 +1947,8 @@ C- large component types
       IF(.NOT.LABDEF) THEN
         DO I = 1,NPLAB(1)
           POPLAB(I) = PLABEL(I,ILABDF)
+!!!     sunaga
+          write(*,*)"PLABEL3 ",PLABEL(I,ILABDF)
           IPOPLAB(I)  = I
         ENDDO
         NPOPLAB = NPLAB(1)
@@ -1931,6 +1963,8 @@ C- combine all small component types for each center
           IF(ICENT.NE.JCENT.OR.IDEG.NE.JDEG) THEN
             NPOPLAB = NPOPLAB + 1
             POPLAB(NPOPLAB) = PLABEL(I,ILABDF)(3:8)//'_small'
+!!!     sunaga
+          write(*,*)"PLABEL4 ",PLABEL(I,ILABDF)
             JCENT = ICENT
             JDEG  = IDEG
           ENDIF
@@ -1941,6 +1975,8 @@ C- individual small component types
         IF(.NOT.LABDEF) THEN
           DO I = NPLAB(1)+1,NPLAB(0)
             POPLAB(I) = PLABEL(I,ILABDF)
+!!!     sunaga
+          write(*,*)"PLABEL5 ",PLABEL(I,ILABDF)
             IPOPLAB(I)  = I
           ENDDO
           NPOPLAB = NPOPLAB + NPLAB(2)
