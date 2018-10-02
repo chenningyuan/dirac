@@ -149,6 +149,7 @@ dirac_test(lucita_q_corrections "short;qcorr;ci" "")
 dirac_test(x2c-SCF_to_4c-SCF "short;x2c;4c;scf" "")
 dirac_test(import_mos "short;import;scf;mcscf" "")
 dirac_test(operators_mo_mtx_elements "short;operators" "")
+dirac_test(spinorbit-from-spinfree "short;scf;resolve" "")
 # disabing eomcc expectation value test until the code is verified
 #dirac_test(eomcc_expval "short;cc" "")
 
