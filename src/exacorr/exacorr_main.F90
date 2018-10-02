@@ -4,6 +4,10 @@
 
    program exacorr_main
 
+#if defined (VAR_MPI) 
+      use interface_to_mpi
+#endif
+
       use exacorr_global,only   : get_talsh_only
       use exacorr_ao_to_mo,only : exacorr_compute_mo_integrals
       use talsh_ao_to_mo,only   : talsh_compute_mo_integrals
@@ -21,8 +25,10 @@
       mo_transform   = .true.
       cc_calculation = .true.
 
+#if defined (VAR_MPI) 
+      call interface_mpi_init()
+#endif
       print*, "hello world, exacorr_main speaking"
-      print*, "we will test a transform with just two orbitals"
 
       nmo = 2
       allocate(mo_list(nmo(1)+nmo(2)+nmo(3)+nmo(4)))
@@ -34,6 +40,7 @@
       end do
 
       if (mo_transform) then
+         print*, "we will test a transform with ",nmo," orbitals"
          if (get_talsh_only()) then
             call talsh_compute_mo_integrals (nmo, mo_list)
          else
@@ -41,7 +48,6 @@
          end if
       end if
 
-      print*, "and now a CC calculation with two occupied and six virtuals"
       nocc = 2
       nvir  = 6
       allocate(mo_occ(nocc))
@@ -54,11 +60,16 @@
       end do
 
       if (cc_calculation) then
+         print*, "a CC calculation with",nocc," occupied"," and ",nvir," virtuals"
          if (get_talsh_only()) then
             call cc_driver (nocc,nvir,mo_occ,mo_vir)
          else
             print*, "exacorr cc not yet available"
          end if
       end if
+
+#if defined (VAR_MPI) 
+      call interface_mpi_finalize()
+#endif
 
    end program exacorr_main

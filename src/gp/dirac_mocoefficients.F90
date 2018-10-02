@@ -126,32 +126,41 @@ contains
 
 #if defined (VAR_MPI)
 
-  subroutine SyncMO (M, mparid)
+  subroutine SyncMO (M,my_MPI_master)
    
-!   Synchronize an already allocated block of MOcoefficients
+    use interface_to_mpi
+
+!   Synchronize and allocate (if not on master) a block of MOcoefficients
  
     type (MO), intent (inout)   :: M
-    integer, intent(in)         :: mparid
-    integer                     :: n_coef, ierr
-    INCLUDE 'mpif.h'
+    integer, intent(in)         :: my_MPI_master
+    integer                     :: my_MPI_rank
+    integer                     :: n_coef
 
-    call mpi_bcast (M%fermion_irrep,    1,mpi_integer,mparid,mpi_comm_world,ierr)
-    call mpi_bcast (M%boson_irrep,  M%nmo,mpi_integer,mparid,mpi_comm_world,ierr)
-    call mpi_bcast (M%index,        M%nmo,mpi_integer,mparid,mpi_comm_world,ierr)
-    call mpi_bcast (M%energy,       M%nmo,mpi_double_precision,mparid,mpi_comm_world,ierr)
+    call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
+    call interface_mpi_bcast (M%nao,1,my_MPI_master,global_communicator)
+    call interface_mpi_bcast (M%nmo,1,my_MPI_master,global_communicator)
+    call interface_mpi_bcast (M%nz ,1,my_MPI_master,global_communicator)
+    if (my_MPI_rank /= my_MPI_master) then
+       call AllocMO (M,M%nao,M%nmo,M%nz)
+    end if
+    call interface_mpi_bcast (M%fermion_irrep,    1,my_MPI_master,global_communicator)
+    call interface_mpi_bcast (M%boson_irrep,  M%nmo,my_MPI_master,global_communicator)
+    call interface_mpi_bcast (M%index,        M%nmo,my_MPI_master,global_communicator)
+    call interface_mpi_bcast (M%energy,       M%nmo,my_MPI_master,global_communicator)
     n_coef = M%nao * M%nmo * M%nz
-    call mpi_bcast (M%coeff,n_coef,mpi_double_precision,mparid,mpi_comm_world,ierr)
+    call interface_mpi_bcast (M%coeff,n_coef,my_MPI_master,global_communicator)
 
   end subroutine SyncMO
 
 #else
 
-  subroutine SyncMO (M, mparid)
+  subroutine SyncMO (M,my_MPI_master)
  
 !   do nothing, makes it possible to call sync also in serial runs
 
     type (MO), intent (inout)   :: M
-    integer, intent(in)         :: mparid
+    integer, intent(in)         :: my_MPI_master
 
   end subroutine SyncMO
 

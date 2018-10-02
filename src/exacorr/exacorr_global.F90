@@ -13,6 +13,7 @@ module exacorr_global
         type(basis_set_info_t) :: ao_basis ! information about the ao basis 
         type(MO):: qmo_all ! Stores all MO-coefficients and energies obtained from the parent code 
         logical :: TALSH_ONLY = .TRUE. ! use single-node TALSH library instead of the full EXATENSOR library
+        logical, public, parameter :: DEBUG = .FALSE. ! switch on and off debug
 
 !       Functions and routines to interact with these data
         public ncartesian
@@ -77,8 +78,11 @@ module exacorr_global
              integer :: ish
              integer :: my_MPI_rank
 
+!            The next line is to be commented out when running the stand-alone code
              if (TALSH_ONLY) return
              call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
+
+             call sync_qmo(qmo_all,my_MPI_master)
 
              call interface_mpi_bcast (ao_basis%nshells,1,my_MPI_master,global_communicator)
              call interface_mpi_bcast (ao_basis%nao,1,my_MPI_master,global_communicator)

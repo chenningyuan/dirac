@@ -80,6 +80,10 @@ module talsh_ao_to_mo
 !        Transform to MO basis
          ierr=talsh_tensor_construct(moint_tensor,C8,moint_dims,init_val=zero)
          call aomo_transform (aoint_tensor,moint_tensor,nmo,mo_list)
+         if (debug) then
+            print*, "AOint = ",talshTensorImageNorm1_cpu(aoint_tensor)
+            print*, "MOint = ",talshTensorImageNorm1_cpu(moint_tensor)
+         end if
 
 !        Write to old format MO-integrals file to allow for easy debugging of the integral transform
          ierr=talsh_tensor_get_body_access(moint_tensor,body_p,C8,0,DEV_HOST)

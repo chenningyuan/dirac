@@ -68,7 +68,6 @@ module exacorr_cc
          integer :: iccsd, nccsd
          real(8) :: mp2_energy, ccsd_energy, t_energy(3), t_convergence
          real(8), parameter :: t_target_precision = 1.D-13
-         logical, parameter :: debug=.false.
 
 !        Make some noise so that we know we are here
          print*, " Arrived in cc_driver routine"
