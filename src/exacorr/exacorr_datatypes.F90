@@ -16,9 +16,12 @@
          real(REALD), pointer :: exponent(:)
          real(REALD), pointer :: coefficient(:)
         end type basis_func_info_t
- !Molecular spinor info:
-        type, public:: mo_spinor_info_t
-         integer:: symmetry=0            !molecular spinor irreducible representation (0: no symmetry)
-        end type mo_spinor_info_t
+ !Basis set info:
+        type, public:: basis_set_info_t
+         integer:: nshells=0             !number of shells in the basis set
+         integer:: nao=0                 !number of basis functions
+         type(basis_func_info_t), pointer:: gtos(:)
+         integer, pointer :: shell_indices(:)
+        end type basis_set_info_t
 
        end module exacorr_datatypes

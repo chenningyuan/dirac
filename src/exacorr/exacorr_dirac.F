@@ -135,33 +135,12 @@ C
 
       end
 
-       integer function Number_AOShells()
-
-!      Read information from common block to get a cleaner interface
-
-#include "implicit.h"
-#include "maxorb.h"
-#include "shells.h"
-
-       Number_AOShells = nlrgsh
-
-       end
-
-       integer function Number_AOs(ils)
-
-!      Get the number of basis functions (0:total, 1:large component, 2:small component)
-
-#include "implicit.h"
-#include "dcbbas.h"
-
-       Number_AOs = nfbas(1,ils)
-
-       end
-
        subroutine Initialize_Shells (shell,ierr)
 
 !      get information from common blocks about the basis set
 !      raise an error for contracted sets that can not yet be handled by Interest
+
+!      NB: this routine is outdated, replaced by read_from_dfcoef. Just keeping it in case we still need it.
 
        use exacorr_datatypes
 
@@ -246,10 +225,11 @@ C
 
        end subroutine compress_unc_shell
   
-       subroutine read_from_dfcoef (nao,nshells,gtos,qmo,ierr)
+       subroutine read_from_dfcoef (ao_basis,qmo,ierr)
   
        use dirac_mo
        use exacorr_datatypes
+       use exacorr_global,only: ncartesian
 
        implicit none
 
@@ -257,9 +237,8 @@ C
 !      check for imcompatibiklities (use of symmetry) as well and continue
 !      by reading also the basis set information into gtos
 
-       integer, intent(in)    :: nao,nshells
+       type(basis_set_info_t), intent(inout) :: ao_basis
        type(MO), intent(inout):: qmo
-       type(basis_func_info_t), intent(inout) :: gtos(nshells)
        integer, intent(out)   :: ierr 
        integer, parameter     :: NOERROR  = 0 ! no error
        integer, parameter     :: NOTFOUND = 1 ! file not found
@@ -275,7 +254,7 @@ C
        logical                :: tobe
        integer                :: lucoef
        integer                :: i, j, k, ishell, iprimstart, iprimend
-       integer                :: nao_coef, nao_bas, nshells_bas
+       integer                :: nao, nao_bas, nshells, iao, ibas
        integer                :: nmo, npo, nto, npriexp, ncnt
        integer, parameter     :: nz = 4 ! we use no symmetry, so always have this
        real(8), allocatable   :: coeff(:,:,:),eig(:)
@@ -305,17 +284,11 @@ C
           ierr = SYMMETRY
           return
        else
-          nao_coef = idim(3,1) ! number of basis functions
+          nao = idim(3,1) ! number of basis functions
           npo = idim(1,1) ! "positronic" (= negative energy) solutions (can be thrown away for our purposes)
           nmo = idim(2,1) ! "electronic" (= positive energy) solutions (we only need these)
           nto = npo+nmo   ! total number of solutions on this file
           if (npo > 0) print*, "warning: reading from 4C DFCOEF file" ! this warning will go once we have the full index transform implementedd
-       end if
-
-       ! Consistency check: does the number of ao's match the expected number ?
-       if (nao_coef /= nao) then
-          ierr = INCONSIS
-          return
        end if
 
        allocate(coeff(nao,nto,nz))
@@ -346,8 +319,8 @@ C
        deallocate(index)
 
        ! read the basis set information and check for consistency
-       read (LUCOEF,err=20,end=20) nao_bas,nshells_bas,npriexp,ncnt 
-       if (nao /= nao_bas .or. nshells /= nshells_bas) then
+       read (LUCOEF,err=20,end=20) nao_bas,nshells,npriexp,ncnt 
+       if (nao /= nao_bas) then
           ierr = INCONSIS
           return
        end if
@@ -374,22 +347,27 @@ C
        read (LUCOEF,err=20,end=20) priccf
 
        ! put in gtos
+       ao_basis%nshells = nshells
+       ao_basis%nao     = nao
+       nullify(ao_basis%gtos)
+       allocate(ao_basis%gtos(nshells))
        do ishell = 1, nshells
-          gtos(ishell)%orb_momentum = nhkt(ishell)
-          gtos(ishell)%atom_number  = ncent(ishell)
-          gtos(ishell)%n_primitives = nuco(ishell)
-          nullify  (gtos(ishell)%exponent) 
-          allocate (gtos(ishell)%exponent(nuco(ishell)))
-          nullify  (gtos(ishell)%coefficient)
-          allocate (gtos(ishell)%coefficient(nuco(ishell)))
+          ao_basis%gtos(ishell)%orb_momentum = nhkt(ishell)
+          ao_basis%gtos(ishell)%atom_number  = ncent(ishell)
+          ao_basis%gtos(ishell)%n_primitives = nuco(ishell)
+          nullify  (ao_basis%gtos(ishell)%exponent) 
+          allocate (ao_basis%gtos(ishell)%exponent(nuco(ishell)))
+          nullify  (ao_basis%gtos(ishell)%coefficient)
+          allocate (ao_basis%gtos(ishell)%coefficient(nuco(ishell)))
           iPrimStart = jstrt(ishell) + 1
           iPrimEnd   = jstrt(ishell) + nuco(ishell)
           k          = numcf(ishell)
-          gtos(ishell)%exponent = priexp(iPrimStart:iPrimEnd)
-          gtos(ishell)%coefficient = priccf(iPrimStart:iPrimEnd,k)
-          gtos(ishell)%coord = cent(ishell,1:3)
+          ao_basis%gtos(ishell)%exponent = priexp(iPrimStart:iPrimEnd)
+          ao_basis%gtos(ishell)%coefficient = 
+     &                                   priccf(iPrimStart:iPrimEnd,k)
+          ao_basis%gtos(ishell)%coord = cent(ishell,1:3)
 !         In DIRAC uncontracted shells are stored as quasi-contracted, fix this.
-          call compress_unc_shell (gtos(ishell),ierr)
+          call compress_unc_shell (ao_basis%gtos(ishell),ierr)
           if (ierr == 1) ierr = CONTRAC
        end do
 
@@ -401,6 +379,25 @@ C
        deallocate(cent)
        deallocate(priexp)
        deallocate(priccf)
+
+       ! make array with pointers from a basis function index to its shell
+       nullify(ao_basis%shell_indices)
+       allocate(ao_basis%shell_indices(nao))
+       iao = 0
+       do ishell = 1, nshells
+          do ibas = 1, ncartesian(ao_basis%gtos(ishell)%orb_momentum)
+             iao = iao + 1
+             if (iao.gt.nao) then
+                ierr = INCONSIS
+                call quit ('Error in read_from_dfcoef')
+             endif
+             ao_basis%shell_indices(iao) = ishell
+          end do
+       end do
+       if (iao.gt.nao) then
+          ierr = INCONSIS
+          call quit ('Error in read_from_dfcoef')
+       endif
 
        close (lucoef,status='KEEP')
 
