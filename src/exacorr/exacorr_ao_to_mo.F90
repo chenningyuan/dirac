@@ -19,6 +19,7 @@ module exacorr_ao_to_mo
 
 !        Written by Lucas Visscher, march 2018
 
+         use interface_to_mpi
          use dirac_MO
          use exacorr_datatypes
          use exacorr_global
@@ -28,19 +29,15 @@ module exacorr_ao_to_mo
          use exatensor
          use, intrinsic:: ISO_C_BINDING
 
-#ifdef USE_MPI_MOD_F90
-         use mpi
+
          implicit none
-#else
-         implicit none
-#include "mpif.h"
-#endif
 
          integer, intent(in) :: nmo(4)       ! the size of the mo basis for each of the 4 indices (mulliken ordering)
          integer, intent(in) :: mo_list(:)   ! and their indices (4 lists consecutively)
 
          integer             :: i, ierr
          integer             :: nshells                    ! the number of shells (orbitals with the same center and l-value)
+         integer             :: nao                        ! the number of atomic orbitals)
          type(basis_func_info_t), allocatable :: gto(:)    ! array with information about the shells
 
          type(subspace_basis_t):: basis_ao
@@ -48,14 +45,16 @@ module exacorr_ao_to_mo
          integer(INTL):: nao_l,labs, ao_space_root
          class(h_space_t), pointer:: ao_space
          integer:: mpi_th_provided, my_rank,my_role, ao_space_id
-         integer:: nao, lsh, l, nl
+         integer:: lsh, l, nl
+         integer:: l_col=1
 
          type(tens_rcrsv_t):: aoint_tensor
 !later   type(tens_rcrsv_t):: moint_tensor
          type(compute_2e_ao_tensor_t) :: aoint_calculator
+         type(tens_init_test_t):: init1369
 
 !        Make some noise so that we know we are here
-         call MPI_Comm_rank(MPI_COMM_WORLD,my_rank,ierr)
+         call interface_mpi_comm_rank(global_communicator,my_rank)
          print*, " Process", my_rank," arrived in compute_mo_integrals_exa routine"
 
 !        Initialize libraries
@@ -63,61 +62,79 @@ module exacorr_ao_to_mo
          call initialize_global_data
 
          nao     = get_nao()
-         nao_l   = nao ! copy of nao to a long integer
+         nao_l   = int(nao,8)
 
 !        Get the basis set information
          call get_gtos(1,nao,gto,nshells)
+         print*,"my_rank,nao,nshells",my_rank,nao,nshells
 
          !Create a basis for a vector space:
+         ierr = 0
          call basis_ao%subspace_basis_ctor(nao_l,ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.subspace_basis_ctor() failed!')
          !This needs to be an array that is persistent on all nodes
          allocate(color(nshells))
-         if(ierr.ne.0) call quit('subspace_basis_t.subspace_basis_ctor() failed!')
 
          labs = 0
          do lsh = 1, nshells !set basis functions
             nl   =  ncartesian(gto(lsh)%orb_momentum)
-            call color(lsh)%color_symmetry_ctor(lsh) ! for the moment take one shell as a color
+!           call color(lsh)%color_symmetry_ctor(lsh) ! for the moment take one shell as a color
+            call color(lsh)%color_symmetry_ctor(l_col) ! give the all the same color
             do  l = 1, nl
                 labs = labs + 1
                 call basis_ao%set_basis_func(labs,BASIS_ABSTRACT,ierr,symm=color(lsh))
-                if(ierr.ne.0) call quit('subspace_basis_t.set_basis_func() failed!')
+                if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.set_basis_func() failed!')
             end do
          enddo
 
          call basis_ao%finalize(ierr)
-         if(ierr.ne.0) call quit('subspace_basis_t.finalize() failed!')
+         if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.finalize() failed!')
 
          !Register a vector space:
          ierr=exatns_space_register('AO_space',basis_ao,ao_space_id,ao_space)
-         if(ierr.ne.0) call quit('exatns_space_register() failed!')
+         print*,"my_rank registered vector space, ierr=",my_rank,ierr
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register() failed!')
 
-         print*, " Process", my_rank," leaves compute_mo_integrals_exa routine"
-         call delete_global_data
-         return ! quit here because the stuff below still requires debugging 
+         call init1369%tens_init_test_ctor(13.69d0)
+         ierr=exatns_method_register('SetTo13.69',init1369)
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
 
          !Register the ao integral generation as a method
          ierr=exatns_method_register('Aoint_calculator',aoint_calculator)
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
 
 !        Run ExaTENSOR within MPI_COMM_WORLD:
-         ierr=exatns_start(MPI_COMM_WORLD)
+         ierr=exatns_start(global_communicator)
          if(ierr.eq.EXA_SUCCESS) then
           ierr=exatns_process_role(my_role)
+          print*,"i am ",my_rank,my_role
           if(my_role.eq.EXA_DRIVER) then
 
            !Create ao-tensor:
+           print*,"i am ",my_rank,my_role," and will create a tensor"
+
            ao_space_root=ao_space%get_root_id(ierr)
+           print*,"root id and ierr",ao_space_root,ierr
            ierr=exatns_tensor_create(aoint_tensor,'ao_tensor',(/(ao_space_id,i=1,4)/),(/(ao_space_root,i=1,4)/),EXA_DATA_KIND_C8)
+           print*,"error code for create:",ierr
+           if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
 
            !Initialize ao-tensor:
-           ierr=exatns_tensor_init(aoint_tensor,'Aoint_calculator')
+           ierr=exatns_tensor_init(aoint_tensor,'SetTo13.69')
+           if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_tensor_init() failed!')
+           ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
+
+           !Initialize ao-tensor:
+!          ierr=exatns_tensor_init(aoint_tensor,'Aoint_calculator')
+!          ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
 
            !Destroy ao-tensor:
            ierr=exatns_tensor_destroy(aoint_tensor)
-          end if
 
-          !Stop ExaTENSOR runtime:
-          ierr=exatns_stop()
+           !Stop ExaTENSOR runtime:
+           ierr=exatns_stop()
+
+          end if
 
          else
           write(*,*) ' Process ',my_rank,' terminated with error ',ierr

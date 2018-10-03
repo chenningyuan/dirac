@@ -3,9 +3,19 @@ module exacorr_tensor_methods
 !This module contains routines to modify (initialize, scale with denominators, etc.) that can be registered with exatensor
 
         use exatensor
+        use, intrinsic:: ISO_C_BINDING
 
         implicit none
         private
+
+        type, extends(tens_method_uni_t), public:: tens_init_test_t
+         complex(8), private:: init_val=(0d0,0d0)
+         contains
+          procedure, private:: TensInitTestCtorReal
+          procedure, private:: TensInitTestCtorComplex
+          generic, public:: tens_init_test_ctor=>TensInitTestCtorReal,TensInitTestCtorComplex
+          procedure, public:: apply=>TensInitTestApply
+        end type tens_init_test_t
 
         !Block-wise initializer for the 2e AO integral tensor:
         type, extends(tens_method_uni_t), public:: compute_2e_ao_tensor_t
@@ -20,6 +30,60 @@ module exacorr_tensor_methods
         end type initialize_mocoef_tensor_t
 
        contains
+
+       subroutine TensInitTestCtorReal(this,val)
+         implicit none
+         class(tens_init_test_t), intent(out):: this
+         real(8), intent(in):: val
+
+         this%init_val=cmplx(val,0d0)
+        end subroutine TensInitTestCtorReal
+
+        subroutine TensInitTestCtorComplex(this,val)
+         implicit none
+         class(tens_init_test_t), intent(out):: this
+         complex(8), intent(in):: val
+
+         this%init_val=val
+        end subroutine TensInitTestCtorComplex
+function TensInitTestApply(this,tensor,scalar) result(ierr)
+         implicit none
+         integer(INTD):: ierr
+         class(tens_init_test_t), intent(in):: this
+         class(tens_rcrsv_t), intent(inout):: tensor
+         complex(8), intent(inout), optional:: scalar
+         integer(INTL):: vol
+         type(tens_dense_t):: tens
+         real(4), pointer:: arr_r4(:)
+         real(8), pointer:: arr_r8(:)
+         complex(4), pointer:: arr_c4(:)
+         complex(8), pointer:: arr_c8(:)
+
+         tens=tensor%get_dense_adapter(ierr)
+         if(ierr.eq.EXA_SUCCESS) then
+          vol=tens_dense_volume(tens)
+          if(vol.gt.0) then
+           select case(tens%data_kind)
+           case(EXA_DATA_KIND_R4)
+            call c_f_pointer(tens%body_ptr,arr_r4,(/vol/))
+            arr_r4(:)=real(this%init_val,4)
+           case(EXA_DATA_KIND_R8)
+            call c_f_pointer(tens%body_ptr,arr_r8,(/vol/))
+            arr_r8(:)=real(this%init_val,8)
+           case(EXA_DATA_KIND_C4)
+            call c_f_pointer(tens%body_ptr,arr_c4,(/vol/))
+            arr_c4(:)=cmplx(real(this%init_val,4),real(imag(this%init_val),4),4)
+           case(EXA_DATA_KIND_C8)
+            call c_f_pointer(tens%body_ptr,arr_c8,(/vol/))
+            arr_c8(:)=this%init_val
+           case default
+            ierr=2
+           end select
+          else
+           ierr=1
+          endif
+         endif
+        end function TensInitTestApply
 
         function compute_2e_ao_tensor(this,tensor,scalar) result(ierr)
          use, intrinsic:: ISO_C_BINDING
@@ -98,6 +162,7 @@ module exacorr_tensor_methods
 
 !        Intranode parallelization should be possible in the loops below because Interest is thread safe
 
+         print*,"hi I'm inside tens_init_ao_integrals",nshells
          loff = 0
          do lsh = 1, nshells(4)
             ll   =  gto4(lsh)%orb_momentum

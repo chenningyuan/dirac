@@ -1,0 +1,8 @@
+!
+! Exacorr MO Transformation and Coupled Cluster
+! Testing the stand-alone version of exacorr by running the TALSH version and creating a DFCOEF file.
+! Exacoor is used in the second step which restarts on (only) the DFCOEF file
+! NB: Only the first step is done automatically be ctest, you should run exacorr using the
+! provided run_exacorr.sh script.
+! Note that if the first step takes too long you can also do only the SCF by modifying the input. All
+! exatensor needs in the second step is the DFCOEF that is already complete after the SCF.

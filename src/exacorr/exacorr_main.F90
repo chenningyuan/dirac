@@ -8,7 +8,7 @@
       use interface_to_mpi
 #endif
 
-      use exacorr_global,only   : get_talsh_only
+      use exacorr_global,only   : get_talsh_only, set_talsh_only
       use exacorr_ao_to_mo,only : exacorr_compute_mo_integrals
       use talsh_ao_to_mo,only   : talsh_compute_mo_integrals
       use talsh_cc,only         : cc_driver
@@ -23,7 +23,9 @@
       integer, allocatable :: mo_vir(:)
 
       mo_transform   = .true.
-      cc_calculation = .true.
+      cc_calculation = .false.
+      call set_talsh_only(.false.)
+      
 
 #if defined (VAR_MPI) 
       call interface_mpi_init()

@@ -1,0 +1,37 @@
+!
+! This test calculates the energy and some properties
+! of the dichloroethane molecule in different geometries.
+! Note that we consistently leave out the SS integrals
+! by using the LVCORR option in the general section.
+!
+**DIRAC
+.TITLE
+1,2-dichloroethane. Restricted kinetic balance. Energies, properties.
+.WAVE F
+**INTEGRALS
+*READIN
+.UNCONTRACT
+**HAMILTONIAN
+.X2C
+**WAVE FUNCTIONS
+.SCF
+.RELCCSD
+.EXACC
+*SCF
+.EVCCNV
+1.0E-8
+**MOLTRA
+.ACTIVE 
+energy -0.5 0.9 0.01
+.EXACORR
+**EXACC
+.OCCUPIED
+22..25
+.VIRTUAL
+26..49
+**RELCCSD
+.TIMING
+.INTERFACE
+DIRAC
+*END OF
+
