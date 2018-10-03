@@ -40,17 +40,21 @@ module exacorr_ao_to_mo
          integer             :: nao                        ! the number of atomic orbitals)
          type(basis_func_info_t), allocatable :: gto(:)    ! array with information about the shells
 
-         type(subspace_basis_t):: basis_ao
+         type(subspace_basis_t):: basis_ao, basis_mo
          type(color_symmetry_t), allocatable :: color(:)
          integer(INTL):: nao_l,labs, ao_space_root
-         class(h_space_t), pointer:: ao_space
-         integer:: mpi_th_provided, my_rank,my_role, ao_space_id
+         integer(INTL):: nmo_l, mo_space_root
+         class(h_space_t), pointer:: ao_space, mo_space
+         integer:: mpi_th_provided, my_rank,my_role, ao_space_id, mo_space_id
          integer:: lsh, l, nl
          integer:: l_col=1
 
          type(tens_rcrsv_t):: aoint_tensor
+         type(tens_rcrsv_t):: mocoef_tensor
 !later   type(tens_rcrsv_t):: moint_tensor
          type(compute_2e_ao_tensor_t) :: aoint_calculator
+         type(initialize_mocoef_tensor_t) :: mocoefa_init
+         type(initialize_mocoef_tensor_t) :: mocoefb_init
          type(tens_init_test_t):: init1369
 
 !        Make some noise so that we know we are here
@@ -61,20 +65,20 @@ module exacorr_ao_to_mo
          call interest_initialize
          call initialize_global_data
 
-         nao     = get_nao()
-         nao_l   = int(nao,8)
+         nao     = get_nao()   ! This is the otal number of ao's
+         nao_l   = int(nao,8)  ! we need this a long int for exatensor
 
 !        Get the basis set information
          call get_gtos(1,nao,gto,nshells)
          print*,"my_rank,nao,nshells",my_rank,nao,nshells
 
-         !Create a basis for a vector space:
+         !Create a basis for the ao vector space:
          ierr = 0
          call basis_ao%subspace_basis_ctor(nao_l,ierr)
          if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.subspace_basis_ctor() failed!')
-         !This needs to be an array that is persistent on all nodes
-         allocate(color(nshells))
 
+         !Assign the colors for the ao space (this is where exatensor may break up into subspaces)
+         allocate(color(nshells))
          labs = 0
          do lsh = 1, nshells !set basis functions
             nl   =  ncartesian(gto(lsh)%orb_momentum)
@@ -87,14 +91,37 @@ module exacorr_ao_to_mo
             end do
          enddo
 
+         !Finalize the ao space basis
          call basis_ao%finalize(ierr)
          if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.finalize() failed!')
 
-         !Register a vector space:
+         !Register the ao vector space:
          ierr=exatns_space_register('AO_space',basis_ao,ao_space_id,ao_space)
          print*,"my_rank registered vector space, ierr=",my_rank,ierr
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register() failed!')
 
+         !Get the MO-coeffcient tensor for the first index that is to be transformed
+         ierr = 0
+         nmo_l   = 2*int(nmo(1),8)
+         call basis_mo%subspace_basis_ctor(nmo_l,ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.subspace_basis_ctor() failed!')
+
+         !Set the functions inside this basis
+         do labs = 1, nmo_l
+            call basis_mo%set_basis_func(labs,BASIS_ABSTRACT,ierr)
+            if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.set_basis_func() failed!')
+         enddo
+
+         !Finalize the mo space basis
+         call basis_mo%finalize(ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.finalize() failed!')
+
+         !Register the mo vector space:
+         ierr=exatns_space_register('MO_space',basis_mo,mo_space_id,mo_space)
+         print*,"my_rank registered vector space, ierr=",my_rank,ierr
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register() failed!')
+
+         !Register the template initialization routine (for testing purposes only)
          call init1369%tens_init_test_ctor(13.69d0)
          ierr=exatns_method_register('SetTo13.69',init1369)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
@@ -103,33 +130,51 @@ module exacorr_ao_to_mo
          ierr=exatns_method_register('Aoint_calculator',aoint_calculator)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
 
-!        Run ExaTENSOR within MPI_COMM_WORLD:
+         !Register the mo coefficient initializer aa a method
+         call mocoefa_init%init_mocoef(mo_list,nmo(1),'a')
+         ierr=exatns_method_register('MOCoeff_initializer',mocoefa_init)
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
+
+!        Run ExaTENSOR within MPI_COMM_WORLD (called golbal_communicator in the MPI interface that DIRAC uses):
          ierr=exatns_start(global_communicator)
          if(ierr.eq.EXA_SUCCESS) then
           ierr=exatns_process_role(my_role)
           print*,"i am ",my_rank,my_role
           if(my_role.eq.EXA_DRIVER) then
 
-           !Create ao-tensor:
-           print*,"i am ",my_rank,my_role," and will create a tensor"
+           print*,"i am ",my_rank,my_role," and will create two tensors"
 
+           !Create ao-integral-tensor:
            ao_space_root=ao_space%get_root_id(ierr)
-           print*,"root id and ierr",ao_space_root,ierr
-           ierr=exatns_tensor_create(aoint_tensor,'ao_tensor',(/(ao_space_id,i=1,4)/),(/(ao_space_root,i=1,4)/),EXA_DATA_KIND_C8)
-           print*,"error code for create:",ierr
+           ierr=exatns_tensor_create(aoint_tensor,'aotensor',(/(ao_space_id,i=1,4)/),(/(ao_space_root,i=1,4)/),EXA_DATA_KIND_C8)
            if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
-
-           !Initialize ao-tensor:
-           ierr=exatns_tensor_init(aoint_tensor,'SetTo13.69')
-           if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_tensor_init() failed!')
            ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
 
            !Initialize ao-tensor:
-!          ierr=exatns_tensor_init(aoint_tensor,'Aoint_calculator')
-!          ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
+           ierr=exatns_tensor_init(aoint_tensor,'Aoint_calculator')
+           if(ierr.ne.EXA_SUCCESS) call quit('Aoint_calculator failed!')
+           ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
 
-           !Destroy ao-tensor:
+           !Create mo-coefficient-tensors:
+           mo_space_root=mo_space%get_root_id(ierr)
+           ierr=exatns_tensor_create(mocoef_tensor,'mocoeftensor', &
+            (/ao_space_id,mo_space_id/),(/ao_space_root,mo_space_root/),EXA_DATA_KIND_C8)
+           if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
+           ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
+
+!          Initialize mocoef-tensor:
+!          ierr=exatns_tensor_init(mocoef_tensor,'SetTo13.69')
+           ierr=exatns_tensor_init(mocoef_tensor,'MOCoeff_initializer')
+           if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_init() failed!')
+           ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
+
+           !Destroy aoint-tensor:
            ierr=exatns_tensor_destroy(aoint_tensor)
+           ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
+
+           !Destroy mocoef-tensor:
+           ierr=exatns_tensor_destroy(mocoef_tensor)
+           ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
 
            !Stop ExaTENSOR runtime:
            ierr=exatns_stop()

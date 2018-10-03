@@ -25,7 +25,9 @@ module exacorr_tensor_methods
 
         !Initializer for the mo coefficients tensor:
         type, extends(tens_method_uni_t), public:: initialize_mocoef_tensor_t
+         complex(8), allocatable, private:: mocoef_all(:,:)
          contains
+          procedure, public:: init_mocoef=>init_mocoef
           procedure, public:: apply=>initialize_mocoef_tensor
         end type initialize_mocoef_tensor_t
 
@@ -46,7 +48,8 @@ module exacorr_tensor_methods
 
          this%init_val=val
         end subroutine TensInitTestCtorComplex
-function TensInitTestApply(this,tensor,scalar) result(ierr)
+
+        function TensInitTestApply(this,tensor,scalar) result(ierr)
          implicit none
          integer(INTD):: ierr
          class(tens_init_test_t), intent(in):: this
@@ -88,34 +91,22 @@ function TensInitTestApply(this,tensor,scalar) result(ierr)
         function compute_2e_ao_tensor(this,tensor,scalar) result(ierr)
          use, intrinsic:: ISO_C_BINDING
          implicit none
-         integer(INTD):: ierr
+         integer(INTD):: ierr,n
          class(compute_2e_ao_tensor_t), intent(in):: this
          class(tens_rcrsv_t), intent(inout):: tensor
          complex(8), intent(inout), optional:: scalar
-         integer(INTL):: tens_shape(1:MAX_TENSOR_RANK)
-         integer(INTL):: tens_signa(1:MAX_TENSOR_RANK)
-         integer(INTD):: data_kind,n
-         type(C_PTR):: tens_body_p
+         type(tens_dense_t):: tens
 
          ierr=0
-         data_kind=tensor%get_data_type(ierr)
-         if(ierr.ne.0) then; ierr=-6; return; endif
-         call tensor%get_dims(tens_shape,n,ierr)
-         if(ierr.ne.0) then; ierr=-5; return; endif
-         if(n.eq.4) then !order-4 tensor
-          call tensor%get_bases(tens_signa,n,ierr)
-          if(ierr.ne.0) then; ierr=-4; return; endif
-          tens_body_p=tensor%get_body_ptr(ierr)
-          if(ierr.ne.0) then; ierr=-3; return; endif
-          ierr=tens_init_ao_integrals(tens_body_p,data_kind,tens_shape(1:n),tens_signa(1:n))
-          if(ierr.ne.0) then; ierr=-2; return; endif
-         else
-          ierr=-1
-         endif
+         tens=tensor%get_dense_adapter(ierr)
+         if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
+         n=tens%num_dims
+         if (n.ne.4) call quit('Error: dimension not 4 in compute_2e_ao_tensor')
+         ierr=tens_init_ao_integrals(tens%body_ptr,tens%data_kind,tens%dims(1:n),tens%bases(1:n))
          return
         end function compute_2e_ao_tensor
 
-        integer function tens_init_ao_integrals(tens_body, data_kind, tens_shape, tens_base) result (ierr)
+        integer function tens_init_ao_integrals(tens_body, data_kind, tens_dims, tens_bases) result (ierr)
         !Initialization routine that is used to fill a tensor with AO integrals
 
          use exacorr_datatypes
@@ -125,10 +116,10 @@ function TensInitTestApply(this,tensor,scalar) result(ierr)
 
          implicit none
 
-         type(C_PTR), value:: tens_body                     !in: C pointer to the tensor body (tensor elements)
-         integer(C_INT), value:: data_kind                  !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
-         integer(C_LONG_LONG), intent(in):: tens_shape(1:*) !in: tensor shape (extent of each tensor dimension)
-         integer(C_LONG_LONG), intent(in):: tens_base(1:*)  !in: base offsets for each tensor dimension)
+         type(C_PTR), value:: tens_body           !in: C pointer to the tensor body (tensor elements)
+         integer(4), value:: data_kind            !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
+         integer(8), intent(in):: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
+         integer(8), intent(in):: tens_bases(1:*) !in: base offsets for each tensor dimension)
 
          integer:: nao(4)
          complex(8),pointer :: ao_tens(:,:,:,:)
@@ -150,8 +141,9 @@ function TensInitTestApply(this,tensor,scalar) result(ierr)
          endif
 
          ! map the arguments to names used in the context of integral evaluation
-         first_ao(1:4) = tens_base(1:4)
-         nao(1:4) = tens_shape(1:4)
+         first_ao(1:4) = tens_bases(1:4)
+         nao(1:4) = tens_dims(1:4)
+         print*,"hi I'm inside tens_init_ao_integrals",first_ao(1:4),nao(1:4)
          call c_f_pointer(tens_body,ao_tens,nao(1:4)) !map C pointer to 4-dimensional array
 
 !        Allocate and get shell information for all shells that we will treat
@@ -162,7 +154,6 @@ function TensInitTestApply(this,tensor,scalar) result(ierr)
 
 !        Intranode parallelization should be possible in the loops below because Interest is thread safe
 
-         print*,"hi I'm inside tens_init_ao_integrals",nshells
          loff = 0
          do lsh = 1, nshells(4)
             ll   =  gto4(lsh)%orb_momentum
@@ -207,9 +198,13 @@ function TensInitTestApply(this,tensor,scalar) result(ierr)
                                   lj,ej,xj,yj,zj,cj )
                      ijkl = 0
                      do l = 1, nl
+                        if (l+loff>tens_dims(4)) exit
                         do k = 1, nk
+                           if (k+koff>tens_dims(3)) exit
                            do j = 1, nj
+                              if (j+joff>tens_dims(2)) exit
                               do i = 1, ni
+                                 if (i+ioff>tens_dims(1)) exit
                                  ijkl = ijkl + 1
                                  ao_tens(i+ioff,j+joff,k+koff,l+loff) = dcmplx(gout(ijkl),0.D0)
                               end do
@@ -232,54 +227,86 @@ function TensInitTestApply(this,tensor,scalar) result(ierr)
 
         end function tens_init_ao_integrals
 
+        subroutine init_mocoef(this,mo_list,nmo,spin)
+
+         use dirac_MO
+         use exacorr_global
+
+         implicit none
+         integer, intent(in) :: nmo          ! the length of the mo basis
+         integer, intent(in) :: mo_list(:)   ! and their indices
+         character, intent(in):: spin
+         class(initialize_mocoef_tensor_t), intent(out):: this
+
+         integer  :: nao,j,k
+         type(MO) :: qmo
+
+!        Copy the coefficients into the alpha or beta array, using the quaternion relations as defined in
+!        T. Saue, H. Jensen, J. Chem. Phys. 111 (1999) 6211–6222, Equation 16.
+!        The coefficients for the barred spinors (that start after the nmo(i) unbarred spinors) are generated
+!        using Kramers' symmetry.
+
+         nao = get_nao()
+         allocate (this%mocoef_all(nao,2*nmo))
+         call get_mo_coefficients (qmo,mo_list,nmo)
+
+         if (spin == 'a' .or. spin == 'A') then
+            do k = 1, nmo
+               do j = 1, nao
+                this%mocoef_all(j,k)     = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
+                this%mocoef_all(j,k+nmo) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
+               end do
+            end do
+         elseif (spin == 'b' .or. spin == 'B') then
+            do k = 1, nmo
+               do j = 1, nao
+                this%mocoef_all(j,k)     = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
+                this%mocoef_all(j,k+nmo) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
+               end do
+            end do
+         else
+            call quit ('init_mocoef called with unknown spin value')
+         end if
+         call delete_qmo (qmo)
+
+        end subroutine init_mocoef
+
         function initialize_mocoef_tensor(this,tensor,scalar) result(ierr)
          use, intrinsic:: ISO_C_BINDING
          implicit none
-         integer(INTD):: ierr
+         integer(INTD):: ierr,n
          class(initialize_mocoef_tensor_t), intent(in):: this
          class(tens_rcrsv_t), intent(inout):: tensor
          complex(8), intent(inout), optional:: scalar
-         integer(INTL):: tens_shape(1:MAX_TENSOR_RANK)
-         integer(INTL):: tens_signa(1:MAX_TENSOR_RANK)
-         integer(INTD):: data_kind,n
-         type(C_PTR):: tens_body_p
+         type(tens_dense_t):: tens
 
          ierr=0
-         data_kind=tensor%get_data_type(ierr)
-         if(ierr.ne.0) then; ierr=-6; return; endif
-         call tensor%get_dims(tens_shape,n,ierr)
-         if(ierr.ne.0) then; ierr=-5; return; endif
-         if(n.eq.2) then !order-2 tensor
-          call tensor%get_bases(tens_signa,n,ierr)
-          if(ierr.ne.0) then; ierr=-4; return; endif
-          tens_body_p=tensor%get_body_ptr(ierr)
-          if(ierr.ne.0) then; ierr=-3; return; endif
-          ierr=tens_init_mocoef(tens_body_p,data_kind,tens_shape(1:n),tens_signa(1:n))
-          if(ierr.ne.0) then; ierr=-2; return; endif
-         else
-          ierr=-1
-         endif
-         return
+         tens=tensor%get_dense_adapter(ierr)
+         if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
+         n=tens%num_dims
+         if (n.ne.2) call quit('Error: dimension not 2 in initialize_mocoef_tensor')
+         ierr=tens_init_mocoef(tens%body_ptr,tens%data_kind,tens%dims(1:n),tens%bases(1:n), &
+                               this%mocoef_all)
+
         end function initialize_mocoef_tensor
 
-        integer function tens_init_mocoef(tens_body, data_kind, tens_shape, tens_base) result (ierr)
+        integer function tens_init_mocoef(tens_body,data_kind,tens_dims,tens_bases, &
+                         mocoef_all) result (ierr)
         !Initialization routine that is used to fill a tensor with mo coefficients
 
-         use exacorr_datatypes
-         use exacorr_global
          use, intrinsic:: ISO_C_BINDING
 
          implicit none
 
-         type(C_PTR), value:: tens_body                     !in: C pointer to the tensor body (tensor elements)
-         integer(C_INT), value:: data_kind                  !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
-         integer(C_LONG_LONG), intent(in):: tens_shape(1:*) !in: tensor shape (extent of each tensor dimension)
-         integer(C_LONG_LONG), intent(in):: tens_base(1:*)  !in: base offsets for each tensor dimension)
+         type(C_PTR), value:: tens_body           !in: C pointer to the tensor body (tensor elements)
+         integer(4), value:: data_kind            !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
+         integer(8), intent(in):: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
+         integer(8), intent(in):: tens_bases(1:*) !in: base offsets for each tensor dimension)
+         complex(8), intent(in):: mocoef_all(:,:)
 
-         integer:: dimensions(2),nao,nmo
-         integer :: first_ao, first_mo
+         integer :: nao, nmo
+         integer :: first_ao, last_ao, first_mo, last_mo
          complex(8),pointer :: mocoef_tens(:,:)
-         complex(8),parameter :: ZERO=(0.D0,0.D0)
 
          ierr=0 !set error code to success
          if(data_kind /= EXA_DATA_KIND_C8) then
@@ -287,17 +314,16 @@ function TensInitTestApply(this,tensor,scalar) result(ierr)
            return
          endif
 
-         ! map the arguments to names used in the context of mocoef retrieval
-         first_ao = tens_base(1)
-         nao = tens_shape(1)
-         first_mo = tens_base(2)
-         nmo = tens_shape(2)
-         dimensions(1) = nao
-         dimensions(2) = nmo
-         call c_f_pointer(tens_body,mocoef_tens,dimensions) !map C pointer to 2-dimensional array
+         nao = tens_dims(1)
+         nmo = tens_dims(2)
+         call c_f_pointer(tens_body,mocoef_tens,(/nao,nmo/)) !map C pointer to 2-dimensional array
 
-!        Placeholder: just initialize to zero
-         mocoef_tens = ZERO
+         first_ao = tens_bases(1)
+         first_mo = tens_bases(2)
+         last_ao  = first_ao + nao - 1
+         last_mo  = first_mo + nmo - 1
+
+         mocoef_tens(1:nao,1:nmo) = mocoef_all(first_ao:last_ao,first_mo:last_mo)
 
         end function tens_init_mocoef
 
