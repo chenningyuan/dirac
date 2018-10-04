@@ -4913,7 +4913,7 @@ C
       CALL SELFRAG(WORK(KQ),NVECS,WORK(KE),WORK(KI),
      &             NFRAG,NSTR,PRJFIL,PROOWN,NPRJNUC,IOPT,KVEC,
      &             WORK(KCMO),WORK(KEIG),WORK(KIBE),IOFF,
-     &             WORK,KFREE,LFREE)
+     &             KDUM,WORK,KFREE,LFREE)
 C
 C     Collect fragment info
 C      
