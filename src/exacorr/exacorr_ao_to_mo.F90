@@ -53,8 +53,8 @@ module exacorr_ao_to_mo
          type(tens_rcrsv_t):: mocoef_tensor
 !later   type(tens_rcrsv_t):: moint_tensor
          type(compute_2e_ao_tensor_t) :: aoint_calculator
-         type(initialize_mocoef_tensor_t) :: mocoefa_init
-         type(initialize_mocoef_tensor_t) :: mocoefb_init
+         type(init_mocoef_tensor_t) :: mocoefa_init
+         type(init_mocoef_tensor_t) :: mocoefb_init
          type(tens_init_test_t):: init1369
 
 !        Make some noise so that we know we are here
@@ -131,7 +131,7 @@ module exacorr_ao_to_mo
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
 
          !Register the mo coefficient initializer aa a method
-         call mocoefa_init%init_mocoef(mo_list,nmo(1),'a')
+         call mocoefa_init%init_mocoef_ctor(mo_list,nmo(1),'a')
          ierr=exatns_method_register('MOCoeff_initializer',mocoefa_init)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
 

@@ -17,19 +17,19 @@ module exacorr_tensor_methods
           procedure, public:: apply=>TensInitTestApply
         end type tens_init_test_t
 
-        !Block-wise initializer for the 2e AO integral tensor:
+        !Initializer for the 2e AO integral tensor:
         type, extends(tens_method_uni_t), public:: compute_2e_ao_tensor_t
          contains
           procedure, public:: apply=>compute_2e_ao_tensor
         end type compute_2e_ao_tensor_t
 
         !Initializer for the mo coefficients tensor:
-        type, extends(tens_method_uni_t), public:: initialize_mocoef_tensor_t
+        type, extends(tens_method_uni_t), public:: init_mocoef_tensor_t
          complex(8), allocatable, private:: mocoef_all(:,:)
          contains
-          procedure, public:: init_mocoef=>init_mocoef
-          procedure, public:: apply=>initialize_mocoef_tensor
-        end type initialize_mocoef_tensor_t
+          procedure, public:: init_mocoef_ctor=>init_mocoef
+          procedure, public:: apply=>init_mocoef_tensor
+        end type init_mocoef_tensor_t
 
        contains
 
@@ -236,7 +236,7 @@ module exacorr_tensor_methods
          integer, intent(in) :: nmo          ! the length of the mo basis
          integer, intent(in) :: mo_list(:)   ! and their indices
          character, intent(in):: spin
-         class(initialize_mocoef_tensor_t), intent(out):: this
+         class(init_mocoef_tensor_t), intent(out):: this
 
          integer  :: nao,j,k
          type(MO) :: qmo
@@ -271,11 +271,11 @@ module exacorr_tensor_methods
 
         end subroutine init_mocoef
 
-        function initialize_mocoef_tensor(this,tensor,scalar) result(ierr)
+        function init_mocoef_tensor(this,tensor,scalar) result(ierr)
          use, intrinsic:: ISO_C_BINDING
          implicit none
          integer(INTD):: ierr,n
-         class(initialize_mocoef_tensor_t), intent(in):: this
+         class(init_mocoef_tensor_t), intent(in):: this
          class(tens_rcrsv_t), intent(inout):: tensor
          complex(8), intent(inout), optional:: scalar
          type(tens_dense_t):: tens
@@ -284,11 +284,11 @@ module exacorr_tensor_methods
          tens=tensor%get_dense_adapter(ierr)
          if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
          n=tens%num_dims
-         if (n.ne.2) call quit('Error: dimension not 2 in initialize_mocoef_tensor')
+         if (n.ne.2) call quit('Error: dimension not 2 in init_mocoef_tensor')
          ierr=tens_init_mocoef(tens%body_ptr,tens%data_kind,tens%dims(1:n),tens%bases(1:n), &
                                this%mocoef_all)
 
-        end function initialize_mocoef_tensor
+        end function init_mocoef_tensor
 
         integer function tens_init_mocoef(tens_body,data_kind,tens_dims,tens_bases, &
                          mocoef_all) result (ierr)
