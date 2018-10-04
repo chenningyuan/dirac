@@ -32,7 +32,7 @@
 #endif
       print*, "hello world, exacorr_main speaking"
 
-      nmo = 2
+      nmo = 8
       allocate(mo_list(nmo(1)+nmo(2)+nmo(3)+nmo(4)))
       do imo = 1, nmo(1)
           mo_list(imo)                      = imo

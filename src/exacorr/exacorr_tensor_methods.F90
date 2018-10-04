@@ -31,6 +31,14 @@ module exacorr_tensor_methods
           procedure, public:: apply=>init_mocoef_tensor
         end type init_mocoef_tensor_t
 
+        !Scale by denominators:
+        type, extends(tens_method_uni_t), public:: scale_with_denom_t
+         real(8), allocatable, private:: eps_occ(:),eps_vir(:)
+         contains
+          procedure, public:: scale_with_denom_ctor=>init_epsilons
+          procedure, public:: apply=>scale_with_denom
+        end type scale_with_denom_t
+
        contains
 
        subroutine TensInitTestCtorReal(this,val)
@@ -227,6 +235,38 @@ module exacorr_tensor_methods
 
         end function tens_init_ao_integrals
 
+        subroutine init_epsilons(this,mo_occ,nocc,mo_vir,nvir)
+
+         use dirac_MO
+         use exacorr_global
+
+         implicit none
+         integer, intent(in) :: nocc, nvir
+         integer, intent(in) :: mo_occ(:),mo_vir(:)
+         class(scale_with_denom_t), intent(out):: this
+
+         type(MO) :: qmo
+         integer  :: k
+
+         ! we are assuming closed shell (Kramers-restricted) cases here
+         call get_mo_coefficients (qmo,mo_occ,nocc)
+         allocate(this%eps_occ(2*nocc))
+         do k = 1, nocc
+            this%eps_occ(k)      = qmo%energy(k)
+            this%eps_occ(k+nocc) = qmo%energy(k)
+         end do
+         call delete_qmo (qmo)
+
+         call get_mo_coefficients (qmo,mo_vir,nvir)
+         allocate(this%eps_vir(2*nvir))
+         do k = 1, nvir
+            this%eps_vir(k)      = qmo%energy(k)
+            this%eps_vir(k+nvir) = qmo%energy(k)
+         end do
+         call delete_qmo (qmo)
+
+        end subroutine init_epsilons
+
         subroutine init_mocoef(this,mo_list,nmo,spin)
 
          use dirac_MO
@@ -270,6 +310,77 @@ module exacorr_tensor_methods
          call delete_qmo (qmo)
 
         end subroutine init_mocoef
+
+        function scale_with_denom(this,tensor,scalar) result(ierr)
+         use, intrinsic:: ISO_C_BINDING
+         implicit none
+         integer(INTD):: ierr,n
+         class(scale_with_denom_t), intent(in):: this
+         class(tens_rcrsv_t), intent(inout):: tensor
+         complex(8), intent(inout), optional:: scalar
+         type(tens_dense_t):: tens
+
+         ierr=0
+         tens=tensor%get_dense_adapter(ierr)
+         if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
+         ierr=denominate(tens%num_dims,tens%body_ptr,tens%data_kind,tens%dims(1:n),tens%bases(1:n), &
+                         this%eps_occ,this%eps_vir)
+
+        end function scale_with_denom
+
+        integer function denominate(num_dims,tens_body,data_kind,tens_dims,tens_bases, &
+                         eps_occ,eps_vir) result (ierr)
+
+        !Scale with denominators for 2-d or 4-d tensor
+
+         use, intrinsic:: ISO_C_BINDING
+
+         implicit none
+
+         integer,intent(in):: num_dims            !in: number of dimensions of the tensor
+         type(C_PTR), value:: tens_body           !in: C pointer to the tensor body (tensor elements)
+         integer(4), value:: data_kind            !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
+         integer(8), intent(in):: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
+         integer(8), intent(in):: tens_bases(1:*) !in: base offsets for each tensor dimension)
+         real(8), intent(in):: eps_occ(:),eps_vir(:)
+
+         integer :: i,j,a,b
+         real(8) :: denominator
+         complex(8),pointer :: t1_tens(:,:),t2_tens(:,:,:,:)
+
+         ierr=0 !set error code to success
+         if(data_kind /= EXA_DATA_KIND_C8) then
+           ierr=-1 !invalid data kind requested
+           return
+         endif
+
+         select case (num_dims)
+         case (2)
+            call c_f_pointer(tens_body,t1_tens,tens_dims(1:2)) !map C pointer to 2-dimensional array
+            do i = 1, tens_dims(2)
+              do a = 1, tens_dims(1)
+                 denominator = eps_occ(i+tens_bases(2)-1) - eps_vir(a+tens_bases(1)-1)
+                 t1_tens(a,i) = t1_tens(a,i) / denominator
+              end do
+            end do
+         case (4)
+            call c_f_pointer(tens_body,t2_tens,tens_dims(1:4)) !map C pointer to 2-dimensional array
+            do j = 1, tens_dims(4)
+              do i = 1, tens_dims(3)
+                do b = 1, tens_dims(2)
+                  do a = 1, tens_dims(1)
+                     denominator = eps_occ(i+tens_bases(3)-1) + eps_occ(j+tens_bases(4)-1) &
+                                 - eps_vir(a+tens_bases(1)-1) - eps_vir(b+tens_bases(2)-1)
+                     t2_tens(a,b,i,j) = t2_tens(a,b,i,j) / denominator
+                  end do
+                end do
+              end do
+            end do
+         case default
+            call quit ('Error: wrong dimension of tensor in denominate')
+         end select
+
+        end function denominate
 
         function init_mocoef_tensor(this,tensor,scalar) result(ierr)
          use, intrinsic:: ISO_C_BINDING

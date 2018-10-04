@@ -55,6 +55,7 @@ module exacorr_ao_to_mo
          type(compute_2e_ao_tensor_t) :: aoint_calculator
          type(init_mocoef_tensor_t) :: mocoefa_init
          type(init_mocoef_tensor_t) :: mocoefb_init
+         type(scale_with_denom_t):: denominate
          type(tens_init_test_t):: init1369
 
 !        Make some noise so that we know we are here
@@ -133,6 +134,11 @@ module exacorr_ao_to_mo
          !Register the mo coefficient initializer aa a method
          call mocoefa_init%init_mocoef_ctor(mo_list,nmo(1),'a')
          ierr=exatns_method_register('MOCoeff_initializer',mocoefa_init)
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
+
+         !Register the mo coefficient initializer aa a method (testing only, registration will move to exacorr_cc)
+         call denominate%scale_with_denom_ctor(mo_list(1:2),2,mo_list(3:nmo(1)),nmo(1)-2)
+         ierr=exatns_method_register('Denominate',denominate)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
 
 !        Run ExaTENSOR within MPI_COMM_WORLD (called golbal_communicator in the MPI interface that DIRAC uses):
