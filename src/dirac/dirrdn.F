@@ -6038,6 +6038,10 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb Hamiltonian'
       ENDIF
 
+      if (x2c.and.ecpcalc) then
+         call quit('Incompatible options: X2C and ECP')
+      end if
+
       IF (ICHANG.GT.0) WRITE(LUPRI,'(3X,A)')
      &    'with the following modifications:'
 
@@ -7045,6 +7049,7 @@ C.....Individual atoms
         ILABDF = 1
         NLAB   = 0
 C.......consider only large component labels
+        ICLS=1 ! Miro: runtimecheck fix
         DO ILAB1 = 1,NPLAB(1)
           IC     = IGET(IATTR(ILAB1,ILABDF))          
           ICENT  = JGET(IATTR(ILAB1,ILABDF))          
@@ -7079,6 +7084,7 @@ C     First make pointer to orbital angular momentum
         ILABDF = 1
         NLAB   = 0
 C.......consider only large component labels
+        ICLS=1 ! Miro: runtimecheck fix
         DO ILAB1 = 1,NPLAB(1)
           IC     = IGET(IATTR(ILAB1,ILABDF))          
           ICENT  = JGET(IATTR(ILAB1,ILABDF))          

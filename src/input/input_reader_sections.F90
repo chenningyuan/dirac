@@ -55,6 +55,18 @@
         case ('*CCIH  ')
            call read_input_ccih(word, kw_section)
 
+        case ('*EOMCC')
+           call read_input_cceom(word, kw_section)
+
+        case ('*EOMPROP')
+           call read_input_eomprop(word, kw_section)
+
+        case ('*CCPROJ')
+           call read_input_ccproj(word, kw_section)
+
+        case ('*CCDIAG')
+           call read_input_ccdiag(word, kw_section)
+
 #ifdef HAS_PCMSOLVER
         case ('*PCM   ')
            call read_input_pcm(word, kw_section)
@@ -896,6 +908,14 @@
          relcc_do_hessian  = .true.
       end if
 
+      if (kw_matches(word, '.EOMCC ')) then
+         relcc_do_eomcc  = .true.
+      end if
+
+      if (kw_matches(word, '.EOMPROP')) then
+         relcc_do_eomprop  = .true.
+      end if
+
       if (kw_matches(word, '.FOCKSP')) then
          relcc_do_fspc     = .true.
          if (.not. explicitly_set_energy) relcc_do_energy = .false.
@@ -1026,6 +1046,224 @@
       call check_whether_kw_found(word, kw_section)
 
    end subroutine
+
+
+   subroutine read_input_cceom(word, kw_section)
+
+      use relcc_cfg
+      use input_reader
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+       integer                          :: nr_roots(2) ! number of roots in each symmetry 
+!     --------------------------------------------------------------------------
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.EE    ')) then
+         relcc_do_eomee=.true.
+         call kw_read(word,  nr_roots)
+         relcc_eom_nroots(nr_roots(1)) = nr_roots(2)           
+      end if
+
+      if (kw_matches(word, '.IP    ')) then
+         relcc_do_eomip=.true.
+         call kw_read(word,  nr_roots)
+         relcc_eom_nroots(nr_roots(1)) = nr_roots(2)           
+      end if
+
+      if (kw_matches(word, '.EA    ')) then
+         relcc_do_eomea=.true.
+         call kw_read(word,  nr_roots)
+         relcc_eom_nroots(nr_roots(1)) = nr_roots(2)           
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+
+      if (    (relcc_do_eomip .and. relcc_do_eomea) &
+          .or.(relcc_do_eomip .and. relcc_do_eomee) &
+          .or.(relcc_do_eomea .and. relcc_do_eomee)) &
+          call quit('Only one EOM kind of calculation at a time (IP/EE/EA) allowed !')
+
+
+   end subroutine
+
+
+   subroutine read_input_eomprop(word, kw_section)
+
+      use relcc_cfg
+      use input_reader
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+       integer   :: nr_roots_prop(2),nr_roots_left(2),nr_roots_right(2) ! number of roots in each symmetry 
+!     --------------------------------------------------------------------------
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.EXCPRP')) then
+         relcc_do_excprp=.true.
+         call kw_read(word,  nr_roots_prop)
+         relcc_eom_nroots_prop(nr_roots_prop(1)) = nr_roots_prop(2)           
+      end if
+
+      if (kw_matches(word, '.LEFT_STATE')) then
+         relcc_do_excprp=.true.
+         call kw_read(word,  nr_roots_left)
+         relcc_eom_nroots_left(nr_roots_left(1)) = nr_roots_left(2)           
+      end if
+
+      if (kw_matches(word, '.RIGHT_STATE')) then
+         relcc_do_excprp=.true.
+         call kw_read(word,  nr_roots_right)
+         relcc_eom_nroots_right(nr_roots_right(1)) = nr_roots_right(2)           
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+
+   end subroutine
+
+
+   subroutine read_input_ccproj(word, kw_section)
+
+      use relcc_cfg
+      use input_reader
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.REW_OCC')) then
+         relcc_projectors_do_restricted_excitation_window = .true.
+         call kw_read(word,  relcc_projectors_rew_occ_min_energy)
+         call kw_read(word,  relcc_projectors_rew_occ_max_energy)
+      end if
+
+      if (kw_matches(word, '.REW_VIRT')) then
+         relcc_projectors_do_restricted_excitation_window = .true.
+         call kw_read(word,  relcc_projectors_rew_virt_min_energy)
+         call kw_read(word,  relcc_projectors_rew_virt_max_energy)
+      end if
+
+      if (kw_matches(word, '.CVS_CORE')) then
+         relcc_projectors_do_core_valence_separation = .true.
+         call kw_read(word,  relcc_projectors_cvs_energy_threshold)
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+
+      if (relcc_projectors_do_restricted_excitation_window.and.relcc_projectors_do_core_valence_separation) & 
+          call quit('Only one projection scheme (CVS/REW) allowed at a time !')
+
+
+   end subroutine
+
+
+   subroutine read_input_ccdiag(word, kw_section)
+
+      use relcc_cfg
+      use input_reader
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.DEBUG ')) then
+         relcc_mfd_verbose = .true.
+      end if
+
+      if (kw_matches(word, '.MAXSIZE')) then
+         call kw_read(word,  relcc_mfd_max_subspace_size)
+      end if
+
+      if (kw_matches(word, '.REFRESH')) then
+         call kw_read(word, relcc_mfd_refresh_rate)
+      end if
+
+      if (kw_matches(word, '.MAXITER')) then
+         call kw_read(word, relcc_mfd_max_iterations)
+      end if
+
+      if (kw_matches(word, '.CONVERG')) then
+         call kw_read(word, relcc_mfd_convergence_threshold)
+      end if
+
+      if (kw_matches(word, '.TRV_CCS')) then
+         relcc_mfd_trial_ccs      = .true.
+         relcc_mfd_trial_diagonal = .not.relcc_mfd_trial_ccs
+         relcc_mfd_trial_full_matrix = .not.relcc_mfd_trial_ccs
+         relcc_mfd_trial_restart = .not.relcc_mfd_trial_ccs
+      end if
+
+      if (kw_matches(word, '.TRV_I  ')) then
+         relcc_mfd_trial_diagonal = .true.
+         relcc_mfd_trial_ccs      = .not.relcc_mfd_trial_diagonal 
+         relcc_mfd_trial_full_matrix = .not.relcc_mfd_trial_diagonal
+         relcc_mfd_trial_restart  = .not.relcc_mfd_trial_diagonal
+      end if
+
+      if (kw_matches(word, '.TRV_FULLMATRIX')) then
+         relcc_mfd_trial_full_matrix = .true.
+         relcc_mfd_trial_diagonal = .not.relcc_mfd_trial_full_matrix
+         relcc_mfd_trial_ccs      = .not.relcc_mfd_trial_full_matrix
+         relcc_mfd_trial_restart  = .not.relcc_mfd_trial_full_matrix
+      end if
+
+      if (kw_matches(word, '.TRV_RESTART')) then
+         relcc_mfd_trial_restart = .true.
+         relcc_mfd_trial_diagonal = .not.relcc_mfd_trial_restart
+         relcc_mfd_trial_ccs      = .not.relcc_mfd_trial_restart
+         relcc_mfd_trial_restart  = .not.relcc_mfd_trial_restart
+      end if
+
+      if (kw_matches(word, '.TRV_R2L ')) then
+         relcc_mfd_trial_lhs_use_rhs = .true.
+      end if
+
+      if (kw_matches(word, '.TRV_NOR2L')) then
+         relcc_mfd_trial_lhs_use_rhs = .false.
+      end if
+
+      if (kw_matches(word, '.OVERLAP')) then
+         relcc_mfd_overlap_sorting = .true.
+      end if
+
+      if (kw_matches(word, '.NOOVERLAP')) then
+         relcc_mfd_overlap_sorting = .false.
+      end if
+
+      if (kw_matches(word, '.EV_Re_SHIFT')) then
+         call kw_read(word, relcc_mfd_eigenvalues_energy_shift(1))
+      end if
+
+      if (kw_matches(word, '.EV_Im_SHIFT')) then
+         call kw_read(word, relcc_mfd_eigenvalues_energy_shift(2))
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+
+
+   end subroutine
+
+
 
    subroutine read_input_ccsort(word, kw_section)
 

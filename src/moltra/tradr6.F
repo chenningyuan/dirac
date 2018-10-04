@@ -430,7 +430,7 @@ C
       IF (MYTID.EQ.0) THEN
 C
 C       Get hold of the slaves
-C       ( ITASK = 2 for parallel integral transformation )
+C       ( MOLTRA_PAR from dirac_partask.h is code for parallel integral transformation )
 C
         CALL DIRAC_PARCTL( MOLTRA_PAR )
 C       
@@ -525,7 +525,7 @@ C                ... slave wants new set of A,B shells
 C
       ELSE
 C
-C     Wait for tasks until we receive the end message
+C     This is a slave process. Wait for tasks until we receive the end message.
 C
          Allocate (RGBUF(MEM))
          Allocate (IGBUF(2,MEM))
@@ -822,14 +822,24 @@ C           calculate memory requirements for this batch.
 C
 C
 C           First a dummy run to calculate the memory requirements
-C           for GMAT. Max size of GMAT is set in MAXSCL from
-C           .SCLMEM in input or chosen based on MWHER.
+C           for GMAT. Max size of GMAT is chosen based on MWHER.
 C
             NSIZG = LFREE - MIN(LFREE/10, 1 000 000) - MWHER
 C           subtract max mem needed in Hermit and 10%/1Mw for anything else
 C
             NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,.FALSE.,
      &           .TRUE.,INDX,IDUM,IJP12,IDUM,NSIZG,IDUM)
+            IF (NPASS .GT. 1) THEN
+               ! we cannot fit all integrals in memory,
+               ! instead we use memory for buffering of integrals.
+               ! Filled buffers are saved on direct access file SCLIN (LGFIL),
+               ! opened in subroutine INITGBF. We limit NSIZG to 10 mio words,
+               ! in order not to get too long records on SCLIN.
+               ! /hjaaj Aug. 2018
+               NSIZG = MIN(10000000,NSIZG)
+               NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,.FALSE.,
+     &           .TRUE.,INDX,IDUM,IJP12,IDUM,NSIZG,IDUM)
+            END IF
 C
             LDXAB = 5*NINSHA*NINSHB
             CALL MEMGET2('INTE','DXAB',KDXAB,LDXAB,WORK,KFREE,LFREE)

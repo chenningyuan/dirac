@@ -2178,22 +2178,10 @@
           WRITE(LUPRI,*)                                                &
      &     'EDM: PLABEL SET to KINENERG, factor +4*c*field_strength'
         ENDIF
-
-        IF (IPRINT.GE.5) THEN
-          WRITE(LUPRI,'(/,2X,A)') '** XPLDE1 before PR1DIR calling'
-          WRITE(LUPRI,'(2X,A,I3)') 'INTTYP=',INTTYP
-          WRITE(LUPRI,*) 'CLASLB=',CLASLB
-          WRITE(LUPRI,*) 'PLABEL=',PLABEL
-          WRITE(LUPRI,*) 'ANTI=',ANTI
-          WRITE(LUPRI,*) 'SQUARE=',SQUARE
-          WRITE(LUPRI,*) 'TRIANG=',TRIANG
-        ENDIF
-
        ! ... call abacus routine...
         CALL PR1DIR(CLASLB,INTTYP,NOPTYP,INTREP,                        &
      &            ANTI,SQUARE,INTADR,LABINT,TRIANG,TRASPH,              &
      &            SOLVNT,IORDER,DOATOM,NATOM,NBAST,NELMNT,IPRINT)
-
         IF (IPRINT.GE.5) THEN
            WRITE(LUPRI,'(/,2X,A)')                                      &
      &      '*** XPLDE1 after PR1DIR calling ***'

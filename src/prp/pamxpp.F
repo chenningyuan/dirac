@@ -1967,7 +1967,7 @@ C     ===============
           ENDDO
         ENDIF
 C.......distribute excitation energies on linear symmetries
-        allocate(EXCBUF(NEXC))
+        allocate(EXCBUF(NEXC+1)) ! Miro: NEXC+1 due to out-of-bounds fix
         allocate(iebuf(2,NEXC))
 C.......we include the ground state
         EXCBUF(1) = 0.0D0        
@@ -2039,7 +2039,7 @@ C     ==========================================================================
           SYMLAB(IREP+IOFF)='3'//REP(IREP)     
         ENDDO
 C.......distribute excitation energies on spinfree symmetries
-        allocate(EXCBUF(NEXC))
+        allocate(EXCBUF(NEXC+1)) ! Miro: NEXC+1 due to out-of-bounds fix
         allocate(iebuf(2,NEXC))
 C.......we include the ground state
         EXCBUF(1) = 0.0D0        

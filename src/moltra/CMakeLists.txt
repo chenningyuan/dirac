@@ -28,9 +28,17 @@ set(FREE_MOLTRA_FORTRAN_SOURCES
     moltra_mocoefficients.F90
 )
 
+
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FREE_MOLTRA_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
     set_source_files_properties(${FIXED_MOLTRA_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
+    set_source_files_properties(${FIXED_MOLTRA_FORTRAN_SOURCES_noruntimecheck} PROPERTIES COMPILE_FLAGS "-qfixed")
+endif()
+
+if(ENABLE_RUNTIMECHECK)
+    message(STATUS "runtime-check flags activated for the 'moltra' module")
+    set_source_files_properties(${FREE_MOLTRA_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+    set_source_files_properties(${FIXED_MOLTRA_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
 endif()
 
 add_library(

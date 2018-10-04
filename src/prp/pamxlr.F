@@ -457,6 +457,8 @@ C
       ELSE
          SET = .TRUE.
       END IF
+! Miro: satisfy runtimecheck for parallel run
+      FINTER     = .FALSE. 
 C
 C     Local initialization
 C

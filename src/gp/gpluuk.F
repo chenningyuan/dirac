@@ -185,15 +185,41 @@ C
 C     Luuk Visscher, May 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include "implicit.h"
+      IMPLICIT NONE
 #include "priunit.h"
-      INTEGER NREAL,NINTE,NLOGI,IRECLEN
+      INTEGER    NREAL,NINTE,NLOGI,IRECLEN, IRECL
+      INTEGER*8  IRECL8
 C
 #if  defined (INT_STAR8)
-      IRECL = 8 * NREAL + 8 * NINTE + 8 * NLOGI
+      IRECL8 = 8 * NREAL + 8 * NINTE + 8 * NLOGI
 #else
-      IRECL = 8 * NREAL + 4 * NINTE + 4 * NLOGI
+      IRECL8 = 8 * NREAL + 4 * NINTE + 4 * NLOGI
 #endif
+
+      IRECL  = IRECL8
+      IF (NREAL .LT. 0 .OR. NINTE .LT. 0 .OR. 
+     &    NLOGI .LT. 0 .OR. IRECL .LT. 0) THEN
+         WRITE(LUPRI,'(//A,5(/A,I20))')
+     &   'IRECLEN error: negative record length',
+     &   '   NREAL',NREAL,
+     &   '   NINTE',NINTE,
+     &   '   NLOGI',NLOGI,
+     &   '   record length (64 bit integers)',IRECL8,
+     &   '   record length (32 bit integers)',IRECL
+         CALL QUIT(
+     &   'IRECLEN error: negative record length')
+      END IF
+      IF (IRECL .NE. IRECL8) THEN
+         WRITE(LUPRI,'(//A,5(/A,I20))')
+     &   'IRECLEN error: record length too big for 32 bit integers',
+     &   '   NREAL',NREAL,
+     &   '   NINTE',NINTE,
+     &   '   NLOGI',NLOGI,
+     &   '   record length (64 bit integers)',IRECL8,
+     &   '   record length (32 bit integers)',IRECL
+         CALL QUIT(
+     &   'IRECLEN error: record length too big for 32 bit integers')
+      END IF
 C
       IRECLEN = IRECL
 C

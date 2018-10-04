@@ -67,6 +67,9 @@ Keyword reference
 
 * :doc:`**MOLTRA <moltra>` --- Integral transformation module
 
-* :doc:`One-electron operators <one_electron_operators>`
+Notes:
+------
 
-* :doc:`Orbital strings <orbital_strings>`
+  :doc:`One-electron operators <one_electron_operators>` |
+  :doc:`Orbital strings <orbital_strings>` |
+  :doc:`Symmetry-handling at the correlated level <groupchain>`
