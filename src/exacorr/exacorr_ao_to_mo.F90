@@ -31,7 +31,6 @@ module exacorr_ao_to_mo
          use exatensor
          use, intrinsic:: ISO_C_BINDING
 
-
          implicit none
 
          integer, intent(in) :: nmo(4)       ! the size of the mo basis for each of the 4 indices (mulliken ordering)
@@ -42,12 +41,17 @@ module exacorr_ao_to_mo
          integer             :: nao                        ! the number of atomic orbitals)
          type(basis_func_info_t), allocatable :: gto(:)    ! array with information about the shells
 
+         class(h_space_t), pointer:: ao_space
+         ! It is not possible to make an array of pointers, so we need a container
+         type mo_spaces_container
+              class(h_space_t), pointer :: ptr
+         end type mo_spaces_container
+         type(mo_spaces_container),  dimension(4) :: mo_space
+
          type(subspace_basis_t):: basis_ao, basis_mo(4)
-         type(color_symmetry_t), allocatable :: color(:),color_mo(:)
+         type(color_symmetry_t), allocatable :: color(:)
          integer(INTL):: nao_l,labs, ao_space_root
          integer(INTL):: nmo_l, mo_space_root(4)
-         class(h_space_t), pointer:: ao_space,mo_space
-         class(h_space_t), pointer:: mo_space2,mo_space3,mo_space4
          integer:: mpi_th_provided, my_rank,my_role, ao_space_id, mo_space_id(4)
          integer:: lsh, l, nl
          integer:: l_col=1
@@ -61,6 +65,7 @@ module exacorr_ao_to_mo
          type(compute_2e_ao_tensor_t) :: aoint_calculator
          type(init_mocoef_tensor_t) :: mocoef_init(2,4) ! array of initializers, first index is alpha/beta
          type(scale_with_denom_t):: denominate
+         type(tens_printer_t):: tens_printer
 
 !        Make some noise so that we know we are here
          call interface_mpi_comm_rank(global_communicator,my_rank)
@@ -105,11 +110,6 @@ module exacorr_ao_to_mo
          print*," process ",my_rank," registered AO vector space with ierr=",ierr
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register() failed!')
 
-         !Testing whether color makes a difference
-         allocate(color_mo(4*nmo(1)))
-         do imo = 1, 4*nmo(1)
-            call color_mo(imo)%color_symmetry_ctor(l_col)
-         enddo
          !Get the MO-coeffcient basis for the four indices that are to be transformed
          ierr = 0
          imo = 1
@@ -121,7 +121,7 @@ module exacorr_ao_to_mo
 
             !Set the functions inside this basis
             do labs = 1, nmo_l
-               call basis_mo(i)%set_basis_func(labs,BASIS_ABSTRACT,ierr,symm=color_mo(imo))
+               call basis_mo(i)%set_basis_func(labs,BASIS_ABSTRACT,ierr)
                if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.set_basis_func() failed!')
             enddo
 
@@ -131,17 +131,7 @@ module exacorr_ao_to_mo
 
             !Register this mo vector space :
             write (vs_str,'(A,I1)') '_',i
-            !This is just for testing, have to figure out how to use an array for mo_space
-            select case (i)
-            case(1)
-            ierr=exatns_space_register('MOspace'//vs_str,basis_mo(i),mo_space_id(i),mo_space)
-            case(2)
-            ierr=exatns_space_register('MOspace'//vs_str,basis_mo(i),mo_space_id(i),mo_space2)
-            case(3)
-            ierr=exatns_space_register('MOspace'//vs_str,basis_mo(i),mo_space_id(i),mo_space3)
-            case(4)
-            ierr=exatns_space_register('MOspace'//vs_str,basis_mo(i),mo_space_id(i),mo_space4)
-            end select
+            ierr=exatns_space_register('MOspace'//vs_str,basis_mo(i),mo_space_id(i),mo_space(i)%ptr)
             print*," process ",my_rank," registered MO vector space",i," with ierr=",ierr
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register() failed!')
 
@@ -167,6 +157,10 @@ module exacorr_ao_to_mo
          call denominate%scale_with_denom_ctor(mo_list(1:2),2,mo_list(3:nmo(1)),nmo(1)-2)
          ierr=exatns_method_register('Denominate',denominate)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
+   
+         !Register the standard print method (needs to be done at the user side)
+         ierr=exatns_method_register('PrintTensor',tens_printer)
+         if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register() failed!')
 
 !        Run ExaTENSOR within MPI_COMM_WORLD (called golbal_communicator in the MPI interface that DIRAC uses):
          ierr=exatns_start(global_communicator)
@@ -187,20 +181,17 @@ module exacorr_ao_to_mo
            if(ierr.ne.EXA_SUCCESS) call quit('Aoint_calculator failed!')
            ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
            call print_date('finished ao integral calculation')
+           call print_tensornorm (aoint_tensor)
 
            !Create mo-integral-tensor:
            do i = 1, 4
-              mo_space_root(i)=mo_space%get_root_id(ierr)
+              mo_space_root(i)=mo_space(i)%ptr%get_root_id(ierr)
            end do
            ierr=exatns_tensor_create(moint_tensor,'motensor',mo_space_id,mo_space_root,EXA_DATA_KIND_C8)
            if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
            ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
            call print_date('created mo integral tensor')
-
-           !Initialize mo-tensor:
-           ierr=exatns_tensor_init(moint_tensor,zero)
-           ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
-           call print_date('initialized mo integral tensor')
+           call print_tensornorm (moint_tensor)
 
            call aomo_transform (aoint_tensor,moint_tensor,initlabel)
 
@@ -283,6 +274,8 @@ module exacorr_ao_to_mo
               ierr=exatns_tensor_init(mocoef_tensor(spin,i),initlabel(spin,i))
               if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_init() failed!')
               ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
+              print*,"created and initialized mocoef_tensor ",spin,i
+              call print_tensornorm (mocoef_tensor(spin,i))
            end do
          end do
 
@@ -305,20 +298,19 @@ module exacorr_ao_to_mo
 
 !        Do 1st and 2nd quarter-transformation
          ierr=exatns_tensor_create(a1int_tensor,'a1int',a1int_id,a1int_root,EXA_DATA_KIND_C8)
+         ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit('exatns_sync() failed!')
          ierr=exatns_tensor_create(a2int_tensor,'a2int',a2int_id,a2int_root,EXA_DATA_KIND_C8)
-         ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
-         ierr=exatns_tensor_init(a1int_tensor,zero)
-         ierr=exatns_tensor_init(a2int_tensor,zero)
          ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
          call print_date('constructed a1 and a2')
          ierr=exatns_tensor_contract(a1int_tensor,mocoef_tensor(1,1),aoint_tensor,"D(i,q,r,s)+=R+(p,i)*L(p,q,r,s)")
          ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
          if(ierr.ne.EXA_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=11; return; endif
-         ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
          ierr=exatns_tensor_contract(a2int_tensor,a1int_tensor,mocoef_tensor(1,2),"D(i,j,r,s)+=L(i,q,r,s)*R(q,j)")
+         ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
          if(ierr.ne.EXA_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=21; return; endif
          ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
          ierr=exatns_tensor_init(a1int_tensor,zero)
+         ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
          ierr=exatns_tensor_contract(a1int_tensor,mocoef_tensor(2,1),aoint_tensor,"D(i,q,r,s)=R+(p,i)*L(p,q,r,s)")
          if(ierr.ne.EXA_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=12; return; endif
          ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
@@ -329,6 +321,7 @@ module exacorr_ao_to_mo
 
 !        Destruct a1 integrals:
          ierr=exatns_tensor_destroy(a1int_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=25; return; endif
+         ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
 
 !        Do 3rd and 4th quarter-transformation
          ierr=exatns_tensor_create(a3int_tensor,'a3int',a3int_id,a3int_root,EXA_DATA_KIND_C8)
@@ -354,14 +347,16 @@ module exacorr_ao_to_mo
 
 !        Destruct a2 and a3 integrals:
          ierr=exatns_tensor_destroy(a2int_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=35; return; endif
+         ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
          ierr=exatns_tensor_destroy(a3int_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=45; return; endif
+         ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
 !        Destruct mocoef tensors:
          do i = 1, 4
            do spin = 1, 2
             ierr=exatns_tensor_destroy(mocoef_tensor(spin,i)); if(ierr.ne.EXA_SUCCESS) then; ierr=45; return; endif
+            ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
             end do
          end do
-         ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
          call print_date('leaving aomo_transform')
 
         end subroutine aomo_transform
@@ -508,5 +503,42 @@ module exacorr_ao_to_mo
          return
 
         end subroutine test_integral_generation
+
+        subroutine print_tensornorm (tens)
+
+          type(tens_rcrsv_t):: tens, scalar
+          integer ierr,rank
+ 
+          ! create a rank-0 tensor
+          ierr=exatns_tensor_create(scalar,'scalar',EXA_DATA_KIND_C8)
+          if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_tensor_create() failed!')
+          ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
+
+          ! get the rank and do the contraction
+          rank = tens%get_rank(ierr)
+          select case (rank)
+          case(0)
+              ierr=exatns_tensor_contract(scalar,tens,tens,'E()+=D+()*D()')
+          case(1)
+              ierr=exatns_tensor_contract(scalar,tens,tens,'E()+=D+(a)*D(a)')
+          case(2)
+              ierr=exatns_tensor_contract(scalar,tens,tens,'E()+=D+(a,b)*D(a,b)')
+          case(3)
+              ierr=exatns_tensor_contract(scalar,tens,tens,'E()+=D+(a,b,c)*D(a,b,c)')
+          case(4)
+              ierr=exatns_tensor_contract(scalar,tens,tens,'E()+=D+(a,b,c,d)*D(a,b,c,d)')
+          case default
+              ierr=1
+          end select
+          if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_contract() failed!')
+          ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit('exatns_sync() failed!')
+          ierr=exatns_tensor_traverse(scalar,'PrintTensor')
+          if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_traverse() failed!')
+          ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit('exatns_sync() failed!')
+          ierr=exatns_tensor_destroy(scalar); if(ierr.ne.EXA_SUCCESS) then; ierr=45; return; endif
+          ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit('exatns_sync() failed!')
+
+        end subroutine print_tensornorm
+
 
 end module exacorr_ao_to_mo
