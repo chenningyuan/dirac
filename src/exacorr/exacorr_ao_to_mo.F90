@@ -159,6 +159,7 @@ module exacorr_ao_to_mo
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
    
          !Register the standard print method (needs to be done at the user side)
+         call tens_printer%reset_thresh(0.01D0)
          ierr=exatns_method_register('PrintTensor',tens_printer)
          if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register() failed!')
 
@@ -197,6 +198,9 @@ module exacorr_ao_to_mo
 
            !Destroy aoint-tensor:
            ierr=exatns_tensor_destroy(aoint_tensor)
+           ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
+
+           ierr=exatns_tensor_destroy(moint_tensor)
            ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
 
            call print_date('completed mo integral tensor')
@@ -278,6 +282,8 @@ module exacorr_ao_to_mo
               call print_tensornorm (mocoef_tensor(spin,i))
            end do
          end do
+         ierr=exatns_tensor_traverse(mocoef_tensor(1,1),'PrintTensor')
+         ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
 
          call print_date('initialized mo-coefficients')
 
