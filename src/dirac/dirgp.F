@@ -2824,7 +2824,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck SelFrag */
       SUBROUTINE SELFRAG(CSEL,NVECS,ESEL,IBSEL,NFRAG,NSTR,FRAGFIL,
      &                   OWNBAS,NUCFRAG,IOPT,KVEC,CMO,EIG,IBEIG,
-     &                   IOFF,WORK,KFREE,LFREE)
+     &                   IOFF,KRMC_FLG,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Routine for extracting coefficients, eigenvalues and boson irrep
@@ -2871,7 +2871,7 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbham.h"
-      LOGICAL TOBE,OWNBAS,LBIT,TOTERG_DEF
+      LOGICAL TOBE,OWNBAS,LBIT
       CHARACTER FRAGFIL(NFRAG)*6
       DIMENSION CSEL(*),ESEL(*),IBSEL(*),NVECS(*),CMO(*),KVEC(2,NFRAG),
      &          EIG(*),IBEIG(*),NSTR(2,0:2,NFRAG),NUCFRAG(NFRAG),WORK(*)
@@ -2881,8 +2881,7 @@ C
 !     flag for MCSCF coefficents present on fragment/molecular
 !     coefficients file
       CMCSCF_MAGIC = 137.0D0
-!miro: initialization
-      TOTERG_DEF=.FALSE.
+      KRMC_FLG = 0
 C
 C.....loop over fragments
       INUC  = 1
@@ -2921,22 +2920,18 @@ C.......Fragment orbitals in molecular basis
 !         check for MCSCF coefficients on fragment/molecule file
           CALL REACMO(LUCOEF,FRAGFIL(IFRAG),CMO,EIG,IBEIG,
      &                TOTERG,-1,WORK,KFREE,LFREE)
-          TOTERG_DEF=.TRUE. ! miro: yes, we have the TOTERG value
-!
-!         set local IOPT_TMP
-          IOPT_TMP = IOPT
 !
 !         found MCSCF coefficients on file CMOFIL?
-          IF( TOTERG .eq. CMCSCF_MAGIC ) IOPT_TMP = 14
+          IF( TOTERG .eq. CMCSCF_MAGIC ) KRMC_FLG = 1
           CALL REACMO(LUCOEF,FRAGFIL(IFRAG),CMO,EIG,IBEIG,
-     &                TOTERG,IOPT_TMP,WORK,KFREE,LFREE)
+     &                TOTERG,IOPT,WORK,KFREE,LFREE)
 !
           ICOFF = 1
           IEOFF = 1
           DO IFRP = 1, NFSYM
              IF(NSTR(IFRP,0,IFRAG).GT.0) THEN
 C             Select coefficients
-              IF(LBIT(IOPT_TMP,2)) THEN
+              IF(LBIT(IOPT,2)) THEN
                 ICSEL = ICOFF + NFBAS(IFRP,0)*IOFF(IFRP)
                 CALL SELCFS (CMO(1+ICMOQ(IFRP)),IFRP,CSEL(ICSEL),
      &                       NVECS(IFRP),WORK(KVEC(IFRP,IFRAG)),
@@ -2945,13 +2940,13 @@ C             Select coefficients
               ENDIF
               IESEL = IEOFF + IOFF(IFRP)
 C             Select eigenvalues
-              IF(LBIT(IOPT_TMP,3)) THEN
+              IF(LBIT(IOPT,3)) THEN
                 CALL SELEIG(EIG(1+IORB(IFRP)),IFRP,ESEL(IESEL),
      &               WORK(KVEC(IFRP,IFRAG)),
      &               NSTR(IFRP,2,IFRAG),NSTR(IFRP,1,IFRAG))
               ENDIF
 C       Select boson irrep information
-              IF(LBIT(IOPT_TMP,4)) THEN
+              IF(LBIT(IOPT,4)) THEN
                 CALL SELIBEIG(IBEIG,IORB(IFRP),IFRP,
      &                 IBSEL(IESEL),WORK(KVEC(IFRP,IFRAG)),
      &                 NSTR(IFRP,2,IFRAG),NSTR(IFRP,1,IFRAG))
@@ -2968,16 +2963,6 @@ C       Select boson irrep information
  12     CONTINUE
         INUC = INUC + NUCFRAG(IFRAG)
  10   CONTINUE
-!
-!     reset IOPT flag for extra printout in ANAPR1 and proper handling 
-!     of the occupation vector.
-      IF (TOTERG_DEF) THEN
-        IF((TOTERG.eq.CMCSCF_MAGIC).and.(FRAGFIL(NFRAG).eq.'DFCOEF')) 
-     &    IOPT = IOPT_TMP
-      ELSE ! miro: TOTERG not defined
-        IF(FRAGFIL(NFRAG).eq.'DFCOEF') 
-     &    IOPT = IOPT_TMP
-      ENDIF
       
       RETURN
 C
