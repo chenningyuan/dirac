@@ -283,6 +283,7 @@ module talsh_ao_to_mo
 
          complex(8):: zero=(0.D0,0.D0)
          integer   :: ierr, tens_rank, i, imo, nao
+         logical, parameter :: debug=.false.
 
          call print_date('entered aomo_transform')
 !        Get tensor dimension of input and output tensors
@@ -303,8 +304,13 @@ module talsh_ao_to_mo
             ierr=talsh_tensor_construct(mocoefb_tensor(i),C8,mocoef_dims,init_val=zero)
             call get_mocoef_tensor (nao, nmo(i), mo_list(imo+1:imo+nmo(i)), mocoefa_tensor(i), mocoefb_tensor(i))
             imo = imo + nmo(i)
+            if (debug) then
+               print*, "MOCoefa = ",talshTensorImageNorm1_cpu(mocoefa_tensor(i))
+               print*, "MOCoefb = ",talshTensorImageNorm1_cpu(mocoefb_tensor(i))
+            end if
          end do
          call print_date('initialized mo-coefficients')
+
 
 !        Set tensor dimensions for the index transformation (simple brute-force algorithm)
          a1int_dims(1)   = moint_dims(1)

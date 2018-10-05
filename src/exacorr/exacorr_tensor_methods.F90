@@ -275,7 +275,7 @@ module exacorr_tensor_methods
          implicit none
          integer, intent(in) :: nmo          ! the length of the mo basis
          integer, intent(in) :: mo_list(:)   ! and their indices
-         character, intent(in):: spin
+         integer, intent(in) :: spin
          class(init_mocoef_tensor_t), intent(out):: this
 
          integer  :: nao,j,k
@@ -290,14 +290,14 @@ module exacorr_tensor_methods
          allocate (this%mocoef_all(nao,2*nmo))
          call get_mo_coefficients (qmo,mo_list,nmo)
 
-         if (spin == 'a' .or. spin == 'A') then
+         if (spin == 1) then
             do k = 1, nmo
                do j = 1, nao
                 this%mocoef_all(j,k)     = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
                 this%mocoef_all(j,k+nmo) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
                end do
             end do
-         elseif (spin == 'b' .or. spin == 'B') then
+         elseif (spin == 2) then
             do k = 1, nmo
                do j = 1, nao
                 this%mocoef_all(j,k)     = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
