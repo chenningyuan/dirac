@@ -60,6 +60,7 @@ for the calculation of transition moments (note that they contribute to the same
       .MPOLE
       1
 
+
 keyword(ANALYZE)
 
 Analyze solution vectors and show the most important excitations at the
@@ -156,6 +157,19 @@ Invoke calculation of oscillator strengths using the full operator coupling the 
 keyword(NROTAV)
 
 As described under the .BED keyword,  `Lebedev quadrature <https://en.wikipedia.org/wiki/Lebedev_quadrature>`_ is employed for rotational average. This quadrature over the solid angles can integrate a spherical harmonic to high accuracy with a maximum angular momentum :math:`L_\mbox{max}`. The default value of :math:`L_\mbox{max}`is presently 5, but can be reset with this keyword.
+
+keyword(BEDCON)
+
+Specification of contributions of the full light-matter interaction of order :math:`n` in the
+wave vector
+
+.. math::
+
+   \hat{T}_{\mathrm{full}}^{\left[n\right]}(\omega)=\frac{k^{n}}{n!}\frac{d^{n}}{dk^{n}}\left[\frac{e}{\omega}
+   \left(c\boldsymbol{\alpha}\cdot\boldsymbol{\epsilon}\right)e^{+i\left(\boldsymbol{k}\cdot\boldsymbol{r}\right)}\right]_{k=0}
+   =\frac{e}{\omega}\frac{i^{n}}{n!}\left(c\boldsymbol{\alpha}\cdot\boldsymbol{\epsilon}\right)\left(\boldsymbol{k}\cdot\boldsymbol{r}\right)^{n}
+
+
 
 Control variational parameters
 ==============================

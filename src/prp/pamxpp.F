@@ -374,7 +374,7 @@ C
      &            '.ITRINT','.CNVINT','.REAXVC','.BEDCHK',
      &            '.RESFAC','.ORBANA','.ROTAV ','.SKIPEE',
      &            '.MXLOAD','.ONLYSF','.ONLYSG','.BED   ',
-     &            '.BEDDER','.BEDSTP','.XXXXXX','.XXXXXX'/
+     &            '.BEDDER','.BEDSTP','.BEDCON','.XXXXXX'/
 C
 #include "ibtfun.h"
 C
@@ -700,6 +700,18 @@ C&&&& BEDSTP: Step length for numerical BED derivatives
                   READ(LUCMD,*) BEDSTP
                GO TO 100
  35            CONTINUE
+C&&&& BEDCON: Contribution to order L in the wave vector from full light-matter interaction
+               READ(LUCMD,*) IORDER
+               NDEG=3*(IORDER+2)*(IORDER+1)/2
+               IF((NPPAPT+NDEG).GT.MAXLPP) THEN
+                 WRITE(LUPRI,'(A,A,I3)') 'XPPINP: Pointer array LPP',
+     &                 'APU out of bounds for truncated light-matter ',
+     &                 'interaction of order ', IORDER
+                 WRITE(LUPRI,'(A,I5)') 
+     &           'Increase MAXEXP to ',(NPPAPT+NDEG)
+               ENDIF
+               CALL DEF_BEDCON(IORDER,LPPAPU(NPPAPT+1),IPRXPP)
+               NPPAPT = NPPAPT + NDEG
                GO TO 100
  36            CONTINUE
                GO TO 100
