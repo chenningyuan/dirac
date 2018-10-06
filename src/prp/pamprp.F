@@ -9384,8 +9384,6 @@ C
       DO I = 2,L
         PFAC = PFAC/I
       ENDDO
-CTROND      
-      WRITE(6,*) 'TEST..',L,K,PFAC      
       NPCOMP         = 1
       PLABEL(1:2) = 'CM'
       PNAME       = 'BEDcL'//CHRNOS(L/10)//CHRNOS(MOD(L,10))

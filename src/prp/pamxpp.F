@@ -414,7 +414,7 @@ C
       ITRIPP(1)  = 1
       ITRIPP(2)  = 1
       NPPAPT     = 0
-      KVAL_OSC   = -1
+      KVAL_OSC   = 0
       CALL IZERO(NPPAP,8)
       MAXEXC     = 0
       CALL IZERO(KEXCNV,8)
@@ -549,7 +549,7 @@ C&&&& EPOLE : Electric multipoles of order L
      &           'APU out of bounds for electric multipole of order ',
      &           IORDER
                  WRITE(LUPRI,'(A,I5)') 
-     &           'Increase MAXEXP to ',(NPPAPT+NDEG)
+     &           'Increase MAXLPP to ',(NPPAPT+NDEG)
                ENDIF
                CALL DEF_EPOLE(IORDER,LPPAPU(NPPAPT+1),IPRXPP)
                NPPAPT = NPPAPT + NDEG
@@ -577,45 +577,6 @@ C&&&& INTFLG: specify what two-electron integrals to include
  16            CONTINUE
 C&&&& INTENS: ask for oscillator strengths to order k in the wave vector
                  READ(LUCMD,*) KVAL_OSC
-                 IF(KVAL_OSC.EQ.0) THEN
-                   IEMAX = 1
-                   IMMAX = 0
-                   IMMAX = 0
-                 ELSE
-                   WRITE(LUPRI,*) 
-     &   '* User asked for oscillator strengths to order :',KVAL_OSC
-                   CALL QUIT('XPPINT: Not implemented yet !')
-                 ENDIF
-C................Electric multipoles
-                 DO IORDER = 1,IEMAX
-                   NDEG=(IORDER+2)*(IORDER+1)/2
-                   IF((NPPAPT+NDEG).GT.MAXLPP) THEN
-                 WRITE(LUPRI,'(A,A,I3)') 'XPPINP: Pointer array LPP',
-     &           'APU out of bounds for electric multipole of order ',
-     &           IORDER
-                 WRITE(LUPRI,'(A,I5)') 
-     &           'Increase MAXEXP to ',(NPPAPT+NDEG)
-                   ENDIF
-                   CALL DEF_EPOLE(IORDER,LPPAPU(NPPAPT+1),IPRXPP)
-                   IEPOFF(IORDER)=NPPAPT
-                   NPPAPT = NPPAPT + NDEG
-                 ENDDO
-C..................Magnetic multipoles
-                 IOFF = 1
-                 DO IORDER = 1,IMMAX
-                   NDEG=3*(IORDER+1)*IORDER/2
-                   IF((NPPAPT+NDEG).GT.MAXLPP) THEN
-                 WRITE(LUPRI,'(A,A,I3)') 'XPPINP: Pointer array LPP',
-     &           'APU out of bounds for magnetic multipole of order ',
-     &           IORDER
-                 WRITE(LUPRI,'(A,I5)') 
-     &           'Increase MAXEXP to ',(NPPAPT+NDEG)
-                   ENDIF
-                   CALL DEF_MPOLE(IORDER,LPPAPU(NPPAPT+1),IPRXPP)
-                   IMPOFF(IORDER)=NPPAPT
-                   NPPAPT = NPPAPT + NDEG
-                   IOFF   = IOFF   + NDEG
-                 ENDDO
                GOTO 100
  17            CONTINUE
 C&&&& OCCUP: String of inactive orbitals in XPP module
@@ -708,7 +669,7 @@ C&&&& BEDCON: Contribution to order L in the wave vector from full light-matter 
      &                 'APU out of bounds for truncated light-matter ',
      &                 'interaction of order ', IORDER
                  WRITE(LUPRI,'(A,I5)') 
-     &           'Increase MAXEXP to ',(NPPAPT+NDEG)
+     &           'Increase MAXLPP to ',(NPPAPT+NDEG)
                ENDIF
                CALL DEF_BEDCON(IORDER,LPPAPU(NPPAPT+1),IPRXPP)
                NPPAPT = NPPAPT + NDEG
@@ -747,6 +708,50 @@ C        calculate default MAXRM
      &  ' INPUT ERROR: QED invalid for Levy-Leblond/no-pair/.SKIPEP'
          INPERR = INPERR + 1
       END IF
+      IEMAX = KVAL_OSC + 1
+      IMMAX = KVAL_OSC
+      IBMAX = KVAL_OSC
+C.....Calculate total number of operators
+      NOP = 0
+      DO IORDER = 0,IBMAX
+        NOP=NOP+3*(IORDER+2)*(IORDER+1)/2
+      ENDDO
+      DO IORDER = 1,IEMAX
+        NOP=NOP+(IORDER+2)*(IORDER+1)/2
+      ENDDO
+      DO IORDER = 1,IMMAX
+        NOP=NOP+3*(IORDER+1)*IORDER/2
+      ENDDO
+      IF((NPPAPT+NOP).GT.MAXLPP) THEN
+          WRITE(LUPRI,'(A,A,A,I3)')
+     &      'XPPINP: Pointer array LPPAPU out of ',
+     &      'bounds for truncated light-matter ',
+     &      'interaction to order ', KVAL_OSC
+          WRITE(LUPRI,'(A,I5)') 
+     &      'Increase MAXLPP to ',(NPPAPT+NOP)
+          CALL QUIT('XPPINP: MAXLPP out of bounds')
+       ENDIF
+C.....Generalized velocity gauge
+      DO IORDER = 0,IBMAX
+        NDEG=3*(IORDER+2)*(IORDER+1)/2
+        CALL DEF_BEDCON(IORDER,LPPAPU(NPPAPT+1),IPRXPP)
+        IBDOFF(IORDER)=NPPAPT
+        NPPAPT = NPPAPT + NDEG
+      ENDDO
+C.....Electric multipoles
+      DO IORDER = 1,IEMAX
+        NDEG=(IORDER+2)*(IORDER+1)/2
+        CALL DEF_EPOLE(IORDER,LPPAPU(NPPAPT+1),IPRXPP)
+        IEPOFF(IORDER)=NPPAPT
+        NPPAPT = NPPAPT + NDEG
+      ENDDO
+C.....Magnetic multipoles
+      DO IORDER = 1,IMMAX
+        NDEG=3*(IORDER+1)*IORDER/2
+        CALL DEF_MPOLE(IORDER,LPPAPU(NPPAPT+1),IPRXPP)
+        IMPOFF(IORDER)=NPPAPT
+        NPPAPT = NPPAPT + NDEG
+      ENDDO
 C
 C     Print section
 C     =============
@@ -1922,9 +1927,9 @@ C
       DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),OMEGA(MAXEXC,NBSYM),
      &          RCNV(MAXEXC,NBSYM),ISSYM(MAXEXC,NBSYM),WORK(*)
       character (len=4),  allocatable   :: symlab(:)
-      real(8), allocatable              :: excerg(:),excbuf(:),fval(:,:)
-      integer, allocatable              :: indx(:),irps(:),ind(:)
-      integer, allocatable              :: n_ev(:),ieerg(:,:),iebuf(:,:)
+      real(8), allocatable :: excerg(:),excbuf(:),fval(:,:,:)
+      integer, allocatable :: indx(:),irps(:),ind(:)
+      integer, allocatable :: n_ev(:),ieerg(:,:),iebuf(:,:)
       CHARACTER TTYP(-1:1)*2
       DATA TTYP /'T-','T0','T+'/
 #include "ibtfun.h"
@@ -2021,6 +2026,7 @@ C.............For Omega = distinguish betweem '+'(IREPP) and '-' reflection symm
           ENDDO
           IREPP = ISYMAX(3,1)
         ENDDO
+C.......Order excitations on energy
         CALL INDEXI(NEXC,IRPS,INDX)
         DO I = 1,NEXC
           II = INDX(I)
@@ -2085,6 +2091,7 @@ C.......we include the ground state
             IOFF = IOFF + MEXC
           ENDDO
         ENDDO
+C.......Order excitations on energy
         CALL INDEXI(NEXC,IRPS,INDX)
         DO I = 1,NEXC
           II = INDX(I)
@@ -2176,6 +2183,7 @@ C.....Zeroth order in the wave vector
 C     ------------------------------
       IF(KVAL_OSC.GE.0) THEN
         IEVAL = 1
+        IBVAL = 0 
         NDEG=(IEVAL+2)*(IEVAL+1)/2
         IOFF  = IEPOFF(IEVAL)
 C.......All crossterms
@@ -2222,52 +2230,84 @@ C.......All crossterms
           ENDDO
         ENDDO
 C.......Isotropic contribution
-        allocate(fval(MAXEXC,NBSYM))
+        allocate(fval(MAXEXC,NBSYM,2))
         NDIM= MAXEXC*NBSYM
-        CALL DCOPY(NDIM,D0,0,FVAL,1)
+        CALL DCOPY(NDIM*2,D0,0,FVAL,1)
+C..........length gauge        
+        NDEG=(IEVAL+2)*(IEVAL+1)/2
         IOFF  = IEPOFF(IEVAL)
         DO IDEGA = 1,NDEG
           INDAP   = IOFF+IDEGA
           INDPRA  = LPPAPU(IOFF+IDEGA)
           ISYM    = IPRPSYM(INDPRA)
-          IREP    = ISYM - 1
           ITIMA   = IPRPTIM(INDPRA)
           MEXC=KEXCNV(ISYM)
           DO IEXC = 1,MEXC
             XMOM = ATMPPF(IEXC,INDAP,ISYM,1)
-            FVAL(IEXC,ISYM) = FVAL(IEXC,ISYM) 
+            FVAL(IEXC,ISYM,1) = FVAL(IEXC,ISYM,1) 
      &                      + XMOM*XMOM*OMEGA(IEXC,ISYM)
           ENDDO
         ENDDO
-        CALL DSCAL(NDIM,D2R3,FVAL,1)
-        WRITE(LUPRI,'(/A)')
-     &  '* Isotropic DL-DL non-zero oscillator strengths (f)'
-        WRITE(LUPRI,'(80A1)') ('=',I=1,51)
+C..........velocity gauge        
+        NDEG=3*(IBVAL+2)*(IBVAL+1)/2
+        IOFF  = IBDOFF(IBVAL)
+        DO IDEGA = 1,NDEG
+          INDAP   = IOFF+IDEGA
+          INDPRA  = LPPAPU(IOFF+IDEGA)
+          ISYM    = IPRPSYM(INDPRA)
+          ITIMA   = IPRPTIM(INDPRA)
+          MEXC=KEXCNV(ISYM)
+          DO IEXC = 1,MEXC
+            XMOM = ATMPPF(IEXC,INDAP,ISYM,1)
+            FVAL(IEXC,ISYM,2) = FVAL(IEXC,ISYM,2) 
+     &                      + XMOM*XMOM/OMEGA(IEXC,ISYM)
+          ENDDO
+        ENDDO
+C.......
+        CALL DSCAL(NDIM*2,D2R3,FVAL,1)
+        WRITE(LUPRI,'(/A,ES8.2)')
+     &  '* Isotropic oscillator strengths (f) above threshold: ', TTOL
+        CALL PRSYMB(LUPRI,'=',62,0)
         WRITE(LUPRI,'(A)') 'DL = dipole length'
+        WRITE(LUPRI,'(A)') 'DV = dipole velocity'        
         WRITE(LUPRI,'(A)') 'Rate = Dipole radiation rate (s-1)'
         WRITE(LUPRI,'(A)') 
      &      'Lifetime = corresponding radiation lifetime (s)'
         WRITE(LUPRI,'(/A)')
-     &  'Level  Frequency (eV)    f           Rate         Lifetime'//
-     &     '    Symmetry'
-        WRITE(LUPRI,'(80A1)') ('-',I=1,72)
+     &       'Level  Frequency (eV)   '//
+     &       'f(DL-DL)        Rate           Lifetime     '//
+     &       'f(DV-DV)        Rate           Lifetime     '//        
+     &       'Symmetry'
+        CALL PRSYMB(LUPRI,'-',120,0)
         DO JEXC = 2,NEXC ! skip reference state
           II = INDX(JEXC)
           IEXC = IEERG(1,II)
           ISYM = IEERG(2,II)
-          OSCIL = FVAL(IEXC,ISYM)
-          IF(OSCIL .GT. 1.0D-8) THEN
-            ILAB = ISSYM(IEXC,ISYM)
-            RATE = D2*ALPHAC**3*OSCIL*OMEGA(IEXC,ISYM)**2/AUTIME
-            WRITE(LUPRI,'(I5,F13.5,F12.6,1P,2E15.5,3X,A4)') 
-     &      JEXC-1,OMEGA(IEXC,ISYM)*XTEV,OSCIL,RATE,D1/RATE,SYMLAB(ILAB)
+          OSCIL1 = FVAL(IEXC,ISYM,1)
+          OSCIL2 = FVAL(IEXC,ISYM,2)
+          OSCIL  = MAX(OSCIL1,OSCIL2)
+          IF(OSCIL .GT. TTOL) THEN
+            ILAB  = ISSYM(IEXC,ISYM)
+            RATE1 = D2*ALPHAC**3*OSCIL1*OMEGA(IEXC,ISYM)**2/AUTIME
+            RATE2 = D2*ALPHAC**3*OSCIL2*OMEGA(IEXC,ISYM)**2/AUTIME            
+            WRITE(LUPRI,'(I5,F16.5,2(2X,ES12.6,2ES15.5),5X,A4)') JEXC-1,
+     &           OMEGA(IEXC,ISYM)*XTEV,
+     &           OSCIL1,RATE1,D1/RATE1,OSCIL2,RATE2,D1/RATE2,
+     &           SYMLAB(ILAB)
           ENDIF
         ENDDO
-        WRITE(LUPRI,'(80A1)') ('-',I=1,72)
-        TOT = DSUM(NDIM,FVAL,1)
-        WRITE(LUPRI,'(A,F12.5)') 'Sum of oscillator strengths: ',TOT
+        CALL PRSYMB(LUPRI,'-',120,0)
+        TOT = DSUM(NDIM,FVAL(1,1,1),1)
+        WRITE(LUPRI,'(A,F12.5)')
+     &     'Sum of oscillator strengths (DL) : ',TOT
+        TOT = DSUM(NDIM,FVAL(1,1,2),1)
+        WRITE(LUPRI,'(A,F12.5)')
+     &     'Sum of oscillator strengths (DV) : ',TOT
         deallocate(fval)
       ENDIF
+      DO IK = 0,KVAL_OSC,2 ! only even orders contribute
+        CALL GENOSC(IK)
+      ENDDO
  10   CONTINUE
       deallocate(symlab)
       deallocate(excerg)
@@ -2278,4 +2318,3 @@ C.......Isotropic contribution
 C
       RETURN
       END
-
