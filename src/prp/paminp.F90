@@ -2681,6 +2681,12 @@
 !
 !     Sort a list of operators in symmetries
 !
+!        IPOP1U - input list of operators
+!        IPOP1S - output list of operators sorted on symmetries        
+!        NOP1T  - total number of operators
+!        NOP1   - number of operators in ISYM
+!        JOP1   - offset to operators in ISYM        
+!      
 !     Written by T.Saue June 28 1996
 !     Last revision - June 26 1996 - tsaue
 !
