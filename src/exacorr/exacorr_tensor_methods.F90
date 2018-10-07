@@ -139,7 +139,8 @@ module exacorr_tensor_methods
          integer :: i, j, k, l, ish, jsh, ksh, lsh, ioff, joff, koff, loff, ijkl
          integer :: li,lj,lk,ll,ni,nj,nk,nl
          real(8) :: ei,ej,ek,el,ci,cj,ck,cl,xi,yi,zi,xj,yj,zj,xk,yk,zk,xl,yl,zl
-         real(8) :: gout(21*21*21*21) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
+         real(8),save :: gout(21*21*21*21) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
+         !$OMP threadprivate(gout)
          real(8), parameter :: fijkl = 1.0
 
          ierr=0 !set error code to success
@@ -148,10 +149,12 @@ module exacorr_tensor_methods
            return
          endif
 
+!        Interest needs to be initalized for each thread, this function will initialize (or return immediately if it is).
+         call interest_initialize(.false.)
+
          ! map the arguments to names used in the context of integral evaluation
          first_ao(1:4) = tens_bases(1:4)
          nao(1:4) = tens_dims(1:4)
-         print*,"hi I'm inside tens_init_ao_integrals",first_ao(1:4),nao(1:4)
          call c_f_pointer(tens_body,ao_tens,nao(1:4)) !map C pointer to 4-dimensional array
 
 !        Allocate and get shell information for all shells that we will treat
@@ -206,13 +209,9 @@ module exacorr_tensor_methods
                                   lj,ej,xj,yj,zj,cj )
                      ijkl = 0
                      do l = 1, nl
-                        if (l+loff>tens_dims(4)) exit
                         do k = 1, nk
-                           if (k+koff>tens_dims(3)) exit
                            do j = 1, nj
-                              if (j+joff>tens_dims(2)) exit
                               do i = 1, ni
-                                 if (i+ioff>tens_dims(1)) exit
                                  ijkl = ijkl + 1
                                  ao_tens(i+ioff,j+joff,k+koff,l+loff) = dcmplx(gout(ijkl),0.D0)
                               end do

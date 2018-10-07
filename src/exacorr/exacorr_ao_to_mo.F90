@@ -71,8 +71,7 @@ module exacorr_ao_to_mo
          call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
          if (my_MPI_rank == 0) print*, " Starting AO-to-MO transform with exatensor"
 
-!        Initialize libraries
-         if (my_MPI_rank == 0) call interest_initialize
+!        Initialize global data (read from DFCOEF or similar by master)
          call initialize_global_data
 
          nao     = get_nao()   ! This is the otal number of ao's
@@ -182,7 +181,11 @@ module exacorr_ao_to_mo
            if(ierr.ne.EXA_SUCCESS) call quit('Aoint_calculator failed!')
            ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
            call print_date('finished ao integral calculation')
-           call print_tensornorm (aoint_tensor)
+           ! the  next three lines are for debugging, 
+           call print_tensornorm (aoint_tensor) ! this is usually sufficent for checking
+           ! when uncommenting the next line: keep in mind that printing an entire tensor yields an enormous output
+           ! ierr=exatns_tensor_traverse(aoint_tensor,'PrintTensor')
+           ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
 
            !Create mo-integral-tensor:
            do i = 1, 4
