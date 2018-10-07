@@ -35,6 +35,7 @@ module talsh_cc
 !        Written by Lucas Visscher, winter 2016/2017
  
          use exacorr_global
+         use talsh_ao_to_mo, only : tensor_norm2
 
          integer, intent(in) :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
          integer, intent(in) :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
@@ -173,7 +174,7 @@ module talsh_cc
          end if
 
          if (debug) then
-            print*, "Voovv = ",talshTensorImageNorm1_cpu(oovv_tensor)
+            print*, "Voovv = ",tensor_norm2(oovv_tensor)
          end if
 
          do iccsd = 1, nccsd
@@ -259,17 +260,17 @@ module talsh_cc
          end if
 
          if (debug) then
-            print*, "T1amp  = ",talshTensorImageNorm1_cpu(t1_tensor)
-            print*, "T2amp  = ",talshTensorImageNorm1_cpu(t2_tensor)*ONE_QUARTER
-            print*, "Tau    = ",talshTensorImageNorm1_cpu(tau_tensor)*ONE_QUARTER
-            print*, "hoint  = ",talshTensorImageNorm1_cpu(hoint_tensor)
-            print*, "goint  = ",talshTensorImageNorm1_cpu(goint_tensor)
-            print*, "hvint  = ",talshTensorImageNorm1_cpu(hvint_tensor)
-            print*, "gvint  = ",talshTensorImageNorm1_cpu(gvint_tensor)
-            print*, "hovint = ",talshTensorImageNorm1_cpu(hovint_tensor)
-            print*, "a int  = ",talshTensorImageNorm1_cpu(aint_tensor)*ONE_QUARTER
-            print*, "h int  = ",talshTensorImageNorm1_cpu(hint_tensor)
-            print*, "c int  = ",talshTensorImageNorm1_cpu(cint_tensor)
+            print*, "T1amp  = ",tensor_norm2(t1_tensor)
+            print*, "T2amp  = ",tensor_norm2(t2_tensor)*ONE_QUARTER
+            print*, "Tau    = ",tensor_norm2(tau_tensor)*ONE_QUARTER
+            print*, "hoint  = ",tensor_norm2(hoint_tensor)
+            print*, "goint  = ",tensor_norm2(goint_tensor)
+            print*, "hvint  = ",tensor_norm2(hvint_tensor)
+            print*, "gvint  = ",tensor_norm2(gvint_tensor)
+            print*, "hovint = ",tensor_norm2(hovint_tensor)
+            print*, "a int  = ",tensor_norm2(aint_tensor)*ONE_QUARTER
+            print*, "h int  = ",tensor_norm2(hint_tensor)
+            print*, "c int  = ",tensor_norm2(cint_tensor)
          end if
 
 !        This term appears twice as we need to permute i and j

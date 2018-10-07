@@ -12,6 +12,7 @@ module talsh_ao_to_mo
         public talsh_compute_mo_integrals
         public compute_ao_integrals
         public get_integral_tensor
+        public tensor_norm2
 
         complex(8), parameter:: zero=(0.D0,0.D0)
 

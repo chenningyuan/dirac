@@ -1,12 +1,9 @@
 !
-! This test calculates the energy and some properties
-! of the dichloroethane molecule in different geometries.
-! Note that we consistently leave out the SS integrals
-! by using the LVCORR option in the general section.
+! This test calculates the coupled cluster energy
 !
 **DIRAC
 .TITLE
-1,2-dichloroethane. Restricted kinetic balance. Energies, properties.
+X2C Hamiltonian. CC Energies.
 .WAVE F
 **INTEGRALS
 *READIN
