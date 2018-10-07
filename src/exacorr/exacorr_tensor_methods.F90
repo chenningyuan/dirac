@@ -300,7 +300,7 @@ module exacorr_tensor_methods
          elseif (spin == 2) then
             do k = 1, nmo
                do j = 1, nao
-                this%mocoef_all(j,k)     = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
+                this%mocoef_all(j,k)     = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
                 this%mocoef_all(j,k+nmo) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
                end do
             end do
