@@ -444,7 +444,7 @@ module exacorr_cc
 !        Written by Lucas Visscher, summer 2017
  
          use exacorr_datatypes
-         use exacorr_ao_to_mo
+         use talsh_ao_to_mo ! to be switched to exacorr once the antisymmetrization works
          use exacorr_global
 
          integer, intent(in)               :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors

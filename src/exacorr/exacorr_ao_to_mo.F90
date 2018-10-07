@@ -8,9 +8,10 @@ module exacorr_ao_to_mo
         implicit none
         private
         public exacorr_compute_mo_integrals
-        public test_integral_generation
+        public get_integral_tensor
+        public print_tensornorm2
 
-        complex(8), parameter              :: zero=(0.D0,0.D0)
+        complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0)
 
        contains
 
@@ -182,7 +183,7 @@ module exacorr_ao_to_mo
            ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
            call print_date('finished ao integral calculation')
            ! the  next three lines are for debugging, 
-           call print_tensornorm (aoint_tensor) ! this is usually sufficent for checking
+           call print_tensornorm2 (aoint_tensor) ! this is usually sufficent for checking
            ! when uncommenting the next line: keep in mind that printing an entire tensor yields an enormous output
            ! ierr=exatns_tensor_traverse(aoint_tensor,'PrintTensor')
            ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
@@ -199,7 +200,7 @@ module exacorr_ao_to_mo
            call aomo_transform (aoint_tensor,moint_tensor,initlabel)
 
            call print_date('completed mo integral tensor')
-           call print_tensornorm (moint_tensor)
+           call print_tensornorm2 (moint_tensor)
            ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
 
            !Destroy aoint-tensor:
@@ -284,7 +285,7 @@ module exacorr_ao_to_mo
               if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_init() failed!')
               ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
 !             print*,"created and initialized mocoef_tensor ",spin,i
-!             call print_tensornorm (mocoef_tensor(spin,i))
+!             call print_tensornorm2 (mocoef_tensor(spin,i))
            end do
          end do
 !        ierr=exatns_tensor_traverse(mocoef_tensor(1,1),'PrintTensor')
@@ -371,150 +372,104 @@ module exacorr_ao_to_mo
          call print_date('leaving aomo_transform')
 
         end subroutine aomo_transform
-        subroutine test_integral_generation (print_level)
 
-!This subroutine tests the parallel AO integral generation
-
-!        Written by Lucas Visscher, march 2018
-
-         use dirac_MO
-         use exacorr_datatypes
-         use exacorr_global
-         use module_interest_interface
-         use module_interest_eri
+        subroutine get_integral_tensor (aoint_tensor,integral_tensor,antisymmetrize,initlabel)
 
          implicit none
-         integer, intent(in) :: print_level  ! 0: only show that we running this test
-                                             ! 1: print only overall summary
-                                             ! 2: print information for each batch
 
-         integer             :: nao           ! the size of the atomic orbital basis
+         ! The strings initlabel are used to find the appropriate initializer for the mo-coefficients
+         ! This initializer has the coefficients stored (on all nodes) and just picks out the proper subset.
+         character(len=*), intent(in)       :: initlabel(2,4) ! Note that these are already given in Mulliken order !
+         type(tens_rcrsv_t), intent(inout)  :: aoint_tensor, integral_tensor
+         type(tens_rcrsv_t)                 :: moint_tensor
 
-         integer :: ierr
-         integer :: i, j, k, l, ish, jsh, ksh, lsh, ijkl
-         integer :: li,lj,lk,ll,ni,nj,nk,nl
-         real(8) :: ei,ej,ek,el,ci,cj,ck,cl,xi,yi,zi,xj,yj,zj,xk,yk,zk,xl,yl,zl
-         real(8) :: gout(21*21*21*21) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
-         real(8), parameter :: fijkl = 1.0
-         real(8) :: batch_value, ddot
-         real(8), allocatable :: batch_values(:,:,:,:)
-         integer            :: nshells ! number of AO shells
-         type(basis_func_info_t), allocatable :: gto(:)   ! array with basis function information
-         real(8) :: relative_error
+         integer, intent(in)                :: antisymmetrize
 
-!        Make some noise so that we know we are here
-         print*, " Testing AO integral generation by calculating all integrals once"
+         integer           :: ierr, tens_rank
+         integer           :: aoint_id(4),integral_id(4),moint_id(4)
+         integer(INTL)     :: aoint_root(4),integral_root(4),moint_root(4)
 
-!        Initialize libraries
-         call interest_initialize(print_level.gt.1)
-         if (print_level > 0) print*, " Initialized interest library"
-         call initialize_global_data
-         if (print_level > 0) print*, " Initialized global data"
+!        Check integrity of tensors
+         tens_rank = aoint_tensor%get_rank(ierr)
+         if (ierr.ne.0 .or. tens_rank.ne.4) call quit('input tensor corrupted in aomo_transform')
+         tens_rank = integral_tensor%get_rank(ierr)
+         if (ierr.ne.0 .or. tens_rank.ne.4) call quit('output tensor corrupted in aomo_transform')
+!        Determine ids and root
+         call aoint_tensor%get_space_ids(aoint_id,aoint_root,ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('aoint tensor corrupted')
+         call integral_tensor%get_space_ids(integral_id,integral_root,ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('integral tensor corrupted')
 
-!        Retrieve basis set information
-         nao     = get_nao()
+!        Copy the information about spaces from the starting and target tensors to the auxilliary ones
+!        Use relation (12|34) = <13|24> 
+         moint_id(1) = integral_id(1) 
+         moint_id(2) = integral_id(3)
+         moint_id(3) = integral_id(2)
+         moint_id(4) = integral_id(4)
 
-!        Get AOs and allocate array to store batch values
-         call get_gtos(1,nao,gto,nshells)
-         allocate(batch_values(nshells,nshells,nshells,nshells))
+         moint_root(1) = integral_root(1)
+         moint_root(2) = integral_root(3)
+         moint_root(3) = integral_root(2)
+         moint_root(4) = integral_root(4)
 
-         do lsh = 1, nshells
-            ll   =  gto(lsh)%orb_momentum
-            el   =  gto(lsh)%exponent(1)
-            xl   =  gto(lsh)%coord(1)
-            yl   =  gto(lsh)%coord(2)
-            zl   =  gto(lsh)%coord(3)
-            cl   =  gto(lsh)%coefficient(1)
-            nl   =  ncartesian(ll)
-            do ksh = 1, nshells
-               lk   =  gto(ksh)%orb_momentum
-               ek   =  gto(ksh)%exponent(1)
-               xk   =  gto(ksh)%coord(1)
-               yk   =  gto(ksh)%coord(2)
-               zk   =  gto(ksh)%coord(3)
-               ck   =  gto(ksh)%coefficient(1)
-               nk   =  ncartesian(lk)
-               do jsh = 1, nshells
-                  lj   =  gto(jsh)%orb_momentum
-                  ej   =  gto(jsh)%exponent(1)
-                  xj   =  gto(jsh)%coord(1)
-                  yj   =  gto(jsh)%coord(2)
-                  zj   =  gto(jsh)%coord(3)
-                  cj   =  gto(jsh)%coefficient(1)
-                  nj   =  ncartesian(lj)
-                  do ish = 1, nshells
-                     li   =  gto(ish)%orb_momentum
-                     ei   =  gto(ish)%exponent(1)
-                     xi   =  gto(ish)%coord(1)
-                     yi   =  gto(ish)%coord(2)
-                     zi   =  gto(ish)%coord(3)
-                     ci   =  gto(ish)%coefficient(1)
-                     ni   =  ncartesian(li)
-                     call interest_eri('llll',fijkl,gout,&
-                                  lk,ek,xk,yk,zk,ck,&
-                                  ll,el,xl,yl,zl,cl,&
-                                  li,ei,xi,yi,zi,ci,&
-                                  lj,ej,xj,yj,zj,cj )
-                     batch_value = ddot(ni*nj*nk*nl,gout,1,gout,1)
-                     batch_values(ish,jsh,ksh,lsh) = batch_value
-                     if (print_level > 1) then
-                        write (*,'(a,4i6,e20.8)') 'batch',ish,jsh,ksh,lsh,batch_value 
-                     endif
-                  end do
-               end do
-            end do
-         end do
+!        Allocate auxilliary tensor to get integrals (without anti-symmetrization) in Mulliken order
+         ierr=exatns_tensor_create(moint_tensor,'moint',moint_id,moint_root,EXA_DATA_KIND_C8)
+         ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit('exatns_sync() failed!')
 
-!        Test correctness by checking permutational symmetry
-         ierr = 0
-         do lsh = 1, nshells
-            do ksh = 1, lsh
-               do jsh = 1, lsh
-                  do ish = 1, jsh
-                     if (relative_error(batch_values(ish,jsh,ksh,lsh),batch_values(jsh,ish,ksh,lsh)).gt.1.e-10) then
-                        ierr = ierr + 1
-                        write (*,'(a,3e20.10,4i4)') 'error in perm. symmetry #1',  &
-                        batch_values(ish,jsh,ksh,lsh),batch_values(jsh,ish,ksh,lsh), &
-                        batch_values(ish,jsh,ksh,lsh)-batch_values(jsh,ish,ksh,lsh), &
-                        ish,jsh,ksh,lsh
-                     end if
-                     if (relative_error(batch_values(ish,jsh,ksh,lsh),batch_values(ish,jsh,lsh,ksh)).gt.1.e-10) then
-                        ierr = ierr + 1
-                        write (*,'(a,3e20.10,4i4)') 'error in perm. symmetry #2',  &
-                        batch_values(ish,jsh,ksh,lsh),batch_values(ish,jsh,lsh,ksh), &
-                        batch_values(ish,jsh,ksh,lsh)-batch_values(ish,jsh,lsh,ksh), &
-                        ish,jsh,ksh,lsh
-                     end if
-                     if (relative_error(batch_values(ish,jsh,ksh,lsh),batch_values(ksh,lsh,ish,jsh)).gt.1.e-10) then
-                        ierr = ierr + 1
-                        write (*,'(a,3e20.10,4i4)') 'error in perm. symmetry #3',  &
-                        batch_values(ish,jsh,ksh,lsh),batch_values(ksh,lsh,ish,jsh), &
-                        batch_values(ish,jsh,ksh,lsh)-batch_values(ksh,lsh,ish,jsh), &
-                        ish,jsh,ksh,lsh
-                     end if
-                  end do
-               end do
-            end do
-         end do
+!        Transform integrals
+         call aomo_transform (aoint_tensor,moint_tensor,initlabel)
+!        Switch to Dirac order and antisymmetrize
+         call mulliken_to_dirac_sort (moint_tensor,integral_tensor,antisymmetrize)
+         ierr=exatns_tensor_destroy(moint_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=1; return; endif
+         ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit('exatns_sync() failed!')
 
-         if (ierr == 0) Then
-            print*," passed permutational symmetry test"
-         else
-            print*,ierr," failures in permutational symmetry test"
+        end subroutine get_integral_tensor
+
+        subroutine mulliken_to_dirac_sort  (mulliken_tensor,dirac_tensor,antisymmetrize)
+
+         implicit none
+
+         type(tens_rcrsv_t), intent(inout)  :: mulliken_tensor,dirac_tensor
+         integer, intent(in)                :: antisymmetrize
+
+         integer           :: mulliken_id(4),dirac_id(4)
+         integer(INTL)     :: mulliken_root(4),dirac_root(4)
+
+         integer   :: ierr, tens_rank, mismatch
+
+!        get dimensions of the tensors and check consistency
+         call mulliken_tensor%get_space_ids(mulliken_id,mulliken_root,ierr)
+         call dirac_tensor%get_space_ids(dirac_id,dirac_root,ierr)
+         ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit('exatns_sync() failed!')
+         mismatch = 0
+         if (mulliken_id(1) .ne. dirac_id(1)) mismatch = mismatch + 1
+         if (mulliken_id(2) .ne. dirac_id(3)) mismatch = mismatch + 1
+         if (mulliken_id(3) .ne. dirac_id(2)) mismatch = mismatch + 1
+         if (mulliken_id(4) .ne. dirac_id(4)) mismatch = mismatch + 1
+         if (antisymmetrize .eq. 12 .and. dirac_id(1) .ne. dirac_id(2)) mismatch = mismatch + 1
+         if (antisymmetrize .eq. 34 .and. dirac_id(3) .ne. dirac_id(4)) mismatch = mismatch + 1
+         if (mismatch.gt.0) stop 'spaces mismatch in mulliken_to_dirac_sort'
+
+         ierr=exatns_tensor_init(dirac_tensor,ZERO)
+         ierr=exatns_tensor_add(dirac_tensor,mulliken_tensor,"D(p,q,r,s)+=M(p,r,q,s)")
+!workaro ierr=talsh_tensor_contract("D(p,q,r,s)+=M(p,r,q,s)*C()",dirac_tensor,mulliken_tensor,one_tensor)
+
+         if (antisymmetrize .eq. 12) then
+             ierr=exatns_tensor_add(dirac_tensor,mulliken_tensor,"D(p,q,r,s)+=M(q,r,p,s)",factor=MINUS_ONE)
+!workaro     ierr=talsh_tensor_contract("D(p,q,r,s)+=M(q,r,p,s)*C()",dirac_tensor,mulliken_tensor,minusone_tensor)
+         elseif (antisymmetrize .eq. 34) then
+             ierr=exatns_tensor_add(dirac_tensor,mulliken_tensor,"D(p,q,r,s)+=M(p,s,q,r)",factor=MINUS_ONE)
+!workaro     ierr=talsh_tensor_contract("D(p,q,r,s)+=M(p,s,q,r)*C()",dirac_tensor,mulliken_tensor,minusone_tensor)
          end if
 
-         deallocate(gto)
-         deallocate(batch_values)
+!        work-around: addition with permutation is not implemented
+!        ierr=talsh_tensor_destruct(one_tensor)
+!        ierr=talsh_tensor_destruct(minusone_tensor)
+!        end work-round
 
-!        Clean up global data used to interact with DIRAC/Interest
-         call delete_global_data
+        end subroutine mulliken_to_dirac_sort
 
-!        Make some noise so that we know we are leaving
-         return
-
-        end subroutine test_integral_generation
-
-        subroutine print_tensornorm (tens)
+        subroutine print_tensornorm2 (tens)
 
           type(tens_rcrsv_t):: tens, scalar
           integer ierr,rank
@@ -548,7 +503,7 @@ module exacorr_ao_to_mo
           ierr=exatns_tensor_destroy(scalar); if(ierr.ne.EXA_SUCCESS) then; ierr=45; return; endif
           ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit('exatns_sync() failed!')
 
-        end subroutine print_tensornorm
+        end subroutine print_tensornorm2
 
 
 end module exacorr_ao_to_mo
