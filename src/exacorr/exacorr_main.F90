@@ -30,7 +30,6 @@
 #if defined (VAR_MPI) 
       call interface_mpi_init()
 #endif
-      print*, "hello world, exacorr_main speaking"
 
       nmo = 8
       allocate(mo_list(nmo(1)+nmo(2)+nmo(3)+nmo(4)))
@@ -42,12 +41,8 @@
       end do
 
       if (mo_transform) then
-         print*, "we will test a transform with ",nmo," orbitals"
-         if (get_talsh_only()) then
-            call talsh_compute_mo_integrals (nmo, mo_list)
-         else
-            call exacorr_compute_mo_integrals (nmo, mo_list)
-         end if
+         call talsh_compute_mo_integrals (nmo, mo_list)
+         call exacorr_compute_mo_integrals (nmo, mo_list)
       end if
 
       nocc = 2

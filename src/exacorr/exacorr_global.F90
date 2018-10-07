@@ -13,7 +13,7 @@ module exacorr_global
         type(basis_set_info_t) :: ao_basis ! information about the ao basis 
         type(MO):: qmo_all ! Stores all MO-coefficients and energies obtained from the parent code 
         logical :: TALSH_ONLY = .TRUE. ! use single-node TALSH library instead of the full EXATENSOR library
-        logical, public, parameter :: DEBUG = .FALSE. ! switch on and off debug
+        logical, public, parameter :: DEBUG = .TRUE. ! switch on and off debug
 
 !       Functions and routines to interact with these data
         public ncartesian
@@ -51,7 +51,7 @@ module exacorr_global
 #if defined (VAR_MPI)
              call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
              if (my_MPI_rank /= my_MPI_master) then
-!               Not all information in common blocks is initialized for the slaves, directly go to the sync and get all that is necessary from master
+!               Slaves go to the sync immediately and get all that is necessary from master
                 call synchronize_global_data
                 return
              end if 
@@ -60,7 +60,7 @@ module exacorr_global
              call read_from_dfcoef (ao_basis,qmo_all,ierr)
 
              if (ierr == 0) then
-                call print_date ("retrieved basis set information from DIRAC common blocks")
+                call print_date ("retrieved basis set information")
              else
                 print*, "Error code",ierr," while reading DFCOEF"
                 call quit ('Could not read DFCOEF')

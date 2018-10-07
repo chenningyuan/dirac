@@ -52,7 +52,7 @@ module exacorr_ao_to_mo
          type(color_symmetry_t), allocatable :: color(:)
          integer(INTL):: nao_l,labs, ao_space_root
          integer(INTL):: nmo_l, mo_space_root(4)
-         integer:: mpi_th_provided, my_rank,my_role, ao_space_id, mo_space_id(4)
+         integer:: mpi_th_provided, my_MPI_rank,my_role, ao_space_id, mo_space_id(4)
          integer:: lsh, l, nl
          integer:: l_col=1
          integer:: spin,imo,jmo
@@ -68,11 +68,11 @@ module exacorr_ao_to_mo
          type(tens_printer_t):: tens_printer
 
 !        Make some noise so that we know we are here
-         call interface_mpi_comm_rank(global_communicator,my_rank)
-         print*, " Process", my_rank," arrived in compute_mo_integrals_exa routine"
+         call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
+         if (my_MPI_rank == 0) print*, " Starting AO-to-MO transform with exatensor"
 
 !        Initialize libraries
-         call interest_initialize
+         if (my_MPI_rank == 0) call interest_initialize
          call initialize_global_data
 
          nao     = get_nao()   ! This is the otal number of ao's
@@ -80,7 +80,6 @@ module exacorr_ao_to_mo
 
 !        Get the basis set information
          call get_gtos(1,nao,gto,nshells)
-         print*,"my_rank,nao,nshells",my_rank,nao,nshells
 
          !Create a basis for the ao vector space:
          ierr = 0
@@ -107,7 +106,7 @@ module exacorr_ao_to_mo
 
          !Register the ao vector space:
          ierr=exatns_space_register('AO_space',basis_ao,ao_space_id,ao_space)
-         print*," process ",my_rank," registered AO vector space with ierr=",ierr
+         if (my_MPI_rank == 0) print*," registered AO vector space with nao, nshells:",nao,nshells
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register() failed!')
 
          !Get the MO-coeffcient basis for the four indices that are to be transformed
@@ -132,7 +131,6 @@ module exacorr_ao_to_mo
             !Register this mo vector space :
             write (vs_str,'(A,I1)') '_',i
             ierr=exatns_space_register('MOspace'//vs_str,basis_mo(i),mo_space_id(i),mo_space(i)%ptr)
-            print*," process ",my_rank," registered MO vector space",i," with ierr=",ierr
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register() failed!')
 
             !Define separate initializers for the alpha and beta MO-coefficients
@@ -148,6 +146,8 @@ module exacorr_ao_to_mo
             end do
             imo = imo + nmo(i) ! make imo point to the start of the list for the next index
          end do
+
+         if (my_MPI_rank == 0) print*," registered MO vectors space with nmo:",nmo
 
          !Register the ao integral generation as a method
          ierr=exatns_method_register('Aoint_calculator',aoint_calculator)
@@ -192,9 +192,12 @@ module exacorr_ao_to_mo
            if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
            ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
            call print_date('created mo integral tensor')
-           call print_tensornorm (moint_tensor)
 
            call aomo_transform (aoint_tensor,moint_tensor,initlabel)
+
+           call print_date('completed mo integral tensor')
+           call print_tensornorm (moint_tensor)
+           ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
 
            !Destroy aoint-tensor:
            ierr=exatns_tensor_destroy(aoint_tensor)
@@ -203,7 +206,6 @@ module exacorr_ao_to_mo
            ierr=exatns_tensor_destroy(moint_tensor)
            ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
 
-           call print_date('completed mo integral tensor')
 
            !Stop ExaTENSOR runtime:
            ierr=exatns_stop()
@@ -211,14 +213,14 @@ module exacorr_ao_to_mo
           end if
 
          else
-          write(*,*) ' Process ',my_rank,' terminated with error ',ierr
+          write(*,*) ' Process ',my_MPI_rank,' terminated with error ',ierr
          endif
 
 !        Clean up global data used to interact with DIRAC/Interest
          call delete_global_data
 
 !        Make some noise so that we know we are leaving
-         print*, " Process ",my_rank, " leaving compute_mo_integrals_exa routine"
+         print*, " Process ",my_MPI_rank, " leaving compute_mo_integrals_exa routine"
          return
         end subroutine exacorr_compute_mo_integrals
 
@@ -278,12 +280,12 @@ module exacorr_ao_to_mo
               ierr=exatns_tensor_init(mocoef_tensor(spin,i),initlabel(spin,i))
               if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_init() failed!')
               ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
-              print*,"created and initialized mocoef_tensor ",spin,i
-              call print_tensornorm (mocoef_tensor(spin,i))
+!             print*,"created and initialized mocoef_tensor ",spin,i
+!             call print_tensornorm (mocoef_tensor(spin,i))
            end do
          end do
-         ierr=exatns_tensor_traverse(mocoef_tensor(1,1),'PrintTensor')
-         ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
+!        ierr=exatns_tensor_traverse(mocoef_tensor(1,1),'PrintTensor')
+!        ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
 
          call print_date('initialized mo-coefficients')
 
@@ -505,7 +507,6 @@ module exacorr_ao_to_mo
          call delete_global_data
 
 !        Make some noise so that we know we are leaving
-         print*, " Leaving test_integral_generation routine"
          return
 
         end subroutine test_integral_generation

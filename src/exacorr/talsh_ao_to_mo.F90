@@ -3,6 +3,7 @@ module talsh_ao_to_mo
 !This module drives the index transformation of two electron integrals
 !integrating the ExaTensor library with the DIRAC code.
 
+
         use tensor_algebra
         use talsh
 
@@ -11,6 +12,8 @@ module talsh_ao_to_mo
         public talsh_compute_mo_integrals
         public compute_ao_integrals
         public get_integral_tensor
+
+        complex(8), parameter:: zero=(0.D0,0.D0)
 
        contains
 !-----------------------------------------------------------
@@ -28,13 +31,15 @@ module talsh_ao_to_mo
          use, intrinsic:: ISO_C_BINDING
          use module_interest_interface
          use module_interest_eri
-
+#if defined (VAR_MPI) 
+         use interface_to_mpi
+#endif
 
          implicit none
          integer, intent(in) :: nmo(4)       ! the size of the mo basis for each of the 4 indices (mulliken ordering)
          integer, intent(in) :: mo_list(:)   ! and their indices (4 lists consecutively)
 
-         integer             :: i, ierr
+         integer             :: i, ierr, my_MPI_rank
          integer             :: nao                        ! the size of the atomic orbital basis
          type(basis_func_info_t), allocatable :: shell(:)  ! array with basis function information
 
@@ -45,12 +50,21 @@ module talsh_ao_to_mo
          integer(C_SIZE_T):: host_buf_size
          integer(C_INT):: host_arg_max
 
-         complex(8):: zero=(0.D0,0.D0)
          complex(8), pointer, contiguous:: ao_tens(:,:,:,:),mo_tens(:,:,:,:)
          type(C_PTR):: body_p
 
 !        Make some noise so that we know we are here
          call print_date('Entered compute_mo_integrals routine')
+
+!        Initialize global data
+         call initialize_global_data
+#if defined (VAR_MPI) 
+         call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
+#else
+         my_MPI_rank = 0
+#endif
+         if (my_MPI_rank /= 0) return ! TALSH is not parallelized, leave the work to master
+         call print_date('Initialized global data')
 
 !        Initialize libraries
          host_buf_size=BUF_SIZE
@@ -59,8 +73,6 @@ module talsh_ao_to_mo
          write(*,'(" Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,host_buf_size,host_arg_max
          call interest_initialize(.true.)
          call print_date('Initialized interest library')
-         call initialize_global_data
-         call print_date('Initialized global data')
 
 !        Retrieve basis set information
          nao     = get_nao()
@@ -81,8 +93,8 @@ module talsh_ao_to_mo
          ierr=talsh_tensor_construct(moint_tensor,C8,moint_dims,init_val=zero)
          call aomo_transform (aoint_tensor,moint_tensor,nmo,mo_list)
          if (debug) then
-            print*, "AOint = ",talshTensorImageNorm1_cpu(aoint_tensor)
-            print*, "MOint = ",talshTensorImageNorm1_cpu(moint_tensor)
+            print*, "AOint = ",tensor_norm2(aoint_tensor)
+            print*, "MOint = ",tensor_norm2(moint_tensor)
          end if
 
 !        Write to old format MO-integrals file to allow for easy debugging of the integral transform
@@ -281,9 +293,7 @@ module talsh_ao_to_mo
          integer:: aoint_dims(1:4),mocoef_dims(1:2),a1int_dims(1:4)
          integer:: a2int_dims(1:4),a3int_dims(1:4),moint_dims(1:4)
 
-         complex(8):: zero=(0.D0,0.D0)
          integer   :: ierr, tens_rank, i, imo, nao
-         logical, parameter :: debug=.false.
 
          call print_date('entered aomo_transform')
 !        Get tensor dimension of input and output tensors
@@ -304,10 +314,6 @@ module talsh_ao_to_mo
             ierr=talsh_tensor_construct(mocoefb_tensor(i),C8,mocoef_dims,init_val=zero)
             call get_mocoef_tensor (nao, nmo(i), mo_list(imo+1:imo+nmo(i)), mocoefa_tensor(i), mocoefb_tensor(i))
             imo = imo + nmo(i)
-            if (debug) then
-               print*, "MOCoefa = ",talshTensorImageNorm1_cpu(mocoefa_tensor(i))
-               print*, "MOCoefb = ",talshTensorImageNorm1_cpu(mocoefb_tensor(i))
-            end if
          end do
          call print_date('initialized mo-coefficients')
 
@@ -435,5 +441,48 @@ module talsh_ao_to_mo
 !        end work-round
 
         end subroutine mulliken_to_dirac_sort
+
+        function tensor_norm2(a_tensor) result(a_norm2)
+
+         !compute norm2(complete contraction of a tensor with itself) for debugging purposed
+
+         type(talsh_tens_t), intent(inout):: a_tensor
+
+         integer:: a_dims(1:4)
+         integer:: ierr, a_rank
+
+!        scalars (need to be defined as tensor types)
+         type(talsh_tens_t):: result_tensor
+         integer:: result_dims(1)
+         complex(8), pointer :: result_tens(:)
+         type(C_PTR):: body_p
+         real(8) :: a_norm2
+
+!        Initialize scalars that are to be used as tensors in contractions
+         result_dims(1) = 1
+         ierr=talsh_tensor_construct(result_tensor,C8,result_dims(1:0),init_val=ZERO)
+         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,0,DEV_HOST)
+         call c_f_pointer(body_p,result_tens,result_dims)
+
+         ierr = talsh_tensor_dimensions(a_tensor,a_rank,a_dims)
+         select case (a_rank)
+         case (0)
+            ierr=talsh_tensor_contract("R()+=A+()*A()",result_tensor,a_tensor,a_tensor)
+         case (1)
+            ierr=talsh_tensor_contract("R()+=A+(p)*A(p)",result_tensor,a_tensor,a_tensor)
+         case (2)
+            ierr=talsh_tensor_contract("R()+=A+(p,q)*A(p,q)",result_tensor,a_tensor,a_tensor)
+         case (3)
+            ierr=talsh_tensor_contract("R()+=A+(p,q,r)*A(p,q,r)",result_tensor,a_tensor,a_tensor)
+         case (4)
+            ierr=talsh_tensor_contract("R()+=A+(p,q,r,s)*A(p,q,r,s)",result_tensor,a_tensor,a_tensor)
+         case default
+            call quit ('wrong dimension in tensor_norm2')
+         end select
+
+         a_norm2 = real(result_tens(1),8)
+         ierr=talsh_tensor_destruct(result_tensor)
+
+        end function tensor_norm2
 
 end module talsh_ao_to_mo
