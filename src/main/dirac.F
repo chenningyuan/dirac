@@ -1336,7 +1336,12 @@ C
 #endif
 
       ELSE IF (ITASK .EQ. 18) THEN
+#ifndef MOD_EXACORR
+          call quit(
+     &    'worker error: exa_moltra task not included in this version')
+#else
          call exa_moltra()
+#endif
 
       ELSE
 C
