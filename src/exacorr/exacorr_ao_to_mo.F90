@@ -8,9 +8,10 @@ module exacorr_ao_to_mo
         implicit none
         private
         public exacorr_compute_mo_integrals
+#if defined (VAR_MPI)
         public get_integral_tensor
         public print_tensornorm2
-
+#endif
         complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0)
 
        contains
@@ -257,18 +258,6 @@ module exacorr_ao_to_mo
          return
         end subroutine exacorr_compute_mo_integrals
 
-#else
-        subroutine exacorr_compute_mo_integrals (nmo, mo_list)
-         implicit none
-         integer, intent(in) :: nmo(4)       ! the size of the mo basis for each of the 4 indices (mulliken ordering)
-         integer, intent(in) :: mo_list(:)   ! and their indices (4 lists consecutively)
-         print*,  'called exatensor version of compute_mo_integrals in a serial version'
-         print*,  'this functionality only works with MPI, we need to stop here'
-         stop ' activate MPI'
-        end subroutine exacorr_compute_mo_integrals
-
-#endif
-
         subroutine aomo_transform_1 (aoint_tensor,moint_tensor,initlabel)
 
 !        Transform integral tensor from ao-basis to mo-basis
@@ -435,7 +424,6 @@ module exacorr_ao_to_mo
          dm_id(3:4)    = moint_id(1:2)
          dm_root(1:2)  = aoint_root(1:2)
          dm_root(3:4)  = moint_root(1:2)
-         print*,dm_id,dm_root
          ierr=exatns_tensor_create(dm_tensor,'dm12tensor',dm_id,dm_root,EXA_DATA_KIND_C8)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create(dm1) failed!')
          ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
@@ -630,6 +618,20 @@ module exacorr_ao_to_mo
           ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit('exatns_sync() failed!')
 
         end subroutine print_tensornorm2
+
+! stub non-MPI routine to satisfy references
+
+#else
+        subroutine exacorr_compute_mo_integrals (nmo, mo_list)
+         implicit none
+         integer, intent(in) :: nmo(4)       ! the size of the mo basis for each of the 4 indices (mulliken ordering)
+         integer, intent(in) :: mo_list(:)   ! and their indices (4 lists consecutively)
+         print*,  'called exatensor version of compute_mo_integrals in a serial version'
+         print*,  'this functionality only works with MPI, we need to stop here'
+         stop ' activate MPI'
+        end subroutine exacorr_compute_mo_integrals
+
+#endif
 
 
 end module exacorr_ao_to_mo
