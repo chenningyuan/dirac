@@ -183,7 +183,7 @@ module exacorr_ao_to_mo
          ierr=exatns_method_register('PrintTensor',tens_printer)
          if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register() failed!')
 
-!        Run ExaTENSOR within MPI_COMM_WORLD (called golbal_communicator in the MPI interface that DIRAC uses):
+!        Run ExaTENSOR within MPI_COMM_WORLD (called global_communicator in the MPI interface that DIRAC uses):
          ierr=exatns_start(global_communicator)
          if(ierr.eq.EXA_SUCCESS) then
           ierr=exatns_process_role(my_role)
@@ -212,6 +212,12 @@ module exacorr_ao_to_mo
            do i = 1, 4
               mo_space_root(i)=mo_space(i)%ptr%get_root_id(ierr)
            end do
+           !For testing the anti-symmetrizer we temporarily set all spaces equal
+           do i = 2, 4
+              mo_space_id(i)=mo_space_id(1)
+              mo_space_root(i)=mo_space_root(1)
+              initlabel(1:2,i)=initlabel(1:2,1)
+           end do
            ierr=exatns_tensor_create(moint_tensor,'motensor',mo_space_id,mo_space_root,EXA_DATA_KIND_C8)
            if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
            ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
@@ -234,10 +240,35 @@ module exacorr_ao_to_mo
            call print_tensornorm2 (moint_tensor)
            ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
 
+           !Destroy moint-tensor:i somehow the code below does give an error -1 in the create.
+!test      ierr=exatns_tensor_destroy(moint_tensor)
+!test      ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
+
+           !Recreate mo-integral-tensor with equal index spaces so that we can anti-symmetrize:
+!test      do i = 2, 4
+!test         mo_space_id(i)=mo_space_id(1)
+!test         mo_space_root(i)=mo_space_root(1)
+!test         initlabel(1:2,i)=initlabel(1:2,1)
+!test      end do
+!test      ierr=exatns_tensor_create(moint_tensor,'motensor',mo_space_id,mo_space_root,EXA_DATA_KIND_C8)
+!test      if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
+!test      ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
+
+           call get_integral_tensor (aoint_tensor,moint_tensor,12,initlabel)
+           call print_date('completed dirac-sorted mo integral tensor - 12 anti-symmetrized')
+           call print_tensornorm2 (moint_tensor)
+           ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
+
+           call get_integral_tensor (aoint_tensor,moint_tensor,34,initlabel)
+           call print_date('completed dirac-sorted mo integral tensor - 34 anti-symmetrized')
+           call print_tensornorm2 (moint_tensor)
+           ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
+
            !Destroy aoint-tensor:
            ierr=exatns_tensor_destroy(aoint_tensor)
            ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
 
+           !Destroy moint-tensor:
            ierr=exatns_tensor_destroy(moint_tensor)
            ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
 
@@ -525,7 +556,7 @@ module exacorr_ao_to_mo
          moint_root(4) = integral_root(4)
 
 !        Allocate auxilliary tensor to get integrals (without anti-symmetrization) in Mulliken order
-         ierr=exatns_tensor_create(moint_tensor,'moint',moint_id,moint_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(moint_tensor,'mulliken',moint_id,moint_root,EXA_DATA_KIND_C8)
          ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit('exatns_sync() failed!')
 
 !        Transform integrals
@@ -544,12 +575,15 @@ module exacorr_ao_to_mo
          type(tens_rcrsv_t), intent(inout)  :: mulliken_tensor,dirac_tensor
          integer, intent(in)                :: antisymmetrize
 
+
          integer           :: mulliken_id(4),dirac_id(4)
          integer(INTL)     :: mulliken_root(4),dirac_root(4)
 
          integer   :: ierr, tens_rank, mismatch
 
-!        get dimensions of the tensors and check consistency
+         type(tens_rcrsv_t) :: one_tensor
+
+!        get dimensions of the input tensors and check consistency
          call mulliken_tensor%get_space_ids(mulliken_id,mulliken_root,ierr)
          call dirac_tensor%get_space_ids(dirac_id,dirac_root,ierr)
          ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit('exatns_sync() failed!')
@@ -562,24 +596,29 @@ module exacorr_ao_to_mo
          if (antisymmetrize .eq. 34 .and. dirac_id(3) .ne. dirac_id(4)) mismatch = mismatch + 1
          if (mismatch.gt.0) stop 'spaces mismatch in mulliken_to_dirac_sort'
 
+         ! We first need to define a scalar as a tensor to work around the missing tensor addition
+         ierr=exatns_tensor_create(one_tensor,'one_tensor',EXA_DATA_KIND_C8)
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create(one_tens) failed!')
+         ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit('exatns_sync() failed!')
+         ierr=exatns_tensor_init(one_tensor,ONE)
+         ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit('exatns_sync() failed!')
+
+         ! Now do the actual sort
          ierr=exatns_tensor_init(dirac_tensor,ZERO)
          ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit('exatns_sync() failed!')
-         return
-         ierr=exatns_tensor_add(dirac_tensor,mulliken_tensor,"D(p,q,r,s)+=M(p,r,q,s)")
-!workaro ierr=talsh_tensor_contract("D(p,q,r,s)+=M(p,r,q,s)*C()",dirac_tensor,mulliken_tensor,one_tensor)
+         ierr=exatns_tensor_contract(dirac_tensor,mulliken_tensor,one_tensor,"D(p,q,r,s)+=M(p,r,q,s)*C()")
+         ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit('exatns_sync() failed!')
 
          if (antisymmetrize .eq. 12) then
-             ierr=exatns_tensor_add(dirac_tensor,mulliken_tensor,"D(p,q,r,s)+=M(q,r,p,s)",factor=MINUS_ONE)
-!workaro     ierr=talsh_tensor_contract("D(p,q,r,s)+=M(q,r,p,s)*C()",dirac_tensor,mulliken_tensor,minusone_tensor)
+             ierr=exatns_tensor_contract(dirac_tensor,mulliken_tensor,one_tensor,"D(p,q,r,s)+=M(q,r,p,s)*C()",prefactor=MINUS_ONE)
+             ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit('exatns_sync() failed!')
          elseif (antisymmetrize .eq. 34) then
-             ierr=exatns_tensor_add(dirac_tensor,mulliken_tensor,"D(p,q,r,s)+=M(p,s,q,r)",factor=MINUS_ONE)
-!workaro     ierr=talsh_tensor_contract("D(p,q,r,s)+=M(p,s,q,r)*C()",dirac_tensor,mulliken_tensor,minusone_tensor)
+             ierr=exatns_tensor_contract(dirac_tensor,mulliken_tensor,one_tensor,"D(p,q,r,s)+=M(p,s,q,r)*C()",prefactor=MINUS_ONE)
+             ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit('exatns_sync() failed!')
          end if
 
-!        work-around: addition with permutation is not implemented
-!        ierr=talsh_tensor_destruct(one_tensor)
-!        ierr=talsh_tensor_destruct(minusone_tensor)
-!        end work-round
+         ierr=exatns_tensor_destroy(one_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=1; return; endif
+         ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit('exatns_sync() failed!')
 
         end subroutine mulliken_to_dirac_sort
 

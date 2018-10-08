@@ -96,12 +96,19 @@ module talsh_ao_to_mo
          if (debug) then
             print*, "AOint = ",tensor_norm2(aoint_tensor)
             print*, "MOint = ",tensor_norm2(moint_tensor)
+            print*, "additional transform to get anti-symmetrized integralss"
          end if
 
 !        Write to old format MO-integrals file to allow for easy debugging of the integral transform
          ierr=talsh_tensor_get_body_access(moint_tensor,body_p,C8,0,DEV_HOST)
          call c_f_pointer(body_p,mo_tens,moint_dims(1:4))
          call write_to_mdcint (nmo,2,mo_tens)
+
+         if (debug) then
+            print*, "additional transform to get anti-symmetrized integralss"
+            call get_integral_tensor (aoint_tensor,moint_tensor,12,nmo,mo_list)
+            print*, "MOint-antisym = ",tensor_norm2(moint_tensor)
+         end if
 
 !        Destruct remaining tensors and shut down library
          ierr=talsh_tensor_destruct(aoint_tensor)
