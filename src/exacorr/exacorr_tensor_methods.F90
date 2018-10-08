@@ -25,11 +25,19 @@ module exacorr_tensor_methods
 
         !Initializer for the mo coefficients tensor:
         type, extends(tens_method_uni_t), public:: init_mocoef_tensor_t
-         complex(8), allocatable, private:: mocoef_all(:,:)
+         complex(8), allocatable, private:: mocoef_all(:,:) ! stores mo-coefficients for both indices, both spins
          contains
           procedure, public:: init_mocoef_ctor=>init_mocoef
           procedure, public:: apply=>init_mocoef_tensor
         end type init_mocoef_tensor_t
+
+        !Initializer for the density matrix tensor:
+        type, extends(tens_method_uni_t), public:: init_dm_tensor_t
+         complex(8), allocatable, private:: mocoef_all_1(:,:,:),mocoef_all_2(:,:,:)
+         contains
+          procedure, public:: init_dm_ctor=>init_dm
+          procedure, public:: apply=>init_dm_tensor
+        end type init_dm_tensor_t
 
         !Scale by denominators:
         type, extends(tens_method_uni_t), public:: scale_with_denom_t
@@ -310,6 +318,52 @@ module exacorr_tensor_methods
 
         end subroutine init_mocoef
 
+        subroutine init_dm(this,mo_list,nmo)
+
+         use dirac_MO
+         use exacorr_global
+
+         implicit none
+         integer, intent(in) :: nmo(2)       ! the length of the mo basis
+         integer, intent(in) :: mo_list(:)   ! and their indices
+         class(init_dm_tensor_t), intent(out):: this
+
+         integer  :: nao,j,k,spin
+         type(MO) :: qmo
+
+!        Copy the coefficients into the alpha or beta array, using the quaternion relations as defined in
+!        T. Saue, H. Jensen, J. Chem. Phys. 111 (1999) 6211–6222, Equation 16.
+!        The coefficients for the barred spinors (that start after the nmo(i) unbarred spinors) are generated
+!        using Kramers' symmetry.
+
+         nao = get_nao()
+
+         allocate (this%mocoef_all_1(nao,2*nmo(1),2))
+         call get_mo_coefficients (qmo,mo_list(1:nmo(1)),nmo(1))
+         do k = 1, nmo(1)
+            do j = 1, nao
+             this%mocoef_all_1(j,k,1)     = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
+             this%mocoef_all_1(j,k,2)     = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
+             this%mocoef_all_1(j,k+nmo,1) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
+             this%mocoef_all_1(j,k+nmo,2) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
+            end do
+         end do
+         call delete_qmo (qmo)
+
+         allocate (this%mocoef_all_2(nao,2*nmo(2),2))
+         call get_mo_coefficients (qmo,mo_list(nmo(1)+1:nmo(1)+nmo(2)),nmo(2))
+         do k = 1, nmo(2)
+            do j = 1, nao
+             this%mocoef_all_2(j,k,1)     = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
+             this%mocoef_all_2(j,k,2)     = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
+             this%mocoef_all_2(j,k+nmo,1) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
+             this%mocoef_all_2(j,k+nmo,2) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
+            end do
+         end do
+         call delete_qmo (qmo)
+
+        end subroutine init_dm
+
         function scale_with_denom(this,tensor,scalar) result(ierr)
          use, intrinsic:: ISO_C_BINDING
          implicit none
@@ -436,5 +490,70 @@ module exacorr_tensor_methods
          mocoef_tens(1:nao,1:nmo) = mocoef_all(first_ao:last_ao,first_mo:last_mo)
 
         end function tens_init_mocoef
+
+        function init_dm_tensor(this,tensor,scalar) result(ierr)
+         use, intrinsic:: ISO_C_BINDING
+         implicit none
+         integer(INTD):: ierr,n
+         class(init_dm_tensor_t), intent(in):: this
+         class(tens_rcrsv_t), intent(inout):: tensor
+         complex(8), intent(inout), optional:: scalar
+         type(tens_dense_t):: tens
+
+         ierr=0
+         tens=tensor%get_dense_adapter(ierr)
+         if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
+         n=tens%num_dims
+         if (n.ne.4) call quit('Error: dimension not 4 in init_dm_tensor')
+         ierr=tens_init_dm(tens%body_ptr,tens%data_kind,tens%dims(1:n),tens%bases(1:n), &
+                               this%mocoef_all_1,this%mocoef_all_2)
+
+        end function init_dm_tensor
+
+        integer function tens_init_dm(tens_body,data_kind,tens_dims,tens_bases, &
+                         mocoef_all_1,mocoef_all_2) result (ierr)
+        !Initialization routine that is used to fill a tensor with mo coefficients
+
+         use, intrinsic:: ISO_C_BINDING
+
+         implicit none
+
+         type(C_PTR), value:: tens_body           !in: C pointer to the tensor body (tensor elements)
+         integer(4), value:: data_kind            !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
+         integer(8), intent(in):: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
+         integer(8), intent(in):: tens_bases(1:*) !in: base offsets for each tensor dimension)
+         complex(8), intent(in):: mocoef_all_1(:,:,:),mocoef_all_2(:,:,:)
+
+         integer :: p,q,i,j,ia,ja,pa,qa,nao(2),nmo(2)
+         complex(8),pointer :: dm_tens(:,:,:,:)
+
+         ierr=0 !set error code to success
+         if(data_kind /= EXA_DATA_KIND_C8) then
+           ierr=-1 !invalid data kind requested
+           return
+         endif
+
+         nao = tens_dims(1:2)
+         nmo = tens_dims(3:4)
+         call c_f_pointer(tens_body,dm_tens,(/nao(1),nao(2),nmo(1),nmo(2)/)) !map C pointer to 4-dimensional array
+
+         ! carry out the spin integration and get the tensor
+         do j = 1, nmo(2)
+            ja = tens_bases(4) + j - 1 
+            do i = 1, nmo(1)
+               ia = tens_bases(3) + i - 1 
+               do q = 1, nao(2)
+                  qa = tens_bases(2) + q - 1 
+                  do p = 1, nao(1)
+                     pa = tens_bases(1) + p - 1 
+                     dm_tens(p,q,i,j) = &
+                       dconjg(mocoef_all_1(pa,ia,1))*mocoef_all_2(qa,ja,1) & ! alpha-alpha
+                     + dconjg(mocoef_all_1(pa,ia,2))*mocoef_all_2(qa,ja,2)   ! beta-beta
+                  end do
+               end do
+            end do
+         end do
+
+        end function tens_init_dm
 
 end module exacorr_tensor_methods
