@@ -1748,6 +1748,7 @@ C
           WRITE(LUTMAT) 
      &     NN,((NORB_SUB(IB,IFRP,IC),IC=0,2),
      &     ID_SUB_BL(IB,IFRP),IB=1,NN)
+          write(*,*)"ID_SUB_BL ",ID_SUB_BL(IB,IFRP) !sunaga
         ENDDO
       ENDIF
 C

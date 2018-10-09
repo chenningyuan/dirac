@@ -5696,12 +5696,7 @@ C
 C
 C     sunaga
       IF(ATOMIC)THEN
-         CALL MEMGET('REAL',KSMAT,N2BBASXQ,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KTCUF,N2BBASXQ,WORK,KFREE,LFREE)
-C
          CALL ATMSYM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
-!          CALL MEMREL('GATMSM',WORK,KSMAT,KSMAT,KFREE,LFREE)
-!          CALL MEMREL('GATMSM',WORK,KTCUF,KTCUF,KFREE,LFREE)
       ENDIF
 Csunaga
 
@@ -6841,7 +6836,7 @@ C
       DO 40 I = 1,NFSYM
 C
 C        output for ABS(Kappa)=1,
-C        which is not included in the below loop (IKAP = 2,KPMAX(I))
+C        which is NOT included in the below loop (IKAP = 2,KPMAX(I))
 C         
          WRITE (LUPRI,1020) 3-2*I,(-1)**I,1,(NORB_SUB(1,I,IC),IC=0,2)
 C

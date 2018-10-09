@@ -2112,37 +2112,48 @@ C     Select occupied orbitals based on (approximate) boson symmetry.
 C     Input is coefficients in MO-basis.
 C
 C     Written by H.J.Aa.Jensen Oct. 2004
+C     Modified by A. Sunaga Oct. 2018 for Kappa   
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION EIG(*),IBEIG(*),CFU(*),WORK(LWORK)
-C
+C     
 #include "dcbdhf.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
-      INTEGER NISHB_CNT(MAX_BOS_BL), NACSHB_CNT(MAX_BOS_BL), JOCC(2)
+      INTEGER IBUF(MAX_BOS_BL)
+      INTEGER JOCC(2), KOCC(2)
 C
       CALL QENTER('BOSSEL')
 C
-      CALL ICOPY(MAX_BOS_BL,NISH_BOS,1,NISHB_CNT,1)
+      CALL ICOPY(MAX_BOS_BL,NISH_BOS,1,IBUF,1)
       DO I = 1,NFSYM
-         JOCC(I) = NPSH(I)
-      IF(NISH_DHF(I).GT.0) THEN
-        CALL BOSSE2(I,EIG(IORB(I)+1),IBEIG(IORB(I)+1),
-     &              CFU(I2ORBT(I)+1),NORB(I),JOCC(I),NISHB_CNT)
-      ENDIF
+C     JOCC(I) = NPSH(I) + NISH(I) + NACSH(I,1:IOPEN-1)
+        KOCC(I) = NPSH(I)
+        JOCC(I) = NPSH(I)
+        IF(NISH_DHF(I).GT.0) THEN
+          KOCC(I) = KOCC(I) + NISH_DHF(I)  
+          CALL BOSSE2(I,EIG(IORB(I)+1),IBEIG(IORB(I)+1),
+     &         CFU(I2ORBT(I)+1),NORB(I),JOCC(I),IBUF)
+          IF(JOCC(I).NE.KOCC(I)) THEN
+            CALL QUIT('Check the number of closed-shell electrons !')
+          ENDIF
+        ENDIF
       ENDDO
+C     
       DO IOPEN = 1,NOPEN
-         DO I = 1,NFSYM
-C           JOCC(I) = NPSH(I) + NISH(I) + NACSH(I,1:IOPEN-1)
-         IF(NACSH(I,IOPEN).GT.0) THEN
-           CALL ICOPY(MAX_BOS_BL,NACSH_BOS(1,IOPEN),1,NACSHB_CNT,1)
-           CALL BOSSE2(I,EIG(IORB(I)+1),IBEIG(IORB(I)+1),
-     &                 CFU(I2ORBT(I)+1),NORB(I),JOCC(I),
-     &                 NACSHB_CNT)
-         ENDIF
-         ENDDO
+        DO I = 1,NFSYM
+          IF(NACSH(I,IOPEN).GT.0) THEN
+            CALL ICOPY(MAX_BOS_BL,NACSH_BOS(1,IOPEN),1,IBUF,1)
+            KOCC(I) = KOCC(I) + NACSH(I,IOPEN)
+            CALL BOSSE2(I,EIG(IORB(I)+1),IBEIG(IORB(I)+1),
+     &                   CFU(I2ORBT(I)+1),NORB(I),JOCC(I),IBUF)
+            IF(JOCC(I).NE.KOCC(I)) THEN
+              CALL QUIT('Check the number of open-shell electrons !')
+            ENDIF            
+          ENDIF  
+        ENDDO
       ENDDO
       CALL QEXIT('BOSSEL')
       RETURN
@@ -2163,19 +2174,27 @@ C***********************************************************************
 #include "dcborb.h"
       DIMENSION EIG(*), CFU(NO,NO,NZ)
       INTEGER   IBEIG(*), NB_CNT(*)
-C
+
       CALL QENTER('BOSSE2')
 C
 C hjaaj Oct 2004: must also implement open shells (NASHB*)
       JST = JOCC + 1
       DO J = JST,NO
-         IF (LINEAR) THEN
-C           ... IBEIG = 2 * abs(MJ)
+         IF (ATOMIC) THEN
+            JSYM = abs(IBEIG(J))
+            IF (IFSYM.EQ.2)THEN
+              KPMAX = ( -1 + int(sqrt(dble(1 + 8*N_SUB_BL(1)))) )/2   
+              JSYM = JSYM + KPMAX*(KPMAX+1)/2
+            ENDIF
+C           ... IBEIG = ID. ID = ID_SUB_BL(ISUB,IFRP) in dirscf.F/INIBOS.
+         ELSEIF (LINEAR) THEN
             JSYM = (abs(IBEIG(J)) + 1) / 2
-            IF (IFSYM.EQ.2) JSYM = JSYM + N_SUB_BL(1)
+C           ... IBEIG = 2 * abs(MJ)
+C           IF (IFSYM.EQ.2) JSYM = JSYM + N_SUB_BL(1)
+Csunaga     It is no longer neccessary, because Atomic symmetry is used. 
          ELSE
-C           ... IBEIG = (approximate) boson irrep
             JSYM = IBEIG(J) + 1
+C           ... IBEIG = (approximate) boson irrep
          END IF
          IF (NB_CNT(JSYM) .GT. 0) THEN
             NB_CNT(JSYM) = NB_CNT(JSYM) - 1
@@ -4203,7 +4222,6 @@ C
         DO J = 1, NORB(I)
           IBEIG(IORB(I)+J) = 0
         ENDDO
-
          iprham_save = iprham
 !        iprham = 5
 C ... control print out of the matrix to be diagonalized
@@ -4287,15 +4305,6 @@ C
             IF(NBO.GT.0) THEN
               IMAT = I2TMOT(I) + (NTMO(I)+1)*IBO + 1
               IEIG = IORB(I) + IBO + 1
-!     sunaga
-!              write(*,*)"IMAT",IMAT
-!              write(*,*)"I2TMOT",I2TMOT(I)
-!              write(*,*)"NTMO",NTMO(I)
-!              write(*,*)"IBO",IBO
-!              write(*,*)"IEIG",IEIG
-!              write(*,*)"IORB",IORB(I)
-!              write(*,*)""
-!sunaga
               IF (DODBG.AND.IPRHAM.GE.5) THEN
                 CALL HEADER(
      &          'DFDIAG: MO matrix (subblocks) to be diagonalized',-1)
@@ -4623,7 +4632,6 @@ C***********************************************************************
 C
       NSUB = N_SUB_BL(IFRP)
       IX = 1
-
       IF (.NOT.SORTLS) THEN
         DO ISUB = 1, NSUB
           ID = ID_SUB_BL(ISUB,IFRP)
