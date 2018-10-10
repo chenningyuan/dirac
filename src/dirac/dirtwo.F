@@ -1969,7 +1969,6 @@ C         =============================
 C         F(i,j) = (FMAT(i,j) + FMAT(j,i))
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -1991,7 +1990,6 @@ C         =========================================
 C         F(i,j) = (FMAT(i,j) +/- FMAT(j,i))
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2007,7 +2005,6 @@ C         Coulomb contributions only
 C         ==========================
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2033,7 +2030,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2060,7 +2056,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2081,7 +2076,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2207,7 +2201,6 @@ C         =============================
 C         F(i,j) = (FMAT(i,j) + FMAT(j,i))
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(3,INTS)
               B = IND(1,INTS)
@@ -2228,7 +2221,6 @@ C         =========================================
 C         F(i,j) = (FMAT(i,j) +/- FMAT(j,i))
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(3,INTS)
               B = IND(1,INTS)
@@ -2243,7 +2235,6 @@ C         Coulomb contributions only
 C         ==========================
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(3,INTS)
               B = IND(1,INTS)
@@ -2268,7 +2259,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(3,INTS)
               B = IND(1,INTS)
@@ -2294,7 +2284,6 @@ C         ================================================
 C         F(i,j) = (1/8) * FMAT(i,j)
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(3,INTS)
               B = IND(1,INTS)
@@ -2314,7 +2303,6 @@ C         ================================================
 C         F(i,j) = (1/8) * FMAT(i,j)
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(3,INTS)
               B = IND(1,INTS)
@@ -2435,7 +2423,6 @@ C         =============================
 C         F(i,j) = (1/4) * (FMAT(i,j) + FMAT(j,i))
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2454,7 +2441,6 @@ C         =========================================
 C         F(i,j) = (1/4) (FMAT(i,j) +/- FMAT(j,i))
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2467,7 +2453,6 @@ C         Coulomb contributions only
 C         ==========================
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2492,7 +2477,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2513,7 +2497,6 @@ C         ================================================
 C         FMAT(i,j)
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2529,7 +2512,6 @@ C         ================================================
 C         F(i,j) = (1/8) * FMAT(i,j)
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2637,7 +2619,6 @@ C         =============================
 C         F(i,j) = (FMAT(i,j) + FMAT(j,i))
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2651,7 +2632,6 @@ C         antisymmetric triplet Fock matrix
 C         =========================================
 C         F(i,j) = (FMAT(i,j) +/- FMAT(j,i))
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2663,7 +2643,6 @@ C         Coulomb contributions only
 C         ==========================
 C
            ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2687,7 +2666,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2703,7 +2681,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2719,7 +2696,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2825,7 +2801,6 @@ C         =============================
 C         F(i,j) = (FMAT(i,j) + FMAT(j,i))
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2841,7 +2816,6 @@ C         =========================================
 C         F(i,j) = (FMAT(i,j) +/- FMAT(j,i))
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2852,7 +2826,6 @@ C         Coulomb contributions only
 C         ==========================
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2875,7 +2848,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2890,7 +2862,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2903,7 +2874,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -3007,7 +2977,6 @@ C       =============================
 C       F(i,j) = (FMAT(i,j) + FMAT(j,i))
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -3024,7 +2993,6 @@ C         =========================================
 C         F(i,j) = (FMAT(i,j) +/- FMAT(j,i))
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -3038,7 +3006,6 @@ C         Coulomb contributions only
 C         ==========================
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -3060,7 +3027,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           IF(IY.EQ.3) THEN
-#include"scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -3077,7 +3043,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -3092,7 +3057,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)

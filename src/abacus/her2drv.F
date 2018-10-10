@@ -3625,7 +3625,6 @@ C     Determine NPRIMS(MAXSHL,NSETSH,2), NCONTS(MAXSHL,NSETSH,2),
 C           and JSTRSH(MAXSHL,NSETSH,2)
 C
       DO 200 I = 1, MAXSHL
-#include "scalar.h"
          DO 300 J = 1, NSETSH(I,1)
             NPRIMS(I,J,1) = NUCO  (KORBSH(I,J))
             NCONTS(I,J,1) = NRCO  (KORBSH(I,J))
