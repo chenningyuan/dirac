@@ -167,25 +167,32 @@ C
       NBUF  = 0
       IOFF  = 0
       AOMAX = D0
-      IF(SUSCEP) THEN
         IF(NOTEST) THEN
           DO ICOMPA = 1,KHKTA
-                        KHKTBB = KHKTB
-            DO ICOMPB = 1,KHKTBB
+            DO ICOMPB = 1,KHKTB
               DO ICOMPC = 1,KHKTC
-                            KHKTDD = KHKTD
-                DO ICOMPD = 1,KHKTDD
+                DO ICOMPD = 1,KHKTD
                   DO IORBAB = 1,NORBAB
-                    IORBA = 1 + NINDAB(IORBAB,1)/KHKTA
-                    IORBB = 1 + NINDAB(IORBAB,2)/KHKTB
+                    IF (SUSCEP) THEN
+                      IORBA = 1 + NINDAB(IORBAB,1)/KHKTA
+                      IORBB = 1 + NINDAB(IORBAB,2)/KHKTB
+                    ELSE
+                      IORBA = NINDAB(IORBAB,1)
+                      IORBB = NINDAB(IORBAB,2)
+                    END IF
                     A = ICORBA(IORBA) + ICOMPA
                     B = ICORBB(IORBB) + ICOMPB
                     DO IORBCD = 1, NORBCD
                       AINT  = AOINT(IOFF+IORBCD)
                       IF(ABS(AINT).GT.FCKTOL) THEN
                         NBUF  = NBUF + 1
-                        IORBC = 1 + NINDCD(IORBCD,1)/KHKTC
-                        IORBD = 1 + NINDCD(IORBCD,2)/KHKTD
+                        IF (SUSCEP) THEN
+                          IORBC = 1 + NINDCD(IORBCD,1)/KHKTC
+                          IORBD = 1 + NINDCD(IORBCD,2)/KHKTD
+                        ELSE
+                          IORBC = NINDCD(IORBCD,1)
+                          IORBD = NINDCD(IORBCD,2)
+                        END IF
                         AOMAX       = MAX(AOMAX,ABS(AINT))
                         AOINT(NBUF) = AINT
                         IND(1,NBUF) = A
@@ -214,12 +221,17 @@ C
                 IF (DIAGCD) KHKTDD = ICOMPC
                 DO ICOMPD = 1,KHKTDD
                   FCABCD = FACAB
-                  IF(DIAGCD.AND.ICOMPC.NE.ICOMPD)
+                  IF (DIAGCD.AND.ICOMPC.NE.ICOMPD)
      &              FCABCD = FCABCD+FCABCD
                   DO IORBAB = 1,NORBAB
+                    IF (SUSCEP) THEN
+                      IORBA = 1 + NINDAB(IORBAB,1)/KHKTA
+                      IORBB = 1 + NINDAB(IORBAB,2)/KHKTB
+                    ELSE
+                      IORBA = NINDAB(IORBAB,1)
+                      IORBB = NINDAB(IORBAB,2)
+                    END IF
                     FAB = FCABCD
-                    IORBA = 1 + NINDAB(IORBAB,1)/KHKTA
-                    IORBB = 1 + NINDAB(IORBAB,2)/KHKTB
                     IF (TCONAB.AND.IORBA.NE.IORBB)
      &                FAB = FAB+FAB
                     A = ICORBA(IORBA) + ICOMPA
@@ -228,8 +240,13 @@ C
                       AINT  = AOINT(IOFF+IORBCD)
                       IF(ABS(AINT).GT.FCKTOL) THEN
                         NBUF  = NBUF + 1
-                        IORBC = 1 + NINDCD(IORBCD,1)/KHKTC
-                        IORBD = 1 + NINDCD(IORBCD,2)/KHKTD
+                        IF (SUSCEP) THEN
+                          IORBC = 1 + NINDCD(IORBCD,1)/KHKTC
+                          IORBD = 1 + NINDCD(IORBCD,2)/KHKTD
+                        ELSE
+                          IORBC = NINDCD(IORBCD,1)
+                          IORBD = NINDCD(IORBCD,2)
+                        END IF
                         FABCD = FAB
                         IF (TCONCD.AND.IORBC.NE.IORBD)
      &                     FABCD = FABCD+FABCD
@@ -248,88 +265,6 @@ C
             ENDDO
           ENDDO
         ENDIF
-      ELSE
-        IF(NOTEST) THEN
-          DO ICOMPA = 1,KHKTA
-                        KHKTBB = KHKTB
-            DO ICOMPB = 1,KHKTBB
-              DO ICOMPC = 1,KHKTC
-                            KHKTDD = KHKTD
-                DO ICOMPD = 1,KHKTDD
-                  DO IORBAB = 1,NORBAB
-                    IORBA = NINDAB(IORBAB,1)
-                    IORBB = NINDAB(IORBAB,2)
-                    A = ICORBA(IORBA) + ICOMPA
-                    B = ICORBB(IORBB) + ICOMPB
-                    DO IORBCD = 1, NORBCD
-                      AINT  = AOINT(IOFF+IORBCD)
-                      IF(ABS(AINT).GT.FCKTOL) THEN
-                        NBUF  = NBUF + 1
-                        IORBC = NINDCD(IORBCD,1)
-                        IORBD = NINDCD(IORBCD,2)
-                        AOMAX       = MAX(AOMAX,ABS(AINT))
-                        AOINT(NBUF) = AINT
-                        IND(1,NBUF) = A
-                        IND(2,NBUF) = B
-                        IND(3,NBUF) = ICORBC(IORBC) + ICOMPC
-                        IND(4,NBUF) = ICORBD(IORBD) + ICOMPD
-                      ENDIF
-                    ENDDO
-                    IOFF = IOFF + NORBCD
-                  ENDDO
-                ENDDO
-              ENDDO
-            ENDDO
-          ENDDO
-          IF(SFAC.NE.D1) CALL DSCAL(NBUF,SFAC,AOINT,1)
-        ELSE
-          DO ICOMPA = 1,KHKTA
-                        KHKTBB = KHKTB
-            IF (DIAGAB) KHKTBB = ICOMPA
-            DO ICOMPB = 1,KHKTBB
-              FACAB = SFAC
-              IF(DIAGAB.AND.ICOMPA.NE.ICOMPB)
-     &          FACAB = FACAB+FACAB
-              DO ICOMPC = 1,KHKTC
-                            KHKTDD = KHKTD
-                IF (DIAGCD) KHKTDD = ICOMPC
-                DO ICOMPD = 1,KHKTDD
-                  FCABCD = FACAB
-                  IF (DIAGCD.AND.ICOMPC.NE.ICOMPD)
-     &              FCABCD = FCABCD+FCABCD
-                  DO IORBAB = 1,NORBAB
-                    IORBA = NINDAB(IORBAB,1)
-                    IORBB = NINDAB(IORBAB,2)
-                    FAB   = FCABCD
-                    IF(TCONAB.AND.IORBA.NE.IORBB)
-     &                FAB = FAB+FAB
-                    A = ICORBA(IORBA) + ICOMPA
-                    B = ICORBB(IORBB) + ICOMPB
-                    DO IORBCD = 1, NORBCD
-                      AINT  = AOINT(IOFF+IORBCD)
-                      IF(ABS(AINT).GT.FCKTOL) THEN
-                        NBUF  = NBUF + 1
-                        IORBC = NINDCD(IORBCD,1)
-                        IORBD = NINDCD(IORBCD,2)
-                        FABCD = FAB
-                        IF (TCONCD.AND.IORBC.NE.IORBD)
-     &                    FABCD = FABCD+FABCD
-                        AOMAX       = MAX(AOMAX,ABS(AINT))
-                        AOINT(NBUF) = FABCD*AINT
-                        IND(1,NBUF) = A
-                        IND(2,NBUF) = B
-                        IND(3,NBUF) = ICORBC(IORBC) + ICOMPC
-                        IND(4,NBUF) = ICORBD(IORBD) + ICOMPD
-                      ENDIF
-                    ENDDO
-                    IOFF = IOFF + NORBCD
-                  ENDDO
-                ENDDO
-              ENDDO
-            ENDDO
-          ENDDO
-        ENDIF
-      ENDIF
 C
 C     Statistics
 C

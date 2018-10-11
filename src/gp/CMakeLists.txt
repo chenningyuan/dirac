@@ -32,7 +32,6 @@ set(FIXED_GP_FORTRAN_SOURCES
    qpack.F
    spline.F
    time.F
-   vcraypack.F
    # gpsaue.F needs disotp
    ${PROJECT_SOURCE_DIR}/src/abacus/hergp.F
 )
