@@ -1,7 +1,7 @@
 module exacorr_cc
 !This module contains the routines needed to calculate ae coupled cluster wave function
 
-!       use tensor_algebra
+        use tensor_algebra  ! still necessary for type definitions, like C_SIZE_T, etc
         use exatensor
 
         implicit none
@@ -34,22 +34,21 @@ module exacorr_cc
          integer(C_INT)                 :: host_arg_max
 
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
-         type(talsh_tens_t) :: foo_tensor, fvv_tensor, fov_tensor
-         type(talsh_tens_t) :: oovv_tensor, vvvv_tensor, oooo_tensor, vovo_tensor, ooov_tensor, vovv_tensor
+         type(tens_rcrsv_t) :: foo_tensor, fvv_tensor, fov_tensor
+         type(tens_rcrsv_t) :: oovv_tensor, vvvv_tensor, oooo_tensor, vovo_tensor, ooov_tensor, vovv_tensor
 !        intermediate tensors (same notation as in relccsd)
-         type(talsh_tens_t) :: goint_tensor, gvint_tensor, hoint_tensor, hvint_tensor, hovint_tensor
-         type(talsh_tens_t) :: aint_tensor, bint_tensor, cint_tensor, hint_tensor
-         type(talsh_tens_t) :: tau_tensor, tau2_tensor
+         type(tens_rcrsv_t) :: goint_tensor, gvint_tensor, hoint_tensor, hvint_tensor, hovint_tensor
+         type(tens_rcrsv_t) :: aint_tensor, bint_tensor, cint_tensor, hint_tensor
+         type(tens_rcrsv_t) :: tau_tensor, tau2_tensor
          integer            :: goint_dims(1:2),gvint_dims(1:2),hoint_dims(1:2),hvint_dims(1:2),hovint_dims(1:2)
          integer            :: aint_dims(1:4),bint_dims(1:4),cint_dims(1:4),hint_dims(1:4)
 !        auxilliary tensors for t1 equation
-         type(talsh_tens_t) :: hovaux_tensor, hoaux_tensor
+         type(tens_rcrsv_t) :: hovaux_tensor, hoaux_tensor
 !        solution tensors
-         type(talsh_tens_t) :: t1_tensor, t2_tensor, s1_tensor, s2_tensor
+         type(tens_rcrsv_t) :: t1_tensor, t2_tensor, s1_tensor, s2_tensor
          integer            :: t1_dims(1:2), t2_dims(1:4), s1_dims(1:2), s2_dims(1:4)
 !        scalars (need to be defined as tensor types)
-         type(talsh_tens_t) :: result_tensor, one_tensor
-         integer            :: result_dims(1),one_dims(1)
+         type(tens_rcrsv_t) :: result_tensor, one_tensor
 !        CCSD control and result variables
          integer            :: iccsd, nccsd
          real(8)            :: mp2_energy, ccsd_energy!, t_energy(3), t_convergence  ! triples not implemented
@@ -60,26 +59,26 @@ module exacorr_cc
 
 !        Initialize libraries
          host_buf_size=BUF_SIZE
-         ierr=talsh_init(host_buf_size,host_arg_max)
-         print*, " Initialized talsh library"
+!        ierr=talsh_init(host_buf_size,host_arg_max) ! need to find exatns alternative
+         print*, " Initialized ExaTensor library"
          write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,host_buf_size,host_arg_max
          call interest_initialize(.true.)
          print*, " Initialized interest library"
          call initialize_global_data
          print*, " Initialized global data"
 
-!        Initialize scalars that are to be used as tensors in contractions
-         one_dims(1) = 1
-         ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
-         result_dims(1) = 1
-         ierr=talsh_tensor_construct(result_tensor,C8,result_dims(1:0),init_val=ZERO)
-         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,0,DEV_HOST)
+!        Create and initialize scalars that are to be used as tensors in contractions
+         ierr=exatns_tensor_create(one_tensor,"one_tensor",EXA_DATA_KIND_C8)   
+         ierr=exatns_tensor_create(result_tensor,"result_tensor",EXA_DATA_KIND_C8)   
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
+         
+         ierr=exatns_tensor_init(one_tensor,scalar=ONE)
+         ierr=exatns_tensor_init(result_tensor,scalar=ZERO)
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_init() failed!')
 
-!        Get fixed one-body tensors ! set to 0 now at the beginning
-!                                 fo_tensor,fov_tensor,fv_tensor)
-         foo_tensor = 0
-         fov_tensor = 0
-         fvv_tensor = 0   
+!        Get fixed one-body tensors => set to 0 
+!        Implement correct dimension with exatns_tensor_create
+         call get_CC_Fockmatrix (nocc,nvir,foo_tensor,fov_tensor,fvv_tensor)
 
 !        Get fixed two-body tensors
          call get_CC_integrals (nocc,nvir,mo_occ,mo_vir, &
@@ -95,15 +94,14 @@ module exacorr_cc
          t2_dims(1:2) = nvir * 2
          t2_dims(3:4) = nocc * 2
          ierr=talsh_tensor_construct(t2_tensor,C8,t2_dims,init_val=ZERO)
-!        ierr=talsh_tensor_add("T(a,b,i,j)+=V+(i,j,a,b)",t2_tensor,oovv_tensor)
+!        ierr=exatns_tensor_add("T(a,b,i,j)+=V+(i,j,a,b)",t2_tensor,oovv_tensor)
 !        work-around because complex conjugation does not work in the above statement
-         ierr=talsh_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)",t2_tensor,oovv_tensor,one_tensor) ! o(2)v(2)
+         ierr=exatns_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)",t2_tensor,oovv_tensor,one_tensor) ! o(2)v(2)
 !        end of work-around
-!        call scale_with_denominators (eps_occ,eps_vir,t1_tensor,t2_tensor)
 
 !        Calculate and print the MP2 energy
-         ierr=talsh_tensor_init(result_tensor)
-         ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,t2_tensor,oovv_tensor) ! o(2)v(2)
+         ierr=exatns_tensor_init(result_tensor)
+         ierr=exatns_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,t2_tensor,oovv_tensor) ! o(2)v(2)
          mp2_energy=result_tens(1) * ONE_QUARTER
          print*," MP2 energy = ", mp2_energy
 
@@ -145,7 +143,7 @@ module exacorr_cc
          s2_dims(3:4) = nocc * 2
          ierr=talsh_tensor_construct(s2_tensor,C8,s2_dims,init_val=ZERO)
 !        call diis (t1_tensor,t2_tensor,mode=1)
-         if (ierr.eq.TALSH_SUCCESS) then
+         if (ierr.eq.EXA_SUCCESS) then
             print*," ccdriver: allocated all tensors"
          else
             print*," ccdriver: error in tensor allocation, code=",ierr
@@ -155,182 +153,182 @@ module exacorr_cc
          do iccsd = 1, nccsd
 
 !        make tau ! validated
-         ierr=talsh_tensor_init(tau_tensor)
-         ierr=talsh_tensor_add("T(a,b,i,j)+=R(a,b,i,j)",tau_tensor,t2_tensor)
-         ierr=talsh_tensor_contract("T(a,b,i,j)+=T(a,i)*T(b,j)",tau_tensor,t1_tensor,t1_tensor) ! o(2)v(2)
-         ierr=talsh_tensor_contract("T(a,b,i,j)+=T(a,j)*T(b,i)",tau_tensor,t1_tensor,t1_tensor,scale=MINUS_ONE) ! o(2)v(2)
+         ierr=exatns_tensor_init(tau_tensor)
+         ierr=exatns_tensor_add("T(a,b,i,j)+=R(a,b,i,j)",tau_tensor,t2_tensor)
+         ierr=exatns_tensor_contract("T(a,b,i,j)+=T(a,i)*T(b,j)",tau_tensor,t1_tensor,t1_tensor) ! o(2)v(2)
+         ierr=exatns_tensor_contract("T(a,b,i,j)+=T(a,j)*T(b,i)",tau_tensor,t1_tensor,t1_tensor,scale=MINUS_ONE) ! o(2)v(2)
 
 !NOTE: contractions marked with "validated" gave numerically significant contributions and could be validated by comparison
 !to the reference implementation, the ones marked "moretests" were too small to decide whether it was correct or not.
 !        calculate intermediaries
 
-         ierr=talsh_tensor_init(s2_tensor)
+         ierr=exatns_tensor_init(s2_tensor)
 
 !        The vvvv contribution
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=V(a,b,c,d)*T(c,d,i,j)",s2_tensor,vvvv_tensor,tau_tensor,scale=ONE_HALF) !validated o(2)v(4)
+         ierr=exatns_tensor_contract("S(a,b,i,j)+=V(a,b,c,d)*T(c,d,i,j)",s2_tensor,vvvv_tensor,tau_tensor,scale=ONE_HALF) !validated o(2)v(4)
 
 !        vv ! validated
-         ierr=talsh_tensor_init(hvint_tensor)
-         ierr=talsh_tensor_add("H(a,c)+=F(a,c)",hvint_tensor,fv_tensor)
-         ierr=talsh_tensor_contract("H(a,c)+=V(k,l,c,d)*T(d,a,k,l)",hvint_tensor,oovv_tensor,tau_tensor, &
+         ierr=exatns_tensor_init(hvint_tensor)
+         ierr=exatns_tensor_add("H(a,c)+=F(a,c)",hvint_tensor,fvv_tensor)
+         ierr=exatns_tensor_contract("H(a,c)+=V(k,l,c,d)*T(d,a,k,l)",hvint_tensor,oovv_tensor,tau_tensor, &
                                      scale=ONE_HALF) ! o(2)v(3)
-         ierr=talsh_tensor_init(gvint_tensor)
-         ierr=talsh_tensor_add("G(a,c)+=H(a,c)",gvint_tensor,hvint_tensor)
-         ierr=talsh_tensor_contract("G(a,c)+=V(a,k,c,d)*T(d,k)",gvint_tensor,vovv_tensor,t1_tensor) ! o(1)v(3)
-         ierr=talsh_tensor_contract("G(a,c)+=F(k,c)*T(a,k)",gvint_tensor,fov_tensor,t1_tensor,scale=MINUS_ONE) ! o(1)v(2)
+         ierr=exatns_tensor_init(gvint_tensor)
+         ierr=exatns_tensor_add("G(a,c)+=H(a,c)",gvint_tensor,hvint_tensor)
+         ierr=exatns_tensor_contract("G(a,c)+=V(a,k,c,d)*T(d,k)",gvint_tensor,vovv_tensor,t1_tensor) ! o(1)v(3)
+         ierr=exatns_tensor_contract("G(a,c)+=F(k,c)*T(a,k)",gvint_tensor,fov_tensor,t1_tensor,scale=MINUS_ONE) ! o(1)v(2)
 
 !        vovo ! moretests
-         ierr=talsh_tensor_init(tau2_tensor)
-         ierr=talsh_tensor_add("T(a,d,l,i)+=R(a,d,l,i)",tau2_tensor,t2_tensor,scale=ONE_HALF)
-         ierr=talsh_tensor_contract("T(a,d,l,i)+=T(a,l)*T(d,i)",tau2_tensor,t1_tensor,t1_tensor) ! o(2)v(2)
-         ierr=talsh_tensor_init(hint_tensor)
-         ierr=talsh_tensor_contract("H(a,k,c,i)+=V(k,l,c,d)*T(a,d,l,i)",hint_tensor,oovv_tensor,tau2_tensor)! o(3)v(3)
-         ierr=talsh_tensor_contract("H(a,k,c,i)+=V(a,k,c,d)*T(d,i)",hint_tensor,vovv_tensor,t1_tensor) ! o(2)v(3)
-         ierr=talsh_tensor_contract("H(a,k,c,i)+=V(k,l,i,c)*T(a,l)",hint_tensor,ooov_tensor,t1_tensor,scale=MINUS_ONE) ! o(3)v(2)
-         ierr=talsh_tensor_add("H(a,k,c,i)+=V(a,k,c,i)",hint_tensor,vovo_tensor)
+         ierr=exatns_tensor_init(tau2_tensor)
+         ierr=exatns_tensor_add("T(a,d,l,i)+=R(a,d,l,i)",tau2_tensor,t2_tensor,scale=ONE_HALF)
+         ierr=exatns_tensor_contract("T(a,d,l,i)+=T(a,l)*T(d,i)",tau2_tensor,t1_tensor,t1_tensor) ! o(2)v(2)
+         ierr=exatns_tensor_init(hint_tensor)
+         ierr=exatns_tensor_contract("H(a,k,c,i)+=V(k,l,c,d)*T(a,d,l,i)",hint_tensor,oovv_tensor,tau2_tensor)! o(3)v(3)
+         ierr=exatns_tensor_contract("H(a,k,c,i)+=V(a,k,c,d)*T(d,i)",hint_tensor,vovv_tensor,t1_tensor) ! o(2)v(3)
+         ierr=exatns_tensor_contract("H(a,k,c,i)+=V(k,l,i,c)*T(a,l)",hint_tensor,ooov_tensor,t1_tensor,scale=MINUS_ONE) ! o(3)v(2)
+         ierr=exatns_tensor_add("H(a,k,c,i)+=V(a,k,c,i)",hint_tensor,vovo_tensor)
 
 !        This term appears four times as we need to permute both i and j and a and b
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=H(a,k,c,i)*T(c,b,j,k)",s2_tensor,hint_tensor,t2_tensor)  ! validated o(3)v(3)
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=H(a,k,c,j)*T(c,b,k,i)",s2_tensor,hint_tensor,t2_tensor)  ! validated o(3)v(3)
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=H(b,k,c,i)*T(a,c,j,k)",s2_tensor,hint_tensor,t2_tensor)  ! validated o(3)v(3)
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=H(b,k,c,j)*T(a,c,k,i)",s2_tensor,hint_tensor,t2_tensor)  ! validated o(3)v(3)
+         ierr=exatns_tensor_contract("S(a,b,i,j)+=H(a,k,c,i)*T(c,b,j,k)",s2_tensor,hint_tensor,t2_tensor)  ! validated o(3)v(3)
+         ierr=exatns_tensor_contract("S(a,b,i,j)+=H(a,k,c,j)*T(c,b,k,i)",s2_tensor,hint_tensor,t2_tensor)  ! validated o(3)v(3)
+         ierr=exatns_tensor_contract("S(a,b,i,j)+=H(b,k,c,i)*T(a,c,j,k)",s2_tensor,hint_tensor,t2_tensor)  ! validated o(3)v(3)
+         ierr=exatns_tensor_contract("S(a,b,i,j)+=H(b,k,c,j)*T(a,c,k,i)",s2_tensor,hint_tensor,t2_tensor)  ! validated o(3)v(3)
 
 !        ovoo ! validated
-         ierr=talsh_tensor_init(cint_tensor)
-         ierr=talsh_tensor_contract("C(k,b,i,j)+=V(b,k,c,d)*T(c,d,i,j)",cint_tensor,vovv_tensor,tau_tensor,scale=MINUS_ONE_HALF) ! o(3)v(3)
-         ierr=talsh_tensor_contract("C(k,b,i,j)+=V(b,k,c,i)*T(c,j)",cint_tensor,vovo_tensor,t1_tensor) ! o(3)v(2)
-         ierr=talsh_tensor_contract("C(k,b,i,j)+=V(b,k,c,j)*T(c,i)",cint_tensor,vovo_tensor,t1_tensor,scale=MINUS_ONE) ! o(3)v(2)
-         ierr=talsh_tensor_contract("C(k,b,i,j)+=V+(i,j,k,b)*K()",cint_tensor,ooov_tensor,one_tensor) ! o(3)v(1)
+         ierr=exatns_tensor_init(cint_tensor)
+         ierr=exatns_tensor_contract("C(k,b,i,j)+=V(b,k,c,d)*T(c,d,i,j)",cint_tensor,vovv_tensor,tau_tensor,scale=MINUS_ONE_HALF) ! o(3)v(3)
+         ierr=exatns_tensor_contract("C(k,b,i,j)+=V(b,k,c,i)*T(c,j)",cint_tensor,vovo_tensor,t1_tensor) ! o(3)v(2)
+         ierr=exatns_tensor_contract("C(k,b,i,j)+=V(b,k,c,j)*T(c,i)",cint_tensor,vovo_tensor,t1_tensor,scale=MINUS_ONE) ! o(3)v(2)
+         ierr=exatns_tensor_contract("C(k,b,i,j)+=V+(i,j,k,b)*K()",cint_tensor,ooov_tensor,one_tensor) ! o(3)v(1)
 
 !        oo ! validated
-         ierr=talsh_tensor_init(hoint_tensor)
-         ierr=talsh_tensor_add("H(k,j)+=F(k,j)",hoint_tensor,fo_tensor)
-         ierr=talsh_tensor_contract("H(k,j)+=V(k,l,c,d)*T(c,d,l,j)",hoint_tensor,oovv_tensor,tau_tensor, &
+         ierr=exatns_tensor_init(hoint_tensor)
+         ierr=exatns_tensor_add("H(k,j)+=F(k,j)",hoint_tensor,foo_tensor)
+         ierr=exatns_tensor_contract("H(k,j)+=V(k,l,c,d)*T(c,d,l,j)",hoint_tensor,oovv_tensor,tau_tensor, &
                                      scale=ONE_HALF) ! o(3)v(2)
-         ierr=talsh_tensor_init(goint_tensor)
-         ierr=talsh_tensor_add("G(k,j)+=H(k,j)",goint_tensor,hoint_tensor)
-         ierr=talsh_tensor_contract("G(k,j)+=V(k,l,j,c)*T(c,l)",goint_tensor,ooov_tensor,t1_tensor,scale=MINUS_ONE) ! o(3)v(1)
-         ierr=talsh_tensor_contract("G(k,j)+=F(k,c)*T(c,j)",goint_tensor,fov_tensor,t1_tensor) ! o(2)v(1)
+         ierr=exatns_tensor_init(goint_tensor)
+         ierr=exatns_tensor_add("G(k,j)+=H(k,j)",goint_tensor,hoint_tensor)
+         ierr=exatns_tensor_contract("G(k,j)+=V(k,l,j,c)*T(c,l)",goint_tensor,ooov_tensor,t1_tensor,scale=MINUS_ONE) ! o(3)v(1)
+         ierr=exatns_tensor_contract("G(k,j)+=F(k,c)*T(c,j)",goint_tensor,fov_tensor,t1_tensor) ! o(2)v(1)
 
 !        ov ! validated
-         ierr=talsh_tensor_init(hovint_tensor)
-         ierr=talsh_tensor_init(hovaux_tensor)
-         ierr=talsh_tensor_contract("H(k,c)+=V(k,l,c,d)*T(d,l)",hovint_tensor,oovv_tensor,t1_tensor) ! o(2)v(2)
-         ierr=talsh_tensor_add("L(k,c)+=H(k,c)",hovaux_tensor,hovint_tensor)                                  ! copy common term
-         ierr=talsh_tensor_add("H(k,c)+=F(k,c)",hovint_tensor,fov_tensor)                                     ! add fock matrix
-         ierr=talsh_tensor_contract("H(k,c)+=F(k,c)*K()",hovaux_tensor,fov_tensor,one_tensor,scale=MINUS_ONE) ! subtract fock matrix
+         ierr=exatns_tensor_init(hovint_tensor)
+         ierr=exatns_tensor_init(hovaux_tensor)
+         ierr=exatns_tensor_contract("H(k,c)+=V(k,l,c,d)*T(d,l)",hovint_tensor,oovv_tensor,t1_tensor) ! o(2)v(2)
+         ierr=exatns_tensor_add("L(k,c)+=H(k,c)",hovaux_tensor,hovint_tensor)                                  ! copy common term
+         ierr=exatns_tensor_add("H(k,c)+=F(k,c)",hovint_tensor,fov_tensor)                                     ! add fock matrix
+         ierr=exatns_tensor_contract("H(k,c)+=F(k,c)*K()",hovaux_tensor,fov_tensor,one_tensor,scale=MINUS_ONE) ! subtract fock matrix
 
 !        oooo ! validated
-         ierr=talsh_tensor_init(aint_tensor)
-         ierr=talsh_tensor_add("A(k,l,i,j)+=V(k,l,i,j)",aint_tensor,oooo_tensor)
-         ierr=talsh_tensor_contract("A(k,l,i,j)+=V(k,l,i,c)*T(c,j)",aint_tensor,ooov_tensor,t1_tensor) ! o(4)v(1)
-         ierr=talsh_tensor_contract("A(k,l,i,j)+=V(k,l,j,c)*T(c,i)",aint_tensor,ooov_tensor,t1_tensor, &
+         ierr=exatns_tensor_init(aint_tensor)
+         ierr=exatns_tensor_add("A(k,l,i,j)+=V(k,l,i,j)",aint_tensor,oooo_tensor)
+         ierr=exatns_tensor_contract("A(k,l,i,j)+=V(k,l,i,c)*T(c,j)",aint_tensor,ooov_tensor,t1_tensor) ! o(4)v(1)
+         ierr=exatns_tensor_contract("A(k,l,i,j)+=V(k,l,j,c)*T(c,i)",aint_tensor,ooov_tensor,t1_tensor, &
                                      scale=MINUS_ONE) ! o(4)v(1)
-         ierr=talsh_tensor_contract("A(k,l,i,j)+=V(k,l,c,d)*T(c,d,i,j)",aint_tensor,oovv_tensor,tau_tensor, &
+         ierr=exatns_tensor_contract("A(k,l,i,j)+=V(k,l,c,d)*T(c,d,i,j)",aint_tensor,oovv_tensor,tau_tensor, &
                                      scale=ONE_HALF) ! o(4)v(2)
 
-         if (ierr.ne.TALSH_SUCCESS) then
+         if (ierr.ne.EXA_SUCCESS) then
             print*," ccdriver: error in calculation of intermediates, code=",ierr
             return
          end if
 
          if (debug) then
 !        For debugging: print quasi-norm (NOT using complex conjugation so that we can also see whether tensors are imaginary)
-            ierr=talsh_tensor_init(result_tensor)
-            ierr=talsh_tensor_contract("S()+=T(a,i)*T(a,i)",result_tensor,t1_tensor,t1_tensor)
+            ierr=exatns_tensor_init(result_tensor)
+            ierr=exatns_tensor_contract("S()+=T(a,i)*T(a,i)",result_tensor,t1_tensor,t1_tensor)
             print*, "T1amp = ",result_tens(1)
-            ierr=talsh_tensor_init(result_tensor)
-            ierr=talsh_tensor_contract("S()+=T(a,b,i,j)*T(a,b,i,j)",result_tensor,t2_tensor,t2_tensor,scale=ONE_QUARTER)
+            ierr=exatns_tensor_init(result_tensor)
+            ierr=exatns_tensor_contract("S()+=T(a,b,i,j)*T(a,b,i,j)",result_tensor,t2_tensor,t2_tensor,scale=ONE_QUARTER)
             print*, "T2amp = ",result_tens(1)
-            ierr=talsh_tensor_init(result_tensor)
-            ierr=talsh_tensor_contract("S()+=T(a,b,i,j)*T(a,b,i,j)",result_tensor,tau_tensor,tau_tensor,scale=ONE_QUARTER)
+            ierr=exatns_tensor_init(result_tensor)
+            ierr=exatns_tensor_contract("S()+=T(a,b,i,j)*T(a,b,i,j)",result_tensor,tau_tensor,tau_tensor,scale=ONE_QUARTER)
             print*, "Tau   = ",result_tens(1)
-            ierr=talsh_tensor_init(result_tensor)
-            ierr=talsh_tensor_contract("S()+=H(k,j)*H(k,j)",result_tensor,hoint_tensor,hoint_tensor)
+            ierr=exatns_tensor_init(result_tensor)
+            ierr=exatns_tensor_contract("S()+=H(k,j)*H(k,j)",result_tensor,hoint_tensor,hoint_tensor)
             print*, "hoint = ",result_tens(1)
-            ierr=talsh_tensor_init(result_tensor)
-            ierr=talsh_tensor_contract("S()+=G(k,j)*G(k,j)",result_tensor,goint_tensor,goint_tensor)
+            ierr=exatns_tensor_init(result_tensor)
+            ierr=exatns_tensor_contract("S()+=G(k,j)*G(k,j)",result_tensor,goint_tensor,goint_tensor)
             print*, "goint = ",result_tens(1)
-            ierr=talsh_tensor_init(result_tensor)
-            ierr=talsh_tensor_contract("S()+=H(a,c)*H(a,c)",result_tensor,hvint_tensor,hvint_tensor)
+            ierr=exatns_tensor_init(result_tensor)
+            ierr=exatns_tensor_contract("S()+=H(a,c)*H(a,c)",result_tensor,hvint_tensor,hvint_tensor)
             print*, "hvint = ",result_tens(1)
-            ierr=talsh_tensor_init(result_tensor)
-            ierr=talsh_tensor_contract("S()+=G(a,c)*G(a,c)",result_tensor,gvint_tensor,gvint_tensor)
+            ierr=exatns_tensor_init(result_tensor)
+            ierr=exatns_tensor_contract("S()+=G(a,c)*G(a,c)",result_tensor,gvint_tensor,gvint_tensor)
             print*, "gvint = ",result_tens(1)
-            ierr=talsh_tensor_init(result_tensor)
-            ierr=talsh_tensor_contract("S()+=H(k,c)*H(k,c)",result_tensor,hovint_tensor,hovint_tensor)
+            ierr=exatns_tensor_init(result_tensor)
+            ierr=exatns_tensor_contract("S()+=H(k,c)*H(k,c)",result_tensor,hovint_tensor,hovint_tensor)
             print*, "hovint = ",result_tens(1)
-            ierr=talsh_tensor_init(result_tensor)
-            ierr=talsh_tensor_contract("S()+=A(k,l,i,j)*A(k,l,i,j)",result_tensor,aint_tensor,aint_tensor)
+            ierr=exatns_tensor_init(result_tensor)
+            ierr=exatns_tensor_contract("S()+=A(k,l,i,j)*A(k,l,i,j)",result_tensor,aint_tensor,aint_tensor)
             print*, "a int = ",result_tens(1)/4.D0
-            ierr=talsh_tensor_init(result_tensor)
-            ierr=talsh_tensor_contract("S()+=H(a,i,c,k)*H(a,i,c,k)",result_tensor,hint_tensor,hint_tensor)
+            ierr=exatns_tensor_init(result_tensor)
+            ierr=exatns_tensor_contract("S()+=H(a,i,c,k)*H(a,i,c,k)",result_tensor,hint_tensor,hint_tensor)
             print*, "h int = ",result_tens(1)
-            ierr=talsh_tensor_init(result_tensor)
-            ierr=talsh_tensor_contract("S()+=C(k,b,i,j)*C(k,b,i,j)",result_tensor,cint_tensor,cint_tensor)
+            ierr=exatns_tensor_init(result_tensor)
+            ierr=exatns_tensor_contract("S()+=C(k,b,i,j)*C(k,b,i,j)",result_tensor,cint_tensor,cint_tensor)
             print*, "c int = ",result_tens(1)
          end if
 
 !        This term appears twice as we need to permute i and j
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=G(k,j)*T(a,b,i,k)",s2_tensor,goint_tensor,t2_tensor)                   ! validated o(3)v(2)
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=G(k,i)*T(a,b,k,j)",s2_tensor,goint_tensor,t2_tensor)                   ! validated o(3)v(2)
+         ierr=exatns_tensor_contract("S(a,b,i,j)+=G(k,j)*T(a,b,i,k)",s2_tensor,goint_tensor,t2_tensor)                   ! validated o(3)v(2)
+         ierr=exatns_tensor_contract("S(a,b,i,j)+=G(k,i)*T(a,b,k,j)",s2_tensor,goint_tensor,t2_tensor)                   ! validated o(3)v(2)
 !        Again two times, also note the complex conjugation as we use vovv instead of vvvo
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=V+(c,j,a,b)*T(c,i)",s2_tensor,vovv_tensor,t1_tensor)                   ! validated o(2)v(3)
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=V+(c,i,a,b)*T(c,j)",s2_tensor,vovv_tensor,t1_tensor,scale=MINUS_ONE)   ! validated o(2)v(3)
+         ierr=exatns_tensor_contract("S(a,b,i,j)+=V+(c,j,a,b)*T(c,i)",s2_tensor,vovv_tensor,t1_tensor)                   ! validated o(2)v(3)
+         ierr=exatns_tensor_contract("S(a,b,i,j)+=V+(c,i,a,b)*T(c,j)",s2_tensor,vovv_tensor,t1_tensor,scale=MINUS_ONE)   ! validated o(2)v(3)
 
 !        This term appears twice as we need to permute a and b
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=G(a,c)*T(c,b,i,j)",s2_tensor,gvint_tensor,t2_tensor)  ! validated o(2)v(3)
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=G(b,c)*T(a,c,i,j)",s2_tensor,gvint_tensor,t2_tensor)  ! validated o(2)v(3)
+         ierr=exatns_tensor_contract("S(a,b,i,j)+=G(a,c)*T(c,b,i,j)",s2_tensor,gvint_tensor,t2_tensor)  ! validated o(2)v(3)
+         ierr=exatns_tensor_contract("S(a,b,i,j)+=G(b,c)*T(a,c,i,j)",s2_tensor,gvint_tensor,t2_tensor)  ! validated o(2)v(3)
 !        Again two times, with the C intermediate (note: in RELCCSD this is done differently)
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=C(k,b,i,j)*T(a,k)",s2_tensor,cint_tensor,t1_tensor,scale=MINUS_ONE)    ! o(3)v(2)
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=C(k,a,i,j)*T(b,k)",s2_tensor,cint_tensor,t1_tensor)                    ! o(3)v(2)
+         ierr=exatns_tensor_contract("S(a,b,i,j)+=C(k,b,i,j)*T(a,k)",s2_tensor,cint_tensor,t1_tensor,scale=MINUS_ONE)    ! o(3)v(2)
+         ierr=exatns_tensor_contract("S(a,b,i,j)+=C(k,a,i,j)*T(b,k)",s2_tensor,cint_tensor,t1_tensor)                    ! o(3)v(2)
 
 !        The oooo contribution
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=A(k,l,i,j)*T(a,b,k,l)",s2_tensor,aint_tensor,tau_tensor,scale=ONE_HALF) !validated o(4)v(2)
+         ierr=exatns_tensor_contract("S(a,b,i,j)+=A(k,l,i,j)*T(a,b,k,l)",s2_tensor,aint_tensor,tau_tensor,scale=ONE_HALF) !validated o(4)v(2)
 
-!        ierr=talsh_tensor_add("S(a,b,i,j)+=V+(i,j,a,b)",s2_tensor,oovv_tensor)
+!        ierr=exatns_tensor_add("S(a,b,i,j)+=V+(i,j,a,b)",s2_tensor,oovv_tensor)
 !        work-around because complex conjugation does not work in the above statement
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=V+(i,j,a,b)*K()",s2_tensor,oovv_tensor,one_tensor)    ! validated o(2)v(2)
+         ierr=exatns_tensor_contract("S(a,b,i,j)+=V+(i,j,a,b)*K()",s2_tensor,oovv_tensor,one_tensor)    ! validated o(2)v(2)
 !        end of work-around
 
 !        calculate s1 tensor
-         ierr=talsh_tensor_init(s1_tensor)
-!        ierr=talsh_tensor_add("S(a,i)+=F+(i,a)",s1_tensor,fov_tensor)
+         ierr=exatns_tensor_init(s1_tensor)
+!        ierr=exatns_tensor_add("S(a,i)+=F+(i,a)",s1_tensor,fov_tensor)
 !        work-around because complex conjugation does not work in the above statement
-         ierr=talsh_tensor_contract("S(a,i)+=F+(i,a)*K()",s1_tensor,fov_tensor,one_tensor)
+         ierr=exatns_tensor_contract("S(a,i)+=F+(i,a)*K()",s1_tensor,fov_tensor,one_tensor)
 !        end of work-around
-         ierr=talsh_tensor_contract("S(a,i)+=V(a,k,c,d)*T(c,d,i,k)",s1_tensor,vovv_tensor,tau_tensor,scale=ONE_HALF) !validated o(2)v(3)
-         ierr=talsh_tensor_contract("S(a,i)+=H(a,c)*T(c,i)",s1_tensor,hvint_tensor,t1_tensor)                        !validated o(1)v(2)
-         ierr=talsh_tensor_contract("S(a,i)+=H(k,i)*T(a,k)",s1_tensor,hoint_tensor,t1_tensor)                        !validated o(2)v(1)
-         ierr=talsh_tensor_contract("S(a,i)+=H(k,c)*T(a,c,i,k)",s1_tensor,hovint_tensor,t2_tensor)                   !validated o(2)v(2)
-         ierr=talsh_tensor_init(hoaux_tensor)                                                                        !moretests
-         ierr=talsh_tensor_contract("L(k,i)+=H(k,c)*T(c,i)",hoaux_tensor,hovaux_tensor,t1_tensor)                    !moretests o(2)v(1)
-         ierr=talsh_tensor_contract("S(a,i)+=H(k,i)*T(a,k)",s1_tensor,hoaux_tensor,t1_tensor)                        !moretests o(2)v(1)
-         ierr=talsh_tensor_contract("S(a,i)+=V(k,l,i,c)*T(c,a,k,l)",s1_tensor,ooov_tensor,tau_tensor,scale=ONE_HALF) !validated o(3)v(2)
-         ierr=talsh_tensor_contract("S(a,i)+=V(a,k,c,i)*T(c,k)",s1_tensor,vovo_tensor,t1_tensor,scale=MINUS_ONE)     !validated o(2)v(2)
+         ierr=exatns_tensor_contract("S(a,i)+=V(a,k,c,d)*T(c,d,i,k)",s1_tensor,vovv_tensor,tau_tensor,scale=ONE_HALF) !validated o(2)v(3)
+         ierr=exatns_tensor_contract("S(a,i)+=H(a,c)*T(c,i)",s1_tensor,hvint_tensor,t1_tensor)                        !validated o(1)v(2)
+         ierr=exatns_tensor_contract("S(a,i)+=H(k,i)*T(a,k)",s1_tensor,hoint_tensor,t1_tensor)                        !validated o(2)v(1)
+         ierr=exatns_tensor_contract("S(a,i)+=H(k,c)*T(a,c,i,k)",s1_tensor,hovint_tensor,t2_tensor)                   !validated o(2)v(2)
+         ierr=exatns_tensor_init(hoaux_tensor)                                                                        !moretests
+         ierr=exatns_tensor_contract("L(k,i)+=H(k,c)*T(c,i)",hoaux_tensor,hovaux_tensor,t1_tensor)                    !moretests o(2)v(1)
+         ierr=exatns_tensor_contract("S(a,i)+=H(k,i)*T(a,k)",s1_tensor,hoaux_tensor,t1_tensor)                        !moretests o(2)v(1)
+         ierr=exatns_tensor_contract("S(a,i)+=V(k,l,i,c)*T(c,a,k,l)",s1_tensor,ooov_tensor,tau_tensor,scale=ONE_HALF) !validated o(3)v(2)
+         ierr=exatns_tensor_contract("S(a,i)+=V(a,k,c,i)*T(c,k)",s1_tensor,vovo_tensor,t1_tensor,scale=MINUS_ONE)     !validated o(2)v(2)
 
-         if (ierr.ne.TALSH_SUCCESS) then
+         if (ierr.ne.EXA_SUCCESS) then
             print*," ccdriver: error in evaluation of amplitude equations, code=",ierr
             return
          end if
 
 !        prepare for next iteration
-         ierr=talsh_tensor_init(t1_tensor)
-         ierr=talsh_tensor_add("T1(a,i)+=S1(a,i)",t1_tensor,s1_tensor)
-         ierr=talsh_tensor_init(t2_tensor)
-         ierr=talsh_tensor_add("T2(a,b,i,j)+=S2(a,b,i,j)",t2_tensor,s2_tensor)
+         ierr=exatns_tensor_init(t1_tensor)
+         ierr=exatns_tensor_add("T1(a,i)+=S1(a,i)",t1_tensor,s1_tensor)
+         ierr=exatns_tensor_init(t2_tensor)
+         ierr=exatns_tensor_add("T2(a,b,i,j)+=S2(a,b,i,j)",t2_tensor,s2_tensor)
 
 !        call diis (t1_tensor,t2_tensor,t_convergence=t_convergence)
 
-         ierr=talsh_tensor_init(result_tensor)
-         ierr=talsh_tensor_contract("E()+=T(a,i)*F(i,a)",result_tensor,t1_tensor,fov_tensor) ! o(1)v(1)
+         ierr=exatns_tensor_init(result_tensor)
+         ierr=exatns_tensor_contract("E()+=T(a,i)*F(i,a)",result_tensor,t1_tensor,fov_tensor) ! o(1)v(1)
          ccsd_energy=result_tens(1)
-         ierr=talsh_tensor_init(result_tensor)
-         ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,tau_tensor,oovv_tensor) ! o(2)v(2)
+         ierr=exatns_tensor_init(result_tensor)
+         ierr=exatns_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,tau_tensor,oovv_tensor) ! o(2)v(2)
          ccsd_energy=ccsd_energy + result_tens(1) * ONE_QUARTER
-         write (*,'(A,I4,A,F20.15,A,E10.1)') "  Iteration ",iccsd," CCSD energy = ",ccsd_energy, " convergence =",t_convergence
-         if (t_convergence .lt. t_target_precision) exit
-
+         write (*,'(A,I4,A,F20.15,A,E10.1)') "  Iteration ",iccsd," CCSD energy = ",ccsd_energy!, " convergence !=",t_convergence
+!        if (t_convergence .lt. t_target_precision) exit
+         exit   ! for testing first one cycle   
          end do
 
 !        Calculate (T) energy correction, not implemented yet
@@ -342,31 +340,31 @@ module exacorr_cc
 !        write (*,'(A,F20.15)') "  CCSD(T) correlation energy :      ",ccsd_energy+t_energy(1)+t_energy(2)
 !        write (*,'(A,F20.15)') "  CCSD-T  correlation energy :      ",ccsd_energy+t_energy(1)+t_energy(3)
 
-!        Destruct tensors and shut down library
+!        Destroy tensors and shut down library
 !        call diis (t1_tensor,t2_tensor,mode=2)
-         ierr=talsh_tensor_destruct(oooo_tensor)
-         ierr=talsh_tensor_destruct(oovv_tensor)
-         ierr=talsh_tensor_destruct(vovo_tensor)
-         ierr=talsh_tensor_destruct(vvvv_tensor)
-         ierr=talsh_tensor_destruct(ooov_tensor)
-         ierr=talsh_tensor_destruct(vovv_tensor)
-         ierr=talsh_tensor_destruct(s1_tensor)
-         ierr=talsh_tensor_destruct(s2_tensor)
-         ierr=talsh_tensor_destruct(t1_tensor)
-         ierr=talsh_tensor_destruct(t2_tensor)
-         ierr=talsh_tensor_destruct(hoint_tensor)
-         ierr=talsh_tensor_destruct(hoaux_tensor)
-         ierr=talsh_tensor_destruct(hvint_tensor)
-         ierr=talsh_tensor_destruct(hovint_tensor)
-         ierr=talsh_tensor_destruct(hovaux_tensor)
-         ierr=talsh_tensor_destruct(goint_tensor)
-         ierr=talsh_tensor_destruct(gvint_tensor)
-         ierr=talsh_tensor_destruct(aint_tensor)
-         ierr=talsh_tensor_destruct(cint_tensor)
-         ierr=talsh_tensor_destruct(hint_tensor)
+         ierr=exatns_tensor_destroy(oooo_tensor)
+         ierr=exatns_tensor_destroy(oovv_tensor)
+         ierr=exatns_tensor_destroy(vovo_tensor)
+         ierr=exatns_tensor_destroy(vvvv_tensor)
+         ierr=exatns_tensor_destroy(ooov_tensor)
+         ierr=exatns_tensor_destroy(vovv_tensor)
+         ierr=exatns_tensor_destroy(s1_tensor)
+         ierr=exatns_tensor_destroy(s2_tensor)
+         ierr=exatns_tensor_destroy(t1_tensor)
+         ierr=exatns_tensor_destroy(t2_tensor)
+         ierr=exatns_tensor_destroy(hoint_tensor)
+         ierr=exatns_tensor_destroy(hoaux_tensor)
+         ierr=exatns_tensor_destroy(hvint_tensor)
+         ierr=exatns_tensor_destroy(hovint_tensor)
+         ierr=exatns_tensor_destroy(hovaux_tensor)
+         ierr=exatns_tensor_destroy(goint_tensor)
+         ierr=exatns_tensor_destroy(gvint_tensor)
+         ierr=exatns_tensor_destroy(aint_tensor)
+         ierr=exatns_tensor_destroy(cint_tensor)
+         ierr=exatns_tensor_destroy(hint_tensor)
 !        Get statistics 
-         ierr=talsh_stats()
-         ierr=talsh_shutdown()
+!        ierr=talsh_stats()    !Need to find correct exatns alternatives. Probably exatns_status & exatns_stop
+!        ierr=talsh_shutdown()
 
 !        Free global data used to interact with DIRAC/Interest
          call delete_global_data
@@ -377,6 +375,51 @@ module exacorr_cc
          print*, " Leaving cc_driver routine"
          return
         end subroutine cc_driver
+
+        subroutine get_CC_Fockmatrix (nocc,nvir,foo_tensor,fov_tensor,fvv_tensor)
+
+!        Routine to get tensors with Fock matrix elements.
+!        In this implementation we assume canonical orbitals, so we may simply construct zero tensors.
+!        We also assume that we deal with a closed shell (Kramers-restricted) case, so nocc and nvir
+!        refer to Kramers pairs rather than spinors.
+       
+!        Written by Lucas Visscher, summer 2017
+!        ExaTensor conversion by Anastasios Papadopoulos, October 2018        
+
+         integer, intent(in)                :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
+!        target tensors to be filled and given back to the caller
+         type(tens_rcrsv_t), intent(inout)  :: foo_tensor, fov_tensor, fvv_tensor
+!        integer:: fo_dims(1:2),fv_dims(1:2),fov_dims(1:2)  => replace with root and id
+         integer(INTL)                      :: foo_space_root(1:2), fov_space_root(1:2), fvv_space_root(1:2)
+         integer                            :: foo_space_id(1:2), fov_space_id(1:2), fvv_space_id(1:2)
+         
+         integer   :: ierr
+
+!        Get foo tensor
+!        fo_dims(1:2) = nocc * 2
+         foo_space_id(1:2) = nocc * 2  ! need to figure out how to get correct 2x2 matrix     
+         foo_space_root(1:2) = 1
+         ierr=exatns_tensor_create(foo_tensor,"foo_tensor",foo_space_id,foo_space_root,EXA_DATA_KIND_C8)
+
+!        Get fov tensor
+!        fov_dims(1) = nocc * 2
+!        fov_dims(2) = nvir * 2
+         fov_space_id(1) = nocc * 2    
+         fov_space_id(2) = nvir * 2    
+         fov_space_root(1:2) = 1
+         ierr=exatns_tensor_create(fov_tensor,"fov_tensor",fov_space_id,fov_space_root,EXA_DATA_KIND_C8)
+
+!        Get fvv tensor
+!        fv_dims(1:2) = nvir * 2
+         foo_space_id(1:2) = nvir * 2   
+         foo_space_root(1:2) = 1 
+         ierr=exatns_tensor_create(fvv_tensor,"fvv_tensor",fvv_space_id,fvv_space_root,EXA_DATA_KIND_C8)
+
+         ierr=exatns_tensor_init(foo_tensor,scalar=ZERO)
+         ierr=exatns_tensor_init(fov_tensor,scalar=ZERO)
+         ierr=exatns_tensor_init(fvv_tensor,scalar=ZERO)
+
+        end subroutine get_CC_Fockmatrix
 
         subroutine get_CC_integrals (nocc,nvir,mo_occ,mo_vir, &
                                      oooo_tensor,ooov_tensor,oovv_tensor, &
@@ -397,8 +440,8 @@ module exacorr_cc
          integer, intent(in)               :: nocc,nvir             ! the size of the mo basis for occupied and virtual spinors
          integer, intent(in)               :: mo_occ(:),mo_vir(:)   ! the list of occupied and virtual orbitals
 !        target integral tensors to be filled and given back to the caller
-         type(talsh_tens_t), intent(inout) :: oovv_tensor, vvvv_tensor, oooo_tensor, vovo_tensor, ooov_tensor, vovv_tensor
-         integer                           :: oovv_dims(1:4),vvvv_dims(1:4),oooo_dims(1:4),vovo_dims(1:4),ooov_dims(1:4),vovv_dims(1:4)
+         type(tens_rcrsv_t), intent(inout) :: oovv_tensor, vvvv_tensor, oooo_tensor, vovo_tensor, ooov_tensor, vovv_tensor
+         integer                            :: oovv_dims(1:4),vvvv_dims(1:4),oooo_dims(1:4),vovo_dims(1:4),ooov_dims(1:4),vovv_dims(1:4)
 
          integer                            :: ierr, i
          complex(8), pointer, contiguous    :: ao_tens(:,:,:,:)
@@ -406,7 +449,7 @@ module exacorr_cc
          integer    :: nao
 
 !        auxilliary integral tensors (only needed inside this routine)
-         type(talsh_tens_t) :: aoint_tensor, ovvo_tensor
+         type(tens_rcrsv_t) :: aoint_tensor, ovvo_tensor
          integer            :: aoint_dims(1:4), ovvo_dims(1:4)
 
 !        arrays needed to communicate with the MO integral generator
@@ -414,8 +457,8 @@ module exacorr_cc
          integer, allocatable   :: mo_list(:)
 
 !        scalars (need to be defined as tensor types)
-         type(talsh_tens_t) :: minusone_tensor
-         integer            :: minusone_dims(1)
+         type(tens_rcrsv_t)    :: minusone_tensor
+         integer                :: minusone_dims(1)
 
 !        Retrieve basis set information
          nao     = get_nao()      ! number of basis functions
@@ -424,7 +467,6 @@ module exacorr_cc
          aoint_dims      = nao
          ierr=talsh_tensor_construct(aoint_tensor,C8,aoint_dims,init_val=ZERO)
 !        Initialize AO integral tensors (ideally via an initialization routine, for now via direct access)
-         ierr=talsh_tensor_get_body_access(aoint_tensor,body_p,C8,0,DEV_HOST)
          call compute_ao_integrals (nao,ao_tens)
 
 !        Get antisymmetric oovv tensor
@@ -493,8 +535,8 @@ module exacorr_cc
 !        Make anti-symmetrized vovo tensor
          minusone_dims(1) = 1
          ierr=talsh_tensor_construct(minusone_tensor,C8,minusone_dims(1:0),init_val=MINUS_ONE)
-         ierr=talsh_tensor_contract("V(a,i,b,j)+=V(i,a,b,j)*C()",vovo_tensor,ovvo_tensor,minusone_tensor)
-         ierr=talsh_tensor_destruct(ovvo_tensor)
+         ierr=exatns_tensor_contract("V(a,i,b,j)+=V(i,a,b,j)*C()",vovo_tensor,ovvo_tensor,minusone_tensor)
+         ierr=exatns_tensor_destroy(ovvo_tensor)
 
 !        Get vvvv tensor
          vvvv_dims = nvir * 2
@@ -540,7 +582,7 @@ module exacorr_cc
          deallocate (mo_list)
 
 !        Clean-up
-         ierr=talsh_tensor_destruct(aoint_tensor)
+         ierr=exatns_tensor_destroy(aoint_tensor)
 
        end subroutine get_CC_integrals
 
