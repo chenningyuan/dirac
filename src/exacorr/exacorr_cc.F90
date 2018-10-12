@@ -533,7 +533,7 @@ module exacorr_cc
          mo_list(nocc+1:nocc+nvir)            = mo_vir(1:nvir)
          mo_list(nocc+nvir+1:2*nocc+nvir)     = mo_occ(1:nocc)
          mo_list(2*nocc+nvir+1:2*nocc+2*nvir) = mo_vir(1:nvir)
-         call get_integral_tensor (aoint_tensor,oovv_tensor,12,nmo,mo_list)
+         !call get_integral_tensor (aoint_tensor,oovv_tensor,12,nmo,mo_list)
          deallocate (mo_list)
 
 !        Get antisymmetric oooo tensor
@@ -545,7 +545,7 @@ module exacorr_cc
          mo_list(nocc+1:2*nocc)   = mo_occ(1:nocc)
          mo_list(2*nocc+1:3*nocc) = mo_occ(1:nocc)
          mo_list(3*nocc+1:4*nocc) = mo_occ(1:nocc)
-         call get_integral_tensor (aoint_tensor,oooo_tensor,12,nmo,mo_list)
+         !call get_integral_tensor (aoint_tensor,oooo_tensor,12,nmo,mo_list)
          deallocate (mo_list)
 
 !        Get anti-symmetrized vovo tensor, this needs to be done in two steps as two different classes contribute.
@@ -562,7 +562,7 @@ module exacorr_cc
          mo_list(nvir+1:2*nvir)               = mo_vir(1:nvir)
          mo_list(2*nvir+1:2*nvir+nocc)        = mo_occ(1:nocc)
          mo_list(2*nvir+nocc+1:2*nvir+2*nocc) = mo_occ(1:nocc)
-         call get_integral_tensor (aoint_tensor,vovo_tensor,0,nmo,mo_list)
+         !call get_integral_tensor (aoint_tensor,vovo_tensor,0,nmo,mo_list)
          deallocate (mo_list)
 !        Get ovvo tensor
          !ovvo_dims(1) = nocc * 2
@@ -579,7 +579,7 @@ module exacorr_cc
          mo_list(nocc+1:nocc+nvir)            = mo_vir(1:nvir)
          mo_list(nvir+nocc+1:2*nvir+nocc)     = mo_vir(1:nvir)
          mo_list(2*nvir+nocc+1:2*nvir+2*nocc) = mo_occ(1:nocc)
-         call get_integral_tensor (aoint_tensor,ovvo_tensor,0,nmo,mo_list)
+         !call get_integral_tensor (aoint_tensor,ovvo_tensor,0,nmo,mo_list)
          deallocate (mo_list)
 !        Make anti-symmetrized vovo tensor
          minusone_dims(1) = 1
@@ -596,7 +596,7 @@ module exacorr_cc
          mo_list(nvir+1:2*nvir)   = mo_vir(1:nvir)
          mo_list(2*nvir+1:3*nvir) = mo_vir(1:nvir)
          mo_list(3*nvir+1:4*nvir) = mo_vir(1:nvir)
-         call get_integral_tensor (aoint_tensor,vvvv_tensor,12,nmo,mo_list)
+         !call get_integral_tensor (aoint_tensor,vvvv_tensor,12,nmo,mo_list)
          deallocate (mo_list)
 
 !        Get ooov tensor
@@ -610,7 +610,7 @@ module exacorr_cc
          mo_list(nocc+1:2*nocc)        = mo_occ(1:nocc)
          mo_list(2*nocc+1:3*nocc)      = mo_occ(1:nocc)
          mo_list(3*nocc+1:3*nocc+nvir) = mo_vir(1:nvir)
-         call get_integral_tensor (aoint_tensor,ooov_tensor,12,nmo,mo_list)
+         !call get_integral_tensor (aoint_tensor,ooov_tensor,12,nmo,mo_list)
          deallocate (mo_list)
 
 !        Get vovv tensor
@@ -627,7 +627,7 @@ module exacorr_cc
          mo_list(nvir+1:2*nvir)             = mo_vir(1:nvir)
          mo_list(2*nvir+1:2*nvir+nocc)      = mo_occ(1:nocc)
          mo_list(2*nvir+nocc+1:3*nvir+nocc) = mo_vir(1:nvir)
-         call get_integral_tensor (aoint_tensor,vovv_tensor,34,nmo,mo_list)
+         !call get_integral_tensor (aoint_tensor,vovv_tensor,34,nmo,mo_list)
          deallocate (mo_list)
 
 !        Clean-up
