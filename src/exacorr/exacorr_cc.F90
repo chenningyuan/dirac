@@ -3,7 +3,6 @@ module exacorr_cc
 
         use tensor_algebra  ! still necessary for type definitions, like C_SIZE_T, etc
         use exatensor
-        use exacorr_ao_to_mo
 
         implicit none
         complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
@@ -24,13 +23,11 @@ module exacorr_cc
 !        ExaTensor conversion by Anastasios Papadopoulos, October 2018
 
 !        COMMENTED OUT (IN MY OPINION) UNNECESSARY INIT STATEMENTS
- 
+         
          use interface_to_mpi
-         use dirac_MO
          use exacorr_datatypes
          use exacorr_global
          use exacorr_tensor_methods
-         !use exatensor
          use, intrinsic:: ISO_C_BINDING
 
          implicit none
@@ -39,6 +36,11 @@ module exacorr_cc
          integer(INTL)       :: nocc_l, nvir_l
          integer, intent(in) :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
 
+         integer :: my_role,mpi_th_provided, my_MPI_rank    ! needed to start exatensor, MPI should already be started in threaded mode
+         integer                                :: nshells  ! the number of shells (orbitals with the same center and l-value)
+         integer                                :: nao      ! the number of atomic orbitals)
+         type(basis_func_info_t), allocatable   :: gto(:)   ! array with information about the shells
+         
          integer                        :: ierr, i
          complex(8), pointer            :: energy(:),result_tens(:)
          integer(C_SIZE_T), parameter   :: BUF_SIZE=1_8*1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
@@ -52,13 +54,10 @@ module exacorr_cc
          type(tens_rcrsv_t) :: goint_tensor, gvint_tensor, hoint_tensor, hvint_tensor, hovint_tensor
          type(tens_rcrsv_t) :: aint_tensor, bint_tensor, cint_tensor, hint_tensor
          type(tens_rcrsv_t) :: tau_tensor, tau2_tensor
-         !integer            :: goint_dims(1:2),gvint_dims(1:2),hoint_dims(1:2),hvint_dims(1:2),hovint_dims(1:2)
-         !integer            :: aint_dims(1:4),bint_dims(1:4),cint_dims(1:4),hint_dims(1:4)
 !        auxilliary tensors for t1 equation
          type(tens_rcrsv_t) :: hovaux_tensor, hoaux_tensor
 !        solution tensors
          type(tens_rcrsv_t) :: t1_tensor, t2_tensor, s1_tensor, s2_tensor
-         !integer            :: t1_dims(1:2), t2_dims(1:4), s1_dims(1:2), s2_dims(1:4)
 !        scalars (need to be defined as tensor types)
          type(tens_rcrsv_t) :: result_tensor, one_tensor
 !        CCSD control and result variables
@@ -66,21 +65,15 @@ module exacorr_cc
          real(8)            :: mp2_energy, ccsd_energy!, t_energy(3), t_convergence  ! triples not implemented
 !        real(8), parameter :: t_target_precision = 1.D-13
 
-         integer :: my_role,mpi_th_provided, my_MPI_rank    ! needed to start exatensor, MPI should already be started in threaded mode
-         integer                                :: nshells  ! the number of shells (orbitals with the same center and l-value)
-         integer                                :: nao      ! the number of atomic orbitals)
-         type(basis_func_info_t), allocatable   :: gto(:)   ! array with information about the shells
-
          ! classes for the definition of spaces (AO and 4 different MO spaces)
          class(h_space_t), pointer                :: ao_space
-         type(h_spaces_container_t), dimension(4) :: mo_space
          class(h_space_t), pointer                :: occ_space, vir_space
 
          ! variables for the definition of spaces (AO and 4 different MO spaces)
-         type(subspace_basis_t) :: basis_ao, basis_mo(4), basis_occ, basis_vir
+         type(subspace_basis_t) :: basis_ao, basis_occ, basis_vir
          integer(INTL)          :: nao_l, ao_space_root
-         integer(INTL)          :: nmo_l, mo_space_root(4), occ_space_root, vir_space_root
-         integer                :: ao_space_id, mo_space_id(4), occ_space_id, vir_space_id
+         integer(INTL)          :: occ_space_root, vir_space_root
+         integer                :: ao_space_id, occ_space_id, vir_space_id
 
          ! variables for the definition of colors inside the spaces
          type(color_symmetry_t), allocatable    :: color(:)
@@ -89,7 +82,6 @@ module exacorr_cc
 
          ! types of the initializer methods
          type(compute_2e_ao_tensor_t) :: aoint_calculator ! method to initialize the ao-integrals tensor
-         type(init_mocoef_tensor_t)   :: mocoef_init(2,4) ! array of initializers for algorithm 1, first index is alpha/beta, second is 1,2,3,4
          type(init_mocoef_tensor_t)   :: occupied_init(2,nocc), virtual_init(2,nvir)
          type(tens_printer_t)         :: tens_printer     ! generic method, but needs to be defined here in specific form
          type(scale_with_denom_t)     :: denominate
