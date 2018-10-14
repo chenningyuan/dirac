@@ -10,11 +10,13 @@ module exacorr_cc
 !                                THREE=(3.0,0.0), SIX=(6.0,0.0)
         private
 
-        public cc_driver
+        public exacorr_cc_driver
         
        contains
+
+#if defined (VAR_MPI)
 !-------------------------------------------------------------------------------------------
-        subroutine cc_driver (nocc,nvir,mo_occ,mo_vir)
+        subroutine exacorr_cc_driver (nocc,nvir,mo_occ,mo_vir)
 
 !        This subroutine drives the ccsd energy calculation
 !        Currently everything is done in-core, purpose is to provide a working implementation that is suitable for debugging the production code
@@ -548,7 +550,7 @@ module exacorr_cc
          print*, " Leaving cc_driver routine"
          return
 
-        end subroutine cc_driver
+        end subroutine exacorr_cc_driver
 
         subroutine get_CC_Fockmatrix (occ_space,vir_space,occ_space_id,vir_space_id,foo_tensor,fov_tensor,fvv_tensor)
 
@@ -786,5 +788,16 @@ module exacorr_cc
          ierr=exatns_tensor_destroy(aoint_tensor)
 
         end subroutine get_CC_integrals
+#else
+        subroutine exacorr_cc_driver (nocc,nvir,mo_occ,mo_vir)
+         implicit none
+         integer, intent(in) :: nocc,nvir           ! the size of the mo basis for occupied and virtual spinors
+         integer, intent(in) :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
+         print*,  'called exatensor version of cc_driver in a serial version'
+         print*,  'this functionality only works with MPI, we need to stop here'
+         stop ' activate MPI'
+        end subroutine exacorr_cc_driver
+
+#endif
 
 end module exacorr_cc
