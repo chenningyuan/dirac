@@ -12,6 +12,7 @@
       use exacorr_ao_to_mo,only : exacorr_compute_mo_integrals
       use talsh_ao_to_mo,only   : talsh_compute_mo_integrals
       use talsh_cc,only         : cc_driver
+      use exacorr_cc,only       : exacorr_cc_driver
 
       implicit none
 
@@ -23,7 +24,7 @@
       integer, allocatable :: mo_vir(:)
 
       mo_transform   = .true.
-      cc_calculation = .false.
+      cc_calculation = .true.
       call set_talsh_only(.false.)
       
 
@@ -61,6 +62,7 @@
          if (get_talsh_only()) then
             call cc_driver (nocc,nvir,mo_occ,mo_vir)
          else
+            call exacorr_cc_driver (nocc,nvir,mo_occ,mo_vir)
             print*, "exacorr cc not yet available"
          end if
       end if

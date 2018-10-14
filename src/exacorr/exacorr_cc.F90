@@ -670,7 +670,7 @@ module exacorr_cc
          aoint_dims      = nao
          !ierr=talsh_tensor_construct(aoint_tensor,C8,aoint_dims,init_val=ZERO)
 !        Initialize AO integral tensors (ideally via an initialization routine, for now via direct access)
-         call compute_ao_integrals (nao,ao_tens)
+!        call compute_ao_integrals (nao,ao_tens)
 
 !        Get antisymmetric oovv tensor
 !        Note that the dimensions for the tensor are given in physicists notation <12||34>
