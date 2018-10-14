@@ -702,7 +702,6 @@ C           =============================
 C           F(i,j) = (1/4) * (FMAT(i,j) + FMAT(j,i))
 C
             IF(IY.EQ.3) THEN
-#include "scalar.h"
               DO INT = 1,NBUF
                 A = IBUF(1,INT)
                 B = IBUF(2,INT)
@@ -728,7 +727,6 @@ C           =========================================
 C           F(i,j) = (1/4) (FMAT(i,j) +/- FMAT(j,i))
 C
             ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
               DO INT = 1,NBUF
                 A = IBUF(1,INT)
                 B = IBUF(2,INT)
@@ -747,7 +745,6 @@ C           Coulomb contributions only
 C           ==========================
 C
             ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
               DO INT = 1,NBUF
                 A = IBUF(1,INT)
                 B = IBUF(2,INT)
@@ -776,7 +773,6 @@ C           ================================================
 C           F(i,j) = (1/8) * FMAT(i,j)
 C
             IF(IY.EQ.3) THEN
-#include "scalar.h"
               DO INT = 1,NBUF
                 A = IBUF(1,INT)
                 B = IBUF(2,INT)
@@ -808,7 +804,6 @@ C           ================================================
 C           F(i,j) = (1/8) * FMAT(i,j)
 C
             ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
               DO INT = 1,NBUF
                 A = IBUF(1,INT)
                 B = IBUF(2,INT)
@@ -832,7 +827,6 @@ C           ================================================
 C           F(i,j) = (1/8) * FMAT(i,j)
 C
             ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
               DO INT = 1,NBUF
                 A = IBUF(1,INT)
                 B = IBUF(2,INT)

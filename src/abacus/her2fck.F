@@ -68,8 +68,6 @@ C*****************************************************************************
      &          DMAT(NBASIS,NBASIS,NDMAT), IFCTYP(NDMAT),
      &          DNSBUF(2,NDMAT),DINTSKP(*),WORK(LWORK)
 #include "twocom.h"
-#include "expcom.h"
-#include "symmet.h"
 #include "nuclei.h"
 C
       CALL QENTER('INTFCK')
@@ -84,7 +82,7 @@ C
 C
       CALL INTFC1(FMAT,AOINT,DMAT,NDMAT,NCCINT,NINTYP,
      &                  ICORBA,ICORBB,ICORBC,ICORBD,FCKTOL,SYMFAC,
-     &                  IPRINT,NODV,NINDAB,NINDCD,SUSCEP,IFCTYP,
+     &                  IPRINT,NINDAB,NINDCD,SUSCEP,IFCTYP,
      &                  DNSBUF,DINTSKP,HFXFAC,WORK(KIND))
 C
       CALL MEMREL('INTFCK',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -96,7 +94,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck intfc1 */
       SUBROUTINE INTFC1(FMAT,AOINT,DMAT,NDMAT,NCCINT,NINTYP,
      &                  ICORBA,ICORBB,ICORBC,ICORBD,FCKTOL,SYMFAC,
-     &                  IPRINT,NODV,NINDAB,NINDCD,SUSCEP,IFCTYP,
+     &                  IPRINT,NINDAB,NINDCD,SUSCEP,IFCTYP,
      &                  DNSBUF,DINTSKP,HFXFAC,IND)
 C*****************************************************************************
 C
@@ -119,21 +117,18 @@ C*****************************************************************************
       PARAMETER(DMP25 = -0.25D00,DMP5=-0.5D0,D1=1.0D0,D2=2.0D0,D0=0.0D0,
      &          DM1=-1.D0, DM3=-3.D0)
       INTEGER A,B,C,D
-      LOGICAL NODV, SUSCEP, NOTEST,LBIT,DOC,DOE
+      LOGICAL SUSCEP, NOTEST,LBIT,DOC,DOE
       DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBD),
      &          AOINT(NCCINT), FMAT(NBASIS,NBASIS,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          DMAT(NBASIS,NBASIS,NDMAT), IFCTYP(NDMAT),
      &          DNSBUF(2,NDMAT),IND(4,*),DINTSKP(2,4)
 #include "twocom.h"
-#include "expcom.h"
-#include "symmet.h"
 #include "nuclei.h"
 C
       IF (IPRINT .GT. 9) THEN
          CALL HEADER('Output from INTFC1',-1)
-         WRITE (LUPRI, '(A,2L5)') ' NODV, SUSCEP',
-     *                              NODV, SUSCEP
+         WRITE (LUPRI, '(A,2L5)') ' SUSCEP', SUSCEP
          WRITE (LUPRI, '(A,4I5)') ' NORB ', NORBA,NORBB,NORBC,NORBD
          WRITE (LUPRI, '(A,2L5)') ' DIAGAB/CD ', DIAGAB,DIAGCD
          WRITE (LUPRI, '(A,3L5)') ' SHAEQB, SHCEQD, SHABAB ',
@@ -273,7 +268,7 @@ C
       DINTSKP(2,2) = DINTSKP(2,2) + NDEL
       DINTSKP(1,3) = DINTSKP(1,3) + NCM*NBUF
       DINTSKP(1,4) = DINTSKP(1,4) + NEM*NBUF
-      TIND = TIND + SECOND()
+      TIND = SECOND() - TIND
 C
 C     **********************************
 C     ***** Print section  *************
@@ -336,6 +331,10 @@ C..........Coulomb interaction
            IE = IY - IC
 C          ... no direct term for antisymmetric density matrix
            IF (IX.EQ.2) IC = 0
+C
+C          Exchange may be switched off in DFT calculations
+C
+           IF (HFXFAC.EQ.D0) IE = 0
         ELSE
 C..........Gaunt interaction
            IF (IY.LE.5) THEN
@@ -350,11 +349,11 @@ C..........Gaunt interaction
            ENDIF
 C          ... no direct term for symmetric density matrix
            IF (IX.EQ.1) IC = 0
+C
+C          Exchange may be switched off in DFT calculations
+C
+           IF (LSCALE_GAUNT .AND. HFXFAC.EQ.D0) IE = 0
         ENDIF
-C
-C       Exchange may be switched off in DFT calculations
-C
-        IF (HFXFAC.EQ.D0) IE = 0
 C       Screening on direct contributions
         IF(DOC.AND.IC.EQ.1.AND.FCM.LT.SCRTHR) THEN
           IC = 0
@@ -396,7 +395,6 @@ C         =============================
 C         F(i,j) = (1/4) * (FMAT(i,j) + FMAT(j,i))
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INT = 1,NBUF
               A = IND(1,INT)
               B = IND(2,INT)
@@ -422,7 +420,6 @@ C         =========================================
 C         F(i,j) = (1/4) (FMAT(i,j) +/- FMAT(j,i))
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INT = 1,NBUF
               A = IND(1,INT)
               B = IND(2,INT)
@@ -441,7 +438,6 @@ C         Coulomb contributions only
 C         ==========================
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INT = 1,NBUF
               A = IND(1,INT)
               B = IND(2,INT)
@@ -469,7 +465,6 @@ C         ================================================
 C         F(i,j) = (1/8) * FMAT(i,j)
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INT = 1,NBUF
               A = IND(1,INT)
               B = IND(2,INT)
@@ -501,7 +496,6 @@ C         ================================================
 C         F(i,j) = (1/8) * FMAT(i,j)
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INT = 1,NBUF
               A = IND(1,INT)
               B = IND(2,INT)
@@ -525,7 +519,6 @@ C         ================================================
 C         F(i,j) = (1/8) * FMAT(i,j)
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INT = 1,NBUF
               A = IND(1,INT)
               B = IND(2,INT)
@@ -563,8 +556,8 @@ C
         WRITE(LUPRI,'(A)')       '* INTFC1 - statistics:'
         WRITE(LUPRI,'(A,I10)')   '*   Integrals in     :',NCCINT
         WRITE(LUPRI,'(A,I10)')   '*   Integrals out    :',NBUF
-        WRITE(LUPRI,'(A,F15.6)') '*   Indices          :',TIND
-        WRITE(LUPRI,'(A,F15.6)') '*   Fock matrix      :',TFCK
+        WRITE(LUPRI,'(A,F15.6)') '*   Time indices     :',TIND
+        WRITE(LUPRI,'(A,F15.6)') '*   Time Fock matrix :',TFCK
         CALL FLSHFO(LUPRI)
       ENDIF
       RETURN
@@ -665,7 +658,6 @@ C*****************************************************************************
 #include "abainf.h"
 #include "ccom.h"
 #include "nuclei.h"
-CTROND#include "inforb.h"
 #include "shells.h"
 #include "symmet.h"
 #include "nuctap.h"
@@ -808,7 +800,7 @@ C*****************************************************************************
 C
 C Trygve Helgaker and Henrik Koch 93-94 ??
 C
-C Implemented all IFCTYP's Oct-Nov 94 Hans Joergen Aa. Jensen
+C Implemented all IFCTYPs Oct-Nov 94 Hans Joergen Aa. Jensen
 C Revised Oct 11 1996 by T.Saue:
 C   a) changed definition of IFCTYP
 C   b) symmetrization/anti-symmetrization is taken out
