@@ -8814,7 +8814,7 @@ C          write(lupri,*) 'IX set to:',IX
             case(7) ! i
              is_degeneracy = 13
              ilast_IPTYPAO = 35
-            case(8) ! j
+            case(8) ! k
              is_degeneracy = 15
              ilast_IPTYPAO = 47
           end select
@@ -8825,12 +8825,12 @@ C          write(lupri,*) 'IX set to:',IX
             IPNUC  (IX+jjj-1) = INUCPOS
           end do
           IX = IX + is_degeneracy
-          write(lupri,*) 'warning: old amfi routines in use:'//
-     &    ' zero AMFI contributions from h, i, j, ... shells '
+          write(lupri,'(A)') 'warning: old amfi routines in use:'//
+     &    ' zero AMFI contributions from h, i, k, ... shells '
         else
-          write(lupri,*) 'error: old amfi routines in use:'//
-     &    ' no AMFI contributions from k, l, ... shells implemented. '
-          CALL QUIT('AMFI interface ONLY UP TO i FUNCTIONS!')
+          write(lupri,'(A)') 'error: old amfi routines in use:'//
+     &    ' no AMFI contributions from l, m, ... shells implemented. '
+          CALL QUIT('AMFI interface ONLY UP TO k FUNCTIONS!')
         ENDIF
       ENDDO
       ENDDO
