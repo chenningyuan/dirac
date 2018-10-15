@@ -1,7 +1,6 @@
 module exacorr_cc
 !This module contains the routines needed to calculate ae coupled cluster wave function
 
-        use tensor_algebra  ! still necessary for type definitions, like C_SIZE_T, etc
         use exatensor
 
         implicit none
@@ -84,7 +83,7 @@ module exacorr_cc
 
          ! types of the initializer methods
          type(compute_2e_ao_tensor_t) :: aoint_calculator ! method to initialize the ao-integrals tensor
-         type(init_mocoef_tensor_t)   :: occupied_init(2,nocc), virtual_init(2,nvir)
+         type(init_mocoef_tensor_t)   :: occupied_init(2), virtual_init(2)
          type(tens_printer_t)         :: tens_printer     ! generic method, but needs to be defined here in specific form
          type(scale_with_denom_t)     :: denominate
 
@@ -141,6 +140,7 @@ module exacorr_cc
          nocc_l   = 2*int(nocc,8)  ! NB: imo, jmo and nmo count orbitals, nocc_l counts spinors
          nvir_l   = 2*int(nvir,8)  ! NB: imo, jmo and nmo count orbitals, nvir_l counts spinors
          call basis_occ%subspace_basis_ctor(nocc_l,ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.subspace_basis_ctor() failed!')
          call basis_vir%subspace_basis_ctor(nvir_l,ierr)
          if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.subspace_basis_ctor() failed!')
 
@@ -158,46 +158,45 @@ module exacorr_cc
 
          !Finalize the mo space basis
          call basis_occ%finalize(ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.finalize() failed!')
          call basis_vir%finalize(ierr)
          if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.finalize() failed!')
 
          !Register this mo vector space :
-         write (vs_str,'(A,I1)') '_',i
          !ierr=exatns_space_register('Occupied',basis_occ(i),occ_space_id,occ_space%ptr) => LUUK WROTE BASIS_OCC(I) => WHY?
          !ierr=exatns_space_register('Virtual',basis_cir(i),vir_space_id,vir_space%ptr)
          ierr=exatns_space_register('Occupied',basis_occ,occ_space_id,occ_space)
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register(occ) failed!')
          ierr=exatns_space_register('Virtual',basis_vir,vir_space_id,vir_space)
-         if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register() failed!')
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register(vir) failed!')
 
          !Might be faster if spin is outer loop => ASK
          !Define separate initializers for the alpha(A) and beta(B) occupied MO-coefficients for each index 
-         do i = 1, nocc
-            do spin = 1, 2
-               !Define a unique name for the initializer for this spin (A/B) of space i
-               if (spin == 1) write (vs_str,'(A2)') '_A'
-               if (spin == 2) write (vs_str,'(A2)') '_B'
-               initlabel(spin) = 'occ' // vs_str
-               !Register this initializer as a method
-               call occupied_init(spin,i)%init_mocoef_ctor(mo_occ(1:nocc),nocc,spin)
-               ierr=exatns_method_register(initlabel(spin),occupied_init(spin,i))
-            end do
+         do spin = 1, 2
+            !Define a unique name for the initializer for this spin (A/B) of space i
+            if (spin == 1) write (vs_str,'(A2)') '_A'
+            if (spin == 2) write (vs_str,'(A2)') '_B'
+            initlabel(spin) = 'occ' // vs_str
+            !Register this initializer as a method
+            call occupied_init(spin)%init_mocoef_ctor(mo_occ(1:nocc),nocc,spin)
+            ierr=exatns_method_register(initlabel(spin),occupied_init(spin))
          end do
  
-         do i = 1, nvir   
-            do spin = 1, 2
-               initlabel(spin) = 'vir' // vs_str
-               !Register this initializer as a method
-               call virtual_init(spin,i)%init_mocoef_ctor(mo_vir(1:nvir),nvir,spin)
-               ierr=exatns_method_register(initlabel(spin),virtual_init(spin,i))
-               if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
-            end do         
-         end do
+         do spin = 1, 2
+            if (spin == 1) write (vs_str,'(A2)') '_A'
+            if (spin == 2) write (vs_str,'(A2)') '_B'
+            initlabel(spin) = 'vir' // vs_str
+            !Register this initializer as a method
+            call virtual_init(spin)%init_mocoef_ctor(mo_vir(1:nvir),nvir,spin)
+            ierr=exatns_method_register(initlabel(spin),virtual_init(spin))
+            if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
+         end do         
 
          if (my_MPI_rank == 0) print*," registered MO vectors spaces and initializers with nocc and nvir:",nocc, nvir
 
          !Register the ao integral generation as a method
          ierr=exatns_method_register('Aoint_calculator',aoint_calculator)
-         if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(aoint) failed!')
 
          !Register the denominator initializer aa a method (testing only, registration will move to exacorr_cc)
          !call denominate%scale_with_denom_ctor(mo_list(1:2),2,mo_list(3:nmo(1)),nmo(1)-2)
@@ -207,7 +206,7 @@ module exacorr_cc
          !Register the standard print method with a high treshold to print only important tensor elements
          call tens_printer%reset_thresh(0.01D0)
          ierr=exatns_method_register('PrintTensor',tens_printer)
-         if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register() failed!')
+         if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(printer) failed!')
 
 !        All preliminary work is now done on all MPI-nodes, we may proceed to start ExaTensor.
 !        After the start of ExaTensor, the driver process (the last MPI process) will be executing
