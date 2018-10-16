@@ -267,7 +267,7 @@ module exacorr_cc
 !                               vovo_tensor,vovv_tensor,vvvv_tensor)
 
 !           Initialize t1 amplitudes to zero (we assume canonical orbitals for the moment)
-            call contruct_2d_tensor(t1_tensor,vo_id,vo_root)
+            call construct_2d_tensor(t1_tensor,vo_id,vo_root)
 
 !           Create and initialize scalars that are to be used as tensors in contractions
             ierr=exatns_tensor_create(one_tensor,"one_tensor",EXA_DATA_KIND_C8)   

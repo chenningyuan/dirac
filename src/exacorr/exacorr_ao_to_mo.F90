@@ -216,6 +216,7 @@ module exacorr_ao_to_mo
 
            call print_date('starting ao integral calculation')
 
+           !CALC GOES WRONG IN THIS PART
            !Create ao-integral-tensor:
            ao_space_root=ao_space%get_root_id(ierr)
            ierr=exatns_tensor_create(aoint_tensor,'aotensor',(/(ao_space_id,i=1,4)/),(/(ao_space_root,i=1,4)/),EXA_DATA_KIND_C8)
