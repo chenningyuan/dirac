@@ -201,6 +201,7 @@ C
 #include "ibtfun.h"
 #include "argoscom.h"
 #include "argoscomch.h"
+#include "dgroup.h"  ! ATOMIC
       DO 5 I = 0,7
         LSYMOP(I) = .FALSE.
     5 CONTINUE
@@ -248,7 +249,8 @@ C
         JSOP(IND) = 7
         NINVC       = 1
       ENDIF
-C
+      write(*,*)"NINVC", NINVC
+C     
 C     Reflections
 C
       NREFL = 0
@@ -474,7 +476,8 @@ C
         FREP(1) = 'E1g'
         FREP(2) = 'E1u'
       ENDIF
-C
+      write(*,*)"NFSYM"
+C     
 C     Determine NZ - parameter
 C     ========================
 C       NZ = 4  quaternionic group        no    totally symmetric rotations

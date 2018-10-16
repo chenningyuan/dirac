@@ -2515,7 +2515,7 @@ C.........reset NEWPRP to re-initialize AOPROPER
               ndim_lowdinmat = ndim_lowdinmat + nfbas(i,0)*nesh(i)
             end do
 
-            if(linear.or.atomic)then
+            if(linear)then
               gmotra_case3 = .true.
             else
               call x2c_read('2cLWAOg   10',work(KTMAT),
@@ -2612,23 +2612,23 @@ C.........do canonical orthonormalization
 
         CALL MEMREL('MODHAM',WORK,KEIG,KEIG,KFREE,LFREE)
 !sunaga
-      IF(IPRHAM.GE.5) THEN
-          CALL HEADER(
-     &    'MODHAM: sunaga LINSYM final transformation'//
-     &    ' matrix 4c AO->LINSYM MO, TMAT(output)',-1)
-          IMAT = 1
-          IBUF = 1
-          DO I = 1,NFSYM
-            IF(NORB(I).GT.0) THEN
-              WRITE(LUPRI,'(A,I1,A,I1)')
-     &        '* Fermion ircop no.',I,'/',NFSYM
-              CALL PRQMAT(WORK(KTMAT),NFBAS(I,0),NORB(I),
-     &                    NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),LUPRI)
-              KTMAT = IMAT + NFBAS(I,0)*NORB(I)*1
-              IBUF = IBUF + NORB(I)*NORB(I)*1
-            ENDIF
-          ENDDO
-       ENDIF
+!      IF(IPRHAM.GE.5) THEN
+!          CALL HEADER(
+!     &    'MODHAM: sunaga LINSYM final transformation'//
+!     &    ' matrix 4c AO->LINSYM MO, TMAT(output)',-1)
+!          IMAT = 1
+!          IBUF = 1
+!          DO I = 1,NFSYM
+!            IF(NORB(I).GT.0) THEN
+!              WRITE(LUPRI,'(A,I1,A,I1)')
+!     &        '* Fermion ircop no.',I,'/',NFSYM
+!              CALL PRQMAT(WORK(KTMAT),NFBAS(I,0),NORB(I),
+!     &                    NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),LUPRI)
+!              KTMAT = IMAT + NFBAS(I,0)*NORB(I)*1
+!              IBUF = IBUF + NORB(I)*NORB(I)*1
+!            ENDIF
+!          ENDDO
+!       ENDIF
 !sunaga 
         
         IF (IPRHAM.GE.5) THEN
@@ -2684,9 +2684,9 @@ C.......SUB_BL will be set true if linear symmetry works
 !     sunaga
 
         IF(ATOMIC)THEN        
-!           CALL MEMGET('REAL',KKMAT ,N2BBASXQ,WORK,KFREE,LFREE)
-!           CALL GATMSM(WORK(KTMAT),WORK(KTBUF),WORK(KTBUF2),WORK(KEIG),
-!     &                  WORK(KFREE),LFREE)
+           write(*,*)"X2C"
+           CALL GATMSM(WORK(KTMAT),WORK(KTBUF),WORK(KTBUF2),WORK(KEIG),
+     &                  WORK(KFREE),LFREE)
 !           CALL MEMREL('MODHAM',WORK,KEIG,KEIG,KFREE,LFREE)
 !           CALL MEMREL('MODHAM',WORK,KKMAT,KKMAT,KFREE,LFREE)
 !     CALL MEMGET('REAL',KKMAT ,N2BBASXQ,WORK,KFREE,LFREE)
@@ -3357,13 +3357,8 @@ CMI     they are in the order "S1 S2 ... S(nbsym) L1 L2 ... L(nbsym)" instead of
 !       out: MO2MO linear symmetry adapted --> TBUF (discarded if not x2c-mmf)
         IF(ATOMIC)THEN
         IF(LINLIN .eqv. .false.)THEN             
-!          CALL MEMGET('REAL',KSMAT,N2BBASXQ,WORK,KFREE,LFREE)
-!          CALL MEMGET('REAL',KTCUF,N2BBASXQ,WORK,KFREE,LFREE)
-!          CALL GATMSM(TMAT,VMAT,TBUF,WORK(KSMAT),WORK(KTCUF),
-!     &                 EIG,WORK(KFREE),LFREE)
+           write(*,*)"X2C2"
           CALL GATMSM(TMAT,VMAT,TBUF, EIG,WORK(KFREE),LFREE)
-!          CALL MEMREL('MODHAM',WORK,KSMAT,KSMAT,KFREE,LFREE)
-!          CALL MEMREL('MODHAM',WORK,KCBUF,KTCUF,KFREE,LFREE)
         ELSE
            CALL GLINSM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
         Endif
@@ -6579,7 +6574,11 @@ C       We will either find a negative or a positive value for each k.
 C
         KPMAX(I) = MAX(KPMAXL,KPMAXS)
 !        WRITE(LUPRI,'(A,I2)') ' * Max ABS(Kappa):', KPMAX
-        MAXSUB = KPMAX(I)*(KPMAX(I)+1)/2
+        IF(NFSYM.EQ.2)THEN
+          MAXSUB = KPMAX(I)*(KPMAX(I)+1)/2
+        ELSE
+          MAXSUB = KPMAX(I)*(KPMAX(I)+1) - KPMAX(I)
+        ENDIF         
         IF (MAXSUB.GT.MAX_SUB_BL) THEN
           write(lupri,*) 'MAX_SUB_BL:',MAX_SUB_BL,
      &       ' max value of Kappa:',KPMAX(I),
@@ -6591,13 +6590,20 @@ CCCCCCCCCCCCCCCCCCCCCCC
 C LL counting and sorting
 CCCCCCCCCCCCCCCCCCCCCCC
         KPBUF = 0
+        KPADB = 0
+        KPADD = 0
         DO IX = IEIGE, IEIGE+NL-1
            KP = NINT(EIG(IX))
            IF(KP.NE.KPBUF) THEN
               KPBUF = KP
               KPABS = ABS(KP)
-              KPADD = KPABS*(KPABS-1)/2 + 1
-              ID_SUB_BL(KPADD,I)  = KP
+              IF(NFSYM.eq.2)THEN !sunaga
+                 KPADD = KPABS*(KPABS-1)/2 + 1
+              ELSE
+                 KPADD = KPABS*(KPABS-1) + 1
+                 IF(KP.GT.0) KPADD = KPADD + KP
+              ENDIF
+              ID_SUB_BL(KPADD,I) = KP
            ENDIF
            NORB_SUB(KPADD,I,1) = NORB_SUB(KPADD,I,1) + 1
            NORB_SUB(KPADD,I,0) = NORB_SUB(KPADD,I,0) + 1
@@ -6605,8 +6611,16 @@ CCCCCCCCCCCCCCCCCCCCCCC
 C
 C       Same thing for the positive energy solutions
 C
+Csunaga
+C       This part is only for sorting, so we can change EIG(IX).
+C       The part is needed when NFSYM=1
         DO IX = IEIGE, IEIGE+NL-1
-           EIG(IX) = ABS(EIG(IX))
+           IF (EIG(IX).GT.0) THEN
+              EIG(IX) = EIG(IX)**D2 + EIG(IX)
+           ELSE
+              EIG(IX) = EIG(IX)**D2
+           ENDIF
+!     EIG(IX) = ABS(EIG(IX)+0.4D0) 
         ENDDO
         CALL MEMGET('INTE',KINDX,NL,WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KIDUM,NL,WORK,KFREE,LFREE)
@@ -6622,13 +6636,19 @@ CCCCCCCCCCCCCCCCCCCCCCC
 C SS counting and sorting
 CCCCCCCCCCCCCCCCCCCCCCC        
         KPBUF = 0
+        KPADD = 0
         DO IX = IEIGP, IEIGP+NS-1
            KP = -NINT(EIG(IX))
            IF(KP.NE.KPBUF) THEN
               KPBUF = KP
               KPABS = ABS(KP)
-              KPADD = KPABS*(KPABS-1)/2 + 1
-              ID_SUB_BL(KPADD,I)  = KP
+              IF(NFSYM.eq.2)THEN 
+                 KPADD = KPABS*(KPABS-1)/2 + 1
+              ELSE
+                 KPADD = KPABS*(KPABS-1) + 1
+                 IF(KP.GT.0) KPADD = KPADD + KP
+              ENDIF  
+              ID_SUB_BL(KPADD,I) = KP
            ENDIF
            NORB_SUB(KPADD,I,2) = NORB_SUB(KPADD,I,2) + 1
            NORB_SUB(KPADD,I,0) = NORB_SUB(KPADD,I,0) + 1
@@ -6641,7 +6661,13 @@ C       still ordered by the signed value. Reorder them first before
 C       continuing.
 C
         DO IX = IEIGP, IEIGP+NS-1
-           EIG(IX) = ABS(EIG(IX))
+           IF (EIG(IX).GT.0) THEN
+              EIG(IX) = EIG(IX)**D2
+           ELSE
+              EIG(IX) = EIG(IX)**D2 - EIG(IX)
+C       Note the sign of Kappa at small
+           ENDIF
+!     EIG(IX) = ABS(EIG(IX))
         ENDDO
 C
 C       The SELBOS routine does just the reordering that we want,
@@ -6837,19 +6863,41 @@ C
 C
 C        output for ABS(Kappa)=1,
 C        which is NOT included in the below loop (IKAP = 2,KPMAX(I))
-C         
-         WRITE (LUPRI,1020) 3-2*I,(-1)**I,1,(NORB_SUB(1,I,IC),IC=0,2)
 C
-         IOFVS = IOFVS + NFBAS(I,0)*NORB_SUB(1,I,0)
-         IOFVL = IOFVL + NFBAS(I,0)*NORB_SUB(1,I,0)
-         IOFT  = IOFT  + NFBAS(I,0)*NORB_SUB(1,I,0)
+         IF(NFSYM.EQ.2)THEN
+            WRITE (LUPRI,1020) 3-2*I,(-1)**I,1,(NORB_SUB(1,I,IC),IC=0,2)
+         ELSE
+            WRITE (LUPRI,1020) 3-2*I,-1,1,(NORB_SUB(1,I,IC),IC=0,2)
+            WRITE (LUPRI,1020) 3-2*I, 1,1,(NORB_SUB(2,I,IC),IC=0,2)
+         ENDIF
+C        
+         IF(NFSYM.eq.2)THEN
+            NORB1 = NFBAS(I,0)*NORB_SUB(1,I,0)
+            IOFVS = IOFVS + NORB1
+            IOFVL = IOFVL + NORB1
+            IOFT  = IOFT  + NORB1
+         ELSE
+            NORB1 = NFBAS(I,0)*(NORB_SUB(1,I,0)+NORB_SUB(2,I,0))
+            IOFVS = IOFVS + NORB1
+            IOFVL = IOFVL + NORB1
+            IOFT  = IOFT  + NORB1
+         ENDIF
          IF(NORB(I).EQ.0) GOTO 40
          NLL=0
          NSS=0
          DO IKAP = 2,KPMAX(I)
-            KPADD = IKAP*(IKAP-1)/2 + 1
-            NLL=MAX(NLL,NORB_SUB(KPADD,I,1)*NORB_SUB(KPADD,I,1))
-            NSS=MAX(NSS,NORB_SUB(KPADD,I,2)*NORB_SUB(KPADD,I,2))            
+            IF(NFSYM.EQ.2)THEN
+               KPADD = IKAP*(IKAP-1)/2 + 1
+               NLL=MAX(NLL,NORB_SUB(KPADD,I,1)*NORB_SUB(KPADD,I,1))
+               NSS=MAX(NSS,NORB_SUB(KPADD,I,2)*NORB_SUB(KPADD,I,2))
+            ELSE
+               KPADD = IKAP*(IKAP-1) + 1
+               NLL=MAX(NLL,NORB_SUB(KPADD,I,1)*NORB_SUB(KPADD,I,1))
+               NSS=MAX(NSS,NORB_SUB(KPADD,I,2)*NORB_SUB(KPADD,I,2))
+               KPADD = IKAP*(IKAP-1) + 1 + IKAP
+               NLL=MAX(NLL,NORB_SUB(KPADD,I,1)*NORB_SUB(KPADD,I,1))
+               NSS=MAX(NSS,NORB_SUB(KPADD,I,2)*NORB_SUB(KPADD,I,2))
+            ENDIF   
          ENDDO
 C
 C........allocate KFLL,KVLL,KFSS,KVSS once and for all
@@ -6862,13 +6910,26 @@ C
 C........Here you tranaform the MJ-matrix for particular kappa; look TSUBBL
          NL = 0  
          NS = 0
+         INVMAX=1
          DO IKAP = 2,KPMAX(I)
-           KPADD = IKAP*(IKAP-1)/2 + 1
+           IF(NFSYM.EQ.2)THEN
+             KPADD = IKAP*(IKAP-1)/2 + 1
+           ELSE
+             KPADD = IKAP*(IKAP-1)   + 1
+           ENDIF
+C
+C     IF (NFSYM.EQ.1), the roop "DO IKAP = 2,KPMAX(I)" is rotated twice.
+C     This part is needed for atomic calculation with Coo symmetry.
+C           
+           IF(NFSYM.EQ.1) INVMAX=2
+           DO INV=1,INVMAX
+           IF(INV.EQ.2) KPADD=KPADD+IKAP
+C           
            NL = NORB_SUB(KPADD,I,1)
            NS = NORB_SUB(KPADD,I,2)
            IEIGP = IORB(I) + 1
            IEIGE = IEIGP + NS
-C
+C           
 CCCCCCCCCCCCCCCCCC         
 C Large AO-MO transformation
 CCCCCCCCCCCCCCCCCC         
@@ -7009,7 +7070,14 @@ C
           IF(MJ.NE.MJBUF) THEN
              MJBUF = MJ
              MJABS = (ABS(MJ)+1)/2
-             ID_SUB_BL(KPADD+MJABS-1,I) = (-1)**(I+1) * (KPADD+MJABS-1)
+             IF(NFSYM.EQ.2)THEN
+                ID_SUB_BL(KPADD+MJABS-1,I)
+     &                 = (-1)**(I+1) * (KPADD +MJABS-1)
+             ELSE
+                KPADD2 = IKAP*(IKAP-1)/2 + 1            
+                ID_SUB_BL(KPADD+MJABS-1,I)
+     &                 = (-1)**INV * (KPADD2+MJABS-1)
+             ENDIF   
           ENDIF
        ENDDO        
 C
@@ -7040,7 +7108,14 @@ C
           IF(MJ.NE.MJBUF) THEN
              MJBUF = MJ
              MJABS = (ABS(MJ)+1)/2
-             ID_SUB_BL(KPADD+MJABS-1,I)  = (-1)**(I+1) * (KPADD+MJABS-1)
+             IF(NFSYM.EQ.2)THEN
+                ID_SUB_BL(KPADD+MJABS-1,I)
+     &                 = (-1)**(I+1) * (KPADD +MJABS-1)
+             ELSE
+                KPADD2 = IKAP*(IKAP-1)/2 + 1            
+                ID_SUB_BL(KPADD+MJABS-1,I)
+     &                 = (-1)**INV * (KPADD2+MJABS-1)
+             ENDIF
           ENDIF
        ENDDO        
 C
@@ -7058,6 +7133,7 @@ C
        CALL MEMREL('ATMSYM',WORK,KINDX,KINDX,KFREE,LFREE)
 C       
        DO IC = 0,2
+!          IF(NFSYM.eq.2)THEN         
           NDIM = NORB_SUB(KPADD,I,IC)/IKAP 
           DO IK = 1,IKAP
              NORB_SUB(KPADD+IK-1,I,IC) = NDIM
@@ -7066,14 +7142,20 @@ C
 C
 C     Write information to output
 C
-       KP = IKAP * (-1)**(I+IKAP+1)
+       KP = IKAP * (-1)**INV
+       DO ID = 1,10
+         INDEX1 = INT(SQRT(dble(2*ABS(ID)) + 0.25D0) + 0.4999D0)
+         INDEX2 = ABS(ID) - INDEX1*(INDEX1-1)/2
+       ENDDO   
        DO IK = 1,IKAP
          ID     = ID_SUB_BL(KPADD+IK-1,I)
          INDEX1 = INT(SQRT(dble(2*ABS(ID)) + 0.25D0) + 0.4999D0)
          INDEX2 = ABS(ID) - INDEX1*(INDEX1-1)/2
-         MJ     = (2*INDEX2 - 1) * (-1)**(INDEX2+1)              
-         WRITE (LUPRI,1020) 3-2*I,KP,MJ,
-     &          (NORB_SUB(KPADD+IK-1,I,IC),IC=0,2)
+         MJ     = (2*INDEX2 - 1) * (-1)**(INDEX2+1)
+         IF(NORB_SUB(KPADD+IK-1,I,0).NE.0) THEN
+           WRITE (LUPRI,1020) 3-2*I,KP,MJ,
+     &           (NORB_SUB(KPADD+IK-1,I,IC),IC=0,2)
+         ENDIF  
        ENDDO       
 C
        IOFS = 0
@@ -7098,10 +7180,11 @@ C...  Update small here: : WORK(KVSS+IOFS),VMAT(IOFV),TMAT(IOFV)
 C...  Update large here: : WORK(KVLL+IOFL),VMAT(IOFV),TMAT(IOFV)
           IOFL = IOFL + NL*NORB_SUB(KPADD+IK-1,I,1)
           IOFT = IOFT + NFBAS(I,0)*NORB_SUB(KPADD+IK-1,I,1)
-        ENDDO  ! IK = 1,IKAP        
+        ENDDO  ! IK = 1,IKAP
         IOFVS = IOFVS + NFBAS(I,0)*(NL+NS)
         IOFVL = IOFVL + NFBAS(I,0)*NS
-      ENDDO  ! IKAP = 2,KPMAX(I)
+      ENDDO                     ! INV=1,INVMAX
+      ENDDO                     ! IKAP = 2,KPMAX(I)
 C        
       CALL MEMREL('ATMSYM',WORK,KFLL,KFLL,KFREE,LFREE)      
 C         

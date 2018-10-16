@@ -714,9 +714,7 @@ C
       LINEAR = .FALSE.
       ATOMIC = .FALSE.
       CLASS = 'N/A'
-         write(*,*)"NUCDEP1",NUCDEP
       IF (ADDSYM) THEN
-         write(*,*)"NUCDEP2",NUCDEP
          IF (IPREAD .GE. 3) THEN
             CALL HEADER('Copy of input in .mol file before ADDSYM',0)
             WRITE (LUPRI,'(A)') (MLINE(I), I = 1, NMLINE)
@@ -725,21 +723,16 @@ C
          CALL SYMADD(WORK,LWORK,NSYMOP,KATOM,KASYM,
      &               CLASS,TOL_SYMADD,IPREAD,.true.)
          IF (CLASS(3:4).EQ.'oo') LINEAR = .TRUE.
-         write(*,*)"NSYMOP",NSYMOP
       END IF
-         write(*,*)"NUCDEP31",NUCDEP
 
 C     Fix a problem with ADDSYM for some D(2) cases, also corrects for wrong user inputs (e.g. specifying X Y and XY as generators)
       CALL FIX_DUPLICATE_GENERATORS (NSYMOP,KASYM)
-         write(*,*)"NSYMOP1",NSYMOP
 C
 C     ***************************************
 C     ***** Process symmetry input data *****
 C     ***************************************
 C
       CALL SYMINP(NSYMOP,KASYM,IFXYZ, CLASS)
-         write(*,*)"NSYMOP2",NSYMOP
-         write(*,*)"NUCDEP32",NUCDEP
 C
 C     ***************************************************
 C     ***** Process orbital and geometry input data *****
@@ -748,9 +741,8 @@ C
       CALL BASPRO(WORK,LWORK,NSYMOP,IQM,NBLCK,JCO,NUC,NRC,
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM,
      &            DOOWN,blk)
-         write(*,*)"NUCDEP32.5",NUCDEP
-Csunaga NUCDEP is non zero here
-      IF (LINEAR .EQV. .TRUE. .and. NUCDEP .Eq. 1) ATOMIC = .TRUE.
+Csunaga NUCDEP is non zero from here
+C      IF (LINEAR .EQV. .TRUE. .and. NUCDEP .Eq. 1) ATOMIC = .TRUE.
 #ifdef BUILD_GEN1INT
 !     initialize basis sets (large and small components) used in Gen1Int interface
       call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM,
@@ -761,7 +753,6 @@ Csunaga NUCDEP is non zero here
 C
 C     Determine center of mass
 C
-         write(*,*)"NUCDEP3",NUCDEP
       KGEOM = 1
       KMASS = KGEOM + 3*NUCDEP
       KNAT  = KMASS +   NUCDEP
@@ -4057,7 +4048,8 @@ C
 #include "shells.h"
 #include "symmet.h"
 #include "aosotr.h"
-C
+#include "dgroup.h"
+C     
 C
 C
 C     Statement function to "convert" 0 - 7 to a printable
@@ -4131,6 +4123,14 @@ C             when total NUCDEP is known. /hjaaj Jan 2010
   200    CONTINUE
   100 CONTINUE
       NATOMS = NUCDEP - NFLOAT
+!sunaga
+      IF (LINEAR .EQV. .TRUE. .and. NATOMS .Eq. 1)THEN
+        ATOMIC = .TRUE.
+!        NFSYM = 2
+!        FREP(1) = 'E1g'
+!        FREP(2) = 'E1u'
+      ENDIF
+!sunaga      
       IF (NUCDEP .GT. MXCENT) GOTO 5010
 C
 C     Nuclear repulsion energy

@@ -3461,6 +3461,12 @@ C
         ITM = I2TMT(IFRP)  +
      &        NFBAS(IFRP,0)*(IBORB+NTMO_BUF) + 1
 C
+!        IF(ISUB.GT.12) IPRINT=12
+!        write(*,*)"KPADD,IPRINT",ISUB,IPRINT
+!        write(*,*)"ITM, I2TMT", ITM, I2TMT(IFRP)
+!        write(*,*)"NFBAS, IBORB, NTMO_BUF",NFBAS(IFRP,0),IBORB,NTMO_BUF
+!        write(*,*)""
+!        write(*,*)""
         CALL QTRANS('AOMO','S',0.0d0,NFBAS(IFRP,0),NFBAS(IFRP,0),
      &         NTMO_SUB(ISUB,IFRP,IC),NTMO_SUB(ISUB,IFRP,IC),
      &         FAO(IAO),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
@@ -3720,6 +3726,7 @@ C
         ILAB(1,JLAB) = ILAB(1,JLAB) + 1
         ILAB(2,JLAB) = I
       ENDDO
+      write(*,*)"MAXREP", MAXREP
       if(iprint > 0)then
         CALL HEADER('Symmetry Orbitals',1)
         WRITE (LUPRI,'(1X,A,6X,8I6)')
