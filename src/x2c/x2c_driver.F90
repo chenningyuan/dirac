@@ -418,7 +418,7 @@ contains
 !      step 3: picture-change transform the 4c-MO coefficients (defining
 !      operator matrix is the 4c-Dirac Fock operator)
 !      ---------------------------------------------------------------------------------------------------------------
-       if(x2c_is_defining_h1mat == 2)then
+       if(x2c_is_defining_h1mat == 2)then ! X2Cmmf
          call x2c_pctrafo_mo_coefficients_driver('DFCOEF',                  &
                                                  2,                         &
                                                  nr_cmo_q,                  &

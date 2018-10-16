@@ -6030,13 +6030,13 @@ C
         WRITE(lupri,'(/A)')
      &    '     *** GO4C2C: Descending to two-component'// 
      &    ' mode after previous four-component SCF cycles. ***'
-       end if
-       TWOCOMPBSS = .FALSE. ! ensure 4comp. mode
-       TWOCOMP    = .FALSE.
+      end if
+      TWOCOMPBSS = .FALSE. ! ensure 4comp. mode
+      TWOCOMP    = .FALSE.
 
-       START2C = .FALSE.
+      START2C = .FALSE.
 !
-!      call the x2c/bss transformation module (branch 2 inside gmotra)
+!     call the x2c/bss transformation module (branch 2 inside gmotra)
       CALL GMOTRA(.FALSE.)
       call legacy_lwork_get(LWORK)
 #include "memint.h"

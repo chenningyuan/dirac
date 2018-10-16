@@ -2905,7 +2905,7 @@ C
      &         form='unformatted',position='rewind')
           call write_fock_matrices_saao_basis_x2c(
      &                                            tbuf_mmf,
-     &                                            len_fmat, 1,
+     &                                            len_fmat, 1,'Fock',
      &                                            lux2c, 0)
 !         save F2c-ll part
           close(lux2c, status='keep')
@@ -2914,7 +2914,7 @@ C
      &         form='unformatted',position='rewind')
           call write_fock_matrices_saao_basis_x2c(
      &                                            tmat_mmf,
-     &                                            len_fmat, 1,
+     &                                            len_fmat, 1,'F[2]',
      &                                            lux2c, 0)
           close(lux2c, status='keep')
           deallocate(tmat_mmf)
@@ -2937,7 +2937,7 @@ C
      &                                             tmat_mmf,
      &                                             len_fmat, 1,
      &                                             lux2c, 0,
-     &                                             .false.,scratch_mmf)
+     &                                             scratch_mmf)
             close(lux2c, status='keep')
             call read_normalized_2e_soc(
      &                                  tbuf_mmf,
