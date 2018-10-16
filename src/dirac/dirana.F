@@ -399,7 +399,7 @@ C            occupancies
          KRMC_FLG = 0
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
          CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
-     &               TOTERG,14,WORK,KFREE,LFREE)
+     &               TOTERG,14)
          CLOSE(LUCOEF,STATUS='KEEP')
 C
 C        check for energy 137.0D0 - if found we are doing a Mulliken
@@ -1245,7 +1245,7 @@ C        CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
 C        CALL MEMGET('REAL',KEIG,NORBT   ,WORK,KFREE,LFREE)
 C        CALL MEMGET('INTE',KIBE,NORBT   ,WORK,KFREE,LFREE)
 C        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KIBE),
-C     &              TOTERG,14,WORK,KFREE,LFREE)
+C     &              TOTERG,14)
 C
 C        DO IFRP = 1,NFSYM
 C          CALL PRJPHA(IREFADJ(IFRP),IFRP,
@@ -2070,7 +2070,7 @@ C     Read coefficients
 C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
       CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
-     &            TOTERG,14,WORK,KFREE,LFREE)
+     &            TOTERG,14)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
       IF (NTESTL.GE.10) THEN
@@ -2275,7 +2275,7 @@ C     Read coefficients + give info
 C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GT1RHO')
       CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),TEMP,TEMP,
-     &            TOTERG,3,WORK,KFREE,LFREE)
+     &            TOTERG,3)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Generate density matrix
@@ -2508,7 +2508,7 @@ C     Read coefficients + give restart info
 C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
       CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),TEMP,TEMP,
-     &            TOTERG,3,WORK,KFREE,LFREE)
+     &            TOTERG,3)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Generate density matrix
@@ -2588,7 +2588,7 @@ C     Read coefficients + give restart info
 C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
       CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),TEMP,TEMP,
-     &            TOTERG,3,WORK,KFREE,LFREE)
+     &            TOTERG,3)
       CLOSE(LUCOEF,STATUS='KEEP')
 
 C     Get cube parameters
