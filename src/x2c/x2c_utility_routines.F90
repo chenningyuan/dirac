@@ -1377,7 +1377,7 @@ contains
      lucoef = 99
      call opnfil(lucoef,'DFCOEF','OLD','x2cfck')
      rewind(lucoef)
-     call reacmo_no_work(lucoef,'DFCOEF',cmo,xx,i,j,2)
+     call reacmo(lucoef,'DFCOEF',cmo,xx,i,j,2)
      close(lucoef,status='keep')
 
 !    generate density matri(x/ces) (denmat is a general driver routine from Dirac

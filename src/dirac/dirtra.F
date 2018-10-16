@@ -4325,8 +4325,7 @@ C     Read the MO coefficients
       INQUIRE(FILE='DFCOEF',EXIST=FILEX)
       IF(.NOT.FILEX) CALL QUIT ('DFCOEF missing')
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPEXP')
-      CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IDUM,DUM,2, 
-     &            WORK,KFREE,LFREE)
+      CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IDUM,DUM,2)
       CLOSE(LUCOEF,STATUS='KEEP')
 
 C     Perform the transformation
