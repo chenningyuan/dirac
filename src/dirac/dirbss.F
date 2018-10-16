@@ -7731,11 +7731,9 @@ C         ... get 4c MO from the "DFCOEF" file into CMO
 C ================================================================
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOTR2C')
       IF(IPRINT.GE.1) THEN
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,15,
-     &              WORK,KFREE,LFREE)
+        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,15)
       ELSE
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
-     &             WORK,KFREE,LFREE)
+        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
       ENDIF
       CLOSE(LUCOEF,STATUS='KEEP')
 
@@ -7947,11 +7945,9 @@ C         ... get 2c MO from the "DFCOEF" file into CMO
 C ================================================================
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOTR4C')
       IF(IPRINT.GE.1) THEN
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,15,
-     &              WORK,KFREE,LFREE)
+        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,15)
       ELSE
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
-     &             WORK,KFREE,LFREE)
+        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
       ENDIF
       CLOSE(LUCOEF,STATUS='KEEP')
 
@@ -8026,11 +8022,9 @@ C ********************************************************
 C    ... read 2c CMO into TBUF ...
        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOTR4C')
        IF(IPRINT.GE.1) THEN
-        CALL REACMO(LUCOEF,'DFCOEF',TBUF,EIG,IBEIG,TOTERG,15,
-     &              WORK,KFREE,LFREE)
+        CALL REACMO(LUCOEF,'DFCOEF',TBUF,EIG,IBEIG,TOTERG,15)
        ELSE
-        CALL REACMO(LUCOEF,'DFCOEF',TBUF,EIG,IBEIG,TOTERG,14,
-     &             WORK,KFREE,LFREE)
+        CALL REACMO(LUCOEF,'DFCOEF',TBUF,EIG,IBEIG,TOTERG,14)
        ENDIF
        CLOSE(LUCOEF,STATUS='KEEP')
 
@@ -8280,11 +8274,9 @@ C    ... do renew the DFCOEF file !!!
 C     ... do read the DFCOEF file from previous iterations ...
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOINI4C')
       IF(IPRSCF.GE.1) THEN
-         CALL REACMO(LUCOEF,'DFCOEF',TMAT,EIG,IBEIG,TOTERG,15,
-     &              WORK,KFREE,LFREE)
+         CALL REACMO(LUCOEF,'DFCOEF',TMAT,EIG,IBEIG,TOTERG,15)
       ELSE
-          CALL REACMO(LUCOEF,'DFCOEF',TMAT,EIG,IBEIG,TOTERG,14,
-     &              WORK,KFREE,LFREE)
+          CALL REACMO(LUCOEF,'DFCOEF',TMAT,EIG,IBEIG,TOTERG,14)
       ENDIF
 
 C ===================================================
