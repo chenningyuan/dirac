@@ -76,6 +76,7 @@ module exacorr_cc
          integer(INTL)              :: occ_space_root, vir_space_root
          integer(INTL),dimension(2) :: oo_root, ov_root, vo_root, vv_root 
          integer(INTL),dimension(4) :: oooo_root, ooov_root, ovoo_root, oovv_root, vovo_root, &
+                                       vvoo_root, vovv_root, vvvv_root
          integer,dimension(2)       :: oo_id, ov_id, vo_id, vv_id 
          integer,dimension(4)       :: oooo_id, ooov_id, ovoo_id, oovv_id, vovo_id, &
                                        vvoo_id, vovv_id, vvvv_id
@@ -256,9 +257,9 @@ module exacorr_cc
 
 !           Get fixed one-body tensors => set to 0 
             !call get_CC_Fockmatrix (occ_space,vir_space,occ_space_id,vir_space_id,foo_tensor,fov_tensor,fvv_tensor)
-            call construct_tensor(foo_tensor,oo_id,oo_root)
-            call construct_tensor(fov_tensor,ov_id,ov_root)
-            call construct_tensor(fvv_tensor,vv_id,vv_root)
+            call construct_2d_tensor(foo_tensor,oo_id,oo_root)
+            call construct_2d_tensor(fov_tensor,ov_id,ov_root)
+            call construct_2d_tensor(fvv_tensor,vv_id,vv_root)
 
 !           Get fixed two-body tensors
 !           call get_CC_integrals (nocc,nvir,mo_occ,mo_vir, &
@@ -266,7 +267,7 @@ module exacorr_cc
 !                               vovo_tensor,vovv_tensor,vvvv_tensor)
 
 !           Initialize t1 amplitudes to zero (we assume canonical orbitals for the moment)
-            call contruct_tensor(t1_tensor,vo_id,vo_root)
+            call contruct_2d_tensor(t1_tensor,vo_id,vo_root)
 
 !           Create and initialize scalars that are to be used as tensors in contractions
             ierr=exatns_tensor_create(one_tensor,"one_tensor",EXA_DATA_KIND_C8)   
@@ -278,7 +279,7 @@ module exacorr_cc
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_init() failed!')
 
 !           Initialize t2 amplitudes with the MP2 values
-            call construct_tensor(t2_tensor,vvoo_id,vvoo_root)
+            call construct_4d_tensor(t2_tensor,vvoo_id,vvoo_root)
 !           ierr=exatns_tensor_add("T(a,b,i,j)+=V+(i,j,a,b)",t2_tensor,oovv_tensor)
 !           work-around because complex conjugation does not work in the above statement
             ierr=exatns_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)",t2_tensor,oovv_tensor,one_tensor) ! o(2)v(2)
@@ -294,20 +295,20 @@ module exacorr_cc
 
             nccsd = 30 ! hard wired for the moment
 
-            call construct_tensor(goint_tensor,oo_id,oo_root)
-            call construct_tensor(gvint_tensor,vv_id,vv_root)
-            call construct_tensor(hoint_tensor,oo_id,oo_root)
-            call construct_tensor(hoaux_tensor,oo_id,oo_root)
-            call construct_tensor(hvint_tensor,vv_id,vv_root)
-            call construct_tensor(hovint_tensor,ov_id,ov_root)
-            call construct_tensor(hovaux_tensor,ov_id,ov_root)
-            call construct_tensor(aint_tensor,oooo_id,oooo_root)
-            call construct_tensor(cint_tensor,ovoo_id,ovoo_root)
-            call construct_tensor(hint_tensor,vovo_id,vovo_root)
-            call construct_tensor(tau_tensor,vvoo_id,vvoo_root)
-            call construct_tensor(tau2_tensor,vvoo_id,vvoo_root)
-            call construct_tensor(s1_tensor,vo_id,vo_root)
-            call construct_tensor(s2_tensor,vvoo_id,vvoo_root)
+            call construct_2d_tensor(goint_tensor,oo_id,oo_root)
+            call construct_2d_tensor(gvint_tensor,vv_id,vv_root)
+            call construct_2d_tensor(hoint_tensor,oo_id,oo_root)
+            call construct_2d_tensor(hoaux_tensor,oo_id,oo_root)
+            call construct_2d_tensor(hvint_tensor,vv_id,vv_root)
+            call construct_2d_tensor(hovint_tensor,ov_id,ov_root)
+            call construct_2d_tensor(hovaux_tensor,ov_id,ov_root)
+            call construct_4d_tensor(aint_tensor,oooo_id,oooo_root)
+            call construct_4d_tensor(cint_tensor,ovoo_id,ovoo_root)
+            call construct_4d_tensor(hint_tensor,vovo_id,vovo_root)
+            call construct_4d_tensor(tau_tensor,vvoo_id,vvoo_root)
+            call construct_4d_tensor(tau2_tensor,vvoo_id,vvoo_root)
+            call construct_2d_tensor(s1_tensor,vo_id,vo_root)
+            call construct_4d_tensor(s2_tensor,vvoo_id,vvoo_root)
 !           call diis (t1_tensor,t2_tensor,mode=1)
             if (ierr.eq.EXA_SUCCESS) then
                print*," ccdriver: allocated all tensors"
@@ -591,11 +592,29 @@ module exacorr_cc
 !
 !        end subroutine get_CC_Fockmatrix
 
-        subroutine construct_tensor (tensor,id_array, root_array)
+        subroutine construct_2d_tensor (tensor, id_array, root_array)
 
          type(tens_rcrsv_t), intent(inout)   :: tensor
-         integer                             :: id_array
-         integer(INTL)                       :: root_array
+         integer,dimension(2)                :: id_array
+         integer(INTL),dimension(2)          :: root_array
+
+         integer                             :: ierr
+
+         !Create matrix
+         ierr=exatns_tensor_create(tensor,"tensor",id_array,root_array,EXA_DATA_KIND_C8)
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
+       
+         !Initialize tensor to 0 
+         ierr=exatns_tensor_init(tensor,ZERO)        
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_init(tensor) failed!')
+
+        end subroutine
+
+        subroutine construct_4d_tensor (tensor, id_array, root_array)
+
+         type(tens_rcrsv_t), intent(inout)   :: tensor
+         integer,dimension(4)                :: id_array
+         integer(INTL),dimension(4)          :: root_array
 
          integer                             :: ierr
 
