@@ -71,10 +71,15 @@ module exacorr_cc
          class(h_space_t), pointer                :: occ_space, vir_space
 
          ! variables for the definition of spaces (AO and 4 different MO spaces)
-         type(subspace_basis_t) :: basis_ao, basis_occ, basis_vir
-         integer(INTL)          :: nao_l, ao_space_root
-         integer(INTL)          :: occ_space_root, vir_space_root
-         integer                :: ao_space_id, occ_space_id, vir_space_id
+         type(subspace_basis_t)     :: basis_ao, basis_occ, basis_vir
+         integer(INTL)              :: nao_l, ao_space_root
+         integer(INTL)              :: occ_space_root, vir_space_root
+         integer(INTL),dimension(2) :: oo_root, ov_root, vo_root, vv_root 
+         integer(INTL),dimension(4) :: oooo_root, ooov_root, ovoo_root, oovv_root, vovo_root, &
+         integer,dimension(2)       :: oo_id, ov_id, vo_id, vv_id 
+         integer,dimension(4)       :: oooo_id, ooov_id, ovoo_id, oovv_id, vovo_id, &
+                                       vvoo_id, vovv_id, vvvv_id
+         integer                    :: ao_space_id, occ_space_id, vir_space_id
 
          ! variables for the definition of colors inside the spaces
          type(color_symmetry_t), allocatable    :: color(:)
@@ -208,6 +213,33 @@ module exacorr_cc
          ierr=exatns_method_register('PrintTensor',tens_printer)
          if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(printer) failed!')
 
+         !Create all id and root arrays, neccessary for exatns_tensor_create
+         oo_id = (/occ_space_id, occ_space_id/)
+         ov_id = (/occ_space_id, vir_space_id/)
+         vo_id = (/vir_space_id, occ_space_id/)
+         vv_id = (/vir_space_id, vir_space_id/)
+         oo_root = (/occ_space_root, occ_space_root/)
+         ov_root = (/occ_space_root, vir_space_root/)
+         vo_root = (/vir_space_root, occ_space_root/)
+         vv_root = (/vir_space_root, vir_space_root/)
+        
+         oooo_id = (/occ_space_id, occ_space_id, occ_space_id, occ_space_id/)
+         ooov_id = (/occ_space_id, occ_space_id, occ_space_id, vir_space_id/)
+         ovoo_id = (/occ_space_id, vir_space_id, occ_space_id, occ_space_id/)
+         oovv_id = (/occ_space_id, occ_space_id, vir_space_id, vir_space_id/)
+         vovo_id = (/vir_space_id, occ_space_id, vir_space_id, occ_space_id/)
+         vvoo_id = (/vir_space_id, vir_space_id, occ_space_id, occ_space_id/)
+         vovv_id = (/vir_space_id, occ_space_id, vir_space_id, vir_space_id/)
+         vvvv_id = (/vir_space_id, vir_space_id, vir_space_id, vir_space_id/)
+         oooo_root = (/occ_space_root, occ_space_root, occ_space_root, occ_space_root/)
+         ooov_root = (/occ_space_root, occ_space_root, occ_space_root, vir_space_root/)
+         ovoo_root = (/occ_space_root, vir_space_root, occ_space_root, occ_space_root/)
+         oovv_root = (/occ_space_root, occ_space_root, vir_space_root, vir_space_root/)
+         vovo_root = (/vir_space_root, occ_space_root, vir_space_root, occ_space_root/)
+         vvoo_root = (/vir_space_root, vir_space_root, occ_space_root, occ_space_root/)
+         vovv_root = (/vir_space_root, occ_space_root, vir_space_root, vir_space_root/)
+         vvvv_root = (/vir_space_root, vir_space_root, vir_space_root, vir_space_root/)
+ 
 !        All preliminary work is now done on all MPI-nodes, we may proceed to start ExaTensor.
 !        After the start of ExaTensor, the driver process (the last MPI process) will be executing
 !        the commands and tell the others (that stay inside exatns_process_role) what to do. 
@@ -223,7 +255,10 @@ module exacorr_cc
             !call print_date('starting ao integral calculation')
 
 !           Get fixed one-body tensors => set to 0 
-            call get_CC_Fockmatrix (occ_space,vir_space,occ_space_id,vir_space_id,foo_tensor,fov_tensor,fvv_tensor)
+            !call get_CC_Fockmatrix (occ_space,vir_space,occ_space_id,vir_space_id,foo_tensor,fov_tensor,fvv_tensor)
+            call construct_tensor(foo_tensor,oo_id,oo_root)
+            call construct_tensor(fov_tensor,ov_id,ov_root)
+            call construct_tensor(fvv_tensor,vv_id,vv_root)
 
 !           Get fixed two-body tensors
 !           call get_CC_integrals (nocc,nvir,mo_occ,mo_vir, &
@@ -231,10 +266,7 @@ module exacorr_cc
 !                               vovo_tensor,vovv_tensor,vvvv_tensor)
 
 !           Initialize t1 amplitudes to zero (we assume canonical orbitals for the moment)
-            !t1_dims(1) = nvir * 2
-            !t1_dims(2) = nocc * 2
-            !ierr=exatns_tensor_create(t1_tensor,"t1_tensor",(),(),EXA_DATA_KIND_C8)
-            ierr=exatns_tensor_init(t1_tensor,ZERO)
+            call contruct_tensor(t1_tensor,vo_id,vo_root)
 
 !           Create and initialize scalars that are to be used as tensors in contractions
             ierr=exatns_tensor_create(one_tensor,"one_tensor",EXA_DATA_KIND_C8)   
@@ -246,10 +278,7 @@ module exacorr_cc
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_init() failed!')
 
 !           Initialize t2 amplitudes with the MP2 values
-            !t2_dims(1:2) = nvir * 2
-            !t2_dims(3:4) = nocc * 2
-            !ierr=exatns_tensor_create()
-            ierr=exatns_tensor_init(t2_tensor,ZERO)
+            call construct_tensor(t2_tensor,vvoo_id,vvoo_root)
 !           ierr=exatns_tensor_add("T(a,b,i,j)+=V+(i,j,a,b)",t2_tensor,oovv_tensor)
 !           work-around because complex conjugation does not work in the above statement
             ierr=exatns_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)",t2_tensor,oovv_tensor,one_tensor) ! o(2)v(2)
@@ -265,53 +294,20 @@ module exacorr_cc
 
             nccsd = 30 ! hard wired for the moment
 
-            !goint_dims = nocc  * 2
-            !ierr=exatns_tensor_create()
-            ierr=exatns_tensor_init(goint_tensor,ZERO)
-            !gvint_dims = nvir * 2
-            !ierr=exatns_tensor_create()
-            ierr=exatns_tensor_init(gvint_tensor,ZERO)
-            !hoint_dims = nocc  * 2
-            !ierr=exatns_tensor_create()
-            !ierr=exatns_tensor_create()
-            ierr=exatns_tensor_init(hoint_tensor,ZERO)
-            ierr=exatns_tensor_init(hoaux_tensor,ZERO)
-            !hvint_dims = nvir * 2!
-            !ierr=exatns_tensor_create()
-            ierr=exatns_tensor_init(hvint_tensor,ZERO)
-            !hovint_dims(1) = nocc * 2
-            !hovint_dims(2) = nvir * 2
-            !ierr=exatns_tensor_create()
-            !ierr=exatns_tensor_create()
-            ierr=exatns_tensor_init(hovint_tensor,ZERO)
-            ierr=exatns_tensor_init(hovaux_tensor,ZERO)
-            !aint_dims  = nocc  * 2
-            !ierr=exatns_tensor_create()
-            ierr=exatns_tensor_init(aint_tensor,ZERO)
-            !cint_dims(1) = nocc * 2
-            !cint_dims(2) = nvir * 2
-            !cint_dims(3) = nocc * 2
-            !cint_dims(4) = nocc * 2
-            !ierr=exatns_tensor_create()
-            ierr=exatns_tensor_init(cint_tensor,ZERO)
-            !hint_dims(1) = nvir * 2
-            !hint_dims(2) = nocc * 2
-            !hint_dims(3) = nvir * 2
-            !hint_dims(4) = nocc * 2
-            !ierr=exatns_tensor_create()
-            !ierr=exatns_tensor_create()
-            !ierr=exatns_tensor_create()
-            ierr=exatns_tensor_init(hint_tensor,ZERO)
-            ierr=exatns_tensor_init(tau_tensor,ZERO)
-            ierr=exatns_tensor_init(tau2_tensor,ZERO)
-            !s1_dims(1) = nvir * 2
-            !s1_dims(2) = nocc * 2
-            !ierr=exatns_tensor_create()
-            ierr=exatns_tensor_init(s1_tensor,ZERO)
-            !s2_dims(1:2) = nvir * 2
-            !s2_dims(3:4) = nocc * 2
-            !ierr=exatns_tensor_create()
-            ierr=exatns_tensor_init(s2_tensor,ZERO)
+            call construct_tensor(goint_tensor,oo_id,oo_root)
+            call construct_tensor(gvint_tensor,vv_id,vv_root)
+            call construct_tensor(hoint_tensor,oo_id,oo_root)
+            call construct_tensor(hoaux_tensor,oo_id,oo_root)
+            call construct_tensor(hvint_tensor,vv_id,vv_root)
+            call construct_tensor(hovint_tensor,ov_id,ov_root)
+            call construct_tensor(hovaux_tensor,ov_id,ov_root)
+            call construct_tensor(aint_tensor,oooo_id,oooo_root)
+            call construct_tensor(cint_tensor,ovoo_id,ovoo_root)
+            call construct_tensor(hint_tensor,vovo_id,vovo_root)
+            call construct_tensor(tau_tensor,vvoo_id,vvoo_root)
+            call construct_tensor(tau2_tensor,vvoo_id,vvoo_root)
+            call construct_tensor(s1_tensor,vo_id,vo_root)
+            call construct_tensor(s2_tensor,vvoo_id,vvoo_root)
 !           call diis (t1_tensor,t2_tensor,mode=1)
             if (ierr.eq.EXA_SUCCESS) then
                print*," ccdriver: allocated all tensors"
@@ -551,69 +547,60 @@ module exacorr_cc
 
         end subroutine exacorr_cc_driver
 
-        subroutine get_CC_Fockmatrix (occ_space,vir_space,occ_space_id,vir_space_id,foo_tensor,fov_tensor,fvv_tensor)
-
+!        subroutine get_CC_Fockmatrix (occ_space,vir_space,occ_space_id,vir_space_id,foo_tensor,fov_tensor,fvv_tensor)
+!
 !        Routine to get tensors with Fock matrix elements.
 !        In this implementation we assume canonical orbitals, so we may simply construct zero tensors.
 !        We also assume that we deal with a closed shell (Kramers-restricted) case, so nocc and nvir
 !        refer to Kramers pairs rather than spinors.
-     
+!     
 !        Written by Anastasios Papadopoulos, October 2018        
-            
+!            
 !        target tensors to be filled and given back to the caller
-         type(tens_rcrsv_t), intent(inout)  :: foo_tensor, fov_tensor, fvv_tensor
+!         type(tens_rcrsv_t), intent(inout)  :: foo_tensor, fov_tensor, fvv_tensor
+!
+!         class(h_space_t), pointer  :: occ_space, vir_space
+!         integer                    :: occ_space_id, vir_space_id
+!         integer(INTL)              :: occ_space_root, vir_space_root
+!        
+!         integer                    :: ierr
+!
+!         integer,dimension(2)       :: foo_id_array, fov_id_array, fvv_id_array
+!         integer(INTL), dimension(2)    :: foo_root_array, fov_root_array, fvv_root_array
+!
+!         occ_space_root=occ_space%get_root_id(ierr)
+!         vir_space_root=vir_space%get_root_id(ierr)
+!
+!         !For some reason these have to be defined. if directly inserted, won't work
+!         foo_id_array = (/occ_space_id,occ_space_id/)
+!         fov_id_array = (/occ_space_id,vir_space_id/)
+!         fvv_id_array = (/vir_space_id,vir_space_id/)
+!         foo_root_array = (/occ_space_root,occ_space_root/)
+!         fov_root_array = (/occ_space_root,vir_space_root/)
+!         fvv_root_array = (/vir_space_root,vir_space_root/)
+! 
+!         ierr=exatns_tensor_create(foo_tensor,"foo_tensor",foo_id_array,foo_root_array,EXA_DATA_KIND_C8) 
+!         ierr=exatns_tensor_create(fov_tensor,"fov_tensor",fov_id_array,fov_root_array,EXA_DATA_KIND_C8)
+!         ierr=exatns_tensor_create(fvv_tensor,"fvv_tensor",fvv_id_array,fvv_root_array,EXA_DATA_KIND_C8)
+!         if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
+!
+!         ierr=exatns_tensor_init(foo_tensor,ZERO)
+!         ierr=exatns_tensor_init(fov_tensor,ZERO)
+!         ierr=exatns_tensor_init(fvv_tensor,ZERO)
+!         if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_init(fock_matrix) failed!')
+!
+!        end subroutine get_CC_Fockmatrix
 
-         class(h_space_t), pointer  :: occ_space, vir_space
-         integer                    :: occ_space_id, vir_space_id
-         integer(INTL)              :: occ_space_root, vir_space_root
-        
-         integer                    :: ierr
-
-         integer,dimension(2)       :: foo_id_array, fov_id_array, fvv_id_array
-         integer(INTL), dimension(2)    :: foo_root_array, fov_root_array, fvv_root_array
-
-         occ_space_root=occ_space%get_root_id(ierr)
-         vir_space_root=vir_space%get_root_id(ierr)
-
-         !For some reason these have to be defined. if directly inserted, won't work
-         foo_id_array = (/occ_space_id,occ_space_id/)
-         fov_id_array = (/occ_space_id,vir_space_id/)
-         fvv_id_array = (/vir_space_id,vir_space_id/)
-         foo_root_array = (/occ_space_root,occ_space_root/)
-         fov_root_array = (/occ_space_root,vir_space_root/)
-         fvv_root_array = (/vir_space_root,vir_space_root/)
- 
-         ierr=exatns_tensor_create(foo_tensor,"foo_tensor",foo_id_array,foo_root_array,EXA_DATA_KIND_C8) 
-         ierr=exatns_tensor_create(fov_tensor,"fov_tensor",fov_id_array,fov_root_array,EXA_DATA_KIND_C8)
-         ierr=exatns_tensor_create(fvv_tensor,"fvv_tensor",fvv_id_array,fvv_root_array,EXA_DATA_KIND_C8)
-         if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
-
-         ierr=exatns_tensor_init(foo_tensor,ZERO)
-         ierr=exatns_tensor_init(fov_tensor,ZERO)
-         ierr=exatns_tensor_init(fvv_tensor,ZERO)
-         if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_init(fock_matrix) failed!')
-
-        end subroutine get_CC_Fockmatrix
-
-        subroutine construct_4d_tensor (tensor,occ_space_id,vir_space_id,occ_space_root,vir_space_root,d1,d2,d3,d4)
-
-!        Written by Anastasios Papadopoulos, October 2018
+        subroutine construct_tensor (tensor,id_array, root_array)
 
          type(tens_rcrsv_t), intent(inout)   :: tensor
-         integer                             :: occ_space_id, vir_space_id
-         integer(INTL)                       :: occ_space_root, vir_space_root
-         integer, dimension(4)               :: tensor_id_array
-         integer(INTL), dimension(4)         :: tensor_root_array
-         character(len=3), intent(in)        :: d1, d2, d3, d4  ! "occ" or "vir"
+         integer                             :: id_array
+         integer(INTL)                       :: root_array
 
          integer                             :: ierr
 
-         !Create correct arrays => Need to figure out how to get the right names, cannot find dynamic variable names
-         !tensor_id_array = (/d1_space_id, d2_space_id, d3_space_id, d4_space_id/)
-         !tensor_root_array = (/d1_space_root, d2_space_root, d3_space_root, d4_space_root/)
-
-         !Create 4d tensor
-         ierr=exatns_tensor_create(tensor,"tensor",tensor_id_array,tensor_root_array,EXA_DATA_KIND_C8)
+         !Create tensor
+         ierr=exatns_tensor_create(tensor,"tensor",id_array,root_array,EXA_DATA_KIND_C8)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
        
          !Initialize tensor to 0 
