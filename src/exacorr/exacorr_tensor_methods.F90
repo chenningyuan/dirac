@@ -8,6 +8,9 @@ module exacorr_tensor_methods
         implicit none
         private
 
+        complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0)
+
+
         type, extends(tens_method_uni_t), public:: tens_init_test_t
          complex(8), private:: init_val=(0d0,0d0)
          contains
@@ -39,6 +42,14 @@ module exacorr_tensor_methods
           procedure, public:: apply=>init_dm_tensor
         end type init_dm_tensor_t
 
+        !Initializer for the half-transformed integrals:
+        type, extends(tens_method_uni_t), public:: init_ht_tensor_t
+         complex(8), allocatable, private:: mocoef_all_1(:,:,:),mocoef_all_2(:,:,:)
+         contains
+          procedure, public:: init_ht_ctor=>init_ht
+          procedure, public:: apply=>init_ht_tensor
+        end type init_ht_tensor_t
+
         !Scale by denominators:
         type, extends(tens_method_uni_t), public:: scale_with_denom_t
          real(8), allocatable, private:: eps_occ(:),eps_vir(:)
@@ -54,7 +65,7 @@ module exacorr_tensor_methods
          class(tens_init_test_t), intent(out):: this
          real(8), intent(in):: val
 
-         this%init_val=cmplx(val,0d0)
+         this%init_val=dcmplx(val,0d0)
         end subroutine TensInitTestCtorReal
 
         subroutine TensInitTestCtorComplex(this,val)
@@ -364,6 +375,52 @@ module exacorr_tensor_methods
 
         end subroutine init_dm
 
+        subroutine init_ht(this,mo_list,nmo)
+
+         use dirac_MO
+         use exacorr_global
+
+         implicit none
+         integer, intent(in) :: nmo(2)       ! the length of the mo basis
+         integer, intent(in) :: mo_list(:)   ! and their indices
+         class(init_ht_tensor_t), intent(out):: this
+
+         integer  :: nao,j,k,spin
+         type(MO) :: qmo
+
+!        Copy the coefficients into the alpha or beta array, using the quaternion relations as defined in
+!        T. Saue, H. Jensen, J. Chem. Phys. 111 (1999) 6211–6222, Equation 16.
+!        The coefficients for the barred spinors (that start after the nmo(i) unbarred spinors) are generated
+!        using Kramers' symmetry.
+
+         nao = get_nao()
+
+         allocate (this%mocoef_all_1(nao,2*nmo(1),2))
+         call get_mo_coefficients (qmo,mo_list(1:nmo(1)),nmo(1))
+         do k = 1, nmo(1)
+            do j = 1, nao
+             this%mocoef_all_1(j,k,1)     = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
+             this%mocoef_all_1(j,k,2)     = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
+             this%mocoef_all_1(j,k+nmo,1) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
+             this%mocoef_all_1(j,k+nmo,2) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
+            end do
+         end do
+         call delete_qmo (qmo)
+
+         allocate (this%mocoef_all_2(nao,2*nmo(2),2))
+         call get_mo_coefficients (qmo,mo_list(nmo(1)+1:nmo(1)+nmo(2)),nmo(2))
+         do k = 1, nmo(2)
+            do j = 1, nao
+             this%mocoef_all_2(j,k,1)     = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
+             this%mocoef_all_2(j,k,2)     = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
+             this%mocoef_all_2(j,k+nmo,1) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
+             this%mocoef_all_2(j,k+nmo,2) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
+            end do
+         end do
+         call delete_qmo (qmo)
+
+        end subroutine init_ht
+
         function scale_with_denom(this,tensor,scalar) result(ierr)
          use, intrinsic:: ISO_C_BINDING
          implicit none
@@ -555,5 +612,163 @@ module exacorr_tensor_methods
          end do
 
         end function tens_init_dm
+
+        function init_ht_tensor(this,tensor,scalar) result(ierr)
+         use, intrinsic:: ISO_C_BINDING
+         implicit none
+         integer(INTD):: ierr,n
+         class(init_ht_tensor_t), intent(in):: this
+         class(tens_rcrsv_t), intent(inout):: tensor
+         complex(8), intent(inout), optional:: scalar
+         type(tens_dense_t):: tens
+
+         ierr=0
+         tens=tensor%get_dense_adapter(ierr)
+         if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
+         n=tens%num_dims
+         if (n.ne.4) call quit('Error: dimension not 4 in init_dm_tensor')
+         ierr=tens_init_ht(tens%body_ptr,tens%data_kind,tens%dims(1:n),tens%bases(1:n), &
+                               this%mocoef_all_1,this%mocoef_all_2)
+
+        end function init_ht_tensor
+
+        integer function tens_init_ht(tens_body,data_kind,tens_dims,tens_bases, &
+                         mocoef_all_1,mocoef_all_2) result (ierr)
+        !Initialization routine that is used to fill a tensor with mo coefficients
+
+         use exacorr_datatypes
+         use exacorr_global
+         use module_interest_eri
+         use, intrinsic:: ISO_C_BINDING
+
+         implicit none
+
+         type(C_PTR), value:: tens_body           !in: C pointer to the tensor body (tensor elements)
+         integer(4), value:: data_kind            !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
+         integer(8), intent(in):: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
+         integer(8), intent(in):: tens_bases(1:*) !in: base offsets for each tensor dimension)
+         complex(8), intent(in):: mocoef_all_1(:,:,:),mocoef_all_2(:,:,:)
+
+         complex(8),pointer :: ht_tens(:,:,:,:)
+
+         integer :: first_ao(1:4)
+         integer :: nshells(4)
+         type(basis_func_info_t), allocatable :: gto1(:), gto2(:), gto3(:), gto4(:)  ! arrays with basis function information
+
+         integer :: ioff,joff,koff,loff,kmo,lmo,ka,la,pa,qa,ra,sa,nao(4),nmo(2),ijkl
+         integer :: i, j, k, l, ish, jsh, ksh, lsh, oi, oj, ok, ol
+         integer :: li,lj,lk,ll,ni,nj,nk,nl
+         real(8) :: ei,ej,ek,el,ci,cj,ck,cl,xi,yi,zi,xj,yj,zj,xk,yk,zk,xl,yl,zl
+         real(8),save :: gout(21*21*21*21) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
+         !$OMP threadprivate(gout)
+         complex(8) :: dP
+         real(8), parameter :: fijkl = 1.0
+
+         ierr=0 !set error code to success
+         if(data_kind /= EXA_DATA_KIND_C8) then
+           ierr=-1 !invalid data kind requested
+           return
+         endif
+
+!        Interest needs to be initalized for each thread, this function will initialize (or return immediately if it is).
+         call interest_initialize(.false.)
+
+         ! map the arguments to names used in the context of integral evaluation
+         first_ao(1:2) = tens_bases(1:2)
+         first_ao(3:4) = 1
+         nao(1:2)      = tens_dims(1:2)
+         nmo(1:2)      = tens_dims(3:4)
+         nao(3:4)      = get_nao()
+         call c_f_pointer(tens_body,ht_tens,(/nao(1),nao(2),nmo(1),nmo(2)/)) !map C pointer to 4-dimensional array
+         ht_tens = ZERO
+
+!        Allocate and get shell information for all shells that we will treat
+         call get_gtos(first_ao(1),nao(1),gto1,nshells(1))
+         call get_gtos(first_ao(2),nao(2),gto2,nshells(2))
+         call get_gtos(first_ao(3),nao(3),gto3,nshells(3))
+         call get_gtos(first_ao(4),nao(4),gto4,nshells(4))
+
+         loff = 0
+         do lsh = 1, nshells(4) ! loop over all ao's, this index is transformed to mo
+            ll   =  gto4(lsh)%orb_momentum
+            el   =  gto4(lsh)%exponent(1)
+            xl   =  gto4(lsh)%coord(1)
+            yl   =  gto4(lsh)%coord(2)
+            zl   =  gto4(lsh)%coord(3)
+            cl   =  gto4(lsh)%coefficient(1)
+            nl   =  ncartesian(ll)
+            koff = 0
+            do ksh = 1, nshells(3) ! loop over all ao's, this index is transformed to mo
+               lk   =  gto3(ksh)%orb_momentum
+               ek   =  gto3(ksh)%exponent(1)
+               xk   =  gto3(ksh)%coord(1)
+               yk   =  gto3(ksh)%coord(2)
+               zk   =  gto3(ksh)%coord(3)
+               ck   =  gto3(ksh)%coefficient(1)
+               nk   =  ncartesian(lk)
+               joff = 0
+               do jsh = 1, nshells(2) ! loop over the ao's active in the HT integral tensor block
+                  lj   =  gto2(jsh)%orb_momentum
+                  ej   =  gto2(jsh)%exponent(1)
+                  xj   =  gto2(jsh)%coord(1)
+                  yj   =  gto2(jsh)%coord(2)
+                  zj   =  gto2(jsh)%coord(3)
+                  cj   =  gto2(jsh)%coefficient(1)
+                  nj   =  ncartesian(lj)
+                  ioff = 0
+                  do ish = 1, nshells(1) ! loop over the ao's active in the HT integral tensor block
+                     li   =  gto1(ish)%orb_momentum
+                     ei   =  gto1(ish)%exponent(1)
+                     xi   =  gto1(ish)%coord(1)
+                     yi   =  gto1(ish)%coord(2)
+                     zi   =  gto1(ish)%coord(3)
+                     ci   =  gto1(ish)%coefficient(1)
+                     ni   =  ncartesian(li)
+                     ! output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
+                     call interest_eri('llll',fijkl,gout,&
+                                  lk,ek,xk,yk,zk,ck,&
+                                  ll,el,xl,yl,zl,cl,&
+                                  li,ei,xi,yi,zi,ci,&
+                                  lj,ej,xj,yj,zj,cj )
+
+                     do lmo = 1, nmo(2) ! loop over the mo's active in the HT integral tensor block
+                        la = tens_bases(4) + lmo - 1 
+                        do kmo = 1, nmo(1) ! loop over the mo's active in the HT integral tensor block
+                           ka = tens_bases(3) + kmo - 1 
+                           ijkl = 0
+                           do l = 1, nl
+                              sa = loff + l
+                              do k = 1, nk
+                                 ra = koff + k
+                                 dP = dconjg(mocoef_all_1(ra,ka,1))*mocoef_all_2(sa,la,1) & ! alpha-alpha
+                                    + dconjg(mocoef_all_1(ra,ka,2))*mocoef_all_2(sa,la,2)   ! beta-beta
+                                 do j = 1, nj
+                                    qa = joff + j
+                                    do i = 1, ni
+                                       pa = ioff + i
+                                       ijkl = ijkl + 1
+                                       ht_tens(pa,qa,kmo,lmo) = ht_tens(pa,qa,kmo,lmo) &
+                                                              + dP * gout(ijkl)
+                                    end do ! i
+                                 end do ! j
+                              end do ! k
+                           end do ! l
+                        end do ! kmo
+                     end do ! lmo
+                     ioff = ioff + ni
+                  end do
+                  joff = joff + nj
+               end do
+               koff = koff + nk
+            end do
+            loff = loff + nl
+         end do
+
+         deallocate(gto1)
+         deallocate(gto2)
+         deallocate(gto3)
+         deallocate(gto4)
+
+        end function tens_init_ht
 
 end module exacorr_tensor_methods
