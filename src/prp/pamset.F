@@ -142,6 +142,7 @@ C
       type(fde_import) :: itmp
 CTOBS: Note the use of dcbdhf ! Should be generalized !!!
       LOGICAL TOBE, SAVEFLAGS(4)
+      CHARACTER*6 F2NAME
       DIMENSION FMO(*),FAO(*),CMO(*),IBEIG(*),WORK(*)
       real(8), allocatable :: xc_matrix(:, :, :)
 #ifdef HAS_PCMSOLVER
@@ -166,8 +167,7 @@ C
         IOPT = 2
       ENDIF
       IF (IPRINT.GE.10) IOPT = IOPT + 1
-      CALL REACMO(LUBUF,'DFCOEF',CMO,DUM,IBEIG,TOTERG,IOPT,
-     &            WORK,KFREE,LFREE)
+      CALL REACMO(LUBUF,'DFCOEF',CMO,DUM,IBEIG,TOTERG,IOPT)
       CLOSE(LUBUF,STATUS='KEEP')
       NFMAT = 1
       IF (NASHT .GT. 0) NFMAT = 2
@@ -175,7 +175,7 @@ C
 C     1. Get two-electron Fock matrix in AO-basis
 C     ===========================================
 C
-      INQUIRE(FILE='DFFCK2',EXIST=TOBE)   
+      INQUIRE(FILE='DFFCK2',EXIST=TOBE)
       IF(TOBE) THEN
         CALL OPNFIL(LUBUF,'DFFCK2','OLD','GETFC1')
         WRITE(LUPRI,'(/A)')

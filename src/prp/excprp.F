@@ -123,12 +123,10 @@ C
       CALL OPNFIL(LUCMO,'DFCOEF','OLD','PRPTPA')
       IF(SPINFR) THEN
         CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
-        CALL REACMO(LUCMO,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),
-     &              TOTERG,11,WORK,KFREE,LFREE)
+        CALL REACMO(LUCMO,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),TOTERG,11)
       ELSE
         KIBRP = KFREE
-        CALL REACMO(LUCMO,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,3,
-     &              WORK,KFREE,LFREE)
+        CALL REACMO(LUCMO,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,3)
       ENDIF
       CLOSE(LUCMO,STATUS='KEEP')
 !
@@ -547,9 +545,6 @@ C*****************************************************************************
       CHARACTER OPNAME*16
 !
       CALL QENTER('EXCPRPINP')
-!     Set index limits of free working memory
-      KFREE = 1
-      LFREE = LWRK
 !     Do consistency check if KEYWID == 4
       IF (KEYWID .eq. 4) THEN
          DOFLAG = .false.

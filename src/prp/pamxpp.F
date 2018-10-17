@@ -887,7 +887,7 @@ C     Indicate from vectors are read...
 C
       LUBUF = 22
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','EIGEXT')
-      CALL REACMO(LUBUF,'DFCOEF',DUM,DUM,DUM,XPPERG,1,DUM,IDUM,IDUM)
+      CALL REACMO(LUBUF,'DFCOEF',DUM,DUM,DUM,XPPERG,1)
 
       CLOSE(LUBUF,STATUS='KEEP')
 C
@@ -980,7 +980,7 @@ C
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','GETPPF')
       CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
       CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),
-     &              TOTERG,10,WORK,KFREE,LFREE)
+     &              TOTERG,10)
       CLOSE(LUBUF,STATUS='KEEP')
 C
       IOFF  = 1
@@ -1911,7 +1911,7 @@ C     ===============
           ENDDO
         ENDIF
 C.......distribute excitation energies on linear symmetries
-        allocate(EXCBUF(NEXC))
+        allocate(EXCBUF(NEXC+1)) ! Miro: NEXC+1 due to out-of-bounds fix
         allocate(iebuf(2,NEXC))
 C.......we include the ground state
         EXCBUF(1) = 0.0D0        
@@ -1983,7 +1983,7 @@ C     ==========================================================================
           SYMLAB(IREP+IOFF)='3'//REP(IREP)     
         ENDDO
 C.......distribute excitation energies on spinfree symmetries
-        allocate(EXCBUF(NEXC))
+        allocate(EXCBUF(NEXC+1)) ! Miro: NEXC+1 due to out-of-bounds fix
         allocate(iebuf(2,NEXC))
 C.......we include the ground state
         EXCBUF(1) = 0.0D0        

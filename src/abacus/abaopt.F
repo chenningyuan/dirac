@@ -2525,7 +2525,6 @@ C     normalization vector in WLKCGH).
 C
       DO 1 IREP = 0, MAXREP
          DO 2 ICENT = 1, NUCIND
-#include "scalar.h"
             DO 3 ICOOR = 1, 3
                ISCOOR = IPTCNT(3*(ICENT-1)+ICOOR,IREP,1)
                IF (ISCOOR .GT. 0) THEN
@@ -6741,7 +6740,6 @@ C
       CALL DZERO(SCLVEC,MXCOOR)
       DO 1 IREP = 0, MAXREP
          DO 2 ICENT = 1, NUCIND
-#include "scalar.h"
             DO 3 ICOOR = 1, 3
                ISCOOR = IPTCNT(3*(ICENT-1)+ICOOR,IREP,1)
                IF (ISCOOR .GT. 0) THEN
@@ -7571,7 +7569,7 @@ C
 C
 C     Update geometry in common block
 C
-         MLINE(NMLAU)(20:20) = ' '
+         IF (NMLAU.GE.1) MLINE(NMLAU)(20:20) = ' ' 
          DO 100 N = 1, NUCIND
             CRX = COOR(1,N)
             CRY = COOR(2,N)

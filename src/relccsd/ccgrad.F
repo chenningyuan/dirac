@@ -330,6 +330,7 @@ C
 #include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
+#include "dgroup.h"
 C
 C---------------Local variables--------------------------------------
 C
@@ -764,6 +765,7 @@ C
 #include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
+#include "dgroup.h"
 C
 C---------------Local variables--------------------------------------
 C
@@ -942,7 +944,7 @@ C
 !     !> read ibeig (info array on boson irreps) from DFCOEF
       if( linear .or. spinfr )then
         call opnfil(lucoef,'DFCOEF','OLD','RIBEIG ')
-        call reacmo_no_work(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8)
+        call reacmo(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8)
         close(lucoef,STATUS='KEEP')
       end if
 C
@@ -1266,6 +1268,12 @@ C---------------Executable code--------------------------------------
             FILE_NAME    = 'CCDENS'
             ADD_2_FOCK   = .TRUE.
             IERR         = 0
+         CASE ("EOM ")
+            WRITE (LUPRI,*) " Retrieving EOMCC density matrix from file"
+            LABEL        = 'EOM DENS'
+            FILE_NAME    = 'CCDENS'
+            ADD_2_FOCK   = .FALSE.
+            IERR         = 0
          CASE ("MC  ")
             WRITE (LUPRI,*) " Retrieving MCSCF density matrix from file"
             LABEL        = 'MC  DENS'
@@ -1323,7 +1331,107 @@ C       The add_two routine scales by 2, scale back to the orginal afterwards
             CALL DENSMO_TO_DENSAO (DMO,DMAT)
       END SELECT
 
+      DEALLOCATE(DMO)
       END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GET_EOM_DENSITY (BASIS,STATE,DMAT,IERR)
+C
+C---------------Description--------------------------------------------
+C
+C     Retrieve relaxed density matrix for processing by other modules
+C     of DIRAC (currenty only first-order properties)
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "implicit.h"
+#include "files.inc"
+#include "priunit.h"
+#include "mxcent.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+C
+C---------------Calling variables--------------------------------------
+C
+      PARAMETER (HALF=0.5D0)
+      CHARACTER*2 BASIS                  ! Representation
+      REAL*8 DMAT(*)                     ! Density matrix
+      INTEGER IERR                       ! Error code
+      INTEGER STATE                      ! Number of state for which density has been stored  
+C
+C---------------Local variables--------------------------------------
+C
+      REAL*8, ALLOCATABLE:: DMO(:,:,:)   ! Density matrix in MO basis
+      LOGICAL FND,FNDLAB,ADD_2_FOCK
+      CHARACTER*8 LABEL
+      CHARACTER*6 FILE_NAME
+      INTEGER dlength,dstart  
+      INTEGER, PARAMETER :: EOMDEN=299
+C
+C---------------Executable code--------------------------------------
+
+            ADD_2_FOCK = .FALSE.
+
+            WRITE (LUPRI,*) " Retrieving EOMCC density matrix from file"
+           ADD_2_FOCK   = .TRUE.
+!              ADD_2_FOCK = .FALSE.
+            IERR         = 0
+
+C     Read the appropriate correlated density from file
+
+      ALLOCATE (DMO(NORBT,NORBT,NZ),STAT=IERR)
+      IF (IERR.NE.0) THEN
+        CALL QUIT('Error in DMO allocation !')
+      ENDIF
+
+!      call waio_open(itapt+7)
+      
+      inquire(iolength=dlength) DMO
+
+      dstart = (state-1)*norbt*norbt*nz+1    
+!      dlength = norbt*norbt*nz*8
+
+      open (eomden,file='EOM_DENS',access='direct',status='old',
+     &      recl=dlength)
+
+      read (eomden,rec=state) dmo
+
+!      write(*,*)(dmo(i,i,1),i=1,norbt) 
+!      call rread (itapt+7,dmo,dlength,dstart)
+      
+C     Add the closed shell Hartree-Fock contribution
+      IF(ADD_2_FOCK)THEN
+C       The add_two routine scales by 2, scale back to the orginal afterwards
+        CALL ADD_TWO_FOCK(DMO,.TRUE.,0)
+        CALL DSCAL(NZ*NORBT*NORBT,HALF,DMO,1)
+      END IF
+
+
+      SELECT CASE (BASIS)
+         CASE ("MO")
+            CALL DCOPY (N2ORBTQ,DMO,1,DMAT,1)
+         CASE ("AO")
+            CALL DENSMO_TO_DENSAO (DMO,DMAT)
+         CASE DEFAULT
+            WRITE (LUPRI,*) " Unknown or unimplemented basis: ",BASIS
+            WRITE (LUPRI,*) " Use density matrix in AO basis "
+            IERR = IERR + 2
+            CALL DENSMO_TO_DENSAO (DMO,DMAT)
+      END SELECT
+
+      deallocate(dmo)
+      
+      close (eomden,status='keep')
+      END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE STORE_CC_DENSITY (WF,DMO)
 C
@@ -1384,4 +1492,71 @@ C     without being able to do a replace or check for old data.
       CALL NEWLAB(EOFLABEL,MCCDENS,LUPRI)
       CLOSE(Unit=MCCDENS,Status='KEEP')
 
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE STORE_EOM_DENSITY (WF,STATE,DMO)
+C
+C---------------Description--------------------------------------------
+C     Storing relaxed EOM density matrix for processing by other modules
+C     of DIRAC (currenty only first-order properties)
+C     This should work with multi-state methods as well...
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Avijit Shee
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "implicit.h"
+#include "files.inc"
+#include "priunit.h"
+#include "mxcent.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+C
+C---------------Calling variables--------------------------------------
+C
+      CHARACTER*4 WF                     ! Wave function type
+      REAL*8, INTENT(IN):: DMO(*)                      ! Density matrix (MO-basis)
+      INTEGER STATE                      ! I designate each state by a Number
+C
+C---------------Local variables--------------------------------------
+C
+      CHARACTER*8 :: LABEL,EOFLABEL
+      LOGICAL, SAVE :: INIT=.FALSE.
+      LOGICAL :: FNDLAB
+      logical            :: exist
+      INTEGER, PARAMETER :: EOMDEN=299
+      integer :: dlength
+C---------------Executable code--------------------------------------
+ 
+      WRITE (LUPRI,*) "Storing the ",WF," density matrix on file"
+
+C     Write the correlated density to file
+C     Code should be replaced by proper storage routine, this just adds to the end of a file 
+C     without being able to do a replace or check for old data.
+
+      inquire(iolength=dlength) DMO(1:norbt*norbt*nz)
+
+      inquire(file='EOM_DENS', exist=exist)
+      if (exist) then
+
+      open (eomden,file='EOM_DENS',access='direct',status='old',
+     &      recl=dlength)
+
+      else
+
+       open (eomden,file='EOM_DENS',access='direct',status='new',
+     &      recl=dlength)
+     
+      endif
+
+      write (eomden,rec=state) dmo(1:norbt*norbt*nz)
+
+      close (eomden,status='keep')
+
+      print *,"done for state ",state
       END

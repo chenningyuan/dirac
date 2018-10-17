@@ -342,8 +342,8 @@ contains
        end do
        allocate(original_eigen_values(l))
        open(fh,file='DFCOEF',status='old',form='unformatted',access='sequential',position='rewind')
-!      call reacmo_no_work(fh,'DFCOEF',xmat,original_eigen_values,scratch5,dummy,4)
-       call reacmo_no_work(fh,'DFCOEF',xmat,original_eigen_values,scratch5,dummy,14)
+!      call reacmo(fh,'DFCOEF',xmat,original_eigen_values,scratch5,dummy,4)
+       call reacmo(fh,'DFCOEF',xmat,original_eigen_values,scratch5,dummy,14)
        close(fh,status='keep')
        offset_1 = 1
        offset_2 = 1
@@ -541,7 +541,7 @@ contains
 
 !      read the title line and total energy (read code -1) from the old DFCOEF
        open(fh,file='DFCOEF',status='old',form='unformatted',access='sequential',position='rewind')
-       call reacmo_no_work(fh,'DFCOEF',mo_coeff_2c_ao,eigen_values,boson_irreps_jz_eigenvalues,total_energy,-1)
+       call reacmo(fh,'DFCOEF',mo_coeff_2c_ao,eigen_values,boson_irreps_jz_eigenvalues,total_energy,-1)
        close(fh,status='keep')
 
 !      backtransform the 2c-MO coefficients from the reference MO basis to AO basis

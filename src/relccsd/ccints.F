@@ -620,8 +620,7 @@ C     when we run with the MOLMF(3) hamiltonian
               CALL QUIT('RDINTS: Coefficient file DFCOEF not found !')
           ENDIF
           CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RDINTS')
-          CALL REACMO_no_work(LUCOEF,'DFCOEF',DUMMY,DUMMY,IDUMMY,
-     &                        ORIG_TOTSCF,1)
+          CALL REACMO(LUCOEF,'DFCOEF',DUMMY,DUMMY,IDUMMY,ORIG_TOTSCF,1)
         ENDIF
 #if defined VAR_MPI
         call interface_mpi_BCAST(ORIG_TOTSCF,1,MASTER,

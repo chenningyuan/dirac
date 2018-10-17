@@ -56,11 +56,10 @@ C
       IF(SPINFR) THEN
         CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
         CALL REACMO(LUCMO,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),
-     &              TOTERG,11,WORK,KFREE,LFREE)
+     &              TOTERG,11)
       ELSE
         KIBRP = KFREE
-        CALL REACMO(LUCMO,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,3,
-     &              WORK,KFREE,LFREE)
+        CALL REACMO(LUCMO,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,3)
       ENDIF
       CLOSE(LUCMO,STATUS='KEEP')
 C
@@ -954,7 +953,9 @@ C
 C     Input handeling for .TWO-PHOTON
 C
 C     Written by johhe 2002
-C
+!
+!  Miro: July 2018, no more need for WORK(:) stuff
+!
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -1004,7 +1005,7 @@ C
       PNAME(3) = 'ZDIPLEN'
       DO I=1,3
          CALL XPRIND(PNAME(I),1,1,D1,PNAME(I),INDXPR,ISYXPR,
-     &               ITRXPR,WORK(KFREE),LFREE,IPRXQR)
+     &               ITRXPR,IPRXQR)
          CALL OP1IND('NAQROP',IND1OP,LAQROP,NAQROP,INDXPR,MAXLQR)
          CALL OP1IND('NBQROP',IND1OP,LBQROP,NBQROP,INDXPR,MAXLQR)
       END DO

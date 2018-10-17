@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,13 +16,13 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://www.diracprogram.org
-!dirac_copyright_end
 
 C FILE    : pamprp.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pamprp */
       SUBROUTINE PAMPRP()
+      use eom_driver , only: number_of_states
 C***********************************************************************
 C
 C     Driver for PAMPRP_1.
@@ -42,6 +41,8 @@ C
 #include "dcbprp.h"
 C
       CHARACTER WF*4
+      INTEGER state 
+      INTEGER J 
 C
       CALL QENTER('PAMPRP')
 C
@@ -80,13 +81,27 @@ C
             CALL SETDC2(0)
          ELSE IF (WF .EQ. 'CCSD') THEN
             CALL SETDC2(0)
+         ELSE IF (WF .EQ. 'EOM ') THEN
+            CALL SETDC2(0)
          ELSE
             CALL QUIT('*** ERROR in PAMPRP *** ' //
      &           'Unknown wave function: ' // WF)
          END IF
          CALL TITLER('Properties for ' // WF // ' wave function',
      &        '*',110)
-         CALL PAMPRP_1(WF)
+
+         IF (WF .EQ. 'EOM ') THEN 
+           CALL number_of_states(state)
+             write(*,*)'# states', state
+            do j = 1, state
+
+             CALL PAMPRP_1(WF, j)
+
+            enddo 
+
+         ELSE
+           CALL PAMPRP_1(WF,1)
+         ENDIF
       END DO
 C
       CALL QEXIT('PAMPRP')
@@ -94,7 +109,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pampr1 */
-      SUBROUTINE PAMPRP_1(WF)
+      SUBROUTINE PAMPRP_1(WF,STATE)
 C***********************************************************************
 C
 C     NOTE
@@ -124,9 +139,6 @@ C***********************************************************************
 
       use memory_allocator
       use dirac_cfg
-#ifdef MOD_OPENRSP
-      use openrsp_main
-#endif
       use fde_mod
 
 #include "implicit.h"
@@ -144,6 +156,8 @@ C
       real(8), allocatable :: WORK(:)
       CHARACTER WF*4
       CHARACTER WFEXPORT*4
+C     INTEGER, OPTIONAL :: STATE
+      INTEGER :: STATE
 C
       CALL QENTER('PAMPRP_1')
 C
@@ -173,7 +187,7 @@ C***********************************************************************
 C
       IF (DOEXP) THEN
          CALL MEMGET('REAL',KEXP,NEXPP,WORK,KFREE,LFREE)
-         CALL PRPEXP(WF,WORK(KEXP),WORK(KFREE),LFREE)
+         CALL PRPEXP(WF,WORK(KEXP),WORK(KFREE),LFREE,STATE)
       ELSE
          KEXP = KFREE
       END IF
@@ -271,14 +285,6 @@ C
          call fde_export_to_file(wf)
       END IF
 
-#ifdef MOD_OPENRSP
-      if (dirac_cfg_openrsp) then
-!       main openrsp driver
-        call openrsp_driver(work(kfree), lfree)
-!       initialize dirac interface
-        call init_dirac_interface()
-      end if
-#endif
 
 C
       call dealloc(WORK)
@@ -4703,6 +4709,101 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_PRP_NMQM */
+      SUBROUTINE DEF_PRP_NMQM(LTRPP,NTRPP,MAXTRP,IPRINT)
+C***********************************************************************
+C
+C     Define operator for nuclear magnetic quadruple moment constant
+C
+C     Written by Malaya K. Nayak July 19 2018
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "mxcent.h"
+#include "nuclei.h"
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION PFAC(3)
+C
+      logical, allocatable :: DOATOM(:)
+C
+      allocate(DOATOM(NUCIND))
+C     NMQM: INTTYP = 30 (cart. el. field grad. at indiv. nuclei)
+C     (-30: accept .SELECT specification)
+      CALL SETATM(DOATOM,NATOM,-30)
+      CALL DEF_PRP_NMQM1(DOATOM,LTRPP,NTRPP,MAXTRP,IPRINT)
+      deallocate(DOATOM)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck def_prp_nmqm1 */
+      SUBROUTINE DEF_PRP_NMQM1(DOATOM,LTRPP,NTRPP,MAXTRP,IPRINT)
+C***********************************************************************
+C
+C     Define nuclear quadruple moment interaction constant
+C
+C     Written by Malaya K. Nayak - July 19 2018
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "maxorb.h"
+      PARAMETER (D1 = 1.0D0, D3 = 3.0D0, D3INV = D1/D3)
+      CHARACTER PNAME*16, PLABEL(2)*8
+      DIMENSION PFAC(2)
+      LOGICAL   DOATOM(NUCIND)
+#include "dcbxpr.h"
+#include "dcbexp.h"
+C
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "chrxyz.h"
+#include "ibtfun.h"
+C
+      ITYP = 0
+CMKN  ZAVECTOR
+      IPTYP     = 7
+      NPCOMP    = 2
+      PFAC(1)   = -D3INV
+      PFAC(2)   = -D3INV
+CMKN  Factor and Sign included, see Eq. (19) of reference on TaN P,T-odd properties.
+      DO 100 IATOM = 1, NUCIND
+         IF (.NOT. DOATOM(IATOM)) GOTO 100
+                ICOOR1 = 2
+                ICOOR2 = 3
+            ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+            IOFF = 0
+            DO 300 IREPC = 0, MAXREP
+               IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+                  IOFF = IOFF + 1
+                  ITYP = ITYP + 1
+                  PNAME    = CHRXYZ(ICOOR2)//CHRNOS(IATOM)//'-MQM'
+                  PLABEL(1) = CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//'EFG'//
+     &                 CHRNOS(IATOM/10)//
+     &                 CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
+                  PLABEL(2) = CHRXYZ(ICOOR1-1)//CHRXYZ(ICOOR2)//'EFG'//
+     &                 CHRNOS(IATOM/10)//
+     &                 CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
+                  CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &                        INDXPR,ISYXPR,ITRXPR,IPRINT)
+                  CALL OP1IND('TRPINP NMQM',INDTRP,LTRPP,NTRPP,
+     &                        INDXPR,MAXTRP)
+      IF(IPRINT.GE.1) THEN
+      write(6,*)'NMQM DEF Testing',LTRPP,NTRPP,INDXPR,PRPNAM(INDXPR)
+      ENDIF
+               END IF
+ 300        CONTINUE
+ 200     CONTINUE
+ 100  CONTINUE
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck DEFINE_PVC_SHIELD */
       SUBROUTINE DEFINE_PVC_SHIELD()
 C=======================================================================
@@ -4743,7 +4844,6 @@ C-----------------------------------------------------------------------
 #include "nuclei.h"
 C
       logical, allocatable :: DOATOM(:)
-#include "memint.h"
 C
 C
       allocate(DOATOM(NUCIND))
@@ -5090,7 +5190,6 @@ C
       DIMENSION PFAC(3)
       logical, allocatable :: DOATOM(:)
 C
-#include "memint.h"
       allocate(DOATOM(NUCIND))
 C     NSTDIACGO: INTTYP = 38
 C     (-38: accept .SELECT specification)

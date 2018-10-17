@@ -2785,7 +2785,7 @@ C
             cmo_aoosoc  = 0.0d0
 !           read coefficients
             call opnfil(lucoef,'DFCOEF','OLD','aoosoc')
-            call reacmo_no_work(lucoef,'DFCOEF',cmo_aoosoc,xx,ii,jj,2)
+            call reacmo(lucoef,'DFCOEF',cmo_aoosoc,xx,ii,jj,2)
             close(lucoef,status='keep')
 
 !           generate density matri(x/ces)
@@ -2945,7 +2945,7 @@ C
           tbuf_mmf    = 0
           !> read 2c-mos
           call opnfil(lucoef,'DFCOEF','OLD','mmfmos')
-          call reacmo_no_work(lucoef,'DFCOEF',cmo_mmf,xx,ii,jj,2)
+          call reacmo(lucoef,'DFCOEF',cmo_mmf,xx,ii,jj,2)
           close(lucoef,status='keep')
           !> density matrix/ces
           call denmat(tbuf_mmf,cmo_mmf,iprham)
@@ -2975,7 +2975,7 @@ C
      &         form='unformatted',position='rewind')
           call write_fock_matrices_saao_basis_x2c(
      &                                            tbuf_mmf,
-     &                                            len_fmat, 1,
+     &                                            len_fmat, 1,'Fock',
      &                                            lux2c, 0)
 !         save F2c-ll part
           close(lux2c, status='keep')
@@ -2984,7 +2984,7 @@ C
      &         form='unformatted',position='rewind')
           call write_fock_matrices_saao_basis_x2c(
      &                                            tmat_mmf,
-     &                                            len_fmat, 1,
+     &                                            len_fmat, 1,'F[2]',
      &                                            lux2c, 0)
           close(lux2c, status='keep')
           deallocate(tmat_mmf)
@@ -3007,7 +3007,7 @@ C
      &                                             tmat_mmf,
      &                                             len_fmat, 1,
      &                                             lux2c, 0,
-     &                                             .false.,scratch_mmf)
+     &                                             scratch_mmf)
             close(lux2c, status='keep')
             call read_normalized_2e_soc(
      &                                  tbuf_mmf,
@@ -5018,7 +5018,7 @@ C
       CALL SELFRAG(WORK(KQ),NVECS,WORK(KE),WORK(KI),
      &             NFRAG,NSTR,PRJFIL,PROOWN,NPRJNUC,IOPT,KVEC,
      &             WORK(KCMO),WORK(KEIG),WORK(KIBE),IOFF,
-     &             WORK,KFREE,LFREE)
+     &             KDUM,WORK,KFREE,LFREE)
 C
 C     Collect fragment info
 C      
@@ -5781,6 +5781,7 @@ C
       N2TMT   = 0
       N2TMOTQ = 0
       DO 10 I = 1,NFSYM
+        N2TMT = N2TMT + NFBAS(I,0)*NORB(I)*NZT
         IF(NORB(I).EQ.0) GOTO 10
 C
 C       from   ** End of branching ** @/dirone.F/GMOTRA
@@ -8103,6 +8104,7 @@ C     when there is no subblock ... allows single code
       N2TMT   = 0
       N2TMOTQ = 0      
       ICOFF   = 0
+      IEOFF   = 0
       IVOFF   = 0
       ITEFF = 1
       DO 10 IFRP =  1,NFSYM
@@ -8575,7 +8577,8 @@ c        ... Get charges and exponents for the electrons in this group
             n_charge = NINT(CHARGE(I))
             n_exp = -1 ! signal the routine to provide the number of exponents only
             CALL Read_screening_parameters
-     &           (n_charge,n_exp,fit_exp,fit_coef)
+     &           (n_charge,n_exp,DUMMY,DUMMY)
+!    &           (n_charge,n_exp,fit_exp,fit_coef)
             Allocate (fit_exp(n_exp))
             Allocate (fit_coef(n_exp))
             CALL Read_screening_parameters 

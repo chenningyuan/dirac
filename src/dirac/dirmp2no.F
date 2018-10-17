@@ -302,7 +302,6 @@ C
 C
       CALL QENTER('MP2NOGEN')
 
-#include "memint.h"
       CALL TITLER('MP2 natural orbitals','*',125)
 C
         WRITE(LUPRI,'(//A/A/A/)')
@@ -439,7 +438,7 @@ C          ... boson irrep info (or mj-values if linear symmetry is available)
 C          ... MO coefficients
            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MP2NOG')
            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO_TRA),XDUMMY,XDUMMY,
-     &                 XDUMMY,2,WORK,KFREE,LFREE)
+     &                 XDUMMY,2)
            CLOSE(LUCOEF,STATUS='KEEP')
 C
 C          transformation 
@@ -869,7 +868,7 @@ C
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MP2DEN')
          CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
-     &               WORK(KIBEIG),TOTERG,14,WORK,KFREE,LFREE)
+     &               WORK(KIBEIG),TOTERG,14)
          CLOSE(LUCOEF,STATUS='KEEP')
       END IF
 C
@@ -1065,7 +1064,7 @@ C
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MP2DEN')
          CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
-     &               WORK(KIBEIG),TOTERG,14,WORK,KFREE,LFREE)
+     &               WORK(KIBEIG),TOTERG,14)
       ENDIF
 C
 C     Select the set that we need

@@ -59,7 +59,7 @@ Read all elements basis sets from selected files:
 
 ::
 
- export BSFILE="basis_ecp/ECPDS28SDFSF"
+ export BSFILE="basis_ecp/ECPDS28SDFSF basis/dyall*"
  ./test -b <BUILDIR> 
 
 Run only selected elements in selected basis set file(s):
@@ -88,7 +88,7 @@ Run three elements in three randomly selected basis set file:
 Nonworking cases
 ~~~~~~~~~~~~~~~~
 
-Because of many basis set files (more than 300), one can not expect all of them working.
+Because of many basis set files (more than 300) one can not expect all of them working properly.
 
 There are cases of wrong basis sets. For example, 
 the proton number can not be extracted from "basis_dalton/aug-pc-0_emsl".

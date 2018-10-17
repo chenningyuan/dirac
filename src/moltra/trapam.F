@@ -251,8 +251,7 @@ C
             CALL QUIT('PAMTRA: No MO coefficient file !')
          ELSE
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMTRA')
-            CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,
-     &                  IBEIG,TOTERG,14,WORK,KFREE,LFREE)
+            CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
             CLOSE(LUCOEF,STATUS='KEEP')
          END IF
       END IF
@@ -429,8 +428,7 @@ C
             CALL QUIT('PAMTRA: No MO coefficient file !')
          ELSE
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMTRA')
-            CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,
-     &                  IBEIG,TOTERG,14,WORK,KFREE,LFREE)
+            CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
          ENDIF
       END IF
 C
@@ -572,6 +570,7 @@ C
 #include "memint.h"
       call alloc(WORK,LWORK,id='WORK in PSIMP2')
       KFRSAV = KFREE
+      TRANOP = .false.
       CALL MP2HI(IPRMP2)
 C
 C     Check to see if coefficients are there
@@ -720,8 +719,7 @@ C
          CALL QUIT('PSIMP2: No MO coefficient file !')
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PSIMP2')
-         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,
-     &               IBEIG,ESCF,14,WORK,KFREE,LFREE)
+         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,ESCF,14)
       ENDIF
       CLOSE(LUCOEF,STATUS='KEEP')
       WRITE(LUPRI,'(A,F18.10,/)')
@@ -1094,8 +1092,7 @@ C
          CALL QUIT('LAGTAU: No MO coefficient file !')
       ELSE  
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','LAGTAU')
-         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,
-     &               TOTERG,14,WORK,KFREE,LFREE)
+         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
          CLOSE(LUCOEF,STATUS='KEEP')
       ENDIF 
 C           
@@ -1613,8 +1610,7 @@ C
                CALL QUIT('TRAHI: No MO coefficient file !')
             ELSE
                CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAHI')
-               CALL REACMO(LUCOEF,'DFCOEF',DUM,DUM,IDUM,TOTERG,1,
-     &                     DUM,IDUM,IDUM)
+               CALL REACMO(LUCOEF,'DFCOEF',DUM,DUM,IDUM,TOTERG,1)
                CLOSE(LUCOEF,STATUS='KEEP')
             ENDIF
          END IF
@@ -3605,8 +3601,7 @@ C
 C     Read and check eigenvalues
 C
       CALL MEMGET2('REAL','EIG',KEIG,NORBT,WORK,KFREE,LFREE)
-      CALL REACMO(LUCOEF,'DFCOEF',DUM,WORK(KEIG),DUM,DUM,4,
-     &            WORK,KFREE,LFREE)
+      CALL REACMO(LUCOEF,'DFCOEF',DUM,WORK(KEIG),DUM,DUM,4)
       DO IFRP = 1,NFSYM
         NSEL = 0
         NDEL = 0
@@ -3973,9 +3968,9 @@ C
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RESOLV')
          CALL REACMO(LUCOEF,'DFCOEF',WORK(KBUF),WORK(KEIG),WORK(KIBEIG),
-     &               TOTERG,14,WORK,KFREE,LFREE)
+     &               TOTERG,14)
         CALL REACMO(LUCOEF,'DFCOEF',WORK(KBUF1),WORK(KEIG),WORK(KIBEIG),
-     &               TOTERG,14,WORK,KFREE,LFREE)
+     &               TOTERG,14)
          CLOSE(LUCOEF,STATUS='KEEP')
       ENDIF
 C
@@ -4158,6 +4153,12 @@ C
 #include "memint.h"
       call alloc(WORK,LWORK,id='WORK in SY_COSCI')
 
+! .. definitions to satisfy ifort runtime check
+      TRANOP = .false.
+      SCRBUF = 0.0D0
+      THRBUF = 0.0D0
+      IPRBUF = 0
+      ISTBUF = 0
       KFRSAV = KFREE
 !@m   CALL TITLER('Resolution of open-shell states','*',120)
       CALL TITLER('Stand-alone COS_CI','*',120)
@@ -4339,7 +4340,7 @@ C
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RESOLV')
          CALL REACMO(LUCOEF,'DFCOEF',WORK(KBUF),WORK(KEIG),WORK(KIBEIG),
-     &               TOTERG,14,WORK,KFREE,LFREE)
+     &               TOTERG,14)
          CLOSE(LUCOEF,STATUS='KEEP')
       ENDIF
 C
@@ -4933,6 +4934,7 @@ C       Receive orbital energies
      &                   MPARID,global_communicator)
         ENDDO
 C       Receive orbital (single group) info
+        KIBE = 1 ! initialize these memory locations to avoid bound check errors if nfsym = 1
         DO I = 1,4
           DO J = 1,NFSYM
             CALL MEMGET2('REAL','KIBE',KIBE(J,I),NSTR(J,0,I),

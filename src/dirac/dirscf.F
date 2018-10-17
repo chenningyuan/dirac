@@ -356,8 +356,7 @@ C       We calculate a regular Fock matrix so we can check convergence ...
 C
         IF (ICHKCNV.EQ.0) ICHKCNV = -1
         IOPT = 15
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT,
-     &              WORK,KFREE,LFREE)
+        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
 C
 C       Generate untransformed coefficients (MO basis)
 C       and prepare for overlap selection
@@ -807,7 +806,7 @@ CMI ... perform all this only if we do not restart BSS from DC-SCF or DC-SCF fro
            CALL MEMGET2('REAL','EIG   ',KEIG   ,NORBT ,WORK,KFREE,LFREE)
            CALL MEMGET2('INTE','IBEIG ',KIBEIG ,NORBT ,WORK,KFREE,LFREE)
            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMOSAV),
-     &                WORK(KEIG),WORK(KIBEIG),TOTERG,6,WORK,KFREE,LFREE)
+     &                WORK(KEIG),WORK(KIBEIG),TOTERG,6)
           ELSE
            CALL MEMGET2('REAL','CMOSAV',KCMOSAV,0     ,WORK,KFREE,LFREE)
            CALL MEMGET2('REAL','EIG   ',KEIG   ,0     ,WORK,KFREE,LFREE)
@@ -1678,8 +1677,7 @@ C          restore density matrix and  total Fock matrices (have been destroyed 
 C          Read CMO coefficients and boson identification, but not orbital energies in EIG (code 10)
 C          Rewrite CMO, now with corrected orbital energies just calculated in DFSOLV
 
-           CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,10,
-     &                 WORK,KFREE,LFREE)
+           CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,10)
            CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
            WRITE(LUPRI,'(/A/A/A/)')
      &' * Open-shell orbital energies recalculated with .OPENFAC 1.0,',
@@ -3301,8 +3299,7 @@ C
          CALL QUIT('MVOGEN: No MO coefficients !')
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MVOGEN')
-         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
-     &               WORK,KFREE,LFREE)
+         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
       ENDIF
       IF(IONMVO) THEN
 C
@@ -4314,7 +4311,7 @@ C
                 CALL PRQMAT(FMO(IMAT),NBO,NBO,NTMO(I),NTMO(I),
      &                      1,IPQTOQ(1,0),LUPRI)
               ENDIF
-              IF (WRITE_FMO_MATRIX) CALL FMO_WRITE(FMO,I,ISUB,NBO)
+              IF (WRITE_FMO_MATRIX) CALL FMO_WRITE(FMO,IMAT,I,ISUB,NBO)
 C
 C             Diagonalize the isub'th block of parity i
 C
@@ -5849,7 +5846,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE FMO_WRITE(FMO,IFRP,ISUB,NBO)
+      SUBROUTINE FMO_WRITE(FMO,IMAT,IFRP,ISUB,NBO)
 C***********************************************************************
 C      miro: save the matrix for diagonalization, FMO(IMAT), into formatted, unique files
 C      -----------------------------------------------------------------------------------
@@ -6046,13 +6043,13 @@ C
         WRITE(lupri,'(/A)')
      &    '     *** GO4C2C: Descending to two-component'// 
      &    ' mode after previous four-component SCF cycles. ***'
-       end if
-       TWOCOMPBSS = .FALSE. ! ensure 4comp. mode
-       TWOCOMP    = .FALSE.
+      end if
+      TWOCOMPBSS = .FALSE. ! ensure 4comp. mode
+      TWOCOMP    = .FALSE.
 
-       START2C = .FALSE.
+      START2C = .FALSE.
 !
-!      call the x2c/bss transformation module (branch 2 inside gmotra)
+!     call the x2c/bss transformation module (branch 2 inside gmotra)
       CALL GMOTRA(.FALSE.)
       call legacy_lwork_get(LWORK)
 #include "memint.h"

@@ -22,7 +22,7 @@
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpexp */
-      SUBROUTINE PRPEXP(WF,EXPVAL,WORK,LWORK)
+      SUBROUTINE PRPEXP(WF,EXPVAL,WORK,LWORK,state)
 C***********************************************************************
 C
 C     Calculate expectation values defined in /CBIEXP/
@@ -37,6 +37,8 @@ C***********************************************************************
 C
       DIMENSION EXPVAL(*),WORK(LWORK)
       CHARACTER WF*4
+      INTEGER, OPTIONAL :: state 
+      INTEGER :: state_local 
 C
 #include "dcbexp.h"
 #include "dcbbas.h"
@@ -60,9 +62,14 @@ CHJ TODO : check if 2 DMAT or NOPEN+1 DMAT is the correct ...
       LUNIT = 14
       CALL OPNFIL(LUNIT,'PMAT','UNKNOWN','PAMEXP')
 #endif
+      if (present(state)) then
+          state_local = state
+      else
+          state_local = 1
+      end if
       CALL PRPEX1(WF,EXPVAL,WORK(KEXPST),WORK(KCMO),WORK(KEIG),
      &            WORK(KDMAT),WORK(KPMAT),WORK(KFIRST),
-     &            WORK(KFREE),LFREE)
+     &            WORK(KFREE),LFREE,state_local)
 #ifdef ANALYZE_PROPERTY_GRADIENT
       CLOSE(LUNIT,STATUS = 'KEEP')
 #endif
@@ -77,7 +84,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpex1 */
       SUBROUTINE PRPEX1(WF,EXPVAL,LEXPST,CMO,EIG,DMAT,PRPAO,FIRST,
-     &                  WORK,LWORK)
+     &                  WORK,LWORK,state)
 C***********************************************************************
 C
 C     Calculate expectation values defined in /CBIEXP/
@@ -111,6 +118,7 @@ C
       CHARACTER WF*4
       INTEGER   GETIOPEN
       LOGICAL FNDLAB
+      INTEGER :: state 
 C
 C     Initialize
 C
@@ -133,8 +141,7 @@ C
         INQUIRE(FILE='DFCOEF',EXIST=FILEX)
         IF(.NOT.FILEX) GOTO 1000
         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPEXP')
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IDUM,TOTERG,6,
-     &               WORK,KFREE,LFREE)
+        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IDUM,TOTERG,6)
         CLOSE(LUCOEF,STATUS='KEEP')
         IF (.NOT. ORBANA) THEN
 C.........accumulate all density into one matrix
@@ -152,7 +159,20 @@ C
 C        Get relaxed density matrix computed by RELCCSD.
 C
          CALL GET_CC_DENSITY (WF,'AO',DMAT,IERR)
-C
+
+
+      ELSE IF (WF .EQ. 'EOM ') THEN
+
+         IF (ORBANA) 
+     &        CALL QUIT('*** ERROR in PRPEX1 *** '
+     &        // 'ORBANA not implemented for EOMCC')
+
+C        Get relaxed density matrix computed for excited states
+
+         write(*,*)'# of statets',state
+
+         CALL GET_EOM_DENSITY ('AO',STATE,DMAT,IERR)
+
       ELSE IF (WF .EQ. 'KRMC') THEN
 C
          IF (ORBANA) 
@@ -927,8 +947,7 @@ C
       CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBP,NORBT,WORK,KFREE,LFREE)
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','EXPCAN')
-      CALL REACMO(LUCOEF,'DFCOEF',DUM,WORK(KEIG),WORK(KIBP),TOTERG,12,
-     &               WORK,KFREE,LFREE)
+      CALL REACMO(LUCOEF,'DFCOEF',DUM,WORK(KEIG),WORK(KIBP),TOTERG,12)
       DO IFRP = 1,NFSYM
 C       Memory allocation
         CALL MEMGET('REAL',KPMO,NISH(IFRP)*NISH(IFRP)*NZ,
@@ -959,8 +978,7 @@ C     Write new coefficients
       CLOSE(IUNIT,STATUS='KEEP')
 C     Read old coefficients
       REWIND LUCOEF
-      CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IDUM,TOTERG,2,
-     &               WORK,KFREE,LFREE)
+      CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IDUM,TOTERG,2)
       CLOSE(LUCOEF,STATUS='KEEP')
       CALL MEMREL('EXPCAN.2',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN

@@ -457,6 +457,8 @@ C
       ELSE
          SET = .TRUE.
       END IF
+! Miro: satisfy runtimecheck for parallel run
+      FINTER     = .FALSE. 
 C
 C     Local initialization
 C
@@ -1379,7 +1381,7 @@ C     Indicate from vectors are read...
 C
       LUBUF = 22
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','EIGEXT')
-      CALL REACMO(LUBUF,'DFCOEF',DUM,DUM,DUM,DUM,1,DUM,IDUM,IDUM)
+      CALL REACMO(LUBUF,'DFCOEF',DUM,DUM,DUM,DUM,1)
       CLOSE(LUBUF,STATUS='KEEP')
 C
 C     Initialize file for solution vectors
@@ -1459,11 +1461,10 @@ C
       IF(SPINFR) THEN
         CALL MEMGET2('INTE','IBEIG',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
         CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,WORK(KBEIG),
-     &              TOTERG,10,WORK,KFREE,LFREE)
+     &              TOTERG,10)
       ELSE
         KBEIG = KFREE
-        CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,2,
-     &              WORK,KFREE,LFREE)
+        CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,2)
       ENDIF
       CLOSE(LUBUF,STATUS='KEEP')
 C

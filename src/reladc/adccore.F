@@ -546,6 +546,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
+#include "dgroup.h"
 #include  "../relccsd/files.inc"
 #include  "adcinpt.inc"
 #include  "../relccsd/symm.inc"

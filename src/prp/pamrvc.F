@@ -1395,7 +1395,7 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 C
-      DIMENSION IHRMOP(NTSIM),IFCKOP(NTSIM),ISYMOP(NTSIM)
+      DIMENSION IHRMOP(*),IFCKOP(*),ISYMOP(*)
       DIMENSION IBCVC(*),IBEVC(*),IBPVC(*),IBTYP(2,*)
 C
       IM = 0
@@ -3928,7 +3928,7 @@ C
          ENDIF
          IF (IPRXRS .GE. 10) IOPT = IOPT + 1
          CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
-     &               TOTERG,IOPT,WORK,KFREE,LFREE)
+     &               TOTERG,IOPT)
          CLOSE(LUBUF,STATUS='KEEP')
       ELSE
 C
