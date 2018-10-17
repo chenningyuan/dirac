@@ -10,7 +10,6 @@ module exacorr_tensor_methods
 
         complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0)
 
-
         type, extends(tens_method_uni_t), public:: tens_init_test_t
          complex(8), private:: init_val=(0d0,0d0)
          contains
@@ -339,7 +338,7 @@ module exacorr_tensor_methods
          integer, intent(in) :: mo_list(:)   ! and their indices
          class(init_dm_tensor_t), intent(out):: this
 
-         integer  :: nao,j,k,spin
+         integer  :: nao,j,k
          type(MO) :: qmo
 
 !        Copy the coefficients into the alpha or beta array, using the quaternion relations as defined in
@@ -385,7 +384,7 @@ module exacorr_tensor_methods
          integer, intent(in) :: mo_list(:)   ! and their indices
          class(init_ht_tensor_t), intent(out):: this
 
-         integer  :: nao,j,k,spin
+         integer  :: nao,j,k
          type(MO) :: qmo
 
 !        Copy the coefficients into the alpha or beta array, using the quaternion relations as defined in
@@ -656,7 +655,7 @@ module exacorr_tensor_methods
          type(basis_func_info_t), allocatable :: gto1(:), gto2(:), gto3(:), gto4(:)  ! arrays with basis function information
 
          integer :: ioff,joff,koff,loff,kmo,lmo,ka,la,pa,qa,ra,sa,nao(4),nmo(2),ijkl
-         integer :: i, j, k, l, ish, jsh, ksh, lsh, oi, oj, ok, ol
+         integer :: i, j, k, l, ish, jsh, ksh, lsh
          integer :: li,lj,lk,ll,ni,nj,nk,nl
          real(8) :: ei,ej,ek,el,ci,cj,ck,cl,xi,yi,zi,xj,yj,zj,xk,yk,zk,xl,yl,zl
          real(8),save :: gout(21*21*21*21) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)

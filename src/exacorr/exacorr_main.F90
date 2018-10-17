@@ -23,7 +23,7 @@
       integer, allocatable :: mo_occ(:)
       integer, allocatable :: mo_vir(:)
 
-      mo_transform   = .true.
+      mo_transform   = .false.
       cc_calculation = .true.
       call set_talsh_only(.false.)
       
@@ -63,7 +63,6 @@
             call cc_driver (nocc,nvir,mo_occ,mo_vir)
          else
             call exacorr_cc_driver (nocc,nvir,mo_occ,mo_vir)
-            print*, "exacorr cc not yet available"
          end if
       end if
 

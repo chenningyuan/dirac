@@ -44,7 +44,7 @@ module exacorr_ao_to_mo
          integer, intent(in) :: nmo(4)       ! the size of the mo basis for each of the 4 indices (mulliken ordering)
          integer, intent(in) :: mo_list(:)   ! and their indices (4 lists consecutively)
 
-         integer:: my_role,mpi_th_provided, my_MPI_rank ! needed to start exatensor, MPI should already be started in threaded mode
+         integer:: my_role, my_MPI_rank                 ! needed to start exatensor, MPI should already be started in threaded mode
          integer             :: nshells                 ! the number of shells (orbitals with the same center and l-value)
          integer             :: nao                     ! the number of atomic orbitals)
          type(basis_func_info_t), allocatable :: gto(:) ! array with information about the shells
@@ -62,7 +62,6 @@ module exacorr_ao_to_mo
          ! variables for the definition of colors inside the spaces
          type(color_symmetry_t), allocatable :: color(:)
          integer(INTL)::                        labs
-         integer::                              l_col=1
 
          ! types of the initializer methods
          type(compute_2e_ao_tensor_t) :: aoint_calculator ! method to initialize the ao-integrals tensor
@@ -111,7 +110,6 @@ module exacorr_ao_to_mo
          do lsh = 1, nshells !set basis functions
             nl   =  ncartesian(gto(lsh)%orb_momentum)
             call color(lsh)%color_symmetry_ctor(lsh) ! take one shell as a color
-!           call color(lsh)%color_symmetry_ctor(l_col) ! give them all the same color
             do  l = 1, nl
                 labs = labs + 1
                 call basis_ao%set_basis_func(labs,BASIS_ABSTRACT,ierr,symm=color(lsh))
@@ -450,7 +448,7 @@ module exacorr_ao_to_mo
          type(tens_rcrsv_t):: dm_tensor
          type(tens_rcrsv_t):: a2int_tensor
 
-         integer           :: ierr,i
+         integer           :: ierr
          integer           :: aoint_id(4),moint_id(4),a2int_id(4),dm_id(4)
          integer(INTL)     :: aoint_root(4),moint_root(4),a2int_root(4),dm_root(4)
 
@@ -538,7 +536,7 @@ module exacorr_ao_to_mo
          type(tens_rcrsv_t):: dm_tensor
          type(tens_rcrsv_t):: a2int_tensor
 
-         integer           :: ierr,i
+         integer           :: ierr
          integer           :: ao_space_id, moint_id(4),a2int_id(4),dm_id(4)
          integer(INTL)     :: ao_space_root,moint_root(4),a2int_root(4),dm_root(4)
 
@@ -652,7 +650,7 @@ module exacorr_ao_to_mo
          integer           :: mulliken_id(4),dirac_id(4)
          integer(INTL)     :: mulliken_root(4),dirac_root(4)
 
-         integer   :: ierr, tens_rank, mismatch
+         integer   :: ierr, mismatch
 
          type(tens_rcrsv_t) :: one_tensor
 
