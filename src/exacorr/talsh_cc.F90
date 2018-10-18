@@ -11,7 +11,7 @@ module talsh_cc
         real(8), parameter    :: ONE_QUARTER=0.25D0
         private
 
-        public cc_driver
+        public talsh_cc_driver
 
         interface scale_with_denominators
            module procedure scale_with_denominators
@@ -27,7 +27,7 @@ module talsh_cc
 
        contains
 !-------------------------------------------------------------------------------------------
-        subroutine cc_driver (nocc,nvir,mo_occ,mo_vir)
+        subroutine talsh_cc_driver (nocc,nvir,mo_occ,mo_vir)
 
 !This subroutine drives the ccsd energy calculation
 !Currently everything is done in-core, purpose is to provide a working implementation that is suitable for debugging the production code
@@ -382,7 +382,7 @@ module talsh_cc
 !        Make some noise so that we know we are leaving
          call print_date('Leaving cc_driver routine')
 
-        end subroutine cc_driver
+        end subroutine talsh_cc_driver
 
         subroutine get_CC_fockmatrix (nocc,nvir,eps_occ,eps_vir,fo_tensor,fov_tensor,fv_tensor)
 
