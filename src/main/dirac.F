@@ -1343,6 +1343,14 @@ C
          call exa_moltra()
 #endif
 
+      ELSE IF (ITASK .EQ. 19) THEN
+#ifndef MOD_EXACORR
+          call quit(
+     &    'worker error: exa_cc task not included in this version')
+#else
+         call exa_cc()
+#endif
+
       ELSE
 C
 C        Unknown task. Abort execution.

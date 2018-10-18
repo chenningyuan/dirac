@@ -11,7 +11,7 @@
       use exacorr_global,only   : get_talsh_only, set_talsh_only
       use exacorr_ao_to_mo,only : exacorr_compute_mo_integrals
       use talsh_ao_to_mo,only   : talsh_compute_mo_integrals
-      use talsh_cc,only         : cc_driver
+      use talsh_cc,only         : talsh_cc_driver
       use exacorr_cc,only       : exacorr_cc_driver
 
       implicit none
@@ -60,7 +60,7 @@
       if (cc_calculation) then
          print*, "a CC calculation with",nocc," occupied"," and ",nvir," virtuals"
          if (get_talsh_only()) then
-            call cc_driver (nocc,nvir,mo_occ,mo_vir)
+            call talsh_cc_driver (nocc,nvir,mo_occ,mo_vir)
          else
             call exacorr_cc_driver (nocc,nvir,mo_occ,mo_vir)
          end if

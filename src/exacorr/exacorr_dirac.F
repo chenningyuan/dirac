@@ -41,14 +41,8 @@ C     Transfer necessary information from common blocks
          orbital_string = tra4_indstr(:,1) ! This is to be changed once we have an exacorr-specific input driver
          ! instruct slaves to go to the current routine (exa_moltra) as well
          call dirac_parctl( 18 )
-      end if
-      ! slaves get input on a need-to-know basis, this is needed to determine nmo and mo_list
-      ! TODO: better is to broadcast nmo and mo_list instead 
-      call interface_mpi_bcast(orbital_string,72*4,mparid,
-     &                         global_communicator)
-      call interface_mpi_bcast(nesh,1,mparid,global_communicator)
-      if (get_talsh_only()) then
-         if (mytid /= 0) return ! Needed for TALSH, keep going for exatensor
+      else
+         if (get_talsh_only()) return ! TALSH has no use for MPI slaves
       end if
 #else
       ! serial version of DIRAC
@@ -62,6 +56,10 @@ C     Transfer necessary information from common blocks
       end if
 #endif
 
+! next block is code is only for master 
+#if defined (VAR_MPI)
+      if (mytid == 0) then
+#endif
 C
 C     Loop over indices to convert string information to list of orbitals
 C
@@ -82,10 +80,21 @@ C     Fill the array with orbital indices
        imo = imo + nmo(i)
       end do
 
+#if defined (VAR_MPI)
+      end if
+#endif
 C
       if (get_talsh_only()) then
          call talsh_compute_mo_integrals (nmo, mo_list)
       else
+#if defined (VAR_MPI)
+         ! slaves need the same info to get started
+         call interface_mpi_bcast(ntmo,1,mparid,global_communicator)
+         if (mytid /= 0) allocate(mo_list(ntmo))
+         call interface_mpi_bcast(nmo,4,mparid,global_communicator)
+         call interface_mpi_bcast(mo_list,ntmo,mparid,
+     &                            global_communicator)
+#endif
          call exacorr_compute_mo_integrals (nmo, mo_list)
       end if
 C
@@ -103,9 +112,15 @@ C
 C***********************************************************************
 
       Use exacc_cfg
-      Use talsh_cc
+      use exacorr_global,only   : get_talsh_only
+      use talsh_cc,only         : talsh_cc_driver
+      use exacorr_cc,only       : exacorr_cc_driver
+#if defined (VAR_MPI)
+      use interface_to_mpi
+#endif
 
 #include "implicit.h"! because common blocks may assume this
+#include "infpar.h"  ! we will be running in parallel
 #include "dcborb.h"  ! to access nesh (number of positive energy "electronlike" orbitals)
 #include "dgroup.h"  ! to access nfsym (should be 1)
 
@@ -116,7 +131,24 @@ C***********************************************************************
       if (nfsym.ne.1) then
          call quit ('exacorr can not handle symmetry')
       end if
+#if defined (VAR_MPI)
+      ! parallel version of DIRAC
+      if (mytid == 0 .and. .not. get_talsh_only()) then
+         call dirac_parctl( 19 )
+      end if
+#else
+      ! serial version of DIRAC
+      if (.not. get_talsh_only()) then
+         ! EXATENSOR version does not work with serial version of DIRAC
+         print*, "Attempting to use exatensor with a non MPI version"
+         call quit ("error in setup: exatensor requires MPI")
+      end if
+#endif
 C
+! next block is code is only for master 
+#if defined (VAR_MPI)
+      if (mytid == 0) then
+#endif
       noccu = 0
       call numlst (string_occupied,kvec,1,1,nesh(1),1,noccu)
       allocate (mo_occ(noccu))
@@ -126,9 +158,25 @@ C
       call numlst (string_virtual,kvec,1,1,nesh(1),1,nvir)
       allocate (mo_vir(nvir))
       call numlst (string_virtual,mo_vir,nvir,1,nesh(1),1,nvir)
-
-      !TODO: make TALSH/EXACORR switch similar to the one in exa_moltra
-      call cc_driver (noccu,nvir,mo_occ,mo_vir)
+#if defined (VAR_MPI)
+      end if
+#endif
+      if (get_talsh_only()) then
+         call talsh_cc_driver (noccu,nvir,mo_occ,mo_vir)
+      else
+#if defined (VAR_MPI)
+         ! slaves need the same info to get started
+         call interface_mpi_bcast(noccu,1,mparid,global_communicator)
+         if (mytid /= 0) allocate(mo_occ(noccu))
+         call interface_mpi_bcast(mo_occ,noccu,mparid,
+     &                            global_communicator)
+         call interface_mpi_bcast(nvir,1,mparid,global_communicator)
+         if (mytid /= 0) allocate(mo_vir(nvir))
+         call interface_mpi_bcast(mo_vir,nvir,mparid,
+     &                            global_communicator)
+#endif
+         call exacorr_cc_driver (noccu,nvir,mo_occ,mo_vir)
+      end if
 
       deallocate (mo_occ)
       deallocate (mo_vir)
