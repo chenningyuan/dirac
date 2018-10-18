@@ -23,8 +23,6 @@ module exacorr_cc
 !        Written by Lucas Visscher, winter 2016/2017
 !        ExaTensor conversion by Anastasios Papadopoulos, October 2018
 
-!        COMMENTED OUT (IN MY OPINION) UNNECESSARY INIT STATEMENTS
-         
          use interface_to_mpi
          use exacorr_datatypes
          use exacorr_global
@@ -44,7 +42,7 @@ module exacorr_cc
          type(basis_func_info_t), allocatable   :: gto(:)   ! array with information about the shells
          
          integer                        :: ierr, i
-         complex(8)                     :: result_tens(1)
+         complex(8)                     :: result
 
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
          type(tens_rcrsv_t) :: foo_tensor, fvv_tensor, fov_tensor
@@ -69,7 +67,7 @@ module exacorr_cc
          class(h_space_t), pointer                :: ao_space
          class(h_space_t), pointer                :: occ_space, vir_space
 
-         ! variables for the definition of spaces (AO and 4 different MO spaces)
+         ! variables for the definition of spaces (AO and 2 different MO spaces)
          type(subspace_basis_t)     :: basis_ao, basis_occ, basis_vir
          integer(INTL)              :: nao_l, ao_space_root
          integer(INTL)              :: occ_space_root, vir_space_root
@@ -136,7 +134,7 @@ module exacorr_cc
          !Register the ao vector space:
          ierr=exatns_space_register('AO_space',basis_ao,ao_space_id,ao_space)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register() failed!')
-         if (my_MPI_rank == 0) print*," registered AO vector space with nao, nshells:",nao,nshells
+         if (my_MPI_rank == 0) print*," registered AO space with nao, nshells:",nao,nshells
 
          !Get the MO-coeffcient basis for the occupied and virtual spaces
          ierr = 0
@@ -189,19 +187,19 @@ module exacorr_cc
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
          end do         
 
-         if (my_MPI_rank == 0) print*," registered MO vectors spaces and initializers with nocc and nvir:",nocc, nvir
+         if (my_MPI_rank == 0) print*," registered MO spaces and initializers with nocc and nvir:",nocc, nvir
 
          !Register the ao integral generation as a method
          ierr=exatns_method_register('Aoint_calculator',aoint_calculator)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(aoint) failed!')
 
-         !Register the denominator initializer aa a method (testing only, registration will move to exacorr_cc)
-         !call denominate%scale_with_denom_ctor(mo_list(1:2),2,mo_list(3:nmo(1)),nmo(1)-2)
-         !ierr=exatns_method_register('Denominate',denominate)
-         !if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
+         !Register the denominator initializer aa a method
+         call denominate%scale_with_denom_ctor(mo_occ,nocc,mo_vir,nvir)
+         ierr=exatns_method_register('Denominate',denominate)
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
    
-         !Register the standard print method with a high treshold to print only important tensor elements
-         call tens_printer%reset_thresh(0.01D0)
+         !Register the standard print method with a low treshold to always print result_tensor
+         call tens_printer%reset_thresh(1.0D-15)
          ierr=exatns_method_register('PrintTensor',tens_printer)
          if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(printer) failed!')
 
@@ -250,7 +248,13 @@ module exacorr_cc
 
             call print_date('starting ccsd calculation')
 
-!           Get fixed one-body tensors => set to 0 
+!           Create and initialize scalars that are to be used as tensors in contractions
+            ierr=exatns_tensor_create(result_tensor,"result_tensor",EXA_DATA_KIND_C8)   
+            ierr=exatns_tensor_create(one_tensor,"another_one_tensor",EXA_DATA_KIND_C8)   
+            ! Note:  also get_integral_tensors will define a one_tensor and call it "one_tensor", so we needed another name
+            ierr=exatns_tensor_init(one_tensor,ONE)
+
+!           Get fixed one-body tensors => set to 0 for the moment (canonical orbitals)
             ierr=exatns_tensor_create(foo_tensor,"foo",oo_id,oo_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(fov_tensor,"fov",ov_id,ov_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(fvv_tensor,"fvv",vv_id,vv_root,EXA_DATA_KIND_C8)
@@ -275,36 +279,24 @@ module exacorr_cc
 !           Initialize t1 amplitudes to zero (we assume canonical orbitals for the moment)
             ierr=exatns_tensor_create(t1_tensor,"t1",vo_id,vo_root,EXA_DATA_KIND_C8)
 
-!           Create and initialize scalars that are to be used as tensors in contractions
-            ierr=exatns_tensor_create(one_tensor,"one_tensor",EXA_DATA_KIND_C8)   
-            ierr=exatns_tensor_create(result_tensor,"result_tensor",EXA_DATA_KIND_C8)   
-            if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
-         
-            ierr=exatns_tensor_init(one_tensor,ONE)
-            ierr=exatns_tensor_init(result_tensor,ZERO)
-            if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_init() failed!')
-
 !           Initialize t2 amplitudes with the MP2 values
-            print*, "oovv  = "
-            call print_tensornorm2 (oovv_tensor)
             ierr=exatns_tensor_create(t2_tensor,"t2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
-            ierr=exatns_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)",t2_tensor,oovv_tensor,one_tensor) ! o(2)v(2)
-            print*, "t2(0) = "
-            call print_tensornorm2 (t2_tensor)
+!           the tensor_add routine is not implemented in exatensor, work around this by using a contraction
+            ierr=exatns_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)*K()",t2_tensor,oovv_tensor,one_tensor) ! o(2)v(2)
+            ierr=exatns_tensor_transform(t2_tensor,'Denominate')
 
 !           Calculate and print the MP2 energy
             ierr=exatns_tensor_init(result_tensor)
-            ierr=exatns_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,t2_tensor,oovv_tensor) ! o(2)v(2)
-            result_tens=ZERO ! need to find out how to assign a number that resides somewhere in the tensor
-            mp2_energy=result_tens(1) * ONE_QUARTER ! this talsh way of assigning a pointer to a tensor does not work with exatensor
-            print*," MP2 energy = ", mp2_energy
+            ierr=exatns_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,t2_tensor,oovv_tensor,ONE_QUARTER) ! o(2)v(2)
+            ! mp2_energy=result * ONE_QUARTER
+            ! print*," MP2 energy = ", mp2_energy
+            print*,"MP2 energy printed directly from result_tensor follows below"
+            ierr=exatns_tensor_traverse(result_tensor,'PrintTensor')
 
 !           Start CCSD iterations
 
             nccsd = 30 ! hard wired for the moment
 
-            ! tensors are by default initialized to zero, so no need to make an additional routine for constructing+zeroing
-            ! we furthemore need a unique name for the tensors (construct_2d_tensor always uses 'tensor', this does not work)
             ierr=exatns_tensor_create(goint_tensor,"goint",oo_id,oo_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(gvint_tensor,"gvint",vv_id,vv_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(hoint_tensor,"hoint",oo_id,oo_root,EXA_DATA_KIND_C8)
@@ -327,14 +319,12 @@ module exacorr_cc
                return
             end if
 
+            print*,"Until the assign_scalar routine is available, also the CCSD energy is printed from result_tensor"
             do iccsd = 1, nccsd
 
 !           make tau ! validated
             ierr=exatns_tensor_init(tau_tensor)
-!           ierr=exatns_tensor_add("T(a,b,i,j)+=R(a,b,i,j)",tau_tensor,t2_tensor)
-!           the tensor_add routine does not work at all in exatensor
-!           work-around on next line (am not sure whether one_tensor is really used) and also further down
-            ierr=exatns_tensor_contract("T(a,b,i,j)+=R(a,b,i,j)",tau_tensor,t2_tensor,one_tensor)
+            ierr=exatns_tensor_contract("T(a,b,i,j)+=R(a,b,i,j)*K()",tau_tensor,t2_tensor,one_tensor)
             ierr=exatns_tensor_contract("T(a,b,i,j)+=T(a,i)*T(b,j)",tau_tensor,t1_tensor,t1_tensor) ! o(2)v(2)
             ierr=exatns_tensor_contract("T(a,b,i,j)+=T(a,j)*T(b,i)",tau_tensor,t1_tensor,t1_tensor,MINUS_ONE) ! o(2)v(2)
 
@@ -349,26 +339,22 @@ module exacorr_cc
 
 !           vv ! validated
             ierr=exatns_tensor_init(hvint_tensor)
-            !ierr=exatns_tensor_add("H(a,c)+=F(a,c)",hvint_tensor,fvv_tensor)
-            ierr=exatns_tensor_contract("H(a,c)+=F(a,c)",hvint_tensor,fvv_tensor,one_tensor)
+            ierr=exatns_tensor_contract("H(a,c)+=F(a,c)*K()",hvint_tensor,fvv_tensor,one_tensor)
             ierr=exatns_tensor_contract("H(a,c)+=V(k,l,c,d)*T(d,a,k,l)",hvint_tensor,oovv_tensor,tau_tensor,ONE_HALF) ! o(2)v(3)
             ierr=exatns_tensor_init(gvint_tensor)
-            !ierr=exatns_tensor_add("G(a,c)+=H(a,c)",gvint_tensor,hvint_tensor)
-            ierr=exatns_tensor_contract("G(a,c)+=H(a,c)",gvint_tensor,hvint_tensor,one_tensor)
+            ierr=exatns_tensor_contract("G(a,c)+=H(a,c)*K()",gvint_tensor,hvint_tensor,one_tensor)
             ierr=exatns_tensor_contract("G(a,c)+=V(a,k,c,d)*T(d,k)",gvint_tensor,vovv_tensor,t1_tensor) ! o(1)v(3)
             ierr=exatns_tensor_contract("G(a,c)+=F(k,c)*T(a,k)",gvint_tensor,fov_tensor,t1_tensor,MINUS_ONE) ! o(1)v(2)
 
 !           vovo ! moretests
             ierr=exatns_tensor_init(tau2_tensor)
-            !ierr=exatns_tensor_add("T(a,d,l,i)+=R(a,d,l,i)",tau2_tensor,t2_tensor,ONE_HALF)
-            ierr=exatns_tensor_contract("T(a,d,l,i)+=R(a,d,l,i)",tau2_tensor,t2_tensor,one_tensor,ONE_HALF)
+            ierr=exatns_tensor_contract("T(a,d,l,i)+=R(a,d,l,i)*K()",tau2_tensor,t2_tensor,one_tensor,ONE_HALF)
             ierr=exatns_tensor_contract("T(a,d,l,i)+=T(a,l)*T(d,i)",tau2_tensor,t1_tensor,t1_tensor) ! o(2)v(2)
             ierr=exatns_tensor_init(hint_tensor)
             ierr=exatns_tensor_contract("H(a,k,c,i)+=V(k,l,c,d)*T(a,d,l,i)",hint_tensor,oovv_tensor,tau2_tensor)! o(3)v(3)
             ierr=exatns_tensor_contract("H(a,k,c,i)+=V(a,k,c,d)*T(d,i)",hint_tensor,vovv_tensor,t1_tensor) ! o(2)v(3)
             ierr=exatns_tensor_contract("H(a,k,c,i)+=V(k,l,i,c)*T(a,l)",hint_tensor,ooov_tensor,t1_tensor,MINUS_ONE) ! o(3)v(2)
-            !ierr=exatns_tensor_add("H(a,k,c,i)+=V(a,k,c,i)",hint_tensor,vovo_tensor)
-            ierr=exatns_tensor_contract("H(a,k,c,i)+=V(a,k,c,i)",hint_tensor,vovo_tensor,one_tensor)
+            ierr=exatns_tensor_contract("H(a,k,c,i)+=V(a,k,c,i)*K()",hint_tensor,vovo_tensor,one_tensor)
 
 !           This term appears four times as we need to permute both i and j and a and b
             ierr=exatns_tensor_contract("S(a,b,i,j)+=H(a,k,c,i)*T(c,b,j,k)",s2_tensor,hint_tensor,t2_tensor)  ! validated o(3)v(3)
@@ -385,12 +371,10 @@ module exacorr_cc
 
 !           oo ! validated
             ierr=exatns_tensor_init(hoint_tensor)
-            !ierr=exatns_tensor_add("H(k,j)+=F(k,j)",hoint_tensor,foo_tensor)
-            ierr=exatns_tensor_contract("H(k,j)+=F(k,j)",hoint_tensor,foo_tensor,one_tensor)
+            ierr=exatns_tensor_contract("H(k,j)+=F(k,j)*K()",hoint_tensor,foo_tensor,one_tensor)
             ierr=exatns_tensor_contract("H(k,j)+=V(k,l,c,d)*T(c,d,l,j)",hoint_tensor,oovv_tensor,tau_tensor,ONE_HALF) ! o(3)v(2)
             ierr=exatns_tensor_init(goint_tensor)
-            !ierr=exatns_tensor_add("G(k,j)+=H(k,j)",goint_tensor,hoint_tensor)
-            ierr=exatns_tensor_contract("G(k,j)+=H(k,j)",goint_tensor,hoint_tensor,one_tensor)
+            ierr=exatns_tensor_contract("G(k,j)+=H(k,j)*K()",goint_tensor,hoint_tensor,one_tensor)
             ierr=exatns_tensor_contract("G(k,j)+=V(k,l,j,c)*T(c,l)",goint_tensor,ooov_tensor,t1_tensor,MINUS_ONE) ! o(3)v(1)
             ierr=exatns_tensor_contract("G(k,j)+=F(k,c)*T(c,j)",goint_tensor,fov_tensor,t1_tensor) ! o(2)v(1)
 
@@ -398,21 +382,19 @@ module exacorr_cc
             ierr=exatns_tensor_init(hovint_tensor)
             ierr=exatns_tensor_init(hovaux_tensor)
             ierr=exatns_tensor_contract("H(k,c)+=V(k,l,c,d)*T(d,l)",hovint_tensor,oovv_tensor,t1_tensor) ! o(2)v(2)
-            !err=exatns_tensor_add("L(k,c)+=H(k,c)",hovaux_tensor,hovint_tensor)                                  ! copy common term
-            !err=exatns_tensor_add("H(k,c)+=F(k,c)",hovint_tensor,fov_tensor)                                     ! add fock matrix
-            ierr=exatns_tensor_contract("L(k,c)+=H(k,c)",hovaux_tensor,hovint_tensor,one_tensor)
-            ierr=exatns_tensor_contract("H(k,c)+=F(k,c)",hovint_tensor,fov_tensor,one_tensor)
+            ierr=exatns_tensor_contract("L(k,c)+=H(k,c)*K()",hovaux_tensor,hovint_tensor,one_tensor)        ! copy common term
+            ierr=exatns_tensor_contract("H(k,c)+=F(k,c)*K()",hovint_tensor,fov_tensor,one_tensor)           ! add fock matrix
             ierr=exatns_tensor_contract("H(k,c)+=F(k,c)*K()",hovaux_tensor,fov_tensor,one_tensor,MINUS_ONE) ! subtract fock matrix
 
 !           oooo ! validated
             ierr=exatns_tensor_init(aint_tensor)
-            !ierr=exatns_tensor_add("A(k,l,i,j)+=V(k,l,i,j)",aint_tensor,oooo_tensor)
-            ierr=exatns_tensor_contract("A(k,l,i,j)+=V(k,l,i,j)",aint_tensor,oooo_tensor,one_tensor)
+            ierr=exatns_tensor_contract("A(k,l,i,j)+=V(k,l,i,j)*K()",aint_tensor,oooo_tensor,one_tensor)
             ierr=exatns_tensor_contract("A(k,l,i,j)+=V(k,l,i,c)*T(c,j)",aint_tensor,ooov_tensor,t1_tensor) ! o(4)v(1)
             ierr=exatns_tensor_contract("A(k,l,i,j)+=V(k,l,j,c)*T(c,i)",aint_tensor,ooov_tensor,t1_tensor,MINUS_ONE) ! o(4)v(1)
             ierr=exatns_tensor_contract("A(k,l,i,j)+=V(k,l,c,d)*T(c,d,i,j)",aint_tensor,oovv_tensor,tau_tensor,ONE_HALF) ! o(4)v(2)
 
-            if (debug) then
+            if (.false.) then
+            !if (debug) then ! deactivated debug printing until better print-out is available
                print*, "T1amp = "
                call print_tensornorm2 (t1_tensor)
                print*, "T2amp = "
@@ -476,23 +458,23 @@ module exacorr_cc
 
 !           prepare for next iteration
             ierr=exatns_tensor_init(t1_tensor,ZERO)
-            !ierr=exatns_tensor_add("T1(a,i)+=S1(a,i)",t1_tensor,s1_tensor)
-            ierr=exatns_tensor_contract("T1(a,i)+=S1(a,i)",t1_tensor,s1_tensor,one_tensor)
+            ierr=exatns_tensor_contract("T1(a,i)+=S1(a,i)*K()",t1_tensor,s1_tensor,one_tensor)
+            ierr=exatns_tensor_transform(t1_tensor,'Denominate')
             ierr=exatns_tensor_init(t2_tensor,ZERO)
-            !ierr=exatns_tensor_add("T2(a,b,i,j)+=S2(a,b,i,j)",t2_tensor,s2_tensor)
-            ierr=exatns_tensor_contract("T2(a,b,i,j)+=S2(a,b,i,j)",t2_tensor,s2_tensor,one_tensor)
+            ierr=exatns_tensor_contract("T2(a,b,i,j)+=S2(a,b,i,j)*K()",t2_tensor,s2_tensor,one_tensor)
+            ierr=exatns_tensor_transform(t2_tensor,'Denominate')
 
 !           call diis (t1_tensor,t2_tensor,t_convergence=t_convergence)
 
             ierr=exatns_tensor_init(result_tensor,ZERO)
             ierr=exatns_tensor_contract("E()+=T(a,i)*F(i,a)",result_tensor,t1_tensor,fov_tensor) ! o(1)v(1)
-            ccsd_energy=result_tens(1)
-            ierr=exatns_tensor_init(result_tensor,ZERO)
-            ierr=exatns_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,tau_tensor,oovv_tensor) ! o(2)v(2)
-            ccsd_energy=ccsd_energy + result_tens(1) * ONE_QUARTER
-            write (*,'(A,I4,A,F20.15,A,E10.1)') "  Iteration ",iccsd," CCSD energy = ",ccsd_energy!, " convergence !=",t_convergence
+            ierr=exatns_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,tau_tensor,oovv_tensor,ONE_QUARTER) ! o(2)v(2)
+            write (*,'(A,I4,A,F20.15,A,E10.1)') "  Iteration ",iccsd!," CCSD energy = ",ccsd_energy!, " convergence !=",t_convergence
+            ierr=exatns_tensor_traverse(result_tensor,'PrintTensor')
+            !call assign_scalar(result_tensor,result)
+            !ccsd_energy=result
+            !write (*,'(A,I4,A,F20.15,A,E10.1)') "  Iteration ",iccsd," CCSD energy = ",ccsd_energy!, " convergence !=",t_convergence
 !           if (t_convergence .lt. t_target_precision) exit
-            exit   ! for testing first one cycle   
             end do
 
 !           Calculate (T) energy correction, not implemented yet
@@ -549,7 +531,7 @@ module exacorr_cc
          call delete_global_data
 
 !        Make some noise so that we know we are leaving
-         if (my_MPI_rank == 0) print*," Final CCSD energy    = ",ccsd_energy
+!        if (my_MPI_rank == 0) print*," Final CCSD energy    = ",ccsd_energy
 !        if (my_MPI_rank == 0) print*," Final CCSD(T) energy = ",ccsd_energy+t_energy(1)+t_energy(2)  ! no (T) implementation yet
          if (my_MPI_rank == 0) print*, " Leaving cc_driver routine"
          return
@@ -599,43 +581,6 @@ module exacorr_cc
 !         if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_init(fock_matrix) failed!')
 !
 !        end subroutine get_CC_Fockmatrix
-
-        subroutine construct_2d_tensor (tensor, id_array, root_array)
-
-         type(tens_rcrsv_t), intent(inout)   :: tensor
-         integer,dimension(2)                :: id_array
-         integer(INTL),dimension(2)          :: root_array
-
-         integer                             :: ierr
-
-         !Create matrix
-         ! NB: next line gives a problem because tensors need to have a unique name !
-         ierr=exatns_tensor_create(tensor,"tensor",id_array,root_array,EXA_DATA_KIND_C8)
-         if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
-       
-         !Initialize tensor to 0 
-         ierr=exatns_tensor_init(tensor,ZERO)        
-         if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_init(tensor) failed!')
-
-        end subroutine
-
-        subroutine construct_4d_tensor (tensor, id_array, root_array)
-
-         type(tens_rcrsv_t), intent(inout)   :: tensor
-         integer,dimension(4)                :: id_array
-         integer(INTL),dimension(4)          :: root_array
-
-         integer                             :: ierr
-
-         !Create tensor
-         ierr=exatns_tensor_create(tensor,"tensor",id_array,root_array,EXA_DATA_KIND_C8)
-         if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
-       
-         !Initialize tensor to 0 
-         ierr=exatns_tensor_init(tensor,ZERO)        
-         if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_init(tensor) failed!')
-
-        end subroutine
 
         subroutine get_CC_integrals (ao_space_id,ao_space_root, &
                                     oooo_tensor,ooov_tensor,oovv_tensor, &
@@ -714,15 +659,15 @@ module exacorr_cc
          initlabel(:,2)=initvir
          initlabel(:,3)=initocc
          initlabel(:,4)=initocc
-!        Get voov tensor
          call get_integral_tensor (aoint_tensor,vovo_tensor,0,initlabel)
+!        Get voov tensor
          initlabel(:,1)=initvir
          initlabel(:,2)=initocc
          initlabel(:,3)=initocc
          initlabel(:,4)=initvir
          call get_integral_tensor (aoint_tensor,voov_tensor,0,initlabel)
 !        Make anti-symmetrized vovo tensor
-         ierr=exatns_tensor_contract("V(a,i,b,j)+=V(a,i,j,b)",vovo_tensor,voov_tensor,one_tensor,MINUS_ONE)
+         ierr=exatns_tensor_contract("V(a,i,b,j)+=V(a,i,j,b)*K()",vovo_tensor,voov_tensor,one_tensor,MINUS_ONE)
          print*, "vovo  = "
          call print_tensornorm2 (vovo_tensor)
 
@@ -757,6 +702,7 @@ module exacorr_cc
          ierr=exatns_tensor_destroy(aoint_tensor)
 
         end subroutine get_CC_integrals
+
 #else
         subroutine exacorr_cc_driver (nocc,nvir,mo_occ,mo_vir)
          implicit none
