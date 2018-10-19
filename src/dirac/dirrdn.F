@@ -2268,47 +2268,76 @@ C   Computation: Kappa and MJ
 C   So, we have to devide each array.
          IF(ATOMIC)THEN
            KPBUF = int(dble(NSUBBL)/D2)+1
-           IF(mod(KPBUF, 2).eq.0)THEN
+           IF(mod(KPBUF, 2).eq.0)THEN ! Max angular momentum (l) is s,d,g.. 
              KPMAX(1) = KPBUF-1
              KPMAX(2) = KPBUF
-           ELSE
+           ELSE ! Max l is p,f
              KPMAX(1) = KPBUF
              KPMAX(2) = KPBUF-1      
            ENDIF
-           IOFM = KPMAX(1)*(KPMAX(1)+1)/2
-           IOFK = KPMAX(1)
+           IF(NFSYM.EQ.2)THEN
+             INVMAX   = 1
+             IOFM = KPMAX(1)*(KPMAX(1)+1)/2
+             IOFK = KPMAX(1)
+           ELSE              
+             KPMAX(1) = MAX(KPMAX(1),KPMAX(2))
+             INVMAX   = 2
+             IOFM = 0
+             IOFK = 0
+           ENDIF
+C          
            DO I =  NFSYM, 1, -1
              DO IKAP = KPMAX(I), 1, -1
-               KPADD = IKAP*(IKAP-1)/2 + 1
-               IF(mod(NISH_BOS(IKAP+IOFK),IKAP).eq.0)THEN
-                 KCBUF = NISH_BOS(IKAP+IOFK)/IKAP
+               IF(NFSYM.EQ.2)THEN                 
+                 KPADD = IKAP*(IKAP-1)/2 + 1
                ELSE
-                 WRITE(LUPRI,'(A,3I3,A)')
-     &           'Number of electrons must be ',IKAP*2,IKAP*4,IKAP*6,
-     &            " etc."
-                 CALL QUIT('Number of elec. of closed shell is wrong!')   
+                 KPADD = IKAP*(IKAP-1)   + 1 + IKAP
                ENDIF
-               DO IK = IKAP, 1, -1  
-                 NISH_BOS(KPADD+IK-1+IOFM) = KCBUF
-               ENDDO
-C
-               DO IOPEN = 1, NOPEN
-                 IF(mod(NACSH_BOS(IKAP+IOFK,IOPEN),IKAP).eq.0)THEN
-                   KOBUF = NACSH_BOS(IKAP+IOFK,IOPEN)/IKAP
+               DO INV=1,INVMAX
+                 IOFKV = -INV+1+IOFK
+!                 IF(INV.EQ.2) KPADD = KPADD-IKAP 
+                 IF(mod(NISH_BOS(IKAP*INVMAX+IOFKV),IKAP).eq.0)THEN
+                   KCBUF = NISH_BOS(IKAP*INVMAX+IOFKV)/IKAP
+                   write(*,*)"NISH_BOS",NISH_BOS(IKAP*INVMAX+IOFKV)
+                   write(*,*)"IKAP,INVMAX,INFOKV",IKAP,INVMAX,IOFKV
+                   write(*,*)"NISH_BOS1",KCBUF
                  ELSE
                    WRITE(LUPRI,'(A,3I3,A)')
      &             'Number of electrons must be ',IKAP*2,IKAP*4,IKAP*6,
      &              " etc."
-                   CALL QUIT('Number of elec. of open shell is wrong!')   
-                 ENDIF                  
+                   CALL QUIT('Number of elec. of closed shell is wrong') 
+                 ENDIF
+                 write(*,*)"************"
                  DO IK = IKAP, 1, -1  
-                   NACSH_BOS(KPADD+IK-1+IOFM,IOPEN) = KOBUF
-                 ENDDO  
-               ENDDO       
+                   NISH_BOS(KPADD+IK-1+IOFM) = KCBUF
+                   write(*,*)"KPADD,IK,IOFM",KPADD,IK,IOFM
+                 ENDDO
+                 write(*,*)
+                 write(*,*)
+C
+                 DO IOPEN = 1, NOPEN
+                   IF(mod(NACSH_BOS(IKAP*INVMAX+IOFKV,IOPEN),IKAP)
+     &              .eq.0)THEN
+                     KOBUF = NACSH_BOS(IKAP*INVMAX+IOFKV,IOPEN)/IKAP
+                   ELSE
+                     WRITE(LUPRI,'(A,3I3,A)')
+     &              'Number of electrons must be ',IKAP*2,IKAP*4,IKAP*6,
+     &                " etc."
+                     CALL QUIT('Number of elec. of open shell is wrong')   
+                   ENDIF                  
+                   DO IK = IKAP, 1, -1  
+                     NACSH_BOS(KPADD+IK-1+IOFM,IOPEN) = KOBUF
+                   ENDDO  
+                 ENDDO
+                 KPADD = KPADD-IKAP
+               ENDDO  !INV            
              ENDDO !IKAP
              IOFK = 0
              IOFM = 0
-           ENDDO
+           ENDDO                 !NFSYM
+           DO II=1,30
+              write(*,*)"NISH_BOS",NISH_BOS(II)
+           ENDDO   
          ENDIF                   ! IF(ATOMIC)
 C  TODO HJAAJ: for NFSYM.eq.2
 C  TODO HJAAJ: check NISH_DHF(1/2) against gerade/ungerade NISH_BOS etc.

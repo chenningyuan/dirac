@@ -2131,9 +2131,14 @@ C     JOCC(I) = NPSH(I) + NISH(I) + NACSH(I,1:IOPEN-1)
         KOCC(I) = NPSH(I)
         JOCC(I) = NPSH(I)
         IF(NISH_DHF(I).GT.0) THEN
-          KOCC(I) = KOCC(I) + NISH_DHF(I)  
+          KOCC(I) = KOCC(I) + NISH_DHF(I)
+          DO III=1,20           
+!             write(*,*)"IBUF",IBUF(III)
+          ENDDO   
           CALL BOSSE2(I,EIG(IORB(I)+1),IBEIG(IORB(I)+1),
      &         CFU(I2ORBT(I)+1),NORB(I),JOCC(I),IBUF)
+!          write(*,*)"NISH_DHF",NISH_DHF(I)
+!          write(*,*)"KOCC,JOCC",KOCC(I),JOCC(I)
           IF(JOCC(I).NE.KOCC(I)) THEN
             CALL QUIT('Check the number of closed-shell electrons !')
           ENDIF
@@ -2177,13 +2182,25 @@ C***********************************************************************
 C
 C hjaaj Oct 2004: must also implement open shells (NASHB*)
       JST = JOCC + 1
+      IF(IFSYM.EQ.2)KPMAX = ( -1 + int(sqrt(dble(1 + 8*N_SUB_BL(1)))))/2   
+!      write(*,*)"KPMAX,N_SUB",KPMAX,N_SUB_BL(1)
       DO J = JST,NO
          IF (ATOMIC) THEN
-            JSYM = abs(IBEIG(J))
-            IF (IFSYM.EQ.2)THEN
-              KPMAX = ( -1 + int(sqrt(dble(1 + 8*N_SUB_BL(1)))) )/2   
-              JSYM = JSYM + KPMAX*(KPMAX+1)/2
-            ENDIF
+            IF(NFSYM.EQ.2)THEN
+              JSYM = abs(IBEIG(J))
+              IF (IFSYM.EQ.2)THEN
+                JSYM  = JSYM + KPMAX*(KPMAX+1)/2
+              ENDIF
+            ELSE
+              INDEX1=INT(SQRT(dble(2*ABS(IBEIG(J)))+0.25D0)+0.4999D0)
+              IF(IBEIG(J).LT.0)THEN
+                JADD = INDEX1*(INDEX1-1)/2               
+              ELSE
+                JADD = INDEX1*(INDEX1+1)/2
+              ENDIF              
+              JSYM = ABS(IBEIG(J)) + JADD
+!              write(*,*)"JSYM,IBEIG",JSYM,IBEIG(J)
+            ENDIF  
 C           ... IBEIG = ID. ID = ID_SUB_BL(ISUB,IFRP) in dirscf.F/INIBOS.
          ELSEIF (LINEAR) THEN
             JSYM = (abs(IBEIG(J)) + 1) / 2
@@ -2194,6 +2211,7 @@ Csunaga     It is no longer neccessary, because Atomic symmetry is used.
             JSYM = IBEIG(J) + 1
 C           ... IBEIG = (approximate) boson irrep
          END IF
+!            write(*,*)"NB_CNT,JSYM",NB_CNT(JSYM),JSYM
          IF (NB_CNT(JSYM) .GT. 0) THEN
             NB_CNT(JSYM) = NB_CNT(JSYM) - 1
             JOCC = JOCC + 1

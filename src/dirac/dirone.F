@@ -1076,22 +1076,6 @@ C       Is this a LL+SS operator (IC=1) or a LS+SL operator (IC=2) ?
         IZ   = JM4POS(IM4)
         IQ   = IQMULT(1,JQBAS(IBRP,IC),IZ)
         IQP  = IQTOPQ(IQ,IBRPOP)
-!sunaga
-c$$$        write(*,*)""
-c$$$        write(*,*)""
-c$$$        write(*,*)"IBRP",IBRP
-c$$$        write(*,*)"IM4",IM4
-c$$$        write(*,*)"IOPTYP",IOPTYP
-c$$$        write(*,*)"IZ",IZ
-c$$$        write(*,*)"###"
-c$$$        write(*,*)"IQ",IQ
-c$$$        write(*,*)"JQBAS   ","IBRP   ","IC"
-c$$$        write(*,*)JQBAS(IBRP,IC),IBRP,IC
-c$$$        write(*,*)"IC",IC
-c$$$        write(*,*)"###"
-c$$$        write(*,*)"IBRPOP",IBRPOP
-c$$$        write(*,*)"IQP",IQP
-        !sunaga
 !check with data printout
         IF(IQP.LE.0) THEN
           WRITE(LUPRI,'(/A)') '***** PRPMAO ERROR *****'
@@ -7077,7 +7061,8 @@ C
              ELSE
                 KPADD2 = IKAP*(IKAP-1)/2 + 1            
                 ID_SUB_BL(KPADD+MJABS-1,I)
-     &                 = (-1)**INV * (KPADD2+MJABS-1)
+     &               = (-1)**INV * (KPADD2+MJABS-1)
+                write(*,*)"ID_SUB_BL",ID_SUB_BL(KPADD+MJABS-1,I)
              ENDIF   
           ENDIF
        ENDDO        
