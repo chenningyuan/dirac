@@ -44,7 +44,7 @@ module london_utils
 #include "infpar.h"
 #ifdef VAR_MPI
 #include "mpif.h"
-  dimension     istat(mpi_status_size)
+  integer istat(mpi_status_size)
 #endif /* ifdef VAR_MPI */
 
 
@@ -62,7 +62,7 @@ contains
 !    ---------------------------------------------------------------------------
      real(8), intent(inout) :: m(norbt, norbt, nz)
      logical, intent(in) :: ee, ep
-     real(8), allocatable   :: m_cp(:,:,:)
+     real(8), allocatable :: m_cp(:,:,:)
      integer, allocatable :: indices_virt(:)
      integer, allocatable :: indices_occ(:)
      integer :: isym, iz, i, j, ip

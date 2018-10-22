@@ -2088,7 +2088,7 @@ C***********************************************************************
 #include "priunit.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 #include "pgroup.h"

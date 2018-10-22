@@ -408,7 +408,7 @@ C***********************************************************************
 #include "maxorb.h"
 #include "aovec.h"
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE), IBUFMPI(5)
+      INTEGER ISTAT(df_MPI_STATUS_SIZE), IBUFMPI(5)
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbtra.h"

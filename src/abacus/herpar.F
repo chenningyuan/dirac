@@ -626,7 +626,7 @@ C
       use interface_to_mpi
 #include "implicit.h"
 #ifdef VAR_MPI
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "infpar.h"
 #include "priunit.h"
@@ -735,7 +735,7 @@ C
       use interface_to_mpi
 #include "implicit.h"
 #if defined (VAR_MPI)
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
       PARAMETER (D1 = 1.0D0)
 C
@@ -932,7 +932,7 @@ C     Written by Henrik Koch and Paal Dahle Nov-1993
 #include "implicit.h"
       PARAMETER ( D0 = 0.00D00 )
 #if defined (VAR_MPI)
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "priunit.h"
 #include "maxorb.h"
@@ -1520,7 +1520,7 @@ CMI changes from TEC for LAO
       use interface_to_mpi
 #include "implicit.h"
 #if defined (VAR_MPI)
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "priunit.h"
 #include "maxaqn.h"
