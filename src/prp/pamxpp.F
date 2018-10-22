@@ -454,8 +454,6 @@ C     =============================================
 C
 C     Electric dipole oscillator strengths
 C
-chjMAERKE: implement oscillator strengths here ? TODO
-C
 C     Process input
 C     =============
 C
@@ -708,6 +706,13 @@ C        calculate default MAXRM
      &  ' INPUT ERROR: QED invalid for Levy-Leblond/no-pair/.SKIPEP'
          INPERR = INPERR + 1
       END IF
+      IF(KVAL_OSC.GT.MAX_KVAL) THEN
+        WRITE(LUPRI,'(3X,A,I3)')
+     &        'Light-matter interaction requested to order: ',KVAL_OSC,
+     &        'Current value of MAX_KVAL                  : ',MAX_KVAL
+        WRITE(LUPRI,'(A)') 'XPPINP: Please increase MAX_KVAL !'
+        CALL QUIT('XPPINP: MAX_KVAL out of bounds')
+      ENDIF
       IEMAX = KVAL_OSC + 1
       IMMAX = KVAL_OSC
       IBMAX = KVAL_OSC
@@ -1928,6 +1933,7 @@ C
      &          RCNV(MAXEXC,NBSYM),ISSYM(MAXEXC,NBSYM),WORK(*)
       character (len=4),  allocatable   :: symlab(:)
       real(8), allocatable :: excerg(:),excbuf(:),fval(:,:,:)
+      real(8), allocatable :: fosc(:,:,:)
       integer, allocatable :: indx(:),irps(:),ind(:)
       integer, allocatable :: n_ev(:),ieerg(:,:),iebuf(:,:)
       CHARACTER TTYP(-1:1)*2
@@ -2274,11 +2280,10 @@ C.......
         WRITE(LUPRI,'(A)') 
      &      'Lifetime = corresponding radiation lifetime (s)'
         WRITE(LUPRI,'(/A)')
-     &       'Level  Frequency (eV)   '//
-     &       'f(DL-DL)        Rate           Lifetime     '//
-     &       'f(DV-DV)        Rate           Lifetime     '//        
-     &       'Symmetry'
-        CALL PRSYMB(LUPRI,'-',120,0)
+     &       'Level    Frequency (eV) Symmetry    '//
+     &       'f(DL-DL)        Rate           Lifetime       '//
+     &       'f(DV-DV)        Rate           Lifetime       '
+        CALL PRSYMB(LUPRI,'-',125,0)
         DO JEXC = 2,NEXC ! skip reference state
           II = INDX(JEXC)
           IEXC = IEERG(1,II)
@@ -2290,13 +2295,13 @@ C.......
             ILAB  = ISSYM(IEXC,ISYM)
             RATE1 = D2*ALPHAC**3*OSCIL1*OMEGA(IEXC,ISYM)**2/AUTIME
             RATE2 = D2*ALPHAC**3*OSCIL2*OMEGA(IEXC,ISYM)**2/AUTIME            
-            WRITE(LUPRI,'(I5,F16.5,2(2X,ES12.6,2ES15.5),5X,A4)') JEXC-1,
-     &           OMEGA(IEXC,ISYM)*XTEV,
-     &           OSCIL1,RATE1,D1/RATE1,OSCIL2,RATE2,D1/RATE2,
-     &           SYMLAB(ILAB)
+            WRITE(LUPRI,
+     &           '(I5,1X,F16.5,2X,A3,1X,A4,2(2X,ES14.6,2ES15.5))')
+     &           JEXC-1,OMEGA(IEXC,ISYM)*XTEV,REP(ISYM-1),SYMLAB(ILAB),
+     &           OSCIL1,RATE1,D1/RATE1,OSCIL2,RATE2,D1/RATE2
           ENDIF
         ENDDO
-        CALL PRSYMB(LUPRI,'-',120,0)
+        CALL PRSYMB(LUPRI,'-',125,0)
         TOT = DSUM(NDIM,FVAL(1,1,1),1)
         WRITE(LUPRI,'(A,F12.5)')
      &     'Sum of oscillator strengths (DL) : ',TOT
@@ -2305,9 +2310,41 @@ C.......
      &     'Sum of oscillator strengths (DV) : ',TOT
         deallocate(fval)
       ENDIF
-      DO IK = 0,KVAL_OSC,2 ! only even orders contribute
-        CALL GENOSC(IK)
+      IF(MOD(KVAL_OSC,2).EQ.0) THEN
+        K2ORD = KVAL_OSC/2
+      ELSE
+        K2ORD = (KVAL_OSC-1)/2
+      ENDIF   
+      allocate(fosc(MAXEXC,NBSYM,-1:K2ORD))
+      FOSC=0.0D0
+      DO IK = 0,K2ORD
+         CALL GENOSC(IK,FOSC(1,1,IK),ATMPPF,OMEGA)
+         CALL DAXPY(MAXEXC*NBSYM,D1,FOSC(1,1,IK),1,FOSC(1,1,-1),1)
       ENDDO
+      NLIN=32+16*(K2ORD+2)
+      WRITE(LUPRI,'(/A,ES8.2)')
+     &     '* Isotropic oscillator strengths '//
+     &     '(generalized velocity gauge) above threshold :', TTOL
+      CALL PRSYMB(LUPRI,'=',NLIN,0)
+      WRITE(LUPRI,'(/A,5(A2,I1,A2,11X))')
+     &     'Level    Frequency (eV) Symmetry    f(total)        ',
+     &     ('f(',IK+IK,') ',IK=0,K2ORD)
+      CALL PRSYMB(LUPRI,'-',NLIN,0)
+      DO JEXC = 2,NEXC          ! skip reference state
+        II = INDX(JEXC)
+        IEXC  = IEERG(1,II)
+        ISYM  = IEERG(2,II)
+        OSCIL = FOSC(IEXC,ISYM,-1)
+        IF(OSCIL .GT. TTOL) THEN
+          ILAB  = ISSYM(IEXC,ISYM)
+          WRITE(LUPRI,
+     &         '(I5,1X,F16.5,2X,A3,1X,A4,5(2X,ES14.6))') JEXC-1,
+     &         OMEGA(IEXC,ISYM)*XTEV,REP(ISYM-1),SYMLAB(ILAB),OSCIL,
+     &         (FOSC(IEXC,ISYM,IK),IK=0,K2ORD)
+        ENDIF
+      ENDDO
+      CALL PRSYMB(LUPRI,'-',NLIN,0)
+      deallocate(fosc)
  10   CONTINUE
       deallocate(symlab)
       deallocate(excerg)

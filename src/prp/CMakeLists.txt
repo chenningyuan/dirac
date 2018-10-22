@@ -31,6 +31,7 @@ set(FIXED_PRP_FORTRAN_SOURCES
    rspmpg.F
    van_der_waals.F
    bed_tm.F
+   bed_osc.F90
    # fix missing rmolgrd
    ${PROJECT_SOURCE_DIR}/src/dirac/dirgrd.F
 )
