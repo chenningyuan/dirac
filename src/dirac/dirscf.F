@@ -2140,6 +2140,7 @@ C     JOCC(I) = NPSH(I) + NISH(I) + NACSH(I,1:IOPEN-1)
 !          write(*,*)"NISH_DHF",NISH_DHF(I)
 !          write(*,*)"KOCC,JOCC",KOCC(I),JOCC(I)
           IF(JOCC(I).NE.KOCC(I)) THEN
+            WRITE(LUPRI,1000)
             CALL QUIT('Check the number of closed-shell electrons !')
           ENDIF
         ENDIF
@@ -2153,6 +2154,7 @@ C
             CALL BOSSE2(I,EIG(IORB(I)+1),IBEIG(IORB(I)+1),
      &                   CFU(I2ORBT(I)+1),NORB(I),JOCC(I),IBUF)
             IF(JOCC(I).NE.KOCC(I)) THEN
+              WRITE(LUPRI,1000)
               CALL QUIT('Check the number of open-shell electrons !')
             ENDIF            
           ENDIF  
@@ -2160,6 +2162,11 @@ C
       ENDDO
       CALL QEXIT('BOSSEL')
       RETURN
+ 1000 FORMAT
+     & (/'Please check the below points in input',  
+     & /'You must write non-occupied orbital for all of the basis set',
+     & /'e.g. Write d+ f+ etc even if the occupation is zero',
+     & /'e.g. Write g,h etc, if your basis set includes them')   
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck bosse2 */
@@ -4684,6 +4691,32 @@ C
 
       RETURN
       END
+c$$$C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+c$$$C  /* Deck kptomj */
+c$$$      SUBROUTINE KPTOMJ(IFRP,IBEIG,IPRINT)
+c$$$C***********************************************************************
+c$$$C
+c$$$C     Converting IBEIG in Kappa with MJ to that in MJ
+c$$$C
+c$$$C     last revison: Oct, 2018 A.Sunaga
+c$$$C
+c$$$C***********************************************************************
+c$$$#include "implicit.h"
+c$$$#include "priunit.h"
+c$$$#include "dgroup.h"
+c$$$#include "dcborb.h"
+c$$$C
+c$$$      DIMENSION IBEIG(*)
+c$$$      JOCC = NPSH(IFRP)
+c$$$      JST = JOCC + 1
+c$$$      DO J = JST,NORB(I)
+c$$$        INDEX1   = INT(SQRT(dble(2*ABS(IBIEG(J))) + 0.25D0) + 0.4999D0)
+c$$$        INDEX2   = ABS(ID) - INDEX1*(INDEX1-1)/2
+c$$$        MJ       = (2*INDEX2 - 1) * (-1)**(INDEX2+1)         
+c$$$        IBEIG(J) = MJ
+c$$$      ENDDO  
+c$$$      RETURN
+c$$$      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck detocc */
       SUBROUTINE DETOCC(EIG,WORK,KFREE,LFREE)

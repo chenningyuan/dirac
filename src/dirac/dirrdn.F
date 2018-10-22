@@ -1666,10 +1666,30 @@ C&&& FROZEN: Frozen orbitals
 C&&& BOSONS: Selection based on (approx.) boson symmetry
                DOBOSSEL = .TRUE.
                IBOSSEL  = 1
-               READ(LUCMD,*) (NISH_BOS(I),I=1,NSUBBL)
+!     READ(LUCMD,*) (NISH_BOS(I),I=1,NSUBBL) !old version
+               allocate(SEL_NORB(NSUBBL,0:NOPEN))
+               READ(LUCMD,*) (SEL_NORB(I,0),I=1,NSUBBL)
+               DO I =1,NSUBBL
+                 IF(mod(SEL_NORB(I,0),2).eq.1)THEN
+                   WRITE(LUPRI,*) 'Error in reading .BOSONS !'
+                   CALL QUIT('Number of electrons must be odd!')                    
+                 ELSE   
+                   NISH_BOS(I) = SEL_NORB(I,0)/2               
+                 ENDIF
+               ENDDO                 
                DO IOPEN = 1,NOPEN
-                  READ(LUCMD,*) (NACSH_BOS(I,IOPEN),I=1,NSUBBL)
+!                 READ(LUCMD,*) (NACSH_BOS(I,IOPEN),I=1,NSUBBL) !old version
+                 READ(LUCMD,*)(SEL_NORB(I,IOPEN),I=1,NSUBBL)
+                 DO I =1,NSUBBL
+                   IF(mod(SEL_NORB(I,IOPEN),2).eq.1)THEN
+                     WRITE(LUPRI,*) 'Error in reading .BOSONS !'
+                     CALL QUIT('Number of electrons must be odd!')   
+                   ELSE   
+                     NACSH_BOS(I,IOPEN) = SEL_NORB(I,IOPEN)/2
+                   ENDIF
+                 ENDDO                    
                END DO
+               deallocate(SEL_NORB)
                GOTO 100
  41            CONTINUE
 C&&& MJSELE: Selection based on Mj symmetry,
@@ -1681,18 +1701,35 @@ C            NSUBBL = # of subblocks for MJ sym.
                  WRITE(LUPRI,*) 'Error in reading NSUBBL for .MJSELE !'
                  CALL QUIT('Error in reading NSUBBL for .MJSELE !')
                ENDIF
-!               allocate(SEL_NORB(NSUBBL,0:NOPEN))                             
-               READ(LUCMD,*,IOSTAT=IOS) (NISH_BOS(I),I=1,NSUBBL)
-!               READ(LUCMD,*,IOSTAT=IOS) (SEL_NORB(I,0),I=1,NSUBBL)
-!               NISH_BOS(:) = SEL_NORB(:,0)/2
+               allocate(SEL_NORB(NSUBBL,0:NOPEN))                             
+!               READ(LUCMD,*,IOSTAT=IOS) (NISH_BOS(I),I=1,NSUBBL)
+               READ(LUCMD,*,IOSTAT=IOS) (SEL_NORB(I,0),I=1,NSUBBL)
+               DO I =1,NSUBBL
+                 IF(mod(SEL_NORB(I,0),2).eq.1)THEN
+                   WRITE(LUPRI,*) 'Error in reading .MJSELE !'
+                   CALL QUIT('Number of electrons must be odd!')                    
+                 ELSE   
+                   NISH_BOS(I) = SEL_NORB(I,0)/2               
+                 ENDIF
+               ENDDO
                IF (IOS.NE.0) THEN
                  WRITE(LUPRI,*)
      &           'Error in reading NISH_BOS(I) for .MJSELE !'
                  CALL QUIT('Error in reading NISH_BOS(I) for .MJSELE !')
                ENDIF
                DO IOPEN = 1,NOPEN
+!                 READ(LUCMD,*,IOSTAT=IOS)
+!     &           (NACSH_BOS(I,IOPEN),I=1,NSUBBL)
                  READ(LUCMD,*,IOSTAT=IOS)
-     &           (NACSH_BOS(I,IOPEN),I=1,NSUBBL)
+     &                (SEL_NORB(I,IOPEN),I=1,NSUBBL)                  
+                 DO I =1,NSUBBL
+                   IF(mod(SEL_NORB(I,IOPEN),2).eq.1)THEN
+                     WRITE(LUPRI,*) 'Error in reading .MJSELE !'
+                     CALL QUIT('Number of electrons must be odd!')   
+                   ELSE   
+                     NACSH_BOS(I,IOPEN) = SEL_NORB(I,IOPEN)/2
+                   ENDIF
+                 ENDDO                  
                  IF (IOS.NE.0) THEN
                    WRITE(LUPRI,*)
      &             'Error in reading NACSH_BOS(I) for .MJSELE !'
@@ -1700,6 +1737,7 @@ C            NSUBBL = # of subblocks for MJ sym.
      &             'Error in reading NACSH_BOS(I) for .MJSELE !')
                  ENDIF
                END DO
+               deallocate(SEL_NORB)
                GO TO 100
  42            CONTINUE
 C&&& AOC: Average-of-Configuration
@@ -1893,6 +1931,7 @@ C    copied from MJSELE
      &             'Error in reading NACSH_BOS(I) for .KPSELE !')
                  ENDIF
                END DO
+               deallocate(SEL_NORB)               
                GO TO 100
 !sunaga               
             ELSE IF (PROMPT .EQ. '*') THEN

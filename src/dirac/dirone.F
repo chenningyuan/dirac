@@ -1076,7 +1076,7 @@ C       Is this a LL+SS operator (IC=1) or a LS+SL operator (IC=2) ?
         IZ   = JM4POS(IM4)
         IQ   = IQMULT(1,JQBAS(IBRP,IC),IZ)
         IQP  = IQTOPQ(IQ,IBRPOP)
-!check with data printout
+! check with data printout
         IF(IQP.LE.0) THEN
           WRITE(LUPRI,'(/A)') '***** PRPMAO ERROR *****'
           WRITE(LUPRI,'(A,I3,A,I2,3X,A,A8)')
@@ -2430,7 +2430,6 @@ C         2) do picture change transformation of integrals on AOPROPER
           CALL READIN(.FALSE.)
           !> stknecht: take care of 2c-mmf-sf for a linear molecule
           if(spinfr .and. linear) linear = .false.
-          if(spinfr .and. atomic) atomic = .false.
           CALL SETDC1(IPREAD)
 !         set AO-labels for large components - in x2c_main initialized for large and small components
           call getlab(ipread)
@@ -2523,7 +2522,6 @@ C
           CALL READIN(.FALSE.)
           !> stknecht: take care of 2c-mmf-sf for a linear molecule
           if(spinfr .and. linear) linear = .false.
-          if(spinfr .and. atomic) atomic = .false.
           CALL SETDC1(IPREAD)
 !         set AO-labels for large components - in x2c_main initialized for large and small components
           call getlab(ipread)
@@ -2575,10 +2573,8 @@ C.........do canonical orthonormalization
 !     -------------------------------------------------------------------
       ELSE
         CALL MEMGET('REAL',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KSMAT,N2BBASXQ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KTCUF,N2BBASXQ,WORK,KFREE,LFREE)
 
 !       defining h1 matrix control variable (in the X2C module) -
 !       set here for consistency to the maximum value
@@ -2595,26 +2591,7 @@ C.........do canonical orthonormalization
      &              is_defining_h1mat,WORK(KFREE),LFREE)
 
         CALL MEMREL('MODHAM',WORK,KEIG,KEIG,KFREE,LFREE)
-!sunaga
-!      IF(IPRHAM.GE.5) THEN
-!          CALL HEADER(
-!     &    'MODHAM: sunaga LINSYM final transformation'//
-!     &    ' matrix 4c AO->LINSYM MO, TMAT(output)',-1)
-!          IMAT = 1
-!          IBUF = 1
-!          DO I = 1,NFSYM
-!            IF(NORB(I).GT.0) THEN
-!              WRITE(LUPRI,'(A,I1,A,I1)')
-!     &        '* Fermion ircop no.',I,'/',NFSYM
-!              CALL PRQMAT(WORK(KTMAT),NFBAS(I,0),NORB(I),
-!     &                    NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),LUPRI)
-!              KTMAT = IMAT + NFBAS(I,0)*NORB(I)*1
-!              IBUF = IBUF + NORB(I)*NORB(I)*1
-!            ENDIF
-!          ENDDO
-!       ENDIF
-!sunaga 
-        
+
         IF (IPRHAM.GE.5) THEN
           write(lupri,*) 'GMOTRA: branch MODHAM'
           write(lupri,*) 'NESH(IFRP),NPSH(IFRP)',
@@ -2664,22 +2641,15 @@ C.......SUB_BL will be set true if linear symmetry works
 
 !       out: AO2MO linear symmetry adapted --> KTMAT
 !       out: AO2MO                         --> KTBUF
-!       out: MO2MO linear symmetry adapted --> KTBUF2 (discarded if not x2c-mmf)
-!     sunaga
+!     out: MO2MO linear symmetry adapted --> KTBUF2 (discarded if not x2c-mmf)
 
         IF(ATOMIC)THEN        
-           write(*,*)"X2C"
-           CALL GATMSM(WORK(KTMAT),WORK(KTBUF),WORK(KTBUF2),WORK(KEIG),
-     &                  WORK(KFREE),LFREE)
-!           CALL MEMREL('MODHAM',WORK,KEIG,KEIG,KFREE,LFREE)
-!           CALL MEMREL('MODHAM',WORK,KKMAT,KKMAT,KFREE,LFREE)
-!     CALL MEMGET('REAL',KKMAT ,N2BBASXQ,WORK,KFREE,LFREE)
-        ELSE
-           CALL GLINSM(WORK(KTMAT),WORK(KTBUF),WORK(KTBUF2),WORK(KEIG),
-     &                 WORK(KFREE),LFREE)
+          CALL GATMSM(WORK(KTMAT),WORK(KTBUF),WORK(KTBUF2),WORK(KEIG),
+     &                 WORK(KFREE),LFREE)        
+        ELSE        
+          CALL GLINSM(WORK(KTMAT),WORK(KTBUF),WORK(KTBUF2),WORK(KEIG),
+     &                WORK(KFREE),LFREE)
         ENDIF
-!     sunaga
-
         CALL MEMREL('MODHAM',WORK,KEIG,KEIG,KFREE,LFREE)
       else if(linear)then
         if(x2c.and.x2cmod_mmf)then
@@ -2695,25 +2665,6 @@ C.......SUB_BL will be set true if linear symmetry works
 !         skip rec # 1
           read(99)
           call readt(99,N2TMT,work(KTMAT))
-  !sunaga
-      IF(IPRHAM.GE.5) THEN
-          CALL HEADER(
-     &    'MODHAM: sunaga2 LINSYM final transformation'//
-     &    ' matrix 4c AO->LINSYM MO, TMAT(output)',-1)
-          IMAT = 1
-          IBUF = 1
-          DO I = 1,NFSYM
-            IF(NORB(I).GT.0) THEN
-              WRITE(LUPRI,'(A,I1,A,I1)')
-     &        '* Fermion ircop no.',I,'/',NFSYM
-              CALL PRQMAT(WORK(KTMAT),NFBAS(I,0),NORB(I),
-     &                    NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),LUPRI)
-              KTMAT = IMAT + NFBAS(I,0)*NORB(I)*1
-              IBUF = IBUF + NORB(I)*NORB(I)*1
-            ENDIF
-          ENDDO
-       ENDIF
-!sunaga 
 !         file is needed in the 4c-2c transformation after the 4c-SCF
 !         in order to ensure numerical stability (avoiding double
 !         diagonalization, etc.)
@@ -2769,7 +2720,7 @@ C
             cmo_aoosoc  = 0.0d0
 !           read coefficients
             call opnfil(lucoef,'DFCOEF','OLD','aoosoc')
-            call reacmo(lucoef,'DFCOEF',cmo_aoosoc,xx,ii,jj,2)
+            call reacmo_no_work(lucoef,'DFCOEF',cmo_aoosoc,xx,ii,jj,2)
             close(lucoef,status='keep')
 
 !           generate density matri(x/ces)
@@ -2929,7 +2880,7 @@ C
           tbuf_mmf    = 0
           !> read 2c-mos
           call opnfil(lucoef,'DFCOEF','OLD','mmfmos')
-          call reacmo(lucoef,'DFCOEF',cmo_mmf,xx,ii,jj,2)
+          call reacmo_no_work(lucoef,'DFCOEF',cmo_mmf,xx,ii,jj,2)
           close(lucoef,status='keep')
           !> density matrix/ces
           call denmat(tbuf_mmf,cmo_mmf,iprham)
@@ -3341,51 +3292,23 @@ CMI     they are in the order "S1 S2 ... S(nbsym) L1 L2 ... L(nbsym)" instead of
 !       out: MO2MO linear symmetry adapted --> TBUF (discarded if not x2c-mmf)
         IF(ATOMIC)THEN
         IF(LINLIN .eqv. .false.)THEN             
-           write(*,*)"X2C2"
           CALL GATMSM(TMAT,VMAT,TBUF, EIG,WORK(KFREE),LFREE)
         ELSE
            CALL GLINSM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
         Endif
-        ELSE 
+        ELSE
            CALL GLINSM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
         ENDIF
-!     sunaga
-
 !       save matrices on file to be re-used in the x2c-module
         if(.not.spinfr)then
 !         MO2MO lin
           call writt(99,ISIZE2,TBUF)
 !         AO2MO lin
-          call writt(99,ISIZE, TMAT)!sunaga
+          call writt(99,ISIZE, TMAT)
         end if
 !       AO2MO
         call writt(99,ISIZE, WORK(KBUF1))
-C sunaga        
-        IF(IPRHAM.GE.5) THEN
-          CALL HEADER(
-     &    'MODHAM: AFTER LINSYM final transformation'//
-     &    ' matrix 4c AO->LINSYM MO, TMAT(output)',-1)
-          IMAT = 1
-          IBUF = 1
-          DO I = 1,NFSYM
-            IF(NORB(I).GT.0) THEN
-              WRITE(LUPRI,'(A,I1,A,I1)')
-     &        '* Fermion ircop no.',I,'/',NFSYM
-              CALL PRQMAT(TMAT(IMAT),NFBAS(I,0),NORB(I),
-     &                    NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),LUPRI)
-              WRITE(LUPRI,'(/5X,A/)')
-     &    'MODHAM: 4c ON  RKB "theta" -> LSYM "theta" transformation'//
-     &        '  matrix (TBUF).'
-              WRITE(LUPRI,'(A,I1,A,I1)')
-     &        '* Fermion ircop no.',I,'/',NFSYM
-              CALL PRQMAT(TBUF(IBUF),NORB(I),NORB(I),
-     &                    NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-              IMAT = IMAT + NFBAS(I,0)*NORB(I)*1
-              IBUF = IBUF + NORB(I)*NORB(I)*1
-            ENDIF
-          ENDDO
-       ENDIF
-Csunaga       
+
 !       by default: return the unmodified AO2MO transformation matrix
         CALL DCOPY(ISIZE,WORK(KBUF1),1,TMAT,1)
 
@@ -5002,7 +4925,7 @@ C
       CALL SELFRAG(WORK(KQ),NVECS,WORK(KE),WORK(KI),
      &             NFRAG,NSTR,PRJFIL,PROOWN,NPRJNUC,IOPT,KVEC,
      &             WORK(KCMO),WORK(KEIG),WORK(KIBE),IOFF,
-     &             KDUM,WORK,KFREE,LFREE)
+     &             WORK,KFREE,LFREE)
 C
 C     Collect fragment info
 C      
@@ -5683,14 +5606,14 @@ Csunaga
 
       IF (IPRHAM.GE.1) THEN
         WRITE(LUPRI,'(/2X,A/)')
-     &'* TMAT and Saomo were adapted for the linear symmetry in GATMSM.'
+     &'* TMAT and Saomo were adapted for the Atomic symmetry in GATMSM.'
       ENDIF
       CALL FLSHFO(LUPRI)
 
       CALL QEXIT('GATMSM')
       RETURN
 C
- 1000 FORMAT (//" WARNING : linear symmetry is not implemented for ",
+ 1000 FORMAT (//" WARNING : atomic symmetry is not implemented for ",
      &A," yet" /"           continue calculation in lower symmetry")
 C
       END
@@ -5733,9 +5656,7 @@ C  DGROUP:
 #include "dgroup.h"
 #include "cbihr1.h"
 #include "dummy.h"
-#include "dcbdhf.h" 
-! dcbdhf is added by sunaga
-C     
+C
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
       DIMENSION IQBF(4),IQW(4)
       LOGICAL :: DOJACO_SAVE
@@ -5762,20 +5683,8 @@ C figure this one out (LV).
 C
       IOFT = 1
       IOFV = 1
-      N2TMT   = 0
-      N2TMOTQ = 0
       DO 10 I = 1,NFSYM
-        N2TMT = N2TMT + NFBAS(I,0)*NORB(I)*NZT
         IF(NORB(I).EQ.0) GOTO 10
-C
-C       from   ** End of branching ** @/dirone.F/GMOTRA
-C
-        I2TMT(I)  = N2TMT
-        N2TMT     = N2TMT + NFBAS(I,0)*NORB(I)*NZT
-        I2TMOT(I) = N2TMOTQ
-        N2TMO(I)  = NTMO(I)*NTMO(I)
-        N2TMOTQ   = N2TMOTQ + N2TMO(I)*NZ
-
         IOFTB = I2BASX(I,I) + 1
         CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
      &            NORB(I),NORB(I),
@@ -5934,7 +5843,7 @@ C
      &          IPQTOQ(1,0),LUPRI)
            CALL FLSHFO(LUPRI)
           ENDIF
-        ENDIF  !(NL.GT.0) THEN
+        ENDIF
 C
 C       Extract SS block of Jz matrix
 C
@@ -5972,7 +5881,7 @@ C
                enddo
              close(luhm,status="keep")
           ENDIF
-          
+
 #ifdef MOD_UNRELEASED
           IF (.NOT.DOQJACO) THEN
 #endif
@@ -6212,7 +6121,7 @@ C
  30   CONTINUE
 C.....Also initialize NTMO_SUB which will be the number of orbitals in each subblock in orthonormal basis
       CALL ICOPY(MAX_SUB_BL*3*2,NORB_SUB,1,NTMO_SUB,1)
-C     
+C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('LINSYM')
       RETURN
@@ -7278,7 +7187,7 @@ C
      &        OP1INT,FIRST,IPRHAM)
       CALL MEMGET('REAL',KBUF,N2BBASX,WORK,KFREE,LFREE)
       CALL DSPTSI(NTBAS(0),FTRI,WORK(KBUF))
-C     
+C
 C     Make the Jz operator (in case of spinfree we make Lz)
 C     =====================================================
 C
@@ -8089,7 +7998,6 @@ C     when there is no subblock ... allows single code
       N2TMT   = 0
       N2TMOTQ = 0      
       ICOFF   = 0
-      IEOFF   = 0
       IVOFF   = 0
       ITEFF = 1
       DO 10 IFRP =  1,NFSYM
@@ -8562,8 +8470,7 @@ c        ... Get charges and exponents for the electrons in this group
             n_charge = NINT(CHARGE(I))
             n_exp = -1 ! signal the routine to provide the number of exponents only
             CALL Read_screening_parameters
-     &           (n_charge,n_exp,DUMMY,DUMMY)
-!    &           (n_charge,n_exp,fit_exp,fit_coef)
+     &           (n_charge,n_exp,fit_exp,fit_coef)
             Allocate (fit_exp(n_exp))
             Allocate (fit_coef(n_exp))
             CALL Read_screening_parameters 
@@ -8673,4 +8580,4 @@ C***********************************************************************
       rewind (lupot)
 
       end
-! -- end of diro
+! -- end of dirone.F --
