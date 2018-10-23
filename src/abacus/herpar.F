@@ -799,7 +799,6 @@ C     Start loop over nodes.
 C---------------------------
 C
       ICOUNT = 0
-         write(LUPRI,*) 'FMAT(1) before',FMAT(1)
       DO 100 I = 1,NODES
 C
          CALL interface_mpi_RECV(ITASK,1,df_mpi_any_source,40,
@@ -867,7 +866,6 @@ C
   300       CONTINUE
          END IF
   100 CONTINUE
-         write(LUPRI,*) 'FMAT(1) after ',FMAT(1);flush(lupri)
 #endif
 C
       IF (ICOUNT .NE. MTOTTK) THEN
