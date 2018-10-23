@@ -45,7 +45,7 @@ module exacorr_cc
          type(basis_func_info_t), allocatable   :: gto(:)   ! array with information about the shells
          
          integer                        :: ierr, i
-         complex(8)                     :: result
+         complex(8)                     :: result_val
 
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
          type(tens_rcrsv_t) :: foo_tensor, fvv_tensor, fov_tensor
@@ -330,7 +330,6 @@ module exacorr_cc
 !           make tau ! validated
             ierr=exatns_tensor_init(tau_tensor)
             ierr=exatns_tensor_contract("T(a,b,i,j)+=R(a,b,i,j)*K()",tau_tensor,t2_tensor,one_tensor)
-            !WHY DO WE ADD AND THEN SUBTRACT?
             if (CCD.eqv..false.) then
                 ierr=exatns_tensor_contract("T(a,b,i,j)+=T(a,i)*T(b,j)",tau_tensor,t1_tensor,t1_tensor) ! o(2)v(2)
                 ierr=exatns_tensor_contract("T(a,b,i,j)+=T(a,j)*T(b,i)",tau_tensor,t1_tensor,t1_tensor,MINUS_ONE) ! o(2)v(2)
@@ -369,7 +368,6 @@ module exacorr_cc
             ierr=exatns_tensor_contract("H(a,k,c,i)+=V(a,k,c,i)*K()",hint_tensor,vovo_tensor,one_tensor)
 
 !           This term appears four times as we need to permute both i and j and a and b
-            !WHY CAN WE NOT DO THIS ONE TIME WITH A FACTOR OF 4?
             ierr=exatns_tensor_contract("S(a,b,i,j)+=H(a,k,c,i)*T(c,b,j,k)",s2_tensor,hint_tensor,t2_tensor)  ! validated o(3)v(3)
             ierr=exatns_tensor_contract("S(a,b,i,j)+=H(a,k,c,j)*T(c,b,k,i)",s2_tensor,hint_tensor,t2_tensor)  ! validated o(3)v(3)
             ierr=exatns_tensor_contract("S(a,b,i,j)+=H(b,k,c,i)*T(a,c,j,k)",s2_tensor,hint_tensor,t2_tensor)  ! validated o(3)v(3)
@@ -379,7 +377,6 @@ module exacorr_cc
             ierr=exatns_tensor_init(cint_tensor)
             ierr=exatns_tensor_contract("C(k,b,i,j)+=V(b,k,c,d)*T(c,d,i,j)",cint_tensor,vovv_tensor,tau_tensor,MINUS_ONE_HALF) ! o(3)v(3)
             if (CCD.eqv..false.) then
-                !WHY ADD + SUBTRACT?
                 ierr=exatns_tensor_contract("C(k,b,i,j)+=V(b,k,c,i)*T(c,j)",cint_tensor,vovo_tensor,t1_tensor) ! o(3)v(2)
                 ierr=exatns_tensor_contract("C(k,b,i,j)+=V(b,k,c,j)*T(c,i)",cint_tensor,vovo_tensor,t1_tensor,MINUS_ONE) ! o(3)v(2)
             end if
@@ -401,7 +398,6 @@ module exacorr_cc
             ierr=exatns_tensor_init(hovaux_tensor)
             if (CCD.eqv..false.) ierr=exatns_tensor_contract("H(k,c)+=V(k,l,c,d)*T(d,l)",hovint_tensor,oovv_tensor,t1_tensor) ! o(2)v(2)
             ierr=exatns_tensor_contract("L(k,c)+=H(k,c)*K()",hovaux_tensor,hovint_tensor,one_tensor)        ! copy common term
-            !WHY ADD + SUBTRACT?
             ierr=exatns_tensor_contract("H(k,c)+=F(k,c)*K()",hovint_tensor,fov_tensor,one_tensor)           ! add fock matrix
             ierr=exatns_tensor_contract("H(k,c)+=F(k,c)*K()",hovaux_tensor,fov_tensor,one_tensor,MINUS_ONE) ! subtract fock matrix
 
@@ -409,7 +405,6 @@ module exacorr_cc
             ierr=exatns_tensor_init(aint_tensor)
             ierr=exatns_tensor_contract("A(k,l,i,j)+=V(k,l,i,j)*K()",aint_tensor,oooo_tensor,one_tensor)
             if (CCD.eqv..false.) then 
-            !WHY ADD + SUBTRACT?
                 ierr=exatns_tensor_contract("A(k,l,i,j)+=V(k,l,i,c)*T(c,j)",aint_tensor,ooov_tensor,t1_tensor) ! o(4)v(1)
                 ierr=exatns_tensor_contract("A(k,l,i,j)+=V(k,l,j,c)*T(c,i)",aint_tensor,ooov_tensor,t1_tensor,MINUS_ONE) ! o(4)v(1)
             end if
@@ -444,23 +439,19 @@ module exacorr_cc
             end if
 
 !           This term appears twice as we need to permute i and j
-            !TIMES 2?
             ierr=exatns_tensor_contract("S(a,b,i,j)+=G(k,j)*T(a,b,i,k)",s2_tensor,goint_tensor,t2_tensor)                   ! validated o(3)v(2)
             ierr=exatns_tensor_contract("S(a,b,i,j)+=G(k,i)*T(a,b,k,j)",s2_tensor,goint_tensor,t2_tensor)                   ! validated o(3)v(2)
 !           Again two times, also note the complex conjugation as we use vovv instead of vvvo
             if (CCD.eqv..false.) then    
-            !WHY ADD + SUBTRACT?
                 ierr=exatns_tensor_contract("S(a,b,i,j)+=V+(c,j,a,b)*T(c,i)",s2_tensor,vovv_tensor,t1_tensor)                   ! validated o(2)v(3)
                 ierr=exatns_tensor_contract("S(a,b,i,j)+=V+(c,i,a,b)*T(c,j)",s2_tensor,vovv_tensor,t1_tensor,MINUS_ONE)         ! validated o(2)v(3)
             end if
 
 !           This term appears twice as we need to permute a and b
-            !TIMES 2?
             ierr=exatns_tensor_contract("S(a,b,i,j)+=G(a,c)*T(c,b,i,j)",s2_tensor,gvint_tensor,t2_tensor)  ! validated o(2)v(3)
             ierr=exatns_tensor_contract("S(a,b,i,j)+=G(b,c)*T(a,c,i,j)",s2_tensor,gvint_tensor,t2_tensor)  ! validated o(2)v(3)
 !           Again two times, with the C intermediate (note: in RELCCSD this is done differently)
             if (CCD.eqv..false.) then    
-            !WHY ADD + SUBTRACT?
                 ierr=exatns_tensor_contract("S(a,b,i,j)+=C(k,b,i,j)*T(a,k)",s2_tensor,cint_tensor,t1_tensor,MINUS_ONE) ! o(3)v(2)
                 ierr=exatns_tensor_contract("S(a,b,i,j)+=C(k,a,i,j)*T(b,k)",s2_tensor,cint_tensor,t1_tensor)           ! o(3)v(2)
             end if
@@ -474,7 +465,6 @@ module exacorr_cc
             ierr=exatns_tensor_contract("S(a,i)+=F+(i,a)*K()",s1_tensor,fov_tensor,one_tensor)
             ierr=exatns_tensor_contract("S(a,i)+=V(a,k,c,d)*T(c,d,i,k)",s1_tensor,vovv_tensor,tau_tensor,ONE_HALF) !validated o(2)v(3)
             if (CCD.eqv..false.) then    
-                !TIMES 2?
                 ierr=exatns_tensor_contract("S(a,i)+=H(a,c)*T(c,i)",s1_tensor,hvint_tensor,t1_tensor)                  !validated o(1)v(2)
                 ierr=exatns_tensor_contract("S(a,i)+=H(k,i)*T(a,k)",s1_tensor,hoint_tensor,t1_tensor)                        !validated o(2)v(1)
             end if
@@ -483,9 +473,9 @@ module exacorr_cc
             if (CCD.eqv..false.) then    
                 ierr=exatns_tensor_contract("L(k,i)+=H(k,c)*T(c,i)",hoaux_tensor,hovaux_tensor,t1_tensor)                    !moretests o(2)v(1)
                 ierr=exatns_tensor_contract("S(a,i)+=H(k,i)*T(a,k)",s1_tensor,hoaux_tensor,t1_tensor)                        !moretests o(2)v(1)
-                ierr=exatns_tensor_contract("S(a,i)+=V(a,k,c,i)*T(c,k)",s1_tensor,vovo_tensor,t1_tensor,MINUS_ONE)     !validated o(2)v(2)
             end if
             ierr=exatns_tensor_contract("S(a,i)+=V(k,l,i,c)*T(c,a,k,l)",s1_tensor,ooov_tensor,tau_tensor,ONE_HALF) !validated o(3)v(2)
+            if (CCD.eqv..false.) ierr=exatns_tensor_contract("S(a,i)+=V(a,k,c,i)*T(c,k)",s1_tensor,vovo_tensor,t1_tensor,MINUS_ONE)     !validated o(2)v(2)
 
             if (ierr.ne.EXA_SUCCESS) then
                print*," ccdriver: error in evaluation of amplitude equations, code=",ierr
@@ -509,8 +499,8 @@ module exacorr_cc
             ierr=exatns_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,tau_tensor,oovv_tensor,ONE_QUARTER) ! o(2)v(2)
             write (*,'(A,I4,A,F20.15,A,E10.1)') "  Iteration ",iccsd," CCSD energy = ",ccsd_energy, " convergence !=",t_convergence
             ierr=exatns_tensor_traverse(result_tensor,'PrintTensor')
-            ierr=exatns_tensor_get_scalar(result_tensor,result)
-            ccsd_energy=result
+            ierr=exatns_tensor_get_scalar(result_tensor,result_val)
+            ccsd_energy=result_val
             write (*,'(A,I4,A,F20.15,A,E10.1)') "  Iteration ",iccsd," CCSD energy = ",ccsd_energy, " convergence !=",t_convergence
             if (t_convergence .lt. t_target_precision) exit
             end do
@@ -742,8 +732,7 @@ module exacorr_cc
          ierr=exatns_tensor_init(one_tensor,ONE)
 
          if (init) then
-!           get dimensions of the tensors
-            !ierr = talsh_tensor_dimensions(t1_tensor,tens_rank,t1_dims)
+!           get dimensions of the tensors => ASK IF THIS IS CORRECT. TENSOR RANK IS SOMEWHAT DIFFERENT DEPENDING ON FIELD
             tens_rank=t1_tensor%get_rank(ierr)
             if (ierr.ne.0 .or. tens_rank.ne.2) stop 'input t1-tensor corrupted in diis'
             !ierr = talsh_tensor_dimensions(t2_tensor,tens_rank,t2_dims)
@@ -812,6 +801,7 @@ module exacorr_cc
             ierr=exatns_tensor_init(scalar_tensor)
             ierr=exatns_tensor_contract("E()+=T+(a,i)*T(a,i)",scalar_tensor,t1_err_tensor(itens),t1_err_tensor(i))
             ierr=exatns_tensor_contract("E()+=T+(a,b,i,j)*T(a,b,i,j)",scalar_tensor,t2_err_tensor(itens),t2_err_tensor(i))
+            !IN THE TALSH IMPLEMENTATION THE SECOND TERM WAS OBTAINED BY DCONJG(SCALAR_TENSOR). IS THIS ALSO CORRECT?
             ierr=exatns_tensor_get_scalar(scalar_tensor,scalar)
             b_diis(itens,i)=scalar
             b_diis(i,itens)=dconjg(scalar)
