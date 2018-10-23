@@ -515,9 +515,8 @@ C     JHS The following variables come from a common block and are thus kept in 
       CHARACTER*72 TTITLE(2)
       CHARACTER*11 SYMTXT
       CHARACTER*15 CLASS
-      DIMENSION IFXYZ(3)
-      LOGICAL ANG, ADDSYM
-      integer blk
+      INTEGER   IFXYZ(3), blk
+      LOGICAL   ANG, ADDSYM
 
 #include "molinp.h"
 #include "ccom.h"
@@ -3955,6 +3954,11 @@ C        is reversed !]
 
 C
       CALL HEADER('Contracted Orbitals',1)
+
+      IF (UNCONT) THEN
+         WRITE(LUPRI,'(A)') ' All orbitals are uncontracted.'
+         RETURN
+      END IF
       IF(ICLS.EQ.1) THEN
         IPRIMD  = 0
         IORBD   = 0
@@ -4015,7 +4019,7 @@ C
       IF (IPREAD .GT. 0) THEN
          WRITE (LUPRI,'(/)')
       END IF
- 1040 FORMAT(I4,2X,A4,A2,2X,A4,24I4)
+ 1040 FORMAT(I5,2X,A4,A2,2X,A4,24I4)
  1050 FORMAT(I4,2X,A4,4X,A4,12I6)
 C
  4242 CONTINUE

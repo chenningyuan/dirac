@@ -6535,7 +6535,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
 #include "parkrmc.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER ISTAT(MPI_STATUS_SIZE)
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dcbgen.h"
