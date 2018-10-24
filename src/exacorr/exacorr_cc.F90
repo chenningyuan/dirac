@@ -255,7 +255,9 @@ module exacorr_cc
             call print_date('starting ccsd calculation')
 
 !           Create and initialize scalars that are to be used as tensors in contractions
-            ierr=exatns_tensor_create(result_tensor,"result_tensor",EXA_DATA_KIND_C8)   
+            print*, 'Started this specific tensor contraction'
+            ierr=exatns_tensor_create(result_tensor,"result_tensor",EXA_DATA_KIND_C8)
+            print*, 'Finished this specific tensor contraction', ': Status = ',ierr
             ierr=exatns_tensor_create(one_tensor,"another_one_tensor",EXA_DATA_KIND_C8)   
             ! Note:  also get_integral_tensors will define a one_tensor and call it "one_tensor", so we needed another name
             ierr=exatns_tensor_init(one_tensor,ONE)
@@ -293,8 +295,9 @@ module exacorr_cc
 !           Calculate and print the MP2 energy
             ierr=exatns_tensor_init(result_tensor)
             ierr=exatns_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,t2_tensor,oovv_tensor,ONE_QUARTER) ! o(2)v(2)
-            ! mp2_energy=result * ONE_QUARTER
-            ! print*," MP2 energy = ", mp2_energy
+            ierr=exatns_tensor_get_scalar(result_tensor,result_val) 
+            mp2_energy=result_val * ONE_QUARTER
+            print*," MP2 energy = ", mp2_energy
             print*,"MP2 energy printed directly from result_tensor follows below"
             ierr=exatns_tensor_traverse(result_tensor,'PrintTensor')
 
@@ -324,7 +327,6 @@ module exacorr_cc
                return
             end if
 
-            print*,"Until the assign_scalar routine is available, also the CCSD energy is printed from result_tensor"
             do iccsd = 1, nccsd
 
 !           make tau ! validated
@@ -576,7 +578,6 @@ module exacorr_cc
 !        refer to Kramers pairs rather than spinors.
 
 !        Written by Lucas Visscher, summer 2017
-!        ExaTensor conversion by Anastasios Papadopoulos, October 2018   
 
          use exacorr_datatypes
          use exacorr_ao_to_mo
@@ -732,7 +733,7 @@ module exacorr_cc
          ierr=exatns_tensor_init(one_tensor,ONE)
 
          if (init) then
-!           get dimensions of the tensors => ASK IF THIS IS CORRECT. TENSOR RANK IS SOMEWHAT DIFFERENT DEPENDING ON FIELD
+!           get dimensions of the tensors
             tens_rank=t1_tensor%get_rank(ierr)
             if (ierr.ne.0 .or. tens_rank.ne.2) stop 'input t1-tensor corrupted in diis'
             !ierr = talsh_tensor_dimensions(t2_tensor,tens_rank,t2_dims)
