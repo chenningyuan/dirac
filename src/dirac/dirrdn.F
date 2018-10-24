@@ -1039,7 +1039,7 @@ C
      &            '.MJSELE','.AOC   ','.FOCC  ','.LSHIFT','.MAXIT2',
      &            '.ERGCN2','.EVCCN2','.FCKCN2','.MOFREE','.OLEVEL',      ! 50
      &            '.ATOMST','.SCFPOP','.OPENFA','.BNC_FO','.FOMOUT',
-     &            '.AD HOC','.HUCPAR','.KPSELE','.XXXXXX','.XXXXXX',      ! 60
+     &            '.AD HOC','.HUCPAR','.KPSELE','.SELECT','.XXXXXX',      ! 60
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'
      &                                                               /
       DATA SET/.FALSE./
@@ -1235,7 +1235,7 @@ C     ========================
      &                     21,22,23,24,25,26,27,28,29,30,
      &                     31,32,33,34,35,36,37,38,39,40,
      &                     41,42,43,44,45,46,47,48,49,50,
-     &                     51,52,53,54,55,56,57,58), I
+     &                     51,52,53,54,55,56,57,58,59), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1933,7 +1933,53 @@ C    copied from MJSELE
                END DO
                deallocate(SEL_NORB)               
                GO TO 100
-!sunaga               
+ 59            CONTINUE
+C&&& SELECT: Generalized Selection based on Kappa symmetry, ! added by sunaga.
+C    NSUBBL = # of subblocks.
+C    copied from MJSELE
+               DOBOSSEL = .TRUE.
+               IBOSSEL  = -1
+               READ(LUCMD,*,IOSTAT=IOS) NSUBBL
+               IF (IOS.NE.0) THEN
+                 WRITE(LUPRI,*) 'Write # of subblocks in first line!'
+                 CALL QUIT('Error in reading NSUBBL for .SELECT !')
+               ENDIF
+               allocate(SEL_NORB(NSUBBL,0:NOPEN))
+               READ(LUCMD,*,IOSTAT=IOS) (SEL_NORB(I,0),I=1,NSUBBL)
+               DO I =1,NSUBBL
+                 IF(mod(SEL_NORB(I,0),2).eq.1)THEN
+                   WRITE(LUPRI,*) 'Error in reading .SELECT !'
+                   CALL QUIT('Number of electrons must be odd!')                    
+                 ELSE   
+                   NISH_BOS(I) = SEL_NORB(I,0)/2               
+                 ENDIF
+               ENDDO  
+               IF (IOS.NE.0) THEN
+                 WRITE(LUPRI,*)
+     &           'Error in reading NISH_BOS(I) for .SELECT !'
+                 CALL QUIT('Error in reading NISH_BOS(I) for .SELECT !')
+               ENDIF
+               DO IOPEN = 1,NOPEN
+                 READ(LUCMD,*,IOSTAT=IOS)
+     &                (SEL_NORB(I,IOPEN),I=1,NSUBBL)
+                 DO I =1,NSUBBL
+                   IF(mod(SEL_NORB(I,IOPEN),2).eq.1)THEN
+                     WRITE(LUPRI,*) 'Error in reading .SELECT !'
+                     CALL QUIT('Number of electrons must be odd!')   
+                   ELSE   
+                     NACSH_BOS(I,IOPEN) = SEL_NORB(I,IOPEN)/2
+                   ENDIF
+                 ENDDO  
+                 IF (IOS.NE.0) THEN
+                   WRITE(LUPRI,*)
+     &             'Error in reading NACSH_BOS(I) for .SELECT !'
+                   CALL QUIT(
+     &             'Error in reading NACSH_BOS(I) for .SELECT !')
+                 ENDIF
+               END DO
+               deallocate(SEL_NORB)               
+               GO TO 100
+!sunaga 
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE

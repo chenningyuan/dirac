@@ -993,7 +993,7 @@ C
       DIMENSION EIG(*),IBEIG(*),EIGBUF(*),
      &          IFIRST(*),NMULT(*)
       CHARACTER FMTE*6,FMTP*6,MXFORM*6, TLINE*(5*NCOL+5),
-     &          TLINE2*(5*NCOL+5),TLINE3*(5*NCOL+5)
+     &          TLINE2*(6*NCOL+5),TLINE3*(6*NCOL+5)
       CHARACTER*4 NAME_SUB (-MAX_SUB_BL:MAX_SUB_BL)
       CHARACTER*6 NAME_SUB2(-MAX_SUB_BL:MAX_SUB_BL),
      &            NAME_SUB3(-MAX_SUB_BL:MAX_SUB_BL)! for MJ of ATOMIC
@@ -1397,7 +1397,12 @@ C
           ENDDO !IFSYM
         WRITE(LUPRI,'(/)')
 
-C ... do the consistency check with the NORB_SUB(MJABS,IFSYM,IC) variable
+C     ... do the consistency check with the NORB_SUB(MJABS,IFSYM,IC) variable
+C     sunaga
+        DO I=1,NFSYM
+           CALL KPTOMJ(I,IBEIG(IORB(I)+1),2)
+        ENDDO   
+Csunaga        
         IC =1
         IF (PRPOS) IC=0
         DO IFSYM=1, NFSYM 

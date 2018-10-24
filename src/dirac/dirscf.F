@@ -2133,12 +2133,9 @@ C     JOCC(I) = NPSH(I) + NISH(I) + NACSH(I,1:IOPEN-1)
         IF(NISH_DHF(I).GT.0) THEN
           KOCC(I) = KOCC(I) + NISH_DHF(I)
           DO III=1,20           
-!             write(*,*)"IBUF",IBUF(III)
           ENDDO   
           CALL BOSSE2(I,EIG(IORB(I)+1),IBEIG(IORB(I)+1),
      &         CFU(I2ORBT(I)+1),NORB(I),JOCC(I),IBUF)
-!          write(*,*)"NISH_DHF",NISH_DHF(I)
-!          write(*,*)"KOCC,JOCC",KOCC(I),JOCC(I)
           IF(JOCC(I).NE.KOCC(I)) THEN
             WRITE(LUPRI,1000)
             CALL QUIT('Check the number of closed-shell electrons !')
@@ -2190,7 +2187,6 @@ C
 C hjaaj Oct 2004: must also implement open shells (NASHB*)
       JST = JOCC + 1
       IF(IFSYM.EQ.2)KPMAX = ( -1 + int(sqrt(dble(1 + 8*N_SUB_BL(1)))))/2   
-!      write(*,*)"KPMAX,N_SUB",KPMAX,N_SUB_BL(1)
       DO J = JST,NO
          IF (ATOMIC) THEN
             IF(NFSYM.EQ.2)THEN
@@ -2206,7 +2202,6 @@ C hjaaj Oct 2004: must also implement open shells (NASHB*)
                 JADD = INDEX1*(INDEX1+1)/2
               ENDIF              
               JSYM = ABS(IBEIG(J)) + JADD
-!              write(*,*)"JSYM,IBEIG",JSYM,IBEIG(J)
             ENDIF  
 C           ... IBEIG = ID. ID = ID_SUB_BL(ISUB,IFRP) in dirscf.F/INIBOS.
          ELSEIF (LINEAR) THEN
@@ -2218,7 +2213,6 @@ Csunaga     It is no longer neccessary, because Atomic symmetry is used.
             JSYM = IBEIG(J) + 1
 C           ... IBEIG = (approximate) boson irrep
          END IF
-!            write(*,*)"NB_CNT,JSYM",NB_CNT(JSYM),JSYM
          IF (NB_CNT(JSYM) .GT. 0) THEN
             NB_CNT(JSYM) = NB_CNT(JSYM) - 1
             JOCC = JOCC + 1
@@ -4691,32 +4685,39 @@ C
 
       RETURN
       END
-c$$$C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-c$$$C  /* Deck kptomj */
-c$$$      SUBROUTINE KPTOMJ(IFRP,IBEIG,IPRINT)
-c$$$C***********************************************************************
-c$$$C
-c$$$C     Converting IBEIG in Kappa with MJ to that in MJ
-c$$$C
-c$$$C     last revison: Oct, 2018 A.Sunaga
-c$$$C
-c$$$C***********************************************************************
-c$$$#include "implicit.h"
-c$$$#include "priunit.h"
-c$$$#include "dgroup.h"
-c$$$#include "dcborb.h"
-c$$$C
-c$$$      DIMENSION IBEIG(*)
-c$$$      JOCC = NPSH(IFRP)
-c$$$      JST = JOCC + 1
-c$$$      DO J = JST,NORB(I)
-c$$$        INDEX1   = INT(SQRT(dble(2*ABS(IBIEG(J))) + 0.25D0) + 0.4999D0)
-c$$$        INDEX2   = ABS(ID) - INDEX1*(INDEX1-1)/2
-c$$$        MJ       = (2*INDEX2 - 1) * (-1)**(INDEX2+1)         
-c$$$        IBEIG(J) = MJ
-c$$$      ENDDO  
-c$$$      RETURN
-c$$$      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck kptomj */
+      SUBROUTINE KPTOMJ(IFRP,IBEIG,IPRINT)
+C***********************************************************************
+C
+C     Converting IBEIG in Kappa with MJ to that in MJ
+C
+C     last revison: Oct, 2018 A.Sunaga
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "dgroup.h"
+#include "dcborb.h"
+C
+      DIMENSION IBEIG(*)
+      IF (IPRINT.GE.2) THEN
+        CALL HEADER('KPTOMJ: IBEIG before transoformation',-1)
+        WRITE(LUPRI,'(A)')'Before After  J'
+      ENDIF
+C
+      DO J = 1,NORB(IFRP)
+        INDEX1   = INT(SQRT(dble(2*ABS(IBEIG(J))) + 0.25D0) + 0.4999D0)
+        INDEX2   = ABS(IBEIG(J)) - INDEX1*(INDEX1-1)/2
+        MJ       = (2*INDEX2 - 1) * (-1)**(INDEX2+1)         
+        IF (IPRINT.GE.2) THEN
+          WRITE(LUPRI,'(I5,I5,I4)') IBEIG(J),MJ,J
+        ENDIF         
+        IBEIG(J) = MJ
+      ENDDO
+C      
+      RETURN
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck detocc */
       SUBROUTINE DETOCC(EIG,WORK,KFREE,LFREE)
