@@ -4336,4 +4336,28 @@ C***********************************************************************
          ENDIF
       ENDDO
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE LEVI-CEVITA(I,J,K,IJK)
+C***********************************************************************
+C
+C     Given indices i and j, give k and e_ijk
+C
+C     Written by Trond Saue Oct 25 2018      
+C***********************************************************************
+      integer, intent(in)  :: I,J
+      integer, intent(out) :: K,IJK
+      INTEGER :: IJKTAB(3,3),KTAB(3,3)
+      SAVE IJKTAB,KTAB
+      DATA IJKTAB/ 0, 1,-1,
+     &            -1, 0, 1,
+     &             1,-1, 0/
+      DATA   KTAB/ 0, 3, 2,
+     &             3, 0, 1,
+     &             2, 1, 0/
+      IF(I.LT.1.OR.I.GT.3) CALL QUIT('LEVI-CEVITA: Not valid I!')
+      IF(J.LT.1.OR.J.GT.3) CALL QUIT('LEVI-CEVITA: Not valid J!')
+      K   = KTAB(I,J)
+      IJK = IJKTAB(I,J)
+      RETURN
+      END
       
