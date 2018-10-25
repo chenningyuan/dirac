@@ -4337,13 +4337,14 @@ C***********************************************************************
       ENDDO
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE LEVI-CEVITA(I,J,K,IJK)
+      SUBROUTINE LEVI_CEVITA(I,J,K,IJK)
 C***********************************************************************
 C
 C     Given indices i and j, give k and e_ijk
 C
 C     Written by Trond Saue Oct 25 2018      
 C***********************************************************************
+      implicit none
       integer, intent(in)  :: I,J
       integer, intent(out) :: K,IJK
       INTEGER :: IJKTAB(3,3),KTAB(3,3)
