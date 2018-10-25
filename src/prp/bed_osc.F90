@@ -343,7 +343,7 @@
               FACMQ = -FAC*WROT*FACML*FACER
               DO IEXC = 1,NEXC
                  FOSC(3,IEXC,ISYM) = FOSC(3,IEXC,ISYM) &
-                      + FACQM*ATMPPF(IEXC,INDAPM,ISYM)*ATMPPF(IEXC,INDBPE,ISYM)
+                      + FACMQ*ATMPPF(IEXC,INDAPM,ISYM)*ATMPPF(IEXC,INDBPE,ISYM)
 !               WRITE(6,*)  'TEST..',FAC,WROT,ATMPPF(IEXC,INDAP,ISYM),ATMPPF(IEXC,INDBP,ISYM)  
               ENDDO
             ENDIF
