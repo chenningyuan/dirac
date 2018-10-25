@@ -2353,7 +2353,7 @@ C.....Oscillator strenghts: general length gauge
       allocate(fosc(4,MAXEXC,NBSYM,-1:K2ORD))
       FOSC=0.0D0
       DO IK = 0,K2ORD
-         CALL GENOSC_BED(IK,FOSC(1,1,1,IK),ATMPPF,OMEGA)
+         CALL GENOSC_MPOL(IK,FOSC(1,1,1,IK),ATMPPF,OMEGA)
          CALL DAXPY(4*MAXEXC*NBSYM,D1,FOSC(1,1,1,IK),1,
      &                                FOSC(1,1,1,-1),1)
       ENDDO
@@ -2373,6 +2373,16 @@ C.....Oscillator strenghts: general length gauge
         OSCIL = FOSC(1,IEXC,ISYM,-1)
         IF(OSCIL .GT. TTOL) THEN
           ILAB  = ISSYM(IEXC,ISYM)
+          WRITE(LUPRI,
+     &         '(I5,1X,F16.5,2X,A3,1X,A4,5(2X,ES14.6))') JEXC-1,
+     &         OMEGA(IEXC,ISYM)*XTEV,REP(ISYM-1),SYMLAB(ILAB),OSCIL,
+     &         (FOSC(1,IEXC,ISYM,IK),IK=0,K2ORD)
+          WRITE(LUPRI,'(43X,A3,2X,4(2X,ES14.6))') 
+     &         'Q-Q',(FOSC(2,IEXC,ISYM,IK),IK=0,K2ORD)
+          WRITE(LUPRI,'(43X,A3,2X,4(2X,ES14.6))') 
+     &         'M-Q',(FOSC(3,IEXC,ISYM,IK),IK=0,K2ORD)
+          WRITE(LUPRI,'(43X,A3,2X,4(2X,ES14.6))') 
+     &         'M-M',(FOSC(4,IEXC,ISYM,IK),IK=0,K2ORD)
         ENDIF
       ENDDO
       CALL PRSYMB(LUPRI,'-',NLIN,0)
