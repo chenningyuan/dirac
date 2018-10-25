@@ -1933,7 +1933,7 @@ C
      &          RCNV(MAXEXC,NBSYM),ISSYM(MAXEXC,NBSYM),WORK(*)
       character (len=4),  allocatable   :: symlab(:)
       real(8), allocatable :: excerg(:),excbuf(:),fval(:,:,:)
-      real(8), allocatable :: fosc(:,:,:)
+      real(8), allocatable :: fosc(:,:,:,:)
       integer, allocatable :: indx(:),irps(:),ind(:)
       integer, allocatable :: n_ev(:),ieerg(:,:),iebuf(:,:)
       CHARACTER TTYP(-1:1)*2
@@ -2310,16 +2310,20 @@ C.......
      &     'Sum of oscillator strengths (DV) : ',TOT
         deallocate(fval)
       ENDIF
+C
+C     Oscillator strengths: general order
+C      
       IF(MOD(KVAL_OSC,2).EQ.0) THEN
         K2ORD = KVAL_OSC/2
       ELSE
         K2ORD = (KVAL_OSC-1)/2
       ENDIF   
-      allocate(fosc(MAXEXC,NBSYM,-1:K2ORD))
+C.....Oscillator strenghts: general velocity gauge
+      allocate(fosc(MAXEXC,NBSYM,-1:K2ORD,1))
       FOSC=0.0D0
       DO IK = 0,K2ORD
-         CALL GENOSC(IK,FOSC(1,1,IK),ATMPPF,OMEGA)
-         CALL DAXPY(MAXEXC*NBSYM,D1,FOSC(1,1,IK),1,FOSC(1,1,-1),1)
+         CALL GENOSC_BED(IK,FOSC(1,1,IK,1),ATMPPF,OMEGA)
+         CALL DAXPY(MAXEXC*NBSYM,D1,FOSC(1,1,IK,1),1,FOSC(1,1,-1,1),1)
       ENDDO
       NLIN=32+16*(K2ORD+2)
       WRITE(LUPRI,'(/A,ES8.2)')
@@ -2334,13 +2338,41 @@ C.......
         II = INDX(JEXC)
         IEXC  = IEERG(1,II)
         ISYM  = IEERG(2,II)
-        OSCIL = FOSC(IEXC,ISYM,-1)
+        OSCIL = FOSC(IEXC,ISYM,-1,1)
         IF(OSCIL .GT. TTOL) THEN
           ILAB  = ISSYM(IEXC,ISYM)
           WRITE(LUPRI,
      &         '(I5,1X,F16.5,2X,A3,1X,A4,5(2X,ES14.6))') JEXC-1,
      &         OMEGA(IEXC,ISYM)*XTEV,REP(ISYM-1),SYMLAB(ILAB),OSCIL,
-     &         (FOSC(IEXC,ISYM,IK),IK=0,K2ORD)
+     &         (FOSC(IEXC,ISYM,IK,1),IK=0,K2ORD)
+        ENDIF
+      ENDDO
+      CALL PRSYMB(LUPRI,'-',NLIN,0)
+      deallocate(fosc)
+C.....Oscillator strenghts: general length gauge
+      allocate(fosc(4,MAXEXC,NBSYM,-1:K2ORD))
+      FOSC=0.0D0
+      DO IK = 0,K2ORD
+         CALL GENOSC_BED(IK,FOSC(1,1,1,IK),ATMPPF,OMEGA)
+         CALL DAXPY(4*MAXEXC*NBSYM,D1,FOSC(1,1,1,IK),1,
+     &                                FOSC(1,1,1,-1),1)
+      ENDDO
+      NLIN=32+16*(K2ORD+2)
+      WRITE(LUPRI,'(/A,ES8.2)')
+     &     '* Isotropic oscillator strengths '//
+     &     '(generalized length gauge) above threshold :', TTOL
+      CALL PRSYMB(LUPRI,'=',NLIN,0)
+      WRITE(LUPRI,'(/A,5(A2,I1,A2,11X))')
+     &     'Level    Frequency (eV) Symmetry    f(total)        ',
+     &     ('f(',IK+IK,') ',IK=0,K2ORD)
+      CALL PRSYMB(LUPRI,'-',NLIN,0)
+      DO JEXC = 2,NEXC          ! skip reference state
+        II = INDX(JEXC)
+        IEXC  = IEERG(1,II)
+        ISYM  = IEERG(2,II)
+        OSCIL = FOSC(1,IEXC,ISYM,-1)
+        IF(OSCIL .GT. TTOL) THEN
+          ILAB  = ISSYM(IEXC,ISYM)
         ENDIF
       ENDDO
       CALL PRSYMB(LUPRI,'-',NLIN,0)
