@@ -62,13 +62,14 @@ C
 #endif
 C
       LOGICAL TWOBUF,GOFAST,TOBE
+      real(8) :: TIMSTR(2), TIMEND(2)
       real(8), allocatable :: WORK(:)
 
       CALL QENTER('PAMSET')
       call legacy_lwork_get(LWORK)
       call alloc(WORK,LWORK,id='WORK in PAMSET - 1')
 
-      CALL TIMER('START ',TIMSTR,TIMEND)
+      CALL TIMER2('START ',TIMSTR,TIMEND)
 C
 C     Attempt a restart unless geometry optimization
 C     ==============================================
@@ -129,7 +130,7 @@ C     ===================
 #endif
 
       IF(DOHRM) THEN
-        CALL TIMER('PAMSET',TIMSTR,TIMEND)
+        CALL TIMER2('PAMSET',TIMSTR,TIMEND)
         RETURN
       ENDIF
 C
@@ -168,7 +169,7 @@ C     ==============================================
 C
       CALL RELINF
 C
-      CALL TIMER('PAMSET',TIMSTR,TIMEND)
+      CALL TIMER2('PAMSET',TIMSTR,TIMEND)
       call dealloc(WORK)
       CALL QEXIT('PAMSET')
       RETURN
@@ -371,11 +372,10 @@ C
         WRITE(LUPRI,'(3X,41A1)') ('-',I=1,41)
         WRITE(LUPRI,'(3X,A6,3I7,4X,A3,I7)') 'Total ',(NTBAS(J),J=0,2),
      &        'Max',MXBBAS
-        WRITE(LUPRI,'(/3X,2(A,I6,2X))') 'NNBBAST = ',NNBBAST,
-     &        'NNBBASX ',NNBBASX
-         WRITE(LUPRI,'(/A)') '* Matrix offsets to symmetry',
-     &                       ' blocks (I2BBASX):'
-         WRITE(LUPRI,'(4(3X,2(A3,2X),2(A1,2X),2X,I8))')
+        WRITE(LUPRI,'(/3X,A,2I9))') 'NNBBAST, NNBASX:',NNBBAST,NNBBASX
+        WRITE(LUPRI,'(/A)')
+     &      '* Matrix offsets to symmetry blocks (I2BBASX):'
+        WRITE(LUPRI,'(4(3X,2(A3,2X),2(A1,2X),I10))')
      &     ((((REP(I),REP(J),COMP(IC),COMP(JC),
      &        I2BBASX(I,J,IC,JC),IC = 1,2),JC = 1,2)
      &        ,I=0,NBSYM-1),J=0,NBSYM-1)

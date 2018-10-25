@@ -132,6 +132,7 @@ C
      &          NPOS(NTOTTK), IREPDM(*), IFCTYP(*),
      &          GABRAO(*),DMRAO(*),DMRSO(*),DINTSKP(*)
       LOGICAL FIRST,NODV,NOPV,NOCONT,RETUR,TKTIME
+      real(8)  :: TIMSTR(2), TIMEND(2)
 C
       CALL QENTER('HER_PARDRV')
 C
@@ -219,25 +220,25 @@ C---------------------------------------
 C     Send initialization data to nodes.
 C---------------------------------------
 C
-      CALL TIMER('START',TIMSTR,TIMEND)
+      CALL TIMER2('START',TIMSTR,TIMEND)
       CALL SDINIT(DMAT,NDMAT,IREPDM,IFCTYP,ITYPE,MAXDIF,IATOM,NODV,
      &            NOPV,NOCONT,TKTIME,RETUR,I2TYP,ICEDIF,SCREEN,
      &            GABRAO,DMRAO,DMRSO)
 C     and transfer screening information to twocom.h
 C     (such that master will print correct scr.thr. in summary) /hjaaj apr 01
       SCRTHR = SCREEN
-      IF (IPRPAR.GT.0) CALL TIMER('SDINIT',TIMSTR,TIMEND)
+      IF (IPRPAR.GT.0) CALL TIMER2('SDINIT',TIMSTR,TIMEND)
 C
 C-----------------------
 C     Start calculation.
 C-----------------------
 C
       CALL DO_HERPAR(WORK(KINDEX),MTOTTK,NBATCH,WORK(KNSTAT))
-      IF (IPRPAR.GT.0) CALL TIMER('DO_HERPAR',TIMSTR,TIMEND)
+      IF (IPRPAR.GT.0) CALL TIMER2('DO_HERPAR',TIMSTR,TIMEND)
 C.....Get results from nodes
       CALL RVRES(WORK(KFREE),FMAT,ITYPE,MTOTTK,NREQUI,
      &           NUMGRA,NUMHES,MAXDIF,WORK(KTIMES),DINTSKP,LDINTSKP)
-      IF (IPRPAR.GT.0) CALL TIMER('RVRES',TIMSTR,TIMEND)
+      IF (IPRPAR.GT.0) CALL TIMER2('RVRES',TIMSTR,TIMEND)
 C
 C-------------------------------------
 C     Get timing results if requested.
@@ -245,7 +246,7 @@ C-------------------------------------
 C
       IF (IPRPAR .GT. 0) THEN
          CALL TIMRES(WORK(KNSTAT))
-         CALL TIMER('TIMRES',TIMSTR,TIMEND)
+         CALL TIMER2('TIMRES',TIMSTR,TIMEND)
       END IF
 C
 C--------------------------------------
@@ -1046,7 +1047,7 @@ C
                EFFI_T = 0.0D0
             END IF
             IF (WALLS(1,NODE) .NE. 0.0D0) THEN
-               EFFI_1 = (CPUS(1,NODE)/WALLS(1,NOD))*100.D0
+               EFFI_1 = (CPUS(1,NODE)/WALLS(1,NODE))*100.D0
             ELSE
                EFFI_1 = 0.0D0
             END IF
