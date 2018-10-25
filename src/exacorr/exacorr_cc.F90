@@ -278,9 +278,6 @@ module exacorr_cc
             ierr=exatns_tensor_create(vovv_tensor,"vovv",vovv_id,vovv_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(vvvv_tensor,"vvvv",vvvv_id,vvvv_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(voov_tensor,"voov",voov_id,voov_root,EXA_DATA_KIND_C8) ! auxilliary for get_CC_integrals 
-            !call get_CC_integrals (ao_space_id,ao_space_root, &
-            !                       oooo_tensor,ooov_tensor,oovv_tensor, &
-            !                       vovo_tensor,vovv_tensor,vvvv_tensor,voov_tensor,one_tensor)
             call get_CC_integrals (ao_space_id,ao_space_root, &
                                    oooo_tensor,ooov_tensor,oovv_tensor, &
                                    vovo_tensor,vovv_tensor,vvvv_tensor,voov_tensor)
@@ -507,7 +504,7 @@ module exacorr_cc
             if (.not.CCD) then
                 ierr=exatns_tensor_contract("E()+=T(a,i)*F(i,a)",result_tensor,t1_tensor,fov_tensor) ! o(1)v(1)
                 ierr=exatns_tensor_traverse(result_tensor,'PrintTensor')
-                print*,"CCSD intermediate energy printed directly from result_tensor follows below"
+                print*,"CCSD intermediate E printed directly from result_tensor follows below (should be 0)"
                 ierr=exatns_tensor_get_scalar(result_tensor,result_val)
                 ccsd_energy=result_val
                 ierr=exatns_tensor_init(result_tensor)
@@ -746,21 +743,6 @@ module exacorr_cc
             if (mode.eq.2) clean_up   = .true.
          end if 
 
-!        Clean-up before init and create to avoid creating and destroying one_tensor       
-         if (clean_up) then
-!           de-allocate tensors
-            ierr=exatns_tensor_destroy(t1_inp_tensor)
-            ierr=exatns_tensor_destroy(t2_inp_tensor)
-            do i = 1, maxdim
-                ierr=exatns_tensor_destroy(t1_res_tensor(i))
-                ierr=exatns_tensor_destroy(t1_err_tensor(i))
-                ierr=exatns_tensor_destroy(t2_res_tensor(i))
-                ierr=exatns_tensor_destroy(t2_err_tensor(i))
-            end do
-            print *, "cleanup done"
-            return
-         end if
-        
          if (init) then
 !           get dimensions of the tensors
             tens_rank=t1_tensor%get_rank(ierr)
@@ -790,16 +772,31 @@ module exacorr_cc
             ierr=exatns_tensor_init(t2_inp_tensor)
             ierr=exatns_tensor_contract("T2O(a,b,i,j)+=T2N(a,b,i,j)*K()",t2_inp_tensor,t2_tensor,one_tensor)
             if(ierr.ne.EXA_SUCCESS) call quit('t2_inp_tensor contraction failed')
-            !ierr=exatns_tensor_destroy(one_tensor)
             return ! no extrapolation possible
          end if
-        
+       
+         if (clean_up) then
+!           de-allocate tensors
+            ierr=exatns_tensor_destroy(t1_inp_tensor)
+            ierr=exatns_tensor_destroy(t2_inp_tensor)
+            do i = 1, maxdim
+                ierr=exatns_tensor_destroy(t1_res_tensor(i))
+                ierr=exatns_tensor_destroy(t1_err_tensor(i))
+                ierr=exatns_tensor_destroy(t2_res_tensor(i))
+                ierr=exatns_tensor_destroy(t2_err_tensor(i))
+            end do
+            print *, "cleanup done"
+            return
+         end if
+ 
 !        update counters
          itens = itens + 1                                                                                                                    
          if (itens.gt.maxdim) itens = 1       ! cycle because we already have the maximum number of stored amplitudes, will overwrite the oldest one
          ntens = ntens + 1                    ! number of tensors stored after returning
          if (ntens.gt.maxdim) ntens = maxdim  ! we have reached the maximum number of tensors to be used in DIIS
-        
+         !Debug
+         print*, "itens = ", itens, "ntens = ", ntens        
+
 !        store the result tensors
          ierr=exatns_tensor_init(t1_res_tensor(itens))
          ierr=exatns_tensor_contract("T1R(a,i)+=T1(a,i)*K()",t1_res_tensor(itens),t1_tensor,one_tensor)
@@ -822,25 +819,31 @@ module exacorr_cc
 !        define scalar tensor needed to extract the error
          ierr=exatns_tensor_create(scalar_tensor,"scalar_tensor",EXA_DATA_KIND_C8)
          print*,"created scalar tensor"
-         ierr=exatns_tensor_init(scalar_tensor)
+         !ierr=exatns_tensor_init(scalar_tensor)
 !        update the b_diis array that holds the scalar products of the error tensors
          do i = 1, ntens
             ierr=exatns_tensor_init(scalar_tensor)
+            !Debug
+            ierr=exatns_tensor_get_scalar(scalar_tensor,scalar)
+            print*, "scalar diis before contraction = ", scalar
             ierr=exatns_tensor_contract("E()+=T+(a,i)*T(a,i)",scalar_tensor,t1_err_tensor(itens),t1_err_tensor(i))
             ierr=exatns_tensor_contract("E()+=T+(a,b,i,j)*T(a,b,i,j)",scalar_tensor,t2_err_tensor(itens),t2_err_tensor(i))
             ierr=exatns_tensor_get_scalar(scalar_tensor,scalar)
+            print*, "scalar diis after contraction = ", scalar
             b_diis(itens,i)=scalar
             b_diis(i,itens)=dconjg(scalar)
          end do
          print*, "updated b_diis"
 
          print*, "b_diis matrix"
+         print*, "======================"
          do i = 1, ntens
             do j = 1, ntens
                 write(*,'(E4.2,A)',advance='no') b_diis(i,j), ' '
             end do
             write(*,*) ' '
          end do
+         print*, "======================"
         
          if (present(t_convergence)) then
             t_convergence = dsqrt(dble(b_diis(itens,itens)))
