@@ -7,6 +7,8 @@ module exacorr_cc
         complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
                                  ONE_HALF=(0.5D0,0.D0),MINUS_ONE_HALF=(-0.5D0,0.D0),ONE_QUARTER=(0.25D0,0.D0)!, &
 !                                THREE=(3.0,0.0), SIX=(6.0,0.0)
+        type(tens_rcrsv_t),public :: one_tensor
+        
         private
 
         public exacorr_cc_driver
@@ -60,7 +62,7 @@ module exacorr_cc
 !        solution tensors
          type(tens_rcrsv_t) :: t1_tensor, t2_tensor, s1_tensor, s2_tensor
 !        scalars (need to be defined as tensor types)
-         type(tens_rcrsv_t) :: result_tensor, one_tensor
+         type(tens_rcrsv_t)         :: result_tensor!, one_tensor
 !        CCSD control and result variables
          integer            :: iccsd, nccsd
          real(8)            :: mp2_energy, ccsd_energy, t_convergence!, t_energy(3) ! triples not implemented
@@ -276,9 +278,12 @@ module exacorr_cc
             ierr=exatns_tensor_create(vovv_tensor,"vovv",vovv_id,vovv_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(vvvv_tensor,"vvvv",vvvv_id,vvvv_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(voov_tensor,"voov",voov_id,voov_root,EXA_DATA_KIND_C8) ! auxilliary for get_CC_integrals 
+            !call get_CC_integrals (ao_space_id,ao_space_root, &
+            !                       oooo_tensor,ooov_tensor,oovv_tensor, &
+            !                       vovo_tensor,vovv_tensor,vvvv_tensor,voov_tensor,one_tensor)
             call get_CC_integrals (ao_space_id,ao_space_root, &
                                    oooo_tensor,ooov_tensor,oovv_tensor, &
-                                   vovo_tensor,vovv_tensor,vvvv_tensor,voov_tensor,one_tensor)
+                                   vovo_tensor,vovv_tensor,vvvv_tensor,voov_tensor)
             ierr=exatns_tensor_destroy(voov_tensor) ! no longer needed 
 
             call print_date('initialized two electron integrals')
@@ -587,9 +592,12 @@ module exacorr_cc
 
         end subroutine exacorr_cc_driver
 
+        !subroutine get_CC_integrals (ao_space_id,ao_space_root, &
+        !                            oooo_tensor,ooov_tensor,oovv_tensor, &
+        !                            vovo_tensor,vovv_tensor,vvvv_tensor,voov_tensor,one_tensor)
         subroutine get_CC_integrals (ao_space_id,ao_space_root, &
                                     oooo_tensor,ooov_tensor,oovv_tensor, &
-                                    vovo_tensor,vovv_tensor,vvvv_tensor,voov_tensor,one_tensor)
+                                    vovo_tensor,vovv_tensor,vvvv_tensor,voov_tensor)
 
 !        Routine to get integrals needed in CC in the form of antisymmetric tensors.
 !        In this implementation we take all AO integrals into memory, the result tensor themselves can be subsets of the
@@ -608,7 +616,7 @@ module exacorr_cc
 !        target integral tensors to be filled and given back to the caller
          type(tens_rcrsv_t), intent(inout) :: oooo_tensor, ooov_tensor, oovv_tensor, vovo_tensor, vovv_tensor, vvvv_tensor
          type(tens_rcrsv_t), intent(inout) :: voov_tensor ! Auxilliary tensor that is not anti-symmetrized
-         type(tens_rcrsv_t), intent(inout) :: one_tensor  ! Another auxilliary needed due to lacking tensor add routine
+         !type(tens_rcrsv_t), intent(inout) :: one_tensor  ! Another auxilliary needed due to lacking tensor add routine
 
          integer                           :: i,ierr
 
@@ -732,7 +740,7 @@ module exacorr_cc
          integer                             :: ipiv(maxdim), info    ! needed for ZHESV solver
          real(8)                             :: work(maxdim,maxdim)   ! needed for ZHESV solver
          type(tens_rcrsv_t)                  :: scalar_tensor
-         type(tens_rcrsv_t)                  :: one_tensor
+         !type(tens_rcrsv_t)                  :: one_tensor
        
          character(len=1) :: vs_str
  
@@ -760,9 +768,9 @@ module exacorr_cc
          end if
         
 !        define one_tensor to work around missing tensor_add
-         ierr=exatns_tensor_create(one_tensor,"one_tensor_diis",EXA_DATA_KIND_C8)   
-         ierr=exatns_tensor_init(one_tensor,ONE)
-         print*, "created one_tensor_diis"
+         !ierr=exatns_tensor_create(one_tensor,"one_tensor_diis",EXA_DATA_KIND_C8)   
+         !ierr=exatns_tensor_init(one_tensor,ONE)
+         !print*, "created one_tensor_diis"
 
          if (init) then
 !           get dimensions of the tensors
@@ -791,7 +799,7 @@ module exacorr_cc
             ierr=exatns_tensor_contract("T1O(a,i)+=T1N(a,i)*K()",t1_inp_tensor,t1_tensor,one_tensor)
             ierr=exatns_tensor_init(t2_inp_tensor)
             ierr=exatns_tensor_contract("T2O(a,b,i,j)+=T2N(a,b,i,j)*K()",t2_inp_tensor,t2_tensor,one_tensor)
-            ierr=exatns_tensor_destroy(one_tensor)
+            !ierr=exatns_tensor_destroy(one_tensor)
             print*, "stored tensors"
             return ! no extrapolation possible
          end if
@@ -878,7 +886,7 @@ module exacorr_cc
          print*, "amps are new input tensors"
 
          ierr=exatns_tensor_destroy(scalar_tensor)
-         ierr=exatns_tensor_destroy(one_tensor)
+         !ierr=exatns_tensor_destroy(one_tensor)
          print*, "destroyed scalar and one tensor"
         
         end subroutine diis
