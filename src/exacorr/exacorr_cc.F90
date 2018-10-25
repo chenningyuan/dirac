@@ -612,10 +612,8 @@ module exacorr_cc
 !        target integral tensors to be filled and given back to the caller
          type(tens_rcrsv_t), intent(inout) :: oooo_tensor, ooov_tensor, oovv_tensor, vovo_tensor, vovv_tensor, vvvv_tensor
          type(tens_rcrsv_t), intent(inout) :: voov_tensor ! Auxilliary tensor that is not anti-symmetrized
-         !type(tens_rcrsv_t), intent(inout) :: one_tensor  ! Another auxilliary needed due to lacking tensor add routine
 
          integer                           :: i,ierr
-         complex(8)                        :: test_one
 
          ! variables for the definition of the initializer methods
          character(len=5)  :: initlabel(2,4),initocc(2),initvir(2)
@@ -629,10 +627,6 @@ module exacorr_cc
          initocc(2) = 'occ_B'
          initvir(1) = 'vir_A'
          initvir(2) = 'vir_B'
-
-         !Debug
-         ierr=exatns_tensor_get_scalar(one_tensor,test_one)
-         print*, "one_tensor = ", test_one
 
 !        Get tensor with AO integrals
          ierr=exatns_tensor_create(aoint_tensor,'aotensor',(/(ao_space_id,i=1,4)/),(/(ao_space_root,i=1,4)/),EXA_DATA_KIND_C8)
@@ -733,7 +727,7 @@ module exacorr_cc
          integer, save                       :: itens, jtens, ntens
          complex(8), save                    :: b_diis(maxdim,maxdim)
          complex(8)                          :: bb(0:maxdim,0:maxdim),coeff(0:maxdim)
-         complex(8)                          :: scalar, test_one
+         complex(8)                          :: scalar
          real(8)                             :: b_max, b_scale
          type(tens_rcrsv_t), save            :: t1_inp_tensor, t2_inp_tensor
          type(tens_rcrsv_t), save            :: t1_res_tensor(maxdim), t2_res_tensor(maxdim)
@@ -741,7 +735,6 @@ module exacorr_cc
          integer                             :: ipiv(maxdim), info    ! needed for ZHESV solver
          real(8)                             :: work(maxdim,maxdim)   ! needed for ZHESV solver
          type(tens_rcrsv_t)                  :: scalar_tensor
-         !type(tens_rcrsv_t)                  :: one_tensor
        
          character(len=1) :: vs_str
  
@@ -752,10 +745,6 @@ module exacorr_cc
             if (mode.eq.1) init       = .true.
             if (mode.eq.2) clean_up   = .true.
          end if 
-         
-         !Debug
-         ierr=exatns_tensor_get_scalar(one_tensor,test_one)
-         print*, "one_tensor = ", test_one
 
 !        Clean-up before init and create to avoid creating and destroying one_tensor       
          if (clean_up) then
@@ -772,11 +761,6 @@ module exacorr_cc
             return
          end if
         
-!        define one_tensor to work around missing tensor_add
-         !ierr=exatns_tensor_create(one_tensor,"one_tensor_diis",EXA_DATA_KIND_C8)   
-         !ierr=exatns_tensor_init(one_tensor,ONE)
-         !print*, "created one_tensor_diis"
-
          if (init) then
 !           get dimensions of the tensors
             tens_rank=t1_tensor%get_rank(ierr)
@@ -853,8 +837,9 @@ module exacorr_cc
          print*, "b_diis matrix"
          do i = 1, ntens
             do j = 1, ntens
-                print *, b_diis(j,i)
+                write(*,'(E4.2,A)',advance='no') b_diis(i,j), ' '
             end do
+            write(*,*) ' '
          end do
         
          if (present(t_convergence)) then
