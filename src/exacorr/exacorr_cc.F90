@@ -731,7 +731,7 @@ module exacorr_cc
          type(tens_rcrsv_t), save            :: t1_err_tensor(maxdim), t2_err_tensor(maxdim)
          integer                             :: ipiv(maxdim), info    ! needed for ZHESV solver
          real(8)                             :: work(maxdim,maxdim)   ! needed for ZHESV solver
-         type(tens_rcrsv_t), save            :: scalar_tensor
+         type(tens_rcrsv_t)                  :: scalar_tensor
          type(tens_rcrsv_t)                  :: one_tensor
        
          character(len=1) :: vs_str
@@ -743,15 +743,26 @@ module exacorr_cc
             if (mode.eq.1) init       = .true.
             if (mode.eq.2) clean_up   = .true.
          end if 
-        
-!        define scalar tensor needed to extract the error
-         ierr=exatns_tensor_create(scalar_tensor,"scalar_tensor",EXA_DATA_KIND_C8)
+
+!        Clean-up before init and create to avoid creating and destroying one_tensor       
+         if (clean_up) then
+!           de-allocate tensors
+            ierr=exatns_tensor_destroy(t1_inp_tensor)
+            ierr=exatns_tensor_destroy(t2_inp_tensor)
+            do i = 1, maxdim
+                ierr=exatns_tensor_destroy(t1_res_tensor(i))
+                ierr=exatns_tensor_destroy(t1_err_tensor(i))
+                ierr=exatns_tensor_destroy(t2_res_tensor(i))
+                ierr=exatns_tensor_destroy(t2_err_tensor(i))
+            end do
+            print *, "cleanup done"
+            return
+         end if
         
 !        define one_tensor to work around missing tensor_add
          ierr=exatns_tensor_create(one_tensor,"one_tensor_diis",EXA_DATA_KIND_C8)   
          ierr=exatns_tensor_init(one_tensor,ONE)
-
-         print*, "created tensors"
+         print*, "created one_tensor_diis"
 
          if (init) then
 !           get dimensions of the tensors
@@ -780,21 +791,9 @@ module exacorr_cc
             ierr=exatns_tensor_contract("T1O(a,i)+=T1N(a,i)*K()",t1_inp_tensor,t1_tensor,one_tensor)
             ierr=exatns_tensor_init(t2_inp_tensor)
             ierr=exatns_tensor_contract("T2O(a,b,i,j)+=T2N(a,b,i,j)*K()",t2_inp_tensor,t2_tensor,one_tensor)
+            ierr=exatns_tensor_destroy(one_tensor)
             print*, "stored tensors"
             return ! no extrapolation possible
-         end if
-        
-         if (clean_up) then
-!           de-allocate tensors
-            ierr=exatns_tensor_destroy(t1_inp_tensor)
-            ierr=exatns_tensor_destroy(t2_inp_tensor)
-            do i = 1, maxdim
-                ierr=exatns_tensor_destroy(t1_res_tensor(i))
-                ierr=exatns_tensor_destroy(t1_err_tensor(i))
-                ierr=exatns_tensor_destroy(t2_res_tensor(i))
-                ierr=exatns_tensor_destroy(t2_err_tensor(i))
-            end do
-            print *, "cleanup done"
          end if
         
 !        update counters
@@ -822,7 +821,8 @@ module exacorr_cc
  
 !        define scalar tensor needed to extract the error
          ierr=exatns_tensor_create(scalar_tensor,"scalar_tensor",EXA_DATA_KIND_C8)
-         ierr=exatns_tensor_init(scalar_tensor)
+         print*,"created scalar tensor"
+         !ierr=exatns_tensor_init(scalar_tensor)
 !        update the b_diis array that holds the scalar products of the error tensors
          do i = 1, ntens
             ierr=exatns_tensor_init(scalar_tensor)
@@ -875,10 +875,11 @@ module exacorr_cc
          ierr=exatns_tensor_contract("T1O(a,i)+=T1(a,i)*K()",t1_inp_tensor,t1_tensor,one_tensor)
          ierr=exatns_tensor_init(t2_inp_tensor)
          ierr=exatns_tensor_contract("T2O(a,b,i,j)+=T2(a,b,i,j)*K()",t2_inp_tensor,t2_tensor,one_tensor)
-        
+         print*, "amps are new input tensors"
+
          ierr=exatns_tensor_destroy(scalar_tensor)
          ierr=exatns_tensor_destroy(one_tensor)
-         print*, "amps are new input tensors"
+         print*, "destroyed scalar and one tensor"
         
         end subroutine diis
 
