@@ -67,7 +67,7 @@ C***********************************************************************
 #include "maxorb.h"
 #include "aovec.h"
 #if defined (VAR_MPI)
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE), IBUFMPI(5)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE), IBUFMPI(5)
 #endif
 #include "infpar.h"
 #include "dcbgen.h"

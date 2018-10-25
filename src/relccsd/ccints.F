@@ -1719,7 +1719,7 @@ C  E1 = E1 - V(II,KK)
 C---------------------------------------------------------------------
             II = 0
             DO IREP = 1, NREP
-               IF (K.LE.NE(KREP)) THEN
+               IF (K.LE.NE(KREP) .AND. NE(IREP).GT.0) THEN
                   CALL XSUM(CSUM,NE(IREP),BUF2(II+KK),NO(IREP)+1)
                   E1 = E1 - CSUM(1)
                ENDIF

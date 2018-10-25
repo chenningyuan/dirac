@@ -5076,7 +5076,7 @@ C***********************************************************************
       PARAMETER(D0=0.0D0,D1=1.0D0)
 C
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 C
 #include "priunit.h"
 #include "mxcent.h"

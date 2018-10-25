@@ -55,6 +55,9 @@ C
 #include "cbihr1.h"
 #include "cbiher.h"
 #include "nuclei.h"
+
+      CHARACTER CPUTID*12, WALLTID*12, SECTID*12
+
       CALL QENTER('ONEGEN')
 C.....With modified Hamiltonian this routine is skipped for now
       IF(MDIRAC) GOTO 20
@@ -66,6 +69,7 @@ C     Loop through list of class labels; calculate only the active ones(CLSCAL)
 C     =========================================================================
 C
       IF (NOSMLV) CALL NOSSNUCATT
+      IF (IPRONE .GT. 0) CALL GETTIM(CPU0,WALL0)
       DO 10 I = 1,NPRPCLS
       IF(.NOT.CLSCAL(I)) GOTO 10
         IF (IPRONE.GE.2) WRITE(LUPRI,'(/2A,2X,A)')
@@ -149,6 +153,13 @@ C
    10 CONTINUE
 C
       CLOSE(LU1INT,STATUS='KEEP')
+      IF (IPRONE .GT. 0) THEN
+         CALL GETTIM(CPUE,WALLE)
+         CPUTID  = SECTID(CPUE-CPU0)
+         WALLTID = SECTID(WALLE-WALL0)
+         WRITE(LUPRI,'(/4A)')
+     &  'Total time used in ONEGEN (CPU) ',CPUTID,' and (WALL) ',WALLTID
+      END IF
  20   CONTINUE
       CALL QEXIT('ONEGEN')
       RETURN
@@ -1928,14 +1939,11 @@ C
 C
 C     Memory allocation
 C
-      CALL MEMGET('REAL',KFTRI ,NZ*NNBBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KONEIN,   NNBBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KFIRST,NZ        ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FTRI',KFTRI ,NZ*NNBBASX,WORK,KFREE,LFREE)
 C
 C     ****** Construct Fock matrix ******
 C
-      CALL FREEM1(FOCK,WORK(KFTRI),WORK(KONEIN),WORK(KFIRST),
-     &              WORK(KFREE),LFREE,IPRINT)
+      CALL FREEM1(FOCK,WORK(KFTRI),WORK(KFREE),LFREE,IPRINT)
 
 C     Memory deallocation
       CALL MEMREL('FREEMT.FREEM1',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -1946,7 +1954,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck freem1 */
-      SUBROUTINE FREEM1(FOCK,FTRI,OP1INT,FIRST,WORK,LWORK,IPRINT)
+      SUBROUTINE FREEM1(FOCK,FTRI,WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
 C     Driver for the construction of the one-electron free particle matrix
@@ -1995,31 +2003,31 @@ C
 #include "dcbham.h"
 #include "dcbgen.h"
 C
-      LOGICAL FIRST(NZ)
-      DIMENSION FOCK(N2BBASX,NZ),FTRI(NNBBASX,NZ),OP1INT(NNBBASX),
+      LOGICAL FIRST(4)
+      DIMENSION FOCK(N2BBASX,NZ),FTRI(NNBBASX,NZ),
      &          WORK(LWORK)
       CALL QENTER('FREEM1')
 
 C
 C     Initialize
 C
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
+      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
-      CALL LSET(NZ,.TRUE.,FIRST)
+      FIRST(1:4) = .TRUE.
 C
-C     Beta matrix
+C     Beta matrix (FOCK is used as scratch space)
 C     ===========
 C
       IOP = IPBETAMT
       CALL PRPMAO(LU1INT,IOP,.TRUE.,NNBBASX,FTRI,
-     &            OP1INT,FIRST,IPRHAM)
+     &            FOCK,FIRST,IPRHAM)
 C
-C     Kinetic energy
+C     Kinetic energy (FOCK is used as scratch space)
 C     ==============
 C
       IOP = IPKINERG
       CALL PRPMAO(LU1INT,IOP,.TRUE.,NNBBASX,FTRI,
-     &            OP1INT,FIRST,IPRHAM)
+     &            FOCK,FIRST,IPRHAM)
 C
       CLOSE(LU1INT,STATUS = 'KEEP')
 C
@@ -4378,6 +4386,8 @@ c
          IF (.not.NOORBT(I)) Z = MAX(Z,CHARGE(I)) ! skip point charges
       ENDDO
 
+C    ... find maximum number of shells we need to run over
+C        and return number in NSHELL
       CALL BNCOR1(GNU,ZEFF,0,Z,NSHELL,0,DUMMY,NUCIND,.TRUE.)
 
 c   ... loop over shells
@@ -4387,9 +4397,9 @@ c       in the zeroth run (N=0) by using a diffuse Gaussian (see BNCOR1)
 c
       IF (IPRINT .GE. 1) THEN
          WRITE(LUPRI,'(/4X,A/4X,A//14X,A/14X,A)')
-     &' *** BNCORR for < X_A | (-Zeff*G(a,r_C))/r_C | X_B > ***',
+     &' *** BNCORR for < X_A | (Qeff*G(a,r_C))/r_C | X_B > ***',
      &'     X=L,S ; G(a,r_C)=exp(-a*r_C^2)',
-     &      ' Nucleus    Charge=(-Zeff)   Exponent(a)',
+     &      ' Nucleus   shell charge=Qeff  Exponent(a)',
      &      '-----------------------------------------'
       ENDIF
       DO N = 0,NSHELL
