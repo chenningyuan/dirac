@@ -3726,7 +3726,6 @@ C
         ILAB(1,JLAB) = ILAB(1,JLAB) + 1
         ILAB(2,JLAB) = I
       ENDDO
-      write(*,*)"MAXREP", MAXREP
       if(iprint > 0)then
         CALL HEADER('Symmetry Orbitals',1)
         WRITE (LUPRI,'(1X,A,6X,8I6)')

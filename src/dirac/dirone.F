@@ -6194,13 +6194,18 @@ C figure this one out (LV).
 C
       IOFT = 1
       IOFV = 1
+      N2TMT = 0
+      N2TMOTQ = 0
       DO 10 I = 1,NFSYM
         IF(NORB(I).EQ.0) GOTO 10
         I2TMT(I)  = N2TMT
+!        write(*,*)"N2TMT ,NFBAS(I,0)*NORB(I)*NZT"
+!        write(*,*)N2TMT,NFBAS(I,0),NORB(I),NZT
         N2TMT     = N2TMT + NFBAS(I,0)*NORB(I)*NZT
         I2TMOT(I) = N2TMOTQ
         N2TMO(I)  = NTMO(I)*NTMO(I)
         N2TMOTQ   = N2TMOTQ + N2TMO(I)*NZ
+!        write(*,*)"N2TMOTQ",N2TMOTQ
 C        
         IOFTB = I2BASX(I,I) + 1        
         CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
@@ -6278,6 +6283,8 @@ C
         NTT = NT * NT
         IEIGP = IORB(I) + 1
         IEIGE = IEIGP + NS
+        KPMAXL = 0
+        KPMAXS = 0
 C
 C       Allocate memory for the diagonalization. We want to
 C       have the LL and SS blocks in separate blocks.
@@ -6484,7 +6491,6 @@ CCCCCCCCCCCCCCCCCCCCCCC
 C LL counting and sorting
 CCCCCCCCCCCCCCCCCCCCCCC
         KPBUF = 0
-        KPADB = 0
         KPADD = 0
         DO IX = IEIGE, IEIGE+NL-1
            KP = NINT(EIG(IX))
@@ -6751,8 +6757,8 @@ C
       IOFT    = 1
       IOFVS   = 1
       IOFVL   = 1
-      N2TMT   = 0
-      N2TMOTQ = 0
+!      N2TMT = 0
+!      N2TMT = 0
       DO 40 I = 1,NFSYM
 C
 C        output for ABS(Kappa)=1,
@@ -6971,7 +6977,6 @@ C
                 KPADD2 = IKAP*(IKAP-1)/2 + 1            
                 ID_SUB_BL(KPADD+MJABS-1,I)
      &               = (-1)**INV * (KPADD2+MJABS-1)
-                write(*,*)"ID_SUB_BL",ID_SUB_BL(KPADD+MJABS-1,I)
              ENDIF   
           ENDIF
        ENDDO        
@@ -7057,27 +7062,33 @@ C
        IOFL = 0
        IOFVL = IOFVL + NFBAS(I,0)*NS
        DO IK = 1,IKAP
-          CALL BCKTRA(TMAT(IOFT),NFBAS(I,0),NORB_SUB(KPADD+IK-1,I,2),
-     &                 WORK(KVSS+IOFS),NS,NORB_SUB(KPADD+IK-1,I,2),
-     &                 NS,1,
-     &                 NORB_SUB(KPADD+IK-1,I,2),1,NFBAS(I,0),
-     &                 VMAT(IOFVS),NFBAS(I,0),NS,1,
-     &                 IPRHAM)
+         IF(NS.GT.0)THEN  
+           CALL BCKTRA(TMAT(IOFT),NFBAS(I,0),NORB_SUB(KPADD+IK-1,I,2),
+     &                  WORK(KVSS+IOFS),NS,NORB_SUB(KPADD+IK-1,I,2),
+     &                  NS,1,
+     &                  NORB_SUB(KPADD+IK-1,I,2),1,NFBAS(I,0),
+     &                  VMAT(IOFVS),NFBAS(I,0),NS,1,
+     &                  IPRHAM)
+         ENDIF           
 C...  Update small here: : WORK(KVSS+IOFS),VMAT(IOFV),TMAT(IOFV)
-          IOFS = IOFS + NS*NORB_SUB(KPADD+IK-1,I,2)
-          IOFT = IOFT + NFBAS(I,0)*NORB_SUB(KPADD+IK-1,I,2)
-          CALL BCKTRA(TMAT(IOFT),NFBAS(I,0),NORB_SUB(KPADD+IK-1,I,1),
-     &                 WORK(KVLL+IOFL),NL,NORB_SUB(KPADD+IK-1,I,1),
-     &                 NL,1,
-     &                 NORB_SUB(KPADD+IK-1,I,1),1,NFBAS(I,0),
-     &                 VMAT(IOFVL),NFBAS(I,0),NL,1,
-     &                 IPRHAM)
+         IOFS = IOFS + NS*NORB_SUB(KPADD+IK-1,I,2)
+         IOFT = IOFT + NFBAS(I,0)*NORB_SUB(KPADD+IK-1,I,2)
+         CALL BCKTRA(TMAT(IOFT),NFBAS(I,0),NORB_SUB(KPADD+IK-1,I,1),
+     &                WORK(KVLL+IOFL),NL,NORB_SUB(KPADD+IK-1,I,1),
+     &                NL,1,
+     &                NORB_SUB(KPADD+IK-1,I,1),1,NFBAS(I,0),
+     &                VMAT(IOFVL),NFBAS(I,0),NL,1,
+     &                IPRHAM)
 C...  Update large here: : WORK(KVLL+IOFL),VMAT(IOFV),TMAT(IOFV)
-          IOFL = IOFL + NL*NORB_SUB(KPADD+IK-1,I,1)
-          IOFT = IOFT + NFBAS(I,0)*NORB_SUB(KPADD+IK-1,I,1)
-        ENDDO  ! IK = 1,IKAP
-        IOFVS = IOFVS + NFBAS(I,0)*(NL+NS)
-        IOFVL = IOFVL + NFBAS(I,0)*NS
+         IOFL = IOFL + NL*NORB_SUB(KPADD+IK-1,I,1)
+         IOFT = IOFT + NFBAS(I,0)*NORB_SUB(KPADD+IK-1,I,1)
+       ENDDO  ! IK = 1,IKAP
+       IOFVS = IOFVS + NFBAS(I,0)*(NL+NS)
+       IF(NS.NE.0)THEN 
+         IOFVL = IOFVL + NFBAS(I,0)*NS
+       ELSE
+         IOFVL = IOFVL + NFBAS(I,0)*NORB_SUB(KPADD,I,1)*IKAP
+       ENDIF   
       ENDDO                     ! INV=1,INVMAX
       ENDDO                     ! IKAP = 2,KPMAX(I)
 C        

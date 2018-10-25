@@ -2383,22 +2383,15 @@ C
 !                 IF(INV.EQ.2) KPADD = KPADD-IKAP 
                  IF(mod(NISH_BOS(IKAP*INVMAX+IOFKV),IKAP).eq.0)THEN
                    KCBUF = NISH_BOS(IKAP*INVMAX+IOFKV)/IKAP
-                   write(*,*)"NISH_BOS",NISH_BOS(IKAP*INVMAX+IOFKV)
-                   write(*,*)"IKAP,INVMAX,INFOKV",IKAP,INVMAX,IOFKV
-                   write(*,*)"NISH_BOS1",KCBUF
                  ELSE
                    WRITE(LUPRI,'(A,3I3,A)')
      &             'Number of electrons must be ',IKAP*2,IKAP*4,IKAP*6,
      &              " etc."
                    CALL QUIT('Number of elec. of closed shell is wrong') 
                  ENDIF
-                 write(*,*)"************"
                  DO IK = IKAP, 1, -1  
                    NISH_BOS(KPADD+IK-1+IOFM) = KCBUF
-                   write(*,*)"KPADD,IK,IOFM",KPADD,IK,IOFM
                  ENDDO
-                 write(*,*)
-                 write(*,*)
 C
                  DO IOPEN = 1, NOPEN
                    IF(mod(NACSH_BOS(IKAP*INVMAX+IOFKV,IOPEN),IKAP)

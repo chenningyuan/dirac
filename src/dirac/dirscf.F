@@ -302,6 +302,9 @@ C
 C
 C       Open files necessary for Dirac-Fock calculation
 C
+!        N2TMOTQ = N2TMO(I)*NZ        
+!        N2TMOTQ = N2TMO(I)*NZ        
+        write(*,*)"N2TMOTQ",N2TMOTQ !sunaga
         OPEN (LUEVEC, FILE='DFEVEC', FORM='UNFORMATTED',
      +      ACCESS='DIRECT',RECL=8*N2TMOTQ,STATUS='UNKNOWN')
         CALL OPNFIL(LUFCK2,'DFFCK2','UNKNOWN','PREDHF')
@@ -4711,7 +4714,7 @@ C
         INDEX2   = ABS(IBEIG(J)) - INDEX1*(INDEX1-1)/2
         MJ       = (2*INDEX2 - 1) * (-1)**(INDEX2+1)         
         IF (IPRINT.GE.2) THEN
-          WRITE(LUPRI,'(I5,I5,I4)') IBEIG(J),MJ,J
+          WRITE(LUPRI,'(I5,I5,I5)') IBEIG(J),MJ,J
         ENDIF         
         IBEIG(J) = MJ
       ENDDO
