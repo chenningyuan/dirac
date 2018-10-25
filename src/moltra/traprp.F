@@ -139,7 +139,7 @@ C
          ELSE
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAPRP')
             CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
-     &                  WORK(KIBEIG),TOTERG,14,WORK,KFREE,LFREE)
+     &                  WORK(KIBEIG),TOTERG,14)
          ENDIF
       END IF
 C

@@ -1630,14 +1630,14 @@ C
 C
 C     Memory allocation
 C
-      CALL MEMGET('REAL',KBUF,MZ*N2BBASX,WORK,KFREE,LFREE)
-      CALL DCOPY(MZ*N2BBASX,AMAT,1,WORK(KBUF),1)
+      CALL MEMGET2('REAL','BUF',KBUF,N2BBASX,WORK,KFREE,LFREE)
       IZOFF = 0
       DO IZ = 1,MZ
+        CALL DCOPY(N2BBASX,AMAT(IZOFF+1),1,WORK(KBUF),1)
         DO JC = 1,2
           DO JREP = 0,MAXREP
             DO J = 0,NBBAS(JREP,JC)-1
-              JSOFF = IZOFF + (IBBAS(JREP  ,JC)+J)*NTBAS(0)
+              JSOFF =         (IBBAS(JREP  ,JC)+J)*NTBAS(0)
               JUOFF = IZOFF + (ICOS (JREP+1,JC)+J)*NTBAS(0)
               DO IC = 1,2
                 DO IREP = 0,MAXREP
@@ -1689,15 +1689,15 @@ C
 #include "memint.h"
 C
 
-      CALL MEMGET('REAL',KBUF,MZ*N2BBASX,WORK,KFREE,LFREE)
-      CALL DCOPY(MZ*N2BBASX,AMAT,1,WORK(KBUF),1)
+      CALL MEMGET2('REAL','BUF',KBUF,N2BBASX,WORK,KFREE,LFREE)
       IZOFF = 0
       DO IZ = 1,MZ
+        CALL DCOPY(N2BBASX,AMAT(IZOFF+1),1,WORK(KBUF),1)
         DO JC = 1,2
           DO JREP = 0,MAXREP
             DO J = 0,NBBAS(JREP,JC)-1
               JSOFF = IZOFF + (IBBAS(JREP  ,JC)+J)*NTBAS(0)
-              JUOFF = IZOFF + (ICOS (JREP+1,JC)+J)*NTBAS(0)
+              JUOFF =         (ICOS (JREP+1,JC)+J)*NTBAS(0)
               DO IC = 1,2
                 DO IREP = 0,MAXREP
                   IUOFF = JUOFF + ICOS (IREP+1,IC)
@@ -4325,8 +4325,7 @@ C     Read the MO coefficients
       INQUIRE(FILE='DFCOEF',EXIST=FILEX)
       IF(.NOT.FILEX) CALL QUIT ('DFCOEF missing')
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPEXP')
-      CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IDUM,DUM,2, 
-     &            WORK,KFREE,LFREE)
+      CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IDUM,DUM,2)
       CLOSE(LUCOEF,STATUS='KEEP')
 
 C     Perform the transformation

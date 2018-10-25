@@ -1729,7 +1729,7 @@ contains
   !     IDIM(2,IFRP) - number of electronic solutions                            !
   !     IDIM(3,IFRP) - number of AO-basis functions                              !
   !                                                                              !
-  !     Based on REACMO_no_work routine from the main Dirac code                 !
+  !     Based on REACMO routine from the main Dirac code                 !
   !                                                                              !
   !==============================================================================!
   implicit none
@@ -2151,7 +2151,7 @@ contains
             CALL NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,EIG)
          ELSE
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PCMOUT')
-            CALL REACMO_no_work(LUCOEF,'DFCOEF',DUM,EIG,IBG,DUM,4)
+            CALL REACMO(LUCOEF,'DFCOEF',DUM,EIG,IBG,DUM,4)
             CLOSE(LUCOEF,STATUS='KEEP')
             IOFF = VAR%IORB(IFRP)+VAR%NPSH(IFRP)
             CALL NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,EIG(1+IOFF))
