@@ -199,12 +199,20 @@ C
       ELSE IF (ITYPE .EQ. 8) THEN
          NREQUI = 3*NNBASX
       END IF
+
+      LDMAT = NDMAT*N2BASX
+      IF (NREQUI .LE. LDMAT ) THEN
+         ! use DMAT as scratch space in RVRES
+         LREQUI = 0
+      ELSE
+         LREQUI = NREQUI
+      END IF
 C
-      IF (LFREE .LT. NREQUI) THEN
-         WRITE(LUPRI,'(/5X,A,2(/5X,A,I8),/5X,A,2I8)')
+      IF (LFREE .LT. LREQUI) THEN
+         WRITE(LUPRI,'(/5X,A,2(/5X,A,I12),/5X,A,2I8)')
      &    'Insufficient work space for subroutine RVRES',
      &    'Free space     :',LFREE,
-     &    'Required space :',NREQUI,
+     &    'Required space :',LREQUI,
      &    'ITYPE, NDMAT   :',ITYPE,NDMAT
          CALL QUIT('Insufficient work space for RVRES')
       ENDIF
@@ -236,8 +244,14 @@ C
       CALL DO_HERPAR(WORK(KINDEX),MTOTTK,NBATCH,WORK(KNSTAT))
       IF (IPRPAR.GT.0) CALL TIMER2('DO_HERPAR',TIMSTR,TIMEND)
 C.....Get results from nodes
-      CALL RVRES(WORK(KFREE),FMAT,ITYPE,MTOTTK,NREQUI,
+      IF (LREQUI .EQ. 0) THEN
+         ! use DMAT as scratch space in RVRES
+         CALL RVRES(DMAT,FMAT,ITYPE,MTOTTK,NREQUI,
      &           NUMGRA,NUMHES,MAXDIF,WORK(KTIMES),DINTSKP,LDINTSKP)
+      ELSE
+         CALL RVRES(WORK(KFREE),FMAT,ITYPE,MTOTTK,NREQUI,
+     &           NUMGRA,NUMHES,MAXDIF,WORK(KTIMES),DINTSKP,LDINTSKP)
+      END IF
       IF (IPRPAR.GT.0) CALL TIMER2('RVRES',TIMSTR,TIMEND)
 C
 C-------------------------------------
