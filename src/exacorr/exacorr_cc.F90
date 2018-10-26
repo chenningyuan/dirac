@@ -257,9 +257,7 @@ module exacorr_cc
             call print_date('starting ccsd calculation')
 
 !           Create and initialize scalars that are to be used as tensors in contractions
-            print*, 'Started this specific tensor contraction'
             ierr=exatns_tensor_create(result_tensor,"result_tensor",EXA_DATA_KIND_C8)
-            print*, 'Finished this specific tensor contraction', ': Status = ',ierr
             ierr=exatns_tensor_create(one_tensor,"another_one_tensor",EXA_DATA_KIND_C8)   
             ! Note:  also get_integral_tensors will define a one_tensor and call it "one_tensor", so we needed another name
             ierr=exatns_tensor_init(one_tensor,ONE)
@@ -295,6 +293,8 @@ module exacorr_cc
             ierr=exatns_tensor_transform(t2_tensor,'Denominate')
 
 !           Calculate and print the MP2 energy
+            print*, "oovv tensor norm = "
+            call print_tensornorm2 (oovv_tensor)
             ierr=exatns_tensor_init(result_tensor)
             ierr=exatns_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,t2_tensor,oovv_tensor,ONE_QUARTER) ! o(2)v(2)
             print*,"MP2 energy printed directly from result_tensor follows below"
@@ -503,12 +503,9 @@ module exacorr_cc
             ierr=exatns_tensor_init(result_tensor)
             if (.not.CCD) then
                 ierr=exatns_tensor_contract("E()+=T(a,i)*F(i,a)",result_tensor,t1_tensor,fov_tensor) ! o(1)v(1)
-                ierr=exatns_tensor_traverse(result_tensor,'PrintTensor')
-                print*,"CCSD intermediate E printed directly from result_tensor follows below (should be 0)"
                 ierr=exatns_tensor_get_scalar(result_tensor,result_val)
                 ccsd_energy=result_val
                 ierr=exatns_tensor_init(result_tensor)
-                print *,"CCSD energy (T1 contribution) = ", ccsd_energy
             end if
             ierr=exatns_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,tau_tensor,oovv_tensor) ! o(2)v(2)
             print*,"CCSD energy printed directly from result_tensor follows below"
@@ -585,9 +582,6 @@ module exacorr_cc
 
         end subroutine exacorr_cc_driver
 
-        !subroutine get_CC_integrals (ao_space_id,ao_space_root, &
-        !                            oooo_tensor,ooov_tensor,oovv_tensor, &
-        !                            vovo_tensor,vovv_tensor,vvvv_tensor,voov_tensor,one_tensor)
         subroutine get_CC_integrals (ao_space_id,ao_space_root, &
                                     oooo_tensor,ooov_tensor,oovv_tensor, &
                                     vovo_tensor,vovv_tensor,vvvv_tensor,voov_tensor)
@@ -709,7 +703,7 @@ module exacorr_cc
 
         subroutine diis (t1_tensor,t2_tensor,vo_id,vo_root,vvoo_id,vvoo_root,t_convergence,mode)
         
-         integer, parameter             :: maxdim = 10 ! maximum number of tensors that will be stored 
+         integer, parameter             :: maxdim = 6 ! maximum number of tensors that will be stored 
          integer, parameter             :: mindim = 3 ! minimum number of tensors to allow extrapolation
          integer, intent(in), optional  :: mode ! 1:initialize, 2:clean-up
          real(8), intent(out), optional :: t_convergence ! convergence of the t1 and t2 amplitudes
@@ -823,32 +817,27 @@ module exacorr_cc
 !        update the b_diis array that holds the scalar products of the error tensors
          do i = 1, ntens
             ierr=exatns_tensor_init(scalar_tensor)
-            !Debug
-            ierr=exatns_tensor_get_scalar(scalar_tensor,scalar)
-            print*, "scalar diis before contraction = ", scalar
             ierr=exatns_tensor_contract("E()+=T+(a,i)*T(a,i)",scalar_tensor,t1_err_tensor(itens),t1_err_tensor(i))
             ierr=exatns_tensor_contract("E()+=T+(a,b,i,j)*T(a,b,i,j)",scalar_tensor,t2_err_tensor(itens),t2_err_tensor(i))
             ierr=exatns_tensor_get_scalar(scalar_tensor,scalar)
-            print*, "scalar diis after contraction = ", scalar
             b_diis(itens,i)=scalar
             b_diis(i,itens)=dconjg(scalar)
          end do
-         print*, "updated b_diis"
 
-         print*, "b_diis matrix"
-         print*, "======================"
-         do i = 1, ntens
-            do j = 1, ntens
-                write(*,'(E5.3,SP,E5.3,"i")',advance='no') b_diis(i,j), ' '
-            end do
-            write(*,*) ' '
-         end do
-         print*, "======================"
+         !b_diis matrix is updated correctly
+         !print*, "b_diis matrix"
+         !print*, "======================"
+         !do i = 1, ntens
+         !   do j = 1, ntens
+         !       write(*,'(F10.8,F10.8,A2)',advance='no') b_diis(i,j), "  "
+         !   end do
+         !   write(*,*) ' '
+         !end do
+         !print*, "======================"
         
          if (present(t_convergence)) then
             t_convergence = dsqrt(dble(b_diis(itens,itens)))
          end if 
-         print*, "updated convergence"
         
 !        transfer to a work array in the way requested by the solver and normalize the matrix
          b_max = maxval (abs(b_diis))
@@ -862,11 +851,13 @@ module exacorr_cc
          bb(1:ntens,0) = MINUS_ONE
          bb(0,1:ntens) = MINUS_ONE
          bb(1:ntens,1:ntens) = b_diis(1:ntens,1:ntens) * b_scale
-        
+         print*, "transfered to work array"       
+ 
 !        solve the linear system of equations using the LAPACK solver ZHESV
          coeff(0)       = MINUS_ONE  ! on input this should be the right-hand-side of the matrix equation b coef = rhs
          coeff(1:ntens) = ZERO 
          call ZHESV ('L',ntens+1,1,bb,maxdim+1,ipiv,coeff,maxdim+1,work,maxdim*maxdim,info)
+         print*, "ZHESV call finished"
 
 !        make the extrapolated amplitudes if the space is large enough
          if (ntens.ge.mindim) then
@@ -887,7 +878,6 @@ module exacorr_cc
          print*, "amps are new input tensors"
 
          ierr=exatns_tensor_destroy(scalar_tensor)
-         !ierr=exatns_tensor_destroy(one_tensor)
          print*, "destroyed scalar_tensor"
         
         end subroutine diis
