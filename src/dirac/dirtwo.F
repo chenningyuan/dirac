@@ -1566,6 +1566,8 @@ C*****************************************************************************
 C
 C*****************************************************************************
 #include "implicit.h"
+      INTEGER IREPA(*), LWORK
+      REAL(8) WORK(LWORK)
 #include "priunit.h"
 #include "dummy.h"
 #include "maxaqn.h"
@@ -1576,7 +1578,8 @@ C
 #include "cbihr2.h"
 #include "hrunit.h"
       LOGICAL LBIT,TOBE,REGO
-      DIMENSION IREPA(*),WORK(LWORK)
+      real(8) :: TIMSTR(2), TIMEND(2)
+
 C     Undifferentiated integrals written on file
       INTTYP = 0
       NCHUNK = 600
@@ -1609,9 +1612,9 @@ C
         I2TYP = 1
 CTROND        CALL OPNFIL(LUINTA,'DFTWLL','UNKNOWN','TWOGE1')          
         CALL GPOPEN(LUINTA,'DFTWLL','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-        CALL TIMER('START ',TIMSTR,TIMEND)
+        CALL TIMER2('START ',TIMSTR,TIMEND)
         CALL TWODRV(INTTYP,I2TYP,WORK,LWORK,IPRTWO)
-        CALL TIMER('LL-int',TIMSTR,TIMEND)
+        CALL TIMER2('LL-int',TIMSTR,TIMEND)
         CALL FLSHFO(LUPRI)
         CALL TWOSRT(I2TYP,NCHUNK,IREPA,WORK,LWORK,IPRTWO)
       ENDIF
@@ -1651,9 +1654,9 @@ C
         IF(IPRTWO.GE.2)
      +     WRITE(LUPRI,'(1P,A,D9.2)') 'SL-int - threshhold:',THRS
         CALL GPOPEN(LUINTA,'DFTWSL','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-        CALL TIMER('START ',TIMSTR,TIMEND)
+        CALL TIMER2('START ',TIMSTR,TIMEND)
         CALL TWODRV(INTTYP,I2TYP,WORK,LWORK,IPRTWO)
-        CALL TIMER('SL-int',TIMSTR,TIMEND)
+        CALL TIMER2('SL-int',TIMSTR,TIMEND)
         CALL FLSHFO(LUPRI)
         CALL TWOSRT(I2TYP,NCHUNK,IREPA,WORK,LWORK,IPRTWO)
       ENDIF
@@ -1697,9 +1700,9 @@ C
         IF(IPRTWO.GE.2)
      +     WRITE(LUPRI,'(A,E9.2)') 'SS-int - threshhold:',THRS
         CALL GPOPEN(LUINTA,'DFTWSS','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-        CALL TIMER('START ',TIMSTR,TIMEND)
+        CALL TIMER2('START ',TIMSTR,TIMEND)
         CALL TWODRV(INTTYP,I2TYP,WORK,LWORK,IPRTWO)
-        CALL TIMER('SS-int',TIMSTR,TIMEND)
+        CALL TIMER2('SS-int',TIMSTR,TIMEND)
         CALL FLSHFO(LUPRI)
         CALL TWOSRT(I2TYP,NCHUNK,IREPA,WORK,LWORK,IPRTWO)
       ENDIF
@@ -1715,9 +1718,9 @@ C
         IF(IPRTWO.GE.2)
      +     WRITE(LUPRI,'(A,E9.2)') 'GT-int - threshhold:',THRS
         CALL GPOPEN(LUINTA,'DFTWGT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-        CALL TIMER('START ',TIMSTR,TIMEND)
+        CALL TIMER2('START ',TIMSTR,TIMEND)
         CALL TWODRV(INTTYP,I2TYP,WORK,LWORK,IPRTWO)
-        CALL TIMER('GT-int',TIMSTR,TIMEND)
+        CALL TIMER2('GT-int',TIMSTR,TIMEND)
         CALL FLSHFO(LUPRI)
         CALL TWOSRT(I2TYP,NCHUNK,IREPA,WORK,LWORK,IPRTWO)
       ENDIF
@@ -3258,7 +3261,7 @@ C
      &        ISYMOP(*),IHRMOP(*),IFCKOP(*),
      &        NPOS(*),WORK(LWORK), IFCKOP_TEMP(NFMAT)
 C
-      DIM = N2BBASX*NZC1*NFMAT
+!     DIM = N2BBASX*NZC1*NFMAT
 C       Conventional (4-center integrals) AO Coulomb + exchange
         CALL DIRAOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
      &              IFCKOP,NPOS,INTFLG,
@@ -4349,6 +4352,10 @@ C     Written by T. Saue Sep 5 2006
 C
 C***********************************************************************
 #include "implicit.h"
+      INTEGER   NFMAT, LWORK, INTFLG
+      REAL(8)   FMAT(*),DMAT(*),WORK(LWORK)
+      INTEGER   ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT),NPOS(*)
+
 #include "priunit.h"
 #include "maxaqn.h"
 #include "dummy.h"
@@ -4358,8 +4365,7 @@ C
 #include "cbihr2.h"
 #include "dcbham.h"
 C
-      DIMENSION FMAT(*),DMAT(*),ISYMOP(NFMAT),IHRMOP(NFMAT),
-     &          IFCKOP(NFMAT),NPOS(*),WORK(LWORK)
+      real(8) :: TIMSTR(2), TIMEND(2)
 C
 C     *************************************************
 C     *****  D i r e c t  c o n s t r u c t i o n *****
@@ -4379,13 +4385,15 @@ C
       IF(IDFLAG.NE.0.AND.IDFLAG.GT.8) THEN
         IF(SOFOCK) THEN
 C.........construction of Fock matrix using ERIs in SO-basis
+          CALL TIMER2('START ',TIMSTR,TIMEND)
           CALL DIRSOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
      &                IFCKOP,NPOS,INTFLG,
      &                IPRINT,WORK,LWORK)
+          CALL TIMER2('SO Fock',TIMSTR,TIMEND)
         ELSE
 C.........construction of Fock matrix using ERIs in AO-basis:
 C.........skeleton Fock approach
-          CALL TIMER('START ',TIMSTR,TIMEND)
+          CALL TIMER2('START ',TIMSTR,TIMEND)
 
         !DIM = N2BBASX*NZC1*NFMAT
 C       Conventional (4-center integrals) AO Coulomb + exchange
@@ -4395,7 +4403,8 @@ C       Conventional (4-center integrals) AO Coulomb + exchange
 !          CALL FASTJK(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
 !     &                IFCKOP,NPOS,INTFLG,
 !     &                IPRINT,WORK,LWORK)
-          CALL TIMER('fastjk',TIMSTR,TIMEND)
+!         CALL TIMER2('fastjk',TIMSTR,TIMEND)
+          CALL TIMER2('AO Fock',TIMSTR,TIMEND)
         ENDIF
       ELSE
 C

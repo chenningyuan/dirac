@@ -552,7 +552,7 @@ C...............Direct contributions
  400  CONTINUE
       TFCK = SECOND() - TFCK
 C
-      IF(IPRINT.GE.3) THEN
+      IF(IPRINT.GE.4) THEN
         WRITE(LUPRI,'(A)')       '* INTFC1 - statistics:'
         WRITE(LUPRI,'(A,I10)')   '*   Integrals in     :',NCCINT
         WRITE(LUPRI,'(A,I10)')   '*   Integrals out    :',NBUF

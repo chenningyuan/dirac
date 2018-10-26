@@ -58,16 +58,16 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       DIMENSION VMAT(*),WORK(LWORK)
       LOGICAL DOBSS,V2COUT,FNDLAB,TWOBUF
+      real(8)              :: timstr(2), timend(2)
+
 #include "memint.h"
 
       CALL QENTER('MAKE_H2C')
 C ... generate 2-component Hamiltonian
 C
-C aspg, timing
-      CALL TIMER('START ',TIMSTR,TIMEND)
+      CALL TIMER2('START ',TIMSTR,TIMEND)
       CALL MAKE_BSS(VMAT,WORK(KFREE),LFREE) 
-      CALL TIMER('mk_bss',TIMSTR,TIMEND)
-C aspg, timing
+      CALL TIMER2('make_bss',TIMSTR,TIMEND)
 
 C    ===================================================================================
 C     ... decide whether do the picture change transformation of 4c Fock AO matrixes
