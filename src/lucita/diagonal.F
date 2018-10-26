@@ -1052,7 +1052,7 @@ C?    WRITE(6,*) ' Mission DIATERMS finished '
       IMPLICIT REAL*8           (A-H,O-Z)
 #if defined (VAR_MPI2)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IDIA_OFFSET
 #endif
 #include "parluci.h"

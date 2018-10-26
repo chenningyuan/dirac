@@ -502,8 +502,7 @@ C
          INQUIRE ( FILE = 'DFCOEF', EXIST = EX )
          IF ( EX ) THEN
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RREADMO')
-            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,2,
-     &                  WORK,KFREE,LFREE)
+            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,2)
             CLOSE(LUCOEF,STATUS='KEEP')
             IF (NTEST.GE. 0) THEN
                WRITE(LUPRI,'(/A)')

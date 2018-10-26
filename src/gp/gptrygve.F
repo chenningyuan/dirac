@@ -70,9 +70,21 @@ C
       END
 C  /* Deck timer */
       SUBROUTINE TIMER(TEXT,TIMSTR,TIMEND)
-#include "implicit.h"
+      ! print CPU time used
+      ! template:
+      !   CALL TIMER('START',TIMSTR,TIMEND)
+      !   ... work ...
+      !   CALL TIMER('work', TIMSTR,TIMEND
+      !   ... more work ...
+      !   CALL TIMER('more work',TIMSTR,TIMEND)
+      implicit none
 #include "priunit.h"
-      CHARACTER TEXT*(*), OUT_TEXT*50
+      CHARACTER TEXT*(*)
+      REAL*8    TIMSTR, TIMEND
+      ! local variables:
+      REAL*8    TIME, DUMMY
+      INTEGER   LTEXT, LOUT, LNBLNK
+      CHARACTER OUT_TEXT*50
 C
       IF (TEXT(1:5) .EQ. 'START') THEN
          CALL GETTIM(TIMSTR,DUMMY)
@@ -84,10 +96,49 @@ C
 C        Jun 06 hjaaj: do not print times less than 0.1 seconds
             LTEXT = LNBLNK(TEXT)
             LTEXT = MIN(30,LTEXT)
-            OUT_TEXT = '>>> Time used in '//TEXT(1:LTEXT)//' is'
-            LOUT = 17 + LTEXT + 3
+            OUT_TEXT = '>>> CPU time used in '//TEXT(1:LTEXT)//' is'
+            LOUT = 21 + LTEXT + 3
             CALL TIMTXT(OUT_TEXT(1:LOUT),TIME,LUPRI)
-            CALL FLSHFO(LUPRI)
+            flush(LUPRI)
+         END IF
+      END IF
+      RETURN
+      END
+      SUBROUTINE TIMER2(TEXT,TIMSTR,TIMEND)
+      ! print CPU and WALL time used
+      ! template:
+      !   CALL TIMER('START',TIMSTR,TIMEND)
+      !   ... work ...
+      !   CALL TIMER('work', TIMSTR,TIMEND
+      !   ... more work ...
+      !   CALL TIMER('more work',TIMSTR,TIMEND)
+      implicit none
+#include "priunit.h"
+      CHARACTER TEXT*(*)
+      REAL*8    TIMSTR(2), TIMEND(2)
+      ! local variables:
+      REAL*8    CTIME, WTIME
+      INTEGER   LTEXT, LOUT, LNBLNK
+      CHARACTER OUT_TEXT*50
+C
+      IF (TEXT(1:5) .EQ. 'START') THEN
+         CALL GETTIM(TIMSTR(1),TIMSTR(2))
+      ELSE
+         CALL GETTIM(TIMEND(1),TIMEND(2))
+         CTIME     = TIMEND(1) - TIMSTR(1)
+         TIMSTR(1) = TIMEND(1)
+         WTIME     = TIMEND(2) - TIMSTR(2)
+         TIMSTR(2) = TIMEND(2)
+         IF (CTIME .GT. 0.1D0 .OR. WTIME .GT. 0.1D0) THEN
+C        Jun 06 hjaaj: do not print times less than 0.1 seconds
+            LTEXT = LNBLNK(TEXT)
+            LTEXT = MIN(30,LTEXT)
+            LOUT = 22 + LTEXT + 3
+            OUT_TEXT = '>>> CPU  time used in '//TEXT(1:LTEXT)//' is'
+            CALL TIMTXT(OUT_TEXT(1:LOUT),CTIME,LUPRI)
+            OUT_TEXT = '>>> WALL time used in '//TEXT(1:LTEXT)//' is'
+            CALL TIMTXT(OUT_TEXT(1:LOUT),WTIME,LUPRI)
+            flush(LUPRI)
          END IF
       END IF
       RETURN

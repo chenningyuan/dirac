@@ -669,7 +669,7 @@ contains
 
       call opnfil(file_unit, 'DFCOEF', 'OLD', 'read_mo_coef')
 
-      call reacmo_no_work(file_unit, &
+      call reacmo(file_unit, &
                           'DFCOEF',  &
                           (/0.0d0/), &
                           (/0.0d0/), &
@@ -692,7 +692,7 @@ contains
 
       call opnfil(file_unit, 'DFCOEF', 'OLD', 'read_mo_coef')
 
-      call reacmo_no_work(file_unit, &
+      call reacmo(file_unit, &
                           'DFCOEF',  &
                           mo_coef,   &
                           (/0.0d0/), &

@@ -27,7 +27,7 @@ MnO6 Cluster with old UW PCs Bare Start
 .INTFLG
 1 1 0
 .MAXITR
- 75 
+ 100
 .EVCCNV
 5.0E-8  1.0e-7
 !.ITRINT
