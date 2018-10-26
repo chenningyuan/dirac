@@ -709,7 +709,7 @@ module exacorr_cc
 
         subroutine diis (t1_tensor,t2_tensor,vo_id,vo_root,vvoo_id,vvoo_root,t_convergence,mode)
         
-         integer, parameter             :: maxdim = 5 ! maximum number of tensors that will be stored 
+         integer, parameter             :: maxdim = 10 ! maximum number of tensors that will be stored 
          integer, parameter             :: mindim = 3 ! minimum number of tensors to allow extrapolation
          integer, intent(in), optional  :: mode ! 1:initialize, 2:clean-up
          real(8), intent(out), optional :: t_convergence ! convergence of the t1 and t2 amplitudes
@@ -839,7 +839,7 @@ module exacorr_cc
          print*, "======================"
          do i = 1, ntens
             do j = 1, ntens
-                write(*,'(E4.2,A)',advance='no') b_diis(i,j), ' '
+                write(*,'(E5.3,SP,E5.3,"i")',advance='no') b_diis(i,j), ' '
             end do
             write(*,*) ' '
          end do
@@ -870,8 +870,8 @@ module exacorr_cc
 
 !        make the extrapolated amplitudes if the space is large enough
          if (ntens.ge.mindim) then
-           ierr=exatns_tensor_init(t1_tensor)
-           ierr=exatns_tensor_init(t2_tensor)
+            ierr=exatns_tensor_init(t1_tensor)
+            ierr=exatns_tensor_init(t2_tensor)
             do i = 1, ntens
                ierr=exatns_tensor_contract("T1(a,i)+=T1O(a,i)*K()",t1_tensor,t1_res_tensor(i),one_tensor,prefactor=coeff(i))
                ierr=exatns_tensor_contract("T2(a,b,i,j)+=T2O(a,b,i,j)*K()",t2_tensor,t2_res_tensor(i),one_tensor,prefactor=coeff(i))
@@ -888,7 +888,7 @@ module exacorr_cc
 
          ierr=exatns_tensor_destroy(scalar_tensor)
          !ierr=exatns_tensor_destroy(one_tensor)
-         print*, "destroyed scalartensor"
+         print*, "destroyed scalar_tensor"
         
         end subroutine diis
 
