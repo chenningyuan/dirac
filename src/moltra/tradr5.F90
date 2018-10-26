@@ -94,7 +94,7 @@
 #include "maxorb.h"
 #include "aovec.h"
 #if defined (VAR_MPI)
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE), IBUFMPI(5)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE), IBUFMPI(5)
 #endif
 #include "infpar.h"
 #include "dcbgen.h"
@@ -1909,8 +1909,7 @@
       INQUIRE(FILE='DFCOEF',EXIST=FILEX)
       IF(.NOT.FILEX) GOTO 1000
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','LAGTRA')
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,IDUM,DUM,2,            &
-     &            WORK,KFREE,LFREE)
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,IDUM,DUM,2)
       CLOSE(LUCOEF,STATUS='KEEP')
 !
 !     ---------------------

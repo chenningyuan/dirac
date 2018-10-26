@@ -1633,7 +1633,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "priunit.h"
 #include "bucket_sort.h"
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER ISTAT(df_MPI_STATUS_SIZE)
       LOGICAL NEWMAIL
       INTEGER IHBUF(4*NGBFSZ+4)
 C
@@ -1677,7 +1677,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "priunit.h"
 #include "bucket_sort.h"
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER ISTAT(df_MPI_STATUS_SIZE)
       INTEGER ISTATS(df_MPI_STATUS_SIZE,MAX_SEND_BUFFERS)
       LOGICAL NEWMAIL
       INTEGER IEND

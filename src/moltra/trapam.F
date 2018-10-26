@@ -255,8 +255,7 @@ C
             CALL QUIT('PAMTRA: No MO coefficient file !')
          ELSE
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMTRA')
-            CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,
-     &                  IBEIG,TOTERG,14,WORK,KFREE,LFREE)
+            CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
             CLOSE(LUCOEF,STATUS='KEEP')
          END IF
       END IF
@@ -433,8 +432,7 @@ C
             CALL QUIT('PAMTRA: No MO coefficient file !')
          ELSE
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMTRA')
-            CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,
-     &                  IBEIG,TOTERG,14,WORK,KFREE,LFREE)
+            CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
          ENDIF
       END IF
 C
@@ -736,8 +734,7 @@ C
          CALL QUIT('PSIMP2: No MO coefficient file !')
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PSIMP2')
-         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,
-     &               IBEIG,ESCF,14,WORK,KFREE,LFREE)
+         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,ESCF,14)
       ENDIF
       CLOSE(LUCOEF,STATUS='KEEP')
       WRITE(LUPRI,'(A,F18.10,/)')
@@ -1110,8 +1107,7 @@ C
          CALL QUIT('LAGTAU: No MO coefficient file !')
       ELSE  
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','LAGTAU')
-         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,
-     &               TOTERG,14,WORK,KFREE,LFREE)
+         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
          CLOSE(LUCOEF,STATUS='KEEP')
       ENDIF 
 C           
@@ -1616,8 +1612,7 @@ C
                CALL QUIT('TRAHI: No MO coefficient file !')
             ELSE
                CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAHI')
-               CALL REACMO(LUCOEF,'DFCOEF',DUM,DUM,IDUM,TOTERG,1,
-     &                     DUM,IDUM,IDUM)
+               CALL REACMO(LUCOEF,'DFCOEF',DUM,DUM,IDUM,TOTERG,1)
                CLOSE(LUCOEF,STATUS='KEEP')
             ENDIF
          END IF
@@ -3608,8 +3603,7 @@ C
 C     Read and check eigenvalues
 C
       CALL MEMGET2('REAL','EIG',KEIG,NORBT,WORK,KFREE,LFREE)
-      CALL REACMO(LUCOEF,'DFCOEF',DUM,WORK(KEIG),DUM,DUM,4,
-     &            WORK,KFREE,LFREE)
+      CALL REACMO(LUCOEF,'DFCOEF',DUM,WORK(KEIG),DUM,DUM,4)
       DO IFRP = 1,NFSYM
         NSEL = 0
         NDEL = 0
@@ -3976,9 +3970,9 @@ C
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RESOLV')
          CALL REACMO(LUCOEF,'DFCOEF',WORK(KBUF),WORK(KEIG),WORK(KIBEIG),
-     &               TOTERG,14,WORK,KFREE,LFREE)
+     &               TOTERG,14)
         CALL REACMO(LUCOEF,'DFCOEF',WORK(KBUF1),WORK(KEIG),WORK(KIBEIG),
-     &               TOTERG,14,WORK,KFREE,LFREE)
+     &               TOTERG,14)
          CLOSE(LUCOEF,STATUS='KEEP')
       ENDIF
 C
@@ -4348,7 +4342,7 @@ C
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RESOLV')
          CALL REACMO(LUCOEF,'DFCOEF',WORK(KBUF),WORK(KEIG),WORK(KIBEIG),
-     &               TOTERG,14,WORK,KFREE,LFREE)
+     &               TOTERG,14)
          CLOSE(LUCOEF,STATUS='KEEP')
       ENDIF
 C
@@ -5085,7 +5079,7 @@ C***********************************************************************
       PARAMETER(D0=0.0D0,D1=1.0D0)
 C
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 C
 #include "priunit.h"
 #include "mxcent.h"

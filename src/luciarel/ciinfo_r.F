@@ -3647,7 +3647,7 @@ C
 #if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER ISTAT(MPI_STATUS_SIZE)
 #endif
 *
 *.output
@@ -3916,7 +3916,7 @@ csk  &                    L0BLOCK,L2BLOCK,LCSBLK
 #if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER ISTAT(MPI_STATUS_SIZE)
 #endif
 *
       INTEGER NBLK_MS2(*), IBLK_MS2(*)
@@ -4169,7 +4169,7 @@ C
 #include "krciprop.h"
 #if defined (VAR_MPI2)
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER ISTAT(MPI_STATUS_SIZE)
 #endif
       DIMENSION IXSYMBLK(*)
 C
@@ -4427,9 +4427,9 @@ C
 #include "infpar.h"
 #include "cands.inc"
 #include "mxpdim.inc"
-      DIMENSION ISTAT(MPI_STATUS_SIZE), ISYM_DISTR(IXSYMACT)
-      DIMENSION NPARBLOCK_X(NUM_BLOCKS,*),IBLOCKL_X(NUM_BLOCKS,*)
-      DIMENSION IXSYMPAIRS(MXPROPKRCI_SYM,*)
+      INTEGER   ISTAT(MPI_STATUS_SIZE), ISYM_DISTR(IXSYMACT)
+      INTEGER   NPARBLOCK_X(NUM_BLOCKS,*),IBLOCKL_X(NUM_BLOCKS,*)
+      INTEGER   IXSYMPAIRS(MXPROPKRCI_SYM,*)
       INTEGER   RCCTOS_X(NUM_BLOCKS2,*)
 C
       IXPAIR = 0
