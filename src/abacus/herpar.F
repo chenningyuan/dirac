@@ -128,7 +128,8 @@ C
 #include "inforb.h"
 #include "infpar.h"
 C
-      DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), WORK(LWORK),
+!     DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), WORK(LWORK),
+      DIMENSION FMAT(*), DMAT(*), WORK(LWORK),
      &          NPOS(NTOTTK), IREPDM(*), IFCTYP(*),
      &          GABRAO(*),DMRAO(*),DMRSO(*),DINTSKP(*)
       LOGICAL FIRST,NODV,NOPV,NOCONT,RETUR,TKTIME
@@ -141,6 +142,7 @@ C
      &('program error: parallel code called but MPI not activated')
 #endif
 C
+      IPRPAR = max(3,IPRPAR) ! hjaaj DEBUG
       IF (IPRPAR .GT. 0) THEN
          WRITE(LUPRI,'(/5X,A,I5/)')
      &    'HER_PARDRV: Number of nodes allocated:', NODES
@@ -201,9 +203,12 @@ C
       END IF
 
       LDMAT = NDMAT*N2BASX
-      IF (NREQUI .LE. LDMAT ) THEN
+      IF (NREQUI .LE. LDMAT .AND. LFREE .LT. NREQUI) THEN
          ! use DMAT as scratch space in RVRES
          LREQUI = 0
+         open(unit=78, file='DMAT_AO_SAVE', form='UNFORMATTED')
+         write(78) DMAT(1:LDMAT)
+         rewind (78)
       ELSE
          LREQUI = NREQUI
       END IF
@@ -248,6 +253,9 @@ C.....Get results from nodes
          ! use DMAT as scratch space in RVRES
          CALL RVRES(DMAT,FMAT,ITYPE,MTOTTK,NREQUI,
      &           NUMGRA,NUMHES,MAXDIF,WORK(KTIMES),DINTSKP,LDINTSKP)
+         rewind (78)
+         read(78) DMAT(1:LDMAT)
+         CLOSE(78, status='DELETE')
       ELSE
          CALL RVRES(WORK(KFREE),FMAT,ITYPE,MTOTTK,NREQUI,
      &           NUMGRA,NUMHES,MAXDIF,WORK(KTIMES),DINTSKP,LDINTSKP)
