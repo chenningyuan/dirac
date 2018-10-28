@@ -142,7 +142,6 @@ C
      &('program error: parallel code called but MPI not activated')
 #endif
 C
-      IPRPAR = max(3,IPRPAR) ! hjaaj DEBUG
       IF (IPRPAR .GT. 0) THEN
          WRITE(LUPRI,'(/5X,A,I5/)')
      &    'HER_PARDRV: Number of nodes allocated:', NODES
