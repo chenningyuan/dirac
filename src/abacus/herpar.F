@@ -128,7 +128,8 @@ C
 #include "inforb.h"
 #include "infpar.h"
 C
-      DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), WORK(LWORK),
+!     DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), WORK(LWORK),
+      DIMENSION FMAT(*), DMAT(*), WORK(LWORK),
      &          NPOS(NTOTTK), IREPDM(*), IFCTYP(*),
      &          GABRAO(*),DMRAO(*),DMRSO(*),DINTSKP(*)
       LOGICAL FIRST,NODV,NOPV,NOCONT,RETUR,TKTIME
@@ -199,12 +200,23 @@ C
       ELSE IF (ITYPE .EQ. 8) THEN
          NREQUI = 3*NNBASX
       END IF
+
+      LDMAT = NDMAT*N2BASX
+      IF (NREQUI .LE. LDMAT .AND. LFREE .LT. NREQUI) THEN
+         ! use DMAT as scratch space in RVRES
+         LREQUI = -1
+         open(unit=78, file='DMAT_AO_SAVE', form='UNFORMATTED')
+         write(78) DMAT(1:LDMAT)
+         rewind (78)
+      ELSE
+         LREQUI = NREQUI
+      END IF
 C
-      IF (LFREE .LT. NREQUI) THEN
-         WRITE(LUPRI,'(/5X,A,2(/5X,A,I8),/5X,A,2I8)')
+      IF (LFREE .LT. LREQUI) THEN
+         WRITE(LUPRI,'(/5X,A,2(/5X,A,I12),/5X,A,2I8)')
      &    'Insufficient work space for subroutine RVRES',
      &    'Free space     :',LFREE,
-     &    'Required space :',NREQUI,
+     &    'Required space :',LREQUI,
      &    'ITYPE, NDMAT   :',ITYPE,NDMAT
          CALL QUIT('Insufficient work space for RVRES')
       ENDIF
@@ -236,8 +248,17 @@ C
       CALL DO_HERPAR(WORK(KINDEX),MTOTTK,NBATCH,WORK(KNSTAT))
       IF (IPRPAR.GT.0) CALL TIMER2('DO_HERPAR',TIMSTR,TIMEND)
 C.....Get results from nodes
-      CALL RVRES(WORK(KFREE),FMAT,ITYPE,MTOTTK,NREQUI,
+      IF (LREQUI .EQ. -1) THEN
+         ! use DMAT as scratch space in RVRES
+         CALL RVRES(DMAT,FMAT,ITYPE,MTOTTK,NREQUI,
      &           NUMGRA,NUMHES,MAXDIF,WORK(KTIMES),DINTSKP,LDINTSKP)
+         rewind (78)
+         read(78) DMAT(1:LDMAT)
+         CLOSE(78, status='DELETE')
+      ELSE
+         CALL RVRES(WORK(KFREE),FMAT,ITYPE,MTOTTK,NREQUI,
+     &           NUMGRA,NUMHES,MAXDIF,WORK(KTIMES),DINTSKP,LDINTSKP)
+      END IF
       IF (IPRPAR.GT.0) CALL TIMER2('RVRES',TIMSTR,TIMEND)
 C
 C-------------------------------------

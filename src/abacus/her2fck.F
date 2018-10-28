@@ -33,7 +33,7 @@ C
 changed ISYMDM, IFCTYP to ISYMDM(NDMAT), IFCTYP(NDMAT)
 implemented all six IFCTYPes (two was already implemented)
 improved efficiency of INTFCK by moving GINT outside and
- moving common factors to SKLFC1
+ moving common factors to SKLFCK_1
 halved no. of  operations for IFCTYP=2 in INTFCK
 #endif
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -652,9 +652,9 @@ C*****************************************************************************
 #include "maxorb.h"
 #include "mxcent.h"
 #include "iratdef.h"
-      LOGICAL DIRFCK, DDFOCK, NODV, EXPECT, LONDON, PERTUR
-      DIMENSION FMAT(NBASIS*NBASIS,*), WORK(LWORK), ISYMDM(NDMAT),
-     &          IFCTYP(NDMAT)
+      LOGICAL   DIRFCK, DDFOCK, NODV, EXPECT, LONDON, PERTUR
+      REAL*8    FMAT(NBASIS*NBASIS,*), WORK(LWORK) 
+      INTEGER   ISYMDM(NDMAT), IFCTYP(NDMAT)
 #include "abainf.h"
 #include "ccom.h"
 #include "nuclei.h"
@@ -672,15 +672,19 @@ C     ============================
 C
       IF (DIRFCK) THEN
          NMAT = NDMAT
-         CALL MEMGET('REAL',KSKLTN,NMAT*N2BASX      ,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KFAC  ,NBASIS*(MAXREP+1),WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','SKLTON',KSKLTN,NMAT*N2BASX,
+     &      WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','FAC',   KFAC  ,NBASIS*(MAXREP+1),
+     &      WORK,KFREE,LFREE)
          NINDEX = KMAX*(MAXREP + 1)*KHK(NHTYP)
-         CALL MEMGET('REAL',KINDEX,NINDEX           ,WORK,KFREE,LFREE)
-         CALL MEMGET('INTE',KPOINT,NBASIS*(MAXREP+1),WORK,KFREE,LFREE)
+         CALL MEMGET2('INTE','IINDEX',KINDEX,NINDEX,
+     &      WORK,KFREE,LFREE)
+         CALL MEMGET2('INTE','IPOINT',KPOINT,NBASIS*(MAXREP+1),
+     &      WORK,KFREE,LFREE)
          IXYZ = 0
-         CALL SKLFC1(FMAT,WORK(KSKLTN),WORK(KFAC),WORK(KINDEX),
-     &               WORK(KPOINT),DUM,DUM,DUM,IDUM,IXYZ,
-     &               NMAT,ISYMDM,IFCTYP,IPRINT)
+         CALL SKLFCK_1(FMAT,WORK(KSKLTN),WORK(KFAC),WORK(KINDEX),
+     &                 WORK(KPOINT),DUM,DUM,DUM,IDUM,IXYZ,
+     &                 NMAT,ISYMDM,IFCTYP,IPRINT)
       END IF
 C
 C     Derivative Fock matrices
@@ -728,7 +732,7 @@ C     We ought also to reorder IFCTYP and ISYMDM, but as
 C     all values are 1 and 0, resp., never mind. /941221-hjaaj
                DO 400 IXYZ = 1, 3
                   IADR = IOFF + NMAT*(IXYZ - 1) + 1
-                  CALL SKLFC1(FMAT(1,IADR),WORK(KSKLTN),WORK(KFAC),
+                  CALL SKLFCK_1(FMAT(1,IADR),WORK(KSKLTN),WORK(KFAC),
      &                        WORK(KINDEX),WORK(KPOINT),WORK(KNFAC),
      &                        WORK(KNINDX),WORK(KNPINT),IATOM,IXYZ,NMAT,
      &                        ISYMDM(IADR),IFCTYP(IADR),IPRINT)
@@ -793,9 +797,9 @@ C
       CALL QEXIT('SKLFCK')
       RETURN
       END
-C  /* Deck sklfc1 */
-      SUBROUTINE SKLFC1(FMAT,SKLTON,FACTOR,INDEX,IPOINT,NFACTR,NINDEX,
-     &                  NPOINT,IATOM,IXYZ,NMAT,ISYMDM,IFCTYP,IPRINT)
+C  /* Deck SKLFCK_1 */
+      SUBROUTINE SKLFCK_1(FMAT,SKLTON,FACTOR,INDEX,IPOINT,NFACTR,NINDEX,
+     &                    NPOINT,IATOM,IXYZ,NMAT,ISYMDM,IFCTYP,IPRINT)
 C*****************************************************************************
 C
 C Trygve Helgaker and Henrik Koch 93-94 ??
@@ -828,8 +832,8 @@ C*****************************************************************************
 C
 C
       IF (IPRINT .GT. 5) THEN
-         CALL HEADER('Subroutine SKLFC1',-1)
-         CALL HEADER("Input skeleton Fock matrices in SKLFC1",1)
+         CALL HEADER('Subroutine SKLFCK_1',-1)
+         CALL HEADER("Input skeleton Fock matrices in SKLFCK_1",1)
          DO 10 IMAT = 1, NMAT
             WRITE (LUPRI,*) 'Input skeleton Fock matrix no.',IMAT,
      &         ' out of',NMAT
@@ -846,7 +850,7 @@ C         (see comments in INTFCK)
 C     /941019-hjaaj
 C
       IF (IPRINT .GT. 5) THEN
-         CALL HEADER("Final scaled skeleton Fock matrices in SKLFC1",1)
+        CALL HEADER("Final scaled skeleton Fock matrices in SKLFCK_1",1)
       END IF
       DO 100 IMAT = 1, NMAT
          IY = MOD(IFCTYP(IMAT),10)
@@ -995,7 +999,7 @@ C
          FAC = D1/dble(MAXREP + 1)
          CALL DSCAL(NMAT*(NBASIS**2),FAC,FMAT,1)
          IF (IPRINT .GT. 5) THEN
-            CALL HEADER("AO Fock matrices in SKLFC1",1)
+            CALL HEADER("AO Fock matrices in SKLFCK_1",1)
             DO 40 N = 1, NMAT
                WRITE (LUPRI,*) 'AO Fock matrix no.',N,
      &         ' out of',NMAT
@@ -1118,7 +1122,7 @@ C
          END IF
 #endif
          IF (IPRINT .GT. 5) THEN
-            CALL HEADER("SO Fock matrices in SKLFC1",1)
+            CALL HEADER("SO Fock matrices in SKLFCK_1",1)
             DO 700 N = 1, NMAT
                WRITE (LUPRI,*) 'SO Fock matrix no.',N,
      &         ' out of',NMAT
