@@ -204,7 +204,7 @@ C
       LDMAT = NDMAT*N2BASX
       IF (NREQUI .LE. LDMAT .AND. LFREE .LT. NREQUI) THEN
          ! use DMAT as scratch space in RVRES
-         LREQUI = 0
+         LREQUI = -1
          open(unit=78, file='DMAT_AO_SAVE', form='UNFORMATTED')
          write(78) DMAT(1:LDMAT)
          rewind (78)
@@ -248,7 +248,7 @@ C
       CALL DO_HERPAR(WORK(KINDEX),MTOTTK,NBATCH,WORK(KNSTAT))
       IF (IPRPAR.GT.0) CALL TIMER2('DO_HERPAR',TIMSTR,TIMEND)
 C.....Get results from nodes
-      IF (LREQUI .EQ. 0) THEN
+      IF (LREQUI .EQ. -1) THEN
          ! use DMAT as scratch space in RVRES
          CALL RVRES(DMAT,FMAT,ITYPE,MTOTTK,NREQUI,
      &           NUMGRA,NUMHES,MAXDIF,WORK(KTIMES),DINTSKP,LDINTSKP)
