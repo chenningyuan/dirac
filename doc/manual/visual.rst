@@ -124,6 +124,16 @@ Default (coordinates in bohr)::
    4.0
 
 
+keyword(3D_IMP)
+
+Calculate various densities in 3D on an imported grid (does not have to be regular)
+Example::
+
+  .3D_IMP
+   grid_file        ! a file with x,y,z-coordinates of grid points
+
+
+
 keyword(3D_INT)
 
 Integrate densities in 3D.
