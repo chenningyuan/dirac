@@ -438,7 +438,12 @@ contains
         do i = 1, nr_occ_used(isym)
            do j = 1, nr_virt_used(isym)
               if (temp_occ(i) .ne. 0 .and. temp_virt(j) .ne. 0) then
-                 ioff = (isym - 1)*nr_occ_used(isym - 1)*nr_virt_used(isym - 1)
+                ! miro: fix due to runtimecheck
+                 if (isym.gt.1) then
+                     ioff = (isym - 1)*nr_occ_used(isym - 1)*nr_virt_used(isym - 1) 
+                 else
+                     ioff = 0
+                 endif
                  ind = ioff + (i-1)*nr_virt_used(isym) + j
                  orbital_rotation_indices(1, ind) = temp_occ(i)
                  orbital_rotation_indices(2, ind) = temp_virt(j)

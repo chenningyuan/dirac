@@ -1658,6 +1658,7 @@ C
 C        The compressed index IJSHEL is split to indices ISHELA and ISHELB.
 C
          CALL UNPKIJ(IJSHEL(1),ISHELA,ISHELB)
+!Miro: runtimecheck problem - ISHELA gets wrong value, see below !
 C
          IF (TIMING) CPUTK1 = SECOND()
 C
@@ -1665,6 +1666,8 @@ C        *****************************
 C        ***** First Shell Index *****
 C        *****************************
 C
+! Fortran runtime error: Index '-2147483648' of dimension 1 of array 'lclash' below lower bound of 1
+! Miro: this means ISHELA get wrong value, needs fix !!!
          ICA    = LCLASH(ISHELA)
          NHKTA  = NHKTSH(ISHELA)
          KHKTA  = KHKTSH(ISHELA)

@@ -1395,7 +1395,7 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 C
-      DIMENSION IHRMOP(NTSIM),IFCKOP(NTSIM),ISYMOP(NTSIM)
+      DIMENSION IHRMOP(*),IFCKOP(*),ISYMOP(*)
       DIMENSION IBCVC(*),IBEVC(*),IBPVC(*),IBTYP(2,*)
 C
       IM = 0

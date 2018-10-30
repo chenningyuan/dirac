@@ -159,7 +159,8 @@ contains
              displs(i) = displs(i-1) + rcounts(i-1)
        end do
 
-       call mpi_gatherv(x, n, mpi_double_precision, y, rcounts, displs, mpi_double_precision, irank_master, global_communicator, ierr)
+       call mpi_gatherv(x, n, mpi_double_precision, y, rcounts, displs, mpi_double_precision, &
+    &                  irank_master, global_communicator, ierr)
 
        deallocate(rcounts_node)
        deallocate(rcounts)

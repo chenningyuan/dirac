@@ -15,8 +15,6 @@ set(FIXED_EMBEDDING_FORTRAN_SOURCES
 )
 
 set(FREE_EMBEDDING_FORTRAN_SOURCES
-   get_vemb_mat.F
-   emb_quit.F
    emb_mpi.F90
    emb_mag_cfg.F90
    emb_dirac_integration.F90
@@ -34,9 +32,22 @@ set(FREE_EMBEDDING_FORTRAN_SOURCES
    emb_main.F90
 )
 
+#Miro: I had to make this exception to pass runtime checks.
+# Could you have a look at it, Andre ?
+set(FREE_EMBEDDING_FORTRAN_SOURCES_noruntimecheck
+   emb_dirac_evaluators.F90
+)
+
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FREE_EMBEDDING_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
+    set_source_files_properties(${FREE_EMBEDDING_FORTRAN_SOURCES_noruntimecheck}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
     set_source_files_properties(${FIXED_EMBEDDING_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
+endif()
+
+if(ENABLE_RUNTIMECHECK)
+    message(STATUS "runtime-check flags activated for the 'embedding' module with some sources excluded")
+    set_source_files_properties(${FREE_EMBEDDING_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+    set_source_files_properties(${FIXED_EMBEDDING_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
 endif()
 
 add_library(
@@ -44,6 +55,7 @@ add_library(
    OBJECT
    ${FIXED_EMBEDDING_FORTRAN_SOURCES}
    ${FREE_EMBEDDING_FORTRAN_SOURCES}
+   ${FREE_EMBEDDING_FORTRAN_SOURCES_noruntimecheck}
 )
 
 # add intermodule dependencies

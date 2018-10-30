@@ -1,4 +1,4 @@
-*./LUCINP/
+!*./LUCINP/
       INTEGER PNTGRP
-      COMMON/LUCINPR/PNTGRP,NIRREP,MAXML,
+      COMMON/LUCINPR/PNTGRP,NIRREP,MAXML,                               &
      &              NACTEL,NSMOB

@@ -53,7 +53,6 @@ cbs   clean the arrays for cartesian integrals
 C
       length3=(numbalLcart*numbalLcart+numbalLcart)/2
       iloca=length3
-CBS   print *, 'iloca',iloca
       IOCAX = 1
       iocay=iocax+iloca
       iocaz=iocay+iloca
@@ -1861,6 +1860,7 @@ cbs   get expansions of atomic orbitals in contracted functions
       dimension xorb(MxprimL,MxContL,0:lmax)
       dimension ovlpprimcont(MxcontL,MxprimL),
      *dummytrafo(MxcontL,MxprimL)
+      real(8), allocatable :: zeta(:)
       DIMENSION WORK(LWORK)
 
 #include "amfi_if.h"
@@ -1920,15 +1920,26 @@ CMI   write(17,'(I5)') null
 CMI   else
       write(17,'(I5)') ione    
 CMI   endif
-      write(17,'(4(E20.14,1X))') ((exponents(irun,L),irun=1,
-     *nprimit(l)),l=0,Lmax_occ)
+
+!     Pack exponents in a one dimensional array as they will be read that way
+!     avoids bug with gnu8 compiler in directly writing in a nested loop
+      allocate(zeta(sum(nprimit)))
+      ii = 0
+      do l=0,Lmax_occ
+         do irun=1,nprimit(l)
+            ii = ii + 1
+            zeta(ii) = exponents(irun,l)
+         end do
+      end do
+      write(17,'(4(E20.14,1X))') zeta
+      deallocate(zeta)
+
       rewind(17)
       close(17,status='keep')
 C
 C     set file labels for file RELSCF_COEF
       CALL GETLAB_RELSCF(INT(CHARGE))
 
-CMI   call system('relscf < TOSCF > scf.out')
 CMI ... run internal atomic SCF code which reads TOSCF input file
       CALL INT_AT_SCF(WORK,LWORK)
       IF(ONRELSCF) THEN

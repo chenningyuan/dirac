@@ -922,10 +922,7 @@ contains
       allocate(u%s_lao(3, nr_fmat))
       allocate(u%gs_lao(3, 3, nr_fmat))
     end if
-
-
-
-
+    tau=0.0d0 ! Miro: satisfy runtime check
 
     if (use_blas3_scheme) then
        block_threshold = get_block_threshold(dft_cfg_tinydens, mat_dim, dmat_0)
