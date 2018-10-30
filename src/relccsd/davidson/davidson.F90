@@ -1632,6 +1632,9 @@ contains
 
                b => updated_subspace_vectors_R(b, delta, verbose=davidson_debug)
 
+               call davidson_synchronize_trial_vectors(b,size(delta,2))
+!              call davidson_synchronize_trial_vectors(b,-1)
+
                if (davidson_verbose) then
                    call davidson_print_vectors(delta, label="delta                         ")
                    call davidson_print_vectors(b, label="Updated subspace vectors      ")
@@ -2638,6 +2641,33 @@ contains
        apply_shift = davidson_apply_eigenvalues_shift 
 
     end subroutine
+
+!!! test for synchronizing variable
+
+   subroutine davidson_synchronize_trial_vectors(b,nr_to_sync)
+!
+! stefan: please add bcast here if a new variable has been added to the list
+!         above
+!
+      use interface_to_mpi
+      real(kind=8), intent(inout) :: b(:,:)
+      integer, intent(in) :: nr_to_sync 
+      integer :: ndim1, ndim2, start_slice, end_slice
+
+      ndim1 = size(b,1)
+
+      print *,'debug: bcast of ',nr_to_sync,' trial vectors from master to nodes'
+      if (nr_to_sync .le. 0) then 
+          ndim2 = size(b,2) 
+          call interface_mpi_bcast_r2_work_f77(b,ndim1,ndim2,0,global_communicator)
+      else
+          end_slice = size(b,2)
+          start_slice = end_slice - nr_to_sync
+          ndim2 = nr_to_sync
+          call interface_mpi_bcast_r2_work_f77(b(:,start_slice:end_slice),ndim1,ndim2,0,global_communicator)
+      end if
+
+   end subroutine
 
 end module
 
