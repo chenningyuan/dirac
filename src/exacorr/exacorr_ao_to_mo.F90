@@ -237,7 +237,7 @@ module exacorr_ao_to_mo
            call print_date('finished ao integral calculation')
 
            ! the  next three lines are for debugging, 
-           call print_tensornorm2 (aoint_tensor) ! this is usually sufficent for checking
+           print*, "aoint = ", print_tensornorm2 (aoint_tensor) ! this is usually sufficent for checking
            ! when uncommenting the next line: keep in mind that printing an entire tensor yields an enormous output
            ! ierr=exatns_tensor_traverse(aoint_tensor,'PrintTensor')
 
@@ -251,21 +251,21 @@ module exacorr_ao_to_mo
 
            call aomo_transform_1 (aoint_tensor,moint_tensor,initlabel)
            call print_date('completed mo integral tensor: algorithm 1')
-           call print_tensornorm2 (moint_tensor)
+           print*, "moint = ", print_tensornorm2 (moint_tensor)
 
            ierr=exatns_tensor_init(moint_tensor,zero)
            call aomo_transform_2 (aoint_tensor,moint_tensor,initlabel2)
            call print_date('completed mo integral tensor: algorithm 2')
-           call print_tensornorm2 (moint_tensor)
+           print*, "moint = ", print_tensornorm2 (moint_tensor)
 
            ierr=exatns_tensor_init(moint_tensor,zero)
            call aomo_transform_3 (ao_space_id,ao_space_root,moint_tensor,initlabel3)
            call print_date('completed mo integral tensor: algorithm 3')
-           call print_tensornorm2 (moint_tensor)
+           print*,"moint = ", print_tensornorm2 (moint_tensor)
 
            call get_integral_tensor (aoint_tensor,moint_tensor,0,initlabel)
            call print_date('completed dirac-sorted mo integral tensor - not anti-symmetrized')
-           call print_tensornorm2 (moint_tensor)
+           print*,"moint = ", print_tensornorm2 (moint_tensor)
 
            ierr=exatns_tensor_destroy(moint_tensor)
 
@@ -280,11 +280,11 @@ module exacorr_ao_to_mo
 
            call get_integral_tensor (aoint_tensor,moint_tensor,12,initlabel)
            call print_date('completed dirac-sorted mo integral tensor - 12 anti-symmetrized')
-           call print_tensornorm2 (moint_tensor)
+           print*,"moint = ", print_tensornorm2 (moint_tensor)
 
            call get_integral_tensor (aoint_tensor,moint_tensor,34,initlabel)
            call print_date('completed dirac-sorted mo integral tensor - 34 anti-symmetrized')
-           call print_tensornorm2 (moint_tensor)
+           print*, "moint = ", print_tensornorm2 (moint_tensor)
 
            !Destroy aoint-tensor:
            ierr=exatns_tensor_destroy(aoint_tensor)
@@ -685,10 +685,12 @@ module exacorr_ao_to_mo
 
         end subroutine mulliken_to_dirac_sort
 
-        subroutine print_tensornorm2 (tens)
+        function print_tensornorm2 (tens) result(scalar_real)
 
           type(tens_rcrsv_t):: tens, scalar
           integer ierr,rank
+          complex(8) :: scalar_complex
+          real(8)    :: scalar_real      
  
           ! create a rank-0 tensor
           ierr=exatns_tensor_create(scalar,'scalar',EXA_DATA_KIND_C8)
@@ -711,11 +713,11 @@ module exacorr_ao_to_mo
               ierr=1
           end select
           if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_contract() failed!')
-          ierr=exatns_tensor_traverse(scalar,'PrintTensor')
-          if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_traverse() failed!')
+          ierr=exatns_tensor_get_scalar(scalar,scalar_complex)
+          scalar_real=real(scalar_complex,8)
           ierr=exatns_tensor_destroy(scalar); if(ierr.ne.EXA_SUCCESS) then; ierr=45; return; endif
 
-        end subroutine print_tensornorm2
+        end function print_tensornorm2
 
 ! stub non-MPI routine to satisfy references
 

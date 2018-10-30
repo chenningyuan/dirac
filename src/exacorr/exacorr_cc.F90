@@ -66,7 +66,7 @@ module exacorr_cc
 !        CCSD control and result variables
          integer            :: iccsd, nccsd
          real(8)            :: mp2_energy, ccsd_energy, t_convergence!, t_energy(3) ! triples not implemented
-         real(8), parameter :: t_target_precision = 1.D-13
+         real(8), parameter :: t_target_precision = 1.D-12
 
          ! classes for the definition of spaces (AO and 4 different MO spaces)
          class(h_space_t), pointer                :: ao_space
@@ -293,14 +293,10 @@ module exacorr_cc
             ierr=exatns_tensor_transform(t2_tensor,'Denominate')
 
 !           Calculate and print the MP2 energy
-            print*, "oovv tensor norm = "
-            call print_tensornorm2 (oovv_tensor)
             ierr=exatns_tensor_init(result_tensor)
             ierr=exatns_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,t2_tensor,oovv_tensor,ONE_QUARTER) ! o(2)v(2)
-            print*,"MP2 energy printed directly from result_tensor follows below"
-            ierr=exatns_tensor_traverse(result_tensor,'PrintTensor')
             ierr=exatns_tensor_get_scalar(result_tensor,result_val)
-            mp2_energy=result_val 
+            mp2_energy=real(result_val,8) ! Casting into real(8)
             print*," MP2 energy = ", mp2_energy
 
 !           Start CCSD iterations
@@ -414,32 +410,20 @@ module exacorr_cc
             end if
             ierr=exatns_tensor_contract("A(k,l,i,j)+=V(k,l,c,d)*T(c,d,i,j)",aint_tensor,oovv_tensor,tau_tensor,ONE_HALF) ! o(4)v(2)
 
-            if (.false.) then
-            !if (debug) then ! deactivated debug printing until better print-out is available
+            if (.true.) then
                if (.not.CCD) then   
-                print*, "T1amp = "
-                call print_tensornorm2 (t1_tensor)
+                write(*,'(A7,F20.15)'), "T1amp = ",print_tensornorm2 (t1_tensor)
                end if
-               print*, "T2amp = "
-               call print_tensornorm2 (t2_tensor)
-               print*, "Tau   = "
-               call print_tensornorm2 (tau_tensor)
-               print*, "hoint = "
-               call print_tensornorm2 (hoint_tensor)
-               print*, "goint = "
-               call print_tensornorm2 (goint_tensor)
-               print*, "hvint = "
-               call print_tensornorm2 (hvint_tensor)
-               print*, "gvint = "
-               call print_tensornorm2 (gvint_tensor)
-               print*, "hovint= "
-               call print_tensornorm2 (hovint_tensor)
-               print*, "aint  = "
-               call print_tensornorm2 (aint_tensor)
-               print*, "hint  = "
-               call print_tensornorm2 (hint_tensor)
-               print*, "cint  = "
-               call print_tensornorm2 (cint_tensor)
+               write(*,'(A7,F20.15)'), "T2amp = ",print_tensornorm2 (t2_tensor)
+               write(*,'(A7,F20.15)'), "Tau   = ",print_tensornorm2 (tau_tensor)
+               write(*,'(A7,F20.15)'), "hoint = ",print_tensornorm2 (hoint_tensor)
+               write(*,'(A7,F20.15)'), "goint = ",print_tensornorm2 (goint_tensor)
+               write(*,'(A7,F20.15)'), "hvint = ",print_tensornorm2 (hvint_tensor)
+               write(*,'(A7,F20.15)'), "gvint = ",print_tensornorm2 (gvint_tensor)
+               write(*,'(A7,F20.15)'), "hovint= ",print_tensornorm2 (hovint_tensor)
+               write(*,'(A7,F20.15)'), "aint  = ",print_tensornorm2 (aint_tensor)
+               write(*,'(A7,F20.15)'), "hint  = ",print_tensornorm2 (hint_tensor)
+               write(*,'(A7,F20.15)'), "cint  = ",print_tensornorm2 (cint_tensor)
             end if
 
 !           This term appears twice as we need to permute i and j
@@ -495,29 +479,23 @@ module exacorr_cc
             ierr=exatns_tensor_init(t2_tensor,ZERO)
             ierr=exatns_tensor_contract("T2(a,b,i,j)+=S2(a,b,i,j)*K()",t2_tensor,s2_tensor,one_tensor)
             ierr=exatns_tensor_transform(t2_tensor,'Denominate')
-            print*,"prepare for next iteration"
 
             if (.not.CCD) call diis (t1_tensor,t2_tensor,vo_id,vo_root,vvoo_id,vvoo_root,t_convergence=t_convergence)
-            print*,"second diis call finished"
 
             ierr=exatns_tensor_init(result_tensor)
             if (.not.CCD) then
+!               Will always be 0 contribution for now, since fov=0 (canonical orbitals)                
                 ierr=exatns_tensor_contract("E()+=T(a,i)*F(i,a)",result_tensor,t1_tensor,fov_tensor) ! o(1)v(1)
                 ierr=exatns_tensor_get_scalar(result_tensor,result_val)
-                ccsd_energy=result_val
+                ccsd_energy=real(result_val,8)
                 ierr=exatns_tensor_init(result_tensor)
             end if
             ierr=exatns_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,tau_tensor,oovv_tensor) ! o(2)v(2)
-            print*,"CCSD energy printed directly from result_tensor follows below"
-            ierr=exatns_tensor_traverse(result_tensor,'PrintTensor')
             ierr=exatns_tensor_get_scalar(result_tensor,result_val)
-            ccsd_energy = ccsd_energy + result_val * ONE_QUARTER
-            write (*,'(A,I4,A,F20.15,A,E10.1)') "  Iteration ",iccsd," CCSD energy = ",ccsd_energy, " convergence !=",t_convergence
+            ccsd_energy = ccsd_energy + real(result_val*ONE_QUARTER,8)
+            write (*,'(A,I4,A,F20.15,A,E10.1)') "  Iteration ",iccsd," CCSD energy = ",ccsd_energy, " convergence =",t_convergence
             if (t_convergence .lt. t_target_precision) exit
-            print*,"end of iteration", iccsd
             end do
-
-            print*,"Out of CCSD loop"
 
 !           Calculate (T) energy correction, not implemented yet
 !           call t3_energy (t_energy,eps_occ,eps_vir,t1_tensor,t2_tensor,fov_tensor,ooov_tensor,vovv_tensor,oovv_tensor)
@@ -557,13 +535,14 @@ module exacorr_cc
             ierr=exatns_tensor_destroy(aint_tensor)
             ierr=exatns_tensor_destroy(cint_tensor)
             ierr=exatns_tensor_destroy(hint_tensor)
-            print*,"destroyed all tensors"
 !           Get statistics 
-!           ierr=talsh_stats()    !Need to find correct exatns alternatives. Probably exatns_status
+            !ierr=exatns_status()    !Need to find correct exatns alternatives. Probably exatns_status
 
+            print*," Final CCSD energy = ",ccsd_energy
+!           print*," Final CCSD(T) energy = ",ccsd_energy+t_energy(1)+t_energy(2)  ! no (T) implementation yet
+            
             !Stop ExaTENSOR runtime
             ierr=exatns_stop()
-            print*,"stopped exatns"
 
             end if
 
@@ -575,8 +554,6 @@ module exacorr_cc
          call delete_global_data
 
 !        Make some noise so that we know we are leaving
-         if (my_MPI_rank == 0) print*," Final CCSD energy    = ",ccsd_energy
-!        if (my_MPI_rank == 0) print*," Final CCSD(T) energy = ",ccsd_energy+t_energy(1)+t_energy(2)  ! no (T) implementation yet
          if (my_MPI_rank == 0) print*, " Leaving cc_driver routine"
          return
 
@@ -627,8 +604,6 @@ module exacorr_cc
          ierr=exatns_tensor_init(aoint_tensor,'Aoint_calculator')
          if(ierr.ne.EXA_SUCCESS) call quit('Aoint_calculator failed!')
          call print_date('finished ao integral calculation')
-         print*, "aoint = "
-         call print_tensornorm2 (aoint_tensor)
 
 !        Note that the spaces for the tensor are given in physicists notation <12||34>
 !        whereas the initializer labels needed in the index transform are in mullikens notation (13||24)
@@ -639,8 +614,6 @@ module exacorr_cc
          initlabel(:,3)=initocc
          initlabel(:,4)=initvir
          call get_integral_tensor (aoint_tensor,oovv_tensor,12,initlabel)
-         print*, "oovv  = "
-         call print_tensornorm2 (oovv_tensor)
 
 !        Get oooo tensor
          initlabel(:,1)=initocc
@@ -648,8 +621,6 @@ module exacorr_cc
          initlabel(:,3)=initocc
          initlabel(:,4)=initocc
          call get_integral_tensor (aoint_tensor,oooo_tensor,12,initlabel)
-         print*, "oooo  = "
-         call print_tensornorm2 (oooo_tensor)
 
 !        Get anti-symmetrized vovo tensor, this needs to be done in two steps as two different classes contribute.
 !        Get vovo tensor
@@ -666,8 +637,6 @@ module exacorr_cc
          call get_integral_tensor (aoint_tensor,voov_tensor,0,initlabel)
 !        Make anti-symmetrized vovo tensor
          ierr=exatns_tensor_contract("V(a,i,b,j)+=V(a,i,j,b)*K()",vovo_tensor,voov_tensor,one_tensor,MINUS_ONE)
-         print*, "vovo  = "
-         call print_tensornorm2 (vovo_tensor)
 
 !        Get vvvv tensor
          initlabel(:,1)=initvir
@@ -675,8 +644,6 @@ module exacorr_cc
          initlabel(:,3)=initvir
          initlabel(:,4)=initvir
          call get_integral_tensor (aoint_tensor,vvvv_tensor,12,initlabel)
-         print*, "vvvv  = "
-         call print_tensornorm2 (vvvv_tensor)
 
 !        Get ooov tensor
          initlabel(:,1)=initocc
@@ -684,8 +651,6 @@ module exacorr_cc
          initlabel(:,3)=initocc
          initlabel(:,4)=initvir
          call get_integral_tensor (aoint_tensor,ooov_tensor,12,initlabel)
-         print*, "ooov  = "
-         call print_tensornorm2 (ooov_tensor)
 
 !        Get vovv tensor
          initlabel(:,1)=initvir
@@ -693,8 +658,6 @@ module exacorr_cc
          initlabel(:,3)=initocc
          initlabel(:,4)=initvir
          call get_integral_tensor (aoint_tensor,vovv_tensor,34,initlabel)
-         print*, "vovv  = "
-         call print_tensornorm2 (vovv_tensor)
 
 !        Clean-up
          ierr=exatns_tensor_destroy(aoint_tensor)
@@ -703,8 +666,8 @@ module exacorr_cc
 
         subroutine diis (t1_tensor,t2_tensor,vo_id,vo_root,vvoo_id,vvoo_root,t_convergence,mode)
         
-         integer, parameter             :: maxdim = 6 ! maximum number of tensors that will be stored 
-         integer, parameter             :: mindim = 3 ! minimum number of tensors to allow extrapolation
+         integer, parameter             :: maxdim = 8 ! maximum number of tensors that will be stored 
+         integer, parameter             :: mindim = 4 ! minimum number of tensors to allow extrapolation
          integer, intent(in), optional  :: mode ! 1:initialize, 2:clean-up
          real(8), intent(out), optional :: t_convergence ! convergence of the t1 and t2 amplitudes
         
@@ -725,7 +688,7 @@ module exacorr_cc
          type(tens_rcrsv_t), save            :: t1_err_tensor(maxdim), t2_err_tensor(maxdim)
          integer                             :: ipiv(maxdim), info    ! needed for ZHESV solver
          real(8)                             :: work(maxdim,maxdim)   ! needed for ZHESV solver
-         type(tens_rcrsv_t)                  :: scalar_tensor
+         type(tens_rcrsv_t), save            :: scalar_tensor
        
          character(len=1) :: vs_str
  
@@ -762,10 +725,9 @@ module exacorr_cc
 !           store the tensors in memory as current input tensors, needed to calculate the error vector later on
             ierr=exatns_tensor_init(t1_inp_tensor)
             ierr=exatns_tensor_contract("T1O(a,i)+=T1N(a,i)*K()",t1_inp_tensor,t1_tensor,one_tensor)
-            if(ierr.ne.EXA_SUCCESS) call quit('t1_inp_tensor contraction failed')
             ierr=exatns_tensor_init(t2_inp_tensor)
             ierr=exatns_tensor_contract("T2O(a,b,i,j)+=T2N(a,b,i,j)*K()",t2_inp_tensor,t2_tensor,one_tensor)
-            if(ierr.ne.EXA_SUCCESS) call quit('t2_inp_tensor contraction failed')
+            ierr=exatns_tensor_create(scalar_tensor,"scalar_tensor",EXA_DATA_KIND_C8)
             return ! no extrapolation possible
          end if
        
@@ -779,7 +741,7 @@ module exacorr_cc
                 ierr=exatns_tensor_destroy(t2_res_tensor(i))
                 ierr=exatns_tensor_destroy(t2_err_tensor(i))
             end do
-            print *, "cleanup done"
+            ierr=exatns_tensor_destroy(scalar_tensor)
             return
          end if
  
@@ -788,32 +750,22 @@ module exacorr_cc
          if (itens.gt.maxdim) itens = 1       ! cycle because we already have the maximum number of stored amplitudes, will overwrite the oldest one
          ntens = ntens + 1                    ! number of tensors stored after returning
          if (ntens.gt.maxdim) ntens = maxdim  ! we have reached the maximum number of tensors to be used in DIIS
-         !Debug
-         print*, "itens = ", itens, "ntens = ", ntens        
 
 !        store the result tensors
          ierr=exatns_tensor_init(t1_res_tensor(itens))
          ierr=exatns_tensor_contract("T1R(a,i)+=T1(a,i)*K()",t1_res_tensor(itens),t1_tensor,one_tensor)
-         if(ierr.ne.EXA_SUCCESS) call quit('t1_res_tensor contraction failed')
          ierr=exatns_tensor_init(t2_res_tensor(itens))
          ierr=exatns_tensor_contract("T2R(a,b,i,j)+=T2(a,b,i,j)*K()",t2_res_tensor(itens),t2_tensor,one_tensor)
-         if(ierr.ne.EXA_SUCCESS) call quit('t2_res_tensor contraction failed')
      
 !        calculate the error tensors by comparing the result of the t-equations with the tensors used as input
          ierr=exatns_tensor_init(t1_err_tensor(itens))
          ierr=exatns_tensor_contract("T1E(a,i)+=T1R(a,i)*K()",t1_err_tensor(itens),t1_tensor,one_tensor)
          ierr=exatns_tensor_contract("T1E(a,i)+=T1I(a,i)*K()",t1_err_tensor(itens),t1_inp_tensor,one_tensor,prefactor=MINUS_ONE)
-         if(ierr.ne.EXA_SUCCESS) call quit('Error tensor t1 calc failed')
          ierr=exatns_tensor_init(t2_err_tensor(itens))
          ierr=exatns_tensor_contract("T2E(a,b,i,j)+=T2R(a,b,i,j)*K()",t2_err_tensor(itens),t2_tensor,one_tensor)
          ierr=exatns_tensor_contract("T2E(a,b,i,j)+=T2I(a,b,i,j)*K()",t2_err_tensor(itens),t2_inp_tensor,one_tensor, &
                                                                                                 prefactor=MINUS_ONE)
-         if(ierr.ne.EXA_SUCCESS) call quit('Error tensor t2 calc failed')
  
-!        define scalar tensor needed to extract the error
-         ierr=exatns_tensor_create(scalar_tensor,"scalar_tensor",EXA_DATA_KIND_C8)
-         print*,"created scalar tensor"
-         !ierr=exatns_tensor_init(scalar_tensor)
 !        update the b_diis array that holds the scalar products of the error tensors
          do i = 1, ntens
             ierr=exatns_tensor_init(scalar_tensor)
@@ -824,17 +776,6 @@ module exacorr_cc
             b_diis(i,itens)=dconjg(scalar)
          end do
 
-         !b_diis matrix is updated correctly
-         !print*, "b_diis matrix"
-         !print*, "======================"
-         !do i = 1, ntens
-         !   do j = 1, ntens
-         !       write(*,'(F10.8,F10.8,A2)',advance='no') b_diis(i,j), "  "
-         !   end do
-         !   write(*,*) ' '
-         !end do
-         !print*, "======================"
-        
          if (present(t_convergence)) then
             t_convergence = dsqrt(dble(b_diis(itens,itens)))
          end if 
@@ -851,13 +792,11 @@ module exacorr_cc
          bb(1:ntens,0) = MINUS_ONE
          bb(0,1:ntens) = MINUS_ONE
          bb(1:ntens,1:ntens) = b_diis(1:ntens,1:ntens) * b_scale
-         print*, "transfered to work array"       
  
 !        solve the linear system of equations using the LAPACK solver ZHESV
          coeff(0)       = MINUS_ONE  ! on input this should be the right-hand-side of the matrix equation b coef = rhs
          coeff(1:ntens) = ZERO 
          call ZHESV ('L',ntens+1,1,bb,maxdim+1,ipiv,coeff,maxdim+1,work,maxdim*maxdim,info)
-         print*, "ZHESV call finished"
 
 !        make the extrapolated amplitudes if the space is large enough
          if (ntens.ge.mindim) then
@@ -868,18 +807,13 @@ module exacorr_cc
                ierr=exatns_tensor_contract("T2(a,b,i,j)+=T2O(a,b,i,j)*K()",t2_tensor,t2_res_tensor(i),one_tensor,prefactor=coeff(i))
             end do
          end if
-         print *, "made extrapolated amps"
         
 !        the extrapolated amplitudes are the new input tensors
          ierr=exatns_tensor_init(t1_inp_tensor)
          ierr=exatns_tensor_contract("T1O(a,i)+=T1(a,i)*K()",t1_inp_tensor,t1_tensor,one_tensor)
          ierr=exatns_tensor_init(t2_inp_tensor)
          ierr=exatns_tensor_contract("T2O(a,b,i,j)+=T2(a,b,i,j)*K()",t2_inp_tensor,t2_tensor,one_tensor)
-         print*, "amps are new input tensors"
 
-         ierr=exatns_tensor_destroy(scalar_tensor)
-         print*, "destroyed scalar_tensor"
-        
         end subroutine diis
 
 #else
