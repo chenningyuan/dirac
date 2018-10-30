@@ -496,12 +496,10 @@
       CALL OPNFIL(LUCMO,'DFCOEF','OLD','PRPXQR')
       IF(SPINFR) THEN
         allocate(ibeig(ntbas(0)))
-        CALL REACMO(LUCMO,'DFCOEF',CMO,DUM,ibeig,          &
-               TOTERG,11,WORK,KFREE,LFREE)
+        CALL REACMO(LUCMO,'DFCOEF',CMO,DUM,ibeig,TOTERG,11)
       ELSE
         allocate(ibeig(1))
-        CALL REACMO(LUCMO,'DFCOEF',CMO,DUM,IDUM,TOTERG,3,        &
-               WORK,KFREE,LFREE)
+        CALL REACMO(LUCMO,'DFCOEF',CMO,DUM,IDUM,TOTERG,3)
       ENDIF
       CLOSE(LUCMO,STATUS='KEEP')
 !

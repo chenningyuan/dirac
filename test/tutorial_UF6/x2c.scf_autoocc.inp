@@ -14,6 +14,9 @@
 #.OPEN SHELL
 #1
 #4/0,6
+# Miro: I need this to get the U atom converged !
+.OPENFACTOR
+ 0.00
 **ANALYZE
 .MULPOP
 *END OF

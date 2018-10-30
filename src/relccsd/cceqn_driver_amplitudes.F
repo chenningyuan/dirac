@@ -1,7 +1,6 @@
-      SUBROUTINE cceqn_driver_amplitudes(MAXIT,EPS,FOO,FVO,FVV,
+      SUBROUTINE cceqn_driver_amplitudes(MAXDIM,MAXIT,EPS,FOO,FVO,FVV,
      &                 T1,S1,T2,S2,AZ,H,HO,HV,HOV,
-     &                 BUF1,BUF2,BUF3,CC1,BB1,BB2,CONV,
-     &                 NBUF2,NBUF3,HEFF,EIGENVALUES,EIGENVECTORS)
+     &                 BUF1,BUF2,BUF3,CONV,NBUF2,NBUF3)
 
       use interface_to_mpi
       use xmlout
@@ -17,24 +16,15 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-C     Intermediaries etc.
+      REAL*8 CONV                ! Desired convergence
+      INTEGER MAXIT              ! Maximum number of iterations that is allowed
+      INTEGER MAXDIM             ! Maximum size of DIIS expansion space
+      INTEGER NBUF2,NBUF3        ! Size of the buffer arrays
 
+C     Pre-allocated arrays used for intermediaries etc.
       REAL*8 EPS(*),FOO(*),FVO(*),FVV(*),T1(*),S1(*),T2(*),S2(*)
       REAL*8 AZ(*),H(*),HO(*),HV(*),HOV(*),BUF1(*),BUF2(*),BUF3(*)
 
-C     for diis ...
-
-      REAL*8 CC1(*)
-      REAL*8 BB1(*),BB2(*)
-
-      real(8), parameter :: rms_limit = 1.D4
-      REAL*8 RMS,CONV
-      REAL*8 DIAG
-      INTEGER MAXIT,NBUF2,NBUF3
-
-C     for Fock space ...
-
-      REAL*8 HEFF(*),EIGENVECTORS(*),EIGENVALUES(0:*)
 
 C---------------Common Blocks--------------------------------------
 
@@ -48,18 +38,23 @@ C---------------Common Blocks--------------------------------------
 #include "complex.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)
-      integer ISTAT
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      integer ISTAT(df_MPI_STATUS_SIZE)
 #endif
 
 C---------------Local variables--------------------------------------
 
-      REAL*8 CPU,CPU4V,CPUH1,CPUH2
+      REAL*8 RMS                             ! Actual convergence
+      real(8), parameter :: rms_limit = 1.D4 ! divergence criterium
+      REAL*8 DIAG                            ! T1-diagnostic 
+      REAL*8 CPU,CPU4V,CPUH1,CPUH2           ! used in timing
       LOGICAL     FOCKSP,PRENE
-      CHARACTER*2 DELS1
-      CHARACTER*4 DELS2
+      CHARACTER*2 DELS1                      ! specifies S1 blocks to be deleted in denomf
+      CHARACTER*4 DELS2                      ! specifies S2 blocks to be deleted in denomf
       REAL*8 DDOT
       INTEGER it,itc,nit,IERR
+
+!     Arrays needed by DIIS routine
+      REAL*8  CC1(MAXDIM),BB1(MAXDIM+1,MAXDIM+2),BB2(MAXDIM+1,MAXDIM+2)
 
 C---------------Executable code--------------------------------------
 C
@@ -83,17 +78,19 @@ C
       IT = 0
       ITC = 0
       NIT = 0
- 1000 CONTINUE
+
+      do
+
       NIT = NIT + 1
       IF (NIT.GT.MAXIT) THEN
          maxit = maxit + 1
          NIT = NIT - 1
          WRITE(IW,6004) RMS
-         GO TO 2000
+         exit
       ENDIF
 C
 C  EVALUATE T1 EQUATIONS
-C  CHECK FOR CASES WITH NO NON_ZERO T1'S TO AVOID CRASHES
+C  CHECK FOR CASES WITH NO NON_ZERO T1s TO AVOID CRASHES
 C
       CALL XTIME(5,1,'- T1 equations                  ')
       CALL HOINTM (FOO,EPS,T1,T2,BUF1,BUF2,BUF3,HO)
@@ -110,70 +107,30 @@ C
 C     In case of NOCCD we can skip the calculation of T2 amplitudes
 C
       IF (        NOCCD) GOTO 100
-      CALL XTIME(5,1,'- T2 equations                  ')
            
 C
 C  EVALUATE T2 INTERMEDIATES
 C
-         CALL XTIME(0,1,'-- GOINTM                        ')
-         CALL GOINTM (FVO,T1,BUF1,BUF2,HO)
-         CALL XTIME(0,2,'-- GOINTM                        ')
-         CALL XTIME(0,1,'-- GVINTM                        ')
-         CALL GVINTM (FVO,T1,BUF3,NBUF3,BUF2,NBUF2,HV)
-         CALL XTIME(0,2,'-- GVINTM                        ')
-         CALL XTIME(0,1,'-- AINTM                         ')
-         CALL AINTM (T1,T2,BUF1,BUF2,AZ)
-         CALL XTIME(0,2,'-- AINTM                         ')
-         CALL XTIME(0,1,'-- HINTM                         ')
-         CALL HINTM (T1,T2,BUF1,BUF2,BUF3,NBUF3,H)
-         CALL XTIME(0,2,'-- HINTM                         ')
-
-#if defined (VAR_MPI)
-C *******************
-C ** parallel case: the H-intermediate was partially calculated
-C ** on the separate slaves. In order to perform the H*T2
-C ** contraction we need the complete H array ==> we complete it
-C ** here and synchronize all the nodes. They then have the complete
-C ** H-array and this lengthy contraction can also be parallelized.
-C
-      IF (NMPROC .GT. 1) THEN
-
-        IF(NBUF3.LT.IVOVO(NREP+1))
-     &    CALL QUIT('BUF3 can not keep the VOVO integrals !')
-C ... we collect the H array
-        CALL XTIME(4,1,'-- combining HINTM via MPI_ALLREDUCE')
-        CALL XCOPY (NBUF3,A0,0,BUF3,1)
-        IERR = 0
-        call interface_mpi_allreduce_r1_work_f77(H,BUF3,
-     &       RCW*IVOVO(NREP+1),
-     &       op_MPI_SUM,global_communicator)
-        IF(IERR.GT.0) THEN
-           CALL QUIT('MPI_REDUCE ERROR in collecting HINTM !')
-        ENDIF
-        CALL XCOPY(IVOVO(NREP+1),BUF3,1,H,1)
-        CALL XTIME(4,2,'-- combining HINTM via MPI_ALLREDUCE')
-
-      ENDIF
-
-#endif
-           
+      CALL XTIME(5,1,'- T2 equations                  ')
+      CALL XTIME(0,1,'-- GOINTM                        ')
+      CALL GOINTM (FVO,T1,BUF1,BUF2,HO)
+      CALL XTIME(0,2,'-- GOINTM                        ')
+      CALL XTIME(0,1,'-- GVINTM                        ')
+      CALL GVINTM (FVO,T1,BUF3,NBUF3,BUF2,NBUF2,HV)
+      CALL XTIME(0,2,'-- GVINTM                        ')
+      CALL XTIME(0,1,'-- AINTM                         ')
+      CALL AINTM (T1,T2,BUF1,BUF2,AZ)
+      CALL XTIME(0,2,'-- AINTM                         ')
+      CALL XTIME(0,1,'-- HINTM                         ')
+      CALL HINTM (T1,T2,BUF1,BUF2,BUF3,NBUF3,H)
+      CALL XTIME(0,2,'-- HINTM                         ')
 C
 C  INTERMEDIATES FORMED --- START T2 EQUATIONS
 C
       CALL XTIME(5,1,'-- T2 EQNS                     ')
       CALL amplitude_equation_T2 (T1,T2,HO,HV,HOV,H,AZ,
-     &             BUF1,BUF2,BUF3,NBUF3,S2)
+     &        BUF1,BUF2,BUF3,NBUF3,S2)
       CALL XTIME(5,2,'-- T2 EQNS                     ')
-C
-C
-C  MUST NOW ADD IN B INTERMEDIATE CONTRIBUTION
-C
-C
-      CALL XTIME(5,1,'-- BINTM                       ')
-      CALL BINTM (T1,T2,BUF1,BUF2,NBUF2,BUF3,NBUF3,S2,IW)
-      CALL XTIME(5,2,'-- BINTM                       ')
-
-      CALL XTIME(5,2,'- T2 equations                  ')
 C
  100  CONTINUE
 C
@@ -223,7 +180,6 @@ C
 C
       CALL ZCORE (T1,T2)
 C
-C
 C  EXTRAPOLATE THE AMPLITUDES
 C
       CALL XTIME(5,1,'- DIIS extrapolation            ')
@@ -239,24 +195,21 @@ C
 C
 C  EVALUATE CORRELATION ENERGY AND WRITE OUT RESULTS
 C
-                   
-         IF (IPRNT.GE.3) CALL PAIREN (T1,T2,FVO,BUF1,BUF2)
-         CALL CCENG  (T1,T2,FVO,BUF1,BUF2,ECCSD,ECCSDIM)
-           
+      IF (IPRNT.GE.3) CALL PAIREN (T1,T2,FVO,BUF1,BUF2)
+      CALL CCENG  (T1,T2,FVO,BUF1,BUF2,ECCSD,ECCSDIM)
 C
       CALL T1DIAG (DIAG,T1,BUF1)
       IF (IPRNT.GE.1) WRITE(IW,6001) NIT,ECCSD,RMS,DIAG
       CALL FLSHFO(IW)
 C
-C
-      IF(RMS.LT.CONV) GO TO 2000
+      IF(RMS.LT.CONV) exit
       IF(RMS.GT.rms_limit) THEN
         WRITE (IW,*) ' WARNING: aborted CC iterations (divergence)'
-        GO TO 2000
+        exit
       END IF
-      GO TO 1000
+
+      end do
 C
- 2000 CONTINUE
       CALL T1DIAG (DIAG,T1,BUF1)
       WRITE(IW,6071)
 C
@@ -290,12 +243,6 @@ C
          call xml_quantity('CC convergence',RMS,' ')
          call xml_quantity('T1 diagnostic',DIAG,' ')
       end if
-C
-      IF (FOCKSP) THEN
-C        Calculate the energies for this sector
-         CALL HEFF1(ICURFSS,IPRNT,S1,S2,FVO,EPS,BUF1,BUF2,BUF3,
-     &              HEFF,EIGENVALUES,EIGENVECTORS)
-      ENDIF
 C
 C     Read out timers for the most important contractions
 C

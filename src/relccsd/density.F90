@@ -20,6 +20,7 @@
   use symmetry_offset
 #include "symm.inc"
 #include "complex.inc"
+#include "inpt.inc"
 !----------------calling variables-------------------------
    real*8, intent(in),contiguous,target :: l1(:),l2(:),r1(:),r2(:)
    real*8, intent(in) :: t1(:),t2(:)
@@ -35,8 +36,6 @@
 
   ndiml1 = size(l1,1) 
   ndiml2 = size(l2,1) 
-
-  write(*,*)'dim l1', ndiml1
 
   l1_ptr(1:ndiml1) => l1
   l2_ptr(1:ndiml2) => l2
@@ -65,7 +64,7 @@
   call contraction_442 ((/"o2","o3","c1","p2"/),(/"c1","p2","o1","o3"/),(/"o2","o1"/),doo,1.0d0,1.0d0,nrep, &
  &  LeftTensor=l2,RightTensor=r2)
 
-   write(*,*)'diagram1',dot_product(doo,doo)
+    if (iprnt.ge.2) write(*,*)'diagram1',dot_product(doo,doo)
 
 !---------------------------------------------------------------------
 !    doo(j,i) = doo(j,i) - l1(j,e*)*r1(e*,i)
@@ -73,7 +72,7 @@
 
   call contraction_222 ((/"o2","c1"/),(/"c1","o1"/),(/"o2","o1"/),l1,r1,doo,1.0d0,1.0d0,nrep)
 
-   write(*,*)'diagram2',dot_product(doo,doo) 
+    if (iprnt.ge.2) write(*,*)'diagram2',dot_product(doo,doo) 
 !---------------------------------------------------------------------
 !    doo(j,i) = doo(j,i) - l2(im,a*e)*r1(a*,m)*t1(e,j) 
 
@@ -91,7 +90,7 @@
 
 ! call dealloc(wop_temp, id="wop_temp vo")
 
-   write(*,*)'diagram3',dot_product(doo,doo) 
+   if (iprnt.ge.2) write(*,*)'diagram3',dot_product(doo,doo) 
 !----------------------------------------------------------------------
 !     dvv(b,a) = dvv(b,a) + l2(mn,ea)*r2(eb,mn) 
 !----------------------------------------------------------------------
@@ -99,7 +98,7 @@
   call contraction_442 ((/"c1","p2","o1","o2"/),(/"o1","o2","c1","p1"/),(/"p2","p1"/),dvv,1.0d0,1.0d0,nrep, &
  &     RightTensor=l2,LeftTensor=r2)
 
-   write(*,*)'diagram4',dot_product(dvv,dvv)
+   if (iprnt.ge.2) write(*,*)'diagram4',dot_product(dvv,dvv)
 !----------------------------------------------------------------------
 !     dvv(b,a) = dvv(b,a) + l2(mn,cb)*r1(c,n)*t1(a,m)
 !     wop_temp(m,b) = wop_temp(m,b) - l2(mn,cb)*r1(c,n) 
@@ -115,14 +114,14 @@
 
   call dealloc(wop_temp, id="wop_temp vo")
 
-   write(*,*)'diagram5',dot_product(dvv,dvv)
+   if (iprnt.ge.2) write(*,*)'diagram5',dot_product(dvv,dvv)
 !----------------------------------------------------------------------------
 !     dvo(a,i) = t1(a,i)
 !----------------------------------------------------------------------------
 
       call xcopy (nfvo,t1,1,dvo,1)
 
-   write(*,*)'diagram6',dot_product(dvo,dvo)
+   if (iprnt.ge.2) write(*,*)'diagram6',dot_product(dvo,dvo)
 !--------------------------------------------------------------------------
 !     dvo(a,i) = dvo(a,i) + l1(m,b) * r(ba,im)
 !--------------------------------------------------------------------------
@@ -133,7 +132,7 @@
 !     call contraction_422 ((/"c1","p1","o1","o2"/),(/"o2","c1"/), &
 !    & (/"p1","o1"/),l1_ptr,dvo,-1.0d0,1.0d0,nrep,LeftTensor=r2_ptr)       
 
-   write(*,*)'diagram7',dot_product(dvo,dvo)
+   if (iprnt.ge.2) write(*,*)'diagram7',dot_product(dvo,dvo)
 !----------------------------------------------------------
 !      dvo(a,i) = dvo(a,i) - l1(m,e) * r(e,i)*t(a,m)
 !----------------------------------------------------------
@@ -151,7 +150,7 @@
 
 !     call dealloc(woo_temp, id="wop_temp oo")
 
-   write(*,*)'diagram8',dot_product(dvo,dvo)
+   if (iprnt.ge.2) write(*,*)'diagram8',dot_product(dvo,dvo)
 !-------------------------------------------------------------
 !       dvo(a,i) = dvo(a,i) -  l2(mn,ef)*r2(ef,in)*t1(a,m) 
 !-------------------------------------------------------------
@@ -169,7 +168,7 @@
 
       call dealloc(woo_temp, id="wop_temp oo")
 
-   write(*,*)'diagram9',dot_product(dvo,dvo)
+   if (iprnt.ge.2) write(*,*)'diagram9',dot_product(dvo,dvo)
 !-----------------------------------------------------------------------
 !      dvo(a,i) = dvo(a,i) - l2(mn,ef)*r1(e,i)*t2(af,mn)
 !-----------------------------------------------------------------------
@@ -193,7 +192,7 @@
 
   call dealloc_array(e)
 
-   write(*,*)'diagram10',dot_product(dvo,dvo)
+   if (iprnt.ge.2) write(*,*)'diagram10',dot_product(dvo,dvo)
 !------------------------------------------------------------------
 !      dvo(a,i) = dvo(a,i) - l2(mn,ef)*t1(f,i)*r2(ea,mn)
 !------------------------------------------------------------------
@@ -212,7 +211,7 @@
       call dealloc(wpp_temp, id="wpp_temp vv")
 
 
-   write(*,*)'diagram10'
+   if (iprnt.ge.2) write(*,*)'diagram10'
 !--------------------------------------------------------------------
 !       dvo(a,i) = dvo(a,i) +  l2(mn,ef)*t2(af,in)*r1(e,m) 
 !--------------------------------------------------------------------
@@ -229,7 +228,7 @@
 
 !     call dealloc(woo_temp, id="woo_temp vo")
 
-   write(*,*)'diagram11',dot_product(dvo,dvo)
+   if (iprnt.ge.2) write(*,*)'diagram11',dot_product(dvo,dvo)
 !--------------------------------------------------------------------
 !       dvo(a,i) = dvo(a,i) -  l2(mn,ef)*t1(f,i)*t1(a,n)*r1(e,m) 
 !--------------------------------------------------------------------
@@ -255,7 +254,7 @@
 
      call dealloc(work1, id="work1 oo")
 
-   write(*,*)'diagram12',dot_product(dvo,dvo)
+   if (iprnt.ge.2) write(*,*)'diagram12',dot_product(dvo,dvo)
 !----------------------------------------------------------
 !       dov(i,a) = dov(i,a) + l2(im,ba) * r1(b,m)
 !----------------------------------------------------------
@@ -263,7 +262,7 @@
       call contraction_422 ((/"o1","o2","c1","p1"/),(/"c1","o2"/), & 
      & (/"o1","p1"/),r1_ptr,dov,-1.0d0,1.0d0,nrep,LeftTensor=l2_ptr)
 
-   write(*,*)'diagram13',dot_product(dov,dov)
+   if (iprnt.ge.2) write(*,*)'diagram13',dot_product(dov,dov)
       if (carith) then
          call conjuga (nfoo,doo,1)
          call conjuga (nfvv,dvv,1)
@@ -297,6 +296,7 @@
   use symmetry_offset
 #include "symm.inc"
 #include "complex.inc"
+#include "inpt.inc"
 !----------------calling variables-------------------------
    real*8, intent(in),contiguous,target :: l1(:),l2(:),r1(:),r2(:)
    real*8, intent(in) :: t1(:),t2(:)
@@ -312,8 +312,6 @@
 
   ndiml1 = size(l1,1) 
   ndiml2 = size(l2,1) 
-
-  write(*,*)'dim l1', ndiml1
 
   l1_ptr(1:ndiml1) => l1
   l2_ptr(1:ndiml2) => l2
@@ -337,7 +335,7 @@
      &    (/"p1","p2","o1","o3"/),(/"o2","o1"/),doo,-1.0d0,1.0d0,nrep, &
      &    LeftTensor=l2,RightTensor=t2)
 
-   write(*,*)'diagram1',dot_product(doo,doo)
+   if (iprnt.ge.2) write(*,*)'diagram1',dot_product(doo,doo)
 
 !-------------------------------------------------------------------
 !   doo(j,i) = doo(j,i) - l2(jm,ef) * r2(ef,im)
@@ -348,7 +346,7 @@
      &    LeftTensor=l2,RightTensor=r2)
 
 
-   write(*,*)'diagram2',dot_product(doo,doo)
+   if (iprnt.ge.2) write(*,*)'diagram2',dot_product(doo,doo)
 
 !---------------------------------------------------------------------
 !    doo(j,i) = doo(j,i) - l1(j,e)*t1(e,i)
@@ -359,7 +357,7 @@
 
 
 
-   write(*,*)'diagram3',dot_product(doo,doo)
+   if (iprnt.ge.2) write(*,*)'diagram3',dot_product(doo,doo)
 
 
 !---------------------------------------------------------------------
@@ -370,7 +368,7 @@
      &                         l1,r1,doo,-1.0d0,1.0d0,nrep)
 
 
-   write(*,*)'diagram4',dot_product(doo,doo)
+   if (iprnt.ge.2) write(*,*)'diagram4',dot_product(doo,doo)
 !---------------------------------------------------------------------
 !    doo(j,i) = doo(j,i) - l2(im,ae)*r1(a,m)*t1(e,j) 
 
@@ -389,7 +387,7 @@
  deallocate(wop_temp)
 
 
-   write(*,*)'diagram5',dot_product(doo,doo)
+   if (iprnt.ge.2) write(*,*)'diagram5',dot_product(doo,doo)
 !----------------------------------------------------------------------
 !     dvv(b,a) = dvv(b,a) + l2(mn,ae)*t2(be,mn) 
 !----------------------------------------------------------------------
@@ -398,7 +396,7 @@
      &    (/"p2","p3","o1","o2"/),(/"p2","p1"/),dvv,1.0d0,1.0d0,nrep,&
      &     LeftTensor=l2,RightTensor=t2 )
 
-   write(*,*)'diagram6',dot_product(dvv,dvv)
+   if (iprnt.ge.2) write(*,*)'diagram6',dot_product(dvv,dvv)
 
 !----------------------------------------------------------------------
 !     dvv(b,a) = dvv(b,a) + l2(mn,ae)*r2(be,mn) 
@@ -408,7 +406,7 @@
      &    (/"p2","p3","o1","o2"/),(/"p2","p1"/),dvv,1.0d0,1.0d0,nrep,&
      &     LeftTensor=l2,RightTensor=r2 )
 
-   write(*,*)'diagram7',dot_product(dvv,dvv)
+   if (iprnt.ge.2) write(*,*)'diagram7',dot_product(dvv,dvv)
 
 !----------------------------------------------------------------------
 !     dvv(b,a) = dvv(b,a) + l1(m,a)*t1(b,m)
@@ -417,7 +415,7 @@
       call contraction_222 ((/"o1","p1"/),(/"p2","o1"/),(/"p2","p1"/),&
      &              l1,t1,dvv,1.0d0,1.0d0,nrep)
 
-   write(*,*)'diagram8',dot_product(dvv,dvv)
+   if (iprnt.ge.2) write(*,*)'diagram8',dot_product(dvv,dvv)
 !----------------------------------------------------------------------
 !     dvv(b,a) = dvv(b,a) + l1(m,a)*r1(b,m)
 !----------------------------------------------------------------------
@@ -426,7 +424,7 @@
      &              l1,r1,dvv,1.0d0,1.0d0,nrep)
 
 
-   write(*,*)'diagram9',dot_product(dvv,dvv)
+   if (iprnt.ge.2) write(*,*)'diagram9',dot_product(dvv,dvv)
 !----------------------------------------------------------------------
 !     dvv(b,a) = dvv(b,a) + l2(mn,cb)*r1(c,n)*t1(a,m)
 !     wop_temp(m,b) = wop_temp(m,b) - l2(mn,cb)*r1(c,n) 
@@ -444,7 +442,7 @@
   deallocate(wop_temp)
 
 
-   write(*,*)'diagram10',dot_product(dvv,dvv)
+   if (iprnt.ge.2) write(*,*)'diagram10',dot_product(dvv,dvv)
 
 
 !     dvo(a,i) = t1(a,i)
@@ -452,7 +450,7 @@
 
       call xcopy (nfvo,t1,1,dvo,1)
 
-   write(*,*)'diagram11',dot_product(dvo,dvo)
+   if (iprnt.ge.2) write(*,*)'diagram11',dot_product(dvo,dvo)
 !--------------------------------------------------------------------------
 !     dvo(a,i) = dvo(a,i) + l1(m,e) * t(ae,im)
 !--------------------------------------------------------------------------
@@ -464,7 +462,7 @@
       call contraction_422 ((/"p1","p2","o1","o2"/),(/"o2","p2"/), &
      & (/"p1","o1"/),l1,dvo,1.0d0,1.0d0,nrep,LeftTensor=t2)
 
-   write(*,*)'diagram12',dot_product(dvo,dvo)
+   if (iprnt.ge.2) write(*,*)'diagram12',dot_product(dvo,dvo)
 
 
 !--------------------------------------------------------------------------
@@ -479,7 +477,7 @@
      & (/"p1","o1"/),l1,dvo,1.0d0,1.0d0,nrep,LeftTensor=r2)
 
 
-   write(*,*)'diagram13',dot_product(dvo,dvo)
+   if (iprnt.ge.2) write(*,*)'diagram13',dot_product(dvo,dvo)
 
 !----------------------------------------------------------
 !      dvo(a,i) = dvo(a,i) - l1(m,e) * t(e,i)*t(a,m)
@@ -499,7 +497,7 @@
       deallocate(woo_temp)
 
 
-   write(*,*)'diagram14',dot_product(dvo,dvo)
+   if (iprnt.ge.2) write(*,*)'diagram14',dot_product(dvo,dvo)
 
 !----------------------------------------------------------
 !      dvo(a,i) = dvo(a,i) - l1(m,e) * r(e,i)*t(a,m)
@@ -519,7 +517,7 @@
       deallocate(woo_temp)
 
 
-   write(*,*)'diagram15',dot_product(dvo,dvo)
+   if (iprnt.ge.2) write(*,*)'diagram15',dot_product(dvo,dvo)
 !----------------------------------------------------------
 !      dvo(a,i) = dvo(a,i) - l1(m,e) * t(e,i)*r(a,m)
 !----------------------------------------------------------
@@ -538,7 +536,7 @@
       deallocate(woo_temp)
 
 
-   write(*,*)'diagram16',dot_product(dvo,dvo)
+   if (iprnt.ge.2) write(*,*)'diagram16',dot_product(dvo,dvo)
 
 !-------------------------------------------------------------
 !       dvo(a,i) = dvo(a,i) -  l2(mn,ef)*t2(ef,in)*t1(a,m) 
@@ -557,7 +555,7 @@
 
       deallocate(woo_temp)
 
-   write(*,*)'diagram17',dot_product(dvo,dvo)
+   if (iprnt.ge.2) write(*,*)'diagram17',dot_product(dvo,dvo)
 
 !-------------------------------------------------------------
 !       dvo(a,i) = dvo(a,i) -  l2(mn,ef)*r2(ef,in)*t1(a,m) 
@@ -576,7 +574,7 @@
 
       deallocate(woo_temp)
 
-   write(*,*)'diagram18',dot_product(dvo,dvo)
+   if (iprnt.ge.2) write(*,*)'diagram18',dot_product(dvo,dvo)
 
 
 !-------------------------------------------------------------
@@ -597,7 +595,7 @@
       deallocate(woo_temp)
 
 
-   write(*,*)'diagram19',dot_product(dvo,dvo)
+   if (iprnt.ge.2) write(*,*)'diagram19',dot_product(dvo,dvo)
 
 !-----------------------------------------------------------------------
 !      dvo(a,i) = dvo(a,i) - l2(mn,ef)*t1(e,i)*t2(af,mn)
@@ -617,7 +615,7 @@
       deallocate(wpp_temp)
 
 
-   write(*,*)'diagram20',dot_product(dvo,dvo)
+   if (iprnt.ge.2) write(*,*)'diagram20',dot_product(dvo,dvo)
 !-----------------------------------------------------------------------
 !      dvo(a,i) = dvo(a,i) - l2(mn,ef)*r1(e,i)*t2(af,mn)
 !-----------------------------------------------------------------------
@@ -635,7 +633,7 @@
 
       deallocate(wpp_temp)
 
-   write(*,*)'diagram21',dot_product(dvo,dvo)
+   if (iprnt.ge.2) write(*,*)'diagram21',dot_product(dvo,dvo)
 
 !-----------------------------------------------------------------------
 !      dvo(a,i) = dvo(a,i) - l2(mn,ef)*t1(e,i)*r2(af,mn)
@@ -655,7 +653,7 @@
       deallocate(wpp_temp)
 
 
-   write(*,*)'diagram22',dot_product(dvo,dvo)
+   if (iprnt.ge.2) write(*,*)'diagram22',dot_product(dvo,dvo)
 !--------------------------------------------------------------------
 !       dvo(a,i) = dvo(a,i) +  l2(mn,ef)*t2(af,in)*r1(e,m) 
 !--------------------------------------------------------------------
@@ -672,7 +670,7 @@
 
       deallocate(woo_temp)
 
-   write(*,*)'diagram23',dot_product(dvo,dvo)
+   if (iprnt.ge.2) write(*,*)'diagram23',dot_product(dvo,dvo)
 !--------------------------------------------------------------------
 !       dvo(a,i) = dvo(a,i) -  l2(mn,ef)*t1(f,i)*t1(a,n)*r1(e,m) 
 !--------------------------------------------------------------------
@@ -698,7 +696,7 @@
 
      deallocate(work1)
 
-   write(*,*)'diagram24',dot_product(dvo,dvo)
+   if (iprnt.ge.2) write(*,*)'diagram24',dot_product(dvo,dvo)
 
 !----------------------------------------------------------
 !       dov(i,a) = l1(i,a)
@@ -713,7 +711,7 @@
       call contraction_422 ((/"o1","o2","p2","p1"/),(/"p2","o2"/), & 
      & (/"o1","p1"/),r1_ptr,dov,-1.0d0,1.0d0,nrep,LeftTensor=l2_ptr)
 
-   write(*,*)'diagram25',dot_product(dov,dov)
+   if (iprnt.ge.2) write(*,*)'diagram25',dot_product(dov,dov)
       if (carith) then
          call conjuga (nfoo,doo,1)
          call conjuga (nfvv,dvv,1)

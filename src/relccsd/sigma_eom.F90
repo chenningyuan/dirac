@@ -518,7 +518,6 @@ integer :: ierr
   real(8)              :: ddot
   type(Offset) :: f,g
   integer  ::row(nrep), column(nrep)
-
 !--------------------------------------------------
 
   N1 = size(sigma1,1)
@@ -778,11 +777,11 @@ integer :: ierr
          done =.false.
          if ((nvvt(irp).eq.0).or.(noot(nrp).eq.0)) cycle
          mint = nbuf3/nvvt(irp)
+         allocate(w_vvvv(nvvt(irp)*mint*rcw))
  10      kstart = istart
          if (idist(1,1,irp).gt.kstart) kstart=idist(1,1,irp)
          ntot = idist(2,1,irp)
          nint = min0(mint,ntot-kstart)
-         allocate(w_vvvv(nvvt(irp)*nint*rcw))
          call getdz (irp,istart,nint,done,w_vvvv,mint)
          m = nvvt(mrp)
          n = noot(nrp)
@@ -794,11 +793,11 @@ integer :: ierr
          call xgemm ('n','n',m,n,k,a1,w_vvvv,m,r2(off1+istart*rcw),m, &
      &               a1,sigma2_local(off2),m)
 !    &               a1,sigma2(off2),m)
-         deallocate(w_vvvv)
          if (.not.done) then
             istart = istart + nint
             goto 10
          endif
+         deallocate(w_vvvv)
       enddo
 
 #if defined (VAR_MPI)
@@ -811,8 +810,7 @@ integer :: ierr
    write(*,*)'diagram 13a ', ddot(N2,sigma2_local,1,sigma2_local,1),myproc
 
         call interface_mpi_allreduce(sigma2_local, &
-!       call interface_mpi_allreduce(sigma2, &
-             local_buffer, ndimr2, &
+             local_buffer, N2, &
              op_mpi_sum,global_communicator)
 
       if (iprnt.ge.2) &
@@ -822,8 +820,8 @@ integer :: ierr
            call quit('mpi_reduce error in collecting sigma2 !')
         endif
         call xcopy(ndimr2,local_buffer,1,sigma2_local,1)
-!       call xcopy(ndimr2,local_buffer,1,sigma2,1)
         deallocate (local_buffer)
+
      endif
 #endif
       if (iprnt.ge.2) &

@@ -287,7 +287,7 @@ C information for property run
 #include "dcbxpr.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
       CHARACTER CIRUN*6, FILELAB*8, FILELAB_REOD*8, RODLAB*2
@@ -530,7 +530,7 @@ C information for property run
 #include "dcbxpr.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_SCRATCH
 #endif
 #include "parluci.h"

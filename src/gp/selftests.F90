@@ -92,7 +92,7 @@
       implicit real*8 (A-H,O-Z)
 #include "infpar.h"
       INTEGER MPIERR, IREQ
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER ISTAT(df_MPI_STATUS_SIZE)
 !
 !     send dummy message (from MASTER to MASTER...)
 !

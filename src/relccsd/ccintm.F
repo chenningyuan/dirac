@@ -224,6 +224,7 @@ C------------------------------------
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE HINTM(T1,T2,BUF1,BUF2,BUF3,NBUF3,H)
 C
+      use interface_to_mpi
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -313,7 +314,6 @@ C----------------------------------------
         CALL XCOPY(NV4,A0,0,BUF1,1)
 
       ENDIF
-
 
 C ***************************
 C ** END OF TASK SPLITTING **
@@ -447,6 +447,30 @@ C
       ENDDO
  
       CALL XTIME(0,2,'--- HINTM: VVOO contribution      ')
+
+#if defined (VAR_MPI)
+C *******************
+C ** parallel case: the H-intermediate was partially calculated
+C ** on the separate slaves. In order to perform the H*T2
+C ** contraction we need the complete H array ==> we complete it
+C ** here and synchronize all the nodes. They then have the complete
+C ** H-array and this lengthy contraction can also be parallelized.
+C
+      IF (NMPROC .GT. 1) THEN
+
+        IF(NBUF3.LT.IVOVO(NREP+1))
+     &    CALL QUIT('BUF3 can not keep the VOVO integrals !')
+
+C ... we collect the H array
+        CALL XTIME(4,1,'-- combining HINTM via MPI_ALLREDUCE')
+        CALL XCOPY (NBUF3,A0,0,BUF3,1)
+        call interface_mpi_allreduce_r1_work_f77(H,BUF3,
+     &       RCW*IVOVO(NREP+1),
+     &       op_MPI_SUM,global_communicator)
+        CALL XCOPY(IVOVO(NREP+1),BUF3,1,H,1)
+        CALL XTIME(4,2,'-- combining HINTM via MPI_ALLREDUCE')
+      ENDIF
+#endif
 
       RETURN
       END
@@ -652,7 +676,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE BINTM(T1,T2,BUF1,BUF2,NBUF2,BUF3,NBUF3,S2,IW)
+      SUBROUTINE BINTM(T1,T2,BUF1,BUF2,BUF3,NBUF3,S2)
 C
       implicit none
 C
@@ -668,7 +692,7 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      INTEGER NBUF2,NBUF3,IW
+      INTEGER NBUF3
       REAL*8 T1(*),T2(*)
       REAL*8 S2(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)

@@ -2418,9 +2418,6 @@ C
          call alloc( a_HO   ,    NFOO*RCW             , id="ho" )
          call alloc( a_HV   ,    NFVV*RCW             , id="hv" )
          call alloc( a_HOV  ,   NFVO*RCW              , id="hov" )
-         call alloc( a_CCC  ,   MAXDIM                , id="ccc" )
-         call alloc( a_BB1  ,   (MAXDIM+1)*(MAXDIM+2) , id="bb1" )
-         call alloc( a_BB2  ,   (MAXDIM+1)*(MAXDIM+2) , id="bb2" )
          call alloc( a_BUF1 ,  NBUF1*RCW              , id="buf1" )
          call alloc( a_BUF2 ,  NBUF2*RCW              , id="buf2" )
 
@@ -2548,11 +2545,10 @@ C
          CALL XTIME(5,1,'CCSD equations                ')
 
          maxit_save = MAXIT
-         CALL cceqn_driver_amplitudes(MAXIT_SAVE,EPS,a_FOO,a_FVO,a_FVV,
-     &           a_T1,a_S1,a_T2 ,a_S2 ,a_AZ,a_H,a_HO,a_HV,a_HOV,
-     &           a_BUF1,a_BUF2,a_BUF3,
-     &           a_CCC,a_BB1,a_BB2,
-     &           TOL,NBUF2,NBUF3,DUM,DUM,DUM)
+         CALL cceqn_driver_amplitudes(maxdim,MAXIT_SAVE,EPS,a_FOO,
+     &        a_FVO,a_FVV,a_T1,a_S1,a_T2,a_S2,a_AZ,a_H,a_HO,a_HV,a_HOV,
+     &        a_BUF1,a_BUF2,a_BUF3,
+     &        TOL,NBUF2,NBUF3)
          CALL XTIME(5,2,'CCSD equations                ')
          if (maxit_save.le.maxit) is_ccsd_converged = .true.
 
@@ -3640,9 +3636,7 @@ c
      &                             a_HO  (:), a_HV  (:), a_HOV (:),
      &                             a_CCC (:),
      &                             a_BB1 (:), a_BB2 (:), a_BUF1(:),
-     &                             a_BUF2(:), a_BUF3(:),
-     &                             a_HEFF(:,:), a_EIGENVALUES(:,:),
-     &                             a_EIGENVECTORS(:,:)
+     &                             a_BUF2(:), a_BUF3(:)
       integer                :: freemem = 0
       integer(kind=8)        :: mxcorr, mxcorr1
       integer                :: maxit_save
@@ -3705,9 +3699,6 @@ C
       call alloc( a_HO  , NFOO*RCW              , id="ho")
       call alloc( a_HV  , NFVV*RCW              , id="hv")
       call alloc( a_HOV , NFVO*RCW              , id="hov")
-      call alloc( a_CCC , MAXDIM                , id="ccc")
-      call alloc( a_BB1 , (MAXDIM+1)*(MAXDIM+2) , id="bb1")
-      call alloc( a_BB2 , (MAXDIM+1)*(MAXDIM+2) , id="bb2")
       call alloc( a_BUF1,NBUF1*RCW              , id="buf1")
       call alloc( a_BUF2,NBUF2*RCW              , id="buf2")
 C
@@ -3819,66 +3810,50 @@ C
      &          'marked as converged but user asked to recalculate it'
            endif
         ENDIF
-C       Allocate space for the effective Hamiltonian and its eigenvalues and eigenvectors
-C
+
+
  441    CONTINUE
 C
 C       skip sectors which have converged, or that we specifically asked to skip
 C       conversely calculate sectors we asked to be recalculated even if previously converged
 C
-        IF (((IMSTAT(IFSTAT).ne.3).and..not.FS_SKIP_SECT(ICURFSS)).or.
-     &      FS_REDO_SECT(ICURFSS)) THEN
-           call alloc (a_HEFF, RCW , IFS_HE2(NREP+1,ICURFSS), id="heff")
-           call alloc (a_EIGENVALUES,  RCW, (IFS_HE(NREP+1,ICURFSS)+1),
-     &                 id="eigenvalues" )
-           call alloc (a_EIGENVECTORS, RCW, IFS_HE2(NREP+1,ICURFSS)  ,
-     &              id="eigenvectors" )
-           IF (ICALC.LE.1) GOTO 442
-C
+        IF ((((IMSTAT(IFSTAT).ne.3).and..not.FS_SKIP_SECT(ICURFSS)).or.
+     &      FS_REDO_SECT(ICURFSS)).and.(ICALC.gt.1)) THEN
 
            maxit_save = MAXIT_SECT(ICURFSS)
-        CALL cceqn_driver_amplitudes(maxit_save,EPS,
+          CALL cceqn_driver_amplitudes(maxdim, maxit_save,EPS,
      &             a_FOO , a_FVO , a_FVV  , a_T1   , a_S1   ,
      &             a_T2  , a_S2  , a_AZ   ,a_H,
      &             a_HO  , a_HV  , a_HOV  ,
      &             a_BUF1 , a_BUF2 , a_BUF3 ,
-     &             a_CCC , a_BB1 , a_BB2 ,
-     &             TOL, NBUF2, NBUF3,
-     &             a_HEFF,a_EIGENVALUES,a_EIGENVECTORS)
+     &             TOL, NBUF2, NBUF3)
 
-           if (maxit_save.gt.maxit_SECT(ICURFSS)) then
+C         Calculate the energies for this sector
+          CALL HEFF1(ICURFSS,IPRNT,a_S1,a_S2,a_FVO,EPS,a_BUF1,
+     &         a_BUF2,a_BUF3,NSP,IREPSPI)
+
+          if (maxit_save.gt.maxit_SECT(ICURFSS)) then
               is_ccsd_converged = .false.
-           else
-              is_ccsd_converged = .true.
-           endif
+          else
+             is_ccsd_converged = .true.
+          endif
 
-           if (ICURFSS.GT.1)
-C          Print the Fock space eigenvalues, compute transition moments
-C          except for the 00 sector, obviously
-     &     CALL FS_ANALYSIS1(ICURFSS,EPS,a_EIGENVALUES,a_EIGENVECTORS,
-     &                    NSP,IREPSPI)
+C         Save the updated wave function
+          CALL FS_PUTAMPT (ICURFSS, a_T1 , a_T2 , a_BUF1 , a_BUF2 )
 
-C          Save the updated wave function
-           CALL FS_PUTAMPT (ICURFSS, a_T1 , a_T2 , a_BUF1 , a_BUF2 )
-
-           if (is_ccsd_converged.or.restart_unconverged) then
+          if (is_ccsd_converged.or.restart_unconverged) then
               IMSTAT(IFSTAT) = 3
               write (IW,*)
               write (IW,'(1X,A)') 'INFO:   converged (unconverged'//
      &                            ' if .UNCONVERGED used) amplitudes'//
      &                            ' available for restart'
-           else
+          else
               IMSTAT(IFSTAT) = 2
               write (IW,*)
               write (IW,'(1X,A)') 'INFO: unconverged amplitudes '//
      &                            'available for restart'
-           endif
+          endif
 
-C          Deallocate space for the effective Hamiltonian
- 442       CONTINUE
-           call dealloc (a_HEFF, id="heff")
-           call dealloc (a_EIGENVALUES, id="eigenvalues")
-           call dealloc (a_EIGENVECTORS, id="eigenvectors")
         ENDIF
 C
       ENDIF
@@ -4552,7 +4527,7 @@ C
             MULTB(IREP,KREP,2) = JREP
          ENDDO
       ENDDO
-       write(*,*) (REPNA(IREP),IREP=1,2*NREP)
+C      write(*,*) (REPNA(IREP),IREP=1,2*NREP)
 
 C     write(*,*)
 C     write(*,*) '--------------------------------------------'

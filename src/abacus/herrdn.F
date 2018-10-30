@@ -515,9 +515,8 @@ C     JHS The following variables come from a common block and are thus kept in 
       CHARACTER*72 TTITLE(2)
       CHARACTER*11 SYMTXT
       CHARACTER*15 CLASS
-      DIMENSION IFXYZ(3)
-      LOGICAL ANG, ADDSYM
-      integer blk
+      INTEGER   IFXYZ(3), blk
+      LOGICAL   ANG, ADDSYM
 
 #include "molinp.h"
 #include "ccom.h"
@@ -3092,9 +3091,9 @@ C     Eg.: 1..20
 C
       CALL RDLINE(LUINFO)
       NUCIJ = 1
-      CALL NUMLST_with_work(MLINE(NMLINE)(1:72),
+      CALL NUMLST(MLINE(NMLINE)(1:72),
      &        ILIST,NFAMEXP(IC),1,NFAMEXP(IC),
-     &     1,NUCIJ,TMP,MXFAMEXP)
+     &     1,NUCIJ)
       NRCIJ = NUCIJ
       DO 300 L = 1, NUCIJ
          ALPHA(L) = FAMEXP(ILIST(L), IC)
@@ -3955,6 +3954,11 @@ C        is reversed !]
 
 C
       CALL HEADER('Contracted Orbitals',1)
+
+      IF (UNCONT) THEN
+         WRITE(LUPRI,'(A)') ' All orbitals are uncontracted.'
+         RETURN
+      END IF
       IF(ICLS.EQ.1) THEN
         IPRIMD  = 0
         IORBD   = 0
@@ -4015,7 +4019,7 @@ C
       IF (IPREAD .GT. 0) THEN
          WRITE (LUPRI,'(/)')
       END IF
- 1040 FORMAT(I4,2X,A4,A2,2X,A4,24I4)
+ 1040 FORMAT(I5,2X,A4,A2,2X,A4,24I4)
  1050 FORMAT(I4,2X,A4,4X,A4,12I6)
 C
  4242 CONTINUE
@@ -6733,7 +6737,7 @@ C   .... prevent segmentation of L shells...
             NDEG  = NUCDEG(ICENT)
             KBCH  = JBLOCK
 CMI         ... charge, highest angular momentum
-!          skip AMFI contributions with l > 5 (h, i, ... functions)
+!          skip AMFI contributions with l > 4 (h, i, ... functions)
 !          stefan - nov 2011: simple fix/approximation for the time
 !                             being...
            imax_l = min(IQM(I)-1,4)
