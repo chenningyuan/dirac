@@ -13,6 +13,16 @@ if(ENABLE_PELIB)
 
     set(PE_INCLUDE_DIR)
 
+    # here we control whether PElib will use mpi.mod or mpif.h
+    # MPI_COMPILER_MATCHES is defined in cmake/custom/mpi.cmake
+    # TODO: we should use generator expressions instead but this probably requires
+    # moving away from add_external() which we should also do at some point
+    if(MPI_COMPILER_MATCHES)
+      set(_enable_mpif "0")
+    else()
+      set(_enable_mpif "1")
+    endif()
+
     set(ExternalProjectCMakeArgs
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
@@ -22,8 +32,11 @@ if(ENABLE_PELIB)
         -DINTEGRAL_LIBRARY=${PE_INTEGRAL_LIBRARY}
 	-DENABLE_MPI=${ENABLE_MPI}
         -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
+        -DENABLE_MPIF=${_enable_mpif}
         -DHOST_PROGRAM=${PE_HOST_PROGRAM}
     )
+
+    unset(_enable_mpif)
 
     add_external(pelib)
 
