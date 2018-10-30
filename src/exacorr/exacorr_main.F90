@@ -46,16 +46,21 @@
          call exacorr_compute_mo_integrals (nmo, mo_list)
       end if
 
-      nocc = 2
-      nvir  = 6
+      !Hard-coded water input to correspond with x2c test
+      !nocc = 2
+      !nvir  = 6
+      nocc = 3
+      nvir  = 12
       allocate(mo_occ(nocc))
-      do imo = 1, nocc
-          mo_occ(imo) = imo
-      end do
+      mo_occ = (/3, 4, 5/)
+      !do imo = 1, nocc
+      !    mo_occ(imo) = imo
+      !end do
       allocate(mo_vir(nvir))
-      do imo = 1, nvir
-          mo_vir(imo) = nocc+imo
-      end do
+      mo_vir = (/6, 7, 8, 9, 10 , 11, 12, 13, 14, 15, 16, 17/)
+      !do imo = 1, nvir
+      !    mo_vir(imo) = nocc+imo
+      !end do
 
       if (cc_calculation) then
          print*, "a CC calculation with",nocc," occupied"," and ",nvir," virtuals"
