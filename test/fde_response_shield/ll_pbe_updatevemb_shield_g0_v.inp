@@ -17,7 +17,7 @@
 .FRDENS
 FROZEN
 .RSP
-.LAODPT
+.LDPT
 **GRID
 .IMPORT
 numerical_grid
