@@ -115,6 +115,7 @@ C***********************************************************************
       use exacorr_global,only   : get_talsh_only
       use talsh_cc,only         : talsh_cc_driver
       use exacorr_cc,only       : exacorr_cc_driver
+      use exacorr_datatypes
 #if defined (VAR_MPI)
       use interface_to_mpi
 #endif
@@ -125,8 +126,9 @@ C***********************************************************************
 #include "dgroup.h"  ! to access nfsym (should be 1)
 
       integer              :: kvec              ! Dummy variable needed in first call to numlst
-      integer, allocatable :: mo_list(:),mo_occ(:),mo_vir(:)
-      integer              :: nmo(4),noccu,nvir
+      integer, allocatable :: mo_list(:)!,mo_occ(:),mo_vir(:)
+      integer              :: nmo(4)!,noccu,nvir
+      type(exacc_input)    :: exa_input
 
       if (nfsym.ne.1) then
          call quit ('exacorr can not handle symmetry')
@@ -134,11 +136,13 @@ C***********************************************************************
 #if defined (VAR_MPI)
       ! parallel version of DIRAC
       if (mytid == 0 .and. .not. get_talsh_only()) then
+      !if (mytid == 0 .and. .not. exa_input%talsh) then
          call dirac_parctl( 19 )
       end if
 #else
       ! serial version of DIRAC
       if (.not. get_talsh_only()) then
+      !if (.not. exa_input%talsh) then
          ! EXATENSOR version does not work with serial version of DIRAC
          print*, "Attempting to use exatensor with a non MPI version"
          call quit ("error in setup: exatensor requires MPI")
@@ -149,37 +153,57 @@ C
 #if defined (VAR_MPI)
       if (mytid == 0) then
 #endif
-      noccu = 0
-      call numlst (string_occupied,kvec,1,1,nesh(1),1,noccu)
-      allocate (mo_occ(noccu))
-      call numlst (string_occupied,mo_occ,noccu,1,nesh(1),1,noccu)
+      exa_input%no=0
+      call numlst (string_occupied,kvec,1,1,nesh(1),1,exa_input%no)
+      allocate (exa_input%mo_o(exa_input%no))
+      call numlst (string_occupied,exa_input%mo_o,exa_input%no,1,
+     &              nesh(1),1,exa_input%no)
 
-      nvir = 0
-      call numlst (string_virtual,kvec,1,1,nesh(1),1,nvir)
-      allocate (mo_vir(nvir))
-      call numlst (string_virtual,mo_vir,nvir,1,nesh(1),1,nvir)
+      exa_input%nv=0
+      call numlst (string_virtual,kvec,1,1,nesh(1),1,exa_input%nv)
+      allocate (exa_input%mo_v(exa_input%nv))
+      call numlst (string_virtual,exa_input%mo_v,exa_input%nv,1,
+     &              nesh(1),1,exa_input%nv)
+
+      exa_input%talsh=logical_talsh
+      exa_input%ccd=logical_ccd
+      exa_input%t_econv=econv
+
 #if defined (VAR_MPI)
       end if
 #endif
       if (get_talsh_only()) then
-         call talsh_cc_driver (noccu,nvir,mo_occ,mo_vir)
+      !if (exa_input%talsh) then
+         print*, "TALSH: ", exa_input%talsh
+         print*, "CCD: ", exa_input%ccd
+         print*, "nocc: ", exa_input%no
+         print*, "nvir: ", exa_input%nv
+         print*, "mo_occ: ", exa_input%mo_o
+         print*, "mo_vir: ", exa_input%mo_v
+         print*, "t_econv: ", exa_input%t_econv
+         call talsh_cc_driver (exa_input%no,exa_input%nv,
+     &                              exa_input%mo_o,exa_input%mo_v)
       else
 #if defined (VAR_MPI)
          ! slaves need the same info to get started
-         call interface_mpi_bcast(noccu,1,mparid,global_communicator)
-         if (mytid /= 0) allocate(mo_occ(noccu))
-         call interface_mpi_bcast(mo_occ,noccu,mparid,
-     &                            global_communicator)
-         call interface_mpi_bcast(nvir,1,mparid,global_communicator)
-         if (mytid /= 0) allocate(mo_vir(nvir))
-         call interface_mpi_bcast(mo_vir,nvir,mparid,
-     &                            global_communicator)
+         call interface_mpi_bcast(exa_input%no,1,mparid,
+     &                              global_communicator)
+         if (mytid /= 0) allocate(exa_input%mo_o(exa_input%no))
+         call interface_mpi_bcast(exa_input%mo_o,exa_input%no,
+     &                              mparid,global_communicator)
+         call interface_mpi_bcast(exa_input%nv,1,mparid,
+     &                              global_communicator)
+         if (mytid /= 0) allocate(exa_input%mo_v(exa_input%nv))
+         call interface_mpi_bcast(exa_input%mo_v,exa_input%nv,
+     &                              mparid,global_communicator)
 #endif
-         call exacorr_cc_driver (noccu,nvir,mo_occ,mo_vir)
+         call exacorr_cc_driver (exa_input%no,exa_input%nv,
+     &                              exa_input%mo_o,exa_input%mo_v)
+         !call exacorr_cc_driver (exa_input)
       end if
 
-      deallocate (mo_occ)
-      deallocate (mo_vir)
+      deallocate (exa_input%mo_o)
+      deallocate (exa_input%mo_v)
 
       end
 

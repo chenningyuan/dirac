@@ -846,7 +846,24 @@
          call kw_read(word, string_virtual)
       end if
 
+      if (kw_matches(word, '.EXATENSOR')) then
+         logical_talsh=.false.
+      else
+         logical_talsh=.true.
+      end if
+
+      if (kw_matches(word, '.CCDOUBLES')) then
+         logical_ccd=.true.
+      else
+         logical_ccd=.false.
+      end if
+
+      if (kw_matches(word, '.TCONVERG')) then
+         read(get_file_unit(),'(f18.16)') econv
+      end if
+
       call check_whether_kw_found(word, kw_section)
+
 #endif
 
    end subroutine

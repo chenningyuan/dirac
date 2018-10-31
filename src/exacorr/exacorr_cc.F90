@@ -22,6 +22,7 @@ module exacorr_cc
 #if defined (VAR_MPI)
 !-------------------------------------------------------------------------------------------
         subroutine exacorr_cc_driver (nocc,nvir,mo_occ,mo_vir)
+        !subroutine exacorr_cc_driver (exa_input)
 
 !        This subroutine drives the ccsd energy calculation
 !        Currently everything is done in-core, purpose is to provide a working implementation that is suitable for debugging the production code
