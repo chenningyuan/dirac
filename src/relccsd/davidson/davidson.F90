@@ -1632,8 +1632,12 @@ contains
 
                b => updated_subspace_vectors_R(b, delta, verbose=davidson_debug)
 
-               call davidson_synchronize_trial_vectors(b,size(delta,2))
-!              call davidson_synchronize_trial_vectors(b,-1)
+! aspg 31/10/2018
+! synchronizing only the  updated vectors seems to lead to crashes, so
+! for the moment synchronize all elements of b 
+!              call davidson_synchronize_trial_vectors(b,size(delta,2))
+               call davidson_synchronize_trial_vectors(b,-1)
+!
 
                if (davidson_verbose) then
                    call davidson_print_vectors(delta, label="delta                         ")
@@ -2656,7 +2660,7 @@ contains
 
       ndim1 = size(b,1)
 
-      print *,'debug: bcast of ',nr_to_sync,' trial vectors from master to nodes'
+!     print *,'debug: bcast of ',nr_to_sync,' trial vectors from master to nodes'
       if (nr_to_sync .le. 0) then 
           ndim2 = size(b,2) 
           call interface_mpi_bcast_r2_work_f77(b,ndim1,ndim2,0,global_communicator)
