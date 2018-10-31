@@ -139,10 +139,10 @@ C
       IF(IPRINT.GE.1) THEN
         CALL HEADER('GETLAB: AO-labels',-1)
         WRITE(LUPRI,'(3X,A,I5)') '* Large components:',NPLAB(1)
-        WRITE(LUPRI,'(6(3X,I3,2X,A12))') (I,PLABEL(I,1),I=1,NPLAB(1))
+        WRITE(LUPRI,'(6(I6,2X,A12))') (I,PLABEL(I,1),I=1,NPLAB(1))
         IOFF = NPLAB(1)
         WRITE(LUPRI,'(3X,A,I5)') '* Small components:',NPLAB(2)
-        WRITE(LUPRI,'(6(3X,I3,2X,A12))')
+        WRITE(LUPRI,'(6(I6,2X,A12))')
      &      (I,PLABEL(I,1),I=1+IOFF,NPLAB(0))
         IF(IPRINT.GE.7) THEN
           CALL PRIVEC('IPLAB ',IPLAB(1,1),NAORB)
