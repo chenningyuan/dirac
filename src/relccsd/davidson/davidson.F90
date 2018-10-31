@@ -2643,13 +2643,15 @@ contains
 
 
    subroutine davidson_synchronize_trial_vectors(b,nr_to_sync)
+#ifdef VAR_MPI
       use interface_to_mpi
+#endif
       real(kind=8), intent(inout) :: b(:,:)
       integer, intent(in) :: nr_to_sync 
       integer :: ndim1, ndim2, start_slice, end_slice, i
 
+#ifdef VAR_MPI
       ndim1 = size(b,1)
-
       if (nr_to_sync .lt. 0) then 
           ndim2 = size(b,2) 
           do i = 1, ndim2
@@ -2662,6 +2664,9 @@ contains
              call interface_mpi_bcast(b(1,i),ndim1,0,global_communicator)
           end do
       end if
+#else
+      return
+#endif
 
    end subroutine
 
