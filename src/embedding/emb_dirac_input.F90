@@ -152,34 +152,69 @@ module fde_input_dirac
             CASE ('.NOSDFT')
 !              no spin density contributions
                fde_cfg_no_sdft = .true.
-! gosia: keywords in LAO basis sets:
-!           embedding contributions to property gradient:
-!           ---------------------------------------------
-            CASE ('.LAODPT')
+
+! gosia: keywords for properties in LAO basis sets:
+!           FDE-LAO contributions to property gradient:
+!           -------------------------------------------
+            CASE ('.LDPT')
 !              Direct-LAO contribution to property gradient, involving embedding PoTential
-               fde_rsp_mag_lao = .true.
-               fde_lao_direct_active_embpot = .true.
                doprp = .true.
                dirac_cfg_fde_response = .true.
-            CASE ('.LAODKR')
-!              Direct-LAO contribution to property gradient, involving embedding KeRnel (only if SDFT)
-               fde_rsp_mag_lao = .true.
-               fde_lao_direct_active_embker = .true.
+               fde_rsp_propgrad_lao = .true.
+               fde_rsp_propgrad_lao_direct_embpot = .true.
+            CASE ('.NOLDPT')
+!              Exclude Direct-LAO contribution to property gradient, involving embedding PoTential
+               fde_exclude_rsp_propgrad_lao_direct_embpot = .true.
+            CASE ('.LDKR')
+!              Direct-LAO contribution to property gradient, involving embedding KeRnel (nonzero if SDFT)
                doprp = .true.
-            CASE ('.LAORKR')
+               dirac_cfg_fde_response = .true.
+               fde_rsp_propgrad_lao = .true.
+               fde_rsp_propgrad_lao_direct_embker = .true.
+            CASE ('.NOLDKR')
+!              Exclude Direct-LAO contribution to property gradient, involving embedding KeRnel
+               fde_exclude_rsp_propgrad_lao_direct_embker = .true.
+            CASE ('.LRKR')
 !              Reorthonormalization-LAO contribution to property gradient, involving embedding KeRnel
-               fde_rsp_mag_lao = .true.
-               fde_lao_reorth_active_embker = .true.
                doprp = .true.
+               dirac_cfg_fde_response = .true.
+               fde_rsp_propgrad_lao = .true.
+               fde_rsp_propgrad_lao_reorth_embker = .true.
+            CASE ('.NOLRKR')
+!              Exclude Reorthonormalization-LAO contribution to property gradient, involving embedding KeRnel
+               fde_exclude_rsp_propgrad_lao_reorth_embker = .true.
+            CASE ('.L11KR')
+!              Group all LAO contributions to property gradient involving uncoupled embedding kernel (w11)
+               doprp = .true.
+               dirac_cfg_fde_response = .true.
+               fde_rsp_propgrad_lao = .true.
+               fde_rsp_propgrad_lao_w11 = .true.
+               fde_rsp_propgrad_lao_direct_embker = .true.
+               fde_rsp_propgrad_lao_reorth_embker = .true.
+            CASE ('.NL11KR')
+!              Exclude all LAO contributions to property gradient involving uncoupled embedding kernel (w11)
+               fde_exclude_rsp_propgrad_lao_w11 = .true.
+               fde_exclude_rsp_propgrad_lao_direct_embker = .true.
+               fde_exclude_rsp_propgrad_lao_reorth_embker = .true.
+            CASE ('.LAO11')
+!              Group all LAO contributions to property gradient involving embedding PoTential (v) and uncoupled embedding kernel (w11)
+               doprp = .true.
+               dirac_cfg_fde_response = .true.
+               fde_rsp_propgrad_lao = .true.
+               fde_rsp_propgrad_lao_vw11 = .true.
+               fde_rsp_propgrad_lao_direct_embpot = .true.
+               fde_rsp_propgrad_lao_direct_embker = .true.
+               fde_rsp_propgrad_lao_reorth_embker = .true.
+!           keywords related to coupled-kernel contributions (to do):
             CASE ('.LAOFRZ')
 !              LAO contribution to property gradient from the FRoZen density (read from file)
 !              it depends on embedding kernel and does NOT include the Coulomb term...
-               fde_rsp_mag_lao = .true.
+               fde_rsp_propgrad_lao = .true.
                fde_lao_frozen_embker_nonadd = .true.
                doprp = .true.
             CASE ('.LFCOUL')
 !              ...this is the additional Coulomb term that contributes to the coupling-kernel-like term (.LAOFRZ)
-               fde_rsp_mag_lao = .true.
+               fde_rsp_propgrad_lao = .true.
                fde_lao_frozen_embker_coulomb = .true.
                doprp = .true.
 !           import/export of perturbed density:

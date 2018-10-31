@@ -146,10 +146,10 @@ contains
        call xc_contrib_2el_lao(cmo, fmat)
     end if
 
-!   calculate fde direct-LAO contributions to the gradient
+!   calculate fde direct-LAO contributions to the property gradient
 !   and, if requested, LAO contribution from the perturbed density
-    if (dirac_cfg_fde_response .and. fde_rsp_mag_lao) then
-       if (fde_lao_direct_active_embpot .or. fde_lao_direct_active_embker) then
+    if (dirac_cfg_fde_response .and. fde_rsp_propgrad_lao) then
+       if (fde_rsp_propgrad_lao_direct_embpot .or. fde_rsp_propgrad_lao_direct_embker) then
           call fde_direct_contribs(cmo, fmat)
        else
           write(*, *) 'no LAO-direct contributions to FDE property gradient'
@@ -636,8 +636,9 @@ contains
 
      call generate_num_grid(dmat)
 
-     if (fde_lao_direct_active_embpot) then
-        write(*, *) 'LAO-direct contribution to property gradient (embpot)'
+     if (fde_rsp_propgrad_lao_direct_embpot .and. .not. fde_exclude_rsp_propgrad_lao_direct_embpot) then
+        write(*, *) 'FDE-LAO direct contribution to the property gradient '// & 
+                    'dependent on the embedding potential'
 
 #ifdef VAR_MPI
         if (parcal) call dirac_parctl(FDE_PAR)
@@ -673,10 +674,12 @@ contains
 
      end if
 
-     if (fde_lao_direct_active_embker &
+     if (fde_rsp_propgrad_lao_direct_embker &
+         .and. .not. fde_exclude_rsp_propgrad_lao_direct_embker &
          .and. .not. fde_cfg_no_sdft) then
 
-        write(*, *) 'LAO-direct contribution to property gradient (embker)'
+        write(*, *) 'FDE-LAO direct contribution to the property gradient ' // &
+                    'dependent on the (uncoupled) embedding kernel'
 
 #ifdef VAR_MPI
         if (parcal) call dirac_parctl(FDE_PAR)
