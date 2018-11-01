@@ -262,7 +262,7 @@ C
 #include "dcbreo.h"
       type(fde_import) :: itmp
       LOGICAL DOSEL,DOLEV,DSCFON,AOCBUF
-      CHARACTER CPUTID*12,DAYTID*24,SECTID*12
+      CHARACTER CPUTID*12,WALTID*12,DAYTID*24,SECTID*12
       INTEGER NOCCUP(8)
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),
      &          BMAT(MXDIIS,MXDIIS),DMAT(*),
@@ -272,6 +272,8 @@ C
 #ifdef HAS_PCMSOLVER
       real(8), allocatable :: fock_pcm(:, :, :)
 #endif
+
+      real(8) :: TIMSTR(2), TIMEND(2)
 
 C
       CALL QENTER('PREDHF')
@@ -320,6 +322,7 @@ C     *****************************************************************
 C
       CALL FLSHFO(LUPRI)
       CALL GETTIM(CTIDSTR,WTIDSTR)
+      IF (IPRSCF .GE. 3) CALL TIMER2('START',TIMSTR,TIMEND)
 
 C
 C     Get 2-electron Fock matrix (save in CMO)
@@ -523,8 +526,10 @@ C       ... read 1-electron Fock matrix into FOCK ...
 !       ... add some kind of screening potential
         IF(BNCRON .AND. .NOT. ONESYS) THEN
           CALL BNCORR(FOCK,WORK(KFREE),LFREE,IPRSCF)
+          IF (IPRSCF .GE. 3) call TIMER2('BNCORR old',TIMSTR,TIMEND)
         ELSEIF (BNSPON .AND. .NOT. ONESYS) THEN
           CALL Add_Screening_Potential(FOCK,WORK(KFREE),LFREE,IPRSCF)
+          IF (IPRSCF .GE. 3) call TIMER2('BNCORR SCRPOT',TIMSTR,TIMEND)
         ENDIF
         IF(IPRSCF.GE.12) THEN
           CALL HEADER(
@@ -673,15 +678,6 @@ C
       CALL GETTIM(CTIDEND,WTIDEND)
       CTIDTOT = CTIDEND - CTIDSTR
       WTIDTOT = WTIDEND - WTIDSTR
-      IF(IPRSCF.GE.1) THEN
-        CPUTID = SECTID(TDDG)
-        IF(NZ.EQ.1) WRITE(LUPRI,'(3X,A,A12)')
-     &      '* Real diagonalization      (CPU):',CPUTID
-        IF(NZ.EQ.2) WRITE(LUPRI,'(3X,A,A12)')
-     &      '* Complex diagonalization   (CPU):',CPUTID
-        IF(NZ.EQ.4) WRITE(LUPRI,'(3X,A,A12)')
-     &      '* Quaternion diagonalization(CPU):',CPUTID
-      ENDIF
 C
       IF(ONESYS) THEN
         IF(PHCOEF) THEN
@@ -918,10 +914,14 @@ C
       LOGICAL DOSEL,DOLEV,FNDLAB
       DIMENSION FMO(*),EIG(*),IBEIG(*),FAO(*),DMAT(*),BMAT(*),
      &          WORK(LWORK)
+
+      real(8) :: TIMSTR(2), TIMEND(2), TIMSTR_save(2)
 C
 #include "memint.h"
 
       CALL QENTER('DFSOLV')
+      IF (IPRSCF .GE. 3) call TIMER2('START',TIMSTR,TIMEND)
+      TIMSTR_save = TIMSTR
 C
 C
 C     Transform AO Fock matrix to reference MO basis
@@ -933,6 +933,7 @@ C
       CALL MEMGET2('REAL','SAOMO',KSAOMO,N2TMT,WORK,KFREE,LFREE)
       CALL DF_FMO(FMO,FAO,DMAT,WORK(KTMAT),WORK(KSAOMO),
      &     WORK,KFREE,LFREE)
+      IF (IPRSCF .GE. 3) call TIMER2('DF_FMO',TIMSTR,TIMEND)
 C
 C     Convergence control/acceleration
 C     ================================
@@ -972,6 +973,7 @@ C        ... before extracting of EIG print the Fock matrix
            CALL FLSHFO(LUPRI)
         ENDDO
       ENDIF
+      IF (IPRSCF .GE. 3) call TIMER2('DHFCNV',TIMSTR,TIMEND)
 C
 C     If converged, exit SCF here
 C
@@ -980,9 +982,12 @@ C
 C     Diagonalize Fock matrix
 C     =======================
 C
-      TDDG = SECOND()
+      CALL GETTIM(CTIM1,WTIM1)
       CALL DFDIAG (FMO,EIG,IBEIG,FAO,.TRUE.,WORK,KFREE,LFREE)
-      TDDG = SECOND() - TDDG
+      CALL GETTIM(CTIM2,WTIM2)
+      TDDG = CTIM2-CTIM1
+      WDDG = WTIM2-WTIM1
+      IF (IPRSCF .GE. 3) call TIMER2('DFDIAG',TIMSTR,TIMEND)
 C
 C     sebastian+stefan: subtract level shift from orbital energies
 C
@@ -1045,7 +1050,8 @@ C
           ENDIF
         ENDIF
  40   CONTINUE
-      IF(NFROT.GT.0) CLOSE(LUTMAT,STATUS='KEEP')
+      IF (NFROT.GT.0) CLOSE(LUTMAT,STATUS='KEEP')
+      IF (IPRSCF .GE. 3) call TIMER2('BCKTRA',TIMSTR,TIMEND)
 C
 C     Print eigenvalues 
 C     (after backtransformation in case of frozen orbitals)
@@ -1082,6 +1088,8 @@ C
       ENDIF
 C
  9999 CONTINUE
+      IF (IPRSCF .GE. 3) call TIMER2('DFSOLV rest ',TIMSTR,TIMEND)
+      IF (IPRSCF .GE. 3) call TIMER2('DFSOLV total',TIMSTR_save,TIMEND)
       CALL MEMREL('DFSOLV',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL FLSHFO(LUPRI)
       CALL QEXIT('DFSOLV')
@@ -1579,12 +1587,16 @@ C
           END IF
 #endif
           CPUTID = SECTID(TDDG)
-          IF(NZ.EQ.1) WRITE(LUPRI,'(3X,A,A12)')
-     &      '* Real diagonalization      (CPU):',CPUTID
-          IF(NZ.EQ.2) WRITE(LUPRI,'(3X,A,A12)')
-     &      '* Complex diagonalization   (CPU):',CPUTID
-          IF(NZ.EQ.4) WRITE(LUPRI,'(3X,A,A12)')
-     &      '* Quaternion diagonalization(CPU):',CPUTID
+          WALTID = SECTID(WDDG)
+          IF(NZ.EQ.1) WRITE(LUPRI,'(3X,4A)')
+     &      '* Real diagonalization      (CPU): ',CPUTID,
+     &      '  (WALL): ',WALTID
+          IF(NZ.EQ.2) WRITE(LUPRI,'(3X,4A)')
+     &      '* Complex diagonalization   (CPU): ',CPUTID,
+     &      '  (WALL): ',WALTID
+          IF(NZ.EQ.4) WRITE(LUPRI,'(3X,4A)')
+     &      '* Quaternion diagonalization(CPU): ',CPUTID,
+     &      '  (WALL): ',WALTID
         ENDIF
         CALL GETTIM(CTIDEND,WTIDEND)
         CTIDTOT = CTIDEND - CTIDSTR
@@ -1593,18 +1605,18 @@ C
         SCFTID(INTFLG) = SCFTID(INTFLG) + WTIDTOT
         WALTID = SECTID(WTIDTOT)
         CPUTID = SECTID(CTIDTOT)
-        WRITE(LUPRI,'(A,A12,A,A12)')
-     &    '>>> Total wall time:',WALTID,
-     &    ', and total CPU time :',CPUTID
+        WRITE(LUPRI,'(4A)')
+     &    '>>> Total wall time: ',WALTID,
+     &    ', and total CPU time : ',CPUTID
         CALL GTINFO(DAYTID)
         WRITE(LUPRI,'(/A,I4,A,3X,A24/)')
      +    '########## END ITERATION NO.',NITER,' ##########',
      &    DAYTID
         WRITE(LUCYCL,1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
-     &                CACC,CPUTID,DHF_INTTYP,DAYTID(1:10)
+     &                CACC,WALTID,DHF_INTTYP,DAYTID(1:10)
         CALL FLSHFO(LUCYCL)
         WRITE(LUPRI, 1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
-     &                CACC,CPUTID,DHF_INTTYP,DAYTID(1:10)
+     &                CACC,WALTID,DHF_INTTYP,DAYTID(1:10)
         if (doxml) then
            call xml_begin('scf-iteration')
            call xml_quantity('SCF energy',DHFERG,'Hartree')
@@ -3615,7 +3627,7 @@ CMI   ... do always utilize DFCYCL when continuing with BSS-SCF after DC-SCF
         REWIND LUCYCL
  10     CONTINUE
         READ(LUCYCL,1020,END=20) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
-     &              CACC,CPUTID,DHF_INTTYP,DAYTID
+     &              CACC,WALTID,DHF_INTTYP,DAYTID
         GOTO 10
  20     CONTINUE
 #if defined (VAR_MFDS)
@@ -3635,7 +3647,7 @@ C        at the end of the file
 
         WRITE(LUPRI,'(A)') '*** WARNING *** : SCFCYC restart info:'
         WRITE(LUPRI,1010) NITER,DHFERG,ERGVAL,FCKVAL,EVCVAL,
-     &            CACC,CPUTID,DHF_INTTYP,DAYTID
+     &            CACC,WALTID,DHF_INTTYP,DAYTID
         ILLINT = 0
         IF(DHF_INTTYP(1:2).EQ.'LL') ILLINT = 1
         ISLINT = 0
@@ -5297,7 +5309,7 @@ C
 C
 C     Done; release the extra memory used in ZORA
 C
-      CALL MEMREL('DFDIAG',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      CALL MEMREL('ZORAEQ',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

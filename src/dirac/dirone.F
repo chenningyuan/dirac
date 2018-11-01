@@ -2175,7 +2175,7 @@ C   PAMIOU: LUTMAT
       logical              :: TOBE, FNDLAB, FNDLAB12, gmotra_case3
       logical              :: is_2c_rel_run
       integer              :: is_defining_h1mat
-      integer              :: ndim_lowmat
+      integer              :: ndim_lowmat,idum
       integer              :: lulmat = 99
       character(len=12)    :: flabel
       real(8), allocatable :: tmat_mmf(:)
@@ -2188,7 +2188,7 @@ C   PAMIOU: LUTMAT
       real(8), allocatable :: pctm_aoosoc(:)
       logical              :: no1esystem_aoosoc
 #endif
-      real(8)              :: timstr(2), timend(2)
+      real(8)              :: timstr(2), timend(2), dum
 
       CALL QENTER('GMOTRA')
 
@@ -2724,7 +2724,7 @@ C
             cmo_aoosoc  = 0.0d0
 !           read coefficients
             call opnfil(lucoef,'DFCOEF','OLD','aoosoc')
-            call reacmo(lucoef,'DFCOEF',cmo_aoosoc,xx,ii,jj,2)
+            call reacmo(lucoef,'DFCOEF',cmo_aoosoc,dum,idum,dum,2)
             close(lucoef,status='keep')
 
 !           generate density matri(x/ces)
@@ -2884,7 +2884,7 @@ C
           tbuf_mmf    = 0
           !> read 2c-mos
           call opnfil(lucoef,'DFCOEF','OLD','mmfmos')
-          call reacmo(lucoef,'DFCOEF',cmo_mmf,xx,ii,jj,2)
+          call reacmo(lucoef,'DFCOEF',cmo_mmf,dum,idum,dum,2)
           close(lucoef,status='keep')
           !> density matrix/ces
           call denmat(tbuf_mmf,cmo_mmf,iprham)
