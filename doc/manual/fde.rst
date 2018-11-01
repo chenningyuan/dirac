@@ -177,11 +177,11 @@ exporting the
 ===================================================
 
 In calculations of magnetic properties with London atomic orbitals (LAOs), additional contributions
-from FDE to the active subsystem should be added in the property gradient (:cite: `olejniczak2017`). 
+from FDE to the active subsystem should be included in the property gradient (:cite: `olejniczak2017`). 
 
 .. math::
 
-    E_{[1],emb}^{[B]} = - \int v_{emb}^I \Omega_{ia}^{B,I} - \iint w_{emb}^{I,I} \Omega_{ia}^{I} \Omega_{jj}^{I} - \iint w_{emb}^{I,II} \Omega_{ia}^{I} \Omega_{jj}^{II}
+    E_{[1],emb}^{[B]} = - \int v_{emb}^I \Omega_{ia}^{B,I} - \iint w_{emb}^{I,I} \Omega_{ia}^{I} \Omega_{jj}^{B,I} - \iint w_{emb}^{I,II} \Omega_{ia}^{I} \Omega_{jj}^{B,II}
 
 where :math:`\Omega_{pq}^{B}` is the first-order perturbed overlap distribution, which in a basis of London orbitals consists of two terms
 
@@ -193,27 +193,76 @@ where :math:`\Omega_{pq}^{B}` is the first-order perturbed overlap distribution,
 
 FDE contributions to property gradient can be included by the keywords presented below.
 
-keyword(LAODPT)
+
+keyword(LAO11)
 
 .. warning:: Development version only. 
 
-This keyword corresponds to the term dependent on the embedding potential (:math:`v_{emb}^I`).
+This keyword turns on the FDE-LAO contributions to the property gradient dependent on the embedding potential (:math:`v_{emb}^I`)
+and the uncoupled embedding kernel (:math:`w_{emb}^{I,I}`). This is the advised option. 
+Other contributions to the property gradient can be included or excluded by using expert keywords (below).
 
-keyword(LAODKR)
+
+keyword(LDPT)
+
+.. warning:: Development version only. 
+
+This keyword turns on the term dependent on the embedding potential (:math:`v_{emb}^I`) only.
+Calculations with the :ref:`LDPT` keyword are less demanding than calculations with the :ref:`LAO11` keyword,
+but may lead to inaccurate results especially for heavy elements.
+
+
+keyword(NOLDPT)
+
+.. warning:: Development version only. 
+
+This keyword turns off the term dependent on the embedding potential (:math:`v_{emb}^I`).
+
+
+keyword(L11KR)
+
+.. warning:: Development version only. 
+
+This keyword turns on the terms dependent on the uncoupled embedding kernel (:math:`w_{emb}^{I,I}`).
+
+
+keyword(NL11KR)
+
+.. warning:: Development version only. 
+
+This keyword turns off the terms dependent on the uncoupled embedding kernel (:math:`w_{emb}^{I,I}`).
+
+
+keyword(LDKR)
 
 .. warning:: Development version only. 
 
 
-This keyword corresponds to the term dependent on the embedding kernel, which involves only the
-"direct" LAO term and which does not describe the coupling between subsystem (:math:`w_{emb}^{I,I}`).
+This keyword corresponds to the term dependent on the uncoupled embedding kernel (:math:`w_{emb}^{I,I}`), 
+which involves only the "direct" LAO contribution.
 
-keyword(LAORKR)
+keyword(NOLDKR)
+
+.. warning:: Development version only. 
+
+
+This keyword excludes the "direct" LAO contribution to the uncoupled embedding kernel (:math:`w_{emb}^{I,I}`) term.
+
+keyword(LRKR)
 
 
 .. warning:: Development version only. 
 
-This keyword corresponds to the term dependent on the embedding kernel, which involves only the
-"reorthonormalization" contribution and which does not describe the coupling between subsystem (:math:`w_{emb}^{I,I}`)
+This keyword corresponds to the term dependent on the uncoupled embedding kernel (:math:`w_{emb}^{I,I}`), 
+which involves only the "reorthonormalization" LAO contribution.
+
+keyword(NOLRKR)
+
+.. warning:: Development version only. 
+
+
+This keyword excludes the "reorthonormalization" LAO contribution to the uncoupled embedding kernel (:math:`w_{emb}^{I,I}`) term.
+
 
 keyword(LAOFRZ)
 
