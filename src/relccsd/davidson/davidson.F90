@@ -1632,6 +1632,7 @@ contains
 
                b => updated_subspace_vectors_R(b, delta, verbose=davidson_debug)
 
+! in the case of a parallel run, at each davidson step synchronize the new trial vectors 
                call davidson_synchronize_trial_vectors(b,size(delta,2))
 
                if (davidson_verbose) then
@@ -2643,6 +2644,18 @@ contains
 
 
    subroutine davidson_synchronize_trial_vectors(b,nr_to_sync)
+! this routine synchronizes the matrix of trial vectors (b) from the 
+! davidson procedure across nodes, with the process with rank 0, through 
+! a brodcast. 
+!
+! the routine takes as second argument the number of trial vectors to 
+! synchronize (nr_to_sync). 
+!
+! the routine can oprate in two ways: 
+! - if nr_to_sync is smaller or equal to zero, this signals all vectors are broadcast.
+! - if nr_to_sync is non-zero, nr_to_sync vectors are broadcast, but starting
+!   with the most recent ones which are stored in the last columns of b. 
+!
 #ifdef VAR_MPI
       use interface_to_mpi
 #endif
@@ -2652,7 +2665,7 @@ contains
 
 #ifdef VAR_MPI
       ndim1 = size(b,1)
-      if (nr_to_sync .lt. 0) then 
+      if (nr_to_sync .le. 0) then 
           ndim2 = size(b,2) 
           do i = 1, ndim2
              call interface_mpi_bcast(b(1,i),ndim1,0,global_communicator)
@@ -2660,7 +2673,7 @@ contains
       else
          end_slice = size(b,2)
          start_slice = end_slice - nr_to_sync
-          do i = start_slice, end_slice
+          do i = start_slice + 1, end_slice
              call interface_mpi_bcast(b(1,i),ndim1,0,global_communicator)
           end do
       end if
