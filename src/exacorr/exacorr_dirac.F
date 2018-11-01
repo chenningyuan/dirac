@@ -13,9 +13,10 @@ C     Written by L.Visscher Jan 2017
 C
 C***********************************************************************
 
-      use exacorr_global,only   : get_talsh_only
-      use exacorr_ao_to_mo,only : exacorr_compute_mo_integrals
-      use talsh_ao_to_mo,only   : talsh_compute_mo_integrals
+      use exacc_cfg
+      use exacorr_ao_to_mo,only     : exacorr_compute_mo_integrals
+      use talsh_ao_to_mo,only       : talsh_compute_mo_integrals
+      use exacorr_datatypes,only    : exacc_input 
 #if defined (VAR_MPI)
       use interface_to_mpi
 #endif
@@ -28,25 +29,32 @@ C***********************************************************************
 
       character (len=72)   :: orbital_string(4) ! String with range of MO's to be transformed for each index
       integer              :: kvec              ! Dummy variable needed in first call to numlst
-      integer, allocatable :: mo_list(:),mo_occ(:),mo_vir(:)
-      integer              :: nmo(4),noccu,nvir
+      integer, allocatable :: mo_list(:)
+      integer              :: nmo(4)
+      type(exacc_input)    :: exa_input
 
       if (nfsym.ne.1) then
          call quit ('exacorr can not handle symmetry')
       end if
+      
+      exa_input%talsh = exacc_use_talsh 
+
 #if defined (VAR_MPI)
       ! parallel version of DIRAC
 C     Transfer necessary information from common blocks
+      !exa_input%talsh = exacc_use_talsh
+      call interface_mpi_bcast_l0(exa_input%talsh,1,0,
+     &                              global_communicator)
       if (mytid == 0) then
          orbital_string = tra4_indstr(:,1) ! This is to be changed once we have an exacorr-specific input driver
          ! instruct slaves to go to the current routine (exa_moltra) as well
          call dirac_parctl( 18 )
       else
-         if (get_talsh_only()) return ! TALSH has no use for MPI slaves
+         if (exa_input%talsh) return ! TALSH has no use for MPI slaves
       end if
 #else
       ! serial version of DIRAC
-      if (get_talsh_only()) then
+      if (exa_input%talsh) then
          ! TALSH version works fine with serial version of DIRAC
          orbital_string = tra4_indstr(:,1) ! This is to be changed once we have an exacorr-specific input driver
       else
@@ -84,7 +92,7 @@ C     Fill the array with orbital indices
       end if
 #endif
 C
-      if (get_talsh_only()) then
+      if (exa_input%talsh) then
          call talsh_compute_mo_integrals (nmo, mo_list)
       else
 #if defined (VAR_MPI)
@@ -111,11 +119,10 @@ C     Written by L.Visscher Jul 2017
 C
 C***********************************************************************
 
-      Use exacc_cfg
-      use exacorr_global,only   : get_talsh_only
-      use talsh_cc,only         : talsh_cc_driver
-      use exacorr_cc,only       : exacorr_cc_driver
-      use exacorr_datatypes
+      use exacc_cfg
+      use talsh_cc,only             : talsh_cc_driver
+      use exacorr_cc,only           : exacorr_cc_driver
+      use exacorr_datatypes,only    : exacc_input
 #if defined (VAR_MPI)
       use interface_to_mpi
 #endif
@@ -126,23 +133,26 @@ C***********************************************************************
 #include "dgroup.h"  ! to access nfsym (should be 1)
 
       integer              :: kvec              ! Dummy variable needed in first call to numlst
-      integer, allocatable :: mo_list(:)!,mo_occ(:),mo_vir(:)
-      integer              :: nmo(4)!,noccu,nvir
+      integer, allocatable :: mo_list(:)
+      integer              :: nmo(4)
       type(exacc_input)    :: exa_input
 
       if (nfsym.ne.1) then
          call quit ('exacorr can not handle symmetry')
       end if
+      
+      exa_input%talsh = exacc_use_talsh
+
 #if defined (VAR_MPI)
       ! parallel version of DIRAC
-      if (mytid == 0 .and. .not. get_talsh_only()) then
-      !if (mytid == 0 .and. .not. exa_input%talsh) then
+      call interface_mpi_bcast_l0(exa_input%talsh,1,0,
+     &                              global_communicator)
+      if (mytid == 0 .and. .not. exa_input%talsh) then
          call dirac_parctl( 19 )
       end if
 #else
       ! serial version of DIRAC
-      if (.not. get_talsh_only()) then
-      !if (.not. exa_input%talsh) then
+      if (.not. exa_input%talsh) then
          ! EXATENSOR version does not work with serial version of DIRAC
          print*, "Attempting to use exatensor with a non MPI version"
          call quit ("error in setup: exatensor requires MPI")
@@ -153,57 +163,54 @@ C
 #if defined (VAR_MPI)
       if (mytid == 0) then
 #endif
-      exa_input%no=0
-      call numlst (string_occupied,kvec,1,1,nesh(1),1,exa_input%no)
-      allocate (exa_input%mo_o(exa_input%no))
-      call numlst (string_occupied,exa_input%mo_o,exa_input%no,1,
-     &              nesh(1),1,exa_input%no)
+      exa_input%nkr_occ = 0
+      call numlst (string_occupied,kvec,1,1,nesh(1),1,exa_input%nkr_occ)
+      allocate (exa_input%mokr_occ(exa_input%nkr_occ))
+      call numlst (string_occupied,exa_input%mokr_occ,exa_input%nkr_occ,
+     &              1,nesh(1),1,exa_input%nkr_occ)
 
-      exa_input%nv=0
-      call numlst (string_virtual,kvec,1,1,nesh(1),1,exa_input%nv)
-      allocate (exa_input%mo_v(exa_input%nv))
-      call numlst (string_virtual,exa_input%mo_v,exa_input%nv,1,
-     &              nesh(1),1,exa_input%nv)
+      exa_input%nkr_vir = 0
+      call numlst (string_virtual,kvec,1,1,nesh(1),1,exa_input%nkr_vir)
+      allocate (exa_input%mokr_vir(exa_input%nkr_vir))
+      call numlst (string_virtual,exa_input%mokr_vir,exa_input%nkr_vir,
+     &              1,nesh(1),1,exa_input%nkr_vir)
 
-      exa_input%talsh=logical_talsh
-      exa_input%ccd=logical_ccd
-      exa_input%t_econv=econv
+      exa_input%ccd = exacc_do_ccd
+      exa_input%t_econv = econv
 
 #if defined (VAR_MPI)
       end if
 #endif
-      if (get_talsh_only()) then
-      !if (exa_input%talsh) then
-         print*, "TALSH: ", exa_input%talsh
-         print*, "CCD: ", exa_input%ccd
-         print*, "nocc: ", exa_input%no
-         print*, "nvir: ", exa_input%nv
-         print*, "mo_occ: ", exa_input%mo_o
-         print*, "mo_vir: ", exa_input%mo_v
+      if (exa_input%talsh) then
+         print*, "TALSH: ", exa_input%talsh, exacc_use_talsh
+         print*, "CCD: ", exa_input%ccd, exacc_do_ccd
+         print*, "nocc: ", exa_input%nkr_occ
+         print*, "nvir: ", exa_input%nkr_vir
+         print*, "mo_occ: ", exa_input%mokr_occ
+         print*, "mo_vir: ", exa_input%mokr_vir
          print*, "t_econv: ", exa_input%t_econv
-         call talsh_cc_driver (exa_input%no,exa_input%nv,
-     &                              exa_input%mo_o,exa_input%mo_v)
+         call talsh_cc_driver (exa_input)
       else
 #if defined (VAR_MPI)
          ! slaves need the same info to get started
-         call interface_mpi_bcast(exa_input%no,1,mparid,
+         ! Need to find correct syntax to bcast exa_input entirely
+         call interface_mpi_bcast(exa_input%nkr_occ,1,mparid,
      &                              global_communicator)
-         if (mytid /= 0) allocate(exa_input%mo_o(exa_input%no))
-         call interface_mpi_bcast(exa_input%mo_o,exa_input%no,
+         if (mytid /= 0) allocate(exa_input%mokr_occ(exa_input%nkr_occ))
+         call interface_mpi_bcast(exa_input%mokr_occ,exa_input%nkr_occ,
      &                              mparid,global_communicator)
-         call interface_mpi_bcast(exa_input%nv,1,mparid,
+         call interface_mpi_bcast(exa_input%nkr_vir,1,mparid,
      &                              global_communicator)
-         if (mytid /= 0) allocate(exa_input%mo_v(exa_input%nv))
-         call interface_mpi_bcast(exa_input%mo_v,exa_input%nv,
+         if (mytid /= 0) allocate(exa_input%mokr_vir(exa_input%nkr_vir))
+         call interface_mpi_bcast(exa_input%mokr_vir,exa_input%nkr_vir,
      &                              mparid,global_communicator)
+
 #endif
-         call exacorr_cc_driver (exa_input%no,exa_input%nv,
-     &                              exa_input%mo_o,exa_input%mo_v)
-         !call exacorr_cc_driver (exa_input)
+         call exacorr_cc_driver (exa_input)
       end if
 
-      deallocate (exa_input%mo_o)
-      deallocate (exa_input%mo_v)
+      deallocate (exa_input%mokr_occ)
+      deallocate (exa_input%mokr_vir)
 
       end
 

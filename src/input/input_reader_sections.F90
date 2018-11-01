@@ -847,19 +847,19 @@
       end if
 
       if (kw_matches(word, '.EXATENSOR')) then
-         logical_talsh=.false.
+         exacc_use_talsh = .false.
       else
-         logical_talsh=.true.
+         exacc_use_talsh = .true.
       end if
 
       if (kw_matches(word, '.CCDOUBLES')) then
-         logical_ccd=.true.
+         exacc_do_ccd = .true.
       else
-         logical_ccd=.false.
+         exacc_do_ccd = .false.
       end if
 
       if (kw_matches(word, '.TCONVERG')) then
-         read(get_file_unit(),'(f18.16)') econv
+         call kw_read(word, econv)
       end if
 
       call check_whether_kw_found(word, kw_section)

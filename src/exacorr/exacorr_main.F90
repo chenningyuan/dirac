@@ -8,25 +8,22 @@
       use interface_to_mpi
 #endif
 
-      use exacorr_global,only   : get_talsh_only, set_talsh_only
-      use exacorr_ao_to_mo,only : exacorr_compute_mo_integrals
-      use talsh_ao_to_mo,only   : talsh_compute_mo_integrals
-      use talsh_cc,only         : talsh_cc_driver
-      use exacorr_cc,only       : exacorr_cc_driver
+      use exacorr_ao_to_mo,only     : exacorr_compute_mo_integrals
+      use talsh_ao_to_mo,only       : talsh_compute_mo_integrals
+      use talsh_cc,only             : talsh_cc_driver
+      use exacorr_cc,only           : exacorr_cc_driver
+      use exacorr_datatypes,only    : exacc_input
 
       implicit none
 
       logical mo_transform, cc_calculation 
       integer              :: imo, nmo(4)
       integer, allocatable :: mo_list(:)
-      integer              :: nocc, nvir
-      integer, allocatable :: mo_occ(:)
-      integer, allocatable :: mo_vir(:)
+      type(exacc_input)    :: exa_input 
 
       mo_transform   = .false.
       cc_calculation = .true.
-      call set_talsh_only(.false.)
-      
+      exa_input%talsh = .false. 
 
 #if defined (VAR_MPI) 
       call interface_mpi_init()
@@ -47,29 +44,25 @@
       end if
 
       !Hard-coded water input to correspond with x2c test
-      !nocc = 2
-      !nvir  = 6
-      nocc = 3
-      nvir  = 12
-      allocate(mo_occ(nocc))
-      mo_occ = (/3, 4, 5/)
-      !do imo = 1, nocc
-      !    mo_occ(imo) = imo
-      !end do
-      allocate(mo_vir(nvir))
-      mo_vir = (/6, 7, 8, 9, 10 , 11, 12, 13, 14, 15, 16, 17/)
-      !do imo = 1, nvir
-      !    mo_vir(imo) = nocc+imo
-      !end do
+      exa_input%nkr_occ = 3
+      exa_input%nkr_vir = 12
+      allocate(exa_input%mokr_occ(exa_input%nkr_occ))
+      allocate(exa_input%mokr_vir(exa_input%nkr_vir))
+      exa_input%mokr_occ = (/3, 4, 5/)
+      exa_input%mokr_vir = (/6, 7, 8, 9, 10 , 11, 12, 13, 14, 15, 16, 17/)
 
       if (cc_calculation) then
-         print*, "a CC calculation with",nocc," occupied"," and ",nvir," virtuals"
-         if (get_talsh_only()) then
-            call talsh_cc_driver (nocc,nvir,mo_occ,mo_vir)
+         print*, "a CC calculation with",exa_input%nkr_occ," occupied"," and ",exa_input%nkr_vir," virtuals"
+         if (exa_input%talsh) then
+            call talsh_cc_driver (exa_input)
          else
-            call exacorr_cc_driver (nocc,nvir,mo_occ,mo_vir)
+            !call exacorr_cc_driver (exa_input%nkr_occ,exa_input%nkr_vir,exa_input%mokr_occ,exa_input%mokr_vir)
+            call exacorr_cc_driver (exa_input)
          end if
       end if
+
+      deallocate(exa_input%mokr_occ)
+      deallocate(exa_input%mokr_vir)
 
 #if defined (VAR_MPI) 
       call interface_mpi_finalize()

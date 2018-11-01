@@ -21,8 +21,8 @@ module exacorr_cc
 
 #if defined (VAR_MPI)
 !-------------------------------------------------------------------------------------------
-        subroutine exacorr_cc_driver (nocc,nvir,mo_occ,mo_vir)
-        !subroutine exacorr_cc_driver (exa_input)
+        !subroutine exacorr_cc_driver (nocc,nvir,mo_occ,mo_vir)
+        subroutine exacorr_cc_driver (exa_input)
 
 !        This subroutine drives the ccsd energy calculation
 !        Currently everything is done in-core, purpose is to provide a working implementation that is suitable for debugging the production code
@@ -38,9 +38,11 @@ module exacorr_cc
 
          implicit none
 
-         integer, intent(in) :: nocc,nvir           ! the size of the mo basis for occupied and virtual spinors
-         integer(INTL)       :: nocc_l, nvir_l
-         integer, intent(in) :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
+         type(exacc_input), intent(in) :: exa_input
+
+         integer                :: nocc,nvir           ! the size of the mo basis for occupied and virtual spinors
+         integer(INTL)          :: nocc_l, nvir_l
+         integer, allocatable   :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
 
          integer :: my_role, my_MPI_rank                    ! needed to start exatensor, MPI should already be started in threaded mode
          integer                                :: nshells  ! the number of shells (orbitals with the same center and l-value)
@@ -111,13 +113,13 @@ module exacorr_cc
 
 !        Initialize global data (read from DFCOEF or similar by master)
          call initialize_global_data
-
+         
          nao     = get_nao()   ! This is the total number of ao's
          nao_l   = int(nao,8)  ! we need this as a long int for exatensor
 
 !        Get the basis set information
          call get_gtos(1,nao,gto,nshells)
-
+         
          !Create a basis for the ao vector space:
          ierr = 0
          call basis_ao%subspace_basis_ctor(nao_l,ierr)
@@ -144,6 +146,14 @@ module exacorr_cc
          ierr=exatns_space_register('AO_space',basis_ao,ao_space_id,ao_space)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register() failed!')
          if (my_MPI_rank == 0) print*," registered AO space with nao, nshells:",nao,nshells
+
+         !DO NOT CHANGE THESE VARIABLES
+         nocc = exa_input%nkr_occ
+         nvir = exa_input%nkr_vir
+         allocate(mo_occ(nocc))
+         allocate(mo_vir(nvir))
+         mo_occ(1:nocc) = exa_input%mokr_occ(1:exa_input%nkr_occ)
+         mo_vir(1:nvir) = exa_input%mokr_vir(1:exa_input%nkr_vir)
 
          !Get the MO-coeffcient basis for the occupied and virtual spaces
          ierr = 0
@@ -550,6 +560,9 @@ module exacorr_cc
          else
             write(*,*) ' Process ',my_MPI_rank,' terminated with error ',ierr
          endif
+
+         deallocate(mo_occ)
+         deallocate(mo_vir)
 
 !        Clean up global data used to interact with DIRAC/Interest
          call delete_global_data

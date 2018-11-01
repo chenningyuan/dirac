@@ -28,8 +28,8 @@
         type, public :: exacc_input
             logical                 :: talsh!=.true.                 !If false, use ExaTensor
             logical                 :: ccd!=.false.                  !If false=>CCSD, if true=>CCD
-            integer                 :: no, nv                   !Number of Kramer pairs
-            integer, allocatable    :: mo_o(:), mo_v(:)         !List of active Kramer pairs
+            integer                 :: nkr_occ, nkr_vir              !Number of Kramer pairs
+            integer, allocatable    :: mokr_occ(:), mokr_vir(:)      !List of active Kramer pairs
             real(8)                 :: t_econv!=1.D-12    !Convergence criterium
         end type exacc_input
 
