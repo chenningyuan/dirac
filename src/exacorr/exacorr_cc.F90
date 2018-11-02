@@ -700,7 +700,7 @@ module exacorr_cc
          type(tens_rcrsv_t), save            :: t1_inp_tensor, t2_inp_tensor
          type(tens_rcrsv_t), save            :: t1_res_tensor(maxdim), t2_res_tensor(maxdim)
          type(tens_rcrsv_t), save            :: t1_err_tensor(maxdim), t2_err_tensor(maxdim)
-         integer                             :: ipiv(maxdim), info    ! needed for ZHESV solver
+         integer                             :: ipiv(0:maxdim), info  ! needed for ZHESV solver
          real(8)                             :: work(maxdim,maxdim)   ! needed for ZHESV solver
          type(tens_rcrsv_t), save            :: scalar_tensor
        

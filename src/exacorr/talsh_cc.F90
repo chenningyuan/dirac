@@ -684,7 +684,7 @@ module talsh_cc
          type(talsh_tens_t), save :: t1_inp_tensor, t2_inp_tensor
          type(talsh_tens_t), save :: t1_res_tensor(maxdim), t2_res_tensor(maxdim)
          type(talsh_tens_t), save :: t1_err_tensor(maxdim), t2_err_tensor(maxdim)
-         integer            :: ipiv(maxdim), info    ! needed for ZHESV solver
+         integer            :: ipiv(0:maxdim), info  ! needed for ZHESV solver
          real(8)            :: work(maxdim,maxdim)   ! needed for ZHESV solver
          type(talsh_tens_t), save  :: scalar_tensor
          integer:: scalar_dims(1)
