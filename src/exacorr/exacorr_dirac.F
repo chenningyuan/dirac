@@ -37,8 +37,8 @@ C***********************************************************************
          call quit ('exacorr can not handle symmetry')
       end if
       
-      !exa_input%talsh = exacc_use_talsh 
-
+!     CODED THIS SO TALSH IS ALWAYS USED
+    
 #if defined (VAR_MPI)
       ! parallel version of DIRAC
 C     Transfer necessary information from common blocks
@@ -91,7 +91,8 @@ C     Fill the array with orbital indices
       end if
 #endif
 C
-      if (exa_input%talsh) then
+      !if (exa_input%talsh) then
+      if (.true.) then
          call talsh_compute_mo_integrals (nmo, mo_list)
       else
 #if defined (VAR_MPI)

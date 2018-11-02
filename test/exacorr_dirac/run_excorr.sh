@@ -2,7 +2,7 @@
 #if multiple MPI processes reside on the same node. In this case
 #the environment variable QF_PROCS_PER_NODE must be set appropriately!
 
-export PAM_PATH=../..              #full path to build directory of exacorr (default assumes build is at top level inside source)
+export DIRAC_PATH=../..              #full path to build directory of exacorr (default assumes build is at top level inside source)
 
 export QF_NUM_PROCS=4                  #number of MPI processes
 export QF_PROCS_PER_NODE=4             #number of MPI processes per node
@@ -51,10 +51,10 @@ export MPICH_RMA_OVER_DMAPP=1                #CRAY: DMAPP backend for CRAY-MPICH
 #Summit (jsrun) specific:
 unset PAMI_IBV_ENABLE_DCT
 
-rm *.tmp *.log *.out *.x
-cp $PAM_PATH/pam ./
+rm *.tmp *.log *.x #*.out
+cp $DIRAC_PATH/dirax.x ./
 
-#./pam --noarch --inp=exacc.inp --mol=H2O_nosym.mol --mpi=$QF_NUM_PROCS --mpirun=mpiexec
+mpiexec -n $QF_NUM_PROCS ./dirax.x #&> dirac.log
 
 #jsrun -n8 -r2 -a1 -c21 -g3 -brs ./exacorr.x #>& exacorr.log
 

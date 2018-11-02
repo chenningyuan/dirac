@@ -70,9 +70,7 @@ module exacorr_global
 
 !            The next line is to be commented out when running the stand-alone code
              call exacc_sync_cw()
-             call print_date("Slave was here")
              if (exa_input%talsh) return
-             call print_date("Slave passed the talsh check")
              call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
 
              call sync_qmo(qmo_all,my_MPI_master)
