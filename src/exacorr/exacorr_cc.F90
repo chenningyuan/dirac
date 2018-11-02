@@ -516,9 +516,11 @@ module exacorr_cc
             ierr=exatns_tensor_get_scalar(result_tensor,result_val)
             ccsd_energy = ccsd_energy + real(result_val*ONE_QUARTER,8)
             if (.not.CCD) then
-                write (*,'(A,I4,A,F20.15,A,E10.1)') "  Iteration ",iccsd," CCSD energy = ",ccsd_energy, " convergence =",t_convergence
+                write (*,'(A,I4,A,F20.15,A,E10.1)') "  Iteration ",iccsd," CCSD energy = ", &
+                                                    ccsd_energy, " convergence =",t_convergence
             else
-                write (*,'(A,I4,A,F20.15,A,E10.1)') "  Iteration ",iccsd," CCD energy = ",ccsd_energy, " convergence =",t_convergence
+                write (*,'(A,I4,A,F20.15,A,E10.1)') "  Iteration ",iccsd," CCD energy = ", & 
+                                                    ccsd_energy, " convergence =",t_convergence
             end if
             if (t_convergence .lt. t_target_precision) exit
             end do

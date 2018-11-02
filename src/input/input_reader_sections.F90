@@ -847,15 +847,15 @@
       end if
 
       if (kw_matches(word, '.EXATENSOR')) then
-         exacc_use_talsh = .false.
+         exa_input%talsh = .false.
       end if
 
       if (kw_matches(word, '.CCDOUBLES')) then
-         exacc_do_ccd = .true.
+         exa_input%ccd = .true.
       end if
 
       if (kw_matches(word, '.TCONVERG')) then
-         call kw_read(word, econv)
+         call kw_read(word, exa_input%t_econv)
       end if
 
       call check_whether_kw_found(word, kw_section)

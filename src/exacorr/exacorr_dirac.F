@@ -16,7 +16,7 @@ C***********************************************************************
       use exacc_cfg
       use exacorr_ao_to_mo,only     : exacorr_compute_mo_integrals
       use talsh_ao_to_mo,only       : talsh_compute_mo_integrals
-      use exacorr_datatypes,only    : exacc_input 
+      !use exacorr_datatypes,only    : exacc_input 
 #if defined (VAR_MPI)
       use interface_to_mpi
 #endif
@@ -31,18 +31,17 @@ C***********************************************************************
       integer              :: kvec              ! Dummy variable needed in first call to numlst
       integer, allocatable :: mo_list(:)
       integer              :: nmo(4)
-      type(exacc_input)    :: exa_input
+      !type(exacc_input)    :: exa_input
 
       if (nfsym.ne.1) then
          call quit ('exacorr can not handle symmetry')
       end if
       
-      exa_input%talsh = exacc_use_talsh 
+      !exa_input%talsh = exacc_use_talsh 
 
 #if defined (VAR_MPI)
       ! parallel version of DIRAC
 C     Transfer necessary information from common blocks
-      !exa_input%talsh = exacc_use_talsh
       call interface_mpi_bcast_l0(exa_input%talsh,1,0,
      &                              global_communicator)
       if (mytid == 0) then
@@ -122,7 +121,7 @@ C***********************************************************************
       use exacc_cfg
       use talsh_cc,only             : talsh_cc_driver
       use exacorr_cc,only           : exacorr_cc_driver
-      use exacorr_datatypes,only    : exacc_input
+      !use exacorr_datatypes,only    : exacc_input
 #if defined (VAR_MPI)
       use interface_to_mpi
 #endif
@@ -135,13 +134,14 @@ C***********************************************************************
       integer              :: kvec              ! Dummy variable needed in first call to numlst
       integer, allocatable :: mo_list(:)
       integer              :: nmo(4)
-      type(exacc_input)    :: exa_input
-
+      !type(exacc_input)    :: exa_input
+      !logical              :: exacc_use_talsh, exacc_do_ccd
+ 
       if (nfsym.ne.1) then
          call quit ('exacorr can not handle symmetry')
       end if
       
-      exa_input%talsh = exacc_use_talsh
+      !exa_input%talsh = exacc_use_talsh
 
 #if defined (VAR_MPI)
       ! parallel version of DIRAC
@@ -175,14 +175,14 @@ C
       call numlst (string_virtual,exa_input%mokr_vir,exa_input%nkr_vir,
      &              1,nesh(1),1,exa_input%nkr_vir)
 
-      exa_input%ccd = exacc_do_ccd
-      exa_input%t_econv = econv
+      !exa_input%ccd = exacc_do_ccd
+      !exa_input%t_econv = econv
 
 #if defined (VAR_MPI)
       end if
 #endif
-         print*, "TALSH: ", exa_input%talsh, exacc_use_talsh
-         print*, "CCD: ", exa_input%ccd, exacc_do_ccd
+         print*, "TALSH: ", exa_input%talsh
+         print*, "CCD: ", exa_input%ccd
          print*, "nocc: ", exa_input%nkr_occ
          print*, "nvir: ", exa_input%nkr_vir
          print*, "mo_occ: ", exa_input%mokr_occ

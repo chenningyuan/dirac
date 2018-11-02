@@ -2,10 +2,10 @@
 #if multiple MPI processes reside on the same node. In this case
 #the environment variable QF_PROCS_PER_NODE must be set appropriately!
 
-export EXACORR_PATH=../..              #full path to build directory of exacorr (default assumes build is at top level inside source)
+export PAM_PATH=../..              #full path to build directory of exacorr (default assumes build is at top level inside source)
 
-export QF_NUM_PROCS=8                  #number of MPI processes
-export QF_PROCS_PER_NODE=8             #number of MPI processes per node
+export QF_NUM_PROCS=4                  #number of MPI processes
+export QF_PROCS_PER_NODE=4             #number of MPI processes per node
 export QF_CORES_PER_PROC=1             #number of cores per MPI process
 export QF_NUM_THREADS=8                #number of threads per MPI process (at least 8)
 export QF_GPUS_PER_PROCESS=0           #number of discrete NVIDIA GPU's per process (optional)
@@ -52,13 +52,15 @@ export MPICH_RMA_OVER_DMAPP=1                #CRAY: DMAPP backend for CRAY-MPICH
 unset PAMI_IBV_ENABLE_DCT
 
 rm *.tmp *.log *.out *.x
-cp $EXACORR_PATH/exacorr.x ./
+cp $PAM_PATH/pam ./
+
+#./pam --noarch --inp=exacc.inp --mol=H2O_nosym.mol --mpi=$QF_NUM_PROCS --mpirun=mpiexec
 
 #jsrun -n8 -r2 -a1 -c21 -g3 -brs ./exacorr.x #>& exacorr.log
 
 #/usr/local/mpi/openmpi-3.1.0/bin/mpiexec -n $QF_NUM_PROCS -npernode $QF_PROCS_PER_NODE -oversubscribe ./exacorr.x #>& exacorr.log
 
-#/usr/local/mpi/mpich-3.2/bin/mpiexec -n $QF_NUM_PROCS ./exacorr.x #>& exacorr.log
+#mpiexec -n $QF_NUM_PROCS ./exacorr.x #>& exacorr.log
 
 #aprun -n $QF_NUM_PROCS -N $QF_PROCS_PER_NODE -d $QF_CORES_PER_PROC -cc 0,2,4,6,8,10,12,14,1,3,5,7,9,11,13 -r1 ./exacorr.x #>& exacorr.log
 

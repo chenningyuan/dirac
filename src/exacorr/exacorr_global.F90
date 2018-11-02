@@ -12,29 +12,17 @@ module exacorr_global
         integer :: my_MPI_master=0 ! Define the MPI master proces (is always zero in the DIRAC MPI environment)
         type(basis_set_info_t) :: ao_basis ! information about the ao basis 
         type(MO):: qmo_all ! Stores all MO-coefficients and energies obtained from the parent code 
-        logical :: TALSH_ONLY = .TRUE. ! use single-node TALSH library instead of the full EXATENSOR library
         logical, public, parameter :: DEBUG = .TRUE. ! switch on and off debug
 
 !       Functions and routines to interact with these data
         public ncartesian
         public get_nao
-        !public get_talsh_only
-        !public set_talsh_only
         public initialize_global_data
         public delete_global_data
         public get_gtos
         public get_mo_coefficients
 
        contains
-         
-         !subroutine set_talsh_only(new_value)
-         !    logical, intent(in) :: new_value
-         !    TALSH_ONLY = new_value
-         !end subroutine set_talsh_only
-
-         !logical function get_talsh_only()
-         !    get_talsh_only = TALSH_ONLY
-         !end function get_talsh_only
 
          integer function get_nao()
              get_nao = ao_basis%nao
@@ -74,12 +62,17 @@ module exacorr_global
  
 #if defined (VAR_MPI)
              use interface_to_mpi
-             integer :: nao, nshells, n_primitives
-             integer :: ish
-             integer :: my_MPI_rank
+             use exacc_cfg
+
+             integer            :: nao, nshells, n_primitives
+             integer            :: ish
+             integer            :: my_MPI_rank
 
 !            The next line is to be commented out when running the stand-alone code
-             if (TALSH_ONLY) return
+             call exacc_sync_cw()
+             call print_date("Slave was here")
+             if (exa_input%talsh) return
+             call print_date("Slave passed the talsh check")
              call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
 
              call sync_qmo(qmo_all,my_MPI_master)
