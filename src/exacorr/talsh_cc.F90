@@ -72,7 +72,10 @@ module talsh_cc
 !        CCSD control and result variables
          integer :: iccsd, nccsd
          real(8) :: mp2_energy, ccsd_energy, t_energy(3), t_convergence
-         real(8), parameter :: t_target_precision = 1.D-13
+         !real(8), parameter :: t_target_precision = 1.D-13
+         real(8) :: t_target_precision
+
+         logical :: CCD
 
 !        Make some noise so that we know we are here
          call print_date('Entered cc_driver routine')
@@ -102,6 +105,8 @@ module talsh_cc
          allocate(mo_vir(nvir))
          mo_occ(1:nocc) = exa_input%mokr_occ(1:exa_input%nkr_occ)
          mo_vir(1:nvir) = exa_input%mokr_vir(1:exa_input%nkr_vir)
+         t_target_precision = exa_input%t_econv
+         CCD = exa_input%ccd
 
 !        Get orbital energies from the DIRAC restart file
          allocate (eps_occ(2*nocc))

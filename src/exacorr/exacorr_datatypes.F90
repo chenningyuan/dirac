@@ -26,11 +26,11 @@
 
 !Input parameter
         type, public :: exacc_input
-            logical                 :: talsh!=.true.                 !If false, use ExaTensor
-            logical                 :: ccd!=.false.                  !If false=>CCSD, if true=>CCD
+            logical                 :: talsh = .true.                 !If false, use ExaTensor
+            logical                 :: ccd = .false.                  !If false=>CCSD, if true=>CCD
             integer                 :: nkr_occ, nkr_vir              !Number of Kramer pairs
             integer, allocatable    :: mokr_occ(:), mokr_vir(:)      !List of active Kramer pairs
-            real(8)                 :: t_econv!=1.D-12    !Convergence criterium
+            real(8)                 :: t_econv = 1.0D-13    !Convergence criterium
         end type exacc_input
 
        end module exacorr_datatypes

@@ -181,7 +181,6 @@ C
 #if defined (VAR_MPI)
       end if
 #endif
-      if (exa_input%talsh) then
          print*, "TALSH: ", exa_input%talsh, exacc_use_talsh
          print*, "CCD: ", exa_input%ccd, exacc_do_ccd
          print*, "nocc: ", exa_input%nkr_occ
@@ -189,6 +188,7 @@ C
          print*, "mo_occ: ", exa_input%mokr_occ
          print*, "mo_vir: ", exa_input%mokr_vir
          print*, "t_econv: ", exa_input%t_econv
+      if (exa_input%talsh) then
          call talsh_cc_driver (exa_input)
       else
 #if defined (VAR_MPI)

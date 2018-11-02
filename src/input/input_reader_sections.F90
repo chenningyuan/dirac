@@ -848,14 +848,10 @@
 
       if (kw_matches(word, '.EXATENSOR')) then
          exacc_use_talsh = .false.
-      else
-         exacc_use_talsh = .true.
       end if
 
       if (kw_matches(word, '.CCDOUBLES')) then
          exacc_do_ccd = .true.
-      else
-         exacc_do_ccd = .false.
       end if
 
       if (kw_matches(word, '.TCONVERG')) then

@@ -8,8 +8,8 @@ module exacc_cfg
 
   integer, parameter        :: LENGTH=100
   character(LENGTH), public :: string_occupied, string_virtual
-  logical, public           :: exacc_use_talsh, exacc_do_ccd
-  real(8), public           :: econv
+  logical, public           :: exacc_use_talsh=.true., exacc_do_ccd=.false.
+  real(8), public           :: econv=1.0D-13
 
 #ifdef VAR_MPI
 
