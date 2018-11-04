@@ -220,6 +220,11 @@ module fde_input_dirac
 !              ...this is the additional Coulomb term that contributes to the coupling-kernel-like term (.LAOFRZ)
                fde_rsp_propgrad_lao = .true.
                fde_lao_frozen_embker_coulomb = .true.
+            CASE ('.LAO12')
+!              Group all LAO contributions to property gradient involving coupling kerned terms (w12)
+               fde_rsp_propgrad_lao = .true.
+               fde_lao_frozen_embker_nonadd = .true.
+               fde_lao_frozen_embker_coulomb = .true.
 !           import/export of perturbed density:
 !           -----------------------------------
             CASE ('.PERTIM')
