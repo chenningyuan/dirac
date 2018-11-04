@@ -209,7 +209,7 @@ keyword(LDPT)
 
 This keyword turns on the term dependent on the embedding potential (:math:`v_{emb}^I`) only.
 Calculations with the :ref:`LDPT` keyword are less demanding than calculations with the :ref:`LAO11` keyword,
-but may lead to inaccurate results especially for heavy elements.
+but may lead to inaccurate results, especially for heavy elements.
 
 
 keyword(NOLDPT)
@@ -241,12 +241,14 @@ keyword(LDKR)
 This keyword corresponds to the term dependent on the uncoupled embedding kernel (:math:`w_{emb}^{I,I}`), 
 which involves only the "direct" LAO contribution.
 
+
 keyword(NOLDKR)
 
 .. warning:: Development version only. 
 
 
-This keyword excludes the "direct" LAO contribution to the uncoupled embedding kernel (:math:`w_{emb}^{I,I}`) term.
+This keyword excludes the "direct" LAO contribution to the uncoupled embedding kernel (:math:`w_{emb}^{I,I}`).
+
 
 keyword(LRKR)
 
@@ -256,16 +258,28 @@ keyword(LRKR)
 This keyword corresponds to the term dependent on the uncoupled embedding kernel (:math:`w_{emb}^{I,I}`), 
 which involves only the "reorthonormalization" LAO contribution.
 
+
 keyword(NOLRKR)
 
 .. warning:: Development version only. 
 
 
-This keyword excludes the "reorthonormalization" LAO contribution to the uncoupled embedding kernel (:math:`w_{emb}^{I,I}`) term.
+This keyword excludes the "reorthonormalization" LAO contribution to the uncoupled embedding kernel (:math:`w_{emb}^{I,I}`).
+
+
+keyword(LAO12)
+
+.. warning:: Development version only. 
+
+This keyword turns on the FDE-LAO contributions to the property gradient dependent on 
+the coupled embedding kernel (:math:`w_{emb}^{I,II}`).
+This option includes both, the term dependent on the non-additive part of the coupled embedding kernel and
+the Coulomb term.
+Each of these terms can be turned on by separate keywords (below).
+If this keyword is employed, it is also necessary to import perturbed densities using the :ref:`PERTIM` keyword.
 
 
 keyword(LAOFRZ)
-
 
 .. warning:: Development version only. 
 
@@ -273,8 +287,8 @@ This keyword corresponds to the term dependent on the non-additive part of embed
 two subsystems (:math:`w_{emb}^{I,II}`). In order to calculate this term, it is necessary also to use 
 the keyword :ref:`PERTIM`. 
 
-keyword(LFCOUL)
 
+keyword(LFCOUL)
 
 .. warning:: Development version only. 
 
