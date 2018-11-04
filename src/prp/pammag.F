@@ -2154,6 +2154,10 @@ C
         call dzero(dmat_0, n2bbasx*nz)
         call genden(dmat_0, cmo, 1, iprprp)
 
+        sus2el_fde_1 = 0.0d0
+        sus2el_fde_2 = 0.0d0
+        sus2el_fde_3 = 0.0d0
+
 !       embedding potential contribution
 !       --------------------------------
         if (.not. fde_lao_magn_expval_no_embpot) then
@@ -2162,7 +2166,6 @@ C
 #ifdef VAR_MPI
           if (parcal) call dirac_parctl( FDE_PAR )
 #endif
-          sus2el_fde_1 = 0.0d0
           if (itmp%im_vemb) then
             call fde_dirac_emb_matrices_via_integration(
      &                    fde_mat_dim            = ntbas(0),
@@ -2203,7 +2206,6 @@ C
 #ifdef VAR_MPI
           if (parcal) call dirac_parctl( FDE_PAR )
 #endif     
-          sus2el_fde_2 = 0.0d0
           call fde_dirac_emb_matrices_via_integration(
      &                    fde_mat_dim            = ntbas(0),
      &                    fde_nz                 = nz,
@@ -2241,7 +2243,6 @@ C
 #ifdef VAR_MPI
             if (parcal) call dirac_parctl( FDE_PAR )
 #endif    
-            sus2el_fde_3 = 0.0d0
             call fde_dirac_emb_matrices_via_integration(
      &                      fde_mat_dim            = ntbas(0),
      &                      fde_nz                 = nz,
