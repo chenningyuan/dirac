@@ -162,8 +162,10 @@ module fde_input_dirac
                dirac_cfg_fde_response = .true.
                fde_rsp_propgrad_lao = .true.
                fde_rsp_propgrad_lao_direct_embpot = .true.
+               fde_exclude_rsp_propgrad_lao_direct_embpot = .false.
             CASE ('.NOLDPT')
 !              Exclude Direct-LAO contribution to property gradient, involving embedding PoTential
+               fde_rsp_propgrad_lao_direct_embpot = .false.
                fde_exclude_rsp_propgrad_lao_direct_embpot = .true.
             CASE ('.LDKR')
 !              Direct-LAO contribution to property gradient, involving embedding KeRnel (nonzero if SDFT)
@@ -171,8 +173,10 @@ module fde_input_dirac
                dirac_cfg_fde_response = .true.
                fde_rsp_propgrad_lao = .true.
                fde_rsp_propgrad_lao_direct_embker = .true.
+               fde_exclude_rsp_propgrad_lao_direct_embker = .false.
             CASE ('.NOLDKR')
 !              Exclude Direct-LAO contribution to property gradient, involving embedding KeRnel
+               fde_rsp_propgrad_lao_direct_embker = .false.
                fde_exclude_rsp_propgrad_lao_direct_embker = .true.
             CASE ('.LRKR')
 !              Reorthonormalization-LAO contribution to property gradient, involving embedding KeRnel
@@ -180,8 +184,10 @@ module fde_input_dirac
                dirac_cfg_fde_response = .true.
                fde_rsp_propgrad_lao = .true.
                fde_rsp_propgrad_lao_reorth_embker = .true.
+               fde_exclude_rsp_propgrad_lao_reorth_embker = .false.
             CASE ('.NOLRKR')
 !              Exclude Reorthonormalization-LAO contribution to property gradient, involving embedding KeRnel
+               fde_rsp_propgrad_lao_reorth_embker = .false.
                fde_exclude_rsp_propgrad_lao_reorth_embker = .true.
             CASE ('.L11KR')
 !              Group all LAO contributions to property gradient involving uncoupled embedding kernel (w11)
@@ -191,8 +197,14 @@ module fde_input_dirac
                fde_rsp_propgrad_lao_w11 = .true.
                fde_rsp_propgrad_lao_direct_embker = .true.
                fde_rsp_propgrad_lao_reorth_embker = .true.
+               fde_exclude_rsp_propgrad_lao_w11 = .false.
+               fde_exclude_rsp_propgrad_lao_direct_embker = .false.
+               fde_exclude_rsp_propgrad_lao_reorth_embker = .false.
             CASE ('.NL11KR')
 !              Exclude all LAO contributions to property gradient involving uncoupled embedding kernel (w11)
+               fde_rsp_propgrad_lao_w11 = .false.
+               fde_rsp_propgrad_lao_direct_embker = .false.
+               fde_rsp_propgrad_lao_reorth_embker = .false.
                fde_exclude_rsp_propgrad_lao_w11 = .true.
                fde_exclude_rsp_propgrad_lao_direct_embker = .true.
                fde_exclude_rsp_propgrad_lao_reorth_embker = .true.
@@ -205,6 +217,9 @@ module fde_input_dirac
                fde_rsp_propgrad_lao_direct_embpot = .true.
                fde_rsp_propgrad_lao_direct_embker = .true.
                fde_rsp_propgrad_lao_reorth_embker = .true.
+               fde_exclude_rsp_propgrad_lao_direct_embpot = .false. 
+               fde_exclude_rsp_propgrad_lao_direct_embker = .false.
+               fde_exclude_rsp_propgrad_lao_reorth_embker = .false. 
 !           keywords related to coupled-kernel contributions (to do):
             CASE ('.LAOFRZ')
 !              LAO contribution to property gradient from the FRoZen density (read from file)
