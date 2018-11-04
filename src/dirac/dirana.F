@@ -1593,7 +1593,7 @@ C
 !Miro: sum all overlaps for given fragments
               CALL SUM_NZ_MATRIX(
      &             AMAT(IOFF,JOFF,1),NFRAGV(I),NFRAGV(J),
-     &             NTOT,NTOT,NZP,AMAT_SUM_NZ,AMAT_SUM)
+     &             NTOT,NTOT,NZP,AMAT_SUM_NZP,AMAT_SUM)
 
               CALL SUM_RE_MATRIX(AMAT1(IOFF,JOFF,1),
      &             NFRAGV(I),NFRAGV(J),NTOT,NTOT,AMAT_SUM_RE)
