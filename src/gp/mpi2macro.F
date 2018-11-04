@@ -65,7 +65,7 @@ C***********************************************************************
 #include "mpif.h"
 #include "priunit.h"
 #include "mxdim_mpi2.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER ISTAT(MPI_STATUS_SIZE)
       DIMENSION RBUF(*), MY_WIN(*)
       INTEGER NTYPE_R, NTYPE_T, DATATYPE_OUT, DATATYPE_IN
       INTEGER JCOUNT, JCOUNT_T
@@ -137,7 +137,7 @@ C***********************************************************************
 #include "mpif.h"
 #include "priunit.h"
 #include "mxdim_mpi2.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER ISTAT(MPI_STATUS_SIZE)
       DIMENSION RBUF(*), MY_WIN(*)
       INTEGER NTYPE_R, NTYPE_T, DATATYPE_OUT, DATATYPE_IN
       INTEGER JCOUNT, JCOUNT_T

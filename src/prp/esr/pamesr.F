@@ -1196,8 +1196,7 @@ C     Generate density matrix
 C     =======================
 C
 C      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPESR')
-C      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IDUM,TOTERG,6,
-C     &            WORK,KFREE,LFREE)
+C      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IDUM,TOTERG,6)
 C      CLOSE(LUCOEF,STATUS='KEEP')
 
 C     Expectation values normal procedure
@@ -1482,7 +1481,7 @@ c      print *, 'IPCMO,nash:',IPCMO,nash
 C
       CALL MEMGET2('REAL','IBEIG',KIBEIG ,NORBT,WORK,KFREE,LFREE)
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','ESRPRP')
-      CALL REACMO_no_work(LUCOEF,'DFCOEF',DUMMY,DUMMY,WORK(KIBEIG),
+      CALL REACMO(LUCOEF,'DFCOEF',DUMMY,DUMMY,WORK(KIBEIG),
      &                    TOTERG,8)
       CLOSE(LUCOEF,status='KEEP')
       CALL PRPMAT(INDXPR,IOPSY,PMAT,CMO,WORK(KIBEIG),IPCMO,NASH,
@@ -2255,11 +2254,11 @@ C        3. DFCOEF with Hartree-Fock or DFT or MVO orbitals ?
          IF (SPINFR.OR.LEVYLE) THEN
             CALL MEMGET2('INTE','IBPRP',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
             CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,WORK(KIBRP),
-     &                  TOTERG,10,WORK,KFREE,LFREE)
+     &                  TOTERG,10)
          ELSE
             KIBRP = KFREE
             CALL REACMO(LUCOEF,'DFCOEF',CMO,WORK(KEIG),IDUM,
-     &                  TOTERG,2,WORK,KFREE,LFREE)
+     &                  TOTERG,2)
          END IF
          CLOSE(LUCOEF,STATUS='KEEP')
          WRITE(LUPRI,'(/A)')

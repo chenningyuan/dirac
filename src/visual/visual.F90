@@ -188,7 +188,7 @@ contains
        eigenvalues = 0.0d0
 
        call opnfil(file_unit, 'DFCOEF', 'OLD', 'visual.F90')
-       call reacmo_no_work(file_unit, 'DFCOEF', (/0.0d0/), eigenvalues, (/0/), energy, 4)
+       call reacmo(file_unit, 'DFCOEF', (/0.0d0/), eigenvalues, (/0/), energy, 4)
 
        close(file_unit, status = 'keep')
        write(LUPRI,'(2x,a)') 'Visualisation : DFCOEF file read'

@@ -78,10 +78,9 @@ contains
        
     new_size=1
     if (associated(node%attr)) then
-       !new_size=size(node%attr,2)+1
-       new_size=size(node%attr,2)+0
+       new_size=size(node%attr,2)+1
        allocate(new_attr(2,new_size))
-       new_attr(:,:)=node%attr(:,:)
+       new_attr(:,1:new_size-1)=node%attr(:,:)
        deallocate(node%attr)
        node%attr=>new_attr
     else; allocate(node%attr(2,1))
@@ -117,10 +116,9 @@ contains
 !   first increase the size of the child array
 !   if this is to slow double the size of children if necessary in a seperate subroutine.
     if (associated(node%children)) then
-       !new_size=size(node%children)+1
-       new_size=size(node%children)+0
+       new_size=size(node%children)+1
        allocate(new_children(new_size))
-       new_children(1:new_size)=node%children(:)
+       new_children(1:new_size-1)=node%children(:)
        deallocate(node%children)
        node%children=>new_children
     else;

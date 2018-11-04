@@ -2366,8 +2366,7 @@ C
         ELSE
 C         read orbital symmetry values from DFCOEF
           CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RSETCI')
-          CALL REACMO_no_work(LUCOEF,'DFCOEF',DUMMY,DUMMY,orb_sym_vec,
-     &                        TOTERG,8)
+          CALL REACMO(LUCOEF,'DFCOEF',DUMMY,DUMMY,orb_sym_vec,TOTERG,8)
           CLOSE(LUCOEF,STATUS='KEEP')
           if(IPROPT .ge. 2)then
             WRITE(LUPRI,'(/A)')
@@ -3155,8 +3154,7 @@ C
          INQUIRE ( FILE = 'DFCOEF', EXIST = EX )
          IF ( EX ) THEN
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RREADMO')
-            CALL REACMO(LUCOEF,'DFCOEF',CMO,DUMMY,DUMMY,DUMMY,2,
-     &                  WORK,KFREE,LFREE)
+            CALL REACMO(LUCOEF,'DFCOEF',CMO,DUMMY,DUMMY,DUMMY,2)
             CLOSE(LUCOEF,STATUS='KEEP')
             readmj_df = .true.
             IF (IPRINT .GE. 0) THEN
@@ -3239,7 +3237,7 @@ C
           if( readmj_df )then
             call opnfil(lucoef,'DFCOEF','OLD','RMJVEC ')
             call reacmo(lucoef,'DFCOEF',dummy,dummy,work(kmjvec),
-     &                  dummy,8,work,kfree,lfree)
+     &                  dummy,8)
             close(lucoef,STATUS='KEEP')
           else
             call ireakrmc(lukrm5,'MJVEC   ',work(kmjvec),norbt)
@@ -3290,8 +3288,7 @@ C         write back on file - if not present
 !         read ibeig (info array on boson irreps) from DFCOEF or KRMC"SCF"(OLD)
           if( readmj_df )then
             call opnfil(lucoef,'DFCOEF','OLD','RIBEIG ')
-            call reacmo(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8,
-     &                  work,kfree,lfree)
+            call reacmo(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8)
 !           WRITE(LUPRI,'(/A)') ' IBEIG array read from file DFCOEF'
 !           call iwrtmamn(ibeig,1,norbt,1,norbt,lupri)
             close(lucoef,STATUS='KEEP')
@@ -6548,7 +6545,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
 #include "parkrmc.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER ISTAT(MPI_STATUS_SIZE)
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dcbgen.h"

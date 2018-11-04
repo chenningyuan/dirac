@@ -166,7 +166,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "infpar.h"
 #ifdef VAR_MPI
-      dimension istat(df_mpi_status_size)
+      integer   istat(df_mpi_status_size)
 #endif
 C
       if(numnod.eq.0) return
@@ -206,7 +206,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcbmp2no.h"
 #include "infpar.h"
 #if defined (VAR_MPI)
-      dimension istat(df_mpi_status_size)
+      integer   istat(df_mpi_status_size)
 #endif
 #include "priunit.h"
 #include "dgroup.h"

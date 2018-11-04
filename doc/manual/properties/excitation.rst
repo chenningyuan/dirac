@@ -32,8 +32,13 @@ times to add more operators.
 
 keyword(EPOLE)
 
-Specification of electric Cartesian multipole operators of order L 
-for the calculation of transition moments. Specify order.
+Specification of electric Cartesian multipole operators of order :math:`n`
+
+.. math::
+
+    \hat{Q}_{j_{1}\ldots j_{n}}^{\left[n\right]}=-er_{1}r_{2}\ldots r_{j_{n}}   
+
+for the calculation of transition moments (note that they contribute to one order less in the wave vector). Specify order.
 
 *Example:* Electric dipole operators::
   
@@ -42,8 +47,14 @@ for the calculation of transition moments. Specify order.
 
 keyword(MPOLE)
 
-Specification of magnetic Cartesian multipole operators of order L 
-for the calculation of transition moments. Specify order.
+Specification of magnetic Cartesian multipole operators of order :math:`n`
+
+.. math::
+
+   \hat{m}_{j_{1}\ldots j_{n-1};j_{n}}^{\left[n\right]}=\frac{n}{n+1}r_{j_{1}}r_{j_{2}}\ldots r_{j_{n-1}}(\boldsymbol{r}\times\hat{\mathbf{j}})_{j_{n}};\quad\hat{\mathbf{j}}=-ec\boldsymbol{\alpha}
+
+
+for the calculation of transition moments (note that they contribute to the same order in the wave vector). Specify order.
 
 *Example:* Magnetic dipole operators::
 

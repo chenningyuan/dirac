@@ -21,10 +21,10 @@ set(FIXED_RELCCSD_FORTRAN_SOURCES
    ccgenp.F
    ccgetv.F
    ccintm.F
+   ccints.F
    ccmain.F
    ccpam.F
    ccrpa.F
-   ccsort.F
    ccxblas.F
    waio.F
    ${PROJECT_SOURCE_DIR}/src/prp/mp2lag.F
@@ -33,13 +33,10 @@ set(FIXED_RELCCSD_FORTRAN_SOURCES
    ${PROJECT_SOURCE_DIR}/src/dirac/dirgeo.F
 )
 
-set(FIXED_RELCCSD_FORTRAN_SOURCES_noruntimecheck
-   ccints.F
-)
-
 set(FREE_RELCCSD_FORTRAN_SOURCES
    relcc_cfg.F90
    auto_offset.F90
+   ccsort.F90
    ccsort_exp.F90
    wrapper_sorting.F90 
    contraction.F90
@@ -50,31 +47,21 @@ set(FREE_RELCCSD_FORTRAN_SOURCES
    trial_vectors_eom.F90
    density.F90
    eom_driver.F90 
-   ccdriv.F # Attempt to fetch from allocatable variable A_HEFF when it is not allocated
+   ccdriv.F
    cceqn_driver_lambda.F
    ccgrad.F
    # needs dependency
    ${PROJECT_SOURCE_DIR}/src/main/mpi_framework.F90
-# Miro: previously "problematic" source files wrt runtime check
 )
 
-set(FREE_RELCCSD_FORTRAN_SOURCES_noruntimecheck
-  # Miro: indeed, I had to return the file back, unfortunately
-#   auto_offset.F90
-#   wrapper_sorting.F90  
-#   contraction.F90
-#   intermediates.F90
-)
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
-    set_source_files_properties(${FREE_RELCCSD_FORTRAN_SOURCES_noruntimecheck}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
     set_source_files_properties(${FREE_RELCCSD_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
-    set_source_files_properties(${FIXED_RELCCSD_FORTRAN_SOURCES_noruntimecheck} PROPERTIES COMPILE_FLAGS "-qfixed")
     set_source_files_properties(${FIXED_RELCCSD_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
 endif()
 
 if(ENABLE_RUNTIMECHECK)
-    message(STATUS "runtime-check flags activated for the 'relccsd' module with some exceptions")
+    message(STATUS "runtime-check flags activated for the 'relccsd' module without any exceptions")
     set_source_files_properties(${FREE_RELCCSD_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
     set_source_files_properties(${FIXED_RELCCSD_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
 endif()
@@ -85,9 +72,7 @@ endif()
 add_library(
     relccsd
     OBJECT
-    ${FREE_RELCCSD_FORTRAN_SOURCES_noruntimecheck}
     ${FREE_RELCCSD_FORTRAN_SOURCES}
-    ${FIXED_RELCCSD_FORTRAN_SOURCES_noruntimecheck}
     ${FIXED_RELCCSD_FORTRAN_SOURCES}
 )
 
