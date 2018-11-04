@@ -158,8 +158,6 @@ module fde_input_dirac
 !           -------------------------------------------
             CASE ('.LDPT')
 !              Direct-LAO contribution to property gradient, involving embedding PoTential
-               doprp = .true.
-               dirac_cfg_fde_response = .true.
                fde_rsp_propgrad_lao = .true.
                fde_rsp_propgrad_lao_direct_embpot = .true.
                fde_exclude_rsp_propgrad_lao_direct_embpot = .false.
@@ -169,8 +167,6 @@ module fde_input_dirac
                fde_exclude_rsp_propgrad_lao_direct_embpot = .true.
             CASE ('.LDKR')
 !              Direct-LAO contribution to property gradient, involving embedding KeRnel (nonzero if SDFT)
-               doprp = .true.
-               dirac_cfg_fde_response = .true.
                fde_rsp_propgrad_lao = .true.
                fde_rsp_propgrad_lao_direct_embker = .true.
                fde_exclude_rsp_propgrad_lao_direct_embker = .false.
@@ -180,8 +176,6 @@ module fde_input_dirac
                fde_exclude_rsp_propgrad_lao_direct_embker = .true.
             CASE ('.LRKR')
 !              Reorthonormalization-LAO contribution to property gradient, involving embedding KeRnel
-               doprp = .true.
-               dirac_cfg_fde_response = .true.
                fde_rsp_propgrad_lao = .true.
                fde_rsp_propgrad_lao_reorth_embker = .true.
                fde_exclude_rsp_propgrad_lao_reorth_embker = .false.
@@ -191,8 +185,6 @@ module fde_input_dirac
                fde_exclude_rsp_propgrad_lao_reorth_embker = .true.
             CASE ('.L11KR')
 !              Group all LAO contributions to property gradient involving uncoupled embedding kernel (w11)
-               doprp = .true.
-               dirac_cfg_fde_response = .true.
                fde_rsp_propgrad_lao = .true.
                fde_rsp_propgrad_lao_w11 = .true.
                fde_rsp_propgrad_lao_direct_embker = .true.
@@ -210,8 +202,6 @@ module fde_input_dirac
                fde_exclude_rsp_propgrad_lao_reorth_embker = .true.
             CASE ('.LAO11')
 !              Group all LAO contributions to property gradient involving embedding PoTential (v) and uncoupled embedding kernel (w11)
-               doprp = .true.
-               dirac_cfg_fde_response = .true.
                fde_rsp_propgrad_lao = .true.
                fde_rsp_propgrad_lao_vw11 = .true.
                fde_rsp_propgrad_lao_direct_embpot = .true.
@@ -226,12 +216,10 @@ module fde_input_dirac
 !              it depends on embedding kernel and does NOT include the Coulomb term...
                fde_rsp_propgrad_lao = .true.
                fde_lao_frozen_embker_nonadd = .true.
-               doprp = .true.
             CASE ('.LFCOUL')
 !              ...this is the additional Coulomb term that contributes to the coupling-kernel-like term (.LAOFRZ)
                fde_rsp_propgrad_lao = .true.
                fde_lao_frozen_embker_coulomb = .true.
-               doprp = .true.
 !           import/export of perturbed density:
 !           -----------------------------------
             CASE ('.PERTIM')
@@ -242,19 +230,16 @@ module fde_input_dirac
                itmp%im_frozen_pert_reorth = .true.
                itmp%im_frozen = .true.
                fde_rsp_mag_lao_import = .true.
-               doprp = .true.
             CASE ('.PERTEX')
 !              export perturbed density (additional columns on 'GRIDOUT' file)
                dirac_cfg_fde_export = .true.
                etmp%do_grid_out = .true.
-               doprp = .true.
                fde_rsp_mag_lao_export = .true.
 !           embedding contributions to expectation value of magnetizability:
 !           ----------------------------------------------------------------
             CASE ('.EMAFDE')
 !              Expectation value contribution to MAgnetizability - FDE (all terms, excluding terms by keywords below)
                fde_magn_expval_lao = .true.
-               doprp = .true.
             CASE ('.MNOPOT')
 !              Magnetizability NO embedding POTential
                fde_lao_magn_expval_no_embpot = .true.
