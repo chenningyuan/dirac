@@ -212,7 +212,9 @@ with two new keywords: :ref:`LAOFRZ` and :ref:`PERTIM`. The corresponding ``pam`
 
 This input does not include the (computationally expensive) Coulomb term in the embedding kernel, only the nonadditive
 exchange-correlation and kinetic kernels. 
-If the Coulomb term is to be calculated then it requires additional keyword, :ref:`LFCOUL`:
+If the Coulomb term is to be calculated then it requires additional keyword, :ref:`LFCOUL`.
+Instead of using the :ref:`LFCOUL` and the :ref:`LAOFRZ` keywords together, it is possible to use a single :ref:`LAO12` keyword,
+which represents both contributions to the coupled embedding kernel:
 
 .. literalinclude:: shield_v_w11_w12.inp
 
