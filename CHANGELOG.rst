@@ -21,6 +21,7 @@ Error corrections:
 - Fix f correlating exponents for 3d in dyall.cv2z and dyall.ae2z. Contributor: Ken G. Dyall.
 - Bugfix in KRCI module (subroutine STRTYP_GAS_REL), reported by Shigeyoshi Yamamoto.
 - Bugfix in polarizable embedding (the printed electronic part of the energy was not corrected with PE contributions).
+- Fixed the formatting of the carbon potential in the file basis_ecp/ECPCE2SO.
 
 Performance improvements:
 
