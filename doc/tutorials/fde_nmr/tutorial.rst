@@ -24,7 +24,7 @@ For instance, these new contributions to the property gradient of subsystem "I" 
 .. math::
    :label: fde_pg
 
-    E_{[1],emb}^{[B]} = - \int v_{emb}^I \Omega_{ia}^{B,I} - \iint w_{emb}^{I,I} \Omega_{ia}^{I} \Omega_{jj}^{I} - \iint w_{emb}^{I,II} \Omega_{ia}^{I} \Omega_{jj}^{II}
+    E_{[1],emb}^{[B]} = - \int v_{emb}^I \Omega_{ia}^{B,I} - \iint w_{emb}^{I,I} \Omega_{ia}^{I} \Omega_{jj}^{B,I} - \iint w_{emb}^{I,II} \Omega_{ia}^{I} \Omega_{jj}^{B,II}
 
 where :math:`\Omega_{pq}^{B}` is the first-order perturbed overlap distribution, which in a basis of London orbitals consists of two terms
 
@@ -66,7 +66,8 @@ In this example we will use the four-component relativistic DC Hamiltonian and D
 Calculations without the FDE coupling terms
 -------------------------------------------
 
-Here we demonstrate how to include the first two terms in the property gradient in Eq. :eq:`fde_pg`.
+Here we demonstrate how to include the first two terms in the property gradient in Eq. :eq:`fde_pg`: 
+the terms dependent on the embedding potential and the uncoupled embedding kernel.
 
 In this tutorial, we use a coarse grid generated in DIRAC in preceeding calculations
 on SeH\ :sub:`2`\ - H\ :sub:`2`\ O supermolecule, which was then exported on a ``numerical_grid`` file.
@@ -118,11 +119,16 @@ and the ``pam`` command is:
 
 .. literalinclude:: updatefrozen.run
 
+
+
+
+
+
 To calculate the NMR shielding tensor, we use the following input file:
 
 .. literalinclude:: shield_v.inp
 
-in which the keyword :ref:`LAODPT` denotes that the property gradient will contain the contribution
+in which the keyword :ref:`LDPT` denotes that the property gradient will contain the contribution
 from the embedding potential, :math:`v_{emb}^{I}`. The corresponding ``pam`` command is then:
 
 .. literalinclude:: shield_v.run
