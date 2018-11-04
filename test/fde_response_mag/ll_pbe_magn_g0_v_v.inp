@@ -21,7 +21,7 @@ pbex=1.0 pbec=1.0
 .FRDENS
 FROZEN
 .RSP
-.LAODPT
+.LDPT
 **GRID
 .IMPORT
 numerical_grid
