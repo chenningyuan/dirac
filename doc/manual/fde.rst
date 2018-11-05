@@ -173,8 +173,8 @@ exporting the
 
 .. warning:: Development version only. 
 
-**Magnetic properties with London atomic orbitals**
-===================================================
+**Magnetic properties with London atomic orbitals - FDE contributions to the property gradient**
+================================================================================================
 
 In calculations of magnetic properties with London atomic orbitals (LAOs), additional contributions
 from FDE to the active subsystem should be included in the property gradient (:cite: `olejniczak2017`). 
@@ -317,6 +317,49 @@ keyword(FRZNOS)
 .. warning:: Development version only. 
 
 This keyword means that no spin-density contributions to the perturbed density will be used in FDE calculations.
+
+
+**Magnetizability with London atomic orbitals - FDE contributions to the expectation value of the magnetizability tensor**
+==========================================================================================================================
+
+The FDE calculations of the magnetizability tensor with London atomic orbitals (LAOs), require the FDE-LAO contributions to
+the property gradient (presented above) and the FDE-LAO contributions to the expectation value of the magnetizability tensor.
+The latter involve the terms dependent on the embedding potential (:math:`v_{emb}^I`), 
+uncoupled embedding kernel (:math:`w_{emb}^{I,I}`) and coupled embedding kernel (:math:`w_{emb}^{I,II}`).
+
+
+keyword(EMAFDE)
+
+.. warning:: Development version only. 
+
+This keyword turns on all FDE-LAO contributions to the expectation value part of the magnetizability tensor.
+This is the advised option. 
+It is possible to exclude each contribution by using expert keywords (presented below).
+
+
+keyword(MNOPOT)
+
+.. warning:: Development version only. 
+
+This keyword turns off the contribution to the expectation value part of the magnetizability tensor
+dependent on the embedding potential (:math:`v_{emb}^I`).
+
+
+keyword(MNOUKE)
+
+.. warning:: Development version only. 
+
+This keyword turns off the contribution to the expectation value part of the magnetizability tensor
+dependent on the uncoupled embedding kernel (:math:`w_{emb}^{I,I}`).
+
+
+keyword(MNONKE)
+
+.. warning:: Development version only. 
+
+This keyword turns off the contribution to the expectation value part of the magnetizability tensor
+dependent on the non-additive part of the coupled embedding kernel (:math:`w_{emb}^{I,II}`).
+
 
 **Debug/expert options**
 ========================
