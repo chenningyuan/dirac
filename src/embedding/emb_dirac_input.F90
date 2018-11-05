@@ -244,6 +244,7 @@ module fde_input_dirac
 !           ----------------------------------------------------------------
             CASE ('.EMAFDE')
 !              Expectation value contribution to MAgnetizability - FDE (all terms, excluding terms by keywords below)
+!              it has to be called with PERTIM which imports perturbed density
                fde_magn_expval_lao = .true.
             CASE ('.MNOPOT')
 !              Magnetizability NO embedding POTential
@@ -254,7 +255,6 @@ module fde_input_dirac
             CASE ('.MNONKE')
 !              Magnetizability NO coupled Nonadditive KErnel
                fde_lao_magn_expval_no_coupl_nonadd_embker = .true.
-!              it has to be called with PERTIM which imports perturbed density
  
 
             CASE DEFAULT
