@@ -1668,7 +1668,7 @@ Options are also read from ~/.diracrc"""
         if not is_windows():
             self.dirac_p = subprocess.Popen(shlex.split(self.dirac_cmd),
                            stdin=subprocess.PIPE, stdout=self.f, stderr=subprocess.PIPE,
-                                            universal_newlines=True, preexec_fn=os.setsid)
+                                            universal_newlines=True)
         else:
         # Windows: provide exec command with "" to fix =/+ characters in the full path
             self.dirac_cmd='"'+self.dirac_cmd+'"'

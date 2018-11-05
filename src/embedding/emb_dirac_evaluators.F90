@@ -562,8 +562,8 @@ module fde_evaluators_dirac
 !     HF density used
          if (printlocal) write(lupri,*) 'Reading DFCOEF'
          call opnfil(LUCOEF,'DFCOEF','UNKNOWN','EMBDRV')
-         call reacmo_no_work(lucoef,    &
-                             'DFCOEF',  &
+         call reacmo(lucoef,    &
+                            'DFCOEF',  &
                              cmo,       &
                              (/0.0d0/), &
                              (/0/),     &

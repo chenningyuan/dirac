@@ -70,7 +70,7 @@
       use interface_to_mpi
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       DIMENSION LU1LIST(*), LU2LIST(*), LU3LIST(*)
       DIMENSION LU4LIST(*), LU5LIST(*), LUCLIST(*)
       DIMENSION LBATV(*), LEBATV(*), I1BATV(*), IBATV(8,*)
@@ -923,7 +923,7 @@ C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
       IMPLICIT REAL*8 (A-H,O-Z)
 #include "ipoist8.inc"
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       REAL * 8   INPROD,INPRDD
       CHARACTER SECTID*12, CPUTID*12, WALLTID*12, WALLTSTEP*12

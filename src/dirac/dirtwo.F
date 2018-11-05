@@ -1566,6 +1566,8 @@ C*****************************************************************************
 C
 C*****************************************************************************
 #include "implicit.h"
+      INTEGER IREPA(*), LWORK
+      REAL(8) WORK(LWORK)
 #include "priunit.h"
 #include "dummy.h"
 #include "maxaqn.h"
@@ -1576,7 +1578,8 @@ C
 #include "cbihr2.h"
 #include "hrunit.h"
       LOGICAL LBIT,TOBE,REGO
-      DIMENSION IREPA(*),WORK(LWORK)
+      real(8) :: TIMSTR(2), TIMEND(2)
+
 C     Undifferentiated integrals written on file
       INTTYP = 0
       NCHUNK = 600
@@ -1609,9 +1612,9 @@ C
         I2TYP = 1
 CTROND        CALL OPNFIL(LUINTA,'DFTWLL','UNKNOWN','TWOGE1')          
         CALL GPOPEN(LUINTA,'DFTWLL','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-        CALL TIMER('START ',TIMSTR,TIMEND)
+        CALL TIMER2('START ',TIMSTR,TIMEND)
         CALL TWODRV(INTTYP,I2TYP,WORK,LWORK,IPRTWO)
-        CALL TIMER('LL-int',TIMSTR,TIMEND)
+        CALL TIMER2('LL-int',TIMSTR,TIMEND)
         CALL FLSHFO(LUPRI)
         CALL TWOSRT(I2TYP,NCHUNK,IREPA,WORK,LWORK,IPRTWO)
       ENDIF
@@ -1651,9 +1654,9 @@ C
         IF(IPRTWO.GE.2)
      +     WRITE(LUPRI,'(1P,A,D9.2)') 'SL-int - threshhold:',THRS
         CALL GPOPEN(LUINTA,'DFTWSL','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-        CALL TIMER('START ',TIMSTR,TIMEND)
+        CALL TIMER2('START ',TIMSTR,TIMEND)
         CALL TWODRV(INTTYP,I2TYP,WORK,LWORK,IPRTWO)
-        CALL TIMER('SL-int',TIMSTR,TIMEND)
+        CALL TIMER2('SL-int',TIMSTR,TIMEND)
         CALL FLSHFO(LUPRI)
         CALL TWOSRT(I2TYP,NCHUNK,IREPA,WORK,LWORK,IPRTWO)
       ENDIF
@@ -1697,9 +1700,9 @@ C
         IF(IPRTWO.GE.2)
      +     WRITE(LUPRI,'(A,E9.2)') 'SS-int - threshhold:',THRS
         CALL GPOPEN(LUINTA,'DFTWSS','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-        CALL TIMER('START ',TIMSTR,TIMEND)
+        CALL TIMER2('START ',TIMSTR,TIMEND)
         CALL TWODRV(INTTYP,I2TYP,WORK,LWORK,IPRTWO)
-        CALL TIMER('SS-int',TIMSTR,TIMEND)
+        CALL TIMER2('SS-int',TIMSTR,TIMEND)
         CALL FLSHFO(LUPRI)
         CALL TWOSRT(I2TYP,NCHUNK,IREPA,WORK,LWORK,IPRTWO)
       ENDIF
@@ -1715,9 +1718,9 @@ C
         IF(IPRTWO.GE.2)
      +     WRITE(LUPRI,'(A,E9.2)') 'GT-int - threshhold:',THRS
         CALL GPOPEN(LUINTA,'DFTWGT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-        CALL TIMER('START ',TIMSTR,TIMEND)
+        CALL TIMER2('START ',TIMSTR,TIMEND)
         CALL TWODRV(INTTYP,I2TYP,WORK,LWORK,IPRTWO)
-        CALL TIMER('GT-int',TIMSTR,TIMEND)
+        CALL TIMER2('GT-int',TIMSTR,TIMEND)
         CALL FLSHFO(LUPRI)
         CALL TWOSRT(I2TYP,NCHUNK,IREPA,WORK,LWORK,IPRTWO)
       ENDIF
@@ -1969,7 +1972,6 @@ C         =============================
 C         F(i,j) = (FMAT(i,j) + FMAT(j,i))
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -1991,7 +1993,6 @@ C         =========================================
 C         F(i,j) = (FMAT(i,j) +/- FMAT(j,i))
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2007,7 +2008,6 @@ C         Coulomb contributions only
 C         ==========================
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2033,7 +2033,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2060,7 +2059,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2081,7 +2079,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2207,7 +2204,6 @@ C         =============================
 C         F(i,j) = (FMAT(i,j) + FMAT(j,i))
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(3,INTS)
               B = IND(1,INTS)
@@ -2228,7 +2224,6 @@ C         =========================================
 C         F(i,j) = (FMAT(i,j) +/- FMAT(j,i))
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(3,INTS)
               B = IND(1,INTS)
@@ -2243,7 +2238,6 @@ C         Coulomb contributions only
 C         ==========================
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(3,INTS)
               B = IND(1,INTS)
@@ -2268,7 +2262,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(3,INTS)
               B = IND(1,INTS)
@@ -2294,7 +2287,6 @@ C         ================================================
 C         F(i,j) = (1/8) * FMAT(i,j)
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(3,INTS)
               B = IND(1,INTS)
@@ -2314,7 +2306,6 @@ C         ================================================
 C         F(i,j) = (1/8) * FMAT(i,j)
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(3,INTS)
               B = IND(1,INTS)
@@ -2435,7 +2426,6 @@ C         =============================
 C         F(i,j) = (1/4) * (FMAT(i,j) + FMAT(j,i))
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2454,7 +2444,6 @@ C         =========================================
 C         F(i,j) = (1/4) (FMAT(i,j) +/- FMAT(j,i))
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2467,7 +2456,6 @@ C         Coulomb contributions only
 C         ==========================
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2492,7 +2480,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2513,7 +2500,6 @@ C         ================================================
 C         FMAT(i,j)
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2529,7 +2515,6 @@ C         ================================================
 C         F(i,j) = (1/8) * FMAT(i,j)
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2637,7 +2622,6 @@ C         =============================
 C         F(i,j) = (FMAT(i,j) + FMAT(j,i))
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2651,7 +2635,6 @@ C         antisymmetric triplet Fock matrix
 C         =========================================
 C         F(i,j) = (FMAT(i,j) +/- FMAT(j,i))
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2663,7 +2646,6 @@ C         Coulomb contributions only
 C         ==========================
 C
            ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2687,7 +2669,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2703,7 +2684,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2719,7 +2699,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2825,7 +2804,6 @@ C         =============================
 C         F(i,j) = (FMAT(i,j) + FMAT(j,i))
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2841,7 +2819,6 @@ C         =========================================
 C         F(i,j) = (FMAT(i,j) +/- FMAT(j,i))
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2852,7 +2829,6 @@ C         Coulomb contributions only
 C         ==========================
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2875,7 +2851,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2890,7 +2865,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2903,7 +2877,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -3007,7 +2980,6 @@ C       =============================
 C       F(i,j) = (FMAT(i,j) + FMAT(j,i))
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -3024,7 +2996,6 @@ C         =========================================
 C         F(i,j) = (FMAT(i,j) +/- FMAT(j,i))
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -3038,7 +3009,6 @@ C         Coulomb contributions only
 C         ==========================
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -3060,7 +3030,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           IF(IY.EQ.3) THEN
-#include"scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -3077,7 +3046,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -3092,7 +3060,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -3294,7 +3261,7 @@ C
      &        ISYMOP(*),IHRMOP(*),IFCKOP(*),
      &        NPOS(*),WORK(LWORK), IFCKOP_TEMP(NFMAT)
 C
-      DIM = N2BBASX*NZC1*NFMAT
+!     DIM = N2BBASX*NZC1*NFMAT
 C       Conventional (4-center integrals) AO Coulomb + exchange
         CALL DIRAOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
      &              IFCKOP,NPOS,INTFLG,
@@ -3402,12 +3369,12 @@ C       Construct Fock matrix
 C       ======================
 C
         CALL DZERO(WORK(KFAO),N2BBASX*NDMAT)
-        CALL DIRAO1(WORK(KFAO),WORK(KDAO),NFMAT,
+        CALL DIRAOF_1(WORK(KFAO),WORK(KDAO),NFMAT,
      &              WORK(KIFC),WORK(KIRD),ISYMOP,IHRMOP,IFCKOP,
      &              WORK(KDMRAO),WORK(KGAB),NPOS,INTFLG,
      &              IPRINT,WORK(KFREE),LFREE)
         IF(IPRINT.GE.5) THEN
-          WRITE(LUPRI,'(A)') 'After DIRAO1'
+          WRITE(LUPRI,'(A)') 'After DIRAOF_1'
           CALL PRQMAT(WORK(KFAO),NTBAS(0),NTBAS(0),NTBAS(0),
      &                NTBAS(0),NZC1,IQMULT,LUPRI)
         ENDIF
@@ -3431,22 +3398,22 @@ C
       ELSE
 C
 C       If there is no symmetry involved the density matrix DMAT
-C       is sent to DIRAO1 module:
+C       is sent to DIRAOF_1 module:
 C
-        CALL DIRAO1(FMAT,DMAT,NFMAT,
+        CALL DIRAOF_1(FMAT,DMAT,NFMAT,
      &              WORK(KIFC),WORK(KIRD),ISYMOP,IHRMOP,IFCKOP,
      &              WORK(KDMRAO),WORK(KGAB),NPOS,INTFLG,
      &              IPRINT,WORK(KFREE),LFREE)
       ENDIF
-      CALL MEMREL('DIRAOF.DIRAO1',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('DIRAOF.DIRAOF_1',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       CALL QEXIT('DIRAOF')
       RETURN
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck dirao1 */
-      SUBROUTINE DIRAO1(FAO,DAO,NFMAT,
+C  /* Deck DIRAOF_1 */
+      SUBROUTINE DIRAOF_1(FAO,DAO,NFMAT,
      &                  IFCTYP,IREPDM,ISYMOP,IHRMOP,IFCKOP,
      &                  DMRAO,GABRAO,NPOS,INTFLG,
      &                  IPRINT,WORK,LWORK)
@@ -3469,21 +3436,23 @@ C*****************************************************************************
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "aovec.h"
+#include "mxcent.h"
 C
 C Used from COMMON blocks:
-C   CCOM  : THRS,NHTYP,KHK
-C   DHFIOU: LUINTA
-C   SHELLS: KMAX
-C   DCBBAS: NTBAS(0),N2BBASX
 C   DCBGEN: PARCAL
+C   DCBBAS: NTBAS(0),N2BBASX
+C   CCOM  : THRS,NHTYP,KHK
+C   SHELLS: KMAX
+C   symmet.h : MAXREP
 C
-#include "ccom.h"
 #include "dcbgen.h"
 #include "cbihr2.h"
 #include "dgroup.h"
 #include "dcbbas.h"
+#include "ccom.h"
 #include "shells.h"
 #include "blocks.h"
+#include "symmet.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
 #endif
@@ -3496,7 +3465,7 @@ C
      &          ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT),
      &          NPOS(*),DMRAO(*),GABRAO(*),WORK(LWORK),DNTSKP(8)
 C
-      CALL QENTER('DIRAO1')
+      CALL QENTER('DIRAOF_1')
 #include "memint.h"
 C
 Ctec Is FIRST needed???
@@ -3635,14 +3604,27 @@ C
 C.... End of loop over integral classes
 C
          CALL FLSHFO(LUPRI)
-      ENDDO
-C
+      ENDDO ! I2TYP = 1, 4
 C
 C     Symmetrize Fock matrix
 C     ======================
 C
-      CALL SKLFCK(FAO,WORK,LWORK,IPRINT,.TRUE.,.FALSE.,.FALSE.,
-     &            .FALSE.,.TRUE.,0,.FALSE.,NDMAT,IREPDM,IFCTYP,IDUM)
+!     CALL MEMGET2('REAL','SKLTON',KSKLTN,NMAT*N2BASX,
+!    &   WORK,KFREE,LFREE)
+!     save memory by reusing DAO for SKLTON matrix
+      CALL MEMGET2('REAL','FAC',KFAC,NTBAS(0)*(MAXREP+1),
+     &   WORK,KFREE,LFREE)
+      NINDEX = KMAX*(MAXREP + 1)*KHK(NHTYP)
+      CALL MEMGET2('INTE','IINDEX',KINDEX,NINDEX,
+     &   WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IPOINT',KPOINT,NTBAS(0)*(MAXREP+1),
+     &   WORK,KFREE,LFREE)
+      IXYZ = 0
+!     CALL SKLFCK_1(FAO,WORK(KSKLTN),WORK(KFAC),WORK(KINDEX),
+      CALL SKLFCK_1(FAO,DAO         ,WORK(KFAC),WORK(KINDEX),
+     &               WORK(KPOINT),DUM,DUM,DUM,IDUM,IXYZ,
+     &               NDMAT,IREPDM,IFCTYP,IPRINT)
+      CALL MEMREL('SKLFCK_1',WORK,KWORK,KWORK,KFREE,LFREE)
       IF(IPRINT.GE.5) THEN
         DO I = 1,NFMAT
           CALL HEADER('Symmetrized skeleton FOCK',-1)
@@ -3651,7 +3633,7 @@ C
      &                NZC1,IQMULT,LUPRI)
         ENDDO
       ENDIF
-      CALL QEXIT('DIRAO1')
+      CALL QEXIT('DIRAOF_1')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -4385,6 +4367,10 @@ C     Written by T. Saue Sep 5 2006
 C
 C***********************************************************************
 #include "implicit.h"
+      INTEGER   NFMAT, LWORK, INTFLG
+      REAL(8)   FMAT(*),DMAT(*),WORK(LWORK)
+      INTEGER   ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT),NPOS(*)
+
 #include "priunit.h"
 #include "maxaqn.h"
 #include "dummy.h"
@@ -4394,8 +4380,7 @@ C
 #include "cbihr2.h"
 #include "dcbham.h"
 C
-      DIMENSION FMAT(*),DMAT(*),ISYMOP(NFMAT),IHRMOP(NFMAT),
-     &          IFCKOP(NFMAT),NPOS(*),WORK(LWORK)
+      real(8) :: TIMSTR(2), TIMEND(2)
 C
 C     *************************************************
 C     *****  D i r e c t  c o n s t r u c t i o n *****
@@ -4415,13 +4400,15 @@ C
       IF(IDFLAG.NE.0.AND.IDFLAG.GT.8) THEN
         IF(SOFOCK) THEN
 C.........construction of Fock matrix using ERIs in SO-basis
+          CALL TIMER2('START ',TIMSTR,TIMEND)
           CALL DIRSOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
      &                IFCKOP,NPOS,INTFLG,
      &                IPRINT,WORK,LWORK)
+          CALL TIMER2('SO Fock',TIMSTR,TIMEND)
         ELSE
 C.........construction of Fock matrix using ERIs in AO-basis:
 C.........skeleton Fock approach
-          CALL TIMER('START ',TIMSTR,TIMEND)
+          CALL TIMER2('START ',TIMSTR,TIMEND)
 
         !DIM = N2BBASX*NZC1*NFMAT
 C       Conventional (4-center integrals) AO Coulomb + exchange
@@ -4431,7 +4418,8 @@ C       Conventional (4-center integrals) AO Coulomb + exchange
 !          CALL FASTJK(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
 !     &                IFCKOP,NPOS,INTFLG,
 !     &                IPRINT,WORK,LWORK)
-          CALL TIMER('fastjk',TIMSTR,TIMEND)
+!         CALL TIMER2('fastjk',TIMSTR,TIMEND)
+          CALL TIMER2('AO Fock',TIMSTR,TIMEND)
         ENDIF
       ELSE
 C

@@ -31,7 +31,7 @@
 #if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER   ISTAT(MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 #include "files.inc"

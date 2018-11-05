@@ -667,8 +667,6 @@ C
 #include "doxyz.h"
 #include "hertop.h"
 C
-#include "ibtfun.h"
-C
       PQXGT0 = IPQX .EQ. 1
       PQYGT0 = IPQY .EQ. 1
       PQZGT0 = IPQZ .EQ. 1

@@ -477,11 +477,11 @@ C boson irreps identification (read with MO coeff.)
       IF (SPINFR) THEN
        IOPT = 10 ! read MO coeff.+boson irreps ident.
        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,WORK(KBEIG),
-     &            TOTERG,IOPT,WORK,KFREE,LFREE)
+     &            TOTERG,IOPT)
       ELSE
        IOPT = 2 ! read only MO coefficients
        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,IDUM,
-     &            TOTERG,IOPT,WORK,KFREE,LFREE)
+     &            TOTERG,IOPT)
       ENDIF
 
 C Open property file
@@ -684,11 +684,11 @@ C boson irreps identification (read with MO coeff.)
       IF (SPINFR) THEN
        IOPT = 10 ! read MO coeff.+boson irreps ident.
        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,WORK(KBEIG),
-     &            TOTERG,IOPT,WORK,KFREE,LFREE)
+     &            TOTERG,IOPT)
       ELSE
        IOPT = 2 ! read only MO coefficients
        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,IDUM,
-     &            TOTERG,IOPT,WORK,KFREE,LFREE)
+     &            TOTERG,IOPT)
       ENDIF
 
 C Open property file
@@ -1132,11 +1132,11 @@ C     and the full relativistic (fermion symm.) mode
       IF (SPINFR) THEN
        IOPT = 10 ! read MO coeff.+boson irreps ident. 
        CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IBEIG,
-     &            TOTERG,IOPT,WORK,KFREE,LFREE)
+     &            TOTERG,IOPT)
       ELSE
        IOPT = 2 ! read only MO coefficients
        CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IDUM,
-     &            TOTERG,IOPT,WORK,KFREE,LFREE)
+     &            TOTERG,IOPT)
 
       ENDIF
       CLOSE(LUCOEF,STATUS='KEEP')
@@ -1902,11 +1902,11 @@ C     and the full relativistic (fermion symm.) mode
       IF (SPINFR) THEN
        IOPT = 10 ! read MO coeff.+boson irreps ident.
        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,WORK(KBEIG),
-     &            TOTERG,IOPT,WORK,KFREE,LFREE)
+     &            TOTERG,IOPT)
       ELSE
        IOPT = 2 ! read only MO coefficients
        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,IDUM,
-     &            TOTERG,IOPT,WORK,KFREE,LFREE)
+     &            TOTERG,IOPT)
       ENDIF
       CLOSE(LUCOEF,STATUS='KEEP')
 C  1. Get tensor of two-electron expectation value terms 
