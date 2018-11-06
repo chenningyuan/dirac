@@ -25,7 +25,7 @@ module exacorr_cc
 
 !        This subroutine drives the ccsd energy calculation
 !        Currently everything is done in-core, purpose is to provide a working implementation that is suitable for debugging the production code
- 
+
 !        Written by Lucas Visscher, winter 2016/2017
 
          use interface_to_mpi
@@ -47,7 +47,7 @@ module exacorr_cc
          integer                                :: nshells  ! the number of shells (orbitals with the same center and l-value)
          integer                                :: nao      ! the number of atomic orbitals)
          type(basis_func_info_t), allocatable   :: gto(:)   ! array with information about the shells
-         
+
          integer                        :: ierr, i
          complex(8)                     :: result_val
 
@@ -113,13 +113,13 @@ module exacorr_cc
 
 !        Initialize global data (read from DFCOEF or similar by master)
          call initialize_global_data
-         
+
          nao     = get_nao()   ! This is the total number of ao's
          nao_l   = int(nao,8)  ! we need this as a long int for exatensor
 
 !        Get the basis set information
          call get_gtos(1,nao,gto,nshells)
-         
+
          !Create a basis for the ao vector space:
          ierr = 0
          call basis_ao%subspace_basis_ctor(nao_l,ierr)
@@ -179,7 +179,7 @@ module exacorr_cc
             call basis_occ%set_basis_func(labs,BASIS_ABSTRACT,ierr)
             if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.set_basis_func() failed!')
          enddo
-         
+
          !Set the functions inside the virtual basis (without colors, not needed for MOs)
          do labs = 1, nvir_l
             call basis_vir%set_basis_func(labs,BASIS_ABSTRACT,ierr)
@@ -214,7 +214,7 @@ module exacorr_cc
             call virtual_init(spin)%init_mocoef_ctor(mo_vir(1:nvir),nvir,spin)
             ierr=exatns_method_register(initlabel,virtual_init(spin))
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
-         end do         
+         end do
 
          if (my_MPI_rank == 0) print*," registered MO spaces and initializers with nocc and nvir:",nocc, nvir
 
@@ -226,7 +226,7 @@ module exacorr_cc
          call denominate%scale_with_denom_ctor(mo_occ,nocc,mo_vir,nvir)
          ierr=exatns_method_register('Denominate',denominate)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
-   
+
          !Register the standard print method with a low treshold to always print result_tensor
          call tens_printer%reset_thresh(1.0D-15)
          ierr=exatns_method_register('PrintTensor',tens_printer)
@@ -262,10 +262,10 @@ module exacorr_cc
          vovv_root = (/vir_space_root, occ_space_root, vir_space_root, vir_space_root/)
          vvvv_root = (/vir_space_root, vir_space_root, vir_space_root, vir_space_root/)
          voov_root = (/vir_space_root, occ_space_root, occ_space_root, vir_space_root/)
- 
+
 !        All preliminary work is now done on all MPI-nodes, we may proceed to start ExaTensor.
 !        After the start of ExaTensor, the driver process (the last MPI process) will be executing
-!        the commands and tell the others (that stay inside exatns_process_role) what to do. 
+!        the commands and tell the others (that stay inside exatns_process_role) what to do.
 !        These other nodes return only after exatns_stop() is called by the driver.
 
 !        Start ExaTENSOR within MPI_COMM_WORLD (called global_communicator in the MPI interface that DIRAC uses):
@@ -283,7 +283,7 @@ module exacorr_cc
 
 !           Create and initialize scalars that are to be used as tensors in contractions
             ierr=exatns_tensor_create(result_tensor,"result_tensor",EXA_DATA_KIND_C8)
-            ierr=exatns_tensor_create(one_tensor,"another_one_tensor",EXA_DATA_KIND_C8)   
+            ierr=exatns_tensor_create(one_tensor,"another_one_tensor",EXA_DATA_KIND_C8)
             ! Note:  also get_integral_tensors will define a one_tensor and call it "one_tensor", so we needed another name
             ierr=exatns_tensor_init(one_tensor,ONE)
 
@@ -300,11 +300,11 @@ module exacorr_cc
             ierr=exatns_tensor_create(vovo_tensor,"vovo",vovo_id,vovo_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(vovv_tensor,"vovv",vovv_id,vovv_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(vvvv_tensor,"vvvv",vvvv_id,vvvv_root,EXA_DATA_KIND_C8)
-            ierr=exatns_tensor_create(voov_tensor,"voov",voov_id,voov_root,EXA_DATA_KIND_C8) ! auxilliary for get_CC_integrals 
+            ierr=exatns_tensor_create(voov_tensor,"voov",voov_id,voov_root,EXA_DATA_KIND_C8) ! auxilliary for get_CC_integrals
             call get_CC_integrals (ao_space_id,ao_space_root, &
                                    oooo_tensor,ooov_tensor,oovv_tensor, &
                                    vovo_tensor,vovv_tensor,vvvv_tensor,voov_tensor)
-            ierr=exatns_tensor_destroy(voov_tensor) ! no longer needed 
+            ierr=exatns_tensor_destroy(voov_tensor) ! no longer needed
 
             call print_date('initialized two electron integrals')
 
@@ -459,7 +459,7 @@ module exacorr_cc
             ierr=exatns_tensor_contract("S(a,b,i,j)+=G(k,j)*T(a,b,i,k)",s2_tensor,goint_tensor,t2_tensor)                   ! validated o(3)v(2)
             ierr=exatns_tensor_contract("S(a,b,i,j)+=G(k,i)*T(a,b,k,j)",s2_tensor,goint_tensor,t2_tensor)                   ! validated o(3)v(2)
 !           Again two times, also note the complex conjugation as we use vovv instead of vvvo
-            if (.not.CCD) then    
+            if (.not.CCD) then
                 ierr=exatns_tensor_contract("S(a,b,i,j)+=V+(c,j,a,b)*T(c,i)",s2_tensor,vovv_tensor,t1_tensor)                   ! validated o(2)v(3)
                 ierr=exatns_tensor_contract("S(a,b,i,j)+=V+(c,i,a,b)*T(c,j)",s2_tensor,vovv_tensor,t1_tensor,MINUS_ONE)         ! validated o(2)v(3)
             end if
@@ -468,7 +468,7 @@ module exacorr_cc
             ierr=exatns_tensor_contract("S(a,b,i,j)+=G(a,c)*T(c,b,i,j)",s2_tensor,gvint_tensor,t2_tensor)  ! validated o(2)v(3)
             ierr=exatns_tensor_contract("S(a,b,i,j)+=G(b,c)*T(a,c,i,j)",s2_tensor,gvint_tensor,t2_tensor)  ! validated o(2)v(3)
 !           Again two times, with the C intermediate (note: in RELCCSD this is done differently)
-            if (.not.CCD) then    
+            if (.not.CCD) then
                 ierr=exatns_tensor_contract("S(a,b,i,j)+=C(k,b,i,j)*T(a,k)",s2_tensor,cint_tensor,t1_tensor,MINUS_ONE) ! o(3)v(2)
                 ierr=exatns_tensor_contract("S(a,b,i,j)+=C(k,a,i,j)*T(b,k)",s2_tensor,cint_tensor,t1_tensor)           ! o(3)v(2)
             end if
@@ -517,7 +517,7 @@ module exacorr_cc
 
             ierr=exatns_tensor_init(result_tensor)
             if (.not.CCD) then
-!               Will always be 0 contribution for now, since fov=0 (canonical orbitals)                
+!               Will always be 0 contribution for now, since fov=0 (canonical orbitals)
                 ierr=exatns_tensor_contract("E()+=T(a,i)*F(i,a)",result_tensor,t1_tensor,fov_tensor) ! o(1)v(1)
                 ierr=exatns_tensor_get_scalar(result_tensor,result_val)
                 ccsd_energy=real(result_val,8)
@@ -530,7 +530,7 @@ module exacorr_cc
                 write (*,'(A,I4,A,F20.15,A,E10.1)') "  Iteration ",iccsd," CCSD energy = ", &
                                                     ccsd_energy, " convergence =",t_convergence
             else
-                write (*,'(A,I4,A,F20.15,A,E10.1)') "  Iteration ",iccsd," CCD energy = ", & 
+                write (*,'(A,I4,A,F20.15,A,E10.1)') "  Iteration ",iccsd," CCD energy = ", &
                                                     ccsd_energy, " convergence =",t_convergence
             end if
             if (t_convergence .lt. t_target_precision) exit
@@ -715,12 +715,12 @@ module exacorr_cc
         end subroutine get_CC_integrals
 
         subroutine diis (t2_tensor,vvoo_id,vvoo_root,t1_tensor,vo_id,vo_root,t_convergence,mode)
-        
-         integer, parameter             :: maxdim = 8 ! maximum number of tensors that will be stored 
+
+         integer, parameter             :: maxdim = 8 ! maximum number of tensors that will be stored
          integer, parameter             :: mindim = 4 ! minimum number of tensors to allow extrapolation
          integer, intent(in), optional  :: mode ! 1:initialize, 2:clean-up
          real(8), intent(out), optional :: t_convergence ! convergence of the t1 and t2 amplitudes
-        
+
          type(tens_rcrsv_t), intent(inout),optional :: t1_tensor
          type(tens_rcrsv_t), intent(inout)          :: t2_tensor
          integer                                    :: ierr, i, tens_rank, j
@@ -740,19 +740,19 @@ module exacorr_cc
          integer                                    :: ipiv(0:maxdim), info  ! needed for ZHESV solver
          real(8)                                    :: work(maxdim,maxdim)   ! needed for ZHESV solver
          type(tens_rcrsv_t), save                   :: scalar_tensor
-       
+
          character(len=1) :: vs_str
- 
+
          init       = .false.
          clean_up   = .false.
          CCD        = .false.
-        
+
          if (present(mode)) then
             if (mode.eq.1) init       = .true.
             if (mode.eq.2) clean_up   = .true.
          end if
 
-         if (.not.present(t1_tensor)) CCD = .true. 
+         if (.not.present(t1_tensor)) CCD = .true.
 
          if (init) then
 !           get dimensions of the tensors
@@ -789,7 +789,7 @@ module exacorr_cc
             ierr=exatns_tensor_create(scalar_tensor,"scalar_tensor",EXA_DATA_KIND_C8)
             return ! no extrapolation possible
          end if
-       
+
          if (clean_up) then
 !           de-allocate tensors
             if (.not.CCD) ierr=exatns_tensor_destroy(t1_inp_tensor)
@@ -805,9 +805,9 @@ module exacorr_cc
             ierr=exatns_tensor_destroy(scalar_tensor)
             return
          end if
- 
+
 !        update counters
-         itens = itens + 1                                                                                                                    
+         itens = itens + 1
          if (itens.gt.maxdim) itens = 1       ! cycle because we already have the maximum number of stored amplitudes, will overwrite the oldest one
          ntens = ntens + 1                    ! number of tensors stored after returning
          if (ntens.gt.maxdim) ntens = maxdim  ! we have reached the maximum number of tensors to be used in DIIS
@@ -819,7 +819,7 @@ module exacorr_cc
          end if
          ierr=exatns_tensor_init(t2_res_tensor(itens))
          ierr=exatns_tensor_contract("T2R(a,b,i,j)+=T2(a,b,i,j)*K()",t2_res_tensor(itens),t2_tensor,one_tensor)
-     
+
 !        calculate the error tensors by comparing the result of the t-equations with the tensors used as input
          if (.not.CCD) then
             ierr=exatns_tensor_init(t1_err_tensor(itens))
@@ -830,7 +830,7 @@ module exacorr_cc
          ierr=exatns_tensor_contract("T2E(a,b,i,j)+=T2R(a,b,i,j)*K()",t2_err_tensor(itens),t2_tensor,one_tensor)
          ierr=exatns_tensor_contract("T2E(a,b,i,j)+=T2I(a,b,i,j)*K()",t2_err_tensor(itens),t2_inp_tensor,one_tensor, &
                                                                                                 prefactor=MINUS_ONE)
- 
+
 !        update the b_diis array that holds the scalar products of the error tensors
          do i = 1, ntens
             ierr=exatns_tensor_init(scalar_tensor)
@@ -844,7 +844,7 @@ module exacorr_cc
          if (present(t_convergence)) then
             t_convergence = dsqrt(dble(b_diis(itens,itens)))
          end if 
-        
+
 !        transfer to a work array in the way requested by the solver and normalize the matrix
          b_max = maxval (abs(b_diis))
          if (b_max .gt. 1.D-30) then
@@ -857,7 +857,7 @@ module exacorr_cc
          bb(1:ntens,0) = MINUS_ONE
          bb(0,1:ntens) = MINUS_ONE
          bb(1:ntens,1:ntens) = b_diis(1:ntens,1:ntens) * b_scale
- 
+
 !        solve the linear system of equations using the LAPACK solver ZHESV
          coeff(0)       = MINUS_ONE  ! on input this should be the right-hand-side of the matrix equation b coef = rhs
          coeff(1:ntens) = ZERO 
@@ -868,7 +868,7 @@ module exacorr_cc
             if (.not.CCD) ierr=exatns_tensor_init(t1_tensor)
             ierr=exatns_tensor_init(t2_tensor)
             do i = 1, ntens
-               if (.not.CCD) ierr=exatns_tensor_contract("T1(a,i)+=T1O(a,i)*K()",t1_tensor,t1_res_tensor(i), & 
+               if (.not.CCD) ierr=exatns_tensor_contract("T1(a,i)+=T1O(a,i)*K()",t1_tensor,t1_res_tensor(i), &
                                                                                 one_tensor,prefactor=coeff(i))
                ierr=exatns_tensor_contract("T2(a,b,i,j)+=T2O(a,b,i,j)*K()",t2_tensor,t2_res_tensor(i),one_tensor,prefactor=coeff(i))
             end do

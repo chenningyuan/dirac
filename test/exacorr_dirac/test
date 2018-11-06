@@ -59,6 +59,6 @@ os.environ['OMP_WAIT_POLICY'] = "PASSIVE"         #idle thread behavior
 #os.environ['MKL_NUM_THREADS=$OMP_NUM_THREADS                #number of Intel MKL threads per process
 #os.environ['OFFLOAD_REPORT=2                                #Intel MIC offload reporting level
 
-test.run(['exacc.inp'], ['H2O_nosym.mol'], f)
+test.run(['exacc.inp'], ['H2O_nosym.mol'], f,"--put='X2CMAT AOMOMAT DFCOEF'")
 
 sys.exit(test.return_code)
