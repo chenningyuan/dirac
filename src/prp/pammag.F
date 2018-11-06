@@ -397,6 +397,9 @@ C =========================================================================
          WRITE(LUPRI,'(1X,A)')
      & 'perturbed LAO-density exported on file pertden_lao'
       END IF
+      if (expped .and. parcal) then
+        call quit('expped is tested in serial mode only; quitting...')
+      end if
 !     if fde and london, then always export perturbed density
 ! gosia: activate it if freeze&thaw with response...
 !      if (dirac_cfg_fde_response .and. london) then
