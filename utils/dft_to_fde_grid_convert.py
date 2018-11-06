@@ -5,6 +5,7 @@
 #
 
 import os
+from sys import version_info
 
 f = open('numerical_grid', 'r')
 lines = f.readlines()
@@ -29,7 +30,18 @@ g.write('-1')
 
 g.close()
 
-# now rename, to avoid confusion:
-os.rename('numerical_grid', 'numerical_grid.ORIG')
-os.rename('numerical_grid_cont', 'numerical_grid')
+# now rename numerical_grid* files to avoid confusion:
+if os.path.exists('numerical_grid.ORIG'):
+    if version_info[0] > 2:
+        overwrite = input("numerical_grid.ORIG exists in this directory, do you want to overwrite it? [y/n]")
+    else:
+        overwrite = raw_input("numerical_grid.ORIG exists in this directory, do you want to overwrite it? [y/n]")
+
+    if overwrite == 'y':
+        os.rename('numerical_grid', 'numerical_grid.ORIG')
+        os.rename('numerical_grid_cont', 'numerical_grid')
+
+else:
+    os.rename('numerical_grid', 'numerical_grid.ORIG')
+    os.rename('numerical_grid_cont', 'numerical_grid')
 
