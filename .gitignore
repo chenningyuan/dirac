@@ -3,4 +3,5 @@ test/*/*.out*
 test/*/*.stdout
 test/*/*.stderr
 *.pyc
+src/tags
 venv/
