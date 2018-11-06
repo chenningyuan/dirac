@@ -713,9 +713,9 @@ module fde_evaluators_dirac
 
       call opnfil(lucoef,'DFCOEF','OLD','fde_get_pertden')
       if (spinfr) then
-         call reacmo_no_work(lucoef,'DFCOEF',cmo,dum,ibeig,toterg,10)
+         call reacmo(lucoef,'DFCOEF',cmo,dum,ibeig,toterg,10)
       else
-         call reacmo_no_work(lucoef,'DFCOEF',cmo,dum,idum,toterg,2)
+         call reacmo(lucoef,'DFCOEF',cmo,dum,idum,toterg,2)
       endif
       close(lucoef,status='keep')
 
