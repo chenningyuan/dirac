@@ -24,6 +24,7 @@
       mo_transform   = .false.
       cc_calculation = .true.
       exa_input%talsh = .false. 
+      exa_input%ccd = .false.
 
 #if defined (VAR_MPI) 
       call interface_mpi_init()

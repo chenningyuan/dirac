@@ -1,9 +1,3 @@
 !
-! Exacorr MO Transformation and Coupled Cluster
-! Testing the stand-alone version of exacorr by running the TALSH version and creating a DFCOEF file.
-! Exacoor is used in the second step which restarts on (only) the DFCOEF file
-! NB: Only the first step is done automatically be ctest, you should run exacorr using the
-! provided run_exacorr.sh script.
-! Note that there are two tests, the one with dichloroethane takes quite some time and is not run 
-! by default. For this one you could also just run the SCF (modify the input), because all
-! exatensor needs in the second step is the DFCOEF that is already complete after the SCF.
+! This is a test for the exacorr combined with DIRAC to check if the input is passed on to the slaves
+! You need to put "--put="X2CMAT AOMOMAT DFCOEF"" in ~/.diracrc

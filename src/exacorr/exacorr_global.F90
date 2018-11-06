@@ -32,6 +32,7 @@ module exacorr_global
 
 #if defined (VAR_MPI)
              use interface_to_mpi
+             !use exacc_cfg
              integer :: my_MPI_rank
 #endif
              integer :: ierr
@@ -69,7 +70,6 @@ module exacorr_global
              integer            :: my_MPI_rank
 
 !            The next line is to be commented out when running the stand-alone code
-             call exacc_sync_cw()
              if (exa_input%talsh) return
              call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
 

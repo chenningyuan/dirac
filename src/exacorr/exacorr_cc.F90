@@ -21,7 +21,6 @@ module exacorr_cc
 
 #if defined (VAR_MPI)
 !-------------------------------------------------------------------------------------------
-        !subroutine exacorr_cc_driver (nocc,nvir,mo_occ,mo_vir)
         subroutine exacorr_cc_driver (exa_input)
 
 !        This subroutine drives the ccsd energy calculation
@@ -158,6 +157,14 @@ module exacorr_cc
          t_target_precision = exa_input%t_econv
          CCD = exa_input%ccd
 
+         !DEBUG => PASSED
+         !print*, "nocc: ", nocc, "nvir", nvir
+         !print*, "mo_occ", mo_occ
+         !print*, "mo_vir", mo_vir
+         !print*, "talsh", exa_input%talsh
+         !print*, "ccd", CCD
+         !print*, "target precision", t_target_precision
+
          !Get the MO-coeffcient basis for the occupied and virtual spaces
          ierr = 0
          nocc_l   = 2*int(nocc,8)  ! NB: imo, jmo and nmo count orbitals, nocc_l counts spinors
@@ -268,7 +275,11 @@ module exacorr_cc
             ierr=exatns_process_role(my_role) ! only EXA_DRIVER will return immediately
             if(my_role.eq.EXA_DRIVER) then
 
-            call print_date('starting ccsd calculation')
+            if (.not.CCD) then
+                call print_date('starting ccsd calculation')
+            else
+                call print_date('starting ccd calculation')
+            end if
 
 !           Create and initialize scalars that are to be used as tensors in contractions
             ierr=exatns_tensor_create(result_tensor,"result_tensor",EXA_DATA_KIND_C8)

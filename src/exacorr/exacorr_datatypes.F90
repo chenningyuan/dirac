@@ -5,6 +5,7 @@
 !PARAMETERS:
 !Generic:
         integer, parameter, private:: REALD=8 !default real for this module
+        integer, parameter, private:: LOGICAL_KIND=8 !default real for this module
 !DERIVED TYPES:
 !Basis function info:
         type, public:: basis_func_info_t
@@ -26,11 +27,11 @@
 
 !Input parameter
         type, public :: exacc_input
-            logical                 :: talsh = .true.                 !If false, use ExaTensor
-            logical                 :: ccd = .false.                  !If false=>CCSD, if true=>CCD
-            integer                 :: nkr_occ, nkr_vir              !Number of Kramer pairs
-            integer, allocatable    :: mokr_occ(:), mokr_vir(:)      !List of active Kramer pairs
-            real(8)                 :: t_econv = 1.0D-13    !Convergence criterium
+            logical(kind=LOGICAL_KIND)  :: talsh = .true.           !If false, use ExaTensor
+            logical(kind=LOGICAL_KIND)  :: ccd = .false.            !If false=>CCSD, if true=>CCD
+            integer                     :: nkr_occ, nkr_vir         !Number of Kramer pairs
+            integer, allocatable        :: mokr_occ(:), mokr_vir(:) !List of active Kramer pairs
+            real(REALD)                 :: t_econv = 1.0D-13        !Convergence criterium
         end type exacc_input
 
        end module exacorr_datatypes

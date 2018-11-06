@@ -31,7 +31,6 @@ C***********************************************************************
       integer              :: kvec              ! Dummy variable needed in first call to numlst
       integer, allocatable :: mo_list(:)
       integer              :: nmo(4)
-      !type(exacc_input)    :: exa_input
 
       if (nfsym.ne.1) then
          call quit ('exacorr can not handle symmetry')
@@ -92,18 +91,20 @@ C     Fill the array with orbital indices
 #endif
 C
       !if (exa_input%talsh) then
-      if (.true.) then
+      if (mytid == 0) then
          call talsh_compute_mo_integrals (nmo, mo_list)
       else
 #if defined (VAR_MPI)
+         !REMOVE THIS IF exacorr_compute_mo_integrals SHOULD BE USED
+         return
+         !EVERYTHING COMMENTED OUT TO ONLY USE TALSH
          ! slaves need the same info to get started
-         call interface_mpi_bcast(ntmo,1,mparid,global_communicator)
-         if (mytid /= 0) allocate(mo_list(ntmo))
-         call interface_mpi_bcast(nmo,4,mparid,global_communicator)
-         call interface_mpi_bcast(mo_list,ntmo,mparid,
-     &                            global_communicator)
+         !call interface_mpi_bcast(ntmo,1,mparid,global_communicator)
+         !if (mytid /= 0) allocate(mo_list(ntmo))
+         !call interface_mpi_bcast(nmo,4,mparid,global_communicator)
+         !call interface_mpi_bcast(mo_list,ntmo,mparid,global_communicator)
 #endif
-         call exacorr_compute_mo_integrals (nmo, mo_list)
+         !call exacorr_compute_mo_integrals (nmo, mo_list)
       end if
 C
       deallocate (mo_list)
@@ -135,19 +136,24 @@ C***********************************************************************
       integer              :: kvec              ! Dummy variable needed in first call to numlst
       integer, allocatable :: mo_list(:)
       integer              :: nmo(4)
-      !type(exacc_input)    :: exa_input
-      !logical              :: exacc_use_talsh, exacc_do_ccd
  
       if (nfsym.ne.1) then
          call quit ('exacorr can not handle symmetry')
       end if
       
-      !exa_input%talsh = exacc_use_talsh
-
 #if defined (VAR_MPI)
       ! parallel version of DIRAC
+      call interface_mpi_comm_rank(global_communicator,mytid)
+      if (mytid /= 0) then
+        call interface_mpi_comm_rank(global_communicator,mytid)
+      end if      
+  
       call interface_mpi_bcast_l0(exa_input%talsh,1,0,
-     &                              global_communicator)
+     &                               global_communicator)
+      call interface_mpi_bcast_l0(exa_input%ccd,1,0,
+     &                               global_communicator)
+      print*, "mpi procs mytid + talsh: ", mytid, exa_input%talsh
+      print*, "CCD: ", exa_input%ccd
       if (mytid == 0 .and. .not. exa_input%talsh) then
          call dirac_parctl( 19 )
       end if
@@ -176,12 +182,24 @@ C
       call numlst (string_virtual,exa_input%mokr_vir,exa_input%nkr_vir,
      &              1,nesh(1),1,exa_input%nkr_vir)
 
-      !exa_input%ccd = exacc_do_ccd
-      !exa_input%t_econv = econv
-
 #if defined (VAR_MPI)
       end if
 #endif
+      if (exa_input%talsh) then
+         call talsh_cc_driver (exa_input)
+      else
+#if defined (VAR_MPI)
+         ! slaves need the same info to get started
+         call interface_mpi_bcast(exa_input%nkr_occ,1,0,
+     &                              global_communicator)
+         if (mytid /= 0) allocate(exa_input%mokr_occ(exa_input%nkr_occ))
+         !call interface_mpi_bcast(exa_input%mokr_occ,exa_input%nkr_occ,mytid,global_communicator)
+         call interface_mpi_bcast(exa_input%nkr_vir,1,0,
+     &                              global_communicator)
+         if (mytid /= 0) allocate(exa_input%mokr_vir(exa_input%nkr_vir))
+         !call interface_mpi_bcast(exa_input%mokr_vir,exa_input%nkr_vir,mytid,global_communicator)
+         call exacc_sync_cw(0)
+
          print*, "TALSH: ", exa_input%talsh
          print*, "CCD: ", exa_input%ccd
          print*, "nocc: ", exa_input%nkr_occ
@@ -189,22 +207,6 @@ C
          print*, "mo_occ: ", exa_input%mokr_occ
          print*, "mo_vir: ", exa_input%mokr_vir
          print*, "t_econv: ", exa_input%t_econv
-      if (exa_input%talsh) then
-         call talsh_cc_driver (exa_input)
-      else
-#if defined (VAR_MPI)
-         ! slaves need the same info to get started
-         ! Need to find correct syntax to bcast exa_input entirely
-         call interface_mpi_bcast(exa_input%nkr_occ,1,mparid,
-     &                              global_communicator)
-         if (mytid /= 0) allocate(exa_input%mokr_occ(exa_input%nkr_occ))
-         call interface_mpi_bcast(exa_input%mokr_occ,exa_input%nkr_occ,
-     &                              mparid,global_communicator)
-         call interface_mpi_bcast(exa_input%nkr_vir,1,mparid,
-     &                              global_communicator)
-         if (mytid /= 0) allocate(exa_input%mokr_vir(exa_input%nkr_vir))
-         call interface_mpi_bcast(exa_input%mokr_vir,exa_input%nkr_vir,
-     &                              mparid,global_communicator)
 
 #endif
          call exacorr_cc_driver (exa_input)
