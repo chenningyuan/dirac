@@ -9375,12 +9375,13 @@ C***********************************************************************
       DIMENSION IPBEDCON(*)
       CHARACTER PNAME*16, PLABEL*8
 C
-      IF(MOD(L,2).EQ.0) THEN
-         K = L/2
-      ELSE
-         K = (L-1)/2
-      ENDIF
-      PFAC = CVAL*(-1.0D0)**K
+C      IF(MOD(L,2).EQ.0) THEN
+C         K = L/2
+C      ELSE
+C         K = (L-1)/2
+C      ENDIF
+C      PFAC = CVAL*(-1.0D0)**K
+      PFAC = CVAL
       DO I = 2,L
         PFAC = PFAC/I
       ENDDO
