@@ -99,7 +99,7 @@ C
       IF (NDIMT1.GT.0) THEN
           CALL HOVINTM (FVO,T1,BUF1,BUF2,HOV)
           CALL amplitude_equation_T1 (FVO,T1,T2,HO,HV,HOV,
-     &                 BUF1,BUF2,BUF3,NBUF3,S1)
+     &                 BUF1,BUF2,BUF3,NBUF2,NBUF3,S1)
       ENDIF
       CALL XTIME(5,2,'- T1 equations                  ')
 

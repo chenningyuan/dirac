@@ -1,5 +1,5 @@
       SUBROUTINE amplitude_equation_T1 (FVO,T1,T2,
-     &        HO,HV,HOV,BUF1,BUF2,BUF3,NBUF3,S1)
+     &        HO,HV,HOV,BUF1,BUF2,BUF3,NBUF2,NBUF3,S1)
 C
 CPi use contraction module to include tensor contraction routiones
       use contraction
@@ -29,14 +29,14 @@ C
       external t1eqn1
       external t1eqn2
 
-      INTEGER NBUF3
+      INTEGER NBUF2,NBUF3
       REAL*8 FVO(*)
 CPi Specify dimension of T1 for TCR      REAL*8 T1(*),T2(*)
       REAL*8 T2(*)
 CPi      REAL*8 S1(*)
 CPi      REAL*8 HO(*),HV(*),HOV(*)
       REAL*8 HOV(*)
-      REAL*8 BUF1(*),BUF2(*),BUF3(NBUF3*RCW)
+      REAL*8 BUF1(NBUF2*RCW),BUF2(NBUF2*RCW),BUF3(NBUF3*RCW)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -88,21 +88,36 @@ C S(A,I) = S(A,I) + T(A,K) * [HOV(K,C) - 2 * F(K,C)] * T(C,I)
 C------------------------------------------------------------
          CALL XTIME(0,1,'--- T1EQNS T*[HOV - F]*T      ')
          CALL XCOPY (NFVO,HOV,1,BUF1,1)
+CPi In order to add with -2*FVO we should complex conjugate HOV which is
+CPi actually HVO*
          IF (CARITH) CALL CONJUGA (NFVO,BUF1,1)
          CALL XAXPY (NFVO,-A2,FVO,1,BUF1,1)
+CPi This is stupid so the transpose of [HOV(K,C) - 2 * F(K,C)] should be
+CPi made otherwise
+         IF (CARITH) CALL CONJUGA (NFVO,BUF1,1)
+CPi DELFCK only applies to FSCC and we should be able to leave it as it is
          CALL DELFCK ('VO','DD',BUF1)
-         OFF1 = 1
-         DO IRP = 1, NREP
-            M = NV(IRP)
-            N = NO(IRP)
-            K1 = NO(IRP)
-            K2 = NV(IRP)
-            CALL XGEMM ('C','N',K1,N,K2,A1,BUF1(OFF1),K2,T1(OFF1),K2,
-     &                   A0,BUF2,K1)
-            CALL XGEMM ('N','N',M,N,K1,A1,T1(OFF1),M,BUF2,K1,
-     &                   A1,S1(OFF1),M)
-            OFF1 = OFF1 + M * N * RCW
-         ENDDO
+CPi Use new contraction routine for [HOV(K,C) - 2 * F(K,C)] * T(C,I)
+         call contraction_222 ((/"p2","o1"/),(/"p2","o2"/),(/"o1","o2"/)&
+     &    ,BUF1,T1,BUF2,1.0d0,0.0d0,NREP)
+CPi Use new contraction routine for T(A,K) * BUF2 and add to S1
+         call contraction_222 ((/"p1","o2"/),(/"o2","o1"/),(/"p1","o1"/)&
+     &    ,T1,BUF2,S1,1.0d0,1.0d0,NREP)
+CPi Keep the old code just for now. PiDeleteMe.
+CPi         OFF1 = 1
+CPi         DO IRP = 1, NREP
+CPi            M = NV(IRP)
+CPi            N = NO(IRP)
+CPi            K1 = NO(IRP)
+CPi            K2 = NV(IRP)
+CPiCPi         BUF1(OFF1) * T1(OFF1) + 0*BUF2 (empty)
+CPi            CALL XGEMM ('C','N',K1,N,K2,A1,BUF1(OFF1),K2,T1(OFF1),K2,
+CPi     &                   A0,BUF2,K1)
+CPiCPi         T1(OFF1) * BUF2 + S1(OFF1)
+CPi            CALL XGEMM ('N','N',M,N,K1,A1,T1(OFF1),M,BUF2,K1,
+CPi     &                   A1,S1(OFF1),M)
+CPi            OFF1 = OFF1 + M * N * RCW
+CPi         ENDDO
          CALL XTIME(0,2,'--- T1EQNS T*[HOV - F]*T      ')
         ENDIF
 C ****************************************************
