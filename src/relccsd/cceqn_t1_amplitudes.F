@@ -35,7 +35,7 @@ CPi Specify dimension of T1 for TCR      REAL*8 T1(*),T2(*)
       REAL*8 T2(*)
 CPi      REAL*8 S1(*)
 CPi      REAL*8 HO(*),HV(*),HOV(*)
-      REAL*8 HO(*),HOV(*)
+      REAL*8 HOV(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)
 C
 C---------------Common Blocks--------------------------------------
@@ -50,7 +50,7 @@ C
 C---------------Calling variables--------------------------------------
 CPi should be after common blocks to get variables
       REAL*8 T1(NDIMT1*RCW)
-      REAL*8 HV(NFVV*RCW)
+      REAL*8 HV(NFVV*RCW), HO(NFVV*RCW)
       REAL*8 S1(NDIMT1*RCW)
 
       interface
@@ -132,18 +132,23 @@ C S(A,I) = S(A,I) + HV(A,C) * T(C,I)
 C-----------------------------------------------
 !      CALL CNTRCT ('N','N',NV,NO,NV,A1,HV,T1,A1,S1,NREP)
 CPi Let's try to use Avijit's routine
+CPi From Lambda equation routine:
 !---------------------------------
 !    ResL1 = ResL1 + L(i,e) * f_bar_ae(e,a)
 !---------------------------------
 !      call contraction_222 ((/"o1","p2"/),(/"p2","p1"/),(/"o1","p1"/), &
 !     &    L1,hv,ResL1,1.0d0,1.0d0,nrep)
+CPi Modified to fit this routine:
       call contraction_222 ((/"p1","p2"/),(/"p2","o1"/),(/"p1","o1"/),  &
      &    HV,T1,S1,1.0d0,1.0d0,NREP)
 
 C-----------------------------------------------
 C S(A,I) = S(A,I) - T(A,K) * HO(K,I)
 C-----------------------------------------------
-      CALL CNTRCT ('N','N',NV,NO,NO,-A1,T1,HO,A1,S1,NREP)
+C      CALL CNTRCT ('N','N',NV,NO,NO,-A1,T1,HO,A1,S1,NREP)
+CPi Use new contraction routine:
+      call contraction_222 ((/"o2","o1"/),(/"p1","o2"/),(/"p1","o1"/),  &
+     &    HO,T1,S1,-1.0d0,1.0d0,NREP)
       CALL XTIME(0,2,'--- T1EQNS   HV*T / T*HO            ')
 
 C--------------------------------------------
