@@ -1936,7 +1936,7 @@ C
       real(8), allocatable :: fosc(:,:,:,:)
       integer, allocatable :: indx(:),irps(:),ind(:)
       integer, allocatable :: n_ev(:),ieerg(:,:),iebuf(:,:)
-      CHARACTER TTYP(-1:1)*2
+      CHARACTER TTYP(-1:1)*2,FMT*2
       DATA TTYP /'T-','T0','T+'/
 #include "ibtfun.h"
       CALL HEADER('Linear response excitations; final output ',-1)
@@ -2317,7 +2317,8 @@ C
         K2ORD = KVAL_OSC/2
       ELSE
         K2ORD = (KVAL_OSC-1)/2
-      ENDIF   
+      ENDIF
+      WRITE(FMT,'(I2)') K2ORD+2
 C.....Oscillator strenghts: general velocity gauge
       allocate(fosc(MAXEXC,NBSYM,-1:K2ORD,1))
       FOSC=0.0D0
@@ -2330,7 +2331,7 @@ C.....Oscillator strenghts: general velocity gauge
      &     '* Isotropic oscillator strengths '//
      &     '(generalized velocity gauge) above threshold :', TTOL
       CALL PRSYMB(LUPRI,'=',NLIN,0)
-      WRITE(LUPRI,'(/A,5(A2,I1,A2,11X))')
+      WRITE(LUPRI,'(/A,'//FMT//'(A2,I2,A2,10X))')
      &     'Level    Frequency (eV) Symmetry    f(total)        ',
      &     ('f(',IK+IK,') ',IK=0,K2ORD)
       CALL PRSYMB(LUPRI,'-',NLIN,0)
@@ -2342,7 +2343,7 @@ C.....Oscillator strenghts: general velocity gauge
         IF(OSCIL .GT. TTOL) THEN
           ILAB  = ISSYM(IEXC,ISYM)
           WRITE(LUPRI,
-     &         '(I5,1X,F16.5,2X,A3,1X,A4,5(2X,ES14.6))') JEXC-1,
+     &         '(I5,1X,F16.5,2X,A3,1X,A4,'//FMT//'(2X,ES14.6))') JEXC-1,
      &         OMEGA(IEXC,ISYM)*XTEV,REP(ISYM-1),SYMLAB(ILAB),OSCIL,
      &         (FOSC(IEXC,ISYM,IK,1),IK=0,K2ORD)
         ENDIF
@@ -2362,7 +2363,7 @@ C.....Oscillator strenghts: general length gauge
      &     '* Isotropic oscillator strengths '//
      &     '(generalized length gauge) above threshold :', TTOL
       CALL PRSYMB(LUPRI,'=',NLIN,0)
-      WRITE(LUPRI,'(/A,5(A2,I1,A2,11X))')
+      WRITE(LUPRI,'(/A,'//FMT//'(A2,I2,A2,10X))')
      &     'Level    Frequency (eV) Symmetry    f(total)        ',
      &     ('f(',IK+IK,') ',IK=0,K2ORD)
       CALL PRSYMB(LUPRI,'-',NLIN,0)
@@ -2374,14 +2375,14 @@ C.....Oscillator strenghts: general length gauge
         IF(OSCIL .GT. TTOL) THEN
           ILAB  = ISSYM(IEXC,ISYM)
           WRITE(LUPRI,
-     &         '(I5,1X,F16.5,2X,A3,1X,A4,5(2X,ES14.6))') JEXC-1,
+     &         '(I5,1X,F16.5,2X,A3,1X,A4,'//FMT//'(2X,ES14.6))') JEXC-1,
      &         OMEGA(IEXC,ISYM)*XTEV,REP(ISYM-1),SYMLAB(ILAB),OSCIL,
      &         (FOSC(1,IEXC,ISYM,IK),IK=0,K2ORD)
-          WRITE(LUPRI,'(43X,A3,2X,4(2X,ES14.6))') 
+          WRITE(LUPRI,'(43X,A3,2X,'//FMT//'(2X,ES14.6))') 
      &         'Q-Q',(FOSC(2,IEXC,ISYM,IK),IK=0,K2ORD)
-          WRITE(LUPRI,'(43X,A3,2X,4(2X,ES14.6))') 
+          WRITE(LUPRI,'(43X,A3,2X,'//FMT//'(2X,ES14.6))') 
      &         'M-Q',(FOSC(3,IEXC,ISYM,IK),IK=0,K2ORD)
-          WRITE(LUPRI,'(43X,A3,2X,4(2X,ES14.6))') 
+          WRITE(LUPRI,'(43X,A3,2X,'//FMT//'(2X,ES14.6))') 
      &         'M-M',(FOSC(4,IEXC,ISYM,IK),IK=0,K2ORD)
         ENDIF
       ENDDO
