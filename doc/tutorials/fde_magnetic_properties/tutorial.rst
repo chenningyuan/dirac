@@ -316,12 +316,13 @@ are very small (can be printed in the output with the print level set at least t
 
 Magnetizability calculations without the FDE coupling terms
 -----------------------------------------------------------
-In this paragraph we demonstrate how to perform the FDE calculations of the magnetizability tensor, in which the terms dependent on the embedding kernel 
+In this section we demonstrate how to perform the FDE calculations of the magnetizability tensor, in which the terms dependent on the embedding kernel 
 involving the coupling between subsystems are neglected, both in the property gradient and in the expectation value parts.
 
-The steps are analogous as for the NMR shielding calculations, in particular here we assume that the ``numerical_grid`` file is prepared (:ref:`NMR_calcs_numerical_grid`)
-and that the "Step 1" involving the SCF calculations on the subsystem II is completed (the ``GRIDOUT`` file is prepared).
-
+Analogously to the NMR shielding calculations, the magnetizability calculations are done in few steps. First steps are common for both properties, in particular:
+  * the ``numerical_grid`` file is prepared as described in section :ref:`NMR_calcs_numerical_grid`,
+  * the "Step 1" discussed in section :ref:`` is completed, therefore the ``GRIDOUT`` file with the exported charge density of subsystem II ("frozen") is available,
+  * "Step 2" discussed in section :ref:`` is completed, therefore the 
 
 Magnetizability calculations with the FDE coupling terms
 --------------------------------------------------------
