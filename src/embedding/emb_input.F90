@@ -226,7 +226,7 @@ module fde_input
             ' * FDE Gridfile with updated density written to:',string
 
             select case(etmp%ex_level)
-               case('DHF','MP2')
+               case('DHF','MP2','CCSD')
                   write(unit,*)                               &
                   'Outputted density will be taken from: ',trim(etmp%ex_level)
                   
