@@ -8,9 +8,11 @@
       iterm = 0
       jterm = 0
       K2=K+K
-      WRITE(6,'(/A,I4)') 'GENOSC_BED: Rotational weights of order: ',K2
-      CALL PRSYMB(6,'-',60,0)
-      WRITE(6,'(18X,100A1)') (' ',J=1,K2+2),'P','Q'
+      IF(IPRXPP.GE.2) THEN
+        WRITE(6,'(/A,I4)') 'GENOSC_BED: Rotational weights of order: ',K2
+        CALL PRSYMB(6,'-',60,0)
+        WRITE(6,'(18X,100A1)') (' ',J=1,K2+2),'P','Q'
+      ENDIF
 !.....Accumulate oscillator strengths
       FOSC=0.0D0
       IF(K.EQ.0) THEN
@@ -19,17 +21,19 @@
         allocate(indices(k2))
         call bedloop(1,k2,indices,iterm,jterm,FOSC,ATMPPF,OMEGA)
         deallocate(indices)
-     ENDIF
+      ENDIF
 !....Add final factors for oscillator strengths
-     DO ISYM = 1,NBSYM
-       NEXC = KEXCNV(ISYM)
-       DO IEXC = 1,NEXC
-         FOSC(IEXC,ISYM)=FOSC(IEXC,ISYM)*(OMEGA(IEXC,ISYM)/CVAL)**K2*2.0D0/OMEGA(IEXC,ISYM)
-       ENDDO
-     ENDDO   
-     write(6,*) 'Total/non-zero terms: ',ITERM,JTERM
-     CALL PRSYMB(6,'-',60,0)
-    END SUBROUTINE GENOSC_BED
+      DO ISYM = 1,NBSYM
+        NEXC = KEXCNV(ISYM)
+        DO IEXC = 1,NEXC
+          FOSC(IEXC,ISYM)=FOSC(IEXC,ISYM)*(OMEGA(IEXC,ISYM)/CVAL)**K2*2.0D0/OMEGA(IEXC,ISYM)
+        ENDDO
+      ENDDO   
+      IF(IPRXPP.GE.2) THEN
+        WRITE(6,*) 'Total/non-zero terms: ',ITERM,JTERM
+        CALL PRSYMB(6,'-',60,0)
+      ENDIF
+      END SUBROUTINE GENOSC_BED
 
       recursive subroutine bedloop(m,k2,indices,iterm,jterm,FOSC,ATMPPF,OMEGA)
 #include "dgroup.h"
@@ -83,10 +87,12 @@
           ENDIF
           WROT=WROT/4.0D0/ACOS(-1.0D0)
           FAC = GAMMA(REAL(K2+5))/GAMMA(REAL(K2/2+3))/2**(K2/2+1)
-          IFAC= NINT(FAC)
-          WRITE(DENOM,'(A,I8,A)') '/',IFAC,':'
-          WRITE(6,'(F6.1,A10,2X,18A1)') WROT*IFAC,DENOM,&
-               (CHAR(87+INDICES(J)),J=1,K2),' ',' ',CHAR(87+IP),CHAR(87+IQ)
+          IF(IPRXPP.GE.2) THEN
+            IFAC= NINT(FAC)
+            WRITE(DENOM,'(A,I8,A)') '/',IFAC,':'
+            WRITE(6,'(F6.1,A10,2X,18A1)') WROT*IFAC,DENOM,&
+                 (CHAR(87+INDICES(J)),J=1,K2),' ',' ',CHAR(87+IP),CHAR(87+IQ)
+          ENDIF
           DO M = 0,K
             FAC = D2*(-D1)**M
             IF(M.EQ.0) FAC = D1
@@ -122,7 +128,9 @@
             ISYMB   = IPRPSYM(INDPRB)
             IF(ISYMB.NE.ISYM) CALL QUIT('ROTFAC_BED: Symmetry problem !')
 !...........Form product
-            WRITE(6,'(2(2X,I3,2X,A16,2X,A3))') K+M,PRPNAM(INDPRA),REP(ISYM-1),K-M,PRPNAM(INDPRB),REP(ISYMB-1)
+            IF(IPRXPP.GE.2) THEN
+              WRITE(6,'(2(2X,I3,2X,A16,2X,A3))') K+M,PRPNAM(INDPRA),REP(ISYM-1),K-M,PRPNAM(INDPRB),REP(ISYMB-1)
+            ENDIF 
             NEXC=KEXCNV(ISYM)
             DO IEXC = 1,NEXC
                FOSC(IEXC,ISYM) = FOSC(IEXC,ISYM) &
@@ -144,9 +152,11 @@
       iterm = 0
       jterm = 0
       K2=K+K
-      WRITE(6,'(/A,I4)') 'GENOSC_MPOL: Rotational weights of order: ',K2
-      CALL PRSYMB(6,'-',60,0)
-      WRITE(6,'(18X,100A1)') (' ',J=1,K2+2),'P','Q'
+      IF(IPRXPP.GE.2) THEN
+        WRITE(6,'(/A,I4)') 'GENOSC_MPOL: Rotational weights of order: ',K2
+        CALL PRSYMB(6,'-',60,0)
+        WRITE(6,'(18X,100A1)') (' ',J=1,K2+2),'P','Q'
+      ENDIF
 !.....Accumulate oscillator strengths
       FOSC=0.0D0
       IF(K.EQ.0) THEN
@@ -166,10 +176,12 @@
          FOSC(4,IEXC,ISYM)=FOSC(4,IEXC,ISYM)*FAC/OMEGA(IEXC,ISYM)
          FOSC(1,IEXC,ISYM)=FOSC(2,IEXC,ISYM)+FOSC(3,IEXC,ISYM)+FOSC(4,IEXC,ISYM)
        ENDDO
-     ENDDO   
-     write(6,*) 'Total/non-zero terms: ',ITERM,JTERM
-     CALL PRSYMB(6,'-',60,0)
-    END SUBROUTINE GENOSC_MPOL
+     ENDDO
+     IF(IPRXPP.GE.2) THEN
+       WRITE(6,*) 'Total/non-zero terms: ',ITERM,JTERM
+       CALL PRSYMB(6,'-',60,0)
+     ENDIF
+     END SUBROUTINE GENOSC_MPOL
 
       recursive subroutine mpolloop(m,k2,indices,iterm,jterm,FOSC,ATMPPF,OMEGA)
 #include "dgroup.h"
@@ -223,10 +235,12 @@
           ENDIF
           WROT=WROT/4.0D0/ACOS(-1.0D0)
           FAC = GAMMA(REAL(K2+5))/GAMMA(REAL(K2/2+3))/2**(K2/2+1)
-          IFAC= NINT(FAC)
-          WRITE(DENOM,'(A,I8,A)') '/',IFAC,':'
-          WRITE(6,'(F6.1,A10,2X,18A1)') WROT*IFAC,DENOM,&
-               (CHAR(87+INDICES(J)),J=1,K2),' ',' ',CHAR(87+IP),CHAR(87+IQ)
+          IF(IPRXPP.GE.2) THEN
+            IFAC= NINT(FAC)
+            WRITE(DENOM,'(A,I8,A)') '/',IFAC,':'
+            WRITE(6,'(F6.1,A10,2X,18A1)') WROT*IFAC,DENOM,&
+                 (CHAR(87+INDICES(J)),J=1,K2),' ',' ',CHAR(87+IP),CHAR(87+IQ)
+          ENDIF
           DO M = 0,K
             FAC = D2*(-D1)**M
             IF(M.EQ.0) FAC = D1
@@ -307,17 +321,19 @@
               ENDIF
             ENDIF
 !...........Form product
-            IF(INDAPM.GT.0) THEN            
-               WRITE(6,'(A,2(2X,I3,2X,A16,2X,A3),I3)') 'Left : ',&
-                    K+M+1,PRPNAM(INDPEL),REP(ISYMEL-1),K+M,PRPNAM(INDPML),REP(ISYMML-1),IJKL
-            ELSE
-              WRITE(6,'(A,(2X,I3,2X,A16,2X,A3))')  'Left : ',K+M+1,PRPNAM(INDPEL),REP(ISYMEL-1)
-            ENDIF
-            IF(INDBPM.GT.0) THEN
-               WRITE(6,'(A,2(2X,I3,2X,A16,2X,A3),I3)') 'Right: ',&
-                    K-M+1,PRPNAM(INDPER),REP(ISYMER-1),K-M,PRPNAM(INDPMR),REP(ISYMMR-1),IJKR
-            ELSE
-              WRITE(6,'(A,(2X,I3,2X,A16,2X,A3))')  'Right: ',K-M+1,PRPNAM(INDPER),REP(ISYMER-1)
+            IF(IPRXPP.GE.2) THEN            
+              IF(INDAPM.GT.0) THEN            
+                 WRITE(6,'(A,2(2X,I3,2X,A16,2X,A3),I3)') 'Left : ',&
+                      K+M+1,PRPNAM(INDPEL),REP(ISYMEL-1),K+M,PRPNAM(INDPML),REP(ISYMML-1),IJKL
+              ELSE
+                WRITE(6,'(A,(2X,I3,2X,A16,2X,A3))')  'Left : ',K+M+1,PRPNAM(INDPEL),REP(ISYMEL-1)
+              ENDIF
+              IF(INDBPM.GT.0) THEN
+                 WRITE(6,'(A,2(2X,I3,2X,A16,2X,A3),I3)') 'Right: ',&
+                      K-M+1,PRPNAM(INDPER),REP(ISYMER-1),K-M,PRPNAM(INDPMR),REP(ISYMMR-1),IJKR
+              ELSE
+                WRITE(6,'(A,(2X,I3,2X,A16,2X,A3))')  'Right: ',K-M+1,PRPNAM(INDPER),REP(ISYMER-1)
+              ENDIF
             ENDIF
             ISYM=ISYMEL           
             NEXC=KEXCNV(ISYM)
