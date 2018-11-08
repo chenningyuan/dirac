@@ -8,7 +8,7 @@ module exacorr_cc
                                  ONE_HALF=(0.5D0,0.D0),MINUS_ONE_HALF=(-0.5D0,0.D0),ONE_QUARTER=(0.25D0,0.D0)!, &
 !                                THREE=(3.0,0.0), SIX=(6.0,0.0)
         type(tens_rcrsv_t),public :: one_tensor
-        
+
         private
 
         public exacorr_cc_driver
@@ -16,7 +16,7 @@ module exacorr_cc
         interface diis
            module procedure diis
         end interface
-        
+
        contains
 
 #if defined (VAR_MPI)
@@ -79,7 +79,7 @@ module exacorr_cc
          type(subspace_basis_t)     :: basis_ao, basis_occ, basis_vir
          integer(INTL)              :: nao_l, ao_space_root
          integer(INTL)              :: occ_space_root, vir_space_root
-         integer(INTL),dimension(2) :: oo_root, ov_root, vo_root, vv_root 
+         integer(INTL),dimension(2) :: oo_root, ov_root, vo_root, vv_root
          integer(INTL),dimension(4) :: oooo_root, ooov_root, ovoo_root, oovv_root, vovo_root, &
                                        vvoo_root, vovv_root, vvvv_root, voov_root
          integer,dimension(2)       :: oo_id, ov_id, vo_id, vv_id 
@@ -156,14 +156,6 @@ module exacorr_cc
          mo_vir(1:nvir) = exa_input%mokr_vir(1:exa_input%nkr_vir)
          t_target_precision = exa_input%t_econv
          CCD = exa_input%ccd
-
-         !DEBUG => PASSED
-         !print*, "nocc: ", nocc, "nvir", nvir
-         !print*, "mo_occ", mo_occ
-         !print*, "mo_vir", mo_vir
-         !print*, "talsh", exa_input%talsh
-         !print*, "ccd", CCD
-         !print*, "target precision", t_target_precision
 
          !Get the MO-coeffcient basis for the occupied and virtual spaces
          ierr = 0
@@ -716,8 +708,8 @@ module exacorr_cc
 
         subroutine diis (t2_tensor,vvoo_id,vvoo_root,t1_tensor,vo_id,vo_root,t_convergence,mode)
 
-         integer, parameter             :: maxdim = 8 ! maximum number of tensors that will be stored
-         integer, parameter             :: mindim = 4 ! minimum number of tensors to allow extrapolation
+         integer, parameter             :: maxdim = 5 ! maximum number of tensors that will be stored
+         integer, parameter             :: mindim = 3 ! minimum number of tensors to allow extrapolation
          integer, intent(in), optional  :: mode ! 1:initialize, 2:clean-up
          real(8), intent(out), optional :: t_convergence ! convergence of the t1 and t2 amplitudes
 

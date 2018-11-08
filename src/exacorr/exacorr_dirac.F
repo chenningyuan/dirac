@@ -16,7 +16,6 @@ C***********************************************************************
       use exacc_cfg
       use exacorr_ao_to_mo,only     : exacorr_compute_mo_integrals
       use talsh_ao_to_mo,only       : talsh_compute_mo_integrals
-      !use exacorr_datatypes,only    : exacc_input
 #if defined (VAR_MPI)
       use interface_to_mpi
 #endif
@@ -36,14 +35,11 @@ C***********************************************************************
          call quit ('exacorr can not handle symmetry')
       end if
 
-!     CODED THIS SO TALSH IS ALWAYS USED
-
 #if defined (VAR_MPI)
       ! parallel version of DIRAC
 C     Transfer necessary information from common blocks
       call interface_mpi_bcast_l0(exa_input%talsh,1,0,
      &                              global_communicator)
-      print*, "mytid,TALSH: ", mytid, exa_input%talsh
       if (mytid == 0) then
          orbital_string = tra4_indstr(:,1) ! This is to be changed once we have an exacorr-specific input driver
          ! instruct slaves to go to the current routine (exa_moltra) as well
@@ -91,7 +87,6 @@ C     Fill the array with orbital indices
       end if
 #endif
 C
-      !if (exa_input%talsh) then
       if (.true.) then !Always use talsh for now
          call talsh_compute_mo_integrals (nmo, mo_list)
       else
@@ -106,6 +101,7 @@ C
          call exacorr_compute_mo_integrals (nmo, mo_list)
       end if
 C
+      !Only master should deallocate, since only master completes talsh
       if (mytid == 0) deallocate (mo_list)
 
       end
@@ -122,7 +118,6 @@ C***********************************************************************
       use exacc_cfg
       use talsh_cc,only             : talsh_cc_driver
       use exacorr_cc,only           : exacorr_cc_driver
-      !use exacorr_datatypes,only    : exacc_input
 #if defined (VAR_MPI)
       use interface_to_mpi
 #endif
@@ -141,7 +136,7 @@ C***********************************************************************
       end if
 
 #if defined (VAR_MPI)
-!     Make some noise so that we know we are here
+!     Cake some noise so that we know we are here
       call interface_mpi_comm_rank(global_communicator,mytid)
       ! parallel version of DIRAC
       call interface_mpi_bcast_l0(exa_input%talsh,1,0,
@@ -162,6 +157,7 @@ C
 #if defined (VAR_MPI)
       if (mytid == 0) then
 #endif
+      ! Obtain nocc and nvir + mo_occ and mo_vir
       exa_input%nkr_occ = 0
       call numlst (string_occupied,kvec,1,1,nesh(1),1,exa_input%nkr_occ)
       allocate (exa_input%mokr_occ(exa_input%nkr_occ))
@@ -176,7 +172,6 @@ C
 
 #if defined (VAR_MPI)
       end if
-      call interface_mpi_barrier(global_communicator)
 #endif
       if (exa_input%talsh) then
          call talsh_cc_driver (exa_input)

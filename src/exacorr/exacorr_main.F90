@@ -4,7 +4,7 @@
 
    program exacorr_main
 
-#if defined (VAR_MPI) 
+#if defined (VAR_MPI)
       use interface_to_mpi
 #endif
 
@@ -16,17 +16,17 @@
 
       implicit none
 
-      logical mo_transform, cc_calculation 
+      logical mo_transform, cc_calculation
       integer              :: imo, nmo(4)
       integer, allocatable :: mo_list(:)
-      type(exacc_input)    :: exa_input 
+      type(exacc_input)    :: exa_input
 
       mo_transform   = .false.
       cc_calculation = .true.
-      exa_input%talsh = .false. 
+      exa_input%talsh = .false.
       exa_input%ccd = .false.
 
-#if defined (VAR_MPI) 
+#if defined (VAR_MPI)
       call interface_mpi_init()
 #endif
 
@@ -57,7 +57,6 @@
          if (exa_input%talsh) then
             call talsh_cc_driver (exa_input)
          else
-            !call exacorr_cc_driver (exa_input%nkr_occ,exa_input%nkr_vir,exa_input%mokr_occ,exa_input%mokr_vir)
             call exacorr_cc_driver (exa_input)
          end if
       end if
