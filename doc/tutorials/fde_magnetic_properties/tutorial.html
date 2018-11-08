@@ -1,0 +1,124 @@
+<dl>
+<dt>orphan</dt>
+<dd>
+</dd>
+</dl>
+<h1 id="nmr-shielding-and-magnetizability-in-frozen-density-embedding-fde-scheme-with-london-atomic-orbitals-laos">NMR shielding and magnetizability in Frozen Density Embedding (FDE) scheme with London atomic orbitals (LAOs)</h1>
+<p>In this tutorial we will show how to calculate the NMR shielding tensor and the magnetizability tensor with London atomic orbitals within the FDE scheme.</p>
+<h2 id="nmr-shielding-and-magnetizability-in-fde-scheme---theory-overview">NMR shielding and magnetizability in FDE scheme - theory overview</h2>
+<p>The NMR shielding tensor and the magnetizability tensor (which we will jointly denote as <span class="math inline"><em>P</em></span>) can be calculated as a sum of a linear response contribution (<span class="math inline"><em>P</em><sub><em>l</em><em>i</em><em>n</em><em>r</em><em>e</em><em>s</em></sub></span>) and an expectation value term (<span class="math inline"><em>P</em><sub><em>e</em><em>x</em><em>p</em><em>v</em><em>a</em><em>l</em></sub></span>):</p>
+<p><br /><span class="math display"><em>P</em> = <em>P</em><sub><em>l</em><em>i</em><em>n</em><em>r</em><em>e</em><em>s</em></sub> + <em>P</em><sub><em>e</em><em>x</em><em>p</em><em>v</em><em>a</em><em>l</em></sub></span><br /></p>
+<p>The former contribution is determined from the response equations, which require the modification of the property gradient due to the use of perturbation-dependent basis set in the FDE scheme (discussed in the next paragraph). The expectation value contribution requires analogous modifications only for the magnetizability tensor and will be discussed in a separate paragraph.</p>
+<h3 id="modifications-of-the-property-gradient">Modifications of the property gradient</h3>
+<p>In order to calculate the NMR shielding tensor or the magnetizability tensor with LAOs, one must take into account modifications of the property gradient due to the use of perturbation-dependent basis sets (see Ilias2009). In FDE scheme, further modifications are needed, since the property gradient includes not only terms from isolated subsystems (here marked as &quot;I&quot; and &quot;II&quot;), but also a contribution from the interaction energy between these subsystems (see Hofener2013).</p>
+<p>For instance, these new contributions to the property gradient of subsystem &quot;I&quot; can be written as (see :cite: olejniczak2017):</p>
+<p><br /><span class="math display"><em>E</em><sub>[1],<em>e</em><em>m</em><em>b</em></sub><sup>[<em>B</em>],<em>I</em></sup> = −∫<em>v</em><sub><em>e</em><em>m</em><em>b</em></sub><sup><em>I</em></sup><em>Ω</em><sub><em>i</em><em>a</em></sub><sup><em>B</em>, <em>I</em></sup> − ∬<em>w</em><sub><em>e</em><em>m</em><em>b</em></sub><sup><em>I</em>, <em>I</em></sup><em>Ω</em><sub><em>i</em><em>a</em></sub><sup><em>I</em></sup><em>Ω</em><sub><em>j</em><em>j</em></sub><sup><em>B</em>, <em>I</em></sup> − ∬<em>w</em><sub><em>e</em><em>m</em><em>b</em></sub><sup><em>I</em>, <em>I</em><em>I</em></sup><em>Ω</em><sub><em>i</em><em>a</em></sub><sup><em>I</em></sup><em>Ω</em><sub><em>j</em><em>j</em></sub><sup><em>B</em>, <em>I</em><em>I</em></sup></span><br /></p>
+<p>where <span class="math inline"><em>Ω</em><sub><em>p</em><em>q</em></sub><sup><em>B</em>, <em>X</em></sup></span> is the first-order perturbed overlap distribution for a subsystem X (<span class="math inline"><em>X</em> ∈ {<em>I</em>, <em>I</em><em>I</em>}</span>), which in a basis of London orbitals consists of two terms</p>
+<p><br /><span class="math display">$$\Omega_{pq}^{B,X} = \frac{i}{2} (R_{MN} \times r) \Omega_{pq}^X + (T_{pt}^{B*,X} \Omega_{tq}^X + \Omega_{pt}^XT_{tq}^{B,X}),$$</span><br /></p>
+<p>&quot;direct&quot; LAO term (the first term) and &quot;reorthonormalization&quot; term (in parenthesis). The <span class="math inline"><em>v</em><sub><em>e</em><em>m</em><em>b</em></sub><sup><em>I</em></sup></span> is the embedding potential of subsystem I, <span class="math inline"><em>w</em><sub><em>e</em><em>m</em><em>b</em></sub><sup><em>I</em>, <em>I</em></sup></span> is the embedding kernel involving subsystem I and <span class="math inline"><em>w</em><sub><em>e</em><em>m</em><em>b</em></sub><sup><em>I</em>, <em>I</em><em>I</em></sup></span> is the embedding kernel involving the coupling between subsystem I and subsystem II.</p>
+<p>In this tutorial we will show how to include each of these contributions to the property gradient in the calculations of the NMR shielding tensor or the magnetizability tensor.</p>
+<h3 id="modifications-of-the-expectation-value-contributions-to-the-magnetizability-tensor">Modifications of the expectation value contributions to the magnetizability tensor</h3>
+<p>While the <span class="math inline"><em>E</em><sub>[1],<em>e</em><em>m</em><em>b</em></sub><sup>[<em>B</em>],<em>X</em></sup></span> contribution to the property gradient formulated in response equations of subsystem &quot;X&quot; is the only modification that needs to be accounted for in the calculations of NMR shieldings, the magnetizability tensor requires additional terms in the expectation value part which arise due to the use of perturbation-dependent basis sets. As the magnetizability tensor is an extensive property, its expectation value part reads</p>
+<p><br /><span class="math display"><em>ξ</em><sub><em>e</em><em>x</em><em>p</em><em>v</em><em>a</em><em>l</em></sub> = <em>ξ</em><sub><em>e</em><em>x</em><em>p</em><em>v</em><em>a</em><em>l</em></sub><sup><em>I</em></sup> + <em>ξ</em><sub><em>e</em><em>x</em><em>p</em><em>v</em><em>a</em><em>l</em></sub><sup><em>I</em><em>I</em></sup> + <em>ξ</em><sub><em>e</em><em>x</em><em>p</em><em>v</em><em>a</em><em>l</em></sub><sup><em>I</em>, <em>I</em><em>I</em></sup></span><br /></p>
+<p>where the first two terms involve the contributions from isolated susbsystems (<span class="math inline"><em>X</em> ∈ {<em>I</em>, <em>I</em><em>I</em>}</span>):</p>
+<p><br /><span class="math display"><em>ξ</em><sub><em>e</em><em>x</em><em>p</em><em>v</em><em>a</em><em>l</em></sub><sup><em>X</em></sup> = ∫<em>v</em><sub><em>e</em><em>m</em><em>b</em></sub><sup><em>X</em></sup><em>Ω</em><sub><em>i</em><em>i</em></sub><sup><em>B</em>, <em>B</em>, <em>X</em></sup> + ∬<em>w</em><sub><em>e</em><em>m</em><em>b</em></sub><sup><em>X</em>, <em>X</em></sup><em>Ω</em><sub><em>i</em><em>i</em></sub><sup><em>B</em>, <em>X</em></sup><em>Ω</em><sub><em>j</em><em>j</em></sub><sup><em>B</em>, <em>Y</em></sup></span><br /></p>
+<p>and the last term involves the coupling between subsystems (<span class="math inline"><em>X</em>, <em>Y</em> ∈ {<em>I</em>, <em>I</em><em>I</em>};<em>X</em> ≠ <em>Y</em></span>):</p>
+<p><br /><span class="math display"><em>ξ</em><sub><em>e</em><em>x</em><em>p</em><em>v</em><em>a</em><em>l</em></sub><sup><em>X</em><em>Y</em></sup> = ∬<em>w</em><sub><em>e</em><em>m</em><em>b</em></sub><sup><em>I</em>, <em>I</em><em>I</em></sup><em>Ω</em><sub><em>i</em><em>i</em></sub><sup><em>B</em>, <em>X</em></sup><em>Ω</em><sub><em>j</em><em>j</em></sub><sup><em>B</em>, <em>Y</em></sup></span><br /></p>
+<p>As in the calculations of the property gradient, <span class="math inline"><em>v</em><sub><em>e</em><em>m</em><em>b</em></sub><sup><em>X</em></sup></span>, <span class="math inline"><em>w</em><sub><em>e</em><em>m</em><em>b</em></sub><sup><em>X</em>, <em>X</em></sup></span> and w_{emb}^{X,Y} are the embedding potential of subsystem X (<span class="math inline"><em>X</em> ∈ {<em>I</em>, <em>I</em><em>I</em>}</span>), the embedding kernel involving subsystem X (<span class="math inline"><em>X</em> ∈ {<em>I</em>, <em>I</em><em>I</em>}</span>) and the embedding kernel describing the coupling between subsystems X and Y (<span class="math inline"><em>X</em>, <em>Y</em> ∈ {<em>I</em>, <em>I</em><em>I</em>};<em>X</em> ≠ <em>Y</em></span>), respectively.</p>
+<p>The first-order perturbed overlap distribution for a subsystem X (<span class="math inline"><em>X</em> ∈ {<em>I</em>, <em>I</em><em>I</em>}</span>) is as in Eq.mo_lao_b, while the second-order derivative of the overlap distribution is more complex as it involves second-order derivatives of the &quot;direct&quot; and &quot;reorthonormalization&quot; terms presented in Eq.mo_lao_b, as well as a mixed derivative involving both, &quot;direct&quot; and &quot;reorthonormalization&quot; contributions.</p>
+<h2 id="nmr-shielding-and-magnetizability-with-fde---sample-calculations">NMR shielding and magnetizability with FDE - sample calculations</h2>
+<p>We will consider a simple system of SeH<sub>2</sub>- H<sub>2</sub>O, in which SeH<sub>2</sub> constitutes an active subsystem (subsystem I) and H<sub>2</sub>Ois an environment (subsystem II):</p>
+<p><img src="h2se_h2o.jpg" alt="image" /></p>
+<p>The computational protocol is different depending on whether the coupling between two subsystems is included or not (through the term dependent on <span class="math inline"><em>w</em><sub><em>e</em><em>m</em><em>b</em></sub><sup><em>I</em>, <em>I</em><em>I</em></sup></span>). To avoid confusion, we will describe these two protocols separately.</p>
+<p>We will need two molecular input files. File <code>h2se.mol</code>, corresponding to an active subsystem I, reads:</p>
+<p>and file <code>h2o.mol</code>, standing for a subsystem II ('environment'):</p>
+<p>In this example we will use the four-component relativistic DC Hamiltonian and DFT/LDA with small grid and small basis sets.</p>
+<h3 id="nmr-shielding-calculations-without-the-fde-coupling-terms">NMR shielding calculations without the FDE coupling terms</h3>
+<dl>
+<dt>label</dt>
+<dd><p>NMR_calcs_numerical_grid</p>
+</dd>
+</dl>
+<p>Here we demonstrate how to include the first two terms of Eq. fde_pg in the property gradient: terms dependent on the embedding potential and the uncoupled embedding kernel on an example of the NMR shielding tensor of Se nucleus.</p>
+<p>In this tutorial, we use a coarse grid generated in DIRAC in preceeding calculations on SeH<sub>2</sub>- H<sub>2</sub>O 'supermolecule', which was then exported on a <code>numerical_grid</code> file. In DIRAC the <code>numerical_grid</code> file, which can be retrieved from DFT calculations, is divided into batches of points. However, FDE module is able to read only the continuous list of grid points, therefore such <code>numerical_grid</code> file has to be reformatted. This can be done by the script which can be found in <code>utils/fde-mag</code> directory of DIRAC, <code>dft_to_fde_grid_convert.py</code>, which should be called from the directory where the <code>numerical_grid</code> file is:</p>
+<p>This script will overwrite the <code>numerical_grid</code> and save its original version as <code>numerical_grid.ORIG</code> (if <code>numerical_grid.ORIG</code> exists in your working directory, then the script will ask if it should be overwritten).</p>
+<h4 id="step-1-scf-calculation-on-the-subsystem-ii">Step 1: SCF calculation on the subsystem II</h4>
+<p>The first step is the calculation on subsystem II, the aim of which is to export its density and electrostatic potential on a text file.</p>
+<p>The menu file <code>getfrozen.inp</code> reads:</p>
+<p>and we make sure to get the text file <code>GRIDOUT</code> (related to the GRIDOU keyword). We should also remember to supply two files, related to keywords GRIDOU (<code>GRIDOUT</code>) and EXONLY (<code>FILEEX</code>), which are copies of a numerical grid file:</p>
+<p>After this step, the <code>GRIDOUT</code> file will be updated: additional columns on that file correspond to the electrostatic potential and the density of subsystem II calculated in each point of a grid.</p>
+<h4 id="step-2-scf-and-response-calculation-on-the-subsystem-i">Step 2: SCF and response calculation on the subsystem I</h4>
+<p>Now we can use the information about the subsystem II written on the <code>GRIDOUT</code> file for constructing the embedding potential, <span class="math inline"><em>v</em><sub><em>e</em><em>m</em><em>b</em></sub><sup><em>I</em></sup></span>, and embedding kernel, <span class="math inline"><em>w</em><sub><em>e</em><em>m</em><em>b</em></sub><sup><em>I</em>, <em>I</em></sup></span>. In order to do that, we use the <code>GRIDOUT</code> file saved from Step 1 and copy it to a <code>FROZEN</code> file, which is given as an argument to the FRDENS keyword.</p>
+<p>We use the following input file for the SCF step:</p>
+<p>and the <code>pam</code> command is:</p>
+<p>To calculate the NMR shielding tensor, we use the following input file:</p>
+<p>in which the keyword LAO11 denotes that the contributions from the embedding potential, <span class="math inline"><em>v</em><sub><em>e</em><em>m</em><em>b</em></sub><sup><em>I</em></sup></span>, and the uncoupled embedding kernel, <span class="math inline"><em>w</em><sub><em>e</em><em>m</em><em>b</em></sub><sup><em>I</em>, <em>I</em></sup></span>, will be added to the property gradient. The corresponding <code>pam</code> command is:</p>
+<p>This is the advised option. However, as the calculations of the uncoupled embedding kernel terms in the property gradient may be expensive, one may want to restrict the FDE-LAO contributions to the part dependent on the embedding potential only. In this case, the input file reads:</p>
+<p>and the corresponding <code>pam</code> command is:</p>
+<p>Additionally, we may want to save the <code>PAMXVC</code> and <code>TBMO</code> files, if we are interested in visualization of the NMR shielding density and/or magnetically-induced current density. The calculation on our test molecule give the following results for the isotropic part of the shielding tensor of Se atom:</p>
+<blockquote>
+<table>
+<thead>
+<tr class="header">
+<th>terms included in property gradient</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>None</td>
+<td>2469.8091</td>
+</tr>
+<tr class="even">
+<td>v</td>
+<td>2370.3941</td>
+</tr>
+<tr class="odd">
+<td>v+w11</td>
+<td>2370.2488</td>
+</tr>
+</tbody>
+</table>
+</blockquote>
+<p><code>None</code> in the table denotes calculations performed with no &quot;new&quot; FDE-LAO terms in the property gradient (the gauge origin is in the center of mass of SeH2). Also, in this test case the value obtained with the embedding potential and the uncoupled embedding kernel in the property gradient (<code>v+w11</code>) is very close to the result of calculations with the embedding potential only (<code>v</code>), but for heavier nuclei the difference between these two setups may be significant.</p>
+<h3 id="calculations-with-the-fde-coupling-terms">Calculations with the FDE coupling terms</h3>
+<p>Here we will demonstrate how to include the coupling between two subsystems in the property gradient (term dependent on <span class="math inline"><em>w</em><sub><em>e</em><em>m</em><em>b</em></sub><sup><em>I</em>, <em>I</em><em>I</em></sup></span>).</p>
+<h4 id="step-1-scf-and-response-calculation-on-the-subsystem-ii">Step 1: SCF and response calculation on the subsystem II</h4>
+<p>In the first step we perform the calculations on subsystem II, the aim of which is to get its density and electrostatic potential written on a text file. In addition, we will export the perturbed density of subsystem II. We will need the DFCOEF file of subsystem II, which can be taken from <code>getfrozen.inp</code> run with the following input:</p>
+<p>with the <code>pam</code> command:</p>
+<p>(exactly as done in calculations without the FDE coupling terms presented above). From this step we save the <code>GRIDOUT.h2o</code> file. In order to get the density perturbed by an external magnetic field in LAO basis, the following input can be used:</p>
+<p>with the keyword EXPPED (under NMR section) asking the program to save the contributions to the perturbed density on two files <code>pertden_direct_lao.FINAL</code> and <code>pertden_reorth_lao.FINAL</code>. The corresponding pam command is:</p>
+<p>NOTE: This step has to be run in serial mode for the moment.</p>
+<h4 id="step-2-response-calculation-on-the-subsystem-i">Step 2: Response calculation on the subsystem I</h4>
+<p>Now we can finally calculate the FDE contributions to the NMR shielding tensor of an active subsystem (H2Se) which depend on the embedding kernel including the coupling terms between two subsystems. If the SCF step on an active subsystem was not done before, we should run the following input:</p>
+<p>with the <code>pam</code> command:</p>
+<p>The response input is then the following:</p>
+<p>with two new keywords: LAOFRZ and PERTIM. The corresponding <code>pam</code> command is:</p>
+<p>This input does not include the computationally expensive Coulomb term in the embedding kernel, only the nonadditive exchange-correlation and kinetic parts of the embedding kernel. If the Coulomb term is to be calculated then an additional keyword is required in the input, LFCOUL. Instead of using the LFCOUL and the LAOFRZ keywords together, it is possible to use a single LAO12 keyword, which represents both contributions to the coupled embedding kernel:</p>
+<p>with an analogous <code>pam</code> command:</p>
+<p>This input contains all the necessary contributions to the property gradient. Additionally, we may want to save the <code>PAMXVC</code> and <code>TBMO</code> files, if we are interested in visualization of the NMR shielding density and/or magnetically-induced current density. With this setup the calculations on the test system gave the following results:</p>
+<blockquote>
+<table>
+<thead>
+<tr class="header">
+<th>terms included in property gradient</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>v+w11+w12, no Coulomb</td>
+<td>2370.2536</td>
+</tr>
+<tr class="even">
+<td>v+w11+w12, ALL terms</td>
+<td>2370.2536</td>
+</tr>
+</tbody>
+</table>
+</blockquote>
+<p>Here the two results are the same within 0.0001 ppm accuracy, as the contributions from the Coulomb embedding contribution to the perturbed Fock matrix are very small (can be printed in the output with the print level set at least to 5 under <code>**PROPERTIES</code> section).</p>
+<h3 id="magnetizability-calculations-without-the-fde-coupling-terms">Magnetizability calculations without the FDE coupling terms</h3>
+<p>In this paragraph we demonstrate how to perform the FDE calculations of the magnetizability tensor, in which the terms dependent on the embedding kernel involving the coupling between subsystems are neglected, both in the property gradient and in the expectation value parts.</p>
+<p>The steps are analogous as for the NMR shielding calculations, in particular here we assume that the <code>numerical_grid</code> file is prepared (NMR_calcs_numerical_grid) and that the &quot;Step 1&quot; involving the SCF calculations on the subsystem II is completed (the <code>GRIDOUT</code> file is prepared).</p>
+<h3 id="magnetizability-calculations-with-the-fde-coupling-terms">Magnetizability calculations with the FDE coupling terms</h3>
