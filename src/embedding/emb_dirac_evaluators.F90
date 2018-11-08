@@ -551,7 +551,7 @@ module fde_evaluators_dirac
       cmo = 0.0d0
 
       select case(level)
-      case('MP2')
+      case('MP2','CCSD')
          if (printlocal) write(lupri,*) 'Reading CC_DENSITY'
          call get_cc_density(level,'AO',DMAT,ierr)
          if (ierr.ne.0) then
