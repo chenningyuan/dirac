@@ -32,10 +32,9 @@ C
       INTEGER NBUF2,NBUF3
       REAL*8 FVO(*)
 CPi Specify dimension of T1 for TCR      REAL*8 T1(*),T2(*)
-      REAL*8 T2(*)
 CPi      REAL*8 S1(*)
 CPi      REAL*8 HO(*),HV(*),HOV(*)
-      REAL*8 HOV(*)
+CPi      REAL*8 HOV(*)
       REAL*8 BUF1(NBUF2*RCW),BUF2(NBUF2*RCW),BUF3(NBUF3*RCW)
 C
 C---------------Common Blocks--------------------------------------
@@ -49,8 +48,8 @@ C
 C
 C---------------Calling variables--------------------------------------
 CPi should be after common blocks to get variables
-      REAL*8 T1(NDIMT1*RCW)
-      REAL*8 HV(NFVV*RCW), HO(NFVV*RCW)
+      REAL*8 T1(NDIMT1*RCW), T2(NDIMT2*RCW)
+      REAL*8 HV(NFVV*RCW), HO(NFVV*RCW), HOV(NFVO*RCW)
       REAL*8 S1(NDIMT1*RCW)
 CPi Allocate space of ooov integrals
 CPi      real*8, allocatable :: ooov(IOOOVT(NREP+1)*RCW)
@@ -127,14 +126,18 @@ C-----------------------------------------------------------------
 C S(A,I) = S(A,I) + HOV(CK) * T2(A,C,I,K)
 C-----------------------------------------------------------------
          CALL XTIME(0,1,'--- T1EQNS HOV*T2(A,C,I,K       ')
-         CALL SRT1TT4 (NREP,MULTB,LTR,LFA,NV,NV,NO,NO,
-     &                 MVO,JVOVO,JJVO,JJVO,T2,BUF1)
-
-         K    = IDIST(1,3,1)
-         OFF1 = IDIST(2,3,1)
-         OFF2 = IDIST(3,3,1)
-         M    = MVO(1)
-         CALL XGEMV ('N',M,K,A1,BUF1(OFF1),M,HOV(OFF2),1,A1,S1,1)
+CPi use new contraction routine - SEQUENTIAL!
+CPi I think what we have is HOV(CK)* and that we might have to conjugate
+         call contraction_242 ((/"p2","o2"/),(/"p1","p2","o1","o2"/),   &
+     &   (/"o1","p1"/),HOV,S1,1.0d0,1.0d0,nrep,RightTensor=T2)
+CPi         CALL SRT1TT4 (NREP,MULTB,LTR,LFA,NV,NV,NO,NO,
+CPi     &                 MVO,JVOVO,JJVO,JJVO,T2,BUF1)
+CPi
+CPi         K    = IDIST(1,3,1)
+CPi         OFF1 = IDIST(2,3,1)
+CPi         OFF2 = IDIST(3,3,1)
+CPi         M    = MVO(1)
+CPi         CALL XGEMV ('N',M,K,A1,BUF1(OFF1),M,HOV(OFF2),1,A1,S1,1)
          CALL XTIME(0,2,'--- T1EQNS HOV*T2(A,C,I,K       ')
            
 
