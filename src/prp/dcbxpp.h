@@ -23,7 +23,7 @@
 !
 !    dcbxpp.h -- Feb. 18, 1999, hjaaj
 !
-      PARAMETER ( MAXLPP = 539, MAX_KVAL = 6 )
+      PARAMETER (MAXLPP = 3016, MAX_KVAL = 12)
       LOGICAL XPP_SKIPEE,XPP_SKIPEP,XPP_LSFG,                           &
      &        XPPNRM,ORBXPP,XPPANA,XPP_TRIPLET,                         &
      &        XPP_E2CHEK,DOBED,DOBEDFIX,BEDCHK,DOBEDDER
