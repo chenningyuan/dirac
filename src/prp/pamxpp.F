@@ -2168,7 +2168,7 @@ C
             IF(ABS(ATMPPF(IEXC,INDAP,ISYM,1)).GT.TTOL) THEN
               NTMOM=NTMOM+1
               ILAB = ISSYM(IEXC,ISYM)
-              WRITE(LUPRI,'(F18.10,3X,F14.10,5X,A4)')
+              WRITE(LUPRI,'(F18.10,3X,ES18.10,5X,A4)')
      &          OMEGA(IEXC,ISYM), ATMPPF(IEXC,INDAP,ISYM,1), 
      &          SYMLAB(ILAB)
             ENDIF
@@ -2349,6 +2349,9 @@ C.....Oscillator strenghts: general velocity gauge
         ENDIF
       ENDDO
       CALL PRSYMB(LUPRI,'-',NLIN,0)
+      TOT = DSUM(NDIM,FOSC(1,1,-1,1),1)
+      WRITE(LUPRI,'(A,F12.5)')
+     &     'Sum of oscillator strengths (general velocity) : ',TOT
       deallocate(fosc)
 C.....Oscillator strenghts: general length gauge
       allocate(fosc(4,MAXEXC,NBSYM,-1:K2ORD))
@@ -2387,6 +2390,9 @@ C.....Oscillator strenghts: general length gauge
         ENDIF
       ENDDO
       CALL PRSYMB(LUPRI,'-',NLIN,0)
+      TOT = DSUM(NDIM,FOSC(1,1,1,-1),4)
+      WRITE(LUPRI,'(A,F12.5)')
+     &     'Sum of oscillator strengths (general length) : ',TOT
       deallocate(fosc)
  10   CONTINUE
       deallocate(symlab)
