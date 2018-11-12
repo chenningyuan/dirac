@@ -3,10 +3,11 @@
         implicit none
         private
 !PARAMETERS:
- !Generic:
+!Generic:
         integer, parameter, private:: REALD=8 !default real for this module
+        integer, parameter, private:: INTEGER_KIND=4 !default real for this module
 !DERIVED TYPES:
- !Basis function info:
+!Basis function info:
         type, public:: basis_func_info_t
          integer:: orb_momentum=-1       !orbital momentum: (0,1,2,3,...)
          integer:: atom_number=-1        !atom sequential number [1..MAX] (if centered on a nucleus of some atom)
@@ -16,12 +17,21 @@
          real(REALD), pointer :: exponent(:)
          real(REALD), pointer :: coefficient(:)
         end type basis_func_info_t
- !Basis set info:
+!Basis set info:
         type, public:: basis_set_info_t
          integer:: nshells=0             !number of shells in the basis set
          integer:: nao=0                 !number of basis functions
          type(basis_func_info_t), pointer:: gtos(:)
          integer, pointer :: shell_indices(:)
         end type basis_set_info_t
+
+!Input parameter
+        type, public :: exacc_input
+            logical(kind=INTEGER_KIND)  :: talsh = .true.           !If false, use ExaTensor
+            logical(kind=INTEGER_KIND)  :: ccd = .false.            !If false=>CCSD, if true=>CCD
+            integer(INTEGER_KIND)       :: nkr_occ, nkr_vir         !Number of Kramer pairs
+            integer, allocatable        :: mokr_occ(:), mokr_vir(:) !List of active Kramer pairs
+            real(REALD)                 :: t_econv = 1.0D-13        !Convergence criterium
+        end type exacc_input
 
        end module exacorr_datatypes

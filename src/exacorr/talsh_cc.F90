@@ -27,7 +27,7 @@ module talsh_cc
 
        contains
 !-------------------------------------------------------------------------------------------
-        subroutine talsh_cc_driver (nocc,nvir,mo_occ,mo_vir)
+        subroutine talsh_cc_driver (exa_input)
 
 !This subroutine drives the ccsd energy calculation
 !Currently everything is done in-core, purpose is to provide a working implementation that is suitable for debugging the production code
@@ -35,10 +35,13 @@ module talsh_cc
 !        Written by Lucas Visscher, winter 2016/2017
  
          use exacorr_global
-         use talsh_ao_to_mo, only : tensor_norm2
+         use talsh_ao_to_mo, only       : tensor_norm2
+         use exacorr_datatypes, only    : exacc_input
 
-         integer, intent(in) :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
-         integer, intent(in) :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
+         type(exacc_input), intent(in) :: exa_input        
+
+         integer                :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
+         integer,  allocatable  :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
 
          integer   :: ierr, i
          complex(8), pointer :: energy(:),result_tens(:)
@@ -69,7 +72,10 @@ module talsh_cc
 !        CCSD control and result variables
          integer :: iccsd, nccsd
          real(8) :: mp2_energy, ccsd_energy, t_energy(3), t_convergence
-         real(8), parameter :: t_target_precision = 1.D-13
+         !real(8), parameter :: t_target_precision = 1.D-13
+         real(8) :: t_target_precision
+
+         logical :: CCD
 
 !        Make some noise so that we know we are here
          call print_date('Entered cc_driver routine')
@@ -91,6 +97,16 @@ module talsh_cc
          ierr=talsh_tensor_construct(result_tensor,C8,result_dims(1:0),init_val=ZERO)
          ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,0,DEV_HOST)
          call c_f_pointer(body_p,result_tens,result_dims)
+
+         !DO NOT CHANGE THESE VARIABLES
+         nocc = exa_input%nkr_occ
+         nvir = exa_input%nkr_vir
+         allocate(mo_occ(nocc))
+         allocate(mo_vir(nvir))
+         mo_occ(1:nocc) = exa_input%mokr_occ(1:exa_input%nkr_occ)
+         mo_vir(1:nvir) = exa_input%mokr_vir(1:exa_input%nkr_vir)
+         t_target_precision = exa_input%t_econv
+         CCD = exa_input%ccd
 
 !        Get orbital energies from the DIRAC restart file
          allocate (eps_occ(2*nocc))
@@ -372,6 +388,8 @@ module talsh_cc
          ierr = talsh_shutdown()
          deallocate (eps_occ)
          deallocate (eps_vir)
+         deallocate (mo_occ)
+         deallocate (mo_vir)
 
 !        Free global data used to interact with DIRAC/Interest
          call delete_global_data
@@ -427,7 +445,6 @@ module talsh_cc
 
 !        Written by Lucas Visscher, summer 2017
  
-         use exacorr_datatypes
          use exacorr_global
          use talsh_ao_to_mo
 
