@@ -846,7 +846,20 @@
          call kw_read(word, string_virtual)
       end if
 
+      if (kw_matches(word, '.EXATENSOR')) then
+         exa_input%talsh = .false.
+      end if
+
+      if (kw_matches(word, '.CCDOUBLES')) then
+         exa_input%ccd = .true.
+      end if
+
+      if (kw_matches(word, '.TCONVERG')) then
+         call kw_read(word, exa_input%t_econv)
+      end if
+
       call check_whether_kw_found(word, kw_section)
+
 #endif
 
    end subroutine

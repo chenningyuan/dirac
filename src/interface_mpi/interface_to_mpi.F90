@@ -287,6 +287,7 @@ contains
     integer(kind=4)            :: communicator_i4
     integer(kind=4)            :: ierr_i4
 !-------------------------------------------------------------------------------
+
     ndim_i4         = ndim
     root_proc_i4    = root_proc
     communicator_i4 = communicator
@@ -296,7 +297,6 @@ contains
     if (.not. MPI_INIT_called) return
     call mpi_bcast(x, ndim   , my_MPI_INTEGER, root_proc   , communicator   , ierr   )
 #endif
-
   end subroutine
 !-------------------------------------------------------------------------------
 

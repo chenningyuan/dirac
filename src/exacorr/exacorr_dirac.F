@@ -13,9 +13,9 @@ C     Written by L.Visscher Jan 2017
 C
 C***********************************************************************
 
-      use exacorr_global,only   : get_talsh_only
-      use exacorr_ao_to_mo,only : exacorr_compute_mo_integrals
-      use talsh_ao_to_mo,only   : talsh_compute_mo_integrals
+      use exacc_cfg
+      use exacorr_ao_to_mo,only     : exacorr_compute_mo_integrals
+      use talsh_ao_to_mo,only       : talsh_compute_mo_integrals
 #if defined (VAR_MPI)
       use interface_to_mpi
 #endif
@@ -28,25 +28,28 @@ C***********************************************************************
 
       character (len=72)   :: orbital_string(4) ! String with range of MO's to be transformed for each index
       integer              :: kvec              ! Dummy variable needed in first call to numlst
-      integer, allocatable :: mo_list(:),mo_occ(:),mo_vir(:)
-      integer              :: nmo(4),noccu,nvir
+      integer, allocatable :: mo_list(:)
+      integer              :: nmo(4)
 
       if (nfsym.ne.1) then
          call quit ('exacorr can not handle symmetry')
       end if
+
 #if defined (VAR_MPI)
       ! parallel version of DIRAC
 C     Transfer necessary information from common blocks
+      call interface_mpi_bcast_l0(exa_input%talsh,1,0,
+     &                              global_communicator)
       if (mytid == 0) then
          orbital_string = tra4_indstr(:,1) ! This is to be changed once we have an exacorr-specific input driver
          ! instruct slaves to go to the current routine (exa_moltra) as well
          call dirac_parctl( 18 )
       else
-         if (get_talsh_only()) return ! TALSH has no use for MPI slaves
+         if (exa_input%talsh) return ! TALSH has no use for MPI slaves
       end if
 #else
       ! serial version of DIRAC
-      if (get_talsh_only()) then
+      if (exa_input%talsh) then
          ! TALSH version works fine with serial version of DIRAC
          orbital_string = tra4_indstr(:,1) ! This is to be changed once we have an exacorr-specific input driver
       else
@@ -56,7 +59,7 @@ C     Transfer necessary information from common blocks
       end if
 #endif
 
-! next block is code is only for master 
+! next block is code is only for master
 #if defined (VAR_MPI)
       if (mytid == 0) then
 #endif
@@ -84,11 +87,11 @@ C     Fill the array with orbital indices
       end if
 #endif
 C
-      if (get_talsh_only()) then
+      if (.true.) then !Always use talsh for now
          call talsh_compute_mo_integrals (nmo, mo_list)
       else
 #if defined (VAR_MPI)
-         ! slaves need the same info to get started
+         !slaves need the same info to get started
          call interface_mpi_bcast(ntmo,1,mparid,global_communicator)
          if (mytid /= 0) allocate(mo_list(ntmo))
          call interface_mpi_bcast(nmo,4,mparid,global_communicator)
@@ -98,7 +101,8 @@ C
          call exacorr_compute_mo_integrals (nmo, mo_list)
       end if
 C
-      deallocate (mo_list)
+      !Only master should deallocate, since only master completes talsh
+      if (mytid == 0) deallocate (mo_list)
 
       end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -111,10 +115,9 @@ C     Written by L.Visscher Jul 2017
 C
 C***********************************************************************
 
-      Use exacc_cfg
-      use exacorr_global,only   : get_talsh_only
-      use talsh_cc,only         : talsh_cc_driver
-      use exacorr_cc,only       : exacorr_cc_driver
+      use exacc_cfg
+      use talsh_cc,only             : talsh_cc_driver
+      use exacorr_cc,only           : exacorr_cc_driver
 #if defined (VAR_MPI)
       use interface_to_mpi
 #endif
@@ -125,61 +128,69 @@ C***********************************************************************
 #include "dgroup.h"  ! to access nfsym (should be 1)
 
       integer              :: kvec              ! Dummy variable needed in first call to numlst
-      integer, allocatable :: mo_list(:),mo_occ(:),mo_vir(:)
-      integer              :: nmo(4),noccu,nvir
+      integer, allocatable :: mo_list(:)
+      integer              :: nmo(4)
 
       if (nfsym.ne.1) then
          call quit ('exacorr can not handle symmetry')
       end if
+
 #if defined (VAR_MPI)
+!     Cake some noise so that we know we are here
+      call interface_mpi_comm_rank(global_communicator,mytid)
       ! parallel version of DIRAC
-      if (mytid == 0 .and. .not. get_talsh_only()) then
+      call interface_mpi_bcast_l0(exa_input%talsh,1,0,
+     &                               global_communicator)
+      if (mytid == 0 .and. .not. exa_input%talsh) then
          call dirac_parctl( 19 )
       end if
 #else
       ! serial version of DIRAC
-      if (.not. get_talsh_only()) then
+      if (.not. exa_input%talsh) then
          ! EXATENSOR version does not work with serial version of DIRAC
          print*, "Attempting to use exatensor with a non MPI version"
          call quit ("error in setup: exatensor requires MPI")
       end if
 #endif
 C
-! next block is code is only for master 
+! next block is code is only for master
 #if defined (VAR_MPI)
       if (mytid == 0) then
 #endif
-      noccu = 0
-      call numlst (string_occupied,kvec,1,1,nesh(1),1,noccu)
-      allocate (mo_occ(noccu))
-      call numlst (string_occupied,mo_occ,noccu,1,nesh(1),1,noccu)
+      ! Obtain nocc and nvir + mo_occ and mo_vir
+      exa_input%nkr_occ = 0
+      call numlst (string_occupied,kvec,1,1,nesh(1),1,exa_input%nkr_occ)
+      allocate (exa_input%mokr_occ(exa_input%nkr_occ))
+      call numlst (string_occupied,exa_input%mokr_occ,exa_input%nkr_occ,
+     &              1,nesh(1),1,exa_input%nkr_occ)
 
-      nvir = 0
-      call numlst (string_virtual,kvec,1,1,nesh(1),1,nvir)
-      allocate (mo_vir(nvir))
-      call numlst (string_virtual,mo_vir,nvir,1,nesh(1),1,nvir)
+      exa_input%nkr_vir = 0
+      call numlst (string_virtual,kvec,1,1,nesh(1),1,exa_input%nkr_vir)
+      allocate (exa_input%mokr_vir(exa_input%nkr_vir))
+      call numlst (string_virtual,exa_input%mokr_vir,exa_input%nkr_vir,
+     &              1,nesh(1),1,exa_input%nkr_vir)
+
 #if defined (VAR_MPI)
       end if
 #endif
-      if (get_talsh_only()) then
-         call talsh_cc_driver (noccu,nvir,mo_occ,mo_vir)
+      if (exa_input%talsh) then
+         call talsh_cc_driver (exa_input)
       else
 #if defined (VAR_MPI)
          ! slaves need the same info to get started
-         call interface_mpi_bcast(noccu,1,mparid,global_communicator)
-         if (mytid /= 0) allocate(mo_occ(noccu))
-         call interface_mpi_bcast(mo_occ,noccu,mparid,
-     &                            global_communicator)
-         call interface_mpi_bcast(nvir,1,mparid,global_communicator)
-         if (mytid /= 0) allocate(mo_vir(nvir))
-         call interface_mpi_bcast(mo_vir,nvir,mparid,
-     &                            global_communicator)
+         call interface_mpi_bcast(exa_input%nkr_occ,1,0,
+     &                              global_communicator)
+         if (mytid /= 0) allocate(exa_input%mokr_occ(exa_input%nkr_occ))
+         call interface_mpi_bcast(exa_input%nkr_vir,1,0,
+     &                              global_communicator)
+         if (mytid /= 0) allocate(exa_input%mokr_vir(exa_input%nkr_vir))
+         call exacc_sync_cw(0)
 #endif
-         call exacorr_cc_driver (noccu,nvir,mo_occ,mo_vir)
+         call exacorr_cc_driver (exa_input)
       end if
 
-      deallocate (mo_occ)
-      deallocate (mo_vir)
+      deallocate (exa_input%mokr_occ)
+      deallocate (exa_input%mokr_vir)
 
       end
 

@@ -123,7 +123,9 @@ module exacorr_ao_to_mo
 
          !Register the ao vector space:
          ierr=exatns_space_register('AO_space',basis_ao,ao_space_id,ao_space)
-         if (my_MPI_rank == 0) print*," registered AO vector space with nao, nshells:",nao,nshells
+         !if (my_MPI_rank == 0) print*," registered AO vector space with nao, nshells:",nao,nshells
+         !DEBUG CHECK IF ALL SLAVES HAVE THE VARIABLES
+         print*," registered AO vector space with nao, nshells:",nao,nshells
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register() failed!')
 
          !Get the MO-coeffcient basis for the four indices that are to be transformed
@@ -185,7 +187,9 @@ module exacorr_ao_to_mo
          ierr=exatns_method_register(initlabel2(2),dm_init(2))
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
 
-         if (my_MPI_rank == 0) print*," registered MO vectors spaces and initializers with nmo:",nmo
+         !if (my_MPI_rank == 0) print*," registered MO vectors spaces and initializers with nmo:",nmo
+         !DEBUG CHECK IF ALL SLAVES HAVE THE VARIABLES
+         print*," registered MO vectors spaces and initializers with nmo:",nmo
 
          !Define separate initializers for the construction of the half-transformed integrals (algorithm 3)
          imo12 = 1
