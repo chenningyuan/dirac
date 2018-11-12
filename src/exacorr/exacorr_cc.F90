@@ -13,9 +13,11 @@ module exacorr_cc
 
         public exacorr_cc_driver
 
+#if defined (VAR_MPI)
         interface diis
            module procedure diis
         end interface
+#endif
 
        contains
 
@@ -877,10 +879,10 @@ module exacorr_cc
         end subroutine diis
 
 #else
-        subroutine exacorr_cc_driver (nocc,nvir,mo_occ,mo_vir)
+        subroutine exacorr_cc_driver (exa_input)
+         use exacorr_datatypes
          implicit none
-         integer, intent(in) :: nocc,nvir           ! the size of the mo basis for occupied and virtual spinors
-         integer, intent(in) :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
+         type(exacc_input), intent(in) :: exa_input
          print*,  'called exatensor version of cc_driver in a serial version'
          print*,  'this functionality only works with MPI, we need to stop here'
          stop ' activate MPI'
