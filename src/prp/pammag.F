@@ -3593,7 +3593,6 @@ C                GRDOR1
 C
 C   Written by Miro Ilias, August 2003, Odense
 C 
-! gosia: FAC2LO is never used?
 C*****************************************************************************
 #ifdef MOD_LAO_REARRANGED
       use london_helper
