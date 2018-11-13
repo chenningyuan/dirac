@@ -116,6 +116,7 @@ module exacorr_cc
          if (my_MPI_rank == 0) print*, " Starting CC calculation with exatensor"
 
 !        Initialize global data (read from DFCOEF or similar by master)
+         call set_talsh_only(exa_input%talsh)
          call initialize_global_data
 
          nao     = get_nao()   ! This is the total number of ao's
