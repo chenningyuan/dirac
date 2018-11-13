@@ -1,5 +1,10 @@
 module exacorr_cc
-!This module contains the routines needed to calculate ae coupled cluster wave function
+
+!This module contains the routines needed to calculate a coupled cluster wave function
+!almost everything requires MPI, but we provide a stub function to make compilation of 
+!non-MPI versions of DIRAC possible.
+
+#if defined (VAR_MPI)
 
         use exatensor
 
@@ -13,15 +18,12 @@ module exacorr_cc
 
         public exacorr_cc_driver
 
-#if defined (VAR_MPI)
         interface diis
            module procedure diis
         end interface
-#endif
 
        contains
 
-#if defined (VAR_MPI)
 !-------------------------------------------------------------------------------------------
         subroutine exacorr_cc_driver (exa_input)
 
@@ -879,6 +881,12 @@ module exacorr_cc
         end subroutine diis
 
 #else
+        implicit none
+
+        public exacorr_cc_driver
+
+       contains
+
         subroutine exacorr_cc_driver (exa_input)
          use exacorr_datatypes
          implicit none
