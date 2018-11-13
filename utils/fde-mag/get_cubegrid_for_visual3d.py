@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-# this script needs 'plot.3d.vector' or 'plot.3d.scalar' file
-# and creates 'cube_grid' file with 3d grid for visual calculations (with '.3D_IMP' keyword)
+# this script needs 'plot.3d.vector' or 'plot.3d.scalar' file from **visual calculations
+# and creates 'cube_grid' file with 3d grid for visualization in DIRAC (with '.3D_IMP' keyword)
 
 import sys
 
