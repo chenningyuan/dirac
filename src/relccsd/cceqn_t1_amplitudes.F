@@ -191,6 +191,17 @@ CPi Use new contraction routine
       call contraction_442((/"p2","o1","o2","o3"/),(/"p1","p2","o2","o3"&
      &          /),(/"p1","o1"/),S1,1.0d0,1.0d0,nrep,LeftTensor=vooo,   &
      &          RightTensor=BUF3)
+CPi Let contraction routine fetch oovo integrals. This doesn't work
+CPi because the routine doesn't know that it should fetch vooo and then
+CPi complex conjugate.
+CPi      call contraction_442((/"o2","o3","p2","o1"/),(/"p1","p2","o2","o3"&
+CPi     &          /),(/"p1","o1"/),S1,1.0d0,1.0d0,nrep,                   &
+CPi     &          RightTensor=BUF3)
+CPi Let contraction routine fetch vooo integrals. Works, but CA test
+CPi fails due to the lack of complex conjugation
+CPi      call contraction_442((/"p2","o1","o2","o3"/),(/"p1","p2","o2","o3"&
+CPi     &          /),(/"p1","o1"/),S1,1.0d0,1.0d0,nrep,                   &
+CPi     &          RightTensor=BUF3)
       deallocate (vooo)
       CALL XTIME(0,2,'--- T1EQNS VOOO*TAU               ')
 
