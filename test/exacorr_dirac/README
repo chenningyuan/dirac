@@ -1,3 +1,0 @@
-!
-! This is a test for the exacorr combined with DIRAC to check if the input is passed on to the master
-! and broadcasted correctly to the slaves.
