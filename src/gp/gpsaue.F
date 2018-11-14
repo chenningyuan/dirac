@@ -447,7 +447,11 @@ C
 C
 C     Format : Seconds
 C
-      WRITE(SECTID,'(F11.8,A1)') TID,'s'
+      IF (TID .LT. 0.0D0) THEN
+         WRITE(SECTID,'(F11.3,A1)') TID,'s'
+      ELSE
+         WRITE(SECTID,'(F11.8,A1)') TID,'s'
+      END IF
       RETURN
 C
 C     Format: Minutes and seconds
@@ -478,8 +482,13 @@ C
       IHOUR = ITID/3600
       ITID  = MOD(ITID,3600)
       IMIN  = ITID/60
-      WRITE(SECTID,'(I3,A1,I2,A1,I2,A3)')
+      IF (IDAY .LE. 999) THEN
+         WRITE(SECTID,'(I3,A1,I2,A1,I2,A3)')
      &      IDAY,'d',IHOUR,'h',IMIN,'min'
+      ELSE
+         WRITE(SECTID,'(I5,A1,I2,A1,I2,A1)')
+     &      IDAY,'d',IHOUR,'h',IMIN,'m'
+      END IF
       RETURN
 C
       END

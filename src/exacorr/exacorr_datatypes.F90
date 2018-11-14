@@ -1,11 +1,14 @@
 !This module defines the data types used in the ExaCorr module of DIRAC
        module exacorr_datatypes
+
+        use talsh, only     : talsh_tens_t
+        use exatensor, only : tens_rcrsv_t
+
         implicit none
         private
 !PARAMETERS:
 !Generic:
         integer, parameter, private:: REALD=8 !default real for this module
-        integer, parameter, private:: INTEGER_KIND=4 !default real for this module
 !DERIVED TYPES:
 !Basis function info:
         type, public:: basis_func_info_t
@@ -27,11 +30,26 @@
 
 !Input parameter
         type, public :: exacc_input
-            logical(kind=INTEGER_KIND)  :: talsh = .true.           !If false, use ExaTensor
-            logical(kind=INTEGER_KIND)  :: ccd = .false.            !If false=>CCSD, if true=>CCD
-            integer(INTEGER_KIND)       :: nkr_occ, nkr_vir         !Number of Kramer pairs
-            integer, allocatable        :: mokr_occ(:), mokr_vir(:) !List of active Kramer pairs
-            real(REALD)                 :: t_econv = 1.0D-13        !Convergence criterium
+            logical                 :: talsh = .true.           !If false, use ExaTensor
+            logical                 :: ccd = .false.            !If false=>CCSD, if true=>CCD
+            integer                 :: nkr_occ, nkr_vir         !Number of Kramer pairs
+            integer, allocatable    :: mokr_occ(:), mokr_vir(:) !List of active Kramer pairs
+            real(REALD)             :: t_econv = 1.0D-13        !Convergence criterium
         end type exacc_input
+
+!All two electron integral tensors
+        type, public :: talsh_intg_tens
+         type(talsh_tens_t) :: oooo
+         type(talsh_tens_t) :: oovv, vovo
+         type(talsh_tens_t) :: ooov, vovv
+         type(talsh_tens_t) :: vvvv
+        end type talsh_intg_tens
+
+        type, public :: exatns_intg_tens
+         type(tens_rcrsv_t) :: oooo
+         type(tens_rcrsv_t) :: oovv, vovo
+         type(tens_rcrsv_t) :: ooov, vovv
+         type(tens_rcrsv_t) :: vvvv
+        end type exatns_intg_tens
 
        end module exacorr_datatypes

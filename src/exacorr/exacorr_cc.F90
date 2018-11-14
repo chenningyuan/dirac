@@ -1,5 +1,10 @@
 module exacorr_cc
-!This module contains the routines needed to calculate ae coupled cluster wave function
+
+!This module contains the routines needed to calculate a coupled cluster wave function
+!almost everything requires MPI, but we provide a stub function to make compilation of 
+!non-MPI versions of DIRAC possible.
+
+#if defined (VAR_MPI)
 
         use exatensor
 
@@ -19,7 +24,6 @@ module exacorr_cc
 
        contains
 
-#if defined (VAR_MPI)
 !-------------------------------------------------------------------------------------------
         subroutine exacorr_cc_driver (exa_input)
 
@@ -112,6 +116,7 @@ module exacorr_cc
          if (my_MPI_rank == 0) print*, " Starting CC calculation with exatensor"
 
 !        Initialize global data (read from DFCOEF or similar by master)
+         call set_talsh_only(exa_input%talsh)
          call initialize_global_data
 
          nao     = get_nao()   ! This is the total number of ao's
@@ -877,10 +882,16 @@ module exacorr_cc
         end subroutine diis
 
 #else
-        subroutine exacorr_cc_driver (nocc,nvir,mo_occ,mo_vir)
+        implicit none
+
+        public exacorr_cc_driver
+
+       contains
+
+        subroutine exacorr_cc_driver (exa_input)
+         use exacorr_datatypes
          implicit none
-         integer, intent(in) :: nocc,nvir           ! the size of the mo basis for occupied and virtual spinors
-         integer, intent(in) :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
+         type(exacc_input), intent(in) :: exa_input
          print*,  'called exatensor version of cc_driver in a serial version'
          print*,  'this functionality only works with MPI, we need to stop here'
          stop ' activate MPI'

@@ -87,6 +87,7 @@ module talsh_cc
          write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,host_buf_size,host_arg_max
          call interest_initialize(.true.)
          call print_date('Initialized interest library')
+         call set_talsh_only(exa_input%talsh)
          call initialize_global_data
          call print_date('Initialized global data')
 

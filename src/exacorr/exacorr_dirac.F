@@ -38,13 +38,15 @@ C***********************************************************************
 #if defined (VAR_MPI)
       ! parallel version of DIRAC
 C     Transfer necessary information from common blocks
-      call interface_mpi_bcast_l0(exa_input%talsh,1,0,
-     &                              global_communicator)
       if (mytid == 0) then
          orbital_string = tra4_indstr(:,1) ! This is to be changed once we have an exacorr-specific input driver
          ! instruct slaves to go to the current routine (exa_moltra) as well
          call dirac_parctl( 18 )
+         call interface_mpi_bcast_l0(exa_input%talsh,1,0,
+     &                               global_communicator)
       else
+         call interface_mpi_bcast_l0(exa_input%talsh,1,0,
+     &                               global_communicator)
          if (exa_input%talsh) return ! TALSH has no use for MPI slaves
       end if
 #else
@@ -136,14 +138,16 @@ C***********************************************************************
       end if
 
 #if defined (VAR_MPI)
-!     Cake some noise so that we know we are here
-      call interface_mpi_comm_rank(global_communicator,mytid)
       ! parallel version of DIRAC
+      ! the slaves do not have their input set yet, so call them
+      ! and let them know whether we use talsh or exatensor
+      call interface_mpi_comm_rank(global_communicator,mytid)
+      if (mytid == 0 ) then
+         call dirac_parctl( 19 ) 
+      end if
       call interface_mpi_bcast_l0(exa_input%talsh,1,0,
      &                               global_communicator)
-      if (mytid == 0 .and. .not. exa_input%talsh) then
-         call dirac_parctl( 19 )
-      end if
+      if (mytid /= 0 .and. exa_input%talsh) return
 #else
       ! serial version of DIRAC
       if (.not. exa_input%talsh) then
@@ -173,6 +177,7 @@ C
 #if defined (VAR_MPI)
       end if
 #endif
+
       if (exa_input%talsh) then
          call talsh_cc_driver (exa_input)
       else
