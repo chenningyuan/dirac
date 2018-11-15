@@ -121,7 +121,7 @@ module relcc_cfg
   integer, public :: relcc_mfd_max_subspace_size = 128
   integer, public :: relcc_mfd_max_iterations = 80
   integer, public :: relcc_mfd_refresh_rate = 0
-  logical, public :: relcc_mfd_overlap_sorting = .true.
+  logical, public :: relcc_mfd_overlap_sorting = .false.
   logical, public :: relcc_mfd_verbose = .false.
   logical, public :: relcc_mfd_trial_diagonal = .true.
   logical, public :: relcc_mfd_trial_ccs = .false. 
