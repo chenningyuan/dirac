@@ -73,7 +73,16 @@ C
      &"J. Chem. Phys. 122 (2005) 224113.",
      &/"  - Parallelization :",T30,
      &"M. Pernpointner and L. Visscher, ",
-     &"J. Comp. Chem. 24 (2003) 754.")
+     &"J. Comp. Chem. 24 (2003) 754.",
+     &/"  - MP2 expectation values :",T30,
+     &"J.N.P. van Stralen, L. Visscher, C.V. Larsen and H.J.Aa. Jensen,",
+     &" Chem. Phys. 311 (2005) 81."
+     &/"  - CC  expectation values :",T30,
+     &"A. Shee, L. Visscher, and T. Saue, ",
+     &"J. Chem. Phys. 145 (2016) 184107."
+     &/"  - EOM-IP/EA/EE energies  :",T30,
+     &"A. Shee, T. Saue, L. Visscher, and A.S.P. Gomes, ",
+     &"J. Chem. Phys. 149 (2018) 174113.")
 C
       RETURN
 C---------------Record of modifications made in the code-------------
