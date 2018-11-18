@@ -4400,7 +4400,7 @@ C
           IF(IPAR.GT.0) THEN
             WRITE(LUPRI,'(//A,I3/A/A/)')
      &      '*** WARNING - If your reference state is not the'//
-     &         ' excited state with index',IPAR,
+     &         ' excited state with index',IPAR+1,
      &      '    WARNING - then you probably have an instability in'//
      &        ' your reference state !!!',
      &      '    WARNING - (e.g. unrestricted lower energy than'//
