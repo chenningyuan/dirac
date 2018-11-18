@@ -1882,7 +1882,6 @@ C
           IND = IBVEC(IREC)
           IH  = IBTYP(2,IND)
           IF(IH.EQ.ITYP) THEN
-!            CALL READAC(LUBVEC,NBDIM,BVBUF,IREC+IRECOFF)
           CALL READ_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVBUF)
             IBOFF = 1
             DO IFREQ = 1,MFREQ
@@ -1902,7 +1901,6 @@ C
           INDI = 2*IND
           IH  = IBTYP(2,IND)
           IF(IH.EQ.ITYP) THEN
-!            CALL READAC(LUBVEC,NBDIM,BVBUF,IREC+IRECOFF)
           CALL READ_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVBUF)
             IBOFF = 1
             DO IFREQ = 1,MFREQ
