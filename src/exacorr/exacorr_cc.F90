@@ -22,6 +22,23 @@ module exacorr_cc
            module procedure diis
         end interface
 
+!       All two electron integral tensors
+        type, public :: exatns_intg_tens
+         type(tens_rcrsv_t) :: oooo
+         type(tens_rcrsv_t) :: oovv, vovo
+         type(tens_rcrsv_t) :: ooov, vovv
+         type(tens_rcrsv_t) :: vvvv
+        end type exatns_intg_tens
+
+!       Common blocks between t and lambda
+        type, public :: exatns_comm_tens
+         type(tens_rcrsv_t) :: foo, fov, fvv
+         type(tens_rcrsv_t) :: goo, gvv
+         type(tens_rcrsv_t) :: hov
+         type(tens_rcrsv_t) :: a_int, b_int, d_int, h_int
+         type(tens_rcrsv_t) :: t1, t2, tau
+        end type talsh_comm_tens
+
        contains
 
 !-------------------------------------------------------------------------------------------

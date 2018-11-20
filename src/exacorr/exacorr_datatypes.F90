@@ -1,9 +1,6 @@
 !This module defines the data types used in the ExaCorr module of DIRAC
        module exacorr_datatypes
 
-        use talsh, only     : talsh_tens_t
-        use exatensor, only : tens_rcrsv_t
-
         implicit none
         private
 !PARAMETERS:
@@ -36,20 +33,5 @@
             integer, allocatable    :: mokr_occ(:), mokr_vir(:) !List of active Kramer pairs
             real(REALD)             :: t_econv = 1.0D-13        !Convergence criterium
         end type exacc_input
-
-!All two electron integral tensors
-        type, public :: talsh_intg_tens
-         type(talsh_tens_t) :: oooo
-         type(talsh_tens_t) :: oovv, vovo
-         type(talsh_tens_t) :: ooov, vovv
-         type(talsh_tens_t) :: vvvv
-        end type talsh_intg_tens
-
-        type, public :: exatns_intg_tens
-         type(tens_rcrsv_t) :: oooo
-         type(tens_rcrsv_t) :: oovv, vovo
-         type(tens_rcrsv_t) :: ooov, vovv
-         type(tens_rcrsv_t) :: vvvv
-        end type exatns_intg_tens
 
        end module exacorr_datatypes
