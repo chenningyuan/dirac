@@ -566,13 +566,13 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
                 CALL DZERO(WORK(KTHMAT),N2ORBXQ)
                 AH  = .TRUE. ! T_icomp is antihermitian ! 
                 CALL TTRA(ISYM2,ISYM,WORK(KTMAT),
-     &             CONMAT,WORK(KTHMAT),.true.,.false.,.false.,IPRINT)
+     &             CONMAT,WORK(KTHMAT),.true.,.false.,IPRINT)
              else if (ep) then
                 call get_m_ep(work(ktmat))
                 CALL DZERO(WORK(KTHMAT),N2ORBXQ)
                 AH  = .TRUE. ! T_icomp is antihermitian ! 
                 CALL TTRA(ISYM2,ISYM,WORK(KTMAT),
-     &            CONMAT,WORK(KTHMAT),.true.,.true.,.false.,IPRINT)
+     &            CONMAT,WORK(KTHMAT),.true.,.false.,IPRINT)
              else if (occ) then
                 call get_m_ij(work(ktmat))
                 CALL DZERO(WORK(KTHMAT),N2ORBXQ)
@@ -580,10 +580,10 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
                 if (lao_lr_rearrange .or.shielding_rearrange) then
 !                 then all contribution to {T,h} comes from occ-occ blocks
                   CALL TTRA(ISYM2,ISYM,WORK(KTMAT),
-     &                CONMAT,WORK(KTHMAT),.true.,.false.,.true.,IPRINT)
+     &                CONMAT,WORK(KTHMAT),.true.,.true.,IPRINT)
                 else 
                   CALL TTRA(ISYM2,ISYM,WORK(KTMAT),
-     &                CONMAT,WORK(KTHMAT),.true.,.false.,.false.,IPRINT)
+     &                CONMAT,WORK(KTHMAT),.true.,.false.,IPRINT)
                 end if
              end if
 #endif
