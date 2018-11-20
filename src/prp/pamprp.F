@@ -6824,7 +6824,7 @@ C--------------------------------------------------------------------
            CALL DSCAL(NCMAT,DM1,TMPMAT,1)
            IF (IPRPRP.GE.2) THEN
              CALL HEADER('reorthonormalization contribution '//
-     &            ' from occ-occ part of T matrix',1)
+     &            'from occ-occ ("ii") part of T matrix',1)
              CALL FCPRI (TMPMAT,'SIGMAS',CSTRA,SCTRA)
            ENDIF
            CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
@@ -6839,8 +6839,8 @@ C--------------------------------------------------------------------
            CALL GETCON_septep(ee,ep,occ,TMPMAT,WORK,KFREE,LFREE,IPRPRP)
            CALL DSCAL(NCMAT,DM1,TMPMAT,1)
            IF (IPRPRP.GE.2) THEN
-             CALL HEADER('reorthonormalization contribution '//
-     &            ' from e-occ part of T matrix',1)
+             CALL HEADER('reorthonormalization contribution from '//
+     &      'occ-"secondary electronic" ("ia+") part of T matrix',1)
              CALL FCPRI (TMPMAT,'SIGMAS',CSTRA,SCTRA)
            ENDIF
            CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
@@ -6857,8 +6857,8 @@ C--------------------------------------------------------------------
            CALL GETCON_septep(ee,ep,occ,TMPMAT,WORK,KFREE,LFREE,IPRPRP)
            CALL DSCAL(NCMAT,DM1,TMPMAT,1)
            IF (IPRPRP.GE.2) THEN
-             CALL HEADER('reorthonormalization contribution '//
-     &            ' from p-occ part of T matrix',1)
+             CALL HEADER('reorthonormalization contribution from '//
+     &      'occ-"secondary positronic" ("ia-") part of T matrix',1)
              CALL FCPRI (TMPMAT,'SIGMAS',CSTRA,SCTRA)
            ENDIF
            CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
