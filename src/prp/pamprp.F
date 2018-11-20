@@ -7301,11 +7301,14 @@ C   ... make separate print out of e-e and e-p response contributions
           WRITE (LUPRI,'(/A,F14.6)') 
      &    ' Reorthonormalization contribution:',AVEDIA3
           if (SEPTEP) then
-           write(LUPRI,'(/A,F14.6)') '...from "occ-e" blocks of T = ',
+           write(LUPRI,'(/A60,F14.6)') '...from "occ-secondary '//
+     &            'electronic (ia+)" blocks of T = ',
      &                                AVEDIA3E
-           write(LUPRI,'(/A,F14.6)') '...from "occ-p" blocks of T = ', 
+           write(LUPRI,'(/A60,F14.6)') '...from "occ-secondary '//
+     &            'positronic (ia-)" blocks of T = ', 
      &                                AVEDIA3P
-           write(LUPRI,'(/A,F14.6)') '...from "occ-occ" blocks of T = ', 
+           write(LUPRI,'(/A60,F14.6)') '...from "occ-occ (ij)" '//
+     &            'blocks of T = ', 
      &                                AVEDIA3O
           end if
         ENDIF
