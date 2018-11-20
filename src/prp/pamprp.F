@@ -6822,6 +6822,11 @@ C--------------------------------------------------------------------
            CALL DZERO(PMAT,NCMAT)
            CALL GETCON_septep(ee,ep,occ,TMPMAT,WORK,KFREE,LFREE,IPRPRP)
            CALL DSCAL(NCMAT,DM1,TMPMAT,1)
+           IF (IPRPRP.GE.2) THEN
+             CALL HEADER('reorthonormalization contribution '//
+     &            ' from occ-occ part of T matrix',1)
+             CALL FCPRI (TMPMAT,'SIGMAS',CSTRA,SCTRA)
+           ENDIF
            CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
            CALL DAXPY(NCMAT,D1,PMAT,1,DMATREO,1)
           
@@ -6833,6 +6838,11 @@ C--------------------------------------------------------------------
            CALL DZERO(PMAT,NCMAT)
            CALL GETCON_septep(ee,ep,occ,TMPMAT,WORK,KFREE,LFREE,IPRPRP)
            CALL DSCAL(NCMAT,DM1,TMPMAT,1)
+           IF (IPRPRP.GE.2) THEN
+             CALL HEADER('reorthonormalization contribution '//
+     &            ' from e-occ part of T matrix',1)
+             CALL FCPRI (TMPMAT,'SIGMAS',CSTRA,SCTRA)
+           ENDIF
            CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
            CALL DAXPY(NCMAT,D1,PMAT,1,DMATREE,1)
 
@@ -6846,6 +6856,11 @@ C--------------------------------------------------------------------
            CALL DZERO(PMAT,NCMAT)
            CALL GETCON_septep(ee,ep,occ,TMPMAT,WORK,KFREE,LFREE,IPRPRP)
            CALL DSCAL(NCMAT,DM1,TMPMAT,1)
+           IF (IPRPRP.GE.2) THEN
+             CALL HEADER('reorthonormalization contribution '//
+     &            ' from p-occ part of T matrix',1)
+             CALL FCPRI (TMPMAT,'SIGMAS',CSTRA,SCTRA)
+           ENDIF
            CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
            CALL DAXPY(NCMAT,D1,PMAT,1,DMATREP,1)
 
