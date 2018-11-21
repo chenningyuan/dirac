@@ -161,9 +161,545 @@ C
      &  'Total time used in ONEGEN (CPU) ',CPUTID,' and (WALL) ',WALLTID
       END IF
  20   CONTINUE
+C     sunaga
+      CALL NUMINT
+Csunaga      
       CALL QEXIT('ONEGEN')
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE NUMINT
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C The numerical integration for constructing AO basis matrix
+C
+C Called from: ONEGEN
+C
+C copied from DFTGRD in dftgrd.F
+C A. Sunaga Nov. 2018
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+
+        use num_grid_cfg
+        use memory_allocator
+
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "ccom.h"
+      PARAMETER (D0=0.0D0)
+
+#include "dftwrk.h"
+
+!      DIMENSION DMAT(*)!sunaga
+      real(8), allocatable :: kzan(:)
+      real(8), allocatable :: kc(:)
+      real(8), allocatable :: ksp(:)
+      real(8), allocatable :: kx8(:)
+      real(8), allocatable :: ky8(:)
+      real(8), allocatable :: kz8(:)
+      real(8), allocatable :: kw8(:)
+      real(8), allocatable :: kpsmu(:)
+      real(8), allocatable :: krj(:)
+      real(8), allocatable :: kaccum(:)
+      real(8), allocatable :: kxmujn(:)
+      real(8), allocatable :: kxmuj2(:)
+      real(8), allocatable :: krij(:)  
+      real(8), allocatable :: kaij(:)  
+      real(8), allocatable :: krbc(:)  
+      real(8), allocatable :: krvec(:) 
+      real(8), allocatable :: kchimt(:)
+      real(8), allocatable :: kaa(:)   
+      integer, allocatable :: knuco(:)
+
+#include "ibtfun.h"
+      CALL QENTER('NUMINT')
+      TIMSTR = SECOND()
+
+C
+C     ********************************
+C     ***** Set up common blocks *****
+C     ********************************
+C
+C     INFOA has been replaced
+C     =====
+
+      call alloc(kzan, nucdep)
+      call alloc(kc,   nucdep*3)
+      CALL SET_GRID_INFO(NAT,NUM,kzan,kc)
+C
+C     DFTWRK
+C     ======
+C
+      RNDMAX  = 20.0D0
+C The values of ultrafine (.ULTRAF) at DFT input-reader section.      
+      RADERR  = 2.0D-15 !num_grid_cfg_RADINT !2,0d-15
+      NSCHEME = 64      !num_grid_cfg_ANGINT !64
+      LEBMIN  = 15      ! default of num_grid_cfg_ANGMIN
+
+C
+C     *******************************************
+C     ***** Prepare arguments for CONSTRUCT *****
+C     *******************************************
+C
+      IBIG    = 1000000
+      IVECL   = 100
+      NNAT    = NAT*(NAT-1)/2
+      N2AT    = NAT*NAT       
+!     radovan: workaround to get nonzero length array
+      if (nnat == 0) nnat = 1
+
+      call alloc(KSP   ,4*NUM    )
+      call alloc(KX8   ,IBIG     )
+      call alloc(KY8   ,IBIG     )
+      call alloc(KZ8   ,IBIG     )
+      call alloc(KW8   ,IBIG     )
+      CALL alloc(KPSMU ,IVECL*NAT)
+      CALL alloc(KRJ   ,IVECL*NAT)
+      CALL alloc(KACCUM,IVECL    )
+      CALL alloc(KXMUJN,IVECL    )
+      CALL alloc(KXMUJ2,IVECL    )
+      CALL alloc(KRIJ  ,NNAT     )
+      CALL alloc(KAIJ  ,NNAT     )
+      CALL alloc(KRBC  ,N2AT     )
+      CALL alloc(KRVEC ,3*IVECL  )
+C..added for density-based atomic size estimates
+      CALL alloc(KCHIMT,NAT*NAT)
+C..added for the MOLCAS scheme:
+      NDIM=2*NHTYP*NUCIND
+      CALL alloc(KAA  ,2*NDIM)
+      kaa = 0.0d0
+      CALL alloc(KNUCO,NDIM  )
+
+
+      if (num_grid_cfg_import_grid) go to 999
+      
+      OPEN(lunit_grid,
+     &     FORM   = 'FORMATTED',
+     &     STATUS = 'UNKNOWN',
+     &     ACCESS = 'SEQUENTIAL',
+     &     FILE   = 'numerical_grid')
+      REWIND lunit_grid
+
+      CALL NMINT2(KSP,KX8,KY8,KZ8,KW8,
+     &              KPSMU,KRJ,KACCUM,
+     &              KXMUJN,KXMUJ2,
+     &              KRIJ,KAIJ,IVECL,IBIG,
+     &              KRBC,KRVEC,
+     &              KNUCO,KAA,    KCHIMT,
+     &              NAT,NUM,KZAN,KC,
+     &              1)
+      
+!     check accuracy of numerical integration
+!      if (num_grid_cfg_integration_check_level > 0) then
+!        call grtest()
+!      end if
+
+      close(lunit_grid, status='keep')
+
+      TIMGRD = SECOND() - TIMSTR
+      WRITE (LUPRI,'(1X)')
+      CALL TIMTXT('>>>> Time used in DFTGRD:',TIMGRD,LUPRI)
+      WRITE (LUPRI,'(1X)')
+
+ 999  CONTINUE
+
+      call dealloc(kzan)
+      call dealloc(kc)
+      call dealloc(ksp)
+      call dealloc(kx8)
+      call dealloc(ky8)
+      call dealloc(kz8)
+      call dealloc(kw8)
+      call dealloc(kpsmu)
+      call dealloc(krj)
+      call dealloc(kaccum)
+      call dealloc(kxmujn)
+      call dealloc(kxmuj2)
+      call dealloc(krij)
+      call dealloc(kaij)
+      call dealloc(krbc)
+      call dealloc(krvec)
+      call dealloc(kchimt)
+      call dealloc(kaa)
+      call dealloc(knuco)
+      
+      CALL QEXIT('NUMINT')
+      RETURN
+      END       
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE NMINT2(WRKSP,X8,Y8,Z8,WT8,PSMU,RJ,ACCUM,XMUIJN,
+     &                    XMUIJ2,RIJ,AIJ,IVECL,IBIG,RBC,RVEC,
+     &                    NUCORB,AA,     CHIMT,
+     &                    NAT,NUM,ZAN,C,IPRINT)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C The numerical integration for constructing AO basis matrix
+C
+C Called from: ONEGEN
+C
+C Written by A. Sunaga Nov. 2018
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+       use num_grid_cfg
+       use interface_grid
+
+#include "implicit.h" 
+#include "priunit.h" 
+      
+      PARAMETER(D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0)
+      LOGICAL SWITCH,TEST
+      DIMENSION X8(IBIG),Y8(IBIG),Z8(IBIG),WT8(IBIG)
+
+      CHARACTER SPDCAR*1
+
+#include "dftwrk.h" 
+
+#include "dummy.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "ccom.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+
+      DIMENSION ZAN(*), C(3,NAT)
+      DIMENSION WRKSP(4*NUM),
+     &          ACCUM(IVECL),XMUIJN(IVECL),XMUIJ2(IVECL),
+     &          PSMU(IVECL,NAT),RJ(IVECL,NAT)
+      DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND),
+     &          CHIMT(NAT,NAT)!,DMAT(*)!sunaga
+C
+C     CARE: Some equivalencing through argument list!
+C      
+      DIMENSION RIJ(NAT*(NAT-1)/2),AIJ(NAT*(NAT-1)/2)
+      DIMENSION RBC(NAT,NAT)
+      DIMENSION RVEC(IVECL,3)
+      DIMENSION RADWT(2000), RADNDE(2000)
+      DIMENSION ANGWT(9000), XANG(9000), YANG(9000), ZANG(9000)
+      DIMENSION XPASC(20)
+C
+      DIMENSION GAO(NTBAS(0))   !sunaga
+!      real(8), allocatable :: krvec(:) 
+!      real(8), allocatable :: kchimt(:)
+!      real(8), allocatable :: kaa(:)
+      REAL(8), allocatable :: SMAT(:,:),TD(:,:,:),TE(:) !sunaga
+#include "ibtfun.h"
+#include "cbiwlk.h"  
+C      
+      TEST = num_grid_cfg_force_4c_grid.OR.(MC.GT.1.AND.(.NOT.LEVYLE))
+C      
+      CALL QENTER('NMINT2')
+C
+C     copied from /CONSTRUC/dftgrd.F
+C      
+C     Get information about basis sets
+C
+      CALL NUCBAS(NUCORB,AA,IPRINT)
+C
+C     Loop over atoms
+C     ===============
+C 
+      MXOPR = 0 
+      NTOTAL = 0
+      NALL = 0
+      BOHR   = 0.529177249D0
+      NATOM = 1
+C
+      DO 10 IATOM = 1, NUCIND
+      DO 10 ISYMOP = 0, MXOPR         
+      IF (IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN 
+         NDEG  = MULT(ISTBNU(IATOM))
+         IF(NOORBT(IATOM)) GOTO 10
+         IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 10
+         MULA  = ISTBNU(IATOM)
+         NDEG  = MULT(MULA)
+         IPT   = 0
+         INDEX = 0
+         NDEX  = 1
+         NTHIS = 0
+         NTHAT = 0
+C     
+C     Radial quadrature 
+C     =================
+C     
+C     As proposed by 
+C     Roland Lindh, Per-Aake Malmqvist and Laura Gagliardi
+C     Theor. Chem. Acc. (2001) 106:178 
+C
+C     Radial point:         
+C     RADNDE(K) = GRDC(EXP[K*H] - 1)
+C               = (RADNDE(K-1)+GRDC)*EXP[H]-GRDC
+C
+C     where appears the constant
+C
+C          GRDC = RL/(EXP[H] - 1),         
+C                   
+C     calculated from the step size H and the inner point RL.
+C
+C     Radial weight:         
+C
+C     RADWT(K) = (RADNDE(K)+GRDC)*RADNDE(K)*RADNDE(K)*H
+C           
+
+C        Grid spacing....
+         H = DUMMY
+         DO LL = 1,NHTYP
+           L = LL-1
+
+           nbas = nucorb(ll, 1, iatom)
+!          radovan:
+!          if Levy-Leblond or X2C, ignore small component
+!          unless user forces 4-c grid
+!           if (mc .gt. 1 .or. num_grid_cfg_force_4c_grid) then
+           if (TEST) then
+             nbas = nbas + nucorb(ll, 2, iatom)
+           end if
+
+           IF(NBAS.GT.0) THEN
+             write(*,*)"RADERR,L,NHTYP",RADERR,L,NHTYP 
+             HTMP = DISERR(RADERR,L)
+             H = MIN(H,HTMP)
+             IF(IPRINT.GE.3) THEN
+               WRITE(LUPRI,'(3X,A1,A,F6.3)')
+     &        SPDCAR(L),'-orbitals --> ',HTMP
+             ENDIF
+           ENDIF
+         ENDDO
+         EPH = EXP(H)
+
+C...     Inner grid point
+         ah = aa(1, 1, 1, iatom)
+!        radovan:
+!        if Levy-Leblond or X2C, ignore small component
+!        unless user forces 4-c grid
+!         if (mc .gt. 1 .or. num_grid_cfg_force_4c_grid) then
+         if (TEST) then
+           ah = max(ah, aa(1, 1, 2, iatom))
+         end if
+         ah = d2*ah
+
+         RL = ((1.9D0+LOG(RADERR))/D3)-(LOG(AH)/D2)
+         RL = EXP(RL)
+
+C...     Outer point
+         RH = D0
+         DO LL = 1,NHTYP
+           L = LL-1
+           AL=DUMMY
+
+           IF(NUCORB(LL,1,IATOM).GT.0) AL=AA(2,LL,1,IATOM)
+!          radovan:
+!          if Levy-Leblond or X2C, ignore small component
+!          unless user forces 4-c grid
+!           if (mc .gt. 1 .or. num_grid_cfg_force_4c_grid) then
+           if (TEST) then
+             IF(NUCORB(LL,2,IATOM).GT.0) AL=MIN(AL,AA(2,LL,2,IATOM))
+           end if
+
+           IF(AL.LT.DUMMY) THEN
+             AL = AL+AL
+             RHTMP = OUTERR(AL,L,RADERR)           
+             RH=MAX(RH,RHTMP)
+             IF(IPRINT.GE.3) THEN
+               WRITE(LUPRI,'(3X,A1,A,F6.3)')
+     &            SPDCAR(L),'-orbitals --> ',RHTMP
+             ENDIF
+           ENDIF
+         ENDDO
+         GRDC = RL/(EPH-D1)
+         NR = NINT(LOG(D1+(RH/GRDC))/H)
+         RADNDE(1) = RL
+         RADWT(1)  = (RL+GRDC)*RL*RL*H
+         DO IR = 2,NR
+           RADNDE(IR) = (RADNDE(IR-1)+GRDC)*EPH-GRDC
+           RADWT(IR) = (RADNDE(IR)+GRDC)*RADNDE(IR)*RADNDE(IR)*H
+         ENDDO
+C 
+C        loop over radial points
+C        =======================
+C
+         SWITCH = .FALSE.
+         RBRAGG = BRAGG(NINT(ZAN(NATOM)))/(5.0D0*BOHR)
+!         call alloc(KSP   ,4*NUM    )
+!         call alloc(SMAT,NTBAS(0)*NTBAS(0))
+!         call alloc(TD  ,NR*NTBAS(0)*NTBAS(0))
+!         call alloc(TE  ,NR)
+         allocate( SMAT(NTBAS(0),NTBAS(0))  )
+         allocate( TD(NR,NTBAS(0),NTBAS(0)) )
+         allocate( TE(NR)                   )
+         CALL DZERO(TD,NR*NTBAS(0)*NTBAS(0))
+         DO 20 IR = 1, NR
+            RWT   = RADWT(IR)
+            RNODE = RADNDE(IR)
+COLAV            IF (RNODE.GT.RNDMAX) GOTO 20
+C 
+C           angular abscissas and weights for this radial point
+C           ===================================================
+C
+            IF (.NOT.SWITCH) THEN
+               CALL SLEB(XANG,YANG,ZANG,ANGWT,NSCHEME,NANG,NATOM,RNODE,
+     &                   RBRAGG)
+               IF (RNODE.GT.RBRAGG) SWITCH = .TRUE.
+            END IF
+            IF (NR*NANG.GT.IBIG) THEN
+               WRITE(LUPRI,*) 'Have:',IBIG,' need:',NR*NANG,NANG
+               CALL QUIT('Storage error in CONSTRUCT')
+            END IF
+!            IF(IPRINT.GE.3) THEN
+!              WRITE(LUPRI,'(A,I5,F16.8,I5,I5,5X,L1)') 
+!     &          '* Grid:',IR,RNODE,NANG,NSCHEME,SWITCH
+!            ENDIF
+C
+C           loop over angular points
+C           ========================
+C
+            DO 30 iy = 1, NANG
+               IPT   = IPT + 1
+               INDEX = INDEX + 1
+               X8(INDEX)  = XANG(iy)*RNODE+C(1,NATOM)
+               Y8(INDEX)  = YANG(iy)*RNODE+C(2,NATOM)
+               Z8(INDEX)  = ZANG(iy)*RNODE+C(3,NATOM)
+               WT8(INDEX) = ANGWT(iy) !*RWT
+C
+C     GET AO's
+C
+!               write(*,*)"INDEX,IBIG,NTBAS",INDEX,IBIG,NTBAS
+!               write(*,*)"NANG,NR,iy,IR",NANG,NR,iy,IR
+               CALL GETAOS(GAO,TEMP,TEMP,TEMP,TEMP,
+     &                      X8(INDEX),Y8(INDEX),Z8(INDEX),
+     &                      NTBAS(0),0,.FALSE.,IPRINT)
+C
+C     Get "overlap" matrix
+C
+               CALL DGEMM('N','T',NTBAS(0),NTBAS(0),1,D1,GAO,NTBAS(0),
+     &                      GAO,NTBAS(0),D0,SMAT,NTBAS(0))
+C
+!               write(*,*)"iy,IR",iy,IR !sunaga
+               DO I = 1,NTBAS(0)
+                 DO J = 1,NTBAS(0)
+!!!  Once you have the integrand you should multiply with the angular weight and accumulate in a vector corresponding to TE of GRASP.                    
+                   TD(IR,I,J) = TD(IR,I,J) + SMAT(I,J)*WT8(INDEX)
+                   TD(IR,I,J) = TD(IR,I,J) !* RNODE * RNODE !* RNODE
+!         write(*,*)"GAO,SMAT,WT8",GAO(I),SMAT(I,J),WT8(INDEX),I,J,INDEX !sunaga
+!                   write(*,*)"TD1,RNODE",TD(IR,I,J),RNODE !sunaga
+!                   write(*,*)
+!                   write(*,*)
+                 END DO
+               END DO
+30          CONTINUE
+            DO I = 1,NTBAS(0)
+              DO J = 1,NTBAS(0)
+                 TD(IR,I,J) = TD(IR,I,J) * RNODE * RNODE * RNODE
+!                 write(*,*)"TD2,RNODE",TD(IR,I,J),RNODE !sunaga
+              END DO
+            END DO                 
+20       CONTINUE
+C
+         DO I = 1,NTBAS(0)
+           DO J = 1,NTBAS(0)
+             DO IR = 1,NR                 
+                TE(IR) = TD(IR,I,J)
+!                write(*,*)"TE3",TE(IR) !sunaga
+             ENDDO   
+             CALL QUAD(OVR,TE,NR,H)
+             WRITE(LUPRI,*)"I,J,OVR",I,J,OVR 
+           END DO
+         END DO               
+!         call dealloc(kzan)
+!         call dealloc(SMAT)
+!         call dealloc(TD)
+!         call dealloc(TE)
+         deallocate(SMAT)
+         deallocate(TD)
+         deallocate(TE)
+      END IF
+10    CONTINUE
+C      
+      CALL QEXIT('NMINT2')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE QUAD(RESULT,TE,NR,H)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C Numerical radial integral
+C
+C Called from: NMINT2
+C
+C copied from /QUAD/grasp.F/GRASP
+C Modified to DIRAC A. Sunaga Nov. 2018       
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+C
+      PARAMETER( W7 = 1.0D0/90.0D0,
+     &           W6 = -4.0D0*W7,  W5 =   7.0D0*W7,
+     &           W4 = 30.0D0*W7,  W3 =  44.0D0*W7,
+     &           W2 = 68.0D0*W7,  W1 = 112.0D0*W7)
+C
+      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
+      PARAMETER(EPSI = 1.0D-35) !-35
+!      REAL(8) TE(NR)      
+!      DIMENSION TE(NR)      
+      DIMENSION TE(*)
+C     
+C   FIND THE STARTING POINT FOR THE INTEGRATION. THIS IS THE POINT
+C   WHERE THE INTEGRAND TE FIRST BECOMES SIGNIFICANT, AND IS CHOSEN
+C   TO PREVENT DIVIDING BY ZERO.
+C
+      DO 1 J = 1,NR
+!        write(*,*)"TE4",TE(J) !sunaga
+        IF (ABS (TE(J)) .GT. EPSI) GO TO 2
+    1 CONTINUE
+      RESULT = ZERO
+      RETURN
+C
+C   CALCULATE THE INTEGRAL USING EXTENDED SIMPSONS RULE, NEGLECTING THE
+C   CONTRIBUTION FROM THE STARTING POINT. CHOOSE THE STARTING POINT
+C   R(JJ) TO GIVE AN ODD NUMBER OF INTEGRATION POINTS.
+C   THE CRAY VERSION OF THE CODE USES THE VECTOR FUNCTION SSUM TO
+C   PERFORM THE SUMMATION.
+C
+    2 SUM = ZERO
+!      write(*,*)"TE1,J,NR",TE(J),J,NR !sunaga
+      NP = NR-J+1
+      ND2 = NP/2
+      N1D2 = (NP+1)/2
+      K = ND2-N1D2+1
+      JJ = J+K
+      JJ1 = JJ+1
+      DO 3 I = JJ1,NR-3,2
+         SUM = SUM + W1*TE(I) + W2*TE(I+1)
+!         write(*,*)"TE5",TE(I) !sunaga
+    3 CONTINUE
+      SUM = SUM + W1*TE(NR-1)
+      SUM = SUM + W4*( TE(JJ)   + TE(NR)   )
+     &          + W5*( TE(JJ1)  + TE(NR-1) )
+     &          + W6*( TE(JJ+2) + TE(NR-2) )
+     &          + W7*( TE(JJ+3) + TE(NR-3) )
+      
+C
+C   ADD THE CONTRIBUTION FROM 0 TO R(JJ), PLUS THE CONTRIBUTION
+C   TO SIMPSONS RULE FROM TE(JJ).
+C
+      COP = TE(J+1)/TE(J)
+      IF (COP .LE. ONE) THEN
+         RPX = ZERO
+      ELSE
+         RPX = TE(JJ)/LOG (COP)
+      ENDIF
+      RESULT = H*(SUM+RPX)
+      RETURN
+C
+      END      
+      
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EFFECTIVE_DENS_NUC(WORK,LWORK,COMB)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -1629,6 +2165,7 @@ C     Get overlap matrix packed on fermion irreps
 C     ===========================================
 C
       CALL GTOVLT(SMAT,D1,IPRINT)
+C      
 C
 C     Generate IRKB array for use in RKBLOW
 C     =====================================
