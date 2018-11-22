@@ -15,6 +15,7 @@
 #import h5py
 import numpy
 import os
+import re
 #import uuid
 
 from openfermion.config import *
@@ -311,27 +312,6 @@ class MolecularData_Dirac(object):
             self.protons = 0
             self.n_electrons = 0
 
-        # Generic attributes from calculations.
-        self.n_orbitals = None
-        self.n_qubits = None
-        self.nuclear_repulsion = None
-
-        # Attributes generated from SCF calculation.
-        self.hf_energy = None
-        self.orbital_energies = None
-
-        # Attributes generated from MP2 calculation.
-        self.mp2_energy = None
-
-        # Attributes generated from CISD calculation.
-        self.cisd_energy = None
-
-        # Attributes generated from exact diagonalization.
-        self.fci_energy = None
-
-        # Attributes generated from CCSD calculation.
-        self.ccsd_energy = None
-
     def get_integrals_FCIDUMP(self):
         if os.path.exists("FCIDUMP_" + self.name) == True:
              E_core = 0
@@ -366,6 +346,23 @@ class MolecularData_Dirac(object):
              raise FileNotFoundError('FCIDUMP not found, first make a run_dirac calculation')
         return E_core, spinor, one_body_int, two_body_int
 
+    def get_energies(self):
+        hf_energy = None
+        mp2_energy = None
+        ccsd_energy = None
+        if os.path.exists(self.name + '.out') == True:
+           with open(self.name + '.out', "r") as f:
+             for line in f:
+                if re.search("@ SCF energy", line):
+                  hf_energy=line.rsplit(None, 1)[-1]
+                if re.search("@ Total MP2 energy", line):
+                  mp2_energy=line.rsplit(None, 1)[-1]
+                if re.search("@ Total CCSD energy", line):
+                  ccsd_energy=line.rsplit(None, 1)[-1]
+        else:
+           raise FileNotFoundError('output not found, check your run_dirac calculation')
+        return hf_energy, mp2_energy, ccsd_energy
+
     def get_molecular_hamiltonian(self, occupied_indices=None,
                                   active_indices=None):
         """Output arrays of the second quantized Hamiltonian coefficients.
@@ -397,16 +394,16 @@ class MolecularData_Dirac(object):
                    one_body_coefficients[p,q] = one_body_integrals[p+1,q+1]
                 for r in range(n_qubits):
                     for s in range(n_qubits):
-                        if (p+1,q+1,r+1,s+1) in two_body_integrals: #in Dirac, it's only considering integrals with orbitals of same spin ! So p, q, r, s are all odd or all even !!
+                        if (p+1,s+1,q+1,r+1) in two_body_integrals: #in Dirac, it's only considering integrals with orbitals of same spin ! So p, q, r, s are all odd or all even !!
                            two_body_coefficients[p,q,r,s] = two_body_integrals[p+1,s+1,q+1,r+1] / 2.0
-                        elif (p%2 == 0) and (q%2 == 1) and (r%2 ==1) and (s%2 == 0) and (p==s) and (q==r):
-                           two_body_coefficients[p,q,r,s] = two_body_integrals[p+1,s+1,q,r] / 2.0
-                        elif (p%2 == 1) and (q%2 == 0) and (r%2 ==0) and (s%2 == 1) and (p==s) and (q==r):
-                           two_body_coefficients[p,q,r,s] = two_body_integrals[p,s,q+1,r+1] / 2.0
-                        elif (p%2 == 0) and (q%2 == 1) and (r%2 ==1) and (s%2 == 0) and (q!=r) and (p!=s):
-                           two_body_coefficients[p,q,r,s] = two_body_integrals[p+1,s+1,q,r] / 2.0
-                        elif (p%2 == 1) and (q%2 == 0) and (r%2 ==0) and (s%2 == 1) and (q!=r) and (p!=s):
-                           two_body_coefficients[p,q,r,s] = two_body_integrals[p,s,q+1,r+1] / 2.0
+                        #elif (p%2 == 0) and (q%2 == 1) and (r%2 ==1) and (s%2 == 0) and (p==s) and (q==r):
+                        #   two_body_coefficients[p,q,r,s] = two_body_integrals[p+1,s+1,q,r] / 2.0
+                        #elif (p%2 == 1) and (q%2 == 0) and (r%2 ==0) and (s%2 == 1) and (p==s) and (q==r):
+                        #   two_body_coefficients[p,q,r,s] = two_body_integrals[p,s,q+1,r+1] / 2.0
+                        #elif (p%2 == 0) and (q%2 == 1) and (r%2 ==1) and (s%2 == 0) and (q!=r) and (p!=s):
+                        #   two_body_coefficients[p,q,r,s] = two_body_integrals[p+1,s+1,q,r] / 2.0
+                        #elif (p%2 == 1) and (q%2 == 0) and (r%2 ==0) and (s%2 == 1) and (q!=r) and (p!=s):
+                        #   two_body_coefficients[p,q,r,s] = two_body_integrals[p,s,q+1,r+1] / 2.0
 
         # Truncate.
         one_body_coefficients[

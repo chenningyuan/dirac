@@ -106,8 +106,6 @@ def generate_dirac_input(molecule,
       f.write("**DIRAC\n")
       f.write(".4INDEX\n")
       f.write(".WAVE FUNCTION\n")
-      f.write("**HAMILTONIAN\n")
-      f.write(".NONREL\n")
       f.write("**WAVE FUNCTION\n")
       f.write(".SCF\n")
       f.write("**MOLTRA\n")

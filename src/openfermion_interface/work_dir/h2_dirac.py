@@ -12,7 +12,6 @@ basis = 'sto-3g'
 bond_distance = 1.0
 multiplicity = 1
 charge = 0
-description = 'R' + str(bond_distance)
 data_directory=os.getcwd()
 
 
@@ -22,10 +21,18 @@ data_directory=os.getcwd()
 
 # Set calculation parameters. For the moment, I only interfaced the SCF calculation.
 run_scf = 1
+if run_scf==1:
+ description = 'R' + str(bond_distance) + '_scf'
 run_mp2 = 0
+if run_mp2==1:
+ description = 'R' + str(bond_distance) + '_mp2'
 run_cisd = 0
-run_ccsd = 0
-run_fci = 0
+if run_cisd==1:
+ description = 'R' + str(bond_distance) + '_cisd'
+run_ccsd = 1
+if run_ccsd==1:
+ description = 'R' + str(bond_distance) + '_ccsd'
+run_fci = 1
 delete_input = True
 delete_xyz = True
 delete_output = False
@@ -64,25 +71,30 @@ molecule_psi4 = run_psi4(molecule1,
                     run_ccsd=run_ccsd,
                     run_fci=run_fci)
 
-print('Molecular Hamiltonian:\n')
-print(molecule_psi4.get_molecular_hamiltonian(), '\n')
+#print('Molecular Hamiltonian:\n')
+#print(molecule_psi4.get_molecular_hamiltonian(), '\n')
 qbit_hamiltonian_psi4 = jordan_wigner(molecule_psi4.get_molecular_hamiltonian())
-print('Qubit Hamiltonian:\n')
-print(qbit_hamiltonian_psi4, '\n')
+#print('Qubit Hamiltonian:\n')
+#print(qbit_hamiltonian_psi4, '\n')
 #new_qbit_hamiltonian_psi4 = project_onto_sector(qbit_hamiltonian_psi4, qubits=[1,3], sectors=[0,0])
 #print('After projection onto sector 0:\n')
 #print(new_qbit_hamiltonian_psi4, '\n')
 evs_psi4 = eigenspectrum(qbit_hamiltonian_psi4)
 #new_evs_psi4 = eigenspectrum(new_qbit_hamiltonian_psi4)
-print('minimum eigenvalue with psi4 is: {}'.format(min(evs_psi4)))
+print('Hartree-Fock energy of {} Hartree.'.format(molecule_psi4.hf_energy))
+print('MP2 energy of {} Hartree.'.format(molecule_psi4.mp2_energy))
+print('CCSD energy of {} Hartree.'.format(molecule_psi4.ccsd_energy))
+print('FCI energy of {} Hartree.'.format(molecule_psi4.fci_energy))
+print('Solving the Qubit Hamiltonian : {}'.format(min(evs_psi4)))
 #print('minimum eigenvalue with psi4 is, after projection: {}'.format(min(new_evs_psi4)))
-print('\n\n')
-print('One-body integrals from psi4:\n')
-print(molecule1.get_from_file("one_body_integrals"), '\n')
-print('two-body integrals from psi4:\n')
-print(molecule1.get_from_file("two_body_integrals"), '\n')
-print()
+#print('\n\n')
+#print('One-body integrals from psi4:\n')
+#print(molecule1.get_from_file("one_body_integrals"), '\n')
+#print('two-body integrals from psi4:\n')
+#print(molecule1.get_from_file("two_body_integrals"), '\n')
+#print()
 
+print()
 print('#'*20)
 print('Dirac calculation')
 print('#'*20)
@@ -102,10 +114,13 @@ molecule_dirac = run_dirac(molecule2,
                     run_ccsd=run_ccsd,
                     run_fci=run_fci)
 
-print('Molecular Hamiltonian:\n')
-print(molecule_dirac.get_molecular_hamiltonian(),'\n')
+#print('Molecular Hamiltonian:\n')
+#print(molecule_dirac.get_molecular_hamiltonian(),'\n')
 qbit_hamiltonian_dirac = jordan_wigner(molecule_dirac.get_molecular_hamiltonian())
-print('Qubit Hamiltonian:\n')
-print(qbit_hamiltonian_dirac,'\n')
+#print('Qubit Hamiltonian:\n')
+#print(qbit_hamiltonian_dirac,'\n')
 evs_dirac = eigenspectrum(qbit_hamiltonian_dirac)
-print('minimum eigenvalue with dirac is: {}'.format(min(evs_dirac)))
+print('Hartree-Fock energy of {} Hartree.'.format(molecule_dirac.get_energies()[0]))
+print('MP2 energy of {} Hartree.'.format(molecule_dirac.get_energies()[1]))
+print('CCSD energy of {} Hartree.'.format(molecule_dirac.get_energies()[2]))
+print('Solving the Qubit Hamiltonian : {}'.format(min(evs_dirac)))
