@@ -162,10 +162,167 @@ C
       END IF
  20   CONTINUE
 C     sunaga
-      CALL NUMINT
+      CALL NUMOVL !NEW
+!      CALL NUMINT !OLD
 Csunaga      
       CALL QEXIT('ONEGEN')
       RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck numovl */
+      SUBROUTINE NUMOVL
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C The numerical integration for constructing AO basis matrix
+C
+C Called from: ONEGEN
+C
+C A. Sunaga Nov. 2018
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use num_grid_cfg
+      
+#include "implicit.h" 
+#include "priunit.h" 
+#include "pi.h"
+#include "mxcent.h"      
+#include "nuclei.h"      
+#include "ibtfun.h"
+#include "dcbbas.h"
+#include "cbiwlk.h"
+!#include ""
+      
+      PARAMETER (D0=0.0D0,D1=1.0D0,D2=2.0D0)      
+      PARAMETER (H=0.01D0,MXNP = 4000) !same to GRASP
+      real(8), allocatable :: ZAN(:),C(:,:),R(:)
+      real(8), allocatable :: ANG(:,:),X8(:),Y8(:),Z8(:),WT8(:)
+      real(8), allocatable :: SMAT(:,:),TD(:,:,:),TE(:),OVL(:)
+
+      CALL QENTER('NUMOVL')
+C
+C     Making ZAN and C 
+C     ZAN... Nuclear charge
+C     C  ... atomic center
+C     =====
+
+      allocate(ZAN(nucdep))
+      allocate(C(3,nucdep))
+      CALL SET_GRID_INFO(NAT,NUM,ZAN,C)
+C
+C The values of ultrafine (.ULTRAF) at DFT input-reader section.      
+!num_grid_cfg_ANGINT !64
+      INTANG=64
+      
+      m = NLEB(INTANG) ! num_grid_cfg_ANGINT
+      allocate( ANG(m,4)   )
+      allocate( X8(m*MXNP) )
+      allocate( Y8(m*MXNP) )
+      allocate( Z8(m*MXNP) )
+      allocate( WT8(m*MXNP))
+      allocate( SMAT(NTBAS(0),NTBAS(0))    )
+      allocate( TD(MXNP,NTBAS(0),NTBAS(0)) )
+      allocate( TE(MXNP)                   )
+      allocate( OVL(NTBAS(0)*NTBAS(0))     )
+      
+      CALL LEBEDEV(INTANG,ANG(1,1),ANG(1,2),ANG(1,3),ANG(1,4),n)
+      CALL DSCAL(m,4*PI,ANG(1,4),1)
+! DSCAl is corresponding to the below part in SLEB/dftgrf.F
+!      DO J=1,NCOUNT
+!         WT(J)=WT(J)*4.0D0*PI
+!     ENDDO
+C
+      allocate( R(MXNP)) 
+      DO 10 IATOM = 1, NUCIND
+!      DO 10 ISYMOP = 0, MXOPR
+!     What is this roop? MXOPR=0 in dftgrd.F
+        IF (IBTAND(0,ISTBNU(IATOM)).EQ.0) THEN
+!        IF (IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN
+!        IBTAND=IAND, but I am not sure what is it.     
+         IF(NOORBT(IATOM)) GOTO 10
+         IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 10
+         INDEX = 0         
+C         
+! from GRASP datain.F and mcdf.F
+C     
+C   SET UP GRID FOR CALCULATION
+C      
+C   SET DEFAULT VALUES OF PARAMETERS FOR CALCULATION
+C
+         EPH = EXP(H)
+         RNT = 1.0D-06/ZAN(IATOM) !CHARGE(IATOM)
+         R(1) = RNT
+         DO I = 2,MXNP
+            R(I) = R(I-1)*EPH
+         ENDDO
+C         
+         CALL DZERO(TD,MXNP*NTBAS(0)*NTBAS(0))
+         DO 20 IR = 1, MXNP
+            RNODE = R(IR)
+C            
+C           loop over angular points
+C           ========================
+C
+            DO 30 iy = 1, m
+               INDEX = INDEX + 1
+               X8(INDEX)  = ANG(iy,1)*RNODE+C(1,IATOM)
+               Y8(INDEX)  = ANG(iy,2)*RNODE+C(2,IATOM)
+               Z8(INDEX)  = ANG(iy,3)*RNODE+C(3,IATOM)
+               WT8(INDEX) = ANG(iy,4)
+C
+C     GET AO's
+C
+               CALL GETAOS(GAO,TEMP,TEMP,TEMP,TEMP,
+     &                      X8(INDEX),Y8(INDEX),Z8(INDEX),
+     &                      NTBAS(0),0,.FALSE.,0) !The last is IPRINT
+C
+C     Get "overlap" matrix
+C
+               CALL DGEMM('N','T',NTBAS(0),NTBAS(0),1,D1,GAO,NTBAS(0),
+     &                      GAO,NTBAS(0),D0,SMAT,NTBAS(0))
+C
+               DO I = 1,NTBAS(0)
+                 DO J = 1,NTBAS(0)
+                   TD(IR,I,J) = TD(IR,I,J) + SMAT(I,J)*WT8(INDEX)
+                 END DO
+              END DO
+30          CONTINUE
+            DO I = 1,NTBAS(0)
+              DO J = 1,NTBAS(0)
+                 TD(IR,I,J) = TD(IR,I,J) * RNODE * RNODE * RNODE
+              END DO
+           END DO
+20       CONTINUE
+C
+         CALL HEADER('Numerical ovelap integral made by Ayaki',-1)
+         IND = 0
+         DO I = 1,NTBAS(0)
+           DO J = 1,NTBAS(0)
+             DO IR = 1,MXNP                
+                TE(IR) = TD(IR,I,J)
+             ENDDO
+             CALL QUAD(RESULT,TE,MXNP,H)
+             IND = IND + 1
+             OVL(IND) = RESULT
+           ENDDO
+         ENDDO
+         CALL OUTPUT(OVL(1),1,NTBAS(0),1,NTBAS(0),
+     &               NTBAS(0),NTBAS(0),1,LUPRI)
+       ENDIF        !(IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0)
+10     CONTINUE   
+       deallocate(ZAN)
+       deallocate(C)
+       deallocate(ANG)
+       deallocate(R)
+       deallocate(SMAT)
+       deallocate(TD)
+       deallocate(TE)
+       deallocate(X8)
+       deallocate(Y8)
+       deallocate(Z8)
+       deallocate(WT8)
+       deallocate(OVL)
+      CALL QEXIT('NUMOVL')
+      RETURN         
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE NUMINT
@@ -602,6 +759,7 @@ C
             END DO                 
 20       CONTINUE
 C
+         CALL HEADER('Numerical ovelap integral made by Ayaki',-1) !
          DO I = 1,NTBAS(0)
            DO J = 1,NTBAS(0)
              DO IR = 1,NR                 
@@ -609,7 +767,7 @@ C
 !                write(*,*)"TE3",TE(IR) !sunaga
              ENDDO   
              CALL QUAD(OVR,TE,NR,H)
-             WRITE(LUPRI,*)"I,J,OVR",I,J,OVR 
+             WRITE(LUPRI,*)"I,J,Overlap",I,J,OVR 
            END DO
          END DO               
 !         call dealloc(kzan)
