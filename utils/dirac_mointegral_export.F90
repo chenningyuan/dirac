@@ -32,8 +32,8 @@ module dirac_mointegral_export
   integer, parameter     :: filenumber_mtable  = 25
   integer, parameter     :: filenumber_55 = 55
   integer, parameter     :: filenumber_56 = 56
-  logical, parameter     :: generate_full_list = .false.
-  logical, parameter     :: generate_lower_triangular = .true.
+  logical, parameter     :: generate_full_list = .true. ! Bruno : originally set to .false. 
+  logical, parameter     :: generate_lower_triangular = .false. ! Bruno : originally set to .true.
 ! The target variable should involve into an input option, for now we have no input since mrcc
 ! is presently the only code that is supported (the interface to nwchem is in an experimental stage)
   character(10)          :: target = 'fcidump'
@@ -52,7 +52,7 @@ module dirac_mointegral_export
   integer                 :: number_of_spinors, number_of_electrons, number_of_irreps, number_of_abelian_irreps
   integer                 :: inversion_symmetry, group_type
   real(8)                 :: core_energy
-  real(8)                 :: threshold = 1.0E-16 
+  real(8)                 :: threshold = 1.0E-16
   integer, allocatable    :: kramer_to_spinor(:)
   integer, allocatable    :: multiplication_table(:,:)
   integer                 :: irrep_occupation(128)
