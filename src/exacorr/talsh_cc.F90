@@ -3,6 +3,7 @@ module talsh_cc
 
         use tensor_algebra
         use talsh
+        use exacorr_datatypes, only    : talsh_intg_tens,talsh_comm_tens
 
         implicit none
         complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
@@ -25,23 +26,6 @@ module talsh_cc
         interface get_subtensor
            module procedure get_subtensor
         end interface
-
-!       All two electron integral tensors
-        type, public :: talsh_intg_tens
-         type(talsh_tens_t) :: oooo
-         type(talsh_tens_t) :: oovv, vovo
-         type(talsh_tens_t) :: ooov, vovv
-         type(talsh_tens_t) :: vvvv
-        end type talsh_intg_tens
-
-!       Common blocks between t and lambda
-        type, public :: talsh_comm_tens
-         type(talsh_tens_t) :: foo, fov, fvv
-         type(talsh_tens_t) :: goo, gvv
-         type(talsh_tens_t) :: hov
-         type(talsh_tens_t) :: a_int, b_int, d_int, h_int
-         type(talsh_tens_t) :: t1, t2, tau
-        end type talsh_comm_tens
 
        contains
 !-------------------------------------------------------------------------------------------
@@ -164,9 +148,6 @@ module talsh_cc
          ierr=talsh_tensor_construct(comm_t%hov,C8,ov_dims,init_val=ZERO)
          oooo_dims  = nocc  * 2
          ierr=talsh_tensor_construct(comm_t%a_int,C8,oooo_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(comm_t%d_int,C8,oooo_dims,init_val=ZERO)
-         vvvv_dims = nvir * 2
-         ierr=talsh_tensor_construct(comm_t%b_int,C8,vvvv_dims,init_val=ZERO)
          vovo_dims(1) = nvir * 2
          vovo_dims(2) = nocc * 2
          vovo_dims(3) = nvir * 2
@@ -197,6 +178,29 @@ module talsh_cc
          write (*,'(A,F20.15)') "  CCSD+T  correlation energy :      ",ccsd_energy+t_energy(1)
          write (*,'(A,F20.15)') "  CCSD(T) correlation energy :      ",ccsd_energy+t_energy(1)+t_energy(2)
          write (*,'(A,F20.15)') "  CCSD-T  correlation energy :      ",ccsd_energy+t_energy(1)+t_energy(3)
+
+         print*," Final CCSD energy    = ",ccsd_energy
+         print*," Final CCSD(T) energy = ",ccsd_energy+t_energy(1)+t_energy(2)
+
+!        Construct tensor to be used in lambda intermediates
+         ierr=talsh_tensor_construct(comm_t%d_int,C8,oooo_dims,init_val=ZERO)
+         vvvv_dims = nvir * 2
+         ierr=talsh_tensor_construct(comm_t%b_int,C8,vvvv_dims,init_val=ZERO)
+
+         call get_common_blocks(comm_t,int_t)
+
+         if (debug) then
+            print*, "t1  = ",tensor_norm2(comm_t%t1)
+            print*, "t2  = ",tensor_norm2(comm_t%t2)
+            print*, "tau = ",tensor_norm2(comm_t%tau)
+            print*, "goo = ",tensor_norm2(comm_t%goo)
+            print*, "gvv = ",tensor_norm2(comm_t%gvv)
+            print*, "hov = ",tensor_norm2(comm_t%hov)
+            print*, "a   = ",tensor_norm2(comm_t%a_int)
+            print*, "b   = ",tensor_norm2(comm_t%b_int)
+            print*, "d   = ",tensor_norm2(comm_t%d_int)
+            print*, "h   = ",tensor_norm2(comm_t%h_int)
+         end if
 
          !call solve_lambda_equations()
 
@@ -234,9 +238,6 @@ module talsh_cc
 !        Free global data used to interact with DIRAC/Interest
          call delete_global_data
 
-         print*," Final CCSD energy    = ",ccsd_energy
-         print*," Final CCSD(T) energy = ",ccsd_energy+t_energy(1)+t_energy(2)
-
 !        Make some noise so that we know we are leaving
          call print_date('Leaving cc_driver routine')
 
@@ -265,9 +266,12 @@ module talsh_cc
          type(talsh_tens_t) :: s1_tensor, s2_tensor
 !        scalars (need to be defined as tensor types)
          type(talsh_tens_t) :: result_tensor, one_tensor
+         !Tensors for debugging
+         type(talsh_tens_t) :: a_orig, h_orig
+         integer :: oooo_dims(4)
          !Tensor dimensions
          integer, dimension(2) :: oo_dims, ov_dims, vo_dims, vv_dims
-         integer, dimension(4) :: vvoo_dims, vovo_dims, vooo_dims
+         integer, dimension(4) :: vvoo_dims, vovo_dims, ovoo_dims
          !Orbital energies for scaling
          real(8), intent(in)   :: eps_occ(:), eps_vir(:)
          integer :: iccsd, nccsd=40
@@ -300,15 +304,10 @@ module talsh_cc
          vvoo_dims(3:4) = nocc * 2
          ierr=talsh_tensor_construct(s2_tensor,C8,vvoo_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
-         vovo_dims(1) = nvir * 2
-         vovo_dims(2) = nocc * 2
-         vovo_dims(3) = nvir * 2
-         vovo_dims(4) = nocc * 2
-         ierr=talsh_tensor_construct(tau2_aux_tensor,C8,vovo_dims,init_val=ZERO)
-         vooo_dims(1) = nvir * 2
-         vooo_dims(2:4) = nocc * 2
-         ierr=talsh_tensor_construct(cint_tensor,C8,vooo_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(caux_tensor,C8,vooo_dims,init_val=ZERO)
+         ovoo_dims(1) = nocc * 2
+         ovoo_dims(2) = nvir * 2
+         ovoo_dims(3:4) = nocc * 2
+         ierr=talsh_tensor_construct(cint_tensor,C8,ovoo_dims,init_val=ZERO)
 
          do iccsd = 1, nccsd
 
@@ -322,14 +321,10 @@ module talsh_cc
 !to the reference implementation, the ones marked "moretests" were too small to decide whether it was correct or not.
 !        calculate intermediaries
 
-!         The vvvv contribution
-          ierr=talsh_tensor_init(comm_t%b_int)
-          ierr=talsh_tensor_add("B(a,b,c,d)+=V(a,b,c,d)",comm_t%b_int,int_t%vvvv)
-          !Need to permute A and B, so term appears twice
-          ierr=talsh_tensor_contract("B(a,b,c,d)+=V(a,k,c,d)*T(b,k)",comm_t%b_int,int_t%vovv,comm_t%t1,scale=MINUS_ONE)
-          ierr=talsh_tensor_contract("B(a,b,c,d)+=V(b,k,c,d)*T(a,k)",comm_t%b_int,int_t%vovv,comm_t%t1)
           ierr=talsh_tensor_init(s2_tensor)
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=B(a,b,c,d)*T(c,d,i,j)",s2_tensor,comm_t%b_int,comm_t%tau,scale=ONE_HALF) !validated o(2)v(4)
+
+!         The vvvv contribution
+          ierr=talsh_tensor_contract("S(a,b,i,j)+=V(a,b,c,d)*T(c,d,i,j)",s2_tensor,int_t%vvvv,comm_t%tau,scale=ONE_HALF) ! validated o(2)v(4)
 
 !         vv ! validated
           ierr=talsh_tensor_init(hvv_int_tensor)
@@ -344,51 +339,42 @@ module talsh_cc
 !         vovo ! moretests
           ierr=talsh_tensor_init(tau2_tensor)
           ierr=talsh_tensor_add("T(a,d,l,i)+=R(a,d,l,i)",tau2_tensor,comm_t%t2,scale=ONE_HALF)
-          ierr=talsh_tensor_contract("T(a,d,l,i)+=T(a,l)*T(d,i)",tau2_tensor,comm_t%t1,comm_t%t1) ! o(2)v(2)
-          ierr=talsh_tensor_init(tau2_aux_tensor)
-          ierr=talsh_tensor_contract("U(a,k,c,i)+=V(k,l,c,d)*T(a,d,l,i)",tau2_aux_tensor,int_t%oovv,tau2_tensor)! o(3)v(3)
-
-!         This term appears four times as we need to permute both i and j and a and b
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=U(a,k,c,i)*T(c,b,j,k)",s2_tensor,tau2_aux_tensor,comm_t%t2)
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=U(a,k,c,j)*T(c,b,k,i)",s2_tensor,tau2_aux_tensor,comm_t%t2)
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=U(b,k,c,i)*T(a,c,j,k)",s2_tensor,tau2_aux_tensor,comm_t%t2)
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=U(b,k,c,j)*T(a,c,k,i)",s2_tensor,tau2_aux_tensor,comm_t%t2)
-
-!         vovo ! moretests
+          ierr=talsh_tensor_contract("T(a,d,l,i)+=T(a,l)*T(d,i)",tau2_tensor,comm_t%t1,comm_t%t1)                       ! o(2)v(2)
           ierr=talsh_tensor_init(comm_t%h_int)
-          ierr=talsh_tensor_contract("H(a,k,c,i)+=V(a,k,c,d)*T(d,i)",comm_t%h_int,int_t%vovv,comm_t%t1) ! o(2)v(3)
+          ierr=talsh_tensor_contract("H(a,k,c,i)+=V(k,l,c,d)*T(a,d,l,i)",comm_t%h_int,int_t%oovv,tau2_tensor)           ! o(3)v(3)
+          ierr=talsh_tensor_contract("H(a,k,c,i)+=V(a,k,c,d)*T(d,i)",comm_t%h_int,int_t%vovv,comm_t%t1)                 ! o(2)v(3)
           ierr=talsh_tensor_contract("H(a,k,c,i)+=V(k,l,i,c)*T(a,l)",comm_t%h_int,int_t%ooov,comm_t%t1,scale=MINUS_ONE) ! o(3)v(2)
           ierr=talsh_tensor_add("H(a,k,c,i)+=V(a,k,c,i)",comm_t%h_int,int_t%vovo)
 
 !         This term appears four times as we need to permute both i and j and a and b
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=H(a,k,c,i)*T(c,b,j,k)",s2_tensor,comm_t%h_int,comm_t%t2)  ! validated o(3)v(3)
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=H(a,k,c,j)*T(c,b,k,i)",s2_tensor,comm_t%h_int,comm_t%t2)  ! validated o(3)v(3)
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=H(b,k,c,i)*T(a,c,j,k)",s2_tensor,comm_t%h_int,comm_t%t2)  ! validated o(3)v(3)
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=H(b,k,c,j)*T(a,c,k,i)",s2_tensor,comm_t%h_int,comm_t%t2)  ! validated o(3)v(3)
+          ierr=talsh_tensor_contract("S(a,b,i,j)+=H(a,k,c,i)*T(c,b,j,k)",s2_tensor,comm_t%h_int,comm_t%t2) ! validated o(3)v(3)
+          ierr=talsh_tensor_contract("S(a,b,i,j)+=H(a,k,c,j)*T(c,b,k,i)",s2_tensor,comm_t%h_int,comm_t%t2) ! validated o(3)v(3)
+          ierr=talsh_tensor_contract("S(a,b,i,j)+=H(b,k,c,i)*T(a,c,j,k)",s2_tensor,comm_t%h_int,comm_t%t2) ! validated o(3)v(3)
+          ierr=talsh_tensor_contract("S(a,b,i,j)+=H(b,k,c,j)*T(a,c,k,i)",s2_tensor,comm_t%h_int,comm_t%t2) ! validated o(3)v(3)
 
+!         ovoo ! validated
           ierr=talsh_tensor_init(cint_tensor)
-          ierr=talsh_tensor_contract("C(a,k,j,i)+=V(a,k,c,i)*T(c,j)",cint_tensor,int_t%vovo,comm_t%t1)
-
-!         This term should appear four times as we need to permute both i and j and a and b, but terms can be combined into two
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=C(a,k,j,i)*T(b,k)",s2_tensor,cint_tensor,comm_t%t1,scale=TWO)  ! validated o(3)v(3)
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=C(b,k,i,j)*T(a,k)",s2_tensor,cint_tensor,comm_t%t1,scale=TWO)  ! validated o(3)v(3)
+          ierr=talsh_tensor_contract("C(k,b,i,j)+=V(b,k,c,d)*T(c,d,i,j)",cint_tensor,int_t%vovv,comm_t%tau,scale=MINUS_ONE_HALF) ! o(3)v(3)
+          ierr=talsh_tensor_contract("C(k,b,i,j)+=V(b,k,c,i)*T(c,j)",cint_tensor,int_t%vovo,comm_t%t1)                           ! o(3)v(2)
+          ierr=talsh_tensor_contract("C(k,b,i,j)+=V(b,k,c,j)*T(c,i)",cint_tensor,int_t%vovo,comm_t%t1,scale=MINUS_ONE)           ! o(3)v(2)
+          ierr=talsh_tensor_contract("C(k,b,i,j)+=V+(i,j,k,b)*K()",cint_tensor,int_t%ooov,one_tensor)                            ! o(3)v(1)
 
 !         oo ! validated
           ierr=talsh_tensor_init(hoo_int_tensor)
-          ierr=talsh_tensor_add("H(k,i)+=F(k,i)",hoo_int_tensor,comm_t%foo)
-          ierr=talsh_tensor_contract("H(k,i)+=V(k,l,c,d)*T(c,d,i,l)",hoo_int_tensor,int_t%oovv,comm_t%tau,scale=ONE_HALF) ! o(3)v(2)
+          ierr=talsh_tensor_add("H(k,i)+=F(k,i)",hoo_int_tensor,comm_t%foo,scale=MINUS_ONE)
+          ierr=talsh_tensor_contract("H(k,i)+=V(k,l,c,d)*T(c,d,l,i)",hoo_int_tensor,int_t%oovv,comm_t%tau,scale=ONE_HALF) ! o(3)v(2)
           ierr=talsh_tensor_init(comm_t%goo)
           ierr=talsh_tensor_add("G(k,i)+=H(k,i)",comm_t%goo,hoo_int_tensor)
-          ierr=talsh_tensor_contract("G(k,i)+=V(k,l,i,c)*T(c,l)",comm_t%goo,int_t%ooov,comm_t%t1) ! o(3)v(1)
-          ierr=talsh_tensor_contract("G(k,i)+=F(k,c)*T(c,i)",comm_t%goo,comm_t%fov,comm_t%t1) ! o(2)v(1)
+          ierr=talsh_tensor_contract("G(k,i)+=V(k,l,i,c)*T(c,l)",comm_t%goo,int_t%ooov,comm_t%t1,scale=MINUS_ONE)         ! o(3)v(1)
+          ierr=talsh_tensor_contract("G(k,i)+=F(k,c)*T(c,i)",comm_t%goo,comm_t%fov,comm_t%t1)                             ! o(2)v(1)
 
 !         ov ! validated
           ierr=talsh_tensor_init(comm_t%hov)
           ierr=talsh_tensor_init(hov_aux_tensor)
           ierr=talsh_tensor_contract("H(k,c)+=V(k,l,c,d)*T(d,l)",comm_t%hov,int_t%oovv,comm_t%t1) ! o(2)v(2)
-          ierr=talsh_tensor_add("L(k,c)+=H(k,c)",hov_aux_tensor,comm_t%hov)                                  ! copy common term
-          ierr=talsh_tensor_add("H(k,c)+=F(k,c)",comm_t%hov,comm_t%fov)                                     ! add fock matrix
-          ierr=talsh_tensor_add("H(k,c)+=F(k,c)",hov_aux_tensor,comm_t%fov,scale=MINUS_ONE) ! subtract fock matrix
+          ierr=talsh_tensor_add("L(k,c)+=H(k,c)",hov_aux_tensor,comm_t%hov)                       ! copy common term
+          ierr=talsh_tensor_add("H(k,c)+=F(k,c)",comm_t%hov,comm_t%fov)                           ! add fock matrix
+          ierr=talsh_tensor_add("H(k,c)+=F(k,c)",hov_aux_tensor,comm_t%fov,scale=MINUS_ONE)       ! subtract fock matrix
 
 !         oooo ! validated
           ierr=talsh_tensor_init(comm_t%a_int)
@@ -396,10 +382,8 @@ module talsh_cc
           ierr=talsh_tensor_contract("A(k,l,i,j)+=V(k,l,i,c)*T(c,j)",comm_t%a_int,int_t%ooov,comm_t%t1) ! o(4)v(1)
           ierr=talsh_tensor_contract("A(k,l,i,j)+=V(k,l,j,c)*T(c,i)",comm_t%a_int,int_t%ooov,comm_t%t1, &
                                       scale=MINUS_ONE) ! o(4)v(1)
-          ierr=talsh_tensor_init(comm_t%d_int)
-          !New intermediate D to be used in lambda equations. A = A_short + 2D
-          ierr=talsh_tensor_contract("D(k,l,i,j)+=V(k,l,c,d)*T(c,d,i,j)",comm_t%d_int,int_t%oovv,comm_t%tau, &
-                                      scale=ONE_QUARTER_C) ! o(4)v(2)
+          ierr=talsh_tensor_contract("A(k,l,i,j)+=V(k,l,c,d)*T(c,d,i,j)",comm_t%a_int,int_t%oovv,comm_t%tau, &
+                                      scale=ONE_HALF) ! o(4)v(2)
 
           if (ierr.ne.TALSH_SUCCESS) then
              print*," ccdriver: error in calculation of intermediates, code=",ierr
@@ -416,16 +400,14 @@ module talsh_cc
              print*, "hvint  = ",tensor_norm2(hvv_int_tensor)
              print*, "gvint  = ",tensor_norm2(comm_t%gvv)
              print*, "hovint = ",tensor_norm2(comm_t%hov)
-             print*, "a int  = ",tensor_norm2(comm_t%a_int)
-             print*, "b int  = ",tensor_norm2(comm_t%b_int)
+             print*, "a int  = ",tensor_norm2(comm_t%a_int)*ONE_QUARTER
              print*, "c int  = ",tensor_norm2(cint_tensor)
-             print*, "d int  = ",tensor_norm2(comm_t%d_int)
-             print*, "h int  = ",tensor_norm2(comm_t%h_int)
+             print*, "h int  = ",tensor_norm2(comm_t%h_int) 
           end if
 
 !         This term appears twice as we need to permute i and j
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=G(k,i)*T(a,b,j,k)",s2_tensor,comm_t%goo,comm_t%t2)  ! validated o(3)v(2)
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=G(k,j)*T(a,b,k,i)",s2_tensor,comm_t%goo,comm_t%t2)  ! validated o(3)v(2)
+          ierr=talsh_tensor_contract("S(a,b,i,j)+=G(k,j)*T(a,b,i,k)",s2_tensor,comm_t%goo,comm_t%t2)  ! validated o(3)v(2)
+          ierr=talsh_tensor_contract("S(a,b,i,j)+=G(k,i)*T(a,b,k,j)",s2_tensor,comm_t%goo,comm_t%t2)  ! validated o(3)v(2)
 !         Again two times, also note the complex conjugation as we use vovv instead of vvvo
           ierr=talsh_tensor_contract("S(a,b,i,j)+=V+(c,j,a,b)*T(c,i)",s2_tensor,int_t%vovv,comm_t%t1)  ! validated o(2)v(3)
           ierr=talsh_tensor_contract("S(a,b,i,j)+=V+(c,i,a,b)*T(c,j)",s2_tensor,int_t%vovv,comm_t%t1,scale=MINUS_ONE)  ! validated o(2)v(3)
@@ -433,14 +415,12 @@ module talsh_cc
 !         This term appears twice as we need to permute a and b
           ierr=talsh_tensor_contract("S(a,b,i,j)+=G(a,c)*T(c,b,i,j)",s2_tensor,comm_t%gvv,comm_t%t2)  ! validated o(2)v(3)
           ierr=talsh_tensor_contract("S(a,b,i,j)+=G(b,c)*T(a,c,i,j)",s2_tensor,comm_t%gvv,comm_t%t2)  ! validated o(2)v(3)
-!         This term appears twice as we need to permute a and b
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=V+(i,j,k,a)*T(b,k)",s2_tensor,int_t%ooov,comm_t%t1)
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=V+(i,j,k,b)*T(a,k)",s2_tensor,int_t%ooov,comm_t%t1,scale=MINUS_ONE)
+!         Again two times, with the C intermediate (note: in RELCCSD this is done differently)
+          ierr=talsh_tensor_contract("S(a,b,i,j)+=C(k,b,i,j)*T(a,k)",s2_tensor,cint_tensor,comm_t%t1,scale=MINUS_ONE) ! o(3)v(2)
+          ierr=talsh_tensor_contract("S(a,b,i,j)+=C(k,a,i,j)*T(b,k)",s2_tensor,cint_tensor,comm_t%t1) ! o(3)v(2)
 
 !         The oooo contribution
           ierr=talsh_tensor_contract("S(a,b,i,j)+=A(k,l,i,j)*T(a,b,k,l)",s2_tensor,comm_t%a_int,comm_t%tau,scale=ONE_HALF) !validated o(4)v(2)
-          !Factor 2 and 1/2 negate each other
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=D(k,l,i,j)*T(a,b,k,l)",s2_tensor,comm_t%d_int,comm_t%tau)
 
 !         ierr=talsh_tensor_add("S(a,b,i,j)+=V+(i,j,a,b)",s2_tensor,oovv_tensor)
 !         work-around because complex conjugation does not work in the above statement
@@ -454,13 +434,12 @@ module talsh_cc
           ierr=talsh_tensor_contract("S(a,i)+=F+(i,a)*K()",s1_tensor,comm_t%fov,one_tensor)
 !         end of work-around
           ierr=talsh_tensor_contract("S(a,i)+=V(a,k,c,d)*T(c,d,i,k)",s1_tensor,int_t%vovv,comm_t%tau,scale=ONE_HALF) !validated o(2)v(3)
-          ierr=talsh_tensor_contract("S(a,i)+=H(a,c)*T(c,i)",s1_tensor,hvv_int_tensor,comm_t%t1)                        !validated o(1)v(2)
-          !ierr=talsh_tensor_contract("S(a,i)+=H(k,i)*T(a,k)",s1_tensor,hoo_int_tensor,comm_t%t1) Why no MINUS_ONE?                        !validated o(2)v(1)
-          ierr=talsh_tensor_contract("S(a,i)+=H(k,i)*T(a,k)",s1_tensor,hoo_int_tensor,comm_t%t1,scale=MINUS_ONE)                        !validated o(2)v(1)
-          ierr=talsh_tensor_contract("S(a,i)+=H(k,c)*T(a,c,i,k)",s1_tensor,comm_t%hov,comm_t%t2)                   !validated o(2)v(2)
-          ierr=talsh_tensor_init(hoo_aux_tensor)                                                                        !moretests
-          ierr=talsh_tensor_contract("L(k,i)+=H(k,c)*T(c,i)",hoo_aux_tensor,hov_aux_tensor,comm_t%t1)                    !moretests o(2)v(1)
-          ierr=talsh_tensor_contract("S(a,i)+=H(k,i)*T(a,k)",s1_tensor,hoo_aux_tensor,comm_t%t1)                        !moretests o(2)v(1)
+          ierr=talsh_tensor_contract("S(a,i)+=H(a,c)*T(c,i)",s1_tensor,hvv_int_tensor,comm_t%t1)                     !validated o(1)v(2)
+          ierr=talsh_tensor_contract("S(a,i)+=H(k,i)*T(a,k)",s1_tensor,hoo_int_tensor,comm_t%t1)                     !validated o(2)v(1)
+          ierr=talsh_tensor_contract("S(a,i)+=H(k,c)*T(a,c,i,k)",s1_tensor,comm_t%hov,comm_t%t2)                     !validated o(2)v(2)
+          ierr=talsh_tensor_init(hoo_aux_tensor)                                                                     !moretests
+          ierr=talsh_tensor_contract("L(k,i)+=H(k,c)*T(c,i)",hoo_aux_tensor,hov_aux_tensor,comm_t%t1)                !moretests o(2)v(1)
+          ierr=talsh_tensor_contract("S(a,i)+=H(k,i)*T(a,k)",s1_tensor,hoo_aux_tensor,comm_t%t1)                     !moretests o(2)v(1)
           ierr=talsh_tensor_contract("S(a,i)+=V(k,l,i,c)*T(c,a,k,l)",s1_tensor,int_t%ooov,comm_t%tau,scale=ONE_HALF) !validated o(3)v(2)
           ierr=talsh_tensor_contract("S(a,i)+=V(a,k,c,i)*T(c,k)",s1_tensor,int_t%vovo,comm_t%t1,scale=MINUS_ONE)     !validated o(2)v(2)
 
@@ -476,6 +455,8 @@ module talsh_cc
           ierr=talsh_tensor_add("T2(a,b,i,j)+=S2(a,b,i,j)",comm_t%t2,s2_tensor)
           call scale_with_denominators (eps_occ,eps_vir,comm_t%t1,comm_t%t2)
 
+          !DEBUGGING: QUICK AND DIRTY CCD
+          !ierr=talsh_tensor_init(comm_t%t1)
           call diis (comm_t%t1,comm_t%t2,t_convergence=t_convergence)
 
           ierr=talsh_tensor_init(result_tensor)
@@ -492,9 +473,7 @@ module talsh_cc
          ierr=talsh_tensor_destruct(s1_tensor)
          ierr=talsh_tensor_destruct(s2_tensor)
          ierr=talsh_tensor_destruct(tau2_tensor)
-         ierr=talsh_tensor_destruct(tau2_aux_tensor)
          ierr=talsh_tensor_destruct(cint_tensor)
-         ierr=talsh_tensor_destruct(caux_tensor)
          ierr=talsh_tensor_destruct(hoo_int_tensor)
          ierr=talsh_tensor_destruct(hoo_aux_tensor)
          ierr=talsh_tensor_destruct(hvv_int_tensor)
@@ -536,9 +515,6 @@ module talsh_cc
 
         end subroutine get_CC_Fockmatrix
 
-        !subroutine get_CC_integrals (nocc,nvir,mo_occ,mo_vir, &
-        !                             oooo_tensor,ooov_tensor,oovv_tensor, &
-        !                             vovo_tensor,vovv_tensor,vvvv_tensor)
         subroutine get_CC_integrals (nocc,nvir,mo_occ,mo_vir,int_t)
 
 !        Routine to get integrals needed in CC in the form of antisymmetric tensors.
