@@ -57,8 +57,9 @@
 !       All two electron integral tensors
         type, public :: talsh_intg_tens
          type(talsh_tens_t) :: oooo
+         type(talsh_tens_t) :: ooov
          type(talsh_tens_t) :: oovv, vovo
-         type(talsh_tens_t) :: ooov, vovv
+         type(talsh_tens_t) :: vovv
          type(talsh_tens_t) :: vvvv
         end type talsh_intg_tens
 
@@ -70,5 +71,14 @@
          type(talsh_tens_t) :: a_int, b_int, d_int, h_int
          type(talsh_tens_t) :: t1, t2, tau
         end type talsh_comm_tens
+
+        type, public :: talsh_lambda_tens
+         type(talsh_tens_t) :: fbar_oo, fbar_ov, fbar_vv
+         type(talsh_tens_t) :: w_oooo
+         type(talsh_tens_t) :: w_ovoo, w_ooov
+         type(talsh_tens_t) :: w_vovo, wbar_vovo
+         type(talsh_tens_t) :: w_vvvo, w_vovv
+         type(talsh_tens_t) :: w_vvvv
+        end type talsh_lambda_tens
 
        end module exacorr_datatypes
