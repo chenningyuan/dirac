@@ -419,7 +419,7 @@ C     SB_(si) = -FB_(si) - GB_(si)
 C
 C     with
 C
-C     FA_(si) = WA_(st)h_(ti) - h_(st)WA_(ti)
+C     FA_(si) = WA_(st)F_(ti) - F_(st)WA_(ti)
 C
 C     GA_(si) = [g_(si,xy)-g_(sy,xi)] DA_(yx)
 C
@@ -1882,7 +1882,6 @@ C
           IND = IBVEC(IREC)
           IH  = IBTYP(2,IND)
           IF(IH.EQ.ITYP) THEN
-!            CALL READAC(LUBVEC,NBDIM,BVBUF,IREC+IRECOFF)
           CALL READ_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVBUF)
             IBOFF = 1
             DO IFREQ = 1,MFREQ
@@ -1902,7 +1901,6 @@ C
           INDI = 2*IND
           IH  = IBTYP(2,IND)
           IF(IH.EQ.ITYP) THEN
-!            CALL READAC(LUBVEC,NBDIM,BVBUF,IREC+IRECOFF)
           CALL READ_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVBUF)
             IBOFF = 1
             DO IFREQ = 1,MFREQ
