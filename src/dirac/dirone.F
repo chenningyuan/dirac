@@ -195,8 +195,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       PARAMETER (D0=0.0D0,D1=1.0D0,D2=2.0D0)      
       PARAMETER (H=0.01D0,MXNP = 4000) !same to GRASP
       real(8), allocatable :: ZAN(:),C(:,:),R(:)
-      real(8), allocatable :: ANG(:,:),X8(:),Y8(:),Z8(:),WT8(:)
-      real(8), allocatable :: SMAT(:,:),TD(:,:,:),TE(:),OVL(:)
+      real(8), allocatable :: ANG(:,:),GAO(:)
+      real(8), allocatable :: SMAT(:,:),TD(:,:,:),TE(:),OVL(:,:)
 
       CALL QENTER('NUMOVL')
 C
@@ -215,15 +215,12 @@ C The values of ultrafine (.ULTRAF) at DFT input-reader section.
       
       m = NLEB(INTANG) ! num_grid_cfg_ANGINT
       allocate( ANG(m,4)   )
-      allocate( X8(m*MXNP) )
-      allocate( Y8(m*MXNP) )
-      allocate( Z8(m*MXNP) )
-      allocate( WT8(m*MXNP))
+      allocate( GAO(NTBAS(0) )             )
       allocate( SMAT(NTBAS(0),NTBAS(0))    )
       allocate( TD(MXNP,NTBAS(0),NTBAS(0)) )
       allocate( TE(MXNP)                   )
-      allocate( OVL(NTBAS(0)*NTBAS(0))     )
-      
+      allocate( OVL(NTBAS(0),NTBAS(0))     )
+C      
       CALL LEBEDEV(INTANG,ANG(1,1),ANG(1,2),ANG(1,3),ANG(1,4),n)
       CALL DSCAL(m,4*PI,ANG(1,4),1)
 ! DSCAl is corresponding to the below part in SLEB/dftgrf.F
@@ -231,7 +228,8 @@ C The values of ultrafine (.ULTRAF) at DFT input-reader section.
 !         WT(J)=WT(J)*4.0D0*PI
 !     ENDDO
 C
-      allocate( R(MXNP)) 
+      allocate( R(MXNP))
+C         
       DO 10 IATOM = 1, NUCIND
 !      DO 10 ISYMOP = 0, MXOPR
 !     What is this roop? MXOPR=0 in dftgrd.F
@@ -240,7 +238,6 @@ C
 !        IBTAND=IAND, but I am not sure what is it.     
          IF(NOORBT(IATOM)) GOTO 10
          IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 10
-         INDEX = 0         
 C         
 ! from GRASP datain.F and mcdf.F
 C     
@@ -264,16 +261,15 @@ C           ========================
 C
             DO 30 iy = 1, m
                INDEX = INDEX + 1
-               X8(INDEX)  = ANG(iy,1)*RNODE+C(1,IATOM)
-               Y8(INDEX)  = ANG(iy,2)*RNODE+C(2,IATOM)
-               Z8(INDEX)  = ANG(iy,3)*RNODE+C(3,IATOM)
-               WT8(INDEX) = ANG(iy,4)
+               X8  = ANG(iy,1)*RNODE+C(1,IATOM)
+               Y8  = ANG(iy,2)*RNODE+C(2,IATOM)
+               Z8  = ANG(iy,3)*RNODE+C(3,IATOM)
+               WT8 = ANG(iy,4)*RNODE*RNODE*RNODE
 C
 C     GET AO's
 C
                CALL GETAOS(GAO,TEMP,TEMP,TEMP,TEMP,
-     &                      X8(INDEX),Y8(INDEX),Z8(INDEX),
-     &                      NTBAS(0),0,.FALSE.,0) !The last is IPRINT
+     &                      X8,Y8,Z8,NTBAS(0),0,.FALSE.,0) !The last is IPRINT
 C
 C     Get "overlap" matrix
 C
@@ -282,31 +278,25 @@ C
 C
                DO I = 1,NTBAS(0)
                  DO J = 1,NTBAS(0)
-                   TD(IR,I,J) = TD(IR,I,J) + SMAT(I,J)*WT8(INDEX)
+                    TD(IR,J,I) = TD(IR,J,I) + SMAT(J,I)*WT8
                  END DO
-              END DO
-30          CONTINUE
-            DO I = 1,NTBAS(0)
-              DO J = 1,NTBAS(0)
-                 TD(IR,I,J) = TD(IR,I,J) * RNODE * RNODE * RNODE
-              END DO
-           END DO
+               END DO
+C
+30         CONTINUE
 20       CONTINUE
 C
          CALL HEADER('Numerical ovelap integral made by Ayaki',-1)
          IND = 0
          DO I = 1,NTBAS(0)
            DO J = 1,NTBAS(0)
-             DO IR = 1,MXNP                
-                TE(IR) = TD(IR,I,J)
-             ENDDO
-             CALL QUAD(RESULT,TE,MXNP,H)
-             IND = IND + 1
-             OVL(IND) = RESULT
+!             DO IR = 1,MXNP                
+!                TE(IR) = TD(IR,J,I)
+!             ENDDO
+             CALL QUAD(OVL(J,I),TD(1,J,I),MXNP,H)
            ENDDO
          ENDDO
-         CALL OUTPUT(OVL(1),1,NTBAS(0),1,NTBAS(0),
-     &               NTBAS(0),NTBAS(0),1,LUPRI)
+         CALL OUTPUT(OVL,1,NTBAS(0),1,NTBAS(0),
+     &                NTBAS(0),NTBAS(0),1,LUPRI)
        ENDIF        !(IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0)
 10     CONTINUE   
        deallocate(ZAN)
@@ -316,10 +306,7 @@ C
        deallocate(SMAT)
        deallocate(TD)
        deallocate(TE)
-       deallocate(X8)
-       deallocate(Y8)
-       deallocate(Z8)
-       deallocate(WT8)
+       deallocate(GAO)
        deallocate(OVL)
       CALL QEXIT('NUMOVL')
       RETURN         
