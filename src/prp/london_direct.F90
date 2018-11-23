@@ -516,43 +516,46 @@ contains
 
       call dzero(gmat, n2orbxq)
 
-      if (spinfr) then
-        lwork = len_f77_work
-        call di_select_wrk(work, lwork)
+! gosia: spinfree+london should be properly tested;
+! the call to qbtrans is temporarily removed to restore the "response_lao_shield" test
+! that is passing on master
+      !if (spinfr) then
+      !  lwork = len_f77_work
+      !  call di_select_wrk(work, lwork)
 
-        do ii = 1, nfsym
-          iopsy = jbtof(irep, 1)
-          jj = mod(ii + iopsy, 2) + 1
-          if (nfbas(ii, 0) > 0 .and. nfbas(jj, 0) > 0) then
+      !  do ii = 1, nfsym
+      !    iopsy = jbtof(irep, 1)
+      !    jj = mod(ii + iopsy, 2) + 1
+      !    if (nfbas(ii, 0) > 0 .and. nfbas(jj, 0) > 0) then
 
-            call qbtrans(irep_2el_lao(icomp),                &
-                         'AOMO',                             &
-                         'S',                                &
-                         0.0d0,                              &
-                         nfbas(ii, 0), nfbas(jj, 0),         &
-                         norb(ii), norb(jj),                 &
-!                        -------------------------------------
-                         fmat(i2basx(ii, jj) + 1, 1, icomp), &
-                         ntbas(0), ntbas(0), nz,             &
-                         ipqtoq(1, irep_2el_lao(icomp)),     &
-!                        -------------------------------------
-                         gmat(i2orbx(ii, jj) + 1),           &
-                         norbt,    norbt,    nz,             &
-                         ipqtoq(1, irep_2el_lao(icomp)),     &
-!                        -------------------------------------
-                         cmo(icmoq(ii) + 1),                 &
-                         nfbas(ii,0), norb(ii), nz,          &
-                         ipqtoq(1, 0),ibeig(iorb(ii)+1),     &
-!                        -------------------------------------
-                         cmo(icmoq(jj) + 1),                 &
-                         nfbas(jj, 0), norb(jj), nz,         &
-                         ipqtoq(1, 0),ibeig(iorb(jj)+1),     &
-!                        -------------------------------------
-                         work, lwork, iprprp)
-          end if
-        end do
-        call di_deselect_wrk(work, lwork)
-      else
+      !      call qbtrans(irep_2el_lao(icomp),                &
+      !                   'AOMO',                             &
+      !                   'S',                                &
+      !                   0.0d0,                              &
+      !                   nfbas(ii, 0), nfbas(jj, 0),         &
+      !                   norb(ii), norb(jj),                 &
+!     !                   -------------------------------------
+      !                   fmat(i2basx(ii, jj) + 1, 1, icomp), &
+      !                   ntbas(0), ntbas(0), nz,             &
+      !                   ipqtoq(1, irep_2el_lao(icomp)),     &
+!     !                   -------------------------------------
+      !                   gmat(i2orbx(ii, jj) + 1),           &
+      !                   norbt,    norbt,    nz,             &
+      !                   ipqtoq(1, irep_2el_lao(icomp)),     &
+!     !                   -------------------------------------
+      !                   cmo(icmoq(ii) + 1),                 &
+      !                   nfbas(ii,0), norb(ii), nz,          &
+      !                   ipqtoq(1, 0),ibeig(iorb(ii)+1),     &
+!     !                   -------------------------------------
+      !                   cmo(icmoq(jj) + 1),                 &
+      !                   nfbas(jj, 0), norb(jj), nz,         &
+      !                   ipqtoq(1, 0),ibeig(iorb(jj)+1),     &
+!     !                   -------------------------------------
+      !                   work, lwork, iprprp)
+      !    end if
+      !  end do
+      !  call di_deselect_wrk(work, lwork)
+      !else
         do ii = 1, nfsym
           iopsy = jbtof(irep, 1)
           jj = mod(ii + iopsy, 2) + 1
@@ -582,7 +585,7 @@ contains
                           iprprp)
           end if
         end do
-      end if
+      !end if
 
 ! check if it is antisymmetric:
       DSX=SYMCHECK(gmat(1),NORBT,NORBT,NORBT,NZ)
