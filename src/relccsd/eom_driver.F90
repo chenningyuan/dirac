@@ -456,15 +456,19 @@
 
               xroot = 0 
 
+              print *,'debug, shift is',relcc_mfd_eigenvalues_energy_shift(1)
               if ((relcc_mfd_eigenvalues_energy_shift(1).gt.(1.0d-3))) then
+                 print *,'debug, shift is',relcc_mfd_eigenvalues_energy_shift(1)
                  do i = 1, size(diag_H,1)
+                    print *,'debug, original diagonal',diag_H(i)
                     diag_H(i) = abs(diag_H(i) - relcc_mfd_eigenvalues_energy_shift(1))
+                    print *,'debug, new diagonal',diag_H(i)
                  end do
               end if
 
               do iroot = 1, nroot
                   k = minloc(diag_H) 
-                  if (iprnt.ge.2) write(iw,*)'roots',iroot,diag_H(k(1)),k(1) 
+                  if (iprnt.ge.1) write(iw,*)'roots',iroot,diag_H(k(1)),k(1) 
                   i = k(1)
                   diag_H(i) = 8000.0d0
                   xroot = xroot + 1
@@ -1541,7 +1545,7 @@
      do j_eigenvalue = 1, nstate_sym(ssym,select_eom) 
           i_eigenvalue = i_eigenvalue + 1 
 !    I have seen crazy ouputs with large fock space calcs, put a limit
-          if (j_eigenvalue.lt.100) then
+          if (j_eigenvalue.lt.100000) then
           write (iw,1010) repna(irpoff+ssym),j_eigenvalue,  &
     &             e_off+ev_all(1,i_eigenvalue),ev_all(1,i_eigenvalue)
 !    Loop over the R-vectors and print the interesting ones
