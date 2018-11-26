@@ -194,9 +194,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       
       PARAMETER (D0=0.0D0,D1=1.0D0,D2=2.0D0)      
       PARAMETER (H=0.01D0,MXNP = 4000) !same to GRASP
-      real(8), allocatable :: ZAN(:),C(:,:),R(:)
+      real(8), allocatable :: ZAN(:),C(:,:)
       real(8), allocatable :: ANG(:,:),GAO(:)
-      real(8), allocatable :: SMAT(:,:),TD(:,:,:),TE(:),OVL(:,:)
+      real(8), allocatable :: SMAT(:),TD(:,:,:),TE(:),OVL(:,:)
 
       CALL QENTER('NUMOVL')
 C
@@ -216,7 +216,7 @@ C The values of ultrafine (.ULTRAF) at DFT input-reader section.
       m = NLEB(INTANG) ! num_grid_cfg_ANGINT
       allocate( ANG(m,4)   )
       allocate( GAO(NTBAS(0) )             )
-      allocate( SMAT(NTBAS(0),NTBAS(0))    )
+      allocate( SMAT(NTBAS(0)*NTBAS(0))    )
       allocate( TD(MXNP,NTBAS(0),NTBAS(0)) )
       allocate( TE(MXNP)                   )
       allocate( OVL(NTBAS(0),NTBAS(0))     )
@@ -227,8 +227,6 @@ C
 !      DO J=1,NCOUNT
 !         WT(J)=WT(J)*4.0D0*PI
 !     ENDDO
-C
-      allocate( R(MXNP))
 C         
       DO 10 IATOM = 1, NUCIND
 !      DO 10 ISYMOP = 0, MXOPR
@@ -247,14 +245,14 @@ C   SET DEFAULT VALUES OF PARAMETERS FOR CALCULATION
 C
          EPH = EXP(H)
          RNT = 1.0D-06/ZAN(IATOM) !CHARGE(IATOM)
-         R(1) = RNT
-         DO I = 2,MXNP
-            R(I) = R(I-1)*EPH
-         ENDDO
+!         R(1) = RNT
+!         DO I = 2,MXNP
+!            R(I) = R(I-1)*EPH
+!         ENDDO
 C         
          CALL DZERO(TD,MXNP*NTBAS(0)*NTBAS(0))
+         RNODE = RNT
          DO 20 IR = 1, MXNP
-            RNODE = R(IR)
 C            
 C           loop over angular points
 C           ========================
@@ -273,17 +271,20 @@ C
 C
 C     Get "overlap" matrix
 C
+!           stop !sunaga
                CALL DGEMM('N','T',NTBAS(0),NTBAS(0),1,D1,GAO,NTBAS(0),
-     &                      GAO,NTBAS(0),D0,SMAT,NTBAS(0))
-C
-               DO I = 1,NTBAS(0)
-                 DO J = 1,NTBAS(0)
-                    TD(IR,J,I) = TD(IR,J,I) + SMAT(J,I)*WT8
-                 END DO
-               END DO
-C
+     &                      GAO,NTBAS(0),D0,SMAT(1),NTBAS(0))
+C     
+               CALL DAXPY(NTBAS(0)*NTBAS(0),WT8,SMAT,1,TD(IR,1,1),MXNP)
+!     DO I = 1,NTBAS(0)
+!                 DO J = 1,NTBAS(0)
+!                    TD(IR,J,I) = TD(IR,J,I) + SMAT(J,I)*WT8
+!                 END DO
+!               END DO
+C     
 30         CONTINUE
-20       CONTINUE
+        RNODE = RNODE*EPH
+20      CONTINUE
 C
          CALL HEADER('Numerical ovelap integral made by Ayaki',-1)
          IND = 0
@@ -302,7 +303,6 @@ C
        deallocate(ZAN)
        deallocate(C)
        deallocate(ANG)
-       deallocate(R)
        deallocate(SMAT)
        deallocate(TD)
        deallocate(TE)
