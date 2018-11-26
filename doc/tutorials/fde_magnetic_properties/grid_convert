@@ -1,4 +1,0 @@
-
-DIRAC_SRC="path/to/DIRAC/source"
-$DIRAC_SRC/utils/fde-mag/dft_to_fde_grid_convert.py
-
