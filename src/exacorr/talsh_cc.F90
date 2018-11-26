@@ -209,6 +209,7 @@ module talsh_cc
 !         Obtain intermediates from CCSD
           call print_date("Calculating common blocks")
           call get_common_blocks(comm_t,int_t)
+          call print_date("Finished calculating common blocks")
 
 !         Construct lambda tensor
           ierr=talsh_tensor_construct(l1_tensor,C8,ov_dims,init_val=ZERO)
