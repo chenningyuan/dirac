@@ -33,11 +33,11 @@ test.run(['eom_ip_dc_inv_ci.inp'],  ['f2_ci_turbomole-dz.mol'], f, args='--mw=11
 # the singly excited/ionized/attached states that the sorting with overlap
 # constrains.
  
-test.run(['eom_ip_dc_noinv_full_nooverlap_c_oo_v_Omega.inp','eom_ip_dc_noinv_full_nooverlap_c_oo_v_-Omega.inp'],   ['f2_c_oo_v_turbomole-dz.mol'], f, args='--mw=110')
+test.run(['eom_ip_dc_noinv_full_nooverlap_c_oo_v_Omega.inp'],   ['f2_c_oo_v_turbomole-dz.mol'], f, args='--mw=110')
 test.run(['eom_ip_dc_noinv_full_nooverlap.inp'],  ['f2_d2_turbomole-dz.mol', 'f2_c2v_turbomole-dz.mol', 'f2_c2_turbomole-dz.mol', 'f2_cs_turbomole-dz.mol'], f, args='--mw=110')
 test.run(['eom_ip_dc_noinv_full_nooverlap_c1.inp'], ['f2_c1_turbomole-dz.mol'], f, args='--mw=110')
 
-test.run(['eom_ip_dc_inv_full_nooverlap_d_oo_h_Omega.inp','eom_ip_dc_inv_full_nooverlap_d_oo_h_-Omega.inp'],   ['f2_d_oo_h_turbomole-dz.mol'], f, args='--mw=110')
+test.run(['eom_ip_dc_inv_full_nooverlap_d_oo_h_Omega.inp'],   ['f2_d_oo_h_turbomole-dz.mol'], f, args='--mw=110')
 test.run(['eom_ip_dc_inv_full_nooverlap.inp'],    ['f2_d2h_turbomole-dz.mol', 'f2_c2h_turbomole-dz.mol'], f, args='--mw=110')
 test.run(['eom_ip_dc_inv_full_nooverlap_ci.inp'], ['f2_ci_turbomole-dz.mol'], f, args='--mw=110')
 
