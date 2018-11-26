@@ -32,6 +32,7 @@
         type, public :: exacc_input
             logical                 :: talsh = .true.           !If false, use ExaTensor
             logical                 :: ccd = .false.            !If false=>CCSD, if true=>CCD
+            logical                 :: lambda = .false.
             integer                 :: nkr_occ, nkr_vir         !Number of Kramer pairs
             integer, allocatable    :: mokr_occ(:), mokr_vir(:) !List of active Kramer pairs
             real(REALD)             :: t_econv = 1.0D-13        !Convergence criterium

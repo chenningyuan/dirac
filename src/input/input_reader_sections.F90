@@ -858,6 +858,10 @@
          call kw_read(word, exa_input%t_econv)
       end if
 
+      if (kw_matches(word, '.LAMBDA')) then
+         exa_input%lambda = .true.
+      end if
+
       call check_whether_kw_found(word, kw_section)
 
 #endif

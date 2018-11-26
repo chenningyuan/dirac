@@ -1,6 +1,6 @@
-    module intermediates
+module intermediates
 
-!    Module to make intermediates needed in CC and Lambda equations
+!Module to make intermediates needed in CC and Lambda equations
 
      implicit none
      private
@@ -205,4 +205,4 @@
 
        end subroutine get_lambda_intermediates_talsh
 
-    end module
+end module
