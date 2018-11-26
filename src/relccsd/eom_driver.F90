@@ -450,19 +450,35 @@
              call quit('REW not implemented')
 
           else if (relcc_projectors_do_core_valence_separation) then ! find the lowest elements of the diagonal involving core electrons only
-             call quit('CVS not implemented')
+
+              xroot = 0
+
+              write (iw,*) 'debug, diag(Hbar_SS): ',diag_H
+! aspg, WIP june/july 2018
+! what is below is a simple hack for testing for water, will not work in general
+              do iroot = 1, nroot
+                  k = minloc(diag_H, MASK=((diag_H > abs(relcc_projectors_cvs_energy_threshold)) &
+                             .and.(diag_H < 100*(abs(relcc_projectors_cvs_energy_threshold)))))
+                  if (iprnt.ge.1) write(iw,*)'roots',iroot,diag_H(k(1)),k(1)
+                  write(iw,*)'roots',iroot,diag_H(k(1)),k(1)
+                  i = k(1)
+                  diag_H(i) = huge(diag_H)
+                  xroot = xroot + 1
+                  jroot = i
+                  if (rcw.eq.2) jroot = 2*i - 1
+                  R1(jroot,xroot) = 1.0d0
+              enddo
+
+              call davidson_print_vectors(R1, label="debug:  R1 vector             ")
+! aspg WIP june/july 2018
 
           else ! this is the standard way of doing it, find the lowest elements of the diagonal
 
               xroot = 0 
 
-              print *,'debug, shift is',relcc_mfd_eigenvalues_energy_shift(1)
               if ((relcc_mfd_eigenvalues_energy_shift(1).gt.(1.0d-3))) then
-                 print *,'debug, shift is',relcc_mfd_eigenvalues_energy_shift(1)
                  do i = 1, size(diag_H,1)
-                    print *,'debug, original diagonal',diag_H(i)
                     diag_H(i) = abs(diag_H(i) - relcc_mfd_eigenvalues_energy_shift(1))
-                    print *,'debug, new diagonal',diag_H(i)
                  end do
               end if
 
