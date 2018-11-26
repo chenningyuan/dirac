@@ -131,7 +131,7 @@ In this example we will use the four-component relativistic DC Hamiltonian and D
 
 NMR shielding calculations without the FDE coupling terms
 ---------------------------------------------------------
-:label: NMR_calcs_numerical_grid
+.. _numgrid
 
 Here we demonstrate how to include the first two terms of Eq. :eq:`fde_pg` in the property gradient: 
 terms dependent on the embedding potential and the uncoupled embedding kernel on an example of 
@@ -153,6 +153,7 @@ This script will overwrite the ``numerical_grid`` and save its original version 
 
 Step 1: SCF calculation on the subsystem II
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. _step1
 
 The first step is the calculation on subsystem II, the aim of which is
 to export its density and electrostatic potential on a text file.
@@ -174,6 +175,7 @@ calculated in each point of a grid.
 
 Step 2: SCF and response calculation on the subsystem I
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. _step2
 
 Now we can use the information about the subsystem II written on the ``GRIDOUT`` file for constructing
 the embedding potential, :math:`v_{emb}^{I}`, and embedding kernel, :math:`w_{emb}^{I,I}`.
@@ -319,10 +321,55 @@ Magnetizability calculations without the FDE coupling terms
 In this section we demonstrate how to perform the FDE calculations of the magnetizability tensor, in which the terms dependent on the embedding kernel 
 involving the coupling between subsystems are neglected, both in the property gradient and in the expectation value parts.
 
-Analogously to the NMR shielding calculations, the magnetizability calculations are done in few steps. First steps are common for both properties, in particular:
-  * the ``numerical_grid`` file is prepared as described in section :ref:`NMR_calcs_numerical_grid`,
-  * the "Step 1" discussed in section :ref:`` is completed, therefore the ``GRIDOUT`` file with the exported charge density of subsystem II ("frozen") is available,
-  * "Step 2" discussed in section :ref:`` is completed, therefore the 
+Analogously to the NMR shielding calculations, the magnetizability calculations are done in few steps. First steps are common for both properties.
+In what follows we assume that:
+  * the ``numerical_grid`` file is prepared as described in section :ref:`numgrid`,
+  * the "Step 1" discussed in section :ref:`step1` is completed, therefore the ``GRIDOUT`` file with the exported charge density of subsystem II ("frozen") is available,
+  * the SCF part of the "Step 2" discussed in section :ref:`step2` is completed, therefore the DFCOEF file for subsystem I is available ("DFCOEF.h2se")
+
+Step 2: Response calculation on the subsystem I
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To calculate the magnetizability tensor, we use the following input file:
+
+.. literalinclude:: magn_v_w11.inp
+
+in which the keyword :ref:`LAO11` denotes that the contributions from the embedding potential, :math:`v_{emb}^{I}`,
+and the uncoupled embedding kernel, :math:`w_{emb}^{I,I}`, will be added to the property gradient.
+The keyword :ref:`EMAFDE` is added to turn on the FDE-LAO terms in the expectation value part of the magnetizbaility tensor,
+while the keyword :ref:`MNONKE` excludes the contributions dependent on the non-additive part of the coupled embedding kernel.
+
+The corresponding ``pam`` command is:
+
+.. literalinclude:: magn_v_w11.run
+
+This is the advised option. However, it is also possible to restrict the FDE-LAO contributions (in both, property gradient and in
+the expectation value term) to the part dependent on the embedding potential only. 
+In this case, the input file reads:
+
+.. literalinclude:: magn_v.inp
+
+and the corresponding ``pam`` command is:
+
+.. literalinclude:: magn_v.run
+
+The calculation on our test molecule give the following results for the isotropic part of the magnetizability tensor of both subsystems:
+
+    ===================================  =========  =========  =========
+    terms included in property gradient    H2Se       H2O       H2Se-H2O
+    ===================================  =========  =========  =========
+    Isolated                             -7.0759     -2.6733   -9.7592
+    None                                 -7.2109     -2.6989   −9.9098               
+    v                                    -7.1182     -2.6717   −9.7899                   
+    v+w11                                -7.1182     -2.6717   -9.7899                      
+    supermolecule                                              -10.0294
+    ===================================  =========  =========  =========
+
+``None`` in the table denotes calculations performed with no "new" FDE-LAO terms (neither in the property gradient nor in the expectation value part,
+the gauge origin is in the center of mass of SeH2-H2O). ``Supermolecule`` value refers to calculations on the full H2Se-H2O system, in other cases the
+value shown in the ``H2Se-H2O`` column is a sum of values obtained for the individual subsystems.
+
+
 
 Magnetizability calculations with the FDE coupling terms
 --------------------------------------------------------
