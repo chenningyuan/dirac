@@ -2167,10 +2167,12 @@ C  dcbgen.h : LUCOEF, LUKRMC
 C  dcbham.h : SPINFR; LEVYLE
 C  dcbbas.h : N2BBASXQ, ...
 C  dcborb.h : NORBT, ..., NCMOTQ
+C  dgroup.h : IPQTOQ
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbbas.h"
 #include "dcborb.h"
+#include "dgroup.h"
 
 C
       KFREE_start = KFREE
