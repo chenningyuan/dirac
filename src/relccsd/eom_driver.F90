@@ -457,12 +457,13 @@
 ! aspg, WIP june/july 2018
 ! what is below is a simple hack for testing for water, will not work in general
               do iroot = 1, nroot
-                  k = minloc(diag_H, MASK=((diag_H > abs(relcc_projectors_cvs_energy_threshold)) &
-                             .and.(diag_H < 100*(abs(relcc_projectors_cvs_energy_threshold)))))
+                  k = maxloc(diag_H, MASK=(diag_H > abs(relcc_projectors_cvs_energy_threshold)))
+!                 k = minloc(diag_H, MASK=((diag_H > abs(relcc_projectors_cvs_energy_threshold)) &
+!                            .and.(diag_H < 100*(abs(relcc_projectors_cvs_energy_threshold)))))
                   if (iprnt.ge.1) write(iw,*)'roots',iroot,diag_H(k(1)),k(1)
                   write(iw,*)'roots',iroot,diag_H(k(1)),k(1)
                   i = k(1)
-                  diag_H(i) = huge(diag_H)
+                  diag_H(i) = tiny(diag_H)
                   xroot = xroot + 1
                   jroot = i
                   if (rcw.eq.2) jroot = 2*i - 1
@@ -2118,22 +2119,24 @@ function create_projector(eom_type, ndet, eps)
       call mapping_spinors_configurations (det_map, eom_type, ndet, eps)
 
       allocate(create_projector(ndet))
-      create_projector = .true.
+      create_projector = .false.
+
+      print *,' debug, relcc_projectors_cvs_energy_threshold',relcc_projectors_cvs_energy_threshold
 
       if (relcc_projectors_do_core_valence_separation) then
           do i = 1, ndet
              if (allocated(det_map%det(i)%occupied_energies)) then
                 do j = 1, size(det_map%det(i)%occupied_energies,1)
-                   if (det_map%det(i)%occupied_energies(j).gt.relcc_projectors_cvs_energy_threshold) then
-                      create_projector(i) = .false.
+                   if (det_map%det(i)%occupied_energies(j).le.relcc_projectors_cvs_energy_threshold) then
+                      create_projector(i) = .true. 
                       cycle
                    end if
                 end do 
                 if (create_projector(i)) then
-                   if (iprnt.ge.2) write (iw,*) 'determinant ',i,' has all spinors in core       :', &
+                   if (iprnt.ge.2) write (iw,*) 'determinant ',i,' has at least one core spinor :', &
     &                                           det_map%det(i)%occupied_energies,create_projector(i) 
                 else
-                   if (iprnt.ge.2) write (iw,*) 'determinant ',i,' has at least a valence spinor :', &
+                   if (iprnt.ge.2) write (iw,*) 'determinant ',i,' has no core spinors          :', &
     &                                           det_map%det(i)%occupied_energies,create_projector(i) 
                 end if
              else
