@@ -755,9 +755,7 @@ contains
 
 
   subroutine get_tb_dmat(tb_dmat, cmo, ibeig)
-#ifdef MOD_UNRELEASED
   use fde_mod
-#endif
 !-----------------------------------------------------------------------
     real(8), intent(out)   :: tb_dmat(n2bbasxq, *)
     real(8), intent(in)    :: cmo(*)
