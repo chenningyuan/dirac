@@ -340,6 +340,12 @@
 
           else ! this is the standard way of doing it, find the lowest elements of the diagonal
 
+              if ((relcc_mfd_eigenvalues_energy_shift(1).gt.(1.0d-3))) then
+                 do i = 1, size(diag_H,1)
+                    diag_H(i) = abs(diag_H(i) - relcc_mfd_eigenvalues_energy_shift(1))
+                 end do
+              end if
+
               do iroot = 1, nroot
                   k = minloc(diag_H)
                   if (iprnt.ge.3) write(iw,*)'roots',iroot,diag_H(k(1)),k(1)
