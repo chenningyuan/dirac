@@ -1502,17 +1502,16 @@ contains
             write(davidson_output_file_unit,*) "Iteration ", niter
             write(davidson_output_file_unit,*) ""
 
-! aspg, WIP june/july 2018
-            if (associated(projector)) call apply_projector(projector,b)
-! aspg, WIP june/july 2018
-
             if (associated(M_small)) deallocate(M_small)
 
             if (associated(projector)) call apply_projector(projector,b)
             if (davidson_debug) call davidson_print_vectors(b, label="debug:  b     vector          ")
 
             sigma_vector => create_sigma_vector(A, b, sigma_vector, state_sym)
+! aspg, WIP june/july 2018
             if (associated(projector)) call apply_projector(projector,sigma_vector)
+            if (associated(projector)) call apply_projector(projector,b)
+! aspg, WIP june/july 2018
 
             if (davidson_debug) call davidson_print_vectors(sigma_vector, label="debug:  sigma vector          ")
 
@@ -1602,10 +1601,6 @@ contains
                 deallocate(sigma_vector)
             else
 
-! aspg, WIP
-! we have to get rid of the update on the parts of the trial vectors we're projecting out...
-               if (associated(projector)) call apply_projector(projector,delta)
-! aspg, WIP
                b => updated_subspace_vectors_R(b, delta, verbose=.false.)
 
 ! in the case of a parallel run, at each davidson step synchronize the new trial vectors 
