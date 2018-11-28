@@ -268,10 +268,16 @@ C
 C     Get "overlap" matrix
 C
 !           stop !sunaga
-               CALL DGEMM('N','T',NTBAS(0),NTBAS(0),1,D1,GAO,NTBAS(0),
-     &                      GAO,NTBAS(0),D0,SMAT(1),NTBAS(0))
+               IAO=1
+               IOV=1
+               LSMAX=1
+               LS=1
+               CALL DGEMM('N','T',NTBAS(0),NTBAS(0),
+     &                      1,D1,GAO,NTBAS(0),
+     &                      GAO,NTBAS(0),D0,SMAT,NTBAS(0))
 C     
-               CALL DAXPY(NTBAS(0)*NTBAS(0),WT8,SMAT,1,TD(1,IR),1)
+               CALL DAXPY(NTBAS(0)*NTBAS(0),
+     &                    WT8,SMAT,1,TD(1,IR),1)
 C     
 30         CONTINUE
         RNODE = RNODE*EPH
