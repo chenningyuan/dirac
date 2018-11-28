@@ -457,14 +457,9 @@
 ! aspg, WIP june/july 2018
 ! what is below is a simple hack for testing for water, will not work in general
               do iroot = 1, nroot
-!                 k = maxloc(diag_H, MASK=(diag_H > abs(relcc_projectors_cvs_energy_threshold)))
                   k = minloc(diag_H, MASK=(diag_H > abs(relcc_projectors_cvs_energy_threshold)))
-
-!                 k = minloc(diag_H, MASK=((diag_H > abs(relcc_projectors_cvs_energy_threshold)) &
-!                            .and.(diag_H < 100*(abs(relcc_projectors_cvs_energy_threshold)))))
                   if (iprnt.ge.2) write(iw,*)'roots',iroot,diag_H(k(1)),k(1)
                   i = k(1)
-!                 diag_H(i) = tiny(diag_H)
                   diag_H(i) = huge(diag_H)
                   xroot = xroot + 1
                   jroot = i
@@ -472,7 +467,7 @@
                   R1(jroot,xroot) = 1.0d0
               enddo
 
-              call davidson_print_vectors(R1, label="debug:  R1 vector             ")
+              if (iprnt.ge.3) call davidson_print_vectors(R1, label="debug:  R1 vector             ")
 ! aspg WIP june/july 2018
 
           else ! this is the standard way of doing it, find the lowest elements of the diagonal
