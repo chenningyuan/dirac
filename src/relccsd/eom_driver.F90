@@ -453,7 +453,7 @@
 
               xroot = 0
 
-              write (iw,*) 'debug, diag(Hbar_SS): ',diag_H
+              if (iprnt.ge.2) write (iw,*) 'diag(Hbar_SS): ',diag_H
 ! aspg, WIP june/july 2018
 ! what is below is a simple hack for testing for water, will not work in general
               do iroot = 1, nroot
@@ -462,8 +462,7 @@
 
 !                 k = minloc(diag_H, MASK=((diag_H > abs(relcc_projectors_cvs_energy_threshold)) &
 !                            .and.(diag_H < 100*(abs(relcc_projectors_cvs_energy_threshold)))))
-                  if (iprnt.ge.1) write(iw,*)'roots',iroot,diag_H(k(1)),k(1)
-                  write(iw,*)'roots',iroot,diag_H(k(1)),k(1)
+                  if (iprnt.ge.2) write(iw,*)'roots',iroot,diag_H(k(1)),k(1)
                   i = k(1)
 !                 diag_H(i) = tiny(diag_H)
                   diag_H(i) = huge(diag_H)
