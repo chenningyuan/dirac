@@ -20,7 +20,8 @@ f.add(from_string = ' Energy eigenvalues in atomic units',
 # during the davidson procedure). 
 
 test.run(['eom_ee_dc_noinv_c_oo_v.inp'],   ['f2_c_oo_v_turbomole-dz.mol'], f, args='--mw=110')
-test.run(['eom_ee_dc_noinv.inp'],   ['f2_c2v_turbomole-dz.mol', 'f2_c2_turbomole-dz.mol', 'f2_cs_turbomole-dz.mol'], f, args='--mw=110')
+test.run(['eom_ee_dc_noinv.inp'],   ['f2_c2v_turbomole-dz.mol'], f, args='--mw=110')
+#test.run(['eom_ee_dc_noinv.inp'],   ['f2_c2v_turbomole-dz.mol', 'f2_c2_turbomole-dz.mol', 'f2_cs_turbomole-dz.mol'], f, args='--mw=110')
 #test.run(['eom_ee_dc_noinv.inp'],   ['f2_d2_turbomole-dz.mol'], f, args='--mw=110')
 
 test.run(['eom_ee_dc_inv_d_oo_h.inp'],   ['f2_d_oo_h_turbomole-dz.mol'], f, args='--mw=110')
