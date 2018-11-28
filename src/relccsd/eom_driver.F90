@@ -317,15 +317,39 @@
           allocate(diag_H(ndimr1))
           diag_H = H_II(1:N1:rcw)
 
-          do iroot = 1, nroot
-              k = minloc(diag_H)
-              if (iprnt.ge.3) write(iw,*)'roots',iroot,diag_H(k(1)),k(1)
-              i = k(1)
-              jroot = i
-              if (rcw.eq.2) jroot = 2*i - 1
-              R1(jroot,iroot) = 1.0d0
-              diag_H(i) = 8000.0d0
-          enddo
+          if (relcc_projectors_do_restricted_excitation_window) then ! find the lowest elements of the diagonal within the given excitation window
+             call quit('REW not implemented')
+
+          else if (relcc_projectors_do_core_valence_separation) then ! find the lowest elements of the diagonal involving core electrons only
+
+              if (iprnt.ge.2) write (iw,*) 'diag(Hbar_SS): ',diag_H
+! aspg, WIP june/july 2018
+! what is below is a simple hack for testing for water, will not work in general
+              do iroot = 1, nroot
+                  k = minloc(diag_H, MASK=(diag_H > abs(relcc_projectors_cvs_energy_threshold)))
+                  if (iprnt.ge.2) write(iw,*)'roots',iroot,diag_H(k(1)),k(1)
+                  i = k(1)
+                  diag_H(i) = huge(diag_H)
+                  jroot = i
+                  if (rcw.eq.2) jroot = 2*i - 1
+                  R1(jroot,iroot) = 1.0d0
+              enddo
+
+              if (iprnt.ge.3) call davidson_print_vectors(R1, label="debug:  R1 vector             ")
+! aspg WIP june/july 2018
+
+          else ! this is the standard way of doing it, find the lowest elements of the diagonal
+
+              do iroot = 1, nroot
+                  k = minloc(diag_H)
+                  if (iprnt.ge.3) write(iw,*)'roots',iroot,diag_H(k(1)),k(1)
+                  i = k(1)
+                  jroot = i
+                  if (rcw.eq.2) jroot = 2*i - 1
+                  R1(jroot,iroot) = 1.0d0
+                  diag_H(i) = huge(diag_H)
+              enddo
+          end if
           deallocate(diag_H)
 
       else if (relcc_mfd_trial_restart) then
