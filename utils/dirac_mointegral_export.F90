@@ -32,8 +32,8 @@ module dirac_mointegral_export
   integer, parameter     :: filenumber_mtable  = 25
   integer, parameter     :: filenumber_55 = 55
   integer, parameter     :: filenumber_56 = 56
-  logical, parameter     :: generate_full_list = .true. ! Bruno : originally set to .false. 
-  logical, parameter     :: generate_lower_triangular = .false. ! Bruno : originally set to .true.
+  logical, parameter     :: generate_full_list = .false. 
+  logical, parameter     :: generate_lower_triangular = .true.
 ! The target variable should involve into an input option, for now we have no input since mrcc
 ! is presently the only code that is supported (the interface to nwchem is in an experimental stage)
   character(10)          :: target = 'fcidump'
@@ -97,7 +97,7 @@ contains
      read (filenumber_1e) (spinor(i)%irrep,spinor(i)%abelian_irrep,spinor(i)%energy,i=1,number_of_spinors)
 
 !    create indices for optional reordering according to occupation
-     call make_index_to_occupied_first ()
+     call make_index_to_occupied_first 
 
      write (*,*) " Initialized reading from MRCONEE"
      write (*,*) " Core energy: ", core_energy
@@ -261,6 +261,7 @@ contains
            end_index = number_of_spinors
         end if
         do j = 1, end_index
+!           if (abs(integral(i,j,1)) > threshold .or. abs(integral(i,j,2)) > threshold) then
            if (abs(integral(i,j,1)) > threshold .or. abs(integral(i,j,2)) > threshold) then
               if (rcw .ne. 1) then
                  write (filenumber_fcidump,'(1P,2E20.12,4i3)') &

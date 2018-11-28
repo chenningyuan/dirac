@@ -56,6 +56,7 @@ def generate_dirac_input(molecule,
                         run_cisd,
                         run_ccsd,
                         run_fci,
+                        relativistic,
                         verbose,
                         tolerate_error,
                         memory,
@@ -91,31 +92,31 @@ def generate_dirac_input(molecule,
     # Write input file and return handle.
     input_file = molecule.filename + '.inp'
     with open(input_file, 'w') as f:
-     if run_ccsd:
-      f.write("**DIRAC\n")
-      f.write(".WAVE FUNCTION\n")
-      f.write("**WAVE FUNCTION\n")
-      f.write(".SCF\n")
-      f.write(".RELCCSD\n")
-      f.write("**MOLECULE\n")
-      f.write("*BASIS\n")
-      f.write(".DEFAULT\n")
-      f.write(" " + molecule.basis + "\n")
-      f.write("*END OF INPUT\n")
-     elif run_scf:
       f.write("**DIRAC\n")
       f.write(".4INDEX\n")
       f.write(".WAVE FUNCTION\n")
       f.write("**WAVE FUNCTION\n")
       f.write(".SCF\n")
+      if run_ccsd:
+       f.write(".RELCCSD\n")
+      if relativistic is False:
+       f.write("**HAMILTONIAN\n")
+       f.write(".NONREL\n")
+       f.write("**INTEGRALS\n")
+       f.write(".NUCMOD\n")
+       f.write(" 1\n")
       f.write("**MOLTRA\n")
       f.write(".MDCINT\n")
       f.write("**MOLECULE\n")
       f.write("*BASIS\n")
       f.write(".DEFAULT\n")
-      f.write(" " + molecule.basis + "\n")
+      if molecule.basis == "explicit" or molecule.basis == "special":
+       f.write(" sto-3g\n")
+       f.write(molecule.special_basis+"\n")
+      else:
+       f.write(" " + molecule.basis + "\n")
       f.write("*END OF INPUT\n")
-     f.close()
+    f.close()
 
     return input_file, xyz_file
 
@@ -156,6 +157,7 @@ def run_dirac(molecule,
              run_cisd=False,
              run_ccsd=False,
              run_fci=False,
+             relativistic=True,
              verbose=False,
              tolerate_error=False,
              delete_input=False,
@@ -195,6 +197,7 @@ def run_dirac(molecule,
                         run_cisd,
                         run_ccsd,
                         run_fci,
+                        relativistic,
                         verbose,
                         tolerate_error,
                         memory,
@@ -203,7 +206,7 @@ def run_dirac(molecule,
     # Run Dirac
     try:
         print('Starting Dirac calculation\n')
-        subprocess.call('pam --mol=' + xyz_file + ' --inp=' + input_file + ' --get="MRCONEE MDCINT" --silent --noarch', shell=True)
+        subprocess.call('pam --mol=' + xyz_file + ' --inp=' + input_file + ' --get="MRCONEE MDCINT" --silent --noarch > output_script', shell=True)
     except:
         print('Dirac calculation for {} has failed. Most certainely a problem with pam.'.format(molecule.name))
 
@@ -213,7 +216,7 @@ def run_dirac(molecule,
     # Compute the FCIDUMP
     try:
         print('Creation of the FCIDUMP file\n')
-        subprocess.call('dirac_mointegral_export.x', shell=True)
+        subprocess.call('dirac_openfermion_mointegral_export.x >> output_script', shell=True)
     except:
         print('Creation of FCIDUMP has failed.')
     else:

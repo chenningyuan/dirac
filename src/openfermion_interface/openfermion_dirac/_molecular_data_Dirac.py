@@ -236,8 +236,8 @@ class MolecularData_Dirac(object):
         general_calculations: A dictionary storing general calculation results
             for this system annotated by the key.
     """
-    def __init__(self, geometry=None, basis=None, multiplicity=None,
-                 charge=0, description="", filename="", data_directory=None):
+    def __init__(self, geometry=None, basis=None, special_basis=None, multiplicity=None,
+                 charge=0, description="", filename="", data_directory=None, relativistic=False):
         """Initialize molecular metadata which defines class.
 
         Args:
@@ -278,6 +278,7 @@ class MolecularData_Dirac(object):
         # Metadata fields which must be provided.
         self.geometry = geometry
         self.basis = basis
+        self.special_basis = special_basis
         self.multiplicity = multiplicity
 
         # Metadata fields with default values.
@@ -285,6 +286,8 @@ class MolecularData_Dirac(object):
         if (not isinstance(description, basestring)):
             raise TypeError("description must be a string.")
         self.description = description
+        
+        self.relativistic = relativistic
 
         # Name molecule and get associated filename
         self.name = name_molecule(geometry, basis, multiplicity,
@@ -363,7 +366,7 @@ class MolecularData_Dirac(object):
            raise FileNotFoundError('output not found, check your run_dirac calculation')
         return hf_energy, mp2_energy, ccsd_energy
 
-    def get_molecular_hamiltonian(self, occupied_indices=None,
+    def get_molecular_hamiltonian(self, relativistic, occupied_indices=None,
                                   active_indices=None):
         """Output arrays of the second quantized Hamiltonian coefficients.
 
@@ -388,22 +391,67 @@ class MolecularData_Dirac(object):
         one_body_coefficients = numpy.zeros((n_qubits, n_qubits))
         two_body_coefficients = numpy.zeros((n_qubits, n_qubits,
                                              n_qubits, n_qubits))
-        for p in range(n_qubits):
+
+        """OpenFermion requires all integrals, without accounting for permutation symmetry or restricted cases.
+           Hence, I modified dirac_mointegral_export.F90 to generate the FCIDUMP which write explicitly the
+           the integrals even if they are equivalent by permutation symmetry. 
+           The FCIDUMP of a relativistic calculation contains every orbitals needed.
+           For the non relativistic case, we have to add the symmetries due to the restricted calculation.
+        """
+        """Note that the integrals in Dirac and Openfermion are not sorted the same way. In Openfermion,
+           they correspond to the h_{p,q,r,s} term, which is equal to < pq | sr > = ( ps | qr ),
+           where <.|.> refers to the physicist's notation, and (.|.) to the chemist's one, used in Dirac.
+           So p,q,r,s in Openfermion reads p,s,q,r in Dirac, or reversely,
+              p,q,r,s in Dirac reads p,r,s,q in Openfermion."""
+
+
+        # Works for relativistic calculation with generate_full_list = true and lowest_trangle = false. Doesn't work for nonrelativistic LiH.
+        if relativistic:
+          for p in range(n_qubits):
             for q in range(n_qubits):
                 if (p+1,q+1) in one_body_integrals: 
                    one_body_coefficients[p,q] = one_body_integrals[p+1,q+1]
                 for r in range(n_qubits):
                     for s in range(n_qubits):
-                        if (p+1,s+1,q+1,r+1) in two_body_integrals: #in Dirac, it's only considering integrals with orbitals of same spin ! So p, q, r, s are all odd or all even !!
-                           two_body_coefficients[p,q,r,s] = two_body_integrals[p+1,s+1,q+1,r+1] / 2.0
-                        #elif (p%2 == 0) and (q%2 == 1) and (r%2 ==1) and (s%2 == 0) and (p==s) and (q==r):
-                        #   two_body_coefficients[p,q,r,s] = two_body_integrals[p+1,s+1,q,r] / 2.0
-                        #elif (p%2 == 1) and (q%2 == 0) and (r%2 ==0) and (s%2 == 1) and (p==s) and (q==r):
-                        #   two_body_coefficients[p,q,r,s] = two_body_integrals[p,s,q+1,r+1] / 2.0
-                        #elif (p%2 == 0) and (q%2 == 1) and (r%2 ==1) and (s%2 == 0) and (q!=r) and (p!=s):
-                        #   two_body_coefficients[p,q,r,s] = two_body_integrals[p+1,s+1,q,r] / 2.0
-                        #elif (p%2 == 1) and (q%2 == 0) and (r%2 ==0) and (s%2 == 1) and (q!=r) and (p!=s):
-                        #   two_body_coefficients[p,q,r,s] = two_body_integrals[p,s,q+1,r+1] / 2.0
+                        if (p+1,q+1,r+1,s+1) in two_body_integrals and relativistic is True:
+                           two_body_coefficients[p,r,s,q] = two_body_integrals[p+1,q+1,r+1,s+1] / 2.0
+#                           two_body_coefficients[r,p,q,s] = two_body_integrals[p+1,q+1,r+1,s+1] / 2.0
+#                           two_body_coefficients[q,s,r,p] = numpy.conj(two_body_integrals[p+1,q+1,r+1,s+1] / 2.0)
+#                           two_body_coefficients[s,q,r,p] = numpy.conj(two_body_integrals[p+1,q+1,r+1,s+1] / 2.0)
+
+        else:
+          """ does not work yet, some elements are still missing... I think that this is because the sorted indexes do not correspond correctly to spin alpha and spin beta... ? So 9 --> 8 for instance, and given that
+              I consider n_qubit // 2, I really need to have the correct ordering with odd numbers in the FCIDUMP... """
+          for p in range(n_qubits):
+            for q in range(n_qubits):
+                if (p+1,q+1) in one_body_integrals:
+                   one_body_coefficients[p,q] = one_body_integrals[p+1,q+1]
+                   one_body_coefficients[q,p] = one_body_integrals[p+1,q+1]
+        
+
+          for p in range(n_qubits//2):
+            for q in range(n_qubits//2):
+                for r in range(n_qubits//2):
+                    for s in range(n_qubits//2):
+                        if (2*p+1,2*q+1,2*r+1,2*s+1) in two_body_integrals:
+                           two_body_coefficients[2*p,2*r,2*s,2*q] = two_body_integrals[2*p+1,2*q+1,2*r+1,2*s+1] / 2.0
+                           #permutation symmetry
+                           two_body_coefficients[2*q,2*r,2*s,2*p] = two_body_integrals[2*p+1,2*q+1,2*r+1,2*s+1] / 2.0
+                           two_body_coefficients[2*p,2*s,2*r,2*q] = two_body_integrals[2*p+1,2*q+1,2*r+1,2*s+1] / 2.0
+                           two_body_coefficients[2*q,2*s,2*r,2*p] = two_body_integrals[2*p+1,2*q+1,2*r+1,2*s+1] / 2.0
+                           two_body_coefficients[2*r,2*p,2*q,2*s] = two_body_integrals[2*p+1,2*q+1,2*r+1,2*s+1] / 2.0
+                           two_body_coefficients[2*s,2*p,2*q,2*r] = two_body_integrals[2*p+1,2*q+1,2*r+1,2*s+1] / 2.0
+                           two_body_coefficients[2*r,2*q,2*p,2*s] = two_body_integrals[2*p+1,2*q+1,2*r+1,2*s+1] / 2.0
+                           two_body_coefficients[2*s,2*q,2*p,2*r] = two_body_integrals[2*p+1,2*q+1,2*r+1,2*s+1] / 2.0
+        # restricted calculation
+          for p in range(n_qubits//2):
+            for q in range(n_qubits//2):
+                for r in range(n_qubits//2):
+                    for s in range(n_qubits//2):
+                        two_body_coefficients[2*p+1,2*q,2*r,2*s+1] = two_body_coefficients[2*p,2*q,2*r,2*s]
+                        two_body_coefficients[2*p,2*q+1,2*r+1,2*s] = two_body_coefficients[2*p,2*q,2*r,2*s]
+                        two_body_coefficients[2*p+1,2*q+1,2*r+1,2*s+1] = two_body_coefficients[2*p,2*q,2*r,2*s]
+#       """        
 
         # Truncate.
         one_body_coefficients[
@@ -461,8 +509,10 @@ class MolecularData_Dirac(object):
 def load_molecular_hamiltonian(
         geometry,
         basis,
+        special_basis,
         multiplicity,
         description,
+        relativistic,
         n_active_electrons=None,
         n_active_orbitals=None):
     """Attempt to load a molecular Hamiltonian with the given properties.
@@ -486,7 +536,7 @@ def load_molecular_hamiltonian(
     """
 
     molecule = MolecularData(
-            geometry, basis, multiplicity, description=description)
+            geometry, basis, special_basis, multiplicity, description=description, relativistic=relativistic)
     molecule.load()
 
     if n_active_electrons is None:
@@ -502,6 +552,6 @@ def load_molecular_hamiltonian(
         active_indices = list(range(n_core_orbitals,
                                     n_core_orbitals + n_active_orbitals))
 
-    return molecule.get_molecular_hamiltonian(
+    return molecule.get_molecular_hamiltonian(relativistic,
             occupied_indices=occupied_indices,
             active_indices=active_indices)

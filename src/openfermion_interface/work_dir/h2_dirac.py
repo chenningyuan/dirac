@@ -2,7 +2,7 @@
 
 from openfermion_dirac import MolecularData_Dirac, run_dirac
 from openfermion.hamiltonians import MolecularData
-from openfermion.transforms import jordan_wigner, project_onto_sector
+from openfermion.transforms import jordan_wigner, project_onto_sector, bravyi_kitaev
 from openfermion.utils import count_qubits,eigenspectrum
 from openfermionpsi4 import run_psi4
 import os
@@ -13,7 +13,6 @@ bond_distance = 1.0
 multiplicity = 1
 charge = 0
 data_directory=os.getcwd()
-
 
 # COMMENTS : For the moment, I don't manage to get the exact same molecular Hamiltonian in psi4 and Dirac...
 # In consequence, the result is wrong with the Dirac interface. It does not seems like a very big issue,
@@ -42,23 +41,17 @@ delete_FCIDUMP = False
 verbose = False
 geometry = [('H', (0., 0., 0.)), ('H', (0., 0., bond_distance))]
 
-molecule1 = MolecularData(geometry, 
-                          basis, 
-                          multiplicity,
+molecule1 = MolecularData(geometry=geometry,
+                          basis=basis,
+                          multiplicity=multiplicity,
                           charge=charge,
                           description=description,
                           data_directory = data_directory)
 
-molecule2 = MolecularData_Dirac(geometry=geometry, 
-                               basis=basis, 
-                               multiplicity=multiplicity,
-                               charge=charge, 
-                               description=description,
-                               data_directory=data_directory)
 
-print('#'*20)
+print('#'*40)
 print('Psi4 calculation')
-print('#'*20)
+print('#'*40)
 print()
 
 molecule_psi4 = run_psi4(molecule1,  
@@ -71,21 +64,26 @@ molecule_psi4 = run_psi4(molecule1,
                     run_ccsd=run_ccsd,
                     run_fci=run_fci)
 
-#print('Molecular Hamiltonian:\n')
-#print(molecule_psi4.get_molecular_hamiltonian(), '\n')
-qbit_hamiltonian_psi4 = jordan_wigner(molecule_psi4.get_molecular_hamiltonian())
+fermion_hamiltonian = molecule_psi4.get_molecular_hamiltonian()
+with open("integrals_H2_psi4","w") as f:
+ f.write(str(fermion_hamiltonian))
+f.close
+qbit_hamiltonian_psi4 = jordan_wigner(fermion_hamiltonian)
+#qbit_hamiltonian_psi4_BK = bravyi_kitaev(molecule_psi4.get_molecular_hamiltonian())
 #print('Qubit Hamiltonian:\n')
 #print(qbit_hamiltonian_psi4, '\n')
 #new_qbit_hamiltonian_psi4 = project_onto_sector(qbit_hamiltonian_psi4, qubits=[1,3], sectors=[0,0])
 #print('After projection onto sector 0:\n')
 #print(new_qbit_hamiltonian_psi4, '\n')
 evs_psi4 = eigenspectrum(qbit_hamiltonian_psi4)
+#evs_psi4_BK = eigenspectrum(qbit_hamiltonian_psi4_BK)
 #new_evs_psi4 = eigenspectrum(new_qbit_hamiltonian_psi4)
 print('Hartree-Fock energy of {} Hartree.'.format(molecule_psi4.hf_energy))
 print('MP2 energy of {} Hartree.'.format(molecule_psi4.mp2_energy))
 print('CCSD energy of {} Hartree.'.format(molecule_psi4.ccsd_energy))
 print('FCI energy of {} Hartree.'.format(molecule_psi4.fci_energy))
-print('Solving the Qubit Hamiltonian : {}'.format(min(evs_psi4)))
+print('Solving the Qubit Hamiltonian (Jordan-Wigner): {}'.format(min(evs_psi4)))
+#print('Solving the Qubit Hamiltonian (Bravyi-Kiteav): {}'.format(min(evs_psi4_BK)))
 #print('minimum eigenvalue with psi4 is, after projection: {}'.format(min(new_evs_psi4)))
 #print('\n\n')
 #print('One-body integrals from psi4:\n')
@@ -93,12 +91,20 @@ print('Solving the Qubit Hamiltonian : {}'.format(min(evs_psi4)))
 #print('two-body integrals from psi4:\n')
 #print(molecule1.get_from_file("two_body_integrals"), '\n')
 #print()
+print()
+print('#'*40)
+print('NONREL Dirac calculation')
+print('#'*40)
+print()
+relativistic=False
+print(basis)
 
-print()
-print('#'*20)
-print('Dirac calculation')
-print('#'*20)
-print()
+molecule2 = MolecularData_Dirac(geometry=geometry,
+                               basis=basis,
+                               multiplicity=multiplicity,
+                               charge=charge,
+                               description=description,
+                               data_directory=data_directory)
 
 molecule_dirac = run_dirac(molecule2,
                     delete_input=delete_input,
@@ -112,11 +118,103 @@ molecule_dirac = run_dirac(molecule2,
                     run_mp2=run_mp2,
                     run_cisd=run_cisd,
                     run_ccsd=run_ccsd,
-                    run_fci=run_fci)
+                    run_fci=run_fci,
+                    relativistic=relativistic)
+
+fermion_hamiltonian = molecule_dirac.get_molecular_hamiltonian(relativistic=relativistic)
+with open("integrals_H2_dirac","w") as f:
+ f.write(str(fermion_hamiltonian))
+f.close
+qbit_hamiltonian_dirac = jordan_wigner(fermion_hamiltonian)
+#qbit_hamiltonian_dirac_BK = bravyi_kitaev(molecule_dirac.get_molecular_hamiltonian(relativistic=relativistic))
+#print('Qubit Hamiltonian:\n')
+#print(qbit_hamiltonian_dirac,'\n')
+evs_dirac = eigenspectrum(qbit_hamiltonian_dirac)
+#evs_dirac_BK = eigenspectrum(qbit_hamiltonian_dirac_BK)
+print('Hartree-Fock energy of {} Hartree.'.format(molecule_dirac.get_energies()[0]))
+print('MP2 energy of {} Hartree.'.format(molecule_dirac.get_energies()[1]))
+print('CCSD energy of {} Hartree.'.format(molecule_dirac.get_energies()[2]))
+print('Solving the Qubit Hamiltonian (Jordan-Wigner): {}'.format(min(evs_dirac)))
+#print('Solving the Qubit Hamiltonian (Bravyi-Kitaev): {}'.format(min(evs_dirac_BK)))
+
+print()
+print('#'*40)
+print('REL Dirac calculation')
+print('#'*40)
+print()
+relativistic=True
+description += '_rel'
+
+molecule2 = MolecularData_Dirac(geometry=geometry,
+                               basis=basis,
+                               multiplicity=multiplicity,
+                               charge=charge,
+                               description=description,
+                               data_directory=data_directory)
+
+molecule_dirac = run_dirac(molecule2,
+                    delete_input=delete_input,
+                    delete_xyz=delete_xyz,
+                    delete_output=delete_output,
+                    delete_MRCONEE=delete_MRCONEE,
+                    delete_MDCINT=delete_MDCINT,
+                    delete_FCIDUMP=delete_FCIDUMP,
+                    verbose=verbose,
+                    run_scf=run_scf,
+                    run_mp2=run_mp2,
+                    run_cisd=run_cisd,
+                    run_ccsd=run_ccsd,
+                    run_fci=run_fci,
+                    relativistic=relativistic)
 
 #print('Molecular Hamiltonian:\n')
-#print(molecule_dirac.get_molecular_hamiltonian(),'\n')
-qbit_hamiltonian_dirac = jordan_wigner(molecule_dirac.get_molecular_hamiltonian())
+#print(molecule_dirac.get_molecular_hamiltonian(relativistic=relativistic),'\n')
+qbit_hamiltonian_dirac = jordan_wigner(molecule_dirac.get_molecular_hamiltonian(relativistic=relativistic))
+#qbit_hamiltonian_dirac_BK = bravyi_kitaev(molecule_dirac.get_molecular_hamiltonian(relativistic=relativistic))
+#print('Qubit Hamiltonian:\n')
+#print(qbit_hamiltonian_dirac,'\n')
+evs_dirac = eigenspectrum(qbit_hamiltonian_dirac)
+#evs_dirac_BK = eigenspectrum(qbit_hamiltonian_dirac_BK)
+print('Hartree-Fock energy of {} Hartree.'.format(molecule_dirac.get_energies()[0]))
+print('MP2 energy of {} Hartree.'.format(molecule_dirac.get_energies()[1]))
+print('CCSD energy of {} Hartree.'.format(molecule_dirac.get_energies()[2]))
+print('Solving the Qubit Hamiltonian (Jordan-Wigner): {}'.format(min(evs_dirac)))
+#print('Solving the Qubit Hamiltonian (Bravyi-Kitaev): {}'.format(min(evs_dirac_BK)))
+
+print()
+print('#'*40)
+print('REL Dirac calculation, special basis')
+print('#'*40)
+print()
+relativistic=True
+basis="explicit"
+special_basis=".SPECIAL\nH EXPLICIT\n    2    1    1\n    4    0    3\n   13.0100000\n    1.962000\n    0.4446000\n    0.1220000\n    1    0    3\n   0.7270000"
+molecule2 = MolecularData_Dirac(geometry=geometry,
+                               basis=basis,
+                               special_basis=special_basis,
+                               multiplicity=multiplicity,
+                               charge=charge,
+                               description=description,
+                               data_directory=data_directory)
+
+molecule_dirac = run_dirac(molecule2,
+                    delete_input=delete_input,
+                    delete_xyz=delete_xyz,
+                    delete_output=delete_output,
+                    delete_MRCONEE=delete_MRCONEE,
+                    delete_MDCINT=delete_MDCINT,
+                    delete_FCIDUMP=delete_FCIDUMP,
+                    verbose=verbose,
+                    run_scf=run_scf,
+                    run_mp2=run_mp2,
+                    run_cisd=run_cisd,
+                    run_ccsd=run_ccsd,
+                    run_fci=run_fci,
+                    relativistic=relativistic)
+
+#print('Molecular Hamiltonian:\n')
+#print(molecule_dirac.get_molecular_hamiltonian(relativistic=relativistic),'\n')
+qbit_hamiltonian_dirac = jordan_wigner(molecule_dirac.get_molecular_hamiltonian(relativistic=relativistic))
 #print('Qubit Hamiltonian:\n')
 #print(qbit_hamiltonian_dirac,'\n')
 evs_dirac = eigenspectrum(qbit_hamiltonian_dirac)

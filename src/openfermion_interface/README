@@ -1,10 +1,10 @@
 1) Install Dirac, Openfermion, Psi4, Openfermion-Psi4, and the requirements for openfermion
-2) I changed the dirac_mointegral_export.F90 slightly, so don't forget to compile it.
+2) I changed the dirac_mointegral_export.F90 into dirac_openfermion_mointegrals_export.F90, in order to sort the integrals as in psi4. For H2 and LiH, it works.
 3) Add the PATH of the dirac/build/ directory to your bash_profile to use
 - pam, the run_script of dirac
-- dirac_mointegrals_export, which creates the FCIDUMP from the one_body_integrals (MRCONEE) and the two_body_integrals (MDCINT)
+- dirac_openfermion_mointegrals_export, which creates the FCIDUMP from the one_body_integrals (MRCONEE) and the two_body_integrals (MDCINT)
 
 $> cd src/openfermion_interface 
 $> pip install -e .
 
-4) an example if furnished in h2_dirac.py
+4) an example if furnished in src/openfermion_interface/work_dir/h2_dirac.py and src/openfermion_interface/workdir/LiH_dirac.py
