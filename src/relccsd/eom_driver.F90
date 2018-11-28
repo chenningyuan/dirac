@@ -2118,7 +2118,7 @@ function create_projector(eom_type, ndet, eps)
       allocate(create_projector(ndet))
       create_projector = .false.
 
-      print *,' debug, relcc_projectors_cvs_energy_threshold',relcc_projectors_cvs_energy_threshold
+      if (iprnt.ge.2) print *,' debug, relcc_projectors_cvs_energy_threshold',relcc_projectors_cvs_energy_threshold
 
       if (relcc_projectors_do_core_valence_separation) then
           do i = 1, ndet
