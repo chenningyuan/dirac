@@ -301,7 +301,7 @@ contains
         if (present(overlap_sorting)) then
             davidson_overlap_sorting = overlap_sorting
         else
-            davidson_overlap_sorting = .true.
+            davidson_overlap_sorting = .false.
         end if
 
         if (present(use_preconditioner)) then

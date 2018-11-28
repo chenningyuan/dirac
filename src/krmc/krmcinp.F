@@ -825,7 +825,7 @@ C               store on common block in krciprop.h
          end if
       END IF
 C
-      IF (IKRMC_SYMMETRY .GT. NREP) THEN
+      IF (.not.linear.and.IKRMC_SYMMETRY .GT. NREP) THEN
          WRITE(LUPRI,'(/A//A,2I3)')
      &      ' INPUT ERROR, requested .SYMMETRY is not valid!',
      &      ' symmetry requested, max value of symmetry = ', 
