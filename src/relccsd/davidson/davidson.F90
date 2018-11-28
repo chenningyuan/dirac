@@ -1510,7 +1510,7 @@ contains
             sigma_vector => create_sigma_vector(A, b, sigma_vector, state_sym)
 ! aspg, WIP june/july 2018
             if (associated(projector)) call apply_projector(projector,sigma_vector)
-            if (associated(projector)) call apply_projector(projector,b)
+!           if (associated(projector)) call apply_projector(projector,b)
 ! aspg, WIP june/july 2018
 
             if (davidson_debug) call davidson_print_vectors(sigma_vector, label="debug:  sigma vector          ")
