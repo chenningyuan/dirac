@@ -8,6 +8,15 @@ from runtest_dirac import Filter, TestRun
 
 test = TestRun(__file__, sys.argv)
 
+#Pi Testing complex arimethic
+f = Filter()
+f.add(from_string = ' Overview of calculated energies',
+      to_string   = '@ Total CCSD-T  energy',
+#Pi      rel_tolerance   = 1.0e-7)
+      rel_tolerance   = 1.0e-14)
+
+test.run(['ccsd.small.ion.inp'], ['H2O_mod.mol'], f, args='--mw=64 --aw=130         ')
+
 # Testing regular and Fock space coupled cluster
 f = Filter()
 f.add(from_string = 'Electronic energy',
