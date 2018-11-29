@@ -310,7 +310,8 @@ C
 C
 C  Large         
          CALL HEADER('Numerical ovelap integral made by Ayaki',-1)
-
+         write(*,*)
+         write(*,*)"Only Large"
          DO J = 1,NTBAS(1)*NTBAS(1)
             CALL DCOPY(MXNP,TDL(J,1),NTBAS(1)*NTBAS(1),TE(1),1)
             CALL QUAD(OVLL(J),TE(1),MXNP,H)
@@ -318,14 +319,32 @@ C  Large
          CALL OUTPUT(OVLL,1,NTBAS(1),1,NTBAS(1),
      &                NTBAS(1),NTBAS(1),1,LUPRI)
 C
+         write(*,*)
+         write(*,*)"Only Small"
          DO J = 1,NTBAS(2)*NTBAS(2)
             CALL DCOPY(MXNP,TDS(J,1),NTBAS(2)*NTBAS(2),TE(1),1)
             CALL QUAD(OVLS(J),TE(1),MXNP,H)
          ENDDO
          CALL OUTPUT(OVLS,1,NTBAS(2),1,NTBAS(2),
      &                NTBAS(2),NTBAS(2),1,LUPRI)
-
-         
+         write(*,*)
+         write(*,*)"Total, Both large and small"
+         IND  = 1
+         INDL = 1
+         INDS = 1
+         DO J = 1,NTBAS(1)
+            CALL DCOPY(NTBAS(1),OVLL(INDL),1,OVL(IND),1)
+            IND  = IND + NTBAS(0)
+            INDL = INDL+ NTBAS(1)
+         ENDDO
+         IND = 1 + (NTBAS(0)+1)*NTBAS(1)
+         DO J = 1,NTBAS(2)
+            CALL DCOPY(NTBAS(2),OVLS(INDS),1,OVL(IND),1)
+            IND  = IND + NTBAS(0)
+            INDS = INDS+ NTBAS(2)
+         ENDDO
+         CALL OUTPUT(OVL,1,NTBAS(0),1,NTBAS(0),
+     &                NTBAS(0),NTBAS(0),1,LUPRI)         
 !*************         *****8
 c$$$         DO I = 1,NTBAS(1)
 c$$$           DO J = 1,NTBAS(1)
