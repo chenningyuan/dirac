@@ -172,6 +172,8 @@
    integer :: ndimr1, ndimr2, search_dimension, xroot, N1, N2, N
    real*8,allocatable :: R1_dum(:,:) 
    integer :: fudge_factor
+   real*8 :: in_core_HbarSS_threshold
+   integer :: number_diagonal_elements_in_core
 
 !initialize the R-vector
 !=======================
@@ -183,6 +185,13 @@
 
     R1(1:N1,1:nroot) = 0.0d0 
     R2(1:N2,1:nroot) = 0.0d0 
+
+! aspg, WIP
+    number_diagonal_elements_in_core = 0
+    in_core_HbarSS_threshold = huge(in_core_HbarSS_threshold)
+! aspg, WIP
+
+! aspg, WIP
 
 ! 1> Determine the minimum energy determinants for IP, EA & EE. The number of them is equal to the number of roots. 
 
@@ -204,6 +213,14 @@
    select case (eomtype)
 
    case ("EE")
+! aspg, WIP
+! whereas for IP/EA one can use the spinor energies as a guide for which
+! diagonal element of Hbar relates to the core-core part of the diagonal, 
+! for EE we have to look at the orbital energy differences and therefore
+! use a helper variable to map between the core-core part of the diagonal
+! and the occupied spinor energy threshold given as input 
+   in_core_HbarSS_threshold = huge(in_core_HbarSS_threshold)
+! aspg, WIP
 
     ai = 1
     ii = 0
@@ -222,6 +239,20 @@
               iaai = (iovvo(state_sym) + (iivo(arep,irep)+(i-1)*nv(arep)+a-1)*nov(iarep) + &
        &      iiov(irep,arep) + (a-1)*no(irep)+ i - 1)*rcw+1   
               H_II(ai) = -fac1 + eps(aa)! - vbar_ss (iaai)
+! aspg, WIP
+! whereas for IP/EA one can use the spinor energies as a guide for which
+! diagonal element of Hbar relates to the core-core part of the diagonal, 
+! for EE we have to look at the orbital energy differences and therefore
+! use a helper variable to map between the core-core part of the diagonal Hbar(ai,ai)
+! and the occupied spinor energy threshold given as input. We will use this
+! variable to determine the trial vectors below 
+              if (fac1 .le. relcc_projectors_cvs_energy_threshold) then
+                 if (H_II(ai).lt.in_core_HbarSS_threshold) then
+                    in_core_HbarSS_threshold = H_II(ai)
+                 end if
+                 number_diagonal_elements_in_core = number_diagonal_elements_in_core + 1
+              end if
+! aspg, WIP
               ai = ai + rcw
           enddo
         enddo
@@ -320,15 +351,37 @@
           if (relcc_projectors_do_restricted_excitation_window) then ! find the lowest elements of the diagonal within the given excitation window
              call quit('REW not implemented')
 
+              if (iprnt.ge.1) then
+                  write (iw,*) ''
+                  write (iw,*) '   Restricted ionization window (REW) via projectors will be invoked'
+                  write (iw,*) '   Spinors in the following window(s) will be active'
+                  write (iw,*) '      occupied low-end ',number_diagonal_elements_in_core,'a.u.'
+                  write (iw,*) '               high-end',number_diagonal_elements_in_core,'a.u.'
+                  write (iw,*) '      virtual  low-end ',number_diagonal_elements_in_core,'a.u.'
+                  write (iw,*) '               high-end',number_diagonal_elements_in_core,'a.u.'
+                  write (iw,*) '   There are',number_diagonal_elements_in_core,' possible single ionizations out of REW orbitals'
+                  write (iw,*) ''
+              end if
+
           else if (relcc_projectors_do_core_valence_separation) then ! find the lowest elements of the diagonal involving core electrons only
 
+              if (iprnt.ge.1) then
+                  write (iw,*) ''
+                  write (iw,*) '   Core-valence separation (CVS) via projectors will be invoked'
+                  write (iw,*) '   Spinors below',relcc_projectors_cvs_energy_threshold,' a.u. taken as core'
+                  write (iw,*) '   There are',number_diagonal_elements_in_core,'possible single excitations out of core orbitals'
+                  write (iw,*) ''
+              end if
+
               if (iprnt.ge.2) write (iw,*) 'diag(Hbar_SS): ',diag_H
+              if (iprnt.ge.2) write (iw,*) 'in_core_HbarSS_threshold',in_core_HbarSS_threshold
 ! aspg, WIP june/july 2018
-! what is below is a simple hack for testing for water, will not work in general
               do iroot = 1, nroot
-                  k = minloc(diag_H, MASK=(diag_H > abs(relcc_projectors_cvs_energy_threshold)))
+                  k = minloc(diag_H, MASK=(diag_H .ge. in_core_HbarSS_threshold))
                   if (iprnt.ge.2) write(iw,*)'roots',iroot,diag_H(k(1)),k(1)
+                  if (iprnt.ge.3) write(iw,*) diag_H
                   i = k(1)
+                  if (iprnt.ge.3) write(iw,*) 'making',i,'huge'
                   diag_H(i) = huge(diag_H)
                   jroot = i
                   if (rcw.eq.2) jroot = 2*i - 1
@@ -378,6 +431,15 @@
          fac1 = eps(ii)
           do a = 1, ncont(arep)
              H_II(ai) = -fac1 
+! aspg, WIP
+              if (fac1 .le. relcc_projectors_cvs_energy_threshold) then
+                 if (H_II(ai).lt.in_core_HbarSS_threshold) then
+                    in_core_HbarSS_threshold = H_II(ai)
+                 end if
+                 number_diagonal_elements_in_core = number_diagonal_elements_in_core + 1
+              end if
+! aspg, WIP
+
              ai = ai + rcw
           enddo
 
@@ -477,24 +539,46 @@
           diag_H = H_II(1:N1:rcw)
 
           if (relcc_projectors_do_restricted_excitation_window) then ! find the lowest elements of the diagonal within the given excitation window
-             call quit('REW not implemented')
+             call quit('RIW not implemented')
+
+              if (iprnt.ge.1) then
+                  write (iw,*) ''
+                  write (iw,*) '   Restricted ionization window (RIW) via projectors will be invoked'
+                  write (iw,*) '   Spinors in the following window(s) will be active'
+                  write (iw,*) '      occupied low-end ',number_diagonal_elements_in_core,'a.u.'
+                  write (iw,*) '               high-end',number_diagonal_elements_in_core,'a.u.'
+                  write (iw,*) '      virtual  low-end ',number_diagonal_elements_in_core,'a.u.'
+                  write (iw,*) '               high-end',number_diagonal_elements_in_core,'a.u.'
+                  write (iw,*) '   There are',number_diagonal_elements_in_core,' possible single ionizations out of RIW orbitals'
+                  write (iw,*) ''
+              end if
 
           else if (relcc_projectors_do_core_valence_separation) then ! find the lowest elements of the diagonal involving core electrons only
 
-              xroot = 0
+              if (iprnt.ge.1) then
+                  write (iw,*) ''
+                  write (iw,*) '   Core-valence separation (CVS) via projectors will be invoked'
+                  write (iw,*) '   Spinors below',relcc_projectors_cvs_energy_threshold,' a.u. taken as core'
+                  write (iw,*) '   There are',number_diagonal_elements_in_core,' possible single ionizations out of core orbitals'
+                  write (iw,*) '' 
+              end if
+
+!             xroot = 0
 
               if (iprnt.ge.2) write (iw,*) 'diag(Hbar_SS): ',diag_H
+              if (iprnt.ge.2) write (iw,*) 'in_core_HbarSS_threshold',in_core_HbarSS_threshold
 ! aspg, WIP june/july 2018
-! what is below is a simple hack for testing for water, will not work in general
               do iroot = 1, nroot
-                  k = minloc(diag_H, MASK=(diag_H > abs(relcc_projectors_cvs_energy_threshold)))
+                  k = minloc(diag_H, MASK=(diag_H .ge. in_core_HbarSS_threshold))
                   if (iprnt.ge.2) write(iw,*)'roots',iroot,diag_H(k(1)),k(1)
+                  if (iprnt.ge.3) write(iw,*) diag_H
                   i = k(1)
+                 if (iprnt.ge.3) write(iw,*) 'making',i,'huge'
                   diag_H(i) = huge(diag_H)
-                  xroot = xroot + 1
+!                 xroot = xroot + 1
                   jroot = i
                   if (rcw.eq.2) jroot = 2*i - 1
-                  R1(jroot,xroot) = 1.0d0
+                  R1(jroot,iroot) = 1.0d0
               enddo
 
               if (iprnt.ge.3) call davidson_print_vectors(R1, label="debug:  R1 vector             ")
