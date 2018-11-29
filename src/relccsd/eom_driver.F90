@@ -2326,9 +2326,9 @@ end subroutine
                                  allocate(map%det(ii)%occupied_indexes_in_irreps(1))
 
 
-                                 map%det(ii)%virtuals_energies(1) = eps(jj)
-                                 map%det(ii)%virtuals_irreps(1) = jrp 
-                                 map%det(ii)%virtuals_indexes_in_irreps(1) = j 
+                                 map%det(ii)%occupied_energies(1) = eps(jj)
+                                 map%det(ii)%occupied_irreps(1) = jrp 
+                                 map%det(ii)%occupied_indexes_in_irreps(1) = j 
 
                                  allocate(map%det(ii)%virtuals_energies(2))
                                  allocate(map%det(ii)%virtuals_irreps(2))
@@ -2442,9 +2442,9 @@ end subroutine
                   allocate(map%det(ii)%occupied_irreps(1))
                   allocate(map%det(ii)%occupied_indexes_in_irreps(1))
                   
-                  map%det(ii)%virtuals_energies(1) = eps(jj)
-                  map%det(ii)%virtuals_irreps(1) = irep
-                  map%det(ii)%virtuals_indexes_in_irreps(1) = i
+                  map%det(ii)%occupied_energies(1) = eps(jj)
+                  map%det(ii)%occupied_irreps(1) = irep
+                  map%det(ii)%occupied_indexes_in_irreps(1) = i
                
                   allocate(map%det(ii)%virtuals_energies(1))
                   allocate(map%det(ii)%virtuals_irreps(1))
@@ -2488,14 +2488,14 @@ end subroutine
                               allocate(map%det(ii)%occupied_irreps(2))
                               allocate(map%det(ii)%occupied_indexes_in_irreps(2))
 
-                              map%det(ii)%virtuals_energies(1) = eps(kk)
-                              map%det(ii)%virtuals_energies(2) = eps(jj)
+                              map%det(ii)%occupied_energies(1) = eps(kk)
+                              map%det(ii)%occupied_energies(2) = eps(jj)
 
-                              map%det(ii)%virtuals_irreps(1) = irp
-                              map%det(ii)%virtuals_irreps(2) = jrp
+                              map%det(ii)%occupied_irreps(1) = irp
+                              map%det(ii)%occupied_irreps(2) = jrp
 
-                              map%det(ii)%virtuals_indexes_in_irreps(1) = i
-                              map%det(ii)%virtuals_indexes_in_irreps(2) = j
+                              map%det(ii)%occupied_indexes_in_irreps(1) = i
+                              map%det(ii)%occupied_indexes_in_irreps(2) = j
 
                               allocate(map%det(ii)%virtuals_energies(2))
                               allocate(map%det(ii)%virtuals_irreps(2))
