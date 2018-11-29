@@ -1954,6 +1954,7 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
  
              end if
 
+             projector => create_projector(4, (ndimr1 + ndimr2), eps)
 
           case ('IP')
 
@@ -2061,6 +2062,8 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
       &                               B%H_II)
  
              end if
+
+             projector => create_projector(2, (ndimr1 + ndimr2), eps)
 
          end select 
 

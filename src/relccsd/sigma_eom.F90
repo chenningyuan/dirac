@@ -312,7 +312,7 @@ module sigma_eom
             call show_number_of_threads(iw)
 !$OMP DO
              do iroot = L_already_done + 1, L 
-
+!               print *,'thread number',omp_get_thread_num(),'root',iroot
                 create_sigma_vector_right(:,iroot:iroot) = 0.0d0
                 if (iprnt.ge.2) write(iw,"(2x,a,i6,a,i6)") "debug, constructing EOM-EA sigma vector ",iroot," out of ",L
                 call sigma_EA(r(start_r1:end_r1, iroot), &
