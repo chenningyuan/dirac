@@ -68,8 +68,8 @@
         type, public :: talsh_comm_tens
          type(talsh_tens_t) :: foo, fov, fvv
          type(talsh_tens_t) :: goo, gvv
-         type(talsh_tens_t) :: hov
-         type(talsh_tens_t) :: a_int, b_int, d_int, h_int
+         type(talsh_tens_t) :: hoo, hov, hvv
+         type(talsh_tens_t) :: a_int, h_int
          type(talsh_tens_t) :: t1, t2, tau
         end type talsh_comm_tens
 

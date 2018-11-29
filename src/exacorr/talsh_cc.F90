@@ -153,8 +153,10 @@ module talsh_cc
 
          oo_dims = nocc  * 2
          ierr=talsh_tensor_construct(comm_t%goo,C8,oo_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(comm_t%hoo,C8,oo_dims,init_val=ZERO)
          vv_dims = nvir * 2
          ierr=talsh_tensor_construct(comm_t%gvv,C8,vv_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(comm_t%hvv,C8,vv_dims,init_val=ZERO)
          ov_dims(1) = nocc *2
          ov_dims(2) = nvir *2
          ierr=talsh_tensor_construct(comm_t%hov,C8,ov_dims,init_val=ZERO)
@@ -202,9 +204,9 @@ module talsh_cc
           call print_date("Begin solving Lambda equations")
 
 !         Construct tensor to be used in lambda intermediates
-          ierr=talsh_tensor_construct(comm_t%d_int,C8,oooo_dims,init_val=ZERO)
-          vvvv_dims = nvir * 2
-          ierr=talsh_tensor_construct(comm_t%b_int,C8,vvvv_dims,init_val=ZERO)
+          !ierr=talsh_tensor_construct(comm_t%d_int,C8,oooo_dims,init_val=ZERO)
+          !ivvv_dims = nvir * 2
+          !ierr=talsh_tensor_construct(comm_t%b_int,C8,vvvv_dims,init_val=ZERO)
 
 !         Obtain intermediates from CCSD
           call print_date("Calculating common blocks")
@@ -251,12 +253,12 @@ module talsh_cc
          ierr=talsh_tensor_destruct(comm_t%t1)
          ierr=talsh_tensor_destruct(comm_t%t2)
          ierr=talsh_tensor_destruct(comm_t%tau)
+         ierr=talsh_tensor_destruct(comm_t%hoo)
          ierr=talsh_tensor_destruct(comm_t%hov)
+         ierr=talsh_tensor_destruct(comm_t%hvv)
          ierr=talsh_tensor_destruct(comm_t%goo)
          ierr=talsh_tensor_destruct(comm_t%gvv)
          ierr=talsh_tensor_destruct(comm_t%a_int)
-         ierr=talsh_tensor_destruct(comm_t%b_int)
-         ierr=talsh_tensor_destruct(comm_t%d_int)
          ierr=talsh_tensor_destruct(comm_t%h_int)
          ierr=talsh_tensor_destruct(result_tensor)
          ierr=talsh_tensor_destruct(one_tensor)
@@ -292,9 +294,9 @@ module talsh_cc
          type(talsh_comm_tens), intent(inout) :: comm_t
          type(talsh_intg_tens), intent(inout) :: int_t
 !        intermediate tensors (same notation as in relccsd)
-         type(talsh_tens_t) :: hoo_int_tensor, hvv_int_tensor
-         type(talsh_tens_t) :: tau2_tensor, tau2_aux_tensor
-         type(talsh_tens_t) :: cint_tensor, caux_tensor
+         !type(talsh_tens_t) :: hoo_int_tensor, hvv_int_tensor
+         type(talsh_tens_t) :: tau2_tensor
+         type(talsh_tens_t) :: cint_tensor
 !        auxilliary tensors for t1 equation
          type(talsh_tens_t) :: hov_aux_tensor, hoo_aux_tensor
 !        solution tensors
@@ -306,7 +308,7 @@ module talsh_cc
          type(talsh_tens_t) :: a_orig, h_orig
          integer :: oooo_dims(4)
          !Tensor dimensions
-         integer, dimension(2) :: oo_dims, ov_dims, vo_dims, vv_dims
+         integer, dimension(2) :: oo_dims, ov_dims, vo_dims
          integer, dimension(4) :: vvoo_dims, vovo_dims, ovoo_dims
          !Orbital energies for scaling
          real(8), intent(in)   :: eps_occ(:), eps_vir(:)
@@ -324,10 +326,7 @@ module talsh_cc
          call c_f_pointer(body_p,result_tens,result_dims)
 
          oo_dims = nocc * 2
-         ierr=talsh_tensor_construct(hoo_int_tensor,C8,oo_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(hoo_aux_tensor,C8,oo_dims,init_val=ZERO)
-         vv_dims = nvir * 2
-         ierr=talsh_tensor_construct(hvv_int_tensor,C8,vv_dims,init_val=ZERO)
          ov_dims(1) = nocc * 2
          ov_dims(2) = nvir * 2
          ierr=talsh_tensor_construct(hov_aux_tensor,C8,ov_dims,init_val=ZERO)
@@ -345,11 +344,13 @@ module talsh_cc
 
          do iccsd = 1, nccsd
 
-!         make tau ! validated
-          ierr=talsh_tensor_init(comm_t%tau)
-          ierr=talsh_tensor_add("T(a,b,i,j)+=R(a,b,i,j)",comm_t%tau,comm_t%t2)
-          ierr=talsh_tensor_contract("T(a,b,i,j)+=T(a,i)*T(b,j)",comm_t%tau,comm_t%t1,comm_t%t1) ! o(2)v(2)
-          ierr=talsh_tensor_contract("T(a,b,i,j)+=T(a,j)*T(b,i)",comm_t%tau,comm_t%t1,comm_t%t1,scale=MINUS_ONE) ! o(2)v(2)
+!         calculate (parts of) intermediates
+          call get_common_blocks(comm_t,int_t)
+
+          if (ierr.ne.TALSH_SUCCESS) then
+             print*," ccdriver: error in calculation of common blocks, code=",ierr
+             return
+          end if
 
 !NOTE: contractions marked with "validated" gave numerically significant contributions and could be validated by comparison
 !to the reference implementation, the ones marked "moretests" were too small to decide whether it was correct or not.
@@ -360,25 +361,11 @@ module talsh_cc
 !         The vvvv contribution
           ierr=talsh_tensor_contract("S(a,b,i,j)+=V(a,b,c,d)*T(c,d,i,j)",s2_tensor,int_t%vvvv,comm_t%tau,scale=ONE_HALF) ! validated o(2)v(4)
 
-!         vv ! validated
-          ierr=talsh_tensor_init(hvv_int_tensor)
-          ierr=talsh_tensor_add("H(a,c)+=F(a,c)",hvv_int_tensor,comm_t%fvv)
-          ierr=talsh_tensor_contract("H(a,c)+=V(k,l,c,d)*T(d,a,k,l)",hvv_int_tensor,int_t%oovv,comm_t%tau, &
-                                      scale=ONE_HALF) ! o(2)v(3)
-          ierr=talsh_tensor_init(comm_t%gvv)
-          ierr=talsh_tensor_add("G(a,c)+=H(a,c)",comm_t%gvv,hvv_int_tensor)
-          ierr=talsh_tensor_contract("G(a,c)+=V(a,k,c,d)*T(d,k)",comm_t%gvv,int_t%vovv,comm_t%t1) ! o(1)v(3)
-          ierr=talsh_tensor_contract("G(a,c)+=F(k,c)*T(a,k)",comm_t%gvv,comm_t%fov,comm_t%t1,scale=MINUS_ONE) ! o(1)v(2)
-
 !         vovo ! moretests
           ierr=talsh_tensor_init(tau2_tensor)
           ierr=talsh_tensor_add("T(a,d,l,i)+=R(a,d,l,i)",tau2_tensor,comm_t%t2,scale=ONE_HALF)
           ierr=talsh_tensor_contract("T(a,d,l,i)+=T(a,l)*T(d,i)",tau2_tensor,comm_t%t1,comm_t%t1)                       ! o(2)v(2)
-          ierr=talsh_tensor_init(comm_t%h_int)
           ierr=talsh_tensor_contract("H(a,k,c,i)+=V(k,l,c,d)*T(a,d,l,i)",comm_t%h_int,int_t%oovv,tau2_tensor)           ! o(3)v(3)
-          ierr=talsh_tensor_contract("H(a,k,c,i)+=V(a,k,c,d)*T(d,i)",comm_t%h_int,int_t%vovv,comm_t%t1)                 ! o(2)v(3)
-          ierr=talsh_tensor_contract("H(a,k,c,i)+=V(k,l,i,c)*T(a,l)",comm_t%h_int,int_t%ooov,comm_t%t1,scale=MINUS_ONE) ! o(3)v(2)
-          ierr=talsh_tensor_add("H(a,k,c,i)+=V(a,k,c,i)",comm_t%h_int,int_t%vovo)
 
 !         This term appears four times as we need to permute both i and j and a and b
           ierr=talsh_tensor_contract("S(a,b,i,j)+=H(a,k,c,i)*T(c,b,j,k)",s2_tensor,comm_t%h_int,comm_t%t2) ! validated o(3)v(3)
@@ -393,31 +380,10 @@ module talsh_cc
           ierr=talsh_tensor_contract("C(k,b,i,j)+=V(b,k,c,j)*T(c,i)",cint_tensor,int_t%vovo,comm_t%t1,scale=MINUS_ONE)           ! o(3)v(2)
           ierr=talsh_tensor_contract("C(k,b,i,j)+=V+(i,j,k,b)*K()",cint_tensor,int_t%ooov,one_tensor)                            ! o(3)v(1)
 
-!         oo ! validated
-          ierr=talsh_tensor_init(hoo_int_tensor)
-          ierr=talsh_tensor_add("H(k,i)+=F(k,i)",hoo_int_tensor,comm_t%foo,scale=MINUS_ONE)
-          ierr=talsh_tensor_contract("H(k,i)+=V(k,l,c,d)*T(c,d,l,i)",hoo_int_tensor,int_t%oovv,comm_t%tau,scale=ONE_HALF) ! o(3)v(2)
-          ierr=talsh_tensor_init(comm_t%goo)
-          ierr=talsh_tensor_add("G(k,i)+=H(k,i)",comm_t%goo,hoo_int_tensor)
-          ierr=talsh_tensor_contract("G(k,i)+=V(k,l,i,c)*T(c,l)",comm_t%goo,int_t%ooov,comm_t%t1,scale=MINUS_ONE)         ! o(3)v(1)
-          ierr=talsh_tensor_contract("G(k,i)+=F(k,c)*T(c,i)",comm_t%goo,comm_t%fov,comm_t%t1)                             ! o(2)v(1)
-
 !         ov ! validated
-          ierr=talsh_tensor_init(comm_t%hov)
           ierr=talsh_tensor_init(hov_aux_tensor)
-          ierr=talsh_tensor_contract("H(k,c)+=V(k,l,c,d)*T(d,l)",comm_t%hov,int_t%oovv,comm_t%t1) ! o(2)v(2)
           ierr=talsh_tensor_add("L(k,c)+=H(k,c)",hov_aux_tensor,comm_t%hov)                       ! copy common term
-          ierr=talsh_tensor_add("H(k,c)+=F(k,c)",comm_t%hov,comm_t%fov)                           ! add fock matrix
           ierr=talsh_tensor_add("H(k,c)+=F(k,c)",hov_aux_tensor,comm_t%fov,scale=MINUS_ONE)       ! subtract fock matrix
-
-!         oooo ! validated
-          ierr=talsh_tensor_init(comm_t%a_int)
-          ierr=talsh_tensor_add("A(k,l,i,j)+=V(k,l,i,j)",comm_t%a_int,int_t%oooo)
-          ierr=talsh_tensor_contract("A(k,l,i,j)+=V(k,l,i,c)*T(c,j)",comm_t%a_int,int_t%ooov,comm_t%t1) ! o(4)v(1)
-          ierr=talsh_tensor_contract("A(k,l,i,j)+=V(k,l,j,c)*T(c,i)",comm_t%a_int,int_t%ooov,comm_t%t1, &
-                                      scale=MINUS_ONE) ! o(4)v(1)
-          ierr=talsh_tensor_contract("A(k,l,i,j)+=V(k,l,c,d)*T(c,d,i,j)",comm_t%a_int,int_t%oovv,comm_t%tau, &
-                                      scale=ONE_HALF) ! o(4)v(2)
 
           if (ierr.ne.TALSH_SUCCESS) then
              print*," ccdriver: error in calculation of intermediates, code=",ierr
@@ -429,9 +395,9 @@ module talsh_cc
              print*, "T1amp  = ",tensor_norm2(comm_t%t1)
              print*, "T2amp  = ",tensor_norm2(comm_t%t2)*ONE_QUARTER
              print*, "Tau    = ",tensor_norm2(comm_t%tau)*ONE_QUARTER
-             print*, "hoint  = ",tensor_norm2(hoo_int_tensor)
+             print*, "hoint  = ",tensor_norm2(comm_t%hoo)
              print*, "goint  = ",tensor_norm2(comm_t%goo)
-             print*, "hvint  = ",tensor_norm2(hvv_int_tensor)
+             print*, "hvint  = ",tensor_norm2(comm_t%hvv)
              print*, "gvint  = ",tensor_norm2(comm_t%gvv)
              print*, "hovint = ",tensor_norm2(comm_t%hov)
              print*, "a int  = ",tensor_norm2(comm_t%a_int)*ONE_QUARTER
@@ -468,8 +434,8 @@ module talsh_cc
           ierr=talsh_tensor_contract("S(a,i)+=F+(i,a)*K()",s1_tensor,comm_t%fov,one_tensor)
 !         end of work-around
           ierr=talsh_tensor_contract("S(a,i)+=V(a,k,c,d)*T(c,d,i,k)",s1_tensor,int_t%vovv,comm_t%tau,scale=ONE_HALF) !validated o(2)v(3)
-          ierr=talsh_tensor_contract("S(a,i)+=H(a,c)*T(c,i)",s1_tensor,hvv_int_tensor,comm_t%t1)                     !validated o(1)v(2)
-          ierr=talsh_tensor_contract("S(a,i)+=H(k,i)*T(a,k)",s1_tensor,hoo_int_tensor,comm_t%t1)                     !validated o(2)v(1)
+          ierr=talsh_tensor_contract("S(a,i)+=H(a,c)*T(c,i)",s1_tensor,comm_t%hvv,comm_t%t1)                     !validated o(1)v(2)
+          ierr=talsh_tensor_contract("S(a,i)+=H(k,i)*T(a,k)",s1_tensor,comm_t%hoo,comm_t%t1)                     !validated o(2)v(1)
           ierr=talsh_tensor_contract("S(a,i)+=H(k,c)*T(a,c,i,k)",s1_tensor,comm_t%hov,comm_t%t2)                     !validated o(2)v(2)
           ierr=talsh_tensor_init(hoo_aux_tensor)                                                                     !moretests
           ierr=talsh_tensor_contract("L(k,i)+=H(k,c)*T(c,i)",hoo_aux_tensor,hov_aux_tensor,comm_t%t1)                !moretests o(2)v(1)
@@ -497,7 +463,7 @@ module talsh_cc
           ierr=talsh_tensor_init(result_tensor)
           ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%tau,int_t%oovv) ! o(2)v(2)
           ccsd_energy=ccsd_energy + result_tens(1) * ONE_QUARTER
-          write (*,'(A,I4,A,F20.15,A,E10.1)') "  Iteration ",iccsd," CCSD energy = ",ccsd_energy, " convergence =",t_convergence
+          write (*,'(A,I4,A,F20.15,A,ES10.1)') "  Iteration ",iccsd," CCSD energy = ",ccsd_energy, " convergence =",t_convergence
           if (t_convergence .lt. t_target_precision) exit
 
          end do
@@ -506,9 +472,9 @@ module talsh_cc
          ierr=talsh_tensor_destruct(s2_tensor)
          ierr=talsh_tensor_destruct(tau2_tensor)
          ierr=talsh_tensor_destruct(cint_tensor)
-         ierr=talsh_tensor_destruct(hoo_int_tensor)
+         !ierr=talsh_tensor_destruct(hoo_int_tensor)
          ierr=talsh_tensor_destruct(hoo_aux_tensor)
-         ierr=talsh_tensor_destruct(hvv_int_tensor)
+         !ierr=talsh_tensor_destruct(hvv_int_tensor)
          ierr=talsh_tensor_destruct(hov_aux_tensor)
          ierr=talsh_tensor_destruct(result_tensor)
 

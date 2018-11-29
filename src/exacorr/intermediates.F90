@@ -6,7 +6,9 @@ module intermediates
      private
 
      complex(8), parameter :: ZERO=(0.D0,0.D0), MINUS_ONE=(-1.D0,0.D0), ONE=(1.D0,0.D0), &
-                              ONE_QUARTER_C=(0.25D0,0.D0), ONE_HALF=(0.5D0,0.D0)
+                              MINUS_ONE_QUARTER=(-0.25D0,0.D0), ONE_HALF=(0.5D0,0.D0), &
+                              MINUS_TWO=(-2.D0,0.D0), TWO=(2.D0,0.D0)
+    real(8), parameter     :: ONE_QUARTER=0.25D0
 
      interface get_common_blocks
         module procedure get_common_blocks_exatns
@@ -102,53 +104,49 @@ module intermediates
 
         integer :: ierr
 
-!       tau
+!       tau ! validated
         ierr=talsh_tensor_init(comm_t%tau)
         ierr=talsh_tensor_add("T(a,b,i,j)+=R(a,b,i,j)",comm_t%tau,comm_t%t2)
-        ierr=talsh_tensor_contract("T(a,b,i,j)+=R(a,i)*R(b,j)",comm_t%tau,comm_t%t1,comm_t%t1)
-        ierr=talsh_tensor_contract("T(a,b,i,j)+=R(a,j)*R(b,i)",comm_t%tau,comm_t%t1,comm_t%t1,scale=MINUS_ONE)
+        ierr=talsh_tensor_contract("T(a,b,i,j)+=T(a,i)*T(b,j)",comm_t%tau,comm_t%t1,comm_t%t1)                  ! o(2)v(2)
+        ierr=talsh_tensor_contract("T(a,b,i,j)+=T(a,j)*T(b,i)",comm_t%tau,comm_t%t1,comm_t%t1,scale=MINUS_ONE)  ! o(2)v(2)
 
-!       vv
+!       vv ! validated
+        ierr=talsh_tensor_init(comm_t%hvv)
+        ierr=talsh_tensor_add("H(a,c)+=F(a,c)",comm_t%hvv,comm_t%fvv)
+        ierr=talsh_tensor_contract("H(a,c)+=V(k,l,c,d)*T(d,a,k,l)",comm_t%hvv,int_t%oovv,comm_t%tau,scale=ONE_HALF) ! o(2)v(3)
         ierr=talsh_tensor_init(comm_t%gvv)
-        ierr=talsh_tensor_contract("G(a,c)+=V(k,l,c,d)*T(d,a,k,l)",comm_t%gvv,int_t%oovv,comm_t%tau,scale=ONE_HALF)
-        ierr=talsh_tensor_contract("G(a,c)+=V(a,k,c,d)*T(d,k)",comm_t%gvv,int_t%vovv,comm_t%t1)
-        ierr=talsh_tensor_contract("G(a,c)+=F(k,c)*T(a,k)",comm_t%gvv,comm_t%fov,comm_t%t1,scale=MINUS_ONE)
-        ierr=talsh_tensor_add("G(a,c)+=F(a,c)",comm_t%gvv,comm_t%fvv)
+        ierr=talsh_tensor_add("G(a,c)+=H(a,c)",comm_t%gvv,comm_t%hvv)
+        ierr=talsh_tensor_contract("G(a,c)+=V(a,k,c,d)*T(d,k)",comm_t%gvv,int_t%vovv,comm_t%t1)             ! o(1)v(3)
+        ierr=talsh_tensor_contract("G(a,c)+=F(k,c)*T(a,k)",comm_t%gvv,comm_t%fov,comm_t%t1,scale=MINUS_ONE) ! o(1)v(2)
 
-!       ov
-        ierr=talsh_tensor_init(comm_t%hov)
-        ierr=talsh_tensor_contract("H(k,c)+=V(k,l,c,d)*T(d,l)",comm_t%hov,int_t%oovv,comm_t%t1)
-        ierr=talsh_tensor_add("H(k,c)+=F(k,c)",comm_t%hov,comm_t%fov)
-
-!       oo
-        ierr=talsh_tensor_init(comm_t%goo)
-        ierr=talsh_tensor_contract("G(k,i)+=V(k,l,c,d)*T(c,d,i,l)",comm_t%goo,int_t%oovv,comm_t%tau,scale=ONE_HALF)
-        ierr=talsh_tensor_contract("G(k,i)+=V(k,l,i,c)*T(c,l)",comm_t%goo,int_t%ooov,comm_t%t1)
-        ierr=talsh_tensor_contract("G(k,i)+=F(k,c)*T(c,i)",comm_t%goo,comm_t%fov,comm_t%t1)
-        ierr=talsh_tensor_add("G(k,i)+=F(k,i)",comm_t%goo,comm_t%foo)
-
-!       vvvv
-        ierr=talsh_tensor_init(comm_t%b_int)
-!       Permute a and b, so term appears twice
-        ierr=talsh_tensor_contract("B(a,b,c,d)+=V(k,a,c,d)*T(b,k)",comm_t%b_int,int_t%vovv,comm_t%t1)
-        ierr=talsh_tensor_contract("B(a,b,c,d)+=V(b,k,c,d)*T(a,k)",comm_t%b_int,int_t%vovv,comm_t%t1)
-        ierr=talsh_tensor_add("B(a,b,c,d)+=V(a,b,c,d)",comm_t%b_int,int_t%vvvv)
-
-!       vovo
+!       vovo ! more tests
         ierr=talsh_tensor_init(comm_t%h_int)
         ierr=talsh_tensor_contract("H(a,k,c,i)+=V(a,k,c,d)*T(d,i)",comm_t%h_int,int_t%vovv,comm_t%t1)                 ! o(2)v(3)
         ierr=talsh_tensor_contract("H(a,k,c,i)+=V(k,l,i,c)*T(a,l)",comm_t%h_int,int_t%ooov,comm_t%t1,scale=MINUS_ONE) ! o(3)v(2)
         ierr=talsh_tensor_add("H(a,k,c,i)+=V(a,k,c,i)",comm_t%h_int,int_t%vovo)
 
-!       oooo
+!       oo ! validated
+        ierr=talsh_tensor_init(comm_t%hoo)
+        ierr=talsh_tensor_add("H(k,i)+=F(k,i)",comm_t%hoo,comm_t%foo,scale=MINUS_ONE)
+        ierr=talsh_tensor_contract("G(k,i)+=V(k,l,c,d)*T(c,d,l,i)",comm_t%hoo,int_t%oovv,comm_t%tau,scale=ONE_HALF) ! o(3)v(2)
+        ierr=talsh_tensor_init(comm_t%goo)
+        ierr=talsh_tensor_add("G(k,i)+=H(k,i)",comm_t%goo,comm_t%hoo)
+        ierr=talsh_tensor_contract("G(k,i)+=V(k,l,i,c)*T(c,l)",comm_t%goo,int_t%ooov,comm_t%t1,scale=MINUS_ONE)     ! o(3)v(1)
+        ierr=talsh_tensor_contract("G(k,i)+=F(k,c)*T(c,i)",comm_t%goo,comm_t%fov,comm_t%t1)                         ! o(2)v(1)
+
+!       ov ! validated
+        ierr=talsh_tensor_init(comm_t%hov)
+        ierr=talsh_tensor_contract("H(k,c)+=V(k,l,c,d)*T(d,l)",comm_t%hov,int_t%oovv,comm_t%t1) ! o(2)v(2)
+        ierr=talsh_tensor_add("H(k,c)+=F(k,c)",comm_t%hov,comm_t%fov)
+
+!       oooo ! validated
         ierr=talsh_tensor_init(comm_t%a_int)
         ierr=talsh_tensor_add("A(k,l,i,j)+=V(k,l,i,j)",comm_t%a_int,int_t%oooo)
         ierr=talsh_tensor_contract("A(k,l,i,j)+=V(k,l,i,c)*T(c,j)",comm_t%a_int,int_t%ooov,comm_t%t1) ! o(4)v(1)
         ierr=talsh_tensor_contract("A(k,l,i,j)+=V(k,l,j,c)*T(c,i)",comm_t%a_int,int_t%ooov,comm_t%t1, &
                                     scale=MINUS_ONE) ! o(4)v(1)
-        ierr=talsh_tensor_init(comm_t%d_int)
-        ierr=talsh_tensor_contract("D(k,l,i,j)+=V(k,l,c,d)*T(c,d,i,j)",comm_t%d_int,int_t%oovv,comm_t%tau, &
-                                    scale=ONE_QUARTER_C)
+        ierr=talsh_tensor_contract("A(k,l,i,j)+=V(k,l,c,d)*T(c,d,i,j)",comm_t%a_int,int_t%oovv,comm_t%tau, &
+                                    scale=ONE_HALF)
 
        end subroutine get_common_blocks_talsh
 
@@ -199,66 +197,77 @@ module intermediates
         ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
 
 !       One-body intermediates
-        ierr=talsh_tensor_contract("F(c,a)+=G+(a,c)*K()",lambda_t%fbar_vv,comm_t%gvv,other1_tensor)
-        ierr=talsh_tensor_add("F(k,c)+=H(k,c)",lambda_t%fbar_ov,comm_t%hov)
-        ierr=talsh_tensor_contract("F(i,k)+=G+(k,i)*K()",lambda_t%fbar_oo,comm_t%goo,other1_tensor)
+!       vv
+        ierr=talsh_tensor_add("F(e,a)+=G(e,a)",lambda_t%fbar_vv,comm_t%gvv)
+        ierr=talsh_tensor_contract("F(e,a)+=V(m,e,f,a)*T(f,m)",lambda_t%fbar_vv,int_t%vovv,comm_t%t1,scale=MINUS_TWO)
+!       ov
+        ierr=talsh_tensor_add("F(m,e)+=H(m,e)",lambda_t%fbar_ov,comm_t%hov)
+!       oo
+        ierr=talsh_tensor_add("F(i,m)+=G(i,m)",lambda_t%fbar_oo,comm_t%goo,scale=MINUS_ONE)
+        ierr=talsh_tensor_contract("F(i,m)+=R(i,e)*T(e,m)",lambda_t%fbar_oo,comm_t%fov,comm_t%t1,scale=TWO)
 
 !       Two-body intermediates
 !       vvvv
-        ierr=talsh_tensor_contract("W(c,d,a,b)+=B+(a,b,c,d)*K()",lambda_t%w_vvvv,comm_t%b_int,other1_tensor)
-        ierr=talsh_tensor_contract("W(c,d,a,b)+=V(k,l,a,b)*T(c,d,k,l)",lambda_t%w_vvvv,int_t%oovv,comm_t%tau,scale=ONE_HALF)
+!       Permute e and f, so term appears twice
+        ierr=talsh_tensor_contract("W(e,f,a,b)+=V(f,m,a,b)*T(e,m)",lambda_t%w_vvvv,int_t%vovv,comm_t%t1)
+        ierr=talsh_tensor_contract("W(e,f,a,b)+=V(e,m,a,b)*T(f,m)",lambda_t%w_vvvv,int_t%vovv,comm_t%t1,scale=MINUS_ONE)
+        ierr=talsh_tensor_contract("W(e,f,a,b)+=V(m,n,a,b)*T(e,f,m,n)",lambda_t%w_vvvv,int_t%oovv,comm_t%tau,scale=ONE_HALF)
+        ierr=talsh_tensor_add("W(e,f,a,b)+=V(e,f,a,b)",lambda_t%w_vvvv,int_t%vvvv)
 
 !       vovo bar
-        ierr=talsh_tensor_contract("W(b,k,c,j)+=V(k,l,c,d)*T(b,d,l,j)",lambda_t%wbar_vovo,int_t%oovv,comm_t%t2)
-        ierr=talsh_tensor_add("W(b,k,c,j)+=V(b,k,c,j)",lambda_t%wbar_vovo,int_t%vovo)
+        ierr=talsh_tensor_contract("W(b,m,e,j)+=V(m,n,e,f)*T(b,f,n,j)",lambda_t%wbar_vovo,int_t%oovv,comm_t%t2)
+        ierr=talsh_tensor_add("W(b,m,e,j)+=V(b,m,e,j)",lambda_t%wbar_vovo,int_t%vovo)
 
 !       vvvo
-        ierr=talsh_tensor_contract("W(c,d,a,k)+=V+(a,k,c,d)*K()",lambda_t%w_vvvo,int_t%vovv,other1_tensor)
-!       Need to permute c and d, so term appears twice
-        ierr=talsh_tensor_contract("W(c,d,a,k)+=V(c,l,a,e)*T(e,d,k,l)",lambda_t%w_vvvo,int_t%vovv,comm_t%tau)
-        ierr=talsh_tensor_contract("W(c,d,a,k)+=V(d,l,a,e)*T(c,e,k,l)",lambda_t%w_vvvo,int_t%vovv,comm_t%tau)
-        ierr=talsh_tensor_contract("W(c,d,a,k)+=R(c,d,a,e)*T(e,k)",lambda_t%w_vvvo,lambda_t%w_vvvv,comm_t%t1)
-        ierr=talsh_tensor_contract("W(c,d,a,k)+=F(l,a)*T(c,d,k,l)",lambda_t%w_vvvo,lambda_t%fbar_ov,comm_t%t2)
-        ierr=talsh_tensor_contract("W(c,d,a,k)+=V(l,m,k,a)*T(d,c,l,m)",lambda_t%w_vvvo,int_t%ooov,comm_t%tau,scale=ONE_HALF)
-!       Need to permute c and d, so term appears twice
-        ierr=talsh_tensor_contract("W(c,d,a,k)+=R(d,l,a,k)*T(c,l)",lambda_t%w_vvvo,lambda_t%wbar_vovo,comm_t%t1)
-        ierr=talsh_tensor_contract("W(c,d,a,k)+=R(c,l,a,k)*T(d,l)",lambda_t%w_vvvo,lambda_t%wbar_vovo,comm_t%t1,scale=MINUS_ONE)
+        ierr=talsh_tensor_contract("W(e,f,a,m)+=V+(a,m,e,f)*K()",lambda_t%w_vvvo,int_t%vovv,other1_tensor)
+!       Need to permute e and f, so term appears twice
+        ierr=talsh_tensor_contract("W(e,f,a,m)+=V(e,n,a,g)*T(g,f,m,n)",lambda_t%w_vvvo,int_t%vovv,comm_t%tau)
+        ierr=talsh_tensor_contract("W(e,f,a,m)+=V(f,n,a,g)*T(e,g,m,n)",lambda_t%w_vvvo,int_t%vovv,comm_t%tau)
+        ierr=talsh_tensor_contract("W(e,f,a,m)+=R(e,f,a,g)*T(g,m)",lambda_t%w_vvvo,lambda_t%w_vvvv,comm_t%t1)
+        ierr=talsh_tensor_contract("W(e,f,a,m)+=F(n,a)*T(e,f,m,n)",lambda_t%w_vvvo,lambda_t%fbar_ov,comm_t%t2)
+        ierr=talsh_tensor_contract("W(e,f,a,m)+=V(n,o,m,a)*T(e,f,o,n)",lambda_t%w_vvvo,int_t%ooov,comm_t%tau,scale=ONE_HALF)
+!       Need to permute e and f, so term appears twice
+        ierr=talsh_tensor_contract("W(e,f,a,m)+=R(f,n,a,m)*T(e,n)",lambda_t%w_vvvo,lambda_t%wbar_vovo,comm_t%t1)
+        ierr=talsh_tensor_contract("W(e,f,a,m)+=R(e,n,a,m)*T(f,n)",lambda_t%w_vvvo,lambda_t%wbar_vovo,comm_t%t1,scale=MINUS_ONE)
 
 !       vovv
-        ierr=talsh_tensor_contract("W(a,k,c,d)+=V(k,l,c,d)*T(a,l)",lambda_t%w_vovv,int_t%oovv,comm_t%t1)
-        ierr=talsh_tensor_add("W(a,k,c,d)+=V(a,k,c,d)",lambda_t%w_vovv,int_t%vovv)
+        ierr=talsh_tensor_contract("W(a,m,e,f)+=V(m,n,e,f)*T(a,n)",lambda_t%w_vovv,int_t%oovv,comm_t%t1)
+        ierr=talsh_tensor_add("W(a,m,e,f)+=V(a,m,e,f)",lambda_t%w_vovv,int_t%vovv)
 
 !       vovo
-        ierr=talsh_tensor_add("W(b,k,c,j)+=H(b,k,c,j)",lambda_t%w_vovo,comm_t%h_int)
-        ierr=talsh_tensor_add("T(d,b,j,l)+=R(d,b,j,l)",tau2_tensor,comm_t%t2)
-        ierr=talsh_tensor_contract("T(d,b,j,l)+=R(d,j)*R(b,l)",tau2_tensor,comm_t%t1,comm_t%t1,scale=MINUS_ONE)
-        ierr=talsh_tensor_contract("W(b,k,c,j)+=V(l,k,c,d)*T(d,b,j,l)",lambda_t%w_vovo,int_t%oovv,tau2_tensor)
+        ierr=talsh_tensor_add("W(b,m,e,j)+=H(b,m,e,j)",lambda_t%w_vovo,comm_t%h_int)
+        ierr=talsh_tensor_add("T(f,b,j,n)+=R(f,b,j,n)",tau2_tensor,comm_t%t2)
+        ierr=talsh_tensor_contract("T(f,b,j,n)+=T(f,j)*T(b,n)",tau2_tensor,comm_t%t1,comm_t%t1,scale=MINUS_ONE)
+        ierr=talsh_tensor_contract("W(b,m,e,j)+=V(n,m,e,f)*T(f,b,j,n)",lambda_t%w_vovo,int_t%oovv,tau2_tensor)
 
 !       oooo
-        ierr=talsh_tensor_contract("W(i,j,k,l)+=A+(k,l,i,j)*K()",lambda_t%w_oooo,comm_t%a_int,other1_tensor)
-        ierr=talsh_tensor_contract("W(i,j,k,l)+=D+(k,l,i,j)*K()",lambda_t%w_oooo,comm_t%d_int,other1_tensor)
+        ierr=talsh_tensor_add("W(i,j,m,n)+=A(i,j,m,n)",lambda_t%w_oooo,comm_t%a_int)
+        ierr=talsh_tensor_contract("W(i,j,m,n)+=V(i,j,e,f)*T(e,f,m,n)",lambda_t%w_oooo,int_t%oovv,comm_t%tau, &
+                                                                              scale=MINUS_ONE_QUARTER)
 
 !       ovoo
-        ierr=talsh_tensor_contract("W(i,c,k,l)+=V+(k,l,i,c)*K()",lambda_t%w_ovoo,int_t%ooov,other1_tensor)
-        ierr=talsh_tensor_contract("W(i,c,k,l)+=F(i,d)*T(c,d,k,l)",lambda_t%w_ovoo,lambda_t%fbar_ov,comm_t%t2)
-        ierr=talsh_tensor_contract("W(i,c,k,l)+=R(m,i,k,l)*T(c,m)",lambda_t%w_ovoo,lambda_t%w_oooo,comm_t%t1)
-        ierr=talsh_tensor_contract("W(i,c,k,l)+=V(c,i,d,e)*T(e,d,k,l)",lambda_t%w_ovoo,int_t%vovv,comm_t%tau,scale=ONE_HALF)
-!       Need to permute k and l, so term appears twice
-        ierr=talsh_tensor_contract("W(i,c,k,l)+=R(c,i,d,l)*T(d,k)",lambda_t%w_ovoo,lambda_t%wbar_vovo,comm_t%t1,scale=MINUS_ONE)
-        ierr=talsh_tensor_contract("W(i,c,k,l)+=R(c,i,d,k)*T(d,l)",lambda_t%w_ovoo,lambda_t%wbar_vovo,comm_t%t1)
-!       Need to permute k and l, so term appears twice
-        ierr=talsh_tensor_contract("W(i,c,k,l)+=V(i,m,k,d)*T(c,d,l,m)",lambda_t%w_ovoo,int_t%ooov,comm_t%t2)
-        ierr=talsh_tensor_contract("W(i,c,k,l)+=V(m,i,l,d)*T(c,d,k,m)",lambda_t%w_ovoo,int_t%ooov,comm_t%t2)
+        ierr=talsh_tensor_contract("W(i,e,m,n)+=V+(m,n,i,e)*K()",lambda_t%w_ovoo,int_t%ooov,other1_tensor)
+        ierr=talsh_tensor_contract("W(i,e,m,n)+=F(i,f)*T(e,f,m,n)",lambda_t%w_ovoo,lambda_t%fbar_ov,comm_t%t2)
+        ierr=talsh_tensor_contract("W(i,e,m,n)+=R(o,i,m,n)*T(e,o)",lambda_t%w_ovoo,lambda_t%w_oooo,comm_t%t1)
+        ierr=talsh_tensor_contract("W(i,e,m,n)+=V(e,i,f,g)*T(g,f,m,n)",lambda_t%w_ovoo,int_t%vovv,comm_t%tau,scale=ONE_HALF)
+!       Need to permute m and n, so term appears twice
+        ierr=talsh_tensor_contract("W(i,e,m,n)+=R(e,i,f,n)*T(f,m)",lambda_t%w_ovoo,lambda_t%wbar_vovo,comm_t%t1,scale=MINUS_ONE)
+        ierr=talsh_tensor_contract("W(i,e,m,n)+=R(e,i,f,m)*T(f,n)",lambda_t%w_ovoo,lambda_t%wbar_vovo,comm_t%t1)
+!       Need to permute m and n, so term appears twice
+        ierr=talsh_tensor_contract("W(i,e,m,n)+=V(i,o,m,f)*T(e,f,n,o)",lambda_t%w_ovoo,int_t%ooov,comm_t%t2)
+        ierr=talsh_tensor_contract("W(i,e,m,n)+=V(o,i,n,f)*T(e,f,m,o)",lambda_t%w_ovoo,int_t%ooov,comm_t%t2)
 
 !       ooov
-        ierr=talsh_tensor_contract("W(k,l,i,c)+=T(d,i)*V(k,l,d,c)",lambda_t%w_ooov,comm_t%t1,int_t%oovv)
-        ierr=talsh_tensor_add("W(k,l,i,c)+=V(k,l,i,c)",lambda_t%w_ooov,int_t%ooov)
+        ierr=talsh_tensor_contract("W(m,n,i,e)+=T(f,i)*V(m,n,f,e)",lambda_t%w_ooov,comm_t%t1,int_t%oovv)
+        ierr=talsh_tensor_add("W(m,n,i,e)+=V(m,n,i,e)",lambda_t%w_ooov,int_t%ooov)
 
         !Debug
+        print*, "T1amp      = ", tensor_norm2(comm_t%t1)
+        print*, "T2amp      = ", tensor_norm2(comm_t%t2)*ONE_QUARTER
         print*, "Fbar_oo    = ", tensor_norm2(lambda_t%fbar_oo)
         print*, "Fbar_ov    = ", tensor_norm2(lambda_t%fbar_ov)
         print*, "Fbar_vv    = ", tensor_norm2(lambda_t%fbar_vv)
-        print*, "w_vvvv     = ", tensor_norm2(lambda_t%w_vvvv)
+!        print*, "w_vvvv     = ", tensor_norm2(lambda_t%w_vvvv)
         print*, "wbar_vovo  = ", tensor_norm2(lambda_t%wbar_vovo)
         print*, "w_vvvo     = ", tensor_norm2(lambda_t%w_vvvo)
         print*, "w_vovv     = ", tensor_norm2(lambda_t%w_vovv)
