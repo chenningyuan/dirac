@@ -520,6 +520,15 @@ module exacorr_cc
                 ccsd_energy=real(result_val,8)
                 ierr=exatns_tensor_init(result_tensor)
             end if
+
+!           Update tau with converged values
+            ierr=exatns_tensor_init(tau_tensor)
+            ierr=exatns_tensor_contract("T(a,b,i,j)+=R(a,b,i,j)*K()",tau_tensor,t2_tensor,one_tensor)
+            if (.not.CCD) then
+                ierr=exatns_tensor_contract("T(a,b,i,j)+=T(a,i)*T(b,j)",tau_tensor,t1_tensor,t1_tensor) ! o(2)v(2)
+                ierr=exatns_tensor_contract("T(a,b,i,j)+=T(a,j)*T(b,i)",tau_tensor,t1_tensor,t1_tensor,MINUS_ONE) ! o(2)v(2)
+            end if
+
             ierr=exatns_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,tau_tensor,oovv_tensor) ! o(2)v(2)
             ierr=exatns_tensor_get_scalar(result_tensor,result_val)
             ccsd_energy = ccsd_energy + real(result_val*ONE_QUARTER,8)

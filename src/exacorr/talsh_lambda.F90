@@ -10,7 +10,8 @@ module talsh_lambda
 
     implicit none
 
-    complex(8), parameter :: ZERO=(0.D0,0.D0),ONE_HALF=(0.5D0,0.D0),MINUS_ONE=(-1.D0,0.D0)
+    complex(8), parameter :: ZERO=(0.D0,0.D0),MINUS_ONE_HALF=(-0.5D0,0.D0),ONE_HALF=(0.5D0,0.D0), &
+                             MINUS_ONE=(-1.D0,0.D0)
     real(8), parameter    :: ONE_QUARTER=0.25D0
 
     private
@@ -86,6 +87,11 @@ module talsh_lambda
        vvvv_dims = nvir * 2
        ierr=talsh_tensor_construct(lambda_t%w_vvvv,C8,vvvv_dims,init_val=ZERO)
 
+!      Obtain intermediates from CCSD
+       call print_date("Calculating common blocks")
+       call get_common_blocks(comm_t,int_t)
+       call print_date("Finished calculating common blocks")
+
 !      Get fixed intermediates
        call print_date('Calculating fixed intermediates')
        call get_lambda_intermediates(comm_t,int_t,lambda_t,nocc,nvir)
@@ -109,7 +115,7 @@ module talsh_lambda
 
 !       Form mixed intermediates
         ierr=talsh_tensor_init(gvv_tensor)
-        ierr=talsh_tensor_contract("G(e,a)+=L(m,n,a,f)*T(f,e,m,n)",gvv_tensor,l2_tensor,comm_t%t2,scale=ONE_HALF)
+        ierr=talsh_tensor_contract("G(e,a)+=L(m,n,a,f)*T(e,f,m,n)",gvv_tensor,l2_tensor,comm_t%t2,scale=MINUS_ONE_HALF)
         ierr=talsh_tensor_init(goo_tensor)
         ierr=talsh_tensor_contract("G(i,m)+=L(i,n,e,f)*T(e,f,m,n)",goo_tensor,l2_tensor,comm_t%t2,scale=ONE_HALF)
 
@@ -152,14 +158,14 @@ module talsh_lambda
         ierr=talsh_tensor_contract("S(i,j,a,b)+=V(j,m,a,b)*G(i,m)",s2_tensor,int_t%oovv,goo_tensor)
 
 !       Need to permute i and j, so term appears twice
-        ierr=talsh_tensor_init(oo_aux_tensor)
-        ierr=talsh_tensor_contract("O(i,m)+=L(i,e)*T(e,m)",oo_aux_tensor,l1_tensor,comm_t%t1)
-        ierr=talsh_tensor_contract("S(i,j,a,b)+=V(m,j,a,b)*O(i,m)",s2_tensor,int_t%oovv,oo_aux_tensor)
-        ierr=talsh_tensor_contract("S(i,j,a,b)+=V(m,i,b,a)*O(j,m)",s2_tensor,int_t%oovv,oo_aux_tensor)
+!        ierr=talsh_tensor_init(oo_aux_tensor)
+!        ierr=talsh_tensor_contract("O(i,m)+=L(i,e)*T(e,m)",oo_aux_tensor,l1_tensor,comm_t%t1)
+!        ierr=talsh_tensor_contract("S(i,j,a,b)+=V(m,j,a,b)*O(i,m)",s2_tensor,int_t%oovv,oo_aux_tensor)
+!        ierr=talsh_tensor_contract("S(i,j,a,b)+=V(m,i,b,a)*O(j,m)",s2_tensor,int_t%oovv,oo_aux_tensor)
 
 !       Need to permute i and j, so term appears twice
-        ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,e)*V(e,j,a,b)",s2_tensor,l1_tensor,int_t%vovv)
-        ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,e)*V(e,i,b,a)",s2_tensor,l1_tensor,int_t%vovv)
+!        ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,e)*V(e,j,a,b)",s2_tensor,l1_tensor,int_t%vovv)
+!        ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,e)*V(e,i,b,a)",s2_tensor,l1_tensor,int_t%vovv)
 
 !       Need to permute i and j, as well as a and b, so term appears four times
         ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,a)*F(j,b)",s2_tensor,l1_tensor,lambda_t%fbar_ov)
@@ -175,11 +181,11 @@ module talsh_lambda
         ierr=talsh_tensor_add("S(i,a)+=F(i,a)",s1_tensor,lambda_t%fbar_ov)
         ierr=talsh_tensor_contract("S(i,a)+=L(i,e)*F(e,a)",s1_tensor,l1_tensor,lambda_t%fbar_vv)
         ierr=talsh_tensor_contract("S(i,a)+=L(m,a)*F(i,m)",s1_tensor,l1_tensor,lambda_t%fbar_oo,scale=MINUS_ONE)
-        ierr=talsh_tensor_contract("S(i,a)+=L(i,m,e,f)*W(e,f,a,m)",s1_tensor,l2_tensor,lambda_t%w_vvvo,scale=ONE_HALF)
-        ierr=talsh_tensor_contract("S(i,a)+=G(f,e)*W(e,i,a,f)",s1_tensor,gvv_tensor,lambda_t%w_vovv)
         ierr=talsh_tensor_contract("S(i,a)+=G(n,m)*W(i,m,n,a)",s1_tensor,goo_tensor,lambda_t%w_ooov)
         ierr=talsh_tensor_contract("S(i,a)+=L(m,e)*W(e,i,a,m)",s1_tensor,l1_tensor,lambda_t%w_vovo,scale=MINUS_ONE)
         ierr=talsh_tensor_contract("S(i,a)+=L(m,n,a,e)*W(i,e,n,m)",s1_tensor,l2_tensor,lambda_t%w_ovoo,scale=ONE_HALF)
+        ierr=talsh_tensor_contract("S(i,a)+=L(i,m,e,f)*W(e,f,a,m)",s1_tensor,l2_tensor,lambda_t%w_vvvo,scale=ONE_HALF)
+        ierr=talsh_tensor_contract("S(i,a)+=G(f,e)*W(e,i,a,f)",s1_tensor,gvv_tensor,lambda_t%w_vovv)
 
 
         if (ierr.ne.TALSH_SUCCESS) then

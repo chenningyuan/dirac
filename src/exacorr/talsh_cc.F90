@@ -203,32 +203,15 @@ module talsh_cc
           print*, ""
           call print_date("Begin solving Lambda equations")
 
-!         Construct tensor to be used in lambda intermediates
-          !ierr=talsh_tensor_construct(comm_t%d_int,C8,oooo_dims,init_val=ZERO)
-          !ivvv_dims = nvir * 2
-          !ierr=talsh_tensor_construct(comm_t%b_int,C8,vvvv_dims,init_val=ZERO)
-
-!         Obtain intermediates from CCSD
-          call print_date("Calculating common blocks")
-          call get_common_blocks(comm_t,int_t)
-          call print_date("Finished calculating common blocks")
-
 !         Construct lambda tensor
           ierr=talsh_tensor_construct(l1_tensor,C8,ov_dims,init_val=ZERO)
           oovv_dims(1:2) = nocc * 2
           oovv_dims(3:4) = nvir * 2
           ierr=talsh_tensor_construct(l2_tensor,C8,oovv_dims,init_val=ZERO)
 
-!         Initialize l2 with MP2 value
-          ierr=talsh_tensor_add("L(i,j,a,b)+=V(i,j,a,b)",l2_tensor,int_t%oovv) ! o(2)v(2)
-          call scale_with_denominators (eps_occ,eps_vir,nocc,l1_tensor,l2_tensor)
-          print*, "MP2 L2 = ", tensor_norm2(l2_tensor)*ONE_QUARTER
-
-!         Debug
-!          ierr=talsh_tensor_init(result_tensor)
-!          ierr=talsh_tensor_contract("E()+=L(i,j,a,b)*V+(i,j,a,b)",result_tensor,l2_tensor,int_t%oovv) ! o(2)v(2)
-!          mp2_energy=result_tens(1) * ONE_QUARTER
-!          print*," Lambda MP2 energy = ",mp2_energy
+!         Initialize l1 and l2 with converged t amplitudes
+          ierr=talsh_tensor_contract("L(i,a)+=T+(a,i)*K()",l1_tensor,comm_t%t1,one_tensor)
+          ierr=talsh_tensor_contract("L(i,j,a,b)+=T+(a,b,i,j)*K()",l2_tensor,comm_t%t2,one_tensor)
 
 !         Re-initialize diis, so it can be used in lambda routine
           call diis (l1_tensor,l2_tensor,mode=1)
@@ -391,7 +374,7 @@ module talsh_cc
           end if
 
           !if (debug) then
-          if (.true.) then
+          if (.false.) then
              print*, "T1amp  = ",tensor_norm2(comm_t%t1)
              print*, "T2amp  = ",tensor_norm2(comm_t%t2)*ONE_QUARTER
              print*, "Tau    = ",tensor_norm2(comm_t%tau)*ONE_QUARTER
@@ -460,6 +443,13 @@ module talsh_cc
           ierr=talsh_tensor_init(result_tensor)
           ierr=talsh_tensor_contract("E()+=T(a,i)*F(i,a)",result_tensor,comm_t%t1,comm_t%fov) ! o(1)v(1)
           ccsd_energy=result_tens(1)
+
+!         Update tau
+          ierr=talsh_tensor_init(comm_t%tau)
+          ierr=talsh_tensor_add("T(a,b,i,j)+=R(a,b,i,j)",comm_t%tau,comm_t%t2)
+          ierr=talsh_tensor_contract("T(a,b,i,j)+=T(a,i)*T(b,j)",comm_t%tau,comm_t%t1,comm_t%t1)                  ! o(2)v(2)
+          ierr=talsh_tensor_contract("T(a,b,i,j)+=T(a,j)*T(b,i)",comm_t%tau,comm_t%t1,comm_t%t1,scale=MINUS_ONE)  ! o(2)v(2)
+
           ierr=talsh_tensor_init(result_tensor)
           ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%tau,int_t%oovv) ! o(2)v(2)
           ccsd_energy=ccsd_energy + result_tens(1) * ONE_QUARTER
