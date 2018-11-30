@@ -348,12 +348,23 @@
           allocate(diag_H(ndimr1))
           diag_H = H_II(1:N1:rcw)
 
+! aspg, WIP june/july 2018
+! in principle we can eigenvalue shift with any of the schemes below 
+          if ((relcc_mfd_eigenvalues_energy_shift(1).gt.(0.0d0))) then
+              do i = 1, size(diag_H,1)
+                 diag_H(i) = abs(diag_H(i) - relcc_mfd_eigenvalues_energy_shift(1))
+              end do
+          end if
+! aspg, WIP june/july 2018
+
           if (relcc_projectors_do_restricted_excitation_window) then ! find the lowest elements of the diagonal within the given excitation window
              call quit('REW not implemented')
 
               if (iprnt.ge.1) then
                   write (iw,*) ''
-                  write (iw,*) '   Restricted ionization window (REW) via projectors will be invoked'
+                  write (iw,*) '   Restricted excitation window (REW) via projectors will be invoked'
+                  write (iw,*) '      unlike core-valence separation (CVS), only S/D/... determinants with ' 
+                  write (iw,*) '      all spinors within the occupied/virtual windows will be considered'
                   write (iw,*) '   Spinors in the following window(s) will be active'
                   write (iw,*) '      occupied low-end ',number_diagonal_elements_in_core,'a.u.'
                   write (iw,*) '               high-end',number_diagonal_elements_in_core,'a.u.'
@@ -392,12 +403,6 @@
 ! aspg WIP june/july 2018
 
           else ! this is the standard way of doing it, find the lowest elements of the diagonal
-
-              if ((relcc_mfd_eigenvalues_energy_shift(1).gt.(1.0d-3))) then
-                 do i = 1, size(diag_H,1)
-                    diag_H(i) = abs(diag_H(i) - relcc_mfd_eigenvalues_energy_shift(1))
-                 end do
-              end if
 
               do iroot = 1, nroot
                   k = minloc(diag_H)
@@ -538,12 +543,24 @@
           allocate(diag_H(ndimr1))
           diag_H = H_II(1:N1:rcw)
 
+! aspg, WIP june/july 2018
+! in principle we can eigenvalue shift with any of the schemes below 
+          if ((relcc_mfd_eigenvalues_energy_shift(1).gt.(0.0d0))) then
+              do i = 1, size(diag_H,1)
+                 diag_H(i) = abs(diag_H(i) - relcc_mfd_eigenvalues_energy_shift(1))
+              end do
+          end if
+! aspg, WIP june/july 2018
+
+
           if (relcc_projectors_do_restricted_excitation_window) then ! find the lowest elements of the diagonal within the given excitation window
              call quit('RIW not implemented')
 
               if (iprnt.ge.1) then
                   write (iw,*) ''
                   write (iw,*) '   Restricted ionization window (RIW) via projectors will be invoked'
+                  write (iw,*) '      unlike core-valence separation (CVS), only S/D/... determinants with '
+                  write (iw,*) '      all spinors within the occupied/virtual windows will be considered'
                   write (iw,*) '   Spinors in the following window(s) will be active'
                   write (iw,*) '      occupied low-end ',number_diagonal_elements_in_core,'a.u.'
                   write (iw,*) '               high-end',number_diagonal_elements_in_core,'a.u.'
@@ -563,8 +580,6 @@
                   write (iw,*) '' 
               end if
 
-!             xroot = 0
-
               if (iprnt.ge.2) write (iw,*) 'diag(Hbar_SS): ',diag_H
               if (iprnt.ge.2) write (iw,*) 'in_core_HbarSS_threshold',in_core_HbarSS_threshold
 ! aspg, WIP june/july 2018
@@ -575,7 +590,6 @@
                   i = k(1)
                  if (iprnt.ge.3) write(iw,*) 'making',i,'huge'
                   diag_H(i) = huge(diag_H)
-!                 xroot = xroot + 1
                   jroot = i
                   if (rcw.eq.2) jroot = 2*i - 1
                   R1(jroot,iroot) = 1.0d0
@@ -586,23 +600,14 @@
 
           else ! this is the standard way of doing it, find the lowest elements of the diagonal
 
-              xroot = 0 
-
-              if ((relcc_mfd_eigenvalues_energy_shift(1).gt.(1.0d-3))) then
-                 do i = 1, size(diag_H,1)
-                    diag_H(i) = abs(diag_H(i) - relcc_mfd_eigenvalues_energy_shift(1))
-                 end do
-              end if
-
               do iroot = 1, nroot
                   k = minloc(diag_H) 
                   if (iprnt.ge.1) write(iw,*)'roots',iroot,diag_H(k(1)),k(1) 
                   i = k(1)
-                  diag_H(i) = 8000.0d0
-                  xroot = xroot + 1
+                  diag_H(i) = huge(diag_H)
                   jroot = i
                   if (rcw.eq.2) jroot = 2*i - 1
-                  R1(jroot,xroot) = 1.0d0
+                  R1(jroot,iroot) = 1.0d0
               enddo
           end if
           deallocate(diag_H)
@@ -725,7 +730,13 @@
           allocate(diag_H(ndimr1))
           diag_H = H_II(1:N1:rcw)
 
-          xroot = 0
+! aspg, WIP june/july 2018
+          if ((relcc_mfd_eigenvalues_energy_shift(1).gt.(0.0d0))) then
+              do i = 1, size(diag_H,1)
+                 diag_H(i) = abs(diag_H(i) - relcc_mfd_eigenvalues_energy_shift(1))
+              end do
+          end if
+! aspg, WIP june/july 2018
 
           fudge_factor = 2
 ! here we set the factor to 1 because for C1, with only one fermion irrep,
@@ -736,11 +747,10 @@
               k = minloc(diag_H) 
               if (iprnt.ge.2) write(iw,*)'roots',iroot,diag_H(k(1)),k(1) 
               i = k(1)
-              diag_H(i) = 8000.0d0
-                   xroot = xroot + 1
-                   jroot = i
-                   if (rcw.eq.2) jroot = 2*i - 1
-                   R1(jroot,xroot) = 1.0d0
+              diag_H(i) = huge(diag_H)
+              jroot = i
+              if (rcw.eq.2) jroot = 2*i - 1
+              R1(jroot,iroot) = 1.0d0
           enddo
  
           deallocate(diag_H)
