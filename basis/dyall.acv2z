@@ -8,6 +8,7 @@ $ Nh Fl Mc Lv Ts Og
 $ Sc Ti V  Cr Mn Fe Co Ni Cu Zn
 $ Y  Zr Nb Mo Tc Ru Rh Pd Ag Cd
 $ Hf Ta W  Re Os Ir Pt Au Hg
+$ Rf Db Sg Bh Hs Mt Ds Rg Cn
 $  
 $  REFERENCE
 $  
@@ -23,6 +24,8 @@ $    4d: K.G. Dyall, Theor. Chem. Acc. (2007) 117:483;
 $        diffuse functions K.G. Dyall, unpublished.
 $    5d: K.G. Dyall, Theor. Chem. Acc. (2004) 112:403;
 $        revision K.G. Dyall and A.S.P. Gomes, Theor. Chem. Acc. (2009) 125:97;
+$        diffuse functions K.G. Dyall, unpublished.
+$    6d: K.G. Dyall, Theor. Chem. Acc. (2011) 129:603.
 $        diffuse functions K.G. Dyall, unpublished.
 $ Available from the Dirac web site, http://dirac.chem.sdu.dk.
 $    
