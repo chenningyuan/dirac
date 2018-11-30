@@ -195,11 +195,10 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       PARAMETER (D0=0.0D0,D1=1.0D0,D2=2.0D0)      
       PARAMETER (H=0.01D0,MXNP = 4000) !same to GRASP
       real(8), allocatable :: ZAN(:),C(:,:)
-      real(8), allocatable :: ANG(:,:),GAO(:),GAOL(:),GAOS(:)
-      real(8), allocatable :: SMAT(:),TD(:,:)
-      real(8), allocatable :: SMATL(:),SMATS(:),TDL(:,:),TDS(:,:)
-      real(8), allocatable :: TE(:),OVL(:),OVLL(:),OVLS(:)
-
+      real(8), allocatable :: ANG(:,:),GAO(:)
+      real(8), allocatable :: SMAT(:),TC(:),TD(:,:)
+      real(8), allocatable :: OVL(:)
+      
       CALL QENTER('NUMOVL')
 C
 C     Making ZAN and C 
@@ -216,23 +215,16 @@ C The values of ultrafine (.ULTRAF) at DFT input-reader section.
       INTANG=64
       
       m = NLEB(INTANG) ! num_grid_cfg_ANGINT
-      LSMAX=1
-      IF(NTBAS(2).GT.0)LSMAX=2
-      BAS=MAX(NTBAS(1),NTBAS(0))
-      allocate( ANG(m,4)   )
-      allocate( GAO(NTBAS(0)))
-      allocate( GAOL(NTBAS(1)))
-      allocate( GAOS(NTBAS(2)))
-      allocate( SMAT(NTBAS(0)*NTBAS(0)))
-      allocate( SMATL(NTBAS(1)*NTBAS(1)))
-      allocate( SMATS(NTBAS(2)*NTBAS(2)))
-      allocate( TD(NTBAS(0)*NTBAS(0),MXNP) )
-      allocate( TDL(NTBAS(1)*NTBAS(1),MXNP) )
-      allocate( TDS(NTBAS(2)*NTBAS(2),MXNP) )
-      allocate( TE(MXNP)                   )
-      allocate( OVL(NTBAS(0)*NTBAS(0))     )
-      allocate( OVLL(NTBAS(1)*NTBAS(1))     )
-      allocate( OVLS(NTBAS(2)*NTBAS(2))     )
+!      LSMAX=1
+!      IF(NTBAS(2).GT.0)LSMAX=2
+      NDIM = MAX(NTBAS(1),NTBAS(0))
+      NDIM2 = NDIM*NDIM
+      allocate( ANG(m,4)       )
+      allocate( GAO(NTBAS(0))  )
+      allocate( SMAT(NDIM2)    )
+      allocate( TC(NDIM2)      )
+      allocate( TD(MXNP,NDIM2) )
+      allocate( OVL(NDIM2)     )
 C      
       CALL LEBEDEV(INTANG,ANG(1,1),ANG(1,2),ANG(1,3),ANG(1,4),n)
       CALL DSCAL(m,4*PI,ANG(1,4),1)
@@ -241,7 +233,10 @@ C
 !         WT(J)=WT(J)*4.0D0*PI
 !     ENDDO
 C
-      IF(MC.eq.2)THEN
+!      write(*,*)"MC",MC
+!      write(*,*)"NTBAS1,2",NTBAS(1),NTBAS(2)
+!      write(*,*)"NPSH",NPSH(1),NPSH(2)
+      IF(X2C.eqv..FALSE.)THEN
         DO 10 IATOM = 1, NUCIND
 !        DO 10 ISYMOP = 0, MXOPR
 !       What is this roop? MXOPR=0 in dftgrd.F
@@ -260,14 +255,13 @@ C
            EPH = EXP(H)
            RNT = 1.0D-06/ZAN(IATOM) !CHARGE(IATOM)
 C         
-           CALL DZERO(TD,MXNP*NTBAS(0)*NTBAS(0))
-           CALL DZERO(SMAT,NTBAS(0)*NTBAS(0))
-           CALL DZERO(TDL,MXNP*NTBAS(1)*NTBAS(1))
-           CALL DZERO(TDS,MXNP*NTBAS(2)*NTBAS(2))
-           CALL DZERO(TE,MXNP)
-           CALL DZERO(OVL,NTBAS(0)*NTBAS(0))
+           CALL DZERO(SMAT,NDIM2) 
+           CALL DZERO(TD,NDIM2*MXNP)
+           CALL DZERO(OVL,NDIM2)
            RNODE = RNT
            DO 20 IR = 1, MXNP
+             RFAC = RNODE*RNODE*RNODE 
+             CALL DZERO(TC,NDIM2)
 C            
 C            loop over angular points
 C            ========================
@@ -276,9 +270,9 @@ C
                X8  = ANG(iy,1)*RNODE+C(1,IATOM)
                Y8  = ANG(iy,2)*RNODE+C(2,IATOM)
                Z8  = ANG(iy,3)*RNODE+C(3,IATOM)
-               WT8 = ANG(iy,4)*RNODE*RNODE*RNODE
+               WT8 = ANG(iy,4)*RFAC
 C
-C     GET AO's (Large)
+C     GET AO's
 C
                IAO=1
                CALL GETAOS(GAO,TEMP,TEMP,TEMP,TEMP,
@@ -289,44 +283,30 @@ C
                CALL DGEMM('N','T',NTBAS(1),NTBAS(1),
      &                    1,D1,GAO(IAO),NTBAS(1),GAO(IAO),
      &                    NTBAS(1),D0,SMAT,NTBAS(0))
-!               CALL DAXPY(NTBAS(1)*NTBAS(1),
-!     &                    WT8,SMAT,1,TD(1,IR),1)
                IAO = 1 + NTBAS(1)
                IOV = 1 + NTBAS(1)*(NTBAS(0)+1)
-C     
-C     GET AO's (Small)
-C
-!               IF(iy.eq.2)THEN
-!                  write(*,*)"IAO,NTBAS(2)",IAO,NTBAS(2)
-!               ENDIF   
 C
 C     Get "overlap" matrix
 C
                CALL DGEMM('N','T',NTBAS(2),NTBAS(2),
      &                    1,D1,GAO(IAO),NTBAS(2),GAO(IAO),
      &                    NTBAS(2),D0,SMAT(IOV),NTBAS(0))
-               CALL DAXPY(NTBAS(0)*NTBAS(0),
-     &                    WT8,SMAT,1,TD(1,IR),1)
-!                 IF(iy.eq.1) THEN
-!                    write(*,*)"IAO,IOV",IAO,IOV
-!                    write(*,*)"NTBAS(1),(2)",NTBAS(1),NTBAS(2)
-!                 ENDIF   
+               CALL DAXPY(NDIM2,
+     &                    WT8,SMAT,1,TC(1),1)
 30           CONTINUE
+             CALL DCOPY(NDIM2,TC(1),1,TD(IR,1),MXNP)
              RNODE = RNODE*EPH
 20         CONTINUE
 C
 C  Large         
-           CALL HEADER('Numerical ovelap integral made by Ayaki',-1)
+           CALL HEADER('Numerical ovelap integral (Large,Small)',-1)
 
-           DO J = 1,NTBAS(0)*NTBAS(0)
-              CALL DCOPY(MXNP,TD(J,1),NTBAS(0)*NTBAS(0),TE(1),1)
-              CALL QUAD(OVL(J),TE(1),MXNP,H)
-           ENDDO
+           CALL QUAD2(OVL,TD,MXNP,H,NDIM2)
            CALL OUTPUT(OVL,1,NTBAS(0),1,NTBAS(0),
      &                NTBAS(0),NTBAS(0),1,LUPRI)
          ENDIF        !(IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0)
 10      CONTINUE
-      ELSE
+      ELSE !MC
         DO 40 IATOM = 1, NUCIND
 !        DO 10 ISYMOP = 0, MXOPR
 !       What is this roop? MXOPR=0 in dftgrd.F
@@ -345,14 +325,13 @@ C
            EPH = EXP(H)
            RNT = 1.0D-06/ZAN(IATOM) !CHARGE(IATOM)
 C         
-           CALL DZERO(TD,MXNP*NTBAS(0)*NTBAS(0))
-           CALL DZERO(SMAT,NTBAS(0)*NTBAS(0))
-           CALL DZERO(TDL,MXNP*NTBAS(1)*NTBAS(1))
-           CALL DZERO(TDS,MXNP*NTBAS(2)*NTBAS(2))
-           CALL DZERO(TE,MXNP)
-           CALL DZERO(OVL,NTBAS(0)*NTBAS(0))
+           CALL DZERO(SMAT,NDIM2)
+           CALL DZERO(TD,NDIM2*MXNP)
+           CALL DZERO(OVL,NDIM2)
            RNODE = RNT
            DO 50 IR = 1, MXNP
+             RFAC = RNODE*RNODE*RNODE 
+             CALL DZERO(TC,NDIM2)
 C            
 C            loop over angular points
 C            ========================
@@ -361,60 +340,120 @@ C
                X8  = ANG(iy,1)*RNODE+C(1,IATOM)
                Y8  = ANG(iy,2)*RNODE+C(2,IATOM)
                Z8  = ANG(iy,3)*RNODE+C(3,IATOM)
-               WT8 = ANG(iy,4)*RNODE*RNODE*RNODE
+               WT8 = ANG(iy,4)*RFAC
 C
 C     GET AO's (Large)
 C
-               IAO=1
                CALL GETAOS(GAO,TEMP,TEMP,TEMP,TEMP,
-     &                      X8,Y8,Z8,NTBAS(0),0,.FALSE.,0) !The last is IPRINT
+     &                      X8,Y8,Z8,NTBAS(1),0,.FALSE.,0) !The last is IPRINT
 C
 C     Get "overlap" matrix
 C
                CALL DGEMM('N','T',NTBAS(1),NTBAS(1),
-     &                    1,D1,GAO(IAO),NTBAS(1),GAO(IAO),
-     &                    NTBAS(1),D0,SMAT,NTBAS(0))
-               CALL DAXPY(NTBAS(0)*NTBAS(0),
-     &                    WT8,SMAT,1,TD(1,IR),1)
-!                 IF(iy.eq.1) THEN
-!                    write(*,*)"IAO,IOV",IAO,IOV
-!                    write(*,*)"NTBAS(1),(2)",NTBAS(1),NTBAS(2)
-!                 ENDIF   
+     &                    1,D1,GAO(1),NTBAS(1),GAO(1),
+     &                    NTBAS(1),D0,SMAT,NTBAS(1))
+               CALL DAXPY(NTBAS(1)*NTBAS(1),
+     &                    WT8,SMAT,1,TC(1),1)
 60           CONTINUE
+             CALL DCOPY(NDIM2,TC(1),1,TD(IR,1),MXNP)
              RNODE = RNODE*EPH
 50         CONTINUE
 C
-C  Large         
-           CALL HEADER('Numerical ovelap integral made by Ayaki',-1)
-
-           DO J = 1,NTBAS(0)*NTBAS(0)
-              CALL DCOPY(MXNP,TD(J,1),NTBAS(0)*NTBAS(0),TE(1),1)
-              CALL QUAD(OVL(J),TE(1),MXNP,H)
-           ENDDO
-           CALL OUTPUT(OVL,1,NTBAS(0),1,NTBAS(0),
-     &                NTBAS(0),NTBAS(0),1,LUPRI)
+           CALL HEADER('Numerical ovelap integral (Only Large)',-1)
+C
+           CALL QUAD2(OVL,TD,MXNP,H,NDIM2)
+           CALL OUTPUT(OVL,1,NTBAS(1),1,NTBAS(1),
+     &                NTBAS(1),NTBAS(1),1,LUPRI)
          ENDIF        !(IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0)
-40     CONTINUE
-      ENDIF
+40      CONTINUE
+      ENDIF                     !MC
 C
       deallocate(ZAN)
       deallocate(C)
       deallocate(ANG)
       deallocate(SMAT)
-      deallocate(SMATL)
-      deallocate(SMATS)
       deallocate(TD)
-      deallocate(TDL)
-      deallocate(TDS)
-      deallocate(TE)
-      deallocate(GAOL)
-      deallocate(GAOS)
       deallocate(OVL)
-      deallocate(OVLL)
-      deallocate(OVLS)
       CALL QEXIT('NUMOVL')
       RETURN         
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE QUAD2(RESULT,TE,NR,H,NDIM)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C Numerical radial integral
+C
+C Called from: NMINT2
+C
+C copied from /QUAD/grasp.F/GRASP
+C Modified to DIRAC A. Sunaga Nov. 2018       
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+C
+      PARAMETER( W7 = 1.0D0/90.0D0,
+     &           W6 = -4.0D0*W7,  W5 =   7.0D0*W7,
+     &           W4 = 30.0D0*W7,  W3 =  44.0D0*W7,
+     &           W2 = 68.0D0*W7,  W1 = 112.0D0*W7)
+C
+      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
+      PARAMETER(EPSI = 1.0D-35) !-35
+!      REAL(8) TE(NR)      
+!      DIMENSION TE(NR)      
+      DIMENSION TE(NR,NDIM), RESULT(NDIM)
+C     
+C   FIND THE STARTING POINT FOR THE INTEGRATION. THIS IS THE POINT
+C   WHERE THE INTEGRAND TE FIRST BECOMES SIGNIFICANT, AND IS CHOSEN
+C   TO PREVENT DIVIDING BY ZERO.
+C
+      DO 5  II = 1,NDIM
+      DO 10 J = 1,NR
+!        write(*,*)"TE4",TE(J) !sunaga
+        IF (ABS (TE(J,II)) .GT. EPSI) GO TO 20
+   10 CONTINUE
+      RESULT(II) = ZERO
+      GO TO 5
+C
+C   CALCULATE THE INTEGRAL USING EXTENDED SIMPSONS RULE, NEGLECTING THE
+C   CONTRIBUTION FROM THE STARTING POINT. CHOOSE THE STARTING POINT
+C   R(JJ) TO GIVE AN ODD NUMBER OF INTEGRATION POINTS.
+C   THE CRAY VERSION OF THE CODE USES THE VECTOR FUNCTION SSUM TO
+C   PERFORM THE SUMMATION.
+C
+   20 SUM = ZERO
+!      write(*,*)"TE1,J,NR",TE(J),J,NR !sunaga
+      NP = NR-J+1
+      ND2 = NP/2
+      N1D2 = (NP+1)/2
+      K = ND2-N1D2+1
+      JJ = J+K
+      JJ1 = JJ+1
+      DO 30 I = JJ1,NR-3,2
+         SUM = SUM + W1*TE(I,II) + W2*TE(I+1,II)
+!         write(*,*)"TE5",TE(I) !sunaga
+   30 CONTINUE
+      SUM = SUM + W1*TE(NR-1,II)
+      SUM = SUM + W4*( TE(JJ,II)   + TE(NR,II)   )
+     &          + W5*( TE(JJ1,II)  + TE(NR-1,II) )
+     &          + W6*( TE(JJ+2,II) + TE(NR-2,II) )
+     &          + W7*( TE(JJ+3,II) + TE(NR-3,II) )
+      
+C
+C   ADD THE CONTRIBUTION FROM 0 TO R(JJ), PLUS THE CONTRIBUTION
+C   TO SIMPSONS RULE FROM TE(JJ).
+C
+      COP = TE(J+1,II)/TE(J,II)
+      IF (COP .LE. ONE) THEN
+         RPX = ZERO
+      ELSE
+         RPX = TE(JJ,II)/LOG (COP)
+      ENDIF
+      RESULT(II) = H*(SUM+RPX)
+    5 CONTINUE
+      RETURN
+C
+      END      
+      
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE QUAD(RESULT,TE,NR,H)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
