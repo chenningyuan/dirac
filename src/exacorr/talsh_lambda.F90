@@ -50,7 +50,7 @@ module talsh_lambda
        real(8), intent(in) :: t_target_precision
        real(8) :: t_convergence
 
-       integer :: ierr
+       integer :: ierr, prints=1
 
        call print_date('Entered lambda solver routine')
 
@@ -119,73 +119,86 @@ module talsh_lambda
         ierr=talsh_tensor_init(goo_tensor)
         ierr=talsh_tensor_contract("G(i,m)+=L(i,n,e,f)*T(e,f,m,n)",goo_tensor,l2_tensor,comm_t%t2,scale=ONE_HALF)
 
-        !if (debug) then
-        if (.true.) then
+        if (prints .ge. 1) then
            print*, "L1  = ", tensor_norm2(l1_tensor)
            print*, "L2  = ", tensor_norm2(l2_tensor)*ONE_QUARTER
            print*, "goo = ", tensor_norm2(goo_tensor)
            print*, "gvv = ", tensor_norm2(gvv_tensor)
         end if
 
+!       Calculate s1 tensor
+        ierr=talsh_tensor_init(s1_tensor)
+        ierr=talsh_tensor_add("S(i,a)+=F(i,a)",s1_tensor,lambda_t%fbar_ov)
+        if (prints .ge. 2) print*, "S1 init = ", tensor_norm2(s1_tensor)
+        ierr=talsh_tensor_contract("S(i,a)+=L(i,e)*F(e,a)",s1_tensor,l1_tensor,lambda_t%fbar_vv)
+        if (prints .ge. 2) print*, "S1 after term1 = ", tensor_norm2(s1_tensor)
+        ierr=talsh_tensor_contract("S(i,a)+=L(m,a)*F(i,m)",s1_tensor,l1_tensor,lambda_t%fbar_oo,scale=MINUS_ONE)
+        if (prints .ge. 2) print*, "S1 after term2 = ", tensor_norm2(s1_tensor)
+        ierr=talsh_tensor_contract("S(i,a)+=G(n,m)*W(i,m,n,a)",s1_tensor,goo_tensor,lambda_t%w_ooov)
+        if (prints .ge. 2) print*, "S1 after term3 = ", tensor_norm2(s1_tensor)
+        ierr=talsh_tensor_contract("S(i,a)+=L(m,e)*W(e,i,a,m)",s1_tensor,l1_tensor,lambda_t%w_vovo,scale=MINUS_ONE)
+        if (prints .ge. 2) print*, "S1 after term4 = ", tensor_norm2(s1_tensor)
+        ierr=talsh_tensor_contract("S(i,a)+=L(m,n,a,e)*W(i,e,n,m)",s1_tensor,l2_tensor,lambda_t%w_ovoo,scale=ONE_HALF)
+        if (prints .ge. 2) print*, "S1 after term5 = ", tensor_norm2(s1_tensor)
+        ierr=talsh_tensor_contract("S(i,a)+=L(i,m,e,f)*W(e,f,a,m)",s1_tensor,l2_tensor,lambda_t%w_vvvo,scale=ONE_HALF)
+        if (prints .ge. 2) print*, "S1 after term6 = ", tensor_norm2(s1_tensor)
+        ierr=talsh_tensor_contract("S(i,a)+=G(f,e)*W(e,i,a,f)",s1_tensor,gvv_tensor,lambda_t%w_vovv)
+        if (prints .ge. 2) print*, "S1 after term7 = ", tensor_norm2(s1_tensor)
+
 !       Calculate s2 tensor
         ierr=talsh_tensor_init(s2_tensor)
         ierr=talsh_tensor_add("S(i,j,a,b)+=V(i,j,a,b)",s2_tensor,int_t%oovv)
+        if (prints .ge. 2) print*, "S2 after initialization = ", tensor_norm2(s2_tensor)*ONE_QUARTER
 
 !       Need to permute a and b, so term appears twice
         ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,j,a,e)*F(e,b)",s2_tensor,l2_tensor,lambda_t%fbar_vv)
         ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,j,e,b)*F(e,a)",s2_tensor,l2_tensor,lambda_t%fbar_vv)
+        if (prints .ge. 2) print*, "S2 after term1 = ", tensor_norm2(s2_tensor)*ONE_QUARTER
 
 !       Need to permute i and j, so term appears twice
         ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,m,b,a)*F(j,m)",s2_tensor,l2_tensor,lambda_t%fbar_oo)
         ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,m,a,b)*F(i,m)",s2_tensor,l2_tensor,lambda_t%fbar_oo)
+        if (prints .ge. 2) print*, "S2 after term2 = ", tensor_norm2(s2_tensor)*ONE_QUARTER
 
         ierr=talsh_tensor_contract("S(i,j,a,b)+=L(m,n,a,b)*W(i,j,m,n)",s2_tensor,l2_tensor,lambda_t%w_oooo,scale=ONE_HALF)
+        if (prints .ge. 2) print*, "S2 after term3 = ", tensor_norm2(s2_tensor)*ONE_QUARTER
 
 !       Need to permute i and j, as well as a and b, so term appears four times
         ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,m,e,a)*W(e,j,b,m)",s2_tensor,l2_tensor,lambda_t%w_vovo)
         ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,m,b,e)*W(e,j,a,m)",s2_tensor,l2_tensor,lambda_t%w_vovo)
         ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,m,a,e)*W(e,i,b,m)",s2_tensor,l2_tensor,lambda_t%w_vovo)
         ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,m,e,b)*W(e,i,a,m)",s2_tensor,l2_tensor,lambda_t%w_vovo)
+        !if (prints .ge. 2) print*, "S2 after term4 = ", tensor_norm2(s2_tensor)*ONE_QUARTER
 
 !       Need to permute a and b, so term appears twice
         ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,j,a,e)*G(e,b)",s2_tensor,int_t%oovv,gvv_tensor)
         ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,j,e,b)*G(e,a)",s2_tensor,int_t%oovv,gvv_tensor)
+        if (prints .ge. 2) print*, "S2 after term5 = ", tensor_norm2(s2_tensor)*ONE_QUARTER
 
+!       Need to permute a and b, so term appears twice
         ierr=talsh_tensor_contract("S(i,j,a,b)+=L(m,a)*W(j,i,m,b)",s2_tensor,l1_tensor,lambda_t%w_ooov)
+        ierr=talsh_tensor_contract("S(i,j,a,b)+=L(m,b)*W(i,j,m,a)",s2_tensor,l1_tensor,lambda_t%w_ooov)
+        if (prints .ge. 2) print*, "S2 after term6 = ", tensor_norm2(s2_tensor)*ONE_QUARTER
 
 !       Need to permute i and j, so term appears twice
         ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,m,b,a)*G(j,m)",s2_tensor,int_t%oovv,goo_tensor)
         ierr=talsh_tensor_contract("S(i,j,a,b)+=V(j,m,a,b)*G(i,m)",s2_tensor,int_t%oovv,goo_tensor)
+        if (prints .ge. 2) print*, "S2 after term7 = ", tensor_norm2(s2_tensor)*ONE_QUARTER
 
 !       Need to permute i and j, so term appears twice
-!        ierr=talsh_tensor_init(oo_aux_tensor)
-!        ierr=talsh_tensor_contract("O(i,m)+=L(i,e)*T(e,m)",oo_aux_tensor,l1_tensor,comm_t%t1)
-!        ierr=talsh_tensor_contract("S(i,j,a,b)+=V(m,j,a,b)*O(i,m)",s2_tensor,int_t%oovv,oo_aux_tensor)
-!        ierr=talsh_tensor_contract("S(i,j,a,b)+=V(m,i,b,a)*O(j,m)",s2_tensor,int_t%oovv,oo_aux_tensor)
-
-!       Need to permute i and j, so term appears twice
-!        ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,e)*V(e,j,a,b)",s2_tensor,l1_tensor,int_t%vovv)
-!        ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,e)*V(e,i,b,a)",s2_tensor,l1_tensor,int_t%vovv)
+        ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,e)*W(e,j,a,b)",s2_tensor,l1_tensor,lambda_t%w_vovv)
+        ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,e)*W(e,i,b,a)",s2_tensor,l1_tensor,lambda_t%w_vovv)
+        if (prints .ge. 2) print*, "S2 after term8 = ", tensor_norm2(s2_tensor)*ONE_QUARTER
 
 !       Need to permute i and j, as well as a and b, so term appears four times
         ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,a)*F(j,b)",s2_tensor,l1_tensor,lambda_t%fbar_ov)
         ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,b)*F(j,a)",s2_tensor,l1_tensor,lambda_t%fbar_ov,scale=MINUS_ONE)
         ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,a)*F(i,b)",s2_tensor,l1_tensor,lambda_t%fbar_ov,scale=MINUS_ONE)
         ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,b)*F(i,a)",s2_tensor,l1_tensor,lambda_t%fbar_ov)
+        if (prints .ge. 2) print*, "S2 after term9 = ", tensor_norm2(s2_tensor)*ONE_QUARTER
 
         ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,j,e,f)*W(e,f,a,b)",s2_tensor,l2_tensor,lambda_t%w_vvvv,scale=ONE_HALF)
-
-
-!       Calculate s1 tensor
-        ierr=talsh_tensor_init(s1_tensor)
-        ierr=talsh_tensor_add("S(i,a)+=F(i,a)",s1_tensor,lambda_t%fbar_ov)
-        ierr=talsh_tensor_contract("S(i,a)+=L(i,e)*F(e,a)",s1_tensor,l1_tensor,lambda_t%fbar_vv)
-        ierr=talsh_tensor_contract("S(i,a)+=L(m,a)*F(i,m)",s1_tensor,l1_tensor,lambda_t%fbar_oo,scale=MINUS_ONE)
-        ierr=talsh_tensor_contract("S(i,a)+=G(n,m)*W(i,m,n,a)",s1_tensor,goo_tensor,lambda_t%w_ooov)
-        ierr=talsh_tensor_contract("S(i,a)+=L(m,e)*W(e,i,a,m)",s1_tensor,l1_tensor,lambda_t%w_vovo,scale=MINUS_ONE)
-        ierr=talsh_tensor_contract("S(i,a)+=L(m,n,a,e)*W(i,e,n,m)",s1_tensor,l2_tensor,lambda_t%w_ovoo,scale=ONE_HALF)
-        ierr=talsh_tensor_contract("S(i,a)+=L(i,m,e,f)*W(e,f,a,m)",s1_tensor,l2_tensor,lambda_t%w_vvvo,scale=ONE_HALF)
-        ierr=talsh_tensor_contract("S(i,a)+=G(f,e)*W(e,i,a,f)",s1_tensor,gvv_tensor,lambda_t%w_vovv)
+        if (prints .ge. 2) print*, "S2 after term10 = ", tensor_norm2(s2_tensor)*ONE_QUARTER
 
 
         if (ierr.ne.TALSH_SUCCESS) then
