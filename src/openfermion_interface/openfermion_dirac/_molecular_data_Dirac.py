@@ -108,6 +108,8 @@ def name_molecule(geometry,
         charge: An integer giving the total molecular charge.
         relativistic: A boolean which tells you if the calculation is
                       relativistic or not.
+        symmetry: A boolean to use symmetry or not
+        speed_of_light: Real number to specify the speed of light manually.
         description: A string giving a description. As an example,
             for dimers a likely description is the bond length (e.g. 0.7414).
 
@@ -268,6 +270,8 @@ class MolecularData_Dirac(object):
                 data directory specified in config file.
             relativistic: A boolean which tells you if the calculation is relativistic
                 or not.
+            speed_of_light: real number of specify the speed of light manually.
+            symmetry: boolean to specify the use of symmetry or not
         """
         # Check appropriate data as been provided and autoload if requested.
         if ((geometry is None) or

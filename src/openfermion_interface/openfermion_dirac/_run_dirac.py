@@ -22,6 +22,8 @@ import re
 import subprocess
 import warnings
 
+class ActiveOrbitalsError(Exception):
+    pass
 
 def create_geometry_string(geometry):
     """This function converts MolecularData geometry to psi4 geometry.
@@ -55,7 +57,8 @@ def generate_dirac_input(molecule,
                         run_scf,
                         run_ccsd,
                         relativistic,
-                        speed_of_light):
+                        speed_of_light,
+                        active):
     """This function creates and saves a psi4 input file.
 
     Args:
@@ -68,6 +71,10 @@ def generate_dirac_input(molecule,
         speed_of_light: Real value for the speed of light (137 a.u.) in atomic unit,
                         to be changed if wanted in order to increase or decrease relativistic
                         effects.
+        active: A list of 3 real numbers select active orbitals.
+                first number : lowest energy
+                second number : highest energy
+                third number : minimum gap required between the lowest (highest)
 
     Returns:
         input_file: A string giving the name of the saved input file, and the xyz file.
@@ -80,6 +87,15 @@ def generate_dirac_input(molecule,
      f.write(molecule.filename + ' # anything can be in this line\n')
      f.write(geo_string)
     f.close()
+
+    if active is False:
+       pass
+    elif not isinstance(active, list):
+       raise ActiveOrbitalsError('keywords active should be a list')
+    elif len(active) != 3:
+       raise ActiveOrbitalsError('keywords active needs 3 numbers in a list')
+    elif (active[0] >= active[1]):
+       raise ActiveOrbitalsError('the second argument of active should be higher than the first argument')
 
     # Find the dirac_directory.
     dirac_directory = os.path.dirname(os.path.realpath(__file__))
@@ -105,6 +121,9 @@ def generate_dirac_input(molecule,
        f.write(" " + str(speed_of_light) + "\n")
       f.write("**MOLTRA\n")
       f.write(".MDCINT\n")
+      if active is not False:
+       f.write(".ACTIVE\n")
+       f.write("energy " + str(active[0]) + " " + str(active[1]) + " " + str(active[2]) + "\n")
       f.write("**MOLECULE\n")
       f.write("*CHARGE\n")
       f.write(".CHARGE\n")
@@ -161,6 +180,7 @@ def run_dirac(molecule,
              run_ccsd=False,
              relativistic=False,
              speed_of_light=False,
+             active=False,
              delete_input=False,
              delete_output=False,
              delete_xyz=False,
@@ -176,6 +196,10 @@ def run_dirac(molecule,
         run_ccsd: Optional boolean to run CCSD calculation.
         relativistic: Optional boolean to run relativistic calculation
         speed_of_light: Optional real to give another value to the speed of light
+        active: Optional list of 3 real numbers select active orbitals.
+                first number : lowest energy
+                second number : highest energy
+                third number : minimum gap required between the lowest (highest)
         delete_input: Optional boolean to delete dirac input file.
         delete_output: Optional boolean to delete dirac output file.
         delete_xyz: Optional boolean to delete dirac xyz file.
@@ -192,7 +216,8 @@ def run_dirac(molecule,
                         run_scf,
                         run_ccsd,
                         relativistic,
-                        speed_of_light)
+                        speed_of_light,
+                        active)
 
     # Run Dirac
     try:
