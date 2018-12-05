@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #ExaTensor run script
 #It is crucial to launch MPI processes consecutively within a node
 #if multiple MPI processes reside on the same node. In this case
@@ -8,13 +10,13 @@ export QF_PATH=../..              #full path to ExaTENSOR root directory
 export QF_NUM_PROCS=4             #total number of MPI processes
 export QF_PROCS_PER_NODE=4        #number of MPI processes per logical node (logical nodes are created by node resource isolation)
 export QF_CORES_PER_PROCESS=1     #number of physical CPU cores per MPI process (no less than 1)
-export QF_MEM_PER_PROCESS=1024    #host RAM memory limit per MPI process in MB
+export QF_MEM_PER_PROCESS=512     #host RAM memory limit per MPI process in MB
 export QF_NVMEM_PER_PROCESS=0     #non-volatile memory limit per MPI process in MB
-export QF_HOST_BUFFER_SIZE=512    #host buffer size per MPI process in MB (must be less than QF_MEM_PER_PROCESS)
+export QF_HOST_BUFFER_SIZE=256    #host buffer size per MPI process in MB (must be less than QF_MEM_PER_PROCESS)
 export QF_GPUS_PER_PROCESS=0      #number of discrete NVIDIA GPU's per MPI process (optional)
 export QF_MICS_PER_PROCESS=0      #number of discrete Intel Xeon Phi's per MPI process (optional)
 export QF_AMDS_PER_PROCESS=0      #number of discrete AMD GPU's per MPI process (optional)
-export QF_NUM_THREADS=8           #initial number of CPU threads per MPI process (keep it 8)
+export QF_NUM_THREADS=8           #initial number of CPU threads per MPI process (irrelevant, keep it 8)
 
 #OpenMP generic:
 export OMP_NUM_THREADS=$QF_NUM_THREADS #initial number of OpenMP threads per MPI process
@@ -23,25 +25,26 @@ export OMP_NESTED=TRUE                 #OpenMP nested parallelism is mandatory
 export OMP_MAX_ACTIVE_LEVELS=3         #max number of OpenMP nesting levels (at least 3)
 export OMP_THREAD_LIMIT=1024           #max total number of OpenMP threads per process
 export OMP_WAIT_POLICY=PASSIVE         #idle thread behavior
-export OMP_STACKSIZE=200M             #stack size per thread
+export OMP_STACKSIZE=200M              #stack size per thread
 #export OMP_DISPLAY_ENV=VERBOSE         #display OpenMP environment variables
 #export GOMP_DEBUG=1                    #GNU OpenMP debugging
+#export LOMP_DEBUG=1                    #IBM XL OpenMP debugging
 
 #OpenMP thread binding:
 export OMP_PLACES_DEFAULT=threads                                  #default thread binding to CPU hardware threads
-export OMP_PLACES_EOS={0},{2},{4},{6,8},{1:16:2},{10},{12},{14}    #Eos 16-core Intel Xeon thread binding (odd logical cores do computing)
-export OMP_PLACES_TITAN={0},{2},{4},{6,8},{1:8:2},{10},{12},{14}   #Titan 16-core AMD thread binding (odd hardware threads do computing)
-export OMP_PLACES_POWER9={0},{2},{4},{6,8},{1:42:2},{10},{12},{14} #Summit 21-core socket thread binding (odd hardware threads do computing)
-export OMP_PLACES_KNL={0},{2},{4},{6,8},{1:128:2},{10},{12},{14}   #KNL 64-core thread binding (odd hardware threads do computing)
+export OMP_PLACES_EOS={1},{3},{5},{7,9},{0:16:2},{11},{13},{15}    #Eos 16-core Intel Xeon thread binding (odd logical cores do computing)
+export OMP_PLACES_TITAN={1},{3},{5},{7,9},{0:8:2},{11},{13},{15}   #Titan 16-core AMD thread binding (odd hardware threads do computing)
+export OMP_PLACES_POWER9={1},{3},{5},{7,9},{0:42:2},{11},{13},{15} #Summit 21-core socket thread binding (odd hardware threads do computing)
+export OMP_PLACES_KNL={1},{3},{5},{7,9},{0:128:2},{11},{13},{15}   #KNL 64-core thread binding (odd hardware threads do computing)
 export OMP_PLACES=$OMP_PLACES_DEFAULT
-export OMP_PROC_BIND=close,spread,spread #nest1: Functional threads (DSVU)
-                                         #nest2: TAVP-WRK:Dispatcher spawns coarse-grain executors
-                                         #nest3: TAVP-WRK:Dispatcher:Executor spawns execution threads in CP-TAL kernels
-#Intel specific:
+export OMP_PROC_BIND="close,spread,spread" #nest1: Functional threads (DSVU)
+                                           #nest2: TAVP-WRK:Dispatcher spawns coarse-grain executors
+                                           #nest3: TAVP-WRK:Dispatcher:Executor spawns execution threads in CP-TAL kernels
+#MKL specific:
 export MKL_NUM_THREADS_DEFAULT=1                #keep consistent with chosen OMP_PLACES!
 export MKL_NUM_THREADS_EOS=16                   #keep consistent with chosen OMP_PLACES!
 export MKL_NUM_THREADS_TITAN=8                  #keep consistent with chosen OMP_PLACES!
-export MKL_NUM_THREADS_POWER9=42                #keep consistent with chosen OMP_PLACES!
+export MKL_NUM_THREADS_POWER9=84                #keep consistent with chosen OMP_PLACES!
 export MKL_NUM_THREADS_KNL=128                  #keep consistent with chosen OMP_PLACES!
 export MKL_NUM_THREADS=$MKL_NUM_THREADS_DEFAULT #number of Intel MKL threads per process
 
@@ -86,7 +89,7 @@ ulimit -s unlimited
 
 #aprun -n $QF_NUM_PROCS -N $QF_PROCS_PER_NODE -d $QF_CORES_PER_PROCESS -cc none ./exacorr.x #>& exacorr.log
 
-#jsrun -n8 -r2 -a1 -c21 -g3 -brs ./exacorr.x #>& exacorr.log
+#jsrun -n $QF_NUM_PROCS -r $QF_PROCS_PER_NODE -a 1 -c $QF_CORES_PER_PROCESS -g $QF_GPUS_PER_PROCESS -bnone ./exacorr.x #>& exacorr.log
 
 #nvprof --log-file nv_profile.log --print-gpu-trace ./exacorr.x #>& exacorr.log
 

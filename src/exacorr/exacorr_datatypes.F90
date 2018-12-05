@@ -41,8 +41,9 @@
 !       All two electron integral tensors
         type, public :: exatns_intg_tens
          type(tens_rcrsv_t) :: oooo
+         type(tens_rcrsv_t) :: ooov
          type(tens_rcrsv_t) :: oovv, vovo
-         type(tens_rcrsv_t) :: ooov, vovv
+         type(tens_rcrsv_t) :: vovv
          type(tens_rcrsv_t) :: vvvv
         end type exatns_intg_tens
 
@@ -50,10 +51,19 @@
         type, public :: exatns_comm_tens
          type(tens_rcrsv_t) :: foo, fov, fvv
          type(tens_rcrsv_t) :: goo, gvv
-         type(tens_rcrsv_t) :: hov
-         type(tens_rcrsv_t) :: a_int, b_int, d_int, h_int
+         type(tens_rcrsv_t) :: hoo, hov, hvv
+         type(tens_rcrsv_t) :: a_int, h_int
          type(tens_rcrsv_t) :: t1, t2, tau
         end type exatns_comm_tens
+
+        type, public :: exatns_lambda_tens
+         type(tens_rcrsv_t) :: fbar_oo, fbar_ov, fbar_vv
+         type(tens_rcrsv_t) :: w_oooo
+         type(tens_rcrsv_t) :: w_ovoo, w_ooov
+         type(tens_rcrsv_t) :: w_vovo, wbar_vovo
+         type(tens_rcrsv_t) :: w_vvvo, w_vovv
+         type(tens_rcrsv_t) :: w_vvvv
+        end type exatns_lambda_tens
 
 !       All two electron integral tensors
         type, public :: talsh_intg_tens

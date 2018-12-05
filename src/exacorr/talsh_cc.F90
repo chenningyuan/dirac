@@ -46,6 +46,7 @@ module talsh_cc
          use talsh_ao_to_mo, only       : tensor_norm2
          use exacorr_datatypes, only    : exacc_input
          use talsh_lambda
+         use talsh_gradient
 
          type(exacc_input), intent(in) :: exa_input        
 
@@ -221,6 +222,9 @@ module talsh_cc
 
 !         Destruct diis tensors
           call diis (l1_tensor,l2_tensor,mode=2)
+
+          !Calculate density matrices
+          call get_dm_mo(comm_t%t1,comm_t%t2,l1_tensor,l2_tensor,nocc,nvir)
          end if
 
 !        Destruct tensors and shut down library

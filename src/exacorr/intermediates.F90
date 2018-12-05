@@ -11,12 +11,16 @@ module intermediates
     real(8), parameter     :: ONE_QUARTER=0.25D0
 
      interface get_common_blocks
+#if defined (VAR_MPI)
         module procedure get_common_blocks_exatns
+#endif
         module procedure get_common_blocks_talsh
      end interface get_common_blocks
 
      interface get_lambda_intermediates
+#if defined (VAR_MPI)
         module procedure get_lambda_intermediates_exatns
+#endif
         module procedure get_lambda_intermediates_talsh
      end interface get_lambda_intermediates
 
@@ -25,7 +29,8 @@ module intermediates
 
      contains
 
-       subroutine get_common_blocks_exatns(comm_t,int_t)
+#if defined (VAR_MPI)
+       subroutine get_common_blocks_exatns(comm_t,int_t,CCD)
 
 !       Get common blocks to be used in lambda intermediates
 
@@ -36,60 +41,69 @@ module intermediates
         type(exatns_intg_tens),intent(inout) :: int_t
         type(tens_rcrsv_t) :: one_comm_tensor
 
+        logical, intent(in) :: CCD
         integer :: ierr
 
-!        ierr=exatns_tensor_create(one_comm_tensor,"one_comm_tensor",EXA_DATA_KIND_C8)
-!        ierr=exatns_tensor_init(one_comm_tensor,ONE)
-!
-!!       tau
-!        ierr=exatns_tensor_init(comm_t%tau)
-!        ierr=exatns_tensor_contract("T(a,b,i,j)+=R(a,b,i,j)*K()",comm_t%tau,comm_t%t2,one_comm_tensor)
-!        ierr=exatns_tensor_contract("T(a,b,i,j)+=R(a,i)*R(b,j)",comm_t%tau,comm_t%t1,comm_t%t1)
-!        ierr=exatns_tensor_contract("T(a,b,i,j)+=R(a,j)*R(b,i)",comm_t%tau,comm_t%t1,comm_t%t1,MINUS_ONE)
-!
-!!       vv
-!        ierr=exatns_tensor_init(comm_t%gvv)
-!        ierr=exatns_tensor_contract("G(a,c)+=V(k,l,c,d)*T(d,a,k,l)",comm_t%gvv,int_t%oovv,comm_t%tau,ONE_HALF)
-!        ierr=exatns_tensor_contract("G(a,c)+=V(a,k,c,d)*T(d,k)",comm_t%gvv,int_t%vovv,comm_t%t1)
-!        ierr=exatns_tensor_contract("G(a,c)+=F(k,c)*T(a,k)",comm_t%gvv,comm_t%fov,comm_t%t1,MINUS_ONE)
-!        ierr=exatns_tensor_contract("G(a,c)+=F(a,c)*K()",comm_t%gvv,comm_t%fvv,one_comm_tensor)
-!
-!!       ov
-!        ierr=exatns_tensor_init(comm_t%hov)
-!        ierr=exatns_tensor_contract("H(k,c)+=V(k,l,c,d)*T(d,l)",comm_t%hov,int_t%oovv,comm_t%t1)
-!        ierr=exatns_tensor_contract("H(k,c)+=F(k,c)*K()",comm_t%hov,comm_t%fov,one_comm_tensor)
-!
-!!       oo
-!        ierr=exatns_tensor_init(comm_t%goo)
-!        ierr=exatns_tensor_contract("G(k,i)+=V(k,l,c,d)*T(c,d,i,l)",comm_t%gvv,int_t%oovv,comm_t%tau,ONE_HALF)
-!        ierr=exatns_tensor_contract("G(k,i)+=V(k,l,i,c)*T(c,l)",comm_t%gvv,int_t%ooov,comm_t%t1)
-!        ierr=exatns_tensor_contract("G(k,i)+=F(k,c)*T(c,i)",comm_t%gvv,comm_t%fov,comm_t%t1)
-!        ierr=exatns_tensor_contract("G(k,i)+=F(k,i)*K()",comm_t%goo,comm_t%foo,one_comm_tensor)
-!
-!!       vvvv
-!        ierr=exatns_tensor_init(comm_t%b_int)
-!!       Permute a and b, so term appears twice
-!        ierr=exatns_tensor_contract("B(a,b,c,d)+=V(k,a,c,d)*T(b,k)",comm_t%b_int,int_t%vovv,comm_t%t1)
-!        ierr=exatns_tensor_contract("B(a,b,c,d)+=V(b,k,c,d)*T(a,k)",comm_t%b_int,int_t%vovv,comm_t%t1)
-!        ierr=exatns_tensor_contract("B(a,b,c,d)+=V(a,b,c,d)*K()",comm_t%b_int,int_t%vvvv,one_comm_tensor)
-!
-!!       vovo
-!        ierr=exatns_tensor_init(comm_t%h_int)
-!        ierr=exatns_tensor_contract("H(a,k,c,i)+=V(a,k,c,d)*T(d,i)",comm_t%h_int,int_t%vovv,comm_t%t1)                 ! o(2)v(3)
-!        ierr=exatns_tensor_contract("H(a,k,c,i)+=V(k,l,i,c)*T(a,l)",comm_t%h_int,int_t%ooov,comm_t%t1,MINUS_ONE) ! o(3)v(2)
-!        ierr=exatns_tensor_contract("H(a,k,c,i)+=V(a,k,c,i)*K()",comm_t%h_int,int_t%vovo,one_comm_tensor)
-!
-!!       oooo
-!        ierr=exatns_tensor_init(comm_t%a_int)
-!        ierr=exatns_tensor_contract("A(k,l,i,j)+=V(k,l,i,j)*K()",comm_t%a_int,int_t%oooo,one_comm_tensor)
-!        ierr=exatns_tensor_contract("A(k,l,i,j)+=V(k,l,i,c)*T(c,j)",comm_t%a_int,int_t%ooov,comm_t%t1) ! o(4)v(1)
-!        ierr=exatns_tensor_contract("A(k,l,i,j)+=V(k,l,j,c)*T(c,i)",comm_t%a_int,int_t%ooov,comm_t%t1,MINUS_ONE) ! o(4)v(1)
-!        ierr=exatns_tensor_init(comm_t%d_int)
-!        ierr=exatns_tensor_contract("D(k,l,i,j)+=V(k,l,c,d)*T(c,d,i,j)",comm_t%d_int,int_t%oovv,comm_t%tau,ONE_QUARTER_C)
-!
-!        ierr=exatns_tensor_destroy(one_comm_tensor)
+!       Initialize scalar
+        ierr=exatns_tensor_create(one_comm_tensor,"one_comm",EXA_DATA_KIND_C8)
+        ierr=exatns_tensor_init(one_comm_tensor,ONE)
+
+!       make tau ! validated
+        ierr=exatns_tensor_init(comm_t%tau)
+        ierr=exatns_tensor_contract("T(a,b,i,j)+=R(a,b,i,j)*K()",comm_t%tau,comm_t%t2,one_comm_tensor)
+        if (.not.CCD) then
+            ierr=exatns_tensor_contract("T(a,b,i,j)+=T(a,i)*T(b,j)",comm_t%tau,comm_t%t1,comm_t%t1) ! o(2)v(2)
+            ierr=exatns_tensor_contract("T(a,b,i,j)+=T(a,j)*T(b,i)",comm_t%tau,comm_t%t1,comm_t%t1,MINUS_ONE) ! o(2)v(2)
+        end if
+
+!       vv ! validated
+        ierr=exatns_tensor_init(comm_t%hvv)
+        ierr=exatns_tensor_contract("H(a,c)+=F(a,c)*K()",comm_t%hvv,comm_t%fvv,one_comm_tensor)
+        ierr=exatns_tensor_contract("H(a,c)+=V(k,l,c,d)*T(d,a,k,l)",comm_t%hvv,int_t%oovv,comm_t%tau,ONE_HALF) ! o(2)v(3)
+        ierr=exatns_tensor_init(comm_t%gvv)
+        ierr=exatns_tensor_contract("G(a,c)+=H(a,c)*K()",comm_t%gvv,comm_t%hvv,one_comm_tensor)
+        if (.not.CCD) then
+            ierr=exatns_tensor_contract("G(a,c)+=V(a,k,c,d)*T(d,k)",comm_t%gvv,int_t%vovv,comm_t%t1) ! o(1)v(3)
+            ierr=exatns_tensor_contract("G(a,c)+=F(k,c)*T(a,k)",comm_t%gvv,comm_t%fov,comm_t%t1,MINUS_ONE) ! o(1)v(2)
+        end if
+
+!       vovo ! more tests
+        ierr=exatns_tensor_init(comm_t%h_int)
+        if (.not.CCD) then
+            ierr=exatns_tensor_contract("H(a,k,c,i)+=V(a,k,c,d)*T(d,i)",comm_t%h_int,int_t%vovv,comm_t%t1) ! o(2)v(3)
+            ierr=exatns_tensor_contract("H(a,k,c,i)+=V(k,l,i,c)*T(a,l)",comm_t%h_int,int_t%ooov,comm_t%t1,MINUS_ONE) ! o(3)v(2)
+        end if
+        ierr=exatns_tensor_contract("H(a,k,c,i)+=V(a,k,c,i)*K()",comm_t%h_int,int_t%vovo,one_comm_tensor)
+
+!       oo ! validated
+        ierr=exatns_tensor_init(comm_t%hoo)
+        ierr=exatns_tensor_contract("H(k,i)+=F(k,i)*K()",comm_t%hoo,comm_t%foo,one_comm_tensor)
+        ierr=exatns_tensor_contract("H(k,i)+=V(k,l,c,d)*T(c,d,l,i)",comm_t%hoo,int_t%oovv,comm_t%tau,ONE_HALF) ! o(3)v(2)
+        ierr=exatns_tensor_init(comm_t%goo)
+        ierr=exatns_tensor_contract("G(k,i)+=H(k,i)*K()",comm_t%goo,comm_t%hoo,one_comm_tensor)
+        if (.not.CCD) then 
+            ierr=exatns_tensor_contract("G(k,i)+=V(k,l,i,c)*T(c,l)",comm_t%goo,int_t%ooov,comm_t%t1,MINUS_ONE) ! o(3)v(1)
+            ierr=exatns_tensor_contract("G(k,i)+=F(k,c)*T(c,i)",comm_t%goo,comm_t%fov,comm_t%t1) ! o(2)v(1)
+        end if
+
+!       ov ! validated
+        ierr=exatns_tensor_init(comm_t%hov)
+        if (.not.CCD) ierr=exatns_tensor_contract("H(k,c)+=V(k,l,c,d)*T(d,l)",comm_t%hov,int_t%oovv,comm_t%t1) ! o(2)v(2)
+        ierr=exatns_tensor_contract("H(k,c)+=F(k,c)*K()",comm_t%hov,comm_t%fov,one_comm_tensor)           ! add fock matrix
+
+!       oooo ! validated
+        ierr=exatns_tensor_init(comm_t%a_int)
+        ierr=exatns_tensor_contract("A(k,l,i,j)+=V(k,l,i,j)*K()",comm_t%a_int,int_t%oooo,one_comm_tensor)
+        if (.not.CCD) then 
+            ierr=exatns_tensor_contract("A(k,l,i,j)+=V(k,l,i,c)*T(c,j)",comm_t%a_int,int_t%ooov,comm_t%t1) ! o(4)v(1)
+            ierr=exatns_tensor_contract("A(k,l,i,j)+=V(k,l,j,c)*T(c,i)",comm_t%a_int,int_t%ooov,comm_t%t1,MINUS_ONE) ! o(4)v(1)
+        end if
+        ierr=exatns_tensor_contract("A(k,l,i,j)+=V(k,l,c,d)*T(c,d,i,j)",comm_t%a_int,int_t%oovv,comm_t%tau,ONE_HALF) ! o(4)v(2)
+
+        ierr=exatns_tensor_destroy(one_comm_tensor)
 
        end subroutine get_common_blocks_exatns
+#endif
 
        subroutine get_common_blocks_talsh(comm_t,int_t)
 
@@ -150,6 +164,7 @@ module intermediates
 
        end subroutine get_common_blocks_talsh
 
+#if defined (VAR_MPI)
        subroutine get_lambda_intermediates_exatns(comm_t,int_t)
 
 !       Get fixed intermediates of lambda equations
@@ -165,6 +180,7 @@ module intermediates
 !       Do stuff
 
        end subroutine get_lambda_intermediates_exatns
+#endif
 
        subroutine get_lambda_intermediates_talsh(comm_t,int_t,lambda_t,nocc,nvir)
 
