@@ -1854,7 +1854,7 @@ C
         CALL RDCIVEC(NRIVEC,MSTATE,IRRP_I,IREP_I,NVEC_I,CL,DET_I,
      &               NZCONF_I,KST,IRVEC,IPRINT)
         IF( KST .NE. 0 ) THEN
-          WRITE(LUPRI,"(/'<bra|      irrep',I3,A
+          WRITE(LUPRI,"(/'<bra|      irrep',I3,A,
      &                   '     skipped.',I4)") 
      &          IREP_I,REPNA(IREP_I),KST
           CYCLE

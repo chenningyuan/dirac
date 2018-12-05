@@ -185,8 +185,6 @@ contains
        case(.false.)
                           path = 'molecular X2C (with spin-orbit contributions)      '
          if(x2c_spinfree) path = 'molecular X2C (spinfree)                           '
-       case default
-         call quit('default path for logical not possible in x2c_main')
      end select
 
      print '(/18x,a,a)', ' *** chosen path in X2C module: ',path

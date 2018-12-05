@@ -1401,8 +1401,8 @@ contains
         write(lupri, *) 'Space around the cube file is ', visual_cfg_add_3d
      end if
      if (visual_cfg_3d_fast) then 
-        write(lupri, *) 'Visualization in 3d with fast evaluation of the molecular electrostatic potential, &
-                         done with the following setiings:'
+        write(lupri, *) 'Visualization in 3d with fast evaluation of the molecular electrostatic potential', &
+                        ' done with the following setiings:'
         write(lupri, *) 'Number of points in x, y, z direction: ', visual_cfg_ncube(1), &
                                                                    visual_cfg_ncube(2), &
                                                                    visual_cfg_ncube(3) 
