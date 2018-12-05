@@ -191,12 +191,13 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbbas.h"
 #include "cbiwlk.h"
 #include "dcbham.h"
+#include "dcbgen.h"
       
       PARAMETER (D0=0.0D0,D1=1.0D0,D2=2.0D0)      
       PARAMETER (H=0.01D0,MXNP = 4000) !same to GRASP
       real(8), allocatable :: ZAN(:),C(:,:)
       real(8), allocatable :: ANG(:,:),GAO(:)
-      real(8), allocatable :: SMAT(:),TC(:),TD(:,:)
+      real(8), allocatable :: BUF(:),TC(:),TD(:,:)
       real(8), allocatable :: OVL(:)
       
       CALL QENTER('NUMOVL')
@@ -215,13 +216,10 @@ C The values of ultrafine (.ULTRAF) at DFT input-reader section.
       INTANG=64
       
       m = NLEB(INTANG) ! num_grid_cfg_ANGINT
-!      LSMAX=1
-!      IF(NTBAS(2).GT.0)LSMAX=2
-      NDIM = MAX(NTBAS(1),NTBAS(0))
-      NDIM2 = NDIM*NDIM
+      NDIM2 = NTBAS(0)*NTBAS(0)
       allocate( ANG(m,4)       )
       allocate( GAO(NTBAS(0))  )
-      allocate( SMAT(NDIM2)    )
+      allocate( BUF(NDIM2)    )
       allocate( TC(NDIM2)      )
       allocate( TD(MXNP,NDIM2) )
       allocate( OVL(NDIM2)     )
@@ -233,18 +231,15 @@ C
 !         WT(J)=WT(J)*4.0D0*PI
 !     ENDDO
 C
-!      write(*,*)"MC",MC
-!      write(*,*)"NTBAS1,2",NTBAS(1),NTBAS(2)
-!      write(*,*)"NPSH",NPSH(1),NPSH(2)
-      IF(X2C.eqv..FALSE.)THEN
-        DO 10 IATOM = 1, NUCIND
-!        DO 10 ISYMOP = 0, MXOPR
-!       What is this roop? MXOPR=0 in dftgrd.F
-         IF (IBTAND(0,ISTBNU(IATOM)).EQ.0) THEN
-!          IF (IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN
-!          IBTAND=IAND, but I am not sure what is it.     
-           IF(NOORBT(IATOM)) GOTO 10
-           IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 10
+      write(*,*)"MCayaki in NUMOVL",MC
+      DO 10 IATOM = 1, NUCIND
+!      DO 10 ISYMOP = 0, MXOPR
+!     What is this roop? MXOPR=0 in dftgrd.F
+       IF (IBTAND(0,ISTBNU(IATOM)).EQ.0) THEN
+!        IF (IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN
+!        IBTAND=IAND, but I am not sure what is it.     
+         IF(NOORBT(IATOM)) GOTO 10
+         IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 10
 C         
 ! from GRASP datain.F and mcdf.F
 C     
@@ -252,126 +247,77 @@ C   SET UP GRID FOR CALCULATION
 C      
 C   SET DEFAULT VALUES OF PARAMETERS FOR CALCULATION
 C
-           EPH = EXP(H)
-           RNT = 1.0D-06/ZAN(IATOM) !CHARGE(IATOM)
-C         
-           CALL DZERO(SMAT,NDIM2) 
-           CALL DZERO(TD,NDIM2*MXNP)
-           CALL DZERO(OVL,NDIM2)
-           RNODE = RNT
-           DO 20 IR = 1, MXNP
-             RFAC = RNODE*RNODE*RNODE 
-             CALL DZERO(TC,NDIM2)
+         EPH = EXP(H)
+         RNT = 1.0D-06/ZAN(IATOM) !CHARGE(IATOM)
+C       
+         CALL DZERO(BUF,NDIM2) 
+         CALL DZERO(TD,NDIM2*MXNP)
+         CALL DZERO(OVL,NDIM2)
+         RNODE = RNT
+         DO 20 IR = 1, MXNP
+           RFAC = RNODE*RNODE*RNODE 
+           CALL DZERO(TC,NDIM2)
 C            
-C            loop over angular points
-C            ========================
+C          loop over angular points
+C          ========================
 C
-             DO 30 iy = 1, m
-               X8  = ANG(iy,1)*RNODE+C(1,IATOM)
-               Y8  = ANG(iy,2)*RNODE+C(2,IATOM)
-               Z8  = ANG(iy,3)*RNODE+C(3,IATOM)
-               WT8 = ANG(iy,4)*RFAC
+           DO 30 iy = 1, m
+             X8  = ANG(iy,1)*RNODE+C(1,IATOM)
+             Y8  = ANG(iy,2)*RNODE+C(2,IATOM)
+             Z8  = ANG(iy,3)*RNODE+C(3,IATOM)
+             WT8 = ANG(iy,4)*RFAC
 C
 C     GET AO's
 C
-               IAO=1
-               CALL GETAOS(GAO,TEMP,TEMP,TEMP,TEMP,
-     &                      X8,Y8,Z8,NTBAS(0),0,.FALSE.,0) !The last is IPRINT
+             CALL GETAOS(GAO,TEMP,TEMP,TEMP,TEMP,
+     &                    X8,Y8,Z8,NTBAS(0),0,.FALSE.,0) !The last is IPRINT
 C
 C     Get "overlap" matrix
 C
-               CALL DGEMM('N','T',NTBAS(1),NTBAS(1),
-     &                    1,D1,GAO(IAO),NTBAS(1),GAO(IAO),
-     &                    NTBAS(1),D0,SMAT,NTBAS(0))
-               IAO = 1 + NTBAS(1)
-               IOV = 1 + NTBAS(1)*(NTBAS(0)+1)
-C
-C     Get "overlap" matrix
-C
-               CALL DGEMM('N','T',NTBAS(2),NTBAS(2),
-     &                    1,D1,GAO(IAO),NTBAS(2),GAO(IAO),
-     &                    NTBAS(2),D0,SMAT(IOV),NTBAS(0))
-               CALL DAXPY(NDIM2,
-     &                    WT8,SMAT,1,TC(1),1)
-30           CONTINUE
-             CALL DCOPY(NDIM2,TC(1),1,TD(IR,1),MXNP)
-             RNODE = RNODE*EPH
-20         CONTINUE
+             IOFF   = 0
+             IEND   = 0
+             ISTART = 0
+             DO IC = 1, MC
+               DO I = 1, NTBAS(IC)
+                 IADD = I*(I-1)/2
+                 DO J = 1, I
+                   IJ = IOFF + IADD + J  
+                   BUF(IJ) = GAO(I+ISTART)*GAO(J+ISTART)
+                 ENDDO
+               ENDDO
+               IOFF   = IOFF   + NTBAS(IC)*(NTBAS(IC)+1)/2 + NTBAS(IC)
+               ISTART = ISTART + NTBAS(IC)
+             ENDDO  
+             CALL DAXPY(NDIM2,WT8,BUF,1,TC(1),1)
+30         CONTINUE
+           CALL DCOPY(NDIM2,TC(1),1,TD(IR,1),MXNP)
+           RNODE = RNODE*EPH
+20       CONTINUE
 C
 C  Large         
-           CALL HEADER('Numerical ovelap integral (Large,Small)',-1)
+         CALL HEADER('Numerical ovelap integral',-1)
 
-           CALL QUAD2(OVL,TD,MXNP,H,NDIM2)
-           CALL OUTPUT(OVL,1,NTBAS(0),1,NTBAS(0),
-     &                NTBAS(0),NTBAS(0),1,LUPRI)
-         ENDIF        !(IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0)
-10      CONTINUE
-      ELSE !MC
-        DO 40 IATOM = 1, NUCIND
-!        DO 10 ISYMOP = 0, MXOPR
-!       What is this roop? MXOPR=0 in dftgrd.F
-         IF (IBTAND(0,ISTBNU(IATOM)).EQ.0) THEN
-!          IF (IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN
-!          IBTAND=IAND, but I am not sure what is it.     
-           IF(NOORBT(IATOM)) GOTO 40
-           IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 40
-C         
-! from GRASP datain.F and mcdf.F
-C     
-C   SET UP GRID FOR CALCULATION
-C      
-C   SET DEFAULT VALUES OF PARAMETERS FOR CALCULATION
-C
-           EPH = EXP(H)
-           RNT = 1.0D-06/ZAN(IATOM) !CHARGE(IATOM)
-C         
-           CALL DZERO(SMAT,NDIM2)
-           CALL DZERO(TD,NDIM2*MXNP)
-           CALL DZERO(OVL,NDIM2)
-           RNODE = RNT
-           DO 50 IR = 1, MXNP
-             RFAC = RNODE*RNODE*RNODE 
-             CALL DZERO(TC,NDIM2)
-C            
-C            loop over angular points
-C            ========================
-C
-             DO 60 iy = 1, m
-               X8  = ANG(iy,1)*RNODE+C(1,IATOM)
-               Y8  = ANG(iy,2)*RNODE+C(2,IATOM)
-               Z8  = ANG(iy,3)*RNODE+C(3,IATOM)
-               WT8 = ANG(iy,4)*RFAC
-C
-C     GET AO's (Large)
-C
-               CALL GETAOS(GAO,TEMP,TEMP,TEMP,TEMP,
-     &                      X8,Y8,Z8,NTBAS(1),0,.FALSE.,0) !The last is IPRINT
-C
-C     Get "overlap" matrix
-C
-               CALL DGEMM('N','T',NTBAS(1),NTBAS(1),
-     &                    1,D1,GAO(1),NTBAS(1),GAO(1),
-     &                    NTBAS(1),D0,SMAT,NTBAS(1))
-               CALL DAXPY(NTBAS(1)*NTBAS(1),
-     &                    WT8,SMAT,1,TC(1),1)
-60           CONTINUE
-             CALL DCOPY(NDIM2,TC(1),1,TD(IR,1),MXNP)
-             RNODE = RNODE*EPH
-50         CONTINUE
-C
-           CALL HEADER('Numerical ovelap integral (Only Large)',-1)
-C
-           CALL QUAD2(OVL,TD,MXNP,H,NDIM2)
-           CALL OUTPUT(OVL,1,NTBAS(1),1,NTBAS(1),
-     &                NTBAS(1),NTBAS(1),1,LUPRI)
-         ENDIF        !(IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0)
-40      CONTINUE
-      ENDIF                     !MC
+         CALL QUAD2(OVL,TD,MXNP,H,NDIM2)
+         IOFF = 1
+         DIM  = NTBAS(1) 
+         DO IC = 1,MC
+           IF(IC.eq.1)THEN 
+              write(*,*)"Large"
+           ELSE
+              write(*,*)"Small"
+           ENDIF   
+           CALL OUTPAK(OVL(IOFF),NTBAS(IC),-1,LUPRI)
+           IOFF = IOFF + NTBAS(IC)*(NTBAS(IC)+1)/2 + NTBAS(IC)
+           DIM = DIM + NTBAS(2)
+         ENDDO
+         write(*,*)
+       ENDIF        !(IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0)
+10    CONTINUE
 C
       deallocate(ZAN)
       deallocate(C)
       deallocate(ANG)
-      deallocate(SMAT)
+      deallocate(BUF)
       deallocate(TD)
       deallocate(OVL)
       CALL QEXIT('NUMOVL')
@@ -386,8 +332,10 @@ C
 C Called from: NMINT2
 C
 C copied from /QUAD/grasp.F/GRASP
-C Modified to DIRAC A. Sunaga Nov. 2018       
 C
+C     Modified to DIRAC A. Sunaga Nov. 2018       
+C     Modification: e.g. TE is two dimension 
+C      
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 C
@@ -2675,7 +2623,9 @@ C
         ENDDO
         IF (TWOCOMP) THEN
          SSMTRC = D0
+         write(*,*)"MCayaki in GMOTRA", MC           
          MC = 1
+         write(*,*)"MCayaki2 in GMOTRA", MC
         ENDIF
         IF (IPRHAM.GE.5) THEN
           write(lupri,*) 'GMOTRA: branch URKBAL'
@@ -5959,7 +5909,6 @@ C
 
 #include "memint.h"
 C
-
       CALL HEADER('Output from LINSYM',-1)
       NBRP = 4 / NZ
 C
