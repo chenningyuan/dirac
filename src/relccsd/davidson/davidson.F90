@@ -950,13 +950,13 @@ contains
             if (abs(vr).lt.print_values_threshold) vr = 0.0d0
 
             if (vi .lt. 0.0d0) then
-                write (davidson_output_file_unit,'(4x,a,i6,a,1e14.6,a,1e14.6,a)'), &
+                write (davidson_output_file_unit,'(4x,a,i6,a,1e14.6,a,1e14.6,a)')  &
                       "Eigenvalue ",i," : ", vr," -",abs(vi)," i"
             else if (vi .gt. 0.0d0) then
-                write (davidson_output_file_unit,'(4x,a,i6,a,1e14.6,a,1e14.6,a)'), &
+                write (davidson_output_file_unit,'(4x,a,i6,a,1e14.6,a,1e14.6,a)')  &
                       "Eigenvalue ",i," : ", vr," +",abs(vi)," i"
             else
-                write (davidson_output_file_unit,'(4x,a,i6,a,1e14.6)'), &
+                write (davidson_output_file_unit,'(4x,a,i6,a,1e14.6)')  &
                       "Eigenvalue ",i," : ", vr
             end if
         end do
@@ -1033,7 +1033,7 @@ contains
                unconverged_roots = unconverged_roots + 1
             end if
         end do
-        write (davidson_output_file_unit,*), ""
+        write (davidson_output_file_unit,*) " "
 
         if (any(vectors_to_update)) then
             if (correct_all_local) then
@@ -1320,7 +1320,7 @@ contains
                     vr = v(kr,j)
                     vi = v(ki,j)
                     write (davidson_output_file_unit,'(a,1i4,a,1i4,a,1i4,a,1i4,a,1e14.6,a,1e14.6)') &
-                                 ,'i:',i,' j:',j,' kr',kr,' ki:',ki,'  vr:',vr,'  vi:',vi 
+                                 'i:',i,' j:',j,' kr',kr,' ki:',ki,'  vr:',vr,'  vi:',vi 
 
                     vt(j,kr) =  vr
                     vt(j,ki) = -vi
