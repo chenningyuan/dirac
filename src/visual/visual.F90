@@ -1394,7 +1394,7 @@ contains
      write(lupri, *)    '--------------------------------------------------------------------------------------'
 
      if (visual_cfg_3d) then
-        write(lupri, *) 'Visualization in 3d done with the following setiings:'
+        write(lupri, *) 'Visualization in 3d done with the following settings:'
         write(lupri, *) 'Number of points in x, y, z direction: ', visual_cfg_ncube(1), &
                                                                    visual_cfg_ncube(2), &
                                                                    visual_cfg_ncube(3) 
@@ -1402,7 +1402,7 @@ contains
      end if
      if (visual_cfg_3d_fast) then 
         write(lupri, *) 'Visualization in 3d with fast evaluation of the molecular electrostatic potential', &
-                        ' done with the following setiings:'
+                        ' done with the following settings:'
         write(lupri, *) 'Number of points in x, y, z direction: ', visual_cfg_ncube(1), &
                                                                    visual_cfg_ncube(2), &
                                                                    visual_cfg_ncube(3) 
