@@ -51,29 +51,23 @@ def create_geometry_string(geometry):
 
 
 def generate_dirac_input(molecule,
+                        symmetry,
                         run_scf,
-                        run_mp2,
-                        run_cisd,
                         run_ccsd,
-                        run_fci,
                         relativistic,
-                        verbose,
-                        tolerate_error,
-                        memory,
-                        template_file):
+                        speed_of_light):
     """This function creates and saves a psi4 input file.
 
     Args:
         molecule: An instance of the MolecularData class.
+        symmetry: Boolean to specify the use of symmetry
         run_scf: Boolean to run SCF calculation.
-        run_mp2: Boolean to run MP2 calculation.
-        run_cisd: Boolean to run CISD calculation.
-        run_ccsd: Boolean to run CCSD calculation.
-        run_fci: Boolean to FCI calculation.
-        verbose: Boolean whether to print calculation results to screen.
-        tolerate_error: Whether to fail or merely warn when Psi4 fails.
-        memory: Int giving amount of memory to allocate in MB.
-        template_file(str): Specify the filename of a dirac template
+        run_ccsd: Boolean to run CCSD calculation. (note that SCF and MP2
+                  energies are done as well with CCSD)
+        relativistic: Boolean to specify relativistic calculation or not
+        speed_of_light: Real value for the speed of light (137 a.u.) in atomic unit,
+                        to be changed if wanted in order to increase or decrease relativistic
+                        effects.
 
     Returns:
         input_file: A string giving the name of the saved input file, and the xyz file.
@@ -105,12 +99,22 @@ def generate_dirac_input(molecule,
        f.write("**INTEGRALS\n")
        f.write(".NUCMOD\n")
        f.write(" 1\n")
+      if speed_of_light is not False:
+       f.write("**GENERAL\n")
+       f.write(".CVALUE\n")
+       f.write(" " + str(speed_of_light) + "\n")
       f.write("**MOLTRA\n")
       f.write(".MDCINT\n")
       f.write("**MOLECULE\n")
+      f.write("*CHARGE\n")
+      f.write(".CHARGE\n")
+      f.write(" " + str(molecule.charge) + "\n")
+      if symmetry is False:
+       f.write("*SYMMETRY\n")
+       f.write(".NOSYM\n")
       f.write("*BASIS\n")
       f.write(".DEFAULT\n")
-      if molecule.basis == "explicit" or molecule.basis == "special":
+      if molecule.basis == "special":
        f.write(" sto-3g\n")
        f.write(molecule.special_basis+"\n")
       else:
@@ -148,60 +152,47 @@ def clean_up(molecule, delete_input=True, delete_xyz=True, delete_output=False, 
     if delete_MDCINT:
         os.remove("MDCINT")
     if delete_FCIDUMP:
-        os.remove("FCIDUMP" + molecule.name)
+        os.remove("FCIDUMP_" + molecule.name)
 
 
 def run_dirac(molecule,
+             symmetry=True,
              run_scf=True,
-             run_mp2=False,
-             run_cisd=False,
              run_ccsd=False,
-             run_fci=False,
-             relativistic=True,
-             verbose=False,
-             tolerate_error=False,
+             relativistic=False,
+             speed_of_light=False,
              delete_input=False,
              delete_output=False,
              delete_xyz=False,
              delete_MRCONEE=False,
              delete_MDCINT=False,
-             delete_FCIDUMP=False,
-             memory=8000,
-             template_file=None):
+             delete_FCIDUMP=False):
     """This function runs a dirac calculation.
 
     Args:
         molecule: An instance of the MolecularData class.
+        symmetry: Optional boolean to remove symmetry in the calculation
         run_scf: Optional boolean to run SCF calculation.
-        run_mp2: Optional boolean to run MP2 calculation.
-        run_cisd: Optional boolean to run CISD calculation.
         run_ccsd: Optional boolean to run CCSD calculation.
-        run_fci: Optional boolean to FCI calculation.
-        verbose: Boolean whether to print calculation results to screen.
-        tolerate_error: Optional boolean to warn or raise when Psi4 fails.
-        delete_input: Optional boolean to delete psi4 input file.
-        delete_output: Optional boolean to delete psi4 output file.
-        memory: Optional int giving amount of memory to allocate in MB.
-        template_file(str): Path to Psi4 template file
+        relativistic: Optional boolean to run relativistic calculation
+        speed_of_light: Optional real to give another value to the speed of light
+        delete_input: Optional boolean to delete dirac input file.
+        delete_output: Optional boolean to delete dirac output file.
+        delete_xyz: Optional boolean to delete dirac xyz file.
+        delete_MRCONEE: Optional boolean to delete dirac MRCONEE file.
+        delete_MDCINT: Optional boolean to delete dirac MDCINT file.
+        delete_FCIDUMP: Optional boolean to delete dirac FCIDUMP file.
 
     Returns:
         molecule: The updated MolecularData object.
-
-    Raises:
-        psi4 errors: An error from psi4.
     """
     # Prepare input.
     input_file, xyz_file = generate_dirac_input(molecule,
+                        symmetry,
                         run_scf,
-                        run_mp2,
-                        run_cisd,
                         run_ccsd,
-                        run_fci,
                         relativistic,
-                        verbose,
-                        tolerate_error,
-                        memory,
-                        template_file)
+                        speed_of_light)
 
     # Run Dirac
     try:
@@ -210,10 +201,6 @@ def run_dirac(molecule,
     except:
         print('Dirac calculation for {} has failed. Most certainely a problem with pam.'.format(molecule.name))
 
-#    try:
-#        subprocess.call('grep "exit           : normal" pam_file | wc -l')
-
-    # Compute the FCIDUMP
     try:
         print('Creation of the FCIDUMP file\n')
         subprocess.call('dirac_openfermion_mointegral_export.x >> output_script', shell=True)
@@ -222,11 +209,4 @@ def run_dirac(molecule,
     else:
         clean_up(molecule, delete_input, delete_xyz, delete_output, delete_MRCONEE, delete_MDCINT, delete_FCIDUMP)
 
-    # Return updated molecule instance.
-    #try:
-    #    molecule.load()
-    #except:
-    #    warnings.warn('No calculation saved. '
-    #                  'Dirac segmentation fault possible.',
-    #                  Warning)
     return molecule

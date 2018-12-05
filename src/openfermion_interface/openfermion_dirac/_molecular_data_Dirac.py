@@ -44,20 +44,16 @@ except NameError:  # pragma: no cover
 class MoleculeNameError(Exception):
     pass
 
-
 class MissingCalculationError(Exception):
     pass
-
 
 # Functions to change from Bohr to angstroms and back.
 def bohr_to_angstroms(distance):
     # Value defined so it is the inverse to numerical precision of angs to bohr
     return 0.5291772458017723 * distance
 
-
 def angstroms_to_bohr(distance):
     return 1.889726 * distance
-
 
 # The Periodic Table as a python list and dictionary.
 periodic_table = [
@@ -85,7 +81,6 @@ periodic_hash_table = {}
 for atomic_number, atom in enumerate(periodic_table):
     periodic_hash_table[atom] = atomic_number
 
-
 # Spin polarization of atoms on period table.
 periodic_polarization = [-1,
                          1, 0,
@@ -94,11 +89,13 @@ periodic_polarization = [-1,
                          1, 0, 1, 2, 3, 6, 5, 4, 3, 2, 1, 0, 1, 2, 3, 2, 1, 0,
                          1, 0, 1, 2, 5, 6, 5, 8, 9, 0, 1, 0, 1, 2, 3, 2, 1, 0]
 
-
 def name_molecule(geometry,
                   basis,
                   multiplicity,
                   charge,
+                  relativistic,
+                  symmetry,
+                  speed_of_light,
                   description):
     """Function to name molecules.
 
@@ -109,6 +106,8 @@ def name_molecule(geometry,
         basis: A string giving the basis set. An example is 'cc-pvtz'.
         multiplicity: An integer giving the spin multiplicity.
         charge: An integer giving the total molecular charge.
+        relativistic: A boolean which tells you if the calculation is
+                      relativistic or not.
         description: A string giving a description. As an example,
             for dimers a likely description is the bond length (e.g. 0.7414).
 
@@ -162,6 +161,12 @@ def name_molecule(geometry,
     # Optionally add descriptive tag and return.
     if description:
         name += '_{}'.format(description)
+    if relativistic:
+        name += '_rel'
+    if symmetry is False:
+        name += '_nosym'
+    if speed_of_light is not False:
+        name += '_c'+str(speed_of_light)
     return name
 
 
@@ -237,7 +242,8 @@ class MolecularData_Dirac(object):
             for this system annotated by the key.
     """
     def __init__(self, geometry=None, basis=None, special_basis=None, multiplicity=None,
-                 charge=0, description="", filename="", data_directory=None, relativistic=False):
+                 charge=0, description="", filename="", data_directory=None, relativistic=False,
+                 symmetry=True, speed_of_light=False):
         """Initialize molecular metadata which defines class.
 
         Args:
@@ -246,6 +252,8 @@ class MolecularData_Dirac(object):
                 Distances in angstrom. Use atomic symbols to
                 specify atoms. Only optional if loading from file.
             basis: A string giving the basis set. An example is 'cc-pvtz'.
+                Only optional if loading from file.
+            special_basis: A string giving a special basis set.
                 Only optional if loading from file.
             charge: An integer giving the total molecular charge. Defaults
                 to 0.  Only optional if loading from file.
@@ -258,6 +266,8 @@ class MolecularData_Dirac(object):
                 If filename is not provided, one is generated automatically.
             data_directory: Optional data directory to change from default
                 data directory specified in config file.
+            relativistic: A boolean which tells you if the calculation is relativistic
+                or not.
         """
         # Check appropriate data as been provided and autoload if requested.
         if ((geometry is None) or
@@ -278,7 +288,6 @@ class MolecularData_Dirac(object):
         # Metadata fields which must be provided.
         self.geometry = geometry
         self.basis = basis
-        self.special_basis = special_basis
         self.multiplicity = multiplicity
 
         # Metadata fields with default values.
@@ -286,12 +295,14 @@ class MolecularData_Dirac(object):
         if (not isinstance(description, basestring)):
             raise TypeError("description must be a string.")
         self.description = description
-        
         self.relativistic = relativistic
+        self.symmetry = symmetry
+        self.speed_of_light = speed_of_light
+        self.special_basis = special_basis
 
         # Name molecule and get associated filename
         self.name = name_molecule(geometry, basis, multiplicity,
-                                  charge, description)
+                                  charge, relativistic, symmetry, speed_of_light, description)
         if filename:
             if filename[-5:] == '.hdf5':
                 filename = filename[:(len(filename) - 5)]
@@ -356,7 +367,7 @@ class MolecularData_Dirac(object):
         if os.path.exists(self.name + '.out') == True:
            with open(self.name + '.out', "r") as f:
              for line in f:
-                if re.search("@ SCF energy", line):
+                if re.search("Total energy                             :", line):
                   hf_energy=line.rsplit(None, 1)[-1]
                 if re.search("@ Total MP2 energy", line):
                   mp2_energy=line.rsplit(None, 1)[-1]
@@ -366,23 +377,31 @@ class MolecularData_Dirac(object):
            raise FileNotFoundError('output not found, check your run_dirac calculation')
         return hf_energy, mp2_energy, ccsd_energy
 
-    def get_molecular_hamiltonian(self, relativistic, occupied_indices=None,
-                                  active_indices=None):
+    def get_molecular_hamiltonian(self, relativistic=False):
         """Output arrays of the second quantized Hamiltonian coefficients.
 
         Args:
-            occupied_indices(list): A list of spatial orbital indices
-                indicating which orbitals should be considered doubly occupied.
-            active_indices(list): A list of spatial orbital indices indicating
-                which orbitals should be considered active.
+            relativistic: Boolean to specify if the calculation is relativistic or not,
+                          which is important to sort the integrals.
 
         Returns:
             molecular_hamiltonian: An instance of the MolecularOperator class.
 
         Note:
-            The indexing convention used is that even indices correspond to
-            spin-up (alpha) modes and odd indices correspond to spin-down
-            (beta) modes.
+           OpenFermion requires all integrals, without accounting for permutation symmetry 
+           or restricted cases.
+           Hence, I modified dirac_mointegral_export.F90 into dirac_openfermion_mointegral_export.F90 
+           to generate the FCIDUMP which write explicitly the
+           integrals even if they are equivalent by permutation symmetry. 
+           The FCIDUMP of a relativistic calculation contains every orbitals needed.
+           For the non relativistic case, we have to add the symmetries due to the restricted
+           calculation. To do so, I also had to add a subroutine in 
+           dirac_openfermion_mointegral_export.F90 to index the orbitals as I wanted.
+           Note that the integrals in Dirac and Openfermion are not sorted the same way. In Openfermion,
+           they correspond to the h_{p,q,r,s} term, which is equal to < pq | sr > = ( ps | qr ),
+           where <.|.> refers to the physicist's notation, and (.|.) to the chemist's one, used in Dirac.
+           So p,q,r,s in Openfermion reads p,s,q,r in Dirac, or reversely,
+              p,q,r,s in Dirac       reads p,r,s,q in Openfermion.
         """
         # Get active space integrals.
         E_core, spinor, one_body_integrals, two_body_integrals = self.get_integrals_FCIDUMP()
@@ -392,20 +411,6 @@ class MolecularData_Dirac(object):
         two_body_coefficients = numpy.zeros((n_qubits, n_qubits,
                                              n_qubits, n_qubits))
 
-        """OpenFermion requires all integrals, without accounting for permutation symmetry or restricted cases.
-           Hence, I modified dirac_mointegral_export.F90 to generate the FCIDUMP which write explicitly the
-           the integrals even if they are equivalent by permutation symmetry. 
-           The FCIDUMP of a relativistic calculation contains every orbitals needed.
-           For the non relativistic case, we have to add the symmetries due to the restricted calculation.
-        """
-        """Note that the integrals in Dirac and Openfermion are not sorted the same way. In Openfermion,
-           they correspond to the h_{p,q,r,s} term, which is equal to < pq | sr > = ( ps | qr ),
-           where <.|.> refers to the physicist's notation, and (.|.) to the chemist's one, used in Dirac.
-           So p,q,r,s in Openfermion reads p,s,q,r in Dirac, or reversely,
-              p,q,r,s in Dirac reads p,r,s,q in Openfermion."""
-
-
-        # Works for relativistic calculation with generate_full_list = true and lowest_trangle = false. Doesn't work for nonrelativistic LiH.
         if relativistic:
           for p in range(n_qubits):
             for q in range(n_qubits):
@@ -415,27 +420,20 @@ class MolecularData_Dirac(object):
                     for s in range(n_qubits):
                         if (p+1,q+1,r+1,s+1) in two_body_integrals and relativistic is True:
                            two_body_coefficients[p,r,s,q] = two_body_integrals[p+1,q+1,r+1,s+1] / 2.0
-#                           two_body_coefficients[r,p,q,s] = two_body_integrals[p+1,q+1,r+1,s+1] / 2.0
-#                           two_body_coefficients[q,s,r,p] = numpy.conj(two_body_integrals[p+1,q+1,r+1,s+1] / 2.0)
-#                           two_body_coefficients[s,q,r,p] = numpy.conj(two_body_integrals[p+1,q+1,r+1,s+1] / 2.0)
-
         else:
-          """ does not work yet, some elements are still missing... I think that this is because the sorted indexes do not correspond correctly to spin alpha and spin beta... ? So 9 --> 8 for instance, and given that
-              I consider n_qubit // 2, I really need to have the correct ordering with odd numbers in the FCIDUMP... """
           for p in range(n_qubits):
             for q in range(n_qubits):
                 if (p+1,q+1) in one_body_integrals:
                    one_body_coefficients[p,q] = one_body_integrals[p+1,q+1]
                    one_body_coefficients[q,p] = one_body_integrals[p+1,q+1]
-        
 
+          #permutation symmetry
           for p in range(n_qubits//2):
             for q in range(n_qubits//2):
                 for r in range(n_qubits//2):
                     for s in range(n_qubits//2):
                         if (2*p+1,2*q+1,2*r+1,2*s+1) in two_body_integrals:
                            two_body_coefficients[2*p,2*r,2*s,2*q] = two_body_integrals[2*p+1,2*q+1,2*r+1,2*s+1] / 2.0
-                           #permutation symmetry
                            two_body_coefficients[2*q,2*r,2*s,2*p] = two_body_integrals[2*p+1,2*q+1,2*r+1,2*s+1] / 2.0
                            two_body_coefficients[2*p,2*s,2*r,2*q] = two_body_integrals[2*p+1,2*q+1,2*r+1,2*s+1] / 2.0
                            two_body_coefficients[2*q,2*s,2*r,2*p] = two_body_integrals[2*p+1,2*q+1,2*r+1,2*s+1] / 2.0
@@ -451,7 +449,6 @@ class MolecularData_Dirac(object):
                         two_body_coefficients[2*p+1,2*q,2*r,2*s+1] = two_body_coefficients[2*p,2*q,2*r,2*s]
                         two_body_coefficients[2*p,2*q+1,2*r+1,2*s] = two_body_coefficients[2*p,2*q,2*r,2*s]
                         two_body_coefficients[2*p+1,2*q+1,2*r+1,2*s+1] = two_body_coefficients[2*p,2*q,2*r,2*s]
-#       """        
 
         # Truncate.
         one_body_coefficients[
@@ -464,94 +461,3 @@ class MolecularData_Dirac(object):
             E_core, one_body_coefficients, two_body_coefficients)
 
         return molecular_hamiltonian
-
-    def get_molecular_rdm(self, use_fci=False):
-        """Method to return 1-RDM and 2-RDMs from CISD or FCI.
-
-        Args:
-            use_fci: Boolean indicating whether to use RDM from FCI
-                calculation.
-
-        Returns:
-            rdm: An instance of the MolecularRDM class.
-
-        Raises:
-            MisissingCalculationError: If the CI calculation has not been
-                performed.
-        """
-        # Make sure requested RDM has been computed and load.
-        if use_fci:
-            if self.fci_energy is None:
-                raise MissingCalculationError(
-                    'Missing FCI RDM in {}'.format(self.filename) +
-                    'Run FCI calculation before loading FCI RDMs.')
-            else:
-                one_rdm = self.fci_one_rdm
-                two_rdm = self.fci_two_rdm
-        else:
-            if self.cisd_energy is None:
-                raise MissingCalculationError(
-                    'Missing CISD RDM in {}'.format(self.filename) +
-                    'Run CISD calculation before loading CISD RDMs.')
-            else:
-                one_rdm = self.cisd_one_rdm
-                two_rdm = self.cisd_two_rdm
-
-        # Truncate.
-        one_rdm[numpy.absolute(one_rdm) < EQ_TOLERANCE] = 0.
-        two_rdm[numpy.absolute(two_rdm) < EQ_TOLERANCE] = 0.
-
-        # Cast to InteractionRDM class.
-        rdm = InteractionRDM(one_rdm, two_rdm)
-        return rdm
-
-
-def load_molecular_hamiltonian(
-        geometry,
-        basis,
-        special_basis,
-        multiplicity,
-        description,
-        relativistic,
-        n_active_electrons=None,
-        n_active_orbitals=None):
-    """Attempt to load a molecular Hamiltonian with the given properties.
-
-    Args:
-        geometry: A list of tuples giving the coordinates of each atom.
-            An example is [('H', (0, 0, 0)), ('H', (0, 0, 0.7414))].
-            Distances in angstrom. Use atomic symbols to
-            specify atoms.
-        basis: A string giving the basis set. An example is 'cc-pvtz'.
-            Only optional if loading from file.
-        multiplicity: An integer giving the spin multiplicity.
-        description: A string giving a description.
-        n_active_electrons: An optional integer specifying the number of
-            electrons desired in the active space.
-        n_active_orbitals: An optional integer specifying the number of
-            spatial orbitals desired in the active space.
-
-    Returns:
-        The Hamiltonian as an InteractionOperator.
-    """
-
-    molecule = MolecularData(
-            geometry, basis, special_basis, multiplicity, description=description, relativistic=relativistic)
-    molecule.load()
-
-    if n_active_electrons is None:
-        n_core_orbitals = 0
-        occupied_indices = None
-    else:
-        n_core_orbitals = (molecule.n_electrons - n_active_electrons) // 2
-        occupied_indices = list(range(n_core_orbitals))
-        
-    if n_active_orbitals is None:
-        active_indices = None
-    else:
-        active_indices = list(range(n_core_orbitals,
-                                    n_core_orbitals + n_active_orbitals))
-
-    return molecule.get_molecular_hamiltonian(relativistic,
-            occupied_indices=occupied_indices,
-            active_indices=active_indices)

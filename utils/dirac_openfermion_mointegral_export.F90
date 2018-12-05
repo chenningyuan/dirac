@@ -387,23 +387,50 @@ contains
 
      integer :: index, i, j, k
 
-     do i = 1, number_of_irreps
+!     do i = 1, number_of_irreps
+!        do j = 1, number_of_spinors
+!           if (spinor(j)%irrep == i) then
+!              spinor(j)%index = i
+!              do k = 1, number_of_spinors
+!                 if ((spinor(k)%irrep == i) .and. (spinor(k)%energy < spinor(j)%energy)) then
+!                    spinor(j)%index = spinor(j)%index + number_of_irreps
+!                 end if
+!              end do
+!              do k = 1, j
+!                 if ((spinor(k)%index == spinor(j)%index) .and. (j .ne. k)) then
+!                    spinor(j)%index = spinor(j)%index + number_of_irreps
+!                 end if
+!              end do
+!           end if
+!        end do
+!     end do
+
+     do i = 1, number_of_spinors
+        spinor(i)%index = 1
         do j = 1, number_of_spinors
-           if (spinor(j)%irrep == i) then
-              spinor(j)%index = i
-              do k = 1, number_of_spinors
-                 if ((spinor(k)%irrep == i) .and. (spinor(k)%energy < spinor(j)%energy)) then
-                    spinor(j)%index = spinor(j)%index + number_of_irreps
-                 end if
-              end do
-              do k = 1, j
-                 if ((spinor(k)%index == spinor(j)%index) .and. (j .ne. k)) then
-                    spinor(j)%index = spinor(j)%index + number_of_irreps
-                 end if
-              end do
+           if (spinor(i)%energy > spinor(j)%energy) then
+              spinor(i)%index = spinor(i)%index + 1
            end if
         end do
      end do
+
+     do i = 1, number_of_spinors
+        do j = i+1, number_of_spinors
+           if ((spinor(i)%energy == spinor(j)%energy) .and. (spinor(i)%irrep == spinor(j)%irrep)) then
+              spinor(j)%index = spinor(j)%index + 2
+           end if
+        end do
+     end do
+
+     do i = 1, number_of_spinors
+        do j = i+1, number_of_spinors
+           if ((spinor(i)%index == spinor(j)%index) .and. (spinor(i)%irrep .ne. spinor(j)%irrep)) then
+              spinor(j)%index = spinor(j)%index + 1
+           end if
+        end do
+     end do
+
+ 
 
   end subroutine
 
