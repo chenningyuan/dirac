@@ -65,7 +65,7 @@
 	LOGICAL DOPROP_KRCI, TWOEPROP, DOOSCILLST, DOSYMOPPRP, DOJZEXP,
      &        DOPROPREOD, DOSIGPROP, RUNXPROP, dodipmom_krci, 
      &        doeedm_krci, domhyp_krci, dogenp_krci, doensps_krci,
-     &        donmqm_krci                                             !MKN  
+     &        donmqm_krci                                             !MKN
 	COMMON/LUCILPRP/ DOPROP_KRCI, TWOEPROP, DOOSCILLST, DOSYMOPPRP,
      &                 DOJZEXP, DOPROPREOD, DOSIGPROP, RUNXPROP,
      &                 dodipmom_krci, doeedm_krci, domhyp_krci, 

@@ -236,6 +236,7 @@ C     ... in "krciprop.h"
       DOEEDM_KRCI   = .FALSE.
       DOMHYP_KRCI   = .FALSE.
       DOENSPS_KRCI  = .FALSE.
+      DONMQM_KRCI   = .FALSE. !MKN
 C     ... in dcbopt.h
       ISHMEM_TYPE =  - 1
 C
