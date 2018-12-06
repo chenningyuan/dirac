@@ -175,7 +175,7 @@ Tutorials and walkthrus
   :doc:`PE-TDDFT calculations on micro-solvated H2O <tutorials/polarizable_embedding/pe_response>`
 
 * **Frozen density embedding (FDE):**
-  :doc:`NMR shieldings in Frozen Density Embedding (FDE) scheme with London atomic orbitals (LAOs) <tutorials/fde_nmr/tutorial>` |
+  :doc:`NMR shieldings in Frozen Density Embedding (FDE) scheme with London atomic orbitals (LAOs) <tutorials/fde_nmr/tutorial>`
  
 * **Davidson corrections for relCI (LUCITA and KRCI):**
   :doc:`+Q corrections <tutorials/relci_q_corrections/q_corrections>`
