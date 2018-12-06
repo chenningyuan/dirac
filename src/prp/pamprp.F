@@ -4709,6 +4709,109 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_NMQM */
+      SUBROUTINE DEF_NMQM(WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define operator for nuclear magnetic quadruple moment constant
+C
+C     Written by Malaya K. Nayak March 20 2015
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "mxcent.h"
+#include "nuclei.h"
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION WORK(LWORK),PFAC(3)
+C
+#include "memint.h"
+      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+C     NMQM: INTTYP = 30 (cart. el. field grad. at indiv. nuclei)
+C     (-30: accept .SELECT specification)
+      CALL SETATM(WORK(KDATOM),NATOM,-30)
+      CALL DEF_NMQM1(WORK(KDATOM),WORK(KFREE),LFREE,IPRINT)
+      CALL MEMREL('DEF_NMQM',WORK,KWORK,KWORK,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck def_nmqm1 */
+      SUBROUTINE DEF_NMQM1(DOATOM,WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define nuclear quadruple moment interaction constant
+C
+C     Written by Malaya K. Nayak - March 20 2015
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "maxorb.h"
+      PARAMETER(D1 = 1.0D0, D3 = 3.0D0, D3INV = D1/D3)
+      CHARACTER PNAME*16, PLABEL(2)*8
+      DIMENSION WORK(LWORK),PFAC(2)
+      LOGICAL   DOATOM(NUCIND)
+#include "dcbxpr.h"
+#include "dcbexp.h"
+C
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "chrxyz.h"
+#include "ibtfun.h"
+#include "krciprop.h"
+C
+      ITYP = 0
+C     ZAVECTOR
+      IPTYP     = 7
+      NPCOMP    = 2
+      PFAC(1)   = -D3INV
+      PFAC(2)   = -D3INV
+CMKN  Factor and Sign included, see Eq. (19) of reference on TaN P,T-odd
+Cproperties.
+      DO 100 IATOM = 1, NUCIND
+         IF (.NOT. DOATOM(IATOM)) GOTO 100
+                ICOOR1 = 2
+                ICOOR2 = 3
+            ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+            IOFF = 0
+            DO 300 IREPC = 0, MAXREP
+               IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+                  IOFF = IOFF + 1
+                  ITYP = ITYP + 1
+C                  PNAME        = 'EFG:
+C                  '//CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)
+C     *                 //CHRNOS(IATOM/10)
+C     &                 //CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
+                  PNAME    = CHRXYZ(ICOOR2)//CHRNOS(IATOM)//'-MQM'
+                  PLABEL(1) = CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//'EFG'//
+     &                 CHRNOS(IATOM/10)//
+     &                 CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
+                  PLABEL(2) = CHRXYZ(ICOOR1-1)//CHRXYZ(ICOOR2)//'EFG'//
+     &                 CHRNOS(IATOM/10)//
+     &                 CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
+                  CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+                  CALL OP1IND('KRCI PROPNMQM',LUCIINDTRP,LPROP_KRCI,
+     &                 NPROP_KRCI,INDXPR,MXPROP_KRCI)
+C                  CALL OP1IND(CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//'EFG'
+C     *                 ,IPEFG(ITYP),LEXPP,NEXPP,INDXPR,MAXEXP)
+      IF(IPRINT.GE.1) THEN
+        write(6,*)'NMQM DEF Testing',LPROP_KRCI(NPROP_KRCI),
+     &             NPROP_KRCI,INDXPR,PRPNAM(INDXPR)
+      ENDIF
+               END IF
+ 300        CONTINUE
+ 200     CONTINUE
+ 100  CONTINUE
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_PRP_NMQM */
       SUBROUTINE DEF_PRP_NMQM(LTRPP,NTRPP,MAXTRP,IPRINT)
 C***********************************************************************
