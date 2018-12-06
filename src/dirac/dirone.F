@@ -194,7 +194,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbgen.h"
       
       PARAMETER (D0=0.0D0,D1=1.0D0,D2=2.0D0)      
-      PARAMETER (H=0.01D0,MXNP = 4000) !same to GRASP
+      PARAMETER (H=0.01D0) !same to GRASP
       real(8), allocatable :: ZAN(:),C(:,:)
       real(8), allocatable :: ANG(:,:),GAO(:)
       real(8), allocatable :: BUF(:),TC(:),TD(:,:)
@@ -231,7 +231,6 @@ C
 !         WT(J)=WT(J)*4.0D0*PI
 !     ENDDO
 C
-      write(*,*)"MCayaki in NUMOVL",MC
       DO 10 IATOM = 1, NUCIND
 !      DO 10 ISYMOP = 0, MXOPR
 !     What is this roop? MXOPR=0 in dftgrd.F
@@ -247,6 +246,11 @@ C   SET UP GRID FOR CALCULATION
 C      
 C   SET DEFAULT VALUES OF PARAMETERS FOR CALCULATION
 C
+         MXNP = 4000 !same to GRASP
+         write(*,*)"MXNP",MXNP 
+         CALL VAC2(VACIR,ZAN(IATOM),MXNP,0)
+         write(*,*)"MXNP",MXNP 
+C         
          EPH = EXP(H)
          RNT = 1.0D-06/ZAN(IATOM) !CHARGE(IATOM)
 C       
@@ -255,7 +259,8 @@ C
          CALL DZERO(OVL,NDIM2)
          RNODE = RNT
          DO 20 IR = 1, MXNP
-           RFAC = RNODE*RNODE*RNODE 
+           CALL VAC2(VACIR,ZAN(IATOM),IR,1)
+           RFAC = RNODE*RNODE*RNODE * VACIR 
            CALL DZERO(TC,NDIM2)
 C            
 C          loop over angular points
@@ -401,14 +406,272 @@ C
       RETURN
 C
       END      
-      
+************************************************************************
+*                                                                      *
+      SUBROUTINE VAC2(TB,Z,MXNP,IMODE)
+*                                                                      *
+*   ----------------   SECTION 11   SUBPROGRAM 11  -----------------   *
+*                                                                      *
+*   THIS ROUTINE SETS UP THE SECOND-ORDER VACUUM POLARIZATION POTEN-   *
+*   TIAL  USING  EQUATIONS (1), (4) AND (6) OF FULLERTON AND RINKER.   *
+*   THE POTENTIAL  IS ACCUMULATED IN ARRAY TB(I),I = 1,N WHICH IS IN   *
+*   COMMON BLOCK /TATB/.                                               *
+*                                                                      *
+C    Called from: NUMOVL
+C
+C    Modified for DIRAC, A. Sunaga Dec. 2018
+C  
+************************************************************************
+#include "implicit.h"
+#include "pi.h"
+#include "dcbgen.h"
+C
+       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, THREE = 3.0D0)     
+       PARAMETER (H=0.01D0)
+!       real(8), allocatable :: FUNK(:,:)
+!#include ""
+!#include ""
+!#include ""
+!#include ""
+!#include ""
+!#include ""
+!#include ""
+C
+!      allocate(FUNK(MXNP,5))
+      N = MXNP 
+      PI3 = THREE*PI
+      C2 = CVAL*CVAL
+      EPS = 1.0D-05
+      WD = CVAL+CVAL
+      FACTOR = -(Z+Z)/(PI3*CVAL)
+      write(*,*)"Z,CVAL",Z,CVAL
+      CALL HEADER('VAC2, second order Vacuum potential',-1)
+C
+C   SET UP POTENTIAL FOR POINT NUCLEUS
+C
+      EPH = EXP(H)
+      RNT = 1.0D-06/Z           !CHARGE(IATOM)
+      RNODE = RNT
+      IF(IMODE.eq.0) THEN
+!        DO 1 I = 1,N
+!           X = WD*RNODE
+!           TEMP = FACTOR*FUNK (X,1)
+!           RNODE = RNODE*EPH
+!           write(*,*)"I",I,TEMP
+!           IF(ABS(TEMP).LE.1.0D-15)THEN
+!              write(*,*)"MXNP",MXNP
+!              MXNP = 4000 ! I
+!              exit
+!           ENDIF   
+!1       CONTINUE
+      ELSE
+        DO I = 1,N
+           RNODE = RNODE*EPH
+        ENDDO
+        X = WD*RNODE
+        TB = FACTOR*FUNK (X,1)
+      ENDIF
+C     
+C
+C The above part is only for point charge.      
+C I will modify the below part, which is for a finite charge.
+C
+C      
+c$$$      IF ((NUCTYP .EQ. 0) .OR. (KTC(8) .EQ. 1)) RETURN !sunaga
+c$$$C
+c$$$C   SERIES EXPANSION FOR FINITE NUCLEUS. CALCULATE EXPANSION
+c$$$C   COEFFICIENTS USING EQUATION (7)
+c$$$C
+c$$$      IF (NUCTYP .GT. 1) GO TO 2 !sunaga
+c$$$C
+c$$$C   UNIFORM NUCLEUS
+c$$$C      
+c$$$      WA = C2*(PARM(1)**2)
+c$$$      FAC3 = FACTOR*TWO*WA/5.0D00
+c$$$      FAC5 = FAC3*WA/7.0D00
+c$$$      GO TO 5
+c$$$C
+c$$$C   OTHER DISTRIBUTIONS
+c$$$C
+c$$$    2 WB = (C2+C2)/(Z*THREE)
+c$$$      DO 3 I = 1,N
+c$$$         TA(I) = ZZ(I)*(R(I)**3)
+c$$$    3 CONTINUE
+c$$$      CALL QUAD (FAC3)
+c$$$      FAC3 = FAC3*FACTOR*WB
+c$$$      DO 4 I = 1,N
+c$$$         TA(I) = TA(I)*(R(I)**2)
+c$$$    4 CONTINUE      
+c$$$      CALL QUAD (FAC5)
+c$$$      FAC5 = FAC5*FACTOR*C2*WB/5.0D00
+c$$$C
+c$$$C   TABULATE POTENTIALS
+c$$$C
+c$$$    RNODE = RNT
+c$$$C      
+c$$$    5 DO 6 I = 1,N
+c$$$         X = WD*R(I)
+c$$$         TB(I) = TB(I)+FAC3*FUNK (X,3)+FAC5*FUNK (X,5)
+c$$$         RNODE = RNODE*EPH
+c$$$    6 CONTINUE
+!      deallocate(FUNK)
+      RETURN
+C
+      END
+************************************************************************
+*                                                                      * 
+      REAL*8 FUNCTION FUNK (X,N)
+*                                                                      *
+*   ----------------   SECTION 11   SUBPROGRAM 12  -----------------   *
+*                                                                      *
+*   THIS  FUNCTION  EVALUATES THE KN(X) FUNCTIONS USING THE ANALYTIC   *
+*   FUNCTIONS DEFINED IN TABLES 1 AND 3 OF FULLERTON AND RINKER.       *
+*                                                                      *
+*   NO SUBROUTINES CALLED.                                             *
+*                                                                      *
+*                                         LAST REVISION: 06 AUG 1987   *
+*                                                                      *
+************************************************************************
+#include "implicit.h"
+C
+      DIMENSION P(10,4),B(2,4),C(3,4),D(5,4),E(5,4),NP(4)
+      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, THREE = 3.0D0)
+C     
+#include "priunit.h"
+C
+      DATA P/ 8.8357293375D-01, -2.8259817381D-01,
+     &       -5.8904879578D-01,  1.2500133434D-01,
+     &       -3.2729913852D-02,  8.2888574511D-03,
+     &       -1.0327765800D-05,  6.3643668900D-05,
+     &        0.0D00, 0.0D00,
+     &       -7.1740181754D-01,  1.1780972274D00,
+     &       -3.7499963087D-01,  1.3089675530D-01,
+     &       -3.8258286439D-02, -2.4297287300D-05,
+     &       -3.5920148670D-04, -1.7170090700D-05,
+     &        0.0D00, 0.0D00,
+     &        9.9999999987D-01,  1.9770200000D-08,
+     &       -7.5000050190D-01,  7.8540306316D-01,
+     &       -3.4988601655D-01,  6.4596333000D-05,
+     &       -9.8189080747D-03,  8.6513145800D-05,
+     &       -2.3969236620D-04,  0.0D00,
+     &        6.0000000002D 00, -6.4305200000D-08,
+     &        2.1049413000D-06, -2.6711271500D-05,
+     &       -1.3705236152D-01, -6.3476104090D-04,
+     &       -7.8739801501D-02, -1.9641740173D-03,
+     &       -3.4752369349D-03, -7.3145316220D-04/
+C
+      DATA B/-3.19999594323D+02,  2.53900995981D 00,
+     &       -6.40514843293D+01,  7.11722714285D-01,
+     &        5.19010136460D+03,  8.28495496200D+01,
+     &        3.18150793824D+02,  4.33898867347D+01/
+C
+      DATA C/-3.19999594333D+02,  2.53901020662D+00,
+     &        0.0D 00,            6.40514843287D+01,
+     &       -7.11722686403D-01,  8.042207748D-04,
+     &        2.76805406060D+04, -3.27039477790D+02,
+     &        0.0D00,             8.48402116837D+02,
+     &       -2.56939867765D+01,  3.20844906346D-01/
+C
+      DATA D/ 5.018065179D+00,  7.151891262D+01,
+     &        2.116209929D+02,  3.140327478D+01,
+     &       -1.0D00,           2.172386409D+02,
+     &        1.643364528D+03,  2.122244512D+03,
+     &       -4.512004044D+01,  1.0D00,
+     &        8.540770444D 00,  6.076242766D+01,
+     &        9.714630584D+01,  3.154973593D+01,
+     &        1.0D00,           5.9243015865D-01,
+     &        2.0596312871D00,  3.7785190424D 00,
+     &        3.5614853214D00,  1.0D00/
+C
+      DATA E/ 2.669207401D+00,  5.172549669D+01,
+     &        2.969809720D+02,  5.364324164D+02,
+     &        1.535335924D+02,  1.155589983D+02,
+     &        1.292191441D+03,  3.831198012D+03,
+     &        2.904410075D+03,  0.000D00,
+     &        4.543392478D00,   3.514920169D+01,
+     &        6.019668656D+01,  8.468839579D00,
+     &        0.0D00,           3.1511867816D-01,
+     &        3.473245222D-01,  3.8791936870D-02,
+     &       -1.3059741497D-03, 0.0D00/
+C
+      DATA NP/8,8,9,10/
+C
+      IF (X .EQ. ZERO) GO TO 11
+      IF ((N .LT. 0) .OR. (N .EQ. 2) .OR.
+     &    (N .EQ. 4) .OR. (N .GT. 5)) GO TO 98
+      IF (N-3) 1,2,3
+    1 K = N+1
+      XN = ONE
+      GO TO 4
+    2 K = N
+      XN = ONE/(X**2)
+      GO TO 4
+    3 K = N-1
+      XN = ONE/(X**4)
+    4 IF (X .GT. ONE) GO TO 9
+C
+C   CALCULATE FUNCTION FOR X < = 1
+C
+      NN = NP(K)
+      SUM = ZERO
+      DO 5 I = 1,NN
+         SUM = SUM+P(I,K)*XN
+         XN = XN*X
+    5 CONTINUE
+      X2 = X*X
+      BSUM = B(1,K)+X2*(B(2,K)+X2)
+      CSUM = C(1,K)+X2*(C(2,K)+X2*C(3,K))
+      GO TO (6,8,7,8), K
+    6 BSUM = BSUM*X
+      GO TO 8
+    7 BSUM = BSUM*X2
+    8 CONTINUE
+      SUM = SUM+BSUM*LOG (X)/CSUM
+      FUNK = SUM
+      RETURN
+C
+C   CALCULATE FUNCTION FOR X > 1
+C
+    9 XN = ONE
+      DSUM = ZERO
+      ESUM = ZERO
+      IF (X .GT. 1.0D+02) GO TO 12
+      DO 10 I = 1,5
+         DSUM = DSUM+D(I,K)*XN
+         ESUM = ESUM+E(I,K)*XN
+         XN = XN/X
+   10 CONTINUE
+      XM = -X
+      SUM = DSUM*EXP (XM)/(ESUM*SQRT (X**3))
+      FUNK = SUM
+      RETURN
+   11 IF (N .NE. 0) GO TO 99
+      FUNK = P(1,1)
+      RETURN
+   12 FUNK = ZERO
+      RETURN
+C
+C   ERROR SECTION
+C
+   98 WRITE (LUPRI,300)
+      WRITE (LUPRI,302)
+      STOP 'Error sentense'
+   99 WRITE (LUPRI,300)
+      WRITE (LUPRI,301)
+      STOP 'Error sentense'
+C
+  300 FORMAT (///' ***** ERROR IN FUNK *****')
+  301 FORMAT (/' ATTEMPT TO CALCULATE FUNK(0,N) FOR N > 0')
+  302 FORMAT (/' ATTEMPT TO CALCULATE FUNK(X,N) FOR N VALUES OTHER THAN'
+     & ,' 0, 1, 3 AND 5.')
+C
+      END
+C      
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE QUAD(RESULT,TE,NR,H)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C Numerical radial integral
-C
-C Called from: NMINT2
+C Numerical radial integral for one dimension
 C
 C copied from /QUAD/grasp.F/GRASP
 C Modified to DIRAC A. Sunaga Nov. 2018       
@@ -432,7 +695,6 @@ C   WHERE THE INTEGRAND TE FIRST BECOMES SIGNIFICANT, AND IS CHOSEN
 C   TO PREVENT DIVIDING BY ZERO.
 C
       DO 1 J = 1,NR
-!        write(*,*)"TE4",TE(J) !sunaga
         IF (ABS (TE(J)) .GT. EPSI) GO TO 2
     1 CONTINUE
       RESULT = ZERO
