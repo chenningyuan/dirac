@@ -50,7 +50,7 @@ contains
 
     real(8), allocatable    :: D_ai(:, :, :), D_ji(:, :, :)
     integer                 :: file_unit, icomp
-    logical                 :: debug_me
+    logical                 :: debug_me, dummy
 
 !   gosia, note for me:
 !   if natural connection - T^B matrix was built from 'd|S>/dB' integrals

@@ -349,7 +349,8 @@ C
 C     Set orbital strings
 C     ===================
 C
-      CALL OSTRING(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,WORK,KFREE,LFREE)
+      CALL OSTRING(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,IPRXQR,
+     &             WORK,KFREE,LFREE)
 C
 C     Initiate variables in dcbxrs.h
 C     ==============================

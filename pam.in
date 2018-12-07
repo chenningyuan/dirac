@@ -928,7 +928,7 @@ Options are also read from ~/.diracrc"""
                 self.dirac_mpi_command = self.dirac_mpi_command + str(self.mpiarg) + ' ' 
 
         # The CMAKE variable ENABLE_MPI is "True" for "setup --mpi", otherwise it is "False".
-        if "@ENABLE_MPI@" == "True":
+        if "@ENABLE_MPI@" == "True" or "@ENABLE_MPI@" == "ON":
             # always is parallel run if ENABLE_MPI=ON
             self.parallel_run = True
             if os.environ.get('LOCAL_SCRATCH_BOOL'):

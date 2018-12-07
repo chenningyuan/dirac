@@ -63,4 +63,9 @@ using London atomic orbitals.
 
 *Default:* Use the natural connection.
 
+keyword(EXPPED)
+
+Keyword used in the DFT calculations only. The contributions to the density perturbed by an external magnetic field
+in LAO basis ("direct" LAO term and "reorthonormalization" term) are exported on files, 
+`pertden_direct_lao.FINAL` and `pertden_reorth_lao.FINAL`.
 
