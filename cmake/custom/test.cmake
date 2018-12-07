@@ -29,6 +29,7 @@ endmacro()
 # activate ctest
 include(CTest)
 enable_testing()
+# these tests apeear are also in release-xx versions
 dirac_test(dft_alda_xcfun "long;dft" "")
 dirac_test(dft_alda "long;dft" "")
 dirac_test(stex "long" "")
@@ -145,8 +146,6 @@ dirac_test(lucita_q_corrections "short;qcorr;ci" "")
 dirac_test(x2c-SCF_to_4c-SCF "short;x2c;4c;scf" "")
 dirac_test(import_mos "short;import;scf;mcscf" "")
 dirac_test(operators_mo_mtx_elements "short;operators" "")
-dirac_test(nmqm_operator "short;operators" "")
-dirac_test(diagonalization "short;external" "")
 # disabing eomcc expectation value test until the code is verified
 #dirac_test(eomcc_expval "short;cc" "")
 
