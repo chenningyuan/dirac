@@ -38,6 +38,8 @@ module exacorr_cc
          use exacorr_global
          use exacorr_tensor_methods
          use exacorr_ao_to_mo
+         use exacorr_lambda
+         use exacorr_common_routines
          use, intrinsic:: ISO_C_BINDING
 
          implicit none
@@ -373,7 +375,8 @@ module exacorr_cc
              ierr=exatns_tensor_contract("L(i,a)+=T+(a,i)*K()",l1_tensor,comm_t%t1,one_tensor)
              ierr=exatns_tensor_contract("L(i,j,a,b)+=T+(a,b,i,j)*K()",l2_tensor,comm_t%t2,one_tensor)
 
-             !call solve_lambda_equations()
+             call solve_lambda_equations(comm_t,int_t,l1_tensor,l2_tensor,occ_space_id,occ_space_root, &
+                                        vir_space_id,vir_space_root,CCD,t_target_precision)
 
              !call get_dm_mo()
             end if
@@ -486,12 +489,9 @@ module exacorr_cc
          do iccsd = 1, nccsd
 
 !         calculate (parts of) intermediates
-          call get_common_blocks(comm_t,int_t,CCD)
+          !call get_common_blocks(comm_t,int_t,CCD)
 
-          if (ierr.ne.EXA_SUCCESS) then
-             print*," ccdriver: error in calculation of common blocks, code=",ierr
-             return
-          end if
+          call get_tau(comm_t,CCD,one_tensor)
 
 !         NOTE: contractions marked with "validated" gave numerically significant contributions and could be validated by comparison
 !         to the reference implementation, the ones marked "moretests" were too small to decide whether it was correct or not.
@@ -502,10 +502,15 @@ module exacorr_cc
 !         The vvvv contribution
           ierr=exatns_tensor_contract("S(a,b,i,j)+=V(a,b,c,d)*T(c,d,i,j)",s2_tensor,int_t%vvvv,comm_t%tau,ONE_HALF) !validated o(2)v(4)
 
+!         vv ! validated
+          call get_hvv(comm_t,int_t%oovv,one_tensor)
+          call get_gvv(comm_t,int_t%vovv,CCD,one_tensor)
+
 !         vovo ! moretests
           ierr=exatns_tensor_init(tau2_tensor)
           ierr=exatns_tensor_contract("T(a,d,l,i)+=R(a,d,l,i)*K()",tau2_tensor,comm_t%t2,one_tensor,ONE_HALF)
           if (.not.CCD) ierr=exatns_tensor_contract("T(a,d,l,i)+=T(a,l)*T(d,i)",tau2_tensor,comm_t%t1,comm_t%t1) ! o(2)v(2)
+          call get_h(comm_t,int_t,CCD,one_tensor)
           ierr=exatns_tensor_contract("H(a,k,c,i)+=V(k,l,c,d)*T(a,d,l,i)",comm_t%h_int,int_t%oovv,tau2_tensor)! o(3)v(3)
 
 !         This term appears four times as we need to permute both i and j and a and b
@@ -523,10 +528,23 @@ module exacorr_cc
           end if
           ierr=exatns_tensor_contract("C(k,b,i,j)+=V+(i,j,k,b)*K()",cint_tensor,int_t%ooov,one_tensor) ! o(3)v(1)
 
+!         oo ! validated
+          call get_hoo(comm_t,int_t%oovv,one_tensor)
+          call get_goo(comm_t,int_t%ooov,CCD,one_tensor)
+
 !         ov ! validated
+          call get_hov(comm_t,int_t%oovv,CCD,one_tensor)
           ierr=exatns_tensor_init(hov_aux_tensor)
           ierr=exatns_tensor_contract("L(k,c)+=H(k,c)*K()",hov_aux_tensor,comm_t%hov,one_tensor)        ! copy common term
           ierr=exatns_tensor_contract("H(k,c)+=F(k,c)*K()",hov_aux_tensor,comm_t%fov,one_tensor,MINUS_ONE) ! subtract fock matrix
+
+!         oooo ! validated
+          call get_a(comm_t,int_t,CCD,one_tensor)
+
+          if (ierr.ne.EXA_SUCCESS) then
+             print*," ccdriver: error in calculation of common blocks, code=",ierr
+             return
+          end if
 
           if (.true.) then
              if (.not.CCD) write(*,'(A7,F20.15)'), "T1amp = ",print_tensornorm2 (comm_t%t1)
@@ -613,12 +631,7 @@ module exacorr_cc
           end if
 
 !         Update tau with converged values
-          ierr=exatns_tensor_init(comm_t%tau)
-          ierr=exatns_tensor_contract("T(a,b,i,j)+=R(a,b,i,j)*K()",comm_t%tau,comm_t%t2,one_tensor)
-          if (.not.CCD) then
-              ierr=exatns_tensor_contract("T(a,b,i,j)+=T(a,i)*T(b,j)",comm_t%tau,comm_t%t1,comm_t%t1) ! o(2)v(2)
-              ierr=exatns_tensor_contract("T(a,b,i,j)+=T(a,j)*T(b,i)",comm_t%tau,comm_t%t1,comm_t%t1,MINUS_ONE) ! o(2)v(2)
-          end if
+          call get_tau(comm_t,CCD,one_tensor)
 
           ierr=exatns_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_t_tensor,comm_t%tau,int_t%oovv) ! o(2)v(2)
           ierr=exatns_tensor_get_scalar(result_t_tensor,result_val)
