@@ -85,7 +85,7 @@ molecule_dirac = run_dirac(molecule2,
                     delete_FCIDUMP=delete_FCIDUMP,
                     run_ccsd=run_ccsd)
 
-fermion_hamiltonian = molecule_dirac.get_molecular_hamiltonian()
+fermion_hamiltonian = molecule_dirac.get_molecular_hamiltonian()[0]
 qubit_hamiltonian_dirac = jordan_wigner(fermion_hamiltonian)
 evs_dirac = eigenspectrum(qubit_hamiltonian_dirac)
 print('Hartree-Fock energy of {} Hartree.'.format(molecule_dirac.get_energies()[0]))
@@ -120,9 +120,8 @@ molecule_dirac = run_dirac(molecule2,
                     run_ccsd=run_ccsd,
                     relativistic=relativistic)
 
-# Don't forget to specify the relativistic argument in get_molecular_hamiltonian if relavistic is True.
-fermion_hamiltonian = molecule_dirac.get_molecular_hamiltonian(relativistic=relativistic)
-qubit_hamiltonian_dirac = jordan_wigner(molecule_dirac.get_molecular_hamiltonian(relativistic=relativistic))
+fermion_hamiltonian = molecule_dirac.get_molecular_hamiltonian()[0]
+qubit_hamiltonian_dirac = jordan_wigner(fermion_hamiltonian)
 evs_dirac = eigenspectrum(qubit_hamiltonian_dirac)
 #evs_dirac_BK = eigenspectrum(qbit_hamiltonian_dirac_BK)
 print('Hartree-Fock energy of {} Hartree.'.format(molecule_dirac.get_energies()[0]))
@@ -144,6 +143,7 @@ molecule2 = MolecularData_Dirac(geometry=geometry,
                                charge=charge,
                                speed_of_light=speed_of_light,
                                description=description,
+                               relativistic=relativistic,
                                data_directory=data_directory)
 
 molecule_dirac = run_dirac(molecule2,
@@ -157,7 +157,7 @@ molecule_dirac = run_dirac(molecule2,
                     relativistic=relativistic,
                     speed_of_light=speed_of_light)
 
-fermion_hamiltonian = molecule_dirac.get_molecular_hamiltonian(relativistic=relativistic)
+fermion_hamiltonian = molecule_dirac.get_molecular_hamiltonian()[0]
 qubit_hamiltonian_dirac = jordan_wigner(fermion_hamiltonian)
 evs_dirac = eigenspectrum(qubit_hamiltonian_dirac)
 print('Hartree-Fock energy of {} Hartree.'.format(molecule_dirac.get_energies()[0]))
@@ -167,5 +167,5 @@ print('Solving the Qubit Hamiltonian (Jordan-Wigner): \n {}'.format(evs_dirac))
 
 subprocess.call("mkdir OUTPUT_PSI4 INTEGRALS OUTPUT_DIRAC/", shell=True)
 subprocess.call("mv -f *dirac*out OUTPUT_DIRAC/", shell=True)
-subprocess.call("mv -f *psi4*out *.hdf5 OUTPUT_PSI4/", shell=True)
+subprocess.call("mv -f *psi4*out *psi4*hdf5 OUTPUT_PSI4/", shell=True)
 subprocess.call("mv -f FCIDUMP_* INTEGRALS/", shell=True)

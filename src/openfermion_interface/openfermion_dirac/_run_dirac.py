@@ -186,7 +186,8 @@ def run_dirac(molecule,
              delete_xyz=False,
              delete_MRCONEE=False,
              delete_MDCINT=False,
-             delete_FCIDUMP=False):
+             delete_FCIDUMP=False,
+             save=False):
     """This function runs a dirac calculation.
 
     Args:
@@ -234,4 +235,11 @@ def run_dirac(molecule,
     else:
         clean_up(molecule, delete_input, delete_xyz, delete_output, delete_MRCONEE, delete_MDCINT, delete_FCIDUMP)
 
+    if save:
+     try:
+        print("Saving the results")
+        molecule.save()
+     except:
+        warnings.warn('Error in saving results.',
+                      Warning)
     return molecule

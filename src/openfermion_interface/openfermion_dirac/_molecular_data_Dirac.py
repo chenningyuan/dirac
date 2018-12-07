@@ -12,14 +12,15 @@
 
 """Class and functions to store quantum chemistry data from a Dirac calculation"""
 
-#import h5py
+import h5py
 import numpy
 import os
 import re
-#import uuid
+import uuid
 
 from openfermion.config import *
 from openfermion.ops import InteractionOperator, InteractionRDM
+from openfermion.utils import count_qubits
 
 
 """NOTE ON PQRS CONVENTION:
@@ -183,7 +184,7 @@ def geometry_from_file(file_name):
 
     Returns:
         geometry: A list of tuples giving the coordinates of each atom.
-            example is [('H', (0, 0, 0)), ('H', (0, 0, 0.7414))].
+    example is [('H', (0, 0, 0)), ('H', (0, 0, 0.7414))].
             Distances in angstrom. Use atomic symbols to specify atoms.
     """
     geometry = []
@@ -222,26 +223,15 @@ class MolecularData_Dirac(object):
         protons: List of atomic charges in molecule sorted by atomic number.
         hf_energy: Energy from open or closed shell Hartree-Fock.
         nuclear_repulsion: Energy from nuclei-nuclei interaction.
-        canonical_orbitals: numpy array giving canonical orbital coefficients.
         n_orbitals: Integer giving total number of spatial orbitals.
         n_qubits: Integer giving total number of qubits that would be needed.
         orbital_energies: Numpy array giving the canonical orbital energies.
-        fock_matrix: Numpy array giving the Fock matrix.
-        overlap_integrals: Numpy array of AO overlap integrals
         one_body_integrals: Numpy array of one-electron integrals
         two_body_integrals: Numpy array of two-electron integrals
         mp2_energy: Energy from MP2 perturbation theory.
-        cisd_energy: Energy from configuration interaction singles + doubles.
-        cisd_one_rdm: Numpy array giving 1-RDM from CISD calculation.
-        cisd_two_rdm: Numpy array giving 2-RDM from CISD calculation.
-        fci_energy: Exact energy of molecule within given basis.
-        fci_one_rdm: Numpy array giving 1-RDM from FCI calculation.
-        fci_two_rdm: Numpy array giving 2-RDM from FCI calculation.
         ccsd_energy: Energy from coupled cluster singles + doubles.
         ccsd_single_amps: Numpy array holding single amplitudes
         ccsd_double_amps: Numpy array holding double amplitudes
-        general_calculations: A dictionary storing general calculation results
-            for this system annotated by the key.
     """
     def __init__(self, geometry=None, basis=None, special_basis=None, multiplicity=None,
                  charge=0, description="", filename="", data_directory=None, relativistic=False,
@@ -330,12 +320,210 @@ class MolecularData_Dirac(object):
             self.protons = 0
             self.n_electrons = 0
 
+        # Generic attributes from calculations.
+        self.n_orbitals = None
+        self.n_qubits = None
+        self.E_core = None
+
+        # Attributes generated from SCF calculation.
+        self.hf_energy = None
+        # Orbital energies
+        self.spinor = None
+
+        # Attributes generated from MP2 calculation.
+        self.mp2_energy = None
+
+        # Attributes generated from CCSD calculation.
+        self.ccsd_energy = None
+
+        # Electronic Integrals
+        # from dirac
+        self.one_body_int = None
+        self.two_body_int = None
+        # and from openfermion (other indexation)
+        self.one_body_coeff = None
+        self.two_body_coeff = None
+        self.molecular_hamiltonian = None
+
+        # Coupled cluster amplitudes
+        self.ccsd_single_amps = None
+        self.ccsd_double_amps = None
+
+
+    def save(self):
+        """Method to save the class under a systematic name."""
+        # Create a temporary file and swap it to the original name in case
+        # data needs to be loaded while saving
+        self.get_energies()
+        self.get_integrals_FCIDUMP()
+        self.molecular_hamiltonian, self.one_body_coeff, self.two_body_coeff = self.get_molecular_hamiltonian()
+        self.n_qubits = count_qubits(self.molecular_hamiltonian)
+        self.n_orbitals = len(self.one_body_int)
+        tmp_name = uuid.uuid4()
+        with h5py.File("{}.hdf5".format(tmp_name), "w") as f:
+            # Save geometry (atoms and positions need to be separate):
+            d_geom = f.create_group("geometry")
+            if not isinstance(self.geometry, basestring):
+                atoms = [numpy.string_(item[0]) for item in self.geometry]
+                positions = numpy.array([list(item[1])
+                                         for item in self.geometry])
+            else:
+                atoms = numpy.string_(self.geometry)
+                positions = None
+            d_geom.create_dataset("atoms", data=(atoms if atoms is not None
+                                                 else False))
+            d_geom.create_dataset("positions", data=(positions if positions
+                                                     is not None else False))
+            # Save basis:
+            f.create_dataset("basis", data=numpy.string_(self.basis))
+            # Save multiplicity:
+            f.create_dataset("multiplicity", data=self.multiplicity)
+            # Save charge:
+            f.create_dataset("charge", data=self.charge)
+            # Save description:
+            f.create_dataset("description",
+                             data=numpy.string_(self.description))
+            # Save name:
+            f.create_dataset("name", data=numpy.string_(self.name))
+            # Save n_atoms:
+            f.create_dataset("n_atoms", data=self.n_atoms)
+            # Save atoms:
+            f.create_dataset("atoms", data=numpy.string_(self.atoms))
+            # Save protons:
+            f.create_dataset("protons", data=self.protons)
+            # Save n_electrons:
+            f.create_dataset("n_electrons", data=self.n_electrons)
+            # Save generic attributes from calculations:
+            f.create_dataset("n_orbitals",
+                             data=(self.n_orbitals if self.n_orbitals
+                                   is not None else False))
+            f.create_dataset("n_qubits",
+                             data=(self.n_qubits if
+                                   self.n_qubits is not None else False))
+            f.create_dataset("nuclear_repulsion",
+                             data=(self.E_core if
+                                   self.E_core is not None else
+                                   False))
+            # Save attributes generated from SCF calculation.
+            f.create_dataset("hf_energy", data=(self.hf_energy if
+                                                self.hf_energy is not None
+                                                else False))
+            f.create_dataset("orbital_energies", data=(str(self.spinor) if
+                                                self.spinor is not None
+                                                else False))
+            # Save attributes generated from integrals.
+            f.create_dataset("one_body_integrals", data=(str(self.one_body_int) if
+                                                self.one_body_int is not None
+                                                else False))
+            f.create_dataset("two_body_integrals", data=(str(self.two_body_int) if
+                                                self.two_body_int is not None
+                                                else False))
+            f.create_dataset("one_body_coefficients", data=(self.one_body_coeff if
+                                                self.one_body_coeff is not None
+                                                else False))
+            f.create_dataset("two_body_coefficients", data=(self.two_body_coeff if
+                                                self.two_body_coeff is not None
+                                                else False))
+            f.create_dataset("print_molecular_hamiltonian", data=(str(self.molecular_hamiltonian) if
+                                                self.molecular_hamiltonian is not None
+                                                else False))
+            # Save attributes generated from MP2 calculation.
+            f.create_dataset("mp2_energy",
+                             data=(self.mp2_energy if
+                                   self.mp2_energy is not None else False))
+            # Save attributes generated from CCSD calculation.
+            f.create_dataset("ccsd_energy",
+                             data=(self.ccsd_energy if
+                                   self.ccsd_energy is not None else False))
+            f.create_dataset("ccsd_single_amps",
+                             data=(self.ccsd_single_amps
+                                   if self.ccsd_single_amps is not None else
+                                   False),
+                             compression=("gzip" if self.ccsd_single_amps
+                                          is not None else None))
+            f.create_dataset("ccsd_double_amps",
+                             data=(self.ccsd_double_amps
+                                   if self.ccsd_double_amps is
+                                   not None else False),
+                             compression=("gzip" if self.ccsd_double_amps
+                                          is not None else None))
+
+        # Remove old file first for compatibility with systems that don't allow
+        # rename replacement.  Catching OSError for when file does not exist
+        # yet
+        try:
+            os.remove("{}.hdf5".format(self.filename))
+        except OSError:
+            pass
+
+        os.rename("{}.hdf5".format(tmp_name),
+                  "{}.hdf5".format(self.filename))
+
+    def get_from_file(self, property_name):
+        """Helper routine to re-open HDF5 file and pull out single property
+
+        Args:
+            property_name: String, Property name to load from self.filename.hdf5
+            
+        porperty_name options
+            name : name of the file
+            description : description of the calculation (set by user)
+            atoms : type of atoms in the molecule
+            protons : number of protons in the atoms
+            positions : positions of atoms
+            n_atoms : number of atoms
+            n_electrons : number of electrons
+            charge
+            basis
+            multiplicity
+            n_orbitals : number of spin orbitals
+            n_qubits : number of qubits
+            hf_energy : Energy Hartree-Fock
+            mp2_energy : Energy MP2
+            ccsd_energy : Energy CCSD
+            nuclear_repulsion : core energy
+            orbital_energies : energies of the spin orbitals
+            one_body_integrals : One body integrals given by FCIDUMP in Dirac
+            two_body_integrals : Two body integrals given by FCIDUMP in Dirac
+            print_molecular_hamiltonian : print the molecular Hamiltonian
+                                          as it should be in Openfermion.
+                                          Cannot be used for operation !
+            one_body_coefficients : One body integrals as it should appear in
+                                    Openfermion
+            two_body_coefficients : Two body integrals as it should appear in
+                                    Openfermion
+            The two latter property + the float(nuclear_repulsion) can be used to
+            generate the molecular_hamiltonian thanks to InteractionOperator. This
+            molecular_hamiltonian can then be used to construct the qubit_Hamiltonian. 
+
+        Returns:
+            The data located at file[property_name] for the HDF5 file at
+                self.filename. Returns None if the key is not found in the
+                file.
+        """
+        try:
+            with h5py.File("{}.hdf5".format(self.filename), "r") as f:
+                data = f[property_name][...]
+        except KeyError:
+            data = None
+        except IOError:
+            data = None
+        return data
+
+    def get_n_alpha_electrons(self):
+        """Return number of alpha electrons."""
+        return int((self.n_electrons + (self.multiplicity - 1)) // 2)
+
+    def get_n_beta_electrons(self):
+        """Return number of beta electrons."""
+        return int((self.n_electrons - (self.multiplicity - 1)) // 2)
+
     def get_integrals_FCIDUMP(self):
         if os.path.exists("FCIDUMP_" + self.name) == True:
-             E_core = 0
-             spinor = {}
-             one_body_int = {}
-             two_body_int = {}
+             self.E_core = 0
+             self.spinor = {}
+             self.one_body_int = {}
+             self.two_body_int = {}
              num_lines = sum(1 for line in open('FCIDUMP_' + self.name))
              with open("FCIDUMP_" + self.name) as f:
                start_reading=0
@@ -352,44 +540,43 @@ class MolecularData_Dirac(object):
                  if a_4 == 0 and a_3 == 0:
                    if a_2 == 0:
                      if a_1 == 0:
-                       E_core = float(listed_values[row][0])
+                       self.E_core = float(listed_values[row][0])
                      else:
-                       spinor[a_1] = float(listed_values[row][0])
+                       self.spinor[a_1] = float(listed_values[row][0])
                    else:
-                     one_body_int[a_1,a_2] = float(listed_values[row][0])
+                     self.one_body_int[a_1,a_2] = float(listed_values[row][0])
                  else:
-                   two_body_int[a_1,a_2,a_3,a_4] = float(listed_values[row][0])
+                   self.two_body_int[a_1,a_2,a_3,a_4] = float(listed_values[row][0])
              f.close()
         else:
              raise FileNotFoundError('FCIDUMP not found, first make a run_dirac calculation')
-        return E_core, spinor, one_body_int, two_body_int
+        return self.E_core, self.spinor, self.one_body_int, self.two_body_int
 
     def get_energies(self):
-        hf_energy = None
-        mp2_energy = None
-        ccsd_energy = None
+        self.hf_energy = None
+        self.mp2_energy = None
+        self.ccsd_energy = None
         if os.path.exists(self.name + '.out') == True:
            with open(self.name + '.out', "r") as f:
              for line in f:
                 if re.search("Total energy                             :", line):
-                  hf_energy=line.rsplit(None, 1)[-1]
+                  self.hf_energy=line.rsplit(None, 1)[-1]
                 if re.search("@ Total MP2 energy", line):
-                  mp2_energy=line.rsplit(None, 1)[-1]
+                  self.mp2_energy=line.rsplit(None, 1)[-1]
                 if re.search("@ Total CCSD energy", line):
-                  ccsd_energy=line.rsplit(None, 1)[-1]
+                  self.ccsd_energy=line.rsplit(None, 1)[-1]
         else:
            raise FileNotFoundError('output not found, check your run_dirac calculation')
-        return hf_energy, mp2_energy, ccsd_energy
+        return self.hf_energy, self.mp2_energy, self.ccsd_energy
 
-    def get_molecular_hamiltonian(self, relativistic=False):
+    def get_molecular_hamiltonian(self):
         """Output arrays of the second quantized Hamiltonian coefficients.
-
-        Args:
-            relativistic: Boolean to specify if the calculation is relativistic or not,
-                          which is important to sort the integrals.
 
         Returns:
             molecular_hamiltonian: An instance of the MolecularOperator class.
+            one_body_coefficients and
+            two_body_coefficients, that can be saved easily in order to compute
+            the molecular_hamiltonian without calling Psi4 or Dirac again.
 
         Note:
            OpenFermion requires all integrals, without accounting for permutation symmetry 
@@ -415,14 +602,14 @@ class MolecularData_Dirac(object):
         two_body_coefficients = numpy.zeros((n_qubits, n_qubits,
                                              n_qubits, n_qubits))
 
-        if relativistic:
+        if self.relativistic:
           for p in range(n_qubits):
             for q in range(n_qubits):
                 if (p+1,q+1) in one_body_integrals: 
                    one_body_coefficients[p,q] = one_body_integrals[p+1,q+1]
                 for r in range(n_qubits):
                     for s in range(n_qubits):
-                        if (p+1,q+1,r+1,s+1) in two_body_integrals and relativistic is True:
+                        if (p+1,q+1,r+1,s+1) in two_body_integrals and self.relativistic is True:
                            two_body_coefficients[p,r,s,q] = two_body_integrals[p+1,q+1,r+1,s+1] / 2.0
         else:
           for p in range(n_qubits):
@@ -464,4 +651,4 @@ class MolecularData_Dirac(object):
         molecular_hamiltonian = InteractionOperator(
             E_core, one_body_coefficients, two_body_coefficients)
 
-        return molecular_hamiltonian
+        return molecular_hamiltonian, one_body_coefficients, two_body_coefficients
