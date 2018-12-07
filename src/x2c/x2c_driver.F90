@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -185,8 +185,6 @@ contains
        case(.false.)
                           path = 'molecular X2C (with spin-orbit contributions)      '
          if(x2c_spinfree) path = 'molecular X2C (spinfree)                           '
-       case default
-         call quit('default path for logical not possible in x2c_main')
      end select
 
      print '(/18x,a,a)', ' *** chosen path in X2C module: ',path

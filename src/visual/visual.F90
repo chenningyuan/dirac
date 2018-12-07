@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1394,15 +1394,15 @@ contains
      write(lupri, *)    '--------------------------------------------------------------------------------------'
 
      if (visual_cfg_3d) then
-        write(lupri, *) 'Visualization in 3d done with the following setiings:'
+        write(lupri, *) 'Visualization in 3d done with the following settings:'
         write(lupri, *) 'Number of points in x, y, z direction: ', visual_cfg_ncube(1), &
                                                                    visual_cfg_ncube(2), &
                                                                    visual_cfg_ncube(3) 
         write(lupri, *) 'Space around the cube file is ', visual_cfg_add_3d
      end if
      if (visual_cfg_3d_fast) then 
-        write(lupri, *) 'Visualization in 3d with fast evaluation of the molecular electrostatic potential, &
-                         done with the following setiings:'
+        write(lupri, *) 'Visualization in 3d with fast evaluation of the molecular electrostatic potential', &
+                        ' done with the following settings:'
         write(lupri, *) 'Number of points in x, y, z direction: ', visual_cfg_ncube(1), &
                                                                    visual_cfg_ncube(2), &
                                                                    visual_cfg_ncube(3) 
