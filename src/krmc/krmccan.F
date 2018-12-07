@@ -1576,9 +1576,10 @@ C     Written by S. Knecht - Nov 2008
 C
 C         T. Fleig - Mar 2016
 C         Introduced .EEDM, .MHYP, .ENSPS flags programmed by MKN and TF
-
+C
 C         Malaya K. Nayak - September 2018
-C         Introdeced a general property output for .OPERATOR thchnique 
+C         Introduced .NMQM flag programmed by MKN
+C         Introduced a general property module for .OPERATOR technique
 C
 C***********************************************************************
       use codata
@@ -1748,6 +1749,8 @@ C
        END DO
 C
       end if
+C
+C     ******************************************************************
 C
 C     1. (transition dipole moments) and oscillator strengths
 C     =======================================================
