@@ -16,14 +16,14 @@ f.add(from_string = '@            isotropic shielding',
       rel_tolerance   = 0.002)
 
 
+test.run(['dc_pbe'],                       ['h2o-1.xyz'],    args='--get="numerical_grid"')
+os.system('../../../utils/fde-mag/dft_to_fde_grid_convert.py')
 
 shutil.copy('numerical_grid', 'FILEEX')
 shutil.copy('numerical_grid', 'GRIDOUT')
 test.run(['dc_pbe_getfrozen.inp'],                       ['h2o-2.xyz'],    args='--put="numerical_grid FILEEX GRIDOUT" --get="GRIDOUT" --outcmo')
 shutil.copy('GRIDOUT', 'FROZEN')
 
-test.run(['dc_pbe_updatevemb_scf.inp'],                  ['h2o-1.xyz'],    args='--put="numerical_grid FROZEN" --outcmo')
-test.run(['dc_pbe_updatevemb_shield_g0_v.inp'],          ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
 test.run(['dc_pbe_updatevemb_shield_g0_v_w11.inp'],      ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
 
 
@@ -33,5 +33,7 @@ os.unlink('FILEEX')
 os.unlink('GRIDOUT')
 os.unlink('FROZEN')
 os.unlink('DFCOEF')
+os.unlink('numerical_grid')
+os.unlink('numerical_grid.ORIG')
 
 sys.exit(test.return_code)
