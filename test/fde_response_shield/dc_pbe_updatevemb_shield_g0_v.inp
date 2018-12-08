@@ -39,8 +39,6 @@ numerical_grid
 *NMR
 .LONDON
 .SYMCON
-.GAUGEO
-0.0 0.0 0.0
 *LINEAR
 .PRINT
 2
