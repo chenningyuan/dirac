@@ -21,8 +21,10 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include  "../relccsd/symm.inc"     !provides MXREP,NXREP etc.
-#include  "../relccsd/complex.inc"  !provides CARITH,RCW
+#include  "../relccsd/symm.inc"
+!provides MXREP,NXREP etc.
+#include  "../relccsd/complex.inc"
+!provides CARITH,RCW
 !
 !---------------Local variables--------------------------------------
 !
@@ -847,9 +849,9 @@ C
                  irow = io(nrep) + iv(arep) + a
                  icol = io(irep) + i
                   IF (CARITH) THEN
-                    write(6,'(A,I6,X2I4,X,2F16.10,A,2F16.10)') 'int # ',
-     &              ai,irow,icol,AVO(2*AI-1),AVO(2*AI),'  ||  ',
-     &              AOV(2*AI-1),AOV(2*AI)
+                    write(6,'(A,I6,X,2I4,X,2F16.10,A,2F16.10)')
+     &              'int # ',ai,irow,icol,AVO(2*AI-1),AVO(2*AI),
+     &              '  ||  ',AOV(2*AI-1),AOV(2*AI)
                   ELSE
                     write(6,'(A,I6,X,2I4,X,F16.10,A,F16.10)') 'int # ',
      &              ai,irow,icol,AVO(AI),'  ||  ',AOV(AI)
@@ -878,7 +880,7 @@ C
                  irow = io(nrep) + iv(arep) + a
                  icol = io(nrep) + iv(brep) + b
                  IF (CARITH) THEN
-                    write(6,'(A,I6,X2I4,X,2F16.10)') 'int # ',
+                    write(6,'(A,I6,X,2I4,X,2F16.10)') 'int # ',
      &              ab,irow,icol,AVV(2*AB-1),AVV(2*AB)
                  ELSE
                     write(6,'(A,I6,X,2I4,X,F16.10)') 'int # ',
@@ -909,7 +911,8 @@ C
 !
 !----------------Common Blocks-----------------------------------------
 !
-#include "../relccsd/symm.inc"    !provides MXREP and MULTB
+#include "../relccsd/symm.inc"
+!provides MXREP and MULTB
 !
 !----------------Calling variables---------------------------------------------
 !
