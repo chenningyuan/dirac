@@ -343,9 +343,6 @@ module talsh_cc
 
          do iccsd = 1, nccsd
 
-!         calculate (parts of) intermediates
-          !call get_common_blocks(comm_t,int_t)
-
           call get_tau(comm_t,CCD)
 
           if (ierr.ne.TALSH_SUCCESS) then

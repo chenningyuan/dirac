@@ -10,7 +10,7 @@ module talsh_lambda
     implicit none
 
     complex(8), parameter :: ZERO=(0.D0,0.D0),MINUS_ONE_HALF=(-0.5D0,0.D0),ONE_HALF=(0.5D0,0.D0), &
-                             MINUS_ONE=(-1.D0,0.D0)
+                             MINUS_ONE=(-1.D0,0.D0), ONE=(1.D0,0.D0)
     real(8), parameter    :: ONE_QUARTER=0.25D0
 
     private
@@ -42,7 +42,7 @@ module talsh_lambda
        type(talsh_tens_t) :: l1_tensor, l2_tensor
        type(talsh_tens_t) :: s1_tensor, s2_tensor
 !      Aux tensor
-       type(talsh_tens_t) :: oo_aux_tensor
+       type(talsh_tens_t) :: oo_aux_tensor,one_tensor
 !      Tensor dimensions
        integer, dimension(2) :: oo_dims, ov_dims, vv_dims
        integer, dimension(4) :: oooo_dims,ovoo_dims,ooov_dims,vovo_dims,oovv_dims, &
@@ -105,10 +105,40 @@ module talsh_lambda
        call get_a(comm_t,int_t,CCD)
        call print_date("Finished calculating common blocks")
 
-!      Get fixed intermediates
+!      Scalar tensor
+       one_dims(1) = 1
+       ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
+
+!      Get fixed intermediates ==> DO TIME TEST
        call print_date('Calculating fixed intermediates')
-       call get_lambda_intermediates(comm_t,int_t,lambda_t,nocc,nvir)
+       call get_w_vvvv(lambda_t%w_vvvv,comm_t,int_t,CCD)
+       call get_wbar_vovo(lambda_t%wbar_vovo,comm_t%t2,int_t)
+       call get_fbar_ov(lambda_t%fbar_ov,comm_t%hov)
+       call get_w_vvvo(lambda_t,comm_t,int_t,CCD,one_tensor)
+       call get_w_vovv(lambda_t%w_vovv,comm_t%t1,int_t,CCD)
+       call get_w_vovo(lambda_t%w_vovo,comm_t,int_t%oovv,nocc,nvir,CCD)
+       call get_w_oooo(lambda_t%w_oooo,comm_t%a_int)
+       call get_w_ovoo(lambda_t,comm_t,int_t,CCD,one_tensor)
+       call get_w_ooov(lambda_t%w_ooov,comm_t%t1,int_t,CCD)
+       call get_fbar_vv(lambda_t%fbar_vv,comm_t%gvv)
+       call get_fbar_oo(lambda_t%fbar_oo,comm_t,CCD)
        call print_date('Finished calculating fixed intermediates')
+
+        !Debug
+       print*, "T1amp      = ", tensor_norm2(comm_t%t1)
+       print*, "T2amp      = ", tensor_norm2(comm_t%t2)*ONE_QUARTER
+!       print*, "Tau        = ", tensor_norm2(comm_t%tau)*ONE_QUARTER
+!       print*, "Fbar_oo    = ", tensor_norm2(lambda_t%fbar_oo)
+       print*, "Fbar_ov    = ", tensor_norm2(lambda_t%fbar_ov)
+!       print*, "Fbar_vv    = ", tensor_norm2(lambda_t%fbar_vv)
+!       print*, "w_vvvv     = ", tensor_norm2(lambda_t%w_vvvv)*ONE_QUARTER
+       print*, "wbar_vovo  = ", tensor_norm2(lambda_t%wbar_vovo)
+       print*, "w_vvvo     = ", tensor_norm2(lambda_t%w_vvvo)*0.5D0
+       print*, "w_vovv     = ", tensor_norm2(lambda_t%w_vovv)*0.5D0
+       print*, "w_vovo     = ", tensor_norm2(lambda_t%w_vovo)
+       print*, "w_ovoo     = ", tensor_norm2(lambda_t%w_ovoo)*0.5D0
+       print*, "w_ooov     = ", tensor_norm2(lambda_t%w_ooov)*0.5D0
+       print*, "w_oooo     = ", tensor_norm2(lambda_t%w_oooo)*ONE_QUARTER
 
 !      Construct solution tensors
        ierr=talsh_tensor_construct(s1_tensor,C8,ov_dims,init_val=ZERO)
@@ -249,6 +279,7 @@ module talsh_lambda
        ierr=talsh_tensor_destruct(goo_tensor)
        ierr=talsh_tensor_destruct(gvv_tensor)
        ierr=talsh_tensor_destruct(oo_aux_tensor)
+       ierr=talsh_tensor_destruct(one_tensor)
        ierr=talsh_tensor_destruct(lambda_t%fbar_oo)
        ierr=talsh_tensor_destruct(lambda_t%fbar_ov)
        ierr=talsh_tensor_destruct(lambda_t%fbar_vv)

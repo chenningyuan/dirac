@@ -39,7 +39,7 @@ module exacorr_cc
          use exacorr_tensor_methods
          use exacorr_ao_to_mo
          use exacorr_lambda
-         use exacorr_common_routines
+         !use exacorr_common_routines
          use, intrinsic:: ISO_C_BINDING
 
          implicit none
@@ -487,9 +487,6 @@ module exacorr_cc
          ierr=exatns_tensor_create(cint_tensor,"cint",ovoo_id,ovoo_root,EXA_DATA_KIND_C8)
 
          do iccsd = 1, nccsd
-
-!         calculate (parts of) intermediates
-          !call get_common_blocks(comm_t,int_t,CCD)
 
           call get_tau(comm_t,CCD,one_tensor)
 

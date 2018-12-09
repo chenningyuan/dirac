@@ -100,14 +100,47 @@ module exacorr_lambda
 
 !      Obtain intermediates from CCSD
        call print_date("Calculating common blocks")
-       call get_common_blocks(comm_t,int_t,CCD)
+       call get_tau(comm_t,CCD,one_l_tensor)
+       call get_hvv(comm_t,int_t%oovv,one_l_tensor)
+       call get_gvv(comm_t,int_t%vovv,CCD,one_l_tensor)
+       call get_h(comm_t,int_t,CCD,one_l_tensor)
+       call get_hoo(comm_t,int_t%oovv,one_l_tensor)
+       call get_goo(comm_t,int_t%ooov,CCD,one_l_tensor)
+       call get_hov(comm_t,int_t%oovv,CCD,one_l_tensor)
+       call get_a(comm_t,int_t,CCD,one_l_tensor)
        call print_date("Finished calculating common blocks")
 
 !      Get fixed intermediates
        call print_date('Calculating fixed intermediates')
-       call get_lambda_intermediates(comm_t,int_t,lambda_t,occ_space_id,occ_space_root, &
-                                                  vir_space_id,vir_space_root,CCD)
+       call get_w_vvvv(lambda_t%w_vvvv,comm_t,int_t,CCD,one_l_tensor)
+       call get_wbar_vovo(lambda_t%wbar_vovo,comm_t%t2,int_t,one_l_tensor)
+       call get_fbar_ov(lambda_t%fbar_ov,comm_t%hov,one_l_tensor)
+       call get_w_vvvo(lambda_t,comm_t,int_t,CCD,one_l_tensor)
+       call get_w_vovv(lambda_t%w_vovv,comm_t%t1,int_t,CCD,one_l_tensor)
+       call get_w_vovo(lambda_t%w_vovo,comm_t,int_t%oovv,occ_space_id,occ_space_root, &
+                        vir_space_id,vir_space_root,CCD,one_l_tensor)
+       call get_w_oooo(lambda_t%w_oooo,comm_t%a_int,one_l_tensor)
+       call get_w_ovoo(lambda_t,comm_t,int_t,CCD,one_l_tensor)
+       call get_w_ooov(lambda_t%w_ooov,comm_t%t1,int_t,CCD,one_l_tensor)
+       call get_fbar_vv(lambda_t%fbar_vv,comm_t%gvv,one_l_tensor)
+       call get_fbar_oo(lambda_t%fbar_oo,comm_t,CCD,one_l_tensor)
        call print_date('Finished calculating fixed intermediates')
+
+       !Debug
+       print*, "T1amp      = ", print_tensornorm2(comm_t%t1)
+       print*, "T2amp      = ", print_tensornorm2(comm_t%t2)*ONE_QUARTER
+!       print*, "Tau        = ", print_tensornorm2(comm_t%tau)*ONE_QUARTER
+!       print*, "Fbar_oo    = ", print_tensornorm2(lambda_t%fbar_oo)*0.5D0
+       print*, "Fbar_ov    = ", print_tensornorm2(lambda_t%fbar_ov)
+!       print*, "Fbar_vv    = ", print_tensornorm2(lambda_t%fbar_vv)*0.5D0
+!       print*, "w_vvvv     = ", print_tensornorm2(lambda_t%w_vvvv)*ONE_QUARTER
+       print*, "wbar_vovo  = ", print_tensornorm2(lambda_t%wbar_vovo)
+       print*, "w_vvvo     = ", print_tensornorm2(lambda_t%w_vvvo)*0.5D0
+       print*, "w_vovv     = ", print_tensornorm2(lambda_t%w_vovv)*0.5D0
+       print*, "w_vovo     = ", print_tensornorm2(lambda_t%w_vovo)
+       print*, "w_ovoo     = ", print_tensornorm2(lambda_t%w_ovoo)*0.5D0
+       print*, "w_ooov     = ", print_tensornorm2(lambda_t%w_ooov)*0.5D0
+       print*, "w_oooo     = ", print_tensornorm2(lambda_t%w_oooo)*ONE_QUARTER
 
 !      Construct solution tensors
        ierr=exatns_tensor_create(s1_tensor,"s1",oovv_id,oovv_root,EXA_DATA_KIND_C8)
