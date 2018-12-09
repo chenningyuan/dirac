@@ -10,8 +10,7 @@
 .DFT
  PBE
 **GRID
-.IMPORT
-numerical_grid
+.DEBUG
 **INTEGRALS
 .NUCMOD
 1
