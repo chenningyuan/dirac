@@ -72,6 +72,8 @@ options available).
 
 keyword(EOMPROP)
 
+.. warning:: Development version only. 
+
 Activate the calculation of excited-state first-order properties for the EOMCC module for
 CCSD wavefunctions, by solving for the left-hand eigenvectors of the corresponding 
 similarity-transformed Hamiltonian. It should be specified along with  :ref:`RELCC_.EOMCC` 
@@ -260,30 +262,90 @@ density matrix. This is computationally less expensive, but also less accurate.
 
 star(EOMCC)
 
-write me
+This menu controls the parameters for the definition of the EOM model used and the number of roots per symmetry. 
+
+Currently the implementation supports the excitation energy (EE), single electron attachment (EA) and detachment (IP) models for CCSD wavefunctions only. 
+
+Note that there is no default, if no options are selected no calculations will be performed. 
 
 keyword(EE)
 
-write me
+Selects excitation energy calculations. 
 
-Arguments: two integers, the first specifying the state symmetry and the second the number of states for this symmetry
+Expects two integers, the first specifying the state symmetry and the second the number of states for this symmetry.
+The keyword should be repeated multiple times if different symmetries are desired. The  implementation does not allow for mixing
+the different EOM models in the same run.
 
-keyword(IP)
+*Example:* requesting two excitation energies for symmetry 1, four for symmetry 3, and one for symmetry 8::
 
-write me
+      .EE
+      1 2
+      .EE
+      3 4
+      .EE
+      8 1
 
-Arguments: two integers, the first specifying the state symmetry and the second the number of states for this symmetry
+*Default:*
+
+::
+
+     No excitation energies requested
+
 
 keyword(EA)
 
-write me
+Selects single electron attachment calculations. 
 
-Arguments: two integers, the first specifying the state symmetry and the second the number of states for this symmetry
+Expects two integers, the first specifying the state symmetry and the second the number of states for this symmetry.
+The keyword should be repeated multiple times if different symmetries are desired. The  implementation does not allow for mixing
+the different EOM models in the same run.
 
+
+*Example:* requesting two electron attachment energies for symmetry 1, four for symmetry 3, and one for symmetry 8::
+
+      .EA
+      1 2
+      .EA
+      3 4
+      .EA
+      8 1
+
+*Default:*
+
+::
+
+     No excitation energies requested
+
+keyword(IP)
+
+Selects electron detachment calculations. 
+
+Expects two integers, the first specifying the state symmetry and the second the number of states for this symmetry.
+The keyword should be repeated multiple times if different symmetries are desired. The  implementation does not allow for mixing
+the different EOM models in the same run.
+
+
+
+*Example:* requesting two single electron detachment energies for symmetry 1, four for symmetry 3, and one for symmetry 8::
+
+      .IP
+      1 2
+      .IP
+      3 4
+      .IP
+      8 1
+
+*Default:*
+
+::
+
+     No excitation energies requested
 
 star(EOMPROP)
 
 keyword(EXCPRP)
+
+.. warning:: Development version only. 
 
 number of excited states to calculate expectation values for, on a given symmetry.
 
@@ -291,32 +353,103 @@ Arguments: two integers, the first specifying the state symmetry and the second 
 
 star(CCDIAG)
 
-write me
+This menu controls the parameters to the iterative Davidson diagonalization procedure.
+
+Note that the implementation currently does not support the saving of eigenvectors, so no restarts are possible.
+
+keyword(CONVERG)
+
+Sets the convergence threshold on the norm of the residual vectors
+
+*Default:*
+
+::
+
+     .CONVERG
+     1.0E-8
+
+keyword(MAXSIZE)
+
+Sets the maximum size of the subspace
+
+*Default:*
+
+::
+
+     .MAXSIZE
+     128
 
 keyword(MAXITER)
 
-Controls the maximum number of iterations in the Davidson procedure
+Sets the maximum number of iterations
 
-keyword(NOR2L)
+*Default:*
 
-Do not use the right-hand side vectors as guess for the left-hand side, but rather
-one of the TRV options.
+::
 
-keyword(NOOVERLAP)
-
-Disables overlap in sorting the left/right-hand side eigenvalues and eigenvectors.
+     .MAXITR
+     80
 
 keyword(TRV_I)
+`
+Creates trial vectors based on unit vectors sorted by lowest energy of the diagonal of the similarity-transoformed Hamitonian (pivoting).
 
-Creates trial vectors based on unit vectors sorted by lowest energy.
 
-keyword(TRV_FU)
+*Default:*
 
-Creates unit trial vectors.
+::
+
+    Enabled
+
+keyword(TRV_FULLMATRIX)
+
+Creates unit trial vectors from a unit matrix. This roughly means that the first trial vectors will be those for high-lying states. 
+
+If combined with a number of EE/EA/IP roots set to -1 and a maximum number of iterations set to 1, the full similarity transformed Hamiltonian for a given symmetry will be diagonalized. 
+This yields the full spectrum, but for anything other than CC singles will require significant amounts of memory, so in practice such a combination is useful for debug purposes only.
+
+*Default:*
+
+::
+
+    Disabled 
 
 keyword(TRV_CCS)
 
 Creates trial vectors from the eigenvectors of the singles-singles EOM-EE/IP/EA blocks.
+
+keyword(TRV_R2L) 
+keyword(TRV_NOR2L)
+
+Control the use the right-hand side (R) vectors as guess for the left-hand side (L). If disabled, (.TRV_NOR2L) trial vector generation will be controlled by the options above.
+
+*Default:*
+
+::
+
+    .TRV_R2L
+
+keyword(OVERLAP) 
+keyword(NOOVERLAP)
+
+Controls the use of root following via overlap in sorting the left/right-hand side eigenvalues and eigenvectors.
+
+*Default:*
+
+::
+
+    .NOOVERLAP
+
+
+keyword(DEBUG)
+
+Enables debug printout. Massive output.
+
+*Default:*
+
+::
+
+    Does not print out debug information
 
 
 
@@ -568,6 +701,8 @@ Fock-space calculations can also be restarted, but for these additional care mus
 A change in the values that define the partition between main (Pm) and intermediate (Pi) model spaces, on the other hand, 
 does not require the integral sorting to be redone.
 (2) One has to specifically indentify which which sectors of Fock space are to be (re)calculated and which should be skipped. Some examples of such a procedure can be found in the test set. 
+
+Important: for EOMCC calculations it is currently only possible to restart from ground-state calculations. In this case, the ".REDOCSD" keyword *must* be used, otherwise the code will produce incorrect results.
 
 
 keyword(UNCONVERGED)
