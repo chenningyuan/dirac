@@ -170,7 +170,7 @@ print *, '*    appropriate citation would be:                                   
 print *, '*                                                                             *'
 print *, '*    DIRAC, a relativistic ab initio electronic structure program,            *'
 print *, '*    Release DIRAC18 (2018),                                                  *'
-print *, '*    written by T. Aaue, L. Visscher, H. J. Aa. Jensen, and R. Bast,          *'
+print *, '*    written by T. Saue, L. Visscher, H. J. Aa. Jensen, and R. Bast,          *'
 print *, '*    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,            *'
 print *, '*    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *'
 print *, '*    O. Fossgaard, A. S. P. Gomes, E. D. Hedegaard, T. Helgaker,              *'
