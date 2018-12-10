@@ -314,7 +314,7 @@ keyword(OPERATOR)
 
 Further modification by Malaya K. Nayak for the proper functioning of .OPERATOR keyword
 
-Some specific examples of :ref:`one_electron_operators` using .OPERATOR keyword.
+Here is some specific examples of :ref:`one_electron_operators` using .OPERATOR keyword.
 
 For the electron electric dipole moment (eEDM) effective electric field one can use
 
@@ -373,7 +373,7 @@ Similarly, the magnetic hyperfine-structure constants in BeH can be defined as f
   'NEF 006'
   'NEF 004'
 
-One can define many more :ref:`one_electron_operators` as per their requirement.
+One can define many more :ref:`one_electron_operators` as per their requirements.
 
 keyword(DIPMOM)
 
