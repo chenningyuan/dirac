@@ -239,7 +239,7 @@ Contents of the input file
 **HAMILTONIAN                                                                                       
 **RELCCSD                                                                                           
 .PRINT                                                                                              
-2                                                                                                   
+1                                                                                                   
 .ENERGY                                                                                             
 .EOMCC                                                                                              
 *EOMCC                                                                                              
@@ -256,7 +256,7 @@ Contents of the input file
 .MAXSIZE                                                                                            
 1024                                                                                                
 .MAXITER                                                                                            
-50                                                                                                  
+70                                                                                                  
 .NOOVERLAP                                                                                          
 .TRV_FU                                                                                             
 **MOLTRA                                                                                            
@@ -1216,8 +1216,8 @@ It.   12    -197.0909143712     -5.68D-14  6.40D-10  1.75D-09   DAMP 25%    0.03
  Time in  Second halftransformation           0.471 seconds
 
 
- Total wall time used in PAMTRA :   00:00:01
- Total CPU  time used in PAMTRA (master only) :   00:00:01
+ Total wall time used in PAMTRA :   00:00:03
+ Total CPU  time used in PAMTRA (master only) :   00:00:02
 
  Transformation ended at : Mon Dec 10 08:40:30 2018
 
@@ -1254,7 +1254,7 @@ It.   12    -197.0909143712     -5.68D-14  6.40D-10  1.75D-09   DAMP 25%    0.03
 ===========================================================================
  **RELCC: Set-up for Coupled Cluster calculations
 ===========================================================================
- * General print level   :   2
+ * General print level   :   1
  NEL_F1:  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
 
  Total memory available :       16384.00 MB   16.000 GB
@@ -1338,12 +1338,12 @@ It.   12    -197.0909143712     -5.68D-14  6.40D-10  1.75D-09   DAMP 25%    0.03
  are given if above a treshold or if iprnt > 1
 
  Spinor   Abelian Rep.         Energy   Recalc. Energy
-  O    1    1    AG      -26.4470200448  -26.4470200443
+  O    1    1    AG      -26.4470200449  -26.4470200443
   O    2    2    AG       -2.7799344826   -2.7799344822
   O    3    3    AG       -1.0293443177   -1.0293443175
   O    4    4    AG       -0.3398739288   -0.3398739288
   O    5    5    AG       -0.3378280130   -0.3378280125
-  O    6    6    AG      -26.4470200448  -26.4470200443
+  O    6    6    AG      -26.4470200449  -26.4470200443
   O    7    7    AG       -2.7799344826   -2.7799344822
   O    8    8    AG       -1.0293443177   -1.0293443175
   O    9    9    AG       -0.3398739288   -0.3398739288
@@ -1640,7 +1640,7 @@ It.   12    -197.0909143712     -5.68D-14  6.40D-10  1.75D-09   DAMP 25%    0.03
  
    convergence threshold         :    9.9999999999999995E-008
    maximum subspace size         :         1024
-   maximum number of iterations  :           50
+   maximum number of iterations  :           70
    refresh trial vectors         :  F
  
   restart/data storage
@@ -2863,7 +2863,7 @@ It.   12    -197.0909143712     -5.68D-14  6.40D-10  1.75D-09   DAMP 25%    0.03
 
  Analysis of EOM eigenvectors
  First line  :  State Energy, Eigenvalue
- other lines : Largest R1 and R2 Vectors (above a threshold of .1E-01)
+ other lines : Largest R1 and R2 Vectors (above a threshold of .1E+00)
 
  Irrep   AG State     1   -196.15710560      1.13892141
         0.99453        0.00000   |   AG #  11 (   1.160) |                         
@@ -5080,7 +5080,7 @@ It.   12    -197.0909143712     -5.68D-14  6.40D-10  1.75D-09   DAMP 25%    0.03
 
  Analysis of EOM eigenvectors
  First line  :  State Energy, Eigenvalue
- other lines : Largest R1 and R2 Vectors (above a threshold of .1E-01)
+ other lines : Largest R1 and R2 Vectors (above a threshold of .1E+00)
 
  Irrep   AU State     1   -196.42446112      0.87156589
         0.99700        0.00000   |   AU #  15 (   0.882) |                         
