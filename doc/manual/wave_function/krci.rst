@@ -373,7 +373,7 @@ Similarly, the magnetic hyperfine-structure constants in BeH can be defined as f
   'NEF 006'
   'NEF 004'
 
-One can define many more :ref:`one_electron_operators` as per their requirements.
+One can define many more :ref:`one_electron_operators` as per their requirement.
 
 keyword(DIPMOM)
 
