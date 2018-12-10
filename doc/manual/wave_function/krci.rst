@@ -310,6 +310,69 @@ Upon request the analysis of other one-electron properties may also be
 implemented. The module could in principle be used for each one-electron
 operator that is specified in :ref:`one_electron_operators`.
 
+Further modification by Malaya K. Nayak for the proper functioning of .OPERATOR keyword
+
+Some specific examples of :ref:`one_electron_operators` using .OPERATOR keyword.
+
+For the electron electric dipolemoment effective electric field one can use
+
+ ::
+
+ .OPERATOR
+  'A2-EDM'
+  iBETAGAM
+  EDM
+
+The electron-nucleus pseudoscalar-scalar interaction in BeH can be defined as 
+
+ ::
+
+ .OPERATOR
+  'A1-SPS'
+  iBETAGAM
+  'PVCBe 01'                for atom Be in BeH molecule
+ .OPERATOR
+  'A2-SPS'
+  iBETAGAM
+  'PVCH  02'                for atom H in BeH molecule
+
+Similarly, the hyperfine-structure constants in BeH can be defined as follows
+
+  ::
+
+ .OPERATOR
+  'X1-HYP'
+  XAVECTOR
+  'NEF 001'
+  'NEF 005'
+ .OPERATOR
+  'Y1-HYP'
+  YAVECTOR
+  'NEF 003'
+  'NEF 001'
+ .OPERATOR
+  'Z1-HYP'
+  ZAVECTOR
+  'NEF 005'
+  'NEF 003'
+ .OPERATOR
+  'X2-HYP'
+  XAVECTOR
+  'NEF 002'
+  'NEF 006'
+ .OPERATOR
+  'Y2-HYP'
+  YAVECTOR
+  'NEF 004'
+  'NEF 002'
+ .OPERATOR
+  'Z2-HYP'
+  ZAVECTOR
+  'NEF 006'
+  'NEF 004'
+
+One can define many more :ref:`one_electron_operators` as per there requirements.
+
 keyword(DIPMOM)
 
 compute the permanent dipole moments in electronic ground and excited states.
