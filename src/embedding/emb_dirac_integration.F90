@@ -2348,9 +2348,9 @@ contains
          write(file_unit, *)
          write(file_unit, '(3x, a)') 'FDE interaction energy contributions'
          write(file_unit, *)
-         write(file_unit,'(6x, a, f26.16)'), 'non-additive:',non_additive_interaction
-         write(file_unit,'(6x, a, f26.16)'), 'E_el^B[nA]  :',electrostatic_b_rho_a_interaction
-         write(file_unit,'(6x, a, f26.16)'), 'E_nuc^A[nB] :',electrostatic_a_rho_b_interaction
+         write(file_unit,'(6x, a, f26.16)') 'non-additive:',non_additive_interaction
+         write(file_unit,'(6x, a, f26.16)') 'E_el^B[nA]  :',electrostatic_b_rho_a_interaction
+         write(file_unit,'(6x, a, f26.16)') 'E_nuc^A[nB] :',electrostatic_a_rho_b_interaction
       endif 
       write(file_unit, *)
 
