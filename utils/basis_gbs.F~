@@ -1,0 +1,9 @@
+      PROGRAM BASIS_GBS
+C***********************************************************************
+C
+C     Purpose:
+C     Read an uncontracted basis set on DALTON form from formatted file
+C     and output it to GBS format
+C
+C***********************************************************************
+      
