@@ -438,18 +438,18 @@ module exacorr_cc
 
             if (.true.) then
                if (.not.CCD) then   
-                write(*,'(A7,F20.15)'), "T1amp = ",print_tensornorm2 (t1_tensor)
+                write(*,'(A7,F20.15)') "T1amp = ",print_tensornorm2 (t1_tensor)
                end if
-               write(*,'(A7,F20.15)'), "T2amp = ",print_tensornorm2 (t2_tensor)
-               write(*,'(A7,F20.15)'), "Tau   = ",print_tensornorm2 (tau_tensor)
-               write(*,'(A7,F20.15)'), "hoint = ",print_tensornorm2 (hoint_tensor)
-               write(*,'(A7,F20.15)'), "goint = ",print_tensornorm2 (goint_tensor)
-               write(*,'(A7,F20.15)'), "hvint = ",print_tensornorm2 (hvint_tensor)
-               write(*,'(A7,F20.15)'), "gvint = ",print_tensornorm2 (gvint_tensor)
-               write(*,'(A7,F20.15)'), "hovint= ",print_tensornorm2 (hovint_tensor)
-               write(*,'(A7,F20.15)'), "aint  = ",print_tensornorm2 (aint_tensor)
-               write(*,'(A7,F20.15)'), "hint  = ",print_tensornorm2 (hint_tensor)
-               write(*,'(A7,F20.15)'), "cint  = ",print_tensornorm2 (cint_tensor)
+               write(*,'(A7,F20.15)') "T2amp = ",print_tensornorm2 (t2_tensor)
+               write(*,'(A7,F20.15)') "Tau   = ",print_tensornorm2 (tau_tensor)
+               write(*,'(A7,F20.15)') "hoint = ",print_tensornorm2 (hoint_tensor)
+               write(*,'(A7,F20.15)') "goint = ",print_tensornorm2 (goint_tensor)
+               write(*,'(A7,F20.15)') "hvint = ",print_tensornorm2 (hvint_tensor)
+               write(*,'(A7,F20.15)') "gvint = ",print_tensornorm2 (gvint_tensor)
+               write(*,'(A7,F20.15)') "hovint= ",print_tensornorm2 (hovint_tensor)
+               write(*,'(A7,F20.15)') "aint  = ",print_tensornorm2 (aint_tensor)
+               write(*,'(A7,F20.15)') "hint  = ",print_tensornorm2 (hint_tensor)
+               write(*,'(A7,F20.15)') "cint  = ",print_tensornorm2 (cint_tensor)
             end if
 
 !           This term appears twice as we need to permute i and j
