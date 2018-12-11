@@ -97,6 +97,14 @@ C
       ELSEIF (CLSINT(I).EQ.'EFFDEN ') THEN
         CALL EFFECTIVE_DENS_NUC(WORK,LWORK,COMB)
 C
+C     Uehling potential for vacuum polarization
+C
+      ELSEIF (CLSINT(I).EQ.'UEHLING') THEN
+C     sunaga
+        IF(NOSMLV) COMB(4:4) = 'T'
+        CALL NUMOVL(COMB)       
+Csunaga      
+C
 C     Contribution from (static) embedding potential
 C
       ELSEIF (CLSINT(i).EQ.'FDEVEMB') THEN
@@ -151,6 +159,7 @@ C
       ENDIF
       CLSCAL(I) = .FALSE.
    10 CONTINUE
+!      CALL NUMOVL(COMB,IPRONE)       
 C
       CLOSE(LU1INT,STATUS='KEEP')
       IF (IPRONE .GT. 0) THEN
@@ -161,16 +170,12 @@ C
      &  'Total time used in ONEGEN (CPU) ',CPUTID,' and (WALL) ',WALLTID
       END IF
  20   CONTINUE
-C     sunaga
-      CALL NUMOVL !NEW
-!      CALL NUMINT !OLD
-Csunaga      
       CALL QEXIT('ONEGEN')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck numovl */
-      SUBROUTINE NUMOVL
+      SUBROUTINE NUMOVL(COMB,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C The numerical integration for constructing AO basis matrix
@@ -193,6 +198,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbham.h"
 #include "dcbgen.h"
       
+      CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4 !check
       PARAMETER (D0=0.0D0,D1=1.0D0,D2=2.0D0)      
       PARAMETER (H=0.01D0) !same to GRASP
       real(8), allocatable :: ZAN(:),C(:,:)
@@ -221,7 +227,7 @@ C The values of ultrafine (.ULTRAF) at DFT input-reader section.
       allocate( GAO(NTBAS(0))  )
       allocate( BUF(NDIM2)    )
       allocate( TC(NDIM2)      )
-      allocate( TD(MXNP,NDIM2) )
+!      allocate( TD(MXNP,NDIM2) )
       allocate( OVL(NDIM2)     )
 C      
       CALL LEBEDEV(INTANG,ANG(1,1),ANG(1,2),ANG(1,3),ANG(1,4),n)
@@ -247,20 +253,24 @@ C
 C   SET DEFAULT VALUES OF PARAMETERS FOR CALCULATION
 C
          MXNP = 4000 !same to GRASP
-         write(*,*)"MXNP",MXNP 
-         CALL VAC2(VACIR,ZAN(IATOM),MXNP,0)
-         write(*,*)"MXNP",MXNP 
-C         
          EPH = EXP(H)
          RNT = 1.0D-06/ZAN(IATOM) !CHARGE(IATOM)
+!         write(*,*)"MXNP",MXNP 
+!         write(*,*)"ZAN",ZAN(IATOM)
+!         CALL MEMEST(ZAN(IATOM),MXNP,RNT,EPH) !change
+         MXNP = 4000 !change
+!         write(*,*)"MXNP",MXNP 
+         allocate( TD(MXNP,NDIM2) )
 C       
          CALL DZERO(BUF,NDIM2) 
-         CALL DZERO(TD,NDIM2*MXNP)
+         CALL DZERO(TD,NDIM2*MXNP) !4000-->MXNP
          CALL DZERO(OVL,NDIM2)
          RNODE = RNT
+!         write(*,*)"RNODE,VACIR" 
          DO 20 IR = 1, MXNP
-           CALL VAC2(VACIR,ZAN(IATOM),IR,1)
-           RFAC = RNODE*RNODE*RNODE * VACIR 
+!           CALL VAC2PT(VACIR,RNODE,ZAN(IATOM)) !change
+!           write(*,*)RNODE,VACIR 
+           RFAC = RNODE*RNODE*RNODE !* VACIR !change
            CALL DZERO(TC,NDIM2)
 C            
 C          loop over angular points
@@ -285,14 +295,17 @@ C
              DO IC = 1, MC
                DO I = 1, NTBAS(IC)
                  IADD = I*(I-1)/2
+!                 write(*,*) 
                  DO J = 1, I
                    IJ = IOFF + IADD + J  
-                   BUF(IJ) = GAO(I+ISTART)*GAO(J+ISTART)
+                   BUF(IJ+ISTART*I) = GAO(I+ISTART)*GAO(J+ISTART)
+!                   write(*,*)"I,J,IJ",I,J,IJ
                  ENDDO
                ENDDO
-               IOFF   = IOFF   + NTBAS(IC)*(NTBAS(IC)+1)/2 + NTBAS(IC)
+               IOFF   = IOFF   + NTBAS(IC)*(NTBAS(IC)+1)/2
                ISTART = ISTART + NTBAS(IC)
-             ENDDO  
+!                  write(*,*)"IOFF,ISTART",IOFF,ISTART
+             ENDDO
              CALL DAXPY(NDIM2,WT8,BUF,1,TC(1),1)
 30         CONTINUE
            CALL DCOPY(NDIM2,TC(1),1,TD(IR,1),MXNP)
@@ -303,27 +316,40 @@ C  Large
          CALL HEADER('Numerical ovelap integral',-1)
 
          CALL QUAD2(OVL,TD,MXNP,H,NDIM2)
-         IOFF = 1
-         DIM  = NTBAS(1) 
-         DO IC = 1,MC
-           IF(IC.eq.1)THEN 
-              write(*,*)"Large"
-           ELSE
-              write(*,*)"Small"
-           ENDIF   
-           CALL OUTPAK(OVL(IOFF),NTBAS(IC),-1,LUPRI)
-           IOFF = IOFF + NTBAS(IC)*(NTBAS(IC)+1)/2 + NTBAS(IC)
-           DIM = DIM + NTBAS(2)
-         ENDDO
-         write(*,*)
+         CALL OUTPAK(OVL,NTBAS(0),-1,LUPRI)
+!         IOFF = 1
+!         DIM  = NTBAS(1) 
+!         DO IC = 1,MC
+!           IF(IC.eq.1)THEN 
+!              write(*,*)"Large"
+!           ELSE
+!              write(*,*)"Small"
+!           ENDIF   
+!           CALL OUTPAK(OVL(IOFF),NTBAS(IC),-1,LUPRI)
+!           IOFF = IOFF + NTBAS(IC)*(NTBAS(IC)+1)/2 + NTBAS(IC)
+!           DIM = DIM + NTBAS(2)
+!         ENDDO
+!         write(*,*)
        ENDIF        !(IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0)
+       deallocate(TD)
 10    CONTINUE
+C      
+C     Generate integral labels
+C
+      LABEL = 'UEHLING'
+      CALL GETDAT(RTNLBL(1),RTNLBL(2))
+      RTNLBL(2)(1:2) = 'SY'
+      WRITE(RTNLBL(2)(3:4),'(I2)') 1
+      RTNLBL(2)(5:8) = COMB
+C
+C     Write integrals to file
+C
+      CALL WRTPRO(OVL,NNBBASX,LABEL,RTNLBL,IPRINT)      
 C
       deallocate(ZAN)
       deallocate(C)
       deallocate(ANG)
       deallocate(BUF)
-      deallocate(TD)
       deallocate(OVL)
       CALL QEXIT('NUMOVL')
       RETURN         
@@ -408,7 +434,59 @@ C
       END      
 ************************************************************************
 *                                                                      *
-      SUBROUTINE VAC2(TB,Z,MXNP,IMODE)
+      SUBROUTINE MEMEST(Z,MXNP,RNT,EPH)
+C
+C     Estimating memories, by calculating the uehling potential of
+C     point charge 
+C      
+C     Called from: NUMOVL
+C
+C    Modified for DIRAC, A. Sunaga Dec. 2018
+C  
+************************************************************************
+#include "implicit.h"
+#include "pi.h"
+#include "dcbgen.h"
+C
+       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, THREE = 3.0D0)     
+!       real(8), allocatable :: FUNK(:,:)
+!#include ""
+!#include ""
+!#include ""
+!#include ""
+!#include ""
+!#include ""
+!#include ""
+C
+!      allocate(FUNK(MXNP,5))
+      N = MXNP 
+      PI3 = THREE*PI
+      WD = CVAL+CVAL
+      FACTOR = -(Z+Z)/(PI3*CVAL)
+!      CALL HEADER('VAC2, second order Vacuum potential',-1)
+C
+C   SET UP POTENTIAL FOR POINT NUCLEUS
+C
+!      EPH = EXP(H)
+!      RNT = 1.0D-06/Z           !CHARGE(IATOM)
+      RTEMP = RNT
+      DO 1 I = 1,N
+         X = WD*RTEMP
+         TEMP = FACTOR*FUNK (X,1)
+!          write(*,*)"I",I,TEMP
+         IF(ABS(TEMP).LE.1.0D-50)THEN
+            MXNP = I
+!            write(*,*)"MXNP_VAC2",MXNP
+            exit
+         ENDIF   
+         RTEMP = RTEMP*EPH
+1     CONTINUE
+      RETURN
+C
+      END
+************************************************************************
+*                                                                      *
+      SUBROUTINE VAC2PT(TB,RNODE,Z)
 *                                                                      *
 *   ----------------   SECTION 11   SUBPROGRAM 11  -----------------   *
 *                                                                      *
@@ -427,8 +505,6 @@ C
 #include "dcbgen.h"
 C
        PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, THREE = 3.0D0)     
-       PARAMETER (H=0.01D0)
-!       real(8), allocatable :: FUNK(:,:)
 !#include ""
 !#include ""
 !#include ""
@@ -437,90 +513,22 @@ C
 !#include ""
 !#include ""
 C
-!      allocate(FUNK(MXNP,5))
-      N = MXNP 
       PI3 = THREE*PI
-      C2 = CVAL*CVAL
-      EPS = 1.0D-05
       WD = CVAL+CVAL
       FACTOR = -(Z+Z)/(PI3*CVAL)
-      write(*,*)"Z,CVAL",Z,CVAL
-      CALL HEADER('VAC2, second order Vacuum potential',-1)
+!      CALL HEADER('VAC2, second order Vacuum potential',-1)
 C
 C   SET UP POTENTIAL FOR POINT NUCLEUS
 C
-      EPH = EXP(H)
-      RNT = 1.0D-06/Z           !CHARGE(IATOM)
-      RNODE = RNT
-      IF(IMODE.eq.0) THEN
-!        DO 1 I = 1,N
-!           X = WD*RNODE
-!           TEMP = FACTOR*FUNK (X,1)
-!           RNODE = RNODE*EPH
-!           write(*,*)"I",I,TEMP
-!           IF(ABS(TEMP).LE.1.0D-15)THEN
-!              write(*,*)"MXNP",MXNP
-!              MXNP = 4000 ! I
-!              exit
-!           ENDIF   
-!1       CONTINUE
-      ELSE
-        DO I = 1,N
-           RNODE = RNODE*EPH
-        ENDDO
-        X = WD*RNODE
-        TB = FACTOR*FUNK (X,1)
-      ENDIF
-C     
-C
-C The above part is only for point charge.      
-C I will modify the below part, which is for a finite charge.
-C
-C      
-c$$$      IF ((NUCTYP .EQ. 0) .OR. (KTC(8) .EQ. 1)) RETURN !sunaga
-c$$$C
-c$$$C   SERIES EXPANSION FOR FINITE NUCLEUS. CALCULATE EXPANSION
-c$$$C   COEFFICIENTS USING EQUATION (7)
-c$$$C
-c$$$      IF (NUCTYP .GT. 1) GO TO 2 !sunaga
-c$$$C
-c$$$C   UNIFORM NUCLEUS
-c$$$C      
-c$$$      WA = C2*(PARM(1)**2)
-c$$$      FAC3 = FACTOR*TWO*WA/5.0D00
-c$$$      FAC5 = FAC3*WA/7.0D00
-c$$$      GO TO 5
-c$$$C
-c$$$C   OTHER DISTRIBUTIONS
-c$$$C
-c$$$    2 WB = (C2+C2)/(Z*THREE)
-c$$$      DO 3 I = 1,N
-c$$$         TA(I) = ZZ(I)*(R(I)**3)
-c$$$    3 CONTINUE
-c$$$      CALL QUAD (FAC3)
-c$$$      FAC3 = FAC3*FACTOR*WB
-c$$$      DO 4 I = 1,N
-c$$$         TA(I) = TA(I)*(R(I)**2)
-c$$$    4 CONTINUE      
-c$$$      CALL QUAD (FAC5)
-c$$$      FAC5 = FAC5*FACTOR*C2*WB/5.0D00
-c$$$C
-c$$$C   TABULATE POTENTIALS
-c$$$C
-c$$$    RNODE = RNT
-c$$$C      
-c$$$    5 DO 6 I = 1,N
-c$$$         X = WD*R(I)
-c$$$         TB(I) = TB(I)+FAC3*FUNK (X,3)+FAC5*FUNK (X,5)
-c$$$         RNODE = RNODE*EPH
-c$$$    6 CONTINUE
-!      deallocate(FUNK)
+      X = WD*RNODE
+      TB = FACTOR*FUNK (X,1)
       RETURN
 C
       END
 ************************************************************************
 *                                                                      * 
-      REAL*8 FUNCTION FUNK (X,N)
+C /* Deck FUNK */
+      FUNCTION FUNK (X,N)
 *                                                                      *
 *   ----------------   SECTION 11   SUBPROGRAM 12  -----------------   *
 *                                                                      *
