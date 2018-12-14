@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -104,10 +104,10 @@ print *, '*                                                                     
 print *, '*                                                                             *'
 print *, '*    Written by:                                                              *'
 print *, '*                                                                             *'
+print *, '*    Trond Saue               Universite Toulouse III           France        *'
 print *, '*    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *'
 print *, '*    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *'
 print *, '*    Radovan Bast             UiT The Arctic University of      Norway        *'
-print *, '*    Trond Saue               Universite Toulouse III           France        *'
 print *, '*                                                                             *'
 print *, '*    with contributions from:                                                 *'
 print *, '*                                                                             *'
@@ -123,7 +123,7 @@ print *, '*    Olav Fossgaard           UiT The Arctic University of      Norway
 print *, '*    Andre S. P. Gomes        CNRS/Universite de Lille          France        *'
 print *, '*    Erik D. Hedegaard        Lund University                   Sweden        *'
 print *, '*    Trygve Helgaker          University of Oslo                Norway        *'
-print *, '*    Benjamin Helmich-Paris   Vrije Universiteit Amsterdam      Netherlands   *'
+print *, '*    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. Germany       *'
 print *, '*    Johan Henriksson         Linkoeping University             Sweden        *'
 print *, '*    Miroslav Ilias           Matej Bel University              Slovakia      *'
 print *, '*    Christoph R. Jacob       TU Braunschweig                   Germany       *'
@@ -169,11 +169,11 @@ print *, '*    If results obtained with this code are published, an             
 print *, '*    appropriate citation would be:                                           *'
 print *, '*                                                                             *'
 print *, '*    DIRAC, a relativistic ab initio electronic structure program,            *'
-print *, '*    Release DIRAC17 (2017),                                                  *'
-print *, '*    written by L. Visscher, H. J. Aa. Jensen, R. Bast, and T. Saue,          *'
+print *, '*    Release DIRAC18 (2018),                                                  *'
+print *, '*    written by T. Saue, L. Visscher, H. J. Aa. Jensen, and R. Bast,          *'
 print *, '*    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,            *'
 print *, '*    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *'
-print *, '*    O. Fossgaard, A. S. P. Gomes, E. D. Hedegrd, T. Helgaker,               *'
+print *, '*    O. Fossgaard, A. S. P. Gomes, E. D. Hedegaard, T. Helgaker,              *'
 print *, '*    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky,         *'
 print *, '*    O. Kullie, J. K. Laerdahl, C. V. Larsen, Y. S. Lee, H. S. Nataraj,       *'
 print *, '*    M. K. Nayak, P. Norman, G. Olejniczak, J. Olsen, J. M. H. Olsen,         *'

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -92,7 +92,7 @@
       implicit real*8 (A-H,O-Z)
 #include "infpar.h"
       INTEGER MPIERR, IREQ
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER ISTAT(df_MPI_STATUS_SIZE)
 !
 !     send dummy message (from MASTER to MASTER...)
 !

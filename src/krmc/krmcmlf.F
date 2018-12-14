@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1842,7 +1842,7 @@ C
             if(.not.isopen) close(luxxxx,status="keep")
           else
             call opnfil(lucoef,'DFCOEF','OLD','mjlist ')
-            call reacmo_no_work(lucoef,'DFCOEF',dummy,dummy,
+            call reacmo(lucoef,'DFCOEF',dummy,dummy,
      &                          orb_sym_vec,dummy,8)
             close(lucoef,status='KEEP')
           end if

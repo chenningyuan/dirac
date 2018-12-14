@@ -5,10 +5,12 @@
   use interface_to_mpi
   use contraction
   use intermediates_1b_2b
+  use wrapper_sorting
 
     public lambda_equation_mp2
     public lambda_equation_L2
     public lambda_equation_L1
+    public lambda2_disconnected
 
 
      private
@@ -132,10 +134,13 @@
       real*8,allocatable :: L2_temp(:),ResL2_temp(:),tau(:)
       integer, allocatable :: counter(:), displ(:)
       integer     :: jklrep,m2,irep,jrep,abrep,jkloff,ij,ijkl,ijkl1,mint
-      integer     :: off2,i,j,istart,m,k,n,irp,ntot,nint,kstart,off1 
-      integer     :: jabrep,x(nrep,nrep),y(nrep) 
-      integer     :: off3,nd,totsize 
+      integer     :: off2,i,j,istart,m,k,n,irp,ntot,nint,kstart,off1
+      integer     :: jabrep,x(nrep,nrep),y(nrep)
+      integer     :: off3,nd,l, totsize
       
+
+      type(indices) ::e,f,g 
+
       interface
          subroutine gettau(t1,t2,tau)
          real*8,intent(in) :: t1(*),t2(*)
@@ -183,61 +188,20 @@
 
        if (iprnt.ge.1) &
      & write(iw,*)'RESL2 after term3', dot_product(ResL2,ResL2)
+
 !--------------------------------------------------------
 !   term4 : ResL2 = ResL2 + P(ij)P(ab) L2(im,ae) * W_bmej(je,bm)
+!--------------------------------------------------------
 
-!   The following calls should be able to replace the hand coding below, but
-!   did not give the correct result. To be debugged before activating
+      call contraction_444((/"o1","o3","p1","p3"/),(/"o2","p3","p2","o3"/), (/"o1","o2","p1","p2"/),ResL2, &
+     &    1.0d0,0.0d0,nrep,righttensor=w_voov,LeftTensor=L2)
 
-!     call contraction_444((/"o1","o3","p1","p3"/),(/"o2","p3","p2","o3"/), (/"o1","o2","p1","p2"/),ResL2, &
-!    &    1.0d0,0.0d0,nrep,righttensor=w_voov,LeftTensor=L2)
-
-      CALL SRT1TT5 (NREP,MULTB,.FALSE.,.FALSE.,NO,NO,NV,NV,MOV,J2OVVO,JJOV,JJVO, &
-     &              L2,buf2)
-
-      CALL SRT1SS4 (NREP,MULTB,.FALSE.,.FALSE.,NO,NV,NV,NO,MOV,J2OVVO,JJOV,JJVO, &
-     &              w_voov,buf3)
-
-      allocate (ResL2_temp(j2ovov(nrep+1)*rcw))
-
-      ResL2_temp = 0.0d0
-
-
-      do i = 1, nrep
-         J = MULTB(i+NREP,1+NREP,2)
-
-          M = mov(i)
-!          N = mov(j)
-          N = mov(i)
-          K = mvo(j)
-
-          ND = mov(i)
-          off1 = 1 + j2ovvo(i)*rcw
-          off2 = 1 + j2ovvo(i)*rcw
-          off3 = 1 + j2ovov(i)*rcw
-
-
-            CALL XGEMM ('N','T',M,N,K,A1,buf2(OFF1),M, &
-      &                  buf3(OFF2),ND,A0,ResL2_temp(OFF3),M)
-
-      enddo
-
-      CALL SRT1TT4 (NREP,MULTB,.FALSE.,.TRUE.,NO,NO,NV,NV,MOV,J2OVOV,JJOV,JJOV, &
-     &              ResL2_temp,buf2)
-
-      deallocate(ResL2_temp)
-
-      CALL XAXPY (ndimt2,A1,buf2,1,resl2,1)
-
-      if (iprnt.ge.1) &
-     &  write(iw,*)'RESL2 after term4',dot_product(ResL2,ResL2)
 !-----------------------------------------------------------
-!   term5 : ResL2 = ResL2 + P(ab) V(ij,ae)*G_vv(b,e)
+!   term5 : ResL2 = ResL2 + P(ab) V(ij,ae)*G_vv(e,b)
 !-----------------------------------------------------------
 
       call contraction_424 ((/"o1","o2","p1","p3"/),(/"p3","p2"/), &
      &        (/"o1","o2","p1","p2"/),ResL2,1.0d0,1.0d0,nrep,RightTensor=G_vv)
-
 
        if (iprnt.ge.1) &
      & write(iw,*)'RESL2 after term5',dot_product(ResL2,ResL2)
@@ -300,7 +264,7 @@
       do irp = 1, nrep
          istart = 0
          totsize = 0
-         if (nvvt(irp).eq.0) cycle
+         if ((nvvt(irp).eq.0).or.(noot(irp).eq.0)) cycle
          mint = nbuf3/nvvt(irp)
  10      kstart = istart
          if (idist(1,1,irp).gt.kstart) kstart=idist(1,1,irp)
@@ -414,8 +378,10 @@
                   IF (IREP.EQ.JREP) IMIN = J + 1
                   IA = (IVO(AREP) + (A-1) * NO(AREP) + IMIN - 1)*RCW + 1
                   NI = NO(IREP) - IMIN + 1
-                  CALL XAXPY (NI,f_bar(jb),L1(ia),1,RESL2(IJABOFF+IJ),1)
-                  CALL XAXPY (NI,L1(JB),f_bar(IA),1,RESL2(IJABOFF+IJ),1)
+                  if (NI > 0) then
+                    CALL XAXPY (NI,f_bar(jb),L1(IA),1,RESL2(IJABOFF+IJ),1)
+                    CALL XAXPY (NI,L1(JB),f_bar(IA),1,RESL2(IJABOFF+IJ),1)
+                  endif
                   IJ = IJ + NI * RCW
                   JB = JB + RCW
                ENDDO
@@ -431,12 +397,14 @@
                   IF (IREP.EQ.JREP) IMIN = J + 1
                   IB = (IVO(BREP) + (B-1) * NO(BREP) + IMIN - 1)*RCW + 1
                   NI = NO(IREP) - IMIN + 1
-                   T1MIN(1) = -f_bar(JA)
-                   IF (CARITH) T1MIN(2) = -f_bar(JA+1)
+                  T1MIN(1) = -f_bar(JA)
+                  IF (CARITH) T1MIN(2) = -f_bar(JA+1)
+                  if (NI > 0) then
                   CALL XAXPY (NI,T1MIN,L1(IB),1,ResL2(IJABOFF+IJ),1)
                    T1MIN(1) = -L1(JA)
                    IF (CARITH) T1MIN(2) = -L1(JA+1)
                   CALL XAXPY (NI,T1MIN,f_bar(IB),1,ResL2(IJABOFF+IJ),1)
+                  endif
                   IJ = IJ + NI * RCW
                   JA = JA + RCW
                ENDDO

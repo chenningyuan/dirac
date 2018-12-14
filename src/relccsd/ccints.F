@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -620,8 +620,7 @@ C     when we run with the MOLMF(3) hamiltonian
               CALL QUIT('RDINTS: Coefficient file DFCOEF not found !')
           ENDIF
           CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RDINTS')
-          CALL REACMO_no_work(LUCOEF,'DFCOEF',DUMMY,DUMMY,IDUMMY,
-     &                        ORIG_TOTSCF,1)
+          CALL REACMO(LUCOEF,'DFCOEF',DUMMY,DUMMY,IDUMMY,ORIG_TOTSCF,1)
         ENDIF
 #if defined VAR_MPI
         call interface_mpi_BCAST(ORIG_TOTSCF,1,MASTER,
@@ -1720,7 +1719,7 @@ C  E1 = E1 - V(II,KK)
 C---------------------------------------------------------------------
             II = 0
             DO IREP = 1, NREP
-               IF (K.LE.NE(KREP)) THEN
+               IF (K.LE.NE(KREP) .AND. NE(IREP).GT.0) THEN
                   CALL XSUM(CSUM,NE(IREP),BUF2(II+KK),NO(IREP)+1)
                   E1 = E1 - CSUM(1)
                ENDIF

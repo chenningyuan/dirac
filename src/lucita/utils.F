@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -91,7 +91,7 @@
 #if defined (VAR_MPI2)
 #include "mpif.h"
 #include "infpar.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER   ISTAT(MPI_STATUS_SIZE)
 #include "parluci.h"
 #endif
       
@@ -298,7 +298,7 @@
 *     Find smallest (MINMAX=1) or largest (MINMAX=2)
 *     absolute value of elements in integer vector IVEC
 *
-      DIMENSION IVEC(1)
+      DIMENSION IVEC(*) ! Miro: instead of IVEC(1)
 *
       IF(NDIM.GT.0) THEN
         IX = -1

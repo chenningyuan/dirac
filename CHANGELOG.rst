@@ -1,15 +1,35 @@
 :orphan:
 
-New features:
-
-- The visualization module has been extended to generate various radial distributions using the keyword .RADIAL. Contributor: Trond Saue
-
-17.1 (unreleased)
+18.0 (unreleased)
 -----------------
 
-- Allow to compile with OpenMP support (this does not imply OpenMP parallelization of the code).
-- Update in CMake framework: pass compilers as cmake variables, not as environment variables.
+New features:
+
+- The visualization module has been extended to generate various radial distributions using the keyword .RADIAL. Contributor: Trond Saue.
+
+Error corrections:
+
+- Fix f correlating exponents for 3d in dyall.cv2z and dyall.ae2z basis sets. Contributor: Ken G. Dyall.
+- Fix f polarizing exponents for 3d in dyall.cv3z and dyall.ae3z basis sets. Contributor: Ken G. Dyall.
 - Bugfix in KRCI module (subroutine STRTYP_GAS_REL), reported by Shigeyoshi Yamamoto.
+- Bugfix in polarizable embedding (the printed electronic part of the energy was not corrected with PE contributions).
+- Fixed the formatting of the carbon potential in the file basis_ecp/ECPCE2SO.
+
+Performance improvements:
+
+- New much more efficient quaternion diagonalization routine using openMP for performance. Contributor: Hans Joergen Aa. Jensen.
+- New much more efficient complex diagonalization routine using openMP for performance. Contributor: Hans Joergen Aa. Jensen.
+- Use MPI_REDUCE for adding Fock matrix contributions from MPI worker nodes on MPI master node. Contributor: Hans Joergen Aa. Jensen.
+- Save memory in direct Fock matrix constructions, now >13000 basis functions can be run in 32GB RAM. Contributor: Hans Joergen Aa. Jensen.
+  (With these performance improvements, a 4c HF test calculation with 13000 basis functions, 3300 postive energy orbitals (6600 in total)
+   has been run on Titan at ORNL with 800 nodes, each with 8 openMP threads, at 1h59m-2h06m per HF iteration.)
+
+Framework changes:
+
+- Allow to compile with OpenMP support.
+- Update in CMake framework: pass compilers as cmake variables, not as environment variables.
+
+-----------------------------------------------------------------------------------------------------
 
 17.0 (2017-12-12)
 -----------------

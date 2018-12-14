@@ -264,6 +264,7 @@ class pam_enviroment:
             'cavity.npz', # for restart of cavity
             'PEDRA.OUT',  # cavity formation summary
             'PCM_mep_asc' # Converged MEP and ASC @cavity points
+            'pcmsolver.inp',
             'POTENTIAL.INP'
             ]
 
@@ -520,9 +521,9 @@ class pam_enviroment:
         from optparse import OptionParser, OptionGroup
 
         usage = \
-            """%prog [options] --inp=*.inp --mol=*.mol
-   or: %prog [options] --inp=*.inp --mol=*.xyz
-   or: %prog [options] --fullrestart=ARCHIVE.tgz [--inp=*.inp] [--mol=*.mol | --mol=*.xyz]
+            """%prog [options] --inp=*.inp --mol=*.mol [--pcm=*.pcm] [--pot=*.pot]
+   or: %prog [options] --inp=*.inp --mol=*.xyz [--pcm=*.pcm] [--pot=*.pot]
+   or: %prog [options] --fullrestart=ARCHIVE.tgz [--inp=*.inp] [--mol=*.mol | --mol=*.xyz] [--pcm=*.pcm] [--pot=*.pot]
 Options are also read from ~/.diracrc"""
 
         parser = OptionParser(usage)
@@ -544,8 +545,7 @@ Options are also read from ~/.diracrc"""
             action='store',
             dest='dest_fullrestart',
             help="""restart from files within ARCHIVE.tgz;
-                    no \"--inp\" and \"--mol\" specifications needed.
-                 """,
+                           old input files from ARCHIVE.tgz are reused unless new input files are provided with one or more of \"--inp\", \"--mol\", \"--pcm\", and \"--pot\".""",
             metavar='ARCHIVE.tgz',
             )
         parser.add_option_group(group)
@@ -600,7 +600,6 @@ Options are also read from ~/.diracrc"""
                   """,
             metavar='INTEGER',
             )
-
         group.add_option(
             '--mb',
             type='int',
@@ -611,7 +610,6 @@ Options are also read from ~/.diracrc"""
                   """,
             metavar='INTEGER',
             )
-
         group.add_option(
             '--gb',
             type='float',
@@ -643,8 +641,6 @@ Options are also read from ~/.diracrc"""
                   """,
             metavar='INTEGER',
             )
-        parser.add_option_group(group)
-
         group.add_option(
             '--ag',
             type='float',
@@ -675,7 +671,7 @@ Options are also read from ~/.diracrc"""
             dest='dest_mpirun',
             default=self.mpirun,
             help='set the MPI run command [default: %default]',
-                 metavar='STRING')
+            metavar='STRING')
 
         group.add_option(
             '--mpiarg',
@@ -683,8 +679,11 @@ Options are also read from ~/.diracrc"""
             action='store',
             dest='dest_mpiarg',
             default=None,
-            help='''additonal options passed on to the MPI launcher
-                    useful arguments could be:                  -envall (for MPICH2, Intel MPI)                 -x \"PATH LD_LIBRARY_PATH\" (for Open MPI)                 which will allow the user to pass the present environment settings from the head node to the scratch nodes.''',
+            help="""additonal options passed on to the MPI launcher;
+                            useful arguments could be:
+                            -envall (for MPICH2, Intel MPI)
+                            -x \"PATH LD_LIBRARY_PATH\" (for Open MPI)
+                            which will allow the user to pass the present environment settings from the head node to the scratch nodes.""",
             metavar='STRING',
             )
 
@@ -929,7 +928,7 @@ Options are also read from ~/.diracrc"""
                 self.dirac_mpi_command = self.dirac_mpi_command + str(self.mpiarg) + ' ' 
 
         # The CMAKE variable ENABLE_MPI is "True" for "setup --mpi", otherwise it is "False".
-        if "@ENABLE_MPI@" == "True":
+        if "@ENABLE_MPI@" == "True" or "@ENABLE_MPI@" == "ON":
             # always is parallel run if ENABLE_MPI=ON
             self.parallel_run = True
             if os.environ.get('LOCAL_SCRATCH_BOOL'):
@@ -1231,7 +1230,8 @@ Options are also read from ~/.diracrc"""
                 tar.extract(tar_member,path=self.scratch_dir)
             tar.close()
 
-        # copy input files
+    # copy input files
+    # Note: this copy is after "restarting stuff" such that specified input files replace those from a restart file
         if self.input_file_molecule:
             if self.xyz_molecule_input:
                 self.copy_with_replacement(self.input_file_molecule, os.path.join(self.scratch_dir, 'MOLECULE.XYZ'))
@@ -1245,7 +1245,6 @@ Options are also read from ~/.diracrc"""
             print('  No input file provided; pam will assume that it is obtained from the restart file.')
         if self.input_file_potential:
             self.copy_with_replacement(self.input_file_potential, os.path.join(self.scratch_dir, 'POTENTIAL.INP'))
-
         if self.input_file_pcm:
             self.copy_with_replacement(self.input_file_pcm, os.path.join(self.scratch_dir, 'pcmsolver.inp'))
             sys.path.append('@PCMSOLVER_PARSE_DIR@')
@@ -1669,7 +1668,7 @@ Options are also read from ~/.diracrc"""
         if not is_windows():
             self.dirac_p = subprocess.Popen(shlex.split(self.dirac_cmd),
                            stdin=subprocess.PIPE, stdout=self.f, stderr=subprocess.PIPE,
-                                            universal_newlines=True, preexec_fn=os.setsid)
+                                            universal_newlines=True)
         else:
         # Windows: provide exec command with "" to fix =/+ characters in the full path
             self.dirac_cmd='"'+self.dirac_cmd+'"'

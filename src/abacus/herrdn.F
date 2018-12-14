@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -515,9 +515,8 @@ C     JHS The following variables come from a common block and are thus kept in 
       CHARACTER*72 TTITLE(2)
       CHARACTER*11 SYMTXT
       CHARACTER*15 CLASS
-      DIMENSION IFXYZ(3)
-      LOGICAL ANG, ADDSYM
-      integer blk
+      INTEGER   IFXYZ(3), blk
+      LOGICAL   ANG, ADDSYM
 
 #include "molinp.h"
 #include "ccom.h"
@@ -3092,9 +3091,9 @@ C     Eg.: 1..20
 C
       CALL RDLINE(LUINFO)
       NUCIJ = 1
-      CALL NUMLST_with_work(MLINE(NMLINE)(1:72),
+      CALL NUMLST(MLINE(NMLINE)(1:72),
      &        ILIST,NFAMEXP(IC),1,NFAMEXP(IC),
-     &     1,NUCIJ,TMP,MXFAMEXP)
+     &     1,NUCIJ)
       NRCIJ = NUCIJ
       DO 300 L = 1, NUCIJ
          ALPHA(L) = FAMEXP(ILIST(L), IC)
@@ -3868,21 +3867,24 @@ C
                ITYP = NHKOFF(J)
                IPSTRT = IPRIM + 1
                IPRIM  =  IPRIM + NNUC
-               IF (SEG(KBCH)) THEN
+               IF (UNCONT) THEN
+                  CHRSEG = 'uncontrac.'
+                  NNRC = 0
+               ELSE IF (SEG(KBCH)) THEN
                   CHRSEG = 'seg. cont.'
                ELSE
                   CHRSEG = 'gen. cont.'
                END IF
                IF (NNRC .LE. 5) THEN
-                  FMTA='(/2X,A4,A2,1X,A4,I4,1P,D18.10,0P,2X,5F8.4)'
-!                 FMTB='(/2X,A4,3X,   A4,I4,1P,D18.10,0P,2X,5F8.4)'
-                  FMTC='( 3X,A10,        I4,1P,D18.10,0P,2X,5F8.4)'
-                  FMTD='(13X,            I4,1P,D18.10,0P,2X,5F8.4)'
+                  FMTA='(/2X,A4,A2,1X,A4,I5,1P,D18.10,0P,2X,5F8.4)'
+!                 FMTB='(/2X,A4,3X,   A4,I5,1P,D18.10,0P,2X,5F8.4)'
+                  FMTC='( 3X,A10,        I5,1P,D18.10,0P,2X,5F8.4)'
+                  FMTD='(13X,            I5,1P,D18.10,0P,2X,5F8.4)'
                ELSE
-          FMTA='(/2X,A4,A2,1X,A4,I4,1P,D18.10,0P,2X,5F8.4/,(37X,5F8.4))'
-!         FMTB='(/2X,A4,3X,   A4,I4,1P,D18.10,0P,2X,5F8.4/,(37X,5F8.4))'
-          FMTC='( 3X,A10,        I4,1P,D18.10,0P,2X,5F8.4/,(37X,5F8.4))'
-          FMTD='(13X,            I4,1P,D18.10,0P,2X,5F8.4/,(37X,5F8.4))'
+          FMTA='(/2X,A4,A2,1X,A4,I5,1P,D18.10,0P,2X,5F8.4/,(37X,5F8.4))'
+!         FMTB='(/2X,A4,3X,   A4,I5,1P,D18.10,0P,2X,5F8.4/,(37X,5F8.4))'
+          FMTC='( 3X,A10,        I5,1P,D18.10,0P,2X,5F8.4/,(37X,5F8.4))'
+          FMTD='(13X,            I5,1P,D18.10,0P,2X,5F8.4/,(37X,5F8.4))'
                END IF
                DEG = '  '
                DO 400 L = 1, NDEG
@@ -3955,6 +3957,11 @@ C        is reversed !]
 
 C
       CALL HEADER('Contracted Orbitals',1)
+
+      IF (UNCONT) THEN
+         WRITE(LUPRI,'(A)') ' All orbitals are uncontracted.'
+         RETURN
+      END IF
       IF(ICLS.EQ.1) THEN
         IPRIMD  = 0
         IORBD   = 0
@@ -4015,7 +4022,7 @@ C
       IF (IPREAD .GT. 0) THEN
          WRITE (LUPRI,'(/)')
       END IF
- 1040 FORMAT(I4,2X,A4,A2,2X,A4,24I4)
+ 1040 FORMAT(I5,2X,A4,A2,2X,A4,24I4)
  1050 FORMAT(I4,2X,A4,4X,A4,12I6)
 C
  4242 CONTINUE
@@ -4657,6 +4664,7 @@ C
 C
 #include "memint.h"
       NCOOR = 3*NUCDEP
+      NWARN = 0
 C
 C     *********************************
 C     ***** Cartesian Coordinates *****
@@ -6732,7 +6740,7 @@ C   .... prevent segmentation of L shells...
             NDEG  = NUCDEG(ICENT)
             KBCH  = JBLOCK
 CMI         ... charge, highest angular momentum
-!          skip AMFI contributions with l > 5 (h, i, ... functions)
+!          skip AMFI contributions with l > 4 (h, i, ... functions)
 !          stefan - nov 2011: simple fix/approximation for the time
 !                             being...
            imax_l = min(IQM(I)-1,4)
