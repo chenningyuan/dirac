@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -85,6 +85,14 @@ end interface
     call stopwatch(1,numnod)
   endif
 #else
+! check for parallel run with sequential executable 
+! this may happen if the user has set --mpi in the .diracrc file
+! we should then quit and report an error message
+  iparex = get_environment_integer('DIRPAR',0)
+  if (iparex .ne. 0) then
+     print*, ' This is a serial executable, do not set --mpi in pam or .diracrc '
+     call quit (' Attempted parallel run with serial executable')
+  end if
   call stopwatch(1,numnod)
 #endif
   iparcal = 0
@@ -132,10 +140,10 @@ end interface
   if (.not. parcal) then
 #endif
     call legacy_lwork_set(WORK_memsize)
-    print '(a,i0,a,f10.2,a,f6.3,a,$)', 'DIRAC serial starts by allocating ',WORK_memsize, &
+    print '(a,i0,a,f10.2,a,f10.3,a,$)', 'DIRAC serial starts by allocating ',WORK_memsize, &
     ' words (',DFLOAT(WORK_memsize)/DFLOAT(2**17),' MB - ', DFLOAT(WORK_memsize)/DFLOAT(2**27),' GB)' ,' of memory'
     if (maxsize.gt.0) then
-       print '(a,i0,a,f10.2,a,f6.3,a)', '    out of the allowed maximum of ',  &
+       print '(a,i0,a,f10.2,a,f10.3,a)', '    out of the allowed maximum of ',  &
           maxsize,' words (',DFLOAT(maxsize)/DFLOAT(2**17),' MB - ',DFLOAT(maxsize)/DFLOAT(2**27),' GB)'
     else
        print '(a)', 'DIRAC serial has no limitations in place for the amount of dynamically allocated memory'
@@ -190,7 +198,7 @@ end interface
      CALL FLSHFO(LUPRI)
   endif
 #ifdef VAR_MPI
-  if (iparcal .eq. 1 ) call mpixfinalize()
+  if (iparex .gt. 0) call mpixfinalize()
 #endif
 
  call allocator_report(mytid,0)

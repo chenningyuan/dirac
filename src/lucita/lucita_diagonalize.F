@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -53,7 +53,7 @@ C
 #if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER   ISTAT(MPI_STATUS_SIZE)
       DIMENSION LU1LIST(*), LU2LIST(*), LU3LIST(*)
       DIMENSION LU4LIST(*), LU5LIST(*), LUCLIST(*)
       DIMENSION LU7LIST(*), LU6LIST(*)
@@ -3329,8 +3329,8 @@ C     CALL COPVCD(LU3,LU4,VEC1,1,LBLK)
 #if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
-       DIMENSION ISTAT(MPI_STATUS_SIZE)
-       INTEGER STATUS_ARRAY(MPI_STATUS_SIZE,NUMNOD), IERR
+       INTEGER   ISTAT(MPI_STATUS_SIZE)
+       INTEGER   STATUS_ARRAY(MPI_STATUS_SIZE,NUMNOD), IERR
 #endif
        DIMENSION VEC1(*),VEC2(*)
        DIMENSION RNRM(MAXIT,NROOT),EIG(MAXIT,NROOT)

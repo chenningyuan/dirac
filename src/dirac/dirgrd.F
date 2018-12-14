@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -288,8 +288,7 @@ c        ... Calculate and add correction.
          allocate(cmo(n2bbasxq))
          cmo = 0.0d0
          call opnfil(lucoef, 'DFCOEF', 'OLD', 'xc molecular gradient')
-         call reacmo_no_work(lucoef, 'DFCOEF', 
-     &                       cmo, dummy, dummy, dummy, 3)
+         call reacmo(lucoef, 'DFCOEF',cmo, dummy, dummy, dummy, 3)
          close(lucoef, status='keep')
        
          allocate(dmat(n2bbasxq))
@@ -353,8 +352,7 @@ C
       IF (NASHT.GT.0) THEN
 C
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3,
-     &               WORK,KFREE,LFREE)
+         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3)
          CLOSE(LUCOEF,STATUS='KEEP')
 C
 C
@@ -407,8 +405,7 @@ C
 C
             KCMO = KFVAO
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
-            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3,
-     &                  WORK,KFREE,LFREE)
+            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3)
             CLOSE(LUCOEF,STATUS='KEEP')
 C
             IF (NISH(I).EQ.0) GOTO 20
@@ -447,8 +444,7 @@ C
       CALL DZERO(WORK(KFCAO),N2BBASXQ)
       KCMO = KFVAO
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3,
-     &            WORK,KFREE,LFREE)
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3)
       CLOSE(LUCOEF,STATUS='KEEP')
       IF ( IPRINT .GE. 10 ) THEN
          DO I=1,NFSYM
@@ -562,8 +558,7 @@ C
       KDVAO = KDAO + N2BBASXQ
       KCMO  = KDVAO + N2BBASXQ
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3,
-     &            WORK,KFREE,LFREE)
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Get density matrix
@@ -690,8 +685,7 @@ C
 C     Contruct density matrix
 C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3,
-     &            WORK,KFREE,LFREE)
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3)
       CLOSE(LUCOEF,STATUS='KEEP')
       DO IMAT = 1,NFMAT
          IBIT = IBTSHL(1,IMAT-1)
@@ -2612,8 +2606,7 @@ C
       CALL QENTER('GETDSO')
       CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GETDSO')
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3,
-     &            WORK,KFREE,LFREE)
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Get total density matrix

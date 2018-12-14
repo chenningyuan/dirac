@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -55,6 +55,9 @@ C
 #include "cbihr1.h"
 #include "cbiher.h"
 #include "nuclei.h"
+
+      CHARACTER CPUTID*12, WALLTID*12, SECTID*12
+
       CALL QENTER('ONEGEN')
 C.....With modified Hamiltonian this routine is skipped for now
       IF(MDIRAC) GOTO 20
@@ -66,6 +69,7 @@ C     Loop through list of class labels; calculate only the active ones(CLSCAL)
 C     =========================================================================
 C
       IF (NOSMLV) CALL NOSSNUCATT
+      IF (IPRONE .GT. 0) CALL GETTIM(CPU0,WALL0)
       DO 10 I = 1,NPRPCLS
       IF(.NOT.CLSCAL(I)) GOTO 10
         IF (IPRONE.GE.2) WRITE(LUPRI,'(/2A,2X,A)')
@@ -149,6 +153,13 @@ C
    10 CONTINUE
 C
       CLOSE(LU1INT,STATUS='KEEP')
+      IF (IPRONE .GT. 0) THEN
+         CALL GETTIM(CPUE,WALLE)
+         CPUTID  = SECTID(CPUE-CPU0)
+         WALLTID = SECTID(WALLE-WALL0)
+         WRITE(LUPRI,'(/4A)')
+     &  'Total time used in ONEGEN (CPU) ',CPUTID,' and (WALL) ',WALLTID
+      END IF
  20   CONTINUE
       CALL QEXIT('ONEGEN')
       RETURN
@@ -1718,7 +1729,7 @@ C
      &                    STOL(IC),IPRINT,EIG,WORK,LWORK)
               NDEL  = NBBAS(IREP,IC) - NEFF
               NLINDEP=NLINDEP+NDEL
-              WRITE(LUPRI,'(3X,A1,3X,A3,3X,A,I10)')
+              WRITE(LUPRI,'(3X,A1,3X,A3,3X,A,I10,38X,A,E10.2)')
      &           COMP(IC),REP(IREP),'* Deleted: ',NDEL,
      &          ' *Smin: ',EIG(NBBAS(IREP,IC))
             ENDIF
@@ -1928,14 +1939,11 @@ C
 C
 C     Memory allocation
 C
-      CALL MEMGET('REAL',KFTRI ,NZ*NNBBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KONEIN,   NNBBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KFIRST,NZ        ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FTRI',KFTRI ,NZ*NNBBASX,WORK,KFREE,LFREE)
 C
 C     ****** Construct Fock matrix ******
 C
-      CALL FREEM1(FOCK,WORK(KFTRI),WORK(KONEIN),WORK(KFIRST),
-     &              WORK(KFREE),LFREE,IPRINT)
+      CALL FREEM1(FOCK,WORK(KFTRI),WORK(KFREE),LFREE,IPRINT)
 
 C     Memory deallocation
       CALL MEMREL('FREEMT.FREEM1',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -1946,7 +1954,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck freem1 */
-      SUBROUTINE FREEM1(FOCK,FTRI,OP1INT,FIRST,WORK,LWORK,IPRINT)
+      SUBROUTINE FREEM1(FOCK,FTRI,WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
 C     Driver for the construction of the one-electron free particle matrix
@@ -1995,31 +2003,31 @@ C
 #include "dcbham.h"
 #include "dcbgen.h"
 C
-      LOGICAL FIRST(NZ)
-      DIMENSION FOCK(N2BBASX,NZ),FTRI(NNBBASX,NZ),OP1INT(NNBBASX),
+      LOGICAL FIRST(4)
+      DIMENSION FOCK(N2BBASX,NZ),FTRI(NNBBASX,NZ),
      &          WORK(LWORK)
       CALL QENTER('FREEM1')
 
 C
 C     Initialize
 C
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
+      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
-      CALL LSET(NZ,.TRUE.,FIRST)
+      FIRST(1:4) = .TRUE.
 C
-C     Beta matrix
+C     Beta matrix (FOCK is used as scratch space)
 C     ===========
 C
       IOP = IPBETAMT
       CALL PRPMAO(LU1INT,IOP,.TRUE.,NNBBASX,FTRI,
-     &            OP1INT,FIRST,IPRHAM)
+     &            FOCK,FIRST,IPRHAM)
 C
-C     Kinetic energy
+C     Kinetic energy (FOCK is used as scratch space)
 C     ==============
 C
       IOP = IPKINERG
       CALL PRPMAO(LU1INT,IOP,.TRUE.,NNBBASX,FTRI,
-     &            OP1INT,FIRST,IPRHAM)
+     &            FOCK,FIRST,IPRHAM)
 C
       CLOSE(LU1INT,STATUS = 'KEEP')
 C
@@ -2167,7 +2175,7 @@ C   PAMIOU: LUTMAT
       logical              :: TOBE, FNDLAB, FNDLAB12, gmotra_case3
       logical              :: is_2c_rel_run
       integer              :: is_defining_h1mat
-      integer              :: ndim_lowmat
+      integer              :: ndim_lowmat,idum
       integer              :: lulmat = 99
       character(len=12)    :: flabel
       real(8), allocatable :: tmat_mmf(:)
@@ -2180,6 +2188,7 @@ C   PAMIOU: LUTMAT
       real(8), allocatable :: pctm_aoosoc(:)
       logical              :: no1esystem_aoosoc
 #endif
+      real(8)              :: timstr(2), timend(2), dum
 
       CALL QENTER('GMOTRA')
 
@@ -2243,9 +2252,9 @@ C     ==============================================
         call readi(lulmat,1,ndim_lowmat)
         call readt(lulmat,ndim_lowmat,work(kvmat))
       else
-        CALL TIMER('START ',TIMSTR,TIMEND)
+        CALL TIMER2('START ',TIMSTR,TIMEND)
         CALL LOWDIN(WORK(KVMAT),WORK(KFREE),LFREE,IPRHAM)
-        CALL TIMER('Lwdn_a',TIMSTR,TIMEND)
+        CALL TIMER2('Lwdn_a',TIMSTR,TIMEND)
 
 !       save LOWDIN matrix on file
         ndim_lowmat = 0
@@ -2312,7 +2321,7 @@ C
 !       --------------------------------------------
       ELSE IF(is_2c_rel_run)THEN
 !
-        CALL TIMER('START ',TIMSTR,TIMEND)
+        CALL TIMER2('START ',TIMSTR,TIMEND)
 
         TOBE=.FALSE.
         IF(GOFAST) THEN
@@ -2480,7 +2489,7 @@ C.........reset NEWPRP to re-initialize AOPROPER
 
         ENDIF ! restart X2C or re-do X2C switch
 
-        CALL TIMER('mk_h2c',TIMSTR,TIMEND)
+        CALL TIMER2('mk_h2c',TIMSTR,TIMEND)
 
 !
 !       case 2 - step b: generate Lowdin canonical orthonormalization matrix in 2c-mode
@@ -2533,9 +2542,9 @@ C.........reset NEWPRP to re-initialize AOPROPER
 
           CALL MEMGET('REAL',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
 C.........do canonical orthonormalization
-          CALL TIMER('START ',TIMSTR,TIMEND)
+          CALL TIMER2('START ',TIMSTR,TIMEND)
           CALL LOWDIN(WORK(KTMAT),WORK(KFREE),LFREE,IPRHAM)
-          CALL TIMER('Lwdn_b',TIMSTR,TIMEND)
+          CALL TIMER2('Lwdn_b',TIMSTR,TIMEND)
 
 !         save new 2c-LOWDIN matrix on file
           call opnfil(lulmat,'LOWDMAT','UNKNOWN','gmotra')
@@ -2715,7 +2724,7 @@ C
             cmo_aoosoc  = 0.0d0
 !           read coefficients
             call opnfil(lucoef,'DFCOEF','OLD','aoosoc')
-            call reacmo_no_work(lucoef,'DFCOEF',cmo_aoosoc,xx,ii,jj,2)
+            call reacmo(lucoef,'DFCOEF',cmo_aoosoc,dum,idum,dum,2)
             close(lucoef,status='keep')
 
 !           generate density matri(x/ces)
@@ -2875,7 +2884,7 @@ C
           tbuf_mmf    = 0
           !> read 2c-mos
           call opnfil(lucoef,'DFCOEF','OLD','mmfmos')
-          call reacmo_no_work(lucoef,'DFCOEF',cmo_mmf,xx,ii,jj,2)
+          call reacmo(lucoef,'DFCOEF',cmo_mmf,dum,idum,dum,2)
           close(lucoef,status='keep')
           !> density matrix/ces
           call denmat(tbuf_mmf,cmo_mmf,iprham)
@@ -2905,7 +2914,7 @@ C
      &         form='unformatted',position='rewind')
           call write_fock_matrices_saao_basis_x2c(
      &                                            tbuf_mmf,
-     &                                            len_fmat, 1,
+     &                                            len_fmat, 1,'Fock',
      &                                            lux2c, 0)
 !         save F2c-ll part
           close(lux2c, status='keep')
@@ -2914,7 +2923,7 @@ C
      &         form='unformatted',position='rewind')
           call write_fock_matrices_saao_basis_x2c(
      &                                            tmat_mmf,
-     &                                            len_fmat, 1,
+     &                                            len_fmat, 1,'F[2]',
      &                                            lux2c, 0)
           close(lux2c, status='keep')
           deallocate(tmat_mmf)
@@ -2937,7 +2946,7 @@ C
      &                                             tmat_mmf,
      &                                             len_fmat, 1,
      &                                             lux2c, 0,
-     &                                             .false.,scratch_mmf)
+     &                                             scratch_mmf)
             close(lux2c, status='keep')
             call read_normalized_2e_soc(
      &                                  tbuf_mmf,
@@ -4261,8 +4270,8 @@ C
       LOGICAL DOINT(2,2), FINISH, ISONBSSMAT, WEHAVE
       CHARACTER*4 OMITVNUC
       CHARACTER*8 BNCRLAB
-      DIMENSION WORK(LWORK),FMAT(*)
-      logical fndlab12
+      REAL*8    WORK(LWORK),FMAT(*)
+      logical   fndlab12
       character*12 flabel
 #include "dcbgen.h"
 #include "dgroup.h"
@@ -4273,12 +4282,14 @@ C
 #include "cbiher.h"
 #include "cbihr1.h"
 #include "cbisol.h"
+
+      real(8)  :: TIMSTR(2), TIMEND(2)
 C
       CALL QENTER('BNCORR')
 c
 c     Start timer
 c
-      TIMSTR = SECOND()
+      CALL TIMER2('START',TIMSTR,TIMEND)
 c
 #include "memint.h"
 
@@ -4366,6 +4377,8 @@ c
          IF (.not.NOORBT(I)) Z = MAX(Z,CHARGE(I)) ! skip point charges
       ENDDO
 
+C    ... find maximum number of shells we need to run over
+C        and return number in NSHELL
       CALL BNCOR1(GNU,ZEFF,0,Z,NSHELL,0,DUMMY,NUCIND,.TRUE.)
 
 c   ... loop over shells
@@ -4375,9 +4388,9 @@ c       in the zeroth run (N=0) by using a diffuse Gaussian (see BNCOR1)
 c
       IF (IPRINT .GE. 1) THEN
          WRITE(LUPRI,'(/4X,A/4X,A//14X,A/14X,A)')
-     &' *** BNCORR for < X_A | (-Zeff*G(a,r_C))/r_C | X_B > ***',
+     &' *** BNCORR for < X_A | (Qeff*G(a,r_C))/r_C | X_B > ***',
      &'     X=L,S ; G(a,r_C)=exp(-a*r_C^2)',
-     &      ' Nucleus    Charge=(-Zeff)   Exponent(a)',
+     &      ' Nucleus   shell charge=Qeff  Exponent(a)',
      &      '-----------------------------------------'
       ENDIF
       DO N = 0,NSHELL
@@ -4486,10 +4499,8 @@ C     Memory deallocation
 C
 c     Stop timer
 c
- 999  TIMEND = SECOND()
-      TIME   = TIMEND - TIMSTR
-      IF (IPRINT.GE.2)
-     &  CALL TIMTXT('>>> Time used in BNCORR is',TIME,LUPRI)
+ 999  IF (IPRINT.GE.2)
+     &  CALL TIMER2('>>> Time used in BNCORR is',TIMSTR,TIMEND)
       CALL QEXIT('BNCORR')
       RETURN
       END
@@ -4913,7 +4924,7 @@ C
       CALL SELFRAG(WORK(KQ),NVECS,WORK(KE),WORK(KI),
      &             NFRAG,NSTR,PRJFIL,PROOWN,NPRJNUC,IOPT,KVEC,
      &             WORK(KCMO),WORK(KEIG),WORK(KIBE),IOFF,
-     &             WORK,KFREE,LFREE)
+     &             KDUM,WORK,KFREE,LFREE)
 C
 C     Collect fragment info
 C      
@@ -5599,7 +5610,9 @@ C figure this one out (LV).
 C
       IOFT = 1
       IOFV = 1
+      N2TMT   = 0
       DO 10 I = 1,NFSYM
+        N2TMT = N2TMT + NFBAS(I,0)*NORB(I)*NZT
         IF(NORB(I).EQ.0) GOTO 10
         IOFTB = I2BASX(I,I) + 1
         CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
@@ -5752,7 +5765,9 @@ C
            CALL HEADER('LINSYM: Jz_LL eigenvalues / eigenvectors',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
      &     '*** Fermion corep ',I,'/',NFSYM
-           write(lupri,*) (EIG(IEIGE+II),II=0,NL-1)
+           DO II = 1,NL
+             WRITE(LUPRI,*) II,EIG(IEIGE+II-1)
+           ENDDO
            CALL PRQMAT(WORK(KVLL),NL,NL,NL,NL,1,
      &          IPQTOQ(1,0),LUPRI)
            CALL FLSHFO(LUPRI)
@@ -5826,8 +5841,10 @@ C
           IF (IPRHAM.GE.5) THEN
            CALL HEADER('LINSYM: Jz_SS eigenvalues/eigenvectors',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
-     &     '*** Fermion corep ',I,'/',NFSYM
-           write(lupri,*) (EIG(IEIGP+II),II=0,NS-1)
+     &          '*** Fermion corep ',I,'/',NFSYM
+           DO II = 1,NS
+             WRITE(LUPRI,*) II,EIG(IEIGP+II-1)
+           ENDDO
            CALL PRQMAT(WORK(KVSS),NS,NS,NS,NS,1,
      &          IPQTOQ(1,0),LUPRI)
            CALL FLSHFO(LUPRI)
@@ -6817,6 +6834,7 @@ C     when there is no subblock ... allows single code
       N2TMT   = 0
       N2TMOTQ = 0      
       ICOFF   = 0
+      IEOFF   = 0
       IVOFF   = 0
       ITEFF = 1
       DO 10 IFRP =  1,NFSYM
@@ -7289,7 +7307,8 @@ c        ... Get charges and exponents for the electrons in this group
             n_charge = NINT(CHARGE(I))
             n_exp = -1 ! signal the routine to provide the number of exponents only
             CALL Read_screening_parameters
-     &           (n_charge,n_exp,fit_exp,fit_coef)
+     &           (n_charge,n_exp,DUMMY,DUMMY)
+!    &           (n_charge,n_exp,fit_exp,fit_coef)
             Allocate (fit_exp(n_exp))
             Allocate (fit_coef(n_exp))
             CALL Read_screening_parameters 

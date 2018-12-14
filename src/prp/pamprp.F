@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,13 +16,13 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://www.diracprogram.org
-!dirac_copyright_end
 
 C FILE    : pamprp.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pamprp */
       SUBROUTINE PAMPRP()
+      use eom_driver , only: number_of_states
 C***********************************************************************
 C
 C     Driver for PAMPRP_1.
@@ -42,6 +41,8 @@ C
 #include "dcbprp.h"
 C
       CHARACTER WF*4
+      INTEGER state 
+      INTEGER J 
 C
       CALL QENTER('PAMPRP')
 C
@@ -80,13 +81,27 @@ C
             CALL SETDC2(0)
          ELSE IF (WF .EQ. 'CCSD') THEN
             CALL SETDC2(0)
+         ELSE IF (WF .EQ. 'EOM ') THEN
+            CALL SETDC2(0)
          ELSE
             CALL QUIT('*** ERROR in PAMPRP *** ' //
      &           'Unknown wave function: ' // WF)
          END IF
          CALL TITLER('Properties for ' // WF // ' wave function',
      &        '*',110)
-         CALL PAMPRP_1(WF)
+
+         IF (WF .EQ. 'EOM ') THEN 
+           CALL number_of_states(state)
+             write(*,*)'# states', state
+            do j = 1, state
+
+             CALL PAMPRP_1(WF, j)
+
+            enddo 
+
+         ELSE
+           CALL PAMPRP_1(WF,1)
+         ENDIF
       END DO
 C
       CALL QEXIT('PAMPRP')
@@ -94,7 +109,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pampr1 */
-      SUBROUTINE PAMPRP_1(WF)
+      SUBROUTINE PAMPRP_1(WF,STATE)
 C***********************************************************************
 C
 C     NOTE
@@ -124,9 +139,6 @@ C***********************************************************************
 
       use memory_allocator
       use dirac_cfg
-#ifdef MOD_OPENRSP
-      use openrsp_main
-#endif
       use fde_mod
 
 #include "implicit.h"
@@ -144,6 +156,8 @@ C
       real(8), allocatable :: WORK(:)
       CHARACTER WF*4
       CHARACTER WFEXPORT*4
+C     INTEGER, OPTIONAL :: STATE
+      INTEGER :: STATE
 C
       CALL QENTER('PAMPRP_1')
 C
@@ -173,7 +187,7 @@ C***********************************************************************
 C
       IF (DOEXP) THEN
          CALL MEMGET('REAL',KEXP,NEXPP,WORK,KFREE,LFREE)
-         CALL PRPEXP(WF,WORK(KEXP),WORK(KFREE),LFREE)
+         CALL PRPEXP(WF,WORK(KEXP),WORK(KFREE),LFREE,STATE)
       ELSE
          KEXP = KFREE
       END IF
@@ -271,14 +285,6 @@ C
          call fde_export_to_file(wf)
       END IF
 
-#ifdef MOD_OPENRSP
-      if (dirac_cfg_openrsp) then
-!       main openrsp driver
-        call openrsp_driver(work(kfree), lfree)
-!       initialize dirac interface
-        call init_dirac_interface()
-      end if
-#endif
 
 C
       call dealloc(WORK)
@@ -4716,6 +4722,101 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_PRP_NMQM */
+      SUBROUTINE DEF_PRP_NMQM(LTRPP,NTRPP,MAXTRP,IPRINT)
+C***********************************************************************
+C
+C     Define operator for nuclear magnetic quadruple moment constant
+C
+C     Written by Malaya K. Nayak July 19 2018
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "mxcent.h"
+#include "nuclei.h"
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION PFAC(3)
+C
+      logical, allocatable :: DOATOM(:)
+C
+      allocate(DOATOM(NUCIND))
+C     NMQM: INTTYP = 30 (cart. el. field grad. at indiv. nuclei)
+C     (-30: accept .SELECT specification)
+      CALL SETATM(DOATOM,NATOM,-30)
+      CALL DEF_PRP_NMQM1(DOATOM,LTRPP,NTRPP,MAXTRP,IPRINT)
+      deallocate(DOATOM)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck def_prp_nmqm1 */
+      SUBROUTINE DEF_PRP_NMQM1(DOATOM,LTRPP,NTRPP,MAXTRP,IPRINT)
+C***********************************************************************
+C
+C     Define nuclear quadruple moment interaction constant
+C
+C     Written by Malaya K. Nayak - July 19 2018
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "maxorb.h"
+      PARAMETER (D1 = 1.0D0, D3 = 3.0D0, D3INV = D1/D3)
+      CHARACTER PNAME*16, PLABEL(2)*8
+      DIMENSION PFAC(2)
+      LOGICAL   DOATOM(NUCIND)
+#include "dcbxpr.h"
+#include "dcbexp.h"
+C
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "chrxyz.h"
+#include "ibtfun.h"
+C
+      ITYP = 0
+CMKN  ZAVECTOR
+      IPTYP     = 7
+      NPCOMP    = 2
+      PFAC(1)   = -D3INV
+      PFAC(2)   = -D3INV
+CMKN  Factor and Sign included, see Eq. (19) of reference on TaN P,T-odd properties.
+      DO 100 IATOM = 1, NUCIND
+         IF (.NOT. DOATOM(IATOM)) GOTO 100
+                ICOOR1 = 2
+                ICOOR2 = 3
+            ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+            IOFF = 0
+            DO 300 IREPC = 0, MAXREP
+               IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+                  IOFF = IOFF + 1
+                  ITYP = ITYP + 1
+                  PNAME    = CHRXYZ(ICOOR2)//CHRNOS(IATOM)//'-MQM'
+                  PLABEL(1) = CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//'EFG'//
+     &                 CHRNOS(IATOM/10)//
+     &                 CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
+                  PLABEL(2) = CHRXYZ(ICOOR1-1)//CHRXYZ(ICOOR2)//'EFG'//
+     &                 CHRNOS(IATOM/10)//
+     &                 CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
+                  CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &                        INDXPR,ISYXPR,ITRXPR,IPRINT)
+                  CALL OP1IND('TRPINP NMQM',INDTRP,LTRPP,NTRPP,
+     &                        INDXPR,MAXTRP)
+      IF(IPRINT.GE.1) THEN
+      write(6,*)'NMQM DEF Testing',LTRPP,NTRPP,INDXPR,PRPNAM(INDXPR)
+      ENDIF
+               END IF
+ 300        CONTINUE
+ 200     CONTINUE
+ 100  CONTINUE
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck DEFINE_PVC_SHIELD */
       SUBROUTINE DEFINE_PVC_SHIELD()
 C=======================================================================
@@ -4756,7 +4857,6 @@ C-----------------------------------------------------------------------
 #include "nuclei.h"
 C
       logical, allocatable :: DOATOM(:)
-#include "memint.h"
 C
 C
       allocate(DOATOM(NUCIND))
@@ -5103,7 +5203,6 @@ C
       DIMENSION PFAC(3)
       logical, allocatable :: DOATOM(:)
 C
-#include "memint.h"
       allocate(DOATOM(NUCIND))
 C     NSTDIACGO: INTTYP = 38
 C     (-38: accept .SELECT specification)
@@ -6070,6 +6169,7 @@ C   IPDSUSC(1-6)...pqRM2H1, IPDSUSC(7-12)...pqRM2H2, IPDSUSC(13-18)...pqRM3H3,
 C   IPDSUSC(19-27)...pqRDUSLL, IPDSUSC(28-33)...pqRDSUSNL, IPDSUSC(34-39)...pqSUSCGO
 C
         CALL DZERO(SUSDIA,9)
+!gosia: it seems that here it is for ipdsusc(1) - ipdsusc(18):
         IJ = 0
         NEXPVALTERMS=3 ! RM2H1 + RM2H2 + RM2H3: second magnetic derivatives of the Dirac Hamiltonian
         DO K = 1, NEXPVALTERMS
@@ -6084,6 +6184,7 @@ C
         ENDDO
         ENDDO
 
+!gosia: it seems that here it is for ipdsusc(19) - ipdsusc(27):
 C -------------------------------------------------------
 C     RDSUSLL - first magnetic derivative of London magnetic dipole operator
 C     These are 9 tensor terms, of which nondiagonal
@@ -6154,7 +6255,7 @@ C ------------------------------------------------------------------------------
           DO J = I, 3 
            IJ = IJ + 1
            IJX = IPDSUSC(IJ) 
-           SUSDIA(IPTAX(J,2),IPTAX(I,2)) = EXPVAL(IJX) +
+           SUSDIA(IPTAX(J,2),IPTAX(I,2)) =  EXPVAL(IJX) +
      &     SUSDIA(IPTAX(J,2),IPTAX(I,2)) 
            SUSDIA(IPTAX(I,2),IPTAX(J,2)) =  
      &     SUSDIA(IPTAX(J,2),IPTAX(I,2))
@@ -6167,6 +6268,7 @@ C          ... save them only when e-p rotations are active!
          ENDDO
 
 C ... This is needed for compatibility with Dalton 
+!gosia: but suscom is not used in following print of one-electron exp.value!
          DO I = 1, 3
          DO J = I, 3 
           IJ = IJ + 1
@@ -6182,22 +6284,22 @@ C ... This is needed for compatibility with Dalton
         CALL HEADER('One-electron expectation values',-1)
         CALL POLPRI(SUSDIA,'   ',-2)
         AVERAG = (SUSDIA(1,1) + SUSDIA(2,2) + SUSDIA(3,3))/D3
-        WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+        WRITE (LUPRI,'(/,6X,A,F20.6)') ' Average value:',AVERAG
 
         CALL HEADER('Two-electron expectation values',-1)
         CALL POLPRI(SUS2EL,'   ',-2)
         AVERAG = (SUS2EL(1,1) + SUS2EL(2,2) + SUS2EL(3,3))/D3
-        WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+        WRITE (LUPRI,'(/,6X,A,F20.6)') ' Average value:',AVERAG
 
         CALL HEADER('Highest-order reorthonormalization',-1)
         CALL POLPRI(SUSFS,'   ',-2)
         AVERAG = (SUSFS (1,1) + SUSFS (2,2) + SUSFS (3,3))/D3
-        WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+        WRITE (LUPRI,'(/,6X,A,F20.6)') ' Average value:',AVERAG
 C
         CALL HEADER('Lowest-order reorthonormalization',-1)
         CALL POLPRI(SUSFSY,'   ',-2)
         AVERAG = (SUSFSY(1,1) + SUSFSY(2,2) + SUSFSY(3,3))/D3
-        WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+        WRITE (LUPRI,'(/,6X,A,F20.6)') ' Average value:',AVERAG
         CALL FLSHFO(LUPRI)
        ENDIF
       ENDIF
@@ -6277,7 +6379,7 @@ C    .... DALTON type of output
           CALL OUTPUT(SUSREL,1,3,1,3,3,3,1,LUPRI)
          ENDIF
          AVERAG = (SUSREL(1,1) + SUSREL(2,2) + SUSREL(3,3))/D3
-         WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+         WRITE (LUPRI,'(/,6X,A,F20.6)') ' Average value:',AVERAG
          IF (.NOT.XLR_SKIPEP) THEN
 C ....write out e-e and e-p contributions...
           CALL HEADER('e-p "diamagnetic" and e-e "paramagnetic"'//
@@ -6291,7 +6393,7 @@ C ....write out e-e and e-p contributions...
      &      (SUSREL_EP(1,1,1)+SUSREL_EP(2,2,1)+SUSREL_EP(3,3,1))/D3
           AVERAG_EP =
      &      (SUSREL_EP(1,1,2)+SUSREL_EP(2,2,2)+SUSREL_EP(3,3,2))/D3
-          WRITE(LUPRI,'(/,1X,A,F12.6,4X,A,F12.6)')
+          WRITE(LUPRI,'(/,1X,A,F20.6,4X,A,F20.6)')
      &    'e-p "diamagnetic" contribution:',AVERAG_EP,
      &    'e-e "paramagnetic":',AVERAG_EE
 !        ... write out MSUSCDIA diamagnetic terms for comparison
@@ -6301,7 +6403,7 @@ C ....write out e-e and e-p contributions...
            CALL OUTPUT(SUSDIA_EX,1,3,1,3,3,3,1,LUPRI)
            AVERAG_EX = 
      &      (SUSDIA_EX(1,1) + SUSDIA_EX(2,2) + SUSDIA_EX(3,3))/D3
-            WRITE (LUPRI,'(/,6X,A,F12.6)')
+            WRITE (LUPRI,'(/,6X,A,F20.6)')
      &      '.MSUSCDIA average value:',AVERAG_EX
           ENDIF
  
@@ -6312,7 +6414,9 @@ C        ... copy e-e "paramagnetic" into SUSREL and e-p "diamagnetic" into SUSD
           ELSE
 C          ... case with London atomic orbitals...
 C          ... copy the e-e "diamagnetic" contribution into SUSCOM
-C           CALL DCOPY(9,SUSREL_EP(1,1,2),1,SUSCOM,1)
+!gosia: line before was commented out, but then the diamagnetic contribution with LAO
+!is always printed as 0
+           CALL DCOPY(9,SUSREL_EP(1,1,2),1,SUSCOM,1)
           ENDIF
          ENDIF
       ENDDO
@@ -6352,6 +6456,8 @@ C
       IJ = 1
       DO 300 I = 1, 3
          DO 310 J = 1, I
+!gosia: todo check if these "magnetizability outputs 1/2/3" have sense with LAOs 
+!            (diasusc=0 for some keyword combination)
             PVAL1(IJ) = DIASUSC(I,J)
             PVAL2(IJ) = PARSUS(I,J)
             PVAL (IJ) = SUSTOT(I,J)
@@ -6419,13 +6525,16 @@ CMI   ...there are three defferent types of the magnetizability output
 CMI  ====================================================================
       IF (MAGOUT1) THEN
          AVE = (PVAL(1) + PVAL(2) + PVAL(3))/D3
-         WRITE (LUPRI,'(3(/,1X,A,3(F12.4,A)))')
-     &      ' Magnetizability:           ',    AVE,' (au), ',
-     &        SI*AVE*1.0D31,' (SI), ', CGS*AVE,' (cgs)',
-     &      ' Diamagnetic contribution:  ',DIAMAG,' (au), ',
-     &        SI*DIAMAG*1.0D31,' (SI), ',CGS*DIAMAG,' (cgs)',
-     &      ' Paramagnetic contribution: ',PARAMA,' (au), ',
-     &        SI*PARAMA*1.0D31,' (SI), ',CGS*PARAMA,' (cgs)'
+         CALL HEADER('Magnetizabilities        '
+     &             //'             au          '
+     &             //'             SI          '
+     &             //'            cgs',1)
+         WRITE (LUPRI,'(3(1X,A,3F20.4,/))')
+     &      ' Magnetizability:           ', AVE,SI*AVE*1.0D31,CGS*AVE,
+     &      ' Diamagnetic contribution:  ',DIAMAG,SI*DIAMAG*1.0D31,
+     &                                     CGS*DIAMAG,
+     &      ' Paramagnetic contribution: ',PARAMA,SI*PARAMA*1.0D31,
+     &                                     CGS*PARAMA
          WRITE (LUPRI,'(/,1X,A)') ' Magnetizability is spherical.'
       ELSE IF (MAGOUT2) THEN
          AVE = (PVAL(1) + PVAL(2) + PVAL(3))/D3
@@ -6437,9 +6546,11 @@ CMI  ====================================================================
             PER = (PVAL(2) + PVAL(3))/D2
          END IF
          ANI = PAR - PER
-         CALL HEADER('Magnetizabilities           '
-     &             //'         au          SI         cgs',1)
-         WRITE (LUPRI,'(6(1X,A,3F12.4,/))')
+         CALL HEADER('Magnetizabilities        '
+     &             //'             au          '
+     &             //'             SI          '
+     &             //'            cgs',1)
+         WRITE (LUPRI,'(6(1X,A,3F20.4,/))')
      &      ' Isotropic magnetizability: ',AVE,SI*AVE*1.0D31,CGS*AVE,
      &      ' Diamagnetic contribution:  ',DIAMAG,SI*DIAMAG*1.0D31,
      &                                     CGS*DIAMAG,
@@ -6461,9 +6572,11 @@ CMI  ====================================================================
          AVE  = (PVAL(1) + PVAL(2) + PVAL(3))/D3
          ANI1 = PVAL(3) - (PVAL(1) + PVAL(2))/D2
          ANI2 = PVAL(2) - (PVAL(1) + PVAL(3))/D2
-         CALL HEADER('Magnetizabilities           '
-     &             //'         au          SI         cgs',1)
-         WRITE (LUPRI,'(5(1X,A,3F12.4,/))')
+         CALL HEADER('Magnetizabilities        '
+     &             //'             au          '
+     &             //'             SI          '
+     &             //'            cgs',1)
+         WRITE (LUPRI,'(5(1X,A,3F20.4,/))')
      &      ' Isotropic magnetizability: ',AVE, SI*AVE*1.0D31, CGS*AVE,
      &      ' Diamagnetic contribution:  ',DIAMAG,SI*DIAMAG*1.0D31,
      &                                     CGS*DIAMAG,
@@ -6722,6 +6835,11 @@ C--------------------------------------------------------------------
            CALL DZERO(PMAT,NCMAT)
            CALL GETCON_septep(ee,ep,occ,TMPMAT,WORK,KFREE,LFREE,IPRPRP)
            CALL DSCAL(NCMAT,DM1,TMPMAT,1)
+           IF (IPRPRP.GE.2) THEN
+             CALL HEADER('reorthonormalization contribution '//
+     &            'from occ-occ ("ii") part of T matrix',1)
+             CALL FCPRI (TMPMAT,'SIGMAS',CSTRA,SCTRA)
+           ENDIF
            CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
            CALL DAXPY(NCMAT,D1,PMAT,1,DMATREO,1)
           
@@ -6733,11 +6851,16 @@ C--------------------------------------------------------------------
            CALL DZERO(PMAT,NCMAT)
            CALL GETCON_septep(ee,ep,occ,TMPMAT,WORK,KFREE,LFREE,IPRPRP)
            CALL DSCAL(NCMAT,DM1,TMPMAT,1)
+           IF (IPRPRP.GE.2) THEN
+             CALL HEADER('reorthonormalization contribution from '//
+     &      'occ-"secondary electronic" ("ia+") part of T matrix',1)
+             CALL FCPRI (TMPMAT,'SIGMAS',CSTRA,SCTRA)
+           ENDIF
            CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
            CALL DAXPY(NCMAT,D1,PMAT,1,DMATREE,1)
 
          end if
-         if (DOEPRN .and. .not. XLR_SKIPEP) then
+         if (EPREORTH) then
 ! p-occ:
            ee = .false.
            ep = .true.
@@ -6746,6 +6869,11 @@ C--------------------------------------------------------------------
            CALL DZERO(PMAT,NCMAT)
            CALL GETCON_septep(ee,ep,occ,TMPMAT,WORK,KFREE,LFREE,IPRPRP)
            CALL DSCAL(NCMAT,DM1,TMPMAT,1)
+           IF (IPRPRP.GE.2) THEN
+             CALL HEADER('reorthonormalization contribution from '//
+     &      'occ-"secondary positronic" ("ia-") part of T matrix',1)
+             CALL FCPRI (TMPMAT,'SIGMAS',CSTRA,SCTRA)
+           ENDIF
            CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
            CALL DAXPY(NCMAT,D1,PMAT,1,DMATREP,1)
 
@@ -7184,11 +7312,14 @@ C   ... make separate print out of e-e and e-p response contributions
           WRITE (LUPRI,'(/A,F14.6)') 
      &    ' Reorthonormalization contribution:',AVEDIA3
           if (SEPTEP) then
-           write(LUPRI,'(/A,F14.6)') '...from "occ-e" blocks of T = ',
+           write(LUPRI,'(/A60,F14.6)') '...from "occ-secondary '//
+     &            'electronic (ia+)" blocks of T = ',
      &                                AVEDIA3E
-           write(LUPRI,'(/A,F14.6)') '...from "occ-p" blocks of T = ', 
+           write(LUPRI,'(/A60,F14.6)') '...from "occ-secondary '//
+     &            'positronic (ia-)" blocks of T = ', 
      &                                AVEDIA3P
-           write(LUPRI,'(/A,F14.6)') '...from "occ-occ" blocks of T = ', 
+           write(LUPRI,'(/A60,F14.6)') '...from "occ-occ (ij)" '//
+     &            'blocks of T = ', 
      &                                AVEDIA3O
           end if
         ENDIF
