@@ -260,7 +260,7 @@ C       Get the two-electron Fock matrix using core density matrix
      &                NZ,IPQTOQ(1,0),LUPRI)
         ENDIF
 
-#if defined MOD_UNRELEASED
+#ifdef MOD_UNRELEASED
 ! Miro: inject xcint density into FMO as is in dirscf.F
         if (DORES.AND.dirac_cfg_dft_calculation.AND..NOT.NOVXC) then
           IF (COREDENS) THEN
@@ -318,7 +318,7 @@ C
 ! if NOVXC=.true. - do not add Exc to the core SCF energy, FMO (2-el Fock mtx) does not contain Vxc
 ! if NOVXC=.false. - add Exc from core density only to the core SCF energy, FMO (2-el Fock mtx) contains Vxc
 !
-#if defined MOD_UNRELEASED
+#ifdef MOD_UNRELEASED
        if (DORES.AND.dirac_cfg_dft_calculation.AND.NOVXC) then
           dirac_cfg_dft_calculation_save=.true.
           dirac_cfg_dft_calculation=.false.   !Miro: do we have interest in absolute energies of multiplet states ?
@@ -328,7 +328,7 @@ C
 #endif
       CALL ERGCAL(FAO,FMO,DMAT,WORK(KFREE),LFREE)
 !Miro: restore the DFT status
-#if defined MOD_UNRELEASED
+#ifdef MOD_UNRELEASED
        if (dirac_cfg_dft_calculation_save.AND.NOVXC) then
           dirac_cfg_dft_calculation=.true.   !Miro: do we have interest in absolute energies of multiplet states ?
        endif
