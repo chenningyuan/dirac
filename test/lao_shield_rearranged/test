@@ -15,16 +15,11 @@ f.add(from_string = '@            isotropic shielding',
 
 # c1
 test.run(['scf.inp'], ['co2_c1.mol'], args='--outcmo')
-test.run(['lao_shield_unchanged_sc.inp'], ['co2_c1.mol'], f, args='--incmo')
-test.run(['lao_shield_unchanged_sc_b3lyp.inp'], ['co2_c1.mol'], f, args='--incmo')
-test.run(['lao_shield_unchanged_sc_septep.inp'], ['co2_c1.mol'], f, args='--incmo')
-test.run(['lao_shield_rearranged_sc.inp'], ['co2_c1.mol'], f, args='--incmo')
-test.run(['lao_shield_rearranged_sc_b3lyp.inp'], ['co2_c1.mol'], f, args='--incmo')
-test.run(['lao_shield_rearranged_sc_septep.inp'], ['co2_c1.mol'], f, args='--incmo')
-test.run(['lao_shield_lr_rearranged.inp'], ['co2_c1.mol'], f, args='--incmo')
-test.run(['lao_shield_lr_rearranged_b3lyp.inp'], ['co2_c1.mol'], f, args='--incmo')
-test.run(['lao_shield_lr_rearranged_septep.inp'], ['co2_c1.mol'], f, args='--incmo')
 
+test.run(['lao_shield_lr_rearranged.inp'], ['co2_c1.mol'], f, args='--incmo')
+test.run(['lao_shield_lr_rearranged_septep.inp'], ['co2_c1.mol'], f, args='--incmo')
+test.run(['lao_shield_rearranged_sc.inp'], ['co2_c1.mol'], f, args='--incmo')
+test.run(['lao_shield_rearranged_sc_septep.inp'], ['co2_c1.mol'], f, args='--incmo')
 os.unlink('DFCOEF')
 
 # d2h

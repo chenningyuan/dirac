@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1110,9 +1110,9 @@ C***********************************************************************
      &    only: initialize_interest_herd,                               &
      &          process_two_electron_integrals_4comp_slaves,            &
      &          process_two_electron_integrals_2comp_slaves 
+#endif
 !     use fde_evaluators_dirac, only : fde_launch_slave_process
       use fde_mod, only : fde_launch_slave_process
-#endif
 
       implicit none
 #include "dcbdhf.h"
