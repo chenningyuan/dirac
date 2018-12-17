@@ -2059,7 +2059,7 @@ C
             DO 200 ISYMOP = 0, MAXOPR
                IF (IAND(ISTBNU(I),ISYMOP).EQ.0) THEN
                   IATOM = IATOM + 1
-                  IF (DOATOM(IATOM)) THEN
+                  IF (DOATOM(I)) THEN
                      NSPEC = NSPEC + 1
                      CALL ESRANA(TMAT(1,1,IATOM), TISO(IATOM),
      &                 IATINF(1,NSPEC),RATINF(1,1,NSPEC),
