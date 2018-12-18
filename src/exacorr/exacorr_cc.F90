@@ -543,7 +543,7 @@ module exacorr_cc
              return
           end if
 
-          if (.true.) then
+          if (.false.) then
              if (.not.CCD) write(*,'(A7,F20.15)'), "T1amp = ",print_tensornorm2 (comm_t%t1)
              write(*,'(A7,F20.15)'), "T2amp = ",print_tensornorm2 (comm_t%t2)
              write(*,'(A7,F20.15)'), "Tau   = ",print_tensornorm2 (comm_t%tau)

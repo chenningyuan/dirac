@@ -13,6 +13,7 @@ module exacorr_lambda
     complex(8), parameter :: ZERO=(0.D0,0.D0),MINUS_ONE_HALF=(-0.5D0,0.D0),ONE_HALF=(0.5D0,0.D0), &
                              MINUS_ONE=(-1.D0,0.D0), ONE=(1.D0,0.D0)
     real(8), parameter    :: ONE_QUARTER=0.25D0
+    type(tens_rcrsv_t)    :: one_l_tensor
 
     private
 
@@ -42,7 +43,6 @@ module exacorr_lambda
        type(tens_rcrsv_t) :: s1_tensor, s2_tensor
 !      Aux tensor
        type(tens_rcrsv_t) :: oo_aux_tensor
-       type(tens_rcrsv_t) :: one_l_tensor
 !      Tensor dimensions
        integer, intent(in) :: occ_space_id, vir_space_id
        integer(INTL), intent(in) :: occ_space_root, vir_space_root
@@ -98,6 +98,11 @@ module exacorr_lambda
        ierr=exatns_tensor_create(lambda_t%w_vovv,"w_vovv",vovv_id,vovv_root,EXA_DATA_KIND_C8)
        ierr=exatns_tensor_create(lambda_t%w_vvvv,"w_vvvv",vvvv_id,vvvv_root,EXA_DATA_KIND_C8)
 
+!      Construct auxiliary tensor
+       ierr=exatns_tensor_create(oo_aux_tensor,"oo_aux",oo_id,oo_root,EXA_DATA_KIND_C8)
+       ierr=exatns_tensor_create(one_l_tensor,"one_l",EXA_DATA_KIND_C8)
+       ierr=exatns_tensor_init(one_l_tensor,ONE)
+
 !      Obtain intermediates from CCSD
        call print_date("Calculating common blocks")
        call get_tau(comm_t,CCD,one_l_tensor)
@@ -143,18 +148,12 @@ module exacorr_lambda
        print*, "w_oooo     = ", print_tensornorm2(lambda_t%w_oooo)*ONE_QUARTER
 
 !      Construct solution tensors
-       ierr=exatns_tensor_create(s1_tensor,"s1",oovv_id,oovv_root,EXA_DATA_KIND_C8)
-       ierr=exatns_tensor_create(s2_tensor,"s2",ov_id,ov_root,EXA_DATA_KIND_C8)
+       ierr=exatns_tensor_create(s2_tensor,"s2",oovv_id,oovv_root,EXA_DATA_KIND_C8)
+       ierr=exatns_tensor_create(s1_tensor,"s1",ov_id,ov_root,EXA_DATA_KIND_C8)
 
 !      Construct mixed type intermediates
        ierr=exatns_tensor_create(goo_tensor,"goo_mixed",oo_id,oo_root,EXA_DATA_KIND_C8)
        ierr=exatns_tensor_create(gvv_tensor,"gvv_mixed",vv_id,vv_root,EXA_DATA_KIND_C8)
-
-!      Construct auxiliary tensor
-       ierr=exatns_tensor_create(oo_aux_tensor,"oo_aux",oo_id,oo_root,EXA_DATA_KIND_C8)
-       ierr=exatns_tensor_create(one_l_tensor,"one_l",EXA_DATA_KIND_C8)
-       ierr=exatns_tensor_init(one_l_tensor,ONE)
-
 
 !      Reinitialize diis, so it can be used in lambda routine
        call diis (l2_tensor,oovv_id,oovv_root,l1_tensor,ov_id,ov_root,mode=1)
@@ -239,10 +238,14 @@ module exacorr_lambda
 !       prepare for next iteration
         ierr=exatns_tensor_init(l1_tensor)
         ierr=exatns_tensor_contract("L1(i,a)+=S1(i,a)*K()",l1_tensor,s1_tensor,one_l_tensor)
+        !print*, "L1 before = ", print_tensornorm2(l1_tensor)
         ierr=exatns_tensor_transform(l1_tensor,"Denominate")
+        !print*, "L1 after = ", print_tensornorm2(l1_tensor)
         ierr=exatns_tensor_init(l2_tensor)
         ierr=exatns_tensor_contract("L2(i,j,a,b)+=S2(i,j,a,b)*K()",l2_tensor,s2_tensor,one_l_tensor)
+        !print*, "L2 before = ", print_tensornorm2(l2_tensor)*ONE_QUARTER
         ierr=exatns_tensor_transform(l2_tensor,"Denominate")
+        !print*, "L2 after = ", print_tensornorm2(l2_tensor)*ONE_QUARTER
 
         call diis (l2_tensor,l1_tensor=l1_tensor,t_convergence=t_convergence)
 
@@ -288,7 +291,7 @@ module exacorr_lambda
        integer, intent(in), optional  :: mode ! 1:initialize, 2:clean-up
        real(8), intent(out), optional :: t_convergence ! convergence of the t1 and t2 amplitudes
 
-       type(tens_rcrsv_t), intent(inout),optional :: l1_tensor
+       type(tens_rcrsv_t), intent(inout)          :: l1_tensor
        type(tens_rcrsv_t), intent(inout)          :: l2_tensor
        integer                                    :: ierr, i, tens_rank, j
        integer,dimension(2),optional              :: ov_id
@@ -306,8 +309,7 @@ module exacorr_lambda
        type(tens_rcrsv_t), save                   :: l1_err_tensor(maxdim), l2_err_tensor(maxdim)
        integer                                    :: ipiv(0:maxdim), info  ! needed for ZHESV solver
        real(8)                                    :: work(maxdim,maxdim)   ! needed for ZHESV solver
-       type(tens_rcrsv_t), save                   :: scalar_tensor
-       type(tens_rcrsv_t)                         :: one_diis_tensor
+       type(tens_rcrsv_t), save                   :: scalar_l_tensor
 
        character(len=1) :: vs_str
 
@@ -318,9 +320,6 @@ module exacorr_lambda
           if (mode.eq.1) init       = .true.
           if (mode.eq.2) clean_up   = .true.
        end if
-
-       ierr=exatns_tensor_create(one_diis_tensor,"one_diis",EXA_DATA_KIND_C8)
-       ierr=exatns_tensor_init(one_diis_tensor,ONE)
 
        if (init) then
 !         get dimensions of the tensors
@@ -345,10 +344,10 @@ module exacorr_lambda
           ntens = 0
 !         store the tensors in memory as current input tensors, needed to calculate the error vector later on
           ierr=exatns_tensor_init(l1_inp_tensor)
-          ierr=exatns_tensor_contract("L1O(i,a)+=L1N(i,a)*K()",l1_inp_tensor,l1_tensor,one_diis_tensor)
+          ierr=exatns_tensor_contract("L1O(i,a)+=L1N(i,a)*K()",l1_inp_tensor,l1_tensor,one_l_tensor)
           ierr=exatns_tensor_init(l2_inp_tensor)
-          ierr=exatns_tensor_contract("L2O(i,j,a,b)+=L2N(i,j,a,b)*K()",l2_inp_tensor,l2_tensor,one_diis_tensor)
-          ierr=exatns_tensor_create(scalar_tensor,"scalar_tensor",EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_contract("L2O(i,j,a,b)+=L2N(i,j,a,b)*K()",l2_inp_tensor,l2_tensor,one_l_tensor)
+          ierr=exatns_tensor_create(scalar_l_tensor,"scalar_l_tensor",EXA_DATA_KIND_C8)
           return ! no extrapolation possible
        end if
 
@@ -362,7 +361,7 @@ module exacorr_lambda
               ierr=exatns_tensor_destroy(l2_res_tensor(i))
               ierr=exatns_tensor_destroy(l2_err_tensor(i))
           end do
-          ierr=exatns_tensor_destroy(scalar_tensor)
+          ierr=exatns_tensor_destroy(scalar_l_tensor)
           return
        end if
 
@@ -374,26 +373,26 @@ module exacorr_lambda
 
 !      store the result tensors
        ierr=exatns_tensor_init(l1_res_tensor(itens))
-       ierr=exatns_tensor_contract("L1R(i,a)+=L1(i,a)*K()",l1_res_tensor(itens),l1_tensor,one_diis_tensor)
+       ierr=exatns_tensor_contract("L1R(i,a)+=L1(i,a)*K()",l1_res_tensor(itens),l1_tensor,one_l_tensor)
        ierr=exatns_tensor_init(l2_res_tensor(itens))
-       ierr=exatns_tensor_contract("L2R(i,j,a,b)+=L2(i,j,a,b)*K()",l2_res_tensor(itens),l2_tensor,one_diis_tensor)
+       ierr=exatns_tensor_contract("L2R(i,j,a,b)+=L2(i,j,a,b)*K()",l2_res_tensor(itens),l2_tensor,one_l_tensor)
 
 !      calculate the error tensors by comparing the result of the t-equations with the tensors used as input
        ierr=exatns_tensor_init(l1_err_tensor(itens))
-       ierr=exatns_tensor_contract("L1E(i,a)+=L1R(i,a)*K()",l1_err_tensor(itens),l1_tensor,one_diis_tensor)
-       ierr=exatns_tensor_contract("L1E(i,a)+=L1I(i,a)*K()",l1_err_tensor(itens),l1_inp_tensor,one_diis_tensor, &
+       ierr=exatns_tensor_contract("L1E(i,a)+=L1R(i,a)*K()",l1_err_tensor(itens),l1_tensor,one_l_tensor)
+       ierr=exatns_tensor_contract("L1E(i,a)+=L1I(i,a)*K()",l1_err_tensor(itens),l1_inp_tensor,one_l_tensor, &
                                                                                                  prefactor=MINUS_ONE)
        ierr=exatns_tensor_init(l2_err_tensor(itens))
-       ierr=exatns_tensor_contract("L2E(i,j,a,b)+=L2R(i,j,a,b)*K()",l2_err_tensor(itens),l2_tensor,one_diis_tensor)
-       ierr=exatns_tensor_contract("L2E(i,j,a,b)+=L2I(i,j,a,b)*K()",l2_err_tensor(itens),l2_inp_tensor,one_diis_tensor, &
+       ierr=exatns_tensor_contract("L2E(i,j,a,b)+=L2R(i,j,a,b)*K()",l2_err_tensor(itens),l2_tensor,one_l_tensor)
+       ierr=exatns_tensor_contract("L2E(i,j,a,b)+=L2I(i,j,a,b)*K()",l2_err_tensor(itens),l2_inp_tensor,one_l_tensor, &
                                                                                               prefactor=MINUS_ONE)
 
 !      update the b_diis array that holds the scalar products of the error tensors
        do i = 1, ntens
-          ierr=exatns_tensor_init(scalar_tensor)
-          ierr=exatns_tensor_contract("E()+=L+(i,a)*L(i,a)",scalar_tensor,l1_err_tensor(itens),l1_err_tensor(i))
-          ierr=exatns_tensor_contract("E()+=L+(i,j,a,b)*L(i,j,a,b)",scalar_tensor,l2_err_tensor(itens),l2_err_tensor(i))
-          ierr=exatns_tensor_get_scalar(scalar_tensor,scalar)
+          ierr=exatns_tensor_init(scalar_l_tensor)
+          ierr=exatns_tensor_contract("E()+=L+(i,a)*L(i,a)",scalar_l_tensor,l1_err_tensor(itens),l1_err_tensor(i))
+          ierr=exatns_tensor_contract("E()+=L+(i,j,a,b)*L(i,j,a,b)",scalar_l_tensor,l2_err_tensor(itens),l2_err_tensor(i))
+          ierr=exatns_tensor_get_scalar(scalar_l_tensor,scalar)
           b_diis(itens,i)=scalar
           b_diis(i,itens)=dconjg(scalar)
        end do
@@ -426,19 +425,17 @@ module exacorr_lambda
           ierr=exatns_tensor_init(l2_tensor)
           do i = 1, ntens
              ierr=exatns_tensor_contract("L1(i,a)+=L1O(i,a)*K()",l1_tensor,l1_res_tensor(i), &
-                                                                              one_diis_tensor,prefactor=coeff(i))
-             ierr=exatns_tensor_contract("L2(i,j,a,b)+=L2O(i,j,a,b)*K()",l2_tensor,l2_res_tensor(i),one_diis_tensor, &
+                                                                              one_l_tensor,prefactor=coeff(i))
+             ierr=exatns_tensor_contract("L2(i,j,a,b)+=L2O(i,j,a,b)*K()",l2_tensor,l2_res_tensor(i),one_l_tensor, &
                                                                                               prefactor=coeff(i))
           end do
        end if
 
 !      the extrapolated amplitudes are the new input tensors
        ierr=exatns_tensor_init(l1_inp_tensor)
-       ierr=exatns_tensor_contract("L1O(i,a)+=L1(i,a)*K()",l1_inp_tensor,l1_tensor,one_diis_tensor)
+       ierr=exatns_tensor_contract("L1O(i,a)+=L1(i,a)*K()",l1_inp_tensor,l1_tensor,one_l_tensor)
        ierr=exatns_tensor_init(l2_inp_tensor)
-       ierr=exatns_tensor_contract("L2O(i,j,a,b)+=L2(i,j,a,b)*K()",l2_inp_tensor,l2_tensor,one_diis_tensor)
-
-       ierr=exatns_tensor_destroy(one_diis_tensor)
+       ierr=exatns_tensor_contract("L2O(i,j,a,b)+=L2(i,j,a,b)*K()",l2_inp_tensor,l2_tensor,one_l_tensor)
 
       end subroutine diis
 

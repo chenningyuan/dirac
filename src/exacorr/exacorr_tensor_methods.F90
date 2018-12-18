@@ -466,25 +466,54 @@ module exacorr_tensor_methods
          select case (num_dims)
          case (2)
             call c_f_pointer(tens_body,t1_tens,tens_dims(1:2)) !map C pointer to 2-dimensional array
-            do i = 1, tens_dims(2)
-              do a = 1, tens_dims(1)
-                 denominator = eps_occ(i+tens_bases(2)-1) - eps_vir(a+tens_bases(1)-1)
-                 t1_tens(a,i) = t1_tens(a,i) / denominator
-              end do
-            end do
+            !print*, "tens_dims:     ", tens_dims(1:2)
+            !print*, "size(eps_vir): ", size(eps_vir)
+            if (tens_dims(1)*2.eq.size(eps_vir)) then 
+               do i = 1, tens_dims(2)
+                  do a = 1, tens_dims(1)
+                     denominator = eps_occ(i+tens_bases(2)-1) - eps_vir(a+tens_bases(1)-1)
+                     t1_tens(a,i) = t1_tens(a,i) / denominator
+                  end do
+               end do
+            else
+               !print*,"Arrived in dnom for lambda"
+               do i = 1, tens_dims(1)
+                  do a = 1, tens_dims(2)
+                     denominator = eps_occ(i+tens_bases(1)-1) - eps_vir(a+tens_bases(2)-1)
+                     t1_tens(i,a) = t1_tens(i,a) / denominator
+                  end do
+               end do
+            end if
          case (4)
             call c_f_pointer(tens_body,t2_tens,tens_dims(1:4)) !map C pointer to 2-dimensional array
-            do j = 1, tens_dims(4)
-              do i = 1, tens_dims(3)
-                do b = 1, tens_dims(2)
-                  do a = 1, tens_dims(1)
-                     denominator = eps_occ(i+tens_bases(3)-1) + eps_occ(j+tens_bases(4)-1) &
-                                 - eps_vir(a+tens_bases(1)-1) - eps_vir(b+tens_bases(2)-1)
-                     t2_tens(a,b,i,j) = t2_tens(a,b,i,j) / denominator
+            !print*, "tens_dims:     ", tens_dims(1:4)
+            !print*, "size(eps_vir): ", size(eps_vir)
+            if (tens_dims(1)*2.eq.size(eps_vir)) then
+               do j = 1, tens_dims(4)
+                  do i = 1, tens_dims(3)
+                     do b = 1, tens_dims(2)
+                        do a = 1, tens_dims(1)
+                           denominator = eps_occ(i+tens_bases(3)-1) + eps_occ(j+tens_bases(4)-1) &
+                                       - eps_vir(a+tens_bases(1)-1) - eps_vir(b+tens_bases(2)-1)
+                           t2_tens(a,b,i,j) = t2_tens(a,b,i,j) / denominator
+                        end do
+                     end do
                   end do
-                end do
-              end do
-            end do
+               end do
+            else
+               !print*,"Arrived in dnom for lambda"
+               do j = 1, tens_dims(2)
+                  do i = 1, tens_dims(1)
+                     do b = 1, tens_dims(4)
+                        do a = 1, tens_dims(3)
+                           denominator = eps_occ(i+tens_bases(1)-1) + eps_occ(j+tens_bases(2)-1) &
+                                       - eps_vir(a+tens_bases(3)-1) - eps_vir(b+tens_bases(4)-1)
+                           t2_tens(i,j,a,b) = t2_tens(i,j,a,b) / denominator
+                        end do
+                     end do
+                  end do
+               end do
+            end if
          case default
             call quit ('Error: wrong dimension of tensor in denominate')
          end select
