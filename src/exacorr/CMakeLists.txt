@@ -18,12 +18,11 @@ if(ENABLE_EXATENSOR)
    intermediates.F90
    exacorr_ao_to_mo.F90
 #   exacorr_common_routines.F90
-   exacorr_lambda.F90
+   exacorr_gradient.F90
    exacorr_cc.F90
    talsh_ao_to_mo.F90
    talsh_common_routines.F90
    talsh_gradient.F90
-   talsh_lambda.F90
    talsh_cc.F90
   )
 

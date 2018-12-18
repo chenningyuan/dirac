@@ -10,7 +10,7 @@
 !Generic:
         integer, parameter, private:: REALD=8 !default real for this module
 !DERIVED TYPES:
-!Basis function info:
+!       Basis function info:
         type, public:: basis_func_info_t
          integer:: orb_momentum=-1       !orbital momentum: (0,1,2,3,...)
          integer:: atom_number=-1        !atom sequential number [1..MAX] (if centered on a nucleus of some atom)
@@ -20,7 +20,7 @@
          real(REALD), pointer :: exponent(:)
          real(REALD), pointer :: coefficient(:)
         end type basis_func_info_t
-!Basis set info:
+!       Basis set info:
         type, public:: basis_set_info_t
          integer:: nshells=0             !number of shells in the basis set
          integer:: nao=0                 !number of basis functions
@@ -28,7 +28,7 @@
          integer, pointer :: shell_indices(:)
         end type basis_set_info_t
 
-!Input parameter
+!       Input parameter
         type, public :: exacc_input
             logical                 :: talsh = .true.           !If false, use ExaTensor
             logical                 :: ccd = .false.            !If false=>CCSD, if true=>CCD
@@ -64,6 +64,11 @@
          type(tens_rcrsv_t) :: w_vvvo, w_vovv
          type(tens_rcrsv_t) :: w_vvvv
         end type exatns_lambda_tens
+
+        type, public :: space_dims
+         integer       :: occ_space_id, vir_space_id
+         integer(INTL) :: occ_space_root,vir_space_root
+        end type space_dims
 
 !       All two electron integral tensors
         type, public :: talsh_intg_tens
