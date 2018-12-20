@@ -1733,9 +1733,18 @@ C
           JFLST = JVEC
           ISYMST_IN = ISYMEIG_KRCI(INIST)
           ISYMST_FL = ISYMEIG_KRCI(JFLST)
-          EDMMOM = DCMPLX(XPROPMAT(INIST,JFLST,IND_PRP(I),1),
-     &                    XPROPMAT(INIST,JFLST,IND_PRP(I),2))
+              IF( MZ .eq. 2 )
+     &        XCOMP         = XPROPMAT(INIST,JFLST,IND_DIP(IPRP),2)
+              XREAL         = XPROPMAT(INIST,JFLST,IND_DIP(IPRP),1)
+              XMOM          = XREAL
+              if(mz.eq.2)then
+                xmom        = dcmplx(xreal,xcomp)
+              end if
+          EDMMOM = XMOM
           EDMNORM = SQRT(EDMMOM**2)
+C          EDMMOM = DCMPLX(XPROPMAT(INIST,JFLST,IND_PRP(I),1),
+C     &                    XPROPMAT(INIST,JFLST,IND_PRP(I),2))
+C          EDMNORM = SQRT(EDMMOM**2)
 C
           write(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F20.12,5X,1F20.12)')
      & '     * state',INIST,'(',XREPEIG(ISYMST_IN),')       * state',
