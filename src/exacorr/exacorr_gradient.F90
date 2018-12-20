@@ -2,9 +2,9 @@ module exacorr_gradient
 
 !This module contains routines for solving the Lambda equations
 
-#if defined (VAR_MPI)
-
     use exatensor
+
+#if defined (VAR_MPI)
 
     implicit none
 

@@ -691,7 +691,7 @@ module exacorr_cc
          real(8) :: t_convergence
 
          logical, intent(in) :: CCD
-         integer :: ierr, prints=0
+         integer :: ierr
 
          call print_date('Entered lambda solver routine')
 
@@ -803,7 +803,7 @@ module exacorr_cc
           ierr=exatns_tensor_init(goo_tensor)
           ierr=exatns_tensor_contract("G(i,m)+=L(i,n,e,f)*T(e,f,m,n)",goo_tensor,l2_tensor,comm_t%t2,ONE_HALF)
 
-          if (prints .ge. 1) then
+          if (.false.) then
             print*, "L1  = ", print_tensornorm2(l1_tensor)
             print*, "L2  = ", print_tensornorm2(l2_tensor)*0.25D0
             print*, "goo = ", print_tensornorm2(goo_tensor)
@@ -874,14 +874,10 @@ module exacorr_cc
 !         prepare for next iteration
           ierr=exatns_tensor_init(l1_tensor)
           ierr=exatns_tensor_contract("L1(i,a)+=S1(i,a)*K()",l1_tensor,s1_tensor,one_tensor)
-          !print*, "L1 before = ", print_tensornorm2(l1_tensor)
           ierr=exatns_tensor_transform(l1_tensor,"Denominate")
-          !print*, "L1 after = ", print_tensornorm2(l1_tensor)
           ierr=exatns_tensor_init(l2_tensor)
           ierr=exatns_tensor_contract("L2(i,j,a,b)+=S2(i,j,a,b)*K()",l2_tensor,s2_tensor,one_tensor)
-          !print*, "L2 before = ", print_tensornorm2(l2_tensor)*ONE_QUARTER
           ierr=exatns_tensor_transform(l2_tensor,"Denominate")
-          !print*, "L2 after = ", print_tensornorm2(l2_tensor)*ONE_QUARTER
 
           call diis (l2_tensor,t1_tensor=l1_tensor,t_convergence=t_convergence)
 

@@ -440,7 +440,7 @@ module exacorr_tensor_methods
         integer function denominate(num_dims,tens_body,data_kind,tens_dims,tens_bases, &
                          eps_occ,eps_vir) result (ierr)
 
-        !Scale with denominators for 2-d or 4-d tensor
+        !Scale with denominators for 2-d or 4-d tensor for regular CC and for lambda
 
          use, intrinsic:: ISO_C_BINDING
 
@@ -466,8 +466,6 @@ module exacorr_tensor_methods
          select case (num_dims)
          case (2)
             call c_f_pointer(tens_body,t1_tens,tens_dims(1:2)) !map C pointer to 2-dimensional array
-            !print*, "tens_dims:     ", tens_dims(1:2)
-            !print*, "size(eps_vir): ", size(eps_vir)
             if (tens_dims(1)*2.eq.size(eps_vir)) then 
                do i = 1, tens_dims(2)
                   do a = 1, tens_dims(1)
@@ -476,7 +474,6 @@ module exacorr_tensor_methods
                   end do
                end do
             else
-               !print*,"Arrived in dnom for lambda"
                do i = 1, tens_dims(1)
                   do a = 1, tens_dims(2)
                      denominator = eps_occ(i+tens_bases(1)-1) - eps_vir(a+tens_bases(2)-1)
@@ -486,8 +483,6 @@ module exacorr_tensor_methods
             end if
          case (4)
             call c_f_pointer(tens_body,t2_tens,tens_dims(1:4)) !map C pointer to 2-dimensional array
-            !print*, "tens_dims:     ", tens_dims(1:4)
-            !print*, "size(eps_vir): ", size(eps_vir)
             if (tens_dims(1)*2.eq.size(eps_vir)) then
                do j = 1, tens_dims(4)
                   do i = 1, tens_dims(3)
@@ -501,7 +496,6 @@ module exacorr_tensor_methods
                   end do
                end do
             else
-               !print*,"Arrived in dnom for lambda"
                do j = 1, tens_dims(2)
                   do i = 1, tens_dims(1)
                      do b = 1, tens_dims(4)

@@ -13,7 +13,7 @@ module talsh_cc
                                  MINUS_ONE_HALF=(-0.5D0,0.D0), TWO=(2.D0,0.D0), &
                                  MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0)
         real(8), parameter    :: ONE_QUARTER=0.25D0
-
+        real(8) :: start, finish
 
         type(talsh_tens_t) :: one_tensor
 
@@ -534,12 +534,11 @@ module talsh_cc
          type(talsh_tens_t) :: l1_tensor, l2_tensor
          type(talsh_tens_t) :: s1_tensor, s2_tensor
 !        Aux tensor
-         type(talsh_tens_t) :: oo_aux_tensor!,one_tensor
+         type(talsh_tens_t) :: oo_aux_tensor
 !        Tensor dimensions
          integer, dimension(2) :: oo_dims, ov_dims, vv_dims
          integer, dimension(4) :: oooo_dims,ovoo_dims,ooov_dims,vovo_dims,oovv_dims, &
                                   vvvo_dims,vovv_dims,vvvv_dims
-         !integer               :: one_dims(1)
 !        Orbital energies for scaling
          real(8), intent(in)   :: eps_occ(:), eps_vir(:)
          integer :: iccsd, nccsd=30
@@ -548,7 +547,7 @@ module talsh_cc
 
          logical, intent(in) :: CCD
 
-         integer :: ierr, prints=1
+         integer :: ierr
 
          call print_date('Entered lambda solver routine')
 
@@ -653,11 +652,17 @@ module talsh_cc
 
 !         Form mixed intermediates
           ierr=talsh_tensor_init(gvv_tensor)
+          call cpu_time(start)
           ierr=talsh_tensor_contract("G(e,a)+=L(m,n,a,f)*T(e,f,m,n)",gvv_tensor,l2_tensor,comm_t%t2,scale=MINUS_ONE_HALF)
+          call cpu_time(finish)
+          print*, "gvv: ", finish-start
           ierr=talsh_tensor_init(goo_tensor)
+          call cpu_time(start)
           ierr=talsh_tensor_contract("G(i,m)+=L(i,n,e,f)*T(e,f,m,n)",goo_tensor,l2_tensor,comm_t%t2,scale=ONE_HALF)
+          call cpu_time(finish)
+          print*, "goo: ", finish-start
 
-          if (prints .ge. 1) then
+          if (.false.) then
              print*, "L1  = ", tensor_norm2(l1_tensor)
              print*, "L2  = ", tensor_norm2(l2_tensor)*ONE_QUARTER
              print*, "goo = ", tensor_norm2(goo_tensor)
@@ -666,77 +671,115 @@ module talsh_cc
 
 !         Calculate s1 tensor
           ierr=talsh_tensor_init(s1_tensor)
+          call cpu_time(start)
           ierr=talsh_tensor_add("S(i,a)+=F(i,a)",s1_tensor,lambda_t%fbar_ov)
-          if (prints .ge. 2) print*, "S1 init = ", tensor_norm2(s1_tensor)
+          call cpu_time(finish)
+          print*, "s1: ", finish-start
+          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,a)+=L(i,e)*F(e,a)",s1_tensor,l1_tensor,lambda_t%fbar_vv)
-          if (prints .ge. 2) print*, "S1 after term1 = ", tensor_norm2(s1_tensor)
+          call cpu_time(finish)
+          print*, "s1: ", finish-start
+          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,a)+=L(m,a)*F(i,m)",s1_tensor,l1_tensor,lambda_t%fbar_oo,scale=MINUS_ONE)
-          if (prints .ge. 2) print*, "S1 after term2 = ", tensor_norm2(s1_tensor)
+          call cpu_time(finish)
+          print*, "s1: ", finish-start
+          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,a)+=G(n,m)*W(i,m,n,a)",s1_tensor,goo_tensor,lambda_t%w_ooov)
-          if (prints .ge. 2) print*, "S1 after term3 = ", tensor_norm2(s1_tensor)
+          call cpu_time(finish)
+          print*, "s1: ", finish-start
+          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,a)+=L(m,e)*W(e,i,a,m)",s1_tensor,l1_tensor,lambda_t%w_vovo,scale=MINUS_ONE)
-          if (prints .ge. 2) print*, "S1 after term4 = ", tensor_norm2(s1_tensor)
+          call cpu_time(finish)
+          print*, "s1: ", finish-start
+          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,a)+=L(m,n,a,e)*W(i,e,n,m)",s1_tensor,l2_tensor,lambda_t%w_ovoo,scale=ONE_HALF)
-          if (prints .ge. 2) print*, "S1 after term5 = ", tensor_norm2(s1_tensor)
+          call cpu_time(finish)
+          print*, "s1: ", finish-start
+          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,a)+=L(i,m,e,f)*W(e,f,a,m)",s1_tensor,l2_tensor,lambda_t%w_vvvo,scale=ONE_HALF)
-          if (prints .ge. 2) print*, "S1 after term6 = ", tensor_norm2(s1_tensor)
+          call cpu_time(finish)
+          print*, "s1: ", finish-start
+          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,a)+=G(f,e)*W(e,i,a,f)",s1_tensor,gvv_tensor,lambda_t%w_vovv)
-          if (prints .ge. 2) print*, "S1 after term7 = ", tensor_norm2(s1_tensor)
+          call cpu_time(finish)
+          print*, "s1: ", finish-start
 
 !         Calculate s2 tensor
           ierr=talsh_tensor_init(s2_tensor)
+          call cpu_time(start)
           ierr=talsh_tensor_add("S(i,j,a,b)+=V(i,j,a,b)",s2_tensor,int_t%oovv)
-          if (prints .ge. 2) print*, "S2 after initialization = ", tensor_norm2(s2_tensor)*ONE_QUARTER
+          call cpu_time(finish)
+          print*, "s2: ", finish-start
 
 !         Need to permute a and b, so term appears twice
+          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,j,a,e)*F(e,b)",s2_tensor,l2_tensor,lambda_t%fbar_vv)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,j,e,b)*F(e,a)",s2_tensor,l2_tensor,lambda_t%fbar_vv)
-          if (prints .ge. 2) print*, "S2 after term1 = ", tensor_norm2(s2_tensor)*ONE_QUARTER
+          call cpu_time(finish)
+          print*, "s2: ", finish-start
 
 !         Need to permute i and j, so term appears twice
+          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,m,b,a)*F(j,m)",s2_tensor,l2_tensor,lambda_t%fbar_oo)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,m,a,b)*F(i,m)",s2_tensor,l2_tensor,lambda_t%fbar_oo)
-          if (prints .ge. 2) print*, "S2 after term2 = ", tensor_norm2(s2_tensor)*ONE_QUARTER
+          call cpu_time(finish)
+          print*, "s2: ", finish-start
 
+          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(m,n,a,b)*W(i,j,m,n)",s2_tensor,l2_tensor,lambda_t%w_oooo,scale=ONE_HALF)
-          if (prints .ge. 2) print*, "S2 after term3 = ", tensor_norm2(s2_tensor)*ONE_QUARTER
+          call cpu_time(finish)
+          print*, "s2: ", finish-start
 
 !         Need to permute i and j, as well as a and b, so term appears four times
+          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,m,e,a)*W(e,j,b,m)",s2_tensor,l2_tensor,lambda_t%w_vovo)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,m,b,e)*W(e,j,a,m)",s2_tensor,l2_tensor,lambda_t%w_vovo)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,m,a,e)*W(e,i,b,m)",s2_tensor,l2_tensor,lambda_t%w_vovo)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,m,e,b)*W(e,i,a,m)",s2_tensor,l2_tensor,lambda_t%w_vovo)
-          !if (prints .ge. 2) print*, "S2 after term4 = ", tensor_norm2(s2_tensor)*ONE_QUARTER
+          call cpu_time(finish)
+          print*, "s2: ", finish-start
 
 !         Need to permute a and b, so term appears twice
+          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,j,a,e)*G(e,b)",s2_tensor,int_t%oovv,gvv_tensor)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,j,e,b)*G(e,a)",s2_tensor,int_t%oovv,gvv_tensor)
-          if (prints .ge. 2) print*, "S2 after term5 = ", tensor_norm2(s2_tensor)*ONE_QUARTER
+          call cpu_time(finish)
+          print*, "s2: ", finish-start
 
 !         Need to permute a and b, so term appears twice
+          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(m,a)*W(j,i,m,b)",s2_tensor,l1_tensor,lambda_t%w_ooov)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(m,b)*W(i,j,m,a)",s2_tensor,l1_tensor,lambda_t%w_ooov)
-          if (prints .ge. 2) print*, "S2 after term6 = ", tensor_norm2(s2_tensor)*ONE_QUARTER
+          call cpu_time(finish)
+          print*, "s2: ", finish-start
 
 !         Need to permute i and j, so term appears twice
+          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,m,b,a)*G(j,m)",s2_tensor,int_t%oovv,goo_tensor)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=V(j,m,a,b)*G(i,m)",s2_tensor,int_t%oovv,goo_tensor)
-          if (prints .ge. 2) print*, "S2 after term7 = ", tensor_norm2(s2_tensor)*ONE_QUARTER
+          call cpu_time(finish)
+          print*, "s2: ", finish-start
 
 !         Need to permute i and j, so term appears twice
+          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,e)*W(e,j,a,b)",s2_tensor,l1_tensor,lambda_t%w_vovv)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,e)*W(e,i,b,a)",s2_tensor,l1_tensor,lambda_t%w_vovv)
-          if (prints .ge. 2) print*, "S2 after term8 = ", tensor_norm2(s2_tensor)*ONE_QUARTER
+          call cpu_time(finish)
+          print*, "s2: ", finish-start
 
 !         Need to permute i and j, as well as a and b, so term appears four times
+          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,a)*F(j,b)",s2_tensor,l1_tensor,lambda_t%fbar_ov)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,b)*F(j,a)",s2_tensor,l1_tensor,lambda_t%fbar_ov,scale=MINUS_ONE)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,a)*F(i,b)",s2_tensor,l1_tensor,lambda_t%fbar_ov,scale=MINUS_ONE)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,b)*F(i,a)",s2_tensor,l1_tensor,lambda_t%fbar_ov)
-          if (prints .ge. 2) print*, "S2 after term9 = ", tensor_norm2(s2_tensor)*ONE_QUARTER
+          call cpu_time(finish)
+          print*, "s2: ", finish-start
 
+          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,j,e,f)*W(e,f,a,b)",s2_tensor,l2_tensor,lambda_t%w_vvvv,scale=ONE_HALF)
-          if (prints .ge. 2) print*, "S2 after term10 = ", tensor_norm2(s2_tensor)*ONE_QUARTER
+          call cpu_time(finish)
+          print*, "s2: ", finish-start
 
 
           if (ierr.ne.TALSH_SUCCESS) then
@@ -746,9 +789,15 @@ module talsh_cc
 
 !         prepare for next iteration
           ierr=talsh_tensor_init(l1_tensor)
+          call cpu_time(start)
           ierr=talsh_tensor_add("L1(i,a)+=S1(i,a)",l1_tensor,s1_tensor)
+          call cpu_time(finish)
+          print*, "l1: ", finish-start
           ierr=talsh_tensor_init(l2_tensor)
+          call cpu_time(start)
           ierr=talsh_tensor_add("L2(i,j,a,b)+=S2(i,j,a,b)",l2_tensor,s2_tensor)
+          call cpu_time(finish)
+          print*, "l2: ", finish-start
           call scale_with_denominators (eps_occ,eps_vir,nocc,l1_tensor,l2_tensor)
 
           call diis (l2_tensor,l1_tensor,t_convergence=t_convergence)
@@ -771,7 +820,6 @@ module talsh_cc
          ierr=talsh_tensor_destruct(goo_tensor)
          ierr=talsh_tensor_destruct(gvv_tensor)
          ierr=talsh_tensor_destruct(oo_aux_tensor)
-         !ierr=talsh_tensor_destruct(one_tensor)
          ierr=talsh_tensor_destruct(lambda_t%fbar_oo)
          ierr=talsh_tensor_destruct(lambda_t%fbar_ov)
          ierr=talsh_tensor_destruct(lambda_t%fbar_vv)
@@ -998,104 +1046,6 @@ module talsh_cc
 
        end subroutine get_CC_integrals
 
-!       subroutine scale_with_denominators (eps_occ,eps_vir,nocc,t1_tensor,t2_tensor,t3_tensor,eps_ijk)
-!
-!         type(talsh_tens_t), optional, intent(inout)  :: t1_tensor, t2_tensor, t3_tensor
-!         real(8), intent(in)                          :: eps_occ(:),eps_vir(:)
-!         real(8), intent(in), optional                :: eps_ijk
-!
-!         real(8)  :: denominator
-!         complex(8), pointer, contiguous:: t1_tens(:,:), t2_tens(:,:,:,:), t3_tens(:,:,:)
-!         type(C_PTR):: body_p
-!
-!         integer:: t1_dims(1:2), t2_dims(1:4), t3_dims(1:3)
-!
-!         integer   :: ierr, tens_rank, a, b, c, i, j
-!
-!         integer, optional, intent(in) :: nocc
-!
-!         if (present(t1_tensor)) then
-!
-!            ierr = talsh_tensor_dimensions(t1_tensor,tens_rank,t1_dims)
-!            if (ierr.ne.0 .or. tens_rank.ne.2) stop 'program error: t1 tensor corrupted'
-!            ierr=talsh_tensor_get_body_access(t1_tensor,body_p,C8,0,DEV_HOST)
-!            call c_f_pointer(body_p,t1_tens,t1_dims(1:2)) ! to use <t1_tens> as a regular Fortran 2d array
-!
-!            if (t1_dims(2) .eq. nocc*2) then
-!             !t amplitudes
-!             do i = 1, t1_dims(2)
-!               do a = 1, t1_dims(1)
-!                  denominator = eps_occ(i) - eps_vir(a)
-!                  t1_tens(a,i) = t1_tens(a,i) / denominator
-!               end do
-!             end do
-!            else
-!             !Lambda
-!             do i = 1, t1_dims(1)
-!               do a = 1, t1_dims(2)
-!                  denominator = eps_occ(i) - eps_vir(a)
-!                  t1_tens(i,a) = t1_tens(i,a) / denominator
-!               end do
-!             end do
-!            end if
-!
-!         end if
-!
-!         if (present(t2_tensor)) then
-!
-!            ierr = talsh_tensor_dimensions(t2_tensor,tens_rank,t2_dims)
-!            if (ierr.ne.0 .or. tens_rank.ne.4) stop 'program error: t2 tensor corrupted'
-!            ierr=talsh_tensor_get_body_access(t2_tensor,body_p,C8,0,DEV_HOST)
-!            call c_f_pointer(body_p,t2_tens,t2_dims(1:4)) ! to use <t2_tens> as a regular Fortran 4d array
-!
-!            if (t2_dims(3) .eq. nocc*2) then
-!             !t amplitudes
-!             do j = 1, t2_dims(4)
-!               do i = 1, t2_dims(3)
-!                 do b = 1, t2_dims(2)
-!                   do a = 1, t2_dims(1)
-!                      denominator = eps_occ(i) + eps_occ(j) - eps_vir(a) - eps_vir(b)
-!                      t2_tens(a,b,i,j) = t2_tens(a,b,i,j) / denominator
-!                   end do
-!                 end do
-!               end do
-!             end do
-!            else
-!             !Lambda
-!             do i = 1, t2_dims(1)
-!               do j = 1, t2_dims(2)
-!                 do a = 1, t2_dims(3)
-!                   do b = 1, t2_dims(4)
-!                      denominator = eps_occ(i) + eps_occ(j) - eps_vir(a) - eps_vir(b)
-!                      t2_tens(i,j,a,b) = t2_tens(i,j,a,b) / denominator
-!                   end do
-!                 end do
-!               end do
-!             end do
-!            end if
-!
-!         end if
-!
-!         if (present(t3_tensor)) then
-!
-!            ierr = talsh_tensor_dimensions(t3_tensor,tens_rank,t3_dims)
-!            if (ierr.ne.0 .or. tens_rank.ne.3) stop 'program error: t3 tensor corrupted'
-!            ierr=talsh_tensor_get_body_access(t3_tensor,body_p,C8,0,DEV_HOST)
-!            call c_f_pointer(body_p,t3_tens,t3_dims(1:3)) ! to use <t3_tens> as a regular Fortran 3d array
-!
-!            do c = 1, t3_dims(3)
-!              do b = 1, t3_dims(2)
-!                do a = 1, t3_dims(1)
-!                   denominator = eps_ijk - eps_vir(a) - eps_vir(b) - eps_vir(c)
-!                   t3_tens(a,b,c) = t3_tens(a,b,c) / denominator
-!                end do
-!              end do
-!            end do
-!
-!         end if
-!        
-!       end subroutine scale_with_denominators
-
        subroutine diis (t2_tensor,t1_tensor,t_convergence,mode)
 
          integer, parameter :: maxdim = 5 ! maximum number of tensors that will be stored 
@@ -1264,32 +1214,6 @@ module talsh_cc
          ierr=talsh_tensor_destruct(scalar_tensor)
 
        end subroutine diis
-
-!       subroutine get_orbital_energies (nmo, mo_list, eps)
-!
-!!This subroutine reads the desired subset of mo energies from DIRAC
-!
-!!        Written by Lucas Visscher, winter 2016/2017 (but in Goa, India, temperature about 25 C)
-!
-!         use dirac_MO
-!         use exacorr_global
-!
-!         integer, intent(in) :: nmo          ! the length of the mo basis
-!         integer, intent(in) :: mo_list(:)   ! and their indices
-!         real(8) :: eps(:)
-!
-!         integer             :: k
-!         type(MO)            :: qmo
-!
-!         call get_mo_coefficients (qmo,mo_list,nmo)
-!
-!         do k = 1, nmo
-!            eps(k)     = qmo%energy(k)
-!            eps(k+nmo) = qmo%energy(k)
-!         end do
-!         call delete_qmo (qmo)
-!
-!        end subroutine get_orbital_energies
 
        subroutine t3_energy (t_energy,eps_occ,eps_vir,t1_tensor,t2_tensor,fov_tensor,ooov_tensor,vovv_tensor,oovv_tensor)
 
