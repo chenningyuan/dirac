@@ -1734,8 +1734,8 @@ C
           ISYMST_IN = ISYMEIG_KRCI(INIST)
           ISYMST_FL = ISYMEIG_KRCI(JFLST)
               IF( MZ .eq. 2 )
-     &        XCOMP         = XPROPMAT(INIST,JFLST,IND_DIP(IPRP),2)
-              XREAL         = XPROPMAT(INIST,JFLST,IND_DIP(IPRP),1)
+     &        XCOMP         = XPROPMAT(INIST,JFLST,IND_PRP(I),2)
+              XREAL         = XPROPMAT(INIST,JFLST,IND_PRP(I),1)
               XMOM          = XREAL
               if(mz.eq.2)then
                 xmom        = dcmplx(xreal,xcomp)
