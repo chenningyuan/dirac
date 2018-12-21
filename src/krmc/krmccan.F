@@ -1606,7 +1606,7 @@ C#include "chrnos.h"
       DOUBLE COMPLEX XMOM
       REAL*8 OSCL, OSCLABS
       DIMENSION XPROPMAT(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,
-     &                   NPROP_KRCI,MZ)
+     &                   NPROP_KRCI,2)
       DIMENSION GTENSOR(NPROP_ROOTS_KRCI),GTENSORNORM(NPROP_ROOTS_KRCI),
      &          ENSPSMOM(NPROP_ROOTS_KRCI),HYFENFIN(NPROP_ROOTS_KRCI),
      &          HYFEDMFIN(NPROP_ROOTS_KRCI),EEFFAU(NPROP_ROOTS_KRCI)
@@ -1733,18 +1733,18 @@ C
           JFLST = JVEC
           ISYMST_IN = ISYMEIG_KRCI(INIST)
           ISYMST_FL = ISYMEIG_KRCI(JFLST)
-              IF( MZ .eq. 2 )
-     &        XCOMP         = XPROPMAT(INIST,JFLST,IND_PRP(I),2)
-              XREAL         = XPROPMAT(INIST,JFLST,IND_PRP(I),1)
-              XMOM          = XREAL
-              if(mz.eq.2)then
-                xmom        = dcmplx(xreal,xcomp)
-              end if
-          EDMMOM = XMOM
-          EDMNORM = SQRT(EDMMOM**2)
-C          EDMMOM = DCMPLX(XPROPMAT(INIST,JFLST,IND_PRP(I),1),
-C     &                    XPROPMAT(INIST,JFLST,IND_PRP(I),2))
+C              IF( MZ .eq. 2 )
+C     &        XCOMP         = XPROPMAT(INIST,JFLST,IND_PRP(I),2)
+C              XREAL         = XPROPMAT(INIST,JFLST,IND_PRP(I),1)
+C              XMOM          = XREAL
+C              if(mz.eq.2)then
+C                xmom        = dcmplx(xreal,xcomp)
+C              end if
+C          EDMMOM = XMOM
 C          EDMNORM = SQRT(EDMMOM**2)
+          EDMMOM = DCMPLX(XPROPMAT(INIST,JFLST,IND_PRP(I),1),
+     &                    XPROPMAT(INIST,JFLST,IND_PRP(I),2))
+          EDMNORM = SQRT(EDMMOM**2)
 C
           write(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F20.12,5X,1F20.12)')
      & '     * state',INIST,'(',XREPEIG(ISYMST_IN),')       * state',
