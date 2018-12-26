@@ -502,7 +502,7 @@ C
          NRAD = INT ((LOG (PARM1) - LOG (RNT))/H)
          RNEW = PARM1/(EPH**NRAD)
          IF (RNEW .GT. RNT) THEN
-            RNEW = PARM1/(EPH**(NRAD+1)) !RNEW/EPH
+            RNEW = PARM1/(EPH**(NRAD+1)) !This line means RNEW/EPH
             NRAD = NRAD+1
          ENDIF
 C bug fix 96/08/14
@@ -571,7 +571,10 @@ C
 C   SECOND-ORDER VACUUM POLARISATION
 C
     3 CALL VAC2(TB,TA,R,Z,N,NUCTYP)
-      
+      write(*,*)"TB2"
+      DO 1 I = 1,N
+         write(*,*)I,TB(I)
+    1 CONTINUE      
 !      IF (NVPORD .EQ. 2) GO TO 4
 !      IF (KTC(19) .EQ. 0) RETURN  !change
 !      WRITE (IPD,300)   !change
@@ -645,21 +648,21 @@ C
       DO 1 I = 1,N
          X = WD*R(I)
          TB(I) = FACTOR*FUNK (X,1)
-         write(*,*)I,TB(I)
     1 CONTINUE
       IF (NUCTYP .EQ. 0) RETURN
-c$$$C
-c$$$C   SERIES EXPANSION FOR FINITE NUCLEUS. CALCULATE EXPANSION
-c$$$C   COEFFICIENTS USING EQUATION (7)
-c$$$C
-c$$$      IF (NUCTYP .GT. 1) GO TO 2
-c$$$C
-c$$$C   UNIFORM NUCLEUS
-c$$$C
-c$$$      WA = C2*(PARM(1)**2)
-c$$$      FAC3 = FACTOR*TWO*WA/5.0D00
-c$$$      FAC5 = FAC3*WA/7.0D00
-c$$$      GO TO 5
+C
+C   SERIES EXPANSION FOR FINITE NUCLEUS. CALCULATE EXPANSION
+C   COEFFICIENTS USING EQUATION (7)
+C
+!      IF (NUCTYP .GT. 1) GO TO 2
+C
+C   UNIFORM NUCLEUS
+C
+      WA = C2*(PARM1*PARM1)
+      FAC3 = FACTOR*TWO*WA/5.0D00
+      FAC5 = FAC3*WA/7.0D00
+      write(*,*)"WA,FAC3,FAC5",WA,FAC3,FAC5
+      GO TO 5
 c$$$C
 c$$$C   OTHER DISTRIBUTIONS
 c$$$C
@@ -674,13 +677,15 @@ c$$$         TA(I) = TA(I)*(R(I)**2)
 c$$$    4 CONTINUE
 c$$$      CALL QUAD (FAC5)
 c$$$      FAC5 = FAC5*FACTOR*C2*WB/5.0D00
-c$$$C
-c$$$C   TABULATE POTENTIALS
-c$$$C
-c$$$    5 DO 6 I = 1,N
-c$$$         X = WD*R(I)
-c$$$         TB(I) = TB(I)+FAC3*FUNK (X,3)+FAC5*FUNK (X,5)
-c$$$    6 CONTINUE
+C
+C   TABULATE POTENTIALS
+C
+    5 DO 6 I = 1,N
+         X = WD*R(I)
+         write(*,*)"TB",TB(I)
+         TB(I) = TB(I)+FAC3*FUNK (X,3)+FAC5*FUNK (X,5)
+         write(*,*)"FUNK3, FUNK5",FUNK(X,3), FUNK(X,5)
+    6 CONTINUE
 c$$$      write(*,*)"Fermi"
 c$$$      IF (KTC(6) .NE. 0) RETURN
 c$$$C
@@ -705,7 +710,7 @@ c$$$      RETURN
 c$$$    9 DO 10 I = K,N
 c$$$         TB(I) = ZERO
 c$$$   10 CONTINUE
-c$$$      RETURN
+      RETURN
 C
       END
 
@@ -796,10 +801,15 @@ C
       XN = ONE
       GO TO 4
     2 K = N
-      XN = ONE/(X**2)
+      XN = ONE/(X*X)
+      IF(N.eq.3)THEN
+!         write(*,*)"BSUM,LOGX,CSUM",BSUM,LOG(X),CSUM
+         write(*,*)
+         write(*,*)"X*X,XN",X*X,XN
+      ENDIF   
       GO TO 4
     3 K = N-1
-      XN = ONE/(X**4)
+      XN = ONE/(X**4.0D0)
     4 IF (X .GT. ONE) GO TO 9
 C
 C   CALCULATE FUNCTION FOR X < = 1
@@ -818,7 +828,16 @@ C
       GO TO 8
     7 BSUM = BSUM*X2
     8 CONTINUE
+      IF(N.eq.3)THEN
+!         write(*,*)"BSUM,LOGX,CSUM",BSUM,LOG(X),CSUM
+         write(*,*)
+         write(*,*)"SUM1",SUM
+      ENDIF   
       SUM = SUM+BSUM*LOG (X)/CSUM
+      IF(N.eq.3)THEN
+!         write(*,*)"BSUM,LOGX,CSUM",BSUM,LOG(X),CSUM
+         write(*,*)"SUM2",SUM
+      ENDIF   
       FUNK = SUM
       RETURN
 C
@@ -977,7 +996,7 @@ C
 !         ELSEIF (NPARM .EQ. 0) THEN
 !            IF (INF) GO TO 107
 C     bug fix 96/08/14
-         AT3 = 201.970632**3.33333333333333D-01
+         AT3 = (DBLE(202)-0.0293680D0) ** (1.0D0/3.0D0) !for debug, comparing with GRASP         
 !            AT3 = AMASS**3.33333333333333D-01
             RFM = 0.836D00*AT3+0.570D00
             NPARM = 1
