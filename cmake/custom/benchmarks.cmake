@@ -14,7 +14,7 @@ macro(dirac_benchmark _name _label)
     # do not include benchmark tests in default ctest test suite
 endmacro()
 
-dirac_benchmark(benchmark_cc "benchmark;cc" "3600")
+dirac_benchmark(benchmark_cc "benchmark;cc" "10000")
 dirac_benchmark(benchmark_cc_linear "benchmark;cc" "3600")
 dirac_benchmark(benchmark_gaunt "benchmark;gaunt" "3600")
 dirac_benchmark(benchmark_mcscf_energy "benchmark;mcscf" "3600")
