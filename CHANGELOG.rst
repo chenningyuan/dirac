@@ -12,6 +12,9 @@ New features:
 18.1 (unreleased)
 -----------------
 
+Error corrections:
+
+- Fix spelling error in keyword .GAUNTSCALE (was .GAUTSCALE)
 
 
 18.0 (2018-12-13)
