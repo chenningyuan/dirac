@@ -254,12 +254,14 @@ C
 C   SET DEFAULT VALUES OF PARAMETERS FOR CALCULATION
 C
          MXNP = 4000            !same to GRASP
-         NUCTYP = 1
 !         write(*,*)"MXNP",MXNP 
 !     write(*,*)"ZAN",ZAN(IATOM)
 !      CALL NUCPRM(Z,NNUC,ZNORM,PARM1,PARM2)
-         CALL NUCPRM(Z,NUCMASS(INT(ZAN(IATOM))),NUCTYP)
-         CALL MEMSET(ZAN(IATOM),MXNP,RNT,EPH,NUCTYP) !change
+         NUCTYP = 2
+         CALL MEMSET(ZAN(IATOM),MXNP,RNT,EPH,NUCTYP) !change  
+         CALL NUCPRM(ZAN(IATOM),NUCMASS(INT(ZAN(IATOM))),NUCTYP,
+     &                RNT,EPH)
+         write(*,*)"MXNP",MXNP
          allocate( TD(MXNP,NDIM2) )
          allocate( VACIR(MXNP)    )
          allocate( R(MXNP)        )
@@ -495,23 +497,6 @@ C
          ENDIF   
          RTEMP = RTEMP*EPH
 1     CONTINUE
-C
-C   ADJUST GRID SO THAT NUCLEAR BOUNDARY FALLS ON GRID POINT
-C
-      IF (NUCTYP .GT. 0 .AND. NUCTYP .NE. 3) THEN
-         NRAD = INT ((LOG (PARM1) - LOG (RNT))/H)
-         RNEW = PARM1/(EPH**NRAD)
-         IF (RNEW .GT. RNT) THEN
-            RNEW = PARM1/(EPH**(NRAD+1)) !This line means RNEW/EPH
-            NRAD = NRAD+1
-         ENDIF
-C bug fix 96/08/14
-         NRAD = NRAD+1
-C end
-         write(*,*)"RNT1",RNT         
-         RNT = RNEW
-         write(*,*)"RNT2,EPH",RNT,EPH         
-      ENDIF
 C      
       RETURN
 C
@@ -563,6 +548,7 @@ C
 C   SET UP R**2 TIMES NUCLEAR CHARGE DISTRIBUTION
 C
 !      CALL NCHARG(TA,R,Z,ZNORM,NUCTYP)
+      write(*,*)"ZNORM,NNUC",ZNORM,NNUC
       CALL NCHARG(TA,R,Z,N,NUCTYP)
       DO 2 I = 1,N
          ZZ(I) = TA(I)*ZNORM
@@ -570,7 +556,7 @@ C
 C
 C   SECOND-ORDER VACUUM POLARISATION
 C
-    3 CALL VAC2(TB,TA,R,Z,N,NUCTYP)
+    3 CALL VAC2(TB,TA,ZZ,R,Z,N,NUCTYP)
       write(*,*)"TB2"
       DO 1 I = 1,N
          write(*,*)I,TB(I)
@@ -615,7 +601,7 @@ C
       END
 ************************************************************************
 *                                                                      *
-      SUBROUTINE VAC2(TB,TA,R,Z,N,NUCTYP)
+      SUBROUTINE VAC2(TB,TA,ZZ,R,Z,N,NUCTYP)
 *                                                                      *
 *   ----------------   SECTION 11   SUBPROGRAM 11  -----------------   *
 *                                                                      *
@@ -635,7 +621,7 @@ C
 #include "graspprm.h"
 C     
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, THREE = 3.0D0)     
-      DIMENSION TB(N),TA(N),R(N)
+      DIMENSION TB(N),TA(N),R(N),ZZ(N)
       PI3 = THREE*PI
       C2 = CVAL*CVAL
       EPS = 1.0D-05
@@ -654,7 +640,7 @@ C
 C   SERIES EXPANSION FOR FINITE NUCLEUS. CALCULATE EXPANSION
 C   COEFFICIENTS USING EQUATION (7)
 C
-!      IF (NUCTYP .GT. 1) GO TO 2
+      IF (NUCTYP .GT. 1) GO TO 2
 C
 C   UNIFORM NUCLEUS
 C
@@ -663,27 +649,35 @@ C
       FAC5 = FAC3*WA/7.0D00
       write(*,*)"WA,FAC3,FAC5",WA,FAC3,FAC5
       GO TO 5
-c$$$C
-c$$$C   OTHER DISTRIBUTIONS
-c$$$C
-c$$$    2 WB = (C2+C2)/(Z*THREE)
-c$$$      DO 3 I = 1,N
-c$$$         TA(I) = ZZ(I)*(R(I)**3)
-c$$$    3 CONTINUE
-c$$$      CALL QUAD (FAC3)
-c$$$      FAC3 = FAC3*FACTOR*WB
-c$$$      DO 4 I = 1,N
-c$$$         TA(I) = TA(I)*(R(I)**2)
-c$$$    4 CONTINUE
-c$$$      CALL QUAD (FAC5)
-c$$$      FAC5 = FAC5*FACTOR*C2*WB/5.0D00
+C
+C   OTHER DISTRIBUTIONS
+C
+    2 WB = (C2+C2)/(Z*THREE)
+      DO 3 I = 1,N
+        TA(I) = ZZ(I)*(R(I)**3)
+        write(*,*)"TA",TA(I) 
+!        TA(I) = 1.0D0
+    3 CONTINUE
+      CALL QUAD (FAC3,TA,N)
+      write(*,*)"FAC3,FACTIR,WB",FAC3,FACTOR,WB
+      FAC3 = FAC3*FACTOR*WB
+!      FAC3 = 1.0D0
+      DO 4 I = 1,N
+        write(*,*)"TA,R",TA(I),R(I)
+        TA(I) = TA(I)*(R(I)**2)
+    4 CONTINUE
+      CALL QUAD (FAC5,TA,N)
+      write(*,*)"FAC5",FAC5
+      FAC5 = FAC5*FACTOR*C2*WB/5.0D00
+!      FAC5 = 1.0D0
 C
 C   TABULATE POTENTIALS
 C
     5 DO 6 I = 1,N
          X = WD*R(I)
-         write(*,*)"TB",TB(I)
-         TB(I) = TB(I)+FAC3*FUNK (X,3)+FAC5*FUNK (X,5)
+         
+         TB(I) = TB(I)+FAC3*FUNK (X,3)+FAC5*FUNK (X,5) 
+         write(*,*)"FAC3,FAC5",FAC3,FAC5
          write(*,*)"FUNK3, FUNK5",FUNK(X,3), FUNK(X,5)
     6 CONTINUE
 c$$$      write(*,*)"Fermi"
@@ -802,11 +796,11 @@ C
       GO TO 4
     2 K = N
       XN = ONE/(X*X)
-      IF(N.eq.3)THEN
+!      IF(N.eq.3)THEN
 !         write(*,*)"BSUM,LOGX,CSUM",BSUM,LOG(X),CSUM
-         write(*,*)
-         write(*,*)"X*X,XN",X*X,XN
-      ENDIF   
+!         write(*,*)
+!         write(*,*)"X*X,XN",X*X,XN
+!      ENDIF   
       GO TO 4
     3 K = N-1
       XN = ONE/(X**4.0D0)
@@ -828,16 +822,16 @@ C
       GO TO 8
     7 BSUM = BSUM*X2
     8 CONTINUE
-      IF(N.eq.3)THEN
+!      IF(N.eq.3)THEN
 !         write(*,*)"BSUM,LOGX,CSUM",BSUM,LOG(X),CSUM
-         write(*,*)
-         write(*,*)"SUM1",SUM
-      ENDIF   
+!         write(*,*)
+!         write(*,*)"SUM1",SUM
+!      ENDIF   
       SUM = SUM+BSUM*LOG (X)/CSUM
-      IF(N.eq.3)THEN
+!      IF(N.eq.3)THEN
 !         write(*,*)"BSUM,LOGX,CSUM",BSUM,LOG(X),CSUM
-         write(*,*)"SUM2",SUM
-      ENDIF   
+!         write(*,*)"SUM2",SUM
+!      ENDIF   
       FUNK = SUM
       RETURN
 C
@@ -879,7 +873,6 @@ C
       END
 ************************************************************************
 *                                                                      *
-!      SUBROUTINE NCHARG(TA,R,Z,ZNORM,NUCTYP)
       SUBROUTINE NCHARG(TA,R,Z,N,NUCTYP)
 *                                                                      *
 *   ----------------   SECTION 11   SUBPROGRAM 19   ----------------   *
@@ -897,13 +890,14 @@ C
 *                                                                      *
 ************************************************************************
 #include "implicit.h"
+#include "priunit.h"
 #include "graspprm.h"
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, THREE = 3.0D0)     
       DIMENSION TA(N),R(N)
 C
 !      RAD = PARM(1)
 !      IF (RAD .LE. ZERO) GO TO 99
-!      IF (NUCTYP .GT. 1) GO TO 3
+      IF (NUCTYP .GT. 1) GO TO 3
 C
 C   UNIFORM DISTRIBUTION
 C
@@ -912,16 +906,19 @@ C
          TA(I) = R(I)*R(I)
     2 CONTINUE
       RETURN
-c$$$C
-c$$$C   FERMI CHARGE DISTRIBUTION
-c$$$C
-c$$$    3 SKI = PARM(2)
-c$$$      IF (SKI .LE. ZERO) GO TO 98
-c$$$      IF (NUCTYP .GT. 2) GO TO 5
-c$$$      DO 4 I = 1,NNUC
-c$$$         TA(I) = (R(I)*R(I))/(ONE+EXP ((R(I)-RAD)/SKI))
-c$$$    4 CONTINUE
-c$$$      GO TO 7
+C
+C   FERMI CHARGE DISTRIBUTION
+C
+    3 SKI = PARM2
+      IF (SKI .LE. ZERO) GO TO 98
+!     IF (NUCTYP .GT. 2) GO TO 5
+      write(*,*)"NNUC",NNUC
+      DO 4 I = 1,NNUC
+         TA(I) = (R(I)*R(I))/(ONE+EXP ((R(I)-RAD)/SKI))
+!         write(*,*)"R,RAD,SKI",R(I),RAD,SKI,TA(I)
+    4 CONTINUE
+      RETURN
+!      GO TO 7
 c$$$C
 c$$$C   GAUSSIAN CHARGE DISTRIBUTION
 c$$$C
@@ -944,20 +941,20 @@ c$$$      IF (NPARM .EQ. 3) RETURN
 c$$$C
 c$$$C   SIX-PARAMETER DISTRIBUTION (NOT IMPLEMENTED)
 c$$$C
-c$$$      WRITE (IPD,300)
-c$$$      WRITE (IPD,301)
+c$$$      WRITE (LUPRI,300)
+c$$$      WRITE (LUPRI,301)
 c$$$      STOP '111901'
 c$$$C
 C   ERROR SECTION
 C
-   97 WRITE (IPD,300)
-      WRITE (IPD,302)
+   97 WRITE (LUPRI,300)
+      WRITE (LUPRI,302)
       STOP '111902'
-   98 WRITE (IPD,300)
-      WRITE (IPD,303)
+   98 WRITE (LUPRI,300)
+      WRITE (LUPRI,303)
       STOP '111903'
-   99 WRITE (IPD,300)
-      WRITE (IPD,304)
+   99 WRITE (LUPRI,300)
+      WRITE (LUPRI,304)
       STOP '111904'
 C
   300 FORMAT (///' ***** ERROR IN NCHARG *****')
@@ -970,7 +967,7 @@ C
 C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE NUCPRM(Z,AMASS,NUCTYP)
+      SUBROUTINE NUCPRM(Z,AMASS,NUCTYP,RNT,EPH)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C deciding nuclear paramerer
@@ -980,35 +977,40 @@ C Modified to DIRAC A. Sunaga Nov. 2018
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
+#include "priunit.h"
 #include "pi.h"
-#include "graspprm.h" 
+#include "graspprm.h"
+CCCCCCCCCCCCCC      
+C datain.F
+CCCCCCCCCCCCCC
 !     PARAMETER (THREE = 3.0D0, FIVE = 5.0D0, SEVEN = 7.0D0)
 !     PARAMETER (FMTOAU = 1.88972598858D-5)
 C     sunaga
-C If I write these parameter, error messages appear.      
+C     If I write these parameter, error messages appear.
+      H = 1.0D-2
       IF (NUCTYP .EQ. 0)   RETURN
 C
       FMTOAU = 1.0D-13/0.529177249D-08
 !      CST13 = 3.33333333333333D-01
+      AT3 = (DBLE(202)-0.0293680D0) ** (1.0D0/3.0D0) !for debug, comparing with GRASP         
+!      AT3 = AMASS**3.33333333333333D-01
       IF (NUCTYP .EQ. 1 .OR. NUCTYP .EQ. 3) THEN
 !         IF (NPARM .EQ. 1) THEN
 !            RFM = PARM(1)
 !         ELSEIF (NPARM .EQ. 0) THEN
 !            IF (INF) GO TO 107
 C     bug fix 96/08/14
-         AT3 = (DBLE(202)-0.0293680D0) ** (1.0D0/3.0D0) !for debug, comparing with GRASP         
-!            AT3 = AMASS**3.33333333333333D-01
-            RFM = 0.836D00*AT3+0.570D00
-            NPARM = 1
-            write(*,*)"NUCPRM,AT3",AT3
-            IF (NUCTYP .EQ. 1) RFM = RFM*SQRT(5.0D0/3.0D0)
+         RFM = 0.836D00*AT3+0.570D00
+         NPARM = 1
+         write(*,*)"NUCPRM,AT3",AT3
+         IF (NUCTYP .EQ. 1) RFM = RFM*SQRT(5.0D0/3.0D0)
 C end
 !         ELSE
 !            GO TO 101
 !         ENDIF
          PARM1 = RFM*FMTOAU
          IF ((NUCTYP .EQ. 1) .AND. (PARM1 .LE. RNT)) GO TO 103
-c$$$      ELSEIF (NUCTYP .EQ. 2) THEN
+      ELSEIF (NUCTYP .EQ. 2) THEN
 c$$$         IF (NPARM .EQ. 2) THEN
 c$$$            RRMSFM = PARM(1)
 c$$$            TFM = PARM(2)
@@ -1018,25 +1020,50 @@ c$$$            TFM = 2.30D00
 c$$$            NPARM = 2
 c$$$         ELSEIF (NPARM .EQ. 0) THEN
 c$$$            IF (INF) GO TO 107
-c$$$            RRMSFM = 0.836D00*AT3+0.570D00
-c$$$            TFM = 2.30D00
-c$$$            NPARM = 2
+         RRMSFM = 0.836D00*AT3+0.570D00
+         TFM = 2.30D00
+         NPARM = 2
 c$$$         ELSE
 c$$$            GO TO 101
 c$$$         ENDIF
-c$$$         RRMS = RRMSFM*FMTOAU
-c$$$         T = TFM*FMTOAU
-c$$$         PARM(2) = T/(4.0D0*LOG (THREE))
-c$$$         ARG = (RRMS**2)-(SEVEN/FIVE)*((PI*PARM(2))**2)
-c$$$         IF (ARG .LE. ZERO) THEN
-c$$$            PARM(1) = 2.2291D-05*AT3-0.90676D-05
-c$$$         ELSE
-c$$$            PARM(1) = SQRT (ARG*FIVE/THREE)
-c$$$         ENDIF
+         RRMS = RRMSFM*FMTOAU
+         T = TFM*FMTOAU
+         PARM2 = T/(4.0D0*LOG (3.0d0))
+         ARG = (RRMS**2)-(7.0D0/5.0D0)*((PI*PARM2)**2)
+!         ARG = (RRMS**2)-(SEVEN/THREE)*((PI*PARM(2))**2)
+         IF (ARG .LE. 0.0d0) THEN
+            PARM1 = 2.2291D-05*AT3-0.90676D-05
+            write(*,*)"AT3",AT3
+         ELSE
+            PARM1 = SQRT (ARG*5.0D0/3.0D0)
+            write(*,*)"ARG",ARG
+!            PARM1 = SQRT (ARG)    ! This line is correct.
+         ENDIF
 c$$$         IF (PARM(1) .LE. RNT) GO TO 103
 c$$$      ELSE
 c$$$         GO TO 103
       ENDIF
+C
+C   ADJUST GRID SO THAT NUCLEAR BOUNDARY FALLS ON GRID POINT
+C
+      IF (NUCTYP .GT. 0 .AND. NUCTYP .NE. 3) THEN
+         NRAD = INT ((LOG (PARM1) - LOG (RNT))/H)
+         RNEW = PARM1/(EPH**NRAD)
+         IF (RNEW .GT. RNT) THEN
+            RNEW = PARM1/(EPH**(NRAD+1)) !This line means RNEW/EPH
+            NRAD = NRAD+1
+         ENDIF
+C bug fix 96/08/14
+         NRAD = NRAD+1
+C end
+         write(*,*)"NRAD",NRAD         
+         RNT = RNEW
+      ENDIF
+CCCCCCCCCCCCCC      
+C mcdf.F, NUCPOT
+CCCCCCCCCCCCCC
+C     This part is for usual nuclear potential.
+C     ZZ(I) for vacuum potential is calculated in other part.
 !C
 !C
 !C   POINT NUCLEUS
@@ -1047,21 +1074,22 @@ c$$$         GO TO 103
 !         DO 1 I = 1,MXNP
 !            ZZ(I) = Z
 !    1    CONTINUE
-!         WRITE (IPD,300)
+!         WRITE (LUPRI,300)
 !         NNUC = 0
 C
 C   FINITE NUCLEI
 C
       IF (NUCTYP .LE. 2) THEN
-         WRITE (IPD,301)
-         RAD = PARM1
-         WA = RAD*RAD
-         FAC = Z/(RAD*WA)
-         ZNORM = 3.0D0*FAC
-         FAC = FAC/TWO
-         WA = WA*3.0D0
-         Z1 = 3.0D0*Z/(2.0D0*RAD)
-         Z3 = -FAC
+        WRITE (LUPRI,301)
+        RAD = PARM1
+        WA = RAD*RAD
+        FAC = Z/(RAD*WA)
+        ZNORM = 3.0D0*FAC
+        write(*,*)"Z,RAD",Z,RAD
+        FAC = FAC/TWO
+        WA = WA*3.0D0
+        Z1 = 3.0D0*Z/(2.0D0*RAD)
+        Z3 = -FAC
 C
 C   UNIFORM CHARGE DISTRIBUTION
 C
@@ -1073,62 +1101,66 @@ C
 !     4    CONTINUE
 C
 C     sunaga
-C     This part is for usual nuclear potential.
-C     ZZ(I) for vacuum potential is defined in other part.
 C         
          NNUC = NRAD
          IF (NUCTYP .EQ. 1) THEN
-!            WRITE (IPD,302) RAD
+!            WRITE (LUPRI,302) RAD
 C
 C   FERMI DISTRIBUTION
 C
-         ELSEIF (NUCTYP. EQ. 2) THEN
-c$$$            SKI = PARM(2)
-c$$$            RS = RAD/SKI
-c$$$            X = EXP (-RS)
-c$$$            SR = SKI/RAD
-c$$$            SR2 = SR*SR
-c$$$            SR3 = SR2*SR
-c$$$            SUM2 = XKONKN (X,2,PRECIS) * SR2
-c$$$            SUM3 = XKONKN (X,3,PRECIS) * SR3
-c$$$            SRE2 = XKONKN (ONE,2,PRECIS)*SR2
-c$$$            SRE3 = XKONKN (ONE,3,PRECIS)*SR3
-c$$$            DEN = ONE + 6.0D0*(SUM3+SRE2+SRE2)
-c$$$            ZNORM = ZNORM/DEN
-c$$$            VNFAC = Z1/DEN
-c$$$            Z1 = VNFAC*(ONE+TWO*(SRE2+SRE2-SUM2))
-c$$$            Z3 = Z3/(DEN*(ONE+X))
-c$$$            RAD2 = RAD+RAD
-c$$$            VNFAC = VNFAC+VNFAC
-c$$$            DO 5 I = 1,NRAD-1
-c$$$               X = EXP (R(I)/SKI-RS)
-c$$$               SUMR2 = XKONKN (X,2,PRECIS) * SR2
-c$$$               SUMR3 = XKONKN (X,3,PRECIS) * SR3
-c$$$               ZZ(I) = ZZ(I)/DEN + VNFAC*( R(I)*(SRE2+SRE2+SUMR2)
-c$$$     &                                    +RAD2*(SUM3-SUMR3) )
-c$$$    5       CONTINUE
-c$$$            VNFAC = THREE/DEN
-c$$$            ZZ(NRAD) = ZZ(NRAD)*(ONE - VNFAC*(SRE2+SRE3+SRE3) )
-c$$$            WA = LOG (VNFAC)+LOG (SR2)+LOG (ONE+SR+SR)-LOG (PRECIS)
-c$$$            NNUC = NRAD+NINT (LOG (ONE+WA*SR)/H)+1
+         ELSEIF (NUCTYP .EQ. 2) THEN
+            PRECIS = 2.0D0**(-53) !same to GRASP
+            SKI = PARM2
+            RS = RAD/SKI
+            write(*,*)"RAD,SKI",RAD,SKI
+            X = EXP (-RS)
+            SR = SKI/RAD
+            SR2 = SR*SR
+            SR3 = SR2*SR
+            SUM2 = XKONKN (X,2,PRECIS) * SR2
+            SUM3 = XKONKN (X,3,PRECIS) * SR3
+            SRE2 = XKONKN (1.0D0,2,PRECIS)*SR2
+            SRE3 = XKONKN (1.0D0,3,PRECIS)*SR3
+            DEN = 1.0D0 + 6.0D0*(SUM3+SRE2+SRE2)
+            write(*,*)"ZNORM,SUM3,SRE2,DEN",ZNORM,SUM3,SRE2,DEN
+            ZNORM = ZNORM/DEN
+            VNFAC = Z1/DEN
+!            Z1 = VNFAC*(1.0D0+2.0D0)*(SRE2+SRE2-SUM2))
+!            Z3 = Z3/(DEN*(1.0D0+X))
+!            RAD2 = RAD+RAD
+            VNFAC = VNFAC+VNFAC
+!            DO 5 I = 1,NRAD-1
+!               X = EXP (R(I)/SKI-RS)
+!               SUMR2 = XKONKN (X,2,PRECIS) * SR2
+!               SUMR3 = XKONKN (X,3,PRECIS) * SR3
+!               ZZ(I) = ZZ(I)/DEN + VNFAC*( R(I)*(SRE2+SRE2+SUMR2)
+!     &                                    +RAD2*(SUM3-SUMR3) )
+!    5       CONTINUE
+            VNFAC = 3.0D0/DEN
+!     ZZ(NRAD) = ZZ(NRAD)*(1.0D0 - VNFAC*(SRE2+SRE3+SRE3) )
+            WA = LOG (VNFAC)+LOG (SR2)+LOG (1.0D0+SR+SR)-LOG (PRECIS)
+            NNUC = NRAD+NINT (LOG (1.0D0+WA*SR)/H)+1
+            write(*,*)"NINT",NINT (LOG (1.0D0+WA*SR)/H)
+            write(*,*)"WA,SR,NRAD,NNUC",WA,SR,NRAD,NNUC
+C The below part is not needed for Vacuum potential            
 c$$$            DO 6 I = NRAD+1,NNUC
 c$$$               X = EXP (RS-R(I)/SKI)
 c$$$               SUMR2 = XKONKN (X,2,PRECIS) * SR2
 c$$$               SUMR3 = XKONKN (X,3,PRECIS) * SR3
 c$$$               ZZ(I) = ZZ(I)*(ONE - VNFAC*(SUMR3+SUMR3+SUMR2*R(I)/RAD))
 c$$$    6       CONTINUE
-c$$$            WRITE (IPD,303) NPARM
-c$$$            WRITE (IPD,304) RAD,SKI
+c$$$            WRITE (LUPRI,303) NPARM
+c$$$            WRITE (LUPRI,304) RAD,SKI
          ENDIF
-!         WRITE (IPD,305) NRAD
+!         WRITE (LUPRI,305) NRAD
       ELSEIF (NUCTYP .EQ. 3) THEN
 c$$$C
 c$$$C   GAUSSIAN DISTRIBUTION
 c$$$C
-c$$$         WRITE (IPD,301)
+c$$$         WRITE (LUPRI,301)
 c$$$         RAD = PARM(1)
 c$$$         WB = THREE/(TWO*RAD*RAD)
-c$$$         WRITE (IPD,306) RAD,WB
+c$$$         WRITE (LUPRI,306) RAD,WB
 c$$$         WA = SQRT(WB)
 c$$$         Z1 = TWO*Z*WA/PIRT
 c$$$         Z3 = -Z1*WB/THREE
@@ -1146,28 +1178,30 @@ C
       
       RETURN
 C
-  101 WRITE (IPD,300)
-      WRITE (IPD,301)
+  101 WRITE (LUPRI,300)
+      WRITE (LUPRI,301)
       STOP '020401'
-  102 WRITE (IPD,300)
-      WRITE (IPD,302)
+  102 WRITE (LUPRI,300)
+      WRITE (LUPRI,302)
       STOP '020402'
-  103 WRITE (IPD,300)
-      WRITE (IPD,303)
+  103 WRITE (LUPRI,300)
+      WRITE (LUPRI,303)
       STOP '020403'
-  104 WRITE (IPD,300)
-      WRITE (IPD,304)
+  104 WRITE (LUPRI,300)
+      WRITE (LUPRI,304)
       STOP '020404'
-  105 WRITE (IPD,300)
-      WRITE (IPD,305)
+  105 WRITE (LUPRI,300)
+      WRITE (LUPRI,305)
       STOP '020405'
-  106 WRITE (IPD,300)
-      WRITE (IPD,306)
+  106 WRITE (LUPRI,300)
+      WRITE (LUPRI,306)
       STOP '020406'
-  107 WRITE (IPD,300)
-      WRITE (IPD,307)
+  107 WRITE (LUPRI,300)
+      WRITE (LUPRI,307)
       STOP '020407'
-C
+CCCCCCCCC
+C mcdf.F 
+CCCCCCCCC
   300 FORMAT (/' ***** ERROR ON ABOVE DATA CARD *****')
   301 FORMAT (/' INCORRECT NUMBER OF VALUES GIVEN')
   302 FORMAT (/' STRING GIVEN WHERE NUMBER EXPECTED')
@@ -1181,10 +1215,9 @@ C
      & ' PROCEEDING WITH (E)AL CALCULATION.')
 C
       END      
-
       
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE QUAD(RESULT,TE,NR,H)
+      SUBROUTINE QUAD(RESULT,TE,NR)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C Numerical radial integral for one dimension
@@ -1201,7 +1234,7 @@ C
      &           W2 = 68.0D0*W7,  W1 = 112.0D0*W7)
 C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
-      PARAMETER(EPSI = 1.0D-35) !-35
+      PARAMETER(H=1.0D-2,EPSI = 1.0D-35) !-35
 !      REAL(8) TE(NR)      
 !      DIMENSION TE(NR)      
       DIMENSION TE(*)
@@ -1254,7 +1287,72 @@ C
       RETURN
 C
       END      
-      
+************************************************************************
+*                                                                      *
+C     /* Deck XKONKN */
+      FUNCTION XKONKN (X,N,TOL)
+*                                                                      *
+*   ----------------   SECTION 09   SUBPROGRAM 10   ----------------   *
+*                                                                      *
+*   EVALUATE THE SUM OF THE SERIES (-X)**(K+1)/K**N FROM K = 1         *
+*   UNTIL THE PRESCRIBED TOLERANCE IS MET.                             *
+*                                                                      *
+*   NO SUBROUTINES CALLED                                              *
+*                                                                      *
+*                                         LAST REVISION: 30 AUG 1987   *
+*                                                                      *
+************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C     
+      PARAMETER(MXXK = 100) ! 100 in GRASP      
+      DIMENSION DELTA(MXXK)
+      PARAMETER(HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0, THREE = 3.0D0)
+C
+C   SUMMATION FOR K = 1,...,6
+C
+      XK = ONE
+      FKN = ONE
+      SUM = XK
+      DO 1 K = 2,6
+         XK = -XK*X
+         FKN = DBLE (K**N)
+         TERM = XK/FKN
+         SUM = SUM+TERM
+         IF (ABS (TERM/SUM) .LT. TOL) GO TO 4
+    1 CONTINUE
+C
+C   REMAINDER OF SUM
+C
+      K = 6
+      M = 7
+    2 K = K+1
+      KM = K-M
+!      write(*,*)
+!      write(*,*)"KM,MXXK",KM,MXXK !sunaga
+      IF (KM .GT. MXXK-1) GO TO 99
+      XK = -XK*X
+      FKN = DBLE (K**N)
+      DELTA(KM+1) = XK*HALF/FKN
+      DO 3 J = KM,1,-1
+         DELTA(J) = HALF*(DELTA(J)+DELTA(J+1))
+    3 CONTINUE
+      SUM = SUM+DELTA(1)
+!      write(*,*)"DELTA,SUM,TOL",DELTA(1),SUM,TOL !sunaga
+      IF (ABS (DELTA(1)/SUM) .GT. TOL) GO TO 2
+C
+    4 XKONKN = SUM*X
+      RETURN
+C
+   99 WRITE (LUPRI,300) MXXK
+
+      STOP '091001'
+C
+  300 FORMAT(/' ***** ERROR IN XKONKN *****',//' OVERFLOW IN ARRAY ',
+     & 'DELTA. RECOMPILE WITH VALUE OF SYMBOL XK GREATER THAN ', I3 )
+C
+      END
+C      
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EFFECTIVE_DENS_NUC(WORK,LWORK,COMB)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
