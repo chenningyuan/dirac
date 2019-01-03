@@ -257,7 +257,7 @@ C
 !         write(*,*)"MXNP",MXNP 
 !     write(*,*)"ZAN",ZAN(IATOM)
 !      CALL NUCPRM(Z,NNUC,ZNORM,PARM1,PARM2)
-         NUCTYP = 2
+         NUCTYP = 0
          CALL MEMSET(ZAN(IATOM),MXNP,RNT,EPH,NUCTYP) !change  
          CALL NUCPRM(ZAN(IATOM),NUCMASS(INT(ZAN(IATOM))),NUCTYP,
      &                RNT,EPH)
@@ -279,9 +279,14 @@ C
          write(*,*)"R(1),Z",R(1),ZAN(IATOM)
          write(*,*)"J,VACIR"
          DO 20 IR = 1, MXNP
-!           CALL VAC2PT(VACIR,RNODE,ZAN(IATOM)) !change
 !           write(*,*)RNODE,VACIR 
-           RFAC = R(IR)*R(IR)*R(IR) * VACIR(IR) !change
+C
+C     1/r in Eq. (2), (4),and (6) of Rinker's paper is NOT calculated in VCMPOL.
+C     Integrand = 1/r * VP(r) * (Large*Large + Small*Small) * r^2 * r
+C      Meaning:   1/r * VACIR(R) *   wavefunction     * Radial int. * for QUAD 
+C     Finally,    We multiply R(IR)*R(IR).
+C     
+           RFAC = R(IR)*R(IR) * VACIR(IR) !*R(IR)!change
            CALL DZERO(TC,NDIM2)
 C            
 C          loop over angular points
@@ -479,7 +484,6 @@ C
       PI3 = THREE*PI
       WD = CVAL+CVAL
       FACTOR = -(Z+Z)/(PI3*CVAL)
-!      CALL HEADER('VAC2, second order Vacuum potential',-1)
 C
 C   SET UP POTENTIAL FOR POINT NUCLEUS
 C
@@ -492,7 +496,6 @@ C
 !          write(*,*)"I",I,TEMP
          IF(ABS(TEMP).LE.1.0D-50)THEN
             MXNP = I
-!            write(*,*)"MXNP_VAC2",MXNP
             exit
          ENDIF   
          RTEMP = RTEMP*EPH
@@ -919,16 +922,16 @@ C
     4 CONTINUE
       RETURN
 !      GO TO 7
-c$$$C
-c$$$C   GAUSSIAN CHARGE DISTRIBUTION
-c$$$C
-c$$$    5 IF (NUCTYP .GT. 3) GO TO 97
-c$$$      WA = SQRT (EXPMAX)*SKI+RAD
-c$$$      WA = SQRT (EXPMAX+TWO*LOG (WA))*SKI+RAD
-c$$$      NNUC = LOG (WA/RNT)/H+ONE
-c$$$      DO 6 I = 1,NNUC
-c$$$         TA(I) = (R(I)*R(I))/(ONE+EXP (((R(I)-RAD)/SKI)**2))
-c$$$    6 CONTINUE
+C
+C   GAUSSIAN CHARGE DISTRIBUTION
+C
+    5 IF (NUCTYP .GT. 3) GO TO 97
+      WA = SQRT (EXPMAX)*SKI+RAD
+      WA = SQRT (EXPMAX+TWO*LOG (WA))*SKI+RAD
+      NNUC = LOG (WA/RNT)/H+ONE
+      DO 6 I = 1,NNUC
+         TA(I) = (R(I)*R(I))/(ONE+EXP (((R(I)-RAD)/SKI)**2))
+    6 CONTINUE
 c$$$C
 c$$$C   THREE-PARAMETER DISTRIBUTION
 c$$$C
@@ -1103,39 +1106,39 @@ C
 C     sunaga
 C         
          NNUC = NRAD
-         IF (NUCTYP .EQ. 1) THEN
+        IF (NUCTYP .EQ. 1) THEN
 !            WRITE (LUPRI,302) RAD
 C
 C   FERMI DISTRIBUTION
 C
-         ELSEIF (NUCTYP .EQ. 2) THEN
-            PRECIS = 2.0D0**(-53) !same to GRASP
-            SKI = PARM2
-            RS = RAD/SKI
-            write(*,*)"RAD,SKI",RAD,SKI
-            X = EXP (-RS)
-            SR = SKI/RAD
-            SR2 = SR*SR
-            SR3 = SR2*SR
-            SUM2 = XKONKN (X,2,PRECIS) * SR2
-            SUM3 = XKONKN (X,3,PRECIS) * SR3
-            SRE2 = XKONKN (1.0D0,2,PRECIS)*SR2
-            SRE3 = XKONKN (1.0D0,3,PRECIS)*SR3
-            DEN = 1.0D0 + 6.0D0*(SUM3+SRE2+SRE2)
-            write(*,*)"ZNORM,SUM3,SRE2,DEN",ZNORM,SUM3,SRE2,DEN
-            ZNORM = ZNORM/DEN
-            VNFAC = Z1/DEN
-!            Z1 = VNFAC*(1.0D0+2.0D0)*(SRE2+SRE2-SUM2))
-!            Z3 = Z3/(DEN*(1.0D0+X))
-!            RAD2 = RAD+RAD
-            VNFAC = VNFAC+VNFAC
-!            DO 5 I = 1,NRAD-1
-!               X = EXP (R(I)/SKI-RS)
-!               SUMR2 = XKONKN (X,2,PRECIS) * SR2
-!               SUMR3 = XKONKN (X,3,PRECIS) * SR3
-!               ZZ(I) = ZZ(I)/DEN + VNFAC*( R(I)*(SRE2+SRE2+SUMR2)
-!     &                                    +RAD2*(SUM3-SUMR3) )
-!    5       CONTINUE
+        ELSEIF (NUCTYP .EQ. 2) THEN
+           PRECIS = 2.0D0**(-53) !same to GRASP
+           SKI = PARM2
+           RS = RAD/SKI
+           write(*,*)"RAD,SKI",RAD,SKI
+           X = EXP (-RS)
+           SR = SKI/RAD
+           SR2 = SR*SR
+           SR3 = SR2*SR
+           SUM2 = XKONKN (X,2,PRECIS) * SR2
+           SUM3 = XKONKN (X,3,PRECIS) * SR3
+           SRE2 = XKONKN (1.0D0,2,PRECIS)*SR2
+           SRE3 = XKONKN (1.0D0,3,PRECIS)*SR3
+           DEN = 1.0D0 + 6.0D0*(SUM3+SRE2+SRE2)
+           write(*,*)"ZNORM,SUM3,SRE2,DEN",ZNORM,SUM3,SRE2,DEN
+           ZNORM = ZNORM/DEN
+           VNFAC = Z1/DEN
+!           Z1 = VNFAC*(1.0D0+2.0D0)*(SRE2+SRE2-SUM2))
+!           Z3 = Z3/(DEN*(1.0D0+X))
+!           RAD2 = RAD+RAD
+           VNFAC = VNFAC+VNFAC
+!           DO 5 I = 1,NRAD-1
+!              X = EXP (R(I)/SKI-RS)
+!              SUMR2 = XKONKN (X,2,PRECIS) * SR2
+!              SUMR3 = XKONKN (X,3,PRECIS) * SR3
+!              ZZ(I) = ZZ(I)/DEN + VNFAC*( R(I)*(SRE2+SRE2+SUMR2)
+!    &                                    +RAD2*(SUM3-SUMR3) )
+!   5       CONTINUE
             VNFAC = 3.0D0/DEN
 !     ZZ(NRAD) = ZZ(NRAD)*(1.0D0 - VNFAC*(SRE2+SRE3+SRE3) )
             WA = LOG (VNFAC)+LOG (SR2)+LOG (1.0D0+SR+SR)-LOG (PRECIS)
@@ -1151,9 +1154,9 @@ c$$$               ZZ(I) = ZZ(I)*(ONE - VNFAC*(SUMR3+SUMR3+SUMR2*R(I)/RAD))
 c$$$    6       CONTINUE
 c$$$            WRITE (LUPRI,303) NPARM
 c$$$            WRITE (LUPRI,304) RAD,SKI
-         ENDIF
+         ENDIF !        IF (NUCTYP .EQ. 1) THEN 
 !         WRITE (LUPRI,305) NRAD
-      ELSEIF (NUCTYP .EQ. 3) THEN
+      ELSEIF (NUCTYP .EQ. 3) THEN !      IF (NUCTYP .LE. 2) THEN
 c$$$C
 c$$$C   GAUSSIAN DISTRIBUTION
 c$$$C
@@ -1170,7 +1173,7 @@ c$$$    7    CONTINUE
 C
 C   OTHER DISTRIBUTIONS : NOT CURRENTLY IMPLEMENTED
 C
-      ELSE
+      ELSE !      IF (NUCTYP .LE. 2) THEN
 !     GO TO 99
          write(*,*)"error"
          stop
