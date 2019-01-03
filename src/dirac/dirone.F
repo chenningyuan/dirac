@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2182,7 +2182,7 @@ C   PAMIOU: LUTMAT
       logical              :: TOBE, FNDLAB, FNDLAB12, gmotra_case3
       logical              :: is_2c_rel_run
       integer              :: is_defining_h1mat
-      integer              :: ndim_lowmat
+      integer              :: ndim_lowmat,idum
       integer              :: lulmat = 99
       character(len=12)    :: flabel
       real(8), allocatable :: tmat_mmf(:)
@@ -2195,6 +2195,7 @@ C   PAMIOU: LUTMAT
       real(8), allocatable :: pctm_aoosoc(:)
       logical              :: no1esystem_aoosoc
 #endif
+      real(8)              :: timstr(2), timend(2), dum
 
       CALL QENTER('GMOTRA')
 
@@ -2258,9 +2259,9 @@ C     ==============================================
         call readi(lulmat,1,ndim_lowmat)
         call readt(lulmat,ndim_lowmat,work(kvmat))
       else
-        CALL TIMER('START ',TIMSTR,TIMEND)
+        CALL TIMER2('START ',TIMSTR,TIMEND)
         CALL LOWDIN(WORK(KVMAT),WORK(KFREE),LFREE,IPRHAM)
-        CALL TIMER('Lwdn_a',TIMSTR,TIMEND)
+        CALL TIMER2('Lwdn_a',TIMSTR,TIMEND)
 
 !       save LOWDIN matrix on file
         ndim_lowmat = 0
@@ -2327,7 +2328,7 @@ C
 !       --------------------------------------------
       ELSE IF(is_2c_rel_run)THEN
 !
-        CALL TIMER('START ',TIMSTR,TIMEND)
+        CALL TIMER2('START ',TIMSTR,TIMEND)
 
         TOBE=.FALSE.
         IF(GOFAST) THEN
@@ -2495,7 +2496,7 @@ C.........reset NEWPRP to re-initialize AOPROPER
 
         ENDIF ! restart X2C or re-do X2C switch
 
-        CALL TIMER('mk_h2c',TIMSTR,TIMEND)
+        CALL TIMER2('mk_h2c',TIMSTR,TIMEND)
 
 !
 !       case 2 - step b: generate Lowdin canonical orthonormalization matrix in 2c-mode
@@ -2548,9 +2549,9 @@ C.........reset NEWPRP to re-initialize AOPROPER
 
           CALL MEMGET('REAL',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
 C.........do canonical orthonormalization
-          CALL TIMER('START ',TIMSTR,TIMEND)
+          CALL TIMER2('START ',TIMSTR,TIMEND)
           CALL LOWDIN(WORK(KTMAT),WORK(KFREE),LFREE,IPRHAM)
-          CALL TIMER('Lwdn_b',TIMSTR,TIMEND)
+          CALL TIMER2('Lwdn_b',TIMSTR,TIMEND)
 
 !         save new 2c-LOWDIN matrix on file
           call opnfil(lulmat,'LOWDMAT','UNKNOWN','gmotra')
@@ -2730,7 +2731,7 @@ C
             cmo_aoosoc  = 0.0d0
 !           read coefficients
             call opnfil(lucoef,'DFCOEF','OLD','aoosoc')
-            call reacmo(lucoef,'DFCOEF',cmo_aoosoc,xx,ii,jj,2)
+            call reacmo(lucoef,'DFCOEF',cmo_aoosoc,dum,idum,dum,2)
             close(lucoef,status='keep')
 
 !           generate density matri(x/ces)
@@ -2890,7 +2891,7 @@ C
           tbuf_mmf    = 0
           !> read 2c-mos
           call opnfil(lucoef,'DFCOEF','OLD','mmfmos')
-          call reacmo(lucoef,'DFCOEF',cmo_mmf,xx,ii,jj,2)
+          call reacmo(lucoef,'DFCOEF',cmo_mmf,dum,idum,dum,2)
           close(lucoef,status='keep')
           !> density matrix/ces
           call denmat(tbuf_mmf,cmo_mmf,iprham)
@@ -4276,8 +4277,8 @@ C
       LOGICAL DOINT(2,2), FINISH, ISONBSSMAT, WEHAVE
       CHARACTER*4 OMITVNUC
       CHARACTER*8 BNCRLAB
-      DIMENSION WORK(LWORK),FMAT(*)
-      logical fndlab12
+      REAL*8    WORK(LWORK),FMAT(*)
+      logical   fndlab12
       character*12 flabel
 #include "dcbgen.h"
 #include "dgroup.h"
@@ -4288,12 +4289,14 @@ C
 #include "cbiher.h"
 #include "cbihr1.h"
 #include "cbisol.h"
+
+      real(8)  :: TIMSTR(2), TIMEND(2)
 C
       CALL QENTER('BNCORR')
 c
 c     Start timer
 c
-      TIMSTR = SECOND()
+      CALL TIMER2('START',TIMSTR,TIMEND)
 c
 #include "memint.h"
 
@@ -4503,10 +4506,8 @@ C     Memory deallocation
 C
 c     Stop timer
 c
- 999  TIMEND = SECOND()
-      TIME   = TIMEND - TIMSTR
-      IF (IPRINT.GE.2)
-     &  CALL TIMTXT('>>> Time used in BNCORR is',TIME,LUPRI)
+ 999  IF (IPRINT.GE.2)
+     &  CALL TIMER2('>>> Time used in BNCORR is',TIMSTR,TIMEND)
       CALL QEXIT('BNCORR')
       RETURN
       END

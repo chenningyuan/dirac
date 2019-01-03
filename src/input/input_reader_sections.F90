@@ -287,6 +287,11 @@
          visual_cfg_3d_integration = .true.
       end if
 
+      if (kw_matches(word, '.3D_IMP')) then
+         visual_cfg_3d_gridimp = .true.
+         read(get_file_unit(), *) visual_cfg_3d_gridfil
+      end if
+
       if (kw_matches(word, '.SCALE ')) then
          call kw_read(word, visual_cfg_scale)
       end if
@@ -462,6 +467,18 @@
          call kw_read(word, visual_cfg_gauge_origin(1), &
                             visual_cfg_gauge_origin(2), &
                             visual_cfg_gauge_origin(3))
+      end if
+
+      if (kw_matches(word, '.NICS  ')) then
+         visual_cfg_nics = .true.
+         call kw_read(word, visual_cfg_nics_origin(1), &
+                            visual_cfg_nics_origin(2), &
+                            visual_cfg_nics_origin(3))
+      end if
+
+      if (kw_matches(word, '.READJB')) then
+         visual_cfg_3d_readjb = .true.
+         read(get_file_unit(), *) visual_cfg_3d_jbfile
       end if
 
       if (kw_matches(word, '.RADIAL')) then

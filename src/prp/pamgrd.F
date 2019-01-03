@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -268,6 +268,8 @@ CMI NOTE/27.10'04 The new IBEIG parameters for spin-free properties !
 CMI This has to be adapted also for LAO properties !
       IF (PRPNAM(INDXPR)(1:3).EQ.'LAO') THEN
         IB = 7 ! 0111 = full H(B) prop. gradient
+!gosia: fac2lo is not set? i'm setting it to 1.0
+        fac2lo = 1.0d0
         CALL GETDHB(IB,FAC2LO,PRPMO,INDXPR,IOPSY,
      &                    WORK,KFREE,LFREE,IPRINT)
       ELSE
@@ -783,6 +785,8 @@ C
       ENDIF
       IF (PRPNAM(INDXPR)(1:3).EQ.'LAO') THEN
         IB = 7 ! 111
+!gosia: fac2lo is not set? i'm setting it to 1.0
+        fac2lo = 1.0d0
         CALL GETDHB(IB,FAC2LO,PRPMO,INDXPR,IOPSY,
      &                    WORK,KFREE,LFREE,IPRINT)
       ELSE

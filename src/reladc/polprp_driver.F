@@ -575,7 +575,8 @@ C
 !
 #include  "../relccsd/symm.inc"
 #include  "../relccsd/complex.inc"
-#include  "../relccsd/param.inc"     !LTR/LFA are defined here (true, false)
+#include  "../relccsd/param.inc"
+!LTR/LFA are defined here (true, false)
 #include  "../relccsd/ccpar.inc"
 #include "polprp_servercodes.h"
 #include "polprp_stacklines.h"

@@ -2,7 +2,7 @@
 #define MPIX_DEBUG -1
 #endif
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -329,11 +329,11 @@ use interface_to_mpi
     CALL interface_MPI_BARRIER(global_communicator)
 
 #if MPIX_DEBUG > 0
-    DO IJ = 1, (NUMNOD    )
+    DO IJ = 1, NUMNOD
        CALL interface_MPI_BARRIER(global_communicator)
        IF( MYTID .eq. IJ ) THEN
-          print '(a,i3,1x,a,a,a,i14,a,f8.3,a)', 'DIRAC node ',mytid, &
-          '(',HOST(1:LHOST),') starts by allocating ',IVARIABLE,' r*8 words (', &
+          print '(a,i0,a,a,a,i14,a,f8.3,a)', 'DIRAC node ',mytid, &
+          ' (',HOST(1:LHOST),') starts by allocating ',IVARIABLE,' r*8 words (', &
           DFLOAT(IVARIABLE)/DFLOAT(2**27),' GB) of memory'
           flush(lupri)
        ENDIF
@@ -342,7 +342,7 @@ use interface_to_mpi
     END DO
 #else
     IF( MYTID .eq. 1 ) THEN
-       print '(a,i3,a,i14,a,f8.3,a)', 'DIRAC nodes 1 to ',numnod, &
+       print '(a,i0,a,i14,a,f8.3,a)', 'DIRAC nodes 1 to ',numnod, &
        ' starts by allocating      ',IVARIABLE,' r*8 words (', &
        DFLOAT(IVARIABLE)/DFLOAT(2**27),' GB) of memory'
        flush(lupri)
@@ -378,12 +378,12 @@ use interface_to_mpi
        CALL interface_MPI_BARRIER(global_communicator)
        IF( MYTID .eq. IJ )  THEN
            if (ivariable.gt.0) then
-              print '(a,i3,1x,a,a,a,i14,a,f8.3,a)', 'DIRAC node ',mytid, &
-              '(',HOST(1:LHOST),') to allocate at most ',IVARIABLE,' r*8 words (', &
+              print '(a,i0,a,a,a,i14,a,f8.3,a)', 'DIRAC node ',mytid, &
+              ' (',HOST(1:LHOST),') to allocate at most ',IVARIABLE,' r*8 words (', &
               DFLOAT(IVARIABLE)/DFLOAT(2**27),' GB) of memory'
            else
-              print '(a,i3,1x,a,a)', 'DIRAC node ',mytid, &
-              '(',HOST(1:LHOST),') has no limitations in place for the amount of dynamically allocated memory'
+              print '(a,i0,a,a)', 'DIRAC node ',mytid, &
+              ' (',HOST(1:LHOST),') has no limitations in place for the amount of dynamically allocated memory'
            endif
            flush(lupri)
        ENDIF
@@ -394,11 +394,11 @@ use interface_to_mpi
     CALL interface_MPI_BARRIER(global_communicator)
     IF( MYTID .eq. 1 ) THEN
        if (ivariable.gt.0) then
-          print '(a,i3,a,i14,a,f8.3,a)', 'DIRAC nodes 1 to ',numnod, &
+          print '(a,i0,a,i14,a,f8.3,a)', 'DIRAC nodes 1 to ',numnod, &
           ' to allocate at most       ',IVARIABLE,' r*8 words (', &
           DFLOAT(IVARIABLE)/DFLOAT(2**27),' GB) of memory'
        else
-          print '(a,i3,a,i14,a,i14,a)', 'DIRAC nodes 1 to ',numnod, &
+          print '(a,i0,a,i14,a,i14,a)', 'DIRAC nodes 1 to ',numnod, &
           ' has no limitations in place for the amount of dynamically allocated memory'
        endif
        flush(lupri)

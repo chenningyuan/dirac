@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -3867,21 +3867,24 @@ C
                ITYP = NHKOFF(J)
                IPSTRT = IPRIM + 1
                IPRIM  =  IPRIM + NNUC
-               IF (SEG(KBCH)) THEN
+               IF (UNCONT) THEN
+                  CHRSEG = 'uncontrac.'
+                  NNRC = 0
+               ELSE IF (SEG(KBCH)) THEN
                   CHRSEG = 'seg. cont.'
                ELSE
                   CHRSEG = 'gen. cont.'
                END IF
                IF (NNRC .LE. 5) THEN
-                  FMTA='(/2X,A4,A2,1X,A4,I4,1P,D18.10,0P,2X,5F8.4)'
-!                 FMTB='(/2X,A4,3X,   A4,I4,1P,D18.10,0P,2X,5F8.4)'
-                  FMTC='( 3X,A10,        I4,1P,D18.10,0P,2X,5F8.4)'
-                  FMTD='(13X,            I4,1P,D18.10,0P,2X,5F8.4)'
+                  FMTA='(/2X,A4,A2,1X,A4,I5,1P,D18.10,0P,2X,5F8.4)'
+!                 FMTB='(/2X,A4,3X,   A4,I5,1P,D18.10,0P,2X,5F8.4)'
+                  FMTC='( 3X,A10,        I5,1P,D18.10,0P,2X,5F8.4)'
+                  FMTD='(13X,            I5,1P,D18.10,0P,2X,5F8.4)'
                ELSE
-          FMTA='(/2X,A4,A2,1X,A4,I4,1P,D18.10,0P,2X,5F8.4/,(37X,5F8.4))'
-!         FMTB='(/2X,A4,3X,   A4,I4,1P,D18.10,0P,2X,5F8.4/,(37X,5F8.4))'
-          FMTC='( 3X,A10,        I4,1P,D18.10,0P,2X,5F8.4/,(37X,5F8.4))'
-          FMTD='(13X,            I4,1P,D18.10,0P,2X,5F8.4/,(37X,5F8.4))'
+          FMTA='(/2X,A4,A2,1X,A4,I5,1P,D18.10,0P,2X,5F8.4/,(37X,5F8.4))'
+!         FMTB='(/2X,A4,3X,   A4,I5,1P,D18.10,0P,2X,5F8.4/,(37X,5F8.4))'
+          FMTC='( 3X,A10,        I5,1P,D18.10,0P,2X,5F8.4/,(37X,5F8.4))'
+          FMTD='(13X,            I5,1P,D18.10,0P,2X,5F8.4/,(37X,5F8.4))'
                END IF
                DEG = '  '
                DO 400 L = 1, NDEG

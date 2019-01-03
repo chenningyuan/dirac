@@ -124,6 +124,15 @@ Default (coordinates in bohr)::
    4.0
 
 
+keyword(3D_IMP)
+
+Calculate various densities in 3D on an imported grid (does not have to be regular)
+Example::
+
+  .3D_IMP
+   grid_file        ! a file with x,y,z-coordinates of grid points
+
+
 keyword(3D_INT)
 
 Integrate densities in 3D.
@@ -347,6 +356,42 @@ keyword(ESPNRHO)
 Compute the nuclear part of the electrostatic potential times density.
 
 
+keyword(NDIPX)
+
+Compute the NMR shielding density, with the "X"-component of the nuclear magnetic dipole moment and
+the selected component of the magnetically-induced current density (by the chosen record on PAMXVC file) as perturbing operators.
+
+keyword(NDIPY)
+
+Compute the NMR shielding density, with the "Y"-component of the nuclear magnetic dipole moment and
+the selected component of the magnetically-induced current density (by the chosen record on PAMXVC file) as perturbing operators.
+
+keyword(NDIPZ)
+
+Compute the NMR shielding density, with the "Z"-component of the nuclear magnetic dipole moment and
+the selected component of the magnetically-induced current density (by the chosen record on PAMXVC file) as perturbing operators.
+
+keyword(NICS )
+
+Compute the NMR shielding density in a selected point in space. Is used to calculate NICS.
+Example::
+
+  .NICS
+   1.2 -1.0 2.0
+
+will calculate the NMR shielding in point (1.2, -1.0, 2.0). This keyword can be used only with one of: NDIPX, NDIPY, NDIPZ keywords.
+
+
+keyword(READJB)
+
+Use the grid and the magnetically-induced current density (jB) from a file to calculate the jB-dependent densities,
+e.g. the NMR shielding density or the magnetizability density. 
+Example::
+
+  .READJB
+   file_name        ! a file with x,y,z-coordinates of grid points and jB vector field
+
+
 keyword(GAUGE)
 
 Specify gauge origin. Example::
@@ -393,6 +438,11 @@ Another example (nitrogen atom)::
 keyword(LONDON)
 
 Activate LAO contribution.
+This keyword is followed by a letter "X", "Y" or "Z" indicating the component of an external perturbing magnetic field.
+For example::
+
+  .LONDON
+   X
 
 
 keyword(NONE)

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1956,7 +1956,7 @@ C Largest exchange contribution
                       FCKMAX = DNSMAX*ULINT
                       IF(FCKMAX.LT.SCRTHR) THEN
                         DINTSKP(2,1) = DINTSKP(2,1) + NCCINT
-                        IF(IPRINT.GE.2) THEN
+                        IF(IPRINT.GE.4) THEN
                    WRITE(LUPRI,
      &              '(A,1P,2(D8.2,1X),4(I4,A1,A6,1X,3A1))')
      &        '*Skip: ',DNSMAX,ULINT,
@@ -1995,7 +1995,7 @@ C                     This why the offset is needed.
                       DISMAX = FAC*DNSMAX*ULINT
                       IF(DISMAX.LT.SCRTHR) THEN
                         DINTSKP(2,JDIS) = DINTSKP(2,JDIS) + NCCINT
-                        IF(IPRINT.GE.2) THEN
+                        IF(IPRINT.GE.4) THEN
                    WRITE(LUPRI,
      &              '(A,1P,D8.2,4(I4,A1,A6,1X,3A1),I3)')
      &        '*Skip: ',DISMAX,
@@ -2132,7 +2132,7 @@ C
                         IF(EXPMAX.LT.EXPTHR) THEN
                            DOXYZ(I) = .FALSE.
                            CALL ADDDINT(DINTSKP,NCCINT,ICEN,2,I)
-                           IF(IPRINT.GE.2) THEN
+                           IF(IPRINT.GE.4) THEN
                               WRITE(LUPRI,
      &              '(A,A1,A,1P,D8.2,4(I4,A1,A6,1X,3A1))')
      &        '*GrdSkip (',CHRXYZ(I),'): ',EXPMAX,

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -768,7 +768,6 @@ contains
 !      read the 4c 1-electron fock matrix from file
 !      --------------------------------------------
        fh       = 99
-       WRITE(6,*) 'TESTing..',nr_2e_fock_matrices,'  ',file_name_1e_fock_matrix
        open(fh,file=file_name_1e_fock_matrix,status='old',form='unformatted',  &
             access='sequential',action="readwrite",position='rewind')
        call read_fock_matrices_saao_basis_x2c(scr_mat1,              &
@@ -830,7 +829,6 @@ contains
 !      read the 4c 2-electron fock matrix from file
 !      --------------------------------------------
        fh       = 99
-       WRITE(6,*) 'TESTing..',nr_2e_fock_matrices,'  ',file_name_2e_fock_matrices
        open(fh,file=file_name_2e_fock_matrices,status='old',form='unformatted',  &
             access='sequential',action="readwrite",position='rewind')
        call read_fock_matrices_saao_basis_x2c(scr_mat1,              &
