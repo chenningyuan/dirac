@@ -91,8 +91,6 @@ unset PAMI_IBV_ENABLE_DCT
 rm core.* *.tmp *.log *.out *.x
 cp $QF_PATH/exacorr.x ./
 
-ulimit -s unlimited
-
 #/usr/local/mpi/openmpi/3.1.0/bin/mpiexec -n $QF_NUM_PROCS -npernode $QF_PROCS_PER_NODE -oversubscribe ./exacorr.x #>& exacorr.log
 
 #/usr/local/mpi/mpich/3.2.1/bin/mpiexec -n $QF_NUM_PROCS ./exacorr.x #>& exacorr.log
