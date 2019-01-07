@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1916,6 +1916,9 @@ C
       DIMENSION WORK(*), ILIST(MXCORB)
       LOGICAL   GASWF
 
+      integer, allocatable :: reduced_pp(:)
+      integer, allocatable :: reduced_pn(:)
+
 C
       CALL QENTER('RSETWOP')
 C
@@ -2163,10 +2166,36 @@ C
 C       set internal control variable
         IREDJOB = 10
 C
+        if (nzhope > 0) then
+          allocate(reduced_pp(nzhope*2))
+          call icopy(nzhope*2,
+     &               get_orbital_rotation_indices_pp(), 1,
+     &               reduced_pp, 1)
+        else
+          allocate(reduced_pp(1))
+        end if
+
+        if (nzxopp > 0) then
+          allocate(reduced_pn(nzxopp*2))
+          call icopy(nzxopp*2,
+     &               get_orbital_rotation_indices_pn(), 1,
+     &               reduced_pn, 1)
+        else
+          allocate(reduced_pn(1))
+        end if
+
         CALL RESETXOP_sym(DUMMY,
-     &                    get_orbital_rotation_indices_pp(),
-     &                    get_orbital_rotation_indices_pn(),
+     &                    reduced_pp,
+     &                    reduced_pn,
      &                    IREDJOB,1)
+
+        call update_orbital_rotation_indices(nzhope,
+     &                                       nzxope,
+     &                                       nzxopp,
+     &                                       reduced_pp,
+     &                                       reduced_pn)
+
+         deallocate(reduced_pp, reduced_pn)
 C
       END IF
 
@@ -3789,7 +3818,6 @@ C
 C     ***************************************************
 C     *** Compress orbital rotations ********************
 C     ***************************************************
-C
 C
 C
       IF (COMPROT) THEN
@@ -5735,10 +5763,15 @@ C
       DIMENSION JXOPE(2,*), JXOPP(2,*)
       integer orb_type_vec(NORBT)
 C
-      IF( IPRINT .ge. 1 )THEN
+      IF( IPRINT .ge. 5 )THEN
         WRITE(LUPRI,'(/A)')' (DELPAR): vector of orbital types:'//
      &              ' mj-/ml-/boson-irrep values'
         CALL IWRTMAMN(orb_type_vec,1,NORBT,1,NORBT,LUPRI)
+        WRITE(LUPRI,'(/A)')' (DELPAR): orbital rotations'
+        do i = 1, nhope
+          write(lupri,'(a,i0,a,i0,a,i0)') ' rotation ',i,': orbital ',
+     &    JXOPE(1,I),' --> ',JXOPE(2,I)
+        end do
       END IF
 
       IF(NXOPE.GT.0) THEN
@@ -5752,23 +5785,35 @@ C
              JXOPE(2,II) = JXOPE(2,I)
            ENDIF
          ENDDO
-         WRITE(LUPRI,'(/A)')
-     & ' (DELPAR) ** statistics of deleted orbital rotations: **'
-         WRITE(LUPRI,9000)
+         if(iprint .ge. 1)then
+           WRITE(LUPRI,'(/A)')
+     &   ' (DELPAR) ** statistics of deleted orbital rotations: **'
+           WRITE(LUPRI,9000)
+         end if
          IF(II.LT.NXOPE) THEN
-            IF(IPRINT.GE.0) THEN
+            IF(IPRINT.GE.1) THEN
                DTST = DC*(NXOPE-II)/NXOPE
                WRITE(LUPRI,9001) 'e-e',NHOPE,NXOPE,II,III,DTST
             ENDIF
             NHOPE  = II
             NXOPE  = III
          ELSE
-            WRITE(LUPRI,9001) 'e-e',NHOPE,NXOPE,NHOPE,NXOPE,D0
+            if(iprint .ge. 1)then
+              WRITE(LUPRI,9001) 'e-e',NHOPE,NXOPE,NHOPE,NXOPE,D0
+            end if
          ENDIF
       ENDIF
  9000 FORMAT(3X,'Type',T10,'Before',T30,'After',T50,'Reduction')
  9001 FORMAT(3X,A,T10,I5,T18,'(',I5,')',T30,I5,T38,'(',I5,')',
      &     T50,F5.1,'%')
+
+      IF( IPRINT .ge. 5 )THEN
+        WRITE(LUPRI,'(/A)')' (DELPAR): orbital rotations (reduced)'
+        do i = 1, nhope
+          write(lupri,'(a,i0,a,i0,a,i0)') ' rotation ',i,': orbital ',
+     &    JXOPE(1,I),' --> ',JXOPE(2,I)
+        end do
+      END IF
 C
 C     e-p orbital rotations
 C     =====================
@@ -5783,11 +5828,13 @@ C
             JXOPP(2,II) = JXOPP(2,I)
           ENDIF
         ENDDO
-        WRITE(LUPRI,'(/A)')
-     & ' (DELPAR) ** statistics of deleted orbital rotations: **'
-        WRITE(LUPRI,9000)
+        if(iprint .ge. 1)then
+          WRITE(LUPRI,'(/A)')
+     &   ' (DELPAR) ** statistics of deleted orbital rotations: **'
+          WRITE(LUPRI,9000)
+        end if
         IF(II.LT.NXOPP) THEN
-          IF(IPRINT.GE.0) THEN
+          IF(IPRINT.GE.1) THEN
             DTST = DC*(NXOPP-II)/NXOPP
             III  = II
             WRITE(LUPRI,9001) 'e-p',NXOPP,NXOPP,II,III,DTST

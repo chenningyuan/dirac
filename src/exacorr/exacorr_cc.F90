@@ -12,8 +12,8 @@ module exacorr_cc
 
         implicit none
         complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
-                                 ONE_HALF=(0.5D0,0.D0),MINUS_ONE_HALF=(-0.5D0,0.D0),ONE_QUARTER=(0.25D0,0.D0)!, &
-!                                THREE=(3.0,0.0), SIX=(6.0,0.0)
+                                 ONE_HALF=(0.5D0,0.D0),MINUS_ONE_HALF=(-0.5D0,0.D0),ONE_QUARTER=(0.25D0,0.D0), &
+                                 MINUS_TWO=(-2.D0,0.D0)!, THREE=(3.0,0.0), SIX=(6.0,0.0)
         type(tens_rcrsv_t),public :: one_tensor
 
         private
@@ -539,7 +539,7 @@ module exacorr_cc
           call get_hov(comm_t,int_t%oovv,CCD,one_tensor)
           ierr=exatns_tensor_init(hov_aux_tensor)
           ierr=exatns_tensor_contract("L(k,c)+=H(k,c)*K()",hov_aux_tensor,comm_t%hov,one_tensor)        ! copy common term
-          ierr=exatns_tensor_contract("H(k,c)+=F(k,c)*K()",hov_aux_tensor,comm_t%fov,one_tensor,MINUS_ONE) ! subtract fock matrix
+          ierr=exatns_tensor_contract("H(k,c)+=F(k,c)*K()",hov_aux_tensor,comm_t%fov,one_tensor,MINUS_TWO) ! subtract fock matrix
 
 !         oooo ! validated
           call get_a(comm_t,int_t,CCD,one_tensor)

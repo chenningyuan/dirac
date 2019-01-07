@@ -20,10 +20,10 @@ export QF_NUM_THREADS=8           #initial number of CPU threads per MPI process
 
 #OpenMP generic:
 export OMP_NUM_THREADS=$QF_NUM_THREADS #initial number of OpenMP threads per MPI process
-export OMP_DYNAMIC=FALSE               #no OpenMP dynamic threading
-export OMP_NESTED=TRUE                 #OpenMP nested parallelism is mandatory
+export OMP_DYNAMIC=false               #no OpenMP dynamic threading
+export OMP_NESTED=true                 #OpenMP nested parallelism is mandatory
 export OMP_MAX_ACTIVE_LEVELS=3         #max number of OpenMP nesting levels (at least 3)
-export OMP_THREAD_LIMIT=1024           #max total number of OpenMP threads per process
+export OMP_THREAD_LIMIT=256            #max total number of OpenMP threads per process
 export OMP_WAIT_POLICY=PASSIVE         #idle thread behavior
 export OMP_STACKSIZE=200M              #stack size per thread
 #export OMP_DISPLAY_ENV=VERBOSE         #display OpenMP environment variables
@@ -48,6 +48,7 @@ export MKL_NUM_THREADS_TITAN=8                  #keep consistent with chosen OMP
 export MKL_NUM_THREADS_POWER9=42                #keep consistent with chosen OMP_PLACES!
 export MKL_NUM_THREADS_KNL=128                  #keep consistent with chosen OMP_PLACES!
 export MKL_NUM_THREADS=$MKL_NUM_THREADS_DEFAULT #number of Intel MKL threads per process
+export MKL_DYNAMIC=false
 
 #Intel MIC specific:
 #export KMP_AFFINITY="verbose,granularity=core,compact"     #Intel CPU thread affinity
@@ -81,6 +82,11 @@ unset PAMI_IBV_ENABLE_DCT
 #export PAMI_IBV_ENABLE_DCT=1               #reduces MPI_Init() time at large scale
 #export PAMI_ENABLE_STRIPING=1              #increases network bandwidth, also increasing latency
 #export PAMI_IBV_ENABLE_OOO_AR=1            #adaptive routing is default
+#export PAMI_IBV_DISABLE_ODP=0              #ODP (requires CAPI for performance)
+#export PAMI_IBV_DEBUG_CQE=1                #CQE error debugging
+#export PAMI_IBV_DEBUG_QP_TIMEOUT=22
+#export PAMI_IBV_DEBUG_RNR_RETRY=9
+#export OMPI_LD_PRELOAD_POSTPEND=$OLCF_SPECTRUM_MPI_ROOT/lib/libmpitrace.so
 
 rm core.* *.tmp *.log *.out *.x
 cp $QF_PATH/exacorr.x ./
@@ -94,6 +100,8 @@ ulimit -s unlimited
 #aprun -n $QF_NUM_PROCS -N $QF_PROCS_PER_NODE -d $QF_CORES_PER_PROCESS -cc none ./exacorr.x #>& exacorr.log
 
 #jsrun -n $QF_NUM_PROCS -r $QF_PROCS_PER_NODE -a 1 -c $QF_CORES_PER_PROCESS -g $QF_GPUS_PER_PROCESS -bnone ./exacorr.x #>& exacorr.log
+#jsrun --smpiargs="-mca common_pami_use_odp 1" -D PAMI_IBV_DISABLE_ODP=0 -n $QF_NUM_PROCS -r $QF_PROCS_PER_NODE -a 1 -c $QF_CORES_PER_PROCESS -g $QF_GPUS_PER_PROCESS -bnone ./exacorr.x #>& exacorr.log
+#jsrun -n $QF_NUM_PROCS -r $QF_PROCS_PER_NODE -a 1 -c $QF_CORES_PER_PROCESS -g $QF_GPUS_PER_PROCESS -bnone nvprof -o trace.%q{OMPI_COMM_WORLD_RANK} ./exacorr.x #>& exacorr.log
 
 #nvprof --log-file nv_profile.log --print-gpu-trace ./exacorr.x #>& exacorr.log
 

@@ -20,11 +20,16 @@ C***********************************************************************
       use interface_to_mpi
 #endif
 
-#include "implicit.h"! because common blocks may assume this
-#include "../moltra/dcbtra.h"  ! to access tra4_indstr
-#include "infpar.h"  ! we need to broadcast tra4_indstr
-#include "dcborb.h"  ! to access nesh (number of positive energy "electronlike" orbitals)
-#include "dgroup.h"  ! to access nfsym (should be 1)
+#include "implicit.h"
+! because common blocks may assume this
+#include "../moltra/dcbtra.h"
+! to access tra4_indstr
+#include "infpar.h"
+! we need to broadcast tra4_indstr
+#include "dcborb.h"
+! to access nesh (number of positive energy "electronlike" orbitals)
+#include "dgroup.h"
+! to access nfsym (should be 1)
 
       character (len=72)   :: orbital_string(4) ! String with range of MO's to be transformed for each index
       integer              :: kvec              ! Dummy variable needed in first call to numlst
@@ -124,10 +129,14 @@ C***********************************************************************
       use interface_to_mpi
 #endif
 
-#include "implicit.h"! because common blocks may assume this
-#include "infpar.h"  ! we will be running in parallel
-#include "dcborb.h"  ! to access nesh (number of positive energy "electronlike" orbitals)
-#include "dgroup.h"  ! to access nfsym (should be 1)
+#include "implicit.h"
+! because common blocks may assume this
+#include "infpar.h"
+! we will be running in parallel
+#include "dcborb.h"
+! to access nesh (number of positive energy "electronlike" orbitals)
+#include "dgroup.h"
+! to access nfsym (should be 1)
 
       integer              :: kvec              ! Dummy variable needed in first call to numlst
       integer, allocatable :: mo_list(:)

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -160,6 +160,39 @@ C   ON OUTPUT:A - full matrix
         WRITE(LUPRI,'(A,A6,A)') '** ERROR in FULMAT **  : Keyword ',
      +    MATTYP,' not recognized!'
       ENDIF
+      END
+C  /* Deck fulmat */
+      SUBROUTINE FULMAT2(MATTYP,LDA,NDIM,A)
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(DFAC=0.5D0)
+      CHARACTER MATTYP*1
+      DIMENSION A(LDA,NDIM)
+C*SYMM  : Real symmetric matrix
+C*ASYM  : Real antisymmetric matrix
+C
+C   ON INPUT: A - lower triangular matrix
+C   ON OUTPUT:A - full matrix
+      IF(MATTYP.EQ.'S') THEN
+      DO 10 J = 1,NDIM
+        DO 20 I = J,NDIM
+          A(I,J) = A(I,J) + A(J,I)
+          A(J,I) = A(I,J)
+   20     CONTINUE
+   10   CONTINUE
+      ELSEIF(MATTYP.EQ.'A') THEN
+      DO 30 J = 1,NDIM
+        DO 40 I = J,NDIM
+          A(I,J) = A(I,J) - A(J,I)
+          A(J,I) = -A(I,J)
+   40     CONTINUE
+   30   CONTINUE
+      ELSE
+        WRITE(LUPRI,'(A,A6,A)') '** ERROR in FULMAT **  : Keyword ',
+     +    MATTYP,' not recognized!'
+      ENDIF
+      NN=LDA*NDIM
+      CALL DSCAL(NN,DFAC,A,1)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck offtst */

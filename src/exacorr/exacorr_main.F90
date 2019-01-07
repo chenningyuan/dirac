@@ -25,7 +25,7 @@
       cc_calculation = .true.
       exa_input%talsh = .false.
       exa_input%ccd = .false.
-      exa_input%lambda = .true.
+      exa_input%lambda = .false.
 
 #if defined (VAR_MPI)
       call interface_mpi_init()

@@ -347,6 +347,8 @@
       logical                         :: is_not_ref
 
       allocate(ref_wavefunction_tmp(nref,2))
+      ref_wavefunction_tmp(:,1) = ' '
+      ref_wavefunction_tmp(:,2) = ' '
       allocate(istr(max(nael,nbel),2))
 
       if( ICISTR .ge. 2 ) call REWINE(LUC,-1)

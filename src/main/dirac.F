@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -226,14 +226,6 @@ C***** V I S U A L I Z A T I O N ***************************************
 C***********************************************************************
 C
       if (dirac_cfg_visual) call run_visual()
-
-C
-C***********************************************************************
-C ***** cleaning up data stored in fde calculations ********************
-C***********************************************************************
-C
-      if (dirac_cfg_fde)
-     &   call fde_cleanup_data()
 
 
  666  CONTINUE
@@ -1119,6 +1111,8 @@ C***********************************************************************
      &          process_two_electron_integrals_4comp_slaves,            &
      &          process_two_electron_integrals_2comp_slaves 
 #endif
+!     use fde_evaluators_dirac, only : fde_launch_slave_process
+      use fde_mod, only : fde_launch_slave_process
 
       implicit none
 #include "dcbdhf.h"
@@ -1373,6 +1367,14 @@ C
 #endif
 
       ELSE IF (ITASK .EQ. 18) THEN
+C
+C        start FDE MPI calculation
+C
+         call fde_launch_slave_process()
+      ELSE IF (ITASK .EQ. 19) THEN
+C
+C        start exacorr moltra with MPI
+C
 #ifndef MOD_EXACORR
           call quit(
      &    'worker error: exa_moltra task not included in this version')
@@ -1380,7 +1382,10 @@ C
          call exa_moltra()
 #endif
 
-      ELSE IF (ITASK .EQ. 19) THEN
+      ELSE IF (ITASK .EQ. 20) THEN
+C
+C        start exacorr cc with MPI
+C
 #ifndef MOD_EXACORR
           call quit(
      &    'worker error: exa_cc task not included in this version')
@@ -1417,6 +1422,7 @@ C     other like in RELCCSD when doing the AO Lagrangian).
 C
 C***********************************************************************
       use interface_to_mpi
+      use fde_mod, only : fde_launch_slave_process
 #include "implicit.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -1500,6 +1506,12 @@ C
 C        start GASCIP MPI calculation
 C
          CALL GASCIP_NODE()
+      ELSE IF (ITASK .EQ. 18) THEN
+C
+C        start FDE MPI calculation
+C
+         call fde_launch_slave_process()
+
       ELSE
 C
 C        Unknown task. Abort execution.
