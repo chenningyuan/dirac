@@ -12,10 +12,17 @@ New features:
 18.1 (unreleased)
 -----------------
 
+Revised features:
+
+- max number of basis functions increased from 30k to 40k
+
 Error corrections:
 
 - Fix spelling error in keyword .GAUNTSCALE (was .GAUTSCALE)
 
+Performance improvements:
+
+- Reduced static memory requirement from common blocks
 
 18.0 (2018-12-13)
 -----------------
