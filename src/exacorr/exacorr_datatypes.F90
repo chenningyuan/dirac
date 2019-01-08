@@ -63,6 +63,7 @@
          type(tens_rcrsv_t) :: w_vovo, wbar_vovo
          type(tens_rcrsv_t) :: w_vvvo, w_vovv
          type(tens_rcrsv_t) :: w_vvvv
+         type(tens_rcrsv_t) :: goo, gvv
         end type exatns_lambda_tens
 
         type, public :: space_dims
@@ -95,6 +96,7 @@
          type(talsh_tens_t) :: w_vovo, wbar_vovo
          type(talsh_tens_t) :: w_vvvo, w_vovv
          type(talsh_tens_t) :: w_vvvv
+         type(talsh_tens_t) :: goo, gvv
         end type talsh_lambda_tens
 
        end module exacorr_datatypes
