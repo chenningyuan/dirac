@@ -2375,7 +2375,7 @@ C
      &                                     a_S1(:),  a_S2(:)
 c
       real(kind=kreal), allocatable, target :: a_AZ(:), a_H(:), a_HO(:),
-     &                         a_HV(:),  a_HOV(:),a_CCC(:),  a_BB1(:),
+     &           a_HV(:), a_GO(:), a_GV(:), a_HOV(:),a_CCC(:), a_BB1(:),
      &                             a_BB2(:), a_BUF1(:), a_BUF2(:)
 c
       real(kind=kreal), allocatable, target :: a_VOOO(:),a_T2S(:),
@@ -2426,6 +2426,8 @@ C
          call alloc( a_H    ,    NV4*RCW              , id="h" )
          call alloc( a_HO   ,    NFOO*RCW             , id="ho" )
          call alloc( a_HV   ,    NFVV*RCW             , id="hv" )
+         call alloc( a_GO   ,    NFOO*RCW             , id="go" )
+         call alloc( a_GV   ,    NFVV*RCW             , id="gv" )
          call alloc( a_HOV  ,   NFVO*RCW              , id="hov" )
          call alloc( a_BUF1 ,  NBUF1*RCW              , id="buf1" )
          call alloc( a_BUF2 ,  NBUF2*RCW              , id="buf2" )
@@ -2556,7 +2558,7 @@ C
          maxit_save = MAXIT
          CALL cceqn_driver_amplitudes(maxdim,MAXIT_SAVE,EPS,a_FOO,
      &        a_FVO,a_FVV,a_T1,a_S1,a_T2,a_S2,a_AZ,a_H,a_HO,a_HV,a_HOV,
-     &        a_BUF1,a_BUF2,a_BUF3,
+     &        a_GO,a_GV,a_BUF1,a_BUF2,a_BUF3,
      &        TOL,NBUF2,NBUF3)
          CALL XTIME(5,2,'CCSD equations                ')
          if (maxit_save.le.maxit) is_ccsd_converged = .true.
@@ -2586,6 +2588,8 @@ C
       call dealloc(a_HO  )
       call dealloc(a_HV  )
       call dealloc(a_HOV )
+      call dealloc(a_GO )
+      call dealloc(a_GV )
       call dealloc(a_CCC )
       call dealloc(a_BB1 )
       call dealloc(a_BB2 )
@@ -3643,7 +3647,7 @@ c
      &                             a_T1  (:), a_T2  (:), a_S1  (:),
      &                             a_S2  (:), a_AZ  (:), a_H   (:),
      &                             a_HO  (:), a_HV  (:), a_HOV (:),
-     &                             a_CCC (:),
+     &                             a_GO(:), a_GV(:), a_CCC (:),
      &                             a_BB1 (:), a_BB2 (:), a_BUF1(:),
      &                             a_BUF2(:), a_BUF3(:)
       integer                :: freemem = 0
@@ -3708,6 +3712,8 @@ C
       call alloc( a_HO  , NFOO*RCW              , id="ho")
       call alloc( a_HV  , NFVV*RCW              , id="hv")
       call alloc( a_HOV , NFVO*RCW              , id="hov")
+      call alloc( a_GO  , NFOO*RCW              , id="go")
+      call alloc( a_GV  , NFVV*RCW              , id="gv")
       call alloc( a_BUF1,NBUF1*RCW              , id="buf1")
       call alloc( a_BUF2,NBUF2*RCW              , id="buf2")
 C
@@ -3833,7 +3839,7 @@ C
           CALL cceqn_driver_amplitudes(maxdim, maxit_save,EPS,
      &             a_FOO , a_FVO , a_FVV  , a_T1   , a_S1   ,
      &             a_T2  , a_S2  , a_AZ   ,a_H,
-     &             a_HO  , a_HV  , a_HOV  ,
+     &             a_HO  , a_HV  , a_HOV, a_GO, a_GV,
      &             a_BUF1 , a_BUF2 , a_BUF3 ,
      &             TOL, NBUF2, NBUF3)
 
@@ -3881,6 +3887,8 @@ C
       call dealloc( a_HO  , id="ho" )
       call dealloc( a_HV  , id="hv" )
       call dealloc( a_HOV , id="hov" )
+      call dealloc( a_GO  , id="go" )
+      call dealloc( a_GV  , id="gv" )
       call dealloc( a_CCC , id="ccc" )
       call dealloc( a_BB1 , id="bb1" )
       call dealloc( a_BB2 , id="bb2" )
