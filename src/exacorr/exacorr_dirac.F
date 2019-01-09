@@ -36,9 +36,9 @@ C***********************************************************************
       integer, allocatable :: mo_list(:)
       integer              :: nmo(4)
 
-      if (nfsym.ne.1) then
-         call quit ('exacorr can not handle symmetry')
-      end if
+c     if (nfsym.ne.1) then
+c        call quit ('exacorr can not handle symmetry')
+c     end if
 
 #if defined (VAR_MPI)
       ! parallel version of DIRAC
@@ -46,7 +46,7 @@ C     Transfer necessary information from common blocks
       if (mytid == 0) then
          orbital_string = tra4_indstr(:,1) ! This is to be changed once we have an exacorr-specific input driver
          ! instruct slaves to go to the current routine (exa_moltra) as well
-         call dirac_parctl( 18 )
+         call dirac_parctl( 19 )
          call interface_mpi_bcast_l0(exa_input%talsh,1,0,
      &                               global_communicator)
       else
@@ -142,9 +142,9 @@ C***********************************************************************
       integer, allocatable :: mo_list(:)
       integer              :: nmo(4)
 
-      if (nfsym.ne.1) then
-         call quit ('exacorr can not handle symmetry')
-      end if
+c     if (nfsym.ne.1) then
+c        call quit ('exacorr can not handle symmetry')
+c     end if
 
 #if defined (VAR_MPI)
       ! parallel version of DIRAC
@@ -152,7 +152,7 @@ C***********************************************************************
       ! and let them know whether we use talsh or exatensor
       call interface_mpi_comm_rank(global_communicator,mytid)
       if (mytid == 0 ) then
-         call dirac_parctl( 19 ) 
+         call dirac_parctl( 20 ) 
       end if
       call interface_mpi_bcast_l0(exa_input%talsh,1,0,
      &                               global_communicator)
