@@ -118,10 +118,10 @@ module exacorr_eom
 
          if (flavour.eq."IP") then
             call eom_ip(exa_input,comm_t,lambda_t,int_t,l1_tensor,l2_tensor,dims,one_tensor)
-         else if (flavour.eq."EE") then
-            call eom_ee(exa_input,comm_t,lambda_t,int_t,l1_tensor,l2_tensor,dims,one_tensor)
          else if (flavour.eq."EA") then
             call eom_ea(exa_input,comm_t,lambda_t,int_t,l1_tensor,l2_tensor,dims,one_tensor)
+         else if (flavour.eq."EE") then
+            call eom_ee(exa_input,comm_t,lambda_t,int_t,l1_tensor,l2_tensor,dims,one_tensor)
          else
             print*, "You should pick a valid EOM type."
          end if
@@ -357,37 +357,37 @@ module exacorr_eom
 !         Permute a and b, so term appears twice
           ierr=exatns_tensor_create("S(a,b,i)+=F(a,e)*r(e,b,i)",r2_sigma,lambda_t%fbar_vv,r2_coef)
           ierr=exatns_tensor_create("S(a,b,i)+=F(b,e)*r(a,e,i)",r2_sigma,lambda_t%fbar_vv,r2_coef)
-          ierr=exatns_tensor_create("S(a,b,i)+=W(m,n,i,j)*r(a,m,n)",r2_sigma,lambda_t%w_oooo,r2_coef)
-!         Permute i and j, so term appears twice
-          ierr=exatns_tensor_create("S(a,b,i)+=W(a,m,e,i)*R(e,j,m)",r2_sigma,lambda_t%w_vovo,r2_coef)
-          ierr=exatns_tensor_create("S(a,b,i)+=W(a,m,e,j)*R(e,m,i)",r2_sigma,lambda_t%w_vovo,r2_coef)
-          ierr=exatns_tensor_create("S(a,b,i)+=F(a,e)*R(e,i,j)",r2_sigma,lambda_t%fbar_vv,r2_coef)
-          ierr=exatns_tensor_init(v_aux)
-          !ierr=exatns_tensor_create("U(m)+=W(m,n,e,f)*R(f,m,n)",v_aux,w_oovv,r2_coef,ONE_HALF) ==> NO W_OOVV DEFINED ==> V_OOVV??
-          ierr=exatns_tensor_create("S(a,b,i)+=U(e)*T(e,a,i,j)",r2_sigma,v_aux,comm_t%t2)
+          ierr=exatns_tensor_create("S(a,b,i)+=W(a,b,e,f)*r(e,f,i)",r2_sigma,lambda_t%w_vvvv,r2_coef,ONE_HALF)
+!         Permute a and b, so term appears twice
+          ierr=exatns_tensor_create("S(a,b,i)+=W(a,m,e,i)*R(b,e,m)",r2_sigma,lambda_t%w_vovo,r2_coef)
+          ierr=exatns_tensor_create("S(a,b,i)+=W(b,m,e,i)*R(e,a,m)",r2_sigma,lambda_t%w_vovo,r2_coef)
+          ierr=exatns_tensor_create("S(a,b,i)+=F(m,i)*R(b,a,m)",r2_sigma,lambda_t%fbar_oo,r2_coef)
+          ierr=exatns_tensor_init(o_aux)
+          ierr=exatns_tensor_create("U(m)+=V(m,n,e,f)*R(e,f,n)",o_aux,int_t%oovv,r2_coef,ONE_HALF)
+          ierr=exatns_tensor_create("S(a,b,i)+=U(m)*T(a,b,m,i)",r2_sigma,o_aux,comm_t%t2)
 
 !         l1_sigma
           ierr=exatns_tensor_init(l1_sigma)
-          ierr=exatns_tensor_contract("S(a)+=F(i,m)*L(m)",l1_sigma,lambda_t%fbar_oo,l1_coef,MINUS_ONE)
-          ierr=exatns_tensor_contract("S(a)+=W(i,e,m,n)*L(m,n,e)",l1_sigma,lambda_t%w_ovoo,l2_coef,ONE_HALF)
+          ierr=exatns_tensor_contract("S(a)+=F(e,a)*L(e)",l1_sigma,lambda_t%fbar_vv,l1_coef)
+          ierr=exatns_tensor_contract("S(a)+=W(e,f,a,m)*L(m,f,e)",l1_sigma,lambda_t%w_vvvo,l2_coef,ONE_HALF)
 
 !         l2_sigma
           ierr=exatns_tensor_init(l2_sigma)
-          ierr=exatns_tensor_contract("S(i,a,b)+=W(j,i,m,a)*L(m)",l2_sigma,lambda_t%w_ooov,l1_coef)
-          ierr=exatns_tensor_contract("S(i,a,b)+=W(i,e,m,n)*L(m,n,e)",l2_sigma,lambda_t%w_ovoo,l2_coef,ONE_HALF)
-!         Permute i and j, so term appears twice
-          ierr=exatns_tensor_contract("S(i,a,b)+=F(j,m)*L(m,i,a)",l2_sigma,lambda_t%fbar_oo,l2_coef)
-          ierr=exatns_tensor_contract("S(i,a,b)+=F(i,m)*L(j,m,a)",l2_sigma,lambda_t%fbar_oo,l2_coef)
-!         Permute i and j, so term appears twice
-          ierr=exatns_tensor_contract("S(i,a,b)+=W(e,j,a,m)*L(m,i,e)",l2_sigma,lambda_t%w_vovo,l2_coef)
-          ierr=exatns_tensor_contract("S(i,a,b)+=W(e,i,a,m)*L(j,m,e)",l2_sigma,lambda_t%w_vovo,l2_coef)
-          ierr=exatns_tensor_contract("S(i,a,b)+=W(i,j,m,n)*L(m,n,a)",l2_sigma,lambda_t%w_oooo,l2_coef,ONE_HALF)
-          ierr=exatns_tensor_init(v_aux)
-          ierr=exatns_tensor_contract("U(e)+=L(m,n,f)*T(e,f,m,n)",v_aux,l2_coef,comm_t%t2,ONE_HALF)
-          ierr=exatns_tensor_contract("S(i,a,b)+=V(i,j,e,a)*U(e)",l2_sigma,int_t%oovv,v_aux)
-!         Permute i and j, so term appears twice
-          ierr=exatns_tensor_contract("S(i,a,b)+=L(i)*F(j,a)",l2_sigma,l1_coef,lambda_t%fbar_ov)
-          ierr=exatns_tensor_contract("S(i,a,b)+=L(j)*F(i,a)",l2_sigma,l1_coef,lambda_t%fbar_ov,MINUS_ONE)
+          ierr=exatns_tensor_contract("S(i,a,b)+=W(e,i,b,a)*L(e)",l2_sigma,lambda_t%w_vovv,l1_coef)
+!         Permute a and b, so term appears twice
+          ierr=exatns_tensor_contract("S(i,a,b)+=F(e,a)*L(i,e,b)",l2_sigma,lambda_t%fbar_vv,l2_coef)
+          ierr=exatns_tensor_contract("S(i,a,b)+=F(e,b)*L(i,a,e)",l2_sigma,lambda_t%fbar_vv,l2_coef)
+          ierr=exatns_tensor_contract("S(i,a,b)+=F(i,m)*L(m,b,a)",l2_sigma,lambda_t$fbar_oo,l2_coef)
+          ierr=exatns_tensor_contract("S(i,a,b)+=W(e,f,a,b)*L(i,e,f)",l2_sigma,lambda_t%w_vvvv,l2_coef,ONE_HALF)
+!         Permute a and b, so term appears twice
+          ierr=exatns_tensor_contract("S(i,a,b)+=W(e,i,b,m)*L(m,e,a)",l2_sigma,lambda_t%w_vovo,l2_coef)
+          ierr=exatns_tensor_contract("S(i,a,b)+=W(e,i,a,m)*L(m,b,e)",l2_sigma,lambda_t%w_vovo,l2_coef)
+          ierr=exatns_tensor_init(o_aux)
+          ierr=exatns_tensor_contract("U(m)+=L(o,e,f)*T(e,f,o,m)",o_aux,l2_coef,comm_t%t2,ONE_HALF)
+          ierr=exatns_tensor_contract("S(i,a,b)+=U(e)*V(m,i,b,a)",l2_sigma,o_aux,int_t%oovv)
+!         Permute a and b, so term appears twice
+          ierr=exatns_tensor_contract("S(i,a,b)+=F(i,a)*L(b)",l2_sigma,lambda_t%fbar_ov,l1_coef)
+          ierr=exatns_tensor_contract("S(i,a,b)+=F(i,b)*L(a)",l2_sigma,lambda_t%fbar_ov,l1_coef,MINUS_ONE)
 
          end do
 
@@ -470,7 +470,121 @@ module exacorr_eom
          oovv_root = (/occ_space_root, occ_space_root, vir_space_root, vir_space_root/)
          vvoo_root = (/vir_space_root, vir_space_root, occ_space_root, occ_space_root/)
 
+!        Create all coefficient and sigma tensors
+         ierr=exatns_tensor_create(r1_coef,"r1_coef",vo_id,vo_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(l1_coef,"l1_coef",ov_id,ov_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(r2_coef,"r2_coef",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(l2_coef,"l2_coef",oovv_id,oovv_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(r1_sigma,"r1_sigma",vo_id,vo_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(l1_sigma,"l1_sigma",ov_id,ov_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(r2_sigma,"r2_sigma",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(l2_sigma,"l2_sigma",oovv_id,oovv_root,EXA_DATA_KIND_C8)
+
+!        Create aux tensors
+         ierr=exatns_create(oo_aux,"oo_aux",oo_id,oo_root,EXA_DATA_KIND_C8)
+         ierr=exatns_create(vv_aux,"vv_aux",vv_id,vv_root,EXA_DATA_KIND_C8)
+
          do i = 1, neom
+
+!         r1_sigma
+          ierr=exatns_tensor_init(r1_sigma)
+          ierr=exatns_tensor_contract("S(a,i)+=F(a,e)*R(e,i)",r1_sigma,lambda_t%fbar_vv,r1_coef)
+          ierr=exatns_tensor_contract("S(a,i)+=F(m,i)*R(a,m)",r1_sigma,lambda_t%fbar_oo,r1_coef,MINUS_ONE)
+          ierr=exatns_tensor_contract("S(a,i)+=F(m,e)*R(e,a,m,i)",r1_sigma,lambda_t%fbar_ov,r2_coef)
+          ierr=exatns_tensor_contract("S(a,i)+=W(a,m,e,i)*R(e,m)",r1_sigma,lambda_t%w_vovo,r1_coef,MINUS_ONE)
+          ierr=exatns_tensor_contract("S(a,i)+=W(a,m,e,f)*R(e,f,i,m)",r1_sigma,lambda_t%w_vovv,r2_coef,ONE_HALF)
+          ierr=exatns_tensor_contract("S(a,i)+=W(m,n,i,e)*R(e,a,n,m)",r1_sigma,lambda_t%w_ooov,r2_coef,ONE_HALF)
+
+!         r2_sigma
+          ierr=exatns_tensor_init(r2_sigma)
+!         Permute a and b, so term appears twice
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=W(m,b,j,i)*R(a,m)",r2_sigma,lambda_t%w_ovoo,r1_coef)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=W(m,a,i,j)*R(b,m)",r2_sigma,lambda_t%w_ovoo,r1_coef)
+!         Permute i and j, so term appears twice
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=W(a,b,e,j)*R(e,i)",r2_sigma,lambda_t%w_vvvo,r1_coef)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=W(b,a,e,i)*R(e,j)",r2_sigma,lambda_t%w_vvvo,r1_coef)
+          ierr=exatns_tensor_init(vv_aux)
+          ierr=exatns_tensor_contract("U(b,f)+=W(b,m,f,e)*R(e,m)",vv_aux,lambda_t%w_vovv,r1_coef)
+!         Permute a and b, so term appears twice
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=U(b,f)*T(a,f,i,j)",r2_sigma,vv_aux,comm_t%t2)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=U(a,f)*T(f,b,i,j)",r2_sigma,vv_aux,comm_t%t2)
+          ierr=exatns_tensor_init(oo_aux)
+          ierr=exatns_tensor_contract("U(n,j)+=W(n,m,j,e)*R(e,m)",oo_aux,lambda_t%w_ooov,r1_coef)
+!         Permute i and j, so term appears twice
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=U(n,j)*T(a,b,i,n)",r2_sigma,oo_aux,comm_t%t2)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=U(n,i)*T(a,b,n,j)",r2_sigma,oo_aux,comm_t%t2)
+!         Permute a and b, so term appears twice
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=F(b,e)*R(a,e,i,j)",r2_sigma,lambda_t%fbar_vv,r2_coef)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=F(a,e)*R(e,b,i,j)",r2_sigma,lambda_t%fbar_vv,r2_coef)
+!         Permute i and j, so term appears twice
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=F(m,j)*R(a,b,m,i)",r2_sigma,lambda_t%fbar_vv,r2_coef)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=F(m,i)*R(a,b,j,m)",r2_sigma,lambda_t%fbar_vv,r2_coef)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=W(m,n,i,j)*R(a,b,m,n)",r2_sigma,lambda_t%w_oooo,r2_coef,ONE_HALF)
+!         Permute i and j, as well as  a and b, so term appears four times
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=W(b,m,e,j)*R(a,e,m,i)",r2_sigma,lambda_t%w_vovo,r2_coef)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=W(a,m,e,j)*R(b,e,i,m)",r2_sigma,lambda_t%w_vovo,r2_coef)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=W(b,m,e,i)*R(a,e,j,m)",r2_sigma,lambda_t%w_vovo,r2_coef)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=W(a,m,e,i)*R(b,e,m,j)",r2_sigma,lambda_t%w_vovo,r2_coef)
+          ierr=exatns_tensor_init(vv_aux)
+          ierr=exatns_tensor_contract("U(a,f)+=V(m,n,f,e)*R(e,a,m,n)",vv_aux,int_t%oovv,r2_coef,ONE_HALF)
+!         Permute a and b, so term appears twice
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=U(a,f)*T(f,b,i,j)",r2_sigma,vv_aux,comm_t%t2)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=U(b,f)*T(a,f,i,j)",r2_sigma,vv_aux,comm_t%t2)
+          ierr=exatns_tensor_init(oo_aux)
+          ierr=exatns_tensor_contract("U(n,i)+=V(n,m,f,e)*R(f,e,i,m)",oo_aux,int_t%oovv,r2_coef,ONE_HALF)
+!         Permute i and j, so term appears twice
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=U(n,i)*T(a,b,j,n)",r2_sigma,oo_aux,comm_t%t2)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=U(n,j)*T(b,a,i,n)",r2_sigma,oo_aux,comm_t%t2)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=W(a,b,e,f)*R(e,f,i,j)",r2_sigma,lambda_t%w_vvvv,r2_coef,ONE_HALF)
+
+!         l1_sigma
+          ierr=exatns_tensor_init(l1_sigma)
+          ierr=exatns_tensor_contract("S(i,a)+=F(i,a)*K()",l1_sigma,lambda_t%fbar_ov,one_tensor)
+          ierr=exatns_tensor_contract("S(i,a)+=L(i,e)*F(e,a)",l1_sigma,l1_coef,lambda_t%fbar_vv)
+          ierr=exatns_tensor_contract("S(i,a)+=L(m,a)*F(i,m)",l1_sigma,l1_coef,lambda_t%fbar_oo,MINUS_ONE)
+          ierr=exatns_tensor_contract("S(i,a)+=L(i,m,e,f)*W(e,f,a,m)",l1_sigma,l2_coef,lambda_t%w_vvvo,ONE_HALF)
+          ierr=exatns_tensor_contract("S(i,a)+=G(f,e)*W(e,i,a,f)",l1_sigma,lambda_t%gvv,lambda_t%w_vovv)
+          ierr=exatns_tensor_contract("S(i,a)+=G(n,m)*W(i,m,n,a)",l1_sigma,lambda_t%goo,lambda_t%w_ooov)
+          ierr=exatns_tensor_contract("S(i,a)+=L(m,e)*W(e,i,a,m)",l1_sigma,l1_coef,lambda_t%w_vovo,MINUS_ONE)
+          ierr=exatns_tensor_contract("S(i,a)+=L(m,n,a,e)*W(i,e,n,m)",l1_sigma,l2_coef,lambda_t%w_ovoo,ONE_HALF)
+
+!         l2_sigma
+          ierr=exatns_tensor_init(l2_sigma)
+          ierr=exatns_tensor_contract("S(i,j,a,b)+=V(i,j,a,b)*K()",l2_sigma,int_t%oovv,one_tensor)
+!         Permute a and b, so term appears twice
+          ierr=exatns_tensor_contract("S(i,j,a,b)+=L(i,j,a,e)*F(e,b)",l2_sigma,l2_coef,lambda_t%fbar_vv)
+          ierr=exatns_tensor_contract("S(i,j,a,b)+=L(i,j,e,b)*F(e,a)",l2_sigma,l2_coef,lambda_t%fbar_vv)
+!         Permute i and j, so term appears twice
+          ierr=exatns_tensor_contract("S(i,j,a,b)+=L(m,i,a,b)*F(j,m)",l2_sigma,l2_coef,lambda_t%fbar_oo)
+          ierr=exatns_tensor_contract("S(i,j,a,b)+=L(j,m,a,b)*F(i,m)",l2_sigma,l2_coef,lambda_t%fbar_oo)
+          ierr=exatns_tensor_contract("S(i,j,a,b)+=L(m,n,a,b)*W(i,j,m,n)",l2_sigma,l2_coef,lambda_t%w_oooo,ONE_HALF)
+!         Permute i and j, as well as  a and b, so term appears four times
+          ierr=exatns_tensor_contract("S(i,j,a,b)+=L(i,m,e,a)*W(e,j,b,m)",l2_sigma,l2_coef,lambda_t%w_vovo)
+          ierr=exatns_tensor_contract("S(i,j,a,b)+=L(i,m,b,e)*W(e,j,a,m)",l2_sigma,l2_coef,lambda_t%w_vovo)
+          ierr=exatns_tensor_contract("S(i,j,a,b)+=L(j,m,a,e)*W(e,i,b,m)",l2_sigma,l2_coef,lambda_t%w_vovo)
+          ierr=exatns_tensor_contract("S(i,j,a,b)+=L(j,m,e,b)*W(e,i,a,m)",l2_sigma,l2_coef,lambda_t%w_vovo)
+!         Permute a and b, so term appears twice
+          ierr=exatns_tensor_contract("S(i,j,a,b)+=V(i,j,a,e)*G(e,b)",l2_sigma,int_t%oovv,lambda_t%gvv)
+          ierr=exatns_tensor_contract("S(i,j,a,b)+=V(i,j,e,b)*G(e,a)",l2_sigma,int_t%oovv,lambda_t%gvv)
+          ierr=exatns_tensor_contract("S(i,j,a,b)+=L(m,a)*W(i,j,m,b)",l2_sigma,l1_coef,lambda_t%w_ooov)
+!         Permute i and j, so term appears twice
+          ierr=exatns_tensor_contract("S(i,j,a,b)+=V(i,m,b,a)*G(j,m)",l2_sigma,int_t%oovv,lambda_t%goo)
+          ierr=exatns_tensor_contract("S(i,j,a,b)+=V(j,m,a,b)*G(i,m)",l2_sigma,int_t%oovv,lambda_t%goo)
+          ierr=exatns_tensor_init(oo_aux)
+          ierr=exatns_tensor_contract("U(i,m)+=L(i,e)*T(e,m)",oo_aux,l1_coef,comm_t%t1)
+!         Permute i and j, so term appears twice
+          ierr=exatans_tensor_contract("S(i,j,a,b)+=V(m,j,a,b)*U(i,m)",l2_sigma,int_t%oovv,oo_aux)
+          ierr=exatans_tensor_contract("S(i,j,a,b)+=V(i,m,a,b)*U(j,m)",l2_sigma,int_t%oovv,oo_aux)
+!         Permute i and j, so term appears twice
+          ierr=exatns_tensor_contract("S(i,j,a,b)+=L(i,e)*V(e,j,a,b)",l2_sigma,l1_coef,int_t%vovv)
+          ierr=exatns_tensor_contract("S(i,j,a,b)+=L(j,e)*V(e,i,b,a)",l2_sigma,l1_coef,int_t%vovv)
+!         Permute i and j, as well as  a and b, so term appears four times
+          ierr=exatns_tensor_contract("S(i,j,a,b)+=L(i,a)*F(j,b)",l2_sigma,l1_coef,lambda_t%fbar_ov)
+          ierr=exatns_tensor_contract("S(i,j,a,b)+=L(j,a)*F(i,b)",l2_sigma,l1_coef,lambda_t%fbar_ov,MINUS_ONE)
+          ierr=exatns_tensor_contract("S(i,j,a,b)+=L(i,b)*F(j,a)",l2_sigma,l1_coef,lambda_t%fbar_ov,MINUS_ONE)
+          ierr=exatns_tensor_contract("S(i,j,a,b)+=L(j,b)*F(i,a)",l2_sigma,l1_coef,lambda_t%fbar_ov)
+          ierr=exatns_tensor_contract("S(i,j,a,b)+=L(i,j,e,f)*W(e,f,a,b)",l2_sigma,l2_coef,lambda_t%w_vvvv,ONE_HALF)
+
          end do
 
          deallocate(mo_occ)
