@@ -677,8 +677,6 @@ module exacorr_cc
          type(exatns_comm_tens), intent(inout) :: comm_t
          type(exatns_intg_tens), intent(inout) :: int_t
          type(exatns_lambda_tens)              :: lambda_t
-!        Mixed type intermediates
-         type(tens_rcrsv_t) :: goo_tensor, gvv_tensor
 !        solution tensors
          type(tens_rcrsv_t) :: l1_tensor, l2_tensor
          type(tens_rcrsv_t) :: s1_tensor, s2_tensor
@@ -796,8 +794,8 @@ module exacorr_cc
          ierr=exatns_tensor_create(s1_tensor,"s1",ov_id,ov_root,EXA_DATA_KIND_C8)
 
 !        Construct mixed type intermediates
-         ierr=exatns_tensor_create(goo_tensor,"goo_mixed",oo_id,oo_root,EXA_DATA_KIND_C8)
-         ierr=exatns_tensor_create(gvv_tensor,"gvv_mixed",vv_id,vv_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(lambda_t%goo,"goo_mixed",oo_id,oo_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(lambda_t%gvv,"gvv_mixed",vv_id,vv_root,EXA_DATA_KIND_C8)
 
 !        Reinitialize diis, so it can be used in lambda routine
          call diis (l2_tensor,oovv_id,oovv_root,l1_tensor,ov_id,ov_root,mode=1)
@@ -806,16 +804,14 @@ module exacorr_cc
          do iccsd = 1, nccsd
 
 !         Form mixed intermediates
-          ierr=exatns_tensor_init(gvv_tensor)
-          ierr=exatns_tensor_contract("G(e,a)+=L(m,n,a,f)*T(e,f,m,n)",gvv_tensor,l2_tensor,comm_t%t2,MINUS_ONE_HALF)
-          ierr=exatns_tensor_init(goo_tensor)
-          ierr=exatns_tensor_contract("G(i,m)+=L(i,n,e,f)*T(e,f,m,n)",goo_tensor,l2_tensor,comm_t%t2,ONE_HALF)
+          call get_gvv_lambda(lambda_t%gvv,l2_tensor,comm_t%t2)
+          call get_goo_lambda(lambda_t%goo,l2_tensor,comm_t%t2)
 
           if (.false.) then
             print*, "L1  = ", print_tensornorm2(l1_tensor)
             print*, "L2  = ", print_tensornorm2(l2_tensor)*0.25D0
-            print*, "goo = ", print_tensornorm2(goo_tensor)
-            print*, "gvv = ", print_tensornorm2(gvv_tensor)
+            print*, "goo = ", print_tensornorm2(lambda_t%goo)
+            print*, "gvv = ", print_tensornorm2(lambda_t%gvv)
           end if
 
 !         Calculate s1 tensor
@@ -823,11 +819,11 @@ module exacorr_cc
           ierr=exatns_tensor_contract("S(i,a)+=F(i,a)*K()",s1_tensor,lambda_t%fbar_ov,one_tensor)
           ierr=exatns_tensor_contract("S(i,a)+=L(i,e)*F(e,a)",s1_tensor,l1_tensor,lambda_t%fbar_vv)
           ierr=exatns_tensor_contract("S(i,a)+=L(m,a)*F(i,m)",s1_tensor,l1_tensor,lambda_t%fbar_oo,MINUS_ONE)
-          ierr=exatns_tensor_contract("S(i,a)+=G(n,m)*W(i,m,n,a)",s1_tensor,goo_tensor,lambda_t%w_ooov)
+          ierr=exatns_tensor_contract("S(i,a)+=G(n,m)*W(i,m,n,a)",s1_tensor,lambda_t%goo,lambda_t%w_ooov)
           ierr=exatns_tensor_contract("S(i,a)+=L(m,e)*W(e,i,a,m)",s1_tensor,l1_tensor,lambda_t%w_vovo,MINUS_ONE)
           ierr=exatns_tensor_contract("S(i,a)+=L(m,n,a,e)*W(i,e,n,m)",s1_tensor,l2_tensor,lambda_t%w_ovoo,ONE_HALF)
           ierr=exatns_tensor_contract("S(i,a)+=L(i,m,e,f)*W(e,f,a,m)",s1_tensor,l2_tensor,lambda_t%w_vvvo,ONE_HALF)
-          ierr=exatns_tensor_contract("S(i,a)+=G(f,e)*W(e,i,a,f)",s1_tensor,gvv_tensor,lambda_t%w_vovv)
+          ierr=exatns_tensor_contract("S(i,a)+=G(f,e)*W(e,i,a,f)",s1_tensor,lambda_t%gvv,lambda_t%w_vovv)
 
 !         Calculate s2 tensor
           ierr=exatns_tensor_init(s2_tensor)
@@ -850,16 +846,16 @@ module exacorr_cc
           ierr=exatns_tensor_contract("S(i,j,a,b)+=L(j,m,e,b)*W(e,i,a,m)",s2_tensor,l2_tensor,lambda_t%w_vovo)
 
 !         Need to permute a and b, so term appears twice
-          ierr=exatns_tensor_contract("S(i,j,a,b)+=V(i,j,a,e)*G(e,b)",s2_tensor,int_t%oovv,gvv_tensor)
-          ierr=exatns_tensor_contract("S(i,j,a,b)+=V(i,j,e,b)*G(e,a)",s2_tensor,int_t%oovv,gvv_tensor)
+          ierr=exatns_tensor_contract("S(i,j,a,b)+=V(i,j,a,e)*G(e,b)",s2_tensor,int_t%oovv,lambda_t%gvv)
+          ierr=exatns_tensor_contract("S(i,j,a,b)+=V(i,j,e,b)*G(e,a)",s2_tensor,int_t%oovv,lambda_t%gvv)
 
 !         Need to permute a and b, so term appears twice
           ierr=exatns_tensor_contract("S(i,j,a,b)+=L(m,a)*W(j,i,m,b)",s2_tensor,l1_tensor,lambda_t%w_ooov)
           ierr=exatns_tensor_contract("S(i,j,a,b)+=L(m,b)*W(i,j,m,a)",s2_tensor,l1_tensor,lambda_t%w_ooov)
 
 !         Need to permute i and j, so term appears twice
-          ierr=exatns_tensor_contract("S(i,j,a,b)+=V(i,m,b,a)*G(j,m)",s2_tensor,int_t%oovv,goo_tensor)
-          ierr=exatns_tensor_contract("S(i,j,a,b)+=V(j,m,a,b)*G(i,m)",s2_tensor,int_t%oovv,goo_tensor)
+          ierr=exatns_tensor_contract("S(i,j,a,b)+=V(i,m,b,a)*G(j,m)",s2_tensor,int_t%oovv,lambda_t%goo)
+          ierr=exatns_tensor_contract("S(i,j,a,b)+=V(j,m,a,b)*G(i,m)",s2_tensor,int_t%oovv,lambda_t%goo)
 
 !         Need to permute i and j, so term appears twice
           ierr=exatns_tensor_contract("S(i,j,a,b)+=L(i,e)*W(e,j,a,b)",s2_tensor,l1_tensor,lambda_t%w_vovv)
@@ -904,8 +900,6 @@ module exacorr_cc
          call diis(l2_tensor,t1_tensor=l1_tensor,mode=2)
          ierr=exatns_tensor_destroy(s1_tensor)
          ierr=exatns_tensor_destroy(s2_tensor)
-         ierr=exatns_tensor_destroy(goo_tensor)
-         ierr=exatns_tensor_destroy(gvv_tensor)
          ierr=exatns_tensor_destroy(oo_aux_tensor)
          ierr=exatns_tensor_destroy(one_tensor)
          ierr=exatns_tensor_destroy(lambda_t%fbar_oo)
@@ -919,6 +913,8 @@ module exacorr_cc
          ierr=exatns_tensor_destroy(lambda_t%w_vovv)
          ierr=exatns_tensor_destroy(lambda_t%w_vvvv)
          ierr=exatns_tensor_destroy(lambda_t%wbar_vovo)
+         ierr=exatns_tensor_destroy(lambda_t%goo)
+         ierr=exatns_tensor_destroy(lambda_t%gvv)
 
          call print_date('Leaving lambda solver routine')
 

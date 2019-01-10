@@ -528,8 +528,6 @@ module talsh_cc
          type(talsh_comm_tens), intent(inout) :: comm_t
          type(talsh_intg_tens), intent(inout) :: int_t
          type(talsh_lambda_tens)              :: lambda_t
-!        Mixed type intermediates
-         type(talsh_tens_t) :: goo_tensor, gvv_tensor
 !        solution tensors
          type(talsh_tens_t) :: l1_tensor, l2_tensor
          type(talsh_tens_t) :: s1_tensor, s2_tensor
@@ -638,8 +636,8 @@ module talsh_cc
          ierr=talsh_tensor_construct(s2_tensor,C8,oovv_dims,init_val=ZERO)
 
 !        Construct mixed type intermediates
-         ierr=talsh_tensor_construct(goo_tensor,C8,oo_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(gvv_tensor,C8,vv_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(lambda_t%goo,C8,oo_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(lambda_t%gvv,C8,vv_dims,init_val=ZERO)
 
 !        Construct auxiliary tensor
          ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
@@ -651,22 +649,14 @@ module talsh_cc
          do iccsd = 1, nccsd
 
 !         Form mixed intermediates
-          ierr=talsh_tensor_init(gvv_tensor)
-          call cpu_time(start)
-          ierr=talsh_tensor_contract("G(e,a)+=L(m,n,a,f)*T(e,f,m,n)",gvv_tensor,l2_tensor,comm_t%t2,scale=MINUS_ONE_HALF)
-          call cpu_time(finish)
-          print*, "gvv: ", finish-start
-          ierr=talsh_tensor_init(goo_tensor)
-          call cpu_time(start)
-          ierr=talsh_tensor_contract("G(i,m)+=L(i,n,e,f)*T(e,f,m,n)",goo_tensor,l2_tensor,comm_t%t2,scale=ONE_HALF)
-          call cpu_time(finish)
-          print*, "goo: ", finish-start
+          call get_gvv_lambda(lambda_t%gvv,l2_tensor,comm_t%t2)
+          call get_goo_lambda(lambda_t%goo,l2_tensor,comm_t%t2)
 
           if (.false.) then
              print*, "L1  = ", tensor_norm2(l1_tensor)
              print*, "L2  = ", tensor_norm2(l2_tensor)*ONE_QUARTER
-             print*, "goo = ", tensor_norm2(goo_tensor)
-             print*, "gvv = ", tensor_norm2(gvv_tensor)
+             print*, "goo = ", tensor_norm2(lambda_t%goo)
+             print*, "gvv = ", tensor_norm2(lambda_t%gvv)
           end if
 
 !         Calculate s1 tensor
@@ -684,7 +674,7 @@ module talsh_cc
           call cpu_time(finish)
           print*, "s1: ", finish-start
           call cpu_time(start)
-          ierr=talsh_tensor_contract("S(i,a)+=G(n,m)*W(i,m,n,a)",s1_tensor,goo_tensor,lambda_t%w_ooov)
+          ierr=talsh_tensor_contract("S(i,a)+=G(n,m)*W(i,m,n,a)",s1_tensor,lambda_t%goo,lambda_t%w_ooov)
           call cpu_time(finish)
           print*, "s1: ", finish-start
           call cpu_time(start)
@@ -700,7 +690,7 @@ module talsh_cc
           call cpu_time(finish)
           print*, "s1: ", finish-start
           call cpu_time(start)
-          ierr=talsh_tensor_contract("S(i,a)+=G(f,e)*W(e,i,a,f)",s1_tensor,gvv_tensor,lambda_t%w_vovv)
+          ierr=talsh_tensor_contract("S(i,a)+=G(f,e)*W(e,i,a,f)",s1_tensor,lambda_t%gvv,lambda_t%w_vovv)
           call cpu_time(finish)
           print*, "s1: ", finish-start
 
@@ -741,8 +731,8 @@ module talsh_cc
 
 !         Need to permute a and b, so term appears twice
           call cpu_time(start)
-          ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,j,a,e)*G(e,b)",s2_tensor,int_t%oovv,gvv_tensor)
-          ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,j,e,b)*G(e,a)",s2_tensor,int_t%oovv,gvv_tensor)
+          ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,j,a,e)*G(e,b)",s2_tensor,int_t%oovv,lambda_t%gvv)
+          ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,j,e,b)*G(e,a)",s2_tensor,int_t%oovv,lambda_t%gvv)
           call cpu_time(finish)
           print*, "s2: ", finish-start
 
@@ -755,8 +745,8 @@ module talsh_cc
 
 !         Need to permute i and j, so term appears twice
           call cpu_time(start)
-          ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,m,b,a)*G(j,m)",s2_tensor,int_t%oovv,goo_tensor)
-          ierr=talsh_tensor_contract("S(i,j,a,b)+=V(j,m,a,b)*G(i,m)",s2_tensor,int_t%oovv,goo_tensor)
+          ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,m,b,a)*G(j,m)",s2_tensor,int_t%oovv,lambda_t%goo)
+          ierr=talsh_tensor_contract("S(i,j,a,b)+=V(j,m,a,b)*G(i,m)",s2_tensor,int_t%oovv,lambda_t%goo)
           call cpu_time(finish)
           print*, "s2: ", finish-start
 
@@ -817,8 +807,6 @@ module talsh_cc
          call diis (l2_tensor,l1_tensor,mode=2)
          ierr=talsh_tensor_destruct(s1_tensor)
          ierr=talsh_tensor_destruct(s2_tensor)
-         ierr=talsh_tensor_destruct(goo_tensor)
-         ierr=talsh_tensor_destruct(gvv_tensor)
          ierr=talsh_tensor_destruct(oo_aux_tensor)
          ierr=talsh_tensor_destruct(lambda_t%fbar_oo)
          ierr=talsh_tensor_destruct(lambda_t%fbar_ov)
@@ -831,6 +819,8 @@ module talsh_cc
          ierr=talsh_tensor_destruct(lambda_t%w_vovv)
          ierr=talsh_tensor_destruct(lambda_t%w_vvvv)
          ierr=talsh_tensor_destruct(lambda_t%wbar_vovo)
+         ierr=talsh_tensor_destruct(lambda_t%goo)
+         ierr=talsh_tensor_destruct(lambda_t%gvv)
 
          call print_date('Leaving lambda solver routine')
 

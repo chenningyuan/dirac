@@ -144,6 +144,20 @@ module intermediates
         module procedure get_w_vvvv_talsh
      end interface get_w_vvvv
 
+     interface get_goo_lambda
+#if defined (VAR_MPI)
+        module procedure get_goo_lambda_exatns
+#endif
+        module procedure get_goo_lambda_talsh
+     end interface get_goo_lambda
+
+     interface get_gvv_lambda
+#if defined (VAR_MPI)
+        module procedure get_gvv_lambda_exatns
+#endif
+        module procedure get_gvv_lambda_talsh
+     end interface get_gvv_lambda
+
 !    CCSD intermediates
      public get_tau
      public get_hoo
@@ -165,6 +179,8 @@ module intermediates
      public get_w_vvvo
      public get_w_vovv
      public get_w_vvvv
+     public get_goo_lambda
+     public get_gvv_lambda
 
      contains
 
@@ -538,6 +554,32 @@ module intermediates
         ierr=exatns_tensor_contract("W(e,f,a,b)+=V(e,f,a,b)*K()",w_vvvv,int_t%vvvv,one_tensor)
 
        end subroutine get_w_vvvv_exatns
+
+       subroutine get_goo_lambda_exatns(goo_tensor,l2_tensor,t2_tensor)
+
+        use exatensor
+
+        type(tens_rcrsv_t), intent(inout) :: goo_tensor
+        type(tens_rcrsv_t), intent(inout) :: l2_tensor, t2_tensor
+        integer :: ierr
+
+        ierr=exatns_tensor_init(goo_tensor)
+        ierr=exatns_tensor_contract("G(i,m)+=L(i,n,e,f)*T(e,f,m,n)",goo_tensor,l2_tensor,t2_tensor,ONE_HALF)
+
+       end subroutine get_goo_lambda_exatns
+
+       subroutine get_gvv_lambda_exatns(gvv_tensor,l2_tensor,t2_tensor)
+
+        use exatensor
+
+        type(tens_rcrsv_t), intent(inout) :: gvv_tensor
+        type(tens_rcrsv_t), intent(inout) :: l2_tensor, t2_tensor
+        integer :: ierr
+
+        ierr=exatns_tensor_init(gvv_tensor)
+        ierr=exatns_tensor_contract("G(e,a)+=L(m,n,a,f)*T(e,f,n,m)",gvv_tensor,l2_tensor,t2_tensor,ONE_HALF)
+
+       end subroutine get_gvv_lambda_exatns
 #endif
 
        subroutine get_tau_talsh(comm_t,CCD)
@@ -863,14 +905,8 @@ module intermediates
         type(talsh_intg_tens),intent(inout) :: int_t
         integer :: ierr
 
-        call cpu_time(start) 
         ierr=talsh_tensor_contract("W(b,m,e,j)+=V(m,n,e,f)*T(b,f,n,j)",wbar_vovo,int_t%oovv,t2_tensor)
-        call cpu_time(finish)
-        print*, "wbar_vovo: ", finish-start
-        call cpu_time(start) 
         ierr=talsh_tensor_add("W(b,m,e,j)+=V(b,m,e,j)",wbar_vovo,int_t%vovo)
-        call cpu_time(finish)
-        print*, "wbar_vovo: ", finish-start
 
        end subroutine get_wbar_vovo_talsh
 
@@ -954,21 +990,44 @@ module intermediates
 
         if (.not.CCD) then
 !        Permute e and f, so term appears twice
-         call cpu_time(start)
          ierr=talsh_tensor_contract("W(e,f,a,b)+=V(f,m,a,b)*T(e,m)",w_vvvv,int_t%vovv,comm_t%t1)
          ierr=talsh_tensor_contract("W(e,f,a,b)+=V(e,m,a,b)*T(f,m)",w_vvvv,int_t%vovv,comm_t%t1,scale=MINUS_ONE)
-         call cpu_time(finish)
-         print*, "w_vvvv: ", finish-start
         end if
-        call cpu_time(start)
         ierr=talsh_tensor_contract("W(e,f,a,b)+=V(m,n,a,b)*T(e,f,m,n)",w_vvvv,int_t%oovv,comm_t%tau,scale=ONE_HALF)
-        call cpu_time(finish)
-        print*, "w_vvvv: ", finish-start
-        call cpu_time(start)
         ierr=talsh_tensor_add("W(e,f,a,b)+=V(e,f,a,b)",w_vvvv,int_t%vvvv)
-        call cpu_time(finish)
-        print*, "w_vvvv: ", finish-start
 
        end subroutine get_w_vvvv_talsh
+
+       subroutine get_goo_lambda_talsh(goo_tensor,l2_tensor,t2_tensor)
+
+        use talsh
+
+        type(talsh_tens_t), intent(inout) :: goo_tensor
+        type(talsh_tens_t), intent(inout) :: l2_tensor, t2_tensor
+        integer :: ierr
+
+        ierr=talsh_tensor_init(goo_tensor)
+        call cpu_time(start)
+        ierr=talsh_tensor_contract("G(i,m)+=L(i,n,e,f)*T(e,f,m,n)",goo_tensor,l2_tensor,t2_tensor,scale=ONE_HALF)
+        call cpu_time(finish)
+        print*, "goo: ", finish-start
+
+       end subroutine get_goo_lambda_talsh
+
+       subroutine get_gvv_lambda_talsh(gvv_tensor,l2_tensor,t2_tensor)
+
+        use talsh
+
+        type(talsh_tens_t), intent(inout) :: gvv_tensor
+        type(talsh_tens_t), intent(inout) :: l2_tensor, t2_tensor
+        integer :: ierr
+
+        ierr=talsh_tensor_init(gvv_tensor)
+        call cpu_time(start)
+        ierr=talsh_tensor_contract("G(e,a)+=L(m,n,a,f)*T(e,f,n,m)",gvv_tensor,l2_tensor,t2_tensor,scale=ONE_HALF)
+        call cpu_time(finish)
+        print*, "gvv: ", finish-start
+
+       end subroutine get_gvv_lambda_talsh
 
 end module
