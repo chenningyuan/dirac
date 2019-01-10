@@ -87,6 +87,7 @@ module exacorr_cc
          integer,dimension(4)       :: oooo_id, ooov_id, ovoo_id, oovv_id, vovo_id, &
                                        vvoo_id, vovv_id, vvvv_id, voov_id
          integer                    :: ao_space_id, occ_space_id, vir_space_id
+         integer                    :: branch_factor
 
          ! variables for the definition of colors inside the spaces
          type(color_symmetry_t), allocatable    :: color(:)
@@ -106,7 +107,7 @@ module exacorr_cc
          integer:: lsh, l, nl
 
          !CCD
-         logical :: CCD, lambda
+         logical :: CCD, lambda, noints
 
 !        Make some noise so that we know we are here
          call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
@@ -145,9 +146,11 @@ module exacorr_cc
          if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.finalize() failed!')
 
          !Register the ao vector space:
-         ierr=exatns_space_register('AO_space',basis_ao,ao_space_id,ao_space)
+         branch_factor = nao / 80 + 1
+         if (branch_factor < 2) branch_factor = 2
+         ierr=exatns_space_register('AO_space',basis_ao,ao_space_id,ao_space,branch_factor)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register() failed!')
-         if (my_MPI_rank == 0) print*," registered AO space with nao, nshells:",nao,nshells
+         if (my_MPI_rank == 0) print*," registered AO space with nao, nshells, branch factor:",nao,nshells,branch_factor
 
          !DO NOT CHANGE THESE VARIABLES
          nocc = exa_input%nkr_occ
@@ -159,6 +162,7 @@ module exacorr_cc
          t_target_precision = exa_input%t_econv
          CCD = exa_input%ccd
          lambda = exa_input%lambda
+         noints = exa_input%noints
 
          !Get the MO-coeffcient basis for the occupied and virtual spaces
          ierr = 0
@@ -188,9 +192,13 @@ module exacorr_cc
          if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.finalize() failed!')
 
          !Register this mo vector space :
-         ierr=exatns_space_register('Occupied',basis_occ,occ_space_id,occ_space)
+         branch_factor = 2*nocc/ 80 + 1
+         if (branch_factor < 2) branch_factor = 2
+         ierr=exatns_space_register('Occupied',basis_occ,occ_space_id,occ_space,branch_factor)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register(occ) failed!')
-         ierr=exatns_space_register('Virtual',basis_vir,vir_space_id,vir_space)
+         branch_factor = 2*nvir/ 80 + 1
+         if (branch_factor < 2) branch_factor = 2
+         ierr=exatns_space_register('Virtual',basis_vir,vir_space_id,vir_space,branch_factor)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register(vir) failed!')
 
          !Define separate initializers for the alpha(A) and beta(B) occupied and virtual MO-coefficients
@@ -211,7 +219,7 @@ module exacorr_cc
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
          end do
 
-         if (my_MPI_rank == 0) print*," registered MO spaces and initializers with nocc and nvir:",nocc, nvir
+         if (my_MPI_rank == 0) print*," registered MO spaces and initializers with nocc and nvir:",2*nocc, 2*nvir
 
          !Register the ao integral generation as a method
          ierr=exatns_method_register('Aoint_calculator',aoint_calculator)
@@ -298,7 +306,7 @@ module exacorr_cc
             ierr=exatns_tensor_create(int_t%vovv,"vovv",vovv_id,vovv_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(int_t%vvvv,"vvvv",vvvv_id,vvvv_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(voov_tensor,"voov",voov_id,voov_root,EXA_DATA_KIND_C8) ! auxilliary for get_CC_integrals
-            call get_CC_integrals (ao_space_id,ao_space_root,voov_tensor,int_t)
+            call get_CC_integrals (ao_space_id,ao_space_root,voov_tensor,int_t,noints)
             ierr=exatns_tensor_destroy(voov_tensor)
 
             call print_date('initialized two electron integrals')
@@ -916,7 +924,7 @@ module exacorr_cc
 
         end subroutine solve_lambda_equations
 
-        subroutine get_CC_integrals (ao_space_id,ao_space_root,voov_tensor,int_t)
+        subroutine get_CC_integrals (ao_space_id,ao_space_root,voov_tensor,int_t,noints)
 
 !        Routine to get integrals needed in CC in the form of antisymmetric tensors.
 !        In this implementation we take all AO integrals into memory, the result tensor themselves can be subsets of the
@@ -936,6 +944,7 @@ module exacorr_cc
          type(tens_rcrsv_t),intent(inout) :: voov_tensor ! Auxilliary tensor that is not anti-symmetrized
 
          integer                           :: i,ierr
+         logical                           :: noints
 
          ! variables for the definition of the initializer methods
          character(len=5)  :: initlabel(2,4),initocc(2),initvir(2)
@@ -953,11 +962,19 @@ module exacorr_cc
 !        Get tensor with AO integrals
          ierr=exatns_tensor_create(aoint_tensor,'aotensor',(/(ao_space_id,i=1,4)/),(/(ao_space_root,i=1,4)/),EXA_DATA_KIND_C8)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
+         call print_date('allocated AO integral tensor')
 
          !Initialize ao-tensor:
-         ierr=exatns_tensor_init(aoint_tensor,'Aoint_calculator')
-         if(ierr.ne.EXA_SUCCESS) call quit('Aoint_calculator failed!')
-         call print_date('finished ao integral calculation')
+         if (noints) then
+!        test code : initialize integrals to zero to be able to time the integral generation
+           ierr=exatns_tensor_init(aoint_tensor)
+           if(ierr.ne.EXA_SUCCESS) call quit('Aoint_calculator failed!')
+           call print_date('initalized all ao integrals to zero')
+         else
+           ierr=exatns_tensor_init(aoint_tensor,'Aoint_calculator')
+           if(ierr.ne.EXA_SUCCESS) call quit('Aoint_calculator failed!')
+           call print_date('finished ao integral calculation')
+         end if
 
 !        Note that the spaces for the tensor are given in physicists notation <12||34>
 !        whereas the initializer labels needed in the index transform are in mullikens notation (13||24)

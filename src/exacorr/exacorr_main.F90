@@ -26,6 +26,7 @@
       exa_input%talsh = .false.
       exa_input%ccd = .false.
       exa_input%lambda = .false.
+      exa_input%noints = .false.
 
 #if defined (VAR_MPI)
       call interface_mpi_init()
