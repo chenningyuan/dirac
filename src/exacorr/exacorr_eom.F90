@@ -40,7 +40,7 @@ module exacorr_eom
          integer,dimension(4)       :: oooo_id, ovoo_id, ooov_id, vovo_id, vvvo_id, vovv_id, vvvv_id
          integer(INTL),dimension(4) :: oooo_root, ovoo_root, ooov_root, vovo_root, vvvo_root, vovv_root, vvvv_root
 
-         logical :: CCD
+         logical :: CCD, left=.true.
          integer :: ierr
 
 !        Make some noise so that we know we are here
@@ -117,11 +117,14 @@ module exacorr_eom
          call print_date('Finished calculating fixed intermediates')
 
          if (flavour.eq."IP") then
-            call eom_ip(exa_input,comm_t,lambda_t,int_t,l1_tensor,l2_tensor,dims,one_tensor)
+            call eom_ip_right(exa_input,comm_t,lambda_t,int_t,l1_tensor,l2_tensor,dims,one_tensor)
+            if (left) call eom_ip_left(exa_input,comm_t,lambda_t,int_t,l1_tensor,l2_tensor,dims,one_tensor)
          else if (flavour.eq."EA") then
-            call eom_ea(exa_input,comm_t,lambda_t,int_t,l1_tensor,l2_tensor,dims,one_tensor)
+            call eom_ea_right(exa_input,comm_t,lambda_t,int_t,l1_tensor,l2_tensor,dims,one_tensor)
+            if (left) call eom_ea_left(exa_input,comm_t,lambda_t,int_t,l1_tensor,l2_tensor,dims,one_tensor)
          else if (flavour.eq."EE") then
-            call eom_ee(exa_input,comm_t,lambda_t,int_t,l1_tensor,l2_tensor,dims,one_tensor)
+            call eom_ee_right(exa_input,comm_t,lambda_t,int_t,l1_tensor,l2_tensor,dims,one_tensor)
+            if (left) call eom_ee_left(exa_input,comm_t,lambda_t,int_t,l1_tensor,l2_tensor,dims,one_tensor)
          else
             print*, "You should pick a valid EOM type."
          end if
@@ -146,7 +149,7 @@ module exacorr_eom
 
         end subroutine exacorr_eom_driver
 
-        subroutine eom_ip(exa_input,comm_t,lambda_t,int_t,l1_tensor,l2_tensor,dims,one_tensor)
+        subroutine eom_ip_right(exa_input,comm_t,lambda_t,int_t,l1_tensor,l2_tensor,dims,one_tensor)
 
          type(exacc_input), intent(in) :: exa_input
 !        Common tensors
@@ -274,9 +277,9 @@ module exacorr_eom
          ierr=exatns_tensor_destroy(l2_sigma)
          ierr=exatns_tensor_destroy(v_aux)
 
-        end subroutine eom_ip
+        end subroutine eom_ip_right
 
-        subroutine eom_ea(exa_input,comm_t,lambda_t,int_t,l1_tensor,l2_tensor,dims,one_tensor)
+        subroutine eom_ea_right(exa_input,comm_t,lambda_t,int_t,l1_tensor,l2_tensor,dims,one_tensor)
 
          type(exacc_input), intent(in) :: exa_input
 !        Common tensors
@@ -404,9 +407,9 @@ module exacorr_eom
          ierr=exatns_tensor_destroy(l2_sigma)
          ierr=exatns_tensor_destroy(o_aux)
 
-        end subroutine eom_ea
+        end subroutine eom_ea_right
 
-        subroutine eom_ee(exa_input,comm_t,lambda_t,int_t,l1_tensor,l2_tensor,dims,one_tensor)
+        subroutine eom_ee_right(exa_input,comm_t,lambda_t,int_t,l1_tensor,l2_tensor,dims,one_tensor)
 
          type(exacc_input), intent(in) :: exa_input
 !        Common tensors
@@ -590,6 +593,6 @@ module exacorr_eom
          deallocate(mo_occ)
          deallocate(mo_vir)
 
-        end subroutine eom_ee
+        end subroutine eom_ee_right
 
 end module exacorr_eom

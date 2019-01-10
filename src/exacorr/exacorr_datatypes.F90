@@ -99,4 +99,10 @@
          type(talsh_tens_t) :: goo, gvv
         end type talsh_lambda_tens
 
+        type, public, extends(talsh_comm_tens) :: talsh_eom_fixed_tens
+            type(talsh_intg_tens)   :: int_t
+            type(talsh_lambda_tens) :: lambda_t
+            type(talsh_tens_t)      :: l2_tensor !Lambda amplitude
+        end type talsh_eom_fixed_tens
+
        end module exacorr_datatypes
