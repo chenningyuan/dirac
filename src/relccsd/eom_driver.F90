@@ -2348,8 +2348,16 @@ function create_projector(eom_type, ndet, eps)
                    end if
                 end do
              end if 
-             create_projector(i) = spinors_in_occupied_window(1).and.spinors_in_virtuals_window(1)
-             create_projector(i) = create_projector(i).and.spinors_in_occupied_window(2).and.spinors_in_virtuals_window(2)
+             if (relcc_projectors_rew_strict) then 
+! strictly enforces that only configurations with ionization/excitations/attachments within the window are kept
+                create_projector(i) = spinors_in_occupied_window(1).and.spinors_in_virtuals_window(1)
+                create_projector(i) = create_projector(i).and.spinors_in_occupied_window(2).and.spinors_in_virtuals_window(2)
+             else
+! more loosely enforces ionization/excitations/attachments within the window; requires only that at least one of the idexes in virtual/occupied space belongs to the window.
+! for ionization/excitations, if there's no restriction on the virtual space, this is equivalent to cvs 
+                create_projector(i) = spinors_in_virtuals_window(1).or.spinors_in_virtuals_window(2)
+                create_projector(i) = create_projector(i).and.(spinors_in_occupied_window(1).or.spinors_in_occupied_window(2))
+             end if 
 
              if (iprnt.ge.2) then
                 if (create_projector(i)) then
