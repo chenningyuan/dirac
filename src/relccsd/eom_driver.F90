@@ -174,6 +174,8 @@
    integer :: fudge_factor
    real*8 :: in_core_HbarSS_threshold
    integer :: number_diagonal_elements_in_core
+   real*8 :: in_rew_HbarSS_threshold
+   integer :: number_diagonal_elements_in_rew
 
 !initialize the R-vector
 !=======================
@@ -189,6 +191,8 @@
 ! aspg, WIP
     number_diagonal_elements_in_core = 0
     in_core_HbarSS_threshold = huge(in_core_HbarSS_threshold)
+    number_diagonal_elements_in_rew = 0
+    in_rew_HbarSS_threshold = huge(in_rew_HbarSS_threshold)
 ! aspg, WIP
 
 ! aspg, WIP
@@ -251,6 +255,15 @@
                     in_core_HbarSS_threshold = H_II(ai)
                  end if
                  number_diagonal_elements_in_core = number_diagonal_elements_in_core + 1
+              end if
+              if ((eps(ii).le.relcc_projectors_rew_occ_max_energy).and.&
+                & (eps(ii).ge.relcc_projectors_rew_occ_min_energy).and.&
+                &((eps(aa).ge.relcc_projectors_rew_virt_min_energy).and.&
+                & (eps(aa).le.relcc_projectors_rew_virt_max_energy))) then
+                 if (H_II(ai).lt.in_rew_HbarSS_threshold) then
+                    in_rew_HbarSS_threshold = H_II(ai)
+                 end if
+                 number_diagonal_elements_in_rew = number_diagonal_elements_in_rew + 1
               end if
 ! aspg, WIP
               ai = ai + rcw
@@ -358,7 +371,6 @@
 ! aspg, WIP june/july 2018
 
           if (relcc_projectors_do_restricted_excitation_window) then ! find the lowest elements of the diagonal within the given excitation window
-             call quit('REW not implemented')
 
               if (iprnt.ge.1) then
                   write (iw,*) ''
@@ -366,19 +378,35 @@
                   write (iw,*) '      unlike core-valence separation (CVS), only S/D/... determinants with ' 
                   write (iw,*) '      all spinors within the occupied/virtual windows will be considered'
                   write (iw,*) '   Spinors in the following window(s) will be active'
-                  write (iw,*) '      occupied low-end ',number_diagonal_elements_in_core,'a.u.'
-                  write (iw,*) '               high-end',number_diagonal_elements_in_core,'a.u.'
-                  write (iw,*) '      virtual  low-end ',number_diagonal_elements_in_core,'a.u.'
-                  write (iw,*) '               high-end',number_diagonal_elements_in_core,'a.u.'
-                  write (iw,*) '   There are',number_diagonal_elements_in_core,' possible single ionizations out of REW orbitals'
+                  write (iw,*) '      occupied min     ',relcc_projectors_rew_occ_min_energy,'a.u.'
+                  write (iw,*) '               max     ',relcc_projectors_rew_occ_max_energy,'a.u.'
+                  write (iw,*) '      virtual  min     ',relcc_projectors_rew_virt_min_energy,'a.u.'
+                  write (iw,*) '               max     ',relcc_projectors_rew_virt_max_energy,'a.u.'
+                  write (iw,*) '   There are',number_diagonal_elements_in_rew,'possible single excitations out of core orbitals'
                   write (iw,*) ''
               end if
+
+              if (iprnt.ge.2) write (iw,*) 'diag(Hbar_SS): ',diag_H
+              if (iprnt.ge.2) write (iw,*) 'in_rew_HbarSS_threshold',in_rew_HbarSS_threshold
+! aspg, WIP june/july 2018
+              do iroot = 1, nroot
+                  k = minloc(diag_H, MASK=(diag_H .ge. in_rew_HbarSS_threshold))
+                  if (iprnt.ge.2) write(iw,*)'roots',iroot,diag_H(k(1)),k(1)
+                  if (iprnt.ge.3) write(iw,*) diag_H
+                  i = k(1)
+                  if (iprnt.ge.3) write(iw,*) 'making',i,'huge'
+                  diag_H(i) = huge(diag_H)
+                  jroot = i
+                  if (rcw.eq.2) jroot = 2*i - 1
+                  R1(jroot,iroot) = 1.0d0
+              enddo
 
           else if (relcc_projectors_do_core_valence_separation) then ! find the lowest elements of the diagonal involving core electrons only
 
               if (iprnt.ge.1) then
                   write (iw,*) ''
                   write (iw,*) '   Core-valence separation (CVS) via projectors will be invoked'
+!                 write (iw,*) '   [S. Coriani, H. Koch, JCP 143, 181103 (2015)]'
                   write (iw,*) '   Spinors below',relcc_projectors_cvs_energy_threshold,' a.u. taken as core'
                   write (iw,*) '   There are',number_diagonal_elements_in_core,'possible single excitations out of core orbitals'
                   write (iw,*) ''
@@ -442,6 +470,13 @@
                     in_core_HbarSS_threshold = H_II(ai)
                  end if
                  number_diagonal_elements_in_core = number_diagonal_elements_in_core + 1
+              end if
+              if ((eps(ii).le.relcc_projectors_rew_occ_max_energy).and.&
+                & (eps(ii).ge.relcc_projectors_rew_occ_min_energy)) then
+                 if (H_II(ai).lt.in_rew_HbarSS_threshold) then
+                    in_rew_HbarSS_threshold = H_II(ai)
+                 end if
+                 number_diagonal_elements_in_rew = number_diagonal_elements_in_rew + 1
               end if
 ! aspg, WIP
 
@@ -554,7 +589,6 @@
 
 
           if (relcc_projectors_do_restricted_excitation_window) then ! find the lowest elements of the diagonal within the given excitation window
-             call quit('RIW not implemented')
 
               if (iprnt.ge.1) then
                   write (iw,*) ''
@@ -562,13 +596,29 @@
                   write (iw,*) '      unlike core-valence separation (CVS), only S/D/... determinants with '
                   write (iw,*) '      all spinors within the occupied/virtual windows will be considered'
                   write (iw,*) '   Spinors in the following window(s) will be active'
-                  write (iw,*) '      occupied low-end ',number_diagonal_elements_in_core,'a.u.'
-                  write (iw,*) '               high-end',number_diagonal_elements_in_core,'a.u.'
-                  write (iw,*) '      virtual  low-end ',number_diagonal_elements_in_core,'a.u.'
-                  write (iw,*) '               high-end',number_diagonal_elements_in_core,'a.u.'
-                  write (iw,*) '   There are',number_diagonal_elements_in_core,' possible single ionizations out of RIW orbitals'
+                  write (iw,*) '      occupied min     ',relcc_projectors_rew_occ_min_energy,'a.u.'
+                  write (iw,*) '               max     ',relcc_projectors_rew_occ_max_energy,'a.u.'
+                  write (iw,*) '      virtual  min     ',relcc_projectors_rew_virt_min_energy,'a.u.'
+                  write (iw,*) '               max     ',relcc_projectors_rew_virt_max_energy,'a.u.'
+                  write (iw,*) '   There are',number_diagonal_elements_in_rew,' possible single ionizations out of RIW orbitals'
                   write (iw,*) ''
               end if
+
+              if (iprnt.ge.2) write (iw,*) 'diag(Hbar_SS): ',diag_H
+              if (iprnt.ge.2) write (iw,*) 'in_riw_HbarSS_threshold',in_rew_HbarSS_threshold
+! aspg, WIP june/july 2018
+              do iroot = 1, nroot
+                  k = minloc(diag_H, MASK=(diag_H .ge. in_rew_HbarSS_threshold))
+                  if (iprnt.ge.2) write(iw,*)'roots',iroot,diag_H(k(1)),k(1)
+                  if (iprnt.ge.3) write(iw,*) diag_H
+                  i = k(1)
+                  if (iprnt.ge.3) write(iw,*) 'making',i,'huge'
+                  diag_H(i) = huge(diag_H)
+                  jroot = i
+                  if (rcw.eq.2) jroot = 2*i - 1
+                  R1(jroot,iroot) = 1.0d0
+              enddo
+
 
           else if (relcc_projectors_do_core_valence_separation) then ! find the lowest elements of the diagonal involving core electrons only
 
@@ -2232,8 +2282,8 @@ function create_projector(eom_type, ndet, eps)
 
    type(mapping) :: det_map
    integer :: i, j
-   logical :: spinors_in_occupied_window
-   logical :: spinors_in_virtuals_window
+   logical :: spinors_in_occupied_window(2)
+   logical :: spinors_in_virtuals_window(2)
 
    if (.not.(relcc_projectors_do_core_valence_separation.or.relcc_projectors_do_restricted_excitation_window)) then
       create_projector => NULL()
@@ -2278,32 +2328,38 @@ function create_projector(eom_type, ndet, eps)
              spinors_in_virtuals_window = .true.
 
              if (allocated(det_map%det(i)%occupied_energies)) then 
-                spinors_in_occupied_window = .true.
                 do j = 1, size(det_map%det(i)%occupied_energies,1)
-                   if ( (det_map%det(i)%occupied_energies(j).lt.relcc_projectors_rew_occ_min_energy).or. &
-                      & (det_map%det(i)%occupied_energies(j).gt.relcc_projectors_rew_occ_max_energy) ) then
-                      spinors_in_occupied_window = .false.
+                   if ( (det_map%det(i)%occupied_energies(j).le.relcc_projectors_rew_occ_max_energy).and. &
+                      & (det_map%det(i)%occupied_energies(j).ge.relcc_projectors_rew_occ_min_energy) ) then
+                      spinors_in_occupied_window(j) = .true.
+                   else
+                      spinors_in_occupied_window(j) = .false.
                    end if
                 end do
-             else
-! there are no occupied in this excited determinant so the occupied  are outside any window..
-                spinors_in_occupied_window = .false.
              end if
 
-            if (allocated(det_map%det(i)%virtuals_energies)) then
-                spinors_in_virtuals_window = .true.
+             if (allocated(det_map%det(i)%virtuals_energies)) then
                 do j = 1, size(det_map%det(i)%virtuals_energies,1)
-                   if ( (det_map%det(i)%virtuals_energies(j).lt.relcc_projectors_rew_virt_min_energy).or. &
-                      & (det_map%det(i)%virtuals_energies(j).gt.relcc_projectors_rew_virt_max_energy) ) then
-                         spinors_in_virtuals_window = .false.
+                   if ( (det_map%det(i)%virtuals_energies(j).ge.relcc_projectors_rew_virt_min_energy).and. &
+                      & (det_map%det(i)%virtuals_energies(j).le.relcc_projectors_rew_virt_max_energy) ) then
+                         spinors_in_virtuals_window(j) = .true.
+                   else
+                         spinors_in_virtuals_window(j) = .false.
                    end if
                 end do
-             else
-! there are no virtuals in this excited determinant so the occupied  are outside any window..
-                spinors_in_virtuals_window = .false.
-             end if
+             end if 
+             create_projector(i) = spinors_in_occupied_window(1).and.spinors_in_virtuals_window(1)
+             create_projector(i) = create_projector(i).and.spinors_in_occupied_window(2).and.spinors_in_virtuals_window(2)
 
-             create_projector(i) = spinors_in_occupied_window.and.spinors_in_virtuals_window
+             if (iprnt.ge.2) then
+                if (create_projector(i)) then
+                   write (iw,*) 'determinant ',i,' is within  REW'
+                else
+                   write (iw,*) 'determinant ',i,' is outside REW'
+                end if
+                write (iw,*) '    occupied:',det_map%det(i)%occupied_energies
+                write (iw,*) '    virtuals:',det_map%det(i)%virtuals_energies
+             end if
           end do
        end if
    end if
