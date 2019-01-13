@@ -883,6 +883,14 @@
          exa_input%noints = .true.
       end if
 
+      if (kw_matches(word, '.EXA_BLOCKSIZE')) then
+         call kw_read(word, exa_input%exa_blocksize)
+      end if
+
+      if (kw_matches(word, '.MOLTRA_SCHEME')) then
+         call kw_read(word, exa_input%moint_scheme)
+      end if
+
       call check_whether_kw_found(word, kw_section)
 
 #endif

@@ -34,6 +34,8 @@
             logical                 :: ccd = .false.            !If false=>CCSD, if true=>CCD
             logical                 :: lambda = .false.
             logical                 :: noints = .false.
+            integer                 :: exa_blocksize = 75
+            integer                 :: moint_scheme = 1
             integer                 :: nkr_occ, nkr_vir         !Number of Kramer pairs
             integer, allocatable    :: mokr_occ(:), mokr_vir(:) !List of active Kramer pairs
             real(REALD)             :: t_econv = 1.0D-13        !Convergence criterium

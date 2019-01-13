@@ -27,6 +27,8 @@
       exa_input%ccd = .false.
       exa_input%lambda = .false.
       exa_input%noints = .false.
+      exa_input%exa_blocksize = 75
+      exa_input%moint_scheme = 1
 
 #if defined (VAR_MPI)
       call interface_mpi_init()
