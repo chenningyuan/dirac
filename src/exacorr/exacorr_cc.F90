@@ -678,6 +678,8 @@ module exacorr_cc
               ierr=exatns_tensor_get_scalar(result_t_tensor,result_val)
               ccsd_energy=real(result_val,8)
               ierr=exatns_tensor_init(result_t_tensor)
+          else
+              ccsd_energy=real(ZERO,8)
           end if
 
 !         Update tau with converged values
