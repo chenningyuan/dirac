@@ -710,12 +710,24 @@ contains
      end do
 
 
+     debug_me = .false.
+     if (debug_me) then
+        write(*, *) 'get_m_ee, m full:'
+        call prqmat(m, &
+                    norbt, norbt, norbt, norbt, &
+                    nz, ipqtoq(1, 0), lupri)
+        write(*, *) 'get_m_ee, m_cp, ee only:'
+        call prqmat(m_cp, &
+                    norbt, norbt, norbt, norbt, &
+                    nz, ipqtoq(1, 0), lupri)
+     end if
+
+
 !    clean
 !    -----
      call dzero(m, n2orbxq)
      call dcopy(n2orbxq, m_cp, 1, m, 1)
      call dealloc(m_cp)
-
 
   end subroutine
 
@@ -772,6 +784,19 @@ contains
         call dealloc(indices_occ)
         call dealloc(indices_virt)
      end do
+
+     debug_me = .false.
+     if (debug_me) then
+        write(*, *) 'get_m_ep, m full:'
+        call prqmat(m, &
+                    norbt, norbt, norbt, norbt, &
+                    nz, ipqtoq(1, 0), lupri)
+        write(*, *) 'get_m_ep, m_cp, ep only:'
+        call prqmat(m_cp, &
+                    norbt, norbt, norbt, norbt, &
+                    nz, ipqtoq(1, 0), lupri)
+     end if
+
 
 !    clean
 !    -----

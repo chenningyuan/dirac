@@ -1167,6 +1167,7 @@ integer :: ierr
 !       call interface_mpi_allreduce(sigma2, &
              local_buffer, N2, &
              op_mpi_sum,global_communicator)
+      if (iprnt.ge.2) &
    write(*,*)'diagram 7b ', ddot(N2,sigma2_local,1,sigma2_local,1),myproc
 !  write(*,*)'diagram 7b ', ddot(N2,sigma2,1,sigma2,1),myproc
 

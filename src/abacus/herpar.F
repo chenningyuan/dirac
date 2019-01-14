@@ -1,5 +1,6 @@
+#define DEBUG_IPRPAR -1
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -142,9 +143,10 @@ C
      &('program error: parallel code called but MPI not activated')
 #endif
 C
+      IPRPAR = max(DEBUG_IPRPAR,IPRPAR)
       IF (IPRPAR .GT. 0) THEN
          WRITE(LUPRI,'(/5X,A,I5/)')
-     &    'HER_PARDRV: Number of nodes allocated:', NODES
+     &    'HER_PARDRV: Number of MPI worker nodes:', NODES
       ENDIF
 C
 C     Take calculation time of each IJ pair?
@@ -813,6 +815,12 @@ C
          CALL interface_mpi_reduce_r1_work_f77(
      &        WORK, DINTSKP, LDINTSKP,
      &        op_MPI_SUM, MPARID, global_communicator)
+         IF (TIMING) THEN
+            call dzero(WORK,MTOTTK)
+            CALL interface_mpi_reduce_r1_work_f77(
+     &        WORK, TIMES, MTOTTK,
+     &        op_MPI_SUM, MPARID, global_communicator)
+         END IF
          GO TO 9000 ! RETURN
       END IF
 C
@@ -1259,7 +1267,7 @@ C
 
       CALL SDRES(WORK(KFMAT),LFMAT,NUMGRA,MAXDIF,
      &     NUMHES,NUMSUS,CPU1,WALL1,ITYPE,DINTSKP,
-     &     WORK(KINDEX),WORK(KTIMES))
+     &     MTOTTK,WORK(KINDEX),WORK(KTIMES))
 
 C
 C     We want the slave program to go until there is nothing
@@ -1980,7 +1988,7 @@ C
 C  /* Deck sdres */
       SUBROUTINE SDRES(FMAT,LFMAT,NUMGRA,MAXDIF,
      &                 NUMHES,NUMSUS,CPU1,WALL1,ITYPE,
-     &                 DINTSKP,INDEX_IJ,TIMES)
+     &                 DINTSKP,MTOTTK,INDEX_IJ,TIMES)
 C
 C           ITYPE  - Calc. type: 2 = expectation values.
 C                                3 = direct SCF (AO-basis)
@@ -2016,6 +2024,7 @@ C
 
 #if defined (VAR_MPI)
       REAL*8    RBUF(4)
+      REAL*8, allocatable :: my_TIMES(:)
 
       CALL GETTIM(CPU2,WALL2)
 C
@@ -2031,7 +2040,19 @@ C
          CALL interface_mpi_reduce_r1_work_f77(
      &        DINTSKP, DUMMY, 8,
      &        op_MPI_SUM, MPARID, global_communicator)
-         GO TO 6000 ! to timing info
+         IF (TIMING) THEN ! used for better load balancing in next iteration
+            allocate (my_TIMES(ICOUNT))
+            my_TIMES(1:ICOUNT) = TIMES(1:ICOUNT)
+            TIMES(1:MTOTTK) = 0.0D0
+            DO I = 1, ICOUNT
+               TIMES( INDEX_IJ(I) ) = my_TIMES(I)
+            END DO 
+            deallocate (my_TIMES)
+            CALL interface_mpi_reduce_r1_work_f77(
+     &        TIMES, DUMMY, MTOTTK,
+     &        op_MPI_SUM, MPARID, global_communicator)
+         END IF
+         GO TO 6000 ! to send general timing info
       END IF
 
       CAll interface_mpi_SEND(ICOUNT,1,MPARID,40,

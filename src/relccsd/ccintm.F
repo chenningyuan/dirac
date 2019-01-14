@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -518,7 +518,6 @@ C
 C---------------------------------------
 C H(K,I) = F(K,I)  - DELTA(K,I) * EPS(I)
 C---------------------------------------
-      call dzero(ho,nfoo)
       CALL XCOPY (NFOO,FOO,1,HO,1)
       II = 1
       I = 1
