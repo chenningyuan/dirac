@@ -887,7 +887,7 @@
          call kw_read(word, exa_input%exa_blocksize)
       end if
 
-      if (kw_matches(word, '.MOLTRA_SCHEME')) then
+      if (kw_matches(word, '.MOINT_SCHEME')) then
          call kw_read(word, exa_input%moint_scheme)
       end if
 

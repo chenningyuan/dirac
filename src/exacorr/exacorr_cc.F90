@@ -247,19 +247,15 @@ module exacorr_cc
            call dm_init(1)%init_dm_ctor(mo_oo,(/nocc,nocc/))
            ierr=exatns_method_register(initlabel2(1),dm_init(1))
            if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
-           print*,"registered oo dm"
            call dm_init(2)%init_dm_ctor(mo_vo,(/nvir,nocc/))
            ierr=exatns_method_register(initlabel2(2),dm_init(2))
            if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
-           print*,"registered vo dm"
            call dm_init(3)%init_dm_ctor(mo_ov,(/nocc,nvir/))
            ierr=exatns_method_register(initlabel2(3),dm_init(3))
            if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
-           print*,"registered ov dm"
            call dm_init(4)%init_dm_ctor(mo_vv,(/nvir,nvir/))
            ierr=exatns_method_register(initlabel2(4),dm_init(4))
            if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
-           print*,"registered vv dm"
          end if
 
          if (my_MPI_rank == 0) print*," registered MO spaces and initializers with nocc and nvir:",2*nocc, 2*nvir
