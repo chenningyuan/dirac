@@ -1,15 +1,11 @@
-# Test set up for generating Hamiltonian for H2.
-
 from openfermion_dirac import MolecularData_Dirac, run_dirac
-from openfermion.transforms import jordan_wigner, project_onto_sector, bravyi_kitaev
+from openfermion.transforms import jordan_wigner
 from openfermion.utils import eigenspectrum
 from openfermion.ops import InteractionOperator
 import os
-import subprocess
-import ast
 
 # Set molecule parameters.
-basis = 'sto-3g'
+basis = 'STO-3G'
 bond_length = 1.0
 multiplicity = 1
 charge = 0
@@ -27,9 +23,12 @@ print('#'*40)
 print('NONREL Dirac calculation')
 print('#'*40)
 print()
-run_ccsd = 1
-if run_ccsd==1:
- description = 'R' + str(bond_length) + '_ccsd_dirac'
+run_ccsd = True
+point_nucleus = True
+if run_ccsd:
+ description = 'R' + str(bond_length) + '_ccsd'
+else:
+ description = 'R' + str(bond_length) + '_scf'
 
 molecule = MolecularData_Dirac(geometry=geometry,
                                basis=basis,
@@ -41,6 +40,7 @@ molecule = MolecularData_Dirac(geometry=geometry,
 if os.path.exists("{}/{}.hdf5".format(data_directory,molecule.name)) is False:
       print("No file found, running Dirac calculation")
       molecule = run_dirac(molecule,
+                    point_nucleus=point_nucleus,
                     delete_input=delete_input,
                     delete_xyz=delete_xyz,
                     delete_output=delete_output,
@@ -51,13 +51,13 @@ if os.path.exists("{}/{}.hdf5".format(data_directory,molecule.name)) is False:
                     save=save)
 
 if save is False:
-      fermion_hamiltonian = molecule.get_molecular_hamiltonian()[0]
-      qubit_hamiltonian_dirac = jordan_wigner(fermion_hamiltonian)
-      evs_dirac = eigenspectrum(qubit_hamiltonian_dirac)
+      molecular_hamiltonian = molecule.get_molecular_hamiltonian()[0]
+      qubit_hamiltonian = jordan_wigner(molecular_hamiltonian)
+      evs = eigenspectrum(qubit_hamiltonian)
       print('Hartree-Fock energy of {} Hartree.'.format(molecule.get_energies()[0]))
       print('MP2 energy of {} Hartree.'.format(molecule.get_energies()[1]))
       print('CCSD energy of {} Hartree.'.format(molecule.get_energies()[2]))
-      print('Solving the Qubit Hamiltonian (Jordan-Wigner): \n {}'.format(min(evs_dirac)))
+      print('Solving the Qubit Hamiltonian (Jordan-Wigner): \n {}'.format(min(evs)))
 
 else:
       print("HDF5 file found, loading from file. Name : {}".format(molecule.get_from_file('name')))
@@ -67,12 +67,8 @@ else:
       E_core=molecule.get_from_file('nuclear_repulsion')
       one_body_coeff = molecule.get_from_file('one_body_coefficients')
       two_body_coeff = molecule.get_from_file('two_body_coefficients')
-      fermionic_ham_print = molecule.get_from_file('print_molecular_hamiltonian')
-      fermionic_ham = InteractionOperator(float(E_core),one_body_coeff,two_body_coeff)
-      qubit_ham = jordan_wigner(fermionic_ham)
+      molecular_ham_print = molecule.get_from_file('print_molecular_hamiltonian')
+      molecular_ham = InteractionOperator(float(E_core),one_body_coeff,two_body_coeff)
+      qubit_ham = jordan_wigner(molecular_ham)
       evs = min(eigenspectrum(qubit_ham))
       print("Ground-state of the qubit Hamiltonian is {}.".format(evs))
-
-subprocess.call("mkdir INTEGRALS OUTPUT_DIRAC/", shell=True)
-subprocess.call("mv -f *dirac*out OUTPUT_DIRAC/", shell=True)
-subprocess.call("mv -f FCIDUMP_* INTEGRALS/", shell=True)

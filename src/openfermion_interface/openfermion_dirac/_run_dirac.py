@@ -1,4 +1,4 @@
-# OpenFermion plugin to interface with Psi4.
+# OpenFermion plugin to interface with Dirac.
 # Copyright 2017 The OpenFermion Developers.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-"""Functions to prepare dirac input and run calculations."""
+"""Functions to prepare Dirac input and run calculations. This program is inspired from _run_psi4.py of the OpenFermion-Psi4 interface."""
 from __future__ import absolute_import
 
 import os
@@ -26,9 +26,12 @@ class ActiveOrbitalsError(Exception):
     pass
 class SpecialBasisError(Exception):
     pass
+class SpeedOfLightError(Exception):
+    pass
 
 def create_geometry_string(geometry):
-    """This function converts MolecularData geometry to psi4 geometry.
+    """This function converts MolecularData geometry to Dirac geometry.
+       This function is taken from Openfermion-Psi4 interface.
 
     Args:
         geometry: A list of tuples giving the coordinates of each atom.
@@ -56,20 +59,22 @@ def create_geometry_string(geometry):
 
 def generate_dirac_input(molecule,
                         symmetry,
-                        run_scf,
                         run_ccsd,
                         relativistic,
+                        point_nucleus,
                         speed_of_light,
-                        active):
-    """This function creates and saves a psi4 input file.
+                        active,
+                        manual_option):
+    """This function creates and saves a Dirac input file.
 
     Args:
         molecule: An instance of the MolecularData class.
         symmetry: Boolean to specify the use of symmetry
-        run_scf: Boolean to run SCF calculation.
         run_ccsd: Boolean to run CCSD calculation. (note that SCF and MP2
                   energies are done as well with CCSD)
         relativistic: Boolean to specify relativistic calculation or not
+        point_nucleus : Boolean to specify the use of the nuclear model of point nucleus,
+                        instead of Gaussian charge distribution (default).
         speed_of_light: Real value for the speed of light (137 a.u.) in atomic unit,
                         to be changed if wanted in order to increase or decrease relativistic
                         effects.
@@ -94,6 +99,7 @@ def generate_dirac_input(molecule,
      f.write(geo_string)
     f.close()
 
+    # Check if the keywords are well defined
     if active is False:
        pass
     elif not isinstance(active, list):
@@ -110,8 +116,9 @@ def generate_dirac_input(molecule,
     elif (molecule.basis != "special") and (molecule.special_basis is not None):
        raise SpecialBasisError('special_basis was specified without setting basis = "special"')
 
-    # Find the dirac_directory.
-    dirac_directory = os.path.dirname(os.path.realpath(__file__))
+    if speed_of_light is not False and relativistic is False:
+       raise SpeedOfLightError('A given speed of light has been specified without setting relativistic to True')
+
     # Write input file and return handle.
     input_file = molecule.filename + '.inp'
     with open(input_file, 'w') as f:
@@ -122,9 +129,10 @@ def generate_dirac_input(molecule,
       f.write(".SCF\n")
       if run_ccsd:
        f.write(".RELCCSD\n")
-      if relativistic is False:
+      if not relativistic:
        f.write("**HAMILTONIAN\n")
        f.write(".NONREL\n")
+      if point_nucleus:
        f.write("**INTEGRALS\n")
        f.write(".NUCMOD\n")
        f.write(" 1\n")
@@ -141,7 +149,7 @@ def generate_dirac_input(molecule,
       f.write("*CHARGE\n")
       f.write(".CHARGE\n")
       f.write(" " + str(molecule.charge) + "\n")
-      if symmetry is False:
+      if not symmetry:
        f.write("*SYMMETRY\n")
        f.write(".NOSYM\n")
       f.write("*BASIS\n")
@@ -152,10 +160,18 @@ def generate_dirac_input(molecule,
        f.write(molecule.special_basis[1] + "\n")
       else:
        f.write(molecule.basis + "\n")
+      if manual_option is not False:
+       f.write(manual_option + "\n")
       f.write("*END OF INPUT\n")
     f.close()
 
     return input_file, xyz_file
+
+def rename(molecule):
+    output_file_dirac = molecule.filename + "_" + molecule.name + '.out'
+    output_file = molecule.filename + '.out'
+    os.rename("FCIDUMP", "FCIDUMP_" + molecule.name)
+    os.rename(output_file_dirac,output_file)
 
 def clean_up(molecule, delete_input=True, delete_xyz=True, delete_output=False, delete_MRCONEE=True,
              delete_MDCINT=True, delete_FCIDUMP=False):
@@ -164,8 +180,6 @@ def clean_up(molecule, delete_input=True, delete_xyz=True, delete_output=False, 
     xyz_file = molecule.filename + '.xyz'
     output_file_dirac = molecule.filename + "_" + molecule.name + '.out'
     output_file = molecule.filename + '.out'
-    os.rename("FCIDUMP", "FCIDUMP_" + molecule.name)
-    os.rename(output_file_dirac,output_file)
     run_directory = os.getcwd()
     for local_file in os.listdir(run_directory):
         if local_file.endswith('.clean'):
@@ -190,11 +204,12 @@ def clean_up(molecule, delete_input=True, delete_xyz=True, delete_output=False, 
 
 def run_dirac(molecule,
              symmetry=True,
-             run_scf=True,
              run_ccsd=False,
              relativistic=False,
+             point_nucleus=False,
              speed_of_light=False,
              active=False,
+             manual_option=False,
              delete_input=False,
              delete_output=False,
              delete_xyz=False,
@@ -202,25 +217,26 @@ def run_dirac(molecule,
              delete_MDCINT=False,
              delete_FCIDUMP=False,
              save=False):
-    """This function runs a dirac calculation.
+    """This function runs a Dirac calculation.
 
     Args:
         molecule: An instance of the MolecularData class.
         symmetry: Optional boolean to remove symmetry in the calculation
-        run_scf: Optional boolean to run SCF calculation.
         run_ccsd: Optional boolean to run CCSD calculation.
         relativistic: Optional boolean to run relativistic calculation
+        point_nucleus : Boolean to specify the use of the nuclear model of point nucleus,
+                        instead of Gaussian charge distribution (default).
         speed_of_light: Optional real to give another value to the speed of light
         active: Optional list of 3 real numbers select active orbitals.
                 first number : lowest energy
                 second number : highest energy
                 third number : minimum gap required between the lowest (highest)
-        delete_input: Optional boolean to delete dirac input file.
-        delete_output: Optional boolean to delete dirac output file.
-        delete_xyz: Optional boolean to delete dirac xyz file.
-        delete_MRCONEE: Optional boolean to delete dirac MRCONEE file.
-        delete_MDCINT: Optional boolean to delete dirac MDCINT file.
-        delete_FCIDUMP: Optional boolean to delete dirac FCIDUMP file.
+        delete_input: Optional boolean to delete Dirac input file.
+        delete_output: Optional boolean to delete Dirac output file.
+        delete_xyz: Optional boolean to delete Dirac xyz file.
+        delete_MRCONEE: Optional boolean to delete Dirac MRCONEE file.
+        delete_MDCINT: Optional boolean to delete Dirac MDCINT file.
+        delete_FCIDUMP: Optional boolean to delete Dirac FCIDUMP file.
 
     Returns:
         molecule: The updated MolecularData object.
@@ -228,32 +244,31 @@ def run_dirac(molecule,
     # Prepare input.
     input_file, xyz_file = generate_dirac_input(molecule,
                         symmetry,
-                        run_scf,
                         run_ccsd,
                         relativistic,
+                        point_nucleus,
                         speed_of_light,
-                        active)
+                        active,
+                        manual_option)
 
     # Run Dirac
-    try:
-        print('Starting Dirac calculation\n')
-        subprocess.call('pam --mol=' + xyz_file + ' --inp=' + input_file + ' --get="MRCONEE MDCINT" --silent --noarch > output_script', shell=True)
-    except:
-        print('Dirac calculation for {} has failed. Most certainely a problem with pam.'.format(molecule.name))
+    print('Starting Dirac calculation\n')
+    subprocess.check_call("pam --mol=" + xyz_file + " --inp=" + input_file + " --get='MRCONEE MDCINT' --silent --noarch", shell=True)
 
-    try:
-        print('Creation of the FCIDUMP file\n')
-        subprocess.call('dirac_openfermion_mointegral_export.x >> output_script', shell=True)
-    except:
-        print('Creation of FCIDUMP has failed.')
-    else:
-        clean_up(molecule, delete_input, delete_xyz, delete_output, delete_MRCONEE, delete_MDCINT, delete_FCIDUMP)
+    # run dirac_openfermion_mointegral_export.x
+    print('\nCreation of the FCIDUMP file\n')
+    subprocess.check_call("dirac_openfermion_mointegral_export.x",shell=True)
+
+    rename(molecule)
 
     if save:
      try:
-        print("Saving the results")
+        print("\nSaving the results\n")
         molecule.save()
      except:
         warnings.warn('Error in saving results.',
                       Warning)
+
+    # Clean-up
+    clean_up(molecule, delete_input, delete_xyz, delete_output, delete_MRCONEE, delete_MDCINT, delete_FCIDUMP)
     return molecule
