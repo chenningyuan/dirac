@@ -434,7 +434,7 @@ module exacorr_ao_to_mo
         subroutine aomo_transform_2 (aoint_tensor,moint_tensor,initlabel2)
 
 !        Transform integral tensor from ao-basis to mo-basis
-!        Algorithm 1: n^6 scaling with density matrices
+!        Algorithm 2: n^6 scaling with density matrices
 
          implicit none
 

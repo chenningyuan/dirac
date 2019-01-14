@@ -354,8 +354,8 @@ module exacorr_tensor_methods
             do j = 1, nao
              this%mocoef_all_1(j,k,1)     = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
              this%mocoef_all_1(j,k,2)     = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-             this%mocoef_all_1(j,k+nmo,1) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-             this%mocoef_all_1(j,k+nmo,2) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
+             this%mocoef_all_1(j,k+nmo(1),1) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
+             this%mocoef_all_1(j,k+nmo(1),2) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
             end do
          end do
          call delete_qmo (qmo)
@@ -366,8 +366,8 @@ module exacorr_tensor_methods
             do j = 1, nao
              this%mocoef_all_2(j,k,1)     = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
              this%mocoef_all_2(j,k,2)     = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-             this%mocoef_all_2(j,k+nmo,1) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-             this%mocoef_all_2(j,k+nmo,2) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
+             this%mocoef_all_2(j,k+nmo(2),1) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
+             this%mocoef_all_2(j,k+nmo(2),2) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
             end do
          end do
          call delete_qmo (qmo)
