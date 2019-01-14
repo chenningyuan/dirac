@@ -24,6 +24,8 @@ import warnings
 
 class ActiveOrbitalsError(Exception):
     pass
+class SpecialBasisError(Exception):
+    pass
 
 def create_geometry_string(geometry):
     """This function converts MolecularData geometry to psi4 geometry.
@@ -74,7 +76,11 @@ def generate_dirac_input(molecule,
         active: A list of 3 real numbers select active orbitals.
                 first number : lowest energy
                 second number : highest energy
-                third number : minimum gap required between the lowest (highest)
+                third number : minimum gap required between the neighbor energy
+                               of the lowest and highest energy set previously.
+                               If the gap is lower than this number, the lowest
+                               (or highest) energy is shifted down (or up) until
+                               the gap is larger to the third number.
 
     Returns:
         input_file: A string giving the name of the saved input file, and the xyz file.
@@ -91,11 +97,18 @@ def generate_dirac_input(molecule,
     if active is False:
        pass
     elif not isinstance(active, list):
-       raise ActiveOrbitalsError('keywords active should be a list')
+       raise ActiveOrbitalsError('keyword active should be a list')
     elif len(active) != 3:
-       raise ActiveOrbitalsError('keywords active needs 3 numbers in a list')
+       raise ActiveOrbitalsError('keyword active needs 3 numbers in a list')
     elif (active[0] >= active[1]):
        raise ActiveOrbitalsError('the second argument of active should be higher than the first argument')
+ 
+    if molecule.basis == "special" and molecule.special_basis is None:
+       raise SpecialBasisError('special_basis should be specified')
+    elif molecule.basis == "special" and len(molecule.special_basis) != 2:
+       raise SpecialBasisError('special_basis should be a list of two strings corresponding to the default and special basis, respectively')
+    elif (molecule.basis != "special") and (molecule.special_basis is not None):
+       raise SpecialBasisError('special_basis was specified without setting basis = "special"')
 
     # Find the dirac_directory.
     dirac_directory = os.path.dirname(os.path.realpath(__file__))
@@ -134,10 +147,11 @@ def generate_dirac_input(molecule,
       f.write("*BASIS\n")
       f.write(".DEFAULT\n")
       if molecule.basis == "special":
-       f.write(" sto-3g\n")
-       f.write(molecule.special_basis+"\n")
+       f.write(molecule.special_basis[0] + "\n")
+       f.write(".SPECIAL\n")
+       f.write(molecule.special_basis[1] + "\n")
       else:
-       f.write(" " + molecule.basis + "\n")
+       f.write(molecule.basis + "\n")
       f.write("*END OF INPUT\n")
     f.close()
 

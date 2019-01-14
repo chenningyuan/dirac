@@ -200,13 +200,7 @@ def geometry_from_file(file_name):
 
 class MolecularData_Dirac(object):
 
-    """Class for storing molecule data from a fixed basis set at a fixed
-    geometry that is obtained from classical electronic structure
-    packages. Not every field is filled in every calculation. All data
-    that can (for some instance) exceed 10 MB should be saved
-    separately. Data saved in HDF5 format.
-
-    Attributes:
+    """Attributes:
         geometry: A list of tuples giving the coordinates of each atom. An
             example is [('H', (0, 0, 0)), ('H', (0, 0, 0.7414))]. Distances
             in angstrom. Use atomic symbols to specify atoms.
@@ -230,8 +224,6 @@ class MolecularData_Dirac(object):
         two_body_integrals: Numpy array of two-electron integrals
         mp2_energy: Energy from MP2 perturbation theory.
         ccsd_energy: Energy from coupled cluster singles + doubles.
-        ccsd_single_amps: Numpy array holding single amplitudes
-        ccsd_double_amps: Numpy array holding double amplitudes
     """
     def __init__(self, geometry=None, basis=None, special_basis=None, multiplicity=None,
                  charge=0, description="", filename="", data_directory=None, relativistic=False,
@@ -245,7 +237,9 @@ class MolecularData_Dirac(object):
                 specify atoms. Only optional if loading from file.
             basis: A string giving the basis set. An example is 'cc-pvtz'.
                 Only optional if loading from file.
-            special_basis: A string giving a special basis set.
+            special_basis: A list of two strings giving the default 
+                and special basis set. An example is ["STO-3G","H cc-PVDZ"] 
+                to specify that the hydrogens are in cc-pVDZ basis.
                 Only optional if loading from file.
             charge: An integer giving the total molecular charge. Defaults
                 to 0.  Only optional if loading from file.
@@ -358,7 +352,7 @@ class MolecularData_Dirac(object):
         self.get_integrals_FCIDUMP()
         self.molecular_hamiltonian, self.one_body_coeff, self.two_body_coeff = self.get_molecular_hamiltonian()
         self.n_qubits = count_qubits(self.molecular_hamiltonian)
-        self.n_orbitals = len(self.one_body_int)
+        self.n_orbitals = len(self.spinor)
         tmp_name = uuid.uuid4()
         with h5py.File("{}.hdf5".format(tmp_name), "w") as f:
             # Save geometry (atoms and positions need to be separate):

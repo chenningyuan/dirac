@@ -97,15 +97,15 @@ contains
      read (filenumber_1e) (spinor(i)%irrep,spinor(i)%abelian_irrep,spinor(i)%energy,i=1,number_of_spinors)
 
 !    create indices for optional reordering according to occupation
-     write(*,*) number_of_irreps
-     write(*,*) spinor%energy
-     write(*,*) spinor%irrep
-     write(*,*) spinor%index
+!     write(*,*) number_of_irreps
+!     write(*,*) spinor%energy
+!     write(*,*) spinor%irrep
+!     write(*,*) spinor%index
      call make_index_to_occupied_first
-     write(*,*) spinor%index
+!     write(*,*) spinor%index
 !    create indices for optional reordering according to energy
      call make_index_lowestenergy_first
-     write(*,*) spinor%index
+!     write(*,*) spinor%index
 
      write (*,*) " Initialized reading from MRCONEE"
      write (*,*) " Core energy: ", core_energy
