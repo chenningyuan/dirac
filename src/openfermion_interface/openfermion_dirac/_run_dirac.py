@@ -253,11 +253,11 @@ def run_dirac(molecule,
 
     # Run Dirac
     print('Starting Dirac calculation\n')
-    subprocess.check_call("pam --mol=" + xyz_file + " --inp=" + input_file + " --get='MRCONEE MDCINT' --silent --noarch", shell=True)
+    subprocess.check_call("set/your/path/to/pam --mol=" + xyz_file + " --inp=" + input_file + " --get='MRCONEE MDCINT' --silent --noarch", shell=True)
 
     # run dirac_openfermion_mointegral_export.x
     print('\nCreation of the FCIDUMP file\n')
-    subprocess.check_call("dirac_openfermion_mointegral_export.x",shell=True)
+    subprocess.check_call("set/your/path/to/dirac_openfermion_mointegral_export.x",shell=True)
 
     rename(molecule)
 
