@@ -763,6 +763,7 @@ C
       DO I = 1, 16
          NELECT = NELECT + NELEC(I)
       ENDDO
+      IF (NELECT.LE.2) DOCCSDT = .FALSE. ! Override default or user set value if this calculation makes no sense and possibly gives errors.
 
 !     total charge of the system
       call get_charge_cc(mycharge,nelect,ncore_elec)
@@ -2832,8 +2833,8 @@ C
       MAXIT  = MXITGR
       MAXDIM = MXDIMGR
 
-      call alloc( a_BUF1  , NBUF1*RCW             , id="buf2" )
-      call alloc( a_BUF2  , NBUF2*RCW             , id="buf1" )
+      call alloc( a_BUF1  , NBUF1*RCW             , id="buf1" )
+      call alloc( a_BUF2  , NBUF2*RCW             , id="buf2" )
 C
 C     Read the Fock matrix from file
 C
