@@ -153,9 +153,8 @@ C
       CALL XTIME(4,2,'- adding partial T1/T2 amplitudes ')
 C
       IF (FOCKSP) THEN
-C       Adding folded diagrams, use HOV and H as scratch arrays
-        CALL FOLDED (ICURFSS,IHEQ,T1,T2,BUF1,BUF2,BUF3,HOV,H,
-     &               S1,S2)
+C       Adding folded diagrams
+        CALL FOLDED(ICURFSS,IHEQ,T1,T2,BUF1,BUF2,BUF3,S1,S2)
       ENDIF
 C
 C  Make new T1s and T2 by dividing S1s and S2 by eigenvalues
