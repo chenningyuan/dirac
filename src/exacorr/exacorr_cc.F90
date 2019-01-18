@@ -110,6 +110,7 @@ module exacorr_cc
 
          integer:: spin
          integer:: lsh, l, nl
+         integer :: ncycles
 
          !CCD
          logical :: CCD, lambda, noints
@@ -169,6 +170,7 @@ module exacorr_cc
          CCD = exa_input%ccd
          lambda = exa_input%lambda
          noints = exa_input%noints
+         ncycles = exa_input%ncycles
 
          !Get the MO-coeffcient basis for the occupied and virtual spaces
          ierr = 0
@@ -388,7 +390,7 @@ module exacorr_cc
                return
             end if
 
-            call solve_t_equations(comm_t,int_t,dims,CCD,t_target_precision,ccsd_energy)
+            call solve_t_equations(comm_t,int_t,dims,CCD,t_target_precision,ccsd_energy,ncycles)
 
 !           Calculate (T) energy correction, not implemented yet
 !           call t3_energy (t_energy,eps_occ,eps_vir,t1_tensor,t2_tensor,fov_tensor,ooov_tensor,vovv_tensor,oovv_tensor)
@@ -425,7 +427,7 @@ module exacorr_cc
              ierr=exatns_tensor_contract("L(i,a)+=T+(a,i)*K()",l1_tensor,comm_t%t1,one_tensor)
              ierr=exatns_tensor_contract("L(i,j,a,b)+=T+(a,b,i,j)*K()",l2_tensor,comm_t%t2,one_tensor)
 
-             call solve_lambda_equations(comm_t,int_t,l1_tensor,l2_tensor,dims,CCD,t_target_precision)            
+             call solve_lambda_equations(comm_t,int_t,l1_tensor,l2_tensor,dims,CCD,t_target_precision,ncycles)            
 
              if (.not.CCD) call get_dm_mo(comm_t%t1,comm_t%t2,l1_tensor,l2_tensor,dims)
             end if
@@ -478,7 +480,7 @@ module exacorr_cc
 
         end subroutine exacorr_cc_driver
 
-        subroutine solve_t_equations(comm_t,int_t,dims,CCD,t_target_precision,ccsd_energy)
+        subroutine solve_t_equations(comm_t,int_t,dims,CCD,t_target_precision,ccsd_energy,ncycles)
 
 !        Routine for solving the t amplitude equations
 
@@ -510,7 +512,8 @@ module exacorr_cc
 
          real(8) :: t_convergence
 
-         integer :: iccsd, nccsd=30
+         integer :: iccsd
+         integer,intent(in) :: ncycles
          integer :: ierr
          
          occ_space_id=dims%occ_space_id
@@ -539,7 +542,7 @@ module exacorr_cc
          ierr=exatns_tensor_create(tau2_tensor,"tau2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
          ierr=exatns_tensor_create(cint_tensor,"cint",ovoo_id,ovoo_root,EXA_DATA_KIND_C8)
 
-         do iccsd = 1, nccsd
+         do iccsd = 1, ncycles
 
           call get_tau(comm_t,CCD,one_tensor)
 
@@ -708,7 +711,7 @@ module exacorr_cc
 
         end subroutine solve_t_equations
 
-        subroutine solve_lambda_equations(comm_t,int_t,l1_tensor,l2_tensor,dims,CCD,t_target_precision)
+        subroutine solve_lambda_equations(comm_t,int_t,l1_tensor,l2_tensor,dims,CCD,t_target_precision,ncycles)
 
 !        Routine for solving the lambda equations
 
@@ -733,7 +736,8 @@ module exacorr_cc
          integer(INTL), dimension(2) :: oo_root, ov_root, vv_root
          integer(INTL), dimension(4) :: oooo_root,ovoo_root,ooov_root,vovo_root,oovv_root, &
                    vvvo_root,vovv_root,vvvv_root
-         integer :: iccsd, nccsd=30
+         integer :: ilambda
+         integer,intent(in) :: ncycles
          real(8), intent(in) :: t_target_precision
          real(8) :: t_convergence
 
@@ -842,7 +846,7 @@ module exacorr_cc
          call diis (l2_tensor,oovv_id,oovv_root,l1_tensor,ov_id,ov_root,mode=1)
 
          call print_date('Begin iterating')
-         do iccsd = 1, nccsd
+         do ilambda = 1, ncycles
 
 !         Form mixed intermediates
           call get_gvv_lambda(lambda_t%gvv,l2_tensor,comm_t%t2)
@@ -926,7 +930,7 @@ module exacorr_cc
 
           call diis (l2_tensor,t1_tensor=l1_tensor,t_convergence=t_convergence)
 
-          write (*,'(A,I4,A,ES10.1)') "  Iteration ",iccsd," convergence =",t_convergence
+          write (*,'(A,I4,A,ES10.1)') "  Iteration ",ilambda," convergence =",t_convergence
           if (t_convergence .lt. t_target_precision) exit
 
          end do
