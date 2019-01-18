@@ -102,7 +102,7 @@ C
       ELSEIF (CLSINT(I).EQ.'UEHLING') THEN
 C     sunaga
         IF(NOSMLV) COMB(4:4) = 'T'
-        CALL NUMOVL(COMB)       
+        CALL NUMOVL(COMB,IPRONE)       
 Csunaga      
 C
 C     Contribution from (static) embedding potential
@@ -258,7 +258,7 @@ C
 !     write(*,*)"ZAN",ZAN(IATOM)
 !      CALL NUCPRM(Z,NNUC,ZNORM,PARM1,PARM2)
          NUCTYP = 0
-         CALL MEMSET(ZAN(IATOM),MXNP,RNT,EPH,NUCTYP) !change  
+         CALL MEMSET(ZAN(IATOM),MXNP,RNT,EPH,NUCTYP,IPRINT) !change
          CALL NUCPRM(ZAN(IATOM),NUCMASS(INT(ZAN(IATOM))),NUCTYP,
      &                RNT,EPH)
          write(*,*)"MXNP",MXNP
@@ -283,7 +283,7 @@ C
 C
 C     1/r in Eq. (2), (4),and (6) of Rinker's paper is NOT calculated in VCMPOL.
 C     Integrand = 1/r * VP(r) * (Large*Large + Small*Small) * r^2 * r
-C      Meaning:   1/r * VACIR(R) *   wavefunction     * Radial int. * for QUAD 
+C      Meaning:   1/r * VACIR(IR) *   wavefunction     * Radial int. * for QUAD 
 C     Finally,    We multiply R(IR)*R(IR).
 C     
            RFAC = R(IR)*R(IR) * VACIR(IR) !*R(IR)!change
@@ -451,7 +451,7 @@ C
       END      
 ************************************************************************
 *                                                                      *
-      SUBROUTINE MEMSET(Z,MXNP,RNT,EPH,NUCTYP)
+      SUBROUTINE MEMSET(Z,MXNP,RNT,EPH,NUCTYP,IPRINT)
 C
 C     Estimating memories, by calculating the uehling potential of
 C     point charge 
@@ -462,6 +462,7 @@ C    Modified for DIRAC, A. Sunaga Dec. 2018
 C  
 ************************************************************************
 #include "implicit.h"
+#include "priunit.h"
 #include "pi.h"
 #include "dcbgen.h"
 #include "graspprm.h"
@@ -493,13 +494,21 @@ C
       DO 1 I = 1,N
          X = WD*RTEMP
          TEMP = FACTOR*FUNK (X,1)
-!          write(*,*)"I",I,TEMP
+!     write(*,*)"I",I,TEMP
          IF(ABS(TEMP).LE.1.0D-50)THEN
             MXNP = I
             exit
          ENDIF   
          RTEMP = RTEMP*EPH
-1     CONTINUE
+ 1    CONTINUE
+      IF (IPRINT.GE.6) THEN
+         WRITE(LUPRI,'(2X,/A)')'**Truncation of radial grid'
+         WRITE(LUPRI,'(2X,A,I4)')
+     &    'The number of Grid (Final one) is ',MXNP
+         WRITE(LUPRI,'(2X,A,E11.4e2,A)')
+     &    'The value of final Grid ',TEMP,' is less than 1.0D-50'
+         WRITE(LUPRI,'(2X,A)')'Note that GRASP part is truncated'
+      ENDIF   
 C      
       RETURN
 C
