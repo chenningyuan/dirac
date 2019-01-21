@@ -34,6 +34,8 @@
             logical                 :: ccd = .false.            !If false=>CCSD, if true=>CCD
             logical                 :: lambda = .false.
             logical                 :: noints = .false.
+            logical                 :: eom = .false.
+            character(len=2)        :: eom_flavour = "  "
             integer                 :: nkr_occ, nkr_vir         !Number of Kramer pairs
             integer, allocatable    :: mokr_occ(:), mokr_vir(:) !List of active Kramer pairs
             real(REALD)             :: t_econv = 1.0D-13        !Convergence criterium
@@ -100,8 +102,8 @@
          type(talsh_tens_t) :: goo, gvv
         end type talsh_lambda_tens
 
-        type, public, extends(talsh_comm_tens) :: talsh_eom_fixed_tens
-            type(talsh_intg_tens)   :: int_t
+        type, public, extends(talsh_intg_tens) :: talsh_eom_fixed_tens
+            type(talsh_comm_tens)   :: comm_t
             type(talsh_lambda_tens) :: lambda_t
             type(talsh_tens_t)      :: l2_tensor !Lambda amplitude
         end type talsh_eom_fixed_tens

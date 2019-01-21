@@ -64,6 +64,8 @@ module talsh_cc
          type(talsh_intg_tens) :: int_t
 !        Lambda tensors
          type(talsh_tens_t) :: l1_tensor, l2_tensor
+!        EOM fixed tensors
+         type(talsh_eom_fixed_tens) :: eom_fixed_t
 !        intermediate tensors (same notation as in relccsd)
          integer, dimension(2) :: oo_dims, ov_dims, vo_dims, vv_dims
          integer, dimension(4) :: oooo_dims, oovv_dims, vvoo_dims, voov_dims, vovo_dims, vvvv_dims
@@ -78,7 +80,8 @@ module talsh_cc
          !real(8) :: ccsd_energy, t_energy(3)
          real(8) :: t_target_precision
 
-         logical :: CCD, lambda
+         logical :: CCD, lambda, eom
+         character(len=2) :: eom_flavour
 
 !        Make some noise so that we know we are here
          call print_date('Entered cc_driver routine')
@@ -110,7 +113,9 @@ module talsh_cc
          mo_vir(1:nvir) = exa_input%mokr_vir(1:exa_input%nkr_vir)
          t_target_precision = exa_input%t_econv
          CCD = exa_input%ccd
-         lambda = exa_input%lambda 
+         lambda = exa_input%lambda
+         eom = exa_input%eom
+         eom_flavour = exa_input%eom_flavour
 
          call print_date("Getting orbital energies")
 !        Get orbital energies from the DIRAC restart file
@@ -232,20 +237,13 @@ module talsh_cc
 
           !Calculate density matrices
           if (.not.CCD) call get_dm_mo(comm_t%t1,comm_t%t2,l1_tensor,l2_tensor,nocc,nvir)
+
          end if
 
 !        Destruct tensors and shut down library
-         ierr=talsh_tensor_destruct(int_t%oooo)
-         ierr=talsh_tensor_destruct(int_t%oovv)
-         ierr=talsh_tensor_destruct(int_t%vovo)
-         ierr=talsh_tensor_destruct(int_t%vvvv)
-         ierr=talsh_tensor_destruct(int_t%ooov)
-         ierr=talsh_tensor_destruct(int_t%vovv)
          ierr=talsh_tensor_destruct(comm_t%foo)
          ierr=talsh_tensor_destruct(comm_t%fov)
          ierr=talsh_tensor_destruct(comm_t%fvv)
-         if (.not.CCD) ierr=talsh_tensor_destruct(comm_t%t1)
-         ierr=talsh_tensor_destruct(comm_t%t2)
          ierr=talsh_tensor_destruct(comm_t%tau)
          ierr=talsh_tensor_destruct(comm_t%hoo)
          ierr=talsh_tensor_destruct(comm_t%hov)
@@ -255,10 +253,33 @@ module talsh_cc
          ierr=talsh_tensor_destruct(comm_t%a_int)
          ierr=talsh_tensor_destruct(comm_t%h_int)
          ierr=talsh_tensor_destruct(result_tensor)
-         ierr=talsh_tensor_destruct(one_tensor)
          ierr=talsh_tensor_destruct(l1_tensor)
-         ierr=talsh_tensor_destruct(l2_tensor)
-!        Get statistics 
+
+         if (eom) then
+            if (eom_flavour.eq."IP" .or. eom_flavour.eq."EA") then
+                ierr=talsh_tensor_destruct(l2_tensor)
+            end if
+            if (eom_flavour.eq."IP") then
+            end if
+            if (eom_flavour.eq."EA") then
+            end if
+            if (eom_flavour.eq."EE") then
+            end if
+         end if
+
+         if (.not.CCD) ierr=talsh_tensor_destruct(comm_t%t1)
+         ierr=talsh_tensor_destruct(comm_t%t2)
+         ierr=talsh_tensor_destruct(int_t%oooo)
+         ierr=talsh_tensor_destruct(int_t%oovv)
+         ierr=talsh_tensor_destruct(int_t%vovo)
+         ierr=talsh_tensor_destruct(int_t%vvvv)
+         ierr=talsh_tensor_destruct(int_t%ooov)
+         ierr=talsh_tensor_destruct(int_t%vovv)
+         ierr=talsh_tensor_destruct(one_tensor)
+         if (.not.eom .or. eom_flavour.eq."EE") then
+            ierr=talsh_tensor_destruct(l2_tensor)
+         end if
+
          ierr=talsh_stats()
          ierr = talsh_shutdown()
          deallocate (eps_occ)

@@ -23,17 +23,13 @@ module talsh_eom
 !        fixed 2-body tensors (two-electron integrals)
          type(talsh_intg_tens),intent(inout) :: int_t
 !        Lambda tensors
-         type(tens_rcrsv_t),intent(inout) :: l2_tensor
+         type(talsh_tens_t),intent(inout) :: l2_tensor
 !        Type of EOM
          character(len=2) :: flavour
 
 !        tensor ids + roots
-         integer                    :: occ_space_id, vir_space_id
-         integer(INTL)              :: occ_space_root, vir_space_root
          integer,dimension(2)       :: oo_id, ov_id, vv_id
-         integer(INTL),dimension(2) :: oo_root, ov_root, vv_root
          integer,dimension(4)       :: oooo_id, ovoo_id, ooov_id, vovo_id, vvvo_id, vovv_id, vvvv_id
-         integer(INTL),dimension(4) :: oooo_root, ovoo_root, ooov_root, vovo_root, vvvo_root, vovv_root, vvvv_root
 
          logical :: CCD, left=.true.
          integer :: ierr
@@ -43,10 +39,6 @@ module talsh_eom
          print*, " Starting EOM-CC calculation with talsh"
 
 !        Create all ids and roots
-         occ_space_id=dims%occ_space_id
-         vir_space_id=dims%vir_space_id
-         occ_space_root=dims%occ_space_root
-         vir_space_root=dims%vir_space_root
          oo_id = (/occ_space_id, occ_space_id/)
          ov_id = (/occ_space_id, vir_space_id/)
          vv_id = (/vir_space_id, vir_space_id/)

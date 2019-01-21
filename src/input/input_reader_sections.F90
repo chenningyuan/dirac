@@ -883,6 +883,11 @@
          exa_input%noints = .true.
       end if
 
+      if (kw_matches(word, '.EOMCC')) then
+         exa_input%eom = .true.
+         call kw_read(word, exa_input%eom_flavour)
+      end if
+
       call check_whether_kw_found(word, kw_section)
 
 #endif
