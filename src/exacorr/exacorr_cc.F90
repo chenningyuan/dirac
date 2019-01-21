@@ -49,6 +49,8 @@ module exacorr_cc
          integer(INTL)          :: nocc_l, nvir_l
          integer, allocatable   :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
 
+         integer, allocatable   :: mo_oo(:),mo_vo(:),mo_ov(:),mo_vv(:) ! joined lists needed for dm init (ugly code, should be refactored)
+
          integer :: my_role, my_MPI_rank                    ! needed to start exatensor, MPI should already be started in threaded mode
          integer                                :: nshells  ! the number of shells (orbitals with the same center and l-value)
          integer                                :: nao      ! the number of atomic orbitals)
@@ -98,13 +100,17 @@ module exacorr_cc
          type(init_mocoef_tensor_t)   :: occupied_init(2), virtual_init(2)
          type(tens_printer_t)         :: tens_printer     ! generic method, but needs to be defined here in specific form
          type(scale_with_denom_t)     :: denominate
+         type(init_dm_tensor_t)       :: dm_init(4)       ! array of initializers for algorithm 2
 
          ! variables for the definition of the initializer methods
          character(len=5)  :: initlabel
+         character(len=5)  :: initlabel2(4)
+         character(len=3)  :: DM_str     = "DM_"
          character(len=2)  :: vs_str
 
          integer:: spin
          integer:: lsh, l, nl
+         integer :: ncycles
 
          !CCD
          logical :: CCD, lambda, noints
@@ -112,6 +118,7 @@ module exacorr_cc
 !        Make some noise so that we know we are here
          call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
          if (my_MPI_rank == 0) print*, " Starting CC calculation with exatensor"
+         if (my_MPI_rank == 0) print*, " using an exa_blocksize value of ",exa_input%exa_blocksize
 
 !        Initialize global data (read from DFCOEF or similar by master)
          call set_talsh_only(exa_input%talsh)
@@ -146,7 +153,7 @@ module exacorr_cc
          if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.finalize() failed!')
 
          !Register the ao vector space:
-         branch_factor = nao / 80 + 1
+         branch_factor = nao / exa_input%exa_blocksize + 1
          if (branch_factor < 2) branch_factor = 2
          ierr=exatns_space_register('AO_space',basis_ao,ao_space_id,ao_space,branch_factor)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register() failed!')
@@ -163,6 +170,7 @@ module exacorr_cc
          CCD = exa_input%ccd
          lambda = exa_input%lambda
          noints = exa_input%noints
+         ncycles = exa_input%ncycles
 
          !Get the MO-coeffcient basis for the occupied and virtual spaces
          ierr = 0
@@ -192,11 +200,11 @@ module exacorr_cc
          if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.finalize() failed!')
 
          !Register this mo vector space :
-         branch_factor = 2*nocc/ 80 + 1
+         branch_factor = 2*nocc / exa_input%exa_blocksize + 1
          if (branch_factor < 2) branch_factor = 2
          ierr=exatns_space_register('Occupied',basis_occ,occ_space_id,occ_space,branch_factor)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register(occ) failed!')
-         branch_factor = 2*nvir/ 80 + 1
+         branch_factor = 2*nvir / exa_input%exa_blocksize + 1
          if (branch_factor < 2) branch_factor = 2
          ierr=exatns_space_register('Virtual',basis_vir,vir_space_id,vir_space,branch_factor)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register(vir) failed!')
@@ -218,6 +226,39 @@ module exacorr_cc
             ierr=exatns_method_register(initlabel,virtual_init(spin))
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
          end do
+
+         if (exa_input%moint_scheme == 2) then
+           !Define names for the initializers for density matrices
+           allocate(mo_oo(nocc+nocc))
+           allocate(mo_vo(nvir+nocc))
+           allocate(mo_ov(nocc+nvir))
+           allocate(mo_vv(nvir+nvir))
+           initlabel2(1) = DM_str // 'oo'
+           initlabel2(2) = DM_str // 'vo'
+           initlabel2(3) = DM_str // 'ov'
+           initlabel2(4) = DM_str // 'vv'
+           mo_oo(1:nocc) = mo_occ
+           mo_ov(1:nocc) = mo_occ
+           mo_vo(1:nvir) = mo_vir
+           mo_vv(1:nvir) = mo_vir
+           mo_oo(nocc+1:nocc+nocc) = mo_occ
+           mo_ov(nocc+1:nocc+nvir) = mo_vir
+           mo_vo(nvir+1:nvir+nocc) = mo_occ
+           mo_vv(nvir+1:nvir+nvir) = mo_vir
+           !Register the dm initializers as methods
+           call dm_init(1)%init_dm_ctor(mo_oo,(/nocc,nocc/))
+           ierr=exatns_method_register(initlabel2(1),dm_init(1))
+           if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
+           call dm_init(2)%init_dm_ctor(mo_vo,(/nvir,nocc/))
+           ierr=exatns_method_register(initlabel2(2),dm_init(2))
+           if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
+           call dm_init(3)%init_dm_ctor(mo_ov,(/nocc,nvir/))
+           ierr=exatns_method_register(initlabel2(3),dm_init(3))
+           if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
+           call dm_init(4)%init_dm_ctor(mo_vv,(/nvir,nvir/))
+           ierr=exatns_method_register(initlabel2(4),dm_init(4))
+           if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
+         end if
 
          if (my_MPI_rank == 0) print*," registered MO spaces and initializers with nocc and nvir:",2*nocc, 2*nvir
 
@@ -306,7 +347,7 @@ module exacorr_cc
             ierr=exatns_tensor_create(int_t%vovv,"vovv",vovv_id,vovv_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(int_t%vvvv,"vvvv",vvvv_id,vvvv_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(voov_tensor,"voov",voov_id,voov_root,EXA_DATA_KIND_C8) ! auxilliary for get_CC_integrals
-            call get_CC_integrals (ao_space_id,ao_space_root,voov_tensor,int_t,noints)
+            call get_CC_integrals (ao_space_id,ao_space_root,voov_tensor,int_t,exa_input%moint_scheme)
             ierr=exatns_tensor_destroy(voov_tensor)
 
             call print_date('initialized two electron integrals')
@@ -349,7 +390,7 @@ module exacorr_cc
                return
             end if
 
-            call solve_t_equations(comm_t,int_t,dims,CCD,t_target_precision,ccsd_energy)
+            call solve_t_equations(comm_t,int_t,dims,CCD,t_target_precision,ccsd_energy,ncycles)
 
 !           Calculate (T) energy correction, not implemented yet
 !           call t3_energy (t_energy,eps_occ,eps_vir,t1_tensor,t2_tensor,fov_tensor,ooov_tensor,vovv_tensor,oovv_tensor)
@@ -386,7 +427,7 @@ module exacorr_cc
              ierr=exatns_tensor_contract("L(i,a)+=T+(a,i)*K()",l1_tensor,comm_t%t1,one_tensor)
              ierr=exatns_tensor_contract("L(i,j,a,b)+=T+(a,b,i,j)*K()",l2_tensor,comm_t%t2,one_tensor)
 
-             call solve_lambda_equations(comm_t,int_t,l1_tensor,l2_tensor,dims,CCD,t_target_precision)            
+             call solve_lambda_equations(comm_t,int_t,l1_tensor,l2_tensor,dims,CCD,t_target_precision,ncycles)            
 
              if (.not.CCD) call get_dm_mo(comm_t%t1,comm_t%t2,l1_tensor,l2_tensor,dims)
             end if
@@ -439,7 +480,7 @@ module exacorr_cc
 
         end subroutine exacorr_cc_driver
 
-        subroutine solve_t_equations(comm_t,int_t,dims,CCD,t_target_precision,ccsd_energy)
+        subroutine solve_t_equations(comm_t,int_t,dims,CCD,t_target_precision,ccsd_energy,ncycles)
 
 !        Routine for solving the t amplitude equations
 
@@ -471,7 +512,8 @@ module exacorr_cc
 
          real(8) :: t_convergence
 
-         integer :: iccsd, nccsd=30
+         integer :: iccsd
+         integer,intent(in) :: ncycles
          integer :: ierr
          
          occ_space_id=dims%occ_space_id
@@ -500,7 +542,7 @@ module exacorr_cc
          ierr=exatns_tensor_create(tau2_tensor,"tau2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
          ierr=exatns_tensor_create(cint_tensor,"cint",ovoo_id,ovoo_root,EXA_DATA_KIND_C8)
 
-         do iccsd = 1, nccsd
+         do iccsd = 1, ncycles
 
           call get_tau(comm_t,CCD,one_tensor)
 
@@ -639,6 +681,8 @@ module exacorr_cc
               ierr=exatns_tensor_get_scalar(result_t_tensor,result_val)
               ccsd_energy=real(result_val,8)
               ierr=exatns_tensor_init(result_t_tensor)
+          else
+              ccsd_energy=real(ZERO,8)
           end if
 
 !         Update tau with converged values
@@ -667,7 +711,7 @@ module exacorr_cc
 
         end subroutine solve_t_equations
 
-        subroutine solve_lambda_equations(comm_t,int_t,l1_tensor,l2_tensor,dims,CCD,t_target_precision)
+        subroutine solve_lambda_equations(comm_t,int_t,l1_tensor,l2_tensor,dims,CCD,t_target_precision,ncycles)
 
 !        Routine for solving the lambda equations
 
@@ -692,7 +736,8 @@ module exacorr_cc
          integer(INTL), dimension(2) :: oo_root, ov_root, vv_root
          integer(INTL), dimension(4) :: oooo_root,ovoo_root,ooov_root,vovo_root,oovv_root, &
                    vvvo_root,vovv_root,vvvv_root
-         integer :: iccsd, nccsd=30
+         integer :: ilambda
+         integer,intent(in) :: ncycles
          real(8), intent(in) :: t_target_precision
          real(8) :: t_convergence
 
@@ -801,7 +846,7 @@ module exacorr_cc
          call diis (l2_tensor,oovv_id,oovv_root,l1_tensor,ov_id,ov_root,mode=1)
 
          call print_date('Begin iterating')
-         do iccsd = 1, nccsd
+         do ilambda = 1, ncycles
 
 !         Form mixed intermediates
           call get_gvv_lambda(lambda_t%gvv,l2_tensor,comm_t%t2)
@@ -885,7 +930,7 @@ module exacorr_cc
 
           call diis (l2_tensor,t1_tensor=l1_tensor,t_convergence=t_convergence)
 
-          write (*,'(A,I4,A,ES10.1)') "  Iteration ",iccsd," convergence =",t_convergence
+          write (*,'(A,I4,A,ES10.1)') "  Iteration ",ilambda," convergence =",t_convergence
           if (t_convergence .lt. t_target_precision) exit
 
          end do
@@ -920,7 +965,7 @@ module exacorr_cc
 
         end subroutine solve_lambda_equations
 
-        subroutine get_CC_integrals (ao_space_id,ao_space_root,voov_tensor,int_t,noints)
+        subroutine get_CC_integrals (ao_space_id,ao_space_root,voov_tensor,int_t,moint_scheme)
 
 !        Routine to get integrals needed in CC in the form of antisymmetric tensors.
 !        In this implementation we take all AO integrals into memory, the result tensor themselves can be subsets of the
@@ -940,10 +985,10 @@ module exacorr_cc
          type(tens_rcrsv_t),intent(inout) :: voov_tensor ! Auxilliary tensor that is not anti-symmetrized
 
          integer                           :: i,ierr
-         logical                           :: noints
+         integer                           :: moint_scheme ! (0: put zeroes for testing. 1: n^5 algorithm, 2: n^6 algorithm)
 
          ! variables for the definition of the initializer methods
-         character(len=5)  :: initlabel(2,4),initocc(2),initvir(2)
+         character(len=5)  :: initlabel(2,4),initocc(2),initvir(2),initlabel_2(2)
 
 !        auxilliary integral tensor (only needed inside this routine)
          type(tens_rcrsv_t) :: aoint_tensor
@@ -961,69 +1006,125 @@ module exacorr_cc
          call print_date('allocated AO integral tensor')
 
          !Initialize ao-tensor:
-         if (noints) then
+         if (moint_scheme == 0) then
 !        test code : initialize integrals to zero to be able to time the integral generation
            ierr=exatns_tensor_init(aoint_tensor)
            if(ierr.ne.EXA_SUCCESS) call quit('Aoint_calculator failed!')
            call print_date('initalized all ao integrals to zero')
-         else
+         elseif (moint_scheme == 1) then
            ierr=exatns_tensor_init(aoint_tensor,'Aoint_calculator')
            if(ierr.ne.EXA_SUCCESS) call quit('Aoint_calculator failed!')
            call print_date('finished ao integral calculation')
+           call print_date('choosing moint_scheme 1')
+
+!          Note that the spaces for the tensor are given in physicists notation <12||34>
+!          whereas the initializer labels needed in the index transform are in mullikens notation (13||24)
+
+!          Get oovv tensor
+           initlabel(:,1)=initocc
+           initlabel(:,2)=initvir
+           initlabel(:,3)=initocc
+           initlabel(:,4)=initvir
+           call get_integral_tensor (aoint_tensor,int_t%oovv,12,initlabel)
+           call print_date('finished oovv integrals')
+
+!          Get oooo tensor
+           initlabel(:,1)=initocc
+           initlabel(:,2)=initocc
+           initlabel(:,3)=initocc
+           initlabel(:,4)=initocc
+           call get_integral_tensor (aoint_tensor,int_t%oooo,12,initlabel)
+           call print_date('finished oooo integrals')
+
+!          Get anti-symmetrized vovo tensor, this needs to be done in two steps as two different classes contribute.
+!          Get vovo tensor
+           initlabel(:,1)=initvir
+           initlabel(:,2)=initvir
+           initlabel(:,3)=initocc
+           initlabel(:,4)=initocc
+           call get_integral_tensor (aoint_tensor,int_t%vovo,0,initlabel)
+           initlabel(:,1)=initvir
+           initlabel(:,2)=initocc
+           initlabel(:,3)=initocc
+           initlabel(:,4)=initvir
+           call get_integral_tensor (aoint_tensor,voov_tensor,0,initlabel)
+!          Make anti-symmetrized vovo tensor
+           ierr=exatns_tensor_contract("V(a,i,b,j)+=V(a,i,j,b)*K()",int_t%vovo,voov_tensor,one_tensor,MINUS_ONE)
+           call print_date('finished vovo integrals')
+
+!          Get vvvv tensor
+           initlabel(:,1)=initvir
+           initlabel(:,2)=initvir
+           initlabel(:,3)=initvir
+           initlabel(:,4)=initvir
+           call get_integral_tensor (aoint_tensor,int_t%vvvv,12,initlabel)
+           call print_date('finished vvvv integrals')
+
+!          Get ooov tensor
+           initlabel(:,1)=initocc
+           initlabel(:,2)=initocc
+           initlabel(:,3)=initocc
+           initlabel(:,4)=initvir
+           call get_integral_tensor (aoint_tensor,int_t%ooov,12,initlabel)
+           call print_date('finished ooov integrals')
+
+!          Get vovv tensor
+           initlabel(:,1)=initvir
+           initlabel(:,2)=initvir
+           initlabel(:,3)=initocc
+           initlabel(:,4)=initvir
+           call get_integral_tensor (aoint_tensor,int_t%vovv,34,initlabel)
+           call print_date('finished vovv integrals')
+
+         elseif (moint_scheme == 2) then
+           ierr=exatns_tensor_init(aoint_tensor,'Aoint_calculator')
+           if(ierr.ne.EXA_SUCCESS) call quit('Aoint_calculator failed!')
+           call print_date('finished ao integral calculation')
+           call print_date('choosing moint_scheme 2')
+
+!          Get vvvv tensor
+           initlabel_2(1)='DM_vv'
+           initlabel_2(2)='DM_vv'
+           call get_integral_tensor_2 (aoint_tensor,int_t%vvvv,12,initlabel_2)
+           call print_date('finished vvvv integrals')
+
+!          Get vovv tensor
+           initlabel_2(1)='DM_vv'
+           initlabel_2(2)='DM_ov'
+           call get_integral_tensor_2 (aoint_tensor,int_t%vovv,34,initlabel_2)
+           call print_date('finished vovv integrals')
+
+!          Get oovv tensor
+           initlabel_2(1)='DM_ov'
+           initlabel_2(2)='DM_ov'
+           call get_integral_tensor_2 (aoint_tensor,int_t%oovv,12,initlabel_2)
+           call print_date('finished oovv integrals')
+
+!          Get ooov tensor
+           initlabel_2(1)='DM_oo'
+           initlabel_2(2)='DM_ov'
+           call get_integral_tensor_2 (aoint_tensor,int_t%ooov,12,initlabel_2)
+           call print_date('finished ooov integrals')
+
+!          Get oooo tensor
+           initlabel_2(1)='DM_oo'
+           initlabel_2(2)='DM_oo'
+           call get_integral_tensor_2 (aoint_tensor,int_t%oooo,12,initlabel_2)
+           call print_date('finished oooo integrals')
+
+!          Get anti-symmetrized vovo tensor, this needs to be done in two steps as two different classes contribute.
+!          Get vovo tensor
+           initlabel_2(1)='DM_vv'
+           initlabel_2(2)='DM_oo'
+           call get_integral_tensor_2 (aoint_tensor,int_t%vovo,0,initlabel_2)
+           initlabel_2(1)='DM_vo'
+           initlabel_2(2)='DM_ov'
+           call get_integral_tensor_2 (aoint_tensor,voov_tensor,0,initlabel_2)
+!          Make anti-symmetrized vovo tensor
+           ierr=exatns_tensor_contract("V(a,i,b,j)+=V(a,i,j,b)*K()",int_t%vovo,voov_tensor,one_tensor,MINUS_ONE)
+           call print_date('finished vovo integrals')
+
          end if
-
-!        Note that the spaces for the tensor are given in physicists notation <12||34>
-!        whereas the initializer labels needed in the index transform are in mullikens notation (13||24)
-
-!        Get oovv tensor
-         initlabel(:,1)=initocc
-         initlabel(:,2)=initvir
-         initlabel(:,3)=initocc
-         initlabel(:,4)=initvir
-         call get_integral_tensor (aoint_tensor,int_t%oovv,12,initlabel)
-
-!        Get oooo tensor
-         initlabel(:,1)=initocc
-         initlabel(:,2)=initocc
-         initlabel(:,3)=initocc
-         initlabel(:,4)=initocc
-         call get_integral_tensor (aoint_tensor,int_t%oooo,12,initlabel)
-
-!        Get anti-symmetrized vovo tensor, this needs to be done in two steps as two different classes contribute.
-!        Get vovo tensor
-         initlabel(:,1)=initvir
-         initlabel(:,2)=initvir
-         initlabel(:,3)=initocc
-         initlabel(:,4)=initocc
-         call get_integral_tensor (aoint_tensor,int_t%vovo,0,initlabel)
-         initlabel(:,1)=initvir
-         initlabel(:,2)=initocc
-         initlabel(:,3)=initocc
-         initlabel(:,4)=initvir
-         call get_integral_tensor (aoint_tensor,voov_tensor,0,initlabel)
-!        Make anti-symmetrized vovo tensor
-         ierr=exatns_tensor_contract("V(a,i,b,j)+=V(a,i,j,b)*K()",int_t%vovo,voov_tensor,one_tensor,MINUS_ONE)
-
-!        Get vvvv tensor
-         initlabel(:,1)=initvir
-         initlabel(:,2)=initvir
-         initlabel(:,3)=initvir
-         initlabel(:,4)=initvir
-         call get_integral_tensor (aoint_tensor,int_t%vvvv,12,initlabel)
-
-!        Get ooov tensor
-         initlabel(:,1)=initocc
-         initlabel(:,2)=initocc
-         initlabel(:,3)=initocc
-         initlabel(:,4)=initvir
-         call get_integral_tensor (aoint_tensor,int_t%ooov,12,initlabel)
-
-!        Get vovv tensor
-         initlabel(:,1)=initvir
-         initlabel(:,2)=initvir
-         initlabel(:,3)=initocc
-         initlabel(:,4)=initvir
-         call get_integral_tensor (aoint_tensor,int_t%vovv,34,initlabel)
 
 !        Clean-up
          ierr=exatns_tensor_destroy(aoint_tensor)

@@ -883,7 +883,19 @@
          exa_input%noints = .true.
       end if
 
-      if (kw_matches(word, '.EOMCC')) then
+      if (kw_matches(word, '.EXA_BLOCKSIZE')) then
+         call kw_read(word, exa_input%exa_blocksize)
+      end if
+
+      if (kw_matches(word, '.MOINT_SCHEME')) then
+         call kw_read(word, exa_input%moint_scheme)
+      end if
+
+      if (kw_matches(word, '.NCYCLES')) then
+         call kw_read(word, exa_input%ncycles)
+      end if
+
+      if (kw_matches(word, '.EOMCCSD')) then
          exa_input%eom = .true.
          call kw_read(word, exa_input%eom_flavour)
       end if
