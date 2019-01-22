@@ -616,19 +616,18 @@ module intermediates
 
        end subroutine get_hoo_talsh
 
-       subroutine get_hov_talsh(comm_t,oovv_tensor,CCD)
+       subroutine get_hov_talsh(comm_t,oovv_tensor)
 
         use talsh
         use exacorr_datatypes, only : talsh_comm_tens
 
         type(talsh_comm_tens),intent(inout) :: comm_t
         type(talsh_tens_t),intent(inout) :: oovv_tensor
-        logical, intent(in) :: CCD
         integer :: ierr
 
 !       ov ! validated
         ierr=talsh_tensor_init(comm_t%hov)
-        if (.not.CCD) ierr=talsh_tensor_contract("H(k,c)+=V(k,l,c,d)*T(d,l)",comm_t%hov,oovv_tensor,comm_t%t1) ! o(2)v(2)
+        ierr=talsh_tensor_contract("H(k,c)+=V(k,l,c,d)*T(d,l)",comm_t%hov,oovv_tensor,comm_t%t1) ! o(2)v(2)
         ierr=talsh_tensor_add("H(k,c)+=F(k,c)",comm_t%hov,comm_t%fov)
 
        end subroutine get_hov_talsh

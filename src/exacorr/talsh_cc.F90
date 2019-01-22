@@ -77,6 +77,7 @@ module talsh_cc
          real(8) :: mp2_energy, ccsd_energy, t_energy(3), t_convergence
          !real(8) :: ccsd_energy, t_energy(3)
          real(8) :: t_target_precision
+         integer :: ncycles
 
          logical :: CCD, lambda
 
@@ -110,7 +111,8 @@ module talsh_cc
          mo_vir(1:nvir) = exa_input%mokr_vir(1:exa_input%nkr_vir)
          t_target_precision = exa_input%t_econv
          CCD = exa_input%ccd
-         lambda = exa_input%lambda 
+         lambda = exa_input%lambda
+         ncycles = exa_input%ncycles
 
          call print_date("Getting orbital energies")
 !        Get orbital energies from the DIRAC restart file
@@ -128,9 +130,11 @@ module talsh_cc
          call get_CC_integrals (nocc,nvir,mo_occ,mo_vir,int_t)
 
 !        Initialize t1 amplitudes to zero (we assume canonical orbitals for the moment)
-         vo_dims(1) = nvir * 2
-         vo_dims(2) = nocc * 2
-         ierr=talsh_tensor_construct(comm_t%t1,C8,vo_dims,init_val=ZERO)
+         if (.not.CCD) then
+            vo_dims(1) = nvir * 2
+            vo_dims(2) = nocc * 2
+            ierr=talsh_tensor_construct(comm_t%t1,C8,vo_dims,init_val=ZERO)
+         end if
 
 !        Initialize t2 amplitudes with the MP2 values
          vvoo_dims(1:2) = nvir * 2
@@ -160,9 +164,11 @@ module talsh_cc
          vv_dims = nvir * 2
          ierr=talsh_tensor_construct(comm_t%gvv,C8,vv_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(comm_t%hvv,C8,vv_dims,init_val=ZERO)
-         ov_dims(1) = nocc *2
-         ov_dims(2) = nvir *2
-         ierr=talsh_tensor_construct(comm_t%hov,C8,ov_dims,init_val=ZERO)
+         if (.not.CCD) then
+            ov_dims(1) = nocc *2
+            ov_dims(2) = nvir *2
+            ierr=talsh_tensor_construct(comm_t%hov,C8,ov_dims,init_val=ZERO)
+         end if
          oooo_dims  = nocc  * 2
          ierr=talsh_tensor_construct(comm_t%a_int,C8,oooo_dims,init_val=ZERO)
          vovo_dims(1) = nvir * 2
@@ -189,7 +195,7 @@ module talsh_cc
          end if
 
          call solve_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
-                                ccsd_energy,CCD)
+                                ccsd_energy,CCD,ncycles)
 
          if (.not.CCD) then
 !           Calculate (T) energy correction
@@ -212,7 +218,7 @@ module talsh_cc
             call diis (comm_t%t2,mode=2)
          end if
 
-         if (lambda) then
+         if (lambda .and. .not.CCD) then
 
           print*, ""
           call print_date("Begin solving Lambda equations")
@@ -228,10 +234,12 @@ module talsh_cc
           ierr=talsh_tensor_contract("L(i,j,a,b)+=T+(a,b,i,j)*K()",l2_tensor,comm_t%t2,one_tensor)
 
           call solve_lambda_equations(comm_t,int_t,l1_tensor,l2_tensor,nocc,nvir, &
-                                        eps_occ,eps_vir,t_target_precision,CCD)
+                                        eps_occ,eps_vir,t_target_precision,ncycles)
 
           !Calculate density matrices
           if (.not.CCD) call get_dm_mo(comm_t%t1,comm_t%t2,l1_tensor,l2_tensor,nocc,nvir)
+         else if (lambda) then
+            print*, "Lambda equations are only implemented for CCSD!"
          end if
 
 !        Destruct tensors and shut down library
@@ -248,7 +256,7 @@ module talsh_cc
          ierr=talsh_tensor_destruct(comm_t%t2)
          ierr=talsh_tensor_destruct(comm_t%tau)
          ierr=talsh_tensor_destruct(comm_t%hoo)
-         ierr=talsh_tensor_destruct(comm_t%hov)
+         if (.not.CCD) ierr=talsh_tensor_destruct(comm_t%hov)
          ierr=talsh_tensor_destruct(comm_t%hvv)
          ierr=talsh_tensor_destruct(comm_t%goo)
          ierr=talsh_tensor_destruct(comm_t%gvv)
@@ -275,7 +283,7 @@ module talsh_cc
         end subroutine talsh_cc_driver
 
         subroutine solve_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
-                                ccsd_energy,CCD)
+                                ccsd_energy,CCD,ncycles)
 
 !        Routine for solving the t amplitude equations
 
@@ -306,12 +314,12 @@ module talsh_cc
          integer, dimension(4) :: vvoo_dims, vovo_dims, ovoo_dims
          !Orbital energies for scaling
          real(8), intent(in)   :: eps_occ(:), eps_vir(:)
-         integer :: iccsd, nccsd=30
+         integer :: iccsd
+         integer, intent(in) :: ncycles
          real(8), intent(in) :: t_target_precision
          real(8) :: t_convergence
          real(8), intent(out) :: ccsd_energy
          logical, intent(in) :: CCD
-
          integer :: ierr
 
 !        Initialize scalars that are to be used as tensors in contractions
@@ -323,13 +331,13 @@ module talsh_cc
          if (.not.CCD) then
             oo_dims = nocc * 2
             ierr=talsh_tensor_construct(hoo_aux_tensor,C8,oo_dims,init_val=ZERO)
+            ov_dims(1) = nocc * 2
+            ov_dims(2) = nvir * 2
+            ierr=talsh_tensor_construct(hov_aux_tensor,C8,ov_dims,init_val=ZERO)
+            vo_dims(1) = nvir * 2
+            vo_dims(2) = nocc * 2
+            ierr=talsh_tensor_construct(s1_tensor,C8,vo_dims,init_val=ZERO)
          end if
-         ov_dims(1) = nocc * 2
-         ov_dims(2) = nvir * 2
-         ierr=talsh_tensor_construct(hov_aux_tensor,C8,ov_dims,init_val=ZERO)
-         vo_dims(1) = nvir * 2
-         vo_dims(2) = nocc * 2
-         ierr=talsh_tensor_construct(s1_tensor,C8,vo_dims,init_val=ZERO)
          vvoo_dims(1:2) = nvir * 2
          vvoo_dims(3:4) = nocc * 2
          ierr=talsh_tensor_construct(s2_tensor,C8,vvoo_dims,init_val=ZERO)
@@ -339,7 +347,7 @@ module talsh_cc
          ovoo_dims(3:4) = nocc * 2
          ierr=talsh_tensor_construct(cint_tensor,C8,ovoo_dims,init_val=ZERO)
 
-         do iccsd = 1, nccsd
+         do iccsd = 1, ncycles
 
           call get_tau(comm_t,CCD)
 
@@ -388,10 +396,12 @@ module talsh_cc
           call get_goo(comm_t,int_t%ooov,CCD)
 
 !         ov ! validated
-          call get_hov(comm_t,int_t%oovv,CCD)
-          ierr=talsh_tensor_init(hov_aux_tensor)
-          ierr=talsh_tensor_add("L(k,c)+=H(k,c)",hov_aux_tensor,comm_t%hov)                       ! copy common term
-          ierr=talsh_tensor_add("H(k,c)+=F(k,c)",hov_aux_tensor,comm_t%fov,scale=MINUS_TWO)       ! subtract fock matrix twice
+          if (.not.CCD) then
+            call get_hov(comm_t,int_t%oovv)
+            ierr=talsh_tensor_init(hov_aux_tensor)
+            ierr=talsh_tensor_add("L(k,c)+=H(k,c)",hov_aux_tensor,comm_t%hov)                       ! copy common term
+            ierr=talsh_tensor_add("H(k,c)+=F(k,c)",hov_aux_tensor,comm_t%fov,scale=MINUS_TWO)       ! subtract fock matrix twice
+          end if
 
 !         oooo ! validated
           call get_a(comm_t,int_t,CCD)
@@ -403,14 +413,14 @@ module talsh_cc
 
           !if (debug) then
           if (.false.) then
-             print*, "T1amp  = ",tensor_norm2(comm_t%t1)
+             if (.not.CCD) print*, "T1amp  = ",tensor_norm2(comm_t%t1)
              print*, "T2amp  = ",tensor_norm2(comm_t%t2)*ONE_QUARTER
              print*, "Tau    = ",tensor_norm2(comm_t%tau)*ONE_QUARTER
              print*, "hoint  = ",tensor_norm2(comm_t%hoo)
              print*, "goint  = ",tensor_norm2(comm_t%goo)
              print*, "hvint  = ",tensor_norm2(comm_t%hvv)
              print*, "gvint  = ",tensor_norm2(comm_t%gvv)
-             print*, "hovint = ",tensor_norm2(comm_t%hov)
+             if (.not.CCD) print*, "hovint = ",tensor_norm2(comm_t%hov)
              print*, "a int  = ",tensor_norm2(comm_t%a_int)*ONE_QUARTER
              print*, "c int  = ",tensor_norm2(cint_tensor)
              print*, "h int  = ",tensor_norm2(comm_t%h_int) 
@@ -443,24 +453,22 @@ module talsh_cc
 !         end of work-around
 
 !         calculate s1 tensor
-          ierr=talsh_tensor_init(s1_tensor)
-!         ierr=talsh_tensor_add("S(a,i)+=F+(i,a)",s1_tensor,fov_tensor)
-!         work-around because complex conjugation does not work in the above statement
-          ierr=talsh_tensor_contract("S(a,i)+=F+(i,a)*K()",s1_tensor,comm_t%fov,one_tensor)
-!         end of work-around
-          ierr=talsh_tensor_contract("S(a,i)+=V(a,k,c,d)*T(c,d,i,k)",s1_tensor,int_t%vovv,comm_t%tau,scale=ONE_HALF) !validated o(2)v(3)
           if (.not.CCD) then
+            ierr=talsh_tensor_init(s1_tensor)
+!           ierr=talsh_tensor_add("S(a,i)+=F+(i,a)",s1_tensor,fov_tensor)
+!           work-around because complex conjugation does not work in the above statement
+            ierr=talsh_tensor_contract("S(a,i)+=F+(i,a)*K()",s1_tensor,comm_t%fov,one_tensor)
+!           end of work-around
+            ierr=talsh_tensor_contract("S(a,i)+=V(a,k,c,d)*T(c,d,i,k)",s1_tensor,int_t%vovv,comm_t%tau,scale=ONE_HALF) !validated o(2)v(3)
             ierr=talsh_tensor_contract("S(a,i)+=H(a,c)*T(c,i)",s1_tensor,comm_t%hvv,comm_t%t1)                     !validated o(1)v(2)
             ierr=talsh_tensor_contract("S(a,i)+=H(k,i)*T(a,k)",s1_tensor,comm_t%hoo,comm_t%t1)                     !validated o(2)v(1)
-          end if
-          ierr=talsh_tensor_contract("S(a,i)+=H(k,c)*T(a,c,i,k)",s1_tensor,comm_t%hov,comm_t%t2)                     !validated o(2)v(2)
-          if (.not.CCD) then
+            ierr=talsh_tensor_contract("S(a,i)+=H(k,c)*T(a,c,i,k)",s1_tensor,comm_t%hov,comm_t%t2)                     !validated o(2)v(2)
             ierr=talsh_tensor_init(hoo_aux_tensor)                                                                     !moretests
             ierr=talsh_tensor_contract("L(k,i)+=H(k,c)*T(c,i)",hoo_aux_tensor,hov_aux_tensor,comm_t%t1)                !moretests o(2)v(1)
             ierr=talsh_tensor_contract("S(a,i)+=H(k,i)*T(a,k)",s1_tensor,hoo_aux_tensor,comm_t%t1)                     !moretests o(2)v(1)
+            ierr=talsh_tensor_contract("S(a,i)+=V(k,l,i,c)*T(c,a,k,l)",s1_tensor,int_t%ooov,comm_t%tau,scale=ONE_HALF) !validated o(3)v(2)
+            ierr=talsh_tensor_contract("S(a,i)+=V(a,k,c,i)*T(c,k)",s1_tensor,int_t%vovo,comm_t%t1,scale=MINUS_ONE)     !validated o(2)v(2)
           end if
-          ierr=talsh_tensor_contract("S(a,i)+=V(k,l,i,c)*T(c,a,k,l)",s1_tensor,int_t%ooov,comm_t%tau,scale=ONE_HALF) !validated o(3)v(2)
-          if (.not.CCD) ierr=talsh_tensor_contract("S(a,i)+=V(a,k,c,i)*T(c,k)",s1_tensor,int_t%vovo,comm_t%t1,scale=MINUS_ONE)     !validated o(2)v(2)
 
           if (ierr.ne.TALSH_SUCCESS) then
              print*," ccdriver: error in evaluation of amplitude equations, code=",ierr
@@ -506,18 +514,20 @@ module talsh_cc
 
          end do
 
-         ierr=talsh_tensor_destruct(s1_tensor)
+         if (.not.CCD) ierr=talsh_tensor_destruct(s1_tensor)
          ierr=talsh_tensor_destruct(s2_tensor)
          ierr=talsh_tensor_destruct(tau2_tensor)
          ierr=talsh_tensor_destruct(cint_tensor)
-         if (.not.CCD) ierr=talsh_tensor_destruct(hoo_aux_tensor)
-         ierr=talsh_tensor_destruct(hov_aux_tensor)
+         if (.not.CCD) then
+            ierr=talsh_tensor_destruct(hoo_aux_tensor)
+            ierr=talsh_tensor_destruct(hov_aux_tensor)
+         end if
          ierr=talsh_tensor_destruct(result_tensor)
 
         end subroutine
 
         subroutine solve_lambda_equations(comm_t,int_t,l1_tensor,l2_tensor,nocc,nvir, &
-                                            eps_occ,eps_vir,t_target_precision,CCD)
+                                            eps_occ,eps_vir,t_target_precision,ncycles)
 
 !        Routine for solving the lambda equations
 
@@ -539,11 +549,13 @@ module talsh_cc
                                   vvvo_dims,vovv_dims,vvvv_dims
 !        Orbital energies for scaling
          real(8), intent(in)   :: eps_occ(:), eps_vir(:)
-         integer :: iccsd, nccsd=30
+         integer :: ilambda
+         integer, intent(in) :: ncycles
          real(8), intent(in) :: t_target_precision
          real(8) :: t_convergence
 
-         logical, intent(in) :: CCD
+         !logical, intent(in) :: CCD
+         logical :: CCD=.false.
 
          integer :: ierr
 
@@ -590,7 +602,7 @@ module talsh_cc
          call get_h(comm_t,int_t,CCD)
          call get_hoo(comm_t,int_t%oovv)
          call get_goo(comm_t,int_t%ooov,CCD)
-         call get_hov(comm_t,int_t%oovv,CCD)
+         call get_hov(comm_t,int_t%oovv)
          call get_a(comm_t,int_t,CCD)
          call print_date("Finished calculating common blocks")
 
@@ -646,7 +658,7 @@ module talsh_cc
          call diis (l2_tensor,l1_tensor,mode=1)
 
          call print_date('Begin iterating')
-         do iccsd = 1, nccsd
+         do ilambda = 1, ncycles
 
 !         Form mixed intermediates
           call get_gvv_lambda(lambda_t%gvv,l2_tensor,comm_t%t2)
@@ -792,7 +804,7 @@ module talsh_cc
 
           call diis (l2_tensor,l1_tensor,t_convergence=t_convergence)
 
-          write (*,'(A,I4,A,ES10.1)') "  Iteration ",iccsd," convergence =",t_convergence
+          write (*,'(A,I4,A,ES10.1)') "  Iteration ",ilambda," convergence =",t_convergence
           if (t_convergence .lt. t_target_precision) exit
 
          end do

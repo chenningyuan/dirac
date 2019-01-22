@@ -415,7 +415,7 @@ module exacorr_cc
                 call diis(comm_t%t2,mode=2)
             end if
 
-            if (lambda) then
+            if (lambda .and. .not.CCD) then
              print*, ""
              call print_date("Begin solving Lambda equations")
 
@@ -427,9 +427,11 @@ module exacorr_cc
              ierr=exatns_tensor_contract("L(i,a)+=T+(a,i)*K()",l1_tensor,comm_t%t1,one_tensor)
              ierr=exatns_tensor_contract("L(i,j,a,b)+=T+(a,b,i,j)*K()",l2_tensor,comm_t%t2,one_tensor)
 
-             call solve_lambda_equations(comm_t,int_t,l1_tensor,l2_tensor,dims,CCD,t_target_precision,ncycles)            
+             call solve_lambda_equations(comm_t,int_t,l1_tensor,l2_tensor,dims,t_target_precision,ncycles)            
 
              if (.not.CCD) call get_dm_mo(comm_t%t1,comm_t%t2,l1_tensor,l2_tensor,dims)
+            else if (lambda) then
+                print*, "Lambda equations are only implemented for CCSD!"
             end if
 
             ierr=exatns_tensor_destroy(int_t%oooo)
@@ -717,7 +719,7 @@ module exacorr_cc
 
         end subroutine solve_t_equations
 
-        subroutine solve_lambda_equations(comm_t,int_t,l1_tensor,l2_tensor,dims,CCD,t_target_precision,ncycles)
+        subroutine solve_lambda_equations(comm_t,int_t,l1_tensor,l2_tensor,dims,t_target_precision,ncycles)
 
 !        Routine for solving the lambda equations
 
@@ -747,7 +749,8 @@ module exacorr_cc
          real(8), intent(in) :: t_target_precision
          real(8) :: t_convergence
 
-         logical, intent(in) :: CCD
+         !logical, intent(in) :: CCD
+         logical :: CCD=.false. ! Work-around until CCD is implemented
          integer :: ierr
 
          call print_date('Entered lambda solver routine')
