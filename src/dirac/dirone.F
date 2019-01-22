@@ -102,7 +102,7 @@ C
       ELSEIF (CLSINT(I).EQ.'UEHLING') THEN
 C     sunaga
         IF(NOSMLV) COMB(4:4) = 'T'
-        CALL NUMOVL(COMB,IPRONE)       
+        CALL NUMINT(COMB,IPRONE)       
 Csunaga      
 C
 C     Contribution from (static) embedding potential
@@ -174,8 +174,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* Deck numovl */
-      SUBROUTINE NUMOVL(COMB,IPRINT)
+C     /* Deck numint */
+      SUBROUTINE NUMINT(COMB,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C The numerical integration for constructing AO basis matrix
@@ -198,6 +198,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbham.h"
 #include "dcbgen.h"
 #include "nucdata.h"      
+#include "graspprm.h" 
       
       CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4 !check
       PARAMETER (D0=0.0D0,D1=1.0D0,D2=2.0D0)      
@@ -228,7 +229,6 @@ C The values of ultrafine (.ULTRAF) at DFT input-reader section.
       allocate( GAO(NTBAS(0))  )
       allocate( BUF(NDIM2)    )
       allocate( TC(NDIM2)      )
-!      allocate( TD(MXNP,NDIM2) )
       allocate( OVL(NDIM2)     )
 C      
       CALL LEBEDEV(INTANG,ANG(1,1),ANG(1,2),ANG(1,3),ANG(1,4),n)
@@ -254,13 +254,9 @@ C
 C   SET DEFAULT VALUES OF PARAMETERS FOR CALCULATION
 C
          MXNP = 4000            !same to GRASP
-!         write(*,*)"MXNP",MXNP 
-!     write(*,*)"ZAN",ZAN(IATOM)
-!      CALL NUCPRM(Z,NNUC,ZNORM,PARM1,PARM2)
          NUCTYP = 0
-         CALL MEMSET(ZAN(IATOM),MXNP,RNT,EPH,NUCTYP,IPRINT) !change
-         CALL NUCPRM(ZAN(IATOM),NUCMASS(INT(ZAN(IATOM))),NUCTYP,
-     &                RNT,EPH)
+         CALL MEMSET(ZAN(IATOM),MXNP,NUCTYP,IPRINT) !change
+         CALL NUCPRM(ZAN(IATOM),NUCMASS(INT(ZAN(IATOM))),NUCTYP)
          write(*,*)"MXNP",MXNP
          allocate( TD(MXNP,NDIM2) )
          allocate( VACIR(MXNP)    )
@@ -279,7 +275,6 @@ C
          write(*,*)"R(1),Z",R(1),ZAN(IATOM)
          write(*,*)"J,VACIR"
          DO 20 IR = 1, MXNP
-!           write(*,*)RNODE,VACIR 
 C
 C     1/r in Eq. (2), (4),and (6) of Rinker's paper is NOT calculated in VCMPOL.
 C     Integrand = 1/r * VP(r) * (Large*Large + Small*Small) * r^2 * r
@@ -449,9 +444,10 @@ C
       RETURN
 C
       END      
-************************************************************************
-*                                                                      *
-      SUBROUTINE MEMSET(Z,MXNP,RNT,EPH,NUCTYP,IPRINT)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck memset */
+      SUBROUTINE MEMSET(Z,MXNP,NUCTYP,IPRINT)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC      
 C
 C     Estimating memories, by calculating the uehling potential of
 C     point charge 
@@ -469,18 +465,7 @@ C
 C
        PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, THREE = 3.0D0)     
        PARAMETER (H=0.01D0)     !same to GRASP
-!     real(8), allocatable :: FUNK(:,:)
-!#include ""
-!#include ""
-!#include ""
-!#include ""
-!#include ""
-!#include ""
-!#include ""
 C
-      EPH = EXP(H)
-      RNT = 1.0D-06/Z           !CHARGE(IATOM)
-!     allocate(FUNK(MXNP,5))
       N = MXNP 
       PI3 = THREE*PI
       WD = CVAL+CVAL
@@ -488,21 +473,23 @@ C
 C
 C   SET UP POTENTIAL FOR POINT NUCLEUS
 C
-!      EPH = EXP(H)
-!      RNT = 1.0D-06/Z           !CHARGE(IATOM)
+      EPH = EXP(H)
+      RNT = 1.0D-06/Z           !CHARGE(IATOM)
       RTEMP = RNT
       DO 1 I = 1,N
          X = WD*RTEMP
          TEMP = FACTOR*FUNK (X,1)
-!     write(*,*)"I",I,TEMP
          IF(ABS(TEMP).LE.1.0D-50)THEN
             MXNP = I
             exit
          ENDIF   
          RTEMP = RTEMP*EPH
  1    CONTINUE
+C      
       IF (IPRINT.GE.6) THEN
          WRITE(LUPRI,'(2X,/A)')'**Truncation of radial grid'
+         WRITE(LUPRI,'(2X,A,E11.5e2,A,E11.4e2)')
+     &    'The value of First Grid is ',RNT,'; Step size is ',H
          WRITE(LUPRI,'(2X,A,I4)')
      &    'The number of Grid (Final one) is ',MXNP
          WRITE(LUPRI,'(2X,A,E11.4e2,A)')
@@ -979,7 +966,7 @@ C
 C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE NUCPRM(Z,AMASS,NUCTYP,RNT,EPH)
+      SUBROUTINE NUCPRM(Z,AMASS,NUCTYP)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C deciding nuclear paramerer
