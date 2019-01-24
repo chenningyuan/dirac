@@ -208,7 +208,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       real(8), allocatable :: BUF(:),TC(:),TD(:,:)
       real(8), allocatable :: VACIR(:),R(:),OVL(:)
       
-      CALL QENTER('NUMOVL')
+      CALL QENTER('NUMINT')
 C
 C     Making ZAN and C 
 C     ZAN... Nuclear charge
@@ -363,7 +363,7 @@ C
       deallocate(ANG)
       deallocate(BUF)
       deallocate(OVL)
-      CALL QEXIT('NUMOVL')
+      CALL QEXIT('NUMINT')
       RETURN         
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -557,9 +557,9 @@ C   SECOND-ORDER VACUUM POLARISATION
 C
     3 CALL VAC2(TB,TA,ZZ,R,Z,N,NUCTYP)
       write(*,*)"TB2"
-      DO 1 I = 1,N
-         write(*,*)I,TB(I)
-    1 CONTINUE      
+!      DO 1 I = 1,N
+!         write(*,*)I,TB(I)
+!    1 CONTINUE      
 !      IF (NVPORD .EQ. 2) GO TO 4
 !      IF (KTC(19) .EQ. 0) RETURN  !change
 !      WRITE (IPD,300)   !change
