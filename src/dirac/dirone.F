@@ -326,7 +326,7 @@ C  Large
          CALL HEADER('Numerical ovelap integral',-1)
 
          CALL QUAD2(OVL,TD,MXNP,H,NDIM2)
-         CALL OUTPAK(OVL,NTBAS(0),-1,LUPRI)
+!         CALL OUTPAK(OVL,NTBAS(0),-1,LUPRI)
 !         IOFF = 1
 !         DIM  = NTBAS(1) 
 !         DO IC = 1,MC
@@ -646,7 +646,7 @@ C
       WA = C2*(PARM1*PARM1)
       FAC3 = FACTOR*TWO*WA/5.0D00
       FAC5 = FAC3*WA/7.0D00
-      write(*,*)"WA,FAC3,FAC5",WA,FAC3,FAC5
+!      write(*,*)"WA,FAC3,FAC5",WA,FAC3,FAC5
       GO TO 5
 C
 C   OTHER DISTRIBUTIONS
@@ -654,30 +654,20 @@ C
     2 WB = (C2+C2)/(Z*THREE)
       DO 3 I = 1,N
         TA(I) = ZZ(I)*(R(I)**3)
-        write(*,*)"TA",TA(I) 
-!        TA(I) = 1.0D0
     3 CONTINUE
       CALL QUAD (FAC3,TA,N)
-      write(*,*)"FAC3,FACTIR,WB",FAC3,FACTOR,WB
       FAC3 = FAC3*FACTOR*WB
-!      FAC3 = 1.0D0
       DO 4 I = 1,N
-        write(*,*)"TA,R",TA(I),R(I)
         TA(I) = TA(I)*(R(I)**2)
     4 CONTINUE
       CALL QUAD (FAC5,TA,N)
-      write(*,*)"FAC5",FAC5
       FAC5 = FAC5*FACTOR*C2*WB/5.0D00
-!      FAC5 = 1.0D0
 C
 C   TABULATE POTENTIALS
 C
     5 DO 6 I = 1,N
          X = WD*R(I)
-         
          TB(I) = TB(I)+FAC3*FUNK (X,3)+FAC5*FUNK (X,5) 
-         write(*,*)"FAC3,FAC5",FAC3,FAC5
-         write(*,*)"FUNK3, FUNK5",FUNK(X,3), FUNK(X,5)
     6 CONTINUE
 c$$$      write(*,*)"Fermi"
 c$$$      IF (KTC(6) .NE. 0) RETURN
