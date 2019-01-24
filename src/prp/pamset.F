@@ -290,6 +290,9 @@ C          Hermitian operator
               endif
 
 !             call fde_set_nz(nz)
+#ifdef VAR_MPI
+            if (parcal) call dirac_parctl( FDE_PAR )
+#endif
               call fde_calculate_emb_pot_mat(ntbas(0),fao,fmo)
 
               write (*,*) 'FDE Fock contributions (re)calculated'
@@ -572,8 +575,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck DEFORB */
-      SUBROUTINE DEFORB(IORBCL,NIND,NTYP,INDSTR,WORK,KFREE,LFREE,
-     &                  IPRINT)
+      SUBROUTINE DEFORB(IORBCL,NIND,INDSTR,WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
 C     This routine reads orbital strings and classifies
@@ -588,8 +590,8 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-      CHARACTER INDSTR(NTYP,2)*72
-      DIMENSION IORBCL(4,NORBT),NIND(2,NTYP,2),WORK(*)
+      CHARACTER INDSTR(3,2)*72
+      DIMENSION IORBCL(4,NORBT),NIND(2,3,2),WORK(*)
 C
       CALL QENTER('DEFORB')
       KFRSAV = KFREE
@@ -598,7 +600,7 @@ C     Allocate buffer areas
 C     =====================
 C
       CALL MEMGET2('INTE','NIND',KIND ,MXFBAS,WORK,KFREE,LFREE)
-      CALL DEFOR1(IORBCL,NIND,NTYP,INDSTR,WORK(KIND),
+      CALL DEFOR1(IORBCL,NIND,INDSTR,WORK(KIND),
      &            WORK,KFREE,LFREE,IPRINT)
       CALL MEMREL('DEFORB',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('DEFORB')
@@ -606,7 +608,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck DEFOR1 */
-      SUBROUTINE DEFOR1(IORBCL,NIND,NTYP,INDSTR,IND,
+      SUBROUTINE DEFOR1(IORBCL,NIND,INDSTR,IND,
      &                  WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
@@ -638,9 +640,9 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-      CHARACTER INDSTR(NTYP,2)*72
+      CHARACTER INDSTR(3,2)*72
       DIMENSION IORBCL(4,NORBT),IND(MXFBAS),
-     &          NIND(2,NTYP,2),WORK(KFREE)
+     &          NIND(2,3,2),WORK(KFREE)
 C
       NDIM = NORBT*4
       CALL IZERO(IORBCL,NDIM)
@@ -648,7 +650,7 @@ C
 C     Unpack strings
 C     ==============
 C
-      DO ITYP = 1,NTYP
+      DO ITYP = 1,3
         KOFE = 0
         KOFP = 0
         DO IFRP = 1,NFSYM
@@ -710,7 +712,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Ostring */
-      SUBROUTINE OSTRING(INDSTR,SKIPEE,SKIPEP,WORK,KFREE,LFREE)
+      SUBROUTINE OSTRING(INDSTR,SKIPEE,SKIPEP,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Set orbital strings         
@@ -803,7 +805,9 @@ C
 C      Definition of orbital classes
 C      -----------------------------
 C
-      WRITE(LUPRI,'(/4X,A)') '* Orbital classes:'
+      IF(IPRINT.GE.0) THEN
+        WRITE(LUPRI,'(/4X,A)') '* Orbital classes:'
+      ENDIF
       DO I = 1,NFSYM
         IF(SKIPEP) THEN
           NR(I)   = NESH(I)
@@ -814,7 +818,9 @@ C
           IR(1,I) = -NPSH(I)
           IR(2,I) =  NESH(I)
         ENDIF
-        WRITE(LUPRI,'(4X,A,A3)') 'Fermion ircop:',FREP(I)
+        IF(IPRINT.GE.0) THEN
+           WRITE(LUPRI,'(4X,A,A3)') 'Fermion ircop:',FREP(I)
+        ENDIF
 C
 C       Inactive orbitals
 C       -----------------
@@ -823,12 +829,14 @@ C
         CALL  NUMLST(INDSTR(1,I),IDUMMY,NR(I),
      &             IR(1,I),IR(2,I),I,NVEC)
         nvec_inactive = nvec_inactive + nvec
-        IF(NVEC.EQ.0) THEN
-          WRITE(LUPRI,'(4X,A)') 
-     &       '- Inactive orbitals  : No electrons'
-        ELSE
-          WRITE(LUPRI,'(4X,A,A56)') 
-     &       '- Inactive orbitals  : ', INDSTR(1,I)
+        IF(IPRINT.GE.0) THEN
+          IF(NVEC.EQ.0) THEN
+            WRITE(LUPRI,'(4X,A)') 
+     &         '- Inactive orbitals  : No electrons'
+          ELSE
+            WRITE(LUPRI,'(4X,A,A56)') 
+     &         '- Inactive orbitals  : ', INDSTR(1,I)
+          ENDIF
         ENDIF
 C
 C       Active orbitals
@@ -838,12 +846,14 @@ C
         CALL  NUMLST(INDSTR(2,I),IDUMMY,NR(I),
      &             IR(1,I),IR(2,I),I,NVEC)
         nvec_active = nvec_active + nvec
-        IF(NVEC.EQ.0) THEN
-          WRITE(LUPRI,'(4X,A)') 
-     &       '- Active orbitals    : No electrons'
-        ELSE
-          WRITE(LUPRI,'(4X,A,A56)') 
-     &       '- Active orbitals    : ', INDSTR(2,I)
+        IF(IPRINT.GE.0) THEN
+          IF(NVEC.EQ.0) THEN
+            WRITE(LUPRI,'(4X,A)') 
+     &         '- Active orbitals    : No electrons'
+          ELSE
+            WRITE(LUPRI,'(4X,A,A56)') 
+     &         '- Active orbitals    : ', INDSTR(2,I)
+          ENDIF
         ENDIF
 C
 C       Secondary orbitals
@@ -851,14 +861,16 @@ C       ------------------
 C
         NVEC = 0
         CALL  NUMLST(INDSTR(3,I),IDUMMY,NR(I),
-     &            IR(1,I),IR(2,I),I,NVEC)
-        IF(NVEC.EQ.0) THEN
-          WRITE(LUPRI,'(4X,A)') 
-     &       '- Secondary orbitals : No electrons'
-        ELSE
-          WRITE(LUPRI,'(4X,A,A56)') 
-     &       '- Secondary orbitals : ', INDSTR(3,I)
-        ENDIF
+     &       IR(1,I),IR(2,I),I,NVEC)
+        IF(IPRINT.GE.0) THEN
+          IF(NVEC.EQ.0) THEN
+            WRITE(LUPRI,'(4X,A)') 
+     &         '- Secondary orbitals : No electrons'
+          ELSE
+            WRITE(LUPRI,'(4X,A,A56)') 
+     &         '- Secondary orbitals : ', INDSTR(3,I)
+          ENDIF
+        ENDIF 
       ENDDO
 
       if ((nvec_inactive + nvec_active) == 0) then 
@@ -872,7 +884,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck xrspar */
-      SUBROUTINE XRSPAR(INDSTR,SKIPEE,SKIPEP,IPRINT)
+      SUBROUTINE XRSPAR(XRS_INDSTR,XRS_SKIPEE,XRS_SKIPEP,IPRINT)
 C***********************************************************************
 C
 C     Initialize configurational and orbital parameters for
@@ -888,20 +900,22 @@ C***********************************************************************
       implicit none
 
       integer, intent(in) :: iprint
-
 #include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbxrs.h"
 C
-      CHARACTER INDSTR(3,2)*72
-      LOGICAL   SKIPEE,SKIPEP
-      LOGICAL GASWF
+      LOGICAL GASWF, XRS_SKIPEE, XRS_SKIPEP
+      CHARACTER*72 XRS_INDSTR(3,2)
       integer, allocatable :: norot(:)
 C
       CALL QENTER('XRSPAR')
 C
+      SKIPEE = XRS_SKIPEE
+      SKIPEP = XRS_SKIPEP
+      INDSTR = XRS_INDSTR
+C     
 C     Configurational parameters
 C     ==========================
 C
@@ -925,7 +939,7 @@ C
       allocate(norot(norbt))
       norot = 0
       GASWF = .FALSE.
-      CALL SETXOP(INDSTR,SKIPEE,SKIPEP,GASWF,JOPSY,NOROT,
+      CALL SETXOP(INDSTR,XRS_SKIPEE,XRS_SKIPEP,GASWF,JOPSY,NOROT,
      &            NZXOPE,NZHOPE,NZXOPP,
      &            IPRINT)
       deallocate(norot)
