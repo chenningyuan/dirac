@@ -20,7 +20,7 @@
 !dirac_copyright_end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FOLDED (ICURFSS,IHEQ,T1,T2,BUF1,BUF2,BUF3,
-     &                   DS1,DS2,S1,S2)
+     &                   S1,S2)
 C
       implicit none
 C
@@ -47,7 +47,7 @@ C     Author : Ephraim Eliav
 C
 C---------------Calling variables--------------------------------------
 C
-      REAL*8 T1(*),T2(*),S1(*),S2(*),DS1(*),DS2(*)
+      REAL*8 T1(*),T2(*),S1(*),S2(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)
       INTEGER ICURFSS,IHEQ
 C
@@ -62,6 +62,7 @@ C
 C---------------Local variables--------------------------------------
 C
       LOGICAL TEQ
+      real*8, allocatable, target :: ds1 (:), ds2 (:)
 C
 C---------------Executable code--------------------------------------
 C
@@ -72,6 +73,8 @@ C  For each term we also indicate which part of the array needs to be extracted 
 C  second class of virtual indices which are the inactive virtuals).
 C
 C--------------------------------------------------------------------
+      allocate (ds1(ndimt1))
+      allocate (ds2(ndimt2))
       CALL XCOPY (NDIMT1,A0,0,DS1,1)
       CALL XCOPY (NDIMT2,A0,0,DS2,1)
 C--------------------------------------------------------------------
@@ -256,6 +259,8 @@ C
       CALL DENOMF (BUF1,DS1,DS2,DS1,DS2,2)
       CALL XAXPY (NDIMT1,A1,DS1,1,S1,1)
       CALL XAXPY (NDIMT2,A1,DS2,1,S2,1)
+      deallocate (ds1)
+      deallocate (ds2)
 C
       RETURN
       END

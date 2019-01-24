@@ -518,7 +518,6 @@ C
 C---------------------------------------
 C H(K,I) = F(K,I)  - DELTA(K,I) * EPS(I)
 C---------------------------------------
-      call dzero(ho,nfoo)
       CALL XCOPY (NFOO,FOO,1,HO,1)
       II = 1
       I = 1
