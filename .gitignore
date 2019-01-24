@@ -5,3 +5,4 @@ test/*/*.stderr
 *.pyc
 src/tags
 venv/
+src/relccsd/parallelization_notes
