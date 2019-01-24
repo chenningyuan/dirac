@@ -31,10 +31,13 @@ C
 
       INTEGER NBUF2,NBUF3
       REAL*8 FVO(*)
-CPi Specify dimension of T1 for TCR      REAL*8 T1(*),T2(*)
+CPi Specify dimensions for general contractions routines to work
+CPi      REAL*8 T1(*),T2(*)
+      REAL*8 T1(NDIMT1*RCW), T2(NDIMT2*RCW)
 CPi      REAL*8 S1(*)
+      REAL*8 S1(NDIMT1*RCW)
 CPi      REAL*8 HO(*),HV(*),HOV(*)
-CPi      REAL*8 HOV(*)
+      REAL*8 HV(NFVV*RCW), HO(NFVV*RCW), HOV(NFVO*RCW)
       REAL*8 BUF1(NBUF2*RCW),BUF2(NBUF2*RCW),BUF3(NBUF3*RCW)
 C
 C---------------Common Blocks--------------------------------------
@@ -47,10 +50,6 @@ C
 #include "ccpar.inc"
 C
 C---------------Calling variables--------------------------------------
-CPi should be after common blocks to get variables
-      REAL*8 T1(NDIMT1*RCW), T2(NDIMT2*RCW)
-      REAL*8 HV(NFVV*RCW), HO(NFVV*RCW), HOV(NFVO*RCW)
-      REAL*8 S1(NDIMT1*RCW)
 CPi Allocate space of ooov integrals
 CPi      real*8, allocatable :: ooov(IOOOVT(NREP+1)*RCW)
       real*8, allocatable :: vooo(:)
@@ -102,7 +101,7 @@ CPi Use new contraction routine for [HOV(K,C) - 2 * F(K,C)] * T(C,I)
 CPi Use new contraction routine for T(A,K) * BUF2 and add to S1
          call contraction_222 ((/"p1","o2"/),(/"o2","o1"/),(/"p1","o1"/)&
      &    ,T1,BUF2,S1,1.0d0,1.0d0,NREP)
-CPi Keep the old code just for now. PiDeleteMe.
+CPi Keep the old code just for now. PiRM
 CPi         OFF1 = 1
 CPi         DO IRP = 1, NREP
 CPi            M = NV(IRP)
@@ -152,14 +151,7 @@ C-----------------------------------------------
 C S(A,I) = S(A,I) + HV(A,C) * T(C,I)
 C-----------------------------------------------
 !      CALL CNTRCT ('N','N',NV,NO,NV,A1,HV,T1,A1,S1,NREP)
-CPi Let's try to use Avijit's routine
-CPi From Lambda equation routine:
-!---------------------------------
-!    ResL1 = ResL1 + L(i,e) * f_bar_ae(e,a)
-!---------------------------------
-!      call contraction_222 ((/"o1","p2"/),(/"p2","p1"/),(/"o1","p1"/), &
-!     &    L1,hv,ResL1,1.0d0,1.0d0,nrep)
-CPi Modified to fit this routine:
+CPi Use new contraction routine:
       call contraction_222 ((/"p1","p2"/),(/"p2","o1"/),(/"p1","o1"/),  &
      &    HV,T1,S1,1.0d0,1.0d0,NREP)
 
@@ -180,23 +172,30 @@ CPi allocate space
 C
       CALL XTIME(0,1,'--- T1EQNS VOOO*TAU                ')
       CALL GETTAU (T1,T2,BUF3)
+CPi      CALL T1EQN1 (BUF3,S1)
+CPi Extract following three calls from T1EQN1
 CPi Get two electron integrals
       CALL GETVOOO (vooo)
-CPi contraction_XXX should take care of the following (?)
-      IF (CARITH) CALL CONJUGA (LVOOOT(NREP+1),vooo,1)
 CPi The following only applies to FSCC and should be kept
       CALL DELINT ('VOOO','DKDD',vooo,0,0,0)
-CPi      CALL T1EQN1 (BUF3,S1)
+CPi     ------------------------
+CPi     V(K,L,C,I) = V*(C,I,K,L)
+CPi     ------------------------
+      IF (CARITH) CALL CONJUGA (LVOOOT(NREP+1),vooo,1)
 CPi Use new contraction routine
       call contraction_442((/"p2","o1","o2","o3"/),(/"p1","p2","o2","o3"&
+CPi Should the following give the same? Crashes due to no available sorting routine.
+CPi      call contraction_442((/"o2","o3","p2","o1"/),(/"p1","p2","o2","o3"&
      &          /),(/"p1","o1"/),S1,1.0d0,1.0d0,nrep,LeftTensor=vooo,   &
      &          RightTensor=BUF3)
+C
 CPi Let contraction routine fetch oovo integrals. This doesn't work
 CPi because the routine doesn't know that it should fetch vooo and then
 CPi complex conjugate.
 CPi      call contraction_442((/"o2","o3","p2","o1"/),(/"p1","p2","o2","o3"&
 CPi     &          /),(/"p1","o1"/),S1,1.0d0,1.0d0,nrep,                   &
 CPi     &          RightTensor=BUF3)
+C
 CPi Let contraction routine fetch vooo integrals. Works, but CA test
 CPi fails due to the lack of complex conjugation
 CPi      call contraction_442((/"p2","o1","o2","o3"/),(/"p1","p2","o2","o3"&
