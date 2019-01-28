@@ -2319,7 +2319,7 @@ C
         K2ORD = (KVAL_OSC-1)/2
       ENDIF
       WRITE(FMT,'(I2)') K2ORD+2
-C.....Oscillator strenghts: general velocity gauge
+C.....Oscillator strenghts: general velocity gauge: rotational average
       allocate(fosc(MAXEXC,NBSYM,-1:K2ORD,1))
       FOSC=0.0D0
       DO IK = 0,K2ORD
@@ -2353,6 +2353,44 @@ C.....Oscillator strenghts: general velocity gauge
       WRITE(LUPRI,'(A,F12.5)')
      &     'Sum of oscillator strengths (general velocity) : ',TOT
       deallocate(fosc)
+C.....Oscillator strenghts: general velocity gauge: specific orientation
+      IF(DOBEDFIX) THEN
+        allocate(fosc(MAXEXC,NBSYM,-1:K2ORD,1))
+        FOSC=0.0D0
+        DO IK = 0,K2ORD
+           CALL OSC_BED(IK,FOSC(1,1,IK,1),ATMPPF,OMEGA)
+           CALL DAXPY(MAXEXC*NBSYM,D1,FOSC(1,1,IK,1),1,FOSC(1,1,-1,1),1)
+        ENDDO
+      NLIN=32+16*(K2ORD+2)
+      WRITE(LUPRI,'(/A,ES8.2)')
+     &     '* Anisotropic oscillator strengths '//
+     &     '(generalized velocity gauge) above threshold :', TTOL
+      WRITE(LUPRI,*) '* Unit wave vector    : ',(UWAVE(I),I=1,3)
+      WRITE(LUPRI,*) '* Polarization vector : ',(UPOL(I),I=1,3)
+      CALL PRSYMB(LUPRI,'=',NLIN,0)
+      WRITE(LUPRI,'(/A,'//FMT//'(A2,I2,A2,10X))')
+     &     'Level    Frequency (eV) Symmetry    f(total)        ',
+     &     ('f(',IK+IK,') ',IK=0,K2ORD)
+      CALL PRSYMB(LUPRI,'-',NLIN,0)
+      DO JEXC = 2,NEXC          ! skip reference state
+        II = INDX(JEXC)
+        IEXC  = IEERG(1,II)
+        ISYM  = IEERG(2,II)
+        OSCIL = FOSC(IEXC,ISYM,-1,1)
+        IF(OSCIL .GT. TTOL) THEN
+          ILAB  = ISSYM(IEXC,ISYM)
+          WRITE(LUPRI,
+     &         '(I5,1X,F16.5,2X,A3,1X,A4,'//FMT//'(2X,ES14.6))') JEXC-1,
+     &         OMEGA(IEXC,ISYM)*XTEV,REP(ISYM-1),SYMLAB(ILAB),OSCIL,
+     &         (FOSC(IEXC,ISYM,IK,1),IK=0,K2ORD)
+        ENDIF
+      ENDDO
+      CALL PRSYMB(LUPRI,'-',NLIN,0)
+      TOT = DSUM(NDIM,FOSC(1,1,-1,1),1)
+      WRITE(LUPRI,'(A,F12.5)')
+     &     'Sum of oscillator strengths (general velocity) : ',TOT
+        deallocate(fosc)
+      ENDIF
 C.....Oscillator strenghts: general length gauge
       allocate(fosc(4,MAXEXC,NBSYM,-1:K2ORD))
       FOSC=0.0D0

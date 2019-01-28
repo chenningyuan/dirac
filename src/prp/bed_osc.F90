@@ -55,6 +55,7 @@
       END SUBROUTINE BEDLOOP
       
       SUBROUTINE ROTFAC_BED(indices,k2,iterm,jterm,FOSC,ATMPPF,OMEGA)
+#include "implicit.h"        
 #include "pgroup.h"
 #include "dgroup.h"
 #include "dcbxpp.h"
@@ -203,6 +204,7 @@
       END SUBROUTINE MPOLLOOP
       
       SUBROUTINE ROTFAC_MPOL(indices,k2,iterm,jterm,FOSC,ATMPPF,OMEGA)
+#include "implicit.h"
 #include "pgroup.h"
 #include "dgroup.h"
 #include "dcbxpp.h"
@@ -377,3 +379,75 @@
       ENDDO
       END SUBROUTINE ROTFAC_MPOL
       
+      SUBROUTINE OSC_BED(K,FOSC,ATMPPF,OMEGA)
+#include "implicit.h"
+#include "dcbgen.h"
+#include "dgroup.h"
+#include "dcbxpp.h"
+      real*8              :: FOSC(MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM),OMEGA(MAXEXC,NBSYM)
+      real*8,allocatable  :: TMOML(:,:),TMOMR(:,:)
+      PARAMETER(D2=2.0D0,D1=1.0D0,D0=0.0D0)
+      allocate(tmoml(MAXEXC,NBSYM))
+      allocate(tmomr(MAXEXC,NBSYM))      
+      K2=K+K
+      DO M = 0,K
+        FAC = D2
+        IF(M==0) FAC = D1
+!.......Accumulate left operator .. order (K+M)
+        IORD  = K+M
+        TMOML = D0
+        CALL accBEDMOM(TMOML,ATMPPF,IORD)
+!.......Accumulate right operator .. order (K-M)
+        IORD  = K-M
+        TMOMR = D0
+        CALL accBEDMOM(TMOMR,ATMPPF,IORD)
+!.......Accumulate oscillator strengths
+        DO ISYM = 1,NBSYM        
+          NEXC=KEXCNV(ISYM)
+          DO IEXC=1,NEXC
+             FOSC(IEXC,ISYM) = FOSC(IEXC,ISYM) + FAC*TMOML(IEXC,ISYM)*TMOMR(IEXC,ISYM)
+!             WRITE(6,*) 'TEST..',K,M,IEXC,ISYM,FOSC(IEXC,ISYM),TMOML(IEXC,ISYM),TMOMR(IEXC,ISYM)
+          ENDDO
+        ENDDO
+      ENDDO
+      deallocate(tmoml)
+      deallocate(tmomr)      
+!....Add final factors for oscillator strengths
+      DO ISYM = 1,NBSYM
+        NEXC = KEXCNV(ISYM)
+        DO IEXC = 1,NEXC
+          FOSC(IEXC,ISYM)=FOSC(IEXC,ISYM)*(OMEGA(IEXC,ISYM)/CVAL)**K2*D2/OMEGA(IEXC,ISYM)
+        ENDDO
+      ENDDO   
+      END SUBROUTINE OSC_BED
+      SUBROUTINE accBEDMOM(TMOM,ATMPPF,IORDER)
+#include "implicit.h"        
+#include "dgroup.h"
+#include "dcbxpr.h"      
+#include "dcbxpp.h"
+      real*8  :: TMOM(MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM)
+      INDAP = IBDOFF(IORDER)
+      IBKA = 1     ! Binomial coefficient (IORDER A)
+      DO IA = 0,IORDER
+        IX = IORDER - IA
+        IBAB = 1     ! Binomial coefficient (A B)
+        DO IB = 0,IA
+          IY = IA - IB
+          IZ = IB
+          TFAC=(UWAVE(1)**IX)*(UWAVE(2)**IY)*(UWAVE(3)**IZ)*IBKA*IBAB
+          DO IP = 1,3
+            INDAP   = INDAP + 1
+            INDPRA  = LPPAPU(INDAP)
+            ISYM    = IPRPSYM(INDPRA)
+            NEXC    = KEXCNV(ISYM)
+            DO IEXC=1,NEXC
+              TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+UPOL(IP)*TFAC*ATMPPF(IEXC,INDAP,ISYM)
+!             WRITE(6,*) 'TEST2..',IORDER,IX,IY,IZ,IEXC,ISYM,TMOM(IEXC,ISYM),UPOL(IP),TFAC,ATMPPF(IEXC,INDAP,ISYM)
+            ENDDO
+          ENDDO
+          IBAB = IBAB*IY/(IB+1)
+       ENDDO
+       IBKA = IBKA*IX/(IA+1)
+      ENDDO
+      RETURN
+      END SUBROUTINE accBEDMOM
