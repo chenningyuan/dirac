@@ -57,6 +57,14 @@ module exacorr_tensor_methods
           procedure, public:: apply=>scale_with_denom
         end type scale_with_denom_t
 
+        !set diagonal
+        type, extends(tens_method_uni_t), public:: set_diagonal_t
+         real(8), private :: constant
+         contains
+          procedure, public:: init_const_ctor=>set_const
+          procedure, public:: apply=>diag_set
+        end type set_diagonal_t
+
        contains
 
        subroutine TensInitTestCtorReal(this,val)
@@ -251,6 +259,7 @@ module exacorr_tensor_methods
          deallocate(gto4)
 
         end function tens_init_ao_integrals
+
 
         subroutine init_epsilons(this,mo_occ,nocc,mo_vir,nvir)
 
@@ -792,5 +801,90 @@ module exacorr_tensor_methods
          deallocate(gto4)
 
         end function tens_init_ht
+
+        !subroutine init_diag(this,diag)
+        ! use dirac_MO
+
+        ! class(set_diagonal_t), intent(inout)   :: this
+        ! real(8), intent(in) :: diag(:)
+        ! integer :: ddim, k
+
+
+        ! ddim=SIZE(diag)
+
+        ! allocate(this%diag_vector(ddim))
+
+        ! do k = 1, ddim
+        !     this%diag_vector(k)=diag(k)
+        ! end do
+
+        !end subroutine init_diag
+
+        subroutine set_const(this, const)
+
+          class(set_diagonal_t), intent(out)   :: this
+          real(8), intent(in) :: const
+
+          this%constant=const
+
+        end subroutine set_const
+
+        function diag_set(this,tensor,scalar) result(ierr)
+         use, intrinsic:: ISO_C_BINDING
+         implicit none
+         integer(INTD):: ierr,rank
+         class(set_diagonal_t), intent(in)    :: this
+         class(tens_rcrsv_t), intent(inout)   :: tensor
+         complex(8), intent(inout), optional  :: scalar
+         type(tens_dense_t):: tens
+
+         ierr=0
+         tens=tensor%get_dense_adapter(ierr)
+         if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
+         rank=tens%num_dims
+         if (rank.ne.2) call quit('Error: dimension not 2 in init_dm_tensor')
+
+         ierr=make_diagonal(tens%body_ptr,tens%data_kind,tens%dims(1:rank),tens%bases(1:rank), this%constant)
+
+        end function diag_set
+
+        function make_diagonal(tens_body,data_kind,tens_dims,tens_bases, constant) result (ierr)
+         ! routine to fill the diagonal of a matrix
+
+         use, intrinsic:: ISO_C_BINDING
+
+         implicit none
+
+         integer(INTD)          :: ierr
+         type(C_PTR), value     :: tens_body       !in: C pointer to the tensor body (tensor elements)
+         integer(4), value      :: data_kind       !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
+         integer(8), intent(in) :: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
+         integer(8), intent(in) :: tens_bases(1:*) !in: base offsets for each tensor dimension)
+         real(8), intent(in)    :: constant
+
+
+         integer            :: lo, la, ro, ra
+         complex(8),pointer :: h_tens(:,:)
+         complex(8)         :: const
+
+
+          const=dcmplx(constant,0d0)
+
+          ierr=0
+
+          call c_f_pointer(tens_body,h_tens,tens_dims(1:2)) !map C pointer to 2-dimensional array
+
+          !print *, "dim1=", tens_dims(1)
+          !print *, "dim2=", tens_dims(2)
+
+          do lo = 1, tens_dims(1) ! loop over lines
+             la = tens_bases(1) + lo - 1
+                  do ro = 1, tens_dims(2) ! loop over rows
+                     ra = tens_bases(2) + ro - 1
+                     if (la.eq.ra) h_tens(lo, ro) = const
+                  end do
+          end do
+
+        end function make_diagonal
 
 end module exacorr_tensor_methods

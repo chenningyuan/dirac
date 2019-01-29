@@ -838,38 +838,6 @@ module talsh_cc
 
         end subroutine solve_lambda_equations
 
-        subroutine get_CC_fockmatrix (nocc,nvir,eps_occ,eps_vir,fo_tensor,fov_tensor,fv_tensor)
-
-!        Routine to get tensors with Fock matrix elements (with on the diagonal the orbital energies subtracted).
-!        In this implementation we assume canonical orbitals, so we may simply construct zero tensors.
-!        We also assume that we deal with a closed shell (Kramers-restricted) case, so nocc and nvir
-!        refer to Kramers pairs rather than spinors.
-
-!        Written by Lucas Visscher, summer 2017
- 
-         integer, intent(in)               :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
-         real(8), intent(in)               :: eps_occ(:),eps_vir(:) ! the orbital energies
-!        target tensors to be filled and given back to the caller
-         type(talsh_tens_t), intent(inout) :: fo_tensor, fv_tensor, fov_tensor
-         integer:: fo_dims(1:2),fv_dims(1:2),fov_dims(1:2)
-
-         integer   :: ierr, i
-
-!        Get foo tensor
-         fo_dims(1:2) = nocc * 2
-         ierr=talsh_tensor_construct(fo_tensor,C8,fo_dims,init_val=ZERO)
-
-!        Get fvv tensor
-         fv_dims(1:2) = nvir * 2
-         ierr=talsh_tensor_construct(fv_tensor,C8,fv_dims,init_val=ZERO)
-
-!        Get fov tensor
-         fov_dims(1) = nocc * 2
-         fov_dims(2) = nvir * 2
-         ierr=talsh_tensor_construct(fov_tensor,C8,fov_dims,init_val=ZERO)
-
-        end subroutine get_CC_Fockmatrix
-
         subroutine get_CC_integrals (nocc,nvir,mo_occ,mo_vir,int_t)
 
 !        Routine to get integrals needed in CC in the form of antisymmetric tensors.
@@ -1517,6 +1485,38 @@ module talsh_cc
          end do
 
        end subroutine form_y3_intermediate
+
+       subroutine get_CC_fockmatrix (nocc,nvir,eps_occ,eps_vir,fo_tensor,fov_tensor,fv_tensor)
+
+!        Routine to get tensors with Fock matrix elements (with on the diagonal the orbital energies subtracted).
+!        In this implementation we assume canonical orbitals, so we may simply construct zero tensors.
+!        We also assume that we deal with a closed shell (Kramers-restricted) case, so nocc and nvir
+!        refer to Kramers pairs rather than spinors.
+
+!        Written by Lucas Visscher, summer 2017
+
+         integer, intent(in)               :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
+         real(8), intent(in)               :: eps_occ(:),eps_vir(:) ! the orbital energies
+!        target tensors to be filled and given back to the caller
+         type(talsh_tens_t), intent(inout) :: fo_tensor, fv_tensor, fov_tensor
+         integer:: fo_dims(1:2),fv_dims(1:2),fov_dims(1:2)
+
+         integer   :: ierr, i
+
+!        Get foo tensor
+         fo_dims(1:2) = nocc * 2
+         ierr=talsh_tensor_construct(fo_tensor,C8,fo_dims,init_val=ZERO)
+
+!        Get fvv tensor
+         fv_dims(1:2) = nvir * 2
+         ierr=talsh_tensor_construct(fv_tensor,C8,fv_dims,init_val=ZERO)
+
+!        Get fov tensor
+         fov_dims(1) = nocc * 2
+         fov_dims(2) = nvir * 2
+         ierr=talsh_tensor_construct(fov_tensor,C8,fov_dims,init_val=ZERO)
+
+       end subroutine get_CC_Fockmatrix
 
        subroutine get_subtensor (tensor,subtensor,mode,i,j)
 

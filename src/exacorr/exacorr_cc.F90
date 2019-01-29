@@ -68,6 +68,8 @@ module exacorr_cc
          type(tens_rcrsv_t) :: l1_tensor, l2_tensor
 !        scalars (need to be defined as tensor types)
          type(tens_rcrsv_t)         :: result_tensor
+!        identity matrix for contraction
+         type(tens_rcrsv_t)         :: id_mat_occ
 !        space ids and roots
          type(space_dims) :: dims
 !        CCSD control and result variables
@@ -91,6 +93,9 @@ module exacorr_cc
          integer                    :: ao_space_id, occ_space_id, vir_space_id
          integer                    :: branch_factor
 
+         !        orbital energies
+         real(8), allocatable :: eps_occ(:),eps_vir(:)
+
          ! variables for the definition of colors inside the spaces
          type(color_symmetry_t), allocatable    :: color(:)
          integer(INTL)                          :: labs
@@ -101,6 +106,7 @@ module exacorr_cc
          type(tens_printer_t)         :: tens_printer     ! generic method, but needs to be defined here in specific form
          type(scale_with_denom_t)     :: denominate
          type(init_dm_tensor_t)       :: dm_init(4)       ! array of initializers for algorithm 2
+         type(set_diagonal_t)         :: id_meth_occ       ! identity matrix
 
          ! variables for the definition of the initializer methods
          character(len=5)  :: initlabel
@@ -114,6 +120,9 @@ module exacorr_cc
 
          !CCD
          logical :: CCD, lambda, noints
+
+         !for printing
+         integer :: fid
 
 !        Make some noise so that we know we are here
          call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
@@ -272,9 +281,14 @@ module exacorr_cc
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
 
          !Register the standard print method with a low treshold to always print result_tensor
-         call tens_printer%reset_thresh(1.0D-15)
+         call tens_printer%reset_thresh(1.0D-18)
          ierr=exatns_method_register('PrintTensor',tens_printer)
          if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(printer) failed!')
+
+         call id_meth_occ%init_const_ctor(1.D0)
+         ierr=exatns_method_register('IdMatrix',id_meth_occ)
+         if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(IdMatrix) failed!')
+         !call print_date('IdMatrix registered')
 
          !Create all id and root arrays, neccessary for exatns_tensor_create
          ao_space_root=ao_space%get_root_id(ierr)
@@ -333,13 +347,8 @@ module exacorr_cc
             ! Note:  also get_integral_tensors will define a one_tensor and call it "one_tensor", so we needed another name
             ierr=exatns_tensor_init(one_tensor,ONE)
 
-!           Get fixed one-body tensors => set to 0 for the moment (canonical orbitals)
-            ierr=exatns_tensor_create(comm_t%foo,"foo",oo_id,oo_root,EXA_DATA_KIND_C8)
-            ierr=exatns_tensor_create(comm_t%fov,"fov",ov_id,ov_root,EXA_DATA_KIND_C8)
-            ierr=exatns_tensor_create(comm_t%fvv,"fvv",vv_id,vv_root,EXA_DATA_KIND_C8)
-            call print_date('initialized fock matrix')
 
-!           Get fixed two-body tensors
+            !           Get fixed two-body tensors
             ierr=exatns_tensor_create(int_t%oooo,"oooo",oooo_id,oooo_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(int_t%ooov,"ooov",ooov_id,ooov_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(int_t%oovv,"oovv",oovv_id,oovv_root,EXA_DATA_KIND_C8)
@@ -351,6 +360,61 @@ module exacorr_cc
             ierr=exatns_tensor_destroy(voov_tensor)
 
             call print_date('initialized two electron integrals')
+
+            call print_date("Getting orbital energies")
+!           Get orbital energies from the DIRAC restart file
+            allocate (eps_occ(2*nocc))
+            allocate (eps_vir(2*nvir))
+            call get_orbital_energies(nocc,mo_occ,eps_occ)
+            call get_orbital_energies(nvir,mo_vir,eps_vir)
+            call print_date("Retrieved orbital energies")
+
+!            Register the method to create a identity matrix
+            !print*, "E_occ=", eps_occ
+            !print*, "E_vir=", eps_vir
+            !call id_meth_occ%init_diag_ctor(eps_occ)
+
+            ierr=exatns_tensor_create(id_mat_occ,"id_mat_occ",oo_id,oo_root,EXA_DATA_KIND_C8)
+            ierr=exatns_tensor_init(id_mat_occ, ZERO)
+            call print_date('id matrix initialized')
+
+            ierr=exatns_tensor_transform(id_mat_occ,'IdMatrix')
+            call print_date('id matrix set')
+
+            ierr=exatns_tensor_transform(id_mat_occ,'PrintTensor')
+            call print_date('identity matrix printed')
+
+
+!           Get fixed one-body tensors => set to 0 for the moment (canonical orbitals)
+            ierr=exatns_tensor_create(comm_t%foo,"foo",oo_id,oo_root,EXA_DATA_KIND_C8)
+            ierr=exatns_tensor_create(comm_t%fov,"fov",ov_id,ov_root,EXA_DATA_KIND_C8)
+            ierr=exatns_tensor_create(comm_t%fvv,"fvv",vv_id,vv_root,EXA_DATA_KIND_C8)
+            ierr=exatns_tensor_init(comm_t%foo,ZERO)
+            ierr=exatns_tensor_init(comm_t%fov,ZERO)
+            ierr=exatns_tensor_init(comm_t%fvv,ZERO)
+            call print_date('fock matrix created')
+
+!           contractions to get two body contributions to the fock matrix
+            ierr=exatns_tensor_init(one_tensor,MINUS_ONE_HALF)
+
+            ierr=exatns_tensor_contract("H(a,b)=G(a,c,b,d)*I(c,d)",comm_t%hoo,int_t%oooo,id_mat_occ)
+            ierr=exatns_tensor_contract("F(a,b)=H(a,b)*K()",comm_t%foo,comm_t%hoo,one_tensor)
+            ierr=exatns_tensor_contract("F(a,b)+=G(a,b,c,d)*I(c,d)",comm_t%foo,int_t%oooo,id_mat_occ)
+            ierr=exatns_tensor_traverse(comm_t%foo,'PrintTensor')
+
+            ierr=exatns_tensor_contract("H(a,i)=G+(a,c,d,i)*I(c,d)",comm_t%hov,int_t%ooov,id_mat_occ)
+            ierr=exatns_tensor_contract("F(a,b)=H(a,b)*K()",comm_t%fov,comm_t%hov,one_tensor)
+            ierr=exatns_tensor_contract("F(a,i)+=G(c,d,a,i)*I(c,d)",comm_t%fov,int_t%ooov,id_mat_occ)
+            ierr=exatns_tensor_traverse(comm_t%fov,'PrintTensor')
+
+            ierr=exatns_tensor_contract("H(i,j)=G(c,d,i,j)*I(c,d)",comm_t%hvv,int_t%oovv,id_mat_occ)
+            ierr=exatns_tensor_contract("F(a,b)=H(a,b)*K()",comm_t%fvv,comm_t%hvv,one_tensor)
+            ierr=exatns_tensor_contract("F(i,j)+=G+(c,d,i,j)*I(c,d)",comm_t%fvv,int_t%oovv,id_mat_occ)
+            ierr=exatns_tensor_traverse(comm_t%fvv,'PrintTensor')
+
+            ierr=exatns_tensor_destroy(id_mat_occ)
+            ierr=exatns_tensor_init(one_tensor,ONE)
+            call print_date('initialized fock matrix')
 
 !           Initialize t1 amplitudes to zero (we assume canonical orbitals for the moment)
             if (.not.CCD) ierr=exatns_tensor_create(comm_t%t1,"t1",vo_id,vo_root,EXA_DATA_KIND_C8)

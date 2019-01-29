@@ -14,7 +14,7 @@ module talsh_common_routines
         module procedure scale_with_denominators
     end interface scale_with_denominators
 
-    public get_orbital_energies
+    !public get_orbital_energies
     public scale_with_denominators
 
     contains
@@ -117,30 +117,30 @@ module talsh_common_routines
 
       end subroutine scale_with_denominators
 
-      subroutine get_orbital_energies (nmo, mo_list, eps)
+!      subroutine get_orbital_energies (nmo, mo_list, eps)
 
 !This subroutine reads the desired subset of mo energies from DIRAC
 
 !      Written by Lucas Visscher, winter 2016/2017 (but in Goa, India, temperature about 25 C)
 
-       use dirac_MO
-       use exacorr_global
+!       use dirac_MO
+!       use exacorr_global!
 
-       integer, intent(in) :: nmo          ! the length of the mo basis
-       integer, intent(in) :: mo_list(:)   ! and their indices
-       real(8) :: eps(:)
+!       integer, intent(in) :: nmo          ! the length of the mo basis
+!       integer, intent(in) :: mo_list(:)   ! and their indices
+!       real(8) :: eps(:)
 
-       integer             :: k
-       type(MO)            :: qmo
+!       integer             :: k
+!       type(MO)            :: qmo
 
-       call get_mo_coefficients (qmo,mo_list,nmo)
+!       call get_mo_coefficients (qmo,mo_list,nmo)
 
-       do k = 1, nmo
-          eps(k)     = qmo%energy(k)
-          eps(k+nmo) = qmo%energy(k)
-       end do
-       call delete_qmo (qmo)
+!       do k = 1, nmo
+!          eps(k)     = qmo%energy(k)
+!          eps(k+nmo) = qmo%energy(k)
+!       end do
+!       call delete_qmo (qmo)
 
-      end subroutine get_orbital_energies
+!      end subroutine get_orbital_energies
 
 end module talsh_common_routines
