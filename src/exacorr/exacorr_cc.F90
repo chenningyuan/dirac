@@ -63,7 +63,6 @@ module exacorr_cc
          type(exatns_comm_tens) :: comm_t
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
          type(exatns_intg_tens) :: int_t
-         type(tens_rcrsv_t) :: voov_tensor
 !        Lambda tensors
          type(tens_rcrsv_t) :: l1_tensor, l2_tensor
 !        scalars (need to be defined as tensor types)
@@ -84,10 +83,10 @@ module exacorr_cc
          integer(INTL)              :: occ_space_root, vir_space_root
          integer(INTL),dimension(2) :: oo_root, ov_root, vo_root, vv_root
          integer(INTL),dimension(4) :: oooo_root, ooov_root, ovoo_root, oovv_root, vovo_root, &
-                                       vvoo_root, vovv_root, vvvv_root, voov_root
+                                       vvoo_root, vovv_root, vvvv_root
          integer,dimension(2)       :: oo_id, ov_id, vo_id, vv_id 
          integer,dimension(4)       :: oooo_id, ooov_id, ovoo_id, oovv_id, vovo_id, &
-                                       vvoo_id, vovv_id, vvvv_id, voov_id
+                                       vvoo_id, vovv_id, vvvv_id
          integer                    :: ao_space_id, occ_space_id, vir_space_id
          integer                    :: branch_factor
 
@@ -286,7 +285,6 @@ module exacorr_cc
          vvoo_id = (/vir_space_id, vir_space_id, occ_space_id, occ_space_id/)
          vovv_id = (/vir_space_id, occ_space_id, vir_space_id, vir_space_id/)
          vvvv_id = (/vir_space_id, vir_space_id, vir_space_id, vir_space_id/)
-         voov_id = (/vir_space_id, occ_space_id, occ_space_id, vir_space_id/)
          oooo_root = (/occ_space_root, occ_space_root, occ_space_root, occ_space_root/)
          ooov_root = (/occ_space_root, occ_space_root, occ_space_root, vir_space_root/)
          oovv_root = (/occ_space_root, occ_space_root, vir_space_root, vir_space_root/)
@@ -294,7 +292,6 @@ module exacorr_cc
          vvoo_root = (/vir_space_root, vir_space_root, occ_space_root, occ_space_root/)
          vovv_root = (/vir_space_root, occ_space_root, vir_space_root, vir_space_root/)
          vvvv_root = (/vir_space_root, vir_space_root, vir_space_root, vir_space_root/)
-         voov_root = (/vir_space_root, occ_space_root, occ_space_root, vir_space_root/)
 
 !        All preliminary work is now done on all MPI-nodes, we may proceed to start ExaTensor.
 !        After the start of ExaTensor, the driver process (the last MPI process) will be executing
@@ -333,9 +330,7 @@ module exacorr_cc
             ierr=exatns_tensor_create(int_t%vovo,"vovo",vovo_id,vovo_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(int_t%vovv,"vovv",vovv_id,vovv_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(int_t%vvvv,"vvvv",vvvv_id,vvvv_root,EXA_DATA_KIND_C8)
-            ierr=exatns_tensor_create(voov_tensor,"voov",voov_id,voov_root,EXA_DATA_KIND_C8) ! auxilliary for get_CC_integrals
-            call get_CC_integrals (ao_space_id,ao_space_root,voov_tensor,int_t,exa_input%moint_scheme)
-            ierr=exatns_tensor_destroy(voov_tensor)
+            call get_CC_integrals (ao_space_id,ao_space_root,int_t,exa_input%moint_scheme)
 
             call print_date('initialized two electron integrals')
 
@@ -961,7 +956,7 @@ module exacorr_cc
 
         end subroutine solve_lambda_equations
 
-        subroutine get_CC_integrals (ao_space_id,ao_space_root,voov_tensor,int_t,moint_scheme)
+        subroutine get_CC_integrals (ao_space_id,ao_space_root,int_t,moint_scheme)
 
 !        Routine to get integrals needed in CC in the form of antisymmetric tensors.
 !        In this implementation we take all AO integrals into memory, the result tensor themselves can be subsets of the
@@ -978,13 +973,26 @@ module exacorr_cc
          integer(INTL),intent(in) :: ao_space_root
 !        target integral tensors to be filled and given back to the caller
          type(exatns_intg_tens), intent(inout) :: int_t 
-         type(tens_rcrsv_t),intent(inout) :: voov_tensor ! Auxilliary tensor that is not anti-symmetrized
+
+         type(tens_rcrsv_t)         :: voov_tensor ! Auxilliary tensor that is not anti-symmetrized
+         integer(INTL),dimension(4) :: vovo_root, voov_root
+         integer,dimension(4)       :: vovo_id, voov_id
 
          integer                           :: i,ierr
          integer                           :: moint_scheme ! (0: put zeroes for testing. 1: n^5 algorithm, 2: n^6 algorithm)
 
 !        auxilliary integral tensor (only needed inside this routine)
          type(tens_rcrsv_t) :: aoint_tensor
+
+!        Determine space ids and root for auxilliary voov tensor from vovo tensor
+         call int_t%vovo%get_space_ids(vovo_id,vovo_root,ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('vovo tensor corrupted')
+         voov_id(1:2) = vovo_id(1:2)
+         voov_id(3)   = vovo_id(4)
+         voov_id(4)   = vovo_id(3)
+         voov_root(1:2) = vovo_root(1:2)
+         voov_root(3)   = vovo_root(4)
+         voov_root(4)   = vovo_root(3)
 
 !        Get tensor with AO integrals
          ierr=exatns_tensor_create(aoint_tensor,'aotensor',(/(ao_space_id,i=1,4)/),(/(ao_space_root,i=1,4)/),EXA_DATA_KIND_C8)
@@ -1017,9 +1025,11 @@ module exacorr_cc
 !          Get anti-symmetrized vovo tensor, this needs to be done in two steps as two different classes contribute.
 !          Get vovo tensor
            call get_integral_tensor (aoint_tensor,int_t%vovo,0)
+           ierr=exatns_tensor_create(voov_tensor,"voov",voov_id,voov_root,EXA_DATA_KIND_C8) ! auxilliary for get_CC_integrals
            call get_integral_tensor (aoint_tensor,voov_tensor,0)
 !          Make anti-symmetrized vovo tensor
            ierr=exatns_tensor_contract("V(a,i,b,j)+=V(a,i,j,b)*K()",int_t%vovo,voov_tensor,one_tensor,MINUS_ONE)
+           ierr=exatns_tensor_destroy(voov_tensor)
            call print_date('finished vovo integrals')
 
 !          Get vvvv tensor
@@ -1063,10 +1073,18 @@ module exacorr_cc
 !          Get anti-symmetrized vovo tensor, this needs to be done in two steps as two different classes contribute.
 !          Get vovo tensor
            call get_integral_tensor_2 (aoint_tensor,int_t%vovo,0)
+           ierr=exatns_tensor_create(voov_tensor,"voov",voov_id,voov_root,EXA_DATA_KIND_C8) ! auxilliary for get_CC_integrals
            call get_integral_tensor_2 (aoint_tensor,voov_tensor,0)
 !          Make anti-symmetrized vovo tensor
            ierr=exatns_tensor_contract("V(a,i,b,j)+=V(a,i,j,b)*K()",int_t%vovo,voov_tensor,one_tensor,MINUS_ONE)
+           ierr=exatns_tensor_destroy(voov_tensor)
            call print_date('finished vovo integrals')
+
+         elseif (moint_scheme == 3) then
+           ierr=exatns_tensor_init(aoint_tensor,'Aoint_calculator')
+           if(ierr.ne.EXA_SUCCESS) call quit('Aoint_calculator failed!')
+           call print_date('finished ao integral calculation')
+           call print_date('choosing moint_scheme 3')
 
          end if
 
