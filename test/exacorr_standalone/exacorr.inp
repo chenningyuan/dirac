@@ -1,0 +1,11 @@
+!
+! This test calculates the CC energy with the X2C Hamiltonian
+!
+**EXACC
+.OCCUPIED
+3..5
+.VIRTUAL
+6..17
+.CCDOUBLES
+.EXATENSOR
+*END OF
