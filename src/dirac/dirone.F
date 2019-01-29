@@ -254,7 +254,7 @@ C
 C   SET DEFAULT VALUES OF PARAMETERS FOR CALCULATION
 C
          MXNP = 4000            !same to GRASP
-         NUCTYP = 0
+         NUCTYP = 1
          CALL MEMSET(ZAN(IATOM),MXNP,NUCTYP,IPRINT) !change
          CALL NUCPRM(ZAN(IATOM),NUCMASS(INT(ZAN(IATOM))),NUCTYP)
          write(*,*)"MXNP",MXNP
@@ -270,7 +270,21 @@ C
             R(J) = R(J-1)*EPH
          ENDDO
          write(*,*)"NUCMASS",NUCMASS(INT(ZAN(IATOM)))
-         CALL VCMPOL(VACIR,R,ZAN(IATOM),MXNP,NUCTYP,1)         !change
+         CALL VCMPOL(VACIR,R,ZAN(IATOM),MXNP,NUCTYP,1) !change
+         DO J = 1,MXNP
+            write(*,*)J,VACIR(J)
+         ENDDO
+         OPEN(20,FILE='LOG_DIRAC',STATUS='REPLACE',          
+     &        FORM='FORMATTED',ACCESS='SEQUENTIAL')  
+         DO  J = 1,MXNP
+           WRITE(20,*)VACIR(J)          !sunaga
+         ENDDO
+         CLOSE(20,STATUS='KEEP')
+         
+         write(*,*)'VACIR'
+         DO J = 1,MXNP
+            write(*,*)J,R(J)
+         ENDDO
 !     change for debug sentense
          write(*,*)"R(1),Z",R(1),ZAN(IATOM)
          write(*,*)"J,VACIR"
@@ -278,9 +292,9 @@ C
 C
 C     1/r in Eq. (2), (4),and (6) of Rinker's paper is NOT calculated in VCMPOL.
 C     Integrand = 1/r * VP(r) * (Large*Large + Small*Small) * r^2 * r
-C      Meaning:   1/r * VACIR(IR) *   wavefunction     * Radial int. * for QUAD 
+C     Meaning:   1/r * VACIR(IR) *   wavefunction     * Radial int. * for QUAD 
 C     Finally,    We multiply R(IR)*R(IR).
-C     
+C
            RFAC = R(IR)*R(IR) * VACIR(IR) !*R(IR)!change
            CALL DZERO(TC,NDIM2)
 C            
@@ -328,7 +342,7 @@ C  Large
          CALL QUAD2(OVL,TD,MXNP,H,NDIM2)
 !         CALL OUTPAK(OVL,NTBAS(0),-1,LUPRI)
 !         IOFF = 1
-!         DIM  = NTBAS(1) 
+!         DIM  = NTBAS(1)  
 !         DO IC = 1,MC
 !           IF(IC.eq.1)THEN 
 !              write(*,*)"Large"
@@ -481,6 +495,14 @@ C
          TEMP = FACTOR*FUNK (X,1)
          IF(ABS(TEMP).LE.1.0D-50)THEN
             MXNP = I
+            IF(MOD(MXNP,2).eq.0)THEN
+               MXNP = MXNP + 1
+!     sunaga
+!     As far as I check GRASP, the number of grid (MXNP) must be odd number.
+!     for the integral of Vacuum polarization          
+!     Even if it is even number, the value of QUAD
+!     does not agree with the one of GRASP.                
+            ENDIF   
             exit
          ENDIF   
          RTEMP = RTEMP*EPH
@@ -654,6 +676,7 @@ C
     2 WB = (C2+C2)/(Z*THREE)
       DO 3 I = 1,N
         TA(I) = ZZ(I)*(R(I)**3)
+        write(*,*)"ZZ",I,ZZ(I)
     3 CONTINUE
       CALL QUAD (FAC3,TA,N)
       FAC3 = FAC3*FACTOR*WB
@@ -669,30 +692,33 @@ C
          X = WD*R(I)
          TB(I) = TB(I)+FAC3*FUNK (X,3)+FAC5*FUNK (X,5) 
     6 CONTINUE
-c$$$      write(*,*)"Fermi"
-c$$$      IF (KTC(6) .NE. 0) RETURN
-c$$$C
-c$$$C   TABULATE POTENTIAL BY INTEGRATING EQUATION (4)
-c$$$C
-c$$$      FACTOR = -ONE/(PI3*C2*TWO)
-c$$$      DO 8 K = 1,N
-c$$$         XK = WD*R(K)
-c$$$         DO 7 I = 1,NNUC
-c$$$            XI = WD*R(I)
-c$$$            XM = ABS (XK-XI)
-c$$$            XP = XK+XI
-c$$$            TA(I) = (FUNK (XM,0)-FUNK (XP,0))*ZZ(I)
-c$$$    7    CONTINUE
-c$$$         CALL QUAD (X)
-c$$$         X = X*FACTOR
-c$$$         IF (X .EQ. ZERO) GO TO 9
-c$$$         IF (ABS ((TB(K)-X)/X) .LT. EPS) RETURN
-c$$$         TB(K) = X
-c$$$    8 CONTINUE
-c$$$      RETURN
-c$$$    9 DO 10 I = K,N
-c$$$         TB(I) = ZERO
-c$$$   10 CONTINUE
+!      RETURN ! sunaga
+C
+C   TABULATE POTENTIAL BY INTEGRATING EQUATION (4)
+C
+      FACTOR = -ONE/(PI3*C2*TWO)
+      DO 8 K = 1,N
+         XK = WD*R(K)
+         DO 7 I = 1,NNUC
+            XI = WD*R(I)
+            XM = ABS (XK-XI)
+            XP = XK+XI
+            TA(I) = (FUNK (XM,0)-FUNK (XP,0))*ZZ(I)
+    7    CONTINUE
+         DO JJ=1,N
+            write(*,*)'TAA',JJ,TA(JJ)
+         ENDDO   
+         CALL QUAD (X,TA,N)
+         write(*,*)'K,X',K,X
+         X = X*FACTOR
+         IF (X .EQ. ZERO) GO TO 9
+         IF (ABS ((TB(K)-X)/X) .LT. EPS) RETURN
+         TB(K) = X
+    8 CONTINUE
+      RETURN
+    9 DO 10 I = K,N
+         TB(I) = ZERO
+   10 CONTINUE
       RETURN
 C
       END
@@ -1252,16 +1278,22 @@ C
       K = ND2-N1D2+1
       JJ = J+K
       JJ1 = JJ+1
+      write(*,*)'NR', NR
+      write(*,*)'J,NP,ND2,N1D2,K,JJ,JJ1', J, NP, ND2, N1D2, K, JJ, JJ1
+      write(*,*)'K',K
       DO 3 I = JJ1,NR-3,2
          SUM = SUM + W1*TE(I) + W2*TE(I+1)
 !         write(*,*)"TE5",TE(I) !sunaga
     3 CONTINUE
+      write(*,*)'SUM1',SUM
       SUM = SUM + W1*TE(NR-1)
+      write(*,*)'SUM2',SUM
       SUM = SUM + W4*( TE(JJ)   + TE(NR)   )
      &          + W5*( TE(JJ1)  + TE(NR-1) )
      &          + W6*( TE(JJ+2) + TE(NR-2) )
      &          + W7*( TE(JJ+3) + TE(NR-3) )
-      
+
+      write(*,*)'SUM3',SUM
 C
 C   ADD THE CONTRIBUTION FROM 0 TO R(JJ), PLUS THE CONTRIBUTION
 C   TO SIMPSONS RULE FROM TE(JJ).
