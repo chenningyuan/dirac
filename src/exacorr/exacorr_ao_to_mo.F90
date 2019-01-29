@@ -13,6 +13,8 @@ module exacorr_ao_to_mo
         public dm_initlabel
         public get_integral_tensor
         public get_integral_tensor_2
+        public get_integral_tensor_3
+        public aomo_halftransform_1
         public print_tensornorm2
 #endif
         complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0)
@@ -765,6 +767,54 @@ module exacorr_ao_to_mo
          ierr=exatns_tensor_destroy(moint_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=1; return; endif
 
         end subroutine get_integral_tensor_2
+
+        subroutine get_integral_tensor_3 (a2int_tensor,integral_tensor,antisymmetrize) 
+
+         implicit none
+
+         type(tens_rcrsv_t), intent(inout)  :: a2int_tensor, integral_tensor
+         type(tens_rcrsv_t)                 :: moint_tensor
+
+         integer, intent(in)                :: antisymmetrize
+
+         integer           :: ierr, tens_rank
+         integer           :: a2int_id(4),integral_id(4),moint_id(4)
+         integer(INTL)     :: a2int_root(4),integral_root(4),moint_root(4)
+
+!        Check integrity of tensors
+         tens_rank = a2int_tensor%get_rank(ierr)
+         if (ierr.ne.0 .or. tens_rank.ne.4) call quit('input tensor corrupted in aomo_transform')
+         tens_rank = integral_tensor%get_rank(ierr)
+         if (ierr.ne.0 .or. tens_rank.ne.4) call quit('output tensor corrupted in aomo_transform')
+
+!        Determine ids and root
+         call a2int_tensor%get_space_ids(a2int_id,a2int_root,ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('a2int tensor corrupted')
+         call integral_tensor%get_space_ids(integral_id,integral_root,ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('integral tensor corrupted')
+
+!        Copy the information about spaces from the starting and target tensors to the auxilliary ones
+!        Use relation (12|34) = <13|24> 
+         moint_id(1) = integral_id(1) 
+         moint_id(2) = integral_id(3)
+         moint_id(3) = integral_id(2)
+         moint_id(4) = integral_id(4)
+
+         moint_root(1) = integral_root(1)
+         moint_root(2) = integral_root(3)
+         moint_root(3) = integral_root(2)
+         moint_root(4) = integral_root(4)
+
+!        Allocate auxilliary tensor to get integrals (without anti-symmetrization) in Mulliken order
+         ierr=exatns_tensor_create(moint_tensor,'mulliken',moint_id,moint_root,EXA_DATA_KIND_C8)
+
+!        Transform integrals
+         call aomo_halftransform_2 (a2int_tensor,moint_tensor)
+!        Switch to Dirac order and antisymmetrize
+         call mulliken_to_dirac_sort (moint_tensor,integral_tensor,antisymmetrize)
+         ierr=exatns_tensor_destroy(moint_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=1; return; endif
+
+        end subroutine get_integral_tensor_3
 
         subroutine mulliken_to_dirac_sort  (mulliken_tensor,dirac_tensor,antisymmetrize)
 
