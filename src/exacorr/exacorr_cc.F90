@@ -30,7 +30,7 @@ module exacorr_cc
         subroutine exacorr_cc_driver (exa_input)
 
 !        This subroutine drives the ccsd energy calculation
-!        Currently everything is done in-core, purpose is to provide a working implementation that is suitable for debugging the production code
+!        The implementation is based on the parallel ExaTensor library
 
 !        Written by Lucas Visscher, winter 2016/2017
 
@@ -47,7 +47,6 @@ module exacorr_cc
 
          integer                :: nocc,nvir           ! the size of the mo basis for occupied and virtual spinors
          integer(INTL)          :: nocc_l, nvir_l
-         integer, allocatable   :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
 
          integer, allocatable   :: mo_oo(:),mo_vo(:),mo_ov(:),mo_vv(:) ! joined lists needed for dm init (ugly code, should be refactored)
 
@@ -73,14 +72,13 @@ module exacorr_cc
          real(8)            :: mp2_energy, ccsd_energy!, t_energy(3) ! triples not implemented
          real(8)            :: t_target_precision
 
-         ! classes for the definition of spaces (AO and 4 different MO spaces)
+         ! classes for the definition of spaces (AO and 2 different MO spaces)
          class(h_space_t), pointer                :: ao_space
          class(h_space_t), pointer                :: occ_space, vir_space
 
          ! variables for the definition of spaces (AO and 2 different MO spaces)
          type(subspace_basis_t)     :: basis_ao, basis_occ, basis_vir
-         integer(INTL)              :: nao_l, ao_space_root
-         integer(INTL)              :: occ_space_root, vir_space_root
+         integer(INTL)              :: ao_space_root, occ_space_root, vir_space_root
          integer(INTL),dimension(2) :: oo_root, ov_root, vo_root, vv_root
          integer(INTL),dimension(4) :: oooo_root, ooov_root, ovoo_root, oovv_root, vovo_root, &
                                        vvoo_root, vovv_root, vvvv_root
@@ -88,21 +86,10 @@ module exacorr_cc
          integer,dimension(4)       :: oooo_id, ooov_id, ovoo_id, oovv_id, vovo_id, &
                                        vvoo_id, vovv_id, vvvv_id
          integer                    :: ao_space_id, occ_space_id, vir_space_id
-         integer                    :: branch_factor
 
          ! variables for the definition of colors inside the spaces
          type(color_symmetry_t), allocatable    :: color(:)
          integer(INTL)                          :: labs
-
-         ! types of the initializer methods
-         type(compute_2e_ao_tensor_t) :: aoint_calculator ! method to initialize the ao-integrals tensor
-         type(init_mocoef_tensor_t)   :: occupied_init(2), virtual_init(2)
-         type(tens_printer_t)         :: tens_printer     ! generic method, but needs to be defined here in specific form
-         type(scale_with_denom_t)     :: denominate
-         type(init_dm_tensor_t)       :: dm_init(4)       ! array of initializers for algorithm 2
-
-         ! variables for the definition of the initializer methods
-         character(len=2)  :: vs_str
 
          integer:: spin
          integer:: lsh, l, nl
@@ -114,153 +101,40 @@ module exacorr_cc
 !        Make some noise so that we know we are here
          call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
          if (my_MPI_rank == 0) print*, " Starting CC calculation with exatensor"
-         if (my_MPI_rank == 0) print*, " using an exa_blocksize value of ",exa_input%exa_blocksize
 
 !        Initialize global data (read from DFCOEF or similar by master)
          call set_talsh_only(exa_input%talsh)
          call initialize_global_data
+         if (my_MPI_rank == 0) print*," Initialized global data"
 
-         nao     = get_nao()   ! This is the total number of ao's
-         nao_l   = int(nao,8)  ! we need this as a long int for exatensor
+!        Initialize and register AO and MO spaces and get their IDs for further reference
+         call exacorr_cc_spaces (exa_input,ao_space,occ_space,vir_space,ao_space_id,occ_space_id,vir_space_id)
+         if (my_MPI_rank == 0) print*," Registered AO and MO spaces"
 
-!        Get the basis set information
-         call get_gtos(1,nao,gto,nshells)
+!        Register and initialize user defined methods needed in the CC calculation
+         call exacorr_cc_methods (exa_input,ao_space_id,occ_space_id,vir_space_id)
+         if (my_MPI_rank == 0) print*," Initialized and registered tensor methods"
 
-         !Create a basis for the ao vector space:
-         ierr = 0
-         call basis_ao%subspace_basis_ctor(nao_l,ierr)
-         if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.subspace_basis_ctor() failed!')
-
-         !Assign the colors for the ao space (this indicates to exatensor where it may break up into subspaces)
-         allocate(color(nshells))
-         labs = 0
-         do lsh = 1, nshells !set basis functions
-            nl   =  ncartesian(gto(lsh)%orb_momentum)
-            call color(lsh)%color_symmetry_ctor(lsh) ! take one shell as a color
-            do  l = 1, nl
-                labs = labs + 1
-                call basis_ao%set_basis_func(labs,BASIS_ABSTRACT,ierr,symm=color(lsh))
-                if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.set_basis_func() failed!')
-            end do
-         enddo
-
-         !Finalize the ao space basis
-         call basis_ao%finalize(ierr)
-         if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.finalize() failed!')
-
-         !Register the ao vector space:
-         branch_factor = nao / exa_input%exa_blocksize + 1
-         if (branch_factor < 2) branch_factor = 2
-         ierr=exatns_space_register('AO_space',basis_ao,ao_space_id,ao_space,branch_factor)
-         if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register() failed!')
-         if (my_MPI_rank == 0) print*," registered AO space with nao, nshells, branch factor:",nao,nshells,branch_factor
-
-         !DO NOT CHANGE THESE VARIABLES
+         !Copy input variables to local ones for ease of reference
          nocc = exa_input%nkr_occ
          nvir = exa_input%nkr_vir
-         allocate(mo_occ(nocc))
-         allocate(mo_vir(nvir))
-         mo_occ(1:nocc) = exa_input%mokr_occ(1:exa_input%nkr_occ)
-         mo_vir(1:nvir) = exa_input%mokr_vir(1:exa_input%nkr_vir)
          t_target_precision = exa_input%t_econv
          CCD = exa_input%ccd
          lambda = exa_input%lambda
          noints = exa_input%noints
          ncycles = exa_input%ncycles
 
-         !Get the MO-coeffcient basis for the occupied and virtual spaces
-         ierr = 0
-         nocc_l   = 2*int(nocc,8)  ! NB: imo, jmo and nmo count orbitals, nocc_l counts spinors
-         nvir_l   = 2*int(nvir,8)  ! NB: imo, jmo and nmo count orbitals, nvir_l counts spinors
-         call basis_occ%subspace_basis_ctor(nocc_l,ierr)
-         if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.subspace_basis_ctor() failed!')
-         call basis_vir%subspace_basis_ctor(nvir_l,ierr)
-         if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.subspace_basis_ctor() failed!')
-
-         !Set the functions inside the occupied basis (without colors, not needed for MOs)
-         do labs = 1, nocc_l
-            call basis_occ%set_basis_func(labs,BASIS_ABSTRACT,ierr)
-            if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.set_basis_func() failed!')
-         enddo
-
-         !Set the functions inside the virtual basis (without colors, not needed for MOs)
-         do labs = 1, nvir_l
-            call basis_vir%set_basis_func(labs,BASIS_ABSTRACT,ierr)
-            if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.set_basis_func() failed!')
-         enddo
-
-         !Finalize the mo space basis
-         call basis_occ%finalize(ierr)
-         if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.finalize() failed!')
-         call basis_vir%finalize(ierr)
-         if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.finalize() failed!')
-
-         !Register this mo vector space :
-         branch_factor = 2*nocc / exa_input%exa_blocksize + 1
-         if (branch_factor < 2) branch_factor = 2
-         ierr=exatns_space_register('Occupied',basis_occ,occ_space_id,occ_space,branch_factor)
-         if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register(occ) failed!')
-         branch_factor = 2*nvir / exa_input%exa_blocksize + 1
-         if (branch_factor < 2) branch_factor = 2
-         ierr=exatns_space_register('Virtual',basis_vir,vir_space_id,vir_space,branch_factor)
-         if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register(vir) failed!')
-
-         !Define separate initializers for the alpha(A) and beta(B) occupied and virtual MO-coefficients
-         do spin = 1, 2
-            !Register this initializer for occupied as a method
-            call occupied_init(spin)%init_mocoef_ctor(mo_occ(1:nocc),nocc,spin)
-            ierr=exatns_method_register(mocoef_initlabel(ao_space_id,occ_space_id,spin),occupied_init(spin))
-            if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
-            !Same procedure for the virtual space
-            call virtual_init(spin)%init_mocoef_ctor(mo_vir(1:nvir),nvir,spin)
-            ierr=exatns_method_register(mocoef_initlabel(ao_space_id,vir_space_id,spin),virtual_init(spin))
-            if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
-         end do
-
-         if (exa_input%moint_scheme == 2) then
-           !Define names for the initializers for density matrices
-           allocate(mo_oo(nocc+nocc))
-           allocate(mo_vo(nvir+nocc))
-           allocate(mo_ov(nocc+nvir))
-           allocate(mo_vv(nvir+nvir))
-           mo_oo(1:nocc) = mo_occ
-           mo_ov(1:nocc) = mo_occ
-           mo_vo(1:nvir) = mo_vir
-           mo_vv(1:nvir) = mo_vir
-           mo_oo(nocc+1:nocc+nocc) = mo_occ
-           mo_ov(nocc+1:nocc+nvir) = mo_vir
-           mo_vo(nvir+1:nvir+nocc) = mo_occ
-           mo_vv(nvir+1:nvir+nvir) = mo_vir
-           !Register the dm initializers as methods
-           call dm_init(1)%init_dm_ctor(mo_oo,(/nocc,nocc/))
-           ierr=exatns_method_register(dm_initlabel((/ao_space_id,ao_space_id/),(/occ_space_id,occ_space_id/)),dm_init(1))
-           if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
-           call dm_init(2)%init_dm_ctor(mo_vo,(/nvir,nocc/))
-           ierr=exatns_method_register(dm_initlabel((/ao_space_id,ao_space_id/),(/vir_space_id,occ_space_id/)),dm_init(2))
-           if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
-           call dm_init(3)%init_dm_ctor(mo_ov,(/nocc,nvir/))
-           ierr=exatns_method_register(dm_initlabel((/ao_space_id,ao_space_id/),(/occ_space_id,vir_space_id/)),dm_init(3))
-           if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
-           call dm_init(4)%init_dm_ctor(mo_vv,(/nvir,nvir/))
-           ierr=exatns_method_register(dm_initlabel((/ao_space_id,ao_space_id/),(/vir_space_id,vir_space_id/)),dm_init(4))
-           if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
+         if (my_MPI_rank == 0) then
+            print*, " Characteristics of this calculation"
+            print*, " - Solve CCD equations:            ",exa_input%ccd
+            print*, " - Solve Lambda equations:         ",exa_input%lambda
+            print*, " - Number of atomic orbitals:      ",ao_space%get_root_id(ierr)
+            print*, " - Number of occupied spinors:     ",2*exa_input%nkr_occ
+            print*, " - Number of virtual spinors:      ",2*exa_input%nkr_vir
+            print*, " - Target precision of amplitudes: ",exa_input%t_econv
+            print*, " - Maximum number of cycles:       ",exa_input%ncycles
+            print*, " - ExaTensor block size            ",exa_input%exa_blocksize
          end if
-
-         if (my_MPI_rank == 0) print*," registered MO spaces and initializers with nocc and nvir:",2*nocc, 2*nvir
-
-         !Register the ao integral generation as a method
-         ierr=exatns_method_register('Aoint_calculator',aoint_calculator)
-         if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(aoint) failed!')
-
-         !Register the denominator initializer aa a method
-         call denominate%scale_with_denom_ctor(mo_occ,nocc,mo_vir,nvir)
-         ierr=exatns_method_register('Denominate',denominate)
-         if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
-
-         !Register the standard print method with a low treshold to always print result_tensor
-         call tens_printer%reset_thresh(1.0D-15)
-         ierr=exatns_method_register('PrintTensor',tens_printer)
-         if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(printer) failed!')
 
          !Create all id and root arrays, neccessary for exatns_tensor_create
          ao_space_root=ao_space%get_root_id(ierr)
@@ -452,9 +326,6 @@ module exacorr_cc
             write(*,*) ' Process ',my_MPI_rank,' terminated with error ',ierr
          endif
 
-         deallocate(mo_occ)
-         deallocate(mo_vir)
-
 !        Clean up global data used to interact with DIRAC/Interest
          call delete_global_data
 
@@ -463,6 +334,221 @@ module exacorr_cc
          return
 
         end subroutine exacorr_cc_driver
+
+        subroutine exacorr_cc_spaces (exa_input,ao_space,occ_space,vir_space,ao_space_id,occ_space_id,vir_space_id)
+
+!        This subroutine defines and registers all spaces for ExaTensor
+
+!        Written by Lucas Visscher, January 2019
+
+         use interface_to_mpi
+         use exacorr_global
+         use exacorr_ao_to_mo
+         use, intrinsic:: ISO_C_BINDING
+
+         implicit none
+
+         type(exacc_input), intent(in) :: exa_input
+         ! classes for the definition of spaces (AO and 2 different MO spaces)
+         class(h_space_t), pointer     :: ao_space, occ_space, vir_space
+         ! ids of these spaces (are not stored in the space class itself ?)
+         integer, intent(out)          :: ao_space_id, occ_space_id, vir_space_id
+
+
+         integer                :: nocc,nvir           ! the size of the mo basis for occupied and virtual ORBITALS
+         integer(INTL)          :: nocc_l, nvir_l      ! the size of the mo basis for occupied and virtual SPINORS
+
+         integer                                :: nao      ! the number of atomic orbitals)
+         integer                                :: nshells  ! the number of shells (orbitals with the same center and l-value)
+         type(basis_func_info_t), allocatable   :: gto(:)   ! array with information about the shells
+
+
+         ! variables for the definition of spaces (AO and 2 different MO spaces)
+         type(subspace_basis_t)     :: basis_ao, basis_occ, basis_vir
+         integer(INTL)              :: nao_l ! (same as nao, as long integer)
+         integer                    :: branch_factor
+
+         ! variables for the definition of colors inside the spaces
+         type(color_symmetry_t), allocatable    :: color(:)
+         integer(INTL)                          :: labs
+
+         ! Loop counters and error codes
+         integer:: ierr, i
+         integer:: lsh, l, nl
+
+         nao     = get_nao()   ! This is the total number of ao's
+         nao_l   = int(nao,8)  ! we need this as a long int for exatensor
+
+!        Get the basis set information
+         call get_gtos(1,nao,gto,nshells)
+
+         !Create a basis for the ao vector space:
+         ierr = 0
+         call basis_ao%subspace_basis_ctor(nao_l,ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.subspace_basis_ctor() failed!')
+
+         !Assign the colors for the ao space (this indicates to exatensor where it may break up into subspaces)
+         allocate(color(nshells))
+         labs = 0
+         do lsh = 1, nshells !set basis functions
+            nl   =  ncartesian(gto(lsh)%orb_momentum)
+            call color(lsh)%color_symmetry_ctor(lsh) ! take one shell as a color
+            do  l = 1, nl
+                labs = labs + 1
+                call basis_ao%set_basis_func(labs,BASIS_ABSTRACT,ierr,symm=color(lsh))
+                if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.set_basis_func() failed!')
+            end do
+         enddo
+
+         !Finalize the ao space basis
+         call basis_ao%finalize(ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.finalize() failed!')
+
+         !Register the ao vector space:
+         branch_factor = nao / exa_input%exa_blocksize + 1
+         if (branch_factor < 2) branch_factor = 2
+         ierr=exatns_space_register('AO_space',basis_ao,ao_space_id,ao_space,branch_factor)
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register() failed!')
+
+         !Copy user input to local arrays for the definition of MO spaces (for standard CC we only distinguish occupied and virtual spinors)
+         nocc = exa_input%nkr_occ
+         nvir = exa_input%nkr_vir
+         !Get the MO basis for the occupied and virtual spaces
+         ierr = 0
+         nocc_l   = 2*int(nocc,8)  ! NB: imo, jmo and nmo count orbitals, nocc_l counts spinors
+         nvir_l   = 2*int(nvir,8)  ! NB: imo, jmo and nmo count orbitals, nvir_l counts spinors
+         call basis_occ%subspace_basis_ctor(nocc_l,ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.subspace_basis_ctor() failed!')
+         call basis_vir%subspace_basis_ctor(nvir_l,ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.subspace_basis_ctor() failed!')
+
+         !Set the functions inside the occupied basis (without colors, not needed for MOs)
+         do labs = 1, nocc_l
+            call basis_occ%set_basis_func(labs,BASIS_ABSTRACT,ierr)
+            if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.set_basis_func() failed!')
+         enddo
+
+         !Set the functions inside the virtual basis (without colors, not needed for MOs)
+         do labs = 1, nvir_l
+            call basis_vir%set_basis_func(labs,BASIS_ABSTRACT,ierr)
+            if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.set_basis_func() failed!')
+         enddo
+
+         !Finalize the mo space basis
+         call basis_occ%finalize(ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.finalize() failed!')
+         call basis_vir%finalize(ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.finalize() failed!')
+
+         !Register this mo vector space :
+         branch_factor = 2*nocc / exa_input%exa_blocksize + 1
+         if (branch_factor < 2) branch_factor = 2
+         ierr=exatns_space_register('Occupied',basis_occ,occ_space_id,occ_space,branch_factor)
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register(occ) failed!')
+         branch_factor = 2*nvir / exa_input%exa_blocksize + 1
+         if (branch_factor < 2) branch_factor = 2
+         ierr=exatns_space_register('Virtual',basis_vir,vir_space_id,vir_space,branch_factor)
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register(vir) failed!')
+
+        end subroutine exacorr_cc_spaces
+
+        subroutine exacorr_cc_methods (exa_input,ao_space_id,occ_space_id,vir_space_id)
+
+!        This subroutine initalizes and registers all user-defined methods for ExaTensor
+
+!        Written by Lucas Visscher, January 2019
+
+         use exacorr_global
+         use exacorr_tensor_methods
+         use exacorr_ao_to_mo
+         use, intrinsic:: ISO_C_BINDING
+
+         implicit none
+
+         ! container with user input (we only need the indices of the occupied and virtual MOs here)
+         type(exacc_input), intent(in) :: exa_input
+         ! identifiers of the spaces that we will use in the methods
+         integer, intent(in)        :: ao_space_id, occ_space_id, vir_space_id
+
+         integer                :: nocc,nvir           ! the size of the mo basis for occupied and virtual orbitals (Kramers pairs)
+         integer, allocatable   :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
+         integer, allocatable   :: mo_oo(:),mo_vo(:),mo_ov(:),mo_vv(:) ! joined lists needed for dm init (ugly code, should be refactored)
+
+         integer                        :: ierr, i
+
+         ! types of the initializer methods
+         type(tens_printer_t)         :: tens_printer     ! generic method, but needs to be defined here in specific form
+         type(compute_2e_ao_tensor_t) :: aoint_calculator ! method to initialize the ao-integrals tensor
+         type(init_mocoef_tensor_t)   :: occupied_init(2), virtual_init(2) ! methods to initialize MO coeffcient tensors
+         type(init_dm_tensor_t)       :: dm_init(4)       ! array of initializers for MO transformation algorithm 2
+         type(scale_with_denom_t)     :: denominate       ! method to scale CC amplitudes by the inverse of orbital energy differences
+
+         integer:: spin
+
+         !Copy user input to local arrays for the definition of MO spaces (for standard CC we only distinguish occupied and virtual spinors)
+         nocc = exa_input%nkr_occ
+         nvir = exa_input%nkr_vir
+         allocate(mo_occ(nocc))
+         allocate(mo_vir(nvir))
+         mo_occ(1:nocc) = exa_input%mokr_occ(1:exa_input%nkr_occ)
+         mo_vir(1:nvir) = exa_input%mokr_vir(1:exa_input%nkr_vir)
+
+         !Define separate initializers for the alpha(A) and beta(B) occupied and virtual MO-coefficients
+         do spin = 1, 2
+            !Register this initializer for occupied as a method
+            call occupied_init(spin)%init_mocoef_ctor(mo_occ(1:nocc),nocc,spin)
+            ierr=exatns_method_register(mocoef_initlabel(ao_space_id,occ_space_id,spin),occupied_init(spin))
+            if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
+            !Same procedure for the virtual space
+            call virtual_init(spin)%init_mocoef_ctor(mo_vir(1:nvir),nvir,spin)
+            ierr=exatns_method_register(mocoef_initlabel(ao_space_id,vir_space_id,spin),virtual_init(spin))
+            if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
+         end do
+
+         if (exa_input%moint_scheme == 2) then
+           !Define names for the initializers for density matrices
+           allocate(mo_oo(nocc+nocc))
+           allocate(mo_vo(nvir+nocc))
+           allocate(mo_ov(nocc+nvir))
+           allocate(mo_vv(nvir+nvir))
+           mo_oo(1:nocc) = mo_occ
+           mo_ov(1:nocc) = mo_occ
+           mo_vo(1:nvir) = mo_vir
+           mo_vv(1:nvir) = mo_vir
+           mo_oo(nocc+1:nocc+nocc) = mo_occ
+           mo_ov(nocc+1:nocc+nvir) = mo_vir
+           mo_vo(nvir+1:nvir+nocc) = mo_occ
+           mo_vv(nvir+1:nvir+nvir) = mo_vir
+           !Register the dm initializers as methods
+           call dm_init(1)%init_dm_ctor(mo_oo,(/nocc,nocc/))
+           ierr=exatns_method_register(dm_initlabel((/ao_space_id,ao_space_id/),(/occ_space_id,occ_space_id/)),dm_init(1))
+           if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
+           call dm_init(2)%init_dm_ctor(mo_vo,(/nvir,nocc/))
+           ierr=exatns_method_register(dm_initlabel((/ao_space_id,ao_space_id/),(/vir_space_id,occ_space_id/)),dm_init(2))
+           if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
+           call dm_init(3)%init_dm_ctor(mo_ov,(/nocc,nvir/))
+           ierr=exatns_method_register(dm_initlabel((/ao_space_id,ao_space_id/),(/occ_space_id,vir_space_id/)),dm_init(3))
+           if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
+           call dm_init(4)%init_dm_ctor(mo_vv,(/nvir,nvir/))
+           ierr=exatns_method_register(dm_initlabel((/ao_space_id,ao_space_id/),(/vir_space_id,vir_space_id/)),dm_init(4))
+           if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
+         end if
+
+         !Register the ao integral generation as a method
+         ierr=exatns_method_register('Aoint_calculator',aoint_calculator)
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(aoint) failed!')
+
+         !Register the denominator initializer as a method
+         call denominate%scale_with_denom_ctor(mo_occ,nocc,mo_vir,nvir)
+         ierr=exatns_method_register('Denominate',denominate)
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
+
+         !Register the standard print method with a low treshold to always print result_tensor
+         call tens_printer%reset_thresh(1.0D-15)
+         ierr=exatns_method_register('PrintTensor',tens_printer)
+         if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(printer) failed!')
+
+        end subroutine exacorr_cc_methods
 
         subroutine solve_t_equations(comm_t,int_t,dims,CCD,t_target_precision,ccsd_energy,ncycles)
 
@@ -1092,7 +1178,7 @@ module exacorr_cc
            a2int_root(1:2) = vovo_root(1)
            ierr=exatns_tensor_create(a2int_tensor,"a2vv",a2int_id,a2int_root,EXA_DATA_KIND_C8) 
            call aomo_halftransform_1 (aoint_tensor,a2int_tensor)
-           call print_date('vv ht done')
+           call print_date('vv halftransformation completed')
            call get_integral_tensor_3 (a2int_tensor,int_t%vvvv,12)
            call print_date('vvvv integrals completed')
            call get_integral_tensor_3 (a2int_tensor,int_t%vovv,34)
@@ -1106,7 +1192,7 @@ module exacorr_cc
            a2int_root(1:2) = vovo_root(2:3)
            ierr=exatns_tensor_create(a2int_tensor,"a2ov",a2int_id,a2int_root,EXA_DATA_KIND_C8) 
            call aomo_halftransform_1 (aoint_tensor,a2int_tensor)
-           call print_date('ov ht done')
+           call print_date('ov halftransformation completed')
            ierr=exatns_tensor_create(ovvo_tensor,"ovvo",ovvo_id,ovvo_root,EXA_DATA_KIND_C8) ! auxilliary for get_CC_integrals
            call get_integral_tensor_3 (a2int_tensor,ovvo_tensor,0)
            call print_date('ovvo integrals completed')
@@ -1123,7 +1209,7 @@ module exacorr_cc
            a2int_root(1:2) = vovo_root(2)
            ierr=exatns_tensor_create(a2int_tensor,"a2oo",a2int_id,a2int_root,EXA_DATA_KIND_C8) 
            call aomo_halftransform_1 (aoint_tensor,a2int_tensor)
-           call print_date('oo ht done')
+           call print_date('oo halftransformation completed')
            call get_integral_tensor_3 (a2int_tensor,int_t%ooov,12)
            call print_date('ooov integrals completed')
            call get_integral_tensor_3 (a2int_tensor,int_t%oooo,12)
