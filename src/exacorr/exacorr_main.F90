@@ -17,8 +17,8 @@
 
       logical mo_transform, cc_calculation
       integer              :: numproc, mytid
-      !integer              :: imo, nmo(4)
-      !integer, allocatable :: mo_list(:)
+      integer              :: imo, nmo(4)
+      integer, allocatable :: mo_list(:)
 !     Variables for reading of DFCOEF
       logical              :: input_found=.false. !For read_menu_input
       integer              :: file_unit,dfcoef_unit
@@ -62,19 +62,20 @@
       end if
 #endif
 
-!      nmo = 8
-!      allocate(mo_list(nmo(1)+nmo(2)+nmo(3)+nmo(4)))
-!      do imo = 1, nmo(1)
-!          mo_list(imo)                      = imo
-!          mo_list(imo+nmo(1))               = imo
-!          mo_list(imo+nmo(1)+nmo(2))        = imo
-!          mo_list(imo+nmo(1)+nmo(2)+nmo(3)) = imo
-!      end do
-!
-!      if (mo_transform) then
+       if (mo_transform) then
+!      We have no input driver for this test code, so we hardwire this here.
+       nmo = 8
+       allocate(mo_list(nmo(1)+nmo(2)+nmo(3)+nmo(4)))
+       do imo = 1, nmo(1)
+           mo_list(imo)                      = imo
+           mo_list(imo+nmo(1))               = imo
+           mo_list(imo+nmo(1)+nmo(2))        = imo
+           mo_list(imo+nmo(1)+nmo(2)+nmo(3)) = imo
+       end do
+ 
 !         call talsh_compute_mo_integrals (nmo, mo_list)
-!         call exacorr_compute_mo_integrals (nmo, mo_list)
-!      end if
+          call exacorr_compute_mo_integrals (nmo, mo_list)
+       end if
 
       if (mytid == 0) then
 !       open file and read dimension info
