@@ -92,15 +92,17 @@ export PAMI_IBV_ENABLE_DCT=1                    #reduces MPI_Init() time at larg
 #export PAMI_IBV_DEBUG_RNR_RETRY=9
 #export OMPI_LD_PRELOAD_POSTPEND=$OLCF_SPECTRUM_MPI_ROOT/lib/libmpitrace.so
 
-rm core.* *.tmp *.log *.out *.x
+rm core.* *.tmp *.log *.x RSD_MOS *.out
 cp $QF_PATH/exacorr.x ./
+cp *.rsd_mos RSD_MOS
 
-ulimit -s unlimited
+#ulimit -s unlimited
 
 #/usr/local/mpi/openmpi/3.1.0/bin/mpiexec -n $QF_NUM_PROCS -npernode $QF_PROCS_PER_NODE -oversubscribe ./exacorr.x #>& exacorr.log
 
 #/usr/local/mpi/mpich/3.2.1/bin/mpiexec -n $QF_NUM_PROCS ./exacorr.x #>& exacorr.log
 #/usr/local/mpi/mpich/3.2.1/bin/mpiexec -n $QF_NUM_PROCS -hosts localhost ./exacorr.x #>& exacorr.log  #For Mac users
+#mpiexec -n $QF_NUM_PROCS -hosts localhost ./exacorr.x 2>&1 | tee exacorr.log  #For Mac users
 
 #aprun -n $QF_NUM_PROCS -N $QF_PROCS_PER_NODE -d $QF_CORES_PER_PROCESS -cc none ./exacorr.x #>& exacorr.log
 

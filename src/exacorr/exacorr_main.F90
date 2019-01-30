@@ -12,6 +12,11 @@
       use talsh_cc,only             : talsh_cc_driver
       use exacorr_cc,only           : exacorr_cc_driver
       use exacc_cfg
+!---------------------------------------------
+      use exacorr_respect
+      use exacorr_datatypes, only : basis_set_info_t
+      use dirac_mo, only : MO
+!---------------------------------------------
 
       implicit none
 
@@ -30,6 +35,11 @@
       integer              :: nsym
       integer              :: idim(3,2)
       integer              :: i, j
+!---------------------------------------------
+      type(basis_set_info_t) :: ao_basis
+      type(MO)               :: qmo
+      integer                :: ierr
+!---------------------------------------------
 
 !     Initialize MPI variables
       mytid   = 0
@@ -62,20 +72,32 @@
       end if
 #endif
 
-       if (mo_transform) then
-!      We have no input driver for this test code, so we hardwire this here.
-       nmo = 8
-       allocate(mo_list(nmo(1)+nmo(2)+nmo(3)+nmo(4)))
-       do imo = 1, nmo(1)
-           mo_list(imo)                      = imo
-           mo_list(imo+nmo(1))               = imo
-           mo_list(imo+nmo(1)+nmo(2))        = imo
-           mo_list(imo+nmo(1)+nmo(2)+nmo(3)) = imo
-       end do
- 
-!         call talsh_compute_mo_integrals (nmo, mo_list)
-          call exacorr_compute_mo_integrals (nmo, mo_list)
-       end if
+      if (mo_transform) then
+!        We have no input driver for this test code, so we hardwire this here.
+         nmo = 8
+         allocate(mo_list(nmo(1)+nmo(2)+nmo(3)+nmo(4)))
+         do imo = 1, nmo(1)
+             mo_list(imo)                      = imo
+             mo_list(imo+nmo(1))               = imo
+             mo_list(imo+nmo(1)+nmo(2))        = imo
+             mo_list(imo+nmo(1)+nmo(2)+nmo(3)) = imo
+         end do
+
+!        call talsh_compute_mo_integrals (nmo, mo_list)
+         call exacorr_compute_mo_integrals (nmo, mo_list)
+      end if
+
+!--------------------------------------------------------------------------------
+      if (mytid == 0) then
+        call read_from_respect(ao_basis,qmo,ierr)
+        if (ierr /= 0) then
+            print*, "read_from_respect returned with error code ", ierr
+            print*, "Aborting calculation"
+            return
+        end if
+      end if
+      return
+!--------------------------------------------------------------------------------
 
       if (mytid == 0) then
 !       open file and read dimension info
