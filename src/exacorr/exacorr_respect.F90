@@ -1,5 +1,7 @@
 module exacorr_respect
 
+!   Module for interfacing the ReSpect SCF with exacorr
+
     implicit none
 
     private
@@ -137,7 +139,9 @@ module exacorr_respect
 
 !-------read MO coefficients
 
-        read (lucoef,*,end=10,err=10) ncoeff ! ncoeff = 2*nao * 2*nmo
+        read (lucoef,*,end=10,err=10) ncoeff ! ncoeff = nao * nmo
+
+        if (nao*nmo /= ncoeff) goto 10 ! sanity check
 
         allocate(coeff(nao,nmo))
         read (lucoef,*,end=10,err=10) coeff
@@ -145,7 +149,7 @@ module exacorr_respect
 !-------store all data in derived type arguments
 
 !       put in cmo
-        call create_cmo (como,nao,nmo)
+        call alloc_mo(como,nao,nmo)
         como%total_energy = total_energy
         como%index        = index
         como%coeff        = coeff(:,:)
@@ -171,15 +175,6 @@ module exacorr_respect
            ao_basis%gtos(ishell)%coefficient = priccf(1,ishell)
            ao_basis%gtos(ishell)%coord = cent(ishell,1:3)
         end do
-
-       print*, "ao_basis%gtos%exponent"
-       do i = 1, nshells
-        print*, ao_basis%gtos(i)%exponent
-       end do
-       print*, "ao_basis%gtos%coefficient"
-       do i = 1, nshells
-        print*, ao_basis%gtos(i)%coefficient
-       end do
 
         deallocate(nhkt  )
         deallocate(ncent )

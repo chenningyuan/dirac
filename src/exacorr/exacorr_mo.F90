@@ -9,18 +9,15 @@ module exacorr_mo
 
 
 !!!!!!!!!!!!!!!!!LOSE DEPENDENCY ON DIRAC_MO -> PUT EVERYTHING IN HERE
-!!!!!!!!!!!!!!!!!HAVE BASIC MO TYPE, EXTEND WITH EITHER QMO OR CMO
-!!!!!!!!!!!!!!!!!FOR NOW ONLY CMO
 
 
     implicit none
 
     private
 
-    public :: cmo, create_cmo, delete_cmo, sync_cmo
+    public :: alloc_mo, dealloc_mo, sync_mo
 
-    type cmo
-
+    type  :: mo_root
         integer             :: &
          fermion_irrep, &     ! fermion irrep (1=gerade, 2=ungerade) to which the spinors belongs
          nao, &               ! number of aos
@@ -32,31 +29,47 @@ module exacorr_mo
         real(8), pointer    :: &
          energy (:)           ! orbital energies
 
-
-        complex(8), pointer :: &
-         coeff (:,:)          ! coefficients (AO,MO)
-         
         integer, pointer    :: &
          index(:), &          ! index of the spinor in the full list of spinors for this fermion symmetry
          boson_irrep(:)       ! for spinfree calculations: boson irrep to which the spinor belongs
 
+    end type mo_root
+
+    type, public, extends(mo_root) :: cmo
+
+        complex(8), pointer :: &
+         coeff (:,:)          ! coefficients (AO,MO)
+
     end type cmo
 
-    interface create_cmo
-      module procedure alloc_cmo
+    type, public, extends(mo_root) :: qumo
+
+        integer :: &
+         nz                   ! number of active quaternion units
+
+        real(8), pointer :: &
+         coeff (:,:,:)        ! coefficients (AO,MO,IZ)
+
+    end type qumo
+
+    interface alloc_mo
+      module procedure alloc_mo_complex
+      module procedure alloc_mo_quaternion
     end interface
 
-    interface delete_cmo
-      module procedure dealloc_cmo
+    interface dealloc_mo
+      module procedure dealloc_mo_complex
+      module procedure dealloc_mo_quaternion
     end interface
 
-    interface sync_cmo
-      module procedure sync_cmo
+    interface sync_mo
+      module procedure sync_mo_complex
+      module procedure sync_mo_quaternion
     end interface
 
     contains
 
-     subroutine alloc_cmo (M, nao, nmo)
+     subroutine alloc_mo_complex(M,nao,nmo)
 
 !     Prepare to work with a block of Mos
 
@@ -84,9 +97,45 @@ module exacorr_mo
       allocate (M%index(M%nmo))
       M%index = 0
 
-     end subroutine alloc_cmo
+     end subroutine alloc_mo_complex
 
-     subroutine dealloc_cmo (M)
+     subroutine alloc_mo_quaternion(M,nao,nmo,nz)
+
+!      Prepare to work with a block of Mos
+
+       type(qumo), intent(out)           :: M
+       integer,    intent(in )           :: nao
+       integer,    intent(in )           :: nmo
+       integer,    intent(in ), optional :: nz
+
+       M%nao = nao  ! Size of AO basis. Is kept here as we may want to use non-global defs
+       M%nmo = nmo  ! Size of MO basis. May vary (e.g. in the 4-index when we have different ranges)
+       if (present(nz)) then
+          M%nz = nz
+       else
+          M%nz = 1  ! We default to one, easy for spinfree applications
+       endif
+
+!      Reserve the memory needed to work with a block of Mos
+       nullify  (M%energy)
+       allocate (M%energy(M%nmo))
+       M%energy = 0.0
+
+       nullify  (M%coeff)
+       allocate (M%coeff(M%nao,M%nmo,M%nz))
+       M%coeff = 0.0
+
+       nullify  (M%boson_irrep)
+       allocate (M%boson_irrep(M%nmo))
+       M%boson_irrep = 0
+
+       nullify  (M%index)
+       allocate (M%index(M%nmo))
+       M%index = 0
+
+     end subroutine alloc_mo_quaternion
+
+     subroutine dealloc_mo_complex(M)
 
 !     Clean up workspace
 
@@ -102,11 +151,30 @@ module exacorr_mo
       deallocate (M%boson_irrep)
       deallocate (M%index)
 
-     end subroutine dealloc_cmo
+     end subroutine dealloc_mo_complex
+
+     subroutine dealloc_mo_quaternion(M)
+
+!      Clean up workspace
+
+       type (qumo), intent(inout) :: M
+
+!      Set the dimensions to zero (not really necessary, but may prevent errors due to abuse of the MO-type)
+       M%nao = 0
+       M%nmo = 0
+       M%nz = 0
+
+!      Free the memory associated with a block of Mos
+       deallocate (M%energy)
+       deallocate (M%coeff)
+       deallocate (M%boson_irrep)
+       deallocate (M%index)
+
+     end subroutine dealloc_mo_quaternion
 
 #if defined (VAR_MPI)
 
-     subroutine sync_cmo (M,my_MPI_master)
+     subroutine sync_mo_complex(M,my_MPI_master)
 
       use interface_to_mpi
 
@@ -121,27 +189,63 @@ module exacorr_mo
       call interface_mpi_bcast (M%nao,1,my_MPI_master,global_communicator)
       call interface_mpi_bcast (M%nmo,1,my_MPI_master,global_communicator)
       if (my_MPI_rank /= my_MPI_master) then
-         call alloc_cmo (M,M%nao,M%nmo)
+         call alloc_mo (M,M%nao,M%nmo)
       end if
       call interface_mpi_bcast (M%fermion_irrep,    1,my_MPI_master,global_communicator)
       call interface_mpi_bcast (M%boson_irrep,  M%nmo,my_MPI_master,global_communicator)
       call interface_mpi_bcast (M%index,        M%nmo,my_MPI_master,global_communicator)
       call interface_mpi_bcast (M%energy,       M%nmo,my_MPI_master,global_communicator)
-      n_coef = 2*M%nao * 2*M%nmo
+      n_coef = M%nao * M%nmo
       call interface_mpi_bcast (M%coeff,n_coef,my_MPI_master,global_communicator)
 
-     end subroutine sync_cmo
+     end subroutine sync_mo_complex
+
+     subroutine sync_mo_quaternion(M,my_MPI_master)
+
+      use interface_to_mpi
+
+!     Synchronize and allocate (if not on master) a block of MOcoefficients
+ 
+      type(qumo), intent(inout) :: M
+      integer,    intent(in   ) :: my_MPI_master
+      integer                   :: my_MPI_rank
+      integer                   :: n_coef
+
+      call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
+      call interface_mpi_bcast (M%nao,1,my_MPI_master,global_communicator)
+      call interface_mpi_bcast (M%nmo,1,my_MPI_master,global_communicator)
+      call interface_mpi_bcast (M%nz ,1,my_MPI_master,global_communicator)
+      if (my_MPI_rank /= my_MPI_master) then
+         call alloc_mo(M,M%nao,M%nmo,M%nz)
+      end if
+      call interface_mpi_bcast (M%fermion_irrep,    1,my_MPI_master,global_communicator)
+      call interface_mpi_bcast (M%boson_irrep,  M%nmo,my_MPI_master,global_communicator)
+      call interface_mpi_bcast (M%index,        M%nmo,my_MPI_master,global_communicator)
+      call interface_mpi_bcast (M%energy,       M%nmo,my_MPI_master,global_communicator)
+      n_coef = M%nao * M%nmo * M%nz
+      call interface_mpi_bcast (M%coeff,n_coef,my_MPI_master,global_communicator)
+
+     end subroutine sync_mo_quaternion
 
 #else
 
-     subroutine sync_cmo (M,my_MPI_master)
+     subroutine sync_mo_complex(M,my_MPI_master)
 
 !     do nothing, makes it possible to call sync also in serial runs
 
       type(cmo), intent(inout) :: M
       integer,   intent(in   ) :: my_MPI_master
 
-     end subroutine sync_cmo
+     end subroutine sync_mo_complex
+
+     subroutine sync_mo_quaternion(M,my_MPI_master)
+
+!     do nothing, makes it possible to call sync also in serial runs
+
+      type(qumo), intent(inout) :: M
+      integer,    intent(in   ) :: my_MPI_master
+
+     end subroutine sync_mo_quaternion
 
 #endif
 
