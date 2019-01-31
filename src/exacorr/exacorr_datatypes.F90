@@ -35,11 +35,11 @@
             logical                 :: lambda = .false.
             logical                 :: noints = .false.
             integer                 :: exa_blocksize = 75
-            integer                 :: moint_scheme = 1
+            integer                 :: moint_scheme = 3
             integer                 :: ncycles = 30
             integer                 :: nkr_occ, nkr_vir         !Number of Kramer pairs
             integer, allocatable    :: mokr_occ(:), mokr_vir(:) !List of active Kramer pairs
-            real(REALD)             :: t_econv = 1.0D-13        !Convergence criterium
+            real(REALD)             :: t_econv = 1.0D-9         !Convergence criterium
         end type exacc_input
 
 !       All two electron integral tensors

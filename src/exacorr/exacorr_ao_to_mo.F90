@@ -9,14 +9,18 @@ module exacorr_ao_to_mo
         private
         public exacorr_compute_mo_integrals
 #if defined (VAR_MPI)
+
+        interface get_integral_tensor
+            module procedure get_integral_tensor
+        end interface get_integral_tensor
+
         public mocoef_initlabel
         public dm_initlabel
         public get_integral_tensor
-        public get_integral_tensor_2
-        public get_integral_tensor_3
-        public aomo_halftransform_1
+        public get_ht1_integral_tensor
+        public get_ht2_integral_tensor
         public print_tensornorm2
-#endif
+
         complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0)
 
          ! It is not possible to make an array of pointers, so we need a container
@@ -26,7 +30,6 @@ module exacorr_ao_to_mo
 
        contains
 
-#if defined (VAR_MPI)
         subroutine exacorr_compute_mo_integrals (nmo, mo_list)
 
 !        This subroutine drives the AO to MO integral transformation using AO integrals from InteRest and the tensor contraction library from ExaTensor
@@ -334,7 +337,7 @@ module exacorr_ao_to_mo
          ierr=exatns_tensor_create(a2int_tensor,'a2int',a2int_id,a2int_root,EXA_DATA_KIND_C8)
 
 !        Do 1st and 2nd quarter-transformation
-         call aomo_halftransform_1 (aoint_tensor,a2int_tensor)
+         call get_ht1_integral_tensor (aoint_tensor,a2int_tensor)
          if (print_level >0) call print_date('first ht done')
 !        Do 3rd and 4th quarter-transformation
          call aomo_halftransform_2 (a2int_tensor,moint_tensor)
@@ -347,7 +350,7 @@ module exacorr_ao_to_mo
 
         end subroutine aomo_transform_1
 
-        subroutine aomo_halftransform_1 (aoint_tensor,a2int_tensor)
+        subroutine get_ht1_integral_tensor (aoint_tensor,a2int_tensor)
 
 !        Transform integral tensor from ao-basis to mo-basis
 !        Algorithm 1: n^5 scaling with index-by-index transform of first two indices
@@ -367,7 +370,7 @@ module exacorr_ao_to_mo
          integer(INTL)     :: aoint_root(4),a1int_root(4),a2int_root(4),mocoef_root(2)
          character(len=9)  :: mocoef_name
 
-         if (print_level >0) call print_date('entered aomo_halftransform_1')
+         if (print_level >0) call print_date('entered get_ht1_integral_tensor')
 
 !        Determine space ids and root
          call aoint_tensor%get_space_ids(aoint_id,aoint_root,ierr)
@@ -432,9 +435,9 @@ module exacorr_ao_to_mo
             end do
          end do
 
-         if (print_level >0) call print_date('leaving aomo_halftransform_1')
+         if (print_level >0) call print_date('leaving get_ht1_integral_tensor')
 
-        end subroutine aomo_halftransform_1
+        end subroutine get_ht1_integral_tensor
 
         subroutine aomo_halftransform_2 (a2int_tensor,moint_tensor)
 
@@ -677,7 +680,7 @@ module exacorr_ao_to_mo
 
         end subroutine aomo_transform_3
 
-        subroutine get_integral_tensor (aoint_tensor,integral_tensor,antisymmetrize)
+        subroutine get_integral_tensor (aoint_tensor,integral_tensor,antisymmetrize,algorithm)
 
          implicit none
 
@@ -685,11 +688,14 @@ module exacorr_ao_to_mo
          type(tens_rcrsv_t)                 :: moint_tensor
 
          integer, intent(in)                :: antisymmetrize
+         integer, optional                  :: algorithm
 
          integer           :: ierr, tens_rank
          integer           :: aoint_id(4),integral_id(4),moint_id(4)
          integer(INTL)     :: aoint_root(4),integral_root(4),moint_root(4)
 
+         if (.not.present(algorithm)) algorithm = 1
+   
 !        Check integrity of tensors
          tens_rank = aoint_tensor%get_rank(ierr)
          if (ierr.ne.0 .or. tens_rank.ne.4) call quit('input tensor corrupted in aomo_transform')
@@ -718,62 +724,22 @@ module exacorr_ao_to_mo
          ierr=exatns_tensor_create(moint_tensor,'mulliken',moint_id,moint_root,EXA_DATA_KIND_C8)
 
 !        Transform integrals
-         call aomo_transform_1 (aoint_tensor,moint_tensor)
+         select case (algorithm)
+         case (1)
+            call aomo_transform_1 (aoint_tensor,moint_tensor)
+         case (2)
+            call aomo_transform_2 (aoint_tensor,moint_tensor)
+         case default
+            call quit ("asked for non-existing algorithm in get_integral_tensor")
+         end select
+
 !        Switch to Dirac order and antisymmetrize
          call mulliken_to_dirac_sort (moint_tensor,integral_tensor,antisymmetrize)
          ierr=exatns_tensor_destroy(moint_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=1; return; endif
 
         end subroutine get_integral_tensor
 
-        subroutine get_integral_tensor_2 (aoint_tensor,integral_tensor,antisymmetrize) 
-
-         implicit none
-
-         type(tens_rcrsv_t), intent(inout)  :: aoint_tensor, integral_tensor
-         type(tens_rcrsv_t)                 :: moint_tensor
-
-         integer, intent(in)                :: antisymmetrize
-
-         integer           :: ierr, tens_rank
-         integer           :: aoint_id(4),integral_id(4),moint_id(4)
-         integer(INTL)     :: aoint_root(4),integral_root(4),moint_root(4)
-
-!        Check integrity of tensors
-         tens_rank = aoint_tensor%get_rank(ierr)
-         if (ierr.ne.0 .or. tens_rank.ne.4) call quit('input tensor corrupted in aomo_transform')
-         tens_rank = integral_tensor%get_rank(ierr)
-         if (ierr.ne.0 .or. tens_rank.ne.4) call quit('output tensor corrupted in aomo_transform')
-
-!        Determine ids and root
-         call aoint_tensor%get_space_ids(aoint_id,aoint_root,ierr)
-         if(ierr.ne.EXA_SUCCESS) call quit('aoint tensor corrupted')
-         call integral_tensor%get_space_ids(integral_id,integral_root,ierr)
-         if(ierr.ne.EXA_SUCCESS) call quit('integral tensor corrupted')
-
-!        Copy the information about spaces from the starting and target tensors to the auxilliary ones
-!        Use relation (12|34) = <13|24> 
-         moint_id(1) = integral_id(1) 
-         moint_id(2) = integral_id(3)
-         moint_id(3) = integral_id(2)
-         moint_id(4) = integral_id(4)
-
-         moint_root(1) = integral_root(1)
-         moint_root(2) = integral_root(3)
-         moint_root(3) = integral_root(2)
-         moint_root(4) = integral_root(4)
-
-!        Allocate auxilliary tensor to get integrals (without anti-symmetrization) in Mulliken order
-         ierr=exatns_tensor_create(moint_tensor,'mulliken',moint_id,moint_root,EXA_DATA_KIND_C8)
-
-!        Transform integrals
-         call aomo_transform_2 (aoint_tensor,moint_tensor)
-!        Switch to Dirac order and antisymmetrize
-         call mulliken_to_dirac_sort (moint_tensor,integral_tensor,antisymmetrize)
-         ierr=exatns_tensor_destroy(moint_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=1; return; endif
-
-        end subroutine get_integral_tensor_2
-
-        subroutine get_integral_tensor_3 (a2int_tensor,integral_tensor,antisymmetrize) 
+        subroutine get_ht2_integral_tensor (a2int_tensor,integral_tensor,antisymmetrize) 
 
          implicit none
 
@@ -819,7 +785,7 @@ module exacorr_ao_to_mo
          call mulliken_to_dirac_sort (moint_tensor,integral_tensor,antisymmetrize)
          ierr=exatns_tensor_destroy(moint_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=1; return; endif
 
-        end subroutine get_integral_tensor_3
+        end subroutine get_ht2_integral_tensor
 
         subroutine mulliken_to_dirac_sort  (mulliken_tensor,dirac_tensor,antisymmetrize)
 
@@ -946,6 +912,9 @@ module exacorr_ao_to_mo
 ! stub non-MPI routine to satisfy references
 
 #else
+
+       contains
+
         subroutine exacorr_compute_mo_integrals (nmo, mo_list)
          implicit none
          integer, intent(in) :: nmo(4)       ! the size of the mo basis for each of the 4 indices (mulliken ordering)
