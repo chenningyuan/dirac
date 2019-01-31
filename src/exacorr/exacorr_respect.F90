@@ -8,9 +8,9 @@ module exacorr_respect
 
     contains
 
-        subroutine read_from_respect (ao_basis,qmo,ierr)
+        subroutine read_from_respect (ao_basis,como,ierr)
 
-        use dirac_mo
+        use exacorr_mo
         use exacorr_datatypes, only : basis_set_info_t
         use exacorr_global, only    : ncartesian
 
@@ -20,25 +20,23 @@ module exacorr_respect
 !       ReSpect does not use symmetry
 
         type(basis_set_info_t), intent(inout) :: ao_basis
-        type(MO), intent(inout):: qmo
+        type(cmo),intent(inout):: como
         integer, intent(out)   :: ierr 
         integer, parameter     :: NOERROR  = 0 ! no error
         integer, parameter     :: NOTFOUND = 1 ! file not found
         integer, parameter     :: CORRUPT  = 2 ! file unreadable
-        integer, parameter     :: NOBASIS  = 4 ! no basis set information could be read (old DFCOEF?)
-        integer, parameter     :: INCONSIS = 5 ! RSD_MOS does not contain consistent information wrt number of basis functions
+        integer, parameter     :: NOBASIS  = 3 ! no basis set information could be read (old DFCOEF?)
+        integer, parameter     :: INCONSIS = 4 ! RSD_MOS does not contain consistent information wrt number of basis functions
         real(8)                :: total_energy
         logical                :: tobe
         integer                :: lucoef
-        integer                :: i, j, k, ishell, iprimstart, iprimend
-        integer                :: counter, first
-        integer                :: nao, nshells, iao, ibas
-        integer                :: nmo, npriexp, ncnt
-        integer                :: ncentr, nelms, ncoeff
+        integer                :: i, j, ishell
+        integer                :: nao, nmo, nshells, iao, ibas
+        integer                :: npriexp, ncnt
+        integer                :: ncentr, ncoeff
         complex(8), allocatable:: coeff(:,:)
         integer, allocatable   :: index(:)
-        integer, allocatable   :: ncent(:),nhkt(:),nuco(:),numcf(:)
-        integer, allocatable   :: jstrt(:)
+        integer, allocatable   :: ncent(:),nhkt(:)
         integer, allocatable   :: natomc(:)
         real(8), allocatable   :: cent(:,:),cent_rsd(:,:)
         real(8), allocatable   :: priexp(:),priccf(:,:)
@@ -62,7 +60,6 @@ module exacorr_respect
 
 !       number of atoms
         read (lucoef,*,end=10,err=10) ncentr
-
         allocate(natomc(ncentr))
         allocate(cent_rsd(3,ncentr))
 
@@ -96,131 +93,67 @@ module exacorr_respect
 !       contraction coefficients
         read (lucoef,*,end=20,err=20) priccf
 
+!       calculate number of functions
+        nao = 0
+        do i = 1, nshells
+!           number of sperical GTOs / "electronic" (=positive energy) solutions"
+            nao = nao + 2 * (nhkt(i) - 1) + 1
+        end do
+        nao = nao * 2
+
 !-------sort and create all necessary arrays from available data
 
 !       sort ReSpect order into exacorr order
         call sort_basis_data(ncent,nhkt,priexp,priccf,nshells)
 
 !       Create array containing centers per shell, instead of per atom
-        allocate(cent(3,nshells))
+        allocate(cent(nshells,3))
         j = 1
         do i = 1, nshells-1
-            cent(1:3,i) = cent_rsd(1:3,j)
+            cent(i,1:3) = cent_rsd(1:3,j)
             if (ncent(i) < ncent(i+1)) then
                 j = j + 1
             else if (i == nshells-1) then
-                cent(1:3,nshells) = cent_rsd(1:3,j)
+                cent(nshells,1:3) = cent_rsd(1:3,j)
             end if
         end do
         deallocate(cent_rsd)
 
-!       calculate number of functions
-        nao = 0
-        nmo = 0
-        do i = 1, nshells
-!           number of Cartesian GTOs / "electronic" (=positive energy) solutions"
-            nao = nao + nhkt(i) * (nhkt(i) + 1) / 2
-!           number of sperical GTOs
-            nmo = nmo + 2 * (nhkt(i) - 1) + 1
-        end do
+!-------read total SCF energy
 
-!!       we set the index compatible with the fact that we store all mo's
-!        allocate(index(nmo))
-!        do i = 1, nmo
-!           index(i) = i
-!        end do
+        read(lucoef,*,err=10,end=10) total_energy
 
-!       create nuco array -> number of uncontracted functions
-        allocate(nuco(nshells))
+!-------read eigenvalues
 
-        counter = 0
-        first   = 1
-        do i = 1, nshells-1
-            if (nhkt(i) == nhkt(i+1)) then
-                counter = counter + 1
-                if (i == nshells-1) nuco(nshells) = counter
-            else
-                nuco(first:i) = counter + 1
-                first         = i + 1
-                counter       = 0
-                if (i == nshells-1) nuco(nshells) = 1 
-            end if
-        end do
-
-!       start of exponent values
-        allocate(jstrt(nshells))
-        i = 1
-        do while (i <= nshells)
-            if (i == 1) then
-                counter =  nuco(i)
-                jstrt(i:counter) = 0
-            else if (i == nshells .and. nuco(i) == 1) then
-                jstrt(nshells) = counter
-            else
-                jstrt(i:i+nuco(i)-1) = counter
-                counter = counter + nuco(i)
-            end if
-            i = i + nuco(i)
-        end do
-
-!       number of contracted for all shells
-        allocate(numcf(nshells))
-        counter = 1
-        do i = 1, nshells-1
-            if (nhkt(i) == nhkt(i+1)) then
-                numcf(i) = counter
-                counter  = counter + 1
-                if (i == nshells-1) numcf(nshells) = counter
-            else
-                numcf(i) = counter
-                counter  = 1
-                if (i == nshells-1) numcf(nshells) = counter
-            end if
-        end do
-
-!-------read total_energy
-
-!        read(lucoef,*,err=10,end=10) total_energy
-!        print*, "total energy: ", total_energy
-
-!        return
-
-!-------read Eigenvalues
-
-        read (lucoef,*,end=10,err=10) nelms ! nelms = 2 * nmo
-        allocate(eig(nelms))
+        read (lucoef,*,end=10,err=10) nmo
+        allocate(eig(nmo))
         read (lucoef,*,end=10,err=10) eig
 
 !       we set the index compatible with the fact that we store all mo's
-        allocate(index(nelms))
-        do i = 1, nelms
+        allocate(index(nmo))
+        do i = 1, nmo
            index(i) = i
         end do
 
 !-------read MO coefficients
 
         read (lucoef,*,end=10,err=10) ncoeff ! ncoeff = 2*nao * 2*nmo
-        allocate(coeff(nao*2,nelms))
-        read (lucoef,*,end=10,err=10) coeff
 
-        return
+        allocate(coeff(nao,nmo))
+        read (lucoef,*,end=10,err=10) coeff
 
 !-------store all data in derived type arguments
 
-!REPLACE THIS WITH CMO
-!!       put in qmo
-!        call create_qmo (qmo,nao,nmo,nz)
-!        qmo%total_energy = total_energy
-!        qmo%index        = index
-!        qmo%coeff        = coeff(:,npo+1:nto,1:nz)
-!        qmo%energy       = eig(1:nmo)
-!        qmo%energy       = eig(1:nelms)
-!        qmo%boson_irrep  = 0 
+!       put in cmo
+        call create_cmo (como,nao,nmo)
+        como%total_energy = total_energy
+        como%index        = index
+        como%coeff        = coeff(:,:)
+        como%energy       = eig(:)
+        como%boson_irrep  = 0 
 
         deallocate(index)
 
-!        allocate(priccf(nshells,ncnt))
-!
 !       put in gtos
         ao_basis%nshells = nshells
         ao_basis%nao     = nao
@@ -229,28 +162,30 @@ module exacorr_respect
         do ishell = 1, nshells
            ao_basis%gtos(ishell)%orb_momentum = nhkt(ishell)
            ao_basis%gtos(ishell)%atom_number  = ncent(ishell)
-           ao_basis%gtos(ishell)%n_primitives = nuco(ishell)
-           nullify  (ao_basis%gtos(ishell)%exponent) 
-           allocate (ao_basis%gtos(ishell)%exponent(nuco(ishell)))
+           ao_basis%gtos(ishell)%n_primitives = 1
+           nullify  (ao_basis%gtos(ishell)%exponent)
+           allocate (ao_basis%gtos(ishell)%exponent(1))
            nullify  (ao_basis%gtos(ishell)%coefficient)
-           allocate (ao_basis%gtos(ishell)%coefficient(nuco(ishell)))
-           iPrimStart = jstrt(ishell) + 1
-           iPrimEnd   = jstrt(ishell) + nuco(ishell)
-           k          = numcf(ishell)
-           ao_basis%gtos(ishell)%exponent = priexp(iPrimStart:iPrimEnd)
-!!!!!!!!!!           ao_basis%gtos(ishell)%coefficient = priccf(iPrimStart:iPrimEnd,k)
+           allocate (ao_basis%gtos(ishell)%coefficient(1))
+           ao_basis%gtos(ishell)%exponent = priexp(ishell)
+           ao_basis%gtos(ishell)%coefficient = priccf(1,ishell)
            ao_basis%gtos(ishell)%coord = cent(ishell,1:3)
         end do
 
-!-------DONT FORGET TO DEALLOC EVERYTHING----------------------
+       print*, "ao_basis%gtos%exponent"
+       do i = 1, nshells
+        print*, ao_basis%gtos(i)%exponent
+       end do
+       print*, "ao_basis%gtos%coefficient"
+       do i = 1, nshells
+        print*, ao_basis%gtos(i)%coefficient
+       end do
+
         deallocate(nhkt  )
         deallocate(ncent )
         deallocate(priexp)
         deallocate(priccf)
         deallocate(cent  )
-        deallocate(nuco  )
-        deallocate(jstrt )
-        deallocate(numcf )
         deallocate(eig   )
         deallocate(coeff )
 
@@ -290,9 +225,10 @@ module exacorr_respect
 
 !        Insertion sort (so far the only sort which gives the desired ordening)
 
+!        input variables
          integer, intent(inout) :: ncent(:), nhkt(:)
+         integer, intent(in   ) :: nshells
          real(8), intent(inout) :: priexp(:), priccf(:,:)
-         integer, intent(in)    :: nshells
 !        local variables
          integer :: tmp_ncent, tmp_nhkt
          real(8) :: tmp_priexp, tmp_priccf

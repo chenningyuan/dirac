@@ -15,7 +15,7 @@
 !---------------------------------------------
       use exacorr_respect
       use exacorr_datatypes, only : basis_set_info_t
-      use dirac_mo, only : MO
+      use exacorr_mo, only : cmo
 !---------------------------------------------
 
       implicit none
@@ -37,7 +37,7 @@
       integer              :: i, j
 !---------------------------------------------
       type(basis_set_info_t) :: ao_basis
-      type(MO)               :: qmo
+      type(cmo)              :: como
       integer                :: ierr
 !---------------------------------------------
 
@@ -89,14 +89,14 @@
 
 !--------------------------------------------------------------------------------
       if (mytid == 0) then
-        call read_from_respect(ao_basis,qmo,ierr)
+        call read_from_respect(ao_basis,como,ierr)
         if (ierr /= 0) then
             print*, "read_from_respect returned with error code ", ierr
             print*, "Aborting calculation"
             return
         end if
       end if
-      return
+!      return
 !--------------------------------------------------------------------------------
 
       if (mytid == 0) then
@@ -115,12 +115,11 @@
            call quit ('exacorr can not handle symmetry')
         else
            nesh(1) = idim(2,1) ! "electronic" (= positive energy) solutions (we only need these)
-        end if 
+        end if
         close (dfcoef_unit,status='KEEP')
 
         exa_input%nkr_occ = 0
         call numlst (string_occupied,kvec,1,1,nesh(1),1,exa_input%nkr_occ)
-        print*, "nocc = ", exa_input%nkr_occ
         allocate(exa_input%mokr_occ(exa_input%nkr_occ))
         call numlst (string_occupied,exa_input%mokr_occ,exa_input%nkr_occ, &
                                             1,nesh(1),1,exa_input%nkr_occ)

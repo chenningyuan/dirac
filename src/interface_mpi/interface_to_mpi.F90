@@ -115,6 +115,7 @@ module interface_to_mpi
     module procedure interface_mpi_bcast_r4
     module procedure interface_mpi_bcast_cx
     module procedure interface_mpi_bcast_c1
+    module procedure interface_mpi_bcast_co2
   end interface
 
   interface interface_mpi_gather
@@ -260,6 +261,7 @@ module interface_to_mpi
   integer,                        parameter, public :: df_mpi_info_null    = mpi_info_null
   integer,                        parameter, public :: df_mpi_byte         = mpi_byte
   integer,                        parameter, public :: df_mpi_real8        = mpi_real8
+  integer,                        parameter, public :: df_mpi_complex8     = mpi_complex8
   integer,                        parameter, public :: df_mpi_integer      = mpi_integer
   integer,                        parameter, public :: df_mpi_integer8     = mpi_integer8
   integer,                        parameter, public :: df_mpi_logical      = mpi_logical
@@ -604,6 +606,34 @@ contains
 #else
     if (.not. MPI_INIT_called) return
     call mpi_bcast(x, ndim   , MPI_CHARACTER, root_proc   , communicator   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_bcast_co2(x,ndim,root_proc,communicator)
+
+!-------------------------------------------------------------------------------
+    complex(8)                 :: x(:,:)
+    integer(kind=integer_kind) :: ndim
+    integer(kind=integer_kind) :: root_proc
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32BIT_INT
+    integer(kind=4)            :: ndim_i4
+    integer(kind=4)            :: root_proc_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
+    ndim_i4         = ndim
+    root_proc_i4    = root_proc
+    communicator_i4 = communicator
+    call mpi_bcast(x, ndim_i4, MPI_COMPLEX8, root_proc_i4, communicator_i4, ierr_i4)
+#else
+    if (.not. MPI_INIT_called) return
+    call mpi_bcast(x, ndim   , MPI_COMPLEX8, root_proc   , communicator   , ierr   )
 #endif
 
   end subroutine
