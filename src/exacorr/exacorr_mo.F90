@@ -249,7 +249,7 @@ module exacorr_mo
 
 #endif
 
-     subroutine convert_quaternion_to_complex(coeff,scoeff,eig,seig,nao,nmo)
+     subroutine convert_quaternion_to_complex(coeff,scoeff,eig,seig,nao,nmo,npo)
 
 !     switch to Kramer's unrestricted picture
 
@@ -257,15 +257,15 @@ module exacorr_mo
       real(8),    intent(inout) :: coeff(:,:,:), eig(:)
       real(8),    intent(  out) :: seig(:)
       complex(8), intent(  out) :: scoeff(:,:)
-      integer,    intent(in   ) :: nao, nmo
+      integer,    intent(in   ) :: nao, nmo, npo
 !-----summation and dummy variables
       integer                 :: i, j
       complex(8), allocatable :: t_cmplx(:)
 
-!-----create new arrays grouped by spin
-!     I think this only works if there are doubly degenerate states
-      seig(    1:  nmo) = eig(:)
-      seig(nmo+1:2*nmo) = eig(:)
+!-----create new arrays grouped by spin + drop "positronic" solutions
+
+      seig(    1:  nmo) = eig(npo+1:npo+nmo)
+      seig(nmo+1:2*nmo) = eig(npo+1:npo+nmo)
 
 !     initial structure of scoeff
 !           nmo nmo
@@ -273,8 +273,8 @@ module exacorr_mo
 
       do j = 1, nmo
         do i = 1, nao
-            scoeff(i,j    ) = dcmplx( coeff(i,j,1),coeff(i,j,2))
-            scoeff(i,j+nmo) = dcmplx(-coeff(i,j,3),coeff(i,j,4))
+            scoeff(i,j    ) = dcmplx( coeff(i,j+npo,1),coeff(i,j+npo,2))
+            scoeff(i,j+nmo) = dcmplx(-coeff(i,j+npo,3),coeff(i,j+npo,4))
         end do
       end do
 

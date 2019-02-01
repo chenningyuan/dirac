@@ -384,7 +384,8 @@ C
 !      switch to unrestricted spinor picture
        allocate(seig(2*nmo))
        allocate(scoeff(nao,2*nmo))
-       call convert_quaternion_to_complex(coeff,scoeff,eig,seig,nao,nmo)
+       call convert_quaternion_to_complex(coeff,scoeff,eig,seig,
+     &                                              nao,nmo,npo)
 
        deallocate(seig)
        deallocate(scoeff)
