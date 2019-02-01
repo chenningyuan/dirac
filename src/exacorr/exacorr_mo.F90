@@ -1,21 +1,21 @@
 module exacorr_mo 
 
+!   Contains all the necessary information for a range of molecular orbitals
+!   In particular:  - Orbital energy
+!                   - Boson characterization (for spinfree runs)
+!                   - Coefficients of AO-functions
+!                   - Position in the full list of MO vectors
 
-! Contains all the necessary information for a range of molecular orbitals
-! In particular:  - Orbital energy
-!                 - Boson characterization (for spinfree runs)
-!                 - Coefficients of AO-functions
-!                 - Position in the full list of MO vectors
-
+!   Extended from dirac_mo by Stan Papadopoulos, January 2019
 
 !!!!!!!!!!!!!!!!!LOSE DEPENDENCY ON DIRAC_MO -> PUT EVERYTHING IN HERE
-
 
     implicit none
 
     private
 
     public :: alloc_mo, dealloc_mo, sync_mo
+    public :: convert_quaternion_to_complex
 
     type  :: mo_root
         integer             :: &
@@ -86,7 +86,7 @@ module exacorr_mo
       M%energy = 0.0
 
       nullify  (M%coeff)
-      allocate (M%coeff(M%nao,M%nmo))
+      allocate (M%coeff(2*M%nao,M%nmo))
       M%coeff = 0.0
 
       nullify  (M%boson_irrep)
@@ -248,5 +248,87 @@ module exacorr_mo
      end subroutine sync_mo_quaternion
 
 #endif
+
+     subroutine convert_quaternion_to_complex(coeff,scoeff,eig,seig,nao,nmo)
+
+!     switch to Kramer's unrestricted picture
+
+!-----input variables
+      real(8),    intent(inout) :: coeff(:,:,:), eig(:)
+      real(8),    intent(  out) :: seig(:)
+      complex(8), intent(  out) :: scoeff(:,:)
+      integer,    intent(in   ) :: nao, nmo
+!-----summation and dummy variables
+      integer                 :: i, j
+      complex(8), allocatable :: t_cmplx(:)
+
+!-----create new arrays grouped by spin
+!     I think this only works if there are doubly degenerate states
+      seig(    1:  nmo) = eig(:)
+      seig(nmo+1:2*nmo) = eig(:)
+
+!     initial structure of scoeff
+!           nmo nmo
+!     nao (  A   B  )
+
+      do j = 1, nmo
+        do i = 1, nao
+            scoeff(i,j    ) = dcmplx( coeff(i,j,1),coeff(i,j,2))
+            scoeff(i,j+nmo) = dcmplx(-coeff(i,j,3),coeff(i,j,4))
+        end do
+      end do
+
+!-----sort output arrays in terms of ascending energy
+
+      allocate(t_cmplx(nao))
+
+      call sort_by_energy(scoeff,seig,t_cmplx,1,2*nmo)
+
+      deallocate(t_cmplx)
+
+     end subroutine convert_quaternion_to_complex
+
+     recursive subroutine sort_by_energy(coeff,eig,t_cmplx,first,last)
+
+!     Quicksort algorithm, taken from https://gist.github.com/t-nissie/479f0f16966925fa29ea
+
+!-----input variables
+      complex(8), intent(inout) :: coeff(:,:)
+      complex(8), intent(inout) :: t_cmplx(:)
+      real(8),    intent(inout) :: eig(:)
+      integer,    intent(in   ) :: first, last
+!-----tmp storage and summation
+      integer    :: i, j
+      real(8)    :: x, t
+
+      x = eig( (first+last) / 2 )
+      i = first
+      j = last
+
+      do
+        do while (eig(i) < x)
+            i = i + 1
+        end do
+        do while (x < eig(j))
+            j = j - 1
+        end do
+        if (i >= j) exit
+
+!       sort eigenvalues
+        t      = eig(i)
+        eig(i) = eig(j)
+        eig(j) = t
+!       sort coefficients
+        t_cmplx    = coeff(:,i)
+        coeff(:,i) = coeff(:,j)
+        coeff(:,j) = t_cmplx
+
+        i = i + 1
+        j = j - 1
+      end do
+      if (first < i - 1) call sort_by_energy(coeff,eig,t_cmplx,first,i-1  )
+      if (j + 1 < last ) call sort_by_energy(coeff,eig,t_cmplx,j+1  , last)
+
+     end subroutine sort_by_energy
 
 end module exacorr_mo

@@ -17,6 +17,7 @@ module exacorr_global
 
 !       Functions and routines to interact with these data
         public ncartesian
+        public nspherical
         public get_nao
         public get_talsh_only
         public set_talsh_only
@@ -145,6 +146,13 @@ module exacorr_global
                 ncartesian = ncartesian + i
              end do
          end function ncartesian
+
+         integer function nspherical(l_value)
+         ! Computes number of spherical functions for a given l-value
+             integer, intent(in) :: l_value
+             integer :: i
+             nspherical = 2 * (l_value - 1) + 1
+         end function nspherical
 
          integer function get_shell_index(ifun)
              integer, intent(in) :: ifun

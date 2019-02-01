@@ -1,6 +1,7 @@
 module exacorr_respect
 
 !   Module for interfacing the ReSpect SCF with exacorr
+!   Written by Stan Papadopoulos, January 2019
 
     implicit none
 
@@ -14,25 +15,29 @@ module exacorr_respect
 
         use exacorr_mo
         use exacorr_datatypes, only : basis_set_info_t
-        use exacorr_global, only    : ncartesian
+        use exacorr_global, only    : nspherical
 
 !       read all positive energy mo coefficients present on DFCOEF file
 !       check for imcompatibiklities (use of symmetry) as well and continue
 !       by reading also the basis set information into gtos
 !       ReSpect does not use symmetry
 
+!-------input variables
         type(basis_set_info_t), intent(inout) :: ao_basis
         type(cmo),intent(inout):: como
-        integer, intent(out)   :: ierr 
+        integer, intent(out)   :: ierr
+!-------error messages
         integer, parameter     :: NOERROR  = 0 ! no error
         integer, parameter     :: NOTFOUND = 1 ! file not found
         integer, parameter     :: CORRUPT  = 2 ! file unreadable
-        integer, parameter     :: NOBASIS  = 3 ! no basis set information could be read (old DFCOEF?)
+        integer, parameter     :: NOBASIS  = 3 ! no basis set information could be read (old RSD_MOS?)
         integer, parameter     :: INCONSIS = 4 ! RSD_MOS does not contain consistent information wrt number of basis functions
-        real(8)                :: total_energy
+!-------file reading
         logical                :: tobe
         integer                :: lucoef
+!-------summation/count variables
         integer                :: i, j, ishell
+!-------data to be read/stored
         integer                :: nao, nmo, nshells, iao, ibas
         integer                :: npriexp, ncnt
         integer                :: ncentr, ncoeff
@@ -43,6 +48,7 @@ module exacorr_respect
         real(8), allocatable   :: cent(:,:),cent_rsd(:,:)
         real(8), allocatable   :: priexp(:),priccf(:,:)
         real(8), allocatable   :: eig(:)
+        real(8)                :: total_energy
 
         ierr = NOERROR
 
@@ -101,7 +107,6 @@ module exacorr_respect
 !           number of sperical GTOs / "electronic" (=positive energy) solutions"
             nao = nao + 2 * (nhkt(i) - 1) + 1
         end do
-        nao = nao * 2
 
 !-------sort and create all necessary arrays from available data
 
@@ -139,11 +144,11 @@ module exacorr_respect
 
 !-------read MO coefficients
 
-        read (lucoef,*,end=10,err=10) ncoeff ! ncoeff = nao * nmo
+        read (lucoef,*,end=10,err=10) ncoeff ! ncoeff = 2*nao * nmo
 
-        if (nao*nmo /= ncoeff) goto 10 ! sanity check
+        if (2*nao*nmo /= ncoeff) goto 10 ! sanity check
 
-        allocate(coeff(nao,nmo))
+        allocate(coeff(2*nao,nmo))
         read (lucoef,*,end=10,err=10) coeff
 
 !-------store all data in derived type arguments
@@ -189,7 +194,7 @@ module exacorr_respect
         allocate(ao_basis%shell_indices(nao))
         iao = 0
         do ishell = 1, nshells
-           do ibas = 1, ncartesian(ao_basis%gtos(ishell)%orb_momentum)
+           do ibas = 1, nspherical(ao_basis%gtos(ishell)%orb_momentum)
               iao = iao + 1
               if (iao.gt.nao) then
                  ierr = INCONSIS
@@ -198,6 +203,7 @@ module exacorr_respect
               ao_basis%shell_indices(iao) = ishell
            end do
         end do
+
         if (iao.gt.nao) then
            ierr = INCONSIS
            call quit ('Error in read_from_respect')

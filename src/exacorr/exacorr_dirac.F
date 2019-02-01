@@ -303,6 +303,7 @@ C
        use dirac_mo
        use exacorr_datatypes
        use exacorr_global,only: ncartesian
+       use exacorr_mo
 
        implicit none
 
@@ -312,6 +313,7 @@ C
 
        type(basis_set_info_t), intent(inout) :: ao_basis
        type(MO), intent(inout):: qmo
+       type(cmo)              :: cspinor
        integer, intent(out)   :: ierr 
        integer, parameter     :: NOERROR  = 0 ! no error
        integer, parameter     :: NOTFOUND = 1 ! file not found
@@ -330,11 +332,12 @@ C
        integer                :: nao, nao_bas, nshells, iao, ibas
        integer                :: nmo, npo, nto, npriexp, ncnt
        integer, parameter     :: nz = 4 ! we use no symmetry, so always have this
-       real(8), allocatable   :: coeff(:,:,:),eig(:)
+       real(8), allocatable   :: coeff(:,:,:),eig(:), seig(:)
        integer, allocatable   :: ibeig(:),index(:)
        integer, allocatable   :: ncent(:),nhkt(:),nuco(:),numcf(:)
        integer, allocatable   :: jstrt(:)
        real(8), allocatable   :: cent(:,:),priexp(:),priccf(:,:)
+       complex(8), allocatable:: scoeff(:,:)
 
        ierr = NOERROR
 
@@ -377,6 +380,14 @@ C
        do i = 1, nmo
           index(i) = i ! we set the index compatible with the fact that we store all mo's
        end do
+
+!      switch to unrestricted spinor picture
+       allocate(seig(2*nmo))
+       allocate(scoeff(nao,2*nmo))
+       call convert_quaternion_to_complex(coeff,scoeff,eig,seig,nao,nmo)
+
+       deallocate(seig)
+       deallocate(scoeff)
 
        ! put in qmo
        call create_qmo (qmo,nao,nmo,nz)
