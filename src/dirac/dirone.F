@@ -272,7 +272,7 @@ C
          write(*,*)"NUCMASS",NUCMASS(INT(ZAN(IATOM)))
          CALL VCMPOL(VACIR,R,ZAN(IATOM),MXNP,NUCTYP,1) !change
          DO J = 1,MXNP
-            write(*,*)J,VACIR(J)
+            write(*,*)J,VACIR(J),R(J)
          ENDDO
          OPEN(20,FILE='LOG_DIRAC',STATUS='REPLACE',          
      &        FORM='FORMATTED',ACCESS='SEQUENTIAL')  
@@ -281,10 +281,6 @@ C
          ENDDO
          CLOSE(20,STATUS='KEEP')
          
-         write(*,*)'VACIR'
-         DO J = 1,MXNP
-            write(*,*)J,R(J)
-         ENDDO
 !     change for debug sentense
          write(*,*)"R(1),Z",R(1),ZAN(IATOM)
          write(*,*)"J,VACIR"
@@ -499,7 +495,7 @@ C
                MXNP = MXNP + 1
 !     sunaga
 !     As far as I check GRASP, the number of grid (MXNP) must be odd number.
-!     for the integral of Vacuum polarization          
+!     for the integral of Vacuum polarization using Ne and Hg atoms.         
 !     Even if it is even number, the value of QUAD
 !     does not agree with the one of GRASP.                
             ENDIF   
@@ -676,7 +672,6 @@ C
     2 WB = (C2+C2)/(Z*THREE)
       DO 3 I = 1,N
         TA(I) = ZZ(I)*(R(I)**3)
-        write(*,*)"ZZ",I,ZZ(I)
     3 CONTINUE
       CALL QUAD (FAC3,TA,N)
       FAC3 = FAC3*FACTOR*WB
@@ -705,11 +700,7 @@ C
             XP = XK+XI
             TA(I) = (FUNK (XM,0)-FUNK (XP,0))*ZZ(I)
     7    CONTINUE
-         DO JJ=1,N
-            write(*,*)'TAA',JJ,TA(JJ)
-         ENDDO   
          CALL QUAD (X,TA,N)
-         write(*,*)'K,X',K,X
          X = X*FACTOR
          IF (X .EQ. ZERO) GO TO 9
          IF (ABS ((TB(K)-X)/X) .LT. EPS) RETURN
@@ -1278,22 +1269,22 @@ C
       K = ND2-N1D2+1
       JJ = J+K
       JJ1 = JJ+1
-      write(*,*)'NR', NR
-      write(*,*)'J,NP,ND2,N1D2,K,JJ,JJ1', J, NP, ND2, N1D2, K, JJ, JJ1
-      write(*,*)'K',K
+!      write(*,*)'NR', NR
+!      write(*,*)'J,NP,ND2,N1D2,K,JJ,JJ1', J, NP, ND2, N1D2, K, JJ, JJ1
+!      write(*,*)'K',K
       DO 3 I = JJ1,NR-3,2
          SUM = SUM + W1*TE(I) + W2*TE(I+1)
 !         write(*,*)"TE5",TE(I) !sunaga
     3 CONTINUE
-      write(*,*)'SUM1',SUM
+!      write(*,*)'SUM1',SUM
       SUM = SUM + W1*TE(NR-1)
-      write(*,*)'SUM2',SUM
+!      write(*,*)'SUM2',SUM
       SUM = SUM + W4*( TE(JJ)   + TE(NR)   )
      &          + W5*( TE(JJ1)  + TE(NR-1) )
      &          + W6*( TE(JJ+2) + TE(NR-2) )
      &          + W7*( TE(JJ+3) + TE(NR-3) )
 
-      write(*,*)'SUM3',SUM
+!      write(*,*)'SUM3',SUM
 C
 C   ADD THE CONTRIBUTION FROM 0 TO R(JJ), PLUS THE CONTRIBUTION
 C   TO SIMPSONS RULE FROM TE(JJ).
