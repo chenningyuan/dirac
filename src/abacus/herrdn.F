@@ -1902,7 +1902,7 @@ C
 C
 C       Read RECP parameter if exist
 C
-        CALL RECP_LNK_READCP(LUINFO,I,NONT(I))
+        CALL RECP_LNK_READCP(LUINFO,I,NONT(I),IPREAD)
 C
 C     End of loop over unique atom types
   100 CONTINUE
