@@ -15,7 +15,7 @@ module exacorr_respect
 
         use exacorr_mo
         use exacorr_datatypes, only : basis_set_info_t
-        use exacorr_global, only    : nspherical
+        use exacorr_global, only    : nfunctions
 
 !       read all positive energy mo coefficients present on DFCOEF file
 !       check for imcompatibiklities (use of symmetry) as well and continue
@@ -38,7 +38,7 @@ module exacorr_respect
 !-------summation/count variables
         integer                :: i, j, ishell
 !-------data to be read/stored
-        integer                :: nao, nmo, nshells, iao, ibas
+        integer                :: nao, nelms, nshells, iao, ibas
         integer                :: npriexp, ncnt
         integer                :: ncentr, ncoeff
         complex(8), allocatable:: coeff(:,:)
@@ -132,29 +132,29 @@ module exacorr_respect
 
 !-------read eigenvalues
 
-        read (lucoef,*,end=10,err=10) nmo
-        allocate(eig(nmo))
+        read (lucoef,*,end=10,err=10) nelms
+        allocate(eig(nelms))
         read (lucoef,*,end=10,err=10) eig
 
 !       we set the index compatible with the fact that we store all mo's
-        allocate(index(nmo))
-        do i = 1, nmo
+        allocate(index(nelms))
+        do i = 1, nelms
            index(i) = i
         end do
 
 !-------read MO coefficients
 
-        read (lucoef,*,end=10,err=10) ncoeff ! ncoeff = 2*nao * nmo
+        read (lucoef,*,end=10,err=10) ncoeff ! ncoeff = 2*nao * nelms = 2*nao * 2*nmo
 
-        if (2*nao*nmo /= ncoeff) goto 10 ! sanity check
+        if (2*nao*nelms /= ncoeff) goto 10 ! sanity check
 
-        allocate(coeff(2*nao,nmo))
+        allocate(coeff(2*nao,nelms))
         read (lucoef,*,end=10,err=10) coeff
 
 !-------store all data in derived type arguments
 
 !       put in cmo
-        call alloc_mo(como,nao,nmo)
+        call alloc_mo(como,nao,nelms)
         como%total_energy = total_energy
         como%index        = index
         como%coeff        = coeff(:,:)
@@ -194,7 +194,7 @@ module exacorr_respect
         allocate(ao_basis%shell_indices(nao))
         iao = 0
         do ishell = 1, nshells
-           do ibas = 1, nspherical(ao_basis%gtos(ishell)%orb_momentum)
+           do ibas = 1, nfunctions(ao_basis%gtos(ishell)%orb_momentum,2)
               iao = iao + 1
               if (iao.gt.nao) then
                  ierr = INCONSIS

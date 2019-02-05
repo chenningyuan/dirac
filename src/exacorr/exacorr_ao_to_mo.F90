@@ -40,7 +40,6 @@ module exacorr_ao_to_mo
 !        Written by Lucas Visscher, march/september 2018
 
          use interface_to_mpi
-         use dirac_MO
          use exacorr_datatypes
          use exacorr_global
          use exacorr_tensor_methods
@@ -113,7 +112,7 @@ module exacorr_ao_to_mo
          allocate(color(nshells))
          labs = 0
          do lsh = 1, nshells !set basis functions
-            nl   =  ncartesian(gto(lsh)%orb_momentum)
+            nl   =  nfunctions(gto(lsh)%orb_momentum,1)
             call color(lsh)%color_symmetry_ctor(lsh) ! take one shell as a color
             do  l = 1, nl
                 labs = labs + 1

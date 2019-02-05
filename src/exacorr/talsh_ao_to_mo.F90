@@ -26,7 +26,7 @@ module talsh_ao_to_mo
 
 !        Written by Lucas Visscher, winter 2016/2017
 
-         use dirac_MO
+         use exacorr_mo
          use exacorr_datatypes
          use exacorr_global
          use, intrinsic:: ISO_C_BINDING
@@ -131,7 +131,7 @@ module talsh_ao_to_mo
 
 !        Written by Lucas Visscher, winter 2016/2017 (but in Goa, India, temperature about 30 C)
 
-         use dirac_MO
+         use exacorr_mo
          use exacorr_global
 
          implicit none
@@ -141,7 +141,7 @@ module talsh_ao_to_mo
          type(talsh_tens_t), intent(inout) :: mocoefa_tensor,mocoefb_tensor
 
          integer             :: j, k, ierr
-         type(MO)            :: qmo
+         type(qumo)            :: qmo
          integer             :: tens_rank, mocoef_dims(1:2)
 
          complex(8), pointer, contiguous:: camo_tens(:,:),cbmo_tens(:,:)
@@ -168,7 +168,7 @@ module talsh_ao_to_mo
                 cbmo_tens(j,k+nmo) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
             end do
          end do
-         call delete_qmo (qmo)
+         call dealloc_mo (qmo)
 
         end subroutine get_mocoef_tensor
 
@@ -208,7 +208,7 @@ module talsh_ao_to_mo
             yl   =  gto(lsh)%coord(2)
             zl   =  gto(lsh)%coord(3)
             cl   =  gto(lsh)%coefficient(1)
-            nl   =  ncartesian(ll)
+            nl   =  nfunctions(ll,1)
             koff = 0
             do ksh = 1, nshells
                lk   =  gto(ksh)%orb_momentum
@@ -217,7 +217,7 @@ module talsh_ao_to_mo
                yk   =  gto(ksh)%coord(2)
                zk   =  gto(ksh)%coord(3)
                ck   =  gto(ksh)%coefficient(1)
-               nk   =  ncartesian(lk)
+               nk   =  nfunctions(lk,1)
                joff = 0
                do jsh = 1, nshells
                   lj   =  gto(jsh)%orb_momentum
@@ -226,7 +226,7 @@ module talsh_ao_to_mo
                   yj   =  gto(jsh)%coord(2)
                   zj   =  gto(jsh)%coord(3)
                   cj   =  gto(jsh)%coefficient(1)
-                  nj   =  ncartesian(lj)
+                  nj   =  nfunctions(lj,1)
                   ioff = 0
                   do ish = 1, nshells
                      li   =  gto(ish)%orb_momentum
@@ -235,7 +235,7 @@ module talsh_ao_to_mo
                      yi   =  gto(ish)%coord(2)
                      zi   =  gto(ish)%coord(3)
                      ci   =  gto(ish)%coefficient(1)
-                     ni   =  ncartesian(li)
+                     ni   =  nfunctions(li,1)
 !                    call interest and get only the (LL|LL) type integrals
 !                    output order of eri is (c,d,a,b), so input k,l first and then i,j to get the order that we want
 

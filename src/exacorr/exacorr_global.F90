@@ -3,7 +3,7 @@ module exacorr_global
 !This module controls storage and interaction with the global data used in ExaCorr
 
         use exacorr_datatypes
-        use dirac_mo
+        use exacorr_mo
 
         implicit none
         private
@@ -11,13 +11,12 @@ module exacorr_global
 !       Global data (should limit this to the minimum required to function)
         integer :: my_MPI_master=0 ! Define the MPI master proces (is always zero in the DIRAC MPI environment)
         type(basis_set_info_t) :: ao_basis ! information about the ao basis 
-        type(MO):: qmo_all ! Stores all MO-coefficients and energies obtained from the parent code 
+        type(qumo):: qmo_all ! Stores all MO-coefficients and energies obtained from the parent code 
         logical :: TALSH_ONLY = .TRUE. ! use single-node TALSH library instead of the full EXATENSOR library
         logical, public, parameter :: DEBUG = .TRUE. ! switch on and off debug
 
 !       Functions and routines to interact with these data
-        public ncartesian
-        public nspherical
+        public nfunctions
         public get_nao
         public get_talsh_only
         public set_talsh_only
@@ -83,7 +82,7 @@ module exacorr_global
              if (TALSH_ONLY) return
              call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
 
-             call sync_qmo(qmo_all,my_MPI_master)
+             call sync_mo(qmo_all,my_MPI_master)
 
              call interface_mpi_bcast (ao_basis%nshells,1,my_MPI_master,global_communicator)
              call interface_mpi_bcast (ao_basis%nao,1,my_MPI_master,global_communicator)
@@ -134,25 +133,26 @@ module exacorr_global
          !TODO: check for memory leaks here. No so important as we usually stop right after and there is not much data anyhow
              deallocate(ao_basis%shell_indices)
              deallocate(ao_basis%gtos)
-             call delete_qmo (qmo_all)
+             call dealloc_mo (qmo_all)
          end subroutine delete_global_data
 
-         integer function ncartesian(l_value)
-         ! Computes number of Cartesian functions for a given l-value
+         integer function nfunctions(l_value,switch)
+         ! Computes number of Cartesian/spherical functions for a given l-value
              integer, intent(in) :: l_value
+             integer, intent(in) :: switch
              integer :: i
-             ncartesian = 1
-             do i = 2, l_value
-                ncartesian = ncartesian + i
-             end do
-         end function ncartesian
-
-         integer function nspherical(l_value)
-         ! Computes number of spherical functions for a given l-value
-             integer, intent(in) :: l_value
-             integer :: i
-             nspherical = 2 * (l_value - 1) + 1
-         end function nspherical
+             !nfunctions = 1
+             !do i = 2, l_value
+             !   nfunctions = nfunctions + i
+             !end do
+             if (switch == 1) then
+!               Cartesian
+                nfunctions = l_value * ( l_value + 1 ) / 2
+             else if (switch == 2) then
+!               spherical
+                nfunctions = 2 * (l_value - 1) + 1
+             end if
+         end function nfunctions
 
          integer function get_shell_index(ifun)
              integer, intent(in) :: ifun
@@ -201,10 +201,10 @@ module exacorr_global
 !
 !***********************************************************************
 
-      use dirac_mo
+      use exacorr_mo
 
       integer, intent(in)     :: nmo,mo_list(nmo)
-      type(MO), intent(inout) :: qmo
+      type(qumo), intent(inout) :: qmo
 
       integer  :: i, nao, nmo_all, nz
 
@@ -213,7 +213,7 @@ module exacorr_global
       nz      = qmo_all%nz 
 
       ! allocate arrays in qmo to hold the active MO's specified in mo_list
-      call create_qmo (qmo,nao,nmo,nz)
+      call alloc_mo (qmo,nao,nmo,nz)
 
       ! copy the requested mo's
       do i = 1, nmo

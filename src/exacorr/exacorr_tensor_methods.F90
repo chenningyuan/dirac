@@ -191,7 +191,7 @@ module exacorr_tensor_methods
             yl   =  gto4(lsh)%coord(2)
             zl   =  gto4(lsh)%coord(3)
             cl   =  gto4(lsh)%coefficient(1)
-            nl   =  ncartesian(ll)
+            nl   =  nfunctions(ll,1)
             koff = 0
             do ksh = 1, nshells(3)
                lk   =  gto3(ksh)%orb_momentum
@@ -200,7 +200,7 @@ module exacorr_tensor_methods
                yk   =  gto3(ksh)%coord(2)
                zk   =  gto3(ksh)%coord(3)
                ck   =  gto3(ksh)%coefficient(1)
-               nk   =  ncartesian(lk)
+               nk   =  nfunctions(lk,1)
                joff = 0
                do jsh = 1, nshells(2)
                   lj   =  gto2(jsh)%orb_momentum
@@ -209,7 +209,7 @@ module exacorr_tensor_methods
                   yj   =  gto2(jsh)%coord(2)
                   zj   =  gto2(jsh)%coord(3)
                   cj   =  gto2(jsh)%coefficient(1)
-                  nj   =  ncartesian(lj)
+                  nj   =  nfunctions(lj,1)
                   ioff = 0
                   do ish = 1, nshells(1)
                      li   =  gto1(ish)%orb_momentum
@@ -218,7 +218,7 @@ module exacorr_tensor_methods
                      yi   =  gto1(ish)%coord(2)
                      zi   =  gto1(ish)%coord(3)
                      ci   =  gto1(ish)%coefficient(1)
-                     ni   =  ncartesian(li)
+                     ni   =  nfunctions(li,1)
 !                    output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
                      call interest_eri('llll',fijkl,gout,&
                                   lk,ek,xk,yk,zk,ck,&
@@ -254,7 +254,7 @@ module exacorr_tensor_methods
 
         subroutine init_epsilons(this,mo_occ,nocc,mo_vir,nvir)
 
-         use dirac_MO
+         use exacorr_mo
          use exacorr_global
 
          implicit none
@@ -262,7 +262,7 @@ module exacorr_tensor_methods
          integer, intent(in) :: mo_occ(:),mo_vir(:)
          class(scale_with_denom_t), intent(out):: this
 
-         type(MO) :: qmo
+         type(qumo) :: qmo
          integer  :: k
 
          ! we are assuming closed shell (Kramers-restricted) cases here
@@ -272,7 +272,7 @@ module exacorr_tensor_methods
             this%eps_occ(k)      = qmo%energy(k)
             this%eps_occ(k+nocc) = qmo%energy(k)
          end do
-         call delete_qmo (qmo)
+         call dealloc_mo (qmo)
 
          call get_mo_coefficients (qmo,mo_vir,nvir)
          allocate(this%eps_vir(2*nvir))
@@ -280,13 +280,13 @@ module exacorr_tensor_methods
             this%eps_vir(k)      = qmo%energy(k)
             this%eps_vir(k+nvir) = qmo%energy(k)
          end do
-         call delete_qmo (qmo)
+         call dealloc_mo (qmo)
 
         end subroutine init_epsilons
 
         subroutine init_mocoef(this,mo_list,nmo,spin)
 
-         use dirac_MO
+         use exacorr_mo
          use exacorr_global
 
          implicit none
@@ -296,7 +296,7 @@ module exacorr_tensor_methods
          class(init_mocoef_tensor_t), intent(out):: this
 
          integer  :: nao,j,k
-         type(MO) :: qmo
+         type(qumo) :: qmo
 
 !        Copy the coefficients into the alpha or beta array, using the quaternion relations as defined in
 !        T. Saue, H. Jensen, J. Chem. Phys. 111 (1999) 6211–6222, Equation 16.
@@ -324,13 +324,13 @@ module exacorr_tensor_methods
          else
             call quit ('init_mocoef called with unknown spin value')
          end if
-         call delete_qmo (qmo)
+         call dealloc_mo (qmo)
 
         end subroutine init_mocoef
 
         subroutine init_dm(this,mo_list,nmo)
 
-         use dirac_MO
+         use exacorr_mo
          use exacorr_global
 
          implicit none
@@ -339,7 +339,7 @@ module exacorr_tensor_methods
          class(init_dm_tensor_t), intent(out):: this
 
          integer  :: nao,j,k
-         type(MO) :: qmo
+         type(qumo) :: qmo
 
 !        Copy the coefficients into the alpha or beta array, using the quaternion relations as defined in
 !        T. Saue, H. Jensen, J. Chem. Phys. 111 (1999) 6211–6222, Equation 16.
@@ -358,7 +358,7 @@ module exacorr_tensor_methods
              this%mocoef_all_1(j,k+nmo(1),2) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
             end do
          end do
-         call delete_qmo (qmo)
+         call dealloc_mo (qmo)
 
          allocate (this%mocoef_all_2(nao,2*nmo(2),2))
          call get_mo_coefficients (qmo,mo_list(nmo(1)+1:nmo(1)+nmo(2)),nmo(2))
@@ -370,13 +370,13 @@ module exacorr_tensor_methods
              this%mocoef_all_2(j,k+nmo(2),2) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
             end do
          end do
-         call delete_qmo (qmo)
+         call dealloc_mo (qmo)
 
         end subroutine init_dm
 
         subroutine init_ht(this,mo_list,nmo)
 
-         use dirac_MO
+         use exacorr_mo
          use exacorr_global
 
          implicit none
@@ -385,7 +385,7 @@ module exacorr_tensor_methods
          class(init_ht_tensor_t), intent(out):: this
 
          integer  :: nao,j,k
-         type(MO) :: qmo
+         type(qumo) :: qmo
 
 !        Copy the coefficients into the alpha or beta array, using the quaternion relations as defined in
 !        T. Saue, H. Jensen, J. Chem. Phys. 111 (1999) 6211–6222, Equation 16.
@@ -404,7 +404,7 @@ module exacorr_tensor_methods
              this%mocoef_all_1(j,k+nmo,2) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
             end do
          end do
-         call delete_qmo (qmo)
+         call dealloc_mo (qmo)
 
          allocate (this%mocoef_all_2(nao,2*nmo(2),2))
          call get_mo_coefficients (qmo,mo_list(nmo(1)+1:nmo(1)+nmo(2)),nmo(2))
@@ -416,7 +416,7 @@ module exacorr_tensor_methods
              this%mocoef_all_2(j,k+nmo,2) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
             end do
          end do
-         call delete_qmo (qmo)
+         call dealloc_mo (qmo)
 
         end subroutine init_ht
 
@@ -718,7 +718,7 @@ module exacorr_tensor_methods
             yl   =  gto4(lsh)%coord(2)
             zl   =  gto4(lsh)%coord(3)
             cl   =  gto4(lsh)%coefficient(1)
-            nl   =  ncartesian(ll)
+            nl   =  nfunctions(ll,1)
             koff = 0
             do ksh = 1, nshells(3) ! loop over all ao's, this index is transformed to mo
                lk   =  gto3(ksh)%orb_momentum
@@ -727,7 +727,7 @@ module exacorr_tensor_methods
                yk   =  gto3(ksh)%coord(2)
                zk   =  gto3(ksh)%coord(3)
                ck   =  gto3(ksh)%coefficient(1)
-               nk   =  ncartesian(lk)
+               nk   =  nfunctions(lk,1)
                joff = 0
                do jsh = 1, nshells(2) ! loop over the ao's active in the HT integral tensor block
                   lj   =  gto2(jsh)%orb_momentum
@@ -736,7 +736,7 @@ module exacorr_tensor_methods
                   yj   =  gto2(jsh)%coord(2)
                   zj   =  gto2(jsh)%coord(3)
                   cj   =  gto2(jsh)%coefficient(1)
-                  nj   =  ncartesian(lj)
+                  nj   =  nfunctions(lj,1)
                   ioff = 0
                   do ish = 1, nshells(1) ! loop over the ao's active in the HT integral tensor block
                      li   =  gto1(ish)%orb_momentum
@@ -745,7 +745,7 @@ module exacorr_tensor_methods
                      yi   =  gto1(ish)%coord(2)
                      zi   =  gto1(ish)%coord(3)
                      ci   =  gto1(ish)%coefficient(1)
-                     ni   =  ncartesian(li)
+                     ni   =  nfunctions(li,1)
                      ! output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
                      call interest_eri('llll',fijkl,gout,&
                                   lk,ek,xk,yk,zk,ck,&

@@ -384,7 +384,7 @@ module exacorr_cc
          allocate(color(nshells))
          labs = 0
          do lsh = 1, nshells !set basis functions
-            nl   =  ncartesian(gto(lsh)%orb_momentum)
+            nl   =  nfunctions(gto(lsh)%orb_momentum,1)
             call color(lsh)%color_symmetry_ctor(lsh) ! take one shell as a color
             do  l = 1, nl
                 labs = labs + 1

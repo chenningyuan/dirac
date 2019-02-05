@@ -123,7 +123,7 @@ module talsh_common_routines
 
 !      Written by Lucas Visscher, winter 2016/2017 (but in Goa, India, temperature about 25 C)
 
-       use dirac_MO
+       use exacorr_mo
        use exacorr_global
 
        integer, intent(in) :: nmo          ! the length of the mo basis
@@ -131,7 +131,7 @@ module talsh_common_routines
        real(8) :: eps(:)
 
        integer             :: k
-       type(MO)            :: qmo
+       type(qumo)            :: qmo
 
        call get_mo_coefficients (qmo,mo_list,nmo)
 
@@ -139,7 +139,7 @@ module talsh_common_routines
           eps(k)     = qmo%energy(k)
           eps(k+nmo) = qmo%energy(k)
        end do
-       call delete_qmo (qmo)
+       call dealloc_mo (qmo)
 
       end subroutine get_orbital_energies
 

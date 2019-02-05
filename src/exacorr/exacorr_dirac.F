@@ -297,13 +297,13 @@ C
           deallocate (coefficients)
 
        end subroutine compress_unc_shell
-  
+
        subroutine read_from_dfcoef (ao_basis,qmo,ierr)
-  
-       use dirac_mo
-       use exacorr_datatypes
-       use exacorr_global,only: ncartesian
+       !subroutine read_from_dfcoef (ao_basis,cspinor,ierr)
+
        use exacorr_mo
+       use exacorr_datatypes
+       use exacorr_global,only: nfunctions
 
        implicit none
 
@@ -312,8 +312,8 @@ C
 !      by reading also the basis set information into gtos
 
        type(basis_set_info_t), intent(inout) :: ao_basis
-       type(MO), intent(inout):: qmo
-       type(cmo)              :: cspinor
+       type(qumo), intent(inout):: qmo
+       type(cmo), intent(inout):: cspinor
        integer, intent(out)   :: ierr 
        integer, parameter     :: NOERROR  = 0 ! no error
        integer, parameter     :: NOTFOUND = 1 ! file not found
@@ -337,7 +337,7 @@ C
        integer, allocatable   :: ncent(:),nhkt(:),nuco(:),numcf(:)
        integer, allocatable   :: jstrt(:)
        real(8), allocatable   :: cent(:,:),priexp(:),priccf(:,:)
-       complex(8), allocatable:: scoeff(:,:)
+       complex(8), allocatable:: scoeff(:,:,:)
 
        ierr = NOERROR
 
@@ -383,7 +383,7 @@ C
 
 !      switch to unrestricted spinor picture
        allocate(seig(2*nmo))
-       allocate(scoeff(nao,2*nmo))
+       allocate(scoeff(nao,2*nmo,2)) ! nao, 2*nmo, spin
        call convert_quaternion_to_complex(coeff,scoeff,eig,seig,
      &                                              nao,nmo,npo)
 
@@ -391,7 +391,7 @@ C
        deallocate(scoeff)
 
        ! put in qmo
-       call create_qmo (qmo,nao,nmo,nz)
+       call alloc_mo (qmo,nao,nmo,nz)
        qmo%total_energy = total_energy
        qmo%index        = index
        qmo%coeff        = coeff(:,npo+1:nto,1:nz)
@@ -470,7 +470,7 @@ C
        allocate(ao_basis%shell_indices(nao))
        iao = 0
        do ishell = 1, nshells
-          do ibas = 1, ncartesian(ao_basis%gtos(ishell)%orb_momentum)
+          do ibas = 1, nfunctions(ao_basis%gtos(ishell)%orb_momentum,1)
              iao = iao + 1
              if (iao.gt.nao) then
                 ierr = INCONSIS
