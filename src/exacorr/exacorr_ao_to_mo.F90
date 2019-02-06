@@ -9,12 +9,18 @@ module exacorr_ao_to_mo
         private
         public exacorr_compute_mo_integrals
 #if defined (VAR_MPI)
+
+        interface get_integral_tensor
+            module procedure get_integral_tensor
+        end interface get_integral_tensor
+
         public mocoef_initlabel
         public dm_initlabel
         public get_integral_tensor
-        public get_integral_tensor_2
+        public get_ht1_integral_tensor
+        public get_ht2_integral_tensor
         public print_tensornorm2
-#endif
+
         complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0)
 
          ! It is not possible to make an array of pointers, so we need a container
@@ -24,7 +30,6 @@ module exacorr_ao_to_mo
 
        contains
 
-#if defined (VAR_MPI)
         subroutine exacorr_compute_mo_integrals (nmo, mo_list)
 
 !        This subroutine drives the AO to MO integral transformation using AO integrals from InteRest and the tensor contraction library from ExaTensor
@@ -309,15 +314,14 @@ module exacorr_ao_to_mo
          type(tens_rcrsv_t), intent(inout)  :: aoint_tensor, moint_tensor   ! for technical reasons intent(inout) needs to be used for all tensors
 
          ! Auxilliary tensors that are created and destroyed inside this subroutine
-         type(tens_rcrsv_t):: mocoef_tensor(2,4)
-         type(tens_rcrsv_t):: a1int_tensor,a2int_tensor, a3int_tensor
+         type(tens_rcrsv_t):: a2int_tensor
 
-         integer           :: ierr,i,spin
-         integer           :: aoint_id(4),moint_id(4),a1int_id(4),a2int_id(4),a3int_id(4),mocoef_id(2)
-         integer(INTL)     :: aoint_root(4),moint_root(4),a1int_root(4),a2int_root(4),a3int_root(4),mocoef_root(2)
-         character(len=9)  :: mocoef_name
+         integer, parameter:: print_level=0
+         integer           :: ierr
+         integer           :: aoint_id(4),moint_id(4),a2int_id(4)
+         integer(INTL)     :: aoint_root(4),moint_root(4),a2int_root(4)
 
-         call print_date('entered aomo_transform_1')
+         if (print_level >0) call print_date('entered aomo_transform_1')
 
 !        Determine space ids and root
          call aoint_tensor%get_space_ids(aoint_id,aoint_root,ierr)
@@ -325,10 +329,148 @@ module exacorr_ao_to_mo
          call moint_tensor%get_space_ids(moint_id,moint_root,ierr)
          if(ierr.ne.EXA_SUCCESS) call quit('moint tensor corrupted')
 
+!        Copy the information about spaces from the starting and target tensors to the auxilliary one and allocate it
+         a2int_id(1:2) = moint_id(1:2)
+         a2int_id(3:4) = aoint_id(3:4)
+         a2int_root(1:2) = moint_root(1:2)
+         a2int_root(3:4) = aoint_root(3:4)
+         ierr=exatns_tensor_create(a2int_tensor,'a2int',a2int_id,a2int_root,EXA_DATA_KIND_C8)
+
+!        Do 1st and 2nd quarter-transformation
+         call get_ht1_integral_tensor (aoint_tensor,a2int_tensor)
+         if (print_level >0) call print_date('first ht done')
+!        Do 3rd and 4th quarter-transformation
+         call aomo_halftransform_2 (a2int_tensor,moint_tensor)
+         if (print_level >0) call print_date('second ht done')
+
+!        Destruct a2 integrals:
+         ierr=exatns_tensor_destroy(a2int_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=35; return; endif
+
+         if (print_level >0) call print_date('leaving aomo_transform_1')
+
+        end subroutine aomo_transform_1
+
+        subroutine get_ht1_integral_tensor (aoint_tensor,a2int_tensor)
+
+!        Transform integral tensor from ao-basis to mo-basis
+!        Algorithm 1: n^5 scaling with index-by-index transform of first two indices
+
+         implicit none
+
+         ! AO integrals are to be provided on input and are not changed, halftransformed MO integrals are returned on output
+         type(tens_rcrsv_t), intent(inout)  :: aoint_tensor, a2int_tensor   ! for technical reasons intent(inout) needs to be used for all tensors
+
+         ! Auxilliary tensors that are created and destroyed inside this subroutine
+         type(tens_rcrsv_t):: mocoef_tensor(2,2)
+         type(tens_rcrsv_t):: a1int_tensor
+
+         integer, parameter:: print_level=0
+         integer           :: ierr,i,spin
+         integer           :: aoint_id(4),a1int_id(4),a2int_id(4),mocoef_id(2)
+         integer(INTL)     :: aoint_root(4),a1int_root(4),a2int_root(4),mocoef_root(2)
+         character(len=9)  :: mocoef_name
+
+         if (print_level >0) call print_date('entered get_ht1_integral_tensor')
+
+!        Determine space ids and root
+         call aoint_tensor%get_space_ids(aoint_id,aoint_root,ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('aoint tensor corrupted')
+         call a2int_tensor%get_space_ids(a2int_id,a2int_root,ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('a2int tensor corrupted')
+
 !        Initialize tensors with MO coefficients, one for each index and alpha/beta
-         mocoef_id(1)   = aoint_id(1)
-         mocoef_root(1) = aoint_root(1)
-         do i = 1, 4
+         do i = 1, 2
+           mocoef_id(1)   = aoint_id(i)
+           mocoef_root(1) = aoint_root(i)
+           mocoef_id(2)   = a2int_id(i)
+           mocoef_root(2) = a2int_root(i)
+           do spin = 1, 2
+!             The name of the tensor needs to be unique, define a name that makes sense
+              write (mocoef_name,'(A7,2I1)') 'mocoef_',spin,i
+!             Create mo-coefficient-tensor
+              ierr=exatns_tensor_create(mocoef_tensor(spin,i),mocoef_name, &
+               mocoef_id,mocoef_root,EXA_DATA_KIND_C8)
+              if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
+!             Initialize mocoef-tensor 
+              ierr=exatns_tensor_init(mocoef_tensor(spin,i),mocoef_initlabel(mocoef_id(1),mocoef_id(2),spin))
+              if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_init() failed!')
+!             next two lines can be used for debugging
+!             print*,"created and initialized mocoef_tensor ",spin,i
+!             call print_tensornorm2 (mocoef_tensor(spin,i))
+           end do
+         end do
+!        next two lines can be used for debugging
+!        ierr=exatns_tensor_traverse(mocoef_tensor(1,1),'TensorPrinter')
+!        ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
+
+         if (print_level >0) call print_date('initialized mo-coefficients')
+
+!        Copy the information about spaces from the starting and target tensor to the auxilliary one
+         a1int_id(1)   = a2int_id(1)
+         a1int_id(2:4) = aoint_id(2:4)
+
+         a1int_root(1)   = a2int_root(1)
+         a1int_root(2:4) = aoint_root(2:4)
+
+!        Do 1st and 2nd quarter-transformation
+         ierr=exatns_tensor_create(a1int_tensor,'a1int',a1int_id,a1int_root,EXA_DATA_KIND_C8)
+!        ierr=exatns_tensor_create(a2int_tensor,'a2int',a2int_id,a2int_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_contract(a1int_tensor,mocoef_tensor(1,1),aoint_tensor,"D(i,q,r,s)+=R+(p,i)*L(p,q,r,s)")
+         if(ierr.ne.EXA_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=11; return; endif
+         ierr=exatns_tensor_contract(a2int_tensor,a1int_tensor,mocoef_tensor(1,2),"D(i,j,r,s)+=L(i,q,r,s)*R(q,j)")
+         if(ierr.ne.EXA_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=21; return; endif
+         ierr=exatns_tensor_init(a1int_tensor,zero) ! alpha-alpha part done, continue with beta-beta part
+         ierr=exatns_tensor_contract(a1int_tensor,mocoef_tensor(2,1),aoint_tensor,"D(i,q,r,s)=R+(p,i)*L(p,q,r,s)")
+         if(ierr.ne.EXA_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=12; return; endif
+         ierr=exatns_tensor_contract(a2int_tensor,a1int_tensor,mocoef_tensor(2,2),"D(i,j,r,s)+=L(i,q,r,s)*R(q,j)")
+         if(ierr.ne.EXA_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=22; return; endif
+
+!        Destruct a1 integrals:
+         ierr=exatns_tensor_destroy(a1int_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=25; return; endif
+
+!        Destruct mocoef tensors:
+         do i = 1, 2
+           do spin = 1, 2
+            ierr=exatns_tensor_destroy(mocoef_tensor(spin,i)); if(ierr.ne.EXA_SUCCESS) then; ierr=45; return; endif
+            end do
+         end do
+
+         if (print_level >0) call print_date('leaving get_ht1_integral_tensor')
+
+        end subroutine get_ht1_integral_tensor
+
+        subroutine aomo_halftransform_2 (a2int_tensor,moint_tensor)
+
+!        Transform integral tensor from ao-basis to mo-basis
+!        Algorithm 1: n^5 scaling with index-by-index transform of second two indices
+
+         implicit none
+
+         ! Halftransformed (A2) integrals are to be provided on input and are not changed, MO integrals are returned on output
+         type(tens_rcrsv_t), intent(inout)  :: a2int_tensor, moint_tensor   ! for technical reasons intent(inout) needs to be used for all tensors
+
+         ! Auxilliary tensors that are created and destroyed inside this subroutine
+         type(tens_rcrsv_t):: mocoef_tensor(2,4)
+         type(tens_rcrsv_t):: a3int_tensor
+
+         integer, parameter:: print_level=0
+         integer           :: ierr,i,spin
+         integer           :: moint_id(4),a2int_id(4),a3int_id(4),mocoef_id(2)
+         integer(INTL)     :: moint_root(4),a2int_root(4),a3int_root(4),mocoef_root(2)
+         character(len=9)  :: mocoef_name
+
+         if (print_level >0) call print_date('entered aomo_halftransform_2')
+
+!        Determine space ids and root
+         call a2int_tensor%get_space_ids(a2int_id,a2int_root,ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('a2int tensor corrupted')
+         call moint_tensor%get_space_ids(moint_id,moint_root,ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('moint tensor corrupted')
+
+!        Initialize tensors with MO coefficients, one for each index and alpha/beta
+         do i = 3, 4
+           mocoef_id(1)   = a2int_id(i)
+           mocoef_root(1) = a2int_root(i)
            mocoef_id(2)   = moint_id(i)
            mocoef_root(2) = moint_root(i)
            do spin = 1, 2
@@ -350,40 +492,14 @@ module exacorr_ao_to_mo
 !        ierr=exatns_tensor_traverse(mocoef_tensor(1,1),'TensorPrinter')
 !        ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
 
-         call print_date('initialized mo-coefficients')
+         if (print_level >0) call print_date('initialized mo-coefficients')
 
-!        Copy the information about spaces from the starting and target tensors to the auxilliary ones
-         a1int_id(1)   = moint_id(1)
-         a1int_id(2:4) = aoint_id(2:4)
-         a2int_id(1:2) = moint_id(1:2)
-         a2int_id(3:4) = aoint_id(3:4)
+!        Copy the information about spaces from the starting and target tensors to the auxilliary one
          a3int_id(1:3) = moint_id(1:3)
-         a3int_id(4)   = aoint_id(4)
+         a3int_id(4)   = a2int_id(4)
 
-         a1int_root(1)   = moint_root(1)
-         a1int_root(2:4) = aoint_root(2:4)
-         a2int_root(1:2) = moint_root(1:2)
-         a2int_root(3:4) = aoint_root(3:4)
          a3int_root(1:3) = moint_root(1:3)
-         a3int_root(4)   = aoint_root(4)
-
-!        Do 1st and 2nd quarter-transformation
-         ierr=exatns_tensor_create(a1int_tensor,'a1int',a1int_id,a1int_root,EXA_DATA_KIND_C8)
-         ierr=exatns_tensor_create(a2int_tensor,'a2int',a2int_id,a2int_root,EXA_DATA_KIND_C8)
-         ierr=exatns_tensor_contract(a1int_tensor,mocoef_tensor(1,1),aoint_tensor,"D(i,q,r,s)+=R+(p,i)*L(p,q,r,s)")
-         if(ierr.ne.EXA_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=11; return; endif
-         ierr=exatns_tensor_contract(a2int_tensor,a1int_tensor,mocoef_tensor(1,2),"D(i,j,r,s)+=L(i,q,r,s)*R(q,j)")
-         if(ierr.ne.EXA_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=21; return; endif
-         ierr=exatns_tensor_init(a1int_tensor,zero) ! alpha-alpha part done, continue with beta-beta part
-         ierr=exatns_tensor_contract(a1int_tensor,mocoef_tensor(2,1),aoint_tensor,"D(i,q,r,s)=R+(p,i)*L(p,q,r,s)")
-         if(ierr.ne.EXA_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=12; return; endif
-         ierr=exatns_tensor_contract(a2int_tensor,a1int_tensor,mocoef_tensor(2,2),"D(i,j,r,s)+=L(i,q,r,s)*R(q,j)")
-         if(ierr.ne.EXA_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=22; return; endif
-
-         call print_date('first ht done')
-
-!        Destruct a1 integrals:
-         ierr=exatns_tensor_destroy(a1int_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=25; return; endif
+         a3int_root(4)   = a2int_root(4)
 
 !        Do 3rd and 4th quarter-transformation
          ierr=exatns_tensor_create(a3int_tensor,'a3int',a3int_id,a3int_root,EXA_DATA_KIND_C8)
@@ -398,21 +514,19 @@ module exacorr_ao_to_mo
          ierr=exatns_tensor_contract(moint_tensor,a3int_tensor,mocoef_tensor(2,4),"D(i,j,k,l)+=L(i,j,k,s)*R(s,l)")
          if(ierr.ne.EXA_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=42; return; endif
 
-         call print_date('second ht done')
-
-!        Destruct a2 and a3 integrals:
-         ierr=exatns_tensor_destroy(a2int_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=35; return; endif
+!        Destruct a3 integrals:
+!        ierr=exatns_tensor_destroy(a2int_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=35; return; endif
          ierr=exatns_tensor_destroy(a3int_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=45; return; endif
 !        Destruct mocoef tensors:
-         do i = 1, 4
+         do i = 3, 4
            do spin = 1, 2
             ierr=exatns_tensor_destroy(mocoef_tensor(spin,i)); if(ierr.ne.EXA_SUCCESS) then; ierr=45; return; endif
             end do
          end do
 
-         call print_date('leaving aomo_transform_1')
+         if (print_level >0) call print_date('leaving aomo_halftransform_2')
 
-        end subroutine aomo_transform_1
+        end subroutine aomo_halftransform_2
 
         subroutine aomo_transform_2 (aoint_tensor,moint_tensor)
 
@@ -428,11 +542,12 @@ module exacorr_ao_to_mo
          type(tens_rcrsv_t):: dm_tensor
          type(tens_rcrsv_t):: a2int_tensor
 
+         integer, parameter:: print_level=0
          integer           :: ierr
          integer           :: aoint_id(4),moint_id(4),a2int_id(4),dm_id(4)
          integer(INTL)     :: aoint_root(4),moint_root(4),a2int_root(4),dm_root(4)
 
-         call print_date('entered aomo_transform_2')
+         if (print_level >0) call print_date('entered aomo_transform_2')
 
 !        Determine ids and root
          call aoint_tensor%get_space_ids(aoint_id,aoint_root,ierr)
@@ -451,7 +566,7 @@ module exacorr_ao_to_mo
          ierr=exatns_tensor_init(dm_tensor,dm_initlabel(dm_id(1:2),dm_id(3:4)))
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_init() failed!')
 
-         call print_date('initialized first density matrix')
+         if (print_level >0) call print_date('initialized first density matrix')
 
 !        Copy the information about spaces from the starting and target tensors to the ht integral tensor
          a2int_id(1:2) = moint_id(1:2)
@@ -461,14 +576,14 @@ module exacorr_ao_to_mo
 
 !        Do 1st half-transformation
          ierr=exatns_tensor_create(a2int_tensor,'a2int',a2int_id,a2int_root,EXA_DATA_KIND_C8)
-         call print_date('constructed a2')
+         if (print_level >0) call print_date('constructed a2')
          ierr=exatns_tensor_contract(a2int_tensor,aoint_tensor,dm_tensor,"D(i,j,r,s)+=L(p,q,r,s)*R(p,q,i,j)")
          if(ierr.ne.EXA_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=1; return; endif
 
 !        Destruct dm tensor:
          ierr=exatns_tensor_destroy(dm_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=3; return; endif
 
-         call print_date('first ht done')
+         if (print_level >0) call print_date('first ht done')
 
 !        Create and initialize the density matrix tensor for the second half-transformation
          dm_id(1:2)    = aoint_id(3:4)
@@ -481,20 +596,20 @@ module exacorr_ao_to_mo
          ierr=exatns_tensor_init(dm_tensor,dm_initlabel(dm_id(1:2),dm_id(3:4)))
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_init() failed!')
 
-         call print_date('initialized second density matrix')
+         if (print_level >0) call print_date('initialized second density matrix')
 
 !        Do 2nd half-transformation
          ierr=exatns_tensor_contract(moint_tensor,a2int_tensor,dm_tensor,"D(i,j,k,l)+=L(i,j,r,s)*R(r,s,k,l)")
          if(ierr.ne.EXA_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=2; return; endif
 
-         call print_date('second ht done')
+         if (print_level >0) call print_date('second ht done')
 
 !        Destruct a2 integrals:
          ierr=exatns_tensor_destroy(a2int_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=3; return; endif
 !        Destruct dm tensor:
          ierr=exatns_tensor_destroy(dm_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=3; return; endif
 
-         call print_date('leaving aomo_transform_2')
+         if (print_level >0) call print_date('leaving aomo_transform_2')
 
         end subroutine aomo_transform_2
 
@@ -512,11 +627,12 @@ module exacorr_ao_to_mo
          type(tens_rcrsv_t):: dm_tensor
          type(tens_rcrsv_t):: a2int_tensor
 
+         integer, parameter:: print_level=1
          integer           :: ierr
          integer           :: ao_space_id, moint_id(4),a2int_id(4),dm_id(4)
          integer(INTL)     :: ao_space_root,moint_root(4),a2int_root(4),dm_root(4)
 
-         call print_date('entered aomo_transform_3')
+         if (print_level >0) call print_date('entered aomo_transform_3')
 
 !        Determine ids and root
          call moint_tensor%get_space_ids(moint_id,moint_root,ierr)
@@ -530,11 +646,11 @@ module exacorr_ao_to_mo
 
 !        Initialize half-transformed integrals
          ierr=exatns_tensor_create(a2int_tensor,'a2int',a2int_id,a2int_root,EXA_DATA_KIND_C8)
-         call print_date('constructed a2')
+         if (print_level >0) call print_date('constructed a2')
          ierr=exatns_tensor_init(a2int_tensor,'HalfTrans')
          if(ierr.ne.EXA_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=1; return; endif
 
-         call print_date('first ht done')
+         if (print_level >0) call print_date('first ht done')
 
 !        Create the density matrix tensor for the second half-transformation
          dm_id(1:2)    = ao_space_id
@@ -547,24 +663,24 @@ module exacorr_ao_to_mo
          ierr=exatns_tensor_init(dm_tensor,dm_initlabel(dm_id(1:2),dm_id(3:4)))
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_init() failed!')
 
-         call print_date('initialized density matrix')
+         if (print_level >0) call print_date('initialized density matrix')
 
 !        Do 2nd half-transformation
          ierr=exatns_tensor_contract(moint_tensor,a2int_tensor,dm_tensor,"D(i,j,k,l)+=L(p,q,k,l)*R(p,q,i,j)")
          if(ierr.ne.EXA_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=2; return; endif
 
-         call print_date('second ht done')
+         if (print_level >0) call print_date('second ht done')
 
 !        Destruct a2 integrals:
          ierr=exatns_tensor_destroy(a2int_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=3; return; endif
 !        Destruct dm tensor:
          ierr=exatns_tensor_destroy(dm_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=3; return; endif
 
-         call print_date('leaving aomo_transform_3')
+         if (print_level >0) call print_date('leaving aomo_transform_3')
 
         end subroutine aomo_transform_3
 
-        subroutine get_integral_tensor (aoint_tensor,integral_tensor,antisymmetrize)
+        subroutine get_integral_tensor (aoint_tensor,integral_tensor,antisymmetrize,algorithm)
 
          implicit none
 
@@ -572,11 +688,14 @@ module exacorr_ao_to_mo
          type(tens_rcrsv_t)                 :: moint_tensor
 
          integer, intent(in)                :: antisymmetrize
+         integer, optional                  :: algorithm
 
          integer           :: ierr, tens_rank
          integer           :: aoint_id(4),integral_id(4),moint_id(4)
          integer(INTL)     :: aoint_root(4),integral_root(4),moint_root(4)
 
+         if (.not.present(algorithm)) algorithm = 1
+   
 !        Check integrity of tensors
          tens_rank = aoint_tensor%get_rank(ierr)
          if (ierr.ne.0 .or. tens_rank.ne.4) call quit('input tensor corrupted in aomo_transform')
@@ -605,35 +724,43 @@ module exacorr_ao_to_mo
          ierr=exatns_tensor_create(moint_tensor,'mulliken',moint_id,moint_root,EXA_DATA_KIND_C8)
 
 !        Transform integrals
-         call aomo_transform_1 (aoint_tensor,moint_tensor)
+         select case (algorithm)
+         case (1)
+            call aomo_transform_1 (aoint_tensor,moint_tensor)
+         case (2)
+            call aomo_transform_2 (aoint_tensor,moint_tensor)
+         case default
+            call quit ("asked for non-existing algorithm in get_integral_tensor")
+         end select
+
 !        Switch to Dirac order and antisymmetrize
          call mulliken_to_dirac_sort (moint_tensor,integral_tensor,antisymmetrize)
          ierr=exatns_tensor_destroy(moint_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=1; return; endif
 
         end subroutine get_integral_tensor
 
-        subroutine get_integral_tensor_2 (aoint_tensor,integral_tensor,antisymmetrize) 
+        subroutine get_ht2_integral_tensor (a2int_tensor,integral_tensor,antisymmetrize) 
 
          implicit none
 
-         type(tens_rcrsv_t), intent(inout)  :: aoint_tensor, integral_tensor
+         type(tens_rcrsv_t), intent(inout)  :: a2int_tensor, integral_tensor
          type(tens_rcrsv_t)                 :: moint_tensor
 
          integer, intent(in)                :: antisymmetrize
 
          integer           :: ierr, tens_rank
-         integer           :: aoint_id(4),integral_id(4),moint_id(4)
-         integer(INTL)     :: aoint_root(4),integral_root(4),moint_root(4)
+         integer           :: a2int_id(4),integral_id(4),moint_id(4)
+         integer(INTL)     :: a2int_root(4),integral_root(4),moint_root(4)
 
 !        Check integrity of tensors
-         tens_rank = aoint_tensor%get_rank(ierr)
+         tens_rank = a2int_tensor%get_rank(ierr)
          if (ierr.ne.0 .or. tens_rank.ne.4) call quit('input tensor corrupted in aomo_transform')
          tens_rank = integral_tensor%get_rank(ierr)
          if (ierr.ne.0 .or. tens_rank.ne.4) call quit('output tensor corrupted in aomo_transform')
 
 !        Determine ids and root
-         call aoint_tensor%get_space_ids(aoint_id,aoint_root,ierr)
-         if(ierr.ne.EXA_SUCCESS) call quit('aoint tensor corrupted')
+         call a2int_tensor%get_space_ids(a2int_id,a2int_root,ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('a2int tensor corrupted')
          call integral_tensor%get_space_ids(integral_id,integral_root,ierr)
          if(ierr.ne.EXA_SUCCESS) call quit('integral tensor corrupted')
 
@@ -653,12 +780,12 @@ module exacorr_ao_to_mo
          ierr=exatns_tensor_create(moint_tensor,'mulliken',moint_id,moint_root,EXA_DATA_KIND_C8)
 
 !        Transform integrals
-         call aomo_transform_2 (aoint_tensor,moint_tensor)
+         call aomo_halftransform_2 (a2int_tensor,moint_tensor)
 !        Switch to Dirac order and antisymmetrize
          call mulliken_to_dirac_sort (moint_tensor,integral_tensor,antisymmetrize)
          ierr=exatns_tensor_destroy(moint_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=1; return; endif
 
-        end subroutine get_integral_tensor_2
+        end subroutine get_ht2_integral_tensor
 
         subroutine mulliken_to_dirac_sort  (mulliken_tensor,dirac_tensor,antisymmetrize)
 
@@ -785,6 +912,9 @@ module exacorr_ao_to_mo
 ! stub non-MPI routine to satisfy references
 
 #else
+
+       contains
+
         subroutine exacorr_compute_mo_integrals (nmo, mo_list)
          implicit none
          integer, intent(in) :: nmo(4)       ! the size of the mo basis for each of the 4 indices (mulliken ordering)
