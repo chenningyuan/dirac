@@ -122,8 +122,10 @@ module exacorr_cc
             print*, " - Solve CCD equations:            ",exa_input%ccd
             print*, " - Solve Lambda equations:         ",exa_input%lambda
             print*, " - Number of atomic orbitals:      ",ao_space%get_root_id(ierr)
-            print*, " - Number of occupied spinors:     ",2*exa_input%nkr_occ
-            print*, " - Number of virtual spinors:      ",2*exa_input%nkr_vir
+            !print*, " - Number of occupied spinors:     ",2*exa_input%nkr_occ
+            !print*, " - Number of virtual spinors:      ",2*exa_input%nkr_vir
+            print*, " - Number of occupied spinors:     ",exa_input%nkr_occ
+            print*, " - Number of virtual spinors:      ",exa_input%nkr_vir
             print*, " - Target precision of amplitudes: ",exa_input%t_econv
             print*, " - Maximum number of cycles:       ",exa_input%ncycles
             print*, " - ExaTensor block size            ",exa_input%exa_blocksize
@@ -408,8 +410,10 @@ module exacorr_cc
          nvir = exa_input%nkr_vir
          !Get the MO basis for the occupied and virtual spaces
          ierr = 0
-         nocc_l   = 2*int(nocc,8)  ! NB: imo, jmo and nmo count orbitals, nocc_l counts spinors
-         nvir_l   = 2*int(nvir,8)  ! NB: imo, jmo and nmo count orbitals, nvir_l counts spinors
+         !nocc_l   = 2*int(nocc,8)  ! NB: imo, jmo and nmo count orbitals, nocc_l counts spinors
+         !nvir_l   = 2*int(nvir,8)  ! NB: imo, jmo and nmo count orbitals, nvir_l counts spinors
+         nocc_l   = int(nocc,8)  ! NB: imo, jmo and nmo count orbitals, nocc_l counts spinors
+         nvir_l   = int(nvir,8)  ! NB: imo, jmo and nmo count orbitals, nvir_l counts spinors
          call basis_occ%subspace_basis_ctor(nocc_l,ierr)
          if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.subspace_basis_ctor() failed!')
          call basis_vir%subspace_basis_ctor(nvir_l,ierr)

@@ -43,26 +43,36 @@ module talsh_gradient
        call print_date('Entered DM routine')
 
 !      Construct gamma prime tensors
-       oo_dims = nocc * 2
+       !oo_dims = nocc * 2
+       oo_dims = nocc
        ierr=talsh_tensor_construct(gprime_oo,C8,oo_dims,init_val=ZERO)
        ierr=talsh_tensor_construct(gsymm_oo,C8,oo_dims,init_val=ZERO)
-       ov_dims(1) = nocc * 2
-       ov_dims(2) = nvir * 2
+       !ov_dims(1) = nocc * 2
+       !ov_dims(2) = nvir * 2
+       ov_dims(1) = nocc
+       ov_dims(2) = nvir
        ierr=talsh_tensor_construct(gprime_ov,C8,ov_dims,init_val=ZERO)
-       vo_dims(1) = nvir * 2
-       vo_dims(2) = nocc * 2
+       !vo_dims(1) = nvir * 2
+       !vo_dims(2) = nocc * 2
+       vo_dims(1) = nvir
+       vo_dims(2) = nocc
        ierr=talsh_tensor_construct(gprime_vo,C8,vo_dims,init_val=ZERO)
-       vv_dims = nvir * 2
+       !vv_dims = nvir * 2
+       vv_dims = nvir
        ierr=talsh_tensor_construct(gprime_vv,C8,vv_dims,init_val=ZERO)
        ierr=talsh_tensor_construct(gsymm_vv,C8,vv_dims,init_val=ZERO)
 
 !      Construct auxiliary tensor
        ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
-       vvoo_dims(1:2) = nvir * 2
-       vvoo_dims(3:4) = nocc * 2
+       !vvoo_dims(1:2) = nvir * 2
+       !vvoo_dims(3:4) = nocc * 2
+       vvoo_dims(1:2) = nvir
+       vvoo_dims(3:4) = nocc
        ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
-       ooov_dims(1:3) = nocc * 2
-       ooov_dims(4)   = nvir * 2
+       !ooov_dims(1:3) = nocc * 2
+       !ooov_dims(4)   = nvir * 2
+       ooov_dims(1:3) = nocc
+       ooov_dims(4)   = nvir
        ierr=talsh_tensor_construct(ooov_aux_tensor,C8,ooov_dims,init_val=ZERO)
        ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
 

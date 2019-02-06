@@ -872,8 +872,10 @@ module intermediates
         integer :: ierr
 
 !       Auxiliary tensor
-        vvoo_dims(1:2) = nvir * 2
-        vvoo_dims(3:4) = nocc * 2
+        !vvoo_dims(1:2) = nvir * 2
+        !vvoo_dims(3:4) = nocc * 2
+        vvoo_dims(1:2) = nvir
+        vvoo_dims(3:4) = nocc
         ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
 
         call cpu_time(start) 

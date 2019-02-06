@@ -38,7 +38,7 @@ module exacorr_mo
     type, public, extends(mo_root) :: cmo
 
         complex(8), pointer :: &
-         coeff (:,:)          ! coefficients (AO,MO)
+         coeff (:,:,:)          ! coefficients (AO,MO,spin)
 
     end type cmo
 
@@ -86,7 +86,7 @@ module exacorr_mo
       M%energy = 0.0
 
       nullify  (M%coeff)
-      allocate (M%coeff(2*M%nao,M%nmo))
+      allocate (M%coeff(M%nao,M%nmo,2))
       M%coeff = 0.0
 
       nullify  (M%boson_irrep)
@@ -196,7 +196,7 @@ module exacorr_mo
       call interface_mpi_bcast (M%index,        M%nmo,my_MPI_master,global_communicator)
       call interface_mpi_bcast (M%energy,       M%nmo,my_MPI_master,global_communicator)
       !n_coef = M%nao * M%nmo
-      n_coef = 2* M%nao * M%nmo
+      n_coef = M%nao * M%nmo * 2 ! (AO,MO,spin)
       call interface_mpi_bcast (M%coeff,n_coef,my_MPI_master,global_communicator)
 
      end subroutine sync_mo_complex
@@ -274,14 +274,14 @@ module exacorr_mo
 
       do spin = 1, 2
         if (spin == 1) then
-            do j = 1, npo+nmo
+            do j = 1, nmo
                 do i = 1, nao
                 scoeff(i,j    ,spin) = dcmplx(coeff(i,j+npo,1),coeff(i,j+npo,2))
                 scoeff(i,j+nmo,spin) = dcmplx(coeff(i,j+npo,3),coeff(i,j+npo,4))
                 end do
             end do
         else if (spin == 2) then
-            do j = 1, npo+nmo
+            do j = 1, nmo
                 do i = 1, nao
                 scoeff(i,j    ,spin) = dcmplx(-coeff(i,j+npo,3), coeff(i,j+npo,4))
                 scoeff(i,j+nmo,spin) = dcmplx( coeff(i,j+npo,1),-coeff(i,j+npo,2))

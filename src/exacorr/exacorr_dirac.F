@@ -141,6 +141,8 @@ C***********************************************************************
       integer              :: kvec              ! Dummy variable needed in first call to numlst
       integer, allocatable :: mo_list(:)
       integer              :: nmo(4)
+      integer, allocatable :: mokr_occ(:), mokr_vir(:)
+      integer :: i !tmp
 
 c     if (nfsym.ne.1) then
 c        call quit ('exacorr can not handle symmetry')
@@ -173,15 +175,30 @@ C
       ! Obtain nocc and nvir + mo_occ and mo_vir
       exa_input%nkr_occ = 0
       call numlst (string_occupied,kvec,1,1,nesh(1),1,exa_input%nkr_occ)
-      allocate (exa_input%mokr_occ(exa_input%nkr_occ))
-      call numlst (string_occupied,exa_input%mokr_occ,exa_input%nkr_occ,
+      allocate (mokr_occ(exa_input%nkr_occ))
+      !call numlst (string_occupied,exa_input%mokr_occ,exa_input%nkr_occ,1,nesh(1),1,exa_input%nkr_occ)
+      call numlst (string_occupied,mokr_occ,exa_input%nkr_occ,
      &              1,nesh(1),1,exa_input%nkr_occ)
+      exa_input%nkr_occ = 2 * exa_input%nkr_occ
+      allocate (exa_input%mokr_occ(exa_input%nkr_occ))
+      do i = 1, exa_input%nkr_occ
+        exa_input%mokr_occ(i) = (mokr_occ(1)-1)*2+i
+      end do
+      deallocate (mokr_occ)
 
       exa_input%nkr_vir = 0
       call numlst (string_virtual,kvec,1,1,nesh(1),1,exa_input%nkr_vir)
+      allocate (mokr_vir(exa_input%nkr_vir))
+      !call numlst (string_virtual,exa_input%mokr_vir,exa_input%nkr_vir,1,nesh(1),1,exa_input%nkr_vir)
+      call numlst (string_virtual,mokr_vir,exa_input%nkr_vir,
+     & 1,nesh(1),1,exa_input%nkr_vir)
+      exa_input%nkr_vir = 2 * exa_input%nkr_vir
       allocate (exa_input%mokr_vir(exa_input%nkr_vir))
-      call numlst (string_virtual,exa_input%mokr_vir,exa_input%nkr_vir,
-     &              1,nesh(1),1,exa_input%nkr_vir)
+      do i = 1, exa_input%nkr_vir
+        exa_input%mokr_vir(i) =
+     &                        exa_input%mokr_occ(exa_input%nkr_occ)+i
+      end do
+      deallocate (mokr_vir)
 
 #if defined (VAR_MPI)
       end if
@@ -298,8 +315,8 @@ C
 
        end subroutine compress_unc_shell
 
-       subroutine read_from_dfcoef (ao_basis,qmo,ierr)
-       !subroutine read_from_dfcoef (ao_basis,cspinor,ierr)
+       !subroutine read_from_dfcoef (ao_basis,qmo,ierr)
+       subroutine read_from_dfcoef (ao_basis,cspinor,ierr)
 
        use exacorr_mo
        use exacorr_datatypes
@@ -312,7 +329,7 @@ C
 !      by reading also the basis set information into gtos
 
        type(basis_set_info_t), intent(inout) :: ao_basis
-       type(qumo), intent(inout):: qmo
+       !type(qumo), intent(inout):: qmo
        type(cmo), intent(inout):: cspinor
        integer, intent(out)   :: ierr 
        integer, parameter     :: NOERROR  = 0 ! no error
@@ -370,14 +387,16 @@ C
        allocate(coeff(nao,nto,nz))
        allocate(eig(nto))
        allocate(ibeig(nto))
-       allocate(index(nto))
+       !allocate(index(nto))
+       allocate(index(2*nmo))
         
        ! read the mo coefficients and orbital eigenvalues
        read (lucoef,end=10,err=10) coeff
        read (lucoef,end=10,err=10) eig
        read (lucoef,end=10,err=10) ibeig
        ! fill in index values
-       do i = 1, nmo
+       !do i = 1, nmo
+       do i = 1, 2*nmo
           index(i) = i ! we set the index compatible with the fact that we store all mo's
        end do
 
@@ -387,21 +406,27 @@ C
        call convert_quaternion_to_complex(coeff,scoeff,eig,seig,
      &                                              nao,nmo,npo)
 
-       deallocate(seig)
-       deallocate(scoeff)
-
        ! put in qmo
-       call alloc_mo (qmo,nao,nmo,nz)
-       qmo%total_energy = total_energy
-       qmo%index        = index
-       qmo%coeff        = coeff(:,npo+1:nto,1:nz)
-       qmo%energy       = eig(npo+1:nto)
-       qmo%boson_irrep  = ibeig(npo+1:nto)
+       !call alloc_mo (qmo,nao,nmo,nz)
+       !qmo%total_energy = total_energy
+       !qmo%index        = index
+       !qmo%coeff        = coeff(:,npo+1:nto,1:nz)
+       !qmo%energy       = eig(npo+1:nto)
+       !qmo%boson_irrep  = ibeig(npo+1:nto)
+       ! put in cmo
+       call alloc_mo (cspinor,nao,2*nmo)
+       cspinor%total_energy = total_energy
+       cspinor%index        = index
+       cspinor%coeff        = scoeff
+       cspinor%energy       = seig
+       cspinor%boson_irrep  = 0 ! because nosym. if there is, include ibeig in converter
 
        deallocate(coeff)
        deallocate(eig)
        deallocate(ibeig)
        deallocate(index)
+       deallocate(seig)
+       deallocate(scoeff)
 
        ! read the basis set information and check for consistency
        read (LUCOEF,err=20,end=20) nao_bas,nshells,npriexp,ncnt 

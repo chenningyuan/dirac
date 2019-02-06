@@ -115,7 +115,8 @@ module interface_to_mpi
     module procedure interface_mpi_bcast_r4
     module procedure interface_mpi_bcast_cx
     module procedure interface_mpi_bcast_c1
-    module procedure interface_mpi_bcast_co2
+    module procedure interface_mpi_bcast_cmplx2
+    module procedure interface_mpi_bcast_cmplx3
   end interface
 
   interface interface_mpi_gather
@@ -611,10 +612,38 @@ contains
   end subroutine
 !-------------------------------------------------------------------------------
 
-  subroutine interface_mpi_bcast_co2(x,ndim,root_proc,communicator)
+  subroutine interface_mpi_bcast_cmplx2(x,ndim,root_proc,communicator)
 
 !-------------------------------------------------------------------------------
     complex(8)                 :: x(:,:)
+    integer(kind=integer_kind) :: ndim
+    integer(kind=integer_kind) :: root_proc
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32BIT_INT
+    integer(kind=4)            :: ndim_i4
+    integer(kind=4)            :: root_proc_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
+    ndim_i4         = ndim
+    root_proc_i4    = root_proc
+    communicator_i4 = communicator
+    call mpi_bcast(x, ndim_i4, MPI_COMPLEX8, root_proc_i4, communicator_i4, ierr_i4)
+#else
+    if (.not. MPI_INIT_called) return
+    call mpi_bcast(x, ndim   , MPI_COMPLEX8, root_proc   , communicator   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_bcast_cmplx3(x,ndim,root_proc,communicator)
+
+!-------------------------------------------------------------------------------
+    complex(8)                 :: x(:,:,:)
     integer(kind=integer_kind) :: ndim
     integer(kind=integer_kind) :: root_proc
     integer(kind=integer_kind) :: communicator

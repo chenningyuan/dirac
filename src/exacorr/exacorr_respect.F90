@@ -157,7 +157,9 @@ module exacorr_respect
         call alloc_mo(como,nao,nelms)
         como%total_energy = total_energy
         como%index        = index
-        como%coeff        = coeff(:,:)
+!       Probably not correct, but needed for new definition of coeff
+        como%coeff(:,:,1)        = coeff(1:nao,:)
+        como%coeff(:,:,2)        = coeff(1+nao:2*nao,:)
         como%energy       = eig(:)
         como%boson_irrep  = 0 
 

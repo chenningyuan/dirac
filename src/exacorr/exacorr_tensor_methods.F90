@@ -262,25 +262,34 @@ module exacorr_tensor_methods
          integer, intent(in) :: mo_occ(:),mo_vir(:)
          class(scale_with_denom_t), intent(out):: this
 
-         type(qumo) :: qmo
+         !type(qumo) :: qmo
+         type(cmo) :: cspinor
          integer  :: k
 
          ! we are assuming closed shell (Kramers-restricted) cases here
-         call get_mo_coefficients (qmo,mo_occ,nocc)
-         allocate(this%eps_occ(2*nocc))
-         do k = 1, nocc
-            this%eps_occ(k)      = qmo%energy(k)
-            this%eps_occ(k+nocc) = qmo%energy(k)
-         end do
-         call dealloc_mo (qmo)
+         !call get_mo_coefficients (qmo,mo_occ,nocc)
+         !allocate(this%eps_occ(2*nocc))
+         !do k = 1, nocc
+         !   this%eps_occ(k)      = qmo%energy(k)
+         !   this%eps_occ(k+nocc) = qmo%energy(k)
+         !end do
+         !call dealloc_mo (qmo)
+         call get_mo_coefficients (cspinor,mo_occ,nocc)
+         allocate(this%eps_occ(nocc))
+         this%eps_occ = cspinor%energy
+         call dealloc_mo (cspinor)
 
-         call get_mo_coefficients (qmo,mo_vir,nvir)
-         allocate(this%eps_vir(2*nvir))
-         do k = 1, nvir
-            this%eps_vir(k)      = qmo%energy(k)
-            this%eps_vir(k+nvir) = qmo%energy(k)
-         end do
-         call dealloc_mo (qmo)
+         !call get_mo_coefficients (qmo,mo_vir,nvir)
+         !allocate(this%eps_vir(2*nvir))
+         !do k = 1, nvir
+         !   this%eps_vir(k)      = qmo%energy(k)
+         !   this%eps_vir(k+nvir) = qmo%energy(k)
+         !end do
+         !call dealloc_mo (qmo)
+         call get_mo_coefficients (cspinor,mo_vir,nvir)
+         allocate(this%eps_vir(nvir))
+         this%eps_vir = cspinor%energy
+         call dealloc_mo (cspinor)
 
         end subroutine init_epsilons
 
@@ -296,7 +305,8 @@ module exacorr_tensor_methods
          class(init_mocoef_tensor_t), intent(out):: this
 
          integer  :: nao,j,k
-         type(qumo) :: qmo
+         !type(qumo) :: qmo
+         type(cmo) :: cspinor
 
 !        Copy the coefficients into the alpha or beta array, using the quaternion relations as defined in
 !        T. Saue, H. Jensen, J. Chem. Phys. 111 (1999) 6211–6222, Equation 16.
@@ -305,26 +315,30 @@ module exacorr_tensor_methods
 
          nao = get_nao()
          allocate (this%mocoef_all(nao,2*nmo))
-         call get_mo_coefficients (qmo,mo_list,nmo)
+         !call get_mo_coefficients (qmo,mo_list,nmo)
+         call get_mo_coefficients (cspinor,mo_list,nmo)
 
-         if (spin == 1) then
-            do k = 1, nmo
-               do j = 1, nao
-                this%mocoef_all(j,k)     = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
-                this%mocoef_all(j,k+nmo) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-               end do
-            end do
-         elseif (spin == 2) then
-            do k = 1, nmo
-               do j = 1, nao
-                this%mocoef_all(j,k)     = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-                this%mocoef_all(j,k+nmo) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
-               end do
-            end do
-         else
-            call quit ('init_mocoef called with unknown spin value')
-         end if
-         call dealloc_mo (qmo)
+         !if (spin == 1) then
+         !   do k = 1, nmo
+         !      do j = 1, nao
+         !       this%mocoef_all(j,k)     = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
+         !       this%mocoef_all(j,k+nmo) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
+         !      end do
+         !   end do
+         !elseif (spin == 2) then
+         !   do k = 1, nmo
+         !      do j = 1, nao
+         !       this%mocoef_all(j,k)     = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
+         !       this%mocoef_all(j,k+nmo) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
+         !      end do
+         !   end do
+         !else
+         !   call quit ('init_mocoef called with unknown spin value')
+         !end if
+         !call dealloc_mo (qmo)
+
+         this%mocoef_all = cspinor%coeff(:,:,spin)
+         call dealloc_mo(cspinor)
 
         end subroutine init_mocoef
 
@@ -346,31 +360,31 @@ module exacorr_tensor_methods
 !        The coefficients for the barred spinors (that start after the nmo(i) unbarred spinors) are generated
 !        using Kramers' symmetry.
 
-         nao = get_nao()
+         !nao = get_nao()
 
-         allocate (this%mocoef_all_1(nao,2*nmo(1),2))
-         call get_mo_coefficients (qmo,mo_list(1:nmo(1)),nmo(1))
-         do k = 1, nmo(1)
-            do j = 1, nao
-             this%mocoef_all_1(j,k,1)     = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
-             this%mocoef_all_1(j,k,2)     = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-             this%mocoef_all_1(j,k+nmo(1),1) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-             this%mocoef_all_1(j,k+nmo(1),2) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
-            end do
-         end do
-         call dealloc_mo (qmo)
+         !allocate (this%mocoef_all_1(nao,2*nmo(1),2))
+         !call get_mo_coefficients (qmo,mo_list(1:nmo(1)),nmo(1))
+         !do k = 1, nmo(1)
+         !   do j = 1, nao
+         !    this%mocoef_all_1(j,k,1)     = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
+         !    this%mocoef_all_1(j,k,2)     = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
+         !    this%mocoef_all_1(j,k+nmo(1),1) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
+         !    this%mocoef_all_1(j,k+nmo(1),2) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
+         !   end do
+         !end do
+         !call dealloc_mo (qmo)
 
-         allocate (this%mocoef_all_2(nao,2*nmo(2),2))
-         call get_mo_coefficients (qmo,mo_list(nmo(1)+1:nmo(1)+nmo(2)),nmo(2))
-         do k = 1, nmo(2)
-            do j = 1, nao
-             this%mocoef_all_2(j,k,1)     = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
-             this%mocoef_all_2(j,k,2)     = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-             this%mocoef_all_2(j,k+nmo(2),1) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-             this%mocoef_all_2(j,k+nmo(2),2) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
-            end do
-         end do
-         call dealloc_mo (qmo)
+         !allocate (this%mocoef_all_2(nao,2*nmo(2),2))
+         !call get_mo_coefficients (qmo,mo_list(nmo(1)+1:nmo(1)+nmo(2)),nmo(2))
+         !do k = 1, nmo(2)
+         !   do j = 1, nao
+         !    this%mocoef_all_2(j,k,1)     = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
+         !    this%mocoef_all_2(j,k,2)     = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
+         !    this%mocoef_all_2(j,k+nmo(2),1) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
+         !    this%mocoef_all_2(j,k+nmo(2),2) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
+         !   end do
+         !end do
+         !call dealloc_mo (qmo)
 
         end subroutine init_dm
 
@@ -386,37 +400,38 @@ module exacorr_tensor_methods
 
          integer  :: nao,j,k
          type(qumo) :: qmo
+         !type(cmo) :: cspinor
 
 !        Copy the coefficients into the alpha or beta array, using the quaternion relations as defined in
 !        T. Saue, H. Jensen, J. Chem. Phys. 111 (1999) 6211–6222, Equation 16.
 !        The coefficients for the barred spinors (that start after the nmo(i) unbarred spinors) are generated
 !        using Kramers' symmetry.
 
-         nao = get_nao()
+         !nao = get_nao()
 
-         allocate (this%mocoef_all_1(nao,2*nmo(1),2))
-         call get_mo_coefficients (qmo,mo_list(1:nmo(1)),nmo(1))
-         do k = 1, nmo(1)
-            do j = 1, nao
-             this%mocoef_all_1(j,k,1)     = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
-             this%mocoef_all_1(j,k,2)     = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-             this%mocoef_all_1(j,k+nmo,1) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-             this%mocoef_all_1(j,k+nmo,2) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
-            end do
-         end do
-         call dealloc_mo (qmo)
+         !allocate (this%mocoef_all_1(nao,2*nmo(1),2))
+         !call get_mo_coefficients (qmo,mo_list(1:nmo(1)),nmo(1))
+         !do k = 1, nmo(1)
+         !   do j = 1, nao
+         !    this%mocoef_all_1(j,k,1)     = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
+         !    this%mocoef_all_1(j,k,2)     = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
+         !    this%mocoef_all_1(j,k+nmo,1) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
+         !    this%mocoef_all_1(j,k+nmo,2) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
+         !   end do
+         !end do
+         !call dealloc_mo (qmo)
 
-         allocate (this%mocoef_all_2(nao,2*nmo(2),2))
-         call get_mo_coefficients (qmo,mo_list(nmo(1)+1:nmo(1)+nmo(2)),nmo(2))
-         do k = 1, nmo(2)
-            do j = 1, nao
-             this%mocoef_all_2(j,k,1)     = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
-             this%mocoef_all_2(j,k,2)     = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-             this%mocoef_all_2(j,k+nmo,1) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-             this%mocoef_all_2(j,k+nmo,2) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
-            end do
-         end do
-         call dealloc_mo (qmo)
+         !allocate (this%mocoef_all_2(nao,2*nmo(2),2))
+         !call get_mo_coefficients (qmo,mo_list(nmo(1)+1:nmo(1)+nmo(2)),nmo(2))
+         !do k = 1, nmo(2)
+         !   do j = 1, nao
+         !    this%mocoef_all_2(j,k,1)     = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
+         !    this%mocoef_all_2(j,k,2)     = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
+         !    this%mocoef_all_2(j,k+nmo,1) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
+         !    this%mocoef_all_2(j,k+nmo,2) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
+         !   end do
+         !end do
+         !call dealloc_mo (qmo)
 
         end subroutine init_ht
 
