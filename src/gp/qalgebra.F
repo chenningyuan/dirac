@@ -515,7 +515,7 @@ C       FIND EIGENVALUES ONLY
 C       =====================
 C
       CALL GETTIM(CPU2,WALL2)
-      CALL TQLRAT(N,EIG,WORK(KFV2),IERR)
+      CALL TQLRAT_omp(N,EIG,WORK(KFV2),IERR)
       CALL GETTIM(CPU3,WALL3)
       GO TO 30
 C
@@ -530,7 +530,7 @@ C       tridiagonal matrix
 C
    20 CONTINUE
       CALL GETTIM(CPU2,WALL2)
-      CALL TQL2(LRV,N,EIG,WORK(KFV1),VEC(1,1,1),IERR)
+      CALL TQL2_omp(LRV,N,EIG,WORK(KFV1),VEC(1,1,1),IERR)
       CALL GETTIM(CPU3,WALL3)
       IF (IERR.NE.0) GO TO 30
 C
@@ -1332,6 +1332,304 @@ C
 !$OMP END PARALLEL
 C
       RETURN
+      END
+      SUBROUTINE TQL2_omp(NM,N,D,E,Z,IERR)
+C
+      IMPLICIT NONE
+      INTEGER I,J,K,L,M,N,II,L1,L2,NM,MML,IERR
+      REAL*8  D(N),E(N),Z(NM,N)
+      REAL*8  C,C2,C3,DL1,EL1,F,G,H,P,R,S,S2,TST1,TST2
+C
+C     THIS SUBROUTINE IS A TRANSLATION OF THE ALGOL PROCEDURE TQL2,
+C     NUM. MATH. 11, 293-306(1968) BY BOWDLER, MARTIN, REINSCH, AND
+C     WILKINSON.
+C     HANDBOOK FOR AUTO. COMP., VOL.II-LINEAR ALGEBRA, 227-240(1971).
+C
+C     THIS SUBROUTINE FINDS THE EIGENVALUES AND EIGENVECTORS
+C     OF A SYMMETRIC TRIDIAGONAL MATRIX BY THE QL METHOD.
+C     THE EIGENVECTORS OF A FULL SYMMETRIC MATRIX CAN ALSO
+C     BE FOUND IF  TRED2  HAS BEEN USED TO REDUCE THIS
+C     FULL MATRIX TO TRIDIAGONAL FORM.
+C
+C     ON INPUT
+C
+C        NM MUST BE SET TO THE ROW DIMENSION OF TWO-DIMENSIONAL
+C          ARRAY PARAMETERS AS DECLARED IN THE CALLING PROGRAM
+C          DIMENSION STATEMENT.
+C
+C        N IS THE ORDER OF THE MATRIX.
+C
+C        D CONTAINS THE DIAGONAL ELEMENTS OF THE INPUT MATRIX.
+C
+C        E CONTAINS THE SUBDIAGONAL ELEMENTS OF THE INPUT MATRIX
+C          IN ITS LAST N-1 POSITIONS.  E(1) IS ARBITRARY.
+C
+C        Z CONTAINS THE TRANSFORMATION MATRIX PRODUCED IN THE
+C          REDUCTION BY  TRED2, IF PERFORMED.  IF THE EIGENVECTORS
+C          OF THE TRIDIAGONAL MATRIX ARE DESIRED, Z MUST CONTAIN
+C          THE IDENTITY MATRIX.
+C
+C      ON OUTPUT
+C
+C        D CONTAINS THE EIGENVALUES IN ASCENDING ORDER.  IF AN
+C          ERROR EXIT IS MADE, THE EIGENVALUES ARE CORRECT BUT
+C          UNORDERED FOR INDICES 1,2,...,IERR-1.
+C
+C        E HAS BEEN DESTROYED.
+C
+C        Z CONTAINS ORTHONORMAL EIGENVECTORS OF THE SYMMETRIC
+C          TRIDIAGONAL (OR FULL) MATRIX.  IF AN ERROR EXIT IS MADE,
+C          Z CONTAINS THE EIGENVECTORS ASSOCIATED WITH THE STORED
+C          EIGENVALUES.
+C
+C        IERR IS SET TO
+C          ZERO       FOR NORMAL RETURN,
+C          J          IF THE J-TH EIGENVALUE HAS NOT BEEN
+C                     DETERMINED AFTER 30 ITERATIONS.
+C
+C     QUESTIONS AND COMMENTS SHOULD BE DIRECTED TO BURTON S. GARBOW,
+C     MATHEMATICS AND COMPUTER SCIENCE DIV, ARGONNE NATIONAL LABORATORY
+C
+C     THIS VERSION DATED AUGUST 1983.
+C
+C     ------------------------------------------------------------------
+C
+      IERR = 0
+      IF (N .EQ. 1) GO TO 1001
+C
+      DO 100 I = 2, N
+  100 E(I-1) = E(I)
+C
+      F = 0.0D0
+      TST1 = 0.0D0
+      E(N) = 0.0D0
+C
+      DO 240 L = 1, N
+         J = 0
+         H = DABS(D(L)) + DABS(E(L))
+         IF (TST1 .LT. H) TST1 = H
+C     .......... LOOK FOR SMALL SUB-DIAGONAL ELEMENT ..........
+         DO 110 M = L, N
+            TST2 = TST1 + DABS(E(M))
+            IF (TST2 .EQ. TST1) GO TO 120
+C     .......... E(N) IS ALWAYS ZERO, SO THERE IS NO EXIT
+C                THROUGH THE BOTTOM OF THE LOOP ..........
+  110    CONTINUE
+C
+  120    IF (M .EQ. L) GO TO 220
+  130    IF (J .EQ. 30) GO TO 1000
+         J = J + 1
+C     .......... FORM SHIFT ..........
+         L1 = L + 1
+         L2 = L1 + 1
+         G = D(L)
+         P = (D(L1) - G) / (2.0D0 * E(L))
+         R = SQRT(1.0D0 + P*P)
+         D(L) = E(L) / (P + DSIGN(R,P))
+         D(L1) = E(L) * (P + DSIGN(R,P))
+         DL1 = D(L1)
+         H = G - D(L)
+         IF (L2 .GT. N) GO TO 145
+C
+         DO 140 I = L2, N
+  140    D(I) = D(I) - H
+C
+  145    F = F + H
+C     .......... QL TRANSFORMATION ..........
+         P = D(M)
+         C = 1.0D0
+         C2 = C
+         EL1 = E(L1)
+         S = 0.0D0
+         MML = M - L
+C     .......... FOR I=M-1 STEP -1 UNTIL L DO -- ..........
+         DO 200 II = 1, MML
+            C3 = C2
+            C2 = C
+            S2 = S
+            I = M - II
+            G = C * E(I)
+            H = C * P
+            R = SQRT(P**2 + E(I)**2)
+            E(I+1) = S * R
+            S = E(I) / R
+            C = P / R
+            P = C * D(I) - S * G
+            D(I+1) = H + S * (C * G + S * D(I))
+C     .......... FORM VECTOR ..........
+            DO 180 K = 1, N
+               H = Z(K,I+1)
+               Z(K,I+1) = S * Z(K,I) + C * H
+               Z(K,I) = C * Z(K,I) - S * H
+  180       CONTINUE
+C
+  200    CONTINUE
+C
+         P = -S * S2 * C3 * EL1 * E(L) / DL1
+         E(L) = S * P
+         D(L) = C * P
+         TST2 = TST1 + DABS(E(L))
+         IF (TST2 .GT. TST1) GO TO 130
+  220    D(L) = D(L) + F
+  240 CONTINUE
+C     .......... ORDER EIGENVALUES AND EIGENVECTORS ..........
+      DO 300 II = 2, N
+         I = II - 1
+         K = I
+         P = D(I)
+C
+         DO 260 J = II, N
+            IF (D(J) .GE. P) GO TO 260
+            K = J
+            P = D(J)
+  260    CONTINUE
+C
+         IF (K .EQ. I) GO TO 300
+         D(K) = D(I)
+         D(I) = P
+C
+         DO 280 J = 1, N
+            P = Z(J,I)
+            Z(J,I) = Z(J,K)
+            Z(J,K) = P
+  280    CONTINUE
+C
+  300 CONTINUE
+C
+      GO TO 1001
+C     .......... SET ERROR -- NO CONVERGENCE TO AN
+C                EIGENVALUE AFTER 30 ITERATIONS ..........
+ 1000 IERR = L
+ 1001 RETURN
+      END
+      SUBROUTINE TQLRAT_omp(N,D,E2,IERR)
+C
+      IMPLICIT NONE
+      INTEGER  I,J,L,M,N,II,L1,MML,IERR
+      REAL*8   D(N),E2(N)
+      REAL*8   B,C,F,G,H,P,R,S,T
+C
+C     THIS SUBROUTINE IS A TRANSLATION OF THE ALGOL PROCEDURE TQLRAT,
+C     ALGORITHM 464, COMM. ACM 16, 689(1973) BY REINSCH.
+C
+C     THIS SUBROUTINE FINDS THE EIGENVALUES OF A SYMMETRIC
+C     TRIDIAGONAL MATRIX BY THE RATIONAL QL METHOD.
+C
+C     ON INPUT
+C
+C        N IS THE ORDER OF THE MATRIX.
+C
+C        D CONTAINS THE DIAGONAL ELEMENTS OF THE INPUT MATRIX.
+C
+C        E2 CONTAINS THE SQUARES OF THE SUBDIAGONAL ELEMENTS OF THE
+C          INPUT MATRIX IN ITS LAST N-1 POSITIONS.  E2(1) IS ARBITRARY.
+C
+C      ON OUTPUT
+C
+C        D CONTAINS THE EIGENVALUES IN ASCENDING ORDER.  IF AN
+C          ERROR EXIT IS MADE, THE EIGENVALUES ARE CORRECT AND
+C          ORDERED FOR INDICES 1,2,...IERR-1, BUT MAY NOT BE
+C          THE SMALLEST EIGENVALUES.
+C
+C        E2 HAS BEEN DESTROYED.
+C
+C        IERR IS SET TO
+C          ZERO       FOR NORMAL RETURN,
+C          J          IF THE J-TH EIGENVALUE HAS NOT BEEN
+C                     DETERMINED AFTER 30 ITERATIONS.
+C
+C     QUESTIONS AND COMMENTS SHOULD BE DIRECTED TO BURTON S. GARBOW,
+C     MATHEMATICS AND COMPUTER SCIENCE DIV, ARGONNE NATIONAL LABORATORY
+C
+C     THIS VERSION DATED AUGUST 1983.
+C
+C     ------------------------------------------------------------------
+C
+      IERR = 0
+      IF (N .EQ. 1) GO TO 1001
+C
+      DO 100 I = 2, N
+  100 E2(I-1) = E2(I)
+C
+      F = 0.0D0
+      T = 0.0D0
+      E2(N) = 0.0D0
+C
+      DO 290 L = 1, N
+         J = 0
+         H = DABS(D(L)) + DSQRT(E2(L))
+         IF (T .GT. H) GO TO 105
+         T = H
+         B = 1.D-14*T ! was EPSLON(T)
+         C = B * B
+C     .......... LOOK FOR SMALL SQUARED SUB-DIAGONAL ELEMENT ..........
+  105    DO 110 M = L, N
+            IF (E2(M) .LE. C) GO TO 120
+C     .......... E2(N) IS ALWAYS ZERO, SO THERE IS NO EXIT
+C                THROUGH THE BOTTOM OF THE LOOP ..........
+  110    CONTINUE
+C
+  120    IF (M .EQ. L) GO TO 210
+  130    IF (J .EQ. 30) GO TO 1000
+         J = J + 1
+C     .......... FORM SHIFT ..........
+         L1 = L + 1
+         S = DSQRT(E2(L))
+         G = D(L)
+         P = (D(L1) - G) / (2.0D0 * S)
+         R = SQRT(1.0D0 + P**2)
+         D(L) = S / (P + DSIGN(R,P))
+         H = G - D(L)
+C
+         DO 140 I = L1, N
+  140    D(I) = D(I) - H
+C
+         F = F + H
+C     .......... RATIONAL QL TRANSFORMATION ..........
+         G = D(M)
+         IF (G .EQ. 0.0D0) G = B
+         H = G
+         S = 0.0D0
+         MML = M - L
+C     .......... FOR I=M-1 STEP -1 UNTIL L DO -- ..........
+         DO 200 II = 1, MML
+            I = M - II
+            P = G * H
+            R = P + E2(I)
+            E2(I+1) = S * R
+            S = E2(I) / R
+            D(I+1) = H + S * (H + D(I))
+            G = D(I) - E2(I) / G
+            IF (G .EQ. 0.0D0) G = B
+            H = G * P / R
+  200    CONTINUE
+C
+         E2(L) = S * G
+         D(L) = H
+C     .......... GUARD AGAINST UNDERFLOW IN CONVERGENCE TEST ..........
+         IF (H .EQ. 0.0D0) GO TO 210
+         IF (DABS(E2(L)) .LE. DABS(C/H)) GO TO 210
+         E2(L) = H * E2(L)
+         IF (E2(L) .NE. 0.0D0) GO TO 130
+  210    P = D(L) + F
+C     .......... ORDER EIGENVALUES ..........
+         IF (L .EQ. 1) GO TO 250
+C     .......... FOR I=L STEP -1 UNTIL 2 DO -- ..........
+         DO 230 II = 2, L
+            I = L + 2 - II
+            IF (P .GE. D(I-1)) GO TO 270
+            D(I) = D(I-1)
+  230    CONTINUE
+C
+  250    I = 1
+  270    D(I) = P
+  290 CONTINUE
+C
+      GO TO 1001
+C     .......... SET ERROR -- NO CONVERGENCE TO AN
+C                EIGENVALUE AFTER 30 ITERATIONS ..........
+ 1000 IERR = L
+ 1001 RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck qopvec */

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -349,7 +349,8 @@ C
 C     Set orbital strings
 C     ===================
 C
-      CALL OSTRING(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,WORK,KFREE,LFREE)
+      CALL OSTRING(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,IPRXQR,
+     &             WORK,KFREE,LFREE)
 C
 C     Initiate variables in dcbxrs.h
 C     ==============================

@@ -1,6 +1,22 @@
 :orphan:
 
-18.0 (unreleased)
+
+18.1 (unreleased)
+-----------------
+
+Revised features:
+
+- max number of basis functions increased from 30k to 40k
+
+Error corrections:
+
+- Fix spelling error in keyword .GAUNTSCALE (was .GAUTSCALE)
+
+Performance improvements:
+
+- Reduced static memory requirement from common blocks
+
+18.0 (2018-12-13)
 -----------------
 
 New features:
@@ -9,7 +25,8 @@ New features:
 
 Error corrections:
 
-- Fix f correlating exponents for 3d in dyall.cv2z and dyall.ae2z. Contributor: Ken G. Dyall.
+- Fix f correlating exponents for 3d in dyall.cv2z and dyall.ae2z basis sets. Contributor: Ken G. Dyall.
+- Fix f polarizing exponents for 3d in dyall.cv3z and dyall.ae3z basis sets. Contributor: Ken G. Dyall.
 - Bugfix in KRCI module (subroutine STRTYP_GAS_REL), reported by Shigeyoshi Yamamoto.
 - Bugfix in polarizable embedding (the printed electronic part of the energy was not corrected with PE contributions).
 - Fixed the formatting of the carbon potential in the file basis_ecp/ECPCE2SO.

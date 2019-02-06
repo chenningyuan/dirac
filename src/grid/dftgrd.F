@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -207,12 +207,11 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h" 
 #include "priunit.h" 
 
-      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,D3=3.0D0)
+      PARAMETER(D0=0.0D0,D1=1.0D0)
 
-      LOGICAL SWITCH,TEST
+      LOGICAL SWITCH,ADDSML
       DIMENSION X8(IBIG),Y8(IBIG),Z8(IBIG),WT8(IBIG)
 
-      CHARACTER SPDCAR*1
 
 #include "dftwrk.h"
 
@@ -242,7 +241,8 @@ C
       DIMENSION ANGWT(9000), XANG(9000), YANG(9000), ZANG(9000)
       DIMENSION XPASC(20)
 #include "ibtfun.h"
-      TEST = num_grid_cfg_force_4c_grid.OR.(MC.GT.1.AND.(.NOT.LEVYLE))
+      ADDSML = num_grid_cfg_force_4c_grid.OR.
+     &         (MC.GT.1.AND.(.NOT.LEVYLE))
 C
 C     Get estimates for atomic size ratios for use in the Becke
 C     partitioning scheme.
@@ -367,73 +367,10 @@ C     Radial weight:
 C
 C     RADWT(K) = (RADNDE(K)+GRDC)*RADNDE(K)*RADNDE(K)*H
 C           
-
-C        Grid spacing....
-         H = DUMMY
-         DO LL = 1,NHTYP
-           L = LL-1
-
-           nbas = nucorb(ll, 1, iatom)
-!          radovan:
-!          if Levy-Leblond or X2C, ignore small component
-!          unless user forces 4-c grid
-!           if (mc .gt. 1 .or. num_grid_cfg_force_4c_grid) then
-           if (TEST) then
-             nbas = nbas + nucorb(ll, 2, iatom)
-           end if
-
-           IF(NBAS.GT.0) THEN
-             HTMP = DISERR(RADERR,L)
-             H = MIN(H,HTMP)
-             IF(IPRINT.GE.3) THEN
-               WRITE(LUPRI,'(3X,A1,A,F6.3)')
-     &        SPDCAR(L),'-orbitals --> ',HTMP
-             ENDIF
-           ENDIF
-         ENDDO
-         EPH = EXP(H)
-
-C...     Inner grid point
-         ah = aa(1, 1, 1, iatom)
-!        radovan:
-!        if Levy-Leblond or X2C, ignore small component
-!        unless user forces 4-c grid
-!         if (mc .gt. 1 .or. num_grid_cfg_force_4c_grid) then
-         if (TEST) then
-           ah = max(ah, aa(1, 1, 2, iatom))
-         end if
-         ah = d2*ah
-
-         RL = ((1.9D0+LOG(RADERR))/D3)-(LOG(AH)/D2)
-         RL = EXP(RL)
-
-C...     Outer point
-         RH = D0
-         DO LL = 1,NHTYP
-           L = LL-1
-           AL=DUMMY
-
-           IF(NUCORB(LL,1,IATOM).GT.0) AL=AA(2,LL,1,IATOM)
-!          radovan:
-!          if Levy-Leblond or X2C, ignore small component
-!          unless user forces 4-c grid
-!           if (mc .gt. 1 .or. num_grid_cfg_force_4c_grid) then
-           if (TEST) then
-             IF(NUCORB(LL,2,IATOM).GT.0) AL=MIN(AL,AA(2,LL,2,IATOM))
-           end if
-
-           IF(AL.LT.DUMMY) THEN
-             AL = AL+AL
-             RHTMP = OUTERR(AL,L,RADERR)           
-             RH=MAX(RH,RHTMP)
-             IF(IPRINT.GE.3) THEN
-               WRITE(LUPRI,'(3X,A1,A,F6.3)')
-     &            SPDCAR(L),'-orbitals --> ',RHTMP
-             ENDIF
-           ENDIF
-         ENDDO
+         CALL LMGGRID(H,RL,RH,RADERR,IATOM,ADDSML,NUCORB,AA,IPRINT)
+         EPH  = EXP(H)
          GRDC = RL/(EPH-D1)
-         NR = NINT(LOG(D1+(RH/GRDC))/H)
+         NR   = NINT(LOG(D1+(RH/GRDC))/H)
          RADNDE(1) = RL
          RADWT(1)  = (RL+GRDC)*RL*RL*H
          DO IR = 2,NR
@@ -634,7 +571,110 @@ C
  
       RETURN
       END
-
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE LMGGRID(H,RL,RH,RADERR,IATOM,ADDSML,NUCORB,AA,IPRINT)
+C***********************************************************************
+C
+C     Find parameters definining the radial grid defined here
+C     Roland Lindh, Per-Aake Malmqvist and Laura Gagliardi
+C     Theor. Chem. Acc. (2001) 106:178
+C
+C     H  - grid spacing      
+C     RL - inner grid point
+C     RH - outer grid point
+C
+C     Input variable:
+C       RADERR - acceptable discretization error
+C       IATOM  - index of symmetry-independent nucleus
+C       ADDSML - include small component basis functions in the generation of
+C                grid parameters (4c grid)      
+C       NUCORB(LL,2,IATOM) - number of large(1)/small(2) component basis functions
+C                            of angular momentum L = LL - 1 on atom IATOM      
+C       AA(2,LL,IC,NUCIND) - highest(1)/lowest(2) exponent of angular momentum 
+C                            L = LL - 1 of large(IC=1)/small(IC=2) components
+C                            on atom IATOM
+C     
+C     Radial point:         
+C     RADNDE(K) = GRDC(EXP[K*H] - 1)
+C               = (RADNDE(K-1)+GRDC)*EXP[H]-GRDC
+C
+C     where appears the constant
+C
+C          GRDC = RL/(EXP[H] - 1),         
+C                   
+C     calculated from the step size H and the inner point RL.
+C
+C     Radial weight:         
+C
+C     RADWT(K) = (RADNDE(K)+GRDC)*RADNDE(K)*RADNDE(K)*H
+C           
+C***********************************************************************
+#include "implicit.h"
+#include "maxaqn.h"
+#include "mxcent.h"      
+#include "dummy.h"      
+      PARAMETER(D0=0.0D0,D2=2.0D0,D3=3.0D0)
+C     
+      CHARACTER SPDCAR*1
+#include "ccom.h"
+#include "nuclei.h"
+      LOGICAL ADDSML
+      DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND)      
+C     Grid spacing....
+      H = DUMMY
+      DO LL = 1,NHTYP
+        L = LL-1
+        NBAS = NUCORB(LL, 1, IATOM)
+!       radovan:
+!       if Levy-Leblond or X2C, ignore small component
+!       unless user forces 4-c grid
+        IF (ADDSML) THEN
+          NBAS = NBAS + NUCORB(LL, 2, IATOM)
+        END IF
+        IF(NBAS.GT.0) THEN
+          HTMP = DISERR(RADERR,L) ! discretization error
+          H    = MIN(H,HTMP)
+          IF(IPRINT.GE.3) THEN
+            WRITE(LUPRI,'(3X,A1,A,F6.3)')
+     &          SPDCAR(L),'-orbitals --> ',HTMP
+          ENDIF
+        ENDIF
+      ENDDO
+C...  Inner grid point
+      AH = AA(1, 1, 1, IATOM)
+!     radovan:
+!     if Levy-Leblond or X2C, ignore small component
+!     unless user forces 4-c grid
+      if (ADDSML) then
+        AH = MAX(AH, AA(1, 1, 2, IATOM))
+      end if
+      AH = D2*AH
+      RL = ((1.9D0+LOG(RADERR))/D3)-(LOG(AH)/D2)
+      RL = EXP(RL)
+C...  Outer point
+      RH = D0
+      DO LL = 1,NHTYP
+        L = LL-1
+        AL= DUMMY
+        IF(NUCORB(LL,1,IATOM).GT.0) AL=AA(2,LL,1,IATOM)
+!       radovan:
+!       if Levy-Leblond or X2C, ignore small component
+!       unless user forces 4-c grid
+        IF (ADDSML) THEN
+          IF(NUCORB(LL,2,IATOM).GT.0) AL=MIN(AL,AA(2,LL,2,IATOM))
+        END IF
+        IF(AL.LT.DUMMY) THEN
+          AL    = AL+AL
+          RHTMP = OUTERR(AL,L,RADERR)           
+          RH    = MAX(RH,RHTMP)
+          IF(IPRINT.GE.3) THEN
+            WRITE(LUPRI,'(3X,A1,A,F6.3)')
+     &            SPDCAR(L),'-orbitals --> ',RHTMP
+           ENDIF
+         ENDIF
+       ENDDO
+       RETURN
+       END  
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
 C  /* Deck sleb */                                                     C
