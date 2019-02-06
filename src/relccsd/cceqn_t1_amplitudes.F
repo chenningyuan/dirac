@@ -223,13 +223,16 @@ C--------------------------------------
       CALL XTIME(0,1,'--- T1EQNS VOVO * T(C,K)         ')
       CALL GETVOVO (BUF1)
       CALL DELINT ('VOVO','KDDK',BUF1,0,0,0)
-      CALL SRT16 (NREP,MULTB,LTR,LFA,NV,NO,NV,NO,MVO,JVOVO,JJVO,JJVO,
-     &            BUF1,BUF2)
-      M    = MVO(1)
-      K    = IDIST(1,3,1)
-      OFF1 = IDIST(2,3,1)
-      OFF2 = IDIST(3,3,1)
-      CALL XGEMV ('N',M,K,-A1,BUF2(OFF1),M,T1(OFF2),1,A1,S1,1)
+CPi old      CALL SRT16 (NREP,MULTB,LTR,LFA,NV,NO,NV,NO,MVO,JVOVO,JJVO,JJVO,
+CPi old     &            BUF1,BUF2)
+CPi old      M    = MVO(1)
+CPi old      K    = IDIST(1,3,1)
+CPi old      OFF1 = IDIST(2,3,1)
+CPi old      OFF2 = IDIST(3,3,1)
+CPi old      CALL XGEMV ('N',M,K,-A1,BUF2(OFF1),M,T1(OFF2),1,A1,S1,1)
+      call contraction_422 ((/"p1","o2","p2","o1"/),(/"p2","o2"/),      &
+     & (/"p1","o1"/),T1,S1,-1.0d0,1.0d0,nrep,LeftTensor=BUF1)
+CPi test     & (/"p1","o1"/),T1,S1,-1.0d0,1.0d0,nrep)
       CALL XTIME(0,2,'--- T1EQNS VOVO * T(C,K)        ')
             
       END
