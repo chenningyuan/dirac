@@ -65,6 +65,15 @@ module exacorr_tensor_methods
           procedure, public:: apply=>diag_set
         end type set_diagonal_t
 
+        !Initializer for the one electron integrals
+        type, extends(tens_method_uni_t), public:: init_one_el_t
+        complex(8), allocatable, private :: integrals(:,:)
+        integer(8), private :: nsp
+         contains
+          procedure, public :: init_one_el_int
+          procedure, public:: apply=>set_one_el_int
+        end type init_one_el_t
+
        contains
 
        subroutine TensInitTestCtorReal(this,val)
@@ -842,13 +851,13 @@ module exacorr_tensor_methods
          tens=tensor%get_dense_adapter(ierr)
          if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
          rank=tens%num_dims
-         if (rank.ne.2) call quit('Error: dimension not 2 in init_dm_tensor')
+         if (rank.ne.2) call quit('Error: dimension not 2 in diag_set')
 
-         ierr=make_diagonal(tens%body_ptr,tens%data_kind,tens%dims(1:rank),tens%bases(1:rank), this%constant)
+         ierr=fill_diagonal(tens%body_ptr,tens%data_kind,tens%dims(1:rank),tens%bases(1:rank), this%constant)
 
         end function diag_set
 
-        function make_diagonal(tens_body,data_kind,tens_dims,tens_bases, constant) result (ierr)
+        function fill_diagonal(tens_body,data_kind,tens_dims,tens_bases, constant) result (ierr)
          ! routine to fill the diagonal of a matrix
 
          use, intrinsic:: ISO_C_BINDING
@@ -885,6 +894,108 @@ module exacorr_tensor_methods
                   end do
           end do
 
-        end function make_diagonal
+        end function fill_diagonal
+
+        subroutine init_one_el_int(this,mo1_list,nmo1,mo2_list,nmo2)
+
+          use exacorr_datatypes
+          use exacorr_global
+          use, intrinsic:: ISO_C_BINDING
+
+          implicit none
+          class(init_one_el_t), intent(out):: this
+          integer, intent(in) :: nmo1          ! the length of the mo basis
+          integer, intent(in) :: mo1_list(:)   ! and their indices
+          integer, intent(in) :: nmo2          ! the length of the mo basis
+          integer, intent(in) :: mo2_list(:)   ! and their indices
+
+          integer  :: i, j, ij
+          type(one_el_t) :: one_int
+
+          call get_one_el(one_int)
+          this%nsp=one_int%n_spinor
+
+          allocate (this%integrals(nmo1,nmo2))
+
+          ij=0
+          do i = 1, nmo1
+            do j = 1, nmo2
+              ij=(j-1)*this%nsp+i
+              this%integrals(i,j)  = dcmplx(one_int%RC(ij), one_int%CC(ij))
+            end do
+         end do
+        !print*, "nsp", this%nsp
+        end subroutine init_one_el_int
+
+        function set_one_el_int(this,tensor,scalar) result(ierr)
+
+          use exacorr_datatypes
+          use, intrinsic:: ISO_C_BINDING
+
+          implicit none
+
+          integer(INTD) :: ierr, rank
+          class(init_one_el_t), intent(in) :: this
+          class(tens_rcrsv_t), intent(inout) :: tensor
+          complex(8), intent(inout), optional :: scalar
+
+          type(tens_dense_t) :: tens
+          integer(8), allocatable :: dims(:)
+          !print*, this%nsp
+          !print*, this%integrals
+
+          ierr=0
+          tens=tensor%get_dense_adapter(ierr)
+          if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
+          rank=tens%num_dims
+          if (rank.ne.2) call quit('Error: dimension not 2 in init_one_el_int')
+
+          allocate(dims(rank))
+          call tensor%get_dims(dims,rank)
+          !print*, "init_one_int matrix dimensions", dims
+
+          ierr=one_el_int_set(tens%body_ptr,tens%data_kind,tens%dims(1:rank),tens%bases(1:rank), rank, &
+                               this%nsp, this%integrals)
+          deallocate(dims)
+        end function set_one_el_int
+
+        integer function one_el_int_set(tens_body,data_kind,tens_dims,tens_bases, rank, &
+                         nsp, integrals) result (ierr)
+          !Initialization routine to fill tensor with one electron integrals
+
+          use exacorr_datatypes
+          use, intrinsic:: ISO_C_BINDING
+
+          implicit none
+
+          type(C_PTR), value:: tens_body           !in: C pointer to the tensor body (tensor elements)
+          integer(4), value:: data_kind , rank     !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
+          integer(8), intent(in):: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
+          integer(8), intent(in):: tens_bases(1:*) !in: base offsets for each tensor dimension)
+          complex(8), intent(in):: integrals(:,:)
+          integer(8), intent(in):: nsp
+
+          complex(8),pointer :: i_tens(:,:)
+
+          integer(8) :: lmo, li, kmo, kj, nkp
+
+          nkp=nsp/2
+
+          ierr=0
+          call c_f_pointer(tens_body,i_tens,tens_dims(1:2)) !map C pointer to 2-dimensional array
+
+          do lmo = 1, tens_dims(2) ! loop over the mo's active in the HT integral tensor block
+             li = tens_bases(2) + lmo - 1
+             do kmo = 1, tens_dims(1) ! loop over the mo's active in the HT integral tensor block
+                kj = tens_bases(1) + kmo - 1
+
+                i_tens(kmo,lmo) = i_tens(kmo,lmo) + integrals(li,kj)
+
+                if (li.gt.nkp) call quit('Error: MRCONEE contains less orbitals, change MOLTRA')
+                if (kj.gt.nkp) call quit('Error: MRCONEE contains less orbitals, change MOLTRA')
+             end do
+          end do
+
+        end function one_el_int_set
 
 end module exacorr_tensor_methods

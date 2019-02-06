@@ -51,6 +51,13 @@
          type(tens_rcrsv_t) :: vvvv
         end type exatns_intg_tens
 
+!       One electron integrals
+        type, public :: one_el_t
+          integer :: n_spinor=-1
+          real(REALD), pointer :: RC(:)
+          real(REALD), pointer :: CC(:)
+        end type one_el_t
+
 !       Common blocks between t and lambda
         type, public :: exatns_comm_tens
          type(tens_rcrsv_t) :: foo, fov, fvv
