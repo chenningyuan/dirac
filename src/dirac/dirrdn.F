@@ -5469,9 +5469,10 @@ C&&& IOTC4: do IOTC in 4c-mode
   144     CONTINUE
 C&&& NONREL: do 2-component non-relativistic calculation
              TWOCOMP = .TRUE.
-             NONREL = .TRUE.
-             SPINFR = .TRUE.
+             NONREL  = .TRUE.
+             SPINFR  = .TRUE.
              DOLVC   = .FALSE.
+             MC      = 1
              GO TO 100
   145     CONTINUE
              BSS = .TRUE.

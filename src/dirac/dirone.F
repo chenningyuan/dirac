@@ -97,6 +97,14 @@ C
       ELSEIF (CLSINT(I).EQ.'EFFDEN ') THEN
         CALL EFFECTIVE_DENS_NUC(WORK,LWORK,COMB)
 C
+C     Uehling potential for vacuum polarization
+C
+      ELSEIF (CLSINT(I).EQ.'UEHLING') THEN
+C     sunaga
+        IF(NOSMLV) COMB(4:4) = 'T'
+        CALL NUMINT(COMB,IPRONE)       
+Csunaga      
+C
 C     Contribution from (static) embedding potential
 C
       ELSEIF (CLSINT(i).EQ.'FDEVEMB') THEN
@@ -151,6 +159,7 @@ C
       ENDIF
       CLSCAL(I) = .FALSE.
    10 CONTINUE
+!      CALL NUMOVL(COMB,IPRONE)       
 C
       CLOSE(LU1INT,STATUS='KEEP')
       IF (IPRONE .GT. 0) THEN
@@ -161,16 +170,12 @@ C
      &  'Total time used in ONEGEN (CPU) ',CPUTID,' and (WALL) ',WALLTID
       END IF
  20   CONTINUE
-C     sunaga
-      CALL NUMOVL !NEW
-!      CALL NUMINT !OLD
-Csunaga      
       CALL QEXIT('ONEGEN')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* Deck numovl */
-      SUBROUTINE NUMOVL
+C     /* Deck numint */
+      SUBROUTINE NUMINT(COMB,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C The numerical integration for constructing AO basis matrix
@@ -190,16 +195,20 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "ibtfun.h"
 #include "dcbbas.h"
 #include "cbiwlk.h"
-!#include ""
+#include "dcbham.h"
+#include "dcbgen.h"
+#include "nucdata.h"      
+#include "graspprm.h" 
       
+      CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4 !check
       PARAMETER (D0=0.0D0,D1=1.0D0,D2=2.0D0)      
-      PARAMETER (H=0.01D0,MXNP = 4000) !same to GRASP
+      PARAMETER (H=0.01D0) !same to GRASP
       real(8), allocatable :: ZAN(:),C(:,:)
-      real(8), allocatable :: ANG(:,:),GAO(:),GAOL(:),GAOS(:)
-      real(8), allocatable :: SMATL(:),SMATS(:),TDL(:,:),TDS(:,:)
-      real(8), allocatable :: TE(:),OVL(:),OVLL(:),OVLS(:)
-
-      CALL QENTER('NUMOVL')
+      real(8), allocatable :: ANG(:,:),GAO(:)
+      real(8), allocatable :: BUF(:),TC(:),TD(:,:)
+      real(8), allocatable :: VACIR(:),R(:),OVL(:)
+      
+      CALL QENTER('NUMINT')
 C
 C     Making ZAN and C 
 C     ZAN... Nuclear charge
@@ -215,21 +224,12 @@ C The values of ultrafine (.ULTRAF) at DFT input-reader section.
       INTANG=64
       
       m = NLEB(INTANG) ! num_grid_cfg_ANGINT
-      LSMAX=1
-      IF(NTBAS(2).GT.0)LSMAX=2
-      BAS=MAX(NTBAS(1),NTBAS(2))
-      allocate( ANG(m,4)   )
-      allocate( GAO(NTBAS(0)))
-      allocate( GAOL(NTBAS(1)))
-      allocate( GAOS(NTBAS(2)))
-      allocate( SMATL(NTBAS(1)*NTBAS(1)))
-      allocate( SMATS(NTBAS(2)*NTBAS(2)))
-      allocate( TDL(NTBAS(1)*NTBAS(1),MXNP) )
-      allocate( TDS(NTBAS(2)*NTBAS(2),MXNP) )
-      allocate( TE(MXNP)                   )
-      allocate( OVL(NTBAS(0)*NTBAS(0))     )
-      allocate( OVLL(NTBAS(1)*NTBAS(1))     )
-      allocate( OVLS(NTBAS(2)*NTBAS(2))     )
+      NDIM2 = NTBAS(0)*NTBAS(0)
+      allocate( ANG(m,4)       )
+      allocate( GAO(NTBAS(0))  )
+      allocate( BUF(NDIM2)    )
+      allocate( TC(NDIM2)      )
+      allocate( OVL(NDIM2)     )
 C      
       CALL LEBEDEV(INTANG,ANG(1,1),ANG(1,2),ANG(1,3),ANG(1,4),n)
       CALL DSCAL(m,4*PI,ANG(1,4),1)
@@ -237,11 +237,11 @@ C
 !      DO J=1,NCOUNT
 !         WT(J)=WT(J)*4.0D0*PI
 !     ENDDO
-C         
+C
       DO 10 IATOM = 1, NUCIND
 !      DO 10 ISYMOP = 0, MXOPR
 !     What is this roop? MXOPR=0 in dftgrd.F
-        IF (IBTAND(0,ISTBNU(IATOM)).EQ.0) THEN
+       IF (IBTAND(0,ISTBNU(IATOM)).EQ.0) THEN
 !        IF (IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN
 !        IBTAND=IAND, but I am not sure what is it.     
          IF(NOORBT(IATOM)) GOTO 10
@@ -253,152 +253,980 @@ C   SET UP GRID FOR CALCULATION
 C      
 C   SET DEFAULT VALUES OF PARAMETERS FOR CALCULATION
 C
-         EPH = EXP(H)
-         RNT = 1.0D-06/ZAN(IATOM) !CHARGE(IATOM)
-C         
-         CALL DZERO(TDL,MXNP*NTBAS(1)*NTBAS(1))
-         CALL DZERO(TDS,MXNP*NTBAS(2)*NTBAS(2))
-         CALL DZERO(TE,MXNP)
-         CALL DZERO(OVL,NTBAS(0)*NTBAS(0))
-         RNODE = RNT
-         DO 20 IR = 1, MXNP
-C            
-C           loop over angular points
-C           ========================
-C
-            DO 30 iy = 1, m
-               X8  = ANG(iy,1)*RNODE+C(1,IATOM)
-               Y8  = ANG(iy,2)*RNODE+C(2,IATOM)
-               Z8  = ANG(iy,3)*RNODE+C(3,IATOM)
-               WT8 = ANG(iy,4)*RNODE*RNODE*RNODE
-C
-C     GET AO's (Large)
-C
-               IAO=1
-               CALL GETAOS(GAO,TEMP,TEMP,TEMP,TEMP,
-     &                      X8,Y8,Z8,NTBAS(0),0,.FALSE.,0) !The last is IPRINT
-C
-C     Get "overlap" matrix
-C
-               CALL DGEMM('N','T',NTBAS(1),NTBAS(1),
-     &                    1,D1,GAO(IAO),NTBAS(1),GAO(IAO),
-     &                    NTBAS(1),D0,SMATL,NTBAS(1))
-               CALL DAXPY(NTBAS(1)*NTBAS(1),
-     &                    WT8,SMATL,1,TDL(1,IR),1)
-               IAO=1+NTBAS(1)
+         MXNP = 4000            !same to GRASP
+         NUCTYP = 1
+         CALL MEMSET(ZAN(IATOM),MXNP,NUCTYP,IPRINT) !change
+         CALL NUCPRM(ZAN(IATOM),NUCMASS(INT(ZAN(IATOM))),NUCTYP)
+         write(*,*)"MXNP",MXNP
+         allocate( TD(MXNP,NDIM2) )
+         allocate( VACIR(MXNP)    )
+         allocate( R(MXNP)        )
 C     
-C     GET AO's (Small)
+         CALL DZERO(BUF,NDIM2) 
+         CALL DZERO(TD,NDIM2*MXNP) !4000-->MXNP
+         CALL DZERO(OVL,NDIM2)
+         R(1) = RNT !CHARGE(IATOM)
+         DO J = 2,MXNP
+            R(J) = R(J-1)*EPH
+         ENDDO
+         write(*,*)"NUCMASS",NUCMASS(INT(ZAN(IATOM)))
+         CALL VCMPOL(VACIR,R,ZAN(IATOM),MXNP,NUCTYP,1) !change
+         DO J = 1,MXNP
+            write(*,*)J,VACIR(J),R(J)
+         ENDDO
+         OPEN(20,FILE='LOG_DIRAC',STATUS='REPLACE',          
+     &        FORM='FORMATTED',ACCESS='SEQUENTIAL')  
+         DO  J = 1,MXNP
+           WRITE(20,*)VACIR(J)          !sunaga
+         ENDDO
+         CLOSE(20,STATUS='KEEP')
+         
+!     change for debug sentense
+         write(*,*)"R(1),Z",R(1),ZAN(IATOM)
+         write(*,*)"J,VACIR"
+         DO 20 IR = 1, MXNP
 C
-!               IF(iy.eq.2)THEN
-!                  write(*,*)"IAO,NTBAS(2)",IAO,NTBAS(2)
-!               ENDIF   
+C     1/r in Eq. (2), (4),and (6) of Rinker's paper is NOT calculated in VCMPOL.
+C     Integrand = 1/r * VP(r) * (Large*Large + Small*Small) * r^2 * r
+C     Meaning:   1/r * VACIR(IR) *   wavefunction     * Radial int. * for QUAD 
+C     Finally,    We multiply R(IR)*R(IR).
+C
+           RFAC = R(IR)*R(IR) * VACIR(IR) !*R(IR)!change
+           CALL DZERO(TC,NDIM2)
+C            
+C          loop over angular points
+C          ========================
+C
+           DO 30 iy = 1, m
+             X8  = ANG(iy,1)*R(IR)+C(1,IATOM)
+             Y8  = ANG(iy,2)*R(IR)+C(2,IATOM)
+             Z8  = ANG(iy,3)*R(IR)+C(3,IATOM)
+             WT8 = ANG(iy,4)*RFAC
+C
+C     GET AO's
+C
+             CALL GETAOS(GAO,TEMP,TEMP,TEMP,TEMP,
+     &                    X8,Y8,Z8,NTBAS(0),0,.FALSE.,0) !The last is IPRINT
 C
 C     Get "overlap" matrix
 C
-               CALL DGEMM('N','T',NTBAS(2),NTBAS(2),
-     &                    1,D1,GAO(IAO),NTBAS(2),GAO(IAO),
-     &                    NTBAS(2),D0,SMATS,NTBAS(2))
-               CALL DAXPY(NTBAS(2)*NTBAS(2),
-     &                    WT8,SMATS,1,TDS(1,IR),1)
-!                 IF(iy.eq.1) THEN
-!                    write(*,*)"IAO,IOV",IAO,IOV
-!                    write(*,*)"NTBAS(1),(2)",NTBAS(1),NTBAS(2)
-!                 ENDIF   
-30          CONTINUE
-            RNODE = RNODE*EPH
+             IOFF   = 0
+             IEND   = 0
+             ISTART = 0
+             DO IC = 1, MC
+               DO I = 1, NTBAS(IC)
+                 IADD = I*(I-1)/2
+!                 write(*,*) 
+                 DO J = 1, I
+                   IJ = IOFF + IADD + J  
+                   BUF(IJ+ISTART*I) = GAO(I+ISTART)*GAO(J+ISTART)
+!                   write(*,*)"I,J,IJ",I,J,IJ
+                 ENDDO
+               ENDDO
+               IOFF   = IOFF   + NTBAS(IC)*(NTBAS(IC)+1)/2
+               ISTART = ISTART + NTBAS(IC)
+!                  write(*,*)"IOFF,ISTART",IOFF,ISTART
+             ENDDO
+             CALL DAXPY(NDIM2,WT8,BUF,1,TC(1),1)
+30         CONTINUE
+           CALL DCOPY(NDIM2,TC(1),1,TD(IR,1),MXNP)
 20       CONTINUE
 C
 C  Large         
-         CALL HEADER('Numerical ovelap integral made by Ayaki',-1)
-         write(*,*)
-         write(*,*)"Only Large"
-         DO J = 1,NTBAS(1)*NTBAS(1)
-            CALL DCOPY(MXNP,TDL(J,1),NTBAS(1)*NTBAS(1),TE(1),1)
-            CALL QUAD(OVLL(J),TE(1),MXNP,H)
-         ENDDO
-         CALL OUTPUT(OVLL,1,NTBAS(1),1,NTBAS(1),
-     &                NTBAS(1),NTBAS(1),1,LUPRI)
-C
-         write(*,*)
-         write(*,*)"Only Small"
-         DO J = 1,NTBAS(2)*NTBAS(2)
-            CALL DCOPY(MXNP,TDS(J,1),NTBAS(2)*NTBAS(2),TE(1),1)
-            CALL QUAD(OVLS(J),TE(1),MXNP,H)
-         ENDDO
-         CALL OUTPUT(OVLS,1,NTBAS(2),1,NTBAS(2),
-     &                NTBAS(2),NTBAS(2),1,LUPRI)
-         write(*,*)
-         write(*,*)"Total, Both large and small"
-         IND  = 1
-         INDL = 1
-         INDS = 1
-         DO J = 1,NTBAS(1)
-            CALL DCOPY(NTBAS(1),OVLL(INDL),1,OVL(IND),1)
-            IND  = IND + NTBAS(0)
-            INDL = INDL+ NTBAS(1)
-         ENDDO
-         IND = 1 + (NTBAS(0)+1)*NTBAS(1)
-         DO J = 1,NTBAS(2)
-            CALL DCOPY(NTBAS(2),OVLS(INDS),1,OVL(IND),1)
-            IND  = IND + NTBAS(0)
-            INDS = INDS+ NTBAS(2)
-         ENDDO
-         CALL OUTPUT(OVL,1,NTBAS(0),1,NTBAS(0),
-     &                NTBAS(0),NTBAS(0),1,LUPRI)         
-!*************         *****8
-c$$$         DO I = 1,NTBAS(1)
-c$$$           DO J = 1,NTBAS(1)
-c$$$             CALL DCOPY(MXNP,TDL(ITD,1),NTBAS(1)*NTBAS(1),TE(1),1)
-c$$$             write(*,*)"ITD,IOV",ITD,IOV 
-c$$$             CALL QUAD(OVL(IOV),TE(1),MXNP,H)
-c$$$             ITD = ITD + 1  
-c$$$             IOV = IOV + 1  
-c$$$           ENDDO 
-c$$$           IOV = IOV + NTBAS(2)
-c$$$         ENDDO
-c$$$         CALL OUTPUT(OVL,1,NTBAS(0),1,NTBAS(0),
-c$$$     &                NTBAS(0),NTBAS(0),1,LUPRI)
-c$$$C
-c$$$C     Small
-c$$$         write(*,*)
-c$$$         write(*,*)"small"
-c$$$         ITD = 1
-c$$$         IOV = 1 + (NTBAS(0)+1)*NTBAS(1)
-c$$$         DO I = 1,NTBAS(2)
-c$$$           DO J = 1,NTBAS(2)
-c$$$             CALL DCOPY(MXNP,TDS(ITD,1),NTBAS(2)*NTBAS(2),TE(1),1)
-c$$$!             CALL QUAD(OVL(IOV),TE(1),MXNP,H)
-c$$$!             write(*,*)"ITD,IOV",ITD,IOV,OVL(IOV)
-c$$$             ITD = ITD + 1  
-c$$$             IOV = IOV + 1  
-c$$$           ENDDO 
-c$$$           IOV = IOV + NTBAS(1)
-c$$$         ENDDO
+         CALL HEADER('Numerical ovelap integral',-1)
+
+         CALL QUAD2(OVL,TD,MXNP,H,NDIM2)
+!         CALL OUTPAK(OVL,NTBAS(0),-1,LUPRI)
+!         IOFF = 1
+!         DIM  = NTBAS(1)  
+!         DO IC = 1,MC
+!           IF(IC.eq.1)THEN 
+!              write(*,*)"Large"
+!           ELSE
+!              write(*,*)"Small"
+!           ENDIF   
+!           CALL OUTPAK(OVL(IOFF),NTBAS(IC),-1,LUPRI)
+!           IOFF = IOFF + NTBAS(IC)*(NTBAS(IC)+1)/2 + NTBAS(IC)
+!           DIM = DIM + NTBAS(2)
+!         ENDDO
+!         write(*,*)
        ENDIF        !(IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0)
-10     CONTINUE   
-       deallocate(ZAN)
-       deallocate(C)
-       deallocate(ANG)
-       deallocate(SMATL)
-       deallocate(SMATS)
-       deallocate(TDL)
-       deallocate(TDS)
-       deallocate(TE)
-       deallocate(GAOL)
-       deallocate(GAOS)
-       deallocate(OVL)
-       deallocate(OVLL)
-       deallocate(OVLS)
-      CALL QEXIT('NUMOVL')
+       deallocate(TD)
+       deallocate(VACIR)
+       deallocate(R)
+10    CONTINUE
+C      
+C     Generate integral labels
+C
+      LABEL = 'UEHLING'
+      CALL GETDAT(RTNLBL(1),RTNLBL(2))
+      RTNLBL(2)(1:2) = 'SY'
+      WRITE(RTNLBL(2)(3:4),'(I2)') 1
+      RTNLBL(2)(5:8) = COMB
+C
+C     Write integrals to file
+C
+      CALL WRTPRO(OVL,NNBBASX,LABEL,RTNLBL,IPRINT)      
+C
+      deallocate(ZAN)
+      deallocate(C)
+      deallocate(ANG)
+      deallocate(BUF)
+      deallocate(OVL)
+      CALL QEXIT('NUMINT')
       RETURN         
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE QUAD(RESULT,TE,NR,H)
+      SUBROUTINE QUAD2(RESULT,TE,NR,H,NDIM)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C Numerical radial integral
 C
 C Called from: NMINT2
+C
+C copied from /QUAD/grasp.F/GRASP
+C
+C     Modified to DIRAC A. Sunaga Nov. 2018       
+C     Modification: e.g. TE is two dimension 
+C      
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+C
+      PARAMETER( W7 = 1.0D0/90.0D0,
+     &           W6 = -4.0D0*W7,  W5 =   7.0D0*W7,
+     &           W4 = 30.0D0*W7,  W3 =  44.0D0*W7,
+     &           W2 = 68.0D0*W7,  W1 = 112.0D0*W7)
+C
+      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
+      PARAMETER(EPSI = 1.0D-35) !-35
+!      REAL(8) TE(NR)      
+!      DIMENSION TE(NR)      
+      DIMENSION TE(NR,NDIM), RESULT(NDIM)
+C     
+C   FIND THE STARTING POINT FOR THE INTEGRATION. THIS IS THE POINT
+C   WHERE THE INTEGRAND TE FIRST BECOMES SIGNIFICANT, AND IS CHOSEN
+C   TO PREVENT DIVIDING BY ZERO.
+C
+      DO 5  II = 1,NDIM
+      DO 10 J = 1,NR
+!        write(*,*)"TE4",TE(J) !sunaga
+        IF (ABS (TE(J,II)) .GT. EPSI) GO TO 20
+   10 CONTINUE
+      RESULT(II) = ZERO
+      GO TO 5
+C
+C   CALCULATE THE INTEGRAL USING EXTENDED SIMPSONS RULE, NEGLECTING THE
+C   CONTRIBUTION FROM THE STARTING POINT. CHOOSE THE STARTING POINT
+C   R(JJ) TO GIVE AN ODD NUMBER OF INTEGRATION POINTS.
+C   THE CRAY VERSION OF THE CODE USES THE VECTOR FUNCTION SSUM TO
+C   PERFORM THE SUMMATION.
+C
+   20 SUM = ZERO
+!      write(*,*)"TE1,J,NR",TE(J),J,NR !sunaga
+      NP = NR-J+1
+      ND2 = NP/2
+      N1D2 = (NP+1)/2
+      K = ND2-N1D2+1
+      JJ = J+K
+      JJ1 = JJ+1
+      DO 30 I = JJ1,NR-3,2
+         SUM = SUM + W1*TE(I,II) + W2*TE(I+1,II)
+!         write(*,*)"TE5",TE(I) !sunaga
+   30 CONTINUE
+      SUM = SUM + W1*TE(NR-1,II)
+      SUM = SUM + W4*( TE(JJ,II)   + TE(NR,II)   )
+     &          + W5*( TE(JJ1,II)  + TE(NR-1,II) )
+     &          + W6*( TE(JJ+2,II) + TE(NR-2,II) )
+     &          + W7*( TE(JJ+3,II) + TE(NR-3,II) )
+      
+C
+C   ADD THE CONTRIBUTION FROM 0 TO R(JJ), PLUS THE CONTRIBUTION
+C   TO SIMPSONS RULE FROM TE(JJ).
+C
+      COP = TE(J+1,II)/TE(J,II)
+      IF (COP .LE. ONE) THEN
+         RPX = ZERO
+      ELSE
+         RPX = TE(JJ,II)/LOG (COP)
+      ENDIF
+      RESULT(II) = H*(SUM+RPX)
+    5 CONTINUE
+      RETURN
+C
+      END      
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck memset */
+      SUBROUTINE MEMSET(Z,MXNP,NUCTYP,IPRINT)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC      
+C
+C     Estimating memories, by calculating the uehling potential of
+C     point charge 
+C      
+C     Called from: NUMOVL
+C
+C    Modified for DIRAC, A. Sunaga Dec. 2018
+C  
+************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
+#include "dcbgen.h"
+#include "graspprm.h"
+C
+       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, THREE = 3.0D0)     
+       PARAMETER (H=0.01D0)     !same to GRASP
+C
+      N = MXNP 
+      PI3 = THREE*PI
+      WD = CVAL+CVAL
+      FACTOR = -(Z+Z)/(PI3*CVAL)
+C
+C   SET UP POTENTIAL FOR POINT NUCLEUS
+C
+      EPH = EXP(H)
+      RNT = 1.0D-06/Z           !CHARGE(IATOM)
+      RTEMP = RNT
+      DO 1 I = 1,N
+         X = WD*RTEMP
+         TEMP = FACTOR*FUNK (X,1)
+         IF(ABS(TEMP).LE.1.0D-50)THEN
+            MXNP = I
+            IF(MOD(MXNP,2).eq.0)THEN
+               MXNP = MXNP + 1
+!     sunaga
+!     As far as I check GRASP, the number of grid (MXNP) must be odd number.
+!     for the integral of Vacuum polarization using Ne and Hg atoms.         
+!     Even if it is even number, the value of QUAD
+!     does not agree with the one of GRASP.                
+            ENDIF   
+            exit
+         ENDIF   
+         RTEMP = RTEMP*EPH
+ 1    CONTINUE
+C      
+      IF (IPRINT.GE.6) THEN
+         WRITE(LUPRI,'(2X,/A)')'**Truncation of radial grid'
+         WRITE(LUPRI,'(2X,A,E11.5e2,A,E11.4e2)')
+     &    'The value of First Grid is ',RNT,'; Step size is ',H
+         WRITE(LUPRI,'(2X,A,I4)')
+     &    'The number of Grid (Final one) is ',MXNP
+         WRITE(LUPRI,'(2X,A,E11.4e2,A)')
+     &    'The value of final Grid ',TEMP,' is less than 1.0D-50'
+         WRITE(LUPRI,'(2X,A)')'Note that GRASP part is truncated'
+      ENDIF   
+C      
+      RETURN
+C
+      END
+************************************************************************
+*
+      SUBROUTINE VCMPOL(TB,R,Z,N,NUCTYP,NVPORD)
+*      
+*     NUCTYP:
+*     0  Point
+*     1  Uniform
+*     2  Gauss
+*     3  Fermi
+*
+*     NVPORD:
+*     1  second (Uehling)
+*     2  Forth order   
+*     
+*   ----------------   SECTION 11   SUBPROGRAM 10  -----------------   *
+*                                                                      *
+*   THIS  ROUTINE CONTROLS THE SETTING UP OF THE VACUUM POLARIZATION   *
+*   POTENTIAL FOR THE GIVEN NUCLEAR CHARGE DISTRIBUTION AT EACH GRID   *
+*   POINT USING THE ANALYTIC FUNCTIONS DEFINED BY  L WAYNE FULLERTON   *
+*   AND  G  A  RINKER  JR  IN  PHYS REV A 13 (1976) 1283. ACTUALLY R   *
+*   TIMES  THEIR  POTENTIAL  IS  TABULATED, AS WE SHALL ONLY REQUIRE   *
+*   THIS WHEN WE INTEGRATE. THE POTENTIAL IS  ACCUMULATED  IN  ARRAY   *
+*   TB(I),I = 1,N WHICH IS IN COMMON BLOCK /TATB/.                     *
+*                                                                      *
+*   SUBROUTINES CALLED: VAC2, VAC4, VACUSR, NCHARG.                    *
+*                                                                      *
+*                                         LAST REVISION: 08 FEB 1988   *
+*                                                                      *
+************************************************************************
+#include "implicit.h"
+#include "graspprm.h"
+C      
+      DIMENSION TB(N),R(N)
+      real(8), allocatable :: ZZ(:),TA(:)
+      
+      allocate(ZZ(N))       
+      allocate(TA(N))
+C
+C   CLEAR ARRAYS ZZ, TA AND TB
+C
+      CALL DZERO(ZZ,N)
+      CALL DZERO(TA,N)
+      IF (NUCTYP .EQ. 0) GO TO 3 !change
+C
+C   SET UP R**2 TIMES NUCLEAR CHARGE DISTRIBUTION
+C
+!      CALL NCHARG(TA,R,Z,ZNORM,NUCTYP)
+      write(*,*)"ZNORM,NNUC",ZNORM,NNUC
+      CALL NCHARG(TA,R,Z,N,NUCTYP)
+      DO 2 I = 1,N
+         ZZ(I) = TA(I)*ZNORM
+    2 CONTINUE
+C
+C   SECOND-ORDER VACUUM POLARISATION
+C
+    3 CALL VAC2(TB,TA,ZZ,R,Z,N,NUCTYP)
+      write(*,*)"TB2"
+!      DO 1 I = 1,N
+!         write(*,*)I,TB(I)
+!    1 CONTINUE      
+!      IF (NVPORD .EQ. 2) GO TO 4
+!      IF (KTC(19) .EQ. 0) RETURN  !change
+!      WRITE (IPD,300)   !change
+!      WRITE (IPD,301) (R(I),TB(I),I = 1,N)  !change
+      deallocate(ZZ)
+      deallocate(TA)
+      RETURN
+C
+C   FOURTH-ORDER VACUUM POLARIZATION
+C
+!    4 CALL VAC4 !change
+!      IF (KTC(19) .NE. 0) WRITE (IPD,302)  !change
+      DO 5 I = 1,N
+         WA = TA(I)+TB(I)
+!         WRITE (IPD,303) R(I),TB(I),TA(I),WA !sunaga
+!         IF (KTC(19) .NE. 0) WRITE (IPD,303) R(I),TB(I),TA(I),WA !change
+         TB(I) = WA
+    5 CONTINUE
+C
+c$$$C   USER-DEFINED VACUUM POLARIZATION POTENTIAL
+c$$$C
+c$$$    6 CALL VACUSR
+c$$$      IF (KTC(19) .EQ. 0) RETURN
+c$$$      WRITE (IPD,304)
+c$$$      WRITE (IPD,301) (R(I),TB(I),I = 1,N)
+C
+  300 FORMAT (///' SECOND-ORDER VACUUM-POLARISATION POTENTIAL',
+     &   //'     R            R * V.P. POTENTIAL')
+  301 FORMAT (1PD12.1,D22.8)
+  302 FORMAT (///' VACUUM-POLARISATION POTENTIAL',
+     &  //'     R            R * 2ND ORDER POT.    ',
+     &  'R * 4TH ORDER POT.    R * TOTAL POTENTIAL',/)
+  303 FORMAT (1PD12.1,3D22.8)
+  304 FORMAT (///' USER-DEFINED VACUUM-POLARISATION POTENTIAL',
+     &  //'     R            R * V.P. POTENTIAL')
+C
+      RETURN
+      END
+************************************************************************
+*                                                                      *
+      SUBROUTINE VAC2(TB,TA,ZZ,R,Z,N,NUCTYP)
+*                                                                      *
+*   ----------------   SECTION 11   SUBPROGRAM 11  -----------------   *
+*                                                                      *
+*   THIS ROUTINE SETS UP THE SECOND-ORDER VACUUM POLARIZATION POTEN-   *
+*   TIAL  USING  EQUATIONS (1), (4) AND (6) OF FULLERTON AND RINKER.   *
+*   THE POTENTIAL  IS ACCUMULATED IN ARRAY TB(I),I = 1,N WHICH IS IN   *
+*   COMMON BLOCK /TATB/.                                               *
+*                                                                      *
+*   SUBROUTINES CALLED: FUNK, QUAD.                                    *
+*                                                                      *
+*                                         LAST REVISION: 02 OCT 1989   *
+*                                                                      *
+************************************************************************
+#include "implicit.h"
+#include "pi.h"
+#include "dcbgen.h"
+#include "graspprm.h"
+C     
+      PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, THREE = 3.0D0)     
+      DIMENSION TB(N),TA(N),R(N),ZZ(N)
+      PI3 = THREE*PI
+      C2 = CVAL*CVAL
+      EPS = 1.0D-05
+      WD = CVAL+CVAL
+      FACTOR = -(Z+Z)/(PI3*CVAL)
+         write(*,*)"CVAC,C2,PI",CVAL,C2,PI !sunaga
+C
+C   SET UP POTENTIAL FOR POINT NUCLEUS
+C
+      DO 1 I = 1,N
+         X = WD*R(I)
+         TB(I) = FACTOR*FUNK (X,1)
+    1 CONTINUE
+      IF (NUCTYP .EQ. 0) RETURN
+C
+C   SERIES EXPANSION FOR FINITE NUCLEUS. CALCULATE EXPANSION
+C   COEFFICIENTS USING EQUATION (7)
+C
+      IF (NUCTYP .GT. 1) GO TO 2
+C
+C   UNIFORM NUCLEUS
+C
+      WA = C2*(PARM1*PARM1)
+      FAC3 = FACTOR*TWO*WA/5.0D00
+      FAC5 = FAC3*WA/7.0D00
+!      write(*,*)"WA,FAC3,FAC5",WA,FAC3,FAC5
+      GO TO 5
+C
+C   OTHER DISTRIBUTIONS
+C
+    2 WB = (C2+C2)/(Z*THREE)
+      DO 3 I = 1,N
+        TA(I) = ZZ(I)*(R(I)**3)
+    3 CONTINUE
+      CALL QUAD (FAC3,TA,N)
+      FAC3 = FAC3*FACTOR*WB
+      DO 4 I = 1,N
+        TA(I) = TA(I)*(R(I)**2)
+    4 CONTINUE
+      CALL QUAD (FAC5,TA,N)
+      FAC5 = FAC5*FACTOR*C2*WB/5.0D00
+C
+C   TABULATE POTENTIALS
+C
+    5 DO 6 I = 1,N
+         X = WD*R(I)
+         TB(I) = TB(I)+FAC3*FUNK (X,3)+FAC5*FUNK (X,5) 
+    6 CONTINUE
+!      RETURN ! sunaga
+C
+C   TABULATE POTENTIAL BY INTEGRATING EQUATION (4)
+C
+      FACTOR = -ONE/(PI3*C2*TWO)
+      DO 8 K = 1,N
+         XK = WD*R(K)
+         DO 7 I = 1,NNUC
+            XI = WD*R(I)
+            XM = ABS (XK-XI)
+            XP = XK+XI
+            TA(I) = (FUNK (XM,0)-FUNK (XP,0))*ZZ(I)
+    7    CONTINUE
+         CALL QUAD (X,TA,N)
+         X = X*FACTOR
+         IF (X .EQ. ZERO) GO TO 9
+         IF (ABS ((TB(K)-X)/X) .LT. EPS) RETURN
+         TB(K) = X
+    8 CONTINUE
+      RETURN
+    9 DO 10 I = K,N
+         TB(I) = ZERO
+   10 CONTINUE
+      RETURN
+C
+      END
+
+************************************************************************
+*                                                                      * 
+C /* Deck FUNK */
+      FUNCTION FUNK (X,N)
+*                                                                      *
+*   ----------------   SECTION 11   SUBPROGRAM 12  -----------------   *
+*                                                                      *
+*   THIS  FUNCTION  EVALUATES THE KN(X) FUNCTIONS USING THE ANALYTIC   *
+*   FUNCTIONS DEFINED IN TABLES 1 AND 3 OF FULLERTON AND RINKER.       *
+*                                                                      *
+*   NO SUBROUTINES CALLED.                                             *
+*                                                                      *
+*                                         LAST REVISION: 06 AUG 1987   *
+*                                                                      *
+************************************************************************
+#include "implicit.h"
+C
+      DIMENSION P(10,4),B(2,4),C(3,4),D(5,4),E(5,4),NP(4)
+      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, THREE = 3.0D0)
+C     
+#include "priunit.h"
+C
+      DATA P/ 8.8357293375D-01, -2.8259817381D-01,
+     &       -5.8904879578D-01,  1.2500133434D-01,
+     &       -3.2729913852D-02,  8.2888574511D-03,
+     &       -1.0327765800D-05,  6.3643668900D-05,
+     &        0.0D00, 0.0D00,
+     &       -7.1740181754D-01,  1.1780972274D00,
+     &       -3.7499963087D-01,  1.3089675530D-01,
+     &       -3.8258286439D-02, -2.4297287300D-05,
+     &       -3.5920148670D-04, -1.7170090700D-05,
+     &        0.0D00, 0.0D00,
+     &        9.9999999987D-01,  1.9770200000D-08,
+     &       -7.5000050190D-01,  7.8540306316D-01,
+     &       -3.4988601655D-01,  6.4596333000D-05,
+     &       -9.8189080747D-03,  8.6513145800D-05,
+     &       -2.3969236620D-04,  0.0D00,
+     &        6.0000000002D 00, -6.4305200000D-08,
+     &        2.1049413000D-06, -2.6711271500D-05,
+     &       -1.3705236152D-01, -6.3476104090D-04,
+     &       -7.8739801501D-02, -1.9641740173D-03,
+     &       -3.4752369349D-03, -7.3145316220D-04/
+C
+      DATA B/-3.19999594323D+02,  2.53900995981D 00,
+     &       -6.40514843293D+01,  7.11722714285D-01,
+     &        5.19010136460D+03,  8.28495496200D+01,
+     &        3.18150793824D+02,  4.33898867347D+01/
+C
+      DATA C/-3.19999594333D+02,  2.53901020662D+00,
+     &        0.0D 00,            6.40514843287D+01,
+     &       -7.11722686403D-01,  8.042207748D-04,
+     &        2.76805406060D+04, -3.27039477790D+02,
+     &        0.0D00,             8.48402116837D+02,
+     &       -2.56939867765D+01,  3.20844906346D-01/
+C
+      DATA D/ 5.018065179D+00,  7.151891262D+01,
+     &        2.116209929D+02,  3.140327478D+01,
+     &       -1.0D00,           2.172386409D+02,
+     &        1.643364528D+03,  2.122244512D+03,
+     &       -4.512004044D+01,  1.0D00,
+     &        8.540770444D 00,  6.076242766D+01,
+     &        9.714630584D+01,  3.154973593D+01,
+     &        1.0D00,           5.9243015865D-01,
+     &        2.0596312871D00,  3.7785190424D 00,
+     &        3.5614853214D00,  1.0D00/
+C
+      DATA E/ 2.669207401D+00,  5.172549669D+01,
+     &        2.969809720D+02,  5.364324164D+02,
+     &        1.535335924D+02,  1.155589983D+02,
+     &        1.292191441D+03,  3.831198012D+03,
+     &        2.904410075D+03,  0.000D00,
+     &        4.543392478D00,   3.514920169D+01,
+     &        6.019668656D+01,  8.468839579D00,
+     &        0.0D00,           3.1511867816D-01,
+     &        3.473245222D-01,  3.8791936870D-02,
+     &       -1.3059741497D-03, 0.0D00/
+C
+      DATA NP/8,8,9,10/
+C
+      IF (X .EQ. ZERO) GO TO 11
+      IF ((N .LT. 0) .OR. (N .EQ. 2) .OR.
+     &    (N .EQ. 4) .OR. (N .GT. 5)) GO TO 98
+      IF (N-3) 1,2,3
+    1 K = N+1
+      XN = ONE
+      GO TO 4
+    2 K = N
+      XN = ONE/(X*X)
+!      IF(N.eq.3)THEN
+!         write(*,*)"BSUM,LOGX,CSUM",BSUM,LOG(X),CSUM
+!         write(*,*)
+!         write(*,*)"X*X,XN",X*X,XN
+!      ENDIF   
+      GO TO 4
+    3 K = N-1
+      XN = ONE/(X**4.0D0)
+    4 IF (X .GT. ONE) GO TO 9
+C
+C   CALCULATE FUNCTION FOR X < = 1
+C
+      NN = NP(K)
+      SUM = ZERO
+      DO 5 I = 1,NN
+         SUM = SUM+P(I,K)*XN
+         XN = XN*X
+    5 CONTINUE
+      X2 = X*X
+      BSUM = B(1,K)+X2*(B(2,K)+X2)
+      CSUM = C(1,K)+X2*(C(2,K)+X2*C(3,K))
+      GO TO (6,8,7,8), K
+    6 BSUM = BSUM*X
+      GO TO 8
+    7 BSUM = BSUM*X2
+    8 CONTINUE
+!      IF(N.eq.3)THEN
+!         write(*,*)"BSUM,LOGX,CSUM",BSUM,LOG(X),CSUM
+!         write(*,*)
+!         write(*,*)"SUM1",SUM
+!      ENDIF   
+      SUM = SUM+BSUM*LOG (X)/CSUM
+!      IF(N.eq.3)THEN
+!         write(*,*)"BSUM,LOGX,CSUM",BSUM,LOG(X),CSUM
+!         write(*,*)"SUM2",SUM
+!      ENDIF   
+      FUNK = SUM
+      RETURN
+C
+C   CALCULATE FUNCTION FOR X > 1
+C
+    9 XN = ONE
+      DSUM = ZERO
+      ESUM = ZERO
+      IF (X .GT. 1.0D+02) GO TO 12
+      DO 10 I = 1,5
+         DSUM = DSUM+D(I,K)*XN
+         ESUM = ESUM+E(I,K)*XN
+         XN = XN/X
+   10 CONTINUE
+      XM = -X
+      SUM = DSUM*EXP (XM)/(ESUM*SQRT (X**3))
+      FUNK = SUM
+      RETURN
+   11 IF (N .NE. 0) GO TO 99
+      FUNK = P(1,1)
+      RETURN
+   12 FUNK = ZERO
+      RETURN
+C
+C   ERROR SECTION
+C
+   98 WRITE (LUPRI,300)
+      WRITE (LUPRI,302)
+      STOP 'Error sentense'
+   99 WRITE (LUPRI,300)
+      WRITE (LUPRI,301)
+      STOP 'Error sentense'
+C
+  300 FORMAT (///' ***** ERROR IN FUNK *****')
+  301 FORMAT (/' ATTEMPT TO CALCULATE FUNK(0,N) FOR N > 0')
+  302 FORMAT (/' ATTEMPT TO CALCULATE FUNK(X,N) FOR N VALUES OTHER THAN'
+     & ,' 0, 1, 3 AND 5.')
+C
+      END
+************************************************************************
+*                                                                      *
+      SUBROUTINE NCHARG(TA,R,Z,N,NUCTYP)
+*                                                                      *
+*   ----------------   SECTION 11   SUBPROGRAM 19   ----------------   *
+*                                                                      *
+*   EVALUATE  R**2  TIMES THE NUCLEAR CHARGE DISTRIBUTION (UNNORMAL-   *
+*   IZED).                                                             *
+*                                                                      *
+*   NUCTYP  =  1 : UNIFORM DISTRIBUTION                                *
+*              2 : FERMI <NPARM>-PARAMETER DISTRIBUTION                *
+*              3 : GAUSSIAN <NPARM>-PARAMETER DISTRIBUTION             *
+*                                                                      *
+*   NO SUBROUTINES CALLED.                                             *
+*                                                                      *
+*                                         LAST REVISION: 08 FEB 1988   *
+*                                                                      *
+************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "graspprm.h"
+      PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, THREE = 3.0D0)     
+      DIMENSION TA(N),R(N)
+C
+!      RAD = PARM(1)
+!      IF (RAD .LE. ZERO) GO TO 99
+      IF (NUCTYP .GT. 1) GO TO 3
+C
+C   UNIFORM DISTRIBUTION
+C
+      write(*,*)"NCHARG,NUCTYP",NUCTYP
+      DO 2 I = 1,NNUC
+         TA(I) = R(I)*R(I)
+    2 CONTINUE
+      RETURN
+C
+C   FERMI CHARGE DISTRIBUTION
+C
+    3 SKI = PARM2
+      IF (SKI .LE. ZERO) GO TO 98
+!     IF (NUCTYP .GT. 2) GO TO 5
+      write(*,*)"NNUC",NNUC
+      DO 4 I = 1,NNUC
+         TA(I) = (R(I)*R(I))/(ONE+EXP ((R(I)-RAD)/SKI))
+!         write(*,*)"R,RAD,SKI",R(I),RAD,SKI,TA(I)
+    4 CONTINUE
+      RETURN
+!      GO TO 7
+C
+C   GAUSSIAN CHARGE DISTRIBUTION
+C
+    5 IF (NUCTYP .GT. 3) GO TO 97
+      WA = SQRT (EXPMAX)*SKI+RAD
+      WA = SQRT (EXPMAX+TWO*LOG (WA))*SKI+RAD
+      NNUC = LOG (WA/RNT)/H+ONE
+      DO 6 I = 1,NNUC
+         TA(I) = (R(I)*R(I))/(ONE+EXP (((R(I)-RAD)/SKI)**2))
+    6 CONTINUE
+c$$$C
+c$$$C   THREE-PARAMETER DISTRIBUTION
+c$$$C
+c$$$    7 IF (NPARM .EQ. 2) RETURN
+c$$$      W = PARM(3)
+c$$$      DO 8 I = 1,NNUC
+c$$$         TA(I) = TA(I)*(ONE+W*(R(I)/RAD)**2)
+c$$$    8 CONTINUE
+c$$$      IF (NPARM .EQ. 3) RETURN
+c$$$C
+c$$$C   SIX-PARAMETER DISTRIBUTION (NOT IMPLEMENTED)
+c$$$C
+c$$$      WRITE (LUPRI,300)
+c$$$      WRITE (LUPRI,301)
+c$$$      STOP '111901'
+c$$$C
+C   ERROR SECTION
+C
+   97 WRITE (LUPRI,300)
+      WRITE (LUPRI,302)
+      STOP '111902'
+   98 WRITE (LUPRI,300)
+      WRITE (LUPRI,303)
+      STOP '111903'
+   99 WRITE (LUPRI,300)
+      WRITE (LUPRI,304)
+      STOP '111904'
+C
+  300 FORMAT (///' ***** ERROR IN NCHARG *****')
+  301 FORMAT (/' NO CODE FOR NUCTYP  =  ',I2)
+  302 FORMAT (/' SIX-PARAMETER DISTRIBUTIONS NOT IMPLEMENTED')
+  303 FORMAT (/' SKIN THICKNESS MUST BE POSITIVE')
+  304 FORMAT (/' NUCLEAR RADIUS MUST BE POSITIVE')
+C
+      END
+C
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE NUCPRM(Z,AMASS,NUCTYP)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C deciding nuclear paramerer
+C
+C copied from /datain.F/GRASP
+C Modified to DIRAC A. Sunaga Nov. 2018       
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
+#include "graspprm.h"
+CCCCCCCCCCCCCC      
+C datain.F
+CCCCCCCCCCCCCC
+!     PARAMETER (THREE = 3.0D0, FIVE = 5.0D0, SEVEN = 7.0D0)
+!     PARAMETER (FMTOAU = 1.88972598858D-5)
+C     sunaga
+C     If I write these parameter, error messages appear.
+      H = 1.0D-2
+      IF (NUCTYP .EQ. 0)   RETURN
+C
+      FMTOAU = 1.0D-13/0.529177249D-08
+!      CST13 = 3.33333333333333D-01
+      AT3 = (DBLE(202)-0.0293680D0) ** (1.0D0/3.0D0) !for debug, comparing with GRASP         
+!      AT3 = AMASS**3.33333333333333D-01
+      IF (NUCTYP .EQ. 1 .OR. NUCTYP .EQ. 3) THEN
+!         IF (NPARM .EQ. 1) THEN
+!            RFM = PARM(1)
+!         ELSEIF (NPARM .EQ. 0) THEN
+!            IF (INF) GO TO 107
+C     bug fix 96/08/14
+         RFM = 0.836D00*AT3+0.570D00
+         NPARM = 1
+         write(*,*)"NUCPRM,AT3",AT3
+         IF (NUCTYP .EQ. 1) RFM = RFM*SQRT(5.0D0/3.0D0)
+C end
+!         ELSE
+!            GO TO 101
+!         ENDIF
+         PARM1 = RFM*FMTOAU
+         IF ((NUCTYP .EQ. 1) .AND. (PARM1 .LE. RNT)) GO TO 103
+      ELSEIF (NUCTYP .EQ. 2) THEN
+c$$$         IF (NPARM .EQ. 2) THEN
+c$$$            RRMSFM = PARM(1)
+c$$$            TFM = PARM(2)
+c$$$         ELSEIF (NPARM .EQ. 1) THEN
+c$$$            RRMSFM = PARM(1)
+c$$$            TFM = 2.30D00
+c$$$            NPARM = 2
+c$$$         ELSEIF (NPARM .EQ. 0) THEN
+c$$$            IF (INF) GO TO 107
+         RRMSFM = 0.836D00*AT3+0.570D00
+         TFM = 2.30D00
+         NPARM = 2
+c$$$         ELSE
+c$$$            GO TO 101
+c$$$         ENDIF
+         RRMS = RRMSFM*FMTOAU
+         T = TFM*FMTOAU
+         PARM2 = T/(4.0D0*LOG (3.0d0))
+         ARG = (RRMS**2)-(7.0D0/5.0D0)*((PI*PARM2)**2)
+!         ARG = (RRMS**2)-(SEVEN/THREE)*((PI*PARM(2))**2)
+         IF (ARG .LE. 0.0d0) THEN
+            PARM1 = 2.2291D-05*AT3-0.90676D-05
+            write(*,*)"AT3",AT3
+         ELSE
+            PARM1 = SQRT (ARG*5.0D0/3.0D0)
+            write(*,*)"ARG",ARG
+!            PARM1 = SQRT (ARG)    ! This line is correct.
+         ENDIF
+c$$$         IF (PARM(1) .LE. RNT) GO TO 103
+c$$$      ELSE
+c$$$         GO TO 103
+      ENDIF
+C
+C   ADJUST GRID SO THAT NUCLEAR BOUNDARY FALLS ON GRID POINT
+C
+      IF (NUCTYP .GT. 0 .AND. NUCTYP .NE. 3) THEN
+         NRAD = INT ((LOG (PARM1) - LOG (RNT))/H)
+         RNEW = PARM1/(EPH**NRAD)
+         IF (RNEW .GT. RNT) THEN
+            RNEW = PARM1/(EPH**(NRAD+1)) !This line means RNEW/EPH
+            NRAD = NRAD+1
+         ENDIF
+C bug fix 96/08/14
+         NRAD = NRAD+1
+C end
+         write(*,*)"NRAD",NRAD         
+         RNT = RNEW
+      ENDIF
+CCCCCCCCCCCCCC      
+C mcdf.F, NUCPOT
+CCCCCCCCCCCCCC
+C     This part is for usual nuclear potential.
+C     ZZ(I) for vacuum potential is calculated in other part.
+!C
+!C
+!C   POINT NUCLEUS
+!C
+!     IF (NUCTYP .EQ. 0) THEN
+!         Z1 = ZERO
+!         Z3 = ZERO
+!         DO 1 I = 1,MXNP
+!            ZZ(I) = Z
+!    1    CONTINUE
+!         WRITE (LUPRI,300)
+!         NNUC = 0
+C
+C   FINITE NUCLEI
+C
+      IF (NUCTYP .LE. 2) THEN
+        WRITE (LUPRI,301)
+        RAD = PARM1
+        WA = RAD*RAD
+        FAC = Z/(RAD*WA)
+        ZNORM = 3.0D0*FAC
+        write(*,*)"Z,RAD",Z,RAD
+        FAC = FAC/TWO
+        WA = WA*3.0D0
+        Z1 = 3.0D0*Z/(2.0D0*RAD)
+        Z3 = -FAC
+C
+C   UNIFORM CHARGE DISTRIBUTION
+C
+!         DO 3 I = 1,NRAD
+!            ZZ(I) = FAC*R(I)*(WA-R(I)*R(I))
+!    3    CONTINUE
+!         DO 4 I = NRAD+1,MXNP
+!            ZZ(I) = Z
+!     4    CONTINUE
+C
+C     sunaga
+C         
+         NNUC = NRAD
+        IF (NUCTYP .EQ. 1) THEN
+!            WRITE (LUPRI,302) RAD
+C
+C   FERMI DISTRIBUTION
+C
+        ELSEIF (NUCTYP .EQ. 2) THEN
+           PRECIS = 2.0D0**(-53) !same to GRASP
+           SKI = PARM2
+           RS = RAD/SKI
+           write(*,*)"RAD,SKI",RAD,SKI
+           X = EXP (-RS)
+           SR = SKI/RAD
+           SR2 = SR*SR
+           SR3 = SR2*SR
+           SUM2 = XKONKN (X,2,PRECIS) * SR2
+           SUM3 = XKONKN (X,3,PRECIS) * SR3
+           SRE2 = XKONKN (1.0D0,2,PRECIS)*SR2
+           SRE3 = XKONKN (1.0D0,3,PRECIS)*SR3
+           DEN = 1.0D0 + 6.0D0*(SUM3+SRE2+SRE2)
+           write(*,*)"ZNORM,SUM3,SRE2,DEN",ZNORM,SUM3,SRE2,DEN
+           ZNORM = ZNORM/DEN
+           VNFAC = Z1/DEN
+!           Z1 = VNFAC*(1.0D0+2.0D0)*(SRE2+SRE2-SUM2))
+!           Z3 = Z3/(DEN*(1.0D0+X))
+!           RAD2 = RAD+RAD
+           VNFAC = VNFAC+VNFAC
+!           DO 5 I = 1,NRAD-1
+!              X = EXP (R(I)/SKI-RS)
+!              SUMR2 = XKONKN (X,2,PRECIS) * SR2
+!              SUMR3 = XKONKN (X,3,PRECIS) * SR3
+!              ZZ(I) = ZZ(I)/DEN + VNFAC*( R(I)*(SRE2+SRE2+SUMR2)
+!    &                                    +RAD2*(SUM3-SUMR3) )
+!   5       CONTINUE
+            VNFAC = 3.0D0/DEN
+!     ZZ(NRAD) = ZZ(NRAD)*(1.0D0 - VNFAC*(SRE2+SRE3+SRE3) )
+            WA = LOG (VNFAC)+LOG (SR2)+LOG (1.0D0+SR+SR)-LOG (PRECIS)
+            NNUC = NRAD+NINT (LOG (1.0D0+WA*SR)/H)+1
+            write(*,*)"NINT",NINT (LOG (1.0D0+WA*SR)/H)
+            write(*,*)"WA,SR,NRAD,NNUC",WA,SR,NRAD,NNUC
+C The below part is not needed for Vacuum potential            
+c$$$            DO 6 I = NRAD+1,NNUC
+c$$$               X = EXP (RS-R(I)/SKI)
+c$$$               SUMR2 = XKONKN (X,2,PRECIS) * SR2
+c$$$               SUMR3 = XKONKN (X,3,PRECIS) * SR3
+c$$$               ZZ(I) = ZZ(I)*(ONE - VNFAC*(SUMR3+SUMR3+SUMR2*R(I)/RAD))
+c$$$    6       CONTINUE
+c$$$            WRITE (LUPRI,303) NPARM
+c$$$            WRITE (LUPRI,304) RAD,SKI
+         ENDIF !        IF (NUCTYP .EQ. 1) THEN 
+!         WRITE (LUPRI,305) NRAD
+      ELSEIF (NUCTYP .EQ. 3) THEN !      IF (NUCTYP .LE. 2) THEN
+c$$$C
+c$$$C   GAUSSIAN DISTRIBUTION
+c$$$C
+c$$$         WRITE (LUPRI,301)
+c$$$         RAD = PARM(1)
+c$$$         WB = THREE/(TWO*RAD*RAD)
+c$$$         WRITE (LUPRI,306) RAD,WB
+c$$$         WA = SQRT(WB)
+c$$$         Z1 = TWO*Z*WA/PIRT
+c$$$         Z3 = -Z1*WB/THREE
+c$$$         DO 7 I = 1,N
+c$$$            ZZ(I) = Z*ERF(WA*R(I))
+c$$$    7    CONTINUE
+C
+C   OTHER DISTRIBUTIONS : NOT CURRENTLY IMPLEMENTED
+C
+      ELSE !      IF (NUCTYP .LE. 2) THEN
+!     GO TO 99
+         write(*,*)"error"
+         stop
+      ENDIF
+      
+      RETURN
+C
+  101 WRITE (LUPRI,300)
+      WRITE (LUPRI,301)
+      STOP '020401'
+  102 WRITE (LUPRI,300)
+      WRITE (LUPRI,302)
+      STOP '020402'
+  103 WRITE (LUPRI,300)
+      WRITE (LUPRI,303)
+      STOP '020403'
+  104 WRITE (LUPRI,300)
+      WRITE (LUPRI,304)
+      STOP '020404'
+  105 WRITE (LUPRI,300)
+      WRITE (LUPRI,305)
+      STOP '020405'
+  106 WRITE (LUPRI,300)
+      WRITE (LUPRI,306)
+      STOP '020406'
+  107 WRITE (LUPRI,300)
+      WRITE (LUPRI,307)
+      STOP '020407'
+CCCCCCCCC
+C mcdf.F 
+CCCCCCCCC
+  300 FORMAT (/' ***** ERROR ON ABOVE DATA CARD *****')
+  301 FORMAT (/' INCORRECT NUMBER OF VALUES GIVEN')
+  302 FORMAT (/' STRING GIVEN WHERE NUMBER EXPECTED')
+  303 FORMAT (/' INCORRECT VALUE GIVEN')
+  304 FORMAT (/' NUMBER GIVEN WHERE STRING EXPECTED')
+  305 FORMAT (/' CONFLICTING OPTIONS SELECTED OR OPTION REPEATED')
+  306 FORMAT (/' LOGICAL VALUE ILLEGAL IN THIS CONTEXT')
+  307 FORMAT (/' INFINITE NUCLEAR MASS - SPECIFY NUCLEAR SIZE.')
+  308 FORMAT (///' ***** WARNING *****',//,' (E)OL CALCULATION WITH ',
+     & 'ONLY ONE CSF IS EQUIVALENT TO (E)AL CALCULATION.',
+     & ' PROCEEDING WITH (E)AL CALCULATION.')
+C
+      END      
+      
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE QUAD(RESULT,TE,NR)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C Numerical radial integral for one dimension
 C
 C copied from /QUAD/grasp.F/GRASP
 C Modified to DIRAC A. Sunaga Nov. 2018       
@@ -412,7 +1240,7 @@ C
      &           W2 = 68.0D0*W7,  W1 = 112.0D0*W7)
 C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
-      PARAMETER(EPSI = 1.0D-35) !-35
+      PARAMETER(H=1.0D-2,EPSI = 1.0D-35) !-35
 !      REAL(8) TE(NR)      
 !      DIMENSION TE(NR)      
       DIMENSION TE(*)
@@ -422,7 +1250,6 @@ C   WHERE THE INTEGRAND TE FIRST BECOMES SIGNIFICANT, AND IS CHOSEN
 C   TO PREVENT DIVIDING BY ZERO.
 C
       DO 1 J = 1,NR
-!        write(*,*)"TE4",TE(J) !sunaga
         IF (ABS (TE(J)) .GT. EPSI) GO TO 2
     1 CONTINUE
       RESULT = ZERO
@@ -442,16 +1269,22 @@ C
       K = ND2-N1D2+1
       JJ = J+K
       JJ1 = JJ+1
+!      write(*,*)'NR', NR
+!      write(*,*)'J,NP,ND2,N1D2,K,JJ,JJ1', J, NP, ND2, N1D2, K, JJ, JJ1
+!      write(*,*)'K',K
       DO 3 I = JJ1,NR-3,2
          SUM = SUM + W1*TE(I) + W2*TE(I+1)
 !         write(*,*)"TE5",TE(I) !sunaga
     3 CONTINUE
+!      write(*,*)'SUM1',SUM
       SUM = SUM + W1*TE(NR-1)
+!      write(*,*)'SUM2',SUM
       SUM = SUM + W4*( TE(JJ)   + TE(NR)   )
      &          + W5*( TE(JJ1)  + TE(NR-1) )
      &          + W6*( TE(JJ+2) + TE(NR-2) )
      &          + W7*( TE(JJ+3) + TE(NR-3) )
-      
+
+!      write(*,*)'SUM3',SUM
 C
 C   ADD THE CONTRIBUTION FROM 0 TO R(JJ), PLUS THE CONTRIBUTION
 C   TO SIMPSONS RULE FROM TE(JJ).
@@ -466,7 +1299,72 @@ C
       RETURN
 C
       END      
-      
+************************************************************************
+*                                                                      *
+C     /* Deck XKONKN */
+      FUNCTION XKONKN (X,N,TOL)
+*                                                                      *
+*   ----------------   SECTION 09   SUBPROGRAM 10   ----------------   *
+*                                                                      *
+*   EVALUATE THE SUM OF THE SERIES (-X)**(K+1)/K**N FROM K = 1         *
+*   UNTIL THE PRESCRIBED TOLERANCE IS MET.                             *
+*                                                                      *
+*   NO SUBROUTINES CALLED                                              *
+*                                                                      *
+*                                         LAST REVISION: 30 AUG 1987   *
+*                                                                      *
+************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C     
+      PARAMETER(MXXK = 100) ! 100 in GRASP      
+      DIMENSION DELTA(MXXK)
+      PARAMETER(HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0, THREE = 3.0D0)
+C
+C   SUMMATION FOR K = 1,...,6
+C
+      XK = ONE
+      FKN = ONE
+      SUM = XK
+      DO 1 K = 2,6
+         XK = -XK*X
+         FKN = DBLE (K**N)
+         TERM = XK/FKN
+         SUM = SUM+TERM
+         IF (ABS (TERM/SUM) .LT. TOL) GO TO 4
+    1 CONTINUE
+C
+C   REMAINDER OF SUM
+C
+      K = 6
+      M = 7
+    2 K = K+1
+      KM = K-M
+!      write(*,*)
+!      write(*,*)"KM,MXXK",KM,MXXK !sunaga
+      IF (KM .GT. MXXK-1) GO TO 99
+      XK = -XK*X
+      FKN = DBLE (K**N)
+      DELTA(KM+1) = XK*HALF/FKN
+      DO 3 J = KM,1,-1
+         DELTA(J) = HALF*(DELTA(J)+DELTA(J+1))
+    3 CONTINUE
+      SUM = SUM+DELTA(1)
+!      write(*,*)"DELTA,SUM,TOL",DELTA(1),SUM,TOL !sunaga
+      IF (ABS (DELTA(1)/SUM) .GT. TOL) GO TO 2
+C
+    4 XKONKN = SUM*X
+      RETURN
+C
+   99 WRITE (LUPRI,300) MXXK
+
+      STOP '091001'
+C
+  300 FORMAT(/' ***** ERROR IN XKONKN *****',//' OVERFLOW IN ARRAY ',
+     & 'DELTA. RECOMPILE WITH VALUE OF SYMBOL XK GREATER THAN ', I3 )
+C
+      END
+C      
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EFFECTIVE_DENS_NUC(WORK,LWORK,COMB)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -2613,7 +3511,9 @@ C
         ENDDO
         IF (TWOCOMP) THEN
          SSMTRC = D0
+         write(*,*)"MCayaki in GMOTRA", MC           
          MC = 1
+         write(*,*)"MCayaki2 in GMOTRA", MC
         ENDIF
         IF (IPRHAM.GE.5) THEN
           write(lupri,*) 'GMOTRA: branch URKBAL'
@@ -5897,7 +6797,6 @@ C
 
 #include "memint.h"
 C
-
       CALL HEADER('Output from LINSYM',-1)
       NBRP = 4 / NZ
 C

@@ -1687,6 +1687,9 @@
       ELSEIF(PLABEL(1:7).EQ.'FDEVEMB') THEN
         CLASLB = 'FDEVEMB'
         IORDER   = 0
+      ELSEIF(PLABEL(1:7).EQ.'UEHLING') THEN
+        CLASLB = 'UEHLING'
+        IORDER   = 0
       ELSEIF(PLABEL(1:7).EQ.'BETAMAT') THEN
         CLASLB = 'BETAMAT'
         IORDER   = 0
@@ -2150,6 +2153,16 @@
       ELSEIF(CLASLB.EQ.'FDEVEMB') THEN
         NOPTYP    = 1
         LABINT(1) = 'FDEVEMB '
+        INTREP(1) = 0
+        SQUARE    = .FALSE.
+        ANTI      = .FALSE.
+        IORDER    = 0
+        DO I = 1,NUCIND
+          DOATOM(I) = .TRUE.
+        ENDDO
+      ELSEIF(CLASLB.EQ.'UEHLING') THEN
+        NOPTYP    = 1
+        LABINT(1) = 'UEHLING '
         INTREP(1) = 0
         SQUARE    = .FALSE.
         ANTI      = .FALSE.
