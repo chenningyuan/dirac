@@ -194,7 +194,7 @@ module exacorr_cc
             ierr=exatns_tensor_init(one_tensor,ONE)
 
 
-            !           Get fixed two-body tensors
+!           Get fixed two-body tensors
             ierr=exatns_tensor_create(int_t%oooo,"oooo",oooo_id,oooo_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(int_t%ooov,"ooov",ooov_id,ooov_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(int_t%oovv,"oovv",oovv_id,oovv_root,EXA_DATA_KIND_C8)
@@ -205,22 +205,6 @@ module exacorr_cc
 
             call print_date('initialized two electron integrals')
 
-            call print_date("Getting orbital energies")
-!           Get orbital energies from the DIRAC restart file
-            allocate (eps_occ(2*nocc))
-            allocate (eps_vir(2*nvir))
-            call get_orbital_energies(nocc,mo_occ,eps_occ)
-            call get_orbital_energies(nvir,mo_vir,eps_vir)
-            call print_date("Retrieved orbital energies")
-
-            !print*, "nocc", nocc
-            !print*, "nvir", nvir
-
-            !ierr=exatns_tensor_create(one_el_mat,"one_el_mat",(/occ_space_id, occ_space_id/), &
-            !(/occ_space_root, occ_space_root/),EXA_DATA_KIND_C8)
-            !ierr=exatns_tensor_init(comm_t%foo,ZERO)
-
-            call print_date('one electron integrals obtained')
 
             ierr=exatns_tensor_create(id_mat_occ,"id_mat_occ",oo_id,oo_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_init(id_mat_occ, ZERO)
@@ -273,7 +257,7 @@ module exacorr_cc
 
             ierr=exatns_tensor_destroy(id_mat_occ)
             ierr=exatns_tensor_init(one_tensor,ONE)
-            call print_date('initialized fock matrix')
+            call print_date('two electron contribution added - fock matrix initialized')
 
 !           Initialize t1 amplitudes to zero (we assume canonical orbitals for the moment)
             if (.not.CCD) ierr=exatns_tensor_create(comm_t%t1,"t1",vo_id,vo_root,EXA_DATA_KIND_C8)
@@ -542,12 +526,17 @@ module exacorr_cc
 
          integer                        :: ierr, i
 
+         !        orbital energies
+         real(8), allocatable :: eps_occ(:),eps_vir(:)
+
          ! types of the initializer methods
          type(tens_printer_t)         :: tens_printer     ! generic method, but needs to be defined here in specific form
          type(compute_2e_ao_tensor_t) :: aoint_calculator ! method to initialize the ao-integrals tensor
          type(init_mocoef_tensor_t)   :: occupied_init(2), virtual_init(2) ! methods to initialize MO coeffcient tensors
          type(init_dm_tensor_t)       :: dm_init(4)       ! array of initializers for MO transformation algorithm 2
          type(scale_with_denom_t)     :: denominate       ! method to scale CC amplitudes by the inverse of orbital energy differences
+         type(set_diagonal_t)         :: id_meth_occ      ! identity matrix
+         type(init_one_el_t)          :: one_el(4)        ! one electron integrals
 
          integer:: spin
 
@@ -613,6 +602,31 @@ module exacorr_cc
          call tens_printer%reset_thresh(1.0D-15)
          ierr=exatns_method_register('PrintTensor',tens_printer)
          if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(printer) failed!')
+
+         !Register methods to read one electron integrals
+         call one_el(1)%init_one_el_int(mo_occ(1:nocc),nocc,mo_occ(1:nocc),nocc)
+         ierr=exatns_method_register('OE_oo',one_el(1))
+         if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(OE_oo) failed!')
+         call one_el(2)%init_one_el_int(mo_occ(1:nocc),nocc,mo_vir(1:nvir),nvir)
+         ierr=exatns_method_register('OE_ov',one_el(2))
+         if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(OE_ov) failed!')
+         call one_el(3)%init_one_el_int(mo_vir(1:nvir),nvir,mo_occ(1:nocc),nocc)
+         ierr=exatns_method_register('OE_vo',one_el(3))
+         if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(OE_vo) failed!')
+         call one_el(4)%init_one_el_int(mo_vir(1:nvir),nvir,mo_vir(1:nvir),nvir)
+         ierr=exatns_method_register('OE_vv',one_el(3))
+         if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(OE_vv) failed!')
+
+         call print_date("Getting orbital energies")
+!        Get orbital energies from the DIRAC restart file
+         allocate (eps_occ(2*nocc))
+         allocate (eps_vir(2*nvir))
+         call get_orbital_energies(nocc,mo_occ,eps_occ)
+         call get_orbital_energies(nvir,mo_vir,eps_vir)
+         call print_date("Retrieved orbital energies")
+
+         deallocate (eps_occ)
+         deallocate (eps_vir)
 
         end subroutine exacorr_cc_methods
 
