@@ -295,7 +295,7 @@ C
                J1_EIGVEC = J1_EIGVEC + N_CIROOTS*NZCONF
                J2_EIGVEC = J2_EIGVEC + N_CIROOTS*NZCONF
                DO I = 1,NDET_MK2
-                  WORK(J2_EIGVEC + I) = WORK(J1_EIGVEC + I)
+                  WORK(J2_EIGVEC + I) = -WORK(J1_EIGVEC + I) ! time-reversal operator includes complex conjugation
                END DO
                END IF
             END IF
