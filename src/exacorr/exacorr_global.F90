@@ -214,7 +214,7 @@ module exacorr_global
       !nmo_all = qmo_all%nmo
       !nz      = qmo_all%nz 
       nao     = cspinor_all%nao
-      nmo_all = cspinor_all%nmo
+      nmo_all = cspinor_all%nmo !WHY IS THIS HERE?
 
       ! allocate arrays in qmo to hold the active MO's specified in mo_list
       !call alloc_mo (qmo,nao,nmo,nz)
@@ -234,6 +234,6 @@ module exacorr_global
          cspinor%boson_irrep(i) = cspinor_all%boson_irrep(mo_list(i))
       enddo
 
-      end
+      end subroutine get_MO_coefficients
 
 end module exacorr_global

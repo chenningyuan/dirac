@@ -122,8 +122,6 @@ module exacorr_cc
             print*, " - Solve CCD equations:            ",exa_input%ccd
             print*, " - Solve Lambda equations:         ",exa_input%lambda
             print*, " - Number of atomic orbitals:      ",ao_space%get_root_id(ierr)
-            !print*, " - Number of occupied spinors:     ",2*exa_input%nkr_occ
-            !print*, " - Number of virtual spinors:      ",2*exa_input%nkr_vir
             print*, " - Number of occupied spinors:     ",exa_input%nkr_occ
             print*, " - Number of virtual spinors:      ",exa_input%nkr_vir
             print*, " - Target precision of amplitudes: ",exa_input%t_econv
@@ -203,6 +201,12 @@ module exacorr_cc
             call get_CC_integrals (ao_space_id,ao_space_root,int_t,exa_input%moint_scheme)
 
             call print_date('initialized two electron integrals')
+            print*, "oooo: ", print_tensornorm2(int_t%oooo)
+            print*, "ooov: ", print_tensornorm2(int_t%ooov)
+            print*, "oovv: ", print_tensornorm2(int_t%oovv)
+            print*, "vovo: ", print_tensornorm2(int_t%vovo)
+            print*, "vovv: ", print_tensornorm2(int_t%vovv)
+            print*, "vvvv: ", print_tensornorm2(int_t%vvvv)
 
 !           Initialize t1 amplitudes to zero (we assume canonical orbitals for the moment)
             if (.not.CCD) ierr=exatns_tensor_create(comm_t%t1,"t1",vo_id,vo_root,EXA_DATA_KIND_C8)
@@ -438,11 +442,13 @@ module exacorr_cc
          if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.finalize() failed!')
 
          !Register this mo vector space :
-         branch_factor = 2*nocc / exa_input%exa_blocksize + 1
+         !branch_factor = 2*nocc / exa_input%exa_blocksize + 1
+         branch_factor = nocc / exa_input%exa_blocksize + 1
          if (branch_factor < 2) branch_factor = 2
          ierr=exatns_space_register('Occupied',basis_occ,occ_space_id,occ_space,branch_factor)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register(occ) failed!')
-         branch_factor = 2*nvir / exa_input%exa_blocksize + 1
+         !branch_factor = 2*nvir / exa_input%exa_blocksize + 1
+         branch_factor = nvir / exa_input%exa_blocksize + 1
          if (branch_factor < 2) branch_factor = 2
          ierr=exatns_space_register('Virtual',basis_vir,vir_space_id,vir_space,branch_factor)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register(vir) failed!')
@@ -487,17 +493,21 @@ module exacorr_cc
          nvir = exa_input%nkr_vir
          allocate(mo_occ(nocc))
          allocate(mo_vir(nvir))
-         mo_occ(1:nocc) = exa_input%mokr_occ(1:exa_input%nkr_occ)
-         mo_vir(1:nvir) = exa_input%mokr_vir(1:exa_input%nkr_vir)
+         !mo_occ(1:nocc) = exa_input%mokr_occ(1:exa_input%nkr_occ)
+         !mo_vir(1:nvir) = exa_input%mokr_vir(1:exa_input%nkr_vir)
+         mo_occ = exa_input%mokr_occ
+         mo_vir = exa_input%mokr_vir
 
          !Define separate initializers for the alpha(A) and beta(B) occupied and virtual MO-coefficients
          do spin = 1, 2
             !Register this initializer for occupied as a method
-            call occupied_init(spin)%init_mocoef_ctor(mo_occ(1:nocc),nocc,spin)
+            !call occupied_init(spin)%init_mocoef_ctor(mo_occ(1:nocc),nocc,spin)
+            call occupied_init(spin)%init_mocoef_ctor(mo_occ,nocc,spin)
             ierr=exatns_method_register(mocoef_initlabel(ao_space_id,occ_space_id,spin),occupied_init(spin))
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
             !Same procedure for the virtual space
-            call virtual_init(spin)%init_mocoef_ctor(mo_vir(1:nvir),nvir,spin)
+            !call virtual_init(spin)%init_mocoef_ctor(mo_vir(1:nvir),nvir,spin)
+            call virtual_init(spin)%init_mocoef_ctor(mo_vir,nvir,spin)
             ierr=exatns_method_register(mocoef_initlabel(ao_space_id,vir_space_id,spin),virtual_init(spin))
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
          end do
@@ -1138,6 +1148,7 @@ module exacorr_cc
            a2int_root(1:2) = vovo_root(1)
            ierr=exatns_tensor_create(a2int_tensor,"a2vv",a2int_id,a2int_root,EXA_DATA_KIND_C8) 
            call get_ht1_integral_tensor (aoint_tensor,a2int_tensor)
+           print*, "a2vv", print_tensornorm2(a2int_tensor)
            call print_date('vv halftransformation completed')
            call get_ht2_integral_tensor (a2int_tensor,int_t%vvvv,12)
            call print_date('vvvv integrals completed')
@@ -1152,6 +1163,7 @@ module exacorr_cc
            a2int_root(1:2) = vovo_root(2:3)
            ierr=exatns_tensor_create(a2int_tensor,"a2ov",a2int_id,a2int_root,EXA_DATA_KIND_C8) 
            call get_ht1_integral_tensor (aoint_tensor,a2int_tensor)
+           print*, "a2ov", print_tensornorm2(a2int_tensor)
            call print_date('ov halftransformation completed')
            ierr=exatns_tensor_create(ovvo_tensor,"ovvo",ovvo_id,ovvo_root,EXA_DATA_KIND_C8) ! auxilliary for get_CC_integrals
            call get_ht2_integral_tensor (a2int_tensor,ovvo_tensor,0)
@@ -1169,6 +1181,7 @@ module exacorr_cc
            a2int_root(1:2) = vovo_root(2)
            ierr=exatns_tensor_create(a2int_tensor,"a2oo",a2int_id,a2int_root,EXA_DATA_KIND_C8) 
            call get_ht1_integral_tensor (aoint_tensor,a2int_tensor)
+           print*, "a2oo", print_tensornorm2(a2int_tensor)
            call print_date('oo halftransformation completed')
            call get_ht2_integral_tensor (a2int_tensor,int_t%ooov,12)
            call print_date('ooov integrals completed')

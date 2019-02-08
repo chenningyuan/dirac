@@ -314,30 +314,19 @@ module exacorr_tensor_methods
 !        using Kramers' symmetry.
 
          nao = get_nao()
-         allocate (this%mocoef_all(nao,2*nmo))
-         !call get_mo_coefficients (qmo,mo_list,nmo)
+         allocate (this%mocoef_all(nao,nmo))
          call get_mo_coefficients (cspinor,mo_list,nmo)
 
-         !if (spin == 1) then
-         !   do k = 1, nmo
-         !      do j = 1, nao
-         !       this%mocoef_all(j,k)     = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
-         !       this%mocoef_all(j,k+nmo) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-         !      end do
+         !DOESNT WORK
+         !do k = 1, nmo
+         !   do j = 1, nao
+         !       this%mocoef_all(j,k) = cspinor%coeff(j,k,spin)
          !   end do
-         !elseif (spin == 2) then
-         !   do k = 1, nmo
-         !      do j = 1, nao
-         !       this%mocoef_all(j,k)     = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-         !       this%mocoef_all(j,k+nmo) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
-         !      end do
-         !   end do
-         !else
-         !   call quit ('init_mocoef called with unknown spin value')
-         !end if
-         !call dealloc_mo (qmo)
+         !end do
 
+         print*, "nao, nmo , spin", nao, nmo, spin
          this%mocoef_all = cspinor%coeff(:,:,spin)
+
          call dealloc_mo(cspinor)
 
         end subroutine init_mocoef
@@ -580,6 +569,9 @@ module exacorr_tensor_methods
          first_mo = tens_bases(2)
          last_ao  = first_ao + nao - 1
          last_mo  = first_mo + nmo - 1
+
+         !print*, "nao, nmo", nao, nmo
+         !print*, "first_ao, first_mo, last_ao, last_mo", first_ao, first_mo, last_ao, last_mo
 
          mocoef_tens(1:nao,1:nmo) = mocoef_all(first_ao:last_ao,first_mo:last_mo)
 

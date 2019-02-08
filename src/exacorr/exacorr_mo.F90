@@ -195,7 +195,6 @@ module exacorr_mo
       call interface_mpi_bcast (M%boson_irrep,  M%nmo,my_MPI_master,global_communicator)
       call interface_mpi_bcast (M%index,        M%nmo,my_MPI_master,global_communicator)
       call interface_mpi_bcast (M%energy,       M%nmo,my_MPI_master,global_communicator)
-      !n_coef = M%nao * M%nmo
       n_coef = M%nao * M%nmo * 2 ! (AO,MO,spin)
       call interface_mpi_bcast (M%coeff,n_coef,my_MPI_master,global_communicator)
 
@@ -261,86 +260,32 @@ module exacorr_mo
       integer,    intent(in   ) :: nao, nmo, npo
 !-----summation and dummy variables
       integer                 :: i, j, spin
-      complex(8), allocatable :: t_cmplx(:,:)
 
-!-----create new arrays grouped by spin + drop "positronic" solutions
+!-----create new arrays grouped by Kramer's partners + drop "positronic" solutions
 
-      seig(    1:  nmo) = eig(npo+1:npo+nmo)
-      seig(nmo+1:2*nmo) = eig(npo+1:npo+nmo)
-
-!     initial structure of scoeff
-!            nmo  nmo
-!     nao (  un-   -  )
+      do i = 1, npo+nmo
+        seig(2*i-1) = eig(npo+i)
+        seig(2*i  ) = eig(npo+i)
+      end do
 
       do spin = 1, 2
         if (spin == 1) then
             do j = 1, nmo
                 do i = 1, nao
-                scoeff(i,j    ,spin) = dcmplx(coeff(i,j+npo,1),coeff(i,j+npo,2))
-                scoeff(i,j+nmo,spin) = dcmplx(coeff(i,j+npo,3),coeff(i,j+npo,4))
+                scoeff(i,2*j-1,spin) = dcmplx(coeff(i,j+npo,1),coeff(i,j+npo,2))
+                scoeff(i,2*j  ,spin) = dcmplx(coeff(i,j+npo,3),coeff(i,j+npo,4))
                 end do
             end do
         else if (spin == 2) then
             do j = 1, nmo
                 do i = 1, nao
-                scoeff(i,j    ,spin) = dcmplx(-coeff(i,j+npo,3), coeff(i,j+npo,4))
-                scoeff(i,j+nmo,spin) = dcmplx( coeff(i,j+npo,1),-coeff(i,j+npo,2))
+                scoeff(i,2*j-1,spin) = dcmplx(-coeff(i,j+npo,3), coeff(i,j+npo,4))
+                scoeff(i,2*j  ,spin) = dcmplx( coeff(i,j+npo,1),-coeff(i,j+npo,2))
                 end do
             end do
         end if
       end do
 
-!-----sort output arrays in terms of ascending energy
-
-      allocate(t_cmplx(nao,2))
-
-      call sort_by_energy(scoeff,seig,t_cmplx,1,2*nmo)
-
-      deallocate(t_cmplx)
-
      end subroutine convert_quaternion_to_complex
-
-     recursive subroutine sort_by_energy(coeff,eig,t_cmplx,first,last)
-
-!     Quicksort algorithm, taken from https://gist.github.com/t-nissie/479f0f16966925fa29ea
-
-!-----input variables
-      complex(8), intent(inout) :: coeff(:,:,:)
-      complex(8), intent(inout) :: t_cmplx(:,:)
-      real(8),    intent(inout) :: eig(:)
-      integer,    intent(in   ) :: first, last
-!-----tmp storage and summation
-      integer    :: i, j
-      real(8)    :: x, t
-
-      x = eig( (first+last) / 2 )
-      i = first
-      j = last
-
-      do
-        do while (eig(i) < x)
-            i = i + 1
-        end do
-        do while (x < eig(j))
-            j = j - 1
-        end do
-        if (i >= j) exit
-
-!       sort eigenvalues
-        t      = eig(i)
-        eig(i) = eig(j)
-        eig(j) = t
-!       sort coefficients
-        t_cmplx      = coeff(:,i,:)
-        coeff(:,i,:) = coeff(:,j,:)
-        coeff(:,j,:) = t_cmplx
-
-        i = i + 1
-        j = j - 1
-      end do
-      if (first < i - 1) call sort_by_energy(coeff,eig,t_cmplx,first,i-1 )
-      if (j + 1 < last ) call sort_by_energy(coeff,eig,t_cmplx,j+1  ,last)
-
-     end subroutine sort_by_energy
 
 end module exacorr_mo
