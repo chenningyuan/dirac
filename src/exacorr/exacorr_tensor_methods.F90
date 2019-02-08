@@ -262,30 +262,14 @@ module exacorr_tensor_methods
          integer, intent(in) :: mo_occ(:),mo_vir(:)
          class(scale_with_denom_t), intent(out):: this
 
-         !type(qumo) :: qmo
          type(cmo) :: cspinor
          integer  :: k
 
-         ! we are assuming closed shell (Kramers-restricted) cases here
-         !call get_mo_coefficients (qmo,mo_occ,nocc)
-         !allocate(this%eps_occ(2*nocc))
-         !do k = 1, nocc
-         !   this%eps_occ(k)      = qmo%energy(k)
-         !   this%eps_occ(k+nocc) = qmo%energy(k)
-         !end do
-         !call dealloc_mo (qmo)
          call get_mo_coefficients (cspinor,mo_occ,nocc)
          allocate(this%eps_occ(nocc))
          this%eps_occ = cspinor%energy
          call dealloc_mo (cspinor)
 
-         !call get_mo_coefficients (qmo,mo_vir,nvir)
-         !allocate(this%eps_vir(2*nvir))
-         !do k = 1, nvir
-         !   this%eps_vir(k)      = qmo%energy(k)
-         !   this%eps_vir(k+nvir) = qmo%energy(k)
-         !end do
-         !call dealloc_mo (qmo)
          call get_mo_coefficients (cspinor,mo_vir,nvir)
          allocate(this%eps_vir(nvir))
          this%eps_vir = cspinor%energy
@@ -305,7 +289,6 @@ module exacorr_tensor_methods
          class(init_mocoef_tensor_t), intent(out):: this
 
          integer  :: nao,j,k
-         !type(qumo) :: qmo
          type(cmo) :: cspinor
 
 !        Copy the coefficients into the alpha or beta array, using the quaternion relations as defined in
@@ -324,8 +307,9 @@ module exacorr_tensor_methods
          !   end do
          !end do
 
-         print*, "nao, nmo , spin", nao, nmo, spin
-         this%mocoef_all = cspinor%coeff(:,:,spin)
+         !print*, "nao, nmo , spin", nao, nmo, spin
+         print*, "spin, shape", spin, shape(cspinor%coeff)
+         this%mocoef_all(:,:) = cspinor%coeff(:,:,spin)
 
          call dealloc_mo(cspinor)
 
@@ -554,6 +538,7 @@ module exacorr_tensor_methods
          integer :: nao, nmo
          integer :: first_ao, last_ao, first_mo, last_mo
          complex(8),pointer :: mocoef_tens(:,:)
+         integer :: i, j
 
          ierr=0 !set error code to success
          if(data_kind /= EXA_DATA_KIND_C8) then
@@ -571,7 +556,7 @@ module exacorr_tensor_methods
          last_mo  = first_mo + nmo - 1
 
          !print*, "nao, nmo", nao, nmo
-         !print*, "first_ao, first_mo, last_ao, last_mo", first_ao, first_mo, last_ao, last_mo
+         !print*, "first_ao, last_ao, first_mo, last_mo", first_ao, last_ao, first_mo, last_mo
 
          mocoef_tens(1:nao,1:nmo) = mocoef_all(first_ao:last_ao,first_mo:last_mo)
 

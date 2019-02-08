@@ -136,7 +136,6 @@ module exacorr_global
          !TODO: check for memory leaks here. No so important as we usually stop right after and there is not much data anyhow
              deallocate(ao_basis%shell_indices)
              deallocate(ao_basis%gtos)
-             !call dealloc_mo (qmo_all)
              call dealloc_mo (cspinor_all)
          end subroutine delete_global_data
 
@@ -182,7 +181,6 @@ module exacorr_global
 
          end subroutine get_gtos
 
-     !subroutine get_MO_coefficients (qmo,mo_list,nmo)
      subroutine get_MO_coefficients (cspinor,mo_list,nmo)
 !***********************************************************************
 !
@@ -205,28 +203,17 @@ module exacorr_global
       use exacorr_mo
 
       integer, intent(in)     :: nmo,mo_list(nmo)
-      !type(qumo), intent(inout) :: qmo
       type(cmo), intent(inout) :: cspinor
 
-      integer  :: i, nao, nmo_all, nz
+      integer  :: i, nao, nmo_all
 
-      !nao     = qmo_all%nao
-      !nmo_all = qmo_all%nmo
-      !nz      = qmo_all%nz 
       nao     = cspinor_all%nao
       nmo_all = cspinor_all%nmo !WHY IS THIS HERE?
 
-      ! allocate arrays in qmo to hold the active MO's specified in mo_list
-      !call alloc_mo (qmo,nao,nmo,nz)
+      ! allocate arrays in cmo to hold the active MO's specified in mo_list
       call alloc_mo (cspinor,nao,nmo)
 
       ! copy the requested mo's
-      !do i = 1, nmo
-      !   qmo%index(i)   = mo_list(i)
-      !   qmo%coeff(:,i,:) = qmo_all%coeff(:,mo_list(i),:)
-      !   qmo%energy(i) = qmo_all%energy(mo_list(i))
-      !   qmo%boson_irrep(i) = qmo_all%boson_irrep(mo_list(i))
-      !enddo
       do i = 1, nmo
          cspinor%index(i)       = mo_list(i)
          cspinor%coeff(:,i,:)   = cspinor_all%coeff(:,mo_list(i),:)

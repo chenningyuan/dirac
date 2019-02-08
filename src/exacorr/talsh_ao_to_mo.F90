@@ -141,7 +141,6 @@ module talsh_ao_to_mo
          type(talsh_tens_t), intent(inout) :: mocoefa_tensor,mocoefb_tensor
 
          integer             :: j, k, ierr
-         !type(qumo)            :: qmo
          type(cmo)            :: cspinor
          integer             :: tens_rank, mocoef_dims(1:2)
 
@@ -154,23 +153,12 @@ module talsh_ao_to_mo
          ierr=talsh_tensor_get_body_access(mocoefb_tensor,body_p,C8,0,DEV_HOST)
          call c_f_pointer(body_p,cbmo_tens,mocoef_dims(1:2)) ! to use cbmo_tens as a regular Fortran 2d array
 
-         !call get_mo_coefficients (qmo,mo_list,nmo)
          call get_mo_coefficients (cspinor,mo_list,nmo)
 
 !        Copy the coefficients into the alpha and beta tensors, using the quaternion relations as defined in
 !        T. Saue, H. Jensen, J. Chem. Phys. 111 (1999) 6211–6222, Equation 16.
 !        The coefficients for the barred spinors (that start after the nmo(i) unbarred spinors) are generated
 !        using Kramers' symmetry.
-
-         !do k = 1, nmo
-         !   do j = 1, nao
-         !       camo_tens(j,k) = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
-         !       cbmo_tens(j,k) = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-         !       camo_tens(j,k+nmo) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-         !       cbmo_tens(j,k+nmo) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
-         !   end do
-         !end do
-         !call dealloc_mo (qmo)
 
          camo_tens = cspinor%coeff(:,:,1)
          cbmo_tens = cspinor%coeff(:,:,2)
@@ -392,7 +380,6 @@ module talsh_ao_to_mo
          integer                            :: ierr, moint_dims(4)
          type(talsh_tens_t)                 :: moint_tensor
 
-         !moint_dims = 2 * nmo
          moint_dims = nmo
          ierr=talsh_tensor_construct(moint_tensor,C8,moint_dims,init_val=ZERO)
 !        Transform integrals

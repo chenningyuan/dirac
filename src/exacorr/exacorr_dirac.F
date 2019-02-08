@@ -315,7 +315,6 @@ C
 
        end subroutine compress_unc_shell
 
-       !subroutine read_from_dfcoef (ao_basis,qmo,ierr)
        subroutine read_from_dfcoef (ao_basis,cspinor,ierr)
 
        use exacorr_mo
@@ -329,7 +328,6 @@ C
 !      by reading also the basis set information into gtos
 
        type(basis_set_info_t), intent(inout) :: ao_basis
-       !type(qumo), intent(inout):: qmo
        type(cmo), intent(inout):: cspinor
        integer, intent(out)   :: ierr 
        integer, parameter     :: NOERROR  = 0 ! no error
@@ -387,7 +385,6 @@ C
        allocate(coeff(nao,nto,nz))
        allocate(eig(nto))
        allocate(ibeig(nto))
-       !allocate(index(nto))
        allocate(index(2*nmo))
         
        ! read the mo coefficients and orbital eigenvalues
@@ -395,7 +392,6 @@ C
        read (lucoef,end=10,err=10) eig
        read (lucoef,end=10,err=10) ibeig
        ! fill in index values
-       !do i = 1, nmo
        do i = 1, 2*nmo
           index(i) = i ! we set the index compatible with the fact that we store all mo's
        end do
@@ -406,13 +402,6 @@ C
        call convert_quaternion_to_complex(coeff,scoeff,eig,seig,
      &                                              nao,nmo,npo)
 
-       ! put in qmo
-       !call alloc_mo (qmo,nao,nmo,nz)
-       !qmo%total_energy = total_energy
-       !qmo%index        = index
-       !qmo%coeff        = coeff(:,npo+1:nto,1:nz)
-       !qmo%energy       = eig(npo+1:nto)
-       !qmo%boson_irrep  = ibeig(npo+1:nto)
        ! put in cmo
        call alloc_mo (cspinor,nao,2*nmo)
        cspinor%total_energy = total_energy

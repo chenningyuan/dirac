@@ -314,9 +314,6 @@ module exacorr_cc
             ierr=exatns_tensor_destroy(l1_tensor)
             ierr=exatns_tensor_destroy(l2_tensor)
 
-!           Get statistics 
-            !ierr=exatns_status()    !Need to find correct exatns alternatives. Probably exatns_status
-
             !Stop ExaTENSOR runtime
             ierr=exatns_stop()
 
@@ -414,8 +411,6 @@ module exacorr_cc
          nvir = exa_input%nkr_vir
          !Get the MO basis for the occupied and virtual spaces
          ierr = 0
-         !nocc_l   = 2*int(nocc,8)  ! NB: imo, jmo and nmo count orbitals, nocc_l counts spinors
-         !nvir_l   = 2*int(nvir,8)  ! NB: imo, jmo and nmo count orbitals, nvir_l counts spinors
          nocc_l   = int(nocc,8)  ! NB: imo, jmo and nmo count orbitals, nocc_l counts spinors
          nvir_l   = int(nvir,8)  ! NB: imo, jmo and nmo count orbitals, nvir_l counts spinors
          call basis_occ%subspace_basis_ctor(nocc_l,ierr)
@@ -442,12 +437,10 @@ module exacorr_cc
          if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.finalize() failed!')
 
          !Register this mo vector space :
-         !branch_factor = 2*nocc / exa_input%exa_blocksize + 1
          branch_factor = nocc / exa_input%exa_blocksize + 1
          if (branch_factor < 2) branch_factor = 2
          ierr=exatns_space_register('Occupied',basis_occ,occ_space_id,occ_space,branch_factor)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register(occ) failed!')
-         !branch_factor = 2*nvir / exa_input%exa_blocksize + 1
          branch_factor = nvir / exa_input%exa_blocksize + 1
          if (branch_factor < 2) branch_factor = 2
          ierr=exatns_space_register('Virtual',basis_vir,vir_space_id,vir_space,branch_factor)
@@ -504,11 +497,13 @@ module exacorr_cc
             !call occupied_init(spin)%init_mocoef_ctor(mo_occ(1:nocc),nocc,spin)
             call occupied_init(spin)%init_mocoef_ctor(mo_occ,nocc,spin)
             ierr=exatns_method_register(mocoef_initlabel(ao_space_id,occ_space_id,spin),occupied_init(spin))
+            !print*, "occ: spin, initlabel", spin, mocoef_initlabel(ao_space_id,occ_space_id,spin)
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
             !Same procedure for the virtual space
             !call virtual_init(spin)%init_mocoef_ctor(mo_vir(1:nvir),nvir,spin)
             call virtual_init(spin)%init_mocoef_ctor(mo_vir,nvir,spin)
             ierr=exatns_method_register(mocoef_initlabel(ao_space_id,vir_space_id,spin),virtual_init(spin))
+            !print*, "vir: spin, initlabel", spin, mocoef_initlabel(ao_space_id,vir_space_id,spin)
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
          end do
 
@@ -592,7 +587,7 @@ module exacorr_cc
          integer :: iccsd
          integer,intent(in) :: ncycles
          integer :: ierr
-         
+
          occ_space_id=dims%occ_space_id
          vir_space_id=dims%vir_space_id
          occ_space_root=dims%occ_space_root
