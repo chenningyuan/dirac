@@ -199,26 +199,33 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbgen.h"
 #include "nucdata.h"      
 #include "graspprm.h" 
-      
+#include "maxaqn.h"
+#include "ccom.h" 
+
+      LOGICAL ADDSML
       CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4 !check
       PARAMETER (D0=0.0D0,D1=1.0D0,D2=2.0D0)      
-      PARAMETER (H=0.01D0) !same to GRASP
       real(8), allocatable :: ZAN(:),C(:,:)
       real(8), allocatable :: ANG(:,:),GAO(:)
       real(8), allocatable :: BUF(:),TC(:),TD(:,:)
-      real(8), allocatable :: VACIR(:),R(:),OVL(:)
+      real(8), allocatable :: VACIR(:),R(:),W(:),OVL(:)
+      DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND)
       
       CALL QENTER('NUMINT')
 C
 C     Making ZAN and C 
 C     ZAN... Nuclear charge
 C     C  ... atomic center
-C     =====
-
+C     ===================
+C      
       allocate(ZAN(nucdep))
       allocate(C(3,nucdep))
       CALL SET_GRID_INFO(NAT,NUM,ZAN,C)
 C
+C     Get information about basis sets
+C
+      CALL NUCBAS(NUCORB,AA,IPRINT)
+C     
 C The values of ultrafine (.ULTRAF) at DFT input-reader section.      
 !num_grid_cfg_ANGINT !64
       INTANG=64
@@ -254,25 +261,53 @@ C
 C   SET DEFAULT VALUES OF PARAMETERS FOR CALCULATION
 C
          MXNP = 4000            !same to GRASP
-         NUCTYP = 1
-         CALL MEMSET(ZAN(IATOM),MXNP,NUCTYP,IPRINT) !change
+         NUCTYP = 0
+         CALL MEMSET(ZAN(IATOM),IATOM,MXNP,IPRINT) !change
          CALL NUCPRM(ZAN(IATOM),NUCMASS(INT(ZAN(IATOM))),NUCTYP)
          write(*,*)"MXNP",MXNP
-         allocate( TD(MXNP,NDIM2) )
-         allocate( VACIR(MXNP)    )
-         allocate( R(MXNP)        )
+         IF(num_grid_cfg_grasp)THEN
+           NDIMR = MXNP
+         ELSE
+           NDIMR = 1
+         ENDIF  
+         allocate( TD(NDIM2,NDIMR) )           
+         allocate( VACIR(MXNP) )
+         allocate( R(MXNP)     )
+         allocate( W(MXNP)     )           
 C     
          CALL DZERO(BUF,NDIM2) 
-         CALL DZERO(TD,NDIM2*MXNP) !4000-->MXNP
+         CALL DZERO(TD,NDIM2*NDIMR) !4000-->MXNP
          CALL DZERO(OVL,NDIM2)
-         R(1) = RNT !CHARGE(IATOM)
-         DO J = 2,MXNP
-            R(J) = R(J-1)*EPH
-         ENDDO
+C         
+         IF(num_grid_cfg_grasp)THEN
+           R(1) = RNT !CHARGE(IATOM)
+           DO J = 2,MXNP
+              R(J) = R(J-1)*EPH
+           ENDDO
+         ELSE
+           ADDSML = num_grid_cfg_force_4c_grid.OR.
+     &                 (MC.GT.1.AND.(.NOT.LEVYLE))
+           CALL LMGGRID(H,RL,RH,2.0d-15,IATOM,ADDSML,NUCORB,AA,IPRINT)
+C The values of ultrafine (.ULTRAF) at DFT input-reader section.    
+C num_grid_cfg_radint = 2.0d-15 
+           EPH  = EXP(H)
+           GRDC = RL/(EPH-D1)
+           R(1) = RL
+           W(1)  = (RL+GRDC)*H 
+C R(IR)**2 is multiplized in RFAC, later          
+             write(*,*)'H,EPH,RL,GRDC',H,EPH,GRDC,RL
+             write(*,*)'R,W',R(1),W(1)
+           DO IR = 2,MXNP
+             R(IR) = (R(IR-1)+GRDC)*EPH-GRDC
+             W(IR) = (R(IR)+GRDC)*H
+!             write(*,*)'R,W',R(IR),W(IR),IR
+           ENDDO
+         ENDIF 
+C         
          write(*,*)"NUCMASS",NUCMASS(INT(ZAN(IATOM)))
          CALL VCMPOL(VACIR,R,ZAN(IATOM),MXNP,NUCTYP,1) !change
          DO J = 1,MXNP
-            write(*,*)J,VACIR(J),R(J)
+!            write(*,*)J,VACIR(J),R(J)
          ENDDO
          OPEN(20,FILE='LOG_DIRAC',STATUS='REPLACE',          
      &        FORM='FORMATTED',ACCESS='SEQUENTIAL')  
@@ -282,16 +317,16 @@ C
          CLOSE(20,STATUS='KEEP')
          
 !     change for debug sentense
-         write(*,*)"R(1),Z",R(1),ZAN(IATOM)
+         write(*,*)"R(1),Z",R(1),ZAN(IATOM) 
          write(*,*)"J,VACIR"
          DO 20 IR = 1, MXNP
 C
 C     1/r in Eq. (2), (4),and (6) of Rinker's paper is NOT calculated in VCMPOL.
-C     Integrand = 1/r * VP(r) * (Large*Large + Small*Small) * r^2 * r
-C     Meaning:   1/r * VACIR(IR) *   wavefunction     * Radial int. * for QUAD 
-C     Finally,    We multiply R(IR)*R(IR).
+C     Integrand = 1/r * VP(r) * (Large*Large + Small*Small) * r^2
+C     Meaning:   1/r * VACIR(IR) *   wavefunction     * Radial int.
+C     Finally,    We multiply R(IR).
 C
-           RFAC = R(IR)*R(IR) * VACIR(IR) !*R(IR)!change
+           RFAC = R(IR) * VACIR(IR) !*R(IR)!change
            CALL DZERO(TC,NDIM2)
 C            
 C          loop over angular points
@@ -316,26 +351,45 @@ C
              DO IC = 1, MC
                DO I = 1, NTBAS(IC)
                  IADD = I*(I-1)/2
-!                 write(*,*) 
                  DO J = 1, I
                    IJ = IOFF + IADD + J  
                    BUF(IJ+ISTART*I) = GAO(I+ISTART)*GAO(J+ISTART)
-!                   write(*,*)"I,J,IJ",I,J,IJ
                  ENDDO
                ENDDO
                IOFF   = IOFF   + NTBAS(IC)*(NTBAS(IC)+1)/2
                ISTART = ISTART + NTBAS(IC)
-!                  write(*,*)"IOFF,ISTART",IOFF,ISTART
              ENDDO
-             CALL DAXPY(NDIM2,WT8,BUF,1,TC(1),1)
-30         CONTINUE
-           CALL DCOPY(NDIM2,TC(1),1,TD(IR,1),MXNP)
-20       CONTINUE
+             CALL DAXPY(NDIM2,WT8,BUF,1,TC,1)
+ 30        CONTINUE
+           IF(num_grid_cfg_grasp)THEN
+             CALL DCOPY(NDIM2,TC,1,TD(1,IR),1)
+!             CALL DCOPY(NDIM2,TC,1,TD(IR,1),MXNP)
+           ELSE
+             CALL DAXPY(NDIM2,W(IR),TC,1,OVL,1)
+           ENDIF  
+ 20      CONTINUE
 C
-C  Large         
          CALL HEADER('Numerical ovelap integral',-1)
-
-         CALL QUAD2(OVL,TD,MXNP,H,NDIM2)
+         
+!         DO II = 1,NDIM2
+!            write(*,*)'TD',TD(II,1)
+!         ENDDO
+         IF(num_grid_cfg_grasp)THEN
+           DO IR = 1,MXNP
+             DO II = 1,NDIM2
+!                write(*,*)'TA1,R',TD(II,IR),R(IR),IR,II
+                TD(II,IR) = TD(II,IR)*R(IR) ! Additional R(IR) for QUAD
+!                write(*,*)'TA2',TD(II,IR),IR,II
+!                write(*,*)
+!                write(*,*)
+             ENDDO
+           ENDDO
+           CALL QUAD2(OVL,TD,MXNP,NDIM2)
+         ENDIF 
+!     CALL QUAD2(RESULT,TD,MXNP,NDIM2) 
+!     CALL QUAD2(OVL,TD,MXNP,NDIM2)
+!         CALL RADINT_WRAPPER(OVL,TD,R,W,MXNP,NDIM2)
+C         
 !         CALL OUTPAK(OVL,NTBAS(0),-1,LUPRI)
 !         IOFF = 1
 !         DIM  = NTBAS(1)  
@@ -354,6 +408,7 @@ C  Large
        deallocate(TD)
        deallocate(VACIR)
        deallocate(R)
+       deallocate(W)
 10    CONTINUE
 C      
 C     Generate integral labels
@@ -377,7 +432,39 @@ C
       RETURN         
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE QUAD2(RESULT,TE,NR,H,NDIM)
+      SUBROUTINE RADINT_WRAPPER(RESULT,TA,R,W,MXNP,NDIM)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C Wrapper for choosing Numerical radial integral scheem
+C
+C Called from: NUMINT,VAC2
+C
+C     A. Sunaga Feb. 2019       
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use num_grid_cfg
+#include "implicit.h"
+      DIMENSION RESULT(NDIM),TA(NDIM,MXNP),R(MXNP),W(MXNP)      
+C
+      IF(num_grid_cfg_grasp)THEN
+         DO IR = 1,MXNP
+           DO II = 1,NDIM
+              write(*,*)'TA1,R',TA(II,IR),R(IR),IR,II
+              TA(II,IR) = TA(II,IR)*R(IR) ! Additional R(IR) for QUAD
+              write(*,*)'TA2',TA(II,IR),IR,II
+              write(*,*)
+              write(*,*)
+           ENDDO
+         ENDDO  
+         CALL QUAD2(RESULT,TA,MXNP,NDIM)
+!         CALL GRASP_QUAD(RESULT,R,MXNP)
+      ELSE
+         CALL DIRAC_QUAD(RESULT,TA,W)  
+      ENDIF
+C      
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE QUAD2(RESULT,TE,NR,NDIM)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C Numerical radial integral
@@ -398,10 +485,10 @@ C
      &           W2 = 68.0D0*W7,  W1 = 112.0D0*W7)
 C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
-      PARAMETER(EPSI = 1.0D-35) !-35
+      PARAMETER(EPSI = 1.0D-35,H=0.01) !-35
 !      REAL(8) TE(NR)      
 !      DIMENSION TE(NR)      
-      DIMENSION TE(NR,NDIM), RESULT(NDIM)
+      DIMENSION TE(NDIM,NR), RESULT(NDIM)
 C     
 C   FIND THE STARTING POINT FOR THE INTEGRATION. THIS IS THE POINT
 C   WHERE THE INTEGRAND TE FIRST BECOMES SIGNIFICANT, AND IS CHOSEN
@@ -410,7 +497,7 @@ C
       DO 5  II = 1,NDIM
       DO 10 J = 1,NR
 !        write(*,*)"TE4",TE(J) !sunaga
-        IF (ABS (TE(J,II)) .GT. EPSI) GO TO 20
+        IF (ABS (TE(II,J)) .GT. EPSI) GO TO 20
    10 CONTINUE
       RESULT(II) = ZERO
       GO TO 5
@@ -430,24 +517,24 @@ C
       JJ = J+K
       JJ1 = JJ+1
       DO 30 I = JJ1,NR-3,2
-         SUM = SUM + W1*TE(I,II) + W2*TE(I+1,II)
+         SUM = SUM + W1*TE(II,I) + W2*TE(II,I+1)
 !         write(*,*)"TE5",TE(I) !sunaga
    30 CONTINUE
-      SUM = SUM + W1*TE(NR-1,II)
-      SUM = SUM + W4*( TE(JJ,II)   + TE(NR,II)   )
-     &          + W5*( TE(JJ1,II)  + TE(NR-1,II) )
-     &          + W6*( TE(JJ+2,II) + TE(NR-2,II) )
-     &          + W7*( TE(JJ+3,II) + TE(NR-3,II) )
+      SUM = SUM + W1*TE(II,NR-1)
+      SUM = SUM + W4*( TE(II,JJ)   + TE(II,NR)   )
+     &          + W5*( TE(II,JJ1)  + TE(II,NR-1) )
+     &          + W6*( TE(II,JJ+2) + TE(II,NR-2) )
+     &          + W7*( TE(II,JJ+3) + TE(II,NR-3) )
       
 C
 C   ADD THE CONTRIBUTION FROM 0 TO R(JJ), PLUS THE CONTRIBUTION
 C   TO SIMPSONS RULE FROM TE(JJ).
 C
-      COP = TE(J+1,II)/TE(J,II)
+      COP = TE(II,J+1)/TE(II,J)
       IF (COP .LE. ONE) THEN
          RPX = ZERO
       ELSE
-         RPX = TE(JJ,II)/LOG (COP)
+         RPX = TE(II,JJ)/LOG (COP)
       ENDIF
       RESULT(II) = H*(SUM+RPX)
     5 CONTINUE
@@ -455,8 +542,29 @@ C
 C
       END      
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE DIRAC_QUAD(RESULT,TA,R,W,MXNP)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C Numerical radial integral using DIRAC_QUAD
+C
+C Called from: RADINT_WRAPPER
+C
+C   A. Sunaga Feb. 2019
+C      
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+      DIMENSION RESULT(NDIM),TA(MXNP,1),R(MXNP),W(MXNP)
+C
+!      CALL DAXPY(NDIM2,)
+!      DO II = 1,NDIM
+!        RESULT(II)
+      RETURN
+      END
+
+      
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck memset */
-      SUBROUTINE MEMSET(Z,MXNP,NUCTYP,IPRINT)
+      SUBROUTINE MEMSET(Z,IATOM,MXNP,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC      
 C
 C     Estimating memories, by calculating the uehling potential of
@@ -467,42 +575,79 @@ C
 C    Modified for DIRAC, A. Sunaga Dec. 2018
 C  
 ************************************************************************
+      use num_grid_cfg
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "dcbham.h"      
 #include "dcbgen.h"
 #include "graspprm.h"
-C
-       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, THREE = 3.0D0)     
-       PARAMETER (H=0.01D0)     !same to GRASP
-C
+#include "maxaqn.h"
+#include "ccom.h"
+C     
+      LOGICAL ADDSML
+      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, THREE = 3.0D0)     
+      DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND)
+C     
       N = MXNP 
       PI3 = THREE*PI
       WD = CVAL+CVAL
       FACTOR = -(Z+Z)/(PI3*CVAL)
+      IF(num_grid_cfg_grasp)THEN 
 C
-C   SET UP POTENTIAL FOR POINT NUCLEUS
+C     SET UP POTENTIAL FOR POINT NUCLEUS
 C
-      EPH = EXP(H)
-      RNT = 1.0D-06/Z           !CHARGE(IATOM)
-      RTEMP = RNT
-      DO 1 I = 1,N
-         X = WD*RTEMP
-         TEMP = FACTOR*FUNK (X,1)
-         IF(ABS(TEMP).LE.1.0D-50)THEN
-            MXNP = I
-            IF(MOD(MXNP,2).eq.0)THEN
-               MXNP = MXNP + 1
+        H=0.01D0
+        EPH = EXP(H)
+        RNT = 1.0D-06/Z           !CHARGE(IATOM)
+        RTEMP = RNT
+        DO 1 I = 1,N
+           X = WD*RTEMP
+           IF(X.GT.1.0D+02)THEN !same to FUNK
+              TEMP = FACTOR*FUNK (X,1)
+              MXNP = I
+              IF(MOD(MXNP,2).eq.0)THEN
+                 MXNP = MXNP + 1
 !     sunaga
 !     As far as I check GRASP, the number of grid (MXNP) must be odd number.
 !     for the integral of Vacuum polarization using Ne and Hg atoms.         
-!     Even if it is even number, the value of QUAD
-!     does not agree with the one of GRASP.                
-            ENDIF   
-            exit
-         ENDIF   
-         RTEMP = RTEMP*EPH
- 1    CONTINUE
+!     If it is even number, the value of QUAD
+!     does not agree with the one of GRASP (Maximu error in each grid is 10e-5). 
+              ENDIF   
+              exit
+           ENDIF   
+           RTEMP = RTEMP*EPH
+ 1      CONTINUE
+      ELSE
+C
+C     Get information about basis sets
+C
+         CALL NUCBAS(NUCORB,AA,IPRINT)
+        ADDSML = num_grid_cfg_force_4c_grid.OR.
+     &          (MC.GT.1.AND.(.NOT.LEVYLE))
+        CALL LMGGRID(H,RL,RH,2.0d-15,IATOM,ADDSML,NUCORB,AA,IPRINT)
+C        
+C The values of ultrafine (.ULTRAF) at DFT input-reader section.    
+C num_grid_cfg_radint = 2.0d-15 
+C
+        EPH   = EXP(H)
+        GRDC  = RL/(EPH-ONE)
+        RTEMP = RL
+C     
+C     SET UP POTENTIAL FOR POINT NUCLEUS
+C
+        DO 2 I = 1,N
+           X = WD*RTEMP
+           IF(X.GT.1.0D+02)THEN !same to FUNK
+              TEMP = FACTOR*FUNK (X,1)
+              MXNP = I
+              exit
+           ENDIF   
+           RTEMP = (RTEMP+GRDC)*EPH-GRDC
+ 2      CONTINUE         
+      ENDIF   
 C      
       IF (IPRINT.GE.6) THEN
          WRITE(LUPRI,'(2X,/A)')'**Truncation of radial grid'

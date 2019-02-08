@@ -174,6 +174,10 @@
          num_grid_cfg_angint = 64
       end if
 
+      if (kw_matches(word, '.GRASP ')) then
+         num_grid_cfg_grasp = .true.
+      end if
+
       if (kw_matches(word, '.INTCHK')) then
          call kw_read(word, num_grid_cfg_integration_check_level)
       end if
