@@ -354,8 +354,9 @@ use interface_to_mpi
     DO IJ = 1, NUMNOD
       CALL interface_MPI_BARRIER(global_communicator)
       IF( MYTID .eq. IJ ) THEN
+         flush(lupri)
          CALL STOPWATCH(0,MYTID)
-         CALL FLSHFO(LUPRI)
+         flush(lupri)
       END IF
       CALL interface_MPI_BARRIER(global_communicator)
     END DO
