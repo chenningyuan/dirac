@@ -356,6 +356,7 @@ module exacorr_cc
 
          integer                                :: nao      ! the number of atomic orbitals)
          integer                                :: nshells  ! the number of shells (orbitals with the same center and l-value)
+         integer                                :: basis    ! 1=cartesian, 2=spherical
          type(basis_func_info_t), allocatable   :: gto(:)   ! array with information about the shells
 
 
@@ -374,6 +375,7 @@ module exacorr_cc
 
          nao     = get_nao()   ! This is the total number of ao's
          nao_l   = int(nao,8)  ! we need this as a long int for exatensor
+         basis   = get_basis() ! needed for setting basis functions
 
 !        Get the basis set information
          call get_gtos(1,nao,gto,nshells)
@@ -387,7 +389,7 @@ module exacorr_cc
          allocate(color(nshells))
          labs = 0
          do lsh = 1, nshells !set basis functions
-            nl   =  nfunctions(gto(lsh)%orb_momentum,1)
+            nl   =  nfunctions(gto(lsh)%orb_momentum,basis)
             call color(lsh)%color_symmetry_ctor(lsh) ! take one shell as a color
             do  l = 1, nl
                 labs = labs + 1

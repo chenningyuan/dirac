@@ -18,6 +18,7 @@ module exacorr_global
 !       Functions and routines to interact with these data
         public nfunctions
         public get_nao
+        public get_basis
         public get_talsh_only
         public set_talsh_only
         public initialize_global_data
@@ -40,13 +41,19 @@ module exacorr_global
              get_nao = ao_basis%nao
          end function get_nao
 
+         integer function get_basis()
+             get_basis = ao_basis%basis
+         end function get_basis
+
          subroutine initialize_global_data
 
+             use exacorr_respect
 #if defined (VAR_MPI)
              use interface_to_mpi
              integer :: my_MPI_rank
 #endif
              integer :: ierr
+             logical :: tobe
 
 #if defined (VAR_MPI)
              call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
@@ -56,26 +63,33 @@ module exacorr_global
                 return
              end if 
 #endif
-             ! read MO coefficients and ao basis set information from DFCOEF
-             !call read_from_dfcoef (ao_basis,qmo_all,ierr)
-             call read_from_dfcoef (ao_basis,cspinor_all,ierr)
+             ! read MO coefficients and ao basis set information
+             inquire (file='DFCOEF',exist=tobe)
+             if (tobe) then
+                call read_from_dfcoef (ao_basis,cspinor_all,ierr)
+             else
+                inquire (file='RSD_MOS',exist=tobe)
+                if (tobe) then
+                   call read_from_respect (ao_basis,cspinor_all,ierr)
+                end if
+             end if
 
              if (ierr == 0) then
                 call print_date ("retrieved basis set information")
              else
-                print*, "Error code",ierr," while reading DFCOEF"
-                call quit ('Could not read DFCOEF')
+                print*, "Error code",ierr," while reading restart file"
+                call quit ('Could not read restart file')
              end if
              
              call synchronize_global_data
- 
+
          end subroutine initialize_global_data
 
          subroutine synchronize_global_data
- 
+
 #if defined (VAR_MPI)
              use interface_to_mpi
-             integer :: nao, nshells, n_primitives
+             integer :: nao, nshells, basis, n_primitives
              integer :: ish
              integer :: my_MPI_rank
 
@@ -87,8 +101,10 @@ module exacorr_global
 
              call interface_mpi_bcast (ao_basis%nshells,1,my_MPI_master,global_communicator)
              call interface_mpi_bcast (ao_basis%nao,1,my_MPI_master,global_communicator)
+             call interface_mpi_bcast (ao_basis%basis,1,my_MPI_master,global_communicator)
              nshells = ao_basis%nshells
              nao     = ao_basis%nao
+             basis   = ao_basis%basis
    
              if (my_MPI_rank /= my_MPI_master) nullify (ao_basis%gtos)
              if (my_MPI_rank /= my_MPI_master) allocate(ao_basis%gtos(nshells))

@@ -54,6 +54,7 @@ module exacorr_ao_to_mo
          integer:: my_role, my_MPI_rank                 ! needed to start exatensor, MPI should already be started in threaded mode
          integer             :: nshells                 ! the number of shells (orbitals with the same center and l-value)
          integer             :: nao                     ! the number of atomic orbitals)
+         integer             :: basis                   ! 1=cartesian, 2=spherical
          type(basis_func_info_t), allocatable :: gto(:) ! array with information about the shells
 
          ! classes for the definition of spaces (AO and 4 different MO spaces)
@@ -99,6 +100,7 @@ module exacorr_ao_to_mo
 
          nao     = get_nao()   ! This is the total number of ao's
          nao_l   = int(nao,8)  ! we need this as a long int for exatensor
+         basis   = get_basis() ! needed for setting basis functions
 
 !        Get the basis set information
          call get_gtos(1,nao,gto,nshells)
@@ -112,7 +114,7 @@ module exacorr_ao_to_mo
          allocate(color(nshells))
          labs = 0
          do lsh = 1, nshells !set basis functions
-            nl   =  nfunctions(gto(lsh)%orb_momentum,1)
+            nl   =  nfunctions(gto(lsh)%orb_momentum,basis)
             call color(lsh)%color_symmetry_ctor(lsh) ! take one shell as a color
             do  l = 1, nl
                 labs = labs + 1
@@ -132,12 +134,13 @@ module exacorr_ao_to_mo
          if (my_MPI_rank == 0) print*," registered AO vector space with nao, nshells:",nao,nshells
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register() failed!')
 
-         !Get the MO-coeffcient basis for the four indices that are to be transformed
+         !Get the MO-coefficient basis for the four indices that are to be transformed
          ierr = 0
          imo = 1
          do i = 1, 4
             jmo     = imo + nmo(i) - 1 ! last MO for index i, whereas imo is the first
-            nmo_l   = 2*int(nmo(i),8)  ! NB: imo, jmo and nmo count orbitals, nmo_l counts spinors
+            !nmo_l   = 2*int(nmo(i),8)  ! NB: imo, jmo and nmo count orbitals, nmo_l counts spinors
+            nmo_l   = int(nmo(i),8)  ! NB: imo, jmo and nmo count orbitals, nmo_l counts spinors
             call basis_mo(i)%subspace_basis_ctor(nmo_l,ierr)
             if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.subspace_basis_ctor() failed!')
 

@@ -80,7 +80,8 @@ module talsh_ao_to_mo
 
 !        Set tensor dimensions for the index transformation (simple brute-force algorithm)
          aoint_dims      = nao
-         moint_dims(1:4) = 2 * nmo(1:4)
+         !moint_dims(1:4) = 2 * nmo(1:4)
+         moint_dims(1:4) = nmo(1:4)
 
 !        Get tensor for AO integrals
          ierr=talsh_tensor_construct(aoint_tensor,C8,aoint_dims,init_val=zero)
@@ -174,7 +175,8 @@ module talsh_ao_to_mo
          use module_interest_eri
 
          implicit none
-         integer, intent(in) :: nao ! number of basis functions
+         integer, intent(in) :: nao   ! number of basis functions
+         integer             :: basis ! 1=cartesian, 2=spherical
          complex(8),intent(out) :: ao_tens(nao,nao,nao,nao)
 
          integer :: ierr
@@ -188,6 +190,7 @@ module talsh_ao_to_mo
          integer            :: nshells                    ! number of AO shells
          type(basis_func_info_t), allocatable :: gto(:)   ! array with basis function information
 
+         basis = get_basis()
          call get_gtos(1,nao,gto,nshells)
 
          !OpenMP task-based parallelism defined by Eric does not work, deactivated [LV]
@@ -201,7 +204,7 @@ module talsh_ao_to_mo
             yl   =  gto(lsh)%coord(2)
             zl   =  gto(lsh)%coord(3)
             cl   =  gto(lsh)%coefficient(1)
-            nl   =  nfunctions(ll,1)
+            nl   =  nfunctions(ll,basis)
             koff = 0
             do ksh = 1, nshells
                lk   =  gto(ksh)%orb_momentum
@@ -210,7 +213,7 @@ module talsh_ao_to_mo
                yk   =  gto(ksh)%coord(2)
                zk   =  gto(ksh)%coord(3)
                ck   =  gto(ksh)%coefficient(1)
-               nk   =  nfunctions(lk,1)
+               nk   =  nfunctions(lk,basis)
                joff = 0
                do jsh = 1, nshells
                   lj   =  gto(jsh)%orb_momentum
@@ -219,7 +222,7 @@ module talsh_ao_to_mo
                   yj   =  gto(jsh)%coord(2)
                   zj   =  gto(jsh)%coord(3)
                   cj   =  gto(jsh)%coefficient(1)
-                  nj   =  nfunctions(lj,1)
+                  nj   =  nfunctions(lj,basis)
                   ioff = 0
                   do ish = 1, nshells
                      li   =  gto(ish)%orb_momentum
@@ -228,7 +231,7 @@ module talsh_ao_to_mo
                      yi   =  gto(ish)%coord(2)
                      zi   =  gto(ish)%coord(3)
                      ci   =  gto(ish)%coefficient(1)
-                     ni   =  nfunctions(li,1)
+                     ni   =  nfunctions(li,basis)
 !                    call interest and get only the (LL|LL) type integrals
 !                    output order of eri is (c,d,a,b), so input k,l first and then i,j to get the order that we want
 

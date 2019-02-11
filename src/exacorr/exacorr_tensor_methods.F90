@@ -148,6 +148,7 @@ module exacorr_tensor_methods
          integer(8), intent(in):: tens_bases(1:*) !in: base offsets for each tensor dimension)
 
          integer:: nao(4)
+         integer:: basis ! 1=cartesian, 2=spherical
          complex(8),pointer :: ao_tens(:,:,:,:)
          integer :: first_ao(1:4)
 
@@ -180,6 +181,7 @@ module exacorr_tensor_methods
          call get_gtos(first_ao(2),nao(2),gto2,nshells(2))
          call get_gtos(first_ao(3),nao(3),gto3,nshells(3))
          call get_gtos(first_ao(4),nao(4),gto4,nshells(4))
+         basis = get_basis()
 
 !        Intranode parallelization should be possible in the loops below because Interest is thread safe
 
@@ -191,7 +193,7 @@ module exacorr_tensor_methods
             yl   =  gto4(lsh)%coord(2)
             zl   =  gto4(lsh)%coord(3)
             cl   =  gto4(lsh)%coefficient(1)
-            nl   =  nfunctions(ll,1)
+            nl   =  nfunctions(ll,basis)
             koff = 0
             do ksh = 1, nshells(3)
                lk   =  gto3(ksh)%orb_momentum
@@ -200,7 +202,7 @@ module exacorr_tensor_methods
                yk   =  gto3(ksh)%coord(2)
                zk   =  gto3(ksh)%coord(3)
                ck   =  gto3(ksh)%coefficient(1)
-               nk   =  nfunctions(lk,1)
+               nk   =  nfunctions(lk,basis)
                joff = 0
                do jsh = 1, nshells(2)
                   lj   =  gto2(jsh)%orb_momentum
@@ -209,7 +211,7 @@ module exacorr_tensor_methods
                   yj   =  gto2(jsh)%coord(2)
                   zj   =  gto2(jsh)%coord(3)
                   cj   =  gto2(jsh)%coefficient(1)
-                  nj   =  nfunctions(lj,1)
+                  nj   =  nfunctions(lj,basis)
                   ioff = 0
                   do ish = 1, nshells(1)
                      li   =  gto1(ish)%orb_momentum
@@ -218,7 +220,7 @@ module exacorr_tensor_methods
                      yi   =  gto1(ish)%coord(2)
                      zi   =  gto1(ish)%coord(3)
                      ci   =  gto1(ish)%coefficient(1)
-                     ni   =  nfunctions(li,1)
+                     ni   =  nfunctions(li,basis)
 !                    output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
                      call interest_eri('llll',fijkl,gout,&
                                   lk,ek,xk,yk,zk,ck,&
@@ -687,6 +689,7 @@ module exacorr_tensor_methods
 
          integer :: first_ao(1:4)
          integer :: nshells(4)
+         integer :: basis 
          type(basis_func_info_t), allocatable :: gto1(:), gto2(:), gto3(:), gto4(:)  ! arrays with basis function information
 
          integer :: ioff,joff,koff,loff,kmo,lmo,ka,la,pa,qa,ra,sa,nao(4),nmo(2),ijkl
@@ -721,6 +724,7 @@ module exacorr_tensor_methods
          call get_gtos(first_ao(2),nao(2),gto2,nshells(2))
          call get_gtos(first_ao(3),nao(3),gto3,nshells(3))
          call get_gtos(first_ao(4),nao(4),gto4,nshells(4))
+         basis = get_basis()
 
          loff = 0
          do lsh = 1, nshells(4) ! loop over all ao's, this index is transformed to mo
@@ -730,7 +734,7 @@ module exacorr_tensor_methods
             yl   =  gto4(lsh)%coord(2)
             zl   =  gto4(lsh)%coord(3)
             cl   =  gto4(lsh)%coefficient(1)
-            nl   =  nfunctions(ll,1)
+            nl   =  nfunctions(ll,basis)
             koff = 0
             do ksh = 1, nshells(3) ! loop over all ao's, this index is transformed to mo
                lk   =  gto3(ksh)%orb_momentum
@@ -739,7 +743,7 @@ module exacorr_tensor_methods
                yk   =  gto3(ksh)%coord(2)
                zk   =  gto3(ksh)%coord(3)
                ck   =  gto3(ksh)%coefficient(1)
-               nk   =  nfunctions(lk,1)
+               nk   =  nfunctions(lk,basis)
                joff = 0
                do jsh = 1, nshells(2) ! loop over the ao's active in the HT integral tensor block
                   lj   =  gto2(jsh)%orb_momentum
@@ -748,7 +752,7 @@ module exacorr_tensor_methods
                   yj   =  gto2(jsh)%coord(2)
                   zj   =  gto2(jsh)%coord(3)
                   cj   =  gto2(jsh)%coefficient(1)
-                  nj   =  nfunctions(lj,1)
+                  nj   =  nfunctions(lj,basis)
                   ioff = 0
                   do ish = 1, nshells(1) ! loop over the ao's active in the HT integral tensor block
                      li   =  gto1(ish)%orb_momentum
@@ -757,7 +761,7 @@ module exacorr_tensor_methods
                      yi   =  gto1(ish)%coord(2)
                      zi   =  gto1(ish)%coord(3)
                      ci   =  gto1(ish)%coefficient(1)
-                     ni   =  nfunctions(li,1)
+                     ni   =  nfunctions(li,basis)
                      ! output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
                      call interest_eri('llll',fijkl,gout,&
                                   lk,ek,xk,yk,zk,ck,&

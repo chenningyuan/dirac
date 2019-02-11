@@ -155,7 +155,6 @@ C***********************************************************************
       integer, allocatable :: mo_list(:)
       integer              :: nmo(4)
       integer, allocatable :: mokr_occ(:), mokr_vir(:)
-      integer :: i !tmp
 
 c     if (nfsym.ne.1) then
 c        call quit ('exacorr can not handle symmetry')
@@ -459,6 +458,7 @@ C
        ! put in gtos
        ao_basis%nshells = nshells
        ao_basis%nao     = nao
+       ao_basis%basis   = 1
        nullify(ao_basis%gtos)
        allocate(ao_basis%gtos(nshells))
        do ishell = 1, nshells
@@ -495,7 +495,8 @@ C
        allocate(ao_basis%shell_indices(nao))
        iao = 0
        do ishell = 1, nshells
-          do ibas = 1, nfunctions(ao_basis%gtos(ishell)%orb_momentum,1)
+          do ibas = 1, 
+     &     nfunctions(ao_basis%gtos(ishell)%orb_momentum,ao_basis%basis)
              iao = iao + 1
              if (iao.gt.nao) then
                 ierr = INCONSIS

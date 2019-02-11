@@ -11,11 +11,10 @@ module exacorr_respect
 
     contains
 
-        subroutine read_from_respect (ao_basis,como,ierr)
+        subroutine read_from_respect (ao_basis,cspinor,ierr)
 
         use exacorr_mo
         use exacorr_datatypes, only : basis_set_info_t
-        use exacorr_global, only    : nfunctions
 
 !       read all positive energy mo coefficients present on DFCOEF file
 !       check for imcompatibiklities (use of symmetry) as well and continue
@@ -24,7 +23,7 @@ module exacorr_respect
 
 !-------input variables
         type(basis_set_info_t), intent(inout) :: ao_basis
-        type(cmo),intent(inout):: como
+        type(cmo),intent(inout):: cspinor
         integer, intent(out)   :: ierr
 !-------error messages
         integer, parameter     :: NOERROR  = 0 ! no error
@@ -36,7 +35,7 @@ module exacorr_respect
         logical                :: tobe
         integer                :: lucoef
 !-------summation/count variables
-        integer                :: i, j, ishell
+        integer                :: i, j, ishell, nfunctions
 !-------data to be read/stored
         integer                :: nao, nelms, nshells, iao, ibas
         integer                :: npriexp, ncnt
@@ -154,20 +153,21 @@ module exacorr_respect
 !-------store all data in derived type arguments
 
 !       put in cmo
-        call alloc_mo(como,nao,nelms)
-        como%total_energy = total_energy
-        como%index        = index
+        call alloc_mo(cspinor,nao,nelms)
+        cspinor%total_energy = total_energy
+        cspinor%index        = index
 !       Probably not correct, but needed for new definition of coeff
-        como%coeff(:,:,1)        = coeff(1:nao,:)
-        como%coeff(:,:,2)        = coeff(1+nao:2*nao,:)
-        como%energy       = eig(:)
-        como%boson_irrep  = 0 
+        cspinor%coeff(:,:,1) = coeff(1:nao,:)
+        cspinor%coeff(:,:,2) = coeff(1+nao:2*nao,:)
+        cspinor%energy       = eig(:)
+        cspinor%boson_irrep  = 0 
 
         deallocate(index)
 
 !       put in gtos
         ao_basis%nshells = nshells
         ao_basis%nao     = nao
+        ao_basis%basis   = 2
         nullify(ao_basis%gtos)
         allocate(ao_basis%gtos(nshells))
         do ishell = 1, nshells
@@ -196,7 +196,8 @@ module exacorr_respect
         allocate(ao_basis%shell_indices(nao))
         iao = 0
         do ishell = 1, nshells
-           do ibas = 1, nfunctions(ao_basis%gtos(ishell)%orb_momentum,2)
+           nfunctions = 2 * (ao_basis%gtos(ishell)%orb_momentum-1) + 1
+           do ibas = 1, nfunctions
               iao = iao + 1
               if (iao.gt.nao) then
                  ierr = INCONSIS
