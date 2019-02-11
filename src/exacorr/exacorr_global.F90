@@ -10,9 +10,8 @@ module exacorr_global
 
 !       Global data (should limit this to the minimum required to function)
         integer :: my_MPI_master=0 ! Define the MPI master proces (is always zero in the DIRAC MPI environment)
-        type(basis_set_info_t) :: ao_basis ! information about the ao basis
+        type(basis_set_info_t) :: ao_basis ! information about the ao basis 
         type(MO):: qmo_all ! Stores all MO-coefficients and energies obtained from the parent code 
-        type(one_el_t)  :: int_1el ! stores 1 electron integrals
         logical :: TALSH_ONLY = .TRUE. ! use single-node TALSH library instead of the full EXATENSOR library
         logical, public, parameter :: DEBUG = .TRUE. ! switch on and off debug
 
@@ -26,7 +25,6 @@ module exacorr_global
         public get_gtos
         public get_mo_coefficients
         public get_orbital_energies
-        public get_one_el
 
        contains
          
@@ -69,16 +67,6 @@ module exacorr_global
                 call quit ('Could not read DFCOEF')
              end if
              
-             ! read one electron integrals
-             call read_from_mrconee (int_1el, ierr)
-
-             if (ierr == 0) then
-                call print_date ("retrieved one electron integrals")
-             else
-                print*, "Error code",ierr," while reading MRCONEE"
-                call quit ('Could not read MRCONEE')
-             end if
-
              call synchronize_global_data
  
          end subroutine initialize_global_data
@@ -87,7 +75,7 @@ module exacorr_global
  
 #if defined (VAR_MPI)
              use interface_to_mpi
-             integer :: nao, nshells, n_primitives, nsp
+             integer :: nao, nshells, n_primitives
              integer :: ish
              integer :: my_MPI_rank
 
@@ -95,10 +83,8 @@ module exacorr_global
              if (TALSH_ONLY) return
              call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
 
-!            1) MO Coefficents
              call sync_qmo(qmo_all,my_MPI_master)
 
-!            2) Parameters of the AO basis
              call interface_mpi_bcast (ao_basis%nshells,1,my_MPI_master,global_communicator)
              call interface_mpi_bcast (ao_basis%nao,1,my_MPI_master,global_communicator)
              nshells = ao_basis%nshells
@@ -138,19 +124,6 @@ module exacorr_global
 
 !            We finally broadcast the pointers from a basis function index to its shell that were determined on master
              call interface_mpi_bcast (ao_basis%shell_indices,nao,my_MPI_master,global_communicator)
-
-!            3) One electron integrals
-             call interface_mpi_bcast (int_1el%n_spinor,1,my_MPI_master,global_communicator)
-             nsp=int_1el%n_spinor
-
-             if (my_MPI_rank /= my_MPI_master) nullify (int_1el%RC)
-             if (my_MPI_rank /= my_MPI_master) allocate(int_1el%RC(nsp*nsp))
-             if (my_MPI_rank /= my_MPI_master) nullify (int_1el%CC)
-             if (my_MPI_rank /= my_MPI_master) allocate(int_1el%CC(nsp*nsp))
-
-             call interface_mpi_bcast (int_1el%RC,nsp*nsp,my_MPI_master,global_communicator)
-             call interface_mpi_bcast (int_1el%CC,nsp*nsp,my_MPI_master,global_communicator)
-
 #else
              return ! For running a serial version no action is required.
 #endif
@@ -162,8 +135,6 @@ module exacorr_global
              deallocate(ao_basis%shell_indices)
              deallocate(ao_basis%gtos)
              call delete_qmo (qmo_all)
-             deallocate(int_1el%RC)
-             deallocate(int_1el%CC)
          end subroutine delete_global_data
 
          integer function ncartesian(l_value)
@@ -245,9 +216,9 @@ module exacorr_global
          qmo%boson_irrep(i) = qmo_all%boson_irrep(mo_list(i))
       enddo
 
-    end subroutine get_MO_coefficients
+      end
 
-    subroutine get_orbital_energies (nmo, mo_list, eps)
+      subroutine get_orbital_energies (nmo, mo_list, eps)
 
 !This subroutine reads the desired subset of mo energies from DIRAC
 
@@ -271,24 +242,5 @@ module exacorr_global
        call delete_qmo (qmo)
 
       end subroutine get_orbital_energies
-
-      subroutine get_one_el(one_int)
-        type(one_el_t), intent(inout)  :: one_int
-
-        integer :: nsp=0
-
-        nsp=int_1el%n_spinor
-        one_int%n_spinor=int_1el%n_spinor
-
-        nullify (one_int%RC)
-        allocate(one_int%RC(nsp*nsp))
-        nullify (one_int%CC)
-        allocate(one_int%CC(nsp*nsp))
-
-        one_int%RC=int_1el%RC
-        one_int%CC=int_1el%CC
-
-      end subroutine get_one_el
-
 
 end module exacorr_global
