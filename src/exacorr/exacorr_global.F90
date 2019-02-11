@@ -24,7 +24,6 @@ module exacorr_global
         public delete_global_data
         public get_gtos
         public get_mo_coefficients
-        public get_orbital_energies
 
        contains
          
@@ -217,30 +216,5 @@ module exacorr_global
       enddo
 
       end
-
-      subroutine get_orbital_energies (nmo, mo_list, eps)
-
-!This subroutine reads the desired subset of mo energies from DIRAC
-
-!      Written by Lucas Visscher, winter 2016/2017 (but in Goa, India, temperature about 25 C)
-
-       use dirac_MO
-
-       integer, intent(in) :: nmo          ! the length of the mo basis
-       integer, intent(in) :: mo_list(:)   ! and their indices
-       real(8) :: eps(:)
-
-       integer             :: k
-       type(MO)            :: qmo
-
-       call get_mo_coefficients (qmo,mo_list,nmo)
-
-       do k = 1, nmo
-          eps(k)     = qmo%energy(k)
-          eps(k+nmo) = qmo%energy(k)
-       end do
-       call delete_qmo (qmo)
-
-      end subroutine get_orbital_energies
 
 end module exacorr_global
