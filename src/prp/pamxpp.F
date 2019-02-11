@@ -369,7 +369,7 @@ C
      &            '.EXCITA','.TRIPLE','.THRESH','.MAXITR',
      &            '.SKIPEP','.MAXRED','.E2CHEK','.NONORM',
      &            '.EPOLE ','.MPOLE ','.INTFLG','.INTENS',
-     &            '.OCCUP ','.VIRTUA','.ACTIVE','.BEDFIX',
+     &            '.OCCUP ','.VIRTUA','.ACTIVE','.ORIENT',
      &            '.ITRINT','.CNVINT','.REAXVC','.BEDCHK',
      &            '.RESFAC','.ORBANA','.ROTAV ','.SKIPEE',
      &            '.MXLOAD','.ONLYSF','.ONLYSG','.BED   ',
@@ -424,7 +424,7 @@ C
       XPPFIL     = 'NORXVC'
       ORBXPP     = .FALSE.
       DOBED      = .FALSE.
-      DOBEDFIX   = .FALSE.
+      ORIENTED   = .FALSE.
       DOBEDDER   = .FALSE.
       BEDSTP     = 0.001D0
       BEDCHK     = .FALSE.
@@ -594,8 +594,8 @@ C&&&& ACTIVE: String of active orbitals in XPP module
                   ENDDO
                GO TO 100
  20            CONTINUE
-C&&&& BEDFIX: Full light-matter interaction at fixed orientation
-               DOBEDFIX=.TRUE.
+C&&&& ORIENT: Specify fixed experimental orientation (no rotational average)
+               ORIENTED=.TRUE.
                READ(LUCMD,*) W1,W2,W3
                CALL ANGLES(W1,W2,W3,UWAVE,UPOL)
                GO TO 100
@@ -1104,7 +1104,7 @@ C     ..not yet written.....tsaue
 C
 C     BED: Beyond Electric Dipole Approximation
 C
-      IF (DOBEDFIX) THEN
+      IF (ORIENTED) THEN
          CALL GET_ED_LENGTH(OMEGA,ISSYM,WORK(KCMO),WORK(KIBRP),
      &        EVECR,IBTYP,IBCVC,IBEVC,IBPVC,
      &        WORK,KFREE,LFREE)
@@ -1404,7 +1404,7 @@ C
 C     Loop over transition operators
 C     ==============================
 C
-      CALL HEADER('Linear response excitations; final output ',-1)
+      CALL HEADER('LINEAR RESPONSE EXCITATIONS; FINAL OUTPUT ',-1)
       DO IOPSY = 1,NFSYM
         NBF = NBSYM/NFSYM
         IF(LINEAR.AND.NFSYM.EQ.2) THEN
@@ -2313,6 +2313,7 @@ C.......
 C
 C     Oscillator strengths: general order
 C      
+      CALL HEADER('Isotropic oscillator strengths',-1)
       IF(MOD(KVAL_OSC,2).EQ.0) THEN
         K2ORD = KVAL_OSC/2
       ELSE
@@ -2353,44 +2354,6 @@ C.....Oscillator strenghts: general velocity gauge: rotational average
       WRITE(LUPRI,'(A,F12.5)')
      &     'Sum of oscillator strengths (general velocity) : ',TOT
       deallocate(fosc)
-C.....Oscillator strenghts: general velocity gauge: specific orientation
-      IF(DOBEDFIX) THEN
-        allocate(fosc(MAXEXC,NBSYM,-1:K2ORD,1))
-        FOSC=0.0D0
-        DO IK = 0,K2ORD
-           CALL OSC_BED(IK,FOSC(1,1,IK,1),ATMPPF,OMEGA)
-           CALL DAXPY(MAXEXC*NBSYM,D1,FOSC(1,1,IK,1),1,FOSC(1,1,-1,1),1)
-        ENDDO
-        NLIN=32+16*(K2ORD+2)
-        WRITE(LUPRI,'(/A,ES8.2)')
-     &     '* Anisotropic oscillator strengths '//
-     &     '(generalized velocity gauge) above threshold :', TTOL
-        WRITE(LUPRI,*) '* Unit wave vector    : ',(UWAVE(I),I=1,3)
-        WRITE(LUPRI,*) '* Polarization vector : ',(UPOL(I),I=1,3)
-        CALL PRSYMB(LUPRI,'=',NLIN,0)
-        WRITE(LUPRI,'(/A,'//FMT//'(A2,I2,A2,10X))')
-     &     'Level    Frequency (eV) Symmetry    f(total)        ',
-     &     ('f(',IK+IK,') ',IK=0,K2ORD)
-        CALL PRSYMB(LUPRI,'-',NLIN,0)
-        DO JEXC = 2,NEXC          ! skip reference state
-          II = INDX(JEXC)
-          IEXC  = IEERG(1,II)
-          ISYM  = IEERG(2,II)
-          OSCIL = FOSC(IEXC,ISYM,-1,1)
-          IF(OSCIL .GT. TTOL) THEN
-            ILAB  = ISSYM(IEXC,ISYM)
-            WRITE(LUPRI,
-     &         '(I5,1X,F16.5,2X,A3,1X,A4,'//FMT//'(2X,ES14.6))') JEXC-1,
-     &         OMEGA(IEXC,ISYM)*XTEV,REP(ISYM-1),SYMLAB(ILAB),OSCIL,
-     &         (FOSC(IEXC,ISYM,IK,1),IK=0,K2ORD)
-          ENDIF
-        ENDDO
-        CALL PRSYMB(LUPRI,'-',NLIN,0)
-        TOT = DSUM(NDIM,FOSC(1,1,-1,1),1)
-        WRITE(LUPRI,'(A,F12.5)')
-     &     'Sum of oscillator strengths (general velocity) : ',TOT
-        deallocate(fosc)
-      ENDIF
 C.....Oscillator strenghts: general length gauge
       allocate(fosc(4,MAXEXC,NBSYM,-1:K2ORD))
       FOSC=0.0D0
@@ -2432,8 +2395,46 @@ C.....Oscillator strenghts: general length gauge
       WRITE(LUPRI,'(A,F12.5)')
      &     'Sum of oscillator strengths (general length) : ',TOT
       deallocate(fosc)
-C.....Oscillator strenghts: general length gauge: specific orientation
-      IF(DOBEDFIX) THEN
+C.....Anisotropic oscillator strenghts
+      IF(ORIENTED) THEN
+        CALL HEADER('Anisotropic oscillator strengths',-1)         
+        WRITE(LUPRI,*) '* Unit wave vector    : ',(UWAVE(I),I=1,3)
+        WRITE(LUPRI,*) '* Polarization vector : ',(UPOL(I),I=1,3)
+C.......Generalized velocity gauge        
+        allocate(fosc(MAXEXC,NBSYM,-1:K2ORD,1))
+        FOSC=0.0D0
+        DO IK = 0,K2ORD
+           CALL OSC_BED(IK,FOSC(1,1,IK,1),ATMPPF,OMEGA)
+           CALL DAXPY(MAXEXC*NBSYM,D1,FOSC(1,1,IK,1),1,FOSC(1,1,-1,1),1)
+        ENDDO
+        NLIN=32+16*(K2ORD+2)
+        WRITE(LUPRI,'(/A,ES8.2)')
+     &     '* Anisotropic oscillator strengths '//
+     &     '(generalized velocity gauge) above threshold :', TTOL
+        CALL PRSYMB(LUPRI,'=',NLIN,0)
+        WRITE(LUPRI,'(/A,'//FMT//'(A2,I2,A2,10X))')
+     &     'Level    Frequency (eV) Symmetry    f(total)        ',
+     &     ('f(',IK+IK,') ',IK=0,K2ORD)
+        CALL PRSYMB(LUPRI,'-',NLIN,0)
+        DO JEXC = 2,NEXC          ! skip reference state
+          II = INDX(JEXC)
+          IEXC  = IEERG(1,II)
+          ISYM  = IEERG(2,II)
+          OSCIL = FOSC(IEXC,ISYM,-1,1)
+          IF(OSCIL .GT. TTOL) THEN
+            ILAB  = ISSYM(IEXC,ISYM)
+            WRITE(LUPRI,
+     &         '(I5,1X,F16.5,2X,A3,1X,A4,'//FMT//'(2X,ES14.6))') JEXC-1,
+     &         OMEGA(IEXC,ISYM)*XTEV,REP(ISYM-1),SYMLAB(ILAB),OSCIL,
+     &         (FOSC(IEXC,ISYM,IK,1),IK=0,K2ORD)
+          ENDIF
+        ENDDO
+        CALL PRSYMB(LUPRI,'-',NLIN,0)
+        TOT = DSUM(NDIM,FOSC(1,1,-1,1),1)
+        WRITE(LUPRI,'(A,F12.5)')
+     &     'Sum of oscillator strengths (general velocity) : ',TOT
+        deallocate(fosc)
+C.......Generalized length gauge
         allocate(fosc(4,MAXEXC,NBSYM,-1:K2ORD))
         FOSC=0.0D0
         DO IK = 0,K2ORD
@@ -2445,8 +2446,6 @@ C.....Oscillator strenghts: general length gauge: specific orientation
         WRITE(LUPRI,'(/A,ES8.2)')
      &     '* Anisotropic oscillator strengths '//
      &     '(generalized length gauge) above threshold :', TTOL
-        WRITE(LUPRI,*) '* Unit wave vector    : ',(UWAVE(I),I=1,3)
-        WRITE(LUPRI,*) '* Polarization vector : ',(UPOL(I),I=1,3)
         CALL PRSYMB(LUPRI,'-',NLIN,0)
         WRITE(LUPRI,'(/A,'//FMT//'(A2,I2,A2,10X))')
      &     'Level    Frequency (eV) Symmetry    f(total)        ',
