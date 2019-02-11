@@ -247,7 +247,7 @@ C
 C
       DO 10 IATOM = 1, NUCIND
 !      DO 10 ISYMOP = 0, MXOPR
-!     What is this roop? MXOPR=0 in dftgrd.F
+!      What is this roop? MXOPR=0 in dftgrd.F
        IF (IBTAND(0,ISTBNU(IATOM)).EQ.0) THEN
 !        IF (IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN
 !        IBTAND=IAND, but I am not sure what is it.     
@@ -259,6 +259,7 @@ C
          MXNP = 4000            !same to GRASP
          NUCTYP = 0
          CALL MEMSET(ZAN(IATOM),IATOM,MXNP,IPRINT)
+         write(*,*)'HH2',H
          CALL NUCPRM(ZAN(IATOM),NUCMASS(INT(ZAN(IATOM))),NUCTYP)
          write(*,*)"MXNP",MXNP
          allocate( VACIR(MXNP) )
@@ -270,7 +271,7 @@ C
 C         
          IF(num_grid_cfg_grasp)THEN
            allocate( TD(NDIM2,MXNP) )         
-           CALL DZERO(TD,NDIM2*MXNP) !4000-->MXNP
+           CALL DZERO(TD,NDIM2*MXNP)
 C           
            R(1) = RNT !CHARGE(IATOM)
            DO J = 2,MXNP
@@ -339,7 +340,7 @@ C
            CALL QUAD2(OVL,TD,MXNP,NDIM2)
          ELSE
            allocate( TD(NDIM2,1) )         
-           CALL DZERO(TD,NDIM2*1) !4000-->MXNP
+           CALL DZERO(TD,NDIM2*1) 
 !     The grids are calculated at MEMSET routine.           
            R(1) = RNT
            W(1)  = (RNT+GRDC)*H 
@@ -480,7 +481,7 @@ C
          DO IR = 1,MXNP
            DO II = 1,NDIM
               write(*,*)'TA1,R',TA(II,IR),R(IR),IR,II
-              TA(II,IR) = TA(II,IR)*R(IR) ! Additional R(IR) for QUAD
+              TA(II,IR) = TA(II,IR)*R(IR)  ! Additional R(IR) for QUAD
               write(*,*)'TA2',TA(II,IR),IR,II
               write(*,*)
               write(*,*)
@@ -598,9 +599,13 @@ C     /* Deck memset */
       SUBROUTINE MEMSET(Z,IATOM,MXNP,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC      
 C
-C     Estimating memories, by calculating the uehling potential of
-C     point charge 
-C      
+C     i) Estimating memories, by calculating the uehling potential of
+C     point charge
+C
+C     ii) Deciding some values for numerical integral
+C        RNT...initial grid      
+C        H.....step size
+C     
 C     Called from: NUMOVL
 C
 C    Modified for DIRAC, A. Sunaga Dec. 2018
@@ -664,19 +669,20 @@ C
 C The values of ultrafine (.ULTRAF) at DFT input-reader section.    
 C num_grid_cfg_radint = 2.0d-15 
 C
+        write(*,*)'HH1',H
         EPH   = EXP(H)
         GRDC  = RNT/(EPH-ONE)
         RTEMP = RNT
 C     
 C     SET UP POTENTIAL FOR POINT NUCLEUS
 C
-        THSHD =-1.0D-6
+        THSHD =-1.0D-5
         VPTST2=-DUMMY
         DO 2 I = 1,N
            X = WD*RTEMP
            VPTST1 = FACTOR*FUNK (X,1)
 !           IF(X.GT.1.0D+02)THEN !same to FUNK
-           IF(VPTST2-VPTST1.GT.THSHD)THEN !same to FUNK
+           IF(VPTST2-VPTST1.GT.THSHD)THEN 
               MXNP = I
               write(*,*)'FINAL value,R',VPTST1,RTEMP
               exit
@@ -1177,7 +1183,7 @@ CCCCCCCCCCCCCC
 !     PARAMETER (FMTOAU = 1.88972598858D-5)
 C     sunaga
 C     If I write these parameter, error messages appear.
-      H = 1.0D-2
+!      H = 1.0D-2
       IF (NUCTYP .EQ. 0)   RETURN
 C
       FMTOAU = 1.0D-13/0.529177249D-08
