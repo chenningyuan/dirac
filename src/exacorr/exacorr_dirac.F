@@ -176,7 +176,6 @@ C
       exa_input%nkr_occ = 0
       call numlst (string_occupied,kvec,1,1,nesh(1),1,exa_input%nkr_occ)
       allocate (mokr_occ(exa_input%nkr_occ))
-      !call numlst (string_occupied,exa_input%mokr_occ,exa_input%nkr_occ,1,nesh(1),1,exa_input%nkr_occ)
       call numlst (string_occupied,mokr_occ,exa_input%nkr_occ,
      &              1,nesh(1),1,exa_input%nkr_occ)
       exa_input%nkr_occ = 2 * exa_input%nkr_occ
@@ -189,7 +188,6 @@ C
       exa_input%nkr_vir = 0
       call numlst (string_virtual,kvec,1,1,nesh(1),1,exa_input%nkr_vir)
       allocate (mokr_vir(exa_input%nkr_vir))
-      !call numlst (string_virtual,exa_input%mokr_vir,exa_input%nkr_vir,1,nesh(1),1,exa_input%nkr_vir)
       call numlst (string_virtual,mokr_vir,exa_input%nkr_vir,
      & 1,nesh(1),1,exa_input%nkr_vir)
       exa_input%nkr_vir = 2 * exa_input%nkr_vir

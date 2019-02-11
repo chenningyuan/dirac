@@ -394,8 +394,8 @@ module exacorr_ao_to_mo
               ierr=exatns_tensor_init(mocoef_tensor(spin,i),mocoef_initlabel(mocoef_id(1),mocoef_id(2),spin))
               if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_init() failed!')
 !             next two lines can be used for debugging
-              print*,"created and initialized mocoef_tensor ", &
-              i,spin,mocoef_initlabel(mocoef_id(1),mocoef_id(2),spin),print_tensornorm2 (mocoef_tensor(spin,i))
+!              print*,"created and initialized mocoef_tensor ", &
+!              i,spin,mocoef_initlabel(mocoef_id(1),mocoef_id(2),spin),print_tensornorm2 (mocoef_tensor(spin,i))
            end do
          end do
 !        next two lines can be used for debugging

@@ -195,7 +195,7 @@ module exacorr_mo
       call interface_mpi_bcast (M%boson_irrep,  M%nmo,my_MPI_master,global_communicator)
       call interface_mpi_bcast (M%index,        M%nmo,my_MPI_master,global_communicator)
       call interface_mpi_bcast (M%energy,       M%nmo,my_MPI_master,global_communicator)
-      n_coef = M%nao * M%nmo * 2 ! (AO,MO,spin)
+      n_coef = M%nao * M%nmo * 4 ! (AO,MO,spin) * 2 for complex
       call interface_mpi_bcast (M%coeff,n_coef,my_MPI_master,global_communicator)
 
      end subroutine sync_mo_complex

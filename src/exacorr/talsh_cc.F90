@@ -116,8 +116,6 @@ module talsh_cc
 
          call print_date("Getting orbital energies")
 !        Get orbital energies from the DIRAC restart file
-         !allocate (eps_occ(2*nocc))
-         !allocate (eps_vir(2*nvir))
          allocate (eps_occ(nocc))
          allocate (eps_vir(nvir))
          call get_orbital_energies(nocc,mo_occ,eps_occ)
@@ -133,16 +131,12 @@ module talsh_cc
 
 !        Initialize t1 amplitudes to zero (we assume canonical orbitals for the moment)
          if (.not.CCD) then
-            !vo_dims(1) = nvir * 2
-            !vo_dims(2) = nocc * 2
             vo_dims(1) = nvir
             vo_dims(2) = nocc
             ierr=talsh_tensor_construct(comm_t%t1,C8,vo_dims,init_val=ZERO)
          end if
 
 !        Initialize t2 amplitudes with the MP2 values
-         !vvoo_dims(1:2) = nvir * 2
-         !vvoo_dims(3:4) = nocc * 2
          vvoo_dims(1:2) = nvir
          vvoo_dims(3:4) = nocc
          ierr=talsh_tensor_construct(comm_t%t2,C8,vvoo_dims,init_val=ZERO)
@@ -164,28 +158,19 @@ module talsh_cc
 
 !        Start CCSD iterations
 
-         !oo_dims = nocc  * 2
          oo_dims = nocc
          ierr=talsh_tensor_construct(comm_t%goo,C8,oo_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(comm_t%hoo,C8,oo_dims,init_val=ZERO)
-         !vv_dims = nvir * 2
          vv_dims = nvir
          ierr=talsh_tensor_construct(comm_t%gvv,C8,vv_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(comm_t%hvv,C8,vv_dims,init_val=ZERO)
          if (.not.CCD) then
-            !ov_dims(1) = nocc *2
-            !ov_dims(2) = nvir *2
             ov_dims(1) = nocc
             ov_dims(2) = nvir
             ierr=talsh_tensor_construct(comm_t%hov,C8,ov_dims,init_val=ZERO)
          end if
-         !oooo_dims  = nocc  * 2
          oooo_dims  = nocc
          ierr=talsh_tensor_construct(comm_t%a_int,C8,oooo_dims,init_val=ZERO)
-         !vovo_dims(1) = nvir * 2
-         !vovo_dims(2) = nocc * 2
-         !vovo_dims(3) = nvir * 2
-         !vovo_dims(4) = nocc * 2
          vovo_dims(1) = nvir
          vovo_dims(2) = nocc
          vovo_dims(3) = nvir
@@ -244,8 +229,6 @@ module talsh_cc
 
 !         Construct lambda tensor
           ierr=talsh_tensor_construct(l1_tensor,C8,ov_dims,init_val=ZERO)
-          !oovv_dims(1:2) = nocc * 2
-          !oovv_dims(3:4) = nvir * 2
           oovv_dims(1:2) = nocc
           oovv_dims(3:4) = nvir
           ierr=talsh_tensor_construct(l2_tensor,C8,oovv_dims,init_val=ZERO)
@@ -350,29 +333,19 @@ module talsh_cc
          call c_f_pointer(body_p,result_tens,result_dims)
 
          if (.not.CCD) then
-            !oo_dims = nocc * 2
             oo_dims = nocc
             ierr=talsh_tensor_construct(hoo_aux_tensor,C8,oo_dims,init_val=ZERO)
-            !ov_dims(1) = nocc * 2
-            !ov_dims(2) = nvir * 2
             ov_dims(1) = nocc
             ov_dims(2) = nvir
             ierr=talsh_tensor_construct(hov_aux_tensor,C8,ov_dims,init_val=ZERO)
-            !vo_dims(1) = nvir * 2
-            !vo_dims(2) = nocc * 2
             vo_dims(1) = nvir
             vo_dims(2) = nocc
             ierr=talsh_tensor_construct(s1_tensor,C8,vo_dims,init_val=ZERO)
          end if
-         !vvoo_dims(1:2) = nvir * 2
-         !vvoo_dims(3:4) = nocc * 2
          vvoo_dims(1:2) = nvir
          vvoo_dims(3:4) = nocc
          ierr=talsh_tensor_construct(s2_tensor,C8,vvoo_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
-         !ovoo_dims(1) = nocc * 2
-         !ovoo_dims(2) = nvir * 2
-         !ovoo_dims(3:4) = nocc * 2
          ovoo_dims(1) = nocc
          ovoo_dims(2) = nvir
          ovoo_dims(3:4) = nocc
@@ -596,55 +569,35 @@ module talsh_cc
          call print_date('Entered lambda solver routine')
 
 !        Construct fixed intermediates
-         !oo_dims = nocc * 2
          oo_dims = nocc
          ierr=talsh_tensor_construct(lambda_t%fbar_oo,C8,oo_dims,init_val=ZERO)
-         !ov_dims(1) = nocc * 2
-         !ov_dims(2) = nvir * 2
          ov_dims(1) = nocc
          ov_dims(2) = nvir
          ierr=talsh_tensor_construct(lambda_t%fbar_ov,C8,ov_dims,init_val=ZERO)
-         !vv_dims = nvir * 2
          vv_dims = nvir
          ierr=talsh_tensor_construct(lambda_t%fbar_vv,C8,vv_dims,init_val=ZERO)
-         !oooo_dims = nocc * 2
          oooo_dims = nocc
          ierr=talsh_tensor_construct(lambda_t%w_oooo,C8,oooo_dims,init_val=ZERO)
-         !ovoo_dims(1)   = nocc * 2
-         !ovoo_dims(2)   = nvir * 2
-         !ovoo_dims(3:4) = nocc * 2
          ovoo_dims(1)   = nocc
          ovoo_dims(2)   = nvir
          ovoo_dims(3:4) = nocc
          ierr=talsh_tensor_construct(lambda_t%w_ovoo,C8,ovoo_dims,init_val=ZERO)
-         !ooov_dims(1:3) = nocc * 2
-         !ooov_dims(4)   = nvir * 2
          ooov_dims(1:3) = nocc
          ooov_dims(4)   = nvir
          ierr=talsh_tensor_construct(lambda_t%w_ooov,C8,ooov_dims,init_val=ZERO)
-         !vovo_dims(1) = nvir * 2
-         !vovo_dims(2) = nocc * 2
-         !vovo_dims(3) = nvir * 2
-         !vovo_dims(4) = nocc * 2
          vovo_dims(1) = nvir
          vovo_dims(2) = nocc
          vovo_dims(3) = nvir
          vovo_dims(4) = nocc
          ierr=talsh_tensor_construct(lambda_t%w_vovo,C8,vovo_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(lambda_t%wbar_vovo,C8,vovo_dims,init_val=ZERO)
-         !vvvo_dims(1:3) = nvir * 2
-         !vvvo_dims(4)   = nocc * 2
          vvvo_dims(1:3) = nvir
          vvvo_dims(4)   = nocc
          ierr=talsh_tensor_construct(lambda_t%w_vvvo,C8,vvvo_dims,init_val=ZERO)
-         !vovv_dims(1)   = nvir * 2
-         !vovv_dims(2)   = nocc * 2
-         !vovv_dims(3:4) = nvir * 2
          vovv_dims(1)   = nvir
          vovv_dims(2)   = nocc
          vovv_dims(3:4) = nvir
          ierr=talsh_tensor_construct(lambda_t%w_vovv,C8,vovv_dims,init_val=ZERO)
-         !vvvv_dims = nvir * 2
          vvvv_dims = nvir
          ierr=talsh_tensor_construct(lambda_t%w_vvvv,C8,vvvv_dims,init_val=ZERO)
 
@@ -659,10 +612,6 @@ module talsh_cc
          call get_hov(comm_t,int_t%oovv)
          call get_a(comm_t,int_t,CCD)
          call print_date("Finished calculating common blocks")
-
-!        Scalar tensor
-         !one_dims(1) = 1
-         !ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
 
 !        Get fixed intermediates ==> DO TIME TEST
          call print_date('Calculating fixed intermediates')
@@ -697,8 +646,6 @@ module talsh_cc
 
 !        Construct solution tensors
          ierr=talsh_tensor_construct(s1_tensor,C8,ov_dims,init_val=ZERO)
-         !oovv_dims(1:2) = nocc * 2
-         !oovv_dims(3:4) = nvir * 2
          oovv_dims(1:2) = nocc
          oovv_dims(3:4) = nvir
          ierr=talsh_tensor_construct(s2_tensor,C8,oovv_dims,init_val=ZERO)
@@ -912,18 +859,14 @@ module talsh_cc
          integer   :: ierr, i
 
 !        Get foo tensor
-         !fo_dims(1:2) = nocc * 2
          fo_dims(1:2) = nocc
          ierr=talsh_tensor_construct(fo_tensor,C8,fo_dims,init_val=ZERO)
 
 !        Get fvv tensor
-         !fv_dims(1:2) = nvir * 2
          fv_dims(1:2) = nvir
          ierr=talsh_tensor_construct(fv_tensor,C8,fv_dims,init_val=ZERO)
 
 !        Get fov tensor
-         !fov_dims(1) = nocc * 2
-         !fov_dims(2) = nvir * 2
          fov_dims(1) = nocc
          fov_dims(2) = nvir
          ierr=talsh_tensor_construct(fov_tensor,C8,fov_dims,init_val=ZERO)
@@ -980,8 +923,6 @@ module talsh_cc
 
 !        Get antisymmetric oovv tensor
 !        Note that the dimensions for the tensor are given in physicists notation <12||34>
-         !oovv_dims(1:2) = nocc * 2
-         !oovv_dims(3:4) = nvir * 2
          oovv_dims(1:2) = nocc
          oovv_dims(3:4) = nvir
          ierr=talsh_tensor_construct(int_t%oovv,C8,oovv_dims,init_val=ZERO)
@@ -1013,10 +954,6 @@ module talsh_cc
 
 !        Get anti-symmetrized vovo tensor, this needs to be done in two steps as two different classes contribute.
 !        Get vovo tensor
-         !vovo_dims(1) = nvir * 2
-         !vovo_dims(2) = nocc * 2
-         !vovo_dims(3) = nvir * 2
-         !vovo_dims(4) = nocc * 2
          vovo_dims(1) = nvir
          vovo_dims(2) = nocc
          vovo_dims(3) = nvir
@@ -1032,10 +969,6 @@ module talsh_cc
          call get_integral_tensor (aoint_tensor,int_t%vovo,0,nmo,mo_list)
          deallocate (mo_list)
 !        Get ovvo tensor
-         !ovvo_dims(1) = nocc * 2
-         !ovvo_dims(2) = nvir * 2
-         !ovvo_dims(3) = nvir * 2
-         !ovvo_dims(4) = nocc * 2
          ovvo_dims(1) = nocc
          ovvo_dims(2) = nvir
          ovvo_dims(3) = nvir
@@ -1059,7 +992,6 @@ module talsh_cc
          ierr=talsh_tensor_destruct(ovvo_tensor)
 
 !        Get vvvv tensor
-         !vvvv_dims = nvir * 2
          vvvv_dims = nvir
          ierr=talsh_tensor_construct(int_t%vvvv,C8,vvvv_dims,init_val=ZERO)
          allocate (mo_list(4*nvir))
@@ -1072,8 +1004,6 @@ module talsh_cc
          deallocate (mo_list)
 
 !        Get ooov tensor
-         !ooov_dims(1:3) = nocc * 2
-         !ooov_dims(4)   = nvir * 2
          ooov_dims(1:3) = nocc
          ooov_dims(4)   = nvir
          ierr=talsh_tensor_construct(int_t%ooov,C8,ooov_dims,init_val=ZERO)
@@ -1088,9 +1018,6 @@ module talsh_cc
          deallocate (mo_list)
 
 !        Get vovv tensor
-         !vovv_dims(1)   = nvir * 2
-         !vovv_dims(2)   = nocc * 2
-         !vovv_dims(3:4) = nvir * 2
          vovv_dims(1)   = nvir
          vovv_dims(2)   = nocc
          vovv_dims(3:4) = nvir

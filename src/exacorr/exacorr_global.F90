@@ -11,7 +11,6 @@ module exacorr_global
 !       Global data (should limit this to the minimum required to function)
         integer :: my_MPI_master=0 ! Define the MPI master proces (is always zero in the DIRAC MPI environment)
         type(basis_set_info_t) :: ao_basis ! information about the ao basis 
-        !type(qumo):: qmo_all ! Stores all MO-coefficients and energies obtained from the parent code 
         type(cmo):: cspinor_all ! Stores all MO-coefficients and energies obtained from the parent code 
         logical :: TALSH_ONLY = .TRUE. ! use single-node TALSH library instead of the full EXATENSOR library
         logical, public, parameter :: DEBUG = .TRUE. ! switch on and off debug
@@ -84,7 +83,6 @@ module exacorr_global
              if (TALSH_ONLY) return
              call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
 
-             !call sync_mo(qmo_all,my_MPI_master)
              call sync_mo(cspinor_all,my_MPI_master)
 
              call interface_mpi_bcast (ao_basis%nshells,1,my_MPI_master,global_communicator)

@@ -486,24 +486,18 @@ module exacorr_cc
          nvir = exa_input%nkr_vir
          allocate(mo_occ(nocc))
          allocate(mo_vir(nvir))
-         !mo_occ(1:nocc) = exa_input%mokr_occ(1:exa_input%nkr_occ)
-         !mo_vir(1:nvir) = exa_input%mokr_vir(1:exa_input%nkr_vir)
          mo_occ = exa_input%mokr_occ
          mo_vir = exa_input%mokr_vir
 
          !Define separate initializers for the alpha(A) and beta(B) occupied and virtual MO-coefficients
          do spin = 1, 2
             !Register this initializer for occupied as a method
-            !call occupied_init(spin)%init_mocoef_ctor(mo_occ(1:nocc),nocc,spin)
             call occupied_init(spin)%init_mocoef_ctor(mo_occ,nocc,spin)
             ierr=exatns_method_register(mocoef_initlabel(ao_space_id,occ_space_id,spin),occupied_init(spin))
-            !print*, "occ: spin, initlabel", spin, mocoef_initlabel(ao_space_id,occ_space_id,spin)
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
             !Same procedure for the virtual space
-            !call virtual_init(spin)%init_mocoef_ctor(mo_vir(1:nvir),nvir,spin)
             call virtual_init(spin)%init_mocoef_ctor(mo_vir,nvir,spin)
             ierr=exatns_method_register(mocoef_initlabel(ao_space_id,vir_space_id,spin),virtual_init(spin))
-            !print*, "vir: spin, initlabel", spin, mocoef_initlabel(ao_space_id,vir_space_id,spin)
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
          end do
 

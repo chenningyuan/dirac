@@ -299,18 +299,7 @@ module exacorr_tensor_methods
          nao = get_nao()
          allocate (this%mocoef_all(nao,nmo))
          call get_mo_coefficients (cspinor,mo_list,nmo)
-
-         !DOESNT WORK
-         !do k = 1, nmo
-         !   do j = 1, nao
-         !       this%mocoef_all(j,k) = cspinor%coeff(j,k,spin)
-         !   end do
-         !end do
-
-         !print*, "nao, nmo , spin", nao, nmo, spin
-         print*, "spin, shape", spin, shape(cspinor%coeff)
          this%mocoef_all(:,:) = cspinor%coeff(:,:,spin)
-
          call dealloc_mo(cspinor)
 
         end subroutine init_mocoef
@@ -373,7 +362,6 @@ module exacorr_tensor_methods
 
          integer  :: nao,j,k
          type(qumo) :: qmo
-         !type(cmo) :: cspinor
 
 !        Copy the coefficients into the alpha or beta array, using the quaternion relations as defined in
 !        T. Saue, H. Jensen, J. Chem. Phys. 111 (1999) 6211–6222, Equation 16.
@@ -554,9 +542,6 @@ module exacorr_tensor_methods
          first_mo = tens_bases(2)
          last_ao  = first_ao + nao - 1
          last_mo  = first_mo + nmo - 1
-
-         !print*, "nao, nmo", nao, nmo
-         !print*, "first_ao, last_ao, first_mo, last_mo", first_ao, last_ao, first_mo, last_mo
 
          mocoef_tens(1:nao,1:nmo) = mocoef_all(first_ao:last_ao,first_mo:last_mo)
 
