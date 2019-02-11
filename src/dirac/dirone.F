@@ -254,46 +254,95 @@ C
          IF(NOORBT(IATOM)) GOTO 10
          IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 10
 C         
-! from GRASP datain.F and mcdf.F
-C     
-C   SET UP GRID FOR CALCULATION
-C      
 C   SET DEFAULT VALUES OF PARAMETERS FOR CALCULATION
 C
          MXNP = 4000            !same to GRASP
          NUCTYP = 0
-         CALL MEMSET(ZAN(IATOM),IATOM,MXNP,IPRINT) !change
+         CALL MEMSET(ZAN(IATOM),IATOM,MXNP,IPRINT)
          CALL NUCPRM(ZAN(IATOM),NUCMASS(INT(ZAN(IATOM))),NUCTYP)
          write(*,*)"MXNP",MXNP
-         IF(num_grid_cfg_grasp)THEN
-           NDIMR = MXNP
-         ELSE
-           NDIMR = 1
-         ENDIF  
-         allocate( TD(NDIM2,NDIMR) )           
          allocate( VACIR(MXNP) )
          allocate( R(MXNP)     )
          allocate( W(MXNP)     )           
 C     
          CALL DZERO(BUF,NDIM2) 
-         CALL DZERO(TD,NDIM2*NDIMR) !4000-->MXNP
          CALL DZERO(OVL,NDIM2)
 C         
          IF(num_grid_cfg_grasp)THEN
+           allocate( TD(NDIM2,MXNP) )         
+           CALL DZERO(TD,NDIM2*MXNP) !4000-->MXNP
+C           
            R(1) = RNT !CHARGE(IATOM)
            DO J = 2,MXNP
               R(J) = R(J-1)*EPH
            ENDDO
+C         
+           write(*,*)"NUCMASS",NUCMASS(INT(ZAN(IATOM)))
+           CALL VCMPOL(VACIR,R,ZAN(IATOM),MXNP,NUCTYP,1) !change
+           DO J = 1,MXNP
+              write(*,*)J,VACIR(J),R(J)
+           ENDDO
+           OPEN(20,FILE='LOG_DIRAC',STATUS='REPLACE',          
+     &          FORM='FORMATTED',ACCESS='SEQUENTIAL')  
+           DO  J = 1,MXNP
+             WRITE(20,*)VACIR(J)          !sunaga
+           ENDDO
+           CLOSE(20,STATUS='KEEP')
+         
+!     change for debug sentense
+           write(*,*)"R(1),Z",R(1),ZAN(IATOM) 
+           write(*,*)"J,VACIR"
+           DO 20 IR = 1, MXNP
+C
+C     1/r in Eq. (2), (4),and (6) of Rinker's paper is NOT calculated in VCMPOL.
+C     Integrand = 1/r * VP(r) * (Large*Large + Small*Small) * r^2 * r
+C     Meaning:   1/r * VACIR(IR) *   wavefunction     * Radial int * Needed in QUAD.
+C     Finally,    We multiply R(IR)*R(IR).
+C
+             RFAC = R(IR)*R(IR) * VACIR(IR)
+             CALL DZERO(TC,NDIM2)
+C            
+C            loop over angular points
+C            ========================
+C
+             DO 30 iy = 1, m
+               X8  = ANG(iy,1)*R(IR)+C(1,IATOM)
+               Y8  = ANG(iy,2)*R(IR)+C(2,IATOM)
+               Z8  = ANG(iy,3)*R(IR)+C(3,IATOM)
+               WT8 = ANG(iy,4)*RFAC
+C
+C     GET AO's
+C
+               CALL GETAOS(GAO,TEMP,TEMP,TEMP,TEMP,
+     &                      X8,Y8,Z8,NTBAS(0),0,.FALSE.,0) !The last is IPRINT
+C
+C     Get "overlap" matrix
+C
+               IOFF   = 0
+               IEND   = 0
+               ISTART = 0
+               DO IC = 1, MC
+                 DO I = 1, NTBAS(IC)
+                   IADD = I*(I-1)/2
+                   DO J = 1, I
+                     IJ = IOFF + IADD + J  
+                     BUF(IJ+ISTART*I) = GAO(I+ISTART)*GAO(J+ISTART)
+                   ENDDO
+                 ENDDO
+                 IOFF   = IOFF   + NTBAS(IC)*(NTBAS(IC)+1)/2
+                 ISTART = ISTART + NTBAS(IC)
+               ENDDO
+               CALL DAXPY(NDIM2,WT8,BUF,1,TC,1)
+ 30          CONTINUE
+             CALL DCOPY(NDIM2,TC,1,TD(1,IR),1)
+ 20        CONTINUE
+           CALL QUAD2(OVL,TD,MXNP,NDIM2)
          ELSE
-           ADDSML = num_grid_cfg_force_4c_grid.OR.
-     &                 (MC.GT.1.AND.(.NOT.LEVYLE))
-           CALL LMGGRID(H,RL,RH,2.0d-15,IATOM,ADDSML,NUCORB,AA,IPRINT)
-C The values of ultrafine (.ULTRAF) at DFT input-reader section.    
-C num_grid_cfg_radint = 2.0d-15 
-           EPH  = EXP(H)
-           GRDC = RL/(EPH-D1)
-           R(1) = RL
-           W(1)  = (RL+GRDC)*H 
+           allocate( TD(NDIM2,1) )         
+           CALL DZERO(TD,NDIM2*1) !4000-->MXNP
+!     The grids are calculated at MEMSET routine.           
+           R(1) = RNT
+           W(1)  = (RNT+GRDC)*H 
 C R(IR)**2 is multiplized in RFAC, later          
              write(*,*)'H,EPH,RL,GRDC',H,EPH,GRDC,RL
              write(*,*)'R,W',R(1),W(1)
@@ -302,90 +351,72 @@ C R(IR)**2 is multiplized in RFAC, later
              W(IR) = (R(IR)+GRDC)*H
 !             write(*,*)'R,W',R(IR),W(IR),IR
            ENDDO
-         ENDIF 
-C         
-         write(*,*)"NUCMASS",NUCMASS(INT(ZAN(IATOM)))
-         CALL VCMPOL(VACIR,R,ZAN(IATOM),MXNP,NUCTYP,1) !change
-         DO J = 1,MXNP
-!            write(*,*)J,VACIR(J),R(J)
-         ENDDO
-         OPEN(20,FILE='LOG_DIRAC',STATUS='REPLACE',          
-     &        FORM='FORMATTED',ACCESS='SEQUENTIAL')  
-         DO  J = 1,MXNP
-           WRITE(20,*)VACIR(J)          !sunaga
-         ENDDO
-         CLOSE(20,STATUS='KEEP')
+           write(*,*)"NUCMASS",NUCMASS(INT(ZAN(IATOM)))
+           CALL VCMPOL(VACIR,R,ZAN(IATOM),MXNP,NUCTYP,1) !change
+           DO J = 1,MXNP
+              write(*,*)J,VACIR(J),R(J)
+           ENDDO
+           OPEN(20,FILE='LOG_DIRAC',STATUS='REPLACE',          
+     &          FORM='FORMATTED',ACCESS='SEQUENTIAL')  
+           DO  J = 1,MXNP
+             WRITE(20,*)VACIR(J)          !sunaga
+           ENDDO
+           CLOSE(20,STATUS='KEEP')
          
 !     change for debug sentense
-         write(*,*)"R(1),Z",R(1),ZAN(IATOM) 
-         write(*,*)"J,VACIR"
-         DO 20 IR = 1, MXNP
+           write(*,*)"R(1),Z",R(1),ZAN(IATOM) 
+           write(*,*)"J,VACIR"
+           DO 40 IR = 1, MXNP
 C
-C     1/r in Eq. (2), (4),and (6) of Rinker's paper is NOT calculated in VCMPOL.
-C     Integrand = 1/r * VP(r) * (Large*Large + Small*Small) * r^2
-C     Meaning:   1/r * VACIR(IR) *   wavefunction     * Radial int.
-C     Finally,    We multiply R(IR).
+C       1/r in Eq. (2), (4),and (6) of Rinker's paper is NOT calculated in VCMPOL.
+C       Integrand = 1/r * VP(r) * (Large*Large + Small*Small) * r^2
+C       Meaning:   1/r * VACIR(IR) *   wavefunction     * Radial int.
+C       Finally,    We multiply R(IR).
 C
-           RFAC = R(IR) * VACIR(IR) !*R(IR)!change
-           CALL DZERO(TC,NDIM2)
+             RFAC = R(IR) * VACIR(IR)
+             CALL DZERO(TC,NDIM2)
 C            
-C          loop over angular points
-C          ========================
+C            loop over angular points
+C            ========================
 C
-           DO 30 iy = 1, m
-             X8  = ANG(iy,1)*R(IR)+C(1,IATOM)
-             Y8  = ANG(iy,2)*R(IR)+C(2,IATOM)
-             Z8  = ANG(iy,3)*R(IR)+C(3,IATOM)
-             WT8 = ANG(iy,4)*RFAC
+             DO 50 iy = 1, m
+               X8  = ANG(iy,1)*R(IR)+C(1,IATOM)
+               Y8  = ANG(iy,2)*R(IR)+C(2,IATOM)
+               Z8  = ANG(iy,3)*R(IR)+C(3,IATOM)
+               WT8 = ANG(iy,4)*RFAC
 C
 C     GET AO's
 C
-             CALL GETAOS(GAO,TEMP,TEMP,TEMP,TEMP,
-     &                    X8,Y8,Z8,NTBAS(0),0,.FALSE.,0) !The last is IPRINT
+               CALL GETAOS(GAO,TEMP,TEMP,TEMP,TEMP,
+     &                      X8,Y8,Z8,NTBAS(0),0,.FALSE.,0) !The last is IPRINT
 C
 C     Get "overlap" matrix
 C
-             IOFF   = 0
-             IEND   = 0
-             ISTART = 0
-             DO IC = 1, MC
-               DO I = 1, NTBAS(IC)
-                 IADD = I*(I-1)/2
-                 DO J = 1, I
-                   IJ = IOFF + IADD + J  
-                   BUF(IJ+ISTART*I) = GAO(I+ISTART)*GAO(J+ISTART)
+               IOFF   = 0
+               IEND   = 0
+               ISTART = 0
+               DO IC = 1, MC
+                 DO I = 1, NTBAS(IC)
+                   IADD = I*(I-1)/2
+                   DO J = 1, I
+                     IJ = IOFF + IADD + J  
+                     BUF(IJ+ISTART*I) = GAO(I+ISTART)*GAO(J+ISTART)
+                   ENDDO
                  ENDDO
+                 IOFF   = IOFF   + NTBAS(IC)*(NTBAS(IC)+1)/2
+                 ISTART = ISTART + NTBAS(IC)
                ENDDO
-               IOFF   = IOFF   + NTBAS(IC)*(NTBAS(IC)+1)/2
-               ISTART = ISTART + NTBAS(IC)
-             ENDDO
-             CALL DAXPY(NDIM2,WT8,BUF,1,TC,1)
- 30        CONTINUE
-           IF(num_grid_cfg_grasp)THEN
-             CALL DCOPY(NDIM2,TC,1,TD(1,IR),1)
-!             CALL DCOPY(NDIM2,TC,1,TD(IR,1),MXNP)
-           ELSE
+               CALL DAXPY(NDIM2,WT8,BUF,1,TC,1)
+ 50          CONTINUE
              CALL DAXPY(NDIM2,W(IR),TC,1,OVL,1)
-           ENDIF  
- 20      CONTINUE
+ 40        CONTINUE
+         ENDIF   !num_grid_cfg_grasp
 C
          CALL HEADER('Numerical ovelap integral',-1)
          
 !         DO II = 1,NDIM2
 !            write(*,*)'TD',TD(II,1)
 !         ENDDO
-         IF(num_grid_cfg_grasp)THEN
-           DO IR = 1,MXNP
-             DO II = 1,NDIM2
-!                write(*,*)'TA1,R',TD(II,IR),R(IR),IR,II
-                TD(II,IR) = TD(II,IR)*R(IR) ! Additional R(IR) for QUAD
-!                write(*,*)'TA2',TD(II,IR),IR,II
-!                write(*,*)
-!                write(*,*)
-             ENDDO
-           ENDDO
-           CALL QUAD2(OVL,TD,MXNP,NDIM2)
-         ENDIF 
 !     CALL QUAD2(RESULT,TD,MXNP,NDIM2) 
 !     CALL QUAD2(OVL,TD,MXNP,NDIM2)
 !         CALL RADINT_WRAPPER(OVL,TD,R,W,MXNP,NDIM2)
@@ -578,6 +609,7 @@ C
       use num_grid_cfg
 #include "implicit.h"
 #include "priunit.h"
+#include "dummy.h"
 #include "pi.h"
 #include "mxcent.h"
 #include "nuclei.h"
@@ -599,9 +631,9 @@ C
 C
 C     SET UP POTENTIAL FOR POINT NUCLEUS
 C
-        H=0.01D0
-        EPH = EXP(H)
-        RNT = 1.0D-06/Z           !CHARGE(IATOM)
+        H     = 0.01D0
+        EPH   = EXP(H)
+        RNT   = 1.0D-06/Z           !CHARGE(IATOM)
         RTEMP = RNT
         DO 1 I = 1,N
            X = WD*RTEMP
@@ -620,43 +652,50 @@ C
            ENDIF   
            RTEMP = RTEMP*EPH
  1      CONTINUE
-      ELSE
+      ELSE !num_grid_cfg_grasp
 C
 C     Get information about basis sets
 C
-         CALL NUCBAS(NUCORB,AA,IPRINT)
+        CALL NUCBAS(NUCORB,AA,IPRINT)
         ADDSML = num_grid_cfg_force_4c_grid.OR.
      &          (MC.GT.1.AND.(.NOT.LEVYLE))
-        CALL LMGGRID(H,RL,RH,2.0d-15,IATOM,ADDSML,NUCORB,AA,IPRINT)
+        CALL LMGGRID(H,RNT,RH,2.0d-15,IATOM,ADDSML,NUCORB,AA,IPRINT)
 C        
 C The values of ultrafine (.ULTRAF) at DFT input-reader section.    
 C num_grid_cfg_radint = 2.0d-15 
 C
         EPH   = EXP(H)
-        GRDC  = RL/(EPH-ONE)
-        RTEMP = RL
+        GRDC  = RNT/(EPH-ONE)
+        RTEMP = RNT
 C     
 C     SET UP POTENTIAL FOR POINT NUCLEUS
 C
+        THSHD =-1.0D-6
+        VPTST2=-DUMMY
         DO 2 I = 1,N
            X = WD*RTEMP
-           IF(X.GT.1.0D+02)THEN !same to FUNK
-              TEMP = FACTOR*FUNK (X,1)
+           VPTST1 = FACTOR*FUNK (X,1)
+!           IF(X.GT.1.0D+02)THEN !same to FUNK
+           IF(VPTST2-VPTST1.GT.THSHD)THEN !same to FUNK
               MXNP = I
+              write(*,*)'FINAL value,R',VPTST1,RTEMP
               exit
-           ENDIF   
+           ENDIF
+           write(*,*)'VPTST1,R,I',VPTST1,RTEMP,I
            RTEMP = (RTEMP+GRDC)*EPH-GRDC
+           VPTST2 = VPTST1
  2      CONTINUE         
       ENDIF   
 C      
       IF (IPRINT.GE.6) THEN
          WRITE(LUPRI,'(2X,/A)')'**Truncation of radial grid'
          WRITE(LUPRI,'(2X,A,E11.5e2,A,E11.4e2)')
-     &    'The value of First Grid is ',RNT,'; Step size is ',H
+     &    'The value of inner grid point is ',RNT,'
+     &    ; Step size is ',H
          WRITE(LUPRI,'(2X,A,I4)')
-     &    'The number of Grid (Final one) is ',MXNP
+     &    'The number of grid points is ',MXNP
          WRITE(LUPRI,'(2X,A,E11.4e2,A)')
-     &    'The value of final Grid ',TEMP,' is less than 1.0D-50'
+     &    'The value of outer grid ',TEMP,' is less than 1.0D-50'
          WRITE(LUPRI,'(2X,A)')'Note that GRASP part is truncated'
       ENDIF   
 C      
