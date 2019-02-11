@@ -96,7 +96,7 @@
           ENDIF
           DO M = 0,K
             FAC = D2*(-D1)**M
-            IF(M.EQ.0) FAC = D1
+            IF(M==0) FAC = D1
 !...........Left operator.. order (K+M)
             IORD  = K+M
             INDAP = IBDOFF(IORD) + IP
@@ -391,7 +391,7 @@
       allocate(tmomr(MAXEXC,NBSYM))      
       K2=K+K
       DO M = 0,K
-        FAC = D2
+        FAC = D2*(-D1)**M
         IF(M==0) FAC = D1
 !.......Accumulate left operator .. order (K+M)
         IORD  = K+M

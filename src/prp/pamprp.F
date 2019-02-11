@@ -449,8 +449,6 @@ C***********************************************************************
 C
 C     Define operators for electric dipole polarizabilities
 C    
-C     This is only linear response calculation.
-C
 C     Written by T.Saue - June 28 1996
 C     Last revision: June 28 - tsaue
 C                    July 2006 - M.Ilias, Prievidza
