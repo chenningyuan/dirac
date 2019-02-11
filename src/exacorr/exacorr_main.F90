@@ -24,6 +24,7 @@
       integer              :: numproc, mytid
       integer              :: imo, nmo(4)
       integer, allocatable :: mo_list(:)
+      integer, allocatable :: mokr_occ(:), mokr_vir(:)
 !     Variables for reading of DFCOEF
       logical              :: input_found=.false. !For read_menu_input
       integer              :: file_unit,dfcoef_unit
@@ -119,15 +120,25 @@
 
         exa_input%nkr_occ = 0
         call numlst (string_occupied,kvec,1,1,nesh(1),1,exa_input%nkr_occ)
-        allocate(exa_input%mokr_occ(exa_input%nkr_occ))
-        call numlst (string_occupied,exa_input%mokr_occ,exa_input%nkr_occ, &
-                                            1,nesh(1),1,exa_input%nkr_occ)
+        allocate (mokr_occ(exa_input%nkr_occ))
+        call numlst (string_occupied,mokr_occ,exa_input%nkr_occ,1,nesh(1),1,exa_input%nkr_occ)
+        exa_input%nkr_occ = 2 * exa_input%nkr_occ
+        allocate (exa_input%mokr_occ(exa_input%nkr_occ))
+        do i = 1, exa_input%nkr_occ
+          exa_input%mokr_occ(i) = (mokr_occ(1)-1)*2+i
+        end do
+        deallocate (mokr_occ)
 
         exa_input%nkr_vir = 0
         call numlst (string_virtual,kvec,1,1,nesh(1),1,exa_input%nkr_vir)
+        allocate (mokr_vir(exa_input%nkr_vir))
+        call numlst (string_virtual,mokr_vir,exa_input%nkr_vir,1,nesh(1),1,exa_input%nkr_vir)
+        exa_input%nkr_vir = 2 * exa_input%nkr_vir
         allocate (exa_input%mokr_vir(exa_input%nkr_vir))
-        call numlst (string_virtual,exa_input%mokr_vir,exa_input%nkr_vir, &
-                                           1,nesh(1),1,exa_input%nkr_vir)
+        do i = 1, exa_input%nkr_vir
+          exa_input%mokr_vir(i) = exa_input%mokr_occ(exa_input%nkr_occ)+i
+        end do
+        deallocate (mokr_vir)
       end if
 
       if (cc_calculation) then

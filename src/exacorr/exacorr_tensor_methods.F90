@@ -315,14 +315,15 @@ module exacorr_tensor_methods
          class(init_dm_tensor_t), intent(out):: this
 
          integer  :: nao,j,k
-         type(qumo) :: qmo
+         !type(qumo) :: qmo
+         type(cmo) :: cspinor
 
 !        Copy the coefficients into the alpha or beta array, using the quaternion relations as defined in
 !        T. Saue, H. Jensen, J. Chem. Phys. 111 (1999) 6211–6222, Equation 16.
 !        The coefficients for the barred spinors (that start after the nmo(i) unbarred spinors) are generated
 !        using Kramers' symmetry.
 
-         !nao = get_nao()
+         nao = get_nao()
 
          !allocate (this%mocoef_all_1(nao,2*nmo(1),2))
          !call get_mo_coefficients (qmo,mo_list(1:nmo(1)),nmo(1))
@@ -348,6 +349,13 @@ module exacorr_tensor_methods
          !end do
          !call dealloc_mo (qmo)
 
+         allocate(this%mocoef_all_1(nao,nmo(1),2))
+         allocate(this%mocoef_all_2(nao,nmo(2),2))
+         call get_mo_coefficients(cspinor,mo_list(1:nmo(1)+nmo(2)),nmo(1)+nmo(2))
+         this%mocoef_all_1 = cspinor%coeff(:,1:nmo(1),:)
+         this%mocoef_all_2 = cspinor%coeff(:,nmo(1)+1:nmo(1)+nmo(2),:)
+         call dealloc_mo(cspinor)
+
         end subroutine init_dm
 
         subroutine init_ht(this,mo_list,nmo)
@@ -361,14 +369,15 @@ module exacorr_tensor_methods
          class(init_ht_tensor_t), intent(out):: this
 
          integer  :: nao,j,k
-         type(qumo) :: qmo
+         !type(qumo) :: qmo
+         type(cmo) :: cspinor
 
 !        Copy the coefficients into the alpha or beta array, using the quaternion relations as defined in
 !        T. Saue, H. Jensen, J. Chem. Phys. 111 (1999) 6211–6222, Equation 16.
 !        The coefficients for the barred spinors (that start after the nmo(i) unbarred spinors) are generated
 !        using Kramers' symmetry.
 
-         !nao = get_nao()
+         nao = get_nao()
 
          !allocate (this%mocoef_all_1(nao,2*nmo(1),2))
          !call get_mo_coefficients (qmo,mo_list(1:nmo(1)),nmo(1))
@@ -394,6 +403,13 @@ module exacorr_tensor_methods
          !end do
          !call dealloc_mo (qmo)
 
+         allocate(this%mocoef_all_1(nao,nmo(1),2))
+         allocate(this%mocoef_all_2(nao,nmo(2),2))
+         call get_mo_coefficients(cspinor,mo_list(1:nmo(1)+nmo(2)),nmo(1)+nmo(2))
+         this%mocoef_all_1 = cspinor%coeff(:,1:nmo(1),:)
+         this%mocoef_all_2 = cspinor%coeff(:,nmo(1)+1:nmo(1)+nmo(2),:)
+         call dealloc_mo(cspinor)
+
         end subroutine init_ht
 
         function scale_with_denom(this,tensor,scalar) result(ierr)
@@ -404,17 +420,35 @@ module exacorr_tensor_methods
          class(tens_rcrsv_t), intent(inout):: tensor
          complex(8), intent(inout), optional:: scalar
          type(tens_dense_t):: tens
+         integer, allocatable :: tens_id(:)
+         integer(INTL), allocatable  :: tens_root(:)
+         logical :: lambda=.false.
 
          ierr=0
          tens=tensor%get_dense_adapter(ierr)
          if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
+
+         select case (tens%num_dims)
+         case (2)
+            allocate (tens_id  (2))
+            allocate (tens_root(2))
+         case (4)
+            allocate (tens_id  (4))
+            allocate (tens_root(4))
+         case default
+            call quit ('Error: wrong dimension of tensor in denominate')
+         end select
+
+         call tensor%get_space_ids(tens_id,tens_root,ierr)
+         if (tens_id(1) == 1) lambda = .true. ! tens_id 1 corresponds to occupied space
+
          ierr=denominate(tens%num_dims,tens%body_ptr,tens%data_kind,tens%dims(1:n),tens%bases(1:n), &
-                         this%eps_occ,this%eps_vir)
+                         this%eps_occ,this%eps_vir,lambda)
 
         end function scale_with_denom
 
         integer function denominate(num_dims,tens_body,data_kind,tens_dims,tens_bases, &
-                         eps_occ,eps_vir) result (ierr)
+                         eps_occ,eps_vir,lambda) result (ierr)
 
         !Scale with denominators for 2-d or 4-d tensor for regular CC and for lambda
 
@@ -428,6 +462,7 @@ module exacorr_tensor_methods
          integer(8), intent(in):: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
          integer(8), intent(in):: tens_bases(1:*) !in: base offsets for each tensor dimension)
          real(8), intent(in):: eps_occ(:),eps_vir(:)
+         logical, intent(in) :: lambda
 
          integer :: i,j,a,b
          real(8) :: denominator
@@ -442,24 +477,24 @@ module exacorr_tensor_methods
          select case (num_dims)
          case (2)
             call c_f_pointer(tens_body,t1_tens,tens_dims(1:2)) !map C pointer to 2-dimensional array
-!           if (tens_dims(1)*2.eq.size(eps_vir)) then 
+            if (.not.lambda) then 
                do i = 1, tens_dims(2)
                   do a = 1, tens_dims(1)
                      denominator = eps_occ(i+tens_bases(2)-1) - eps_vir(a+tens_bases(1)-1)
                      t1_tens(a,i) = t1_tens(a,i) / denominator
                   end do
                end do
-!           else
-!              do i = 1, tens_dims(1)
-!                 do a = 1, tens_dims(2)
-!                    denominator = eps_occ(i+tens_bases(1)-1) - eps_vir(a+tens_bases(2)-1)
-!                    t1_tens(i,a) = t1_tens(i,a) / denominator
-!                 end do
-!              end do
-!           end if
+            else
+              do i = 1, tens_dims(1)
+                 do a = 1, tens_dims(2)
+                    denominator = eps_occ(i+tens_bases(1)-1) - eps_vir(a+tens_bases(2)-1)
+                    t1_tens(i,a) = t1_tens(i,a) / denominator
+                 end do
+              end do
+            end if
          case (4)
             call c_f_pointer(tens_body,t2_tens,tens_dims(1:4)) !map C pointer to 2-dimensional array
-!           if (tens_dims(1)*2.eq.size(eps_vir)) then
+            if (.not.lambda) then
                do j = 1, tens_dims(4)
                   do i = 1, tens_dims(3)
                      do b = 1, tens_dims(2)
@@ -471,19 +506,19 @@ module exacorr_tensor_methods
                      end do
                   end do
                end do
-!           else
-!              do j = 1, tens_dims(2)
-!                 do i = 1, tens_dims(1)
-!                    do b = 1, tens_dims(4)
-!                       do a = 1, tens_dims(3)
-!                          denominator = eps_occ(i+tens_bases(1)-1) + eps_occ(j+tens_bases(2)-1) &
-!                                      - eps_vir(a+tens_bases(3)-1) - eps_vir(b+tens_bases(4)-1)
-!                          t2_tens(i,j,a,b) = t2_tens(i,j,a,b) / denominator
-!                       end do
-!                    end do
-!                 end do
-!              end do
-!           end if
+            else
+              do j = 1, tens_dims(2)
+                 do i = 1, tens_dims(1)
+                    do b = 1, tens_dims(4)
+                       do a = 1, tens_dims(3)
+                          denominator = eps_occ(i+tens_bases(1)-1) + eps_occ(j+tens_bases(2)-1) &
+                                      - eps_vir(a+tens_bases(3)-1) - eps_vir(b+tens_bases(4)-1)
+                          t2_tens(i,j,a,b) = t2_tens(i,j,a,b) / denominator
+                       end do
+                    end do
+                 end do
+              end do
+            end if
          case default
             call quit ('Error: wrong dimension of tensor in denominate')
          end select

@@ -33,7 +33,7 @@ C***********************************************************************
 
       character (len=72)   :: orbital_string(4) ! String with range of MO's to be transformed for each index
       integer              :: kvec              ! Dummy variable needed in first call to numlst
-      integer, allocatable :: mo_list(:)
+      integer, allocatable :: mo_list(:), mo_list_tmp(:)
       integer              :: nmo(4)
 
 c     if (nfsym.ne.1) then
@@ -82,13 +82,26 @@ C     Count number of orbitals to be transformed for each index
       end do
 
 C     Fill the array with orbital indices
-      allocate (mo_list(ntmo))
+      allocate (mo_list_tmp(ntmo))
       imo = 1
       do i = 1, 4
        call numlst
-     & (orbital_string(i),mo_list(imo),nmo(i),1,nesh(1),1,nmo(i))
+     & (orbital_string(i),mo_list_tmp(imo),nmo(i),1,nesh(1),1,nmo(i))
        imo = imo + nmo(i)
       end do
+
+      allocate (mo_list(ntmo*2))
+      imo = 1
+      jmo = 1
+      do j = 1, 4
+        do i = 1, 2*nmo(j)
+            mo_list(imo) = (mo_list_tmp(jmo)-1)*2 + i
+            imo = imo + 1
+        end do
+        jmo = jmo + nmo(j)
+      end do
+      deallocate(mo_list_tmp)
+      nmo = nmo * 2 ! Kramer's unrestricted
 
 #if defined (VAR_MPI)
       end if

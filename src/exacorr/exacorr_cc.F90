@@ -1137,7 +1137,6 @@ module exacorr_cc
            a2int_root(1:2) = vovo_root(1)
            ierr=exatns_tensor_create(a2int_tensor,"a2vv",a2int_id,a2int_root,EXA_DATA_KIND_C8) 
            call get_ht1_integral_tensor (aoint_tensor,a2int_tensor)
-           print*, "a2vv", print_tensornorm2(a2int_tensor)
            call print_date('vv halftransformation completed')
            call get_ht2_integral_tensor (a2int_tensor,int_t%vvvv,12)
            call print_date('vvvv integrals completed')
@@ -1152,7 +1151,6 @@ module exacorr_cc
            a2int_root(1:2) = vovo_root(2:3)
            ierr=exatns_tensor_create(a2int_tensor,"a2ov",a2int_id,a2int_root,EXA_DATA_KIND_C8) 
            call get_ht1_integral_tensor (aoint_tensor,a2int_tensor)
-           print*, "a2ov", print_tensornorm2(a2int_tensor)
            call print_date('ov halftransformation completed')
            ierr=exatns_tensor_create(ovvo_tensor,"ovvo",ovvo_id,ovvo_root,EXA_DATA_KIND_C8) ! auxilliary for get_CC_integrals
            call get_ht2_integral_tensor (a2int_tensor,ovvo_tensor,0)
@@ -1170,7 +1168,6 @@ module exacorr_cc
            a2int_root(1:2) = vovo_root(2)
            ierr=exatns_tensor_create(a2int_tensor,"a2oo",a2int_id,a2int_root,EXA_DATA_KIND_C8) 
            call get_ht1_integral_tensor (aoint_tensor,a2int_tensor)
-           print*, "a2oo", print_tensornorm2(a2int_tensor)
            call print_date('oo halftransformation completed')
            call get_ht2_integral_tensor (a2int_tensor,int_t%ooov,12)
            call print_date('ooov integrals completed')
