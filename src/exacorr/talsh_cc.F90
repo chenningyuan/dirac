@@ -208,12 +208,8 @@ module talsh_cc
             write (*,'(A,F20.15)') "  CCSD-T  correlation energy :      ",ccsd_energy+t_energy(1)+t_energy(3)
          end if
 
-         if (.not.CCD) then
-            print*," Final CCSD energy    = ",ccsd_energy
-            print*," Final CCSD(T) energy = ",ccsd_energy+t_energy(1)+t_energy(2)
-         else
-            print*," Final CCD energy    = ",ccsd_energy
-         end if
+         print*," Final CCSD energy    = ",ccsd_energy
+         if (.not.CCD) print*," Final CCSD(T) energy = ",ccsd_energy+t_energy(1)+t_energy(2)
 
          !Destruct diis tensors
          if (.not.CCD) then
@@ -513,11 +509,7 @@ module talsh_cc
           ierr=talsh_tensor_init(result_tensor)
           ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%tau,int_t%oovv) ! o(2)v(2)
           ccsd_energy=ccsd_energy + result_tens(1) * ONE_QUARTER
-          if (.not.CCD) then
-            write (*,'(A,I4,A,F20.15,A,ES10.1)') "  Iteration ",iccsd," CCSD energy = ",ccsd_energy, " convergence =",t_convergence
-          else
-            write (*,'(A,I4,A,F20.15,A,ES10.1)') "  Iteration ",iccsd," CCD energy = ",ccsd_energy, " convergence =",t_convergence
-          end if
+          write (*,'(A,I4,A,F20.15,A,ES10.1)') "  Iteration ",iccsd," CCSD energy = ",ccsd_energy, " convergence =",t_convergence
           if (t_convergence .lt. t_target_precision) exit
 
          end do
