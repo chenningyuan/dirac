@@ -420,6 +420,7 @@
         ENDDO
       ENDDO   
       END SUBROUTINE OSC_BED
+
       SUBROUTINE accBEDMOM(TMOM,ATMPPF,IORDER)
 #include "implicit.h"        
 #include "dgroup.h"
@@ -451,3 +452,153 @@
       ENDDO
       RETURN
       END SUBROUTINE accBEDMOM
+
+      SUBROUTINE OSC_MPOL(K,FOSC,ATMPPF,OMEGA)
+#include "implicit.h"
+#include "dcbgen.h"
+#include "dgroup.h"
+#include "dcbxpp.h"
+      real*8              :: FOSC(4,MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM),OMEGA(MAXEXC,NBSYM)
+      real*8,allocatable  :: TEMOML(:,:),TMMOML(:,:),TEMOMR(:,:),TMMOMR(:,:)
+      PARAMETER(D2=2.0D0,D1=1.0D0,D0=0.0D0)
+      allocate(temoml(MAXEXC,NBSYM))
+      allocate(tmmoml(MAXEXC,NBSYM))      
+      allocate(temomr(MAXEXC,NBSYM))
+      allocate(tmmomr(MAXEXC,NBSYM))            
+      K2=K+K
+      DO M = 0,K
+        FAC = D2*(-D1)**M
+        IF(M==0) FAC = D1
+!.......Accumulate left operator .. order (K+M)
+        IORD  = K+M
+!.........Electric multipole        
+          TEMOML = D0
+          CALL accEMOM(TEMOML,ATMPPF,IORD+1)
+!.........Magnetic multipole        
+          TMMOML = D0
+          CALL accMMOM(TMMOML,ATMPPF,IORD)
+!.......Accumulate right operator .. order (K-M)
+        IORD  = K-M
+!.........Electric multipole        
+          TEMOMR = D0
+          CALL accEMOM(TEMOMR,ATMPPF,IORD+1)
+!.........Magnetic multipole        
+          TMMOMR = D0
+          CALL accMMOM(TMMOMR,ATMPPF,IORD)
+!.......Accumulate oscillator strengths
+        DO ISYM = 1,NBSYM        
+          NEXC=KEXCNV(ISYM)
+          DO IEXC=1,NEXC
+             FOSC(2,IEXC,ISYM) = FOSC(2,IEXC,ISYM) + FAC*TEMOML(IEXC,ISYM)*TEMOMR(IEXC,ISYM)
+             FOSC(3,IEXC,ISYM) = FOSC(3,IEXC,ISYM) - FAC*(TEMOML(IEXC,ISYM)*TMMOMR(IEXC,ISYM)&
+                                                   +      TMMOML(IEXC,ISYM)*TEMOMR(IEXC,ISYM))
+             FOSC(4,IEXC,ISYM) = FOSC(4,IEXC,ISYM) + FAC*TMMOML(IEXC,ISYM)*TMMOMR(IEXC,ISYM)
+           ENDDO
+        ENDDO
+      ENDDO
+      deallocate(temoml)
+      deallocate(tmmoml)
+      deallocate(temomr)      
+      deallocate(tmmomr)
+      !....Add final factors for oscillator strengths
+      DO ISYM = 1,NBSYM
+        NEXC = KEXCNV(ISYM)
+        DO IEXC = 1,NEXC
+          FAC = (OMEGA(IEXC,ISYM)/CVAL)**K2*2.0D0
+          FOSC(2,IEXC,ISYM)=FOSC(2,IEXC,ISYM)*FAC*OMEGA(IEXC,ISYM)
+          FOSC(3,IEXC,ISYM)=FOSC(3,IEXC,ISYM)*FAC
+          FOSC(4,IEXC,ISYM)=FOSC(4,IEXC,ISYM)*FAC/OMEGA(IEXC,ISYM)
+          FOSC(1,IEXC,ISYM)=FOSC(2,IEXC,ISYM)+FOSC(3,IEXC,ISYM)+FOSC(4,IEXC,ISYM)
+        ENDDO
+      ENDDO   
+      END SUBROUTINE OSC_MPOL
+
+      SUBROUTINE accMMOM(TMOM,ATMPPF,IORDER)
+!     Accumulate magnetic multipole contributions to order IORDER        
+#include "implicit.h"        
+#include "dgroup.h"
+#include "dcbxpr.h"      
+#include "dcbxpp.h"
+      real*8  :: TMOM(MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM)
+      IF(IORDER.EQ.0) RETURN  
+      FAC = 1.0D0
+      DO I = 2,IORDER
+        FAC = FAC/I
+      ENDDO
+      IORDM = IORDER - 1
+      DO IP = 1,3
+        INDAP = IMPOFF(IORDER)
+        IBKA = 1     ! Binomial coefficient (IORDM A)
+        DO IA = 0,IORDM
+          IX = IORDM - IA
+          IBAB = 1     ! Binomial coefficient (A B)
+          DO IB = 0,IA
+            IY = IA - IB
+            IZ = IB
+            TFAC=FAC*UPOL(IP)*(UWAVE(1)**IX)*(UWAVE(2)**IY)*(UWAVE(3)**IZ)*IBKA*IBAB
+            DO IR = 1,3
+              INDAP   = INDAP + 1
+              CALL LEVI_CEVITA(IP,IR,IS,IPRS)
+              IF(IPRS.NE.0) THEN
+                INDPRA  = LPPAPU(INDAP)
+                ISYM    = IPRPSYM(INDPRA)
+                NEXC    = KEXCNV(ISYM)
+                DO IEXC=1,NEXC
+                  TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+UWAVE(IS)*TFAC*ATMPPF(IEXC,INDAP,ISYM)
+!               WRITE(6,*) 'TEST2..',IORDER,IX,IY,IZ,IEXC,ISYM,TMOM(IEXC,ISYM),UPOL(IP),TFAC,ATMPPF(IEXC,INDAP,ISYM)
+                ENDDO
+              ENDIF 
+            ENDDO
+            IBAB = IBAB*IY/(IB+1)
+          ENDDO
+          IBKA = IBKA*IX/(IA+1)
+        ENDDO
+      ENDDO
+      RETURN
+      END SUBROUTINE accMMOM
+
+      SUBROUTINE accEMOM(TMOM,ATMPPF,IORDER)
+!     Accumulate electric multipole contributions to order IORDER        
+#include "implicit.h"        
+#include "dgroup.h"
+#include "dcbxpr.h"      
+#include "dcbxpp.h"
+      real*8  :: TMOM(MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM)
+      integer :: IND(3)  
+      FAC = 1.0D0
+      DO I = 2,IORDER
+        FAC = FAC/I
+      ENDDO
+      IORDM = IORDER - 1
+      IBKA = 1     ! Binomial coefficient (IORDM A)
+      DO IA = 0,IORDM
+        IX = IORDM - IA
+        IBAB = 1     ! Binomial coefficient (A B)
+        DO IB = 0,IA
+          IY = IA - IB
+          IZ = IB
+          TFAC=FAC*(UWAVE(1)**IX)*(UWAVE(2)**IY)*(UWAVE(3)**IZ)*IBKA*IBAB
+          DO IP = 1,3
+            IND(1)  = IX
+            IND(2)  = IY 
+            IND(3)  = IZ
+            IND(IP) = IND(IP) + 1
+            IA1     = IORDER - IND(1)
+            IB1     = IND(3)
+            INDAP   = IEPOFF(IORDER) + IB1 + 1 + (IA1+1)*IA1/2
+            INDPRA  = LPPAPU(INDAP)
+            ISYM    = IPRPSYM(INDPRA)
+            NEXC    = KEXCNV(ISYM)
+            DO IEXC=1,NEXC
+              TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+UPOL(IP)*TFAC*ATMPPF(IEXC,INDAP,ISYM)
+!              WRITE(6,*) 'TEST2..',IORDER,IX,IY,IZ,IEXC,ISYM,TMOM(IEXC,ISYM),UPOL(IP),TFAC,ATMPPF(IEXC,INDAP,ISYM)
+            ENDDO
+          ENDDO
+          IBAB = IBAB*IY/(IB+1)
+        ENDDO
+        IBKA = IBKA*IX/(IA+1)
+      ENDDO
+      RETURN
+      END SUBROUTINE accEMOM
+      
+      
