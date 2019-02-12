@@ -95,11 +95,6 @@ module exacorr_cc
          call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
          if (my_MPI_rank == 0) print*, " Starting CC calculation with exatensor"
 
-!        Initialize global data (read from DFCOEF or similar by master)
-         call set_talsh_only(exa_input%talsh)
-         call initialize_global_data
-         if (my_MPI_rank == 0) print*," Initialized global data"
-
 !        Initialize and register AO and MO spaces and get their IDs for further reference
          call exacorr_cc_spaces (exa_input,ao_space,occ_space,vir_space,ao_space_id,occ_space_id,vir_space_id)
          if (my_MPI_rank == 0) print*," Registered AO and MO spaces"
@@ -199,14 +194,7 @@ module exacorr_cc
             ierr=exatns_tensor_create(int_t%vovv,"vovv",vovv_id,vovv_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(int_t%vvvv,"vvvv",vvvv_id,vvvv_root,EXA_DATA_KIND_C8)
             call get_CC_integrals (ao_space_id,ao_space_root,int_t,exa_input%moint_scheme)
-
             call print_date('initialized two electron integrals')
-            print*, "oooo: ", print_tensornorm2(int_t%oooo)
-            print*, "ooov: ", print_tensornorm2(int_t%ooov)
-            print*, "oovv: ", print_tensornorm2(int_t%oovv)
-            print*, "vovo: ", print_tensornorm2(int_t%vovo)
-            print*, "vovv: ", print_tensornorm2(int_t%vovv)
-            print*, "vvvv: ", print_tensornorm2(int_t%vvvv)
 
 !           Initialize t1 amplitudes to zero (we assume canonical orbitals for the moment)
             if (.not.CCD) ierr=exatns_tensor_create(comm_t%t1,"t1",vo_id,vo_root,EXA_DATA_KIND_C8)
@@ -553,6 +541,7 @@ module exacorr_cc
 !        Routine for solving the t amplitude equations
 
          use exacorr_ao_to_mo, only : print_tensornorm2
+         use exacorr_global,   only : debug
 
 !        Input
          type(exatns_comm_tens), intent(inout) :: comm_t
@@ -673,7 +662,7 @@ module exacorr_cc
              return
           end if
 
-          if (.false.) then
+          if (debug) then
              if (.not.CCD) write(*,'(A7,F20.15)'), "T1amp = ",print_tensornorm2 (comm_t%t1)
              write(*,'(A7,F20.15)'), "T2amp = ",print_tensornorm2 (comm_t%t2)
              write(*,'(A7,F20.15)'), "Tau   = ",print_tensornorm2 (comm_t%tau)
@@ -789,7 +778,8 @@ module exacorr_cc
 
 !        Routine for solving the lambda equations
 
-         use exacorr_ao_to_mo, only       : print_tensornorm2
+         use exacorr_ao_to_mo, only : print_tensornorm2
+         use exacorr_global,   only : debug
 
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
          type(exatns_comm_tens), intent(inout) :: comm_t
@@ -927,7 +917,7 @@ module exacorr_cc
           call get_gvv_lambda(lambda_t%gvv,l2_tensor,comm_t%t2)
           call get_goo_lambda(lambda_t%goo,l2_tensor,comm_t%t2)
 
-          if (.false.) then
+          if (debug) then
             print*, "L1  = ", print_tensornorm2(l1_tensor)
             print*, "L2  = ", print_tensornorm2(l2_tensor)*0.25D0
             print*, "goo = ", print_tensornorm2(lambda_t%goo)

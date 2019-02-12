@@ -13,12 +13,13 @@ module exacorr_global
         type(basis_set_info_t) :: ao_basis ! information about the ao basis 
         type(cmo):: cspinor_all ! Stores all MO-coefficients and energies obtained from the parent code 
         logical :: TALSH_ONLY = .TRUE. ! use single-node TALSH library instead of the full EXATENSOR library
-        logical, public, parameter :: DEBUG = .TRUE. ! switch on and off debug
+        logical, public, parameter :: debug = .false. ! switch on and off debug
 
 !       Functions and routines to interact with these data
         public nfunctions
         public get_nao
         public get_basis
+        public get_nsolutions
         public get_talsh_only
         public set_talsh_only
         public initialize_global_data
@@ -44,6 +45,10 @@ module exacorr_global
          integer function get_basis()
              get_basis = ao_basis%basis
          end function get_basis
+
+         integer function get_nsolutions()
+             get_nsolutions = cspinor_all%nmo
+         end function get_nsolutions
 
          subroutine initialize_global_data
 

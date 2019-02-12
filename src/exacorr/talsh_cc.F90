@@ -91,9 +91,6 @@ module talsh_cc
          write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,host_buf_size,host_arg_max
          call interest_initialize(.true.)
          call print_date('Initialized interest library')
-         call set_talsh_only(exa_input%talsh)
-         call initialize_global_data
-         call print_date('Initialized global data')
 
 !        Initialize scalars that are to be used as tensors in contractions
          one_dims(1) = 1
@@ -291,7 +288,8 @@ module talsh_cc
 
 !        Routine for solving the t amplitude equations
 
-         use talsh_ao_to_mo, only       : tensor_norm2
+         use talsh_ao_to_mo, only : tensor_norm2
+         use exacorr_global, only : debug
 
          complex(8), pointer :: result_tens(:)
          type(C_PTR):: body_p
@@ -415,8 +413,7 @@ module talsh_cc
              return
           end if
 
-          !if (debug) then
-          if (.false.) then
+          if (debug) then
              if (.not.CCD) print*, "T1amp  = ",tensor_norm2(comm_t%t1)
              print*, "T2amp  = ",tensor_norm2(comm_t%t2)*ONE_QUARTER
              print*, "Tau    = ",tensor_norm2(comm_t%tau)*ONE_QUARTER
@@ -539,7 +536,8 @@ module talsh_cc
 
 !        Routine for solving the lambda equations
 
-         use talsh_ao_to_mo, only       : tensor_norm2 
+         use talsh_ao_to_mo, only : tensor_norm2
+         use exacorr_global, only : debug
 
          integer, intent(in) :: nocc, nvir
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
@@ -667,7 +665,7 @@ module talsh_cc
           call get_gvv_lambda(lambda_t%gvv,l2_tensor,comm_t%t2)
           call get_goo_lambda(lambda_t%goo,l2_tensor,comm_t%t2)
 
-          if (.false.) then
+          if (debug) then
              print*, "L1  = ", tensor_norm2(l1_tensor)
              print*, "L2  = ", tensor_norm2(l2_tensor)*ONE_QUARTER
              print*, "goo = ", tensor_norm2(lambda_t%goo)

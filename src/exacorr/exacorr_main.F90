@@ -6,41 +6,24 @@
 #if defined (VAR_MPI)
       use interface_to_mpi
 #endif
-
       use exacorr_ao_to_mo,only     : exacorr_compute_mo_integrals
       use talsh_ao_to_mo,only       : talsh_compute_mo_integrals
       use talsh_cc,only             : talsh_cc_driver
       use exacorr_cc,only           : exacorr_cc_driver
       use exacc_cfg
-!---------------------------------------------
-      use exacorr_respect
-      use exacorr_datatypes, only : basis_set_info_t
-      use exacorr_mo, only : cmo
-!---------------------------------------------
+      use exacorr_global
 
       implicit none
 
       logical mo_transform, cc_calculation
       integer              :: numproc, mytid
       integer              :: imo, nmo(4)
+      logical              :: input_found=.false.
+      integer              :: file_unit
       integer, allocatable :: mo_list(:)
       integer, allocatable :: mokr_occ(:), mokr_vir(:)
-!     Variables for reading of DFCOEF
-      logical              :: input_found=.false. !For read_menu_input
-      integer              :: file_unit,dfcoef_unit
-      logical              :: tobe
-!     Variables for storing DFCOEF info
-      integer              :: kvec ! Dummy variable needed in first call to numlst
-      integer              :: nesh(2) ! the second element is a dummy. Just to keep it consistent with the rest of the code
-      character            :: text*74
-      integer              :: nsym
-      integer              :: idim(3,2)
-      integer              :: i, j
-!---------------------------------------------
-      type(basis_set_info_t) :: ao_basis
-      type(cmo)              :: como
-      integer                :: ierr
-!---------------------------------------------
+      integer              :: nesh, kvec
+      integer              :: i
 
 !     Initialize MPI variables
       mytid   = 0
@@ -73,6 +56,11 @@
       end if
 #endif
 
+!     Initialize global data (read from DFCOEF or similar by master)
+      call set_talsh_only(exa_input%talsh)
+      call initialize_global_data
+      if (mytid == 0) print*," Initialized global data"
+
       if (mo_transform) then
 !        We have no input driver for this test code, so we hardwire this here.
          nmo = 8
@@ -88,40 +76,13 @@
          call exacorr_compute_mo_integrals (nmo, mo_list)
       end if
 
-!--------------------------------------------------------------------------------
       if (mytid == 0) then
-        call read_from_respect(ao_basis,como,ierr)
-        if (ierr /= 0) then
-            print*, "read_from_respect returned with error code ", ierr
-            print*, "Aborting calculation"
-            return
-        end if
-      end if
-!--------------------------------------------------------------------------------
-
-      if (mytid == 0) then
-!       open file and read dimension info
-        inquire (file='DFCOEF',exist=tobe)
-        if (.not.tobe) then
-           call quit('error: MO coefficient file DFCOEF not found')
-        else
-           call get_free_fileunit(dfcoef_unit)
-           open (dfcoef_unit,file='DFCOEF',status='OLD',FORM='UNFORMATTED',access='SEQUENTIAL')
-           read (dfcoef_unit) text,nsym, ((idim(i,j),i=1,3),j=1,nsym)
-        end if
-
-!       check symmetry and get dimensions of the coefficient array
-        if (nsym > 1) then
-           call quit ('exacorr can not handle symmetry')
-        else
-           nesh(1) = idim(2,1) ! "electronic" (= positive energy) solutions (we only need these)
-        end if
-        close (dfcoef_unit,status='KEEP')
+        nesh = get_nsolutions() / 2
 
         exa_input%nkr_occ = 0
-        call numlst (string_occupied,kvec,1,1,nesh(1),1,exa_input%nkr_occ)
+        call numlst (string_occupied,kvec,1,1,nesh,1,exa_input%nkr_occ)
         allocate (mokr_occ(exa_input%nkr_occ))
-        call numlst (string_occupied,mokr_occ,exa_input%nkr_occ,1,nesh(1),1,exa_input%nkr_occ)
+        call numlst (string_occupied,mokr_occ,exa_input%nkr_occ,1,nesh,1,exa_input%nkr_occ)
         exa_input%nkr_occ = 2 * exa_input%nkr_occ
         allocate (exa_input%mokr_occ(exa_input%nkr_occ))
         do i = 1, exa_input%nkr_occ
@@ -130,9 +91,9 @@
         deallocate (mokr_occ)
 
         exa_input%nkr_vir = 0
-        call numlst (string_virtual,kvec,1,1,nesh(1),1,exa_input%nkr_vir)
+        call numlst (string_virtual,kvec,1,1,nesh,1,exa_input%nkr_vir)
         allocate (mokr_vir(exa_input%nkr_vir))
-        call numlst (string_virtual,mokr_vir,exa_input%nkr_vir,1,nesh(1),1,exa_input%nkr_vir)
+        call numlst (string_virtual,mokr_vir,exa_input%nkr_vir,1,nesh,1,exa_input%nkr_vir)
         exa_input%nkr_vir = 2 * exa_input%nkr_vir
         allocate (exa_input%mokr_vir(exa_input%nkr_vir))
         do i = 1, exa_input%nkr_vir

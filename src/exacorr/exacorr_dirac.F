@@ -138,23 +138,20 @@ C***********************************************************************
       use exacc_cfg
       use talsh_cc,only             : talsh_cc_driver
       use exacorr_cc,only           : exacorr_cc_driver
+      use exacorr_global
 #if defined (VAR_MPI)
       use interface_to_mpi
 #endif
 
 #include "implicit.h"
 ! because common blocks may assume this
-#include "infpar.h"
-! we will be running in parallel
-#include "dcborb.h"
-! to access nesh (number of positive energy "electronlike" orbitals)
 #include "dgroup.h"
 ! to access nfsym (should be 1)
 
       integer              :: kvec              ! Dummy variable needed in first call to numlst
-      integer, allocatable :: mo_list(:)
-      integer              :: nmo(4)
       integer, allocatable :: mokr_occ(:), mokr_vir(:)
+      integer              :: nesh
+      integer              :: mytid
 
 c     if (nfsym.ne.1) then
 c        call quit ('exacorr can not handle symmetry')
@@ -180,16 +177,22 @@ c     end if
       end if
 #endif
 C
+      call set_talsh_only(exa_input%talsh)
+      call initialize_global_data
+      if (mytid == 0) print*," Initialized global data"
+
 ! next block is code is only for master
 #if defined (VAR_MPI)
       if (mytid == 0) then
 #endif
+
+      nesh = get_nsolutions() / 2
       ! Obtain nocc and nvir + mo_occ and mo_vir
       exa_input%nkr_occ = 0
-      call numlst (string_occupied,kvec,1,1,nesh(1),1,exa_input%nkr_occ)
+      call numlst (string_occupied,kvec,1,1,nesh,1,exa_input%nkr_occ)
       allocate (mokr_occ(exa_input%nkr_occ))
       call numlst (string_occupied,mokr_occ,exa_input%nkr_occ,
-     &              1,nesh(1),1,exa_input%nkr_occ)
+     &              1,nesh,1,exa_input%nkr_occ)
       exa_input%nkr_occ = 2 * exa_input%nkr_occ
       allocate (exa_input%mokr_occ(exa_input%nkr_occ))
       do i = 1, exa_input%nkr_occ
@@ -198,10 +201,10 @@ C
       deallocate (mokr_occ)
 
       exa_input%nkr_vir = 0
-      call numlst (string_virtual,kvec,1,1,nesh(1),1,exa_input%nkr_vir)
+      call numlst (string_virtual,kvec,1,1,nesh,1,exa_input%nkr_vir)
       allocate (mokr_vir(exa_input%nkr_vir))
       call numlst (string_virtual,mokr_vir,exa_input%nkr_vir,
-     & 1,nesh(1),1,exa_input%nkr_vir)
+     & 1,nesh,1,exa_input%nkr_vir)
       exa_input%nkr_vir = 2 * exa_input%nkr_vir
       allocate (exa_input%mokr_vir(exa_input%nkr_vir))
       do i = 1, exa_input%nkr_vir

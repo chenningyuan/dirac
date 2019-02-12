@@ -128,23 +128,12 @@ module talsh_common_routines
        use exacorr_mo
        use exacorr_global
 
-       integer, intent(in) :: nmo          ! the length of the mo basis
-       integer, intent(in) :: mo_list(:)   ! and their indices
-       real(8),intent(out) :: eps(:)
-
-       integer             :: k
-       !type(qumo)            :: qmo
+       integer, intent(in ) :: nmo          ! the length of the mo basis
+       integer, intent(in ) :: mo_list(:)   ! and their indices
+       real(8), intent(out) :: eps(:)
        type(cmo)            :: cspinor
 
-       !call get_mo_coefficients (qmo,mo_list,nmo)
        call get_mo_coefficients (cspinor,mo_list,nmo)
-
-       !do k = 1, nmo
-       !   eps(k)     = qmo%energy(k)
-       !   eps(k+nmo) = qmo%energy(k)
-       !end do
-       !call dealloc_mo (qmo)
-
        eps = cspinor%energy
        call dealloc_mo(cspinor)
 
