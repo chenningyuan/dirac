@@ -190,7 +190,10 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h" 
 #include "priunit.h" 
 #include "pi.h"
-#include "mxcent.h"      
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+C
 #include "nuclei.h"      
 #include "ibtfun.h"
 #include "dcbbas.h"
@@ -199,14 +202,14 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbgen.h"
 #include "nucdata.h"      
 #include "graspprm.h" 
-#include "maxaqn.h"
 #include "ccom.h" 
-
+#include "symmet.h"
+C      
       LOGICAL ADDSML
       CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4 !check
       PARAMETER (D0=0.0D0,D1=1.0D0,D2=2.0D0)      
       real(8), allocatable :: ZAN(:),C(:,:)
-      real(8), allocatable :: ANG(:,:),GAO(:)
+      real(8), allocatable :: ANG(:,:),GAO(:), BUFGAO(:)
       real(8), allocatable :: BUF(:),TC(:),TD(:,:)
       real(8), allocatable :: VACIR(:),R(:),W(:),OVL(:)
       DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND)
@@ -232,11 +235,15 @@ C The values of ultrafine (.ULTRAF) at DFT input-reader section.
       
       m = NLEB(INTANG) ! num_grid_cfg_ANGINT
       NDIM2 = NTBAS(0)*NTBAS(0)
-      allocate( ANG(m,4)       )
-      allocate( GAO(NTBAS(0))  )
-      allocate( BUF(NDIM2)    )
-      allocate( TC(NDIM2)      )
-      allocate( OVL(NDIM2)     )
+      allocate( ANG   (m,4)      )
+      allocate( GAO   (NTBAS(0)) )
+      allocate( BUFGAO(NTBAS(0)) )
+      allocate( BUF   (NDIM2)    )
+      allocate( TC    (NDIM2)    )
+      allocate( OVL   (NDIM2)    )
+C      
+      CALL DZERO(BUF,NDIM2) 
+      CALL DZERO(OVL,NDIM2)
 C      
       CALL LEBEDEV(INTANG,ANG(1,1),ANG(1,2),ANG(1,3),ANG(1,4),n)
       CALL DSCAL(m,4*PI,ANG(1,4),1)
@@ -245,20 +252,22 @@ C
 !         WT(J)=WT(J)*4.0D0*PI
 !     ENDDO
 C
-      DO 10 IATOM = 1, NUCIND
+!      DO 10 IATOM = 1, NUCIND !change
+       DO IATOM = 1,1
 !      DO 10 ISYMOP = 0, MXOPR
 !      What is this roop? MXOPR=0 in dftgrd.F
        IF (IBTAND(0,ISTBNU(IATOM)).EQ.0) THEN
 !        IF (IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN
 !        IBTAND=IAND, but I am not sure what is it.     
-         IF(NOORBT(IATOM)) GOTO 10
-         IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 10
+!         IF(NOORBT(IATOM)) GOTO 10  !chamge
+!         IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 10 !change
 C         
 C   SET DEFAULT VALUES OF PARAMETERS FOR CALCULATION
 C
          MXNP = 4000            !same to GRASP
          NUCTYP = 0
          CALL MEMSET(ZAN(IATOM),IATOM,MXNP,IPRINT)
+         MXNP = 2000            !change
          write(*,*)'HH2',H
          CALL NUCPRM(ZAN(IATOM),NUCMASS(INT(ZAN(IATOM))),NUCTYP)
          write(*,*)"MXNP",MXNP
@@ -266,8 +275,6 @@ C
          allocate( R(MXNP)     )
          allocate( W(MXNP)     )           
 C     
-         CALL DZERO(BUF,NDIM2) 
-         CALL DZERO(OVL,NDIM2)
 C         
          IF(num_grid_cfg_grasp)THEN
            allocate( TD(NDIM2,MXNP) )         
@@ -279,16 +286,17 @@ C
            ENDDO
 C         
            write(*,*)"NUCMASS",NUCMASS(INT(ZAN(IATOM)))
-           CALL VCMPOL(VACIR,R,ZAN(IATOM),MXNP,NUCTYP,1) !change
+!           CALL VCMPOL(VACIR,R,ZAN(IATOM),MXNP,NUCTYP,1) !change
            DO J = 1,MXNP
-              write(*,*)J,VACIR(J),R(J)
+!     write(*,*)J,VACIR(J),R(J)
+              VACIR(J)=D1
            ENDDO
-           OPEN(20,FILE='LOG_DIRAC',STATUS='REPLACE',          
-     &          FORM='FORMATTED',ACCESS='SEQUENTIAL')  
-           DO  J = 1,MXNP
-             WRITE(20,*)VACIR(J)          !sunaga
-           ENDDO
-           CLOSE(20,STATUS='KEEP')
+!           OPEN(20,FILE='LOG_DIRAC',STATUS='REPLACE',          
+!     &          FORM='FORMATTED',ACCESS='SEQUENTIAL')  
+!           DO  J = 1,MXNP
+!             WRITE(20,*)VACIR(J)          !sunaga
+!           ENDDO
+!           CLOSE(20,STATUS='KEEP')
          
 !     change for debug sentense
            write(*,*)"R(1),Z",R(1),ZAN(IATOM) 
@@ -300,7 +308,8 @@ C     Integrand = 1/r * VP(r) * (Large*Large + Small*Small) * r^2 * r
 C     Meaning:   1/r * VACIR(IR) *   wavefunction     * Radial int * Needed in QUAD.
 C     Finally,    We multiply R(IR)*R(IR).
 C
-             RFAC = R(IR)*R(IR) * VACIR(IR)
+!             RFAC = R(IR)*R(IR) * VACIR(IR)
+             RFAC = R(IR)*R(IR)*R(IR) * VACIR(IR)
              CALL DZERO(TC,NDIM2)
 C            
 C            loop over angular points
@@ -314,31 +323,41 @@ C
 C
 C     GET AO's
 C
-               CALL GETAOS(GAO,TEMP,TEMP,TEMP,TEMP,
+               CALL GETAOS(BUFGAO,TEMP,TEMP,TEMP,TEMP,
      &                      X8,Y8,Z8,NTBAS(0),0,.FALSE.,0) !The last is IPRINT
-C
+               CALL WTAOSO(BUFGAO,GAO,NTBAS(0),1,IPRINT)
+!               CALL VTBUBS(BUFGAO,GAO,1)
+C     
 C     Get "overlap" matrix
 C
                IOFF   = 0
-               IEND   = 0
                ISTART = 0
-               DO IC = 1, MC
-                 DO I = 1, NTBAS(IC)
-                   IADD = I*(I-1)/2
-                   DO J = 1, I
-                     IJ = IOFF + IADD + J  
-                     BUF(IJ+ISTART*I) = GAO(I+ISTART)*GAO(J+ISTART)
+               DO IRP = 1,MAXREP+1 
+                 DO IC = 1, MC
+!                   write(*,*)'***********'  
+!                   write(*,*)'NCOS,IRP,IC',NCOS(IRP,IC),IRP,IC
+!                   write(*,*)'***********'
+                    DO I = 1, NCOS(IRP,IC)
+                     IADD = I*(I-1)/2
+                     DO J = 1, I
+                       IJ = IADD + J + IOFF 
+                       BUF(IJ+ISTART*I) = GAO(I+ISTART)*GAO(J+ISTART)
+!                       write(*,*)'IJ,ISTART,IOFF,I,J',IJ,ISTART,IOFF,I,J
+!                       write(*,*)'IJ+ISTART*I',IJ+ISTART*I
+                     ENDDO
                    ENDDO
-                 ENDDO
-                 IOFF   = IOFF   + NTBAS(IC)*(NTBAS(IC)+1)/2
-                 ISTART = ISTART + NTBAS(IC)
+!                   write(*,*)
+                   ISTART = ISTART + NCOS(IRP,IC)
+                   IOFF   = ISTART*(ISTART+1)/2
+                 ENDDO  
                ENDDO
+!               stop
                CALL DAXPY(NDIM2,WT8,BUF,1,TC,1)
  30          CONTINUE
              CALL DCOPY(NDIM2,TC,1,TD(1,IR),1)
  20        CONTINUE
            CALL QUAD2(OVL,TD,MXNP,NDIM2)
-         ELSE
+         ELSE  ! num_grid_cfg_grasp
            allocate( TD(NDIM2,1) )         
            CALL DZERO(TD,NDIM2*1) 
 !     The grids are calculated at MEMSET routine.           
@@ -355,15 +374,19 @@ C R(IR)**2 is multiplized in RFAC, later
            write(*,*)"NUCMASS",NUCMASS(INT(ZAN(IATOM)))
            CALL VCMPOL(VACIR,R,ZAN(IATOM),MXNP,NUCTYP,1) !change
            DO J = 1,MXNP
-              write(*,*)J,VACIR(J),R(J)
+              VACIR(J)=D1
+!              write(*,*)J,VACIR(J),R(J)
            ENDDO
-           OPEN(20,FILE='LOG_DIRAC',STATUS='REPLACE',          
-     &          FORM='FORMATTED',ACCESS='SEQUENTIAL')  
-           DO  J = 1,MXNP
-             WRITE(20,*)VACIR(J)          !sunaga
+!           OPEN(20,FILE='LOG_DIRAC',STATUS='REPLACE',          
+!     &          FORM='FORMATTED',ACCESS='SEQUENTIAL')  
+!           DO  J = 1,MXNP
+!             WRITE(20,*)VACIR(J)          !sunaga
+!           ENDDO
+!           CLOSE(20,STATUS='KEEP')
+           DO IRP=0,MAXREP+1
+              write(*,*)'NCOS',NCOS(IRP,1),IRP        !sunagatest
+              write(*,*)'NCOS',NCOS(IRP,2),IRP        !sunagatest
            ENDDO
-           CLOSE(20,STATUS='KEEP')
-         
 !     change for debug sentense
            write(*,*)"R(1),Z",R(1),ZAN(IATOM) 
            write(*,*)"J,VACIR"
@@ -374,7 +397,8 @@ C       Integrand = 1/r * VP(r) * (Large*Large + Small*Small) * r^2
 C       Meaning:   1/r * VACIR(IR) *   wavefunction     * Radial int.
 C       Finally,    We multiply R(IR).
 C
-             RFAC = R(IR) * VACIR(IR)
+!             RFAC = R(IR) * VACIR(IR) !change
+             RFAC = R(IR) * R(IR) * VACIR(IR)
              CALL DZERO(TC,NDIM2)
 C            
 C            loop over angular points
@@ -388,25 +412,35 @@ C
 C
 C     GET AO's
 C
-               CALL GETAOS(GAO,TEMP,TEMP,TEMP,TEMP,
+               CALL GETAOS(BUFGAO,TEMP,TEMP,TEMP,TEMP,
      &                      X8,Y8,Z8,NTBAS(0),0,.FALSE.,0) !The last is IPRINT
-C
+               CALL WTAOSO(BUFGAO,GAO,NTBAS(0),1,IPRINT)
+!               CALL VTBUBS(BUFGAO,GAO,1)
+C     
 C     Get "overlap" matrix
 C
                IOFF   = 0
-               IEND   = 0
                ISTART = 0
-               DO IC = 1, MC
-                 DO I = 1, NTBAS(IC)
-                   IADD = I*(I-1)/2
-                   DO J = 1, I
-                     IJ = IOFF + IADD + J  
-                     BUF(IJ+ISTART*I) = GAO(I+ISTART)*GAO(J+ISTART)
+               DO IRP = 1,MAXREP+1 
+                 DO IC = 1, MC
+!                   write(*,*)'***********'  
+!                   write(*,*)'NCOS,IRP,IC',NCOS(IRP,IC),IRP,IC
+!                   write(*,*)'***********'
+                    DO I = 1, NCOS(IRP,IC)
+                     IADD = I*(I-1)/2
+                     DO J = 1, I
+                       IJ = IADD + J + IOFF 
+                       BUF(IJ+ISTART*I) = GAO(I+ISTART)*GAO(J+ISTART)
+!                       write(*,*)'IJ,ISTART,IOFF,I,J',IJ,ISTART,IOFF,I,J
+!                       write(*,*)'IJ+ISTART*I',IJ+ISTART*I
+                     ENDDO
                    ENDDO
-                 ENDDO
-                 IOFF   = IOFF   + NTBAS(IC)*(NTBAS(IC)+1)/2
-                 ISTART = ISTART + NTBAS(IC)
+!                   write(*,*)
+                   ISTART = ISTART + NCOS(IRP,IC)
+                   IOFF   = ISTART*(ISTART+1)/2
+                 ENDDO  
                ENDDO
+!               stop
                CALL DAXPY(NDIM2,WT8,BUF,1,TC,1)
  50          CONTINUE
              CALL DAXPY(NDIM2,W(IR),TC,1,OVL,1)
@@ -423,25 +457,27 @@ C
 !         CALL RADINT_WRAPPER(OVL,TD,R,W,MXNP,NDIM2)
 C         
 !         CALL OUTPAK(OVL,NTBAS(0),-1,LUPRI)
-!         IOFF = 1
-!         DIM  = NTBAS(1)  
-!         DO IC = 1,MC
-!           IF(IC.eq.1)THEN 
-!              write(*,*)"Large"
-!           ELSE
-!              write(*,*)"Small"
-!           ENDIF   
-!           CALL OUTPAK(OVL(IOFF),NTBAS(IC),-1,LUPRI)
-!           IOFF = IOFF + NTBAS(IC)*(NTBAS(IC)+1)/2 + NTBAS(IC)
-!           DIM = DIM + NTBAS(2)
-!         ENDDO
-!         write(*,*)
-       ENDIF        !(IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0)
+c$$$         IOFF = 1
+c$$$         DIM  = NTBAS(1)  
+c$$$         DO IC = 1,MC
+c$$$           IF(IC.eq.1)THEN 
+c$$$              write(*,*)"Large"
+c$$$           ELSE
+c$$$              write(*,*)"Small"
+c$$$           ENDIF   
+c$$$           CALL OUTPAK(OVL(IOFF),NTBAS(IC),-1,LUPRI)
+c$$$           IOFF = IOFF + NTBAS(IC)*(NTBAS(IC)+1)/2 + NTBAS(IC)
+c$$$           DIM = DIM + NTBAS(2)
+c$$$         ENDDO
+c$$$         write(*,*)
+          CALL OUTPAK(OVL(1),NTBAS(0),-1,LUPRI)
+       Endif        !(IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0)
        deallocate(TD)
        deallocate(VACIR)
        deallocate(R)
        deallocate(W)
-10    CONTINUE
+       ENDDO
+!10    CONTINUE
 C      
 C     Generate integral labels
 C
@@ -458,8 +494,11 @@ C
       deallocate(ZAN)
       deallocate(C)
       deallocate(ANG)
+      deallocate(GAO)
       deallocate(BUF)
+      deallocate(BUFGAO)
       deallocate(OVL)
+!      stop 
       CALL QEXIT('NUMINT')
       RETURN         
       END
@@ -681,8 +720,8 @@ C
         DO 2 I = 1,N
            X = WD*RTEMP
            VPTST1 = FACTOR*FUNK (X,1)
-!           IF(X.GT.1.0D+02)THEN !same to FUNK
-           IF(VPTST2-VPTST1.GT.THSHD)THEN 
+           IF(X.GT.1.0D+02)THEN !same to FUNK
+!           IF(VPTST2-VPTST1.GT.THSHD)THEN 
               MXNP = I
               write(*,*)'FINAL value,R',VPTST1,RTEMP
               exit
