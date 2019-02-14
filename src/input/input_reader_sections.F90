@@ -1174,7 +1174,10 @@
 
       if (kw_matches(word, '.CVS_CORE')) then
          relcc_projectors_do_core_valence_separation = .true.
-         call kw_read(word,  relcc_projectors_cvs_energy_threshold)
+         call kw_read(word,  relcc_projectors_rew_occ_max_energy)
+         relcc_projectors_rew_occ_min_energy = -huge(relcc_projectors_rew_occ_min_energy)
+         relcc_projectors_rew_virt_min_energy = -huge(relcc_projectors_rew_virt_min_energy)
+         relcc_projectors_rew_virt_max_energy = huge(relcc_projectors_rew_virt_min_energy)
       end if
 
       call check_whether_kw_found(word, kw_section)
