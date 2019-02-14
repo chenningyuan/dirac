@@ -19,7 +19,7 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-      SUBROUTINE RECP_LNK_READCP(LUINFO,NUC1,NONT0)
+      SUBROUTINE RECP_LNK_READCP(LUINFO,NUC1,NONT0,IPREAD)
 !     Read ECP parameters
       USE RECP_NTR
       IMPLICIT NONE
@@ -30,7 +30,7 @@
 #include "recpval.h"
 #include "argoscom.h"
 !     global variables
-      INTEGER LUINFO,NUC1,NONT0
+      INTEGER LUINFO,NUC1,NONT0,IPREAD
       REAL*8  Q,Q1
 !     local variables
       INTEGER I,J,K,IOS,RECPIN1,LUBAS,INTQ0,ISTART,ECPINDEX,msup
@@ -130,11 +130,13 @@
          IF (CHARGE(ECPNUC).LT.0) GOTO 8310
 !        GNUEXP(ECPNUC) = 6.66D+37
       ENDDO
-      WRITE(LUPRI,'(2X,A,I3,A)') 
+      IF (IPREAD .GT. 0) THEN
+         WRITE(LUPRI,'(2X,A,I3,A)') 
      &     '* This atomic center has RECP with ',RECP_CORE(NUC1),
      &     ' core electrons.'
-      WRITE(LUPRI,'(2X,A,F8.3)') 
+         WRITE(LUPRI,'(2X,A,F8.3)') 
      &     '  The charge value is changed as',CHARGE(ECPNUC)
+      END IF
 
 !     Write RECP information into file
 !     ================================

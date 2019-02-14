@@ -17,13 +17,13 @@ f.add(from_string = 'Eigenvalues',
       rel_tolerance   = 1.0e-5)
 
 # run U atom and save MOs in C1 symmetry
-test.run(['x2c.scf_autoocc.inp'], ['U.v2z.D2h.mol'], f, args='--mw=140  --get "DFACMO=DFACMO.U.x2c.v2z"')
+test.run(['x2c.scf_autoocc.inp'], ['U.v2z.D2h.mol'], f, args='--gb=3.500  --get "DFACMO=DFACMO.U.x2c.v2z"')
 
 # run F atom and save MOs in C1 symmetry
-test.run(['F.x2c.scf_2fs.inp'], ['F.v2z.D2h.mol'], f, args='--mw=140  --get "DFACMO=DFACMO.F.x2c.v2z"')
+test.run(['F.x2c.scf_2fs.inp'], ['F.v2z.D2h.mol'], f, args='--gb=0.150  --get "DFACMO=DFACMO.F.x2c.v2z"')
 
 # run UF6 molecule with U,F atomic starts
-test.run(['x2c_a4p.atstart_scf_autoocc_2fs.inp'],  ['UF6.v2z.D2h.mol'], f, args='--mw=140 --put "DFACMO.F.x2c.v2z=AFFXXX DFACMO.U.x2c.v2z=AFUXXX" --get "DFCOEF=DFCOEF.UF6.x2c_a4p.scf_autoocc.v2z"')
+test.run(['x2c_a4p.atstart_scf_autoocc_2fs.inp'],  ['UF6.v2z.D2h.mol'], f, args='--gb=4.500 --put "DFACMO.F.x2c.v2z=AFFXXX DFACMO.U.x2c.v2z=AFUXXX" --get "DFCOEF=DFCOEF.UF6.x2c_a4p.scf_autoocc.v2z"')
 
 # not active runs; shown for tutorial purposes
 ## Preparation for the geometry optimization step - get DFT MOs 
