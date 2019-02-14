@@ -590,7 +590,7 @@
                       write (iw,*) '        the occupied/virtual windows will be retained'
                   else if (relcc_projectors_do_core_valence_separation) then
                       write (iw,*) '   Core valence separation (CVS) via projectors will be invoked'
-                      write (iw,*) '      - 1hI determinants with all particles within'
+                      write (iw,*) '      - 1h  determinants with all particles within'
                       write (iw,*) '        the occupied window will be retained'
                   end if
                   if (relcc_projectors_rew_strict) then
