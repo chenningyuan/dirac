@@ -2282,6 +2282,9 @@ function create_projector(eom_type, ndet, eps)
       allocate(create_projector(ndet))
       create_projector = .false.
 
+      spinors_in_occupied_window = .true.
+      spinors_in_virtuals_window = .true. 
+
 ! we loop over the composition of each determinant in the "excitation" manifold 
       do i = 1, ndet
          if (allocated(det_map%det(i)%occupied_energies)) then 
