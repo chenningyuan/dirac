@@ -126,6 +126,8 @@ module talsh_cc
 !        Get fixed two-body tensors
          call get_CC_integrals (nocc,nvir,mo_occ,mo_vir,int_t)
 
+
+
 !        Initialize t1 amplitudes to zero (we assume canonical orbitals for the moment)
          if (.not.CCD) then
             vo_dims(1) = nvir
@@ -187,7 +189,7 @@ module talsh_cc
             return
          end if
 
-         if (debug) then
+         if (debug_exa) then
             print*, "Voovv = ",tensor_norm2(int_t%oovv)
          end if
 
@@ -289,7 +291,7 @@ module talsh_cc
 !        Routine for solving the t amplitude equations
 
          use talsh_ao_to_mo, only : tensor_norm2
-         use exacorr_global, only : debug
+         use exacorr_global, only : debug_exa
 
          complex(8), pointer :: result_tens(:)
          type(C_PTR):: body_p
@@ -413,7 +415,7 @@ module talsh_cc
              return
           end if
 
-          if (debug) then
+          if (debug_exa) then
              if (.not.CCD) print*, "T1amp  = ",tensor_norm2(comm_t%t1)
              print*, "T2amp  = ",tensor_norm2(comm_t%t2)*ONE_QUARTER
              print*, "Tau    = ",tensor_norm2(comm_t%tau)*ONE_QUARTER
@@ -537,7 +539,7 @@ module talsh_cc
 !        Routine for solving the lambda equations
 
          use talsh_ao_to_mo, only : tensor_norm2
-         use exacorr_global, only : debug
+         use exacorr_global, only : debug_exa
 
          integer, intent(in) :: nocc, nvir
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
@@ -665,7 +667,7 @@ module talsh_cc
           call get_gvv_lambda(lambda_t%gvv,l2_tensor,comm_t%t2)
           call get_goo_lambda(lambda_t%goo,l2_tensor,comm_t%t2)
 
-          if (debug) then
+          if (debug_exa) then
              print*, "L1  = ", tensor_norm2(l1_tensor)
              print*, "L2  = ", tensor_norm2(l2_tensor)*ONE_QUARTER
              print*, "goo = ", tensor_norm2(lambda_t%goo)
@@ -813,8 +815,8 @@ module talsh_cc
          call print_date("Finished iterating")
 
          if (t_convergence .gt. t_target_precision) print*, "WARNING: Non-converged amplitudes!"
-         write(*,'(A,ES22.16)'),"  Final L1amp = ", tensor_norm2(l1_tensor)
-         write(*,'(A,ES22.16)'),"  Final L2amp = ", tensor_norm2(l2_tensor)*ONE_QUARTER
+         write(*,'(A,ES22.16)') "  Final L1amp = ", tensor_norm2(l1_tensor)
+         write(*,'(A,ES22.16)') "  Final L2amp = ", tensor_norm2(l2_tensor)*ONE_QUARTER
 
 !        Destruct tensors
          call diis (l2_tensor,l1_tensor,mode=2)

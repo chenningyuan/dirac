@@ -20,25 +20,20 @@ C***********************************************************************
       use interface_to_mpi
 #endif
 
-#include "implicit.h"
-! because common blocks may assume this
+      implicit none
+
 #include "../moltra/dcbtra.h"
 ! to access tra4_indstr
 #include "infpar.h"
 ! we need to broadcast tra4_indstr
 #include "dcborb.h"
 ! to access nesh (number of positive energy "electronlike" orbitals)
-#include "dgroup.h"
-! to access nfsym (should be 1)
 
       character (len=72)   :: orbital_string(4) ! String with range of MO's to be transformed for each index
       integer              :: kvec              ! Dummy variable needed in first call to numlst
       integer, allocatable :: mo_list(:), mo_list_tmp(:)
       integer              :: nmo(4)
-
-c     if (nfsym.ne.1) then
-c        call quit ('exacorr can not handle symmetry')
-c     end if
+      integer              :: i, j, imo, jmo, ntmo
 
 #if defined (VAR_MPI)
       ! parallel version of DIRAC
@@ -90,6 +85,7 @@ C     Fill the array with orbital indices
        imo = imo + nmo(i)
       end do
 
+C     Convert to Kramer's unrestricted picture
       allocate (mo_list(ntmo*2))
       imo = 1
       jmo = 1
@@ -143,19 +139,13 @@ C***********************************************************************
       use interface_to_mpi
 #endif
 
-#include "implicit.h"
-! because common blocks may assume this
-#include "dgroup.h"
-! to access nfsym (should be 1)
+      implicit none
 
-      integer              :: kvec              ! Dummy variable needed in first call to numlst
-      integer, allocatable :: mokr_occ(:), mokr_vir(:)
-      integer              :: nesh
-      integer              :: mytid
-
-c     if (nfsym.ne.1) then
-c        call quit ('exacorr can not handle symmetry')
-c     end if
+      integer              :: kvec                     ! Dummy variable needed in first call to numlst
+      integer, allocatable :: mokr_occ(:), mokr_vir(:) ! list of spinors
+      integer              :: nesh                     ! number of positive energy solutions
+      integer              :: mytid                    ! MPI rank
+      integer              :: i
 
 #if defined (VAR_MPI)
       ! parallel version of DIRAC
@@ -459,9 +449,9 @@ C
        read (LUCOEF,err=20,end=20) priccf
 
        ! put in gtos
-       ao_basis%nshells = nshells
-       ao_basis%nao     = nao
-       ao_basis%basis   = 1
+       ao_basis%nshells       = nshells
+       ao_basis%nao           = nao
+       ao_basis%basis_angular = 1
        nullify(ao_basis%gtos)
        allocate(ao_basis%gtos(nshells))
        do ishell = 1, nshells
@@ -498,8 +488,9 @@ C
        allocate(ao_basis%shell_indices(nao))
        iao = 0
        do ishell = 1, nshells
-          do ibas = 1, 
-     &     nfunctions(ao_basis%gtos(ishell)%orb_momentum,ao_basis%basis)
+          do ibas = 1,
+     &       nfunctions(
+     &       ao_basis%gtos(ishell)%orb_momentum,ao_basis%basis_angular)
              iao = iao + 1
              if (iao.gt.nao) then
                 ierr = INCONSIS

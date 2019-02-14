@@ -24,7 +24,7 @@
         type, public:: basis_set_info_t
          integer:: nshells=0             ! number of shells in the basis set
          integer:: nao=0                 ! number of basis functions
-         integer:: basis                 ! 1=cartesian, 2=spherical
+         integer:: basis_angular         ! 1=cartesian, 2=spherical
          type(basis_func_info_t), pointer:: gtos(:)
          integer, pointer :: shell_indices(:)
         end type basis_set_info_t

@@ -156,18 +156,19 @@ module exacorr_respect
         call alloc_mo(cspinor,nao,nelms)
         cspinor%total_energy = total_energy
         cspinor%index        = index
-!       Probably not correct, but needed for new definition of coeff
         cspinor%coeff(:,:,1) = coeff(1:nao,:)
         cspinor%coeff(:,:,2) = coeff(1+nao:2*nao,:)
         cspinor%energy       = eig(:)
         cspinor%boson_irrep  = 0 
 
+        deallocate(coeff)
+        deallocate(eig  )
         deallocate(index)
 
 !       put in gtos
-        ao_basis%nshells = nshells
-        ao_basis%nao     = nao
-        ao_basis%basis   = 2
+        ao_basis%nshells       = nshells
+        ao_basis%nao           = nao
+        ao_basis%basis_angular = 2
         nullify(ao_basis%gtos)
         allocate(ao_basis%gtos(nshells))
         do ishell = 1, nshells
@@ -180,7 +181,7 @@ module exacorr_respect
            allocate (ao_basis%gtos(ishell)%coefficient(1))
            ao_basis%gtos(ishell)%exponent = priexp(ishell)
            ao_basis%gtos(ishell)%coefficient = priccf(1,ishell)
-           ao_basis%gtos(ishell)%coord = cent(ishell,1:3)
+           ao_basis%gtos(ishell)%coord = cent(ishell,1:3)         
         end do
 
         deallocate(nhkt  )
@@ -188,8 +189,6 @@ module exacorr_respect
         deallocate(priexp)
         deallocate(priccf)
         deallocate(cent  )
-        deallocate(eig   )
-        deallocate(coeff )
 
 !       make array with pointers from a basis function index to its shell
         nullify(ao_basis%shell_indices)

@@ -13,12 +13,12 @@ module exacorr_global
         type(basis_set_info_t) :: ao_basis ! information about the ao basis 
         type(cmo):: cspinor_all ! Stores all MO-coefficients and energies obtained from the parent code 
         logical :: TALSH_ONLY = .TRUE. ! use single-node TALSH library instead of the full EXATENSOR library
-        logical, public, parameter :: debug = .false. ! switch on and off debug
+        logical, public, parameter :: debug_exa = .true. ! switch on and off debug
 
 !       Functions and routines to interact with these data
         public nfunctions
         public get_nao
-        public get_basis
+        public get_basis_angular
         public get_nsolutions
         public get_talsh_only
         public set_talsh_only
@@ -42,9 +42,9 @@ module exacorr_global
              get_nao = ao_basis%nao
          end function get_nao
 
-         integer function get_basis()
-             get_basis = ao_basis%basis
-         end function get_basis
+         integer function get_basis_angular()
+             get_basis_angular = ao_basis%basis_angular
+         end function get_basis_angular
 
          integer function get_nsolutions()
              get_nsolutions = cspinor_all%nmo
@@ -94,7 +94,7 @@ module exacorr_global
 
 #if defined (VAR_MPI)
              use interface_to_mpi
-             integer :: nao, nshells, basis, n_primitives
+             integer :: nao, nshells, n_primitives
              integer :: ish
              integer :: my_MPI_rank
 
@@ -106,10 +106,9 @@ module exacorr_global
 
              call interface_mpi_bcast (ao_basis%nshells,1,my_MPI_master,global_communicator)
              call interface_mpi_bcast (ao_basis%nao,1,my_MPI_master,global_communicator)
-             call interface_mpi_bcast (ao_basis%basis,1,my_MPI_master,global_communicator)
-             nshells = ao_basis%nshells
-             nao     = ao_basis%nao
-             basis   = ao_basis%basis
+             call interface_mpi_bcast (ao_basis%basis_angular,1,my_MPI_master,global_communicator)
+             nshells       = ao_basis%nshells
+             nao           = ao_basis%nao
    
              if (my_MPI_rank /= my_MPI_master) nullify (ao_basis%gtos)
              if (my_MPI_rank /= my_MPI_master) allocate(ao_basis%gtos(nshells))

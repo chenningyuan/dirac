@@ -54,7 +54,7 @@ module exacorr_ao_to_mo
          integer:: my_role, my_MPI_rank                 ! needed to start exatensor, MPI should already be started in threaded mode
          integer             :: nshells                 ! the number of shells (orbitals with the same center and l-value)
          integer             :: nao                     ! the number of atomic orbitals)
-         integer             :: basis                   ! 1=cartesian, 2=spherical
+         integer             :: basis_angular           ! 1=cartesian, 2=spherical
          type(basis_func_info_t), allocatable :: gto(:) ! array with information about the shells
 
          ! classes for the definition of spaces (AO and 4 different MO spaces)
@@ -98,9 +98,9 @@ module exacorr_ao_to_mo
          call set_talsh_only(.false.)
          call initialize_global_data
 
-         nao     = get_nao()   ! This is the total number of ao's
-         nao_l   = int(nao,8)  ! we need this as a long int for exatensor
-         basis   = get_basis() ! needed for setting basis functions
+         nao           = get_nao()   ! This is the total number of ao's
+         nao_l         = int(nao,8)  ! we need this as a long int for exatensor
+         basis_angular = get_basis_angular() ! needed for setting basis functions
 
 !        Get the basis set information
          call get_gtos(1,nao,gto,nshells)
@@ -114,7 +114,7 @@ module exacorr_ao_to_mo
          allocate(color(nshells))
          labs = 0
          do lsh = 1, nshells !set basis functions
-            nl   =  nfunctions(gto(lsh)%orb_momentum,basis)
+            nl   =  nfunctions(gto(lsh)%orb_momentum,basis_angular)
             call color(lsh)%color_symmetry_ctor(lsh) ! take one shell as a color
             do  l = 1, nl
                 labs = labs + 1

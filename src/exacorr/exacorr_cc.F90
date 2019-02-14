@@ -344,7 +344,7 @@ module exacorr_cc
 
          integer                                :: nao      ! the number of atomic orbitals)
          integer                                :: nshells  ! the number of shells (orbitals with the same center and l-value)
-         integer                                :: basis    ! 1=cartesian, 2=spherical
+         integer                                :: basis_angular    ! 1=cartesian, 2=spherical
          type(basis_func_info_t), allocatable   :: gto(:)   ! array with information about the shells
 
 
@@ -361,9 +361,9 @@ module exacorr_cc
          integer:: ierr, i
          integer:: lsh, l, nl
 
-         nao     = get_nao()   ! This is the total number of ao's
-         nao_l   = int(nao,8)  ! we need this as a long int for exatensor
-         basis   = get_basis() ! needed for setting basis functions
+         nao           = get_nao()   ! This is the total number of ao's
+         nao_l         = int(nao,8)  ! we need this as a long int for exatensor
+         basis_angular = get_basis_angular() ! needed for setting basis functions
 
 !        Get the basis set information
          call get_gtos(1,nao,gto,nshells)
@@ -377,7 +377,7 @@ module exacorr_cc
          allocate(color(nshells))
          labs = 0
          do lsh = 1, nshells !set basis functions
-            nl   =  nfunctions(gto(lsh)%orb_momentum,basis)
+            nl   =  nfunctions(gto(lsh)%orb_momentum,basis_angular)
             call color(lsh)%color_symmetry_ctor(lsh) ! take one shell as a color
             do  l = 1, nl
                 labs = labs + 1
@@ -541,7 +541,7 @@ module exacorr_cc
 !        Routine for solving the t amplitude equations
 
          use exacorr_ao_to_mo, only : print_tensornorm2
-         use exacorr_global,   only : debug
+         use exacorr_global,   only : debug_exa
 
 !        Input
          type(exatns_comm_tens), intent(inout) :: comm_t
@@ -662,18 +662,18 @@ module exacorr_cc
              return
           end if
 
-          if (debug) then
-             if (.not.CCD) write(*,'(A7,F20.15)'), "T1amp = ",print_tensornorm2 (comm_t%t1)
-             write(*,'(A7,F20.15)'), "T2amp = ",print_tensornorm2 (comm_t%t2)
-             write(*,'(A7,F20.15)'), "Tau   = ",print_tensornorm2 (comm_t%tau)
-             write(*,'(A7,F20.15)'), "hoint = ",print_tensornorm2 (comm_t%hoo)
-             write(*,'(A7,F20.15)'), "goint = ",print_tensornorm2 (comm_t%goo)
-             write(*,'(A7,F20.15)'), "hvint = ",print_tensornorm2 (comm_t%hvv)
-             write(*,'(A7,F20.15)'), "gvint = ",print_tensornorm2 (comm_t%gvv)
-             if (.not.CCD) write(*,'(A7,F20.15)'), "hovint= ",print_tensornorm2 (comm_t%hov)
-             write(*,'(A7,F20.15)'), "aint  = ",print_tensornorm2 (comm_t%a_int)
-             write(*,'(A7,F20.15)'), "cint  = ",print_tensornorm2 (cint_tensor)
-             write(*,'(A7,F20.15)'), "hint  = ",print_tensornorm2 (comm_t%h_int)
+          if (debug_exa) then
+             if (.not.CCD) write(*,'(A7,F20.15)') "T1amp = ",print_tensornorm2 (comm_t%t1)
+             write(*,'(A7,F20.15)') "T2amp = ",print_tensornorm2 (comm_t%t2)
+             write(*,'(A7,F20.15)') "Tau   = ",print_tensornorm2 (comm_t%tau)
+             write(*,'(A7,F20.15)') "hoint = ",print_tensornorm2 (comm_t%hoo)
+             write(*,'(A7,F20.15)') "goint = ",print_tensornorm2 (comm_t%goo)
+             write(*,'(A7,F20.15)') "hvint = ",print_tensornorm2 (comm_t%hvv)
+             write(*,'(A7,F20.15)') "gvint = ",print_tensornorm2 (comm_t%gvv)
+             if (.not.CCD) write(*,'(A7,F20.15)') "hovint= ",print_tensornorm2 (comm_t%hov)
+             write(*,'(A7,F20.15)') "aint  = ",print_tensornorm2 (comm_t%a_int)
+             write(*,'(A7,F20.15)') "cint  = ",print_tensornorm2 (cint_tensor)
+             write(*,'(A7,F20.15)') "hint  = ",print_tensornorm2 (comm_t%h_int)
           end if
 
 !         This term appears twice as we need to permute i and j
@@ -779,7 +779,7 @@ module exacorr_cc
 !        Routine for solving the lambda equations
 
          use exacorr_ao_to_mo, only : print_tensornorm2
-         use exacorr_global,   only : debug
+         use exacorr_global,   only : debug_exa
 
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
          type(exatns_comm_tens), intent(inout) :: comm_t
@@ -917,7 +917,7 @@ module exacorr_cc
           call get_gvv_lambda(lambda_t%gvv,l2_tensor,comm_t%t2)
           call get_goo_lambda(lambda_t%goo,l2_tensor,comm_t%t2)
 
-          if (debug) then
+          if (debug_exa) then
             print*, "L1  = ", print_tensornorm2(l1_tensor)
             print*, "L2  = ", print_tensornorm2(l2_tensor)*0.25D0
             print*, "goo = ", print_tensornorm2(lambda_t%goo)
@@ -1003,8 +1003,8 @@ module exacorr_cc
          call print_date("Finished iterating")
 
          if (t_convergence .gt. t_target_precision) print*, "WARNING: Non-converged amplitudes!"
-         write(*,'(A,ES22.16)'),"  Final L1amp = ", print_tensornorm2(l1_tensor)
-         write(*,'(A,ES22.16)'),"  Final L2amp = ", print_tensornorm2(l2_tensor)*ONE_QUARTER
+         write(*,'(A,ES22.16)') "  Final L1amp = ", print_tensornorm2(l1_tensor)
+         write(*,'(A,ES22.16)') "  Final L2amp = ", print_tensornorm2(l2_tensor)*ONE_QUARTER
 
 !        Destroy diis tensors
          call diis(l2_tensor,t1_tensor=l1_tensor,mode=2)
