@@ -609,7 +609,6 @@
                   write (iw,*) ''
               end if
 
-              if (iprnt.ge.3) call davidson_print_vectors(R1, label="debug:  R1 vector             ")
               if (iprnt.ge.2) write (iw,*) 'diag(Hbar_SS): ',diag_H
               if (iprnt.ge.2) write (iw,*) 'in_window_HbarSS_threshold',in_window_HbarSS_threshold
 ! aspg, WIP june/july 2018
