@@ -252,22 +252,24 @@ C
 !         WT(J)=WT(J)*4.0D0*PI
 !     ENDDO
 C
-!      DO 10 IATOM = 1, NUCIND !change
-       DO IATOM = 1,1
+      write(*,*)'NUCIND',NUCIND
+!      DO 10 IATOM = 1, NUCDEP !test
+      DO 10 IATOM = 1, NUCIND !change
 !      DO 10 ISYMOP = 0, MXOPR
 !      What is this roop? MXOPR=0 in dftgrd.F
-       IF (IBTAND(0,ISTBNU(IATOM)).EQ.0) THEN
+       IF (IBTAND(0,ISTBNU(IATOM)).EQ.0) THEN 
 !        IF (IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN
 !        IBTAND=IAND, but I am not sure what is it.     
-!         IF(NOORBT(IATOM)) GOTO 10  !chamge
-!         IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 10 !change
+         IF(NOORBT(IATOM)) GOTO 10 
+         IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 10
+         NDEG  = MULT(ISTBNU(IATOM))
 C         
 C   SET DEFAULT VALUES OF PARAMETERS FOR CALCULATION
 C
          MXNP = 4000            !same to GRASP
          NUCTYP = 0
          CALL MEMSET(ZAN(IATOM),IATOM,MXNP,IPRINT)
-         MXNP = 2000            !change
+!         MXNP = 2000            !change
          write(*,*)'HH2',H
          CALL NUCPRM(ZAN(IATOM),NUCMASS(INT(ZAN(IATOM))),NUCTYP)
          write(*,*)"MXNP",MXNP
@@ -286,11 +288,10 @@ C
            ENDDO
 C         
            write(*,*)"NUCMASS",NUCMASS(INT(ZAN(IATOM)))
-!           CALL VCMPOL(VACIR,R,ZAN(IATOM),MXNP,NUCTYP,1) !change
-           DO J = 1,MXNP
+           CALL VCMPOL(VACIR,R,ZAN(IATOM),MXNP,NUCTYP,1) 
+!           DO J = 1,MXNP
 !     write(*,*)J,VACIR(J),R(J)
-              VACIR(J)=D1
-           ENDDO
+!           ENDDO
 !           OPEN(20,FILE='LOG_DIRAC',STATUS='REPLACE',          
 !     &          FORM='FORMATTED',ACCESS='SEQUENTIAL')  
 !           DO  J = 1,MXNP
@@ -308,8 +309,7 @@ C     Integrand = 1/r * VP(r) * (Large*Large + Small*Small) * r^2 * r
 C     Meaning:   1/r * VACIR(IR) *   wavefunction     * Radial int * Needed in QUAD.
 C     Finally,    We multiply R(IR)*R(IR).
 C
-!             RFAC = R(IR)*R(IR) * VACIR(IR)
-             RFAC = R(IR)*R(IR)*R(IR) * VACIR(IR)
+             RFAC = R(IR)*R(IR) * VACIR(IR)
              CALL DZERO(TC,NDIM2)
 C            
 C            loop over angular points
@@ -364,7 +364,7 @@ C
            R(1) = RNT
            W(1)  = (RNT+GRDC)*H 
 C R(IR)**2 is multiplized in RFAC, later          
-             write(*,*)'H,EPH,RL,GRDC',H,EPH,GRDC,RL
+             write(*,*)'H,EPH,RL,GRDC',H,EPH,RNT,GRDC
              write(*,*)'R,W',R(1),W(1)
            DO IR = 2,MXNP
              R(IR) = (R(IR-1)+GRDC)*EPH-GRDC
@@ -372,11 +372,11 @@ C R(IR)**2 is multiplized in RFAC, later
 !             write(*,*)'R,W',R(IR),W(IR),IR
            ENDDO
            write(*,*)"NUCMASS",NUCMASS(INT(ZAN(IATOM)))
-           CALL VCMPOL(VACIR,R,ZAN(IATOM),MXNP,NUCTYP,1) !change
-           DO J = 1,MXNP
-              VACIR(J)=D1
+           CALL VCMPOL(VACIR,R,ZAN(IATOM),MXNP,NUCTYP,1) 
+!           DO J = 1,MXNP
+!              VACIR(J)=D1
 !              write(*,*)J,VACIR(J),R(J)
-           ENDDO
+!           ENDDO
 !           OPEN(20,FILE='LOG_DIRAC',STATUS='REPLACE',          
 !     &          FORM='FORMATTED',ACCESS='SEQUENTIAL')  
 !           DO  J = 1,MXNP
@@ -397,8 +397,7 @@ C       Integrand = 1/r * VP(r) * (Large*Large + Small*Small) * r^2
 C       Meaning:   1/r * VACIR(IR) *   wavefunction     * Radial int.
 C       Finally,    We multiply R(IR).
 C
-!             RFAC = R(IR) * VACIR(IR) !change
-             RFAC = R(IR) * R(IR) * VACIR(IR)
+             RFAC = R(IR) * VACIR(IR)
              CALL DZERO(TC,NDIM2)
 C            
 C            loop over angular points
@@ -423,9 +422,6 @@ C
                ISTART = 0
                DO IRP = 1,MAXREP+1 
                  DO IC = 1, MC
-!                   write(*,*)'***********'  
-!                   write(*,*)'NCOS,IRP,IC',NCOS(IRP,IC),IRP,IC
-!                   write(*,*)'***********'
                     DO I = 1, NCOS(IRP,IC)
                      IADD = I*(I-1)/2
                      DO J = 1, I
@@ -470,14 +466,19 @@ c$$$           IOFF = IOFF + NTBAS(IC)*(NTBAS(IC)+1)/2 + NTBAS(IC)
 c$$$           DIM = DIM + NTBAS(2)
 c$$$         ENDDO
 c$$$         write(*,*)
-          CALL OUTPAK(OVL(1),NTBAS(0),-1,LUPRI)
-       Endif        !(IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0)
-       deallocate(TD)
-       deallocate(VACIR)
-       deallocate(R)
-       deallocate(W)
-       ENDDO
-!10    CONTINUE
+!          CALL OUTPAK(OVL(1),NTBAS(0),-1,LUPRI)
+        Endif        !(IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0)
+        deallocate(TD)
+        deallocate(VACIR)
+        deallocate(R)
+        deallocate(W)
+10    CONTINUE
+C      
+      IF(NDEG.GT.0) THEN
+C       Scale weights with multiplicity of center
+        FAC = dble(NDEG) 
+        CALL DSCAL(NDIM2,FAC,OVL,1)
+      ENDIF
 C      
 C     Generate integral labels
 C
@@ -708,27 +709,23 @@ C
 C The values of ultrafine (.ULTRAF) at DFT input-reader section.    
 C num_grid_cfg_radint = 2.0d-15 
 C
-        write(*,*)'HH1',H
+        write(*,*)'GRDC1',GRDC
         EPH   = EXP(H)
         GRDC  = RNT/(EPH-ONE)
         RTEMP = RNT
+        write(*,*)'GRDC2,RNT,EPH',GRDC,RNT,EPH
 C     
 C     SET UP POTENTIAL FOR POINT NUCLEUS
 C
-        THSHD =-1.0D-5
-        VPTST2=-DUMMY
         DO 2 I = 1,N
            X = WD*RTEMP
-           VPTST1 = FACTOR*FUNK (X,1)
            IF(X.GT.1.0D+02)THEN !same to FUNK
-!           IF(VPTST2-VPTST1.GT.THSHD)THEN 
+!     IF(VPTST2-VPTST1.GT.THSHD)THEN
+              TEMP = FACTOR*FUNK (X,1)              
               MXNP = I
-              write(*,*)'FINAL value,R',VPTST1,RTEMP
               exit
            ENDIF
-           write(*,*)'VPTST1,R,I',VPTST1,RTEMP,I
            RTEMP = (RTEMP+GRDC)*EPH-GRDC
-           VPTST2 = VPTST1
  2      CONTINUE         
       ENDIF   
 C      
