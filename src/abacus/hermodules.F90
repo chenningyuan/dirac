@@ -1181,7 +1181,7 @@
         END DO
 
 !       This routine reads the next line to check whether an ECP is specified for this type
-        CALL RECP_LNK_READCP(infile,basindex,NONT(basindex))
+        CALL RECP_LNK_READCP(infile,basindex,NONT(basindex),IPREAD)
 
         typepointer=>typepointer%next
         index=index+NONT(basindex)

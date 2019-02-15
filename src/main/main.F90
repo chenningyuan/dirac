@@ -194,8 +194,9 @@ end interface
      write (lupri, '(a/)') '*****************************************************'
      CALL TSTAMP(' ',LUPRI)
      write (lupri,'()')
+     flush(lupri)
      call stopwatch(0,mytid)
-     CALL FLSHFO(LUPRI)
+     flush(lupri)
   endif
 #ifdef VAR_MPI
   if (iparex .gt. 0) call mpixfinalize()
