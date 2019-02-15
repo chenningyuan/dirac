@@ -398,6 +398,9 @@
                   write (iw,*) '   There are',number_diagonal_elements_in_window,'possible 1h1p determinants within the window'
                   write (iw,*) ''
               end if
+              if (number_diagonal_elements_in_window.lt.nroot) then
+                  call quit ('Requested more roots than there are 1h1p determinants within the window. Stopping.')
+              end if
 
               if (iprnt.ge.2) write (iw,*) 'diag(Hbar_SS): ',diag_H
               if (iprnt.ge.2) write (iw,*) 'in_window_HbarSS_threshold',in_window_HbarSS_threshold
@@ -607,6 +610,10 @@
                   write (iw,*) '               max     ',relcc_projectors_rew_virt_max_energy,'a.u.'
                   write (iw,*) '   There are',number_diagonal_elements_in_window,'possible 1h determinans within the window'
                   write (iw,*) ''
+              end if
+
+              if (number_diagonal_elements_in_window.lt.nroot) then
+                  call quit ('Requested more roots than there are 1h determinants within the window. Stopping.')
               end if
 
               if (iprnt.ge.2) write (iw,*) 'diag(Hbar_SS): ',diag_H
