@@ -38,6 +38,7 @@ C***********************************************************************
 #if defined (VAR_MPI)
       ! parallel version of DIRAC
 C     Transfer necessary information from common blocks
+      call interface_mpi_comm_rank(global_communicator,mytid)
       if (mytid == 0) then
          orbital_string = tra4_indstr(:,1) ! This is to be changed once we have an exacorr-specific input driver
          ! instruct slaves to go to the current routine (exa_moltra) as well
@@ -85,8 +86,9 @@ C     Fill the array with orbital indices
        imo = imo + nmo(i)
       end do
 
-C     Convert to Kramer's unrestricted picture
-      allocate (mo_list(ntmo*2))
+C     Convert to Kramers unrestricted picture
+      ntmo = ntmo * 2 ! spinors
+      allocate (mo_list(ntmo))
       imo = 1
       jmo = 1
       do j = 1, 4
@@ -97,7 +99,7 @@ C     Convert to Kramer's unrestricted picture
         jmo = jmo + nmo(j)
       end do
       deallocate(mo_list_tmp)
-      nmo = nmo * 2 ! Kramer's unrestricted
+      nmo = nmo * 2 ! Kramers unrestricted
 
 #if defined (VAR_MPI)
       end if
