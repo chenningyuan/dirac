@@ -51,8 +51,8 @@ module talsh_cc
          integer                :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
          integer,  allocatable  :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
 
-         integer   :: ierr, i
-         complex(8), pointer :: energy(:),result_tens(:)
+         integer   :: ierr
+         complex(8), pointer :: result_tens(:)
          type(C_PTR):: body_p
          integer(C_SIZE_T), parameter:: BUF_SIZE=1_8*1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
          integer(C_SIZE_T):: host_buf_size
@@ -66,7 +66,7 @@ module talsh_cc
          type(talsh_tens_t) :: l1_tensor, l2_tensor
 !        intermediate tensors (same notation as in relccsd)
          integer, dimension(2) :: oo_dims, ov_dims, vo_dims, vv_dims
-         integer, dimension(4) :: oooo_dims, oovv_dims, vvoo_dims, voov_dims, vovo_dims, vvvv_dims
+         integer, dimension(4) :: oooo_dims, oovv_dims, vvoo_dims, vovo_dims
 !        scalars (need to be defined as tensor types)
          type(talsh_tens_t):: result_tensor
          integer:: one_dims(1)
@@ -74,7 +74,7 @@ module talsh_cc
          real(8), allocatable :: eps_occ(:),eps_vir(:)
 !        CCSD control and result variables
          !integer :: iccsd, nccsd
-         real(8) :: mp2_energy, ccsd_energy, t_energy(3), t_convergence
+         real(8) :: mp2_energy, ccsd_energy, t_energy(3)
          !real(8) :: ccsd_energy, t_energy(3)
          real(8) :: t_target_precision
          integer :: ncycles
@@ -125,8 +125,6 @@ module talsh_cc
 
 !        Get fixed two-body tensors
          call get_CC_integrals (nocc,nvir,mo_occ,mo_vir,int_t)
-
-
 
 !        Initialize t1 amplitudes to zero (we assume canonical orbitals for the moment)
          if (.not.CCD) then
@@ -310,12 +308,9 @@ module talsh_cc
 !        scalars (need to be defined as tensor types)
          type(talsh_tens_t) :: result_tensor
          integer            :: result_dims(1)
-         !Tensors for debugging
-         type(talsh_tens_t) :: a_orig, h_orig
-         integer :: oooo_dims(4)
          !Tensor dimensions
          integer, dimension(2) :: oo_dims, ov_dims, vo_dims
-         integer, dimension(4) :: vvoo_dims, vovo_dims, ovoo_dims
+         integer, dimension(4) :: vvoo_dims, ovoo_dims
          !Orbital energies for scaling
          real(8), intent(in)   :: eps_occ(:), eps_vir(:)
          integer :: iccsd
@@ -856,7 +851,7 @@ module talsh_cc
          type(talsh_tens_t), intent(inout) :: fo_tensor, fv_tensor, fov_tensor
          integer:: fo_dims(1:2),fv_dims(1:2),fov_dims(1:2)
 
-         integer   :: ierr, i
+         integer   :: ierr
 
 !        Get foo tensor
          fo_dims(1:2) = nocc
@@ -891,7 +886,7 @@ module talsh_cc
          type(talsh_intg_tens),intent(inout)    :: int_t
          integer :: oovv_dims(1:4),vvvv_dims(1:4),oooo_dims(1:4),vovo_dims(1:4),ooov_dims(1:4),vovv_dims(1:4)
 
-         integer                            :: ierr, i
+         integer                            :: ierr
          complex(8), pointer, contiguous    :: ao_tens(:,:,:,:)
          type(C_PTR)                        :: body_p
 
@@ -904,7 +899,6 @@ module talsh_cc
 !        arrays needed to communicate with the MO integral generator
          integer:: nmo(4)
          integer, allocatable :: mo_list(:)
-         real(8), allocatable :: eps_occ(:),eps_vir(:)
 
 !        scalars (need to be defined as tensor types)
          type(talsh_tens_t):: minusone_tensor
@@ -1051,7 +1045,7 @@ module talsh_cc
          integer            :: ierr, i, tens_rank
          integer, save      :: t1_dims(1:2), t2_dims(1:4)
          logical            :: init, clean_up, CCD
-         integer, save      :: itens, jtens, ntens
+         integer, save      :: itens, ntens
          complex(8), save   :: b_diis(maxdim,maxdim)
          complex(8)         :: bb(0:maxdim,0:maxdim),coeff(0:maxdim)
          real(8)            :: b_max, b_scale
@@ -1218,7 +1212,7 @@ module talsh_cc
          real(8), intent(in)                :: eps_occ(:),eps_vir(:)
          real(8), intent(out)               :: t_energy(3)
 
-         integer:: t1_dims(2), t2_dims(4), abc_dims(3), ab_dims(2), ia_dims(2), abi_dims(3)
+         integer:: t2_dims(4), abc_dims(3), ab_dims(2), ia_dims(2), abi_dims(3)
          type(talsh_tens_t):: w_tensor, y_tensor, we_tensor
          type(talsh_tens_t):: vovv_i_tensor, vovv_j_tensor, vovv_k_tensor
          type(talsh_tens_t):: ooov_ij_tensor, ooov_jk_tensor, ooov_ki_tensor
@@ -1229,7 +1223,7 @@ module talsh_cc
          type(C_PTR):: body_p
          type(talsh_tens_t):: result_tensor
          integer:: result_dims(1)
-         complex(8), pointer :: energy(:),result_tens(:)
+         complex(8), pointer :: result_tens(:)
 
          real(8)   :: eps_ijk
          integer   :: ierr, tens_rank, nocc, nvir, i, j, k

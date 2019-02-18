@@ -46,13 +46,10 @@ module exacorr_cc
          type(exacc_input), intent(in) :: exa_input
 
          integer                :: nocc,nvir           ! the size of the mo basis for occupied and virtual spinors
-         integer(INTL)          :: nocc_l, nvir_l
-
-         integer, allocatable   :: mo_oo(:),mo_vo(:),mo_ov(:),mo_vv(:) ! joined lists needed for dm init (ugly code, should be refactored)
 
          integer :: my_role, my_MPI_rank                    ! needed to start exatensor, MPI should already be started in threaded mode
 
-         integer                        :: ierr, i
+         integer                        :: ierr
          complex(8)                     :: result_val
 
 !        Common tensors
@@ -74,18 +71,15 @@ module exacorr_cc
          class(h_space_t), pointer                :: occ_space, vir_space
 
          ! variables for the definition of spaces (AO and 2 different MO spaces)
-         type(subspace_basis_t)     :: basis_ao, basis_occ, basis_vir
          integer(INTL)              :: ao_space_root, occ_space_root, vir_space_root
          integer(INTL),dimension(2) :: oo_root, ov_root, vo_root, vv_root
-         integer(INTL),dimension(4) :: oooo_root, ooov_root, ovoo_root, oovv_root, vovo_root, &
+         integer(INTL),dimension(4) :: oooo_root, ooov_root, oovv_root, vovo_root, &
                                        vvoo_root, vovv_root, vvvv_root
          integer,dimension(2)       :: oo_id, ov_id, vo_id, vv_id 
-         integer,dimension(4)       :: oooo_id, ooov_id, ovoo_id, oovv_id, vovo_id, &
+         integer,dimension(4)       :: oooo_id, ooov_id, oovv_id, vovo_id, &
                                        vvoo_id, vovv_id, vvvv_id
          integer                    :: ao_space_id, occ_space_id, vir_space_id
 
-         integer:: spin
-         integer:: lsh, l, nl
          integer :: ncycles
 
          !CCD
@@ -251,7 +245,7 @@ module exacorr_cc
                 print*," Final CCD energy = ",ccsd_energy
             end if
 !           print*," Final CCSD(T) energy = ",ccsd_energy+t_energy(1)+t_energy(2)  ! no (T) implementation yet
-    
+
 !           Destroy tensors and shut down library
             if (.not.CCD) then
                 call diis (comm_t%t2,t1_tensor=comm_t%t1,mode=2)
@@ -271,7 +265,7 @@ module exacorr_cc
              ierr=exatns_tensor_contract("L(i,a)+=T+(a,i)*K()",l1_tensor,comm_t%t1,one_tensor)
              ierr=exatns_tensor_contract("L(i,j,a,b)+=T+(a,b,i,j)*K()",l2_tensor,comm_t%t2,one_tensor)
 
-             call solve_lambda_equations(comm_t,int_t,l1_tensor,l2_tensor,dims,t_target_precision,ncycles)            
+             call solve_lambda_equations(comm_t,int_t,l1_tensor,l2_tensor,dims,t_target_precision,ncycles)
 
              if (.not.CCD) call get_dm_mo(comm_t%t1,comm_t%t2,l1_tensor,l2_tensor,dims)
             else if (lambda) then
@@ -338,7 +332,6 @@ module exacorr_cc
          ! ids of these spaces (are not stored in the space class itself ?)
          integer, intent(out)          :: ao_space_id, occ_space_id, vir_space_id
 
-
          integer                :: nocc,nvir           ! the size of the mo basis for occupied and virtual ORBITALS
          integer(INTL)          :: nocc_l, nvir_l      ! the size of the mo basis for occupied and virtual SPINORS
 
@@ -346,7 +339,6 @@ module exacorr_cc
          integer                                :: nshells  ! the number of shells (orbitals with the same center and l-value)
          integer                                :: basis_angular    ! 1=cartesian, 2=spherical
          type(basis_func_info_t), allocatable   :: gto(:)   ! array with information about the shells
-
 
          ! variables for the definition of spaces (AO and 2 different MO spaces)
          type(subspace_basis_t)     :: basis_ao, basis_occ, basis_vir
@@ -358,7 +350,8 @@ module exacorr_cc
          integer(INTL)                          :: labs
 
          ! Loop counters and error codes
-         integer:: ierr, i
+         integer:: ierr
+
          integer:: lsh, l, nl
 
          nao           = get_nao()   ! This is the total number of ao's
@@ -460,7 +453,7 @@ module exacorr_cc
          integer, allocatable   :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
          integer, allocatable   :: mo_oo(:),mo_vo(:),mo_ov(:),mo_vv(:) ! joined lists needed for dm init (ugly code, should be refactored)
 
-         integer                        :: ierr, i
+         integer                        :: ierr
 
          ! types of the initializer methods
          type(tens_printer_t)         :: tens_printer     ! generic method, but needs to be defined here in specific form
@@ -1183,13 +1176,13 @@ module exacorr_cc
 
          type(tens_rcrsv_t), intent(inout),optional :: t1_tensor
          type(tens_rcrsv_t), intent(inout)          :: t2_tensor
-         integer                                    :: ierr, i, tens_rank, j
+         integer                                    :: ierr, i, tens_rank
          integer,dimension(2),optional              :: vo_id
          integer,dimension(4),optional              :: vvoo_id
          integer(INTL),dimension(2),optional        :: vo_root
          integer(INTL),dimension(4),optional        :: vvoo_root
          logical                                    :: init, clean_up, CCD
-         integer, save                              :: itens, jtens, ntens
+         integer, save                              :: itens, ntens
          complex(8), save                           :: b_diis(maxdim,maxdim)
          complex(8)                                 :: bb(0:maxdim,0:maxdim),coeff(0:maxdim)
          complex(8)                                 :: scalar

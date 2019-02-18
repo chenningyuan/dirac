@@ -265,7 +265,6 @@ module exacorr_tensor_methods
          class(scale_with_denom_t), intent(out):: this
 
          type(cmo) :: cspinor
-         integer  :: k
 
          call get_mo_coefficients (cspinor,mo_occ,nocc)
          allocate(this%eps_occ(nocc))
@@ -290,7 +289,7 @@ module exacorr_tensor_methods
          integer, intent(in) :: spin
          class(init_mocoef_tensor_t), intent(out):: this
 
-         integer  :: nao,j,k
+         integer  :: nao
          type(cmo) :: cspinor
 
 !        Copy the coefficients into the alpha or beta array, using the quaternion relations as defined in
@@ -316,8 +315,7 @@ module exacorr_tensor_methods
          integer, intent(in) :: mo_list(:)   ! and their indices
          class(init_dm_tensor_t), intent(out):: this
 
-         integer  :: nao,j,k
-         !type(qumo) :: qmo
+         integer  :: nao
          type(cmo) :: cspinor
 
 !        Copy the coefficients into the alpha or beta array, using the quaternion relations as defined in
@@ -326,31 +324,6 @@ module exacorr_tensor_methods
 !        using Kramers' symmetry.
 
          nao = get_nao()
-
-         !allocate (this%mocoef_all_1(nao,2*nmo(1),2))
-         !call get_mo_coefficients (qmo,mo_list(1:nmo(1)),nmo(1))
-         !do k = 1, nmo(1)
-         !   do j = 1, nao
-         !    this%mocoef_all_1(j,k,1)     = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
-         !    this%mocoef_all_1(j,k,2)     = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-         !    this%mocoef_all_1(j,k+nmo(1),1) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-         !    this%mocoef_all_1(j,k+nmo(1),2) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
-         !   end do
-         !end do
-         !call dealloc_mo (qmo)
-
-         !allocate (this%mocoef_all_2(nao,2*nmo(2),2))
-         !call get_mo_coefficients (qmo,mo_list(nmo(1)+1:nmo(1)+nmo(2)),nmo(2))
-         !do k = 1, nmo(2)
-         !   do j = 1, nao
-         !    this%mocoef_all_2(j,k,1)     = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
-         !    this%mocoef_all_2(j,k,2)     = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-         !    this%mocoef_all_2(j,k+nmo(2),1) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-         !    this%mocoef_all_2(j,k+nmo(2),2) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
-         !   end do
-         !end do
-         !call dealloc_mo (qmo)
-
          allocate(this%mocoef_all_1(nao,nmo(1),2))
          allocate(this%mocoef_all_2(nao,nmo(2),2))
          call get_mo_coefficients(cspinor,mo_list(1:nmo(1)+nmo(2)),nmo(1)+nmo(2))
@@ -370,8 +343,7 @@ module exacorr_tensor_methods
          integer, intent(in) :: mo_list(:)   ! and their indices
          class(init_ht_tensor_t), intent(out):: this
 
-         integer  :: nao,j,k
-         !type(qumo) :: qmo
+         integer  :: nao
          type(cmo) :: cspinor
 
 !        Copy the coefficients into the alpha or beta array, using the quaternion relations as defined in
@@ -380,31 +352,6 @@ module exacorr_tensor_methods
 !        using Kramers' symmetry.
 
          nao = get_nao()
-
-         !allocate (this%mocoef_all_1(nao,2*nmo(1),2))
-         !call get_mo_coefficients (qmo,mo_list(1:nmo(1)),nmo(1))
-         !do k = 1, nmo(1)
-         !   do j = 1, nao
-         !    this%mocoef_all_1(j,k,1)     = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
-         !    this%mocoef_all_1(j,k,2)     = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-         !    this%mocoef_all_1(j,k+nmo,1) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-         !    this%mocoef_all_1(j,k+nmo,2) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
-         !   end do
-         !end do
-         !call dealloc_mo (qmo)
-
-         !allocate (this%mocoef_all_2(nao,2*nmo(2),2))
-         !call get_mo_coefficients (qmo,mo_list(nmo(1)+1:nmo(1)+nmo(2)),nmo(2))
-         !do k = 1, nmo(2)
-         !   do j = 1, nao
-         !    this%mocoef_all_2(j,k,1)     = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
-         !    this%mocoef_all_2(j,k,2)     = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-         !    this%mocoef_all_2(j,k+nmo,1) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-         !    this%mocoef_all_2(j,k+nmo,2) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
-         !   end do
-         !end do
-         !call dealloc_mo (qmo)
-
          allocate(this%mocoef_all_1(nao,nmo(1),2))
          allocate(this%mocoef_all_2(nao,nmo(2),2))
          call get_mo_coefficients(cspinor,mo_list(1:nmo(1)+nmo(2)),nmo(1)+nmo(2))
@@ -563,7 +510,6 @@ module exacorr_tensor_methods
          integer :: nao, nmo
          integer :: first_ao, last_ao, first_mo, last_mo
          complex(8),pointer :: mocoef_tens(:,:)
-         integer :: i, j
 
          ierr=0 !set error code to success
          if(data_kind /= EXA_DATA_KIND_C8) then

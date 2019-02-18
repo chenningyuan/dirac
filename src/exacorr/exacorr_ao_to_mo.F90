@@ -77,7 +77,6 @@ module exacorr_ao_to_mo
          type(init_dm_tensor_t)       :: dm_init(2)       ! array of initializers for algorithm 2, index indicates first/second halftransformation
          type(init_ht_tensor_t)       :: ht_init          ! initializers for algorithm 3 in which the HT matrix is made without ao-integral tensor
          type(tens_printer_t)         :: tens_printer     ! generic method, but needs to be defined here in specific form
-         type(scale_with_denom_t)     :: denominate
 
          ! the two tensors that we need
          type(tens_rcrsv_t):: aoint_tensor
@@ -164,7 +163,7 @@ module exacorr_ao_to_mo
             imo = imo + nmo(i) ! make imo point to the start of the list for the next index
          end do
 
-         !Define separate initializers for the alpha(A) and beta(B) MO-coefficients for each index 
+         !Define separate initializers for the alpha(A) and beta(B) MO-coefficients for each index
          imo = 1
          do i = 1, 4
             jmo     = imo + nmo(i) - 1 ! last MO for index i, whereas imo is the first
@@ -232,7 +231,7 @@ module exacorr_ao_to_mo
            if(ierr.ne.EXA_SUCCESS) call quit('Aoint_calculator failed!')
            call print_date('finished ao integral calculation')
 
-           ! the  next three lines are for debugging, 
+           ! the  next three lines are for debugging,
            print*, "aoint = ", print_tensornorm2 (aoint_tensor) ! this is usually sufficent for checking
            ! when uncommenting the next line: keep in mind that printing an entire tensor yields an enormous output
            ! ierr=exatns_tensor_traverse(aoint_tensor,'TensorPrinter')
@@ -697,7 +696,7 @@ module exacorr_ao_to_mo
          integer(INTL)     :: aoint_root(4),integral_root(4),moint_root(4)
 
          if (.not.present(algorithm)) algorithm = 1
-   
+
 !        Check integrity of tensors
          tens_rank = aoint_tensor%get_rank(ierr)
          if (ierr.ne.0 .or. tens_rank.ne.4) call quit('input tensor corrupted in aomo_transform')
@@ -711,8 +710,8 @@ module exacorr_ao_to_mo
          if(ierr.ne.EXA_SUCCESS) call quit('integral tensor corrupted')
 
 !        Copy the information about spaces from the starting and target tensors to the auxilliary ones
-!        Use relation (12|34) = <13|24> 
-         moint_id(1) = integral_id(1) 
+!        Use relation (12|34) = <13|24>
+         moint_id(1) = integral_id(1)
          moint_id(2) = integral_id(3)
          moint_id(3) = integral_id(2)
          moint_id(4) = integral_id(4)
@@ -741,7 +740,7 @@ module exacorr_ao_to_mo
 
         end subroutine get_integral_tensor
 
-        subroutine get_ht2_integral_tensor (a2int_tensor,integral_tensor,antisymmetrize) 
+        subroutine get_ht2_integral_tensor (a2int_tensor,integral_tensor,antisymmetrize)
 
          implicit none
 
@@ -767,8 +766,8 @@ module exacorr_ao_to_mo
          if(ierr.ne.EXA_SUCCESS) call quit('integral tensor corrupted')
 
 !        Copy the information about spaces from the starting and target tensors to the auxilliary ones
-!        Use relation (12|34) = <13|24> 
-         moint_id(1) = integral_id(1) 
+!        Use relation (12|34) = <13|24>
+         moint_id(1) = integral_id(1)
          moint_id(2) = integral_id(3)
          moint_id(3) = integral_id(2)
          moint_id(4) = integral_id(4)
@@ -840,8 +839,8 @@ module exacorr_ao_to_mo
           type(tens_rcrsv_t):: tens, scalar
           integer ierr,rank
           complex(8) :: scalar_complex
-          real(8)    :: scalar_real      
- 
+          real(8)    :: scalar_real
+
           ! create a rank-0 tensor
           ierr=exatns_tensor_create(scalar,'scalar',EXA_DATA_KIND_C8)
           if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_tensor_create() failed!')
@@ -880,7 +879,7 @@ module exacorr_ao_to_mo
          character(len=2)  :: vs_str
 
          if (ao_space_id>9.or.mo_space_id>9) then
-             call quit ('Revise naming scheme for MO coef initializers') 
+             call quit ('Revise naming scheme for MO coef initializers')
          else
               write (vs_str,'(2I1)') ao_space_id,mo_space_id
          end if
@@ -902,7 +901,7 @@ module exacorr_ao_to_mo
 
          do i = 1, 2
             if (ao_space_id(i)>9.or.mo_space_id(i)>9) then
-               call quit ('Revise naming scheme for DM initializers') 
+               call quit ('Revise naming scheme for DM initializers')
             else
               write (vs_str(i),'(2I1)') ao_space_id(i),mo_space_id(i)
            end if
@@ -927,6 +926,5 @@ module exacorr_ao_to_mo
         end subroutine exacorr_compute_mo_integrals
 
 #endif
-
 
 end module exacorr_ao_to_mo

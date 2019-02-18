@@ -40,9 +40,8 @@ module talsh_ao_to_mo
          integer, intent(in) :: nmo(4)       ! the size of the mo basis for each of the 4 indices (mulliken ordering)
          integer, intent(in) :: mo_list(:)   ! and their indices (4 lists consecutively)
 
-         integer             :: i, ierr, my_MPI_rank
+         integer             :: ierr, my_MPI_rank
          integer             :: nao                        ! the size of the atomic orbital basis
-         type(basis_func_info_t), allocatable :: shell(:)  ! array with basis function information
 
          integer(C_SIZE_T), parameter:: BUF_SIZE=1_8*1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
          type(talsh_tens_t):: aoint_tensor
@@ -141,8 +140,8 @@ module talsh_ao_to_mo
          integer, intent(in) :: mo_list(:)   ! and their indices
          type(talsh_tens_t), intent(inout) :: mocoefa_tensor,mocoefb_tensor
 
-         integer             :: j, k, ierr
-         type(cmo)            :: cspinor
+         integer             :: ierr
+         type(cmo)           :: cspinor
          integer             :: tens_rank, mocoef_dims(1:2)
 
          complex(8), pointer, contiguous:: camo_tens(:,:),cbmo_tens(:,:)
@@ -179,7 +178,6 @@ module talsh_ao_to_mo
          integer             :: basis_angular ! 1=cartesian, 2=spherical
          complex(8),intent(out) :: ao_tens(nao,nao,nao,nao)
 
-         integer :: ierr
          integer :: i, j, k, l, ish, jsh, ksh, lsh, ioff, joff, koff, loff, ijkl, ijkl2
          integer :: li,lj,lk,ll,ni,nj,nk,nl
          real(8) :: ei,ej,ek,el,ci,cj,ck,cl,xi,yi,zi,xj,yj,zj,xk,yk,zk,xl,yl,zl
