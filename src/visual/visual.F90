@@ -1159,7 +1159,6 @@ contains
 
    end subroutine
 
-
    subroutine setup_orbital_string(occupation)
 
       ! this routine will set up occupation vector
@@ -1177,7 +1176,7 @@ contains
       do ifsym = 1, nfsym
          ioff = ioff + npsh(ifsym)
          if (visual_cfg_use_orbital_string) then
-            do i = 1, nish(ifsym) + nash(ifsym) + nssh(ifsym)
+            do i = 1, nesh(ifsym)
                occupation(ioff + i) = visual_cfg_occupation(i, ifsym)
             end do
          else
@@ -1191,7 +1190,7 @@ contains
                occupation(ioff + i) = 1.0d0
             end do
          end if
-         ioff = ioff + nesh(ifsym)
+         ioff = norb(ifsym)
       end do
 
    end subroutine
