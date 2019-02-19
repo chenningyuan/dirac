@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2037,9 +2037,11 @@ C
          IF (IPRINT .GE. 0)
      &      WRITE (LUPRI,'(27X,A6,2X,F12.6)')  NAMDEP(IATOM), RMASS
  100  CONTINUE
-      ORIGIN(1) = ORIGIN(1)/TOTMAS
-      ORIGIN(2) = ORIGIN(2)/TOTMAS
-      ORIGIN(3) = ORIGIN(3)/TOTMAS
+      IF(TOTMAS.NE.D0) THEN
+        ORIGIN(1) = ORIGIN(1)/TOTMAS
+        ORIGIN(2) = ORIGIN(2)/TOTMAS
+        ORIGIN(3) = ORIGIN(3)/TOTMAS
+      ENDIF
       IF (IPRINT .GE. 0) THEN
         WRITE (LUPRI,'(/23X,A,F12.6,A)') 'Total mass: ',TOTMAS,' amu'
         WRITE (LUPRI,'( 23X,A,F8.3,A)')  'Natural abundance:',ABUND,' %'

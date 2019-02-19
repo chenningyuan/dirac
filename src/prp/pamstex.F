@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -285,7 +285,7 @@ C     Read reference orbitals and eigenvalues
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','STEX  ')
       IOPT = 2+4+8
       CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),WORK(KEIG),
-     &     WORK(KBREP),TOTERG,IOPT,WORK,KFREE,LFREE)
+     &     WORK(KBREP),TOTERG,IOPT)
       CLOSE(LUBUF,STATUS='KEEP')
 
 
@@ -347,7 +347,7 @@ C     property gradients are complex, so *2 size of double.
          CALL OPNFIL(LUBUF,'DFCOEF.GS','OLD','STEX  ')
          IOPT = 2+8
          CALL REACMO(LUBUF,'DFCOEF.GS',WORK(KCMOGS),DUM,
-     &        WORK(KBREP),TOTERG,IOPT,WORK,KFREE,LFREE)
+     &        WORK(KBREP),TOTERG,IOPT)
          CALL COF_PRPGRAD(WORK(KPRP),WORK(KCMOGS),WORK(KBREP)
      $        ,WORK(KCMO),REFGSOVL,WORK(KFREE),LFREE)
       ELSE

@@ -20,6 +20,12 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FIXED_PELIB_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
 endif()
 
+if(ENABLE_RUNTIMECHECK)
+    message(STATUS "runtime-check flags activated for the 'pelib_interface' module without exceptions")
+    set_source_files_properties(${FREE_PELIB_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+    set_source_files_properties(${FIXED_PELIB_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+endif()
+
 add_library(
           pelib_interface
           ${FIXED_PELIB_FORTRAN_SOURCES}
@@ -28,9 +34,7 @@ add_library(
 
 # deal with intedependencies
 # needs memory allocator etc..
-
 add_dependencies(gen1int_interface gen1int)
 add_dependencies(pelib gen1int_interface)
 add_dependencies(pelib_interface pelib)
 add_dependencies(pelib_interface interface_mpi)
-#add_dependencies(dirac pelib)

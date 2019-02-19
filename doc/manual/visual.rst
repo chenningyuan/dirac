@@ -133,6 +133,15 @@ Default (coordinates in bohr)::
    4.0
 
 
+keyword(3D_IMP)
+
+Calculate various densities in 3D on an imported grid (does not have to be regular)
+Example::
+
+  .3D_IMP
+   grid_file        ! a file with x,y,z-coordinates of grid points
+
+
 keyword(3D_INT)
 
 Integrate densities in 3D.
@@ -351,6 +360,16 @@ Example::
    1.2 -1.0 2.0
 
 will calculate the NMR shielding in point (1.2, -1.0, 2.0). This keyword can be used only with one of: NDIPX, NDIPY, NDIPZ keywords.
+
+
+keyword(READJB)
+
+Use the grid and the magnetically-induced current density (jB) from a file to calculate the jB-dependent densities,
+e.g. the NMR shielding density or the magnetizability density. 
+Example::
+
+  .READJB
+   file_name        ! a file with x,y,z-coordinates of grid points and jB vector field
 
 
 keyword(GAUGE)

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2088,7 +2088,7 @@ C***********************************************************************
 #include "priunit.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 #include "pgroup.h"
@@ -2182,7 +2182,7 @@ C
               if(.not.isopen) close(luxxxx,status="keep")
             else
               call opnfil(lucoef,'DFCOEF','OLD','mjlist ')
-              call reacmo_no_work(lucoef,'DFCOEF',dummy,dummy,
+              call reacmo(lucoef,'DFCOEF',dummy,dummy,
      &                            orb_sym_vec,dummy,8)
               close(lucoef,status='KEEP')
             end if

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -52,6 +52,7 @@
 #include "mxpdim.inc"
 #include "crun.inc"
       logical mcscf, run_wo_t_buff
+      character*6 CIRUN
  
       if(.not.run_wo_t_buff)then
         call integral_distribution_driver(ISPINFREE,NL2D,IUB2D,ISM2D,
@@ -601,7 +602,7 @@ C
 #include "clunit.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IDISP
 #endif
 #include "parluci.h"
@@ -1303,7 +1304,7 @@ C
 #include "clunit.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IDISP
 #endif
 #include "parluci.h"
@@ -2074,7 +2075,7 @@ C
 #include "dgroup.h"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET
 #endif
 #include "parluci.h"
@@ -3232,7 +3233,7 @@ csk               write(LUWRT,*) ' continuing ...'
       use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "krmc_shmem.h"
 #include "ipoist8.inc"
@@ -3498,7 +3499,7 @@ csk               write(LUWRT,*) ' continuing ...'
       use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -3768,7 +3769,7 @@ csk               write(LUWRT,*) ' continuing ...'
       use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "wrkspc.inc"

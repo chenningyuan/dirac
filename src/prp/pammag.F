@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -54,6 +54,7 @@ C*****************************************************************************
 #include "maxorb.h"
 #include "symmet.h"
 #include "dcbxlr.h"
+#include "dgroup.h"
 C
 
       PARAMETER (NTABLE = 16)
@@ -261,6 +262,17 @@ C ... header:
       WRITE(LUPRI,'(3X,A)') 'Magnetic properties:'
       CALL PRSYMB(LUPRI,'=',75,0)
 
+      if (nz .ne. 4) then
+        if (msuscp .and. london .and. dirac_cfg_dft_calculation) then
+          call quit("Magnetizabilities with DFT and London atomic"//
+     &              " orbitals available in C1 symmetry only")
+        end if
+        if (shield .and. london .and. dirac_cfg_dft_calculation) then
+          call quit("Shieldings with DFT and London atomic orbitals"//
+     &              " available in C1 symmetry only")
+        end if
+      end if
+
       IF (USECM.AND.GORG) THEN
        WRITE(LUPRI,'(A)')
      & 'You have asked for center of mass to be the gauge origin!'
@@ -397,6 +409,9 @@ C =========================================================================
          WRITE(LUPRI,'(1X,A)')
      & 'perturbed LAO-density exported on file pertden_lao'
       END IF
+      if (expped .and. parcal) then
+        call quit('expped is tested in serial mode only; quitting...')
+      end if
 !     if fde and london, then always export perturbed density
 ! gosia: activate it if freeze&thaw with response...
 !      if (dirac_cfg_fde_response .and. london) then
@@ -477,11 +492,11 @@ C boson irreps identification (read with MO coeff.)
       IF (SPINFR) THEN
        IOPT = 10 ! read MO coeff.+boson irreps ident.
        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,WORK(KBEIG),
-     &            TOTERG,IOPT,WORK,KFREE,LFREE)
+     &            TOTERG,IOPT)
       ELSE
        IOPT = 2 ! read only MO coefficients
        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,IDUM,
-     &            TOTERG,IOPT,WORK,KFREE,LFREE)
+     &            TOTERG,IOPT)
       ENDIF
 
 C Open property file
@@ -563,13 +578,13 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
                 CALL DZERO(WORK(KTHMAT),N2ORBXQ)
                 AH  = .TRUE. ! T_icomp is antihermitian ! 
                 CALL TTRA(ISYM2,ISYM,WORK(KTMAT),
-     &             CONMAT,WORK(KTHMAT),.true.,.false.,.false.,IPRINT)
+     &             CONMAT,WORK(KTHMAT),.true.,.false.,IPRINT)
              else if (ep) then
                 call get_m_ep(work(ktmat))
                 CALL DZERO(WORK(KTHMAT),N2ORBXQ)
                 AH  = .TRUE. ! T_icomp is antihermitian ! 
                 CALL TTRA(ISYM2,ISYM,WORK(KTMAT),
-     &            CONMAT,WORK(KTHMAT),.true.,.true.,.false.,IPRINT)
+     &            CONMAT,WORK(KTHMAT),.true.,.false.,IPRINT)
              else if (occ) then
                 call get_m_ij(work(ktmat))
                 CALL DZERO(WORK(KTHMAT),N2ORBXQ)
@@ -577,10 +592,10 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
                 if (lao_lr_rearrange .or.shielding_rearrange) then
 !                 then all contribution to {T,h} comes from occ-occ blocks
                   CALL TTRA(ISYM2,ISYM,WORK(KTMAT),
-     &                CONMAT,WORK(KTHMAT),.true.,.false.,.true.,IPRINT)
+     &                CONMAT,WORK(KTHMAT),.true.,.true.,IPRINT)
                 else 
                   CALL TTRA(ISYM2,ISYM,WORK(KTMAT),
-     &                CONMAT,WORK(KTHMAT),.true.,.false.,.false.,IPRINT)
+     &                CONMAT,WORK(KTHMAT),.true.,.false.,IPRINT)
                 end if
              end if
 #endif
@@ -684,11 +699,11 @@ C boson irreps identification (read with MO coeff.)
       IF (SPINFR) THEN
        IOPT = 10 ! read MO coeff.+boson irreps ident.
        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,WORK(KBEIG),
-     &            TOTERG,IOPT,WORK,KFREE,LFREE)
+     &            TOTERG,IOPT)
       ELSE
        IOPT = 2 ! read only MO coefficients
        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,IDUM,
-     &            TOTERG,IOPT,WORK,KFREE,LFREE)
+     &            TOTERG,IOPT)
       ENDIF
 
 C Open property file
@@ -1132,11 +1147,11 @@ C     and the full relativistic (fermion symm.) mode
       IF (SPINFR) THEN
        IOPT = 10 ! read MO coeff.+boson irreps ident. 
        CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IBEIG,
-     &            TOTERG,IOPT,WORK,KFREE,LFREE)
+     &            TOTERG,IOPT)
       ELSE
        IOPT = 2 ! read only MO coefficients
        CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IDUM,
-     &            TOTERG,IOPT,WORK,KFREE,LFREE)
+     &            TOTERG,IOPT)
 
       ENDIF
       CLOSE(LUCOEF,STATUS='KEEP')
@@ -1902,11 +1917,11 @@ C     and the full relativistic (fermion symm.) mode
       IF (SPINFR) THEN
        IOPT = 10 ! read MO coeff.+boson irreps ident.
        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,WORK(KBEIG),
-     &            TOTERG,IOPT,WORK,KFREE,LFREE)
+     &            TOTERG,IOPT)
       ELSE
        IOPT = 2 ! read only MO coefficients
        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,IDUM,
-     &            TOTERG,IOPT,WORK,KFREE,LFREE)
+     &            TOTERG,IOPT)
       ENDIF
       CLOSE(LUCOEF,STATUS='KEEP')
 C  1. Get tensor of two-electron expectation value terms 
@@ -2154,6 +2169,10 @@ C
         call dzero(dmat_0, n2bbasx*nz)
         call genden(dmat_0, cmo, 1, iprprp)
 
+        sus2el_fde_1 = 0.0d0
+        sus2el_fde_2 = 0.0d0
+        sus2el_fde_3 = 0.0d0
+
 !       embedding potential contribution
 !       --------------------------------
         if (.not. fde_lao_magn_expval_no_embpot) then
@@ -2162,7 +2181,6 @@ C
 #ifdef VAR_MPI
           if (parcal) call dirac_parctl( FDE_PAR )
 #endif
-          sus2el_fde_1 = 0.0d0
           if (itmp%im_vemb) then
             call fde_dirac_emb_matrices_via_integration(
      &                    fde_mat_dim            = ntbas(0),
@@ -2203,7 +2221,6 @@ C
 #ifdef VAR_MPI
           if (parcal) call dirac_parctl( FDE_PAR )
 #endif     
-          sus2el_fde_2 = 0.0d0
           call fde_dirac_emb_matrices_via_integration(
      &                    fde_mat_dim            = ntbas(0),
      &                    fde_nz                 = nz,
@@ -2241,7 +2258,6 @@ C
 #ifdef VAR_MPI
             if (parcal) call dirac_parctl( FDE_PAR )
 #endif    
-            sus2el_fde_3 = 0.0d0
             call fde_dirac_emb_matrices_via_integration(
      &                      fde_mat_dim            = ntbas(0),
      &                      fde_nz                 = nz,
@@ -3589,7 +3605,6 @@ C                GRDOR1
 C
 C   Written by Miro Ilias, August 2003, Odense
 C 
-! gosia: FAC2LO is never used?
 C*****************************************************************************
 #ifdef MOD_LAO_REARRANGED
       use london_helper

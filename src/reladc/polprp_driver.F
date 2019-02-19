@@ -46,7 +46,7 @@
       LOGICAL CA
       CHARACTER*10 INTFCE
 #ifdef VAR_MPI
-      dimension istat(df_mpi_status_size)
+      integer istat(df_mpi_status_size)
 #endif
 !
 !---------------Executable code--------------------------------------
@@ -158,7 +158,7 @@
 #include "dcbmp2no.h"
 #include "infpar.h"
 #if defined (VAR_MPI)
-      dimension istat(df_mpi_status_size)
+      integer istat(df_mpi_status_size)
 #endif
 #include "priunit.h"
 #include "dgroup.h"
@@ -575,7 +575,8 @@ C
 !
 #include  "../relccsd/symm.inc"
 #include  "../relccsd/complex.inc"
-#include  "../relccsd/param.inc"     !LTR/LFA are defined here (true, false)
+#include  "../relccsd/param.inc"
+!LTR/LFA are defined here (true, false)
 #include  "../relccsd/ccpar.inc"
 #include "polprp_servercodes.h"
 #include "polprp_stacklines.h"

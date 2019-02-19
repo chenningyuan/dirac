@@ -17,11 +17,8 @@ FROZEN
 TXT
 .UPDATE
 .RSP
-.LAODPT
-.LAODKR
-.LAORKR
-.LAOFRZ
-.LFCOUL
+.LAO11
+.LAO12
 .PERTIM
 pertden_direct_lao.FINAL
 pertden_reorth_lao.FINAL

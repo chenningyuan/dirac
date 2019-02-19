@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -5348,7 +5348,7 @@ C&&&&  ONESTEP: Do NOT do preliminary free-particle transformation
   130     CONTINUE
 C&&& BLOCKD:   Do use block diagonalization
 CMI      ... not active yet
-#if defined MOD_UNRELEASED
+#ifdef MOD_UNRELEASED
              BLOCKD = .TRUE.
 #else
              call quit('block diagonalizing feature not in release!')
@@ -6037,6 +6037,10 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
       ELSE
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb Hamiltonian'
       ENDIF
+
+      if (x2c.and.ecpcalc) then
+         call quit('Incompatible options: X2C and ECP')
+      end if
 
       IF (ICHANG.GT.0) WRITE(LUPRI,'(3X,A)')
      &    'with the following modifications:'
@@ -6795,7 +6799,7 @@ c     Spin-orbit integrals for ECP centres ...
 c     ========================================
 c
         PNAME            = 'Spin-orbit Pseudopotentials'
-        IPTYP            = 22 ! for the new definition
+        IPTYP            = 20 ! for the new definition
         NPCOMP           = 3
         PFAC(1)          = +1.0
         PFAC(2)          = +1.0
@@ -7045,6 +7049,7 @@ C.....Individual atoms
         ILABDF = 1
         NLAB   = 0
 C.......consider only large component labels
+        ICLS=1 ! Miro: runtimecheck fix
         DO ILAB1 = 1,NPLAB(1)
           IC     = IGET(IATTR(ILAB1,ILABDF))          
           ICENT  = JGET(IATTR(ILAB1,ILABDF))          
@@ -7079,6 +7084,7 @@ C     First make pointer to orbital angular momentum
         ILABDF = 1
         NLAB   = 0
 C.......consider only large component labels
+        ICLS=1 ! Miro: runtimecheck fix
         DO ILAB1 = 1,NPLAB(1)
           IC     = IGET(IATTR(ILAB1,ILABDF))          
           ICENT  = JGET(IATTR(ILAB1,ILABDF))          
@@ -7374,7 +7380,7 @@ C
 !radovan: i think they are now rather ok tested
 !     IF (SPINFR.AND.DOPRP)WRITE (LUPRI,1000)'Spinfree properties'
 
-#if !defined MOD_UNRELEASED
+#ifndef MOD_UNRELEASED
       IF (DORES .AND.dirac_cfg_dft_calculation)
      &   CALL QUIT ('.RESOLVE does not work with DFT !')
 #endif

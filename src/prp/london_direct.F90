@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -146,10 +146,10 @@ contains
        call xc_contrib_2el_lao(cmo, fmat)
     end if
 
-!   calculate fde direct-LAO contributions to the gradient
+!   calculate fde direct-LAO contributions to the property gradient
 !   and, if requested, LAO contribution from the perturbed density
-    if (dirac_cfg_fde_response .and. fde_rsp_mag_lao) then
-       if (fde_lao_direct_active_embpot .or. fde_lao_direct_active_embker) then
+    if (dirac_cfg_fde_response .and. fde_rsp_propgrad_lao) then
+       if (fde_rsp_propgrad_lao_direct_embpot .or. fde_rsp_propgrad_lao_direct_embker) then
           call fde_direct_contribs(cmo, fmat)
        else
           write(*, *) 'no LAO-direct contributions to FDE property gradient'
@@ -516,43 +516,46 @@ contains
 
       call dzero(gmat, n2orbxq)
 
-      if (spinfr) then
-        lwork = len_f77_work
-        call di_select_wrk(work, lwork)
+! gosia: spinfree+london should be properly tested;
+! the call to qbtrans is temporarily removed to restore the "response_lao_shield" test
+! that is passing on master
+      !if (spinfr) then
+      !  lwork = len_f77_work
+      !  call di_select_wrk(work, lwork)
 
-        do ii = 1, nfsym
-          iopsy = jbtof(irep, 1)
-          jj = mod(ii + iopsy, 2) + 1
-          if (nfbas(ii, 0) > 0 .and. nfbas(jj, 0) > 0) then
+      !  do ii = 1, nfsym
+      !    iopsy = jbtof(irep, 1)
+      !    jj = mod(ii + iopsy, 2) + 1
+      !    if (nfbas(ii, 0) > 0 .and. nfbas(jj, 0) > 0) then
 
-            call qbtrans(irep_2el_lao(icomp),                &
-                         'AOMO',                             &
-                         'S',                                &
-                         0.0d0,                              &
-                         nfbas(ii, 0), nfbas(jj, 0),         &
-                         norb(ii), norb(jj),                 &
-!                        -------------------------------------
-                         fmat(i2basx(ii, jj) + 1, 1, icomp), &
-                         ntbas(0), ntbas(0), nz,             &
-                         ipqtoq(1, irep_2el_lao(icomp)),     &
-!                        -------------------------------------
-                         gmat(i2orbx(ii, jj) + 1),           &
-                         norbt,    norbt,    nz,             &
-                         ipqtoq(1, irep_2el_lao(icomp)),     &
-!                        -------------------------------------
-                         cmo(icmoq(ii) + 1),                 &
-                         nfbas(ii,0), norb(ii), nz,          &
-                         ipqtoq(1, 0),ibeig(iorb(ii)+1),     &
-!                        -------------------------------------
-                         cmo(icmoq(jj) + 1),                 &
-                         nfbas(jj, 0), norb(jj), nz,         &
-                         ipqtoq(1, 0),ibeig(iorb(jj)+1),     &
-!                        -------------------------------------
-                         work, lwork, iprprp)
-          end if
-        end do
-        call di_deselect_wrk(work, lwork)
-      else
+      !      call qbtrans(irep_2el_lao(icomp),                &
+      !                   'AOMO',                             &
+      !                   'S',                                &
+      !                   0.0d0,                              &
+      !                   nfbas(ii, 0), nfbas(jj, 0),         &
+      !                   norb(ii), norb(jj),                 &
+!     !                   -------------------------------------
+      !                   fmat(i2basx(ii, jj) + 1, 1, icomp), &
+      !                   ntbas(0), ntbas(0), nz,             &
+      !                   ipqtoq(1, irep_2el_lao(icomp)),     &
+!     !                   -------------------------------------
+      !                   gmat(i2orbx(ii, jj) + 1),           &
+      !                   norbt,    norbt,    nz,             &
+      !                   ipqtoq(1, irep_2el_lao(icomp)),     &
+!     !                   -------------------------------------
+      !                   cmo(icmoq(ii) + 1),                 &
+      !                   nfbas(ii,0), norb(ii), nz,          &
+      !                   ipqtoq(1, 0),ibeig(iorb(ii)+1),     &
+!     !                   -------------------------------------
+      !                   cmo(icmoq(jj) + 1),                 &
+      !                   nfbas(jj, 0), norb(jj), nz,         &
+      !                   ipqtoq(1, 0),ibeig(iorb(jj)+1),     &
+!     !                   -------------------------------------
+      !                   work, lwork, iprprp)
+      !    end if
+      !  end do
+      !  call di_deselect_wrk(work, lwork)
+      !else
         do ii = 1, nfsym
           iopsy = jbtof(irep, 1)
           jj = mod(ii + iopsy, 2) + 1
@@ -582,7 +585,7 @@ contains
                           iprprp)
           end if
         end do
-      end if
+      !end if
 
 ! check if it is antisymmetric:
       DSX=SYMCHECK(gmat(1),NORBT,NORBT,NORBT,NZ)
@@ -636,8 +639,9 @@ contains
 
      call generate_num_grid(dmat)
 
-     if (fde_lao_direct_active_embpot) then
-        write(*, *) 'LAO-direct contribution to property gradient (embpot)'
+     if (fde_rsp_propgrad_lao_direct_embpot .and. .not. fde_exclude_rsp_propgrad_lao_direct_embpot) then
+        write(*, *) 'FDE-LAO direct contribution to the property gradient '// & 
+                    'dependent on the embedding potential'
 
 #ifdef VAR_MPI
         if (parcal) call dirac_parctl(FDE_PAR)
@@ -673,10 +677,12 @@ contains
 
      end if
 
-     if (fde_lao_direct_active_embker &
+     if (fde_rsp_propgrad_lao_direct_embker &
+         .and. .not. fde_exclude_rsp_propgrad_lao_direct_embker &
          .and. .not. fde_cfg_no_sdft) then
 
-        write(*, *) 'LAO-direct contribution to property gradient (embker)'
+        write(*, *) 'FDE-LAO direct contribution to the property gradient ' // &
+                    'dependent on the (uncoupled) embedding kernel'
 
 #ifdef VAR_MPI
         if (parcal) call dirac_parctl(FDE_PAR)

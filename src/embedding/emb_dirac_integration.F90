@@ -2348,9 +2348,9 @@ contains
          write(file_unit, *)
          write(file_unit, '(3x, a)') 'FDE interaction energy contributions'
          write(file_unit, *)
-         write(file_unit,'(6x, a, f26.16)'), 'non-additive:',non_additive_interaction
-         write(file_unit,'(6x, a, f26.16)'), 'E_el^B[nA]  :',electrostatic_b_rho_a_interaction
-         write(file_unit,'(6x, a, f26.16)'), 'E_nuc^A[nB] :',electrostatic_a_rho_b_interaction
+         write(file_unit,'(6x, a, f26.16)') 'non-additive:',non_additive_interaction
+         write(file_unit,'(6x, a, f26.16)') 'E_el^B[nA]  :',electrostatic_b_rho_a_interaction
+         write(file_unit,'(6x, a, f26.16)') 'E_nuc^A[nB] :',electrostatic_a_rho_b_interaction
       endif 
       write(file_unit, *)
 
@@ -2705,7 +2705,8 @@ contains
 #ifdef VAR_MPI
          if (parallel_fde) then
             call fde_mpi_distribute_points(rx, ry, rz, rw, nr_points_batch, nr_points_on_this_proc) 
-            call fde_mpi_distribute_frozen(frozen_n, frozen_gnx, frozen_gny, frozen_gnz, frozen_elpot,nr_points_batch, nr_points_on_this_proc) 
+            call fde_mpi_distribute_frozen(frozen_n, frozen_gnx, frozen_gny, frozen_gnz, &
+       &                                   frozen_elpot,nr_points_batch, nr_points_on_this_proc) 
             if (use_potential) then
               call fde_mpi_distribute_vemb(use_vemb, nr_points_batch, nr_points_on_this_proc)
             end if
@@ -2714,7 +2715,8 @@ contains
               .or. do_london_rhs_direct_coupling &
               .or. do_london_susc2el_coupling &
               .or. do_london_suscreo_coupling) then
-              call fde_mpi_distribute_frozen_pertden_n(frozen_n_bx, frozen_n_by, frozen_n_bz, nr_points_batch, nr_points_on_this_proc)
+              call fde_mpi_distribute_frozen_pertden_n(frozen_n_bx, frozen_n_by, frozen_n_bz, &
+        &                                              nr_points_batch, nr_points_on_this_proc)
               if (use_gga) then
               call fde_mpi_distribute_frozen_pertden_gn(frozen_gxn_bx, frozen_gxn_by, frozen_gxn_bz, &
                                                         frozen_gyn_bx, frozen_gyn_by, frozen_gyn_bz, &

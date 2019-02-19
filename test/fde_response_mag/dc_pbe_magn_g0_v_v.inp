@@ -1,7 +1,6 @@
 **DIRAC
+.WAVE FUN
 .PROPERTIES
-**GENERAL
-.RKBIMP
 **MOLECULE
 *BASIS
 .DEFAULT
@@ -9,7 +8,7 @@
 *SYMMETRY
 .NOSYM
 **HAMILTONIAN
-.URKBAL
+! note that this is RKB run on the DEBUG grid (not adequate for this type of calculation)
 .DFT
  PBE
 .FDE
@@ -22,7 +21,7 @@ pbex=1.0 pbec=1.0
 .FRDENS
 FROZEN
 .RSP
-.LAODPT
+.LDPT
 .EMAFDE
 .MNOUKE
 .MNONKE
@@ -43,12 +42,9 @@ numerical_grid
 .PRINT
 2
 .MAGNETIZABILITY
-.MSTDIA
 *NMR
 .LONDON
 .SYMCON
-.GAUGEO
-0.0 0.0 0.0
 *LINEAR
 .PRINT
 2

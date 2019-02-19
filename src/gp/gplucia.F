@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -3106,7 +3106,8 @@ C     call iwrtma(minval,1,ngasl,1,ngasl)
         IMULT = IMULT*(MAXVAL(IGAS)-MINVAL(IGAS)+1)
 C       write(6,*) ' igas i imult ',igas,i,imult
       END DO
-      IOFF_SYM_DIST=IOFF(I)
+      ! Miro: fix due to runtimecheck, I should be nonzero
+      IF (I.GT.0) IOFF_SYM_DIST=IOFF(I) 
 *
       NTEST = 000
       IF(NTEST.GE.100) THEN

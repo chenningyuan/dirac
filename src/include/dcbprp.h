@@ -28,7 +28,8 @@
      &        DOTPA,DOVER,DOEXCPRP,DOVDW,REGRAD,                        &
      &        ROTG, LONDON, SYMCON, NOORTH, DOPCT, MSUSCDIA, NOPCT,     & 
      &        PVC_SHIELD, PVC_SPINSPIN, DOSTEX, OPTROT,                 &
-     &        BXLAO, BYLAO, BZLAO, EFFDEN, EFFDE2,SEPTEP,FULMAT,EXPPED
+     &        BXLAO, BYLAO, BZLAO, EFFDEN, EFFDE2,SEPTEP,FULMAT,EXPPED, &
+     &        DONMQM
       COMMON /CBLPRP/ DOXLR, DOXPP, DOEXP, DOXQR, DIPOLE, EPOLAR,DOVDW, &
      &                MSUSCP, SHIELD, SPNSPN, EFG, NQCC, MGRAD, NSTDIA, &
      &                PVC, DOESR, ESRGTENS, ESR_HFCC, EFT, EFTNTL,      &
@@ -36,7 +37,7 @@
      &                ROTG,LONDON,SYMCON,NOORTH,DOPCT,MSUSCDIA,NOPCT,   & 
      &                PVC_SHIELD,PVC_SPINSPIN,DOSTEX,OPTROT,            &
      &                BXLAO, BYLAO, BZLAO, EFFDEN, EFFDE2,SEPTEP,FULMAT,&
-     &                EXPPED
+     &                EXPPED, DONMQM
 
       INTEGER IPRPRP, IPEPOLAR(3, 2), IPSPNSPN(2, MXCOOR),              &
      &        IPDSO(MXCOOR*(MXCOOR+1)/2), NDSOIN, IPSHIELD(MXCOOR+3),   &

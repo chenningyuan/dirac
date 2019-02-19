@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -513,13 +513,13 @@ contains
 
 !   fde contributions to property gradient
 !   --------------------------------------
-    if (dirac_cfg_fde_response .and. fde_rsp_mag_lao) then
+    if (dirac_cfg_fde_response .and. fde_rsp_propgrad_lao) then
        call fde_get_import_info(itmp)
 !      no coupling:
 !      ------------
-       if (fde_lao_reorth_active_embker) then
-          write(*, *) 'LAO kernel-like contribution to property gradient '// &
-                      'reorthonormalization contributions, no coupling'
+       if (fde_rsp_propgrad_lao_reorth_embker .and. .not. fde_exclude_rsp_propgrad_lao_reorth_embker) then
+          write(*, *) 'FDE-LAO reorthonormalization contribution to the property gradient '// &
+                      'from the (uncoupled) embedding kernel'
           call alloc(dmat, n2bbasxq)
           dmat = 0.0d0
           call genden(dmat, cmo, 1, iprprp)
@@ -755,9 +755,7 @@ contains
 
 
   subroutine get_tb_dmat(tb_dmat, cmo, ibeig)
-#ifdef MOD_UNRELEASED
   use fde_mod
-#endif
 !-----------------------------------------------------------------------
     real(8), intent(out)   :: tb_dmat(n2bbasxq, *)
     real(8), intent(in)    :: cmo(*)

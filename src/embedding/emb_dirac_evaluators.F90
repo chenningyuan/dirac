@@ -551,7 +551,7 @@ module fde_evaluators_dirac
       cmo = 0.0d0
 
       select case(level)
-      case('MP2')
+      case('MP2','CCSD')
          if (printlocal) write(lupri,*) 'Reading CC_DENSITY'
          call get_cc_density(level,'AO',DMAT,ierr)
          if (ierr.ne.0) then
@@ -562,8 +562,8 @@ module fde_evaluators_dirac
 !     HF density used
          if (printlocal) write(lupri,*) 'Reading DFCOEF'
          call opnfil(LUCOEF,'DFCOEF','UNKNOWN','EMBDRV')
-         call reacmo_no_work(lucoef,    &
-                             'DFCOEF',  &
+         call reacmo(lucoef,    &
+                            'DFCOEF',  &
                              cmo,       &
                              (/0.0d0/), &
                              (/0/),     &
@@ -713,9 +713,9 @@ module fde_evaluators_dirac
 
       call opnfil(lucoef,'DFCOEF','OLD','fde_get_pertden')
       if (spinfr) then
-         call reacmo_no_work(lucoef,'DFCOEF',cmo,dum,ibeig,toterg,10)
+         call reacmo(lucoef,'DFCOEF',cmo,dum,ibeig,toterg,10)
       else
-         call reacmo_no_work(lucoef,'DFCOEF',cmo,dum,idum,toterg,2)
+         call reacmo(lucoef,'DFCOEF',cmo,dum,idum,toterg,2)
       endif
       close(lucoef,status='keep')
 

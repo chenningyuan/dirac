@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -226,7 +226,7 @@ module fde_input
             ' * FDE Gridfile with updated density written to:',string
 
             select case(etmp%ex_level)
-               case('DHF','MP2')
+               case('DHF','MP2','CCSD')
                   write(unit,*)                               &
                   'Outputted density will be taken from: ',trim(etmp%ex_level)
                   

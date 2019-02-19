@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,31 +19,56 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-C FILE    : dirac.F
+! FILE    : main/dirac.F
+
+! if openMP, then let MPI slave nodes sleep 10 ms before probing for a new task
+! then the same cores can be used more efficiently for both openMP and MPI.
+#ifdef HAVE_OPENMP
+#define VAR_SLEEPING_SLAVES
+#endif
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
 #include "dirac_partask.h"
 C***********************************************************************
       SUBROUTINE DIRAC(IPARCAL,IMYTID,IMPARID,INUMNOD)
-#include "implicit.h"
+!
+!     main driver for Dirac master node
+!
+      implicit none
+
+      integer IPARCAL, IMYTID, IMPARID, INUMNOD
+
 #include "priunit.h"
-C
+
 #include "dcbgen.h"
-C
+
 #include "infpar.h"
 #include "dgroup.h"
-#ifdef VAR_OMP
-      INTEGER omp_get_num_procs
+
+#ifdef HAVE_OPENMP
+      INTEGER omp_get_num_procs, omp_get_num_threads
+      INTEGER omp_get_thread_limit, omp_get_thread_num
+      CHARACTER*10 my_OMP_NUM_THREADS
 #endif
-C
-C
+
 C     Set up basic information for parallel execution, to be stored in the
 C     common block infpar
-C
-#ifdef VAR_OMP
-         write(lupri,'(//A,I5)')
-     &   ' * openMP activated, number of threads:',
-     &   omp_get_num_procs()
+
+#ifdef HAVE_OPENMP
+      MAX_OMP_THREADS = omp_get_num_procs()
+      write(lupri,'(//A,2I5)')
+     &' * openMP activated, number of processes and number of threads'//
+     &' in non-parallel region:',
+     &   MAX_OMP_THREADS, omp_get_num_threads()
+!$OMP PARALLEL
+      MAX_OMP_THREADS = omp_get_thread_limit()
+      write(lupri,'(//A,I20,2I5)') ' * openMP parallel region, '//
+     &'max number of threads and current number of threads:',
+     &   MAX_OMP_THREADS, omp_get_num_threads()
+     & , omp_get_thread_num()
+!$OMP END PARALLEL
+#else
+      MAX_OMP_THREADS = 0
 #endif
       PARCAL = (IPARCAL .NE. 0)
       MPARID = IMPARID
@@ -392,6 +417,14 @@ C***********************************************************************
       IF(DOPSI) THEN
 C
 C***********************************************************************
+C******* E X A _ C C  M O D U L E **************************************
+C***********************************************************************
+C
+#ifdef MOD_EXACORR
+        IF(DOEXACC) CALL EXA_CC()
+#endif
+C
+C***********************************************************************
 C******* R E L C C S D  M O D U L E ************************************
 C***********************************************************************
 C
@@ -637,7 +670,7 @@ C        Set min and max accumulated no. of electrons in each gas space
          NGAS_DC = NGAS_DC + 1 ! RAS2-GAS space
          DO J = 1,NFSYM
             NGSH(J,NGAS_DC) = NASH(J)
-            NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NASH(I)
+            NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NASH(J)
          END DO
 
          IF (NGAS_CIESR(3) > 0) THEN
@@ -763,6 +796,7 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbkrmc.h"
+#include "dcbkrci.h"
 #include "dcbopt.h"
 #include "dcbgascip.h"
 #include "dcbdhf.h"
@@ -1087,29 +1121,73 @@ C     Last revision: July 29 1996
 C
 C***********************************************************************
       use interface_to_mpi
+      use iso_c_binding
+
 #ifdef MOD_INTEREST
       use module_interest_interface,                                    &
      &    only: initialize_interest_herd,                               &
      &          process_two_electron_integrals_4comp_slaves,            &
      &          process_two_electron_integrals_2comp_slaves 
+#endif
 !     use fde_evaluators_dirac, only : fde_launch_slave_process
       use fde_mod, only : fde_launch_slave_process
-#endif
 
       implicit none
+
+#if defined (VAR_SLEEPING_SLAVES)
+      interface
+         ! fortran sleep() is only in seconds,
+         ! so we use the usleep() from C to sleep in microseconds
+         subroutine usleep_ftn(useconds) bind(C,name="usleep")
+      !  integer(c_int) function usleep(useconds) bind(C)
+          use iso_c_binding
+          implicit none
+          integer(c_int32_t), value :: useconds
+      !  end function
+         end subroutine
+      end interface
+#endif
+
 #include "dcbdhf.h"
 #include "dcbgen.h"
 #include "priunit.h"
 #include "infpar.h"
-      DIMENSION ISTAT(df_mpi_status_size)
-      LOGICAL NEWTASK
-      integer :: IMPARID, INUMNOD, IMYTID, ITASK, IPARCAL
-      real*8 :: CPU1, WALL1
-C
-C
+      INTEGER :: ISTAT(df_mpi_status_size)
+      LOGICAL :: NEWTASK
+      integer :: IMPARID, INUMNOD, IMYTID, ITASK, IPARCAL, mytid_print
+      real*8  :: CPU1, WALL1, TIMSTR, TIMEND
+#ifdef HAVE_OPENMP
+      INTEGER :: omp_get_num_procs, omp_get_num_threads
+#endif
+
       integer :: sleep_time=15
 
       CALL QENTER('DIRNOD')
+
+      mytid_print = -1
+! activate next line for debug print from one of the nodes
+!     mytid_print = min(10,INUMNOD)
+      
+      if (mytid .eq. mytid_print) print *, 'DIRNOD slave MYTID ',IMYTID
+
+#ifdef HAVE_OPENMP
+      MAX_OMP_THREADS = omp_get_num_procs()
+      if (mytid .eq. mytid_print) then
+!$OMP PARALLEL
+!        write(lupri,'(//A,2I5)')
+!    &' * node 10 openMP, number of processes and number of threads:',
+!    &   MAX_OMP_THREADS, omp_get_num_threads()
+!        write(lupri,'(//A,I10)')
+!    &' * node 10 openMP, number of mkl threads:',
+!    &    mkl_get_max_threads()
+!        print *,'node 10 openMP, call omp_set_num_threads(1)'
+!$OMP END PARALLEL
+      end if
+      call omp_set_num_threads(1)
+      MAX_OMP_THREADS = 0
+#else
+      MAX_OMP_THREADS = 0
+#endif
 C
 C     Transfer variables to common blocks
 C
@@ -1120,12 +1198,15 @@ C     SK - Sep 08: subtraction has already been done in mpixinit.
       NUMNOD = INUMNOD
       MYTID  = IMYTID
       PARCAL = (IPARCAL .NE. 0)
+      IF (.NOT. PARCAL) THEN
+         CALL QUIT('ERROR: PARCAL false, but DIRNOD called')
+      END IF
 
 #if defined (SLOWDOWN_SLAVES)
 !mi+sk: introduce slowdown statement for debug purposes :
 ! node 'sleeps' short time and in between the user can attach debugger to the process
       if(mytid > 0)then
-         write(lupri,'(2x,a,i2,a)')
+         if (mytid .eq. mytid_print) write(lupri,'(2x,a,i2,a)')
      &   'slaves first sleep for ',sleep_time,' seconds. '
          call sleep(sleep_time)
       endif
@@ -1140,31 +1221,26 @@ C
  100  CONTINUE
 #if defined (VAR_SLEEPING_SLAVES)
 ! If it is important that the slaves are not idling
-! then one can define VAR_SLEEPING SLAVES.
-! If set, then the slaves test once per second if there
-! is a new task (because of the CALL SLEEP(1))
+! then one can define VAR_SLEEPING_SLAVES.
+! If set, then the slaves test once per 10 ms if there
+! is a new task.
       call interface_mpi_iprobe(MPARID,27,NEWTASK,global_communicator,
      &                          ISTAT)
       IF (NEWTASK) THEN
-chj      write (0,*) 'mpi_iprobe true for node',mytid
-chj      write (0,*) 'istatus(source,tag,error):',
-chj  &     ( istatus(i),i=1,3)
          CALL interface_MPI_RECV(ITASK,1,MPARID,27,
      &                           global_communicator)
-chj      write (0,*) ' itask, node',itask,mytid
-chj      write (0,*) 'istatus(source,tag,error):',
-chj  &     ( istatus(i),i=1,3)
       ELSE
-         CALL SLEEP(1)
+!        CALL SLEEP(1) ! 1 second is too long, costs a lot of waste when 100, 1000 slaves or more
+         call usleep_ftn(10000_c_int32_t) ! sleep for 10 ms = 10000 microseconds
          GO TO 100
       END IF
 #else
 C
-Csk      write(6,*) 'node will recieve itask',MYTID
          CALL interface_MPI_RECV(ITASK,1,MPARID,27,
      &                           global_communicator)
-! debug         print*,'node',mytid,' has recieved itask',itask
 #endif
+      if (mytid .eq. mytid_print) 
+     &   print*,'info: node',mytid,' has received itask',itask
 C
 C     check for proper LUCITA / LUCIAREL installation
 C
@@ -1172,14 +1248,15 @@ C
 C
       IF (ITASK .eq. 5 .or. ITASK .eq. 6) THEN
         WRITE(LUPRI,'(//A)') 'Fatal error in starting a parallel LUCITA'
-     & //' / LUCIAREL run; you do not have a MPI-2 library installed'
-       CALL Abend2('Error in DIRNOD: missing MPI-2 library functions')
+     & //' / LUCIAREL run; you do not have an MPI-2 library installed'
+       CALL QUIT('Error in DIRNOD: missing MPI-2 library functions')
       END IF
 #endif
 C
 C     Start timing.
 C
-      CALL GETTIM(CPU1,WALL1)
+      ! CALL GETTIM(CPU1,WALL1)
+      call TIMER('START',TIMSTR,TIMEND)
 C
 C     ***************************************************
 C     ***** Receive initialization data from master *****
@@ -1325,19 +1402,43 @@ C
 C        start FDE MPI calculation
 C
          call fde_launch_slave_process()
+      ELSE IF (ITASK .EQ. 19) THEN
+C
+C        start exacorr moltra with MPI
+C
+#ifndef MOD_EXACORR
+          call quit(
+     &    'worker error: exa_moltra task not included in this version')
+#else
+         call exa_moltra()
+#endif
+
+      ELSE IF (ITASK .EQ. 20) THEN
+C
+C        start exacorr cc with MPI
+C
+#ifndef MOD_EXACORR
+          call quit(
+     &    'worker error: exa_cc task not included in this version')
+#else
+         call exa_cc()
+#endif
 
       ELSE
 C
 C        Unknown task. Abort execution.
 C
-         WRITE(LUPRI,'(A,I5)')
-     &     '*** ERROR *** DIRNOD: Unknown task ITASK = ',ITASK
+         WRITE(LUPRI,'(A,I0,A,I5)')
+     &     '*** ERROR *** DIRNOD node ',mytid,
+     &     ': Unknown task ITASK = ',ITASK
          CALL QUIT(' Unknown task in DIRNOD')
       END IF
 C
 C     We want the slave program to go until there is nothing
 C     more to calculate, K.Ruud, May-95
 C
+      if (mytid .eq. mytid_print)
+     &   call TIMER('node 10 task',TIMSTR,TIMEND)
       GOTO 100
 C
  999  CALL QEXIT('DIRNOD')
@@ -1376,7 +1477,7 @@ C
       IF (ITASK .eq. 5 .or. ITASK .eq. 6) THEN
         WRITE(6,*) ' fatal error in starting a parallel LUCITA /
      & LUCIAREL run; you do not have a MPI-2 library installed'
-       CALL Abend2(' error in DIRNOD2: missing MPI-2 library functions')
+       CALL QUIT(' error in DIRNOD2: missing MPI-2 library functions')
       END IF
 #endif
 C

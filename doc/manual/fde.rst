@@ -173,15 +173,15 @@ exporting the
 
 .. warning:: Development version only. 
 
-**Magnetic properties with London atomic orbitals**
-===================================================
+**Magnetic properties with London atomic orbitals - FDE contributions to the property gradient**
+================================================================================================
 
 In calculations of magnetic properties with London atomic orbitals (LAOs), additional contributions
-from FDE to the active subsystem should be added in the property gradient (:cite: `olejniczak2017`). 
+from FDE to the active subsystem should be included in the property gradient (:cite: `olejniczak2017`). 
 
 .. math::
 
-    E_{[1],emb}^{[B]} = - \int v_{emb}^I \Omega_{ia}^{B,I} - \iint w_{emb}^{I,I} \Omega_{ia}^{I} \Omega_{jj}^{I} - \iint w_{emb}^{I,II} \Omega_{ia}^{I} \Omega_{jj}^{II}
+    E_{[1],emb}^{[B]} = - \int v_{emb}^I \Omega_{ia}^{B,I} - \iint w_{emb}^{I,I} \Omega_{ia}^{I} \Omega_{jj}^{B,I} - \iint w_{emb}^{I,II} \Omega_{ia}^{I} \Omega_{jj}^{B,II}
 
 where :math:`\Omega_{pq}^{B}` is the first-order perturbed overlap distribution, which in a basis of London orbitals consists of two terms
 
@@ -193,49 +193,82 @@ where :math:`\Omega_{pq}^{B}` is the first-order perturbed overlap distribution,
 
 FDE contributions to property gradient can be included by the keywords presented below.
 
-keyword(LAODPT)
 
-.. warning:: Development version only. 
+keyword(LAO11)
 
-This keyword corresponds to the term dependent on the embedding potential (:math:`v_{emb}^I`).
-
-keyword(LAODKR)
-
-.. warning:: Development version only. 
+This keyword turns on the FDE-LAO contributions to the property gradient dependent on the embedding potential (:math:`v_{emb}^I`)
+and the uncoupled embedding kernel (:math:`w_{emb}^{I,I}`). This is the advised option. 
+Other contributions to the property gradient can be included or excluded by using expert keywords (below).
 
 
-This keyword corresponds to the term dependent on the embedding kernel, which involves only the
-"direct" LAO term and which does not describe the coupling between subsystem (:math:`w_{emb}^{I,I}`).
+keyword(LDPT)
 
-keyword(LAORKR)
+This keyword turns on the term dependent on the embedding potential (:math:`v_{emb}^I`) only.
+Calculations with the :ref:`LDPT` keyword are less demanding than calculations with the :ref:`LAO11` keyword,
+but may lead to inaccurate results, especially for heavy elements.
 
 
-.. warning:: Development version only. 
+keyword(NOLDPT)
 
-This keyword corresponds to the term dependent on the embedding kernel, which involves only the
-"reorthonormalization" contribution and which does not describe the coupling between subsystem (:math:`w_{emb}^{I,I}`)
+This keyword turns off the term dependent on the embedding potential (:math:`v_{emb}^I`).
+
+
+keyword(L11KR)
+
+This keyword turns on the terms dependent on the uncoupled embedding kernel (:math:`w_{emb}^{I,I}`).
+
+
+keyword(NL11KR)
+
+This keyword turns off the terms dependent on the uncoupled embedding kernel (:math:`w_{emb}^{I,I}`).
+
+
+keyword(LDKR)
+
+This keyword corresponds to the term dependent on the uncoupled embedding kernel (:math:`w_{emb}^{I,I}`), 
+which involves only the "direct" LAO contribution.
+
+
+keyword(NOLDKR)
+
+This keyword excludes the "direct" LAO contribution to the uncoupled embedding kernel (:math:`w_{emb}^{I,I}`).
+
+
+keyword(LRKR)
+
+This keyword corresponds to the term dependent on the uncoupled embedding kernel (:math:`w_{emb}^{I,I}`), 
+which involves only the "reorthonormalization" LAO contribution.
+
+
+keyword(NOLRKR)
+
+This keyword excludes the "reorthonormalization" LAO contribution to the uncoupled embedding kernel (:math:`w_{emb}^{I,I}`).
+
+
+keyword(LAO12)
+
+This keyword turns on the FDE-LAO contributions to the property gradient dependent on 
+the coupled embedding kernel (:math:`w_{emb}^{I,II}`).
+This option includes both, the term dependent on the non-additive part of the coupled embedding kernel and
+the Coulomb term.
+Each of these terms can be turned on by separate keywords (below).
+If this keyword is employed, it is also necessary to import perturbed densities using the :ref:`PERTIM` keyword.
+
 
 keyword(LAOFRZ)
-
-
-.. warning:: Development version only. 
 
 This keyword corresponds to the term dependent on the non-additive part of embedding kernel involving the coupling between 
 two subsystems (:math:`w_{emb}^{I,II}`). In order to calculate this term, it is necessary also to use 
 the keyword :ref:`PERTIM`. 
 
+
 keyword(LFCOUL)
-
-
-.. warning:: Development version only. 
 
 This keyword corresponds to the term dependent on the Coulomb part of embedding kernel involving the coupling between 
 two subsystems (:math:`w_{emb}^{I,II}`). In order to calculate this term, it is necessary also to use 
 the keyword :ref:`PERTIM`. 
 
 keyword(PERTIM)
-
-.. warning:: Development version only. 
 
 This keyword should be used whenever :ref:`LAOFRZ` keyword is present. It commands the program to read the contributions
 ("direct" LAO contribution and "reorthonormalization" contribution) to the perturbed density in LAO basis from files.
@@ -251,9 +284,42 @@ This keyword should be used whenever :ref:`LAOFRZ` keyword is present. It comman
 
 keyword(FRZNOS)
 
-.. warning:: Development version only. 
-
 This keyword means that no spin-density contributions to the perturbed density will be used in FDE calculations.
+
+
+**Magnetizability with London atomic orbitals - FDE contributions to the expectation value of the magnetizability tensor**
+==========================================================================================================================
+
+The FDE calculations of the magnetizability tensor with London atomic orbitals (LAOs), require the FDE-LAO contributions to
+the property gradient (presented above) and the FDE-LAO contributions to the expectation value of the magnetizability tensor.
+The latter involve the terms dependent on the embedding potential (:math:`v_{emb}^I`), 
+uncoupled embedding kernel (:math:`w_{emb}^{I,I}`) and coupled embedding kernel (:math:`w_{emb}^{I,II}`).
+
+
+keyword(EMAFDE)
+
+This keyword turns on all FDE-LAO contributions to the expectation value part of the magnetizability tensor.
+This is the advised option. 
+It is possible to exclude each contribution by using expert keywords (presented below).
+
+
+keyword(MNOPOT)
+
+This keyword turns off the contribution to the expectation value part of the magnetizability tensor
+dependent on the embedding potential (:math:`v_{emb}^I`).
+
+
+keyword(MNOUKE)
+
+This keyword turns off the contribution to the expectation value part of the magnetizability tensor
+dependent on the uncoupled embedding kernel (:math:`w_{emb}^{I,I}`).
+
+
+keyword(MNONKE)
+
+This keyword turns off the contribution to the expectation value part of the magnetizability tensor
+dependent on the non-additive part of the coupled embedding kernel (:math:`w_{emb}^{I,II}`).
+
 
 **Debug/expert options**
 ========================
