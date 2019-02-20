@@ -104,6 +104,12 @@
          type(talsh_tens_t) :: goo, gvv
         end type talsh_lambda_tens
 
+        type, public :: talsh_dm_tens
+         type(talsh_tens_t) :: prime_oo, symm_oo
+         type(talsh_tens_t) :: prime_ov, prime_vo
+         type(talsh_tens_t) :: prime_vv, symm_vv
+        end type talsh_dm_tens
+
         type, public, extends(talsh_comm_tens) :: talsh_eom_fixed_tens
             type(talsh_intg_tens)   :: int_t
             type(talsh_lambda_tens) :: lambda_t

@@ -238,7 +238,7 @@ module talsh_cc
                                         eps_occ,eps_vir,t_target_precision,ncycles)
 
           !Calculate density matrices
-          if (.not.CCD) call get_dm_mo(comm_t%t1,comm_t%t2,l1_tensor,l2_tensor,nocc,nvir)
+          if (.not.CCD) call dm_driver(exa_input,comm_t%t1,comm_t%t2,l1_tensor,l2_tensor)
          else if (lambda) then
             print*, "Lambda equations are only implemented for CCSD!"
          end if
@@ -623,21 +623,22 @@ module talsh_cc
          call get_fbar_oo(lambda_t%fbar_oo,comm_t,CCD)
          call print_date('Finished calculating fixed intermediates')
 
-          !Debug
-         print*, "T1amp      = ", tensor_norm2(comm_t%t1)
-         print*, "T2amp      = ", tensor_norm2(comm_t%t2)*ONE_QUARTER
-!         print*, "Tau        = ", tensor_norm2(comm_t%tau)*ONE_QUARTER
-!         print*, "Fbar_oo    = ", tensor_norm2(lambda_t%fbar_oo)
-         print*, "Fbar_ov    = ", tensor_norm2(lambda_t%fbar_ov)
-!         print*, "Fbar_vv    = ", tensor_norm2(lambda_t%fbar_vv)
-!         print*, "w_vvvv     = ", tensor_norm2(lambda_t%w_vvvv)*ONE_QUARTER
-         print*, "wbar_vovo  = ", tensor_norm2(lambda_t%wbar_vovo)
-         print*, "w_vvvo     = ", tensor_norm2(lambda_t%w_vvvo)*0.5D0
-         print*, "w_vovv     = ", tensor_norm2(lambda_t%w_vovv)*0.5D0
-         print*, "w_vovo     = ", tensor_norm2(lambda_t%w_vovo)
-         print*, "w_ovoo     = ", tensor_norm2(lambda_t%w_ovoo)*0.5D0
-         print*, "w_ooov     = ", tensor_norm2(lambda_t%w_ooov)*0.5D0
-         print*, "w_oooo     = ", tensor_norm2(lambda_t%w_oooo)*ONE_QUARTER
+         if (debug_exa) then
+             print*, "T1amp      = ", tensor_norm2(comm_t%t1)
+             print*, "T2amp      = ", tensor_norm2(comm_t%t2)*ONE_QUARTER
+             ! print*, "Tau        = ", tensor_norm2(comm_t%tau)*ONE_QUARTER
+             ! print*, "Fbar_oo    = ", tensor_norm2(lambda_t%fbar_oo)
+             print*, "Fbar_ov    = ", tensor_norm2(lambda_t%fbar_ov)
+             ! print*, "Fbar_vv    = ", tensor_norm2(lambda_t%fbar_vv)
+             ! print*, "w_vvvv     = ", tensor_norm2(lambda_t%w_vvvv)*ONE_QUARTER
+             print*, "wbar_vovo  = ", tensor_norm2(lambda_t%wbar_vovo)
+             print*, "w_vvvo     = ", tensor_norm2(lambda_t%w_vvvo)*0.5D0
+             print*, "w_vovv     = ", tensor_norm2(lambda_t%w_vovv)*0.5D0
+             print*, "w_vovo     = ", tensor_norm2(lambda_t%w_vovo)
+             print*, "w_ovoo     = ", tensor_norm2(lambda_t%w_ovoo)*0.5D0
+             print*, "w_ooov     = ", tensor_norm2(lambda_t%w_ooov)*0.5D0
+             print*, "w_oooo     = ", tensor_norm2(lambda_t%w_oooo)*ONE_QUARTER
+         end if
 
 !        Construct solution tensors
          ierr=talsh_tensor_construct(s1_tensor,C8,ov_dims,init_val=ZERO)

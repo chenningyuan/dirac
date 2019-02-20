@@ -161,7 +161,6 @@ module exacorr_global
          ! Computes number of Cartesian/spherical functions for a given l-value
              integer, intent(in) :: l_value
              integer, intent(in) :: switch
-             integer :: i
              if (switch == 1) then
 !               Cartesian
                 nfunctions = l_value * ( l_value + 1 ) / 2

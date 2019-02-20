@@ -11,7 +11,7 @@ To Do:
 
 <table>
   <tr>
-    <th>Input parameters</th>
+    <th>Input parameters</th><th>Comment</th>
   </tr>
   <tr>
   	<td>.OCCUPIED</td><td>As list of MOs or energy range</td>

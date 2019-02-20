@@ -39,6 +39,12 @@
       cc_calculation = .true.
 
       if (mytid == 0) then
+!       print logo
+        call printtitle
+        call printlogo
+        call printsubtitle
+
+!       read input
         call get_free_fileunit(file_unit)
         call read_menu_input('exacorr.inp',file_unit,'**EXACC',input_found) 
         if (.not.input_found) call quit('Input was not found!')

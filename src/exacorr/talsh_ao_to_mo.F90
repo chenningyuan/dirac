@@ -75,11 +75,10 @@ module talsh_ao_to_mo
          call print_date('Initialized interest library')
 
 !        Retrieve basis set information
-         nao     = get_nao()
+         nao = get_nao()
 
 !        Set tensor dimensions for the index transformation (simple brute-force algorithm)
-         aoint_dims      = nao
-         ! moint_dims(1:4) = 2 * nmo(1:4)
+         aoint_dims = nao
          moint_dims = nmo
 
 !        Get tensor for AO integrals
@@ -102,7 +101,7 @@ module talsh_ao_to_mo
 !        Write to old format MO-integrals file to allow for easy debugging of the integral transform
          ierr=talsh_tensor_get_body_access(moint_tensor,body_p,C8,0,DEV_HOST)
          call c_f_pointer(body_p,mo_tens,moint_dims(1:4))
-         call write_to_mdcint (nmo,2,mo_tens)
+         call write_to_mdcint (nmo,mo_tens)
 
          if (debug_exa) then
             print*, "additional transform to get anti-symmetrized integralss"
@@ -311,7 +310,6 @@ module talsh_ao_to_mo
             mocoef_dims(1) = aoint_dims(i)
             if (mocoef_dims(1) .ne. nao)      stop 'program error: inconsistent dimensions'
             mocoef_dims(2) = moint_dims(i)
-            !if (mocoef_dims(2) .ne. 2*nmo(i)) stop 'program error: inconsistent dimensions'
             if (mocoef_dims(2) .ne. nmo(i)) stop 'program error: inconsistent dimensions'
             ierr=talsh_tensor_construct(mocoefa_tensor(i),C8,mocoef_dims,init_val=zero)
             ierr=talsh_tensor_construct(mocoefb_tensor(i),C8,mocoef_dims,init_val=zero)
