@@ -9,7 +9,6 @@ module intermediates
                               ONE_QUARTER_C=(0.25D0,0.D0), ONE_HALF=(0.5D0,0.D0), &
                               MINUS_TWO=(-2.D0,0.D0), TWO=(2.D0,0.D0)
     real(8), parameter     :: ONE_QUARTER=0.25D0
-    real(8) :: start, finish
 
      interface get_tau
 #if defined (VAR_MPI)
@@ -741,14 +740,8 @@ module intermediates
         logical, intent(in) :: CCD
         integer :: ierr
 
-        call cpu_time(start)
         ierr=talsh_tensor_add("F(i,m)+=G(i,m)",fbar_oo,comm_t%goo,scale=MINUS_ONE)
-        call cpu_time(finish)
-        print*, "fbar_oo: ", finish-start
-        call cpu_time(start)
         if (.not.CCD) ierr=talsh_tensor_contract("F(i,m)+=R(i,e)*T(e,m)",fbar_oo,comm_t%fov,comm_t%t1,scale=TWO)
-        call cpu_time(finish)
-        print*, "fbar_oo: ", finish-start
 
        end subroutine get_fbar_oo_talsh
 
@@ -800,14 +793,8 @@ module intermediates
         logical, intent(in) :: CCD
         integer :: ierr
 
-        call cpu_time(start)        
         if (.not.CCD) ierr=talsh_tensor_contract("W(m,n,i,e)+=T(f,i)*V(m,n,f,e)",w_ooov,t1_tensor,int_t%oovv)
-        call cpu_time(finish)
-        print*, "w_ooov: ", finish-start
-        call cpu_time(start)
         ierr=talsh_tensor_add("W(m,n,i,e)+=V(m,n,i,e)",w_ooov,int_t%ooov)
-        call cpu_time(finish)
-        print*, "w_ooov: ", finish-start
        
        end subroutine get_w_ooov_talsh
 
@@ -823,36 +810,18 @@ module intermediates
         type(talsh_tens_t) :: one_tensor
         integer :: ierr
 
-        call cpu_time(start)        
         ierr=talsh_tensor_contract("W(i,e,m,n)+=V+(m,n,i,e)*K()",lambda_t%w_ovoo,int_t%ooov,one_tensor)
-        call cpu_time(finish)
-        print*, "w_ovoo: ", finish-start
-        call cpu_time(start)        
         ierr=talsh_tensor_contract("W(i,e,m,n)+=F(i,f)*T(f,e,m,n)",lambda_t%w_ovoo,lambda_t%fbar_ov,comm_t%t2)
-        call cpu_time(finish)
-        print*, "w_ovoo: ", finish-start
 !       Need to permute m and n, so term appears twice
-        call cpu_time(start)        
         ierr=talsh_tensor_contract("W(i,e,m,n)+=V(i,o,m,f)*T(e,f,n,o)",lambda_t%w_ovoo,int_t%ooov,comm_t%t2)
         ierr=talsh_tensor_contract("W(i,e,m,n)+=V(o,i,n,f)*T(e,f,m,o)",lambda_t%w_ovoo,int_t%ooov,comm_t%t2)
-        call cpu_time(finish)
-        print*, "w_ovoo: ", finish-start
         if (.not.CCD) then 
 !        Need to permute m and n, so term appears twice
-         call cpu_time(start)        
          ierr=talsh_tensor_contract("W(i,e,m,n)+=R(e,i,f,n)*T(f,m)",lambda_t%w_ovoo,lambda_t%wbar_vovo,comm_t%t1,scale=MINUS_ONE)
          ierr=talsh_tensor_contract("W(i,e,m,n)+=R(e,i,f,m)*T(f,n)",lambda_t%w_ovoo,lambda_t%wbar_vovo,comm_t%t1)
-         call cpu_time(finish)
-         print*, "w_ovoo: ", finish-start
-         call cpu_time(start)        
          ierr=talsh_tensor_contract("W(i,e,m,n)+=R(o,i,m,n)*T(e,o)",lambda_t%w_ovoo,lambda_t%w_oooo,comm_t%t1)
-         call cpu_time(finish)
-         print*, "w_ovoo: ", finish-start
         end if
-        call cpu_time(start)        
         ierr=talsh_tensor_contract("W(i,e,m,n)+=V(e,i,f,g)*T(g,f,m,n)",lambda_t%w_ovoo,int_t%vovv,comm_t%tau,scale=ONE_HALF)
-        call cpu_time(finish)
-        print*, "w_ovoo: ", finish-start
 
        end subroutine get_w_ovoo_talsh
 
@@ -876,20 +845,11 @@ module intermediates
         vvoo_dims(3:4) = nocc
         ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
 
-        call cpu_time(start) 
         ierr=talsh_tensor_add("W(b,m,e,j)+=H(b,m,e,j)",w_vovo,comm_t%h_int)
-        call cpu_time(finish)
-        print*, "w_vovo: ", finish-start
-        call cpu_time(start) 
         ierr=talsh_tensor_init(tau2_tensor)
         ierr=talsh_tensor_add("T(f,b,j,n)+=R(f,b,j,n)",tau2_tensor,comm_t%t2)
         if (.not.CCD) ierr=talsh_tensor_contract("T(f,b,j,n)+=T(f,j)*T(b,n)",tau2_tensor,comm_t%t1,comm_t%t1)
-        call cpu_time(finish)
-        print*, "w_vovo: ", finish-start
-        call cpu_time(start) 
         ierr=talsh_tensor_contract("W(b,m,e,j)+=V(m,n,e,f)*T(f,b,j,n)",w_vovo,oovv_tensor,tau2_tensor)
-        call cpu_time(finish)
-        print*, "w_vovo: ", finish-start
 
        end subroutine get_w_vovo_talsh
 
@@ -920,35 +880,17 @@ module intermediates
         type(talsh_tens_t) :: one_tensor
         integer :: ierr
 
-        call cpu_time(start) 
         ierr=talsh_tensor_contract("W(e,f,a,m)+=V+(a,m,e,f)*K()",lambda_t%w_vvvo,int_t%vovv,one_tensor)
-        call cpu_time(finish)
-        print*, "w_vvvo: ", finish-start
 !       Need to permute e and f, so term appears twice
-        call cpu_time(start)
         ierr=talsh_tensor_contract("W(e,f,a,m)+=V(e,n,a,g)*T(f,g,m,n)",lambda_t%w_vvvo,int_t%vovv,comm_t%t2)
         ierr=talsh_tensor_contract("W(e,f,a,m)+=V(f,n,a,g)*T(g,e,m,n)",lambda_t%w_vvvo,int_t%vovv,comm_t%t2)
-        call cpu_time(finish)
-        print*, "w_vvvo: ", finish-start
-        call cpu_time(start)
         ierr=talsh_tensor_contract("W(e,f,a,m)+=F(n,a)*T(e,f,m,n)",lambda_t%w_vvvo,lambda_t%fbar_ov,comm_t%t2)
-        call cpu_time(finish)
-        print*, "w_vvvo: ", finish-start
-        call cpu_time(start)
         ierr=talsh_tensor_contract("W(e,f,a,m)+=V(n,o,m,a)*T(e,f,o,n)",lambda_t%w_vvvo,int_t%ooov,comm_t%tau,scale=ONE_HALF)
-        call cpu_time(finish)
-        print*, "w_vvvo: ", finish-start
         if (.not.CCD) then
 !        Need to permute e and f, so term appears twice
-         call cpu_time(start)
          ierr=talsh_tensor_contract("W(e,f,a,m)+=R(f,n,a,m)*T(e,n)",lambda_t%w_vvvo,lambda_t%wbar_vovo,comm_t%t1)
          ierr=talsh_tensor_contract("W(e,f,a,m)+=R(e,n,a,m)*T(f,n)",lambda_t%w_vvvo,lambda_t%wbar_vovo,comm_t%t1,scale=MINUS_ONE)
-         call cpu_time(finish)
-         print*, "w_vvvo: ", finish-start
-         call cpu_time(start)
          ierr=talsh_tensor_contract("W(e,f,a,m)+=R(e,f,a,g)*T(g,m)",lambda_t%w_vvvo,lambda_t%w_vvvv,comm_t%t1)
-         call cpu_time(finish)
-         print*, "w_vvvo: ", finish-start
         end if
 
         end subroutine get_w_vvvo_talsh
@@ -964,14 +906,8 @@ module intermediates
         logical, intent(in) :: CCD
         integer :: ierr
 
-        call cpu_time(start)
         if (.not.CCD) ierr=talsh_tensor_contract("W(a,m,e,f)+=V(m,n,e,f)*T(a,n)",w_vovv,int_t%oovv,t1_tensor)
-        call cpu_time(finish)
-        print*, "w_vovv: ", finish-start
-        call cpu_time(start)
         ierr=talsh_tensor_add("W(a,m,e,f)+=V(a,m,e,f)",w_vovv,int_t%vovv)
-        call cpu_time(finish)
-        print*, "w_vovv: ", finish-start
 
        end subroutine get_w_vovv_talsh
 
@@ -1005,10 +941,7 @@ module intermediates
         integer :: ierr
 
         ierr=talsh_tensor_init(goo_tensor)
-        call cpu_time(start)
         ierr=talsh_tensor_contract("G(i,m)+=L(i,n,e,f)*T(e,f,m,n)",goo_tensor,l2_tensor,t2_tensor,scale=ONE_HALF)
-        call cpu_time(finish)
-        print*, "goo: ", finish-start
 
        end subroutine get_goo_lambda_talsh
 
@@ -1021,10 +954,7 @@ module intermediates
         integer :: ierr
 
         ierr=talsh_tensor_init(gvv_tensor)
-        call cpu_time(start)
         ierr=talsh_tensor_contract("G(e,a)+=L(m,n,a,f)*T(e,f,n,m)",gvv_tensor,l2_tensor,t2_tensor,scale=ONE_HALF)
-        call cpu_time(finish)
-        print*, "gvv: ", finish-start
 
        end subroutine get_gvv_lambda_talsh
 

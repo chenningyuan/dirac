@@ -1,8 +1,8 @@
 module talsh_gradient
 
-!This module contains routines to calculate density matrices
-!See Shee, A.; Visscher, L.; Saue, T. J. Chem. Phys. 2016, 145, 184107.
-!Written by Stan Papadopoulos, February 2019
+! This module contains routines to calculate density matrices
+! See Shee, A.; Visscher, L.; Saue, T. J. Chem. Phys. 2016, 145, 184107.
+! Written by Stan Papadopoulos, February 2019
 
   use talsh
   use tensor_algebra
@@ -262,6 +262,12 @@ module talsh_gradient
 !     copy DM blocks into one large DM *
 !***************************************
 
+!     -----------
+!     | OO | OV |
+!     -----------
+!     | VO | VV |
+!     -----------
+
 !     body acces to final DM
       ierr=talsh_tensor_get_body_access(dm_mo,body_p1,C8,0,DEV_HOST)
       call c_f_pointer(body_p1,dm_mo_fort,dm_mo_dims) ! to use <dm_mo_fort> as a regular Fortran 2d array
@@ -316,18 +322,31 @@ module talsh_gradient
 !     MO to AO transformation *
 !******************************
 
-!----------------------------------------------
-!     ht1: DM_ht(p,s) += DM_MO(p,q) * C+(q,s) |
-!----------------------------------------------
-      ierr=talsh_tensor_contract("H(p,s)+=D(p,q)*C+(s,q)",dm_ht,dm_mo,coeff_a) ! only alpha for now
+!-----------------------------------------------------
+!     ht1 alpha: DM_ht(p,s) += DM_MO(p,q) * Ca+(q,s) |
+!-----------------------------------------------------
+      ierr=talsh_tensor_contract("H(p,s)+=D(p,q)*C+(s,q)",dm_ht,dm_mo,coeff_a)
 
-!----------------------------------------------
-!     ht2: DM_AO(r,s) += C(r,p) * DM_ht(p,s)  |
-!----------------------------------------------
+!----------------------------------------------------
+!     ht2 alpha: DM_AO(r,s) += Ca(r,p) * DM_ht(p,s) |
+!----------------------------------------------------
       ierr=talsh_tensor_contract("D(r,s)+=C(r,p)*H(p,s)",dm_ao,coeff_a,dm_ht)
 
+!-----------------------------------------------------
+!     ht1 beta: DM_ht(p,s) += DM_MO(p,q) * Cb+(q,s) |
+!-----------------------------------------------------
+
+!     first reset dm_ht
+      ierr=talsh_tensor_init(dm_ht,ZERO)
+      ierr=talsh_tensor_contract("H(p,s)+=D(p,q)*C+(s,q)",dm_ht,dm_mo,coeff_b)
+
+!----------------------------------------------------
+!     ht2 beta: DM_AO(r,s) += Cb(r,p) * DM_ht(p,s) |
+!----------------------------------------------------
+      ierr=talsh_tensor_contract("D(r,s)+=C(r,p)*H(p,s)",dm_ao,coeff_b,dm_ht)
+
 !     debug
-      if (debug_exa) print*, "DM_AO = ", tensor_norm2(dm_ao)
+      print*, "DM_AO = ", tensor_norm2(dm_ao)
 
 !**************
 !     cleanup *

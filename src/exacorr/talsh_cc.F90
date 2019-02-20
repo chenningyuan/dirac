@@ -672,116 +672,58 @@ module talsh_cc
 
 !         Calculate s1 tensor
           ierr=talsh_tensor_init(s1_tensor)
-          call cpu_time(start)
           ierr=talsh_tensor_add("S(i,a)+=F(i,a)",s1_tensor,lambda_t%fbar_ov)
-          call cpu_time(finish)
-          print*, "s1: ", finish-start
-          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,a)+=L(i,e)*F(e,a)",s1_tensor,l1_tensor,lambda_t%fbar_vv)
-          call cpu_time(finish)
-          print*, "s1: ", finish-start
-          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,a)+=L(m,a)*F(i,m)",s1_tensor,l1_tensor,lambda_t%fbar_oo,scale=MINUS_ONE)
-          call cpu_time(finish)
-          print*, "s1: ", finish-start
-          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,a)+=G(n,m)*W(i,m,n,a)",s1_tensor,lambda_t%goo,lambda_t%w_ooov)
-          call cpu_time(finish)
-          print*, "s1: ", finish-start
-          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,a)+=L(m,e)*W(e,i,a,m)",s1_tensor,l1_tensor,lambda_t%w_vovo,scale=MINUS_ONE)
-          call cpu_time(finish)
-          print*, "s1: ", finish-start
-          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,a)+=L(m,n,a,e)*W(i,e,n,m)",s1_tensor,l2_tensor,lambda_t%w_ovoo,scale=ONE_HALF)
-          call cpu_time(finish)
-          print*, "s1: ", finish-start
-          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,a)+=L(i,m,e,f)*W(e,f,a,m)",s1_tensor,l2_tensor,lambda_t%w_vvvo,scale=ONE_HALF)
-          call cpu_time(finish)
-          print*, "s1: ", finish-start
-          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,a)+=G(f,e)*W(e,i,a,f)",s1_tensor,lambda_t%gvv,lambda_t%w_vovv)
-          call cpu_time(finish)
-          print*, "s1: ", finish-start
 
 !         Calculate s2 tensor
           ierr=talsh_tensor_init(s2_tensor)
-          call cpu_time(start)
           ierr=talsh_tensor_add("S(i,j,a,b)+=V(i,j,a,b)",s2_tensor,int_t%oovv)
-          call cpu_time(finish)
-          print*, "s2: ", finish-start
 
 !         Need to permute a and b, so term appears twice
-          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,j,a,e)*F(e,b)",s2_tensor,l2_tensor,lambda_t%fbar_vv)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,j,e,b)*F(e,a)",s2_tensor,l2_tensor,lambda_t%fbar_vv)
-          call cpu_time(finish)
-          print*, "s2: ", finish-start
 
 !         Need to permute i and j, so term appears twice
-          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,m,b,a)*F(j,m)",s2_tensor,l2_tensor,lambda_t%fbar_oo)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,m,a,b)*F(i,m)",s2_tensor,l2_tensor,lambda_t%fbar_oo)
-          call cpu_time(finish)
-          print*, "s2: ", finish-start
 
-          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(m,n,a,b)*W(i,j,m,n)",s2_tensor,l2_tensor,lambda_t%w_oooo,scale=ONE_HALF)
-          call cpu_time(finish)
-          print*, "s2: ", finish-start
 
 !         Need to permute i and j, as well as a and b, so term appears four times
-          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,m,e,a)*W(e,j,b,m)",s2_tensor,l2_tensor,lambda_t%w_vovo)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,m,b,e)*W(e,j,a,m)",s2_tensor,l2_tensor,lambda_t%w_vovo)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,m,a,e)*W(e,i,b,m)",s2_tensor,l2_tensor,lambda_t%w_vovo)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,m,e,b)*W(e,i,a,m)",s2_tensor,l2_tensor,lambda_t%w_vovo)
-          call cpu_time(finish)
-          print*, "s2: ", finish-start
 
 !         Need to permute a and b, so term appears twice
-          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,j,a,e)*G(e,b)",s2_tensor,int_t%oovv,lambda_t%gvv)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,j,e,b)*G(e,a)",s2_tensor,int_t%oovv,lambda_t%gvv)
-          call cpu_time(finish)
-          print*, "s2: ", finish-start
 
 !         Need to permute a and b, so term appears twice
-          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(m,a)*W(j,i,m,b)",s2_tensor,l1_tensor,lambda_t%w_ooov)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(m,b)*W(i,j,m,a)",s2_tensor,l1_tensor,lambda_t%w_ooov)
-          call cpu_time(finish)
-          print*, "s2: ", finish-start
 
 !         Need to permute i and j, so term appears twice
-          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,m,b,a)*G(j,m)",s2_tensor,int_t%oovv,lambda_t%goo)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=V(j,m,a,b)*G(i,m)",s2_tensor,int_t%oovv,lambda_t%goo)
-          call cpu_time(finish)
-          print*, "s2: ", finish-start
 
 !         Need to permute i and j, so term appears twice
-          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,e)*W(e,j,a,b)",s2_tensor,l1_tensor,lambda_t%w_vovv)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,e)*W(e,i,b,a)",s2_tensor,l1_tensor,lambda_t%w_vovv)
-          call cpu_time(finish)
-          print*, "s2: ", finish-start
 
 !         Need to permute i and j, as well as a and b, so term appears four times
-          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,a)*F(j,b)",s2_tensor,l1_tensor,lambda_t%fbar_ov)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,b)*F(j,a)",s2_tensor,l1_tensor,lambda_t%fbar_ov,scale=MINUS_ONE)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,a)*F(i,b)",s2_tensor,l1_tensor,lambda_t%fbar_ov,scale=MINUS_ONE)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,b)*F(i,a)",s2_tensor,l1_tensor,lambda_t%fbar_ov)
-          call cpu_time(finish)
-          print*, "s2: ", finish-start
 
-          call cpu_time(start)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,j,e,f)*W(e,f,a,b)",s2_tensor,l2_tensor,lambda_t%w_vvvv,scale=ONE_HALF)
-          call cpu_time(finish)
-          print*, "s2: ", finish-start
-
 
           if (ierr.ne.TALSH_SUCCESS) then
              print*," ccdriver: error in evaluation of lambda equations, code=",ierr
@@ -790,15 +732,9 @@ module talsh_cc
 
 !         prepare for next iteration
           ierr=talsh_tensor_init(l1_tensor)
-          call cpu_time(start)
           ierr=talsh_tensor_add("L1(i,a)+=S1(i,a)",l1_tensor,s1_tensor)
-          call cpu_time(finish)
-          print*, "l1: ", finish-start
           ierr=talsh_tensor_init(l2_tensor)
-          call cpu_time(start)
           ierr=talsh_tensor_add("L2(i,j,a,b)+=S2(i,j,a,b)",l2_tensor,s2_tensor)
-          call cpu_time(finish)
-          print*, "l2: ", finish-start
           call scale_with_denominators (eps_occ,eps_vir,nocc,l1_tensor,l2_tensor)
 
           call diis (l2_tensor,l1_tensor,t_convergence=t_convergence)
