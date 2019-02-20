@@ -9,10 +9,18 @@ module exacorr_ao_to_mo
         private
         public exacorr_compute_mo_integrals
 #if defined (VAR_MPI)
+
+        interface get_integral_tensor
+            module procedure get_integral_tensor
+        end interface get_integral_tensor
+
+        public mocoef_initlabel
+        public dm_initlabel
         public get_integral_tensor
-        public get_integral_tensor_2
+        public get_ht1_integral_tensor
+        public get_ht2_integral_tensor
         public print_tensornorm2
-#endif
+
         complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0)
 
          ! It is not possible to make an array of pointers, so we need a container
@@ -22,7 +30,6 @@ module exacorr_ao_to_mo
 
        contains
 
-#if defined (VAR_MPI)
         subroutine exacorr_compute_mo_integrals (nmo, mo_list)
 
 !        This subroutine drives the AO to MO integral transformation using AO integrals from InteRest and the tensor contraction library from ExaTensor
@@ -33,7 +40,6 @@ module exacorr_ao_to_mo
 !        Written by Lucas Visscher, march/september 2018
 
          use interface_to_mpi
-         use dirac_MO
          use exacorr_datatypes
          use exacorr_global
          use exacorr_tensor_methods
@@ -48,6 +54,7 @@ module exacorr_ao_to_mo
          integer:: my_role, my_MPI_rank                 ! needed to start exatensor, MPI should already be started in threaded mode
          integer             :: nshells                 ! the number of shells (orbitals with the same center and l-value)
          integer             :: nao                     ! the number of atomic orbitals)
+         integer             :: basis_angular           ! 1=cartesian, 2=spherical
          type(basis_func_info_t), allocatable :: gto(:) ! array with information about the shells
 
          ! classes for the definition of spaces (AO and 4 different MO spaces)
@@ -70,32 +77,29 @@ module exacorr_ao_to_mo
          type(init_dm_tensor_t)       :: dm_init(2)       ! array of initializers for algorithm 2, index indicates first/second halftransformation
          type(init_ht_tensor_t)       :: ht_init          ! initializers for algorithm 3 in which the HT matrix is made without ao-integral tensor
          type(tens_printer_t)         :: tens_printer     ! generic method, but needs to be defined here in specific form
-         type(scale_with_denom_t)     :: denominate
-
-         ! variables for the definition of the initializer methods
-         character(len=9)  :: initlabel(2,4),initlabel2(2),initlabel3(2)
-         character(len=7)  :: MOCoef_str = "MOCoef_"
-         character(len=7)  :: DM_str     = "DM_mat_"
-         character(len=2)  :: vs_str
 
          ! the two tensors that we need
          type(tens_rcrsv_t):: aoint_tensor
          type(tens_rcrsv_t):: moint_tensor
 
-         ! loop variables
+         ! loop and other auxilliary variables
          integer:: i, ierr
          integer:: spin,imo,jmo,imo12,jmo12,imo34,jmo34
          integer:: lsh, l, nl
+         character(len=2)  :: vs_str
+         integer branch_factor
 
 !        Make some noise so that we know we are here
          call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
          if (my_MPI_rank == 0) print*, " Starting AO-to-MO transform with exatensor"
 
 !        Initialize global data (read from DFCOEF or similar by master)
+         call set_talsh_only(.false.)
          call initialize_global_data
 
-         nao     = get_nao()   ! This is the total number of ao's
-         nao_l   = int(nao,8)  ! we need this as a long int for exatensor
+         nao           = get_nao()   ! This is the total number of ao's
+         nao_l         = int(nao,8)  ! we need this as a long int for exatensor
+         basis_angular = get_basis_angular() ! needed for setting basis functions
 
 !        Get the basis set information
          call get_gtos(1,nao,gto,nshells)
@@ -109,7 +113,7 @@ module exacorr_ao_to_mo
          allocate(color(nshells))
          labs = 0
          do lsh = 1, nshells !set basis functions
-            nl   =  ncartesian(gto(lsh)%orb_momentum)
+            nl   =  nfunctions(gto(lsh)%orb_momentum,basis_angular)
             call color(lsh)%color_symmetry_ctor(lsh) ! take one shell as a color
             do  l = 1, nl
                 labs = labs + 1
@@ -122,17 +126,20 @@ module exacorr_ao_to_mo
          call basis_ao%finalize(ierr)
          if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.finalize() failed!')
 
-         !Register the ao vector space:
-         ierr=exatns_space_register('AO_space',basis_ao,ao_space_id,ao_space)
+         !Register the ao vector space (block size hardwired to 75 for the moment):
+         branch_factor = nao / 75 + 1
+         if (branch_factor < 2) branch_factor = 2
+         ierr=exatns_space_register('AOspace',basis_ao,ao_space_id,ao_space,branch_factor)
          if (my_MPI_rank == 0) print*," registered AO vector space with nao, nshells:",nao,nshells
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register() failed!')
 
-         !Get the MO-coeffcient basis for the four indices that are to be transformed
+         !Get the MO-coefficient basis for the four indices that are to be transformed
          ierr = 0
          imo = 1
          do i = 1, 4
             jmo     = imo + nmo(i) - 1 ! last MO for index i, whereas imo is the first
-            nmo_l   = 2*int(nmo(i),8)  ! NB: imo, jmo and nmo count orbitals, nmo_l counts spinors
+            !nmo_l   = 2*int(nmo(i),8)  ! NB: imo, jmo and nmo count orbitals, nmo_l counts spinors
+            nmo_l   = int(nmo(i),8)  ! NB: imo, jmo and nmo count orbitals, nmo_l counts spinors
             call basis_mo(i)%subspace_basis_ctor(nmo_l,ierr)
             if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.subspace_basis_ctor() failed!')
 
@@ -147,25 +154,23 @@ module exacorr_ao_to_mo
             if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.finalize() failed!')
 
             !Register this mo vector space :
+            branch_factor = nmo(i) / 75 + 1
+            if (branch_factor < 2) branch_factor = 2
             write (vs_str,'(A,I1)') '_',i
-            ierr=exatns_space_register('MOspace'//vs_str,basis_mo(i),mo_space_id(i),mo_space(i)%ptr)
+            ierr=exatns_space_register('MOspace'//vs_str,basis_mo(i),mo_space_id(i),mo_space(i)%ptr,branch_factor)
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register() failed!')
 
             imo = imo + nmo(i) ! make imo point to the start of the list for the next index
          end do
 
-         !Define separate initializers for the alpha(A) and beta(B) MO-coefficients for each index 
+         !Define separate initializers for the alpha(A) and beta(B) MO-coefficients for each index
          imo = 1
          do i = 1, 4
             jmo     = imo + nmo(i) - 1 ! last MO for index i, whereas imo is the first
             do spin = 1, 2
-               !Define a unique name for the initializer for this spin (A/B) of space i
-               if (spin == 1) write (vs_str,'(I1,A)') i,'A'
-               if (spin == 2) write (vs_str,'(I1,A)') i,'B'
-               initlabel(spin,i) = MOCoef_str // vs_str
                !Register this initializer as a method
                call mocoef_init(spin,i)%init_mocoef_ctor(mo_list(imo:jmo),nmo(i),spin)
-               ierr=exatns_method_register(initlabel(spin,i),mocoef_init(spin,i))
+               ierr=exatns_method_register(mocoef_initlabel(ao_space_id,mo_space_id(i),spin),mocoef_init(spin,i))
                if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
             end do
          end do
@@ -175,42 +180,31 @@ module exacorr_ao_to_mo
          jmo12 = nmo(1)+nmo(2)
          imo34 = jmo12 + 1
          jmo34 = jmo12 + nmo(3)+nmo(4)
-         !Define names for the initializers for density matrices
-         initlabel2(1) = DM_str // '12'
-         initlabel2(2) = DM_str // '34'
          !Register the dm initializers as methods
          call dm_init(1)%init_dm_ctor(mo_list(imo12:jmo12),nmo(1:2))
-         ierr=exatns_method_register(initlabel2(1),dm_init(1))
+         ierr=exatns_method_register(dm_initlabel((/ao_space_id,ao_space_id/),mo_space_id(1:2)),dm_init(1))
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
          call dm_init(2)%init_dm_ctor(mo_list(imo34:jmo34),nmo(3:4))
-         ierr=exatns_method_register(initlabel2(2),dm_init(2))
+         ierr=exatns_method_register(dm_initlabel((/ao_space_id,ao_space_id/),mo_space_id(3:4)),dm_init(2))
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
 
          if (my_MPI_rank == 0) print*," registered MO vectors spaces and initializers with nmo:",nmo
 
-         !Define separate initializers for the construction of the half-transformed integrals (algorithm 3)
+         !Define separate initializer for the construction of the half-transformed integrals (algorithm 3)
          imo12 = 1
          jmo12 = nmo(1)+nmo(2)
-         !Define names for the initializers for this algorithm
-         initlabel3(1) = 'HalfTrans'
-         initlabel3(2) = initlabel2(2)
-         !Register the ht initializer as methods
+         !Register the ht initializer as method
          call ht_init%init_ht_ctor(mo_list(imo12:jmo12),nmo(1:2))
-         ierr=exatns_method_register(initlabel3(1),ht_init)
+         ierr=exatns_method_register('HalfTrans',ht_init)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
 
          !Register the ao integral generation as a method
-         ierr=exatns_method_register('Aoint_calculator',aoint_calculator)
+         ierr=exatns_method_register('AointCalculator',aoint_calculator)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
 
-         !Register the denominator initializer aa a method (testing only, registration will move to exacorr_cc)
-         call denominate%scale_with_denom_ctor(mo_list(1:2),2,mo_list(3:nmo(1)),nmo(1)-2)
-         ierr=exatns_method_register('Denominate',denominate)
-         if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
-   
          !Register the standard print method with a high treshold to print only important tensor elements
          call tens_printer%reset_thresh(0.01D0)
-         ierr=exatns_method_register('PrintTensor',tens_printer)
+         ierr=exatns_method_register('TensorPrinter',tens_printer)
          if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register() failed!')
 
 !        All preliminary work is now done on all MPI-nodes, we may proceed to start ExaTensor.
@@ -233,14 +227,14 @@ module exacorr_ao_to_mo
            if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
 
            !Initialize ao-tensor:
-           ierr=exatns_tensor_init(aoint_tensor,'Aoint_calculator')
+           ierr=exatns_tensor_init(aoint_tensor,'AointCalculator')
            if(ierr.ne.EXA_SUCCESS) call quit('Aoint_calculator failed!')
            call print_date('finished ao integral calculation')
 
-           ! the  next three lines are for debugging, 
+           ! the  next three lines are for debugging,
            print*, "aoint = ", print_tensornorm2 (aoint_tensor) ! this is usually sufficent for checking
            ! when uncommenting the next line: keep in mind that printing an entire tensor yields an enormous output
-           ! ierr=exatns_tensor_traverse(aoint_tensor,'PrintTensor')
+           ! ierr=exatns_tensor_traverse(aoint_tensor,'TensorPrinter')
 
            !Create mo-integral-tensor:
            do i = 1, 4
@@ -250,21 +244,21 @@ module exacorr_ao_to_mo
            if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
            call print_date('created mo integral tensor')
 
-           call aomo_transform_1 (aoint_tensor,moint_tensor,initlabel)
+           call aomo_transform_1 (aoint_tensor,moint_tensor)
            call print_date('completed mo integral tensor: algorithm 1')
            print*, "moint = ", print_tensornorm2 (moint_tensor)
 
            ierr=exatns_tensor_init(moint_tensor,zero)
-           call aomo_transform_2 (aoint_tensor,moint_tensor,initlabel2)
+           call aomo_transform_2 (aoint_tensor,moint_tensor)
            call print_date('completed mo integral tensor: algorithm 2')
            print*, "moint = ", print_tensornorm2 (moint_tensor)
 
            ierr=exatns_tensor_init(moint_tensor,zero)
-           call aomo_transform_3 (ao_space_id,ao_space_root,moint_tensor,initlabel3)
+           call aomo_transform_3 (ao_space_id,ao_space_root,moint_tensor)
            call print_date('completed mo integral tensor: algorithm 3')
            print*,"moint = ", print_tensornorm2 (moint_tensor)
 
-           call get_integral_tensor (aoint_tensor,moint_tensor,0,initlabel)
+           call get_integral_tensor (aoint_tensor,moint_tensor,0)
            call print_date('completed dirac-sorted mo integral tensor - not anti-symmetrized')
            print*,"moint = ", print_tensornorm2 (moint_tensor)
 
@@ -274,16 +268,15 @@ module exacorr_ao_to_mo
            do i = 2, 4
               mo_space_id(i)=mo_space_id(1)
               mo_space_root(i)=mo_space_root(1)
-              initlabel(1:2,i)=initlabel(1:2,1)
            end do
            ierr=exatns_tensor_create(moint_tensor,'motensor',mo_space_id,mo_space_root,EXA_DATA_KIND_C8)
            if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
 
-           call get_integral_tensor (aoint_tensor,moint_tensor,12,initlabel)
+           call get_integral_tensor (aoint_tensor,moint_tensor,12)
            call print_date('completed dirac-sorted mo integral tensor - 12 anti-symmetrized')
            print*,"moint = ", print_tensornorm2 (moint_tensor)
 
-           call get_integral_tensor (aoint_tensor,moint_tensor,34,initlabel)
+           call get_integral_tensor (aoint_tensor,moint_tensor,34)
            call print_date('completed dirac-sorted mo integral tensor - 34 anti-symmetrized')
            print*, "moint = ", print_tensornorm2 (moint_tensor)
 
@@ -308,33 +301,28 @@ module exacorr_ao_to_mo
 !        Make some noise so that we know we are leaving
          print*, " Process ",my_MPI_rank, " leaving compute_mo_integrals_exa routine"
          return
- 
+
         end subroutine exacorr_compute_mo_integrals
 
-        subroutine aomo_transform_1 (aoint_tensor,moint_tensor,initlabel)
+        subroutine aomo_transform_1 (aoint_tensor,moint_tensor)
 
 !        Transform integral tensor from ao-basis to mo-basis
 !        Algorithm 1: n^5 scaling with index-by-index transform
 
          implicit none
 
-         ! The strings initlabel are used to find the appropriate initializer for the mo-coefficients
-         ! This initializer has the coefficients stored (on all nodes) and just picks out the proper subset.
-         character(len=*), intent(in)       :: initlabel(2,4)
-         
          ! AO integrals are to be provided on input and are not changed, MO integrals are returned on output
          type(tens_rcrsv_t), intent(inout)  :: aoint_tensor, moint_tensor   ! for technical reasons intent(inout) needs to be used for all tensors
 
          ! Auxilliary tensors that are created and destroyed inside this subroutine
-         type(tens_rcrsv_t):: mocoef_tensor(2,4)
-         type(tens_rcrsv_t):: a1int_tensor,a2int_tensor, a3int_tensor
+         type(tens_rcrsv_t):: a2int_tensor
 
-         integer           :: ierr,i,spin
-         integer           :: aoint_id(4),moint_id(4),a1int_id(4),a2int_id(4),a3int_id(4),mocoef_id(2)
-         integer(INTL)     :: aoint_root(4),moint_root(4),a1int_root(4),a2int_root(4),a3int_root(4),mocoef_root(2)
-         character(len=9)  :: mocoef_name
+         integer, parameter:: print_level=0
+         integer           :: ierr
+         integer           :: aoint_id(4),moint_id(4),a2int_id(4)
+         integer(INTL)     :: aoint_root(4),moint_root(4),a2int_root(4)
 
-         call print_date('entered aomo_transform_1')
+         if (print_level >0) call print_date('entered aomo_transform_1')
 
 !        Determine space ids and root
          call aoint_tensor%get_space_ids(aoint_id,aoint_root,ierr)
@@ -342,12 +330,61 @@ module exacorr_ao_to_mo
          call moint_tensor%get_space_ids(moint_id,moint_root,ierr)
          if(ierr.ne.EXA_SUCCESS) call quit('moint tensor corrupted')
 
+!        Copy the information about spaces from the starting and target tensors to the auxilliary one and allocate it
+         a2int_id(1:2) = moint_id(1:2)
+         a2int_id(3:4) = aoint_id(3:4)
+         a2int_root(1:2) = moint_root(1:2)
+         a2int_root(3:4) = aoint_root(3:4)
+         ierr=exatns_tensor_create(a2int_tensor,'a2int',a2int_id,a2int_root,EXA_DATA_KIND_C8)
+
+!        Do 1st and 2nd quarter-transformation
+         call get_ht1_integral_tensor (aoint_tensor,a2int_tensor)
+         if (print_level >0) call print_date('first ht done')
+!        Do 3rd and 4th quarter-transformation
+         call aomo_halftransform_2 (a2int_tensor,moint_tensor)
+         if (print_level >0) call print_date('second ht done')
+
+!        Destruct a2 integrals:
+         ierr=exatns_tensor_destroy(a2int_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=35; return; endif
+
+         if (print_level >0) call print_date('leaving aomo_transform_1')
+
+        end subroutine aomo_transform_1
+
+        subroutine get_ht1_integral_tensor (aoint_tensor,a2int_tensor)
+
+!        Transform integral tensor from ao-basis to mo-basis
+!        Algorithm 1: n^5 scaling with index-by-index transform of first two indices
+
+         implicit none
+
+         ! AO integrals are to be provided on input and are not changed, halftransformed MO integrals are returned on output
+         type(tens_rcrsv_t), intent(inout)  :: aoint_tensor, a2int_tensor   ! for technical reasons intent(inout) needs to be used for all tensors
+
+         ! Auxilliary tensors that are created and destroyed inside this subroutine
+         type(tens_rcrsv_t):: mocoef_tensor(2,2)
+         type(tens_rcrsv_t):: a1int_tensor
+
+         integer, parameter:: print_level=0
+         integer           :: ierr,i,spin
+         integer           :: aoint_id(4),a1int_id(4),a2int_id(4),mocoef_id(2)
+         integer(INTL)     :: aoint_root(4),a1int_root(4),a2int_root(4),mocoef_root(2)
+         character(len=9)  :: mocoef_name
+
+         if (print_level >0) call print_date('entered get_ht1_integral_tensor')
+
+!        Determine space ids and root
+         call aoint_tensor%get_space_ids(aoint_id,aoint_root,ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('aoint tensor corrupted')
+         call a2int_tensor%get_space_ids(a2int_id,a2int_root,ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('a2int tensor corrupted')
+
 !        Initialize tensors with MO coefficients, one for each index and alpha/beta
-         mocoef_id(1)   = aoint_id(1)
-         mocoef_root(1) = aoint_root(1)
-         do i = 1, 4
-           mocoef_id(2)   = moint_id(i)
-           mocoef_root(2) = moint_root(i)
+         do i = 1, 2
+           mocoef_id(1)   = aoint_id(i)
+           mocoef_root(1) = aoint_root(i)
+           mocoef_id(2)   = a2int_id(i)
+           mocoef_root(2) = a2int_root(i)
            do spin = 1, 2
 !             The name of the tensor needs to be unique, define a name that makes sense
               write (mocoef_name,'(A7,2I1)') 'mocoef_',spin,i
@@ -356,37 +393,29 @@ module exacorr_ao_to_mo
                mocoef_id,mocoef_root,EXA_DATA_KIND_C8)
               if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
 !             Initialize mocoef-tensor 
-              ierr=exatns_tensor_init(mocoef_tensor(spin,i),initlabel(spin,i))
+              ierr=exatns_tensor_init(mocoef_tensor(spin,i),mocoef_initlabel(mocoef_id(1),mocoef_id(2),spin))
               if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_init() failed!')
 !             next two lines can be used for debugging
-!             print*,"created and initialized mocoef_tensor ",spin,i
-!             call print_tensornorm2 (mocoef_tensor(spin,i))
+!              print*,"created and initialized mocoef_tensor ", &
+!              i,spin,mocoef_initlabel(mocoef_id(1),mocoef_id(2),spin),print_tensornorm2 (mocoef_tensor(spin,i))
            end do
          end do
 !        next two lines can be used for debugging
-!        ierr=exatns_tensor_traverse(mocoef_tensor(1,1),'PrintTensor')
+!        ierr=exatns_tensor_traverse(mocoef_tensor(2,1),'TensorPrinter')
 !        ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
 
-         call print_date('initialized mo-coefficients')
+         if (print_level >0) call print_date('initialized mo-coefficients')
 
-!        Copy the information about spaces from the starting and target tensors to the auxilliary ones
-         a1int_id(1)   = moint_id(1)
+!        Copy the information about spaces from the starting and target tensor to the auxilliary one
+         a1int_id(1)   = a2int_id(1)
          a1int_id(2:4) = aoint_id(2:4)
-         a2int_id(1:2) = moint_id(1:2)
-         a2int_id(3:4) = aoint_id(3:4)
-         a3int_id(1:3) = moint_id(1:3)
-         a3int_id(4)   = aoint_id(4)
 
-         a1int_root(1)   = moint_root(1)
+         a1int_root(1)   = a2int_root(1)
          a1int_root(2:4) = aoint_root(2:4)
-         a2int_root(1:2) = moint_root(1:2)
-         a2int_root(3:4) = aoint_root(3:4)
-         a3int_root(1:3) = moint_root(1:3)
-         a3int_root(4)   = aoint_root(4)
 
 !        Do 1st and 2nd quarter-transformation
          ierr=exatns_tensor_create(a1int_tensor,'a1int',a1int_id,a1int_root,EXA_DATA_KIND_C8)
-         ierr=exatns_tensor_create(a2int_tensor,'a2int',a2int_id,a2int_root,EXA_DATA_KIND_C8)
+!        ierr=exatns_tensor_create(a2int_tensor,'a2int',a2int_id,a2int_root,EXA_DATA_KIND_C8)
          ierr=exatns_tensor_contract(a1int_tensor,mocoef_tensor(1,1),aoint_tensor,"D(i,q,r,s)+=R+(p,i)*L(p,q,r,s)")
          if(ierr.ne.EXA_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=11; return; endif
          ierr=exatns_tensor_contract(a2int_tensor,a1int_tensor,mocoef_tensor(1,2),"D(i,j,r,s)+=L(i,q,r,s)*R(q,j)")
@@ -397,10 +426,81 @@ module exacorr_ao_to_mo
          ierr=exatns_tensor_contract(a2int_tensor,a1int_tensor,mocoef_tensor(2,2),"D(i,j,r,s)+=L(i,q,r,s)*R(q,j)")
          if(ierr.ne.EXA_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=22; return; endif
 
-         call print_date('first ht done')
-
 !        Destruct a1 integrals:
          ierr=exatns_tensor_destroy(a1int_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=25; return; endif
+
+!        Destruct mocoef tensors:
+         do i = 1, 2
+           do spin = 1, 2
+            ierr=exatns_tensor_destroy(mocoef_tensor(spin,i)); if(ierr.ne.EXA_SUCCESS) then; ierr=45; return; endif
+            end do
+         end do
+
+         if (print_level >0) call print_date('leaving get_ht1_integral_tensor')
+
+        end subroutine get_ht1_integral_tensor
+
+        subroutine aomo_halftransform_2 (a2int_tensor,moint_tensor)
+
+!        Transform integral tensor from ao-basis to mo-basis
+!        Algorithm 1: n^5 scaling with index-by-index transform of second two indices
+
+         implicit none
+
+         ! Halftransformed (A2) integrals are to be provided on input and are not changed, MO integrals are returned on output
+         type(tens_rcrsv_t), intent(inout)  :: a2int_tensor, moint_tensor   ! for technical reasons intent(inout) needs to be used for all tensors
+
+         ! Auxilliary tensors that are created and destroyed inside this subroutine
+         type(tens_rcrsv_t):: mocoef_tensor(2,4)
+         type(tens_rcrsv_t):: a3int_tensor
+
+         integer, parameter:: print_level=0
+         integer           :: ierr,i,spin
+         integer           :: moint_id(4),a2int_id(4),a3int_id(4),mocoef_id(2)
+         integer(INTL)     :: moint_root(4),a2int_root(4),a3int_root(4),mocoef_root(2)
+         character(len=9)  :: mocoef_name
+
+         if (print_level >0) call print_date('entered aomo_halftransform_2')
+
+!        Determine space ids and root
+         call a2int_tensor%get_space_ids(a2int_id,a2int_root,ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('a2int tensor corrupted')
+         call moint_tensor%get_space_ids(moint_id,moint_root,ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('moint tensor corrupted')
+
+!        Initialize tensors with MO coefficients, one for each index and alpha/beta
+         do i = 3, 4
+           mocoef_id(1)   = a2int_id(i)
+           mocoef_root(1) = a2int_root(i)
+           mocoef_id(2)   = moint_id(i)
+           mocoef_root(2) = moint_root(i)
+           do spin = 1, 2
+!             The name of the tensor needs to be unique, define a name that makes sense
+              write (mocoef_name,'(A7,2I1)') 'mocoef_',spin,i
+!             Create mo-coefficient-tensor
+              ierr=exatns_tensor_create(mocoef_tensor(spin,i),mocoef_name, &
+               mocoef_id,mocoef_root,EXA_DATA_KIND_C8)
+              if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
+!             Initialize mocoef-tensor 
+              ierr=exatns_tensor_init(mocoef_tensor(spin,i),mocoef_initlabel(mocoef_id(1),mocoef_id(2),spin))
+              if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_init() failed!')
+!             next two lines can be used for debugging
+!             print*,"created and initialized mocoef_tensor ",spin,i
+!             call print_tensornorm2 (mocoef_tensor(spin,i))
+           end do
+         end do
+!        next two lines can be used for debugging
+!        ierr=exatns_tensor_traverse(mocoef_tensor(1,1),'TensorPrinter')
+!        ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
+
+         if (print_level >0) call print_date('initialized mo-coefficients')
+
+!        Copy the information about spaces from the starting and target tensors to the auxilliary one
+         a3int_id(1:3) = moint_id(1:3)
+         a3int_id(4)   = a2int_id(4)
+
+         a3int_root(1:3) = moint_root(1:3)
+         a3int_root(4)   = a2int_root(4)
 
 !        Do 3rd and 4th quarter-transformation
          ierr=exatns_tensor_create(a3int_tensor,'a3int',a3int_id,a3int_root,EXA_DATA_KIND_C8)
@@ -415,32 +515,26 @@ module exacorr_ao_to_mo
          ierr=exatns_tensor_contract(moint_tensor,a3int_tensor,mocoef_tensor(2,4),"D(i,j,k,l)+=L(i,j,k,s)*R(s,l)")
          if(ierr.ne.EXA_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=42; return; endif
 
-         call print_date('second ht done')
-
-!        Destruct a2 and a3 integrals:
-         ierr=exatns_tensor_destroy(a2int_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=35; return; endif
+!        Destruct a3 integrals:
+!        ierr=exatns_tensor_destroy(a2int_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=35; return; endif
          ierr=exatns_tensor_destroy(a3int_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=45; return; endif
 !        Destruct mocoef tensors:
-         do i = 1, 4
+         do i = 3, 4
            do spin = 1, 2
             ierr=exatns_tensor_destroy(mocoef_tensor(spin,i)); if(ierr.ne.EXA_SUCCESS) then; ierr=45; return; endif
             end do
          end do
 
-         call print_date('leaving aomo_transform_1')
+         if (print_level >0) call print_date('leaving aomo_halftransform_2')
 
-        end subroutine aomo_transform_1
+        end subroutine aomo_halftransform_2
 
-        subroutine aomo_transform_2 (aoint_tensor,moint_tensor,initlabel2)
+        subroutine aomo_transform_2 (aoint_tensor,moint_tensor)
 
 !        Transform integral tensor from ao-basis to mo-basis
 !        Algorithm 2: n^6 scaling with density matrices
 
          implicit none
-
-         ! The strings in initlabel2 are used to find the appropriate initializer for the density matrices.
-         ! This initializer has the MO-coefficients stored (on all nodes) and just picks out the proper subsets.
-         character(len=*), intent(in)       :: initlabel2(2)
 
          ! AO integrals are to be provided on input and are not changed, MO integrals are returned on output
          type(tens_rcrsv_t), intent(inout)  :: aoint_tensor, moint_tensor
@@ -449,11 +543,12 @@ module exacorr_ao_to_mo
          type(tens_rcrsv_t):: dm_tensor
          type(tens_rcrsv_t):: a2int_tensor
 
+         integer, parameter:: print_level=0
          integer           :: ierr
          integer           :: aoint_id(4),moint_id(4),a2int_id(4),dm_id(4)
          integer(INTL)     :: aoint_root(4),moint_root(4),a2int_root(4),dm_root(4)
 
-         call print_date('entered aomo_transform_2')
+         if (print_level >0) call print_date('entered aomo_transform_2')
 
 !        Determine ids and root
          call aoint_tensor%get_space_ids(aoint_id,aoint_root,ierr)
@@ -461,7 +556,7 @@ module exacorr_ao_to_mo
          call moint_tensor%get_space_ids(moint_id,moint_root,ierr)
          if(ierr.ne.EXA_SUCCESS) call quit('moint tensor corrupted')
 
-!        Create the density matrix tensor for the first half-transformation
+!        Create and initialize the density matrix tensor for the first half-transformation
          dm_id(1:2)    = aoint_id(1:2)
          dm_id(3:4)    = moint_id(1:2)
          dm_root(1:2)  = aoint_root(1:2)
@@ -469,10 +564,10 @@ module exacorr_ao_to_mo
          ierr=exatns_tensor_create(dm_tensor,'dm12tensor',dm_id,dm_root,EXA_DATA_KIND_C8)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create(dm1) failed!')
 !        Initialize dm-tensor 
-         ierr=exatns_tensor_init(dm_tensor,initlabel2(1))
+         ierr=exatns_tensor_init(dm_tensor,dm_initlabel(dm_id(1:2),dm_id(3:4)))
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_init() failed!')
 
-         call print_date('initialized first density matrix')
+         if (print_level >0) call print_date('initialized first density matrix')
 
 !        Copy the information about spaces from the starting and target tensors to the ht integral tensor
          a2int_id(1:2) = moint_id(1:2)
@@ -482,16 +577,16 @@ module exacorr_ao_to_mo
 
 !        Do 1st half-transformation
          ierr=exatns_tensor_create(a2int_tensor,'a2int',a2int_id,a2int_root,EXA_DATA_KIND_C8)
-         call print_date('constructed a2')
+         if (print_level >0) call print_date('constructed a2')
          ierr=exatns_tensor_contract(a2int_tensor,aoint_tensor,dm_tensor,"D(i,j,r,s)+=L(p,q,r,s)*R(p,q,i,j)")
          if(ierr.ne.EXA_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=1; return; endif
 
 !        Destruct dm tensor:
          ierr=exatns_tensor_destroy(dm_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=3; return; endif
 
-         call print_date('first ht done')
+         if (print_level >0) call print_date('first ht done')
 
-!        Create the density matrix tensor for the second half-transformation
+!        Create and initialize the density matrix tensor for the second half-transformation
          dm_id(1:2)    = aoint_id(3:4)
          dm_id(3:4)    = moint_id(3:4)
          dm_root(1:2)  = aoint_root(3:4)
@@ -499,36 +594,32 @@ module exacorr_ao_to_mo
          ierr=exatns_tensor_create(dm_tensor,'dm34tensor',dm_id,dm_root,EXA_DATA_KIND_C8)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create(dm) failed!')
 !        Initialize dm-tensor 
-         ierr=exatns_tensor_init(dm_tensor,initlabel2(2))
+         ierr=exatns_tensor_init(dm_tensor,dm_initlabel(dm_id(1:2),dm_id(3:4)))
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_init() failed!')
 
-         call print_date('initialized second density matrix')
+         if (print_level >0) call print_date('initialized second density matrix')
 
 !        Do 2nd half-transformation
          ierr=exatns_tensor_contract(moint_tensor,a2int_tensor,dm_tensor,"D(i,j,k,l)+=L(i,j,r,s)*R(r,s,k,l)")
          if(ierr.ne.EXA_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=2; return; endif
 
-         call print_date('second ht done')
+         if (print_level >0) call print_date('second ht done')
 
 !        Destruct a2 integrals:
          ierr=exatns_tensor_destroy(a2int_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=3; return; endif
 !        Destruct dm tensor:
          ierr=exatns_tensor_destroy(dm_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=3; return; endif
 
-         call print_date('leaving aomo_transform_2')
+         if (print_level >0) call print_date('leaving aomo_transform_2')
 
         end subroutine aomo_transform_2
 
-        subroutine aomo_transform_3 (ao_space_id,ao_space_root,moint_tensor,initlabel3)
+        subroutine aomo_transform_3 (ao_space_id,ao_space_root,moint_tensor)
 
 !        Transform integral tensor from ao-basis to mo-basis
-!        Algorithm 1: n^6 scaling with density matrices
+!        Algorithm 3: n^6 scaling with fock matrix builds
 
          implicit none
-
-         ! The strings in initlabel2 are used to find the appropriate initializer for the density matrices.
-         ! This initializer has the MO-coefficients stored (on all nodes) and just picks out the proper subsets.
-         character(len=*), intent(in)       :: initlabel3(2)
 
          ! MO integrals are returned on output
          type(tens_rcrsv_t), intent(inout)  :: moint_tensor
@@ -537,11 +628,12 @@ module exacorr_ao_to_mo
          type(tens_rcrsv_t):: dm_tensor
          type(tens_rcrsv_t):: a2int_tensor
 
+         integer, parameter:: print_level=1
          integer           :: ierr
          integer           :: ao_space_id, moint_id(4),a2int_id(4),dm_id(4)
          integer(INTL)     :: ao_space_root,moint_root(4),a2int_root(4),dm_root(4)
 
-         call print_date('entered aomo_transform_3')
+         if (print_level >0) call print_date('entered aomo_transform_3')
 
 !        Determine ids and root
          call moint_tensor%get_space_ids(moint_id,moint_root,ierr)
@@ -555,11 +647,11 @@ module exacorr_ao_to_mo
 
 !        Initialize half-transformed integrals
          ierr=exatns_tensor_create(a2int_tensor,'a2int',a2int_id,a2int_root,EXA_DATA_KIND_C8)
-         call print_date('constructed a2')
-         ierr=exatns_tensor_init(a2int_tensor,initlabel3(1))
+         if (print_level >0) call print_date('constructed a2')
+         ierr=exatns_tensor_init(a2int_tensor,'HalfTrans')
          if(ierr.ne.EXA_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=1; return; endif
 
-         call print_date('first ht done')
+         if (print_level >0) call print_date('first ht done')
 
 !        Create the density matrix tensor for the second half-transformation
          dm_id(1:2)    = ao_space_id
@@ -569,41 +661,41 @@ module exacorr_ao_to_mo
          ierr=exatns_tensor_create(dm_tensor,'dm12tensor',dm_id,dm_root,EXA_DATA_KIND_C8)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create(dm) failed!')
 !        Initialize dm-tensor 
-         ierr=exatns_tensor_init(dm_tensor,initlabel3(2))
+         ierr=exatns_tensor_init(dm_tensor,dm_initlabel(dm_id(1:2),dm_id(3:4)))
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_init() failed!')
 
-         call print_date('initialized density matrix')
+         if (print_level >0) call print_date('initialized density matrix')
 
 !        Do 2nd half-transformation
          ierr=exatns_tensor_contract(moint_tensor,a2int_tensor,dm_tensor,"D(i,j,k,l)+=L(p,q,k,l)*R(p,q,i,j)")
          if(ierr.ne.EXA_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=2; return; endif
 
-         call print_date('second ht done')
+         if (print_level >0) call print_date('second ht done')
 
 !        Destruct a2 integrals:
          ierr=exatns_tensor_destroy(a2int_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=3; return; endif
 !        Destruct dm tensor:
          ierr=exatns_tensor_destroy(dm_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=3; return; endif
 
-         call print_date('leaving aomo_transform_3')
+         if (print_level >0) call print_date('leaving aomo_transform_3')
 
         end subroutine aomo_transform_3
 
-        subroutine get_integral_tensor (aoint_tensor,integral_tensor,antisymmetrize,initlabel)
+        subroutine get_integral_tensor (aoint_tensor,integral_tensor,antisymmetrize,algorithm)
 
          implicit none
 
-         ! The strings initlabel are used to find the appropriate initializer for the mo-coefficients
-         ! This initializer has the coefficients stored (on all nodes) and just picks out the proper subset.
-         character(len=*), intent(in)       :: initlabel(2,4) ! Note that these are already given in Mulliken order !
          type(tens_rcrsv_t), intent(inout)  :: aoint_tensor, integral_tensor
          type(tens_rcrsv_t)                 :: moint_tensor
 
          integer, intent(in)                :: antisymmetrize
+         integer, optional                  :: algorithm
 
          integer           :: ierr, tens_rank
          integer           :: aoint_id(4),integral_id(4),moint_id(4)
          integer(INTL)     :: aoint_root(4),integral_root(4),moint_root(4)
+
+         if (.not.present(algorithm)) algorithm = 1
 
 !        Check integrity of tensors
          tens_rank = aoint_tensor%get_rank(ierr)
@@ -618,8 +710,8 @@ module exacorr_ao_to_mo
          if(ierr.ne.EXA_SUCCESS) call quit('integral tensor corrupted')
 
 !        Copy the information about spaces from the starting and target tensors to the auxilliary ones
-!        Use relation (12|34) = <13|24> 
-         moint_id(1) = integral_id(1) 
+!        Use relation (12|34) = <13|24>
+         moint_id(1) = integral_id(1)
          moint_id(2) = integral_id(3)
          moint_id(3) = integral_id(2)
          moint_id(4) = integral_id(4)
@@ -633,44 +725,49 @@ module exacorr_ao_to_mo
          ierr=exatns_tensor_create(moint_tensor,'mulliken',moint_id,moint_root,EXA_DATA_KIND_C8)
 
 !        Transform integrals
-         call aomo_transform_1 (aoint_tensor,moint_tensor,initlabel)
+         select case (algorithm)
+         case (1)
+            call aomo_transform_1 (aoint_tensor,moint_tensor)
+         case (2)
+            call aomo_transform_2 (aoint_tensor,moint_tensor)
+         case default
+            call quit ("asked for non-existing algorithm in get_integral_tensor")
+         end select
+
 !        Switch to Dirac order and antisymmetrize
          call mulliken_to_dirac_sort (moint_tensor,integral_tensor,antisymmetrize)
          ierr=exatns_tensor_destroy(moint_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=1; return; endif
 
         end subroutine get_integral_tensor
 
-        subroutine get_integral_tensor_2 (aoint_tensor,integral_tensor,antisymmetrize,initlabel)
+        subroutine get_ht2_integral_tensor (a2int_tensor,integral_tensor,antisymmetrize)
 
          implicit none
 
-         ! The strings initlabel are used to find the appropriate initializer for the mo-coefficients
-         ! This initializer has the coefficients stored (on all nodes) and just picks out the proper subset.
-         character(len=*), intent(in)       :: initlabel(2) ! Note that these are already given in Mulliken order !
-         type(tens_rcrsv_t), intent(inout)  :: aoint_tensor, integral_tensor
+         type(tens_rcrsv_t), intent(inout)  :: a2int_tensor, integral_tensor
          type(tens_rcrsv_t)                 :: moint_tensor
 
          integer, intent(in)                :: antisymmetrize
 
          integer           :: ierr, tens_rank
-         integer           :: aoint_id(4),integral_id(4),moint_id(4)
-         integer(INTL)     :: aoint_root(4),integral_root(4),moint_root(4)
+         integer           :: a2int_id(4),integral_id(4),moint_id(4)
+         integer(INTL)     :: a2int_root(4),integral_root(4),moint_root(4)
 
 !        Check integrity of tensors
-         tens_rank = aoint_tensor%get_rank(ierr)
+         tens_rank = a2int_tensor%get_rank(ierr)
          if (ierr.ne.0 .or. tens_rank.ne.4) call quit('input tensor corrupted in aomo_transform')
          tens_rank = integral_tensor%get_rank(ierr)
          if (ierr.ne.0 .or. tens_rank.ne.4) call quit('output tensor corrupted in aomo_transform')
 
 !        Determine ids and root
-         call aoint_tensor%get_space_ids(aoint_id,aoint_root,ierr)
-         if(ierr.ne.EXA_SUCCESS) call quit('aoint tensor corrupted')
+         call a2int_tensor%get_space_ids(a2int_id,a2int_root,ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('a2int tensor corrupted')
          call integral_tensor%get_space_ids(integral_id,integral_root,ierr)
          if(ierr.ne.EXA_SUCCESS) call quit('integral tensor corrupted')
 
 !        Copy the information about spaces from the starting and target tensors to the auxilliary ones
-!        Use relation (12|34) = <13|24> 
-         moint_id(1) = integral_id(1) 
+!        Use relation (12|34) = <13|24>
+         moint_id(1) = integral_id(1)
          moint_id(2) = integral_id(3)
          moint_id(3) = integral_id(2)
          moint_id(4) = integral_id(4)
@@ -684,12 +781,12 @@ module exacorr_ao_to_mo
          ierr=exatns_tensor_create(moint_tensor,'mulliken',moint_id,moint_root,EXA_DATA_KIND_C8)
 
 !        Transform integrals
-         call aomo_transform_2 (aoint_tensor,moint_tensor,initlabel)
+         call aomo_halftransform_2 (a2int_tensor,moint_tensor)
 !        Switch to Dirac order and antisymmetrize
          call mulliken_to_dirac_sort (moint_tensor,integral_tensor,antisymmetrize)
          ierr=exatns_tensor_destroy(moint_tensor); if(ierr.ne.EXA_SUCCESS) then; ierr=1; return; endif
 
-        end subroutine get_integral_tensor_2
+        end subroutine get_ht2_integral_tensor
 
         subroutine mulliken_to_dirac_sort  (mulliken_tensor,dirac_tensor,antisymmetrize)
 
@@ -742,8 +839,8 @@ module exacorr_ao_to_mo
           type(tens_rcrsv_t):: tens, scalar
           integer ierr,rank
           complex(8) :: scalar_complex
-          real(8)    :: scalar_real      
- 
+          real(8)    :: scalar_real
+
           ! create a rank-0 tensor
           ierr=exatns_tensor_create(scalar,'scalar',EXA_DATA_KIND_C8)
           if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_tensor_create() failed!')
@@ -770,10 +867,55 @@ module exacorr_ao_to_mo
           ierr=exatns_tensor_destroy(scalar); if(ierr.ne.EXA_SUCCESS) then; ierr=45; return; endif
 
         end function print_tensornorm2
+ 
+        function mocoef_initlabel (ao_space_id,mo_space_id,spin) result(initlabel)
+
+         !Define a unique name for the initializer of mo coeffiecients for a particular spin
+         !we assume that we can use a single digit to indicate the ao and mo spaces
+         !if we start using more spaces, we can simply define a longer string here
+
+         integer,intent(in):: ao_space_id, mo_space_id, spin
+         character(len=9)  :: initlabel
+         character(len=2)  :: vs_str
+
+         if (ao_space_id>9.or.mo_space_id>9) then
+             call quit ('Revise naming scheme for MO coef initializers')
+         else
+              write (vs_str,'(2I1)') ao_space_id,mo_space_id
+         end if
+         if (spin == 1) initlabel = 'MOCoef' // vs_str // 'A'
+         if (spin == 2) initlabel = 'MOCoef' // vs_str // 'B'
+
+        end function mocoef_initlabel
+
+        function dm_initlabel (ao_space_id,mo_space_id) result(initlabel)
+
+         !Define a unique name for the initializer of density matrices
+         !we assume that we can use a single digit to indicate the ao and mo spaces
+         !if we start using more spaces, we can simply define a longer string here
+
+         integer,intent(in):: ao_space_id(2), mo_space_id(2)
+         character(len=9)  :: initlabel
+         character(len=2)  :: vs_str(2)
+         integer           :: i
+
+         do i = 1, 2
+            if (ao_space_id(i)>9.or.mo_space_id(i)>9) then
+               call quit ('Revise naming scheme for DM initializers')
+            else
+              write (vs_str(i),'(2I1)') ao_space_id(i),mo_space_id(i)
+           end if
+         end do
+         initlabel = 'DensM' // vs_str(1) // vs_str(2)
+
+        end function dm_initlabel
 
 ! stub non-MPI routine to satisfy references
 
 #else
+
+       contains
+
         subroutine exacorr_compute_mo_integrals (nmo, mo_list)
          implicit none
          integer, intent(in) :: nmo(4)       ! the size of the mo basis for each of the 4 indices (mulliken ordering)
@@ -784,6 +926,5 @@ module exacorr_ao_to_mo
         end subroutine exacorr_compute_mo_integrals
 
 #endif
-
 
 end module exacorr_ao_to_mo

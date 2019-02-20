@@ -16,7 +16,7 @@ Water molecule. X2C Hamiltonian. CC energies.
 **MOLTRA
 .ACTIVE
 3..17
-.EXACORR
+!.EXACORR
 **EXACC
 .OCCUPIED
 3..5

@@ -3,7 +3,7 @@ module exacorr_global
 !This module controls storage and interaction with the global data used in ExaCorr
 
         use exacorr_datatypes
-        use dirac_mo
+        use exacorr_mo
 
         implicit none
         private
@@ -11,13 +11,15 @@ module exacorr_global
 !       Global data (should limit this to the minimum required to function)
         integer :: my_MPI_master=0 ! Define the MPI master proces (is always zero in the DIRAC MPI environment)
         type(basis_set_info_t) :: ao_basis ! information about the ao basis 
-        type(MO):: qmo_all ! Stores all MO-coefficients and energies obtained from the parent code 
+        type(cmo):: cspinor_all ! Stores all MO-coefficients and energies obtained from the parent code 
         logical :: TALSH_ONLY = .TRUE. ! use single-node TALSH library instead of the full EXATENSOR library
-        logical, public, parameter :: DEBUG = .TRUE. ! switch on and off debug
+        logical, public, parameter :: debug_exa = .false. ! switch on and off debug
 
 !       Functions and routines to interact with these data
-        public ncartesian
+        public nfunctions
         public get_nao
+        public get_basis_angular
+        public get_nsolutions
         public get_talsh_only
         public set_talsh_only
         public initialize_global_data
@@ -40,13 +42,23 @@ module exacorr_global
              get_nao = ao_basis%nao
          end function get_nao
 
+         integer function get_basis_angular()
+             get_basis_angular = ao_basis%basis_angular
+         end function get_basis_angular
+
+         integer function get_nsolutions()
+             get_nsolutions = cspinor_all%nmo
+         end function get_nsolutions
+
          subroutine initialize_global_data
 
+             use exacorr_respect
 #if defined (VAR_MPI)
              use interface_to_mpi
              integer :: my_MPI_rank
 #endif
              integer :: ierr
+             logical :: tobe
 
 #if defined (VAR_MPI)
              call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
@@ -56,22 +68,30 @@ module exacorr_global
                 return
              end if 
 #endif
-             ! read MO coefficients and ao basis set information from DFCOEF
-             call read_from_dfcoef (ao_basis,qmo_all,ierr)
+             ! read MO coefficients and ao basis set information
+             inquire (file='DFCOEF',exist=tobe)
+             if (tobe) then
+                call read_from_dfcoef (ao_basis,cspinor_all,ierr)
+             else
+                inquire (file='RSD_MOS',exist=tobe)
+                if (tobe) then
+                   call read_from_respect (ao_basis,cspinor_all,ierr)
+                end if
+             end if
 
              if (ierr == 0) then
                 call print_date ("retrieved basis set information")
              else
-                print*, "Error code",ierr," while reading DFCOEF"
-                call quit ('Could not read DFCOEF')
+                print*, "Error code",ierr," while reading restart file"
+                call quit ('Could not read restart file')
              end if
              
              call synchronize_global_data
- 
+
          end subroutine initialize_global_data
 
          subroutine synchronize_global_data
- 
+
 #if defined (VAR_MPI)
              use interface_to_mpi
              integer :: nao, nshells, n_primitives
@@ -82,12 +102,13 @@ module exacorr_global
              if (TALSH_ONLY) return
              call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
 
-             call sync_qmo(qmo_all,my_MPI_master)
+             call sync_mo(cspinor_all,my_MPI_master)
 
              call interface_mpi_bcast (ao_basis%nshells,1,my_MPI_master,global_communicator)
              call interface_mpi_bcast (ao_basis%nao,1,my_MPI_master,global_communicator)
-             nshells = ao_basis%nshells
-             nao     = ao_basis%nao
+             call interface_mpi_bcast (ao_basis%basis_angular,1,my_MPI_master,global_communicator)
+             nshells       = ao_basis%nshells
+             nao           = ao_basis%nao
    
              if (my_MPI_rank /= my_MPI_master) nullify (ao_basis%gtos)
              if (my_MPI_rank /= my_MPI_master) allocate(ao_basis%gtos(nshells))
@@ -133,18 +154,21 @@ module exacorr_global
          !TODO: check for memory leaks here. No so important as we usually stop right after and there is not much data anyhow
              deallocate(ao_basis%shell_indices)
              deallocate(ao_basis%gtos)
-             call delete_qmo (qmo_all)
+             call dealloc_mo (cspinor_all)
          end subroutine delete_global_data
 
-         integer function ncartesian(l_value)
-         ! Computes number of Cartesian functions for a given l-value
+         integer function nfunctions(l_value,switch)
+         ! Computes number of Cartesian/spherical functions for a given l-value
              integer, intent(in) :: l_value
-             integer :: i
-             ncartesian = 1
-             do i = 2, l_value
-                ncartesian = ncartesian + i
-             end do
-         end function ncartesian
+             integer, intent(in) :: switch
+             if (switch == 1) then
+!               Cartesian
+                nfunctions = l_value * ( l_value + 1 ) / 2
+             else if (switch == 2) then
+!               spherical
+                nfunctions = 2 * (l_value - 1) + 1
+             end if
+         end function nfunctions
 
          integer function get_shell_index(ifun)
              integer, intent(in) :: ifun
@@ -174,7 +198,7 @@ module exacorr_global
 
          end subroutine get_gtos
 
-     subroutine get_MO_coefficients (qmo,mo_list,nmo)
+     subroutine get_MO_coefficients (cspinor,mo_list,nmo)
 !***********************************************************************
 !
 !     Fill array with subset of MO coefficients and related information
@@ -193,28 +217,27 @@ module exacorr_global
 !
 !***********************************************************************
 
-      use dirac_mo
+      use exacorr_mo
 
       integer, intent(in)     :: nmo,mo_list(nmo)
-      type(MO), intent(inout) :: qmo
+      type(cmo), intent(inout) :: cspinor
 
-      integer  :: i, nao, nmo_all, nz
+      integer  :: i, nao, nmo_all
 
-      nao     = qmo_all%nao
-      nmo_all = qmo_all%nmo
-      nz      = qmo_all%nz 
+      nao     = cspinor_all%nao
+      nmo_all = cspinor_all%nmo !WHY IS THIS HERE?
 
-      ! allocate arrays in qmo to hold the active MO's specified in mo_list
-      call create_qmo (qmo,nao,nmo,nz)
+      ! allocate arrays in cmo to hold the active MO's specified in mo_list
+      call alloc_mo (cspinor,nao,nmo)
 
       ! copy the requested mo's
       do i = 1, nmo
-         qmo%index(i)   = mo_list(i)
-         qmo%coeff(:,i,:) = qmo_all%coeff(:,mo_list(i),:)
-         qmo%energy(i) = qmo_all%energy(mo_list(i))
-         qmo%boson_irrep(i) = qmo_all%boson_irrep(mo_list(i))
+         cspinor%index(i)       = mo_list(i)
+         cspinor%coeff(:,i,:)   = cspinor_all%coeff(:,mo_list(i),:)
+         cspinor%energy(i)      = cspinor_all%energy(mo_list(i))
+         cspinor%boson_irrep(i) = cspinor_all%boson_irrep(mo_list(i))
       enddo
 
-      end
+      end subroutine get_MO_coefficients
 
 end module exacorr_global

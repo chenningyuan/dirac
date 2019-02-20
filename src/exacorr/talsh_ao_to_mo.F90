@@ -26,7 +26,7 @@ module talsh_ao_to_mo
 
 !        Written by Lucas Visscher, winter 2016/2017
 
-         use dirac_MO
+         use exacorr_mo
          use exacorr_datatypes
          use exacorr_global
          use, intrinsic:: ISO_C_BINDING
@@ -40,9 +40,8 @@ module talsh_ao_to_mo
          integer, intent(in) :: nmo(4)       ! the size of the mo basis for each of the 4 indices (mulliken ordering)
          integer, intent(in) :: mo_list(:)   ! and their indices (4 lists consecutively)
 
-         integer             :: i, ierr, my_MPI_rank
+         integer             :: ierr, my_MPI_rank
          integer             :: nao                        ! the size of the atomic orbital basis
-         type(basis_func_info_t), allocatable :: shell(:)  ! array with basis function information
 
          integer(C_SIZE_T), parameter:: BUF_SIZE=1_8*1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
          type(talsh_tens_t):: aoint_tensor
@@ -76,11 +75,11 @@ module talsh_ao_to_mo
          call print_date('Initialized interest library')
 
 !        Retrieve basis set information
-         nao     = get_nao()
+         nao = get_nao()
 
 !        Set tensor dimensions for the index transformation (simple brute-force algorithm)
-         aoint_dims      = nao
-         moint_dims(1:4) = 2 * nmo(1:4)
+         aoint_dims = nao
+         moint_dims = nmo
 
 !        Get tensor for AO integrals
          ierr=talsh_tensor_construct(aoint_tensor,C8,aoint_dims,init_val=zero)
@@ -93,18 +92,18 @@ module talsh_ao_to_mo
 !        Transform to MO basis
          ierr=talsh_tensor_construct(moint_tensor,C8,moint_dims,init_val=zero)
          call aomo_transform (aoint_tensor,moint_tensor,nmo,mo_list)
-         if (debug) then
+         if (debug_exa) then
             print*, "AOint = ",tensor_norm2(aoint_tensor)
             print*, "MOint = ",tensor_norm2(moint_tensor)
-            print*, "additional transform to get anti-symmetrized integralss"
+            print*, "additional transform to get anti-symmetrized integrals"
          end if
 
 !        Write to old format MO-integrals file to allow for easy debugging of the integral transform
          ierr=talsh_tensor_get_body_access(moint_tensor,body_p,C8,0,DEV_HOST)
          call c_f_pointer(body_p,mo_tens,moint_dims(1:4))
-         call write_to_mdcint (nmo,2,mo_tens)
+         call write_to_mdcint (nmo,mo_tens)
 
-         if (debug) then
+         if (debug_exa) then
             print*, "additional transform to get anti-symmetrized integralss"
             call get_integral_tensor (aoint_tensor,moint_tensor,12,nmo,mo_list)
             print*, "MOint-antisym = ",tensor_norm2(moint_tensor)
@@ -131,7 +130,7 @@ module talsh_ao_to_mo
 
 !        Written by Lucas Visscher, winter 2016/2017 (but in Goa, India, temperature about 30 C)
 
-         use dirac_MO
+         use exacorr_mo
          use exacorr_global
 
          implicit none
@@ -140,8 +139,8 @@ module talsh_ao_to_mo
          integer, intent(in) :: mo_list(:)   ! and their indices
          type(talsh_tens_t), intent(inout) :: mocoefa_tensor,mocoefb_tensor
 
-         integer             :: j, k, ierr
-         type(MO)            :: qmo
+         integer             :: ierr
+         type(cmo)           :: cspinor
          integer             :: tens_rank, mocoef_dims(1:2)
 
          complex(8), pointer, contiguous:: camo_tens(:,:),cbmo_tens(:,:)
@@ -153,22 +152,15 @@ module talsh_ao_to_mo
          ierr=talsh_tensor_get_body_access(mocoefb_tensor,body_p,C8,0,DEV_HOST)
          call c_f_pointer(body_p,cbmo_tens,mocoef_dims(1:2)) ! to use cbmo_tens as a regular Fortran 2d array
 
-         call get_mo_coefficients (qmo,mo_list,nmo)
+         call get_mo_coefficients (cspinor,mo_list,nmo)
 
 !        Copy the coefficients into the alpha and beta tensors, using the quaternion relations as defined in
 !        T. Saue, H. Jensen, J. Chem. Phys. 111 (1999) 6211–6222, Equation 16.
 !        The coefficients for the barred spinors (that start after the nmo(i) unbarred spinors) are generated
 !        using Kramers' symmetry.
 
-         do k = 1, nmo
-            do j = 1, nao
-                camo_tens(j,k) = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
-                cbmo_tens(j,k) = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-                camo_tens(j,k+nmo) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-                cbmo_tens(j,k+nmo) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
-            end do
-         end do
-         call delete_qmo (qmo)
+         camo_tens = cspinor%coeff(:,:,1)
+         cbmo_tens = cspinor%coeff(:,:,2)
 
         end subroutine get_mocoef_tensor
 
@@ -181,10 +173,10 @@ module talsh_ao_to_mo
          use module_interest_eri
 
          implicit none
-         integer, intent(in) :: nao ! number of basis functions
+         integer, intent(in) :: nao           ! number of basis functions
+         integer             :: basis_angular ! 1=cartesian, 2=spherical
          complex(8),intent(out) :: ao_tens(nao,nao,nao,nao)
 
-         integer :: ierr
          integer :: i, j, k, l, ish, jsh, ksh, lsh, ioff, joff, koff, loff, ijkl, ijkl2
          integer :: li,lj,lk,ll,ni,nj,nk,nl
          real(8) :: ei,ej,ek,el,ci,cj,ck,cl,xi,yi,zi,xj,yj,zj,xk,yk,zk,xl,yl,zl
@@ -195,6 +187,7 @@ module talsh_ao_to_mo
          integer            :: nshells                    ! number of AO shells
          type(basis_func_info_t), allocatable :: gto(:)   ! array with basis function information
 
+         basis_angular = get_basis_angular()
          call get_gtos(1,nao,gto,nshells)
 
          !OpenMP task-based parallelism defined by Eric does not work, deactivated [LV]
@@ -208,7 +201,7 @@ module talsh_ao_to_mo
             yl   =  gto(lsh)%coord(2)
             zl   =  gto(lsh)%coord(3)
             cl   =  gto(lsh)%coefficient(1)
-            nl   =  ncartesian(ll)
+            nl   =  nfunctions(ll,basis_angular)
             koff = 0
             do ksh = 1, nshells
                lk   =  gto(ksh)%orb_momentum
@@ -217,7 +210,7 @@ module talsh_ao_to_mo
                yk   =  gto(ksh)%coord(2)
                zk   =  gto(ksh)%coord(3)
                ck   =  gto(ksh)%coefficient(1)
-               nk   =  ncartesian(lk)
+               nk   =  nfunctions(lk,basis_angular)
                joff = 0
                do jsh = 1, nshells
                   lj   =  gto(jsh)%orb_momentum
@@ -226,7 +219,7 @@ module talsh_ao_to_mo
                   yj   =  gto(jsh)%coord(2)
                   zj   =  gto(jsh)%coord(3)
                   cj   =  gto(jsh)%coefficient(1)
-                  nj   =  ncartesian(lj)
+                  nj   =  nfunctions(lj,basis_angular)
                   ioff = 0
                   do ish = 1, nshells
                      li   =  gto(ish)%orb_momentum
@@ -235,7 +228,7 @@ module talsh_ao_to_mo
                      yi   =  gto(ish)%coord(2)
                      zi   =  gto(ish)%coord(3)
                      ci   =  gto(ish)%coefficient(1)
-                     ni   =  ncartesian(li)
+                     ni   =  nfunctions(li,basis_angular)
 !                    call interest and get only the (LL|LL) type integrals
 !                    output order of eri is (c,d,a,b), so input k,l first and then i,j to get the order that we want
 
@@ -317,7 +310,7 @@ module talsh_ao_to_mo
             mocoef_dims(1) = aoint_dims(i)
             if (mocoef_dims(1) .ne. nao)      stop 'program error: inconsistent dimensions'
             mocoef_dims(2) = moint_dims(i)
-            if (mocoef_dims(2) .ne. 2*nmo(i)) stop 'program error: inconsistent dimensions'
+            if (mocoef_dims(2) .ne. nmo(i)) stop 'program error: inconsistent dimensions'
             ierr=talsh_tensor_construct(mocoefa_tensor(i),C8,mocoef_dims,init_val=zero)
             ierr=talsh_tensor_construct(mocoefb_tensor(i),C8,mocoef_dims,init_val=zero)
             call get_mocoef_tensor (nao, nmo(i), mo_list(imo+1:imo+nmo(i)), mocoefa_tensor(i), mocoefb_tensor(i))
@@ -386,7 +379,7 @@ module talsh_ao_to_mo
          integer                            :: ierr, moint_dims(4)
          type(talsh_tens_t)                 :: moint_tensor
 
-         moint_dims = 2 * nmo
+         moint_dims = nmo
          ierr=talsh_tensor_construct(moint_tensor,C8,moint_dims,init_val=ZERO)
 !        Transform integrals
          call aomo_transform (aoint_tensor,moint_tensor,nmo,mo_list)

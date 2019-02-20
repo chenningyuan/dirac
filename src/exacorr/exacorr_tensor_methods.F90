@@ -148,6 +148,7 @@ module exacorr_tensor_methods
          integer(8), intent(in):: tens_bases(1:*) !in: base offsets for each tensor dimension)
 
          integer:: nao(4)
+         integer:: basis_angular ! 1=cartesian, 2=spherical
          complex(8),pointer :: ao_tens(:,:,:,:)
          integer :: first_ao(1:4)
 
@@ -180,6 +181,7 @@ module exacorr_tensor_methods
          call get_gtos(first_ao(2),nao(2),gto2,nshells(2))
          call get_gtos(first_ao(3),nao(3),gto3,nshells(3))
          call get_gtos(first_ao(4),nao(4),gto4,nshells(4))
+         basis_angular = get_basis_angular()
 
 !        Intranode parallelization should be possible in the loops below because Interest is thread safe
 
@@ -191,7 +193,7 @@ module exacorr_tensor_methods
             yl   =  gto4(lsh)%coord(2)
             zl   =  gto4(lsh)%coord(3)
             cl   =  gto4(lsh)%coefficient(1)
-            nl   =  ncartesian(ll)
+            nl   =  nfunctions(ll,basis_angular)
             koff = 0
             do ksh = 1, nshells(3)
                lk   =  gto3(ksh)%orb_momentum
@@ -200,7 +202,7 @@ module exacorr_tensor_methods
                yk   =  gto3(ksh)%coord(2)
                zk   =  gto3(ksh)%coord(3)
                ck   =  gto3(ksh)%coefficient(1)
-               nk   =  ncartesian(lk)
+               nk   =  nfunctions(lk,basis_angular)
                joff = 0
                do jsh = 1, nshells(2)
                   lj   =  gto2(jsh)%orb_momentum
@@ -209,7 +211,7 @@ module exacorr_tensor_methods
                   yj   =  gto2(jsh)%coord(2)
                   zj   =  gto2(jsh)%coord(3)
                   cj   =  gto2(jsh)%coefficient(1)
-                  nj   =  ncartesian(lj)
+                  nj   =  nfunctions(lj,basis_angular)
                   ioff = 0
                   do ish = 1, nshells(1)
                      li   =  gto1(ish)%orb_momentum
@@ -218,7 +220,7 @@ module exacorr_tensor_methods
                      yi   =  gto1(ish)%coord(2)
                      zi   =  gto1(ish)%coord(3)
                      ci   =  gto1(ish)%coefficient(1)
-                     ni   =  ncartesian(li)
+                     ni   =  nfunctions(li,basis_angular)
 !                    output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
                      call interest_eri('llll',fijkl,gout,&
                                   lk,ek,xk,yk,zk,ck,&
@@ -254,7 +256,7 @@ module exacorr_tensor_methods
 
         subroutine init_epsilons(this,mo_occ,nocc,mo_vir,nvir)
 
-         use dirac_MO
+         use exacorr_mo
          use exacorr_global
 
          implicit none
@@ -262,31 +264,23 @@ module exacorr_tensor_methods
          integer, intent(in) :: mo_occ(:),mo_vir(:)
          class(scale_with_denom_t), intent(out):: this
 
-         type(MO) :: qmo
-         integer  :: k
+         type(cmo) :: cspinor
 
-         ! we are assuming closed shell (Kramers-restricted) cases here
-         call get_mo_coefficients (qmo,mo_occ,nocc)
-         allocate(this%eps_occ(2*nocc))
-         do k = 1, nocc
-            this%eps_occ(k)      = qmo%energy(k)
-            this%eps_occ(k+nocc) = qmo%energy(k)
-         end do
-         call delete_qmo (qmo)
+         call get_mo_coefficients (cspinor,mo_occ,nocc)
+         allocate(this%eps_occ(nocc))
+         this%eps_occ = cspinor%energy
+         call dealloc_mo (cspinor)
 
-         call get_mo_coefficients (qmo,mo_vir,nvir)
-         allocate(this%eps_vir(2*nvir))
-         do k = 1, nvir
-            this%eps_vir(k)      = qmo%energy(k)
-            this%eps_vir(k+nvir) = qmo%energy(k)
-         end do
-         call delete_qmo (qmo)
+         call get_mo_coefficients (cspinor,mo_vir,nvir)
+         allocate(this%eps_vir(nvir))
+         this%eps_vir = cspinor%energy
+         call dealloc_mo (cspinor)
 
         end subroutine init_epsilons
 
         subroutine init_mocoef(this,mo_list,nmo,spin)
 
-         use dirac_MO
+         use exacorr_mo
          use exacorr_global
 
          implicit none
@@ -295,8 +289,8 @@ module exacorr_tensor_methods
          integer, intent(in) :: spin
          class(init_mocoef_tensor_t), intent(out):: this
 
-         integer  :: nao,j,k
-         type(MO) :: qmo
+         integer  :: nao
+         type(cmo) :: cspinor
 
 !        Copy the coefficients into the alpha or beta array, using the quaternion relations as defined in
 !        T. Saue, H. Jensen, J. Chem. Phys. 111 (1999) 6211–6222, Equation 16.
@@ -304,33 +298,16 @@ module exacorr_tensor_methods
 !        using Kramers' symmetry.
 
          nao = get_nao()
-         allocate (this%mocoef_all(nao,2*nmo))
-         call get_mo_coefficients (qmo,mo_list,nmo)
-
-         if (spin == 1) then
-            do k = 1, nmo
-               do j = 1, nao
-                this%mocoef_all(j,k)     = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
-                this%mocoef_all(j,k+nmo) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-               end do
-            end do
-         elseif (spin == 2) then
-            do k = 1, nmo
-               do j = 1, nao
-                this%mocoef_all(j,k)     = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-                this%mocoef_all(j,k+nmo) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
-               end do
-            end do
-         else
-            call quit ('init_mocoef called with unknown spin value')
-         end if
-         call delete_qmo (qmo)
+         allocate (this%mocoef_all(nao,nmo))
+         call get_mo_coefficients (cspinor,mo_list,nmo)
+         this%mocoef_all(:,:) = cspinor%coeff(:,:,spin)
+         call dealloc_mo(cspinor)
 
         end subroutine init_mocoef
 
         subroutine init_dm(this,mo_list,nmo)
 
-         use dirac_MO
+         use exacorr_mo
          use exacorr_global
 
          implicit none
@@ -338,8 +315,8 @@ module exacorr_tensor_methods
          integer, intent(in) :: mo_list(:)   ! and their indices
          class(init_dm_tensor_t), intent(out):: this
 
-         integer  :: nao,j,k
-         type(MO) :: qmo
+         integer  :: nao
+         type(cmo) :: cspinor
 
 !        Copy the coefficients into the alpha or beta array, using the quaternion relations as defined in
 !        T. Saue, H. Jensen, J. Chem. Phys. 111 (1999) 6211–6222, Equation 16.
@@ -347,36 +324,18 @@ module exacorr_tensor_methods
 !        using Kramers' symmetry.
 
          nao = get_nao()
-
-         allocate (this%mocoef_all_1(nao,2*nmo(1),2))
-         call get_mo_coefficients (qmo,mo_list(1:nmo(1)),nmo(1))
-         do k = 1, nmo(1)
-            do j = 1, nao
-             this%mocoef_all_1(j,k,1)     = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
-             this%mocoef_all_1(j,k,2)     = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-             this%mocoef_all_1(j,k+nmo(1),1) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-             this%mocoef_all_1(j,k+nmo(1),2) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
-            end do
-         end do
-         call delete_qmo (qmo)
-
-         allocate (this%mocoef_all_2(nao,2*nmo(2),2))
-         call get_mo_coefficients (qmo,mo_list(nmo(1)+1:nmo(1)+nmo(2)),nmo(2))
-         do k = 1, nmo(2)
-            do j = 1, nao
-             this%mocoef_all_2(j,k,1)     = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
-             this%mocoef_all_2(j,k,2)     = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-             this%mocoef_all_2(j,k+nmo(2),1) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-             this%mocoef_all_2(j,k+nmo(2),2) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
-            end do
-         end do
-         call delete_qmo (qmo)
+         allocate(this%mocoef_all_1(nao,nmo(1),2))
+         allocate(this%mocoef_all_2(nao,nmo(2),2))
+         call get_mo_coefficients(cspinor,mo_list(1:nmo(1)+nmo(2)),nmo(1)+nmo(2))
+         this%mocoef_all_1 = cspinor%coeff(:,1:nmo(1),:)
+         this%mocoef_all_2 = cspinor%coeff(:,nmo(1)+1:nmo(1)+nmo(2),:)
+         call dealloc_mo(cspinor)
 
         end subroutine init_dm
 
         subroutine init_ht(this,mo_list,nmo)
 
-         use dirac_MO
+         use exacorr_mo
          use exacorr_global
 
          implicit none
@@ -384,8 +343,8 @@ module exacorr_tensor_methods
          integer, intent(in) :: mo_list(:)   ! and their indices
          class(init_ht_tensor_t), intent(out):: this
 
-         integer  :: nao,j,k
-         type(MO) :: qmo
+         integer  :: nao
+         type(cmo) :: cspinor
 
 !        Copy the coefficients into the alpha or beta array, using the quaternion relations as defined in
 !        T. Saue, H. Jensen, J. Chem. Phys. 111 (1999) 6211–6222, Equation 16.
@@ -393,30 +352,12 @@ module exacorr_tensor_methods
 !        using Kramers' symmetry.
 
          nao = get_nao()
-
-         allocate (this%mocoef_all_1(nao,2*nmo(1),2))
-         call get_mo_coefficients (qmo,mo_list(1:nmo(1)),nmo(1))
-         do k = 1, nmo(1)
-            do j = 1, nao
-             this%mocoef_all_1(j,k,1)     = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
-             this%mocoef_all_1(j,k,2)     = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-             this%mocoef_all_1(j,k+nmo,1) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-             this%mocoef_all_1(j,k+nmo,2) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
-            end do
-         end do
-         call delete_qmo (qmo)
-
-         allocate (this%mocoef_all_2(nao,2*nmo(2),2))
-         call get_mo_coefficients (qmo,mo_list(nmo(1)+1:nmo(1)+nmo(2)),nmo(2))
-         do k = 1, nmo(2)
-            do j = 1, nao
-             this%mocoef_all_2(j,k,1)     = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
-             this%mocoef_all_2(j,k,2)     = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-             this%mocoef_all_2(j,k+nmo,1) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-             this%mocoef_all_2(j,k+nmo,2) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
-            end do
-         end do
-         call delete_qmo (qmo)
+         allocate(this%mocoef_all_1(nao,nmo(1),2))
+         allocate(this%mocoef_all_2(nao,nmo(2),2))
+         call get_mo_coefficients(cspinor,mo_list(1:nmo(1)+nmo(2)),nmo(1)+nmo(2))
+         this%mocoef_all_1 = cspinor%coeff(:,1:nmo(1),:)
+         this%mocoef_all_2 = cspinor%coeff(:,nmo(1)+1:nmo(1)+nmo(2),:)
+         call dealloc_mo(cspinor)
 
         end subroutine init_ht
 
@@ -428,17 +369,35 @@ module exacorr_tensor_methods
          class(tens_rcrsv_t), intent(inout):: tensor
          complex(8), intent(inout), optional:: scalar
          type(tens_dense_t):: tens
+         integer, allocatable :: tens_id(:)
+         integer(INTL), allocatable  :: tens_root(:)
+         logical :: lambda=.false.
 
          ierr=0
          tens=tensor%get_dense_adapter(ierr)
          if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
+
+         select case (tens%num_dims)
+         case (2)
+            allocate (tens_id  (2))
+            allocate (tens_root(2))
+         case (4)
+            allocate (tens_id  (4))
+            allocate (tens_root(4))
+         case default
+            call quit ('Error: wrong dimension of tensor in denominate')
+         end select
+
+         call tensor%get_space_ids(tens_id,tens_root,ierr)
+         if (tens_id(1) == 1) lambda = .true. ! tens_id 1 corresponds to occupied space
+
          ierr=denominate(tens%num_dims,tens%body_ptr,tens%data_kind,tens%dims(1:n),tens%bases(1:n), &
-                         this%eps_occ,this%eps_vir)
+                         this%eps_occ,this%eps_vir,lambda)
 
         end function scale_with_denom
 
         integer function denominate(num_dims,tens_body,data_kind,tens_dims,tens_bases, &
-                         eps_occ,eps_vir) result (ierr)
+                         eps_occ,eps_vir,lambda) result (ierr)
 
         !Scale with denominators for 2-d or 4-d tensor for regular CC and for lambda
 
@@ -452,6 +411,7 @@ module exacorr_tensor_methods
          integer(8), intent(in):: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
          integer(8), intent(in):: tens_bases(1:*) !in: base offsets for each tensor dimension)
          real(8), intent(in):: eps_occ(:),eps_vir(:)
+         logical, intent(in) :: lambda
 
          integer :: i,j,a,b
          real(8) :: denominator
@@ -466,24 +426,24 @@ module exacorr_tensor_methods
          select case (num_dims)
          case (2)
             call c_f_pointer(tens_body,t1_tens,tens_dims(1:2)) !map C pointer to 2-dimensional array
-!           if (tens_dims(1)*2.eq.size(eps_vir)) then 
+            if (.not.lambda) then 
                do i = 1, tens_dims(2)
                   do a = 1, tens_dims(1)
                      denominator = eps_occ(i+tens_bases(2)-1) - eps_vir(a+tens_bases(1)-1)
                      t1_tens(a,i) = t1_tens(a,i) / denominator
                   end do
                end do
-!           else
-!              do i = 1, tens_dims(1)
-!                 do a = 1, tens_dims(2)
-!                    denominator = eps_occ(i+tens_bases(1)-1) - eps_vir(a+tens_bases(2)-1)
-!                    t1_tens(i,a) = t1_tens(i,a) / denominator
-!                 end do
-!              end do
-!           end if
+            else
+              do i = 1, tens_dims(1)
+                 do a = 1, tens_dims(2)
+                    denominator = eps_occ(i+tens_bases(1)-1) - eps_vir(a+tens_bases(2)-1)
+                    t1_tens(i,a) = t1_tens(i,a) / denominator
+                 end do
+              end do
+            end if
          case (4)
             call c_f_pointer(tens_body,t2_tens,tens_dims(1:4)) !map C pointer to 2-dimensional array
-!           if (tens_dims(1)*2.eq.size(eps_vir)) then
+            if (.not.lambda) then
                do j = 1, tens_dims(4)
                   do i = 1, tens_dims(3)
                      do b = 1, tens_dims(2)
@@ -495,19 +455,19 @@ module exacorr_tensor_methods
                      end do
                   end do
                end do
-!           else
-!              do j = 1, tens_dims(2)
-!                 do i = 1, tens_dims(1)
-!                    do b = 1, tens_dims(4)
-!                       do a = 1, tens_dims(3)
-!                          denominator = eps_occ(i+tens_bases(1)-1) + eps_occ(j+tens_bases(2)-1) &
-!                                      - eps_vir(a+tens_bases(3)-1) - eps_vir(b+tens_bases(4)-1)
-!                          t2_tens(i,j,a,b) = t2_tens(i,j,a,b) / denominator
-!                       end do
-!                    end do
-!                 end do
-!              end do
-!           end if
+            else
+              do j = 1, tens_dims(2)
+                 do i = 1, tens_dims(1)
+                    do b = 1, tens_dims(4)
+                       do a = 1, tens_dims(3)
+                          denominator = eps_occ(i+tens_bases(1)-1) + eps_occ(j+tens_bases(2)-1) &
+                                      - eps_vir(a+tens_bases(3)-1) - eps_vir(b+tens_bases(4)-1)
+                          t2_tens(i,j,a,b) = t2_tens(i,j,a,b) / denominator
+                       end do
+                    end do
+                 end do
+              end do
+            end if
          case default
             call quit ('Error: wrong dimension of tensor in denominate')
          end select
@@ -675,6 +635,7 @@ module exacorr_tensor_methods
 
          integer :: first_ao(1:4)
          integer :: nshells(4)
+         integer :: basis_angular 
          type(basis_func_info_t), allocatable :: gto1(:), gto2(:), gto3(:), gto4(:)  ! arrays with basis function information
 
          integer :: ioff,joff,koff,loff,kmo,lmo,ka,la,pa,qa,ra,sa,nao(4),nmo(2),ijkl
@@ -709,6 +670,7 @@ module exacorr_tensor_methods
          call get_gtos(first_ao(2),nao(2),gto2,nshells(2))
          call get_gtos(first_ao(3),nao(3),gto3,nshells(3))
          call get_gtos(first_ao(4),nao(4),gto4,nshells(4))
+         basis_angular = get_basis_angular()
 
          loff = 0
          do lsh = 1, nshells(4) ! loop over all ao's, this index is transformed to mo
@@ -718,7 +680,7 @@ module exacorr_tensor_methods
             yl   =  gto4(lsh)%coord(2)
             zl   =  gto4(lsh)%coord(3)
             cl   =  gto4(lsh)%coefficient(1)
-            nl   =  ncartesian(ll)
+            nl   =  nfunctions(ll,basis_angular)
             koff = 0
             do ksh = 1, nshells(3) ! loop over all ao's, this index is transformed to mo
                lk   =  gto3(ksh)%orb_momentum
@@ -727,7 +689,7 @@ module exacorr_tensor_methods
                yk   =  gto3(ksh)%coord(2)
                zk   =  gto3(ksh)%coord(3)
                ck   =  gto3(ksh)%coefficient(1)
-               nk   =  ncartesian(lk)
+               nk   =  nfunctions(lk,basis_angular)
                joff = 0
                do jsh = 1, nshells(2) ! loop over the ao's active in the HT integral tensor block
                   lj   =  gto2(jsh)%orb_momentum
@@ -736,7 +698,7 @@ module exacorr_tensor_methods
                   yj   =  gto2(jsh)%coord(2)
                   zj   =  gto2(jsh)%coord(3)
                   cj   =  gto2(jsh)%coefficient(1)
-                  nj   =  ncartesian(lj)
+                  nj   =  nfunctions(lj,basis_angular)
                   ioff = 0
                   do ish = 1, nshells(1) ! loop over the ao's active in the HT integral tensor block
                      li   =  gto1(ish)%orb_momentum
@@ -745,7 +707,7 @@ module exacorr_tensor_methods
                      yi   =  gto1(ish)%coord(2)
                      zi   =  gto1(ish)%coord(3)
                      ci   =  gto1(ish)%coefficient(1)
-                     ni   =  ncartesian(li)
+                     ni   =  nfunctions(li,basis_angular)
                      ! output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
                      call interest_eri('llll',fijkl,gout,&
                                   lk,ek,xk,yk,zk,ck,&
