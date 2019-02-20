@@ -386,6 +386,9 @@
                   if (relcc_projectors_rew_strict) then
                       write (iw,*) '      - 2h2p/... determinants with all (quasi)particles within' 
                       write (iw,*) '        the occupied/virtual windows will be retained'
+                  else if (relcc_projectors_rew_remove_double_occupied) then
+                      write (iw,*) '      - 2h2p/... determinants with only one (quasi)particle within'            
+                      write (iw,*) '        the occupied window will be retained'
                   else
                       write (iw,*) '      - 2h2p/... determinants with at least one (quasi)particle within' 
                       write (iw,*) '        the occupied/virtual windows will be retained'
@@ -599,6 +602,9 @@
                   if (relcc_projectors_rew_strict) then
                       write (iw,*) '      - 2h1p/... determinants with all (quasi)particles within'
                       write (iw,*) '        the occupied/virtual windows will be retained'
+                  else if (relcc_projectors_rew_remove_double_occupied) then
+                      write (iw,*) '      - 2h1p/... determinants with only one (quasi)particle within'
+                      write (iw,*) '        the occupied window will be retained'
                   else
                       write (iw,*) '      - 2h1p/... determinants with at least one (quasi)particle within'
                       write (iw,*) '        the occupied/virtual windows will be retained'
@@ -2305,6 +2311,15 @@ function create_projector(eom_type, ndet, eps)
                end if
             end do
             if (ndim_occ.eq.1) spinors_in_occupied_window(2) = spinors_in_occupied_window(1) 
+
+            if ((ndim_occ.eq.2).and.relcc_projectors_rew_remove_double_occupied) then
+! if we require to remove doubly excited determinants with both indices in the
+! occupied window, force these out
+                if (spinors_in_occupied_window(1).and.spinors_in_occupied_window(2)) then
+                    spinors_in_occupied_window(1) = .false. 
+                    spinors_in_occupied_window(2) = .false. 
+                end if
+            end if
          end if
 
          if (allocated(det_map%det(i)%virtuals_energies)) then

@@ -1180,6 +1180,10 @@
          relcc_projectors_rew_virt_max_energy = huge(relcc_projectors_rew_virt_min_energy)
       end if
 
+      if (kw_matches(word, '.NODOCC')) then
+         relcc_projectors_rew_remove_double_occupied = .true.
+      end if
+
       call check_whether_kw_found(word, kw_section)
 
       if (relcc_projectors_do_restricted_excitation_window.and.relcc_projectors_do_core_valence_separation) & 
