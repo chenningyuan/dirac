@@ -16,11 +16,11 @@ module talsh_gradient
 
   private
 
-  public dm_driver
+  public talsh_dm_driver
 
   contains
 
-    subroutine dm_driver(exa_input,t1_tensor,t2_tensor,l1_tensor,l2_tensor)
+    subroutine talsh_dm_driver(exa_input,t1_tensor,t2_tensor,l1_tensor,l2_tensor)
 
 !     Routine for obtaining the density matrices in the MO basis
 
@@ -99,7 +99,7 @@ module talsh_gradient
 
       ierr=talsh_tensor_destruct(dm_ao)
 
-    end subroutine dm_driver
+    end subroutine talsh_dm_driver
 
     subroutine calc_dm_mo(gamma,t1_tensor,t2_tensor,l1_tensor,l2_tensor,nocc,nvir)
 

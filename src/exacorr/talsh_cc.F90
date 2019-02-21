@@ -13,7 +13,6 @@ module talsh_cc
                                  MINUS_ONE_HALF=(-0.5D0,0.D0), TWO=(2.D0,0.D0), &
                                  MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0)
         real(8), parameter    :: ONE_QUARTER=0.25D0
-        real(8) :: start, finish
 
         type(talsh_tens_t) :: one_tensor
 
@@ -238,7 +237,7 @@ module talsh_cc
                                         eps_occ,eps_vir,t_target_precision,ncycles)
 
           !Calculate density matrices
-          if (.not.CCD) call dm_driver(exa_input,comm_t%t1,comm_t%t2,l1_tensor,l2_tensor)
+          if (.not.CCD) call talsh_dm_driver(exa_input,comm_t%t1,comm_t%t2,l1_tensor,l2_tensor)
          else if (lambda) then
             print*, "Lambda equations are only implemented for CCSD!"
          end if
