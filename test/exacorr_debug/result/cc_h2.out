@@ -1,5 +1,7 @@
-DIRAC serial starts by allocating 64000000 words (    488.28 MB -  0.477 GB)
- of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB - 16.000 GB)
+  ** interface to 32-bit integer MPI enabled **
+
+DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB)
+ of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
 
 Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 
@@ -80,10 +82,10 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *                                                                             *
  *    Written by:                                                              *
  *                                                                             *
+ *    Trond Saue               Universite Toulouse III           France        *
  *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
  *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
  *    Radovan Bast             UiT The Arctic University of      Norway        *
- *    Trond Saue               Universite Toulouse III           France        *
  *                                                                             *
  *    with contributions from:                                                 *
  *                                                                             *
@@ -93,12 +95,13 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    Ulf Ekstroem             University of Oslo                Norway        *
  *    Ephraim Eliav            University of Tel Aviv            Israel        *
  *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
- *    Elke Fasshauer           University of Copenhagen          Denmark       *
+ *    Elke Fasshauer           University of Aarhus              Denmark       *
  *    Timo Fleig               Universite Toulouse III           France        *
  *    Olav Fossgaard           UiT The Arctic University of      Norway        *
  *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
- *    Erik D. Hedegård         Lund University                   Sweden        *
+ *    Erik D. Hedegaard        Lund University                   Sweden        *
  *    Trygve Helgaker          University of Oslo                Norway        *
+ *    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. Germany       *
  *    Johan Henriksson         Linkoeping University             Sweden        *
  *    Miroslav Ilias           Matej Bel University              Slovakia      *
  *    Christoph R. Jacob       TU Braunschweig                   Germany       *
@@ -113,7 +116,7 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    Patrick Norman           Linkoeping University             Sweden        *
  *    Malgorzata Olejniczak    CNRS/Universite de Lille          France        *
  *    Jeppe Olsen              Aarhus University                 Denmark       *
- *    Jógvan Magnus H. Olsen   University of Southern Denmark    Denmark       *
+ *    Jogvan Magnus H. Olsen   University of Southern Denmark    Denmark       *
  *    Young Choon Park         KAIST, Daejeon                    South Korea   *
  *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
  *    Markus Pernpointner      University of Heidelberg          Germany       *
@@ -121,6 +124,7 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    Kenneth Ruud             UiT The Arctic University of      Norway        *
  *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
  *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
+ *    Avijit Shee              University of Michigan            USA           *
  *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
  *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
  *    Joern Thyssen            University of Southern Denmark    Denmark       *
@@ -130,8 +134,7 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    Toke Winther             University of Southern Denmark    Denmark       *
  *    Shigeyoshi Yamamoto      Chukyo University                 Japan         *
  *                                                                             *
- *    For the complete list of contributors to the DIRAC code see our          *
- *    website http://www.diracprogram.org                                      *
+ *    For more information about the DIRAC code see http://diracprogram.org    *
  *                                                                             *
  *    This is an experimental code. The authors accept no responsibility       *
  *    for the performance of the code or for the correctness of the results.   *
@@ -144,18 +147,18 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    appropriate citation would be:                                           *
  *                                                                             *
  *    DIRAC, a relativistic ab initio electronic structure program,            *
- *    Release DIRAC17 (2017),                                                  *
- *    written by L. Visscher, H. J. Aa. Jensen, R. Bast, and T. Saue,          *
+ *    Release DIRAC18 (2018),                                                  *
+ *    written by T. Saue, L. Visscher, H. J. Aa. Jensen, and R. Bast,          *
  *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,            *
  *    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *
- *    O. Fossgaard, A. S. P. Gomes, E. D. Hedegård, T. Helgaker,               *
+ *    O. Fossgaard, A. S. P. Gomes, E. D. Hedegaard, T. Helgaker,              *
  *    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky,         *
  *    O. Kullie, J. K. Laerdahl, C. V. Larsen, Y. S. Lee, H. S. Nataraj,       *
  *    M. K. Nayak, P. Norman, G. Olejniczak, J. Olsen, J. M. H. Olsen,         *
  *    Y. C. Park, J. K. Pedersen, M. Pernpointner, R. Di Remigio, K. Ruud,     *
- *    P. Salek, B. Schimmelpfennig, J. Sikkema, A. J. Thorvaldsen, J. Thyssen, *
- *    J. van Stralen, S. Villaume, O. Visser,T. Winther, and S. Yamamoto       *
- *    (see http://www.diracprogram.org).                                       *
+ *    P. Salek, B. Schimmelpfennig, A. Shee, J. Sikkema, A. J. Thorvaldsen,    *
+ *    J. Thyssen, J. van Stralen, S. Villaume, O. Visser,T. Winther,           *
+ *    and S. Yamamoto (see http://diracprogram.org).                           *
  *                                                                             *
  *******************************************************************************
 
@@ -164,9 +167,9 @@ Version information
 -------------------
 
 Branch        | caar
-Commit hash   | 0cc1e9413
-Commit author | Lucas Visscher
-Commit date   | Thu Jan 11 20:07:35 2018 +0100
+Commit hash   | 1dd47373b
+Commit author | Lucas
+Commit date   | Wed Feb 20 17:19:45 2019 +0000
 
 
 Configuration and build information
@@ -174,39 +177,45 @@ Configuration and build information
 
 Who compiled             | visscher
 Compiled on server       | MacBook2017LV.local
-Operating system         | Darwin-17.3.0
-CMake version            | 3.10.1
+Operating system         | Darwin-18.2.0
+CMake version            | 3.13.3
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2018-01-12 13:56:50.565535
-Python version           | 3.5.4
-Fortran compiler         | /opt/local/bin/gfortran
-Fortran compiler version | 5.5.0
-Fortran compiler flags   |   -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -fbounds-check
-C compiler               | /opt/local/bin/gcc
-C compiler version       | 5.5.0
-C compiler flags         |   -g -g -fbounds-check
-C++ compiler             | /opt/local/bin/g++
-C++ compiler version     | 5.5.0
-C++ compiler flags       |   -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fbounds-check
+Configuration time       | 2019-02-21 07:10:54.890447
+Python version           | 3.6.7
+Fortran compiler         | /opt/local/bin/mpif90
+Fortran compiler version | 8.2.0
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS  -fopenmp -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS  -fopenmp
+C compiler               | /opt/local/bin/mpicc
+C compiler version       | 8.2.0
+C compiler flags         |  -g  -fopenmp -g  -fopenmp
+C++ compiler             | /opt/local/bin/mpicxx
+C++ compiler version     | 8.2.0
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused  -fopenmp -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused  -fopenmp
 Static linking           | False
 64-bit integers          | False
-MPI parallelization      | False
-MPI launcher             | unknown
+MPI parallelization      | True
+MPI launcher             | /opt/local/bin/mpiexec
 Math libraries           | /opt/local/lib/libatlas.a;/usr/lib/liblapack.dylib;/opt/local/lib/libf77blas.a;/usr/lib/libcblas.dylib;/opt/local/lib/libatlas.a
 Builtin BLAS library     | OFF
 Builtin LAPACK library   | OFF
 Explicit libraries       | unknown
-Compile definitions      | MOD_UNRELEASED;SYS_DARWIN;VAR_MFDS;PRG_DIRAC;INSTALL_WRKMEM=64000000;HAS_PCMSOLVER;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT
+Compile definitions      | HAVE_MPI;HAVE_OPENMP;VAR_MPI;VAR_MPI2;MOD_UNRELEASED;SYS_DARWIN;VAR_MFDS;PRG_DIRAC;INSTALL_WRKMEM=64000000;BUILD_GEN1INT;MOD_QCORR;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT;MOD_EXACORR
 
 
  Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
+
+
+ * openMP activated, number of processes and number of threads in non-parallel region:    8    1
+
+
+ * openMP parallel region, max number of threads and current number of threads:          2147483647    1    0
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Mac OSX): Fri Jan 12 17:14:24 2018
+     Date and time (Mac OSX): Thu Feb 21 08:19:14 2019
      Host name              : MacBook2017LV.local                     
 
 
@@ -230,6 +239,8 @@ Contents of the input file
 1..9                                                                                                
 **RELCCSD                                                                                           
 .DEBUG                                                                                              
+.INTERFACE                                                                                          
+DIRAC                                                                                               
 .PRINT                                                                                              
 2                                                                                                   
 *CCSORT                                                                                             
@@ -611,9 +622,9 @@ H      0.0000000000   0.0000000000   0.7000000000
     - Index  2:  1..9                                                                    
 
  * Set-up for 4-index transformation
- * Following scheme      :   6
- - write half-transformed integrals (ij|rs) to disk
- - sorting of intermediate 1HT integrals is disabled
+ * Following scheme      :   4
+ - write (rs)-batches of half-transformed integrals 
+ (ij|rs) to disk; parallel scheme
  * Screening threshold :1.00E-14
  * MO integral threshold :1.00E-14
  * LS Integrals not transformed.
@@ -789,11 +800,25 @@ H      0.0000000000   0.0000000000   0.7000000000
 
                         1 Debye =   2.54177000 a.u. 
 
+Total time used in ONEGEN (CPU)  0.00184900s and (WALL)  0.00200000s
+
 
                        Generating Lowdin canonical matrix:
                        -----------------------------------
 
+
+QDIAG timings. NZ,N = 1  14
+
+QDIAG: QTRIDI CPU (WALL) time:  0.00001300s ( 0.00000000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00001200s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00000400s ( 0.00000000s)
    L   A     * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.13E-01
+
+QDIAG timings. NZ,N = 1  36
+
+QDIAG: QTRIDI CPU (WALL) time:  0.00004600s ( 0.00000000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00004800s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00000200s ( 0.00000000s)
    S   A     * Deleted:          2(Proj:          2, Lindep:          0) Smin: 0.21E-01
 
                    *********************************************************************
@@ -820,12 +845,30 @@ H      0.0000000000   0.0000000000   0.7000000000
 
                    *** chosen path in X2C module: molecular X2C (with spin-orbit contributions)      
 
+QDIAG timings. NZ,N = 1  14
+
+QDIAG: QTRIDI CPU (WALL) time:  0.00000900s ( 0.00000000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00000500s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00000400s ( 0.00000000s)
+
 
                                 Output from MODHAM
                                 ------------------
 
  * Applied strict kinetic balance !
  * Applied SL-regrouping on AO2MO tranf.matrix in SLSORT.
+
+QDIAG timings. NZ,N = 4  28
+
+QDIAG: QTRIDI CPU (WALL) time:  0.00017100s ( 0.00100000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00003000s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00015000s ( 0.00000000s)
+
+QDIAG timings. NZ,N = 4  14
+
+QDIAG: QTRIDI CPU (WALL) time:  0.00003100s ( 0.00000000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00000600s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00001900s ( 0.00000000s)
 
 
                                 Output from AMFIIN
@@ -867,10 +910,18 @@ H      0.0000000000   0.0000000000   0.7000000000
 
                         1 Debye =   2.54177000 a.u. 
 
+Total time used in ONEGEN (CPU)  0.00080000s and (WALL)  0.00000000s
+
 
                        Generating Lowdin canonical matrix:
                        -----------------------------------
 
+
+QDIAG timings. NZ,N = 1  14
+
+QDIAG: QTRIDI CPU (WALL) time:  0.00000800s ( 0.00000000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00000700s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00000400s ( 0.00000000s)
    L   A     * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.13E-01
 
 
@@ -893,96 +944,138 @@ Total no. of orbitals           (NORB):    14
              Improved by a sum of atomic screening potentials.
 
 
-########## START ITERATION NO.   1 ##########   Fri Jan 12 17:14:24 2018
+########## START ITERATION NO.   1 ##########   Thu Feb 21 08:19:14 2019
 
+
+QDIAG timings. NZ,N = 4  14
+
+QDIAG: QTRIDI CPU (WALL) time:  0.00004600s ( 0.00000000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00001000s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00003100s ( 0.00000000s)
 E_HOMO...E_LUMO, symmetry 1:     1  -0.70649    2  -0.09781
 
 => Calculating sum of orbital energies
-It.    1   -0.6570043398404      0.00D+00  0.00D+00  0.00D+00               0.00333900s   Scr. nuclei    Fri Jan 12
+It.    1   -0.6570043398404      0.00D+00  0.00D+00  0.00D+00               0.00373700s   Atom. scrpot   Thu Feb 21
 
-########## START ITERATION NO.   2 ##########   Fri Jan 12 17:14:24 2018
+########## START ITERATION NO.   2 ##########   Thu Feb 21 08:19:14 2019
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   57.52%    0.00%   17.02%   0.00341900s
+SOfock:LL  1.00D-12    0.00%   57.52%    0.00%   17.02%   0.00470200s
+
+QDIAG timings. NZ,N = 4  14
+
+QDIAG: QTRIDI CPU (WALL) time:  0.00004100s ( 0.00000000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00000700s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00002600s ( 0.00000000s)
 E_HOMO...E_LUMO, symmetry 1:     1  -0.56503    2   0.21613
->>> Total wall time: 0.01600000s, and total CPU time : 0.00788900s
+>>> Total wall time:  0.01500000s, and total CPU time :  0.01089400s
 
-########## END ITERATION NO.   2 ##########   Fri Jan 12 17:14:24 2018
+########## END ITERATION NO.   2 ##########   Thu Feb 21 08:19:14 2019
 
-It.    2    -1.104699065456      4.48D-01  1.00D+00  2.58D-01               0.00788900s   LL             Fri Jan 12
+It.    2    -1.104699065456      4.48D-01  1.00D+00  2.58D-01               0.01500000s   LL             Thu Feb 21
 
-########## START ITERATION NO.   3 ##########   Fri Jan 12 17:14:24 2018
+########## START ITERATION NO.   3 ##########   Thu Feb 21 08:19:14 2019
 
     3 *** Differential density matrix. DCOVLP     = 0.8933
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   57.52%    0.00%   17.05%   0.00404000s
+SOfock:LL  1.00D-12    0.00%   57.52%    0.00%   17.05%   0.00523800s
+
+QDIAG timings. NZ,N = 4  14
+
+QDIAG: QTRIDI CPU (WALL) time:  0.00003200s ( 0.00000000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00000700s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00009000s ( 0.00000000s)
 E_HOMO...E_LUMO, symmetry 1:     1  -0.60544    2   0.20012
->>> Total wall time: 0.00900000s, and total CPU time : 0.00569900s
+>>> Total wall time:  0.01100000s, and total CPU time :  0.00718200s
 
-########## END ITERATION NO.   3 ##########   Fri Jan 12 17:14:24 2018
+########## END ITERATION NO.   3 ##########   Thu Feb 21 08:19:14 2019
 
-It.    3    -1.129330591137      2.46D-02 -8.54D-02  3.64D-02   DIIS   2    0.00569900s   LL             Fri Jan 12
+It.    3    -1.129330591137      2.46D-02 -8.54D-02  3.64D-02   DIIS   2    0.01100000s   LL             Thu Feb 21
 
-########## START ITERATION NO.   4 ##########   Fri Jan 12 17:14:24 2018
+########## START ITERATION NO.   4 ##########   Thu Feb 21 08:19:14 2019
 
     4 *** Differential density matrix. DCOVLP     = 0.9793
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   57.52%    0.00%   17.05%   0.00349000s
+SOfock:LL  1.00D-12    0.00%   57.52%    0.00%   17.05%   0.00463599s
+
+QDIAG timings. NZ,N = 4  14
+
+QDIAG: QTRIDI CPU (WALL) time:  0.00003000s ( 0.00000000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00000700s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00001700s ( 0.00000000s)
 E_HOMO...E_LUMO, symmetry 1:     1  -0.60719    2   0.19867
->>> Total wall time: 0.01000000s, and total CPU time : 0.00481400s
+>>> Total wall time:  0.01000000s, and total CPU time :  0.00616400s
 
-########## END ITERATION NO.   4 ##########   Fri Jan 12 17:14:24 2018
+########## END ITERATION NO.   4 ##########   Thu Feb 21 08:19:14 2019
 
-It.    4    -1.130048741603      7.18D-04 -1.66D-02  3.51D-03   DIIS   3    0.00481400s   LL             Fri Jan 12
+It.    4    -1.130048741603      7.18D-04 -1.66D-02  3.51D-03   DIIS   3    0.01000000s   LL             Thu Feb 21
 
-########## START ITERATION NO.   5 ##########   Fri Jan 12 17:14:24 2018
+########## START ITERATION NO.   5 ##########   Thu Feb 21 08:19:14 2019
 
     5 *** Differential density matrix. DCOVLP     = 0.9972
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   57.54%    0.00%   17.52%   0.00406200s
+SOfock:LL  1.00D-12    0.00%   57.54%    0.00%   17.52%   0.00537600s
+
+QDIAG timings. NZ,N = 4  14
+
+QDIAG: QTRIDI CPU (WALL) time:  0.00002900s ( 0.00000000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00000600s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00001800s ( 0.00000000s)
 E_HOMO...E_LUMO, symmetry 1:     1  -0.60732    2   0.19866
->>> Total wall time: 0.01000000s, and total CPU time : 0.00557100s
+>>> Total wall time:  0.01000000s, and total CPU time :  0.00667600s
 
-########## END ITERATION NO.   5 ##########   Fri Jan 12 17:14:24 2018
+########## END ITERATION NO.   5 ##########   Thu Feb 21 08:19:14 2019
 
-It.    5    -1.130054472840      5.73D-06 -1.07D-03  1.20D-04   DIIS   4    0.00557100s   LL             Fri Jan 12
+It.    5    -1.130054472840      5.73D-06 -1.07D-03  1.20D-04   DIIS   4    0.01000000s   LL             Thu Feb 21
 
-########## START ITERATION NO.   6 ##########   Fri Jan 12 17:14:24 2018
+########## START ITERATION NO.   6 ##########   Thu Feb 21 08:19:14 2019
 
     6 *** Differential density matrix. DCOVLP     = 0.9999
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   57.54%    0.00%   17.28%   0.00509000s
+SOfock:LL  1.00D-12    0.00%   57.54%    0.00%   17.28%   0.00509299s
+
+QDIAG timings. NZ,N = 4  14
+
+QDIAG: QTRIDI CPU (WALL) time:  0.00003100s ( 0.00000000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00000600s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00001900s ( 0.00000000s)
 E_HOMO...E_LUMO, symmetry 1:     1  -0.60731    2   0.19866
->>> Total wall time: 0.01200000s, and total CPU time : 0.00683600s
+>>> Total wall time:  0.01100000s, and total CPU time :  0.00642000s
 
-########## END ITERATION NO.   6 ##########   Fri Jan 12 17:14:24 2018
+########## END ITERATION NO.   6 ##########   Thu Feb 21 08:19:14 2019
 
-It.    6    -1.130054479063      6.22D-09 -4.30D-05  8.53D-06   DIIS   5    0.00683600s   LL             Fri Jan 12
+It.    6    -1.130054479063      6.22D-09 -4.30D-05  8.53D-06   DIIS   5    0.01100000s   LL             Thu Feb 21
 
-########## START ITERATION NO.   7 ##########   Fri Jan 12 17:14:24 2018
+########## START ITERATION NO.   7 ##########   Thu Feb 21 08:19:14 2019
 
     7 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   57.69%    0.00%   17.81%   0.00401900s
+SOfock:LL  1.00D-12    0.00%   57.69%    0.00%   17.81%   0.00366700s
+
+QDIAG timings. NZ,N = 4  14
+
+QDIAG: QTRIDI CPU (WALL) time:  0.00003000s ( 0.00000000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00000700s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00001800s ( 0.00000000s)
 E_HOMO...E_LUMO, symmetry 1:     1  -0.60731    2   0.19866
->>> Total wall time: 0.01000000s, and total CPU time : 0.00556200s
+>>> Total wall time:  0.01000000s, and total CPU time :  0.00498500s
 
-########## END ITERATION NO.   7 ##########   Fri Jan 12 17:14:24 2018
+########## END ITERATION NO.   7 ##########   Thu Feb 21 08:19:14 2019
 
-It.    7    -1.130054479083      2.00D-11  1.98D-06  1.47D-07   DIIS   6    0.00556200s   LL             Fri Jan 12
+It.    7    -1.130054479083      2.00D-11  1.98D-06  1.47D-07   DIIS   6    0.01000000s   LL             Thu Feb 21
 
-########## START ITERATION NO.   8 ##########   Fri Jan 12 17:14:24 2018
+########## START ITERATION NO.   8 ##########   Thu Feb 21 08:19:14 2019
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   59.08%    0.00%   24.92%   0.00335100s
->>> Total wall time: 0.00900000s, and total CPU time : 0.00437400s
+SOfock:LL  1.00D-12    0.00%   59.08%    0.00%   24.92%   0.00509100s
+>>> Total wall time:  0.01000000s, and total CPU time :  0.00605600s
 
-########## END ITERATION NO.   8 ##########   Fri Jan 12 17:14:24 2018
+########## END ITERATION NO.   8 ##########   Thu Feb 21 08:19:14 2019
 
-It.    8    -1.130054479083      1.29D-14 -6.54D-08  1.01D-09   DIIS   6    0.00437400s   LL             Fri Jan 12
+It.    8    -1.130054479083      8.88D-15 -6.54D-08  1.01D-09   DIIS   6    0.01000000s   LL             Thu Feb 21
 
 
                                    SCF - CYCLE
@@ -998,31 +1091,31 @@ It.    8    -1.130054479083      1.29D-14 -6.54D-08  1.01D-09   DIIS   6    0.00
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1   -0.6570043398404      0.00D+00  0.00D+00  0.00D+00               0.00333900s   Scr. nuclei    Fri Jan 12
-It.    2    -1.104699065456      4.48D-01  1.00D+00  2.58D-01               0.00788900s   LL             Fri Jan 12
-It.    3    -1.129330591137      2.46D-02 -8.54D-02  3.64D-02   DIIS   2    0.00569900s   LL             Fri Jan 12
-It.    4    -1.130048741603      7.18D-04 -1.66D-02  3.51D-03   DIIS   3    0.00481400s   LL             Fri Jan 12
-It.    5    -1.130054472840      5.73D-06 -1.07D-03  1.20D-04   DIIS   4    0.00557100s   LL             Fri Jan 12
-It.    6    -1.130054479063      6.22D-09 -4.30D-05  8.53D-06   DIIS   5    0.00683600s   LL             Fri Jan 12
-It.    7    -1.130054479083      2.00D-11  1.98D-06  1.47D-07   DIIS   6    0.00556200s   LL             Fri Jan 12
-It.    8    -1.130054479083      1.29D-14 -6.54D-08  1.01D-09   DIIS   6    0.00437400s   LL             Fri Jan 12
+It.    1   -0.6570043398404      0.00D+00  0.00D+00  0.00D+00               0.00373700s   Atom. scrpot   Thu Feb 21
+It.    2    -1.104699065456      4.48D-01  1.00D+00  2.58D-01               0.01500000s   LL             Thu Feb 21
+It.    3    -1.129330591137      2.46D-02 -8.54D-02  3.64D-02   DIIS   2    0.01100000s   LL             Thu Feb 21
+It.    4    -1.130048741603      7.18D-04 -1.66D-02  3.51D-03   DIIS   3    0.01000000s   LL             Thu Feb 21
+It.    5    -1.130054472840      5.73D-06 -1.07D-03  1.20D-04   DIIS   4    0.01000000s   LL             Thu Feb 21
+It.    6    -1.130054479063      6.22D-09 -4.30D-05  8.53D-06   DIIS   5    0.01100000s   LL             Thu Feb 21
+It.    7    -1.130054479083      2.00D-11  1.98D-06  1.47D-07   DIIS   6    0.01000000s   LL             Thu Feb 21
+It.    8    -1.130054479083      8.88D-15 -6.54D-08  1.01D-09   DIIS   6    0.01000000s   LL             Thu Feb 21
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    8 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.00400000s
-      LL           :    0.01085714s
+      No 2-ints    :    0.00300000s
+      LL           :    0.01100000s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -1.8860219195114027
+   Electronic energy                        :    -1.8860219195114096
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :     0.7559674404285716
 
    Sum of all contributions to the energy
-   Total energy                             :    -1.1300544790828311
+   Total energy                             :    -1.1300544790828382
 
 
                                    Eigenvalues
@@ -1034,8 +1127,8 @@ It.    8    -1.130054479083      1.29D-14 -6.54D-08  1.01D-09   DIIS   6    0.00
  -0.60731148487009  ( 2)
   * Virtual eigenvalues, f = 0.0000
   0.19865818500634  ( 2)     0.40456728798896  ( 2)     0.83176140829290  ( 2)     1.29615815094774  ( 2)     1.29620421514680  ( 2)
-  1.92327181098042  ( 2)     2.06798828503012  ( 2)     2.06802858147780  ( 2)     2.77324196620313  ( 2)     3.30331881370300  ( 2)
-  3.71958775222383  ( 2)    21.79687212375737  ( 2)    22.70198052574210  ( 2)
+  1.92327181098042  ( 2)     2.06798828503012  ( 2)     2.06802858147780  ( 2)     2.77324196620320  ( 2)     3.30331881370300  ( 2)
+  3.71958775222387  ( 2)    21.79687212375741  ( 2)    22.70198052574216  ( 2)
 * HOMO - LUMO gap:
 
     E(LUMO) :     0.19865819 au (symmetry E1 )
@@ -1061,25 +1154,10 @@ It.    8    -1.130054479083      1.29D-14 -6.54D-08  1.01D-09   DIIS   6    0.00
      ************************************************************************
 
 
- Transformation started at : Fri Jan 12 17:14:24 2018
+ Transformation started at : Thu Feb 21 08:19:14 2019
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -1.13005447908281820
-* Heading :DIRAC: No title specified !!!                     Fri Jan 12 17:14:24 2018
-  Arrived in compute_mo_integrals routine
-  Initialized talsh library
- Status           0: Size (Bytes) =    1073741824: Max args in HAB =    2048
-
-  Integral module InteRest is initialized
-  Last commit rev         | af67681897b1ecc14a7668475bd13b62471f8211
-  Last commit author      | Michal Repisky 
-  Last commit time        | Wed Oct 16 14:37:58 2013 +0200
-  Last update time        | Sat Feb 20 15:39:00 2015 +0200
-
-  Initialized interest library
-  Retrieved basis set information from DIRAC common blocks
-  Initialized global data
-  Leaving compute_mo_integrals routine
- - Binary  file MDCINT was written.
+* REACMO: Coefficients read from file DFCOEF - Total energy: -1.13005447908282930
+* Heading :DIRAC: No title specified !!!                     Thu Feb 21 08:19:14 2019
 
 * Orbital ranges for 4-index transformation:
 
@@ -1122,10 +1200,10 @@ It.    8    -1.130054479083      1.29D-14 -6.54D-08  1.01D-09   DIIS   6    0.00
       **********************************************************************
 
 
- Transformation started at : Fri Jan 12 17:14:24 2018
+ Transformation started at : Thu Feb 21 08:19:14 2019
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -1.13005447908281820
-* Heading :DIRAC: No title specified !!!                     Fri Jan 12 17:14:24 2018
+* REACMO: Coefficients read from file DFCOEF - Total energy: -1.13005447908282930
+* Heading :DIRAC: No title specified !!!                     Thu Feb 21 08:19:14 2019
 
 
  * Fermion ircop E1 
@@ -1153,13 +1231,13 @@ It.    8    -1.130054479083      1.29D-14 -6.54D-08  1.01D-09   DIIS   6    0.00
        ********************************************************************
 
 
- Transformation started at : Fri Jan 12 17:14:24 2018
+ Transformation started at : Thu Feb 21 08:19:14 2019
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -1.13005447908281820
-* Heading :DIRAC: No title specified !!!                     Fri Jan 12 17:14:24 2018
+* REACMO: Coefficients read from file DFCOEF - Total energy: -1.13005447908282930
+* Heading :DIRAC: No title specified !!!                     Thu Feb 21 08:19:14 2019
 
 * REAFCK: Fock matrix read from file DFFCK1                                                      
-* Heading :DIRAC: No title specified !!!                     Fri Jan 12 17:14:24 2018
+* Heading :DIRAC: No title specified !!!                     Thu Feb 21 08:19:14 2019
 
 
  Core energy (includes nuclear repulsion) :              0.7559674404
@@ -1169,45 +1247,116 @@ It.    8    -1.130054479083      1.29D-14 -6.54D-08  1.01D-09   DIIS   6    0.00
 
 
  MOLFDIR file MRCONEE is written
+  21 Feb 19 08:19:14 Entered compute_mo_integrals routine
+  21 Feb 19 08:19:14 read from DFCOEF:DIRAC: No title specified !!!                     Thu Feb 21 08:19:14 2019
+  21 Feb 19 08:19:14 retrieved basis set information
+  21 Feb 19 08:19:14 Initialized global data
+  21 Feb 19 08:19:14 Initialized talsh library
+ Status           0: Size (Bytes) =    1073741824: Max args in HAB =    8192
+
+  Integral module InteRest is initialized
+  Last commit rev         | af67681897b1ecc14a7668475bd13b62471f8211
+  Last commit author      | Michal Repisky 
+  Last commit time        | Wed Oct 16 14:37:58 2013 +0200
+  Last update time        | Sat Feb 20 15:39:00 2015 +0200
+
+  21 Feb 19 08:19:14 Initialized interest library
+  21 Feb 19 08:19:14 Calculated AO integrals
+  21 Feb 19 08:19:14 entered aomo_transform
+  21 Feb 19 08:19:14 initialized mo-coefficients
+  21 Feb 19 08:19:14 constructed a1 and a2
+  21 Feb 19 08:19:14 first ht done
+  21 Feb 19 08:19:14 constructed a3
+  21 Feb 19 08:19:14 second ht done
+  21 Feb 19 08:19:14 leaving aomo_transform
+ - Binary  file MDCINT was written.
+  21 Feb 19 08:19:14 Leaving compute_mo_integrals routine
 
 
  Total wall time used in PAMTRA :   00:00:00
  Total CPU  time used in PAMTRA (master only) :   00:00:00
 
- Transformation ended at : Fri Jan 12 17:14:24 2018
+ Transformation ended at : Thu Feb 21 08:19:14 2019
 
-  Arrived in cc_driver routine
-  Initialized talsh library
-  Status           0: Size (Bytes) =    1073741824: Max args in HAB =    2048
-  Initialized interest library
-  Retrieved basis set information from DIRAC common blocks
+  21 Feb 19 08:19:14 read from DFCOEF:DIRAC: No title specified !!!                     Thu Feb 21 08:19:14 2019
+  21 Feb 19 08:19:14 retrieved basis set information
   Initialized global data
-  MP2 energy =   -2.3075110593158098E-002
-  ccdriver: allocated all tensors
-  Iteration    1 CCSD energy =   -0.023075110593158 convergence =   0.5E-01
-  Iteration    2 CCSD energy =   -0.028327950534856 convergence =   0.1E-01
-  Iteration    3 CCSD energy =   -0.029702051962336 convergence =   0.5E-02
-  Iteration    4 CCSD energy =   -0.030312596421951 convergence =   0.2E-03
-  Iteration    5 CCSD energy =   -0.030311024834836 convergence =   0.1E-04
-  Iteration    6 CCSD energy =   -0.030310702247030 convergence =   0.2E-05
-  Iteration    7 CCSD energy =   -0.030310847486238 convergence =   0.4E-06
-  Iteration    8 CCSD energy =   -0.030310851132614 convergence =   0.4E-07
-  Iteration    9 CCSD energy =   -0.030310850091305 convergence =   0.1E-07
-  Iteration   10 CCSD energy =   -0.030310850585912 convergence =   0.3E-09
-  Iteration   11 CCSD energy =   -0.030310850589023 convergence =   0.7E-10
-  Iteration   12 CCSD energy =   -0.030310850587925 convergence =   0.8E-11
-  Iteration   13 CCSD energy =   -0.030310850587637 convergence =   0.7E-12
-  Iteration   14 CCSD energy =   -0.030310850587659 convergence =   0.1E-12
-  Iteration   15 CCSD energy =   -0.030310850587659 convergence =   0.7E-13
+  21 Feb 19 08:19:14 Entered cc_driver routine
+  21 Feb 19 08:19:14 Initialized talsh library
+  Status           0: Size (Bytes) =    1073741824: Max args in HAB =    8192
+  21 Feb 19 08:19:14 Initialized interest library
+  21 Feb 19 08:19:14 Getting orbital energies
+  21 Feb 19 08:19:14 Retrieved orbital energies
+  21 Feb 19 08:19:14 entered aomo_transform
+  21 Feb 19 08:19:14 initialized mo-coefficients
+  21 Feb 19 08:19:14 constructed a1 and a2
+  21 Feb 19 08:19:14 first ht done
+  21 Feb 19 08:19:14 constructed a3
+  21 Feb 19 08:19:14 second ht done
+  21 Feb 19 08:19:14 leaving aomo_transform
+  21 Feb 19 08:19:14 entered aomo_transform
+  21 Feb 19 08:19:14 initialized mo-coefficients
+  21 Feb 19 08:19:14 constructed a1 and a2
+  21 Feb 19 08:19:14 first ht done
+  21 Feb 19 08:19:14 constructed a3
+  21 Feb 19 08:19:14 second ht done
+  21 Feb 19 08:19:14 leaving aomo_transform
+  21 Feb 19 08:19:14 entered aomo_transform
+  21 Feb 19 08:19:14 initialized mo-coefficients
+  21 Feb 19 08:19:14 constructed a1 and a2
+  21 Feb 19 08:19:14 first ht done
+  21 Feb 19 08:19:14 constructed a3
+  21 Feb 19 08:19:14 second ht done
+  21 Feb 19 08:19:14 leaving aomo_transform
+  21 Feb 19 08:19:14 entered aomo_transform
+  21 Feb 19 08:19:14 initialized mo-coefficients
+  21 Feb 19 08:19:14 constructed a1 and a2
+  21 Feb 19 08:19:14 first ht done
+  21 Feb 19 08:19:14 constructed a3
+  21 Feb 19 08:19:14 second ht done
+  21 Feb 19 08:19:14 leaving aomo_transform
+  21 Feb 19 08:19:14 entered aomo_transform
+  21 Feb 19 08:19:14 initialized mo-coefficients
+  21 Feb 19 08:19:14 constructed a1 and a2
+  21 Feb 19 08:19:14 first ht done
+  21 Feb 19 08:19:14 constructed a3
+  21 Feb 19 08:19:14 second ht done
+  21 Feb 19 08:19:14 leaving aomo_transform
+  21 Feb 19 08:19:14 entered aomo_transform
+  21 Feb 19 08:19:14 initialized mo-coefficients
+  21 Feb 19 08:19:14 constructed a1 and a2
+  21 Feb 19 08:19:14 first ht done
+  21 Feb 19 08:19:14 constructed a3
+  21 Feb 19 08:19:14 second ht done
+  21 Feb 19 08:19:14 leaving aomo_transform
+  21 Feb 19 08:19:14 entered aomo_transform
+  21 Feb 19 08:19:14 initialized mo-coefficients
+  21 Feb 19 08:19:14 constructed a1 and a2
+  21 Feb 19 08:19:14 first ht done
+  21 Feb 19 08:19:14 constructed a3
+  21 Feb 19 08:19:14 second ht done
+  21 Feb 19 08:19:14 leaving aomo_transform
+  MP2 energy =   -2.3075110593157883E-002
+  21 Feb 19 08:19:14 Succesfully allocated all tensors
+  Iteration    1 CCSD energy =   -0.028327950534855 convergence =   4.7E-02
+  Iteration    2 CCSD energy =   -0.029702051962336 convergence =   1.5E-02
+  Iteration    3 CCSD energy =   -0.030312596421951 convergence =   5.3E-03
+  Iteration    4 CCSD energy =   -0.030311024834835 convergence =   1.6E-04
+  Iteration    5 CCSD energy =   -0.030310702247030 convergence =   1.3E-05
+  Iteration    6 CCSD energy =   -0.030310847486238 convergence =   1.9E-06
+  Iteration    7 CCSD energy =   -0.030310851132614 convergence =   3.6E-07
+  Iteration    8 CCSD energy =   -0.030310850091304 convergence =   4.4E-08
+  Iteration    9 CCSD energy =   -0.030310850585911 convergence =   1.1E-08
+  Iteration   10 CCSD energy =   -0.030310850589023 convergence =   2.7E-10
   4th order triples correction :       0.000000000000000
   5th order triples (T) correction :   0.000000000000000
   5th order triples -T  correction :   0.000000000000000
-  CCSD+T  correlation energy :        -0.030310850587659
-  CCSD(T) correlation energy :        -0.030310850587659
-  CCSD-T  correlation energy :        -0.030310850587659
-  Final CCSD energy    =   -3.0310850587658505E-002
-  Final CCSD(T) energy =   -3.0310850587658505E-002
-  Leaving cc_driver routine
+  CCSD+T  correlation energy :        -0.030310850589023
+  CCSD(T) correlation energy :        -0.030310850589023
+  CCSD-T  correlation energy :        -0.030310850589023
+  Final CCSD energy    =   -3.0310850589022786E-002
+  Final CCSD(T) energy =   -3.0310850589022786E-002
+  21 Feb 19 08:19:14 Leaving cc_driver routine
 
 ---< Process     1 of     1----<
 
@@ -1229,13 +1378,15 @@ It.    8    -1.130054479083      1.29D-14 -6.54D-08  1.01D-09   DIIS   6    0.00
   - Fock Space (FSCC):       L. Visscher, E. Eliav and U. Kaldor, J. Chem. Phys. 115 (2002) 9720.
   - Intermediate Hamiltonian E. Eliav, M. J. Vilkas, Y. Ishikawa, and U. Kaldor, J. Chem. Phys. 122 (2005) 224113.
   - Parallelization :        M. Pernpointner and L. Visscher, J. Comp. Chem. 24 (2003) 754.
+  - MP2 expectation values : J.N.P. van Stralen, L. Visscher, C.V. Larsen and H.J.Aa. Jensen," Chem. Phys. 311 (2005) 81.
+  - CC  expectation values : A. Shee, L. Visscher, and T. Saue, J. Chem. Phys. 145 (2016) 184107.
+  - EOM-IP/EA/EE energies  : A. Shee, T. Saue, L. Visscher, and A.S.P. Gomes, J. Chem. Phys. 149 (2018) 174113.
 
 
- Today is :    12 Jan 18
- The time is :  17:14:24
+ Today is :    21 Feb 19
+ The time is :  08:19:14
 
  Initializing word-addressable I/O : the FORTRAN-interface is used with    16 KB records
-    A   a
 ===========================================================================
  **RELCC: Set-up for Coupled Cluster calculations
 ===========================================================================
@@ -1272,13 +1423,12 @@ It.    8    -1.130054479083      1.29D-14 -6.54D-08  1.01D-09   DIIS   6    0.00
  Timing information      :                 F
  Print level          :                    2
  Memory limit (MWord) :                      2048
- Interface used       :                DIRAC6    
+ Interface used       :                DIRAC     
 
 
  Leave after calculating the total memory demand :          F
  Memory for reading and sorting integrals :                83067 8-byte words
- Core used for calculating amplitudes :                    37430 8-byte words
- Core used for in core evaluation of triples :             22408 8-byte words
+ Core used for calculating amplitudes :                    37242 8-byte words
  Memory used for active modules :                          83067 8-byte words
 
  Predicted RelCC memory demand:            0.63 MB
@@ -1292,27 +1442,27 @@ It.    8    -1.130054479083      1.29D-14 -6.54D-08  1.01D-09   DIIS   6    0.00
  Type VOVV :            3840 integrals
  Type VVVV :           14400 integrals
 
- Start sorting of integral classes at  12 Jan 18 17:14:24
+ Start sorting of integral classes at  21 Feb 19 08:19:14
 
 
- Sorting of first 4 classes done at  12 Jan 18 17:14:24
+ Sorting of first 4 classes done at  21 Feb 19 08:19:14
 
  Need      1 passes to sort VOVV integrals
 
- Pass     1 ended at  12 Jan 18 17:14:24
+ Pass     1 ended at  21 Feb 19 08:19:14
 
- VOVV sorting done at  12 Jan 18 17:14:24
+ VOVV sorting done at  21 Feb 19 08:19:14
 
  Need      1 passes to sort VVVV integrals
 
- Pass     1 ended at  12 Jan 18 17:14:24
+ Pass     1 ended at  21 Feb 19 08:19:14
 
- VVVV sorting done at  12 Jan 18 17:14:24
+ VVVV sorting done at  21 Feb 19 08:19:14
 
  Reading Coulomb integrals :
- File date :      12 Jan 18
- File time :       17:14:24
- # of integrals               20670
+ File date :      21 Feb 19
+ File time :       08:19:14
+ # of integrals               20774
 
  Finished sorting of integrals
 
@@ -1351,22 +1501,22 @@ It.    8    -1.130054479083      1.29D-14 -6.54D-08  1.01D-09   DIIS   6    0.00
 
  Nuclear repulsion + core energy :             0.755967440428572
  Zero order electronic energy :               -1.214622969740179
- First order electronic energy :              -0.671398950506392
- Electronic energy :                          -1.886021920246571
- SCF energy :                                 -1.130054479817999
+ First order electronic energy :              -0.671398950506388
+ Electronic energy :                          -1.886021920246567
+ SCF energy :                                 -1.130054479817995
 
 
  Energy calculations
  MP2 module active :                       T
  CCSD module active :                      T
- CCSD(T) module active :                   T
+ CCSD(T) module active :                   F
 
 
   MP2 results
 
- SCF energy :                                 -1.130054479817999
+ SCF energy :                                 -1.130054479817995
  MP2 correlation energy :                     -0.023075110593158
- Total MP2 energy :                           -1.153129590411158
+ Total MP2 energy :                           -1.153129590411153
  T1 diagnostic :                               0.000000000000000
 
 
@@ -1378,25 +1528,24 @@ It.    8    -1.130054479083      1.29D-14 -6.54D-08  1.01D-09   DIIS   6    0.00
 
    NIT          ENERGY                    RMS       T1-DIAGN
     0       -0.023075110593158   1.000000000000000   0.00000
-    1       -0.028327950534856   0.006838433502656   0.00244
-    2       -0.030292072872262   0.006195780370560   0.00390
-    3       -0.030311170971573   0.000576624466109   0.00409
-    4       -0.030311545538855   0.000025064506260   0.00411
-    5       -0.030310626814849   0.000011857602988   0.00411
-    6       -0.030310898710980   0.000000692286300   0.00412
-    7       -0.030310847733126   0.000000094243749   0.00412
-    8       -0.030310850649037   0.000000013467538   0.00412
-    9       -0.030310850579909   0.000000000730325   0.00412
-   10       -0.030310850588003   0.000000000050999   0.00412
-   11       -0.030310850587666   0.000000000001994   0.00412
-   12       -0.030310850587660   0.000000000000273   0.00412
+    1       -0.028327950534855   0.001923861032723   0.00244
+    2       -0.030292072872261   0.000614081334486   0.00390
+    3       -0.030311170971572   0.000071500783612   0.00409
+    4       -0.030311545538855   0.000006780453022   0.00411
+    5       -0.030310626814848   0.000000813605919   0.00411
+    6       -0.030310898710979   0.000000109770462   0.00412
+    7       -0.030310847733126   0.000000015953629   0.00412
+    8       -0.030310850649037   0.000000001578913   0.00412
+    9       -0.030310850579909   0.000000000063895   0.00412
+   10       -0.030310850588003   0.000000000004150   0.00412
+   11       -0.030310850587665   0.000000000000447   0.00412
 
 
   CCSD results
 
- SCF energy :                                 -1.130054479817999
- CCSD correlation energy :                    -0.030310850587660
- Total CCSD energy :                          -1.160365330405660
+ SCF energy :                                 -1.130054479817995
+ CCSD correlation energy :                    -0.030310850587665
+ Total CCSD energy :                          -1.160365330405661
 
 
  Individual terms in the correlation energy
@@ -1404,32 +1553,20 @@ It.    8    -1.130054479083      1.29D-14 -6.54D-08  1.01D-09   DIIS   6    0.00
    Irrep Spinor     Relaxation energy (T1-amplitudes)
 
    Irrep1 Spinor1 Irrep2 Spinor2     Correlation energy (T2-amplitudes)
-      1       2      1       1            -0.030310850587660
+      1       2      1       1            -0.030310850587665
 
 
 
- T1 diagnostic :                               0.004115310522320
- Convergence :                                 0.000000000000273
- Number or iterations used :                                  12
-
-
-  Perturbative treatment of triple excitations
-
- SCF energy :                                 -1.130054479817999
- CCSD correlation energy :                    -0.030310850587660
- 4th order triples correction :                0.000000000000000
- 5th order triples (T) correction :            0.000000000000000
- 5th order triples -T  correction :            0.000000000000000
- Total CCSD+T  energy :                       -1.160365330405660
- Total CCSD(T) energy :                       -1.160365330405660
- Total CCSD-T  energy :                       -1.160365330405660
+ T1 diagnostic :                               0.004115310522379
+ Convergence :                                 0.000000000000447
+ Number or iterations used :                                  11
 
 
 --------------------------------------------------------------------------------
 
 
- Today is :    12 Jan 18
- The time is :  17:14:24
+ Today is :    21 Feb 19
+ The time is :  08:19:14
 
  Status of the calculations
  Integral sort # 1 :                   Completed, restartable        
@@ -1438,27 +1575,21 @@ It.    8    -1.130054479083      1.29D-14 -6.54D-08  1.01D-09   DIIS   6    0.00
  MP2 energy calculation :              Completed, restartable        
  CCSD energy calculation :             Completed, restartable        
  CCSD(T) energy calculation :          Completed, restartable        
- CCSD(T) energy calculation :          Completed, restartable        
+ CCSD(T) energy calculation :          Never asked for               
 
  Overview of calculated energies
-@ SCF energy :                                -1.130054479817999
+@ SCF energy :                                -1.130054479817995
 @ MP2 correlation energy :                    -0.023075110593158
-@ CCSD correlation energy :                   -0.030310850587660
-@ 4th order triples correction :               0.000000000000000
-@ 5th order triples (T) correction :           0.000000000000000
-@ 5th order triples -T  correction :           0.000000000000000
-@ Total MP2 energy :                          -1.153129590411158
-@ Total CCSD energy :                         -1.160365330405660
-@ Total CCSD+T  energy :                      -1.160365330405660
-@ Total CCSD(T) energy :                      -1.160365330405660
-@ Total CCSD-T  energy :                      -1.160365330405660
+@ CCSD correlation energy :                   -0.030310850587665
+@ Total MP2 energy :                          -1.153129590411153
+@ Total CCSD energy :                         -1.160365330405661
 
 
 --------------------------------------------------------------------------------
 
 ------ Timing report (in CPU seconds) of module  RELCCSD                      
 
- Time in Sorting of integrals                 0.020 seconds
+ Time in Sorting of integrals                 0.015 seconds
  Time in CCSD equations                       0.009 seconds
  Time in - T1 equations                       0.001 seconds
  Time in --- T1EQNS T*[HOV - F]*T             0.000 seconds
@@ -1467,14 +1598,13 @@ It.    8    -1.130054479083      1.29D-14 -6.54D-08  1.01D-09   DIIS   6    0.00
  Time in --- T1EQNS VOOO*TAU                  0.000 seconds
  Time in --- T1EQNS VOVV contribution         0.000 seconds
  Time in --- T1EQNS VOVO * T(C,K)             0.000 seconds
- Time in - T2 equations                       0.004 seconds
  Time in -- GOINTM                            0.000 seconds
- Time in -- GVINTM                            0.000 seconds
+ Time in -- GVINTM                            0.001 seconds
  Time in -- AINTM                             0.000 seconds
  Time in -- HINTM                             0.001 seconds
  Time in --- HINTM: VOVV*T                    0.000 seconds
  Time in --- HINTM: VVOO contribution         0.000 seconds
- Time in -- T2 EQNS                           0.001 seconds
+ Time in -- T2 EQNS                           0.002 seconds
  Time in --- T2EQNS: TAU*AINTM contract       0.000 seconds
  Time in --- T2EQNS: VOVV*T1                  0.000 seconds
  Time in --- T2EQNS: HINTM*T2                 0.000 seconds
@@ -1482,35 +1612,37 @@ It.    8    -1.130054479083      1.29D-14 -6.54D-08  1.01D-09   DIIS   6    0.00
  Time in - adding partial T1/T2 amplitu       0.000 seconds
  Time in - DIIS extrapolation                 0.003 seconds
  Time in - synchronizing T1 & T2 amplit       0.000 seconds
- Time in CCSD(T) evaluation                   0.000 seconds
- Time in -- T3CORR: Integral resorting        0.000 seconds
+
+------ End of timing report ------
+
 
 
  Timing of main modules :         Wallclock (s)       CPU on master (s)
- Before CC driver :            1797692.95                     0.27
+ Before CC driver :             250360.48                     0.34
  Initialization :                    0.01                     0.01
- Integral sorting :                  0.02                     0.02
- Energy calculation :                0.02                     0.02
+ Integral sorting :                  0.01                     0.02
+ Energy calculation :                0.01                     0.01
  First order properties :            0.00                     0.00
  Second order properties :           0.00                     0.00
  Fock space energies :               0.00                     0.00
+ EOMCC energies :                    0.00                     0.00
  Untimed parts :                     0.00                     0.00
- Total time in CC driver :             0.                     0.05
+ Total time in CC driver :             0.                     0.03
 
  Statistics for the word-addressable I/O
- Number of write calls                                 605.
- Number of read calls                                  648.
- Megabytes written                                    0.387
- Megabytes read                                       7.330
+ Number of write calls                                 546.
+ Number of read calls                                  547.
+ Megabytes written                                    0.380
+ Megabytes read                                       6.655
  Seconds spent in reads                               0.001
  Seconds spent in writes                              0.001
- average I/O speed for write (Mb/s)                 386.551
- average I/O speed for read  (Mb/s)                7330.216
+ average I/O speed for write (Mb/s)                 379.593
+ average I/O speed for read  (Mb/s)                6655.029
 
 
- CPU time (seconds) used in RELCCSD:                     0.0467
- CPU time (seconds) used before RELCCSD:                 0.2709
- CPU time (seconds) used in total sofar:                 0.3176
+ CPU time (seconds) used in RELCCSD:                     0.0351
+ CPU time (seconds) used before RELCCSD:                 0.3371
+ CPU time (seconds) used in total sofar:                 0.3722
 
   --- Normal end of RELCCSD Run ---
 
@@ -1523,15 +1655,15 @@ It.    8    -1.130054479083      1.29D-14 -6.54D-08  1.01D-09   DIIS   6    0.00
 
 
  
-     Date and time (Mac OSX): Fri Jan 12 17:14:24 2018
+     Date and time (Mac OSX): Thu Feb 21 08:19:14 2019
      Host name              : MacBook2017LV.local                     
 
->>>> Node 0, utime: 0, stime: 0, minflt: 10074, majflt: 152, nvcsw: 50, nivcsw: 262, maxrss: 35848192
+>>>> Node 0, utime: 0, stime: 0, minflt: 32038, majflt: 339, nvcsw: 198, nivcsw: 223, maxrss: 125542400
 >>>> Total WALL time used in DIRAC: 0s
   
   Dynamical Memory Usage Summary for Master
   
-  Mean allocation size (Mb) :        21.39
+  Mean allocation size (Mb) :        30.82
   
   Largest          10  allocations
   
@@ -1554,4 +1686,4 @@ It.    8    -1.130054479083      1.29D-14 -6.54D-08  1.01D-09   DIIS   6    0.00
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
-DIRAC pam run in /Users/visscher/sources/Dirac4/build/test/exacorr_debug
+DIRAC pam run in /Users/visscher/sources/Dirac2/build_caar_mpi_omp/test/exacorr_debug
