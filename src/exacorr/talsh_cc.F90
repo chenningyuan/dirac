@@ -218,13 +218,13 @@ module talsh_cc
             call diis (comm_t%t2,mode=2)
          end if
 
-         if (lambda .and. .not.CCD) then
+         if (lambda) then
 
           print*, ""
           call print_date("Begin solving Lambda equations")
 
 !         Construct lambda tensor
-          ierr=talsh_tensor_construct(l1_tensor,C8,ov_dims,init_val=ZERO)
+          if (.not.CCD) ierr=talsh_tensor_construct(l1_tensor,C8,ov_dims,init_val=ZERO)
           oovv_dims(1:2) = nocc
           oovv_dims(3:4) = nvir
           ierr=talsh_tensor_construct(l2_tensor,C8,oovv_dims,init_val=ZERO)
@@ -233,13 +233,21 @@ module talsh_cc
           if (.not.CCD) ierr=talsh_tensor_contract("L(i,a)+=T+(a,i)*K()",l1_tensor,comm_t%t1,one_tensor)
           ierr=talsh_tensor_contract("L(i,j,a,b)+=T+(a,b,i,j)*K()",l2_tensor,comm_t%t2,one_tensor)
 
-          call solve_lambda_equations(comm_t,int_t,l1_tensor,l2_tensor,nocc,nvir, &
+          if (.not.CCD) then
+            call solve_lambda_equations(comm_t,int_t,l2_tensor,nocc,nvir, &
+                                        eps_occ,eps_vir,t_target_precision,ncycles,l1_tensor)
+          else
+            call solve_lambda_equations(comm_t,int_t,l2_tensor,nocc,nvir, &
                                         eps_occ,eps_vir,t_target_precision,ncycles)
+          end if
 
           !Calculate density matrices
-          if (.not.CCD) call talsh_dm_driver(exa_input,comm_t%t1,comm_t%t2,l1_tensor,l2_tensor)
-         else if (lambda) then
-            print*, "Lambda equations are only implemented for CCSD!"
+          if (.not.CCD) then
+            call talsh_dm_driver(exa_input,comm_t%t2,l2_tensor,comm_t%t1,l1_tensor)
+          else
+            call talsh_dm_driver(exa_input,comm_t%t2,l2_tensor)
+          end if
+
          end if
 
 !        Destruct tensors and shut down library
@@ -252,8 +260,6 @@ module talsh_cc
          ierr=talsh_tensor_destruct(comm_t%foo)
          ierr=talsh_tensor_destruct(comm_t%fov)
          ierr=talsh_tensor_destruct(comm_t%fvv)
-         if (.not.CCD) ierr=talsh_tensor_destruct(comm_t%t1)
-         ierr=talsh_tensor_destruct(comm_t%t2)
          ierr=talsh_tensor_destruct(comm_t%tau)
          ierr=talsh_tensor_destruct(comm_t%hoo)
          if (.not.CCD) ierr=talsh_tensor_destruct(comm_t%hov)
@@ -264,7 +270,11 @@ module talsh_cc
          ierr=talsh_tensor_destruct(comm_t%h_int)
          ierr=talsh_tensor_destruct(result_tensor)
          ierr=talsh_tensor_destruct(one_tensor)
-         ierr=talsh_tensor_destruct(l1_tensor)
+         if (.not.CCD) then
+           ierr=talsh_tensor_destruct(comm_t%t1)
+           ierr=talsh_tensor_destruct(l1_tensor)
+         end if
+         ierr=talsh_tensor_destruct(comm_t%t2)
          ierr=talsh_tensor_destruct(l2_tensor)
 !        Get statistics 
          ierr=talsh_stats()
@@ -527,8 +537,8 @@ module talsh_cc
 
         end subroutine
 
-        subroutine solve_lambda_equations(comm_t,int_t,l1_tensor,l2_tensor,nocc,nvir, &
-                                            eps_occ,eps_vir,t_target_precision,ncycles)
+        subroutine solve_lambda_equations(comm_t,int_t,l2_tensor,nocc,nvir, &
+                                            eps_occ,eps_vir,t_target_precision,ncycles,l1_tensor)
 
 !        Routine for solving the lambda equations
 
@@ -541,10 +551,9 @@ module talsh_cc
          type(talsh_intg_tens), intent(inout) :: int_t
          type(talsh_lambda_tens)              :: lambda_t
 !        solution tensors
-         type(talsh_tens_t) :: l1_tensor, l2_tensor
+         type(talsh_tens_t), intent(inout)           :: l2_tensor
+         type(talsh_tens_t), intent(inout), optional :: l1_tensor
          type(talsh_tens_t) :: s1_tensor, s2_tensor
-!        Aux tensor
-         type(talsh_tens_t) :: oo_aux_tensor
 !        Tensor dimensions
          integer, dimension(2) :: oo_dims, ov_dims, vv_dims
          integer, dimension(4) :: oooo_dims,ovoo_dims,ooov_dims,vovo_dims,oovv_dims, &
@@ -556,13 +565,18 @@ module talsh_cc
          real(8), intent(in) :: t_target_precision
          real(8) :: t_convergence
 
-         logical :: CCD=.false.
+         logical :: CCD = .false.
 
          integer :: ierr
 
          call print_date('Entered lambda solver routine')
 
-!        Construct fixed intermediates
+         if (.not.present(l1_tensor)) CCD = .true.
+
+!***************************************
+!        construct fixed intermediates *
+!***************************************
+
          oo_dims = nocc
          ierr=talsh_tensor_construct(lambda_t%fbar_oo,C8,oo_dims,init_val=ZERO)
          ov_dims(1) = nocc
@@ -595,7 +609,10 @@ module talsh_cc
          vvvv_dims = nvir
          ierr=talsh_tensor_construct(lambda_t%w_vvvv,C8,vvvv_dims,init_val=ZERO)
 
-!        Obtain intermediates from CCSD ==> DO TIME TEST
+!******************************************
+!        obtain intermediates from CC(S)D *
+!******************************************
+
          call print_date("Calculating common blocks")
          call get_tau(comm_t,CCD)
          call get_hvv(comm_t,int_t%oovv)
@@ -607,7 +624,10 @@ module talsh_cc
          call get_a(comm_t,int_t,CCD)
          call print_date("Finished calculating common blocks")
 
-!        Get fixed intermediates ==> DO TIME TEST
+!*********************************
+!        get fixed intermediates *
+!*********************************
+
          call print_date('Calculating fixed intermediates')
          call get_w_vvvv(lambda_t%w_vvvv,comm_t,int_t,CCD)
          call get_wbar_vovo(lambda_t%wbar_vovo,comm_t%t2,int_t)
@@ -623,7 +643,7 @@ module talsh_cc
          call print_date('Finished calculating fixed intermediates')
 
          if (debug_exa) then
-             print*, "T1amp      = ", tensor_norm2(comm_t%t1)
+             if (.not.CCD) print*, "T1amp      = ", tensor_norm2(comm_t%t1)
              print*, "T2amp      = ", tensor_norm2(comm_t%t2)*ONE_QUARTER
              ! print*, "Tau        = ", tensor_norm2(comm_t%tau)*ONE_QUARTER
              ! print*, "Fbar_oo    = ", tensor_norm2(lambda_t%fbar_oo)
@@ -639,88 +659,196 @@ module talsh_cc
              print*, "w_oooo     = ", tensor_norm2(lambda_t%w_oooo)*ONE_QUARTER
          end if
 
-!        Construct solution tensors
-         ierr=talsh_tensor_construct(s1_tensor,C8,ov_dims,init_val=ZERO)
+!************************************
+!        construct solution tensors *
+!************************************
+
+         if (.not.CCD) ierr=talsh_tensor_construct(s1_tensor,C8,ov_dims,init_val=ZERO)
          oovv_dims(1:2) = nocc
          oovv_dims(3:4) = nvir
          ierr=talsh_tensor_construct(s2_tensor,C8,oovv_dims,init_val=ZERO)
 
-!        Construct mixed type intermediates
+!********************************************
+!        construct mixed type intermediates *
+!********************************************
+
          ierr=talsh_tensor_construct(lambda_t%goo,C8,oo_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(lambda_t%gvv,C8,vv_dims,init_val=ZERO)
 
-!        Construct auxiliary tensor
-         ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
+!*****************************************************************
+!        re-initialize diis, so it can be used in lambda routine *
+!*****************************************************************
 
-!        Re-initialize diis, so it can be used in lambda routine
-         call diis (l2_tensor,l1_tensor,mode=1)
+         if (.not.CCD) then
+           call diis (l2_tensor,l1_tensor,mode=1)
+         else
+           call diis (l2_tensor,mode=1)
+         end if
 
-         call print_date('Begin iterating')
+!*****************
+!        iterate *
+!*****************
+
          do ilambda = 1, ncycles
 
-!         Form mixed intermediates
+!***********************************
+!         form mixed intermediates *
+!***********************************
+
           call get_gvv_lambda(lambda_t%gvv,l2_tensor,comm_t%t2)
           call get_goo_lambda(lambda_t%goo,l2_tensor,comm_t%t2)
 
+!         debug
           if (debug_exa) then
-             print*, "L1  = ", tensor_norm2(l1_tensor)
+             if (.not.CCD) print*, "L1  = ", tensor_norm2(l1_tensor)
              print*, "L2  = ", tensor_norm2(l2_tensor)*ONE_QUARTER
              print*, "goo = ", tensor_norm2(lambda_t%goo)
              print*, "gvv = ", tensor_norm2(lambda_t%gvv)
           end if
 
-!         Calculate s1 tensor
-          ierr=talsh_tensor_init(s1_tensor)
-          ierr=talsh_tensor_add("S(i,a)+=F(i,a)",s1_tensor,lambda_t%fbar_ov)
-          ierr=talsh_tensor_contract("S(i,a)+=L(i,e)*F(e,a)",s1_tensor,l1_tensor,lambda_t%fbar_vv)
-          ierr=talsh_tensor_contract("S(i,a)+=L(m,a)*F(i,m)",s1_tensor,l1_tensor,lambda_t%fbar_oo,scale=MINUS_ONE)
-          ierr=talsh_tensor_contract("S(i,a)+=G(n,m)*W(i,m,n,a)",s1_tensor,lambda_t%goo,lambda_t%w_ooov)
-          ierr=talsh_tensor_contract("S(i,a)+=L(m,e)*W(e,i,a,m)",s1_tensor,l1_tensor,lambda_t%w_vovo,scale=MINUS_ONE)
-          ierr=talsh_tensor_contract("S(i,a)+=L(m,n,a,e)*W(i,e,n,m)",s1_tensor,l2_tensor,lambda_t%w_ovoo,scale=ONE_HALF)
-          ierr=talsh_tensor_contract("S(i,a)+=L(i,m,e,f)*W(e,f,a,m)",s1_tensor,l2_tensor,lambda_t%w_vvvo,scale=ONE_HALF)
-          ierr=talsh_tensor_contract("S(i,a)+=G(f,e)*W(e,i,a,f)",s1_tensor,lambda_t%gvv,lambda_t%w_vovv)
+!******************************
+!         calculate s1 tensor *
+!******************************
 
-!         Calculate s2 tensor
+          if (.not.CCD) then
+            ierr=talsh_tensor_init(s1_tensor)
+
+!----------------------------------------
+!           term 1: S(i,a) += Fbar(i,a) |
+!----------------------------------------
+
+            ierr=talsh_tensor_add("S(i,a)+=F(i,a)",s1_tensor,lambda_t%fbar_ov)
+
+!-------------------------------------------------
+!           term 2: S(i,a) += L(i,e) * Fbar(e,a) |
+!-------------------------------------------------
+
+            ierr=talsh_tensor_contract("S(i,a)+=L(i,e)*F(e,a)",s1_tensor,l1_tensor,lambda_t%fbar_vv)
+
+!-------------------------------------------------
+!           term 3: S(i,a) -= L(m,a) * Fbar(i,m) |
+!-------------------------------------------------
+
+            ierr=talsh_tensor_contract("S(i,a)+=L(m,a)*F(i,m)",s1_tensor,l1_tensor,lambda_t%fbar_oo,scale=MINUS_ONE)
+
+!--------------------------------------------------
+!           term 6: S(i,a) -= G(n,m) * W(m,i,n,a) |
+!--------------------------------------------------
+
+            ierr=talsh_tensor_contract("S(i,a)+=G(n,m)*W(i,m,n,a)",s1_tensor,lambda_t%goo,lambda_t%w_ooov)
+
+!--------------------------------------------------
+!           term 7: S(i,a) += L(m,e) * W(i,e,a,m) |
+!--------------------------------------------------
+
+            ierr=talsh_tensor_contract("S(i,a)+=L(m,e)*W(e,i,a,m)",s1_tensor,l1_tensor,lambda_t%w_vovo,scale=MINUS_ONE)
+
+!-------------------------------------------------------------
+!           term 8: S(i,a) -= 1/2 * L(m,n,a,e)  * W(i,e,m,n) |
+!-------------------------------------------------------------
+
+            ierr=talsh_tensor_contract("S(i,a)+=L(m,n,a,e)*W(i,e,n,m)",s1_tensor,l2_tensor,lambda_t%w_ovoo,scale=ONE_HALF)
+
+!----------------------------------------------------------
+!           term 4: S(i,a) += 1/2 L(i,m,e,f) * W(e,f,a,m) |
+!----------------------------------------------------------
+
+            ierr=talsh_tensor_contract("S(i,a)+=L(i,m,e,f)*W(e,f,a,m)",s1_tensor,l2_tensor,lambda_t%w_vvvo,scale=ONE_HALF)
+
+!--------------------------------------------------
+!           term 5: S(i,a) -= G(f,e) * W(e,i,f,a) |
+!--------------------------------------------------
+
+            ierr=talsh_tensor_contract("S(i,a)+=G(f,e)*W(e,i,a,f)",s1_tensor,lambda_t%gvv,lambda_t%w_vovv)
+          end if
+
+!******************************
+!         calculate s2 tensor *
+!******************************
+
           ierr=talsh_tensor_init(s2_tensor)
+
+!-------------------------------------------
+!         term 1: S(i,j,a,b) += V(i,j,a,b) |
+!-------------------------------------------
+
           ierr=talsh_tensor_add("S(i,j,a,b)+=V(i,j,a,b)",s2_tensor,int_t%oovv)
 
-!         Need to permute a and b, so term appears twice
+!--------------------------------------------------------------
+!         term 2: S(i,j,a,b) += P(a,b) L(i,j,a,e) * Fbar(e,b) |
+!--------------------------------------------------------------
+
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,j,a,e)*F(e,b)",s2_tensor,l2_tensor,lambda_t%fbar_vv)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,j,e,b)*F(e,a)",s2_tensor,l2_tensor,lambda_t%fbar_vv)
 
-!         Need to permute i and j, so term appears twice
+!--------------------------------------------------------------
+!         term 3: S(i,j,a,b) -= P(i,j) L(i,m,a,b) * Fbar(j,m) |
+!--------------------------------------------------------------
+
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,m,b,a)*F(j,m)",s2_tensor,l2_tensor,lambda_t%fbar_oo)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,m,a,b)*F(i,m)",s2_tensor,l2_tensor,lambda_t%fbar_oo)
 
+!------------------------------------------------------------
+!         term 4: S(i,j,a,b) += 1/2 L(m,n,a,b) * W(i,j,m,n) |
+!------------------------------------------------------------
+
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(m,n,a,b)*W(i,j,m,n)",s2_tensor,l2_tensor,lambda_t%w_oooo,scale=ONE_HALF)
 
-!         Need to permute i and j, as well as a and b, so term appears four times
+!----------------------------------------------------------------------
+!         term 5: S(i,j,a,b) += P(i,j) P(a,b) L(i,m,a,e) * W(j,e,b,m) |
+!----------------------------------------------------------------------
+
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,m,e,a)*W(e,j,b,m)",s2_tensor,l2_tensor,lambda_t%w_vovo)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,m,b,e)*W(e,j,a,m)",s2_tensor,l2_tensor,lambda_t%w_vovo)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,m,a,e)*W(e,i,b,m)",s2_tensor,l2_tensor,lambda_t%w_vovo)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,m,e,b)*W(e,i,a,m)",s2_tensor,l2_tensor,lambda_t%w_vovo)
 
-!         Need to permute a and b, so term appears twice
+!-----------------------------------------------------------
+!         term 6: S(i,j,a,b) += P(a,b) V(i,j,a,e) * G(e,b) |
+!-----------------------------------------------------------
+
           ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,j,a,e)*G(e,b)",s2_tensor,int_t%oovv,lambda_t%gvv)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,j,e,b)*G(e,a)",s2_tensor,int_t%oovv,lambda_t%gvv)
 
-!         Need to permute a and b, so term appears twice
-          ierr=talsh_tensor_contract("S(i,j,a,b)+=L(m,a)*W(j,i,m,b)",s2_tensor,l1_tensor,lambda_t%w_ooov)
-          ierr=talsh_tensor_contract("S(i,j,a,b)+=L(m,b)*W(i,j,m,a)",s2_tensor,l1_tensor,lambda_t%w_ooov)
+!-----------------------------------------------------------
+!         term 7: S(i,j,a,b) -= P(a,b) L(m,a) * W(i,j,m,b) |
+!-----------------------------------------------------------
 
-!         Need to permute i and j, so term appears twice
+          if (.not.CCD) then
+            ierr=talsh_tensor_contract("S(i,j,a,b)+=L(m,a)*W(j,i,m,b)",s2_tensor,l1_tensor,lambda_t%w_ooov)
+            ierr=talsh_tensor_contract("S(i,j,a,b)+=L(m,b)*W(i,j,m,a)",s2_tensor,l1_tensor,lambda_t%w_ooov)
+          end if
+
+!-----------------------------------------------------------
+!         term 8: S(i,j,a,b) -= P(i,j) V(i,m,a,b) * G(j,m) |
+!-----------------------------------------------------------
+
           ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,m,b,a)*G(j,m)",s2_tensor,int_t%oovv,lambda_t%goo)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=V(j,m,a,b)*G(i,m)",s2_tensor,int_t%oovv,lambda_t%goo)
 
-!         Need to permute i and j, so term appears twice
-          ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,e)*W(e,j,a,b)",s2_tensor,l1_tensor,lambda_t%w_vovv)
-          ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,e)*W(e,i,b,a)",s2_tensor,l1_tensor,lambda_t%w_vovv)
+!--------------------------------------------------------------
+!         term 9+10: S(i,j,a,b) += P(i,j) L(i,e) * W(e,j,a,b) |
+!--------------------------------------------------------------
 
-!         Need to permute i and j, as well as a and b, so term appears four times
-          ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,a)*F(j,b)",s2_tensor,l1_tensor,lambda_t%fbar_ov)
-          ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,b)*F(j,a)",s2_tensor,l1_tensor,lambda_t%fbar_ov,scale=MINUS_ONE)
-          ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,a)*F(i,b)",s2_tensor,l1_tensor,lambda_t%fbar_ov,scale=MINUS_ONE)
-          ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,b)*F(i,a)",s2_tensor,l1_tensor,lambda_t%fbar_ov)
+          if (.not.CCD) then
+            ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,e)*W(e,j,a,b)",s2_tensor,l1_tensor,lambda_t%w_vovv)
+            ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,e)*W(e,i,b,a)",s2_tensor,l1_tensor,lambda_t%w_vovv)
+          end if
+
+!------------------------------------------------------------------
+!         term 11: S(i,j,a,b) += P(i,j) P(a,b) L(i,a) * Fbar(j,b) |
+!------------------------------------------------------------------
+
+          if (.not.CCD) then
+            ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,a)*F(j,b)",s2_tensor,l1_tensor,lambda_t%fbar_ov)
+            ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,b)*F(j,a)",s2_tensor,l1_tensor,lambda_t%fbar_ov,scale=MINUS_ONE)
+            ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,a)*F(i,b)",s2_tensor,l1_tensor,lambda_t%fbar_ov,scale=MINUS_ONE)
+            ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,b)*F(i,a)",s2_tensor,l1_tensor,lambda_t%fbar_ov)
+          end if
+
+!-----------------------------------------------------------
+!         term 12: S(i,j,a,b) += 1/2 L(i,j,e,f) W(e,f,a,b) |
+!-----------------------------------------------------------
 
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,j,e,f)*W(e,f,a,b)",s2_tensor,l2_tensor,lambda_t%w_vvvv,scale=ONE_HALF)
 
@@ -729,31 +857,46 @@ module talsh_cc
              return
           end if
 
-!         prepare for next iteration
-          ierr=talsh_tensor_init(l1_tensor)
-          ierr=talsh_tensor_add("L1(i,a)+=S1(i,a)",l1_tensor,s1_tensor)
+!*************************************
+!         prepare for next iteration *
+!*************************************
+
+          if (.not.CCD) then
+            ierr=talsh_tensor_init(l1_tensor)
+            ierr=talsh_tensor_add("L1(i,a)+=S1(i,a)",l1_tensor,s1_tensor)
+          end if
           ierr=talsh_tensor_init(l2_tensor)
           ierr=talsh_tensor_add("L2(i,j,a,b)+=S2(i,j,a,b)",l2_tensor,s2_tensor)
-          call scale_with_denominators (eps_occ,eps_vir,nocc,l1_tensor,l2_tensor)
+          if (.not.CCD) then
+            call scale_with_denominators (eps_occ,eps_vir,nocc,l1_tensor,l2_tensor)
+            call diis (l2_tensor,l1_tensor,t_convergence=t_convergence)
+          else
+            call scale_with_denominators (eps_occ,eps_vir,nocc,t2_tensor=l2_tensor)
+            call diis (l2_tensor,t_convergence=t_convergence)
+          end if
 
-          call diis (l2_tensor,l1_tensor,t_convergence=t_convergence)
 
           write (*,'(A,I4,A,ES10.1)') "  Iteration ",ilambda," convergence =",t_convergence
           if (t_convergence .lt. t_target_precision) exit
 
          end do
 
-         call print_date("Finished iterating")
 
          if (t_convergence .gt. t_target_precision) print*, "WARNING: Non-converged amplitudes!"
-         write(*,'(A,ES22.16)') "  Final L1amp = ", tensor_norm2(l1_tensor)
+         if (.not.CCD) write(*,'(A,ES22.16)') "  Final L1amp = ", tensor_norm2(l1_tensor)
          write(*,'(A,ES22.16)') "  Final L2amp = ", tensor_norm2(l2_tensor)*ONE_QUARTER
 
-!        Destruct tensors
-         call diis (l2_tensor,l1_tensor,mode=2)
-         ierr=talsh_tensor_destruct(s1_tensor)
+!*****************
+!        cleanup *
+!*****************
+
+         if (.not.CCD) then
+           call diis (l2_tensor,l1_tensor,mode=2)
+         else
+           call diis (l2_tensor,mode=2)
+         end if
+         if (.not.CCD) ierr=talsh_tensor_destruct(s1_tensor)
          ierr=talsh_tensor_destruct(s2_tensor)
-         ierr=talsh_tensor_destruct(oo_aux_tensor)
          ierr=talsh_tensor_destruct(lambda_t%fbar_oo)
          ierr=talsh_tensor_destruct(lambda_t%fbar_ov)
          ierr=talsh_tensor_destruct(lambda_t%fbar_vv)

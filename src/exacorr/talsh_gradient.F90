@@ -20,7 +20,7 @@ module talsh_gradient
 
   contains
 
-    subroutine talsh_dm_driver(exa_input,t1_tensor,t2_tensor,l1_tensor,l2_tensor)
+    subroutine talsh_dm_driver(exa_input,t2_tensor,l2_tensor,t1_tensor,l1_tensor)
 
 !     Routine for obtaining the density matrices in the MO basis
 
@@ -28,8 +28,8 @@ module talsh_gradient
       
 !     input variables
       type(exacc_input), intent(in   ) :: exa_input
-      type(talsh_tens_t),intent(inout) :: t1_tensor, t2_tensor ! solution tensors
-      type(talsh_tens_t),intent(inout) :: l1_tensor, l2_tensor ! solution tensors
+      type(talsh_tens_t),intent(inout) :: t2_tensor, l2_tensor ! solution tensors
+      type(talsh_tens_t),intent(inout), optional :: t1_tensor, l1_tensor ! solution tensors
 !     density matrices type, output
       type(talsh_dm_tens) :: gamma
       type(talsh_tens_t)  :: dm_ao
@@ -37,10 +37,14 @@ module talsh_gradient
       integer :: nao
       integer, dimension(2) :: oo_dims,ov_dims,vo_dims,vv_dims
       integer, dimension(2) :: dm_ao_dims
+!     CCD switch
+      logical :: CCD = .false.
 !     error code
       integer :: ierr
 
       call print_date('Entered DM routine')
+
+      if (.not.present(t1_tensor) .and. .not.present(l1_tensor)) CCD = .true.
 
 !************************************
 !     construct gamma prime tensors *
@@ -49,12 +53,14 @@ module talsh_gradient
       oo_dims = exa_input%nkr_occ
       ierr=talsh_tensor_construct(gamma%prime_oo,C8,oo_dims,init_val=ZERO)
       ierr=talsh_tensor_construct(gamma%symm_oo,C8,oo_dims,init_val=ZERO)
-      ov_dims(1) = exa_input%nkr_occ
-      ov_dims(2) = exa_input%nkr_vir
-      ierr=talsh_tensor_construct(gamma%prime_ov,C8,ov_dims,init_val=ZERO)
-      vo_dims(1) = exa_input%nkr_vir
-      vo_dims(2) = exa_input%nkr_occ
-      ierr=talsh_tensor_construct(gamma%prime_vo,C8,vo_dims,init_val=ZERO)
+      if (.not.CCD) then
+        ov_dims(1) = exa_input%nkr_occ
+        ov_dims(2) = exa_input%nkr_vir
+        ierr=talsh_tensor_construct(gamma%prime_ov,C8,ov_dims,init_val=ZERO)
+        vo_dims(1) = exa_input%nkr_vir
+        vo_dims(2) = exa_input%nkr_occ
+        ierr=talsh_tensor_construct(gamma%prime_vo,C8,vo_dims,init_val=ZERO)
+      end if
       vv_dims = exa_input%nkr_vir
       ierr=talsh_tensor_construct(gamma%prime_vv,C8,vv_dims,init_val=ZERO)
       ierr=talsh_tensor_construct(gamma%symm_vv,C8,vv_dims,init_val=ZERO)
@@ -63,7 +69,11 @@ module talsh_gradient
 !     calculate DM blocks in MO basis *
 !**************************************
 
-      call calc_dm_mo(gamma,t1_tensor,t2_tensor,l1_tensor,l2_tensor,exa_input%nkr_occ,exa_input%nkr_vir)
+      if (.not.CCD) then
+        call calc_dm_mo(gamma,t2_tensor,l2_tensor,exa_input%nkr_occ,exa_input%nkr_vir,t1_tensor,l1_tensor)
+      else
+        call calc_dm_mo(gamma,t2_tensor,l2_tensor,exa_input%nkr_occ,exa_input%nkr_vir)
+      end if
       call print_date("Calculated density matrices in MO basis")
 
 !******************************
@@ -75,13 +85,15 @@ module talsh_gradient
       dm_ao_dims = nao
       ierr=talsh_tensor_construct(dm_ao,C8,dm_ao_dims,init_val=ZERO)
 
-      call mo_to_ao(exa_input,gamma,dm_ao)
+      call mo_to_ao(exa_input,gamma,dm_ao,CCD)
       call print_date("MO to AO transformation completed")
 
 !     cleanup
       ierr=talsh_tensor_destruct(gamma%prime_oo)
-      ierr=talsh_tensor_destruct(gamma%prime_ov)
-      ierr=talsh_tensor_destruct(gamma%prime_vo)
+      if (.not.CCD) then
+        ierr=talsh_tensor_destruct(gamma%prime_ov)
+        ierr=talsh_tensor_destruct(gamma%prime_vo)
+      end if
       ierr=talsh_tensor_destruct(gamma%prime_vv)
       ierr=talsh_tensor_destruct(gamma%symm_oo)
       ierr=talsh_tensor_destruct(gamma%symm_vv)
@@ -101,15 +113,15 @@ module talsh_gradient
 
     end subroutine talsh_dm_driver
 
-    subroutine calc_dm_mo(gamma,t1_tensor,t2_tensor,l1_tensor,l2_tensor,nocc,nvir)
+    subroutine calc_dm_mo(gamma,t2_tensor,l2_tensor,nocc,nvir,t1_tensor,l1_tensor)
 
       use exacorr_global, only : debug_exa
 
 !     input variables
-      type(talsh_dm_tens), intent(inout)  :: gamma
-      type(talsh_tens_t),  intent(inout)  :: t1_tensor, t2_tensor
-      type(talsh_tens_t),  intent(inout)  :: l1_tensor, l2_tensor
-      integer,             intent(in)     :: nocc, nvir
+      type(talsh_dm_tens), intent(inout) :: gamma
+      type(talsh_tens_t),  intent(inout) :: t2_tensor, l2_tensor
+      type(talsh_tens_t),  intent(inout), optional :: t1_tensor, l1_tensor
+      integer,             intent(in   ) :: nocc, nvir
 !     auxiliary tensors
       type(talsh_tens_t) :: one_tensor
       type(talsh_tens_t) :: tau2_tensor
@@ -118,8 +130,12 @@ module talsh_gradient
       integer :: one_dims(1)=1
       integer, dimension(2) :: oo_dims
       integer, dimension(4) :: vvoo_dims, ooov_dims
+!     CCD switch
+      logical :: CCD = .false.
 !     error code
       integer :: ierr
+
+      if (.not.present(t1_tensor) .and. .not.present(l1_tensor)) CCD = .true.
 
 !*********************************
 !     construct auxiliary tensor *
@@ -128,11 +144,13 @@ module talsh_gradient
       ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
       vvoo_dims(1:2) = nvir
       vvoo_dims(3:4) = nocc
-      ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
-      ooov_dims(1:3) = nocc
-      ooov_dims(4)   = nvir
-      ierr=talsh_tensor_construct(ooov_aux_tensor,C8,ooov_dims,init_val=ZERO)
-      ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
+      if (.not.CCD) then
+        ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
+        ooov_dims(1:3) = nocc
+        ooov_dims(4)   = nvir
+        ierr=talsh_tensor_construct(ooov_aux_tensor,C8,ooov_dims,init_val=ZERO)
+        ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
+      end if
 
 !********************
 !     calculate DMs *
@@ -141,39 +159,48 @@ module talsh_gradient
 !----------------------------------------------------------------
 !     oo: g'(j,i) = - 1/2 t(ef,im) * l(jm,ef) - t(e,i) * l(j,e) |
 !----------------------------------------------------------------
+
       ierr=talsh_tensor_contract("G(j,i)+=T(e,f,i,m)*L(m,j,e,f)",gamma%prime_oo,t2_tensor,l2_tensor,scale=ONE_HALF)
-      ierr=talsh_tensor_contract("G(j,i)+=T(e,i)*L(j,e)",gamma%prime_oo,t1_tensor,l1_tensor,scale=MINUS_ONE)
+      if (.not.CCD) ierr=talsh_tensor_contract("G(j,i)+=T(e,i)*L(j,e)",gamma%prime_oo,t1_tensor,l1_tensor,scale=MINUS_ONE)
 
 !--------------------------------------------------------------
 !     vv: g'(a,b) = 1/2 t(ae,mn) * l(mn,be) + t(a,m) * l(m,b) |
 !--------------------------------------------------------------
-      ierr=talsh_tensor_contract("G(a,b)+=T(a,e,m,n)*L(m,n,b,e)",gamma%prime_vv,t2_tensor,l2_tensor,scale=ONE_HALF)
-      ierr=talsh_tensor_contract("G(a,b)+=T(a,m)*L(m,b)",gamma%prime_vv,t1_tensor,l1_tensor)
 
+      ierr=talsh_tensor_contract("G(a,b)+=T(a,e,m,n)*L(m,n,b,e)",gamma%prime_vv,t2_tensor,l2_tensor,scale=ONE_HALF)
+      if (.not.CCD) ierr=talsh_tensor_contract("G(a,b)+=T(a,m)*L(m,b)",gamma%prime_vv,t1_tensor,l1_tensor)
+
+!     no off-diagonal terms in CCD
+      if (.not.CCD) then
 !----------------------------
 !     vo: g'(a,i) += t(a,i) |
 !----------------------------
-      ierr=talsh_tensor_add("G(a,i)+=T(a,i)",gamma%prime_vo,t1_tensor)
+
+        ierr=talsh_tensor_add("G(a,i)+=T(a,i)",gamma%prime_vo,t1_tensor)
 
 !-----------------------------------------------------------
 !     vo: g'(a,i) += l(m,e) * (t(ae,im) - t(e,i) * t(a,m)) |
 !-----------------------------------------------------------
-      ierr=talsh_tensor_add("T(a,e,i,m)+=R(a,e,i,m)",tau2_tensor,t2_tensor)
-      ierr=talsh_tensor_contract("T(a,e,i,m)+=T(e,i)*T(a,m)",tau2_tensor,t1_tensor,t1_tensor,scale=MINUS_ONE)
+
+        ierr=talsh_tensor_add("T(a,e,i,m)+=R(a,e,i,m)",tau2_tensor,t2_tensor)
+        ierr=talsh_tensor_contract("T(a,e,i,m)+=T(e,i)*T(a,m)",tau2_tensor,t1_tensor,t1_tensor,scale=MINUS_ONE)
 
 !----------------------------------------------------------------------------
 !     vo: g'(a,i) += 1/4 l(mn,ef) * (t(ef,in) * t(a,m) + t(e,i) * t(af,mn)) |
 !----------------------------------------------------------------------------
-      ierr=talsh_tensor_contract("G(a,i)+=L(m,e)*T(a,e,i,m)",gamma%prime_vo,l1_tensor,tau2_tensor)
-      ierr=talsh_tensor_contract("X(m,i)+=L(m,n,e,f)*T(e,f,i,n)",oo_aux_tensor,l2_tensor,t2_tensor)
-      ierr=talsh_tensor_contract("G(a,i)+=X(m,i)*T(a,m)",gamma%prime_vo,oo_aux_tensor,t1_tensor,scale=MINUS_ONE_QUARTER)
-      ierr=talsh_tensor_contract("X(m,n,i,f)+=L(m,n,e,f)*T(e,i)",ooov_aux_tensor,l2_tensor,t1_tensor)
-      ierr=talsh_tensor_contract("G(a,i)+=X(m,n,i,f)*T(a,f,m,n)",gamma%prime_vo,ooov_aux_tensor,t2_tensor,scale=MINUS_ONE_QUARTER)
+
+        ierr=talsh_tensor_contract("G(a,i)+=L(m,e)*T(a,e,i,m)",gamma%prime_vo,l1_tensor,tau2_tensor)
+        ierr=talsh_tensor_contract("X(m,i)+=L(m,n,e,f)*T(e,f,i,n)",oo_aux_tensor,l2_tensor,t2_tensor)
+        ierr=talsh_tensor_contract("G(a,i)+=X(m,i)*T(a,m)",gamma%prime_vo,oo_aux_tensor,t1_tensor,scale=MINUS_ONE_QUARTER)
+        ierr=talsh_tensor_contract("X(m,n,i,f)+=L(m,n,e,f)*T(e,i)",ooov_aux_tensor,l2_tensor,t1_tensor)
+        ierr=talsh_tensor_contract("G(a,i)+=X(m,n,i,f)*T(a,f,m,n)",gamma%prime_vo,ooov_aux_tensor,t2_tensor,scale=MINUS_ONE_QUARTER)
 
 !---------------------------
 !     ov: g'(i,a) = l(i,a) |
 !---------------------------
-      ierr=talsh_tensor_add("G(i,a)+=L(i,a)",gamma%prime_ov,l1_tensor)
+
+        ierr=talsh_tensor_add("G(i,a)+=L(i,a)",gamma%prime_ov,l1_tensor)
+      end if
 
 !------------------------------------------------
 !     vv symm: g(b,a) = 1/2 (g'(b,a) + g'(a,b)) |
@@ -190,8 +217,10 @@ module talsh_gradient
 !     debug
       if (debug_exa) then
         print*, "gprime_oo  = ", tensor_norm2(gamma%prime_oo)
-        print*, "gprime_ov  = ", tensor_norm2(gamma%prime_ov)
-        print*, "gprime_vo  = ", tensor_norm2(gamma%prime_vo)
+        if (.not.CCD) then
+          print*, "gprime_ov  = ", tensor_norm2(gamma%prime_ov)
+          print*, "gprime_vo  = ", tensor_norm2(gamma%prime_vo)
+        end if
         print*, "gprime_vv  = ", tensor_norm2(gamma%prime_vv)
         print*, "gsymm_oo   = ", tensor_norm2(gamma%symm_oo)
         print*, "gsymm_vv   = ", tensor_norm2(gamma%symm_vv)
@@ -201,14 +230,16 @@ module talsh_gradient
 !     cleanup *
 !**************
 
-      ierr=talsh_tensor_destruct(tau2_tensor)
-      ierr=talsh_tensor_destruct(ooov_aux_tensor)
-      ierr=talsh_tensor_destruct(oo_aux_tensor)
       ierr=talsh_tensor_destruct(one_tensor)
+      if (.not.CCD) then
+        ierr=talsh_tensor_destruct(tau2_tensor)
+        ierr=talsh_tensor_destruct(ooov_aux_tensor)
+        ierr=talsh_tensor_destruct(oo_aux_tensor)
+      end if
 
     end subroutine calc_dm_mo
 
-    subroutine mo_to_ao(exa_input,gamma,dm_ao)
+    subroutine mo_to_ao(exa_input,gamma,dm_ao,CCD)
 
       use exacorr_mo
       use exacorr_global, only : debug_exa, get_nao, get_mo_coefficients
@@ -217,6 +248,7 @@ module talsh_gradient
       type(exacc_input),   intent(in   )  :: exa_input
       type(talsh_dm_tens), intent(inout)  :: gamma
       type(talsh_tens_t),  intent(inout)  :: dm_ao
+      logical,             intent(in   )  :: CCD
 !     store mo_coefficients
       type(cmo)                       :: cspinor
       complex(8), pointer, contiguous :: coeff_fort(:,:)
@@ -275,25 +307,29 @@ module talsh_gradient
 !     oo
       ierr=talsh_tensor_get_body_access(gamma%symm_oo,body_p2,C8,0,DEV_HOST)
       call c_f_pointer(body_p2,dm_block,(/nocc,nocc/)) ! to use <dm_mo_block> as a regular Fortran 2d array
-
       dm_mo_fort(1:nocc,1:nocc) = dm_block
 
 !     vo
-      ierr=talsh_tensor_get_body_access(gamma%prime_vo,body_p2,C8,0,DEV_HOST)
-      call c_f_pointer(body_p2,dm_block,(/nvir,nocc/)) ! to use <dm_mo_block> as a regular Fortran 2d array
-
-      dm_mo_fort(1+nocc:nocc+nvir,1:nocc) = dm_block
+      if (.not.CCD) then
+        ierr=talsh_tensor_get_body_access(gamma%prime_vo,body_p2,C8,0,DEV_HOST)
+        call c_f_pointer(body_p2,dm_block,(/nvir,nocc/)) ! to use <dm_mo_block> as a regular Fortran 2d array
+        dm_mo_fort(1+nocc:nocc+nvir,1:nocc) = dm_block
+      else
+        dm_mo_fort(1+nocc:nocc+nvir,1:nocc) = 0
+      end if
 
 !     ov
-      ierr=talsh_tensor_get_body_access(gamma%prime_ov,body_p2,C8,0,DEV_HOST)
-      call c_f_pointer(body_p2,dm_block,(/nocc,nvir/)) ! to use <dm_mo_block> as a regular Fortran 2d array
-
-      dm_mo_fort(1:nocc,1+nocc:nocc+nvir) = dm_block
+      if (.not.CCD) then
+        ierr=talsh_tensor_get_body_access(gamma%prime_ov,body_p2,C8,0,DEV_HOST)
+        call c_f_pointer(body_p2,dm_block,(/nocc,nvir/)) ! to use <dm_mo_block> as a regular Fortran 2d array
+        dm_mo_fort(1:nocc,1+nocc:nocc+nvir) = dm_block
+      else
+        dm_mo_fort(1:nocc,1+nocc:nocc+nvir) = 0
+      end if
 
 !     vv
       ierr=talsh_tensor_get_body_access(gamma%symm_vv,body_p2,C8,0,DEV_HOST)
       call c_f_pointer(body_p2,dm_block,(/nvir,nvir/)) ! to use <dm_mo_block> as a regular Fortran 2d array
-
       dm_mo_fort(1+nocc:nocc+nvir,1+nocc:nocc+nvir) = dm_block
 
 !**************************
