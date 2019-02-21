@@ -632,3 +632,264 @@ C
 
        return
        end
+
+       subroutine read_from_mrconee (int_1el, ierr)
+
+       use exacorr_datatypes
+
+       implicit none
+
+!      routine to read the one electron integrals from MRCONEE
+
+       type(one_el_t), intent(out) :: int_1el
+       integer, intent(out)   :: ierr
+       integer, parameter     :: NOERROR  = 0 ! no error
+       integer, parameter     :: NOTFOUND = 1 ! file not found
+       integer, parameter     :: CORRUPT  = 2 ! file unreadable
+       integer, parameter     :: SYMMETRY = 3 ! calculation used symmetry
+       integer, parameter     :: NOBASIS  = 4 ! no basis set information could be read (old DFCOEF?)
+       integer, parameter     :: CONTRAC  = 5 ! basis set is contracted (Interest can not handle this)
+       integer, parameter     :: INCONSIS = 6 ! DFCOEF does not contain consistent information wrt number of basis functions
+
+       integer :: NSP, NFSYM, NZ, NORBT
+       logical :: BREIT, SPFR
+       real(8) :: ECORE
+       real(8), allocatable :: RDUM(:), CDUM(:)
+
+       logical                :: tobe
+       integer                :: lucoef
+       integer                :: ij, i, j
+       real(8), parameter     :: treshold=1.D-12
+
+       ierr=NOERROR
+
+!      open file and read setup infromation
+       inquire (file='MRCONEE',exist=tobe)
+       if (.not.tobe) then
+          print*, "error: file MRCONEE not found"
+          ierr = NOTFOUND
+          return
+       else
+          call get_free_fileunit(lucoef)
+          open (lucoef,file='MRCONEE',status='OLD',FORM='UNFORMATTED',
+     &     access='SEQUENTIAL')
+          read (lucoef,ERR=10,END=10) NSP,BREIT,ECORE,NFSYM,
+     &     NZ,SPFR,NORBT
+       end if
+!      save number of spinors
+       int_1el%n_spinor=NSP
+       int_1el%core=ECORE
+
+!       print *, "MRCONEE, spinors: ", NSP
+
+!      skip symmetry information
+       read (lucoef,ERR=10,END=10)
+       read (lucoef,ERR=10,END=10)
+       read (lucoef,ERR=10,END=10)
+       read (lucoef,ERR=10,END=10)
+
+!      read one electron integrals
+       allocate(RDUM(NSP*NSP))
+       allocate(CDUM(NSP*NSP))
+
+       read (lucoef,ERR=20,END=20) (RDUM(ij),
+     &  CDUM(ij),ij=1,NSP*NSP)
+
+!      write one electron integrals
+       nullify(int_1el%RC)
+       nullify(int_1el%CC)
+
+       allocate(int_1el%RC(NSP, NSP))
+       allocate(int_1el%CC(NSP, NSP))
+
+       do i=1,NSP
+         do j=1,NSP
+           ij=NSP*(j-1)+i
+           int_1el%RC(i,j)=RDUM(ij)
+           int_1el%CC(i,j)=CDUM(ij)
+         end do
+       end do
+
+       deallocate(RDUM)
+       deallocate(CDUM)
+       close (lucoef,status='KEEP')
+       
+       return
+
+  10   ierr = CORRUPT
+       return
+
+  20   ierr = INCONSIS
+       return
+
+       end subroutine read_from_mrconee
+
+       subroutine read_from_mdcint (int_2el, ierr)
+!      routine to read two electron integrals from MDCINT, for testing purposes
+
+       use exacorr_datatypes
+
+       implicit none
+
+       integer, parameter     :: NOERROR  = 0 ! no error
+       integer, parameter     :: NOTFOUND = 1 ! file not found
+       integer, parameter     :: CORRUPT  = 2 ! file unreadable
+       integer, parameter     :: SYMMETRY = 3 ! calculation used symmetry
+       integer, parameter     :: NOBASIS  = 4 ! no basis set information could be read (old DFCOEF?)
+       integer, parameter     :: CONTRAC  = 5 ! basis set is contracted (Interest can not handle this)
+       integer, parameter     :: INCONSIS = 6 ! File does not contain consistent information
+
+       type(two_el_t), intent(out) :: int_2el
+
+       logical       :: tobe
+       integer       :: lucoef
+
+       integer, intent(out)   :: ierr
+       integer                :: NBATCH, NKR, RCW, NZERO
+       integer                :: IKR, JKR, NONZERO, I, J, K, L, INZ
+       character              :: DATE*10, TIME*8
+
+       integer, allocatable     :: KP_TO_SP(:), BSIZE(:)
+       integer, allocatable     :: INDK(:), INDL(:)
+       real(8), allocatable     :: RKL(:)
+       integer     :: IIND, JIND, KIND, LIND, INDH
+       real(8)     :: INT_R, INT_C
+
+       
+       ierr=NOERROR
+       NKR=0
+       RCW=2
+
+!       open file and read setup infromation
+       inquire (file='MDCINT',exist=tobe)
+       if (.not.tobe) then
+          print*, "error: file MDCINT not found"
+          ierr = NOTFOUND
+          return
+       else
+          call get_free_fileunit(lucoef)
+          open (lucoef,file='MDCINT',FORM='UNFORMATTED')
+          read (lucoef,ERR=60,END=70) DATE, TIME, NKR
+       end if
+
+       int_2el%nkp=NKR
+
+       !print *, "MDCINT created on:", DATE," at: " , TIME
+       !print *, "Kramerspairs:", NKR
+       
+       allocate(KP_TO_SP(-NKR:NKR))
+       KP_TO_SP(0)=666
+
+       REWIND(lucoef)
+       read (lucoef,ERR=60,END=70) DATE,TIME,NKR,(KP_TO_SP(INZ),
+     &       KP_TO_SP(-INZ), INZ=1,NKR)
+
+
+       !print *, "--------------- KP_TO_SP -----------------"
+       !print *, KP_TO_SP
+
+       ! get the number of batches
+       NBATCH=0
+       NZERO=0
+       do I = 1, NKR*NKR*NKR*NKR
+         read (lucoef,ERR=60,END=70) IKR, JKR, NONZERO
+         !print *, "IKR, JKR, NONZERO: ",IKR, JKR, NONZERO
+         IF(IKR.eq.0) GO TO 20
+         NZERO=NZERO+NONZERO
+         NBATCH=NBATCH+1
+       end do
+
+  20   CONTINUE
+
+      !get batch sizes
+       allocate(BSIZE(NBATCH))
+       REWIND(lucoef)
+       read (lucoef,ERR=60,END=70) DATE,TIME,NKR,(KP_TO_SP(INZ),
+     &       KP_TO_SP(-INZ), INZ=1,NKR)
+              ! get the number of batches
+       do I = 1, NBATCH
+         read (lucoef,ERR=60,END=70) IKR, JKR, NONZERO
+         BSIZE(I)=NONZERO
+       end do
+       !print *, "--------------- BSIZE -----------------"
+       !print *, BSIZE
+
+       !allocate and initialize Fock matrix contribution
+       nullify (int_2el%RC)
+       allocate(int_2el%RC(2*NKR,2*NKR, 2*NKR, 2*NKR))
+
+       nullify (int_2el%CC)
+       allocate(int_2el%CC(2*NKR,2*NKR, 2*NKR, 2*NKR))
+
+       do I = 1, 2*NKR
+         do J = 1, 2*NKR
+            do K = 1, 2*NKR
+               do L = 1, 2*NKR
+                int_2el%RC(I,J,K,L)=0.0
+                int_2el%CC(I,J,K,L)=0.0
+               end do
+            end do
+         end do
+       end do
+
+       !read and save the integrals
+       REWIND(lucoef)
+       read (lucoef,ERR=60,END=70) DATE,TIME,NKR,(KP_TO_SP(INZ),
+     &       KP_TO_SP(-INZ), INZ=1,NKR)
+       do I = 1, NBATCH
+         allocate(INDK(BSIZE(I)))
+         allocate(INDL(BSIZE(I)))
+         allocate(RKL(BSIZE(I)*RCW))
+         read (lucoef,ERR=60,END=70) IKR, JKR, NONZERO,
+     &               (INDK(INZ),INDL(INZ),INZ=1,BSIZE(I)),
+     &               (RKL(INZ),INZ=1,BSIZE(I)*RCW)
+         
+         !process integrals: write 4 el integrals memory
+         do INZ=1,BSIZE(I)
+            IIND=KP_TO_SP(IKR)
+            JIND=KP_TO_SP(JKR)
+            KIND=KP_TO_SP(INDK(INZ))
+            LIND=KP_TO_SP(INDL(INZ))
+            INT_R=RKL(INZ)
+            INT_C=RKL(INZ+BSIZE(I))
+!            print *, "IND", IND1, IND2, IND3, IND4,
+!     &               "INT", INT_R, INT_C
+
+            int_2el%RC(IIND,JIND, KIND, LIND)=INT_R
+            int_2el%CC(IIND,JIND, KIND, LIND)=INT_C
+
+            int_2el%RC(JIND,IIND, LIND, KIND)=INT_R
+            int_2el%CC(JIND,IIND, LIND, KIND)=INT_C
+
+            int_2el%RC(KIND,LIND, IIND, JIND)=INT_R
+            int_2el%CC(KIND,LIND, IIND, JIND)=-INT_C
+
+            int_2el%RC(LIND,KIND, JIND, IIND)=INT_R
+            int_2el%CC(LIND,KIND, JIND, IIND)=-INT_C
+
+!         time reversal and point group symmetris are missing
+          end do
+
+         deallocate(INDK)
+         deallocate(INDL)
+         deallocate(RKL)
+       end do
+
+       close (lucoef,status='KEEP')
+
+       deallocate(KP_TO_SP)
+       deallocate(BSIZE)
+
+       !print *, int_2el%RC
+       !print *, int_2el%CC
+
+       call print_date("read two el. integrals from MDCINT")
+       return
+
+  60   ierr = CORRUPT
+       return
+
+  70   ierr = INCONSIS
+       return
+
+       end subroutine read_from_mdcint

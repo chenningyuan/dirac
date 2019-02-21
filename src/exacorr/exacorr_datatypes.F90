@@ -116,4 +116,19 @@
             type(talsh_tens_t)      :: l2_tensor ! lambda amplitude
         end type talsh_eom_fixed_tens
 
+!       One electron integrals
+        type, public  :: one_el_t
+         integer     :: n_spinor=-1
+         real(8)     ::  core
+         real(8), pointer :: RC(:,:)
+         real(8), pointer :: CC(:,:)
+        end type one_el_t
+
+!       Two electron integrals, testing
+        type, public  :: two_el_t
+         integer     :: nkp=-1
+         real(8), pointer :: RC(:,:, :, :)
+         real(8), pointer :: CC(:,:, :, :)
+        end type two_el_t
+
        end module exacorr_datatypes
