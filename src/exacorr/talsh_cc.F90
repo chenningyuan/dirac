@@ -233,18 +233,14 @@ module talsh_cc
           if (.not.CCD) ierr=talsh_tensor_contract("L(i,a)+=T+(a,i)*K()",l1_tensor,comm_t%t1,one_tensor)
           ierr=talsh_tensor_contract("L(i,j,a,b)+=T+(a,b,i,j)*K()",l2_tensor,comm_t%t2,one_tensor)
 
+!         solve lambda-equations and caluclate density matrix in MO basis
           if (.not.CCD) then
             call solve_lambda_equations(comm_t,int_t,l2_tensor,nocc,nvir, &
                                         eps_occ,eps_vir,t_target_precision,ncycles,l1_tensor)
+            call talsh_dm_driver(exa_input,comm_t%t2,l2_tensor,comm_t%t1,l1_tensor)
           else
             call solve_lambda_equations(comm_t,int_t,l2_tensor,nocc,nvir, &
                                         eps_occ,eps_vir,t_target_precision,ncycles)
-          end if
-
-          !Calculate density matrices
-          if (.not.CCD) then
-            call talsh_dm_driver(exa_input,comm_t%t2,l2_tensor,comm_t%t1,l1_tensor)
-          else
             call talsh_dm_driver(exa_input,comm_t%t2,l2_tensor)
           end if
 
@@ -731,33 +727,33 @@ module talsh_cc
 
             ierr=talsh_tensor_contract("S(i,a)+=L(m,a)*F(i,m)",s1_tensor,l1_tensor,lambda_t%fbar_oo,scale=MINUS_ONE)
 
-!--------------------------------------------------
-!           term 6: S(i,a) -= G(n,m) * W(m,i,n,a) |
-!--------------------------------------------------
+!------------------------------------------------
+!           term 6: S(i,a) -= G(n,m) * W(mi,na) |
+!------------------------------------------------
 
             ierr=talsh_tensor_contract("S(i,a)+=G(n,m)*W(i,m,n,a)",s1_tensor,lambda_t%goo,lambda_t%w_ooov)
 
-!--------------------------------------------------
-!           term 7: S(i,a) += L(m,e) * W(i,e,a,m) |
-!--------------------------------------------------
+!------------------------------------------------
+!           term 7: S(i,a) += L(m,e) * W(ie,am) |
+!------------------------------------------------
 
             ierr=talsh_tensor_contract("S(i,a)+=L(m,e)*W(e,i,a,m)",s1_tensor,l1_tensor,lambda_t%w_vovo,scale=MINUS_ONE)
 
-!-------------------------------------------------------------
-!           term 8: S(i,a) -= 1/2 * L(m,n,a,e)  * W(i,e,m,n) |
-!-------------------------------------------------------------
+!---------------------------------------------------------
+!           term 8: S(i,a) -= 1/2 * L(mn,ae)  * W(ie,mn) |
+!---------------------------------------------------------
 
             ierr=talsh_tensor_contract("S(i,a)+=L(m,n,a,e)*W(i,e,n,m)",s1_tensor,l2_tensor,lambda_t%w_ovoo,scale=ONE_HALF)
 
-!----------------------------------------------------------
-!           term 4: S(i,a) += 1/2 L(i,m,e,f) * W(e,f,a,m) |
-!----------------------------------------------------------
+!------------------------------------------------------
+!           term 4: S(i,a) += 1/2 L(im,ef) * W(ef,am) |
+!------------------------------------------------------
 
             ierr=talsh_tensor_contract("S(i,a)+=L(i,m,e,f)*W(e,f,a,m)",s1_tensor,l2_tensor,lambda_t%w_vvvo,scale=ONE_HALF)
 
-!--------------------------------------------------
-!           term 5: S(i,a) -= G(f,e) * W(e,i,f,a) |
-!--------------------------------------------------
+!------------------------------------------------
+!           term 5: S(i,a) -= G(f,e) * W(ei,fa) |
+!------------------------------------------------
 
             ierr=talsh_tensor_contract("S(i,a)+=G(f,e)*W(e,i,a,f)",s1_tensor,lambda_t%gvv,lambda_t%w_vovv)
           end if
@@ -768,76 +764,76 @@ module talsh_cc
 
           ierr=talsh_tensor_init(s2_tensor)
 
-!-------------------------------------------
-!         term 1: S(i,j,a,b) += V(i,j,a,b) |
-!-------------------------------------------
+!---------------------------------------
+!         term 1: S(ij,ab) += V(ij,ab) |
+!---------------------------------------
 
           ierr=talsh_tensor_add("S(i,j,a,b)+=V(i,j,a,b)",s2_tensor,int_t%oovv)
 
-!--------------------------------------------------------------
-!         term 2: S(i,j,a,b) += P(a,b) L(i,j,a,e) * Fbar(e,b) |
-!--------------------------------------------------------------
+!----------------------------------------------------------
+!         term 2: S(ij,ab) += P(a,b) L(ij,ae) * Fbar(e,b) |
+!----------------------------------------------------------
 
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,j,a,e)*F(e,b)",s2_tensor,l2_tensor,lambda_t%fbar_vv)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,j,e,b)*F(e,a)",s2_tensor,l2_tensor,lambda_t%fbar_vv)
 
-!--------------------------------------------------------------
-!         term 3: S(i,j,a,b) -= P(i,j) L(i,m,a,b) * Fbar(j,m) |
-!--------------------------------------------------------------
+!----------------------------------------------------------
+!         term 3: S(ij,ab) -= P(i,j) L(im,ab) * Fbar(j,m) |
+!----------------------------------------------------------
 
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,m,b,a)*F(j,m)",s2_tensor,l2_tensor,lambda_t%fbar_oo)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,m,a,b)*F(i,m)",s2_tensor,l2_tensor,lambda_t%fbar_oo)
 
-!------------------------------------------------------------
-!         term 4: S(i,j,a,b) += 1/2 L(m,n,a,b) * W(i,j,m,n) |
-!------------------------------------------------------------
+!------------------------------------------------------
+!         term 4: S(ij,ab) += 1/2 L(mn,ab) * W(ij,mn) |
+!------------------------------------------------------
 
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(m,n,a,b)*W(i,j,m,n)",s2_tensor,l2_tensor,lambda_t%w_oooo,scale=ONE_HALF)
 
-!----------------------------------------------------------------------
-!         term 5: S(i,j,a,b) += P(i,j) P(a,b) L(i,m,a,e) * W(j,e,b,m) |
-!----------------------------------------------------------------------
+!----------------------------------------------------------------
+!         term 5: S(ij,ab) += P(i,j) P(a,b) L(im,ae) * W(je,bm) |
+!----------------------------------------------------------------
 
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,m,e,a)*W(e,j,b,m)",s2_tensor,l2_tensor,lambda_t%w_vovo)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,m,b,e)*W(e,j,a,m)",s2_tensor,l2_tensor,lambda_t%w_vovo)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,m,a,e)*W(e,i,b,m)",s2_tensor,l2_tensor,lambda_t%w_vovo)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,m,e,b)*W(e,i,a,m)",s2_tensor,l2_tensor,lambda_t%w_vovo)
 
-!-----------------------------------------------------------
-!         term 6: S(i,j,a,b) += P(a,b) V(i,j,a,e) * G(e,b) |
-!-----------------------------------------------------------
+!-------------------------------------------------------
+!         term 6: S(ij,ab) += P(a,b) V(ij,ae) * G(e,b) |
+!-------------------------------------------------------
 
           ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,j,a,e)*G(e,b)",s2_tensor,int_t%oovv,lambda_t%gvv)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,j,e,b)*G(e,a)",s2_tensor,int_t%oovv,lambda_t%gvv)
 
-!-----------------------------------------------------------
-!         term 7: S(i,j,a,b) -= P(a,b) L(m,a) * W(i,j,m,b) |
-!-----------------------------------------------------------
+!-------------------------------------------------------
+!         term 7: S(ij,ab) -= P(a,b) L(m,a) * W(,j,mb) |
+!-------------------------------------------------------
 
           if (.not.CCD) then
             ierr=talsh_tensor_contract("S(i,j,a,b)+=L(m,a)*W(j,i,m,b)",s2_tensor,l1_tensor,lambda_t%w_ooov)
             ierr=talsh_tensor_contract("S(i,j,a,b)+=L(m,b)*W(i,j,m,a)",s2_tensor,l1_tensor,lambda_t%w_ooov)
           end if
 
-!-----------------------------------------------------------
-!         term 8: S(i,j,a,b) -= P(i,j) V(i,m,a,b) * G(j,m) |
-!-----------------------------------------------------------
+!-------------------------------------------------------
+!         term 8: S(ij,ab) -= P(i,j) V(im,ab) * G(j,m) |
+!-------------------------------------------------------
 
           ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,m,b,a)*G(j,m)",s2_tensor,int_t%oovv,lambda_t%goo)
           ierr=talsh_tensor_contract("S(i,j,a,b)+=V(j,m,a,b)*G(i,m)",s2_tensor,int_t%oovv,lambda_t%goo)
 
-!--------------------------------------------------------------
-!         term 9+10: S(i,j,a,b) += P(i,j) L(i,e) * W(e,j,a,b) |
-!--------------------------------------------------------------
+!----------------------------------------------------------
+!         term 9+10: S(ij,ab) += P(i,j) L(i,e) * W(ej,ab) |
+!----------------------------------------------------------
 
           if (.not.CCD) then
             ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,e)*W(e,j,a,b)",s2_tensor,l1_tensor,lambda_t%w_vovv)
             ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,e)*W(e,i,b,a)",s2_tensor,l1_tensor,lambda_t%w_vovv)
           end if
 
-!------------------------------------------------------------------
-!         term 11: S(i,j,a,b) += P(i,j) P(a,b) L(i,a) * Fbar(j,b) |
-!------------------------------------------------------------------
+!----------------------------------------------------------------
+!         term 11: S(ij,ab) += P(i,j) P(a,b) L(i,a) * Fbar(j,b) |
+!----------------------------------------------------------------
 
           if (.not.CCD) then
             ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,a)*F(j,b)",s2_tensor,l1_tensor,lambda_t%fbar_ov)
@@ -846,9 +842,9 @@ module talsh_cc
             ierr=talsh_tensor_contract("S(i,j,a,b)+=L(j,b)*F(i,a)",s2_tensor,l1_tensor,lambda_t%fbar_ov)
           end if
 
-!-----------------------------------------------------------
-!         term 12: S(i,j,a,b) += 1/2 L(i,j,e,f) W(e,f,a,b) |
-!-----------------------------------------------------------
+!-----------------------------------------------------
+!         term 12: S(ij,ab) += 1/2 L(ij,ef) W(ef,ab) |
+!-----------------------------------------------------
 
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,j,e,f)*W(e,f,a,b)",s2_tensor,l2_tensor,lambda_t%w_vvvv,scale=ONE_HALF)
 
@@ -891,11 +887,11 @@ module talsh_cc
 !*****************
 
          if (.not.CCD) then
+           ierr=talsh_tensor_destruct(s1_tensor)
            call diis (l2_tensor,l1_tensor,mode=2)
          else
            call diis (l2_tensor,mode=2)
          end if
-         if (.not.CCD) ierr=talsh_tensor_destruct(s1_tensor)
          ierr=talsh_tensor_destruct(s2_tensor)
          ierr=talsh_tensor_destruct(lambda_t%fbar_oo)
          ierr=talsh_tensor_destruct(lambda_t%fbar_ov)

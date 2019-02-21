@@ -71,6 +71,12 @@
          type(tens_rcrsv_t) :: goo, gvv
         end type exatns_lambda_tens
 
+        type, public :: exatns_dm_tens
+         type(tens_rcrsv_t) :: prime_oo, symm_oo
+         type(tens_rcrsv_t) :: prime_ov, prime_vo
+         type(tens_rcrsv_t) :: prime_vv, symm_vv
+        end type exatns_dm_tens
+
         type, public :: space_dims
          integer       :: occ_space_id, vir_space_id
          integer(INTL) :: occ_space_root,vir_space_root

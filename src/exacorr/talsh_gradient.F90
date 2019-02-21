@@ -154,7 +154,7 @@ module talsh_gradient
 
 !********************
 !     calculate DMs *
-!*********************     
+!********************
 
 !----------------------------------------------------------------
 !     oo: g'(j,i) = - 1/2 t(ef,im) * l(jm,ef) - t(e,i) * l(j,e) |
@@ -186,14 +186,17 @@ module talsh_gradient
         ierr=talsh_tensor_contract("T(a,e,i,m)+=T(e,i)*T(a,m)",tau2_tensor,t1_tensor,t1_tensor,scale=MINUS_ONE)
 
 !----------------------------------------------------------------------------
-!     vo: g'(a,i) += 1/4 l(mn,ef) * (t(ef,in) * t(a,m) + t(e,i) * t(af,mn)) |
+!     vo: g'(a,i) -= 1/4 l(mn,ef) * (t(ef,in) * t(a,m) + t(e,i) * t(af,mn)) |
 !----------------------------------------------------------------------------
 
         ierr=talsh_tensor_contract("G(a,i)+=L(m,e)*T(a,e,i,m)",gamma%prime_vo,l1_tensor,tau2_tensor)
         ierr=talsh_tensor_contract("X(m,i)+=L(m,n,e,f)*T(e,f,i,n)",oo_aux_tensor,l2_tensor,t2_tensor)
+          ! print*, "oo_aux     = ", tensor_norm2(oo_aux_tensor) => causes program to freeze at line 202 from talsh_cc
         ierr=talsh_tensor_contract("G(a,i)+=X(m,i)*T(a,m)",gamma%prime_vo,oo_aux_tensor,t1_tensor,scale=MINUS_ONE_QUARTER)
+          print*, "gprime_vo  = ", tensor_norm2(gamma%prime_vo)
         ierr=talsh_tensor_contract("X(m,n,i,f)+=L(m,n,e,f)*T(e,i)",ooov_aux_tensor,l2_tensor,t1_tensor)
         ierr=talsh_tensor_contract("G(a,i)+=X(m,n,i,f)*T(a,f,m,n)",gamma%prime_vo,ooov_aux_tensor,t2_tensor,scale=MINUS_ONE_QUARTER)
+          print*, "gprime_vo  = ", tensor_norm2(gamma%prime_vo)
 
 !---------------------------
 !     ov: g'(i,a) = l(i,a) |
