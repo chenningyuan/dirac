@@ -24,27 +24,22 @@ module talsh_gradient
 
 !     Routine for obtaining the density matrices in the MO basis
 
-      use exacorr_global, only : get_nao
-      
 !     input variables
       type(exacc_input), intent(in   ) :: exa_input
       type(talsh_tens_t),intent(inout) :: t2_tensor, l2_tensor ! solution tensors
       type(talsh_tens_t),intent(inout), optional :: t1_tensor, l1_tensor ! solution tensors
 !     density matrices type, output
       type(talsh_dm_tens) :: gamma
-      type(talsh_tens_t)  :: dm_ao
 !     tensor dimensions
-      integer :: nao
       integer, dimension(2) :: oo_dims,ov_dims,vo_dims,vv_dims
-      integer, dimension(2) :: dm_ao_dims
 !     CCD switch
-      logical :: CCD = .false.
+      logical :: CCD
 !     error code
       integer :: ierr
 
       call print_date('Entered DM routine')
 
-      if (.not.present(t1_tensor) .and. .not.present(l1_tensor)) CCD = .true.
+      CCD = exa_input%CCD
 
 !************************************
 !     construct gamma prime tensors *
@@ -57,9 +52,11 @@ module talsh_gradient
         ov_dims(1) = exa_input%nkr_occ
         ov_dims(2) = exa_input%nkr_vir
         ierr=talsh_tensor_construct(gamma%prime_ov,C8,ov_dims,init_val=ZERO)
+        ierr=talsh_tensor_construct(gamma%symm_ov,C8,ov_dims,init_val=ZERO)
         vo_dims(1) = exa_input%nkr_vir
         vo_dims(2) = exa_input%nkr_occ
         ierr=talsh_tensor_construct(gamma%prime_vo,C8,vo_dims,init_val=ZERO)
+        ierr=talsh_tensor_construct(gamma%symm_vo,C8,vo_dims,init_val=ZERO)
       end if
       vv_dims = exa_input%nkr_vir
       ierr=talsh_tensor_construct(gamma%prime_vv,C8,vv_dims,init_val=ZERO)
@@ -76,40 +73,30 @@ module talsh_gradient
       end if
       call print_date("Calculated density matrices in MO basis")
 
-!******************************
-!     MO to AO transformation *
-!******************************
+!***********************
+!     write DM to file *
+!***********************
 
-!     construct tensor
-      nao        = get_nao()
-      dm_ao_dims = nao
-      ierr=talsh_tensor_construct(dm_ao,C8,dm_ao_dims,init_val=ZERO)
-
-      call mo_to_ao(exa_input,gamma,dm_ao,CCD)
-      call print_date("MO to AO transformation completed")
+      call store_dm_mo(exa_input,gamma)
+      call print_date("MO density matrix stored")
 
 !     cleanup
       ierr=talsh_tensor_destruct(gamma%prime_oo)
       if (.not.CCD) then
         ierr=talsh_tensor_destruct(gamma%prime_ov)
+        ierr=talsh_tensor_destruct(gamma%symm_ov)
         ierr=talsh_tensor_destruct(gamma%prime_vo)
+        ierr=talsh_tensor_destruct(gamma%symm_vo)
       end if
       ierr=talsh_tensor_destruct(gamma%prime_vv)
       ierr=talsh_tensor_destruct(gamma%symm_oo)
       ierr=talsh_tensor_destruct(gamma%symm_vv)
 
-!********************
-!     write to disk *
-!********************
-
-      call write_to_something(dm_ao,nao)
-       
       if (ierr.ne.TALSH_SUCCESS) then
         print*," ccdriver: error in evaluation of density matrices, code=",ierr
         return
       end if
 
-      ierr=talsh_tensor_destruct(dm_ao)
 
     end subroutine talsh_dm_driver
 
@@ -201,17 +188,34 @@ module talsh_gradient
 !---------------------------
 
         ierr=talsh_tensor_add("G(i,a)+=L(i,a)",gamma%prime_ov,l1_tensor)
+
+!--------------------------------------------------
+!       ov symm: g(i,a) = 1/2 (g'(i,a) + g'(a,i)) |
+!--------------------------------------------------
+
+        ierr=talsh_tensor_add("G(i,a)+=X(i,a)",gamma%symm_ov,gamma%prime_ov,scale=ONE_HALF)
+        ierr=talsh_tensor_contract("G(i,a)+=X+(a,i)*K()",gamma%symm_ov,gamma%prime_vo,one_tensor,scale=ONE_HALF)
+
+!--------------------------------------------------
+!       vo symm: g(a,i) = 1/2 (g'(a,i) + g'(i,a)) |
+!--------------------------------------------------
+
+        ierr=talsh_tensor_add("G(a,i)+=X(a,i)",gamma%symm_vo,gamma%prime_vo,scale=ONE_HALF)
+        ierr=talsh_tensor_contract("G(a,i)+=X+(i,a)*K()",gamma%symm_vo,gamma%prime_ov,one_tensor,scale=ONE_HALF)
+
       end if
 
 !------------------------------------------------
 !     vv symm: g(b,a) = 1/2 (g'(b,a) + g'(a,b)) |
 !------------------------------------------------
+
       ierr=talsh_tensor_add("G(b,a)+=X(b,a)",gamma%symm_vv,gamma%prime_vv,scale=ONE_HALF)
       ierr=talsh_tensor_contract("G(b,a)+=X(a,b)*K()",gamma%symm_vv,gamma%prime_vv,one_tensor,scale=ONE_HALF)
 
 !------------------------------------------------
 !     oo symm: g(j,i) = 1/2 (g'(j,i) + g'(i,j)) |
 !------------------------------------------------
+
       ierr=talsh_tensor_add("G(j,i)+=X(j,i)",gamma%symm_oo,gamma%prime_oo,scale=ONE_HALF)
       ierr=talsh_tensor_contract("G(j,i)+=X(i,j)*K()",gamma%symm_oo,gamma%prime_oo,one_tensor,scale=ONE_HALF)
 
@@ -220,7 +224,9 @@ module talsh_gradient
         print*, "gprime_oo  = ", tensor_norm2(gamma%prime_oo)
         if (.not.CCD) then
           print*, "gprime_ov  = ", tensor_norm2(gamma%prime_ov)
+          print*, "gsymm_ov   = ", tensor_norm2(gamma%symm_ov)
           print*, "gprime_vo  = ", tensor_norm2(gamma%prime_vo)
+          print*, "gsymm_vo   = ", tensor_norm2(gamma%symm_vo)
         end if
         print*, "gprime_vv  = ", tensor_norm2(gamma%prime_vv)
         print*, "gsymm_oo   = ", tensor_norm2(gamma%symm_oo)
@@ -240,70 +246,50 @@ module talsh_gradient
 
     end subroutine calc_dm_mo
 
-    subroutine mo_to_ao(exa_input,gamma,dm_ao,CCD)
+    subroutine store_dm_mo (exa_input,gamma)
 
       use exacorr_mo
-      use exacorr_global, only : debug_exa, get_nao, get_mo_coefficients
+      use exacorr_global, only : get_nsolutions
 
 !     input variables
       type(exacc_input),   intent(in   )  :: exa_input
       type(talsh_dm_tens), intent(inout)  :: gamma
-      type(talsh_tens_t),  intent(inout)  :: dm_ao
-      logical,             intent(in   )  :: CCD
-!     store mo_coefficients
-      type(cmo)                       :: cspinor
-      complex(8), pointer, contiguous :: coeff_fort(:,:)
-      type(talsh_tens_t)              :: coeff_a, coeff_b
-!     tensor dimensions
-      integer :: nao, nocc, nvir
-!     DMs
-      type(talsh_tens_t)  :: dm_mo
-      type(talsh_tens_t)  :: dm_ht
-!     DM dims
-      integer :: dm_mo_dims(2), dm_ht_dims(2),coeff_dims(2)
+!     matrix dimensions
+      integer :: nocc, nvir, nesh
 !     body pointers
-      type(C_PTR)                     :: body_p1, body_p2
-      complex(8), pointer, contiguous :: dm_mo_fort(:,:), dm_block(:,:)
+      type(C_PTR)                     :: body_p2
+      complex(8), pointer, contiguous :: dm_block(:,:)
+      complex(8), allocatable         :: dm_mo_fort(:,:)
+      real(8),allocatable             :: dm_diracformat(:,:,:)
 !     complete mo list
       integer, allocatable :: mo_list(:)
+!     CCD switch
+      logical :: CCD
 !     error code
       integer :: ierr
+!     loop variables
+      integer :: i, j, norbt
+
+      CCD = exa_input%CCD
 
 !***************
 !     set dims *
 !***************
  
-      nao           = get_nao()
-      nocc          = exa_input%nkr_occ
-      nvir          = exa_input%nkr_vir
-      dm_mo_dims    = nocc + nvir
-      dm_ht_dims(1) = nocc + nvir
-      dm_ht_dims(2) = nao
-      coeff_dims(1) = nao
-      coeff_dims(2) = nocc + nvir
-
-!************************
-!     construct tensors *
-!************************
-
-      ierr=talsh_tensor_construct(dm_mo,C8,dm_mo_dims,init_val=ZERO)
-      ierr=talsh_tensor_construct(dm_ht,C8,dm_ht_dims,init_val=ZERO)
-      ierr=talsh_tensor_construct(coeff_a,C8,coeff_dims,init_val=ZERO)
-      ierr=talsh_tensor_construct(coeff_b,C8,coeff_dims,init_val=ZERO)
+      nocc = exa_input%nocc
+      nvir = exa_input%nvir
 
 !***************************************
 !     copy DM blocks into one large DM *
 !***************************************
+
+      allocate (dm_mo_fort(nocc+nvir,nocc+nvir))
 
 !     -----------
 !     | OO | OV |
 !     -----------
 !     | VO | VV |
 !     -----------
-
-!     body acces to final DM
-      ierr=talsh_tensor_get_body_access(dm_mo,body_p1,C8,0,DEV_HOST)
-      call c_f_pointer(body_p1,dm_mo_fort,dm_mo_dims) ! to use <dm_mo_fort> as a regular Fortran 2d array
 
 !     oo
       ierr=talsh_tensor_get_body_access(gamma%symm_oo,body_p2,C8,0,DEV_HOST)
@@ -312,7 +298,7 @@ module talsh_gradient
 
 !     vo
       if (.not.CCD) then
-        ierr=talsh_tensor_get_body_access(gamma%prime_vo,body_p2,C8,0,DEV_HOST)
+        ierr=talsh_tensor_get_body_access(gamma%symm_vo,body_p2,C8,0,DEV_HOST)
         call c_f_pointer(body_p2,dm_block,(/nvir,nocc/)) ! to use <dm_mo_block> as a regular Fortran 2d array
         dm_mo_fort(1+nocc:nocc+nvir,1:nocc) = dm_block
       else
@@ -321,7 +307,7 @@ module talsh_gradient
 
 !     ov
       if (.not.CCD) then
-        ierr=talsh_tensor_get_body_access(gamma%prime_ov,body_p2,C8,0,DEV_HOST)
+        ierr=talsh_tensor_get_body_access(gamma%symm_ov,body_p2,C8,0,DEV_HOST)
         call c_f_pointer(body_p2,dm_block,(/nocc,nvir/)) ! to use <dm_mo_block> as a regular Fortran 2d array
         dm_mo_fort(1:nocc,1+nocc:nocc+nvir) = dm_block
       else
@@ -333,98 +319,38 @@ module talsh_gradient
       call c_f_pointer(body_p2,dm_block,(/nvir,nvir/)) ! to use <dm_mo_block> as a regular Fortran 2d array
       dm_mo_fort(1+nocc:nocc+nvir,1+nocc:nocc+nvir) = dm_block
 
-!**************************
-!     get MO coefficients *
-!**************************
+!     Determine where this should go in the full list of MOs (NB: DIRAC assumes restricted densities and uses Kramers pairs)
 
-      allocate(mo_list(nocc+nvir))
-      mo_list(1:nocc          ) = exa_input%mokr_occ
-      mo_list(1+nocc:nocc+nvir) = exa_input%mokr_vir
-      call get_mo_coefficients(cspinor,mo_list,nocc+nvir)
-      deallocate(mo_list)
+      ! norbt = exa_input%nkr_occ + exa_input%nkr_vir
+      allocate(mo_list(exa_input%nkr_occ+exa_input%nkr_vir))
+      ! do i = 1, norbt
+      !   if (2*i <= nocc) then
+      !     mo_list(i) = exa_input%mokr_occ(2*i)/2  ! TO DO: keep list of input Kramers pairs that is overwritten in the driver
+      !   else
+      !     mo_list(i) = exa_input%mokr_vir(2*i-nocc)/2
+      !   end if
+      ! end do
+      mo_list(1:exa_input%nkr_occ) = exa_input%mokr_occ
+      mo_list(1+exa_input%nkr_occ:exa_input%nkr_occ+exa_input%nkr_vir) = exa_input%mokr_vir
 
-!     body acces to coeff_a
-      ierr=talsh_tensor_get_body_access(coeff_a,body_p1,C8,0,DEV_HOST)
-      call c_f_pointer(body_p1,coeff_fort,coeff_dims) ! to use <coeff_fort> as a regular Fortran 2d array
-      coeff_fort(:,:) = cspinor%coeff(:,:,1)
+      nesh = get_nsolutions() / 2
+      allocate (dm_diracformat(nesh,nesh,4))
+      dm_diracformat = ZERO
+      do j = 1, norbt
+        do i = 1, norbt
+          ! We copy the unbar-unbar part of the density matrix, would be good to test whether the Kramers-restricted assumption holds
+          ! Or even to average over the two density matrices and enforce a Kramers-restricted density
+          dm_diracformat(mo_list(i),mo_list(j),1) = real(dm_mo_fort(2*i-1,2*j-1)) 
+          dm_diracformat(mo_list(i),mo_list(j),2) = imag(dm_mo_fort(2*i-1,2*j-1))
+        end do
+      end do
 
-!     body acces to coeff_b
-      ierr=talsh_tensor_get_body_access(coeff_b,body_p1,C8,0,DEV_HOST)
-      call c_f_pointer(body_p1,coeff_fort,coeff_dims) ! to use <coeff_fort> as a regular Fortran 2d array
-      coeff_fort(:,:) = cspinor%coeff(:,:,2)
+      call store_cc_density ('CCSD', dm_diracformat )
 
-      call dealloc_mo(cspinor)
+      deallocate (dm_diracformat)
+      deallocate (mo_list)
+      deallocate (dm_mo_fort)
 
-!******************************
-!     MO to AO transformation *
-!******************************
-
-!-----------------------------------------------------
-!     ht1 alpha: DM_ht(p,s) += DM_MO(p,q) * Ca+(q,s) |
-!-----------------------------------------------------
-      ierr=talsh_tensor_contract("H(p,s)+=D(p,q)*C+(s,q)",dm_ht,dm_mo,coeff_a)
-
-!----------------------------------------------------
-!     ht2 alpha: DM_AO(r,s) += Ca(r,p) * DM_ht(p,s) |
-!----------------------------------------------------
-      ierr=talsh_tensor_contract("D(r,s)+=C(r,p)*H(p,s)",dm_ao,coeff_a,dm_ht)
-
-!-----------------------------------------------------
-!     ht1 beta: DM_ht(p,s) += DM_MO(p,q) * Cb+(q,s) |
-!-----------------------------------------------------
-
-!     first reset dm_ht
-      ierr=talsh_tensor_init(dm_ht,ZERO)
-      ierr=talsh_tensor_contract("H(p,s)+=D(p,q)*C+(s,q)",dm_ht,dm_mo,coeff_b)
-
-!----------------------------------------------------
-!     ht2 beta: DM_AO(r,s) += Cb(r,p) * DM_ht(p,s) |
-!----------------------------------------------------
-      ierr=talsh_tensor_contract("D(r,s)+=C(r,p)*H(p,s)",dm_ao,coeff_b,dm_ht)
-
-!     debug
-      print*, "DM_AO = ", tensor_norm2(dm_ao)
-
-!**************
-!     cleanup *
-!**************
-
-      ierr=talsh_tensor_destruct(dm_mo)
-      ierr=talsh_tensor_destruct(dm_ht)
-      ierr=talsh_tensor_destruct(coeff_a)
-      ierr=talsh_tensor_destruct(coeff_b)
-
-    end subroutine mo_to_ao
-
-    subroutine write_to_something(dm_ao,nao)
-
-!     input variables
-      type(talsh_tens_t), intent(inout) :: dm_ao
-      integer,            intent(in   ) :: nao
-!     file variable
-      integer :: file_unit
-!     body pointers
-      type(C_PTR)                     :: body_p
-      complex(8), pointer, contiguous :: dm_ao_fort(:,:)
-!     error code
-      integer :: ierr
-
-!     openn file to read
-      call get_free_fileunit(file_unit)
-      open(file_unit,file="DM_AO",status="new",form="unformatted",action="write")
-
-!     dimension info
-      write(file_unit) nao
-
-!     body acces to  DM_AO
-      ierr=talsh_tensor_get_body_access(dm_ao,body_p,C8,0,DEV_HOST)
-      call c_f_pointer(body_p,dm_ao_fort,(/nao,nao/)) ! to use <dm_ao_fort> as a regular Fortran 2d array
-
-!     write fortran array of DM_AO
-      write(file_unit) dm_ao_fort
-
-      close(file_unit)
-
-    end subroutine write_to_something
+    end subroutine store_dm_mo
 
 end module talsh_gradient

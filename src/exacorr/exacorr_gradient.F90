@@ -4,7 +4,7 @@ module exacorr_gradient
 
   use exatensor
   use exacorr_ao_to_mo,  only : print_tensornorm2
-  use exacorr_datatypes, only : exatns_dm_tens, space_dims
+  use exacorr_datatypes
   use exacorr_global,    only : debug_exa
 
 #if defined (VAR_MPI)
@@ -20,32 +20,32 @@ module exacorr_gradient
 
   contains
 
-    subroutine exacorr_dm_driver(dims,t2_tensor,l2_tensor,t1_tensor,l1_tensor)
+    subroutine exacorr_dm_driver(exa_input,dims,t2_tensor,l2_tensor,t1_tensor,l1_tensor)
 
 !     Routine for obtaining the density matrices in the MO basis
 
 !     input variables
+      type(exacc_input), intent(in  )  :: exa_input
       type(space_dims),  intent(in   ) :: dims
       type(tens_rcrsv_t),intent(inout) :: t2_tensor, l2_tensor
       type(tens_rcrsv_t),intent(inout), optional :: t1_tensor, l1_tensor
 !     density matrices type, output
       type(exatns_dm_tens) :: gamma
-      type(tens_rcrsv_t)   :: dm_mo
 !     tensor dimensions
-      integer,       dimension(2) :: oo_id,  ov_id,  vo_id,  vv_id,   dm_mo_id
-      integer(INTL), dimension(2) :: oo_root,ov_root,vo_root,vv_root, dm_mo_root
+      integer,       dimension(2) :: oo_id,  ov_id,  vo_id,  vv_id
+      integer(INTL), dimension(2) :: oo_root,ov_root,vo_root,vv_root
 !     CCD switch
-      logical :: CCD = .false.
+      logical :: CCD
 !     error code
       integer :: ierr
 
       call print_date('Entered DM routine')
 
-      if (.not.present(t1_tensor) .and. .not.present(l1_tensor)) CCD = .true.
+      CCD = exa_input%CCD
 
-!***********************
+!**********************
 !     set ids + roots *
-!***********************
+!**********************
 
       oo_id   = (/dims%occ_space_id,   dims%occ_space_id  /)
       oo_root = (/dims%occ_space_root, dims%occ_space_root/)
@@ -65,7 +65,9 @@ module exacorr_gradient
       ierr=exatns_tensor_create(gamma%prime_oo,"gprime_oo",oo_id,oo_root,EXA_DATA_KIND_C8)
       if (.not.CCD) then
         ierr=exatns_tensor_create(gamma%prime_ov,"gprime_ov",ov_id,ov_root,EXA_DATA_KIND_C8)
+        ierr=exatns_tensor_create(gamma%symm_ov,"gsymm_ov",ov_id,ov_root,EXA_DATA_KIND_C8)
         ierr=exatns_tensor_create(gamma%prime_vo,"gprime_vo",vo_id,vo_root,EXA_DATA_KIND_C8)
+        ierr=exatns_tensor_create(gamma%symm_vo,"gsymm_vo",vo_id,vo_root,EXA_DATA_KIND_C8)
       end if
       ierr=exatns_tensor_create(gamma%prime_vv,"gprime_vv",vv_id,vv_root,EXA_DATA_KIND_C8)
       ierr=exatns_tensor_create(gamma%symm_oo,"gsymm_oo",oo_id,oo_root,EXA_DATA_KIND_C8)
@@ -76,56 +78,46 @@ module exacorr_gradient
 !**************************************
 
       if (.not.CCD) then
-        call calc_dm_mo(gamma,t2_tensor,l2_tensor,dims,t1_tensor,l1_tensor)
+        call calc_dm_mo(gamma,t2_tensor,l2_tensor,dims,CCD,t1_tensor,l1_tensor)
       else
-        call calc_dm_mo(gamma,t2_tensor,l2_tensor,dims)
+        call calc_dm_mo(gamma,t2_tensor,l2_tensor,dims,CCD)
       end if
       call print_date("Calculated density matrices in MO basis")
 
-!***************************
-!     combine DM_MO blocks *
-!***************************
+!***********************
+!     write DM to file *
+!***********************
 
-!     construct tensor
-      ! dm_mo_id   = ?
-      ! dm_mo_root = ?
-      ! ierr=exatns_tensor_create(dm_mo,"dm_mo",dm_mo_id,dm_mo_root,EXA_DATA_KIND_C8)
-
-      ! call combine_dm_blocks(dm_mo,gamma,CCD)
-      ! call print_date("Combination of DM_MO blocks succeeded")
+      call store_dm_mo(exa_input,gamma,dims)
+      call print_date("MO density matrix stored")
 
 !     cleanup
       ierr=exatns_tensor_destroy(gamma%prime_oo)
       if (.not.CCD) then
         ierr=exatns_tensor_destroy(gamma%prime_ov)
+        ierr=exatns_tensor_destroy(gamma%symm_ov)
         ierr=exatns_tensor_destroy(gamma%prime_vo)
+        ierr=exatns_tensor_destroy(gamma%symm_vo)
       end if
       ierr=exatns_tensor_destroy(gamma%prime_vv)
       ierr=exatns_tensor_destroy(gamma%symm_oo)
       ierr=exatns_tensor_destroy(gamma%symm_vv)
-
-!********************
-!     write to disk *
-!********************
-
-      ! call write_to_something(dm_ao,nao)
        
       if (ierr.ne.EXA_SUCCESS) then
         print*," ccdriver: error in evaluation of density matrices, code=",ierr
         return
       end if
 
-      ! ierr=exatns_tensor_destroy(dm_mo)
-
     end subroutine exacorr_dm_driver
 
-    subroutine calc_dm_mo(gamma,t2_tensor,l2_tensor,dims,t1_tensor,l1_tensor)
+    subroutine calc_dm_mo(gamma,t2_tensor,l2_tensor,dims,CCD,t1_tensor,l1_tensor)
 
 !     input variables
       type(exatns_dm_tens), intent(inout) :: gamma
       type(tens_rcrsv_t),   intent(inout) :: t2_tensor, l2_tensor
       type(tens_rcrsv_t),   intent(inout), optional :: t1_tensor, l1_tensor
       type(space_dims),     intent(in   ) :: dims
+      logical,              intent(in   ) :: CCD
 !     auxiliary tensors
       type(tens_rcrsv_t) :: one_dm_tensor
       type(tens_rcrsv_t) :: tau2_tensor
@@ -135,12 +127,8 @@ module exacorr_gradient
       integer(INTL), dimension(2) :: oo_root
       integer,       dimension(4) :: vvoo_id,   ooov_id
       integer(INTL), dimension(4) :: vvoo_root, ooov_root
-!     CCD switch
-      logical :: CCD = .false.
 !     error code
       integer :: ierr
-
-      if (.not.present(t1_tensor) .and. .not.present(l1_tensor)) CCD = .true.
 
 !*********************************
 !     construct auxiliary tensor *
@@ -200,18 +188,30 @@ module exacorr_gradient
 
         ierr=exatns_tensor_contract("G(a,i)+=L(m,e)*T(a,e,i,m)",gamma%prime_vo,l1_tensor,tau2_tensor)
         ierr=exatns_tensor_contract("X(m,i)+=L(m,n,e,f)*T(e,f,i,n)",oo_aux_tensor,l2_tensor,t2_tensor)
-          print*, "oo_aux     = ", print_tensornorm2(oo_aux_tensor)
         ierr=exatns_tensor_contract("G(a,i)+=X(m,i)*T(a,m)",gamma%prime_vo,oo_aux_tensor,t1_tensor,MINUS_ONE_QUARTER)
-          print*, "gprime_vo  = ", print_tensornorm2(gamma%prime_vo)
         ierr=exatns_tensor_contract("X(m,n,i,f)+=L(m,n,e,f)*T(e,i)",ooov_aux_tensor,l2_tensor,t1_tensor)
         ierr=exatns_tensor_contract("G(a,i)+=X(m,n,i,f)*T(a,f,m,n)",gamma%prime_vo,ooov_aux_tensor,t2_tensor,MINUS_ONE_QUARTER)
-          print*, "gprime_vo  = ", print_tensornorm2(gamma%prime_vo)
 
 !---------------------------
 !     ov: g'(i,a) = l(i,a) |
 !---------------------------
 
         ierr=exatns_tensor_contract("G(i,a)+=L(i,a)*K()",gamma%prime_ov,l1_tensor,one_dm_tensor)
+
+!--------------------------------------------------
+!       ov symm: g(i,a) = 1/2 (g'(i,a) + g'(a,i)) |
+!--------------------------------------------------
+
+        ! ierr=exatns_tensor_contract("G(i,a)+=X(i,a)*K()",gamma%symm_ov,gamma%prime_ov,one_dm_tensor,scale=ONE_HALF)
+        ! ierr=exatns_tensor_contract("G(i,a)+=X+(a,i)*K()",gamma%symm_ov,gamma%prime_vo,one_dm_tensor,scale=ONE_HALF)
+
+!--------------------------------------------------
+!       vo symm: g(a,i) = 1/2 (g'(a,i) + g'(i,a)) |
+!--------------------------------------------------
+
+        ! ierr=exatns_tensor_contract("G(a,i)+=X(a,i)*K()",gamma%symm_vo,gamma%prime_vo,one_dm_tensor,scale=ONE_HALF)
+        ! ierr=exatns_tensor_contract("G(a,i)+=X+(i,a)*K()",gamma%symm_vo,gamma%prime_ov,one_dm_tensor,scale=ONE_HALF)
+
       end if
 
 !------------------------------------------------
@@ -233,7 +233,9 @@ module exacorr_gradient
         print*, "gprime_oo  = ", print_tensornorm2(gamma%prime_oo)
         if (.not.CCD) then
           print*, "gprime_ov  = ", print_tensornorm2(gamma%prime_ov)
+          print*, "gsymm_ov   = ", print_tensornorm2(gamma%symm_ov)
           print*, "gprime_vo  = ", print_tensornorm2(gamma%prime_vo)
+          print*, "gsymm_vo   = ", print_tensornorm2(gamma%symm_vo)
         end if
         print*, "gprime_vv  = ", print_tensornorm2(gamma%prime_vv)
         print*, "gsymm_oo   = ", print_tensornorm2(gamma%symm_oo)
@@ -252,6 +254,34 @@ module exacorr_gradient
       end if
 
     end subroutine calc_dm_mo
+
+    subroutine store_dm_mo(exa_input,gamma,dims)
+
+      type(exacc_input),    intent(in   ) :: exa_input
+      type(exatns_dm_tens), intent(inout) :: gamma
+      type(space_dims),     intent(in   ) :: dims
+!     full DM in MO basis
+      type(tens_rcrsv_t) :: dm_mo
+!     tensor dimensions
+      integer,       dimension(2) :: dm_id
+      integer(INTL), dimension(2) :: dm_root
+!     error code
+      integer :: ierr
+
+!***********************
+!     construct tensor *
+!***********************
+
+      dm_id   = (/dims%spinor_space_id,  dims%spinor_space_id  /)
+      dm_root = (/dims%spinor_space_root,dims%spinor_space_root/)
+      ierr=exatns_tensor_create(dm_mo,"dm_mo",dm_id,dm_root,EXA_DATA_KIND_C8)
+
+      ! call get_dims(dm_mo,dm_mo_dims,num_dims)
+      ! print*, "dm_mo_dims, num_dims", dm_mo_dims, num_dims
+
+      ierr=exatns_tensor_destroy(dm_mo)
+
+    end subroutine store_dm_mo
 
 #endif
 

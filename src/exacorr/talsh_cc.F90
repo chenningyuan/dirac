@@ -72,9 +72,7 @@ module talsh_cc
 !        orbital energies
          real(8), allocatable :: eps_occ(:),eps_vir(:)
 !        CCSD control and result variables
-         !integer :: iccsd, nccsd
          real(8) :: mp2_energy, ccsd_energy, t_energy(3)
-         !real(8) :: ccsd_energy, t_energy(3)
          real(8) :: t_target_precision
          integer :: ncycles
 
@@ -99,12 +97,12 @@ module talsh_cc
          call c_f_pointer(body_p,result_tens,one_dims)
 
          !DO NOT CHANGE THESE VARIABLES
-         nocc = exa_input%nkr_occ
-         nvir = exa_input%nkr_vir
+         nocc = exa_input%nocc
+         nvir = exa_input%nvir
          allocate(mo_occ(nocc))
          allocate(mo_vir(nvir))
-         mo_occ(1:nocc) = exa_input%mokr_occ(1:exa_input%nkr_occ)
-         mo_vir(1:nvir) = exa_input%mokr_vir(1:exa_input%nkr_vir)
+         mo_occ = exa_input%mo_occ
+         mo_vir = exa_input%mo_vir
          t_target_precision = exa_input%t_econv
          CCD = exa_input%ccd
          lambda = exa_input%lambda

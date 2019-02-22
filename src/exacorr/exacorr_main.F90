@@ -21,7 +21,6 @@
       logical              :: input_found=.false.
       integer              :: file_unit
       integer, allocatable :: mo_list(:)
-      integer, allocatable :: mokr_occ(:), mokr_vir(:)
       integer              :: nesh, kvec
       integer              :: i
 
@@ -87,29 +86,27 @@
 
         exa_input%nkr_occ = 0
         call numlst (string_occupied,kvec,1,1,nesh,1,exa_input%nkr_occ)
-        allocate (mokr_occ(exa_input%nkr_occ))
-        call numlst (string_occupied,mokr_occ,exa_input%nkr_occ,1,nesh,1,exa_input%nkr_occ)
-        exa_input%nkr_occ = 2 * exa_input%nkr_occ
         allocate (exa_input%mokr_occ(exa_input%nkr_occ))
-        do i = 1, exa_input%nkr_occ
-          exa_input%mokr_occ(i) = (mokr_occ(1)-1)*2+i
+        call numlst (string_occupied,exa_input%mokr_occ,exa_input%nkr_occ,1,nesh,1,exa_input%nkr_occ)
+        exa_input%nocc = 2 * exa_input%nkr_occ
+        allocate (exa_input%mo_occ(exa_input%nocc))
+        do i = 1, exa_input%nocc
+          exa_input%mo_occ(i) = (exa_input%mokr_occ(1)-1)*2+i
         end do
-        deallocate (mokr_occ)
 
         exa_input%nkr_vir = 0
         call numlst (string_virtual,kvec,1,1,nesh,1,exa_input%nkr_vir)
-        allocate (mokr_vir(exa_input%nkr_vir))
-        call numlst (string_virtual,mokr_vir,exa_input%nkr_vir,1,nesh,1,exa_input%nkr_vir)
-        exa_input%nkr_vir = 2 * exa_input%nkr_vir
         allocate (exa_input%mokr_vir(exa_input%nkr_vir))
-        do i = 1, exa_input%nkr_vir
-          exa_input%mokr_vir(i) = exa_input%mokr_occ(exa_input%nkr_occ)+i
+        call numlst (string_virtual,exa_input%mokr_vir,exa_input%nkr_vir,1,nesh,1,exa_input%nkr_vir)
+        exa_input%nvir = 2 * exa_input%nkr_vir
+        allocate (exa_input%mo_vir(exa_input%nvir))
+        do i = 1, exa_input%nvir
+          exa_input%mo_vir(i) = exa_input%mo_occ(exa_input%nocc)+i
         end do
-        deallocate (mokr_vir)
       end if
 
       if (cc_calculation) then
-         if (mytid == 0) print*, "a CC calculation with",exa_input%nkr_occ," occupied"," and ",exa_input%nkr_vir," virtuals"
+         if (mytid == 0) print*, "a CC calculation with",exa_input%nocc," occupied"," and ",exa_input%nvir," virtuals"
          if (exa_input%talsh) then
             if (mytid == 0) call talsh_cc_driver (exa_input)
          else
@@ -119,6 +116,10 @@
             if (mytid /= 0) allocate(exa_input%mokr_occ(exa_input%nkr_occ))
             call interface_mpi_bcast(exa_input%nkr_vir,1,0,global_communicator)
             if (mytid /= 0) allocate(exa_input%mokr_vir(exa_input%nkr_vir))
+            call interface_mpi_bcast(exa_input%nocc,1,0,global_communicator)
+            if (mytid /= 0) allocate(exa_input%mo_occ(exa_input%nocc))
+            call interface_mpi_bcast(exa_input%nvir,1,0,global_communicator)
+            if (mytid /= 0) allocate(exa_input%mo_vir(exa_input%nvir))
             call exacc_sync_cw(0)
 #endif
             call exacorr_cc_driver (exa_input)
@@ -127,6 +128,8 @@
 
       deallocate(exa_input%mokr_occ)
       deallocate(exa_input%mokr_vir)
+      deallocate(exa_input%mo_occ  )
+      deallocate(exa_input%mo_vir  )
 
 #if defined (VAR_MPI) 
       call interface_mpi_finalize()
