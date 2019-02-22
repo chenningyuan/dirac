@@ -1,13 +1,16 @@
-#General documentation for exacorr module
+General documentation for exacorr module
 
 Remarks:
-- The exacorr MOLTRA routine is bugged. Please do **not** use!
+- To use the standalone version of exacorr use the exacorr.x executable i.c.w. exacorr.inp (only need to specify EXACC section)
 
 To Do:
-1. Fix MOLTRA bug
-2. Finish ReSpect interface
-3. Implement MO to AO transformation for DMs
-4. Implement EOM
+- [ ] Finish ReSpect interface (@stanpa)
+- [ ] Implement CCD for Lambda equations (@stanpa)
+- [ ] Write talsh DM to file (@stanpa, @Visscher)
+- [ ] Refactor exacorr_gradient (@stanpa)
+- [ ] Implement EOM (@stanpa)
+  - [ ] Refactor EOM (@stanpa)
+  - [ ] Implement Davidson for EOM (@gomes.asp)
 
 <table>
   <tr>
