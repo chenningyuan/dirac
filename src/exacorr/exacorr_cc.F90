@@ -13,7 +13,7 @@ module exacorr_cc
         implicit none
         complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
                                  ONE_HALF=(0.5D0,0.D0),MINUS_ONE_HALF=(-0.5D0,0.D0),ONE_QUARTER=(0.25D0,0.D0), &
-                                 MINUS_TWO=(-2.D0,0.D0)!, THREE=(3.0,0.0), SIX=(6.0,0.0)
+                                 MINUS_TWO=(-2.D0,0.D0), TWO=(2.D0,0.D0)!, THREE=(3.0,0.0), SIX=(6.0,0.0)
         type(tens_rcrsv_t),public :: one_tensor
 
         private
@@ -205,6 +205,10 @@ module exacorr_cc
             if(ierr.ne.EXA_SUCCESS) call quit(ierr,'Adding one electron integrals (OE_vv) failed!')
             call print_date('one electron integrals added to Fock Matrix')
 
+            !ierr=exatns_tensor_traverse(comm_t%foo,'PrintTensor')
+            !ierr=exatns_tensor_traverse(comm_t%fov,'PrintTensor')
+            !ierr=exatns_tensor_traverse(comm_t%fvv,'PrintTensor')
+
             ierr=exatns_tensor_create(id_mat_occ,"id_mat_occ",oo_id,oo_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_init(id_mat_occ, ZERO)
             ierr=exatns_tensor_transform(id_mat_occ,'IDmatrix')
@@ -218,8 +222,8 @@ module exacorr_cc
             ierr=exatns_tensor_contract("F(a,i)+=G(c,d,a,i)*I(c,d)",comm_t%fov,int_t%ooov,id_mat_occ, MINUS_TWO)
 
 
-            ierr=exatns_tensor_contract("F(i,j)+=G(c,d,i,j)*I(c,d)",comm_t%fvv,int_t%oovv,id_mat_occ, ONE)
-            ierr=exatns_tensor_contract("F(i,j)+=G+(c,d,i,j)*I(c,d)",comm_t%fvv,int_t%oovv,id_mat_occ, MINUS_TWO)
+            ierr=exatns_tensor_contract("F(i,j)+=G(c,d,i,j)*I(c,d)",comm_t%fvv,int_t%oovv,id_mat_occ, MINUS_ONE)
+            ierr=exatns_tensor_contract("F(i,j)+=G+(c,d,i,j)*I(c,d)",comm_t%fvv,int_t%oovv,id_mat_occ, TWO)
 
             ierr=exatns_tensor_destroy(id_mat_occ)
             call print_date('two electron integrals added to Fock Matrix')
@@ -567,7 +571,7 @@ module exacorr_cc
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register() failed!')
 
          !Register the standard print method with a low treshold to always print result_tensor
-         call tens_printer%reset_thresh(1.0D-15)
+         call tens_printer%reset_thresh(1.0D-10)
          ierr=exatns_method_register('PrintTensor',tens_printer)
          if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(printer) failed!')
 
