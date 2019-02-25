@@ -882,8 +882,8 @@ module exacorr_tensor_methods
               iv=imo/2+nkp
             end if
 
-            do j = 1, nmo2-min_occ+1
-              jmo=mo2_list(j)
+            do j = 1, nmo2
+              jmo=mo2_list(j)-min_occ+1
               if (mod(jmo,2).gt.0) then
                 jv=(jmo-1)/2+1
               else
@@ -891,6 +891,7 @@ module exacorr_tensor_methods
               end if
               
               this%integrals(i,j)  = dcmplx(one_int%RC(iv, jv), one_int%CC(iv, jv))
+              !print *, i, imo, iv, j, jmo, jv, this%integrals(i,j)
             end do
           end do
 

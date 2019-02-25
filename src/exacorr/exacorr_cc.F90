@@ -61,12 +61,13 @@ module exacorr_cc
 !        scalars (need to be defined as tensor types)
          type(tens_rcrsv_t)         :: result_tensor
 !        identity matrix for contraction 
-         type(tens_rcrsv_t)         :: id_mat_occ
+         type(tens_rcrsv_t)         :: id_mat_occ, id_mat_vir, h_tens
 !        space ids and roots
          type(space_dims) :: dims
 !        CCSD control and result variables
          real(8)            :: mp2_energy, ccsd_energy!, t_energy(3) ! triples not implemented
          real(8)            :: t_target_precision
+         real(8)            :: ev_energy, off_diag
 
          ! classes for the definition of spaces (AO and 2 different MO spaces)
          class(h_space_t), pointer                :: ao_space
@@ -205,29 +206,40 @@ module exacorr_cc
             if(ierr.ne.EXA_SUCCESS) call quit(ierr,'Adding one electron integrals (OE_vv) failed!')
             call print_date('one electron integrals added to Fock Matrix')
 
-            
             ierr=exatns_tensor_create(id_mat_occ,"id_mat_occ",oo_id,oo_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_init(id_mat_occ, ZERO)
             ierr=exatns_tensor_transform(id_mat_occ,'IDmatrix')
+            ierr=exatns_tensor_create(id_mat_vir,"id_mat_vir",vv_id,vv_root,EXA_DATA_KIND_C8)
+            ierr=exatns_tensor_init(id_mat_vir, ZERO)
+            ierr=exatns_tensor_transform(id_mat_vir,'IDmatrix')
             call print_date('Id matrix set')
 
             ierr=exatns_tensor_contract("F(a,b)+=G(a,c,b,d)*I(c,d)",comm_t%foo,int_t%oooo,id_mat_occ, ONE)
-            ierr=exatns_tensor_contract("F(a,b)+=G(a,b,c,d)*I(c,d)",comm_t%foo,int_t%oooo,id_mat_occ, MINUS_TWO)
-
+            ierr=exatns_tensor_contract("F(a,b)+=G+(c,d,a,b)*I(c,d)",comm_t%foo,int_t%oooo,id_mat_occ, MINUS_TWO)
 
             ierr=exatns_tensor_contract("F(a,i)+=G+(a,c,d,i)*I(c,d)",comm_t%fov,int_t%ooov,id_mat_occ, MINUS_ONE)
             ierr=exatns_tensor_contract("F(a,i)+=G(c,d,a,i)*I(c,d)",comm_t%fov,int_t%ooov,id_mat_occ, TWO)
 
-
             ierr=exatns_tensor_contract("F(i,j)+=G(i,c,j,d)*I(c,d)",comm_t%fvv,int_t%vovo,id_mat_occ, ONE)
             ierr=exatns_tensor_contract("F(i,j)+=G+(c,d,i,j)*I(c,d)",comm_t%fvv,int_t%oovv,id_mat_occ, MINUS_TWO)
 
-            ierr=exatns_tensor_destroy(id_mat_occ)
+            
             call print_date('two electron integrals added to Fock Matrix')
+
+            ierr=exatns_tensor_init(result_tensor, ONE)
+            ierr=exatns_tensor_init(one_tensor, ONE)
+            ierr=exatns_tensor_contract("R()=F(a,b)*I(a,b)",result_tensor,comm_t%foo,id_mat_occ)
+            ierr=exatns_tensor_get_scalar(result_tensor,result_val)
+            ev_energy=real(result_val,8) ! Casting into real(8)
+            print*," sum of EV = ", ev_energy
 
             ierr=exatns_tensor_traverse(comm_t%foo,'PrintTensor')
             ierr=exatns_tensor_traverse(comm_t%fov,'PrintTensor')
             ierr=exatns_tensor_traverse(comm_t%fvv,'PrintTensor')
+
+
+            ierr=exatns_tensor_destroy(id_mat_occ)
+            ierr=exatns_tensor_destroy(id_mat_vir)
 
             call print_date('initialized fock matrix')
 
@@ -241,7 +253,6 @@ module exacorr_cc
             ierr=exatns_tensor_transform(comm_t%t2,'Denominate')
 
 !           Calculate and print the MP2 energy
-            ierr=exatns_tensor_init(result_tensor)
             ierr=exatns_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%t2,int_t%oovv,ONE_QUARTER) ! o(2)v(2)
             ierr=exatns_tensor_get_scalar(result_tensor,result_val)
             mp2_energy=real(result_val,8) ! Casting into real(8)

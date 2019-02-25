@@ -13,6 +13,9 @@ f = Filter()
 f.add(from_string = 'Final CCSD energy',
       num_lines   = 1,
       rel_tolerance   = 1.0e-9)
+f.add(from_string = 'sum of EV',
+      num_lines   = 1,
+      rel_tolerance   = 1.0e-9)
 
 
 #ExaTensor environment
