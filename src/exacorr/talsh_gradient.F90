@@ -12,7 +12,7 @@ module talsh_gradient
   implicit none
 
   complex(8), parameter :: ZERO=(0.D0,0.D0),MINUS_ONE_QUARTER=(-0.25D0,0.D0),ONE_HALF=(0.5D0,0.D0), &
-                             MINUS_ONE=(-1.D0,0.D0),ONE=(1.0D0,0.D0)
+                             MINUS_ONE=(-1.D0,0.D0),ONE=(1.0D0,0.D0), MINUS_ONE_HALF=(-0.5D0,0.D0)
 
   private
 
@@ -45,20 +45,20 @@ module talsh_gradient
 !     construct gamma prime tensors *
 !************************************
  
-      oo_dims = exa_input%nkr_occ
+      oo_dims = exa_input%nocc
       ierr=talsh_tensor_construct(gamma%prime_oo,C8,oo_dims,init_val=ZERO)
       ierr=talsh_tensor_construct(gamma%symm_oo,C8,oo_dims,init_val=ZERO)
       if (.not.CCD) then
-        ov_dims(1) = exa_input%nkr_occ
-        ov_dims(2) = exa_input%nkr_vir
+        ov_dims(1) = exa_input%nocc
+        ov_dims(2) = exa_input%nvir
         ierr=talsh_tensor_construct(gamma%prime_ov,C8,ov_dims,init_val=ZERO)
         ierr=talsh_tensor_construct(gamma%symm_ov,C8,ov_dims,init_val=ZERO)
-        vo_dims(1) = exa_input%nkr_vir
-        vo_dims(2) = exa_input%nkr_occ
+        vo_dims(1) = exa_input%nvir
+        vo_dims(2) = exa_input%nocc
         ierr=talsh_tensor_construct(gamma%prime_vo,C8,vo_dims,init_val=ZERO)
         ierr=talsh_tensor_construct(gamma%symm_vo,C8,vo_dims,init_val=ZERO)
       end if
-      vv_dims = exa_input%nkr_vir
+      vv_dims = exa_input%nvir
       ierr=talsh_tensor_construct(gamma%prime_vv,C8,vv_dims,init_val=ZERO)
       ierr=talsh_tensor_construct(gamma%symm_vv,C8,vv_dims,init_val=ZERO)
 
@@ -67,9 +67,9 @@ module talsh_gradient
 !**************************************
 
       if (.not.CCD) then
-        call calc_dm_mo(gamma,t2_tensor,l2_tensor,exa_input%nkr_occ,exa_input%nkr_vir,t1_tensor,l1_tensor)
+        call calc_dm_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,t1_tensor,l1_tensor)
       else
-        call calc_dm_mo(gamma,t2_tensor,l2_tensor,exa_input%nkr_occ,exa_input%nkr_vir)
+        call calc_dm_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir)
       end if
       call print_date("Calculated density matrices in MO basis")
 
@@ -112,11 +112,11 @@ module talsh_gradient
 !     auxiliary tensors
       type(talsh_tens_t) :: one_tensor
       type(talsh_tens_t) :: tau2_tensor
-      type(talsh_tens_t) :: ooov_aux_tensor,oo_aux_tensor
+      type(talsh_tens_t) :: oo_aux_tensor, vv_aux_tensor
 !     tensor dimensions
       integer :: one_dims(1)=1
-      integer, dimension(2) :: oo_dims
-      integer, dimension(4) :: vvoo_dims, ooov_dims
+      integer, dimension(2) :: oo_dims, vv_dims
+      integer, dimension(4) :: vvoo_dims
 !     CCD switch
       logical :: CCD = .false.
 !     error code
@@ -129,13 +129,12 @@ module talsh_gradient
 !*********************************
  
       ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
-      vvoo_dims(1:2) = nvir
-      vvoo_dims(3:4) = nocc
       if (.not.CCD) then
+        vvoo_dims(1:2) = nvir
+        vvoo_dims(3:4) = nocc
         ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
-        ooov_dims(1:3) = nocc
-        ooov_dims(4)   = nvir
-        ierr=talsh_tensor_construct(ooov_aux_tensor,C8,ooov_dims,init_val=ZERO)
+        vv_dims = nvir
+        ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
         oo_dims = nocc
         ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
       end if
@@ -172,16 +171,16 @@ module talsh_gradient
 
         ierr=talsh_tensor_add("T(a,e,i,m)+=R(a,e,i,m)",tau2_tensor,t2_tensor)
         ierr=talsh_tensor_contract("T(a,e,i,m)+=T(e,i)*T(a,m)",tau2_tensor,t1_tensor,t1_tensor,scale=MINUS_ONE)
+        ierr=talsh_tensor_contract("G(a,i)+=L(m,e)*T(a,e,i,m)",gamma%prime_vo,l1_tensor,tau2_tensor)
 
 !----------------------------------------------------------------------------
 !     vo: g'(a,i) -= 1/4 l(mn,ef) * (t(ef,in) * t(a,m) + t(e,i) * t(af,mn)) |
 !----------------------------------------------------------------------------
 
-        ierr=talsh_tensor_contract("G(a,i)+=L(m,e)*T(a,e,i,m)",gamma%prime_vo,l1_tensor,tau2_tensor)
         ierr=talsh_tensor_contract("X(m,i)+=L(m,n,e,f)*T(e,f,i,n)",oo_aux_tensor,l2_tensor,t2_tensor)
         ierr=talsh_tensor_contract("G(a,i)+=X(m,i)*T(a,m)",gamma%prime_vo,oo_aux_tensor,t1_tensor,scale=MINUS_ONE_QUARTER)
-        ierr=talsh_tensor_contract("X(m,n,i,f)+=L(m,n,e,f)*T(e,i)",ooov_aux_tensor,l2_tensor,t1_tensor)
-        ierr=talsh_tensor_contract("G(a,i)+=X(m,n,i,f)*T(a,f,m,n)",gamma%prime_vo,ooov_aux_tensor,t2_tensor,scale=MINUS_ONE_QUARTER)
+        ierr=talsh_tensor_contract("X(a,e)+=L(m,n,e,f)*T(a,f,m,n)",vv_aux_tensor,l2_tensor,t2_tensor)
+        ierr=talsh_tensor_contract("G(a,i)+=X(a,e)*T(e,i)",gamma%prime_vo,vv_aux_tensor,t1_tensor,scale=MINUS_ONE_QUARTER)
 
 !---------------------------
 !     ov: g'(i,a) = l(i,a) |
@@ -240,7 +239,7 @@ module talsh_gradient
       ierr=talsh_tensor_destruct(one_tensor)
       if (.not.CCD) then
         ierr=talsh_tensor_destruct(tau2_tensor)
-        ierr=talsh_tensor_destruct(ooov_aux_tensor)
+        ierr=talsh_tensor_destruct(vv_aux_tensor)
         ierr=talsh_tensor_destruct(oo_aux_tensor)
       end if
 
@@ -319,17 +318,12 @@ module talsh_gradient
       call c_f_pointer(body_p2,dm_block,(/nvir,nvir/)) ! to use <dm_mo_block> as a regular Fortran 2d array
       dm_mo_fort(1+nocc:nocc+nvir,1+nocc:nocc+nvir) = dm_block
 
-!     Determine where this should go in the full list of MOs (NB: DIRAC assumes restricted densities and uses Kramers pairs)
+!*****************************************************************************************************************************
+!     Determine where this should go in the full list of MOs (NB: DIRAC assumes restricted densities and uses Kramers pairs) *
+!*****************************************************************************************************************************
 
-      ! norbt = exa_input%nkr_occ + exa_input%nkr_vir
-      allocate(mo_list(exa_input%nkr_occ+exa_input%nkr_vir))
-      ! do i = 1, norbt
-      !   if (2*i <= nocc) then
-      !     mo_list(i) = exa_input%mokr_occ(2*i)/2  ! TO DO: keep list of input Kramers pairs that is overwritten in the driver
-      !   else
-      !     mo_list(i) = exa_input%mokr_vir(2*i-nocc)/2
-      !   end if
-      ! end do
+      norbt = exa_input%nkr_occ + exa_input%nkr_vir
+      allocate(mo_list(norbt))
       mo_list(1:exa_input%nkr_occ) = exa_input%mokr_occ
       mo_list(1+exa_input%nkr_occ:exa_input%nkr_occ+exa_input%nkr_vir) = exa_input%mokr_vir
 

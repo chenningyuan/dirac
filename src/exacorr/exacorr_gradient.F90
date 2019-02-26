@@ -2,12 +2,12 @@ module exacorr_gradient
 
 ! This module contains routines for solving the Lambda equations
 
+#if defined (VAR_MPI)
+
   use exatensor
   use exacorr_ao_to_mo,  only : print_tensornorm2
   use exacorr_datatypes
   use exacorr_global,    only : debug_exa
-
-#if defined (VAR_MPI)
 
   implicit none
 
@@ -121,12 +121,12 @@ module exacorr_gradient
 !     auxiliary tensors
       type(tens_rcrsv_t) :: one_dm_tensor
       type(tens_rcrsv_t) :: tau2_tensor
-      type(tens_rcrsv_t) :: ooov_aux_tensor,oo_aux_tensor
+      type(tens_rcrsv_t) :: vv_aux_tensor,oo_aux_tensor
 !     tensor dimensions
-      integer,       dimension(2) :: oo_id
-      integer(INTL), dimension(2) :: oo_root
-      integer,       dimension(4) :: vvoo_id,   ooov_id
-      integer(INTL), dimension(4) :: vvoo_root, ooov_root
+      integer,       dimension(2) :: oo_id,   vv_id
+      integer(INTL), dimension(2) :: oo_root, vv_root
+      integer,       dimension(4) :: vvoo_id
+      integer(INTL), dimension(4) :: vvoo_root
 !     error code
       integer :: ierr
 
@@ -139,13 +139,13 @@ module exacorr_gradient
       if (.not.CCD) then
         oo_id   = (/dims%occ_space_id,   dims%occ_space_id  /)
         oo_root = (/dims%occ_space_root, dims%occ_space_root/)
-        ooov_id   = (/dims%occ_space_id,   dims%occ_space_id,   dims%occ_space_id,   dims%vir_space_id  /)
+        vv_id   = (/dims%vir_space_id,   dims%vir_space_id  /)
+        vv_root = (/dims%vir_space_root, dims%vir_space_root/)
         vvoo_id   = (/dims%vir_space_id,   dims%vir_space_id,   dims%occ_space_id,   dims%occ_space_id  /)
-        ooov_root = (/dims%occ_space_root, dims%occ_space_root, dims%occ_space_root, dims%vir_space_root/)
         vvoo_root = (/dims%vir_space_root, dims%vir_space_root, dims%occ_space_root, dims%occ_space_root/)
 
         ierr=exatns_tensor_create(tau2_tensor,"tau2_dm",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
-        ierr=exatns_tensor_create(ooov_aux_tensor,"ooov_aux",ooov_id,ooov_root,EXA_DATA_KIND_C8)
+        ierr=exatns_tensor_create(vv_aux_tensor,"vv_aux",vv_id,vv_root,EXA_DATA_KIND_C8)
         ierr=exatns_tensor_create(oo_aux_tensor,"oo_aux",oo_id,oo_root,EXA_DATA_KIND_C8)
       end if
 
@@ -181,16 +181,16 @@ module exacorr_gradient
 
         ierr=exatns_tensor_contract("T(a,e,i,m)+=R(a,e,i,m)*K()",tau2_tensor,t2_tensor,one_dm_tensor)
         ierr=exatns_tensor_contract("T(a,e,i,m)+=T(e,i)*T(a,m)",tau2_tensor,t1_tensor,t1_tensor,MINUS_ONE)
+        ierr=exatns_tensor_contract("G(a,i)+=L(m,e)*T(a,e,i,m)",gamma%prime_vo,l1_tensor,tau2_tensor)
 
 !----------------------------------------------------------------------------
 !     vo: g'(a,i) += 1/4 l(mn,ef) * (t(ef,in) * t(a,m) + t(e,i) * t(af,mn)) |
 !----------------------------------------------------------------------------
 
-        ierr=exatns_tensor_contract("G(a,i)+=L(m,e)*T(a,e,i,m)",gamma%prime_vo,l1_tensor,tau2_tensor)
         ierr=exatns_tensor_contract("X(m,i)+=L(m,n,e,f)*T(e,f,i,n)",oo_aux_tensor,l2_tensor,t2_tensor)
         ierr=exatns_tensor_contract("G(a,i)+=X(m,i)*T(a,m)",gamma%prime_vo,oo_aux_tensor,t1_tensor,MINUS_ONE_QUARTER)
-        ierr=exatns_tensor_contract("X(m,n,i,f)+=L(m,n,e,f)*T(e,i)",ooov_aux_tensor,l2_tensor,t1_tensor)
-        ierr=exatns_tensor_contract("G(a,i)+=X(m,n,i,f)*T(a,f,m,n)",gamma%prime_vo,ooov_aux_tensor,t2_tensor,MINUS_ONE_QUARTER)
+        ierr=exatns_tensor_contract("X(a,e)+=L(m,n,e,f)*T(a,f,m,n)",vv_aux_tensor,l2_tensor,t2_tensor)
+        ierr=exatns_tensor_contract("G(a,i)+=X(a,e)*T(e,i)",gamma%prime_vo,vv_aux_tensor,t1_tensor,MINUS_ONE_QUARTER)
 
 !---------------------------
 !     ov: g'(i,a) = l(i,a) |
@@ -202,6 +202,7 @@ module exacorr_gradient
 !       ov symm: g(i,a) = 1/2 (g'(i,a) + g'(a,i)) |
 !--------------------------------------------------
 
+        ! bug -> There is no specific function for the generic 'exatns_tensor_contract' at (1)
         ! ierr=exatns_tensor_contract("G(i,a)+=X(i,a)*K()",gamma%symm_ov,gamma%prime_ov,one_dm_tensor,scale=ONE_HALF)
         ! ierr=exatns_tensor_contract("G(i,a)+=X+(a,i)*K()",gamma%symm_ov,gamma%prime_vo,one_dm_tensor,scale=ONE_HALF)
 
@@ -209,6 +210,7 @@ module exacorr_gradient
 !       vo symm: g(a,i) = 1/2 (g'(a,i) + g'(i,a)) |
 !--------------------------------------------------
 
+        ! bug -> There is no specific function for the generic 'exatns_tensor_contract' at (1)
         ! ierr=exatns_tensor_contract("G(a,i)+=X(a,i)*K()",gamma%symm_vo,gamma%prime_vo,one_dm_tensor,scale=ONE_HALF)
         ! ierr=exatns_tensor_contract("G(a,i)+=X+(i,a)*K()",gamma%symm_vo,gamma%prime_ov,one_dm_tensor,scale=ONE_HALF)
 
@@ -249,7 +251,7 @@ module exacorr_gradient
       ierr=exatns_tensor_destroy(one_dm_tensor)
       if (.not.CCD) then
         ierr=exatns_tensor_destroy(tau2_tensor)
-        ierr=exatns_tensor_destroy(ooov_aux_tensor)
+        ierr=exatns_tensor_destroy(vv_aux_tensor)
         ierr=exatns_tensor_destroy(oo_aux_tensor)
       end if
 
