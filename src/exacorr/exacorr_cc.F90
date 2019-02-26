@@ -43,7 +43,7 @@ module exacorr_cc
 
          implicit none
 
-         type(exacc_input), intent(in) :: exa_input
+         type(exacc_input), intent(inout) :: exa_input
 
          integer                :: nocc,nvir           ! the size of the mo basis for occupied and virtual spinors
 
@@ -88,6 +88,18 @@ module exacorr_cc
          !CCD
          logical :: CCD, lambda, noints
 
+         ! !hard coded beh example
+         ! exa_input%nkr_occ=5
+         ! exa_input%nkr_vir=15
+         ! exa_input%mokr_occ=(/ 1, 2, 3, 4, 5 /)
+         ! exa_input%mokr_vir=(/ 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 /)
+
+         ! !hard coded beh core example
+         ! exa_input%nkr_occ=3
+         ! exa_input%nkr_vir=15
+         ! exa_input%mokr_occ=(/ 3, 4, 5 /)
+         ! exa_input%mokr_vir=(/ 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 /)
+
 !        Make some noise so that we know we are here
          call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
          if (my_MPI_rank == 0) print*, " Starting CC calculation with exatensor"
@@ -99,6 +111,7 @@ module exacorr_cc
 !        Register and initialize user defined methods needed in the CC calculation
          call exacorr_cc_methods (exa_input,ao_space_id,occ_space_id,vir_space_id)
          if (my_MPI_rank == 0) print*," Initialized and registered tensor methods"
+
 
 !        copy input variables to local ones for ease of reference
          nocc = exa_input%nkr_occ
@@ -232,6 +245,36 @@ module exacorr_cc
             ierr=exatns_tensor_get_scalar(result_tensor,result_val)
             ev_energy=real(result_val,8) ! Casting into real(8)
             print*," sum of EV = ", ev_energy
+
+            ierr=exatns_tensor_init(result_tensor, ZERO)
+            ierr=exatns_tensor_create(h_tens,"h_tens",oo_id,oo_root,EXA_DATA_KIND_C8)
+            ierr=exatns_tensor_init(h_tens, ONE)
+            ierr=exatns_tensor_init(result_tensor, ZERO)
+            ierr=exatns_tensor_contract("H(a,b)+=F(a,b)*I()",h_tens,id_mat_occ, one_tensor, MINUS_ONE)
+            ierr=exatns_tensor_contract("R()=F(a,b)*H(a,b)",result_tensor,comm_t%foo,h_tens)
+            ierr=exatns_tensor_get_scalar(result_tensor,result_val)
+            off_diag=real(result_val,8) ! Casting into real(8)
+            print*," OO off diag = ", off_diag
+            ierr=exatns_tensor_destroy(h_tens)
+            
+            ierr=exatns_tensor_init(result_tensor, ZERO)
+            ierr=exatns_tensor_create(h_tens,"h_tens",ov_id,ov_root,EXA_DATA_KIND_C8)
+            ierr=exatns_tensor_init(h_tens, ONE)
+            ierr=exatns_tensor_contract("R()=F(a,b)*H(a,b)",result_tensor,comm_t%fov,h_tens)
+            ierr=exatns_tensor_get_scalar(result_tensor,result_val)
+            off_diag=real(result_val,8) ! Casting into real(8)
+            print*," OV off diag = ", off_diag
+            ierr=exatns_tensor_destroy(h_tens)
+
+            ierr=exatns_tensor_init(result_tensor, ZERO)
+            ierr=exatns_tensor_create(h_tens,"h_tens",vv_id,vv_root,EXA_DATA_KIND_C8)
+            ierr=exatns_tensor_init(h_tens, ONE)
+            ierr=exatns_tensor_contract("H(a,b)+=F(a,b)*I()",h_tens,id_mat_vir, one_tensor, MINUS_ONE)
+            ierr=exatns_tensor_contract("R()=F(a,b)*H(a,b)",result_tensor,comm_t%fvv,h_tens)
+            ierr=exatns_tensor_get_scalar(result_tensor,result_val)
+            off_diag=real(result_val,8) ! Casting into real(8)
+            print*," VV off diag = ", off_diag
+            ierr=exatns_tensor_destroy(h_tens)
 
             ierr=exatns_tensor_traverse(comm_t%foo,'PrintTensor')
             ierr=exatns_tensor_traverse(comm_t%fov,'PrintTensor')
