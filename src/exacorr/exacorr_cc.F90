@@ -343,7 +343,7 @@ module exacorr_cc
          ! variables for the definition of spaces (AO and 2 different MO spaces)
          type(subspace_basis_t)     :: basis_ao, basis_occ, basis_vir
          integer(INTL)              :: nao_l ! (same as nao, as long integer)
-         integer                    :: branch_factor
+         integer                    :: branch_factor, tavp_mng_depth
 
          ! variables for the definition of colors inside the spaces
          type(color_symmetry_t), allocatable    :: color(:)
@@ -383,11 +383,18 @@ module exacorr_cc
          call basis_ao%finalize(ierr)
          if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.finalize() failed!')
 
+         !Get ExaTENSOR TAVP-MNG depth:
+         ierr = exatns_virtual_depth(tavp_mng_depth)
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_virtual_depth() failed!')
+
          !Register the ao vector space:
-         branch_factor = nao / exa_input%exa_blocksize + 1
-         if (branch_factor < 2) branch_factor = 2
+!        branch_factor = nao / exa_input%exa_blocksize + 1
+!        if (branch_factor < 2) branch_factor = 2
+         branch_factor = max(2, (int(get_num_segments(int(nao,8),int(exa_input%exa_blocksize,8)),4) - 1)/tavp_mng_depth + 1)
          ierr=exatns_space_register('AO_space',basis_ao,ao_space_id,ao_space,branch_factor)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register() failed!')
+         print *,'ExaCorr: Registered vector space of dimension ',nao,': Number of segments = ',&
+         &branch_factor*(2**(tavp_mng_depth-1)) !debug
 
          !Copy user input to local arrays for the definition of MO spaces (for standard CC we only distinguish occupied and virtual spinors)
          nocc = exa_input%nkr_occ
@@ -419,15 +426,23 @@ module exacorr_cc
          call basis_vir%finalize(ierr)
          if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.finalize() failed!')
 
-         !Register this mo vector space :
-         branch_factor = nocc / exa_input%exa_blocksize + 1
-         if (branch_factor < 2) branch_factor = 2
+         !Register occ mo vector space:
+!        branch_factor = nocc / exa_input%exa_blocksize + 1
+!        if (branch_factor < 2) branch_factor = 2
+         branch_factor = max(2, (int(get_num_segments(int(nocc,8),int(exa_input%exa_blocksize,8)),4) - 1)/tavp_mng_depth + 1)
          ierr=exatns_space_register('Occupied',basis_occ,occ_space_id,occ_space,branch_factor)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register(occ) failed!')
-         branch_factor = nvir / exa_input%exa_blocksize + 1
-         if (branch_factor < 2) branch_factor = 2
+         print *,'ExaCorr: Registered vector space of dimension ',nocc,': Number of segments = ',&
+         &branch_factor*(2**(tavp_mng_depth-1)) !debug
+
+         !Register vir mo vector space:
+!        branch_factor = nvir / exa_input%exa_blocksize + 1
+!        if (branch_factor < 2) branch_factor = 2
+         branch_factor = max(2, (int(get_num_segments(int(nvir,8),int(exa_input%exa_blocksize,8)),4) - 1)/tavp_mng_depth + 1)
          ierr=exatns_space_register('Virtual',basis_vir,vir_space_id,vir_space,branch_factor)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register(vir) failed!')
+         print *,'ExaCorr: Registered vector space of dimension ',nvir,': Number of segments = ',&
+         &branch_factor*(2**(tavp_mng_depth-1)) !debug
 
         end subroutine exacorr_cc_spaces
 
