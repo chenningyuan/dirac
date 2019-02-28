@@ -15,8 +15,16 @@ f.add(from_string = 'Final CCSD energy',
       rel_tolerance   = 1.0e-9)
 f.add(from_string = 'sum of EV',
       num_lines   = 1,
-      rel_tolerance   = 1.0e-9)
-
+      abs_tolerance   = 1.0e-9)
+f.add(from_string = 'OO off diag',
+      num_lines   = 1,
+      abs_tolerance   = 1.0e-9)
+f.add(from_string = 'OV off diag',
+      num_lines   = 1,
+      abs_tolerance   = 1.0e-9)
+f.add(from_string = 'VV off diag',
+      num_lines   = 1,
+      abs_tolerance   = 1.0e-9)
 
 #ExaTensor environment
 #It is crucial to launch MPI processes consecutively within a node

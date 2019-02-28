@@ -828,21 +828,21 @@ module exacorr_tensor_methods
 
           call c_f_pointer(tens_body,h_tens,tens_dims(1:2)) !map C pointer to 2-dimensional array
 
-          !print *, "dim1=", tens_dims(1)
-          !print *, "dim2=", tens_dims(2)
-          !print *, h_tens
-
           do lo = 1, tens_dims(1) ! loop over lines
              la = tens_bases(1) + lo - 1
                   do ro = 1, tens_dims(2) ! loop over rows
                      ra = tens_bases(2) + ro - 1
-                     if (la.eq.ra) h_tens(lo, ro) = const
+                     if (la.eq.ra) then
+                       h_tens(lo, ro) = const
+                     else
+                       h_tens(lo, ro) = ZERO
+                     endif
                   end do
           end do
 
         end function fill_diagonal
 
-        subroutine init_one_el_int(this,mo1_list,nmo1,mo2_list,nmo2, min_occ)
+        subroutine init_one_el_int(this,mo1_list,nmo1,mo2_list,nmo2, min_occ, one_el_exist)
 
           use exacorr_datatypes
           use exacorr_global
@@ -851,49 +851,90 @@ module exacorr_tensor_methods
           implicit none
 
           class(init_one_el_t), intent(out):: this
-          integer, intent(in) :: nmo1          ! the length of the mo basis
-          integer, intent(in) :: mo1_list(:)   ! and their indices
-          integer, intent(in) :: nmo2          ! the length of the mo basis
-          integer, intent(in) :: mo2_list(:)   ! and their indices
-          integer, intent(in) :: min_occ       ! the length of the mo basis
-
+          integer, intent(in)  :: nmo1          ! the length of the mo basis
+          integer, intent(in)  :: mo1_list(:)   ! and their indices
+          integer, intent(in)  :: nmo2          ! the length of the mo basis
+          integer, intent(in)  :: mo2_list(:)   ! and their indices
+          integer, intent(in)  :: min_occ       ! the length of the mo basis
+          integer, intent(out) :: one_el_exist
           integer  :: i, j, imo, jmo, iv, jv
           integer  :: nkp
           type(one_el_t) :: one_int
 
-          call get_one_el(one_int)
+          integer, allocatable    :: mo_list(:)
+          real(8), allocatable    :: eps_orb(:)
+          integer                 :: norb
+          
+
+          call get_one_el(one_int, one_el_exist)
+
           this%nsp=one_int%n_spinor
           this%core=one_int%core
-
           !print *, this%core
 
           nkp=this%nsp/2
 
-          if ((maxval(mo1_list)-min_occ+1).gt.this%nsp) call quit('Error: not enough orbitals in DIRAC MOLTRA')
-          if ((maxval(mo2_list)-min_occ+1).gt.this%nsp) call quit('Error: not enough orbitals in DIRAC MOLTRA')
+          if (one_el_exist.gt.0) then
 
-          allocate(this%integrals(nmo1,nmo2))
+            if ((maxval(mo1_list)-min_occ+1).gt.this%nsp) call quit('Error: not enough orbitals in DIRAC MOLTRA')
+            if ((maxval(mo2_list)-min_occ+1).gt.this%nsp) call quit('Error: not enough orbitals in DIRAC MOLTRA')
 
-          do i = 1, nmo1
-            imo=mo1_list(i)-min_occ+1
-            if (mod(imo,2).gt.0) then
-              iv=(imo-1)/2+1
-            else
-              iv=imo/2+nkp
-            end if
+            ! write the integrals
+            allocate(this%integrals(nmo1,nmo2))
 
-            do j = 1, nmo2
-              jmo=mo2_list(j)-min_occ+1
-              if (mod(jmo,2).gt.0) then
-                jv=(jmo-1)/2+1
+            do i = 1, nmo1
+              imo=mo1_list(i)-min_occ+1
+              if (mod(imo,2).gt.0) then
+                iv=(imo-1)/2+1
               else
-                jv=jmo/2+nkp
+                iv=imo/2+nkp
               end if
-              
-              this%integrals(i,j)  = dcmplx(one_int%RC(iv, jv), one_int%CC(iv, jv))
-              !print *, i, imo, iv, j, jmo, jv, this%integrals(i,j)
+
+              do j = 1, nmo2
+                jmo=mo2_list(j)-min_occ+1
+                if (mod(jmo,2).gt.0) then
+                  jv=(jmo-1)/2+1
+                else
+                  jv=jmo/2+nkp
+                end if
+
+                this%integrals(i,j)  = dcmplx(one_int%RC(iv, jv), one_int%CC(iv, jv))
+                !print *, i, imo, iv, j, jmo, jv, this%integrals(i,j)
+              end do
             end do
-          end do
+
+            !check if there is overlapp between the orbitals and get the diagonal elements
+            norb=0
+            do i = 1, nmo1
+              imo=mo1_list(i)
+              do j = 1, nmo2
+                jmo=mo2_list(j)
+                if (imo==jmo) norb=norb+1
+              end do
+            end do
+
+            if (norb.gt.0) then
+              if (norb==nmo1) then
+                allocate(mo_list(norb))
+                allocate(eps_orb(norb))
+                mo_list=mo1_list
+                call get_epsilons(mo_list,norb,eps_orb)
+
+                !remove the diagonal elements
+                do i = 1, nmo1
+                  imo=mo1_list(i)
+                  do j = 1, nmo2
+                    jmo=mo2_list(j)
+                    if (imo==jmo) this%integrals(i,j) = this%integrals(i,j) - eps_orb(i)
+                  end do
+                end do
+                deallocate(mo_list)
+                deallocate(eps_orb)
+              else
+                call quit('Error: not quadtratic in init_one_el_int')
+              end if
+            end if
+          end if
 
         end subroutine init_one_el_int
 
@@ -962,11 +1003,30 @@ module exacorr_tensor_methods
              do ko = 1, tens_dims(1) 
                 kg = tens_bases(1) + ko - 1
 
-                i_tens(ko,lo) = i_tens(ko,lo) + integrals(kg, lg)
+                i_tens(ko,lo) = integrals(kg, lg)
 
              end do
           end do
 
         end function one_el_int_set
+
+        subroutine get_epsilons(mo_list,norb,eps_orb)
+
+         use exacorr_mo
+         use exacorr_global
+
+         implicit none
+
+         integer, intent(in)     :: norb
+         integer, intent(in)     :: mo_list(:)
+         real(8), intent(out)    :: eps_orb(:)
+
+         type(cmo) :: cspinor
+
+         call get_mo_coefficients (cspinor,mo_list,norb)
+         eps_orb = cspinor%energy
+         call dealloc_mo (cspinor)
+
+        end subroutine get_epsilons
 
 end module exacorr_tensor_methods
