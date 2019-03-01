@@ -80,8 +80,8 @@
         end type exatns_dm_tens
 
         type, public :: space_dims
-         integer       :: occ_space_id, vir_space_id, spinor_space_id
-         integer(INTL) :: occ_space_root,vir_space_root, spinor_space_root
+         integer       :: occ_space_id, vir_space_id
+         integer(INTL) :: occ_space_root,vir_space_root
         end type space_dims
 
 !       All two electron integral tensors

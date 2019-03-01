@@ -88,7 +88,7 @@ module exacorr_gradient
 !     write DM to file *
 !***********************
 
-      call store_dm_mo(exa_input,gamma,dims)
+      call store_dm_mo(exa_input,gamma)
       call print_date("MO density matrix stored")
 
 !     cleanup
@@ -202,17 +202,15 @@ module exacorr_gradient
 !       ov symm: g(i,a) = 1/2 (g'(i,a) + g'(a,i)) |
 !--------------------------------------------------
 
-        ! bug -> There is no specific function for the generic 'exatns_tensor_contract' at (1)
-        ! ierr=exatns_tensor_contract("G(i,a)+=X(i,a)*K()",gamma%symm_ov,gamma%prime_ov,one_dm_tensor,scale=ONE_HALF)
-        ! ierr=exatns_tensor_contract("G(i,a)+=X+(a,i)*K()",gamma%symm_ov,gamma%prime_vo,one_dm_tensor,scale=ONE_HALF)
+        ierr=exatns_tensor_contract("G(i,a)+=X(i,a)*K()",gamma%symm_ov,gamma%prime_ov,one_dm_tensor,ONE_HALF)
+        ierr=exatns_tensor_contract("G(i,a)+=X+(a,i)*K()",gamma%symm_ov,gamma%prime_vo,one_dm_tensor,ONE_HALF)
 
 !--------------------------------------------------
 !       vo symm: g(a,i) = 1/2 (g'(a,i) + g'(i,a)) |
 !--------------------------------------------------
 
-        ! bug -> There is no specific function for the generic 'exatns_tensor_contract' at (1)
-        ! ierr=exatns_tensor_contract("G(a,i)+=X(a,i)*K()",gamma%symm_vo,gamma%prime_vo,one_dm_tensor,scale=ONE_HALF)
-        ! ierr=exatns_tensor_contract("G(a,i)+=X+(i,a)*K()",gamma%symm_vo,gamma%prime_ov,one_dm_tensor,scale=ONE_HALF)
+        ierr=exatns_tensor_contract("G(a,i)+=X(a,i)*K()",gamma%symm_vo,gamma%prime_vo,one_dm_tensor,ONE_HALF)
+        ierr=exatns_tensor_contract("G(a,i)+=X+(i,a)*K()",gamma%symm_vo,gamma%prime_ov,one_dm_tensor,ONE_HALF)
 
       end if
 
@@ -257,31 +255,92 @@ module exacorr_gradient
 
     end subroutine calc_dm_mo
 
-    subroutine store_dm_mo(exa_input,gamma,dims)
+    subroutine store_dm_mo(exa_input,gamma)
 
+      use exacorr_global,         only : get_nsolutions
+
+!     input variables
       type(exacc_input),    intent(in   ) :: exa_input
       type(exatns_dm_tens), intent(inout) :: gamma
       type(space_dims),     intent(in   ) :: dims
-!     full DM in MO basis
-      type(tens_rcrsv_t) :: dm_mo
-!     tensor dimensions
-      integer,       dimension(2) :: dm_id
-      integer(INTL), dimension(2) :: dm_root
+!     matrix dimensions
+      integer :: nocc, nvir, nkr_occ, nkr_vir, nesh
+!     body pointers
+      complex(8), allocatable         :: dm_mo_fort(:,:)
+      real(8), allocatable            :: dm_diracformat(:,:,:)
+!     complete mo list
+      integer, allocatable :: mo_list(:)
+!     CCD switch
+      logical :: CCD
 !     error code
       integer :: ierr
+!     loop variables
+      integer :: i, j, norbt
 
-!***********************
-!     construct tensor *
-!***********************
+      CCD = exa_input%CCD
 
-      dm_id   = (/dims%spinor_space_id,  dims%spinor_space_id  /)
-      dm_root = (/dims%spinor_space_root,dims%spinor_space_root/)
-      ierr=exatns_tensor_create(dm_mo,"dm_mo",dm_id,dm_root,EXA_DATA_KIND_C8)
+!***************
+!     set dims *
+!***************
 
-      ! call get_dims(dm_mo,dm_mo_dims,num_dims)
-      ! print*, "dm_mo_dims, num_dims", dm_mo_dims, num_dims
+      nocc    = exa_input%nocc
+      nvir    = exa_input%nvir
+      nkr_occ = exa_input%nkr_occ
+      nkr_vir = exa_input%nkr_vir
 
-      ierr=exatns_tensor_destroy(dm_mo)
+!***************************************
+!     copy DM blocks into one large DM *
+!***************************************
+
+      allocate (dm_mo_fort(nocc+nvir,nocc+nvir))
+      dm_mo_fort = ZERO
+
+!     -----------
+!     | OO | OV |
+!     -----------
+!     | VO | VV |
+!     -----------
+
+!     oo
+
+
+!     vo + ov
+      if (.not.CCD) then
+
+      else
+        dm_mo_fort(1+nocc:nocc+nvir,1:nocc) = 0
+        dm_mo_fort(1:nocc,1+nocc:nocc+nvir) = 0
+      end if
+
+!     vv
+
+
+!*****************************************************************************************************************************
+!     Determine where this should go in the full list of MOs (NB: DIRAC assumes restricted densities and uses Kramers pairs) *
+!*****************************************************************************************************************************
+
+      norbt = nkr_occ + nkr_vir
+      allocate(mo_list(norbt))
+      mo_list(1:nkr_occ)                 = exa_input%mokr_occ
+      mo_list(1+nkr_occ:nkr_occ+nkr_vir) = exa_input%mokr_vir
+
+      nesh = get_nsolutions() / 2
+      allocate (dm_diracformat(nesh,nesh,4))
+      dm_diracformat = ZERO
+      do j = 1, norbt
+        do i = 1, norbt
+          ! We copy the unbar-unbar part of the density matrix, would be good to test whether the Kramers-restricted assumption holds
+          ! Or even to average over the two density matrices and enforce a Kramers-restricted density
+          dm_diracformat(mo_list(i),mo_list(j),1) = real(dm_mo_fort(2*i-1,2*j-1))
+          dm_diracformat(mo_list(i),mo_list(j),2) = imag(dm_mo_fort(2*i-1,2*j-1))
+        end do
+      end do
+
+      call store_cc_density ('CCSD', dm_diracformat )
+
+      deallocate (dm_diracformat)
+      deallocate (mo_list)
+      deallocate (dm_mo_fort)
 
     end subroutine store_dm_mo
 

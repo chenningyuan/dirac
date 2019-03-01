@@ -247,14 +247,13 @@ module talsh_gradient
 
     subroutine store_dm_mo (exa_input,gamma)
 
-      use exacorr_mo
       use exacorr_global, only : get_nsolutions
 
 !     input variables
       type(exacc_input),   intent(in   )  :: exa_input
       type(talsh_dm_tens), intent(inout)  :: gamma
 !     matrix dimensions
-      integer :: nocc, nvir, nesh
+      integer :: nocc, nvir, nkr_occ, nkr_vir, nesh
 !     body pointers
       type(C_PTR)                     :: body_p2
       complex(8), pointer, contiguous :: dm_block(:,:)
@@ -275,14 +274,17 @@ module talsh_gradient
 !     set dims *
 !***************
  
-      nocc = exa_input%nocc
-      nvir = exa_input%nvir
+      nocc    = exa_input%nocc
+      nvir    = exa_input%nvir
+      nkr_occ = exa_input%nkr_occ
+      nkr_vir = exa_input%nkr_vir
 
 !***************************************
 !     copy DM blocks into one large DM *
 !***************************************
 
       allocate (dm_mo_fort(nocc+nvir,nocc+nvir))
+      dm_mo_fort = ZERO
 
 !     -----------
 !     | OO | OV |
@@ -295,21 +297,17 @@ module talsh_gradient
       call c_f_pointer(body_p2,dm_block,(/nocc,nocc/)) ! to use <dm_mo_block> as a regular Fortran 2d array
       dm_mo_fort(1:nocc,1:nocc) = dm_block
 
-!     vo
+!     vo + ov
       if (.not.CCD) then
         ierr=talsh_tensor_get_body_access(gamma%symm_vo,body_p2,C8,0,DEV_HOST)
         call c_f_pointer(body_p2,dm_block,(/nvir,nocc/)) ! to use <dm_mo_block> as a regular Fortran 2d array
         dm_mo_fort(1+nocc:nocc+nvir,1:nocc) = dm_block
-      else
-        dm_mo_fort(1+nocc:nocc+nvir,1:nocc) = 0
-      end if
 
-!     ov
-      if (.not.CCD) then
         ierr=talsh_tensor_get_body_access(gamma%symm_ov,body_p2,C8,0,DEV_HOST)
         call c_f_pointer(body_p2,dm_block,(/nocc,nvir/)) ! to use <dm_mo_block> as a regular Fortran 2d array
         dm_mo_fort(1:nocc,1+nocc:nocc+nvir) = dm_block
       else
+        dm_mo_fort(1+nocc:nocc+nvir,1:nocc) = 0
         dm_mo_fort(1:nocc,1+nocc:nocc+nvir) = 0
       end if
 
@@ -322,10 +320,10 @@ module talsh_gradient
 !     Determine where this should go in the full list of MOs (NB: DIRAC assumes restricted densities and uses Kramers pairs) *
 !*****************************************************************************************************************************
 
-      norbt = exa_input%nkr_occ + exa_input%nkr_vir
+      norbt = nkr_occ + nkr_vir
       allocate(mo_list(norbt))
-      mo_list(1:exa_input%nkr_occ) = exa_input%mokr_occ
-      mo_list(1+exa_input%nkr_occ:exa_input%nkr_occ+exa_input%nkr_vir) = exa_input%mokr_vir
+      mo_list(1:nkr_occ)                 = exa_input%mokr_occ
+      mo_list(1+nkr_occ:nkr_occ+nkr_vir) = exa_input%mokr_vir
 
       nesh = get_nsolutions() / 2
       allocate (dm_diracformat(nesh,nesh,4))
