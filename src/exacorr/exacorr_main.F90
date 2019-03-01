@@ -24,7 +24,8 @@
       integer, allocatable :: mokr_occ(:), mokr_vir(:)
       integer, allocatable :: mobe_occ(:), mobe_vir(:)
       integer              :: nesh, kvec
-      integer              :: i, ialpha, ibeta
+      integer              :: i
+      integer              :: ialpha, ibeta
 
 !     Initialize MPI variables
       mytid   = 0
@@ -84,10 +85,92 @@
       end if
 
       if (mytid == 0) then
-        nesh = get_nsolutions() / 2
-        
-        if (.not.exa_input%beta_occ) then
-          if (.not.exa_input%beta_vir) then
+       nesh = get_nsolutions() / 2
+
+       if (exa_input%beta_occ) then
+        if (exa_input%beta_vir) then
+         nmo(1:4)=0
+         call numlst (string_occupied,kvec,1,1,nesh,1,nmo(1))
+         call numlst (string_occ_beta,kvec,1,1,nesh,1,nmo(2))
+         call numlst (string_virtual,kvec,1,1,nesh,1,nmo(3))
+         call numlst (string_vir_beta,kvec,1,1,nesh,1,nmo(4))
+
+         allocate (mokr_occ(nmo(1)))
+         allocate (mobe_occ(nmo(2)))
+         allocate (mokr_vir(nmo(3)))
+         allocate (mobe_vir(nmo(4)))
+
+         call numlst(string_occupied,mokr_occ,nmo(1),1,nesh,1,nmo(1))
+         call numlst(string_occ_beta,mobe_occ,nmo(2),1,nesh,1,nmo(2))
+         call numlst(string_virtual,mokr_vir,nmo(3),1,nesh,1,nmo(3))
+         call numlst(string_vir_beta,mobe_vir,nmo(4),1,nesh,1,nmo(4))
+
+         if(mokr_occ(1).ne.mobe_occ(1)) then 
+          print *, "core orbital need to be closed shell"
+          call quit ("change .OCC_BETA in EXACORR")
+         end if
+            
+         exa_input%nkr_occ=nmo(1)+nmo(2)
+         exa_input%nkr_vir=nmo(3)+nmo(4)
+         allocate (exa_input%mokr_occ(exa_input%nkr_occ))
+         allocate (exa_input%mokr_vir(exa_input%nkr_vir))
+
+         imo=0
+         do i=1, max(nmo(1), nmo(2))
+          if(i.le.nmo(1)) then
+           imo=imo+1
+           exa_input%mokr_occ(imo)=mokr_occ(i)*2-1
+          end if
+          if(i.le.nmo(2)) then
+           imo=imo+1
+           exa_input%mokr_occ(imo)=mobe_occ(i)*2
+          end if
+         end do
+         
+         ialpha=1
+         ibeta=1
+         imo=0
+         do i=1, nmo(3)+nmo(4)
+          if(ibeta.gt.nmo(4)) then
+           if (ialpha.le.nmo(3)) then
+            imo=imo+1
+            exa_input%mokr_vir(imo)=mokr_vir(ialpha)*2-1
+            ialpha=ialpha+1
+           end if
+          else if (ialpha.gt.nmo(3)) then
+           if (ibeta.le.nmo(4)) then
+            imo=imo+1
+            exa_input%mokr_vir(imo)=mobe_vir(ibeta)*2
+            ibeta=ibeta+1
+           end if
+          else if(mokr_vir(ialpha).eq.mobe_vir(ibeta)) then
+           imo=imo+1
+           exa_input%mokr_vir(imo)=mokr_vir(ialpha)*2-1
+           ialpha=ialpha+1
+           imo=imo+1
+           exa_input%mokr_vir(imo)=mobe_vir(ibeta)*2
+           ibeta=ibeta+1
+          else if (mokr_vir(ialpha).lt.mobe_vir(ibeta)) then
+           imo=imo+1
+           exa_input%mokr_vir(imo)=mokr_vir(ialpha)*2-1
+           ialpha=ialpha+1
+          else                   
+           imo=imo+1
+           exa_input%mokr_vir(imo)=mobe_vir(ibeta)*2
+           ibeta=ibeta+1
+          end if
+         end do
+
+         deallocate (mokr_occ)
+         deallocate (mobe_occ)
+         deallocate (mokr_vir)
+         deallocate (mobe_vir)
+        else
+         call quit ("also define .OCC_BETA in EXACORR")
+        end if
+       else if (exa_input%beta_vir) then
+        call quit ("also define .VIR_BETA in EXACORR")
+       else
             exa_input%nkr_occ = 0
             call numlst (string_occupied,kvec,1,1,nesh,1,exa_input%nkr_occ)
             allocate (mokr_occ(exa_input%nkr_occ))
@@ -109,92 +192,7 @@
               exa_input%mokr_vir(i) = exa_input%mokr_occ(exa_input%nkr_occ)+i
             end do
             deallocate (mokr_vir)
-
-          else
-            call quit ("also define .OCC_BETA in EXACORR")
-          end if
-        else
-          if (.not.exa_input%beta_vir) then
-            call quit ("also define .VIR_BETA in EXACORR")
-          else
-            call numlst (string_occupied,kvec,1,1,nesh,1,nmo(1))
-            call numlst (string_occ_beta,kvec,1,1,nesh,1,nmo(2))
-            call numlst (string_virtual,kvec,1,1,nesh,1,nmo(3))
-            call numlst (string_vir_beta,kvec,1,1,nesh,1,nmo(4))
-
-            allocate (mokr_occ(nmo(1)))
-            allocate (mobe_occ(nmo(2)))
-            allocate (mokr_vir(nmo(3)))
-            allocate (mobe_vir(nmo(4)))
-
-            call numlst (string_occupied,mokr_occ,nmo(1),1,nesh,1,nmo(1))
-            call numlst (string_occ_beta,mobe_occ,nmo(2),1,nesh,1,nmo(2))
-            call numlst (string_virtual,mokr_vir,nmo(3),1,nesh,1,nmo(3))
-            call numlst (string_vir_beta,mobe_vir,nmo(4),1,nesh,1,nmo(4))
-
-            if(mokr_occ(1).ne.mobe_occ(1)) then 
-              call quit ("core orbital need to be closed shell, change .OCC_BETA in EXACORR")
-            end if
-            
-            exa_input%nkr_occ=nmo(1)+nmo(2)
-            exa_input%nkr_vir=nmo(3)+nmo(4)
-            allocate (exa_input%mokr_occ(exa_input%nkr_occ))
-            allocate (exa_input%mokr_vir(exa_input%nkr_vir))
-
-            imo=0
-            do i=1, max(nmo(1), nmo(2))
-              if(i.le.nmo(1)) then
-                imo=imo+1
-                exa_input%mokr_occ(imo)=mokr_occ(i)*2-1
-              end if
-              if(i.le.nmo(2)) then
-                imo=imo+1
-                exa_input%mokr_occ(imo)=mobe_occ(i)*2
-              end if
-            end do
-
-            ialpha=1
-            ibeta=1
-            imo=0
-            do i=1, nmo(3)+nmo(4)
-              if(ibeta.gt.nmo(4)) then
-                if (ialpha.le.nmo(3)) then
-                  imo=imo+1
-                  exa_input%mokr_occ(imo)=mokr_occ(ialpha)*2-1
-                  ialpha=ialpha+1
-                end if
-              else if (ialpha.gt.nmo(3)) then
-                if (ibeta.le.nmo(4)) then
-                  imo=imo+1
-                  exa_input%mokr_occ(imo)=mobe_occ(ibeta)*2
-                  ibeta=ibeta+1
-                end if
-              else
-                if(mokr_occ(ialpha).eq.mobe_occ(ibeta)) then
-                  imo=imo+1
-                  exa_input%mokr_occ(imo)=mokr_occ(ialpha)*2-1
-                  ialpha=ialpha+1
-                  imo=imo+1
-                  exa_input%mokr_occ(imo)=mobe_occ(ibeta)*2
-                  ibeta=ibeta+1
-                else if (mokr_occ(ialpha).lt.mobe_occ(ibeta)) then
-                  imo=imo+1
-                  exa_input%mokr_occ(imo)=mokr_occ(ialpha)*2-1
-                  ialpha=ialpha+1
-                else                   
-                  imo=imo+1
-                  exa_input%mokr_occ(imo)=mobe_occ(ibeta)*2
-                  ibeta=ibeta+1
-                end if
-              end if
-            end do
-
-            deallocate (mokr_occ)
-            deallocate (mobe_occ)
-            deallocate (mokr_vir)
-            deallocate (mobe_vir)
-          end if
-        end if
+       end if
       end if
 
       if (cc_calculation) then

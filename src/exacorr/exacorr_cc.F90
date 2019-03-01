@@ -100,9 +100,6 @@ module exacorr_cc
          call exacorr_cc_methods (exa_input,ao_space_id,occ_space_id,vir_space_id, one_el_exist)
          if (my_MPI_rank == 0) print*," Initialized and registered tensor methods"
 
-         print *, "exa_mokr_occ", exa_input%mokr_occ
-         print *, "exa_mokr_vir", exa_input%mokr_vir
-
 !        copy input variables to local ones for ease of reference
          nocc = exa_input%nkr_occ
          nvir = exa_input%nkr_vir
@@ -1406,6 +1403,10 @@ module exacorr_cc
             ierr=exatns_tensor_init(comm_t%fvv,'OE_vv')
             if(ierr.ne.EXA_SUCCESS) call quit(ierr,'Creating one electron integrals (OE_vv) failed!')
             if (print_level >0) call print_date('one electron integrals added to Fock Matrix')
+
+            if (print_level >0) ierr=exatns_tensor_traverse(comm_t%foo,'PrintTensor')
+            if (print_level >0) ierr=exatns_tensor_traverse(comm_t%fov,'PrintTensor')
+            if (print_level >0) ierr=exatns_tensor_traverse(comm_t%fvv,'PrintTensor')
 
             ierr=exatns_tensor_create(id_mat_occ,"id_mat_occ",oo_id,oo_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_init(id_mat_occ,'IDmatrix')

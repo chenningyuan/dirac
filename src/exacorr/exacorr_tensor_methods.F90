@@ -858,7 +858,7 @@ module exacorr_tensor_methods
           integer, intent(in)  :: min_occ       ! the length of the mo basis
           integer, intent(out) :: one_el_exist
           integer  :: i, j, imo, jmo, iv, jv
-          integer  :: nkp
+          integer  :: nkp, ieven, jeven
           type(one_el_t) :: one_int
 
           integer, allocatable    :: mo_list(:)
@@ -882,9 +882,12 @@ module exacorr_tensor_methods
             ! write the integrals
             allocate(this%integrals(nmo1,nmo2))
 
+            ieven=1
+            jeven=1
+
             do i = 1, nmo1
               imo=mo1_list(i)-min_occ+1
-              if (mod(imo,2).gt.0) then
+              if (mod(imo,2).eq.ieven) then
                 iv=(imo-1)/2+1
               else
                 iv=imo/2+nkp
@@ -892,7 +895,7 @@ module exacorr_tensor_methods
 
               do j = 1, nmo2
                 jmo=mo2_list(j)-min_occ+1
-                if (mod(jmo,2).gt.0) then
+                if (mod(jmo,2).eq.jeven) then
                   jv=(jmo-1)/2+1
                 else
                   jv=jmo/2+nkp
