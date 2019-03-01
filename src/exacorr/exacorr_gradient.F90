@@ -262,7 +262,6 @@ module exacorr_gradient
 !     input variables
       type(exacc_input),    intent(in   ) :: exa_input
       type(exatns_dm_tens), intent(inout) :: gamma
-      type(space_dims),     intent(in   ) :: dims
 !     matrix dimensions
       integer :: nocc, nvir, nkr_occ, nkr_vir, nesh
 !     body pointers
