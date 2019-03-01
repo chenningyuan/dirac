@@ -35,6 +35,8 @@
             logical                 :: ccd = .false.            ! if false=>CCSD, if true=>CCD
             logical                 :: lambda = .false.
             logical                 :: noints = .false.
+            logical                 :: beta_occ = .false.
+            logical                 :: beta_vir = .false.
             integer                 :: exa_blocksize = 75
             integer                 :: moint_scheme = 3
             integer                 :: ncycles = 30

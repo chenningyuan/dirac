@@ -895,6 +895,16 @@
          call kw_read(word, exa_input%ncycles)
       end if
 
+      if (kw_matches(word, '.OCC_BETA')) then
+         exa_input%beta_occ = .true.
+         call kw_read(word, string_occ_beta)
+      end if
+
+      if (kw_matches(word, '.VIR_BETA')) then
+         exa_input%beta_vir = .true.
+         call kw_read(word, string_vir_beta)
+      end if
+
       call check_whether_kw_found(word, kw_section)
 
 #endif

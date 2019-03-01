@@ -100,6 +100,8 @@ module exacorr_cc
          call exacorr_cc_methods (exa_input,ao_space_id,occ_space_id,vir_space_id, one_el_exist)
          if (my_MPI_rank == 0) print*," Initialized and registered tensor methods"
 
+         print *, "exa_mokr_occ", exa_input%mokr_occ
+         print *, "exa_mokr_vir", exa_input%mokr_vir
 
 !        copy input variables to local ones for ease of reference
          nocc = exa_input%nkr_occ
