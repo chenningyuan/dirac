@@ -253,15 +253,15 @@ module exacorr_mo
 
 !     switch to Kramer's unrestricted picture
 
-!-----input variables
+!     input variables
       real(8),    intent(inout) :: coeff(:,:,:), eig(:)
       real(8),    intent(  out) :: seig(:)
       complex(8), intent(  out) :: scoeff(:,:,:)
       integer,    intent(in   ) :: nao, nmo, npo
-!-----summation and dummy variables
+!     summation and dummy variables
       integer                 :: i, j, spin
 
-!-----create new arrays grouped by Kramer's partners + drop "positronic" solutions
+!     create new arrays grouped by Kramer's partners + drop "positronic" solutions
 
       do i = 1, npo+nmo
         seig(2*i-1) = eig(npo+i)
