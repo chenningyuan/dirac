@@ -8,7 +8,7 @@ if(ENABLE_EXATENSOR)
     ExternalProject_Add(exatensor
         PREFIX "${PROJECT_BINARY_DIR}/exatensor"
         GIT_REPOSITORY https://gitlab.com/DmitryLyakh/ExaTensor.git
-        GIT_TAG devel
+        GIT_TAG dirac
         CONFIGURE_COMMAND true  # currently no configure command
         BUILD_COMMAND cd ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/ && make
         INSTALL_COMMAND true  # currently no install command
