@@ -327,6 +327,7 @@ module exacorr_cc
 
 !        Written by Lucas Visscher, January 2019
 
+         use interface_to_mpi
          use exacorr_global
          use exacorr_ao_to_mo
          use, intrinsic:: ISO_C_BINDING
