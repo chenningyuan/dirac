@@ -16,7 +16,7 @@ if(ENABLE_EXATENSOR)
         )
 
     set(EXTERNAL_LIBS ${EXTERNAL_LIBS} ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib/libexatensor.a)
-    set(EXTERNAL_LIBS ${EXTERNAL_LIBS} ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib/libtalsh.a -L/sw/summit/essl/6.1.0-2/essl/6.1/lib64 -L/sw/summit/xl/16.1.1-1/xlC/16.1.1/lib -L/sw/summit/xl/16.1.1-1/xlf/16.1.1/lib -lessl -lxlf90_r -lxlfmath -L/sw/summit/cuda/9.2.148/lib64 -lgomp -lcublas -lcudart -lnvToolsExt -lstdc++)
+    set(EXTERNAL_LIBS ${EXTERNAL_LIBS} ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib/libtalsh.a)
 
     include_directories(${PROJECT_BINARY_DIR}/exatensor/src/exatensor/include)
 endif()
