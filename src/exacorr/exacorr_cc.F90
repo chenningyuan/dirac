@@ -350,7 +350,7 @@ module exacorr_cc
          ! variables for the definition of spaces (AO and 2 different MO spaces)
          type(subspace_basis_t)     :: basis_ao, basis_occ, basis_vir
          integer(INTL)              :: nao_l ! (same as nao, as long integer)
-         integer                    :: branch_factor, tavp_mng_depth
+         integer                    :: branch_factor, tavp_mng_depth, my_MPI_rank
 
          ! variables for the definition of colors inside the spaces
          type(color_symmetry_t), allocatable    :: color(:)
@@ -360,6 +360,8 @@ module exacorr_cc
          integer:: ierr
 
          integer:: lsh, l, nl
+
+         call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
 
          nao           = get_nao()   ! This is the total number of ao's
          nao_l         = int(nao,8)  ! we need this as a long int for exatensor
