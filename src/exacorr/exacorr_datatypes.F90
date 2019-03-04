@@ -8,40 +8,42 @@
         private
 !PARAMETERS:
 !Generic:
-        integer, parameter, private:: REALD=8 !default real for this module
+        integer, parameter, private:: REALD=8 ! default real for this module
 !DERIVED TYPES:
 !       Basis function info:
         type, public:: basis_func_info_t
-         integer:: orb_momentum=-1       !orbital momentum: (0,1,2,3,...)
-         integer:: atom_number=-1        !atom sequential number [1..MAX] (if centered on a nucleus of some atom)
-         integer:: atom_element=0        !atomic element number (if centered on a nucleus of some atom)
-         integer:: n_primitives=0        !number of primitives in the contraction
-         real(REALD):: coord(1:3)        !coordinate of the basis function center (typically a nucleus)
+         integer:: orb_momentum=-1       ! orbital momentum: (0,1,2,3,...)
+         integer:: atom_number=-1        ! atom sequential number [1..MAX] (if centered on a nucleus of some atom)
+         integer:: atom_element=0        ! atomic element number (if centered on a nucleus of some atom)
+         integer:: n_primitives=0        ! number of primitives in the contraction
+         real(REALD):: coord(1:3)        ! coordinate of the basis function center (typically a nucleus)
          real(REALD), pointer :: exponent(:)
          real(REALD), pointer :: coefficient(:)
         end type basis_func_info_t
 !       Basis set info:
         type, public:: basis_set_info_t
-         integer:: nshells=0             !number of shells in the basis set
-         integer:: nao=0                 !number of basis functions
+         integer:: nshells=0             ! number of shells in the basis set
+         integer:: nao=0                 ! number of basis functions
+         integer:: basis_angular         ! 1=cartesian, 2=spherical
          type(basis_func_info_t), pointer:: gtos(:)
          integer, pointer :: shell_indices(:)
         end type basis_set_info_t
 
 !       Input parameter
         type, public :: exacc_input
-            logical                 :: talsh = .true.           !If false, use ExaTensor
-            logical                 :: ccd = .false.            !If false=>CCSD, if true=>CCD
+            logical                 :: talsh = .true.           ! if false, use ExaTensor
+            logical                 :: ccd = .false.            ! if false=>CCSD, if true=>CCD
             logical                 :: lambda = .false.
             logical                 :: noints = .false.
             logical                 :: eom = .false.
+            logical                 :: eom_properties = .false.
             character(len=2)        :: eom_flavour = "  "
             integer                 :: exa_blocksize = 75
-            integer                 :: moint_scheme = 1
+            integer                 :: moint_scheme = 3
             integer                 :: ncycles = 30
-            integer                 :: nkr_occ, nkr_vir         !Number of Kramer pairs
-            integer, allocatable    :: mokr_occ(:), mokr_vir(:) !List of active Kramer pairs
-            real(REALD)             :: t_econv = 1.0D-13        !Convergence criterium
+            integer                 :: nkr_occ, nkr_vir         ! number of Kramer pairs
+            integer, allocatable    :: mokr_occ(:), mokr_vir(:) ! list of active Kramer pairs
+            real(REALD)             :: t_econv = 1.0D-9         ! convergence criterium
         end type exacc_input
 
 !       All two electron integral tensors
@@ -105,10 +107,10 @@
          type(talsh_tens_t) :: goo, gvv
         end type talsh_lambda_tens
 
-        type, public, extends(talsh_intg_tens) :: talsh_eom_fixed_tens
-            type(talsh_comm_tens)   :: comm_t
-            type(talsh_lambda_tens) :: lambda_t
-            type(talsh_tens_t)      :: l2_tensor !Lambda amplitude
-        end type talsh_eom_fixed_tens
+        type, public :: talsh_dm_tens
+         type(talsh_tens_t) :: prime_oo, symm_oo
+         type(talsh_tens_t) :: prime_ov, prime_vo
+         type(talsh_tens_t) :: prime_vv, symm_vv
+        end type talsh_dm_tens
 
        end module exacorr_datatypes

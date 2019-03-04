@@ -1,4 +1,5 @@
-!define QDIAG_TIMING
+#define QDIAG_TIMING
+!define QDIAG_OMP_INFO
 C  /* Deck iqpack */
       SUBROUTINE IQPACK(IQPA,NZA,IQPB,NZB,IQPC,NZC)
 C***********************************************************************
@@ -688,6 +689,10 @@ C
       REAL*8   ::  H, HH, D_I, FHH, FR_INV, ASCALE, ASCALE_INV
       REAL*8,  PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 
+#ifdef QDIAG_OMP_INFO
+      integer   :: omp_get_num_threads, omp_get_thread_num
+#endif
+
       TAU(1,N) = D1
       TAU(2,N) = D0
       TAU(3,N) = D0
@@ -787,6 +792,11 @@ C
          FR = D0
 !$OMP PARALLEL IF(IM1 .GT. 10) DEFAULT(PRIVATE)
 !$OMP& SHARED(I,IM1,H,FR,A,TAU,N,FHH)
+#ifdef QDIAG_OMP_INFO
+         if (I.eq.N) 
+     &   print *,'QTRIDI_omp, openMP threads',omp_get_num_threads()
+     &   ,  omp_get_thread_num()
+#endif
 !$OMP DO SCHEDULE(GUIDED) REDUCTION(+:FR)
          DO J = 1,IM1
 C
@@ -950,6 +960,9 @@ C     ------------------------------------------------------------------
 C
       INTEGER   :: I, J, K
       REAL*8    :: H, SR, SI, SJ, SK
+#ifdef QDIAG_OMP_INFO
+      integer   :: omp_get_num_threads, omp_get_thread_num
+#endif
 
 C
 C     Transform the eigenvector of the real symmetric tridiagonal matrix
@@ -959,8 +972,17 @@ C      Z = TAU* . Z
 C
 !$OMP PARALLEL DEFAULT(NONE) SHARED(M,N,TAU,A,Z)
 !$OMP& PRIVATE(I,J,K,H,SR,SI,SJ,SK)
+#ifdef QDIAG_OMP_INFO
+      print '(A,3I10)','QTRIBK_omp - openMP threads, my rank',
+     &   omp_get_num_threads(), omp_get_thread_num(), M
+#endif
 !$OMP DO SCHEDULE(GUIDED)
       DO J = 1, M
+#ifdef QDIAG_OMP_INFO
+!     if (MOD(J, 99) .eq. 1) then
+!        print *, 'J, rank',J, omp_get_thread_num()
+!     end if
+#endif
 
          DO K = 1, N
             Z(K,J,4) = -TAU(4,K)*Z(K,J,1)
@@ -1067,6 +1089,10 @@ C
       REAL*8   ::  H, HH, D_I, FHH, FR_INV, ASCALE, ASCALE_INV
       REAL*8,  PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 
+#ifdef QDIAG_OMP_INFO
+      integer   :: omp_get_num_threads, omp_get_thread_num
+#endif
+
       TAU(1,N) = D1
       TAU(2,N) = D0
 C
@@ -1148,6 +1174,11 @@ C
          FR = D0
 !$OMP PARALLEL IF(IM1 .GT. 10) DEFAULT(PRIVATE)
 !$OMP& SHARED(I,IM1,H,FR,A,TAU,N,FHH)
+#ifdef QDIAG_OMP_INFO
+         if (I.eq.N) 
+     &   print *,'HTRIDI_omp, openMP threads',omp_get_num_threads()
+     &   ,  omp_get_thread_num()
+#endif
 !$OMP DO SCHEDULE(GUIDED) REDUCTION(+:FR)
          DO J = 1,IM1
 C
@@ -1285,6 +1316,9 @@ C     ------------------------------------------------------------------
 C
       INTEGER   :: I, J, K
       REAL*8    :: H, SR, SI, SJ, SK
+#ifdef QDIAG_OMP_INFO
+      integer   :: omp_get_num_threads, omp_get_thread_num
+#endif
 
 C
 C     Transform the eigenvector of the real symmetric tridiagonal matrix
@@ -1294,6 +1328,10 @@ C      Z = TAU* . Z
 C
 !$OMP PARALLEL DEFAULT(NONE) SHARED(M,N,TAU,A,Z)
 !$OMP& PRIVATE(I,J,K,H,SR,SI,SJ,SK)
+#ifdef QDIAG_OMP_INFO
+      print '(A,3I10)','HTRIBK_omp - openMP threads, my rank',
+     &   omp_get_num_threads(), omp_get_thread_num(), M
+#endif
 !$OMP DO SCHEDULE(GUIDED)
       DO J = 1, M
 

@@ -42,7 +42,8 @@ module talsh_common_routines
           ierr=talsh_tensor_get_body_access(t1_tensor,body_p,C8,0,DEV_HOST)
           call c_f_pointer(body_p,t1_tens,t1_dims(1:2)) ! to use <t1_tens> as a regular Fortran 2d array
 
-          if (t1_dims(2) .eq. nocc*2) then
+          !if (t1_dims(2) .eq. nocc*2) then
+          if (t1_dims(2) .eq. nocc) then
            !t amplitudes
            do i = 1, t1_dims(2)
              do a = 1, t1_dims(1)
@@ -69,7 +70,8 @@ module talsh_common_routines
           ierr=talsh_tensor_get_body_access(t2_tensor,body_p,C8,0,DEV_HOST)
           call c_f_pointer(body_p,t2_tens,t2_dims(1:4)) ! to use <t2_tens> as a regular Fortran 4d array
 
-          if (t2_dims(3) .eq. nocc*2) then
+          !if (t2_dims(3) .eq. nocc*2) then
+          if (t2_dims(3) .eq. nocc) then
            !t amplitudes
            do j = 1, t2_dims(4)
              do i = 1, t2_dims(3)
@@ -123,23 +125,17 @@ module talsh_common_routines
 
 !      Written by Lucas Visscher, winter 2016/2017 (but in Goa, India, temperature about 25 C)
 
-       use dirac_MO
+       use exacorr_mo
        use exacorr_global
 
-       integer, intent(in) :: nmo          ! the length of the mo basis
-       integer, intent(in) :: mo_list(:)   ! and their indices
-       real(8) :: eps(:)
+       integer, intent(in ) :: nmo          ! the length of the mo basis
+       integer, intent(in ) :: mo_list(:)   ! and their indices
+       real(8), intent(out) :: eps(:)
+       type(cmo)            :: cspinor
 
-       integer             :: k
-       type(MO)            :: qmo
-
-       call get_mo_coefficients (qmo,mo_list,nmo)
-
-       do k = 1, nmo
-          eps(k)     = qmo%energy(k)
-          eps(k+nmo) = qmo%energy(k)
-       end do
-       call delete_qmo (qmo)
+       call get_mo_coefficients (cspinor,mo_list,nmo)
+       eps = cspinor%energy
+       call dealloc_mo(cspinor)
 
       end subroutine get_orbital_energies
 

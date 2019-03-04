@@ -17,9 +17,7 @@ Water molecule. X2C Hamiltonian. CC energies.
 .OCCUPIED
 3..5
 .VIRTUAL
-6..17
+6..11
 .EXATENSOR
-.TCONVERG
-2.0E-13
 .LAMBDA
 *END OF

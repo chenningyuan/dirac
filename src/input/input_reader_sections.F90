@@ -895,7 +895,7 @@
          call kw_read(word, exa_input%ncycles)
       end if
 
-      if (kw_matches(word, '.EOMCCSD')) then
+      if (kw_matches(word, '.EOMCC ')) then
          exa_input%eom = .true.
          call kw_read(word, exa_input%eom_flavour)
       end if
@@ -2550,7 +2550,7 @@
          call setaldaha(.true.) !activate alda for the h- part
       end if
 
-      if (kw_matches(word, '.GAUTSC')) then
+      if (kw_matches(word, '.GAUNTS')) then
          call set_lscale_dft_gaunt()
       end if
 #endif

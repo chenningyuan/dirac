@@ -310,6 +310,71 @@ Upon request the analysis of other one-electron properties may also be
 implemented. The module could in principle be used for each one-electron
 operator that is specified in :ref:`one_electron_operators`.
 
+keyword(OPERATOR)
+
+Further modification by Malaya K. Nayak for the proper functioning of .OPERATOR keyword
+
+Here is some specific examples of :ref:`one_electron_operators` using .OPERATOR keyword.
+
+For the electron electric dipole moment (eEDM) effective electric field one can use
+
+::
+
+ .OPERATOR
+  'A2-EDM'
+  iBETAGAM
+  EDM
+
+The nucleus-electron scalar-pseudoscalar (Ne-SPS) interaction in BeH can be defined as 
+
+::
+
+ .OPERATOR
+  'A1-SPS'
+  iBETAGAM
+  'PVCBe 01'        for the first atom (as specied in .mol file) Be in BeH molecule
+ .OPERATOR
+  'A2-SPS'
+  iBETAGAM
+  'PVCH  02'        for the second atom (as specied in .mol file) H in BeH molecule
+
+Similarly, the magnetic hyperfine-structure constants in BeH can be defined as follows
+
+::
+
+ .OPERATOR
+  'X1-HYP'     (X1-HYP, Y1-HYP and Z1-HYP are for the first atom as specied in .mol file)
+  XAVECTOR
+  'NEF 001'
+  'NEF 005'
+ .OPERATOR
+  'Y1-HYP'
+  YAVECTOR
+  'NEF 003'
+  'NEF 001'
+ .OPERATOR
+  'Z1-HYP'
+  ZAVECTOR
+  'NEF 005'
+  'NEF 003'
+ .OPERATOR
+  'X2-HYP'     (X2-HYP, Y2-HYP and Z2-HYP are for second atom as specied in the .mol file)
+  XAVECTOR
+  'NEF 002'
+  'NEF 006'
+ .OPERATOR
+  'Y2-HYP'
+  YAVECTOR
+  'NEF 004'
+  'NEF 002'
+ .OPERATOR
+  'Z2-HYP'
+  ZAVECTOR
+  'NEF 006'
+  'NEF 004'
+
+One can define many more :ref:`one_electron_operators` as per their requirements.
+
 keyword(DIPMOM)
 
 compute the permanent dipole moments in electronic ground and excited states.

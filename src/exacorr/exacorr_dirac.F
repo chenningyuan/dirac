@@ -20,29 +20,25 @@ C***********************************************************************
       use interface_to_mpi
 #endif
 
-#include "implicit.h"
-! because common blocks may assume this
+      implicit none
+
 #include "../moltra/dcbtra.h"
 ! to access tra4_indstr
 #include "infpar.h"
 ! we need to broadcast tra4_indstr
 #include "dcborb.h"
 ! to access nesh (number of positive energy "electronlike" orbitals)
-#include "dgroup.h"
-! to access nfsym (should be 1)
 
       character (len=72)   :: orbital_string(4) ! String with range of MO's to be transformed for each index
       integer              :: kvec              ! Dummy variable needed in first call to numlst
-      integer, allocatable :: mo_list(:)
+      integer, allocatable :: mo_list(:), mo_list_tmp(:)
       integer              :: nmo(4)
-
-c     if (nfsym.ne.1) then
-c        call quit ('exacorr can not handle symmetry')
-c     end if
+      integer              :: i, j, imo, jmo, ntmo
 
 #if defined (VAR_MPI)
       ! parallel version of DIRAC
 C     Transfer necessary information from common blocks
+      call interface_mpi_comm_rank(global_communicator,mytid)
       if (mytid == 0) then
          orbital_string = tra4_indstr(:,1) ! This is to be changed once we have an exacorr-specific input driver
          ! instruct slaves to go to the current routine (exa_moltra) as well
@@ -82,13 +78,28 @@ C     Count number of orbitals to be transformed for each index
       end do
 
 C     Fill the array with orbital indices
-      allocate (mo_list(ntmo))
+      allocate (mo_list_tmp(ntmo))
       imo = 1
       do i = 1, 4
        call numlst
-     & (orbital_string(i),mo_list(imo),nmo(i),1,nesh(1),1,nmo(i))
+     & (orbital_string(i),mo_list_tmp(imo),nmo(i),1,nesh(1),1,nmo(i))
        imo = imo + nmo(i)
       end do
+
+C     Convert to Kramers unrestricted picture
+      ntmo = ntmo * 2 ! spinors
+      allocate (mo_list(ntmo))
+      imo = 1
+      jmo = 1
+      do j = 1, 4
+        do i = 1, 2*nmo(j)
+            mo_list(imo) = (mo_list_tmp(jmo)-1)*2 + i
+            imo = imo + 1
+        end do
+        jmo = jmo + nmo(j)
+      end do
+      deallocate(mo_list_tmp)
+      nmo = nmo * 2 ! Kramers unrestricted
 
 #if defined (VAR_MPI)
       end if
@@ -125,26 +136,18 @@ C***********************************************************************
       use exacc_cfg
       use talsh_cc,only             : talsh_cc_driver
       use exacorr_cc,only           : exacorr_cc_driver
+      use exacorr_global
 #if defined (VAR_MPI)
       use interface_to_mpi
 #endif
 
-#include "implicit.h"
-! because common blocks may assume this
-#include "infpar.h"
-! we will be running in parallel
-#include "dcborb.h"
-! to access nesh (number of positive energy "electronlike" orbitals)
-#include "dgroup.h"
-! to access nfsym (should be 1)
+      implicit none
 
-      integer              :: kvec              ! Dummy variable needed in first call to numlst
-      integer, allocatable :: mo_list(:)
-      integer              :: nmo(4)
-
-c     if (nfsym.ne.1) then
-c        call quit ('exacorr can not handle symmetry')
-c     end if
+      integer              :: kvec                     ! Dummy variable needed in first call to numlst
+      integer, allocatable :: mokr_occ(:), mokr_vir(:) ! list of spinors
+      integer              :: nesh                     ! number of positive energy solutions
+      integer              :: mytid                    ! MPI rank
+      integer              :: i
 
 #if defined (VAR_MPI)
       ! parallel version of DIRAC
@@ -166,22 +169,41 @@ c     end if
       end if
 #endif
 C
+      call set_talsh_only(exa_input%talsh)
+      call initialize_global_data
+      if (mytid == 0) print*," Initialized global data"
+
 ! next block is code is only for master
 #if defined (VAR_MPI)
       if (mytid == 0) then
 #endif
+
+      nesh = get_nsolutions() / 2
       ! Obtain nocc and nvir + mo_occ and mo_vir
       exa_input%nkr_occ = 0
-      call numlst (string_occupied,kvec,1,1,nesh(1),1,exa_input%nkr_occ)
+      call numlst (string_occupied,kvec,1,1,nesh,1,exa_input%nkr_occ)
+      allocate (mokr_occ(exa_input%nkr_occ))
+      call numlst (string_occupied,mokr_occ,exa_input%nkr_occ,
+     &              1,nesh,1,exa_input%nkr_occ)
+      exa_input%nkr_occ = 2 * exa_input%nkr_occ
       allocate (exa_input%mokr_occ(exa_input%nkr_occ))
-      call numlst (string_occupied,exa_input%mokr_occ,exa_input%nkr_occ,
-     &              1,nesh(1),1,exa_input%nkr_occ)
+      do i = 1, exa_input%nkr_occ
+        exa_input%mokr_occ(i) = (mokr_occ(1)-1)*2+i
+      end do
+      deallocate (mokr_occ)
 
       exa_input%nkr_vir = 0
-      call numlst (string_virtual,kvec,1,1,nesh(1),1,exa_input%nkr_vir)
+      call numlst (string_virtual,kvec,1,1,nesh,1,exa_input%nkr_vir)
+      allocate (mokr_vir(exa_input%nkr_vir))
+      call numlst (string_virtual,mokr_vir,exa_input%nkr_vir,
+     & 1,nesh,1,exa_input%nkr_vir)
+      exa_input%nkr_vir = 2 * exa_input%nkr_vir
       allocate (exa_input%mokr_vir(exa_input%nkr_vir))
-      call numlst (string_virtual,exa_input%mokr_vir,exa_input%nkr_vir,
-     &              1,nesh(1),1,exa_input%nkr_vir)
+      do i = 1, exa_input%nkr_vir
+        exa_input%mokr_vir(i) =
+     &                        exa_input%mokr_occ(exa_input%nkr_occ)+i
+      end do
+      deallocate (mokr_vir)
 
 #if defined (VAR_MPI)
       end if
@@ -297,12 +319,12 @@ C
           deallocate (coefficients)
 
        end subroutine compress_unc_shell
-  
-       subroutine read_from_dfcoef (ao_basis,qmo,ierr)
-  
-       use dirac_mo
+
+       subroutine read_from_dfcoef (ao_basis,cspinor,ierr)
+
+       use exacorr_mo
        use exacorr_datatypes
-       use exacorr_global,only: ncartesian
+       use exacorr_global,only: nfunctions
 
        implicit none
 
@@ -311,7 +333,7 @@ C
 !      by reading also the basis set information into gtos
 
        type(basis_set_info_t), intent(inout) :: ao_basis
-       type(MO), intent(inout):: qmo
+       type(cmo), intent(inout):: cspinor
        integer, intent(out)   :: ierr 
        integer, parameter     :: NOERROR  = 0 ! no error
        integer, parameter     :: NOTFOUND = 1 ! file not found
@@ -330,11 +352,12 @@ C
        integer                :: nao, nao_bas, nshells, iao, ibas
        integer                :: nmo, npo, nto, npriexp, ncnt
        integer, parameter     :: nz = 4 ! we use no symmetry, so always have this
-       real(8), allocatable   :: coeff(:,:,:),eig(:)
+       real(8), allocatable   :: coeff(:,:,:),eig(:), seig(:)
        integer, allocatable   :: ibeig(:),index(:)
        integer, allocatable   :: ncent(:),nhkt(:),nuco(:),numcf(:)
        integer, allocatable   :: jstrt(:)
        real(8), allocatable   :: cent(:,:),priexp(:),priccf(:,:)
+       complex(8), allocatable:: scoeff(:,:,:)
 
        ierr = NOERROR
 
@@ -367,29 +390,37 @@ C
        allocate(coeff(nao,nto,nz))
        allocate(eig(nto))
        allocate(ibeig(nto))
-       allocate(index(nto))
+       allocate(index(2*nmo))
         
        ! read the mo coefficients and orbital eigenvalues
        read (lucoef,end=10,err=10) coeff
        read (lucoef,end=10,err=10) eig
        read (lucoef,end=10,err=10) ibeig
        ! fill in index values
-       do i = 1, nmo
+       do i = 1, 2*nmo
           index(i) = i ! we set the index compatible with the fact that we store all mo's
        end do
 
-       ! put in qmo
-       call create_qmo (qmo,nao,nmo,nz)
-       qmo%total_energy = total_energy
-       qmo%index        = index
-       qmo%coeff        = coeff(:,npo+1:nto,1:nz)
-       qmo%energy       = eig(npo+1:nto)
-       qmo%boson_irrep  = ibeig(npo+1:nto)
+!      switch to unrestricted spinor picture
+       allocate(seig(2*nmo))
+       allocate(scoeff(nao,2*nmo,2)) ! nao, 2*nmo, spin
+       call convert_quaternion_to_complex(coeff,scoeff,eig,seig,
+     &                                              nao,nmo,npo)
+
+       ! put in cmo
+       call alloc_mo (cspinor,nao,2*nmo)
+       cspinor%total_energy = total_energy
+       cspinor%index        = index
+       cspinor%coeff        = scoeff
+       cspinor%energy       = seig
+       cspinor%boson_irrep  = 0 ! because nosym. if there is, include ibeig in converter
 
        deallocate(coeff)
        deallocate(eig)
        deallocate(ibeig)
        deallocate(index)
+       deallocate(seig)
+       deallocate(scoeff)
 
        ! read the basis set information and check for consistency
        read (LUCOEF,err=20,end=20) nao_bas,nshells,npriexp,ncnt 
@@ -420,8 +451,9 @@ C
        read (LUCOEF,err=20,end=20) priccf
 
        ! put in gtos
-       ao_basis%nshells = nshells
-       ao_basis%nao     = nao
+       ao_basis%nshells       = nshells
+       ao_basis%nao           = nao
+       ao_basis%basis_angular = 1
        nullify(ao_basis%gtos)
        allocate(ao_basis%gtos(nshells))
        do ishell = 1, nshells
@@ -458,7 +490,9 @@ C
        allocate(ao_basis%shell_indices(nao))
        iao = 0
        do ishell = 1, nshells
-          do ibas = 1, ncartesian(ao_basis%gtos(ishell)%orb_momentum)
+          do ibas = 1,
+     &       nfunctions(
+     &       ao_basis%gtos(ishell)%orb_momentum,ao_basis%basis_angular)
              iao = iao + 1
              if (iao.gt.nao) then
                 ierr = INCONSIS
@@ -485,7 +519,7 @@ C
 
        end subroutine read_from_dfcoef
 
-       subroutine Write_To_Mdcint (nmo,rcw,mo_tens)
+       subroutine Write_To_Mdcint (nmo,mo_tens)
 
 !      Utility routine to write to the DIRAC moltra format, makes it easier to test the index transform
  
@@ -497,27 +531,24 @@ C
        integer rcw    ! this is used to toggle between complex (so, rcw=2) and real (scalar, rcw=1) tensors
        integer iclass, nclass
        integer nmo(4)
-       real(8) mo_tens(rcw,nmo(3)*rcw,nmo(4)*rcw,nmo(1)*rcw,nmo(2)*rcw) ! the first rcw is real/complex, the other toggles orbitals/spinors
-       real(8), allocatable :: fmat(:,:),rkl(:,:)
+       real(8) mo_tens(2,nmo(3),nmo(4),nmo(1),nmo(2))
+       real(8), allocatable :: fmat(:,:,:),rkl(:,:)
        integer, allocatable :: indk(:),indl(:)
-       integer :: nmo_start(8,4),nmo_end(8,4)
+       integer nkr(4),bar(8,4)
 
        iprint = 0
+       irepij = 1
+       nkr = nmo / 2 ! go to Kramers restricted
+       rcw = 2       ! We have no symmetry or spinfree options yet, so this is always 2
+       nclass = 8    ! write the standard classes used in MOLTRA as well
 
 !      Open the MDCINT file
        call mdinti (0) 
 
-!      We use no symmetry, but may have both scalar and spin-orbit tensors as input
-       irepij = 1
-       if (rcw == 1) then
-          nclass = 1  ! this implies spinfree
-       else
-          nclass = 8
-       end if
-
 !      We only need to write a subset of integrals, the rest will be generated by permutation and/or Kramers' symmetry
  
 !      Classes are defined to have a standard subset of integrals, make these consistent with the definition in mdintb (in moltra)
+!      Index   :  3    4      1    2
 !      Class 1 : (k    l    | i    j   )
 !      Class 2 : (kbar lbar | i    j   )
 !      Class 3 : (k    lbar | i    jbar)
@@ -529,47 +560,31 @@ C
 
 !      NB: classes 5 through 8 are not used, we therefore shift the final 4 classes in the array below to get a contiguous index
 
-       do i = 1, 4
-          do iclass = 1, 8
-             nmo_start(iclass,i) = 1
-             nmo_end  (iclass,i) = nmo(i)
-          end do
-       end do
-
+       bar = 1 ! set everything unbarred to initialize
 !      define bars for class 2
-       nmo_start(2,3) = nmo(3) + 1
-       nmo_end  (2,3) = 2 * nmo(3)
-       nmo_start(2,4) = nmo(4) + 1
-       nmo_end  (2,4) = 2 * nmo(4)
+       bar(2,3) = 2
+       bar(2,4) = 2
 !      define bars for class 3
-       nmo_start(3,2) = nmo(2) + 1
-       nmo_end  (3,2) = 2 * nmo(2)
-       nmo_start(3,4) = nmo(4) + 1
-       nmo_end  (3,4) = 2 * nmo(4)
+       bar(3,2) = 2
+       bar(3,4) = 2
 !      define bars for class 4
-       nmo_start(4,2) = nmo(2) + 1
-       nmo_end  (4,2) = 2 * nmo(2)
-       nmo_start(4,3) = nmo(3) + 1
-       nmo_end  (4,3) = 2 * nmo(3)
+       bar(4,2) = 2
+       bar(4,3) = 2
 !      define bars for class 5=9
-       nmo_start(5,3) = nmo(3) + 1
-       nmo_end  (5,3) = 2 * nmo(3)
+       bar(5,3) = 2
 !      define bars for class 6=10
-       nmo_start(6,4) = nmo(4) + 1
-       nmo_end  (6,4) = 2 * nmo(4)
+       bar(6,4) = 2
 !      define bars for class 7=11
-       nmo_start(7,1) = nmo(1) + 1
-       nmo_end  (7,1) = 2 * nmo(1)
+       bar(7,1) = 2
 !      define bars for class 8=12
-       nmo_start(8,2) = nmo(2) + 1
-       nmo_end  (8,2) = 2 * nmo(2)
+       bar(8,2) = 2
 
 !      Allocate memory needed by mdintb
-       nkl = nmo(3) * nmo(4)
-       allocate(rkl(rcw,nkl))
+       nkl = nkr(3) * nkr(4)
+       allocate(rkl(rcw,nkl)) 
        allocate(indk(nkl))
        allocate(indl(nkl)) 
-       allocate(fmat(nkl,rcw))
+       allocate(fmat(nkr(3),nkr(4),rcw))
 
 !      loop over classes to write out subsets of integrals
        do iclass = 1, nclass
@@ -580,18 +595,10 @@ C
           end if
 
 !         loop over blocks of integrals, taking i and j as outermost indices like is done in moltra
-          do j = nmo_start(iclass,2), nmo_end(iclass,2)
-             if (j.le.nmo(2)) then ! mdintb takes as index Kramers pairs not spinors
-                jj = j
-             else
-                jj = j - nmo(2)
-             endif
-             do i = nmo_start(iclass,1),nmo_end(iclass,1)
-               if (i.le.nmo(1)) then ! mdintb takes as index Kramers pairs not spinors
-                  ii = i
-               else
-                  ii = i - nmo(1)
-               endif
+          do jj = 1, nkr(2)
+             j = (jj-1)*2 + bar(iclass,2) ! Spinor index 2
+             do ii = 1, nkr(1)
+                i = (ii-1)*2 + bar(iclass,1) ! Spinor index 1
 
 !              In moltra the real/imaginary index within a block is last rather than first, so we need to reorganize
 
@@ -599,15 +606,18 @@ C
 !              this can be done here, but will be quite inefficient and not worth the trouble for this utility routine that
 !              is to discarded later anyhow.
      
-               rkl = reshape(mo_tens(1:rcw,
-     &                       nmo_start(iclass,3):nmo_end(iclass,3),
-     &                       nmo_start(iclass,4):nmo_end(iclass,4),i,j),
-     &                       (/rcw, nmo(3)*nmo(4)/))
-               fmat = transpose(rkl)
+               do ll = 1, nkr(4)
+                  l = (ll-1)*2 + bar(iclass,4) ! Spinor index 4
+                  do kk = 1, nkr(3)
+                     k = (kk-1)*2 + bar(iclass,3) ! Spinor index 3
+                     fmat(kk,ll,1) = mo_tens(1,k,l,i,j)
+                     fmat(kk,ll,2) = mo_tens(2,k,l,i,j)
+                  end do
+               end do
 
 !              write a block of integrals to file. mdintb takes care of thresholding and labelling
-               call mdintb(iprint,rcw,jclass,irepij,nmo(3),nmo(4),ii,jj,
-     &                     fmat,nkl,indk,indl,rkl)
+               call mdintb(iprint,rcw,jclass,irepij,nkr(3),nkr(4),
+     &           ii,jj,fmat,nkl,indk,indl,rkl)
 
              end do
           end do
@@ -615,10 +625,10 @@ C
 
 !      Close the MDCINT file
        call mdintf 
-       deallocate(fmat)
        deallocate(rkl)
        deallocate(indk)
        deallocate(indl)
+       deallocate(fmat)
 
        return
        end

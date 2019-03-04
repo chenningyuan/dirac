@@ -27,6 +27,7 @@ contains
   call interface_mpi_bcast_l0(exa_input%lambda,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%ccd,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%eom,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast_l0(exa_input%eom_properties,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%eom_flavour,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%ncycles,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%exa_blocksize,1,exa_MPI_RANK,global_communicator)

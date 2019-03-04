@@ -1902,7 +1902,7 @@ C
 C
 C       Read RECP parameter if exist
 C
-        CALL RECP_LNK_READCP(LUINFO,I,NONT(I))
+        CALL RECP_LNK_READCP(LUINFO,I,NONT(I),IPREAD)
 C
 C     End of loop over unique atom types
   100 CONTINUE
@@ -2286,9 +2286,9 @@ C*****************************************************************************
      &            KATOM,KANG,KBLOCK,KPRIM,
      &            ISHELL_FIT,IPRIM_FIT,IPRIMD_FIT,
      &            IORB_FIT,IORBD_FIT,LCOMP_FIT)
-      IF (ISHELL_FIT.GT. MXSHEL) GOTO 5000
-      IF (IORBD_FIT .GT. MXCORB) GOTO 5010
-      IF (IPRIM_FIT .GT. MXPRIM) GOTO 5020
+      IF (ISHELL_FIT.GT. MXSHEL_FIT) GOTO 5000
+      IF (IORBD_FIT .GT. MXCORB_FIT) GOTO 5010
+      IF (IPRIM_FIT .GT. MXPRIM_FIT) GOTO 5020
       KMAX_FIT   = ISHELL_FIT
       NSMLSH_FIT = KMAX_FIT - NLRGSH_FIT
       NBASIS_FIT = IORBD_FIT
