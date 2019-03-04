@@ -12,9 +12,6 @@ f = Filter()
 f.add(from_string = 'Final L1amp',
       num_lines   = 2,
       rel_tolerance   = 1.0e-9)
-f.add(from_string = 'DM_AO',
-      num_lines   = 1,
-      rel_tolerance   = 1.0e-9)
 
 test.run(['ccsd_x2c.inp'], ['H2O_nosym.mol'], f)
 

@@ -41,7 +41,9 @@
             integer                 :: moint_scheme = 3
             integer                 :: ncycles = 30
             integer                 :: nkr_occ, nkr_vir         ! number of Kramer pairs
+            integer                 :: nocc, nvir               ! number of spinors
             integer, allocatable    :: mokr_occ(:), mokr_vir(:) ! list of active Kramer pairs
+            integer, allocatable    :: mo_occ(:), mo_vir(:)     ! list of active spinors
             real(REALD)             :: t_econv = 1.0D-9         ! convergence criterium
         end type exacc_input
 
@@ -72,6 +74,12 @@
          type(tens_rcrsv_t) :: w_vvvv
          type(tens_rcrsv_t) :: goo, gvv
         end type exatns_lambda_tens
+
+        type, public :: exatns_dm_tens
+         type(tens_rcrsv_t) :: prime_oo, symm_oo
+         type(tens_rcrsv_t) :: prime_ov, prime_vo, symm_ov, symm_vo
+         type(tens_rcrsv_t) :: prime_vv, symm_vv
+        end type exatns_dm_tens
 
         type, public :: space_dims
          integer       :: occ_space_id, vir_space_id
@@ -108,7 +116,7 @@
 
         type, public :: talsh_dm_tens
          type(talsh_tens_t) :: prime_oo, symm_oo
-         type(talsh_tens_t) :: prime_ov, prime_vo
+         type(talsh_tens_t) :: prime_ov, prime_vo, symm_ov, symm_vo
          type(talsh_tens_t) :: prime_vv, symm_vv
         end type talsh_dm_tens
 
