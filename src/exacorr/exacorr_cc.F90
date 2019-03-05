@@ -198,9 +198,9 @@ module exacorr_cc
             ierr=exatns_tensor_create(comm_t%t2,"t2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
 !           the tensor_add routine is not implemented in exatensor, work around this by using a contraction
             ierr=exatns_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)*K()",comm_t%t2,int_t%oovv,one_tensor) ! o(2)v(2)
-            ierr=exatns_tensor_traverse(comm_t%t2,'PrintTensor')
+            !ierr=exatns_tensor_traverse(comm_t%t2,'PrintTensor')
             ierr=exatns_tensor_transform(comm_t%t2,'Denominate')
-            ierr=exatns_tensor_traverse(comm_t%t2,'PrintTensor')
+            !ierr=exatns_tensor_traverse(comm_t%t2,'PrintTensor')
 
 !           Calculate and print the MP2 energy
             ierr=exatns_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%t2,int_t%oovv,ONE_QUARTER) ! o(2)v(2)
@@ -1585,7 +1585,7 @@ module exacorr_cc
             ierr=exatns_tensor_contract("R()+=H(a,b)*I(a,b)",r_tensor,h_tensor,id_mat_occ)
             ierr=exatns_tensor_get_scalar(r_tensor,result_val)
             hf_energy=real(result_val,8) ! Casting into real(8)
-            if (print_level >0) print*," HF = ", hf_energy+e_core
+            if (print_level >0) print*," HF (recalc.) = ", hf_energy+e_core
             ierr=exatns_tensor_destroy(h_tensor)
 
             ierr=exatns_tensor_create(orb_tensor,"orb_oo",oo_id,oo_root,EXA_DATA_KIND_C8)

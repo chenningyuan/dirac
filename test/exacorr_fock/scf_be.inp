@@ -14,6 +14,7 @@ Water molecule. X2C Hamiltonian. CC energies.
 4
 .OPEN SHELL
 1
+1 / 2
 .EVCCNV
 1.0E-9
 **INTEGRALS
