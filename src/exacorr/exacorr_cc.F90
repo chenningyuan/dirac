@@ -327,6 +327,7 @@ module exacorr_cc
 
 !        Written by Lucas Visscher, January 2019
 
+         use interface_to_mpi
          use exacorr_global
          use exacorr_ao_to_mo
          use, intrinsic:: ISO_C_BINDING
@@ -350,7 +351,7 @@ module exacorr_cc
          ! variables for the definition of spaces (AO and 2 different MO spaces)
          type(subspace_basis_t)     :: basis_ao, basis_occ, basis_vir
          integer(INTL)              :: nao_l ! (same as nao, as long integer)
-         integer                    :: branch_factor, tavp_mng_depth
+         integer                    :: branch_factor, tavp_mng_depth, my_MPI_rank
 
          ! variables for the definition of colors inside the spaces
          type(color_symmetry_t), allocatable    :: color(:)
@@ -360,6 +361,8 @@ module exacorr_cc
          integer:: ierr
 
          integer:: lsh, l, nl
+
+         call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
 
          nao           = get_nao()   ! This is the total number of ao's
          nao_l         = int(nao,8)  ! we need this as a long int for exatensor
@@ -393,6 +396,7 @@ module exacorr_cc
          !Get ExaTENSOR TAVP-MNG depth:
          ierr = exatns_virtual_depth(tavp_mng_depth)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_virtual_depth() failed!')
+         if(my_MPI_rank == 0) print *,'ExaCorr: Inferred TAVP-MNG depth = ',tavp_mng_depth
 
          !Register the ao vector space:
 !        branch_factor = nao / exa_input%exa_blocksize + 1
@@ -400,7 +404,7 @@ module exacorr_cc
          branch_factor = max(2, (int(get_num_segments(int(nao,8),int(exa_input%exa_blocksize,8)),4) - 1)/tavp_mng_depth + 1)
          ierr=exatns_space_register('AO_space',basis_ao,ao_space_id,ao_space,branch_factor)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register() failed!')
-         print *,'ExaCorr: Registered vector space of dimension ',nao,': Number of segments = ',&
+         if(my_MPI_rank == 0) print *,'ExaCorr: Registered AO vector space of dimension ',nao,': Number of segments = ',&
          &branch_factor*(2**(tavp_mng_depth-1)) !debug
 
          !Copy user input to local arrays for the definition of MO spaces (for standard CC we only distinguish occupied and virtual spinors)
@@ -439,7 +443,7 @@ module exacorr_cc
          branch_factor = max(2, (int(get_num_segments(int(nocc,8),int(exa_input%exa_blocksize,8)),4) - 1)/tavp_mng_depth + 1)
          ierr=exatns_space_register('Occupied',basis_occ,occ_space_id,occ_space,branch_factor)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register(occ) failed!')
-         print *,'ExaCorr: Registered vector space of dimension ',nocc,': Number of segments = ',&
+         if(my_MPI_rank == 0) print *,'ExaCorr: Registered OCC vector space of dimension ',nocc,': Number of segments = ',&
          &branch_factor*(2**(tavp_mng_depth-1)) !debug
 
          !Register vir mo vector space:
@@ -448,7 +452,7 @@ module exacorr_cc
          branch_factor = max(2, (int(get_num_segments(int(nvir,8),int(exa_input%exa_blocksize,8)),4) - 1)/tavp_mng_depth + 1)
          ierr=exatns_space_register('Virtual',basis_vir,vir_space_id,vir_space,branch_factor)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register(vir) failed!')
-         print *,'ExaCorr: Registered vector space of dimension ',nvir,': Number of segments = ',&
+         if(my_MPI_rank == 0) print *,'ExaCorr: Registered VIRT vector space of dimension ',nvir,': Number of segments = ',&
          &branch_factor*(2**(tavp_mng_depth-1)) !debug
 
         end subroutine exacorr_cc_spaces
