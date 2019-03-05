@@ -905,6 +905,10 @@
          call kw_read(word, string_vir_beta)
       end if
 
+      if (kw_matches(word, '.PRINT ')) then
+         call kw_read(word, exa_input%print_level)
+      end if
+
       call check_whether_kw_found(word, kw_section)
 
 #endif

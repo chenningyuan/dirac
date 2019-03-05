@@ -40,6 +40,7 @@
             integer                 :: exa_blocksize = 75
             integer                 :: moint_scheme = 3
             integer                 :: ncycles = 30
+            integer                 :: print_level = 0
             integer                 :: nkr_occ, nkr_vir         ! number of Kramer pairs
             integer                 :: nocc, nvir               ! number of spinors
             integer, allocatable    :: mokr_occ(:), mokr_vir(:) ! list of active Kramer pairs
@@ -133,12 +134,5 @@
          real(8), pointer :: RC(:,:)
          real(8), pointer :: CC(:,:)
         end type one_el_t
-
-!       Two electron integrals, testing
-        type, public  :: two_el_t
-         integer     :: nkp=-1
-         real(8), pointer :: RC(:,:, :, :)
-         real(8), pointer :: CC(:,:, :, :)
-        end type two_el_t
 
        end module exacorr_datatypes

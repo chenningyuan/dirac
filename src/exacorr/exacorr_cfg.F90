@@ -30,6 +30,7 @@ contains
   call interface_mpi_bcast_l0(exa_input%beta_vir,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%ncycles,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%exa_blocksize,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast(exa_input%print_level,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%moint_scheme,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%mokr_occ,exa_input%nkr_occ,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%mokr_vir,exa_input%nkr_vir,exa_MPI_RANK,global_communicator)

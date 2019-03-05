@@ -88,6 +88,9 @@ module exacorr_cc
          !USE MRCONEE
          integer :: one_el_exist
 
+         !controlling print
+         integer :: print_level
+
 !        Make some noise so that we know we are here
          call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
          if (my_MPI_rank == 0) print*, " Starting CC calculation with exatensor"
@@ -108,6 +111,7 @@ module exacorr_cc
          lambda = exa_input%lambda
          noints = exa_input%noints
          ncycles = exa_input%ncycles
+         print_level = exa_input%print_level
 
          if (my_MPI_rank == 0) then
             print*, " Characteristics of this calculation"
@@ -120,6 +124,7 @@ module exacorr_cc
             print*, " - Maximum number of cycles:       ",exa_input%ncycles
             print*, " - ExaTensor block size            ",exa_input%exa_blocksize
             print*, " - Integral transformation scheme  ",exa_input%moint_scheme
+            print*, " - Print Level                     ",exa_input%print_level
          end if
 
          !Create all id and root arrays, neccessary for exatns_tensor_create
@@ -176,6 +181,7 @@ module exacorr_cc
             ierr=exatns_tensor_create(one_tensor,"another_one_tensor",EXA_DATA_KIND_C8)
             ! Note:  also get_integral_tensors will define a one_tensor and call it "one_tensor", so we needed another name
             ierr=exatns_tensor_init(one_tensor,ONE)
+            
 
 !           Get fixed two-body tensors
             ierr=exatns_tensor_create(int_t%oooo,"oooo",oooo_id,oooo_root,EXA_DATA_KIND_C8)
@@ -188,7 +194,7 @@ module exacorr_cc
             call print_date('initialized two electron integrals')
 
             ! needs to be after the initializtion of the two electron integrals
-            call init_fock (comm_t,int_t,oo_id,oo_root,ov_id,ov_root,vv_id,vv_root, one_el_exist, e_core)
+            call init_fock (comm_t,int_t,oo_id,oo_root,ov_id,ov_root,vv_id,vv_root, one_el_exist, e_core, print_level)
             call print_date('initialized fock matrix')
 
 !           Initialize t1 amplitudes to zero (we assume canonical orbitals for the moment)
@@ -198,12 +204,15 @@ module exacorr_cc
             ierr=exatns_tensor_create(comm_t%t2,"t2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
 !           the tensor_add routine is not implemented in exatensor, work around this by using a contraction
             ierr=exatns_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)*K()",comm_t%t2,int_t%oovv,one_tensor) ! o(2)v(2)
-            !ierr=exatns_tensor_traverse(comm_t%t2,'PrintTensor')
             ierr=exatns_tensor_transform(comm_t%t2,'Denominate')
-            !ierr=exatns_tensor_traverse(comm_t%t2,'PrintTensor')
 
+            ierr=exatns_tensor_init(result_tensor,ZERO)
 !           Calculate and print the MP2 energy
             ierr=exatns_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%t2,int_t%oovv,ONE_QUARTER) ! o(2)v(2)
+            if (ierr > 0) print *, "MP2 error", ierr
+            if (print_level >2) ierr=exatns_tensor_traverse(comm_t%t2,'PrintTensor')
+            if (print_level >2) ierr=exatns_tensor_traverse(int_t%oovv,'PrintTensor')
+            if (print_level >2) ierr=exatns_tensor_traverse(result_tensor,'PrintTensor')
             ierr=exatns_tensor_get_scalar(result_tensor,result_val)
             mp2_energy=real(result_val,8) ! Casting into real(8)
             print*," MP2 energy = ", mp2_energy
@@ -1532,7 +1541,7 @@ module exacorr_cc
 
         end subroutine diis
 
-        subroutine init_fock (comm_t,int_t,oo_id,oo_root,ov_id,ov_root,vv_id,vv_root, one_el_exist, e_core)
+        subroutine init_fock (comm_t,int_t,oo_id,oo_root,ov_id,ov_root,vv_id,vv_root, one_el_exist, e_core, print_level)
 
           use, intrinsic:: ISO_C_BINDING
           use exacorr_global
@@ -1546,8 +1555,7 @@ module exacorr_cc
           integer,dimension(2), intent(in)       :: oo_id, ov_id, vv_id 
           integer, intent(in)                    :: one_el_exist
           real(8), intent(in)                    :: e_core
-
-          integer, parameter:: print_level=1
+          integer, intent(in)                    :: print_level
 
           real(8)                    :: ev_energy, off_diag, hf_energy
           !        scalars (need to be defined as tensor types)
@@ -1650,9 +1658,9 @@ module exacorr_cc
             if (print_level >0) print*," VV off diag = ", off_diag
             
 
-            if (print_level >0) ierr=exatns_tensor_traverse(comm_t%foo,'PrintTensor')
-            if (print_level >0) ierr=exatns_tensor_traverse(comm_t%fov,'PrintTensor')
-            if (print_level >0) ierr=exatns_tensor_traverse(comm_t%fvv,'PrintTensor')
+            if (print_level >1) ierr=exatns_tensor_traverse(comm_t%foo,'PrintTensor')
+            if (print_level >1) ierr=exatns_tensor_traverse(comm_t%fov,'PrintTensor')
+            if (print_level >1) ierr=exatns_tensor_traverse(comm_t%fvv,'PrintTensor')
 
             ierr=exatns_tensor_destroy(h_tensor)
             ierr=exatns_tensor_destroy(id_mat_occ)

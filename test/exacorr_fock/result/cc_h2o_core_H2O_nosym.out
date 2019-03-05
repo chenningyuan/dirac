@@ -226,7 +226,7 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Mac OSX): Tue Mar  5 14:14:05 2019
+     Date and time (Mac OSX): Tue Mar  5 16:01:53 2019
      Host name              : MW-038275.clients.vu.nl                 
 
 
@@ -258,6 +258,8 @@ energy -1.0 1.0 0.00001
 .VIRTUAL                                                                                            
 6..9                                                                                                
 .EXATENSOR                                                                                          
+.PRINT                                                                                              
+2                                                                                                   
 **INTEGRALS                                                                                         
 *READIN                                                                                             
 .UNCONTRACT                                                                                         
@@ -906,7 +908,7 @@ H     -0.7685504811   0.0000000000   0.4760602904
 
                         1 Debye =   2.54177000 a.u. 
 
-Total time used in ONEGEN (CPU)  0.04242000s and (WALL)  0.04300000s
+Total time used in ONEGEN (CPU)  0.04325200s and (WALL)  0.04300000s
 * Info: DIRAC found X2CMAT (X2C stuff) ... skipping generation of H2C
   Nuclear Gaussian exponent for atom of charge   8.000 :    5.8631436655D+08
   Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248239171D+09
@@ -923,9 +925,9 @@ Total time used in ONEGEN (CPU)  0.04242000s and (WALL)  0.04300000s
 
                         1 Debye =   2.54177000 a.u. 
 
-Total time used in ONEGEN (CPU)  0.00789600s and (WALL)  0.00800000s
- >>> CPU  time used in PAMSET is   0.12 seconds
- >>> WALL time used in PAMSET is   0.12 seconds
+Total time used in ONEGEN (CPU)  0.00843700s and (WALL)  0.00900000s
+ >>> CPU  time used in PAMSET is   0.13 seconds
+ >>> WALL time used in PAMSET is   0.13 seconds
 
 
  *******************************************************************************
@@ -933,18 +935,18 @@ Total time used in ONEGEN (CPU)  0.00789600s and (WALL)  0.00800000s
  *******************************************************************************
 
 
-########## START ITERATION NO.   1 ##########   Tue Mar  5 14:14:05 2019
+########## START ITERATION NO.   1 ##########   Tue Mar  5 16:01:53 2019
 
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -76.0806180161887653
-* Heading :Water molecule. X2C Hamiltonian. CC energies.     Tue Mar  5 14:13:01 2019
+* REACMO: Coefficients read from file DFCOEF - Total energy: -76.0806180161886374
+* Heading :Water molecule. X2C Hamiltonian. CC energies.     Tue Mar  5 16:00:48 2019
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12    0.00%   46.87%    0.00%    0.93%   0.11400000s
+SOfock:LL  1.00D-12    0.00%   46.87%    0.00%    0.93%   0.11900000s
  >>> CPU  time used in SO Fock is   0.14 seconds
- >>> WALL time used in SO Fock is   0.14 seconds
-It.    1    -76.08061801619      7.61D+01  0.00D+00  7.69D-10               0.14101000s   LL             Tue Mar  5
+ >>> WALL time used in SO Fock is   0.15 seconds
+It.    1    -76.08061801619      7.61D+01  0.00D+00  7.66D-10               0.14364000s   LL             Tue Mar  5
 
 
                                    SCF - CYCLE
@@ -960,23 +962,23 @@ It.    1    -76.08061801619      7.61D+01  0.00D+00  7.69D-10               0.14
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -76.08061801619      7.61D+01  0.00D+00  7.69D-10               0.14101000s   LL             Tue Mar  5
+It.    1    -76.08061801619      7.61D+01  0.00D+00  7.66D-10               0.14364000s   LL             Tue Mar  5
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    1 iterations.
 * Average elapsed time per iteration: 
-      LL           :    0.16100000s
+      LL           :    0.17200000s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -85.135621162988144
+   Electronic energy                        :    -85.135621162988173
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      9.055003146800487
 
    Sum of all contributions to the energy
-   Total energy                             :    -76.080618016187657
+   Total energy                             :    -76.080618016187685
 
 
                                    Eigenvalues
@@ -987,13 +989,13 @@ It.    1    -76.08061801619      7.61D+01  0.00D+00  7.69D-10               0.14
   * Closed shell, f = 1.0000
    -20.56489715438  ( 2)       -1.33252571089  ( 2)       -0.69277015031  ( 2)       -0.56459452085  ( 2)       -0.49287124388  ( 2)
   * Virtual eigenvalues, f = 0.0000
-     0.18035984556  ( 2)        0.25130412390  ( 2)        0.66089631286  ( 2)        0.73710967717  ( 2)        1.07463066529  ( 2)
-     1.12297048546  ( 2)        1.19782178560  ( 2)        1.41466085597  ( 2)        1.47145549645  ( 2)        1.63534407593  ( 2)
-     1.66934487641  ( 2)        1.89241681944  ( 2)        2.31506926676  ( 2)        2.39594226114  ( 2)        3.27115078429  ( 2)
-     3.29852605730  ( 2)        3.32276170854  ( 2)        3.39980055805  ( 2)        3.52499634465  ( 2)        3.83221318463  ( 2)
-     4.12810705524  ( 2)        6.12206455320  ( 2)        6.55553466751  ( 2)        6.81985413729  ( 2)       13.05167016492  ( 2)
-    22.16800269631  ( 2)       22.33170317508  ( 2)       33.42012479086  ( 2)       33.66119266657  ( 2)       33.81882288062  ( 2)
-    61.53045790537  ( 2)      230.57019793740  ( 2)      851.99630215762  ( 2)     3409.90566004766  ( 2)    15466.31280371308  ( 2)
+     0.18035984556  ( 2)        0.25130412389  ( 2)        0.66089631286  ( 2)        0.73710967718  ( 2)        1.07463066528  ( 2)
+     1.12297048546  ( 2)        1.19782178559  ( 2)        1.41466085597  ( 2)        1.47145549645  ( 2)        1.63534407591  ( 2)
+     1.66934487639  ( 2)        1.89241681943  ( 2)        2.31506926673  ( 2)        2.39594226110  ( 2)        3.27115078428  ( 2)
+     3.29852605729  ( 2)        3.32276170853  ( 2)        3.39980055804  ( 2)        3.52499634466  ( 2)        3.83221318460  ( 2)
+     4.12810705523  ( 2)        6.12206455320  ( 2)        6.55553466750  ( 2)        6.81985413728  ( 2)       13.05167016491  ( 2)
+    22.16800269630  ( 2)       22.33170317507  ( 2)       33.42012479086  ( 2)       33.66119266657  ( 2)       33.81882288062  ( 2)
+    61.53045790533  ( 2)      230.57019793740  ( 2)      851.99630215761  ( 2)     3409.90566004765  ( 2)    15466.31280371306  ( 2)
 * HOMO - LUMO gap:
 
     E(LUMO) :     0.18035985 au (symmetry E1 )
@@ -1019,10 +1021,10 @@ It.    1    -76.08061801619      7.61D+01  0.00D+00  7.69D-10               0.14
      ************************************************************************
 
 
- Transformation started at : Tue Mar  5 14:14:06 2019
+ Transformation started at : Tue Mar  5 16:01:54 2019
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -76.0806180161887653
-* Heading :Water molecule. X2C Hamiltonian. CC energies.     Tue Mar  5 14:13:01 2019
+* REACMO: Coefficients read from file DFCOEF - Total energy: -76.0806180161886374
+* Heading :Water molecule. X2C Hamiltonian. CC energies.     Tue Mar  5 16:00:48 2019
      Energy selection of active orbitals :       -1.00 < Eps. <         1.00 with a mininum gap of     0.0000 au.
      Energy selection of active orbitals :       -1.00 < Eps. <         1.00 with a mininum gap of     0.0000 au.
      Energy selection of active orbitals :       -1.00 < Eps. <         1.00 with a mininum gap of     0.0000 au.
@@ -1070,10 +1072,10 @@ It.    1    -76.08061801619      7.61D+01  0.00D+00  7.69D-10               0.14
       **********************************************************************
 
 
- Transformation started at : Tue Mar  5 14:14:06 2019
+ Transformation started at : Tue Mar  5 16:01:54 2019
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -76.0806180161887653
-* Heading :Water molecule. X2C Hamiltonian. CC energies.     Tue Mar  5 14:13:01 2019
+* REACMO: Coefficients read from file DFCOEF - Total energy: -76.0806180161886374
+* Heading :Water molecule. X2C Hamiltonian. CC energies.     Tue Mar  5 16:00:48 2019
      Energy selection of active orbitals :       -1.00 < Eps. <         1.00 with a mininum gap of     0.0000 au.
      Energy selection of active orbitals :       -1.00 < Eps. <         1.00 with a mininum gap of     0.0000 au.
 
@@ -1103,17 +1105,15 @@ It.    1    -76.08061801619      7.61D+01  0.00D+00  7.69D-10               0.14
        ********************************************************************
 
 
- Transformation started at : Tue Mar  5 14:14:06 2019
+ Transformation started at : Tue Mar  5 16:01:54 2019
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -76.0806180161887653
-* Heading :Water molecule. X2C Hamiltonian. CC energies.     Tue Mar  5 14:13:01 2019
+* REACMO: Coefficients read from file DFCOEF - Total energy: -76.0806180161886374
+* Heading :Water molecule. X2C Hamiltonian. CC energies.     Tue Mar  5 16:00:48 2019
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12    0.00%   47.18%    0.00%    1.36%   0.10900000s
- >>> CPU  time used in SO Fock is   0.09 seconds
- >>> WALL time used in SO Fock is   0.11 seconds
+SOfock:LL  1.00D-12    0.00%   47.18%    0.00%    1.36%   0.09700000s
 
 * REAFCK: Fock matrix read from file DFFCK1                                                      
-* Heading :Water molecule. X2C Hamiltonian. CC energies.     Tue Mar  5 14:14:05 2019
+* Heading :Water molecule. X2C Hamiltonian. CC energies.     Tue Mar  5 16:01:53 2019
 
 
  Core energy (includes nuclear repulsion) :            -63.1402465806
@@ -1128,15 +1128,15 @@ SOfock:LL  1.00D-12    0.00%   47.18%    0.00%    1.36%   0.10900000s
  - Integral class 2 : (SS|??)
  - Integral class 1 : (LL|??)
    - Starting shell A no.    7 after           0.00 seconds.
-   - Starting shell A no.    6 after           0.00 seconds.
-   - Starting shell A no.    5 after           0.00 seconds.
-   - Starting shell A no.    4 after           0.00 seconds.
+   - Starting shell A no.    6 after           0.01 seconds.
+   - Starting shell A no.    5 after           0.01 seconds.
+   - Starting shell A no.    4 after           0.01 seconds.
    - Starting shell A no.    3 after           0.06 seconds.
    - Starting shell A no.    2 after           0.08 seconds.
    - Starting shell A no.    1 after           0.08 seconds.
- Node    1 finished first half transformation           34009 HT integrals written ( 59.22%,      0.00 GB)
- Node    3 finished first half transformation           35097 HT integrals written ( 68.35%,      0.00 GB)
- Node    2 finished first half transformation           34435 HT integrals written ( 57.41%,      0.00 GB)
+ Node    1 finished first half transformation           31446 HT integrals written ( 60.09%,      0.00 GB)
+ Node    3 finished first half transformation           35138 HT integrals written ( 68.43%,      0.00 GB)
+ Node    2 finished first half transformation           37125 HT integrals written ( 57.05%,      0.00 GB)
  - Binary  file MDCINT was written.
 * Screening statistics:
    (LL|LL)ints :   0.00%
@@ -1162,16 +1162,17 @@ SOfock:LL  1.00D-12    0.00%   47.18%    0.00%    1.36%   0.10900000s
  Total wall time used in PAMTRA :   00:00:01
  Total CPU  time used in PAMTRA (master only) :   00:00:01
 
- Transformation ended at : Tue Mar  5 14:14:07 2019
+ Transformation ended at : Tue Mar  5 16:01:55 2019
 
-   5 Mar 19 14:14:07 read from DFCOEF:Water molecule. X2C Hamiltonian. CC energies.     Tue Mar  5 14:13:01 2019
-   5 Mar 19 14:14:07 retrieved basis set information
-   5 Mar 19 14:14:07 read one el. integrals from MRCONEE
+   5 Mar 19 16:01:55 read from DFCOEF:Water molecule. X2C Hamiltonian. CC energies.     Tue Mar  5 16:00:48 2019
+   5 Mar 19 16:01:55 retrieved basis set information
+   5 Mar 19 16:01:55 read one el. integrals from MRCONEE
   Initialized global data
   Starting CC calculation with exatensor
- ExaCorr: Registered vector space of dimension           41 : Number of segments =            2
- ExaCorr: Registered vector space of dimension            6 : Number of segments =            2
- ExaCorr: Registered vector space of dimension            8 : Number of segments =            2
+ ExaCorr: Inferred TAVP-MNG depth =            1
+ ExaCorr: Registered AO vector space of dimension           41 : Number of segments =            2
+ ExaCorr: Registered OCC vector space of dimension            6 : Number of segments =            2
+ ExaCorr: Registered VIRT vector space of dimension            8 : Number of segments =            2
   Registered AO and MO spaces
   Initialized and registered tensor methods
   Characteristics of this calculation
@@ -1184,84 +1185,76 @@ SOfock:LL  1.00D-12    0.00%   47.18%    0.00%    1.36%   0.10900000s
   - Maximum number of cycles:                 30
   - ExaTensor block size                      75
   - Integral transformation scheme             3
- ExaCorr: Registered vector space of dimension           41 : Number of segments =            2
- ExaCorr: Registered vector space of dimension            6 : Number of segments =            2
- ExaCorr: Registered vector space of dimension            8 : Number of segments =            2
- ExaCorr: Registered vector space of dimension           41 : Number of segments =            2
- ExaCorr: Registered vector space of dimension            6 : Number of segments =            2
- ExaCorr: Registered vector space of dimension            8 : Number of segments =            2
- ExaCorr: Registered vector space of dimension           41 : Number of segments =            2
- ExaCorr: Registered vector space of dimension            6 : Number of segments =            2
- ExaCorr: Registered vector space of dimension            8 : Number of segments =            2
-   5 Mar 19 14:14:07 starting ccsd calculation
-   5 Mar 19 14:14:07 allocated AO integral tensor
-   5 Mar 19 14:14:09 finished ao integral calculation
-   5 Mar 19 14:14:09 choosing moint_scheme 3
-   5 Mar 19 14:14:11 vv halftransformation completed
-   5 Mar 19 14:14:11 vvvv integrals completed
-   5 Mar 19 14:14:12 vovv integrals completed
-   5 Mar 19 14:14:12 vovo integrals completed
-   5 Mar 19 14:14:13 ov halftransformation completed
-   5 Mar 19 14:14:13 ovvo integrals completed
-   5 Mar 19 14:14:13 vovo integrals anti-symmetrized
-   5 Mar 19 14:14:13 oovv integrals completed
-   5 Mar 19 14:14:14 oo halftransformation completed
-   5 Mar 19 14:14:14 ooov integrals completed
-   5 Mar 19 14:14:15 oooo integrals completed
-   5 Mar 19 14:14:15 initialized two electron integrals
-   5 Mar 19 14:14:15 Id matrices set
-  HF (recalc.) =   -76.080618016187685     
-   5 Mar 19 14:14:15 one electron integrals added to Fock Matrix
-   5 Mar 19 14:14:15 two electron integrals added to Fock Matrix
-  sum of EV =    5.7044369228265168E-011
-  OO off diag =   -1.3317600928292039E-010
-  OV off diag =    6.9518812890545859E-010
-  VV off diag =   -1.7978653808081333E-010
-foo(1:7,1:8)[3,3]foo(1:7,1:7)[3,3]
-
+  - Print Level                                2
+   5 Mar 19 16:01:55 starting ccsd calculation
+   5 Mar 19 16:01:55 allocated AO integral tensor
+   5 Mar 19 16:01:57 finished ao integral calculation
+   5 Mar 19 16:01:57 choosing moint_scheme 3
+   5 Mar 19 16:01:59 vv halftransformation completed
+   5 Mar 19 16:01:59 vvvv integrals completed
+   5 Mar 19 16:01:59 vovv integrals completed
+   5 Mar 19 16:02:00 vovo integrals completed
+   5 Mar 19 16:02:01 ov halftransformation completed
+   5 Mar 19 16:02:01 ovvo integrals completed
+   5 Mar 19 16:02:01 vovo integrals anti-symmetrized
+   5 Mar 19 16:02:01 oovv integrals completed
+   5 Mar 19 16:02:02 oo halftransformation completed
+   5 Mar 19 16:02:03 ooov integrals completed
+   5 Mar 19 16:02:03 oooo integrals completed
+   5 Mar 19 16:02:03 initialized two electron integrals
+   5 Mar 19 16:02:03 Id matrices set
+  HF (recalc.) =   -76.080618016187728     
+   5 Mar 19 16:02:03 one electron integrals added to Fock Matrix
+   5 Mar 19 16:02:03 two electron integrals added to Fock Matrix
+  sum of EV =    5.8822280379899894E-011
+  OO off diag =   -1.1999468758037974E-010
+  OV off diag =    7.1358910688529460E-010
+  VV off diag =   -1.9741601973625055E-010
+foo(1:7,1:8)[3,3]
+foo(1:7,1:7)[3,3]
 foo(1:8,1:8)[3,3]
 foo(1:8,1:7)[3,3]
 fov(1:7,2:9)[3,4]
 fov(1:7,2:10)[3,4]
 fov(1:8,2:10)[3,4]
-    0.11993348902981D-09   -0.10316632021049D-13       5      7
-    0.11993348902981D-09    0.10316632021049D-13       6      8
+    0.11992226189948D-09   -0.99892795610736D-14       5      7
+    0.11992226189948D-09    0.99892795610736D-14       6      8
 fov(1:8,2:9)[3,4]
-    0.21162811607300D-09   -0.55680193822443D-14       5      1
-    0.21162811585616D-09    0.55680193822443D-14       6      2
-fvv(2:9,2:10)[4,4]
+    0.21162492353129D-09   -0.54754643035039D-14       5      1
+    0.21162492374813D-09    0.54754643035039D-14       6      2
 fvv(2:9,2:9)[4,4]
-   -0.41397620347337D-13   -0.53274689518327D-07       4      5
-    0.41397620347337D-13   -0.53274689518327D-07       3      6
-fvv(2:10,2:10)[4,4]fvv(2:10,2:9)[4,4]
-
-    0.41374194032802D-13    0.53274689518328D-07       6      3
-   -0.41374194032802D-13    0.53274689518328D-07       5      4
-   5 Mar 19 14:14:15 initialized fock matrix
-  MP2 energy =   -1.3744108595148904E-002
+fvv(2:10,2:9)[4,4]
+    0.41986522481735D-13    0.53275965298122D-07       6      3
+   -0.41986522481735D-13    0.53275965298122D-07       5      4
+fvv(2:9,2:10)[4,4]
+   -0.42008351654024D-13   -0.53275965298122D-07       4      5
+    0.42008351653610D-13   -0.53275965298122D-07       3      6
+fvv(2:10,2:10)[4,4]
+   5 Mar 19 16:02:04 initialized fock matrix
+  MP2 energy =   -1.3744108595189623E-002
   ccdriver: allocated all tensors
-  Iteration    1 CCSD energy =   -0.017093396401021 convergence =   4.1E-02
-  Iteration    2 CCSD energy =   -0.018104755251988 convergence =   1.5E-02
-  Iteration    3 CCSD energy =   -0.018668297873098 convergence =   5.8E-03
-  Iteration    4 CCSD energy =   -0.018667000027804 convergence =   4.9E-04
-  Iteration    5 CCSD energy =   -0.018667301643473 convergence =   5.0E-05
-  Iteration    6 CCSD energy =   -0.018667401083055 convergence =   5.0E-06
-  Iteration    7 CCSD energy =   -0.018667396457725 convergence =   1.1E-06
-  Iteration    8 CCSD energy =   -0.018667393210868 convergence =   2.8E-07
-  Iteration    9 CCSD energy =   -0.018667395137894 convergence =   1.1E-07
-  Iteration   10 CCSD energy =   -0.018667395532050 convergence =   2.2E-08
-  Iteration   11 CCSD energy =   -0.018667395451697 convergence =   6.2E-09
-  Iteration   12 CCSD energy =   -0.018667395426943 convergence =   1.5E-09
-  Iteration   13 CCSD energy =   -0.018667395441549 convergence =   3.4E-10
-  Final CCSD energy =   -1.8667395441549134E-002
-#MSG(DSVP): Shut down DSVP      2: TAVP-MNG#0
-#MSG(DSVP): Counters: Recv    2071; Rtrd    2071; Crtd   31252; Fail    0: Time (s)       50.356
+  Iteration    1 CCSD energy =   -0.017093396401084 convergence =   4.1E-02
+  Iteration    2 CCSD energy =   -0.018104755252036 convergence =   1.5E-02
+  Iteration    3 CCSD energy =   -0.018668297873124 convergence =   5.8E-03
+  Iteration    4 CCSD energy =   -0.018667000027830 convergence =   4.9E-04
+  Iteration    5 CCSD energy =   -0.018667301643499 convergence =   5.0E-05
+  Iteration    6 CCSD energy =   -0.018667401083081 convergence =   5.0E-06
+  Iteration    7 CCSD energy =   -0.018667396457751 convergence =   1.1E-06
+  Iteration    8 CCSD energy =   -0.018667393210894 convergence =   2.8E-07
+  Iteration    9 CCSD energy =   -0.018667395137920 convergence =   1.1E-07
+  Iteration   10 CCSD energy =   -0.018667395532076 convergence =   2.2E-08
+  Iteration   11 CCSD energy =   -0.018667395451723 convergence =   6.2E-09
+  Iteration   12 CCSD energy =   -0.018667395426969 convergence =   1.5E-09
+  Iteration   13 CCSD energy =   -0.018667395441575 convergence =   3.4E-10
+  Final CCSD energy =   -1.8667395441575065E-002
 #MSG(TAL-SH): Device utilization statistics for MPI process      1:
-#MSG(DSVP): Shut down DSVP      1: TAVP-WRK#1
-#MSG(DSVP): Counters: Recv   14101; Rtrd   14101; Crtd   11263; Fail    0: Time (s)       50.361
+#MSG(DSVP): Shut down DSVP      1:#MSG(DSVP): Shut down DSVP      2: TAVP-MNG#0
+#MSG(DSVP): Counters: Recv    2072; Rtrd    2072; Crtd   31253; Fail    0: Time (s)       51.843
+ TAVP-WRK#1
 #MSG(TAL-SH): Device utilization statistics for MPI process      0:
+#MSG(DSVP): Counters: Recv   13369; Rtrd   13369; Crtd   10572; Fail    0: Time (s)       51.849
 #MSG(DSVP): Shut down DSVP      0: TAVP-WRK#0
-#MSG(DSVP): Counters: Recv   17153; Rtrd   17153; Crtd   13697; Fail    0: Time (s)       50.367
+#MSG(DSVP): Counters: Recv   17886; Rtrd   17886; Crtd   14388; Fail    0: Time (s)       51.854
   Leaving cc_driver routine
 
 *****************************************************
@@ -1270,11 +1263,11 @@ fvv(2:10,2:10)[4,4]fvv(2:10,2:9)[4,4]
 
 
  
-     Date and time (Mac OSX): Tue Mar  5 14:14:57 2019
+     Date and time (Mac OSX): Tue Mar  5 16:02:47 2019
      Host name              : MW-038275.clients.vu.nl                 
 
->>>> Node 0, utime: 33, stime: 30, minflt: 301261, majflt: 1250, nvcsw: 41, nivcsw: 4730050, maxrss: 310968320
->>>> Total WALL time used in DIRAC: 52s
+>>>> Node 0, utime: 34, stime: 30, minflt: 315666, majflt: 1186, nvcsw: 31, nivcsw: 4839710, maxrss: 319188992
+>>>> Total WALL time used in DIRAC: 54s
   
   Dynamical Memory Usage Summary for Master
   
