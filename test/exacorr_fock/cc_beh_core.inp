@@ -12,6 +12,10 @@ Water molecule. X2C Hamiltonian. CC energies.
 .SCF
 .EXACC
 *SCF
+.CLOSED SHELL
+4
+.OPEN SHELL
+1
 .EVCCNV
 1.0E-9
 **MOLTRA

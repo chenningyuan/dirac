@@ -65,6 +65,15 @@ module exacorr_tensor_methods
           procedure, public:: apply=>diag_set
         end type set_diagonal_t
 
+        !set diag with energies:
+        type, extends(tens_method_uni_t), public:: set_energy_t
+         real(8), allocatable, private :: eps_occ(:),eps_vir(:)
+         integer, private              :: occ_id, vir_id    
+         contains
+          procedure, public:: init_eps
+          procedure, public:: apply=>energy_set
+        end type set_energy_t
+
         !Initializer for the one electron integrals
         type, extends(tens_method_uni_t), public:: init_one_el_t
         complex(8), allocatable, private :: integrals(:,:)
@@ -842,7 +851,7 @@ module exacorr_tensor_methods
 
         end function fill_diagonal
 
-        subroutine init_one_el_int(this,mo1_list,nmo1,mo2_list,nmo2, min_occ, one_el_exist)
+        subroutine init_one_el_int(this,mo1_list,nmo1,mo2_list,nmo2, min_occ, one_el_exist, e_core)
 
           use exacorr_datatypes
           use exacorr_global
@@ -857,6 +866,7 @@ module exacorr_tensor_methods
           integer, intent(in)  :: mo2_list(:)   ! and their indices
           integer, intent(in)  :: min_occ       ! the length of the mo basis
           integer, intent(out) :: one_el_exist
+          real(8), intent(out) :: e_core
           integer  :: i, j, imo, jmo, iv, jv
           integer  :: nkp, ieven, jeven
           type(one_el_t) :: one_int
@@ -869,12 +879,13 @@ module exacorr_tensor_methods
           call get_one_el(one_int, one_el_exist)
 
           this%nsp=one_int%n_spinor
-          this%core=one_int%core
-          !print *, this%core
 
           nkp=this%nsp/2
 
           if (one_el_exist.gt.0) then
+
+            this%core=one_int%core
+            e_core=one_int%core
 
             if ((maxval(mo1_list)-min_occ+1).gt.this%nsp) call quit('Error: not enough orbitals in DIRAC MOLTRA')
             if ((maxval(mo2_list)-min_occ+1).gt.this%nsp) call quit('Error: not enough orbitals in DIRAC MOLTRA')
@@ -905,38 +916,9 @@ module exacorr_tensor_methods
                 !print *, i, imo, iv, j, jmo, jv, this%integrals(i,j)
               end do
             end do
-
-            !check if there is overlapp between the orbitals and get the diagonal elements
-            norb=0
-            do i = 1, nmo1
-              imo=mo1_list(i)
-              do j = 1, nmo2
-                jmo=mo2_list(j)
-                if (imo==jmo) norb=norb+1
-              end do
-            end do
-
-            if (norb.gt.0) then
-              if (norb==nmo1) then
-                allocate(mo_list(norb))
-                allocate(eps_orb(norb))
-                mo_list=mo1_list
-                call get_epsilons(mo_list,norb,eps_orb)
-
-                !remove the diagonal elements
-                do i = 1, nmo1
-                  imo=mo1_list(i)
-                  do j = 1, nmo2
-                    jmo=mo2_list(j)
-                    if (imo==jmo) this%integrals(i,j) = this%integrals(i,j) - eps_orb(i)
-                  end do
-                end do
-                deallocate(mo_list)
-                deallocate(eps_orb)
-              else
-                call quit('Error: not quadtratic in init_one_el_int')
-              end if
-            end if
+          else
+            this%core=0
+            e_core=0
           end if
 
         end subroutine init_one_el_int
@@ -1013,23 +995,125 @@ module exacorr_tensor_methods
 
         end function one_el_int_set
 
-        subroutine get_epsilons(mo_list,norb,eps_orb)
+        subroutine init_eps(this,mo_occ,nocc,mo_vir,nvir,occ_space_id, vir_space_id)
 
          use exacorr_mo
          use exacorr_global
 
          implicit none
-
-         integer, intent(in)     :: norb
-         integer, intent(in)     :: mo_list(:)
-         real(8), intent(out)    :: eps_orb(:)
+         integer, intent(in) :: nocc, nvir, occ_space_id, vir_space_id
+         integer, intent(in) :: mo_occ(:),mo_vir(:)
+         class(set_energy_t), intent(out):: this
 
          type(cmo) :: cspinor
 
-         call get_mo_coefficients (cspinor,mo_list,norb)
-         eps_orb = cspinor%energy
+         call get_mo_coefficients (cspinor,mo_occ,nocc)
+         allocate(this%eps_occ(nocc))
+         this%eps_occ = cspinor%energy
          call dealloc_mo (cspinor)
 
-        end subroutine get_epsilons
+         call get_mo_coefficients (cspinor,mo_vir,nvir)
+         allocate(this%eps_vir(nvir))
+         this%eps_vir = cspinor%energy
+         call dealloc_mo (cspinor)
+
+         this%occ_id=occ_space_id
+         this%vir_id=vir_space_id
+
+        end subroutine init_eps
+
+        function energy_set(this,tensor,scalar) result(ierr)
+
+          use exacorr_datatypes
+          use, intrinsic:: ISO_C_BINDING
+
+          implicit none
+
+          integer(INTD) :: ierr, rank
+          class(set_energy_t), intent(in) :: this
+          class(tens_rcrsv_t), intent(inout) :: tensor
+          complex(8), intent(inout), optional :: scalar
+
+          type(tens_dense_t)      :: tens
+          integer(8), allocatable :: dims(:), tens_root(:)
+          integer(4), allocatable :: tens_id(:)
+          integer                 :: space_id
+          !print*, this%nsp
+          !print*, this%integrals
+
+          ierr=0
+          tens=tensor%get_dense_adapter(ierr)
+          if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
+          rank=tens%num_dims
+          if (rank.ne.2) call quit('Error: dimension not 2 in energy_set')
+
+          allocate(dims(rank))
+          call tensor%get_dims(dims,rank)
+
+          allocate (tens_id (rank))
+          allocate (tens_root (rank))
+          call tensor%get_space_ids(tens_id,tens_root,ierr)
+
+          if (tens_id(1) == this%occ_id) then
+            if (tens_id(2) == this%occ_id) then
+             space_id=this%occ_id ! tens_id 1 corresponds to occupied space
+            else 
+              space_id=-9
+            end if
+          else if (tens_id(1) == this%vir_id) then
+            if (tens_id(2) == this%vir_id) then
+             space_id=this%vir_id! tens_id 1 corresponds to occupied space
+            else 
+              space_id=-9
+            end if
+          else
+            space_id=-9
+          end if
+
+          ierr=energy_set_diag(tens%body_ptr,tens%data_kind,tens%dims(1:rank),tens%bases(1:rank), rank, &
+                               this%eps_occ, this%eps_vir, space_id, this%occ_id, this%vir_id)
+          deallocate(dims)
+        end function energy_set
+
+        integer function energy_set_diag(tens_body,data_kind,tens_dims,tens_bases, rank, &
+                         eps_occ, eps_vir, space_id, occ_id, vir_id) result (ierr)
+          !Initialization routine to fill tensor with one electron integrals
+
+          use exacorr_datatypes
+          use, intrinsic:: ISO_C_BINDING
+
+          implicit none
+
+          type(C_PTR), value:: tens_body           !in: C pointer to the tensor body (tensor elements)
+          integer(4), value:: data_kind, rank      !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
+          integer(8), intent(in):: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
+          integer(8), intent(in):: tens_bases(1:*) !in: base offsets for each tensor dimension)
+
+          real(8), intent(in)   :: eps_occ(:),eps_vir(:)
+          integer, intent(in)   :: space_id, occ_id, vir_id
+
+          complex(8),pointer :: i_tens(:,:)
+
+          integer(8) :: lo, lg, ko, kg
+
+          ierr=0
+          call c_f_pointer(tens_body,i_tens,tens_dims(1:2)) !map C pointer to 2-dimensional array
+
+
+          do lo = 1, tens_dims(2) 
+             lg = tens_bases(2) + lo - 1
+             do ko = 1, tens_dims(1) 
+                kg = tens_bases(1) + ko - 1
+
+                i_tens(ko,lo) = ZERO
+                if (lg.eq.kg) then
+                  if (space_id.eq.occ_id) i_tens(ko,lo) = i_tens(ko,lo)+ eps_occ(lg)
+                  if (space_id.eq.vir_id) i_tens(ko,lo) = i_tens(ko,lo)+ eps_vir(lg)
+                end if
+
+             end do
+          end do
+
+        end function energy_set_diag
 
 end module exacorr_tensor_methods

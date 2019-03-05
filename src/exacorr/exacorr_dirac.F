@@ -189,9 +189,11 @@ C
          call numlst (string_virtual,kvec,1,1,nesh,1,nmo(3))
          call numlst (string_vir_beta,kvec,1,1,nesh,1,nmo(4))
 
-         allocate (exa_input%mokr_occ(nmo(1)))
+         exa_input%nkr_occ=nmo(1)
+         allocate (exa_input%mokr_occ(exa_input%nkr_occ))
          allocate (mobe_occ(nmo(2)))
-         allocate (exa_input%mokr_vir(nmo(3)))
+         exa_input%nkr_vir=nmo(3)
+         allocate (exa_input%mokr_vir(exa_input%nkr_vir))
          allocate (mobe_vir(nmo(4)))
 
          call numlst(string_occupied,exa_input%mokr_occ,nmo(1),
@@ -206,10 +208,10 @@ C
           call quit ("change .OCC_BETA in EXACORR")
          end if
             
-         exa_input%nkr_occ=nmo(1)+nmo(2)
-         exa_input%nkr_vir=nmo(3)+nmo(4)
-         allocate (exa_input%mo_occ(exa_input%nkr_occ))
-         allocate (exa_input%mo_vir(exa_input%nkr_vir))
+         exa_input%nocc=nmo(1)+nmo(2)
+         exa_input%nvir=nmo(3)+nmo(4)
+         allocate (exa_input%mo_occ(exa_input%nocc))
+         allocate (exa_input%mo_vir(exa_input%nvir))
 
          imo=0
          do i=1, max(nmo(1), nmo(2))

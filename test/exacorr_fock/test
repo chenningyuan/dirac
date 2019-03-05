@@ -9,6 +9,11 @@ from runtest_dirac import Filter, TestRun
 
 test = TestRun(__file__, sys.argv)
 
+f1 = Filter()
+f1.add(from_string = 'Total energy',
+      num_lines   = 1,
+      rel_tolerance   = 1.0e-9)
+
 f = Filter()
 f.add(from_string = 'Final CCSD energy',
       num_lines   = 1,
@@ -41,7 +46,9 @@ os.environ['QF_HOST_BUFFER_SIZE'] = "1024"         #non-volatile memory limit pe
 os.environ['QF_GPUS_PER_PROCESS'] = "0"           #number of discrete NVIDIA GPU's per process (optional)
 os.environ['QF_MICS_PER_PROCESS'] = "0"           #number of discrete Intel Xeon Phi's per process (optional)
 os.environ['QF_AMDS_PER_PROCESS'] = "0"           #number of dsicrete AMD GPU's per process (optional)
-os.environ['QF_NUM_THREADS'] = "8"                #number of threads per MPI process (irrelevant, keep it 8)
+os.environ['QF_NUM_THREADS'] = "4"                #number of threads per MPI process (irrelevant, keep it 8)
+
+os.environ['DIRAC_MPI_COMMAND'] = "mpiexec -n " + os.getenv('QF_NUM_PROCS') + " -hosts localhost"
 
 #OpenMP:
 os.environ['OMP_NUM_THREADS'] = os.getenv('QF_NUM_THREADS') #initial number of OpenMP threads per MPI process
@@ -117,14 +124,21 @@ os.environ['PAMI_IBV_ENABLE_DCT'] = "1"                #reduces MPI_Init() time 
 #os.environ['PAMI_IBV_DEBUG_RNR_RETRY'] = "9"
 #os.environ['OMPI_LD_PRELOAD_POSTPEND'] = os.getenv('OLCF_SPECTRUM_MPI_ROOT') + "/lib/libmpitrace.so"
 
+
 os.system('ulimit -s unlimited')
 
-os.environ['DIRAC_MPI_COMMAND'] = "mpiexec -n " + os.getenv('QF_NUM_PROCS') + " -hosts localhost"
+os.environ['OMP_NUM_THREADS'] = "1" #initial number of OpenMP threads per MPI process, X2C requires 1
+test.run(['scf.inp'], ['H2O_nosym.mol'], f1,"--get='X2CMAT AOMOMAT DFCOEF'")
+os.environ['OMP_NUM_THREADS'] = os.getenv('QF_NUM_THREADS') #initial number of OpenMP threads per MPI process
 
+test.run(['cc_h2o.inp'], ['H2O_nosym.mol'], f, "--put='X2CMAT AOMOMAT DFCOEF'")
+test.run(['cc_h2o_core.inp'], ['H2O_nosym.mol'], f, "--put='X2CMAT AOMOMAT DFCOEF'")
 
-test.run(['cc_h2o.inp'], ['H2O_nosym.mol'], f)
-test.run(['cc_h2o_core.inp'], ['H2O_nosym.mol'], f)
-test.run(['cc_beh.inp'], ['BeH_nosym.mol'], f)
-test.run(['cc_beh_core.inp'], ['BeH_nosym.mol'], f)
+os.environ['OMP_NUM_THREADS'] = "1" #initial number of OpenMP threads per MPI process, X2C requires 1
+test.run(['scf_be.inp'], ['BeH_nosym.mol'], f1,"--get='X2CMAT AOMOMAT DFCOEF'")
+os.environ['OMP_NUM_THREADS'] = os.getenv('QF_NUM_THREADS') #initial number of OpenMP threads per MPI process
+
+test.run(['cc_beh.inp'], ['BeH_nosym.mol'], f, "--put='X2CMAT AOMOMAT DFCOEF'")
+test.run(['cc_beh_core.inp'], ['BeH_nosym.mol'], f, "--put='X2CMAT AOMOMAT DFCOEF'")
 
 sys.exit(test.return_code)
