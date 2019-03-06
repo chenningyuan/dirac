@@ -133,6 +133,7 @@ module relcc_cfg
   logical, public :: relcc_projectors_do_core_valence_separation = .false. 
   logical, public :: relcc_projectors_rew_strict = .false.
   logical, public :: relcc_projectors_rew_remove_double_occupied = .false.
+  logical, public :: relcc_projectors_frozen_core = .false.
   real*8, public  :: relcc_projectors_rew_occ_min_energy = -huge(relcc_projectors_rew_occ_min_energy)
   real*8, public  :: relcc_projectors_rew_occ_max_energy =  huge(relcc_projectors_rew_occ_max_energy)
   real*8, public  :: relcc_projectors_rew_virt_min_energy = -huge(relcc_projectors_rew_virt_min_energy)
@@ -263,6 +264,7 @@ contains
   call interface_mpi_bcast_l0(relcc_projectors_do_core_valence_separation,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_projectors_rew_strict                     ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_projectors_rew_remove_double_occupied     , 1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_projectors_frozen_core     , 1,0,global_communicator)
   call interface_mpi_bcast(relcc_projectors_rew_occ_min_energy    ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_projectors_rew_occ_max_energy    ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_projectors_rew_virt_min_energy   ,1,0,global_communicator)

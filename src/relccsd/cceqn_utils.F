@@ -1230,6 +1230,57 @@ C
 C
       RETURN
       END
+
+      SUBROUTINE FCORE(T1,T2,EPS)
+      use relcc_cfg  
+      use projectors 
+C
+      implicit none
+C
+C---------------Description--------------------------------------------
+C
+C     Zeroes out core contributions (frozen core approximation)
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 T1(*),T2(*),EPS(*)
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "param.inc"
+#include "freeze.inc"
+#include "symm.inc"
+#include "complex.inc"
+C
+C---------------Local variables--------------------------------------
+C
+      integer idet
+      logical, pointer :: projector(:) => NULL()
+C
+C---------------Executable code--------------------------------------
+C
+      if (.not.relcc_projectors_frozen_core) RETURN
+
+      projector => create_t_projector(NDIMT1+NDIMT2,EPS)
+
+      do idet=1, (NDIMT1+NDIMT2)
+        if (idet.le.NDIMT1) then
+          if (projector(idet)) T1(idet) = 0
+        else 
+          if (projector(idet)) T2(idet-NDIMT1) = 0
+        endif
+      end do
+C
+      RETURN
+      END
+
+
       SUBROUTINE MP2ENG(T1,T2,FVO,BUF1,EMP2)
 C
       implicit none

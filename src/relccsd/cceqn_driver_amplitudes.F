@@ -81,7 +81,8 @@ C
       NIT = 0
 
       do
-
+        !mlv
+        CALL FCORE(T1,T2,EPS)
       NIT = NIT + 1
       IF (NIT.GT.MAXIT) THEN
          maxit = maxit + 1
