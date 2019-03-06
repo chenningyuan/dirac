@@ -20,4 +20,6 @@ Water molecule. X2C Hamiltonian. CC energies.
 6..11
 .EXATENSOR
 .LAMBDA
+.PRINT
+1
 *END OF

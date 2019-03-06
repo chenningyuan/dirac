@@ -279,10 +279,10 @@ module exacorr_cc
 
 !            solve lambda-equations and caluclate density matrix in MO basis
              if (.not.CCD) then
-               call solve_lambda_equations(comm_t,int_t,l2_tensor,dims,t_target_precision,ncycles,l1_tensor)
+               call solve_lambda_equations(comm_t,int_t,l2_tensor,dims,t_target_precision,ncycles,print_level,l1_tensor)
                call exacorr_dm_driver(exa_input,dims,comm_t%t2,l2_tensor,comm_t%t1,l1_tensor)
              else
-               call solve_lambda_equations(comm_t,int_t,l2_tensor,dims,t_target_precision,ncycles)
+               call solve_lambda_equations(comm_t,int_t,l2_tensor,dims,t_target_precision,ncycles,print_level)
                call exacorr_dm_driver(exa_input,dims,comm_t%t2,l2_tensor)
              end if
 
@@ -840,7 +840,7 @@ module exacorr_cc
 
         end subroutine solve_t_equations
 
-        subroutine solve_lambda_equations(comm_t,int_t,l2_tensor,dims,t_target_precision,ncycles,l1_tensor)
+        subroutine solve_lambda_equations(comm_t,int_t,l2_tensor,dims,t_target_precision,ncycles,print_level,l1_tensor)
 
 !        Routine for solving the lambda equations
 
@@ -867,6 +867,7 @@ module exacorr_cc
                                         vvvo_root,vovv_root,vvvv_root
          integer :: ilambda
          integer,intent(in) :: ncycles
+         integer,intent(in) :: print_level
          real(8), intent(in) :: t_target_precision
          real(8) :: t_convergence
          logical :: CCD=.false.
@@ -956,7 +957,7 @@ module exacorr_cc
          call get_fbar_oo(lambda_t%fbar_oo,comm_t,CCD,one_tensor)
          call print_date('Finished calculating fixed intermediates')
 
-         if (debug_exa) then
+         if (print_level > 0) then
            if (.not.CCD) print*, "T1amp      = ", print_tensornorm2(comm_t%t1)
            print*, "T2amp      = ", print_tensornorm2(comm_t%t2)*0.25D0
            ! print*, "Tau        = ", print_tensornorm2(comm_t%tau)*0.25D0
