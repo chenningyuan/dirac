@@ -1090,7 +1090,6 @@ module talsh_cc
 !           compute HF energy 
             ierr=talsh_tensor_init(result_tensor)           
             ierr=talsh_tensor_contract("R()=F(a,b)*I(a,b)",result_tensor,fo_tensor,id_mat_occ)
-            
             ierr=talsh_tensor_construct(h_tensor,C8,fo_dims,init_val=ZERO)
             ierr=talsh_tensor_contract("H(a,b)+=G(a,c,b,d)*I(c,d)",h_tensor,int_t%oooo,id_mat_occ, ONE_HALF)
             ierr=talsh_tensor_contract("H(a,b)+=G+(c,d,a,b)*I(c,d)",h_tensor,int_t%oooo,id_mat_occ, MINUS_ONE)
@@ -1112,14 +1111,29 @@ module talsh_cc
             ierr=talsh_tensor_contract("F(i,j)+=G+(c,d,i,j)*I(c,d)",fv_tensor,int_t%oovv,id_mat_occ, MINUS_TWO)
             if (print_level >0) call print_date('two electron integrals added to Fock Matrix')
 
-            if (print_level >0) call print_tensor(fo_tensor, 2, 1.0D-12, 'fo_tensor')
-            if (print_level >0) call print_tensor(fov_tensor, 2, 1.0D-12, 'fov_tensor')
-            if (print_level >0) call print_tensor(fv_tensor, 2, 1.0D-12, 'fv_tensor')
+            if (print_level >1) call print_tensor(fo_tensor, 2, 1.0D-12, 'fo_tensor')
+            if (print_level >1) call print_tensor(fov_tensor, 2, 1.0D-12, 'fov_tensor')
+            if (print_level >1) call print_tensor(fv_tensor, 2, 1.0D-12, 'fv_tensor')
 
             ierr=talsh_tensor_add("F(a,i)+=D(a,i)",fo_tensor,diag_mat_occ,scale=MINUS_ONE)
             ierr=talsh_tensor_add("F(a,i)+=D(a,i)",fv_tensor,diag_mat_vir,scale=MINUS_ONE)
             if (print_level >0) call print_date('diagonal substracted from Fock Matrix')
 
+            ierr=talsh_tensor_init(result_tensor)
+            ierr=talsh_tensor_contract("R()+=F(a,b)*H(a,b)",result_tensor,fo_tensor,fo_tensor)
+            off_diag=real(result_tens(1),8) 
+            if (print_level >0) print*," OO without diag = ", off_diag
+
+            ierr=talsh_tensor_init(result_tensor)
+            ierr=talsh_tensor_contract("R()+=F(a,b)*H(a,b)",result_tensor,fov_tensor,fov_tensor)
+            off_diag=real(result_tens(1),8) 
+            if (print_level >0) print*," OV tot = ", off_diag
+
+            ierr=talsh_tensor_init(result_tensor)
+            ierr=talsh_tensor_contract("R()+=F(a,b)*H(a,b)",result_tensor,fv_tensor,fv_tensor)
+            off_diag=real(result_tens(1),8) 
+            if (print_level >0) print*," VV without diag = ", off_diag
+            
             ierr=talsh_tensor_destruct(id_mat_occ)
             ierr=talsh_tensor_destruct(diag_mat_occ)
             ierr=talsh_tensor_destruct(diag_mat_vir)

@@ -1624,38 +1624,22 @@ module exacorr_cc
             if (print_level >0) call print_date('two electron integrals added to Fock Matrix')
 
             ierr=exatns_tensor_init(r_tensor, ZERO)
-            ierr=exatns_tensor_contract("R()=F(a,b)*I(a,b)",r_tensor,comm_t%foo,id_mat_occ)
-            ierr=exatns_tensor_get_scalar(r_tensor,result_val)
-            ev_energy=real(result_val,8) ! Casting into real(8)
-            if (print_level >0) print*," sum of EV = ", ev_energy
-
-            ierr=exatns_tensor_init(r_tensor, ZERO)
-            ierr=exatns_tensor_create(h_tensor,"h_tensor",oo_id,oo_root,EXA_DATA_KIND_C8)
-            ierr=exatns_tensor_init(h_tensor, ONE)
-            ierr=exatns_tensor_contract("H(a,b)+=F(a,b)*I()",h_tensor,id_mat_occ, o_tensor, MINUS_ONE)
-            ierr=exatns_tensor_contract("R()=F(a,b)*H(a,b)",r_tensor,comm_t%foo,h_tensor)
+            ierr=exatns_tensor_contract("R()=F(a,b)*H(a,b)",r_tensor,comm_t%foo,comm_t%foo)
             ierr=exatns_tensor_get_scalar(r_tensor,result_val)
             off_diag=real(result_val,8) ! Casting into real(8)
-            if (print_level >0) print*," OO off diag = ", off_diag
-            ierr=exatns_tensor_destroy(h_tensor)
+            if (print_level >0) print*," OO without diag = ", off_diag
             
             ierr=exatns_tensor_init(r_tensor, ZERO)
-            ierr=exatns_tensor_create(h_tensor,"h_tensor",ov_id,ov_root,EXA_DATA_KIND_C8)
-            ierr=exatns_tensor_init(h_tensor, ONE)
-            ierr=exatns_tensor_contract("R()=F(a,b)*H(a,b)",r_tensor,comm_t%fov,h_tensor)
+            ierr=exatns_tensor_contract("R()=F(a,b)*H(a,b)",r_tensor,comm_t%fov,comm_t%fov)
             ierr=exatns_tensor_get_scalar(r_tensor,result_val)
             off_diag=real(result_val,8) ! Casting into real(8)
-            if (print_level >0) print*," OV off diag = ", off_diag
-            ierr=exatns_tensor_destroy(h_tensor)
+            if (print_level >0) print*," OV tot = ", off_diag
 
             ierr=exatns_tensor_init(r_tensor, ZERO)
-            ierr=exatns_tensor_create(h_tensor,"h_tensor",vv_id,vv_root,EXA_DATA_KIND_C8)
-            ierr=exatns_tensor_init(h_tensor, ONE)
-            ierr=exatns_tensor_contract("H(a,b)+=F(a,b)*I()",h_tensor,id_mat_vir, o_tensor, MINUS_ONE)
-            ierr=exatns_tensor_contract("R()=F(a,b)*H(a,b)",r_tensor,comm_t%fvv,h_tensor)
+            ierr=exatns_tensor_contract("R()=F(a,b)*H(a,b)",r_tensor,comm_t%fvv,comm_t%fvv)
             ierr=exatns_tensor_get_scalar(r_tensor,result_val)
             off_diag=real(result_val,8) ! Casting into real(8)
-            if (print_level >0) print*," VV off diag = ", off_diag
+            if (print_level >0) print*," VV without diag = ", off_diag
             
 
             if (print_level >1) ierr=exatns_tensor_traverse(comm_t%foo,'PrintTensor')
