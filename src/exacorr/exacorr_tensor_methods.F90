@@ -878,11 +878,11 @@ module exacorr_tensor_methods
 
           call get_one_el(one_int, one_el_exist)
 
-          this%nsp=one_int%n_spinor
-
-          nkp=this%nsp/2
-
           if (one_el_exist.gt.0) then
+
+            this%nsp=one_int%n_spinor
+
+            nkp=this%nsp/2
 
             this%core=one_int%core
             e_core=one_int%core
