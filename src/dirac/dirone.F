@@ -268,6 +268,8 @@ C   SET DEFAULT VALUES OF PARAMETERS FOR CALCULATION
 C
          MXNP = 4000            !same to GRASP
          NUCTYP = 0
+         IF(GAUNUC) NUCTYP = 3
+         write(*,*)"NUCTYP",NUCTYP
          CALL MEMSET(ZAN(IATOM),IATOM,MXNP,IPRINT)
 !         MXNP = 2000            !change
          write(*,*)'HH2',H
@@ -276,7 +278,6 @@ C
          allocate( VACIR(MXNP) )
          allocate( R(MXNP)     )
          allocate( W(MXNP)     )           
-C     
 C         
          IF(num_grid_cfg_grasp)THEN
            allocate( TD(NDIM2,MXNP) )         
@@ -297,6 +298,9 @@ C
 !           DO  J = 1,MXNP
 !             WRITE(20,*)VACIR(J)          !sunaga
 !           ENDDO
+           DO  J = 1,MXNP
+             WRITE(*,*)R(J),VACIR(J)          !sunaga
+           ENDDO
 !           CLOSE(20,STATUS='KEEP')
          
 !     change for debug sentense
@@ -380,7 +384,7 @@ C R(IR)**2 is multiplized in RFAC, later
 !           OPEN(20,FILE='LOG_DIRAC',STATUS='REPLACE',          
 !     &          FORM='FORMATTED',ACCESS='SEQUENTIAL')  
 !           DO  J = 1,MXNP
-!             WRITE(20,*)VACIR(J)          !sunaga
+!             WRITE(*,*)R(J),VACIR(J)          !sunaga
 !           ENDDO
 !           CLOSE(20,STATUS='KEEP')
            DO IRP=0,MAXREP+1
@@ -751,8 +755,8 @@ C
 *     NUCTYP:
 *     0  Point
 *     1  Uniform
-*     2  Gauss
-*     3  Fermi
+*     2  Fermi
+*     3  Gauss
 *
 *     NVPORD:
 *     1  second (Uehling)
@@ -1127,13 +1131,12 @@ C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, THREE = 3.0D0)     
       DIMENSION TA(N),R(N)
 C
-!      RAD = PARM(1)
-!      IF (RAD .LE. ZERO) GO TO 99
+      write(*,*)"NCHARG,NUCTYP",NUCTYP
+      IF (RAD .LE. ZERO) GO TO 99
       IF (NUCTYP .GT. 1) GO TO 3
 C
 C   UNIFORM DISTRIBUTION
 C
-      write(*,*)"NCHARG,NUCTYP",NUCTYP
       DO 2 I = 1,NNUC
          TA(I) = R(I)*R(I)
     2 CONTINUE
@@ -1141,9 +1144,9 @@ C
 C
 C   FERMI CHARGE DISTRIBUTION
 C
-    3 SKI = PARM2
+    3 IF (NUCTYP .GT. 2) GO TO 5
+      SKI = PARM2
       IF (SKI .LE. ZERO) GO TO 98
-!     IF (NUCTYP .GT. 2) GO TO 5
       write(*,*)"NNUC",NNUC
       DO 4 I = 1,NNUC
          TA(I) = (R(I)*R(I))/(ONE+EXP ((R(I)-RAD)/SKI))
@@ -1155,12 +1158,12 @@ C
 C   GAUSSIAN CHARGE DISTRIBUTION
 C
     5 IF (NUCTYP .GT. 3) GO TO 97
-      WA = SQRT (EXPMAX)*SKI+RAD
-      WA = SQRT (EXPMAX+TWO*LOG (WA))*SKI+RAD
-      NNUC = LOG (WA/RNT)/H+ONE
-      DO 6 I = 1,NNUC
-         TA(I) = (R(I)*R(I))/(ONE+EXP (((R(I)-RAD)/SKI)**2))
+      NNUC = N
+      WB = THREE/(TWO*RAD*RAD)      
+      DO 6 I = 1,N
+         TA(I) = R(I)*R(I)*(EXP (-WB*R(I)*R(I)))         
     6 CONTINUE
+      RETURN
 c$$$C
 c$$$C   THREE-PARAMETER DISTRIBUTION
 c$$$C
@@ -1221,43 +1224,33 @@ C     sunaga
 C     If I write these parameter, error messages appear.
 !      H = 1.0D-2
       IF (NUCTYP .EQ. 0)   RETURN
+C      
+      FMTOAU = 1.0D-13/0.52917721067D-08
+C      
+C     This value is coming from CODATA2017. I brought it from GRASP's QED routine.      
+C     If you want to compare with GRASP's value, you have to take care CVAC, FMTOAU.
+C     Because, the physical constants in each version (branch) of GRASP are different.
 C
-      FMTOAU = 1.0D-13/0.529177249D-08
-!      CST13 = 3.33333333333333D-01
-      AT3 = (DBLE(202)-0.0293680D0) ** (1.0D0/3.0D0) !for debug, comparing with GRASP         
-!      AT3 = AMASS**3.33333333333333D-01
+C     In additin, the value of AMASS is modified in GRASP.
+C     For example, AMASS of Hg is not 202, but 202-0.0293680D0, as follows.
+C      
+!     AT3 = (DBLE(202)-0.0293680D0) ** (1.0D0/3.0D0) !for debug, comparing with GRASP
+      AT3 = AMASS**3.33333333333333D-01
+!      FMTOAU = 1.8897261254578283E-005        
+!     CST13 = 3.33333333333333D-01
+CCC
+      
       IF (NUCTYP .EQ. 1 .OR. NUCTYP .EQ. 3) THEN
-!         IF (NPARM .EQ. 1) THEN
-!            RFM = PARM(1)
-!         ELSEIF (NPARM .EQ. 0) THEN
-!            IF (INF) GO TO 107
-C     bug fix 96/08/14
          RFM = 0.836D00*AT3+0.570D00
          NPARM = 1
-         write(*,*)"NUCPRM,AT3",AT3
+         write(*,*)"AT3,FMTOAU",AT3,FMTOAU
          IF (NUCTYP .EQ. 1) RFM = RFM*SQRT(5.0D0/3.0D0)
-C end
-!         ELSE
-!            GO TO 101
-!         ENDIF
          PARM1 = RFM*FMTOAU
          IF ((NUCTYP .EQ. 1) .AND. (PARM1 .LE. RNT)) GO TO 103
       ELSEIF (NUCTYP .EQ. 2) THEN
-c$$$         IF (NPARM .EQ. 2) THEN
-c$$$            RRMSFM = PARM(1)
-c$$$            TFM = PARM(2)
-c$$$         ELSEIF (NPARM .EQ. 1) THEN
-c$$$            RRMSFM = PARM(1)
-c$$$            TFM = 2.30D00
-c$$$            NPARM = 2
-c$$$         ELSEIF (NPARM .EQ. 0) THEN
-c$$$            IF (INF) GO TO 107
          RRMSFM = 0.836D00*AT3+0.570D00
          TFM = 2.30D00
          NPARM = 2
-c$$$         ELSE
-c$$$            GO TO 101
-c$$$         ENDIF
          RRMS = RRMSFM*FMTOAU
          T = TFM*FMTOAU
          PARM2 = T/(4.0D0*LOG (3.0d0))
@@ -1386,16 +1379,18 @@ c$$$            WRITE (LUPRI,304) RAD,SKI
          ENDIF !        IF (NUCTYP .EQ. 1) THEN 
 !         WRITE (LUPRI,305) NRAD
       ELSEIF (NUCTYP .EQ. 3) THEN !      IF (NUCTYP .LE. 2) THEN
-c$$$C
-c$$$C   GAUSSIAN DISTRIBUTION
-c$$$C
-c$$$         WRITE (LUPRI,301)
-c$$$         RAD = PARM(1)
-c$$$         WB = THREE/(TWO*RAD*RAD)
-c$$$         WRITE (LUPRI,306) RAD,WB
-c$$$         WA = SQRT(WB)
-c$$$         Z1 = TWO*Z*WA/PIRT
-c$$$         Z3 = -Z1*WB/THREE
+C
+C   GAUSSIAN DISTRIBUTION
+C
+!         WRITE (LUPRI,301)
+         RAD = PARM1
+         WB = 3.0D0/(2.0D0*RAD*RAD)
+         WA = SQRT(WB)
+         Z1 = TWO*Z*WA/SQRT(PI)
+         Z3 = -Z1*WB/THREE
+         ZNORM = 2.0D0*2.0D0*Z
+         ZNORM = ZNORM*WB*WA/SQRT(PI)
+         write(*,*)'PARM1,WB,WA,Z1',RAD,WB,WA,Z
 c$$$         DO 7 I = 1,N
 c$$$            ZZ(I) = Z*ERF(WA*R(I))
 c$$$    7    CONTINUE
