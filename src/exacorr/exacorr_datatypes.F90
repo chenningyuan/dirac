@@ -35,9 +35,12 @@
             logical                 :: ccd = .false.            ! if false=>CCSD, if true=>CCD
             logical                 :: lambda = .false.
             logical                 :: noints = .false.
+            logical                 :: beta_occ = .false.
+            logical                 :: beta_vir = .false.
             integer                 :: exa_blocksize = 75
             integer                 :: moint_scheme = 3
             integer                 :: ncycles = 30
+            integer                 :: print_level = 0
             integer                 :: nkr_occ, nkr_vir         ! number of Kramer pairs
             integer                 :: nocc, nvir               ! number of spinors
             integer, allocatable    :: mokr_occ(:), mokr_vir(:) ! list of active Kramer pairs
@@ -123,5 +126,12 @@
             type(talsh_lambda_tens) :: lambda_t
             type(talsh_tens_t)      :: l2_tensor ! lambda amplitude
         end type talsh_eom_fixed_tens
+
+!       One electron integrals
+        type, public  :: one_el_t
+         integer     :: n_spinor=-1          ! number of spinors, used for consistency checks
+         real(8)     :: e_core               ! energy of the core electrons plus nuclear repulsion energy
+         complex(8), pointer :: h_core(:,:)  ! one-body part of Hamiltonian (kinetic energy + nuclear attraction + core shielding)
+        end type one_el_t
 
        end module exacorr_datatypes
