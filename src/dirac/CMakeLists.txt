@@ -51,7 +51,6 @@ set(FREE_DIRAC_FORTRAN_SOURCES
 # needs also input reader..
     ${PROJECT_SOURCE_DIR}/src/input/parse_input.F90
     ${PROJECT_SOURCE_DIR}/src/input/input_reader.F90
-    ${PROJECT_SOURCE_DIR}/src/input/input_reader_sections.F90
 )
 
 if(ENABLE_INTEREST)

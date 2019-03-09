@@ -17,13 +17,14 @@ Water molecule. X2C Hamiltonian. CC energies.
 **MOLTRA
 .ACTIVE
 energy -100.0 1.0 0.00001
+.NO4IND
 **EXACC
 .OCCUPIED
 1..5
 .VIRTUAL
 6..9
 .PRINT
-2
+1
 **INTEGRALS
 *READIN
 .UNCONTRACT

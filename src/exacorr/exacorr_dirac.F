@@ -741,20 +741,15 @@ C
        integer, parameter     :: NOERROR  = 0 ! no error
        integer, parameter     :: NOTFOUND = 1 ! file not found
        integer, parameter     :: CORRUPT  = 2 ! file unreadable
-       integer, parameter     :: SYMMETRY = 3 ! calculation used symmetry
-       integer, parameter     :: NOBASIS  = 4 ! no basis set information could be read (old DFCOEF?)
-       integer, parameter     :: CONTRAC  = 5 ! basis set is contracted (Interest can not handle this)
-       integer, parameter     :: INCONSIS = 6 ! DFCOEF does not contain consistent information wrt number of basis functions
+       integer, parameter     :: INCONSIS = 6 ! MRCONEE does not match information read from DFCOEF
 
-       integer :: NSP, NFSYM, NZ, NORBT
-       logical :: BREIT, SPFR
-       real(8) :: ECORE
-       real(8), allocatable :: RDUM(:), CDUM(:)
+       integer :: nsp, nkr
+       logical :: breit
+       real(8) :: e_core
+       complex(8), allocatable :: h_core(:,:)
 
        logical                :: tobe
-       integer                :: lucoef
-       integer                :: ij, i, j
-       real(8), parameter     :: treshold=1.D-12
+       integer                :: luone
 
        ierr=NOERROR
 
@@ -765,49 +760,46 @@ C
           ierr = NOTFOUND
           return
        else
-          call get_free_fileunit(lucoef)
-          open (lucoef,file='MRCONEE',status='OLD',FORM='UNFORMATTED',
+          call get_free_fileunit(luone)
+          open (luone,file='MRCONEE',status='OLD',FORM='UNFORMATTED',
      &     access='SEQUENTIAL')
-          read (lucoef,ERR=10,END=10) NSP,BREIT,ECORE,NFSYM,
-     &     NZ,SPFR,NORBT
+          read (luone,ERR=10,END=10) nsp,breit,e_core
        end if
 !      save number of spinors
-       int_1el%n_spinor=NSP
-       int_1el%core=ECORE
-
-!       print *, "MRCONEE, spinors: ", NSP
+       int_1el%n_spinor=nsp
+!      save core energy
+       int_1el%e_core=e_core
+!TODO  check consistency of e_core and nsp with the values read from DFCOEF !
 
 !      skip symmetry information
-       read (lucoef,ERR=10,END=10)
-       read (lucoef,ERR=10,END=10)
-       read (lucoef,ERR=10,END=10)
-       read (lucoef,ERR=10,END=10)
+       read (luone,ERR=10,END=10)
+       read (luone,ERR=10,END=10)
+       read (luone,ERR=10,END=10)
+       read (luone,ERR=10,END=10)
 
-!      read one electron integrals
-       allocate(RDUM(NSP*NSP))
-       allocate(CDUM(NSP*NSP))
+!      allocate array to store the effective 1-body Hamiltonian
+       nullify(int_1el%h_core)
+       allocate(int_1el%h_core(NSP, NSP))
 
-       read (lucoef,ERR=20,END=20) (RDUM(ij),
-     &  CDUM(ij),ij=1,NSP*NSP)
+!      as the ordering on mrconee is different we need an auxilliary array to read in
+       allocate(h_core(NSP, NSP))
 
-!      write one electron integrals
-       nullify(int_1el%RC)
-       nullify(int_1el%CC)
+!      read this "core" Hamiltonian
+       read (luone,ERR=20,END=20) h_core
+!      For some vague historical reason hcore is not written in fortran order by MOLTRA but as its transpose
+!      In RELCCSD the complex conjugate is taken (quicker than doing the transpose) after the read, we do the same thing here
+!      but it would be good to fix this in MOLTRA and just write in fortran order (LV, 8-3-2019)
+       h_core = dconjg(h_core)
 
-       allocate(int_1el%RC(NSP, NSP))
-       allocate(int_1el%CC(NSP, NSP))
+!      reorder and store in the data type
+       nkr = nsp / 2 ! number of Kramers pairs is always half the number of spinors
+       int_1el%h_core(1:nsp:2,1:nsp:2) = h_core(1:nkr,1:nkr)     ! unbar-unbar
+       int_1el%h_core(2:nsp:2,1:nsp:2) = h_core(nkr+1:nsp,1:nkr)   ! bar-unbar
+       int_1el%h_core(1:nsp:2,2:nsp:2) = h_core(1:nkr,nkr+1:nsp)   ! unbar-bar
+       int_1el%h_core(2:nsp:2,2:nsp:2) = h_core(nkr+1:nsp,nkr+1:nsp) ! bar-bar
 
-       do i=1,NSP
-         do j=1,NSP
-           ij=NSP*(j-1)+i
-           int_1el%RC(i,j)=RDUM(ij)
-           int_1el%CC(i,j)=CDUM(ij)
-         end do
-       end do
-
-       deallocate(RDUM)
-       deallocate(CDUM)
-       close (lucoef,status='KEEP')
+       deallocate (h_core)
+       close (luone,status='KEEP')
        
        return
 

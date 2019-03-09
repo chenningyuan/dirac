@@ -15,7 +15,7 @@ module exacorr_global
         type(one_el_t)  :: int_1el ! stores 1 electron integrals
         logical :: TALSH_ONLY = .TRUE. ! use single-node TALSH library instead of the full EXATENSOR library
         logical, public, parameter :: debug_exa = .false. ! switch on and off debug
-        integer :: one_el_exist=0 ! logiacal if MRCONEE is available or not
+        logical :: one_el_exist=.FALSE. ! logical if MRCONEE is available or not
 
 !       Functions and routines to interact with these data
         public nfunctions
@@ -28,6 +28,7 @@ module exacorr_global
         public delete_global_data
         public get_gtos
         public get_mo_coefficients
+        public exist_one_el
         public get_one_el
 
        contains
@@ -95,13 +96,13 @@ module exacorr_global
                 call read_from_mrconee (int_1el, ierr)
                 if (ierr == 0) then
                   call print_date("read one el. integrals from MRCONEE")
-                  one_el_exist=1
+                  one_el_exist = .TRUE.
                 else
                   print*, "Error code",ierr," while reading MRCONEE"
                   call quit ('Could not read MRCONEE')
                 end if
              else
-               one_el_exist=0
+               one_el_exist = .FALSE.
              end if
              
              call synchronize_global_data
@@ -164,19 +165,16 @@ module exacorr_global
              call interface_mpi_bcast (ao_basis%shell_indices,nao,my_MPI_master,global_communicator)
              
 !            One electron integrals
-             call interface_mpi_bcast (one_el_exist,1,my_MPI_master,global_communicator)
-             if(one_el_exist.gt.0) then
+             call interface_mpi_bcast_l0 (one_el_exist,1,my_MPI_master,global_communicator)
+             if(one_el_exist) then
                call interface_mpi_bcast (int_1el%n_spinor,1,my_MPI_master,global_communicator)
                nsp=int_1el%n_spinor
-               call interface_mpi_bcast (int_1el%core,1,my_MPI_master,global_communicator)
+               call interface_mpi_bcast (int_1el%e_core,1,my_MPI_master,global_communicator)
 
-               if (my_MPI_rank /= my_MPI_master) nullify (int_1el%RC)
-               if (my_MPI_rank /= my_MPI_master) allocate(int_1el%RC(nsp,nsp))
-               if (my_MPI_rank /= my_MPI_master) nullify (int_1el%CC)
-               if (my_MPI_rank /= my_MPI_master) allocate(int_1el%CC(nsp,nsp))
+               if (my_MPI_rank /= my_MPI_master) nullify (int_1el%h_core)
+               if (my_MPI_rank /= my_MPI_master) allocate(int_1el%h_core(nsp,nsp))
 
-               call interface_mpi_bcast (int_1el%RC,nsp*nsp,my_MPI_master,global_communicator)
-               call interface_mpi_bcast (int_1el%CC,nsp*nsp,my_MPI_master,global_communicator)
+               call interface_mpi_bcast (int_1el%h_core,2*nsp*nsp,my_MPI_master,global_communicator)
              end if
 #else
              return ! For running a serial version no action is required.
@@ -189,9 +187,8 @@ module exacorr_global
              deallocate(ao_basis%shell_indices)
              deallocate(ao_basis%gtos)
              call dealloc_mo (cspinor_all)
-             if(one_el_exist.gt.0) then
-               deallocate(int_1el%RC)
-               deallocate(int_1el%CC)
+             if(one_el_exist) then
+               deallocate(int_1el%h_core)
              end if
          end subroutine delete_global_data
 
@@ -278,27 +275,31 @@ module exacorr_global
 
       end subroutine get_MO_coefficients
 
-      subroutine get_one_el(one_int, exist_one_el)
+      logical function exist_one_el(e_core)
 
-        type(one_el_t), intent(inout)  :: one_int
-        integer, intent(out) :: exist_one_el
-        integer :: nsp=0
+        real(8), intent(out) :: e_core
 
         exist_one_el=one_el_exist
-
-        if(one_el_exist.gt.0) then
-          nsp=int_1el%n_spinor
-          one_int%n_spinor=int_1el%n_spinor
-          one_int%core=int_1el%core
-
-          nullify (one_int%RC)
-          allocate(one_int%RC(nsp,nsp))
-          nullify (one_int%CC)
-          allocate(one_int%CC(nsp,nsp))
-
-          one_int%RC=int_1el%RC
-          one_int%CC=int_1el%CC
+        if (one_el_exist) then
+           e_core=int_1el%e_core
+        else
+           e_core = 0.D0
         end if
+
+      end function
+
+      subroutine get_one_el(one_int)
+
+        type(one_el_t), intent(inout)  :: one_int
+        integer :: nsp
+
+        nsp=int_1el%n_spinor
+        one_int%n_spinor=int_1el%n_spinor
+
+        nullify (one_int%h_core)
+        allocate(one_int%h_core(nsp,nsp))
+
+        one_int%h_core=int_1el%h_core
 
      end subroutine get_one_el
 

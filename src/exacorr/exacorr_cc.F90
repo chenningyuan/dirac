@@ -15,6 +15,8 @@ module exacorr_cc
                                  ONE_HALF=(0.5D0,0.D0),MINUS_ONE_HALF=(-0.5D0,0.D0),ONE_QUARTER=(0.25D0,0.D0), &
                                  MINUS_TWO=(-2.D0,0.D0), TWO=(2.D0,0.D0)!, THREE=(3.0,0.0), SIX=(6.0,0.0)
         type(tens_rcrsv_t),public :: one_tensor
+        real(8) :: e_core
+        logical :: one_el_exist
 
         private
 
@@ -63,7 +65,7 @@ module exacorr_cc
 !        space ids and roots
          type(space_dims) :: dims
 !        CCSD control and result variables
-         real(8)            :: mp2_energy, ccsd_energy, e_core !, t_energy(3) ! triples not implemented
+         real(8)            :: mp2_energy, ccsd_energy !, t_energy(3) ! triples not implemented
          real(8)            :: t_target_precision
 
          ! classes for the definition of spaces (AO and 2 different MO spaces)
@@ -85,9 +87,6 @@ module exacorr_cc
          !CCD
          logical :: CCD, lambda, noints
 
-         !USE MRCONEE
-         integer :: one_el_exist
-
          !controlling print
          integer :: print_level
 
@@ -100,7 +99,7 @@ module exacorr_cc
          if (my_MPI_rank == 0) print*," Registered AO and MO spaces"
 
 !        Register and initialize user defined methods needed in the CC calculation
-         call exacorr_cc_methods (exa_input,ao_space_id,occ_space_id,vir_space_id, one_el_exist, e_core)
+         call exacorr_cc_methods (exa_input,ao_space_id,occ_space_id,vir_space_id)
          if (my_MPI_rank == 0) print*," Initialized and registered tensor methods"
 
 !        copy input variables to local ones for ease of reference
@@ -193,9 +192,12 @@ module exacorr_cc
             call get_CC_integrals (ao_space_id,ao_space_root,int_t,exa_input%moint_scheme)
             call print_date('initialized two electron integrals')
 
-            ! needs to be after the initializtion of the two electron integrals
-            call init_fock (comm_t,int_t,oo_id,oo_root,ov_id,ov_root,vv_id,vv_root, one_el_exist, e_core, print_level)
-            call print_date('initialized fock matrix')
+            ! If we have the 1-body integrals we rebuild the Fock matrix and check consistency, otherwise we use the orbital energies
+            ierr=exatns_tensor_create(comm_t%foo,"foo",oo_id,oo_root,EXA_DATA_KIND_C8)
+            ierr=exatns_tensor_create(comm_t%fov,"fov",ov_id,ov_root,EXA_DATA_KIND_C8)
+            ierr=exatns_tensor_create(comm_t%fvv,"fvv",vv_id,vv_root,EXA_DATA_KIND_C8)
+            call init_fock (comm_t,int_t,oo_id,oo_root,ov_id,ov_root,vv_id,vv_root, print_level)
+            call print_date('initialized Fock matrix')
 
 !           Initialize t1 amplitudes to zero (we assume canonical orbitals for the moment)
             if (.not.CCD) ierr=exatns_tensor_create(comm_t%t1,"t1",vo_id,vo_root,EXA_DATA_KIND_C8)
@@ -468,7 +470,7 @@ module exacorr_cc
 
         end subroutine exacorr_cc_spaces
 
-        subroutine exacorr_cc_methods (exa_input,ao_space_id,occ_space_id,vir_space_id, one_el_exist, e_core)
+        subroutine exacorr_cc_methods (exa_input,ao_space_id,occ_space_id,vir_space_id)
 
 !        This subroutine initalizes and registers all user-defined methods for ExaTensor
 
@@ -485,15 +487,12 @@ module exacorr_cc
          type(exacc_input), intent(in) :: exa_input
          ! identifiers of the spaces that we will use in the methods
          integer, intent(in)        :: ao_space_id, occ_space_id, vir_space_id
-         integer, intent(out)       :: one_el_exist
-         real(8), intent(out)       :: e_core
 
          integer                :: nocc,nvir           ! the size of the mo basis for occupied and virtual orbitals (Kramers pairs)
          integer, allocatable   :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
          integer, allocatable   :: mo_oo(:),mo_vo(:),mo_ov(:),mo_vv(:) ! joined lists needed for dm init (ugly code, should be refactored)
 
          integer                        :: ierr
-         integer                        :: min_occ
 
          ! types of the initializer methods
          type(tens_printer_t)         :: tens_printer     ! generic method, but needs to be defined here in specific form
@@ -502,9 +501,8 @@ module exacorr_cc
          type(init_dm_tensor_t)       :: dm_init(4)       ! array of initializers for MO transformation algorithm 2
          type(scale_with_denom_t)     :: denominate       ! method to scale CC amplitudes by the inverse of orbital energy differences
          type(set_diagonal_t)         :: id_meth          ! identity matrix
-         type(init_one_el_t)          :: one_el(4)        ! one electron integrals
-         type(set_energy_t)           :: orb_set
-         ! type(init_delta_t)           :: delta_init
+         type(init_one_el_t)          :: one_el(3)        ! one electron integrals
+         type(set_energy_t)           :: orb_set(2)       ! place orbital energies on diagonal
 
          integer:: spin
 
@@ -566,8 +564,8 @@ module exacorr_cc
          ierr=exatns_method_register('Denominate',denominate)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(Denominate) failed!')
 
-         !Register the standard print method with a low treshold to always print result_tensor
-         call tens_printer%reset_thresh(1.0D-10)
+         !Register the standard print method with treshold such that it only prints interesting elements
+         call tens_printer%reset_thresh(1.0D-6)
          ierr=exatns_method_register('PrintTensor',tens_printer)
          if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(printer) failed!')
 
@@ -576,29 +574,27 @@ module exacorr_cc
          ierr=exatns_method_register('IDmatrix',id_meth)
          if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(IDmatrix) failed!')
 
-         !Register methods to read one electron integrals
-         min_occ=minval(mo_occ)
-         call one_el(1)%init_one_el_int(mo_occ(1:nocc),nocc,mo_occ(1:nocc),nocc, min_occ, one_el_exist, e_core)
-         ierr=exatns_method_register('OE_oo',one_el(1))
-         if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(OE_oo) failed!')
-         call one_el(2)%init_one_el_int(mo_occ(1:nocc),nocc,mo_vir(1:nvir),nvir, min_occ, one_el_exist, e_core)
-         ierr=exatns_method_register('OE_ov',one_el(2))
-         if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(OE_ov) failed!')
-         call one_el(3)%init_one_el_int(mo_vir(1:nvir),nvir,mo_occ(1:nocc),nocc, min_occ, one_el_exist, e_core)
-         ierr=exatns_method_register('OE_vo',one_el(3))
-         if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(OE_vo) failed!')
-         call one_el(4)%init_one_el_int(mo_vir(1:nvir),nvir,mo_vir(1:nvir),nvir, min_occ, one_el_exist, e_core)
-         ierr=exatns_method_register('OE_vv',one_el(4))
-         if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(OE_vv) failed!')
+         one_el_exist = exist_one_el(e_core)
+         if (one_el_exist) then
+            !Register methods to read one electron integrals
+            call one_el(1)%init_one_el_int(1,nocc,1,nocc)
+            ierr=exatns_method_register('OE_oo',one_el(1))
+            if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(OE_oo) failed!')
+            call one_el(2)%init_one_el_int(1,nocc,nocc+1,nocc+nvir)
+            ierr=exatns_method_register('OE_ov',one_el(2))
+            if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(OE_ov) failed!')
+            call one_el(3)%init_one_el_int(nocc+1,nocc+nvir,nocc+1,nocc+nvir)
+            ierr=exatns_method_register('OE_vv',one_el(3))
+            if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(OE_vv) failed!')
 
-         !Register method to set diagonal to orbital energies
-         call orb_set%init_eps(mo_occ,nocc,mo_vir,nvir,occ_space_id, vir_space_id)
-         ierr=exatns_method_register('OrbSet',orb_set)
-         if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(OrbSet) failed!')
-
-         !Register the delta matrix generation as a method
-         ! ierr=exatns_method_register('init_delta',delta_init)
-         ! if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(delta) failed!')
+            !Register methods to make matrix with orbital energies on the diagonal
+            call orb_set(1)%init_eps(mo_occ,nocc,occ_space_id)
+            ierr=exatns_method_register('OrbE_o',orb_set(1))
+            if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(OrbE_o) failed!')
+            call orb_set(2)%init_eps(mo_vir,nvir,vir_space_id)
+            ierr=exatns_method_register('OrbE_v',orb_set(2))
+            if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(OrbE_v) failed!')
+         end if
 
         end subroutine exacorr_cc_methods
 
@@ -1542,7 +1538,7 @@ module exacorr_cc
 
         end subroutine diis
 
-        subroutine init_fock (comm_t,int_t,oo_id,oo_root,ov_id,ov_root,vv_id,vv_root, one_el_exist, e_core, print_level)
+        subroutine init_fock (comm_t,int_t,oo_id,oo_root,ov_id,ov_root,vv_id,vv_root, print_level)
 
           use, intrinsic:: ISO_C_BINDING
           use exacorr_global
@@ -1554,102 +1550,91 @@ module exacorr_cc
           type(exatns_intg_tens), intent(inout)  :: int_t
           integer(INTL),dimension(2), intent(in) :: oo_root, ov_root, vv_root
           integer,dimension(2), intent(in)       :: oo_id, ov_id, vv_id 
-          integer, intent(in)                    :: one_el_exist
-          real(8), intent(in)                    :: e_core
           integer, intent(in)                    :: print_level
 
           real(8)                    :: ev_energy, off_diag, hf_energy
           !        scalars (need to be defined as tensor types)
           type(tens_rcrsv_t)         :: r_tensor, o_tensor, orb_tensor, h_tensor
           !        identity matrix for contraction 
-          type(tens_rcrsv_t)         :: id_mat_occ, id_mat_vir
+          type(tens_rcrsv_t)         :: id_mat_occ
           integer                    :: ierr
           complex(8)                 :: result_val
 
-          ierr=exatns_tensor_create(comm_t%foo,"foo",oo_id,oo_root,EXA_DATA_KIND_C8)
-          ierr=exatns_tensor_create(comm_t%fov,"fov",ov_id,ov_root,EXA_DATA_KIND_C8)
-          ierr=exatns_tensor_create(comm_t%fvv,"fvv",vv_id,vv_root,EXA_DATA_KIND_C8)
 
-          if (one_el_exist.gt.0) then
+          if (one_el_exist) then
 
+            ! Allocate two auxilliary tensors needed to extract results or multiply by one
             ierr=exatns_tensor_create(r_tensor,"r_tensor",EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(o_tensor,"o_tensor",EXA_DATA_KIND_C8)
             ierr=exatns_tensor_init(o_tensor, ONE)
 
+            ! Make the density matrix (which is an identity matrix in the MO basis)
             ierr=exatns_tensor_create(id_mat_occ,"id_mat_occ",oo_id,oo_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_init(id_mat_occ,'IDmatrix')
-            ierr=exatns_tensor_create(id_mat_vir,"id_mat_vir",vv_id,vv_root,EXA_DATA_KIND_C8)
-            ierr=exatns_tensor_init(id_mat_vir,'IDmatrix')
-            if (print_level >0) call print_date('Id matrices set')
+            if (print_level >0) call print_date('Density matrix initialized')
 
+            ! Initialize the sub blocks of the Fock matrix with the (effective) one-electron integrals
             ierr=exatns_tensor_init(comm_t%foo,'OE_oo')
-            if(ierr.ne.EXA_SUCCESS) call quit(ierr,'Creating one electron integrals (OE_oo) failed!')
             ierr=exatns_tensor_init(comm_t%fov,'OE_ov')
-            if(ierr.ne.EXA_SUCCESS) call quit(ierr,'Creating one electron integrals (OE_ov) failed!')
             ierr=exatns_tensor_init(comm_t%fvv,'OE_vv')
-            if(ierr.ne.EXA_SUCCESS) call quit(ierr,'Creating one electron integrals (OE_vv) failed!')
-
-            ierr=exatns_tensor_init(r_tensor, ZERO)
-            ierr=exatns_tensor_contract("R()=F(a,b)*I(a,b)",r_tensor,comm_t%foo,id_mat_occ)
-            ierr=exatns_tensor_create(h_tensor,"h_tensor",oo_id,oo_root,EXA_DATA_KIND_C8)
-            ierr=exatns_tensor_init(h_tensor, ZERO)
-            ierr=exatns_tensor_contract("H(a,b)+=G(a,c,b,d)*I(c,d)",h_tensor,int_t%oooo,id_mat_occ, ONE_HALF)
-            ierr=exatns_tensor_contract("H(a,b)+=G+(c,d,a,b)*I(c,d)",h_tensor,int_t%oooo,id_mat_occ, MINUS_ONE)
-            ierr=exatns_tensor_contract("R()+=H(a,b)*I(a,b)",r_tensor,h_tensor,id_mat_occ)
-            ierr=exatns_tensor_get_scalar(r_tensor,result_val)
-            hf_energy=real(result_val,8) ! Casting into real(8)
-            if (print_level >0) print*," HF (recalc.) = ", hf_energy+e_core
-            ierr=exatns_tensor_destroy(h_tensor)
-
-            ierr=exatns_tensor_create(orb_tensor,"orb_oo",oo_id,oo_root,EXA_DATA_KIND_C8)
-            ierr=exatns_tensor_init(orb_tensor,'OrbSet')
-            ierr=exatns_tensor_contract("F(a,b)+=E(a,b)*O()",comm_t%foo,orb_tensor,o_tensor, MINUS_ONE)
-            ierr=exatns_tensor_destroy(orb_tensor)
-
-            ierr=exatns_tensor_create(orb_tensor,"orb_vv",vv_id,vv_root,EXA_DATA_KIND_C8)
-            ierr=exatns_tensor_init(orb_tensor,'OrbSet')
-            ierr=exatns_tensor_contract("F(a,b)+=E(a,b)*O()",comm_t%fvv,orb_tensor,o_tensor, MINUS_ONE)
-            ierr=exatns_tensor_destroy(orb_tensor)
-
+            if(ierr.ne.EXA_SUCCESS) call quit(ierr,'Creating one electron integrals failed!')
             if (print_level >0) call print_date('one electron integrals added to Fock Matrix')
 
+            ! Calculate the Hartree-Fock energy
+            ierr=exatns_tensor_init(r_tensor, ZERO)
+            ierr=exatns_tensor_contract("R()=F(i,j)*I(i,j)",r_tensor,comm_t%foo,id_mat_occ)
+            ierr=exatns_tensor_create(h_tensor,"h_tensor",oo_id,oo_root,EXA_DATA_KIND_C8)
+            ierr=exatns_tensor_get_scalar(r_tensor,result_val)
+            ierr=exatns_tensor_init(h_tensor, ZERO)
+            ierr=exatns_tensor_contract("H(i,j)+=V(i,k,j,l)*I(k,l)",h_tensor,int_t%oooo,id_mat_occ, ONE_HALF)
+            ierr=exatns_tensor_contract("R()+=H(i,j)*I(i,j)",r_tensor,h_tensor,id_mat_occ)
+            ierr=exatns_tensor_get_scalar(r_tensor,result_val)
+            hf_energy=real(result_val,8) ! Casting into real(8)
+            ierr=exatns_tensor_destroy(h_tensor)
+            print*," Energy of reference wave function (HF single determinant) = ", hf_energy+e_core
 
-            ierr=exatns_tensor_contract("F(a,b)+=G(a,c,b,d)*I(c,d)",comm_t%foo,int_t%oooo,id_mat_occ, ONE)
-            ierr=exatns_tensor_contract("F(a,b)+=G+(c,d,a,b)*I(c,d)",comm_t%foo,int_t%oooo,id_mat_occ, MINUS_TWO)
-
-            ierr=exatns_tensor_contract("F(a,i)+=G+(a,c,d,i)*I(c,d)",comm_t%fov,int_t%ooov,id_mat_occ, MINUS_ONE)
-            ierr=exatns_tensor_contract("F(a,i)+=G(c,d,a,i)*I(c,d)",comm_t%fov,int_t%ooov,id_mat_occ, TWO)
-
-            ierr=exatns_tensor_contract("F(i,j)+=G(i,c,j,d)*I(c,d)",comm_t%fvv,int_t%vovo,id_mat_occ, ONE)
-            ierr=exatns_tensor_contract("F(i,j)+=G+(c,d,i,j)*I(c,d)",comm_t%fvv,int_t%oovv,id_mat_occ, MINUS_TWO)
+            ! Make the complete Fock matrix by addding the valence electron contributions
+            ierr=exatns_tensor_contract("F(i,j)+=V(i,k,j,l)*I(k,l)",comm_t%foo,int_t%oooo,id_mat_occ, ONE)
+            ierr=exatns_tensor_contract("F(i,a)+=V(k,i,l,a)*I(k,l)",comm_t%fov,int_t%ooov,id_mat_occ, ONE)
+            ierr=exatns_tensor_contract("F(a,b)+=V(a,k,b,l)*I(k,l)",comm_t%fvv,int_t%vovo,id_mat_occ, ONE)
             if (print_level >0) call print_date('two electron integrals added to Fock Matrix')
 
+            ! Subtract orbital energies from the diagonal (they are moved to the other side of the CC equations)
+            ierr=exatns_tensor_create(orb_tensor,"orb_oo",oo_id,oo_root,EXA_DATA_KIND_C8)
+            ierr=exatns_tensor_init(orb_tensor,'OrbE_o')
+            ierr=exatns_tensor_contract("F(i,j)+=E(i,j)*O()",comm_t%foo,orb_tensor,o_tensor, MINUS_ONE)
+            ierr=exatns_tensor_destroy(orb_tensor)
+            ierr=exatns_tensor_create(orb_tensor,"orb_vv",vv_id,vv_root,EXA_DATA_KIND_C8)
+            ierr=exatns_tensor_init(orb_tensor,'OrbE_v')
+            ierr=exatns_tensor_contract("F(a,b)+=E(a,b)*O()",comm_t%fvv,orb_tensor,o_tensor, MINUS_ONE)
+            ierr=exatns_tensor_destroy(orb_tensor)
+            if (print_level >0) call print_date('orbital energies subtracted from the diagonal')
+
+            ! Compute norms (check whether this single determinant is contructed from optimized orbitals)
             ierr=exatns_tensor_init(r_tensor, ZERO)
-            ierr=exatns_tensor_contract("R()=F(a,b)*H(a,b)",r_tensor,comm_t%foo,comm_t%foo)
+            ierr=exatns_tensor_contract("R()=F(i,j)*F(i,j)",r_tensor,comm_t%foo,comm_t%foo)
             ierr=exatns_tensor_get_scalar(r_tensor,result_val)
             off_diag=real(result_val,8) ! Casting into real(8)
-            if (print_level >0) print*," OO without diag = ", off_diag
+            if (print_level >0) print*," Norm of OO part Fock matrix (without diag) = ", off_diag
             
             ierr=exatns_tensor_init(r_tensor, ZERO)
-            ierr=exatns_tensor_contract("R()=F(a,b)*H(a,b)",r_tensor,comm_t%fov,comm_t%fov)
+            ierr=exatns_tensor_contract("R()=F(i,a)*F(i,a)",r_tensor,comm_t%fov,comm_t%fov)
             ierr=exatns_tensor_get_scalar(r_tensor,result_val)
             off_diag=real(result_val,8) ! Casting into real(8)
-            if (print_level >0) print*," OV tot = ", off_diag
+            if (print_level >0) print*," Norm of OV part Fock matrix =                ", off_diag
 
             ierr=exatns_tensor_init(r_tensor, ZERO)
-            ierr=exatns_tensor_contract("R()=F(a,b)*H(a,b)",r_tensor,comm_t%fvv,comm_t%fvv)
+            ierr=exatns_tensor_contract("R()=F(a,b)*F(a,b)",r_tensor,comm_t%fvv,comm_t%fvv)
             ierr=exatns_tensor_get_scalar(r_tensor,result_val)
             off_diag=real(result_val,8) ! Casting into real(8)
-            if (print_level >0) print*," VV without diag = ", off_diag
+            if (print_level >0) print*," Norm of VV part Fock matrix (without diag) = ", off_diag
             
-
             if (print_level >1) ierr=exatns_tensor_traverse(comm_t%foo,'PrintTensor')
             if (print_level >1) ierr=exatns_tensor_traverse(comm_t%fov,'PrintTensor')
             if (print_level >1) ierr=exatns_tensor_traverse(comm_t%fvv,'PrintTensor')
 
             ierr=exatns_tensor_destroy(h_tensor)
             ierr=exatns_tensor_destroy(id_mat_occ)
-            ierr=exatns_tensor_destroy(id_mat_vir)
             ierr=exatns_tensor_destroy(r_tensor)
             ierr=exatns_tensor_destroy(o_tensor)
           else
