@@ -215,7 +215,7 @@ int icommsize_(const fortran_int_t *istart, const fortran_int_t *iend)
 */
 void crash_(void)
 {
-  __builtin_trap();
+  *(int *)0 = 0;
 }
 
 /*
