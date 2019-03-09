@@ -12,8 +12,10 @@ module exacorr_global
         integer :: my_MPI_master=0 ! Define the MPI master proces (is always zero in the DIRAC MPI environment)
         type(basis_set_info_t) :: ao_basis ! information about the ao basis 
         type(cmo):: cspinor_all ! Stores all MO-coefficients and energies obtained from the parent code 
+        type(one_el_t)  :: int_1el ! stores 1 electron integrals
         logical :: TALSH_ONLY = .TRUE. ! use single-node TALSH library instead of the full EXATENSOR library
         logical, public, parameter :: debug_exa = .false. ! switch on and off debug
+        logical :: one_el_exist=.FALSE. ! logical if MRCONEE is available or not
 
 !       Functions and routines to interact with these data
         public nfunctions
@@ -26,6 +28,8 @@ module exacorr_global
         public delete_global_data
         public get_gtos
         public get_mo_coefficients
+        public exist_one_el
+        public get_one_el
 
        contains
          
@@ -85,6 +89,21 @@ module exacorr_global
                 print*, "Error code",ierr," while reading restart file"
                 call quit ('Could not read restart file')
              end if
+
+             ! read one electron integrals
+             inquire (file='MRCONEE',exist=tobe)
+             if (tobe) then
+                call read_from_mrconee (int_1el, ierr)
+                if (ierr == 0) then
+                  call print_date("read one el. integrals from MRCONEE")
+                  one_el_exist = .TRUE.
+                else
+                  print*, "Error code",ierr," while reading MRCONEE"
+                  call quit ('Could not read MRCONEE')
+                end if
+             else
+               one_el_exist = .FALSE.
+             end if
              
              call synchronize_global_data
 
@@ -94,7 +113,7 @@ module exacorr_global
 
 #if defined (VAR_MPI)
              use interface_to_mpi
-             integer :: nao, nshells, n_primitives
+             integer :: nao, nshells, n_primitives, nsp
              integer :: ish
              integer :: my_MPI_rank
 
@@ -144,6 +163,19 @@ module exacorr_global
 
 !            We finally broadcast the pointers from a basis function index to its shell that were determined on master
              call interface_mpi_bcast (ao_basis%shell_indices,nao,my_MPI_master,global_communicator)
+             
+!            One electron integrals
+             call interface_mpi_bcast_l0 (one_el_exist,1,my_MPI_master,global_communicator)
+             if(one_el_exist) then
+               call interface_mpi_bcast (int_1el%n_spinor,1,my_MPI_master,global_communicator)
+               nsp=int_1el%n_spinor
+               call interface_mpi_bcast (int_1el%e_core,1,my_MPI_master,global_communicator)
+
+               if (my_MPI_rank /= my_MPI_master) nullify (int_1el%h_core)
+               if (my_MPI_rank /= my_MPI_master) allocate(int_1el%h_core(nsp,nsp))
+
+               call interface_mpi_bcast (int_1el%h_core,2*nsp*nsp,my_MPI_master,global_communicator)
+             end if
 #else
              return ! For running a serial version no action is required.
 #endif
@@ -155,6 +187,9 @@ module exacorr_global
              deallocate(ao_basis%shell_indices)
              deallocate(ao_basis%gtos)
              call dealloc_mo (cspinor_all)
+             if(one_el_exist) then
+               deallocate(int_1el%h_core)
+             end if
          end subroutine delete_global_data
 
          integer function nfunctions(l_value,switch)
@@ -239,5 +274,33 @@ module exacorr_global
       enddo
 
       end subroutine get_MO_coefficients
+
+      logical function exist_one_el(e_core)
+
+        real(8), intent(out) :: e_core
+
+        exist_one_el=one_el_exist
+        if (one_el_exist) then
+           e_core=int_1el%e_core
+        else
+           e_core = 0.D0
+        end if
+
+      end function
+
+      subroutine get_one_el(one_int)
+
+        type(one_el_t), intent(inout)  :: one_int
+        integer :: nsp
+
+        nsp=int_1el%n_spinor
+        one_int%n_spinor=int_1el%n_spinor
+
+        nullify (one_int%h_core)
+        allocate(one_int%h_core(nsp,nsp))
+
+        one_int%h_core=int_1el%h_core
+
+     end subroutine get_one_el
 
 end module exacorr_global

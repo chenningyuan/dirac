@@ -144,9 +144,12 @@ C***********************************************************************
       implicit none
 
       integer              :: kvec                     ! Dummy variable needed in first call to numlst
+      integer, allocatable :: mobe_occ(:), mobe_vir(:)
       integer              :: nesh                     ! number of positive energy solutions
       integer              :: mytid                    ! MPI rank
       integer              :: i
+      integer              :: nmo(4)
+      integer              :: imo, ialpha, ibeta
 
 #if defined (VAR_MPI)
       ! parallel version of DIRAC
@@ -176,31 +179,118 @@ C
 #if defined (VAR_MPI)
       if (mytid == 0) then
 #endif
+       nesh = get_nsolutions() / 2
 
-      nesh = get_nsolutions() / 2
-      ! Obtain nocc and nvir + mo_occ and mo_vir
-      exa_input%nkr_occ = 0
-      call numlst (string_occupied,kvec,1,1,nesh,1,exa_input%nkr_occ)
-      allocate (exa_input%mokr_occ(exa_input%nkr_occ))
-      call numlst (string_occupied,exa_input%mokr_occ,exa_input%nkr_occ,
-     &              1,nesh,1,exa_input%nkr_occ)
-      exa_input%nocc = 2 * exa_input%nkr_occ
-      allocate (exa_input%mo_occ(exa_input%nocc))
-      do i = 1, exa_input%nocc
-        exa_input%mo_occ(i) = (exa_input%mokr_occ(1)-1)*2+i
-      end do
+       if (exa_input%beta_occ) then
+        if (exa_input%beta_vir) then
+         nmo(1:4)=0
+         call numlst (string_occupied,kvec,1,1,nesh,1,nmo(1))
+         call numlst (string_occ_beta,kvec,1,1,nesh,1,nmo(2))
+         call numlst (string_virtual,kvec,1,1,nesh,1,nmo(3))
+         call numlst (string_vir_beta,kvec,1,1,nesh,1,nmo(4))
 
-      exa_input%nkr_vir = 0
-      call numlst (string_virtual,kvec,1,1,nesh,1,exa_input%nkr_vir)
-      allocate (exa_input%mokr_vir(exa_input%nkr_vir))
-      call numlst (string_virtual,exa_input%mokr_vir,exa_input%nkr_vir,
-     & 1,nesh,1,exa_input%nkr_vir)
-      exa_input%nvir = 2 * exa_input%nkr_vir
-      allocate (exa_input%mo_vir(exa_input%nvir))
-      do i = 1, exa_input%nvir
-        exa_input%mo_vir(i) =
+         exa_input%nkr_occ=nmo(1)
+         allocate (exa_input%mokr_occ(exa_input%nkr_occ))
+         allocate (mobe_occ(nmo(2)))
+         exa_input%nkr_vir=nmo(3)
+         allocate (exa_input%mokr_vir(exa_input%nkr_vir))
+         allocate (mobe_vir(nmo(4)))
+
+         call numlst(string_occupied,exa_input%mokr_occ,nmo(1),
+     &    1,nesh,1,nmo(1))
+         call numlst(string_occ_beta,mobe_occ,nmo(2),1,nesh,1,nmo(2))
+         call numlst(string_virtual,exa_input%mokr_vir,nmo(3),
+     &    1,nesh,1,nmo(3))
+         call numlst(string_vir_beta,mobe_vir,nmo(4),1,nesh,1,nmo(4))
+
+         if(exa_input%mokr_occ(1).ne.mobe_occ(1)) then
+          print *, "core orbital need to be closed shell"
+          call quit ("change .OCC_BETA in EXACORR")
+         end if
+            
+         exa_input%nocc=nmo(1)+nmo(2)
+         exa_input%nvir=nmo(3)+nmo(4)
+         allocate (exa_input%mo_occ(exa_input%nocc))
+         allocate (exa_input%mo_vir(exa_input%nvir))
+
+         imo=0
+         do i=1, max(nmo(1), nmo(2))
+          if(i.le.nmo(1)) then
+           imo=imo+1
+           exa_input%mo_occ(imo)=exa_input%mokr_occ(i)*2-1
+          end if
+          if(i.le.nmo(2)) then
+           imo=imo+1
+           exa_input%mo_occ(imo)=mobe_occ(i)*2
+          end if
+         end do
+         
+         ialpha=1
+         ibeta=1
+         imo=0
+         do i=1, nmo(3)+nmo(4)
+          if(ibeta.gt.nmo(4)) then
+           if (ialpha.le.nmo(3)) then
+            imo=imo+1
+            exa_input%mo_vir(imo)=exa_input%mokr_vir(ialpha)*2-1
+            ialpha=ialpha+1
+           end if
+          else if (ialpha.gt.nmo(3)) then
+           if (ibeta.le.nmo(4)) then
+            imo=imo+1
+            exa_input%mo_vir(imo)=mobe_vir(ibeta)*2
+            ibeta=ibeta+1
+           end if
+          else if(exa_input%mokr_vir(ialpha).eq.mobe_vir(ibeta)) then
+           imo=imo+1
+           exa_input%mo_vir(imo)=exa_input%mokr_vir(ialpha)*2-1
+           ialpha=ialpha+1
+           imo=imo+1
+           exa_input%mo_vir(imo)=mobe_vir(ibeta)*2
+           ibeta=ibeta+1
+          else if (exa_input%mokr_vir(ialpha).lt.mobe_vir(ibeta)) then
+           imo=imo+1
+           exa_input%mo_vir(imo)=exa_input%mokr_vir(ialpha)*2-1
+           ialpha=ialpha+1
+          else                   
+           imo=imo+1
+           exa_input%mo_vir(imo)=mobe_vir(ibeta)*2
+           ibeta=ibeta+1
+          end if
+         end do
+
+         deallocate (mobe_occ)
+         deallocate (mobe_vir)
+        else
+         call quit ("also define .OCC_BETA in EXACORR")
+        end if
+      else if (exa_input%beta_vir) then
+       call quit ("also define .VIR_BETA in EXACORR")
+      else
+       exa_input%nkr_occ = 0
+       call numlst (string_occupied,kvec,1,1,nesh,1,exa_input%nkr_occ)
+       allocate (exa_input%mokr_occ(exa_input%nkr_occ))
+       call numlst (string_occupied,exa_input%mokr_occ,
+     &  exa_input%nkr_occ, 1,nesh,1,exa_input%nkr_occ)
+       exa_input%nocc = 2 * exa_input%nkr_occ
+       allocate (exa_input%mo_occ(exa_input%nocc))
+       do i = 1, exa_input%nocc
+         exa_input%mo_occ(i) = (exa_input%mokr_occ(1)-1)*2+i
+       end do
+
+       exa_input%nkr_vir = 0
+       call numlst (string_virtual,kvec,1,1,nesh,1,exa_input%nkr_vir)
+       allocate (exa_input%mokr_vir(exa_input%nkr_vir))
+       call numlst (string_virtual,exa_input%mokr_vir,
+     &  exa_input%nkr_vir,1,nesh,1,exa_input%nkr_vir)
+       exa_input%nvir = 2 * exa_input%nkr_vir
+       allocate (exa_input%mo_vir(exa_input%nvir))
+       do i = 1, exa_input%nvir
+         exa_input%mo_vir(i) =
      &                        exa_input%mo_occ(exa_input%nocc)+i
-      end do
+       end do
+      end if
+
 
 #if defined (VAR_MPI)
       end if
@@ -637,3 +727,86 @@ C
 
        return
        end
+
+       subroutine read_from_mrconee (int_1el, ierr)
+
+       use exacorr_datatypes
+
+       implicit none
+
+!      routine to read the one electron integrals from MRCONEE
+
+       type(one_el_t), intent(out) :: int_1el
+       integer, intent(out)   :: ierr
+       integer, parameter     :: NOERROR  = 0 ! no error
+       integer, parameter     :: NOTFOUND = 1 ! file not found
+       integer, parameter     :: CORRUPT  = 2 ! file unreadable
+       integer, parameter     :: INCONSIS = 6 ! MRCONEE does not match information read from DFCOEF
+
+       integer :: nsp, nkr
+       logical :: breit
+       real(8) :: e_core
+       complex(8), allocatable :: h_core(:,:)
+
+       logical                :: tobe
+       integer                :: luone
+
+       ierr=NOERROR
+
+!      open file and read setup infromation
+       inquire (file='MRCONEE',exist=tobe)
+       if (.not.tobe) then
+          print*, "error: file MRCONEE not found"
+          ierr = NOTFOUND
+          return
+       else
+          call get_free_fileunit(luone)
+          open (luone,file='MRCONEE',status='OLD',FORM='UNFORMATTED',
+     &     access='SEQUENTIAL')
+          read (luone,ERR=10,END=10) nsp,breit,e_core
+       end if
+!      save number of spinors
+       int_1el%n_spinor=nsp
+!      save core energy
+       int_1el%e_core=e_core
+!TODO  check consistency of e_core and nsp with the values read from DFCOEF !
+
+!      skip symmetry information
+       read (luone,ERR=10,END=10)
+       read (luone,ERR=10,END=10)
+       read (luone,ERR=10,END=10)
+       read (luone,ERR=10,END=10)
+
+!      allocate array to store the effective 1-body Hamiltonian
+       nullify(int_1el%h_core)
+       allocate(int_1el%h_core(NSP, NSP))
+
+!      as the ordering on mrconee is different we need an auxilliary array to read in
+       allocate(h_core(NSP, NSP))
+
+!      read this "core" Hamiltonian
+       read (luone,ERR=20,END=20) h_core
+!      For some vague historical reason hcore is not written in fortran order by MOLTRA but as its transpose
+!      In RELCCSD the complex conjugate is taken (quicker than doing the transpose) after the read, we do the same thing here
+!      but it would be good to fix this in MOLTRA and just write in fortran order (LV, 8-3-2019)
+       h_core = dconjg(h_core)
+
+!      reorder and store in the data type
+       nkr = nsp / 2 ! number of Kramers pairs is always half the number of spinors
+       int_1el%h_core(1:nsp:2,1:nsp:2) = h_core(1:nkr,1:nkr)     ! unbar-unbar
+       int_1el%h_core(2:nsp:2,1:nsp:2) = h_core(nkr+1:nsp,1:nkr)   ! bar-unbar
+       int_1el%h_core(1:nsp:2,2:nsp:2) = h_core(1:nkr,nkr+1:nsp)   ! unbar-bar
+       int_1el%h_core(2:nsp:2,2:nsp:2) = h_core(nkr+1:nsp,nkr+1:nsp) ! bar-bar
+
+       deallocate (h_core)
+       close (luone,status='KEEP')
+       
+       return
+
+  10   ierr = CORRUPT
+       return
+
+  20   ierr = INCONSIS
+       return
+
+       end subroutine read_from_mrconee

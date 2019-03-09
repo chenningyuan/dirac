@@ -9,7 +9,7 @@ module exacc_cfg
 #endif
 
   integer, parameter :: LENGTH=100
-  character(LENGTH), public :: string_occupied, string_virtual
+  character(LENGTH), public :: string_occupied, string_virtual, string_occ_beta, string_vir_beta
   type(exacc_input), public :: exa_input
 
 #ifdef VAR_MPI
@@ -26,8 +26,11 @@ contains
   call interface_mpi_bcast_l0(exa_input%noints,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%lambda,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%ccd,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast_l0(exa_input%beta_occ,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast_l0(exa_input%beta_vir,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%ncycles,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%exa_blocksize,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast(exa_input%print_level,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%moint_scheme,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%mokr_occ,exa_input%nkr_occ,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%mokr_vir,exa_input%nkr_vir,exa_MPI_RANK,global_communicator)
