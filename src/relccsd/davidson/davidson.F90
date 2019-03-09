@@ -2204,7 +2204,7 @@ contains
        real(kind=8), intent(in)  ::  shift, unshifted_value
 
        shifted_value_real = abs(unshifted_value - shift)
-    end
+    end function shifted_value_real
 
     real(kind=8) function shifted_value_complex_as_real(unshifted_value, shift)
        real(kind=8), intent(in)  ::  shift(2), unshifted_value(2)
@@ -2214,7 +2214,7 @@ contains
        temp(2) = unshifted_value(2) - shift(2)
 
        shifted_value_complex_as_real = sqrt(temp(1)*temp(1) + temp(2)*temp(2))
-    end
+    end function shifted_value_complex_as_real
 
     recursive subroutine quicksort_vector_real_shifted(shift, v, indices_sorted, first, last)
         real(kind=8), intent(inout) ::  v(:)
