@@ -18,6 +18,18 @@ f = Filter()
 f.add(from_string = 'Final CCSD energy',
       num_lines   = 1,
       rel_tolerance   = 1.0e-9)
+f.add(from_string = 'Energy of reference wave function (HF single determinant)',
+      num_lines   = 1,
+      rel_tolerance   = 1.0e-9)
+f.add(from_string = 'Norm of OO part Fock matrix ',
+      num_lines   = 1,
+      abs_tolerance   = 1.0e-9)
+f.add(from_string = 'Norm of OV part Fock matrix ',
+      num_lines   = 1,
+      abs_tolerance   = 1.0e-9)
+f.add(from_string = 'Norm of VV part Fock matrix ',
+      num_lines   = 1,
+      abs_tolerance   = 1.0e-9)
 
 #ExaTensor environment
 #It is crucial to launch MPI processes consecutively within a node
@@ -120,7 +132,7 @@ os.environ['OMP_NUM_THREADS'] = "1" #initial number of OpenMP threads per MPI pr
 test.run(['scf_beh.inp'], ['BeH_nosym.mol'], f1,"--get='X2CMAT AOMOMAT DFCOEF'")
 os.environ['OMP_NUM_THREADS'] = os.getenv('QF_NUM_THREADS') #initial number of OpenMP threads per MPI process
 
-#test.run(['cc_beh.inp'], ['BeH_nosym.mol'], f, "--put='X2CMAT AOMOMAT DFCOEF'")
-#test.run(['cc_beh_core.inp'], ['BeH_nosym.mol'], f, "--put='X2CMAT AOMOMAT DFCOEF'")
+test.run(['cc_beh.inp'], ['BeH_nosym.mol'], f, "--put='X2CMAT AOMOMAT DFCOEF'")
+test.run(['cc_beh_core.inp'], ['BeH_nosym.mol'], f, "--put='X2CMAT AOMOMAT DFCOEF'")
 
 sys.exit(test.return_code)

@@ -211,10 +211,6 @@ module exacorr_cc
             ierr=exatns_tensor_init(result_tensor,ZERO)
 !           Calculate and print the MP2 energy
             ierr=exatns_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%t2,int_t%oovv,ONE_QUARTER) ! o(2)v(2)
-            if (ierr > 0) print *, "MP2 error", ierr
-            if (print_level >2) ierr=exatns_tensor_traverse(comm_t%t2,'PrintTensor')
-            if (print_level >2) ierr=exatns_tensor_traverse(int_t%oovv,'PrintTensor')
-            if (print_level >2) ierr=exatns_tensor_traverse(result_tensor,'PrintTensor')
             ierr=exatns_tensor_get_scalar(result_tensor,result_val)
             mp2_energy=real(result_val,8) ! Casting into real(8)
             print*," MP2 energy = ", mp2_energy
@@ -1629,9 +1625,9 @@ module exacorr_cc
             off_diag=real(result_val,8) ! Casting into real(8)
             if (print_level >0) print*," Norm of VV part Fock matrix (without diag) = ", off_diag
             
-            if (print_level >1) ierr=exatns_tensor_traverse(comm_t%foo,'PrintTensor')
-            if (print_level >1) ierr=exatns_tensor_traverse(comm_t%fov,'PrintTensor')
-            if (print_level >1) ierr=exatns_tensor_traverse(comm_t%fvv,'PrintTensor')
+            if (print_level >3) ierr=exatns_tensor_traverse(comm_t%foo,'PrintTensor')
+            if (print_level >3) ierr=exatns_tensor_traverse(comm_t%fov,'PrintTensor')
+            if (print_level >3) ierr=exatns_tensor_traverse(comm_t%fvv,'PrintTensor')
 
             ierr=exatns_tensor_destroy(h_tensor)
             ierr=exatns_tensor_destroy(id_mat_occ)
