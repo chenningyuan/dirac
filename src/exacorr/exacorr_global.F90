@@ -288,18 +288,25 @@ module exacorr_global
 
       end function
 
-      subroutine get_one_el(one_int)
+      subroutine get_one_el(integrals,mo1_list,nmo1,mo2_list,nmo2,min_occ)
 
-        type(one_el_t), intent(inout)  :: one_int
-        integer :: nsp
+        complex(8), intent(out) :: integrals(:,:) !one lectron integrals
+        integer, intent(in)     :: nmo1          ! the length of the mo basis
+        integer, intent(in)     :: mo1_list(:)   ! and their indices
+        integer, intent(in)     :: nmo2          ! the length of the mo basis
+        integer, intent(in)     :: mo2_list(:)   ! and their indices
+        integer, intent(in)     :: min_occ       ! smallest index, assumes same closed shell as MOLTRA
 
-        nsp=int_1el%n_spinor
-        one_int%n_spinor=int_1el%n_spinor
+        integer :: pmo, qmo
 
-        nullify (one_int%h_core)
-        allocate(one_int%h_core(nsp,nsp))
+        if((mo1_list(nmo1)-min_occ+1).gt.int_1el%n_spinor) call quit ('Not enough orbitals in MRCONEE (MOLTRA)')
+        if((mo2_list(nmo2)-min_occ+1).gt.int_1el%n_spinor) call quit ('Not enough orbitals in MRCONEE (MOLTRA)')
 
-        one_int%h_core=int_1el%h_core
+        do qmo = 1, nmo2
+          do pmo = 1, nmo1
+            integrals(pmo, qmo) = int_1el%h_core(mo1_list(pmo)-min_occ+1,mo2_list(qmo)-min_occ+1)
+          end do
+        end do
 
      end subroutine get_one_el
 

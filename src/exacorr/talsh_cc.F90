@@ -933,7 +933,7 @@ module talsh_cc
          logical                         :: one_el_exist
          type(one_el_t)                  :: one_int
          real(8)                         :: e_core, ev_energy, off_diag, hf_energy
-         integer                         :: nsp, nkp, min_occ
+         integer                         :: nkp, min_occ
          type(C_PTR)                     :: body_p
          complex(8), pointer, contiguous :: h_tens(:,:)
          integer                         :: i, j, iv, jv, imo, jmo
@@ -962,7 +962,7 @@ module talsh_cc
 
 !        write one electron integrals to tensor
          if (one_el_exist) then
-           call get_one_el(one_int)
+           
 !          create density (identity) matrix for the occupied space
            ierr=talsh_tensor_construct(id_mat_occ,C8,fo_dims,init_val=ZERO)
            ierr=talsh_tensor_get_body_access(id_mat_occ,body_p,C8,0,DEV_HOST)
@@ -990,20 +990,19 @@ module talsh_cc
            enddo
 
 !          now write one electron integrals
-           nsp=one_int%n_spinor
-           e_core=one_int%e_core
 
            ierr=talsh_tensor_get_body_access(fo_tensor,body_p,C8,0,DEV_HOST)
            call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
-           h_tens = one_int%h_core(1:nocc,1:nocc)
+           call get_one_el(h_tens,mo_occ,nocc,mo_occ,nocc,min_occ)
+           
 
            ierr=talsh_tensor_get_body_access(fv_tensor,body_p,C8,0,DEV_HOST)
            call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
-           h_tens = one_int%h_core(nocc+1:nsp,nocc+1:nsp)
+           call get_one_el(h_tens,mo_vir,nvir,mo_vir,nvir,min_occ)
 
            ierr=talsh_tensor_get_body_access(fov_tensor,body_p,C8,0,DEV_HOST)
            call c_f_pointer(body_p,h_tens,fov_dims) ! to use as a regular Fortran array
-           h_tens = one_int%h_core(1:nocc,nocc+1:nsp)
+           call get_one_el(h_tens,mo_occ,nocc,mo_vir,nvir,min_occ)
 
 !           Get access to result 
             result_dims(1) = 1

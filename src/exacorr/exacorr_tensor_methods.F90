@@ -848,31 +848,30 @@ module exacorr_tensor_methods
 
         end function fill_diagonal
 
-        subroutine init_one_el_int(this,mo1_start,mo1_end,mo2_start,mo2_end)
+        subroutine init_one_el_int(this,mo1_list,nmo1,mo2_list,nmo2, min_occ)
 
-          use exacorr_datatypes
           use exacorr_global
           use, intrinsic:: ISO_C_BINDING
 
           implicit none
 
           class(init_one_el_t), intent(out):: this
-          integer, intent(in)  :: mo1_start     ! the index of the first spinor
-          integer, intent(in)  :: mo1_end       ! the index of the last spinor
-          integer, intent(in)  :: mo2_start     ! the index of the first spinor
-          integer, intent(in)  :: mo2_end       ! the index of the last spinor
-          type(one_el_t) :: one_int
-          logical              :: one_el_exist  ! we also have one-electron Hamiltonian elements available
-          real(8)              :: e_core
+          integer, intent(in) :: nmo1          ! the length of the mo basis
+          integer, intent(in) :: mo1_list(:)   ! and their indices
+          integer, intent(in) :: nmo2          ! the length of the mo basis
+          integer, intent(in) :: mo2_list(:)   ! and their indices
+          integer, intent(in) :: min_occ       ! smallest index
+
+          
+          logical        :: one_el_exist  ! we also have one-electron Hamiltonian elements available
+          real(8)        :: e_core
 
           one_el_exist = exist_one_el(e_core)
 
           if (one_el_exist) then
-
-            call get_one_el(one_int)
             ! store the integrals inside this type, so we can extract them later
-            allocate(this%integrals(mo1_end-mo1_start+1,mo2_end-mo2_start+1))
-            this%integrals = one_int%h_core(mo1_start:mo1_end,mo2_start:mo2_end)
+            allocate(this%integrals(nmo1,nmo2))
+            call get_one_el(this%integrals, mo1_list,nmo1,mo2_list,nmo2, min_occ)
 
           end if
 

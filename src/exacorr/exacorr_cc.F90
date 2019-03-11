@@ -124,6 +124,10 @@ module exacorr_cc
             print*, " - ExaTensor block size            ",exa_input%exa_blocksize
             print*, " - Integral transformation scheme  ",exa_input%moint_scheme
             print*, " - Print Level                     ",exa_input%print_level
+            if (print_level > 1) then
+              print*, " - occupied spinors ", exa_input%mo_occ
+              print*, " - virtual spinors ", exa_input%mo_vir
+            end if
          end if
 
          !Create all id and root arrays, neccessary for exatns_tensor_create
@@ -501,6 +505,7 @@ module exacorr_cc
          type(set_energy_t)           :: orb_set(2)       ! place orbital energies on diagonal
 
          integer:: spin
+         integer:: min_occ
 
          !Copy user input to local arrays for the definition of MO spaces (for standard CC we only distinguish occupied and virtual spinors)
          nocc = exa_input%nocc
@@ -509,6 +514,8 @@ module exacorr_cc
          allocate(mo_vir(nvir))
          mo_occ = exa_input%mo_occ
          mo_vir = exa_input%mo_vir
+
+         min_occ=minval(mo_occ)
 
          !Define separate initializers for the alpha(A) and beta(B) occupied and virtual MO-coefficients
          do spin = 1, 2
@@ -573,13 +580,13 @@ module exacorr_cc
          one_el_exist = exist_one_el(e_core)
          if (one_el_exist) then
             !Register methods to read one electron integrals
-            call one_el(1)%init_one_el_int(1,nocc,1,nocc)
+            call one_el(1)%init_one_el_int(mo_occ,nocc,mo_occ,nocc,min_occ)
             ierr=exatns_method_register('OE_oo',one_el(1))
             if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(OE_oo) failed!')
-            call one_el(2)%init_one_el_int(1,nocc,nocc+1,nocc+nvir)
+            call one_el(2)%init_one_el_int(mo_occ,nocc,mo_vir,nvir,min_occ)
             ierr=exatns_method_register('OE_ov',one_el(2))
             if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(OE_ov) failed!')
-            call one_el(3)%init_one_el_int(nocc+1,nocc+nvir,nocc+1,nocc+nvir)
+            call one_el(3)%init_one_el_int(mo_vir,nvir,mo_vir,nvir,min_occ)
             ierr=exatns_method_register('OE_vv',one_el(3))
             if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(OE_vv) failed!')
 
@@ -1595,6 +1602,10 @@ module exacorr_cc
             ierr=exatns_tensor_contract("F(a,b)+=V(a,k,b,l)*I(k,l)",comm_t%fvv,int_t%vovo,id_mat_occ, ONE)
             if (print_level >0) call print_date('two electron integrals added to Fock Matrix')
 
+            if (print_level >3) ierr=exatns_tensor_traverse(comm_t%foo,'PrintTensor')
+            if (print_level >3) ierr=exatns_tensor_traverse(comm_t%fov,'PrintTensor')
+            if (print_level >3) ierr=exatns_tensor_traverse(comm_t%fvv,'PrintTensor')
+
             ! Subtract orbital energies from the diagonal (they are moved to the other side of the CC equations)
             ierr=exatns_tensor_create(orb_tensor,"orb_oo",oo_id,oo_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_init(orb_tensor,'OrbE_o')
@@ -1624,10 +1635,6 @@ module exacorr_cc
             ierr=exatns_tensor_get_scalar(r_tensor,result_val)
             off_diag=real(result_val,8) ! Casting into real(8)
             if (print_level >0) print*," Norm of VV part Fock matrix (without diag) = ", off_diag
-            
-            if (print_level >3) ierr=exatns_tensor_traverse(comm_t%foo,'PrintTensor')
-            if (print_level >3) ierr=exatns_tensor_traverse(comm_t%fov,'PrintTensor')
-            if (print_level >3) ierr=exatns_tensor_traverse(comm_t%fvv,'PrintTensor')
 
             ierr=exatns_tensor_destroy(h_tensor)
             ierr=exatns_tensor_destroy(id_mat_occ)
