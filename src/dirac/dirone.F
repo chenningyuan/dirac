@@ -102,7 +102,7 @@ C
       ELSEIF (CLSINT(I).EQ.'UEHLING') THEN
 C     sunaga
         IF(NOSMLV) COMB(4:4) = 'T'
-        CALL NUMINT(COMB,IPRONE)       
+        CALL NUMINT(I,COMB,IPRONE)       
 Csunaga      
 C
 C     Contribution from (static) embedding potential
@@ -175,7 +175,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck numint */
-      SUBROUTINE NUMINT(COMB,IPRINT)
+      SUBROUTINE NUMINT(IOP,COMB,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C The numerical integration for constructing AO basis matrix
@@ -204,6 +204,7 @@ C
 #include "graspprm.h" 
 #include "ccom.h" 
 #include "symmet.h"
+#include "dcbcls.h"
 C      
       LOGICAL ADDSML
       CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4 !check
@@ -213,8 +214,10 @@ C
       real(8), allocatable :: BUF(:),TC(:),TD(:,:)
       real(8), allocatable :: VACIR(:),R(:),W(:),OVL(:)
       DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND)
-      
+
       CALL QENTER('NUMINT')
+      write(*,*)"IOP",IOP
+      write(*,*)"CLSINT",CLSINT(IOP)
 C
 C     Making ZAN and C 
 C     ZAN... Nuclear charge
@@ -486,7 +489,8 @@ C       Scale weights with multiplicity of center
 C      
 C     Generate integral labels
 C
-      LABEL = 'UEHLING'
+C     LABEL = 'UEHLING'
+      LABEL = CLSINT(IOP)
       CALL GETDAT(RTNLBL(1),RTNLBL(2))
       RTNLBL(2)(1:2) = 'SY'
       WRITE(RTNLBL(2)(3:4),'(I2)') 1
