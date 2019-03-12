@@ -1690,6 +1690,18 @@
       ELSEIF(PLABEL(1:7).EQ.'UEHLING') THEN
         CLASLB = 'UEHLING'
         IORDER   = 0
+      ELSEIF(PLABEL(1:6).EQ.'SEFGMG') THEN
+        CLASLB = 'SEFGMG'
+        IORDER   = 0
+      ELSEIF(PLABEL(1:6).EQ.'SEFGHF') THEN
+        CLASLB = 'SEFGHF'
+        IORDER   = 0
+      ELSEIF(PLABEL(1:6).EQ.'SEFGLF') THEN
+        CLASLB = 'SEFGLF'
+        IORDER   = 0
+      ELSEIF(PLABEL(1:4).EQ.'SEPZ') THEN
+        CLASLB = 'SEPZ'
+        IORDER   = 0
       ELSEIF(PLABEL(1:7).EQ.'BETAMAT') THEN
         CLASLB = 'BETAMAT'
         IORDER   = 0
@@ -2163,6 +2175,46 @@
       ELSEIF(CLASLB.EQ.'UEHLING') THEN
         NOPTYP    = 1
         LABINT(1) = 'UEHLING '
+        INTREP(1) = 0
+        SQUARE    = .FALSE.
+        ANTI      = .FALSE.
+        IORDER    = 0
+        DO I = 1,NUCIND
+          DOATOM(I) = .TRUE.
+        ENDDO
+      ELSEIF(CLASLB.EQ.'SEFGMG') THEN
+        NOPTYP    = 1
+        LABINT(1) = 'SEFGMG  '
+        INTREP(1) = 0
+        SQUARE    = .FALSE.
+        ANTI      = .TRUE.
+        IORDER    = 0
+        DO I = 1,NUCIND
+          DOATOM(I) = .TRUE.
+        ENDDO
+      ELSEIF(CLASLB.EQ.'SEFGHF') THEN
+        NOPTYP    = 1
+        LABINT(1) = 'SEFGHF  '
+        INTREP(1) = 0
+        SQUARE    = .FALSE.
+        ANTI      = .FALSE.
+        IORDER    = 0
+        DO I = 1,NUCIND
+          DOATOM(I) = .TRUE.
+        ENDDO
+      ELSEIF(CLASLB.EQ.'SEFGLF') THEN
+        NOPTYP    = 1
+        LABINT(1) = 'SEFGLF  '
+        INTREP(1) = 0
+        SQUARE    = .FALSE.
+        ANTI      = .FALSE.
+        IORDER    = 0
+        DO I = 1,NUCIND
+          DOATOM(I) = .TRUE.
+        ENDDO
+      ELSEIF(CLASLB.EQ.'SEPZ') THEN
+        NOPTYP    = 1
+        LABINT(1) = 'SEPZ    '
         INTREP(1) = 0
         SQUARE    = .FALSE.
         ANTI      = .FALSE.
