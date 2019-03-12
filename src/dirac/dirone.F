@@ -101,7 +101,7 @@ C     Uehling potential for vacuum polarization
 C
       ELSEIF (CLSINT(I).EQ.'UEHLING') THEN
 C     sunaga
-        IF(NOSMLV) COMB(4:4) = 'T'
+        IF(NOSMLV) COMB(4:4) = 'F'
         CALL NUMINT_DIAG(I,COMB,IPRONE)       
 Csunaga      
 C
@@ -109,7 +109,7 @@ C     Self-energy(Flambaum and Pyyko)
 C
       ELSEIF (CLSINT(I)(1:2).EQ.'SE') THEN
 C     sunaga
-        IF(NOSMLV) COMB(4:4) = 'T'
+        IF(NOSMLV) COMB(4:4) = 'F'
         CALL NUMINT_DIAG(I,COMB,IPRONE)       
 Csunaga      
 C
@@ -304,12 +304,12 @@ C
            write(*,*)"NUCMASS",NUCMASS(INT(ZAN(IATOM)))
            IF(LABEL.EQ.'UEHLING')THEN
              CALL VCMPOL(NUMIR,R,ZAN(IATOM),MXNP,NUCTYP,1)
-           ELSEIF(LABEL.EQ.'SEFGHF')THEN
+C           ELSEIF(LABEL.EQ.'SEFGHF')THEN
 C             CALL INTHF(NUMIR,R,ZAN(IATOM),MXNP,NUCTYP,1)
            ELSEIF(LABEL.EQ.'SEFGLF')THEN
              CALL INTLF(NUMIR,R,ZAN(IATOM),MXNP          )
            ELSEIF(LABEL.EQ.'SEPZ'  )THEN
-C             CALL INTPZ(NUMIR,R,ZAN(IATOM),MXNP,NUCTYP,1)
+             CALL INTPZ(NUMIR,R,ZAN(IATOM),MXNP          )
            ENDIF   
 !           DO J = 1,MXNP
 !     write(*,*)J,NUMIR(J),R(J)
@@ -1487,7 +1487,6 @@ C
       BZ = 0.074D0 + 0.35D0*Z/CVAL
       CVAL3 = CVAL*CVAL*CVAL
       PREFAC = BZ * Z*Z*Z*Z / CVAL3
-      write(*,*)"CVAL,Z,BZ",CVAL,Z,BZ
       DO 1 I = 1,N
          TB(I) = EXP(-Z*R(I))
  1    CONTINUE
@@ -1500,6 +1499,44 @@ C      deallocate(BUF)
 C      
       RETURN
       END      
+*****************************************************************************
+*
+      SUBROUTINE INTPZ(TB,R,Z,N)
+*
+*     Model potential of Pekka and Zhao of J Phys B 36 1469 (2004)
+*
+*     Called from: NUMINT_DIAG
+*      
+*     Modified to DIRAC A. Sunaga Mar. 2019      
+*           
+*****************************************************************************
+#include "implicit.h"
+C     
+      DIMENSION TB(N),R(N)
+C
+      B0 = -48.6166
+      B1 = 1.53666
+      B2 = 0.0301129
+      BETA0 = -12751.3
+      BETA1 = 916.038
+      BETA2 = 5.7797
+      BFIT = B0 + B1*Z + B2*Z**2
+      BETAFIT = BETA0 + BETA1*Z + BETA2*Z*Z
+C
+      DO 1 I = 1,N
+         TB(I) = EXP(-BETAFIT*R(I)*R(I))
+C         write(*,*)"TB,R(I),R**2,1,I",TB(I),R(I),R(I)**2,I
+ 1    CONTINUE
+      CALL DSCAL(N,BFIT,TB,1)
+C     change
+C     error sentence for 29<Z<83
+C     
+C      DO 2 I = 1,N
+C         write(*,*)"TB,PP,2,I",TB(I),I
+C 2    CONTINUE
+C      
+      RETURN
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE QUAD(RESULT,TE,NR)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
