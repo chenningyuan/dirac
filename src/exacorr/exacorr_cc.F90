@@ -123,7 +123,7 @@ module exacorr_cc
             print*, " - Maximum number of cycles:       ",exa_input%ncycles
             print*, " - ExaTensor block size            ",exa_input%exa_blocksize
             print*, " - Integral transformation scheme  ",exa_input%moint_scheme
-            if (exa_input%level_shift.gt.1.0D-8) then
+            if (exa_input%level_shift.gt.1.0D-14) then
               print*, " - Level Shift                     ",exa_input%level_shift
             end if
             print*, " - Print Level                     ",exa_input%print_level

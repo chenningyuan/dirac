@@ -306,7 +306,7 @@ module exacorr_tensor_methods
          this%eps_vir = cspinor%energy
          call dealloc_mo (cspinor)
 
-         if (level_shift.gt.THRESHOLD) then
+         if (level_shift.gt.1.0D-14) then
            e_homo = maxval(this%eps_occ)
            e_lumo = minval(this%eps_vir)
            lumo   = minloc(this%eps_vir,1)

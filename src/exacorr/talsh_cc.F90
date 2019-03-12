@@ -78,6 +78,10 @@ module talsh_cc
 
          logical :: CCD, lambda
 
+         real(8)            :: e_lumo, e_homo
+         integer            :: lumo
+         real(8), parameter :: THRESHOLD=1.0D-8
+
 !        Make some noise so that we know we are here
          call print_date('Entered cc_driver routine')
 
@@ -109,6 +113,24 @@ module talsh_cc
          ncycles = exa_input%ncycles
          print_level = exa_input%print_level
 
+        if (print_level>0) then
+            print*, " Characteristics of this calculation"
+            print*, " - Solve CCD equations:            ",exa_input%ccd
+            print*, " - Solve Lambda equations:         ",exa_input%lambda
+            print*, " - Number of occupied spinors:     ",exa_input%nocc
+            print*, " - Number of virtual spinors:      ",exa_input%nvir
+            print*, " - Target precision of amplitudes: ",exa_input%t_econv
+            print*, " - Maximum number of cycles:       ",exa_input%ncycles
+            if (exa_input%level_shift.gt.1.0D-14) then
+              print*, " - Level Shift                     ",exa_input%level_shift
+            end if
+            print*, " - Print Level                     ",exa_input%print_level
+            if (print_level > 1) then
+              print*, " - occupied spinors                ", exa_input%mo_occ
+              print*, " - virtual spinors                 ", exa_input%mo_vir
+            end if
+         end if
+
          call print_date("Getting orbital energies")
 !        Get orbital energies from the DIRAC restart file
          allocate (eps_occ(nocc))
@@ -116,6 +138,24 @@ module talsh_cc
          call get_orbital_energies(nocc,mo_occ,eps_occ)
          call get_orbital_energies(nvir,mo_vir,eps_vir)
          call print_date("Retrieved orbital energies")
+
+        if (exa_input%level_shift.gt.1.0D-14) then
+           e_homo = maxval(eps_occ)
+           e_lumo = minval(eps_vir)
+           lumo   = minloc(eps_vir,1)
+
+           do while(e_lumo-e_homo < THRESHOLD)
+             print*, "e_homo, e_lumo", e_homo, e_lumo
+             if (e_lumo+exa_input%level_shift-e_homo >THRESHOLD) then
+               eps_vir(lumo)=e_lumo+exa_input%level_shift
+               print *, "lumo energy level shifted by ", exa_input%level_shift," to ",e_lumo+exa_input%level_shift
+             else
+               call quit('Negative HOMO-LUMO gap')
+             end if
+             e_lumo = minval(eps_vir)
+             lumo   = minloc(eps_vir, 1)
+           end do
+         end if
 
 !        Get fixed two-body tensors
          call get_CC_integrals (nocc,nvir,mo_occ,mo_vir,int_t)
