@@ -279,7 +279,7 @@ module exacorr_tensor_methods
 
         end function tens_init_ao_integrals
 
-        subroutine init_epsilons(this,mo_occ,nocc,mo_vir,nvir)
+        subroutine init_epsilons(this,mo_occ,nocc,mo_vir,nvir,level_shift)
 
          use exacorr_mo
          use exacorr_global
@@ -287,9 +287,14 @@ module exacorr_tensor_methods
          implicit none
          integer, intent(in) :: nocc, nvir
          integer, intent(in) :: mo_occ(:),mo_vir(:)
+         real(8), intent(in) :: level_shift
          class(scale_with_denom_t), intent(out):: this
+         
 
-         type(cmo) :: cspinor
+         type(cmo)          :: cspinor
+         integer            :: lumo
+         real(8)            :: e_homo, e_lumo
+         real(8), parameter :: THRESHOLD=1.D-8
 
          call get_mo_coefficients (cspinor,mo_occ,nocc)
          allocate(this%eps_occ(nocc))
@@ -300,6 +305,24 @@ module exacorr_tensor_methods
          allocate(this%eps_vir(nvir))
          this%eps_vir = cspinor%energy
          call dealloc_mo (cspinor)
+
+         if (level_shift.gt.THRESHOLD) then
+           e_homo = maxval(this%eps_occ)
+           e_lumo = minval(this%eps_vir)
+           lumo   = minloc(this%eps_vir,1)
+
+           do while(e_lumo-e_homo < THRESHOLD)
+             print*, "e_homo, e_lumo", e_homo, e_lumo
+             if (e_lumo+level_shift-e_homo >THRESHOLD) then
+               this%eps_vir(lumo)=e_lumo+level_shift
+               print *, "lumo energy level shifted by ", level_shift," to ",e_lumo+level_shift
+             else
+               call quit('Negative HOMO-LUMO gap')
+             end if
+             e_lumo = minval(this%eps_vir)
+             lumo   = minloc(this%eps_vir, 1)
+           end do
+         end if
 
         end subroutine init_epsilons
 

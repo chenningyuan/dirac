@@ -37,7 +37,8 @@ contains
   call interface_mpi_bcast(exa_input%mo_occ,exa_input%nocc,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%mo_vir,exa_input%nvir,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%t_econv,1,exa_MPI_RANK,global_communicator)
-
+  call interface_mpi_bcast(exa_input%level_shift,1,exa_MPI_RANK,global_communicator)
+  
   end subroutine exacc_sync_cw
 #endif
 

@@ -123,10 +123,13 @@ module exacorr_cc
             print*, " - Maximum number of cycles:       ",exa_input%ncycles
             print*, " - ExaTensor block size            ",exa_input%exa_blocksize
             print*, " - Integral transformation scheme  ",exa_input%moint_scheme
+            if (exa_input%level_shift.gt.1.0D-8) then
+              print*, " - Level Shift                     ",exa_input%level_shift
+            end if
             print*, " - Print Level                     ",exa_input%print_level
             if (print_level > 1) then
-              print*, " - occupied spinors ", exa_input%mo_occ
-              print*, " - virtual spinors ", exa_input%mo_vir
+              print*, " - occupied spinors                ", exa_input%mo_occ
+              print*, " - virtual spinors                 ", exa_input%mo_vir
             end if
          end if
 
@@ -563,7 +566,7 @@ module exacorr_cc
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(aoint) failed!')
 
          !Register the denominator initializer as a method
-         call denominate%scale_with_denom_ctor(mo_occ,nocc,mo_vir,nvir)
+         call denominate%scale_with_denom_ctor(mo_occ,nocc,mo_vir,nvir,exa_input%level_shift)
          ierr=exatns_method_register('Denominate',denominate)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(Denominate) failed!')
 
