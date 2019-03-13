@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -112,7 +112,7 @@ C
       NEXCF  = MAXEXC*NBSYM
       IF(ORBXPP) THEN
         CALL MEMGET('INTE',KPPO,4*NORBT,WORK,KFREE,LFREE)
-        CALL DEFORB(WORK(KPPO),NCLS_XPP,3,XPP_INDSTR,
+        CALL DEFORB(WORK(KPPO),NCLS_XPP,XPP_INDSTR,
      &              WORK,KFREE,LFREE,IPRXPP)
         NI = 0
 C       Number of inactive orbitals
@@ -152,8 +152,7 @@ C     Initialize:
      &            WORK(KSSYM),WORK,KFREE,LFREE)
 C
  10   CONTINUE
-      IF (XPPANA) CALL ANAXRS(XPP_INDSTR,XPP_SKIPEE,XPP_SKIPEP,
-     &                        WORK,KFREE,LFREE,IPRXPP)
+      IF (XPPANA) CALL ANAXRS(WORK,KFREE,LFREE,IPRXPP)
 C
       CALL MEMCHK('PRPXPP memory check',WORK,1)
 C     ... note: NOT MEMREL here as info is passed to calling
@@ -840,7 +839,8 @@ C     ************************************
 C     *** Set orbital strings          ***
 C     ************************************
 C
-      CALL OSTRING(XPP_INDSTR,XPP_SKIPEE,XPP_SKIPEP,WORK,KFREE,LFREE)
+      CALL OSTRING(XPP_INDSTR,XPP_SKIPEE,XPP_SKIPEP,IPRXPP,
+     &             WORK,KFREE,LFREE)
 C
 C     ************************************
 C     *** Sort operators on symmetries ***

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1189,7 +1189,7 @@
         END DO
 
 !       This routine reads the next line to check whether an ECP is specified for this type
-        CALL RECP_LNK_READCP(infile,basindex,NONT(basindex))
+        CALL RECP_LNK_READCP(infile,basindex,NONT(basindex),IPREAD)
 
         typepointer=>typepointer%next
         index=index+NONT(basindex)

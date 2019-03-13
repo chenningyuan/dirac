@@ -242,7 +242,6 @@ contains
         end if
 
         if (present(energy_shift)) then
-            write (unit_output,*) 'shift is defined'
             davidson_eigenvalues_shift = energy_shift
             davidson_apply_eigenvalues_shift = .true.
 
@@ -257,7 +256,6 @@ contains
                davidson_apply_eigenvalues_shift = .false.
             end if
         else
-            write (unit_output,*) 'shift is not defined'
             davidson_eigenvalues_shift = (/0.0d0, 0.0d0/) 
             davidson_apply_eigenvalues_shift = .false.
         end if
@@ -301,7 +299,7 @@ contains
         if (present(overlap_sorting)) then
             davidson_overlap_sorting = overlap_sorting
         else
-            davidson_overlap_sorting = .true.
+            davidson_overlap_sorting = .false.
         end if
 
         if (present(use_preconditioner)) then
@@ -351,19 +349,19 @@ contains
         if (present(save_subspaces)) then
            davidson_save_subspaces = save_subspaces
         else
-           davidson_save_subspaces = .true. 
+           davidson_save_subspaces = .false. 
         end if
 
         if (present(save_sigmas)) then
            davidson_save_sigmas = save_sigmas
         else
-           davidson_save_sigmas = .true. 
+           davidson_save_sigmas = .false. 
         end if
 
         if (present(save_results)) then
            davidson_save_results = save_results
         else
-           davidson_save_results = .true. 
+           davidson_save_results = .false. 
         end if
 
         if (present(unit_subspaces)) then
@@ -941,7 +939,8 @@ contains
 
         label = "Eigenvalues"
         if (davidson_debug) print *, "debug, evalues inside print_values_vectors_R"
-        if (davidson_debug) print *, eValues
+        if (davidson_debug) print *, eValues(1,:)
+        if (davidson_debug) print *, eValues(2,:)
 
         do i = 1, nroots_local 
             vr = eValues(1,i)
@@ -950,13 +949,13 @@ contains
             if (abs(vr).lt.print_values_threshold) vr = 0.0d0
 
             if (vi .lt. 0.0d0) then
-                write (davidson_output_file_unit,'(4x,a,i6,a,1e14.6,a,1e14.6,a)'), &
+                write (davidson_output_file_unit,'(4x,a,i6,a,1e14.6,a,1e14.6,a)')  &
                       "Eigenvalue ",i," : ", vr," -",abs(vi)," i"
             else if (vi .gt. 0.0d0) then
-                write (davidson_output_file_unit,'(4x,a,i6,a,1e14.6,a,1e14.6,a)'), &
+                write (davidson_output_file_unit,'(4x,a,i6,a,1e14.6,a,1e14.6,a)')  &
                       "Eigenvalue ",i," : ", vr," +",abs(vi)," i"
             else
-                write (davidson_output_file_unit,'(4x,a,i6,a,1e14.6)'), &
+                write (davidson_output_file_unit,'(4x,a,i6,a,1e14.6)')  &
                       "Eigenvalue ",i," : ", vr
             end if
         end do
@@ -1033,7 +1032,7 @@ contains
                unconverged_roots = unconverged_roots + 1
             end if
         end do
-        write (davidson_output_file_unit,*), ""
+        write (davidson_output_file_unit,*) " "
 
         if (any(vectors_to_update)) then
             if (correct_all_local) then
@@ -1157,7 +1156,7 @@ contains
             vectors_N_complex = vectors_N / 2
             scaling_factor(2) = 0.0d0 
  
-            if (davidson_debug) write (davidson_output_file_unit,*) 'debug, vectors to update',vectors_to_update
+!!          if (davidson_debug) write (davidson_output_file_unit,*) 'debug, vectors to update',vectors_to_update
             i = 1
             do k = 1, nroots
                if (vectors_to_update(k)) then
@@ -1184,7 +1183,7 @@ contains
         end if
 
 ! aspg: the call below just fails.. don't quite get why
-        if (davidson_debug) call davidson_print_vectors(delta,          label="deltas                        ")
+!       if (davidson_debug) call davidson_print_vectors(delta,          label="deltas                        ")
 !       if (davidson_debug) call davidson_print_vectors(preconditioner, label="preconditioner                ")
 
     end subroutine 
@@ -1227,11 +1226,11 @@ contains
                        (0.0d0), residue_b, vectors_N)
         end if
 
-        if (davidson_debug) then
-            call davidson_print_vectors(residue_a,  label="debug: in form_r, residue a   ", complex_dimension=1)
-            call davidson_print_vectors(residue_b,  label="debug: in form_r, residue b   ", complex_dimension=1)
-            call davidson_print_vectors(e_small_M,  label="debug: in form_r, e_small M   ", complex_dimension=1)
-        end if
+!       if (davidson_debug) then
+!           call davidson_print_vectors(residue_a,  label="debug: in form_r, residue a   ", complex_dimension=1)
+!           call davidson_print_vectors(residue_b,  label="debug: in form_r, residue b   ", complex_dimension=1)
+!           call davidson_print_vectors(e_small_M,  label="debug: in form_r, e_small M   ", complex_dimension=1)
+!       end if
 ! todo: generalize this to the multiplication of the complex e_small with  complex residue_b
 
         do k = 1, nroots
@@ -1242,9 +1241,9 @@ contains
             end if
             r(:,k) = residue_a(:,k) - residue_b(:,k)
         end do
-        if (davidson_debug) then
-            call davidson_print_vectors(r,  label="debug: in form_r, r           ", complex_dimension=1)
-        end if
+!       if (davidson_debug) then
+!           call davidson_print_vectors(r,  label="debug: in form_r, r           ", complex_dimension=1)
+!       end if
 
         deallocate(residue_a)
         deallocate(residue_b)
@@ -1320,7 +1319,7 @@ contains
                     vr = v(kr,j)
                     vi = v(ki,j)
                     write (davidson_output_file_unit,'(a,1i4,a,1i4,a,1i4,a,1i4,a,1e14.6,a,1e14.6)') &
-                                 ,'i:',i,' j:',j,' kr',kr,' ki:',ki,'  vr:',vr,'  vi:',vi 
+                                 'i:',i,' j:',j,' kr',kr,' ki:',ki,'  vr:',vr,'  vi:',vi 
 
                     vt(j,kr) =  vr
                     vt(j,ki) = -vi
@@ -1456,7 +1455,6 @@ contains
         real(kind=8), pointer :: preconditioner(:,:) => NULL()
         real(kind=8), pointer :: sigma_vector(:,:)   => NULL()
         real(kind=8), pointer :: b(:,:)              => NULL()
-        real(kind=8), pointer :: b_proj(:,:)         => NULL()
         real(kind=8), pointer :: M_small(:,:)        => NULL()
         real(kind=8), pointer :: c_small_r(:,:)      => NULL()
         real(kind=8), pointer :: c_small_l(:,:)      => NULL()
@@ -1487,6 +1485,12 @@ contains
         max_subspace_size = max(nroots, davidson_max_subspace_size)
         max_subspace_size = min(vectors_N, max_subspace_size)
 
+        if (associated(projector)) then
+            write(davidson_output_file_unit,*) ""
+            write(davidson_output_file_unit,"(4x,a)") "Projector (for CVS/REW/... calculations) is active"
+            write(davidson_output_file_unit,*) ""
+        end if
+
         write(davidson_output_file_unit,"(4x,a,i6,a)") "Requested ",nroots," eigenvales"
         if ( nroots .gt. vectors_N ) then 
            write(davidson_output_file_unit, "(4x,a)") "Number of roots requested larger than matrix order !"
@@ -1513,25 +1517,16 @@ contains
             write(davidson_output_file_unit,*) "Iteration ", niter
             write(davidson_output_file_unit,*) ""
 
-! aspg, WIP june/july 2018
-!           allocate(b_proj(size(b,1),size(b,2)))
-!           b_proj = b
-!           if (associated(projector)) call apply_projector(projector,b_proj)
-            if (associated(projector)) call apply_projector(projector,b)
-! aspg, WIP june/july 2018
-
             if (associated(M_small)) deallocate(M_small)
 
+            if (associated(projector)) call apply_projector(projector,b)
             if (davidson_debug) call davidson_print_vectors(b, label="debug:  b     vector          ")
 
-!           sigma_vector => create_sigma_vector(A, b_proj, sigma_vector, state_sym)
             sigma_vector => create_sigma_vector(A, b, sigma_vector, state_sym)
+            if (associated(projector)) call apply_projector(projector,sigma_vector)
 
             if (davidson_debug) call davidson_print_vectors(sigma_vector, label="debug:  sigma vector          ")
 
-!           if (davidson_solve_rhs) M_small => create_reduced_problem(b_proj, sigma_vector)
-!           if (davidson_solve_lhs) M_small => create_reduced_problem(sigma_vector, b_proj)
-!           deallocate(b_proj)
             if (davidson_solve_rhs) M_small => create_reduced_problem(b, sigma_vector)
             if (davidson_solve_lhs) M_small => create_reduced_problem(sigma_vector, b)
 
@@ -1578,6 +1573,7 @@ contains
             if (associated(delta)) deallocate(delta)
 
             preconditioner =>  form_preconditioner(M_diag, e_small)
+
            if (davidson_solve_rhs) delta => correction_to_vectors(davidson_output_file_unit, nroots,  &
                                            e_small, c_small_r, sigma_vector, & 
                                            b, preconditioner)
@@ -1623,14 +1619,10 @@ contains
                 deallocate(sigma_vector)
             else
 
-! aspg, WIP june/july 2018
-!           allocate(b_proj(size(b,1),size(b,2)))
-!           b_proj = b
-!           if (associated(projector)) call apply_projector(projector,b_proj)
-!            if (associated(projector)) call apply_projector(projector,b)
-! aspg, WIP june/july 2018
-
                b => updated_subspace_vectors_R(b, delta, verbose=davidson_debug)
+
+! in the case of a parallel run, at each davidson step synchronize the new trial vectors 
+               call davidson_synchronize_trial_vectors(b,size(delta,2))
 
                if (davidson_verbose) then
                    call davidson_print_vectors(delta, label="delta                         ")
@@ -2208,23 +2200,39 @@ contains
         if (j+1 < last)  call quicksort_vector_real(v, indices_sorted, j+1, last)
     end subroutine
 
+    real(kind=8) function shifted_value_real(unshifted_value, shift)
+       real(kind=8), intent(in)  ::  shift, unshifted_value
+
+       shifted_value_real = abs(unshifted_value - shift)
+    end function shifted_value_real
+
+    real(kind=8) function shifted_value_complex_as_real(unshifted_value, shift)
+       real(kind=8), intent(in)  ::  shift(2), unshifted_value(2)
+       real(kind=8)  :: temp(2)
+
+       temp(1) = unshifted_value(1) - shift(1)
+       temp(2) = unshifted_value(2) - shift(2)
+
+       shifted_value_complex_as_real = sqrt(temp(1)*temp(1) + temp(2)*temp(2))
+    end function shifted_value_complex_as_real
+
     recursive subroutine quicksort_vector_real_shifted(shift, v, indices_sorted, first, last)
         real(kind=8), intent(inout) ::  v(:)
         real(kind=8), intent(in) ::  shift
         integer, intent(inout) :: indices_sorted(:)
         integer, intent(in)  :: first, last
 
-        real(kind=8) :: x, t
+        real(kind=8) :: x, y, t
         integer :: i, j, ti
 
-        x = abs(v( (first + last) / 2 ) - shift)
+        x = shifted_value_real(v( (first + last) / 2 ),shift)
         i = first
         j = last
         do
-           do while (abs(v(i)-shift) < x)
+           do while (shifted_value_real(v(i),shift) < x)
               i = i + 1
            end do
-           do while (x < abs(v(j)-shift))
+           do while (x < shifted_value_real(v(j),shift))
               j = j - 1
            end do
            if (i >= j) exit
@@ -2302,20 +2310,16 @@ contains
 
         start_index = (first + last) / 2
 
-        x = sqrt(abs(v(1,start_index)-shift(1))*abs(v(1,start_index)-shift(1)) &
-             & + abs(v(2,start_index)-shift(2))*abs(v(2,start_index)-shift(2))) 
+        x = shifted_value_complex_as_real(v(:,start_index), shift)
 
         i = first
         j = last
 
         do
-           do while (( sqrt( abs(v(1,i)-shift(1)) * abs(v(1,i)-shift(1)) &
-                       &   + abs(v(2,i)-shift(2)) * abs(v(2,i)-shift(2))) < x ))
-
+           do while ( shifted_value_complex_as_real(v(:,i), shift) < x)
               i = i + 1
            end do
-           do while (( x < sqrt( abs(v(1,i)-shift(1)) * abs(v(1,i)-shift(1)) &
-                           &   + abs(v(2,i)-shift(2)) * abs(v(2,i)-shift(2))) ))
+           do while ( x < shifted_value_complex_as_real(v(:,j), shift))
               j = j - 1
            end do
            if (i >= j) exit
@@ -2597,7 +2601,6 @@ contains
 
     end subroutine
 
-! aspg, WIP june/july 2018
     subroutine apply_projector(projector,b)
         logical, intent(in) :: projector(:)
         real(kind=8), intent(inout)  :: b(:,:)
@@ -2612,13 +2615,11 @@ contains
 
         if (davidson_complex_mode_with_reals) vectors_N = vectors_N / 2
 
-!       call davidson_print_vectors(b, label="debug:  b before projector    ")
         do i = 1, vectors_N
            if (projector(i).eqv..false.) then
               if (davidson_complex_mode_with_reals) then
                  j = 2*(i-1) + 1
                  k = j + 1
-!                print *, 'indexes of b, complex: i',i,'j',j,'k',k
                  b(j,:) = 0.0d0
                  b(k,:) = 0.0d0
               else 
@@ -2626,9 +2627,7 @@ contains
               end if
            end if
         end do
-!       call davidson_print_vectors(b, label="debug:  b after  projector    ")
     end subroutine
-! aspg, WIP june/july 2018
 
     subroutine davidson_get_eigenvalue_shift(apply_shift,shift)
        logical, intent(inout)      :: apply_shift
@@ -2638,6 +2637,47 @@ contains
        apply_shift = davidson_apply_eigenvalues_shift 
 
     end subroutine
+
+
+   subroutine davidson_synchronize_trial_vectors(b,nr_to_sync)
+! this routine synchronizes the matrix of trial vectors (b) from the 
+! davidson procedure across nodes, with the process with rank 0, through 
+! a brodcast. 
+!
+! the routine takes as second argument the number of trial vectors to 
+! synchronize (nr_to_sync). 
+!
+! the routine can oprate in two ways: 
+! - if nr_to_sync is smaller or equal to zero, this signals all vectors are broadcast.
+! - if nr_to_sync is non-zero, nr_to_sync vectors are broadcast, but starting
+!   with the most recent ones which are stored in the last columns of b. 
+!
+#ifdef VAR_MPI
+      use interface_to_mpi
+#endif
+      real(kind=8), intent(inout) :: b(:,:)
+      integer, intent(in) :: nr_to_sync 
+      integer :: ndim1, ndim2, start_slice, end_slice, i
+
+#ifdef VAR_MPI
+      ndim1 = size(b,1)
+      if (nr_to_sync .le. 0) then 
+          ndim2 = size(b,2) 
+          do i = 1, ndim2
+             call interface_mpi_bcast(b(1,i),ndim1,0,global_communicator)
+          end do
+      else
+         end_slice = size(b,2)
+         start_slice = end_slice - nr_to_sync
+          do i = start_slice + 1, end_slice
+             call interface_mpi_bcast(b(1,i),ndim1,0,global_communicator)
+          end do
+      end if
+#else
+      return
+#endif
+
+   end subroutine
 
 end module
 

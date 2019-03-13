@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -194,8 +194,9 @@ end interface
      write (lupri, '(a/)') '*****************************************************'
      CALL TSTAMP(' ',LUPRI)
      write (lupri,'()')
+     flush(lupri)
      call stopwatch(0,mytid)
-     CALL FLSHFO(LUPRI)
+     flush(lupri)
   endif
 #ifdef VAR_MPI
   if (iparex .gt. 0) call mpixfinalize()

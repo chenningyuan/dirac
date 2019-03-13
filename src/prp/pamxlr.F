@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -126,8 +126,7 @@ C
       CALL PRPXL1(WORK(KLRF),WORK(KCNV),WORK,KFREE,LFREE)
 C
  10   CONTINUE
-      IF (XLRANA) CALL ANAXRS(XLR_INDSTR,XLR_SKIPEE,XLR_SKIPEP,
-     &                        WORK,KFREE,LFREE,IPRXLR)
+      IF (XLRANA) CALL ANAXRS(WORK,KFREE,LFREE,IPRXLR)
 C
       CALL QEXIT('PRPXLR')
       RETURN
@@ -204,7 +203,7 @@ C
 
       IF(XLRANA) THEN
         CALL MEMGET2('INTE','IORBCLS',KLRO,4*NORBT,WORK,KFREE,LFREE)
-        CALL DEFORB(WORK(KLRO),NCLS_XLR,3,XLR_INDSTR,
+        CALL DEFORB(WORK(KLRO),NCLS_XLR,XLR_INDSTR,
      &              WORK,KFREE,LFREE,IPRXLR)
       ELSE
         KLRO = KFREE
@@ -223,29 +222,31 @@ C     *** L I N E A R   R E S P O N S E   F U N C T I O N S  ***
 C     ***                                                    ***
 C     **********************************************************
       if (london) then
+        if (.not.regrad) then
 
-        call alloc(cmo,   ncmotq)
-        call alloc(ibeig, ntbas(0))
+          call alloc(cmo,   ncmotq)
+          call alloc(ibeig, ntbas(0))
 
-c.......direct contribution
-        call onelon(cmo, ibeig, work, kfree, lfree)
+c.........direct contribution
+          call onelon(cmo, ibeig, work, kfree, lfree)
+          
+          if (.not.notwol) then
+            call london_twoel_hb(cmo, ibeig, work(kfree), lfree)
+          end if
 
-        if (.not.notwol) then
-          call london_twoel_hb(cmo, ibeig, work(kfree), lfree)
-        end if
+c.........reorthonormalization contribution
+!         gosia: in connection-independent formulation, there is no
+!         reorthonormalization contribution in the property gradient.
+!         Instead, there is a contribution from magnetic derivatives 
+!         of overlap matrix (modifications in london_reorth.F90)
+          if (.not. noonei) then
+            call london_reort_hb(cmo, ibeig, work(kfree), lfree)
+          end if
+         
+          call dealloc(cmo)
+          call dealloc(ibeig)
 
-c.......reorthonormalization contribution
-!       gosia: in connection-independent formulation, there is no
-!       reorthonormalization contribution in the property gradient.
-!       Instead, there is a contribution from magnetic derivatives 
-!       of overlap matrix (modifications in london_reorth.F90)
-        if (.not. noonei) then
-          call london_reort_hb(cmo, ibeig, work(kfree), lfree)
-        end if
-
-        call dealloc(cmo)
-        call dealloc(ibeig)
-
+        endif
       endif
 
 C
@@ -1258,7 +1259,8 @@ C     ************************************
 C     *** Set orbital strings          ***
 C     ************************************
 C
-      CALL OSTRING(XLR_INDSTR,XLR_SKIPEE,XLR_SKIPEP,WORK,KFREE,LFREE)
+      CALL OSTRING(XLR_INDSTR,XLR_SKIPEE,XLR_SKIPEP,IPRXLR,
+     &             WORK,KFREE,LFREE)
 C
 C     ************************************
 C     *** Sort operators on symmetries ***
@@ -1472,7 +1474,7 @@ C
 C
       IF(XLRANA) THEN
         CALL MEMGET2('INTE','IORBCL',KLRO,4*NORBT,WORK,KFREE,LFREE)
-        CALL DEFORB(WORK(KLRO),NCLS_XLR,3,XLR_INDSTR,
+        CALL DEFORB(WORK(KLRO),NCLS_XLR,XLR_INDSTR,
      &              WORK,KFREE,LFREE,IPRXLR)
       ELSE
         KLRO=KFREE
@@ -2046,7 +2048,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Anaxrs */
-      SUBROUTINE ANAXRS(INDSTR,SKIPEE,SKIPEP,WORK,KFREE,LFREE,IPRINT)
+      SUBROUTINE ANAXRS(WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
 C     Analyze solution vectors on file PAMXVC
@@ -2068,8 +2070,7 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 C
-      CHARACTER INDSTR(3,2)*72
-      LOGICAL   SKIPEE,SKIPEP,TOBE,GASWF
+      LOGICAL   TOBE,GASWF
       DIMENSION WORK(*)
       INTEGER   NCLS(2,3,2)
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2,LBUF*16,PBUF*1
@@ -2102,9 +2103,9 @@ C
       TOBE = .FALSE.
       JFRP = -1
 C     Set orbital strings and classify orbitals
-      CALL OSTRING(INDSTR,SKIPEE,SKIPEP,WORK,KFREE,LFREE)
+      CALL OSTRING(INDSTR,SKIPEE,SKIPEP,IPRINT,WORK,KFREE,LFREE)
       CALL MEMGET2('INTE','IORBCL',KLRO,4*NORBT,WORK,KFREE,LFREE)
-      CALL DEFORB(WORK(KLRO),NCLS,3,INDSTR,
+      CALL DEFORB(WORK(KLRO),NCLS,INDSTR,
      &              WORK,KFREE,LFREE,IPRINT)
       KLOOP=KFREE
 C

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -222,12 +222,11 @@ C
       CALL GTINFO(TEXT(51:74))
       REWIND IUNIT
       WRITE(IUNIT,'(A74)') TEXT
-      WRITE(IUNIT,'((XI0),6(XI0))') NFSYM,
-     &                             ((IDIM(I,J),I = 1,3),J=1,NFSYM)
+      WRITE(IUNIT,'(7(X,I0))') NFSYM,((IDIM(I,J),I = 1,3),J=1,NFSYM)
       WRITE(IUNIT,'(E24.16)') TOTERG
       WRITE(IUNIT,'(6F22.16)') CMO
       WRITE(IUNIT,'(6E22.12)') EIG
-      WRITE(IUNIT,'(66(XI0))') IBEIG
+      WRITE(IUNIT,'(66(X,I0))') IBEIG
 C
       RETURN
       END

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2175,7 +2175,7 @@ C   PAMIOU: LUTMAT
       logical              :: TOBE, FNDLAB, FNDLAB12, gmotra_case3
       logical              :: is_2c_rel_run
       integer              :: is_defining_h1mat
-      integer              :: ndim_lowmat
+      integer              :: ndim_lowmat,idum
       integer              :: lulmat = 99
       character(len=12)    :: flabel
       real(8), allocatable :: tmat_mmf(:)
@@ -2188,6 +2188,7 @@ C   PAMIOU: LUTMAT
       real(8), allocatable :: pctm_aoosoc(:)
       logical              :: no1esystem_aoosoc
 #endif
+      real(8)              :: timstr(2), timend(2), dum
 
       CALL QENTER('GMOTRA')
 
@@ -2229,7 +2230,7 @@ C
      &    CALL MK1CEX (WORK,KFREE,LFREE,IPRGEN)
 
 !     we use N2BBASXQ instead of N2BBASX for BSS...to be checked
-      CALL MEMGET('REAL',KVMAT,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','VMAT',KVMAT,N2BBASXQ,WORK,KFREE,LFREE)
 C
 C     Get Lowdin canonical orthonormalization matrix
 C     ==============================================
@@ -2251,9 +2252,9 @@ C     ==============================================
         call readi(lulmat,1,ndim_lowmat)
         call readt(lulmat,ndim_lowmat,work(kvmat))
       else
-        CALL TIMER('START ',TIMSTR,TIMEND)
+        CALL TIMER2('START ',TIMSTR,TIMEND)
         CALL LOWDIN(WORK(KVMAT),WORK(KFREE),LFREE,IPRHAM)
-        CALL TIMER('Lwdn_a',TIMSTR,TIMEND)
+        CALL TIMER2('Lwdn_a',TIMSTR,TIMEND)
 
 !       save LOWDIN matrix on file
         ndim_lowmat = 0
@@ -2320,7 +2321,7 @@ C
 !       --------------------------------------------
       ELSE IF(is_2c_rel_run)THEN
 !
-        CALL TIMER('START ',TIMSTR,TIMEND)
+        CALL TIMER2('START ',TIMSTR,TIMEND)
 
         TOBE=.FALSE.
         IF(GOFAST) THEN
@@ -2488,7 +2489,7 @@ C.........reset NEWPRP to re-initialize AOPROPER
 
         ENDIF ! restart X2C or re-do X2C switch
 
-        CALL TIMER('mk_h2c',TIMSTR,TIMEND)
+        CALL TIMER2('mk_h2c',TIMSTR,TIMEND)
 
 !
 !       case 2 - step b: generate Lowdin canonical orthonormalization matrix in 2c-mode
@@ -2496,7 +2497,7 @@ C.........reset NEWPRP to re-initialize AOPROPER
         if(.not.(twocompbss.or.x2c).or.x2cmod_mmf)then
 
           if(x2cmod_mmf)then
-            CALL MEMGET('REAL',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','TMAT',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
             call dzero(work(KTMAT),N2BBASXQ)
             open(lux2c,file='X2CMAT',status='old',form='unformatted',
      &           access='sequential',action='readwrite',
@@ -2539,11 +2540,11 @@ C.........reset NEWPRP to re-initialize AOPROPER
           CALL LSET(NPRPCLS,.TRUE.,CLSCAL)
           CALL ONEGEN(WORK,LWORK)
 
-          CALL MEMGET('REAL',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
+          CALL MEMGET2('REAL','TMAT',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
 C.........do canonical orthonormalization
-          CALL TIMER('START ',TIMSTR,TIMEND)
+          CALL TIMER2('START ',TIMSTR,TIMEND)
           CALL LOWDIN(WORK(KTMAT),WORK(KFREE),LFREE,IPRHAM)
-          CALL TIMER('Lwdn_b',TIMSTR,TIMEND)
+          CALL TIMER2('Lwdn_b',TIMSTR,TIMEND)
 
 !         save new 2c-LOWDIN matrix on file
           call opnfil(lulmat,'LOWDMAT','UNKNOWN','gmotra')
@@ -2580,9 +2581,9 @@ C.........do canonical orthonormalization
 !     Case 3: Transformation matrix with modified Dirac equation embedded
 !     -------------------------------------------------------------------
       ELSE
-        CALL MEMGET('REAL',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','TMAT',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','EIG' ,KEIG ,NTBAS(0),WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','TBUF',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
 
 !       defining h1 matrix control variable (in the X2C module) -
 !       set here for consistency to the maximum value
@@ -2613,7 +2614,7 @@ C
 C     ** End of branching **
 C=======================================================================
 C     
-      CALL MEMGET('REAL',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','TBUF',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
 
       N2TMT   = 0
       N2TMOTQ = 0
@@ -2642,8 +2643,8 @@ C.......SUB_BL will be set true if linear symmetry works
         CALL DCOPY(N2TMT,WORK(KTMAT),1,WORK(KTBUF),1)
 !       in:  KTMAT + KTBUF
 !       out: KTMAT
-        CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KTBUF2,N2BBASXQ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','EIG'  ,KEIG  ,NTBAS(0),WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','TBUF2',KTBUF2,N2BBASXQ,WORK,KFREE,LFREE)
 
 !        in: AO2MO                         --> KTBUF
 
@@ -2728,7 +2729,7 @@ C
             cmo_aoosoc  = 0.0d0
 !           read coefficients
             call opnfil(lucoef,'DFCOEF','OLD','aoosoc')
-            call reacmo(lucoef,'DFCOEF',cmo_aoosoc,xx,ii,jj,2)
+            call reacmo(lucoef,'DFCOEF',cmo_aoosoc,dum,idum,dum,2)
             close(lucoef,status='keep')
 
 !           generate density matri(x/ces)
@@ -2888,7 +2889,7 @@ C
           tbuf_mmf    = 0
           !> read 2c-mos
           call opnfil(lucoef,'DFCOEF','OLD','mmfmos')
-          call reacmo(lucoef,'DFCOEF',cmo_mmf,xx,ii,jj,2)
+          call reacmo(lucoef,'DFCOEF',cmo_mmf,dum,idum,dum,2)
           close(lucoef,status='keep')
           !> density matrix/ces
           call denmat(tbuf_mmf,cmo_mmf,iprham)
@@ -3233,7 +3234,7 @@ CMI     they are in the order "S1 S2 ... S(nbsym) L1 L2 ... L(nbsym)" instead of
         if(is_defining_h1mat.gt.3.or.
      &    (is_defining_h1mat.eq.2.and.LSYMAD))then
 !       if(is_defining_h1mat.gt.3)then
-          CALL MEMGET('REAL',KBUF,ISIZE,WORK,KFREE,LFREE)
+          CALL MEMGET2('REAL','BUF',KBUF,ISIZE,WORK,KFREE,LFREE)
 !         in:  AO2MO transformation matrix             --> TMAT
 !         out: AO2MO transformation matrix             --> TMAT
 !              AO2MO transformation matrix SL resorted --> WORK(KBUF)
@@ -3267,7 +3268,7 @@ CMI     they are in the order "S1 S2 ... S(nbsym) L1 L2 ... L(nbsym)" instead of
       END IF
 
       IF(LSYMAD)THEN
-        CALL MEMGET('REAL',KBUF1,ISIZE,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','BUF1',KBUF1,ISIZE,WORK,KFREE,LFREE)
         CALL DCOPY(ISIZE,TMAT,1,VMAT,1)
         CALL DCOPY(ISIZE,TMAT,1,WORK(KBUF1),1)
         IF(IPRHAM.GE.5) THEN
@@ -3739,7 +3740,7 @@ C
 #include "memint.h"
       NCAR = NBBAS(IREP,IC)
       NMAT = NCAR*NCAR
-      CALL MEMGET('REAL',KTMAT,NMAT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','TMAT',KTMAT,NMAT,WORK,KFREE,LFREE)
       CALL SPHLO1(IREP,IC,NCAR,SMAT,VMAT,LDM,NEFF,NLDP,STOL,EIG,
      &            WORK(KTMAT),WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('SPHLOW',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -3831,7 +3832,7 @@ C
 #include "memint.h"
       NCAR = NBBAS(IREP,IC)
       NMAT = NCAR*NCAR
-      CALL MEMGET('REAL',KTMAT,NMAT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','TMAT',KTMAT,NMAT,WORK,KFREE,LFREE)
       CALL RKBLO1(IREP,IC,NCAR,SMAT,VMAT,LDM,NEFF,NLDP,STOL,EIG,
      &            WORK(KTMAT),IRKB,WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('RKBLOW',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -3984,8 +3985,8 @@ c    It would be better to rewrite the code below instead..
       ELSE
 CMI   ... (quaternion) Jacobi diagonalization routine
         NSS=NS*NS
-        CALL MEMGET('REAL',KSMAT,NSS,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KVMAT,NSS,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','SMAT',KSMAT,NSS,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','VMAT',KVMAT,NSS,WORK,KFREE,LFREE)
         IPOS=0
         DO II=1,NS
         DO JJ=1,NS
@@ -4188,8 +4189,8 @@ C
       CALL QENTER('TSCORR')
 #include "memint.h"
 C     Memory allocation
-      CALL MEMGET('REAL',KONEMT,N2BBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KONEIN,NNBBASX,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','ONEMT',KONEMT,N2BBASX,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','ONEIN',KONEIN,NNBBASX,WORK,KFREE,LFREE)
 C
 C     Buffer info
 C
@@ -4281,8 +4282,8 @@ C
       LOGICAL DOINT(2,2), FINISH, ISONBSSMAT, WEHAVE
       CHARACTER*4 OMITVNUC
       CHARACTER*8 BNCRLAB
-      DIMENSION WORK(LWORK),FMAT(*)
-      logical fndlab12
+      REAL*8    WORK(LWORK),FMAT(*)
+      logical   fndlab12
       character*12 flabel
 #include "dcbgen.h"
 #include "dgroup.h"
@@ -4293,12 +4294,14 @@ C
 #include "cbiher.h"
 #include "cbihr1.h"
 #include "cbisol.h"
+
+      real(8)  :: TIMSTR(2), TIMEND(2)
 C
       CALL QENTER('BNCORR')
 c
 c     Start timer
 c
-      TIMSTR = SECOND()
+      CALL TIMER2('START',TIMSTR,TIMEND)
 c
 #include "memint.h"
 
@@ -4347,19 +4350,19 @@ CMI   ... read 2c screened bare nucleus from the BSSMAT file in 4c or 2c metric
 
 CMI   ... continue the standard way
 C     Memory allocation
-      CALL MEMGET('REAL',KONEMT, N2BBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KONEIN, NNBBASX,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','ONEMT',KONEMT, N2BBASX,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','ONEIN',KONEIN, NNBBASX,WORK,KFREE,LFREE)
       LFCBA = NUCDEP**3
-      CALL MEMGET('REAL',KFCBA ,  LFCBA ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCOORC,3*NUCDEP,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSIGNC,3*NUCDEP,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KNCENT,  NUCDEP,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KJSYMC,  NUCDEP,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KJCENT,  NUCDEP,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGEXP ,  NUCDEP,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KXGEXP,  NUCIND,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCHRG ,  NUCIND,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KESHEL,7*NUCIND,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FCBA' ,KFCBA ,  LFCBA ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','COORC',KCOORC,3*NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','SIGNC',KSIGNC,3*NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','NCENT',KNCENT,  NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','JSYMC',KJSYMC,  NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','JCENT',KJCENT,  NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','GEXP' ,KGEXP ,  NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','XGEXP',KXGEXP,  NUCIND,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CHRG' ,KCHRG ,  NUCIND,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','ESHEL',KESHEL,7*NUCIND,WORK,KFREE,LFREE)
 !     allocate(eshell_vec(7*NUCIND))
       LEN_WRK   = LWORK - KFREE + 1
       CALL DZERO(WORK(KCHRG),NUCIND)
@@ -4508,10 +4511,8 @@ C     Memory deallocation
 C
 c     Stop timer
 c
- 999  TIMEND = SECOND()
-      TIME   = TIMEND - TIMSTR
-      IF (IPRINT.GE.2)
-     &  CALL TIMTXT('>>> Time used in BNCORR is',TIME,LUPRI)
+ 999  IF (IPRINT.GE.2)
+     &  CALL TIMER2('>>> Time used in BNCORR is',TIMSTR,TIMEND)
       CALL QEXIT('BNCORR')
       RETURN
       END
@@ -4907,20 +4908,20 @@ C
         NCDIM = NCDIM + NFBAS(IFRP,0)*NVECS(IFRP)*NZ
         NEDIM = NEDIM + NVECS(IFRP)
       ENDDO
-      CALL MEMGET('REAL',KQ,NCDIM,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KE,NEDIM,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KI,NEDIM,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','Q',KQ,NCDIM,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','E',KE,NEDIM,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','I',KI,NEDIM,WORK,KFREE,LFREE)
       CALL IZERO(WORK(KI),NEDIM)
 C
 C     Allocate buffer space for coefficients, eigenvalues
 C     and boson irrep information
 C     ===================================================
 C
-      CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG,NORBT   ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CMO',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EIG',KEIG,NORBT   ,WORK,KFREE,LFREE)
       IF(SUB_BL) THEN
         IOPT = 15
-        CALL MEMGET('REAL',KIBE,NORBT,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','IBEIG',KIBE,NORBT,WORK,KFREE,LFREE)
       ELSE
         IOPT = 7
         KIBE = KFREE
@@ -4939,7 +4940,7 @@ C
 C
 C     Collect fragment info
 C      
-      CALL MEMGET('INTE',KSEL,2*NVECT,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','SEL',KSEL,2*NVECT,WORK,KFREE,LFREE)
       CALL FRAGINFO(WORK(KSEL),NVECT,KVEC,NFRAG,NSTR,
      &              WORK,KFREE,LFREE)
 C
@@ -4990,10 +4991,10 @@ C
 C
       LDM = NTBAS(0)
       LDM2 = LDM * LDM
-      CALL MEMGET('REAL',KSMAT1,LDM2,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSMAT2,LDM2,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KINDAO,LDM,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KINDAOS,LDM,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','SMAT1' ,KSMAT1 ,LDM2,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','SMAT2' ,KSMAT2 ,LDM2,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','INDAO' ,KINDAO ,LDM ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','INDAOS',KINDAOS,LDM ,WORK,KFREE,LFREE)
       NIND = 2 * NUCDEP + 2
       CALL MEMGET('INTE',KINDNAO,NIND,WORK,KFREE,LFREE)
 C
@@ -5092,9 +5093,9 @@ C
            NLOC = NB2-NB1+1
            NV = NLOC*LDM
            NW = NLOC*NLOC
-           CALL MEMGET('REAL',KEIG,NLOC,WORK,KFREE,LFREE)
-           CALL MEMGET('REAL',KV,NV,WORK,KFREE,LFREE)
-           CALL MEMGET('REAL',KW,NW,WORK,KFREE,LFREE)
+           CALL MEMGET2('REAL','EIG',KEIG,NLOC,WORK,KFREE,LFREE)
+           CALL MEMGET2('REAL','V'  ,KV,NV,WORK,KFREE,LFREE)
+           CALL MEMGET2('REAL','W'  ,KW,NW,WORK,KFREE,LFREE)
 C
 C          Make the local projection operator
 C
@@ -5244,8 +5245,8 @@ C
 C     Allocate work space to store the projection operator and
 C     a work array.
 C
-      CALL MEMGET('REAL',KPROJ,N2BBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBUF1,N2BBASX*4,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','PROJ',KPROJ,N2BBASX,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','BUF1',KBUF1,N2BBASX*4,WORK,KFREE,LFREE)
 C
 C     Get the projection operator
 C
@@ -5772,17 +5773,17 @@ C
 C       Allocate memory for the diagonalization. We want to
 C       have the LL and SS blocks in separate blocks.
 C
-        CALL MEMGET('REAL',KFLL,NLL,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KFSS,NSS,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KVLL,NLL,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KVSS,NSS,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','FLL',KFLL,NLL,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','VLL',KVLL,NLL,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','FSS',KFSS,NSS,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','VSS',KVSS,NSS,WORK,KFREE,LFREE)
 C
 C       Extract LL block of Jz matrix
 C
         CALL EXTRSB (1,I,NBORB,4,NBRP,NBORB,4,NBRP,0,0,1,1,1,NZ,
      &               WORK(KFLL),NL,NL,1,
      &               TMAT(IOFT),NT,NT,NZ)
-C
+C     
 C       Find eigenvalues of Jz
 C
         IF (NL.GT.0) THEN
@@ -5822,15 +5823,13 @@ C
               CALL RSJACO(NL,NL,NL,WORK(KFLL),EIG(IEIGE),1,1,0,
      &                  WORK(KVLL))
             ELSE
-              CALL QDIAG(1,NL,WORK(KFLL),NL,NL,
-     &                EIG(IEIGE),1,
-     &                WORK(KVLL),NL,NL,
-     &                WORK(KFREE),LFREE,IERR)
+               CALL QDIAG(1,NL,WORK(KFLL),NL,NL,EIG(IEIGE),1,
+     &                WORK(KVLL),NL,NL,WORK(KFREE),LFREE,IERR)
               IF (IERR.NE.0) THEN
                 WRITE(LUPRI,'(2X,A)')
-     &         'LINSYM: Errorneous QDIAG diagonalization of Jz_LL!'
+     &         'LINSYM: Erroneous QDIAG diagonalization of Jz_LL!'
                CALL QUIT(
-     &        'LINSYM: Errorneous QDIAG diagonalization of Jz_LL !')
+     &        'LINSYM: Erroneous QDIAG diagonalization of Jz_LL !')
               ENDIF
             ENDIF
 #ifdef MOD_UNRELEASED
@@ -5905,9 +5904,9 @@ C
      &                WORK(KFREE),LFREE,IERR)
               IF (IERR.NE.0) THEN
                 WRITE(LUPRI,'(2X,A)')
-     &         'LINSYM: Errorneous QDIAG diagonalization of Jz_SS!'
+     &         'LINSYM: Erroneous QDIAG diagonalization of Jz_SS!'
                CALL QUIT(
-     &        'LINSYM: Errorneous QDIAG diagonalization of Jz_SS !')
+     &        'LINSYM: Erroneous QDIAG diagonalization of Jz_SS !')
               ENDIF
             ENDIF
 #ifdef MOD_UNRELEASED
@@ -5997,9 +5996,9 @@ C       scratch arrays. The IBEIG part will not be used but we will
 C       initialize it to prevent problems with uninitialized data while
 C       sorting it.
 C
-        CALL MEMGET('INTE',KINDX,NS,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIDUM,NS,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIBEI,NS,WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','INDX' ,KINDX,NS,WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IDUM' ,KIDUM,NS,WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IBEIG',KIBEI,NS,WORK,KFREE,LFREE)
         MJ = 0
         CALL ICOPY (NS,MJ,0,WORK(KIBEI),1)
         CALL SELBOS (I,NS,WORK(KINDX),EIG(IEIGP),
@@ -6012,9 +6011,9 @@ C
         DO IX = IEIGE, IEIGE+NL-1
            EIG(IX) = ABS(EIG(IX))
         ENDDO
-        CALL MEMGET('INTE',KINDX,NL,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIDUM,NL,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIBEI,NL,WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','INDX' ,KINDX,NL,WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IDUM' ,KIDUM,NL,WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IBEIG',KIBEI,NL,WORK,KFREE,LFREE)
         MJ = 0
         CALL ICOPY (NL,MJ,0,WORK(KIBEI),1)
         CALL SELBOS (I,NL,WORK(KINDX),EIG(IEIGE),
@@ -7926,8 +7925,8 @@ C     These variables are later set by SETDC2, but needed here...
           N2TMO(IFRP)  = NTMO(IFRP)*NTMO(IFRP)
           N2TMOTQ      = N2TMOTQ + NTMO(IFRP)*NTMO(IFRP)*NZ
         ENDDO
-        CALL MEMGET('REAL',KBUF,N2ORBT*NZ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','BUF'  ,KBUF,N2ORBT*NZ,WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IBEIG',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
         CALL DELPOS(TMAT,TBUF,WORK(KBUF),EIG,WORK(KBEIG),
      &              VMAT,WORK,KFREE,LFREE)
         CALL MEMREL('MOD_DIREQ.delpos',WORK,KBUF,KBUF,KFREE,LFREE)
@@ -8062,7 +8061,7 @@ C..............Negative-energy solution
         ENDIF
         ENDDO
 C.......Allocate an array to hold all vectors
-        CALL MEMGET('REAL',KREF,NREF,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','REF',KREF,NREF,WORK,KFREE,LFREE)
 C.......Transform vector of each subblock to orthonormal basis
         IBORB = 0
         IREF  = KREF
@@ -8135,7 +8134,7 @@ C.........New matrix
               ENDIF
             ENDIF
             NPRJ = NORB_SUB(ISUB,IFRP,0)*NORB_SUB(ISUB,IFRP,0)*NZMO
-            CALL MEMGET('REAL',KBUF,NPRJ,WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','BUF',KBUF,NPRJ,WORK,KFREE,LFREE)
 C...........Do projection
             CALL PRJORT(WORK(KBUF),WORK(IREF),NORB_SUB(ISUB,IFRP,0),
      &           NVECS_SUB(ISUB),NZMO,WORK,KFREE,LFREE)
@@ -8189,9 +8188,9 @@ C       Save frozen orbitals to file
 C
         IF(NFRO(IFRP).GT.0) THEN
           NBUF = NFBAS(IFRP,0)*NZ
-          CALL MEMGET('INTE',KSEL,NVECS(IFRP),WORK,KFREE,LFREE)
-          CALL MEMGET('INTE',KIND,NFRO(IFRP),WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KBUF,NBUF,WORK,KFREE,LFREE)
+          CALL MEMGET2('INTE','SEL',KSEL,NVECS(IFRP),WORK,KFREE,LFREE)
+          CALL MEMGET2('INTE','IND',KIND,NFRO(IFRP),WORK,KFREE,LFREE)
+          CALL MEMGET2('REAL','BUF',KBUF,NBUF,WORK,KFREE,LFREE)
           CALL WRIFRZ(LUCOEF,IFRP,CSEL(ICOFF+1),ESEL(IVOFF+1),
      &         ISEL(IVOFF+1),WORK(KSEL),WORK(KBUF),WORK(KIND),
      &         NVECS(IFRP),NQ)
@@ -8243,7 +8242,7 @@ C
       DIMENSION SMAT(*),WORK(*)
       KFRSAV=KFREE
 C.....Get overlap matrix in SO-basis (no symmetry packing)
-      CALL MEMGET('REAL',KSBUF,N2BBASX,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','SBUF',KSBUF,N2BBASX,WORK,KFREE,LFREE)
       CALL GTOVLX(WORK(KSBUF),SSMTRC)
 C.....Transform to AO-basis and release memory
       CALL MTSOAO(WORK(KSBUF),SMAT,NTBAS(0),0,IPRINT)
@@ -8384,10 +8383,10 @@ C***********************************************************************
       DIMENSION VMO(NORB,NORB,NZ),COEF(NORB,NVEC,NZ),WORK(*)
 C.....Form density matrix
       KFRSAV = KFREE
-      CALL MEMGET('REAL',KDMAT,NORB*NORB*NZ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','DMAT',KDMAT,NORB*NORB*NZ,WORK,KFREE,LFREE)
       CALL DENST1(WORK(KDMAT),NORB,NORB,NZ,D1,D0,
      &     COEF,NORB,NVEC,1,NVEC,NORB)
-      CALL MEMGET('REAL',KEIG,NORB,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EIG',KEIG,NORB,WORK,KFREE,LFREE)
       CALL QDIAG(NZ,NORB,WORK(KDMAT),NORB,NORB,
      &           WORK(KEIG),1,VMO,NORB,
      &           NORB,WORK(KFREE),LFREE,IERR)

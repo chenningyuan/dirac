@@ -1,5 +1,6 @@
+#define DEBUG_IPRPAR -1
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -128,10 +129,12 @@ C
 #include "inforb.h"
 #include "infpar.h"
 C
-      DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), WORK(LWORK),
+!     DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), WORK(LWORK),
+      DIMENSION FMAT(*), DMAT(*), WORK(LWORK),
      &          NPOS(NTOTTK), IREPDM(*), IFCTYP(*),
      &          GABRAO(*),DMRAO(*),DMRSO(*),DINTSKP(*)
       LOGICAL FIRST,NODV,NOPV,NOCONT,RETUR,TKTIME
+      real(8)  :: TIMSTR(2), TIMEND(2)
 C
       CALL QENTER('HER_PARDRV')
 C
@@ -140,9 +143,10 @@ C
      &('program error: parallel code called but MPI not activated')
 #endif
 C
+      IPRPAR = max(DEBUG_IPRPAR,IPRPAR)
       IF (IPRPAR .GT. 0) THEN
          WRITE(LUPRI,'(/5X,A,I5/)')
-     &    'HER_PARDRV: Number of nodes allocated:', NODES
+     &    'HER_PARDRV: Number of MPI worker nodes:', NODES
       ENDIF
 C
 C     Take calculation time of each IJ pair?
@@ -198,12 +202,23 @@ C
       ELSE IF (ITYPE .EQ. 8) THEN
          NREQUI = 3*NNBASX
       END IF
+
+      LDMAT = NDMAT*N2BASX
+      IF (NREQUI .LE. LDMAT .AND. LFREE .LT. NREQUI) THEN
+         ! use DMAT as scratch space in RVRES
+         LREQUI = -1
+         open(unit=78, file='DMAT_AO_SAVE', form='UNFORMATTED')
+         write(78) DMAT(1:LDMAT)
+         rewind (78)
+      ELSE
+         LREQUI = NREQUI
+      END IF
 C
-      IF (LFREE .LT. NREQUI) THEN
-         WRITE(LUPRI,'(/5X,A,2(/5X,A,I8),/5X,A,2I8)')
+      IF (LFREE .LT. LREQUI) THEN
+         WRITE(LUPRI,'(/5X,A,2(/5X,A,I12),/5X,A,2I8)')
      &    'Insufficient work space for subroutine RVRES',
      &    'Free space     :',LFREE,
-     &    'Required space :',NREQUI,
+     &    'Required space :',LREQUI,
      &    'ITYPE, NDMAT   :',ITYPE,NDMAT
          CALL QUIT('Insufficient work space for RVRES')
       ENDIF
@@ -219,25 +234,34 @@ C---------------------------------------
 C     Send initialization data to nodes.
 C---------------------------------------
 C
-      CALL TIMER('START',TIMSTR,TIMEND)
+      CALL TIMER2('START',TIMSTR,TIMEND)
       CALL SDINIT(DMAT,NDMAT,IREPDM,IFCTYP,ITYPE,MAXDIF,IATOM,NODV,
      &            NOPV,NOCONT,TKTIME,RETUR,I2TYP,ICEDIF,SCREEN,
      &            GABRAO,DMRAO,DMRSO)
 C     and transfer screening information to twocom.h
 C     (such that master will print correct scr.thr. in summary) /hjaaj apr 01
       SCRTHR = SCREEN
-      IF (IPRPAR.GT.0) CALL TIMER('SDINIT',TIMSTR,TIMEND)
+      IF (IPRPAR.GT.0) CALL TIMER2('SDINIT',TIMSTR,TIMEND)
 C
 C-----------------------
 C     Start calculation.
 C-----------------------
 C
       CALL DO_HERPAR(WORK(KINDEX),MTOTTK,NBATCH,WORK(KNSTAT))
-      IF (IPRPAR.GT.0) CALL TIMER('DO_HERPAR',TIMSTR,TIMEND)
+      IF (IPRPAR.GT.0) CALL TIMER2('DO_HERPAR',TIMSTR,TIMEND)
 C.....Get results from nodes
-      CALL RVRES(WORK(KFREE),FMAT,ITYPE,MTOTTK,NREQUI,
+      IF (LREQUI .EQ. -1) THEN
+         ! use DMAT as scratch space in RVRES
+         CALL RVRES(DMAT,FMAT,ITYPE,MTOTTK,NREQUI,
      &           NUMGRA,NUMHES,MAXDIF,WORK(KTIMES),DINTSKP,LDINTSKP)
-      IF (IPRPAR.GT.0) CALL TIMER('RVRES',TIMSTR,TIMEND)
+         rewind (78)
+         read(78) DMAT(1:LDMAT)
+         CLOSE(78, status='DELETE')
+      ELSE
+         CALL RVRES(WORK(KFREE),FMAT,ITYPE,MTOTTK,NREQUI,
+     &           NUMGRA,NUMHES,MAXDIF,WORK(KTIMES),DINTSKP,LDINTSKP)
+      END IF
+      IF (IPRPAR.GT.0) CALL TIMER2('RVRES',TIMSTR,TIMEND)
 C
 C-------------------------------------
 C     Get timing results if requested.
@@ -245,7 +269,7 @@ C-------------------------------------
 C
       IF (IPRPAR .GT. 0) THEN
          CALL TIMRES(WORK(KNSTAT))
-         CALL TIMER('TIMRES',TIMSTR,TIMEND)
+         CALL TIMER2('TIMRES',TIMSTR,TIMEND)
       END IF
 C
 C--------------------------------------
@@ -791,6 +815,12 @@ C
          CALL interface_mpi_reduce_r1_work_f77(
      &        WORK, DINTSKP, LDINTSKP,
      &        op_MPI_SUM, MPARID, global_communicator)
+         IF (TIMING) THEN
+            call dzero(WORK,MTOTTK)
+            CALL interface_mpi_reduce_r1_work_f77(
+     &        WORK, TIMES, MTOTTK,
+     &        op_MPI_SUM, MPARID, global_communicator)
+         END IF
          GO TO 9000 ! RETURN
       END IF
 C
@@ -1046,7 +1076,7 @@ C
                EFFI_T = 0.0D0
             END IF
             IF (WALLS(1,NODE) .NE. 0.0D0) THEN
-               EFFI_1 = (CPUS(1,NODE)/WALLS(1,NOD))*100.D0
+               EFFI_1 = (CPUS(1,NODE)/WALLS(1,NODE))*100.D0
             ELSE
                EFFI_1 = 0.0D0
             END IF
@@ -1237,7 +1267,7 @@ C
 
       CALL SDRES(WORK(KFMAT),LFMAT,NUMGRA,MAXDIF,
      &     NUMHES,NUMSUS,CPU1,WALL1,ITYPE,DINTSKP,
-     &     WORK(KINDEX),WORK(KTIMES))
+     &     MTOTTK,WORK(KINDEX),WORK(KTIMES))
 
 C
 C     We want the slave program to go until there is nothing
@@ -1958,7 +1988,7 @@ C
 C  /* Deck sdres */
       SUBROUTINE SDRES(FMAT,LFMAT,NUMGRA,MAXDIF,
      &                 NUMHES,NUMSUS,CPU1,WALL1,ITYPE,
-     &                 DINTSKP,INDEX_IJ,TIMES)
+     &                 DINTSKP,MTOTTK,INDEX_IJ,TIMES)
 C
 C           ITYPE  - Calc. type: 2 = expectation values.
 C                                3 = direct SCF (AO-basis)
@@ -1994,6 +2024,7 @@ C
 
 #if defined (VAR_MPI)
       REAL*8    RBUF(4)
+      REAL*8, allocatable :: my_TIMES(:)
 
       CALL GETTIM(CPU2,WALL2)
 C
@@ -2009,7 +2040,19 @@ C
          CALL interface_mpi_reduce_r1_work_f77(
      &        DINTSKP, DUMMY, 8,
      &        op_MPI_SUM, MPARID, global_communicator)
-         GO TO 6000 ! to timing info
+         IF (TIMING) THEN ! used for better load balancing in next iteration
+            allocate (my_TIMES(ICOUNT))
+            my_TIMES(1:ICOUNT) = TIMES(1:ICOUNT)
+            TIMES(1:MTOTTK) = 0.0D0
+            DO I = 1, ICOUNT
+               TIMES( INDEX_IJ(I) ) = my_TIMES(I)
+            END DO 
+            deallocate (my_TIMES)
+            CALL interface_mpi_reduce_r1_work_f77(
+     &        TIMES, DUMMY, MTOTTK,
+     &        op_MPI_SUM, MPARID, global_communicator)
+         END IF
+         GO TO 6000 ! to send general timing info
       END IF
 
       CAll interface_mpi_SEND(ICOUNT,1,MPARID,40,

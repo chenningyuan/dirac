@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -605,6 +605,15 @@
         call quit('ERROR: NMR shielding with open shells not possible')
        end if
       end if
+
+!gosia: probably here is a good place to add Miro's warning, 
+! but i need to think of correct flags (for DC and SPINFREE Hamiltonians)
+! so commented out for now
+!      if (shield .and. .not. urkbal) then
+!        write(lupri, *) 'warning: unsufficient flexibility of small '//
+!     &  'component set in RKB scheme, you need very large basis sets,'//
+!     &  '  or use simple magn.balance instead...'
+!      end if
 
       CALL FLSHFO(LUPRI)
       CALL QEXIT('PRPINP')
