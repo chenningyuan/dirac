@@ -1254,13 +1254,12 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "param.inc"
-#include "freeze.inc"
 #include "symm.inc"
 #include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
-      integer idet
+      integer :: idet, j, k
       logical, pointer :: projector(:) => NULL()
 C
 C---------------Executable code--------------------------------------
@@ -1268,12 +1267,28 @@ C
       if (.not.relcc_projectors_frozen_core) RETURN
 
       projector => create_t_projector(NDIMT1+NDIMT2,EPS)
-
+       
       do idet=1, (NDIMT1+NDIMT2)
-        if (idet.le.NDIMT1) then
-          if (projector(idet)) T1(idet) = 0
-        else 
-          if (projector(idet)) T2(idet-NDIMT1) = 0
+        if (projector(idet)) then
+          if (idet.le.NDIMT1) then
+            if(CARITH) then
+              j = 2*(idet-1) + 1
+              k = j + 1
+              T1(j) = 0d0
+              T1(k) = 0d0
+            else
+              T1(idet) = 0d0
+            endif
+          else 
+            if(CARITH) then
+              j = 2*(idet-1) + 1
+              k = j + 1
+              T2(j-NDIMT1*2) = 0d0
+              T2(k-NDIMT1*2) = 0d0
+            else
+              T2(idet-NDIMT1) = 0d0
+            endif
+          endif
         endif
       end do
 C
