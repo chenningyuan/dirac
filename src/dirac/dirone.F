@@ -1670,19 +1670,18 @@ CCCCCCCCCCCCCC
 C mcdf.F, NUCPOT
 CCCCCCCCCCCCCC
 C     This part is for usual nuclear potential.
-C     ZZ(I) for vacuum potential is calculated in other part.
-!C
-!C
-!C   POINT NUCLEUS
-!C
-!     IF (NUCTYP .EQ. 0) THEN
-!         Z1 = ZERO
-!         Z3 = ZERO
+C     It is not the operator, but the potential without minus(-).      
+C
+C   POINT NUCLEUS
+C
+!      IF (NUCTYP .EQ. 0) THEN
+!C         Z1 = ZERO
+!C         Z3 = ZERO
 !         DO 1 I = 1,MXNP
 !            ZZ(I) = Z
 !    1    CONTINUE
 !         WRITE (LUPRI,300)
-!         NNUC = 0
+!        NNUC = 0
 C
 C   FINITE NUCLEI
 C
@@ -1695,8 +1694,8 @@ C
         write(*,*)"Z,RAD",Z,RAD
         FAC = FAC/TWO
         WA = WA*3.0D0
-        Z1 = 3.0D0*Z/(2.0D0*RAD)
-        Z3 = -FAC
+C        Z1 = 3.0D0*Z/(2.0D0*RAD)
+C        Z3 = -FAC
 C
 C   UNIFORM CHARGE DISTRIBUTION
 C
@@ -1705,17 +1704,14 @@ C
 !    3    CONTINUE
 !         DO 4 I = NRAD+1,MXNP
 !            ZZ(I) = Z
-!     4    CONTINUE
-C
-C     sunaga
-C         
+!    4    CONTINUE
          NNUC = NRAD
-        IF (NUCTYP .EQ. 1) THEN
+!        IF (NUCTYP .EQ. 1) THEN
 !            WRITE (LUPRI,302) RAD
 C
 C   FERMI DISTRIBUTION
 C
-        ELSEIF (NUCTYP .EQ. 2) THEN
+        IF (NUCTYP .EQ. 2) THEN
            PRECIS = 2.0D0**(-53) !same to GRASP
            SKI = PARM2
            RS = RAD/SKI
@@ -1741,24 +1737,24 @@ C
 !              SUMR2 = XKONKN (X,2,PRECIS) * SR2
 !              SUMR3 = XKONKN (X,3,PRECIS) * SR3
 !              ZZ(I) = ZZ(I)/DEN + VNFAC*( R(I)*(SRE2+SRE2+SUMR2)
-!    &                                    +RAD2*(SUM3-SUMR3) )
+!    &                                     +RAD2*(SUM3-SUMR3) )
 !   5       CONTINUE
-            VNFAC = 3.0D0/DEN
-!     ZZ(NRAD) = ZZ(NRAD)*(1.0D0 - VNFAC*(SRE2+SRE3+SRE3) )
-            WA = LOG (VNFAC)+LOG (SR2)+LOG (1.0D0+SR+SR)-LOG (PRECIS)
-            NNUC = NRAD+NINT (LOG (1.0D0+WA*SR)/H)+1
-            write(*,*)"NINT",NINT (LOG (1.0D0+WA*SR)/H)
-            write(*,*)"WA,SR,NRAD,NNUC",WA,SR,NRAD,NNUC
+           VNFAC = 3.0D0/DEN
+!           ZZ(NRAD) = ZZ(NRAD)*(1.0D0 - VNFAC*(SRE2+SRE3+SRE3) )
+           WA = LOG (VNFAC)+LOG (SR2)+LOG (1.0D0+SR+SR)-LOG (PRECIS)
+           NNUC = NRAD+NINT (LOG (1.0D0+WA*SR)/H)+1
+           write(*,*)"NINT",NINT (LOG (1.0D0+WA*SR)/H)
+           write(*,*)"WA,SR,NRAD,NNUC",WA,SR,NRAD,NNUC
 C The below part is not needed for Vacuum potential            
-c$$$            DO 6 I = NRAD+1,NNUC
-c$$$               X = EXP (RS-R(I)/SKI)
-c$$$               SUMR2 = XKONKN (X,2,PRECIS) * SR2
-c$$$               SUMR3 = XKONKN (X,3,PRECIS) * SR3
-c$$$               ZZ(I) = ZZ(I)*(ONE - VNFAC*(SUMR3+SUMR3+SUMR2*R(I)/RAD))
-c$$$    6       CONTINUE
-c$$$            WRITE (LUPRI,303) NPARM
-c$$$            WRITE (LUPRI,304) RAD,SKI
-         ENDIF !        IF (NUCTYP .EQ. 1) THEN 
+!           DO 6 I = NRAD+1,NNUC
+!              X = EXP (RS-R(I)/SKI)
+!              SUMR2 = XKONKN (X,2,PRECIS) * SR2
+!              SUMR3 = XKONKN (X,3,PRECIS) * SR3
+!              ZZ(I) = ZZ(I)*(ONE - VNFAC*(SUMR3+SUMR3+SUMR2*R(I)/RAD))
+!    6      CONTINUE
+C           WRITE (LUPRI,303) NPARM
+C           WRITE (LUPRI,304) RAD,SKI
+        ENDIF !        IF (NUCTYP .EQ. 1) THEN 
 !         WRITE (LUPRI,305) NRAD
       ELSEIF (NUCTYP .EQ. 3) THEN !      IF (NUCTYP .LE. 2) THEN
 C
@@ -1768,14 +1764,14 @@ C
          RAD = PARM1
          WB = 3.0D0/(2.0D0*RAD*RAD)
          WA = SQRT(WB)
-         Z1 = TWO*Z*WA/SQRT(PI)
-         Z3 = -Z1*WB/THREE
+!         Z1 = TWO*Z*WA/SQRT(PI)
+!         Z3 = -Z1*WB/THREE
          ZNORM = 2.0D0*2.0D0*Z
          ZNORM = ZNORM*WB*WA/SQRT(PI)
          write(*,*)'PARM1,WB,WA,Z1',RAD,WB,WA,Z
-c$$$         DO 7 I = 1,N
-c$$$            ZZ(I) = Z*ERF(WA*R(I))
-c$$$    7    CONTINUE
+!         DO 7 I = 1,N
+!            ZZ(I) = Z*ERF(WA*R(I))
+!    7    CONTINUE
 C
 C   OTHER DISTRIBUTIONS : NOT CURRENTLY IMPLEMENTED
 C
@@ -1838,12 +1834,226 @@ C
 *****************************************************************************
 #include "implicit.h"
 #include "dcbgen.h"
-C      
-      DIMENSION INTAO(N),R(N)
+#include "pi.h"
+C     
+      DIMENSION TB(N),R(N)
+      PARAMETER(NTMAX = 10000)
+      real(8), allocatable :: TT(:),TTX(:)      
 C
+      allocate(TT(NTMAX))
+      allocate(TTX(NTMAX))
+C      
+      PREFAC = TWO/(4.0D0*CVAL*CVAL*3.14159D0)
+      IF(NUCTYP.EQ.3)THEN
+        RAD = PARM1
+        XI = 1.5/(RAD*RAD)
+        WA = SQRT(XI)
+      ENDIF  
+!     IF(NUCTYP.EQ.1.OR.2)
+!     For the calculation of the deri
+!
+!      
+      DO 6 I = 1,N
+        CALL G1TGRID(TT,TTX,NTMAX,NT,R(I))
+        CALL QUAD_T_US2(TT,TTX,NTMAX,NT,RESULT)
+*     radial derivative of the nuclear potential
+      IF (NUCTYP .EQ. 0) THEN
+*     POINT
+C     DIFFNUCPOT = ZZ(I)/R(I)**2
+        POTIR=Z 
+        DIFFNUCPOT = POTIR/R(I)**2
+      ELSE
+*     GAUSS
+C        XI = 1.5/PARM(1)**2
+        POTIR = Z*ERF(WA*R(I))
+        DIFFNUCPOT = POTIR/R(I)**2
+     &               - 2*Z*WA/(R(I)*SQRTPI)*EXP(-XI*R(I)*R(I))
+C        DIFFNUCPOT = ZZ(I)/R(I)**2
+C  :                  - 2*Z*SQRT(XI/3.14159)/R(I)*EXP(-XI*R(I)**2)
+      ENDIF
+      G1A = RESULT*DIFFNUCPOT
+      G1B = DIFFNUCPOT
+*
+      CALL G2TGRID(TT,TTX,NTMAX,NT,R(I))
+      CALL QUAD_T_US2(TT,TTX,NTMAX,NT,RESULT)
+      G2 = 2.0D0*RESULT*CVAL*POTIR/R(I)
+      TB(I) = PREFAC*(G1A - G1B + G2) !*R(I)
+ 6    CONTINUE
+C      
+      deallocate(TT)
+      deallocate(TTX)
+C      
       RETURN
       END
-      
+************************************************************************
+*                                                                      *
+         SUBROUTINE G1TGRID (F,T,NTMAX,NT,R)
+*                                                                      *
+*   ----------------   SECTION 11   SUBPROGRAM 27   ----------------   *
+*                                                                      *
+*   CREATE T-GRID FOR THE RADIATIVE POTENTIALS                         *
+*   SUBROUTINES CALLED:   PHI_G1_INNER                                 *
+*                                                                      *
+*                                         LAST REVISION: 15 DEC 2008   *
+*                                                                      *
+************************************************************************
+*
+#include <implicit.h>
+*
+      PARAMETER (ONE = 1.0D0, TEN = 10.0D0)
+      DOUBLEPRECISION T(NTMAX)
+      DOUBLEPRECISION F(NTMAX)
+      TWELVE  = 12.0D0
+      HUNDRED = 100.0D0
+*
+      DO 1 J = 1, NTMAX
+        T(J) = ONE + TEN**(-(TWELVE - DBLE(J)*ONE/HUNDRED))
+        F(J) = PHI_G1_INNER(T(J),R)
+*
+        IF (ABS(F(J)) .LE. 1.0D-32) THEN
+           NT = J
+           GOTO 2
+        END IF
+*
+    1 CONTINUE
+    2 RETURN
+*
+      END
+************************************************************************
+*                                                                      *
+      FUNCTION PHI_G1_INNER (T,R)
+*                                                                      *
+*   ----------------   SECTION 11   SUBPROGRAM 22  -----------------   *
+*                                                                      *
+*   CALCULATE THE FIRST PART OF THE INTEGRAL-KERNAL FOR THE RADIATIVE  *
+*   PHI_G POTENTIAL NO SUBROUTINES CALLED.                             *
+*                                                                      *
+*                                         LAST REVISION: 12 DEC 2007   *
+*                                                                      *
+************************************************************************
+*
+#include "implicit.h"
+#include "dcbgen.h"
+*      
+      PARAMETER (ONE = 1.0D0,TWO=2.0D0)
+*     
+* CALCULATE THE T DEPENDENT PART
+*
+      X1 = ONE/(T*T*SQRT(T*T - ONE))
+      X2 = EXP(-TWO*T*R*CVAL)
+*
+      PHI_G1_INNER = X1*X2
+*
+      RETURN
+*
+      END      
+************************************************************************
+*                                                                      *
+         SUBROUTINE QUAD_T_US2 (F,T,NTMAX,NT,RESULT)
+*                                                                      *
+*   ----------------   SECTION 11   SUBPROGRAM 24   ----------------   *
+*                                                                      *
+*   SIMPSON RULE FOR AN NONUNIFORM GRID                                *
+*   NO SUBROUTINES CALLED.                                             *
+*                                                                      *
+*                                         LAST REVISION: 12 DEC 2007   *
+*                                                                      *
+************************************************************************
+*
+#include "implicit.h"
+*
+      PARAMETER( W7 = 1.0D0/90.0D0,
+     &           W6 = -4.0D0*W7,  W5 =   7.0D0*W7,
+     &           W4 = 30.0D0*W7,  W3 =  44.0D0*W7,
+     &           W2 = 68.0D0*W7,  W1 = 112.0D0*W7)
+*
+      DOUBLEPRECISION T(NTMAX)
+      DOUBLEPRECISION F(NTMAX)
+*
+*   FIND THE STARTING POINT FOR THE INTEGRATION. THIS IS THE POINT
+*   WHERE THE INTEGRAND TA FIRST BECOMES SIGNIFICANT, AND IS CHOSEN
+*   TO PREVENT DIVIDING BY ZERO.
+*
+      SUM = 0.0D0
+      DO 1 J = 1,NT-3,2
+         J1 = J
+         J2 = J + 1
+         J3 = J + 2
+         F1=F(J1)
+         F2=F(J2)
+         F3=F(J3)
+         T1=T(J1)
+         T2=T(J2)
+         T3=T(J3)
+         X1 = F2*(T1-T3)*F2*(T1-T3)
+         X2 = F1*(T2-T3)*(2*T1-3*T2+T3)
+         X3 = F3*(T1-T2)*(T1-3*T2+2*T3)
+         SUM = SUM - (T1-T3)*(X1+X2-X3)/(6.0D0*(T1-T2)*(T2-T3))
+    1 CONTINUE
+      RESULT = SUM
+      RETURN
+*
+      END
+************************************************************************
+*                                                                      *
+         SUBROUTINE G2TGRID (F,T,NTMAX,NT,R)
+*                                                                      *
+*   ----------------   SECTION 11   SUBPROGRAM 28   ----------------   *
+*                                                                      *
+*   CREATE T-GRID FOR THE RADIATIVE POTENTIALS                         *
+*   SUBROUTINES CALLED:   PHI_G2_INNER                                 *
+*                                                                      *
+*                                         LAST REVISION: 15 JAN 2008   *
+*                                                                      *
+************************************************************************
+*
+#include <implicit.h>
+*
+      INTEGER NT,NTMAX
+      DOUBLEPRECISION T(NTMAX)
+      DOUBLEPRECISION F(NTMAX)
+      TWELVE  = 12.0D0
+      HUNDRED = 100.0D0
+*
+      DO 1 J = 1, NTMAX
+        T(J) = ONE + TEN**(-(TWELVE - DBLE(J)*ONE/HUNDRED))
+        F(J) = PHI_G2_INNER(T(J),R)
+        IF (ABS(F(J)) .LE. 1.0D-32) THEN
+           NT = J
+           GOTO 2
+        END IF
+*
+    1 CONTINUE
+    2 RETURN
+*
+      END
+************************************************************************
+*                                                                      *
+      FUNCTION PHI_G2_INNER (T,R)
+*                                                                      *
+*   ----------------   SECTION 11   SUBPROGRAM 23  -----------------   *
+*                                                                      *
+*   CALCULATE THE SECOND PART OF THE INTEGRAL-KERNAL FOR THE           *
+*   RADIATIVE PHI_G POTENTIAL NO SUBROUTINES CALLED.                   *
+*                                                                      *
+*                                         LAST REVISION: 12 DEC 2007   *
+*                                                                      *
+************************************************************************
+*
+#include "implicit.h"
+#include "dcbgen.h"
+*
+      PARAMETER (ONE = 1.0D0,TWO=2.0D0)
+*     CALCULATE THE T DEPENDENT PART
+*
+      X1 = ONE/(T*SQRT(T*T - ONE))
+      X2 = EXP(-TWO*T*R*CVAL)
+*
+      PHI_G2_INNER = X1*X2
+*
+      RETURN
+*
+      END      
 *****************************************************************************
 *
       SUBROUTINE INTLF(TB,R,Z,N)
@@ -1878,7 +2088,7 @@ C 1    CONTINUE
 C      deallocate(BUF) 
 C      
       RETURN
-      END      
+      END
 *****************************************************************************
 *
       SUBROUTINE INTPZ(TB,R,Z,N)
