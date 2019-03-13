@@ -34,7 +34,7 @@ f3.add(from_string = 'Norm of OV part Fock matrix ',
       abs_tolerance   = 5.0e-5)
 f3.add(from_string = 'Norm of VV part Fock matrix ',
       num_lines   = 1,
-      abs_tolerance   = 5.0e-5)
+      abs_tolerance   = 5.0e-2)
 
 #ExaTensor environment
 #It is crucial to launch MPI processes consecutively within a node
@@ -139,6 +139,7 @@ os.environ['OMP_NUM_THREADS'] = os.getenv('QF_NUM_THREADS') #initial number of O
 
 test.run(['cc_beh.inp'], ['BeH_nosym.mol'], f2, "--put='X2CMAT AOMOMAT DFCOEF'")
 test.run(['cc_beh_fock.inp'], ['BeH_nosym.mol'], f3, "--put='X2CMAT AOMOMAT DFCOEF'")
-test.run(['cc_beh_level.inp'], ['BeH_nosym.mol'], f3, "--put='X2CMAT AOMOMAT DFCOEF'")
+test.run(['cc_beh_level.inp'], ['BeH_nosym.mol'], f2, "--put='X2CMAT AOMOMAT DFCOEF'")
+test.run(['cc_beh_level_fock.inp'], ['BeH_nosym.mol'], f3, "--put='X2CMAT AOMOMAT DFCOEF'")
 
 sys.exit(test.return_code)

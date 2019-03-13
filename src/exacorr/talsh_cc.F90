@@ -78,10 +78,6 @@ module talsh_cc
 
          logical :: CCD, lambda
 
-         real(8)            :: e_lumo, e_homo
-         integer            :: lumo
-         real(8), parameter :: THRESHOLD=1.0D-8
-
 !        Make some noise so that we know we are here
          call print_date('Entered cc_driver routine')
 
@@ -139,30 +135,12 @@ module talsh_cc
          call get_orbital_energies(nvir,mo_vir,eps_vir)
          call print_date("Retrieved orbital energies")
 
-        if (exa_input%level_shift.gt.1.0D-14) then
-           e_homo = maxval(eps_occ)
-           e_lumo = minval(eps_vir)
-           lumo   = minloc(eps_vir,1)
-
-           do while(e_lumo-e_homo < THRESHOLD)
-             print*, "e_homo, e_lumo", e_homo, e_lumo
-             if (e_lumo+exa_input%level_shift-e_homo >THRESHOLD) then
-               eps_vir(lumo)=e_lumo+exa_input%level_shift
-               print *, "lumo energy level shifted by ", exa_input%level_shift," to ",e_lumo+exa_input%level_shift
-             else
-               call quit('Negative HOMO-LUMO gap')
-             end if
-             e_lumo = minval(eps_vir)
-             lumo   = minloc(eps_vir, 1)
-           end do
-         end if
-
 !        Get fixed two-body tensors
          call get_CC_integrals (nocc,nvir,mo_occ,mo_vir,int_t)
 
 !        Get fixed one-body tensors, needs to follow the two body tensors
          call get_CC_fockmatrix (nocc,nvir,mo_occ,mo_vir,eps_occ,eps_vir, &
-                                 comm_t%foo,comm_t%fov,comm_t%fvv, int_t, print_level)
+                                 comm_t%foo,comm_t%fov,comm_t%fvv, int_t, print_level, exa_input%level_shift)
 
 !        Initialize t1 amplitudes to zero (we assume canonical orbitals for the moment)
          if (.not.CCD) then
@@ -950,7 +928,8 @@ module talsh_cc
 
         end subroutine solve_lambda_equations
 
-        subroutine get_CC_fockmatrix (nocc,nvir,mo_occ,mo_vir,eps_occ,eps_vir,fo_tensor,fov_tensor,fv_tensor, int_t, print_level)
+        subroutine get_CC_fockmatrix (nocc,nvir,mo_occ,mo_vir,eps_occ,eps_vir, &
+                                      fo_tensor,fov_tensor,fv_tensor, int_t, print_level, level_shift)
 
 !        Written by Lucas Visscher, summer 2017
 
@@ -961,7 +940,8 @@ module talsh_cc
          integer, intent(in)                  :: nocc,nvir  ! the size of the mo basis for occupied and virtual spinors
          integer, intent(in)                  :: print_level
          integer, intent(in)                  :: mo_occ(:),mo_vir(:) ! the orbital energies
-         real(8), intent(in)                  :: eps_occ(:),eps_vir(:) ! orbital energies
+         real(8), intent(inout)               :: eps_occ(:),eps_vir(:) ! orbital energies
+         real(8), intent(in)                  :: level_shift
 !        target tensors to be filled and given back to the caller
          type(talsh_tens_t), intent(inout)    :: fo_tensor, fv_tensor, fov_tensor
          type(talsh_intg_tens), intent(inout) :: int_t
@@ -980,6 +960,10 @@ module talsh_cc
          type(talsh_tens_t)              :: result_tensor
          integer                         :: result_dims(1)
          complex(8), pointer             :: result_tens(:)
+
+         real(8)            :: e_lumo, e_homo
+         integer            :: lumo
+         real(8), parameter :: THRESHOLD=1.0D-8
 
          min_occ=minval(mo_occ)
          result_dims(1)=1
@@ -1003,46 +987,29 @@ module talsh_cc
 !        write one electron integrals to tensor
          if (one_el_exist) then
            
-!          create density (identity) matrix for the occupied space
-           ierr=talsh_tensor_construct(id_mat_occ,C8,fo_dims,init_val=ZERO)
-           ierr=talsh_tensor_get_body_access(id_mat_occ,body_p,C8,0,DEV_HOST)
-           call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
-           h_tens = ZERO
-           do i = 1, nocc
+!           create density (identity) matrix for the occupied space
+            ierr=talsh_tensor_construct(id_mat_occ,C8,fo_dims,init_val=ZERO)
+            ierr=talsh_tensor_get_body_access(id_mat_occ,body_p,C8,0,DEV_HOST)
+            call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
+            h_tens = ZERO
+            do i = 1, nocc
               h_tens(i,i) = ONE
-           enddo
+            enddo
 
-!          create matrices with eps on the diagonal
-           ierr=talsh_tensor_construct(diag_mat_occ,C8,fo_dims,init_val=ZERO)
-           ierr=talsh_tensor_get_body_access(diag_mat_occ,body_p,C8,0,DEV_HOST)
-           call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
-           h_tens = ZERO
-           do i = 1, nocc
-              h_tens(i,i) = eps_occ(i)
-           enddo
+!           now write one electron integrals
 
-           ierr=talsh_tensor_construct(diag_mat_vir,C8,fv_dims,init_val=ZERO)
-           ierr=talsh_tensor_get_body_access(diag_mat_vir,body_p,C8,0,DEV_HOST)
-           call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
-           h_tens = ZERO
-           do i = 1, nvir
-              h_tens(i,i) = eps_vir(i)
-           enddo
-
-!          now write one electron integrals
-
-           ierr=talsh_tensor_get_body_access(fo_tensor,body_p,C8,0,DEV_HOST)
-           call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
-           call get_one_el(h_tens,mo_occ,nocc,mo_occ,nocc,min_occ)
+            ierr=talsh_tensor_get_body_access(fo_tensor,body_p,C8,0,DEV_HOST)
+            call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
+            call get_one_el(h_tens,mo_occ,nocc,mo_occ,nocc,min_occ)
            
 
-           ierr=talsh_tensor_get_body_access(fv_tensor,body_p,C8,0,DEV_HOST)
-           call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
-           call get_one_el(h_tens,mo_vir,nvir,mo_vir,nvir,min_occ)
+            ierr=talsh_tensor_get_body_access(fv_tensor,body_p,C8,0,DEV_HOST)
+            call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
+            call get_one_el(h_tens,mo_vir,nvir,mo_vir,nvir,min_occ)
 
-           ierr=talsh_tensor_get_body_access(fov_tensor,body_p,C8,0,DEV_HOST)
-           call c_f_pointer(body_p,h_tens,fov_dims) ! to use as a regular Fortran array
-           call get_one_el(h_tens,mo_occ,nocc,mo_vir,nvir,min_occ)
+            ierr=talsh_tensor_get_body_access(fov_tensor,body_p,C8,0,DEV_HOST)
+            call c_f_pointer(body_p,h_tens,fov_dims) ! to use as a regular Fortran array
+            call get_one_el(h_tens,mo_occ,nocc,mo_vir,nvir,min_occ)
 
 !           Get access to result 
             result_dims(1) = 1
@@ -1074,6 +1041,56 @@ module talsh_cc
             if (print_level >1) call print_tensor(fov_tensor, 2, 1.0D-6, 'fov_tensor')
             if (print_level >1) call print_tensor(fv_tensor, 2, 1.0D-6, 'fv_tensor')
 
+            !now we can get the correct epsilon values
+            ierr=talsh_tensor_get_body_access(fo_tensor,body_p,C8,0,DEV_HOST)
+            call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
+            do i=1,fo_dims(1)
+              eps_occ(i)=h_tens(i,i)
+            end do
+
+            ierr=talsh_tensor_get_body_access(fv_tensor,body_p,C8,0,DEV_HOST)
+            call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
+            do i=1,fv_dims(1)
+              eps_vir(i)=h_tens(i,i)
+            end do
+
+            !apply level shit
+            if (level_shift.gt.1.0D-14) then
+              e_homo = maxval(eps_occ)
+              e_lumo = minval(eps_vir)
+              lumo   = minloc(eps_vir,1)
+               
+              do while(e_lumo-e_homo < THRESHOLD)
+                print*, "e_homo, e_lumo", e_homo, e_lumo
+                if (e_lumo+level_shift-e_homo >THRESHOLD) then
+                  eps_vir(lumo)=e_lumo+level_shift
+                  print *, "lumo energy level shifted by ", level_shift," to ",e_lumo+level_shift
+                else
+                  call quit('Negative HOMO-LUMO gap')
+                end if
+                e_lumo = minval(eps_vir)
+                lumo   = minloc(eps_vir, 1)
+              end do
+            end if
+
+            !set diag_mat
+            ierr=talsh_tensor_construct(diag_mat_occ,C8,fo_dims,init_val=ZERO)
+            ierr=talsh_tensor_get_body_access(diag_mat_occ,body_p,C8,0,DEV_HOST)
+            call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
+            h_tens = ZERO
+            do i = 1, nocc
+               h_tens(i,i) = eps_occ(i)
+            end do
+
+            ierr=talsh_tensor_construct(diag_mat_vir,C8,fv_dims,init_val=ZERO)
+            ierr=talsh_tensor_get_body_access(diag_mat_vir,body_p,C8,0,DEV_HOST)
+            call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
+            h_tens = ZERO
+            do i = 1, nvir
+              h_tens(i,i) = eps_vir(i)
+            end do
+
+
             ierr=talsh_tensor_add("F(i,j)+=D(i,j)",fo_tensor,diag_mat_occ,scale=MINUS_ONE)
             ierr=talsh_tensor_add("F(a,b)+=D(a,b)",fv_tensor,diag_mat_vir,scale=MINUS_ONE)
             if (print_level >1) call print_date('diagonal substracted from Fock Matrix')
@@ -1097,6 +1114,24 @@ module talsh_cc
             ierr=talsh_tensor_destruct(diag_mat_occ)
             ierr=talsh_tensor_destruct(diag_mat_vir)
             ierr=talsh_tensor_destruct(result_tensor)
+         else
+            if (level_shift.gt.1.0D-14) then
+              e_homo = maxval(eps_occ)
+              e_lumo = minval(eps_vir)
+              lumo   = minloc(eps_vir,1)
+               
+              do while(e_lumo-e_homo < THRESHOLD)
+                print*, "e_homo, e_lumo", e_homo, e_lumo
+                if (e_lumo+level_shift-e_homo >THRESHOLD) then
+                  eps_vir(lumo)=e_lumo+level_shift
+                  print *, "lumo energy level shifted by ", level_shift," to ",e_lumo+level_shift
+                else
+                  call quit('Negative HOMO-LUMO gap')
+                end if
+                e_lumo = minval(eps_vir)
+                lumo   = minloc(eps_vir, 1)
+              end do
+            end if
          end if
          if (print_level >0) call print_date('Fock matrix initialized')
         end subroutine get_CC_Fockmatrix
