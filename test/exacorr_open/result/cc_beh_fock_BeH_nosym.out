@@ -1,12 +1,12 @@
   ** interface to 32-bit integer MPI enabled **
 
 DIRAC master    (MW-038275.clients.vu.nl) starts by allocating       64000000 r*8 words (   0.477 GB) of memory
+DIRAC nodes 1 to 3 starts by allocating            64000000 r*8 words (   0.477 GB) of memory
 DIRAC master    (MW-038275.clients.vu.nl) to allocate at most      2147483648 r*8 words (  16.000 GB) of memory
+DIRAC nodes 1 to 3 to allocate at most           2147483648 r*8 words (  16.000 GB) of memory
  
 Note: maximum allocatable memory for master+nodes can be set by -aw (MW)/-ag (GB) flags in pam
  
-DIRAC nodes 1 to 3 starts by allocating            64000000 r*8 words (   0.477 GB) of memory
-DIRAC nodes 1 to 3 to allocate at most           2147483648 r*8 words (  16.000 GB) of memory
  *******************************************************************************
  *                                                                             *
  *                                O U T P U T                                  *
@@ -211,9 +211,6 @@ Compile definitions      | HAVE_SYSTEM_NATIVE_BLAS;HAVE_SYSTEM_NATIVE_LAPACK;HAV
  * openMP activated, number of processes and number of threads in non-parallel region:    4    1
 
 
- * openMP parallel region, max number of threads and current number of threads:                 256    4    0
-
-
  * openMP parallel region, max number of threads and current number of threads:                 256    4    1
 
 
@@ -222,11 +219,14 @@ Compile definitions      | HAVE_SYSTEM_NATIVE_BLAS;HAVE_SYSTEM_NATIVE_LAPACK;HAV
 
  * openMP parallel region, max number of threads and current number of threads:                 256    4    3
 
+
+ * openMP parallel region, max number of threads and current number of threads:                 256    4    0
+
 Execution time and host
 -----------------------
 
  
-     Date and time (Mac OSX): Tue Mar 12 10:41:56 2019
+     Date and time (Mac OSX): Wed Mar 13 10:14:34 2019
      Host name              : MW-038275.clients.vu.nl                 
 
 
@@ -267,7 +267,6 @@ energy -1.0 0.5 0.00001
 2                                                                                                   
 .VIR_BETA                                                                                           
 4..10                                                                                               
-.EXATENSOR                                                                                          
 .PRINT                                                                                              
 4                                                                                                   
 **INTEGRALS                                                                                         
@@ -884,7 +883,7 @@ H      0.0000000000   0.0000000000   0.7090974591
 
                         1 Debye =   2.54177000 a.u. 
 
-Total time used in ONEGEN (CPU)  0.02830200s and (WALL)  0.02900000s
+Total time used in ONEGEN (CPU)  0.02826400s and (WALL)  0.02800000s
 * Info: DIRAC found X2CMAT (X2C stuff) ... skipping generation of H2C
   Nuclear Gaussian exponent for atom of charge   4.000 :    7.8788802914D+08
   Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248239171D+09
@@ -901,9 +900,9 @@ Total time used in ONEGEN (CPU)  0.02830200s and (WALL)  0.02900000s
 
                         1 Debye =   2.54177000 a.u. 
 
-Total time used in ONEGEN (CPU)  0.00539500s and (WALL)  0.00500000s
- >>> CPU  time used in PAMSET is   0.10 seconds
- >>> WALL time used in PAMSET is   0.10 seconds
+Total time used in ONEGEN (CPU)  0.00590000s and (WALL)  0.00600000s
+ >>> CPU  time used in PAMSET is   0.12 seconds
+ >>> WALL time used in PAMSET is   0.12 seconds
 
 
  *******************************************************************************
@@ -911,16 +910,16 @@ Total time used in ONEGEN (CPU)  0.00539500s and (WALL)  0.00500000s
  *******************************************************************************
 
 
-########## START ITERATION NO.   1 ##########   Tue Mar 12 10:41:57 2019
+########## START ITERATION NO.   1 ##########   Wed Mar 13 10:14:34 2019
 
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -14.8250127059712931
-* Heading :Water molecule. X2C Hamiltonian. CC energies.     Tue Mar 12 10:40:09 2019
+* REACMO: Coefficients read from file DFCOEF - Total energy: -14.8250127059714849
+* Heading :Water molecule. X2C Hamiltonian. CC energies.     Wed Mar 13 10:14:26 2019
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12    0.00%   67.16%    0.00%    0.18%   0.06900000s
-It.    1    -14.82501270597      1.48D+01  0.00D+00  8.45D-10               0.08780200s   LL             Tue Mar 12
+SOfock:LL  1.00D-12    0.00%   67.16%    0.00%    0.15%   0.07800000s
+It.    1    -14.82501270597      1.48D+01  0.00D+00  8.44D-10               0.09330000s   LL             Wed Mar 13
 
 
                                    SCF - CYCLE
@@ -936,23 +935,23 @@ It.    1    -14.82501270597      1.48D+01  0.00D+00  8.45D-10               0.08
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -14.82501270597      1.48D+01  0.00D+00  8.45D-10               0.08780200s   LL             Tue Mar 12
+It.    1    -14.82501270597      1.48D+01  0.00D+00  8.44D-10               0.09330000s   LL             Wed Mar 13
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    1 iterations.
 * Average elapsed time per iteration: 
-      LL           :    0.09400000s
+      LL           :    0.10400000s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -17.810087332839242
+   Electronic energy                        :    -17.810087332839256
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      2.985074626865671
 
    Sum of all contributions to the energy
-   Total energy                             :    -14.825012705973570
+   Total energy                             :    -14.825012705973585
 
 
                                    Eigenvalues
@@ -963,14 +962,14 @@ It.    1    -14.82501270597      1.48D+01  0.00D+00  8.45D-10               0.08
   * Closed shell, f = 1.0000
    -4.711611454100  ( 2)      -0.553370398594  ( 2)
   * Open shell #1, f = 0.5000
-   -0.201396737535  ( 2)
+   -0.201396737536  ( 2)
   * Virtual eigenvalues, f = 0.0000
-    0.071089376089  ( 2)       0.071096202933  ( 2)       0.134599959280  ( 2)       0.280118869235  ( 2)       0.327241505436  ( 2)
-    0.327264476875  ( 2)       0.482982387905  ( 2)       0.642058745249  ( 2)       0.642063843779  ( 2)       0.654524943796  ( 2)
-    0.659277904138  ( 2)       0.659288148017  ( 2)       1.109735618719  ( 2)       1.346405303782  ( 2)       1.346512987449  ( 2)
-    1.703369413682  ( 2)       2.138691080387  ( 2)       2.138716426983  ( 2)       2.142867082778  ( 2)       3.730908385719  ( 2)
-    4.461673382174  ( 2)       7.163321617943  ( 2)       7.164492254126  ( 2)       7.272187786576  ( 2)      16.258241257892  ( 2)
-   22.644413949716  ( 2)      59.284716153488  ( 2)     220.036990986939  ( 2)     925.185586515797  ( 2)    4979.854683435310  ( 2)
+    0.071089376089  ( 2)       0.071096202933  ( 2)       0.134599959285  ( 2)       0.280118869235  ( 2)       0.327241505436  ( 2)
+    0.327264476875  ( 2)       0.482982387929  ( 2)       0.642058745250  ( 2)       0.642063843779  ( 2)       0.654524943781  ( 2)
+    0.659277904138  ( 2)       0.659288148017  ( 2)       1.109735618654  ( 2)       1.346405303783  ( 2)       1.346512987449  ( 2)
+    1.703369413638  ( 2)       2.138691080396  ( 2)       2.138716426995  ( 2)       2.142867082800  ( 2)       3.730908385711  ( 2)
+    4.461673382198  ( 2)       7.163321617943  ( 2)       7.164492254126  ( 2)       7.272187786573  ( 2)      16.258241257888  ( 2)
+   22.644413949717  ( 2)      59.284716153491  ( 2)     220.036990986944  ( 2)     925.185586515796  ( 2)    4979.854683435309  ( 2)
 * HOMO - LUMO gap:
 
     E(LUMO) :     0.07108938 au (symmetry E1 )
@@ -996,10 +995,10 @@ It.    1    -14.82501270597      1.48D+01  0.00D+00  8.45D-10               0.08
      ************************************************************************
 
 
- Transformation started at : Tue Mar 12 10:41:57 2019
+ Transformation started at : Wed Mar 13 10:14:34 2019
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -14.8250127059712931
-* Heading :Water molecule. X2C Hamiltonian. CC energies.     Tue Mar 12 10:40:09 2019
+* REACMO: Coefficients read from file DFCOEF - Total energy: -14.8250127059714849
+* Heading :Water molecule. X2C Hamiltonian. CC energies.     Wed Mar 13 10:14:26 2019
      Energy selection of active orbitals :       -1.00 < Eps. <         0.50 with a mininum gap of     0.0000 au.
      Energy selection of active orbitals :       -1.00 < Eps. <         0.50 with a mininum gap of     0.0000 au.
      Energy selection of active orbitals :       -1.00 < Eps. <         0.50 with a mininum gap of     0.0000 au.
@@ -1047,10 +1046,10 @@ It.    1    -14.82501270597      1.48D+01  0.00D+00  8.45D-10               0.08
       **********************************************************************
 
 
- Transformation started at : Tue Mar 12 10:41:57 2019
+ Transformation started at : Wed Mar 13 10:14:34 2019
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -14.8250127059712931
-* Heading :Water molecule. X2C Hamiltonian. CC energies.     Tue Mar 12 10:40:09 2019
+* REACMO: Coefficients read from file DFCOEF - Total energy: -14.8250127059714849
+* Heading :Water molecule. X2C Hamiltonian. CC energies.     Wed Mar 13 10:14:26 2019
      Energy selection of active orbitals :       -1.00 < Eps. <         0.50 with a mininum gap of     0.0000 au.
      Energy selection of active orbitals :       -1.00 < Eps. <         0.50 with a mininum gap of     0.0000 au.
 
@@ -1080,15 +1079,15 @@ It.    1    -14.82501270597      1.48D+01  0.00D+00  8.45D-10               0.08
        ********************************************************************
 
 
- Transformation started at : Tue Mar 12 10:41:57 2019
+ Transformation started at : Wed Mar 13 10:14:34 2019
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -14.8250127059712931
-* Heading :Water molecule. X2C Hamiltonian. CC energies.     Tue Mar 12 10:40:09 2019
+* REACMO: Coefficients read from file DFCOEF - Total energy: -14.8250127059714849
+* Heading :Water molecule. X2C Hamiltonian. CC energies.     Wed Mar 13 10:14:26 2019
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12    0.00%   67.37%    0.00%    4.86%   0.03700000s
+SOfock:LL  1.00D-12    0.00%   67.37%    0.00%    7.58%   0.03700000s
 
 * REAFCK: Fock matrix read from file DFFCK1                                                      
-* Heading :Water molecule. X2C Hamiltonian. CC energies.     Tue Mar 12 10:41:57 2019
+* Heading :Water molecule. X2C Hamiltonian. CC energies.     Wed Mar 13 10:14:34 2019
 
 
  Core energy (includes nuclear repulsion) :            -12.1244318996
@@ -1103,188 +1102,201 @@ SOfock:LL  1.00D-12    0.00%   67.37%    0.00%    4.86%   0.03700000s
  Total wall time used in PAMTRA :   00:00:00
  Total CPU  time used in PAMTRA (master only) :   00:00:00
 
- Transformation ended at : Tue Mar 12 10:41:57 2019
+ Transformation ended at : Wed Mar 13 10:14:34 2019
 
-  12 Mar 19 10:41:57 read from DFCOEF:Water molecule. X2C Hamiltonian. CC energies.     Tue Mar 12 10:40:09 2019
-  12 Mar 19 10:41:57 retrieved basis set information
-  12 Mar 19 10:41:57 read one el. integrals from MRCONEE
+  13 Mar 19 10:14:34 read from DFCOEF:Water molecule. X2C Hamiltonian. CC energies.     Wed Mar 13 10:14:26 2019
+  13 Mar 19 10:14:34 retrieved basis set information
+  13 Mar 19 10:14:34 read one el. integrals from MRCONEE
   Initialized global data
-  Starting CC calculation with exatensor
- ExaCorr: Inferred TAVP-MNG depth =            1
- ExaCorr: Registered AO vector space of dimension           34 : Number of segments =            2
- ExaCorr: Registered OCC vector space of dimension            3 : Number of segments =            2
- ExaCorr: Registered VIRT vector space of dimension           14 : Number of segments =            2
-  Registered AO and MO spaces
-  Initialized and registered tensor methods
+  13 Mar 19 10:14:34 Entered cc_driver routine
+  13 Mar 19 10:14:34 Initialized talsh library
+  Status           0: Size (Bytes) =    1073741824: Max args in HAB =    8192
+
+  Integral module InteRest is initialized
+  Last commit rev         | af67681897b1ecc14a7668475bd13b62471f8211
+  Last commit author      | Michal Repisky 
+  Last commit time        | Wed Oct 16 14:37:58 2013 +0200
+  Last update time        | Sat Feb 20 15:39:00 2015 +0200
+
+  13 Mar 19 10:14:34 Initialized interest library
   Characteristics of this calculation
   - Solve CCD equations:             F
   - Solve Lambda equations:          F
-  - Number of atomic orbitals:                         34
   - Number of occupied spinors:                3
   - Number of virtual spinors:                14
   - Target precision of amplitudes:    1.0000000000000001E-009
   - Maximum number of cycles:                 30
-  - ExaTensor block size                      75
-  - Integral transformation scheme             3
   - Print Level                                4
   - occupied spinors                           3           4           5
   - virtual spinors                            7           8           9          10          11          12          13          14          15          16          17          18          19          20
-  12 Mar 19 10:41:57 starting ccsd calculation
-  12 Mar 19 10:41:57 allocated AO integral tensor
-  12 Mar 19 10:41:58 finished ao integral calculation
-  12 Mar 19 10:41:58 choosing moint_scheme 3
-  12 Mar 19 10:42:00 vv halftransformation completed
-  12 Mar 19 10:42:00 vvvv integrals completed
-  12 Mar 19 10:42:00 vovv integrals completed
-  12 Mar 19 10:42:01 vovo integrals completed
-  12 Mar 19 10:42:01 ov halftransformation completed
-  12 Mar 19 10:42:01 ovvo integrals completed
-  12 Mar 19 10:42:01 vovo integrals anti-symmetrized
-  12 Mar 19 10:42:02 oovv integrals completed
-  12 Mar 19 10:42:02 oo halftransformation completed
-  12 Mar 19 10:42:02 ooov integrals completed
-  12 Mar 19 10:42:03 oooo integrals completed
-  12 Mar 19 10:42:03 initialized two electron integrals
-  12 Mar 19 10:42:03 Density matrix initialized
-  12 Mar 19 10:42:03 one electron integrals added to Fock Matrix
-  Energy of reference wave function (HF single determinant) =   -14.825012705973608     
-  12 Mar 19 10:42:03 two electron integrals added to Fock Matrix
-foo(1:4,1:4)[2,2]
-   -0.56078448137113D+00   -0.45430294440340D-20       1      1
-   -0.54595631583531D+00    0.45427516536223D-20       2      2
-foo(1:4,1:2)[2,1]
-    0.13470195029606D-02   -0.95975247737044D-11       1      3
-foo(1:2,1:2)[1,1]
-   -0.30437834777036D+00   -0.43404995804705D-20       3      3
-foo(1:2,1:4)[1,2]
-    0.13470195029344D-02    0.95975247637984D-11       3      1
-fov(1:4,2:15)[2,7]
-fov(1:4,2:16)[2,7]
-    0.15499772376994D-02   -0.48818348603673D-11       2      8
-    0.17950409285977D-05    0.33088142401484D-15       1      9
-    0.17259716552922D-05    0.23520231485703D-14       1      1
-   -0.17949372981992D-05    0.63070839785474D-14       2     10
-    0.18927229321168D-03   -0.10403803953446D-10       1     13
-   -0.18927229403798D-03    0.10673356235494D-10       2     14
-   -0.17258845821320D-05    0.38254663167583D-14       2      2
-   -0.19234097777044D-02   -0.72787951082460D-11       1      5
-    0.19234097746595D-02    0.17080987881807D-11       2      6
-   -0.15499772352269D-02   -0.80836371453931D-12       1      7
-fov(1:2,2:16)[1,7]
-fov(1:2,2:15)[1,7]
-fvv(2:15,2:16)[7,7]
-   -0.84626785147417D-03   -0.22866065169461D-11       6      8
-    0.90045234866262D-02    0.96251422086138D-12       1      9
-   -0.10220359463146D-05   -0.84753358192906D-14       5      9
-    0.53374033816127D-05    0.25743808062847D-14       7      9
-   -0.90045234927618D-02    0.13102478038229D-11       2     10
-    0.10220991108408D-05    0.81616974828122D-14       6     10
-   -0.66808897546423D-02   -0.51019892434266D-02       3     11
-    0.22096901458894D-02   -0.23542281215848D-02       4     11
-    0.22096901473784D-02    0.23542281230348D-02       3     12
-    0.66808897584462D-02   -0.51019892467619D-02       4     12
-   -0.46894344596157D-05    0.10439901910017D-13       1     13
-   -0.19445930909899D-02    0.23909041400589D-11       5     13
-   -0.33408889917659D-02   -0.11678686804422D-10       7     13
-    0.46894880299175D-05   -0.96955521861826D-14       2     14
-    0.19445930049565D-02   -0.38432068361591D-12       6     14
-fvv(2:16,2:16)[7,7]
-    0.30860016606527D+00    0.10363169004785D-19       8      8
-   -0.53377134121245D-05    0.48938214696061D-15      10      8
-    0.33408890517751D-02   -0.64342283532270D-11      14      8
-    0.33799114204904D+00   -0.16895671929370D-15       9      9
-   -0.33243406632461D-05   -0.20950081156853D-13      13      9
-   -0.53377134119779D-05   -0.44193567136326D-15       8     10
-    0.31649186881175D+00    0.16895672016257D-15      10     10
-    0.33243611248644D-05    0.20253991539891D-13      14     10
-    0.33801193825348D+00    0.18665099024857D-15      11     11
-    0.23693521571137D-03   -0.11017095405503D-03      12     11
-    0.23693521571137D-03    0.11017095405504D-03      11     12
-    0.31651701548577D+00   -0.18268354798306D-15      12     12
-   -0.33243406630991D-05    0.20958390073060D-13       9     13
-    0.47897351432631D+00    0.19959994228485D-19      13     13
-    0.33408890516542D-02    0.64342283443740D-11       8     14
-    0.33243611250112D-05   -0.20262300456097D-13      10     14
-    0.48699126135153D+00   -0.19959503729685D-19      14     14
-fvv(2:15,2:15)[7,7]
-    0.86830575453609D-01   -0.14248997989468D-15       1      1
-   -0.33669690031159D-05   -0.52895228790112D-14       5      1
-    0.55348176717554D-01    0.14248997951458D-15       2      2
-    0.33670775061968D-05    0.44213353892895D-14       6      2
-    0.82539167517041D-01    0.10459460355690D-15       3      3
-   -0.99397064375933D-03    0.10762634931883D-01       4      3
-   -0.99397064375913D-03   -0.10762634931883D-01       3      4
-    0.59653238342950D-01   -0.10510618221474D-15       4      4
-   -0.33669690031502D-05    0.52807306578702D-14       1      5
-    0.13174880263521D+00    0.24787154031197D-20       5      5
-    0.84626788895548D-03   -0.45943762427335D-11       7      5
-    0.33670775061625D-05   -0.44125431681486D-14       2      6
-    0.13745111586234D+00   -0.24767991287801D-20       6      6
-    0.84626788892061D-03    0.45943762403489D-11       5      7
-    0.25163757239250D+00   -0.10362936159829D-19       7      7
-fvv(2:16,2:15)[7,7]
-    0.90045234866261D-02   -0.96198696473492D-12       9      1
-   -0.46894344597383D-05   -0.10426129977149D-13      13      1
-   -0.90045234927619D-02   -0.13107750599492D-11      10      2
-    0.46894880297948D-05    0.96817802533149D-14      14      2
-   -0.66808897546419D-02    0.51019892434269D-02      11      3
-    0.22096901473782D-02   -0.23542281230349D-02      12      3
-    0.22096901458896D-02    0.23542281215848D-02      11      4
-    0.66808897584467D-02    0.51019892467616D-02      12      4
-   -0.10220359462732D-05    0.84725486077249D-14       9      5
-   -0.19445930909267D-02   -0.23909041273364D-11      13      5
-   -0.84626785143971D-03    0.22866065193296D-11       8      6
-    0.10220991108822D-05   -0.81589102712463D-14      10      6
-    0.19445930050198D-02    0.38432067089273D-12      14      6
-    0.53374033814660D-05   -0.26218272818823D-14       9      7
-   -0.33408889916456D-02    0.11678686813277D-10      13      7
-  12 Mar 19 10:42:03 orbital energies subtracted from the diagonal
-  Norm of OO part Fock matrix (without diag) =    1.0718778216394879E-002
-  Norm of OV part Fock matrix =                   1.2275529605228182E-005
-  Norm of VV part Fock matrix (without diag) =    3.1194830275331166E-003
-  12 Mar 19 10:42:03 initialized Fock matrix
-  MP2 energy =   -6.2596867972849086E-003
-  ccdriver: allocated all tensors
-  Iteration    1 CCSD energy =   -0.008569814285548 convergence =   6.1E-02
-  Iteration    2 CCSD energy =   -0.009677023476365 convergence =   3.9E-02
-  Iteration    3 CCSD energy =   -0.011649633961360 convergence =   2.8E-02
-  Iteration    4 CCSD energy =   -0.011716650565077 convergence =   4.0E-03
-  Iteration    5 CCSD energy =   -0.011729293702568 convergence =   1.6E-03
-  Iteration    6 CCSD energy =   -0.011731877940846 convergence =   7.1E-04
-  Iteration    7 CCSD energy =   -0.011733572421097 convergence =   4.0E-04
-  Iteration    8 CCSD energy =   -0.011735497033408 convergence =   2.0E-04
-  Iteration    9 CCSD energy =   -0.011736073643729 convergence =   1.0E-04
-  Iteration   10 CCSD energy =   -0.011735841219120 convergence =   8.1E-05
-  Iteration   11 CCSD energy =   -0.011736445734682 convergence =   9.1E-05
-  Iteration   12 CCSD energy =   -0.011736096959535 convergence =   6.4E-05
-  Iteration   13 CCSD energy =   -0.011734979052766 convergence =   3.8E-05
-  Iteration   14 CCSD energy =   -0.011734661132175 convergence =   1.4E-05
-  Iteration   15 CCSD energy =   -0.011734694927749 convergence =   6.8E-06
-  Iteration   16 CCSD energy =   -0.011734765979920 convergence =   3.4E-06
-  Iteration   17 CCSD energy =   -0.011734792141551 convergence =   1.7E-06
-  Iteration   18 CCSD energy =   -0.011734792414267 convergence =   1.5E-06
-  Iteration   19 CCSD energy =   -0.011734789619501 convergence =   1.6E-06
-  Iteration   20 CCSD energy =   -0.011734785060254 convergence =   1.2E-06
-  Iteration   21 CCSD energy =   -0.011734777035347 convergence =   1.2E-06
-  Iteration   22 CCSD energy =   -0.011734779101982 convergence =   5.7E-07
-  Iteration   23 CCSD energy =   -0.011734779056991 convergence =   5.9E-07
-  Iteration   24 CCSD energy =   -0.011734782692664 convergence =   3.6E-07
-  Iteration   25 CCSD energy =   -0.011734782694916 convergence =   3.5E-07
-  Iteration   26 CCSD energy =   -0.011734782875404 convergence =   3.5E-07
-  Iteration   27 CCSD energy =   -0.011734783434086 convergence =   3.6E-07
-  Iteration   28 CCSD energy =   -0.011734783122818 convergence =   3.9E-07
-  Iteration   29 CCSD energy =   -0.011734783539999 convergence =   3.3E-07
-  Iteration   30 CCSD energy =   -0.011734790249758 convergence =   3.0E-07
-  Final CCSD energy =   -1.1734790249758320E-002
-#MSG(DSVP): Shut down DSVP      2: TAVP-MNG#0
-#MSG(DSVP): Counters: Recv    4279; Rtrd    4279; Crtd   66862; Fail    0: Time (s)      102.811
-#MSG(TAL-SH): Device utilization statistics for MPI process      0:
-#MSG(TAL-SH): Device utilization statistics for MPI process      1:
-#MSG(DSVP): Shut down DSVP      1: TAVP-WRK#1
-#MSG(DSVP): Counters: Recv   28358; Rtrd   28358; Crtd   23597; Fail    0: Time (s)      102.826
-#MSG(DSVP): Shut down DSVP      0: TAVP-WRK#0
-#MSG(DSVP): Counters: Recv   38506; Rtrd   38506; Crtd   32295; Fail    0: Time (s)      102.829
-  Leaving cc_driver routine
+  13 Mar 19 10:14:34 Getting orbital energies
+  13 Mar 19 10:14:34 Retrieved orbital energies
+  13 Mar 19 10:14:35 entered aomo_transform
+  13 Mar 19 10:14:35 initialized mo-coefficients
+  13 Mar 19 10:14:35 constructed a1 and a2
+  13 Mar 19 10:14:35 first ht done
+  13 Mar 19 10:14:35 constructed a3
+  13 Mar 19 10:14:35 second ht done
+  13 Mar 19 10:14:35 leaving aomo_transform
+  13 Mar 19 10:14:35 entered aomo_transform
+  13 Mar 19 10:14:35 initialized mo-coefficients
+  13 Mar 19 10:14:35 constructed a1 and a2
+  13 Mar 19 10:14:35 first ht done
+  13 Mar 19 10:14:35 constructed a3
+  13 Mar 19 10:14:35 second ht done
+  13 Mar 19 10:14:35 leaving aomo_transform
+  13 Mar 19 10:14:35 entered aomo_transform
+  13 Mar 19 10:14:35 initialized mo-coefficients
+  13 Mar 19 10:14:35 constructed a1 and a2
+  13 Mar 19 10:14:35 first ht done
+  13 Mar 19 10:14:35 constructed a3
+  13 Mar 19 10:14:35 second ht done
+  13 Mar 19 10:14:35 leaving aomo_transform
+  13 Mar 19 10:14:35 entered aomo_transform
+  13 Mar 19 10:14:35 initialized mo-coefficients
+  13 Mar 19 10:14:35 constructed a1 and a2
+  13 Mar 19 10:14:35 first ht done
+  13 Mar 19 10:14:35 constructed a3
+  13 Mar 19 10:14:35 second ht done
+  13 Mar 19 10:14:35 leaving aomo_transform
+  13 Mar 19 10:14:35 entered aomo_transform
+  13 Mar 19 10:14:35 initialized mo-coefficients
+  13 Mar 19 10:14:35 constructed a1 and a2
+  13 Mar 19 10:14:35 first ht done
+  13 Mar 19 10:14:35 constructed a3
+  13 Mar 19 10:14:35 second ht done
+  13 Mar 19 10:14:35 leaving aomo_transform
+  13 Mar 19 10:14:35 entered aomo_transform
+  13 Mar 19 10:14:35 initialized mo-coefficients
+  13 Mar 19 10:14:35 constructed a1 and a2
+  13 Mar 19 10:14:35 first ht done
+  13 Mar 19 10:14:35 constructed a3
+  13 Mar 19 10:14:35 second ht done
+  13 Mar 19 10:14:35 leaving aomo_transform
+  13 Mar 19 10:14:35 entered aomo_transform
+  13 Mar 19 10:14:35 initialized mo-coefficients
+  13 Mar 19 10:14:35 constructed a1 and a2
+  13 Mar 19 10:14:35 first ht done
+  13 Mar 19 10:14:35 constructed a3
+  13 Mar 19 10:14:35 second ht done
+  13 Mar 19 10:14:35 leaving aomo_transform
+  Energy of reference wave function (HF single determinant) =   -14.825012705973625     
+  13 Mar 19 10:14:35 one electron integrals added to Fock Matrix
+  13 Mar 19 10:14:35 two electron integrals added to Fock Matrix
+ print 2D tensor: fo_tensor
+           1           1      (-0.56078448137099568,-4.54264272190149638E-021)
+           1           3  (1.34701950325086576E-003,-5.49547304964247335E-012)
+           2           2       (-0.54595631583519477,4.54279907558130304E-021)
+           3           1   (1.34701950322456410E-003,5.49547303982794307E-012)
+           3           3      (-0.30437834777029044,-4.33926841484245774E-021)
+  end print 2D tensor fo_tensor
+ print 2D tensor: fov_tensor
+           1           1 (-1.72597168212299390E-006,-1.73623333370076779E-015)
+           1           5 (-1.92340977676784541E-003,-1.24543756191683585E-011)
+           1           7  (1.54997723595406501E-003,-6.36617239904429650E-013)
+           1           9  (-1.79504081332287699E-006,1.39419569616588479E-015)
+           1          13  (1.89272295080110398E-004,-1.46997754611016003E-011)
+           2           2  (1.72588455286464079E-006,-6.30539381361240688E-015)
+           2           6   (1.92340977550136891E-003,3.60442221761600603E-012)
+           2           8  (-1.54997723696256645E-003,8.47108129149911637E-012)
+           2          10  (1.79493741024365022E-006,-1.00365425991294209E-014)
+           2          14  (-1.89272292668518638E-004,1.58468613780328938E-011)
+  end print 2D tensor fov_tensor
+ print 2D tensor: fv_tensor
+           1           1  (8.68305754538916119E-002,-1.42489979708408490E-016)
+           1           5  (3.36696897704634766E-006,-2.65828950130785579E-015)
+           1           9   (9.00452348670294223E-003,1.14825872776575539E-012)
+           1          13  (4.68943454718867363E-006,-8.82732311059054548E-015)
+           2           2   (5.53481767172150363E-002,1.42489979527717015E-016)
+           2           6  (-3.36707757150027585E-006,2.09013557487513800E-015)
+           2          10  (-9.00452349339608826E-003,8.77689808816542076E-013)
+           2          14  (-4.68948797742062604E-006,5.58409732317393358E-015)
+           3           3   (8.03781926306772476E-002,5.53497568048769859E-017)
+           3           4  (-1.21501819069581643E-002,3.73918088514893759E-003)
+           3          11  (-6.91982965018816953E-003,3.87567998592636132E-003)
+           3          12   (4.19185891462851845E-003,7.82996721849747723E-004)
+           4           3 (-1.21501819069581227E-002,-3.73918088514909415E-003)
+           4           4  (6.18142132292562874E-002,-5.56917196652230953E-017)
+           4          11  (4.19185891218497308E-003,-7.82996721160118814E-004)
+           4          12   (6.91982965472021094E-003,3.87567998863815044E-003)
+           5           1   (3.36696897700941702E-006,2.66708172238413924E-015)
+           5           5        (0.13174880263556266,2.47102861648054322E-021)
+           5           7 (-8.46267890035518749E-004,-5.08401142686193012E-012)
+           5           9   (1.02203615896579692E-006,3.70520295368980360E-015)
+           5          13  (-1.94459310048462897E-003,1.05182318201518693E-011)
+           6           2 (-3.36707757153703708E-006,-2.09892779595181666E-015)
+           6           6       (0.13745111586210368,-2.47023563841591889E-021)
+           6           8   (8.46267849647819054E-004,3.39822220795285095E-012)
+           6          10 (-1.02209894971868991E-006,-3.75393695053203400E-015)
+           6          14  (1.94459299438570765E-003,-5.90097722866042262E-012)
+           7           5  (-8.46267890068769062E-004,5.08401142924323447E-012)
+           7           7       (0.25163757239244983,-1.03584181632307715E-020)
+           7           9  (5.33740334550684894E-006,-1.67442143478108384E-015)
+           7          13   (3.34088898801728276E-003,1.70037339155565561E-011)
+           8           6  (8.46267849614481572E-004,-3.39822221033275297E-012)
+           8           8        (0.30860016606508250,1.03580271033182356E-020)
+           8          10 (-5.33771343824081696E-006,-3.45814930742472622E-016)
+           8          14 (-3.34088905556845922E-003,-9.34854413175316475E-012)
+           9           1  (9.00452348670266467E-003,-1.14773147163878434E-012)
+           9           5  (1.02203615892628114E-006,-3.70241574229480653E-015)
+           9           7   (5.33740334535943810E-006,1.62697495821857338E-015)
+           9           9       (0.33799114204937264,-1.68956720975548055E-016)
+           9          13  (3.32434046520721244E-006,-1.62363511374687909E-014)
+          10           2 (-9.00452349339642133E-003,-8.78217064943545438E-013)
+          10           6  (-1.02209894975827345E-006,3.75114973913527224E-015)
+          10           8  (-5.33771343838834299E-006,3.93261407303699603E-016)
+          10          10        (0.31649186881134106,1.68956720948467915E-016)
+          10          14  (-3.32436138354385199E-006,1.33350413605464562E-014)
+          11           3 (-6.91982965018833607E-003,-3.87567998592591723E-003)
+          11           4   (4.19185891218498696E-003,7.82996721159945341E-004)
+          11          11        (0.33800077513361981,1.05063164413802414E-016)
+          11          12 (-5.37349906637289341E-004,-1.39128733317488899E-004)
+          12           3  (4.19185891462847682E-003,-7.82996721849928135E-004)
+          12           4  (6.91982965471998890E-003,-3.87567998863860841E-003)
+          12          11  (-5.37349906637295087E-004,1.39128733317477597E-004)
+          12          12       (0.31652817860555349,-1.08695649275107631E-016)
+          13           1   (4.68943454730801041E-006,8.81355117759355811E-015)
+          13           5 (-1.94459310042402467E-003,-1.05182318074431650E-011)
+          13           7  (3.34088898789688948E-003,-1.70037339243765665E-011)
+          13           9   (3.32434046535098612E-006,1.62280422201098533E-014)
+          13          13        (0.47897351432712160,1.99483999947523286E-020)
+          14           2 (-4.68948797730098433E-006,-5.57032539017715289E-015)
+          14           6   (1.94459299444642297E-003,5.90097721595363110E-012)
+          14           8  (-3.34088905568836331E-003,9.34854414057621082E-012)
+          14          10 (-3.32436138340013083E-006,-1.33267324431903648E-014)
+          14          14       (0.48699126135045084,-1.99491411854359586E-020)
+  end print 2D tensor fv_tensor
+  13 Mar 19 10:14:35 diagonal substracted from Fock Matrix
+  Norm of OO part Fock matrix (without diag) =    1.0718778216156908E-002
+  Norm of OV part Fock matrix =                   1.2275529605023302E-005
+  Norm of VV part Fock matrix (without diag) =    3.6543751395341174E-003
+  13 Mar 19 10:14:35 Fock matrix initialized
+  MP2 energy =   -6.2596867973643382E-003
+  13 Mar 19 10:14:35 Succesfully allocated all tensors
+  Iteration    1 CCSD energy =   -0.008252822066058 convergence =   4.9E-02
+  Iteration    2 CCSD energy =   -0.009017921933484 convergence =   2.3E-02
+  Iteration    3 CCSD energy =   -0.009663362686963 convergence =   1.2E-02
+  Iteration    4 CCSD energy =   -0.009665818096815 convergence =   5.8E-04
+  Iteration    5 CCSD energy =   -0.009665173201691 convergence =   1.4E-04
+  Iteration    6 CCSD energy =   -0.009665108988868 convergence =   2.9E-05
+  Iteration    7 CCSD energy =   -0.009665102522010 convergence =   6.7E-06
+  Iteration    8 CCSD energy =   -0.009665103414991 convergence =   1.4E-06
+  Iteration    9 CCSD energy =   -0.009665098616279 convergence =   2.6E-07
+  Iteration   10 CCSD energy =   -0.009665093971184 convergence =   1.3E-07
+  Iteration   11 CCSD energy =   -0.009665093223135 convergence =   2.4E-08
+  Iteration   12 CCSD energy =   -0.009665093199547 convergence =   6.2E-09
+  Iteration   13 CCSD energy =   -0.009665093215678 convergence =   2.7E-09
+  Iteration   14 CCSD energy =   -0.009665093223461 convergence =   1.2E-09
+  Iteration   15 CCSD energy =   -0.009665093221239 convergence =   3.2E-10
+  4th order triples correction :      -0.000042957674635
+  5th order triples (T) correction :   0.000000083102792
+  5th order triples -T  correction :   0.000001158090537
+  CCSD+T  correlation energy :        -0.009708050895874
+  CCSD(T) correlation energy :        -0.009707967793083
+  CCSD-T  correlation energy :        -0.009706892805337
+  Final CCSD energy    =   -9.6650932212387856E-003
+  Final CCSD(T) energy =   -9.7079677930825715E-003
+  13 Mar 19 10:14:37 Leaving cc_driver routine
 
 *****************************************************
 ********** E N D   of   D I R A C  output  **********
@@ -1292,11 +1304,11 @@ fvv(2:16,2:15)[7,7]
 
 
  
-     Date and time (Mac OSX): Tue Mar 12 10:43:40 2019
+     Date and time (Mac OSX): Wed Mar 13 10:14:37 2019
      Host name              : MW-038275.clients.vu.nl                 
 
->>>> Node 0, utime: 67, stime: 62, minflt: 589671, majflt: 1177, nvcsw: 33, nivcsw: 9892535, maxrss: 302817280
->>>> Total WALL time used in DIRAC: 1min44s
+>>>> Node 0, utime: 3, stime: 1, minflt: 70835, majflt: 216, nvcsw: 38, nivcsw: 276212, maxrss: 286986240
+>>>> Total WALL time used in DIRAC: 3s
   
   Dynamical Memory Usage Summary for Master
   

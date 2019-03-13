@@ -1,12 +1,12 @@
   ** interface to 32-bit integer MPI enabled **
 
 DIRAC master    (MW-038275.clients.vu.nl) starts by allocating       64000000 r*8 words (   0.477 GB) of memory
-DIRAC nodes 1 to 3 starts by allocating            64000000 r*8 words (   0.477 GB) of memory
 DIRAC master    (MW-038275.clients.vu.nl) to allocate at most      2147483648 r*8 words (  16.000 GB) of memory
-DIRAC nodes 1 to 3 to allocate at most           2147483648 r*8 words (  16.000 GB) of memory
  
 Note: maximum allocatable memory for master+nodes can be set by -aw (MW)/-ag (GB) flags in pam
  
+DIRAC nodes 1 to 3 starts by allocating            64000000 r*8 words (   0.477 GB) of memory
+DIRAC nodes 1 to 3 to allocate at most           2147483648 r*8 words (  16.000 GB) of memory
  *******************************************************************************
  *                                                                             *
  *                                O U T P U T                                  *
@@ -211,22 +211,22 @@ Compile definitions      | HAVE_SYSTEM_NATIVE_BLAS;HAVE_SYSTEM_NATIVE_LAPACK;HAV
  * openMP activated, number of processes and number of threads in non-parallel region:    4    1
 
 
- * openMP parallel region, max number of threads and current number of threads:                 256    4    0
-
-
  * openMP parallel region, max number of threads and current number of threads:                 256    4    1
+
+
+ * openMP parallel region, max number of threads and current number of threads:                 256    4    2
 
 
  * openMP parallel region, max number of threads and current number of threads:                 256    4    3
 
 
- * openMP parallel region, max number of threads and current number of threads:                 256    4    2
+ * openMP parallel region, max number of threads and current number of threads:                 256    4    0
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Mac OSX): Tue Mar 12 09:57:55 2019
+     Date and time (Mac OSX): Wed Mar 13 10:14:28 2019
      Host name              : MW-038275.clients.vu.nl                 
 
 
@@ -262,7 +262,6 @@ Water molecule. X2C Hamiltonian. CC energies.
 2                                                                                                   
 .VIR_BETA                                                                                           
 4..10                                                                                               
-.EXATENSOR                                                                                          
 .PRINT                                                                                              
 4                                                                                                   
 **INTEGRALS                                                                                         
@@ -820,7 +819,7 @@ H      0.0000000000   0.0000000000   0.7090974591
 
                         1 Debye =   2.54177000 a.u. 
 
-Total time used in ONEGEN (CPU)  0.02357100s and (WALL)  0.02300000s
+Total time used in ONEGEN (CPU)  0.03133600s and (WALL)  0.03400000s
 * Info: DIRAC found X2CMAT (X2C stuff) ... skipping generation of H2C
   Nuclear Gaussian exponent for atom of charge   4.000 :    7.8788802914D+08
   Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248239171D+09
@@ -837,7 +836,7 @@ Total time used in ONEGEN (CPU)  0.02357100s and (WALL)  0.02300000s
 
                         1 Debye =   2.54177000 a.u. 
 
-Total time used in ONEGEN (CPU)  0.00422900s and (WALL)  0.00400000s
+Total time used in ONEGEN (CPU)  0.00511400s and (WALL)  0.00500000s
 
 
  *******************************************************************************
@@ -845,16 +844,16 @@ Total time used in ONEGEN (CPU)  0.00422900s and (WALL)  0.00400000s
  *******************************************************************************
 
 
-########## START ITERATION NO.   1 ##########   Tue Mar 12 09:57:55 2019
+########## START ITERATION NO.   1 ##########   Wed Mar 13 10:14:28 2019
 
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -14.8250127059724583
-* Heading :Water molecule. X2C Hamiltonian. CC energies.     Tue Mar 12 09:57:53 2019
+* REACMO: Coefficients read from file DFCOEF - Total energy: -14.8250127059714849
+* Heading :Water molecule. X2C Hamiltonian. CC energies.     Wed Mar 13 10:14:26 2019
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12    0.00%   67.16%    0.00%    0.21%   0.07400000s
-It.    1    -14.82501270597      1.48D+01  0.00D+00  8.40D-10               0.09058700s   LL             Tue Mar 12
+SOfock:LL  1.00D-12    0.00%   67.16%    0.00%    0.15%   0.07300000s
+It.    1    -14.82501270597      1.48D+01  0.00D+00  8.44D-10               0.08299700s   LL             Wed Mar 13
 
 
                                    SCF - CYCLE
@@ -870,23 +869,23 @@ It.    1    -14.82501270597      1.48D+01  0.00D+00  8.40D-10               0.09
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -14.82501270597      1.48D+01  0.00D+00  8.40D-10               0.09058700s   LL             Tue Mar 12
+It.    1    -14.82501270597      1.48D+01  0.00D+00  8.44D-10               0.08299700s   LL             Wed Mar 13
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    1 iterations.
 * Average elapsed time per iteration: 
-      LL           :    0.10000000s
+      LL           :    0.10200000s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -17.810087332839249
+   Electronic energy                        :    -17.810087332839256
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      2.985074626865671
 
    Sum of all contributions to the energy
-   Total energy                             :    -14.825012705973577
+   Total energy                             :    -14.825012705973585
 
 
                                    Eigenvalues
@@ -895,16 +894,16 @@ It.    1    -14.82501270597      1.48D+01  0.00D+00  8.40D-10               0.09
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
-   -4.711611454100  ( 2)      -0.553370398595  ( 2)
+   -4.711611454100  ( 2)      -0.553370398594  ( 2)
   * Open shell #1, f = 0.5000
-   -0.201396737535  ( 2)
+   -0.201396737536  ( 2)
   * Virtual eigenvalues, f = 0.0000
-    0.071089376089  ( 2)       0.071096202933  ( 2)       0.134599959266  ( 2)       0.280118869231  ( 2)       0.327241505436  ( 2)
-    0.327264476875  ( 2)       0.482982387868  ( 2)       0.642058745253  ( 2)       0.642063843782  ( 2)       0.654524943784  ( 2)
-    0.659277904139  ( 2)       0.659288148018  ( 2)       1.109735618642  ( 2)       1.346405303782  ( 2)       1.346512987448  ( 2)
-    1.703369413645  ( 2)       2.138691080350  ( 2)       2.138716426946  ( 2)       2.142867082768  ( 2)       3.730908385708  ( 2)
-    4.461673382148  ( 2)       7.163321617943  ( 2)       7.164492254125  ( 2)       7.272187786573  ( 2)      16.258241257887  ( 2)
-   22.644413949718  ( 2)      59.284716153497  ( 2)     220.036990986950  ( 2)     925.185586515800  ( 2)    4979.854683435313  ( 2)
+    0.071089376089  ( 2)       0.071096202933  ( 2)       0.134599959285  ( 2)       0.280118869235  ( 2)       0.327241505436  ( 2)
+    0.327264476875  ( 2)       0.482982387929  ( 2)       0.642058745250  ( 2)       0.642063843779  ( 2)       0.654524943781  ( 2)
+    0.659277904138  ( 2)       0.659288148017  ( 2)       1.109735618654  ( 2)       1.346405303783  ( 2)       1.346512987449  ( 2)
+    1.703369413638  ( 2)       2.138691080396  ( 2)       2.138716426995  ( 2)       2.142867082800  ( 2)       3.730908385711  ( 2)
+    4.461673382198  ( 2)       7.163321617943  ( 2)       7.164492254126  ( 2)       7.272187786573  ( 2)      16.258241257888  ( 2)
+   22.644413949717  ( 2)      59.284716153491  ( 2)     220.036990986944  ( 2)     925.185586515796  ( 2)    4979.854683435309  ( 2)
 * HOMO - LUMO gap:
 
     E(LUMO) :     0.07108938 au (symmetry E1 )
@@ -912,88 +911,123 @@ It.    1    -14.82501270597      1.48D+01  0.00D+00  8.40D-10               0.09
   ------------------------------------------
     gap     :     0.27248611 au
 
-  12 Mar 19 09:57:55 read from DFCOEF:Water molecule. X2C Hamiltonian. CC energies.     Tue Mar 12 09:57:53 2019
-  12 Mar 19 09:57:55 retrieved basis set information
+  13 Mar 19 10:14:29 read from DFCOEF:Water molecule. X2C Hamiltonian. CC energies.     Wed Mar 13 10:14:26 2019
+  13 Mar 19 10:14:29 retrieved basis set information
   Initialized global data
-  Starting CC calculation with exatensor
- ExaCorr: Inferred TAVP-MNG depth =            1
- ExaCorr: Registered AO vector space of dimension           34 : Number of segments =            2
- ExaCorr: Registered OCC vector space of dimension            3 : Number of segments =            2
- ExaCorr: Registered VIRT vector space of dimension           14 : Number of segments =            2
-  Registered AO and MO spaces
-  Initialized and registered tensor methods
+  13 Mar 19 10:14:29 Entered cc_driver routine
+  13 Mar 19 10:14:29 Initialized talsh library
+  Status           0: Size (Bytes) =    1073741824: Max args in HAB =    8192
+
+  Integral module InteRest is initialized
+  Last commit rev         | af67681897b1ecc14a7668475bd13b62471f8211
+  Last commit author      | Michal Repisky 
+  Last commit time        | Wed Oct 16 14:37:58 2013 +0200
+  Last update time        | Sat Feb 20 15:39:00 2015 +0200
+
+  13 Mar 19 10:14:29 Initialized interest library
   Characteristics of this calculation
   - Solve CCD equations:             F
   - Solve Lambda equations:          F
-  - Number of atomic orbitals:                         34
   - Number of occupied spinors:                3
   - Number of virtual spinors:                14
   - Target precision of amplitudes:    1.0000000000000001E-009
   - Maximum number of cycles:                 30
-  - ExaTensor block size                      75
-  - Integral transformation scheme             3
   - Print Level                                4
-  - occupied spinors            3           4           5
-  - virtual spinors            7           8           9          10          11          12          13          14          15          16          17          18          19          20
-  12 Mar 19 09:57:55 starting ccsd calculation
-  12 Mar 19 09:57:55 allocated AO integral tensor
-  12 Mar 19 09:57:56 finished ao integral calculation
-  12 Mar 19 09:57:56 choosing moint_scheme 3
-  12 Mar 19 09:57:58 vv halftransformation completed
-  12 Mar 19 09:57:58 vvvv integrals completed
-  12 Mar 19 09:57:59 vovv integrals completed
-  12 Mar 19 09:57:59 vovo integrals completed
-  12 Mar 19 09:57:59 ov halftransformation completed
-  12 Mar 19 09:58:00 ovvo integrals completed
-  12 Mar 19 09:58:00 vovo integrals anti-symmetrized
-  12 Mar 19 09:58:00 oovv integrals completed
-  12 Mar 19 09:58:00 oo halftransformation completed
-  12 Mar 19 09:58:01 ooov integrals completed
-  12 Mar 19 09:58:01 oooo integrals completed
-  12 Mar 19 09:58:01 initialized two electron integrals
-  12 Mar 19 09:58:01 initialized Fock matrix
-  MP2 energy =   -6.2596867972714307E-003
-  ccdriver: allocated all tensors
-  Iteration    1 CCSD energy =   -0.008379294650309 convergence =   5.4E-02
-  Iteration    2 CCSD energy =   -0.009284686452821 convergence =   3.0E-02
-  Iteration    3 CCSD energy =   -0.010370045690501 convergence =   1.9E-02
-  Iteration    4 CCSD energy =   -0.010380931056125 convergence =   1.3E-03
-  Iteration    5 CCSD energy =   -0.010380308232420 convergence =   4.0E-04
-  Iteration    6 CCSD energy =   -0.010380372219630 convergence =   9.0E-05
-  Iteration    7 CCSD energy =   -0.010380388124088 convergence =   2.3E-05
-  Iteration    8 CCSD energy =   -0.010380400092604 convergence =   5.1E-06
-  Iteration    9 CCSD energy =   -0.010380376765656 convergence =   1.5E-06
-  Iteration   10 CCSD energy =   -0.010380349055172 convergence =   1.1E-06
-  Iteration   11 CCSD energy =   -0.010380345658867 convergence =   9.5E-07
-  Iteration   12 CCSD energy =   -0.010380346781756 convergence =   9.7E-07
-  Iteration   13 CCSD energy =   -0.010380342663441 convergence =   7.7E-07
-  Iteration   14 CCSD energy =   -0.010380340546646 convergence =   2.6E-07
-  Iteration   15 CCSD energy =   -0.010380341318121 convergence =   1.1E-07
-  Iteration   16 CCSD energy =   -0.010380341749624 convergence =   5.9E-08
-  Iteration   17 CCSD energy =   -0.010380341591767 convergence =   2.8E-08
-  Iteration   18 CCSD energy =   -0.010380341433048 convergence =   1.1E-08
-  Iteration   19 CCSD energy =   -0.010380341336555 convergence =   1.6E-08
-  Iteration   20 CCSD energy =   -0.010380341279797 convergence =   4.8E-09
-  Iteration   21 CCSD energy =   -0.010380341269109 convergence =   4.8E-09
-  Iteration   22 CCSD energy =   -0.010380341263893 convergence =   4.5E-09
-  Iteration   23 CCSD energy =   -0.010380341264524 convergence =   4.6E-09
-  Iteration   24 CCSD energy =   -0.010380341266810 convergence =   4.6E-09
-  Iteration   25 CCSD energy =   -0.010380341271198 convergence =   4.4E-09
-  Iteration   26 CCSD energy =   -0.010380341268054 convergence =   4.3E-09
-  Iteration   27 CCSD energy =   -0.010380341265603 convergence =   3.4E-09
-  Iteration   28 CCSD energy =   -0.010380341257294 convergence =   3.3E-09
-  Iteration   29 CCSD energy =   -0.010380341251953 convergence =   2.0E-09
-  Iteration   30 CCSD energy =   -0.010380341245122 convergence =   1.7E-09
-  Final CCSD energy =   -1.0380341245121971E-002
-#MSG(DSVP): Shut down DSVP      2: TAVP-MNG#0
-#MSG(DSVP): Counters: Recv    4239; Rtrd    4239; Crtd   66696; Fail    0: Time (s)      115.623
-#MSG(TAL-SH): Device utilization statistics for MPI process      1:
-#MSG(DSVP): Shut down DSVP      1: TAVP-WRK#1
-#MSG(DSVP): Counters: Recv   28048; Rtrd   28048; Crtd   23407; Fail    0: Time (s)      115.539
-#MSG(TAL-SH): Device utilization statistics for MPI process      0:
-#MSG(DSVP): Shut down DSVP      0: TAVP-WRK#0
-#MSG(DSVP): Counters: Recv   38650; Rtrd   38650; Crtd   32393; Fail    0: Time (s)      115.646
-  Leaving cc_driver routine
+  - occupied spinors                           3           4           5
+  - virtual spinors                            7           8           9          10          11          12          13          14          15          16          17          18          19          20
+  13 Mar 19 10:14:29 Getting orbital energies
+  13 Mar 19 10:14:29 Retrieved orbital energies
+  13 Mar 19 10:14:29 entered aomo_transform
+  13 Mar 19 10:14:29 initialized mo-coefficients
+  13 Mar 19 10:14:29 constructed a1 and a2
+  13 Mar 19 10:14:29 first ht done
+  13 Mar 19 10:14:29 constructed a3
+  13 Mar 19 10:14:29 second ht done
+  13 Mar 19 10:14:29 leaving aomo_transform
+  13 Mar 19 10:14:29 entered aomo_transform
+  13 Mar 19 10:14:29 initialized mo-coefficients
+  13 Mar 19 10:14:29 constructed a1 and a2
+  13 Mar 19 10:14:29 first ht done
+  13 Mar 19 10:14:29 constructed a3
+  13 Mar 19 10:14:29 second ht done
+  13 Mar 19 10:14:29 leaving aomo_transform
+  13 Mar 19 10:14:29 entered aomo_transform
+  13 Mar 19 10:14:29 initialized mo-coefficients
+  13 Mar 19 10:14:29 constructed a1 and a2
+  13 Mar 19 10:14:29 first ht done
+  13 Mar 19 10:14:29 constructed a3
+  13 Mar 19 10:14:29 second ht done
+  13 Mar 19 10:14:29 leaving aomo_transform
+  13 Mar 19 10:14:29 entered aomo_transform
+  13 Mar 19 10:14:29 initialized mo-coefficients
+  13 Mar 19 10:14:29 constructed a1 and a2
+  13 Mar 19 10:14:29 first ht done
+  13 Mar 19 10:14:29 constructed a3
+  13 Mar 19 10:14:29 second ht done
+  13 Mar 19 10:14:29 leaving aomo_transform
+  13 Mar 19 10:14:29 entered aomo_transform
+  13 Mar 19 10:14:29 initialized mo-coefficients
+  13 Mar 19 10:14:29 constructed a1 and a2
+  13 Mar 19 10:14:29 first ht done
+  13 Mar 19 10:14:29 constructed a3
+  13 Mar 19 10:14:29 second ht done
+  13 Mar 19 10:14:29 leaving aomo_transform
+  13 Mar 19 10:14:29 entered aomo_transform
+  13 Mar 19 10:14:29 initialized mo-coefficients
+  13 Mar 19 10:14:29 constructed a1 and a2
+  13 Mar 19 10:14:29 first ht done
+  13 Mar 19 10:14:29 constructed a3
+  13 Mar 19 10:14:29 second ht done
+  13 Mar 19 10:14:29 leaving aomo_transform
+  13 Mar 19 10:14:29 entered aomo_transform
+  13 Mar 19 10:14:29 initialized mo-coefficients
+  13 Mar 19 10:14:29 constructed a1 and a2
+  13 Mar 19 10:14:30 first ht done
+  13 Mar 19 10:14:30 constructed a3
+  13 Mar 19 10:14:30 second ht done
+  13 Mar 19 10:14:30 leaving aomo_transform
+  13 Mar 19 10:14:30 Fock matrix initialized
+  MP2 energy =   -6.2596867973643399E-003
+  13 Mar 19 10:14:30 Succesfully allocated all tensors
+  Iteration    1 CCSD energy =   -0.008379294650424 convergence =   5.4E-02
+  Iteration    2 CCSD energy =   -0.009284686452941 convergence =   3.0E-02
+  Iteration    3 CCSD energy =   -0.010370045690625 convergence =   1.9E-02
+  Iteration    4 CCSD energy =   -0.010380931056249 convergence =   1.3E-03
+  Iteration    5 CCSD energy =   -0.010380308232544 convergence =   4.0E-04
+  Iteration    6 CCSD energy =   -0.010380372219753 convergence =   9.0E-05
+  Iteration    7 CCSD energy =   -0.010380388124212 convergence =   2.3E-05
+  Iteration    8 CCSD energy =   -0.010380400092727 convergence =   5.1E-06
+  Iteration    9 CCSD energy =   -0.010380376765779 convergence =   1.5E-06
+  Iteration   10 CCSD energy =   -0.010380349055295 convergence =   1.1E-06
+  Iteration   11 CCSD energy =   -0.010380345658991 convergence =   9.5E-07
+  Iteration   12 CCSD energy =   -0.010380346781880 convergence =   9.7E-07
+  Iteration   13 CCSD energy =   -0.010380342663563 convergence =   7.7E-07
+  Iteration   14 CCSD energy =   -0.010380340546778 convergence =   2.6E-07
+  Iteration   15 CCSD energy =   -0.010380341318034 convergence =   1.1E-07
+  Iteration   16 CCSD energy =   -0.010380341733215 convergence =   5.9E-08
+  Iteration   17 CCSD energy =   -0.010380341660503 convergence =   3.6E-08
+  Iteration   18 CCSD energy =   -0.010380341548037 convergence =   4.5E-08
+  Iteration   19 CCSD energy =   -0.010380341420886 convergence =   1.0E-08
+  Iteration   20 CCSD energy =   -0.010380341353783 convergence =   1.2E-08
+  Iteration   21 CCSD energy =   -0.010380341294915 convergence =   6.0E-09
+  Iteration   22 CCSD energy =   -0.010380341276048 convergence =   6.1E-09
+  Iteration   23 CCSD energy =   -0.010380341264583 convergence =   5.2E-09
+  Iteration   24 CCSD energy =   -0.010380341265011 convergence =   5.3E-09
+  Iteration   25 CCSD energy =   -0.010380341259006 convergence =   5.3E-09
+  Iteration   26 CCSD energy =   -0.010380341226418 convergence =   4.8E-09
+  Iteration   27 CCSD energy =   -0.010380341215895 convergence =   4.4E-09
+  Iteration   28 CCSD energy =   -0.010380341204128 convergence =   3.8E-09
+  Iteration   29 CCSD energy =   -0.010380341207478 convergence =   3.5E-09
+  Iteration   30 CCSD energy =   -0.010380341207393 convergence =   3.0E-09
+  4th order triples correction :      -0.000053063894219
+  5th order triples (T) correction :   0.000000631279839
+  5th order triples -T  correction :   0.000003345077248
+  CCSD+T  correlation energy :        -0.010433405101612
+  CCSD(T) correlation energy :        -0.010432773821773
+  CCSD-T  correlation energy :        -0.010430060024364
+  Final CCSD energy    =   -1.0380341207393290E-002
+  Final CCSD(T) energy =   -1.0432773821772665E-002
+  13 Mar 19 10:14:32 Leaving cc_driver routine
 
 *****************************************************
 ********** E N D   of   D I R A C  output  **********
@@ -1001,11 +1035,11 @@ It.    1    -14.82501270597      1.48D+01  0.00D+00  8.40D-10               0.09
 
 
  
-     Date and time (Mac OSX): Tue Mar 12 09:59:51 2019
+     Date and time (Mac OSX): Wed Mar 13 10:14:32 2019
      Host name              : MW-038275.clients.vu.nl                 
 
->>>> Node 0, utime: 71, stime: 69, minflt: 591381, majflt: 1185, nvcsw: 32, nivcsw: 10924495, maxrss: 303095808
->>>> Total WALL time used in DIRAC: 1min56s
+>>>> Node 0, utime: 4, stime: 2, minflt: 74354, majflt: 197, nvcsw: 20, nivcsw: 531678, maxrss: 300793856
+>>>> Total WALL time used in DIRAC: 4s
   
   Dynamical Memory Usage Summary for Master
   

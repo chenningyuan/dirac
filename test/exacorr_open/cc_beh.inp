@@ -27,7 +27,6 @@ Water molecule. X2C Hamiltonian. CC energies.
 2
 .VIR_BETA
 4..10
-.EXATENSOR
 .PRINT
 4
 **INTEGRALS
