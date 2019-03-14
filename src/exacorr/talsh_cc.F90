@@ -1037,22 +1037,18 @@ module talsh_cc
             ierr=talsh_tensor_contract("F(a,b)+=V(a,k,b,l)*I(k,l)",fv_tensor,int_t%vovo,id_mat_occ, ONE)
             if (print_level >0) call print_date('two electron integrals added to Fock Matrix')
 
-            if (print_level >1) call print_tensor(fo_tensor, 2, 1.0D-6, 'fo_tensor')
-            if (print_level >1) call print_tensor(fov_tensor, 2, 1.0D-6, 'fov_tensor')
-            if (print_level >1) call print_tensor(fv_tensor, 2, 1.0D-6, 'fv_tensor')
-
             !now we can get the correct epsilon values
-            ierr=talsh_tensor_get_body_access(fo_tensor,body_p,C8,0,DEV_HOST)
-            call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
-            do i=1,fo_dims(1)
-              eps_occ(i)=h_tens(i,i)
-            end do
+            !ierr=talsh_tensor_get_body_access(fo_tensor,body_p,C8,0,DEV_HOST)
+            !call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
+            !do i=1,fo_dims(1)
+            !  eps_occ(i)=h_tens(i,i)
+            !end do
 
-            ierr=talsh_tensor_get_body_access(fv_tensor,body_p,C8,0,DEV_HOST)
-            call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
-            do i=1,fv_dims(1)
-              eps_vir(i)=h_tens(i,i)
-            end do
+            !ierr=talsh_tensor_get_body_access(fv_tensor,body_p,C8,0,DEV_HOST)
+            !call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
+            !do i=1,fv_dims(1)
+            !  eps_vir(i)=h_tens(i,i)
+            !end do
 
             !apply level shit
             if (level_shift.gt.1.0D-14) then
@@ -1109,6 +1105,10 @@ module talsh_cc
             ierr=talsh_tensor_contract("R()+=F(a,b)*F(a,b)",result_tensor,fv_tensor,fv_tensor)
             off_diag=real(result_tens(1),8) 
             if (print_level >0) print*," Norm of VV part Fock matrix (without diag) = ", off_diag
+
+            if (print_level >3) call print_tensor(fo_tensor, 2, 1.0D-6, 'fo_tensor')
+            if (print_level >3) call print_tensor(fov_tensor, 2, 1.0D-6, 'fov_tensor')
+            if (print_level >3) call print_tensor(fv_tensor, 2, 1.0D-6, 'fv_tensor')
             
             ierr=talsh_tensor_destruct(id_mat_occ)
             ierr=talsh_tensor_destruct(diag_mat_occ)

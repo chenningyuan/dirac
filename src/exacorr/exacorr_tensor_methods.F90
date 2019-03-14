@@ -57,22 +57,23 @@ module exacorr_tensor_methods
           procedure, public:: apply=>scale_with_denom
         end type scale_with_denom_t
 
-        !set diagonal
+        !set diagonal to constant
         type, extends(tens_method_uni_t), public:: set_diagonal_t
-         real(8), private :: constant
+         complex(8), private :: constant
          contains
           procedure, public:: init_const_ctor=>set_const
           procedure, public:: apply=>diag_set
         end type set_diagonal_t
 
-        !set diag with energies:
+        !set orbital energies on diagonal
         type, extends(tens_method_uni_t), public:: set_energy_t
-         real(8), allocatable, private :: eps(:)
-         integer, private              :: space_id
+         real(8), allocatable, private :: eps_occ(:),eps_vir(:)
+         integer, private              :: occ_id, vir_id    
          contains
           procedure, public:: init_eps
           procedure, public:: apply=>eps_on_diagonal
         end type set_energy_t
+
 
         !Initializer for the one electron integrals
         type, extends(tens_method_uni_t), public:: init_one_el_t
@@ -806,7 +807,7 @@ module exacorr_tensor_methods
         subroutine set_const(this, const)
 
           class(set_diagonal_t), intent(out)   :: this
-          real(8), intent(in) :: const
+          complex(8), intent(in) :: const
 
           this%constant=const
 
@@ -825,49 +826,63 @@ module exacorr_tensor_methods
          tens=tensor%get_dense_adapter(ierr)
          if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
          rank=tens%num_dims
-         if (rank.ne.2) call quit('Error: dimension not 2 in diag_set')
           
-         ierr=fill_diagonal(tens%body_ptr,tens%data_kind,tens%dims(1:rank),tens%bases(1:rank), this%constant)
+         ierr=fill_diagonal(tens%body_ptr,tens%data_kind,tens%dims(1:rank),tens%bases(1:rank), rank, this%constant)
 
         end function diag_set
 
-        function fill_diagonal(tens_body,data_kind,tens_dims,tens_bases, constant) result (ierr)
-         ! routine to fill the diagonal of a matrix
+        function fill_diagonal(tens_body,data_kind,tens_dims,tens_bases, rank, constant) result (ierr)
+          ! routine to fill the diagonal of a matrix
 
-         use, intrinsic:: ISO_C_BINDING
+          use, intrinsic:: ISO_C_BINDING
 
-         implicit none
+          implicit none
 
-         integer(INTD)          :: ierr
-         type(C_PTR), value     :: tens_body       !in: C pointer to the tensor body (tensor elements)
-         integer(4), value      :: data_kind       !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
-         integer(8), intent(in) :: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
-         integer(8), intent(in) :: tens_bases(1:*) !in: base offsets for each tensor dimension)
-         real(8), intent(in)    :: constant
+          integer(INTD)          :: ierr
+          type(C_PTR), value     :: tens_body       !in: C pointer to the tensor body (tensor elements)
+          integer(4), value      :: data_kind, rank !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
+          integer(8), intent(in) :: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
+          integer(8), intent(in) :: tens_bases(1:*) !in: base offsets for each tensor dimension)
+          complex(8), intent(in) :: constant
 
-
-         integer            :: lo, la, ro, ra
-         complex(8),pointer :: h_tens(:,:)
-         complex(8)         :: const
+          integer            :: po, qo, ro, pa, qa, ra
+          complex(8),pointer :: h2_tens(:,:), h3_tens(:,:,:)
           
-
-          const=dcmplx(constant,0d0)
-      
           ierr=0
 
-          call c_f_pointer(tens_body,h_tens,tens_dims(1:2)) !map C pointer to 2-dimensional array
+          if (rank==2) then
+            call c_f_pointer(tens_body,h2_tens,tens_dims(1:2)) !map C pointer to 2-dimensional array
 
-          do lo = 1, tens_dims(2) ! loop over columns
-             la = tens_bases(2) + lo - 1
+            do qo = 1, tens_dims(2) ! loop over columns
+              qa = tens_bases(2) + qo - 1
+                do ro = 1, tens_dims(1) ! loop over rows
+                  ra = tens_bases(1) + ro - 1
+                  if (qa.eq.ra) then
+                    h2_tens(ro, qo) = constant
+                  endif
+                end do
+            end do
+          else if (rank==3) then
+            call c_f_pointer(tens_body,h3_tens,tens_dims(1:3)) !map C pointer to 3-dimensional array
+
+            do po = 1, tens_dims(3) ! loop over depth
+              pa = tens_bases(3) + po - 1
+              do qo = 1, tens_dims(2) ! loop over colums
+                qa = tens_bases(2) + qo - 1
+                if (pa.eq.qa) then
                   do ro = 1, tens_dims(1) ! loop over rows
-                     ra = tens_bases(1) + ro - 1
-                     if (la.eq.ra) then
-                       h_tens(ro, lo) = const
-                     else
-                       h_tens(ro, lo) = ZERO
-                     endif
+                    ra = tens_bases(1) + ro - 1
+                    if (qa.eq.ra) then
+                      h3_tens(ro, qo, po) = constant
+                    endif
                   end do
-          end do
+                end if
+              end do
+            end do
+
+          else
+            call quit('Error: dimension not 2 or 3 in fill_diagonal')
+          end if
 
         end function fill_diagonal
 
@@ -966,24 +981,52 @@ module exacorr_tensor_methods
 
         end function one_el_int_set
 
-        subroutine init_eps(this,mo_list,nmo,space_id)
+        subroutine init_eps(this,mo_occ,nocc,occ_space_id,mo_vir,nvir,vir_space_id,level_shift)
 
          use exacorr_mo
          use exacorr_global
 
          implicit none
-         integer, intent(in) :: nmo, space_id
-         integer, intent(in) :: mo_list(:)
+         integer, intent(in) :: nocc, occ_space_id, nvir, vir_space_id
+         integer, intent(in) :: mo_occ(:),mo_vir(:)
+         real(8), intent(in) :: level_shift
          class(set_energy_t), intent(out):: this
 
-         type(cmo) :: cspinor
+         type(cmo)          :: cspinor
+         integer            :: lumo
+         real(8)            :: e_homo, e_lumo
+         real(8), parameter :: THRESHOLD=1.D-8
 
-         call get_mo_coefficients (cspinor,mo_list,nmo)
-         allocate(this%eps(nmo))
-         this%eps = cspinor%energy
+         call get_mo_coefficients (cspinor,mo_occ,nocc)
+         allocate(this%eps_occ(nocc))
+         this%eps_occ = cspinor%energy
          call dealloc_mo (cspinor)
 
-         this%space_id=space_id
+         call get_mo_coefficients (cspinor,mo_vir,nvir)
+         allocate(this%eps_vir(nvir))
+         this%eps_vir = cspinor%energy
+         call dealloc_mo (cspinor)
+
+         if (level_shift.gt.1.0D-14) then
+           e_homo = maxval(this%eps_occ)
+           e_lumo = minval(this%eps_vir)
+           lumo   = minloc(this%eps_vir,1)
+
+           do while(e_lumo-e_homo < THRESHOLD)
+             print*, "e_homo, e_lumo", e_homo, e_lumo
+             if (e_lumo+level_shift-e_homo >THRESHOLD) then
+               this%eps_vir(lumo)=e_lumo+level_shift
+               print *, "lumo energy level shifted by ", level_shift," to ",e_lumo+level_shift
+             else
+               call quit('Negative HOMO-LUMO gap')
+             end if
+             e_lumo = minval(this%eps_vir)
+             lumo   = minloc(this%eps_vir, 1)
+           end do
+         end if
+
+         this%occ_id=occ_space_id
+         this%vir_id=vir_space_id
 
         end subroutine init_eps
 
@@ -1008,7 +1051,7 @@ module exacorr_tensor_methods
           tens=tensor%get_dense_adapter(ierr)
           if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
           rank=tens%num_dims
-          if (rank.ne.2) call quit('Error: dimension not 2 in energy_set')
+          if (rank.ne.2) call quit('Error: dimension not 2 in eps_on_diagonal')
 
           allocate(dims(rank))
           call tensor%get_dims(dims,rank)
@@ -1017,19 +1060,31 @@ module exacorr_tensor_methods
           allocate (tens_root (rank))
           call tensor%get_space_ids(tens_id,tens_root,ierr)
 
-          if (tens_id(1) /= this%space_id) then
-            call quit('incompatible space for first index in eps_on_diagonal')
-          endif
-          if (tens_id(2) /= this%space_id) then
-            call quit('incompatible space for second index in eps_on_diagonal')
-          endif
+          if (tens_id(1) == this%occ_id) then
+            if (tens_id(2) == this%occ_id) then
+              space_id=this%occ_id ! tens_id 1 corresponds to occupied space
+            else 
+              call quit('incompatible space for second index in eps_on_diagonal')
+            end if
+          else if (tens_id(1) == this%vir_id) then
+            if (tens_id(2) == this%vir_id) then
+             space_id=this%vir_id! tens_id 1 corresponds to occupied space
+            else 
+              call quit('incompatible space for second index in eps_on_diagonal')
+            end if
+          else
+            call quit('incompatible space id in eps_on_diagonal')
+          end if
 
-          ierr=energy_set_diag(tens%body_ptr,tens%dims(1:rank),tens%bases(1:rank),this%eps )
+          ierr=energy_set_diag(tens%body_ptr,tens%dims(1:rank),tens%bases(1:rank), space_id, &
+                               this%eps_occ, this%eps_vir, this%occ_id, this%vir_id)
+
           deallocate(dims)
         end function eps_on_diagonal
 
-        integer function energy_set_diag(tens_body,tens_dims,tens_bases,eps) result (ierr)
-          !Initialization routine to fill tensor with one electron integrals
+        integer function energy_set_diag(tens_body,tens_dims,tens_bases, space_id, &
+                              eps_occ, eps_vir, occ_id, vir_id) result (ierr)
+          !Initialization routine to fill tensor diagonals with eigenvalues form dfcoef
 
           use exacorr_datatypes
           use, intrinsic:: ISO_C_BINDING
@@ -1040,9 +1095,9 @@ module exacorr_tensor_methods
           integer(8), intent(in):: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
           integer(8), intent(in):: tens_bases(1:*) !in: base offsets for each tensor dimension)
 
-          real(8), intent(in)   :: eps(:)
-
-          complex(8),pointer :: i_tens(:,:)
+          real(8), intent(in)   :: eps_occ(:), eps_vir(:)
+          integer, intent(in)   :: space_id, occ_id, vir_id
+          complex(8),pointer    :: i_tens(:,:)
 
           integer(8) :: ko, lo, kg, lg
 
@@ -1057,8 +1112,10 @@ module exacorr_tensor_methods
              do ko = 1, tens_dims(1) 
                 kg = tens_bases(1) + ko - 1
 
-                if (kg == lg) i_tens(ko,lo) = eps(lg)
-
+                if (kg == lg) then
+                  if (space_id.eq.occ_id) i_tens(ko,lo) = eps_occ(lg)
+                  if (space_id.eq.vir_id) i_tens(ko,lo) = eps_vir(lg)
+                end if
              end do
           end do
 

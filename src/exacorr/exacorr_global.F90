@@ -57,6 +57,8 @@ module exacorr_global
          subroutine initialize_global_data
 
              use exacorr_respect
+             use exacc_cfg
+
 #if defined (VAR_MPI)
              use interface_to_mpi
              integer :: my_MPI_rank
@@ -76,6 +78,11 @@ module exacorr_global
              inquire (file='DFCOEF',exist=tobe)
              if (tobe) then
                 call read_from_dfcoef (ao_basis,cspinor_all,ierr)
+                if (exa_input%beta_occ .and. (.not.TALSH_ONLY)) then
+                  if (exa_input%level_shift.lt.1.0D-10) then
+                    call quit ('Open shell computations with DIRAC and EXACORR require level shift (LSHIFT)')
+                  end if
+               end if
              else
                 inquire (file='RSD_MOS',exist=tobe)
                 if (tobe) then
@@ -103,6 +110,9 @@ module exacorr_global
                 end if
              else
                one_el_exist = .FALSE.
+               if (exa_input%beta_occ) then
+                 call quit ('One electron integrals required in the open shell case (MOLTRA)')
+               end if
              end if
              
              call synchronize_global_data
