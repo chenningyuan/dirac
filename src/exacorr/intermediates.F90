@@ -28,7 +28,8 @@ module intermediates
 #if defined (VAR_MPI)
         module procedure get_hov_exatns
 #endif
-        module procedure get_hov_talsh
+        module procedure get_hov_talsh_dt
+        module procedure get_hov_talsh_no_dt
      end interface get_hov
 
      interface get_hvv
@@ -70,7 +71,8 @@ module intermediates
 #if defined (VAR_MPI)
         module procedure get_fbar_oo_exatns
 #endif
-        module procedure get_fbar_oo_talsh
+        module procedure get_fbar_oo_talsh_dt
+        module procedure get_fbar_oo_talsh_no_dt
      end interface get_fbar_oo
 
      interface get_fbar_ov
@@ -78,6 +80,7 @@ module intermediates
         module procedure get_fbar_ov_exatns
 #endif
         module procedure get_fbar_ov_talsh
+        module procedure get_fbar_ov_talsh_scratch
      end interface get_fbar_ov
 
      interface get_fbar_vv
@@ -85,6 +88,7 @@ module intermediates
         module procedure get_fbar_vv_exatns
 #endif
         module procedure get_fbar_vv_talsh
+        module procedure get_fbar_vv_talsh_scratch
      end interface get_fbar_vv
 
      interface get_w_oooo
@@ -92,6 +96,7 @@ module intermediates
         module procedure get_w_oooo_exatns
 #endif
         module procedure get_w_oooo_talsh
+        module procedure get_w_oooo_talsh_scratch
      end interface get_w_oooo
 
      interface get_w_ooov
@@ -106,6 +111,7 @@ module intermediates
         module procedure get_w_ovoo_exatns
 #endif
         module procedure get_w_ovoo_talsh
+        module procedure get_w_ovoo_talsh_scratch
      end interface get_w_ovoo
 
      interface get_w_vovo
@@ -113,6 +119,7 @@ module intermediates
         module procedure get_w_vovo_exatns
 #endif
         module procedure get_w_vovo_talsh
+        module procedure get_w_vovo_talsh_scratch
      end interface get_w_vovo
 
      interface get_wbar_vovo
@@ -580,21 +587,25 @@ module intermediates
        end subroutine get_gvv_lambda_exatns
 #endif
 
-       subroutine get_tau_talsh(comm_t,CCD)
+       subroutine get_tau_talsh(tau_tensor,t2_tensor,t1_tensor)
 
         use talsh
-        use exacorr_datatypes, only : talsh_comm_tens
 
-        type(talsh_comm_tens),intent(inout) :: comm_t
-        logical, intent(in) :: CCD
+        type(talsh_tens_t), intent(inout) :: tau_tensor,t2_tensor
+        type(talsh_tens_t), intent(inout), optional :: t1_tensor
+!       CCD switch
+        logical :: CCD = .false.
+!       error code
         integer :: ierr
 
+        if (.not.present(t1_tensor)) CCD = .true.
+
 !       tau ! validated
-        ierr=talsh_tensor_init(comm_t%tau)
-        ierr=talsh_tensor_add("T(a,b,i,j)+=R(a,b,i,j)",comm_t%tau,comm_t%t2)
+        ierr=talsh_tensor_init(tau_tensor)
+        ierr=talsh_tensor_add("T(a,b,i,j)+=R(a,b,i,j)",tau_tensor,t2_tensor)
         if (.not.CCD) then
-            ierr=talsh_tensor_contract("T(a,b,i,j)+=T(a,i)*T(b,j)",comm_t%tau,comm_t%t1,comm_t%t1)                  ! o(2)v(2)
-            ierr=talsh_tensor_contract("T(a,b,i,j)+=T(a,j)*T(b,i)",comm_t%tau,comm_t%t1,comm_t%t1,scale=MINUS_ONE)  ! o(2)v(2)
+            ierr=talsh_tensor_contract("T(a,b,i,j)+=T(a,i)*T(b,j)",tau_tensor,t1_tensor,t1_tensor)                  ! o(2)v(2)
+            ierr=talsh_tensor_contract("T(a,b,i,j)+=T(a,j)*T(b,i)",tau_tensor,t1_tensor,t1_tensor,scale=MINUS_ONE)  ! o(2)v(2)
         end if
 
        end subroutine get_tau_talsh
@@ -615,21 +626,41 @@ module intermediates
 
        end subroutine get_hoo_talsh
 
-       subroutine get_hov_talsh(comm_t,oovv_tensor)
+       subroutine get_hov_talsh_dt(comm_t,oovv_tensor,CCD)
 
         use talsh
         use exacorr_datatypes, only : talsh_comm_tens
 
-        type(talsh_comm_tens),intent(inout) :: comm_t
-        type(talsh_tens_t),intent(inout) :: oovv_tensor
+        type(talsh_comm_tens), intent(inout) :: comm_t
+        type(talsh_tens_t),    intent(inout) :: oovv_tensor
+        logical,               intent(in   ) :: CCD
         integer :: ierr
 
 !       ov ! validated
         ierr=talsh_tensor_init(comm_t%hov)
-        ierr=talsh_tensor_contract("H(k,c)+=V(k,l,c,d)*T(d,l)",comm_t%hov,oovv_tensor,comm_t%t1) ! o(2)v(2)
+        if (.not.CCD) ierr=talsh_tensor_contract("H(k,c)+=V(k,l,c,d)*T(d,l)",comm_t%hov,oovv_tensor,comm_t%t1) ! o(2)v(2)
         ierr=talsh_tensor_add("H(k,c)+=F(k,c)",comm_t%hov,comm_t%fov)
 
-       end subroutine get_hov_talsh
+       end subroutine get_hov_talsh_dt
+
+       subroutine get_hov_talsh_no_dt(hov_tensor,oovv_tensor,fov_tensor,t1_tensor)
+
+        use talsh
+
+        type(talsh_tens_t),intent(inout) :: hov_tensor
+        type(talsh_tens_t), intent(inout) :: oovv_tensor, fov_tensor
+        type(talsh_tens_t), intent(inout), optional :: t1_tensor
+        logical :: CCD=.false.
+        integer :: ierr
+
+        if (.not.present(t1_tensor)) CCD = .true.
+
+!       ov ! validated
+        ierr=talsh_tensor_init(hov_tensor)
+        if (.not.CCD) ierr=talsh_tensor_contract("H(k,c)+=V(k,l,c,d)*T(d,l)",hov_tensor,oovv_tensor,t1_tensor) ! o(2)v(2)
+        ierr=talsh_tensor_add("H(k,c)+=F(k,c)",hov_tensor,fov_tensor)
+
+       end subroutine get_hov_talsh_no_dt
 
        subroutine get_hvv_talsh(comm_t,oovv_tensor)
 
@@ -730,12 +761,12 @@ module intermediates
 
        end subroutine get_h_talsh
 
-       subroutine get_fbar_oo_talsh(fbar_oo,comm_t,CCD)
+       subroutine get_fbar_oo_talsh_dt(fbar_oo,comm_t,CCD)
 
         use talsh
         use exacorr_datatypes, only : talsh_comm_tens
 
-        type(talsh_tens_t),intent(inout)   :: fbar_oo
+        type(talsh_tens_t),   intent(inout)   :: fbar_oo
         type(talsh_comm_tens),intent(inout)   :: comm_t
         logical, intent(in) :: CCD
         integer :: ierr
@@ -743,7 +774,50 @@ module intermediates
         ierr=talsh_tensor_add("F(i,m)+=G(i,m)",fbar_oo,comm_t%goo,scale=MINUS_ONE)
         if (.not.CCD) ierr=talsh_tensor_contract("F(i,m)+=R(i,e)*T(e,m)",fbar_oo,comm_t%fov,comm_t%t1,scale=TWO)
 
-       end subroutine get_fbar_oo_talsh
+       end subroutine get_fbar_oo_talsh_dt
+
+       subroutine get_fbar_oo_talsh_no_dt(fbar_oo,int_t,foo_tensor,fov_tensor,t2_tensor,t1_tensor)
+
+        use talsh
+        use tensor_algebra
+        use exacorr_datatypes, only : talsh_intg_tens
+
+!       input variables
+        type(talsh_tens_t),    intent(inout) :: fbar_oo
+        type(talsh_intg_tens), intent(inout) :: int_t
+        type(talsh_tens_t),    intent(inout) :: foo_tensor, fov_tensor, t2_tensor
+        type(talsh_tens_t),    intent(inout), optional :: t1_tensor
+!       local intermediate
+        type(talsh_tens_t) :: tau_tensor
+        integer            :: tens_rank
+        integer            :: vvoo_dims(4)
+!       CCD switch
+        logical :: CCD = .false.
+!       error code
+        integer :: ierr
+
+        if (.not.present(t1_tensor)) CCD = .true.
+
+        ierr=talsh_tensor_init(fbar_oo)
+        ierr=talsh_tensor_add("F(i,m)+=U(i,m)",fbar_oo,foo_tensor)
+        if (.not.CCD) then
+          ierr=talsh_tensor_contract("F(i,m)+=U(i,e)*T(e,m)",fbar_oo,fov_tensor,t1_tensor)
+          ierr=talsh_tensor_contract("F(i,m)+=V(i,n,m,e)*T(e,n)",fbar_oo,int_t%ooov,t1_tensor)
+        end if
+
+        ierr=talsh_tensor_dimensions(t2_tensor,tens_rank,vvoo_dims)
+        ierr=talsh_tensor_construct(tau_tensor,C8,vvoo_dims,init_val=ZERO)
+        if (.not.CCD) then
+          call get_tau(tau_tensor,t2_tensor,t1_tensor)
+        else
+          call get_tau(tau_tensor,t2_tensor)
+        end if
+
+        ierr=talsh_tensor_contract("F(i,m)+=V(i,n,e,f)*T(e,f,m,n)",fbar_oo,int_t%oovv,tau_tensor,ONE_HALF)
+
+        ierr=talsh_tensor_destruct(tau_tensor)
+
+       end subroutine get_fbar_oo_talsh_no_dt
 
        subroutine get_fbar_ov_talsh(fbar_ov,hov_tensor)
 
@@ -756,6 +830,24 @@ module intermediates
         ierr=talsh_tensor_add("F(m,e)+=H(m,e)",fbar_ov,hov_tensor)
 
        end subroutine get_fbar_ov_talsh
+
+       subroutine get_fbar_ov_talsh_scratch(fbar_ov,fov_tensor,CCD,oovv_tensor,t1_tensor)
+
+        use talsh
+
+!       input variables
+        type(talsh_tens_t), intent(inout) :: fbar_ov
+        type(talsh_tens_t), intent(inout) :: fov_tensor
+        type(talsh_tens_t), intent(inout), optional :: oovv_tensor, t1_tensor
+        logical,            intent(in   ) :: CCD
+!       error code
+        integer :: ierr
+
+        ierr=talsh_tensor_init(fbar_ov)
+        ierr=talsh_tensor_add("F(m,e)+=U(m,e)",fbar_ov,fov_tensor)
+        if (.not.CCD) ierr=talsh_tensor_contract("F(m,e)+=V(m,n,e,f)*T(f,n)",fbar_ov,oovv_tensor,t1_tensor)
+
+       end subroutine get_fbar_ov_talsh_scratch
 
        subroutine get_fbar_vv_talsh(fbar_vv,gvv_tensor)
 
@@ -770,6 +862,49 @@ module intermediates
 
        end subroutine get_fbar_vv_talsh
 
+       subroutine get_fbar_vv_talsh_scratch(fbar_vv,int_t,fvv_tensor,fov_tensor,t2_tensor,t1_tensor)
+
+        use talsh
+        use tensor_algebra
+        use exacorr_datatypes, only : talsh_intg_tens
+
+!       input variables
+        type(talsh_tens_t),    intent(inout) :: fbar_vv
+        type(talsh_intg_tens), intent(inout) :: int_t
+        type(talsh_tens_t),    intent(inout) :: fvv_tensor, fov_tensor, t2_tensor
+        type(talsh_tens_t),    intent(inout), optional :: t1_tensor
+!       local intermediate
+        type(talsh_tens_t) :: tau_tensor
+        integer            :: tens_rank
+        integer            :: vvoo_dims(4)
+!       CCD switch
+        logical :: CCD = .false.
+!       error code
+        integer :: ierr
+
+        if (.not.present(t1_tensor)) CCD = .true.
+
+        ierr=talsh_tensor_init(fbar_vv)
+        ierr=talsh_tensor_add("F(e,a)+=U(e,a)",fbar_vv,fvv_tensor)
+        if (.not.CCD) then
+          ierr=talsh_tensor_contract("F(e,a)+=U(m,a)*T(e,m)",fbar_vv,fov_tensor,t1_tensor,scale=MINUS_ONE)
+          ierr=talsh_tensor_contract("F(e,a)+=V(e,m,a,f)*T(f,m)",fbar_vv,int_t%vovv,t1_tensor)
+        end if
+
+        ierr=talsh_tensor_dimensions(t2_tensor,tens_rank,vvoo_dims)
+        ierr=talsh_tensor_construct(tau_tensor,C8,vvoo_dims,init_val=ZERO)
+        if (.not.CCD) then
+          call get_tau(tau_tensor,t2_tensor,t1_tensor)
+        else
+          call get_tau(tau_tensor,t2_tensor)
+        end if
+
+        ierr=talsh_tensor_contract("F(e,a)+=V(m,n,a,f)*T(f,e,m,n)",fbar_vv,int_t%oovv,tau_tensor,ONE_HALF)
+
+        ierr=talsh_tensor_destruct(tau_tensor)
+
+       end subroutine get_fbar_vv_talsh_scratch
+
        subroutine get_w_oooo_talsh(w_oooo,a_int)
 
         use talsh
@@ -782,19 +917,66 @@ module intermediates
 
        end subroutine get_w_oooo_talsh
 
-       subroutine get_w_ooov_talsh(w_ooov,t1_tensor,int_t,CCD)
+       subroutine get_w_oooo_talsh_scratch(w_oooo,int_t,t2_tensor,t1_tensor)
+
+        use talsh
+        use tensor_algebra
+        use exacorr_datatypes, only : talsh_intg_tens
+
+!       input variables
+        type(talsh_tens_t),    intent(inout) :: w_oooo
+        type(talsh_intg_tens), intent(inout) :: int_t
+        type(talsh_tens_t),    intent(inout) :: t2_tensor
+        type(talsh_tens_t),    intent(inout), optional :: t1_tensor
+!       local intermediate
+        type(talsh_tens_t) :: tau_tensor
+        integer            :: tens_rank
+        integer            :: vvoo_dims(4)
+!       CCD switch
+        logical :: CCD = .false.
+!       error code
+        integer :: ierr
+
+        if (.not.present(t1_tensor)) CCD = .true.
+
+        ierr=talsh_tensor_add("W(i,j,m,n)+=V(i,j,m,n)",w_oooo,int_t%oooo)
+        if (.not.CCD) then
+          ierr=talsh_tensor_contract("W(i,j,m,n)+=V(j,i,n,e)*T(e,m)",w_oooo,int_t%ooov,t1_tensor)
+          ierr=talsh_tensor_contract("W(i,j,m,n)+=V(i,j,m,e)*T(e,n)",w_oooo,int_t%ooov,t1_tensor)
+        end if
+
+        ierr=talsh_tensor_dimensions(t2_tensor,tens_rank,vvoo_dims)
+        ierr=talsh_tensor_construct(tau_tensor,C8,vvoo_dims,init_val=ZERO)
+        if (.not.CCD) then
+          call get_tau(tau_tensor,t2_tensor,t1_tensor)
+        else
+          call get_tau(tau_tensor,t2_tensor)
+        end if
+
+        ierr=talsh_tensor_contract("W(i,j,m,n)+=V(i,j,e,f)*T(e,f,m,n)",w_oooo,int_t%oovv,tau_tensor,ONE_HALF)
+
+        ierr=talsh_tensor_destruct(tau_tensor)
+
+       end subroutine get_w_oooo_talsh_scratch
+
+       subroutine get_w_ooov_talsh(w_ooov,int_t,t1_tensor)
 
         use talsh
         use exacorr_datatypes, only : talsh_intg_tens
 
-        type(talsh_tens_t),intent(inout)   :: w_ooov
-        type(talsh_intg_tens),intent(inout)   :: int_t
-        type(talsh_tens_t),intent(inout) :: t1_tensor
-        logical, intent(in) :: CCD
+!       input variables
+        type(talsh_tens_t),    intent(inout) :: w_ooov
+        type(talsh_intg_tens), intent(inout) :: int_t
+        type(talsh_tens_t),    intent(inout), optional :: t1_tensor
+!       CCD switch
+        logical :: CCD = .false.
+!       error code
         integer :: ierr
 
-        if (.not.CCD) ierr=talsh_tensor_contract("W(m,n,i,e)+=T(f,i)*V(m,n,f,e)",w_ooov,t1_tensor,int_t%oovv)
+        if (.not.present(t1_tensor)) CCD = .true.
+
         ierr=talsh_tensor_add("W(m,n,i,e)+=V(m,n,i,e)",w_ooov,int_t%ooov)
+        if (.not.CCD) ierr=talsh_tensor_contract("W(m,n,i,e)+=T(f,i)*V(m,n,f,e)",w_ooov,t1_tensor,int_t%oovv)
        
        end subroutine get_w_ooov_talsh
 
@@ -825,6 +1007,55 @@ module intermediates
 
        end subroutine get_w_ovoo_talsh
 
+       subroutine get_w_ovoo_talsh_scratch(w_ovoo,int_t,fbar_ov,w_oooo,wbar_vovo,t2_tensor,t1_tensor)
+
+        use talsh
+        use tensor_algebra
+        use exacorr_datatypes, only : talsh_intg_tens
+
+        type(talsh_tens_t),    intent(inout) :: w_ovoo
+        type(talsh_intg_tens), intent(inout) :: int_t
+        type(talsh_tens_t),    intent(inout) :: fbar_ov, w_oooo, wbar_vovo, t2_tensor
+        type(talsh_tens_t),    intent(inout), optional :: t1_tensor
+!       local intermediates
+        type(talsh_tens_t) :: tau_tensor, one_tensor
+        integer            :: tens_rank
+        integer            :: vvoo_dims(4), one_dims(1)
+!       CCD switch
+        logical :: CCD = .false.
+!       error code
+        integer :: ierr
+
+        if (.not.present(t1_tensor)) CCD = .true.
+
+        one_dims(1) = 1
+        ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
+        ierr=talsh_tensor_contract("W(i,e,m,n)+=V+(m,n,i,e)*K()",w_ovoo,int_t%ooov,one_tensor)
+        ierr=talsh_tensor_destruct(one_tensor)
+
+        ierr=talsh_tensor_contract("W(i,e,m,n)+=F(i,f)*T(f,e,m,n)",w_ovoo,fbar_ov,t2_tensor)
+!       Need to permute m and n, so term appears twice
+        ierr=talsh_tensor_contract("W(i,e,m,n)+=V(i,o,m,f)*T(e,f,n,o)",w_ovoo,int_t%ooov,t2_tensor)
+        ierr=talsh_tensor_contract("W(i,e,m,n)+=V(o,i,n,f)*T(e,f,m,o)",w_ovoo,int_t%ooov,t2_tensor)
+        if (.not.CCD) then 
+!        Need to permute m and n, so term appears twice
+         ierr=talsh_tensor_contract("W(i,e,m,n)+=R(e,i,f,n)*T(f,m)",w_ovoo,wbar_vovo,t1_tensor,scale=MINUS_ONE)
+         ierr=talsh_tensor_contract("W(i,e,m,n)+=R(e,i,f,m)*T(f,n)",w_ovoo,wbar_vovo,t1_tensor)
+         ierr=talsh_tensor_contract("W(i,e,m,n)+=R(o,i,m,n)*T(e,o)",w_ovoo,w_oooo,t1_tensor)
+        end if
+
+        ierr=talsh_tensor_dimensions(t2_tensor,tens_rank,vvoo_dims)
+        ierr=talsh_tensor_construct(tau_tensor,C8,vvoo_dims,init_val=ZERO)
+        if (.not.CCD) then
+          call get_tau(tau_tensor,t2_tensor,t1_tensor)
+        else
+          call get_tau(tau_tensor,t2_tensor)
+        end if
+        ierr=talsh_tensor_contract("W(i,e,m,n)+=V(e,i,f,g)*T(g,f,m,n)",w_ovoo,int_t%vovv,tau_tensor,scale=ONE_HALF)
+        ierr=talsh_tensor_destruct(tau_tensor)
+
+       end subroutine get_w_ovoo_talsh_scratch
+
        subroutine get_w_vovo_talsh(w_vovo,comm_t,oovv_tensor,nocc,nvir,CCD)
 
         use talsh
@@ -851,7 +1082,47 @@ module intermediates
         if (.not.CCD) ierr=talsh_tensor_contract("T(f,b,j,n)+=T(f,j)*T(b,n)",tau2_tensor,comm_t%t1,comm_t%t1)
         ierr=talsh_tensor_contract("W(b,m,e,j)+=V(m,n,e,f)*T(f,b,j,n)",w_vovo,oovv_tensor,tau2_tensor)
 
+        ierr=talsh_tensor_destruct(tau2_tensor)
+
        end subroutine get_w_vovo_talsh
+
+       subroutine get_w_vovo_talsh_scratch(w_vovo,int_t,t2_tensor,t1_tensor)
+
+        use talsh
+        use tensor_algebra
+        use exacorr_datatypes, only : talsh_intg_tens
+
+!       input variables
+        type(talsh_tens_t),    intent(inout) :: w_vovo
+        type(talsh_intg_tens), intent(inout) :: int_t
+        type(talsh_tens_t),    intent(inout) :: t2_tensor
+        type(talsh_tens_t),    intent(inout), optional :: t1_tensor
+!       local intermediates
+        type(talsh_tens_t) :: tau2_tensor
+        integer            :: tens_rank
+        integer            :: vvoo_dims(4)
+!       CCD switch
+        logical :: CCD = .false.
+!       error code
+        integer :: ierr
+
+        if (.not.present(t1_tensor)) CCD = .true.
+
+        ierr=talsh_tensor_add("W(b,m,e,j)+=V(b,m,e,j)",w_vovo,int_t%vovo)
+        if (.not.CCD) then
+          ierr=talsh_tensor_contract("W(b,m,e,j)+=V(b,m,e,f)*T(f,j)",w_vovo,int_t%vovv,t1_tensor)
+          ierr=talsh_tensor_contract("W(b,m,e,j)+=V(n,m,j,e)*T(b,n)",w_vovo,int_t%ooov,t1_tensor)
+        end if
+ 
+        ierr=talsh_tensor_dimensions(t2_tensor,tens_rank,vvoo_dims)
+        ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
+        ierr=talsh_tensor_add("T(f,b,j,n)+=R(f,b,j,n)",tau2_tensor,t2_tensor)
+        if (.not.CCD) ierr=talsh_tensor_contract("T(f,b,j,n)+=T(f,j)*T(b,n)",tau2_tensor,t1_tensor,t1_tensor)
+        ierr=talsh_tensor_contract("W(b,m,e,j)+=V(m,n,e,f)*T(f,b,j,n)",w_vovo,int_t%oovv,tau2_tensor)
+
+        ierr=talsh_tensor_destruct(tau2_tensor)
+
+       end subroutine get_w_vovo_talsh_scratch
 
        subroutine get_wbar_vovo_talsh(wbar_vovo,t2_tensor,int_t)
 

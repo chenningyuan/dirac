@@ -121,4 +121,9 @@
          type(talsh_tens_t) :: prime_vv, symm_vv
         end type talsh_dm_tens
 
+        type, extends(talsh_lambda_tens), public :: talsh_eom_tens
+         type(talsh_tens_t) :: r1_coeff, r2_coeff, l1_coeff, l2_coeff
+         type(talsh_tens_t) :: r1_sigma, r2_sigma, l1_sigma, l2_sigma
+        end type talsh_eom_tens
+
        end module exacorr_datatypes

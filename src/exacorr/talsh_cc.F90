@@ -44,6 +44,7 @@ module talsh_cc
          use exacorr_global
          use talsh_ao_to_mo, only       : tensor_norm2
          use talsh_gradient
+         use talsh_eom,      only       : talsh_eom_driver
 
          type(exacc_input), intent(in) :: exa_input        
 
@@ -247,10 +248,7 @@ module talsh_cc
 
          end if
 
-!        Destruct tensors and shut down library
-         ierr=talsh_tensor_destruct(comm_t%foo)
-         ierr=talsh_tensor_destruct(comm_t%fov)
-         ierr=talsh_tensor_destruct(comm_t%fvv)
+!        Destruct tensors
          ierr=talsh_tensor_destruct(comm_t%tau)
          ierr=talsh_tensor_destruct(comm_t%hoo)
          if (.not.CCD) ierr=talsh_tensor_destruct(comm_t%hov)
@@ -261,13 +259,29 @@ module talsh_cc
          ierr=talsh_tensor_destruct(comm_t%h_int)
          ierr=talsh_tensor_destruct(result_tensor)
          ierr=talsh_tensor_destruct(one_tensor)
+
+!**************************
+!        EOM calculations *
+!**************************
+
+         if (eom) then
+           if (.not.CCD) then
+             call talsh_eom_driver(exa_input,comm_t%t2,int_t,comm_t%foo,comm_t%fov,comm_t%fvv,l2_tensor,comm_t%t1)
+           else
+             call talsh_eom_driver(exa_input,comm_t%t2,int_t,comm_t%foo,comm_t%fov,comm_t%fvv,l2_tensor)
+           end if
+         end if
+
          if (.not.CCD) then
            ierr=talsh_tensor_destruct(comm_t%t1)
            ierr=talsh_tensor_destruct(l1_tensor)
          end if
          ierr=talsh_tensor_destruct(comm_t%t2)
          ierr=talsh_tensor_destruct(l2_tensor)
-!        Get statistics 
+         ierr=talsh_tensor_destruct(comm_t%foo)
+         ierr=talsh_tensor_destruct(comm_t%fov)
+         ierr=talsh_tensor_destruct(comm_t%fvv)
+!        Get statistics and shut down library
          ierr=talsh_stats()
          ierr = talsh_shutdown()
          deallocate (eps_occ)
@@ -330,13 +344,13 @@ module talsh_cc
          if (.not.CCD) then
             oo_dims = nocc
             ierr=talsh_tensor_construct(hoo_aux_tensor,C8,oo_dims,init_val=ZERO)
-            ov_dims(1) = nocc
-            ov_dims(2) = nvir
-            ierr=talsh_tensor_construct(hov_aux_tensor,C8,ov_dims,init_val=ZERO)
             vo_dims(1) = nvir
             vo_dims(2) = nocc
             ierr=talsh_tensor_construct(s1_tensor,C8,vo_dims,init_val=ZERO)
          end if
+         ov_dims(1) = nocc
+         ov_dims(2) = nvir
+         ierr=talsh_tensor_construct(hov_aux_tensor,C8,ov_dims,init_val=ZERO)
          vvoo_dims(1:2) = nvir
          vvoo_dims(3:4) = nocc
          ierr=talsh_tensor_construct(s2_tensor,C8,vvoo_dims,init_val=ZERO)
@@ -348,7 +362,11 @@ module talsh_cc
 
          do iccsd = 1, ncycles
 
-          call get_tau(comm_t,CCD)
+          if (.not.CCD) then
+              call get_tau(comm_t%tau,comm_t%t2,comm_t%t1)
+          else
+              call get_tau(comm_t%tau,comm_t%t2)
+          end if
 
           if (ierr.ne.TALSH_SUCCESS) then
              print*," ccdriver: error in calculation of common blocks, code=",ierr
@@ -395,12 +413,10 @@ module talsh_cc
           call get_goo(comm_t,int_t%ooov,CCD)
 
 !         ov ! validated
-          if (.not.CCD) then
-            call get_hov(comm_t,int_t%oovv)
-            ierr=talsh_tensor_init(hov_aux_tensor)
-            ierr=talsh_tensor_add("L(k,c)+=H(k,c)",hov_aux_tensor,comm_t%hov)                       ! copy common term
-            ierr=talsh_tensor_add("H(k,c)+=F(k,c)",hov_aux_tensor,comm_t%fov,scale=MINUS_TWO)       ! subtract fock matrix twice
-          end if
+          call get_hov(comm_t,int_t%oovv,CCD)
+          ierr=talsh_tensor_init(hov_aux_tensor)
+          ierr=talsh_tensor_add("L(k,c)+=H(k,c)",hov_aux_tensor,comm_t%hov)                       ! copy common term
+          ierr=talsh_tensor_add("H(k,c)+=F(k,c)",hov_aux_tensor,comm_t%fov,scale=MINUS_TWO)       ! subtract fock matrix twice
 
 !         oooo ! validated
           call get_a(comm_t,int_t,CCD)
@@ -502,7 +518,11 @@ module talsh_cc
           end if
 
 !         Update tau
-          call get_tau(comm_t,CCD)
+          if (.not.CCD) then
+              call get_tau(comm_t%tau,comm_t%t2,comm_t%t1)
+          else
+              call get_tau(comm_t%tau,comm_t%t2)
+          end if
 
           ierr=talsh_tensor_init(result_tensor)
           ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%tau,int_t%oovv) ! o(2)v(2)
@@ -522,8 +542,8 @@ module talsh_cc
          ierr=talsh_tensor_destruct(cint_tensor)
          if (.not.CCD) then
             ierr=talsh_tensor_destruct(hoo_aux_tensor)
-            ierr=talsh_tensor_destruct(hov_aux_tensor)
          end if
+         ierr=talsh_tensor_destruct(hov_aux_tensor)
          ierr=talsh_tensor_destruct(result_tensor)
 
         end subroutine
@@ -605,13 +625,17 @@ module talsh_cc
 !******************************************
 
          call print_date("Calculating common blocks")
-         call get_tau(comm_t,CCD)
+         if (.not.CCD) then
+              call get_tau(comm_t%tau,comm_t%t2,comm_t%t1)
+         else
+              call get_tau(comm_t%tau,comm_t%t2)
+         end if
          call get_hvv(comm_t,int_t%oovv)
          call get_gvv(comm_t,int_t%vovv,CCD)
          call get_h(comm_t,int_t,CCD)
          call get_hoo(comm_t,int_t%oovv)
          call get_goo(comm_t,int_t%ooov,CCD)
-         call get_hov(comm_t,int_t%oovv)
+         call get_hov(comm_t,int_t%oovv,CCD)
          call get_a(comm_t,int_t,CCD)
          call print_date("Finished calculating common blocks")
 
@@ -628,7 +652,11 @@ module talsh_cc
          call get_w_vovo(lambda_t%w_vovo,comm_t,int_t%oovv,nocc,nvir,CCD)
          call get_w_oooo(lambda_t%w_oooo,comm_t%a_int)
          call get_w_ovoo(lambda_t,comm_t,int_t,CCD,one_tensor)
-         call get_w_ooov(lambda_t%w_ooov,comm_t%t1,int_t,CCD)
+         if (.not.CCD) then
+           call get_w_ooov(lambda_t%w_ooov,int_t,comm_t%t1)
+         else
+           call get_w_ooov(lambda_t%w_ooov,int_t)
+         end if
          call get_fbar_vv(lambda_t%fbar_vv,comm_t%gvv)
          call get_fbar_oo(lambda_t%fbar_oo,comm_t,CCD)
          call print_date('Finished calculating fixed intermediates')
