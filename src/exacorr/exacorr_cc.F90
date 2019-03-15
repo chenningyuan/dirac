@@ -1603,6 +1603,10 @@ module exacorr_cc
             ierr=exatns_tensor_contract("F(a,b)+=V(a,k,b,l)*I(k,l)",comm_t%fvv,int_t%vovo,id_mat_occ, ONE)
             if (print_level >0) call print_date('two electron integrals added to Fock Matrix')
 
+            if (print_level >3) ierr=exatns_tensor_traverse(comm_t%foo,'PrintTensor')
+            if (print_level >3) ierr=exatns_tensor_traverse(comm_t%fov,'PrintTensor')
+            if (print_level >3) ierr=exatns_tensor_traverse(comm_t%fvv,'PrintTensor')
+
             ! Subtract orbital energies from the diagonal (they are moved to the other side of the CC equations)
             ierr=exatns_tensor_create(orb_tensor,"orb_oo",oo_id,oo_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_init(orb_tensor,'OrbSet')
@@ -1632,10 +1636,6 @@ module exacorr_cc
             ierr=exatns_tensor_get_scalar(r_tensor,result_val)
             off_diag=real(result_val,8) ! Casting into real(8)
             if (print_level >0) print*," Norm of VV part Fock matrix (without diag) = ", off_diag
-
-            if (print_level >3) ierr=exatns_tensor_traverse(comm_t%foo,'PrintTensor')
-            if (print_level >3) ierr=exatns_tensor_traverse(comm_t%fov,'PrintTensor')
-            if (print_level >3) ierr=exatns_tensor_traverse(comm_t%fvv,'PrintTensor')
 
             ierr=exatns_tensor_destroy(h_tensor)
             ierr=exatns_tensor_destroy(id_mat_occ)

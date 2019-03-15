@@ -134,7 +134,6 @@ os.environ['OMP_NUM_THREADS'] = os.getenv('QF_NUM_THREADS') #initial number of O
 
 test.run(['talsh_cc_beh.inp'], ['BeH_nosym.mol'], f2, "--put='X2CMAT AOMOMAT DFCOEF'")
 test.run(['talsh_cc_beh_level.inp'], ['BeH_nosym.mol'], f2, "--put='X2CMAT AOMOMAT DFCOEF'")
-#test.run(['cc_beh.inp'], ['BeH_nosym.mol'], f2, "--put='X2CMAT AOMOMAT DFCOEF'")
 test.run(['cc_beh_level.inp'], ['BeH_nosym.mol'], f2, "--put='X2CMAT AOMOMAT DFCOEF'")
 
 sys.exit(test.return_code)
