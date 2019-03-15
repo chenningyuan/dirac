@@ -740,8 +740,6 @@ C
       CALL BASPRO(WORK,LWORK,NSYMOP,IQM,NBLCK,JCO,NUC,NRC,
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM,
      &            DOOWN,blk)
-Csunaga NUCDEP is non zero from here
-C      IF (LINEAR .EQV. .TRUE. .and. NUCDEP .Eq. 1) ATOMIC = .TRUE.
 #ifdef BUILD_GEN1INT
 !     initialize basis sets (large and small components) used in Gen1Int interface
       call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM,
@@ -4130,14 +4128,10 @@ C             when total NUCDEP is known. /hjaaj Jan 2010
   200    CONTINUE
   100 CONTINUE
       NATOMS = NUCDEP - NFLOAT
-!sunaga
-      IF (LINEAR .EQV. .TRUE. .and. NATOMS .Eq. 1)THEN
-        ATOMIC = .TRUE.
-!        NFSYM = 2
-!        FREP(1) = 'E1g'
-!        FREP(2) = 'E1u'
+      IF (LINEAR .EQV. .TRUE.) THEN
+        IF((NATOMS .Eq. 1).OR.((NATOMS.EQ.0).AND.(NFLOAT.EQ.1))) 
+     &    ATOMIC = .TRUE.
       ENDIF
-!sunaga      
       IF (NUCDEP .GT. MXCENT) GOTO 5010
 C
 C     Nuclear repulsion energy
