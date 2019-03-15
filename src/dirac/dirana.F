@@ -791,10 +791,17 @@ C
               ID = IBEIG(II)
               WRITE(SYMLAB,'("m_j=",I3,"/2")') ID
             ENDIF
-            WRITE(LUPRI,'(/A,I4,A,'//FMT//',A,F6.4,A,2X,A9)')
-     &         '* Positronic eigenvalue no.',II,': ',
-     &         EIG(II),'       (Occupation : f = ',OCC2(I),')',
-     &         SYMLAB
+            IF(ATOMIC)THEN
+              WRITE(LUPRI,'(/A,I4,A,'//FMT//',A,F6.4,A,2X,A11)')
+     &          '* Positronic eigenvalue no.',II,': ',
+     &          EIG(II),'       (Occupation : f = ',OCC2(I),')',
+     &          SYMLAB2
+            ELSE
+              WRITE(LUPRI,'(/A,I4,A,'//FMT//',A,F6.4,A,2X,A9)')
+     &          '* Positronic eigenvalue no.',II,': ',
+     &          EIG(II),'       (Occupation : f = ',OCC2(I),')',
+     &          SYMLAB
+            ENDIF   
           END IF
         END IF
         CALL PRSYMB(LUPRI,'=',92,0)
