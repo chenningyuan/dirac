@@ -1690,8 +1690,14 @@
       ELSEIF(PLABEL(1:7).EQ.'UEHLING') THEN
         CLASLB = 'UEHLING'
         IORDER   = 0
-      ELSEIF(PLABEL(1:6).EQ.'SEFGMG') THEN
-        CLASLB = 'SEFGMG'
+      ELSEIF(PLABEL(1:7).EQ.'XSEFGMG') THEN
+        CLASLB = 'XSEFGMG'
+        IORDER   = 0
+      ELSEIF(PLABEL(1:7).EQ.'YSEFGMG') THEN
+        CLASLB = 'YSEFGMG'
+        IORDER   = 0
+      ELSEIF(PLABEL(1:7).EQ.'ZSEFGMG') THEN
+        CLASLB = 'ZSEFGMG'
         IORDER   = 0
       ELSEIF(PLABEL(1:6).EQ.'SEFGHF') THEN
         CLASLB = 'SEFGHF'
@@ -2182,9 +2188,29 @@
         DO I = 1,NUCIND
           DOATOM(I) = .TRUE.
         ENDDO
-      ELSEIF(CLASLB.EQ.'SEFGMG') THEN
+      ELSEIF(CLASLB.EQ.'XSEFGMG') THEN
         NOPTYP    = 1
-        LABINT(1) = 'SEFGMG  '
+        LABINT(1) = 'XSEFGMG '
+        INTREP(1) = 0
+        SQUARE    = .FALSE.
+        ANTI      = .TRUE.
+        IORDER    = 0
+        DO I = 1,NUCIND
+          DOATOM(I) = .TRUE.
+        ENDDO
+      ELSEIF(CLASLB.EQ.'YSEFGMG') THEN
+        NOPTYP    = 1
+        LABINT(1) = 'YSEFGMG '
+        INTREP(1) = 0
+        SQUARE    = .FALSE.
+        ANTI      = .TRUE.
+        IORDER    = 0
+        DO I = 1,NUCIND
+          DOATOM(I) = .TRUE.
+        ENDDO
+      ELSEIF(CLASLB.EQ.'ZSEFGMG') THEN
+        NOPTYP    = 1
+        LABINT(1) = 'ZSEFGMG '
         INTREP(1) = 0
         SQUARE    = .FALSE.
         ANTI      = .TRUE.
@@ -2278,6 +2304,9 @@
         IF(NPRPLBL.GT.MAXPRPLBL) THEN
           CALL QUIT('XPLDEF:Redimension MAXPRPLBL !')
         ENDIF
+        !sunaga
+        write(*,*)"PLABEL,LABINT,ICMP",PLABEL,LABINT(ICMP),ICMP
+        !sunaga
         IF(PLABEL.EQ.LABINT(ICMP)) THEN
         !mi: the only place to reset LABERR, more printout needed for "else" branch
           LABERR = .FALSE.

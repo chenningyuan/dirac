@@ -242,6 +242,9 @@ C
       DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND)
 
       CALL QENTER('NUMINT_ANG')
+      write(*,*)"****************"
+      write(*,*)"NUMINT_ANG"
+      write(*,*)"****************"
       write(*,*)"IOP",IOP
       write(*,*)"CLSINT",CLSINT(IOP)
 C
@@ -318,6 +321,9 @@ C
            ENDDO
 C         
            write(*,*)"NUCMASS",NUCMASS(INT(ZAN(IATOM)))
+           write(*,*)
+           write(*,*)"***************"
+           write(*,*)
            CALL INTMG(NUMIR,R,ZAN(IATOM),MXNP,NUCTYP)
 !           DO J = 1,MXNP
 !     write(*,*)J,NUMIR(J),R(J)
@@ -328,7 +334,7 @@ C
              WRITE(20,*)NUMIR(J)          !sunaga
            ENDDO
            DO  J = 1,MXNP
-             WRITE(*,*)NUMIR(J)          !sunaga
+             WRITE(*,*)NUMIR(J),J          !sunaga
            ENDDO
            CLOSE(20,STATUS='KEEP')
          
@@ -1615,9 +1621,13 @@ C     Because, the physical constants in each version (branch) of GRASP are diff
 C
 C     In additin, the value of AMASS is modified in GRASP.
 C     For example, AMASS of Hg is not 202, but 202-0.0293680D0, as follows.
-C      
-!     AT3 = (DBLE(202)-0.0293680D0) ** (1.0D0/3.0D0) !for debug, comparing with GRASP
-      AT3 = AMASS**3.33333333333333D-01
+C
+!      AT3 = (DBLE(20)-7.5609D-003) **  (1.0D0/3.0D0) !for debug, comparing with GRASP
+       AT3 = (DBLE(202)-0.0293680D0) ** (1.0D0/3.0D0) !for debug, comparing with GRASP
+!     AT3 = AMASS**3.33333333333333D-01
+C
+C     7.5609D-003 is DMASS(I) in datain.F ande grasp.F
+C
 !      FMTOAU = 1.8897261254578283E-005        
 !     CST13 = 3.33333333333333D-01
 CCC
@@ -1835,15 +1845,18 @@ C
 #include "implicit.h"
 #include "dcbgen.h"
 #include "pi.h"
+#include "graspprm.h"
 C     
       DIMENSION TB(N),R(N)
-      PARAMETER(NTMAX = 10000)
+      PARAMETER(NTMAX = 10000,TWO=2.0D0)
       real(8), allocatable :: TT(:),TTX(:)      
 C
       allocate(TT(NTMAX))
       allocate(TTX(NTMAX))
-C      
-      PREFAC = TWO/(4.0D0*CVAL*CVAL*3.14159D0)
+C
+C      write(*,*)
+      write(*,*)"magnetic" !sunaga
+      PREFAC = TWO/(4.0D0*CVAL*CVAL*PI)
       IF(NUCTYP.EQ.3)THEN
         RAD = PARM1
         XI = 1.5/(RAD*RAD)
@@ -1855,28 +1868,60 @@ C
 !      
       DO 6 I = 1,N
         CALL G1TGRID(TT,TTX,NTMAX,NT,R(I))
+C        write(*,*)""
+C        write(*,*)""
+C        write(*,*)"TT,R" ,TT(1),TT(2),NTMAX,NT,R(I)
+C        write(*,*)"TTX,R" ,TTX(1),TTX(2)
         CALL QUAD_T_US2(TT,TTX,NTMAX,NT,RESULT)
+C        write(*,*)""
+C        write(*,*)"TT,RESULT" ,TT(1),TT(2),NTMAX,NT,RESULT
+C        write(*,*)"TTX,R" ,TTX(1),TTX(2)
 *     radial derivative of the nuclear potential
       IF (NUCTYP .EQ. 0) THEN
 *     POINT
 C     DIFFNUCPOT = ZZ(I)/R(I)**2
         POTIR=Z 
-        DIFFNUCPOT = POTIR/R(I)**2
+        DIFFNUCPOT = POTIR/R(I)**TWO
       ELSE
 *     GAUSS
 C        XI = 1.5/PARM(1)**2
         POTIR = Z*ERF(WA*R(I))
-        DIFFNUCPOT = POTIR/R(I)**2
-     &               - 2*Z*WA/(R(I)*SQRTPI)*EXP(-XI*R(I)*R(I))
+        DIFFNUCPOT = POTIR/R(I)**TWO
+     &             - TWO*Z*SQRT(XI)/(SQRTPI*R(I))*EXP(-XI*R(I)*R(I))
+        SEC1 = - TWO*Z*SQRT(XI/3.14159)/R(I)*EXP(-XI*R(I)*R(I))
+        SEC2 = - TWO*Z*SQRT(XI/PI)/R(I)*EXP(-XI*R(I)*R(I))
+        SEC3 = - TWO*Z*SQRT(XI)/(SQRTPI*R(I))*EXP(-XI*R(I)*R(I))
+C        DIFFNUCPOT = POTIR/R(I)**TWO
+C     &               - TWO*Z*WA/(R(I)*SQRT(3.14159))*EXP(-XI*R(I)*R(I)) !sqrtpi
 C        DIFFNUCPOT = ZZ(I)/R(I)**2
-C  :                  - 2*Z*SQRT(XI/3.14159)/R(I)*EXP(-XI*R(I)**2)
+C     :                  - 2*Z*SQRT(XI/3.14159)/R(I)*EXP(-XI*R(I)**2)
+C        write(*,*)
+C        write(*,*)"POTIR/R(I)**TWO",POTIR/R(I)**TWO
+C        write(*,*)"SEC1",SEC1, POTIR/R(I)**TWO + SEC1
+C        write(*,*)"SEC2",SEC2, POTIR/R(I)**TWO + SEC2
+C        write(*,*)"SEC3",SEC3, POTIR/R(I)**TWO + SEC3
+C        write(*,*)
       ENDIF
       G1A = RESULT*DIFFNUCPOT
       G1B = DIFFNUCPOT
+C      write(*,*)"ERF,WA,R(I),I"
+C      write(*,*)"ERF,WA,R(I),I",ERF(WA*R(I)),WA,R(I),I
+C      write(*,*)"POTIR,XI,a,",POTIR,XI,TWO*Z*WA/(R(I)*SQRTPI)
+      write(*,*)"1,2,total",POTIR/R(I)**TWO,
+     &     - TWO*Z*SQRT(XI/PI)/(R(I))*EXP(-XI*R(I)*R(I)),DIFFNUCPOT
+      write(*,*)"RESULT,NUCPOT",RESULT,DIFFNUCPOT
+C     write(*,*)"exp",EXP(-XI*R(I)*R(I))
 *
       CALL G2TGRID(TT,TTX,NTMAX,NT,R(I))
+C      write(*,*)"TT",TT(1),TT(2),TT(3)
+C      write(*,*)"TTX",TTX(1),TTX(2),TTX(3)
+C      write(*,*)"NTMAX,NT,R(I)",NTMAX,NT,R(1),R(2),R(3)
+C      write(*,*)""
       CALL QUAD_T_US2(TT,TTX,NTMAX,NT,RESULT)
-      G2 = 2.0D0*RESULT*CVAL*POTIR/R(I)
+      G2 = TWO*RESULT*CVAL*POTIR/R(I)
+C      write(*,*)"TWO,RESULT,CVAL,POTIR", TWO,RESULT,CVAL,POTIR!sunaga
+      write(*,*)"PREFAC,G1A,G1B,G2",PREFAC,G1A,G1B,G2,I !sunaga
+C      write(*,*)""
       TB(I) = PREFAC*(G1A - G1B + G2) !*R(I)
  6    CONTINUE
 C      
@@ -1901,6 +1946,7 @@ C
 #include <implicit.h>
 *
       PARAMETER (ONE = 1.0D0, TEN = 10.0D0)
+      INTEGER NT,NTMAX
       DOUBLEPRECISION T(NTMAX)
       DOUBLEPRECISION F(NTMAX)
       TWELVE  = 12.0D0
@@ -1914,6 +1960,7 @@ C
            NT = J
            GOTO 2
         END IF
+C        write(*,*)"T,J",T(J)
 *
     1 CONTINUE
     2 RETURN
@@ -1943,6 +1990,7 @@ C
       X2 = EXP(-TWO*T*R*CVAL)
 *
       PHI_G1_INNER = X1*X2
+C      write(*,*)"X1,X2,inner",X1,X2,PHI_G1_INNER
 *
       RETURN
 *
@@ -1975,6 +2023,8 @@ C
 *   TO PREVENT DIVIDING BY ZERO.
 *
       SUM = 0.0D0
+C         write(*,*)
+C         write(*,*)
       DO 1 J = 1,NT-3,2
          J1 = J
          J2 = J + 1
@@ -1985,12 +2035,16 @@ C
          T1=T(J1)
          T2=T(J2)
          T3=T(J3)
-         X1 = F2*(T1-T3)*F2*(T1-T3)
-         X2 = F1*(T2-T3)*(2*T1-3*T2+T3)
-         X3 = F3*(T1-T2)*(T1-3*T2+2*T3)
+         X1 = F2*(T1-T3)*(T1-T3)
+         X2 = F1*(T2-T3)*(2.0D0*T1-3*T2+T3)
+         X3 = F3*(T1-T2)*(T1-3.0D0*T2+2.0D0*T3)
          SUM = SUM - (T1-T3)*(X1+X2-X3)/(6.0D0*(T1-T2)*(T2-T3))
+!         write(*,*)"T1,T3,X1,SUM,J",T1,T3,X1,SUM,J
     1 CONTINUE
+!      stop!sunaga
+C      write(*,*)"RESULT1",RESULT
       RESULT = SUM
+C      write(*,*)"RESULT2",RESULT
       RETURN
 *
       END
@@ -2009,6 +2063,7 @@ C
 *
 #include <implicit.h>
 *
+      PARAMETER (ONE = 1.0D0,TEN = 10.0D0)
       INTEGER NT,NTMAX
       DOUBLEPRECISION T(NTMAX)
       DOUBLEPRECISION F(NTMAX)
