@@ -38,14 +38,18 @@
             logical                 :: eom = .false.
             logical                 :: eom_properties = .false.
             character(len=2)        :: eom_flavour = "  "
+            logical                 :: beta_occ = .false.
+            logical                 :: beta_vir = .false.
             integer                 :: exa_blocksize = 75
             integer                 :: moint_scheme = 3
             integer                 :: ncycles = 30
+            integer                 :: print_level = 0
             integer                 :: nkr_occ, nkr_vir         ! number of Kramer pairs
             integer                 :: nocc, nvir               ! number of spinors
             integer, allocatable    :: mokr_occ(:), mokr_vir(:) ! list of active Kramer pairs
             integer, allocatable    :: mo_occ(:), mo_vir(:)     ! list of active spinors
             real(REALD)             :: t_econv = 1.0D-9         ! convergence criterium
+            real(REALD)             :: level_shift = 0.D0       ! level shift
         end type exacc_input
 
 !       All two electron integral tensors
@@ -125,5 +129,12 @@
          type(talsh_tens_t) :: r1_coeff, r2_coeff, l1_coeff, l2_coeff
          type(talsh_tens_t) :: r1_sigma, r2_sigma, l1_sigma, l2_sigma
         end type talsh_eom_tens
+
+!       One electron integrals
+        type, public  :: one_el_t
+         integer     :: n_spinor=-1          ! number of spinors, used for consistency checks
+         real(8)     :: e_core               ! energy of the core electrons plus nuclear repulsion energy
+         complex(8), pointer :: h_core(:,:)  ! one-body part of Hamiltonian (kinetic energy + nuclear attraction + core shielding)
+        end type one_el_t
 
        end module exacorr_datatypes

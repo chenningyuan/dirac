@@ -875,6 +875,10 @@
          call kw_read(word, exa_input%t_econv)
       end if
 
+      if (kw_matches(word, '.LSHIFT')) then
+         call kw_read(word, exa_input%level_shift)
+      end if
+
       if (kw_matches(word, '.LAMBDA')) then
          exa_input%lambda = .true.
       end if
@@ -898,6 +902,20 @@
       if (kw_matches(word, '.EOMCC ')) then
          exa_input%eom = .true.
          call kw_read(word, exa_input%eom_flavour)
+      end if
+ 
+      if (kw_matches(word, '.OCC_BETA')) then
+         exa_input%beta_occ = .true.
+         call kw_read(word, string_occ_beta)
+      end if
+
+      if (kw_matches(word, '.VIR_BETA')) then
+         exa_input%beta_vir = .true.
+         call kw_read(word, string_vir_beta)
+      end if
+
+      if (kw_matches(word, '.PRINT ')) then
+         call kw_read(word, exa_input%print_level)
       end if
 
       call check_whether_kw_found(word, kw_section)

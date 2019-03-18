@@ -5,6 +5,7 @@ module talsh_eom
   use exacorr_datatypes
   use intermediates
   use talsh_ao_to_mo, only : tensor_norm2
+  use exacorr_global, only : debug_exa
 
   implicit none
 
@@ -131,16 +132,16 @@ module talsh_eom
       end if
 
 !     create all coefficient and sigma tensors
-      ierr=talsh_tensor_construct(eom_t%r1_coeff,C8,(/nocc/),init_val=ZERO)
+      ierr=talsh_tensor_construct(eom_t%r1_coeff,C8,(/nocc/),init_val=ONE)
       ierr=talsh_tensor_construct(eom_t%r1_sigma,C8,(/nocc/),init_val=ZERO)
       if (exa_input%eom_properties) then
-        ierr=talsh_tensor_construct(eom_t%l1_coeff,C8,(/nvir/),init_val=ZERO)
+        ierr=talsh_tensor_construct(eom_t%l1_coeff,C8,(/nvir/),init_val=ONE)
         ierr=talsh_tensor_construct(eom_t%l1_sigma,C8,(/nvir/),init_val=ZERO)
       end if
-      ierr=talsh_tensor_construct(eom_t%r2_coeff,C8,voo_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(eom_t%r2_coeff,C8,voo_dims,init_val=ONE)
       ierr=talsh_tensor_construct(eom_t%r2_sigma,C8,voo_dims,init_val=ZERO)
       if (exa_input%eom_properties) then
-        ierr=talsh_tensor_construct(eom_t%l2_coeff,C8,oov_dims,init_val=ZERO)
+        ierr=talsh_tensor_construct(eom_t%l2_coeff,C8,oov_dims,init_val=ONE)
         ierr=talsh_tensor_construct(eom_t%l2_sigma,C8,oov_dims,init_val=ZERO)
       end if
 
