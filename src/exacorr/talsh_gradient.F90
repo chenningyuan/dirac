@@ -327,7 +327,7 @@ module talsh_gradient
 
       nesh = get_nsolutions() / 2
       allocate (dm_diracformat(nesh,nesh,4))
-      dm_diracformat = ZERO
+      dm_diracformat = real(ZERO)
       do j = 1, norbt
         do i = 1, norbt
           ! We copy the unbar-unbar part of the density matrix, would be good to test whether the Kramers-restricted assumption holds
