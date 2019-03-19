@@ -1195,7 +1195,7 @@ module exacorr_cc
 
          if (t_convergence .gt. t_target_precision) print*, "WARNING: Non-converged amplitudes!"
          if (.not.CCD) write(*,'(A,ES22.16)') "  Final L1amp = ", print_tensornorm2(l1_tensor)
-         write(*,'(A,ES22.16)') "  Final L2amp = ", print_tensornorm2(l2_tensor)*ONE_QUARTER
+         write(*,'(A,ES22.16)') "  Final L2amp = ", print_tensornorm2(l2_tensor)*0.25D0
 
 !*****************
 !        cleanup *

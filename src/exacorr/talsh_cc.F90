@@ -1068,14 +1068,14 @@ module talsh_cc
             hf_energy=real(result_tens(1),8) ! Casting into real(8)
             print*," Energy of reference wave function (HF single determinant) = ", hf_energy+e_core
             
-            if (print_level >0) call print_date('one electron integrals added to Fock Matrix')
+            call print_date('one electron integrals added to Fock Matrix')
 
             ierr=talsh_tensor_contract("F(i,j)+=V(i,k,j,l)*I(k,l)",fo_tensor,int_t%oooo,id_mat_occ, ONE)
 
             ierr=talsh_tensor_contract("F(i,a)+=V(k,i,l,a)*I(k,l)",fov_tensor,int_t%ooov,id_mat_occ, ONE)
 
             ierr=talsh_tensor_contract("F(a,b)+=V(a,k,b,l)*I(k,l)",fv_tensor,int_t%vovo,id_mat_occ, ONE)
-            if (print_level >0) call print_date('two electron integrals added to Fock Matrix')
+            call print_date('two electron integrals added to Fock Matrix')
 
             if (print_level >3) call print_tensor(fo_tensor, 2, 1.0D-6, 'fo_tensor')
             if (print_level >3) call print_tensor(fov_tensor, 2, 1.0D-6, 'fov_tensor')
@@ -1094,9 +1094,6 @@ module talsh_cc
               eps_vir(i)=h_tens(i,i)
             end do
 
-            print *, eps_occ
-            print *, eps_vir
-
             !apply level shit
             if (level_shift.gt.1.0D-14) then
               e_homo = maxval(eps_occ)
@@ -1104,7 +1101,6 @@ module talsh_cc
               lumo   = minloc(eps_vir,1)
                
               do while(e_lumo-e_homo < THRESHOLD)
-                print*, "e_homo, e_lumo", e_homo, e_lumo
                 if (e_lumo+level_shift-e_homo >THRESHOLD) then
                   eps_vir(lumo)=e_lumo+level_shift
                   print *, "lumo energy level shifted by ", level_shift," to ",e_lumo+level_shift
