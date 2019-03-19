@@ -284,11 +284,22 @@ module talsh_cc
 !**************************
 
          if (eom) then
-           if (.not.CCD) then
-             call talsh_eom_driver(exa_input,comm_t%t2,int_t,comm_t%foo,comm_t%fov,comm_t%fvv,l2_tensor,comm_t%t1)
-           else
-             call talsh_eom_driver(exa_input,comm_t%t2,int_t,comm_t%foo,comm_t%fov,comm_t%fvv,l2_tensor)
+           if (exa_input%eom_flavour.eq."EE" .and. exa_input%eom_properties .and. .not.lambda) then
+             call quit("To do EOM-EE properties, you first need to calculate the Lambda amplitudes!")
            end if
+
+           if ( (exa_input%eom_flavour.eq."IP" .or. exa_input%eom_flavour.eq."EA") .and. .not.CCD) then
+             call talsh_eom_driver(exa_input,comm_t%t2,int_t,comm_t%foo,comm_t%fov,comm_t%fvv,t1_tensor=comm_t%t1)
+           elseif ( (exa_input%eom_flavour.eq."IP" .or. exa_input%eom_flavour.eq."EA") .and. CCD) then
+             call talsh_eom_driver(exa_input,comm_t%t2,int_t,comm_t%foo,comm_t%fov,comm_t%fvv)
+           elseif (exa_input%eom_flavour.eq."EE" .and. .not.CCD) then
+             call talsh_eom_driver(exa_input,comm_t%t2,int_t,comm_t%foo,comm_t%fov,comm_t%fvv,l2_tensor,comm_t%t1)
+           elseif (exa_input%eom_flavour.eq."EE" .and. CCD) then
+             call talsh_eom_driver(exa_input,comm_t%t2,int_t,comm_t%foo,comm_t%fov,comm_t%fvv,l2_tensor)
+           else
+             call quit ('Error: No valid EOM-flavour chosen')
+           end if
+
          end if
 
          if (.not.CCD) then
@@ -667,7 +678,11 @@ module talsh_cc
          call get_wbar_vovo(lambda_t%wbar_vovo,comm_t%t2,int_t)
          call get_fbar_ov(lambda_t%fbar_ov,comm_t%hov)
          call get_w_vvvo(lambda_t,comm_t,int_t,CCD,one_tensor)
-         call get_w_vovv(lambda_t%w_vovv,comm_t%t1,int_t,CCD)
+         if (.not.CCD) then
+           call get_w_vovv(lambda_t%w_vovv,int_t,comm_t%t1)
+         else
+           call get_w_vovv(lambda_t%w_vovv,int_t)
+         end if
          call get_w_vovo(lambda_t%w_vovo,comm_t,int_t%oovv,nocc,nvir,CCD)
          call get_w_oooo(lambda_t%w_oooo,comm_t%a_int)
          call get_w_ovoo(lambda_t,comm_t,int_t,CCD,one_tensor)
@@ -849,7 +864,7 @@ module talsh_cc
           ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,j,e,b)*G(e,a)",s2_tensor,int_t%oovv,lambda_t%gvv)
 
 !-------------------------------------------------------
-!         term 7: S(ij,ab) -= P(a,b) L(m,a) * W(,j,mb) |
+!         term 7: S(ij,ab) -= P(a,b) L(m,a) * W(ij,mb) |
 !-------------------------------------------------------
 
           if (.not.CCD) then
