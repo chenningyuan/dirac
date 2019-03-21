@@ -97,13 +97,10 @@ C
       ELSEIF (CLSINT(I).EQ.'EFFDEN ') THEN
         CALL EFFECTIVE_DENS_NUC(WORK,LWORK,COMB)
 C
-C     Uehling potential for vacuum polarization
+C     Self-energy(3component)
 C
-      ELSEIF (CLSINT(I).EQ.'UEHLING') THEN
-C     sunaga
-        IF(NOSMLV) COMB(4:4) = 'F'
-        CALL NUMINT(I,COMB,IPRONE)       
-Csunaga      
+      ELSEIF (CLSINT(I)(3:6).EQ.'FGMG') THEN
+        CALL NUMINT_ANG(I,COMB,IPRONE) 
 C
 C     Self-energy(Flambaum and Pyyko)
 C
@@ -111,21 +108,13 @@ C
 C     sunaga
         IF(NOSMLV) COMB(4:4) = 'F'
         CALL NUMINT(I,COMB,IPRONE)       
-Csunaga      
 C
-C     Self-energy(3component)
+C     Uehling potential for vacuum polarization
 C
-      ELSEIF (CLSINT(I)(1:3).EQ.'XSE') THEN
-        IXYZ = 1 
-        CALL NUMINT_ANG(I,COMB,IXYZ,IPRONE)       
-C
-      ELSEIF (CLSINT(I)(1:3).EQ.'YSE') THEN
-        IXYZ = 2 
-        CALL NUMINT_ANG(I,COMB,IXYZ,IPRONE)       
-C
-      ELSEIF (CLSINT(I)(1:3).EQ.'ZSE') THEN
-        IXYZ = 3 
-        CALL NUMINT_ANG(I,COMB,IXYZ,IPRONE)       
+      ELSEIF (CLSINT(I).EQ.'UEHLING') THEN
+C     sunaga
+        IF(NOSMLV) COMB(4:4) = 'F'
+        CALL NUMINT(I,COMB,IPRONE)       
 Csunaga      
 C
 C     Contribution from (static) embedding potential
@@ -197,8 +186,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* Deck numint */
-      SUBROUTINE NUMINT_ANG(IOP,COMB,IXYZ,IPRINT)
+C     /* Deck numint_ang */
+      SUBROUTINE NUMINT_ANG(IOP,COMB,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C      
 C On iuput: IOP   ... Index of operator: e.g. CLSINT(IOP)='UEHLING'
@@ -268,8 +257,7 @@ C The values of ultrafine (.ULTRAF) at DFT input-reader section.
       
       m = NLEB(INTANG) ! num_grid_cfg_ANGINT
       NDIM2 = NTBAS(0)*NTBAS(0)
-      LABEL = CLSINT(IOP)
-!     It is important, because LABEL must be 8, while CLSINT(IOP) is 7
+! LABEL is defined below. This part is different from NUMINT      
       allocate( ANG   (m,4)      )
       allocate( GAO   (NTBAS(0)) )
       allocate( BUFGAO(NTBAS(0)) )
@@ -288,6 +276,7 @@ C
 !     ENDDO
 C
       write(*,*)'NUCIND',NUCIND
+      DO 5 IXYZ = 1, 3
       DO 10 IATOM = 1, NUCIND !change
 !      DO 10 ISYMOP = 0, MXOPR
 !      What is this roop? MXOPR=0 in dftgrd.F
@@ -533,8 +522,21 @@ C
 C
 C     Write integrals to file
 C
+      LABEL(2:8) = CLSINT(IOP)
+!     It is important, because LABEL must be 8, while CLSINT(IOP) is 7      
+      IF(IXYZ.EQ.1)THEN
+        LABEL(1:1) = "X"
+      ELSEIF(IXYZ.EQ.2)THEN
+        LABEL(1:1) = "Y"
+      ELSEIF(IXYZ.EQ.3)THEN
+        LABEL(1:1) = "Z"
+      ELSE
+        CALL QUIT('NUMINT_ANG: The initial character of LABEL' //
+     &            'should be X/Y/Z')
+      ENDIF   
       CALL WRTPRO(INTAO,NNBBASX,LABEL,RTNLBL,IPRINT)      
 C
+ 5    CONTINUE
       deallocate(ZAN)
       deallocate(C)
       deallocate(ANG)
@@ -1835,7 +1837,7 @@ C
       END      
 *****************************************************************************
 *
-      SUBROUTINE INTMG(TB,R,Z,N,NUCTYP,IXYZ)
+      SUBROUTINE INTMG(TB,R,Z,N,NUCTYP)
 *
 *     PHI_MG CONTRIBUTION (7) of Flambaum et al. Phys. Rev. A 72 052115 (2005)
 *     Magnetic contribution

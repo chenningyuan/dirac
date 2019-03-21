@@ -1691,14 +1691,8 @@
       ELSEIF(PLABEL(1:7).EQ.'UEHLING') THEN
         CLASLB = 'UEHLING'
         IORDER   = 0
-      ELSEIF(PLABEL(1:7).EQ.'XSEFGMG') THEN
-        CLASLB = 'XSEFGMG'
-        IORDER   = 0
-      ELSEIF(PLABEL(1:7).EQ.'YSEFGMG') THEN
-        CLASLB = 'YSEFGMG'
-        IORDER   = 0
-      ELSEIF(PLABEL(1:7).EQ.'ZSEFGMG') THEN
-        CLASLB = 'ZSEFGMG'
+      ELSEIF(PLABEL(2:7).EQ.'SEFGMG') THEN
+        CLASLB = 'SEFGMG '
         IORDER   = 0
       ELSEIF(PLABEL(1:6).EQ.'SEFGHF') THEN
         CLASLB = 'SEFGHF'
@@ -2189,30 +2183,14 @@
         DO I = 1,NUCIND
           DOATOM(I) = .TRUE.
         ENDDO
-      ELSEIF(CLASLB.EQ.'XSEFGMG') THEN
-        NOPTYP    = 1
+      ELSEIF(CLASLB.EQ.'SEFGMG ') THEN
+        NOPTYP    = 3
         LABINT(1) = 'XSEFGMG '
-        INTREP(1) = 0
-        SQUARE    = .FALSE.
-        ANTI      = .TRUE.
-        IORDER    = 0
-        DO I = 1,NUCIND
-          DOATOM(I) = .TRUE.
-        ENDDO
-      ELSEIF(CLASLB.EQ.'YSEFGMG') THEN
-        NOPTYP    = 1
-        LABINT(1) = 'YSEFGMG '
-        INTREP(1) = 0
-        SQUARE    = .FALSE.
-        ANTI      = .TRUE.
-        IORDER    = 0
-        DO I = 1,NUCIND
-          DOATOM(I) = .TRUE.
-        ENDDO
-      ELSEIF(CLASLB.EQ.'ZSEFGMG') THEN
-        NOPTYP    = 1
-        LABINT(1) = 'ZSEFGMG '
-        INTREP(1) = 0
+        LABINT(2) = 'YSEFGMG '
+        LABINT(3) = 'ZSEFGMG '        
+        INTREP(1) = ISYMAX(1,1)
+        INTREP(2) = ISYMAX(2,1)
+        INTREP(3) = ISYMAX(3,1)
         SQUARE    = .FALSE.
         ANTI      = .TRUE.
         IORDER    = 0
