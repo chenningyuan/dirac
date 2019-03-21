@@ -117,15 +117,15 @@ C     Self-energy(3component)
 C
       ELSEIF (CLSINT(I)(1:3).EQ.'XSE') THEN
         IXYZ = 1 
-        CALL NUMINT_ANG(I,COMB,IPRONE,IXYZ)       
+        CALL NUMINT_ANG(I,COMB,IXYZ,IPRONE)       
 C
       ELSEIF (CLSINT(I)(1:3).EQ.'YSE') THEN
         IXYZ = 2 
-        CALL NUMINT_ANG(I,COMB,IPRONE,IXYZ)       
+        CALL NUMINT_ANG(I,COMB,IXYZ,IPRONE)       
 C
       ELSEIF (CLSINT(I)(1:3).EQ.'ZSE') THEN
         IXYZ = 3 
-        CALL NUMINT_ANG(I,COMB,IPRONE,IXYZ)       
+        CALL NUMINT_ANG(I,COMB,IXYZ,IPRONE)       
 Csunaga      
 C
 C     Contribution from (static) embedding potential
@@ -203,6 +203,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C      
 C On iuput: IOP   ... Index of operator: e.g. CLSINT(IOP)='UEHLING'
 C           IXYZ  ... Index of XYZ, which is used in angular roop
+C                     ( WT8 = WT8 * ANG(IY,IXYZ) )
 C      
 C The numerical integration for constructing AO basis matrix
 C
@@ -379,7 +380,7 @@ C
                      IADD = I*(I-1)/2
                      DO J = 1, I
                        IJ = IADD + J + IOFF 
-                       BUF(IJ+ISTART*I) = GAO(I+ISTART)*GAO(J+ISTART)
+                       BUF(IJ+ISTART*I) = GAO(I+ISTART)*GAO(J+ISTART) 
 !                       write(*,*)'IJ,ISTART,IOFF,I,J',IJ,ISTART,IOFF,I,J
 !                       write(*,*)'IJ+ISTART*I',IJ+ISTART*I
                      ENDDO
@@ -389,7 +390,8 @@ C
                    IOFF   = ISTART*(ISTART+1)/2
                  ENDDO  
                ENDDO
-!               stop
+!     stop
+               WT8 = WT8 * ANG(IY,IXYZ) 
                CALL DAXPY(NDIM2,WT8,BUF,1,TC,1)
  30          CONTINUE
              CALL DCOPY(NDIM2,TC,1,TD(1,IR),1)
@@ -476,7 +478,8 @@ C
                    IOFF   = ISTART*(ISTART+1)/2
                  ENDDO  
                ENDDO
-!               stop
+!     stop
+               WT8 = WT8 * ANG(IY,IXYZ) 
                CALL DAXPY(NDIM2,WT8,BUF,1,TC,1)
  50          CONTINUE
              CALL DAXPY(NDIM2,W(IR),TC,1,INTAO,1)
@@ -522,10 +525,10 @@ C       Scale weights with multiplicity of center
 C      
 C     Generate integral labels
 C
-C     LABEL = 'UEHLING'
       CALL GETDAT(RTNLBL(1),RTNLBL(2))
-      RTNLBL(2)(1:2) = 'SY'
-      WRITE(RTNLBL(2)(3:4),'(I2)') 1
+      RTNLBL(2)(1:2) = 'AN'
+      WRITE(RTNLBL(2)(3:4),'(I2)') ISYMAX(IXYZ,1)+1
+!     WRITE(RTNLBL(2)(3:4),'(I2)') INTREP(I)+1  ! refer to  PR1IN2 of abacus/her1pro.F
       RTNLBL(2)(5:8) = COMB
 C
 C     Write integrals to file
@@ -1846,6 +1849,10 @@ C
 #include "dcbgen.h"
 #include "pi.h"
 #include "graspprm.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"     
+#include "symmet.h"
 C     
       DIMENSION TB(N),R(N)
       PARAMETER(NTMAX = 10000,TWO=2.0D0)
@@ -1907,9 +1914,9 @@ C        write(*,*)
 C      write(*,*)"ERF,WA,R(I),I"
 C      write(*,*)"ERF,WA,R(I),I",ERF(WA*R(I)),WA,R(I),I
 C      write(*,*)"POTIR,XI,a,",POTIR,XI,TWO*Z*WA/(R(I)*SQRTPI)
-      write(*,*)"1,2,total",POTIR/R(I)**TWO,
-     &     - TWO*Z*SQRT(XI/PI)/(R(I))*EXP(-XI*R(I)*R(I)),DIFFNUCPOT
-      write(*,*)"RESULT,NUCPOT",RESULT,DIFFNUCPOT
+C      write(*,*)"1,2,total",POTIR/R(I)**TWO,
+C     &     - TWO*Z*SQRT(XI/PI)/(R(I))*EXP(-XI*R(I)*R(I)),DIFFNUCPOT
+C      write(*,*)"RESULT,NUCPOT",RESULT,DIFFNUCPOT
 C     write(*,*)"exp",EXP(-XI*R(I)*R(I))
 *
       CALL G2TGRID(TT,TTX,NTMAX,NT,R(I))
@@ -1920,7 +1927,7 @@ C      write(*,*)""
       CALL QUAD_T_US2(TT,TTX,NTMAX,NT,RESULT)
       G2 = TWO*RESULT*CVAL*POTIR/R(I)
 C      write(*,*)"TWO,RESULT,CVAL,POTIR", TWO,RESULT,CVAL,POTIR!sunaga
-      write(*,*)"PREFAC,G1A,G1B,G2",PREFAC,G1A,G1B,G2,I !sunaga
+C      write(*,*)"PREFAC,G1A,G1B,G2",PREFAC,G1A,G1B,G2,I !sunaga
 C      write(*,*)""
       TB(I) = PREFAC*(G1A - G1B + G2) !*R(I)
  6    CONTINUE

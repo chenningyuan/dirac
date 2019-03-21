@@ -796,6 +796,7 @@
       IF(NEXPP.GT.0) THEN
         DO I = 1,NEXPP
           INDXPR = LEXPP(I)
+!          write(*,*)"NEXPP,INDXPR",NEXPP,INDXPR !sunaga
           CALL WRIXPR(I,INDXPR)
         ENDDO
       ENDIF  
@@ -2585,6 +2586,7 @@
 !
       ISYM = IPRPSYM(INDXPR)
       ITIM = IPRPTIM(INDXPR)
+!      write(*,*)"PRPNAM,REP,TTYP",PRPNAM(INDXPR),REP(ISYM-1),TTYP(ITIM)!sunaga
       IF(IND.EQ.0) THEN
         WRITE(LUPRI,'(6X,A16,5X,A3,5X,A2)')                             &
      &    PRPNAM(INDXPR),REP(ISYM-1),TTYP(ITIM)
