@@ -277,6 +277,7 @@ C
 C
       write(*,*)'NUCIND',NUCIND
       DO 5 IXYZ = 1, 3
+!         IXYZ = 3
       DO 10 IATOM = 1, NUCIND !change
 !      DO 10 ISYMOP = 0, MXOPR
 !      What is this roop? MXOPR=0 in dftgrd.F
@@ -292,7 +293,7 @@ C
          MXNP = 4000            !same to GRASP
          NUCTYP = 0
          IF(GAUNUC) NUCTYP = 3
-         write(*,*)"NUCTYP",NUCTYP
+         write(*,*)"NUCTYP,IXYZ",NUCTYP,IXYZ
          CALL MEMSET(ZAN(IATOM),IATOM,MXNP,IPRINT)
          write(*,*)'HH2',H
          CALL NUCPRM(ZAN(IATOM),NUCMASS(INT(ZAN(IATOM))),NUCTYP)
@@ -338,7 +339,7 @@ C     Integrand = 1/r * VP(r) * (Large*Large + Small*Small) * r^2 * r
 C     Meaning:   1/r * NUMIR(IR) *   wavefunction     * Radial int * Needed in QUAD.
 C     Finally,    We multiply R(IR)*R(IR).
 C
-             RFAC = R(IR)*R(IR) * NUMIR(IR)
+             RFAC = R(IR)*R(IR)*R(IR) * NUMIR(IR)
              CALL DZERO(TC,NDIM2)
 C            
 C            loop over angular points
@@ -352,37 +353,47 @@ C
 C
 C     GET AO's
 C
-               CALL GETAOS(BUFGAO,TEMP,TEMP,TEMP,TEMP,
+               CALL GETAOS(GAO,TEMP,TEMP,TEMP,TEMP,
      &                      X8,Y8,Z8,NTBAS(0),0,.FALSE.,0) !The last is IPRINT
-               CALL WTAOSO(BUFGAO,GAO,NTBAS(0),1,IPRINT)
+C               CALL WTAOSO(BUFGAO,GAO,NTBAS(0),1,IPRINT)
 C     
 C     Get "overlap" matrix
 C
-               IOFF   = 0
-               ISTART = 0
-               DO IRP = 1,MAXREP+1 
-                 DO IC = 1, MC
-!                   write(*,*)'***********'  
-!                   write(*,*)'NCOS,IRP,IC',NCOS(IRP,IC),IRP,IC
-!                   write(*,*)'***********'
-                    DO I = 1, NCOS(IRP,IC)
-                     IADD = I*(I-1)/2
-                     DO J = 1, I
-                       IJ = IADD + J + IOFF 
-                       BUF(IJ+ISTART*I) = GAO(I+ISTART)*GAO(J+ISTART) 
-!                       write(*,*)'IJ,ISTART,IOFF,I,J',IJ,ISTART,IOFF,I,J
-!                       write(*,*)'IJ+ISTART*I',IJ+ISTART*I
-                     ENDDO
-                   ENDDO
-!                   write(*,*)
-                   ISTART = ISTART + NCOS(IRP,IC)
-                   IOFF   = ISTART*(ISTART+1)/2
-                 ENDDO  
+               ISTART = NTBAS(1)*(NTBAS(1)+1)/2
+               DO I = 1, NTBAS(2)
+                 IADD = I*(I-1)/2 + NTBAS(1)*(I-1)
+                 DO J = 1, NTBAS(1)
+                   BUF(ISTART+IADD+J) = GAO(J)*GAO(I+NTBAS(1))
+!                   write(*,*)"I,J,IADD,ISTART",I,J,IADD,ISTART
+                 ENDDO
                ENDDO
-!     stop
-               WT8 = WT8 * ANG(IY,IXYZ) 
+!              stop
+!                  write(*,*)"IOFF,ISTART",IOFF,ISTART
+c$$$               DO IRP = 1,MAXREP+1 
+c$$$                 DO IC = 1, MC
+c$$$!                   write(*,*)'***********'  
+c$$$!                   write(*,*)'NCOS,IRP,IC',NCOS(IRP,IC),IRP,IC
+c$$$!                   write(*,*)'***********'
+c$$$                   DO I = 1, NCOS(IRP,IC)
+c$$$                     IADD = I*(I-1)/2
+c$$$                     DO J = 1, I
+c$$$                       IJ = IADD + J + IOFF 
+c$$$                       BUF(IJ+ISTART*I) = GAO(I+ISTART)*GAO(J+ISTART) 
+c$$$!                       write(*,*)'IJ,ISTART,IOFF,I,J',IJ,ISTART,IOFF,I,J
+c$$$!                       write(*,*)'IJ+ISTART*I',IJ+ISTART*I
+c$$$                     ENDDO
+c$$$                   ENDDO
+c$$$!                   write(*,*)
+c$$$                   ISTART = ISTART + NCOS(IRP,IC)
+c$$$                   IOFF   = ISTART*(ISTART+1)/2
+c$$$                 ENDDO  
+c$$$               ENDDO
+c$$$!               write(*,*)"WT8,ANG",WT8,ANG(iy,IXYZ)
+               WT8 = WT8 * ANG(iy,IXYZ)
+!               write(*,*)"WT8",WT8
                CALL DAXPY(NDIM2,WT8,BUF,1,TC,1)
  30          CONTINUE
+!             stop!sunaga
              CALL DCOPY(NDIM2,TC,1,TD(1,IR),1)
  20        CONTINUE
            CALL QUAD2(INTAO,TD,MXNP,NDIM2)
@@ -401,9 +412,10 @@ C R(IR)**2 is multiplized in RFAC, later
 !             write(*,*)'R,W',R(IR),W(IR),IR
            ENDDO
            write(*,*)"NUCMASS",NUCMASS(INT(ZAN(IATOM)))
-           IF(LABEL.EQ.'UEHLING')THEN
-             CALL VCMPOL(NUMIR,R,ZAN(IATOM),MXNP,NUCTYP,1)
-           ENDIF   
+           write(*,*)
+           write(*,*)"***************"
+           write(*,*)
+           CALL INTMG(NUMIR,R,ZAN(IATOM),MXNP,NUCTYP)
 !           DO J = 1,MXNP
 !              NUMIR(J)=D1
 !              write(*,*)J,NUMIR(J),R(J)
@@ -428,7 +440,7 @@ C       Integrand = 1/r * VP(r) * (Large*Large + Small*Small) * r^2
 C       Meaning:   1/r * NUMIR(IR) *   wavefunction     * Radial int.
 C       Finally,    We multiply R(IR).
 C
-             RFAC = R(IR) * NUMIR(IR)
+             RFAC = R(IR)*R(IR) * NUMIR(IR)
              CALL DZERO(TC,NDIM2)
 C            
 C            loop over angular points
@@ -468,7 +480,7 @@ C
                  ENDDO  
                ENDDO
 !     stop
-               WT8 = WT8 * ANG(IY,IXYZ) 
+               WT8 = WT8 * ANG(iy,IXYZ) 
                CALL DAXPY(NDIM2,WT8,BUF,1,TC,1)
  50          CONTINUE
              CALL DAXPY(NDIM2,W(IR),TC,1,INTAO,1)
@@ -480,11 +492,11 @@ C
 !         DO II = 1,NDIM2
 !            write(*,*)'TD',TD(II,1)
 !         ENDDO
-!     CALL QUAD2(RESULT,TD,MXNP,NDIM2) 
-!     CALL QUAD2(INTAO,TD,MXNP,NDIM2)
+!         CALL QUAD2(RESULT,TD,MXNP,NDIM2) 
+!         CALL QUAD2(INTAO,TD,MXNP,NDIM2)
 !         CALL RADINT_WRAPPER(INTAO,TD,R,W,MXNP,NDIM2)
 C         
-!         CALL OUTPAK(INTAO,NTBAS(0),-1,LUPRI)
+         CALL OUTPAK(INTAO,NTBAS(0),-1,LUPRI)
 c$$$         IOFF = 1
 c$$$         DIM  = NTBAS(1)  
 c$$$         DO IC = 1,MC
@@ -525,11 +537,11 @@ C
       LABEL(2:8) = CLSINT(IOP)
 !     It is important, because LABEL must be 8, while CLSINT(IOP) is 7      
       IF(IXYZ.EQ.1)THEN
-        LABEL(1:1) = "X"
+        LABEL(1:1) = 'X'
       ELSEIF(IXYZ.EQ.2)THEN
-        LABEL(1:1) = "Y"
+        LABEL(1:1) = 'Y'
       ELSEIF(IXYZ.EQ.3)THEN
-        LABEL(1:1) = "Z"
+        LABEL(1:1) = 'Z'
       ELSE
         CALL QUIT('NUMINT_ANG: The initial character of LABEL' //
      &            'should be X/Y/Z')
@@ -679,9 +691,23 @@ C           ELSEIF(LABEL.EQ.'SEFGHF')THEN
 C             CALL INTHF(NUMIR,R,ZAN(IATOM),MXNP,NUCTYP,1)
            ELSEIF(LABEL.EQ.'SEFGLF')THEN
              CALL INTLF(NUMIR,R,ZAN(IATOM),MXNP          )
+             DO I = 1,MXNP
+C                write(*,*)"NUMIR1,R(I)",NUMIR(I),R(I)
+                NUMIR(I) = NUMIR(I)*R(I)
+C                write(*,*)"NUMIR2",NUMIR(I)
+C                write(*,*)
+             ENDDO
            ELSEIF(LABEL.EQ.'SEPZ'  )THEN
              CALL INTPZ(NUMIR,R,ZAN(IATOM),MXNP          )
-           ENDIF   
+             DO I = 1,MXNP
+                NUMIR(I) = NUMIR(I)*R(I)
+             ENDDO
+           ENDIF
+C          
+C     This roop is
+C     RFAC in the below part is made for VCMPOL, which includes 1/r.
+C     We have to muliply extra R(I) here.       
+C           
 !           DO J = 1,MXNP
 !     write(*,*)J,NUMIR(J),R(J)
 !           ENDDO
@@ -690,9 +716,9 @@ C             CALL INTHF(NUMIR,R,ZAN(IATOM),MXNP,NUCTYP,1)
            DO  J = 1,MXNP
              WRITE(20,*)NUMIR(J)          !sunaga
            ENDDO
-           DO  J = 1,MXNP
-             WRITE(*,*)NUMIR(J)          !sunaga
-           ENDDO
+C           DO  J = 1,MXNP
+C             WRITE(*,*)NUMIR(J)          !sunaga
+C           ENDDO
            CLOSE(20,STATUS='KEEP')
          
 !     change for debug sentense
@@ -849,8 +875,8 @@ C
 !     CALL QUAD2(INTAO,TD,MXNP,NDIM2)
 !         CALL RADINT_WRAPPER(INTAO,TD,R,W,MXNP,NDIM2)
 C         
-!         CALL OUTPAK(INTAO,NTBAS(0),-1,LUPRI)
-c$$$         IOFF = 1
+C         CALL OUTPAK(INTAO,NTBAS(0),-1,LUPRI) !debug
+c$$$         IOFF = 1 
 c$$$         DIM  = NTBAS(1)  
 c$$$         DO IC = 1,MC
 c$$$           IF(IC.eq.1)THEN 
