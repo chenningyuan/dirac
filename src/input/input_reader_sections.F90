@@ -1182,6 +1182,7 @@
 
       if (kw_matches(word, '.FCORE ')) then
          relcc_projectors_frozen_core = .true.
+         call kw_read(word,  relcc_projectors_frozen_core_max_energy)
       end if
 
       if (kw_matches(word, '.NODOCC')) then

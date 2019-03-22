@@ -161,8 +161,7 @@ function create_t_projector(ndet, eps)
          if (allocated(det_map%det(i)%occupied_energies)) then 
             ndim_occ = size(det_map%det(i)%occupied_energies,1)
             do j = 1, ndim_occ
-               if ( (det_map%det(i)%occupied_energies(j).le.relcc_projectors_rew_occ_max_energy).and. &
-                  & (det_map%det(i)%occupied_energies(j).ge.relcc_projectors_rew_occ_min_energy) ) then
+               if ( (det_map%det(i)%occupied_energies(j).le.relcc_projectors_frozen_core_max_energy) ) then
                   spinors_in_occupied_window(j) = .true.
                else
                   spinors_in_occupied_window(j) = .false.

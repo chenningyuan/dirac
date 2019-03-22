@@ -138,6 +138,7 @@ module relcc_cfg
   real*8, public  :: relcc_projectors_rew_occ_max_energy =  huge(relcc_projectors_rew_occ_max_energy)
   real*8, public  :: relcc_projectors_rew_virt_min_energy = -huge(relcc_projectors_rew_virt_min_energy)
   real*8, public  :: relcc_projectors_rew_virt_max_energy =  huge(relcc_projectors_rew_virt_max_energy)
+  real*8, public  :: relcc_projectors_frozen_core_max_energy =  huge(relcc_projectors_frozen_core_max_energy)
 
 ! will add filenames etc here too
 
@@ -269,6 +270,7 @@ contains
   call interface_mpi_bcast(relcc_projectors_rew_occ_max_energy    ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_projectors_rew_virt_min_energy   ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_projectors_rew_virt_max_energy   ,1,0,global_communicator)
+  call interface_mpi_bcast(relcc_projectors_frozen_core_max_energy    ,1,0,global_communicator)
 
 ! Information relevant to restarts
   call interface_mpi_bcast_l0(relcc_restart_skipsect,    6,0,global_communicator)
