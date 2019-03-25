@@ -482,7 +482,7 @@ contains
         if (present(orthogonalize_all)) then
             orthogonalize_all_local = orthogonalize_all 
         else
-            orthogonalize_all_local = .true.
+            orthogonalize_all_local = .false.
         end if
 
         if (present(verbose)) then
@@ -507,12 +507,12 @@ contains
         if (verbose_local) &
             call davidson_print_vectors(updated_subspace_vectors_R, label="new subspace vectors before OR")
 
-!       if (orthogonalize_all) then
+        if (orthogonalize_all_local) then
             call orthonormalize_subspace(updated_subspace_vectors_R, verbose=verbose_local)
-!       else ! only orthogonalize the new vectors with respect to the old ones
-!           ortho_from_vector=vectors_L + 1
-!           call orthonormalize_subspace(updated_subspace_vectors_R, start_from=ortho_from_vector, verbose=verbose_local)
-!       end if
+        else ! only orthogonalize the new vectors with respect to the old ones
+            ortho_from_vector=vectors_L + 1
+            call orthonormalize_subspace(updated_subspace_vectors_R, start_from=ortho_from_vector, verbose=verbose_local)
+        end if
 
     end function
 
@@ -746,19 +746,15 @@ contains
             verbose_local = .false.
         end if
 
-        if (start_from.ne.1) then
-            print *, 'warning, orthogonalization of a subset of vectors not implemented yet, will orthogonalize all vectors'
-        end if
-
-        do i = 1, vectors_L
-            norm = vector_norm(vectors(:,i))
+        do j = start_from, vectors_L
+            norm = vector_norm(vectors(:,j))
             if (verbose_local) then
                 if (davidson_debug) print *, "debug, Gram-Schmidt orthogonalization"
-                print *, "  renormalizing vector v(",i,") : (norm = ",norm,")"
+                print *, "  renormalizing vector v(",j,") : (norm = ",norm,")"
                 if (davidson_complex_mode_with_reals) then
                     do k = 1, vectors_N, 2
-                        vr = vectors(k,i)
-                        vi = vectors(k+1,i)
+                        vr = vectors(k,j)
+                        vi = vectors(k+1,j)
                         if (vi < 0.0d0) then
                             print "(4x,1e14.6,a,1e13.6,a)", vr," -",abs(vi)," i"
                         else
@@ -767,23 +763,23 @@ contains
                     end do
                 else
                     do k = 1, vectors_N
-                        vr = vectors(k,i)
+                        vr = vectors(k,j)
                         print "(4x,1e14.6)", vr
                     end do
                 end if
                 print *, ""
             end if 
             if (norm .ge. safe_minimum ) then
-                vectors(:,i) = vectors(:,i) / norm
+                vectors(:,j) = vectors(:,j) / norm
             else
                 stop ('division by zero in orthogonalization') 
             end if
             if (verbose_local) then
-                print *, "renormalized  vector v(",i,") : " 
+                print *, "renormalized  vector v(",j,") : "
                 if (davidson_complex_mode_with_reals) then
                     do k = 1, vectors_N, 2
-                        vr = vectors(k,i)
-                        vi = vectors(k+1,i)
+                        vr = vectors(k,j)
+                        vi = vectors(k+1,j)
                         if (vi < 0.0d0) then
                             print "(4x,1e14.6,a,1e13.6,a)", vr," -",abs(vi)," i"
                         else
@@ -792,13 +788,13 @@ contains
                     end do
                 else
                     do k = 1, vectors_N
-                        vr = vectors(k,i)
+                        vr = vectors(k,j)
                         print "(4x,1e14.6)", vr
                     end do
                 end if
                 print *, ""
             end if
-            do j = i+1, vectors_L
+            do i = 1, j-1
                 call gram_schmidt_projection_R(projection, vectors(:,i),vectors(:,j))
                 if (verbose_local) then
                     print *," projection of v(",i,") onto v(",j,"):"
@@ -827,6 +823,12 @@ contains
                 end if
                 vectors(:,j) = vectors(:,j) - projection(:)
             end do
+            norm = vector_norm(vectors(:,j))
+            if (norm .ge. safe_minimum ) then
+                vectors(:,j) = vectors(:,j) / norm
+            else
+                stop ('division by zero in orthogonalization')
+            end if
             if (verbose_local) then
                 call davidson_print_vectors(vectors, label="all vectors                   ")
             end if
@@ -2204,7 +2206,7 @@ contains
        real(kind=8), intent(in)  ::  shift, unshifted_value
 
        shifted_value_real = abs(unshifted_value - shift)
-    end
+    end function shifted_value_real
 
     real(kind=8) function shifted_value_complex_as_real(unshifted_value, shift)
        real(kind=8), intent(in)  ::  shift(2), unshifted_value(2)
@@ -2214,7 +2216,7 @@ contains
        temp(2) = unshifted_value(2) - shift(2)
 
        shifted_value_complex_as_real = sqrt(temp(1)*temp(1) + temp(2)*temp(2))
-    end
+    end function shifted_value_complex_as_real
 
     recursive subroutine quicksort_vector_real_shifted(shift, v, indices_sorted, first, last)
         real(kind=8), intent(inout) ::  v(:)
