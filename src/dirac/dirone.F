@@ -318,16 +318,18 @@ C
            CALL INTMG(NUMIR,R,ZAN(IATOM),MXNP,NUCTYP)
 !           DO J = 1,MXNP
 !     write(*,*)J,NUMIR(J),R(J)
+!     ENDDO
+!!! debug           
+!           OPEN(20,FILE='LOG_DIRAC',STATUS='REPLACE',          
+!     &          FORM='FORMATTED',ACCESS='SEQUENTIAL')  
+!           DO  J = 1,MXNP
+!             WRITE(20,*)NUMIR(J)          !sunaga
 !           ENDDO
-           OPEN(20,FILE='LOG_DIRAC',STATUS='REPLACE',          
-     &          FORM='FORMATTED',ACCESS='SEQUENTIAL')  
-           DO  J = 1,MXNP
-             WRITE(20,*)NUMIR(J)          !sunaga
-           ENDDO
-           DO  J = 1,MXNP
-             WRITE(*,*)NUMIR(J),J          !sunaga
-           ENDDO
-           CLOSE(20,STATUS='KEEP')
+!           DO  J = 1,MXNP
+!             WRITE(*,*)NUMIR(J),J          !sunaga
+!           ENDDO
+!           CLOSE(20,STATUS='KEEP')
+!!! debug           
          
 !     change for debug sentense
            write(*,*)"R(1),Z",R(1),ZAN(IATOM) 
@@ -363,11 +365,26 @@ C
                DO I = 1, NTBAS(2)
                  IADD = I*(I-1)/2 + NTBAS(1)*(I-1)
                  DO J = 1, NTBAS(1)
-                   BUF(ISTART+IADD+J) = GAO(J)*GAO(I+NTBAS(1))
+                    BUF(ISTART+IADD+J) = -GAO(J)*GAO(I+NTBAS(1))
+                    BUFTST = BUF(ISTART+IADD+J) * ANG(iy,IXYZ)
+!                    IF(BUFTST.NE.0.0D0)THEN
+!                      IF(ISTART+IADD+J.EQ.20)THEN
+!                       write(*,*)'IJ,J,I',ISTART+IADD+J,J,I
+!                       write(*,*)'X8,Y8,Z8',X8,Y8,Z8
+!                 write(*,*)'L,S,ANG',GAO(J),GAO(I+NTBAS(1)),ANG(iy,IXYZ)
+!                 write(*,*)
+!                       IF(BUFTST.LE.0.0D0)THEN
+!                          write(*,*)"BUFTST",BUFTST
+!                       ENDIF   
+!                    ENDIF
+!                    ENDIF
 !                   write(*,*)"I,J,IADD,ISTART",I,J,IADD,ISTART
                  ENDDO
-               ENDDO
-!              stop
+              ENDDO
+!              IF(IR.EQ.5)THEN
+!                write(*,*)
+!                write(*,*)
+!              ENDIF  
 !                  write(*,*)"IOFF,ISTART",IOFF,ISTART
 c$$$               DO IRP = 1,MAXREP+1 
 c$$$                 DO IC = 1, MC
@@ -390,12 +407,22 @@ c$$$                 ENDDO
 c$$$               ENDDO
 c$$$!               write(*,*)"WT8,ANG",WT8,ANG(iy,IXYZ)
                WT8 = WT8 * ANG(iy,IXYZ)
-!               write(*,*)"WT8",WT8
                CALL DAXPY(NDIM2,WT8,BUF,1,TC,1)
  30          CONTINUE
+!               write(*,*)"TC(20),IR",TC(20),IR
 !             stop!sunaga
              CALL DCOPY(NDIM2,TC,1,TD(1,IR),1)
- 20        CONTINUE
+!          DO JJ=1,NDIM2
+!             write(*,*)"TC",TC(JJ),JJ
+!          ENDDO
+!          write(*,*)
+!          write(*,*)
+!          write(*,*)"fin,IR",IR
+!          IF(IR.EQ.10)THEN
+!            stop
+!         ENDIF
+C         
+ 20       CONTINUE
            CALL QUAD2(INTAO,TD,MXNP,NDIM2)
          ELSE  ! num_grid_cfg_grasp
            allocate( TD(NDIM2,1) )         
@@ -469,12 +496,11 @@ C
                      IADD = I*(I-1)/2
                      DO J = 1, I
                        IJ = IADD + J + IOFF 
-                       BUF(IJ+ISTART*I) = GAO(I+ISTART)*GAO(J+ISTART)
-!                       write(*,*)'IJ,ISTART,IOFF,I,J',IJ,ISTART,IOFF,I,J
+                       BUF(IJ+ISTART*I) = GAO(I+ISTART)*GAO(J+ISTART)                       
 !                       write(*,*)'IJ+ISTART*I',IJ+ISTART*I
                      ENDDO
                    ENDDO
-!                   write(*,*)
+                   write(*,*)
                    ISTART = ISTART + NCOS(IRP,IC)
                    IOFF   = ISTART*(ISTART+1)/2
                  ENDDO  
@@ -548,7 +574,7 @@ C
       ENDIF   
       CALL WRTPRO(INTAO,NNBBASX,LABEL,RTNLBL,IPRINT)      
 C
- 5    CONTINUE
+ 5    CONTINUE !IXYZ
       deallocate(ZAN)
       deallocate(C)
       deallocate(ANG)
