@@ -365,7 +365,7 @@ C
                DO I = 1, NTBAS(2)
                  IADD = I*(I-1)/2 + NTBAS(1)*(I-1)
                  DO J = 1, NTBAS(1)
-                    BUF(ISTART+IADD+J) = -GAO(J)*GAO(I+NTBAS(1))
+                    BUF(ISTART+IADD+J) = GAO(J)*GAO(I+NTBAS(1))
                     BUFTST = BUF(ISTART+IADD+J) * ANG(iy,IXYZ)
 !                    IF(BUFTST.NE.0.0D0)THEN
 !                      IF(ISTART+IADD+J.EQ.20)THEN
@@ -522,6 +522,10 @@ C
 !         CALL QUAD2(INTAO,TD,MXNP,NDIM2)
 !         CALL RADINT_WRAPPER(INTAO,TD,R,W,MXNP,NDIM2)
 C         
+C
+C  This minus DSCAL is due to Beta Alpha, although we use Alpha. 
+C              
+         CALL DSCAL(-D1,NDIM2,INTAO,1)
          CALL OUTPAK(INTAO,NTBAS(0),-1,LUPRI)
 c$$$         IOFF = 1
 c$$$         DIM  = NTBAS(1)  
@@ -536,7 +540,6 @@ c$$$           IOFF = IOFF + NTBAS(IC)*(NTBAS(IC)+1)/2 + NTBAS(IC)
 c$$$           DIM = DIM + NTBAS(2)
 c$$$         ENDDO
 c$$$         write(*,*)
-!          CALL OUTPAK(INTAO(1),NTBAS(0),-1,LUPRI)
         Endif        !(IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0)
         deallocate(TD)
         deallocate(NUMIR)
@@ -709,12 +712,11 @@ C
            write(*,*)"NUCMASS",NUCMASS(INT(ZAN(IATOM)))
            IF(LABEL.EQ.'UEHLING')THEN
              CALL VCMPOL(NUMIR,R,ZAN(IATOM),MXNP,NUCTYP,1)
-C           ELSEIF(LABEL.EQ.'XSEFGMG')THEN
-C             CALL INTMG(INTAO,R,ZAN(IATOM),MXNP,NUCTYP,1)
-C     Note that we do not obtain NUMIR, but INTAO.
-C     Because, the roop of the angular part is different from the normal one.             
-C           ELSEIF(LABEL.EQ.'SEFGHF')THEN
-C             CALL INTHF(NUMIR,R,ZAN(IATOM),MXNP,NUCTYP,1)
+           ELSEIF(LABEL.EQ.'SEFGHF')THEN
+             CALL INTHF(NUMIR,R,ZAN(IATOM),MXNP,NUCTYP   )
+             DO I = 1,MXNP
+                NUMIR(I) = NUMIR(I)*R(I)
+             ENDDO
            ELSEIF(LABEL.EQ.'SEFGLF')THEN
              CALL INTLF(NUMIR,R,ZAN(IATOM),MXNP          )
              DO I = 1,MXNP
@@ -1949,9 +1951,9 @@ C        XI = 1.5/PARM(1)**2
         POTIR = Z*ERF(WA*R(I))
         DIFFNUCPOT = POTIR/R(I)**TWO
      &             - TWO*Z*SQRT(XI)/(SQRTPI*R(I))*EXP(-XI*R(I)*R(I))
-        SEC1 = - TWO*Z*SQRT(XI/3.14159)/R(I)*EXP(-XI*R(I)*R(I))
-        SEC2 = - TWO*Z*SQRT(XI/PI)/R(I)*EXP(-XI*R(I)*R(I))
-        SEC3 = - TWO*Z*SQRT(XI)/(SQRTPI*R(I))*EXP(-XI*R(I)*R(I))
+C        SEC1 = - TWO*Z*SQRT(XI/3.14159)/R(I)*EXP(-XI*R(I)*R(I))
+C        SEC2 = - TWO*Z*SQRT(XI/PI)/R(I)*EXP(-XI*R(I)*R(I))
+C        SEC3 = - TWO*Z*SQRT(XI)/(SQRTPI*R(I))*EXP(-XI*R(I)*R(I))
 C        DIFFNUCPOT = POTIR/R(I)**TWO
 C     &               - TWO*Z*WA/(R(I)*SQRT(3.14159))*EXP(-XI*R(I)*R(I)) !sqrtpi
 C        DIFFNUCPOT = ZZ(I)/R(I)**2
@@ -2205,6 +2207,140 @@ C      deallocate(BUF)
 C      
       RETURN
       END
+*****************************************************************************
+*
+      SUBROUTINE INTHF(TB,R,Z,N,NUCTYP)
+*
+*     PHI_L CONTRIBUTION (10) of Flambaum et al. Phys. Rev. A 72 052115 (2005)
+*     Low flequency contribution
+*
+*     Called from: NUMINT
+*      
+*     Modified to DIRAC A. Sunaga Mar. 2019      
+*           
+*****************************************************************************
+#include "implicit.h"
+#include "dcbgen.h"
+#include "pi.h"
+#include "graspprm.h"
+C     
+      DIMENSION TB(N),R(N)
+      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
+      PARAMETER(NTMAX = 10000)
+      real(8), allocatable :: TT(:),TTX(:)      
+C
+      allocate(TT(NTMAX))
+      allocate(TTX(NTMAX))
+C     
+      PREFAC = ONE/(CVAL*PI)
+      X1  = (Z-80)/CVAL
+      X2  = X1*X
+      X3  = X2*X
+      X4  = X3*X
+      ZC7 = 0.07D0 * Z*Z/(CVAL*CVAL)
+      IF(NUCTYP.EQ.3)THEN
+        RAD = PARM1
+        XI = 1.5D0/(RAD*RAD)
+        WA = SQRT(XI)
+      ENDIF
+C
+      CALL DCOPY(N,R,1,TB,1)
+      CALL DSCAL(N,CVAL,TB,1) 
+C      
+      DO 5 I = 1,N
+        IF (NUCTYP .EQ. 0) THEN
+*     POINT
+          POT = Z/R(I) 
+        ELSE
+*     GAUSS
+          POT = Z*ERF(WA*R(I))/R(I)
+        ENDIF
+c     hth  GRID FOR T-INTEGRATION
+        CALL FTGRID(TT,TTX,NTMAX,NT,R(I),Z)
+chth  T-INTEGRATION
+        CALL QUAD_T_US2(TT,TTX,NTMAX,NT,RESULT)
+        AZ1 = (1.071D0 - 1.976D0*X2 - 2.128D0*X3 + 0.169D0*X4) * TB(I)
+        AZ2 = TB(I) + ZC7
+        AZ  = AZ1/AZ2
+        TB(I) = PREFAC*RESULT*POT*AZ
+ 5    CONTINUE
+chth  R-INTEGRATION
+C
+      deallocate(TT)
+      deallocate(TTX)
+C      
+      RETURN
+      END
+C
+************************************************************************
+*                                                                      *
+         SUBROUTINE FTGRID (F,T,NTMAX,NT,R,Z)
+*                                                                      *
+*   ----------------   SECTION 11   SUBPROGRAM 26   ----------------   *
+*                                                                      *
+*   CREATE T-GRID FOR THE RADIATIVE POTENTIALS                         *
+*   SUBROUTINES CALLED:   PHI_F_INNER                                  *
+*                                                                      *
+*                                         LAST REVISION: 12 DEC 2007   *
+*                                                                      *
+************************************************************************
+*
+#include <implicit.h>
+*
+      INTEGER NT,NTMAX,J
+      PARAMETER(ONE = 1.0D0, TEN = 10.D0)
+      DOUBLEPRECISION T(NTMAX)
+      DOUBLEPRECISION F(NTMAX)
+      TWELVE  = 12.0D0
+      HUNDRED = 100.0D0
+*
+      DO 1 J = 1, NTMAX
+        T(J) = ONE + TEN**(-(TWELVE - DBLE(J)*ONE/HUNDRED))
+        F(J) = PHI_F_INNER(T(J),R,Z)
+        IF (ABS(F(J)) .LE. 1.0D-32) THEN
+           NT = J
+           GOTO 2
+        END IF
+*
+    1 CONTINUE
+    2 RETURN
+*
+      END
+************************************************************************
+*                                                                      *
+      FUNCTION PHI_F_INNER (T,R,Z)
+*                                                                      *
+*   ----------------   SECTION 11   SUBPROGRAM 21  -----------------   *
+*                                                                      *
+*   CALCULATE THE INTEGRAL-KERNAL FOR THE RADIATIVE PHI_F POTENTIAL    *
+*   NO SUBROUTINES CALLED.                                             *
+*                                                                      *
+*                                         LAST REVISION: 12 DEC 2007   *
+*                                                                      *
+************************************************************************
+*
+#include "implicit.h"
+#include "dcbgen.h"
+*      
+      PARAMETER(ONE = 1.0D0, TWO = 2.0D0, THREE = 3.0D0, FOUR = 4.0D0,
+     &          HALF = 0.5D0)
+*     
+* CALCULATE THE T DEPENDENT PART
+*
+      X1 = ONE/SQRT(T*T-ONE)
+      X2 = ONE - ONE/(TWO*T*T)
+      X3 = LOG(T*T - ONE)
+      X4 = FOUR*LOG(CVAL/Z + HALF)
+      X5 = THREE/TWO
+      X6 = ONE/T*T
+      X7 = EXP(-TWO*T*R*CVAL)
+*
+      PHI_F_INNER = X1*(X2*(X3 + X4) - X5 + X6)*X7
+*
+      RETURN
+*
+      END
+      
 *****************************************************************************
 *
       SUBROUTINE INTPZ(TB,R,Z,N)
