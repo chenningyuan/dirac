@@ -130,6 +130,10 @@
          type(talsh_tens_t) :: r1_sigma, r2_sigma, l1_sigma, l2_sigma
         end type talsh_eom_tens
 
+        type, public :: talsh_projectors
+         logical, pointer :: p1(:), p2(:)
+        end type talsh_projectors
+
 !       One electron integrals
         type, public  :: one_el_t
          integer     :: n_spinor=-1          ! number of spinors, used for consistency checks
