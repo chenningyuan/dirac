@@ -744,9 +744,9 @@ C
            DO  J = 1,MXNP
              WRITE(20,*)NUMIR(J)          !sunaga
            ENDDO
-C           DO  J = 1,MXNP
-C             WRITE(*,*)NUMIR(J)          !sunaga
-C           ENDDO
+           DO  J = 1,MXNP
+             WRITE(*,*)NUMIR(J)          !sunaga
+           ENDDO
            CLOSE(20,STATUS='KEEP')
          
 !     change for debug sentense
@@ -1681,8 +1681,9 @@ C
 C     In additin, the value of AMASS is modified in GRASP.
 C     For example, AMASS of Hg is not 202, but 202-0.0293680D0, as follows.
 C
-!      AT3 = (DBLE(20)-7.5609D-003) **  (1.0D0/3.0D0) !for debug, comparing with GRASP
-       AT3 = (DBLE(202)-0.0293680D0) ** (1.0D0/3.0D0) !for debug, comparing with GRASP
+      AT3 = (DBLE(20)-7.5609D-003) **  (1.0D0/3.0D0) !for debug, comparing with GRASP
+      write(*,*)'AT3 correction for Ne'
+!       AT3 = (DBLE(202)-0.0293680D0) ** (1.0D0/3.0D0) !for debug, comparing with GRASP
 !     AT3 = AMASS**3.33333333333333D-01
 C
 C     7.5609D-003 is DMASS(I) in datain.F ande grasp.F
@@ -2225,7 +2226,7 @@ C
 #include "graspprm.h"
 C     
       DIMENSION TB(N),R(N)
-      PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
+      PARAMETER(ONE = 1.0D0)
       PARAMETER(NTMAX = 10000)
       real(8), allocatable :: TT(:),TTX(:)      
 C
@@ -2234,9 +2235,9 @@ C
 C     
       PREFAC = ONE/(CVAL*PI)
       X1  = (Z-80)/CVAL
-      X2  = X1*X
-      X3  = X2*X
-      X4  = X3*X
+      X2  = X1 * X1
+      X3  = X2 * X1
+      X4  = X3 * X1
       ZC7 = 0.07D0 * Z*Z/(CVAL*CVAL)
       IF(NUCTYP.EQ.3)THEN
         RAD = PARM1
@@ -2246,7 +2247,8 @@ C
 C
       CALL DCOPY(N,R,1,TB,1)
       CALL DSCAL(N,CVAL,TB,1) 
-C      
+C
+      write(*,*)'PARM1.XI,WA'
       DO 5 I = 1,N
         IF (NUCTYP .EQ. 0) THEN
 *     POINT
@@ -2262,7 +2264,12 @@ chth  T-INTEGRATION
         AZ1 = (1.071D0 - 1.976D0*X2 - 2.128D0*X3 + 0.169D0*X4) * TB(I)
         AZ2 = TB(I) + ZC7
         AZ  = AZ1/AZ2
+!        write(*,*)
+!        write(*,*)'AZ1,AZ2,TB,X,X4',AZ1,AZ2,TB(I),X,X4
         TB(I) = PREFAC*RESULT*POT*AZ
+!        write(*,*)'NUMIR,POT,R(I),AZ,I',
+!     &                PREFAC*RESULT*POT*AZ,POT,R(I),AZ,I
+        
  5    CONTINUE
 chth  R-INTEGRATION
 C
@@ -2332,7 +2339,7 @@ C
       X3 = LOG(T*T - ONE)
       X4 = FOUR*LOG(CVAL/Z + HALF)
       X5 = THREE/TWO
-      X6 = ONE/T*T
+      X6 = ONE/(T*T)
       X7 = EXP(-TWO*T*R*CVAL)
 *
       PHI_F_INNER = X1*(X2*(X3 + X4) - X5 + X6)*X7
