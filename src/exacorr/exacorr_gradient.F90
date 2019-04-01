@@ -306,9 +306,6 @@ module exacorr_gradient
 !     vo + ov
       if (.not.CCD) then
 
-      else
-        dm_mo_fort(1+nocc:nocc+nvir,1:nocc) = 0
-        dm_mo_fort(1:nocc,1+nocc:nocc+nvir) = 0
       end if
 
 !     vv

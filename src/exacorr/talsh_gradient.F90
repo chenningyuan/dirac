@@ -306,9 +306,6 @@ module talsh_gradient
         ierr=talsh_tensor_get_body_access(gamma%symm_ov,body_p2,C8,0,DEV_HOST)
         call c_f_pointer(body_p2,dm_block,(/nocc,nvir/)) ! to use <dm_mo_block> as a regular Fortran 2d array
         dm_mo_fort(1:nocc,1+nocc:nocc+nvir) = dm_block
-      else
-        dm_mo_fort(1+nocc:nocc+nvir,1:nocc) = 0
-        dm_mo_fort(1:nocc,1+nocc:nocc+nvir) = 0
       end if
 
 !     vv
