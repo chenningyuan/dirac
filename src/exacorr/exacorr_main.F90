@@ -12,6 +12,7 @@
       use exacorr_cc,only           : exacorr_cc_driver
       use exacc_cfg
       use exacorr_global
+      use exacorr_utils
 
       implicit none
 
@@ -44,6 +45,7 @@
         call printtitle
         call printlogo
         call printsubtitle
+        call print_exacorr_logo
 
 !       read input
         call get_free_fileunit(file_unit)
@@ -66,7 +68,7 @@
 !     Initialize global data (read from DFCOEF or similar by master)
       call set_talsh_only(exa_input%talsh)
       call initialize_global_data
-      if (mytid == 0) print*," Initialized global data"
+      if (mytid == 0) call print_date("Initialized global data")
 
       if (mo_transform) then
 !        We have no input driver for this test code, so we hardwire this here.
@@ -192,7 +194,6 @@
       end if
 
       if (cc_calculation) then
-         if (mytid == 0) print*, "a CC calculation with",exa_input%nocc," occupied"," and ",exa_input%nvir," virtuals"
          if (exa_input%talsh) then
             if (mytid == 0) call talsh_cc_driver (exa_input)
          else

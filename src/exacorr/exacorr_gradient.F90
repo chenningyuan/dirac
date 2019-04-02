@@ -8,6 +8,7 @@ module exacorr_gradient
   use exacorr_ao_to_mo,  only : print_tensornorm2
   use exacorr_datatypes
   use exacorr_global,    only : debug_exa
+  use exacorr_utils,     only : print_date
 
   implicit none
 
@@ -38,8 +39,6 @@ module exacorr_gradient
       logical :: CCD
 !     error code
       integer :: ierr
-
-      call print_date('Entered DM routine')
 
       CCD = exa_input%CCD
 
@@ -89,7 +88,6 @@ module exacorr_gradient
 !***********************
 
       call store_dm_mo(exa_input,gamma)
-      call print_date("MO density matrix stored")
 
 !     cleanup
       ierr=exatns_tensor_destroy(gamma%prime_oo)
@@ -333,6 +331,7 @@ module exacorr_gradient
       end do
 
       call store_cc_density ('CCSD', dm_diracformat )
+      write(*,*) ""
 
       deallocate (dm_diracformat)
       deallocate (mo_list)

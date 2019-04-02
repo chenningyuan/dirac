@@ -3,6 +3,7 @@ module talsh_eom
         use talsh
         use tensor_algebra
         use exacorr_datatypes
+        use exacorr_utils, only : print_date
         use intermediates
 
         implicit none

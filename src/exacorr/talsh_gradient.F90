@@ -8,6 +8,7 @@ module talsh_gradient
   use tensor_algebra
   use talsh_ao_to_mo, only    : tensor_norm2
   use exacorr_datatypes, only : talsh_dm_tens, exacc_input
+  use exacorr_utils, only     : print_date
 
   implicit none
 
@@ -36,8 +37,6 @@ module talsh_gradient
       logical :: CCD
 !     error code
       integer :: ierr
-
-      call print_date('Entered DM routine')
 
       CCD = exa_input%CCD
 
@@ -78,7 +77,6 @@ module talsh_gradient
 !***********************
 
       call store_dm_mo(exa_input,gamma)
-      call print_date("MO density matrix stored")
 
 !     cleanup
       ierr=talsh_tensor_destruct(gamma%prime_oo)

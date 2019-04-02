@@ -8,6 +8,7 @@ module exacorr_cc
 
         use exatensor
         use exacorr_datatypes
+        use exacorr_utils
         use intermediates
 
         implicit none
@@ -92,15 +93,15 @@ module exacorr_cc
 
 !        Make some noise so that we know we are here
          call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
-         if (my_MPI_rank == 0) print*, " Starting CC calculation with exatensor"
+         if (my_MPI_rank == 0) call print_date(" Starting CC calculation with exatensor")
 
 !        Initialize and register AO and MO spaces and get their IDs for further reference
          call exacorr_cc_spaces (exa_input,ao_space,occ_space,vir_space,ao_space_id,occ_space_id,vir_space_id)
-         if (my_MPI_rank == 0) print*," Registered AO and MO spaces"
+         if (my_MPI_rank == 0) call print_date(" Registered AO and MO spaces")
 
 !        Register and initialize user defined methods needed in the CC calculation
          call exacorr_cc_methods (exa_input,ao_space_id,occ_space_id,vir_space_id)
-         if (my_MPI_rank == 0) print*," Initialized and registered tensor methods"
+         if (my_MPI_rank == 0) call print_date(" Initialized and registered tensor methods")
 
 !        copy input variables to local ones for ease of reference
          nocc = exa_input%nocc
@@ -113,24 +114,25 @@ module exacorr_cc
          print_level = exa_input%print_level
 
          if (my_MPI_rank == 0) then
-            print*, " Characteristics of this calculation"
-            print*, " - Solve CCD equations:            ",exa_input%ccd
-            print*, " - Solve Lambda equations:         ",exa_input%lambda
-            print*, " - Number of atomic orbitals:      ",ao_space%get_root_id(ierr)
-            print*, " - Number of occupied spinors:     ",exa_input%nocc
-            print*, " - Number of virtual spinors:      ",exa_input%nvir
-            print*, " - Target precision of amplitudes: ",exa_input%t_econv
-            print*, " - Maximum number of cycles:       ",exa_input%ncycles
-            print*, " - ExaTensor block size            ",exa_input%exa_blocksize
-            print*, " - Integral transformation scheme  ",exa_input%moint_scheme
+            write(*,*) ""
+            write(*,'(A)') " Characteristics of this calculation"
+            write(*,'(A)') " -----------------------------------"
+            write(*,'(A,I3)') " - Number of atomic orbitals:      ",ao_space%get_root_id(ierr)
+            write(*,'(A,I3)') " - Number of occupied spinors:     ", exa_input%nocc
+            write(*,'(A,I3)') " - Number of virtual spinors:      ", exa_input%nvir
+            write(*,'(A,ES10.1)') " - Target precision of amplitudes:", exa_input%t_econv
+            write(*,'(A,I3)') " - Maximum number of cycles:       ", exa_input%ncycles
+            write(*,'(A,I3)') " - ExaTensor block size            ",exa_input%exa_blocksize
+            write(*,'(A,I3)') " - Integral transformation scheme  ",exa_input%moint_scheme
             if (exa_input%level_shift.gt.1.0D-14) then
-              print*, " - Level Shift                     ",exa_input%level_shift
+              write(*,'(A,ES10.1)') " - Level Shift                     ",exa_input%level_shift
             end if
-            print*, " - Print Level                     ",exa_input%print_level
+            write(*,'(A,I3)') " - Print Level                     ",exa_input%print_level
             if (print_level > 1) then
               print*, " - occupied spinors                ", exa_input%mo_occ
               print*, " - virtual spinors                 ", exa_input%mo_vir
             end if
+            write(*,*) ""
          end if
 
          !Create all id and root arrays, neccessary for exatns_tensor_create
@@ -176,12 +178,6 @@ module exacorr_cc
             ierr=exatns_process_role(my_role) ! only EXA_DRIVER will return immediately
             if(my_role.eq.EXA_DRIVER) then
 
-            if (.not.CCD) then
-                call print_date('starting ccsd calculation')
-            else
-                call print_date('starting ccd calculation')
-            end if
-
 !           Create and initialize scalars that are to be used as tensors in contractions
             ierr=exatns_tensor_create(result_tensor,"result_tensor",EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(one_tensor,"another_one_tensor",EXA_DATA_KIND_C8)
@@ -220,7 +216,9 @@ module exacorr_cc
             ierr=exatns_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%t2,int_t%oovv,ONE_QUARTER) ! o(2)v(2)
             ierr=exatns_tensor_get_scalar(result_tensor,result_val)
             mp2_energy=real(result_val,8) ! Casting into real(8)
+            print*, ""
             print*," MP2 energy = ", mp2_energy
+            print*, ""
 
 !           Start CC(S)D iterations
 
@@ -270,8 +268,6 @@ module exacorr_cc
             end if
 
             if (lambda ) then
-             print*, ""
-             call print_date("Begin solving Lambda equations")
 
 !            construct lambda tensors + initialize with t-amplitudes
              if (.not.CCD) then
@@ -332,7 +328,10 @@ module exacorr_cc
          call delete_global_data
 
 !        Make some noise so that we know we are leaving
-         if (my_MPI_rank == 0) print*, " Leaving cc_driver routine"
+         if (my_MPI_rank == 0) then
+            print*, ""
+            print*, " Leaving cc_driver routine"
+         end if
          return
 
         end subroutine exacorr_cc_driver
@@ -412,7 +411,7 @@ module exacorr_cc
          !Get ExaTENSOR TAVP-MNG depth:
          ierr = exatns_virtual_depth(tavp_mng_depth)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_virtual_depth() failed!')
-         if(my_MPI_rank == 0) print *,'ExaCorr: Inferred TAVP-MNG depth = ',tavp_mng_depth
+         if(my_MPI_rank == 0) write(*,*) 'ExaCorr: Inferred TAVP-MNG depth = ',tavp_mng_depth
 
          !Register the ao vector space:
 !        branch_factor = nao / exa_input%exa_blocksize + 1
@@ -420,8 +419,8 @@ module exacorr_cc
          branch_factor = max(2, (int(get_num_segments(int(nao,8),int(exa_input%exa_blocksize,8)),4) - 1)/tavp_mng_depth + 1)
          ierr=exatns_space_register('AO_space',basis_ao,ao_space_id,ao_space,branch_factor)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register() failed!')
-         if(my_MPI_rank == 0) print *,'ExaCorr: Registered AO vector space of dimension ',nao,': Number of segments = ',&
-         &branch_factor*(2**(tavp_mng_depth-1)) !debug
+         if(my_MPI_rank == 0) write (*,'(A,I3,A,I3)') ' ExaCorr: Registered AO vector space of dimension   ',nao, &
+         ': Number of segments = ', branch_factor*(2**(tavp_mng_depth-1)) !debug
 
          !Copy user input to local arrays for the definition of MO spaces (for standard CC we only distinguish occupied and virtual spinors)
          nocc = exa_input%nocc
@@ -459,8 +458,8 @@ module exacorr_cc
          branch_factor = max(2, (int(get_num_segments(int(nocc,8),int(exa_input%exa_blocksize,8)),4) - 1)/tavp_mng_depth + 1)
          ierr=exatns_space_register('Occupied',basis_occ,occ_space_id,occ_space,branch_factor)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register(occ) failed!')
-         if(my_MPI_rank == 0) print *,'ExaCorr: Registered OCC vector space of dimension ',nocc,': Number of segments = ',&
-         &branch_factor*(2**(tavp_mng_depth-1)) !debug
+         if(my_MPI_rank == 0) write (*,'(A,I3,A,I3)') ' ExaCorr: Registered OCC vector space of dimension  ',nocc, &
+         ': Number of segments = ', branch_factor*(2**(tavp_mng_depth-1)) !debug
 
          !Register vir mo vector space:
 !        branch_factor = nvir / exa_input%exa_blocksize + 1
@@ -468,8 +467,8 @@ module exacorr_cc
          branch_factor = max(2, (int(get_num_segments(int(nvir,8),int(exa_input%exa_blocksize,8)),4) - 1)/tavp_mng_depth + 1)
          ierr=exatns_space_register('Virtual',basis_vir,vir_space_id,vir_space,branch_factor)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register(vir) failed!')
-         if(my_MPI_rank == 0) print *,'ExaCorr: Registered VIRT vector space of dimension ',nvir,': Number of segments = ',&
-         &branch_factor*(2**(tavp_mng_depth-1)) !debug
+         if(my_MPI_rank == 0) write (*,'(A,I3,A,I3)') ' ExaCorr: Registered VIRT vector space of dimension ',nvir, &
+         ': Number of segments = ', branch_factor*(2**(tavp_mng_depth-1)) !debug
 
         end subroutine exacorr_cc_spaces
 
@@ -817,13 +816,8 @@ module exacorr_cc
           ierr=exatns_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_t_tensor,comm_t%tau,int_t%oovv) ! o(2)v(2)
           ierr=exatns_tensor_get_scalar(result_t_tensor,result_val)
           ccsd_energy = ccsd_energy + real(result_val*ONE_QUARTER,8)
-          if (.not.CCD) then
-              write (*,'(A,I4,A,F20.15,A,ES10.1)') "  Iteration ",iccsd," CCSD energy = ", &
-                                                  ccsd_energy, " convergence =",t_convergence
-          else
-              write (*,'(A,I4,A,F20.15,A,ES10.1)') "  Iteration ",iccsd," CCD energy = ", &
-                                                  ccsd_energy, " convergence =",t_convergence
-          end if
+
+          call print_iteration(iccsd,t_target_precision,t_convergence,ccsd_energy)
           if (t_convergence .lt. t_target_precision) exit
          end do
 
@@ -872,7 +866,11 @@ module exacorr_cc
          logical :: CCD=.false.
          integer :: ierr
 
-         call print_date('Entered lambda solver routine')
+         write(*,*) ""
+         write(*,'(A)') "*******************************************************************************"
+         write(*,'(A)') "********************** Solving Left Eigenvector Equation **********************"
+         write(*,'(A)') "*******************************************************************************"
+         write(*,*) ""
 
          if (.not.present(l1_tensor)) CCD = .true.
 
@@ -927,8 +925,6 @@ module exacorr_cc
 !        obtain intermediates from CC(S)D *
 !******************************************
 
-         call print_date("Calculating common blocks")
-         call get_tau(comm_t,CCD,one_tensor)
          call get_hvv(comm_t,int_t%oovv,one_tensor)
          call get_gvv(comm_t,int_t%vovv,CCD,one_tensor)
          call get_h(comm_t,int_t,CCD,one_tensor)
@@ -941,7 +937,6 @@ module exacorr_cc
 !*********************************
 !        get fixed intermediates *
 !*********************************
-         call print_date('Calculating fixed intermediates')
          call get_w_vvvv(lambda_t%w_vvvv,comm_t,int_t,CCD,one_tensor)
          call get_wbar_vovo(lambda_t%wbar_vovo,comm_t%t2,int_t,one_tensor)
          call get_fbar_ov(lambda_t%fbar_ov,comm_t%hov,one_tensor)
@@ -1187,7 +1182,7 @@ module exacorr_cc
             call diis (l2_tensor,t_convergence=t_convergence)
           end if
 
-          write (*,'(A,I4,A,ES10.1)') "  Iteration ",ilambda," convergence =",t_convergence
+          call print_iteration(ilambda,t_target_precision,t_convergence)
           if (t_convergence .lt. t_target_precision) exit
 
          end do
@@ -1196,6 +1191,7 @@ module exacorr_cc
          if (t_convergence .gt. t_target_precision) print*, "WARNING: Non-converged amplitudes!"
          if (.not.CCD) write(*,'(A,ES22.16)') "  Final L1amp = ", print_tensornorm2(l1_tensor)
          write(*,'(A,ES22.16)') "  Final L2amp = ", print_tensornorm2(l2_tensor)*0.25D0
+         write(*,*) ""
 
 !*****************
 !        cleanup *
@@ -1222,8 +1218,6 @@ module exacorr_cc
          ierr=exatns_tensor_destroy(lambda_t%wbar_vovo)
          ierr=exatns_tensor_destroy(lambda_t%goo)
          ierr=exatns_tensor_destroy(lambda_t%gvv)
-
-         call print_date('Leaving lambda solver routine')
 
         end subroutine solve_lambda_equations
 

@@ -3,6 +3,8 @@ module exacorr_respect
 ! Module for interfacing the ReSpect SCF with exacorr
 ! Written by Stan Papadopoulos, January/February 2019
 
+  use exacorr_utils
+
   implicit none
 
   private
