@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -344,7 +344,7 @@ C     *k_offset = (long) (wrk-work+1);
       KADD = MXPWRD
 
 C     initialize memory
-      call memmar(K_OFFSET,KADD,'INI   ',IDUMMY,'DUMMY')
+      call memmar(K_OFFSET,KADD,'INI   ',IDUMMY,'DUMMY ')
 
 !     write(luwrt,*) 'K_OFFSET ==> ',K_OFFSET
 !     IDUM = 0

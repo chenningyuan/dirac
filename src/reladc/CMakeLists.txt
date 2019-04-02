@@ -8,7 +8,6 @@ if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fort
 endif()
 
 set(FIXED_RELADC_FORTRAN_SOURCES
-    adccore.F
     adcdble.F
     adcdiag.F
     adcsort.F
@@ -16,28 +15,34 @@ set(FIXED_RELADC_FORTRAN_SOURCES
     polprp_cousat.F
     polprp_driver.F
     polprp_helpers.F
-    polprp_mainblk.F
     polprp_mpimaster.F
     polprp_mpiserver.F
     polprp_prpint.F
+)
 
+set(FIXED_RELADC_FORTRAN_SOURCES_noruntimecheck
+    adccore.F
+    polprp_mainblk.F
 )
 
 set(FREE_RELADC_FORTRAN_SOURCES
     adc_cfg.F90
     adc_fano_exchange.F90
-    adc_fano_routines.F90
     adc_fano_real_routines.F90
     adc_fano_complex_routines.F90
     adc_fano_diag.F90
     adc_mat.F90
     adc_fano_matmul.F90
-    adc_fano.F90
     adcutil.F90
     polprp_cfg.F90
     polprp_qstackm.F90
     polprp_blockdav.F90
     polprp_blockdav_c.F90
+)
+
+set(FREE_RELADC_FORTRAN_SOURCES_noruntimecheck
+    adc_fano_routines.F90
+    adc_fano.F90 # Attempt to fetch from allocatable variable ASSIGN_FIN_CHANNEL when it is not allocated
 )
 
 set(C_RELADC_SOURCES
@@ -59,7 +64,9 @@ endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FREE_RELADC_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
+    set_source_files_properties(${FREE_RELADC_FORTRAN_SOURCES_noruntimecheck}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
     set_source_files_properties(${FIXED_RELADC_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
+    set_source_files_properties(${FIXED_RELADC_FORTRAN_SOURCES_noruntimecheck} PROPERTIES COMPILE_FLAGS "-qfixed")
 endif()
 
 # Miro: fix for Intel compilers,  "-O3 -ip" is too harsh !
@@ -72,11 +79,20 @@ if ( (CMAKE_Fortran_COMPILER_ID MATCHES "Intel") AND (CMAKE_BUILD_TYPE MATCHES "
     message(STATUS "src/reladc/polprp_cousat.F: assigned -O2 optimization flag to fix the compilation with Intel")
 endif()
 
+if(ENABLE_RUNTIMECHECK)
+    message(STATUS "runtime-check flags activated for the 'reladc' module with some source files excluded form checking")
+    set_source_files_properties(${FREE_RELADC_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+    set_source_files_properties(${FIXED_RELADC_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+    set_source_files_properties(${RELADC_C_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_C_FLAGS_runtimecheck})
+endif()
+
 add_library(
     reladc
     OBJECT
     ${FREE_RELADC_FORTRAN_SOURCES}
+    ${FREE_RELADC_FORTRAN_SOURCES_noruntimecheck}
     ${FIXED_RELADC_FORTRAN_SOURCES}
+    ${FIXED_RELADC_FORTRAN_SOURCES_noruntimecheck}
     ${C_RELADC_SOURCES}
 )
 

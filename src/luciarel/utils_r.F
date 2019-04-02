@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -471,7 +471,7 @@ C***********************************************************************
 #include "oper.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET, IOFF_T_IJKL
 #if defined (INT_STAR8)
       INTEGER(KIND=df_MPI_OFFSET_KIND)  IWRITE_BYTE
@@ -619,7 +619,7 @@ C***********************************************************************
       IMPLICIT REAL*8 (A-H,O-Z)
 #if defined (VAR_MPI2)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IDISP, IOFFSET
       INTEGER(KIND=df_MPI_OFFSET_KIND) IS_BYTE8 
       INTEGER(KIND=df_MPI_OFFSET_KIND) IWRITE_MAX,IMOD_WRITE
@@ -869,7 +869,7 @@ C***********************************************************************
       IMPLICIT REAL*8 (A-H,O-Z)
 #if defined (VAR_MPI2)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IDISP, IOFFSET
       INTEGER(KIND=df_MPI_OFFSET_KIND) IS_BYTE8 
       INTEGER(KIND=df_MPI_OFFSET_KIND) IWRITE_MAX,IMOD_WRITE
@@ -1063,7 +1063,7 @@ C***********************************************************************
       IMPLICIT REAL*8 (A-H,O-Z)
 #if defined (VAR_MPI2)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IDISP,IOFFSET,IREAD_MAX,IMOD_READ
       INTEGER(KIND=df_MPI_OFFSET_KIND) IS_BYTE8,IOFFSET_T, IT_TOFFW
       INTEGER(KIND=df_MPI_OFFSET_KIND) IREAD_ELM,IOFF_ADD
@@ -1306,7 +1306,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
       use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 C information for property run
 #include "krciprop.h"

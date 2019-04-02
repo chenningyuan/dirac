@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -112,7 +112,7 @@ C
       NEXCF  = MAXEXC*NBSYM
       IF(ORBXPP) THEN
         CALL MEMGET('INTE',KPPO,4*NORBT,WORK,KFREE,LFREE)
-        CALL DEFORB(WORK(KPPO),NCLS_XPP,3,XPP_INDSTR,
+        CALL DEFORB(WORK(KPPO),NCLS_XPP,XPP_INDSTR,
      &              WORK,KFREE,LFREE,IPRXPP)
         NI = 0
 C       Number of inactive orbitals
@@ -152,8 +152,7 @@ C     Initialize:
      &            WORK(KSSYM),WORK,KFREE,LFREE)
 C
  10   CONTINUE
-      IF (XPPANA) CALL ANAXRS(XPP_INDSTR,XPP_SKIPEE,XPP_SKIPEP,
-     &                        WORK,KFREE,LFREE,IPRXPP)
+      IF (XPPANA) CALL ANAXRS(WORK,KFREE,LFREE,IPRXPP)
 C
       CALL MEMCHK('PRPXPP memory check',WORK,1)
 C     ... note: NOT MEMREL here as info is passed to calling
@@ -840,7 +839,8 @@ C     ************************************
 C     *** Set orbital strings          ***
 C     ************************************
 C
-      CALL OSTRING(XPP_INDSTR,XPP_SKIPEE,XPP_SKIPEP,WORK,KFREE,LFREE)
+      CALL OSTRING(XPP_INDSTR,XPP_SKIPEE,XPP_SKIPEP,IPRXPP,
+     &             WORK,KFREE,LFREE)
 C
 C     ************************************
 C     *** Sort operators on symmetries ***
@@ -887,7 +887,7 @@ C     Indicate from vectors are read...
 C
       LUBUF = 22
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','EIGEXT')
-      CALL REACMO(LUBUF,'DFCOEF',DUM,DUM,DUM,XPPERG,1,DUM,IDUM,IDUM)
+      CALL REACMO(LUBUF,'DFCOEF',DUM,DUM,DUM,XPPERG,1)
 
       CLOSE(LUBUF,STATUS='KEEP')
 C
@@ -980,7 +980,7 @@ C
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','GETPPF')
       CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
       CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),
-     &              TOTERG,10,WORK,KFREE,LFREE)
+     &              TOTERG,10)
       CLOSE(LUBUF,STATUS='KEEP')
 C
       IOFF  = 1
@@ -1911,7 +1911,7 @@ C     ===============
           ENDDO
         ENDIF
 C.......distribute excitation energies on linear symmetries
-        allocate(EXCBUF(NEXC))
+        allocate(EXCBUF(NEXC+1)) ! Miro: NEXC+1 due to out-of-bounds fix
         allocate(iebuf(2,NEXC))
 C.......we include the ground state
         EXCBUF(1) = 0.0D0        
@@ -1983,7 +1983,7 @@ C     ==========================================================================
           SYMLAB(IREP+IOFF)='3'//REP(IREP)     
         ENDDO
 C.......distribute excitation energies on spinfree symmetries
-        allocate(EXCBUF(NEXC))
+        allocate(EXCBUF(NEXC+1)) ! Miro: NEXC+1 due to out-of-bounds fix
         allocate(iebuf(2,NEXC))
 C.......we include the ground state
         EXCBUF(1) = 0.0D0        

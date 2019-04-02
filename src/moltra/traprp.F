@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -139,7 +139,7 @@ C
          ELSE
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAPRP')
             CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
-     &                  WORK(KIBEIG),TOTERG,14,WORK,KFREE,LFREE)
+     &                  WORK(KIBEIG),TOTERG,14)
          ENDIF
       END IF
 C
@@ -529,9 +529,9 @@ C
  1010 FORMAT (/'Nonzero diagonal elements of ',A8,
      & ' operator in Kramers paired molecular spinor basis:'
      & //12X,'Real part',11X,'Imaginary Part')
- 1011 FORMAT (I6,2X,F18.10,2X,F18.10)
+ 1011 FORMAT (I6,2F20.10)
  1012 FORMAT (/'Property elements of the "',A8,'" operator',
      &' in Kramers paired molecular spinor basis:'/)
- 1013 FORMAT (2I5,3X,D12.6,2X,D12.6)
+ 1013 FORMAT (2I5,1P,2E15.6)
       RETURN
       END

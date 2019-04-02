@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -419,7 +419,7 @@ C     SB_(si) = -FB_(si) - GB_(si)
 C
 C     with
 C
-C     FA_(si) = WA_(st)h_(ti) - h_(st)WA_(ti)
+C     FA_(si) = WA_(st)F_(ti) - F_(st)WA_(ti)
 C
 C     GA_(si) = [g_(si,xy)-g_(sy,xi)] DA_(yx)
 C
@@ -536,7 +536,7 @@ C     ------------------------------------------------
 C
       NDIM = NCSIM + NOSIM
       IF (NASHT .GT. 0) NDIM = NDIM + NOSIM
-      CALL MEMGET('REAL',KF,NDIM*N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','F',KF,NDIM*N2BBASXQ,WORK,KFREE,LFREE)
 C
       IF (LSVCFG(1)) THEN
         CALL GMOLITX(WORK(KF),WORK(KDVT),WORK(KDV),
@@ -1395,7 +1395,7 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 C
-      DIMENSION IHRMOP(NTSIM),IFCKOP(NTSIM),ISYMOP(NTSIM)
+      DIMENSION IHRMOP(*),IFCKOP(*),ISYMOP(*)
       DIMENSION IBCVC(*),IBEVC(*),IBPVC(*),IBTYP(2,*)
 C
       IM = 0
@@ -1882,7 +1882,6 @@ C
           IND = IBVEC(IREC)
           IH  = IBTYP(2,IND)
           IF(IH.EQ.ITYP) THEN
-!            CALL READAC(LUBVEC,NBDIM,BVBUF,IREC+IRECOFF)
           CALL READ_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVBUF)
             IBOFF = 1
             DO IFREQ = 1,MFREQ
@@ -1902,7 +1901,6 @@ C
           INDI = 2*IND
           IH  = IBTYP(2,IND)
           IF(IH.EQ.ITYP) THEN
-!            CALL READAC(LUBVEC,NBDIM,BVBUF,IREC+IRECOFF)
           CALL READ_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVBUF)
             IBOFF = 1
             DO IFREQ = 1,MFREQ
@@ -3856,7 +3854,9 @@ C        IBCVC, IBEVC, IBPVC: index stuff
 C        NPOS   : something needed for the call to TWOFCK
 C
 C     Output:
-C        FMO    :  Fock matrices.
+C        FMO    : Fock matrices in MO basis: FMO(N2ORBXQ,NDSIM)
+C                 NOTE: FMO is used as scratch space for AO matrices and
+C                 it should therefore be allocated with NDSIM*NBBASXQ.
 C
 C     Written by J. Thyssen - Nov 24 2000
 C     Replaces GMOLI by T.Saue Sep 1996
@@ -3926,7 +3926,7 @@ C
          ENDIF
          IF (IPRXRS .GE. 10) IOPT = IOPT + 1
          CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
-     &               TOTERG,IOPT,WORK,KFREE,LFREE)
+     &               TOTERG,IOPT)
          CLOSE(LUBUF,STATUS='KEEP')
       ELSE
 C
@@ -4118,6 +4118,9 @@ C     --------------------------
 
               call fde_dirac_set_isymop(isymop)
               call fde_dirac_set_ihrmop(ihrmop)
+#ifdef VAR_MPI
+          if (parcal) call dirac_parctl( FDE_PAR )
+#endif
               call fde_dirac_emb_matrices_via_integration(       
      &                       fde_mat_dim            = ntbas(0),
      &                       fde_nz                 = nz,

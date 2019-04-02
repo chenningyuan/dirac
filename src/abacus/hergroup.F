@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1230,42 +1230,42 @@ C     13. i[betaSig_x]P * x-component of beta sigma times scalar operator
 C     ==================================================================
 C
       MCMP(13)  =  1
-      JM4 (1,13)=  7
+      JM4 (1,13)=  12
       JCOM(1,13)=  1
 C
 C     14. i[betaSig_y]P * y-component of beta sigma times scalar operator
 C     ==================================================================
 C
       MCMP(14)  =  1
-      JM4 (1,14)=  6
+      JM4 (1,14)=  11
       JCOM(1,14)=  1
 C
 C     15. i[betaSig_z]P * z-component of beta sigma times scalar operator
 C     ==================================================================
 C
       MCMP(15)  =  1
-      JM4 (1,15)=  5
+      JM4 (1,15)=  10
       JCOM(1,15)=  1
 C
 C     16. i[betaalp_x]P * x-component of beta alpha times scalar operator
 C     ==================================================================
 C
       MCMP(16)  =  1
-      JM4 (1,16)=  3
+      JM4 (1,16)=  15
       JCOM(1,16)=  1
 C
 C     17. i[betaalp_y]P * y-component of beta alpha times scalar operator
 C     ==================================================================
 C
       MCMP(17)  =  1
-      JM4 (1,17)=  2
+      JM4 (1,17)=  14
       JCOM(1,17)=  1
 C
 C     18. i[betaalp_z]P * z-component of beta alpha times scalar operator
 C     ===================================================================
 C
       MCMP(18)  =  1
-      JM4 (1,18)=  1
+      JM4 (1,18)=  13
       JCOM(1,18)=  1
 C
 C
@@ -1273,17 +1273,17 @@ C     19. beta         * scalar operator
 C     ==================================
 C
       MCMP(19)  = 1
-      JM4 (1,19)= 0
+      JM4 (1,19)= 8
       JCOM(1,19)= 1
 C       
 C         
-C     20. iS.P   * off-diagonal dot-product of sigma and vector operator
-C     ==================================
+C     20. iS.P   * dot-product of sigma matrix and vector operator
+C     ============================================================
 C
       MCMP(20)   =  3
-      JM4 (1,20) =  3
-      JM4 (2,20) =  2
-      JM4 (3,20) =  1
+      JM4 (1,20) =  7
+      JM4 (2,20) =  6
+      JM4 (3,20) =  5
       JCOM(1,20) =  1
       JCOM(2,20) =  1
       JCOM(3,20) =  1
@@ -1295,20 +1295,9 @@ C     occupies (as imaginary elements) off-diagonal block (0+-0)
 C     carries symmetry of gamma5 (xyz)
 C
       MCMP(21)    =  1
-      JM4 (1,21)  =  4 
+CTROND      JM4 (1,21)  =  9
+      JM4 (1,21)  =  4
       JCOM(1,21)  =  1
-
-C     22. (iS.P)d   * new diagonal dot-product of sigma and vector operator
-C     composed of i[Sigma_x]Px + i[Sigma_y]Py + i[Sigma_z]Pz (+00+)
-C     =======================================================================
-C
-      MCMP(22)   =  3
-      JM4 (1,22) =  7
-      JM4 (2,22) =  6
-      JM4 (3,22) =  5
-      JCOM(1,22) =  1
-      JCOM(2,22) =  1
-      JCOM(3,22) =  1
 
       RETURN
       END

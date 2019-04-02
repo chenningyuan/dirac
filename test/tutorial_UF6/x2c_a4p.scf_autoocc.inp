@@ -21,7 +21,10 @@
 .EVCCNV
 1.0D-7  5.0D-5
 .MAXITR
-60  
+45
+# omit term in Fock mtx,  ensure the convergence !
+.OPENFAC
+0.0
 **ANALYZE
 .MULPOP
 *MULPOP

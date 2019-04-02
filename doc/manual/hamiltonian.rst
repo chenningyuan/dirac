@@ -273,7 +273,6 @@ To use the spinfree version of X2C with only scalar relativistic terms
 one needs to add the keyword :ref:`HAMILTONIAN_.SPINFREE` (.SPINFREE implies .NOAMFI).
 The spinfree X2C is equivalent to and numerically yields the same numbers as X2C in the quantum chemistry packages CFour, Turbomole, and Molcas. 
 
-See section :ref:`X2C` for more options, in particular a local X2C scheme. 
 An overview of the (local) X2C approach is given in the corresponding tutorial 
 section :ref:`X2Clocal`.
 

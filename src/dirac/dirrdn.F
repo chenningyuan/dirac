@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1031,7 +1031,7 @@ C
      &            '.NODIIS','.MXDIIS','.CNVINT','.ITRINT','.INTFLG',
      &            '.MOSTAR','.XXXXXX','.CLOSED','.EIGPRI','.OPEN S',      ! 20
      &            '.AUTOCC','.OWNBAS','.NOBNCR','.DIISTH','.DAMPFC',
-     &            '.OVLSEL','.NODYNS','.XXXXXX','.DIISMO','.DIISAO',      ! 30
+     &            '.OVLSEL','.NODYNS','.BNCORR','.DIISMO','.DIISAO',      ! 30
      &            '.XXXXXX','.MAX MA','.MAX MI','.2NDOPT','.SKIPEE',
      &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.BOSONS',      ! 40
      &            '.MJSELE','.AOC   ','.FOCC  ','.LSHIFT','.MAXIT2',
@@ -1081,7 +1081,7 @@ C     initial molecular orbitals:
       TRIFCK    = .FALSE.
       BARNUC    = .TRUE.
       BNCRON    = .FALSE.
-      force_bnc = .false.
+      FORCE_BNC = .false.
       BNSPON    = .TRUE.  ! use either this or BNCRON
       SIRIFC    = .FALSE.
       DOHUCKEL  = .false.  
@@ -1407,6 +1407,7 @@ C&&& MOSTARt: How to obtain initial MOs [ default: 1) TRIVEC, 2) BNCORR ]
      &                  INDEX(LINE,'BARE NUC').ne.0) THEN
                   BARNUC = .TRUE.
                   BNCRON = .FALSE.
+                  BNSPON = .FALSE.
                ELSE IF (INDEX(LINE,'BNCORR').ne.0) THEN
                   BARNUC = .TRUE.
                   BNCRON = .TRUE.
@@ -1606,6 +1607,9 @@ C            (new overlap selection matrix formed in each iteration)
                   DYNSEL = .FALSE.
                GO TO 100
    28          CONTINUE
+C&&& BNCORR: Bare nucleus screening (based on Slaters rules)
+                  BNCRON = .TRUE.
+                  BNSPON = .FALSE.
                GO TO 100
    29          CONTINUE
 C&&& DIISMO: Do DIIS in MO-basis
@@ -1806,7 +1810,7 @@ C&&& OPENFA: extra factor on active-active correction block to open shell Fock m
  54            CONTINUE
 C&&& BNC_FO: force bare nucleus correction (usefull for charged systems)
 C    PBS+MI/Aug2014
-               force_bnc = .true.
+               FORCE_BNC = .true.
                GOTO 100
  55            CONTINUE
 !&&& FOMOUT: print out the Fock MO matrices for diagonalization for each
@@ -2106,33 +2110,36 @@ C
 
       IF(.NOT.dirac_cfg_scf_calculation) GOTO 999
 C
-      IF (BNCRON) THEN
-         WRITE (LUPRI,'(A)')
-     &      ' * Bare nucleus screening correction used for start guess'
-!     psb 1/13/10 (psb+mi Aug2014) New parameter force_bnc (.BNC_FORCE) force input for
-!        bncron variable w/o checking value of molecular charge
-         if (force_bnc) write (lupri,'(5x,a)')
-     1   'the bare nuclear correction used independently of '//
-     2   'the system charge'
+      IF (BNCRON.OR.BNSPON) THEN
 C     hjaaj nov 2004: bare nucleus correction is
 C     designed for approx. neutral molecules,
 C     and it will give very poor start guess for e.g.
 C     a U(+90) calculation.
-         CALL RMOLCHR(ICHRG)
-         KCHARG = ICHRG - NELECT_DHF - NAELEC_DHF
-         IF (ABS(KCHARG) .GT. 10 .and. .not.force_bnc) THEN
+        IF (FORCE_BNC) THEN
+           WRITE (LUPRI,'(A)')
+     &     ' - INFO: bare nucleus correction used independently of '//
+     &  'the system charge'
+        ELSE
+          CALL RMOLCHR(ICHRG)
+          KCHARG = ICHRG - NELECT_DHF - NAELEC_DHF
+          IF (ABS(KCHARG) .GT. 10) THEN
+            BNCRON = .FALSE.
             BNCRON = .FALSE.
             WRITE (LUPRI,'(A)')
      &      ' - INFO: bare nucleus correction disabled because'//
      &      ' abs(molecular charge) .gt. 10'
-         END IF
-      END IF
-      IF (BNSPON) THEN
+          END IF
+        END IF
+        IF (BNCRON) THEN
+          DHF_INTTYP='Scr. nuclei'
          WRITE (LUPRI,'(A)')
+     &     ' * Bare nucleus screening correction used for start guess'
+        END IF
+        IF (BNSPON) THEN
+          DHF_INTTYP='Atom. scrpot'
+          WRITE (LUPRI,'(A)')
      &      ' * Sum of atomic potentials used for start guess'
-      END IF
-      IF(BNCRON.OR.BNSPON) THEN
-        DHF_INTTYP= 'Scr. nuclei '
+        END IF
       ENDIF
 C
       IF (DOBOSSEL) THEN
@@ -4370,26 +4377,28 @@ C&&& POLNRM: Normalize polarization contribution
  11            CONTINUE
 C&&& ATOMS : Do projection analysis using atomic fragments
                   PATOMS = .TRUE.
-                  NREFS=NUCDEP
-                  IF((NREFS+1).GT.MAXREF) THEN
+                  IREFS=1
+                  ININD=1
+                  DO ITYP = 1,NONTYP
+                    IF(.NOT.NOORBT(ININD)) THEN
+                      READ(LUCMD,'(A6)') REFFIL(IREFS)
+                      READ(LUCMD,'(A72)') VECREF(1,IREFS)
+                      NPROJNUC(IREFS)=1
+                      DO J = 0,NONT(ITYP)-1
+                        IREFS = IREFS + NUCDEG(ININD+J)
+                      ENDDO
+                    ENDIF
+                    ININD = ININD + NONT(ITYP)
+                  ENDDO
+                  IF(IREFS.GT.MAXREF) THEN
                     WRITE(LUPRI,'(A,I5)')
-     &         '* Number of atomic types specified  :',NREFS,
+     &         '* Number of atomic types specified  :',IREFS,
      &         '* Current maximum no. of fragments  :',MAXREF
                     CALL QUIT('*PROJECT input: Too many fragments !')
                   ENDIF
-                  INDEP=1
-                  ININD=1
-                  DO ITYP = 1,NONTYP
-                    READ(LUCMD,'(A6)') REFFIL(INDEP)
-                    NPROJNUC(INDEP)=1
-                    READ(LUCMD,'(A72)') VECREF(1,INDEP)
-                    DO J = 0,NONT(ITYP)-1
-                      INDEP = INDEP + NUCDEG(ININD+J)
-                    ENDDO
-                    ININD = ININD + NONT(ITYP)
-                  ENDDO
-                  REFFIL(INDEP) = 'Polari'
-               GO TO 100
+                  REFFIL(IREFS) = 'Polari'
+                  NREFS=IREFS-1
+                  GO TO 100
  12            CONTINUE
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
@@ -4479,13 +4488,15 @@ C
         WRITE(LUPRI,'(1X,A)')
      &   '* Projection analysis based on atomic fragments, ',
      &   '  calculated in their individual bases'
-        INDEP=1
+        IREFS=1
         ININD=1
         DO ITYP = 1,NONTYP
-          WRITE(LUPRI,'(A6,3X,A72)') REFFIL(INDEP),VECREF(1,INDEP)
-          DO J = 0,NONT(ITYP)-1
-            INDEP = INDEP + NUCDEG(ININD+J)
-          ENDDO
+          IF(.NOT.NOORBT(ININD)) THEN
+            WRITE(LUPRI,'(6X,A6,3X,A72)') REFFIL(IREFS),VECREF(1,IREFS)
+            DO J = 0,NONT(ITYP)-1
+              IREFS = IREFS + NUCDEG(ININD+J)
+            ENDDO
+          ENDIF 
           ININD = ININD + NONT(ITYP)
         ENDDO
       ELSE
@@ -5344,7 +5355,7 @@ C&&&&  ONESTEP: Do NOT do preliminary free-particle transformation
   130     CONTINUE
 C&&& BLOCKD:   Do use block diagonalization
 CMI      ... not active yet
-#if defined MOD_UNRELEASED
+#ifdef MOD_UNRELEASED
              BLOCKD = .TRUE.
 #else
              call quit('block diagonalizing feature not in release!')
@@ -5623,6 +5634,10 @@ C..TODO: check for inconsistencies and add stops
 !&&&& .PEQM: polarizable embedding
   166     CONTINUE
 #ifdef HAS_PELIB
+           IF(NBSYM.GT.1) THEN
+             CALL QUIT('Polarized embedding '//
+     &       'does not work with symmetry yet.')
+            ENDIF
             WRITE(LUPRI,*) 'PE library will be used.'
             PEQM = .TRUE.
 #else
@@ -6088,6 +6103,10 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
       ELSE
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb Hamiltonian'
       ENDIF
+
+      if (x2c.and.ecpcalc) then
+         call quit('Incompatible options: X2C and ECP')
+      end if
 
       IF (ICHANG.GT.0) WRITE(LUPRI,'(3X,A)')
      &    'with the following modifications:'
@@ -6893,7 +6912,7 @@ c     Spin-orbit integrals for ECP centres ...
 c     ========================================
 c
         PNAME            = 'Spin-orbit Pseudopotentials'
-        IPTYP            = 22 ! for the new definition
+        IPTYP            = 20 ! for the new definition
         NPCOMP           = 3
         PFAC(1)          = +1.0
         PFAC(2)          = +1.0
@@ -7143,6 +7162,7 @@ C.....Individual atoms
         ILABDF = 1
         NLAB   = 0
 C.......consider only large component labels
+        ICLS=1 ! Miro: runtimecheck fix
         DO ILAB1 = 1,NPLAB(1)
           IC     = IGET(IATTR(ILAB1,ILABDF))          
           ICENT  = JGET(IATTR(ILAB1,ILABDF))          
@@ -7177,6 +7197,7 @@ C     First make pointer to orbital angular momentum
         ILABDF = 1
         NLAB   = 0
 C.......consider only large component labels
+        ICLS=1 ! Miro: runtimecheck fix
         DO ILAB1 = 1,NPLAB(1)
           IC     = IGET(IATTR(ILAB1,ILABDF))          
           ICENT  = JGET(IATTR(ILAB1,ILABDF))          
@@ -7472,7 +7493,7 @@ C
 !radovan: i think they are now rather ok tested
 !     IF (SPINFR.AND.DOPRP)WRITE (LUPRI,1000)'Spinfree properties'
 
-#if !defined MOD_UNRELEASED
+#ifndef MOD_UNRELEASED
       IF (DORES .AND.dirac_cfg_dft_calculation)
      &   CALL QUIT ('.RESOLVE does not work with DFT !')
 #endif

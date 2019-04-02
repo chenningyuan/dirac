@@ -1,6 +1,6 @@
 #define GASCIP_DEBUG -1
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2225,7 +2225,7 @@ C
       PARAMETER ( MAX_ROOTS = 41, N_CSIM_EXTRA_START = 7)
       real*8    DNRES(MAX_ROOTS), ECIOLD(MAX_ROOTS), ECIA(MAX_ROOTS)
       INTEGER   J_HDIAG(MAX_ROOTS + N_CSIM_EXTRA_START)
-      INTEGER   ICONV(MAX_ROOTS), LUGASCIP
+      INTEGER   ICONV(MAX_ROOTS), LUGASCIP, IOSVAL
       CHARACTER SECTID*12, CPUTID*12, WALLTID*12
       real*8    ECI(MAX_ROOTS)
       LOGICAL   PAR_GASCIP
@@ -2250,8 +2250,8 @@ C
       IF (N_ROOTS .LT. 1 .OR. N_ROOTS .GE. MAX_ROOTS) THEN
 C        MAX_ROOTS must be greater than  N_ROOTS to be sure
 C        to include all members of quasidegenerate sets.
-         WRITE(LUPRI,*) 'N_ROOTS .lt. 1 .or. N_ROOTS .ge. MAX_ROOTS',
-     &      N_ROOTS,MAX_ROOTS
+         WRITE(LUPRI,*) 'N_ROOTS .lt. 1 .or. N_ROOTS .ge. MAX_ROOTS;'//
+     &      ' NROOTS, MAX_ROOTS =',N_ROOTS,MAX_ROOTS
          CALL QUIT('N_ROOTS .lt. 1 .or N_ROOTS .gt. MAX_ROOTS')
       END IF
       IF (N_ROOTS .GT. NDET) THEN
@@ -2389,7 +2389,11 @@ C
      &         status='OLD',form='UNFORMATTED')
          END IF
          REWIND (LUGASCIP)
-         READ (LUGASCIP) NCMOTQ_r, NDET_r, NDETQ_r, N_CVEC
+         READ (LUGASCIP,IOSTAT=IOSVAL) NCMOTQ_r, NDET_r, NDETQ_r, N_CVEC
+         IF (IOSVAL .NE. 0) THEN
+            N_CVEC = 0
+            REWIND (LUGASCIP)
+         ELSE
          IF (N_CVEC .GT. 0 .AND. NCMOTQ .EQ. NCMOTQ_r .AND.
      &      NDET .EQ. NDET_r .AND. NDETQ_r .EQ. NDETQ) THEN
          ! GASCIP.RST seems to be OK for restart
@@ -2419,7 +2423,10 @@ C
             ELSE
                GO TO 50
             END IF
+         ELSE
+            N_CVEC = 0
          END IF
+         END IF ! IOSVAL .eq. 0
       ELSE
          LUGASCIP = LU_NOT_USED(51)
          open(LUGASCIP,file='GASCIP.RST',
@@ -2479,7 +2486,7 @@ C
 C
 C     Set first trial vectors equal to: BCVEC(I,J) = DELTA(I, J_HDIAG(J))
 C
-      WRITE(LUPRI,'(/I5,A)') N_CSIM-N_CVEC,
+      WRITE(LUPRI,'(/1X,I0,A)') N_CSIM-N_CVEC,
      &   ' start vectors based on lowest diagonal elements of H_CI'
       JBCVEC = KBCVEC - 1
       DO I = 1, N_CSIM
@@ -2534,12 +2541,12 @@ C
          CPU_st  = CPU3
          WALL_st = WALL3
 C
-         WRITE(LUPRI,'(//A,I5//A,I2)')
-     &        ' (GASCIP_RCISTD) CI microiteration no.',ITMIC,
-     &        '                 Number of trial vectors:',N_CSIM
+         WRITE(LUPRI,'(//A,I0,A,I0)')
+     &        ' (GASCIP_RCISTD) CI microiteration no. ',ITMIC,
+     &        ' - number of trial vectors: ',N_CSIM
          IF (N_CSIM .LE. 0) THEN
-            WRITE (LUPRI,'(/A,I4)')
-     &         ' FATAL ERROR: no new trial vectors',N_CSIM
+            WRITE (LUPRI,'(/A,I0)')
+     &         ' FATAL ERROR: no new trial vectors ',N_CSIM
             CALL QUIT(' FATAL ERROR: no new trial vectors')
          END IF
          CALL FLSHFO(LUPRI)
@@ -2838,13 +2845,14 @@ C
          WRITE (LUGASCIP) NCMOTQ, NDET, NDETQ, N_ROOTS
          CALL WRITT(LUGASCIP,N_ROOTS*NDETQ,CVECS)
 
-         ! 3) multipy with -ECIA(i_root) (note: real eigenvalues) and save in BCVECS
+         ! 3) multiply with -ECIA(i_root) (note: real eigenvalues) and save in BCVECS
          JBCVEC = KBCVEC + N_CRED*NDETQ - 1
          DO I_ROOT = 1, N_ROOTS
            WORK(JBCVEC+1:JBCVEC+NDETQ) =
      &        -ECIA(I_ROOT)*CVECS(1:NDETQ,I_ROOT)
            JBCVEC = JBCVEC + NDETQ
          END DO
+         ! 1b) the imaginary part of eigen vectors C(:,:)
 
          ! 4) add SUM_J C(J,I_ROOT) SCVEC(J) to finish residual
          ! 4a) the real part of eigen vectors C(:,:)
@@ -3215,7 +3223,6 @@ C
       IF (PAR_GASCIP) THEN
          CALL GASCIP_RELEASE_NODES()
       END IF
-      call memchk('esr_resolve end RCISTD',work,1)
       CALL QEXIT('GASCIP_RCISTD')
 
       !> debug...
@@ -3305,7 +3312,7 @@ C
 C
       THR_PCI_local = max(THR_PCI_in,1.0D-15) * 1.0000001D0
 C
-      DMX = 1.0D0
+      DMX = 1.0D10 ! for print of sigma vectors
       DMN = 0.1D0
  10   CONTINUE
          WRITE(LUPRI,'(/A,1P,D7.1,A,D7.1,A/)')
@@ -3313,10 +3320,8 @@ C
      &     DMN,' to ',DMX,' :'
          K = 0
          DO I = 1, NDET
-            DI = 0.0D0
-            DO IZ = 1, NZ_in_CI
-               DI = DI + CREF(I,IZ) * CREF(I,IZ)
-            END DO
+            DI = CREF(I,1) * CREF(I,1)
+            IF (NZ_in_CI.eq.2)   DI = DI + CREF(I,2) * CREF(I,2)
             IF (DI .GT. DMN .AND. DI .LE. DMX) THEN
                K = K + 1
                IF (NZ_in_CI .EQ. 1) THEN
@@ -5051,7 +5056,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 #include "implicit.h"
 
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER ISTAT(df_MPI_STATUS_SIZE)
 
 #include "priunit.h"
 C
