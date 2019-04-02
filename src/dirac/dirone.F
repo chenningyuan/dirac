@@ -224,7 +224,7 @@ C
 C      
       LOGICAL ADDSML
       CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4 !check
-      PARAMETER (D0=0.0D0,D1=1.0D0,D2=2.0D0)      
+      PARAMETER (D0=0.0D0,D1=1.0D0,D2=2.0D0,DM1=-1.0D0)      
       real(8), allocatable :: ZAN(:),C(:,:)
       real(8), allocatable :: ANG(:,:),GAO(:), BUFGAO(:)
       real(8), allocatable :: BUF(:),TC(:),TD(:,:)
@@ -295,6 +295,7 @@ C
          IF(GAUNUC) NUCTYP = 3
          write(*,*)"NUCTYP,IXYZ",NUCTYP,IXYZ
          CALL MEMSET(ZAN(IATOM),IATOM,MXNP,IPRINT)
+         MXNP = 1912            !change
          write(*,*)'HH2',H
          CALL NUCPRM(ZAN(IATOM),NUCMASS(INT(ZAN(IATOM))),NUCTYP)
          write(*,*)"MXNP",MXNP
@@ -306,7 +307,7 @@ C
            allocate( TD(NDIM2,MXNP) )         
            CALL DZERO(TD,NDIM2*MXNP)
 C           
-           R(1) = RNT !CHARGE(IATOM)
+           R(1) = RNT
            DO J = 2,MXNP
               R(J) = R(J-1)*EPH
            ENDDO
@@ -316,9 +317,15 @@ C
            write(*,*)"***************"
            write(*,*)
            CALL INTMG(NUMIR,R,ZAN(IATOM),MXNP,NUCTYP)
+C
+C  This minus DSCAL is due to Beta Alpha, although we use Alpha. 
+C
+           CALL DSCAL(MXNP,DM1,NUMIR,1)
+!           write(*,*)
+!           write(*,*)LABEL
 !           DO J = 1,MXNP
-!     write(*,*)J,NUMIR(J),R(J)
-!     ENDDO
+!             write(*,*)J,NUMIR(J),R(J)
+!           ENDDO
 !!! debug           
 !           OPEN(20,FILE='LOG_DIRAC',STATUS='REPLACE',          
 !     &          FORM='FORMATTED',ACCESS='SEQUENTIAL')  
@@ -423,7 +430,7 @@ c$$$!               write(*,*)"WT8,ANG",WT8,ANG(iy,IXYZ)
 !         ENDIF
 C         
  20       CONTINUE
-           CALL QUAD2(INTAO,TD,MXNP,NDIM2)
+          CALL QUAD2(INTAO,TD,MXNP,NDIM2)
          ELSE  ! num_grid_cfg_grasp
            allocate( TD(NDIM2,1) )         
            CALL DZERO(TD,NDIM2*1) 
@@ -443,6 +450,10 @@ C R(IR)**2 is multiplized in RFAC, later
            write(*,*)"***************"
            write(*,*)
            CALL INTMG(NUMIR,R,ZAN(IATOM),MXNP,NUCTYP)
+C
+C  This minus DSCAL is due to Beta Alpha, although we use Alpha. 
+C
+           CALL DSCAL(MXNP,DM1,NUMIR,1)
 !           DO J = 1,MXNP
 !              NUMIR(J)=D1
 !              write(*,*)J,NUMIR(J),R(J)
@@ -500,7 +511,6 @@ C
 !                       write(*,*)'IJ+ISTART*I',IJ+ISTART*I
                      ENDDO
                    ENDDO
-                   write(*,*)
                    ISTART = ISTART + NCOS(IRP,IC)
                    IOFF   = ISTART*(ISTART+1)/2
                  ENDDO  
@@ -508,7 +518,11 @@ C
 !     stop
                WT8 = WT8 * ANG(iy,IXYZ) 
                CALL DAXPY(NDIM2,WT8,BUF,1,TC,1)
- 50          CONTINUE
+ 50         CONTINUE
+C
+C  This minus DSCAL is due to Beta Alpha, although we use Alpha. 
+C
+             CALL DSCAL(NDIM2,DM1,TC,1)
              CALL DAXPY(NDIM2,W(IR),TC,1,INTAO,1)
  40        CONTINUE
          ENDIF   !num_grid_cfg_grasp
@@ -522,24 +536,7 @@ C
 !         CALL QUAD2(INTAO,TD,MXNP,NDIM2)
 !         CALL RADINT_WRAPPER(INTAO,TD,R,W,MXNP,NDIM2)
 C         
-C
-C  This minus DSCAL is due to Beta Alpha, although we use Alpha. 
-C              
-         CALL DSCAL(-D1,NDIM2,INTAO,1)
-         CALL OUTPAK(INTAO,NTBAS(0),-1,LUPRI)
-c$$$         IOFF = 1
-c$$$         DIM  = NTBAS(1)  
-c$$$         DO IC = 1,MC
-c$$$           IF(IC.eq.1)THEN 
-c$$$              write(*,*)"Large"
-c$$$           ELSE
-c$$$              write(*,*)"Small"
-c$$$           ENDIF   
-c$$$           CALL OUTPAK(INTAO(IOFF),NTBAS(IC),-1,LUPRI)
-c$$$           IOFF = IOFF + NTBAS(IC)*(NTBAS(IC)+1)/2 + NTBAS(IC)
-c$$$           DIM = DIM + NTBAS(2)
-c$$$         ENDDO
-c$$$         write(*,*)
+!         CALL OUTPAK(INTAO,NTBAS(0),-1,LUPRI)
         Endif        !(IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0)
         deallocate(TD)
         deallocate(NUMIR)
@@ -695,6 +692,7 @@ C
          CALL MEMSET(ZAN(IATOM),IATOM,MXNP,IPRINT)
          write(*,*)'HH2',H
          CALL NUCPRM(ZAN(IATOM),NUCMASS(INT(ZAN(IATOM))),NUCTYP)
+         MXNP = 1912            !change
          write(*,*)"MXNP",MXNP
          allocate( NUMIR(MXNP) )
          allocate( R(MXNP)     )
@@ -720,10 +718,7 @@ C
            ELSEIF(LABEL.EQ.'SEFGLF')THEN
              CALL INTLF(NUMIR,R,ZAN(IATOM),MXNP          )
              DO I = 1,MXNP
-C                write(*,*)"NUMIR1,R(I)",NUMIR(I),R(I)
                 NUMIR(I) = NUMIR(I)*R(I)
-C                write(*,*)"NUMIR2",NUMIR(I)
-C                write(*,*)
              ENDDO
            ELSEIF(LABEL.EQ.'SEPZ'  )THEN
              CALL INTPZ(NUMIR,R,ZAN(IATOM),MXNP          )
@@ -735,19 +730,20 @@ C
 C     This roop is
 C     RFAC in the below part is made for VCMPOL, which includes 1/r.
 C     We have to muliply extra R(I) here.       
-C           
+C
+           write(*,*)LABEL
 !           DO J = 1,MXNP
-!     write(*,*)J,NUMIR(J),R(J)
+!             write(*,*)J,NUMIR(J)/R(J),R(J)
 !           ENDDO
-           OPEN(20,FILE='LOG_DIRAC',STATUS='REPLACE',          
-     &          FORM='FORMATTED',ACCESS='SEQUENTIAL')  
-           DO  J = 1,MXNP
-             WRITE(20,*)NUMIR(J)          !sunaga
-           ENDDO
-           DO  J = 1,MXNP
-             WRITE(*,*)NUMIR(J)          !sunaga
-           ENDDO
-           CLOSE(20,STATUS='KEEP')
+!           OPEN(20,FILE='LOG_DIRAC',STATUS='REPLACE',          
+!     &          FORM='FORMATTED',ACCESS='SEQUENTIAL')  
+!           DO  J = 1,MXNP
+!             WRITE(20,*)NUMIR(J)          !sunaga
+!           ENDDO
+!           DO  J = 1,MXNP
+!             WRITE(*,*)NUMIR(J)          !sunaga
+!           ENDDO
+!           CLOSE(20,STATUS='KEEP')
          
 !     change for debug sentense
            write(*,*)"R(1),Z",R(1),ZAN(IATOM) 
@@ -824,16 +820,6 @@ C R(IR)**2 is multiplized in RFAC, later
            IF(LABEL.EQ.'UEHLING')THEN
              CALL VCMPOL(NUMIR,R,ZAN(IATOM),MXNP,NUCTYP,1)
            ENDIF   
-!           DO J = 1,MXNP
-!              NUMIR(J)=D1
-!              write(*,*)J,NUMIR(J),R(J)
-!           ENDDO
-!           OPEN(20,FILE='LOG_DIRAC',STATUS='REPLACE',          
-!     &          FORM='FORMATTED',ACCESS='SEQUENTIAL')  
-!           DO  J = 1,MXNP
-!             WRITE(*,*)R(J),NUMIR(J)          !sunaga
-!           ENDDO
-!           CLOSE(20,STATUS='KEEP')
            DO IRP=0,MAXREP+1
               write(*,*)'NCOS',NCOS(IRP,1),IRP        !sunagatest
               write(*,*)'NCOS',NCOS(IRP,2),IRP        !sunagatest
@@ -1912,15 +1898,20 @@ C
 #include "symmet.h"
 C     
       DIMENSION TB(N),R(N)
-      PARAMETER(NTMAX = 10000,TWO=2.0D0)
+      PARAMETER(NTMAX = 10000,ONE=1.0D0,TWO=2.0D0)
       real(8), allocatable :: TT(:),TTX(:)      
 C
       allocate(TT(NTMAX))
       allocate(TTX(NTMAX))
 C
-C      write(*,*)
       write(*,*)"magnetic" !sunaga
-      PREFAC = TWO/(4.0D0*CVAL*CVAL*PI)
+      PREFAC = ONE/(4.0D0*CVAL*CVAL*PI)
+C
+C     PREFAC is different from GRASP.
+C     In GRASP, large*small + small*large are calculated.
+C     In DIRAC, only triangle matrix (large*small) are calculated.
+C     From this, we have to remove TWO from GRASO's source.
+C      
       IF(NUCTYP.EQ.3)THEN
         RAD = PARM1
         XI = 1.5/(RAD*RAD)
@@ -2213,7 +2204,7 @@ C
       SUBROUTINE INTHF(TB,R,Z,N,NUCTYP)
 *
 *     PHI_L CONTRIBUTION (10) of Flambaum et al. Phys. Rev. A 72 052115 (2005)
-*     Low flequency contribution
+*     High flequency contribution
 *
 *     Called from: NUMINT
 *      
@@ -2228,17 +2219,19 @@ C
       DIMENSION TB(N),R(N)
       PARAMETER(ONE = 1.0D0)
       PARAMETER(NTMAX = 10000)
-      real(8), allocatable :: TT(:),TTX(:)      
+      real(8), allocatable :: TT(:),TTX(:),AZTEST(:)      
 C
       allocate(TT(NTMAX))
       allocate(TTX(NTMAX))
+      allocate(AZTEST(120))
 C     
-      PREFAC = ONE/(CVAL*PI)
-      X1  = (Z-80)/CVAL
+      X1  = (Z-80.0D0)/CVAL
       X2  = X1 * X1
       X3  = X2 * X1
       X4  = X3 * X1
-      ZC7 = 0.07D0 * Z*Z/(CVAL*CVAL)
+      ZC7 = 0.07D0 * Z*Z/(CVAL*CVAL)      
+      AZ1COEF = 1.071D0 - 1.976D0*X2 - 2.128D0*X3 + 0.169D0*X4
+      PREFAC  = ONE/(CVAL*PI)
       IF(NUCTYP.EQ.3)THEN
         RAD = PARM1
         XI = 1.5D0/(RAD*RAD)
@@ -2261,7 +2254,7 @@ c     hth  GRID FOR T-INTEGRATION
         CALL FTGRID(TT,TTX,NTMAX,NT,R(I),Z)
 chth  T-INTEGRATION
         CALL QUAD_T_US2(TT,TTX,NTMAX,NT,RESULT)
-        AZ1 = (1.071D0 - 1.976D0*X2 - 2.128D0*X3 + 0.169D0*X4) * TB(I)
+        AZ1 = AZ1COEF * TB(I)
         AZ2 = TB(I) + ZC7
         AZ  = AZ1/AZ2
 !        write(*,*)
@@ -2271,10 +2264,32 @@ chth  T-INTEGRATION
 !     &                PREFAC*RESULT*POT*AZ,POT,R(I),AZ,I
         
  5    CONTINUE
-chth  R-INTEGRATION
+C
+!      write(*,*)'ZZ,AZZ1COEF'
+!      DO I=1,N
+!      DO ZZ=1,120
+!        XZ1  = (ZZ-80.0D0)/CVAL
+!        XZ2  = XZ1 * XZ1
+!        XZ3  = XZ2 * XZ1
+!        XZ4  = XZ3 * XZ1
+!        AZZ1COEF = 1.071D0 - 1.976D0*XZ2 - 2.128D0*XZ3 + 0.169D0*XZ4
+!        AZZ1 = AZZ1COEF * R(I)*CVAL
+!        AZZ2 = R(I)*CVAL + 0.07D0 * ZZ*ZZ/(CVAL*CVAL)
+!        AZTEST(ZZ) = AZZ1/AZZ2
+!        write(*,*)ZZ,AZZ1,AZZ2,ZC7
+!      ENDDO
+!        write(*,*) (AZTEST(ZZ),ZZ=1,120)
+!      ENDDO
+!      write(*,*)
+!      write(*,*)
+!      write(*,*)'radial'
+!      DO I=1,N
+!         write(*,*) R(I)
+!       ENDDO  
 C
       deallocate(TT)
       deallocate(TTX)
+      deallocate(AZTEST)
 C      
       RETURN
       END
@@ -2369,20 +2384,23 @@ C
       BETA0 = -12751.3
       BETA1 = 916.038
       BETA2 = 5.7797
-      BFIT = B0 + B1*Z + B2*Z**2
+      BFIT = B0 + B1*Z + B2*Z*Z
       BETAFIT = BETA0 + BETA1*Z + BETA2*Z*Z
 C
       DO 1 I = 1,N
          TB(I) = EXP(-BETAFIT*R(I)*R(I))
-C         write(*,*)"TB,R(I),R**2,1,I",TB(I),R(I),R(I)**2,I
  1    CONTINUE
       CALL DSCAL(N,BFIT,TB,1)
+C
+!         write(*,*)'ZZ,BFIT,BETAFIT'
+!      DO ZZ=1,120
+!         BFIT_ZZ = B0 + B1*ZZ + B2*ZZ*ZZ
+!         BETAFIT_ZZ = BETA0 + BETA1*ZZ + BETA2*ZZ*ZZ
+!         write(*,*)ZZ,BFIT_ZZ,BETAFIT_ZZ
+!      ENDDO   
+C      
 C     change
 C     error sentence for 29<Z<83
-C     
-C      DO 2 I = 1,N
-C         write(*,*)"TB,PP,2,I",TB(I),I
-C 2    CONTINUE
 C      
       RETURN
       END
@@ -2426,29 +2444,20 @@ C   THE CRAY VERSION OF THE CODE USES THE VECTOR FUNCTION SSUM TO
 C   PERFORM THE SUMMATION.
 C
     2 SUM = ZERO
-!      write(*,*)"TE1,J,NR",TE(J),J,NR !sunaga
       NP = NR-J+1
       ND2 = NP/2
       N1D2 = (NP+1)/2
       K = ND2-N1D2+1
       JJ = J+K
       JJ1 = JJ+1
-!      write(*,*)'NR', NR
-!      write(*,*)'J,NP,ND2,N1D2,K,JJ,JJ1', J, NP, ND2, N1D2, K, JJ, JJ1
-!      write(*,*)'K',K
       DO 3 I = JJ1,NR-3,2
          SUM = SUM + W1*TE(I) + W2*TE(I+1)
-!         write(*,*)"TE5",TE(I) !sunaga
     3 CONTINUE
-!      write(*,*)'SUM1',SUM
       SUM = SUM + W1*TE(NR-1)
-!      write(*,*)'SUM2',SUM
       SUM = SUM + W4*( TE(JJ)   + TE(NR)   )
      &          + W5*( TE(JJ1)  + TE(NR-1) )
      &          + W6*( TE(JJ+2) + TE(NR-2) )
      &          + W7*( TE(JJ+3) + TE(NR-3) )
-
-!      write(*,*)'SUM3',SUM
 C
 C   ADD THE CONTRIBUTION FROM 0 TO R(JJ), PLUS THE CONTRIBUTION
 C   TO SIMPSONS RULE FROM TE(JJ).
