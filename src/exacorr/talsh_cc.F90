@@ -4,6 +4,7 @@ module talsh_cc
         use tensor_algebra
         use talsh
         use exacorr_datatypes
+        use exacorr_utils
         use intermediates
         use talsh_common_routines
 
@@ -109,23 +110,24 @@ module talsh_cc
          ncycles = exa_input%ncycles
          print_level = exa_input%print_level
 
-        if (print_level>0) then
-            print*, " Characteristics of this calculation"
-            print*, " - Solve CCD equations:            ",exa_input%ccd
-            print*, " - Solve Lambda equations:         ",exa_input%lambda
-            print*, " - Number of occupied spinors:     ",exa_input%nocc
-            print*, " - Number of virtual spinors:      ",exa_input%nvir
-            print*, " - Target precision of amplitudes: ",exa_input%t_econv
-            print*, " - Maximum number of cycles:       ",exa_input%ncycles
-            if (exa_input%level_shift.gt.1.0D-14) then
-              print*, " - Level Shift                     ",exa_input%level_shift
-            end if
-            print*, " - Print Level                     ",exa_input%print_level
-            if (print_level > 1) then
-              print*, " - occupied spinors                ", exa_input%mo_occ
-              print*, " - virtual spinors                 ", exa_input%mo_vir
-            end if
+         write(*,*) ""
+         write(*,'(A)') " Characteristics of this calculation"
+         write(*,'(A)') " -----------------------------------"
+         write(*,'(A,L1)') " - Solve CCD equations:              ", exa_input%ccd
+         write(*,'(A,L1)') " - Solve Lambda equations:           ", exa_input%lambda
+         write(*,'(A,I3)') " - Number of occupied spinors:     ", exa_input%nocc
+         write(*,'(A,I3)') " - Number of virtual spinors:      ", exa_input%nvir
+         write(*,'(A,ES10.1)') " - Target precision of amplitudes:", exa_input%t_econv
+         write(*,'(A,I3)') " - Maximum number of cycles:       ", exa_input%ncycles
+         if (exa_input%level_shift.gt.1.0D-14) then
+           write(*,'(A,ES10.1)') " - Level Shift                     ",exa_input%level_shift
          end if
+         write(*,'(A,I3)') " - Print Level                     ",exa_input%print_level
+         if (print_level > 1) then
+           print*, " - occupied spinors                ", exa_input%mo_occ
+           print*, " - virtual spinors                 ", exa_input%mo_vir
+         end if
+         write(*,'(A)') ""
 
          call print_date("Getting orbital energies")
 !        Get orbital energies from the DIRAC restart file
@@ -167,7 +169,9 @@ module talsh_cc
          ierr=talsh_tensor_init(result_tensor)
          ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%t2,int_t%oovv) ! o(2)v(2)
          mp2_energy=result_tens(1) * ONE_QUARTER
+         print*,""
          print*," MP2 energy = ",mp2_energy
+         print*,""
 
 !        Start CCSD iterations
 
@@ -213,19 +217,15 @@ module talsh_cc
          if (.not.CCD) then
 !           Calculate (T) energy correction
             call t3_energy (t_energy,eps_occ,eps_vir, comm_t%t1,comm_t%t2,comm_t%fov,int_t%ooov,int_t%vovv,int_t%oovv)
+            write (*,'(A,F20.15)') "  Final CCSD energy :               ",ccsd_energy
             write (*,'(A,F20.15)') "  4th order triples correction :    ",t_energy(1)
             write (*,'(A,F20.15)') "  5th order triples (T) correction :",t_energy(2)
             write (*,'(A,F20.15)') "  5th order triples -T  correction :",t_energy(3)
             write (*,'(A,F20.15)') "  CCSD+T  correlation energy :      ",ccsd_energy+t_energy(1)
             write (*,'(A,F20.15)') "  CCSD(T) correlation energy :      ",ccsd_energy+t_energy(1)+t_energy(2)
             write (*,'(A,F20.15)') "  CCSD-T  correlation energy :      ",ccsd_energy+t_energy(1)+t_energy(3)
-         end if
-
-         if (.not.CCD) then
-            print*," Final CCSD energy    = ",ccsd_energy
-            print*," Final CCSD(T) energy = ",ccsd_energy+t_energy(1)+t_energy(2)
          else
-            print*," Final CCD energy    = ",ccsd_energy
+            write (*,'(A,F20.15)') "  Final CCD energy     :            ",ccsd_energy
          end if
 
          !Destruct diis tensors
@@ -236,9 +236,6 @@ module talsh_cc
          end if
 
          if (lambda) then
-
-          print*, ""
-          call print_date("Begin solving Lambda equations")
 
 !         Construct lambda tensor
           if (.not.CCD) ierr=talsh_tensor_construct(l1_tensor,C8,ov_dims,init_val=ZERO)
@@ -301,6 +298,7 @@ module talsh_cc
          call delete_global_data
 
 !        Make some noise so that we know we are leaving
+         print*, ""
          call print_date('Leaving cc_driver routine')
 
         end subroutine talsh_cc_driver
@@ -529,11 +527,8 @@ module talsh_cc
           ierr=talsh_tensor_init(result_tensor)
           ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%tau,int_t%oovv) ! o(2)v(2)
           ccsd_energy=ccsd_energy + result_tens(1) * ONE_QUARTER
-          if (.not.CCD) then
-            write (*,'(A,I4,A,F20.15,A,ES10.1)') "  Iteration ",iccsd," CCSD energy = ",ccsd_energy, " convergence =",t_convergence
-          else
-            write (*,'(A,I4,A,F20.15,A,ES10.1)') "  Iteration ",iccsd," CCD energy = ",ccsd_energy, " convergence =",t_convergence
-          end if
+
+          call print_iteration(iccsd,t_target_precision,t_convergence,ccsd_energy)
           if (t_convergence .lt. t_target_precision) exit
 
          end do
@@ -582,7 +577,11 @@ module talsh_cc
 
          integer :: ierr
 
-         call print_date('Entered lambda solver routine')
+         write(*,*) ""
+         write(*,'(A)') "*******************************************************************************"
+         write(*,'(A)') "********************** Solving Left Eigenvector Equation **********************"
+         write(*,'(A)') "*******************************************************************************"
+         write(*,*) ""
 
          if (.not.present(l1_tensor)) CCD = .true.
 
@@ -626,7 +625,6 @@ module talsh_cc
 !        obtain intermediates from CC(S)D *
 !******************************************
 
-         call print_date("Calculating common blocks")
          call get_tau(comm_t,CCD)
          call get_hvv(comm_t,int_t%oovv)
          call get_gvv(comm_t,int_t%vovv,CCD)
@@ -641,7 +639,6 @@ module talsh_cc
 !        get fixed intermediates *
 !*********************************
 
-         call print_date('Calculating fixed intermediates')
          call get_w_vvvv(lambda_t%w_vvvv,comm_t,int_t,CCD)
          call get_wbar_vovo(lambda_t%wbar_vovo,comm_t%t2,int_t)
          call get_fbar_ov(lambda_t%fbar_ov,comm_t%hov)
@@ -888,8 +885,7 @@ module talsh_cc
             call diis (l2_tensor,t_convergence=t_convergence)
           end if
 
-
-          write (*,'(A,I4,A,ES10.1)') "  Iteration ",ilambda," convergence =",t_convergence
+          call print_iteration(ilambda,t_target_precision,t_convergence)
           if (t_convergence .lt. t_target_precision) exit
 
          end do
@@ -898,6 +894,7 @@ module talsh_cc
          if (t_convergence .gt. t_target_precision) print*, "WARNING: Non-converged amplitudes!"
          if (.not.CCD) write(*,'(A,ES22.16)') "  Final L1amp = ", tensor_norm2(l1_tensor)
          write(*,'(A,ES22.16)') "  Final L2amp = ", tensor_norm2(l2_tensor)*ONE_QUARTER
+         write(*,*) ""
 
 !*****************
 !        cleanup *
@@ -923,8 +920,6 @@ module talsh_cc
          ierr=talsh_tensor_destruct(lambda_t%wbar_vovo)
          ierr=talsh_tensor_destruct(lambda_t%goo)
          ierr=talsh_tensor_destruct(lambda_t%gvv)
-
-         call print_date('Leaving lambda solver routine')
 
         end subroutine solve_lambda_equations
 
@@ -1177,10 +1172,12 @@ module talsh_cc
 !        Get tensor with AO integrals
          aoint_dims      = nao
          ierr=talsh_tensor_construct(aoint_tensor,C8,aoint_dims,init_val=ZERO)
+         call print_date('allocated AO integral tensor')
 !        Initialize AO integral tensors (ideally via an initialization routine, for now via direct access)
          ierr=talsh_tensor_get_body_access(aoint_tensor,body_p,C8,0,DEV_HOST)
          call c_f_pointer(body_p,ao_tens,aoint_dims(1:4)) ! to use <ao_tens> as a regular Fortran 4d array
          call compute_ao_integrals (nao,ao_tens)
+         call print_date('finished ao integral calculation')
 
 !        Get antisymmetric oovv tensor
 !        Note that the dimensions for the tensor are given in physicists notation <12||34>
@@ -1199,6 +1196,7 @@ module talsh_cc
          mo_list(2*nocc+nvir+1:2*nocc+2*nvir) = mo_vir(1:nvir)
          call get_integral_tensor (aoint_tensor,int_t%oovv,12,nmo,mo_list)
          deallocate (mo_list)
+         call print_date('finished oovv integrals')
 
 !        Get antisymmetric oooo tensor
          oooo_dims = nocc
@@ -1211,6 +1209,7 @@ module talsh_cc
          mo_list(3*nocc+1:4*nocc) = mo_occ(1:nocc)
          call get_integral_tensor (aoint_tensor,int_t%oooo,12,nmo,mo_list)
          deallocate (mo_list)
+         call print_date('finished oooo integrals')
 
 !        Get anti-symmetrized vovo tensor, this needs to be done in two steps as two different classes contribute.
 !        Get vovo tensor
@@ -1250,6 +1249,7 @@ module talsh_cc
          ierr=talsh_tensor_construct(minusone_tensor,C8,minusone_dims(1:0),init_val=MINUS_ONE)
          ierr=talsh_tensor_contract("V(a,i,b,j)+=V(i,a,b,j)*C()",int_t%vovo,ovvo_tensor,minusone_tensor)
          ierr=talsh_tensor_destruct(ovvo_tensor)
+         call print_date('finished vovo integrals')
 
 !        Get vvvv tensor
          vvvv_dims = nvir
@@ -1262,6 +1262,7 @@ module talsh_cc
          mo_list(3*nvir+1:4*nvir) = mo_vir(1:nvir)
          call get_integral_tensor (aoint_tensor,int_t%vvvv,12,nmo,mo_list)
          deallocate (mo_list)
+         call print_date('finished vvvv integrals')
 
 !        Get ooov tensor
          ooov_dims(1:3) = nocc
@@ -1276,6 +1277,7 @@ module talsh_cc
          mo_list(3*nocc+1:3*nocc+nvir) = mo_vir(1:nvir)
          call get_integral_tensor (aoint_tensor,int_t%ooov,12,nmo,mo_list)
          deallocate (mo_list)
+         call print_date('finished ooov integrals')
 
 !        Get vovv tensor
          vovv_dims(1)   = nvir
@@ -1293,6 +1295,7 @@ module talsh_cc
          mo_list(2*nvir+nocc+1:3*nvir+nocc) = mo_vir(1:nvir)
          call get_integral_tensor (aoint_tensor,int_t%vovv,34,nmo,mo_list)
          deallocate (mo_list)
+         call print_date('finished vovv integrals')
 
 !        Clean-up
          ierr=talsh_tensor_destruct(aoint_tensor)

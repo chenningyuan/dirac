@@ -4,6 +4,7 @@ module exacorr_ao_to_mo
 !integrating the ExaTensor library with the DIRAC code.
 
         use exatensor
+        use exacorr_utils
 
         implicit none
         private

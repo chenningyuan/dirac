@@ -16,6 +16,7 @@ C***********************************************************************
       use exacc_cfg
       use exacorr_ao_to_mo,only     : exacorr_compute_mo_integrals
       use talsh_ao_to_mo,only       : talsh_compute_mo_integrals
+      use exacorr_utils, only       : print_date
 #if defined (VAR_MPI)
       use interface_to_mpi
 #endif
@@ -137,6 +138,7 @@ C***********************************************************************
       use talsh_cc,only             : talsh_cc_driver
       use exacorr_cc,only           : exacorr_cc_driver
       use exacorr_global
+      use exacorr_utils, only : print_exacorr_logo, print_date
 #if defined (VAR_MPI)
       use interface_to_mpi
 #endif
@@ -157,6 +159,7 @@ C***********************************************************************
       ! and let them know whether we use talsh or exatensor
       call interface_mpi_comm_rank(global_communicator,mytid)
       if (mytid == 0 ) then
+         call print_exacorr_logo
          call dirac_parctl( 20 ) 
       end if
       call interface_mpi_bcast_l0(exa_input%talsh,1,0,
@@ -173,7 +176,7 @@ C***********************************************************************
 C
       call set_talsh_only(exa_input%talsh)
       call initialize_global_data
-      if (mytid == 0) print*," Initialized global data"
+      if (mytid == 0) call print_date("Initialized global data")
 
 ! next block is code is only for master
 #if defined (VAR_MPI)
@@ -420,6 +423,7 @@ C
        use exacorr_mo
        use exacorr_datatypes
        use exacorr_global,only: nfunctions
+       use exacorr_utils
 
        implicit none
 
@@ -731,6 +735,7 @@ C
        subroutine read_from_mrconee (int_1el, ierr)
 
        use exacorr_datatypes
+       use exacorr_utils, only: get_free_fileunit
 
        implicit none
 

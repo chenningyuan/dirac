@@ -1230,14 +1230,13 @@ It.    8    -14.57484503273     -1.78D-15 -3.90D-09  1.29D-09   DIIS   6    0.00
   Iteration   28 CCSD energy =   -0.076735898898552 convergence =   0.1E-12
   Iteration   29 CCSD energy =   -0.076735898898557 convergence =   0.1E-12
   Iteration   30 CCSD energy =   -0.076735898898558 convergence =   0.6E-13
+  Final CCSD energy    =   -7.6735898898557892E-002
   4th order triples correction :      -0.000366628700714
   5th order triples (T) correction :   0.000011087877886
   5th order triples -T  correction :   0.000008662695229
   CCSD+T  correlation energy :        -0.077102527599272
   CCSD(T) correlation energy :        -0.077091439721386
   CCSD-T  correlation energy :        -0.077093864904042
-  Final CCSD energy    =   -7.6735898898557892E-002
-  Final CCSD(T) energy =   -7.7091439721385630E-002
   Leaving cc_driver routine
 
 ---< Process     1 of     1----<

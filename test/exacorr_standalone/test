@@ -9,8 +9,8 @@ from runtest_dirac import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
-f.add(from_string = '4th order triples correction',
-      num_lines   = 8,
+f.add(from_string = 'Final CCSD energy',
+      num_lines   = 7,
       rel_tolerance   = 1.0e-6)
 f.add(from_string = 'Electronic energy',
       num_lines   = 8,

@@ -8,10 +8,11 @@ module talsh_gradient
   use tensor_algebra
   use talsh_ao_to_mo, only    : tensor_norm2
   use exacorr_datatypes, only : talsh_dm_tens, exacc_input
+  use exacorr_utils, only     : print_date
 
   implicit none
 
-  complex(8), parameter :: ZERO=(0.D0,0.D0),MINUS_ONE_QUARTER=(-0.25D0,0.D0),ONE_HALF=(0.5D0,0.D0), &
+  complex(8), parameter :: ZERO=(0.D0,0.D0),ONE_HALF=(0.5D0,0.D0), &
                              MINUS_ONE=(-1.D0,0.D0),ONE=(1.0D0,0.D0), MINUS_ONE_HALF=(-0.5D0,0.D0)
 
   private
@@ -36,8 +37,6 @@ module talsh_gradient
       logical :: CCD
 !     error code
       integer :: ierr
-
-      call print_date('Entered DM routine')
 
       CCD = exa_input%CCD
 
@@ -78,7 +77,6 @@ module talsh_gradient
 !***********************
 
       call store_dm_mo(exa_input,gamma)
-      call print_date("MO density matrix stored")
 
 !     cleanup
       ierr=talsh_tensor_destruct(gamma%prime_oo)
@@ -174,13 +172,13 @@ module talsh_gradient
         ierr=talsh_tensor_contract("G(a,i)+=L(m,e)*T(a,e,i,m)",gamma%prime_vo,l1_tensor,tau2_tensor)
 
 !----------------------------------------------------------------------------
-!     vo: g'(a,i) -= 1/4 l(mn,ef) * (t(ef,in) * t(a,m) + t(e,i) * t(af,mn)) |
+!     vo: g'(a,i) -= 1/2 l(mn,ef) * (t(ef,in) * t(a,m) + t(e,i) * t(af,mn)) |
 !----------------------------------------------------------------------------
 
         ierr=talsh_tensor_contract("X(m,i)+=L(m,n,e,f)*T(e,f,i,n)",oo_aux_tensor,l2_tensor,t2_tensor)
-        ierr=talsh_tensor_contract("G(a,i)+=X(m,i)*T(a,m)",gamma%prime_vo,oo_aux_tensor,t1_tensor,scale=MINUS_ONE_QUARTER)
+        ierr=talsh_tensor_contract("G(a,i)+=X(m,i)*T(a,m)",gamma%prime_vo,oo_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
         ierr=talsh_tensor_contract("X(a,e)+=L(m,n,e,f)*T(a,f,m,n)",vv_aux_tensor,l2_tensor,t2_tensor)
-        ierr=talsh_tensor_contract("G(a,i)+=X(a,e)*T(e,i)",gamma%prime_vo,vv_aux_tensor,t1_tensor,scale=MINUS_ONE_QUARTER)
+        ierr=talsh_tensor_contract("G(a,i)+=X(a,e)*T(e,i)",gamma%prime_vo,vv_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
 
 !---------------------------
 !     ov: g'(i,a) = l(i,a) |
@@ -306,9 +304,6 @@ module talsh_gradient
         ierr=talsh_tensor_get_body_access(gamma%symm_ov,body_p2,C8,0,DEV_HOST)
         call c_f_pointer(body_p2,dm_block,(/nocc,nvir/)) ! to use <dm_mo_block> as a regular Fortran 2d array
         dm_mo_fort(1:nocc,1+nocc:nocc+nvir) = dm_block
-      else
-        dm_mo_fort(1+nocc:nocc+nvir,1:nocc) = 0
-        dm_mo_fort(1:nocc,1+nocc:nocc+nvir) = 0
       end if
 
 !     vv
@@ -327,7 +322,7 @@ module talsh_gradient
 
       nesh = get_nsolutions() / 2
       allocate (dm_diracformat(nesh,nesh,4))
-      dm_diracformat = ZERO
+      dm_diracformat = real(ZERO)
       do j = 1, norbt
         do i = 1, norbt
           ! We copy the unbar-unbar part of the density matrix, would be good to test whether the Kramers-restricted assumption holds
