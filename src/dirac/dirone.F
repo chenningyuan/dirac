@@ -779,10 +779,10 @@ C
                ISTART = 0
                DO IRP = 1,MAXREP+1 
                  DO IC = 1, MC
-!                   write(*,*)'***********'  
-!                   write(*,*)'NCOS,IRP,IC',NCOS(IRP,IC),IRP,IC
-!                   write(*,*)'***********'
-                    DO I = 1, NCOS(IRP,IC)
+!                  write(*,*)'***********'  
+!                  write(*,*)'NCOS,IRP,IC',NCOS(IRP,IC),IRP,IC
+!                  write(*,*)'***********'
+                   DO I = 1, NCOS(IRP,IC)
                      IADD = I*(I-1)/2
                      DO J = 1, I
                        IJ = IADD + J + IOFF 
