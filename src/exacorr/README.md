@@ -5,11 +5,8 @@ Remarks:
 
 To Do:
 - [ ] Finish ReSpect interface (@stanpa)
-- [ ] Implement CCD for Lambda equations (@stanpa)
-- [ ] Write talsh DM to file (@stanpa, @Visscher)
-- [ ] Refactor exacorr_gradient (@stanpa)
+- [ ] Write ExaTensor DM to file (@stanpa)
 - [ ] Implement EOM (@stanpa)
-  - [ ] Refactor EOM (@stanpa)
   - [ ] Implement Davidson for EOM (@gomes.asp)
 
 <table>

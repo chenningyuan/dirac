@@ -8,11 +8,12 @@ module exacorr_gradient
   use exacorr_ao_to_mo,  only : print_tensornorm2
   use exacorr_datatypes
   use exacorr_global,    only : debug_exa
+  use exacorr_utils,     only : print_date
 
   implicit none
 
-  complex(8), parameter :: ZERO=(0.D0,0.D0),MINUS_ONE_QUARTER=(-0.25D0,0.D0),ONE_HALF=(0.5D0,0.D0), &
-                           MINUS_ONE=(-1.D0,0.D0),ONE=(1.0D0,0.D0)
+  complex(8), parameter :: ZERO=(0.D0,0.D0),ONE_HALF=(0.5D0,0.D0), &
+                           MINUS_ONE=(-1.D0,0.D0),ONE=(1.0D0,0.D0),MINUS_ONE_HALF=(-0.5D0,0.D0)
 
   private
 
@@ -38,8 +39,6 @@ module exacorr_gradient
       logical :: CCD
 !     error code
       integer :: ierr
-
-      call print_date('Entered DM routine')
 
       CCD = exa_input%CCD
 
@@ -89,7 +88,6 @@ module exacorr_gradient
 !***********************
 
       call store_dm_mo(exa_input,gamma)
-      call print_date("MO density matrix stored")
 
 !     cleanup
       ierr=exatns_tensor_destroy(gamma%prime_oo)
@@ -184,13 +182,13 @@ module exacorr_gradient
         ierr=exatns_tensor_contract("G(a,i)+=L(m,e)*T(a,e,i,m)",gamma%prime_vo,l1_tensor,tau2_tensor)
 
 !----------------------------------------------------------------------------
-!     vo: g'(a,i) += 1/4 l(mn,ef) * (t(ef,in) * t(a,m) + t(e,i) * t(af,mn)) |
+!     vo: g'(a,i) -= 1/2 l(mn,ef) * (t(ef,in) * t(a,m) + t(e,i) * t(af,mn)) |
 !----------------------------------------------------------------------------
 
         ierr=exatns_tensor_contract("X(m,i)+=L(m,n,e,f)*T(e,f,i,n)",oo_aux_tensor,l2_tensor,t2_tensor)
-        ierr=exatns_tensor_contract("G(a,i)+=X(m,i)*T(a,m)",gamma%prime_vo,oo_aux_tensor,t1_tensor,MINUS_ONE_QUARTER)
+        ierr=exatns_tensor_contract("G(a,i)+=X(m,i)*T(a,m)",gamma%prime_vo,oo_aux_tensor,t1_tensor,MINUS_ONE_HALF)
         ierr=exatns_tensor_contract("X(a,e)+=L(m,n,e,f)*T(a,f,m,n)",vv_aux_tensor,l2_tensor,t2_tensor)
-        ierr=exatns_tensor_contract("G(a,i)+=X(a,e)*T(e,i)",gamma%prime_vo,vv_aux_tensor,t1_tensor,MINUS_ONE_QUARTER)
+        ierr=exatns_tensor_contract("G(a,i)+=X(a,e)*T(e,i)",gamma%prime_vo,vv_aux_tensor,t1_tensor,MINUS_ONE_HALF)
 
 !---------------------------
 !     ov: g'(i,a) = l(i,a) |
@@ -306,9 +304,6 @@ module exacorr_gradient
 !     vo + ov
       if (.not.CCD) then
 
-      else
-        dm_mo_fort(1+nocc:nocc+nvir,1:nocc) = 0
-        dm_mo_fort(1:nocc,1+nocc:nocc+nvir) = 0
       end if
 
 !     vv
@@ -336,6 +331,7 @@ module exacorr_gradient
       end do
 
       call store_cc_density ('CCSD', dm_diracformat )
+      write(*,*) ""
 
       deallocate (dm_diracformat)
       deallocate (mo_list)

@@ -6,6 +6,7 @@ module talsh_ao_to_mo
 
         use tensor_algebra
         use talsh
+        use exacorr_utils
 
         implicit none
         private
@@ -296,7 +297,7 @@ module talsh_ao_to_mo
 
          integer   :: ierr, tens_rank, i, imo, nao
 
-         call print_date('entered aomo_transform')
+         ! call print_date('entered aomo_transform')
 !        Get tensor dimension of input and output tensors
          ierr = talsh_tensor_dimensions(aoint_tensor,tens_rank,aoint_dims)
          if (ierr.ne.0 .or. tens_rank.ne.4) stop 'program error: aoint tensor corrupted'
@@ -316,7 +317,7 @@ module talsh_ao_to_mo
             call get_mocoef_tensor (nao, nmo(i), mo_list(imo+1:imo+nmo(i)), mocoefa_tensor(i), mocoefb_tensor(i))
             imo = imo + nmo(i)
          end do
-         call print_date('initialized mo-coefficients')
+         ! call print_date('initialized mo-coefficients')
 
 
 !        Set tensor dimensions for the index transformation (simple brute-force algorithm)
@@ -330,7 +331,7 @@ module talsh_ao_to_mo
 !        Do 1st and 2nd quarter-transformation
          ierr=talsh_tensor_construct(a1int_tensor,C8,a1int_dims,init_val=zero)
          ierr=talsh_tensor_construct(a2int_tensor,C8,a2int_dims,init_val=zero)
-         call print_date('constructed a1 and a2')
+         ! call print_date('constructed a1 and a2')
          ierr=talsh_tensor_contract("D(i,q,r,s)+=R+(p,i)*L(p,q,r,s)",a1int_tensor,mocoefa_tensor(1),aoint_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=11; return; endif
          ierr=talsh_tensor_contract("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoefa_tensor(2))
@@ -340,14 +341,14 @@ module talsh_ao_to_mo
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=12; return; endif
          ierr=talsh_tensor_contract("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoefb_tensor(2))
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=22; return; endif
-         call print_date('first ht done')
+         ! call print_date('first ht done')
 
 !        Destruct a1 and a1 integrals:
          ierr=talsh_tensor_destruct(a1int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=25; return; endif
 
 !        Do 3rd and 4th quarter-transformation
          ierr=talsh_tensor_construct(a3int_tensor,C8,a3int_dims,init_val=zero)
-         call print_date('constructed a3')
+         ! call print_date('constructed a3')
          ierr=talsh_tensor_contract("D(i,j,k,s)+=R+(r,k)*L(i,j,r,s)",a3int_tensor,mocoefa_tensor(3),a2int_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=31; return; endif
          ierr=talsh_tensor_contract("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoefa_tensor(4))
@@ -357,12 +358,12 @@ module talsh_ao_to_mo
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=32; return; endif
          ierr=talsh_tensor_contract("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoefb_tensor(4))
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=42; return; endif
-         call print_date('second ht done')
+         ! call print_date('second ht done')
 
 !        Destruct a2 and a3 integrals:
          ierr=talsh_tensor_destruct(a2int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=35; return; endif
          ierr=talsh_tensor_destruct(a3int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=45; return; endif
-         call print_date('leaving aomo_transform')
+         ! call print_date('leaving aomo_transform')
 
         end subroutine aomo_transform
 

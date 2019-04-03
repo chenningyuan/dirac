@@ -1854,14 +1854,13 @@ SOfock:LL  1.00D-12    0.00%   47.18%    0.00%    1.67%   0.04337001s
  h int  =    32.040559862441107     
  c int  =    1.4553295782838824     
   Iteration   24 CCSD energy =   -0.093988810178536 convergence =   0.4E-13
+  Final CCSD energy    =   -9.3988810178535817E-002
   4th order triples correction :      -0.001691265158578
   5th order triples (T) correction :   0.000227604105410
   5th order triples -T  correction :   0.000338477352398
   CCSD+T  correlation energy :        -0.095680075337114
   CCSD(T) correlation energy :        -0.095452471231704
   CCSD-T  correlation energy :        -0.095341597984716
-  Final CCSD energy    =   -9.3988810178535817E-002
-  Final CCSD(T) energy =   -9.5452471231704125E-002
    7 Oct 18 20:15:02 Leaving cc_driver routine
 
 ---< Process     1 of     1----<

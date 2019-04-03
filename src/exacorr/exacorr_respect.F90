@@ -3,6 +3,8 @@ module exacorr_respect
 ! Module for interfacing the ReSpect SCF with exacorr
 ! Written by Stan Papadopoulos, January/February 2019
 
+  use exacorr_utils
+
   implicit none
 
   private
@@ -106,8 +108,8 @@ module exacorr_respect
 !     calculate number of functions
       nao = 0
       do i = 1, nshells
-!       number of sperical GTOs / "electronic" (=positive energy) solutions"
-        nao = nao + 2 * (nhkt(i) - 1) + 1
+!       number of Cartesian GTOs / "electronic" (=positive energy) solutions"
+        nao = nao + nhkt(i) * (nhkt(i) + 1) / 2
       end do
 
 !*********************************************

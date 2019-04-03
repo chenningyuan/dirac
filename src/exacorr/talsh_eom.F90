@@ -6,6 +6,7 @@ module talsh_eom
   use intermediates
   use talsh_ao_to_mo, only : tensor_norm2
   use exacorr_global, only : debug_exa
+  use exacorr_utils,  only : print_date
 
   implicit none
 
@@ -28,6 +29,12 @@ module talsh_eom
       type(talsh_tens_t),    intent(inout), optional :: t1_tensor, l2_tensor
 !     eom tensors
       type(talsh_eom_tens) :: eom_t
+
+      write(*,*) ""
+      write(*,'(A)') "*******************************************************************************"
+      write(*,'(A)') "***************************** Equation of Motion ******************************"
+      write(*,'(A)') "*******************************************************************************"
+      write(*,*) ""
 
 !************************************
 !     EOM calculation: IP, EA or EE *
@@ -66,7 +73,8 @@ module talsh_eom
       end if
 
 !     make some noise so that we know we are leaving
-      print*, " Leaving eom_driver routine"
+      print*, ""
+      call print_date("Leaving eom_driver routine")
       return
 
     end subroutine talsh_eom_driver
@@ -439,9 +447,9 @@ module talsh_eom
 
       if (exa_input%eom_properties) then
         if (.not.CCD) then
-          call sigma_left_ee(exa_input,int_t,eom_t,t2_tensor,t1_tensor)
+          call sigma_left_ee(exa_input,int_t,eom_t,t1_tensor)
         else
-          call sigma_left_ee(exa_input,int_t,eom_t,t2_tensor)
+          call sigma_left_ee(exa_input,int_t,eom_t)
         end if
         call print_date("Calculated EOM-EE LHS")
       end if
@@ -986,13 +994,12 @@ module talsh_eom
 
     end subroutine sigma_right_ee
 
-    subroutine sigma_left_ee(exa_input,int_t,eom_t,t2_tensor,t1_tensor)
+    subroutine sigma_left_ee(exa_input,int_t,eom_t,t1_tensor)
 
 !     input variables
       type(exacc_input),     intent(in   ) :: exa_input
       type(talsh_intg_tens), intent(inout) :: int_t
       type(talsh_eom_tens),  intent(inout) :: eom_t
-      type(talsh_tens_t),    intent(inout) :: t2_tensor
       type(talsh_tens_t),    intent(inout), optional :: t1_tensor
 !     auxiliary tensor
       type(talsh_tens_t) :: oo_aux
