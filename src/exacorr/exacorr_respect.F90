@@ -109,7 +109,7 @@ module exacorr_respect
       nao = 0
       do i = 1, nshells
 !       number of Cartesian GTOs / "electronic" (=positive energy) solutions"
-        nao = nao + nhkt(i) * (nhkt(i) + 1) / 2
+        nao = nao + nhkt(i) * ( nhkt(i) + 1 ) / 2
       end do
 
 !*********************************************
@@ -178,7 +178,7 @@ module exacorr_respect
 !     put in gtos
       ao_basis%nshells       = nshells
       ao_basis%nao           = nao
-      ao_basis%basis_angular = 2
+      ao_basis%basis_angular = 1
       nullify(ao_basis%gtos)
       allocate(ao_basis%gtos(nshells))
       do ishell = 1, nshells
@@ -205,7 +205,7 @@ module exacorr_respect
       allocate(ao_basis%shell_indices(nao))
       iao = 0
       do ishell = 1, nshells
-        nfunctions = 2 * (ao_basis%gtos(ishell)%orb_momentum-1) + 1
+        nfunctions = ao_basis%gtos(ishell)%orb_momentum * ( ao_basis%gtos(ishell)%orb_momentum + 1 ) / 2
         do ibas = 1, nfunctions
           iao = iao + 1
           if (iao.gt.nao) then
