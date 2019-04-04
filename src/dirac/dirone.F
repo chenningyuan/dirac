@@ -276,8 +276,8 @@ C
 !     ENDDO
 C
       write(*,*)'NUCIND',NUCIND
-      DO 5 IXYZ = 1, 3
-!         IXYZ = 3
+!      DO 5 IXYZ = 1, 3
+         IXYZ = 3
       DO 10 IATOM = 1, NUCIND !change
 !      DO 10 ISYMOP = 0, MXOPR
 !      What is this roop? MXOPR=0 in dftgrd.F
@@ -341,6 +341,11 @@ C
 !     change for debug sentense
            write(*,*)"R(1),Z",R(1),ZAN(IATOM) 
            write(*,*)"J,NUMIR"
+           DO IRP=1,MAXREP+1
+           DO IC =1,MC
+              write(*,*)'NCOS,ICOS',NCOS(IRP,IC),ICOS(IRP,IC),IRP,IC
+           ENDDo
+           ENDDo
            DO 20 IR = 1, MXNP
 C
 C     1/r in Eq. (2), (4),and (6) of Rinker's paper is NOT calculated in VCMPOL.
@@ -362,68 +367,90 @@ C
 C
 C     GET AO's
 C
-               CALL GETAOS(GAO,TEMP,TEMP,TEMP,TEMP,
+               CALL GETAOS(BUFGAO,TEMP,TEMP,TEMP,TEMP,
      &                      X8,Y8,Z8,NTBAS(0),0,.FALSE.,0) !The last is IPRINT
-C               CALL WTAOSO(BUFGAO,GAO,NTBAS(0),1,IPRINT)
+               CALL WTAOSO(BUFGAO,GAO,NTBAS(0),1,IPRINT)
 C     
 C     Get "overlap" matrix
 C
-               ISTART = NTBAS(1)*(NTBAS(1)+1)/2
-               DO I = 1, NTBAS(2)
-                 IADD = I*(I-1)/2 + NTBAS(1)*(I-1)
-                 DO J = 1, NTBAS(1)
-                    BUF(ISTART+IADD+J) = GAO(J)*GAO(I+NTBAS(1))
-                    BUFTST = BUF(ISTART+IADD+J) * ANG(iy,IXYZ)
-!                    IF(BUFTST.NE.0.0D0)THEN
-!                      IF(ISTART+IADD+J.EQ.20)THEN
-!                       write(*,*)'IJ,J,I',ISTART+IADD+J,J,I
-!                       write(*,*)'X8,Y8,Z8',X8,Y8,Z8
-!                 write(*,*)'L,S,ANG',GAO(J),GAO(I+NTBAS(1)),ANG(iy,IXYZ)
-!                 write(*,*)
-!                       IF(BUFTST.LE.0.0D0)THEN
-!                          write(*,*)"BUFTST",BUFTST
-!                       ENDIF   
-!                    ENDIF
-!                    ENDIF
-!                   write(*,*)"I,J,IADD,ISTART",I,J,IADD,ISTART
+CCCCC
+C sym
+CCCCC
+               IREPOP = ISYMAX(IXYZ,1)
+               DO ISYM = 1, MAXREP + 1
+                  IREP = ISYM - 1
+!                  write(*,*)
+!                  write(*,*)'Next'
+!                  write(*,*)
+                 DO JSYM = 1,ISYM
+                    JREP = JSYM - 1
+!                    write(*,*)'IREP,JREP,IBT,IREPOP',
+!     &                         IREP,JREP,IBTXOR(IREP,JREP),IREPOP
+                   IF(IBTXOR(IREP,JREP).EQ.IREPOP) THEN
+C** SL - block
+                     IOFF = ICOS(ISYM,2)
+                     JOFF = ICOS(JSYM,1)
+                     IJOFF = IOFF*(IOFF+1)/2 !+ JOFF
+                     IADD = ICOS(ISYM,1)
+                     IJ = 0
+                     DO I = 1,NCOS(ISYM,2)
+                       DO J = 1,NCOS(JSYM,1)
+                         IJ = IJ + 1  
+                         BUF(IJ+IJOFF+IADD) = GAO(I+IOFF)*GAO(J+JOFF)
+!                         write(*,*)'IJ+IJOFF+IADD,I,J',IJ+IJOFF+IADD,
+!     &                                                 I+IOFF,J+JOFF
+!                         write(*,*)'IJOFF,IOFF,JOFF,IADD',
+!     &                        IJOFF,IOFF,JOFF,IADD
+!                         write(*,*)
+                       ENDDO
+!                       IADD = IADD + JOFF + I 
+                       IADD = IADD + ICOS(ISYM,1) + I
+                     ENDDO
+                   ENDIF
                  ENDDO
               ENDDO
-!              IF(IR.EQ.5)THEN
-!                write(*,*)
-!                write(*,*)
-!              ENDIF  
-!                  write(*,*)"IOFF,ISTART",IOFF,ISTART
-c$$$               DO IRP = 1,MAXREP+1 
-c$$$                 DO IC = 1, MC
-c$$$!                   write(*,*)'***********'  
-c$$$!                   write(*,*)'NCOS,IRP,IC',NCOS(IRP,IC),IRP,IC
-c$$$!                   write(*,*)'***********'
-c$$$                   DO I = 1, NCOS(IRP,IC)
-c$$$                     IADD = I*(I-1)/2
-c$$$                     DO J = 1, I
-c$$$                       IJ = IADD + J + IOFF 
-c$$$                       BUF(IJ+ISTART*I) = GAO(I+ISTART)*GAO(J+ISTART) 
-c$$$!                       write(*,*)'IJ,ISTART,IOFF,I,J',IJ,ISTART,IOFF,I,J
-c$$$!                       write(*,*)'IJ+ISTART*I',IJ+ISTART*I
-c$$$                     ENDDO
-c$$$                   ENDDO
-c$$$!                   write(*,*)
-c$$$                   ISTART = ISTART + NCOS(IRP,IC)
-c$$$                   IOFF   = ISTART*(ISTART+1)/2
-c$$$                 ENDDO  
-c$$$               ENDDO
-c$$$!               write(*,*)"WT8,ANG",WT8,ANG(iy,IXYZ)
+!              stop 
+c$$$
+CCCCC 
+C sym
+CCCCC
+CCCCC
+C C1
+CCCCC
+c$$$               ISTART = NTBAS(1)*(NTBAS(1)+1)/2
+c$$$               DO I = 1, NTBAS(2)
+c$$$                 IADD = I*(I-1)/2 + NTBAS(1)*(I-1)
+c$$$                 DO J = 1, NTBAS(1)
+c$$$                    BUF(ISTART+IADD+J) = GAO(J)*GAO(I+NTBAS(1))
+c$$$                    BUFTST = BUF(ISTART+IADD+J) * ANG(iy,IXYZ)
+c$$$!                    IF(BUFTST.NE.0.0D0)THEN
+c$$$!                      IF(ISTART+IADD+J.EQ.20)THEN
+c$$$!                       write(*,*)'IJ,J,I',ISTART+IADD+J,J,I
+c$$$!                       write(*,*)'X8,Y8,Z8',X8,Y8,Z8
+c$$$!                 write(*,*)'L,S,ANG',GAO(J),GAO(I+NTBAS(1)),ANG(iy,IXYZ)
+c$$$!                 write(*,*)
+c$$$!                       IF(BUFTST.LE.0.0D0)THEN
+c$$$!                          write(*,*)"BUFTST",BUFTST
+c$$$!                       ENDIF   
+c$$$!                    ENDIF
+c$$$!                    ENDIF
+c$$$!                   write(*,*)"I,J,IADD,ISTART",I,J,IADD,ISTART
+c$$$                 ENDDO
+c$$$              ENDDO
+c$$$CCCCC
+C C1
+CCCCC              
                WT8 = WT8 * ANG(iy,IXYZ)
                CALL DAXPY(NDIM2,WT8,BUF,1,TC,1)
  30          CONTINUE
 !               write(*,*)"TC(20),IR",TC(20),IR
 !             stop!sunaga
              CALL DCOPY(NDIM2,TC,1,TD(1,IR),1)
-!          DO JJ=1,NDIM2
-!             write(*,*)"TC",TC(JJ),JJ
-!          ENDDO
-!          write(*,*)
-!          write(*,*)
+             DO JJ = 7,12
+                write(*,*)"TC",TC(JJ),IR
+             ENDDO
+          write(*,*)
+          write(*,*)
 !          write(*,*)"fin,IR",IR
 !          IF(IR.EQ.10)THEN
 !            stop
@@ -528,15 +555,8 @@ C
          ENDIF   !num_grid_cfg_grasp
 C
          CALL HEADER('Numerical ovelap integral',-1)
-         
-!         DO II = 1,NDIM2
-!            write(*,*)'TD',TD(II,1)
-!         ENDDO
-!         CALL QUAD2(RESULT,TD,MXNP,NDIM2) 
-!         CALL QUAD2(INTAO,TD,MXNP,NDIM2)
-!         CALL RADINT_WRAPPER(INTAO,TD,R,W,MXNP,NDIM2)
 C         
-!         CALL OUTPAK(INTAO,NTBAS(0),-1,LUPRI)
+         CALL OUTPAK(INTAO,NTBAS(0),-1,LUPRI)
         Endif        !(IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0)
         deallocate(TD)
         deallocate(NUMIR)
@@ -574,7 +594,7 @@ C
       ENDIF   
       CALL WRTPRO(INTAO,NNBBASX,LABEL,RTNLBL,IPRINT)      
 C
- 5    CONTINUE !IXYZ
+! 5    CONTINUE !IXYZ
       deallocate(ZAN)
       deallocate(C)
       deallocate(ANG)
