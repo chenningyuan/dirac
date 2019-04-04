@@ -1141,6 +1141,9 @@ module talsh_cc
 
          use exacorr_global
          use talsh_ao_to_mo
+         use exacorr_cholesky
+
+         complex(8), allocatable :: CD(:,:,:)
 
          integer, intent(in)    :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
          integer, intent(in)    :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
@@ -1178,6 +1181,9 @@ module talsh_cc
          call c_f_pointer(body_p,ao_tens,aoint_dims(1:4)) ! to use <ao_tens> as a regular Fortran 4d array
          call compute_ao_integrals (nao,ao_tens)
          call print_date('finished ao integral calculation')
+
+         call cholesky_decompose (CD, ao_tens, 1.0d-5)
+         deallocate(CD)
 
 !        Get antisymmetric oovv tensor
 !        Note that the dimensions for the tensor are given in physicists notation <12||34>
