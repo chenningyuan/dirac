@@ -1182,7 +1182,7 @@ module talsh_cc
          call compute_ao_integrals (nao,ao_tens)
          call print_date('finished ao integral calculation')
 
-         call cholesky_decompose (CD, ao_tens, 1.0d-5)
+         call cholesky_decompose (CD, 1.0d-9)
          deallocate(CD)
 
 !        Get antisymmetric oovv tensor

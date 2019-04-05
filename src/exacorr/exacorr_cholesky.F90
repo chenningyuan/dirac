@@ -15,7 +15,7 @@ public cholesky_decompose
 
 contains
 
-subroutine cholesky_decompose (CD, ao_tens, threshold)
+subroutine cholesky_decompose (CD, threshold)
 
   use exacorr_datatypes
   use exacorr_global
@@ -24,7 +24,6 @@ subroutine cholesky_decompose (CD, ao_tens, threshold)
 
   !in: ao information
   real(8), intent(in)                  :: threshold
-  complex(8),intent(in)                :: ao_tens(:, :, :, :)
   type(basis_func_info_t), allocatable :: gto(:)  ! arrays with basis function information
   integer                              :: nao, nshells
   integer                              :: basis_angular ! 1=cartesian, 2=spherical
@@ -54,14 +53,7 @@ subroutine cholesky_decompose (CD, ao_tens, threshold)
   allocate(Res(nao,nao))
   allocate(Gkl(nao,nao))
 
-  !compute diagonal matrix Dm(1, 2, 3=1, 4=2)
-  do i = 1,nao
-    do j= 1, nao
-      Dm(i,j)=ao_tens(i,j,i,j)
-    end do
-  end do
-
-  !call get_2el_diag(nao, gto, basis_angular, nshells, Dm)
+  call get_2el_diag(nao, gto, basis_angular, nshells, Dm)
 
   !find largest value
   m=0
@@ -79,8 +71,8 @@ subroutine cholesky_decompose (CD, ao_tens, threshold)
     do i = 1,m
        Res=Res+CD(i,:,:)*CD(i,i_max(1),i_max(2))
     end do
-    !call get_2el_int(nao, gto, basis_angular, nshells, i_max(1), i_max(2), Gkl)
-    Res=ao_tens(:,:,i_max(1),i_max(2))-Res
+    call get_2el_int(nao, gto, basis_angular, nshells, i_max(1), i_max(2), Gkl)
+    Res=Gkl-Res
     Res=Res/zsqrt(D_max)
 
     m=m+1
@@ -210,7 +202,7 @@ subroutine get_2el_int(nao, gto, basis_angular, nshells, l_fix, k_fix, Gkl)
 
 
 
-  integer      :: i, j, k, l, ioff,joff
+  integer      :: i, j, k, l, ioff,joff, koff, loff
   integer      :: ijkl
   integer      :: ish, jsh, ksh, lsh
   integer      :: li,lj,lk,ll, ni,nj,nk,nl
@@ -219,23 +211,37 @@ subroutine get_2el_int(nao, gto, basis_angular, nshells, l_fix, k_fix, Gkl)
   real(8),save :: gout(21*21*21*21) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
   real(8), parameter :: FIJKL = 1.0
 
+  loff = 0
+  do lsh = 1, nshells
+    ll   =  gto(lsh)%orb_momentum
+    el   =  gto(lsh)%exponent(1)
+    xl   =  gto(lsh)%coord(1)
+    yl   =  gto(lsh)%coord(2)
+    zl   =  gto(lsh)%coord(3)
+    cl   =  gto(lsh)%coefficient(1)
+    nl   =  nfunctions(ll,basis_angular)
+    if ( l_fix>loff .and. l_fix.le.loff+nl) then
+        EXIT
+    else
+       loff = loff + nl
+    end if
+  end do
 
-
-  ll   =  gto(l_fix)%orb_momentum
-  el   =  gto(l_fix)%exponent(1)
-  xl   =  gto(l_fix)%coord(1)
-  yl   =  gto(l_fix)%coord(2)
-  zl   =  gto(l_fix)%coord(3)
-  cl   =  gto(l_fix)%coefficient(1)
-  nl   =  nfunctions(ll,basis_angular)
-
-  lk   =  gto(k_fix)%orb_momentum
-  ek   =  gto(k_fix)%exponent(1)
-  xk   =  gto(k_fix)%coord(1)
-  yk   =  gto(k_fix)%coord(2)
-  zk   =  gto(k_fix)%coord(3)
-  ck   =  gto(k_fix)%coefficient(1)
-  nk   =  nfunctions(lk,basis_angular)
+  koff = 0
+  do ksh = 1, nshells
+    lk   =  gto(ksh)%orb_momentum
+    ek   =  gto(ksh)%exponent(1)
+    xk   =  gto(ksh)%coord(1)
+    yk   =  gto(ksh)%coord(2)
+    zk   =  gto(ksh)%coord(3)
+    ck   =  gto(ksh)%coefficient(1)
+    nk   =  nfunctions(lk,basis_angular)
+    if ( k_fix>koff .and. k_fix.le.koff+nk) then
+        EXIT
+    else
+       koff = koff + nk
+    end if
+  end do
 
   joff = 0
   do jsh = 1, nshells
@@ -257,22 +263,19 @@ subroutine get_2el_int(nao, gto, basis_angular, nshells, l_fix, k_fix, Gkl)
       ni   =  nfunctions(li,basis_angular)
 
 !     output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
-      call interest_eri('llll',FIJKL,gout,&
-                          lk,ek,xk,yk,zk,ck,&
-                          ll,el,xl,yl,zl,cl,&
-                          li,ei,xi,yi,zi,ci,&
-                          lj,ej,xj,yj,zj,cj )
-
+      call interest_eri('llll',fijkl,gout,&
+                        lk,ek,xk,yk,zk,ck,&
+                        ll,el,xl,yl,zl,cl,&
+                        li,ei,xi,yi,zi,ci,&
+                        lj,ej,xj,yj,zj,cj )
       ijkl = 0
       do l = 1, nl
-        !if (l>l_fix) EXIT
         do k = 1, nk
-          !if (k>k_fix) EXIT
           do j = 1, nj
             do i = 1, ni
               ijkl = ijkl + 1
-              if (k==k_fix) then
-                if (l==l_fix) then
+              if (koff+k==k_fix) then
+                if (loff+l==l_fix) then
                   Gkl(i+ioff,j+joff) = dcmplx(gout(ijkl),0.D0)
                 end if
               end if
@@ -280,12 +283,12 @@ subroutine get_2el_int(nao, gto, basis_angular, nshells, l_fix, k_fix, Gkl)
           end do
         end do
       end do
+      
       ioff = ioff + ni
     end do
     joff = joff + nj
   end do
-
-
+  
 end subroutine get_2el_int
 
 

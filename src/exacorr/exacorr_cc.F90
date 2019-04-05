@@ -482,6 +482,7 @@ module exacorr_cc
          use exacorr_tensor_methods
          use exacorr_ao_to_mo
          use, intrinsic:: ISO_C_BINDING
+         use exacorr_cholesky
 
          implicit none
 
@@ -508,6 +509,8 @@ module exacorr_cc
 
          integer:: spin
          integer:: min_occ
+
+         complex(8), allocatable :: CD(:,:,:)
 
          !Copy user input to local arrays for the definition of MO spaces (for standard CC we only distinguish occupied and virtual spinors)
          nocc = exa_input%nocc
@@ -597,6 +600,9 @@ module exacorr_cc
             ierr=exatns_method_register('OrbSet',orb_set)
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(OrbSet) failed!')
          end if
+
+         call cholesky_decompose (CD, 1.0d-9)
+         deallocate(CD)
 
         end subroutine exacorr_cc_methods
 
