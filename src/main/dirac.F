@@ -1795,6 +1795,8 @@ C
          else
             RUN_PAMSET = .FALSE.
          end if
+      else
+         RUN_PAMSET = .TRUE.
       end if
 #else
       RUN_PAMSET = .TRUE.
