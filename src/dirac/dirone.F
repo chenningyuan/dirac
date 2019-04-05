@@ -276,8 +276,8 @@ C
 !     ENDDO
 C
       write(*,*)'NUCIND',NUCIND
-!      DO 5 IXYZ = 1, 3
-         IXYZ = 3
+      DO 5 IXYZ = 1, 3
+!         IXYZ = 1
       DO 10 IATOM = 1, NUCIND !change
 !      DO 10 ISYMOP = 0, MXOPR
 !      What is this roop? MXOPR=0 in dftgrd.F
@@ -320,7 +320,7 @@ C
 C
 C  This minus DSCAL is due to Beta Alpha, although we use Alpha. 
 C
-           CALL DSCAL(MXNP,DM1,NUMIR,1)
+!           CALL DSCAL(MXNP,DM1,NUMIR,1)
 !           write(*,*)
 !           write(*,*)LABEL
 !           DO J = 1,MXNP
@@ -390,70 +390,60 @@ CCCCC
 C** SL - block
                      IOFF = ICOS(ISYM,2)
                      JOFF = ICOS(JSYM,1)
-                     IJOFF = IOFF*(IOFF+1)/2 !+ JOFF
-                     IADD = ICOS(ISYM,1)
+                     IJOFF = IOFF*(IOFF+1)/2 
+                     IADD = JOFF
                      IJ = 0
                      DO I = 1,NCOS(ISYM,2)
                        DO J = 1,NCOS(JSYM,1)
                          IJ = IJ + 1  
-                         BUF(IJ+IJOFF+IADD) = GAO(I+IOFF)*GAO(J+JOFF)
+                         BUF(IJ+IJOFF+IADD)=DM1*GAO(I+IOFF)*GAO(J+JOFF)
 !                         write(*,*)'IJ+IJOFF+IADD,I,J',IJ+IJOFF+IADD,
 !     &                                                 I+IOFF,J+JOFF
 !                         write(*,*)'IJOFF,IOFF,JOFF,IADD',
 !     &                        IJOFF,IOFF,JOFF,IADD
 !                         write(*,*)
                        ENDDO
-!                       IADD = IADD + JOFF + I 
-                       IADD = IADD + ICOS(ISYM,1) + I
+                       IADD = IADD + JOFF + IOFF - ICOS(JSYM,2) + I
                      ENDDO
-                   ENDIF
+C** LS - block
+                     IF(IREP.NE.JREP) THEN
+                       IOFF = ICOS(ISYM,1)
+                       JOFF = ICOS(JSYM,2)
+                       IJOFF = IOFF*(IOFF+1)/2 
+                       IADD = JOFF
+                       IJ = 0
+                       DO I = 1,NCOS(ISYM,1)
+                         DO J = 1,NCOS(JSYM,2)
+                           IJ = IJ + 1  
+                          BUF(IJ+IJOFF+IADD)=GAO(I+IOFF)*GAO(J+JOFF)
+!                           write(*,*)'IJ+IJOFF+IADD,I,J',IJ+IJOFF+IADD,
+!     &                                                   I+IOFF,J+JOFF
+!                           write(*,*)'IJOFF,IOFF,JOFF,IADD',
+!     &                          IJOFF,IOFF,JOFF,IADD
+!                           write(*,*)
+                         ENDDO
+                         IADD = IADD + JOFF + IOFF - ICOS(JSYM+1,1) + I
+                       ENDDO
+                     ENDIF !(IREP.NE.JREP)
+                   ENDIF   !(IBTXOR(IREP,JREP).EQ.IREPOP)
                  ENDDO
-              ENDDO
+               ENDDO
 !              stop 
-c$$$
+C$$$
 CCCCC 
 C sym
 CCCCC
-CCCCC
-C C1
-CCCCC
-c$$$               ISTART = NTBAS(1)*(NTBAS(1)+1)/2
-c$$$               DO I = 1, NTBAS(2)
-c$$$                 IADD = I*(I-1)/2 + NTBAS(1)*(I-1)
-c$$$                 DO J = 1, NTBAS(1)
-c$$$                    BUF(ISTART+IADD+J) = GAO(J)*GAO(I+NTBAS(1))
-c$$$                    BUFTST = BUF(ISTART+IADD+J) * ANG(iy,IXYZ)
-c$$$!                    IF(BUFTST.NE.0.0D0)THEN
-c$$$!                      IF(ISTART+IADD+J.EQ.20)THEN
-c$$$!                       write(*,*)'IJ,J,I',ISTART+IADD+J,J,I
-c$$$!                       write(*,*)'X8,Y8,Z8',X8,Y8,Z8
-c$$$!                 write(*,*)'L,S,ANG',GAO(J),GAO(I+NTBAS(1)),ANG(iy,IXYZ)
-c$$$!                 write(*,*)
-c$$$!                       IF(BUFTST.LE.0.0D0)THEN
-c$$$!                          write(*,*)"BUFTST",BUFTST
-c$$$!                       ENDIF   
-c$$$!                    ENDIF
-c$$$!                    ENDIF
-c$$$!                   write(*,*)"I,J,IADD,ISTART",I,J,IADD,ISTART
-c$$$                 ENDDO
-c$$$              ENDDO
-c$$$CCCCC
-C C1
-CCCCC              
                WT8 = WT8 * ANG(iy,IXYZ)
                CALL DAXPY(NDIM2,WT8,BUF,1,TC,1)
  30          CONTINUE
 !               write(*,*)"TC(20),IR",TC(20),IR
 !             stop!sunaga
              CALL DCOPY(NDIM2,TC,1,TD(1,IR),1)
-             DO JJ = 7,12
-                write(*,*)"TC",TC(JJ),IR
-             ENDDO
-          write(*,*)
-          write(*,*)
-!          write(*,*)"fin,IR",IR
-!          IF(IR.EQ.10)THEN
-!            stop
+!             DO JJ = 7,12
+!                write(*,*)"TC",TC(JJ),IR
+!             ENDDO
+!          write(*,*)
+!          write(*,*)
 !         ENDIF
 C         
  20       CONTINUE
@@ -480,7 +470,7 @@ C R(IR)**2 is multiplized in RFAC, later
 C
 C  This minus DSCAL is due to Beta Alpha, although we use Alpha. 
 C
-           CALL DSCAL(MXNP,DM1,NUMIR,1)
+!           CALL DSCAL(MXNP,DM1,NUMIR,1)
 !           DO J = 1,MXNP
 !              NUMIR(J)=D1
 !              write(*,*)J,NUMIR(J),R(J)
@@ -547,9 +537,9 @@ C
                CALL DAXPY(NDIM2,WT8,BUF,1,TC,1)
  50         CONTINUE
 C
-C  This minus DSCAL is due to Beta Alpha, although we use Alpha. 
+C  This minus DSCAL is due to Beta Alpha, although we use Alpha.
 C
-             CALL DSCAL(NDIM2,DM1,TC,1)
+!             CALL DSCAL(NDIM2,DM1,TC,1)
              CALL DAXPY(NDIM2,W(IR),TC,1,INTAO,1)
  40        CONTINUE
          ENDIF   !num_grid_cfg_grasp
@@ -575,7 +565,6 @@ C
       CALL GETDAT(RTNLBL(1),RTNLBL(2))
       RTNLBL(2)(1:2) = 'AN'
       WRITE(RTNLBL(2)(3:4),'(I2)') ISYMAX(IXYZ,1)+1
-!     WRITE(RTNLBL(2)(3:4),'(I2)') INTREP(I)+1  ! refer to  PR1IN2 of abacus/her1pro.F
       RTNLBL(2)(5:8) = COMB
 C
 C     Write integrals to file
@@ -594,7 +583,7 @@ C
       ENDIF   
       CALL WRTPRO(INTAO,NNBBASX,LABEL,RTNLBL,IPRINT)      
 C
-! 5    CONTINUE !IXYZ
+ 5    CONTINUE !IXYZ
       deallocate(ZAN)
       deallocate(C)
       deallocate(ANG)
