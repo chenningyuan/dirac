@@ -587,7 +587,7 @@ C
 C
          CALL HEADER('Numerical ovelap integral',-1)
 C         
-         CALL OUTPAK(INTAO,NTBAS(0),-1,LUPRI)
+!         CALL OUTPAK(INTAO,NTBAS(0),-1,LUPRI)
         Endif        !(IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0)
         deallocate(TD)
         deallocate(NUMIR)
@@ -1754,7 +1754,7 @@ C
 !      write(*,*)'AT3 correction for Ne'
 !       AT3 = (DBLE(202)-0.0293680D0) ** (1.0D0/3.0D0) !for debug, comparing with GRASP
        AT3 = AMASS**3.33333333333333D-01
-      write(*,*)'AT3 NO correction'
+       write(*,*)'AT3 NO correction'
 C
 C     7.5609D-003 is DMASS(I) in datain.F ande grasp.F
 C
