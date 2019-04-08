@@ -6890,7 +6890,7 @@ C************************************************************************
       DIMENSION COR(N,3), TINERT(3,3), TINVER(3,3), TMASS(N),
      &          ANGMOM(3), OMEGA(3)
       DIMENSION EIGVAL(3), EIGVEC(3,3), AMAT(6), AWRK(3), IWRK(3),
-     &          CEPVAL(*), CEPVEC(*)
+     &          CEPVAL(*), CEPVEC(*), EIGVALUE(3), EIGVECTOR(3,3)
 C
       CALL DZERO(TINERT,9)
       CALL DZERO(OMEGA,3)
@@ -6935,32 +6935,62 @@ C
       EIGVAL(1) = AMAT(1)
       EIGVAL(2) = AMAT(3)
       EIGVAL(3) = AMAT(6)
-C.....Order eigenvalues and corresponding eigenvectors in ascending order E(1) < E(2) < E(3)
-      CALL ORDER(EIGVEC,EIGVAL,3,3)
 C
-      IF (ABS(EIGVAL(3)-(EIGVAL(2)+EIGVAL(1))) .LT. TSTLIN) THEN
-         PLANAR = .TRUE.
-      ELSE
-         PLANAR = .FALSE.
-      END IF
-      IF (EIGVAL(1) .LT. TSTLIN) THEN
-         LINEAR    = .TRUE.
-         PLANAR    = .FALSE.
-         EIGVAL(1) = D0
-      ELSE
-         LINEAR    = .FALSE.
-         EIGVAL(1) = D1/EIGVAL(1)
-      END IF
-      EIGVAL(2)    = D1/EIGVAL(2)
-      EIGVAL(3)    = D1/EIGVAL(3)
-C
+      DO 500 I = 1, 3
+      DO 500 J = 1, 3
+      EIGVECTOR(I,J) = EIGVEC(I,J)
+  500 CONTINUE
+C      
 C     Inverse moments of inertia
+C
+      IF (EIGVAL(1).gt.TSTLIN.and.EIGVAL(2).gt.TSTLIN
+     & .and.EIGVAL(3).gt.TSTLIN) THEN
+C     Non-linear molecules
+         EIGVALUE(1)    = D1/EIGVAL(1)
+         EIGVALUE(2)    = D1/EIGVAL(2)
+         EIGVALUE(3)    = D1/EIGVAL(3) 
+         LINEAR = .FALSE.
+         write(lupri,*) 'Non-linear molecule'
+C.....Order eigenvalues and corresponding eigenvectors in ascending order E(1) < E(2) < E(3)
+         CALL ORDER(EIGVEC,EIGVAL,3,3)
+C
+         IF (ABS(EIGVAL(3)-(EIGVAL(2)+EIGVAL(1))) .LT. TSTLIN) THEN
+            PLANAR = .TRUE.
+            write(lupri,*) 'Planar molecule'
+         ELSE
+            PLANAR = .FALSE.
+         END IF
+         IF (EIGVAL(1).eq.EIGVAL(2).and.EIGVAL(1).eq.EIGVAL(3))
+     &    write(lupri,*) 'Spherical top molecule'
+         IF (EIGVAL(1).eq.EIGVAL(2).and.EIGVAL(1).ne.EIGVAL(3))
+     &    write(lupri,*) 'Oblate symmetric top molecule'
+         IF (EIGVAL(2).eq.EIGVAL(3).and.EIGVAL(2).ne.EIGVAL(1))
+     &    write(lupri,*) 'Prolate symmetric top molecule'
+      ELSE
+C     Linear molecules
+         LINEAR = .TRUE.
+         PLANAR = .FALSE.
+         IF (EIGVAL(1).lt.TSTLIN) THEN
+          EIGVALUE(1) = D0
+          EIGVALUE(2) = D1/EIGVAL(2)
+          EIGVALUE(3) = D1/EIGVAL(3)
+         ELSE IF (EIGVAL(2).lt.TSTLIN) THEN
+          EIGVALUE(1) = D1/EIGVAL(1)
+          EIGVALUE(2) = D0
+          EIGVALUE(3) = D1/EIGVAL(3)
+         ELSE
+          EIGVALUE(1) = D1/EIGVAL(1)
+          EIGVALUE(2) = D1/EIGVAL(2)
+          EIGVALUE(3) = D0
+         END IF
+         write(lupri,*) 'Linear molecule'
+      END IF
 C
       CALL DZERO(TINVER,9)
       DO 200 X = 1, 3
       DO 200 Y = 1, 3
       DO 200 I = 1, 3
-         TINVER(X,Y) = TINVER(X,Y) + EIGVEC(X,I)*EIGVEC(Y,I)*EIGVAL(I)
+         TINVER(X,Y) = TINVER(X,Y) + EIGVEC(X,I)*EIGVEC(Y,I)*EIGVALUE(I)
   200 CONTINUE
 C
       DO 300 X = 1, 3
@@ -6969,8 +6999,8 @@ C
   300 CONTINUE
 C
       IF (DOCOPY) THEN
-         CALL DCOPY(3,EIGVAL,1,CEPVAL,1)
-         CALL DCOPY(9,EIGVEC,1,CEPVEC,1)
+         CALL DCOPY(3,EIGVALUE,1,CEPVAL,1)
+         CALL DCOPY(9,EIGVECTOR,1,CEPVEC,1)
       END IF
       RETURN
       END
