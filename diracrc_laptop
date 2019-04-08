@@ -7,8 +7,7 @@
 --env='QF_CORES_PER_PROCESS=1'          #number of cores per MPI process
 --env='QF_MEM_PER_PROCESS=1576'         #host memory limit per MPI process in MB
 --env='QF_NVMEM_PER_PROCESS=0'          #non-volatile memory limit per MPI process in MB
---env='QF_HOST_BUFFER_SIZE=1024'        #non-volatile memory limit per MPI process in MB
---env='QF_NUM_THREADS=8'                #number of threads per MPI process (irrelevant, keep it 8)
+--env='QF_HOST_BUFFER_SIZE=1576'        #non-volatile memory limit per MPI process in MB
 
 #OpenMP:
 --env='OMP_DYNAMIC=false'               #no OpenMP dynamic threading

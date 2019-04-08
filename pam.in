@@ -936,7 +936,6 @@ Options are also read from ~/.diracrc"""
             self.parallel_run = True
             self.nr_proc = int(options.dest_mpi)
             self.dirac_mpi_command = self.mpirun + ' -np ' + str(self.nr_proc) + ' '
-            os.environ['QF_NUM_PROCS'] = options.dest_mpi # This is the number of MPI processes that ExaTensor expects
             if self.mpiarg: 
                 self.dirac_mpi_command = self.dirac_mpi_command + str(self.mpiarg) + ' ' 
 
