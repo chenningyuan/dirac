@@ -266,7 +266,6 @@ C The values of ultrafine (.ULTRAF) at DFT input-reader section.
       allocate( INTAO (NDIM2)    )
 C      
       CALL DZERO(BUF,NDIM2) 
-      CALL DZERO(INTAO,NDIM2)
 C      
       CALL LEBEDEV(INTANG,ANG(1,1),ANG(1,2),ANG(1,3),ANG(1,4),n)
       CALL DSCAL(m,4*PI,ANG(1,4),1)
@@ -278,6 +277,7 @@ C
       write(*,*)'NUCIND',NUCIND
       DO 5 IXYZ = 1, 3
 !         IXYZ = 1
+      CALL DZERO(INTAO,NDIM2)
       DO 10 IATOM = 1, NUCIND !change
 !      DO 10 ISYMOP = 0, MXOPR
 !      What is this roop? MXOPR=0 in dftgrd.F
@@ -295,7 +295,7 @@ C
          IF(GAUNUC) NUCTYP = 3
          write(*,*)"NUCTYP,IXYZ",NUCTYP,IXYZ
          CALL MEMSET(ZAN(IATOM),IATOM,MXNP,IPRINT)
-         MXNP = 1912            !change
+!         MXNP = 1912            !change
          write(*,*)'HH2',H
          CALL NUCPRM(ZAN(IATOM),NUCMASS(INT(ZAN(IATOM))),NUCTYP)
          write(*,*)"MXNP",MXNP
@@ -366,7 +366,7 @@ C
                WT8 = ANG(iy,4)*RFAC
 C
 C     GET AO's
-C
+C 
                CALL GETAOS(BUFGAO,TEMP,TEMP,TEMP,TEMP,
      &                      X8,Y8,Z8,NTBAS(0),0,.FALSE.,0) !The last is IPRINT
                CALL WTAOSO(BUFGAO,GAO,NTBAS(0),1,IPRINT)
@@ -415,7 +415,7 @@ C** LS - block
                        DO I = 1,NCOS(ISYM,1)
                          DO J = 1,NCOS(JSYM,2)
                            IJ = IJ + 1  
-                          BUF(IJ+IJOFF+IADD)=GAO(I+IOFF)*GAO(J+JOFF)
+                           BUF(IJ+IJOFF+IADD)=GAO(I+IOFF)*GAO(J+JOFF)
 !                           write(*,*)'IJ+IJOFF+IADD,I,J',IJ+IJOFF+IADD,
 !     &                                                   I+IOFF,J+JOFF
 !                           write(*,*)'IJOFF,IOFF,JOFF,IADD',
@@ -516,23 +516,64 @@ C
 C     
 C     Get "overlap" matrix
 C
-               IOFF   = 0
-               ISTART = 0
-               DO IRP = 1,MAXREP+1 
-                 DO IC = 1, MC
-                    DO I = 1, NCOS(IRP,IC)
-                     IADD = I*(I-1)/2
-                     DO J = 1, I
-                       IJ = IADD + J + IOFF 
-                       BUF(IJ+ISTART*I) = GAO(I+ISTART)*GAO(J+ISTART)                       
-!                       write(*,*)'IJ+ISTART*I',IJ+ISTART*I
+CCCCC
+C sym
+CCCCC
+               IREPOP = ISYMAX(IXYZ,1)
+               DO ISYM = 1, MAXREP + 1
+                  IREP = ISYM - 1
+!                  write(*,*)
+!                  write(*,*)'Next'
+!                  write(*,*)
+                 DO JSYM = 1,ISYM
+                    JREP = JSYM - 1
+!                    write(*,*)'IREP,JREP,IBT,IREPOP',
+!     &                         IREP,JREP,IBTXOR(IREP,JREP),IREPOP
+                   IF(IBTXOR(IREP,JREP).EQ.IREPOP) THEN
+C** SL - block
+                     IOFF = ICOS(ISYM,2)
+                     JOFF = ICOS(JSYM,1)
+                     IJOFF = IOFF*(IOFF+1)/2 
+                     IADD = JOFF
+                     IJ = 0
+                     DO I = 1,NCOS(ISYM,2)
+                       DO J = 1,NCOS(JSYM,1)
+                         IJ = IJ + 1  
+                         BUF(IJ+IJOFF+IADD)=DM1*GAO(I+IOFF)*GAO(J+JOFF)
+!                         write(*,*)'IJ+IJOFF+IADD,I,J',IJ+IJOFF+IADD,
+!     &                                                 I+IOFF,J+JOFF
+!                         write(*,*)'IJOFF,IOFF,JOFF,IADD',
+!     &                        IJOFF,IOFF,JOFF,IADD
+!                         write(*,*)
+                       ENDDO
+                       IADD = IADD + JOFF + IOFF - ICOS(JSYM,2) + I
                      ENDDO
-                   ENDDO
-                   ISTART = ISTART + NCOS(IRP,IC)
-                   IOFF   = ISTART*(ISTART+1)/2
-                 ENDDO  
+C** LS - block
+                     IF(IREP.NE.JREP) THEN
+                       IOFF = ICOS(ISYM,1)
+                       JOFF = ICOS(JSYM,2)
+                       IJOFF = IOFF*(IOFF+1)/2 
+                       IADD = JOFF
+                       IJ = 0
+                       DO I = 1,NCOS(ISYM,1)
+                         DO J = 1,NCOS(JSYM,2)
+                           IJ = IJ + 1  
+                           BUF(IJ+IJOFF+IADD)=GAO(I+IOFF)*GAO(J+JOFF)
+!                           write(*,*)'IJ+IJOFF+IADD,I,J',IJ+IJOFF+IADD,
+!     &                                                   I+IOFF,J+JOFF
+!                           write(*,*)'IJOFF,IOFF,JOFF,IADD',
+!     &                          IJOFF,IOFF,JOFF,IADD
+!                           write(*,*)
+                         ENDDO
+                         IADD = IADD + JOFF + IOFF - ICOS(JSYM+1,1) + I
+                       ENDDO
+                     ENDIF !(IREP.NE.JREP)
+                   ENDIF   !(IBTXOR(IREP,JREP).EQ.IREPOP)
+                 ENDDO
                ENDDO
-!     stop
+CCCCC 
+C sym
+CCCCC
                WT8 = WT8 * ANG(iy,IXYZ) 
                CALL DAXPY(NDIM2,WT8,BUF,1,TC,1)
  50         CONTINUE
@@ -701,7 +742,7 @@ C
          CALL MEMSET(ZAN(IATOM),IATOM,MXNP,IPRINT)
          write(*,*)'HH2',H
          CALL NUCPRM(ZAN(IATOM),NUCMASS(INT(ZAN(IATOM))),NUCTYP)
-         MXNP = 1912            !change
+!         MXNP = 1912            !change
          write(*,*)"MXNP",MXNP
          allocate( NUMIR(MXNP) )
          allocate( R(MXNP)     )
@@ -825,10 +866,27 @@ C R(IR)**2 is multiplized in RFAC, later
              W(IR) = (R(IR)+GRDC)*H
 !             write(*,*)'R,W',R(IR),W(IR),IR
            ENDDO
-           write(*,*)"NUCMASS",NUCMASS(INT(ZAN(IATOM)))
+C          
+           write(*,*)"NUCMASS",NUCMASS(INT(ZAN(IATOM)))           
            IF(LABEL.EQ.'UEHLING')THEN
              CALL VCMPOL(NUMIR,R,ZAN(IATOM),MXNP,NUCTYP,1)
-           ENDIF   
+           ELSEIF(LABEL.EQ.'SEFGHF')THEN
+             CALL INTHF(NUMIR,R,ZAN(IATOM),MXNP,NUCTYP   )
+             DO I = 1,MXNP
+                NUMIR(I) = NUMIR(I)*R(I)
+             ENDDO
+           ELSEIF(LABEL.EQ.'SEFGLF')THEN
+             CALL INTLF(NUMIR,R,ZAN(IATOM),MXNP          )
+             DO I = 1,MXNP
+                NUMIR(I) = NUMIR(I)*R(I)
+             ENDDO
+           ELSEIF(LABEL.EQ.'SEPZ'  )THEN
+             CALL INTPZ(NUMIR,R,ZAN(IATOM),MXNP          )
+             DO I = 1,MXNP
+                NUMIR(I) = NUMIR(I)*R(I)
+             ENDDO
+           ENDIF
+C          
            DO IRP=0,MAXREP+1
               write(*,*)'NCOS',NCOS(IRP,1),IRP        !sunagatest
               write(*,*)'NCOS',NCOS(IRP,2),IRP        !sunagatest
@@ -1114,10 +1172,13 @@ C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, THREE = 3.0D0)     
       DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND)
 C     
-      N = MXNP 
-      PI3 = THREE*PI
-      WD = CVAL+CVAL
-      FACTOR = -(Z+Z)/(PI3*CVAL)
+      N = MXNP
+      BZ = 0.074D0 + 0.35D0*Z/CVAL
+      CVAL3 = CVAL*CVAL*CVAL
+      PREFAC = BZ * Z*Z*Z*Z / CVAL3
+C      PI3 = THREE*PI
+C      WD = CVAL+CVAL
+C      FACTOR = -(Z+Z)/(PI3*CVAL)
       IF(num_grid_cfg_grasp)THEN 
 C
 C     SET UP POTENTIAL FOR POINT NUCLEUS
@@ -1127,21 +1188,27 @@ C
         RNT   = 1.0D-06/Z           !CHARGE(IATOM)
         RTEMP = RNT
         DO 1 I = 1,N
-           X = WD*RTEMP
-           IF(X.GT.1.0D+02)THEN !same to FUNK
-              TEMP = FACTOR*FUNK (X,1)
+           X = PREFAC*EXP(-Z*RTEMP)
+           IF(X.LT.1.0D-50)THEN
+              TEMP = X
               MXNP = I
-              IF(MOD(MXNP,2).eq.0)THEN
-                 MXNP = MXNP + 1
-!     sunaga
-!     As far as I check GRASP, the number of grid (MXNP) must be odd number.
-!     for the integral of Vacuum polarization using Ne and Hg atoms.         
-!     If it is even number, the value of QUAD
-!     does not agree with the one of GRASP (Maximu error in each grid is 10e-5). 
-              ENDIF   
               exit
            ENDIF   
            RTEMP = RTEMP*EPH
+C           X = WD*RTEMP
+c$$$           IF(X.GT.1.0D+02)THEN !same to FUNK
+c$$$              TEMP = FACTOR*FUNK (X,1)
+c$$$              MXNP = I
+c$$$              IF(MOD(MXNP,2).eq.0)THEN
+c$$$                 MXNP = MXNP + 1
+c$$$!     sunaga
+c$$$!     As far as I check GRASP, the number of grid (MXNP) must be odd number.
+c$$$!     for the integral of Vacuum polarization using Ne and Hg atoms.         
+c$$$!     If it is even number, the value of QUAD
+c$$$!     does not agree with the one of GRASP (Maximu error in each grid is 10e-5). 
+c$$$              ENDIF   
+c$$$              exit
+C           ENDIF   
  1      CONTINUE
       ELSE !num_grid_cfg_grasp
 C
@@ -1164,16 +1231,23 @@ C
 C     SET UP POTENTIAL FOR POINT NUCLEUS
 C
         DO 2 I = 1,N
-           X = WD*RTEMP
-           IF(X.GT.1.0D+02)THEN !same to FUNK
-!     IF(VPTST2-VPTST1.GT.THSHD)THEN
-              TEMP = FACTOR*FUNK (X,1)              
+           X = PREFAC*EXP(-Z*RTEMP)
+!           write(*,*)'PREFAC,Z,RTEMP,X,I',PREFAC,Z,RTEMP,X,I
+           IF(X.LT.1.0D-50)THEN
+              TEMP = X
               MXNP = I
               exit
-           ENDIF
+           ENDIF 
            RTEMP = (RTEMP+GRDC)*EPH-GRDC
+c$$$           X = WD*RTEMP
+c$$$           IF(X.GT.1.0D+02)THEN !same to FUNK
+c$$$!     IF(VPTST2-VPTST1.GT.THSHD)THEN
+c$$$              TEMP = FACTOR*FUNK (X,1)              
+c$$$              MXNP = I
+c$$$              exit
+c$$$           ENDIF
  2      CONTINUE         
-      ENDIF   
+      ENDIF    !num_grid_cfg_grasp
 C      
       IF (IPRINT.GE.6) THEN
          WRITE(LUPRI,'(2X,/A)')'**Truncation of radial grid'
@@ -1676,10 +1750,11 @@ C
 C     In additin, the value of AMASS is modified in GRASP.
 C     For example, AMASS of Hg is not 202, but 202-0.0293680D0, as follows.
 C
-      AT3 = (DBLE(20)-7.5609D-003) **  (1.0D0/3.0D0) !for debug, comparing with GRASP
-      write(*,*)'AT3 correction for Ne'
+!      AT3 = (DBLE(20)-7.5609D-003) **  (1.0D0/3.0D0) !for debug, comparing with GRASP
+!      write(*,*)'AT3 correction for Ne'
 !       AT3 = (DBLE(202)-0.0293680D0) ** (1.0D0/3.0D0) !for debug, comparing with GRASP
-!     AT3 = AMASS**3.33333333333333D-01
+       AT3 = AMASS**3.33333333333333D-01
+      write(*,*)'AT3 NO correction'
 C
 C     7.5609D-003 is DMASS(I) in datain.F ande grasp.F
 C
