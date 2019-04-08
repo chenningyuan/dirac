@@ -1153,13 +1153,15 @@ module talsh_cc
 
          integer                            :: ierr
          complex(8), pointer, contiguous    :: ao_tens(:,:,:,:)
+         complex(8), pointer, contiguous    :: chol_tens(:,:,:)
+         complex(8), pointer, contiguous    :: result_tens(:)
          type(C_PTR)                        :: body_p
 
          integer :: nao
 
 !        auxilliary integral tensors (only needed inside this routine)
-         type(talsh_tens_t):: aoint_tensor, ovvo_tensor
-         integer:: aoint_dims(1:4), ovvo_dims(1:4)
+         type(talsh_tens_t):: aoint_tensor, ovvo_tensor, chol_tensor, test_tensor 
+         integer:: aoint_dims(1:4), ovvo_dims(1:4), chol_dims(1:3)
 
 !        arrays needed to communicate with the MO integral generator
          integer:: nmo(4)
@@ -1182,9 +1184,22 @@ module talsh_cc
          call compute_ao_integrals (nao,ao_tens)
          call print_date('finished ao integral calculation')
 
+!        write cholesky to talsh tensor
          call cholesky_decompose (CD, 1.0d-9)
+         call print_date('cholesky decomposition done')
+         chol_dims=shape(CD)
+         ierr=talsh_tensor_construct(chol_tensor,C8,chol_dims,init_val=ZERO)
+         ierr=talsh_tensor_get_body_access(chol_tensor,body_p,C8,0,DEV_HOST)
+         call c_f_pointer(body_p,chol_tens,chol_dims(1:3)) ! to use the tensor as a regular Fortran array
+         chol_tens=CD
          deallocate(CD)
 
+         ierr=talsh_tensor_construct(test_tensor,C8,aoint_dims,init_val=ZERO)
+         ierr=talsh_tensor_contract("T(p,q,r,s)+=K+(u,q,p)*L(u,r,s)",test_tensor,chol_tensor,chol_tensor) ! validated
+         if (ierr.ne.0) stop 'program error: cholesky not working'
+         ierr=talsh_tensor_contract("T(p,q,r,s)+=I(p,q,r,s)*O()",test_tensor,aoint_tensor,one_tensor,scale=MINUS_ONE)
+         call print_tensor(test_tensor, 4, 1.0D-9, 'test_tensor')
+         
 !        Get antisymmetric oovv tensor
 !        Note that the dimensions for the tensor are given in physicists notation <12||34>
          oovv_dims(1:2) = nocc

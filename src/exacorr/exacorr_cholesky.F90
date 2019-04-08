@@ -15,7 +15,7 @@ public cholesky_decompose
 
 contains
 
-subroutine cholesky_decompose (CD, threshold)
+subroutine cholesky_decompose (CD_out, threshold)
 
   use exacorr_datatypes
   use exacorr_global
@@ -29,7 +29,7 @@ subroutine cholesky_decompose (CD, threshold)
   integer                              :: basis_angular ! 1=cartesian, 2=spherical
 
   !out: 3 component tensors
-  complex(8), intent(out), allocatable :: CD(:,:,:)
+  complex(8), intent(out), allocatable :: CD_out(:,:,:)
 
   !work
   complex(8), allocatable :: Dm(:,:)
@@ -37,6 +37,7 @@ subroutine cholesky_decompose (CD, threshold)
   integer(8)              :: i_max(1:2)
   complex(8)              :: D_max
   complex(8), allocatable :: Res(:,:), Gkl(:,:)
+  complex(8), allocatable :: CD(:,:,:)
 
   !Interest needs to be initalized for each thread, this function will initialize (or return immediately if it is).
   call interest_initialize(.false.)
@@ -96,7 +97,7 @@ subroutine cholesky_decompose (CD, threshold)
     D_max=Dm(i_max(1), i_max(2))
     print *, 'largest element ind = ', i_max, ' value = ', D_max
 
-    if (m>100) EXIT
+    if (m>10000) EXIT
   end do
 
   print *, 'Cholesky dcomposition done '
@@ -106,6 +107,12 @@ subroutine cholesky_decompose (CD, threshold)
   deallocate(Dm)
   deallocate(gto)
 
+  !hand tensor over
+  allocate(CD_out(m, nao, nao))
+  do i = 1,m
+       CD_out(i,:,:)=CD(i,:,:)
+  end do
+  deallocate(CD)
 end subroutine cholesky_decompose
 
 subroutine get_2el_diag(nao, gto, basis_angular, nshells, Dm)
