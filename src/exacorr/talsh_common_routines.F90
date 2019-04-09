@@ -140,21 +140,24 @@ module talsh_common_routines
 
       end subroutine get_orbital_energies
 
-      subroutine print_tensor(h_tensor, rank, acc, t_name)
+      subroutine print_tensor(h_tensor, acc, t_name)
 
-        integer, intent(in)                  :: rank
         type(talsh_tens_t), intent(inout)    :: h_tensor
         real(8), intent(in)                  :: acc
         character(LEN=*), intent(in)         :: t_name
 
         integer  ::  dims2(1:2)
+        integer  ::  dims3(1:3)
         integer  ::  dims4(1:4)
         integer  ::  ierr
-        integer  ::  rrank
+        integer  ::  rank, rrank
         integer  ::  i, j, k, l
         type(C_PTR)         :: body_p
         complex(8), pointer :: tens2(:, :)
+        complex(8), pointer :: tens3(:, :, :)
         complex(8), pointer :: tens4(:, :, :, :)
+
+        rank=talsh_tensor_rank(h_tensor)
         
         if (rank.eq.2) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims2)
@@ -163,7 +166,7 @@ module talsh_common_routines
           ierr=talsh_tensor_get_body_access(h_tensor,body_p,C8,0,DEV_HOST)
           call c_f_pointer(body_p,tens2,dims2)
 
-          print *, "print 2D tensor: ", t_name
+          print *, "print 2D tensor: ", t_name, " (shape:", dims2,")"
           do i = 1, dims2(1)
             do j = 1, dims2(2)
               if(abs(real(tens2(i,j),8)).gt.acc .or. abs(dimag(tens2(i,j))).gt.acc) then
@@ -173,6 +176,25 @@ module talsh_common_routines
           end do
           print *, " end print 2D tensor ", t_name
 
+        else if (rank.eq.3) then
+          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims3)
+          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,C8,0,DEV_HOST)
+          call c_f_pointer(body_p,tens3,dims3)
+
+          print *, "print 3D tensor: ", t_name, " (shape:", dims3,")"
+          do i = 1, dims3(1)
+            do j = 1, dims3(2)
+              do k = 1, dims3(3)
+                  if(abs(real(tens3(i,j,k),8)).gt.acc .or. abs(dimag(tens3(i,j,k))).gt.acc) then
+                    print *, i, j, k, tens3(i, j, k)
+                  end if
+              end do
+            end do
+          end do
+          print *, " end print 3D tensor: ", t_name
+
         else if (rank.eq.4) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims4)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
@@ -180,7 +202,7 @@ module talsh_common_routines
           ierr=talsh_tensor_get_body_access(h_tensor,body_p,C8,0,DEV_HOST)
           call c_f_pointer(body_p,tens4,dims4)
 
-          print *, "print 4D tensor: ", t_name
+          print *, "print 4D tensor: ", t_name, " (shape:", dims4, ")"
           do i = 1, dims4(1)
             do j = 1, dims4(2)
               do k = 1, dims4(3)
@@ -195,7 +217,7 @@ module talsh_common_routines
           print *, " end print 4D tensor: ", t_name
 
         else
-          stop 'error in print_tensor: only rank 2 and 4 implemented'
+          stop 'error in print_tensor: only ranks 2,3 and 4 implemented'
         end if
 
       end subroutine print_tensor

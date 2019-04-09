@@ -1032,9 +1032,9 @@ module talsh_cc
             ierr=talsh_tensor_contract("F(a,b)+=V(a,k,b,l)*I(k,l)",fv_tensor,int_t%vovo,id_mat_occ, ONE)
             call print_date('two electron integrals added to Fock Matrix')
 
-            if (print_level >3) call print_tensor(fo_tensor, 2, 1.0D-6, 'fo_tensor')
-            if (print_level >3) call print_tensor(fov_tensor, 2, 1.0D-6, 'fov_tensor')
-            if (print_level >3) call print_tensor(fv_tensor, 2, 1.0D-6, 'fv_tensor')
+            if (print_level >3) call print_tensor(fo_tensor, 1.0D-6, 'fo_tensor')
+            if (print_level >3) call print_tensor(fov_tensor, 1.0D-6, 'fov_tensor')
+            if (print_level >3) call print_tensor(fv_tensor, 1.0D-6, 'fv_tensor')
 
             !now we can get the correct epsilon values
             ierr=talsh_tensor_get_body_access(fo_tensor,body_p,C8,0,DEV_HOST)
@@ -1143,25 +1143,23 @@ module talsh_cc
          use talsh_ao_to_mo
          use exacorr_cholesky
 
-         complex(8), allocatable :: CD(:,:,:)
+         implicit none
 
          integer, intent(in)    :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
          integer, intent(in)    :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
 !        target integral tensors to be filled and given back to the caller
          type(talsh_intg_tens),intent(inout)    :: int_t
-         integer :: oovv_dims(1:4),vvvv_dims(1:4),oooo_dims(1:4),vovo_dims(1:4),ooov_dims(1:4),vovv_dims(1:4)
+         integer, dimension(4)  :: oovv_dims,vvvv_dims,oooo_dims,vovo_dims,ooov_dims,vovv_dims
 
          integer                            :: ierr
          complex(8), pointer, contiguous    :: ao_tens(:,:,:,:)
-         complex(8), pointer, contiguous    :: chol_tens(:,:,:)
-         complex(8), pointer, contiguous    :: result_tens(:)
          type(C_PTR)                        :: body_p
 
          integer :: nao
 
 !        auxilliary integral tensors (only needed inside this routine)
-         type(talsh_tens_t):: aoint_tensor, ovvo_tensor, chol_tensor, test_tensor 
-         integer:: aoint_dims(1:4), ovvo_dims(1:4), chol_dims(1:3)
+         type(talsh_tens_t)    :: aoint_tensor, ovvo_tensor
+         integer, dimension(4) :: aoint_dims, ovvo_dims
 
 !        arrays needed to communicate with the MO integral generator
          integer:: nmo(4)
@@ -1171,8 +1169,19 @@ module talsh_cc
          type(talsh_tens_t):: minusone_tensor
          integer:: minusone_dims(1)
 
+!        cholesky 
+         complex(8), allocatable         :: CD(:,:,:)
+         complex(8), pointer, contiguous :: chol_tens(:,:,:)
+         type(talsh_tens_t)              :: test_tensor, chol_tensor
+         type(talsh_tens_t)              :: uoo_tensor, uov_tensor, uvv_tensor
+         integer, dimension(3)           :: chol_dims, uoo_dims, uov_dims, uvv_dims
+
 !        Retrieve basis set information
          nao     = get_nao()      ! number of basis functions
+
+!        set up scalar tensor
+         minusone_dims(1) = 1
+         ierr=talsh_tensor_construct(minusone_tensor,C8,minusone_dims(1:0),init_val=MINUS_ONE)
 
 !        Get tensor with AO integrals
          aoint_dims      = nao
@@ -1185,20 +1194,58 @@ module talsh_cc
          call print_date('finished ao integral calculation')
 
 !        write cholesky to talsh tensor
-         call cholesky_decompose (CD, 1.0d-9)
+         call cholesky_decompose (CD, 1.0d-13)
+         chol_dims(1)=size(CD,1)
+         chol_dims(2)=size(CD,2)
+         chol_dims(3)=size(CD,3)
          call print_date('cholesky decomposition done')
-         chol_dims=shape(CD)
          ierr=talsh_tensor_construct(chol_tensor,C8,chol_dims,init_val=ZERO)
          ierr=talsh_tensor_get_body_access(chol_tensor,body_p,C8,0,DEV_HOST)
-         call c_f_pointer(body_p,chol_tens,chol_dims(1:3)) ! to use the tensor as a regular Fortran array
+         call c_f_pointer(body_p,chol_tens,chol_dims) ! to use the tensor as a regular Fortran array
          chol_tens=CD
          deallocate(CD)
 
          ierr=talsh_tensor_construct(test_tensor,C8,aoint_dims,init_val=ZERO)
-         ierr=talsh_tensor_contract("T(p,q,r,s)+=K+(u,q,p)*L(u,r,s)",test_tensor,chol_tensor,chol_tensor) ! validated
+         ierr=talsh_tensor_contract("T(p,q,r,s)+=K(u,q,p)*L(u,r,s)",test_tensor,chol_tensor,chol_tensor) ! validated
          if (ierr.ne.0) stop 'program error: cholesky not working'
-         ierr=talsh_tensor_contract("T(p,q,r,s)+=I(p,q,r,s)*O()",test_tensor,aoint_tensor,one_tensor,scale=MINUS_ONE)
-         call print_tensor(test_tensor, 4, 1.0D-9, 'test_tensor')
+         ierr=talsh_tensor_contract("T(p,q,r,s)+=I(p,q,r,s)*O()",test_tensor,aoint_tensor,minusone_tensor)
+         if (ierr.ne.0) stop 'program error: cholesky comparision not working'
+         call print_tensor(test_tensor, 1.0D-9, 'aoint diff. tensor')
+         ierr=talsh_tensor_destruct(test_tensor)
+
+!        perform ao to mo transformation for cholesky tensor
+         uoo_dims(1)=chol_dims(1)
+         uoo_dims(2:3)=nocc
+         print *,'uoo_dims:', uoo_dims
+         ierr=talsh_tensor_construct(uoo_tensor,C8,uoo_dims,init_val=ZERO)
+         allocate(mo_list(2*nocc))
+         mo_list(1:nocc)                      = mo_occ(1:nocc)
+         mo_list(nocc+1:nocc+nocc)            = mo_occ(1:nocc)
+         call aomo_cholesky (chol_tensor,uoo_tensor,uoo_dims(2:3),mo_list)
+         deallocate(mo_list)
+         !call print_tensor(uoo_tensor, 1.0D-9, 'CD oo tensor')
+
+         uov_dims(1)=chol_dims(1)
+         uov_dims(2)=nocc
+         uov_dims(3)=nvir
+         ierr=talsh_tensor_construct(uov_tensor,C8,uov_dims,init_val=ZERO)
+         allocate(mo_list(nocc+nvir))
+         mo_list(1:nocc)                      = mo_occ(1:nocc)
+         mo_list(nocc+1:nocc+nvir)            = mo_vir(1:nvir)
+         call aomo_cholesky (chol_tensor,uov_tensor,uov_dims(2:3),mo_list)
+         deallocate(mo_list)
+         !call print_tensor(uov_tensor, 1.0D-9, 'CD ov tensor')
+
+         uvv_dims(1)=chol_dims(1)
+         uvv_dims(2:3)=nvir
+         ierr=talsh_tensor_construct(uvv_tensor,C8,uvv_dims,init_val=ZERO)
+         allocate(mo_list(2*nvir))
+         mo_list(1:nvir)                      = mo_vir(1:nvir)
+         mo_list(nvir+1:nvir+nvir)            = mo_vir(1:nvir)
+         call aomo_cholesky (chol_tensor,uvv_tensor,uvv_dims(2:3),mo_list)
+         deallocate(mo_list)
+         !call print_tensor(uvv_tensor, 1.0D-9, 'CD vv tensor')
+
          
 !        Get antisymmetric oovv tensor
 !        Note that the dimensions for the tensor are given in physicists notation <12||34>
@@ -1231,6 +1278,14 @@ module talsh_cc
          call get_integral_tensor (aoint_tensor,int_t%oooo,12,nmo,mo_list)
          deallocate (mo_list)
          call print_date('finished oooo integrals')
+         call print_tensor(int_t%oooo, 1.0D-9, ' oooo tensor')
+
+         ierr=talsh_tensor_construct(test_tensor,C8,oooo_dims,init_val=ZERO)
+         ierr=talsh_tensor_contract("T(p,q,r,s)+=K(u,q,p)*L(u,r,s)",test_tensor,uoo_tensor,uoo_tensor) ! validated
+         if (ierr.ne.0) stop 'program error: cholesky not working'
+         call mulliken_to_dirac_sort(test_tensor,int_t%oooo,12)
+         call print_tensor(int_t%oooo, 1.0D-9, 'CD oooo tensor')
+         ierr=talsh_tensor_destruct(test_tensor)
 
 !        Get anti-symmetrized vovo tensor, this needs to be done in two steps as two different classes contribute.
 !        Get vovo tensor
@@ -1266,8 +1321,6 @@ module talsh_cc
          call get_integral_tensor (aoint_tensor,ovvo_tensor,0,nmo,mo_list)
          deallocate (mo_list)
 !        Make anti-symmetrized vovo tensor
-         minusone_dims(1) = 1
-         ierr=talsh_tensor_construct(minusone_tensor,C8,minusone_dims(1:0),init_val=MINUS_ONE)
          ierr=talsh_tensor_contract("V(a,i,b,j)+=V(i,a,b,j)*C()",int_t%vovo,ovvo_tensor,minusone_tensor)
          ierr=talsh_tensor_destruct(ovvo_tensor)
          call print_date('finished vovo integrals')
@@ -1319,7 +1372,13 @@ module talsh_cc
          call print_date('finished vovv integrals')
 
 !        Clean-up
+         ierr=talsh_tensor_destruct(minusone_tensor)
          ierr=talsh_tensor_destruct(aoint_tensor)
+
+         ierr=talsh_tensor_destruct(chol_tensor)
+         ierr=talsh_tensor_destruct(uoo_tensor)
+         ierr=talsh_tensor_destruct(uov_tensor)
+         ierr=talsh_tensor_destruct(uvv_tensor)
 
        end subroutine get_CC_integrals
 

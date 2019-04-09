@@ -48,7 +48,7 @@ subroutine cholesky_decompose (CD_out, threshold)
   call get_gtos(1,nao,gto,nshells)
 
   !allocate tensors for cholesky decompostion
-  allocate(CD(nao*nao/2, nao, nao))
+  allocate(CD(nao*nao, nao, nao))
   CD=ZERO
   allocate(Dm(nao,nao))
   allocate(Res(nao,nao))
@@ -97,7 +97,9 @@ subroutine cholesky_decompose (CD_out, threshold)
     D_max=Dm(i_max(1), i_max(2))
     print *, 'largest element ind = ', i_max, ' value = ', D_max
 
-    if (m>10000) EXIT
+    if (m.ge.nao*nao) then
+      stop 'error: cholesky not converged'
+    end if
   end do
 
   print *, 'Cholesky dcomposition done '
