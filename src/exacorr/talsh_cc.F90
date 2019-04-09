@@ -43,7 +43,7 @@ module talsh_cc
 !        Written by Lucas Visscher, winter 2016/2017
  
          use exacorr_global
-         use talsh_ao_to_mo, only       : tensor_norm2
+         use talsh_ao_to_mo, only       : tensor_norm2, compute_nelectrons
          use talsh_gradient
 
          type(exacc_input), intent(in) :: exa_input        
@@ -109,6 +109,9 @@ module talsh_cc
          lambda = exa_input%lambda
          ncycles = exa_input%ncycles
          print_level = exa_input%print_level
+
+         ! test respect, hard-code water
+         call compute_nelectrons((/1,2,3,4,5,6,7,8,9,10/))
 
          write(*,*) ""
          write(*,'(A)') " Characteristics of this calculation"

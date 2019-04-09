@@ -14,6 +14,7 @@ module talsh_ao_to_mo
         public compute_ao_integrals
         public get_integral_tensor
         public tensor_norm2
+        public compute_nelectrons
 
         complex(8), parameter:: zero=(0.D0,0.D0)
 
@@ -486,5 +487,96 @@ module talsh_ao_to_mo
          ierr=talsh_tensor_destruct(result_tensor)
 
         end function tensor_norm2
+
+        subroutine compute_nelectrons(mo_occ)
+
+          use exacorr_datatypes
+          use exacorr_mo
+          use exacorr_respect
+
+          ! input variables
+          integer, intent(in) :: mo_occ(:)
+          ! local variables
+          type(cmo)              :: cspinor
+          type(basis_set_info_t) :: ao_basis
+
+          integer :: ksh, lsh,koff, loff
+          integer :: lk,ll,nk,nl,k,l,kl
+          real(8) :: ek,el,ck,cl,xk,yk,zk,xl,yl,zl
+
+          integer :: nrkb
+          real(8) :: skl(21*21) ! hardwired for maximum  l-value of 5 (s=1,p=3,d=6,f=10,g=15,h=21)
+          real(8), parameter :: fijkl = 1.0
+          integer :: ncentr=1
+          real(8) :: atomic_data(1)
+
+          integer :: nocc
+          real(8), allocatable :: s_ao(:,:)
+          complex(8), allocatable :: s_c(:,:), s_mo(:,:)
+          real(8) :: nelec
+
+          integer :: ierr
+
+          print*, "mo_occ", mo_occ
+
+          call read_from_respect(ao_basis,cspinor,ierr)
+
+          allocate(s_ao(ao_basis%nao,ao_basis%nao))
+
+!         AO overlap
+          loff = 0
+          do lsh = 1, ao_basis%nshells
+            ll   =  ao_basis%gtos(lsh)%orb_momentum
+            el   =  ao_basis%gtos(lsh)%exponent(1)
+            xl   =  ao_basis%gtos(lsh)%coord(1)
+            yl   =  ao_basis%gtos(lsh)%coord(2)
+            zl   =  ao_basis%gtos(lsh)%coord(3)
+            cl   =  ao_basis%gtos(lsh)%coefficient(1)
+            koff = 0
+            do ksh = 1, ao_basis%nshells
+              lk   =  ao_basis%gtos(ksh)%orb_momentum
+              ek   =  ao_basis%gtos(ksh)%exponent(1)
+              xk   =  ao_basis%gtos(ksh)%coord(1)
+              yk   =  ao_basis%gtos(ksh)%coord(2)
+              zk   =  ao_basis%gtos(ksh)%coord(3)
+              ck   =  ao_basis%gtos(ksh)%coefficient(1)
+              call  interest_overlap(.false.,   &
+                              skl,nk,nl,nrkb,   &
+                              lk,ek,xk,yk,zk,ck,&
+                              ll,el,xl,yl,zl,cl,&
+                              ncentr,atomic_data)
+              kl = 1
+              do l = 1, nl
+                do k = 1, nk
+                  s_ao(koff+k,loff+l) = skl(kl)
+                  kl = kl + 1
+                end do
+              end do
+              koff = koff + nk
+            end do
+            loff = loff + nl
+          end do
+
+          nocc = size(mo_occ)
+          allocate(s_c (cspinor%nao,nocc))
+          allocate(s_mo(nocc,       nocc))
+
+          s_c  = matmul(s_ao,cspinor%coeff(:,mo_occ,1))
+          s_mo = matmul(conjg(transpose(cspinor%coeff(:,mo_occ,1))),s_c)
+          s_c  = matmul(s_ao,cspinor%coeff(:,mo_occ,2))
+          s_mo = s_mo + matmul(conjg(transpose(cspinor%coeff(:,mo_occ,2))),s_c)
+
+!         take trace of matrix
+          nelec = 0
+          do k = 1, nocc
+            nelec = nelec + real(s_mo(k,k),8)
+            print*, "nelec : ", nelec
+          end do
+
+          deallocate(s_ao)
+          deallocate(s_c)
+          deallocate(s_mo)
+
+        end subroutine compute_nelectrons
 
 end module talsh_ao_to_mo
