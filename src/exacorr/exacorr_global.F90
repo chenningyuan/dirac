@@ -78,7 +78,7 @@ module exacorr_global
              ! read MO coefficients and ao basis set information
              inquire (file='DFCOEF',exist=tobe)
              if (tobe) then
-                call read_from_dfcoef (ao_basis,cspinor_all,ierr)
+                call read_from_dirac (ao_basis,cspinor_all,'DFCOEF',ierr)
                 if (exa_input%beta_occ .and. (.not.TALSH_ONLY)) then
                   if (exa_input%level_shift.lt.1.0D-10) then
                     call quit ('Open shell computations with DIRAC and EXACORR require level shift (LSHIFT)')

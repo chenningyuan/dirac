@@ -333,7 +333,7 @@ C
 !      get information from common blocks about the basis set
 !      raise an error for contracted sets that can not yet be handled by Interest
 
-!      NB: this routine is outdated, replaced by read_from_dfcoef. Just keeping it in case we still need it.
+!      NB: this routine is outdated, replaced by read_from_dirac. Just keeping it in case we still need it.
 
        use exacorr_datatypes
 
@@ -418,7 +418,7 @@ C
 
        end subroutine compress_unc_shell
 
-       subroutine read_from_dfcoef (ao_basis,cspinor,ierr)
+       subroutine read_from_dirac (ao_basis,cspinor,file_name,ierr)
 
        use exacorr_mo
        use exacorr_datatypes
@@ -431,6 +431,7 @@ C
 !      check for imcompatibiklities (use of symmetry) as well and continue
 !      by reading also the basis set information into gtos
 
+       character(len=*),intent(in) :: file_name
        type(basis_set_info_t), intent(inout) :: ao_basis
        type(cmo), intent(inout):: cspinor
        integer, intent(out)   :: ierr 
@@ -461,14 +462,14 @@ C
        ierr = NOERROR
 
        ! open file and read dimension info
-       inquire (file='DFCOEF',exist=tobe)
+       inquire (file=file_name,exist=tobe)
        if (.not.tobe) then
-          print*, "error: MO coefficient file DFCOEF not found"
+          print*, "error: MO coefficient file"//file_name//" not found"
           ierr = NOTFOUND
           return
        else
           call get_free_fileunit(lucoef)
-          open (lucoef,file='DFCOEF',status='OLD',FORM='UNFORMATTED',
+          open (lucoef,file=file_name,status='OLD',FORM='UNFORMATTED',
      &     access='SEQUENTIAL')
           read (lucoef,end=10,err=10) text,nsym,
      &         ((idim(i,j),i=1,3),j=1,nsym),total_energy
@@ -477,6 +478,7 @@ C
        ! check symmetry and get dimensions of the coefficient array
        if (nsym > 1) then
           ierr = SYMMETRY
+          close (lucoef,status='KEEP')
           return
        else
           nao = idim(3,1) ! number of basis functions
@@ -525,6 +527,7 @@ C
        read (LUCOEF,err=20,end=20) nao_bas,nshells,npriexp,ncnt 
        if (nao /= nao_bas) then
           ierr = INCONSIS
+          close (lucoef,status='KEEP')
           return
        end if
 
@@ -595,14 +598,15 @@ C
              iao = iao + 1
              if (iao.gt.nao) then
                 ierr = INCONSIS
-                call quit ('Error in read_from_dfcoef')
+                call quit ('Error in read_from_dirac')
              endif
              ao_basis%shell_indices(iao) = ishell
           end do
        end do
        if (iao.gt.nao) then
           ierr = INCONSIS
-          call quit ('Error in read_from_dfcoef')
+          close (lucoef,status='KEEP')
+          call quit ('Error in read_from_dirac')
        endif
 
        close (lucoef,status='KEEP')
@@ -611,12 +615,14 @@ C
        return
 
   10   ierr = CORRUPT
+       close (lucoef,status='KEEP')
        return
 
   20   ierr = NOBASIS
+       close (lucoef,status='KEEP')
        return
 
-       end subroutine read_from_dfcoef
+       end subroutine read_from_dirac
 
        subroutine Write_To_Mdcint (nmo,mo_tens)
 
