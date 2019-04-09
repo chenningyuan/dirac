@@ -88,6 +88,9 @@ class pam_enviroment:
         # list of environment variables thar are to be set by dirac (useful to specify defaults in .diracrc)
         self.environment = []
 
+        # supercomputers are special, need to know whether we run on summit
+        self.summit = False
+
         self.expert_mode = False # disable various safety checks
 
         # set the basis set directories
@@ -834,6 +837,9 @@ Options are also read from ~/.diracrc"""
         group.add_option('--debug', action='store_true',
                          dest='dest_debug', default=False,
                          help='run in debugger [default: %default]')
+        group.add_option('--summit', action='store_true',
+                         dest='dest_summit', default=False,
+                         help='run with summits jsrun [default: %default]')
         group.add_option(
             '--debugger',
             type='string',
@@ -939,6 +945,10 @@ Options are also read from ~/.diracrc"""
             if self.mpiarg: 
                 self.dirac_mpi_command = self.dirac_mpi_command + str(self.mpiarg) + ' ' 
 
+        # overwrite whatever was specified for MPI because summit does not fit the general scheme
+        if options.dest_summit:
+            self.summit = True
+
         # The CMAKE variable ENABLE_MPI is "True" for "setup --mpi", otherwise it is "False".
         if "@ENABLE_MPI@" == "True" or "@ENABLE_MPI@" == "ON":
             # always is parallel run if ENABLE_MPI=ON
@@ -997,6 +1007,7 @@ Options are also read from ~/.diracrc"""
 
         if options.dest_debug:
             self.debug = True
+
 
         if options.dest_debugger:
             debugger_full_path=str(find_executable(options.dest_debugger))
@@ -1414,6 +1425,30 @@ Options are also read from ~/.diracrc"""
         if not os.path.isfile(dirac_executable):
             print_error_message(dirac_executable+' not found!')
             sys.exit(13)
+
+        # On summit we execute a script that executes dirac.x (to keep things simple...)
+        if self.summit:
+           # assemble the jsrun command that we need and put this at the place of mpirun command
+           mpi_command = "jsrun --smpiargs='-mca common_pami_use_odp 1' -bnone" 
+           mpi_command =  mpi_command + ' -n ' + str(self.nr_proc)
+           mpi_command =  mpi_command + ' -a 1'
+           mpi_command =  mpi_command + ' -c ' + os.environ.get('QF_CORES_PER_PROCESS')
+           mpi_command =  mpi_command + ' -g ' + os.environ.get('QF_GPUS_PER_PROCESS') + ' '
+           self.dirac_mpi_command = mpi_command 
+           # create an executable script to set the correct OMP_PLACES before starting dirac.x
+           path_to_script = os.path.join(self.scratch_dir,'exec_script.sh')
+           with open(path_to_script, 'w') as script:
+               script.write("#!/bin/bash\n")
+               script.write("remainder=$(( $PMIX_RANK % 2 ))\n")
+               script.write("if [ $remainder -eq 0 ]; then\n")
+               script.write("export OMP_PLACES='{0},{4},{8},{12},{28:56},{16},{20},{24}' \n")
+               script.write("else\n")
+               script.write("export OMP_PLACES='{88},{92},{96},{100},{116:56},{104},{108},{112}'\n")
+               script.write("fi\n")
+               script.write("./dirac.x\n")
+               script.close()
+           os.chmod(path_to_script, 509)
+           dirac_executable = path_to_script
 
         if self.parallel_run:
             if self.mpirun == None:
