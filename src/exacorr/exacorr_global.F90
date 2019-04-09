@@ -203,14 +203,14 @@ module exacorr_global
              end if
          end subroutine delete_global_data
 
-         integer function nfunctions(l_value,switch)
+         integer function nfunctions(l_value,basis_angular)
          ! Computes number of Cartesian/spherical functions for a given l-value
              integer, intent(in) :: l_value
-             integer, intent(in) :: switch
-             if (switch == 1) then
+             integer, intent(in) :: basis_angular
+             if (basis_angular == 1) then
 !               Cartesian
                 nfunctions = l_value * ( l_value + 1 ) / 2
-             else if (switch == 2) then
+             else if (basis_angular == 2) then
 !               spherical
                 nfunctions = 2 * (l_value - 1) + 1
              end if
