@@ -55,7 +55,6 @@
 
 #if defined (VAR_MPI)
       call interface_mpi_bcast_l0(exa_input%talsh,1,0,global_communicator)
-      if (mytid /= 0 .and. exa_input%talsh) call interface_mpi_finalize()
 #else
 !     serial version of DIRAC
       if (.not.exa_input%talsh) then
@@ -67,7 +66,7 @@
 
 !     Initialize global data (read from DFCOEF or similar by master)
       call set_talsh_only(exa_input%talsh)
-      call initialize_global_data
+      if (mytid == 0 .or. .not. exa_input%talsh) call initialize_global_data
       if (mytid == 0) call print_date("Initialized global data")
 
       if (mo_transform) then
@@ -212,11 +211,6 @@
             call exacorr_cc_driver (exa_input)
          end if
       end if
-
-      deallocate(exa_input%mokr_occ)
-      deallocate(exa_input%mokr_vir)
-      deallocate(exa_input%mo_occ  )
-      deallocate(exa_input%mo_vir  )
 
 #if defined (VAR_MPI) 
       call interface_mpi_finalize()

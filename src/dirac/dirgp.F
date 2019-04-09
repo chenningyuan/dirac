@@ -1815,6 +1815,9 @@ C
       CALL WRITT(LUCOEF,NDIM,CAO)
       CALL WRITT(LUCOEF,NORBT,EIG)
       CALL WRITI(LUCOEF,NORBT,IBEIG)
+!     Add additional information about basis set to create a simple interface file
+!     for correlated calculations (like exacorr)
+      call append_basisinfo_to_dfcoef (LUCOEF)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
       CALL PRSYMB(LUPRI,'=',75,0)
