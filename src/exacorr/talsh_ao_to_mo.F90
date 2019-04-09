@@ -508,11 +508,10 @@ module talsh_ao_to_mo
           real(8) :: skl(21*21) ! hardwired for maximum  l-value of 5 (s=1,p=3,d=6,f=10,g=15,h=21)
           real(8), parameter :: fijkl = 1.0
           integer :: ncentr=1
-          real(8) :: atomic_data(1)
+          real(8) :: atomic_data(5)
 
           integer :: nocc
-          real(8), allocatable :: s_ao(:,:)
-          complex(8), allocatable :: s_c(:,:), s_mo(:,:)
+          complex(8), allocatable :: s_ao(:,:), s_c(:,:), s_mo(:,:)
           real(8) :: nelec
 
           integer :: ierr
@@ -548,10 +547,11 @@ module talsh_ao_to_mo
               kl = 1
               do l = 1, nl
                 do k = 1, nk
-                  s_ao(koff+k,loff+l) = skl(kl)
+                  s_ao(koff+k,loff+l) = dcmplx(skl(kl),0.D0)
                   kl = kl + 1
                 end do
               end do
+
               koff = koff + nk
             end do
             loff = loff + nl
@@ -572,6 +572,10 @@ module talsh_ao_to_mo
             nelec = nelec + real(s_mo(k,k),8)
             print*, "nelec : ", nelec
           end do
+
+          print*, s_mo(3,3), s_mo(3,4), s_mo(3,5)
+          print*, s_mo(4,3), s_mo(4,4), s_mo(4,5)
+          print*, s_mo(5,3), s_mo(5,4), s_mo(5,5)
 
           deallocate(s_ao)
           deallocate(s_c)
