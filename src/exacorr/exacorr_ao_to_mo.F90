@@ -821,8 +821,7 @@ module exacorr_ao_to_mo
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create(one_tens) failed!')
          ierr=exatns_tensor_init(one_tensor,ONE)
 
-         ! Now do the actual sort
-         ierr=exatns_tensor_init(dirac_tensor,ZERO)
+         ! Now do the actual sort, note that we do not initialize as we may be accumulating in the target tensor
          ierr=exatns_tensor_contract(dirac_tensor,mulliken_tensor,one_tensor,"D(p,q,r,s)+=M(p,r,q,s)*C()")
 
          if (antisymmetrize .eq. 12) then
