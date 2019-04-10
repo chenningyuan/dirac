@@ -286,7 +286,8 @@ C
 !        IBTAND=IAND, but I am not sure what is it.     
          IF(NOORBT(IATOM)) GOTO 10 
          IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 10
-         NDEG  = MULT(ISTBNU(IATOM))
+         GEXP = GNUEXP(IATOM)
+         NDEG = MULT(ISTBNU(IATOM))
 C         
 C   SET DEFAULT VALUES OF PARAMETERS FOR CALCULATION
 C
@@ -294,10 +295,11 @@ C
          NUCTYP = 0
          IF(GAUNUC) NUCTYP = 3
          write(*,*)"NUCTYP,IXYZ",NUCTYP,IXYZ
-         CALL MEMSET(ZAN(IATOM),IATOM,MXNP,IPRINT)
+         CALL MEMSET(ZAN(IATOM),IATOM,MXNP,RNT,H,EPH,GRDC,IPRINT)
 !         MXNP = 1912            !change
          write(*,*)'HH2',H
-         CALL NUCPRM(ZAN(IATOM),NUCMASS(INT(ZAN(IATOM))),NUCTYP)
+         CALL NUCPRM(ZAN(IATOM),NUCMASS(INT(ZAN(IATOM))),GEXP,
+     &                RNT,EPH,NUCTYP)
          write(*,*)"MXNP",MXNP
          allocate( NUMIR(MXNP) )
          allocate( R(MXNP)     )
@@ -316,16 +318,7 @@ C
            write(*,*)
            write(*,*)"***************"
            write(*,*)
-           CALL INTMG(NUMIR,R,ZAN(IATOM),MXNP,NUCTYP)
-C
-C  This minus DSCAL is due to Beta Alpha, although we use Alpha. 
-C
-!           CALL DSCAL(MXNP,DM1,NUMIR,1)
-!           write(*,*)
-!           write(*,*)LABEL
-!           DO J = 1,MXNP
-!             write(*,*)J,NUMIR(J),R(J)
-!           ENDDO
+           CALL INTMG(NUMIR,R,ZAN(IATOM),GEXP,MXNP,NUCTYP)
 !!! debug           
 !           OPEN(20,FILE='LOG_DIRAC',STATUS='REPLACE',          
 !     &          FORM='FORMATTED',ACCESS='SEQUENTIAL')  
@@ -397,6 +390,9 @@ C** SL - block
                        DO J = 1,NCOS(JSYM,1)
                          IJ = IJ + 1  
                          BUF(IJ+IJOFF+IADD)=DM1*GAO(I+IOFF)*GAO(J+JOFF)
+C
+C  This minus DSCAL is due to Beta Alpha, although we use Alpha. 
+C
 !                         write(*,*)'IJ+IJOFF+IADD,I,J',IJ+IJOFF+IADD,
 !     &                                                 I+IOFF,J+JOFF
 !                         write(*,*)'IJOFF,IOFF,JOFF,IADD',
@@ -466,7 +462,7 @@ C R(IR)**2 is multiplized in RFAC, later
            write(*,*)
            write(*,*)"***************"
            write(*,*)
-           CALL INTMG(NUMIR,R,ZAN(IATOM),MXNP,NUCTYP)
+           CALL INTMG(NUMIR,R,ZAN(IATOM),GEXP,MXNP,NUCTYP)
 C
 C  This minus DSCAL is due to Beta Alpha, although we use Alpha. 
 C
@@ -731,7 +727,8 @@ C
 !        IBTAND=IAND, but I am not sure what is it.     
          IF(NOORBT(IATOM)) GOTO 10 
          IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 10
-         NDEG  = MULT(ISTBNU(IATOM))
+         GEXP = GNUEXP(IATOM)
+         NDEG = MULT(ISTBNU(IATOM))
 C         
 C   SET DEFAULT VALUES OF PARAMETERS FOR CALCULATION
 C
@@ -739,39 +736,40 @@ C
          NUCTYP = 0
          IF(GAUNUC) NUCTYP = 3
          write(*,*)"NUCTYP",NUCTYP
-         CALL MEMSET(ZAN(IATOM),IATOM,MXNP,IPRINT)
+         CALL MEMSET(ZAN(IATOM),IATOM,MXNP,RNT,H,EPH,GRDC,IPRINT)
          write(*,*)'HH2',H
-         CALL NUCPRM(ZAN(IATOM),NUCMASS(INT(ZAN(IATOM))),NUCTYP)
+         CALL NUCPRM(ZAN(IATOM),NUCMASS(INT(ZAN(IATOM))),GEXP,
+     &                RNT,EPH,NUCTYP)
 !         MXNP = 1912            !change
          write(*,*)"MXNP",MXNP
          allocate( NUMIR(MXNP) )
          allocate( R(MXNP)     )
-         allocate( W(MXNP)     )           
+         allocate( W(MXNP)     )
 C         
          IF(num_grid_cfg_grasp)THEN
            allocate( TD(NDIM2,MXNP) )         
            CALL DZERO(TD,NDIM2*MXNP)
 C           
-           R(1) = RNT !CHARGE(IATOM)
+           R(1) = RNT           !CHARGE(IATOM)
            DO J = 2,MXNP
               R(J) = R(J-1)*EPH
            ENDDO
 C         
            write(*,*)"NUCMASS",NUCMASS(INT(ZAN(IATOM)))
            IF(LABEL.EQ.'UEHLING')THEN
-             CALL VCMPOL(NUMIR,R,ZAN(IATOM),MXNP,NUCTYP,1)
+             CALL VCMPOL(NUMIR,R,W,ZAN(IATOM),GEXP,MXNP,NUCTYP,1)
            ELSEIF(LABEL.EQ.'SEFGHF')THEN
-             CALL INTHF(NUMIR,R,ZAN(IATOM),MXNP,NUCTYP   )
+             CALL INTHF (NUMIR,R,ZAN(IATOM),GEXP,MXNP,NUCTYP    )
              DO I = 1,MXNP
                 NUMIR(I) = NUMIR(I)*R(I)
              ENDDO
            ELSEIF(LABEL.EQ.'SEFGLF')THEN
-             CALL INTLF(NUMIR,R,ZAN(IATOM),MXNP          )
+             CALL INTLF (NUMIR,R,ZAN(IATOM),MXNP                )
              DO I = 1,MXNP
                 NUMIR(I) = NUMIR(I)*R(I)
              ENDDO
            ELSEIF(LABEL.EQ.'SEPZ'  )THEN
-             CALL INTPZ(NUMIR,R,ZAN(IATOM),MXNP          )
+             CALL INTPZ (NUMIR,R,ZAN(IATOM),MXNP                )
              DO I = 1,MXNP
                 NUMIR(I) = NUMIR(I)*R(I)
              ENDDO
@@ -798,6 +796,9 @@ C
 !     change for debug sentense
            write(*,*)"R(1),Z",R(1),ZAN(IATOM) 
            write(*,*)"J,NUMIR"
+           DO I = 1,MXNP
+             write(*,*)'NUMIR,R,I',NUMIR(I),R(I),I
+           ENDDO
            DO 20 IR = 1, MXNP
 C
 C     1/r in Eq. (2), (4),and (6) of Rinker's paper is NOT calculated in VCMPOL.
@@ -869,9 +870,9 @@ C R(IR)**2 is multiplized in RFAC, later
 C          
            write(*,*)"NUCMASS",NUCMASS(INT(ZAN(IATOM)))           
            IF(LABEL.EQ.'UEHLING')THEN
-             CALL VCMPOL(NUMIR,R,ZAN(IATOM),MXNP,NUCTYP,1)
+             CALL VCMPOL(NUMIR,R,W,ZAN(IATOM),GEXP,MXNP,NUCTYP,1)
            ELSEIF(LABEL.EQ.'SEFGHF')THEN
-             CALL INTHF(NUMIR,R,ZAN(IATOM),MXNP,NUCTYP   )
+             CALL INTHF(NUMIR,R,ZAN(IATOM),GEXP,MXNP,NUCTYP   )
              DO I = 1,MXNP
                 NUMIR(I) = NUMIR(I)*R(I)
              ENDDO
@@ -890,6 +891,9 @@ C
            DO IRP=0,MAXREP+1
               write(*,*)'NCOS',NCOS(IRP,1),IRP        !sunagatest
               write(*,*)'NCOS',NCOS(IRP,2),IRP        !sunagatest
+           ENDDO
+           DO I = 1,MXNP
+              write(*,*)'NUMIR,R,I',NUMIR(I),R(I),I
            ENDDO
 !     change for debug sentense
            write(*,*)"R(1),Z",R(1),ZAN(IATOM) 
@@ -1034,7 +1038,7 @@ C
          CALL QUAD2(RESULT,TA,MXNP,NDIM)
 !         CALL GRASP_QUAD(RESULT,R,MXNP)
       ELSE
-         CALL DIRAC_QUAD(RESULT,TA,W)  
+!         CALL DIRAC_QUAD(RESULT,TA,W)  
       ENDIF
 C      
       RETURN
@@ -1117,38 +1121,45 @@ C
       RETURN
 C
       END      
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DIRAC_QUAD(RESULT,TA,R,W,MXNP)
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C
-C Numerical radial integral using DIRAC_QUAD
-C
-C Called from: RADINT_WRAPPER
-C
-C   A. Sunaga Feb. 2019
-C      
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include "implicit.h"
-      DIMENSION RESULT(NDIM),TA(MXNP,1),R(MXNP),W(MXNP)
-C
-!      CALL DAXPY(NDIM2,)
-!      DO II = 1,NDIM
-!        RESULT(II)
-      RETURN
-      END
+c$$$C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+c$$$      SUBROUTINE DIRAC_QUAD(RESULT,TA,R,W,MXNP)
+c$$$CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+c$$$C
+c$$$C Numerical radial integral using DIRAC_QUAD
+c$$$C
+c$$$C Called from: RADINT_WRAPPER
+c$$$C
+c$$$C   A. Sunaga Feb. 2019
+c$$$C      
+c$$$CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+c$$$#include "implicit.h"
+c$$$      DIMENSION RESULT(NDIM),TA(MXNP,1),R(MXNP),W(MXNP)
+c$$$C
+c$$$!      CALL DAXPY(NDIM2,)
+c$$$!      DO II = 1,NDIM
+c$$$!        RESULT(II)
+c$$$      RETURN
+c$$$      END
 
       
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck memset */
-      SUBROUTINE MEMSET(Z,IATOM,MXNP,IPRINT)
+      SUBROUTINE MEMSET(Z,IATOM,MXNP,RNT,H,EPH,GRDC,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC      
 C
 C     i) Estimating memories, by calculating the uehling potential of
 C     point charge
 C
 C     ii) Deciding some values for numerical integral
-C        RNT...initial grid      
-C        H.....step size
+C
+C     On iuput: 
+C      
+C      
+C     On output: GRDC - Grid for numerical integral
+C                RNT...initial grid      
+C                H.....step size
+C                EPH = exp(H)
+C      
 C     
 C     Called from: NUMINT
 C
@@ -1266,7 +1277,7 @@ C
       END
 ************************************************************************
 *
-      SUBROUTINE VCMPOL(TB,R,Z,N,NUCTYP,NVPORD)
+      SUBROUTINE VCMPOL(TB,R,W,Z,GEXP,N,NUCTYP,NVPORD)
 *      
 *     NUCTYP:
 *     0  Point
@@ -1296,7 +1307,7 @@ C
 #include "implicit.h"
 #include "graspprm.h"
 C      
-      DIMENSION TB(N),R(N)
+      DIMENSION TB(N),R(N),W(N)
       real(8), allocatable :: ZCHARG(:),TA(:)
       
       allocate(ZCHARG(N))       
@@ -1312,14 +1323,15 @@ C   SET UP R**2 TIMES NUCLEAR CHARGE DISTRIBUTION
 C
 !      CALL NCHARG(TA,R,Z,ZNORM,NUCTYP)
       write(*,*)"ZNORM,NNUC",ZNORM,NNUC
-      CALL NCHARG(TA,R,Z,N,NUCTYP)
+      write(*,*)'GEXP,NUCTYP,Z',GEXP,NUCTYP,Z
+      CALL NCHARG(TA,R,Z,GEXP,N,NUCTYP)
       DO 2 I = 1,N
          ZCHARG(I) = TA(I)*ZNORM
     2 CONTINUE
 C
 C   SECOND-ORDER VACUUM POLARISATION
 C
-    3 CALL VAC2(TB,TA,ZCHARG,R,Z,N,NUCTYP)
+    3 CALL VAC2(TB,TA,ZCHARG,R,W,Z,N,NUCTYP)
       write(*,*)"TB2"
 !      DO 1 I = 1,N
 !         write(*,*)I,TB(I)
@@ -1364,7 +1376,7 @@ C
       END
 ************************************************************************
 *                                                                      *
-      SUBROUTINE VAC2(TB,TA,ZCHARG,R,Z,N,NUCTYP)
+      SUBROUTINE VAC2(TB,TA,ZCHARG,R,W,Z,N,NUCTYP)
 *                                                                      *
 *   ----------------   SECTION 11   SUBPROGRAM 11  -----------------   *
 *                                                                      *
@@ -1378,13 +1390,15 @@ C
 *                                         LAST REVISION: 02 OCT 1989   *
 *                                                                      *
 ************************************************************************
+      use num_grid_cfg
+
 #include "implicit.h"
 #include "pi.h"
 #include "dcbgen.h"
 #include "graspprm.h"
 C     
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, THREE = 3.0D0)     
-      DIMENSION TB(N),TA(N),R(N),ZCHARG(N)
+      DIMENSION TB(N),TA(N),R(N),W(N),ZCHARG(N)
       PI3 = THREE*PI
       C2 = CVAL*CVAL
       EPS = 1.0D-05
@@ -1397,6 +1411,7 @@ C
       DO 1 I = 1,N
          X = WD*R(I)
          TB(I) = FACTOR*FUNK (X,1)
+         write(*,*)'TB,R,I',TB(I),R(I),I
     1 CONTINUE
       IF (NUCTYP .EQ. 0) RETURN
 C
@@ -1415,17 +1430,31 @@ C
 C
 C   OTHER DISTRIBUTIONS
 C
-    2 WB = (C2+C2)/(Z*THREE)
-      DO 3 I = 1,N
-        TA(I) = ZCHARG(I)*(R(I)**3)
-    3 CONTINUE
-      CALL QUAD (FAC3,TA,N)
-      FAC3 = FAC3*FACTOR*WB
-      DO 4 I = 1,N
-        TA(I) = TA(I)*(R(I)**2)
-    4 CONTINUE
-      CALL QUAD (FAC5,TA,N)
-      FAC5 = FAC5*FACTOR*C2*WB/5.0D00
+ 2    IF(num_grid_cfg_grasp)THEN
+        WB = (C2+C2)/(Z*THREE)
+        DO 3 I = 1,N
+          TA(I) = ZCHARG(I)*(R(I)**3)
+    3   CONTINUE
+        CALL QUAD (FAC3,TA,N)
+        FAC3 = FAC3*FACTOR*WB
+        DO 4 I = 1,N
+          TA(I) = TA(I)*(R(I)**2)
+    4   CONTINUE
+        CALL QUAD (FAC5,TA,N)
+        FAC5 = FAC5*FACTOR*C2*WB/5.0D00
+      ELSE
+        WB = (C2+C2)/(Z*THREE)
+        FAC3 = ZERO 
+        FAC5 = ZERO 
+        DO 23 I = 1,N
+          FAC3 = FAC3 + ZCHARG(I)*(R(I)**3)
+ 23     CONTINUE
+        FAC3 = FAC3*FACTOR*WB
+        DO 24 I = 1,N
+          FAC5 = FAC5 + TA(I)*(R(I)**2)
+ 24     CONTINUE
+        FAC5 = FAC5*FACTOR*C2*WB/5.0D00         
+      ENDIF   
 C
 C   TABULATE POTENTIALS
 C
@@ -1433,29 +1462,47 @@ C
          X = WD*R(I)
          TB(I) = TB(I)+FAC3*FUNK (X,3)+FAC5*FUNK (X,5) 
     6 CONTINUE
-!      RETURN ! sunaga
 C
 C   TABULATE POTENTIAL BY INTEGRATING EQUATION (4)
 C
       FACTOR = -ONE/(PI3*C2*TWO)
-      DO 8 K = 1,N
-         XK = WD*R(K)
-         DO 7 I = 1,NNUC
+      IF(num_grid_cfg_grasp)THEN
+        DO 8 K = 1,N
+           XK = WD*R(K)
+           DO 7 I = 1,NNUC
+              XI = WD*R(I)
+              XM = ABS (XK-XI)
+              XP = XK+XI
+              TA(I) = (FUNK (XM,0)-FUNK (XP,0))*ZCHARG(I)
+    7      CONTINUE
+           CALL QUAD (X,TA,N)
+           X = X*FACTOR
+           IF (X .EQ. ZERO) GO TO 11
+           IF (ABS ((TB(K)-X)/X) .LT. EPS) RETURN
+!           write(*,*)'K,R(K),X,NNUC',K,R(K),X,NNUC
+           TB(K) = X
+    8   CONTINUE
+      ELSE
+        DO 9 K = 1,N
+          XK = WD*R(K)
+          X  = ZERO  
+          DO 10 I = 1,NNUC
             XI = WD*R(I)
             XM = ABS (XK-XI)
             XP = XK+XI
-            TA(I) = (FUNK (XM,0)-FUNK (XP,0))*ZCHARG(I)
-    7    CONTINUE
-         CALL QUAD (X,TA,N)
-         X = X*FACTOR
-         IF (X .EQ. ZERO) GO TO 9
-         IF (ABS ((TB(K)-X)/X) .LT. EPS) RETURN
-         TB(K) = X
-    8 CONTINUE
+            X = X + (FUNK (XM,0)-FUNK (XP,0))*ZCHARG(I)*W(I)
+ 10       CONTINUE
+          X = X*FACTOR
+          IF (X .EQ. ZERO) GO TO 11
+          IF (ABS ((TB(K)-X)/X) .LT. EPS) RETURN
+!          write(*,*)'K,R(K),X,NNUC',K,R(K),X,NNUC
+          TB(K) = X
+ 9      CONTINUE
+      ENDIF
       RETURN
-    9 DO 10 I = K,N
+ 11   DO 12 I = K,N
          TB(I) = ZERO
-   10 CONTINUE
+ 12   CONTINUE
       RETURN
 C
       END
@@ -1625,11 +1672,11 @@ C
       END
 ************************************************************************
 *                                                                      *
-      SUBROUTINE NCHARG(TA,R,Z,N,NUCTYP)
+      SUBROUTINE NCHARG(TA,R,Z,GEXP,N,NUCTYP)
 *                                                                      *
 *   ----------------   SECTION 11   SUBPROGRAM 19   ----------------   *
 *                                                                      *
-*   EVALUATE  R**2  TIMES THE NUCLEAR CHARGE DISTRIBUTION (UNNORMAL-   *
+*   EVALUATE  R*1  TIMES THE NUCLEAR CHARGE DISTRIBUTION (UNNORMAL-   *
 *   IZED).                                                             *
 *                                                                      *
 *   NUCTYP  =  1 : UNIFORM DISTRIBUTION                                *
@@ -1641,6 +1688,8 @@ C
 *                                         LAST REVISION: 08 FEB 1988   *
 *                                                                      *
 ************************************************************************
+      use num_grid_cfg
+      
 #include "implicit.h"
 #include "priunit.h"
 #include "graspprm.h"
@@ -1648,13 +1697,14 @@ C
       DIMENSION TA(N),R(N)
 C
       write(*,*)"NCHARG,NUCTYP",NUCTYP
-      IF (RAD .LE. ZERO) GO TO 99
+!      IF (RAD .LE. ZERO) GO TO 99
+      IF (GEXP .LE. ZERO) GO TO 99
       IF (NUCTYP .GT. 1) GO TO 3
 C
 C   UNIFORM DISTRIBUTION
 C
       DO 2 I = 1,NNUC
-         TA(I) = R(I)*R(I)
+         TA(I) = R(I) !*R(I)
     2 CONTINUE
       RETURN
 C
@@ -1665,7 +1715,7 @@ C
       IF (SKI .LE. ZERO) GO TO 98
       write(*,*)"NNUC",NNUC
       DO 4 I = 1,NNUC
-         TA(I) = (R(I)*R(I))/(ONE+EXP ((R(I)-RAD)/SKI))
+         TA(I) = (R(I))/(ONE+EXP ((R(I)-RAD)/SKI))
 !         write(*,*)"R,RAD,SKI",R(I),RAD,SKI,TA(I)
     4 CONTINUE
       RETURN
@@ -1675,10 +1725,18 @@ C   GAUSSIAN CHARGE DISTRIBUTION
 C
     5 IF (NUCTYP .GT. 3) GO TO 97
       NNUC = N
-      WB = THREE/(TWO*RAD*RAD)      
+      WB = GEXP  !THREE/(TWO*RAD*RAD)      
       DO 6 I = 1,N
-         TA(I) = R(I)*R(I)*(EXP (-WB*R(I)*R(I)))         
+         TA(I) = (EXP (-WB*R(I)*R(I)))* R(I) !*R(I)        
     6 CONTINUE
+C
+C  Multiplying additional R(I) for QUAD
+C      
+      IF(num_grid_cfg_grasp)THEN
+        DO 7 I = 1,N
+           TA(I) = TA(I)*R(I)        
+ 7      CONTINUE
+      ENDIF
       RETURN
 c$$$C
 c$$$C   THREE-PARAMETER DISTRIBUTION
@@ -1718,7 +1776,7 @@ C
 C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE NUCPRM(Z,AMASS,NUCTYP)
+      SUBROUTINE NUCPRM(Z,AMASS,GEXP,RNT,EPH,NUCTYP)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C deciding nuclear paramerer
@@ -1794,6 +1852,10 @@ C
 C   ADJUST GRID SO THAT NUCLEAR BOUNDARY FALLS ON GRID POINT
 C
       IF (NUCTYP .GT. 0 .AND. NUCTYP .NE. 3) THEN
+Csunaga
+C     Note that it is for GRASP grid.
+C     In order to use DIRAC grid, you should check.
+C      
          NRAD = INT ((LOG (PARM1) - LOG (RNT))/H)
          RNEW = PARM1/(EPH**NRAD)
          IF (RNEW .GT. RNT) THEN
@@ -1902,7 +1964,7 @@ C   GAUSSIAN DISTRIBUTION
 C
 !         WRITE (LUPRI,301)
          RAD = PARM1
-         WB = 3.0D0/(2.0D0*RAD*RAD)
+         WB = GEXP !3.0D0/(2.0D0*RAD*RAD)
          WA = SQRT(WB)
 !         Z1 = TWO*Z*WA/SQRT(PI)
 !         Z3 = -Z1*WB/THREE
@@ -1916,7 +1978,6 @@ C
 C   OTHER DISTRIBUTIONS : NOT CURRENTLY IMPLEMENTED
 C
       ELSE !      IF (NUCTYP .LE. 2) THEN
-!     GO TO 99
          write(*,*)"error"
          stop
       ENDIF
@@ -1962,7 +2023,7 @@ C
       END      
 *****************************************************************************
 *
-      SUBROUTINE INTMG(TB,R,Z,N,NUCTYP)
+      SUBROUTINE INTMG(TB,R,Z,GEXP,N,NUCTYP)
 *
 *     PHI_MG CONTRIBUTION (7) of Flambaum et al. Phys. Rev. A 72 052115 (2005)
 *     Magnetic contribution
@@ -1997,8 +2058,8 @@ C     In DIRAC, only triangle matrix (large*small) are calculated.
 C     From this, we have to remove TWO from GRASO's source.
 C      
       IF(NUCTYP.EQ.3)THEN
-        RAD = PARM1
-        XI = 1.5/(RAD*RAD)
+!        RAD = PARM1
+        XI = GEXP !1.5/(RAD*RAD)
         WA = SQRT(XI)
       ENDIF  
 !     IF(NUCTYP.EQ.1.OR.2)
@@ -2285,7 +2346,7 @@ C
       END
 *****************************************************************************
 *
-      SUBROUTINE INTHF(TB,R,Z,N,NUCTYP)
+      SUBROUTINE INTHF(TB,R,Z,GEXP,N,NUCTYP)
 *
 *     PHI_L CONTRIBUTION (10) of Flambaum et al. Phys. Rev. A 72 052115 (2005)
 *     High flequency contribution
@@ -2317,8 +2378,8 @@ C
       AZ1COEF = 1.071D0 - 1.976D0*X2 - 2.128D0*X3 + 0.169D0*X4
       PREFAC  = ONE/(CVAL*PI)
       IF(NUCTYP.EQ.3)THEN
-        RAD = PARM1
-        XI = 1.5D0/(RAD*RAD)
+!        RAD = PARM1
+        XI = GEXP !1.5D0/(RAD*RAD)
         WA = SQRT(XI)
       ENDIF
 C
