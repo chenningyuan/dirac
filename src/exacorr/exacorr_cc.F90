@@ -665,20 +665,16 @@ module exacorr_cc
 
           call get_tau(comm_t,CCD,one_tensor)
 
-!         NOTE: contractions marked with "validated" gave numerically significant contributions and could be validated by comparison
-!         to the reference implementation, the ones marked "moretests" were too small to decide whether it was correct or not.
-!         calculate intermediaries
-
           ierr=exatns_tensor_init(s2_tensor)
 
 !         The vvvv contribution
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=V(a,b,c,d)*T(c,d,i,j)",s2_tensor,int_t%vvvv,comm_t%tau,ONE_HALF) !validated o(2)v(4)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=V(a,b,c,d)*T(c,d,i,j)",s2_tensor,int_t%vvvv,comm_t%tau,ONE_HALF) !o(2)v(4)
 
-!         vv ! validated
+!         vv
           call get_hvv(comm_t,int_t%oovv,one_tensor)
           call get_gvv(comm_t,int_t%vovv,CCD,one_tensor)
 
-!         vovo ! moretests
+!         vovo
           ierr=exatns_tensor_init(tau2_tensor)
           ierr=exatns_tensor_contract("T(a,d,l,i)+=R(a,d,l,i)*K()",tau2_tensor,comm_t%t2,one_tensor,ONE_HALF)
           if (.not.CCD) ierr=exatns_tensor_contract("T(a,d,l,i)+=T(a,l)*T(d,i)",tau2_tensor,comm_t%t1,comm_t%t1) ! o(2)v(2)
@@ -686,12 +682,12 @@ module exacorr_cc
           ierr=exatns_tensor_contract("H(a,k,c,i)+=V(k,l,c,d)*T(a,d,l,i)",comm_t%h_int,int_t%oovv,tau2_tensor)! o(3)v(3)
 
 !         This term appears four times as we need to permute both i and j and a and b
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=H(a,k,c,i)*T(c,b,j,k)",s2_tensor,comm_t%h_int,comm_t%t2)  ! validated o(3)v(3)
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=H(a,k,c,j)*T(c,b,k,i)",s2_tensor,comm_t%h_int,comm_t%t2)  ! validated o(3)v(3)
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=H(b,k,c,i)*T(a,c,j,k)",s2_tensor,comm_t%h_int,comm_t%t2)  ! validated o(3)v(3)
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=H(b,k,c,j)*T(a,c,k,i)",s2_tensor,comm_t%h_int,comm_t%t2)  ! validated o(3)v(3)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=H(a,k,c,i)*T(c,b,j,k)",s2_tensor,comm_t%h_int,comm_t%t2)  ! o(3)v(3)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=H(a,k,c,j)*T(c,b,k,i)",s2_tensor,comm_t%h_int,comm_t%t2)  ! o(3)v(3)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=H(b,k,c,i)*T(a,c,j,k)",s2_tensor,comm_t%h_int,comm_t%t2)  ! o(3)v(3)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=H(b,k,c,j)*T(a,c,k,i)",s2_tensor,comm_t%h_int,comm_t%t2)  ! o(3)v(3)
 
-!         ovoo ! validated
+!         ovoo
           ierr=exatns_tensor_init(cint_tensor)
           ierr=exatns_tensor_contract("C(k,b,i,j)+=V(b,k,c,d)*T(c,d,i,j)",cint_tensor,int_t%vovv,comm_t%tau,MINUS_ONE_HALF) ! o(3)v(3)
           if (.not.CCD) then
@@ -700,11 +696,11 @@ module exacorr_cc
           end if
           ierr=exatns_tensor_contract("C(k,b,i,j)+=V+(i,j,k,b)*K()",cint_tensor,int_t%ooov,one_tensor) ! o(3)v(1)
 
-!         oo ! validated
+!         oo
           call get_hoo(comm_t,int_t%oovv,one_tensor)
           call get_goo(comm_t,int_t%ooov,CCD,one_tensor)
 
-!         ov ! validated
+!         ov
           if (.not.CCD) then
             call get_hov(comm_t,int_t%oovv,one_tensor)
             ierr=exatns_tensor_init(hov_aux_tensor)
@@ -712,7 +708,7 @@ module exacorr_cc
             ierr=exatns_tensor_contract("H(k,c)+=F(k,c)*K()",hov_aux_tensor,comm_t%fov,one_tensor,MINUS_TWO) ! subtract fock matrix
           end if
 
-!         oooo ! validated
+!         oooo
           call get_a(comm_t,int_t,CCD,one_tensor)
 
           if (ierr.ne.EXA_SUCCESS) then
@@ -735,17 +731,17 @@ module exacorr_cc
           end if
 
 !         This term appears twice as we need to permute i and j
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=G(k,j)*T(a,b,i,k)",s2_tensor,comm_t%goo,comm_t%t2)                   ! validated o(3)v(2)
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=G(k,i)*T(a,b,k,j)",s2_tensor,comm_t%goo,comm_t%t2)                   ! validated o(3)v(2)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=G(k,j)*T(a,b,i,k)",s2_tensor,comm_t%goo,comm_t%t2)                   ! o(3)v(2)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=G(k,i)*T(a,b,k,j)",s2_tensor,comm_t%goo,comm_t%t2)                   ! o(3)v(2)
 !         Again two times, also note the complex conjugation as we use vovv instead of vvvo
           if (.not.CCD) then
-              ierr=exatns_tensor_contract("S(a,b,i,j)+=V+(c,j,a,b)*T(c,i)",s2_tensor,int_t%vovv,comm_t%t1)                   ! validated o(2)v(3)
-              ierr=exatns_tensor_contract("S(a,b,i,j)+=V+(c,i,a,b)*T(c,j)",s2_tensor,int_t%vovv,comm_t%t1,MINUS_ONE)         ! validated o(2)v(3)
+              ierr=exatns_tensor_contract("S(a,b,i,j)+=V+(c,j,a,b)*T(c,i)",s2_tensor,int_t%vovv,comm_t%t1)                   ! o(2)v(3)
+              ierr=exatns_tensor_contract("S(a,b,i,j)+=V+(c,i,a,b)*T(c,j)",s2_tensor,int_t%vovv,comm_t%t1,MINUS_ONE)         ! o(2)v(3)
           end if
 
 !         This term appears twice as we need to permute a and b
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=G(a,c)*T(c,b,i,j)",s2_tensor,comm_t%gvv,comm_t%t2)  ! validated o(2)v(3)
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=G(b,c)*T(a,c,i,j)",s2_tensor,comm_t%gvv,comm_t%t2)  ! validated o(2)v(3)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=G(a,c)*T(c,b,i,j)",s2_tensor,comm_t%gvv,comm_t%t2)  ! o(2)v(3)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=G(b,c)*T(a,c,i,j)",s2_tensor,comm_t%gvv,comm_t%t2)  ! o(2)v(3)
 !         Again two times, with the C intermediate (note: in RELCCSD this is done differently)
           if (.not.CCD) then
               ierr=exatns_tensor_contract("S(a,b,i,j)+=C(k,b,i,j)*T(a,k)",s2_tensor,cint_tensor,comm_t%t1,MINUS_ONE) ! o(3)v(2)
@@ -753,23 +749,23 @@ module exacorr_cc
           end if
 
 !         The oooo contribution
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=A(k,l,i,j)*T(a,b,k,l)",s2_tensor,comm_t%a_int,comm_t%tau,ONE_HALF) !validated o(4)v(2)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=A(k,l,i,j)*T(a,b,k,l)",s2_tensor,comm_t%a_int,comm_t%tau,ONE_HALF) !o(4)v(2)
 
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=V+(i,j,a,b)*K()",s2_tensor,int_t%oovv,one_tensor)    ! validated o(2)v(2)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=V+(i,j,a,b)*K()",s2_tensor,int_t%oovv,one_tensor)    ! o(2)v(2)
 
 !         calculate s1 tensor
           if (.not.CCD) then
             ierr=exatns_tensor_init(s1_tensor)
             ierr=exatns_tensor_contract("S(a,i)+=F+(i,a)*K()",s1_tensor,comm_t%fov,one_tensor)
-            ierr=exatns_tensor_contract("S(a,i)+=V(a,k,c,d)*T(c,d,i,k)",s1_tensor,int_t%vovv,comm_t%tau,ONE_HALF) !validated o(2)v(3)
-            ierr=exatns_tensor_contract("S(a,i)+=H(a,c)*T(c,i)",s1_tensor,comm_t%hvv,comm_t%t1)                  !validated o(1)v(2)
-            ierr=exatns_tensor_contract("S(a,i)+=H(k,i)*T(a,k)",s1_tensor,comm_t%hoo,comm_t%t1)                        !validated o(2)v(1)
-            ierr=exatns_tensor_contract("S(a,i)+=H(k,c)*T(a,c,i,k)",s1_tensor,comm_t%hov,comm_t%t2)                   !validated o(2)v(2)
-            ierr=exatns_tensor_init(hoo_aux_tensor)                                                                        !moretests
-            ierr=exatns_tensor_contract("L(k,i)+=H(k,c)*T(c,i)",hoo_aux_tensor,hov_aux_tensor,comm_t%t1)                    !moretests o(2)v(1)
-            ierr=exatns_tensor_contract("S(a,i)+=H(k,i)*T(a,k)",s1_tensor,hoo_aux_tensor,comm_t%t1)                        !moretests o(2)v(1)
-            ierr=exatns_tensor_contract("S(a,i)+=V(k,l,i,c)*T(c,a,k,l)",s1_tensor,int_t%ooov,comm_t%tau,ONE_HALF) !validated o(3)v(2)
-            ierr=exatns_tensor_contract("S(a,i)+=V(a,k,c,i)*T(c,k)",s1_tensor,int_t%vovo,comm_t%t1,MINUS_ONE)     !validated o(2)v(2)
+            ierr=exatns_tensor_contract("S(a,i)+=V(a,k,c,d)*T(c,d,i,k)",s1_tensor,int_t%vovv,comm_t%tau,ONE_HALF) !o(2)v(3)
+            ierr=exatns_tensor_contract("S(a,i)+=H(a,c)*T(c,i)",s1_tensor,comm_t%hvv,comm_t%t1)                   !o(1)v(2)
+            ierr=exatns_tensor_contract("S(a,i)+=H(k,i)*T(a,k)",s1_tensor,comm_t%hoo,comm_t%t1)                   !o(2)v(1)
+            ierr=exatns_tensor_contract("S(a,i)+=H(k,c)*T(a,c,i,k)",s1_tensor,comm_t%hov,comm_t%t2)               !o(2)v(2)
+            ierr=exatns_tensor_init(hoo_aux_tensor)
+            ierr=exatns_tensor_contract("L(k,i)+=H(k,c)*T(c,i)",hoo_aux_tensor,hov_aux_tensor,comm_t%t1)          !o(2)v(1)
+            ierr=exatns_tensor_contract("S(a,i)+=H(k,i)*T(a,k)",s1_tensor,hoo_aux_tensor,comm_t%t1)               !o(2)v(1)
+            ierr=exatns_tensor_contract("S(a,i)+=V(k,l,i,c)*T(c,a,k,l)",s1_tensor,int_t%ooov,comm_t%tau,ONE_HALF) !o(3)v(2)
+            ierr=exatns_tensor_contract("S(a,i)+=V(a,k,c,i)*T(c,k)",s1_tensor,int_t%vovo,comm_t%t1,MINUS_ONE)     !o(2)v(2)
           end if
 
           if (ierr.ne.EXA_SUCCESS) then
