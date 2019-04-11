@@ -73,24 +73,24 @@
   write(lupri,'(a)') 'Set print level [default:0]:'
   write(lupri,'(a)') '      0. Basic print level '
   write(lupri,'(a)') '      1. Print additional information'
-  read(lucmd,'(a)',iostat=ier) strkey; read(strkey,*,iostat=ier) nprint
+  read(LUSTD,'(a)',iostat=ier) strkey; read(strkey,*,iostat=ier) nprint
   if(nprint /= 1) nprint = 0
 
   ! read reduced mass
   write(lupri,'(a)') 'Reduced mass (in Daltons)'
-  read(lucmd,*) u
+  read(LUSTD,*) u
   ! read the name of file with potential/property curve
   write(lupri,'(a)') 'Name of the input file (A30) with potential/property curve'
-  read(lucmd,'(a)') potfil
+  read(LUSTD,'(a)') potfil
   write(lupri,'(a)')  'Select one of the following:'
   write(lupri,'(a)')  '  1. Bond lengths in Angstroms.'
   write(lupri,'(a)')  '  2. Bond lengths in atomic units.'
   write(lupri,'(a)')  ' (Note that all other quantities only in atomic units !)'
-  read(lucmd,*) iang
+  read(LUSTD,*) iang
   write(lupri,'(a)')  'Select one of the following:'         
   write(lupri,'(a)')  '  1. Numerical derivatives (assumes fixed step length).'
   write(lupri,'(a)')  '  2. Polynomial fits             .'
-  read(lucmd,*) keymeth
+  read(LUSTD,*) keymeth
 
   ! open input file
   ipot = 1
@@ -192,9 +192,9 @@
 
   elseif(keymeth==2)then
     write(lupri,*) 'Give order of polynomial:'
-    read(lucmd,*) norder
+    read(LUSTD,*) norder
     write(lupri,*) 'Select point for the calculation of derivatives'
-    read(lucmd,*)  xmin
+    read(LUSTD,*)  xmin
     if(iang==1)then
       xmin=xmin/xtang
     endif
@@ -202,7 +202,7 @@
       write(lupri,*) 'Too few points for a polynomial fit of order',norder
       write(lupri,*) '  Try again.'
       write(lupri,*) 'Give order of polynomial:'
-      read(lucmd,*) norder
+      read(LUSTD,*) norder
     enddo
     ndim = norder + 1
   ! allocate arrays

@@ -3991,7 +3991,7 @@ C
       DIMENSION X(NP),Y(NP),A(NP,*),B(NP),C(NP),D(NP)
       WRITE(LUPRI,'(A)') 
      &  'Polynomial fit: Give order of polynomial '
-      READ(LUCMD,*) NORDER
+      READ(LUSTD,*) NORDER
       IF(NORDER.LT.2) THEN
         WRITE(LUPRI,'(A)') 
      &    '* This program requires at least a quadratic fit.'

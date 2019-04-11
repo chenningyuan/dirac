@@ -4,4 +4,5 @@
 ! - "LUPRI" should not be parameter, it may be temporarily changed to redirect output to a file
 !   instead of stdout, especially from MPI slaves.
       integer, parameter :: LUCMD = 4  ! for reading from DIRAC.INP
-      integer            :: LUPRI = 6
+      integer, parameter :: LUSTD = 5  ! for reading standard input
+      integer, parameter :: LUPRI = 6
