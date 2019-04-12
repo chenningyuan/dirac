@@ -26,7 +26,6 @@ subroutine cholesky_decompose (CD_out, threshold)
   real(8), intent(in)                  :: threshold
   type(basis_func_info_t), allocatable :: gto(:)  ! arrays with basis function information
   integer                              :: nao, nshells
-  integer                              :: basis_angular ! 1=cartesian, 2=spherical
 
   !out: 3 component tensors
   complex(8), intent(out), allocatable :: CD_out(:,:,:)
@@ -36,7 +35,7 @@ subroutine cholesky_decompose (CD_out, threshold)
   integer(8)              :: m, i, j
   integer(8)              :: i_max(1:2)
   complex(8)              :: D_max
-  complex(8), allocatable :: Res(:,:), Gkl(:,:)
+  complex(8), allocatable :: Gkl(:,:)
   complex(8), allocatable :: CD(:,:,:)
 
   !Interest needs to be initalized for each thread, this function will initialize (or return immediately if it is).
@@ -44,56 +43,41 @@ subroutine cholesky_decompose (CD_out, threshold)
 
   !get all information about the Gauss type orbitals, allocate retrieve data
   nao = get_nao()
-  basis_angular = get_basis_angular()
   call get_gtos(1,nao,gto,nshells)
 
   !allocate tensors for cholesky decompostion
   allocate(CD(nao*nao, nao, nao))
-  CD=ZERO
   allocate(Dm(nao,nao))
-  allocate(Res(nao,nao))
   allocate(Gkl(nao,nao))
 
-  call get_2el_diag(nao, gto, basis_angular, nshells, Dm)
+  call get_2el_diag(nao, gto, nshells, Dm)
 
   !find largest value
-  m=0
-! print *, ' -------- iteration m = ', m, ' ------------ '
   i_max=maxloc(abs(Dm))
   D_max=Dm(i_max(1), i_max(2))
-  print *, ' largest element ind = ', i_max, ' value = ', D_max
   write (*,'(a,a,2i6,a,e12.2)') 'start iter',' largest element ind = ', i_max, ' value = ', abs(D_max)
   
   !loop until threshold is reached
 
+  CD=ZERO
+  m=0
   do while (abs(D_max)>threshold)
     
     !compute next element
-    Res=ZERO
     do i = 1,m
-       Res=Res+CD(i,:,:)*CD(i,i_max(1),i_max(2))
+       CD(m+1,:,:)=CD(m+1,:,:)+CD(i,:,:)*CD(i,i_max(1),i_max(2))
     end do
-    call get_2el_int(nao, gto, basis_angular, nshells, i_max(1), i_max(2), Gkl)
-    Res=Gkl-Res
-    Res=Res/zsqrt(D_max)
+    call get_2el_int(nao, gto, nshells, i_max(1), i_max(2), Gkl)
+    CD(m+1,:,:)=Gkl-CD(m+1,:,:)
+    CD(m+1,:,:)=CD(m+1,:,:)/zsqrt(D_max)
 
     m=m+1
-!   print *, ' -------- iteration m = ', m, ' ------------ '
-
-    !save vector
-    CD(m,:,:)=Res
 
     !update diagonal
-    Gkl=ZERO
-    do i = 1,nao
-      do j= 1, nao
-        Gkl(i,j)=Res(i,j)*Res(i,j)
-      end do
-    end do
+    Gkl(:,:)=CD(m,:,:)*CD(m,:,:)
     Dm=Dm-Gkl
 
     !find largest element
-!   print *, 'old one =', Dm(i_max(1), i_max(2))
     i_max=maxloc(abs(Dm))
     D_max=Dm(i_max(1), i_max(2))
     write (*,'(a,i6,a,2i6,a,e12.2)') 'iter',m,' largest element ind = ', i_max, ' value = ', abs(D_max)
@@ -106,19 +90,16 @@ subroutine cholesky_decompose (CD_out, threshold)
   print *, 'Cholesky dcomposition done '
 
   deallocate(Gkl)
-  deallocate(Res)
   deallocate(Dm)
   deallocate(gto)
 
   !hand tensor over
   allocate(CD_out(m, nao, nao))
-  do i = 1,m
-       CD_out(i,:,:)=CD(i,:,:)
-  end do
+  CD_out=CD(1:m,:,:)
   deallocate(CD)
 end subroutine cholesky_decompose
 
-subroutine get_2el_diag(nao, gto, basis_angular, nshells, Dm)
+subroutine get_2el_diag(nao, gto, nshells, Dm)
 
   use exacorr_datatypes
   use exacorr_global
@@ -127,21 +108,22 @@ subroutine get_2el_diag(nao, gto, basis_angular, nshells, Dm)
   implicit none
 
   !returns two electron integrals with i=k and j=l
-  integer, intent(in) :: nao, basis_angular, nshells
+  integer, intent(in) :: nao, nshells
   type(basis_func_info_t), intent(in) :: gto(:)  ! arrays with basis function information
 
   complex(8), intent(inout) :: Dm(:,:)
 
+  integer :: basis_angular
   integer :: lq, lp, nq, np, q, p
-  integer :: i, j, k, l, ijkl
-  integer :: ioff, joff, koff, loff
+  integer :: i, j, ijij
+  integer :: ioff, joff
   real(8) :: eq,ep,cq,cp
   real(8) :: xq,yq,zq,xp,yp,zp
   real(8),save :: gout(21*21*21*21) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
   real(8), parameter :: FIJKL = 1.0
 
+  basis_angular = get_basis_angular()
   joff = 0
-  loff = 0
   do q = 1, nshells
      lq   =  gto(q)%orb_momentum
      eq   =  gto(q)%exponent(1)
@@ -152,7 +134,6 @@ subroutine get_2el_diag(nao, gto, basis_angular, nshells, Dm)
      nq   =  nfunctions(lq,basis_angular)
 
      ioff = 0
-     koff = 0
      do p = 1, nshells
         lp   =  gto(p)%orb_momentum
         ep   =  gto(p)%exponent(1)
@@ -170,33 +151,22 @@ subroutine get_2el_diag(nao, gto, basis_angular, nshells, Dm)
                           lp,ep,xp,yp,zp,cp,&
                           lq,eq,xq,yq,zq,cq )
 
-        ijkl=0
-        do  l = 1, nq
-          do k = 1, np
-            do j = 1, nq
-              do i = 1, np
-                ijkl = ijkl+1
-
-                if (i==k) then
-                  if (j==l) Dm(i+ioff,j+joff) = dcmplx(gout(ijkl),0.D0)
-                end if
-
-              end do
-            end do
+        do j = 1, nq
+          do i = 1, np
+            ijij = (j-1)*np*nq*np+(i-1)*nq*np+(j-1)*np+i
+            Dm(i+ioff,j+joff) = dcmplx(gout(ijij),0.D0)
           end do
         end do
 
         ioff = ioff + np
-        koff = koff + np
      end do
      joff = joff + nq
-     loff = loff + nq
   end do
 
 end subroutine get_2el_diag
 
-subroutine get_2el_int(nao, gto, basis_angular, nshells, l_fix, k_fix, Gkl)
-  !returns two electron integrals with two fixed indeces
+subroutine get_2el_int(nao, gto, nshells, l_fix, k_fix, Gkl)
+  !returns two electron integrals with two fixed indices
 
   use exacorr_datatypes
   use exacorr_global
@@ -204,14 +174,13 @@ subroutine get_2el_int(nao, gto, basis_angular, nshells, l_fix, k_fix, Gkl)
 
   implicit none
 
-  integer, intent(in)                 :: nao, basis_angular, nshells
+  integer, intent(in)                 :: nao, nshells
   integer(8), intent(in)              :: l_fix, k_fix
   type(basis_func_info_t), intent(in) :: gto(:)  ! arrays with basis function information
 
   complex(8), intent(inout) :: Gkl(:,:)
 
-
-
+  integer      :: basis_angular
   integer      :: i, j, k, l, ioff,joff, koff, loff
   integer      :: ijkl
   integer      :: ish, jsh, ksh, lsh
@@ -221,6 +190,7 @@ subroutine get_2el_int(nao, gto, basis_angular, nshells, l_fix, k_fix, Gkl)
   real(8),save :: gout(21*21*21*21) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
   real(8), parameter :: FIJKL = 1.0
 
+  basis_angular = get_basis_angular()
   loff = 0
   do lsh = 1, nshells
     ll   =  gto(lsh)%orb_momentum
