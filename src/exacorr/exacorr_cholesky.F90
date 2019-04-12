@@ -58,14 +58,15 @@ subroutine cholesky_decompose (CD_out, threshold)
 
   !find largest value
   m=0
-  print *, ' -------- iteration m = ', m, ' ------------ '
-  i_max=maxloc(abs(abs(Dm)))
+! print *, ' -------- iteration m = ', m, ' ------------ '
+  i_max=maxloc(abs(Dm))
   D_max=Dm(i_max(1), i_max(2))
-  print *, 'largest element ind = ', i_max, ' value = ', D_max
+  print *, ' largest element ind = ', i_max, ' value = ', D_max
+  write (*,'(a,a,2i6,a,e12.2)') 'start iter',' largest element ind = ', i_max, ' value = ', abs(D_max)
   
   !loop until threshold is reached
 
-  do while (abs(abs(D_max))>threshold)
+  do while (abs(D_max)>threshold)
     
     !compute next element
     Res=ZERO
@@ -77,7 +78,7 @@ subroutine cholesky_decompose (CD_out, threshold)
     Res=Res/zsqrt(D_max)
 
     m=m+1
-    print *, ' -------- iteration m = ', m, ' ------------ '
+!   print *, ' -------- iteration m = ', m, ' ------------ '
 
     !save vector
     CD(m,:,:)=Res
@@ -92,10 +93,10 @@ subroutine cholesky_decompose (CD_out, threshold)
     Dm=Dm-Gkl
 
     !find largest element
-    print *, 'old one =', Dm(i_max(1), i_max(2))
-    i_max=maxloc(abs(abs(Dm)))
+!   print *, 'old one =', Dm(i_max(1), i_max(2))
+    i_max=maxloc(abs(Dm))
     D_max=Dm(i_max(1), i_max(2))
-    print *, 'largest element ind = ', i_max, ' value = ', D_max
+    write (*,'(a,i6,a,2i6,a,e12.2)') 'iter',m,' largest element ind = ', i_max, ' value = ', abs(D_max)
 
     if (m.ge.nao*nao) then
       stop 'error: cholesky not converged'

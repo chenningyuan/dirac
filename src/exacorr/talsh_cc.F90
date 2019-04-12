@@ -1172,7 +1172,7 @@ module talsh_cc
 !        cholesky 
          complex(8), allocatable         :: CD(:,:,:)
          complex(8), pointer, contiguous :: chol_tens(:,:,:)
-         type(talsh_tens_t)              :: chol_tensor, test_tensor, err_tensor, one_tensor
+         type(talsh_tens_t)              :: chol_tensor, test_tensor, err_tensor
          type(talsh_tens_t)              :: uoo_tensor, uov_tensor, uvo_tensor, uvv_tensor
          integer, dimension(3)           :: chol_dims, uoo_dims, uov_dims, uvo_dims, uvv_dims
          integer, dimension(4)           :: ovov_dims, vvov_dims
@@ -1186,7 +1186,6 @@ module talsh_cc
 !        set up scalar tensor
          minusone_dims(1) = 1
          ierr=talsh_tensor_construct(minusone_tensor,C8,minusone_dims(1:0),init_val=MINUS_ONE)
-         ierr=talsh_tensor_construct(one_tensor,C8,(/1/),init_val=ONE)
 
 !        Get tensor with AO integrals
          aoint_dims      = nao
@@ -1288,10 +1287,10 @@ module talsh_cc
          ovov_dims(3) = nocc
          ovov_dims(4) = nvir
          ierr=talsh_tensor_construct(test_tensor,C8,ovov_dims,init_val=ZERO)
-         ierr=talsh_tensor_contract("T(p,q,r,s)+=K(u,q,p)*L(u,r,s)",test_tensor,uvo_tensor,uov_tensor) 
+         ierr=talsh_tensor_contract("T(p,q,r,s)+=K+(u,q,p)*L(u,r,s)",test_tensor,uvo_tensor,uov_tensor)
          if (ierr.ne.0) stop 'program error: cholesky not working'
          call mulliken_to_dirac_sort(test_tensor,int_t%oovv,12)
-         ierr=talsh_tensor_contract("E(p,q,r,s)+=T(p,q,r,s)*O()",err_tensor,int_t%oovv,minusone_tensor) 
+         ierr=talsh_tensor_contract("E(p,q,r,s)+=T(p,q,r,s)*O()",err_tensor,int_t%oovv,minusone_tensor)
          print *, 'oovv error =', tensor_norm2(err_tensor)
          ierr=talsh_tensor_destruct(err_tensor)
          ierr=talsh_tensor_destruct(test_tensor)
@@ -1308,18 +1307,19 @@ module talsh_cc
          call get_integral_tensor (aoint_tensor,int_t%oooo,12,nmo,mo_list)
          deallocate (mo_list)
          call print_date('finished oooo integrals')
-         call print_tensor(int_t%oooo, 1.0D-4, ' oooo tensor')
+!        call print_tensor(int_t%oooo, 1.0D-4, ' oooo tensor')
 !use cholesky vector
          ierr=talsh_tensor_construct(err_tensor,C8,oooo_dims,init_val=ZERO)
-         ierr=talsh_tensor_contract("E(p,q,r,s)+=T(p,q,r,s)*O()",err_tensor,int_t%oooo,one_tensor) 
+         ierr=talsh_tensor_contract("E(p,q,r,s)+=T(p,q,r,s)*O()",err_tensor,int_t%oooo,one_tensor)
          ierr=talsh_tensor_construct(test_tensor,C8,oooo_dims,init_val=ZERO)
-         ierr=talsh_tensor_contract("T(p,q,r,s)+=K(u,q,p)*L(u,r,s)",test_tensor,uoo_tensor,uoo_tensor) 
+         ierr=talsh_tensor_contract("T(p,q,r,s)+=K+(u,q,p)*L(u,r,s)",test_tensor,uoo_tensor,uoo_tensor)
          if (ierr.ne.0) stop 'program error: cholesky not working'
          call mulliken_to_dirac_sort(test_tensor,int_t%oooo,12)
          ierr=talsh_tensor_destruct(test_tensor)
-         ierr=talsh_tensor_contract("E(p,q,r,s)+=T(p,q,r,s)*O()",err_tensor,int_t%oooo,minusone_tensor) 
-         call print_tensor(int_t%oooo, 1.0D-4, ' oooo tensor')
+         ierr=talsh_tensor_contract("E(p,q,r,s)+=T(p,q,r,s)*O()",err_tensor,int_t%oooo,minusone_tensor)
+!        call print_tensor(int_t%oooo, 1.0D-4, ' chol oooo tensor')
          print *, 'oooo error =', tensor_norm2(err_tensor)
+!        call print_tensor(err_tensor, 1.0D-4, ' err oooo tensor')
          ierr=talsh_tensor_destruct(err_tensor)
          ierr=talsh_tensor_destruct(test_tensor)
 
@@ -1367,15 +1367,21 @@ module talsh_cc
          ierr=talsh_tensor_destruct(int_t%vovo)
          ierr=talsh_tensor_construct(int_t%vovo,C8,vovo_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(ovvo_tensor,C8,ovvo_dims,init_val=ZERO)
-         ierr=talsh_tensor_contract("T(p,q,r,s)+=K(u,q,p)*L(u,r,s)",int_t%vovo,uov_tensor,uvo_tensor) 
-         ierr=talsh_tensor_contract("T(p,q,r,s)+=K(u,q,p)*L(u,r,s)",ovvo_tensor,uvo_tensor,uvo_tensor)
+         ierr=talsh_tensor_construct(test_tensor,C8,(/nvir,nvir,nocc,nocc/),init_val=ZERO)
+         ierr=talsh_tensor_contract("T(p,q,r,s)+=K+(u,q,p)*L(u,r,s)",test_tensor,uvv_tensor,uoo_tensor)
          if (ierr.ne.0) stop 'program error: cholesky not working'
+         call mulliken_to_dirac_sort(test_tensor,int_t%vovo,0)
+         ierr=talsh_tensor_destruct(test_tensor)
+         ierr=talsh_tensor_construct(test_tensor,C8,(/nocc,nvir,nvir,nocc/),init_val=ZERO)
+         ierr=talsh_tensor_contract("T(p,q,r,s)+=K+(u,q,p)*L(u,r,s)",test_tensor,uvo_tensor,uvo_tensor)
+         if (ierr.ne.0) stop 'program error: cholesky not working'
+         call mulliken_to_dirac_sort(test_tensor,ovvo_tensor,0)
+         ierr=talsh_tensor_destruct(test_tensor)
          ierr=talsh_tensor_contract("V(a,i,b,j)+=V(i,a,b,j)*C()",int_t%vovo,ovvo_tensor,minusone_tensor)
          ierr=talsh_tensor_destruct(ovvo_tensor)
-         ierr=talsh_tensor_contract("E(p,q,r,s)+=T(p,q,r,s)*O()",err_tensor,int_t%vovo,minusone_tensor) 
+         ierr=talsh_tensor_contract("E(p,q,r,s)+=T(p,q,r,s)*O()",err_tensor,int_t%vovo,minusone_tensor)
          print *, 'vovo error =', tensor_norm2(err_tensor)
          ierr=talsh_tensor_destruct(err_tensor)
-         ierr=talsh_tensor_destruct(test_tensor)
 
 !        Get vvvv tensor
          vvvv_dims = nvir
@@ -1392,12 +1398,12 @@ module talsh_cc
          !call print_tensor(int_t%vvvv, 1.0D-4, ' vvvv tensor')
 !use cholesky vector
          ierr=talsh_tensor_construct(err_tensor,C8,vvvv_dims,init_val=ZERO)
-         ierr=talsh_tensor_contract("E(p,q,r,s)+=T(p,q,r,s)*O()",err_tensor,int_t%vvvv,one_tensor) 
+         ierr=talsh_tensor_contract("E(p,q,r,s)+=T(p,q,r,s)*O()",err_tensor,int_t%vvvv,one_tensor)
          ierr=talsh_tensor_construct(test_tensor,C8,vvvv_dims,init_val=ZERO)
-         ierr=talsh_tensor_contract("T(p,q,r,s)+=K(u,q,p)*L(u,r,s)",test_tensor,uvv_tensor,uvv_tensor) 
+         ierr=talsh_tensor_contract("T(p,q,r,s)+=K+(u,q,p)*L(u,r,s)",test_tensor,uvv_tensor,uvv_tensor)
          if (ierr.ne.0) stop 'program error: cholesky not working'
          call mulliken_to_dirac_sort(test_tensor,int_t%vvvv,12)
-         ierr=talsh_tensor_contract("E(p,q,r,s)+=T(p,q,r,s)*O()",err_tensor,int_t%vvvv,minusone_tensor) 
+         ierr=talsh_tensor_contract("E(p,q,r,s)+=T(p,q,r,s)*O()",err_tensor,int_t%vvvv,minusone_tensor)
          print *, 'vvvv error =', tensor_norm2(err_tensor)
          ierr=talsh_tensor_destruct(err_tensor)
          ierr=talsh_tensor_destruct(test_tensor)
@@ -1419,12 +1425,12 @@ module talsh_cc
          !call print_tensor(int_t%ooov, 1.0D-4, ' ooov tensor')
 !use cholesky vector
          ierr=talsh_tensor_construct(err_tensor,C8,ooov_dims,init_val=ZERO)
-         ierr=talsh_tensor_contract("E(p,q,r,s)+=T(p,q,r,s)*O()",err_tensor,int_t%ooov,one_tensor) 
+         ierr=talsh_tensor_contract("E(p,q,r,s)+=T(p,q,r,s)*O()",err_tensor,int_t%ooov,one_tensor)
          ierr=talsh_tensor_construct(test_tensor,C8,ooov_dims,init_val=ZERO)
-         ierr=talsh_tensor_contract("T(p,q,r,s)+=K(u,q,p)*L(u,r,s)",test_tensor,uoo_tensor,uov_tensor) 
+         ierr=talsh_tensor_contract("T(p,q,r,s)+=K+(u,q,p)*L(u,r,s)",test_tensor,uoo_tensor,uov_tensor)
          if (ierr.ne.0) stop 'program error: cholesky not working'
          call mulliken_to_dirac_sort(test_tensor,int_t%ooov,12)
-         ierr=talsh_tensor_contract("E(p,q,r,s)+=T(p,q,r,s)*O()",err_tensor,int_t%ooov,minusone_tensor) 
+         ierr=talsh_tensor_contract("E(p,q,r,s)+=T(p,q,r,s)*O()",err_tensor,int_t%ooov,minusone_tensor)
          print *, 'ooov error =', tensor_norm2(err_tensor)
          ierr=talsh_tensor_destruct(err_tensor)
          ierr=talsh_tensor_destruct(test_tensor)         
@@ -1455,10 +1461,10 @@ module talsh_cc
          vvov_dims(3) = nocc
          vvov_dims(4) = nvir
          ierr=talsh_tensor_construct(test_tensor,C8,vvov_dims,init_val=ZERO)
-         ierr=talsh_tensor_contract("T(p,q,r,s)+=K(u,q,p)*L(u,r,s)",test_tensor,uvv_tensor,uov_tensor) 
+         ierr=talsh_tensor_contract("T(p,q,r,s)+=K+(u,q,p)*L(u,r,s)",test_tensor,uvv_tensor,uov_tensor)
          if (ierr.ne.0) stop 'program error: cholesky not working'
          call mulliken_to_dirac_sort(test_tensor,int_t%vovv,34)
-         ierr=talsh_tensor_contract("E(p,q,r,s)+=T(p,q,r,s)*O()",err_tensor,int_t%vovv,minusone_tensor) 
+         ierr=talsh_tensor_contract("E(p,q,r,s)+=T(p,q,r,s)*O()",err_tensor,int_t%vovv,minusone_tensor)
          print *, 'vovv error =', tensor_norm2(err_tensor)
          ierr=talsh_tensor_destruct(err_tensor)
          ierr=talsh_tensor_destruct(test_tensor)
@@ -1466,7 +1472,6 @@ module talsh_cc
 !        Clean-up
          ierr=talsh_tensor_destruct(minusone_tensor)
          ierr=talsh_tensor_destruct(aoint_tensor)
-         ierr=talsh_tensor_destruct(one_tensor)
          ierr=talsh_tensor_destruct(chol_tensor)
          ierr=talsh_tensor_destruct(uoo_tensor)
          ierr=talsh_tensor_destruct(uov_tensor)

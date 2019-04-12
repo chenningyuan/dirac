@@ -534,13 +534,13 @@ module talsh_ao_to_mo
 !        transform 1st and 2nd index
          ierr=talsh_tensor_construct(a1int_tensor,C8,a1int_dims,init_val=ZERO)
 
-         ierr=talsh_tensor_contract("A(u,p,s)+=C(u,r,s)*M(r,p)",a1int_tensor,chol_tensor,mocoefa_tensor(1))
+         ierr=talsh_tensor_contract("A(u,p,s)+=C(u,r,s)*M+(r,p)",a1int_tensor,chol_tensor,mocoefa_tensor(1))
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=11; return; endif
          ierr=talsh_tensor_contract("D(u,p,q)+=A(u,p,s)*M(s,q)",moint_tensor,a1int_tensor,mocoefa_tensor(2))
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=21; return; endif
 
          ierr=talsh_tensor_init(a1int_tensor,ZERO)
-         ierr=talsh_tensor_contract("A(u,p,s)+=C(u,r,s)*M(r,p)",a1int_tensor,chol_tensor,mocoefb_tensor(1))
+         ierr=talsh_tensor_contract("A(u,p,s)+=C(u,r,s)*M+(r,p)",a1int_tensor,chol_tensor,mocoefb_tensor(1))
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=12; return; endif
          ierr=talsh_tensor_contract("D(u,p,q)+=A(u,p,s)*M(s,q)",moint_tensor,a1int_tensor,mocoefb_tensor(2))
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=22; return; endif
