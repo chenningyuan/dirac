@@ -64,20 +64,20 @@
 !
       IUNIT = 1
       ILOGG = 2
-      READ(LUSTD,*) I
+      READ(LUSTDIN,*) I
       IF(I.EQ.1) THEN
         WRITE(LUPRI,'(A)')                                              &
      'Name of input file with potential curve with '//                  &
      '" R E(R)" values (A40)'
-        READ(LUSTD,'(A)') POTFIL
+        READ(LUSTDIN,'(A)') POTFIL
         NPRP = 0
       ELSEIF(I.EQ.2) THEN
         WRITE(LUPRI,'(A)')                                              &
      'Name of input file with potential/property curve (A40)'
-        READ(LUSTD,'(A)') POTFIL
+        READ(LUSTDIN,'(A)') POTFIL
         WRITE(LUPRI,'(A)')                                              &
      'Give number of property curves'
-        READ(LUSTD,*) NPRP
+        READ(LUSTDIN,*) NPRP
         IF(NPRP.GT.MXPRP) THEN
           WRITE(LUPRI,'(A,I5)')                                         &
         '* Maximum number of properties  : ',MXPRP,                     &
@@ -92,7 +92,7 @@
    '  1. Bond lengths in Angstroms.',                                   &
    '  2. Bond lengths in atomic units.',                                &
    ' (Note that all other quantities only in atomic units !)'
-      READ(LUSTD,*) IANG
+      READ(LUSTDIN,*) IANG
       i=LNBLNK(POTFIL)
       OPEN(IUNIT,FILE=POTFIL,STATUS='OLD',FORM='FORMATTED',             &
       ACCESS='SEQUENTIAL',ERR=20)
@@ -149,10 +149,10 @@
    '  1. Select masses of the most abundant isotopes.',                 &
    '  2. Employ user-defined atomic masses.',                           &
    '  3. Normal modes: Give reduced mass.'
-      READ(LUSTD,*) I
+      READ(LUSTDIN,*) I
       IF(I.EQ.1) THEN
         WRITE(LUPRI,'(A)') '* Give charge of atom A:'
-        READ(LUSTD,*) IZ
+        READ(LUSTDIN,*) IZ
         CALL GETMSS(IZ,AM,ABUND,INFO)
         IF(INFO.EQ.0) THEN
           WRITE(LUPRI,'(A,F12.4)')                                      &
@@ -160,10 +160,10 @@
      '* Abundance:', ABUND
         ELSE
           WRITE(LUPRI,'(A)') 'Routine failed. Give mass in Daltons:'
-          READ(LUSTD,*) AM
+          READ(LUSTDIN,*) AM
         ENDIF
         WRITE(LUPRI,'(A)') '* Give charge of atom B :'
-        READ(LUSTD,*) IZ
+        READ(LUSTDIN,*) IZ
         CALL GETMSS(IZ,BM,ABUND,INFO)
         IF(INFO.EQ.0) THEN
           WRITE(LUPRI,'(A,F12.4)')                                      &
@@ -171,16 +171,16 @@
      '* Abundance:', ABUND
         ELSE
           WRITE(LUPRI,'(A)') 'Routine failed. Give mass in Daltons:'
-          READ(LUSTD,*) BM
+          READ(LUSTDIN,*) BM
         ENDIF
       ELSEIF(I.EQ.2) THEN
         WRITE(LUPRI,'(A)') '* Give mass of atom A in Daltons:'
-        READ(LUSTD,*) AM
+        READ(LUSTDIN,*) AM
         WRITE(LUPRI,'(A)') '* Give mass of atom B in Daltons:'
-        READ(LUSTD,*) BM
+        READ(LUSTDIN,*) BM
       ELSEIF(I.EQ.3) THEN
         WRITE(LUPRI,'(A)') '* Give reduced mass in Daltons:'
-        READ(LUSTD,*) UM
+        READ(LUSTDIN,*) UM
         GOTO 50
       ELSE
         WRITE(LUPRI,'(A)') ' You stupid fart ! Try again !'
@@ -212,12 +212,12 @@
 !
       WRITE(LUPRI,*) 'Do you want to calculate spectroscopic constants',&
     ' with other isotope(s) (y/n)?'
-      READ(LUSTD,*) REPLY
+      READ(LUSTDIN,*) REPLY
       IF(REPLY.EQ.'y') GO TO 10
 !
       WRITE(LUPRI,*) 'Do you want to calculate spectroscopic constants',&
     ' with another polynomial order (y/n)?'
-      READ(LUSTD,*) REPLY
+      READ(LUSTDIN,*) REPLY
       IF(REPLY.EQ.'y') GO TO 60
 !
 !     Anharmonic constant at non-stationary geometry
@@ -225,7 +225,7 @@
 !
       WRITE(LUPRI,*) 'Do you want to calculate spectroscopic constants',&
     ' at another geometry (y/n)?'
-      READ(LUSTD,*) REPLY
+      READ(LUSTDIN,*) REPLY
       IF(REPLY.EQ.'y') THEN
         WRITE(LUPRI,*) 'Give geometry in Angstroms '
         READ(5,*) XNEW
