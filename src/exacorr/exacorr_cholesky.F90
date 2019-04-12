@@ -15,7 +15,90 @@ public cholesky_decompose
 
 contains
 
-subroutine cholesky_decompose (CD_out, threshold)
+subroutine cholesky_decompose (matrix, mdim, CD_out, threshold)
+
+  use exacorr_datatypes
+  use exacorr_global
+
+  implicit none
+
+  !in: ao information
+  real(8), intent(in)                  :: threshold
+  complex(8), intent(in)               :: matrix(mdim,mdim)
+
+  !out: 3 component tensors
+  complex(8), intent(out), allocatable :: CD_out(:,:)
+
+  !work
+  complex(8), allocatable :: Dm(:)
+  integer(8)              :: m, i, j
+  integer(8)              :: i_max
+  complex(8)              :: D_max,D_max_denom
+  complex(8), allocatable :: Gkl(:)
+  complex(8), allocatable :: CD(:,:)
+  integer                 :: mdim, log_conv
+
+  !allocate tensors for cholesky decompostion
+  allocate(CD(mdim,mdim))
+  allocate(Dm(mdim))
+  allocate(Gkl(mdim))
+
+  do i = 1, mdim
+     Dm(i) = matrix(i,i)
+  end do
+
+  !find largest value
+  i_max=maxloc(abs(Dm),1)
+  D_max=Dm(i_max)
+  write (*,'(a,a,i6,a,e12.2)') 'start iter',' largest element ind = ', i_max, ' value = ', abs(D_max)
+  
+  !loop until threshold is reached
+
+  log_conv = ceiling(log10(abs(D_max)))
+  CD=ZERO
+  m=0
+  do while (abs(D_max)>threshold)
+    
+    !compute next element
+    do i = 1,m
+       CD(:,m+1)=CD(:,m+1)+CD(:,i)*CD(i_max,i)
+    end do
+    CD(:,m+1)=matrix(:,i_max)-CD(:,m+1)
+    D_max_denom = ONE / zsqrt(D_max)
+    CD(:,m+1)=CD(:,m+1) * D_max_denom
+
+    m=m+1
+
+    !update diagonal
+    Gkl(:)=CD(:,m)*CD(:,m)
+    Dm=Dm-Gkl
+
+    !find largest element
+    i_max=maxloc(abs(Dm),1)
+    D_max=Dm(i_max)
+
+    if (ceiling(log10(abs(D_max))) /= log_conv) then
+       write (*,'(a,i6,a,i6,a,e12.2)') 'iter',m,' largest element ind = ', i_max, ' value = ', abs(D_max)
+       log_conv = ceiling(log10(abs(D_max)))
+    end if
+
+    if (m.ge.mdim) then
+      stop 'error: cholesky not converged'
+    end if
+  end do
+
+  print *, 'Cholesky decomposition done '
+
+  deallocate(Gkl)
+  deallocate(Dm)
+
+  !hand tensor over
+  allocate(CD_out(mdim, m))
+  CD_out=CD(:,1:m)
+  deallocate(CD)
+end subroutine cholesky_decompose
+
+subroutine cholesky_decompose_aomat (CD_out, threshold)
 
   use exacorr_datatypes
   use exacorr_global
@@ -34,7 +117,7 @@ subroutine cholesky_decompose (CD_out, threshold)
   complex(8), allocatable :: Dm(:,:)
   integer(8)              :: m, i, j
   integer(8)              :: i_max(1:2)
-  complex(8)              :: D_max
+  complex(8)              :: D_max,D_max_denom
   complex(8), allocatable :: Gkl(:,:)
   complex(8), allocatable :: CD(:,:,:)
 
@@ -69,7 +152,8 @@ subroutine cholesky_decompose (CD_out, threshold)
     end do
     call get_2el_int(nao, gto, nshells, i_max(1), i_max(2), Gkl)
     CD(m+1,:,:)=Gkl-CD(m+1,:,:)
-    CD(m+1,:,:)=CD(m+1,:,:)/zsqrt(D_max)
+    D_max_denom = ONE / zsqrt(D_max)
+    CD(m+1,:,:)=CD(m+1,:,:) * D_max_denom
 
     m=m+1
 
@@ -97,7 +181,7 @@ subroutine cholesky_decompose (CD_out, threshold)
   allocate(CD_out(m, nao, nao))
   CD_out=CD(1:m,:,:)
   deallocate(CD)
-end subroutine cholesky_decompose
+end subroutine cholesky_decompose_aomat
 
 subroutine get_2el_diag(nao, gto, nshells, Dm)
 
