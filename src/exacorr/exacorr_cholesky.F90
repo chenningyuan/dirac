@@ -143,7 +143,6 @@ subroutine get_2el_diag(nao, gto, nshells, Dm)
         cp   =  gto(p)%coefficient(1)
         np   =  nfunctions(lp,basis_angular)
 
-
         !get eri values
         call interest_eri('llll',FIJKL,gout,&
                           lp,ep,xp,yp,zp,cp,&
@@ -165,7 +164,7 @@ subroutine get_2el_diag(nao, gto, nshells, Dm)
 
 end subroutine get_2el_diag
 
-subroutine get_2el_int(nao, gto, nshells, l_fix, k_fix, Gkl)
+subroutine get_2el_int(nao, gto, nshells, k_fix, l_fix, Gkl)
   !returns two electron integrals with two fixed indices
 
   use exacorr_datatypes
@@ -175,7 +174,7 @@ subroutine get_2el_int(nao, gto, nshells, l_fix, k_fix, Gkl)
   implicit none
 
   integer, intent(in)                 :: nao, nshells
-  integer(8), intent(in)              :: l_fix, k_fix
+  integer(8), intent(in)              :: k_fix, l_fix
   type(basis_func_info_t), intent(in) :: gto(:)  ! arrays with basis function information
 
   complex(8), intent(inout) :: Gkl(:,:)
@@ -192,6 +191,7 @@ subroutine get_2el_int(nao, gto, nshells, l_fix, k_fix, Gkl)
 
   basis_angular = get_basis_angular()
   loff = 0
+! This search could be avoided by generalizing the routine that points from a function to the shell
   do lsh = 1, nshells
     ll   =  gto(lsh)%orb_momentum
     el   =  gto(lsh)%exponent(1)
@@ -201,6 +201,7 @@ subroutine get_2el_int(nao, gto, nshells, l_fix, k_fix, Gkl)
     cl   =  gto(lsh)%coefficient(1)
     nl   =  nfunctions(ll,basis_angular)
     if ( l_fix>loff .and. l_fix.le.loff+nl) then
+        l = l_fix - loff
         EXIT
     else
        loff = loff + nl
@@ -217,6 +218,7 @@ subroutine get_2el_int(nao, gto, nshells, l_fix, k_fix, Gkl)
     ck   =  gto(ksh)%coefficient(1)
     nk   =  nfunctions(lk,basis_angular)
     if ( k_fix>koff .and. k_fix.le.koff+nk) then
+        k = k_fix - koff
         EXIT
     else
        koff = koff + nk
@@ -248,19 +250,10 @@ subroutine get_2el_int(nao, gto, nshells, l_fix, k_fix, Gkl)
                         ll,el,xl,yl,zl,cl,&
                         li,ei,xi,yi,zi,ci,&
                         lj,ej,xj,yj,zj,cj )
-      ijkl = 0
-      do l = 1, nl
-        do k = 1, nk
-          do j = 1, nj
-            do i = 1, ni
-              ijkl = ijkl + 1
-              if (koff+k==k_fix) then
-                if (loff+l==l_fix) then
-                  Gkl(i+ioff,j+joff) = dcmplx(gout(ijkl),0.D0)
-                end if
-              end if
-            end do
-          end do
+      do j = 1, nj
+        do i = 1, ni
+           ijkl = (l-1)*nk*nj*ni+(k-1)*nj*ni+(j-1)*ni+i
+           Gkl(i+ioff,j+joff) = dcmplx(gout(ijkl),0.D0)
         end do
       end do
       
