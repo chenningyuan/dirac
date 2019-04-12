@@ -7,6 +7,7 @@ module talsh_eom
   use talsh_ao_to_mo, only : tensor_norm2
   use exacorr_global, only : debug_exa
   use exacorr_utils,  only : print_date
+  use talsh_davidson
 
   implicit none
 
@@ -29,12 +30,27 @@ module talsh_eom
       type(talsh_tens_t),    intent(inout), optional :: t1_tensor, l2_tensor
 !     eom tensors
       type(talsh_eom_tens) :: eom_t
+      type(talsh_davidson_workspace) :: workspace_t
+      integer, allocatable :: manifolds_d(:)
 
       write(*,*) ""
       write(*,'(A)') "*******************************************************************************"
       write(*,'(A)') "***************************** Equation of Motion ******************************"
       write(*,'(A)') "*******************************************************************************"
       write(*,*) ""
+
+      call talsh_davidson_setup(unit_output=6, &
+                                solve_right=.true.,&
+                                solve_left=.false.,&
+                                symmetric=.false., &
+                                complex_mode=.true.)
+
+      call talsh_tensor_print_info(t1_tensor)
+      call talsh_tensor_print_info(t2_tensor)
+      allocate(manifolds_d(2))
+      manifolds_d = (/1,1/)
+      call talsh_davidson_workspace_create(workspace_t, manifolds_d)
+      deallocate(manifolds_d)
 
 !************************************
 !     EOM calculation: IP, EA or EE *

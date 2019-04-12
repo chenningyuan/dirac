@@ -19,5 +19,6 @@ Water molecule. X2C Hamiltonian. CC energies.
 .VIRTUAL
 6..17
 .EOMCC
+IP
 !.CCDOUBLES
 *END OF

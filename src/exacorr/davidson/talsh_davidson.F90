@@ -1,15 +1,27 @@
 module talsh_davidson
 
+use talsh
+use tensor_algebra
+use talsh_common_routines
+use exacorr_datatypes
+
 
 implicit none
+complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
+                         ONE_QUARTER_C=(0.25D0,0.D0), ONE_HALF=(0.5D0,0.D0), &
+                         MINUS_ONE_HALF=(-0.5D0,0.D0), TWO=(2.D0,0.D0), &
+                         MINUS_TWO=(-2.D0,0.D0)
+
 
 public talsh_davidson_get_eigenvalue_shift
 public talsh_davidson_setup
-public talsh_davidson_cleanup
+public talsh_davidson_destroy
 public talsh_davidson_driver
-public talsh_davidson_print_vectors
+!public davidson_print_vectors
 public talsh_solve_values_vectors
 public talsh_sort_values_vectors
+public talsh_davidson_workspace_create
+public talsh_davidson_workspace_destroy
 
 interface talsh_davidson_driver
     module procedure talsh_get_values_vectors_davidson
@@ -88,46 +100,12 @@ integer, save :: left_subspace_file_unit  = 242
 
 contains 
 
-!
-! create_sigma_vector is the interface used with the diagonalizer. 
-! inside it we will handle left and right sigma vector cases, and the sigma_eom module 
-! will have to be initialized so that it knows whether to do left or right vectors
-!  
-   function create_sigma_vector(A, r, old_sigma_vector, state_sym)
-! bad coupling between modules, to be replaced by an abstract class that the sigma vector module extends
-! and that will have associated get_matrix_size, create_sigma_vector and create_diagonal
-
-      real(kind=8), pointer :: create_sigma_vector(:,:)
-      real(kind=8), pointer :: old_sigma_vector(:,:)
-      type(intermediates) :: A
-      real(kind=8), intent(in) :: r(:,:)
-      integer, intent(in) :: state_sym
-
-      if (davidson_solve_rhs.and..not.davidson_solve_lhs) then 
-!     do right vectors, this is the default
-          create_sigma_vector => create_sigma_vector_right(A, r, old_sigma_vector, state_sym)
-
-      else if (davidson_solve_lhs.and..not.davidson_solve_rhs) then
-!     do left vectors vectors
-          create_sigma_vector => create_sigma_vector_left(A, r, old_sigma_vector, state_sym)
-
-      else
-! do both at the same time; this will require some thinking, one option is to return
-! a matrix of (N,(Lr+Lf)), L(r/l) the number of rhs/lhs vecturs, containing Lr rhs vectors 
-! in the first Lr columns and the transpose of sigma_L in the remaining columns. it is easy
-! if there's always the same number of columns flr left and right, otherwise there's no 
-! simple way to keep track of the dimensions.
-          create_sigma_vector => NULL()
-      endif 
-   end function
-
-
 ! this should never be used to update an instance, only to create new ones. it's better to have results
 ! for left and right separately if we determine these in two steps. but we must check whether an 
 ! element of the derived type has been allocated already... perhaps this should then be changed to a
 ! function returning a results type, and have the davidson driver return that to its caller
     subroutine davidson_create_results(results, N, nroots, values, left, right)
-        type(davidson_results), intent(inout) :: results
+        type(talsh_davidson_results), intent(inout) :: results
         integer, intent(in)    :: N, nroots 
         integer                :: N_local
         logical, intent(in)    :: values, left, right
@@ -175,7 +153,7 @@ contains
 
 
     subroutine free_davidson_results(results)
-        type(davidson_results), intent(inout) :: results
+        type(talsh_davidson_results), intent(inout) :: results
 
         if (associated(results%eValues)) deallocate(results%eValues)
         if (associated(results%eVectorsR)) deallocate(results%eVectorsR)
@@ -183,7 +161,7 @@ contains
     end subroutine
 
 
-    subroutine davidson_setup(convergence_threshold, &
+    subroutine talsh_davidson_setup(convergence_threshold, &
                               max_subspace_size, &
                               max_iterations,    & 
                               unit_output,       & 
@@ -445,8 +423,8 @@ contains
     end subroutine 
 
 
-    subroutine davidson_cleanup(results)
-        type(davidson_results), intent(inout) :: results
+    subroutine talsh_davidson_destroy(results)
+        type(talsh_davidson_results), intent(inout) :: results
         call free_davidson_results(results)
     end subroutine
 
@@ -1023,36 +1001,6 @@ contains
         deallocate(residue_b)
     end subroutine
 
-    function create_reduced_problem(b, sigma_vector)
-        real(kind=8), pointer     :: create_reduced_problem(:,:)
-        real(kind=8), intent(in)  :: sigma_vector(:,:)
-        real(kind=8), intent(in)  :: b(:,:)
-        real(kind=8), pointer     :: sigmat(:,:), bt(:,:)
-
-        integer :: vectors_L, vectors_N
-        real(kind=8) :: r_alpha_lapack = 1.0d0
-        real(kind=8) :: r_beta_lapack = 1.0d0 
-
-        integer :: vectors_L_complex, vectors_N_complex
-
-        complex*16, pointer :: c_b(:,:), c_sigma(:,:), c_reduced(:,:)
-        integer :: i, j, k
-
-        vectors_N = size(b,1)
-        vectors_L = size(b,2)
-
-        if (davidson_complex_mode_with_reals) then
-            vectors_L_complex = 2*vectors_L
-            vectors_N_complex = vectors_N / 2
-
-            allocate(create_reduced_problem(vectors_L_complex,vectors_L))
-            create_reduced_problem = 0.0d0
-
-            call zgemm('C', 'N', vectors_L, vectors_L, vectors_N_complex, (1.d0, 0.0d0), b, vectors_N_complex, &
-                       sigma_vector, vectors_N_complex, (0.d0, 0.0d0), create_reduced_problem, vectors_L)
-        end if
-
-    end function
 
     subroutine davidson_transpose_conjugate_vector(v, vt, complex_dimension_v)
         real(kind=8), intent(in)    :: v(:,:)
@@ -1114,7 +1062,7 @@ contains
 
     end subroutine
 
-    subroutine solve_values_vectors(M, eValues, eVectorsR, eVectorsL, left)
+    subroutine talsh_solve_values_vectors(M, eValues, eVectorsR, eVectorsL, left)
         real(kind=8), intent(inout), pointer :: M(:,:)
         real(kind=8), intent(inout), pointer :: eVectorsL(:,:)
         real(kind=8), intent(inout), pointer :: eVectorsR(:,:)
@@ -1186,16 +1134,79 @@ contains
     end subroutine
  
 
-    subroutine talsh_get_values_vectors_davidson(nroots, A, b, projector)
+    subroutine talsh_davidson_workspace_destroy(workspace)
+        type(talsh_davidson_workspace),  intent(inout) :: workspace
+
+        write(davidson_output_file_unit, "(4x,a)") 'write me (talsh_davidson_workspace_destroy)!'
+    end subroutine 
+
+    subroutine talsh_davidson_workspace_create(workspace, N)
+        type(talsh_davidson_workspace),  intent(inout) :: workspace
+        integer, intent(in)  :: N(:)
+        integer :: trial_dims(2), sigma_dims(2), delta_dims(2), M_dims(2) 
+        integer :: ierr, i, excitation_level, total_dimension
+! exploring
+        integer           :: tensor_id(4)
+        integer(INTL)     :: tensor_root(4)
+!       
+!   for the moment we force the number of roots to be 1
+!
+        excitation_level = size(N,1) 
+        total_dimension  = 0
+        do i = 1, excitation_level
+           total_dimension  = total_dimension + N(i)  
+        end do
+
+        workspace%nroots = 1
+        workspace%Nmax   = total_dimension
+        workspace%N      = total_dimension
+        workspace%Lmax   = davidson_max_subspace_size
+        workspace%L      = 1
+
+!     set tensor dims
+        
+        trial_dims = (/ workspace%Nmax, workspace%Lmax /)
+        sigma_dims = (/ workspace%Nmax, workspace%Lmax /)
+        delta_dims = (/ workspace%Nmax, workspace%nroots /)
+        M_dims     = (/ workspace%Lmax, workspace%Lmax /)
+
+!     create all fixed intermediates
+        ierr=talsh_tensor_construct(workspace%trial,C8,trial_dims,init_val=ZERO)
+        ierr=talsh_tensor_construct(workspace%sigma,C8,sigma_dims,init_val=ZERO)
+        ierr=talsh_tensor_construct(workspace%delta,C8,delta_dims,init_val=ZERO)
+        ierr=talsh_tensor_construct(workspace%M,C8,M_dims,init_val=ZERO)
+
+! testing
+!         call workspace%trial%get_space_ids(tensor_id,tensor_root,ierr)
+
+! debug statements
+        write(davidson_output_file_unit, "(4x,a)")  'in talsh_davidson_workspace_create'
+
+        write(davidson_output_file_unit, "(4x,a,i6,a,i6)") &
+     &  'created tensor for trial vectors, dimensions :',workspace%Nmax,"x",workspace%Lmax
+
+        call talsh_tensor_print_info(workspace%trial)
+!        write(davidson_output_file_unit, "(4x,a,4i6)") &
+!     &  'created tensor for trial vectors, id :',tensor_id
+
+!        write(davidson_output_file_unit, "(4x,a,4i6)") &
+!     &  'created tensor for trial vectors, root :',tensor_root
+
+        write(davidson_output_file_unit, "(4x,a,i6,a,i6)") &
+     &  'created tensor for sigma vectors, dimensions :',workspace%Nmax,"x",workspace%Lmax
+
+        write(davidson_output_file_unit, "(4x,a,i6,a,i6)") &
+     &  'created tensor for correction vectors, dimensions :',workspace%Nmax,"x",workspace%nroots
+
+        
+    end subroutine 
+
+    subroutine talsh_get_values_vectors_davidson(A, workspace, projector)
 ! bad coupling between modules, to be replaced by an abstract class that the sigma vector module extends
 ! and that will have associated get_matrix_size, create_sigma_vector and create_diagonal
-        use exacorr_datatypes, only: talsh_eom_tens
         type(talsh_lambda_tens), intent(in)   :: A
-! back to general stuff
-        type(talsh_eom_tens), intent(inout)   :: b
-        logical, intent(in), pointer :: projector(:)
-        integer, intent(in) :: nroots
-        integer, intent(in) :: state_sym
+        type(talsh_davidson_workspace),  intent(inout) :: workspace
+        type(talsh_projectors), intent(inout) :: projector
 !
 ! nullifying all pointers at the start to give them a state, see discussion on http://www.cs.rpi.edu/~szymansk/OOF90/bugs.html
 ! "[...] When a pointer is declared its status is undefined, and cannot be safely queried with the associated intrinsic. [...]"
@@ -1203,8 +1214,6 @@ contains
         real(kind=8), pointer :: M_diag(:)           => NULL()
         real(kind=8), pointer :: delta(:,:)          => NULL()
         real(kind=8), pointer :: preconditioner(:,:) => NULL()
-        real(kind=8), pointer :: sigma_vector(:,:)   => NULL()
-        real(kind=8), pointer :: b(:,:)              => NULL()
         real(kind=8), pointer :: M_small(:,:)        => NULL()
         real(kind=8), pointer :: c_small_r(:,:)      => NULL()
         real(kind=8), pointer :: c_small_l(:,:)      => NULL()
@@ -1215,30 +1224,27 @@ contains
 
         integer :: vectors_N, L, min_subspace_size, max_subspace_size, niter
         integer :: i, j, k
+        integer :: nroots, ierr
 
-        vectors_N = get_matrix_size(A)
+        vectors_N = workspace%N
+        nroots = workspace%nroots
 !
 ! davidson_create_results() will allocate storage for results from davidson diagonalization when called a first time. 
 ! 
-        call davidson_create_results(results,vectors_N,nroots,&
-                                     davidson_solve_values,   &
-                                     davidson_solve_lhs,      &
-                                     davidson_solve_rhs)
+!!      call davidson_create_results(results,vectors_N,nroots,&
+!!                                   davidson_solve_values,   &
+!!                                   davidson_solve_lhs,      &
+!!                                   davidson_solve_rhs)
 
 ! todo: replace lines below with a call to a function which also performs the allocation, like
 !        M_diag => create_diagonal(A)
-        allocate(M_diag(size(A%H_II))) 
-        M_diag = A%H_II 
+!!      allocate(M_diag(size(A%H_II))) 
+!!      M_diag = A%H_II 
 
-        min_subspace_size = nroots 
-        max_subspace_size = max(nroots, davidson_max_subspace_size)
+ 
+        min_subspace_size = nroots
+        max_subspace_size = max(nroots, workspace%Lmax)
         max_subspace_size = min(vectors_N, max_subspace_size)
-
-        if (associated(projector)) then
-            write(davidson_output_file_unit,*) ""
-            write(davidson_output_file_unit,"(4x,a)") "Projector (for CVS/REW/... calculations) is active"
-            write(davidson_output_file_unit,*) ""
-        end if
 
         write(davidson_output_file_unit,"(4x,a,i6,a)") "Requested ",nroots," eigenvales"
         if ( nroots .gt. vectors_N ) then 
@@ -1248,32 +1254,24 @@ contains
            write(davidson_output_file_unit, "(4x,a)") "Number of roots requested equal to matrix order !"
         endif
 
-        b => b_guess
-
-        if (davidson_verbose) then
-            write(davidson_output_file_unit,"(4x,a,i4,a,i8)") &
-                  "Start by mapping M onto a subspace of size ",min_subspace_size, &
-                  ", will extend it up to ",max_subspace_size
-            call davidson_print_vectors(b, label="Initial subspace vectors      ")
-        end if
-
-       if (davidson_overlap_sorting) &
-           call setup_overlap_sorting(c_small_r_old, c_small_l_old, nroots, davidson_solve_rhs, davidson_solve_lhs)
-
-
+        
         write(davidson_output_file_unit,*) ""
-        do niter = 1, davidson_max_iterations
+!!      do niter = 1, davidson_max_iterations
             write(davidson_output_file_unit,*) "Iteration ", niter
             write(davidson_output_file_unit,*) ""
 
             if (associated(M_small)) deallocate(M_small)
-            if (associated(projector)) call apply_projector(projector,b)
 
-            sigma_vector => create_sigma_vector(A, b, sigma_vector, state_sym)
-            if (associated(projector)) call apply_projector(projector,sigma_vector)
+!!          sigma_vector => create_sigma_vector(A, b, sigma_vector, state_sym)
+!!          if (associated(projector)) call apply_projector(projector,sigma_vector)
 
-            if (davidson_solve_rhs) M_small => create_reduced_problem(b, sigma_vector)
-            if (davidson_solve_lhs) M_small => create_reduced_problem(sigma_vector, b)
+!! this is only one side rhs/lhs
+!! from this we need to fish out the small matrix, which is the slice LxL of the full tensor
+!! we also need to conjugate transpose the trial vector 
+            ierr=talsh_tensor_contract("M(i,j)+=Bdag(i,e)*S(e,j)",workspace%M,workspace%trial,workspace%sigma)
+            allocate(M_small(workspace%L,workspace%L))
+            M_small = 1
+!! create code to fetch M_small here 
 
             call calculate_eigenvalues_and_eigenvectors(davidson_output_file_unit,    &
                                                         M_small,                      &
@@ -1303,64 +1301,59 @@ contains
             if (associated(preconditioner)) deallocate(preconditioner)
             if (associated(delta)) deallocate(delta)
 
-            preconditioner =>  form_preconditioner(M_diag, e_small)
+!!          preconditioner =>  form_preconditioner(M_diag, e_small)
 
-           if (davidson_solve_rhs) delta => correction_to_vectors(davidson_output_file_unit, nroots,  &
-                                           e_small, c_small_r, sigma_vector, & 
-                                           b, preconditioner)
-
-           if (davidson_solve_lhs) delta => correction_to_vectors(davidson_output_file_unit, nroots,  &
-                                           e_small, c_small_l, sigma_vector, & 
-                                           b, preconditioner)
+!!         if (davidson_solve_rhs) delta => correction_to_vectors(davidson_output_file_unit, nroots,  &
+!!                                         e_small, c_small_r, sigma_vector, & 
+!!                                         b, preconditioner)
 
             if (.not.associated(delta)) then
                 write(davidson_output_file_unit,*) "All roots converged."
                  if (associated(preconditioner)) deallocate(preconditioner)
-                exit
+!! withouth the do loop this exit is pointless, so comment it out now
+!!              exit
             end if
 
 ! not converged yet, if asked to refresh the trial vectors do it now, otherwise create
 ! new trial vectors
-            if (davidson_refresh_trial_vectors.and.(mod(niter,davidson_trial_vector_refresh_rate).eq.0)) then
-            else
+!!          if (davidson_refresh_trial_vectors.and.(mod(niter,davidson_trial_vector_refresh_rate).eq.0)) then
+!!          else
 
-               b => updated_subspace_vectors_R(b, delta, verbose=davidson_debug)
+!!             call update_subspace(workspace%b, workspace%delta)
 
-! in the case of a parallel run, at each davidson step synchronize the new trial vectors 
-               call davidson_synchronize_trial_vectors(b,size(delta,2))
-            end if
+!!          end if
  
 ! now check whether we reached the maximum subspace size
-            L = size(b,2)
-            if (L .eq. max_subspace_size) then
-               if (associated(preconditioner)) deallocate(preconditioner)
-               if (associated(delta)) deallocate(delta)
-               write(davidson_output_file_unit, *) "Reached maximum subspace size, stopping."
-               exit
-            end if
-        end do ! davidson iterations
+!!          L = size(b,2)
+!!          if (L .eq. max_subspace_size) then
+!!             if (associated(preconditioner)) deallocate(preconditioner)
+!!             if (associated(delta)) deallocate(delta)
+!!             write(davidson_output_file_unit, *) "Reached maximum subspace size, stopping."
+!!             exit
+!!          end if
+!!      end do ! davidson iterations
 
         if (davidson_solve_rhs.and.davidson_overlap_sorting) deallocate(c_small_r_old)
         if (davidson_solve_lhs.and.davidson_overlap_sorting) deallocate(c_small_l_old)
 
         write(davidson_output_file_unit, *) "Final size of reduced subspace : ",L
 
-        call form_eigenvalues_full_problem(results%eValues, nroots, e_small) 
+!!      call form_eigenvalues_full_problem(results%eValues, nroots, e_small) 
 
-        if (davidson_solve_lhs) then 
-            call form_eigenvector_full_problem(results%eVectorsL, nroots,b,c_small_l,davidson_solve_rhs,davidson_solve_lhs)
-        end if
-        if (davidson_solve_rhs) then 
-            call form_eigenvector_full_problem(results%eVectorsR, nroots,b,c_small_r,davidson_solve_rhs,davidson_solve_lhs)
-        end if
+!!      if (davidson_solve_lhs) then 
+!!          call form_eigenvector_full_problem(results%eVectorsL, nroots,b,c_small_l,davidson_solve_rhs,davidson_solve_lhs)
+!!      end if
+!!      if (davidson_solve_rhs) then 
+!!          call form_eigenvector_full_problem(results%eVectorsR, nroots,b,c_small_r,davidson_solve_rhs,davidson_solve_lhs)
+!!      end if
 
-        if (associated(b)) deallocate(b)
-        deallocate(M_small)
-        if (associated(sigma_vector)) deallocate(sigma_vector)
-        deallocate(M_diag)
-        deallocate(e_small)
-        if (associated(c_small_r)) deallocate(c_small_r)
-        if (associated(c_small_l)) deallocate(c_small_l)
+!!      if (associated(b)) deallocate(b)
+!!      deallocate(M_small)
+!!      if (associated(sigma_vector)) deallocate(sigma_vector)
+!!      deallocate(M_diag)
+!!      deallocate(e_small)
+!!      if (associated(c_small_r)) deallocate(c_small_r)
+!!      if (associated(c_small_l)) deallocate(c_small_l)
 
     end subroutine
 
@@ -1465,7 +1458,7 @@ contains
             nroots_to_print = M_nroots
         end if
 
-        call solve_values_vectors(M, eValues, eVectorsR, eVectorsL, left_local)
+        call talsh_solve_values_vectors(M, eValues, eVectorsR, eVectorsL, left_local)
 
         if (follow_overlap_local) then
             
@@ -1505,7 +1498,7 @@ contains
             end if ! selection of overlap sorting scheme 
 
         else
-            call sort_values_vectors(sorting_order_local, eValues, eVectorsR, eVectorsL, &
+            call talsh_sort_values_vectors(sorting_order_local, eValues, eVectorsR, eVectorsL, &
                                      right_local, left_local, apply_evalues_shift, eValuesShift)
         end if
 
@@ -1617,11 +1610,11 @@ contains
         if (davidson_complex_mode_with_reals) then
             vectors_N = vectors_N / 2
             call zgemm('N', 'N', vectors_N, vectors_L, vectors_N, (1.0d0, 0.0d0), M, vectors_N, &
-                       b, vectors_N, (0.0d0, 0.0d0), create_sigma_vector, vectors_N)
+                       b, vectors_N, (0.0d0, 0.0d0), create_sigma_vector_full_matrix, vectors_N)
         end if
     end function
 
-    subroutine sort_values_vectors(order, e_small, c_small_r, c_small_l, right, left, apply_shift, energy_shift) 
+    subroutine talsh_sort_values_vectors(order, e_small, c_small_r, c_small_l, right, left, apply_shift, energy_shift) 
         integer, intent(in) :: order ! 1: ascending, -1: descending
         logical, intent(in) :: right ! if true, sort also the right eigenvectors
         logical, intent(in) :: left  ! if true, sort also the left eigenvectors
@@ -1775,41 +1768,6 @@ contains
        shifted_value_complex_as_real = sqrt(temp(1)*temp(1) + temp(2)*temp(2))
     end function shifted_value_complex_as_real
 
-    recursive subroutine quicksort_vector_real_shifted(shift, v, indices_sorted, first, last)
-        real(kind=8), intent(inout) ::  v(:)
-        real(kind=8), intent(in) ::  shift
-        integer, intent(inout) :: indices_sorted(:)
-        integer, intent(in)  :: first, last
-
-        real(kind=8) :: x, y, t
-        integer :: i, j, ti
-
-        x = shifted_value_real(v( (first + last) / 2 ),shift)
-        i = first
-        j = last
-        do
-           do while (shifted_value_real(v(i),shift) < x)
-              i = i + 1
-           end do
-           do while (x < shifted_value_real(v(j),shift))
-              j = j - 1
-           end do
-           if (i >= j) exit
-
-           t = v(i)
-           v(i) = v(j)
-           v(j) = t
-
-           ti = indices_sorted(i)
-           indices_sorted(i) = indices_sorted(j)
-           indices_sorted(j) = ti
-
-           i = i + 1
-           j = j - 1
-        end do
-        if (first < i-1) call quicksort_vector_real_shifted(shift, v, indices_sorted, first, i-1)
-        if (j+1 < last)  call quicksort_vector_real_shifted(shift, v, indices_sorted, j+1, last)
-    end subroutine 
 
     recursive subroutine quicksort_vector_complex_as_real(v, indices_sorted, first, last)
         real(kind=8), intent(inout) ::  v(:,:)
@@ -2049,7 +2007,7 @@ contains
         end do
     end subroutine
 
-    subroutine davidson_get_eigenvalue_shift(apply_shift,shift)
+    subroutine talsh_davidson_get_eigenvalue_shift(apply_shift,shift)
        logical, intent(inout)      :: apply_shift
        real(kind=8), intent(inout) :: shift(2)
 
@@ -2058,46 +2016,6 @@ contains
 
     end subroutine
 
-
-   subroutine davidson_synchronize_trial_vectors(b,nr_to_sync)
-! this routine synchronizes the matrix of trial vectors (b) from the 
-! davidson procedure across nodes, with the process with rank 0, through 
-! a brodcast. 
-!
-! the routine takes as second argument the number of trial vectors to 
-! synchronize (nr_to_sync). 
-!
-! the routine can oprate in two ways: 
-! - if nr_to_sync is smaller or equal to zero, this signals all vectors are broadcast.
-! - if nr_to_sync is non-zero, nr_to_sync vectors are broadcast, but starting
-!   with the most recent ones which are stored in the last columns of b. 
-!
-#ifdef VAR_MPI
-      use interface_to_mpi
-#endif
-      real(kind=8), intent(inout) :: b(:,:)
-      integer, intent(in) :: nr_to_sync 
-      integer :: ndim1, ndim2, start_slice, end_slice, i
-
-#ifdef VAR_MPI
-      ndim1 = size(b,1)
-      if (nr_to_sync .le. 0) then 
-          ndim2 = size(b,2) 
-          do i = 1, ndim2
-             call interface_mpi_bcast(b(1,i),ndim1,0,global_communicator)
-          end do
-      else
-         end_slice = size(b,2)
-         start_slice = end_slice - nr_to_sync
-          do i = start_slice + 1, end_slice
-             call interface_mpi_bcast(b(1,i),ndim1,0,global_communicator)
-          end do
-      end if
-#else
-      return
-#endif
-
-   end subroutine
 
 end module
 

@@ -26,6 +26,7 @@ if(ENABLE_EXATENSOR)
    talsh_eom.F90
    talsh_gradient.F90
    talsh_cc.F90
+   davidson/talsh_davidson.F90
   )
 
   if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
