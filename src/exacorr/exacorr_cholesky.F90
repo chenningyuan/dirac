@@ -13,9 +13,13 @@ private
 
 public cholesky_decompose
 
+interface cholesky_decompose
+   module procedure cholesky_decompose_real
+end interface
+
 contains
 
-subroutine cholesky_decompose (matrix, mdim, CD_out, threshold)
+subroutine cholesky_decompose_real (matrix, mdim, CD_out, threshold)
 
   use exacorr_datatypes
   use exacorr_global
@@ -24,24 +28,31 @@ subroutine cholesky_decompose (matrix, mdim, CD_out, threshold)
 
   !in: ao information
   real(8), intent(in)                  :: threshold
-  complex(8), intent(in)               :: matrix(mdim,mdim)
+  real(8), intent(in)                  :: matrix(mdim,mdim)
 
   !out: 3 component tensors
-  complex(8), intent(out), allocatable :: CD_out(:,:)
+  real(8), intent(out), allocatable :: CD_out(:,:)
 
   !work
-  complex(8), allocatable :: Dm(:)
-  integer(8)              :: m, i, j
-  integer(8)              :: i_max
-  complex(8)              :: D_max,D_max_denom
-  complex(8), allocatable :: Gkl(:)
-  complex(8), allocatable :: CD(:,:)
-  integer                 :: mdim, log_conv
+  real(8), allocatable :: Dm(:)
+  integer(8)           :: m, i, j, nonzero
+  integer(8)           :: i_max
+  real(8)              :: D_max,D_max_denom
+  real(8), allocatable :: Gkl(:)
+  real(8), allocatable :: CD(:,:)
+  integer              :: mdim, log_conv
 
   !allocate tensors for cholesky decompostion
   allocate(CD(mdim,mdim))
   allocate(Dm(mdim))
   allocate(Gkl(mdim))
+
+  nonzero = 0
+  do j = 1, mdim
+     do i = 1, mdim
+        if (matrix(i,j).gt.threshold) nonzero = nonzero+1
+     end do
+  end do
 
   do i = 1, mdim
      Dm(i) = matrix(i,i)
@@ -64,7 +75,7 @@ subroutine cholesky_decompose (matrix, mdim, CD_out, threshold)
        CD(:,m+1)=CD(:,m+1)+CD(:,i)*CD(i_max,i)
     end do
     CD(:,m+1)=matrix(:,i_max)-CD(:,m+1)
-    D_max_denom = ONE / zsqrt(D_max)
+    D_max_denom = ONE / sqrt(D_max)
     CD(:,m+1)=CD(:,m+1) * D_max_denom
 
     m=m+1
@@ -87,7 +98,9 @@ subroutine cholesky_decompose (matrix, mdim, CD_out, threshold)
     end if
   end do
 
-  print *, 'Cholesky decomposition done '
+  print *, 'Cholesky decomposition done, used ',m,' elements'
+  print *, 'Matrix compressed to ',real(m)/real(mdim)*100,'% of the original size'
+  print *, 'Original number of non-zero elements was ', real(nonzero)/real(mdim*mdim)*100,'%'
 
   deallocate(Gkl)
   deallocate(Dm)
@@ -96,7 +109,7 @@ subroutine cholesky_decompose (matrix, mdim, CD_out, threshold)
   allocate(CD_out(mdim, m))
   CD_out=CD(:,1:m)
   deallocate(CD)
-end subroutine cholesky_decompose
+end subroutine cholesky_decompose_real
 
 subroutine cholesky_decompose_aomat (CD_out, threshold)
 
