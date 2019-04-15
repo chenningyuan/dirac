@@ -301,7 +301,12 @@ C
          CALL MEMSET_NUM(ZAN(IATOM),IATOM,MXNP,RNT,H,EPH,GRDC,
      &                    num_grid_cfg_grasp,IPRINT)
          write(*,*)'HH2',H
-         CALL NUCPRM(ZAN(IATOM),GEXP,NNUC,RNT,EPH,NUCTYP)
+C         
+C NUCPRM is for making nuclear parameter of Fermi and Uniform nucleus. 
+C We do not have to use it for the Gaussian nucleus.
+C         
+C        CALL NUCPRM(ZAN(IATOM),GEXP,NNUC,RNT,EPH,NUCTYP)
+C         
          write(*,*)"MXNP",MXNP
          allocate( NUMIR(MXNP) )
          allocate( R(MXNP)     )
@@ -316,9 +321,6 @@ C
               R(J) = R(J-1)*EPH
            ENDDO
 C         
-           write(*,*)
-           write(*,*)"***************"
-           write(*,*)
            CALL INTMG(NUMIR,R,ZAN(IATOM),GEXP,MXNP,NUCTYP)
 !!! debug           
 !           OPEN(20,FILE='LOG_DIRAC',STATUS='REPLACE',          
@@ -742,6 +744,12 @@ C
          CALL MEMSET_NUM(ZAN(IATOM),IATOM,MXNP,RNT,H,EPH,GRDC,
      &                    num_grid_cfg_grasp,IPRINT)
          write(*,*)'HH2',H
+C         
+C NUCPRM is for making nuclear parameter of Fermi and Uniform nucleus. 
+C We do not have to use it for the Gaussian nucleus.
+C         
+C        CALL NUCPRM(ZAN(IATOM),GEXP,NNUC,RNT,EPH,NUCTYP)
+C
          CALL NUCPRM(ZAN(IATOM),GEXP,NNUC,RNT,EPH,NUCTYP)
 !         MXNP = 1912            !change
          write(*,*)"MXNP",MXNP
@@ -2056,56 +2064,27 @@ C
 #include "implicit.h"
 #include "dcbgen.h"
 #include "pi.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"     
-#include "symmet.h"
 C     
       DIMENSION TB(N),R(N)
-      PARAMETER(NTMAX = 10000,ONE=1.0D0,TWO=2.0D0)
-      real(8), allocatable :: TT(:),TTX(:)      
-C
-      allocate(TT(NTMAX))
-      allocate(TTX(NTMAX))
+      PARAMETER(ONE=1.0D0,TWO=2.0D0)
 C
       write(*,*)"magnetic" !sunaga
-      PREFAC = ONE/(4.0D0*CVAL*CVAL*PI)
-C
-C     PREFAC is different from GRASP.
-C     In GRASP, large*small + small*large are calculated.
-C     In DIRAC, only triangle matrix (large*small) are calculated.
-C     From this, we have to remove TWO from GRASP's source.
-C      
-      IF(NUCTYP.EQ.3)THEN
-        XI = GEXP !1.5/(RAD*RAD)
-        WA = SQRT(XI)
-      ENDIF  
-!     IF(NUCTYP.EQ.1.OR.2)
-!     For the calculation of the deri
-!
-!      
-      DO 6 I = 1,N
-        CALL G1TGRID(TT,TTX,NTMAX,NT,R(I))
-C        write(*,*)""
-C        write(*,*)""
-C        write(*,*)"TT,R" ,TT(1),TT(2),NTMAX,NT,R(I)
-C        write(*,*)"TTX,R" ,TTX(1),TTX(2)
-        CALL QUAD_T_US2(TT,TTX,NTMAX,NT,RESULT)
-C        write(*,*)""
-C        write(*,*)"TT,RESULT" ,TT(1),TT(2),NTMAX,NT,RESULT
-C        write(*,*)"TTX,R" ,TTX(1),TTX(2)
-*     radial derivative of the nuclear potential
-      IF (NUCTYP .EQ. 0) THEN
+      IF(NUCTYP.EQ.0)THEN
 *     POINT
-C     DIFFNUCPOT = ZZ(I)/R(I)**2
         POTIR=Z 
-        DIFFNUCPOT = POTIR/R(I)**TWO
-      ELSE
+        DO 10 I = 1,N
+          DIFFNUCPOT = POTIR/(R(I)*R(I))
+          CALL INTMG2(TB(I),R(I),POTIR,DIFFNUCPOT)
+ 10     CONTINUE
+      ELSE   
 *     GAUSS
-C        XI = 1.5/PARM(1)**2
-        POTIR = Z*ERF(WA*R(I))
-        DIFFNUCPOT = POTIR/R(I)**TWO
-     &             - TWO*Z*SQRT(XI)/(SQRTPI*R(I))*EXP(-XI*R(I)*R(I))
+        XI = GEXP              !1.5/(RAD*RAD)
+        WA = SQRT(XI)
+        DO 20 I = 1,N
+          POTIR = Z*ERF(WA*R(I))
+          DIFFNUCPOT = POTIR/(R(I)*R(I))
+     &                 - TWO*Z*SQRT(XI)/(SQRTPI*R(I))*EXP(-XI*R(I)*R(I))
+          CALL INTMG2(TB(I),R(I),POTIR,DIFFNUCPOT)
 C        SEC1 = - TWO*Z*SQRT(XI/3.14159)/R(I)*EXP(-XI*R(I)*R(I))
 C        SEC2 = - TWO*Z*SQRT(XI/PI)/R(I)*EXP(-XI*R(I)*R(I))
 C        SEC3 = - TWO*Z*SQRT(XI)/(SQRTPI*R(I))*EXP(-XI*R(I)*R(I))
@@ -2119,7 +2098,48 @@ C        write(*,*)"SEC1",SEC1, POTIR/R(I)**TWO + SEC1
 C        write(*,*)"SEC2",SEC2, POTIR/R(I)**TWO + SEC2
 C        write(*,*)"SEC3",SEC3, POTIR/R(I)**TWO + SEC3
 C        write(*,*)
-      ENDIF
+ 20     CONTINUE
+      ENDIF  
+!     IF(NUCTYP.EQ.1.OR.2)
+!     For the calculation of the deri
+C      
+      RETURN
+      END
+*****************************************************************************
+*
+      SUBROUTINE INTMG2(TBI,RI,POTIR,DIFFNUCPOT)
+*
+*     PHI_MG CONTRIBUTION (7) of Flambaum et al. Phys. Rev. A 72 052115 (2005)
+*     Magnetic contribution
+*
+*     Called from: NUMINT
+*      
+*     Modified to DIRAC A. Sunaga Mar. 2019      
+*           
+*****************************************************************************
+#include "implicit.h"
+#include "dcbgen.h"
+#include "pi.h"
+C     
+      PARAMETER(NTMAX = 10000,ONE=1.0D0,TWO=2.0D0)
+      real(8), allocatable :: TT(:),TTX(:)      
+C
+      allocate(TT(NTMAX))
+      allocate(TTX(NTMAX))
+C
+      PREFAC = ONE/(4.0D0*CVAL*CVAL*PI)
+C
+C     PREFAC is different from GRASP.
+C     In GRASP, large*small + small*large are calculated.
+C     In DIRAC, only triangle matrix (large*small) are calculated.
+C     From this, we have to remove TWO from GRASP's source.
+C      
+      CALL G1TGRID(TT,TTX,NTMAX,NT,RI)
+      CALL QUAD_T_US2(TT,TTX,NTMAX,NT,RESULT)
+C        write(*,*)""
+C        write(*,*)"TT,RESULT" ,TT(1),TT(2),NTMAX,NT,RESULT
+C        write(*,*)"TTX,R" ,TTX(1),TTX(2)
+*     radial derivative of the nuclear potential
       G1A = RESULT*DIFFNUCPOT
       G1B = DIFFNUCPOT
 C      write(*,*)"ERF,WA,R(I),I"
@@ -2130,18 +2150,17 @@ C     &     - TWO*Z*SQRT(XI/PI)/(R(I))*EXP(-XI*R(I)*R(I)),DIFFNUCPOT
 C      write(*,*)"RESULT,NUCPOT",RESULT,DIFFNUCPOT
 C     write(*,*)"exp",EXP(-XI*R(I)*R(I))
 *
-      CALL G2TGRID(TT,TTX,NTMAX,NT,R(I))
+      CALL G2TGRID(TT,TTX,NTMAX,NT,RI)
 C      write(*,*)"TT",TT(1),TT(2),TT(3)
 C      write(*,*)"TTX",TTX(1),TTX(2),TTX(3)
 C      write(*,*)"NTMAX,NT,R(I)",NTMAX,NT,R(1),R(2),R(3)
 C      write(*,*)""
       CALL QUAD_T_US2(TT,TTX,NTMAX,NT,RESULT)
-      G2 = TWO*RESULT*CVAL*POTIR/R(I)
+      G2 = TWO*RESULT*CVAL*POTIR/RI
 C      write(*,*)"TWO,RESULT,CVAL,POTIR", TWO,RESULT,CVAL,POTIR!sunaga
 C      write(*,*)"PREFAC,G1A,G1B,G2",PREFAC,G1A,G1B,G2,I !sunaga
 C      write(*,*)""
-      TB(I) = PREFAC*(G1A - G1B + G2) !*R(I)
- 6    CONTINUE
+      TBI = PREFAC*(G1A - G1B + G2) !*R(I)
 C      
       deallocate(TT)
       deallocate(TTX)
