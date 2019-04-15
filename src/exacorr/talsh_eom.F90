@@ -20,7 +20,167 @@ module talsh_eom
 
   contains
 
-    subroutine talsh_eom_driver (exa_input,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor,l2_tensor,t1_tensor)
+    subroutine talsh_eom_trial_create(workspace, flavor)
+      type(talsh_davidson_workspace), intent(inout) :: workspace
+      character(len=2), intent(in) :: flavor
+
+      integer :: nocc, nvir, i, j, a, b, ierr 
+      complex(8), allocatable :: diagonal(:)
+
+      integer :: hdiag1_dims(2), hdiag2_dims(4)
+      complex(8), pointer, contiguous:: hdiag1_hp_tens(:,:), hdiag2_hp_tens(:,:,:,:)
+      complex(8), pointer, contiguous:: hdiag1_h_p_tens(:),  hdiag2_h_p_tens(:,:,:)
+      type(C_PTR):: Hdiag1_body_p, Hdiag2_body_p
+
+      integer :: trial1_dims(2), trial2_dims(4)
+      complex(8), pointer, contiguous:: trial1_hp_tens(:,:), trial2_hp_tens(:,:,:,:)
+      complex(8), pointer, contiguous:: trial1_h_p_tens(:),  trial2_h_p_tens(:,:,:)
+      type(C_PTR):: trial1_body_p, trial2_body_p
+
+      ierr=talsh_tensor_get_body_access(workspace%Hdiag1,Hdiag1_body_p,C8,0,DEV_HOST)
+      ierr=talsh_tensor_get_body_access(workspace%Hdiag2,Hdiag2_body_p,C8,0,DEV_HOST)
+
+!     ierr=talsh_tensor_get_body_access(workspace%trial1,trial1_body_p,C8,0,DEV_HOST)
+!     ierr=talsh_tensor_get_body_access(workspace%trial2,trial2_body_p,C8,0,DEV_HOST)
+
+      select case(flavor)
+         case("IP")
+!           call c_f_pointer(Hdiag1_body_p,hdiag1_h_p_tens,hdiag1_dims(1:1))
+!           call c_f_pointer(Hdiag2_body_p,hdiag2_h_p_tens,hdiag2_dims(1:3))
+
+!           call c_f_pointer(trial1_body_p,trial1_h_p_tens,trial1_dims(1:1))
+!           call c_f_pointer(trial2_body_p,trial2_h_p_tens,trial2_dims(1:3))
+
+!           write (6,*) hdiag1_dims(1:1)
+
+!           allocate(diagonal(hdiag1_dims(1:1)))
+            
+!           do i = 1, hdiag1_dims(1:1)
+!              diagonal(i) = Hdiag1_body_p(i)
+!           end do
+
+      end select
+
+!    write (6,*) 'debug >>> hdiag1_h_p_tens >>>'
+!    write (6,*) diagonal
+!    write (6,*) 'debug <<< hdiag1_h_p_tens <<<'
+
+
+!              iroot = 1
+!              do while (iroot.le.nroot)
+!                 k = minloc(diag_H, MASK=(diag_H .ge. in_window_HbarSS_threshold))
+!                 i = k(1)
+!                 if (iprnt.ge.2) write(iw,*)'roots',iroot,diag_H(i),i
+!                 if (iprnt.ge.4) write(iw,*) 'making',i,'huge'
+!                 diag_H(i) = huge(diag_H)
+!! we may have diagonal elements which do not correspond to an element within the windows, so we check that
+!! this is the case
+!                 if (index_in_window(i).eqv..true.) then
+!                     if (iprnt.ge.2) write(iw,*)'determinant in window',i
+!                     jroot = i
+!                     if (rcw.eq.2) jroot = 2*i - 1
+!                     R1(jroot,iroot) = 1.0d0
+!                     iroot = iroot + 1
+!                end if
+
+    end subroutine
+
+    subroutine talsh_eom_Hdiag_create(workspace, eps_occ, eps_vir, flavor)
+      type(talsh_davidson_workspace), intent(inout) :: workspace
+      real(8), intent(in) :: eps_occ(:), eps_vir(:)
+      character(len=2), intent(in) :: flavor
+      integer :: nocc, nvir, i, j, a, b, ierr 
+      integer :: hdiag1_dims(2), hdiag2_dims(4)
+      real(8) :: diagonal
+      complex(8), pointer, contiguous:: hdiag1_hp_tens(:,:), hdiag2_hp_tens(:,:,:,:)
+      complex(8), pointer, contiguous:: hdiag1_h_p_tens(:),  hdiag2_h_p_tens(:,:,:)
+      type(C_PTR):: Hdiag1_body_p, Hdiag2_body_p
+
+
+      diagonal = ZERO
+
+      nocc = size(eps_occ,1)
+      nvir = size(eps_vir,1)
+
+      ierr=talsh_tensor_get_body_access(workspace%Hdiag1,Hdiag1_body_p,C8,0,DEV_HOST)
+      ierr=talsh_tensor_get_body_access(workspace%Hdiag2,Hdiag2_body_p,C8,0,DEV_HOST)
+
+      print *,'debug, in Hdiag_create: no=',nocc,'nv=',nvir
+      select case(flavor)
+         case("IP")
+            call c_f_pointer(Hdiag1_body_p,hdiag1_h_p_tens,hdiag1_dims(1:1))
+            call c_f_pointer(Hdiag2_body_p,hdiag2_h_p_tens,hdiag2_dims(1:3))
+
+     write (6,*) hdiag1_dims 
+     write (6,*) hdiag2_dims 
+
+            do i = 1, nocc 
+               diagonal = -eps_occ(i)
+     write (6,*) diagonal 
+               hdiag1_h_p_tens(i) = diagonal
+            end do
+
+     write (6,*) 'debug >>> hdiag1_h_p_tens >>>'
+     write (6,*) hdiag1_h_p_tens(1:nocc)
+     write (6,*) 'debug <<< hdiag1_h_p_tens <<<'
+
+            do i = 1, nocc 
+               do j = 1, nocc 
+                  do a = 1, nvir 
+                     diagonal = eps_vir(a) - eps_occ(j) - eps_occ(i)
+     write (6,*) diagonal 
+                     hdiag2_h_p_tens(a,j,i) = diagonal 
+                  end do
+               end do
+            end do
+
+!    write (6,*) 'debug >>> hdiag2_h_p_tens >>>'
+!    write (6,*) hdiag2_h_p_tens(1:nvir,1:nocc,1:nocc)
+!    write (6,*) 'debug <<< hdiag2_h_p_tens <<<'
+
+         case("EA")
+            call c_f_pointer(Hdiag1_body_p,hdiag1_h_p_tens,hdiag1_dims(1:1))
+            call c_f_pointer(Hdiag2_body_p,hdiag2_h_p_tens,hdiag2_dims(1:3))
+            do a = 1, nvir 
+               diagonal = eps_vir(a)
+               hdiag1_h_p_tens(a) = diagonal
+            end do
+
+            do a = 1, nvir 
+               do b = 1, nvir 
+                  do i = 1, nocc 
+                     diagonal = eps_vir(a) + eps_vir(b) - eps_occ(i)
+                     hdiag2_h_p_tens(a,b,i) = diagonal
+                  end do
+               end do
+            end do
+
+         case("EE")
+            call c_f_pointer(Hdiag1_body_p,hdiag1_hp_tens,hdiag1_dims(1:2))
+            call c_f_pointer(Hdiag2_body_p,hdiag2_hp_tens,hdiag2_dims(1:4))
+            do i = 1, nocc
+               do a = 1, nvir
+                  diagonal = eps_vir(a) - eps_occ(i)
+                  hdiag1_hp_tens(a,i) = diagonal
+               end do
+            end do
+
+            do i = 1, nocc
+               do j = 1, nocc
+                  do a = 1, nvir
+                     do b = 1, nvir
+                        diagonal = eps_vir(b) + eps_vir(a) - eps_occ(j) - eps_occ(i)
+                        hdiag2_hp_tens(a,b,i,j) = diagonal
+                     end do
+                  end do
+               end do
+            end do
+
+       end select
+
+    end subroutine
+
+    subroutine talsh_eom_driver (exa_input,eps_occ,eps_vir, t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor,l2_tensor,t1_tensor)
 
 !     input variables
       type(exacc_input),     intent(in   )           :: exa_input
@@ -28,10 +188,11 @@ module talsh_eom
       type(talsh_intg_tens), intent(inout)           :: int_t
       type(talsh_tens_t),    intent(inout)           :: foo_tensor, fov_tensor, fvv_tensor
       type(talsh_tens_t),    intent(inout), optional :: t1_tensor, l2_tensor
+      real(8),               intent(in)              :: eps_occ(:), eps_vir(:)
 !     eom tensors
       type(talsh_eom_tens) :: eom_t
       type(talsh_davidson_workspace) :: workspace_t
-      integer, allocatable :: manifolds_d(:)
+
 
       write(*,*) ""
       write(*,'(A)') "*******************************************************************************"
@@ -45,12 +206,9 @@ module talsh_eom
                                 symmetric=.false., &
                                 complex_mode=.true.)
 
-      call talsh_tensor_print_info(t1_tensor)
-      call talsh_tensor_print_info(t2_tensor)
-      allocate(manifolds_d(2))
-      manifolds_d = (/1,1/)
-      call talsh_davidson_workspace_create(workspace_t, manifolds_d)
-      deallocate(manifolds_d)
+      call talsh_davidson_workspace_create(workspace_t, exa_input%nocc, exa_input%nvir, exa_input%eom_flavour, 2)
+      call talsh_eom_Hdiag_create(workspace_t, eps_occ, eps_vir, exa_input%eom_flavour)
+      call talsh_eom_trial_create(workspace_t, exa_input%eom_flavour)
 
 !************************************
 !     EOM calculation: IP, EA or EE *

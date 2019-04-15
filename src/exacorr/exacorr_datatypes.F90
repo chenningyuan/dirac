@@ -128,8 +128,8 @@
         type, extends(talsh_lambda_tens), public :: talsh_eom_tens
          type(talsh_tens_t) :: r1_coeff, r2_coeff, l1_coeff, l2_coeff
          type(talsh_tens_t) :: r1_sigma, r2_sigma, l1_sigma, l2_sigma
-         type(talsh_tens_t) :: Hdiag1, Hdiag2
         end type talsh_eom_tens
+
 
         type, public :: talsh_projectors
          type(talsh_tens_t) :: p1, p2
@@ -137,15 +137,17 @@
 
         type, public :: talsh_davidson_workspace
            integer :: nroots              ! number of roots we're looking for
+           integer, allocatable :: N(:)   ! number of rows per excitation level
            integer :: Nmax                ! total number of rows =  dim(T1)+dim(T2)+...
            integer :: Lmax                ! total number of columns = dim(maximum number of trial vectors)
-           integer :: L, N                ! counters for keeping tabs on how much of the workspace we've used
+           integer :: L                   ! counters for keeping tabs on how much of the workspace we've used
                                           ! in most usages N = Nmax and L will grow up to Lmax
            type(talsh_tens_t) :: M        ! subspace matrix, dimension : (Lmax, Lmax) 
 ! see to change those below to tensors segmented into singly/doubly/... manifolds
-           type(talsh_tens_t) :: trial    ! trial vector workspace, dimension: (Nmax,Lmax) if left or right, careful otherwise 
-           type(talsh_tens_t) :: sigma    ! sigma vector workspace, dimension: (Nmax,Lmax) if left or right, careful otherwise
-           type(talsh_tens_t) :: delta    ! error vector, dimension : (Nmax, nroots) if left or right, careful otherwise
+           type(talsh_tens_t) :: trial1, trial2   ! trial vector workspace, dimension: (N(i),Lmax) if left or right, careful otherwise; i = 1, 2,... 
+           type(talsh_tens_t) :: sigma1, sigma2   ! sigma vector workspace, dimension: (N(i),Lmax) if left or right, careful otherwise; i = 1, 2,...
+           type(talsh_tens_t) :: delta1, delta2   ! error vector, dimension : (NmaxY, nroots) if left or right, careful otherwise; i = 1, 2,...
+           type(talsh_tens_t) :: Hdiag1, Hdiag2   ! diagonal elements for the similarity-transformed Hamiltonian
         end type
 
 !       One electron integrals

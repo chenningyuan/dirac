@@ -281,18 +281,19 @@ module talsh_cc
 !**************************
 
          if (eom) then
+
            if (exa_input%eom_flavour.eq."EE" .and. exa_input%eom_properties .and. .not.lambda) then
              call quit("To do EOM-EE properties, you first need to calculate the Lambda amplitudes!")
            end if
 
            if ( (exa_input%eom_flavour.eq."IP" .or. exa_input%eom_flavour.eq."EA") .and. .not.CCD) then
-             call talsh_eom_driver(exa_input,comm_t%t2,int_t,comm_t%foo,comm_t%fov,comm_t%fvv,t1_tensor=comm_t%t1)
+             call talsh_eom_driver(exa_input,eps_occ,eps_vir, comm_t%t2,int_t,comm_t%foo,comm_t%fov,comm_t%fvv,t1_tensor=comm_t%t1) 
            elseif ( (exa_input%eom_flavour.eq."IP" .or. exa_input%eom_flavour.eq."EA") .and. CCD) then
-             call talsh_eom_driver(exa_input,comm_t%t2,int_t,comm_t%foo,comm_t%fov,comm_t%fvv)
+             call talsh_eom_driver(exa_input,eps_occ,eps_vir, comm_t%t2,int_t,comm_t%foo,comm_t%fov,comm_t%fvv)
            elseif (exa_input%eom_flavour.eq."EE" .and. .not.CCD) then
-             call talsh_eom_driver(exa_input,comm_t%t2,int_t,comm_t%foo,comm_t%fov,comm_t%fvv,l2_tensor,comm_t%t1)
+             call talsh_eom_driver(exa_input,eps_occ,eps_vir, comm_t%t2,int_t,comm_t%foo,comm_t%fov,comm_t%fvv,l2_tensor,comm_t%t1)
            elseif (exa_input%eom_flavour.eq."EE" .and. CCD) then
-             call talsh_eom_driver(exa_input,comm_t%t2,int_t,comm_t%foo,comm_t%fov,comm_t%fvv,l2_tensor)
+             call talsh_eom_driver(exa_input,eps_occ,eps_vir, comm_t%t2,int_t,comm_t%foo,comm_t%fov,comm_t%fvv,l2_tensor)
            else
              call quit ('Error: No valid EOM-flavour chosen')
            end if
