@@ -255,7 +255,7 @@ module talsh_eom
       if (.not.exa_input%ccd) then
         select case(exa_input%eom_flavour)
           case("IP")
-            call eom_ip(exa_input,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor,t1_tensor)
+            call eom_ip(exa_input,workspace_t,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor,t1_tensor)
           case("EA")
             call eom_ea(exa_input,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor,t1_tensor)
           case("EE")
@@ -270,7 +270,7 @@ module talsh_eom
       else
         select case(exa_input%eom_flavour)
           case("IP")
-            call eom_ip(exa_input,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor)
+            call eom_ip(exa_input,workspace_t,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor)
           case("EA")
             call eom_ea(exa_input,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor)
           case("EE")
@@ -291,11 +291,12 @@ module talsh_eom
 
     end subroutine talsh_eom_driver
 
-    subroutine eom_ip(exa_input,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor,t1_tensor)
+    subroutine eom_ip(exa_input,workspace_t,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor,t1_tensor)
 
 !     input variables
       type(exacc_input),     intent(in   ) :: exa_input
       type(talsh_eom_tens),  intent(inout) :: eom_t
+      type(talsh_davidson_workspace), intent(inout) :: workspace_t
       type(talsh_tens_t),    intent(inout) :: t2_tensor
       type(talsh_intg_tens), intent(inout) :: int_t
       type(talsh_tens_t),    intent(inout) :: foo_tensor, fov_tensor, fvv_tensor
@@ -378,7 +379,9 @@ module talsh_eom
 !     calculate right sigma vector *
 !***********************************
 
-      call sigma_right_ip(exa_input,int_t,eom_t,t2_tensor)
+      call sigma_right_ip(exa_input,int_t,eom_t,t2_tensor, &
+   &                      workspace_t%trial1,workspace_t%trial2, &
+   &                      workspace_t%sigma1,workspace_t%sigma2)
       call print_date("Calculated EOM-IP RHS")
 
 !************************************************
@@ -697,13 +700,17 @@ module talsh_eom
 
     end subroutine eom_ee
 
-    subroutine sigma_right_ip(exa_input,int_t,eom_t,t2_tensor)
+    subroutine sigma_right_ip(exa_input,int_t,eom_t, t2_tensor, r1_tensor, r2_tensor, sigma1_tensor, sigma2_tensor)
 
 !     input variables
       type(exacc_input),     intent(in   ) :: exa_input
       type(talsh_intg_tens), intent(inout) :: int_t
       type(talsh_eom_tens),  intent(inout) :: eom_t
       type(talsh_tens_t),    intent(inout) :: t2_tensor
+      type(talsh_tens_t),    intent(inout) :: r1_tensor
+      type(talsh_tens_t),    intent(inout) :: r2_tensor
+      type(talsh_tens_t),    intent(inout) :: sigma1_tensor
+      type(talsh_tens_t),    intent(inout) :: sigma2_tensor
 !     auxiliary tensor
       type(talsh_tens_t) :: v_aux
 !     error code
@@ -713,78 +720,74 @@ module talsh_eom
 !     r1_sigma *
 !***************
 
-      ierr=talsh_tensor_init(eom_t%r1_sigma)
-
 !--------------------------------------
 !     term 1: S1(i) -= F(m,i) * R1(m) |
 !--------------------------------------
 
-      ierr=talsh_tensor_contract("S(i)+=F(m,i)*R(m)",eom_t%r1_sigma,eom_t%fbar_oo,eom_t%r1_coeff,scale=MINUS_ONE)
+      ierr=talsh_tensor_contract("S(i,L)+=F(m,i)*R(m,L)",sigma1_tensor,eom_t%fbar_oo,r1_tensor,scale=MINUS_ONE)
 
 !------------------------------------------
 !     term 2: S1(i) += F(m,e) * R2(e,i,m) |
 !------------------------------------------
 
-      ierr=talsh_tensor_contract("S(i)+=F(m,e)*R(e,i,m)",eom_t%r1_sigma,eom_t%fbar_ov,eom_t%r2_coeff)
+      ierr=talsh_tensor_contract("S(i,L)+=F(m,e)*R(e,i,m,L)",sigma1_tensor,eom_t%fbar_ov,r2_tensor)
 
 !--------------------------------------------------
 !     term 3: S1(i) += 1/2 W(m,n,i,e) * R2(e,m,n) |
 !--------------------------------------------------
 
-      ierr=talsh_tensor_contract("S(i)+=W(m,n,i,e)*R(e,m,n)",eom_t%r1_sigma,eom_t%w_ooov,eom_t%r2_coeff,scale=ONE_HALF)
+      ierr=talsh_tensor_contract("S(i,L)+=W(m,n,i,e)*R(e,m,n,L)",sigma1_tensor,eom_t%w_ooov,r2_tensor,scale=ONE_HALF)
 
 !***************
 !     r2_sigma *
 !***************
 
-      ierr=talsh_tensor_init(eom_t%r2_sigma)
-
 !---------------------------------------------
 !     term 1: S2(a,i,j) -= W(m,a,i,j) * R(m) |
 !---------------------------------------------
 
-      ierr=talsh_tensor_contract("S(a,i,j)+=W(m,a,j,i)*R(m)",eom_t%r2_sigma,eom_t%w_ovoo,eom_t%r1_coeff)
+      ierr=talsh_tensor_contract("S(a,i,j,L)+=W(m,a,j,i)*R(m,L)",sigma2_tensor,eom_t%w_ovoo,r1_tensor)
 
 !-----------------------------------------------------
 !     term 2: S2(a,i,j) -= P(i,j) F(m,i) * R2(a,m,j) |
 !-----------------------------------------------------
 
-      ierr=talsh_tensor_contract("S(a,i,j)+=F(m,i)*r(a,j,m)",eom_t%r2_sigma,eom_t%fbar_oo,eom_t%r2_coeff)
-      ierr=talsh_tensor_contract("S(a,i,j)+=F(m,j)*r(a,m,i)",eom_t%r2_sigma,eom_t%fbar_oo,eom_t%r2_coeff)
+      ierr=talsh_tensor_contract("S(a,i,j,L)+=F(m,i)*r(a,j,m,L)",sigma2_tensor,eom_t%fbar_oo,r2_tensor)
+      ierr=talsh_tensor_contract("S(a,i,j,L)+=F(m,j)*r(a,m,i,L)",sigma2_tensor,eom_t%fbar_oo,r2_tensor)
 
 !--------------------------------------------------
 !     term 3: S2(a,i,j) += W(m,n,i,j) * R2(a,m,n) |
 !--------------------------------------------------
 
-      ierr=talsh_tensor_contract("S(a,i,j)+=W(m,n,i,j)*r(a,m,n)",eom_t%r2_sigma,eom_t%w_oooo,eom_t%r2_coeff)
+      ierr=talsh_tensor_contract("S(a,i,j,L)+=W(m,n,i,j)*r(a,m,n,L)",sigma2_tensor,eom_t%w_oooo,r2_tensor)
 
 !---------------------------------------------------------
 !     term 4: S2(a,i,j) -= P(i,j) W(m,a,i,e) * R2(e,m,j) |
 !---------------------------------------------------------
 
-      ierr=talsh_tensor_contract("S(a,i,j)+=W(a,m,e,i)*R(e,j,m)",eom_t%r2_sigma,eom_t%w_vovo,eom_t%r2_coeff)
-      ierr=talsh_tensor_contract("S(a,i,j)+=W(a,m,e,j)*R(e,m,i)",eom_t%r2_sigma,eom_t%w_vovo,eom_t%r2_coeff)
+      ierr=talsh_tensor_contract("S(a,i,j,L)+=W(a,m,e,i)*R(e,j,m,L)",sigma2_tensor,eom_t%w_vovo,r2_tensor)
+      ierr=talsh_tensor_contract("S(a,i,j,L)+=W(a,m,e,j)*R(e,m,i,L)",sigma2_tensor,eom_t%w_vovo,r2_tensor)
 
 !----------------------------------------------
 !     term 5: S2(a,i,j) += F(a,e) * R2(e,i,j) |
 !----------------------------------------------
 
-      ierr=talsh_tensor_contract("S(a,i,j)+=F(a,e)*R(e,i,j)",eom_t%r2_sigma,eom_t%fbar_vv,eom_t%r2_coeff)
+      ierr=talsh_tensor_contract("S(a,i,j,L)+=F(a,e)*R(e,i,j,L)",sigma2_tensor,eom_t%fbar_vv,r2_tensor)
 
 !-----------------------------------------------------------------------
 !     term 6: S2(a,i,j) += 1/2 ( V(m,n,e,f) * R2(f,m,n) ) * T(e,a,i,j) |
 !-----------------------------------------------------------------------
 
-      ierr=talsh_tensor_construct(v_aux,C8,(/exa_input%nvir/),init_val=ZERO)
-      ierr=talsh_tensor_contract("U(e)+=V(m,n,e,f)*R(f,m,n)",v_aux,int_t%oovv,eom_t%r2_coeff,scale=ONE_HALF)
-      ierr=talsh_tensor_contract("S(a,i,j)+=U(e)*T(e,a,i,j)",eom_t%r2_sigma,v_aux,t2_tensor)
+      ierr=talsh_tensor_construct(v_aux,C8,(/exa_input%nvir, 4/),init_val=ZERO)
+      ierr=talsh_tensor_contract("U(e,L)+=V(m,n,e,f)*R(f,m,n,L)",v_aux,int_t%oovv,r2_tensor,scale=ONE_HALF)
+      ierr=talsh_tensor_contract("S(a,i,j,L)+=U(e)*T(e,a,i,j)",sigma2_tensor,v_aux,t2_tensor)
       ierr=talsh_tensor_destruct(v_aux)
 
       ! debug
-      if (debug_exa) then
-        print*, "r1_sigma", tensor_norm2(eom_t%r1_sigma)
-        print*, "r2_sigma", tensor_norm2(eom_t%r2_sigma)*ONE_QUARTER
-      end if
+!     if (debug_exa) then
+        print*, "r1_sigma", tensor_norm2(sigma1_tensor)
+        print*, "r2_sigma", tensor_norm2(sigma2_tensor)*ONE_QUARTER
+!     end if
 
     end subroutine sigma_right_ip
 
