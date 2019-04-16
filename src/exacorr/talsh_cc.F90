@@ -1166,7 +1166,7 @@ module talsh_cc
          integer, allocatable :: mo_list(:)
 
 !        cholesky 
-         real(8), allocatable            :: CD(:,:)
+         real(8), allocatable            :: CD(:,:,:)
          complex(8), pointer, contiguous :: chol_tens(:,:,:)
          type(talsh_tens_t)              :: chol_tensor, test_tensor, err_tensor
          type(talsh_tens_t)              :: uoo_tensor, uov_tensor, uvo_tensor, uvv_tensor
@@ -1183,21 +1183,24 @@ module talsh_cc
 !        Get cholesky-vectors and copy them in to a talsh tensor
          allocate(ao_tens(nao,nao,nao,nao))
          call compute_ao_integrals (nao,ao_tens_real=ao_tens)
-         call cholesky_decompose (reshape(ao_tens,(/nao*nao,nao*nao/)),nao*nao,CD, 1.0d-12)
+         call cholesky_decompose (ao_tens,nao,CD, 1.0d-9)
+!        call cholesky_decompose (reshape(ao_tens,(/nao*nao,nao*nao/)),nao*nao,CD, 1.0d-12)
          deallocate(ao_tens)
          chol_dims(1)=nao
          chol_dims(2)=nao
-         chol_dims(3)=size(CD,2)
+!        chol_dims(3)=size(CD,2)
+         chol_dims(3)=size(CD,3)
          call print_date('cholesky decomposition done')
          ierr=talsh_tensor_construct(chol_tensor,C8,chol_dims,init_val=ZERO)
          ierr=talsh_tensor_get_body_access(chol_tensor,body_p,C8,0,DEV_HOST)
          call c_f_pointer(body_p,chol_tens,chol_dims) ! to use the tensor as a regular Fortran array
          do m = 1, chol_dims(3)
-            ij = 0
+!           ij = 0
             do j = 1, nao
                do i = 1, nao
-                  ij = ij + 1
-                  chol_tens(i,j,m)=dcmplx(CD(ij,m),0.D0)
+!                 ij = ij + 1
+                  chol_tens(i,j,m)=dcmplx(CD(i,j,m),0.D0)
+!                 chol_tens(i,j,m)=dcmplx(CD(ij,m),0.D0)
                end do
             end do
          end do

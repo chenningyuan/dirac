@@ -14,12 +14,13 @@ private
 public cholesky_decompose
 
 interface cholesky_decompose
-   module procedure cholesky_decompose_real
+   module procedure cholesky_decompose_real_matrix
+   module procedure cholesky_decompose_real_tensor
 end interface
 
 contains
 
-subroutine cholesky_decompose_real (matrix, mdim, CD_out, threshold)
+subroutine cholesky_decompose_real_matrix (matrix, mdim, CD_out, threshold)
 
   use exacorr_datatypes
   use exacorr_global
@@ -47,13 +48,6 @@ subroutine cholesky_decompose_real (matrix, mdim, CD_out, threshold)
   allocate(Dm(mdim))
   allocate(Gkl(mdim))
 
-  nonzero = 0
-  do j = 1, mdim
-     do i = 1, mdim
-        if (matrix(i,j).gt.threshold) nonzero = nonzero+1
-     end do
-  end do
-
   do i = 1, mdim
      Dm(i) = matrix(i,i)
   end do
@@ -70,12 +64,20 @@ subroutine cholesky_decompose_real (matrix, mdim, CD_out, threshold)
   m=0
   do while (abs(D_max)>threshold)
     
+    if (m.ge.mdim) then
+      stop 'error: cholesky not converged'
+    end if
+
     !compute next element
     do i = 1,m
        CD(:,m+1)=CD(:,m+1)+CD(:,i)*CD(i_max,i)
     end do
     CD(:,m+1)=matrix(:,i_max)-CD(:,m+1)
-    D_max_denom = ONE / sqrt(D_max)
+    if (D_max < threshold) then
+!      this should not happen: stop (alternative would be to have an error output)
+       stop 'input matrix is not positive definite: Cholesky decomposition not possible'
+    end if
+    D_max_denom = ONE / dsqrt(D_max)
     CD(:,m+1)=CD(:,m+1) * D_max_denom
 
     m=m+1
@@ -93,14 +95,10 @@ subroutine cholesky_decompose_real (matrix, mdim, CD_out, threshold)
        log_conv = ceiling(log10(abs(D_max)))
     end if
 
-    if (m.ge.mdim) then
-      stop 'error: cholesky not converged'
-    end if
   end do
 
   print *, 'Cholesky decomposition done, used ',m,' elements'
   print *, 'Matrix compressed to ',real(m)/real(mdim)*100,'% of the original size'
-  print *, 'Original number of non-zero elements was ', real(nonzero)/real(mdim*mdim)*100,'%'
 
   deallocate(Gkl)
   deallocate(Dm)
@@ -109,7 +107,120 @@ subroutine cholesky_decompose_real (matrix, mdim, CD_out, threshold)
   allocate(CD_out(mdim, m))
   CD_out=CD(:,1:m)
   deallocate(CD)
-end subroutine cholesky_decompose_real
+end subroutine cholesky_decompose_real_matrix
+
+subroutine cholesky_decompose_real_tensor (tensor, ndim, CD_out, threshold)
+
+  use exacorr_datatypes
+  use exacorr_global
+
+  implicit none
+
+  !in: real 4-d tensor
+  real(8), intent(in)                  :: threshold
+  real(8), intent(in)                  :: tensor(ndim,ndim,ndim,ndim)
+
+  !out: 3 component tensors
+  real(8), intent(out), allocatable :: CD_out(:,:,:)
+
+  !work
+  real(8), allocatable :: Dm(:,:)
+  integer(8)           :: m, i, j, nonzero, nkeep
+  integer(8)           :: i_max(2)
+  real(8)              :: D_max,D_max_denom
+  real(8), allocatable :: Gkl(:,:)
+  real(8), allocatable :: CD(:,:,:)
+  integer              :: ndim, log_conv
+  !work for SVD via lapack
+  real(8), allocatable :: RES(:,:),ev(:),work(:)
+  integer, allocatable :: iwork(:)
+  integer              :: lwork,liwork,info
+
+  !allocate tensors for cholesky decomposition
+  allocate(CD(ndim,ndim,ndim*ndim))
+  allocate(Dm(ndim,ndim))
+  allocate(Gkl(ndim,ndim))
+
+  ! allocate matrices for singular value decomposition
+  allocate(RES(ndim,ndim))
+  allocate(ev(ndim))
+  lwork = 1 + 6*ndim + 2*ndim**2 ! this is the minimum, maybe should scale this up
+  allocate(work(lwork))
+  liwork = 3 + 5*ndim ! again the minimum, for now
+  allocate(iwork(8*ndim))
+
+  ! set diagonal matrix
+  do j = 1, ndim
+     do i = 1, ndim
+        Dm(i,j) = tensor(i,j,i,j)
+     end do
+  end do
+
+  !find largest value
+  i_max=maxloc(abs(Dm))
+  D_max=Dm(i_max(1), i_max(2))
+  write (*,'(a,a,2i6,a,e12.2)') 'start iter',' largest element ind = ', i_max, ' value = ', abs(D_max)
+
+  !loop until threshold is reached
+
+  log_conv = ceiling(log10(abs(D_max)))
+  CD=ZERO
+  m=0
+  nonzero = 0
+  do while (abs(D_max)>threshold)
+
+    !compute next element
+    do i = 1,m
+       CD(:,:,m+1)=CD(:,:,m+1)+CD(:,:,i)*CD(i_max(1),i_max(2),i)
+    end do
+    CD(:,:,m+1)=tensor(:,:,i_max(1),i_max(2))-CD(:,:,m+1)
+    D_max_denom = ONE / sqrt(D_max)
+    CD(:,:,m+1)=CD(:,:,m+1) * D_max_denom
+
+    m=m+1
+    !compress CD vector
+    RES = CD(:,:,m)
+    call dsyevd ('V','L',ndim,RES,ndim,ev,work,lwork,iwork,liwork,info)
+    if (info /= 0) print*,'iteration ',m,' dsyevd info =',info
+    nkeep = ndim
+    do i = 1, ndim
+       if (ev(i) > threshold) then
+          nkeep = i
+          exit
+       end if
+    end do
+    nonzero = nonzero + (nkeep+1) * ndim
+
+    !update diagonal
+    Gkl(:,:)=CD(:,:,m)*CD(:,:,m)
+    Dm=Dm-Gkl
+
+    !find largest element
+    i_max=maxloc(abs(Dm))
+    D_max=Dm(i_max(1),i_max(2))
+
+    if (ceiling(log10(abs(D_max))) /= log_conv) then
+       write (*,'(a,i6,a,2i6,a,e12.2)') 'iter',m,' largest element ind = ', i_max, ' value = ', abs(D_max)
+       log_conv = ceiling(log10(abs(D_max)))
+    end if
+
+    if (m.ge.ndim*ndim) then
+      stop 'error: cholesky not converged'
+    end if
+  end do
+
+  print *, 'Cholesky decomposition done, used ',m,' elements'
+  print *, 'Tensor compressed to ',real(m)/real(ndim*ndim)*100,'% of the original size'
+  print *, 'Additional compression possible to ', real(nonzero)/real(ndim)**4*100,'%'
+
+  deallocate(Gkl)
+  deallocate(Dm)
+
+  !hand tensor over
+  allocate(CD_out(ndim,ndim, m))
+  CD_out=CD(:,:,1:m)
+  deallocate(CD)
+end subroutine cholesky_decompose_real_tensor
 
 subroutine cholesky_decompose_aomat (CD_out, threshold)
 
