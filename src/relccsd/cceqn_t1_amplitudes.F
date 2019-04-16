@@ -214,6 +214,11 @@ C S(A,I) = S(A,I) + V(A,K,C,D) * TAU(C,D,I,K)   ! VOVV contributions !
 C--------------------------------------------
       CALL GETTAU (T1,T2,BUF1)
       CALL XTIME(0,1,'--- T1EQNS VOVV contribution  ')
+CPi      CALL GETVOVV_incore (BUF3)
+CPi      CALL DELINT ('VOVV','KDDD',BUF3,0,0,0)
+CPi      call contraction_442((/"p1","o2","p2","p3"/),(/"p2","p3","o1","o2"&
+CPi     &          /),(/"p1","o1"/),S1,1.0d0,1.0d0,nrep,                   &
+CPi     &          LeftTensor=BUF3,RightTensor=BUF1)
       CALL T1EQN2 (BUF1,BUF3,NBUF3,S1)   ! VOVV contractions, term 6 !
       CALL XTIME(0,2,'--- T1EQNS VOVV contribution  ')
 
