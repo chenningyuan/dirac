@@ -235,7 +235,7 @@ contains
         if (present(max_subspace_size)) then
             davidson_max_subspace_size = max_subspace_size  
         else
-            davidson_max_subspace_size = 1024
+            davidson_max_subspace_size = 4 ! 1024
         end if
 
         if (present(max_iterations)) then
@@ -1149,9 +1149,9 @@ contains
         integer :: M_dims(2) 
         integer :: ierr
 !       
-!   for the moment we force the number of roots to be 1
+!   for the moment we force the number of roots to be 4
 !
-        workspace%nroots = 1
+        workspace%nroots = 4
         workspace%Lmax   = davidson_max_subspace_size
         workspace%L      = workspace%nroots 
 
@@ -1169,6 +1169,7 @@ contains
               ierr=talsh_tensor_construct(workspace%sigma1,C8,tens_dims,init_val=ZERO)
 
               tens_dims = (/ nocc, workspace%nroots /)
+              write (6,*) 'bla',tens_dims,tens_dims(1:1)
               ierr=talsh_tensor_construct(workspace%delta1,C8,tens_dims,init_val=ZERO)
               ierr=talsh_tensor_construct(workspace%Hdiag1,C8,tens_dims(1:1),init_val=ZERO)
               deallocate(tens_dims)
