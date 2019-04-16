@@ -5,4 +5,4 @@
 !   instead of stdout, especially from MPI slaves.
       integer, parameter :: LUCMD   = 4  ! for reading from DIRAC.INP
       integer, parameter :: LUSTDIN = 5  ! for reading standard input
-      integer, parameter :: LUPRI   = 6
+      integer            :: LUPRI   = 6  ! not defined as parameter, due to redefinition in LUCIAREL_NODE
