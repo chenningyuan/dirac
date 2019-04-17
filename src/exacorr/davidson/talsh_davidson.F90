@@ -475,8 +475,8 @@ contains
            updated_subspace_vectors_R(:, vectors_L + i) = delta(:,i)
         end do
 
-        if (verbose_local) &
-            call davidson_print_vectors(updated_subspace_vectors_R, label="new subspace vectors before OR")
+!       if (verbose_local) &
+!           call davidson_print_vectors(updated_subspace_vectors_R, label="new subspace vectors before OR")
 
         if (orthogonalize_all_local) then
             call orthonormalize_subspace(updated_subspace_vectors_R, verbose=verbose_local)
@@ -723,9 +723,9 @@ contains
 
 
     subroutine print_values_vectors_R(output_file_unit, eValues, eVectorsR, eVectorsL, left, right, nroots)
-        real(kind=8), intent(in) :: eVectorsL(:,:)
-        real(kind=8), intent(in) :: eVectorsR(:,:)
-        real(kind=8), intent(in) :: eValues(:,:)
+        complex(kind=8), intent(in) :: eVectorsL(:,:)
+        complex(kind=8), intent(in) :: eVectorsR(:,:)
+        complex(kind=8), intent(in) :: eValues(:)
         integer, optional, intent(in) :: nroots
         integer, intent(in) :: output_file_unit
 
@@ -747,8 +747,8 @@ contains
         label = "Eigenvalues"
 
         do i = 1, nroots_local 
-            vr = eValues(1,i)
-            vi = eValues(2,i)
+            vr = realpart(eValues(i))
+            vi = imagpart(eValues(i))
             if (abs(vi).lt.print_values_threshold) vi = 0.0d0
             if (abs(vr).lt.print_values_threshold) vr = 0.0d0
 
@@ -765,11 +765,11 @@ contains
         end do
         if (left) then
             label = "Left Eigenvectors            "
-            call davidson_print_vectors(eVectorsL, label=label) 
+!           call davidson_print_vectors(eVectorsL, label=label) 
         end if
         if (right) then
             label = "Right Eigenvectors           "
-            call davidson_print_vectors(eVectorsR, label=label) 
+!           call davidson_print_vectors(eVectorsR, label=label) 
         end if
 
     end subroutine 
@@ -1063,10 +1063,10 @@ contains
     end subroutine
 
     subroutine talsh_solve_values_vectors(M, eValues, eVectorsR, eVectorsL, left)
-        real(kind=8), intent(inout), pointer :: M(:,:)
-        real(kind=8), intent(inout), pointer :: eVectorsL(:,:)
-        real(kind=8), intent(inout), pointer :: eVectorsR(:,:)
-        real(kind=8), intent(inout), pointer :: eValues(:,:)
+        complex(kind=8), intent(inout), pointer :: M(:,:)
+        complex(kind=8), intent(inout), pointer :: eVectorsL(:,:)
+        complex(kind=8), intent(inout), pointer :: eVectorsR(:,:)
+        complex(kind=8), intent(inout), pointer :: eValues(:)
         logical, intent(in) :: left 
 
         integer :: vectors_N, vectors_L, i
@@ -1093,7 +1093,7 @@ contains
             eVectorsL = 0.0d0
         end if
         allocate(eVectorsR(vectors_N,vectors_L))
-        allocate(eValues(2,vectors_L))
+        allocate(eValues(vectors_L))
         eVectorsR = 0.0d0
         eValues   = 0.0d0
 
@@ -1102,31 +1102,29 @@ contains
         allocate(work(4*vectors_L))
 !       print *, "debug, lwork in diagonalization before query:",lwork,4*vectors_L
 
-        if (davidson_complex_mode_with_reals) then
-            allocate(rwork(2*vectors_N))
-            call zgeev (do_left, do_right, vectors_L, M, vectors_L,      &
-                        eValues, eVectorsL, vectors_L, eVectorsR, &
-                        vectors_L, WORK, LWORK, rwork, INFO)
-            deallocate(rwork)
-        end if
+! aspg, 17/04/2019
+! check whether the factor of two is needed here after all
+        allocate(rwork(2*vectors_N))
+        call zgeev (do_left, do_right, vectors_L, M, vectors_L,      &
+                    eValues, eVectorsL, vectors_L, eVectorsR, &
+                    vectors_L, WORK, LWORK, rwork, INFO)
+        deallocate(rwork)
 
         lwork = work(1)
 !       print *, "debug, lwork in diagonalization after query:",lwork,work(1:4)
         deallocate(work)
         allocate(work(2*lwork))
-        if (davidson_complex_mode_with_reals) then
-            allocate(rwork(2*vectors_N))
-            call zgeev (do_left, do_right, vectors_L, M, vectors_L,      &
-                        eValues, eVectorsL, vectors_L, eVectorsR, &
-                        vectors_L, WORK, LWORK, rwork, INFO)
-            deallocate(rwork)
-        end if
+        allocate(rwork(2*vectors_N))
+        call zgeev (do_left, do_right, vectors_L, M, vectors_L,      &
+                    eValues, eVectorsL, vectors_L, eVectorsR, &
+                    vectors_L, WORK, LWORK, rwork, INFO)
+        deallocate(rwork)
 !       print *, 'in small_solve_eigenvalue: info',info
         if (info .gt. 0) then
             print *, 'in small_solve_eigenvalue: not all eigenvalues converged' 
             print *, 'converged'
             do i = info+1, vectors_L 
-                print *, " real part : ",eValues(1,i), " imaginary part : ",eValues(2,i)
+                print *, " Re, Im : ",eValues(i)
             end do
         end if
         deallocate(work)
@@ -1136,8 +1134,23 @@ contains
 
     subroutine talsh_davidson_workspace_destroy(workspace)
         type(talsh_davidson_workspace),  intent(inout) :: workspace
+        integer :: ierr
 
-        write(davidson_output_file_unit, "(4x,a)") 'write me (talsh_davidson_workspace_destroy)!'
+        ierr = talsh_tensor_destruct(workspace%trial1)
+        ierr = talsh_tensor_destruct(workspace%sigma1)
+        ierr = talsh_tensor_destruct(workspace%delta1)
+        ierr = talsh_tensor_destruct(workspace%Hdiag1)
+
+        ierr = talsh_tensor_destruct(workspace%trial2)
+        ierr = talsh_tensor_destruct(workspace%sigma2)
+        ierr = talsh_tensor_destruct(workspace%delta2)
+        ierr = talsh_tensor_destruct(workspace%Hdiag2)
+
+        ierr = talsh_tensor_destruct(workspace%M)
+
+        if (allocated(workspace%N)) deallocate(workspace%N)
+
+        write(davidson_output_file_unit, "(4x,a)") 'leaving talsh_davidson_workspace_destroy'
     end subroutine 
 
     subroutine talsh_davidson_workspace_create(workspace, nocc, nvirt, flavor, excitation_level)
@@ -1262,28 +1275,132 @@ contains
      &  'created tensor for correction vectors, dimensions :',workspace%Nmax,"x",workspace%nroots
 
         
-    end subroutine 
+   end subroutine 
 
-    subroutine talsh_get_values_vectors_davidson(A, workspace, projector)
+
+   subroutine create_sigma_right(exa_input,int_t,eom_t,t2_tensor,trial1,trial2, sigma1, sigma2)
+      use talsh_eom_sigma, only : sigma_right_ip
+      type(exacc_input),     intent(in   ) :: exa_input
+      type(talsh_eom_tens),  intent(inout) :: eom_t
+      type(talsh_tens_t),    intent(inout) :: t2_tensor
+      type(talsh_intg_tens), intent(inout) :: int_t
+      type(talsh_tens_t),    intent(inout) :: trial1
+      type(talsh_tens_t),    intent(inout) :: trial2
+      type(talsh_tens_t),    intent(inout) :: sigma1
+      type(talsh_tens_t),    intent(inout) :: sigma2
+
+      integer :: s1_dims(2), s1_rank
+      complex(8), pointer, contiguous:: s1_tens(:,:)
+      type(C_PTR):: s1_body_p
+
+      integer :: s2_dims(2), s2_rank
+      complex(8), pointer, contiguous:: s2_tens(:,:)
+      type(C_PTR):: s2_body_p
+
+      integer :: ierr, i
+
+      ierr = talsh_tensor_dimensions(sigma1,s1_rank,s1_dims)
+      write (6,*) 's1_rank',s1_rank
+      write (6,*) 's1_dims',s1_dims
+      write (6,*) 's1_body_p',s1_body_p
+      ierr = talsh_tensor_get_body_access(sigma1,s1_body_p,C8,0,DEV_HOST)
+      write (6,*) 's1_body_p',s1_body_p
+
+      call c_f_pointer(s1_body_p,s1_tens,s1_dims(1:s1_rank))
+
+      write (6,*) 's1_tens before construction'
+      do i = 1, s1_dims(1)
+         write (6,*) s1_tens(i,1:s1_dims(2))
+      end do
+
+      call sigma_right_ip(exa_input,int_t,eom_t,t2_tensor, &
+   &                      trial1,trial2,sigma1,sigma2)
+
+      write (6,*) 's1_tens after construction'
+      do i = 1, s1_dims(1)
+         write (6,*) s1_tens(i,1:s1_dims(2))
+      end do
+
+   end subroutine
+
+
+   subroutine create_subspace_matrix_right(M_small, workspace)
+      type(talsh_davidson_workspace), intent(inout) :: workspace
+      complex(kind=8), pointer, intent(inout) :: M_small(:,:) 
+
+      integer :: m_dims(2), m_rank
+      complex(8), pointer, contiguous:: m_tens(:,:)
+      type(C_PTR):: m_body_p
+      integer :: ierr, i
+
+! capital letters here are meant to be the roots
+
+      ierr=talsh_tensor_contract("M(I,J)+=Bdag(e,I)*S(e,J)",workspace%M,&
+   &                                                        workspace%trial1,&
+   &                                                        workspace%sigma1)
+      ierr=talsh_tensor_contract("M(I,J)+=Bdag(a,b,c,I)*S(a,b,c,J)",workspace%M,&
+   &                                                                  workspace%trial2,&
+   &                                                                  workspace%sigma2)
+
+!! we need to fish out the small matrix from workspace%M, which is the slice LxL of the full tensor
+!! we also need to conjugate transpose the trial vector 
+       if (associated(M_small)) deallocate(M_small)
+       allocate(M_small(workspace%L,workspace%L))
+       M_small = 0
+
+       ierr = talsh_tensor_dimensions(workspace%M,m_rank,m_dims)
+       write (6,*) 'm_rank',m_rank
+       write (6,*) 'm_dims',m_dims
+       write (6,*) 'm_body_p',m_body_p
+       ierr = talsh_tensor_get_body_access(workspace%M,m_body_p,C8,0,DEV_HOST)
+       write (6,*) 'm_body_p',m_body_p
+
+       call c_f_pointer(m_body_p,m_tens,m_dims(1:m_rank))
+
+       write (6,*) 'M_tens'
+       do i = 1, m_dims(1)
+          write (6,*) M_tens(i,1:m_dims(2))
+       end do
+
+       M_small = m_tens
+       write (6,*) 'M small'
+       do i = 1, m_dims(1)
+          write (6,*) M_small(i,1:m_dims(2))
+       end do
+
+    end
+
+
+! aspg, 16/04/2019
+! for the moment we have a long argument list to get it going, later we try to shorten in
+!   subroutine talsh_get_values_vectors_davidson(A, workspace, projector)
+   subroutine talsh_get_values_vectors_davidson(exa_input,int_t,eom_t,t2_tensor, workspace, projector)
+      type(exacc_input),     intent(in   ) :: exa_input
+      type(talsh_eom_tens),  intent(inout) :: eom_t
+      type(talsh_davidson_workspace), intent(inout) :: workspace
+      type(talsh_projectors), intent(inout) :: projector
+      type(talsh_tens_t),    intent(inout) :: t2_tensor
+      type(talsh_intg_tens), intent(inout) :: int_t
 ! bad coupling between modules, to be replaced by an abstract class that the sigma vector module extends
 ! and that will have associated get_matrix_size, create_sigma_vector and create_diagonal
-        type(talsh_lambda_tens), intent(in)   :: A
-        type(talsh_davidson_workspace),  intent(inout) :: workspace
-        type(talsh_projectors), intent(inout) :: projector
+
+!       type(talsh_lambda_tens), intent(in)   :: A
+!       type(talsh_davidson_workspace),  intent(inout) :: workspace
+!       type(talsh_projectors), intent(inout) :: projector
 !
 ! nullifying all pointers at the start to give them a state, see discussion on http://www.cs.rpi.edu/~szymansk/OOF90/bugs.html
 ! "[...] When a pointer is declared its status is undefined, and cannot be safely queried with the associated intrinsic. [...]"
 ! 
-        real(kind=8), pointer :: M_diag(:)           => NULL()
-        real(kind=8), pointer :: delta(:,:)          => NULL()
-        real(kind=8), pointer :: preconditioner(:,:) => NULL()
-        real(kind=8), pointer :: M_small(:,:)        => NULL()
-        real(kind=8), pointer :: c_small_r(:,:)      => NULL()
-        real(kind=8), pointer :: c_small_l(:,:)      => NULL()
-        real(kind=8), pointer :: e_small(:,:)        => NULL()
+        complex(kind=8), pointer :: M_diag(:)           => NULL()
+        complex(kind=8), pointer :: delta(:,:)          => NULL()
+        complex(kind=8), pointer :: preconditioner(:,:) => NULL()
+        complex(kind=8), pointer :: M_small(:,:)        => NULL()
+        complex(kind=8), pointer :: c_small_r(:,:)      => NULL()
+        complex(kind=8), pointer :: c_small_l(:,:)      => NULL()
+        complex(kind=8), pointer :: e_small(:)        => NULL()
 
-        real(kind=8), pointer :: c_small_r_old(:,:)  => NULL()
-        real(kind=8), pointer :: c_small_l_old(:,:)  => NULL()
+        complex(kind=8), pointer :: c_small_r_old(:,:)  => NULL()
+        complex(kind=8), pointer :: c_small_l_old(:,:)  => NULL()
 
         integer :: vectors_N, L, min_subspace_size, max_subspace_size, niter
         integer :: i, j, k
@@ -1322,18 +1439,22 @@ contains
             write(davidson_output_file_unit,*) "Iteration ", niter
             write(davidson_output_file_unit,*) ""
 
-            if (associated(M_small)) deallocate(M_small)
+            if (davidson_solve_rhs) then
+               call create_sigma_right(exa_input,int_t,eom_t,t2_tensor, &
+   &                            workspace%trial1,workspace%trial2, &
+   &                            workspace%sigma1,workspace%sigma2)
+               call create_subspace_matrix_right(M_small,workspace) 
+!           else if (davidson_solve_lhs) then
+!              call create_sigma_left(exa_input,int_t,eom_t,t2_tensor, &
+!  &                            workspace%trial1,workspace_t%trial2, &
+!  &                            workspace%sigma1,workspace_t%sigma2)
+!              call create_subspace_matrix_left(M_small,workspace_t) 
+            else
+               stop 'unknown choice of side to solve for in davidson'  
+            end if
 
 !!          sigma_vector => create_sigma_vector(A, b, sigma_vector, state_sym)
 !!          if (associated(projector)) call apply_projector(projector,sigma_vector)
-
-!! this is only one side rhs/lhs
-!! from this we need to fish out the small matrix, which is the slice LxL of the full tensor
-!! we also need to conjugate transpose the trial vector 
-            ierr=talsh_tensor_contract("M(i,j)+=Bdag(i,e)*S(e,j)",workspace%M,workspace%trial1,workspace%sigma1)
-            allocate(M_small(workspace%L,workspace%L))
-            M_small = 1
-!! create code to fetch M_small here 
 
             call calculate_eigenvalues_and_eigenvectors(davidson_output_file_unit,    &
                                                         M_small,                      &
@@ -1454,10 +1575,10 @@ contains
     subroutine calculate_eigenvalues_and_eigenvectors(output_file_unit, M, eValues, eVectorsR, eVectorsL, &
                                 eVectorsR_old, eVectorsL_old, eValuesShift, left, right,    &
                                 sorting_order, nroots, verbose, follow_overlap, follow_overlap_scheme, apply_evalues_shift)
-        real(kind=8), intent(inout), pointer   :: M(:,:)
-        real(kind=8), intent(inout), pointer   :: eValues(:,:)
-        real(kind=8), intent(inout), pointer   :: eVectorsR(:,:), eVectorsL(:,:)
-        real(kind=8), intent(in)   :: eVectorsR_old(:,:), eVectorsL_old(:,:) !old vectors
+        complex(kind=8), intent(inout), pointer   :: M(:,:)
+        complex(kind=8), intent(inout), pointer   :: eValues(:)
+        complex(kind=8), intent(inout), pointer   :: eVectorsR(:,:), eVectorsL(:,:)
+        complex(kind=8), intent(in)   :: eVectorsR_old(:,:), eVectorsL_old(:,:) !old vectors
         real(kind=8), intent(in)   :: eValuesShift(2)
         logical, optional, intent(in) :: left, right, verbose, follow_overlap, apply_evalues_shift
         integer, optional, intent(in) :: sorting_order, nroots, follow_overlap_scheme
@@ -1465,7 +1586,7 @@ contains
 
         logical :: left_local, right_local, verbose_local, follow_overlap_local, apply_evalues_shift_local
         integer :: sorting_order_local, M_nroots, nroot, nroots_to_print, follow_overlap_scheme_local
-        real(kind=8), allocatable :: overlap(:,:)
+        complex(kind=8), allocatable :: overlap(:,:)
 
         if (present(apply_evalues_shift)) then
             apply_evalues_shift_local = apply_evalues_shift
@@ -1532,14 +1653,12 @@ contains
                 overlap = 0.0d0 
                 if(right_local) then    
                     if (davidson_complex_mode_with_reals) then
-                        nroot = nroot / 2
 ! aspg, check consistency of complex and real modes after real mode is validated
                         call zgemm('C', 'N', nroot, M_nroots, nroot, (1.0d0, 0.0d0), eVectorsR_old, &
                                    nroot, eVectorsR(1:2*nroot,1:M_nroots), nroot, (1.0d0, 0.0d0), overlap, nroot)
                     end if
                 else if (left_local) then
                     if (davidson_complex_mode_with_reals) then
-                        nroot = nroot / 2
 ! aspg, check consistency of complex and real modes after real mode is validated
                         call zgemm('C', 'N', nroot, M_nroots, nroot, (1.0d0, 0.0d0), eVectorsL_old, &
                                    nroot, eVectorsL(1:2*nroot,1:M_nroots), nroot, (1.0d0, 0.0d0), overlap, nroot)
@@ -1570,26 +1689,26 @@ contains
     end subroutine
 
     subroutine form_eigenvalues_full_problem(eValues, nroots, e_small)
-        real(kind=8), intent(inout) :: eValues(:,:)
-        real(kind=8), intent(in)    :: e_small(:,:)
+        complex(kind=8), intent(inout) :: eValues(:)
+        complex(kind=8), intent(in)    :: e_small(:)
         integer, intent(in) :: nroots
 
         integer :: i
 
         do i = 1, nroots
-            eValues(:,i) = e_small(:,i)
+            eValues(i) = e_small(i)
         end do
     end subroutine
 
     subroutine form_eigenvector_full_problem(eVectorsFull,nroots,b,eVectorsSmall,right_vector,left_vector) 
-        real(kind=8), intent(inout) :: eVectorsFull(:,:)
-        real(kind=8), intent(in)    :: eVectorsSmall(:,:)
-        real(kind=8), intent(in)    :: b(:,:)
+        complex(kind=8), intent(inout) :: eVectorsFull(:,:)
+        complex(kind=8), intent(in)    :: eVectorsSmall(:,:)
+        complex(kind=8), intent(in)    :: b(:,:)
         logical, intent(in) :: left_vector, right_vector
         integer, intent(in) :: nroots
 
         integer :: i
-        real(kind=8), allocatable :: bc(:,:)
+        complex(kind=8), allocatable :: bc(:,:)
         integer :: vectors_L, vectors_N
 
         vectors_N = size(b,1)
@@ -1598,13 +1717,10 @@ contains
         if (left_vector) then
             allocate(bc(vectors_L,vectors_N))
             bc = 0.0d0
-            if (davidson_complex_mode_with_reals) then
-                vectors_N = vectors_N / 2
 ! aspg: verify here whether transpose or conjugate transpose
-                print *, 'warning, calling zgemm with T instead of C in form_eigenvector_full_problem'
-                call zgemm('T', 'T', vectors_L, vectors_N, vectors_L, (1.0d0, 0.0d0), eVectorsSmall, &
-                           vectors_L, b, vectors_N, (1.0d0, 0.0d0), bc, vectors_L)
-            end if 
+            print *, 'warning, calling zgemm with T instead of C in form_eigenvector_full_problem'
+            call zgemm('T', 'T', vectors_L, vectors_N, vectors_L, (1.0d0, 0.0d0), eVectorsSmall, &
+                       vectors_L, b, vectors_N, (1.0d0, 0.0d0), bc, vectors_L)
             do i = 1, nroots
                 eVectorsFull(:,i) = bc(i,:) 
             end do
@@ -1613,12 +1729,8 @@ contains
         if (right_vector) then 
             allocate(bc(vectors_N,vectors_L))
             bc = 0.0d0
-            if (davidson_complex_mode_with_reals) then
-                vectors_N = vectors_N / 2
-                call zgemm('N', 'N', vectors_N, vectors_L, vectors_L, (1.0d0, 0.0d0), b, &
-                           vectors_N, eVectorsSmall, vectors_L, (1.0d0, 0.0d0), bc, vectors_N)
-            end if
-
+            call zgemm('N', 'N', vectors_N, vectors_L, vectors_L, (1.0d0, 0.0d0), b, &
+                       vectors_N, eVectorsSmall, vectors_L, (1.0d0, 0.0d0), bc, vectors_N)
             do i = 1, nroots
                 eVectorsFull(:,i) = bc(:,i) 
             end do
@@ -1681,32 +1793,37 @@ contains
         logical, intent(in) :: right ! if true, sort also the right eigenvectors
         logical, intent(in) :: left  ! if true, sort also the left eigenvectors
         logical, intent(in) :: apply_shift ! if true, sort values of |e_small - energy_shift| instead of e_small
-        real(kind=8), intent(inout) :: e_small(:,:)
-        real(kind=8), intent(inout) :: c_small_r(:,:)
-        real(kind=8), intent(inout) :: c_small_l(:,:)
+        complex(kind=8), intent(inout) :: e_small(:)
+        complex(kind=8), intent(inout) :: c_small_r(:,:)
+        complex(kind=8), intent(inout) :: c_small_l(:,:)
         real(kind=8), intent(in) :: energy_shift(2)
 
         real(kind=8), allocatable :: temp_vector(:,:)
         real(kind=8) :: temp
         integer, allocatable :: indices_sorted_array(:)
+        real(kind=8), allocatable :: e_small_real(:,:)
         integer :: vectors_N, vectors_L, i_sorted, i
 
-        vectors_L = size(e_small,2)
+        vectors_L = size(e_small)
+        allocate(e_small_real(2,vectors_L))
         allocate(indices_sorted_array(vectors_L))
         do i = 1, vectors_L 
             indices_sorted_array(i) = i 
+            e_small_real(1,i) = realpart(e_small(i))
+            e_small_real(2,i) = imagpart(e_small(i))
         end do
 
-        if (davidson_complex_mode_with_reals) then
-            vectors_N = 2*vectors_L
-            if (apply_shift) then
-               call quicksort_vector_complex_as_real_shifted(energy_shift, e_small, indices_sorted_array, 1, vectors_L)
-            else
-               call quicksort_vector_complex_as_real(e_small, indices_sorted_array, 1, vectors_L)
-            end if
+        if (apply_shift) then
+           call quicksort_vector_complex_as_real_shifted(energy_shift, e_small_real, indices_sorted_array, 1, vectors_L)
+        else
+           call quicksort_vector_complex_as_real(e_small_real, indices_sorted_array, 1, vectors_L)
         end if
 
-        allocate(temp_vector(vectors_N,vectors_L))
+        do i = 1, vectors_L
+            e_small(i) = complex(e_small_real(1,i), e_small_real(2,i))
+        end do
+
+        allocate(temp_vector(vectors_L,vectors_L))
         temp_vector = 0.0d0
 
         if (right) then
@@ -1726,6 +1843,7 @@ contains
         end if
         deallocate(temp_vector)
         deallocate(indices_sorted_array)
+        deallocate(e_small_real)
 
     end subroutine
 
@@ -1734,26 +1852,20 @@ contains
         integer, intent(in) :: order ! 1: ascending, -1: descending
         logical, intent(in) :: right ! if true, sort also the right eigenvectors
         logical, intent(in) :: left  ! if true, sort also the left eigenvectors
-        real(kind=8), intent(inout) :: overlap(:,:)
-        real(kind=8), intent(inout) :: c_small_r(:,:)
-        real(kind=8), intent(inout) :: c_small_l(:,:)
-        real(kind=8), intent(inout) :: e_small(:,:)
+        complex(kind=8), intent(inout) :: overlap(:,:)
+        complex(kind=8), intent(inout) :: c_small_r(:,:)
+        complex(kind=8), intent(inout) :: c_small_l(:,:)
+        complex(kind=8), intent(inout) :: e_small(:)
 
-        real(kind=8), allocatable :: temp_vector(:,:), overlap_copy(:,:)
-        real(kind=8),allocatable :: temp(:)
+        complex(kind=8), allocatable :: temp_vector(:,:)
+        real(kind=8), allocatable :: overlap_copy(:,:)
+        complex(kind=8),allocatable :: temp(:)
         integer, allocatable :: indices_sorted_array(:), indices_sorted_array_temp(:)
         integer :: vectors_L, i_sorted, i, max_overlap(1), iroot, nroot, jroot, kroot
-        integer :: factor
         real(kind=8) :: vr, vi
 
         vectors_L = size(overlap,2)
         nroot     = size(overlap,1)
-
-        if (davidson_complex_mode_with_reals) then
-            factor = 2 
-        else
-            factor = 1 
-        end if
 
         allocate(indices_sorted_array(vectors_L))
         allocate(indices_sorted_array_temp(vectors_L))
@@ -1764,22 +1876,20 @@ contains
             indices_sorted_array(i) = i 
         end do
 
-        do iroot = 1, nroot, factor 
-          if (davidson_complex_mode_with_reals) then
-              do i = 1, vectors_L 
-                  indices_sorted_array_temp(i) = i
-              end do
-              jroot = iroot + 1
-              overlap_copy(1,:) = overlap(iroot,:)
-              overlap_copy(2,:) = overlap(jroot,:)
-              call davidson_print_vectors(overlap_copy,   label="copy of overlap matrix before  ")
-              call quicksort_vector_complex_as_real(overlap_copy, indices_sorted_array_temp, 1, vectors_L)
-              call davidson_print_vectors(overlap_copy,   label="copy of overlap matrix after   ")
-              max_overlap(1) =  indices_sorted_array_temp(vectors_L)
-              kroot = jroot / factor
-          end if
+        do iroot = 1, nroot
+         
+          do i = 1, vectors_L 
+              indices_sorted_array_temp(i) = i
+              overlap_copy(1,i) = realpart(overlap(iroot,i))
+              overlap_copy(2,i) = imagpart(overlap(iroot,i))
+          end do
+          call davidson_print_vectors(overlap_copy,   label="copy of overlap matrix before  ")
+          call quicksort_vector_complex_as_real(overlap_copy, indices_sorted_array_temp, 1, vectors_L)
+          call davidson_print_vectors(overlap_copy,   label="copy of overlap matrix after   ")
+          max_overlap(1) =  indices_sorted_array_temp(vectors_L)
+          
           i = max_overlap(1)
-          indices_sorted_array(kroot) = i
+          indices_sorted_array(iroot) = i
         enddo
 
         do i = 1, nroot
@@ -1806,13 +1916,12 @@ contains
 
         deallocate(temp_vector)
 
-        allocate(temp_vector(2,vectors_L))
-           do i = 1, vectors_L
-             i_sorted = indices_sorted_array(i)
-             temp_vector(1,i) = e_small(1,i_sorted)
-             temp_vector(2,i) = e_small(2,i_sorted)
-            end do
-            e_small = temp_vector
+        allocate(temp(vectors_L))
+        do i = 1, vectors_L
+          i_sorted = indices_sorted_array(i)
+          temp(i) = e_small(i_sorted)
+        end do
+        e_small = temp
 
         deallocate(temp_vector)
         deallocate(indices_sorted_array)
@@ -1979,19 +2088,17 @@ contains
 ! that said, a possible wat forward if this becomes an issue is would be to use the next to largest elements that haven't
 ! been used before.
 !
-        real(kind=8), intent(inout) :: c_small(:,:) ! left or right-side reduced subspace eigenvectors
-        real(kind=8), intent(inout) :: e_small(:,:) ! reduced subspace eigenvalues
+        complex(kind=8), intent(inout) :: c_small(:,:) ! left or right-side reduced subspace eigenvectors
+        complex(kind=8), intent(inout) :: e_small(:) ! reduced subspace eigenvalues
 
-        real(kind=8), allocatable :: temp_vector(:,:)
-        real(kind=8),allocatable :: temp(:)
+        complex(kind=8),allocatable :: temp(:), temp_vector(:,:)
         integer, allocatable :: indices_sorted_array(:), already_sorted(:)
-        integer :: vectors_L, vectors_N, i_sorted, i, max_overlap(1), iroot, jroot, kroot
-        integer :: factor
-        real(kind=8) :: vr, vi
+        integer :: vectors_L, vectors_N, i_sorted, i, max_overlap(1), iroot, jroot
+        real(kind=8),allocatable :: norms(:)
+        double precision dnrm2, dznrm2
 
-        vectors_N = size(c_small,1)
+
         vectors_L = size(c_small,2)
-        factor    = vectors_N/vectors_L 
 
         allocate(indices_sorted_array(vectors_L))
         allocate(already_sorted(vectors_L))
@@ -2000,25 +2107,19 @@ contains
         end do
         already_sorted = -1
 
+        allocate(norms(vectors_L))
         allocate(temp(vectors_L))
+        allocate(temp_vector(vectors_L,vectors_L))
 
-
-        do iroot = 1, vectors_N, factor
-          if (davidson_complex_mode_with_reals) then
+        do iroot = 1, vectors_L
 ! the loop over jroot will create a temporary array with the norm of the iroot-th roow of the eigenvectors
-              do jroot = 1, vectors_L
-                  vr = c_small(iroot,jroot)*c_small(iroot,jroot)
-                  vi = c_small(iroot+1,jroot)*c_small(iroot+1,jroot)
-                  temp(jroot) = sqrt(vr*vr + vi*vi)
-              end do
-              max_overlap = maxloc(temp)
-              kroot = (iroot + 1) / factor
-          end if
+          do jroot = 1, vectors_L
+              norms(jroot) = dznrm2(vectors_L, c_small(:,jroot), 1) 
+          end do
+          max_overlap = maxloc(norms)
           i = max_overlap(1)
-          indices_sorted_array(kroot) = i
+          indices_sorted_array(iroot) = i
         enddo
-
-        allocate(temp_vector(vectors_N,vectors_L))
 
         do i = 1, vectors_L
             i_sorted = indices_sorted_array(i)
@@ -2026,16 +2127,14 @@ contains
         end do
         c_small = temp_vector
 
-        deallocate(temp_vector)
-
-        allocate(temp_vector(2,vectors_L))
         do i = 1, vectors_L
             i_sorted = indices_sorted_array(i)
-            temp_vector(1,i) = e_small(1,i_sorted)
-            temp_vector(2,i) = e_small(2,i_sorted)
+            temp(i) = e_small(i_sorted)
         end do
-        e_small = temp_vector
+        e_small = temp
 
+        deallocate(norms)
+        deallocate(temp)
         deallocate(temp_vector)
         deallocate(indices_sorted_array)
 
