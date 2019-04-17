@@ -47,23 +47,10 @@ module talsh_eom
 !       ierr = talsh_tensor_dimensions(workspace%Hdiag2,hdiag2_rank,hdiag2_dims)
 !       ierr = talsh_tensor_get_body_access(workspace%Hdiag2,hdiag2_body_p,C8,0,DEV_HOST)
 
-        ierr = talsh_tensor_dimensions(workspace%trial1,trial1_rank,trial1_dims)
-        write (6,*) 'trial1_rank',trial1_rank
-        write (6,*) 'trial1_dims',trial1_dims
-        write (6,*) 'trial1_body_p',trial1_body_p
-        ierr = talsh_tensor_get_body_access(workspace%trial1,trial1_body_p,C8,0,DEV_HOST)
-        write (6,*) 'trial1_body_p',trial1_body_p
-
-!       ierr = talsh_tensor_dimensions(workspace%trial2,trial2_rank,trial2_dims)
-!       ierr = talsh_tensor_get_body_access(workspace%trial2,trial2_body_p,C8,0,DEV_HOST)
-
         select case(flavor)
            case("IP")
               call c_f_pointer(hdiag1_body_p,hdiag1_h_p_tens,hdiag1_dims(1:hdiag1_rank))
               call c_f_pointer(hdiag2_body_p,hdiag2_h_p_tens,hdiag2_dims(1:hdiag2_rank))
-
-              call c_f_pointer(trial1_body_p,trial1_h_p_tens,trial1_dims(1:trial1_rank))
-              call c_f_pointer(trial2_body_p,trial2_h_p_tens,trial2_dims(1:trial2_rank))
 
               write (6,*) 'foo',hdiag1_dims(1)
               write (6,*) 'bar',hdiag1_h_p_tens(1:hdiag1_dims(1))
@@ -88,21 +75,43 @@ module talsh_eom
            write(6,*) 'debug, roots',iroot,diagonal(i),i
            diagonal(i) = huge(diagonal)
            write(6,*) 'debug, making diagonal huge',diagonal(i)
+
+           ierr = talsh_tensor_dimensions(workspace%trial1(iroot),trial1_rank,trial1_dims)
+           write (6,*) 'trial1_rank',trial1_rank
+           write (6,*) 'trial1_dims',trial1_dims
+           write (6,*) 'trial1_body_p',trial1_body_p
+           ierr = talsh_tensor_get_body_access(workspace%trial1(iroot),trial1_body_p,C8,0,DEV_HOST)
+           write (6,*) 'trial1_body_p',trial1_body_p
+!       ierr = talsh_tensor_dimensions(workspace%trial2,trial2_rank,trial2_dims)
+!       ierr = talsh_tensor_get_body_access(workspace%trial2,trial2_body_p,C8,0,DEV_HOST)
+
 !! we may have diagonal elements which do not correspond to an element within the windows, so we check that
 !! this is the case
 !          if (index_in_window(i).eqv..true.) then
            if (.true.) then
-              write(6,*)'determinant in window',i
-              trial1_h_p_tens(i,iroot) = ONE
-              iroot = iroot + 1
+              select case(flavor)
+                 case("IP")
+
+                    call c_f_pointer(trial1_body_p,trial1_h_p_tens,trial1_dims(1:trial1_rank))
+                    call c_f_pointer(trial2_body_p,trial2_h_p_tens,trial2_dims(1:trial2_rank))
+
+                    write(6,*)'determinant in window',I,trial1_rank,trial1_dims(1:trial1_rank)
+                    trial1_h_p_tens(i,1) = ONE
+                    iroot = iroot + 1
+              end select
            end if
+        write(6,*)'   ff',trial1_h_p_tens
         end do
 
-        write (6,*) 'debug >>> trial1_h_p_tens >>>'
-        do i = 1, trial1_dims(1)
-           write (6,*) trial1_h_p_tens(i,1:trial1_dims(3))
-        end do
-        write (6,*) 'debug <<< trial1_h_p_tens <<<'
+
+!       select case(flavor)
+!          case("IP")
+!             write (6,*) 'debug >>> trial1_h_p_tens >>>'
+!             do i = 1, trial1_dims(1)
+!                write (6,*) trial1_h_p_tens(i,1:trial1_dims(3))
+!             end do
+!             write (6,*) 'debug <<< trial1_h_p_tens <<<'
+!       end select
 
 
         deallocate (diagonal)

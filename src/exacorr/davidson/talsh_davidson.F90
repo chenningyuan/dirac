@@ -1134,16 +1134,32 @@ contains
 
     subroutine talsh_davidson_workspace_destroy(workspace)
         type(talsh_davidson_workspace),  intent(inout) :: workspace
-        integer :: ierr
+        integer :: ierr, i
 
-        ierr = talsh_tensor_destruct(workspace%trial1)
-        ierr = talsh_tensor_destruct(workspace%sigma1)
-        ierr = talsh_tensor_destruct(workspace%delta1)
+      
+        do i = 1, workspace%Lmax
+           ierr = talsh_tensor_destruct(workspace%trial1(i))
+           ierr = talsh_tensor_destruct(workspace%trial2(i))
+           ierr = talsh_tensor_destruct(workspace%sigma1(i))
+           ierr = talsh_tensor_destruct(workspace%sigma2(i))
+        end do
+        deallocate(workspace%trial1)
+        deallocate(workspace%trial2)
+        deallocate(workspace%sigma1)
+        deallocate(workspace%sigma2)
+
+        do i = 1, workspace%nroots
+           ierr = talsh_tensor_destruct(workspace%delta1(i))
+           ierr = talsh_tensor_destruct(workspace%delta2(i))
+           ierr = talsh_tensor_destruct(workspace%CTtrial1(i))
+           ierr = talsh_tensor_destruct(workspace%CTtrial2(i))
+        end do
+        deallocate(workspace%delta1)
+        deallocate(workspace%delta2)
+        deallocate(workspace%CTtrial1)
+        deallocate(workspace%CTtrial2)
+
         ierr = talsh_tensor_destruct(workspace%Hdiag1)
-
-        ierr = talsh_tensor_destruct(workspace%trial2)
-        ierr = talsh_tensor_destruct(workspace%sigma2)
-        ierr = talsh_tensor_destruct(workspace%delta2)
         ierr = talsh_tensor_destruct(workspace%Hdiag2)
 
         ierr = talsh_tensor_destruct(workspace%M)
@@ -1160,7 +1176,7 @@ contains
 
         integer, allocatable :: tens_dims(:)
         integer :: M_dims(2) 
-        integer :: ierr
+        integer :: ierr, i
 !       
 !   for the moment we force the number of roots to be 4
 !
@@ -1170,80 +1186,110 @@ contains
 
         allocate(workspace%N(excitation_level))
 
+        allocate(workspace%trial1(workspace%Lmax))
+        allocate(workspace%trial2(workspace%Lmax))
+
+        allocate(workspace%CTtrial1(workspace%nroots))
+        allocate(workspace%CTtrial2(workspace%nroots))
+
+        allocate(workspace%sigma1(workspace%Lmax))
+        allocate(workspace%sigma2(workspace%Lmax))
+
+        allocate(workspace%delta1(workspace%nroots))
+        allocate(workspace%delta2(workspace%nroots))
+
         M_dims     = (/ workspace%Lmax, workspace%Lmax /)
         ierr=talsh_tensor_construct(workspace%M,C8,M_dims,init_val=ZERO)
 
+        
         select case(flavor)
            case("IP")
 ! singles
-              allocate(tens_dims(2))
-              tens_dims = (/ nocc, workspace%Lmax /)
-              ierr=talsh_tensor_construct(workspace%trial1,C8,tens_dims,init_val=ZERO)
-              ierr=talsh_tensor_construct(workspace%sigma1,C8,tens_dims,init_val=ZERO)
-
-              tens_dims = (/ nocc, workspace%nroots /)
-              write (6,*) 'bla',tens_dims,tens_dims(1:1)
-              ierr=talsh_tensor_construct(workspace%delta1,C8,tens_dims,init_val=ZERO)
-              ierr=talsh_tensor_construct(workspace%Hdiag1,C8,tens_dims(1:1),init_val=ZERO)
+              allocate(tens_dims(1))
+              tens_dims = (/ nocc /)
+              do i = 1, workspace%Lmax
+                 ierr = talsh_tensor_construct(workspace%trial1(i),C8,tens_dims,init_val=ZERO)
+                 ierr = talsh_tensor_construct(workspace%sigma1(i),C8,tens_dims,init_val=ZERO)
+              end do
+              do i = 1, workspace%nroots
+                 ierr = talsh_tensor_construct(workspace%delta1(i),C8,tens_dims,init_val=ZERO)
+                 ierr = talsh_tensor_construct(workspace%CTtrial1(i),C8,tens_dims,init_val=ZERO)
+              end do
+              ierr = talsh_tensor_construct(workspace%Hdiag1,C8,tens_dims,init_val=ZERO)
               deallocate(tens_dims)
               workspace%N(1) = nocc 
 ! doubles
-              allocate(tens_dims(4))
-              tens_dims = (/ nvirt, nocc, nocc, workspace%Lmax /)
-              ierr=talsh_tensor_construct(workspace%trial2,C8,tens_dims,init_val=ZERO)
-              ierr=talsh_tensor_construct(workspace%sigma2,C8,tens_dims,init_val=ZERO)
-
-              tens_dims = (/ nvirt, nocc, nocc, workspace%nroots /)
-              ierr=talsh_tensor_construct(workspace%delta2,C8,tens_dims,init_val=ZERO)
-              ierr=talsh_tensor_construct(workspace%Hdiag2,C8,tens_dims(1:3),init_val=ZERO)
+              allocate(tens_dims(3))
+              tens_dims = (/ nvirt, nocc, nocc /)
+              do i = 1, workspace%Lmax
+                 ierr = talsh_tensor_construct(workspace%trial2(i),C8,tens_dims,init_val=ZERO)
+                 ierr = talsh_tensor_construct(workspace%sigma2(i),C8,tens_dims,init_val=ZERO)
+              end do
+              do i = 1, workspace%nroots
+                 ierr = talsh_tensor_construct(workspace%delta2(i),C8,tens_dims,init_val=ZERO)
+                 ierr = talsh_tensor_construct(workspace%CTtrial2(i),C8,tens_dims,init_val=ZERO)
+              end do
+              ierr = talsh_tensor_construct(workspace%Hdiag2,C8,tens_dims,init_val=ZERO)
               deallocate(tens_dims)
               workspace%N(2) = nvirt*nocc*nocc
 
            case("EA")
 ! singles
-              allocate(tens_dims(2))
-              tens_dims = (/ nvirt, workspace%Lmax /)
-              ierr=talsh_tensor_construct(workspace%trial1,C8,tens_dims,init_val=ZERO)
-              ierr=talsh_tensor_construct(workspace%sigma1,C8,tens_dims,init_val=ZERO)
-
-              tens_dims = (/ nvirt, workspace%nroots /)
-              ierr=talsh_tensor_construct(workspace%delta1,C8,tens_dims,init_val=ZERO)
-              ierr=talsh_tensor_construct(workspace%Hdiag1,C8,tens_dims(1:1),init_val=ZERO)
+              allocate(tens_dims(1))
+              tens_dims = (/ nvirt /)
+              do i = 1, workspace%Lmax
+                 ierr = talsh_tensor_construct(workspace%trial1(i),C8,tens_dims,init_val=ZERO)
+                 ierr = talsh_tensor_construct(workspace%sigma1(i),C8,tens_dims,init_val=ZERO)
+              end do
+              do i = 1, workspace%nroots
+                 ierr = talsh_tensor_construct(workspace%delta1(i),C8,tens_dims,init_val=ZERO)
+                 ierr = talsh_tensor_construct(workspace%CTtrial1(i),C8,tens_dims,init_val=ZERO)
+              end do
+              ierr = talsh_tensor_construct(workspace%Hdiag1,C8,tens_dims,init_val=ZERO)
               deallocate(tens_dims)
               workspace%N(1) = nvirt 
 ! doubles
-              allocate(tens_dims(4))
-              tens_dims = (/ nvirt, nvirt, nocc, workspace%Lmax /)
-              ierr=talsh_tensor_construct(workspace%trial2,C8,tens_dims,init_val=ZERO)
-              ierr=talsh_tensor_construct(workspace%sigma2,C8,tens_dims,init_val=ZERO)
-
-              tens_dims = (/ nvirt, nvirt, nocc, workspace%nroots /)
-              ierr=talsh_tensor_construct(workspace%delta2,C8,tens_dims,init_val=ZERO)
-              ierr=talsh_tensor_construct(workspace%Hdiag1,C8,tens_dims(1:3),init_val=ZERO)
+              allocate(tens_dims(3))
+              tens_dims = (/ nvirt, nvirt, nocc /)
+              do i = 1, workspace%Lmax
+                 ierr = talsh_tensor_construct(workspace%trial2(i),C8,tens_dims,init_val=ZERO)
+                 ierr = talsh_tensor_construct(workspace%sigma2(i),C8,tens_dims,init_val=ZERO)
+              end do
+              do i = 1, workspace%nroots
+                 ierr = talsh_tensor_construct(workspace%delta2(i),C8,tens_dims,init_val=ZERO)
+                 ierr = talsh_tensor_construct(workspace%CTtrial2(i),C8,tens_dims,init_val=ZERO)
+              end do
+              ierr = talsh_tensor_construct(workspace%Hdiag1,C8,tens_dims,init_val=ZERO)
               deallocate(tens_dims)
               workspace%N(2) = nvirt*nvirt*nocc
 
            case("EE")
 ! singles
-              allocate(tens_dims(3))
-              tens_dims = (/ nvirt, nocc, workspace%Lmax /)
-              ierr=talsh_tensor_construct(workspace%trial1,C8,tens_dims,init_val=ZERO)
-              ierr=talsh_tensor_construct(workspace%sigma1,C8,tens_dims,init_val=ZERO)
-
-              tens_dims = (/ nvirt, nocc, workspace%nroots /)
-              ierr=talsh_tensor_construct(workspace%delta1,C8,tens_dims,init_val=ZERO)
-              ierr=talsh_tensor_construct(workspace%Hdiag1,C8,tens_dims(1:2),init_val=ZERO)
+              allocate(tens_dims(2))
+              tens_dims = (/ nvirt, nocc /)
+              do i = 1, workspace%Lmax
+                 ierr = talsh_tensor_construct(workspace%trial1(i),C8,tens_dims,init_val=ZERO)
+                 ierr = talsh_tensor_construct(workspace%sigma1(i),C8,tens_dims,init_val=ZERO)
+              end do
+              do i = 1, workspace%nroots
+                 ierr = talsh_tensor_construct(workspace%delta1(i),C8,tens_dims,init_val=ZERO)
+                 ierr = talsh_tensor_construct(workspace%CTtrial1(i),C8,tens_dims,init_val=ZERO)
+              end do
+              ierr = talsh_tensor_construct(workspace%Hdiag1,C8,tens_dims,init_val=ZERO)
               deallocate(tens_dims)
               workspace%N(1) = nvirt*nocc
 ! doubles
-              allocate(tens_dims(5))
-              tens_dims = (/ nvirt, nvirt, nocc, nocc, workspace%Lmax /)
-              ierr=talsh_tensor_construct(workspace%trial2,C8,tens_dims,init_val=ZERO)
-              ierr=talsh_tensor_construct(workspace%sigma2,C8,tens_dims,init_val=ZERO)
-
-              tens_dims = (/ nvirt, nvirt, nocc, nocc, workspace%nroots /)
-              ierr=talsh_tensor_construct(workspace%delta2,C8,tens_dims,init_val=ZERO)
-              ierr=talsh_tensor_construct(workspace%Hdiag2,C8,tens_dims(1:4),init_val=ZERO)
+              allocate(tens_dims(4))
+              tens_dims = (/ nvirt, nvirt, nocc, nocc /)
+              do i = 1, workspace%Lmax
+                 ierr=talsh_tensor_construct(workspace%trial2(i),C8,tens_dims,init_val=ZERO)
+                 ierr=talsh_tensor_construct(workspace%sigma2(i),C8,tens_dims,init_val=ZERO)
+              end do
+              do i = 1, workspace%nroots
+                 ierr = talsh_tensor_construct(workspace%delta2(i),C8,tens_dims,init_val=ZERO)
+                 ierr = talsh_tensor_construct(workspace%CTtrial2(i),C8,tens_dims,init_val=ZERO)
+              end do 
+              ierr=talsh_tensor_construct(workspace%Hdiag2,C8,tens_dims,init_val=ZERO)
               deallocate(tens_dims)
               workspace%N(2) = nvirt*nvirt*nocc*nocc
 
@@ -1258,10 +1304,10 @@ contains
         write(davidson_output_file_unit, "(4x,a,i6,a,i6)") &
      &  'created tensor for trial vectors, dimensions :',workspace%Nmax,"x",workspace%Lmax
 
-        write(davidson_output_file_unit, "(4x,a)") 'info on workspace%trial1' 
-        call talsh_tensor_print_info(workspace%trial1)
-        write(davidson_output_file_unit, "(4x,a)") 'info on workspace%trial2' 
-        call talsh_tensor_print_info(workspace%trial2)
+        write(davidson_output_file_unit, "(4x,a)") 'info on workspace%trial1(1)' 
+        call talsh_tensor_print_info(workspace%trial1(1))
+        write(davidson_output_file_unit, "(4x,a)") 'info on workspace%trial2(1)' 
+        call talsh_tensor_print_info(workspace%trial2(1))
 
         write(davidson_output_file_unit, "(4x,a)") 'info on workspace%Hdiag1' 
         call talsh_tensor_print_info(workspace%Hdiag1)
@@ -1278,16 +1324,13 @@ contains
    end subroutine 
 
 
-   subroutine create_sigma_right(exa_input,int_t,eom_t,t2_tensor,trial1,trial2, sigma1, sigma2)
+   subroutine create_sigma_right(exa_input,int_t,eom_t,t2_tensor,workspace)
       use talsh_eom_sigma, only : sigma_right_ip
       type(exacc_input),     intent(in   ) :: exa_input
       type(talsh_eom_tens),  intent(inout) :: eom_t
       type(talsh_tens_t),    intent(inout) :: t2_tensor
       type(talsh_intg_tens), intent(inout) :: int_t
-      type(talsh_tens_t),    intent(inout) :: trial1
-      type(talsh_tens_t),    intent(inout) :: trial2
-      type(talsh_tens_t),    intent(inout) :: sigma1
-      type(talsh_tens_t),    intent(inout) :: sigma2
+      type(talsh_davidson_workspace), intent(inout) :: workspace
 
       integer :: s1_dims(2), s1_rank
       complex(8), pointer, contiguous:: s1_tens(:,:)
@@ -1297,28 +1340,31 @@ contains
       complex(8), pointer, contiguous:: s2_tens(:,:)
       type(C_PTR):: s2_body_p
 
-      integer :: ierr, i
+      integer :: ierr, i, j
 
-      ierr = talsh_tensor_dimensions(sigma1,s1_rank,s1_dims)
-      write (6,*) 's1_rank',s1_rank
-      write (6,*) 's1_dims',s1_dims
-      write (6,*) 's1_body_p',s1_body_p
-      ierr = talsh_tensor_get_body_access(sigma1,s1_body_p,C8,0,DEV_HOST)
-      write (6,*) 's1_body_p',s1_body_p
+      do i = (workspace%L - workspace%nroots + 1), workspace%L
+         ierr = talsh_tensor_dimensions(workspace%sigma1(i),s1_rank,s1_dims)
+         write (6,*) 's1_rank',s1_rank
+         write (6,*) 's1_dims',s1_dims
+         write (6,*) 's1_body_p',s1_body_p
+         ierr = talsh_tensor_get_body_access(workspace%sigma1(i),s1_body_p,C8,0,DEV_HOST)
+         write (6,*) 's1_body_p',s1_body_p
 
-      call c_f_pointer(s1_body_p,s1_tens,s1_dims(1:s1_rank))
+         call c_f_pointer(s1_body_p,s1_tens,s1_dims(1:s1_rank))
 
-      write (6,*) 's1_tens before construction'
-      do i = 1, s1_dims(1)
-         write (6,*) s1_tens(i,1:s1_dims(2))
-      end do
+         write (6,*) 's1_tens before construction'
+         do j = 1, s1_dims(1)
+            write (6,*) s1_tens(j,1:s1_dims(2))
+         end do
 
-      call sigma_right_ip(exa_input,int_t,eom_t,t2_tensor, &
-   &                      trial1,trial2,sigma1,sigma2)
+         call sigma_right_ip(exa_input,int_t,eom_t,t2_tensor, &
+   &                         workspace%trial1(i),workspace%trial2(i),&
+   &                         workspace%sigma1(i),workspace%sigma2(i))
 
-      write (6,*) 's1_tens after construction'
-      do i = 1, s1_dims(1)
-         write (6,*) s1_tens(i,1:s1_dims(2))
+         write (6,*) 's1_tens after construction'
+         do j = 1, s1_dims(1)
+            write (6,*) s1_tens(j,1:s1_dims(2))
+         end do
       end do
 
    end subroutine
@@ -1335,12 +1381,13 @@ contains
 
 ! capital letters here are meant to be the roots
 
-      ierr=talsh_tensor_contract("M(I,J)+=Bdag(e,I)*S(e,J)",workspace%M,&
-   &                                                        workspace%trial1,&
-   &                                                        workspace%sigma1)
-      ierr=talsh_tensor_contract("M(I,J)+=Bdag(a,b,c,I)*S(a,b,c,J)",workspace%M,&
-   &                                                                  workspace%trial2,&
-   &                                                                  workspace%sigma2)
+!     do i = 1, workspace%L
+!     ierr=talsh_tensor_contract("M(I,J)+=Bdag(e)*S(e)",workspace%M,&
+!  &                                                    workspace%trial1(i),&
+!  &                                                    workspace%sigma1(i))
+!     ierr=talsh_tensor_contract("M(I,J)+=Bdag(a,b,c,I)*S(a,b,c,J)",workspace%M,&
+!  &                                                                  workspace%trial2,&
+!  &                                                                  workspace%sigma2)
 
 !! we need to fish out the small matrix from workspace%M, which is the slice LxL of the full tensor
 !! we also need to conjugate transpose the trial vector 
@@ -1440,9 +1487,7 @@ contains
             write(davidson_output_file_unit,*) ""
 
             if (davidson_solve_rhs) then
-               call create_sigma_right(exa_input,int_t,eom_t,t2_tensor, &
-   &                            workspace%trial1,workspace%trial2, &
-   &                            workspace%sigma1,workspace%sigma2)
+               call create_sigma_right(exa_input,int_t,eom_t,t2_tensor,workspace)
                call create_subspace_matrix_right(M_small,workspace) 
 !           else if (davidson_solve_lhs) then
 !              call create_sigma_left(exa_input,int_t,eom_t,t2_tensor, &

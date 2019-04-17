@@ -144,10 +144,11 @@
                                           ! in most usages N = Nmax and L will grow up to Lmax
            type(talsh_tens_t) :: M        ! subspace matrix, dimension : (Lmax, Lmax) 
 ! see to change those below to tensors segmented into singly/doubly/... manifolds
-           type(talsh_tens_t) :: trial1, trial2   ! trial vector workspace, dimension: (N(i),Lmax) if left or right, careful otherwise; i = 1, 2,... 
-           type(talsh_tens_t) :: sigma1, sigma2   ! sigma vector workspace, dimension: (N(i),Lmax) if left or right, careful otherwise; i = 1, 2,...
-           type(talsh_tens_t) :: delta1, delta2   ! error vector, dimension : (NmaxY, nroots) if left or right, careful otherwise; i = 1, 2,...
-           type(talsh_tens_t) :: Hdiag1, Hdiag2   ! diagonal elements for the similarity-transformed Hamiltonian
+           type(talsh_tens_t), allocatable :: trial1(:), trial2(:)     ! workspace for trial vectors
+           type(talsh_tens_t), allocatable :: CTtrial1(:), CTtrial2(:) ! workspace for conjugate transpose of trial vectors 
+           type(talsh_tens_t), allocatable :: sigma1(:), sigma2(:)     ! workspace for sigma vectors
+           type(talsh_tens_t), allocatable :: delta1(:), delta2(:)     ! workspace for correction vectors
+           type(talsh_tens_t) :: Hdiag1, Hdiag2                        ! workspace for diagonal elements of the similarity-transformed Hamiltonian
         end type
 
 !       One electron integrals
