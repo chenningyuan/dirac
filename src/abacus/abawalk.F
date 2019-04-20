@@ -6950,7 +6950,7 @@ C     Non-linear molecules
          EIGVALUE(2)    = D1/EIGVAL(2)
          EIGVALUE(3)    = D1/EIGVAL(3) 
          LINEAR = .FALSE.
-         write(lupri,*) 'Non-linear molecule'
+         WRITE (LUPRI,'(/,1X,A)') 'Non-linear molecule'
 C.....Order eigenvalues and corresponding eigenvectors in ascending order E(1) < E(2) < E(3)
          CALL ORDER(EIGVEC,EIGVAL,3,3)
 C

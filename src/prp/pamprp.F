@@ -10886,37 +10886,58 @@ C
      &                    'A', (GTRANN(I,1,IATOM),I = 1,3),
      &                    'B', (GTRANN(I,2,IATOM),I = 1,3),
      &                    'C', (GTRANN(I,3,IATOM),I = 1,3)
+                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
+     &       'iso', (GTRANN(1,1,IATOM)
+     &              +GTRANN(2,2,IATOM)+GTRANN(3,3,IATOM))/3
                       CALL HEADER('Expectation value contribution',-1)
                       WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                    'A', (GTRAND(I,1,IATOM),I = 1,3),
      &                    'B', (GTRAND(I,2,IATOM),I = 1,3),
      &                    'C', (GTRAND(I,3,IATOM),I = 1,3)
+                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
+     &       'iso', (GTRAND(1,1,IATOM)
+     &              +GTRAND(2,2,IATOM)+GTRAND(3,3,IATOM))/3
                       CALL HEADER('Linear response contribution',-1)
                       WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                    'A', (GTRANP(I,1,IATOM),I = 1,3),
      &                    'B', (GTRANP(I,2,IATOM),I = 1,3),
      &                    'C', (GTRANP(I,3,IATOM),I = 1,3)
+                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
+     &       'iso', (GTRANP(1,1,IATOM)
+     &              +GTRANP(2,2,IATOM)+GTRANP(3,3,IATOM))/3
 C
                       CALL HEADER('M^L(e-e)',-1)
                       WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                    'A', (GTRANPLEE(I,1,IATOM),I = 1,3),
      &                    'B', (GTRANPLEE(I,2,IATOM),I = 1,3),
      &                    'C', (GTRANPLEE(I,3,IATOM),I = 1,3)
+                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
+     &       'iso', (GTRANPLEE(1,1,IATOM)
+     &              +GTRANPLEE(2,2,IATOM)+GTRANPLEE(3,3,IATOM))/3
                       CALL HEADER('M^S(e-e)',-1)
                       WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                    'A', (GTRANPSEE(I,1,IATOM),I = 1,3),
      &                    'B', (GTRANPSEE(I,2,IATOM),I = 1,3),
      &                    'C', (GTRANPSEE(I,3,IATOM),I = 1,3)
+                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
+     &       'iso', (GTRANPSEE(1,1,IATOM)
+     &              +GTRANPSEE(2,2,IATOM)+GTRANPSEE(3,3,IATOM))/3
                       CALL HEADER('M^L(e-p)',-1)
                       WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                    'A', (GTRANPLEP(I,1,IATOM),I = 1,3),
      &                    'B', (GTRANPLEP(I,2,IATOM),I = 1,3),
      &                    'C', (GTRANPLEP(I,3,IATOM),I = 1,3)
+                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
+     &       'iso', (GTRANPLEP(1,1,IATOM)
+     &              +GTRANPLEP(2,2,IATOM)+GTRANPLEP(3,3,IATOM))/3
                       CALL HEADER('M^S(e-p)',-1)
                       WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                    'A', (GTRANPSEP(I,1,IATOM),I = 1,3),
      &                    'B', (GTRANPSEP(I,2,IATOM),I = 1,3),
      &                    'C', (GTRANPSEP(I,3,IATOM),I = 1,3)
+                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
+     &       'iso', (GTRANPSEP(1,1,IATOM)
+     &              +GTRANPSEP(2,2,IATOM)+GTRANPSEP(3,3,IATOM))/3
 C
                       CALL HEADER('Total spin-rotation constant',-1)
                     END IF
@@ -10924,6 +10945,9 @@ C
      &                 'A', (GTRANT(I,1,IATOM),I = 1,3),
      &                 'B', (GTRANT(I,2,IATOM),I = 1,3),
      &                 'C', (GTRANT(I,3,IATOM),I = 1,3)
+                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
+     &       'iso', (GTRANT(1,1,IATOM)
+     &              +GTRANT(2,2,IATOM)+GTRANT(3,3,IATOM))/3
 C
 C    Print values in ppm
 C
@@ -10935,37 +10959,58 @@ C
      &                    'A', (GTRANNPPM(I,1,IATOM),I = 1,3),
      &                    'B', (GTRANNPPM(I,2,IATOM),I = 1,3),
      &                    'C', (GTRANNPPM(I,3,IATOM),I = 1,3)
+                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
+     &       'iso', (GTRANNPPM(1,1,IATOM)
+     &              +GTRANNPPM(2,2,IATOM)+GTRANNPPM(3,3,IATOM))/3
                       CALL HEADER('Expectation value contribution',-1)
                       WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                    'A', (GTRANDPPM(I,1,IATOM),I = 1,3),
      &                    'B', (GTRANDPPM(I,2,IATOM),I = 1,3),
      &                    'C', (GTRANDPPM(I,3,IATOM),I = 1,3)
+                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
+     &       'iso', (GTRANDPPM(1,1,IATOM)
+     &              +GTRANDPPM(2,2,IATOM)+GTRANDPPM(3,3,IATOM))/3
                       CALL HEADER('Linear response contribution',-1)
                       WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                    'A', (GTRANPPPM(I,1,IATOM),I = 1,3),
      &                    'B', (GTRANPPPM(I,2,IATOM),I = 1,3),
      &                    'C', (GTRANPPPM(I,3,IATOM),I = 1,3)
+                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
+     &       'iso', (GTRANPPPM(1,1,IATOM)
+     &              +GTRANPPPM(2,2,IATOM)+GTRANPPPM(3,3,IATOM))/3
 C
                       CALL HEADER('M^L(e-e)',-1)
                       WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                    'A', (GTRANPLEEPPM(I,1,IATOM),I = 1,3),
      &                    'B', (GTRANPLEEPPM(I,2,IATOM),I = 1,3),
      &                    'C', (GTRANPLEEPPM(I,3,IATOM),I = 1,3)
+                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
+     &       'iso', (GTRANPLEEPPM(1,1,IATOM)
+     &              +GTRANPLEEPPM(2,2,IATOM)+GTRANPLEEPPM(3,3,IATOM))/3
                       CALL HEADER('M^S(e-e)',-1)
                       WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                    'A', (GTRANPSEEPPM(I,1,IATOM),I = 1,3),
      &                    'B', (GTRANPSEEPPM(I,2,IATOM),I = 1,3),
      &                    'C', (GTRANPSEEPPM(I,3,IATOM),I = 1,3)
+                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
+     &       'iso', (GTRANPSEEPPM(1,1,IATOM)
+     &              +GTRANPSEEPPM(2,2,IATOM)+GTRANPSEEPPM(3,3,IATOM))/3
                       CALL HEADER('M^L(e-p)',-1)
                       WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                    'A', (GTRANPLEPPPM(I,1,IATOM),I = 1,3),
      &                    'B', (GTRANPLEPPPM(I,2,IATOM),I = 1,3),
      &                    'C', (GTRANPLEPPPM(I,3,IATOM),I = 1,3)
+                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
+     &       'iso', (GTRANPLEPPPM(1,1,IATOM)
+     &              +GTRANPLEPPPM(2,2,IATOM)+GTRANPLEPPPM(3,3,IATOM))/3
                       CALL HEADER('M^S(e-p)',-1)
                       WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                    'A', (GTRANPSEPPPM(I,1,IATOM),I = 1,3),
      &                    'B', (GTRANPSEPPPM(I,2,IATOM),I = 1,3),
      &                    'C', (GTRANPSEPPPM(I,3,IATOM),I = 1,3)
+                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
+     &       'iso', (GTRANPSEPPPM(1,1,IATOM)
+     &              +GTRANPSEPPPM(2,2,IATOM)+GTRANPSEPPPM(3,3,IATOM))/3
 C
                       CALL HEADER('Total spin-rotation constant',-1)
                     END IF
@@ -10973,6 +11018,9 @@ C
      &                 'A', (GTRANTPPM(I,1,IATOM),I = 1,3),
      &                 'B', (GTRANTPPM(I,2,IATOM),I = 1,3),
      &                 'C', (GTRANTPPM(I,3,IATOM),I = 1,3)
+                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
+     &       'iso', (GTRANTPPM(1,1,IATOM)
+     &              +GTRANTPPM(2,2,IATOM)+GTRANTPPM(3,3,IATOM))/3
                  END IF
  45      CONTINUE
       END IF
