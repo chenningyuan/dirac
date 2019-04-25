@@ -280,7 +280,7 @@ subroutine cholesky_decompose_aomat (CD_out, threshold)
     do i = 1,m
        CD(:,:,m+1)=CD(:,:,m+1)+CD(:,:,i)*CD(i_max(1),i_max(2),i)
     end do
-    call get_2el_int(nao, gto, nshells, i_max(1), i_max(2), Gkl,Dm, threshold)
+    call get_2el_int(nao, gto, nshells, i_max(1), i_max(2), Gkl, threshold, Dm, CD(:,:,m+1))
     CD(:,:,m+1)=Gkl-CD(:,:,m+1)
     D_max_denom = ONE / zsqrt(D_max)
     CD(:,:,m+1)=CD(:,:,m+1) * D_max_denom
@@ -381,7 +381,7 @@ subroutine get_2el_diag(nao, gto, nshells, Dm)
 
 end subroutine get_2el_diag
 
-subroutine get_2el_int(nao, gto, nshells, k_fix, l_fix, Gkl, Dm, threshold)
+subroutine get_2el_int(nao, gto, nshells, k_fix, l_fix, Gkl, threshold, DM , CD)
   !returns two electron integrals with two fixed indices
 
   use exacorr_datatypes
@@ -394,8 +394,10 @@ subroutine get_2el_int(nao, gto, nshells, k_fix, l_fix, Gkl, Dm, threshold)
   integer(8), intent(in)              :: k_fix, l_fix
   type(basis_func_info_t), intent(in) :: gto(:)  ! arrays with basis function information
   complex(8), intent(in)              :: Dm(:,:)
-  real(8)                             :: threshold
-  complex(8), intent(inout) :: Gkl(:,:)
+  real(8), intent(in)                 :: threshold
+
+  complex(8), intent(inout)           :: CD(:,:)
+  complex(8), intent(inout)           :: Gkl(:,:)
 
   integer      :: basis_angular
   integer      :: i, j, k, l, ioff,joff, koff, loff
@@ -408,8 +410,7 @@ subroutine get_2el_int(nao, gto, nshells, k_fix, l_fix, Gkl, Dm, threshold)
   real(8), parameter :: FIJKL = 1.0
   real(8)      :: limit
 
-  limit=threshold*threshold*1.0E-10
-  print *, 'limit = ',limit
+  limit=threshold*threshold*1.0E-6
 
   Gkl=ZERO
   basis_angular = get_basis_angular()
@@ -460,6 +461,7 @@ subroutine get_2el_int(nao, gto, nshells, k_fix, l_fix, Gkl, Dm, threshold)
 
 
     if (any(abs(Dm(:, joff+1:joff+nj)*Dm(k_fix,l_fix))>limit)) then
+      !print *, 'considered elements:', joff+1,joff+nj
 
       ioff = 0
       do ish = 1, nshells
@@ -473,8 +475,7 @@ subroutine get_2el_int(nao, gto, nshells, k_fix, l_fix, Gkl, Dm, threshold)
 
       
         if (any(abs(Dm(ioff+1:ioff+ni, joff+1:joff+nj)*Dm(k_fix,l_fix))>limit)) then
-        !  print *, sum(abs(Dm(ioff+1:ioff+ni, joff+1:joff+nj)*Dm(k_fix,l_fix)))
-        !end if
+          !print *, abs(Dm(ioff+1:ioff+ni, joff+1:joff+nj)*Dm(k_fix,l_fix))
           
 !         output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
           call interest_eri('llll',fijkl,gout,&
@@ -488,11 +489,15 @@ subroutine get_2el_int(nao, gto, nshells, k_fix, l_fix, Gkl, Dm, threshold)
               Gkl(i+ioff,j+joff) = dcmplx(gout(ijkl),0.D0)
             end do
           end do
-          
+
+        else
+          CD(ioff+1:ioff+ni, joff+1:joff+nj)=ZERO
         end if
       
         ioff = ioff + ni
       end do
+    else
+      CD(:, joff+1:joff+nj)=ZERO
     end if
     joff = joff + nj
   end do
