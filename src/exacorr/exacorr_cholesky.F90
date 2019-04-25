@@ -245,7 +245,7 @@ subroutine cholesky_decompose_aomat (CD_out, threshold)
   logical, allocatable    :: Dl(:,:)
   integer(8)              :: m, i, j
   integer(8)              :: i_max(1:2)
-  complex(8)              :: D_max,D_max_denom
+  complex(8)              :: D_max,D_max_denom, D_tot
   complex(8), allocatable :: Gkl(:,:)
   complex(8), allocatable :: CD(:,:,:)
 
@@ -280,7 +280,8 @@ subroutine cholesky_decompose_aomat (CD_out, threshold)
     do i = 1,m
        CD(:,:,m+1)=CD(:,:,m+1)+CD(:,:,i)*CD(i_max(1),i_max(2),i)
     end do
-    call get_2el_int(nao, gto, nshells, i_max(1), i_max(2), Gkl, threshold, Dm, CD(:,:,m+1))
+    Gkl=CD(:,:,m+1)
+    call get_2el_int(nao, gto, nshells, i_max(1), i_max(2), Gkl, threshold, Dm)
     CD(:,:,m+1)=Gkl-CD(:,:,m+1)
     D_max_denom = ONE / zsqrt(D_max)
     CD(:,:,m+1)=CD(:,:,m+1) * D_max_denom
@@ -295,9 +296,16 @@ subroutine cholesky_decompose_aomat (CD_out, threshold)
     Dl(i_max(1), i_max(2))=.false.
 
     !find largest element
+    i_max=maxloc(abs(Dm))
+    D_tot=Dm(i_max(1), i_max(2))
+
     i_max=maxloc(abs(Dm), mask=Dl)
     D_max=Dm(i_max(1), i_max(2))
     write (*,'(a,i6,a,2i6,a,e12.2)') 'iter',m,' largest element ind = ', i_max, ' value = ', abs(D_max)
+    
+    if (abs(D_tot).gt.abs(D_max)) then
+      print *, 'Warning: error in cholesky will not be smaller than ', D_tot
+    end if
 
     if (m.ge.nao*nao) then
       stop 'error: cholesky not converged'
@@ -308,6 +316,7 @@ subroutine cholesky_decompose_aomat (CD_out, threshold)
 
   deallocate(Gkl)
   deallocate(Dm)
+  deallocate(Dl)
   deallocate(gto)
 
   !hand tensor over
@@ -381,7 +390,7 @@ subroutine get_2el_diag(nao, gto, nshells, Dm)
 
 end subroutine get_2el_diag
 
-subroutine get_2el_int(nao, gto, nshells, k_fix, l_fix, Gkl, threshold, DM , CD)
+subroutine get_2el_int(nao, gto, nshells, k_fix, l_fix, Gkl, threshold, DM)
   !returns two electron integrals with two fixed indices
 
   use exacorr_datatypes
@@ -396,7 +405,6 @@ subroutine get_2el_int(nao, gto, nshells, k_fix, l_fix, Gkl, threshold, DM , CD)
   complex(8), intent(in)              :: Dm(:,:)
   real(8), intent(in)                 :: threshold
 
-  complex(8), intent(inout)           :: CD(:,:)
   complex(8), intent(inout)           :: Gkl(:,:)
 
   integer      :: basis_angular
@@ -411,9 +419,8 @@ subroutine get_2el_int(nao, gto, nshells, k_fix, l_fix, Gkl, threshold, DM , CD)
   real(8)      :: limit
 
   limit=threshold*threshold*1.0E-6
-
-  Gkl=ZERO
   basis_angular = get_basis_angular()
+
   loff = 0
 ! This search could be avoided by generalizing the routine that points from a function to the shell
   do lsh = 1, nshells
@@ -459,10 +466,7 @@ subroutine get_2el_int(nao, gto, nshells, k_fix, l_fix, Gkl, threshold, DM , CD)
     cj   =  gto(jsh)%coefficient(1)
     nj   =  nfunctions(lj,basis_angular)
 
-
     if (any(abs(Dm(:, joff+1:joff+nj)*Dm(k_fix,l_fix))>limit)) then
-      !print *, 'considered elements:', joff+1,joff+nj
-
       ioff = 0
       do ish = 1, nshells
         li   =  gto(ish)%orb_momentum
@@ -473,10 +477,7 @@ subroutine get_2el_int(nao, gto, nshells, k_fix, l_fix, Gkl, threshold, DM , CD)
         ci   =  gto(ish)%coefficient(1)
         ni   =  nfunctions(li,basis_angular)
 
-      
         if (any(abs(Dm(ioff+1:ioff+ni, joff+1:joff+nj)*Dm(k_fix,l_fix))>limit)) then
-          !print *, abs(Dm(ioff+1:ioff+ni, joff+1:joff+nj)*Dm(k_fix,l_fix))
-          
 !         output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
           call interest_eri('llll',fijkl,gout,&
                         lk,ek,xk,yk,zk,ck,&
@@ -489,16 +490,12 @@ subroutine get_2el_int(nao, gto, nshells, k_fix, l_fix, Gkl, threshold, DM , CD)
               Gkl(i+ioff,j+joff) = dcmplx(gout(ijkl),0.D0)
             end do
           end do
-
-        else
-          CD(ioff+1:ioff+ni, joff+1:joff+nj)=ZERO
         end if
       
         ioff = ioff + ni
       end do
-    else
-      CD(:, joff+1:joff+nj)=ZERO
     end if
+
     joff = joff + nj
   end do
   
