@@ -184,7 +184,6 @@ module exacorr_cc
             ! Note:  also get_integral_tensors will define a one_tensor and call it "one_tensor", so we needed another name
             ierr=exatns_tensor_init(one_tensor,ONE)
             
-
 !           Get fixed two-body tensors
             ierr=exatns_tensor_create(int_t%oooo,"oooo",oooo_id,oooo_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(int_t%ooov,"ooov",ooov_id,ooov_root,EXA_DATA_KIND_C8)
@@ -192,7 +191,7 @@ module exacorr_cc
             ierr=exatns_tensor_create(int_t%vovo,"vovo",vovo_id,vovo_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(int_t%vovv,"vovv",vovv_id,vovv_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(int_t%vvvv,"vvvv",vvvv_id,vvvv_root,EXA_DATA_KIND_C8)
-            call get_CC_integrals (ao_space_id,ao_space_root,int_t,exa_input%moint_scheme)
+            call get_CC_integrals (ao_space_id,ao_space,int_t,exa_input%moint_scheme)
             call print_date('initialized two electron integrals')
 
             ! If we have the 1-body integrals we rebuild the Fock matrix and check consistency, otherwise we use the orbital energies
@@ -411,16 +410,15 @@ module exacorr_cc
          !Get ExaTENSOR TAVP-MNG depth:
          ierr = exatns_virtual_depth(tavp_mng_depth)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_virtual_depth() failed!')
-         if(my_MPI_rank == 0) write(*,*) 'ExaCorr: Inferred TAVP-MNG depth = ',tavp_mng_depth
+         if(debug_exa .and. my_MPI_rank == 0) write(*,*) 'ExaCorr: Inferred TAVP-MNG depth = ',tavp_mng_depth
 
          !Register the ao vector space:
-!        branch_factor = nao / exa_input%exa_blocksize + 1
-!        if (branch_factor < 2) branch_factor = 2
          branch_factor = max(2, (int(get_num_segments(int(nao,8),int(exa_input%exa_blocksize,8)),4) - 1)/tavp_mng_depth + 1)
          ierr=exatns_space_register('AO_space',basis_ao,ao_space_id,ao_space,branch_factor)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register() failed!')
-         if(my_MPI_rank == 0) write (*,'(A,I3,A,I3)') ' ExaCorr: Registered AO vector space of dimension   ',nao, &
+         if(debug_exa .and. my_MPI_rank == 0) write (*,'(A,I3,A,I3)') ' ExaCorr: Registered AO vector space of dimension   ',nao, &
          ': Number of segments = ', branch_factor*(2**(tavp_mng_depth-1)) !debug
+         if(debug_exa .and. my_MPI_rank == 0) call ao_space%print_it()
 
          !Copy user input to local arrays for the definition of MO spaces (for standard CC we only distinguish occupied and virtual spinors)
          nocc = exa_input%nocc
@@ -453,21 +451,17 @@ module exacorr_cc
          if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.finalize() failed!')
 
          !Register occ mo vector space:
-!        branch_factor = nocc / exa_input%exa_blocksize + 1
-!        if (branch_factor < 2) branch_factor = 2
          branch_factor = max(2, (int(get_num_segments(int(nocc,8),int(exa_input%exa_blocksize,8)),4) - 1)/tavp_mng_depth + 1)
          ierr=exatns_space_register('Occupied',basis_occ,occ_space_id,occ_space,branch_factor)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register(occ) failed!')
-         if(my_MPI_rank == 0) write (*,'(A,I3,A,I3)') ' ExaCorr: Registered OCC vector space of dimension  ',nocc, &
-         ': Number of segments = ', branch_factor*(2**(tavp_mng_depth-1)) !debug
+         if(debug_exa .and. my_MPI_rank == 0) write (*,'(A,I3,A,I3)') ' ExaCorr: Registered OCC vector space of dimension  ',nocc, &
+         ': Number of segments = ', branch_factor*(2**(tavp_mng_depth-1))
 
          !Register vir mo vector space:
-!        branch_factor = nvir / exa_input%exa_blocksize + 1
-!        if (branch_factor < 2) branch_factor = 2
          branch_factor = max(2, (int(get_num_segments(int(nvir,8),int(exa_input%exa_blocksize,8)),4) - 1)/tavp_mng_depth + 1)
          ierr=exatns_space_register('Virtual',basis_vir,vir_space_id,vir_space,branch_factor)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register(vir) failed!')
-         if(my_MPI_rank == 0) write (*,'(A,I3,A,I3)') ' ExaCorr: Registered VIRT vector space of dimension ',nvir, &
+         if(debug_exa .and. my_MPI_rank == 0) write (*,'(A,I3,A,I3)') ' ExaCorr: Registered VIRT vector space of dimension ',nvir, &
          ': Number of segments = ', branch_factor*(2**(tavp_mng_depth-1)) !debug
 
         end subroutine exacorr_cc_spaces
@@ -671,20 +665,16 @@ module exacorr_cc
 
           call get_tau(comm_t,CCD,one_tensor)
 
-!         NOTE: contractions marked with "validated" gave numerically significant contributions and could be validated by comparison
-!         to the reference implementation, the ones marked "moretests" were too small to decide whether it was correct or not.
-!         calculate intermediaries
-
           ierr=exatns_tensor_init(s2_tensor)
 
 !         The vvvv contribution
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=V(a,b,c,d)*T(c,d,i,j)",s2_tensor,int_t%vvvv,comm_t%tau,ONE_HALF) !validated o(2)v(4)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=V(a,b,c,d)*T(c,d,i,j)",s2_tensor,int_t%vvvv,comm_t%tau,ONE_HALF) !o(2)v(4)
 
-!         vv ! validated
+!         vv
           call get_hvv(comm_t,int_t%oovv,one_tensor)
           call get_gvv(comm_t,int_t%vovv,CCD,one_tensor)
 
-!         vovo ! moretests
+!         vovo
           ierr=exatns_tensor_init(tau2_tensor)
           ierr=exatns_tensor_contract("T(a,d,l,i)+=R(a,d,l,i)*K()",tau2_tensor,comm_t%t2,one_tensor,ONE_HALF)
           if (.not.CCD) ierr=exatns_tensor_contract("T(a,d,l,i)+=T(a,l)*T(d,i)",tau2_tensor,comm_t%t1,comm_t%t1) ! o(2)v(2)
@@ -692,12 +682,12 @@ module exacorr_cc
           ierr=exatns_tensor_contract("H(a,k,c,i)+=V(k,l,c,d)*T(a,d,l,i)",comm_t%h_int,int_t%oovv,tau2_tensor)! o(3)v(3)
 
 !         This term appears four times as we need to permute both i and j and a and b
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=H(a,k,c,i)*T(c,b,j,k)",s2_tensor,comm_t%h_int,comm_t%t2)  ! validated o(3)v(3)
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=H(a,k,c,j)*T(c,b,k,i)",s2_tensor,comm_t%h_int,comm_t%t2)  ! validated o(3)v(3)
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=H(b,k,c,i)*T(a,c,j,k)",s2_tensor,comm_t%h_int,comm_t%t2)  ! validated o(3)v(3)
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=H(b,k,c,j)*T(a,c,k,i)",s2_tensor,comm_t%h_int,comm_t%t2)  ! validated o(3)v(3)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=H(a,k,c,i)*T(c,b,j,k)",s2_tensor,comm_t%h_int,comm_t%t2)  ! o(3)v(3)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=H(a,k,c,j)*T(c,b,k,i)",s2_tensor,comm_t%h_int,comm_t%t2)  ! o(3)v(3)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=H(b,k,c,i)*T(a,c,j,k)",s2_tensor,comm_t%h_int,comm_t%t2)  ! o(3)v(3)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=H(b,k,c,j)*T(a,c,k,i)",s2_tensor,comm_t%h_int,comm_t%t2)  ! o(3)v(3)
 
-!         ovoo ! validated
+!         ovoo
           ierr=exatns_tensor_init(cint_tensor)
           ierr=exatns_tensor_contract("C(k,b,i,j)+=V(b,k,c,d)*T(c,d,i,j)",cint_tensor,int_t%vovv,comm_t%tau,MINUS_ONE_HALF) ! o(3)v(3)
           if (.not.CCD) then
@@ -706,11 +696,11 @@ module exacorr_cc
           end if
           ierr=exatns_tensor_contract("C(k,b,i,j)+=V+(i,j,k,b)*K()",cint_tensor,int_t%ooov,one_tensor) ! o(3)v(1)
 
-!         oo ! validated
+!         oo
           call get_hoo(comm_t,int_t%oovv,one_tensor)
           call get_goo(comm_t,int_t%ooov,CCD,one_tensor)
 
-!         ov ! validated
+!         ov
           if (.not.CCD) then
             call get_hov(comm_t,int_t%oovv,one_tensor)
             ierr=exatns_tensor_init(hov_aux_tensor)
@@ -718,7 +708,7 @@ module exacorr_cc
             ierr=exatns_tensor_contract("H(k,c)+=F(k,c)*K()",hov_aux_tensor,comm_t%fov,one_tensor,MINUS_TWO) ! subtract fock matrix
           end if
 
-!         oooo ! validated
+!         oooo
           call get_a(comm_t,int_t,CCD,one_tensor)
 
           if (ierr.ne.EXA_SUCCESS) then
@@ -741,17 +731,17 @@ module exacorr_cc
           end if
 
 !         This term appears twice as we need to permute i and j
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=G(k,j)*T(a,b,i,k)",s2_tensor,comm_t%goo,comm_t%t2)                   ! validated o(3)v(2)
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=G(k,i)*T(a,b,k,j)",s2_tensor,comm_t%goo,comm_t%t2)                   ! validated o(3)v(2)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=G(k,j)*T(a,b,i,k)",s2_tensor,comm_t%goo,comm_t%t2)                   ! o(3)v(2)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=G(k,i)*T(a,b,k,j)",s2_tensor,comm_t%goo,comm_t%t2)                   ! o(3)v(2)
 !         Again two times, also note the complex conjugation as we use vovv instead of vvvo
           if (.not.CCD) then
-              ierr=exatns_tensor_contract("S(a,b,i,j)+=V+(c,j,a,b)*T(c,i)",s2_tensor,int_t%vovv,comm_t%t1)                   ! validated o(2)v(3)
-              ierr=exatns_tensor_contract("S(a,b,i,j)+=V+(c,i,a,b)*T(c,j)",s2_tensor,int_t%vovv,comm_t%t1,MINUS_ONE)         ! validated o(2)v(3)
+              ierr=exatns_tensor_contract("S(a,b,i,j)+=V+(c,j,a,b)*T(c,i)",s2_tensor,int_t%vovv,comm_t%t1)                   ! o(2)v(3)
+              ierr=exatns_tensor_contract("S(a,b,i,j)+=V+(c,i,a,b)*T(c,j)",s2_tensor,int_t%vovv,comm_t%t1,MINUS_ONE)         ! o(2)v(3)
           end if
 
 !         This term appears twice as we need to permute a and b
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=G(a,c)*T(c,b,i,j)",s2_tensor,comm_t%gvv,comm_t%t2)  ! validated o(2)v(3)
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=G(b,c)*T(a,c,i,j)",s2_tensor,comm_t%gvv,comm_t%t2)  ! validated o(2)v(3)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=G(a,c)*T(c,b,i,j)",s2_tensor,comm_t%gvv,comm_t%t2)  ! o(2)v(3)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=G(b,c)*T(a,c,i,j)",s2_tensor,comm_t%gvv,comm_t%t2)  ! o(2)v(3)
 !         Again two times, with the C intermediate (note: in RELCCSD this is done differently)
           if (.not.CCD) then
               ierr=exatns_tensor_contract("S(a,b,i,j)+=C(k,b,i,j)*T(a,k)",s2_tensor,cint_tensor,comm_t%t1,MINUS_ONE) ! o(3)v(2)
@@ -759,23 +749,23 @@ module exacorr_cc
           end if
 
 !         The oooo contribution
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=A(k,l,i,j)*T(a,b,k,l)",s2_tensor,comm_t%a_int,comm_t%tau,ONE_HALF) !validated o(4)v(2)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=A(k,l,i,j)*T(a,b,k,l)",s2_tensor,comm_t%a_int,comm_t%tau,ONE_HALF) !o(4)v(2)
 
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=V+(i,j,a,b)*K()",s2_tensor,int_t%oovv,one_tensor)    ! validated o(2)v(2)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=V+(i,j,a,b)*K()",s2_tensor,int_t%oovv,one_tensor)    ! o(2)v(2)
 
 !         calculate s1 tensor
           if (.not.CCD) then
             ierr=exatns_tensor_init(s1_tensor)
             ierr=exatns_tensor_contract("S(a,i)+=F+(i,a)*K()",s1_tensor,comm_t%fov,one_tensor)
-            ierr=exatns_tensor_contract("S(a,i)+=V(a,k,c,d)*T(c,d,i,k)",s1_tensor,int_t%vovv,comm_t%tau,ONE_HALF) !validated o(2)v(3)
-            ierr=exatns_tensor_contract("S(a,i)+=H(a,c)*T(c,i)",s1_tensor,comm_t%hvv,comm_t%t1)                  !validated o(1)v(2)
-            ierr=exatns_tensor_contract("S(a,i)+=H(k,i)*T(a,k)",s1_tensor,comm_t%hoo,comm_t%t1)                        !validated o(2)v(1)
-            ierr=exatns_tensor_contract("S(a,i)+=H(k,c)*T(a,c,i,k)",s1_tensor,comm_t%hov,comm_t%t2)                   !validated o(2)v(2)
-            ierr=exatns_tensor_init(hoo_aux_tensor)                                                                        !moretests
-            ierr=exatns_tensor_contract("L(k,i)+=H(k,c)*T(c,i)",hoo_aux_tensor,hov_aux_tensor,comm_t%t1)                    !moretests o(2)v(1)
-            ierr=exatns_tensor_contract("S(a,i)+=H(k,i)*T(a,k)",s1_tensor,hoo_aux_tensor,comm_t%t1)                        !moretests o(2)v(1)
-            ierr=exatns_tensor_contract("S(a,i)+=V(k,l,i,c)*T(c,a,k,l)",s1_tensor,int_t%ooov,comm_t%tau,ONE_HALF) !validated o(3)v(2)
-            ierr=exatns_tensor_contract("S(a,i)+=V(a,k,c,i)*T(c,k)",s1_tensor,int_t%vovo,comm_t%t1,MINUS_ONE)     !validated o(2)v(2)
+            ierr=exatns_tensor_contract("S(a,i)+=V(a,k,c,d)*T(c,d,i,k)",s1_tensor,int_t%vovv,comm_t%tau,ONE_HALF) !o(2)v(3)
+            ierr=exatns_tensor_contract("S(a,i)+=H(a,c)*T(c,i)",s1_tensor,comm_t%hvv,comm_t%t1)                   !o(1)v(2)
+            ierr=exatns_tensor_contract("S(a,i)+=H(k,i)*T(a,k)",s1_tensor,comm_t%hoo,comm_t%t1)                   !o(2)v(1)
+            ierr=exatns_tensor_contract("S(a,i)+=H(k,c)*T(a,c,i,k)",s1_tensor,comm_t%hov,comm_t%t2)               !o(2)v(2)
+            ierr=exatns_tensor_init(hoo_aux_tensor)
+            ierr=exatns_tensor_contract("L(k,i)+=H(k,c)*T(c,i)",hoo_aux_tensor,hov_aux_tensor,comm_t%t1)          !o(2)v(1)
+            ierr=exatns_tensor_contract("S(a,i)+=H(k,i)*T(a,k)",s1_tensor,hoo_aux_tensor,comm_t%t1)               !o(2)v(1)
+            ierr=exatns_tensor_contract("S(a,i)+=V(k,l,i,c)*T(c,a,k,l)",s1_tensor,int_t%ooov,comm_t%tau,ONE_HALF) !o(3)v(2)
+            ierr=exatns_tensor_contract("S(a,i)+=V(a,k,c,i)*T(c,k)",s1_tensor,int_t%vovo,comm_t%t1,MINUS_ONE)     !o(2)v(2)
           end if
 
           if (ierr.ne.EXA_SUCCESS) then
@@ -1221,7 +1211,7 @@ module exacorr_cc
 
         end subroutine solve_lambda_equations
 
-        subroutine get_CC_integrals (ao_space_id,ao_space_root,int_t,moint_scheme)
+        subroutine get_CC_integrals (ao_space_id,ao_space,int_t,moint_scheme)
 
 !        Routine to get integrals needed in CC in the form of antisymmetric tensors.
 !        In this implementation we take all AO integrals into memory, the result tensor themselves can be subsets of the
@@ -1235,19 +1225,26 @@ module exacorr_cc
 
 !        information needed to compute the ao-tensor
          integer,intent(in)       :: ao_space_id
-         integer(INTL),intent(in) :: ao_space_root
+         class(h_space_t), pointer, intent(in) :: ao_space
 !        target integral tensors to be filled and given back to the caller
          type(exatns_intg_tens), intent(inout) :: int_t 
 
+         integer(INTL)              :: ao_space_root,subspace_id(4),num_subspaces
+         integer(INTL),allocatable  :: ao_subspaces(:)
          type(tens_rcrsv_t)         :: a2int_tensor, ovvo_tensor ! Auxilliary tensors
          integer(INTL),dimension(4) :: a2int_root, vovo_root, ovvo_root
          integer,dimension(4)       :: a2int_id, vovo_id, ovvo_id
 
-         integer                           :: i,ierr
-         integer                           :: moint_scheme ! (0: put zeroes for testing. 1: n^5 algorithm, 2: n^6 algorithm)
+         integer                           :: i,ierr, sub3, sub4
+         integer                           :: moint_scheme ! (0: put zeroes for testing. 1: n^5 algorithm, 2: n^6 algorithm
+                                                           !  3: n^5 with re-use of ints 4: as 3, but with sliced AO and HT)
+         character(len=15)                 :: text
 
 !        auxilliary integral tensor (only needed inside this routine)
          type(tens_rcrsv_t) :: aoint_tensor
+
+!        get the root space, covers all ao's
+         ao_space_root=ao_space%get_root_id(ierr)
 
 !        Determine space ids and root for auxilliary voov tensor from vovo tensor
          call int_t%vovo%get_space_ids(vovo_id,vovo_root,ierr)
@@ -1260,9 +1257,11 @@ module exacorr_cc
          ovvo_root(3:4) = vovo_root(3:4)
 
 !        Get tensor with AO integrals
-         ierr=exatns_tensor_create(aoint_tensor,'aotensor',(/(ao_space_id,i=1,4)/),(/(ao_space_root,i=1,4)/),EXA_DATA_KIND_C8)
-         if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
-         call print_date('allocated AO integral tensor')
+         if (moint_scheme /= 4) then
+            ierr=exatns_tensor_create(aoint_tensor,'aotensor',(/(ao_space_id,i=1,4)/),(/(ao_space_root,i=1,4)/),EXA_DATA_KIND_C8)
+            if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
+            call print_date('allocated AO integral tensor')
+         end if
 
          !Initialize ao-tensor:
          if (moint_scheme == 0) then
@@ -1358,10 +1357,68 @@ module exacorr_cc
            call print_date('oooo integrals completed')
            ierr=exatns_tensor_destroy(a2int_tensor)
 
+         elseif (moint_scheme == 4) then
+           
+           call print_date('choosing moint_scheme 4')
+           ! in this algorithm we only keep part of the AO and HT integrals in memory
+           subspace_id(1:2) = ao_space_root
+           call ao_space%get_level_composition(1,ao_subspaces,num_subspaces,ierr)
+           do sub4 = 1, num_subspaces
+              subspace_id(4)=ao_subspaces(sub4)
+              do sub3 = 1, num_subspaces
+                 subspace_id(3)=ao_subspaces(sub3)
+                 ierr=exatns_tensor_create(aoint_tensor,'aotensor',(/(ao_space_id,i=1,4)/),subspace_id,EXA_DATA_KIND_C8)
+                 if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
+                 ierr=exatns_tensor_init(aoint_tensor,'Aoint_calculator')
+                 if(ierr.ne.EXA_SUCCESS) call quit('Aoint_calculator failed!')
+
+                 ! Setting dimensions for the half transformed integral tensor, the last two are always AO spaces
+                 a2int_id(3:4)   = ao_space_id
+                 a2int_root(3:4) = subspace_id(3:4)
+
+                 ! get the integrals with vv as first transform
+                 a2int_id(1:2)   = vovo_id(1)
+                 a2int_root(1:2) = vovo_root(1)
+                 ierr=exatns_tensor_create(a2int_tensor,"a2vv",a2int_id,a2int_root,EXA_DATA_KIND_C8) 
+                 call get_ht1_integral_tensor (aoint_tensor,a2int_tensor)
+                 call get_ht2_integral_tensor (a2int_tensor,int_t%vvvv,12)
+                 call get_ht2_integral_tensor (a2int_tensor,int_t%vovv,34)
+                 call get_ht2_integral_tensor (a2int_tensor,int_t%vovo,0)
+                 ierr=exatns_tensor_destroy(a2int_tensor)
+
+                 ! get the integrals with ov as first transform
+                 a2int_id(1:2)   = vovo_id(2:3)
+                 a2int_root(1:2) = vovo_root(2:3)
+                 ierr=exatns_tensor_create(a2int_tensor,"a2ov",a2int_id,a2int_root,EXA_DATA_KIND_C8) 
+                 call get_ht1_integral_tensor (aoint_tensor,a2int_tensor)
+                 ierr=exatns_tensor_create(ovvo_tensor,"ovvo",ovvo_id,ovvo_root,EXA_DATA_KIND_C8) ! auxilliary for get_CC_integrals
+                 call get_ht2_integral_tensor (a2int_tensor,ovvo_tensor,0)
+!                Make anti-symmetrized vovo tensor
+                 ierr=exatns_tensor_contract("V(a,i,b,j)+=V(i,a,b,j)*K()",int_t%vovo,ovvo_tensor,one_tensor,MINUS_ONE)
+                 ierr=exatns_tensor_destroy(ovvo_tensor)
+                 call get_ht2_integral_tensor (a2int_tensor,int_t%oovv,12)
+                 ierr=exatns_tensor_destroy(a2int_tensor)
+
+                 ! get the integrals with oo as first transform
+                 a2int_id(1:2)   = vovo_id(2)
+                 a2int_root(1:2) = vovo_root(2)
+                 ierr=exatns_tensor_create(a2int_tensor,"a2oo",a2int_id,a2int_root,EXA_DATA_KIND_C8) 
+                 call get_ht1_integral_tensor (aoint_tensor,a2int_tensor)
+                 call get_ht2_integral_tensor (a2int_tensor,int_t%ooov,12)
+                 call get_ht2_integral_tensor (a2int_tensor,int_t%oooo,12)
+                 ierr=exatns_tensor_destroy(a2int_tensor)
+                 ierr=exatns_tensor_destroy(aoint_tensor)
+              end do
+              write (text,'(I6,A,I6)') sub4,' of',num_subspaces
+              call print_date('finished transforming subspace'//text)
+           end do
+
          end if
 
 !        Clean-up
-         ierr=exatns_tensor_destroy(aoint_tensor)
+         if (moint_scheme /= 4) then
+            ierr=exatns_tensor_destroy(aoint_tensor)
+         end if
 
         end subroutine get_CC_integrals
 
