@@ -13,6 +13,7 @@ private
 
 public cholesky_decompose
 public cholesky_decompose_aomat
+public cholesky_decompose_aomat_real
 
 interface cholesky_decompose
    module procedure cholesky_decompose_real_matrix
@@ -241,14 +242,14 @@ subroutine cholesky_decompose_aomat (CD_out, threshold)
   !out: 3 component tensors
   complex(8), intent(out), allocatable :: CD_out(:,:,:)
 
-  !work
-  complex(8), allocatable :: Dm(:,:)
-  logical, allocatable    :: M_do(:,:), M_ncomp(:,:)
+  !quanities for doing the main work
   integer(8)              :: m
   integer(8)              :: i_max(1:2)
   complex(8)              :: D_max,D_max_denom, D_tot
+  complex(8), allocatable :: Dm(:,:)
   complex(8), allocatable :: Gkl(:,:,:)
   complex(8), allocatable :: CD(:,:,:)
+  logical, allocatable    :: M_do(:,:), M_ncomp(:,:)
 
   !variables required to compute 2el integrals
   integer            :: basis_angular
@@ -263,21 +264,26 @@ subroutine cholesky_decompose_aomat (CD_out, threshold)
   real(8)            :: ek, ck, xk, yk, zk
   integer            :: l, nl, ll
   real(8)            :: el, cl, xl, yl, zl
-
-  real(8), save      :: gout(21*21*21*21) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
   real(8), parameter :: FIJKL = 1.0
+  integer, parameter :: LMAX = 21 ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
+  real(8), save      :: gout(LMAX*LMAX*LMAX*LMAX) 
   real(8)            :: limit
 
-  integer            :: max_ind(1:121,1:2)
-  complex(8)         :: max_val(1:121)
+  ! variables required to treat all significant elements of the shell
+  integer            :: max_ind(1:LMAX*LMAX,1:2)
   integer            :: max_m, q
-
-  !Interest needs to be initalized for each thread, this function will initialize (or return immediately if it is).
-  call interest_initialize(.false.)
+  real(8)            :: deltaD = 1.0E-3
 
   !get all information about the Gauss type orbitals, allocate retrieve data
   nao = get_nao()
   call get_gtos(1,nao,gto,nshells)
+
+  !Interest needs to be initalized for each thread, this function will initialize (or return immediately if it is).
+  call interest_initialize(.false.)
+  !set threshold for which integrals are include
+  limit=threshold*threshold*1.0E-6
+  !initialization for 2el integrals
+  basis_angular = get_basis_angular()
 
   !allocate tensors for cholesky decompostion
   allocate(CD(nao, nao, nao*nao))
@@ -292,10 +298,6 @@ subroutine cholesky_decompose_aomat (CD_out, threshold)
   i_max=maxloc(abs(Dm))
   D_max=Dm(i_max(1), i_max(2))
   write (*,'(a,a,2i6,a,e12.2)') 'start iter',' largest element ind = ', i_max, ' value = ', abs(D_max)
-  
-  !initialization for 2el integrals
-  limit=threshold*threshold*1.0E-6
-  basis_angular = get_basis_angular()
   
   !loop until threshold is reached
   CD=ZERO
@@ -340,14 +342,12 @@ subroutine cholesky_decompose_aomat (CD_out, threshold)
     M_ncomp=.false.
     M_ncomp(koff+1:koff+nk,loff+1:loff+nl)=.true.
     max_ind(1,:)=i_max
-    max_val(1)=D_max
     M_ncomp(max_ind(1,1),max_ind(1,2))=.false.
     
-    do q =2,121
+    do q =2,LMAX*LMAX
       if (count(M_ncomp)>0) then
         max_ind(q,:)=maxloc(abs(Dm), mask=M_ncomp)
-        max_val(q)=Dm(max_ind(q,1),max_ind(q,2))
-        if (abs(max_val(q))<abs(D_max)/1000) then
+        if (abs(Dm(max_ind(q,1),max_ind(q,2)))<abs(D_max)*deltaD) then
           max_m=q-1
           EXIT
         end if
@@ -357,11 +357,6 @@ subroutine cholesky_decompose_aomat (CD_out, threshold)
         EXIT
       end if
     end do
-    
-    !print *, ' # elements =', max_m
-    !do i =1,max_m
-    !  print *, 'element:', max_ind(i,1:2), max_val(i)
-    !end do
     
     allocate(Gkl(nao,nao,max_m))
 
@@ -378,6 +373,7 @@ subroutine cholesky_decompose_aomat (CD_out, threshold)
       cj   =  gto(jsh)%coefficient(1)
       nj   =  nfunctions(lj,basis_angular)
 
+      !neglect small elements
       if (any(abs(Dm(:,joff+1:joff+nj)*D_max)>limit)) then
         ioff = 0
         do ish = 1, nshells
@@ -389,6 +385,7 @@ subroutine cholesky_decompose_aomat (CD_out, threshold)
           ci   =  gto(ish)%coefficient(1)
           ni   =  nfunctions(li,basis_angular)
 
+          !neglect small elements
           if (any(abs(Dm(ioff+1:ioff+ni,joff+1:joff+nj)*D_max)>limit)) then
 !           output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
             call interest_eri('llll',FIJKL,gout,&
@@ -397,6 +394,7 @@ subroutine cholesky_decompose_aomat (CD_out, threshold)
                         li,ei,xi,yi,zi,ci,&
                         lj,ej,xj,yj,zj,cj )
 
+            !save all significant elements for this shell
             do q = 1,max_m
               k = max_ind(q,1) - koff
               l = max_ind(q,2) - loff
@@ -408,35 +406,37 @@ subroutine cholesky_decompose_aomat (CD_out, threshold)
                 end do
               end do
             end do
+
           end if
-      
           ioff = ioff + ni
         end do
       end if
-
       joff = joff + nj
     end do
 
-    !compute next elements
+    !add next elements
     do q = 1,max_m
-      if (abs(Dm(max_ind(q,1),max_ind(q,2)))>abs(D_max)/1000) then
-        !print *, 'q = ', q, '   D = ', Dm(max_ind(q,1),max_ind(q,2))
+      !check if previous vectors already took care of this element
+      if (abs(Dm(max_ind(q,1),max_ind(q,2)))>abs(D_max)*deltaD) then
+
+        !compute new element 
         do i = 1,m
           CD(:,:,m+1)=CD(:,:,m+1)+CD(:,:,i)*CD(max_ind(q,1),max_ind(q,2),i)
         end do
-
         CD(:,:,m+1)=Gkl(:,:,q)-CD(:,:,m+1)
+        !zero out elements that are not treated but should be small
         where (M_ncomp) CD(:,:,m+1)=ZERO
         D_max_denom = ONE / zsqrt(Dm(max_ind(q,1),max_ind(q,2)))
         CD(:,:,m+1)=CD(:,:,m+1) * D_max_denom
 
-        m=m+1
+        ! next element
+        m=m+1   
 
         !update diagonal
         Gkl(:,:,1)=CD(:,:,m)*CD(:,:,m)
         Dm=Dm-Gkl(:,:,1)
 
-        !make mask for searching new element
+        !make mask for searching new elements
         M_do(max_ind(q,1),max_ind(q,2))=.false.
 
       end if
@@ -446,13 +446,15 @@ subroutine cholesky_decompose_aomat (CD_out, threshold)
     i_max=maxloc(abs(Dm))
     D_tot=Dm(i_max(1), i_max(2))
 
+    !find largest non treated element
     i_max=maxloc(abs(Dm), mask=M_do)
     D_max=Dm(i_max(1), i_max(2))
-    write (*,'(a,i6,a,2i6,a,e12.2)') 'cholesky length =',m,' largest element ind = ', i_max, ' value = ', abs(D_max)
 
     if (abs(D_tot).gt.abs(D_max)) then
       print *, 'Warning: error in cholesky will not be smaller than ', D_tot
     end if
+
+    write (*,'(a,i6,a,2i6,a,e12.2)') 'cholesky length =',m,' largest element ind = ', i_max, ' value = ', abs(D_max)
 
     if (m.ge.nao*nao) then
       stop 'error: cholesky not converged'
@@ -463,7 +465,7 @@ subroutine cholesky_decompose_aomat (CD_out, threshold)
 
   print *, 'Cholesky dcomposition done '
 
-  
+  ! clean up
   deallocate(Dm)
   deallocate(M_do)
   deallocate(M_ncomp)
@@ -474,6 +476,257 @@ subroutine cholesky_decompose_aomat (CD_out, threshold)
   CD_out=CD(:,:,1:m)
   deallocate(CD)
 end subroutine cholesky_decompose_aomat
+
+subroutine cholesky_decompose_aomat_real(CD_out, threshold)
+
+  use exacorr_datatypes
+  use exacorr_global
+  use module_interest_eri
+  
+  implicit none
+
+  !in: ao information
+  real(8), intent(in)                  :: threshold
+  type(basis_func_info_t), allocatable :: gto(:)  ! arrays with basis function information
+  integer                              :: nao, nshells
+
+  !out: 3 component tensors
+  real(8), intent(out), allocatable :: CD_out(:,:,:)
+
+  !quanities for doing the main work
+  integer(8)           :: m
+  integer(8)           :: i_max(1:2)
+  real(8)              :: D_max,D_max_denom, D_tot
+  real(8), allocatable :: Dm(:,:)
+  real(8), allocatable :: Gkl(:,:,:)
+  real(8), allocatable :: CD(:,:,:)
+  logical, allocatable :: M_do(:,:), M_ncomp(:,:)
+
+  !variables required to compute 2el integrals
+  integer            :: basis_angular
+  integer(8)         :: ijkl
+  integer(8)         :: ioff,joff,koff,loff
+  integer(8)         :: ish,jsh,ksh,lsh
+  integer            :: i, ni, li
+  real(8)            :: ei, ci, xi, yi, zi
+  integer            :: j, nj, lj
+  real(8)            :: ej, cj, xj, yj, zj
+  integer            :: k, nk, lk
+  real(8)            :: ek, ck, xk, yk, zk
+  integer            :: l, nl, ll
+  real(8)            :: el, cl, xl, yl, zl
+  real(8), parameter :: FIJKL = 1.0
+  integer, parameter :: LMAX = 21 ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
+  real(8), save      :: gout(LMAX*LMAX*LMAX*LMAX) 
+  real(8)            :: limit
+
+  ! variables required to treat all significant elements of the shell
+  integer            :: max_ind(1:LMAX*LMAX,1:2)
+  integer            :: max_m, q
+  real(8)            :: deltaD = 1.0E-3
+
+  !get all information about the Gauss type orbitals, allocate retrieve data
+  nao = get_nao()
+  call get_gtos(1,nao,gto,nshells)
+
+  !Interest needs to be initalized for each thread, this function will initialize (or return immediately if it is).
+  call interest_initialize(.false.)
+  !set threshold for which integrals are include
+  limit=threshold*threshold*1.0E-6
+  !initialization for 2el integrals
+  basis_angular = get_basis_angular()
+
+  !allocate tensors for cholesky decompostion
+  allocate(CD(nao, nao, nao*nao))
+  allocate(Dm(nao,nao))
+  allocate(M_do(nao,nao))
+  M_do=.true.
+  allocate(M_ncomp(nao,nao))
+
+  call get_2el_diag_real(nao, gto, nshells, Dm)
+
+  !find largest value
+  i_max=maxloc(abs(Dm))
+  D_max=Dm(i_max(1), i_max(2))
+  write (*,'(a,a,2i6,a,e12.2)') 'start iter',' largest element ind = ', i_max, ' value = ', abs(D_max)
+  
+  !loop until threshold is reached
+  CD=0.0
+  m=0
+  do while (abs(D_max)>threshold)
+    
+    !find shell and save values for integral computation to variables
+    loff = 0
+    ! This search could be avoided by generalizing the routine that points from a function to the shell
+    do lsh = 1, nshells
+      ll   =  gto(lsh)%orb_momentum
+      nl   =  nfunctions(ll,basis_angular)
+      if ( i_max(2)>loff .and. i_max(2).le.loff+nl) then
+        el   =  gto(lsh)%exponent(1)
+        xl   =  gto(lsh)%coord(1)
+        yl   =  gto(lsh)%coord(2)
+        zl   =  gto(lsh)%coord(3)
+        cl   =  gto(lsh)%coefficient(1)
+        EXIT
+      else
+       loff = loff + nl
+      end if
+    end do
+
+    koff = 0
+    do ksh = 1, nshells
+      lk   =  gto(ksh)%orb_momentum
+      nk   =  nfunctions(lk,basis_angular)
+      if ( i_max(1)>koff .and. i_max(1).le.koff+nk) then
+        ek   =  gto(ksh)%exponent(1)
+        ck   =  gto(ksh)%coefficient(1)
+        xk   =  gto(ksh)%coord(1)
+        yk   =  gto(ksh)%coord(2)
+        zk   =  gto(ksh)%coord(3)
+        EXIT
+      else
+       koff = koff + nk
+      end if
+    end do
+
+    !find all large elements in the shell, allocate accordingly
+    M_ncomp=.false.
+    M_ncomp(koff+1:koff+nk,loff+1:loff+nl)=.true.
+    max_ind(1,:)=i_max
+    M_ncomp(max_ind(1,1),max_ind(1,2))=.false.
+    
+    do q =2,LMAX*LMAX
+      if (count(M_ncomp)>0) then
+        max_ind(q,:)=maxloc(abs(Dm), mask=M_ncomp)
+        if (abs(Dm(max_ind(q,1),max_ind(q,2)))<abs(D_max)*deltaD) then
+          max_m=q-1
+          EXIT
+        end if
+        M_ncomp(max_ind(q,1),max_ind(q,2))=.false.
+      else
+        max_m=q-1
+        EXIT
+      end if
+    end do
+    
+    allocate(Gkl(nao,nao,max_m))
+
+    !compute nessecary two electron integrals
+    M_ncomp=.true.
+
+    joff = 0
+    do jsh = 1, nshells
+      lj   =  gto(jsh)%orb_momentum
+      ej   =  gto(jsh)%exponent(1)
+      xj   =  gto(jsh)%coord(1)
+      yj   =  gto(jsh)%coord(2)
+      zj   =  gto(jsh)%coord(3)
+      cj   =  gto(jsh)%coefficient(1)
+      nj   =  nfunctions(lj,basis_angular)
+
+      !neglect small elements
+      if (any(abs(Dm(:,joff+1:joff+nj)*D_max)>limit)) then
+        ioff = 0
+        do ish = 1, nshells
+          li   =  gto(ish)%orb_momentum
+          ei   =  gto(ish)%exponent(1)
+          xi   =  gto(ish)%coord(1)
+          yi   =  gto(ish)%coord(2)
+          zi   =  gto(ish)%coord(3)
+          ci   =  gto(ish)%coefficient(1)
+          ni   =  nfunctions(li,basis_angular)
+
+          !neglect small elements
+          if (any(abs(Dm(ioff+1:ioff+ni,joff+1:joff+nj)*D_max)>limit)) then
+!           output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
+            call interest_eri('llll',FIJKL,gout,&
+                        lk,ek,xk,yk,zk,ck,&
+                        ll,el,xl,yl,zl,cl,&
+                        li,ei,xi,yi,zi,ci,&
+                        lj,ej,xj,yj,zj,cj )
+
+            !save all significant elements for this shell
+            do q = 1,max_m
+              k = max_ind(q,1) - koff
+              l = max_ind(q,2) - loff
+              do j = 1, nj
+                do i = 1, ni
+                  ijkl = (l-1)*nk*nj*ni+(k-1)*nj*ni+(j-1)*ni+i
+                  Gkl(i+ioff,j+joff,q) = gout(ijkl)
+                  M_ncomp(i+ioff,j+joff)=.false.
+                end do
+              end do
+            end do
+
+          end if
+          ioff = ioff + ni
+        end do
+      end if
+      joff = joff + nj
+    end do
+
+    !add next elements
+    do q = 1,max_m
+      !check if previous vectors already took care of this element
+      if (abs(Dm(max_ind(q,1),max_ind(q,2)))>abs(D_max)*deltaD) then
+
+        !compute new element 
+        do i = 1,m
+          CD(:,:,m+1)=CD(:,:,m+1)+CD(:,:,i)*CD(max_ind(q,1),max_ind(q,2),i)
+        end do
+        CD(:,:,m+1)=Gkl(:,:,q)-CD(:,:,m+1)
+        !zero out elements that are not treated but should be small
+        where (M_ncomp) CD(:,:,m+1)=0.0
+        D_max_denom = ONE / sqrt(Dm(max_ind(q,1),max_ind(q,2)))
+        CD(:,:,m+1)=CD(:,:,m+1) * D_max_denom
+
+        ! next element
+        m=m+1   
+
+        !update diagonal
+        Gkl(:,:,1)=CD(:,:,m)*CD(:,:,m)
+        Dm=Dm-Gkl(:,:,1)
+
+        !make mask for searching new elements
+        M_do(max_ind(q,1),max_ind(q,2))=.false.
+
+      end if
+    end do
+
+    !find largest element
+    i_max=maxloc(abs(Dm))
+    D_tot=Dm(i_max(1), i_max(2))
+
+    !find largest non treated element
+    i_max=maxloc(abs(Dm), mask=M_do)
+    D_max=Dm(i_max(1), i_max(2))
+
+    if (abs(D_tot).gt.abs(D_max)) then
+      print *, 'Warning: error in cholesky will not be smaller than ', D_tot
+    end if
+
+    write (*,'(a,i6,a,2i6,a,e12.2)') 'cholesky length =',m,' largest element ind = ', i_max, ' value = ', abs(D_max)
+
+    if (m.ge.nao*nao) then
+      stop 'error: cholesky not converged'
+    end if
+
+    deallocate(Gkl)
+  end do
+
+  print *, 'Cholesky dcomposition done '
+
+  ! clean up
+  deallocate(Dm)
+  deallocate(M_do)
+  deallocate(M_ncomp)
+  deallocate(gto)
+
+  !hand tensor over
+  allocate(CD_out(nao, nao, m))
+  CD_out=CD(:,:,1:m)
+  deallocate(CD)
+end subroutine cholesky_decompose_aomat_real
 
 subroutine get_2el_diag(nao, gto, nshells, Dm)
 
@@ -540,116 +793,69 @@ subroutine get_2el_diag(nao, gto, nshells, Dm)
 
 end subroutine get_2el_diag
 
-subroutine get_2el_int(nao, gto, nshells, k_fix, l_fix, Gkl, threshold, DM)
-  !returns two electron integrals with two fixed indices
+subroutine get_2el_diag_real(nao, gto, nshells, Dm)
 
   use exacorr_datatypes
   use exacorr_global
   use module_interest_eri
 
   implicit none
-
-  integer, intent(in)                 :: nao, nshells
-  integer(8), intent(in)              :: k_fix, l_fix
+  
+  !returns two electron integrals with i=k and j=l
+  integer, intent(in) :: nao, nshells
   type(basis_func_info_t), intent(in) :: gto(:)  ! arrays with basis function information
-  complex(8), intent(in)              :: Dm(:,:)
-  real(8), intent(in)                 :: threshold
 
-  complex(8), intent(inout)           :: Gkl(:,:)
+  real(8), intent(inout) :: Dm(:,:)
 
-  integer      :: basis_angular
-  integer      :: i, j, k, l, ioff,joff, koff, loff
-  integer      :: ijkl
-  integer      :: ish, jsh, ksh, lsh
-  integer      :: li,lj,lk,ll, ni,nj,nk,nl
-  real(8)      :: ei,ej,ek,el,ci,cj,ck,cl
-  real(8)      :: xi,yi,zi,xj,yj,zj,xk,yk,zk,xl,yl,zl
+  integer :: basis_angular
+  integer :: lq, lp, nq, np, q, p
+  integer :: i, j, ijij
+  integer :: ioff, joff
+  real(8) :: eq,ep,cq,cp
+  real(8) :: xq,yq,zq,xp,yp,zp
   real(8),save :: gout(21*21*21*21) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
   real(8), parameter :: FIJKL = 1.0
-  real(8)      :: limit
 
-  limit=threshold*threshold*1.0E-6
   basis_angular = get_basis_angular()
-
-  loff = 0
-! This search could be avoided by generalizing the routine that points from a function to the shell
-  do lsh = 1, nshells
-    ll   =  gto(lsh)%orb_momentum
-    el   =  gto(lsh)%exponent(1)
-    xl   =  gto(lsh)%coord(1)
-    yl   =  gto(lsh)%coord(2)
-    zl   =  gto(lsh)%coord(3)
-    cl   =  gto(lsh)%coefficient(1)
-    nl   =  nfunctions(ll,basis_angular)
-    if ( l_fix>loff .and. l_fix.le.loff+nl) then
-        l = l_fix - loff
-        EXIT
-    else
-       loff = loff + nl
-    end if
-  end do
-
-  koff = 0
-  do ksh = 1, nshells
-    lk   =  gto(ksh)%orb_momentum
-    ek   =  gto(ksh)%exponent(1)
-    xk   =  gto(ksh)%coord(1)
-    yk   =  gto(ksh)%coord(2)
-    zk   =  gto(ksh)%coord(3)
-    ck   =  gto(ksh)%coefficient(1)
-    nk   =  nfunctions(lk,basis_angular)
-    if ( k_fix>koff .and. k_fix.le.koff+nk) then
-        k = k_fix - koff
-        EXIT
-    else
-       koff = koff + nk
-    end if
-  end do
-
   joff = 0
-  do jsh = 1, nshells
-    lj   =  gto(jsh)%orb_momentum
-    ej   =  gto(jsh)%exponent(1)
-    xj   =  gto(jsh)%coord(1)
-    yj   =  gto(jsh)%coord(2)
-    zj   =  gto(jsh)%coord(3)
-    cj   =  gto(jsh)%coefficient(1)
-    nj   =  nfunctions(lj,basis_angular)
+  do q = 1, nshells
+     lq   =  gto(q)%orb_momentum
+     eq   =  gto(q)%exponent(1)
+     xq   =  gto(q)%coord(1)
+     yq   =  gto(q)%coord(2)
+     zq   =  gto(q)%coord(3)
+     cq   =  gto(q)%coefficient(1)
+     nq   =  nfunctions(lq,basis_angular)
 
-    if (any(abs(Dm(:, joff+1:joff+nj)*Dm(k_fix,l_fix))>limit)) then
-      ioff = 0
-      do ish = 1, nshells
-        li   =  gto(ish)%orb_momentum
-        ei   =  gto(ish)%exponent(1)
-        xi   =  gto(ish)%coord(1)
-        yi   =  gto(ish)%coord(2)
-        zi   =  gto(ish)%coord(3)
-        ci   =  gto(ish)%coefficient(1)
-        ni   =  nfunctions(li,basis_angular)
+     ioff = 0
+     do p = 1, nshells
+        lp   =  gto(p)%orb_momentum
+        ep   =  gto(p)%exponent(1)
+        xp   =  gto(p)%coord(1)
+        yp   =  gto(p)%coord(2)
+        zp   =  gto(p)%coord(3)
+        cp   =  gto(p)%coefficient(1)
+        np   =  nfunctions(lp,basis_angular)
 
-        if (any(abs(Dm(ioff+1:ioff+ni, joff+1:joff+nj)*Dm(k_fix,l_fix))>limit)) then
-!         output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
-          call interest_eri('llll',fijkl,gout,&
-                        lk,ek,xk,yk,zk,ck,&
-                        ll,el,xl,yl,zl,cl,&
-                        li,ei,xi,yi,zi,ci,&
-                        lj,ej,xj,yj,zj,cj )
-          do j = 1, nj
-            do i = 1, ni
-              ijkl = (l-1)*nk*nj*ni+(k-1)*nj*ni+(j-1)*ni+i
-              Gkl(i+ioff,j+joff) = dcmplx(gout(ijkl),0.D0)
-            end do
+        !get eri values
+        call interest_eri('llll',FIJKL,gout,&
+                          lp,ep,xp,yp,zp,cp,&
+                          lq,eq,xq,yq,zq,cq,&
+                          lp,ep,xp,yp,zp,cp,&
+                          lq,eq,xq,yq,zq,cq )
+
+        do j = 1, nq
+          do i = 1, np
+            ijij = (j-1)*np*nq*np+(i-1)*nq*np+(j-1)*np+i
+            Dm(i+ioff,j+joff) = gout(ijij)
           end do
-        end if
-      
-        ioff = ioff + ni
-      end do
-    end if
+        end do
 
-    joff = joff + nj
+        ioff = ioff + np
+     end do
+     joff = joff + nq
   end do
-  
-end subroutine get_2el_int
 
+end subroutine get_2el_diag_real
 
 end module exacorr_cholesky

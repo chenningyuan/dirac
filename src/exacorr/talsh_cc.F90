@@ -1183,7 +1183,8 @@ module talsh_cc
 !        Get cholesky-vectors and copy them in to a talsh tensor
          allocate(ao_tens(nao,nao,nao,nao))
          call compute_ao_integrals (nao,ao_tens_real=ao_tens)
-         call cholesky_decompose (ao_tens,nao,CD, 1.0d-9)
+         call cholesky_decompose_aomat_real (CD,  1.0d-9)
+         !call cholesky_decompose (ao_tens,nao,CD, 1.0d-9)
 !        call cholesky_decompose (reshape(ao_tens,(/nao*nao,nao*nao/)),nao*nao,CD, 1.0d-12)
          deallocate(ao_tens)
          chol_dims(1)=nao
@@ -1199,8 +1200,8 @@ module talsh_cc
             do j = 1, nao
                do i = 1, nao
 !                 ij = ij + 1
+                  !chol_tens(i,j,m)=CD(i,j,m)
                   chol_tens(i,j,m)=dcmplx(CD(i,j,m),0.D0)
-!                 chol_tens(i,j,m)=dcmplx(CD(ij,m),0.D0)
                end do
             end do
          end do
