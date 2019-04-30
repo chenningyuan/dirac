@@ -247,7 +247,7 @@ subroutine cholesky_decompose_aomat (CD_out, threshold)
   integer(8)              :: m
   integer(8)              :: i_max(1:2)
   complex(8)              :: D_max,D_max_denom, D_tot
-  complex(8), allocatable :: Gkl(:,:)
+  complex(8), allocatable :: Gkl(:,:,:)
   complex(8), allocatable :: CD(:,:,:)
 
   !variables required to compute 2el integrals
@@ -268,6 +268,10 @@ subroutine cholesky_decompose_aomat (CD_out, threshold)
   real(8), parameter :: FIJKL = 1.0
   real(8)            :: limit
 
+  integer            :: max_ind(1:121,1:2)
+  complex(8)         :: max_val(1:121)
+  integer            :: max_m, q
+
   !Interest needs to be initalized for each thread, this function will initialize (or return immediately if it is).
   call interest_initialize(.false.)
 
@@ -278,7 +282,6 @@ subroutine cholesky_decompose_aomat (CD_out, threshold)
   !allocate tensors for cholesky decompostion
   allocate(CD(nao, nao, nao*nao))
   allocate(Dm(nao,nao))
-  allocate(Gkl(nao,nao))
   allocate(M_do(nao,nao))
   M_do=.true.
   allocate(M_ncomp(nao,nao))
@@ -294,8 +297,8 @@ subroutine cholesky_decompose_aomat (CD_out, threshold)
   limit=threshold*threshold*1.0E-6
   basis_angular = get_basis_angular()
   
-  CD=ZERO
   !loop until threshold is reached
+  CD=ZERO
   m=0
   do while (abs(D_max)>threshold)
     
@@ -304,14 +307,13 @@ subroutine cholesky_decompose_aomat (CD_out, threshold)
     ! This search could be avoided by generalizing the routine that points from a function to the shell
     do lsh = 1, nshells
       ll   =  gto(lsh)%orb_momentum
-      el   =  gto(lsh)%exponent(1)
-      xl   =  gto(lsh)%coord(1)
-      yl   =  gto(lsh)%coord(2)
-      zl   =  gto(lsh)%coord(3)
-      cl   =  gto(lsh)%coefficient(1)
       nl   =  nfunctions(ll,basis_angular)
       if ( i_max(2)>loff .and. i_max(2).le.loff+nl) then
-        l = i_max(2) - loff
+        el   =  gto(lsh)%exponent(1)
+        xl   =  gto(lsh)%coord(1)
+        yl   =  gto(lsh)%coord(2)
+        zl   =  gto(lsh)%coord(3)
+        cl   =  gto(lsh)%coefficient(1)
         EXIT
       else
        loff = loff + nl
@@ -321,41 +323,47 @@ subroutine cholesky_decompose_aomat (CD_out, threshold)
     koff = 0
     do ksh = 1, nshells
       lk   =  gto(ksh)%orb_momentum
-      ek   =  gto(ksh)%exponent(1)
-      xk   =  gto(ksh)%coord(1)
-      yk   =  gto(ksh)%coord(2)
-      zk   =  gto(ksh)%coord(3)
-      ck   =  gto(ksh)%coefficient(1)
       nk   =  nfunctions(lk,basis_angular)
       if ( i_max(1)>koff .and. i_max(1).le.koff+nk) then
-        k = i_max(1) - koff
+        ek   =  gto(ksh)%exponent(1)
+        ck   =  gto(ksh)%coefficient(1)
+        xk   =  gto(ksh)%coord(1)
+        yk   =  gto(ksh)%coord(2)
+        zk   =  gto(ksh)%coord(3)
         EXIT
       else
        koff = koff + nk
       end if
     end do
 
-    !find other large elements in this shell, allocate accordingly
-    !M_ncomp=.false.
-    !M_ncomp(loff+1:loff+nl,koff+1:koff+nk)=.true.
-    !M_ncomp(i_max(1), i_max(2))=.false.
+    !find all large elements in the shell, allocate accordingly
+    M_ncomp=.false.
+    M_ncomp(koff+1:koff+nk,loff+1:loff+nl)=.true.
+    max_ind(1,:)=i_max
+    max_val(1)=D_max
+    M_ncomp(max_ind(1,1),max_ind(1,2))=.false.
     
-    ! do i =1,121
-    !   if (count(M_ncomp)>1) then
-    !     max_ind(i,:)=maxloc(abs(Dm), mask=M_ncomp)
-    !     max_val(i)=Dm(max_ind(i,1),max_ind(i,2))
-    !     if (abs(max_val(i))<abs(D_max)/1000) then
-    !       max_m=i-1
-    !       EXIT
-    !     end if
-    !     M_ncomp(max_ind(i,1),max_ind(i,2))=.false.
-    !   else
-    !     max_m=i
-    !     EXIT
-    !   end if
-    ! end do
-
-    !print *, 'elements:', max_ind(1:max_m,2), max_val(1:max_m)
+    do q =2,121
+      if (count(M_ncomp)>0) then
+        max_ind(q,:)=maxloc(abs(Dm), mask=M_ncomp)
+        max_val(q)=Dm(max_ind(q,1),max_ind(q,2))
+        if (abs(max_val(q))<abs(D_max)/1000) then
+          max_m=q-1
+          EXIT
+        end if
+        M_ncomp(max_ind(q,1),max_ind(q,2))=.false.
+      else
+        max_m=q-1
+        EXIT
+      end if
+    end do
+    
+    !print *, ' # elements =', max_m
+    !do i =1,max_m
+    !  print *, 'element:', max_ind(i,1:2), max_val(i)
+    !end do
+    
+    allocate(Gkl(nao,nao,max_m))
 
     !compute nessecary two electron integrals
     M_ncomp=.true.
@@ -370,7 +378,7 @@ subroutine cholesky_decompose_aomat (CD_out, threshold)
       cj   =  gto(jsh)%coefficient(1)
       nj   =  nfunctions(lj,basis_angular)
 
-      !if (any(abs(Dm(:, joff+1:joff+nj)*Dm(i_max(1), i_max(2)))>limit)) then
+      if (any(abs(Dm(:,joff+1:joff+nj)*D_max)>limit)) then
         ioff = 0
         do ish = 1, nshells
           li   =  gto(ish)%orb_momentum
@@ -381,47 +389,58 @@ subroutine cholesky_decompose_aomat (CD_out, threshold)
           ci   =  gto(ish)%coefficient(1)
           ni   =  nfunctions(li,basis_angular)
 
-          !if (any(abs(Dm(ioff+1:ioff+ni, joff+1:joff+nj)*Dm(i_max(1), i_max(2)))>limit)) then
+          if (any(abs(Dm(ioff+1:ioff+ni,joff+1:joff+nj)*D_max)>limit)) then
 !           output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
             call interest_eri('llll',FIJKL,gout,&
                         lk,ek,xk,yk,zk,ck,&
                         ll,el,xl,yl,zl,cl,&
                         li,ei,xi,yi,zi,ci,&
                         lj,ej,xj,yj,zj,cj )
-            do j = 1, nj
-              do i = 1, ni
-                ijkl = (l-1)*nk*nj*ni+(k-1)*nj*ni+(j-1)*ni+i
-                Gkl(i+ioff,j+joff) = dcmplx(gout(ijkl),0.D0)
-                M_ncomp=.false.
+
+            do q = 1,max_m
+              k = max_ind(q,1) - koff
+              l = max_ind(q,2) - loff
+              do j = 1, nj
+                do i = 1, ni
+                  ijkl = (l-1)*nk*nj*ni+(k-1)*nj*ni+(j-1)*ni+i
+                  Gkl(i+ioff,j+joff,q) = dcmplx(gout(ijkl),0.D0)
+                  M_ncomp(i+ioff,j+joff)=.false.
+                end do
               end do
             end do
-          !end if
+          end if
       
           ioff = ioff + ni
         end do
-      !end if
+      end if
 
       joff = joff + nj
     end do
 
-    !compute next element
-    do i = 1,m
-       CD(:,:,m+1)=CD(:,:,m+1)+CD(:,:,i)*CD(i_max(1),i_max(2),i)
+    !compute next elements
+    do q = 1,max_m
+      if (abs(Dm(max_ind(q,1),max_ind(q,2)))>abs(D_max)/1000) then
+        !print *, 'q = ', q, '   D = ', Dm(max_ind(q,1),max_ind(q,2))
+        do i = 1,m
+          CD(:,:,m+1)=CD(:,:,m+1)+CD(:,:,i)*CD(max_ind(q,1),max_ind(q,2),i)
+        end do
+
+        CD(:,:,m+1)=Gkl(:,:,q)-CD(:,:,m+1)
+        where (M_ncomp) CD(:,:,m+1)=ZERO
+        D_max_denom = ONE / zsqrt(Dm(max_ind(q,1),max_ind(q,2)))
+        CD(:,:,m+1)=CD(:,:,m+1) * D_max_denom
+
+        m=m+1
+
+        !update diagonal
+        Gkl(:,:,1)=CD(:,:,m)*CD(:,:,m)
+        Dm=Dm-Gkl(:,:,1)
+
+        !make mask for searching new element
+        M_do(max_ind(q,1),max_ind(q,2))=.false.
+
+      end if
     end do
-
-    CD(:,:,m+1)=Gkl-CD(:,:,m+1)
-    where (M_ncomp) CD(:,:,m+1)=ZERO
-    D_max_denom = ONE / zsqrt(D_max)
-    CD(:,:,m+1)=CD(:,:,m+1) * D_max_denom
-
-    m=m+1
-
-    !update diagonal
-    Gkl(:,:)=CD(:,:,m)*CD(:,:,m)
-    Dm=Dm-Gkl
-
-    !make mask for searching new element
-    M_do(i_max(1), i_max(2))=.false.
 
     !find largest element
     i_max=maxloc(abs(Dm))
@@ -429,8 +448,8 @@ subroutine cholesky_decompose_aomat (CD_out, threshold)
 
     i_max=maxloc(abs(Dm), mask=M_do)
     D_max=Dm(i_max(1), i_max(2))
-    write (*,'(a,i6,a,2i6,a,e12.2)') 'iter',m,' largest element ind = ', i_max, ' value = ', abs(D_max)
-    
+    write (*,'(a,i6,a,2i6,a,e12.2)') 'cholesky length =',m,' largest element ind = ', i_max, ' value = ', abs(D_max)
+
     if (abs(D_tot).gt.abs(D_max)) then
       print *, 'Warning: error in cholesky will not be smaller than ', D_tot
     end if
@@ -438,11 +457,13 @@ subroutine cholesky_decompose_aomat (CD_out, threshold)
     if (m.ge.nao*nao) then
       stop 'error: cholesky not converged'
     end if
+
+    deallocate(Gkl)
   end do
 
   print *, 'Cholesky dcomposition done '
 
-  deallocate(Gkl)
+  
   deallocate(Dm)
   deallocate(M_do)
   deallocate(M_ncomp)
