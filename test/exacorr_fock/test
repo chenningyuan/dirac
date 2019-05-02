@@ -48,8 +48,8 @@ os.environ['QF_MICS_PER_PROCESS'] = "0"           #number of discrete Intel Xeon
 os.environ['QF_AMDS_PER_PROCESS'] = "0"           #number of dsicrete AMD GPU's per process (optional)
 os.environ['QF_NUM_THREADS'] = "4"                #number of threads per MPI process (irrelevant, keep it 8)
 
-#os.environ['DIRAC_MPI_COMMAND'] = "mpiexec -n " + os.getenv('QF_NUM_PROCS') + " -hosts localhost"
-os.environ['DIRAC_MPI_COMMAND'] = "mpiexec -n " + os.getenv('QF_NUM_PROCS')
+os.environ['DIRAC_MPI_COMMAND'] = "mpiexec -n " + os.getenv('QF_NUM_PROCS') + " -hosts localhost"
+#os.environ['DIRAC_MPI_COMMAND'] = "mpiexec -n " + os.getenv('QF_NUM_PROCS')
 
 #OpenMP:
 os.environ['OMP_NUM_THREADS'] = os.getenv('QF_NUM_THREADS') #initial number of OpenMP threads per MPI process

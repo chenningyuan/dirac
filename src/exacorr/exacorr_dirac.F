@@ -487,6 +487,7 @@ C
           nto = npo+nmo   ! total number of solutions on this file
           if (npo > 0) print*, "warning: reading from 4C DFCOEF file" ! this warning will go once we have the full index transform implementedd
        end if
+       print*,'nao, npo, nmo, nto : ', nao, npo, nmo, nto
 
        allocate(coeff(nao,nto,nz))
        allocate(eig(nto))
@@ -527,8 +528,10 @@ C
        read (LUCOEF,err=20,end=20) nao_bas,nshells,npriexp,ncnt 
        if (nao /= nao_bas) then
           ierr = INCONSIS
-          close (lucoef,status='KEEP')
-          return
+          print*,'!! Inconsistency !! I will ignore this...', 
+     &            nao, nao_bas
+!          close (lucoef,status='KEEP')
+!          return
        end if
 
        ! allocate the arrays to read the basis set information in DIRAC format

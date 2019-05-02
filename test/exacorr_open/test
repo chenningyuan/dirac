@@ -128,7 +128,6 @@ os.environ['PAMI_IBV_ENABLE_DCT'] = "1"                #reduces MPI_Init() time 
 
 os.system('ulimit -s unlimited')
 
-os.environ['OMP_NUM_THREADS'] = "1" #initial number of OpenMP threads per MPI process, X2C requires 1
 test.run(['scf_beh.inp'], ['BeH_nosym.mol'], f1,"--get='X2CMAT AOMOMAT DFCOEF'")
 os.environ['OMP_NUM_THREADS'] = os.getenv('QF_NUM_THREADS') #initial number of OpenMP threads per MPI process
 

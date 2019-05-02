@@ -28,7 +28,9 @@
       integer              :: ialpha, ibeta
 
 !     Temporary hack to call the IAO code
-!     call generate_iaos
+      print*,'starting generate iaos'
+      call generate_iaos
+      stop 'generated local orbitals'
 
 !     Initialize MPI variables
       mytid   = 0

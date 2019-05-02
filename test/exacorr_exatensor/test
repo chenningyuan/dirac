@@ -119,8 +119,8 @@ os.environ['PAMI_IBV_ENABLE_DCT'] = "1"                #reduces MPI_Init() time 
 
 os.system('ulimit -s unlimited')
 
-os.environ['DIRAC_MPI_COMMAND'] = "mpiexec -n " + os.getenv('QF_NUM_PROCS')
-#os.environ['DIRAC_MPI_COMMAND'] = "mpiexec -n " + os.getenv('QF_NUM_PROCS') + " -hosts localhost"
+#os.environ['DIRAC_MPI_COMMAND'] = "mpiexec -n " + os.getenv('QF_NUM_PROCS')
+os.environ['DIRAC_MPI_COMMAND'] = "mpiexec -n " + os.getenv('QF_NUM_PROCS') + " -hosts localhost"
 test.run(['exacc.inp'], ['H2O_nosym.mol'], f,"--put='X2CMAT AOMOMAT DFCOEF'")
 
 sys.exit(test.return_code)
