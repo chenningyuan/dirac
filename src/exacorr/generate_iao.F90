@@ -72,21 +72,53 @@
 !           write(*,15)(REAL(S11(i,j)),j=1,nmo1)
 !        enddo
 
-        print*,'-----Compute S22-----(',nmo2,'x',nmo2,') ##### WARNING: the 2x2 size block (corresponding&
-                to frag.3 overlap) is not complex hermitian...'
+        print*,'-----Compute S22-----(',nmo2,'x',nmo2,') ##### WARNING: the 2x2 size blocks (corresponding&
+                to frag.2/2 and frag.3/3 overlaps) are not complex hermitian...'
         allocate (S22(nmo2,nmo2))
+!        imo = 0
+!        do i = 1, n_fragments
+!           nmoi = cspinor_fragment(i)%nmo
+!           jmo = 0
+!           print*,'For fragment ',i
+!           do j = 1, n_fragments
+!              nmoj = cspinor_fragment(j)%nmo
+!              print*,'  For fragment ',j
+!              print*,'  imo, jmo: ',imo, jmo
+!              allocate (S_block(nmoi,nmoj))
+!              call get_mo_overlap (ao_basis_2(i),cspinor_fragment(i),ao_basis_2(j),cspinor_fragment(j),S_block)
+!              S22(imo+1:imo+nmoi,jmo+1:jmo+nmoj) = S_block
+!              S22(jmo+1:jmo+nmoj,imo+1:imo+nmoi) = conjg(transpose(S_block))
+!              jmo = jmo + nmoj
+!              deallocate (S_block)
+!           enddo
+!           imo = imo + nmoi
+!        enddo
+!        print*,'Print real part of S22:'
+!        do i=1,nmo2
+!!           write(*,55)(S22(i,j),j=1,nmo2)
+!           write(*,15)(REAL(S22(i,j)),j=1,nmo2)
+!        enddo
+
+!        allocate (S22(nmo2,nmo2))
         imo = 0
         do i = 1, n_fragments
            nmoi = cspinor_fragment(i)%nmo
-           jmo = 0
            print*,'For fragment ',i
-           do j = 1, n_fragments
+           jmo = imo
+           do j = i, n_fragments
               nmoj = cspinor_fragment(j)%nmo
               print*,'  For fragment ',j
+              print*,'  imo, jmo: ',imo, jmo
               allocate (S_block(nmoi,nmoj))
               call get_mo_overlap (ao_basis_2(i),cspinor_fragment(i),ao_basis_2(j),cspinor_fragment(j),S_block)
-              S22(imo+1:imo+nmoi,jmo+1:jmo+nmoj) = S_block
-              S22(jmo+1:jmo+nmoj,imo+1:imo+nmoi) = conjg(transpose(S_block))
+                 S22(imo+1:imo+nmoi,jmo+1:jmo+nmoj) = S_block
+              if (i /= j) then
+                 S22(jmo+1:jmo+nmoj,imo+1:imo+nmoi) = conjg(transpose(S_block))
+              end if
+              do k=1,nmoi
+!           write(*,55)(S22(i,j),j=1,nmo2)
+                 write(*,15)(REAL(S_block(k,l)),l=1,nmoj)
+              enddo
               jmo = jmo + nmoj
               deallocate (S_block)
            enddo
@@ -211,7 +243,7 @@
         !T4 = COcc - mdot(P12, CTil2Bar)        # O(N m^2)
         !CIb = P12 + mdot(T4, COcc2.T)          # O(N m^2)
 
-        print*,"-----Symmetrically orthogonalize orbitals CIb with respect to overlap matrix S11-----"
+        print*,"-----Symmetrically orthogonalize intrinsic basis (in the mo basis)-----"
         call SymOrth(c_Ib,S11,size(S11(:,1)),size(c_Ib(1,:)))      
         print*,'Print real part of CIb after orthogonalization'
         do i=1,nmo1
@@ -328,15 +360,20 @@
 !           write(*,*)(SAO(i,j),j=1,cspinor_ket%nao)
 !        enddo
 
-        print*,'    ####### WARNING : The overlap matrix is not correctly calculated in my opinion...&
-                (not enough elements calculated and sometimes > E+200... And why so much imaginary numbers &
-                for a non-relativistc calculation ?) #######'
+        print*,'    ####### WARNING : The MO overlap matrix is correctly calculated ? &
+                (not enough elements calculated for the AO overlap matrix? &
+                 non negligible imaginary part for a non-relativistc calculation ?) #######'
         SC  = matmul(SAO,cspinor_ket%coeff(:,:,1))                        ! multiply with alpha coefficients
         SMO = matmul(conjg(transpose(cspinor_bra%coeff(:,:,1))),SC)       ! alpha-alpha contribution
         SC  = matmul(SAO,cspinor_ket%coeff(:,:,2))                        ! multiply with beta coefficients
         SMO = SMO + matmul(conjg(transpose(cspinor_bra%coeff(:,:,2))),SC) ! add the beta-beta contribution
 
-!       filter out occupation numbers slightly broken due to rounding. I get "Cannot assign to a named constant" error...
+        do i=1,cspinor_bra%nmo
+           do j=1,cspinor_ket%nmo
+              if (ABS(REAL(SMO(i,j))) .gt. 1.0D+38) print*, '            ### WARNING overlap (real) value > 1.0D+38 ###'
+           end do
+        end do
+!       filter out occupation numbers slightly broken due to rounding.
 !        do i=1,cspinor_bra%nmo
 !           do j=1,cspinor_ket%nmo
 !              if (REAL(SMO(i,j)) > 0.999999999999D0 .and. AIMAG(SMO(i,j)) < 1.0D-12) SMO(i,j) = ONE # Some values are like E+300... Better keep them to detect potential bugs
