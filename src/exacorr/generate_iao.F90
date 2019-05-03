@@ -72,8 +72,7 @@
 !           write(*,15)(REAL(S11(i,j)),j=1,nmo1)
 !        enddo
 
-        print*,'-----Compute S22-----(',nmo2,'x',nmo2,') ##### WARNING: the 2x2 size blocks (corresponding&
-                to frag.2/2 and frag.3/3 overlaps) are not complex hermitian...'
+        print*,'-----Compute S22-----(',nmo2,'x',nmo2,')'
         allocate (S22(nmo2,nmo2))
 !        imo = 0
 !        do i = 1, n_fragments
@@ -232,7 +231,7 @@
         print*,'Print real part of CIb'
         do i=1,nmo1
 !           write(*,55)(c_Ib(i,j),j=1,nmo2)
-           write(*,15)(REAL(c_Ib(i,j)),j=1,nmo2)
+           write(*,55)((c_Ib(i,j)),j=1,nmo2)
         enddo
 
         ! Reference Python code
@@ -258,6 +257,8 @@
 
      55 FORMAT( 100(:,1X,'(',G10.2,',',G10.2,')') )
      15 FORMAT(100G10.2)
+        print*,'    ####### WARNING : The MO overlap matrix is correctly calculated ? &
+                (not enough elements calculated for the AO overlap matrix?)'
 
    end subroutine generate_iaos
 
@@ -360,19 +361,18 @@
 !           write(*,*)(SAO(i,j),j=1,cspinor_ket%nao)
 !        enddo
 
-        print*,'    ####### WARNING : The MO overlap matrix is correctly calculated ? &
-                (not enough elements calculated for the AO overlap matrix? &
-                 non negligible imaginary part for a non-relativistc calculation ?) #######'
         SC  = matmul(SAO,cspinor_ket%coeff(:,:,1))                        ! multiply with alpha coefficients
         SMO = matmul(conjg(transpose(cspinor_bra%coeff(:,:,1))),SC)       ! alpha-alpha contribution
         SC  = matmul(SAO,cspinor_ket%coeff(:,:,2))                        ! multiply with beta coefficients
         SMO = SMO + matmul(conjg(transpose(cspinor_bra%coeff(:,:,2))),SC) ! add the beta-beta contribution
 
+!       This WARNING can normally be removed by adding ao_overlap = 0.0D0 in the AO overlap subroutine. Keep it for now.
         do i=1,cspinor_bra%nmo
            do j=1,cspinor_ket%nmo
               if (ABS(REAL(SMO(i,j))) .gt. 1.0D+38) print*, '            ### WARNING overlap (real) value > 1.0D+38 ###'
            end do
         end do
+
 !       filter out occupation numbers slightly broken due to rounding.
 !        do i=1,cspinor_bra%nmo
 !           do j=1,cspinor_ket%nmo
@@ -411,6 +411,7 @@
         real(8) :: atomic_data(1)
 
 !       Have to set all elements to 0.0 first, otherwise I get those FLAGS : IEEE_INVALID_FLAG IEEE_OVERFLOW_FLAG IEEE_UNDERFLOW_FLAG, in addition to IEEE_DENORMAL, and big errors in the numbers !!!
+!       It also fixes the problem of having big imaginary part in some  matrix elements...
         ao_overlap = 0.0D0
         loff = 0
         mycount=0
@@ -440,7 +441,6 @@
                do l = 1, nl
                   do k = 1, nk
                       ao_overlap(koff+k,loff+l) = skl(kl)
-                      if( skl(kl) > 1.0D+38) print*,'        ###### WARNING overlap > E+38 ######'
                       mycount = mycount + 1
                       kl = kl + 1
                   end do
