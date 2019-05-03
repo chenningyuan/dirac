@@ -98,14 +98,6 @@
            write(*,15)(REAL(S22(i,j)),j=1,nmo2)
         enddo
 
-        print*,'TEST, I force the S22 to the complex hermitian:'
-        S22(nmo2,nmo2-1)=conjg(S22(nmo2-1,nmo2))
-        print*,'Print real part of S22:'
-        do i=1,nmo2
-!           write(*,55)(S22(i,j),j=1,nmo2)
-           write(*,15)(REAL(S22(i,j)),j=1,nmo2)
-        enddo
-
         print*,'-----Compute S21-----(',nmo2,'x',nmo1,') (Inconvenient to print)'
         allocate (S21(nmo2,nmo1))
         imo = 0
@@ -155,7 +147,7 @@
 
         ! Make intrinsic basis orbitals for the occupied space (Simple/2014 scheme of Knizia's reference implementation)
         ! Note that our overlap matrices refer to the MO basis of the molecule and its fragments and that the coefficient
-        ! matrices are simple diagonal matrices. we transform to AO bases after this step.
+        ! matrices are simple diagonal matrices. we transform to AO basis after this step.
         allocate (coeff1_occ(nmo1,nocc))
         allocate (coeff2_occ(nmo2,nocc))
         allocate (c_tilde(nmo2,nocc))
@@ -165,7 +157,7 @@
         allocate (t4(nmo1,nocc))
         allocate (c_Ib(nmo1,nmo2))
 
-        print*,'-----Compute COcc-----(',nmo1,'x',nocc,') (Identity matrix)'
+        print*,'-----Compute COcc-----(',nmo1,'x',nocc,') (diagonal matrix)'
         coeff1_occ = ZERO
         forall (i=1:nocc) coeff1_occ(i,i) = ONE
 !        print*,'Print real part of COcc:'
@@ -219,13 +211,13 @@
         !T4 = COcc - mdot(P12, CTil2Bar)        # O(N m^2)
         !CIb = P12 + mdot(T4, COcc2.T)          # O(N m^2)
 
-!        print*,"-----Symmetrically orthogonalize orbitals CIb with respect to overlap matrix S11-----"
-!        call SymOrth(c_Ib,S11,size(S11(:,1)),size(c_Ib(1,:)))      
-!        print*,'Print real part of CIb after orthogonalization'
-!        do i=1,nmo1
+        print*,"-----Symmetrically orthogonalize orbitals CIb with respect to overlap matrix S11-----"
+        call SymOrth(c_Ib,S11,size(S11(:,1)),size(c_Ib(1,:)))      
+        print*,'Print real part of CIb after orthogonalization'
+        do i=1,nmo1
 !           write(*,55)(c_Ib(i,j),j=1,nmo2)
-!           write(*,15)(REAL(c_Ib(i,j)),j=1,nmo2)
-!        enddo
+           write(*,15)(REAL(c_Ib(i,j)),j=1,nmo2)
+        enddo
 
 !       clean up list of atoms
         call del_atoms(first_atom)
@@ -240,40 +232,42 @@
    subroutine SymOrth(C,S,nmo1,nmo2)
         !Symmetrically orthogonalize intrinsic basis to arrive at standard IAOs
 
+        implicit none
+
         integer, intent(in) :: nmo1, nmo2
         complex(8), intent(in) :: S(nmo1,nmo1)
         complex(8), intent(inout) :: C(nmo1,nmo2)
         integer, parameter :: lwmax=1000
-        integer :: info, lwork, liwork, lrwork
+        integer :: info, lwork, liwork, lrwork,i,j
         integer, dimension(lwmax) :: iwork
         complex(8), dimension(lwmax) :: work
         real(8), dimension(lwmax) :: rwork
-        complex(8), allocatable :: ew(:), matrix(:,:)
-        
+        complex(8), allocatable :: matrix(:,:)
+        real(8), allocatable :: ew(:)
+
         allocate(matrix(nmo2,nmo2))
         allocate(ew(nmo2))
         matrix = matmul(conjg(transpose(C)),matmul(S,C))
-!        print*,'Matrix:'
-!        do i=1,nmo2
-!           write(*,*)(matrix(i,j),j=1,nmo2)
-!        enddo
-!
+
 !
 !       Query the optimal workspace.
 !
         lwork = -1
         liwork = -1
         lrwork = -1
-        call zheevd( 'Vectors', 'Lower', nmo2, matrix, nmo2, ew, work, lwork, rwork, &
+
+        call zheevd( 'V', 'L', nmo2, matrix, nmo2, ew, work, lwork, rwork, &
                     lrwork, iwork, liwork, info )
         lwork = min(lwmax,int(work(1)))
         lrwork = min(lwmax,int(rwork(1)))
         liwork = min(lwmax,iwork(1))
+
 !
 !       Solve eigenproblem.
 !
-        call zheevd( 'Vectors', 'Lower', nmo2, matrix, nmo2, ew, work, lwork, rwork, &
+        call zheevd( 'V', 'L', nmo2, matrix, nmo2, ew, work, lwork, rwork, &
                     lrwork, iwork, liwork, info )
+
 !
 !       Check for convergence.
 !
@@ -281,28 +275,20 @@
            write(*,*)'The algorithm failed to compute eigenvalues.'
            stop
         end if        
-!
-!        do i=1,nmo2
-!           write(*,*)(matrix(i,j),j=1,nmo2)
-!        enddo
-!
+
         do i=1,nmo2
            ew(i) = 1.0/sqrt(sqrt(ew(i)))
         enddo
         do i=1, nmo2
            matrix(:,i)=matrix(:,i)*ew(i)
         enddo
-!
         C = matmul(C,matmul(matrix,conjg(transpose(matrix))))
-        do i=1,nmo1
-           write(*,15)(REAL(C(i,j)),j=1,nmo2)
+
+        write(*,*)'Check: Cnew.T S Cnew == id?'
+        matrix = matmul(conjg(transpose(C)),matmul(S,C))
+        do i=1,nmo2
+           write(*,15)(REAL(matrix(i,j)),j=1,nmo2)
         enddo
-!
-!        print*,'Check: C.T S C == id?'
-!        matrix = matmul(conjg(transpose(C)),matmul(S,C))
-!        do i=1,nmo2
-!           write(*,15)(REAL(matrix(i,j)),j=1,nmo2)
-!        enddo
         deallocate(matrix,ew)
 
      55 FORMAT( 100(:,1X,'(',G10.2,',',G10.2,')') )
@@ -326,6 +312,7 @@
         real(8), allocatable :: SAO(:,:)   ! the AO overlap matrix
         complex(8), allocatable :: SC(:,:) ! Overlap times MO coefficients
         integer :: i,j
+
 
         ! allocate auxilliaries
         allocate (SAO(cspinor_bra%nao,cspinor_ket%nao))
@@ -413,6 +400,7 @@
                do l = 1, nl
                   do k = 1, nk
                       ao_overlap(koff+k,loff+l) = skl(kl)
+                      if( skl(kl) > 1.0D+38) print*,'        ###### WARNING overlap > E+38 ######'
                       mycount = mycount + 1
                       kl = kl + 1
                   end do
@@ -543,20 +531,3 @@
          end select
      
    end subroutine atom_minbas_size
-
-   subroutine diasym(a,eig,n)
-   !---------------------------------------------------------!
-   !Calls the LAPACK diagonalization subroutine DSYEV        !
-   !input:  a(n,n) = real symmetric matrix to be diagonalized!
-   !            n  = size of a                               !
-   !output: a(n,n) = orthonormal eigenvectors of a           !
-   !        eig(n) = eigenvalues of a in ascending order     !
-   !---------------------------------------------------------!
-   !--------------------------!
-    implicit none
-    integer n,l,inf
-    real*8  a(n,n),eig(n),work(n*(3+n/2))
-
-    l=n*(3+n/2)
-    call dsyev('V','U',n,a,n,eig,work,l,inf)
-    end subroutine diasym
