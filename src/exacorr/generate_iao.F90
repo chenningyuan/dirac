@@ -386,6 +386,7 @@
 !        enddo
 
         deallocate(SAO,SC)
+     15 FORMAT(100G10.2)
      55 FORMAT( 100(:,1X,'(',G10.2,',',G10.2,')') )
 
    end subroutine get_mo_overlap
@@ -409,6 +410,8 @@
         integer :: ncentr=1
         real(8) :: atomic_data(1)
 
+!       Have to set all elements to 0.0 first, otherwise I get those FLAGS : IEEE_INVALID_FLAG IEEE_OVERFLOW_FLAG IEEE_UNDERFLOW_FLAG, in addition to IEEE_DENORMAL, and big errors in the numbers !!!
+        ao_overlap = 0.0D0
         loff = 0
         mycount=0
 !        print*,'GET_AO_OVERLAP subroutine, nshell ao_basis_bra, ao_basis_ket ; nao  ao_basis_bra, ao_basis_ket:',&
