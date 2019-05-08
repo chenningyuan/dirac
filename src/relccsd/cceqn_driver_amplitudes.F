@@ -200,6 +200,10 @@ C
 C
       CALL T1DIAG (DIAG,T1,BUF1)
       IF (IPRNT.GE.1) WRITE(IW,6001) NIT,ECCSD,RMS,DIAG
+CPi
+      WRITE(*,*) 'Here am I'
+      WRITE(*,*) 'IW', IW
+CPi-end
       CALL FLSHFO(IW)
 C
       IF(RMS.LT.CONV) exit
