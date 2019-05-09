@@ -16,6 +16,7 @@ module exacorr_global
         logical :: TALSH_ONLY = .TRUE. ! use single-node TALSH library instead of the full EXATENSOR library
         logical, public, parameter :: debug_exa = .false. ! switch on and off debug
         logical :: one_el_exist=.FALSE. ! logical if MRCONEE is available or not
+        integer :: m_cholesky=-666  ! length of cholesky vector
 
 !       Functions and routines to interact with these data
         public nfunctions
@@ -30,6 +31,8 @@ module exacorr_global
         public get_mo_coefficients
         public exist_one_el
         public get_one_el
+        public set_m_cholesky
+        public get_m_cholesky
 
        contains
          
@@ -320,5 +323,28 @@ module exacorr_global
         end do
 
      end subroutine get_one_el
+
+     subroutine get_m_cholesky(m)
+
+      integer, intent(out)  ::  m
+
+      m=m_cholesky
+
+     end subroutine get_m_cholesky
+
+     subroutine set_m_cholesky(m)
+       use interface_to_mpi
+       
+       integer, intent(in)  :: m
+       integer :: my_MPI_rank
+
+       call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
+
+       m_cholesky=m
+
+       call interface_mpi_bcast (m_cholesky,1,my_MPI_rank,global_communicator)
+
+    end subroutine set_m_cholesky
+
 
 end module exacorr_global

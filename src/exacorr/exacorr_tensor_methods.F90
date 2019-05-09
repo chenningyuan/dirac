@@ -83,6 +83,14 @@ module exacorr_tensor_methods
           procedure, public:: apply=>set_one_el_int
         end type init_one_el_t
 
+        !Initializer for the cholesky decomposed vectors
+        type, extends(tens_method_uni_t), public:: get_cholesky
+        complex(8), allocatable, private :: CD(:,:,:)
+         contains
+          procedure, public :: init_cholesky
+          procedure, public:: apply=>set_cholesky
+        end type get_cholesky
+
        contains
 
        subroutine TensInitTestCtorReal(this,val)
@@ -1120,5 +1128,92 @@ module exacorr_tensor_methods
           end do
 
         end function energy_set_diag
+
+        subroutine init_cholesky(this, threshold)
+
+         use exacorr_cholesky
+         use exacorr_global
+
+         implicit none
+
+         real(8), intent(in) :: threshold
+
+         class(get_cholesky), intent(out) :: this
+
+         integer          ::  m
+
+         call cholesky_decompose_aomat(this%CD, threshold)
+
+         m=size(this%CD, 3)
+         call set_m_cholesky(m)
+
+        end subroutine init_cholesky
+
+        function set_cholesky(this,tensor,scalar) result(ierr)
+
+          use exacorr_datatypes
+          use, intrinsic:: ISO_C_BINDING
+
+          implicit none
+
+          integer(INTD) :: ierr, rank
+          class(get_cholesky), intent(in) :: this
+          class(tens_rcrsv_t), intent(inout) :: tensor
+          complex(8), intent(inout), optional :: scalar
+
+          type(tens_dense_t) :: tens
+          integer(8), allocatable :: dims(:)
+
+          ierr=0
+          tens=tensor%get_dense_adapter(ierr)
+          if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
+          rank=tens%num_dims
+          if (rank.ne.3) call quit('Error: dimension not 3 in set cholesky')
+
+          allocate(dims(rank))
+          call tensor%get_dims(dims,rank)
+
+          ierr=cholesky_set(tens%body_ptr,tens%data_kind,tens%dims(1:rank),tens%bases(1:rank), rank, &
+                               this%CD)
+          deallocate(dims)
+        end function set_cholesky
+
+        integer function cholesky_set(tens_body,data_kind,tens_dims,tens_bases, rank, &
+                         chol) result (ierr)
+          !Initialization routine to fill tensor with one electron integrals
+
+          use exacorr_datatypes
+          use, intrinsic:: ISO_C_BINDING
+
+          implicit none
+
+          type(C_PTR), value:: tens_body           !in: C pointer to the tensor body (tensor elements)
+          integer(4), value:: data_kind, rank      !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
+          integer(8), intent(in):: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
+          integer(8), intent(in):: tens_bases(1:*) !in: base offsets for each tensor dimension)
+
+          complex(8), intent(in):: chol(:,:,:)
+
+          complex(8),pointer :: c_tens(:,:,:)
+
+          integer(8) :: mo, mg, lo, lg, ko, kg
+
+
+          ierr=0
+          call c_f_pointer(tens_body,c_tens,tens_dims(1:rank)) !map C pointer to 3-dimensional array
+
+          do mo = 1, tens_dims(3)
+            mg = tens_bases(3) + mo - 1
+              do lo = 1, tens_dims(2) 
+                lg = tens_bases(2) + lo - 1
+                do ko = 1, tens_dims(1) 
+                  kg = tens_bases(1) + ko - 1
+                  c_tens(ko,lo,mo) = chol(kg, lg, mg)
+                end do
+              end do
+          end do
+
+        end function cholesky_set
+
 
 end module exacorr_tensor_methods
