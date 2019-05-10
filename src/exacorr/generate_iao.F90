@@ -24,12 +24,13 @@
         complex(8), allocatable :: S_block(:,:) ! sub block of the overlap matrix
         complex(8), allocatable :: S11(:,:),S21(:,:),S12(:,:),S22(:,:) !  the overlap matrices
         complex(8), allocatable :: P12(:,:),P21(:,:)          !  the projection operators
-        complex(8), allocatable :: coeff1_occ(:,:),coeff2_occ(:,:),c_Ib(:,:)
-        complex(8), allocatable :: c_tilde(:,:),c_tilde_bar(:,:),c_tilde2_bar(:,:)
-        complex(8), allocatable :: s_tilde(:,:),t4(:,:)
+        complex(8), allocatable :: c_Ib(:,:)                  !  Matrix "A" in Knizia's paper: coefficient matrix of the IAOs.
+        complex(8), allocatable :: coeff1_occ(:,:)
 
         integer :: nocc = 10 ! Should be read from a file, but currently this info is not available
         integer luxyz, ierr, i, j, k, l, nmo1, nmo2, imo, jmo, nmoi, nmoj, nao1, nao2
+
+        character(13) :: target
 
 
         print*,"Arrived in generate_iaos"
@@ -66,58 +67,22 @@
         print*,'-----Compute S11----- (',nmo1,'x',nmo1,') (It is equal to Identity)'
         allocate (S11(nmo1,nmo1))
         call get_mo_overlap (ao_basis_1,cspinor_original,ao_basis_1,cspinor_original,S11)
-!        print*,'Print real part of S11:'
-!        do i=1,nmo1
-!           write(*,55)(S11(i,j),j=1,nmo1)
-!           write(*,15)(REAL(S11(i,j)),j=1,nmo1)
-!        enddo
 
         print*,'-----Compute S22-----(',nmo2,'x',nmo2,')'
         allocate (S22(nmo2,nmo2))
-!        imo = 0
-!        do i = 1, n_fragments
-!           nmoi = cspinor_fragment(i)%nmo
-!           jmo = 0
-!           print*,'For fragment ',i
-!           do j = 1, n_fragments
-!              nmoj = cspinor_fragment(j)%nmo
-!              print*,'  For fragment ',j
-!              print*,'  imo, jmo: ',imo, jmo
-!              allocate (S_block(nmoi,nmoj))
-!              call get_mo_overlap (ao_basis_2(i),cspinor_fragment(i),ao_basis_2(j),cspinor_fragment(j),S_block)
-!              S22(imo+1:imo+nmoi,jmo+1:jmo+nmoj) = S_block
-!              S22(jmo+1:jmo+nmoj,imo+1:imo+nmoi) = conjg(transpose(S_block))
-!              jmo = jmo + nmoj
-!              deallocate (S_block)
-!           enddo
-!           imo = imo + nmoi
-!        enddo
-!        print*,'Print real part of S22:'
-!        do i=1,nmo2
-!!           write(*,55)(S22(i,j),j=1,nmo2)
-!           write(*,15)(REAL(S22(i,j)),j=1,nmo2)
-!        enddo
 
-!        allocate (S22(nmo2,nmo2))
         imo = 0
         do i = 1, n_fragments
            nmoi = cspinor_fragment(i)%nmo
-           print*,'For fragment ',i
            jmo = imo
            do j = i, n_fragments
               nmoj = cspinor_fragment(j)%nmo
-              print*,'  For fragment ',j
-              print*,'  imo, jmo: ',imo, jmo
               allocate (S_block(nmoi,nmoj))
               call get_mo_overlap (ao_basis_2(i),cspinor_fragment(i),ao_basis_2(j),cspinor_fragment(j),S_block)
                  S22(imo+1:imo+nmoi,jmo+1:jmo+nmoj) = S_block
               if (i /= j) then
                  S22(jmo+1:jmo+nmoj,imo+1:imo+nmoi) = conjg(transpose(S_block))
               end if
-              do k=1,nmoi
-!           write(*,55)(S22(i,j),j=1,nmo2)
-                 write(*,15)(REAL(S_block(k,l)),l=1,nmoj)
-              enddo
               jmo = jmo + nmoj
               deallocate (S_block)
            enddo
@@ -125,8 +90,7 @@
         enddo
         print*,'Print real part of S22:'
         do i=1,nmo2
-!           write(*,55)(S22(i,j),j=1,nmo2)
-           write(*,15)(REAL(S22(i,j)),j=1,nmo2)
+           write(*,'(100G10.2)')(REAL(S22(i,j)),j=1,nmo2)
         enddo
 
         print*,'-----Compute S21-----(',nmo2,'x',nmo1,') (Inconvenient to print)'
@@ -135,22 +99,11 @@
         do i = 1, n_fragments
            nmoi = cspinor_fragment(i)%nmo
            allocate (S_block(nmoi,nmo1))
-           print*,'For fragment ',i
            call get_mo_overlap (ao_basis_2(i),cspinor_fragment(i),ao_basis_1,cspinor_original,S_block)
-!           S21(:,imo+1:imo+nmoi) = S_block ! Bruno : I think there is an error here
            S21(imo+1:imo+nmoi,:) = S_block
-!           print*,'S_block'
-!           do k=1,nmoi
-!              write(*,*)(S_block(k,j),j=1,nmo1)
-!           end do
            imo = imo + nmoi
            deallocate (S_block)
         enddo
-!        print*,'Print real part of S21:'
-!        do i=1,nmo2
-!           write(*,55)(S21(i,j),j=1,nmo1)
-!           write(*,15)(REAL(S21(i,j)),j=1,nmo1)
-!        enddo
 
 
         ! Calculate the molecule-intrinsic atomic orbital (IAO) basis
@@ -158,13 +111,11 @@
         ! See his reference Python implementation for the Simple/2014 scheme used here.
         allocate (S12(nmo1,nmo2))
         allocate (P12(nmo1,nmo2))
-        allocate (P21(nmo2,nmo1))
         print*,'-----Compute S12-----(',nmo1,'x',nmo2,')'
         S12 = conjg(transpose(S21))
         print*,'Print real part of S12:'
         do i=1,nmo1
-!           write(*,55)(S12(i,j),j=1,nmo2)
-           write(*,15)(REAL(S12(i,j)),j=1,nmo2)
+           write(*,'(100G10.2)')(REAL(S12(i,j)),j=1,nmo2)
         enddo
         ! Make the projector, zposv solves AX = B in which B is input and overwritten by X on output.
         print*,'-----Compute P12-----(',nmo1,'x',nmo2,')'
@@ -172,69 +123,101 @@
         call zposv( 'U', nmo1, nmo2, S11, nmo1, P12, nmo1, ierr )
         print*,'Print real part of P12:'
         do i=1,nmo1
-!           write(*,55)(P12(i,j),j=1,nmo2)
-           write(*,15)(REAL(P12(i,j)),j=1,nmo2)
+           write(*,'(100G10.2)')(REAL(P12(i,j)),j=1,nmo2)
         enddo
+
+        allocate(coeff1_occ(nmo1,nocc))
+        print*,'-----Compute COcc-----(',nmo1,'x',nocc,') (diagonal matrix)'
+        coeff1_occ = ZERO
+        forall (i=1:nocc) coeff1_occ(i,i) = ONE
+
+        allocate (c_Ib(nmo1,nmo2))
+        call get_command_argument(1, target)
+        select case (target)
+           case ('Standard_2013')
+             write(*,*)" Making IAO according to Standard 2013"
+             call MakeIAO_Standard_2013(c_Ib,coeff1_occ,S11,S21,S22,P12,nmo1,nmo2,nocc)
+           case ('Simple_2013')
+             write(*,*)" Making IAO according to Simple 2013"
+             call MakeIAO_Simple_2013(c_Ib,coeff1_occ,S11,S12,S21,S22,P12,nmo1,nmo2,nocc)
+           case ('Simple_2014')
+             write(*,*)" Making IAO according to Simple 2014"
+             call MakeIAO_Simple_2014(c_Ib,coeff1_occ,S21,S22,P12,nmo1,nmo2,nocc)
+           case default
+             print*, 'No correct argument given to the executable. Default : Simple_2014'
+             call MakeIAO_Simple_2014(c_Ib,coeff1_occ,S21,S22,P12,nmo1,nmo2,nocc)
+        end select
+
+!       filter out occupation numbers slightly broken due to rounding... At least it clarifies the output
+        do i=1,nmo1
+           do j=1,nmo2
+              if (REAL(c_Ib(i,j)) > 0.999999999999D0 .and. AIMAG(c_Ib(i,j)) < 1.0D-12) c_Ib(i,j) = ONE
+              if (ABS(REAL(c_Ib(i,j))) < 1.0D-12 .and. ABS(AIMAG(c_Ib(i,j))) < 1.0D-12) c_Ib(i,j) = ZERO
+           end do
+        end do
+        print*,'Print real part of CIb:'
+        do i=1,nmo1
+           write(*,'(100G10.2)')(REAL(c_Ib(i,j)),j=1,nmo2)
+        enddo
+        
+        print*,"-----Symmetrically orthogonalize intrinsic basis (in the mo basis)-----"
+        call SymOrth(c_Ib,S11,size(S11(:,1)),size(c_Ib(1,:)))
+
+!       filter out occupation numbers slightly broken due to rounding... At least it clarifies the output
+        do i=1,nmo1
+           do j=1,nmo2
+              if (REAL(c_Ib(i,j)) > 0.999999999999D0 .and. AIMAG(c_Ib(i,j)) < 1.0D-12) c_Ib(i,j) = ONE
+              if (ABS(REAL(c_Ib(i,j))) < 1.0D-12 .and. ABS(AIMAG(c_Ib(i,j))) < 1.0D-12) c_Ib(i,j) = ZERO
+           end do
+        end do
+        print*,'Print real part of CIb after orthogonalization'
+        do i=1,nmo1
+           write(*,'(100G10.2)')(REAL(c_Ib(i,j)),j=1,nmo2)
+        enddo
+
+!       clean up list of atoms
+        call del_atoms(first_atom)
+
+!     55 FORMAT( 100(:,1X,'(',G10.2,',',G10.2,')') ) ! Useful format to write complex matrices.
+        print*,'    ####### WARNING : The MO overlap matrix is correctly calculated ? &
+                (not enough elements calculated for the AO overlap matrix?)'
+
+   end subroutine generate_iaos
+
+   subroutine MakeIAO_Simple_2014(A,C,S21,S22,P12,nmo1,nmo2,nocc)
+
+        implicit none 
+        integer :: ierr
+        integer, intent(in)     :: nmo1, nmo2, nocc
+        complex(8), allocatable :: coeff2_occ(:,:),c_Ib(:,:)
+        complex(8), allocatable :: c_tilde(:,:),c_tilde_bar(:,:),c_tilde2_bar(:,:)
+        complex(8), allocatable :: s_tilde(:,:),t4(:,:)
+        complex(8), intent(in)  :: S21(nmo2,nmo1),S22(nmo2,nmo2) !  the overlap matrices
+        complex(8), intent(in)  :: P12(nmo1,nmo2)          !  the projection operator
+        complex(8), intent(in)  :: C(nmo1,nocc)
+        complex(8), intent(out) :: A(nmo1,nmo2)
 
         ! Make intrinsic basis orbitals for the occupied space (Simple/2014 scheme of Knizia's reference implementation)
         ! Note that our overlap matrices refer to the MO basis of the molecule and its fragments and that the coefficient
         ! matrices are simple diagonal matrices. we transform to AO basis after this step.
-        allocate (coeff1_occ(nmo1,nocc))
         allocate (coeff2_occ(nmo2,nocc))
         allocate (c_tilde(nmo2,nocc))
         allocate (c_tilde_bar(nocc,nmo2))
         allocate (c_tilde2_bar(nmo2,nocc))
         allocate (s_tilde(nocc,nocc))
         allocate (t4(nmo1,nocc))
-        allocate (c_Ib(nmo1,nmo2))
 
-        print*,'-----Compute COcc-----(',nmo1,'x',nocc,') (diagonal matrix)'
-        coeff1_occ = ZERO
-        forall (i=1:nocc) coeff1_occ(i,i) = ONE
-!        print*,'Print real part of COcc:'
-!        do i=1,nmo1
-!           write(*,55)(coeff1_occ(i,j),j=1,nocc)
-!           write(*,15)(REAL(coeff1_occ(i,j)),j=1,nocc)
-!        end do
-        print*,'-----Compute COcc2-----(',nmo2,'x',nocc,')'
-        coeff2_occ = matmul(S21,coeff1_occ)
-        print*,'Print real part of COcc2:'
-        do i=1,nmo2
-!           write(*,55)(coeff2_occ(i,j),j=1,nocc)
-           write(*,15)(REAL(coeff2_occ(i,j)),j=1,nocc)
-        end do
-!        print*,'Compute CTil'
+        coeff2_occ = matmul(S21,C)
         c_tilde = coeff2_occ
         call zposv( 'U', nmo2, nocc, S22, nmo2, c_tilde, nmo2, ierr )
-!        do i=1,nmo2
-!           write(*,*)(c_tilde(i,j),j=1,nocc)
-!        end do
-!        print*,'Compute STil'
         s_tilde = matmul(conjg(transpose(coeff2_occ)),c_tilde)
-!        do i=1,nocc
-!           write(*,*)(s_tilde(i,j),j=1,nocc)
-!        end do
-!        print*,'Compute CTil2Bar'
         c_tilde_bar = conjg(transpose(c_tilde))
         call zposv( 'U', nocc, nmo2, s_tilde, nmo2, c_tilde_bar, nmo2, ierr )
         c_tilde2_bar = conjg(transpose(c_tilde_bar))
-!        do i=1,nmo2
-!           write(*,*)(c_tilde2_bar(i,j),j=1,nocc)
-!        end do
-!        print*,'Compute T4'
-        t4 = coeff1_occ - matmul(P12,c_tilde2_bar)
-!        do i=1,nmo1
-!           write(*,*)(t4(i,j),j=1,nocc)
-!        end do
-        print*,'-----Compute CIb-----(',nmo1,'x',nmo2,')'
-        c_Ib = P12 + matmul(t4,conjg(transpose(coeff2_occ)))
-        print*,'Print real part of CIb'
-        do i=1,nmo1
-!           write(*,55)(c_Ib(i,j),j=1,nmo2)
-           write(*,55)((c_Ib(i,j)),j=1,nmo2)
-        enddo
+        t4 = C - matmul(P12,c_tilde2_bar)
+        A = P12 + matmul(t4,conjg(transpose(coeff2_occ)))
 
-        ! Reference Python code
+        ! Reference Python code for Simple/2014
         !COcc2 = mdot(S21, COcc)                # O(N m^2)
         !CTil = la.solve(S2, COcc2)             # O(m^3)
         !STil = mdot(COcc2.T, CTil)             # O(m^3)
@@ -242,31 +225,89 @@
         !T4 = COcc - mdot(P12, CTil2Bar)        # O(N m^2)
         !CIb = P12 + mdot(T4, COcc2.T)          # O(N m^2)
 
-        print*,"-----Symmetrically orthogonalize intrinsic basis (in the mo basis)-----"
-        call SymOrth(c_Ib,S11,size(S11(:,1)),size(c_Ib(1,:)))      
-        print*,'Print real part of CIb after orthogonalization'
-        do i=1,nmo1
-!           write(*,55)(c_Ib(i,j),j=1,nmo2)
-           write(*,15)(REAL(c_Ib(i,j)),j=1,nmo2)
-        enddo
+        deallocate (coeff2_occ,c_tilde,c_tilde_bar,c_tilde2_bar,s_tilde,t4)
 
-!       clean up list of atoms
-        call del_atoms(first_atom)
-        deallocate(S11,S22,S12,S21,P12,P21,coeff1_occ,coeff2_occ,c_tilde,c_tilde_bar,s_tilde,c_tilde2_bar,t4,c_Ib)
-        print*,'Deallocate'
 
-     55 FORMAT( 100(:,1X,'(',G10.2,',',G10.2,')') )
-     15 FORMAT(100G10.2)
-        print*,'    ####### WARNING : The MO overlap matrix is correctly calculated ? &
-                (not enough elements calculated for the AO overlap matrix?)'
+   end subroutine MakeIAO_Simple_2014
 
-   end subroutine generate_iaos
+   subroutine MakeIAO_Simple_2013(A,C,S11,S12,S21,S22,P12,nmo1,nmo2,nocc)
+
+        implicit none
+        integer :: ierr,i,j
+        integer, intent(in)     :: nmo1, nmo2, nocc
+        complex(8), intent(out) :: A(nmo1,nmo2)
+        complex(8), intent(in)  :: S11(nmo1,nmo1),S12(nmo1,nmo2),S21(nmo2,nmo1),S22(nmo2,nmo2) !  the overlap matrices
+        complex(8), intent(in)  :: P12(nmo1,nmo2)          !  the projection operator
+        complex(8), intent(in)  :: C(nmo1,nocc)
+        complex(8), allocatable :: c_tilde(:,:),P21(:,:)
+
+
+        allocate (c_tilde(nmo1,nocc))
+        allocate (P21(nmo2,nmo1))
+        P21 = S21
+        call zposv( 'U', nmo2, nmo1, S22, nmo2, P21, nmo2, ierr )
+
+        c_tilde = matmul(P12,matmul(P21,C))
+        call SymOrth(c_tilde,S11,nmo1,nocc)
+        A = P12 + matmul(C,matmul(conjg(transpose(C)),S12))&
+        &               - matmul(c_tilde,matmul(conjg(transpose(c_tilde)),S12))
+
+        ! Reference Python code for Simple/2013
+        !CTil = SymOrth(mdot(P12, P21, COcc), S1)
+        !CIb = P12 + mdot(COcc, COcc.T, S12) - mdot(CTil, CTil.T, S12)
+
+        deallocate (c_tilde,P21)
+
+   end subroutine MakeIAO_Simple_2013
+
+   subroutine MakeIAO_Standard_2013(A,C,S11,S21,S22,P12,nmo1,nmo2,nocc)
+
+        complex(8), parameter :: ZERO=(0.D0,0.D0), ONE=(1.D0,0.D0)
+        integer :: i
+        integer, intent(in) :: nmo1,nmo2,nocc
+        complex(8), intent(in) :: S11(nmo1,nmo1), S21(nmo2,nmo1), S22(nmo2,nmo2)
+        complex(8), intent(in) :: P12(nmo1,nmo2)
+        complex(8), intent(in) :: C(nmo1,nocc)
+        complex(8), intent(out) :: A(nmo1,nmo2)
+        complex(8), allocatable :: c_tilde(:,:),P21(:,:),Id(:,:)
+        complex(8), allocatable :: term11(:,:),term12(:,:),term21(:,:),term22(:,:)
+       
+        allocate (c_tilde(nmo1,nocc))
+        allocate (P21(nmo2,nmo1))
+        allocate (Id(nmo1,nmo1))
+        P21 = S21
+        call zposv( 'U', nmo2, nmo1, S22, nmo2, P21, nmo2, ierr )
+
+        Id = ZERO
+        forall (i=1:nmo1) Id(i,i) = ONE
+        c_tilde = matmul(P12,matmul(P21,C))
+        call SymOrth(c_tilde,S11,nmo1,nocc)
+        allocate(term11(nmo1,nmo1))
+        allocate(term12(nmo1,nmo2))
+        allocate(term21(nmo1,nmo1))
+        allocate(term22(nmo1,nmo2))
+        term11 = matmul(C,matmul(conjg(transpose(C)),S11))
+        term12 = matmul(matmul(c_tilde,matmul(conjg(transpose(c_tilde)),S11)),P12)
+        term21 = Id-matmul(C,matmul(conjg(transpose(C)),S11))
+        term22 = matmul(Id-matmul(c_tilde,matmul(conjg(transpose(c_tilde)),S11)),P12)
+        A = matmul(term11,term12) + matmul(term21,term22)       
+
+      ! Reference Python code for Simple/2013
+      ! Calculate de-polarized occupied orbitals CTil by projecting COcc from 1 to 2 and back (Knizia, eq.1)
+      ! CTil = SymOrth(mdot(P12, P21, COcc), S1)
+      ! this is Knizia, eq. 2.
+      ! make [ |i><i| |itil><itil|  + (1-|i><i|)(1-|itil><itil|) ] P12 |mu>
+      ! CIb = mdot(mdot(COcc, COcc.T, S1), mdot(CTil, CTil.T, S1), P12) +\
+      !      mdot(np.eye(nBf)-mdot(COcc, COcc.T, S1), np.eye(nBf)-mdot(CTil, CTil.T, S1), P12)
+
+        deallocate(P21,c_tilde,Id,term11,term12,term21,term22)
+
+   end subroutine MakeIAO_Standard_2013
 
    subroutine SymOrth(C,S,nmo1,nmo2)
         !Symmetrically orthogonalize intrinsic basis to arrive at standard IAOs
 
         implicit none
-
         integer, intent(in) :: nmo1, nmo2
         complex(8), intent(in) :: S(nmo1,nmo1)
         complex(8), intent(inout) :: C(nmo1,nmo2)
@@ -281,7 +322,6 @@
         allocate(matrix(nmo2,nmo2))
         allocate(ew(nmo2))
         matrix = matmul(conjg(transpose(C)),matmul(S,C))
-
 !
 !       Query the optimal workspace.
 !
@@ -294,13 +334,11 @@
         lwork = min(lwmax,int(work(1)))
         lrwork = min(lwmax,int(rwork(1)))
         liwork = min(lwmax,iwork(1))
-
 !
 !       Solve eigenproblem.
 !
         call zheevd( 'V', 'L', nmo2, matrix, nmo2, ew, work, lwork, rwork, &
                     lrwork, iwork, liwork, info )
-
 !
 !       Check for convergence.
 !
@@ -317,15 +355,7 @@
         enddo
         C = matmul(C,matmul(matrix,conjg(transpose(matrix))))
 
-        write(*,*)'Check: Cnew.T S Cnew == id?'
-        matrix = matmul(conjg(transpose(C)),matmul(S,C))
-        do i=1,nmo2
-           write(*,15)(REAL(matrix(i,j)),j=1,nmo2)
-        enddo
         deallocate(matrix,ew)
-
-     55 FORMAT( 100(:,1X,'(',G10.2,',',G10.2,')') )
-     15 FORMAT(100G10.2)
 
    end subroutine SymOrth
    
@@ -346,14 +376,13 @@
         complex(8), allocatable :: SC(:,:) ! Overlap times MO coefficients
         integer :: i,j
 
-
         ! allocate auxilliaries
         allocate (SAO(cspinor_bra%nao,cspinor_ket%nao))
         allocate (SC(cspinor_bra%nao,cspinor_ket%nmo))
-        print*,'    MO overlap (nao basis, nshells basis, nao cspinor) bra:', &
-                                 ao_basis_bra%nao, ao_basis_bra%nshells, cspinor_bra%nao, &
-                                 ' ket:', &
-                                 ao_basis_ket%nao, ao_basis_ket%nshells, cspinor_ket%nao
+!        print*,'    MO overlap (nao basis, nshells basis, nao cspinor) bra:', &
+!                                 ao_basis_bra%nao, ao_basis_bra%nshells, cspinor_bra%nao, &
+!                                 ' ket:', &
+!                                 ao_basis_ket%nao, ao_basis_ket%nshells, cspinor_ket%nao
 
         call  get_ao_overlap (ao_basis_bra,ao_basis_ket,SAO)
 !        print*,'Print AO overlap (size ', cspinor_bra%nao ,'x', cspinor_ket%nao,')'
@@ -366,27 +395,15 @@
         SC  = matmul(SAO,cspinor_ket%coeff(:,:,2))                        ! multiply with beta coefficients
         SMO = SMO + matmul(conjg(transpose(cspinor_bra%coeff(:,:,2))),SC) ! add the beta-beta contribution
 
-!       This WARNING can normally be removed by adding ao_overlap = 0.0D0 in the AO overlap subroutine. Keep it for now.
+!       filter out occupation numbers slightly broken due to rounding.
         do i=1,cspinor_bra%nmo
            do j=1,cspinor_ket%nmo
-              if (ABS(REAL(SMO(i,j))) .gt. 1.0D+38) print*, '            ### WARNING overlap (real) value > 1.0D+38 ###'
+              if (REAL(SMO(i,j)) > 0.999999999999D0 .and. AIMAG(SMO(i,j)) < 1.0D-12) SMO(i,j) = ONE
+              if (ABS(REAL(SMO(i,j))) < 1.0D-12 .and. ABS(AIMAG(SMO(i,j))) < 1.0D-12) SMO(i,j) = ZERO
            end do
         end do
 
-!       filter out occupation numbers slightly broken due to rounding.
-!        do i=1,cspinor_bra%nmo
-!           do j=1,cspinor_ket%nmo
-!              if (REAL(SMO(i,j)) > 0.999999999999D0 .and. AIMAG(SMO(i,j)) < 1.0D-12) SMO(i,j) = ONE # Some values are like E+300... Better keep them to detect potential bugs
-!              if (ABS(REAL(SMO(i,j))) < 1.0D-12 .and. ABS(AIMAG(SMO(i,j))) < 1.0D-12) SMO(i,j) = ZERO
-!           end do
-!        end do
-!        print*,'SMO size:', cspinor_bra%nmo,'x', cspinor_ket%nmo
-!        do i=1,cspinor_bra%nmo
-!           write(*,55)(SMO(i,j),j=1,cspinor_ket%nmo)
-!        enddo
-
         deallocate(SAO,SC)
-     15 FORMAT(100G10.2)
      55 FORMAT( 100(:,1X,'(',G10.2,',',G10.2,')') )
 
    end subroutine get_mo_overlap
@@ -415,8 +432,6 @@
         ao_overlap = 0.0D0
         loff = 0
         mycount=0
-!        print*,'GET_AO_OVERLAP subroutine, nshell ao_basis_bra, ao_basis_ket ; nao  ao_basis_bra, ao_basis_ket:',&
-!                ao_basis_bra%nshells,ao_basis_ket%nshells,ao_basis_bra%nao,ao_basis_ket%nao
         do lsh = 1, ao_basis_ket%nshells
             ll   =  ao_basis_ket%gtos(lsh)%orb_momentum
             el   =  ao_basis_ket%gtos(lsh)%exponent(1)
