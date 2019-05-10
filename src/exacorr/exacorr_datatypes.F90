@@ -38,7 +38,7 @@
             logical                 :: beta_occ = .false.
             logical                 :: beta_vir = .false.
             integer                 :: exa_blocksize = 75
-            integer                 :: moint_scheme = 3
+            integer                 :: moint_scheme = 42        ! 42 for cholesky
             integer                 :: ncycles = 30
             integer                 :: print_level = 0
             integer                 :: nkr_occ, nkr_vir         ! number of Kramer pairs
@@ -47,6 +47,7 @@
             integer, allocatable    :: mo_occ(:), mo_vir(:)     ! list of active spinors
             real(REALD)             :: t_econv = 1.0D-9         ! convergence criterium
             real(REALD)             :: level_shift = 0.D0       ! level shift
+            real(REALD)             :: t_cholesky = 1.0D-8      ! threshold for cholesky
         end type exacc_input
 
 !       All two electron integral tensors
@@ -57,6 +58,14 @@
          type(tens_rcrsv_t) :: vovv
          type(tens_rcrsv_t) :: vvvv
         end type exatns_intg_tens
+
+!       All cholesky tensors
+        type, public :: exatns_chol_tens
+         type(tens_rcrsv_t) :: oou
+         type(tens_rcrsv_t) :: ovu
+         type(tens_rcrsv_t) :: vou
+         type(tens_rcrsv_t) :: vvu
+        end type exatns_chol_tens
 
 !       Common blocks between t and lambda
         type, public :: exatns_comm_tens

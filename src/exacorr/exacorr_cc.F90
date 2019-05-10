@@ -72,17 +72,17 @@ module exacorr_cc
          ! classes for the definition of spaces (AO and 2 different MO spaces)
          class(h_space_t), pointer                :: ao_space
          class(h_space_t), pointer                :: occ_space, vir_space
-         class(h_space_t), pointer                :: chol_space
 
          ! variables for the definition of spaces (AO and 2 different MO spaces)
          integer(INTL)              :: ao_space_root, occ_space_root, vir_space_root
          integer(INTL),dimension(2) :: oo_root, ov_root, vo_root, vv_root
          integer(INTL),dimension(4) :: oooo_root, ooov_root, oovv_root, vovo_root, &
                                        vvoo_root, vovv_root, vvvv_root
+
          integer,dimension(2)       :: oo_id, ov_id, vo_id, vv_id 
          integer,dimension(4)       :: oooo_id, ooov_id, oovv_id, vovo_id, &
                                        vvoo_id, vovv_id, vvvv_id
-         integer                    :: ao_space_id, occ_space_id, vir_space_id, chol_space_id
+         integer                    :: ao_space_id, occ_space_id, vir_space_id
 
          integer :: ncycles
 
@@ -92,19 +92,31 @@ module exacorr_cc
          !controlling print
          integer :: print_level
 
-         !cholesky threshold
-         real(8) :: threshold = 1.0E-8
+         !cholesky stuff
+         class(h_space_t), pointer  :: chol_space
+         integer(INTL)              :: chol_space_root
+         integer                    :: chol_space_id
+         integer(INTL),dimension(3) :: oou_root, ovu_root, vou_root, vvu_root
+         integer,dimension(3)       :: oou_id, ovu_id, vou_id, vvu_id 
+         type(exatns_chol_tens)     :: chol_t
 
 !        Make some noise so that we know we are here
          call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
          if (my_MPI_rank == 0) call print_date(" Starting CC calculation with exatensor")
 
-!        Compute Cholesky Decomposition, register 
-         call compute_cholesky(threshold)
+!        Compute Cholesky Decomposition, register the initializer
+         if (exa_input%moint_scheme.eq.42) then
+            call compute_cholesky(exa_input%t_cholesky)
+            if (my_MPI_rank == 0) call print_date(" Cholesky decomposition done")
+         end if
 
 !        Initialize and register AO and MO spaces and get their IDs for further reference
-         call exacorr_cc_spaces (exa_input,ao_space,occ_space,vir_space,chol_space, &
+         if (exa_input%moint_scheme.eq.42) then
+           call exacorr_cc_spaces_chol(exa_input,ao_space,occ_space,vir_space,chol_space, &
                                 ao_space_id,occ_space_id,vir_space_id,chol_space_id)
+         else
+           call exacorr_cc_spaces (exa_input,ao_space,occ_space,vir_space,ao_space_id,occ_space_id,vir_space_id)
+         end if
          if (my_MPI_rank == 0) call print_date(" Registered AO and MO spaces")
 
 !        Register and initialize user defined methods needed in the CC calculation
@@ -132,6 +144,9 @@ module exacorr_cc
             write(*,'(A,I3)') " - Maximum number of cycles:       ", exa_input%ncycles
             write(*,'(A,I3)') " - ExaTensor block size            ",exa_input%exa_blocksize
             write(*,'(A,I3)') " - Integral transformation scheme  ",exa_input%moint_scheme
+            if (exa_input%moint_scheme.eq.42) then
+              write(*,'(A)') " - Cholesky decomposition threshold ",exa_input%t_cholesky
+            end if
             if (exa_input%level_shift.gt.1.0D-14) then
               write(*,'(A,ES10.1)') " - Level Shift                     ",exa_input%level_shift
             end if
@@ -174,6 +189,19 @@ module exacorr_cc
          vovv_root = (/vir_space_root, occ_space_root, vir_space_root, vir_space_root/)
          vvvv_root = (/vir_space_root, vir_space_root, vir_space_root, vir_space_root/)
 
+         if (exa_input%moint_scheme.eq.42) then
+              ! Ids and roots for Cholesky
+              chol_space_root=chol_space%get_root_id(ierr)
+              oou_id = (/occ_space_id, occ_space_id, chol_space_id/)
+              ovu_id = (/occ_space_id, vir_space_id, chol_space_id/)
+              vou_id = (/vir_space_id, occ_space_id, chol_space_id/)
+              vvu_id = (/vir_space_id, vir_space_id, chol_space_id/)
+              oou_root = (/occ_space_root, occ_space_root, chol_space_root/)
+              ovu_root = (/occ_space_root, vir_space_root, chol_space_root/)
+              vou_root = (/vir_space_root, occ_space_root, chol_space_root/)
+              vvu_root = (/vir_space_root, vir_space_root, chol_space_root/)
+         end if
+
 !        All preliminary work is now done on all MPI-nodes, we may proceed to start ExaTensor.
 !        After the start of ExaTensor, the driver process (the last MPI process) will be executing
 !        the commands and tell the others (that stay inside exatns_process_role) what to do.
@@ -199,7 +227,16 @@ module exacorr_cc
             ierr=exatns_tensor_create(int_t%vovo,"vovo",vovo_id,vovo_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(int_t%vovv,"vovv",vovv_id,vovv_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(int_t%vvvv,"vvvv",vvvv_id,vvvv_root,EXA_DATA_KIND_C8)
-            call get_CC_integrals(ao_space_id,ao_space,chol_space_id,chol_space,int_t,exa_input%moint_scheme)
+            if (exa_input%moint_scheme.eq.42) then
+              ierr=exatns_tensor_create(chol_t%oou,"oou",oou_id,oou_root,EXA_DATA_KIND_C8)
+              ierr=exatns_tensor_create(chol_t%ovu,"ovu",ovu_id,ovu_root,EXA_DATA_KIND_C8)
+              ierr=exatns_tensor_create(chol_t%vou,"vou",vou_id,vou_root,EXA_DATA_KIND_C8)
+              ierr=exatns_tensor_create(chol_t%vvu,"vvu",vvu_id,vvu_root,EXA_DATA_KIND_C8)
+              call get_CC_integrals_chol(ao_space_id,ao_space,chol_space_id,chol_space,int_t,chol_t)
+            else 
+              call get_CC_integrals (ao_space_id,ao_space,int_t,exa_input%moint_scheme)
+            end if
+
             call print_date('initialized two electron integrals')
 
             ! If we have the 1-body integrals we rebuild the Fock matrix and check consistency, otherwise we use the orbital energies
@@ -343,7 +380,138 @@ module exacorr_cc
 
         end subroutine exacorr_cc_driver
 
-        subroutine exacorr_cc_spaces (exa_input,ao_space,occ_space,vir_space,chol_space, &
+        subroutine exacorr_cc_spaces (exa_input,ao_space,occ_space,vir_space,ao_space_id,occ_space_id,vir_space_id)
+
+!        This subroutine defines and registers all spaces for ExaTensor
+
+!        Written by Lucas Visscher, January 2019
+
+         use interface_to_mpi
+         use exacorr_global
+         use exacorr_ao_to_mo
+         use, intrinsic:: ISO_C_BINDING
+
+         implicit none
+
+         type(exacc_input), intent(in) :: exa_input
+         ! classes for the definition of spaces (AO and 2 different MO spaces)
+         class(h_space_t), pointer     :: ao_space, occ_space, vir_space
+         ! ids of these spaces (are not stored in the space class itself ?)
+         integer, intent(out)          :: ao_space_id, occ_space_id, vir_space_id
+
+         integer                :: nocc,nvir       ! the size of the mo basis for occupied and virtual ORBITALS
+         integer(INTL)          :: nocc_l, nvir_l  ! the size of the mo basis for occupied and virtual SPINORS
+
+         integer                                :: nao      ! the number of atomic orbitals)
+         integer                                :: nshells  ! the number of shells (orbitals with the same center and l-value)
+         integer                                :: basis_angular    ! 1=cartesian, 2=spherical
+         type(basis_func_info_t), allocatable   :: gto(:)   ! array with information about the shells
+
+         ! variables for the definition of spaces (AO and 2 different MO spaces)
+         type(subspace_basis_t)     :: basis_ao, basis_occ, basis_vir
+         integer(INTL)              :: nao_l ! (same as nao, as long integer)
+         integer                    :: branch_factor, tavp_mng_depth, my_MPI_rank
+
+         ! variables for the definition of colors inside the spaces
+         type(color_symmetry_t), allocatable    :: color(:)
+         integer(INTL)                          :: labs
+
+         ! Loop counters and error codes
+         integer:: ierr
+
+         integer:: lsh, l, nl
+
+         call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
+
+         nao           = get_nao()   ! This is the total number of ao's
+         nao_l         = int(nao,8)  ! we need this as a long int for exatensor
+         basis_angular = get_basis_angular() ! needed for setting basis functions
+
+!        Get the basis set information
+         call get_gtos(1,nao,gto,nshells)
+
+         !Create a basis for the ao vector space:
+         ierr = 0
+         call basis_ao%subspace_basis_ctor(nao_l,ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.subspace_basis_ctor() failed!')
+
+         !Assign the colors for the ao space (this indicates to exatensor where it may break up into subspaces)
+         allocate(color(nshells))
+         labs = 0
+         do lsh = 1, nshells !set basis functions
+            nl   =  nfunctions(gto(lsh)%orb_momentum,basis_angular)
+            call color(lsh)%color_symmetry_ctor(lsh) ! take one shell as a color
+            do  l = 1, nl
+                labs = labs + 1
+                call basis_ao%set_basis_func(labs,BASIS_ABSTRACT,ierr,symm=color(lsh))
+                if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.set_basis_func() failed!')
+            end do
+         enddo
+
+         !Finalize the ao space basis
+         call basis_ao%finalize(ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.finalize() failed!')
+
+         !Get ExaTENSOR TAVP-MNG depth:
+         ierr = exatns_virtual_depth(tavp_mng_depth)
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_virtual_depth() failed!')
+         if(debug_exa .and. my_MPI_rank == 0) write(*,*) 'ExaCorr: Inferred TAVP-MNG depth = ',tavp_mng_depth
+
+         !Register the ao vector space:
+         branch_factor = max(2, (int(get_num_segments(int(nao,8),int(exa_input%exa_blocksize,8)),4) - 1)/tavp_mng_depth + 1)
+         ierr=exatns_space_register('AO_space',basis_ao,ao_space_id,ao_space,branch_factor)
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register() failed!')
+         if(debug_exa .and. my_MPI_rank == 0) write (*,'(A,I3,A,I3)') ' ExaCorr: Registered AO vector space of dimension   ',nao, &
+         ': Number of segments = ', branch_factor*(2**(tavp_mng_depth-1)) !debug
+         if(debug_exa .and. my_MPI_rank == 0) call ao_space%print_it()
+
+         !Copy user input to local arrays for the definition of MO spaces (for standard CC we only distinguish occupied and virtual spinors)
+         nocc = exa_input%nocc
+         nvir = exa_input%nvir
+         !Get the MO basis for the occupied and virtual spaces
+         ierr = 0
+         nocc_l    = int(nocc,8)  ! NB: imo, jmo and nmo count orbitals, nocc_l counts spinors
+         nvir_l    = int(nvir,8)  ! NB: imo, jmo and nmo count orbitals, nvir_l counts spinors
+         call basis_occ%subspace_basis_ctor(nocc_l,ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.subspace_basis_ctor() failed!')
+         call basis_vir%subspace_basis_ctor(nvir_l,ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.subspace_basis_ctor() failed!')
+
+         !Set the functions inside the occupied basis (without colors, not needed for MOs)
+         do labs = 1, nocc_l
+            call basis_occ%set_basis_func(labs,BASIS_ABSTRACT,ierr)
+            if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.set_basis_func() failed!')
+         enddo
+
+         !Set the functions inside the virtual basis (without colors, not needed for MOs)
+         do labs = 1, nvir_l
+            call basis_vir%set_basis_func(labs,BASIS_ABSTRACT,ierr)
+            if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.set_basis_func() failed!')
+         enddo
+
+         !Finalize the mo space basis
+         call basis_occ%finalize(ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.finalize() failed!')
+         call basis_vir%finalize(ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('subspace_basis_t.finalize() failed!')
+
+         !Register occ mo vector space:
+         branch_factor = max(2, (int(get_num_segments(int(nocc,8),int(exa_input%exa_blocksize,8)),4) - 1)/tavp_mng_depth + 1)
+         ierr=exatns_space_register('Occupied',basis_occ,occ_space_id,occ_space,branch_factor)
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register(occ) failed!')
+         if(debug_exa .and. my_MPI_rank == 0) write (*,'(A,I3,A,I3)') ' ExaCorr: Registered OCC vector space of dimension  ',nocc, &
+         ': Number of segments = ', branch_factor*(2**(tavp_mng_depth-1))
+
+         !Register vir mo vector space:
+         branch_factor = max(2, (int(get_num_segments(int(nvir,8),int(exa_input%exa_blocksize,8)),4) - 1)/tavp_mng_depth + 1)
+         ierr=exatns_space_register('Virtual',basis_vir,vir_space_id,vir_space,branch_factor)
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register(vir) failed!')
+         if(debug_exa .and. my_MPI_rank == 0) write (*,'(A,I3,A,I3)') ' ExaCorr: Registered VIRT vector space of dimension ',nvir, &
+         ': Number of segments = ', branch_factor*(2**(tavp_mng_depth-1)) !debug
+
+        end subroutine exacorr_cc_spaces
+
+        subroutine exacorr_cc_spaces_chol (exa_input,ao_space,occ_space,vir_space,chol_space, &
             ao_space_id,occ_space_id,vir_space_id,chol_space_id)
 
 !        This subroutine defines and registers all spaces for ExaTensor
@@ -498,7 +666,7 @@ module exacorr_cc
          if(debug_exa .and. my_MPI_rank == 0) write (*,'(A,I3,A,I3)') ' ExaCorr: Registered Cholesky space of dimension  ', m, &
          ': Number of segments = ', branch_factor*(2**(tavp_mng_depth-1))
 
-        end subroutine exacorr_cc_spaces
+        end subroutine exacorr_cc_spaces_chol
 
         subroutine exacorr_cc_methods (exa_input,ao_space_id,occ_space_id,vir_space_id)
 
@@ -1246,7 +1414,7 @@ module exacorr_cc
 
         end subroutine solve_lambda_equations
 
-        subroutine get_CC_integrals (ao_space_id,ao_space,chol_space_id,chol_space,int_t,moint_scheme)
+        subroutine get_CC_integrals (ao_space_id,ao_space,int_t,moint_scheme)
 
 !        Routine to get integrals needed in CC in the form of antisymmetric tensors.
 !        In this implementation we take all AO integrals into memory, the result tensor themselves can be subsets of the
@@ -1259,8 +1427,8 @@ module exacorr_cc
          use exacorr_global
 
 !        information needed to compute the ao-tensor
-         integer,intent(in)       :: ao_space_id, chol_space_id
-         class(h_space_t), pointer, intent(in) :: ao_space, chol_space
+         integer,intent(in)       :: ao_space_id
+         class(h_space_t), pointer, intent(in) :: ao_space
 !        target integral tensors to be filled and given back to the caller
          type(exatns_intg_tens), intent(inout) :: int_t 
 
@@ -1270,18 +1438,13 @@ module exacorr_cc
          integer(INTL),dimension(4) :: a2int_root, vovo_root, ovvo_root
          integer,dimension(4)       :: a2int_id, vovo_id, ovvo_id
 
-         integer(INTL),dimension(3) :: chol_root
-         integer,dimension(3)       :: chol_id
-         integer                    :: m          ! size of cholesky space
-         type(tens_rcrsv_t)         :: chol_tensor
-
          integer                           :: i,ierr, sub3, sub4
          integer                           :: moint_scheme ! (0: put zeroes for testing. 1: n^5 algorithm, 2: n^6 algorithm
                                                            !  3: n^5 with re-use of ints 4: as 3, but with sliced AO and HT)
          character(len=15)                 :: text
 
 !        auxilliary integral tensor (only needed inside this routine)
-         type(tens_rcrsv_t) :: aoint_tensor, err_tensor
+         type(tens_rcrsv_t) :: aoint_tensor
 
 !        get the root space, covers all ao's
          ao_space_root=ao_space%get_root_id(ierr)
@@ -1349,25 +1512,6 @@ module exacorr_cc
            if(ierr.ne.EXA_SUCCESS) call quit('Aoint_calculator failed!')
            call print_date('finished ao integral calculation')
            call print_date('choosing moint_scheme 3')
-           
-!          alternative use cholesky vectors to generate ao integrals
-!          get cholesky vector 
-           chol_id(1:2)=ao_space_id
-           chol_id(3)=chol_space_id
-           chol_root(1:2)=ao_space_root
-           call get_m_cholesky(m)
-           chol_root(3)=m
-           !print *, chol_id, chol_root
-           ierr=exatns_tensor_create(chol_tensor,"cholesky",chol_id,chol_root,EXA_DATA_KIND_C8)
-           ierr=exatns_tensor_init(chol_tensor,'Cholesky')
-           ierr=exatns_tensor_create(err_tensor,'err',(/(ao_space_id,i=1,4)/),(/(ao_space_root,i=1,4)/),EXA_DATA_KIND_C8)
-           ierr=exatns_tensor_init(err_tensor, ZERO)
-           ierr=exatns_tensor_contract("E(p,q,r,s)+=C(q,p,u)*C(r,s,u)",err_tensor,chol_tensor,chol_tensor)
-           ierr=exatns_tensor_contract("E(p,q,r,s)+=A(p,q,r,s)*O()",err_tensor,aoint_tensor,one_tensor, MINUS_ONE)
-           !ierr=exatns_tensor_traverse(err_tensor,'PrintTensor')
-           print*, "chol. error = ", print_tensornorm2(err_tensor)
-           ierr=exatns_tensor_destroy(err_tensor)
-           ierr=exatns_tensor_destroy(chol_tensor)
 
            ! Setting dimensions for the half transformed integral tensor, the last two are always AO spaces
            a2int_id(3:4)   = ao_space_id
@@ -1480,6 +1624,142 @@ module exacorr_cc
          end if
 
         end subroutine get_CC_integrals
+
+        subroutine get_CC_integrals_chol(ao_space_id,ao_space,chol_space_id,chol_space,int_t,chol_t)
+!        Routine to get integrals needed in CC in the form of antisymmetric tensors.
+!        In this implementation we take all AO integrals into memory, the result tensor themselves can be subsets of the
+!        full integral list. We do assume that we deal with a closed shell (Kramers-restricted) case, so nocc and nvir
+!        refer to Kramers pairs rather than spinors.
+
+!        Written by Lucas Visscher, summer 2017
+
+         use exacorr_ao_to_mo
+         use exacorr_global
+
+!        information needed to compute the ao-tensor
+         integer,intent(in)       :: ao_space_id, chol_space_id
+         class(h_space_t), pointer, intent(in) :: ao_space, chol_space
+!        target integral tensors to be filled and given back to the caller
+         type(exatns_intg_tens), intent(inout) :: int_t 
+         type(exatns_chol_tens), intent(inout) :: chol_t
+
+         integer(INTL)              :: ao_space_root,subspace_id(4),num_subspaces
+         integer(INTL),allocatable  :: ao_subspaces(:)
+         type(tens_rcrsv_t)         :: a2int_tensor, ovvo_tensor ! Auxilliary tensors
+         integer(INTL),dimension(4) :: a2int_root, vovo_root, ovvo_root
+         integer,dimension(4)       :: a2int_id, vovo_id, ovvo_id
+
+         integer(INTL),dimension(3) :: chol_root
+         integer,dimension(3)       :: chol_id
+         integer                    :: m          ! size of cholesky space
+         type(tens_rcrsv_t)         :: chol_tensor
+
+         integer                           :: i,ierr, sub3, sub4
+         character(len=15)                 :: text
+
+!        auxilliary integral tensor (only needed inside this routine)
+         type(tens_rcrsv_t) :: aoint_tensor, err_tensor
+
+!        get the root space, covers all ao's
+         ao_space_root=ao_space%get_root_id(ierr)
+
+!        Determine space ids and root for auxilliary voov tensor from vovo tensor
+         call int_t%vovo%get_space_ids(vovo_id,vovo_root,ierr)
+         if(ierr.ne.EXA_SUCCESS) call quit('vovo tensor corrupted')
+         ovvo_id(1)   = vovo_id(2)
+         ovvo_id(2)   = vovo_id(1)
+         ovvo_id(3:4) = vovo_id(3:4)
+         ovvo_root(1)   = vovo_root(2)
+         ovvo_root(2)   = vovo_root(1)
+         ovvo_root(3:4) = vovo_root(3:4)
+
+         call print_date('choosing moint_scheme 42 (cholesky) ')
+           
+!        get cholesky ao vector 
+         chol_id(1:2)=ao_space_id
+         chol_id(3)=chol_space_id
+         chol_root(1:2)=ao_space_root
+         call get_m_cholesky(m)
+         chol_root(3)=m
+         !print *, chol_id, chol_root
+         ierr=exatns_tensor_create(chol_tensor,"cholesky",chol_id,chol_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_init(chol_tensor,'Cholesky')
+
+!        testing: get alternative ao
+         ierr=exatns_tensor_create(aoint_tensor,'aotensor',(/(ao_space_id,i=1,4)/),(/(ao_space_root,i=1,4)/),EXA_DATA_KIND_C8)
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
+         call print_date('allocated AO integral tensor')
+         ierr=exatns_tensor_init(aoint_tensor,'Aoint_calculator')
+         if(ierr.ne.EXA_SUCCESS) call quit('Aoint_calculator failed!')
+         call print_date('finished ao integral calculation')
+
+         ierr=exatns_tensor_create(err_tensor,'err',(/(ao_space_id,i=1,4)/),(/(ao_space_root,i=1,4)/),EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_init(err_tensor, ZERO)
+         ierr=exatns_tensor_contract("E(p,q,r,s)+=C(q,p,u)*C(r,s,u)",err_tensor,chol_tensor,chol_tensor)
+         ierr=exatns_tensor_contract("E(p,q,r,s)+=A(p,q,r,s)*O()",err_tensor,aoint_tensor,one_tensor, MINUS_ONE)
+         !ierr=exatns_tensor_traverse(err_tensor,'PrintTensor')
+         print*, "chol. error = ", print_tensornorm2(err_tensor)
+         ierr=exatns_tensor_destroy(err_tensor)
+
+         !transformation of the cholesky vectors
+         call aomo_trans_chol(chol_t%oou,chol_tensor)
+           
+         !original transformation
+           ! Setting dimensions for the half transformed integral tensor, the last two are always AO spaces
+           a2int_id(3:4)   = ao_space_id
+           a2int_root(3:4) = ao_space_root
+
+           ! get the integrals with vv as first transform
+           a2int_id(1:2)   = vovo_id(1)
+           a2int_root(1:2) = vovo_root(1)
+           ierr=exatns_tensor_create(a2int_tensor,"a2vv",a2int_id,a2int_root,EXA_DATA_KIND_C8) 
+           call get_ht1_integral_tensor (aoint_tensor,a2int_tensor)
+           call print_date('vv halftransformation completed')
+           call get_ht2_integral_tensor (a2int_tensor,int_t%vvvv,12)
+           call print_date('vvvv integrals completed')
+           call get_ht2_integral_tensor (a2int_tensor,int_t%vovv,34)
+           call print_date('vovv integrals completed')
+           call get_ht2_integral_tensor (a2int_tensor,int_t%vovo,0)
+           call print_date('vovo integrals completed')
+           ierr=exatns_tensor_destroy(a2int_tensor)
+
+           ! get the integrals with ov as first transform
+           a2int_id(1:2)   = vovo_id(2:3)
+           a2int_root(1:2) = vovo_root(2:3)
+           ierr=exatns_tensor_create(a2int_tensor,"a2ov",a2int_id,a2int_root,EXA_DATA_KIND_C8) 
+           call get_ht1_integral_tensor (aoint_tensor,a2int_tensor)
+           call print_date('ov halftransformation completed')
+           ierr=exatns_tensor_create(ovvo_tensor,"ovvo",ovvo_id,ovvo_root,EXA_DATA_KIND_C8) ! auxilliary for get_CC_integrals
+           call get_ht2_integral_tensor (a2int_tensor,ovvo_tensor,0)
+           call print_date('ovvo integrals completed')
+!          Make anti-symmetrized vovo tensor
+           ierr=exatns_tensor_contract("V(a,i,b,j)+=V(i,a,b,j)*K()",int_t%vovo,ovvo_tensor,one_tensor,MINUS_ONE)
+           ierr=exatns_tensor_destroy(ovvo_tensor)
+           call print_date('vovo integrals anti-symmetrized')
+           call get_ht2_integral_tensor (a2int_tensor,int_t%oovv,12)
+           call print_date('oovv integrals completed')
+           ierr=exatns_tensor_destroy(a2int_tensor)
+
+           ! get the integrals with oo as first transform
+           a2int_id(1:2)   = vovo_id(2)
+           a2int_root(1:2) = vovo_root(2)
+           ierr=exatns_tensor_create(a2int_tensor,"a2oo",a2int_id,a2int_root,EXA_DATA_KIND_C8) 
+           call get_ht1_integral_tensor (aoint_tensor,a2int_tensor)
+           call print_date('oo halftransformation completed')
+           call get_ht2_integral_tensor (a2int_tensor,int_t%ooov,12)
+           call print_date('ooov integrals completed')
+           call get_ht2_integral_tensor (a2int_tensor,int_t%oooo,12)
+           call print_date('oooo integrals completed')
+           ierr=exatns_tensor_destroy(a2int_tensor)
+
+        
+!        Clean-up
+         ierr=exatns_tensor_destroy(chol_tensor)
+         
+         !testing
+         ierr=exatns_tensor_destroy(aoint_tensor)
+
+        end subroutine get_CC_integrals_chol
 
         subroutine diis (t2_tensor,vvoo_id,vvoo_root,t1_tensor,vo_id,vo_root,t_convergence,mode)
 
