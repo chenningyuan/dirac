@@ -71,6 +71,11 @@ C
 C
       CALL GETTIM(CPU1,WALL1)
       CALL TRAHI(IPRTRA,3)
+
+C     Define NOMDCINT from **MOLTRA input
+
+      NOMDCINT = NOMDCINT_TRAINP
+
 C
 C     Define number of double quaternionic classes
 C
@@ -203,8 +208,26 @@ C
       Allocate (IBEIG(NORBT))
       CALL IZERO(IBEIG,NORBT)
       CALL DZERO(EIG,NORBT)
-      INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
-      INQUIRE(FILE='KRMCOLD',EXIST=TOBEKK)
+
+      SELECT CASE ( MOFILE_TRAINP )
+         CASE ( "DFCOEF" )
+            TOBEK  = .FALSE.
+            TOBEKK = .FALSE.
+         CASE ( "KRMCSCF" )
+            TOBEK  = .TRUE.
+            TOBEKK = .FALSE.
+         CASE ( "KRMCOLD" )
+            TOBEK  = .FALSE.
+            TOBEKK = .TRUE.
+         CASE ( "UNKNOWN" )
+            INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
+            INQUIRE(FILE='KRMCOLD',EXIST=TOBEKK)
+         CASE DEFAULT
+            WRITE(LUPRI,'(/2A)')
+     &      'FATAL ERROR for **MOLTRA input: Unknown .MOFILE name : ',
+     &      MOFILE_PAMTRA
+            CALL QUIT('Unknown .MOFILE from **MOLTRA input')
+      END SELECT
 
       IF (TOBEK) THEN
          CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','PAMTRA')
