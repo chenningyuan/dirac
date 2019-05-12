@@ -1336,6 +1336,10 @@ contains
       complex(8), pointer, contiguous:: s1_tens(:,:)
       type(C_PTR):: s1_body_p
 
+      integer :: t1_dims(1), t1_rank
+      complex(8), pointer, contiguous:: t1_tens(:)
+      type(C_PTR):: t1_body_p
+
       integer :: s2_dims(2), s2_rank
       complex(8), pointer, contiguous:: s2_tens(:,:)
       type(C_PTR):: s2_body_p
@@ -1343,6 +1347,7 @@ contains
       integer :: ierr, i, j
 
       do i = (workspace%L - workspace%nroots + 1), workspace%L
+         write (6,*) 'root ',i
          ierr = talsh_tensor_dimensions(workspace%sigma1(i),s1_rank,s1_dims)
          write (6,*) 's1_rank',s1_rank
          write (6,*) 's1_dims',s1_dims
@@ -1353,9 +1358,20 @@ contains
          call c_f_pointer(s1_body_p,s1_tens,s1_dims(1:s1_rank))
 
          write (6,*) 's1_tens before construction'
-         do j = 1, s1_dims(1)
-            write (6,*) s1_tens(j,1:s1_dims(2))
-         end do
+         write (6,*) s1_tens(i,1)
+
+         ierr = talsh_tensor_dimensions(workspace%trial1(i),t1_rank,t1_dims)
+         write (6,*) 't1_rank',t1_rank
+         write (6,*) 't1_dims',t1_dims
+         write (6,*) 't1_body_p',t1_body_p
+         ierr = talsh_tensor_get_body_access(workspace%trial1(i),t1_body_p,C8,0,DEV_HOST)
+         write (6,*) 't1_body_p',t1_body_p
+
+         call c_f_pointer(t1_body_p,t1_tens,t1_dims(1:t1_rank))
+
+         write (6,*) 't1_tens before construction'
+         write (6,*) t1_tens
+
 
          call sigma_right_ip(exa_input,int_t,eom_t,t2_tensor, &
    &                         workspace%trial1(i),workspace%trial2(i),&
