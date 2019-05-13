@@ -419,7 +419,7 @@ C*****************************************************************************
 #include "dummy.h"
 #include "maxorb.h"
       PARAMETER(D0=0.0D0)
-      PARAMETER (NDIR = 3, NTABLE = 26)
+      PARAMETER (NDIR = 3, NTABLE = 27)
 C
       LOGICAL SET, NEWDEF,LSPES,LSPES2,LSPES4
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
@@ -444,7 +444,7 @@ C
      &            '.NO2IND','.NO4IND','.2INDEX','.INTFL2','.INTFL4',
      &            '.PRPTRA','.SCREEN','.RCORBS','.NOMDCI','.NOSCAT',
      &            '.PAR4BS','.SCATTE','.MDCINT','.HSCC  ','.HTSORT',
-     &            '.ASCII '/
+     &            '.ASCII ','.MOFILE'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -566,7 +566,7 @@ C         if reading input from a terminal
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
-     &                      16,17,18,19,20,21,22,23,24,25,26), I
+     &                      16,17,18,19,20,21,22,23,24,25,26,27), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -840,7 +840,7 @@ C&&&& MDCINT - Force writing of the MDCINT file in MOLFDIR format
 !&&&& "MOFILE" - which file to read MO coefficients from
 !      note: list directed read will ignore initial blanks, so MOFILE_TRAINP
 !            will always begin with the first non-blank character in input line.
-               READ(LUCMD,*) MOFILE_TRAINP
+                  READ(LUCMD,*) MOFILE_TRAINP
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
