@@ -838,7 +838,9 @@ C&&&& MDCINT - Force writing of the MDCINT file in MOLFDIR format
                GO TO 100
    27          CONTINUE
 !&&&& "MOFILE" - which file to read MO coefficients from
-               WRITE(LUCMD,*) MOFILE_TRAINP
+!      note: list directed read will ignore initial blanks, so MOFILE_TRAINP
+!            will always begin with the first non-blank character in input line.
+               READ(LUCMD,*) MOFILE_TRAINP
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300

@@ -225,7 +225,7 @@ C
          CASE DEFAULT
             WRITE(LUPRI,'(/2A)')
      &      'FATAL ERROR for **MOLTRA input: Unknown .MOFILE name : ',
-     &      MOFILE_PAMTRA
+     &      MOFILE_TRAINP
             CALL QUIT('Unknown .MOFILE from **MOLTRA input')
       END SELECT
 
