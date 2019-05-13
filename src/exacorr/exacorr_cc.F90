@@ -1626,138 +1626,257 @@ module exacorr_cc
         end subroutine get_CC_integrals
 
         subroutine get_CC_integrals_chol(ao_space_id,ao_space,chol_space_id,chol_space,int_t,chol_t)
-!        Routine to get integrals needed in CC in the form of antisymmetric tensors.
-!        In this implementation we take all AO integrals into memory, the result tensor themselves can be subsets of the
-!        full integral list. We do assume that we deal with a closed shell (Kramers-restricted) case, so nocc and nvir
-!        refer to Kramers pairs rather than spinors.
+!         Routine to get integrals needed in CC in the form of antisymmetric tensors.
+!         In this implementation we take all AO integrals into memory, the result tensor themselves can be subsets of the
+!         full integral list. We do assume that we deal with a closed shell (Kramers-restricted) case, so nocc and nvir
+!         refer to Kramers pairs rather than spinors.
+ 
+!         Written by Lucas Visscher, summer 2017
+ 
+          use exacorr_ao_to_mo
+          use exacorr_global
+ 
+!         information needed to compute the ao-tensor
+          integer,intent(in)       :: ao_space_id, chol_space_id
+          class(h_space_t), pointer, intent(in) :: ao_space, chol_space
+!         target integral tensors to be filled and given back to the caller
+          type(exatns_intg_tens), intent(inout) :: int_t
+          type(exatns_chol_tens), intent(inout) :: chol_t
+ 
+          integer(INTL)              :: ao_space_root,subspace_id(4),num_subspaces
+          integer(INTL),allocatable  :: ao_subspaces(:)
+          type(tens_rcrsv_t)         :: a2int_tensor, ovvo_tensor ! Auxilliary tensors
+          integer(INTL),dimension(4) :: a2int_root, vovo_root, ovvo_root, mull_root, dirac_root
+          integer,dimension(4)       :: a2int_id, vovo_id, ovvo_id, mull_id, dirac_id
+ 
+          integer(INTL),dimension(3) :: chol_root
+          integer,dimension(3)       :: chol_id
+          integer                    :: m          ! size of cholesky space
+          type(tens_rcrsv_t)         :: chol_tensor
+ 
+          integer                           :: i,ierr, sub3, sub4
+          character(len=15)                 :: text
+ 
+!         auxilliary integral tensor (only needed inside this routine)
+          type(tens_rcrsv_t) :: aoint_tensor, mull_tensor, err_tensor
+ 
+!         get the root space, covers all ao's
+          ao_space_root=ao_space%get_root_id(ierr)
+ 
+!         Determine space ids and root for auxilliary voov tensor from vovo tensor
+          call int_t%vovo%get_space_ids(vovo_id,vovo_root,ierr)
+          if(ierr.ne.EXA_SUCCESS) call quit('vovo tensor corrupted')
+          ovvo_id(1)   = vovo_id(2)
+          ovvo_id(2)   = vovo_id(1)
+          ovvo_id(3:4) = vovo_id(3:4)
+          ovvo_root(1)   = vovo_root(2)
+          ovvo_root(2)   = vovo_root(1)
+          ovvo_root(3:4) = vovo_root(3:4)
 
-!        Written by Lucas Visscher, summer 2017
-
-         use exacorr_ao_to_mo
-         use exacorr_global
-
-!        information needed to compute the ao-tensor
-         integer,intent(in)       :: ao_space_id, chol_space_id
-         class(h_space_t), pointer, intent(in) :: ao_space, chol_space
-!        target integral tensors to be filled and given back to the caller
-         type(exatns_intg_tens), intent(inout) :: int_t 
-         type(exatns_chol_tens), intent(inout) :: chol_t
-
-         integer(INTL)              :: ao_space_root,subspace_id(4),num_subspaces
-         integer(INTL),allocatable  :: ao_subspaces(:)
-         type(tens_rcrsv_t)         :: a2int_tensor, ovvo_tensor ! Auxilliary tensors
-         integer(INTL),dimension(4) :: a2int_root, vovo_root, ovvo_root
-         integer,dimension(4)       :: a2int_id, vovo_id, ovvo_id
-
-         integer(INTL),dimension(3) :: chol_root
-         integer,dimension(3)       :: chol_id
-         integer                    :: m          ! size of cholesky space
-         type(tens_rcrsv_t)         :: chol_tensor
-
-         integer                           :: i,ierr, sub3, sub4
-         character(len=15)                 :: text
-
-!        auxilliary integral tensor (only needed inside this routine)
-         type(tens_rcrsv_t) :: aoint_tensor, err_tensor
-
-!        get the root space, covers all ao's
-         ao_space_root=ao_space%get_root_id(ierr)
-
-!        Determine space ids and root for auxilliary voov tensor from vovo tensor
-         call int_t%vovo%get_space_ids(vovo_id,vovo_root,ierr)
-         if(ierr.ne.EXA_SUCCESS) call quit('vovo tensor corrupted')
-         ovvo_id(1)   = vovo_id(2)
-         ovvo_id(2)   = vovo_id(1)
-         ovvo_id(3:4) = vovo_id(3:4)
-         ovvo_root(1)   = vovo_root(2)
-         ovvo_root(2)   = vovo_root(1)
-         ovvo_root(3:4) = vovo_root(3:4)
-
-         call print_date('choosing moint_scheme 42 (cholesky) ')
+          call print_date('choosing moint_scheme 42 (cholesky) ')
            
-!        get cholesky ao vector 
-         chol_id(1:2)=ao_space_id
-         chol_id(3)=chol_space_id
-         chol_root(1:2)=ao_space_root
-         call get_m_cholesky(m)
-         chol_root(3)=m
-         !print *, chol_id, chol_root
-         ierr=exatns_tensor_create(chol_tensor,"cholesky",chol_id,chol_root,EXA_DATA_KIND_C8)
-         ierr=exatns_tensor_init(chol_tensor,'Cholesky')
+!         get cholesky ao vector 
+          chol_id(1:2)=ao_space_id
+          chol_id(3)=chol_space_id
+          chol_root(1:2)=ao_space_root
+          call get_m_cholesky(m)
+          chol_root(3)=m
+          !print *, chol_id, chol_root
+          ierr=exatns_tensor_create(chol_tensor,"cholesky",chol_id,chol_root,EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_init(chol_tensor,'Cholesky')
+ 
+! test: get alternative ao
+          ierr=exatns_tensor_create(aoint_tensor,'aotensor',(/(ao_space_id,i=1,4)/),(/(ao_space_root,i=1,4)/),EXA_DATA_KIND_C8)
+          if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
+          call print_date('allocated AO integral tensor')
+          ierr=exatns_tensor_init(aoint_tensor,'Aoint_calculator')
+          if(ierr.ne.EXA_SUCCESS) call quit('Aoint_calculator failed!')
+          call print_date('finished ao integral calculation')
+ 
+          ierr=exatns_tensor_create(err_tensor,'err',(/(ao_space_id,i=1,4)/),(/(ao_space_root,i=1,4)/),EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_init(err_tensor, ZERO)
+          ierr=exatns_tensor_contract("E(p,q,r,s)+=C(q,p,u)*C(r,s,u)",err_tensor,chol_tensor,chol_tensor)
+          ierr=exatns_tensor_contract("E(p,q,r,s)+=A(p,q,r,s)*O()",err_tensor,aoint_tensor,one_tensor, MINUS_ONE)
+          !ierr=exatns_tensor_traverse(err_tensor,'PrintTensor')
+          print*, "chol. error = ", print_tensornorm2(err_tensor)
+          ierr=exatns_tensor_destroy(err_tensor)
+ 
+          !transformation of the cholesky vectors
+          call aomo_trans_chol(chol_t%oou,chol_tensor)
+          call aomo_trans_chol(chol_t%ovu,chol_tensor)
+          call aomo_trans_chol(chol_t%vou,chol_tensor)
+          call aomo_trans_chol(chol_t%vvu,chol_tensor)
 
-!        testing: get alternative ao
-         ierr=exatns_tensor_create(aoint_tensor,'aotensor',(/(ao_space_id,i=1,4)/),(/(ao_space_root,i=1,4)/),EXA_DATA_KIND_C8)
-         if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
-         call print_date('allocated AO integral tensor')
-         ierr=exatns_tensor_init(aoint_tensor,'Aoint_calculator')
-         if(ierr.ne.EXA_SUCCESS) call quit('Aoint_calculator failed!')
-         call print_date('finished ao integral calculation')
+! test: Setting dimensions for the half transformed integral tensor, the last two are always AO spaces
+          a2int_id(3:4)   = ao_space_id
+          a2int_root(3:4) = ao_space_root
+          ! get the integrals with vv as first transform
+          a2int_id(1:2)   = vovo_id(1)
+          a2int_root(1:2) = vovo_root(1)
+          ierr=exatns_tensor_create(a2int_tensor,"a2vv",a2int_id,a2int_root,EXA_DATA_KIND_C8) 
+          call get_ht1_integral_tensor (aoint_tensor,a2int_tensor)
+          call print_date('vv halftransformation completed')
 
-         ierr=exatns_tensor_create(err_tensor,'err',(/(ao_space_id,i=1,4)/),(/(ao_space_root,i=1,4)/),EXA_DATA_KIND_C8)
-         ierr=exatns_tensor_init(err_tensor, ZERO)
-         ierr=exatns_tensor_contract("E(p,q,r,s)+=C(q,p,u)*C(r,s,u)",err_tensor,chol_tensor,chol_tensor)
-         ierr=exatns_tensor_contract("E(p,q,r,s)+=A(p,q,r,s)*O()",err_tensor,aoint_tensor,one_tensor, MINUS_ONE)
-         !ierr=exatns_tensor_traverse(err_tensor,'PrintTensor')
-         print*, "chol. error = ", print_tensornorm2(err_tensor)
-         ierr=exatns_tensor_destroy(err_tensor)
+!         vvvv using cholesky
+          call int_t%vvvv%get_space_ids(dirac_id,dirac_root,ierr)
+          if(ierr.ne.EXA_SUCCESS) call quit(' tensor corrupted ')
+          mull_id=dirac_id
+          mull_root=dirac_root
+          ierr=exatns_tensor_create(mull_tensor,'mull',mull_id,mull_root,EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_contract("E(p,q,r,s)=C+(q,p,u)*C(r,s,u)",mull_tensor,chol_t%vvu,chol_t%vvu)
+          call mulliken_to_dirac_sort (mull_tensor,int_t%vvvv,12)
+          ierr=exatns_tensor_destroy(mull_tensor)
+          call print_date('vvvv integrals completed')
+! test
+          ierr=exatns_tensor_create(err_tensor,'err',dirac_id,dirac_root,EXA_DATA_KIND_C8)
+          call get_ht2_integral_tensor (a2int_tensor,err_tensor,12)
+          ierr=exatns_tensor_contract("E(p,q,r,s)+=A(p,q,r,s)*O()",err_tensor,int_t%vvvv,one_tensor, MINUS_ONE)
+          print*, "vvvv error = ", print_tensornorm2(err_tensor)
+          ierr=exatns_tensor_destroy(err_tensor)
+          
 
-         !transformation of the cholesky vectors
-         call aomo_trans_chol(chol_t%oou,chol_tensor)
-           
-         !original transformation
-           ! Setting dimensions for the half transformed integral tensor, the last two are always AO spaces
-           a2int_id(3:4)   = ao_space_id
-           a2int_root(3:4) = ao_space_root
+!         vovv using cholesky
+          call int_t%vovv%get_space_ids(dirac_id,dirac_root,ierr)
+          if(ierr.ne.EXA_SUCCESS) call quit(' tensor corrupted ')
+          mull_id=dirac_id
+          mull_root=dirac_root
+          mull_id(2)=dirac_id(3)
+          mull_id(3)=dirac_id(2)
+          mull_root(2)=dirac_root(3)
+          mull_root(3)=dirac_root(2)
+          ierr=exatns_tensor_create(mull_tensor,'mull',mull_id,mull_root,EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_contract("E(p,q,r,s)=C+(q,p,u)*C(r,s,u)",mull_tensor,chol_t%vvu,chol_t%ovu)
+          call mulliken_to_dirac_sort (mull_tensor,int_t%vovv,34)
+          ierr=exatns_tensor_destroy(mull_tensor)
+          call print_date('vovv integrals completed')
+! test
+          ierr=exatns_tensor_create(err_tensor,'err',dirac_id,dirac_root,EXA_DATA_KIND_C8)
+          call get_ht2_integral_tensor (a2int_tensor,err_tensor,34)
+          ierr=exatns_tensor_contract("E(p,q,r,s)+=A(p,q,r,s)*O()",err_tensor,int_t%vovv,one_tensor, MINUS_ONE)
+          print*, "vovv error = ", print_tensornorm2(err_tensor)
+          ierr=exatns_tensor_destroy(err_tensor)
 
-           ! get the integrals with vv as first transform
-           a2int_id(1:2)   = vovo_id(1)
-           a2int_root(1:2) = vovo_root(1)
-           ierr=exatns_tensor_create(a2int_tensor,"a2vv",a2int_id,a2int_root,EXA_DATA_KIND_C8) 
-           call get_ht1_integral_tensor (aoint_tensor,a2int_tensor)
-           call print_date('vv halftransformation completed')
-           call get_ht2_integral_tensor (a2int_tensor,int_t%vvvv,12)
-           call print_date('vvvv integrals completed')
-           call get_ht2_integral_tensor (a2int_tensor,int_t%vovv,34)
-           call print_date('vovv integrals completed')
-           call get_ht2_integral_tensor (a2int_tensor,int_t%vovo,0)
-           call print_date('vovo integrals completed')
-           ierr=exatns_tensor_destroy(a2int_tensor)
+!         vovo using cholesky
+          call int_t%vovo%get_space_ids(dirac_id,dirac_root,ierr)
+          if(ierr.ne.EXA_SUCCESS) call quit(' tensor corrupted ')
+          mull_id=dirac_id
+          mull_root=dirac_root
+          mull_id(2)=dirac_id(3)
+          mull_id(3)=dirac_id(2)
+          mull_root(2)=dirac_root(3)
+          mull_root(3)=dirac_root(2)
+          ierr=exatns_tensor_create(mull_tensor,'mull',mull_id,mull_root,EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_contract("E(p,q,r,s)=C+(q,p,u)*C(r,s,u)",mull_tensor,chol_t%vvu,chol_t%oou)
+          call mulliken_to_dirac_sort (mull_tensor,int_t%vovo,0)
+          ierr=exatns_tensor_destroy(mull_tensor)
+          call print_date('vovo integrals completed')
 
-           ! get the integrals with ov as first transform
-           a2int_id(1:2)   = vovo_id(2:3)
-           a2int_root(1:2) = vovo_root(2:3)
-           ierr=exatns_tensor_create(a2int_tensor,"a2ov",a2int_id,a2int_root,EXA_DATA_KIND_C8) 
-           call get_ht1_integral_tensor (aoint_tensor,a2int_tensor)
-           call print_date('ov halftransformation completed')
-           ierr=exatns_tensor_create(ovvo_tensor,"ovvo",ovvo_id,ovvo_root,EXA_DATA_KIND_C8) ! auxilliary for get_CC_integrals
-           call get_ht2_integral_tensor (a2int_tensor,ovvo_tensor,0)
-           call print_date('ovvo integrals completed')
-!          Make anti-symmetrized vovo tensor
-           ierr=exatns_tensor_contract("V(a,i,b,j)+=V(i,a,b,j)*K()",int_t%vovo,ovvo_tensor,one_tensor,MINUS_ONE)
-           ierr=exatns_tensor_destroy(ovvo_tensor)
-           call print_date('vovo integrals anti-symmetrized')
-           call get_ht2_integral_tensor (a2int_tensor,int_t%oovv,12)
-           call print_date('oovv integrals completed')
-           ierr=exatns_tensor_destroy(a2int_tensor)
+          mull_id=dirac_id
+          mull_root=dirac_root
+          mull_id(1)=dirac_id(2)
+          mull_id(2)=dirac_id(1)
+          mull_root(1)=dirac_root(2)
+          mull_root(2)=dirac_root(1)
+          ierr=exatns_tensor_create(mull_tensor,'mull',mull_id,mull_root,EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_contract("E(p,q,r,s)=C+(q,p,u)*C(r,s,u)",mull_tensor,chol_t%vou,chol_t%vou)
+          ierr=exatns_tensor_create(ovvo_tensor,"ovvo",ovvo_id,ovvo_root,EXA_DATA_KIND_C8) 
+          call mulliken_to_dirac_sort (mull_tensor,ovvo_tensor,0)
+          ierr=exatns_tensor_destroy(mull_tensor)
+          call print_date('ovvo integrals completed')
 
-           ! get the integrals with oo as first transform
-           a2int_id(1:2)   = vovo_id(2)
-           a2int_root(1:2) = vovo_root(2)
-           ierr=exatns_tensor_create(a2int_tensor,"a2oo",a2int_id,a2int_root,EXA_DATA_KIND_C8) 
-           call get_ht1_integral_tensor (aoint_tensor,a2int_tensor)
-           call print_date('oo halftransformation completed')
-           call get_ht2_integral_tensor (a2int_tensor,int_t%ooov,12)
-           call print_date('ooov integrals completed')
-           call get_ht2_integral_tensor (a2int_tensor,int_t%oooo,12)
-           call print_date('oooo integrals completed')
-           ierr=exatns_tensor_destroy(a2int_tensor)
+          ierr=exatns_tensor_contract("V(a,i,b,j)+=V(i,a,b,j)*C()",int_t%vovo,ovvo_tensor,one_tensor,MINUS_ONE)
+          ierr=exatns_tensor_destroy(ovvo_tensor)
+          call print_date('vovo integrals anti-symmetrized')
 
-        
-!        Clean-up
-         ierr=exatns_tensor_destroy(chol_tensor)
-         
-         !testing
-         ierr=exatns_tensor_destroy(aoint_tensor)
+! test
+          ierr=exatns_tensor_create(err_tensor,'err',dirac_id,dirac_root,EXA_DATA_KIND_C8)
+          call get_ht2_integral_tensor (a2int_tensor,err_tensor,0)
+          ierr=exatns_tensor_destroy(a2int_tensor)
+          a2int_id(1:2)   = vovo_id(2:3)
+          a2int_root(1:2) = vovo_root(2:3)
+          ierr=exatns_tensor_create(a2int_tensor,"a2ov",a2int_id,a2int_root,EXA_DATA_KIND_C8) 
+          call get_ht1_integral_tensor (aoint_tensor,a2int_tensor)
+          call print_date('ov halftransformation completed')
+          ierr=exatns_tensor_create(ovvo_tensor,"ovvo",ovvo_id,ovvo_root,EXA_DATA_KIND_C8) ! auxilliary for get_CC_integrals
+          call get_ht2_integral_tensor (a2int_tensor,ovvo_tensor,0)
+!         Make anti-symmetrized vovo tensor
+          ierr=exatns_tensor_contract("V(a,i,b,j)+=V(i,a,b,j)*K()",err_tensor,ovvo_tensor,one_tensor,MINUS_ONE)
+          ierr=exatns_tensor_destroy(ovvo_tensor)
+          ierr=exatns_tensor_contract("V(a,i,b,j)+=V(a,i,b,j)*K()",err_tensor,int_t%vovo,one_tensor,MINUS_ONE)
+          print*, "vovo error = ", print_tensornorm2(err_tensor)
+          ierr=exatns_tensor_destroy(err_tensor)
+
+!         oovv using cholesky
+          call int_t%oovv%get_space_ids(dirac_id,dirac_root,ierr)
+          if(ierr.ne.EXA_SUCCESS) call quit(' tensor corrupted ')
+          mull_id=dirac_id
+          mull_root=dirac_root
+          mull_id(2)=dirac_id(3)
+          mull_id(3)=dirac_id(2)
+          mull_root(2)=dirac_root(3)
+          mull_root(3)=dirac_root(2)
+          ierr=exatns_tensor_create(mull_tensor,'mull',mull_id,mull_root,EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_contract("E(p,q,r,s)=C+(q,p,u)*C(r,s,u)",mull_tensor,chol_t%vou,chol_t%ovu)
+          call mulliken_to_dirac_sort (mull_tensor,int_t%oovv,12)
+          ierr=exatns_tensor_destroy(mull_tensor)
+          call print_date('oovv integrals completed')
+! test
+          ierr=exatns_tensor_create(err_tensor,'err',dirac_id,dirac_root,EXA_DATA_KIND_C8)
+          call get_ht2_integral_tensor (a2int_tensor,err_tensor,12)
+          ierr=exatns_tensor_contract("E(p,q,r,s)+=A(p,q,r,s)*O()",err_tensor,int_t%oovv,one_tensor, MINUS_ONE)
+          print*, "oovv error = ", print_tensornorm2(err_tensor)
+          ierr=exatns_tensor_destroy(err_tensor)
+          
+
+! test: get the integrals with oo as first transform
+          ierr=exatns_tensor_destroy(a2int_tensor)
+          a2int_id(1:2)   = vovo_id(2)
+          a2int_root(1:2) = vovo_root(2)
+          ierr=exatns_tensor_create(a2int_tensor,"a2oo",a2int_id,a2int_root,EXA_DATA_KIND_C8) 
+          call get_ht1_integral_tensor (aoint_tensor,a2int_tensor)
+          call print_date('oo halftransformation completed')
+
+!         ooov using cholesky
+          call int_t%ooov%get_space_ids(dirac_id,dirac_root,ierr)
+          if(ierr.ne.EXA_SUCCESS) call quit(' tensor corrupted ')
+          mull_id=dirac_id
+          mull_root=dirac_root
+          ierr=exatns_tensor_create(mull_tensor,'mull',mull_id,mull_root,EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_contract("E(p,q,r,s)=C+(q,p,u)*C(r,s,u)",mull_tensor,chol_t%oou,chol_t%ovu)
+          call mulliken_to_dirac_sort (mull_tensor,int_t%ooov,12)
+          ierr=exatns_tensor_destroy(mull_tensor)
+          call print_date('ooov integrals completed')
+! test
+          ierr=exatns_tensor_create(err_tensor,'err',dirac_id,dirac_root,EXA_DATA_KIND_C8)
+          call get_ht2_integral_tensor (a2int_tensor,err_tensor,12)
+          ierr=exatns_tensor_contract("E(p,q,r,s)+=A(p,q,r,s)*O()",err_tensor,int_t%ooov,one_tensor, MINUS_ONE)
+          print*, "ooov error = ", print_tensornorm2(err_tensor)
+          ierr=exatns_tensor_destroy(err_tensor)
+          
+
+!         oooo using cholesky
+          call int_t%oooo%get_space_ids(dirac_id,dirac_root,ierr)
+          if(ierr.ne.EXA_SUCCESS) call quit(' tensor corrupted ')
+          mull_id=dirac_id
+          mull_root=dirac_root
+          ierr=exatns_tensor_create(mull_tensor,'mull',mull_id,mull_root,EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_contract("E(p,q,r,s)=C+(q,p,u)*C(r,s,u)",mull_tensor,chol_t%oou,chol_t%oou)
+          call mulliken_to_dirac_sort (mull_tensor,int_t%oooo,12)
+          ierr=exatns_tensor_destroy(mull_tensor)
+          call print_date('oooo integrals completed')
+! test
+          ierr=exatns_tensor_create(err_tensor,'err',dirac_id,dirac_root,EXA_DATA_KIND_C8)
+          call get_ht2_integral_tensor (a2int_tensor,err_tensor,12)
+          ierr=exatns_tensor_contract("E(p,q,r,s)+=A(p,q,r,s)*O()",err_tensor,int_t%oooo,one_tensor, MINUS_ONE)
+          print*, "oooo error = ", print_tensornorm2(err_tensor)
+          ierr=exatns_tensor_destroy(err_tensor)
+
+! test
+          ierr=exatns_tensor_destroy(a2int_tensor)
+          ierr=exatns_tensor_destroy(aoint_tensor)
+
+!         Clean-up
+          ierr=exatns_tensor_destroy(chol_tensor)
 
         end subroutine get_CC_integrals_chol
 

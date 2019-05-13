@@ -22,6 +22,7 @@ module exacorr_ao_to_mo
         public get_ht2_integral_tensor
         public print_tensornorm2
         public aomo_trans_chol
+        public mulliken_to_dirac_sort
 
         complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0)
 
@@ -921,7 +922,7 @@ module exacorr_ao_to_mo
           type(tens_rcrsv_t):: mocoef_tensor(2,2)
           type(tens_rcrsv_t):: int_tens
 
-          integer, parameter:: print_level=1
+          integer, parameter:: print_level=0
           integer           :: ierr,i,spin
           integer           :: ao_id(3),int_id(3),mo_id(3),mocoef_id(2)
           integer(INTL)     :: ao_root(3),int_root(3),mo_root(3),mocoef_root(2)
