@@ -879,6 +879,10 @@
          call kw_read(word, exa_input%level_shift)
       end if
 
+      if (kw_matches(word, '.CHOLESKY')) then
+         call kw_read(word, exa_input%t_cholesky)
+      end if
+
       if (kw_matches(word, '.LAMBDA')) then
          exa_input%lambda = .true.
       end if
