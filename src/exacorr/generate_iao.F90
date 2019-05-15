@@ -215,8 +215,6 @@
         call del_atoms(first_atom)
 
 !     55 FORMAT( 100(:,1X,'(',G10.2,',',G10.2,')') ) ! Useful format to write complex matrices.
-        print*,'    ####### WARNING : The MO overlap matrix is correctly calculated ? &
-                (not enough elements calculated for the AO overlap matrix?)'
 
    end subroutine generate_iaos
 
@@ -589,7 +587,7 @@
         real(8), intent(out)              :: ao_overlap(ao_basis_bra%nao,ao_basis_ket%nao)
 
         integer :: ksh, lsh,koff, loff
-        integer :: lk,ll,nk,nl,k,l,kl, mycount
+        integer :: lk,ll,nk,nl,k,l,kl
         real(8) :: ek,el,ck,cl,xk,yk,zk,xl,yl,zl
 
         integer :: nrkb
@@ -598,11 +596,7 @@
         integer :: ncentr=1
         real(8) :: atomic_data(1)
 
-!       Have to set all elements to 0.0 first, otherwise I get those FLAGS : IEEE_INVALID_FLAG IEEE_OVERFLOW_FLAG IEEE_UNDERFLOW_FLAG, in addition to IEEE_DENORMAL, and big errors in the numbers !!!
-!       It also fixes the problem of having big imaginary part in some  matrix elements...
-        ao_overlap = 0.0D0
         loff = 0
-        mycount=0
         do lsh = 1, ao_basis_ket%nshells
             ll   =  ao_basis_ket%gtos(lsh)%orb_momentum
             el   =  ao_basis_ket%gtos(lsh)%exponent(1)
@@ -627,7 +621,6 @@
                do l = 1, nl
                   do k = 1, nk
                       ao_overlap(koff+k,loff+l) = skl(kl)
-                      mycount = mycount + 1
                       kl = kl + 1
                   end do
                end do
@@ -636,7 +629,6 @@
             end do
             loff = loff + nl
         end do
-        print*,'    AO Overlap : Number of overlaps that were calculated:',mycount, ' instead of', ao_basis_bra%nao*ao_basis_ket%nao
 
    end subroutine get_ao_overlap
 

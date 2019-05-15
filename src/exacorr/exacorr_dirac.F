@@ -528,10 +528,9 @@ C
        read (LUCOEF,err=20,end=20) nao_bas,nshells,npriexp,ncnt 
        if (nao /= nao_bas) then
           ierr = INCONSIS
-          print*,'!! Inconsistency !! I will ignore this...', 
-     &            nao, nao_bas
-!          close (lucoef,status='KEEP')
-!          return
+          print*,"use NONREL, X2C, or X2CMMF Hamiltonian"
+          close (lucoef,status='KEEP')
+          return
        end if
 
        ! allocate the arrays to read the basis set information in DIRAC format
