@@ -554,12 +554,14 @@ contains
               call quit('Select one of .READJB and .3D_IMP keywords.')
       end if
 
-      if (visual_cfg_3d_grid_units .eq. 'angstrom') then
-          write(LUPRI,*) 'imported grid is in Angstrom, it will be transformed to a.u.'
-      else if (visual_cfg_3d_grid_units .eq. 'au') then
-          write(LUPRI,*) 'imported grid is in atomic units'
-      else
-          call quit('unrecognized unit in 3D_IMP keyword; choose "angstrom" or "au"')
+      if (visual_cfg_3d_gridimp) then
+          if (visual_cfg_3d_grid_units .eq. 'angstrom') then
+              write(LUPRI,*) 'imported grid is in Angstrom, it will be transformed to a.u.'
+          else if (visual_cfg_3d_grid_units .eq. 'au') then
+              write(LUPRI,*) 'imported grid is in atomic units'
+          else
+              call quit('unrecognized unit in 3D_IMP keyword; choose "angstrom" or "au"')
+          end if
       end if
 
 
