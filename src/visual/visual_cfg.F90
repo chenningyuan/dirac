@@ -103,6 +103,7 @@ module visual_cfg
    logical, public :: visual_cfg_3d_gridimp = .false.
    logical, public :: visual_cfg_3d_readjb  = .false.
    character(80), public :: visual_cfg_3d_gridfil
+   character(80), public :: visual_cfg_3d_grid_units
    character(80), public :: visual_cfg_3d_jbfile
 
 !                     integration in 3d

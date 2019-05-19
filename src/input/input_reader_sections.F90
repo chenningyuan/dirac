@@ -290,6 +290,7 @@
       if (kw_matches(word, '.3D_IMP')) then
          visual_cfg_3d_gridimp = .true.
          read(get_file_unit(), *) visual_cfg_3d_gridfil
+         read(get_file_unit(), *) visual_cfg_3d_grid_units
       end if
 
       if (kw_matches(word, '.SCALE ')) then

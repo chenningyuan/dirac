@@ -113,6 +113,7 @@ Example:
 
   .3D_IMP
    numerical_grid    ! a grid file on which various densities will be calculated; the file should have 3 columns with x, y, z coordinates of grid points 
+   grid_units        ! grid units (choose from: 'angstrom' or 'au')
 
 
 keyword(3DFAST)

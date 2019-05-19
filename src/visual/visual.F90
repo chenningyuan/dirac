@@ -554,6 +554,14 @@ contains
               call quit('Select one of .READJB and .3D_IMP keywords.')
       end if
 
+      if (visual_cfg_3d_grid_units .eq. 'angstrom') then
+          write(LUPRI,*) 'imported grid is in Angstrom, it will be transformed to a.u.'
+      else if (visual_cfg_3d_grid_units .eq. 'au') then
+          write(LUPRI,*) 'imported grid is in atomic units'
+      else
+          call quit('unrecognized unit in 3D_IMP keyword; choose "angstrom" or "au"')
+      end if
+
 
       lunit_2d_scalar     = 14
       lunit_2d_vector     = 15
@@ -840,6 +848,9 @@ contains
 
          do 
             read(lunit_3d_gridimp, *, end=98) r(1), r(2), r(3)
+            if (visual_cfg_3d_grid_units .eq. 'angstrom') then
+                r = r/xtang
+            end if
             call get_quantity_in_point(visual_cfg_nr_dmat, &
                                        D,                  &
                                        D_0,                &
