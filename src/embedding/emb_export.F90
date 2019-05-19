@@ -428,8 +428,8 @@ module fde_export_data
          select case (scope)
          case ('density')
            do i = 1, grid%npoints
-               write (export_unit,'(5ES30.20E3)') (grid%r(j,i), j = 1,3), &
-                                               grid%w(i),             &
+               ! only grid coordinates + electron density
+               write (export_unit,'(4ES30.20E3)') (grid%r(j,i), j = 1,3), &
                                                gf%n(i)
            end do
          case default
