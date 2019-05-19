@@ -41,12 +41,11 @@ def main(argv):
         for filename in fnmatch.filter(files, '*.rst'):
 
             #
-            # replace (in a given **SECTION/*SECTION):
-            #
+            ##replace (in a given **NEW SECTION/*NEW SECTION):
             # keyword(RABOOF)
-            # by:
+            ##by:
             # .. index:: .RABOOF
-            # .. SECTION_RABOOF:
+            # .. _NEW_SECTION_.RABOOF:
             #
             # .RABOOF
             # -------
@@ -61,11 +60,11 @@ def main(argv):
                 print re.sub(KEYWORD_REGEX,
                             ('.. index:: .\g<1>\n.. _%s.\g<1>:\n\n.\g<1>\n'+str('-'*(line.find(')')-line.find('(')))) % section,line[0:len(line)-1])
 
-            # replace:
+            ##replace:
             # starstar(RABOOF)
-            # by:
+            ##by:
             # .. index:: **RABOOF
-            # .. _RABOOF:
+            # .. _**RABOOF:
             #
             # ==========
             # \*\*RABOOF
@@ -74,11 +73,11 @@ def main(argv):
                 print re.sub(STARSTAR_REGEX,
                              ('.. index:: **\g<1>\n.. _**\g<1>:\n\n'+str('='*(line.find(')')-line.find('(')+3))+'\n\\*\\*\g<1>\n'+str('='*(line.find(')')-line.find('(')+3))),line[0:len(line)-1])
 
-            # replace:
+            ##replace:
             # star(RABOOF)
-            # by:
-            # .. index:: **RABOOF
-            # .. _RABOOF:
+            ##by:
+            # .. index:: *RABOOF
+            # .. _*RABOOF:
             #
             # ========
             # \*RABOOF
