@@ -1,6 +1,4 @@
-
-
-   subroutine generate_iaos
+   subroutine generate_iao
 
         use exacorr_datatypes
         use exacorr_mo
@@ -17,25 +15,26 @@
 
         integer :: n_fragments ! the number of fragments used to project on to
         type(basis_set_info_t),allocatable :: ao_basis_2(:) ! the ao basis sets of the fragments
-        type(cmo), allocatable :: cspinor_fragment(:) ! MO-coefficients of the fragments 
+        type(cmo), allocatable :: cspinor_fragment(:) ! MO-coefficients of the fragments
 
         type(atom),pointer :: first_atom,current_atom ! linked list to store coordindate information
 
         complex(8), allocatable :: S_block(:,:) ! sub block of the overlap matrix
         complex(8), allocatable :: S11(:,:),S21(:,:),S12(:,:),S22(:,:) !  the overlap matrices
         complex(8), allocatable :: P12(:,:),P21(:,:)          !  the projection operators
-        complex(8), allocatable :: c_Ib(:,:)                  !  Matrix "A" in Knizia's paper: coefficient matrix of the IAOs.
+        complex(8), allocatable :: c_Ib(:,:), c_Ib_occ(:,:)                  !  Matrix "A" in Knizia's paper: coefficient matrix of the IAOs.
         complex(8), allocatable :: coeff1_occ(:,:)
+        real(8), allocatable :: coeff_quaternion(:,:,:)
 
         integer :: nocc = 10 ! Should be read from a file, but currently this info is not available
-        integer luxyz, ierr, i, j, k, l, nmo1, nmo2, imo, jmo, nmoi, nmoj, nao1, nao2
+        integer luxyz, ierr, i, j, k, l, nmo1, nmo2, imo, jmo, nmoi, nmoj
 
         complex(8), allocatable :: DMAT(:,:)
         complex(8) :: sum_diag
         character(13) :: target
 
 
-        print*,"Arrived in generate_iaos"
+        print*,"Arrived in generate_iao"
 
         call get_free_fileunit(luxyz)
         open (luxyz,file='H2O.xyz',form='formatted')
@@ -47,7 +46,7 @@
         n_fragments = 0
         do while(associated(current_atom))
            n_fragments = n_fragments + 1
-           print*,current_atom%name,current_atom%bascharge,current_atom%x 
+           print*,current_atom%name,current_atom%bascharge,current_atom%x
            current_atom=>current_atom%next
         end do
         allocate (ao_basis_2(n_fragments))
@@ -57,14 +56,21 @@
         do i = 1, n_fragments
            call get_atomic_fragment (nint(current_atom%bascharge),current_atom%x,ao_basis_2(i),cspinor_fragment(i))
            nmo2 = nmo2 + cspinor_fragment(i)%nmo
-           nao2 = nao2 + cspinor_fragment(i)%nao
            current_atom=>current_atom%next
         end do
 
-        call read_from_dirac (ao_basis_1,cspinor_original,'DFCOEF',ierr)
+        call read_from_dirac (ao_basis_1,cspinor_original,'DFCOEF_mol',ierr)
+
         nmo1 = cspinor_original%nmo
-        nao1 = cspinor_original%nao
-        print*,"Read MO coefficients: nmo1,nmo2,nao1,nao2 (size of basis 1 and basis 2)",nmo1,nmo2,nao1,nao2
+        print*,"Read MO coefficients: nmo1,nmo2(size of basis 1 and basis 2)",nmo1,nmo2
+
+        ! The following Coeff file is here to check that I indeed get the same format as the DFPCMO_mol file.
+        allocate(coeff_quaternion(cspinor_original%nao,int(cspinor_original%nmo/2),4))
+        call convert_complex_to_quaternion_format(cspinor_original%coeff,coeff_quaternion,cspinor_original%nao,cspinor_original%nmo)
+        open ( UNIT = 96, FILE = 'Coeff', ACCESS = 'SEQUENTIAL' )
+        write(96,'(6F22.16)') coeff_quaternion
+        close(96)
+        deallocate(coeff_quaternion)
 
         print*,
         print*,'-----Compute S11----- (',nmo1,'x',nmo1,') (It is equal to Identity)'
@@ -182,19 +188,21 @@
               if (ABS(REAL(c_Ib(i,j))) < 1.0D-12 .and. ABS(AIMAG(c_Ib(i,j))) < 1.0D-12) c_Ib(i,j) = ZERO
            end do
         end do
-        print*,'Print real part of CIb after orthogonalization'
+        print*,'Print real part of CIb after orthogonalization (',nmo1,'x',nmo2,')'
         do i=1,nmo1
            write(*,'(100G10.2)')(REAL(c_Ib(i,j)),j=1,nmo2)
         enddo
 
+        call write_dffiles(c_Ib,nmo1,nmo2)
+
         print*,
-        print*,'-----Compute the 1RDM (IAO basis)-----'
+        print*,'-----Compute the 1RDM (IAO basis)-----(',nmo1,'x',nmo1,')'
         allocate(DMAT(nmo1,nmo1))
         DMAT = 0.D0
         do i=1,nmo1
          do j=1,nmo1
            do k=1,nocc
-              DMAT(i,j) = DMAT(i,j) + c_Ib(i,k)*c_Ib(j,k)
+              DMAT(i,j) = DMAT(i,j) + conjg(c_Ib(i,k))*c_Ib(j,k)
            enddo
          enddo
         enddo
@@ -206,9 +214,9 @@
         enddo
         print*,"Sum of diagonal (should to be equal to nocc = 10):",sum_diag
 
-        print*,
-        print*,'----***** MAKE IBOs *****-----'
-        call MakeIBO(c_Ib,coeff1_occ,S11,cspinor_fragment,n_fragments,nmo1,nmo2,nocc)
+!        print*,
+!        print*,'----***** MAKE IBOs *****-----'
+!        call MakeIBO(c_Ib,coeff1_occ,S11,cspinor_fragment,n_fragments,nmo1,nmo2,nocc)
 
 
 !       clean up list of atoms
@@ -216,7 +224,53 @@
 
 !     55 FORMAT( 100(:,1X,'(',G10.2,',',G10.2,')') ) ! Useful format to write complex matrices.
 
-   end subroutine generate_iaos
+   end subroutine generate_iao
+
+   subroutine write_dffiles(coeff,nmo1,nmo2)
+
+       use exacorr_utils
+       implicit none
+
+       integer, parameter :: nsym = 1
+       character(len=74) :: text="IAO coefficients"
+       integer :: i,j, iunit, idim(3,2)
+       integer, intent(in)     :: nmo1, nmo2
+       complex(8), intent(in)  :: coeff(nmo1,nmo2,2)
+       complex(8)  :: coeff_quaternion(nmo1,int(nmo2/2),4)
+       real(8) :: toterg
+       real(8) :: eig(nmo2)
+       integer :: ibeig(nmo2)
+
+       call get_free_fileunit(iunit)
+
+       toterg= 0.D0
+       eig = 0.D0
+       ibeig = 0
+
+       idim(3,1) = nmo1
+       idim(1,1) = 0
+       idim(2,1) = nmo2
+
+       ! I think that I need to have this format for the DFCOEF file ?
+       call convert_complex_to_quaternion_format(coeff,coeff_quaternion,nmo1,nmo2)
+
+       open (UNIT = iunit,file="DFCOEF",FORM='UNFORMATTED',access='SEQUENTIAL')
+       write (iunit) text,nsym,((idim(i,j),i=1,3),j=1,nsym),toterg
+       write (iunit) coeff_quaternion
+       write (iunit) eig
+       write (iunit) ibeig
+       close (iunit)
+
+       open (UNIT = iunit,file="DFPCMO",FORM='FORMATTED',access='SEQUENTIAL')
+       write(iunit,'(A74)') text
+       write(iunit,'(7(X,I0))') nsym,((idim(i,j),i = 1,3),j=1,nsym)
+       write(iunit,'(E24.16)') toterg
+       write(iunit,'(6F22.16)') coeff_quaternion
+       write(iunit,'(6E22.12)') eig
+       write(iunit,'(66(X,I0))') ibeig
+
+
+   end subroutine write_dffiles
 
    subroutine MakeIBO(A,C,S11,cspinor_fragment,n_fragments,nmo1,nmo2,nocc)
    ! make intrinsic bond orbitals (IBOs)
@@ -231,21 +285,22 @@
         complex(8), intent(in)  :: C(nmo1,nocc)
         complex(8), intent(in)  :: A(nmo1,nmo2)
         type(cmo),  intent(in)  :: cspinor_fragment(n_fragments) ! MO-coefficients of the fragments
-        complex(8) :: Aocc(nmo2,nocc)
-        real(8) :: Aocc2(nmo2,nocc)
+        complex(8) :: Aocc(nmo2,nocc), Aocc2(nmo2,nocc)
          
-        print*,'-----Re-express occupied orbitals in terms of IAO basis-----'
-        Aocc = matmul(conjg(transpose(A)),matmul(S11,C))     
+        print*,
+        print*,'-----Re-express occupied orbitals in terms of IAO basis-----(',nmo2,'x',nocc,')'
+        Aocc = matmul(conjg(transpose(A)),matmul(S11,C))
         do i=1,nmo2
           write(*,'(100G10.2)') (REAL(Aocc(i,j)),j=1,nocc)
         enddo
+
         print*,
         print*,'-----Localize iteratively (check how to do that properly with complex entries?)-----'
         call LocalizeIbosInIaoBasis(Aocc,Aocc2,cspinor_fragment,n_fragments,nmo2,nocc)
         print*,
-        print*,'-----Compute CIbOcc-----'
+        print*,'-----Compute LIbOcc-----(',nmo2,'x',nocc,')'
         do i=1,nmo2
-          write(*,'(100G10.2)') (Aocc2(i,j),j=1,nocc)
+          write(*,'(100G10.2)') (REAL(Aocc2(i,j)),j=1,nocc)
         enddo
         stop 'MakeIBO subroutine not finished'
 
@@ -260,7 +315,7 @@
    end subroutine MakeIBO
 
    subroutine LocalizeIbosInIaoBasis(Aocc,Aocc2,cspinor_fragment,n_fragments,nmo2,nocc)
-        ! For now, written for real numbers. I don't know yet how to write in for complex.
+        ! Not working for now, I am a bit confused with the imaginary part.
         use exacorr_mo
 
         implicit none
@@ -269,14 +324,14 @@
         integer :: i,j,k,l, imo, nmoi, it
         integer, intent(in) :: n_fragments, nmo2, nocc
         complex(8), intent(in) :: Aocc(nmo2,nocc)
-        real(8), intent(out) :: Aocc2(nmo2,nocc)
+        complex(8), intent(out) :: Aocc2(nmo2,nocc)
         type(cmo), intent(in) :: cspinor_fragment(n_fragments) ! MO-coefficients of the fragments
         real(8) :: phi,func, fGrad, Aij, Bij, Cii, Cij, Cjj
         real(8), allocatable :: C(:,:), Ai(:), Aj(:), vec(:)
 
-        print*,"Entering LocalizeIbosInIaoBasis subroutine (using reals instead of complex)&
+        print*,"Entering LocalizeIbosInIaoBasis subroutine&
               &, not working yet"
-        Aocc2 = REAL(Aocc)
+        Aocc2 = Aocc
         conv = .false.
         do it=1,100
           func = 0.D0
@@ -286,7 +341,7 @@
              do j=1,nocc
                 allocate(vec(nmoi))
                 vec = Aocc2(imo+1:imo+nmoi,j)
-                func = func + dot_product(vec,vec)**Expnt  
+                func = func + real(dot_product(vec,vec))**Expnt
                 deallocate(vec)
              enddo
              imo = imo + nmoi
@@ -307,9 +362,9 @@
                    C = Aocc2(imo+1:imo+nmoi,:)
                    Ai = C(:,i)
                    Aj = C(:,j)
-                   Cii = dot_product(Ai,Ai)
-                   Cij = dot_product(Ai,Aj)
-                   Cjj = dot_product(Aj,Aj)
+                   Cii = real(dot_product(Ai,Ai))
+                   Cij = real(dot_product(Ai,Aj))
+                   Cjj = real(dot_product(Aj,Aj))
                    if ((Expnt.eq.2) .or. (Expnt.eq.3)) then
                      Aij = Aij + 4.D0*Cij**2 - (Cii-Cjj)**2
                      Bij = Bij + 4*Cij*(Cii - Cjj)
@@ -669,6 +724,38 @@
         call dealloc_mo(cspinor_full)
 
    end subroutine get_atomic_fragment
+
+   subroutine convert_complex_to_quaternion_format(scoeff,coeff,nao,nmo)
+
+      implicit none
+      integer,    intent(in   ) :: nao, nmo
+      complex(8), intent(inout) :: scoeff(nao,nmo,2)
+      real(8),    intent(  out) :: coeff(nao,int(nmo/2),4)
+      integer                   :: i, j, spin
+
+      do spin = 1, 2
+        if (spin == 1) then
+            do j = 1, int(nmo/2)
+                do i = 1, nao
+                coeff(i,j,1) = real(scoeff(i,2*j-1,spin))
+                coeff(i,j,2) = aimag(scoeff(i,2*j-1,spin))
+                coeff(i,j,3) = real(scoeff(i,2*j,spin))
+                coeff(i,j,4) = aimag(scoeff(i,2*j,spin))
+                end do
+            end do
+!        else if (spin == 2) then
+!            do j = 1, int(nmo/2)
+!                do i = 1, nao
+!                coeff(i,j,3) = - real(scoeff(i,2*j-1,spin))
+!                coeff(i,j,4) = aimag(scoeff(i,2*j-1,spin))
+!                coeff(i,j,1) = real(scoeff(i,2*j,spin))
+!                coeff(i,j,2) = - aimag(scoeff(i,2*j,spin))
+!                end do
+!            end do
+        end if
+      end do
+
+   end subroutine convert_complex_to_quaternion_format
 
    subroutine atom_minbas_size(atom_number,ncore,nvale)
 
