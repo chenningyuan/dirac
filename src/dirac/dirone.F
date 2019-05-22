@@ -222,6 +222,7 @@ C
 C      
       LOGICAL ADDSML
       CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4 !check
+      CHARACTER RADC*2,ANGC*2,RADANGC*6 !sunaga      
       PARAMETER (D0=0.0D0,D1=1.0D0,D2=2.0D0,DM1=-1.0D0)      
       real(8), allocatable :: ZAN(:),C(:,:)
       real(8), allocatable :: ANG(:,:),GAO(:), BUFGAO(:)
@@ -251,7 +252,7 @@ C
 C     
 C The values of ultrafine (.ULTRAF) at DFT input-reader section.      
 !num_grid_cfg_ANGINT !64
-      INTANG=64
+      INTANG=num_grid_cfg_ANGMIN
       
       m = NLEB(INTANG) ! num_grid_cfg_ANGINT
       NDIM2 = NTBAS(0)*NTBAS(0)
@@ -273,6 +274,7 @@ C
 !     ENDDO
 C
       write(*,*)'NUCIND',NUCIND
+      write(*,*)'INTAMG,m',INTANG,m
       DO 5 IXYZ = 1, 3
       CALL DZERO(INTAO,NDIM2)
       DO 10 IATOM = 1, NUCIND !change
@@ -335,7 +337,7 @@ C
 !!! debug           
          
 !     change for debug sentense
-           write(*,*)"R(1),Z",R(1),ZAN(IATOM) 
+           write(*,*)"R(1),R(MAX),Z",R(1),R(MXNP),ZAN(IATOM) 
            write(*,*)"J,NUMIR"
            DO IRP=1,MAXREP+1
            DO IC =1,MC
@@ -468,11 +470,12 @@ C R(IR)**2 is multiplized in RFAC, later
 C
 C  This minus DSCAL is due to Beta Alpha, although we use Alpha. 
 C
-!           CALL DSCAL(MXNP,DM1,NUMIR,1)
-!           DO J = 1,MXNP
+!     CALL DSCAL(MXNP,DM1,NUMIR,1)
+           write(*,*)'magnetic'
+           DO J = 1,MXNP
 !              NUMIR(J)=D1
-!              write(*,*)J,NUMIR(J),R(J)
-!           ENDDO
+              write(*,*)R(J),NUMIR(J)
+           ENDDO
 !           OPEN(20,FILE='LOG_DIRAC',STATUS='REPLACE',          
 !     &          FORM='FORMATTED',ACCESS='SEQUENTIAL')  
 !           DO  J = 1,MXNP
@@ -484,7 +487,7 @@ C
               write(*,*)'NCOS',NCOS(IRP,2),IRP        !sunagatest
            ENDDO
 !     change for debug sentense
-           write(*,*)"R(1),Z",R(1),ZAN(IATOM) 
+           write(*,*)"R(1),R(MAX),Z",R(1),R(MXNP),ZAN(IATOM) 
            write(*,*)"J,NUMIR"
            DO 40 IR = 1, MXNP
 C
@@ -621,7 +624,35 @@ C
      &            'should be X/Y/Z')
       ENDIF   
       CALL WRTPRO(INTAO,NNBBASX,LABEL,RTNLBL,IPRINT)      
-C
+CCCCCCCCCCC      
+C     sunaga
+      NRAD = int(-log10(num_grid_cfg_RADINT))
+      write(*,*)"NRAD",NRAD
+      write(RADC,'(I2)')NRAD
+      write(ANGC,'(I2)')INTANG
+      write(*,*)"RADC,ANGC",RADC,ANGC
+      RADANGC(1:2) = RADC
+      RADANGC(3:3) = '.'
+      RADANGC(4:5) = ANGC
+      RADANGC(6:6) = LABEL(1:1)
+C      write(RADANGC(1,2),'(I2)')RADC
+C      write(RADANGC(3),'(A)')"."
+C      write(RADANGC(4,5),'(I2)')ANGC
+      write(*,*)RADANGC
+C      OPEN(30,FILE=RADANGC,STATUS='NEW',  
+C     &     FORM='FORMATTED',ACCESS='SEQUENTIAL')
+      OPEN(30,FILE=RADANGC,STATUS='REPLACE')
+      DO I = 1,NDIM2
+         write(30,*)INTAO(I)
+      ENDDO   
+      write(30,*)'INTAO,RADC,ANGC',RADC,ANGC
+      CLOSE(30,STATUS='KEEP')
+C      write(*,*) "RADINT,log,NRAD",num_grid_cfg_RADINT,
+C     &  log10(num_grid_cfg_RADINT),NRAD
+
+C      sunaga
+CCCCCCCCCCC
+C     
  5    CONTINUE !IXYZ
       deallocate(ZAN)
       deallocate(C)
@@ -670,6 +701,7 @@ C
 C      
       LOGICAL ADDSML
       CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4 !check
+      CHARACTER RADC*2,ANGC*2,RADANGC*5 !sunaga
       PARAMETER (D0=0.0D0,D1=1.0D0,D2=2.0D0)      
       real(8), allocatable :: ZAN(:),C(:,:)
       real(8), allocatable :: ANG(:,:),GAO(:), BUFGAO(:)
@@ -696,7 +728,7 @@ C
 C     
 C The values of ultrafine (.ULTRAF) at DFT input-reader section.      
 !num_grid_cfg_ANGINT !64
-      INTANG=64
+      INTANG=num_grid_cfg_ANGMIN
       
       m = NLEB(INTANG) ! num_grid_cfg_ANGINT
       NDIM2 = NTBAS(0)*NTBAS(0)
@@ -743,7 +775,7 @@ C
          write(*,*)"NUCTYP",NUCTYP
          CALL MEMSET_NUM(ZAN(IATOM),IATOM,MXNP,RNT,H,EPH,GRDC,
      &                    num_grid_cfg_grasp,IPRINT)
-         write(*,*)'HH2',H
+         write(*,*)'HH2,INTANG,m_ang',H,INTANG,m
 C         
 C NUCPRM is for making nuclear parameter of Fermi and Uniform nucleus. 
 C We do not have to use it for the Gaussian nucleus.
@@ -751,7 +783,6 @@ C
 C        CALL NUCPRM(ZAN(IATOM),GEXP,NNUC,RNT,EPH,NUCTYP)
 C
          CALL NUCPRM(ZAN(IATOM),GEXP,NNUC,RNT,EPH,NUCTYP)
-!         MXNP = 1912            !change
          write(*,*)"MXNP",MXNP
          allocate( NUMIR(MXNP) )
          allocate( R(MXNP)     )
@@ -784,6 +815,11 @@ C
                 NUMIR(I) = NUMIR(I)*R(I)
              ENDDO
            ENDIF
+C
+           write(*,*)'R,TB,GRASP'
+           DO I = 1,MXNP
+              write(*,*)R(I),NUMIR(I)
+           ENDDO          
 C          
 C     This roop is
 C     RFAC in the below part is made for VCMPOL, which includes 1/r.
@@ -901,10 +937,25 @@ C
               write(*,*)'NCOS',NCOS(IRP,1),IRP        !sunagatest
               write(*,*)'NCOS',NCOS(IRP,2),IRP        !sunagatest
            ENDDO
-!           DO I = 1,MXNP
-!              write(*,*)'NUMIR,R,I',NUMIR(I),R(I),I
-!           ENDDO
 !     change for debug sentense
+           IF(LABEL.EQ.'UEHLING')THEN
+!             write(*,*)
+!             write(*,*)'R,TB,DIRAC',LABEL
+!             DO I = 1,MXNP
+!                write(*,*)R(I),NUMIR(I)
+!             ENDDO
+!             write(*,*)'potential'
+!             DO I = 1,MXNP
+!                write(*,*)R(I),NUMIR(I)/R(I)
+!             ENDDO
+           ELSE
+             write(*,*)
+             write(*,*)'NUMIR/R',LABEL
+             DO I = 1,MXNP
+                write(*,*)R(I),NUMIR(I)/R(I)
+             ENDDO
+           ENDIF            
+C           
            write(*,*)"R(1),Z",R(1),ZAN(IATOM) 
            write(*,*)"J,NUMIR"
            DO 40 IR = 1, MXNP
@@ -925,13 +976,12 @@ C
                Y8  = ANG(iy,2)*R(IR)+C(2,IATOM)
                Z8  = ANG(iy,3)*R(IR)+C(3,IATOM)
                WT8 = ANG(iy,4)*RFAC
-C
+C    
 C     GET AO's
 C
                CALL GETAOS(BUFGAO,TEMP,TEMP,TEMP,TEMP,
      &                      X8,Y8,Z8,NTBAS(0),0,.FALSE.,0) !The last is IPRINT
                CALL WTAOSO(BUFGAO,GAO,NTBAS(0),1,IPRINT)
-!               CALL VTBUBS(BUFGAO,GAO,1)
 C     
 C     Get "overlap" matrix
 C
@@ -1007,8 +1057,37 @@ C     LABEL = 'UEHLING'
 C
 C     Write integrals to file
 C
-      CALL WRTPRO(INTAO,NNBBASX,LABEL,RTNLBL,IPRINT)      
-C
+      CALL WRTPRO(INTAO,NNBBASX,LABEL,RTNLBL,IPRINT)
+CCCCCCCCCCC      
+C     sunaga
+      NRAD = int(-log10(num_grid_cfg_RADINT))
+      write(*,*)"NRAD",NRAD
+      write(RADC,'(I2)')NRAD
+      write(ANGC,'(I2)')INTANG
+      write(*,*)"RADC,ANGC",RADC,ANGC
+      RADANGC(1:2) = RADC
+      RADANGC(3:3) = '.'
+      RADANGC(4:5) = ANGC
+C      RADANGC(1:) = RADC
+C      RADANGC(2:) = '.'
+C      RADANGC(3:4) = ANGC
+C      write(RADANGC(1,2),'(I2)')RADC
+C      write(RADANGC(3),'(A)')"."
+C      write(RADANGC(4,5),'(I2)')ANGC
+      write(*,*)RADANGC
+C      OPEN(30,FILE=RADANGC,STATUS='NEW',  
+C     &     FORM='FORMATTED',ACCESS='SEQUENTIAL')
+      OPEN(30,FILE=RADANGC,STATUS='REPLACE')
+      DO I = 1,NDIM2
+         write(30,*)INTAO(I)
+      ENDDO   
+      write(30,*)'INTAO,RADC,ANGC',RADC,ANGC
+      CLOSE(30,STATUS='KEEP')
+C      write(*,*) "RADINT,log,NRAD",num_grid_cfg_RADINT,
+C     &  log10(num_grid_cfg_RADINT),NRAD
+
+C      sunaga
+CCCCCCCCCCC      
       deallocate(ZAN)
       deallocate(C)
       deallocate(ANG)
@@ -1020,38 +1099,38 @@ C
       CALL QEXIT('NUMINT')
       RETURN         
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE RADINT_WRAPPER(RESULT,TA,R,W,MXNP,NDIM)
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C
-C Wrapper for choosing Numerical radial integral scheem
-C
-C Called from: NUMINT,VAC2
-C
-C     A. Sunaga Feb. 2019       
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-      use num_grid_cfg
-#include "implicit.h"
-      DIMENSION RESULT(NDIM),TA(NDIM,MXNP),R(MXNP),W(MXNP)      
-C
-      IF(num_grid_cfg_grasp)THEN
-         DO IR = 1,MXNP
-           DO II = 1,NDIM
-              write(*,*)'TA1,R',TA(II,IR),R(IR),IR,II
-              TA(II,IR) = TA(II,IR)*R(IR)  ! Additional R(IR) for QUAD
-              write(*,*)'TA2',TA(II,IR),IR,II
-              write(*,*)
-              write(*,*)
-           ENDDO
-         ENDDO  
-         CALL QUAD2(RESULT,TA,MXNP,NDIM)
-!         CALL GRASP_QUAD(RESULT,R,MXNP)
-      ELSE
-!         CALL DIRAC_QUAD(RESULT,TA,W)  
-      ENDIF
-C      
-      RETURN
-      END
+c$$$C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+c$$$      SUBROUTINE RADINT_WRAPPER(RESULT,TA,R,W,MXNP,NDIM)
+c$$$CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+c$$$C
+c$$$C Wrapper for choosing Numerical radial integral scheem
+c$$$C
+c$$$C Called from: NUMINT,VAC2
+c$$$C
+c$$$C     A. Sunaga Feb. 2019       
+c$$$CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+c$$$      use num_grid_cfg
+c$$$#include "implicit.h"
+c$$$      DIMENSION RESULT(NDIM),TA(NDIM,MXNP),R(MXNP),W(MXNP)      
+c$$$C
+c$$$      IF(num_grid_cfg_grasp)THEN
+c$$$         DO IR = 1,MXNP
+c$$$           DO II = 1,NDIM
+c$$$              write(*,*)'TA1,R',TA(II,IR),R(IR),IR,II
+c$$$              TA(II,IR) = TA(II,IR)*R(IR)  ! Additional R(IR) for QUAD
+c$$$              write(*,*)'TA2',TA(II,IR),IR,II
+c$$$              write(*,*)
+c$$$              write(*,*)
+c$$$           ENDDO
+c$$$         ENDDO  
+c$$$         CALL QUAD2(RESULT,TA,MXNP,NDIM)
+c$$$!         CALL GRASP_QUAD(RESULT,R,MXNP)
+c$$$      ELSE
+c$$$!         CALL DIRAC_QUAD(RESULT,TA,W)  
+c$$$      ENDIF
+c$$$C      
+c$$$      RETURN
+c$$$      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE QUAD2(RESULT,TE,NR,NDIM)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -1195,9 +1274,10 @@ C
       BZ = 0.074D0 + 0.35D0*Z/CVAL
       CVAL3 = CVAL*CVAL*CVAL
       PREFAC = BZ * Z*Z*Z*Z / CVAL3
-C      PI3 = THREE*PI
-C      WD = CVAL+CVAL
-C      FACTOR = -(Z+Z)/(PI3*CVAL)
+CUEHLING      
+      PI3 = THREE*PI
+      WD = CVAL+CVAL
+      FACTOR = -(Z+Z)/(PI3*CVAL)
       IF(GRASP)THEN 
 C
 C     SET UP POTENTIAL FOR POINT NUCLEUS
@@ -1235,13 +1315,14 @@ C     Get information about basis sets
 C
         CALL NUCBAS(NUCORB,AA,IPRINT)
         ADDSML = num_grid_cfg_force_4c_grid.OR.
-     &          (MC.GT.1.AND.(.NOT.LEVYLE))
-        CALL LMGGRID(H,RNT,RH,2.0d-15,IATOM,ADDSML,NUCORB,AA,IPRINT)
+     &              (MC.GT.1.AND.(.NOT.LEVYLE))
+        RADDER = num_grid_cfg_RADINT
+        CALL LMGGRID(H,RNT,RH,RADDER,IATOM,ADDSML,NUCORB,AA,IPRINT)
 C        
 C The values of ultrafine (.ULTRAF) at DFT input-reader section.    
 C num_grid_cfg_radint = 2.0d-15 
 C
-        write(*,*)'GRDC1',GRDC
+        write(*,*)'GRDC1,RADDER',GRDC,RADDER
         EPH   = EXP(H)
         GRDC  = RNT/(EPH-ONE)
         RTEMP = RNT
@@ -1258,6 +1339,19 @@ C
               exit
            ENDIF 
            RTEMP = (RTEMP+GRDC)*EPH-GRDC
+ 2      CONTINUE
+        RTEMP = RNT
+        DO J = 1,N
+           X = WD*RTEMP
+           IF(X.GT.1.0D+02)THEN !same to FUNK
+!     IF(VPTST2-VPTST1.GT.THSHD)THEN
+              TEMP = FACTOR*FUNK (X,1)              
+              MUEHLING = J
+              exit
+           ENDIF   
+           RTEMP = (RTEMP+GRDC)*EPH-GRDC
+        ENDDO
+        write(*,*)'MUEHLING,RTEMP',MUEHLING,RTEMP
 c$$$           X = WD*RTEMP
 c$$$           IF(X.GT.1.0D+02)THEN !same to FUNK
 c$$$!     IF(VPTST2-VPTST1.GT.THSHD)THEN
@@ -1265,7 +1359,6 @@ c$$$              TEMP = FACTOR*FUNK (X,1)
 c$$$              MXNP = I
 c$$$              exit
 c$$$           ENDIF
- 2      CONTINUE         
       ENDIF    !num_grid_cfg_grasp
 C      
       IF (IPRINT.GE.6) THEN
@@ -1341,7 +1434,7 @@ C
 C   SECOND-ORDER VACUUM POLARISATION
 C
     3 CALL VAC2(TB,R,Z,GEXP,N,NNUC,NUCTYP)
-      write(*,*)"TB2"
+!      write(*,*)"TB2"
 !      DO 1 I = 1,N
 !         write(*,*)I,TB(I)
 !    1 CONTINUE      
