@@ -485,7 +485,7 @@ C
           npo = idim(1,1) ! "positronic" (= negative energy) solutions (can be thrown away for our purposes)
           nmo = idim(2,1) ! "electronic" (= positive energy) solutions (we only need these)
           nto = npo+nmo   ! total number of solutions on this file
-          if (npo > 0) print*, "warning: reading from 4C DFCOEF file" ! this warning will go once we have the full index transform implementedd
+          if (npo > 0) print*, "warning: reading from 4C DFCOEF file" ! this warning will go once we have the full index transform implemented
        end if
        print*,'nao, npo, nmo, nto : ', nao, npo, nmo, nto
 
@@ -528,7 +528,7 @@ C
        read (LUCOEF,err=20,end=20) nao_bas,nshells,npriexp,ncnt 
        if (nao /= nao_bas) then
           ierr = INCONSIS
-          print*,"use NONREL, X2C, or X2CMMF Hamiltonian"
+          print*,"Inconsistency: use NONREL, X2C, or X2CMMF Hamiltonian"
           close (lucoef,status='KEEP')
           return
        end if

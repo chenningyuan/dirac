@@ -22,12 +22,14 @@
         complex(8), allocatable :: S_block(:,:) ! sub block of the overlap matrix
         complex(8), allocatable :: S11(:,:),S21(:,:),S12(:,:),S22(:,:) !  the overlap matrices
         complex(8), allocatable :: P12(:,:),P21(:,:)          !  the projection operators
-        complex(8), allocatable :: c_Ib(:,:), c_Ib_occ(:,:)                  !  Matrix "A" in Knizia's paper: coefficient matrix of the IAOs.
+        complex(8), allocatable :: c_Ib(:,:)                  !  Matrix "A" in Knizia's paper but in MO basis: coefficient matrix of the IMOs
+        complex(8), allocatable :: c_Ib_ao(:,:,:)             !  coefficient matrix of the IAOs.
         complex(8), allocatable :: coeff1_occ(:,:)
         real(8), allocatable :: coeff_quaternion(:,:,:)
+        real(8), allocatable :: SAO11(:,:)
 
         integer :: nocc = 10 ! Should be read from a file, but currently this info is not available
-        integer luxyz, ierr, i, j, k, l, nmo1, nmo2, imo, jmo, nmoi, nmoj
+        integer luxyz, ierr, i, j, k, l, nmo1, nmo2, imo, jmo, nmoi, nmoj, nao1
 
         complex(8), allocatable :: DMAT(:,:)
         complex(8) :: sum_diag
@@ -62,6 +64,7 @@
         call read_from_dirac (ao_basis_1,cspinor_original,'DFCOEF_mol',ierr)
 
         nmo1 = cspinor_original%nmo
+        nao1 = cspinor_original%nao
         print*,"Read MO coefficients: nmo1,nmo2(size of basis 1 and basis 2)",nmo1,nmo2
 
         ! The following Coeff file is here to check that I indeed get the same format as the DFPCMO_mol file.
@@ -166,53 +169,56 @@
         end select
 
 !       filter out occupation numbers slightly broken due to rounding... At least it clarifies the output
-        do i=1,nmo1
-           do j=1,nmo2
-              if (REAL(c_Ib(i,j)) > 0.999999999999D0 .and. AIMAG(c_Ib(i,j)) < 1.0D-12) c_Ib(i,j) = ONE
-              if (ABS(REAL(c_Ib(i,j))) < 1.0D-12 .and. ABS(AIMAG(c_Ib(i,j))) < 1.0D-12) c_Ib(i,j) = ZERO
-           end do
-        end do
+!        do i=1,nmo1
+!           do j=1,nmo2
+!              if (REAL(c_Ib(i,j)) > 0.999999999999D0 .and. AIMAG(c_Ib(i,j)) < 1.0D-12) c_Ib(i,j) = ONE
+!              if (ABS(REAL(c_Ib(i,j))) < 1.0D-12 .and. ABS(AIMAG(c_Ib(i,j))) < 1.0D-12) c_Ib(i,j) = ZERO
+!           end do
+!        end do
         print*,'Print real part of CIb:'
         do i=1,nmo1
            write(*,'(100G10.2)')(REAL(c_Ib(i,j)),j=1,nmo2)
         enddo
-        
-        print*,
-        print*,"-----Symmetrically orthogonalize intrinsic basis (in the mo basis)-----"
-        call SymOrth(c_Ib,S11,size(S11(:,1)),size(c_Ib(1,:)))
+
+!        print*,
+!        print*,"-----Symmetrically orthogonalize intrinsic basis (in the mo basis)-----"
+!        call SymOrth(c_Ib,S11,size(S11(:,1)),size(c_Ib(1,:)))
 
 !       filter out occupation numbers slightly broken due to rounding... At least it clarifies the output
-        do i=1,nmo1
-           do j=1,nmo2
-              if (REAL(c_Ib(i,j)) > 0.999999999999D0 .and. AIMAG(c_Ib(i,j)) < 1.0D-12) c_Ib(i,j) = ONE
-              if (ABS(REAL(c_Ib(i,j))) < 1.0D-12 .and. ABS(AIMAG(c_Ib(i,j))) < 1.0D-12) c_Ib(i,j) = ZERO
-           end do
-        end do
-        print*,'Print real part of CIb after orthogonalization (',nmo1,'x',nmo2,')'
-        do i=1,nmo1
-           write(*,'(100G10.2)')(REAL(c_Ib(i,j)),j=1,nmo2)
-        enddo
+!        do i=1,nmo1
+!           do j=1,nmo2
+!              if (REAL(c_Ib(i,j)) > 0.999999999999D0 .and. AIMAG(c_Ib(i,j)) < 1.0D-12) c_Ib(i,j) = ONE
+!              if (ABS(REAL(c_Ib(i,j))) < 1.0D-12 .and. ABS(AIMAG(c_Ib(i,j))) < 1.0D-12) c_Ib(i,j) = ZERO
+!           end do
+!        end do
+!        print*,'Print real part of CIb after orthogonalization (',nmo1,'x',nmo2,')'
+!        do i=1,nmo1
+!           write(*,'(100G10.2)')(REAL(c_Ib(i,j)),j=1,nmo2)
+!        enddo
 
-        call write_dffiles(c_Ib,nmo1,nmo2)
+        allocate(c_Ib_ao(nao1,nmo2,2))
+        c_Ib_ao(:,:,1) = matmul(cspinor_original%coeff(:,:,1),c_Ib)
+        c_Ib_ao(:,:,2) = matmul(cspinor_original%coeff(:,:,2),c_Ib)
+        call write_dffiles("DFCOEF_iao","DFPCMO_iao",c_Ib_ao,nao1,nmo2)
 
-        print*,
-        print*,'-----Compute the 1RDM (IAO basis)-----(',nmo1,'x',nmo1,')'
-        allocate(DMAT(nmo1,nmo1))
-        DMAT = 0.D0
-        do i=1,nmo1
-         do j=1,nmo1
-           do k=1,nocc
-              DMAT(i,j) = DMAT(i,j) + conjg(c_Ib(i,k))*c_Ib(j,k)
-           enddo
-         enddo
-        enddo
-        print*,"PRINT DIAGONAL OF DENSITY MATRIX"
-        write(*,'(100G10.2)') (REAL(DMAT(i,i)),i=1,nmo1)
-        sum_diag = 0.0
-        do i=1,nmo1
-         sum_diag = sum_diag + DMAT(i,i)
-        enddo
-        print*,"Sum of diagonal (should to be equal to nocc = 10):",sum_diag
+!        print*,
+!        print*,'-----Compute the 1RDM (IAO basis)-----(',nmo1,'x',nmo1,')'
+!        allocate(DMAT(nmo1,nmo1))
+!        DMAT = 0.D0
+!        do i=1,nmo1
+!         do j=1,nmo1
+!           do k=1,nocc
+!              DMAT(i,j) = DMAT(i,j) + conjg(c_Ib(i,k))*c_Ib(j,k)
+!           enddo
+!         enddo
+!        enddo
+!        print*,"PRINT DIAGONAL OF DENSITY MATRIX"
+!        write(*,'(100G10.2)') (REAL(DMAT(i,i)),i=1,nmo1)
+!        sum_diag = 0.0
+!        do i=1,nmo1
+!         sum_diag = sum_diag + DMAT(i,i)
+!        enddo
+!        print*,"Sum of diagonal (should to be equal to nocc = 10):",sum_diag
 
 !        print*,
 !        print*,'----***** MAKE IBOs *****-----'
@@ -226,20 +232,21 @@
 
    end subroutine generate_iao
 
-   subroutine write_dffiles(coeff,nmo1,nmo2)
+   subroutine write_dffiles(filename_unformatted,filename_formatted,coeff,basis1,basis2)
 
        use exacorr_utils
        implicit none
 
        integer, parameter :: nsym = 1
        character(len=74) :: text="IAO coefficients"
-       integer :: i,j, iunit, idim(3,2)
-       integer, intent(in)     :: nmo1, nmo2
-       complex(8), intent(in)  :: coeff(nmo1,nmo2,2)
-       complex(8)  :: coeff_quaternion(nmo1,int(nmo2/2),4)
+       character(10) :: filename_unformatted, filename_formatted
+       integer :: i,j, iunit, idim(3,nsym)
+       integer, intent(in)     :: basis1, basis2
+       complex(8), intent(in)  :: coeff(basis1,basis2,2)
+       complex(8)  :: coeff_quaternion(basis1,int(basis2/2),4)
        real(8) :: toterg
-       real(8) :: eig(nmo2)
-       integer :: ibeig(nmo2)
+       real(8) :: eig(basis2)
+       integer :: ibeig(basis2)
 
        call get_free_fileunit(iunit)
 
@@ -247,21 +254,21 @@
        eig = 0.D0
        ibeig = 0
 
-       idim(3,1) = nmo1
+       idim(3,1) = basis1
        idim(1,1) = 0
-       idim(2,1) = nmo2
+       idim(2,1) = int(basis2/2)
 
        ! I think that I need to have this format for the DFCOEF file ?
-       call convert_complex_to_quaternion_format(coeff,coeff_quaternion,nmo1,nmo2)
+       call convert_complex_to_quaternion_format(coeff,coeff_quaternion,basis1,basis2)
 
-       open (UNIT = iunit,file="DFCOEF",FORM='UNFORMATTED',access='SEQUENTIAL')
+       open (UNIT = iunit,file=filename_unformatted,FORM='UNFORMATTED',access='SEQUENTIAL')
        write (iunit) text,nsym,((idim(i,j),i=1,3),j=1,nsym),toterg
        write (iunit) coeff_quaternion
        write (iunit) eig
        write (iunit) ibeig
        close (iunit)
 
-       open (UNIT = iunit,file="DFPCMO",FORM='FORMATTED',access='SEQUENTIAL')
+       open (UNIT = iunit,file=filename_formatted,FORM='FORMATTED',access='SEQUENTIAL')
        write(iunit,'(A74)') text
        write(iunit,'(7(X,I0))') nsym,((idim(i,j),i = 1,3),j=1,nsym)
        write(iunit,'(E24.16)') toterg
@@ -532,16 +539,16 @@
         !Symmetrically orthogonalize intrinsic basis to arrive at standard IAOs
 
         implicit none
-        integer, intent(in) :: nmo1, nmo2
-        complex(8), intent(in) :: S(nmo1,nmo1)
-        complex(8), intent(inout) :: C(nmo1,nmo2)
-        integer, parameter :: lwmax=1000
-        integer :: info, lwork, liwork, lrwork,i,j
-        integer, dimension(lwmax) :: iwork
+        integer,    intent(in)       :: nmo1, nmo2
+        complex(8), intent(in)       :: S(nmo1,nmo1)
+        complex(8), intent(inout)    :: C(nmo1,nmo2)
+        integer,    parameter        :: lwmax=1000
+        integer                      :: info, lwork, liwork, lrwork,i,j
+        integer,    dimension(lwmax) :: iwork
         complex(8), dimension(lwmax) :: work
-        real(8), dimension(lwmax) :: rwork
-        complex(8), allocatable :: matrix(:,:)
-        real(8), allocatable :: ew(:)
+        real(8),    dimension(lwmax) :: rwork
+        complex(8), allocatable      :: matrix(:,:)
+        real(8),    allocatable      :: ew(:)
 
         allocate(matrix(nmo2,nmo2))
         allocate(ew(nmo2))
@@ -590,15 +597,13 @@
 
         implicit none
 
-        complex(8), parameter :: ZERO=(0.D0,0.D0), ONE=(1.D0,0.D0)
-
-        type(basis_set_info_t),intent(in) :: ao_basis_bra, ao_basis_ket 
-        type(cmo),intent(in)              :: cspinor_bra, cspinor_ket 
-        complex(8), intent(out)           :: SMO(cspinor_bra%nmo,cspinor_ket%nmo)
-
-        real(8), allocatable :: SAO(:,:)   ! the AO overlap matrix
-        complex(8), allocatable :: SC(:,:) ! Overlap times MO coefficients
-        integer :: i,j
+        complex(8), parameter              :: ZERO=(0.D0,0.D0), ONE=(1.D0,0.D0)
+        type(basis_set_info_t),intent(in)  :: ao_basis_bra, ao_basis_ket 
+        type(cmo),             intent(in)  :: cspinor_bra, cspinor_ket 
+        complex(8),            intent(out) :: SMO(cspinor_bra%nmo,cspinor_ket%nmo)
+        real(8), allocatable               :: SAO(:,:)   ! the AO overlap matrix
+        complex(8), allocatable            :: SC(:,:) ! Overlap times MO coefficients
+        integer                            :: i,j
 
         ! allocate auxilliaries
         allocate (SAO(cspinor_bra%nao,cspinor_ket%nao))
@@ -729,7 +734,7 @@
 
       implicit none
       integer,    intent(in   ) :: nao, nmo
-      complex(8), intent(inout) :: scoeff(nao,nmo,2)
+      complex(8), intent(in   ) :: scoeff(nao,nmo,2)
       real(8),    intent(  out) :: coeff(nao,int(nmo/2),4)
       integer                   :: i, j, spin
 
