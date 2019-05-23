@@ -796,7 +796,6 @@
       IF(NEXPP.GT.0) THEN
         DO I = 1,NEXPP
           INDXPR = LEXPP(I)
-!          write(*,*)"NEXPP,INDXPR",NEXPP,INDXPR !sunaga
           CALL WRIXPR(I,INDXPR)
         ENDDO
       ENDIF  

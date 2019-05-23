@@ -171,7 +171,6 @@ C
       ENDIF
       CLSCAL(I) = .FALSE.
    10 CONTINUE
-!      CALL NUMOVL(COMB,IPRONE)       
 C
       CLOSE(LU1INT,STATUS='KEEP')
       IF (IPRONE .GT. 0) THEN
