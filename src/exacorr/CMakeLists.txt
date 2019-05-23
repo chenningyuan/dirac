@@ -25,6 +25,8 @@ if(ENABLE_EXATENSOR)
    talsh_common_routines.F90
    talsh_gradient.F90
    talsh_cc.F90
+   get_overlap.f90
+   make_iao.f90
    generate_iao.F90
   )
 
