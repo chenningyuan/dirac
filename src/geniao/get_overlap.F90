@@ -1,11 +1,11 @@
 module get_overlap
 
+  use exacorr_mo
+  use exacorr_datatypes
+
 contains
 
    subroutine get_mo_overlap (ao_basis_bra,cspinor_bra,ao_basis_ket,cspinor_ket,SMO)
-
-        use exacorr_datatypes
-        use exacorr_mo
 
         implicit none
 
@@ -50,8 +50,6 @@ contains
    end subroutine get_mo_overlap
 
    subroutine get_ao_overlap (ao_basis_bra,ao_basis_ket,ao_overlap)
-
-        use exacorr_datatypes
 
         implicit none
 

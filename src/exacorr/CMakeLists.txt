@@ -3,7 +3,6 @@ if(ENABLE_EXATENSOR)
     ${PROJECT_SOURCE_DIR}/src/include
     )
 
-
   set(FIXED_EXACORR_FORTRAN_SOURCES
     exacorr_dirac.F
   )
@@ -25,9 +24,6 @@ if(ENABLE_EXATENSOR)
    talsh_common_routines.F90
    talsh_gradient.F90
    talsh_cc.F90
-   get_overlap.f90
-   make_iao.f90
-   generate_iao.F90
   )
 
   if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -46,4 +42,3 @@ if(ENABLE_EXATENSOR)
   add_dependencies(exacorr  main)
   add_dependencies(exacorr  exatensor)
 endif()
-

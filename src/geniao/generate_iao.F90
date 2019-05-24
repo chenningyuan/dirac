@@ -1,11 +1,13 @@
-   subroutine generate_iao
+   program generate_iao
 
         use exacorr_datatypes
         use exacorr_mo
         use exacorr_utils
-        use read_xyzfile
         use get_overlap
         use make_iao
+        use atomic_fragments
+        use utils
+        use read_xyzfile_only
 
         implicit none
 
@@ -24,18 +26,18 @@
         complex(8), allocatable :: S_block(:,:) ! sub block of the overlap matrix
         complex(8), allocatable :: S11(:,:),S21(:,:),S12(:,:),S22(:,:) !  the overlap matrices
         complex(8), allocatable :: P12(:,:),P21(:,:)          !  the projection operators
-        complex(8), allocatable :: c_Ib(:,:)                  !  coefficient matrix to go from the MOs to the IAOs.
-        complex(8), allocatable :: c_Ib_ao(:,:,:)             !  coefficient matrix to go from the AOs to the IAOs..
+        complex(8), allocatable :: c_Ib(:,:)                  !  coefficient matrix, IAOs in terms of MOs of basis 1
+        complex(8), allocatable :: c_Ib_ao(:,:,:)             !  coefficient matrix, IAOs in terms of AOs of basis 1
+        complex(8), allocatable :: c_Ib_occ(:,:)              !  coefficient matrix, occupied MOs in terms of IAOs.
         complex(8), allocatable :: coeff1_occ(:,:)
         real(8), allocatable :: coeff_quaternion(:,:,:)
-        real(8), allocatable :: SAO11(:,:)
 
         integer :: nocc = 10 ! Should be read from a file, but currently this info is not available
         integer luxyz, ierr, i, j, k, l, nmo1, nmo2, imo, jmo, nmoi, nmoj, nao1
 
         complex(8), allocatable :: DMAT(:,:)
         complex(8) :: sum_diag
-        character(13) :: target
+        character(13) :: version
 
 
         print*,"Arrived in generate_iao"
@@ -45,7 +47,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         call get_free_fileunit(luxyz)
-        open (luxyz,file='H2O.xyz',form='formatted')
+        open (luxyz,file='MOLECULE.XYZ',form='formatted')
         call get_atoms(luxyz,first_atom)
         close (luxyz,status='keep')
         current_atom => first_atom
@@ -67,7 +69,7 @@
            current_atom=>current_atom%next
         end do
 
-        call read_from_dirac (ao_basis_1,cspinor_original,'DFCOEF_mol',ierr)
+        call read_from_dirac (ao_basis_1,cspinor_original,'MOLECULE.dfcoef',ierr)
 
         nmo1 = cspinor_original%nmo
         nao1 = cspinor_original%nao
@@ -77,10 +79,7 @@
         ! It will be removed when I'll be sure it is indeed correct in any cases.
         allocate(coeff_quaternion(cspinor_original%nao,int(cspinor_original%nmo/2),4))
         call convert_complex_to_quaternion_format(cspinor_original%coeff,coeff_quaternion,cspinor_original%nao,cspinor_original%nmo)
-        open ( UNIT = 96, FILE = 'Coeff', ACCESS = 'SEQUENTIAL' )
-        write(96,'(6F22.16)') coeff_quaternion
-        close(96)
-        deallocate(coeff_quaternion)
+        call write_dffiles("DFCOEFtest","DFPCMOtest",cspinor_original%coeff,nao1,nmo1)
 
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -167,8 +166,8 @@
         print*,
         print*,'-----Compute CIb-----(',nmo1,'x',nmo2,')'
         allocate (c_Ib(nmo1,nmo2))
-        call get_command_argument(1, target)
-        select case (target)
+        call get_command_argument(1, version)
+        select case (version)
            case ('Standard_2013')
              write(*,*)" Making IAO according to Standard 2013"
              call MakeIAO_Standard_2013(c_Ib,coeff1_occ,S11,S21,S22,P12,nmo1,nmo2,nocc)
@@ -192,6 +191,14 @@
 !        end do
         do i=1,nmo1
            write(*,'(100G10.2)')(REAL(c_Ib(i,j)),j=1,nmo2)
+        enddo
+
+        allocate (c_Ib_occ(nmo2,nocc))
+        print*,
+        print*,'-----Re-express occupied orbitals in terms of IAO basis-----(',nmo2,'x',nocc,')'
+        c_Ib_occ = matmul(conjg(transpose(c_Ib)),matmul(S11,coeff1_occ))
+        do i=1,nmo2
+          write(*,'(100G10.2)') (REAL(c_Ib_occ(i,j)),j=1,nocc)
         enddo
 
 !        print*,
@@ -248,200 +255,4 @@
 
 !     55 FORMAT( 100(:,1X,'(',G10.2,',',G10.2,')') ) ! Useful format to write complex matrices.
 
-   end subroutine generate_iao
-
-   subroutine write_dffiles(filename_unformatted,filename_formatted,coeff,basis1,basis2)
-
-       use exacorr_utils
-       implicit none
-
-       integer, parameter :: nsym = 1
-       character(len=74) :: text="IAO coefficients"
-       character(10) :: filename_unformatted, filename_formatted
-       integer :: i,j, iunit, idim(3,nsym)
-       integer, intent(in)     :: basis1, basis2
-       complex(8), intent(in)  :: coeff(basis1,basis2,2)
-       complex(8)  :: coeff_quaternion(basis1,int(basis2/2),4)
-       real(8) :: toterg
-       real(8) :: eig(basis2)
-       integer :: ibeig(basis2)
-
-       call get_free_fileunit(iunit)
-
-       toterg= 0.D0
-       eig = 0.D0
-       ibeig = 0
-
-       idim(3,1) = basis1
-       idim(1,1) = 0
-       idim(2,1) = int(basis2/2)
-
-       ! I think that I need to have this format for the DFCOEF file ?
-       call convert_complex_to_quaternion_format(coeff,coeff_quaternion,basis1,basis2)
-
-       open (UNIT = iunit,file=filename_unformatted,FORM='UNFORMATTED',access='SEQUENTIAL')
-       write (iunit) text,nsym,((idim(i,j),i=1,3),j=1,nsym),toterg
-       write (iunit) coeff_quaternion
-       write (iunit) eig
-       write (iunit) ibeig
-       close (iunit)
-
-       open (UNIT = iunit,file=filename_formatted,FORM='FORMATTED',access='SEQUENTIAL')
-       write(iunit,'(A74)') text
-       write(iunit,'(7(X,I0))') nsym,((idim(i,j),i = 1,3),j=1,nsym)
-       write(iunit,'(E24.16)') toterg
-       write(iunit,'(6F22.16)') coeff_quaternion
-       write(iunit,'(6E22.12)') eig
-       write(iunit,'(66(X,I0))') ibeig
-
-
-   end subroutine write_dffiles
-
-   subroutine get_atomic_fragment (atom_number,atom_coord,ao_basis,cspinor)
-
-        use exacorr_datatypes
-        use exacorr_mo
-
-        implicit none
-
-        integer, intent(in) :: atom_number
-        real(8), intent(in) :: atom_coord(3)
-        type(basis_set_info_t),intent(out) :: ao_basis ! the ao basis used in the generation of the MO coefficients
-        type(cmo),intent(out) :: cspinor               ! occupied spinors (minimal basis set)
-
-        type(cmo):: cspinor_full  ! all spinors as they are read from file
-        character(len=10) fragfile
-        integer ierr, ishell, nao, nmo, ncore, nvale, i,j
-
-        ! Should include path information, for now assume this is copied into the working dir
-        write (fragfile,'(i3.3,a7)') atom_number,'.dfcoef'
-        call read_from_dirac (ao_basis,cspinor_full,fragfile,ierr)
-        print*,'  ierr (0 --> NO ERROR) = ', ierr
-        ! All atomic coefficients are generated with the atom in the origin, translate the basis to the actual position
-        do ishell = 1, ao_basis%nshells ! somehow the compiler wants an explicit loop for this
-            ao_basis%gtos(ishell)%coord = atom_coord
-        end do
-        ! Query the size of the (mo) basis that should be made
-        call atom_minbas_size (atom_number,ncore,nvale)
-        nmo = ncore+nvale 
-        nao = cspinor_full%nao
-        ! Copy only the relevant MOs to the output array
-        call alloc_mo (cspinor,nao,nmo)
-        cspinor%energy = cspinor_full%energy(1:nmo)
-        cspinor%coeff  = cspinor_full%coeff(:,1:nmo,:)
-        cspinor%index  = cspinor_full%index(1:nmo)
-        ! we don't need this coefficient set anymore, free up the memory
-        call dealloc_mo(cspinor_full)
-
-   end subroutine get_atomic_fragment
-
-   subroutine convert_complex_to_quaternion_format(scoeff,coeff,nao,nmo)
-
-      implicit none
-      integer,    intent(in   ) :: nao, nmo
-      complex(8), intent(in   ) :: scoeff(nao,nmo,2)
-      real(8),    intent(  out) :: coeff(nao,int(nmo/2),4)
-      integer                   :: i, j, spin
-
-      do spin = 1, 2
-        if (spin == 1) then
-            do j = 1, int(nmo/2)
-                do i = 1, nao
-                coeff(i,j,1) = real(scoeff(i,2*j-1,spin))
-                coeff(i,j,2) = aimag(scoeff(i,2*j-1,spin))
-                coeff(i,j,3) = real(scoeff(i,2*j,spin))
-                coeff(i,j,4) = aimag(scoeff(i,2*j,spin))
-                end do
-            end do
-!        else if (spin == 2) then
-!            do j = 1, int(nmo/2)
-!                do i = 1, nao
-!                coeff(i,j,3) = - real(scoeff(i,2*j-1,spin))
-!                coeff(i,j,4) = aimag(scoeff(i,2*j-1,spin))
-!                coeff(i,j,1) = real(scoeff(i,2*j,spin))
-!                coeff(i,j,2) = - aimag(scoeff(i,2*j,spin))
-!                end do
-!            end do
-        end if
-      end do
-
-   end subroutine convert_complex_to_quaternion_format
-
-   subroutine atom_minbas_size(atom_number,ncore,nvale)
-
-!        returns size of minimal basis (NB: counting spinors, so there is a factor of 2 wrt orbitals)
-
-         implicit none
-
-         integer,intent(in)  ::  atom_number  ! the number that is used to search the basis set and ao-coefficient libs
-         integer,intent(out) ::  ncore, nvale ! the number of core and valence spinors
-
-!        Easiest is to simply hardwire this
-
-         select case (atom_number)
-            case (:0)        ! 0 is to be used for point charges that do not carry a basis set
-                 ncore = 0
-                 nvale = 0
-            case (1:2)       ! H, He
-                 ncore = 0
-                 nvale = 2
-            case (3:4)       ! Li,Be
-                 ncore = 2
-                 nvale = 2
-            case (5:10)      ! B..Ne
-                 ncore = 2
-                 nvale = 8
-            case (11:12)     ! Na,Mg
-                 ncore = 10
-                 nvale = 2
-            case (13:18)     ! Al..Ar
-                 ncore = 10
-                 nvale = 8
-            case (19:20)     ! K,Ca
-                 ncore = 18
-                 nvale = 2
-            case (21:30)     ! Sc..Zn
-                 ncore = 18
-                 nvale = 12
-            case (31:36)     ! Ga..Kr
-                 ncore = 18
-                 nvale = 18
-            case (37:38)     ! Rb,Sr
-                 ncore = 36
-                 nvale = 2
-            case (39:48)     ! Y..Cd
-                 ncore = 36
-                 nvale = 12
-            case (49:54)     ! In..Xe
-                 ncore = 36
-                 nvale = 18
-            case (55:56)     ! Cs,Ba
-                 ncore = 54
-                 nvale = 2
-            case (57:70)     ! La..Yb
-                 ncore = 54
-                 nvale = 16  ! assuming that we will enforce 4f rather than 5d occupation in the atomic scf
-            case (71:80)     ! Lu..Hg
-                 ncore = 54
-                 nvale = 26
-            case (81:86)     ! Tl..Rn
-                 ncore = 68  ! place the 4f in the core
-                 nvale = 18
-            case (87:88)     ! Fr,Ra
-                 ncore = 86 
-                 nvale = 2
-            case (89:102)    ! Ac,RNo
-                 ncore = 86 
-                 nvale = 16  ! assuming that we will enforce 5f rather than 6d occupation in the atomic scf
-            case (103:112)   ! Lr..Cn
-                 ncore = 86
-                 nvale = 26
-            case (113:118)   ! Nh..Og
-                 ncore = 100 ! place the 5f in the core
-                 nvale = 18
-            case (119:)      ! Venturing into the unknown superheavies, impossible to decide the valence
-                 ncore = 118
-                 nvale = atom_number - ncore
-         end select
-     
-   end subroutine atom_minbas_size
+   end program generate_iao

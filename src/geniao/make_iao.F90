@@ -48,7 +48,6 @@ contains
 
    end subroutine MakeIAO_Simple_2014
 
-
    subroutine MakeIAO_Simple_2013(A,C,S11,S12,S21,S22,P12,nmo1,nmo2,nocc)
 
         implicit none
