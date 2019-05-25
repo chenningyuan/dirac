@@ -23,6 +23,5 @@ if(ENABLE_GENIAO)
   )
 
 # deal with dependencies
-  add_dependencies(geniao main)
   add_dependencies(geniao exacorr)
 endif()
