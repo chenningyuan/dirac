@@ -1,12 +1,13 @@
 General documentation for exacorr module
 
 Remarks:
-- To use the standalone version of exacorr use the exacorr.x executable i.c.w. exacorr.inp (only need to specify EXACC section)
+- To use the standalone version of ExaCorr use the exacorr.x executable i.c.w. exacorr.inp (only need to specify EXACC section)
 
 To Do:
 - [ ] Finish ReSpect interface (@stanpa)
 - [ ] Implement EOM (@stanpa)
   - [ ] Implement Davidson for EOM (@gomes.asp)
+  - [ ] Move Davidson overlap to caar-branch
 - [ ] Create module for parameters
 
 <table>
