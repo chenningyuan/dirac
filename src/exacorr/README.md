@@ -5,9 +5,9 @@ Remarks:
 
 To Do:
 - [ ] Finish ReSpect interface (@stanpa)
-- [ ] Write ExaTensor DM to file (@stanpa)
 - [ ] Implement EOM (@stanpa)
   - [ ] Implement Davidson for EOM (@gomes.asp)
+- [ ] Create module for parameters
 
 <table>
   <tr>
