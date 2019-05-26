@@ -20,7 +20,6 @@ import fnmatch
 import fileinput
 import subprocess
 import shutil
-import string
 
 
 def main(argv):
