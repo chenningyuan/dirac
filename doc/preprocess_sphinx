@@ -88,6 +88,6 @@ def expand_sections(source_dir, build_dir):
 
 
 if __name__ == '__main__':
-    source_dir = os.path.abspath(sys.argv[1])
+    source_dir = os.path.dirname(os.path.abspath(__file__))
     build_dir = os.path.abspath(sys.argv[2])
     expand_sections(source_dir, build_dir)
