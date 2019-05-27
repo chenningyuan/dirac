@@ -38,12 +38,11 @@ def expand_sections(source_dir, build_dir):
         for filename in fnmatch.filter(files, '*.rst'):
 
             #
-            # replace (in a given **SECTION/*SECTION):
-            #
+            ##replace (in a given **NEW SECTION/*NEW SECTION):
             # keyword(RABOOF)
-            # by:
+            ##by:
             # .. index:: .RABOOF
-            # .. SECTION_RABOOF:
+            # .. _NEW_SECTION_.RABOOF:
             #
             # .RABOOF
             # -------
@@ -54,35 +53,35 @@ def expand_sections(source_dir, build_dir):
                 if section_found == []:
                     section_found = re.findall(STAR_REGEX, line)
                 if section_found != []:
-                    section = '%s_' % string.replace(section_found[0], ' ', '_')
-                print re.sub(KEYWORD_REGEX,
-                            ('.. index:: .\g<1>\n.. _%s.\g<1>:\n\n.\g<1>\n'+str('-'*(line.find(')')-line.find('(')))) % section,line[0:len(line)-1])
+                    section = '%s_' % section_found[0].replace(' ', '_')
+                print(re.sub(KEYWORD_REGEX,
+                            ('.. index:: .\g<1>\n.. _%s.\g<1>:\n\n.\g<1>\n'+str('-'*(line.find(')')-line.find('(')))) % section,line[0:len(line)-1]))
 
-            # replace:
+            ##replace:
             # starstar(RABOOF)
-            # by:
+            ##by:
             # .. index:: **RABOOF
-            # .. _RABOOF:
+            # .. _**RABOOF:
             #
             # ==========
             # \*\*RABOOF
             # ==========
             for line in fileinput.input(os.path.join(root, filename), inplace=True):
-                print re.sub(STARSTAR_REGEX,
-                             ('.. index:: **\g<1>\n.. _**\g<1>:\n\n'+str('='*(line.find(')')-line.find('(')+3))+'\n\\*\\*\g<1>\n'+str('='*(line.find(')')-line.find('(')+3))),line[0:len(line)-1])
+                print(re.sub(STARSTAR_REGEX,
+                             ('.. index:: **\g<1>\n.. _**\g<1>:\n\n'+str('='*(line.find(')')-line.find('(')+3))+'\n\\*\\*\g<1>\n'+str('='*(line.find(')')-line.find('(')+3))),line[0:len(line)-1]))
 
-            # replace:
+            ##replace:
             # star(RABOOF)
-            # by:
-            # .. index:: **RABOOF
-            # .. _RABOOF:
+            ##by:
+            # .. index:: *RABOOF
+            # .. _*RABOOF:
             #
             # ========
             # \*RABOOF
             # ========
             for line in fileinput.input(os.path.join(root, filename), inplace=True):
-                print re.sub(STAR_REGEX,
-                             ('.. index:: *\g<1>\n.. _*\g<1>:\n\n'+str('='*(line.find(')')-line.find('(')+1))+'\n\\*\g<1>\n'+str('='*(line.find(')')-line.find('(')+1))),line[0:len(line)-1])
+                print(re.sub(STAR_REGEX,
+                             ('.. index:: *\g<1>\n.. _*\g<1>:\n\n'+str('='*(line.find(')')-line.find('(')+1))+'\n\\*\g<1>\n'+str('='*(line.find(')')-line.find('(')+1))),line[0:len(line)-1]))
 
     # Miro: use quiet mode to keep only warnings and errors
     subprocess.call('sphinx-build -q -b html %s %s' % (DIR_TEMP, DIR_FINAL), shell=True)
