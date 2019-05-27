@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 """
     Script to replace homecooked macros to get index and crossref labels
     'for free'. Bash version written by Radovan Bast, translated
