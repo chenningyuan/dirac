@@ -3,11 +3,11 @@
         use exacorr_datatypes
         use exacorr_mo
         use exacorr_utils
+        use read_xyz
         use get_overlap
         use make_iao
-        use atomic_fragments
         use utils
-        use read_xyzfile_only
+        use atomic_fragments
 
         implicit none
 
@@ -20,7 +20,6 @@
         integer :: n_fragments ! the number of fragments used to project on to
         type(basis_set_info_t),allocatable :: ao_basis_2(:) ! the ao basis sets of the fragments
         type(cmo), allocatable :: cspinor_fragment(:) ! MO-coefficients of the fragments
-
         type(atom),pointer :: first_atom,current_atom ! linked list to store coordindate information
 
         complex(8), allocatable :: S_block(:,:) ! sub block of the overlap matrix
@@ -30,24 +29,31 @@
         complex(8), allocatable :: c_Ib_ao(:,:,:)             !  coefficient matrix, IAOs in terms of AOs of basis 1
         complex(8), allocatable :: c_Ib_occ(:,:)              !  coefficient matrix, occupied MOs in terms of IAOs.
         complex(8), allocatable :: coeff1_occ(:,:)
-        real(8), allocatable :: coeff_quaternion(:,:,:)
+        real(8),    allocatable :: coeff_quaternion(:,:,:)
 
         integer :: nocc = 10 ! Should be read from a file, but currently this info is not available
         integer luxyz, ierr, i, j, k, l, nmo1, nmo2, imo, jmo, nmoi, nmoj, nao1
 
-        complex(8), allocatable :: DMAT(:,:)
-        complex(8) :: sum_diag
+        complex(8), allocatable :: HF_RDM(:,:), IbRDM(:,:), Id(:,:)
+        complex(8) :: sum_diag, sum_column
         character(13) :: version
 
-
-        print*,"Arrived in generate_iao"
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !           READ Input Files         !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        call read_from_dirac (ao_basis_1,cspinor_original,'MOLECULE.dfcoef',ierr)
+        nmo1 = cspinor_original%nmo
+        nao1 = cspinor_original%nao
+        ! The following Coeff file is here to check that I indeed get the same format as the DFPCMO_mol file.
+        ! It will be removed when I'll be sure it is indeed correct in any cases.
+        allocate(coeff_quaternion(cspinor_original%nao,int(cspinor_original%nmo/2),4))
+        call write_dffiles("test.dfcoef","test.dfpcmo",ao_basis_1,cspinor_original%coeff,nao1,nmo1)
+
 
         call get_free_fileunit(luxyz)
         open (luxyz,file='MOLECULE.XYZ',form='formatted')
+
         call get_atoms(luxyz,first_atom)
         close (luxyz,status='keep')
         current_atom => first_atom
@@ -68,19 +74,6 @@
            nmo2 = nmo2 + cspinor_fragment(i)%nmo
            current_atom=>current_atom%next
         end do
-
-        call read_from_dirac (ao_basis_1,cspinor_original,'MOLECULE.dfcoef',ierr)
-
-        nmo1 = cspinor_original%nmo
-        nao1 = cspinor_original%nao
-        print*,"Read MO coefficients: nmo1,nmo2(size of basis 1 and basis 2)",nmo1,nmo2
-
-        ! The following Coeff file is here to check that I indeed get the same format as the DFPCMO_mol file.
-        ! It will be removed when I'll be sure it is indeed correct in any cases.
-        allocate(coeff_quaternion(cspinor_original%nao,int(cspinor_original%nmo/2),4))
-        call convert_complex_to_quaternion_format(cspinor_original%coeff,coeff_quaternion,cspinor_original%nao,cspinor_original%nmo)
-        call write_dffiles("DFCOEFtest","DFPCMOtest",cspinor_original%coeff,nao1,nmo1)
-
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !       Compute Overlap Matrices     !
@@ -182,6 +175,20 @@
              call MakeIAO_Simple_2014(c_Ib,coeff1_occ,S21,S22,P12,nmo1,nmo2,nocc)
         end select
 
+        print*,
+        print*,"Check normalization:"
+        do i=1,nmo2
+         sum_column = 0.D0
+         do j=1,nmo1
+           sum_column = sum_column + c_Ib(j,i)**2
+         end do
+         write(*,*) sum_column
+        end do
+
+        print*,
+        print*,"-----Symmetrically orthonormalize intrinsic basis (in the mo basis)-----"
+        call SymOrth(c_Ib,S11,nmo1,nmo2)
+
 !       filter out occupation numbers slightly broken due to rounding... At least it clarifies the output
 !        do i=1,nmo1
 !           do j=1,nmo2
@@ -189,33 +196,39 @@
 !              if (ABS(REAL(c_Ib(i,j))) < 1.0D-12 .and. ABS(AIMAG(c_Ib(i,j))) < 1.0D-12) c_Ib(i,j) = ZERO
 !           end do
 !        end do
+
         do i=1,nmo1
            write(*,'(100G10.2)')(REAL(c_Ib(i,j)),j=1,nmo2)
         enddo
 
+        print*,
+        print*,"Check normalization:"
+        do i=1,nmo2
+         sum_column = 0.D0
+         do j=1,nmo1
+           sum_column = sum_column + c_Ib(j,i)**2
+         end do
+         write(*,*) sum_column
+        end do
+
         allocate (c_Ib_occ(nmo2,nocc))
         print*,
-        print*,'-----Re-express occupied orbitals in terms of IAO basis-----(',nmo2,'x',nocc,')'
+        print*,'-----Re-express occupied orbitals in terms of IAO basis-----(',nmo2,'x',nocc,') &
+                (I think this is not needed, only if we want to construct IBOs)'
         c_Ib_occ = matmul(conjg(transpose(c_Ib)),matmul(S11,coeff1_occ))
         do i=1,nmo2
           write(*,'(100G10.2)') (REAL(c_Ib_occ(i,j)),j=1,nocc)
         enddo
 
-!        print*,
-!        print*,"-----Symmetrically orthogonalize intrinsic basis (in the mo basis)-----"
-!        call SymOrth(c_Ib,S11,size(S11(:,1)),size(c_Ib(1,:)))
-
-!       filter out occupation numbers slightly broken due to rounding... At least it clarifies the output
-!        do i=1,nmo1
-!           do j=1,nmo2
-!              if (REAL(c_Ib(i,j)) > 0.999999999999D0 .and. AIMAG(c_Ib(i,j)) < 1.0D-12) c_Ib(i,j) = ONE
-!              if (ABS(REAL(c_Ib(i,j))) < 1.0D-12 .and. ABS(AIMAG(c_Ib(i,j))) < 1.0D-12) c_Ib(i,j) = ZERO
-!           end do
-!        end do
-!        print*,'Print real part of CIb after orthogonalization (',nmo1,'x',nmo2,')'
-!        do i=1,nmo1
-!           write(*,'(100G10.2)')(REAL(c_Ib(i,j)),j=1,nmo2)
-!        enddo
+        print*,
+        print*,"Check normalization:"
+        do i=1,nocc
+         sum_column = 0.D0
+         do j=1,nmo2
+           sum_column = sum_column + c_Ib_occ(j,i)**2
+         end do
+         write(*,*) sum_column
+        end do
 
         ! Transform the coefficient matrix back into the atomic orbital basis 1.
         ! This new coefficient matrix gives the transformation from the AOs of basis 1
@@ -223,31 +236,58 @@
         allocate(c_Ib_ao(nao1,nmo2,2))
         c_Ib_ao(:,:,1) = matmul(cspinor_original%coeff(:,:,1),c_Ib)
         c_Ib_ao(:,:,2) = matmul(cspinor_original%coeff(:,:,2),c_Ib)
-        call write_dffiles("DFCOEF_iao","DFPCMO_iao",c_Ib_ao,nao1,nmo2)
+        call write_dffiles("iao.dfcoef","iao.dfpcmo",ao_basis_1,c_Ib_ao,nao1,nmo2)
 
 !       clean up list of atoms
         call del_atoms(first_atom)
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!  STUFF not needed for now. Will be removed later maybe.  !
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!      Check IAOs, python reference:
+!      IbRdm = mdot(CIb.T, S1, hfr.Rdm, S1, CIb)
+!      IbFock = mdot(CIb.T, hfr.Fock, CIb)
+!      IbCoreH = mdot(CIb.T, CoreH, CIb)
+!      print("*** Check of properties of the intrinsic basis:\n")
+!      print(FR("Deviation from orthogonality", la.norm((np.eye(CIb.shape[1]) - mdot(CIb.T, S1, CIb))).flatten()))
+!      print(FR("|ib><ib|i> - |i>", la.norm(mdot(CIb, CIb.T, S1, COcc) - COcc)))
+!      print(FR("nElec/IB", np.trace(IbRdm)))
+!      print(FR("Hartree-Fock energy/IB", .5*dot2(IbFock+IbCoreH, IbRdm) + Atoms.fCoreRepulsion()))
 
-!        allocate(DMAT(nmo1,nmo1))
-!        DMAT = 0.D0
-!        do i=1,nmo1
-!         do j=1,nmo1
-!           do k=1,nocc
-!              DMAT(i,j) = DMAT(i,j) + conjg(c_Ib(i,k))*c_Ib(j,k)
-!           enddo
-!         enddo
-!        enddo
-!        print*,"PRINT DIAGONAL OF DENSITY MATRIX"
-!        write(*,'(100G10.2)') (REAL(DMAT(i,i)),i=1,nmo1)
-!        sum_diag = 0.0
-!        do i=1,nmo1
-!         sum_diag = sum_diag + DMAT(i,i)
-!        enddo
-!        print*,"Sum of diagonal (should to be equal to nocc = 10):",sum_diag
+        allocate(HF_RDM(nmo1,nmo1)) ! In the MO basis, should be 0 everywhere except 1 on part of the diagonal.
+        HF_RDM = 0.D0
+        do i=1,nmo1
+         do j=1,nmo1
+           do k=1,nocc
+              HF_RDM(i,j) = HF_RDM(i,j) + conjg(coeff1_occ(i,k))*coeff1_occ(j,k)
+           enddo
+         enddo
+        enddo
+        print*,"PRINT DIAGONAL OF HF DENSITY MATRIX, nmo = ",nmo1
+        write(*,'(100G10.2)') (REAL(HF_RDM(i,i)),i=1,nmo1)
+        sum_diag = 0.0
+        do i=1,nmo1
+         sum_diag = sum_diag + HF_RDM(i,i)
+        enddo
+        print*,"Sum of diagonal (should be equal to nocc = 10):",sum_diag
+      
+        allocate(IbRDM(nmo2,nmo2))
+!       IbRDM = matmul(conjg(transpose(c_Ib)),matmul(S11,matmul(HF_RDM,matmul(S11,c_Ib))))
+!       S11 is identity matrix in the MO basis...
+        IbRDM = matmul(conjg(transpose(c_Ib)),matmul(HF_RDM,c_Ib))
+        print*,"PRINT DIAGONAL OF DENSITY MATRIX in IAO basis, nmo = ", nmo2
+        write(*,'(100G10.2)') (REAL(IbRDM(i,i)),i=1,nmo2)
+        sum_diag = 0.0
+        do i=1,nmo2
+         sum_diag = sum_diag + IbRDM(i,i)
+        enddo
+        print*,"Sum of diagonal (should be equal to nocc = 10):",sum_diag
+
+        print*,
+        allocate(Id(nmo2,nmo2))
+        Id = ZERO
+        forall (i=1:nmo2) Id(i,i) = ONE
+        print*,"Deviation from orthogonality :", norm2(real(Id - matmul(conjg(transpose(c_Ib)),matmul(S11,c_Ib))))
+!        print*,"|ib><ib|i> - |i>            :", norm2(real(matmul(c_Ib,matmul(conjg(transpose(c_Ib)),coeff1_occ)) - coeff1_occ))
+        print*,"|ib><ib|i> - |i>            :", norm2(real(matmul(c_Ib,c_Ib_occ) - coeff1_occ))
+        print*,"number of electrons         :", real(sum_diag)
 
 !        print*,
 !        print*,'----***** MAKE IBOs *****-----'

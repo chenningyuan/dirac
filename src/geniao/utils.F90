@@ -2,38 +2,43 @@ module utils
 
 contains
 
-   subroutine write_dffiles(filename_unformatted,filename_formatted,coeff,basis1,basis2)
+   subroutine write_dffiles(filename_unformatted,filename_formatted,ao_basis,coeff,nao,nmo)
+
+       use exacorr_datatypes
 
        implicit none
 
-       integer, parameter :: nsym = 1, iunit = 98, lucoef = 97
+       integer, parameter :: nsym = 1, iunit = 98
        character(len=74) :: text="IAO coefficients"
-       character(10) :: filename_unformatted, filename_formatted
-       integer :: idim(3,nsym), i,j
-       integer, intent(in)     :: basis1, basis2
-       complex(8), intent(in)  :: coeff(basis1,basis2,2)
-       real(8)  :: coeff_quaternion(basis1,int(basis2/2),4)
+       character(len=*) :: filename_unformatted, filename_formatted
+       integer :: idim(3,nsym), i, j
+       integer, intent(in) :: nao, nmo
+       complex(8), intent(in)  :: coeff(nao,nmo,2)
+       type(basis_set_info_t), intent(in) :: ao_basis
+       real(8)  :: coeff_quaternion(nao,int(nmo/2),4)
        real(8) :: toterg
-       real(8) :: eig(basis2)
-       integer :: ibeig(basis2)
+       real(8) :: eig(nmo)
+       integer :: ibeig(nmo)
 
        toterg= 0.D0
        eig = 0.D0
        ibeig = 0
 
-       idim(3,1) = basis1
+       idim(3,1) = nao
        idim(1,1) = 0
-       idim(2,1) = int(basis2/2)
+       idim(2,1) = int(nmo/2)
 
        ! I think that I need to have this format for the DFCOEF file ?
-       call convert_complex_to_quaternion_format(coeff,coeff_quaternion,basis1,basis2)
+       call convert_complex_to_quaternion_format(coeff,coeff_quaternion,nao,nmo)
 
        open (UNIT = iunit,file=filename_unformatted,FORM='UNFORMATTED',access='SEQUENTIAL')
        write (iunit) text,nsym,((idim(i,j),i=1,3),j=1,nsym),toterg
        write (iunit) coeff_quaternion
        write (iunit) eig
        write (iunit) ibeig
-       close (iunit)
+     
+       call write_basis_dfcoef(ao_basis,"MOLECULE.dfcoef",iunit)
+       close(iunit)
 
        open (UNIT = iunit,file=filename_formatted,FORM='FORMATTED',access='SEQUENTIAL')
        write(iunit,'(A74)') text
@@ -42,7 +47,7 @@ contains
        write(iunit,'(6F22.16)') coeff_quaternion
        write(iunit,'(6E22.12)') eig
        write(iunit,'(66(X,I0))') ibeig
-
+       close(iunit)
 
    end subroutine write_dffiles
 

@@ -28,7 +28,7 @@
 !     In the long run the readingsection for the .inp file move to dirac/dirrdn.F
 !     JHS 05-07-07
 
-      MODULE READ_XYZFILE_only
+      MODULE READ_XYZ
         IMPLICIT NONE
 
         PRIVATE
@@ -343,4 +343,4 @@
 
         END FUNCTION
 
-      END MODULE READ_XYZFILE_only
+      END MODULE READ_XYZ

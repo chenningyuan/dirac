@@ -10,6 +10,7 @@ if(ENABLE_GENIAO)
    utils.F90
    atomic_fragments.F90
    read_xyz.F90
+   write_basis.F
   )
 
   if(CMAKE_Fortran_COMPILER_ID MATCHES XL)

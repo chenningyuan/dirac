@@ -26,10 +26,6 @@ contains
 !                                 ao_basis_ket%nao, ao_basis_ket%nshells, cspinor_ket%nao
 
         call  get_ao_overlap (ao_basis_bra,ao_basis_ket,SAO)
-!        print*,'Print AO overlap (size ', cspinor_bra%nao ,'x', cspinor_ket%nao,')'
-!        do i=1,cspinor_bra%nao
-!           write(*,*)(SAO(i,j),j=1,cspinor_ket%nao)
-!        enddo
 
         SC  = matmul(SAO,cspinor_ket%coeff(:,:,1))                        ! multiply with alpha coefficients
         SMO = matmul(conjg(transpose(cspinor_bra%coeff(:,:,1))),SC)       ! alpha-alpha contribution
@@ -45,7 +41,7 @@ contains
         end do
 
         deallocate(SAO,SC)
-     55 FORMAT( 100(:,1X,'(',G10.2,',',G10.2,')') )
+!     55 FORMAT( 100(:,1X,'(',G10.2,',',G10.2,')') )
 
    end subroutine get_mo_overlap
 
