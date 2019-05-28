@@ -24,25 +24,9 @@ sys.path.append(os.path.abspath('sphinxext'))
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 # miro: this is safe list of extensions for (almost) all versions of sphinx
 extensions = ['matplotlib.sphinxext.mathmpl',
-              'matplotlib.sphinxext.only_directives',
               'matplotlib.sphinxext.plot_directive',
               'sphinx.ext.autodoc',
               'sphinx.ext.doctest',]
-
-#miro: try to add conditionally the extension in order not to hurt the doc compilation
-# older machines might lack it
-
-try:
-    import sphinx.ext.mathjax
-    #extensions.append('sphinx.ext.mathjax')
-except ImportError:
-    print('sphinx.ext.mathjax extension not found => math will not be properly rendered')
-
-# port of mathjax which supports downloading of math formulas as latex
-extensions.append('mathjaxplus')
-
-# adds info about pages from git log
-extensions.append('gitlog')
 
 # be safe about adding new extensions
 try:
@@ -259,12 +243,3 @@ latex_documents = [
 
 # If false, no module index is generated.
 #latex_use_modindex = True
-
-# mathjax config
-mathjax_generate_latex = True
-mathjax_latex_style = 'font-size:14px;text-align:right;'
-mathjax_latex_title = 'Save as Latex'
-
-# gitlog config
-gitlog_source_path = 'doc'
-gitlog_date_format = '%d %b %Y, %H:%M:%S'
