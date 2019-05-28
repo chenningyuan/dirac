@@ -508,17 +508,26 @@ module talsh_ao_to_mo
           real(8) :: skl(21*21) ! hardwired for maximum  l-value of 5 (s=1,p=3,d=6,f=10,g=15,h=21)
           real(8), parameter :: fijkl = 1.0
           integer :: ncentr=1
-          real(8) :: atomic_data(5)
+          real(8) :: atomic_data(5) = (/0.0,0.0,0.0,0.0,0.0/)
 
           integer :: nocc
           complex(8), allocatable :: s_ao(:,:), s_c(:,:), s_mo(:,:)
           real(8) :: nelec
 
+          logical :: tobe
+
           integer :: ierr
 
-          print*, "mo_occ", mo_occ
-
-          call read_from_respect(ao_basis,cspinor,ierr)
+          ! read MO coefficients and ao basis set information
+          inquire (file='DFCOEF',exist=tobe)
+          if (tobe) then
+             call read_from_dirac (ao_basis,cspinor,'DFCOEF',ierr)
+          else
+             inquire (file='RSD_MOS',exist=tobe)
+             if (tobe) then
+                call read_from_respect (ao_basis,cspinor,ierr)
+             end if
+          end if
 
           allocate(s_ao(ao_basis%nao,ao_basis%nao))
 
@@ -572,10 +581,6 @@ module talsh_ao_to_mo
             nelec = nelec + real(s_mo(k,k),8)
             print*, "nelec : ", nelec
           end do
-
-          print*, s_mo(3,3), s_mo(3,4), s_mo(3,5)
-          print*, s_mo(4,3), s_mo(4,4), s_mo(4,5)
-          print*, s_mo(5,3), s_mo(5,4), s_mo(5,5)
 
           deallocate(s_ao)
           deallocate(s_c)

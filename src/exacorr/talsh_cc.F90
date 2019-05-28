@@ -110,9 +110,6 @@ module talsh_cc
          ncycles = exa_input%ncycles
          print_level = exa_input%print_level
 
-         ! test respect, hard-code water
-         call compute_nelectrons((/1,2,3,4,5,6,7,8,9,10/))
-
          write(*,*) ""
          write(*,'(A)') " Characteristics of this calculation"
          write(*,'(A)') " -----------------------------------"

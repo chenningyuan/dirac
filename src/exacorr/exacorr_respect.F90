@@ -112,26 +112,6 @@ module exacorr_respect
         nao = nao + nhkt(i) * ( nhkt(i) + 1 ) / 2
       end do
 
-!*********************************************
-!       sort and create all necessary arrays *
-!*********************************************
-
-!     sort ReSpect order into exacorr order
-      call sort_basis_data(ncent,nhkt,priexp,priccf,nshells)
-
-!     Create array containing centers per shell, instead of per atom
-      allocate(cent(nshells,3))
-      j = 1
-      do i = 1, nshells-1
-        cent(i,1:3) = cent_rsd(1:3,j)
-        if (ncent(i) < ncent(i+1)) then
-          j = j + 1
-        else if (i == nshells-1) then
-          cent(nshells,1:3) = cent_rsd(1:3,j)
-        end if
-      end do
-      deallocate(cent_rsd)
-
 !*************************************************************
 !     read total SCF energy, eigenvalues and MO coefficients *
 !*************************************************************
@@ -157,6 +137,26 @@ module exacorr_respect
 
       allocate(coeff(2*nao,nelms))
       read (lucoef,*,end=10,err=10) coeff
+
+!*********************************************
+!       sort and create all necessary arrays *
+!*********************************************
+
+!     sort ReSpect order into exacorr order
+      if (ncentr.gt.1) call sort_data(ncent,nhkt,priexp,priccf,coeff,nshells)
+
+!     Create array containing centers per shell, instead of per atom
+      allocate(cent(nshells,3))
+      j = 1
+      do i = 1, nshells-1
+        cent(i,1:3) = cent_rsd(1:3,j)
+        if (ncent(i) < ncent(i+1)) then
+          j = j + 1
+        else if (i == nshells-1) then
+          cent(nshells,1:3) = cent_rsd(1:3,j)
+        end if
+      end do
+      deallocate(cent_rsd)
 
 !***********************************************
 !     store all data in derived type arguments *
@@ -234,18 +234,60 @@ module exacorr_respect
 
       end subroutine read_from_respect
 
-      subroutine sort_basis_data(ncent,nhkt,priexp,priccf,nshells)
+      subroutine sort_data(ncent,nhkt,priexp,priccf,coeff,nshells)
 
-!       Insertion sort (so far the only sort which gives the desired ordening)
+!       Sort of MO coefficients and basis set data
 
 !       input variables
-        integer, intent(inout) :: ncent(:), nhkt(:)
-        integer, intent(in   ) :: nshells
-        real(8), intent(inout) :: priexp(:), priccf(:,:)
+        integer,    intent(inout) :: ncent(:), nhkt(:)
+        integer,    intent(in   ) :: nshells
+        real(8),    intent(inout) :: priexp(:), priccf(:,:)
+        complex(8), intent(inout) :: coeff(:,:)
 !       local variables
-        integer :: i, j
+        integer :: i, j, index, index2
         integer :: tmp_ncent, tmp_nhkt
+        integer :: dims(2)
+        integer :: nao, nfunctions, ncentr
         real(8) :: tmp_priexp, tmp_priccf
+        complex(8), allocatable :: tmp_coeff(:,:)
+
+        !  extract variables from arguments
+        dims   = shape(coeff)
+        nao    = dims(1) / 2
+        ncentr = maxval(ncent)
+
+        ! make tmp copy of coefficients
+        allocate(tmp_coeff(dims(1),dims(2)))
+        tmp_coeff = coeff
+
+        ! MO coefficient matrix ReSpect
+        !       2*nmo
+        !     ---------
+        ! nao | alpha |
+        !     ---------
+        ! nao | beta  |
+        !     ---------
+
+        ! sort MO coefficients
+        i = 1
+        index = 1
+        do while (i.le.ncentr)
+          index2 = 1
+          do j = 1, nshells
+            nfunctions = nhkt(j) * ( nhkt(j) + 1 ) / 2
+            if (i == ncent(j)) then
+              ! alpha
+              coeff(index:index+nfunctions-1,:) = tmp_coeff(index2:index2+nfunctions-1,:)
+              ! beta
+              coeff(index+nao:index+nao+nfunctions-1,:) = tmp_coeff(index2+nao:index2+nao+nfunctions-1,:)
+              index = index + nfunctions
+            end if
+            index2 = index2 + nfunctions
+          end do
+          i = i + 1
+        end do
+
+        deallocate(tmp_coeff)
 
         do i = 2, nshells
           tmp_ncent  = ncent (  i)
@@ -267,6 +309,6 @@ module exacorr_respect
           priccf(1,j+1) = tmp_priccf
         end do
 
-      end subroutine sort_basis_data
+      end subroutine sort_data
 
 end module exacorr_respect
