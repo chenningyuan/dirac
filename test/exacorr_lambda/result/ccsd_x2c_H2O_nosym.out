@@ -166,57 +166,57 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 Version information
 -------------------
 
-Branch        | caar-interface-respect
-Commit hash   | 170a831ce
-Commit author | Stan Papadopoulos
-Commit date   | Mon Feb 18 10:45:48 2019 +0100
+Branch        | caar
+Commit hash   | c9183442d
+Commit author | visscher
+Commit date   | Thu Apr 11 11:24:01 2019 -0400
 
 
 Configuration and build information
 -----------------------------------
 
-Who compiled             | stan
-Compiled on server       | MacBook-Pro-van-Stan.local
+Who compiled             | visscher
+Compiled on server       | MacBook2017LV.local
 Operating system         | Darwin-18.2.0
-CMake version            | 3.13.3
+CMake version            | 3.14.0
 CMake generator          | Unix Makefiles
-CMake build type         | debug
-Configuration time       | 2019-02-19 09:29:03.895941
-Python version           | 3.7.2
-Fortran compiler         | /Users/stan/packages/mpi/mpich/3.2.1/bin/mpifort
-Fortran compiler version | 8.2.0
-Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS  -fopenmp
-C compiler               | /Users/stan/packages/mpi/mpich/3.2.1/bin/mpicc
-C compiler version       | 8.2.0
-C compiler flags         |  -g  -fopenmp
-C++ compiler             | /Users/stan/packages/mpi/mpich/3.2.1/bin/mpicxx
-C++ compiler version     | 8.2.0
-C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused  -fopenmp
+CMake build type         | release
+Configuration time       | 2019-05-16 12:19:41.348578
+Python version           | 3.6.7
+Fortran compiler         | /opt/local/bin/mpif90
+Fortran compiler version | 8.3.0
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS  -fopenmp -ffpe-trap=invalid -rdynamic -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS  -fopenmp
+C compiler               | /opt/local/bin/mpicc
+C compiler version       | 8.3.0
+C compiler flags         |  -g  -fopenmp -g  -fopenmp
+C++ compiler             | /opt/local/bin/mpicxx
+C++ compiler version     | 8.3.0
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused  -fopenmp -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused  -fopenmp
 Static linking           | False
 64-bit integers          | False
 MPI parallelization      | True
-MPI launcher             | /Users/stan/packages/mpi/mpich/3.2.1/bin/mpiexec
-Math libraries           | /usr/lib/liblapack.dylib;/usr/lib/libblas.dylib
+MPI launcher             | /opt/local/bin/mpiexec
+Math libraries           | /opt/local/lib/libatlas.a;/usr/lib/liblapack.dylib;/opt/local/lib/libf77blas.a;/usr/lib/libcblas.dylib;/opt/local/lib/libatlas.a
 Builtin BLAS library     | OFF
 Builtin LAPACK library   | OFF
 Explicit libraries       | unknown
-Compile definitions      | HAVE_SYSTEM_NATIVE_BLAS;HAVE_SYSTEM_NATIVE_LAPACK;HAVE_MPI;HAVE_OPENMP;VAR_MPI;VAR_MPI2;USE_MPI_MOD_F90;MOD_UNRELEASED;SYS_DARWIN;VAR_MFDS;PRG_DIRAC;INSTALL_WRKMEM=64000000;MOD_QCORR;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT;MOD_EXACORR
+Compile definitions      | HAVE_MPI;HAVE_OPENMP;VAR_MPI;VAR_MPI2;MOD_UNRELEASED;SYS_DARWIN;VAR_MFDS;PRG_DIRAC;INSTALL_WRKMEM=64000000;BUILD_GEN1INT;MOD_QCORR;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT;MOD_EXACORR
 
 
  Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
 
 
- * openMP activated, number of processes and number of threads in non-parallel region:   12    1
+ * openMP activated, number of processes and number of threads in non-parallel region:    8    1
 
 
- * openMP parallel region, max number of threads and current number of threads:          2147483647    1    0
+ * openMP parallel region, max number of threads and current number of threads:                 256    1    0
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Mac OSX): Wed Feb 20 13:54:53 2019
-     Host name              : MacBook-Pro-van-Stan.local              
+     Date and time (Mac OSX): Thu May 16 16:42:59 2019
+     Host name              : MacBook2017LV.local                     
 
 
 Contents of the input file
@@ -229,6 +229,7 @@ Contents of the input file
 .TITLE                                                                                              
 Water molecule. X2C Hamiltonian. CC energies.                                                       
 .WAVE F                                                                                             
+.PROPERTIES                                                                                         
 **HAMILTONIAN                                                                                       
 .X2C                                                                                                
 **WAVE FUNCTIONS                                                                                    
@@ -237,16 +238,15 @@ Water molecule. X2C Hamiltonian. CC energies.
 *SCF                                                                                                
 .EVCCNV                                                                                             
 1.0E-9                                                                                              
-**MOLTRA                                                                                            
-.ACTIVE                                                                                             
-3..17                                                                                               
-!.EXACORR                                                                                           
 **EXACC                                                                                             
 .OCCUPIED                                                                                           
 3..5                                                                                                
 .VIRTUAL                                                                                            
 6..17                                                                                               
 .LAMBDA                                                                                             
+**PROPERTIES                                                                                        
+.DIPOLE                                                                                             
+.EFG                                                                                                
 *END OF                                                                                             
 
 
@@ -298,6 +298,7 @@ FINISH
 
  Jobs in this run:
    * Wave function
+   * Properties
 
 
     **************************************************************************
@@ -540,6 +541,7 @@ H     -0.7685504811   0.0000000000   0.4760602904
    *************************** Hamiltonian defined ***************************
    ***************************************************************************
 
+  - BSS with properties !
  * Print level:    0
  * Exact-Two-Component (X2C) Hamiltonian
    Reference: 
@@ -622,6 +624,30 @@ H     -0.7685504811   0.0000000000   0.4760602904
  * NB!!! No e-p rotations in 2nd order optimization.
  ***** OUTPUT CONTROL *****
  * Only electron eigenvalues written out.
+
+
+   ***************************************************************************
+   ***************************** Property module *****************************
+   ***************************************************************************
+
+ * Print level:   0
+ * Input label: **PROPE
+ * Properties calculated for the following wave functions:
+     1: DHF 
+ These initial settings of center and origins might be changed later:
+ * Operator center (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * Gauge origin    (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * Dipole origin   (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * Perform 4c->2c picture change transformation of the four-component property operators
+===========================================================================
+   Magnetic properties:
+===========================================================================
+===========================================================================
+ Dipole moment
+===========================================================================
+===========================================================================
+ Electric field gradients
+===========================================================================
 
 
  ********************************************************************************
@@ -815,7 +841,7 @@ H     -0.7685504811   0.0000000000   0.4760602904
 
                         1 Debye =   2.54177000 a.u. 
 
-Total time used in ONEGEN (CPU)  0.02735800s and (WALL)  0.02800000s
+Total time used in ONEGEN (CPU)  0.01441900s and (WALL)  0.01400000s
 
 
                        Generating Lowdin canonical matrix:
@@ -824,16 +850,16 @@ Total time used in ONEGEN (CPU)  0.02735800s and (WALL)  0.02800000s
 
 QDIAG timings. NZ,N = 1  40
 
-QDIAG: QTRIDI CPU (WALL) time:  0.00032800s ( 0.00000000s)
-QDIAG: TQL2   CPU (WALL) time:  0.00060700s ( 0.00100000s)
+QDIAG: QTRIDI CPU (WALL) time:  0.00006400s ( 0.00000000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00007600s ( 0.00000000s)
 QDIAG: QTRIBK CPU (WALL) time:  0.00000500s ( 0.00000000s)
    L   A     * Deleted:          1(Proj:          1, Lindep:          0) Smin: 0.15E-01
 
 QDIAG timings. NZ,N = 1  97
 
-QDIAG: QTRIDI CPU (WALL) time:  0.00409000s ( 0.00400000s)
-QDIAG: TQL2   CPU (WALL) time:  0.00856700s ( 0.00900000s)
-QDIAG: QTRIBK CPU (WALL) time:  0.00000400s ( 0.00000000s)
+QDIAG: QTRIDI CPU (WALL) time:  0.00073500s ( 0.00000000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00091300s ( 0.00100000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00000500s ( 0.00000000s)
    S   A     * Deleted:          9(Proj:          9, Lindep:          0) Smin: 0.74E-02
 
                    *********************************************************************
@@ -862,9 +888,9 @@ QDIAG: QTRIBK CPU (WALL) time:  0.00000400s ( 0.00000000s)
 
 QDIAG timings. NZ,N = 1  40
 
-QDIAG: QTRIDI CPU (WALL) time:  0.00032200s ( 0.00000000s)
-QDIAG: TQL2   CPU (WALL) time:  0.00055100s ( 0.00100000s)
-QDIAG: QTRIBK CPU (WALL) time:  0.00000300s ( 0.00000000s)
+QDIAG: QTRIDI CPU (WALL) time:  0.00006000s ( 0.00100000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00007100s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00000400s ( 0.00000000s)
 
 
                                 Output from MODHAM
@@ -875,15 +901,15 @@ QDIAG: QTRIBK CPU (WALL) time:  0.00000300s ( 0.00000000s)
 
 QDIAG timings. NZ,N = 4  80
 
-QDIAG: QTRIDI CPU (WALL) time:  0.01723500s ( 0.01700000s)
-QDIAG: TQL2   CPU (WALL) time:  0.00366600s ( 0.00400000s)
-QDIAG: QTRIBK CPU (WALL) time:  0.02256400s ( 0.02200000s)
+QDIAG: QTRIDI CPU (WALL) time:  0.00291000s ( 0.00300000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00039300s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00267400s ( 0.00300000s)
 
 QDIAG timings. NZ,N = 4  40
 
-QDIAG: QTRIDI CPU (WALL) time:  0.00218500s ( 0.00200000s)
-QDIAG: TQL2   CPU (WALL) time:  0.00049700s ( 0.00000000s)
-QDIAG: QTRIBK CPU (WALL) time:  0.00293500s ( 0.00300000s)
+QDIAG: QTRIDI CPU (WALL) time:  0.00035800s ( 0.00100000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00006000s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00031500s ( 0.00000000s)
 
 
                                 Output from AMFIIN
@@ -974,8 +1000,8 @@ QDIAG: QTRIBK CPU (WALL) time:  0.00293500s ( 0.00300000s)
                    ***          Calculation continues in two-component mode.         ***
                    *********************************************************************
 
- >>> CPU  time used in mk_h2c is   0.14 seconds
- >>> WALL time used in mk_h2c is   0.14 seconds
+ >>> CPU  time used in mk_h2c is   0.12 seconds
+ >>> WALL time used in mk_h2c is   0.12 seconds
   Nuclear Gaussian exponent for atom of charge   8.000 :    5.8631436655D+08
   Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248239171D+09
 
@@ -991,7 +1017,7 @@ QDIAG: QTRIBK CPU (WALL) time:  0.00293500s ( 0.00300000s)
 
                         1 Debye =   2.54177000 a.u. 
 
-Total time used in ONEGEN (CPU)  0.00451600s and (WALL)  0.00400000s
+Total time used in ONEGEN (CPU)  0.00411200s and (WALL)  0.00400000s
 
 
                        Generating Lowdin canonical matrix:
@@ -1000,9 +1026,9 @@ Total time used in ONEGEN (CPU)  0.00451600s and (WALL)  0.00400000s
 
 QDIAG timings. NZ,N = 1  40
 
-QDIAG: QTRIDI CPU (WALL) time:  0.00034900s ( 0.00000000s)
-QDIAG: TQL2   CPU (WALL) time:  0.00065200s ( 0.00100000s)
-QDIAG: QTRIBK CPU (WALL) time:  0.00000500s ( 0.00000000s)
+QDIAG: QTRIDI CPU (WALL) time:  0.00005900s ( 0.00000000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00007200s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00000400s ( 0.00000000s)
    L   A     * Deleted:          1(Proj:          1, Lindep:          0) Smin: 0.15E-01
 
 
@@ -1013,8 +1039,8 @@ QDIAG: QTRIBK CPU (WALL) time:  0.00000500s ( 0.00000000s)
 No. of positive energy orbitals (NESH):    40
 No. of negative energy orbitals (NPSH):     0
 Total no. of orbitals           (NORB):    40
- >>> CPU  time used in PAMSET is   0.20 seconds
- >>> WALL time used in PAMSET is   0.20 seconds
+ >>> CPU  time used in PAMSET is   0.15 seconds
+ >>> WALL time used in PAMSET is   0.15 seconds
 
 
  *******************************************************************************
@@ -1027,354 +1053,354 @@ Total no. of orbitals           (NORB):    40
              Improved by a sum of atomic screening potentials.
 
 
-########## START ITERATION NO.   1 ##########   Wed Feb 20 13:54:53 2019
+########## START ITERATION NO.   1 ##########   Thu May 16 16:42:59 2019
 
 
 QDIAG timings. NZ,N = 4  40
 
-QDIAG: QTRIDI CPU (WALL) time:  0.00214000s ( 0.00200000s)
-QDIAG: TQL2   CPU (WALL) time:  0.00053900s ( 0.00100000s)
-QDIAG: QTRIBK CPU (WALL) time:  0.00279600s ( 0.00300000s)
+QDIAG: QTRIDI CPU (WALL) time:  0.00035200s ( 0.00000000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00006600s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00030700s ( 0.00100000s)
 E_HOMO...E_LUMO, symmetry 1:     5  -0.79636    6  -0.26440
 
 => Calculating sum of orbital energies
-It.    1    -37.80760523219      0.00D+00  0.00D+00  0.00D+00               0.16496100s   Atom. scrpot   Wed Feb 20
+It.    1    -37.80760523219      0.00D+00  0.00D+00  0.00D+00               0.02789700s   Atom. scrpot   Thu May 16
 
-########## START ITERATION NO.   2 ##########   Wed Feb 20 13:54:53 2019
+########## START ITERATION NO.   2 ##########   Thu May 16 16:42:59 2019
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   46.85%    0.00%    1.85%   0.07198501s
+SOfock:LL  1.00D-12    0.00%   46.85%    0.00%    1.93%   0.04038098s
 
 QDIAG timings. NZ,N = 4  40
 
-QDIAG: QTRIDI CPU (WALL) time:  0.00208900s ( 0.00200000s)
-QDIAG: TQL2   CPU (WALL) time:  0.00051300s ( 0.00100000s)
-QDIAG: QTRIBK CPU (WALL) time:  0.00279200s ( 0.00300000s)
+QDIAG: QTRIDI CPU (WALL) time:  0.00038400s ( 0.00100000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00006200s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00032700s ( 0.00000000s)
 E_HOMO...E_LUMO, symmetry 1:     5  -0.19710    6   0.22035
->>> Total wall time:  0.09800000s, and total CPU time :  0.09516800s
+>>> Total wall time:  0.07100000s, and total CPU time :  0.06593600s
 
-########## END ITERATION NO.   2 ##########   Wed Feb 20 13:54:53 2019
+########## END ITERATION NO.   2 ##########   Thu May 16 16:42:59 2019
 
-It.    2    -75.76333161755      3.80D+01  4.73D+00  1.49D+00               0.09800000s   LL             Wed Feb 20
+It.    2    -75.76333161755      3.80D+01  4.73D+00  1.49D+00               0.07100000s   LL             Thu May 16
 
-########## START ITERATION NO.   3 ##########   Wed Feb 20 13:54:53 2019
+########## START ITERATION NO.   3 ##########   Thu May 16 16:42:59 2019
 
     3 *** Differential density matrix. DCOVLP     = 0.9024
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   46.98%    0.00%    1.93%   0.07677299s
+SOfock:LL  1.00D-12    0.00%   46.98%    0.00%    1.85%   0.04332298s
 
 QDIAG timings. NZ,N = 4  40
 
-QDIAG: QTRIDI CPU (WALL) time:  0.00208500s ( 0.00200000s)
-QDIAG: TQL2   CPU (WALL) time:  0.00051300s ( 0.00000000s)
-QDIAG: QTRIBK CPU (WALL) time:  0.00280200s ( 0.00300000s)
+QDIAG: QTRIDI CPU (WALL) time:  0.00045700s ( 0.00100000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00006500s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00031400s ( 0.00000000s)
 E_HOMO...E_LUMO, symmetry 1:     5  -0.49676    6   0.17825
->>> Total wall time:  0.08900000s, and total CPU time :  0.08510000s
+>>> Total wall time:  0.05100000s, and total CPU time :  0.04692700s
 
-########## END ITERATION NO.   3 ##########   Wed Feb 20 13:54:53 2019
+########## END ITERATION NO.   3 ##########   Thu May 16 16:42:59 2019
 
-It.    3    -75.97685545247      2.14D-01 -1.19D+00  8.33D-01   DIIS   2    0.08900000s   LL             Wed Feb 20
+It.    3    -75.97685545247      2.14D-01 -1.19D+00  8.33D-01   DIIS   2    0.05100000s   LL             Thu May 16
 
-########## START ITERATION NO.   4 ##########   Wed Feb 20 13:54:53 2019
+########## START ITERATION NO.   4 ##########   Thu May 16 16:42:59 2019
 
     4 *** Differential density matrix. DCOVLP     = 0.9710
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   47.26%    0.00%    1.92%   0.07801002s
+SOfock:LL  1.00D-12    0.00%   47.26%    0.00%    1.92%   0.03854600s
 
 QDIAG timings. NZ,N = 4  40
 
-QDIAG: QTRIDI CPU (WALL) time:  0.00313900s ( 0.00300000s)
-QDIAG: TQL2   CPU (WALL) time:  0.00077800s ( 0.00000000s)
-QDIAG: QTRIBK CPU (WALL) time:  0.00365800s ( 0.00400000s)
+QDIAG: QTRIDI CPU (WALL) time:  0.00053100s ( 0.00000000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00009300s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00046700s ( 0.00100000s)
 E_HOMO...E_LUMO, symmetry 1:     5  -0.49009    6   0.17998
->>> Total wall time:  0.09600000s, and total CPU time :  0.08856800s
+>>> Total wall time:  0.04800000s, and total CPU time :  0.04235000s
 
-########## END ITERATION NO.   4 ##########   Wed Feb 20 13:54:54 2019
+########## END ITERATION NO.   4 ##########   Thu May 16 16:42:59 2019
 
-It.    4    -76.08015849022      1.03D-01  4.79D-01  4.83D-02   DIIS   3    0.09600000s   LL             Wed Feb 20
+It.    4    -76.08015849021      1.03D-01  4.79D-01  4.83D-02   DIIS   3    0.04800000s   LL             Thu May 16
 
-########## START ITERATION NO.   5 ##########   Wed Feb 20 13:54:54 2019
+########## START ITERATION NO.   5 ##########   Thu May 16 16:42:59 2019
 
     5 *** Differential density matrix. DCOVLP     = 1.0015
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   47.94%    0.00%    1.89%   0.07366902s
+SOfock:LL  1.00D-12    0.00%   47.94%    0.00%    1.89%   0.04383200s
 
 QDIAG timings. NZ,N = 4  40
 
-QDIAG: QTRIDI CPU (WALL) time:  0.00232600s ( 0.00300000s)
-QDIAG: TQL2   CPU (WALL) time:  0.00057000s ( 0.00000000s)
-QDIAG: QTRIBK CPU (WALL) time:  0.00309700s ( 0.00300000s)
+QDIAG: QTRIDI CPU (WALL) time:  0.00036200s ( 0.00100000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00006400s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00034900s ( 0.00000000s)
 E_HOMO...E_LUMO, symmetry 1:     5  -0.49192    6   0.18037
->>> Total wall time:  0.08600000s, and total CPU time :  0.08184400s
+>>> Total wall time:  0.05200000s, and total CPU time :  0.04754600s
 
-########## END ITERATION NO.   5 ##########   Wed Feb 20 13:54:54 2019
+########## END ITERATION NO.   5 ##########   Thu May 16 16:42:59 2019
 
-It.    5    -76.08059414839      4.36D-04 -2.41D-02  7.48D-03   DIIS   4    0.08600000s   LL             Wed Feb 20
+It.    5    -76.08059414839      4.36D-04 -2.41D-02  7.48D-03   DIIS   4    0.05200000s   LL             Thu May 16
 
-########## START ITERATION NO.   6 ##########   Wed Feb 20 13:54:54 2019
+########## START ITERATION NO.   6 ##########   Thu May 16 16:42:59 2019
 
     6 *** Differential density matrix. DCOVLP     = 1.0006
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   48.21%    0.00%    1.78%   0.07356197s
+SOfock:LL  1.00D-12    0.00%   48.21%    0.00%    1.78%   0.03791100s
 
 QDIAG timings. NZ,N = 4  40
 
-QDIAG: QTRIDI CPU (WALL) time:  0.00318800s ( 0.00300000s)
-QDIAG: TQL2   CPU (WALL) time:  0.00075600s ( 0.00100000s)
-QDIAG: QTRIBK CPU (WALL) time:  0.00364300s ( 0.00400000s)
+QDIAG: QTRIDI CPU (WALL) time:  0.00038400s ( 0.00100000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00006300s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00033800s ( 0.00000000s)
 E_HOMO...E_LUMO, symmetry 1:     5  -0.49278    6   0.18034
->>> Total wall time:  0.09000000s, and total CPU time :  0.08407800s
+>>> Total wall time:  0.04500000s, and total CPU time :  0.04079500s
 
-########## END ITERATION NO.   6 ##########   Wed Feb 20 13:54:54 2019
+########## END ITERATION NO.   6 ##########   Thu May 16 16:42:59 2019
 
-It.    6    -76.08061513075      2.10D-05  1.30D-03  2.30D-03   DIIS   5    0.09000000s   LL             Wed Feb 20
+It.    6    -76.08061513075      2.10D-05  1.30D-03  2.30D-03   DIIS   5    0.04500000s   LL             Thu May 16
 
-########## START ITERATION NO.   7 ##########   Wed Feb 20 13:54:54 2019
+########## START ITERATION NO.   7 ##########   Thu May 16 16:42:59 2019
 
     7 *** Differential density matrix. DCOVLP     = 1.0004
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   48.49%    0.00%    1.88%   0.07347900s
+SOfock:LL  1.00D-12    0.00%   48.49%    0.00%    1.88%   0.04685101s
 
 QDIAG timings. NZ,N = 4  40
 
-QDIAG: QTRIDI CPU (WALL) time:  0.00231400s ( 0.00200000s)
-QDIAG: TQL2   CPU (WALL) time:  0.00056000s ( 0.00100000s)
-QDIAG: QTRIBK CPU (WALL) time:  0.00308000s ( 0.00300000s)
+QDIAG: QTRIDI CPU (WALL) time:  0.00037400s ( 0.00100000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00006600s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00031600s ( 0.00000000s)
 E_HOMO...E_LUMO, symmetry 1:     5  -0.49286    6   0.18036
->>> Total wall time:  0.08600000s, and total CPU time :  0.08156800s
+>>> Total wall time:  0.05400000s, and total CPU time :  0.04970900s
 
-########## END ITERATION NO.   7 ##########   Wed Feb 20 13:54:54 2019
+########## END ITERATION NO.   7 ##########   Thu May 16 16:42:59 2019
 
-It.    7    -76.08061797267      2.84D-06  3.07D-04  2.42D-04   DIIS   6    0.08600000s   LL             Wed Feb 20
+It.    7    -76.08061797267      2.84D-06  3.07D-04  2.42D-04   DIIS   6    0.05400000s   LL             Thu May 16
 
-########## START ITERATION NO.   8 ##########   Wed Feb 20 13:54:54 2019
+########## START ITERATION NO.   8 ##########   Thu May 16 16:42:59 2019
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   49.50%    0.00%    1.77%   0.07120597s
+SOfock:LL  1.00D-12    0.00%   49.50%    0.00%    1.77%   0.04169196s
 
 QDIAG timings. NZ,N = 4  40
 
-QDIAG: QTRIDI CPU (WALL) time:  0.00310800s ( 0.00400000s)
-QDIAG: TQL2   CPU (WALL) time:  0.00075100s ( 0.00000000s)
-QDIAG: QTRIBK CPU (WALL) time:  0.00362900s ( 0.00400000s)
+QDIAG: QTRIDI CPU (WALL) time:  0.00044600s ( 0.00000000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00011800s ( 0.00100000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00033200s ( 0.00000000s)
 E_HOMO...E_LUMO, symmetry 1:     5  -0.49287    6   0.18036
->>> Total wall time:  0.08800000s, and total CPU time :  0.08161400s
+>>> Total wall time:  0.05100000s, and total CPU time :  0.04523200s
 
-########## END ITERATION NO.   8 ##########   Wed Feb 20 13:54:54 2019
+########## END ITERATION NO.   8 ##########   Thu May 16 16:42:59 2019
 
-It.    8    -76.08061801368      4.10D-08  3.66D-05  5.77D-05   DIIS   7    0.08800000s   LL             Wed Feb 20
+It.    8    -76.08061801368      4.10D-08  3.66D-05  5.77D-05   DIIS   7    0.05100000s   LL             Thu May 16
 
-########## START ITERATION NO.   9 ##########   Wed Feb 20 13:54:54 2019
+########## START ITERATION NO.   9 ##########   Thu May 16 16:42:59 2019
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   50.61%    0.00%    1.86%   0.07176101s
+SOfock:LL  1.00D-12    0.00%   50.61%    0.00%    1.86%   0.03829300s
 
 QDIAG timings. NZ,N = 4  40
 
-QDIAG: QTRIDI CPU (WALL) time:  0.00210300s ( 0.00200000s)
-QDIAG: TQL2   CPU (WALL) time:  0.00050600s ( 0.00000000s)
-QDIAG: QTRIBK CPU (WALL) time:  0.00279300s ( 0.00300000s)
+QDIAG: QTRIDI CPU (WALL) time:  0.00053200s ( 0.00100000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00009300s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00046700s ( 0.00100000s)
 E_HOMO...E_LUMO, symmetry 1:     5  -0.49287    6   0.18036
->>> Total wall time:  0.08400000s, and total CPU time :  0.07922200s
+>>> Total wall time:  0.04700000s, and total CPU time :  0.04254600s
 
-########## END ITERATION NO.   9 ##########   Wed Feb 20 13:54:54 2019
+########## END ITERATION NO.   9 ##########   Thu May 16 16:42:59 2019
 
-It.    9    -76.08061801610      2.42D-09  8.30D-06  1.16D-05   DIIS   8    0.08400000s   LL             Wed Feb 20
+It.    9    -76.08061801610      2.42D-09  8.30D-06  1.16D-05   DIIS   8    0.04700000s   LL             Thu May 16
 
-########## START ITERATION NO.  10 ##########   Wed Feb 20 13:54:54 2019
+########## START ITERATION NO.  10 ##########   Thu May 16 16:42:59 2019
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   52.84%    0.00%    1.75%   0.07048893s
+SOfock:LL  1.00D-12    0.00%   52.84%    0.00%    1.75%   0.04309100s
 
 QDIAG timings. NZ,N = 4  40
 
-QDIAG: QTRIDI CPU (WALL) time:  0.00208600s ( 0.00200000s)
-QDIAG: TQL2   CPU (WALL) time:  0.00050700s ( 0.00000000s)
-QDIAG: QTRIBK CPU (WALL) time:  0.00288600s ( 0.00300000s)
+QDIAG: QTRIDI CPU (WALL) time:  0.00036700s ( 0.00100000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00006400s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00031700s ( 0.00000000s)
 E_HOMO...E_LUMO, symmetry 1:     5  -0.49287    6   0.18036
->>> Total wall time:  0.08100000s, and total CPU time :  0.07804700s
+>>> Total wall time:  0.05100000s, and total CPU time :  0.04655100s
 
-########## END ITERATION NO.  10 ##########   Wed Feb 20 13:54:54 2019
+########## END ITERATION NO.  10 ##########   Thu May 16 16:42:59 2019
 
-It.   10    -76.08061801619      8.61D-11  2.42D-06  1.39D-06   DIIS   9    0.08100000s   LL             Wed Feb 20
+It.   10    -76.08061801619      8.60D-11  2.42D-06  1.39D-06   DIIS   9    0.05100000s   LL             Thu May 16
 
-########## START ITERATION NO.  11 ##########   Wed Feb 20 13:54:54 2019
+########## START ITERATION NO.  11 ##########   Thu May 16 16:42:59 2019
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   55.65%    0.01%    2.00%   0.06888199s
+SOfock:LL  1.00D-12    0.00%   55.65%    0.01%    1.92%   0.04231501s
 
 QDIAG timings. NZ,N = 4  40
 
-QDIAG: QTRIDI CPU (WALL) time:  0.00214300s ( 0.00200000s)
-QDIAG: TQL2   CPU (WALL) time:  0.00051900s ( 0.00100000s)
-QDIAG: QTRIBK CPU (WALL) time:  0.00286300s ( 0.00200000s)
+QDIAG: QTRIDI CPU (WALL) time:  0.00036700s ( 0.00100000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00006300s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00031600s ( 0.00000000s)
 E_HOMO...E_LUMO, symmetry 1:     5  -0.49287    6   0.18036
->>> Total wall time:  0.08000000s, and total CPU time :  0.07652100s
+>>> Total wall time:  0.05000000s, and total CPU time :  0.04542800s
 
-########## END ITERATION NO.  11 ##########   Wed Feb 20 13:54:54 2019
+########## END ITERATION NO.  11 ##########   Thu May 16 16:42:59 2019
 
-It.   11    -76.08061801619      1.51D-12  2.77D-07  2.36D-07   DIIS   9    0.08000000s   LL             Wed Feb 20
+It.   11    -76.08061801619      1.72D-12  2.77D-07  2.36D-07   DIIS   9    0.05000000s   LL             Thu May 16
 
-########## START ITERATION NO.  12 ##########   Wed Feb 20 13:54:54 2019
+########## START ITERATION NO.  12 ##########   Thu May 16 16:42:59 2019
 
    12 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   57.88%    0.02%    2.31%   0.07341492s
+SOfock:LL  1.00D-12    0.00%   57.88%    0.02%    2.29%   0.03913796s
 
 QDIAG timings. NZ,N = 4  40
 
-QDIAG: QTRIDI CPU (WALL) time:  0.00337100s ( 0.00300000s)
-QDIAG: TQL2   CPU (WALL) time:  0.00074500s ( 0.00100000s)
-QDIAG: QTRIBK CPU (WALL) time:  0.00377800s ( 0.00400000s)
+QDIAG: QTRIDI CPU (WALL) time:  0.00035100s ( 0.00000000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00006200s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00037200s ( 0.00000000s)
 E_HOMO...E_LUMO, symmetry 1:     5  -0.49287    6   0.18036
->>> Total wall time:  0.09000000s, and total CPU time :  0.08419500s
+>>> Total wall time:  0.04300000s, and total CPU time :  0.04181100s
 
-########## END ITERATION NO.  12 ##########   Wed Feb 20 13:54:54 2019
+########## END ITERATION NO.  12 ##########   Thu May 16 16:42:59 2019
 
-It.   12    -76.08061801619      8.53D-14  3.61D-08  6.90D-08   DIIS   9    0.09000000s   LL             Wed Feb 20
+It.   12    -76.08061801619      0.00D+00 -3.61D-08  6.90D-08   DIIS   9    0.04300000s   LL             Thu May 16
 
-########## START ITERATION NO.  13 ##########   Wed Feb 20 13:54:54 2019
+########## START ITERATION NO.  13 ##########   Thu May 16 16:42:59 2019
 
    13 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   62.31%    0.14%    2.40%   0.06549096s
+SOfock:LL  1.00D-12    0.00%   62.31%    0.14%    2.50%   0.04321998s
 
 QDIAG timings. NZ,N = 4  40
 
-QDIAG: QTRIDI CPU (WALL) time:  0.00415900s ( 0.00500000s)
-QDIAG: TQL2   CPU (WALL) time:  0.00090200s ( 0.00000000s)
-QDIAG: QTRIBK CPU (WALL) time:  0.00420900s ( 0.00500000s)
+QDIAG: QTRIDI CPU (WALL) time:  0.00035600s ( 0.00100000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00006100s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00031100s ( 0.00000000s)
 E_HOMO...E_LUMO, symmetry 1:     5  -0.49287    6   0.18036
->>> Total wall time:  0.07900000s, and total CPU time :  0.07793000s
+>>> Total wall time:  0.04700000s, and total CPU time :  0.04611600s
 
-########## END ITERATION NO.  13 ##########   Wed Feb 20 13:54:54 2019
+########## END ITERATION NO.  13 ##########   Thu May 16 16:43:00 2019
 
-It.   13    -76.08061801619     -3.69D-13 -1.78D-08  2.25D-08   DIIS   5    0.07900000s   LL             Wed Feb 20
+It.   13    -76.08061801619     -2.70D-13 -1.78D-08  2.25D-08   DIIS   5    0.04700000s   LL             Thu May 16
 
-########## START ITERATION NO.  14 ##########   Wed Feb 20 13:54:54 2019
+########## START ITERATION NO.  14 ##########   Thu May 16 16:43:00 2019
 
    14 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.02%   65.80%    0.90%    3.47%   0.06401098s
+SOfock:LL  1.00D-12    0.02%   65.80%    0.90%    3.54%   0.03933901s
 
 QDIAG timings. NZ,N = 4  40
 
-QDIAG: QTRIDI CPU (WALL) time:  0.00214200s ( 0.00200000s)
-QDIAG: TQL2   CPU (WALL) time:  0.00051900s ( 0.00000000s)
-QDIAG: QTRIBK CPU (WALL) time:  0.00286800s ( 0.00300000s)
+QDIAG: QTRIDI CPU (WALL) time:  0.00037500s ( 0.00000000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00006400s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00037200s ( 0.00000000s)
 E_HOMO...E_LUMO, symmetry 1:     5  -0.49287    6   0.18036
->>> Total wall time:  0.07300000s, and total CPU time :  0.07139200s
+>>> Total wall time:  0.04300000s, and total CPU time :  0.04249900s
 
-########## END ITERATION NO.  14 ##########   Wed Feb 20 13:54:54 2019
+########## END ITERATION NO.  14 ##########   Thu May 16 16:43:00 2019
 
-It.   14    -76.08061801619     -3.13D-13 -7.01D-09  4.77D-09   DAMP 25%    0.07300000s   LL             Wed Feb 20
+It.   14    -76.08061801619     -3.98D-13  7.01D-09  4.77D-09   DAMP 25%    0.04300000s   LL             Thu May 16
 
-########## START ITERATION NO.  15 ##########   Wed Feb 20 13:54:54 2019
+########## START ITERATION NO.  15 ##########   Thu May 16 16:43:00 2019
 
    15 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.13%   75.96%    1.33%    4.92%   0.05720294s
+SOfock:LL  1.00D-12    0.13%   75.96%    1.33%    4.93%   0.03851599s
 
 QDIAG timings. NZ,N = 4  40
 
-QDIAG: QTRIDI CPU (WALL) time:  0.00213600s ( 0.00200000s)
-QDIAG: TQL2   CPU (WALL) time:  0.00051800s ( 0.00100000s)
-QDIAG: QTRIBK CPU (WALL) time:  0.00286100s ( 0.00200000s)
+QDIAG: QTRIDI CPU (WALL) time:  0.00036200s ( 0.00100000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00006400s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00031700s ( 0.00000000s)
 E_HOMO...E_LUMO, symmetry 1:     5  -0.49287    6   0.18036
->>> Total wall time:  0.06500000s, and total CPU time :  0.06437200s
+>>> Total wall time:  0.04200000s, and total CPU time :  0.04103800s
 
-########## END ITERATION NO.  15 ##########   Wed Feb 20 13:54:54 2019
+########## END ITERATION NO.  15 ##########   Thu May 16 16:43:00 2019
 
-It.   15    -76.08061801619     -1.02D-12 -1.36D-09  4.73D-09   DAMP 25%    0.06500000s   LL             Wed Feb 20
+It.   15    -76.08061801619     -1.14D-12  1.36D-09  4.73D-09   DAMP 25%    0.04200000s   LL             Thu May 16
 
-########## START ITERATION NO.  16 ##########   Wed Feb 20 13:54:54 2019
+########## START ITERATION NO.  16 ##########   Thu May 16 16:43:00 2019
 
    16 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.13%   77.25%    2.02%    6.05%   0.05451405s
+SOfock:LL  1.00D-12    0.13%   77.24%    2.02%    5.95%   0.04097599s
 
 QDIAG timings. NZ,N = 4  40
 
-QDIAG: QTRIDI CPU (WALL) time:  0.00209700s ( 0.00200000s)
-QDIAG: TQL2   CPU (WALL) time:  0.00050500s ( 0.00100000s)
-QDIAG: QTRIBK CPU (WALL) time:  0.00281100s ( 0.00300000s)
+QDIAG: QTRIDI CPU (WALL) time:  0.00036600s ( 0.00100000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00006400s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00031700s ( 0.00000000s)
 E_HOMO...E_LUMO, symmetry 1:     5  -0.49287    6   0.18036
->>> Total wall time:  0.06200000s, and total CPU time :  0.06148200s
+>>> Total wall time:  0.04400000s, and total CPU time :  0.04335400s
 
-########## END ITERATION NO.  16 ##########   Wed Feb 20 13:54:55 2019
+########## END ITERATION NO.  16 ##########   Thu May 16 16:43:00 2019
 
-It.   16    -76.08061801618     -4.04D-12  9.20D-10  3.10D-09   DAMP 25%    0.06200000s   LL             Wed Feb 20
+It.   16    -76.08061801618     -3.89D-12 -9.20D-10  3.10D-09   DAMP 25%    0.04400000s   LL             Thu May 16
 
-########## START ITERATION NO.  17 ##########   Wed Feb 20 13:54:55 2019
+########## START ITERATION NO.  17 ##########   Thu May 16 16:43:00 2019
 
    17 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.79%   79.01%    2.94%    6.48%   0.05202699s
+SOfock:LL  1.00D-12    0.79%   79.01%    2.94%    6.52%   0.04688102s
 
 QDIAG timings. NZ,N = 4  40
 
-QDIAG: QTRIDI CPU (WALL) time:  0.00232500s ( 0.00200000s)
-QDIAG: TQL2   CPU (WALL) time:  0.00053200s ( 0.00100000s)
-QDIAG: QTRIBK CPU (WALL) time:  0.00279200s ( 0.00300000s)
+QDIAG: QTRIDI CPU (WALL) time:  0.00037300s ( 0.00100000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00006300s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00031500s ( 0.00000000s)
 E_HOMO...E_LUMO, symmetry 1:     5  -0.49287    6   0.18036
->>> Total wall time:  0.06100000s, and total CPU time :  0.05932800s
+>>> Total wall time:  0.04900000s, and total CPU time :  0.04923800s
 
-########## END ITERATION NO.  17 ##########   Wed Feb 20 13:54:55 2019
+########## END ITERATION NO.  17 ##########   Thu May 16 16:43:00 2019
 
-It.   17    -76.08061801618      5.97D-13 -6.25D-10  2.08D-09   DAMP 25%    0.06100000s   LL             Wed Feb 20
+It.   17    -76.08061801618      5.40D-13 -6.25D-10  2.08D-09   DAMP 25%    0.04900000s   LL             Thu May 16
 
-########## START ITERATION NO.  18 ##########   Wed Feb 20 13:54:55 2019
+########## START ITERATION NO.  18 ##########   Thu May 16 16:43:00 2019
 
    18 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    1.03%   81.69%    3.20%    6.29%   0.05161202s
+SOfock:LL  1.00D-12    1.03%   81.68%    3.20%    6.39%   0.03503597s
 
 QDIAG timings. NZ,N = 4  40
 
-QDIAG: QTRIDI CPU (WALL) time:  0.00231600s ( 0.00300000s)
-QDIAG: TQL2   CPU (WALL) time:  0.00053000s ( 0.00000000s)
-QDIAG: QTRIBK CPU (WALL) time:  0.00279500s ( 0.00300000s)
+QDIAG: QTRIDI CPU (WALL) time:  0.00064000s ( 0.00000000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00009300s ( 0.00000000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00046000s ( 0.00100000s)
 E_HOMO...E_LUMO, symmetry 1:     5  -0.49287    6   0.18036
->>> Total wall time:  0.06000000s, and total CPU time :  0.05892200s
+>>> Total wall time:  0.03900000s, and total CPU time :  0.03844000s
 
-########## END ITERATION NO.  18 ##########   Wed Feb 20 13:54:55 2019
+########## END ITERATION NO.  18 ##########   Thu May 16 16:43:00 2019
 
-It.   18    -76.08061801618      1.48D-12 -4.24D-10  1.41D-09   DAMP 25%    0.06000000s   LL             Wed Feb 20
+It.   18    -76.08061801618      1.68D-12  4.24D-10  1.41D-09   DAMP 25%    0.03900000s   LL             Thu May 16
 
-########## START ITERATION NO.  19 ##########   Wed Feb 20 13:54:55 2019
+########## START ITERATION NO.  19 ##########   Thu May 16 16:43:00 2019
 
    19 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    1.09%   83.61%    3.73%    5.37%   0.05122292s
+SOfock:LL  1.00D-12    1.09%   83.61%    3.71%    5.86%   0.03965402s
 
 QDIAG timings. NZ,N = 4  40
 
-QDIAG: QTRIDI CPU (WALL) time:  0.00213900s ( 0.00200000s)
-QDIAG: TQL2   CPU (WALL) time:  0.00053000s ( 0.00100000s)
-QDIAG: QTRIBK CPU (WALL) time:  0.00286700s ( 0.00200000s)
+QDIAG: QTRIDI CPU (WALL) time:  0.00066800s ( 0.00000000s)
+QDIAG: TQL2   CPU (WALL) time:  0.00011700s ( 0.00100000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00058500s ( 0.00000000s)
 E_HOMO...E_LUMO, symmetry 1:     5  -0.49287    6   0.18036
->>> Total wall time:  0.06400000s, and total CPU time :  0.05862500s
+>>> Total wall time:  0.04900000s, and total CPU time :  0.04422600s
 
-########## END ITERATION NO.  19 ##########   Wed Feb 20 13:54:55 2019
+########## END ITERATION NO.  19 ##########   Thu May 16 16:43:00 2019
 
-It.   19    -76.08061801619      4.06D-12  7.48D-10  1.02D-09   DAMP 25%    0.06400000s   LL             Wed Feb 20
+It.   19    -76.08061801619      3.99D-12  7.44D-10  1.03D-09   DAMP 25%    0.04900000s   LL             Thu May 16
 
-########## START ITERATION NO.  20 ##########   Wed Feb 20 13:54:55 2019
+########## START ITERATION NO.  20 ##########   Thu May 16 16:43:00 2019
 
    20 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.71%   84.88%    2.35%    4.78%   0.05663896s
->>> Total wall time:  0.06200000s, and total CPU time :  0.05834200s
+SOfock:LL  1.00D-12    0.71%   84.89%    2.35%    5.26%   0.04688406s
+>>> Total wall time:  0.05400000s, and total CPU time :  0.04869700s
 
-########## END ITERATION NO.  20 ##########   Wed Feb 20 13:54:55 2019
+########## END ITERATION NO.  20 ##########   Thu May 16 16:43:00 2019
 
-It.   20    -76.08061801620      1.44D-11  5.44D-10  7.38D-10   DAMP 25%    0.06200000s   LL             Wed Feb 20
+It.   20    -76.08061801620      1.47D-11  5.61D-10  7.40D-10   DAMP 25%    0.05400000s   LL             Thu May 16
 
 
                                    SCF - CYCLE
@@ -1390,43 +1416,43 @@ It.   20    -76.08061801620      1.44D-11  5.44D-10  7.38D-10   DAMP 25%    0.06
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -37.80760523219      0.00D+00  0.00D+00  0.00D+00               0.16496100s   Atom. scrpot   Wed Feb 20
-It.    2    -75.76333161755      3.80D+01  4.73D+00  1.49D+00               0.09800000s   LL             Wed Feb 20
-It.    3    -75.97685545247      2.14D-01 -1.19D+00  8.33D-01   DIIS   2    0.08900000s   LL             Wed Feb 20
-It.    4    -76.08015849022      1.03D-01  4.79D-01  4.83D-02   DIIS   3    0.09600000s   LL             Wed Feb 20
-It.    5    -76.08059414839      4.36D-04 -2.41D-02  7.48D-03   DIIS   4    0.08600000s   LL             Wed Feb 20
-It.    6    -76.08061513075      2.10D-05  1.30D-03  2.30D-03   DIIS   5    0.09000000s   LL             Wed Feb 20
-It.    7    -76.08061797267      2.84D-06  3.07D-04  2.42D-04   DIIS   6    0.08600000s   LL             Wed Feb 20
-It.    8    -76.08061801368      4.10D-08  3.66D-05  5.77D-05   DIIS   7    0.08800000s   LL             Wed Feb 20
-It.    9    -76.08061801610      2.42D-09  8.30D-06  1.16D-05   DIIS   8    0.08400000s   LL             Wed Feb 20
-It.   10    -76.08061801619      8.61D-11  2.42D-06  1.39D-06   DIIS   9    0.08100000s   LL             Wed Feb 20
-It.   11    -76.08061801619      1.51D-12  2.77D-07  2.36D-07   DIIS   9    0.08000000s   LL             Wed Feb 20
-It.   12    -76.08061801619      8.53D-14  3.61D-08  6.90D-08   DIIS   9    0.09000000s   LL             Wed Feb 20
-It.   13    -76.08061801619     -3.69D-13 -1.78D-08  2.25D-08   DIIS   5    0.07900000s   LL             Wed Feb 20
-It.   14    -76.08061801619     -3.13D-13 -7.01D-09  4.77D-09   DAMP 25%    0.07300000s   LL             Wed Feb 20
-It.   15    -76.08061801619     -1.02D-12 -1.36D-09  4.73D-09   DAMP 25%    0.06500000s   LL             Wed Feb 20
-It.   16    -76.08061801618     -4.04D-12  9.20D-10  3.10D-09   DAMP 25%    0.06200000s   LL             Wed Feb 20
-It.   17    -76.08061801618      5.97D-13 -6.25D-10  2.08D-09   DAMP 25%    0.06100000s   LL             Wed Feb 20
-It.   18    -76.08061801618      1.48D-12 -4.24D-10  1.41D-09   DAMP 25%    0.06000000s   LL             Wed Feb 20
-It.   19    -76.08061801619      4.06D-12  7.48D-10  1.02D-09   DAMP 25%    0.06400000s   LL             Wed Feb 20
-It.   20    -76.08061801620      1.44D-11  5.44D-10  7.38D-10   DAMP 25%    0.06200000s   LL             Wed Feb 20
+It.    1    -37.80760523219      0.00D+00  0.00D+00  0.00D+00               0.02789700s   Atom. scrpot   Thu May 16
+It.    2    -75.76333161755      3.80D+01  4.73D+00  1.49D+00               0.07100000s   LL             Thu May 16
+It.    3    -75.97685545247      2.14D-01 -1.19D+00  8.33D-01   DIIS   2    0.05100000s   LL             Thu May 16
+It.    4    -76.08015849021      1.03D-01  4.79D-01  4.83D-02   DIIS   3    0.04800000s   LL             Thu May 16
+It.    5    -76.08059414839      4.36D-04 -2.41D-02  7.48D-03   DIIS   4    0.05200000s   LL             Thu May 16
+It.    6    -76.08061513075      2.10D-05  1.30D-03  2.30D-03   DIIS   5    0.04500000s   LL             Thu May 16
+It.    7    -76.08061797267      2.84D-06  3.07D-04  2.42D-04   DIIS   6    0.05400000s   LL             Thu May 16
+It.    8    -76.08061801368      4.10D-08  3.66D-05  5.77D-05   DIIS   7    0.05100000s   LL             Thu May 16
+It.    9    -76.08061801610      2.42D-09  8.30D-06  1.16D-05   DIIS   8    0.04700000s   LL             Thu May 16
+It.   10    -76.08061801619      8.60D-11  2.42D-06  1.39D-06   DIIS   9    0.05100000s   LL             Thu May 16
+It.   11    -76.08061801619      1.72D-12  2.77D-07  2.36D-07   DIIS   9    0.05000000s   LL             Thu May 16
+It.   12    -76.08061801619      0.00D+00 -3.61D-08  6.90D-08   DIIS   9    0.04300000s   LL             Thu May 16
+It.   13    -76.08061801619     -2.70D-13 -1.78D-08  2.25D-08   DIIS   5    0.04700000s   LL             Thu May 16
+It.   14    -76.08061801619     -3.98D-13  7.01D-09  4.77D-09   DAMP 25%    0.04300000s   LL             Thu May 16
+It.   15    -76.08061801619     -1.14D-12  1.36D-09  4.73D-09   DAMP 25%    0.04200000s   LL             Thu May 16
+It.   16    -76.08061801618     -3.89D-12 -9.20D-10  3.10D-09   DAMP 25%    0.04400000s   LL             Thu May 16
+It.   17    -76.08061801618      5.40D-13 -6.25D-10  2.08D-09   DAMP 25%    0.04900000s   LL             Thu May 16
+It.   18    -76.08061801618      1.68D-12  4.24D-10  1.41D-09   DAMP 25%    0.03900000s   LL             Thu May 16
+It.   19    -76.08061801619      3.99D-12  7.44D-10  1.03D-09   DAMP 25%    0.04900000s   LL             Thu May 16
+It.   20    -76.08061801620      1.47D-11  5.61D-10  7.40D-10   DAMP 25%    0.05400000s   LL             Thu May 16
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   20 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.16500000s
-      LL           :    0.07863158s
+      No 2-ints    :    0.02800000s
+      LL           :    0.04894737s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -85.135621163003634
+   Electronic energy                        :    -85.135621163003364
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      9.055003146800487
 
    Sum of all contributions to the energy
-   Total energy                             :    -76.080618016203147
+   Total energy                             :    -76.080618016202877
 
 
                                    Eigenvalues
@@ -1439,11 +1465,11 @@ It.   20    -76.08061801620      1.44D-11  5.44D-10  7.38D-10   DAMP 25%    0.06
   * Virtual eigenvalues, f = 0.0000
      0.18035984556  ( 2)        0.25130412389  ( 2)        0.66089631286  ( 2)        0.73710967718  ( 2)        1.07463066528  ( 2)
      1.12297048546  ( 2)        1.19782178559  ( 2)        1.41466085597  ( 2)        1.47145549645  ( 2)        1.63534407591  ( 2)
-     1.66934487639  ( 2)        1.89241681944  ( 2)        2.31506926674  ( 2)        2.39594226110  ( 2)        3.27115078428  ( 2)
+     1.66934487639  ( 2)        1.89241681943  ( 2)        2.31506926674  ( 2)        2.39594226110  ( 2)        3.27115078429  ( 2)
      3.29852605729  ( 2)        3.32276170853  ( 2)        3.39980055804  ( 2)        3.52499634466  ( 2)        3.83221318459  ( 2)
-     4.12810705523  ( 2)        6.12206455320  ( 2)        6.55553466751  ( 2)        6.81985413728  ( 2)       13.05167016491  ( 2)
-    22.16800269630  ( 2)       22.33170317508  ( 2)       33.42012479086  ( 2)       33.66119266657  ( 2)       33.81882288062  ( 2)
-    61.53045790534  ( 2)      230.57019793741  ( 2)      851.99630215762  ( 2)     3409.90566004766  ( 2)    15466.31280371306  ( 2)
+     4.12810705523  ( 2)        6.12206455320  ( 2)        6.55553466750  ( 2)        6.81985413728  ( 2)       13.05167016491  ( 2)
+    22.16800269631  ( 2)       22.33170317508  ( 2)       33.42012479086  ( 2)       33.66119266657  ( 2)       33.81882288062  ( 2)
+    61.53045790534  ( 2)      230.57019793740  ( 2)      851.99630215762  ( 2)     3409.90566004765  ( 2)    15466.31280371308  ( 2)
 * HOMO - LUMO gap:
 
     E(LUMO) :     0.18035985 au (symmetry E1 )
@@ -1451,11 +1477,30 @@ It.   20    -76.08061801620      1.44D-11  5.44D-10  7.38D-10   DAMP 25%    0.06
   ------------------------------------------
     gap     :     0.67323109 au
 
-  20 Feb 19 13:54:55 read from DFCOEF:Water molecule. X2C Hamiltonian. CC energies.     Wed Feb 20 13:54:55 2019
-  20 Feb 19 13:54:55 retrieved basis set information
-  Initialized global data
-  20 Feb 19 13:54:55 Entered cc_driver routine
-  20 Feb 19 13:54:55 Initialized talsh library
+ 
+ 
+                    *****************************************************
+                    ***     Entering the ExaCorr module in DIRAC      ***
+                    ***                                               ***
+                    ***  Authors:         - Lucas Visscher            ***
+                    ***                   - Anastasios Papadopoulos   ***
+                    ***  Contributors:    - Johann Potoschnig         ***
+                    ***                   - Andre S. P. Gomes         ***
+                    ***  Features:        - CCD/CCSD                  ***
+                    ***                   - 1DM                       ***
+                    ***                   - ReSpect interface         ***
+                    ***                                               ***
+                    ***  Relativistic Coupled Cluster code using the  ***
+                    ***  TALSH and ExaTensor libraries developed by   ***
+                    ***  Dmitry Lyakh                                 ***
+                    *****************************************************
+ 
+ 
+  16 May 19 16:43:00 read from DFCOEF:Water molecule. X2C Hamiltonian. CC energies.     Thu May 16 16:43:00 2019
+  16 May 19 16:43:00 retrieved basis set information
+  16 May 19 16:43:00 Initialized global data
+  16 May 19 16:43:00 Entered cc_driver routine
+  16 May 19 16:43:00 Initialized talsh library
   Status           0: Size (Bytes) =    1073741824: Max args in HAB =    8192
 
   Integral module InteRest is initialized
@@ -1464,112 +1509,345 @@ It.   20    -76.08061801620      1.44D-11  5.44D-10  7.38D-10   DAMP 25%    0.06
   Last commit time        | Wed Oct 16 14:37:58 2013 +0200
   Last update time        | Sat Feb 20 15:39:00 2015 +0200
 
-  20 Feb 19 13:54:55 Initialized interest library
-  20 Feb 19 13:54:55 Getting orbital energies
-  20 Feb 19 13:54:55 Retrieved orbital energies
-  20 Feb 19 13:54:55 entered aomo_transform
-  20 Feb 19 13:54:55 initialized mo-coefficients
-  20 Feb 19 13:54:55 constructed a1 and a2
-  20 Feb 19 13:54:55 first ht done
-  20 Feb 19 13:54:55 constructed a3
-  20 Feb 19 13:54:55 second ht done
-  20 Feb 19 13:54:55 leaving aomo_transform
-  20 Feb 19 13:54:55 entered aomo_transform
-  20 Feb 19 13:54:55 initialized mo-coefficients
-  20 Feb 19 13:54:55 constructed a1 and a2
-  20 Feb 19 13:54:55 first ht done
-  20 Feb 19 13:54:55 constructed a3
-  20 Feb 19 13:54:55 second ht done
-  20 Feb 19 13:54:55 leaving aomo_transform
-  20 Feb 19 13:54:55 entered aomo_transform
-  20 Feb 19 13:54:55 initialized mo-coefficients
-  20 Feb 19 13:54:55 constructed a1 and a2
-  20 Feb 19 13:54:56 first ht done
-  20 Feb 19 13:54:56 constructed a3
-  20 Feb 19 13:54:56 second ht done
-  20 Feb 19 13:54:56 leaving aomo_transform
-  20 Feb 19 13:54:56 entered aomo_transform
-  20 Feb 19 13:54:56 initialized mo-coefficients
-  20 Feb 19 13:54:56 constructed a1 and a2
-  20 Feb 19 13:54:56 first ht done
-  20 Feb 19 13:54:56 constructed a3
-  20 Feb 19 13:54:56 second ht done
-  20 Feb 19 13:54:56 leaving aomo_transform
-  20 Feb 19 13:54:56 entered aomo_transform
-  20 Feb 19 13:54:56 initialized mo-coefficients
-  20 Feb 19 13:54:56 constructed a1 and a2
-  20 Feb 19 13:54:57 first ht done
-  20 Feb 19 13:54:57 constructed a3
-  20 Feb 19 13:54:57 second ht done
-  20 Feb 19 13:54:57 leaving aomo_transform
-  20 Feb 19 13:54:57 entered aomo_transform
-  20 Feb 19 13:54:57 initialized mo-coefficients
-  20 Feb 19 13:54:57 constructed a1 and a2
-  20 Feb 19 13:54:57 first ht done
-  20 Feb 19 13:54:57 constructed a3
-  20 Feb 19 13:54:57 second ht done
-  20 Feb 19 13:54:57 leaving aomo_transform
-  20 Feb 19 13:54:57 entered aomo_transform
-  20 Feb 19 13:54:57 initialized mo-coefficients
-  20 Feb 19 13:54:57 constructed a1 and a2
-  20 Feb 19 13:54:58 first ht done
-  20 Feb 19 13:54:58 constructed a3
-  20 Feb 19 13:54:58 second ht done
-  20 Feb 19 13:54:58 leaving aomo_transform
-  MP2 energy =   -8.8462652441082548E-002
-  20 Feb 19 13:54:58 Succesfully allocated all tensors
-  Iteration    1 CCSD energy =   -0.092088068154917 convergence =   4.2E-02
-  Iteration    2 CCSD energy =   -0.093442117460802 convergence =   1.4E-02
-  Iteration    3 CCSD energy =   -0.093966189627081 convergence =   6.1E-03
-  Iteration    4 CCSD energy =   -0.093987827415511 convergence =   1.3E-03
-  Iteration    5 CCSD energy =   -0.093989088707580 convergence =   2.9E-04
-  Iteration    6 CCSD energy =   -0.093988793776367 convergence =   4.2E-05
-  Iteration    7 CCSD energy =   -0.093988836612702 convergence =   7.8E-06
-  Iteration    8 CCSD energy =   -0.093988819099107 convergence =   1.3E-06
-  Iteration    9 CCSD energy =   -0.093988814919735 convergence =   3.3E-07
-  Iteration   10 CCSD energy =   -0.093988811256104 convergence =   1.3E-07
-  Iteration   11 CCSD energy =   -0.093988809984914 convergence =   6.0E-08
-  Iteration   12 CCSD energy =   -0.093988810066134 convergence =   1.9E-08
-  Iteration   13 CCSD energy =   -0.093988810161117 convergence =   3.4E-09
-  Iteration   14 CCSD energy =   -0.093988810176471 convergence =   7.3E-10
-  4th order triples correction :      -0.001691265158618
-  5th order triples (T) correction :   0.000227604105217
-  5th order triples -T  correction :   0.000338477352237
-  CCSD+T  correlation energy :        -0.095680075335088
-  CCSD(T) correlation energy :        -0.095452471229871
-  CCSD-T  correlation energy :        -0.095341597982851
-  Final CCSD energy    =   -9.3988810176470719E-002
-  Final CCSD(T) energy =   -9.5452471229871008E-002
+  16 May 19 16:43:00 Initialized interest library
  
-  20 Feb 19 13:55:00 Begin solving Lambda equations
-  20 Feb 19 13:55:00 Entered lambda solver routine
-  20 Feb 19 13:55:00 Calculating common blocks
-  20 Feb 19 13:55:00 Finished calculating common blocks
-  20 Feb 19 13:55:00 Calculating fixed intermediates
-  20 Feb 19 13:55:00 Finished calculating fixed intermediates
-  20 Feb 19 13:55:00 Begin iterating
-  Iteration    1 convergence =   1.5E-02
-  Iteration    2 convergence =   3.2E-03
-  Iteration    3 convergence =   1.1E-03
-  Iteration    4 convergence =   3.9E-04
-  Iteration    5 convergence =   7.7E-05
-  Iteration    6 convergence =   1.4E-05
-  Iteration    7 convergence =   2.5E-06
-  Iteration    8 convergence =   4.7E-07
-  Iteration    9 convergence =   1.0E-07
-  Iteration   10 convergence =   4.1E-08
-  Iteration   11 convergence =   1.9E-08
-  Iteration   12 convergence =   5.2E-09
-  Iteration   13 convergence =   9.3E-10
-  20 Feb 19 13:55:01 Finished iterating
-  Final L1amp = 6.8791285498245056E-04
-  Final L2amp = 3.2888531527514683E-02
-  20 Feb 19 13:55:01 Leaving lambda solver routine
-  20 Feb 19 13:55:01 Entered DM routine
-  20 Feb 19 13:55:01 Calculated density matrices in MO basis
- DM_AO =    1.7347603957747773E-002
-  20 Feb 19 13:55:01 MO to AO transformation completed
-  20 Feb 19 13:55:01 Leaving cc_driver routine
+ Characteristics of this calculation
+ -----------------------------------
+ - Solve CCD equations:              F
+ - Solve Lambda equations:           T
+ - Number of occupied spinors:       6
+ - Number of virtual spinors:       24
+ - Target precision of amplitudes:   1.0E-09
+ - Maximum number of cycles:        30
+ - Print Level                       0
+
+  16 May 19 16:43:00 Getting orbital energies
+  16 May 19 16:43:00 Retrieved orbital energies
+  16 May 19 16:43:00 allocated AO integral tensor
+  16 May 19 16:43:00 finished ao integral calculation
+  16 May 19 16:43:00 finished oovv integrals
+  16 May 19 16:43:00 finished oooo integrals
+  16 May 19 16:43:00 finished vovo integrals
+  16 May 19 16:43:01 finished vvvv integrals
+  16 May 19 16:43:01 finished ooov integrals
+  16 May 19 16:43:01 finished vovv integrals
+ 
+  MP2 energy =   -8.8462652441022402E-002
+ 
+  16 May 19 16:43:01 Succesfully allocated all tensors
+ 
+ -----------------------------------------------
+   It.     Energy                  Convergence  
+ -----------------------------------------------
+    1      -0.092088068154856      0.4E-01
+    2      -0.093442117460740      0.1E-01
+    3      -0.093966189627018      0.6E-02
+    4      -0.093987827415448      0.1E-02
+    5      -0.093989088707517      0.3E-03
+    6      -0.093988793776305      0.4E-04
+    7      -0.093988836612638      0.8E-05
+    8      -0.093988819099044      0.1E-05
+    9      -0.093988814919672      0.3E-06
+   10      -0.093988811256041      0.1E-06
+   11      -0.093988809984851      0.6E-07
+   12      -0.093988810066071      0.2E-07
+   13      -0.093988810161055      0.3E-08
+   14      -0.093988810176409      0.7E-09
+ -----------------------------------------------
+ 
+  Final CCSD energy :                 -0.093988810176409
+  4th order triples correction :      -0.001691265158620
+  5th order triples (T) correction :   0.000227604105218
+  5th order triples -T  correction :   0.000338477352238
+  CCSD+T  correlation energy :        -0.095680075335029
+  CCSD(T) correlation energy :        -0.095452471229811
+  CCSD-T  correlation energy :        -0.095341597982791
+ 
+*******************************************************************************
+********************** Solving Left Eigenvector Equation **********************
+*******************************************************************************
+ 
+  16 May 19 16:43:01 Finished calculating common blocks
+  16 May 19 16:43:01 Finished calculating fixed intermediates
+ 
+ ------------------------
+   It.      Convergence  
+ ------------------------
+    1       0.1E-01
+    2       0.3E-02
+    3       0.1E-02
+    4       0.4E-03
+    5       0.8E-04
+    6       0.1E-04
+    7       0.3E-05
+    8       0.5E-06
+    9       0.1E-06
+   10       0.4E-07
+   11       0.2E-07
+   12       0.5E-08
+   13       0.9E-09
+ ------------------------
+ 
+  Final L1amp = 6.8791285498269212E-04
+  Final L2amp = 3.2888531527485346E-02
+ 
+  16 May 19 16:43:02 Calculated density matrices in MO basis
+ Storing the CCSD density matrix on file
+ 
+  16 May 19 16:43:02 Leaving cc_driver routine
+
+
+       *******************************************************************
+       ************************* Property module *************************
+       *******************************************************************
+
+
+
+   This is output from the Dirac property module:
+
+   HF & DFT first order properties
+      Trond Saue
+
+   First-order ESR properties
+      Hans Joergen Aa. Jensen et al.
+
+   MP2 first order properties:
+      J. N. P. van Stralen, L. Visscher, C. V. Larsen and H. J. Aa Jensen, Chem. Phys. 311 (2005) 81.
+
+   KR-RPA second-order properties
+      Hans Joergen Aa. Jensen and Trond Saue
+
+   KR-QR third order properties
+      Patrick Norman and Hans Joergen Aa. Jensen
+
+   Molecular gradient
+      Joern Thyssen
+
+   Additional contributions from:
+      Thomas Enevoldsen, Miroslav Ilias (London orbitals)
+
+
+
+
+             *******************************************************
+             ********** Properties for DHF  wave function **********
+             *******************************************************
+
+
+
+    **************************************************************************
+    *************************** Expectation values ***************************
+    **************************************************************************
+
+    Dipole length: X :     0.59826157E-13 a.u.      s0 = F   t0 = F
+    Dipole length: Y :    -0.14085787E-13 a.u.      s0 = F   t0 = F
+    Dipole length: Z :     0.834859110250 a.u.      s0 = F   t0 = F
+    EFG: XX011       :     1.526390159306 a.u.      s0 = F   t0 = F
+    EFG: XY011       :     0.64376767E-13 a.u.      s0 = F   t0 = F
+    EFG: XZ011       :     0.55874369E-12 a.u.      s0 = F   t0 = F
+    EFG: YY011       :    -1.697766990154 a.u.      s0 = F   t0 = F
+    EFG: YZ011       :     0.27799566E-13 a.u.      s0 = F   t0 = F
+    EFG: ZZ011       :     0.171376830848 a.u.      s0 = F   t0 = F
+    EFG: XX021       :    -0.994872136857 a.u.      s0 = F   t0 = F
+    EFG: XY021       :    -0.10505749E-14 a.u.      s0 = F   t0 = F
+    EFG: XZ021       :    -1.568890153976 a.u.      s0 = F   t0 = F
+    EFG: YY021       :     1.075808035319 a.u.      s0 = F   t0 = F
+    EFG: YZ021       :    -0.27812419E-15 a.u.      s0 = F   t0 = F
+    EFG: ZZ021       :    -0.80935898E-01 a.u.      s0 = F   t0 = F
+    EFG: XX031       :    -0.994872136857 a.u.      s0 = F   t0 = F
+    EFG: XY031       :     0.85286983E-15 a.u.      s0 = F   t0 = F
+    EFG: XZ031       :     1.568890153976 a.u.      s0 = F   t0 = F
+    EFG: YY031       :     1.075808035319 a.u.      s0 = F   t0 = F
+    EFG: YZ031       :    -0.17929095E-14 a.u.      s0 = F   t0 = F
+    EFG: ZZ031       :    -0.80935898E-01 a.u.      s0 = F   t0 = F
+    ---------------------------------------------------------------------------
+    s0 = T : Expectation value zero by point group symmetry.
+    t0 = T : Expectation value zero by time reversal symmetry.
+----------------------------------------------------------------------------
+* Dipole moment:
+
+          Electronic               Nuclear                  Total       
+          contribution             contribution             contribution
+----------------------------------------------------------------------------
+x         0.00000000 Debye         0.00000000 Debye         0.00000000 Debye
+y        -0.00000000 Debye         0.00000000 Debye        -0.00000000 Debye
+z         2.12201984 Debye         0.00000000 Debye         2.12201984 Debye
+----------------------------------------------------------------------------
+x         0.00000000 a.u.          0.00000000 a.u.          0.00000000 a.u.
+y        -0.00000000 a.u.          0.00000000 a.u.         -0.00000000 a.u.
+z         0.83485911 a.u.          0.00000000 a.u.          0.83485911 a.u.
+----------------------------------------------------------------------------
+
+ 1 a.u =   2.54177000 Debye
+----------------------------------------------------------------------------
+* Electric field gradients :
+
+  ------------------------------------------------------------------------
+            Individual (non-zero) components
+
+            Electronic             Nuclear                Total       
+            contribution           contribution           contribution
+  ------------------------------------------------------------------------
+
+  Nucleus: O   
+
+  qxx       1.5263901593 au        0.2825693835 au        1.8089595428 au 
+  qyy      -1.6977669902 au       -0.3227262029 au       -2.0204931931 au 
+  qzz       0.1713768308 au        0.0401568195 au        0.2115336503 au 
+
+  Nucleus: H   
+
+  qxx      -0.9948721369 au        1.2118843069 au        0.2170121700 au 
+  qxz      -1.5688901540 au        1.8746796710 au        0.3057895171 au 
+  qyy       1.0758080353 au       -1.3317081982 au       -0.2559001629 au 
+  qzx      -1.5688901540 au        1.8746796710 au        0.3057895171 au 
+  qzz      -0.0809358985 au        0.1198238913 au        0.0388879928 au 
+
+  Nucleus: H   
+
+  qxx      -0.9948721369 au        1.2118843069 au        0.2170121700 au 
+  qxz       1.5688901540 au       -1.8746796710 au       -0.3057895171 au 
+  qyy       1.0758080353 au       -1.3317081982 au       -0.2559001629 au 
+  qzx       1.5688901540 au       -1.8746796710 au       -0.3057895171 au 
+  qzz      -0.0809358985 au        0.1198238913 au        0.0388879928 au 
+
+  
+  ------------------------------------------------------------------------
+            Total contribution to principal components 
+  ------------------------------------------------------------------------
+
+  Nucleus: O   
+
+  qxx   0.1808959543E+01 au 
+  qyy   -.2020493193E+01 au 
+  qzz   0.2115336503E+00 au 
+
+  Nucleus: H   
+
+  qxx   0.4464454258E+00 au 
+  qyy   -.2559001629E+00 au 
+  qzz   -.1905452629E+00 au 
+
+  Nucleus: H   
+
+  qxx   0.4464454258E+00 au 
+  qyy   -.2559001629E+00 au 
+  qzz   -.1905452629E+00 au 
+  ------------------------------------------------------------------------
+
+  1 a.u. =  9.71736E+21 V*m**-2
+
+
+
+             *******************************************************
+             ********** Properties for CCSD wave function **********
+             *******************************************************
+
+  Retrieving CC density matrix from file
+
+
+    **************************************************************************
+    *************************** Expectation values ***************************
+    **************************************************************************
+
+    Dipole length: X :     0.32804722E-12 a.u.      s0 = F   t0 = F
+    Dipole length: Y :     0.60240594E-13 a.u.      s0 = F   t0 = F
+    Dipole length: Z :     0.739996099526 a.u.      s0 = F   t0 = F
+    EFG: XX011       :     1.439286211057 a.u.      s0 = F   t0 = F
+    EFG: XY011       :     0.64399073E-13 a.u.      s0 = F   t0 = F
+    EFG: XZ011       :     0.37157678E-12 a.u.      s0 = F   t0 = F
+    EFG: YY011       :    -1.693670472595 a.u.      s0 = F   t0 = F
+    EFG: YZ011       :     0.83658191E-13 a.u.      s0 = F   t0 = F
+    EFG: ZZ011       :     0.254384261538 a.u.      s0 = F   t0 = F
+    EFG: XX021       :    -0.984803614113 a.u.      s0 = F   t0 = F
+    EFG: XY021       :     0.61041388E-14 a.u.      s0 = F   t0 = F
+    EFG: XZ021       :    -1.556040067160 a.u.      s0 = F   t0 = F
+    EFG: YY021       :     1.064797805707 a.u.      s0 = F   t0 = F
+    EFG: YZ021       :     0.39557756E-13 a.u.      s0 = F   t0 = F
+    EFG: ZZ021       :    -0.79994192E-01 a.u.      s0 = F   t0 = F
+    EFG: XX031       :    -0.984803614113 a.u.      s0 = F   t0 = F
+    EFG: XY031       :    -0.59520832E-14 a.u.      s0 = F   t0 = F
+    EFG: XZ031       :     1.556040067160 a.u.      s0 = F   t0 = F
+    EFG: YY031       :     1.064797805707 a.u.      s0 = F   t0 = F
+    EFG: YZ031       :     0.38095209E-13 a.u.      s0 = F   t0 = F
+    EFG: ZZ031       :    -0.79994192E-01 a.u.      s0 = F   t0 = F
+    ---------------------------------------------------------------------------
+    s0 = T : Expectation value zero by point group symmetry.
+    t0 = T : Expectation value zero by time reversal symmetry.
+----------------------------------------------------------------------------
+* Dipole moment:
+
+          Electronic               Nuclear                  Total       
+          contribution             contribution             contribution
+----------------------------------------------------------------------------
+x         0.00000000 Debye         0.00000000 Debye         0.00000000 Debye
+y         0.00000000 Debye         0.00000000 Debye         0.00000000 Debye
+z         1.88089989 Debye         0.00000000 Debye         1.88089989 Debye
+----------------------------------------------------------------------------
+x         0.00000000 a.u.          0.00000000 a.u.          0.00000000 a.u.
+y         0.00000000 a.u.          0.00000000 a.u.          0.00000000 a.u.
+z         0.73999610 a.u.          0.00000000 a.u.          0.73999610 a.u.
+----------------------------------------------------------------------------
+
+ 1 a.u =   2.54177000 Debye
+----------------------------------------------------------------------------
+* Electric field gradients :
+
+  ------------------------------------------------------------------------
+            Individual (non-zero) components
+
+            Electronic             Nuclear                Total       
+            contribution           contribution           contribution
+  ------------------------------------------------------------------------
+
+  Nucleus: O   
+
+  qxx       1.4392862111 au        0.2825693835 au        1.7218555945 au 
+  qyy      -1.6936704726 au       -0.3227262029 au       -2.0163966755 au 
+  qzz       0.2543842615 au        0.0401568195 au        0.2945410810 au 
+
+  Nucleus: H   
+
+  qxx      -0.9848036141 au        1.2118843069 au        0.2270806928 au 
+  qxz      -1.5560400672 au        1.8746796710 au        0.3186396039 au 
+  qyy       1.0647978057 au       -1.3317081982 au       -0.2669103925 au 
+  qzx      -1.5560400672 au        1.8746796710 au        0.3186396039 au 
+  qzz      -0.0799941916 au        0.1198238913 au        0.0398296997 au 
+
+  Nucleus: H   
+
+  qxx      -0.9848036141 au        1.2118843069 au        0.2270806928 au 
+  qxz       1.5560400672 au       -1.8746796710 au       -0.3186396039 au 
+  qyy       1.0647978057 au       -1.3317081982 au       -0.2669103925 au 
+  qzx       1.5560400672 au       -1.8746796710 au       -0.3186396039 au 
+  qzz      -0.0799941916 au        0.1198238913 au        0.0398296997 au 
+
+  
+  ------------------------------------------------------------------------
+            Total contribution to principal components 
+  ------------------------------------------------------------------------
+
+  Nucleus: O   
+
+  qxx   0.1721855595E+01 au 
+  qyy   -.2016396676E+01 au 
+  qzz   0.2945410810E+00 au 
+
+  Nucleus: H   
+
+  qxx   0.4655650135E+00 au 
+  qyy   -.2669103925E+00 au 
+  qzz   -.1986546211E+00 au 
+
+  Nucleus: H   
+
+  qxx   0.4655650135E+00 au 
+  qyy   -.2669103925E+00 au 
+  qzz   -.1986546211E+00 au 
+  ------------------------------------------------------------------------
+
+  1 a.u. =  9.71736E+21 V*m**-2
+
 
 *****************************************************
 ********** E N D   of   D I R A C  output  **********
@@ -1577,35 +1855,39 @@ It.   20    -76.08061801620      1.44D-11  5.44D-10  7.38D-10   DAMP 25%    0.06
 
 
  
-     Date and time (Mac OSX): Wed Feb 20 13:55:01 2019
-     Host name              : MacBook-Pro-van-Stan.local              
+     Date and time (Mac OSX): Thu May 16 16:43:02 2019
+     Host name              : MacBook2017LV.local                     
 
->>>> Node 0, utime: 7, stime: 0, minflt: 126478, majflt: 0, nvcsw: 88, nivcsw: 149, maxrss: 471142400
->>>> Total WALL time used in DIRAC: 8s
+>>>> Node 0, utime: 2, stime: 0, minflt: 84785, majflt: 0, nvcsw: 123, nivcsw: 739, maxrss: 290476032
+>>>> Total WALL time used in DIRAC: 3s
   
   Dynamical Memory Usage Summary for Master
   
-  Mean allocation size (Mb) :        97.77
+  Mean allocation size (Mb) :        50.22
   
   Largest          10  allocations
   
-      488.28 Mb at subroutine psiscf_                                    for WORK in PSISCF                            
-      488.28 Mb at subroutine pamset_                                    for WORK in PAMSET - 2                        
-      488.28 Mb at subroutine gmotra_                                    for WORK in GMOTRA - part 2                   
-      488.28 Mb at subroutine gmotra_                                    for WORK in GMOTRA                            
-      488.28 Mb at subroutine pamset_                                    for WORK in PAMSET - 1                        
-      488.28 Mb at subroutine MAIN__                                     for test allocation of work array in DIRAC mai
-        0.76 Mb at subroutine paminp_                                    for PAMINP WORK array                         
-        0.66 Mb at subroutine butobs_no_work_                            for buf in butobs                             
-        0.36 Mb at subroutine qtrans90_                                  for QTRANS90-buffer-space                     
-        0.36 Mb at subroutine qtrans90_                                  for QTRANS90-buffer-space                     
+      488.28 Mb at subroutine unknown                                    for WORK in PAMPRP_1                          
+      488.28 Mb at subroutine unknown                                    for WORK in PAMPRP_1                          
+      488.28 Mb at subroutine unknown                                    for WORK in PSISCF                            
+      488.28 Mb at subroutine unknown                                    for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine unknown                                    for WORK in GMOTRA - part 2                   
+      488.28 Mb at subroutine unknown                                    for WORK in GMOTRA                            
+      488.28 Mb at subroutine unknown                                    for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine unknown                                    for test allocation of work array in DIRAC mai
+        0.76 Mb at subroutine unknown                                    for PAMINP WORK array                         
+        0.66 Mb at subroutine unknown                                    for buf in butobs                             
   
   Peak memory usage:       488.29 MB
   Peak memory usage:        0.477 GB
-       reached at subroutine : butobs_no_work_                           
+       reached at subroutine : unknown                                   
               for variable   : buf in butobs                             
   
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
-DIRAC pam run in /Users/stan/programmes/dirac-stan/build-respect-mpi/test/exacorr_lambda
+DIRAC pam run in /Users/visscher/sources/Dirac2/build_caar_mpi_omp/test/exacorr_lambda
+
+ ====  below this line is the stderr stream  ====
+
+libgomp: Affinity not supported on this configuration
