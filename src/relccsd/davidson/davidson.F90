@@ -1508,10 +1508,7 @@ contains
             if (davidson_debug) call davidson_print_vectors(b, label="debug:  b     vector          ")
 
             sigma_vector => create_sigma_vector(A, b, sigma_vector, state_sym)
-! aspg, WIP june/july 2018
             if (associated(projector)) call apply_projector(projector,sigma_vector)
-!           if (associated(projector)) call apply_projector(projector,b)
-! aspg, WIP june/july 2018
 
             if (davidson_debug) call davidson_print_vectors(sigma_vector, label="debug:  sigma vector          ")
 
@@ -1601,7 +1598,7 @@ contains
                 deallocate(sigma_vector)
             else
 
-               b => updated_subspace_vectors_R(b, delta, verbose=.false.)
+               b => updated_subspace_vectors_R(b, delta, verbose=davidson_debug)
 
 ! in the case of a parallel run, at each davidson step synchronize the new trial vectors 
                call davidson_synchronize_trial_vectors(b,size(delta,2))
