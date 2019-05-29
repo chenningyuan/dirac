@@ -7,7 +7,6 @@
     public create_projector
     public create_t_projector
 
-! aspg, WIP june/july 2018
 ! the excited determinant derived type holds the information on occupied/virtual spinor energies, irreps and position within
 ! the irreps, for the spinors making up a given excited state determinant
 !
@@ -32,13 +31,10 @@
    type mapping
        type(excited_determinant), allocatable :: det(:)
    endtype mapping
-! aspg, WIP june/july 2018
  
 
    contains
-   ! aspg, WIP, june/july 2018
 
-! aspg, WIP, june/july 2018
 ! function to create the operator to project out certain lines of the trial vectors in the
 ! davidson procedure
 ! it returs an array of logical variables, where the entries are set to false if a given line is
@@ -46,7 +42,6 @@
 ! excited determinants in terms of the orbital energies and and their position on the similarity
 ! transformed hamiltonian with a call to mapping_spinors_configurations(), which works quite similarly
 ! to the routines to print out the solution vectors.
-! aspg, WIP, june/july 2018
 function create_projector(eom_type, ndet, state_sym, eps)
 #include "files.inc"
 #include "inpt.inc"
@@ -184,7 +179,6 @@ end function
 
 
 
-!aspg, WIP june/july 2018
    subroutine mapping_spinors_configurations (map, select_eom, ndt, state_sym, eps)
 
 !---------------Description--------------------------------------------
@@ -476,10 +470,8 @@ end function
       end select
  
   end subroutine
-! aspg, WIP june/july 2018
 
 
-!aspg, WIP june/july 2018
    subroutine mapping_spinors_configurations_for_t (map, ndt, eps)
 
 !---------------Description--------------------------------------------
@@ -611,6 +603,5 @@ end function
          enddo
  
   end subroutine
-! aspg, WIP june/july 2018
    end module 
 
