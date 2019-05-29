@@ -81,7 +81,7 @@ C
       CHARACTER*10 FNODE,LFNAM
       integer dummy,i,idum,idummy,ind1,ind2,inze,ipass,irep,itrs,itrsgn
       integer ityp,jtrs,mreader,n5,n6,nkr,nkr2,nonzr,npass,nsec,nsec5
-      integer nsec6,nze
+      integer nsec6,nze,INTTYP
 C
 C---------------Executable code--------------------------------------
 C
@@ -560,7 +560,7 @@ C
       CALL DAYTIME (DATEX,TIMEX)
       write(iw,*)
       WRITE(IW,*) 'VVVV sorting done at '//datex//' '//timex
-      CALL FLSHFO (IW)
+      CALL FLSHFO (IW)  
 C
 C
 C  NOW PASS THE BREIT INTEGRAL FILE IF DESIRED
