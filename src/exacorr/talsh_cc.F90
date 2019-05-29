@@ -43,7 +43,7 @@ module talsh_cc
 !        Written by Lucas Visscher, winter 2016/2017
  
          use exacorr_global
-         use talsh_ao_to_mo, only       : tensor_norm2
+         use talsh_ao_to_mo, only       : tensor_norm2, compute_nelectrons
          use talsh_gradient
 
          type(exacc_input), intent(in) :: exa_input        
@@ -113,19 +113,20 @@ module talsh_cc
          write(*,*) ""
          write(*,'(A)') " Characteristics of this calculation"
          write(*,'(A)') " -----------------------------------"
-         write(*,'(A,L1)') " - Solve CCD equations:              ", exa_input%ccd
-         write(*,'(A,L1)') " - Solve Lambda equations:           ", exa_input%lambda
-         write(*,'(A,I3)') " - Number of occupied spinors:     ", exa_input%nocc
-         write(*,'(A,I3)') " - Number of virtual spinors:      ", exa_input%nvir
-         write(*,'(A,ES10.1)') " - Target precision of amplitudes:", exa_input%t_econv
-         write(*,'(A,I3)') " - Maximum number of cycles:       ", exa_input%ncycles
+         write(*,'(A,L1)') " - Solve CCD equations :              ", exa_input%ccd
+         write(*,'(A,L1)') " - Solve Lambda equations :           ", exa_input%lambda
+         write(*,'(A,I3)') " - Number of atomic orbitals :      ", get_nao()
+         write(*,'(A,I3)') " - Number of occupied spinors :     ", exa_input%nocc
+         write(*,'(A,I3)') " - Number of virtual spinors :      ", exa_input%nvir
+         write(*,'(A,ES10.1)') " - Target precision of amplitudes :", exa_input%t_econv
+         write(*,'(A,I3)') " - Maximum number of cycles :       ", exa_input%ncycles
          if (exa_input%level_shift.gt.1.0D-14) then
-           write(*,'(A,ES10.1)') " - Level Shift                     ",exa_input%level_shift
+           write(*,'(A,ES10.1)') " - Level Shift :                     ",exa_input%level_shift
          end if
-         write(*,'(A,I3)') " - Print Level                     ",exa_input%print_level
+         write(*,'(A,I3)') " - Print Level :                    ",exa_input%print_level
          if (print_level > 1) then
-           print*, " - occupied spinors                ", exa_input%mo_occ
-           print*, " - virtual spinors                 ", exa_input%mo_vir
+           print*, " - occupied spinors :                ", exa_input%mo_occ
+           print*, " - virtual spinors :                 ", exa_input%mo_vir
          end if
          write(*,'(A)') ""
 
@@ -528,10 +529,16 @@ module talsh_cc
           ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%tau,int_t%oovv) ! o(2)v(2)
           ccsd_energy=ccsd_energy + result_tens(1) * ONE_QUARTER
 
-          call print_iteration(iccsd,t_target_precision,t_convergence,ccsd_energy)
+          call print_iteration(iccsd,t_convergence,ccsd_energy)
           if (t_convergence .lt. t_target_precision) exit
 
          end do
+
+         write(*,*) "-----------------------------------------------"
+         write(*,*) ""
+
+         if (t_convergence .gt. t_target_precision) print*, "WARNING: Non-converged amplitudes!"
+         write(*,*) ""
 
          if (.not.CCD) ierr=talsh_tensor_destruct(s1_tensor)
          ierr=talsh_tensor_destruct(s2_tensor)
@@ -885,11 +892,13 @@ module talsh_cc
             call diis (l2_tensor,t_convergence=t_convergence)
           end if
 
-          call print_iteration(ilambda,t_target_precision,t_convergence)
+          call print_iteration(ilambda,t_convergence)
           if (t_convergence .lt. t_target_precision) exit
 
          end do
 
+         write(*,*) "------------------------"
+         write(*,*) ""
 
          if (t_convergence .gt. t_target_precision) print*, "WARNING: Non-converged amplitudes!"
          if (.not.CCD) write(*,'(A,ES22.16)') "  Final L1amp = ", tensor_norm2(l1_tensor)

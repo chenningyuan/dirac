@@ -82,12 +82,12 @@ module exacorr_utils
 
     end subroutine print_exacorr_logo
 
-    subroutine print_iteration(iteration,target_precision,convergence,energy)
+    subroutine print_iteration(iteration,convergence,energy)
     ! Formatted print for iterations
 
       ! input variables
       integer, intent(in)           :: iteration
-      real(8), intent(in)           :: target_precision, convergence
+      real(8), intent(in)           :: convergence
       real(8), intent(in), optional :: energy
 
       if (iteration.eq.1 .and. present(energy)) then
@@ -106,14 +106,6 @@ module exacorr_utils
         write(*,'(A3,I2,A4,F20.15,A3,E10.1)') "   ", iteration, "    ", energy, "   ", convergence
       else if (iteration.ne.1) then
         write(*,'(A3,I2,A4,E10.1)') "   ", iteration, "    ", convergence
-      end if
-
-      if (convergence.lt.target_precision .and. present(energy)) then
-        write(*,*) "-----------------------------------------------"
-        write(*,*) ""
-      else if (convergence.lt.target_precision) then
-        write(*,*) "------------------------"
-        write(*,*) ""
       end if
 
     end subroutine print_iteration

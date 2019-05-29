@@ -117,20 +117,22 @@ module exacorr_cc
             write(*,*) ""
             write(*,'(A)') " Characteristics of this calculation"
             write(*,'(A)') " -----------------------------------"
-            write(*,'(A,I3)') " - Number of atomic orbitals:      ",ao_space%get_root_id(ierr)
-            write(*,'(A,I3)') " - Number of occupied spinors:     ", exa_input%nocc
-            write(*,'(A,I3)') " - Number of virtual spinors:      ", exa_input%nvir
-            write(*,'(A,ES10.1)') " - Target precision of amplitudes:", exa_input%t_econv
-            write(*,'(A,I3)') " - Maximum number of cycles:       ", exa_input%ncycles
-            write(*,'(A,I3)') " - ExaTensor block size            ",exa_input%exa_blocksize
-            write(*,'(A,I3)') " - Integral transformation scheme  ",exa_input%moint_scheme
+            write(*,'(A,L1)') " - Solve CCD equations :              ", exa_input%ccd
+            write(*,'(A,L1)') " - Solve Lambda equations :           ", exa_input%lambda
+            write(*,'(A,I3)') " - Number of atomic orbitals :      ",ao_space%get_root_id(ierr)
+            write(*,'(A,I3)') " - Number of occupied spinors :     ", exa_input%nocc
+            write(*,'(A,I3)') " - Number of virtual spinors :      ", exa_input%nvir
+            write(*,'(A,ES10.1)') " - Target precision of amplitudes :", exa_input%t_econv
+            write(*,'(A,I3)') " - Maximum number of cycles :       ", exa_input%ncycles
+            write(*,'(A,I3)') " - ExaTensor block size :           ",exa_input%exa_blocksize
+            write(*,'(A,I3)') " - Integral transformation scheme : ",exa_input%moint_scheme
             if (exa_input%level_shift.gt.1.0D-14) then
-              write(*,'(A,ES10.1)') " - Level Shift                     ",exa_input%level_shift
+              write(*,'(A,ES10.1)') " - Level Shift :                    ",exa_input%level_shift
             end if
-            write(*,'(A,I3)') " - Print Level                     ",exa_input%print_level
+            write(*,'(A,I3)') " - Print Level :                    ",exa_input%print_level
             if (print_level > 1) then
-              print*, " - occupied spinors                ", exa_input%mo_occ
-              print*, " - virtual spinors                 ", exa_input%mo_vir
+              print*, " - occupied spinors :                ", exa_input%mo_occ
+              print*, " - virtual spinors :                 ", exa_input%mo_vir
             end if
             write(*,*) ""
          end if
@@ -807,9 +809,15 @@ module exacorr_cc
           ierr=exatns_tensor_get_scalar(result_t_tensor,result_val)
           ccsd_energy = ccsd_energy + real(result_val*ONE_QUARTER,8)
 
-          call print_iteration(iccsd,t_target_precision,t_convergence,ccsd_energy)
+          call print_iteration(iccsd,t_convergence,ccsd_energy)
           if (t_convergence .lt. t_target_precision) exit
          end do
+
+         write(*,*) "-----------------------------------------------"
+         write(*,*) ""
+
+         if (t_convergence .gt. t_target_precision) print*, "WARNING: Non-converged amplitudes!"
+         write(*,*) ""
 
          if (.not.CCD) ierr=exatns_tensor_destroy(s1_tensor)
          ierr=exatns_tensor_destroy(s2_tensor)
@@ -1172,11 +1180,13 @@ module exacorr_cc
             call diis (l2_tensor,t_convergence=t_convergence)
           end if
 
-          call print_iteration(ilambda,t_target_precision,t_convergence)
+          call print_iteration(ilambda,t_convergence)
           if (t_convergence .lt. t_target_precision) exit
 
          end do
 
+         write(*,*) "------------------------"
+         write(*,*) ""
 
          if (t_convergence .gt. t_target_precision) print*, "WARNING: Non-converged amplitudes!"
          if (.not.CCD) write(*,'(A,ES22.16)') "  Final L1amp = ", print_tensornorm2(l1_tensor)
