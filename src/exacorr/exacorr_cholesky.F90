@@ -15,6 +15,10 @@ public cholesky_decompose
 public cholesky_decompose_aomat
 public cholesky_decompose_aomat_real
 
+public find_shells_talsh
+public get_diag_talsh
+
+
 interface cholesky_decompose
    module procedure cholesky_decompose_real_matrix
    module procedure cholesky_decompose_real_tensor
@@ -857,5 +861,153 @@ subroutine get_2el_diag_real(nao, gto, nshells, Dm)
   end do
 
 end subroutine get_2el_diag_real
+
+subroutine find_shells_talsh(Diag, Mask, lshell, kshell, lsize, ksize, D_max)
+
+  use tensor_algebra
+  use talsh
+  use exacorr_datatypes
+  use exacorr_global
+
+  implicit none
+
+  type(talsh_tens_t), intent(inout) :: Diag
+  type(talsh_tens_t), intent(inout) :: Mask
+  integer, intent(out)              :: lshell, kshell, lsize, ksize
+  real(8), intent(out)              :: D_max
+
+
+  real(8), pointer     :: Dm(:,:)
+  real(4), pointer     :: rfilt(:,:)
+  logical, allocatable :: lfilt(:,:)
+  type(C_PTR)          :: body_p
+  integer              :: rank
+  integer              :: dims2(1:2), i_max(1:2)
+  real(8)              :: D_tot
+  integer              :: ierr
+
+  rank=talsh_tensor_rank(Diag)
+  if (rank.ne.2) stop 'error: wrong rank in find_shells_talsh'
+  ierr = talsh_tensor_dimensions(Diag,rank,dims2)
+  if (ierr.ne.0) stop 'error: wrong dimension in find_shells_talsh'
+  ierr=talsh_tensor_get_body_access(Diag,body_p,C8,0,DEV_HOST)
+  call c_f_pointer(body_p,Dm,dims2)
+
+  rank=talsh_tensor_rank(Mask)
+  if (rank.ne.2) stop 'error: wrong rank in find_shells_talsh'
+  ierr = talsh_tensor_dimensions(Mask,rank,dims2)
+  if (ierr.ne.0) stop 'error: wrong dimension in find_shells_talsh'
+  ierr=talsh_tensor_get_body_access(Mask,body_p,C8,0,DEV_HOST)
+  call c_f_pointer(body_p,rfilt,dims2)
+  allocate(lfilt(dims2(1),dims2(2)))
+  
+  !find largest element
+  i_max=maxloc(abs(Dm))
+  D_tot=Dm(i_max(1), i_max(2))
+
+  !find largest non treated element
+  lfilt=rfilt.lt.0
+  i_max=maxloc(abs(Dm), mask=lfilt)
+  D_max=Dm(i_max(1), i_max(2))
+
+  if (abs(D_tot).gt.abs(D_max)) then
+    print *, 'Warning: error in cholesky will not be smaller than ', D_tot
+  end if
+
+  lshell=get_shell_index(i_max(1))
+  kshell=get_shell_index(i_max(2))
+
+  lsize=get_shell_size(lshell)
+  ksize=get_shell_size(kshell)
+
+  deallocate(lfilt)
+
+end subroutine find_shells_talsh
+
+subroutine get_diag_talsh(Diag)
+
+  use tensor_algebra
+  use talsh
+  use exacorr_datatypes
+  use exacorr_global
+  use module_interest_eri
+
+  implicit none
+
+  type(talsh_tens_t), intent(inout) :: Diag
+
+  real(8), pointer     :: Dm(:,:)
+  type(C_PTR)          :: body_p
+  integer              :: rank
+  integer              :: dims2(1:2)
+  integer              :: ierr
+
+  type(basis_func_info_t), allocatable :: gto(:)  ! arrays with basis function information
+  integer                              :: nao, nshells
+  integer                              :: basis_angular
+
+  integer :: lq, lp, nq, np, q, p
+  integer :: i, j, ijij
+  integer :: ioff, joff
+  real(8) :: eq,ep,cq,cp
+  real(8) :: xq,yq,zq,xp,yp,zp
+  real(8),save :: gout(21*21*21*21) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
+  real(8), parameter :: FIJKL = 1.0
+  
+  ! get acces to the tensor
+  rank=talsh_tensor_rank(Diag)
+  if (rank.ne.2) stop 'error: wrong rank in find_shells_talsh'
+  ierr = talsh_tensor_dimensions(Diag,rank,dims2)
+  if (ierr.ne.0) stop 'error: wrong dimension in find_shells_talsh'
+  ierr=talsh_tensor_get_body_access(Diag,body_p,C8,0,DEV_HOST)
+  call c_f_pointer(body_p,Dm,dims2)
+
+  ! get basis information
+  nao = get_nao()
+  call get_gtos(1,nao,gto,nshells)
+  basis_angular = get_basis_angular()
+
+  ! compute diagonal elements
+  joff = 0
+  do q = 1, nshells
+     lq   =  gto(q)%orb_momentum
+     eq   =  gto(q)%exponent(1)
+     xq   =  gto(q)%coord(1)
+     yq   =  gto(q)%coord(2)
+     zq   =  gto(q)%coord(3)
+     cq   =  gto(q)%coefficient(1)
+     nq   =  nfunctions(lq,basis_angular)
+
+     ioff = 0
+     do p = 1, nshells
+        lp   =  gto(p)%orb_momentum
+        ep   =  gto(p)%exponent(1)
+        xp   =  gto(p)%coord(1)
+        yp   =  gto(p)%coord(2)
+        zp   =  gto(p)%coord(3)
+        cp   =  gto(p)%coefficient(1)
+        np   =  nfunctions(lp,basis_angular)
+
+        !get eri values
+        call interest_eri('llll',FIJKL,gout,&
+                          lp,ep,xp,yp,zp,cp,&
+                          lq,eq,xq,yq,zq,cq,&
+                          lp,ep,xp,yp,zp,cp,&
+                          lq,eq,xq,yq,zq,cq )
+
+        do j = 1, nq
+          do i = 1, np
+            ijij = (j-1)*np*nq*np+(i-1)*nq*np+(j-1)*np+i
+            Dm(i+ioff,j+joff) = gout(ijij)
+          end do
+        end do
+
+        ioff = ioff + np
+     end do
+     joff = joff + nq
+  end do
+
+end subroutine get_diag_talsh
+
 
 end module exacorr_cholesky

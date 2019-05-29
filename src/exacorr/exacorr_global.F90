@@ -33,6 +33,8 @@ module exacorr_global
         public get_one_el
         public set_m_cholesky
         public get_m_cholesky
+        public get_shell_index
+        public get_shell_size
 
        contains
          
@@ -223,6 +225,13 @@ module exacorr_global
              integer, intent(in) :: ifun
              get_shell_index = ao_basis%shell_indices(ifun)
          end function get_shell_index
+
+         integer function get_shell_size(ish)
+             integer, intent(in) :: ish
+             integer :: il
+             il=ao_basis%gtos(ish)%orb_momentum
+             get_shell_size = nfunctions(il,ao_basis%basis_angular)
+         end function get_shell_size
 
          type(basis_func_info_t) function get_gto(ish)
              integer, intent(in) :: ish

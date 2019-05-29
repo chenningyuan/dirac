@@ -2058,6 +2058,56 @@ module talsh_cc
             stop 'Error in get_subtensor'
          end if
  
+ 
        end subroutine get_subtensor
+
+    subroutine decompose_cholesky_talsh (CD, t_cholesky, nao)
+
+        use exacorr_cholesky
+
+        implicit none
+
+        real(8), intent(in)                  :: t_cholesky ! cholesky threshold
+        type(talsh_tens_t), intent(inout)    :: CD
+        integer, intent(in)                  :: nao
+
+        integer            :: ierr
+
+        integer            :: lshell, kshell, lsize, ksize
+        real(8)            :: D_max
+        type(talsh_tens_t) :: Diag, Mask, Dl
+        integer            :: ao_dims(1:2), l_dims(1:4)
+        
+        integer(8)         :: m
+        ao_dims=nao
+        l_dims(1:2)=nao
+
+        ierr=talsh_tensor_construct(Diag,R8,ao_dims,init_val=ZERO)
+        ierr=talsh_tensor_construct(Mask,R4,ao_dims,init_val=ONE)
+        
+
+        call get_diag_talsh(Diag)
+
+        call find_shells_talsh(Diag, Mask, lshell, kshell, lsize, ksize, D_max)
+        
+        m=0
+        
+        do while (abs(D_max)>t_cholesky)
+            l_dims(3)=lsize
+            l_dims(4)=ksize
+
+            ierr=talsh_tensor_construct(Dl,R8,l_dims,init_val=ZERO)
+
+
+
+            ierr=talsh_tensor_destruct(Dl)
+        end do
+
+        print *, 'Cholesky decomposition done, used ',m,' elements'
+
+        ierr=talsh_tensor_destruct(Diag)
+        ierr=talsh_tensor_destruct(Mask)
+
+    end subroutine decompose_cholesky_talsh
 
 end module talsh_cc
