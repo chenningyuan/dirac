@@ -64,7 +64,7 @@ module exacorr_global
              use interface_to_mpi
              integer :: my_MPI_rank
 #endif
-             integer :: ierr
+             integer :: ierr, scf_file
              logical :: tobe
 
 #if defined (VAR_MPI)
@@ -78,6 +78,7 @@ module exacorr_global
              ! read MO coefficients and ao basis set information
              inquire (file='DFCOEF',exist=tobe)
              if (tobe) then
+                scf_file = 0
                 call read_from_dirac (ao_basis,cspinor_all,'DFCOEF',ierr)
                 if (exa_input%beta_occ .and. (.not.TALSH_ONLY)) then
                   if (exa_input%level_shift.lt.1.0D-10) then
@@ -87,6 +88,7 @@ module exacorr_global
              else
                 inquire (file='RSD_MOS',exist=tobe)
                 if (tobe) then
+                   scf_file = 1
                    call read_from_respect (ao_basis,cspinor_all,ierr)
                 end if
              end if
@@ -112,7 +114,7 @@ module exacorr_global
              else
                one_el_exist = .FALSE.
                if (exa_input%beta_occ) then
-                 call quit ('One electron integrals required in the open shell case (MOLTRA)')
+                 if (scf_file == 0) call quit ('One electron integrals required in the open shell case (MOLTRA)')
                end if
              end if
              

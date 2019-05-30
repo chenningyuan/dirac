@@ -111,10 +111,10 @@
           call quit ("change .OCC_BETA in EXACORR")
          end if
             
-         exa_input%nkr_occ=nmo(1)+nmo(2)
-         exa_input%nkr_vir=nmo(3)+nmo(4)
-         allocate (exa_input%mo_occ(exa_input%nkr_occ))
-         allocate (exa_input%mo_vir(exa_input%nkr_vir))
+         exa_input%nocc=nmo(1)+nmo(2)
+         exa_input%nvir=nmo(3)+nmo(4)
+         allocate (exa_input%mo_occ(exa_input%nocc))
+         allocate (exa_input%mo_vir(exa_input%nvir))
 
          imo=0
          do i=1, max(nmo(1), nmo(2))
