@@ -11,6 +11,7 @@ Revised features:
 Error corrections:
 
 - Fix spelling error in keyword .GAUNTSCALE (was .GAUTSCALE)
+- Fixed T1EQN1 function call in src/relccsd/ccgrad.F (thanks to Martin Siegert).
 
 Performance improvements:
 
