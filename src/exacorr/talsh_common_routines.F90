@@ -282,7 +282,7 @@ module talsh_common_routines
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims4)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
 
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,C8,0,DEV_HOST)
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,R8,0,DEV_HOST)
           call c_f_pointer(body_p,tens4,dims4)
 
           print *, "print 4D tensor: ", t_name, " (shape:", dims4, ")"

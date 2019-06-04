@@ -15,10 +15,10 @@ public cholesky_decompose
 public cholesky_decompose_aomat
 public cholesky_decompose_aomat_real
 
-public find_shells_talsh
-public get_diag_talsh
-public get_shell_talsh
-public find_el_talsh
+public get_diag_talsh_real
+public find_shells_talsh_real
+public get_shell_talsh_real
+public find_el_talsh_real
 
 
 interface cholesky_decompose
@@ -864,69 +864,7 @@ subroutine get_2el_diag_real(nao, gto, nshells, Dm)
 
 end subroutine get_2el_diag_real
 
-subroutine find_shells_talsh(Diag, Filter, lshell, kshell, lsize, ksize, D_max)
-
-  use tensor_algebra
-  use talsh
-  use exacorr_datatypes
-  use exacorr_global
-
-  implicit none
-
-  type(talsh_tens_t), intent(inout) :: Diag
-  type(talsh_tens_t), intent(inout) :: Filter
-  integer, intent(out)              :: lshell, kshell, lsize, ksize
-  real(8), intent(out)              :: D_max
-
-
-  real(8), pointer     :: Dm(:,:)
-  real(4), pointer     :: rfilt(:,:)
-  logical, allocatable :: lfilt(:,:)
-  type(C_PTR)          :: body_p
-  integer              :: rank
-  integer              :: dims2(1:2), i_max(1:2)
-  real(8)              :: D_tot
-  integer              :: ierr
-
-  rank=talsh_tensor_rank(Diag)
-  if (rank.ne.2) stop 'error: wrong rank in find_shells_talsh'
-  ierr = talsh_tensor_dimensions(Diag,rank,dims2)
-  if (ierr.ne.0) stop 'error: wrong dimension in find_shells_talsh'
-  ierr=talsh_tensor_get_body_access(Diag,body_p,C8,0,DEV_HOST)
-  call c_f_pointer(body_p,Dm,dims2)
-
-  rank=talsh_tensor_rank(Filter)
-  if (rank.ne.2) stop 'error: wrong rank in find_shells_talsh'
-  ierr = talsh_tensor_dimensions(Filter,rank,dims2)
-  if (ierr.ne.0) stop 'error: wrong dimension in find_shells_talsh'
-  ierr=talsh_tensor_get_body_access(Filter,body_p,C8,0,DEV_HOST)
-  call c_f_pointer(body_p,rfilt,dims2)
-  allocate(lfilt(dims2(1),dims2(2)))
-  
-  !find largest element
-  i_max=maxloc(abs(Dm))
-  D_tot=Dm(i_max(1), i_max(2))
-
-  !find largest non treated element
-  lfilt=rfilt.lt.0
-  i_max=maxloc(abs(Dm), mask=lfilt)
-  D_max=Dm(i_max(1), i_max(2))
-
-  if (abs(D_tot).gt.abs(D_max)) then
-    print *, 'Warning: error in cholesky will not be smaller than ', D_tot
-  end if
-
-  lshell=get_shell_index(i_max(1))
-  kshell=get_shell_index(i_max(2))
-
-  lsize=get_shell_size(lshell)
-  ksize=get_shell_size(kshell)
-
-  deallocate(lfilt)
-
-end subroutine find_shells_talsh
-
-subroutine get_diag_talsh(Diag)
+subroutine get_diag_talsh_real(Diag)
 
   use tensor_algebra
   use talsh
@@ -961,7 +899,7 @@ subroutine get_diag_talsh(Diag)
   if (rank.ne.2) stop 'error: wrong rank in find_shells_talsh'
   ierr = talsh_tensor_dimensions(Diag,rank,dims2)
   if (ierr.ne.0) stop 'error: wrong dimension in find_shells_talsh'
-  ierr=talsh_tensor_get_body_access(Diag,body_p,C8,0,DEV_HOST)
+  ierr=talsh_tensor_get_body_access(Diag,body_p,R8,0,DEV_HOST)
   call c_f_pointer(body_p,Dm,dims2)
 
   ! get basis information
@@ -1009,9 +947,71 @@ subroutine get_diag_talsh(Diag)
      joff = joff + nq
   end do
 
-end subroutine get_diag_talsh
+end subroutine get_diag_talsh_real
 
-subroutine get_shell_talsh(Dshell, lsh, ksh)
+subroutine find_shells_talsh_real(Diag, Filter, lshell, kshell, lsize, ksize, D_max)
+
+  use tensor_algebra
+  use talsh
+  use exacorr_datatypes
+  use exacorr_global
+
+  implicit none
+
+  type(talsh_tens_t), intent(inout) :: Diag
+  type(talsh_tens_t), intent(inout) :: Filter
+  integer, intent(out)              :: lshell, kshell, lsize, ksize
+  real(8), intent(out)              :: D_max
+
+
+  real(8), pointer     :: Dm(:,:)
+  real(4), pointer     :: rfilt(:,:)
+  logical, allocatable :: lfilt(:,:)
+  type(C_PTR)          :: body_p
+  integer              :: rank
+  integer              :: dims2(1:2), i_max(1:2)
+  real(8)              :: D_tot
+  integer              :: ierr
+
+  rank=talsh_tensor_rank(Diag)
+  if (rank.ne.2) stop 'error: wrong rank in find_shells_talsh'
+  ierr = talsh_tensor_dimensions(Diag,rank,dims2)
+  if (ierr.ne.0) stop 'error: wrong dimension in find_shells_talsh'
+  ierr=talsh_tensor_get_body_access(Diag,body_p,R8,0,DEV_HOST)
+  call c_f_pointer(body_p,Dm,dims2)
+
+  rank=talsh_tensor_rank(Filter)
+  if (rank.ne.2) stop 'error: wrong rank in find_shells_talsh'
+  ierr = talsh_tensor_dimensions(Filter,rank,dims2)
+  if (ierr.ne.0) stop 'error: wrong dimension in find_shells_talsh'
+  ierr=talsh_tensor_get_body_access(Filter,body_p,R4,0,DEV_HOST)
+  call c_f_pointer(body_p,rfilt,dims2)
+  allocate(lfilt(dims2(1),dims2(2)))
+  lfilt=rfilt.gt.0
+
+  !find largest element
+  i_max=maxloc(abs(Dm))
+  D_tot=Dm(i_max(1), i_max(2))
+
+  !find largest non treated element
+  i_max=maxloc(abs(Dm), mask=lfilt)
+  D_max=Dm(i_max(1), i_max(2))
+
+  if (abs(D_tot).gt.abs(D_max)) then
+    print *, 'Warning: error in cholesky will not be smaller than ', D_tot
+  end if
+
+  lshell=get_shell_index(i_max(1))
+  kshell=get_shell_index(i_max(2))
+
+  lsize=get_shell_size(lshell)
+  ksize=get_shell_size(kshell)
+
+  deallocate(lfilt)
+
+end subroutine find_shells_talsh_real
+
+subroutine get_shell_talsh_real(Dshell, lsh, ksh)
 
   use tensor_algebra
   use talsh
@@ -1092,7 +1092,7 @@ subroutine get_shell_talsh(Dshell, lsh, ksh)
   if (rank.ne.4) stop 'error: wrong rank in get_shell_talsh'
   ierr = talsh_tensor_dimensions(Dshell,rank,dims4)
   if (ierr.ne.0) stop 'error: wrong dimension in get_shell_talsh'
-  ierr=talsh_tensor_get_body_access(Dshell,body_p,C8,0,DEV_HOST)
+  ierr=talsh_tensor_get_body_access(Dshell,body_p,R8,0,DEV_HOST)
   call c_f_pointer(body_p,Dlk,dims4)
 
   !loop over all the shells for the other indices
@@ -1143,10 +1143,10 @@ subroutine get_shell_talsh(Dshell, lsh, ksh)
     joff = joff + nj
   end do
 
-end subroutine get_shell_talsh
+end subroutine get_shell_talsh_real
 
 
-subroutine find_el_talsh(Diag, Filter, lsh, ksh, l, k, D_el)
+subroutine find_el_talsh_real(Diag, Filter, lsh, ksh, l, k, D_el)
 
   use tensor_algebra
   use talsh
@@ -1210,7 +1210,7 @@ subroutine find_el_talsh(Diag, Filter, lsh, ksh, l, k, D_el)
   if (rank.ne.2) stop 'error: wrong rank in get_shell_talsh'
   ierr = talsh_tensor_dimensions(Diag,rank,dims2)
   if (ierr.ne.0) stop 'error: wrong dimension in get_shell_talsh'
-  ierr=talsh_tensor_get_body_access(Diag,body_p,C8,0,DEV_HOST)
+  ierr=talsh_tensor_get_body_access(Diag,body_p,R8,0,DEV_HOST)
   call c_f_pointer(body_p,Dm,dims2)
 
   ! set up Mask
@@ -1218,7 +1218,7 @@ subroutine find_el_talsh(Diag, Filter, lsh, ksh, l, k, D_el)
   if (rank.ne.2) stop 'error: wrong rank in get_shell_talsh'
   ierr = talsh_tensor_dimensions(Filter,rank,dims2)
   if (ierr.ne.0) stop 'error: wrong dimension in get_shell_talsh'
-  ierr=talsh_tensor_get_body_access(Filter,body_p,C8,0,DEV_HOST)
+  ierr=talsh_tensor_get_body_access(Filter,body_p,R4,0,DEV_HOST)
   call c_f_pointer(body_p,rfilt,dims2)
   allocate(lfilt(dims2(1),dims2(2)))
   lfilt=.false.
@@ -1226,7 +1226,7 @@ subroutine find_el_talsh(Diag, Filter, lsh, ksh, l, k, D_el)
   allocate(Dmask(dims2(1),dims2(2)))
   Dmask=.false.
   Dmask(koff+1:koff+nk,loff+1:loff+nl)=.true.
-  where (Dmask) lfilt = rfilt.lt.0
+  where (Dmask) lfilt = rfilt.gt.0
 
   mind=maxloc(abs(Dm), mask=lfilt)
 
@@ -1237,6 +1237,6 @@ subroutine find_el_talsh(Diag, Filter, lsh, ksh, l, k, D_el)
   deallocate(lfilt)
   deallocate(Dmask)
 
-end subroutine find_el_talsh
+end subroutine find_el_talsh_real
 
 end module exacorr_cholesky
