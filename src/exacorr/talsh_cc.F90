@@ -1353,7 +1353,7 @@ module talsh_cc
 !        cholesky 
          real(8), allocatable            :: CD(:,:,:)
          complex(8), pointer, contiguous :: chol_tens(:,:,:)
-         type(talsh_tens_t)              :: chol_tensor, test_tensor, err_tensor
+         type(talsh_tens_t)              :: chol_tensor, test_tensor, err_tensor, CD0
          type(talsh_tens_t)              :: uoo_tensor, uov_tensor, uvo_tensor, uvv_tensor
          integer, dimension(3)           :: chol_dims, uoo_dims, uov_dims, uvo_dims, uvv_dims
          integer, dimension(4)           :: ovov_dims, vvov_dims
@@ -1374,7 +1374,7 @@ module talsh_cc
          !call compute_ao_integrals (nao,ao_tens_real=ao_tens)
          !call cholesky_decompose (ao_tens,nao,CD, t_cholesky)
          !deallocate(ao_tens)
-
+         !call decompose_cholesky_talsh (CD0, t_cholesky, nao)
          call cholesky_decompose_aomat_real (CD, t_cholesky)
          
          chol_dims(1)=nao
@@ -2074,17 +2074,21 @@ module talsh_cc
         integer            :: ierr
 
         integer            :: lshell, kshell, lsize, ksize
-        real(8)            :: D_max
-        type(talsh_tens_t) :: Diag, Mask, Dl
-        integer            :: ao_dims(1:2), l_dims(1:4)
+        integer            :: l, k
+        real(8)            :: D_max, D_el
+        type(talsh_tens_t) :: Diag, Mask, Dlk, Res, CD_v, CD_m
+        integer            :: ao_dims(1:2), l_dims(1:4), cd_dims(1:3)
         
         integer(8)         :: m
+
+        real(8), parameter :: ACC=1.0E-9
+        
         ao_dims=nao
         l_dims(1:2)=nao
 
         ierr=talsh_tensor_construct(Diag,R8,ao_dims,init_val=ZERO)
         ierr=talsh_tensor_construct(Mask,R4,ao_dims,init_val=ONE)
-        
+        ierr=talsh_tensor_construct(Res,R8,ao_dims,init_val=ZERO)
 
         call get_diag_talsh(Diag)
 
@@ -2096,17 +2100,58 @@ module talsh_cc
             l_dims(3)=lsize
             l_dims(4)=ksize
 
-            ierr=talsh_tensor_construct(Dl,R8,l_dims,init_val=ZERO)
+            ierr=talsh_tensor_construct(Dlk,R8,l_dims,init_val=ZERO)
 
+            call get_shell_talsh(Dlk, lshell, kshell)
 
+            call find_el_talsh(Diag, Mask, lshell, kshell, l, k, D_el)
 
-            ierr=talsh_tensor_destruct(Dl)
+            do while(abs(D_el)>abs(D_max/1000))
+              cd_dims(1:2)=1
+              cd_dims(3)=m
+              ierr=talsh_tensor_construct(CD_v,R8,cd_dims,init_val=ZERO)
+              cd_dims(1)=l
+              cd_dims(2)=k
+              cd_dims(3)=0
+              ierr=talsh_tensor_slice(CD_v,CD,cd_dims,0,DEV_HOST) 
+
+              call print_tensor_real(CD_v, ACC, "CD vector")
+
+              cd_dims(1:2)=nao
+              cd_dims(3)=m
+              ierr=talsh_tensor_construct(CD_m,R8,cd_dims,init_val=ZERO)
+              cd_dims(1)=0
+              cd_dims(2)=0
+              cd_dims(3)=0
+              ierr=talsh_tensor_slice(CD_m,CD,cd_dims,0,DEV_HOST)
+
+              call print_tensor_real(CD_v, ACC, "CD matrix")
+              
+
+              ierr=talsh_tensor_contract("T(p,q)=C(p,q,u)*D(u)",Res,CD_m,CD_v)
+              ierr=talsh_tensor_destruct(CD_m)
+              ierr=talsh_tensor_destruct(CD_v)
+
+              
+
+              
+              m=m+1
+
+              if (m>nao*nao) print *, 'Cholesky decomposition did not work'
+
+              call find_el_talsh(Diag, Mask, lshell, kshell, l, k, D_el)
+            end do
+
+            call find_shells_talsh(Diag, Mask, lshell, kshell, lsize, ksize, D_max)
+
+            ierr=talsh_tensor_destruct(Dlk)
         end do
 
         print *, 'Cholesky decomposition done, used ',m,' elements'
 
         ierr=talsh_tensor_destruct(Diag)
         ierr=talsh_tensor_destruct(Mask)
+        ierr=talsh_tensor_destruct(Res)
 
     end subroutine decompose_cholesky_talsh
 

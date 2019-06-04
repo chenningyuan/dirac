@@ -17,6 +17,7 @@ module talsh_common_routines
     public get_orbital_energies
     public scale_with_denominators
     public print_tensor
+    public print_tensor_real
 
     contains
 
@@ -169,7 +170,7 @@ module talsh_common_routines
           print *, "print 2D tensor: ", t_name, " (shape:", dims2,")"
           do i = 1, dims2(1)
             do j = 1, dims2(2)
-              if(abs(real(tens2(i,j),8)).gt.acc .or. abs(dimag(tens2(i,j))).gt.acc) then
+              if(abs(tens2(i,j)).gt.acc) then
                 print *, i, j, tens2(i,j)
               end if
             end do
@@ -187,7 +188,7 @@ module talsh_common_routines
           do i = 1, dims3(1)
             do j = 1, dims3(2)
               do k = 1, dims3(3)
-                  if(abs(real(tens3(i,j,k),8)).gt.acc .or. abs(dimag(tens3(i,j,k))).gt.acc) then
+                  if(abs(tens3(i,j,k)).gt.acc) then
                     print *, i, j, k, tens3(i, j, k)
                   end if
               end do
@@ -207,7 +208,7 @@ module talsh_common_routines
             do j = 1, dims4(2)
               do k = 1, dims4(3)
                 do l = 1, dims4(4)
-                  if(abs(real(tens4(i,j,k,l),8)).gt.acc .or. abs(dimag(tens4(i,j,k,l))).gt.acc) then
+                  if(abs(tens4(i,j,k,l)).gt.acc) then
                     print *, i, j, k, l, tens4(i, j, k, l)
                   end if
                 end do
@@ -221,5 +222,87 @@ module talsh_common_routines
         end if
 
       end subroutine print_tensor
+
+      subroutine print_tensor_real(h_tensor, acc, t_name)
+
+        type(talsh_tens_t), intent(inout)    :: h_tensor
+        real(8), intent(in)                  :: acc
+        character(LEN=*), intent(in)         :: t_name
+
+        integer  ::  dims2(1:2)
+        integer  ::  dims3(1:3)
+        integer  ::  dims4(1:4)
+        integer  ::  ierr
+        integer  ::  rank, rrank
+        integer  ::  i, j, k, l
+        type(C_PTR)         :: body_p
+        real(8), pointer :: tens2(:, :)
+        real(8), pointer :: tens3(:, :, :)
+        real(8), pointer :: tens4(:, :, :, :)
+
+        rank=talsh_tensor_rank(h_tensor)
+        
+        if (rank.eq.2) then
+          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims2)
+          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,R8,0,DEV_HOST)
+          call c_f_pointer(body_p,tens2,dims2)
+
+          print *, "print 2D tensor: ", t_name, " (shape:", dims2,")"
+          do i = 1, dims2(1)
+            do j = 1, dims2(2)
+              if(abs(tens2(i,j)).gt.acc) then
+                print *, i, j, tens2(i,j)
+              end if
+            end do
+          end do
+          print *, " end print 2D tensor ", t_name
+
+        else if (rank.eq.3) then
+          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims3)
+          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,R8,0,DEV_HOST)
+          call c_f_pointer(body_p,tens3,dims3)
+
+          print *, "print 3D tensor: ", t_name, " (shape:", dims3,")"
+          do i = 1, dims3(1)
+            do j = 1, dims3(2)
+              do k = 1, dims3(3)
+                  if(abs(tens3(i,j,k)).gt.acc) then
+                    print *, i, j, k, tens3(i, j, k)
+                  end if
+              end do
+            end do
+          end do
+          print *, " end print 3D tensor: ", t_name
+
+        else if (rank.eq.4) then
+          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims4)
+          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,C8,0,DEV_HOST)
+          call c_f_pointer(body_p,tens4,dims4)
+
+          print *, "print 4D tensor: ", t_name, " (shape:", dims4, ")"
+          do i = 1, dims4(1)
+            do j = 1, dims4(2)
+              do k = 1, dims4(3)
+                do l = 1, dims4(4)
+                  if(abs(tens4(i,j,k,l)).gt.acc) then
+                    print *, i, j, k, l, tens4(i, j, k, l)
+                  end if
+                end do
+              end do
+            end do
+          end do
+          print *, " end print 4D tensor: ", t_name
+
+        else
+          stop 'error in print_tensor: only ranks 2,3 and 4 implemented'
+        end if
+
+      end subroutine print_tensor_real
 
 end module talsh_common_routines

@@ -17,6 +17,8 @@ public cholesky_decompose_aomat_real
 
 public find_shells_talsh
 public get_diag_talsh
+public get_shell_talsh
+public find_el_talsh
 
 
 interface cholesky_decompose
@@ -862,7 +864,7 @@ subroutine get_2el_diag_real(nao, gto, nshells, Dm)
 
 end subroutine get_2el_diag_real
 
-subroutine find_shells_talsh(Diag, Mask, lshell, kshell, lsize, ksize, D_max)
+subroutine find_shells_talsh(Diag, Filter, lshell, kshell, lsize, ksize, D_max)
 
   use tensor_algebra
   use talsh
@@ -872,7 +874,7 @@ subroutine find_shells_talsh(Diag, Mask, lshell, kshell, lsize, ksize, D_max)
   implicit none
 
   type(talsh_tens_t), intent(inout) :: Diag
-  type(talsh_tens_t), intent(inout) :: Mask
+  type(talsh_tens_t), intent(inout) :: Filter
   integer, intent(out)              :: lshell, kshell, lsize, ksize
   real(8), intent(out)              :: D_max
 
@@ -893,11 +895,11 @@ subroutine find_shells_talsh(Diag, Mask, lshell, kshell, lsize, ksize, D_max)
   ierr=talsh_tensor_get_body_access(Diag,body_p,C8,0,DEV_HOST)
   call c_f_pointer(body_p,Dm,dims2)
 
-  rank=talsh_tensor_rank(Mask)
+  rank=talsh_tensor_rank(Filter)
   if (rank.ne.2) stop 'error: wrong rank in find_shells_talsh'
-  ierr = talsh_tensor_dimensions(Mask,rank,dims2)
+  ierr = talsh_tensor_dimensions(Filter,rank,dims2)
   if (ierr.ne.0) stop 'error: wrong dimension in find_shells_talsh'
-  ierr=talsh_tensor_get_body_access(Mask,body_p,C8,0,DEV_HOST)
+  ierr=talsh_tensor_get_body_access(Filter,body_p,C8,0,DEV_HOST)
   call c_f_pointer(body_p,rfilt,dims2)
   allocate(lfilt(dims2(1),dims2(2)))
   
@@ -1009,5 +1011,232 @@ subroutine get_diag_talsh(Diag)
 
 end subroutine get_diag_talsh
 
+subroutine get_shell_talsh(Dshell, lsh, ksh)
+
+  use tensor_algebra
+  use talsh
+  use exacorr_datatypes
+  use exacorr_global
+  use module_interest_eri
+
+  implicit none 
+
+  integer, intent(in)            :: lsh, ksh
+  type(talsh_tens_t), intent(inout) :: Dshell
+
+  real(8), pointer     :: Dlk(:,:,:,:)
+  type(C_PTR)          :: body_p
+  integer              :: rank
+  integer              :: dims4(1:4)
+  integer              :: ierr
+
+
+  type(basis_func_info_t), allocatable :: gto(:)  ! arrays with basis function information
+  integer                              :: nao, nshells
+  integer                              :: basis_angular
+
+  !variables required to compute 2el integrals
+  integer(8)         :: ijkl
+  integer(8)         :: ioff,joff,koff,loff
+  integer(8)         :: ish,jsh
+  integer(8)         :: kshell,lshell
+  integer            :: i, ni, li
+  real(8)            :: ei, ci, xi, yi, zi
+  integer            :: j, nj, lj
+  real(8)            :: ej, cj, xj, yj, zj
+  integer            :: k, nk, lk
+  real(8)            :: ek, ck, xk, yk, zk
+  integer            :: l, nl, ll
+  real(8)            :: el, cl, xl, yl, zl
+  real(8), parameter :: FIJKL = 1.0
+  integer, parameter :: LMAX = 21 ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
+  real(8), save      :: gout(LMAX*LMAX*LMAX*LMAX) 
+  real(8)            :: limit
+
+  ! get basis information
+  nao = get_nao()
+  call get_gtos(1,nao,gto,nshells)
+  basis_angular = get_basis_angular()
+
+  !set parameters for the fixed shell
+  loff=0
+  do lshell = 1, lsh-1
+    ll   =  gto(lshell)%orb_momentum
+    nl   =  nfunctions(ll,basis_angular)
+    loff = loff + nl
+  end do
+  ll   =  gto(lsh)%orb_momentum
+  el   =  gto(lsh)%exponent(1)
+  xl   =  gto(lsh)%coord(1)
+  yl   =  gto(lsh)%coord(2)
+  zl   =  gto(lsh)%coord(3)
+  cl   =  gto(lsh)%coefficient(1)
+  nl   =  nfunctions(ll,basis_angular)
+
+  koff=0
+  do kshell = 1, ksh-1
+    lk   =  gto(kshell)%orb_momentum
+    nk   =  nfunctions(lk,basis_angular)
+    koff = koff + nk
+  end do
+  lk   =  gto(ksh)%orb_momentum
+  ek   =  gto(ksh)%exponent(1)
+  xk   =  gto(ksh)%coord(1)
+  yk   =  gto(ksh)%coord(2)
+  zk   =  gto(ksh)%coord(3)
+  ck   =  gto(ksh)%coefficient(1)
+  nk   =  nfunctions(lk,basis_angular)
+
+  ! get acces to the tensor
+  rank=talsh_tensor_rank(Dshell)
+  if (rank.ne.4) stop 'error: wrong rank in get_shell_talsh'
+  ierr = talsh_tensor_dimensions(Dshell,rank,dims4)
+  if (ierr.ne.0) stop 'error: wrong dimension in get_shell_talsh'
+  ierr=talsh_tensor_get_body_access(Dshell,body_p,C8,0,DEV_HOST)
+  call c_f_pointer(body_p,Dlk,dims4)
+
+  !loop over all the shells for the other indices
+  joff = 0
+  do jsh = 1, nshells
+    lj   =  gto(jsh)%orb_momentum
+    ej   =  gto(jsh)%exponent(1)
+    xj   =  gto(jsh)%coord(1)
+    yj   =  gto(jsh)%coord(2)
+    zj   =  gto(jsh)%coord(3)
+    cj   =  gto(jsh)%coefficient(1)
+    nj   =  nfunctions(lj,basis_angular)
+
+    !neglect small elements
+    ioff = 0
+    do ish = 1, nshells
+      li   =  gto(ish)%orb_momentum
+      ei   =  gto(ish)%exponent(1)
+      xi   =  gto(ish)%coord(1)
+      yi   =  gto(ish)%coord(2)
+      zi   =  gto(ish)%coord(3)
+      ci   =  gto(ish)%coefficient(1)
+      ni   =  nfunctions(li,basis_angular)
+
+
+!     output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
+      call interest_eri('llll',FIJKL,gout,&
+                        lk,ek,xk,yk,zk,ck,&
+                        ll,el,xl,yl,zl,cl,&
+                        li,ei,xi,yi,zi,ci,&
+                        lj,ej,xj,yj,zj,cj )
+
+      !save all elements for this shell
+      do k = 1, nk
+        do l = 1, nl
+          do j = 1, nj
+            do i = 1, ni
+              ijkl = (l-1)*nk*nj*ni+(k-1)*nj*ni+(j-1)*ni+i
+              Dlk(i+ioff,j+joff,l,k) = gout(ijkl)
+            end do
+          end do
+        end do
+      end do
+
+      ioff = ioff + ni
+    end do
+
+    joff = joff + nj
+  end do
+
+end subroutine get_shell_talsh
+
+
+subroutine find_el_talsh(Diag, Filter, lsh, ksh, l, k, D_el)
+
+  use tensor_algebra
+  use talsh
+  use exacorr_datatypes
+  use exacorr_global
+  use module_interest_eri
+
+  implicit none
+  
+  integer, intent(in)               :: lsh, ksh
+  type(talsh_tens_t), intent(inout) :: Filter
+  type(talsh_tens_t), intent(inout) :: Diag
+  integer, intent(out)              :: l, k
+  real(8), intent(out)              :: D_el
+
+  real(8), pointer     :: Dm(:,:)
+  type(C_PTR)          :: body_p
+  integer              :: rank
+  integer              :: dims2(1:2), mind(1:2)
+  integer              :: ierr
+  real(4), pointer     :: rfilt(:,:)
+  logical, allocatable :: lfilt(:,:)
+
+  type(basis_func_info_t), allocatable :: gto(:)  ! arrays with basis function information
+  integer                              :: nao, nshells
+  integer                              :: basis_angular
+
+  integer(8)         :: koff, loff
+  integer            :: kshell, lshell
+  integer            :: nk, nl
+  integer            :: ll, lk
+
+  logical, allocatable :: Dmask(:,:)
+
+  ! get basis information
+  nao = get_nao()
+  call get_gtos(1,nao,gto,nshells)
+  basis_angular = get_basis_angular()
+
+  !get shell information
+  loff=0
+  do lshell = 1, lsh-1
+    ll   =  gto(lshell)%orb_momentum
+    nl   =  nfunctions(ll,basis_angular)
+    loff = loff + nl
+  end do
+  ll   =  gto(lsh)%orb_momentum
+  nl   =  nfunctions(ll,basis_angular)
+
+  koff=0
+  do kshell = 1, ksh-1
+    lk   =  gto(kshell)%orb_momentum
+    nk   =  nfunctions(lk,basis_angular)
+    koff = koff + nk
+  end do
+  lk   =  gto(ksh)%orb_momentum
+  nk   =  nfunctions(lk,basis_angular)
+
+  ! get acces to the tensor
+  rank=talsh_tensor_rank(Diag)
+  if (rank.ne.2) stop 'error: wrong rank in get_shell_talsh'
+  ierr = talsh_tensor_dimensions(Diag,rank,dims2)
+  if (ierr.ne.0) stop 'error: wrong dimension in get_shell_talsh'
+  ierr=talsh_tensor_get_body_access(Diag,body_p,C8,0,DEV_HOST)
+  call c_f_pointer(body_p,Dm,dims2)
+
+  ! set up Mask
+  rank=talsh_tensor_rank(Filter)
+  if (rank.ne.2) stop 'error: wrong rank in get_shell_talsh'
+  ierr = talsh_tensor_dimensions(Filter,rank,dims2)
+  if (ierr.ne.0) stop 'error: wrong dimension in get_shell_talsh'
+  ierr=talsh_tensor_get_body_access(Filter,body_p,C8,0,DEV_HOST)
+  call c_f_pointer(body_p,rfilt,dims2)
+  allocate(lfilt(dims2(1),dims2(2)))
+  lfilt=.false.
+
+  allocate(Dmask(dims2(1),dims2(2)))
+  Dmask=.false.
+  Dmask(koff+1:koff+nk,loff+1:loff+nl)=.true.
+  where (Dmask) lfilt = rfilt.lt.0
+
+  mind=maxloc(abs(Dm), mask=lfilt)
+
+  k=mind(1)
+  l=mind(2)
+  D_el=Dm(l,k)
+  
+  deallocate(lfilt)
+  deallocate(Dmask)
+
+end subroutine find_el_talsh
 
 end module exacorr_cholesky
