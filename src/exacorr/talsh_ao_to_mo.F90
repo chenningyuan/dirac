@@ -17,6 +17,7 @@ module talsh_ao_to_mo
         public tensor_norm2
         public aomo_cholesky
         public mulliken_to_dirac_sort
+        public compute_nelectrons
 
         interface compute_ao_integrals
            module procedure compute_ao_integrals
@@ -39,7 +40,7 @@ module talsh_ao_to_mo
          use, intrinsic:: ISO_C_BINDING
          use module_interest_interface
          use module_interest_eri
-#if defined (VAR_MPI) 
+#if defined (VAR_MPI)
          use interface_to_mpi
 #endif
 
@@ -65,7 +66,7 @@ module talsh_ao_to_mo
 
 !        Initialize global data
          call initialize_global_data
-#if defined (VAR_MPI) 
+#if defined (VAR_MPI)
          call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
 #else
          my_MPI_rank = 0
@@ -209,7 +210,7 @@ module talsh_ao_to_mo
 
          !OpenMP task-based parallelism defined by Eric does not work, deactivated [LV]
          !deactivatedopenmp parallel
-         !deactivatedopenmp single 
+         !deactivatedopenmp single
          loff = 0
          do lsh = 1, nshells
             ll   =  gto(lsh)%orb_momentum
@@ -503,9 +504,109 @@ module talsh_ao_to_mo
 
         end function tensor_norm2
 
+        subroutine compute_nelectrons(mo_occ)
+
+          use exacorr_datatypes
+          use exacorr_mo
+          use exacorr_respect
+
+          ! input variables
+          integer, intent(in) :: mo_occ(:)
+          ! local variables
+          type(cmo)              :: cspinor
+          type(basis_set_info_t) :: ao_basis
+
+          integer :: ksh, lsh,koff, loff
+          integer :: lk,ll,nk,nl,k,l,kl
+          real(8) :: ek,el,ck,cl,xk,yk,zk,xl,yl,zl
+
+          integer :: nrkb
+          real(8) :: skl(21*21) ! hardwired for maximum  l-value of 5 (s=1,p=3,d=6,f=10,g=15,h=21)
+          real(8), parameter :: fijkl = 1.0
+          integer :: ncentr=1
+          real(8) :: atomic_data(5) = (/0.0,0.0,0.0,0.0,0.0/)
+
+          integer :: nocc
+          complex(8), allocatable :: s_ao(:,:), s_c(:,:), s_mo(:,:)
+          real(8) :: nelec
+
+          logical :: tobe
+
+          integer :: ierr
+
+          ! read MO coefficients and ao basis set information
+          inquire (file='DFCOEF',exist=tobe)
+          if (tobe) then
+             call read_from_dirac (ao_basis,cspinor,'DFCOEF',ierr)
+          else
+             inquire (file='RSD_MOS',exist=tobe)
+             if (tobe) then
+                call read_from_respect (ao_basis,cspinor,ierr)
+             end if
+          end if
+
+          allocate(s_ao(ao_basis%nao,ao_basis%nao))
+
+!         AO overlap
+          loff = 0
+          do lsh = 1, ao_basis%nshells
+            ll   =  ao_basis%gtos(lsh)%orb_momentum
+            el   =  ao_basis%gtos(lsh)%exponent(1)
+            xl   =  ao_basis%gtos(lsh)%coord(1)
+            yl   =  ao_basis%gtos(lsh)%coord(2)
+            zl   =  ao_basis%gtos(lsh)%coord(3)
+            cl   =  ao_basis%gtos(lsh)%coefficient(1)
+            koff = 0
+            do ksh = 1, ao_basis%nshells
+              lk   =  ao_basis%gtos(ksh)%orb_momentum
+              ek   =  ao_basis%gtos(ksh)%exponent(1)
+              xk   =  ao_basis%gtos(ksh)%coord(1)
+              yk   =  ao_basis%gtos(ksh)%coord(2)
+              zk   =  ao_basis%gtos(ksh)%coord(3)
+              ck   =  ao_basis%gtos(ksh)%coefficient(1)
+              call  interest_overlap(.false.,   &
+                              skl,nk,nl,nrkb,   &
+                              lk,ek,xk,yk,zk,ck,&
+                              ll,el,xl,yl,zl,cl,&
+                              ncentr,atomic_data)
+              kl = 1
+              do l = 1, nl
+                do k = 1, nk
+                  s_ao(koff+k,loff+l) = dcmplx(skl(kl),0.D0)
+                  kl = kl + 1
+                end do
+              end do
+
+              koff = koff + nk
+            end do
+            loff = loff + nl
+          end do
+
+          nocc = size(mo_occ)
+          allocate(s_c (cspinor%nao,nocc))
+          allocate(s_mo(nocc,       nocc))
+
+          s_c  = matmul(s_ao,cspinor%coeff(:,mo_occ,1))
+          s_mo = matmul(conjg(transpose(cspinor%coeff(:,mo_occ,1))),s_c)
+          s_c  = matmul(s_ao,cspinor%coeff(:,mo_occ,2))
+          s_mo = s_mo + matmul(conjg(transpose(cspinor%coeff(:,mo_occ,2))),s_c)
+
+!         take trace of matrix
+          nelec = 0
+          do k = 1, nocc
+            nelec = nelec + real(s_mo(k,k),8)
+            print*, "nelec : ", nelec
+          end do
+
+          deallocate(s_ao)
+          deallocate(s_c)
+          deallocate(s_mo)
+
+        end subroutine compute_nelectrons
+
         subroutine aomo_cholesky (chol_tensor,moint_tensor,nmo,mo_list)
 !        Transform integral tensor from ao-basis to mo-basis
-         
+
          use talsh_common_routines
 
          implicit none
