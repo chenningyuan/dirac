@@ -100,6 +100,7 @@ To rotate we use the unit vectors of the spherical coordinates
 
    \begin{array}{lcl} \mathbf{e}_{r} & = & \mathbf{e}_{x}\sin\theta\cos\phi+\mathbf{e}_{y}\sin\theta\sin\phi+\mathbf{e}_{z}\cos\theta\\
    \mathbf{e}_{\theta} & = & \mathbf{e}_{x}\cos\theta\cos\phi+\mathbf{e}_{y}\cos\theta\sin\phi-\mathbf{e}_{z}\sin\theta\\ \mathbf{e}_{\phi} & = & -\mathbf{e}_{x}\sin\phi+\mathbf{e}_{y}\cos\phi \end{array}   
+
 We now choose to align the wave vector with the :math:`\mathbf{e}_r` unit vector, that is
 
 .. math::
@@ -156,7 +157,7 @@ Specify fixed experimental configuration (no rotational average). The orientatio
 
 keyword(NROTAV)
 
-As described under the .BED keyword,  `Lebedev quadrature <https://en.wikipedia.org/wiki/Lebedev_quadrature>`_ is employed for rotational average. This quadrature over the solid angles can integrate a spherical harmonic to high accuracy with a maximum angular momentum :math:`L_\mbox{max}`. The default value of :math:`L_\mbox{max}`is presently 5, but can be reset with this keyword.
+As described under the .BED keyword,  `Lebedev quadrature <https://en.wikipedia.org/wiki/Lebedev_quadrature>`_ is employed for rotational average. This quadrature over the solid angles can integrate a spherical harmonic to high accuracy with a maximum angular momentum :math:`L_\mbox{max}`. The default value of :math:`L_\mbox{max}` is presently 5, but can be reset with this keyword.
 
 keyword(BEDCON)
 
