@@ -4924,11 +4924,12 @@ C     For Charge.GT.109 Nuclear Mass = CHARGE*2.556.
 C     Conversion Factor Bohr/fm 52917.7249.
 C                                      T. Saue and J.K. Laerdahl 12.02.1996
 C.......................................................................
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "nucdata.h"
       PARAMETER (DP3=1.0D0/3.0D0)
-      PARAMETER (FAC=1.5D10,AF=0.529177249D0,BF=0.836D0,CF=0.570D0)
+      PARAMETER (FAC=1.5D10,BF=0.836D0,CF=0.570D0)
       PARAMETER (FAC2=2.556D0)
 C
       IF (INUC.LE.109.AND.INUC.GT.0) THEN
@@ -4937,22 +4938,8 @@ C
          A = INUC*FAC2
       END IF
       A = A**DP3
-      DELTA = (AF/(BF*A+CF))
+      DELTA = (XTANG/(BF*A+CF))
       DELTA = FAC*DELTA*DELTA
-C      IF (INUC.LE.109) THEN
-C         WRITE(LUPRI,'(2X,A,I4,A,A3,A)')
-C     +        'Element', INUC, ', ',ASYMB(INUC), ':'
-C         WRITE(LUPRI,'(10X,A,F6.2)')
-C     +        'Nuclear Mass:', AMASS(INUC)
-C      ELSE
-C         WRITE(LUPRI,'(2X,A,I4,A)')
-C     +        'Element', INUC, ':'
-C         WRITE(LUPRI,'(10X,A,F6.2)')
-C     +        'Nuclear Mass:', CHARGE*FAC2
-C      ENDIF
-C      WRITE(LUPRI,'(10X,A,D20.11,/)')
-C     +     'Exponent for Gaussian Charge Distribution : ',
-C     +     DELTA
       RETURN
       END
 C  /* Deck sphlab */

@@ -16,7 +16,6 @@ set(FIXED_PRP_FORTRAN_SOURCES
    ibndxdef.h 
    thrldp.h
    excprp.F
-   help.F
    mp2lag.F
    pamexp.F
    pamfck.F
