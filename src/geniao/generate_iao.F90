@@ -53,7 +53,6 @@
         open (luxyz,file="INPUT",form='formatted')
         read(luxyz,'(A11)') version
         read(luxyz,'(I2)') charge
-        print*, version, charge
         close(luxyz)
 
         call read_from_dirac (ao_basis_1,cspinor_original,'MOLECULE.dfcoef',ierr)
@@ -203,6 +202,7 @@
 
         allocate(check(nmo2,nmo2))
         check = matmul(conjg(transpose(c_Ib)),c_Ib)
+        print*,
         print*,'-----Compute CIb.T*CIb-----(',nmo2,'x',nmo2,')'
         do i=1,nmo2
            write(*,'(100G10.2)')(REAL(check(i,j)),j=1,nmo2)
@@ -319,7 +319,7 @@
         print*,"Deviation from orthogonality      :", norm2(real(Id - matmul(conjg(transpose(c_Ib)),matmul(S11,c_Ib))))
 !        print*,"|ib><ib|i> - |i>                  :", norm2(real(matmul(c_Ib,matmul(conjg(transpose(c_Ib)),coeff1_occ))&
 !                                                                  - coeff1_occ))
-        print*,"|ib><ib|i> - |i>                  :", norm2(real(matmul(c_Ib,c_Ib_occ) - coeff1_occ))
+        print*,"(occupied MO) |ib><ib|i> - |i>    :", norm2(real(matmul(c_Ib,c_Ib_occ) - coeff1_occ))
         print*,"deviation in number of electrons  :", real(sum_diag - nocc)
 
 !        MAKE IBO. I actually do not need that right ? We are only interested about the intrinsic fragment orbitals are we ? 
