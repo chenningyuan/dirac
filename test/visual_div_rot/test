@@ -52,8 +52,4 @@ for inp in ['visual_jpara.inp',
                 extra_args='--copy="DFCOEF PAMXVC"',
                 filters={'out': f})
 
-# cleanup
-os.unlink('DFCOEF')
-os.unlink('PAMXVC')
-
 sys.exit(ierr)
