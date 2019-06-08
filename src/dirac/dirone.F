@@ -37,7 +37,8 @@ C     Written by T.Saue - May 1996
 C
 C*****************************************************************************
 ! checking
-       use fde_mod
+      use interface_ao_specific
+      use fde_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
@@ -64,6 +65,8 @@ C.....With modified Hamiltonian this routine is skipped for now
       !mi: always print nuclear contribution to the dipole moment (costs nothing)
       TEST=(DSUM(NUCIND,CHARGE,1).GT.D0)
       IF(TEST) CALL DIPNUC(1,.FALSE.)
+C     Dump AO information in case of numerical integration      
+      call interface_ao_write()
 C
 C     Loop through list of class labels; calculate only the active ones(CLSCAL)
 C     =========================================================================
@@ -104,7 +107,7 @@ C
 C
 C     Self-energy(Flambaum and Pyyko)
 C
-      ELSEIF (CLSINT(I)(1:2).EQ.'SE') THEN
+      ELSEIF (CLSINT(I)(1:4).EQ.'SEFG') THEN
 C     sunaga
         IF(NOSMLV) COMB(4:4) = 'F'
         CALL NUMINT(I,COMB,IPRONE)       
