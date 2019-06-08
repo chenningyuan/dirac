@@ -29,10 +29,23 @@ for inp in ['visual_1z_bz.inp',
             'visual_divs.inp',
             'visual_j.inp',
             'visual_jdia.inp',
-            'visual_jpara.inp',
-            'visual_rotj.inp',
-            'visual_rots.inp',
-            'visual_s.inp']:
+            'visual_rotj.inp']:
+    ierr += run(options,
+                configure,
+                input_files=[inp, 'co.mol'],
+                extra_args='--copy="DFCOEF PAMXVC"',
+                filters={'out': f})
+
+f = [
+    get_filter(from_string='r_x           r_y           r_z            scalar',
+               num_lines=7,
+               rel_tolerance=1.0e-4,
+               skip_below=1.0e-8),
+]
+
+for inp in ['visual_jpara.inp',
+            'visual_s.inp',
+            'visual_rots.inp']:
     ierr += run(options,
                 configure,
                 input_files=[inp, 'co.mol'],
