@@ -105,9 +105,16 @@ C
       ELSEIF (CLSINT(I)(3:6).EQ.'FGMG') THEN
         CALL NUMINT_ANG(I,COMB,IPRONE) 
 C
-C     Self-energy(Flambaum and Pyyko)
+C     Self-energy(Flambaum)
 C
       ELSEIF (CLSINT(I)(1:4).EQ.'SEFG') THEN
+C     sunaga
+        IF(NOSMLV) COMB(4:4) = 'F'
+        CALL NUMINT(I,COMB,IPRONE)       
+C
+C     Self-energy(Pyyko)
+C
+      ELSEIF (CLSINT(I)(1:4).EQ.'SEPZ') THEN
 C     sunaga
         IF(NOSMLV) COMB(4:4) = 'F'
         CALL NUMINT(I,COMB,IPRONE)       
