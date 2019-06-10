@@ -37,7 +37,7 @@ Next time you log on, you do not need to install it again, you just activate it
 like above.  Once activated, you can install Python packages into the virtual
 environment::
 
-  $ pip install sphinx matplotlib sphinx_rtd_theme hieroglyph sphinxcontrib-bibtex
+  $ pip install sphinx sphinx_rtd_theme sphinxcontrib-bibtex
 
 The advantage of using virtualenv is that it is cross-platform,
 you get the latest packages, you get an isolated and disposable

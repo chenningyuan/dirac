@@ -2283,8 +2283,6 @@
           CALL QUIT('XPLDEF:Redimension MAXPRPLBL !')
         ENDIF
         !sunaga
-        write(*,*)"PLABEL,LABINT,ICMP",PLABEL,LABINT(ICMP),ICMP
-        !sunaga
         IF(PLABEL.EQ.LABINT(ICMP)) THEN
         !mi: the only place to reset LABERR, more printout needed for "else" branch
           LABERR = .FALSE.
