@@ -108,12 +108,12 @@ of :math:`i=1,...,N_A` atomic (or in principle also fragment) matrices :math:`\m
 
 .. math::
 
-   \mathbf{U}_{mol} \approx \sum\limits_{i=1}^{N_{A}} \mathbf{U}_{i} \oplus  \mathbf{U}_{i+1} \oplus \mathbf{U}_{i+2} \oplus \ldots, 
+   \mathbf{U}_{mol} \approx \mathbf{U}_{i} \oplus  \mathbf{U}_{i+1} \oplus \mathbf{U}_{i+2} \oplus \ldots \mathbf{U}_{N_A} , 
 
 
 In order to benefit from the above DLU approach in Dirac which at present works *only for C1 symmetry* we need to first carry
 out the atomic calculations and save the atomic :math:`\mathbf{U}_{i}` matrices. This can be done as follows. 
-We run an atomic X2C transformation for each *unique* atom in our molecule (here we assume a cc-pVDZ basis)::
+We run an atomic X2C transformation for each *unique* atom in our molecule (here we assume a dyall.v2z basis)::
 
   **DIRAC
   .TITLE
@@ -125,20 +125,23 @@ We run an atomic X2C transformation for each *unique* atom in our molecule (here
   **MOLECULE
   *BASIS
   .DEFAULT 
-  cc-pVDZ
+  dyall.v2z
   *SYMMETRY
   .NOSYM
+  **INTEGRALS
+  *READIN
+  .UNCONTRACT
   **END OF
 
 Note the use of .NOSYM to enforce C1 symmetry in the atomic run even for an atom. A possible corresponding xyz input for an atom (here
-C) would look like::
+Cl) would look like::
 
    1
-   carbon atom XYZ file
-   C 0.0 0.0 0.0
+   chlorine atom XYZ file
+   Cl 0.0 0.0 0.0
 
 We save the file X2CMAT containing the atomic :math:`\mathbf{U}_{i}` matrix and rename it according to the atomic number
-of the respective atom, here X2CMAT.006 for carbon (Z=6). For tungsten (Z=74) the appropriate ending would be X2CMAT.074
+of the respective atom, here X2CMAT.017 for chlorine (Z=17). For mercury (Z=80) the appropriate ending would be X2CMAT.080
 and similar for other atoms::
 
   $ ./pam --inp=atom.inp --mol=carbon.xyz --get=X2CMAT
@@ -146,7 +149,7 @@ and similar for other atoms::
 
 
 After we have created all atomic :math:`\mathbf{U}_{i}` matrices for each *unique* atom type in our molecule --- let's
-assume to work on W(CH :math:`_{3}` ) :math:`_{6}` where we would need a transformation matrix for W, C and H --- we are ready to setup 
+assume to work on Hg(Cl :math:`_{2` ) :math:`_{6}` where we would need a transformation matrix for Hg and Cl  --- we are ready to setup 
 the molecular X2C calculation based on the local/atomic approach of the
 decoupling unitary  :math:`\mathbf{U}_{i}` matrices. The relevant part of the input would then read::
 
@@ -166,15 +169,18 @@ decoupling unitary  :math:`\mathbf{U}_{i}` matrices. The relevant part of the in
   **MOLECULE
   *BASIS
   .DEFAULT 
-  cc-pVDZ
+  dyall.v2z
   *SYMMETRY
   .NOSYM
+  **INTEGRALS
+  *READIN
+  .UNCONTRACT
   **END OF
 
 
 This input should be used with the following pam line::
 
-  $ ./pam ... --put=X2CMAT.* 
+  $ ./pam ... --put=X2CMAT.* --mw=200
 
 In this DLU approach proposed by Peng and Reiher :cite:`Peng2012` the molecular :math:`\mathbf{U}_{mol}` matrix will then be
 approximated as described above. It works with spinfree as well as all spin-dependent (spin-orbit) Hamiltonian schemes and 
