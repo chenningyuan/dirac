@@ -1013,7 +1013,17 @@ contains
                      ao,                               &
                      buffer                            &
                     )
-
+         !sunaga
+         write(*,*)'max_block_length',max_block_length
+         write(*,*)'nr_points_on_this_proc',nr_points_on_this_proc
+         write(*,*)'block_length',block_length
+         write(*,*)'nr_ao_slices,nr_ao_cartesian',nr_ao_slices, nr_ao_cartesian
+         
+         write(*,*)'ipoint',ipoint
+         DO II=ipoint,ipoint+block_length-1
+         write(*,*)'rx,ry,rz',rx(II),ry(II),rz(II),II
+         ENDDO
+!      sunaga   
          call xc_contribution_blas3(                          &
                                     use_gga,                  &
                                     use_gga_qr,               &

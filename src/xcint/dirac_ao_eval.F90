@@ -191,6 +191,7 @@ contains
                                               ao(1, ao_off_g1_m0(2, 0) + i), &
                                               ao(1, ao_off_g1_m0(3, 0) + i))
                   else
+                     write(*,*)'00_sunaga'
                      call get_cartesian_ao_g0(block_length, &
                                               ishell,       &
                                               px,           &
