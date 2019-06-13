@@ -1031,12 +1031,31 @@ C
               ENDDO
             ENDDO
 C
-!            DO II=1,NTBAS(0)
-!              DO  III=1,nblock_length-1
+!     DO II=1,NTBAS(0)
+              II=35
+              DO  III=1,nblock_length-1
+!              DO  III=1,5
+!                 IF(GAO(ipoint+III,II).ne.0.0D0)THEN
 !                 write(*,*)
 !                 write(*,*)'GAO,III,II',GAO(ipoint+III,II),III,II
-!      write(*,*)'X8,Y8,Z8',X8(ipoint+III),Y8(ipoint+III),Z8(ipoint+III)
-!              ENDDO
+!       write(*,*)'X8,Y8,Z8',X8(ipoint+III),Y8(ipoint+III),Z8(ipoint+III)
+!                 ENDIF
+              ENDDO
+              write(*,*)"*********"
+              write(*,*)"*********"
+              write(*,*)"basis"
+              II=46
+              DO  III=1,nblock_length-1
+!     DO  III=1,5
+!                 IF(GAO(ipoint+III,II).ne.0.0D0)THEN
+!                 write(*,*)
+!                 write(*,*)'GAO,III,II',GAO(ipoint+III,II),III,II
+!       write(*,*)'X8,Y8,Z8',X8(ipoint+III),Y8(ipoint+III),Z8(ipoint+III)
+!                 ENDIF
+              ENDDO
+              write(*,*)"*********"
+              write(*,*)"*********"
+              write(*,*)"basis"
 !            ENDDO  
 
 C            CALL DCOPY(MXNP,GAO2(1,1),1,GAO(1,(ipoint-1)*MXNP+1),1)
@@ -1092,11 +1111,11 @@ C
                     DO I = 1, NCOS(IRP,IC)
                      IADD = I*(I-1)/2
                      DO J = 1, I
-                       IJ = IADD + J + IOFF 
+                       IJ = IADD + J + IOFF
                        BUF(IJ+ISTART*I)
      &                 = GAO(INDEX,I+ISTART)*GAO(INDEX,J+ISTART)
 !                       write(*,*)'IJ,ISTART,IOFF,I,J',IJ,ISTART,IOFF,I,J
-!                       write(*,*)'IJ+ISTART*I',IJ+ISTART*I
+!     write(*,*)'IJ+ISTART*I',IJ+ISTART*I
                      ENDDO
                    ENDDO
 !                   write(*,*)
@@ -1108,9 +1127,20 @@ C
                CALL DAXPY(NDIM2,WT8(INDEX),BUF,1,TC,1)
  50          CONTINUE
              CALL DAXPY(NDIM2,W(IR),TC,1,INTAO,1)
+!             write(*,*)
+!             write(*,*)'*************'
+!             write(*,*)'TC,2104',TC(2104),IR
+!             write(*,*)'TC,2105',TC(2105),IR
+!             write(*,*)'TC,2106',TC(2106),IR
+!             write(*,*)'TC,2107',TC(2107),IR
  40        CONTINUE
          ENDIF   !num_grid_cfg_grasp
 C
+!             write(*,*)'INTAO,2104',INTAO(2104)
+!             write(*,*)'INTAO,2105',INTAO(2105)
+!             write(*,*)'INTAO,2106',INTAO(2106)
+!             write(*,*)'INTAO,2107',INTAO(2107)
+!             INTAO(2106)=10000000000
          CALL HEADER('Numerical ovelap integral',-1)
          
 !         DO II = 1,NDIM2
