@@ -716,7 +716,7 @@ C
       CHARACTER RADC*2,ANGC*2,RADANGC*5 !sunaga
       PARAMETER (D0=0.0D0,D1=1.0D0,D2=2.0D0)      
       real(8), allocatable :: ZAN(:),C(:,:)
-      real(8), allocatable :: ANG(:,:),GAO(:,:), BUFGAO(:,:)
+      real(8), allocatable :: ANG(:,:),GAO(:,:),GAO2(:,:), BUFGAO(:,:)
       real(8), allocatable :: BUF(:),TC(:),TD(:,:)
       real(8), allocatable :: NUMIR(:),R(:),W(:),INTAO(:)
       real(8), allocatable :: X8(:),Y8(:),Z8(:),WT8(:)
@@ -805,6 +805,7 @@ C
          allocate( Y8(nr_points_on_this_proc)  )
          allocate( Z8(nr_points_on_this_proc)  )
          allocate( WT8(nr_points_on_this_proc) )
+         allocate( GAO(nr_points_on_this_proc,NTBAS(0)) )  
 C         
          IF(num_grid_cfg_grasp)THEN
 c$$$           allocate( TD(NDIM2,MXNP) )         
@@ -951,7 +952,7 @@ C
              ENDDO
            ENDIF
 C          
-           DO IRP=0,MAXREP+1
+           DO IRP=1,MAXREP+1
               write(*,*)'NCOS',NCOS(IRP,1),IRP        !sunagatest
               write(*,*)'NCOS',NCOS(IRP,2),IRP        !sunagatest
            ENDDO
@@ -1005,28 +1006,52 @@ C
 C    GET AO's
 C
            nr_ao_slices = 1
-C           do ipoint = 1, nr_points_on_this_proc, max_block_length
-           nblock_length = nr_points_on_this_proc
-C     &      min(max_block_length, nr_points_on_this_proc - ipoint + 1)
-            
-           allocate(GAO(nblock_length,   NTBAS(0)))
-!           CALL DZERO(GAO,nblock_length*nr_ao_slices*nr_ao_cartesian)
-           allocate(BUFGAO(nblock_length,NTBAS(0)))
-!           CALL DZERO(BUFGAO,block_length*nr_ao_slices*nr_ao_cartesian)
+           do ipoint = 1, nr_points_on_this_proc, m
+!            nblock_length = nr_points_on_this_proc
+            nblock_length = min(m, nr_points_on_this_proc - ipoint + 1)
+            write(*,*)'nblock_length'  ,nblock_length
+            allocate(GAO2(nblock_length,   NTBAS(0)))
+            CALL DZERO(GAO2,nblock_length*nr_ao_slices*NTBAS(0))
+            allocate(BUFGAO(nblock_length,NTBAS(0)))
+            CALL DZERO(BUFGAO,block_length*nr_ao_slices*NTBAS(0))
 
-           call dirac_ao_eval_init(0,0,.FALSE.)
-           call get_ao(                                  
-     &                   nblock_length,                     
-     &                   X8(1:nblock_length), 
-     &                   Y8(1:nblock_length), 
-     &                   Z8(1:block_length), 
-     &                   GAO,                              
-     &                   BUFGAO                            
-     &                 )
+            call dirac_ao_eval_init(0,0,.FALSE.)
+            call get_ao(                                  
+     &                    nblock_length,                     
+     &                    X8(ipoint:ipoint+nblock_length-1), 
+     &                    Y8(ipoint:ipoint+nblock_length-1), 
+     &                    Z8(ipoint:ipoint+nblock_length-1), 
+     &                    GAO2,                               
+     &                    BUFGAO                            
+     &                  )
+!            call ao_to_so(nblock_length, GAO2, BUFGAO)            
+            DO II=1,NTBAS(0)
+              DO  III=1,nblock_length
+                 GAO(ipoint+III-1,II)=GAO2(III,II)
+              ENDDO
+            ENDDO
+C
+!            DO II=1,NTBAS(0)
+!              DO  III=1,nblock_length-1
+!                 write(*,*)
+!                 write(*,*)'GAO,III,II',GAO(ipoint+III,II),III,II
+!      write(*,*)'X8,Y8,Z8',X8(ipoint+III),Y8(ipoint+III),Z8(ipoint+III)
+!              ENDDO
+!            ENDDO  
+
+C            CALL DCOPY(MXNP,GAO2(1,1),1,GAO(1,(ipoint-1)*MXNP+1),1)
+C            call get_ao(                                  
+C     &                   nblock_length,                     
+C     &                   X8(1:nblock_length), 
+C     &                   Y8(1:nblock_length), 
+C     &                   Z8(1:block_length), 
+C     &                   GAO,                              
+C     &                   BUFGAO                            
+C     &                  )
 !           call ao_to_so(nblock_length, GAO, BUFGAO)
-C            deallocate(GAO)
-C            deallocate(BUFGAO)
-C           end do
+            deallocate(GAO2)
+            deallocate(BUFGAO)
+           end do
 C
 C           write(*,*)'nr_ao_cartesian',nr_ao_cartesian
 C           DO III=1,NTBAS(0)
@@ -1109,7 +1134,7 @@ c$$$           IOFF = IOFF + NTBAS(IC)*(NTBAS(IC)+1)/2 + NTBAS(IC)
 c$$$           DIM = DIM + NTBAS(2)
 c$$$         ENDDO
 c$$$         write(*,*)
-!          CALL OUTPAK(INTAO(1),NTBAS(0),-1,LUPRI)
+          CALL OUTPAK(INTAO(1),NTBAS(0),-1,LUPRI)
         Endif        !(IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0)
         deallocate(TD)
         deallocate(NUMIR)
@@ -1167,46 +1192,14 @@ CCCCCCCCCCC
       deallocate(ZAN)
       deallocate(C)
       deallocate(ANG)
-      deallocate(GAO)
+!      deallocate(GAO)
       deallocate(BUF)
-      deallocate(BUFGAO)
+!      deallocate(BUFGAO)
       deallocate(INTAO)
 !      stop 
       CALL QEXIT('NUMINT')
       RETURN         
       END
-c$$$C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-c$$$      SUBROUTINE RADINT_WRAPPER(RESULT,TA,R,W,MXNP,NDIM)
-c$$$CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-c$$$C
-c$$$C Wrapper for choosing Numerical radial integral scheem
-c$$$C
-c$$$C Called from: NUMINT,VAC2
-c$$$C
-c$$$C     A. Sunaga Feb. 2019       
-c$$$CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-c$$$      use num_grid_cfg
-c$$$#include "implicit.h"
-c$$$      DIMENSION RESULT(NDIM),TA(NDIM,MXNP),R(MXNP),W(MXNP)      
-c$$$C
-c$$$      IF(num_grid_cfg_grasp)THEN
-c$$$         DO IR = 1,MXNP
-c$$$           DO II = 1,NDIM
-c$$$              write(*,*)'TA1,R',TA(II,IR),R(IR),IR,II
-c$$$              TA(II,IR) = TA(II,IR)*R(IR)  ! Additional R(IR) for QUAD
-c$$$              write(*,*)'TA2',TA(II,IR),IR,II
-c$$$              write(*,*)
-c$$$              write(*,*)
-c$$$           ENDDO
-c$$$         ENDDO  
-c$$$         CALL QUAD2(RESULT,TA,MXNP,NDIM)
-c$$$!         CALL GRASP_QUAD(RESULT,R,MXNP)
-c$$$      ELSE
-c$$$!         CALL DIRAC_QUAD(RESULT,TA,W)  
-c$$$      ENDIF
-c$$$C      
-c$$$      RETURN
-c$$$      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE QUAD2(RESULT,TE,NR,NDIM)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC

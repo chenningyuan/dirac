@@ -1020,9 +1020,9 @@ contains
          write(*,*)'nr_ao_slices,nr_ao_cartesian',nr_ao_slices, nr_ao_cartesian
          
          write(*,*)'ipoint',ipoint
-         DO II=ipoint,ipoint+block_length-1
-         write(*,*)'rx,ry,rz',rx(II),ry(II),rz(II),II
-         ENDDO
+!         DO II=ipoint,ipoint+block_length-1
+!         write(*,*)'rx,ry,rz',rx(II),ry(II),rz(II),II
+!         ENDDO
 !      sunaga   
          call xc_contribution_blas3(                          &
                                     use_gga,                  &
