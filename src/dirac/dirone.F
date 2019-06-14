@@ -690,8 +690,9 @@ C A. Sunaga Nov. 2018
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use num_grid_cfg
-      use dirac_ao_eval
       use interface_ao
+      use dirac_ao_eval
+      use dirac_ao_eval_sub
       
 #include "implicit.h" 
 #include "priunit.h" 
@@ -720,6 +721,9 @@ C
       real(8), allocatable :: BUF(:),TC(:),TD(:,:)
       real(8), allocatable :: NUMIR(:),R(:),W(:),INTAO(:)
       real(8), allocatable :: X8(:),Y8(:),Z8(:),WT8(:)
+      real(8), allocatable :: px(:),py(:),pz(:),p2(:)
+      real(8), parameter   :: bitstring_parity(0:7) =
+     &    (/1.0d0, -1.0d0, -1.0d0, 1.0d0, -1.0d0, 1.0d0, 1.0d0, -1.0d0/)     
       DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND)
 
       CALL QENTER('NUMINT')
@@ -753,8 +757,11 @@ C The values of ultrafine (.ULTRAF) at DFT input-reader section.
       allocate( BUF   (NDIM2)    )
       allocate( TC    (NDIM2)    )
       allocate( INTAO (NDIM2)    )
+      allocate( px    (m)        )
+      allocate( py    (m)        )
+      allocate( pz    (m)        )
+      allocate( p2    (m)        )
 C      
-!      CALL DZERO(BUF,NDIM2) 
       CALL DZERO(INTAO,NDIM2)
 C      
       CALL LEBEDEV(INTANG,ANG(1,1),ANG(1,2),ANG(1,3),ANG(1,4),n)
@@ -1016,14 +1023,51 @@ C
             CALL DZERO(BUFGAO,block_length*nr_ao_slices*NTBAS(0))
 
             call dirac_ao_eval_init(0,0,.FALSE.)
-            call get_ao(                                  
-     &                    nblock_length,                     
-     &                    X8(ipoint:ipoint+nblock_length-1), 
-     &                    Y8(ipoint:ipoint+nblock_length-1), 
-     &                    Z8(ipoint:ipoint+nblock_length-1), 
-     &                    GAO2,                               
-     &                    BUFGAO                            
-     &                  )
+            i = 1
+            do ishell = 1, nr_shells
+             do isym = 0, nr_boson_ireps - 1
+             write(*,*)'shell,nr_boson_ireps',nr_shells,nr_boson_ireps
+              if (iand(isym, shell_stabilizing_irep(ishell)) == 0) then
+!             write(*,*)'22_sunaga'
+
+               sx = bitstring_parity(iand(irep_of_axes(1), isym))
+     &              * center_xyz(shell_center(ishell), 1)
+               sy = bitstring_parity(iand(irep_of_axes(2), isym))
+     &              * center_xyz(shell_center(ishell), 2)
+               sz = bitstring_parity(iand(irep_of_axes(3), isym))
+     &              * center_xyz(shell_center(ishell), 3)
+     
+               do k = 1, nblock_length
+                  px(k) = X8(ipoint+k-1) - sx
+                  py(k) = Y8(ipoint+k-1) - sy
+                  pz(k) = Z8(ipoint+k-1) - sz
+               end do
+
+               do k = 1, nblock_length
+                  p2(k) = px(k)*px(k) 
+     &                  + py(k)*py(k) 
+     &                  + pz(k)*pz(k)
+               end do
+               
+               call get_cartesian_ao_g0(nblock_length, 
+     &                                    ishell,       
+     &                                    px,           
+     &                                    py,           
+     &                                    pz,           
+     &                                    p2,
+     &                                    GAO2(1, i))                   
+               i = i + cartesian_deg(ishell)
+              end if
+             end do
+            end do
+!                   call get_ao(                                  
+!     &                    nblock_length,                     
+!     &                    X8(ipoint:ipoint+nblock_length-1), 
+!     &                    Y8(ipoint:ipoint+nblock_length-1), 
+!     &                    Z8(ipoint:ipoint+nblock_length-1), 
+!     &                    GAO2,                               
+!     &                    BUFGAO                            
+!     &                  )
 !            call ao_to_so(nblock_length, GAO2, BUFGAO)            
             DO II=1,NTBAS(0)
               DO  III=1,nblock_length
@@ -1070,7 +1114,7 @@ C     &                  )
 !           call ao_to_so(nblock_length, GAO, BUFGAO)
             deallocate(GAO2)
             deallocate(BUFGAO)
-           end do
+           end do ! ipoint
 C
 C           write(*,*)'nr_ao_cartesian',nr_ao_cartesian
 C           DO III=1,NTBAS(0)
@@ -1226,6 +1270,10 @@ CCCCCCCCCCC
       deallocate(BUF)
 !      deallocate(BUFGAO)
       deallocate(INTAO)
+      deallocate(px)
+      deallocate(py)
+      deallocate(pz)
+      deallocate(p2)
 !      stop 
       CALL QEXIT('NUMINT')
       RETURN         
