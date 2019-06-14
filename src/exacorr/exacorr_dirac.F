@@ -139,7 +139,7 @@ C***********************************************************************
       use exacorr_cc,only           : exacorr_cc_driver
       use exacorr_global
       use exacorr_utils, only       : print_exacorr_logo
-      use exacorr_utils, only       : print_date, make_spinor_list
+      use exacorr_utils, only       : print_date
 #if defined (VAR_MPI)
       use interface_to_mpi
 #endif
