@@ -146,7 +146,6 @@ C***********************************************************************
 
       implicit none
 
-      integer              :: nesh                     ! number of positive energy solutions
       integer              :: mytid                    ! MPI rank
 
 #if defined (VAR_MPI)
@@ -178,9 +177,8 @@ C
 #if defined (VAR_MPI)
       if (mytid == 0) then
 #endif
-       nesh = get_nsolutions() / 2
 
-       call make_spinor_list ( nesh, exa_input, string_occupied,
+       call make_spinor_list ( exa_input, string_occupied,
      & string_occ_beta, string_virtual, string_vir_beta)
 
 #if defined (VAR_MPI)

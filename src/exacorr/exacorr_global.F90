@@ -324,11 +324,13 @@ module exacorr_global
 
      end subroutine get_one_el
 
-      subroutine string2mo ( inp_str, nmo, mo_list)
+      subroutine string2mo ( inp_str, a_or_b, nmo, mo_list)
 
         implicit none
 
         character(len = *), intent(in)        :: inp_str
+        !indicate if alpha or beta orbitals
+        logical, intent(in)                   :: a_or_b
         integer,intent(out),optional          :: nmo
         integer,optional                      :: mo_list(:)
 
@@ -368,10 +370,14 @@ module exacorr_global
         ! check if energy or mo list
         if (inp_str(1:6) == 'energy') then
           !get orbital energies
-          nmo_all = cspinor_all%nmo 
+          nmo_all = cspinor_all%nmo/2
           allocate(lmo(nmo_all))
           do i = 1, nmo_all
-            lmo(i)=i
+            if (a_or_b) then
+              lmo(i)=i*2-1
+            else
+              lmo(i)=i*2
+            end if
           end do
           allocate(eps(nmo_all))
           eps=cspinor_all%energy(lmo)  
@@ -534,7 +540,7 @@ module exacorr_global
             end do
           end if
         end if
-
+      if (do_mo) print *, "mos:", mo_list
       end subroutine string2mo
 
       recursive subroutine quicksort(mo_list, i_beg, i_end)
@@ -577,21 +583,19 @@ module exacorr_global
 
       end subroutine quicksort
 
-      subroutine make_spinor_list ( nesh, exa_input, string_occupied, & 
+      subroutine make_spinor_list ( exa_input, string_occupied, & 
         string_occ_beta, string_virtual, string_vir_beta)
 
         use exacorr_datatypes
 
         implicit none
 
-        integer, intent(in)              :: nesh                     ! number of positive energy solutions
         type(exacc_input), intent(inout) :: exa_input
         character(len = *), intent(in)   :: string_occupied
         character(len = *), intent(in)   :: string_virtual
         character(len = *), intent(in)   :: string_occ_beta
         character(len = *), intent(in)   :: string_vir_beta
 
-        integer              :: kvec                     ! Dummy variable needed in first call to numlst
         integer, allocatable :: mobe_occ(:), mobe_vir(:)
         integer              :: i
         integer              :: nmo(4)
@@ -601,14 +605,10 @@ module exacorr_global
           if (exa_input%beta_vir) then
             nmo(1:4)=0
             
-            call string2mo ( string_occupied, nmo=nmo(1))
-            call string2mo ( string_occ_beta, nmo=nmo(2))
-            call string2mo ( string_virtual,  nmo=nmo(3))
-            call string2mo ( string_vir_beta, nmo=nmo(4))
-            !call numlst (string_occupied,kvec,1,1,nesh,1,nmo(1))
-            !call numlst (string_occ_beta,kvec,1,1,nesh,1,nmo(2))
-            !call numlst (string_virtual,kvec,1,1,nesh,1,nmo(3))
-            !call numlst (string_vir_beta,kvec,1,1,nesh,1,nmo(4))
+            call string2mo(string_occupied,.true.,nmo=nmo(1))
+            call string2mo(string_occ_beta,.false.,nmo=nmo(2))
+            call string2mo(string_virtual,.true.,nmo=nmo(3))
+            call string2mo(string_vir_beta,.false.,nmo=nmo(4))
 
             exa_input%nkr_occ=nmo(1)
             allocate (exa_input%mokr_occ(exa_input%nkr_occ))
@@ -617,20 +617,10 @@ module exacorr_global
             allocate (exa_input%mokr_vir(exa_input%nkr_vir))
             allocate (mobe_vir(nmo(4)))
 
-            call string2mo ( string_occupied, mo_list=exa_input%mokr_occ)
-            call string2mo ( string_occ_beta, mo_list=mobe_occ)
-            call string2mo ( string_virtual,  mo_list=exa_input%mokr_vir)
-            call string2mo ( string_vir_beta, mo_list=mobe_vir)
-
-            !call numlst(string_occupied,exa_input%mokr_occ, &
-            !      nmo(1),1,nesh,1,nmo(1))
-            !call numlst(string_occ_beta,mobe_occ, &
-            !      nmo(2),1,nesh,1,nmo(2))
-            !call numlst(string_virtual,exa_input%mokr_vir, &
-            !      nmo(3),1,nesh,1,nmo(3))
-            !call numlst(string_vir_beta,mobe_vir, &
-            !      nmo(4),1,nesh,1,nmo(4))
-
+            call string2mo(string_occupied,.true.,mo_list=exa_input%mokr_occ)
+            call string2mo(string_occ_beta,.false.,mo_list=mobe_occ)
+            call string2mo(string_virtual,.true.,mo_list=exa_input%mokr_vir)
+            call string2mo(string_vir_beta,.false.,mo_list=mobe_vir)
 
             if(exa_input%mokr_occ(1).ne.mobe_occ(1)) then
               print *, "core orbital need to be closed shell"
@@ -696,27 +686,19 @@ module exacorr_global
         else if (exa_input%beta_vir) then
           call quit ("also define .VIR_BETA in EXACORR")
         else
-          exa_input%nkr_occ = 0
-          call string2mo ( string_occupied, nmo=exa_input%nkr_occ)
-          !call numlst (string_occupied,kvec,1,1,nesh,1, &
-          !    exa_input%nkr_occ)
+          call string2mo(string_occupied,.true.,nmo=exa_input%nkr_occ)
           allocate (exa_input%mokr_occ(exa_input%nkr_occ))
-
-          call numlst (string_occupied,exa_input%mokr_occ, &
-              exa_input%nkr_occ, 1,nesh,1,exa_input%nkr_occ)
+          call string2mo(string_occupied,.true.,mo_list=exa_input%mokr_occ)
           exa_input%nocc = 2 * exa_input%nkr_occ
           allocate (exa_input%mo_occ(exa_input%nocc))
           do i = 1, exa_input%nocc
             exa_input%mo_occ(i) = (exa_input%mokr_occ(1)-1)*2+i
           end do
 
-          exa_input%nkr_vir = 0
-            call string2mo ( string_virtual,  nmo=exa_input%nkr_vir)
-          !call numlst (string_virtual,kvec,1,1,nesh,1, &
-          !    exa_input%nkr_vir)
+          
+          call string2mo(string_virtual,.true.,nmo=exa_input%nkr_vir)
           allocate (exa_input%mokr_vir(exa_input%nkr_vir))
-          call numlst (string_virtual,exa_input%mokr_vir, &
-              exa_input%nkr_vir,1,nesh,1,exa_input%nkr_vir)
+          call string2mo(string_virtual,.true.,mo_list=exa_input%mokr_vir)
           exa_input%nvir = 2 * exa_input%nkr_vir
           allocate (exa_input%mo_vir(exa_input%nvir))
           do i = 1, exa_input%nvir

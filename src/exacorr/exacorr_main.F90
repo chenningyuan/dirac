@@ -87,7 +87,7 @@
       if (mytid == 0) then
 
        nesh = get_nsolutions() / 2
-       call make_spinor_list ( nesh, exa_input, string_occupied, &
+       call make_spinor_list ( exa_input, string_occupied, &
          string_occ_beta, string_virtual, string_vir_beta)
       end if
 
