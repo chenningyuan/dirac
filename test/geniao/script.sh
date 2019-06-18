@@ -20,6 +20,12 @@ frag[2]=Ne
 Z[2]=010
 coord[2]="0. 0. +1."
 
+
+#H2O: 
+#O    0.0      0.00000000   0.0000000
+#H    0.0      0.75115500  -0.5816060
+#H    0.0     -0.75115500  -0.5816060	
+
 ######################
 # GENERATE XYZ FILES #
 ######################
@@ -40,7 +46,7 @@ cp MOLECULE.XYZ $mol.xyz
 ############################################
 # GENERATE INPUT FILE (charge and version) #
 ############################################
-echo "Simple_2014" > INPUT # choices: Simple_2014, Simple_2013, Stndrd_2013
+echo "Simple_2013" > INPUT # choices: Simple_2014, Simple_2013, Stndrd_2013
 echo "$charge" >> INPUT
 
 cat > $inp1.inp << EOF
@@ -97,9 +103,11 @@ basis
 *END OF INPUT
 EOF
 
-#############################
-# GENERATE THE DFCOEF FILES #
-#############################
+echo 
+echo 
+echo "#############################"
+echo "# GENERATE THE DFCOEF FILES #"
+echo "#############################"
 pam --replace basis=$basis1 --replace nelec=$nelec --inp=$inp1.inp --mol=$mol.xyz --get="DFCOEF" --silent
 mv DFCOEF MOLECULE.dfcoef
 mv "$inp1"_"$mol"_basis="$basis1"_nelec="$nelec".out "$mol"_"$basis1"_nelec"$nelec".out
@@ -107,32 +115,72 @@ mv "$inp1"_"$mol"_basis="$basis1"_nelec="$nelec".out "$mol"_"$basis1"_nelec"$nel
 for i in `seq 1 $nfrag` ; do
   pam --replace basis=$basis2 --inp=$inp2.inp --mol=${frag[$i]}.xyz --get="DFCOEF" --silent
   mv DFCOEF ${Z[$i]}.dfcoef
-  mv "$inp2"_"$mol"_basis="$basis2".out "$mol"_"$basis2".out
+  mv "$inp2"_"${frag[$i]}"_basis="$basis2".out "$mol"_"$basis2".out
 done
 
-#################
-# GENERATE IAOs #
-#################
+echo
+echo
+echo "#################"
+echo "# GENERATE IAOs #"
+echo "#################"
+echo
+
 $path_to_geniao/geniao.x
 
-########################################################
-# RESTART HF CALCULATION WITH THE NEW IAO COEFFICIENTS #
-########################################################
-cp iao.dfcoef DFCOEF
+
+echo
+echo
+echo "############################################################################"
+echo "# TEST IF MY TRANSFORMATION TO GENERATE THE INITIAL DFCOEF FILE IS CORRECT #"
+echo "############################################################################"
+echo
+cp test.dfcoef DFCOEF
 pam --replace basis=$basis1 --replace nelec=$nelec --inp=$inp1.inp --mol=$mol.xyz --put="DFCOEF" --silent
 mv "$inp1"_"$mol"_basis="$basis1"_nelec="$nelec".out "$mol"_"$basis1"_nelec"$nelec"_restarted.out
-
 convergence=10
 convergence=$(grep "* Convergence after" "$mol"_"$basis1"_nelec"$nelec"_restarted.out | awk '{print $4}')
+if (( $(echo "$convergence != 1" | bc -l) )); then
+  echo
+  echo
+  echo "Convergence after $convergence iterations"
+  echo ERROR IN THE RECONSTRUCTION OF THE DFCOEF FILE
+else
+  echo
+  echo
+  echo Convergence after $convergence iterations
+  echo RECONSTRUCTION OF THE DFCOEF FILE SUCCEEDED
+fi
+
+
+
+echo
+echo
+echo "########################################################"
+echo "# RESTART HF CALCULATION WITH THE NEW IAO COEFFICIENTS #"
+echo "########################################################"
+echo
+cp iao.dfcoef DFCOEF
+pam --replace basis=$basis1 --replace nelec=$nelec --inp=$inp1.inp --mol=$mol.xyz --put="DFCOEF" --silent
+mv "$inp1"_"$mol"_basis="$basis1"_nelec="$nelec".out "$mol"_"$basis1"_nelec"$nelec"_iao.out
+
+convergence=10
+convergence=$(grep "* Convergence after" "$mol"_"$basis1"_nelec"$nelec"_iao.out | awk '{print $4}')
+iteration1=$(grep "It.    1" "$mol"_"$basis1"_nelec"$nelec".out | tail -1 | awk '{print $3}')
+iteration1_iao=$(grep "It.    1" "$mol"_"$basis1"_nelec"$nelec"_iao.out | tail -1 | awk '{print $3}')
+HF_energy=$(grep "   Total energy                             :" "$mol"_"$basis1"_nelec"$nelec".out | awk '{print $4}')
 
 if (( $(echo "$convergence != 1" | bc -l) )); then
   echo
   echo
-  echo Convergence after $convergence iterations
+  echo "Convergence after $convergence iterations"
+  echo "Energy of the first calculation at iteration 1  :" $iteration1
+  echo "Energy at iteration 1 using the IAO coeffcients :" $iteration1_iao
+  echo "Hartree-Fock energy                             :" $HF_energy
   echo ERROR IN THE GENERATION OF IAO COEFFICIENTS
 else
   echo
   echo
   echo Convergence after $convergence iterations
+  echo Hartree-Fock energy: $HF_energy
   echo GENERATION OF IAO COEFFICIENTS CORRECTLY SUCCEEDED
 fi

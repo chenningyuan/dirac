@@ -124,46 +124,21 @@ contains
 
    subroutine SymOrth(C,S,nmo1,nmo2)
         !Symmetrically orthogonalize intrinsic basis to arrive at standard IAOs
+        use utils
 
         implicit none
+        integer                      :: i,j
         integer,    intent(in)       :: nmo1, nmo2
         complex(8), intent(in)       :: S(nmo1,nmo1)
         complex(8), intent(inout)    :: C(nmo1,nmo2)
-        integer,    parameter        :: lwmax=1000
-        integer                      :: info, lwork, liwork, lrwork,i,j
-        integer,    dimension(lwmax) :: iwork
-        complex(8), dimension(lwmax) :: work
-        real(8),    dimension(lwmax) :: rwork
         complex(8), allocatable      :: matrix(:,:)
         real(8),    allocatable      :: ew(:)
 
         allocate(matrix(nmo2,nmo2))
         allocate(ew(nmo2))
         matrix = matmul(conjg(transpose(C)),matmul(S,C))
-!
-!       Query the optimal workspace.
-!
-        lwork = -1
-        liwork = -1
-        lrwork = -1
 
-        call zheevd( 'V', 'L', nmo2, matrix, nmo2, ew, work, lwork, rwork, &
-                    lrwork, iwork, liwork, info )
-        lwork = min(lwmax,int(work(1)))
-        lrwork = min(lwmax,int(rwork(1)))
-        liwork = min(lwmax,iwork(1))
-!
-!       Solve eigenproblem.
-!
-        call zheevd( 'V', 'L', nmo2, matrix, nmo2, ew, work, lwork, rwork, &
-                    lrwork, iwork, liwork, info )
-!
-!       Check for convergence.
-!
-        if( info.gt.0 ) then
-           write(*,*)'The algorithm failed to compute eigenvalues.'
-           stop
-        end if        
+        call diag_matrix(matrix,nmo2,ew)
 
         do i=1,nmo2
            ew(i) = 1.0/sqrt(sqrt(ew(i)))

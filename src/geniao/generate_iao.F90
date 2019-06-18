@@ -8,7 +8,6 @@
         use make_iao
         use utils
         use atomic_fragments
-        use make_avas
 
         implicit none
 
@@ -16,7 +15,6 @@
 
         type(basis_set_info_t) :: ao_basis_1 ! the ao basis used in the generation of the MO coefficients
         type(cmo):: cspinor_original ! MO-coefficients before localization 
-        type(cmo):: cspinor_local    ! MO-coefficients after localization
 
         integer :: n_fragments ! the number of fragments used to project on to
         type(basis_set_info_t),allocatable :: ao_basis_2(:) ! the ao basis sets of the fragments
@@ -32,7 +30,6 @@
         complex(8), allocatable :: c_Ib_ao(:,:,:)             !  coefficient matrix, IAOs in terms of AOs of basis 1
         complex(8), allocatable :: c_Ib_occ(:,:)              !  coefficient matrix, occupied MOs in terms of IAOs.
         complex(8), allocatable :: coeff1_occ(:,:)
-        complex(8), allocatable :: coeff1_vir(:,:)
         real(8),    allocatable :: coeff_quaternion(:,:,:)
 
         integer :: nocc
@@ -326,14 +323,6 @@
 !        print*,
 !        print*,'----***** MAKE IBOs *****-----'
 !        call MakeIBO(c_Ib,coeff1_occ,S11,cspinor_fragment,n_fragments,nmo1,nmo2,nocc)
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!  Now I follow the procedure of Sayfutyarova et al. (arXiv:1701.07862v1)   !
-!        to generate an atomic valence active space (AVAS)                  !
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        
-!        not yet working
-!        call avas(c_Ib,coeff1_occ,nmo1,nmo2,nocc)
 
 !     55 FORMAT( 100(:,1X,'(',G10.2,',',G10.2,')') ) ! Useful format to write complex matrices.
 

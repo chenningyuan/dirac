@@ -83,4 +83,41 @@ contains
 
    end subroutine convert_complex_to_quaternion_format
 
+   subroutine diag_matrix(A,n,eigval)
+        implicit none
+        integer,    intent(in)       :: n
+        integer,    parameter        :: lwmax=10000
+        integer                      :: info, lwork, liwork, lrwork
+        integer,    dimension(lwmax) :: iwork
+        complex(8), dimension(lwmax) :: work
+        real(8),    dimension(lwmax) :: rwork
+        complex(8), intent(inout)    :: A(n,n)
+        real(8),    intent(  out)    :: eigval(n)
+!
+!       Query the optimal workspace.
+!
+        lwork = -1
+        liwork = -1
+        lrwork = -1
+
+        call zheevd( 'V', 'L', n, A, n, eigval, work, lwork, rwork, &
+                    lrwork, iwork, liwork, info )
+        lwork = min(lwmax,int(work(1)))
+        lrwork = min(lwmax,int(rwork(1)))
+        liwork = min(lwmax,iwork(1))
+!
+!       Solve eigenproblem.
+!
+        call zheevd( 'V', 'L', n, A, n, eigval, work, lwork, rwork, &
+                    lrwork, iwork, liwork, info )
+!
+!       Check for convergence.
+!
+        if( info.gt.0 ) then
+           write(*,*)'The algorithm failed to compute eigenvalues.'
+           stop
+        end if
+
+   end subroutine diag_matrix
+
 end module utils
