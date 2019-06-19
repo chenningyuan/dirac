@@ -1,5 +1,7 @@
 #/bin/sh
 
+# Script to run the program that generates Intrinsic Atomic Orbitals.
+
 #################
 # MANUAL SET-UP #
 #################
@@ -13,18 +15,22 @@ basis1=sto-3g # BASIS SET OF THE ORIGINAL PROBLEM
 basis2=cc-pvtz # LARGE BASIS SET FOR THE FRAGMENTS
 nfrag=2 # NUMBER OF FRAGMENTS (atoms for now!)
 # FRAGMENTS NAMES, ATOMIC NUMBER, COORDINATES
-frag[1]=He 
+frag[1]=He
 Z[1]=002 # MUST BE IN THIS FORMAT
-coord[1]="0. 0. -1."
+coord[1]="0. 0. -1.0"
 frag[2]=Ne
-Z[2]=010
-coord[2]="0. 0. +1."
+Z[2]=010 # MUST BE IN THIS FORMAT
+coord[2]="0. 0. +1.0"
 
-
-#H2O: 
-#O    0.0      0.00000000   0.0000000
-#H    0.0      0.75115500  -0.5816060
-#H    0.0     -0.75115500  -0.5816060	
+#frag[1]=O
+#Z[1]=008 # MUST BE IN THIS FORMAT
+#coord[1]="0. 0. 0."
+#frag[2]=H
+#Z[2]=001
+#coord[2]="0.  0.75115500  -0.5816060"
+#frag[3]=H
+#Z[3]=001
+#coord[3]="0. -0.75115500  -0.5816060"
 
 ######################
 # GENERATE XYZ FILES #
@@ -127,7 +133,6 @@ echo
 
 $path_to_geniao/geniao.x
 
-
 echo
 echo
 echo "############################################################################"
@@ -150,8 +155,6 @@ else
   echo Convergence after $convergence iterations
   echo RECONSTRUCTION OF THE DFCOEF FILE SUCCEEDED
 fi
-
-
 
 echo
 echo

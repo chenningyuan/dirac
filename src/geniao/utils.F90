@@ -2,23 +2,23 @@ module utils
 
 contains
 
-   subroutine write_dffiles(filename_unformatted,filename_formatted,ao_basis,coeff,nao,nmo)
+   subroutine write_dffiles(filename_unformatted,filename_formatted,ao_basis,coeff,nao,nmo,basisfile_name)
 
        use exacorr_datatypes
 
        implicit none
 
-       integer, parameter :: nsym = 1, iunit = 98
-       character(len=74) :: text="IAO coefficients"
-       character(len=*) :: filename_unformatted, filename_formatted
-       integer :: idim(3,nsym), i, j
-       integer, intent(in) :: nao, nmo
-       complex(8), intent(in)  :: coeff(nao,nmo,2)
+       integer, parameter                 :: nsym = 1, iunit = 98
+       character(len=74)                  :: text="IAO coefficients"
+       character(len=*), intent(in)       :: filename_unformatted, filename_formatted,basisfile_name
+       integer                            :: idim(3,nsym), i, j
+       integer, intent(in)                :: nao, nmo
+       complex(8), intent(in)             :: coeff(nao,nmo,2)
        type(basis_set_info_t), intent(in) :: ao_basis
-       real(8)  :: coeff_quaternion(nao,int(nmo/2),4)
-       real(8) :: toterg
-       real(8) :: eig(nmo)
-       integer :: ibeig(nmo)
+       real(8)                            :: coeff_quaternion(nao,int(nmo/2),4)
+       real(8)                            :: toterg
+       real(8)                            :: eig(nmo)
+       integer                            :: ibeig(nmo)
 
        toterg= 0.D0
        eig = 0.D0
@@ -37,7 +37,7 @@ contains
        write (iunit) eig
        write (iunit) ibeig
      
-       call write_basis_dfcoef(ao_basis,"MOLECULE.dfcoef",iunit)
+       call write_basis_dfcoef(ao_basis,basisfile_name,iunit)
        close(iunit)
 
        open (UNIT = iunit,file=filename_formatted,FORM='FORMATTED',access='SEQUENTIAL')
@@ -86,7 +86,7 @@ contains
    subroutine diag_matrix(A,n,eigval)
         implicit none
         integer,    intent(in)       :: n
-        integer,    parameter        :: lwmax=10000
+        integer,    parameter        :: lwmax=100000
         integer                      :: info, lwork, liwork, lrwork
         integer,    dimension(lwmax) :: iwork
         complex(8), dimension(lwmax) :: work

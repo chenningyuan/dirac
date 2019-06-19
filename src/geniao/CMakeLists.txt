@@ -5,6 +5,7 @@ if(ENABLE_GENIAO)
 
   set(FREE_GENIAO_FORTRAN_SOURCES
    generate_iao.F90
+   generate_avas.F90
    get_overlap.F90
    make_iao.F90
    utils.F90

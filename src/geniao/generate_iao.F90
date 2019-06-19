@@ -11,36 +11,32 @@
 
         implicit none
 
-        complex(8), parameter :: ZERO=(0.D0,0.D0), ONE=(1.D0,0.D0)
-
-        type(basis_set_info_t) :: ao_basis_1 ! the ao basis used in the generation of the MO coefficients
-        type(cmo):: cspinor_original ! MO-coefficients before localization 
-
-        integer :: n_fragments ! the number of fragments used to project on to
+        complex(8), parameter              :: ZERO=(0.D0,0.D0), ONE=(1.D0,0.D0)
+        type(basis_set_info_t)             :: ao_basis_1 ! the ao basis used in the generation of the MO coefficients
         type(basis_set_info_t),allocatable :: ao_basis_2(:) ! the ao basis sets of the fragments
-        type(cmo), allocatable :: cspinor_fragment(:) ! MO-coefficients of the fragments
-        type(atom),pointer :: first_atom,current_atom ! linked list to store coordindate information
-
-        complex(8), allocatable :: S_block(:,:) ! sub block of the overlap matrix
-        complex(8), allocatable :: S11(:,:),S21(:,:),S12(:,:),S22(:,:) !  the overlap matrices
-        complex(8), allocatable :: Socc(:,:),Svir(:,:)
-        complex(8), allocatable :: P12(:,:),P21(:,:)          !  the projection operators
-        complex(8), allocatable :: Proj(:,:)                  !  the projection operator from Sayfutyarova et al. (Eq. 15 arXiv:1701.07862v1)
-        complex(8), allocatable :: c_Ib(:,:)                  !  coefficient matrix, IAOs in terms of MOs of basis 1
-        complex(8), allocatable :: c_Ib_ao(:,:,:)             !  coefficient matrix, IAOs in terms of AOs of basis 1
-        complex(8), allocatable :: c_Ib_occ(:,:)              !  coefficient matrix, occupied MOs in terms of IAOs.
-        complex(8), allocatable :: coeff1_occ(:,:)
-        real(8),    allocatable :: coeff_quaternion(:,:,:)
-
-        integer :: nocc
-        integer luxyz, ierr, i, j, k, l, nmo1, nmo2, imo, jmo, nmoi, nmoj, nao1
-
-        complex(8), allocatable :: HF_RDM(:,:), IbRDM(:,:), Id(:,:)
-        complex(8) :: sum_diag, sum_column
-        character(11) :: version
-        integer :: charge
-
-        complex(8), allocatable :: check(:,:)
+        type(cmo)                          :: cspinor_original ! MO-coefficients before localization 
+        type(cmo), allocatable             :: cspinor_fragment(:) ! MO-coefficients of the fragments
+        type(atom), pointer                :: first_atom,current_atom ! linked list to store coordindate information
+        integer                            :: luxyz, ierr, i, j, k, l
+        integer                            :: nmo1, nmo2, imo, jmo, nmoi, nmoj, nao1, ncore, nvale
+        integer                            :: n_fragments ! the number of fragments used to project on to
+        integer                            :: nocc ! Number of occupied spinors
+        integer                            :: charge ! Charge of the molecule
+        character(11)                      :: version ! Version of the IAO construction (Standard_2013, Simple_2013, Simple_2014)
+        complex(8), allocatable            :: S_block(:,:) ! sub block of the overlap matrix
+        complex(8), allocatable            :: S11(:,:),S21(:,:),S12(:,:),S22(:,:) !  the overlap matrices
+        complex(8), allocatable            :: P12(:,:),P21(:,:)          !  the projection operators
+        complex(8), allocatable            :: c_Ib(:,:)                  !  coefficient matrix, IAOs in terms of MOs of basis 1
+        complex(8), allocatable            :: c_Ib_ao(:,:,:)             !  coefficient matrix, IAOs in terms of AOs of basis 1
+        complex(8), allocatable            :: c_Ib_occ(:,:)              !  coefficient matrix, occupied MOs in terms of IAOs.
+        complex(8), allocatable            :: c_Ib_frag(:,:,:)             !  coefficient matrix, IAOs of a fragment in terms of AOs of basis 1.
+        complex(8), allocatable            :: coeff1_occ(:,:)
+        complex(8), allocatable            :: HF_RDM(:,:), IbRDM(:,:), Id(:,:)
+        complex(8)                         :: sum_diag, sum_column
+        complex(8), allocatable            :: check(:,:)
+        real(8),    allocatable            :: coeff_quaternion(:,:,:)
+        character(len=14)                  :: fragfile_dfcoef, fragfile_dfpcmo
+        character(len=18)                  :: fragfile_val_dfcoef, fragfile_val_dfpcmo
 
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -58,7 +54,7 @@
         ! The following Coeff file is here to check that I indeed get the same format as the DFPCMO_mol file.
         ! It will be removed when I'll be sure it is indeed correct in any cases.
         allocate(coeff_quaternion(cspinor_original%nao,int(cspinor_original%nmo/2),4))
-        call write_dffiles("test.dfcoef","test.dfpcmo",ao_basis_1,cspinor_original%coeff,nao1,nmo1)
+        call write_dffiles("test.dfcoef","test.dfpcmo",ao_basis_1,cspinor_original%coeff,nao1,nmo1,"MOLECULE.dfcoef")
 
 
         call get_free_fileunit(luxyz)
@@ -268,7 +264,30 @@
         allocate(c_Ib_ao(nao1,nmo2,2))
         c_Ib_ao(:,:,1) = matmul(cspinor_original%coeff(:,:,1),c_Ib)
         c_Ib_ao(:,:,2) = matmul(cspinor_original%coeff(:,:,2),c_Ib)
-        call write_dffiles("iao.dfcoef","iao.dfpcmo",ao_basis_1,c_Ib_ao,nao1,nmo2)
+        call write_dffiles("iao.dfcoef","iao.dfpcmo",ao_basis_1,c_Ib_ao,nao1,nmo2,"MOLECULE.dfcoef")
+
+        ! Separate the IAO DFCOEF file for each fragment. For instance, it will be interesting to get the IAOs a the metallic atom in a transition metal complex. This can be used in the AVAS theory (https://arxiv.org/abs/1701.07862)
+        imo=0
+        current_atom => first_atom
+        do i = 1, n_fragments
+           nmoi = cspinor_fragment(i)%nmo
+           allocate(c_Ib_frag(nao1,nmoi,2))
+           c_Ib_frag = c_Ib_ao(:,imo+1:imo+nmoi,:)
+           write (fragfile_dfcoef,'(i3.3,a11)') nint(current_atom%bascharge),'_iao.dfcoef'
+           write (fragfile_dfpcmo,'(i3.3,a11)') nint(current_atom%bascharge),'_iao.dfpcmo'
+           call write_dffiles(fragfile_dfcoef,fragfile_dfpcmo,ao_basis_1,c_Ib_frag,nao1,nmoi,"MOLECULE.dfcoef")
+           deallocate(c_Ib_frag)
+           ! Do it also for valence orbitals only
+           call atom_minbas_size (nint(current_atom%bascharge),ncore,nvale)
+           allocate(c_Ib_frag(nao1,nvale,2))
+           c_Ib_frag = c_Ib_ao(:,imo+1+ncore:imo+nmoi,:)
+           write (fragfile_val_dfcoef,'(i3.3,a15)') nint(current_atom%bascharge),'_iao_val.dfcoef'
+           write (fragfile_val_dfpcmo,'(i3.3,a15)') nint(current_atom%bascharge),'_iao_val.dfpcmo'
+           call write_dffiles(fragfile_val_dfcoef,fragfile_val_dfpcmo,ao_basis_1,c_Ib_frag,nao1,nvale,"MOLECULE.dfcoef")
+           deallocate(c_Ib_frag)
+           imo = imo + nmoi
+           current_atom=>current_atom%next
+        end do
 
 !       clean up list of atoms
         call del_atoms(first_atom)
