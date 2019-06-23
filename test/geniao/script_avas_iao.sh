@@ -206,3 +206,35 @@ echo "#############################"
 echo 
 cp "$atom_number"_iao.dfcoef atom.dfcoef
 $path_to_avas/avas.x
+
+echo
+echo
+echo "################################################################"
+echo "# RESTART HF CALCULATION WITH THE NEW TRANSFORMED COEFFICIENTS #"
+echo "################################################################"
+echo
+cp avas.dfcoef DFCOEF
+pam --replace basis=$basis_avas --replace nelec=$nelec --inp=$inp1.inp --mol=$mol.xyz --put="DFCOEF" --silent
+mv "$inp1"_"$mol"_basis="$basis_avas"_nelec="$nelec".out "$mol"_"$basis_avas"_nelec"$nelec"_avas.out
+
+convergence=10
+convergence=$(grep "* Convergence after" "$mol"_"$basis_avas"_nelec"$nelec"_avas.out | awk '{print $4}')
+iteration1=$(grep "It.    1" "$mol"_"$basis_avas"_nelec"$nelec".out | tail -1 | awk '{print $3}')
+iteration1_avas=$(grep "It.    1" "$mol"_"$basis_avas"_nelec"$nelec"_avas.out | tail -1 | awk '{print $3}')
+HF_energy=$(grep "   Total energy                             :" "$mol"_"$basis_avas"_nelec"$nelec".out | awk '{print $4}')
+
+if (( $(echo "$convergence != 1" | bc -l) )); then
+  echo
+  echo
+  echo "Convergence after $convergence iterations"
+  echo "Energy of the first calculation at iteration 1     :" $iteration1
+  echo "Energy at iteration 1 with transformed coeffcients :" $iteration1_avas
+  echo "Hartree-Fock energy                                :" $HF_energy
+  echo ERROR IN THE TRANSFORMATION, NOT UNITARY ?
+else
+  echo
+  echo
+  echo Convergence after $convergence iterations
+  echo Hartree-Fock energy: $HF_energy
+  echo TRANSFORMED ORBITALS GIVE THE CORRECT ENERGY
+fi

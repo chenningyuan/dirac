@@ -19,7 +19,7 @@ program avas
         type(cmo)               :: cspinor_atom ! MO-coefficients of basis B2 (all orbitals)
         type(cmo)               :: cspinor_B2 ! MO-coefficients of basis B2 (valence only !)
         complex(8), allocatable :: Proj(:,:), Socc(:,:), Cocc(:,:), Svir(:,:), Cvir(:,:)
-        complex(8), allocatable :: Cocc_tilde(:,:), Cvir_tilde(:,:), Ccas(:,:)
+        complex(8), allocatable :: Cocc_tilde(:,:), Cvir_tilde(:,:), Ccas(:,:), Ctilde(:,:), Ctilde_ao(:,:,:)
         complex(8), allocatable :: eigvec_occ(:,:), eigvec_vir(:,:)
         real(8),    allocatable :: eigval_occ(:), eigval_vir(:)
         complex(8), allocatable :: S21(:,:),S12(:,:), S22(:,:)
@@ -86,6 +86,7 @@ program avas
         forall (i=1:nocc) Cocc(i,i) = ONE
         Cvir = ZERO
         forall (i=1:nvir) Cvir(i+nocc,i) = ONE
+!        forall (i=1:nvir) Cvir(i,i) = ONE
 
         allocate(Socc(nocc,nocc))
         Socc = matmul(conjg(transpose(Cocc)),matmul(Proj,Cocc))
@@ -131,6 +132,23 @@ program avas
          write(*,*) sum_column
         end do
 
+        allocate(Ctilde(nmo1,nmo1))
+        do i=1,nmo1
+          do j=1,nocc
+            Ctilde(i,j) = Cocc_tilde(i,j)
+          enddo
+          do j=1,nvir
+            Ctilde(i,j+nocc) = Cvir_tilde(i,j)
+          enddo
+        enddo
+
+        allocate(Ctilde_ao(nao1,nmo1,2))
+        Ctilde_ao(:,:,1) = matmul(cspinor_B1%coeff(:,:,1),Ctilde)
+        Ctilde_ao(:,:,2) = matmul(cspinor_B1%coeff(:,:,2),Ctilde)
+        call write_dffiles("avas.dfcoef","avas.dfpcmo",ao_basis_1,Ctilde_ao,nao1,nmo1,"B1.dfcoef")
+
+!The eigenvalues of the projected overlap matrices reflect the degree to which the transformed orbitals overlap with the space of our target AOs.
+!Let us include the transformed orbitals that have non-zero overlap with the target AOs in the CAS:
         allocate(Ccas(nmo1,2*nmo2))
         j = 1
         do i=1,nocc
