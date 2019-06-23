@@ -19,13 +19,14 @@ program avas
         type(cmo)               :: cspinor_atom ! MO-coefficients of basis B2 (all orbitals)
         type(cmo)               :: cspinor_B2 ! MO-coefficients of basis B2 (valence only !)
         complex(8), allocatable :: Proj(:,:), Socc(:,:), Cocc(:,:), Svir(:,:), Cvir(:,:)
-        complex(8), allocatable :: Cocc_tilde(:,:), Cvir_tilde(:,:)
+        complex(8), allocatable :: Cocc_tilde(:,:), Cvir_tilde(:,:), Ccas(:,:)
         complex(8), allocatable :: eigvec_occ(:,:), eigvec_vir(:,:)
         real(8),    allocatable :: eigval_occ(:), eigval_vir(:)
         complex(8), allocatable :: S21(:,:),S12(:,:), S22(:,:)
         integer                 :: nao1,nmo1,nao2,nmo2
         integer                 :: nelec,nocc,nvir,atom_number,charge,ncore,nvale
         character(len=10)       :: B2file
+        complex(8)              :: sum_column
        
         print*, "******************* START AVAS *******************"
 
@@ -63,15 +64,16 @@ program avas
         allocate(S12(nmo1,nmo2))
         allocate(S22(nmo2,nmo2))
         call get_mo_overlap (ao_basis_2,cspinor_B2,ao_basis_2,cspinor_B2,S22)
-        print*,"S22 (should be identity)"
-        do i=1,nmo2
-         write(*,'(100G10.2)') (REAL(S22(i,j)),j=1,nmo2)
-        enddo
+!        print*,
+!        print*,"S22 (should be identity)"
+!        do i=1,nmo2
+!         write(*,'(100G10.2)') (REAL(S22(i,j)),j=1,nmo2)
+!        enddo
 
         call get_mo_overlap (ao_basis_2,cspinor_B2,ao_basis_1,cspinor_B1,S21)
         S12 = conjg(transpose(S21))
-       
-        ! Compute the projector. IAO or MO are orthonormalized, so sigma^(-1) in Eq.13 of the article is equal to the identity.
+
+        ! Compute the projector. IAO or MO are orthonormalized, so sigma^(-1) in Eq.13 of the article is equal to the identity in the MO basis, that I considered here.
         allocate(Proj(nmo1,nmo1))
         Proj = matmul(S12,S21)
 
@@ -83,22 +85,12 @@ program avas
         Cocc = ZERO
         forall (i=1:nocc) Cocc(i,i) = ONE
         Cvir = ZERO
-        forall (i=1:nvir) Cvir(i,i) = ONE
+        forall (i=1:nvir) Cvir(i+nocc,i) = ONE
 
         allocate(Socc(nocc,nocc))
         Socc = matmul(conjg(transpose(Cocc)),matmul(Proj,Cocc))
-        print*,
-!        print*,"Socc"
-!        do i=1,nocc
-!          write(*,'(100G10.2)') (REAL(Socc(i,j)),j=1,nocc)
-!        enddo
         allocate(Svir(nvir,nvir))
         Svir = matmul(conjg(transpose(Cvir)),matmul(Proj,Cvir))
-!        print*,
-!        print*,"Svir"
-!        do i=1,nvir
-!          write(*,'(100G10.2)') (REAL(Svir(i,j)),j=1,nvir)
-!        enddo
 
         allocate(eigvec_occ(nocc,nocc))
         allocate(eigval_occ(nocc))
@@ -115,19 +107,62 @@ program avas
 
         allocate(Cocc_tilde(nmo1,nocc))
         allocate(Cvir_tilde(nmo1,nvir))
+        ! Fortran is column
         Cocc_tilde = matmul(Cocc,eigvec_occ)
         Cvir_tilde = matmul(Cvir,eigvec_vir)
 
-!        print*,
-!        print*,"eigvec occ"
-!        do i=1,nocc
-!          write(*,'(100G10.2)') (REAL(eigvec_occ(i,j)),j=1,nocc)
-!        enddo
-!        print*,
-!        print*,"eigvec vir"
-!        do i=1,nvir
-!          write(*,'(100G10.2)') (REAL(eigvec_vir(i,j)),j=1,nvir)
-!        enddo
+        print*,
+        print*,"Check normalization Cocctilde"
+        do i=1,nocc
+         sum_column = ZERO
+         do j=1,nmo1
+           sum_column = sum_column + conjg(Cocc_tilde(j,i))*Cocc_tilde(j,i)
+         end do
+         write(*,*) sum_column
+        end do
+
+        print*,
+        print*,"Check normalization Cvirtilde"
+        do i=1,nvir
+         sum_column = ZERO
+         do j=1,nmo1
+           sum_column = sum_column + conjg(Cvir_tilde(j,i))*Cvir_tilde(j,i)
+         end do
+         write(*,*) sum_column
+        end do
+
+        allocate(Ccas(nmo1,2*nmo2))
+        j = 1
+        do i=1,nocc
+          if (eigval_occ(i) > 1.D-12) then
+            Ccas(:,j) = Cocc_tilde(:,i)
+            print*,i,j,eigval_occ(i)
+            j=j+1
+          endif
+        enddo
+        j = nmo2+1
+        do i=1,nvir
+          if (eigval_vir(i) > 1.D-12) then
+            Ccas(:,j) = Cvir_tilde(:,i)
+            print*,i,j,eigval_vir(i)
+            j=j+1
+          endif
+        enddo
+        print*,
+        print*,"Ccas"
+        do i=1,nmo1
+           write(*,'(100G10.2)') (REAL(Ccas(i,j)),j=1,2*nmo2)
+        enddo
+
+        print*,                            
+        print*,"Check normalization"
+        do i=1,2*nmo2
+         sum_column = ZERO                 
+         do j=1,nmo1
+           sum_column = sum_column + conjg(Ccas(j,i))*Ccas(j,i)
+         end do
+         write(*,*) sum_column
+        end do
 
         print*, "******************** END AVAS ********************"
 end program avas
