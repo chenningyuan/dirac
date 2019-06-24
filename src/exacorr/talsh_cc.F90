@@ -2074,7 +2074,6 @@ module talsh_cc
     subroutine decompose_cholesky_talsh (CD, t_cholesky, nao)
 
         use exacorr_cholesky
-        use module_interest_eri
 
         implicit none
 
@@ -2085,14 +2084,16 @@ module talsh_cc
         integer            :: ierr
 
         integer            :: lshell, kshell, lsize, ksize
-        integer            :: l, k
+        integer            :: l, k, l0, k0
         complex(8)         :: D_max, D_el, denom_fac
-        type(talsh_tens_t) :: Diag, Mask, Dlk, Res, Resi, CD_v, CD_m, one_real
+        type(talsh_tens_t) :: Diag, Mask, Dlk, Res
+        type(talsh_tens_t) :: CD_v, CD_m, CD_new, Temp
         integer            :: ao_dims(1:2)
         integer            :: l_dims(1:4),  off4(1:4)
         integer            :: cd_dims(1:3), off3(1:3)
+        integer            :: rank
 
-        integer(8)         :: m
+        integer(4)         :: m
 
         real(8), parameter :: ACC=1.0E-9
 
@@ -2107,20 +2108,22 @@ module talsh_cc
         !Interest needs to be initalized for each thread, this function will initialize (or return immediately if it is).
         call interest_initialize(.false.)
 
-        ierr=talsh_tensor_construct(one_real,C8,(/1/),init_val=ONE)
         ierr=talsh_tensor_construct(Diag,C8,ao_dims,init_val=ZERO)
         ierr=talsh_tensor_construct(Mask,R4,ao_dims,init_val=ONE)
         ierr=talsh_tensor_construct(Res,C8,ao_dims,init_val=ZERO)
+        ierr=talsh_tensor_construct(Temp,C8,ao_dims,init_val=ZERO)
         
         call get_diag_talsh_comp(Diag)
         print *, "========= diagonal computed ============== "
-        call print_tensor(Diag, ACC, "Diag")
+        !call print_tensor(Diag, ACC, "Diag")
 
         call find_shells_talsh_comp(Diag, Mask, lshell, kshell, lsize, ksize, D_max)
         print *, "--- shell found: ", lshell, kshell, lsize, ksize, D_max
 
         m=0
+        cd_dims(3)=1
         ierr=talsh_tensor_construct(CD,C8,cd_dims,init_val=ZERO)
+        ierr=talsh_tensor_construct(CD_new,C8,cd_dims,init_val=ZERO)
         print*, "ierr 0", ierr
 
         do while (abs(D_max)>t_cholesky)
@@ -2129,103 +2132,100 @@ module talsh_cc
 
           ierr=talsh_tensor_construct(Dlk,C8,l_dims,init_val=ZERO)
             
-          ierr=talsh_tensor_destruct(CD)
-          print*, "ierr CD dest", ierr
-          cd_dims(3)=lsize*ksize+1
-          ierr=talsh_tensor_construct(CD,C8,cd_dims,init_val=ZERO)
-          print*, "ierr CD const", ierr
+          ierr=talsh_tensor_destruct(CD_new)
+          print*, "ierr CD_new dest", ierr
+          cd_dims(3)=m+lsize*ksize
+          ierr=talsh_tensor_construct(CD_new,C8,cd_dims,init_val=ZERO)
+          print*, "ierr CD_new const", ierr
 
           !get the values for the current shell
           call get_shell_talsh_comp(Dlk, lshell, kshell)
-          call print_tensor(Dlk, ACC, "Dlk")
+          !call print_tensor(Dlk, ACC, "Dlk")
 
           call find_el_talsh_comp(Diag, Mask, lshell, kshell, l, k, D_el)
           print *, '--- largest value found: ', l, k, D_el
 
           do while(abs(D_el)>abs(D_max/1000))
+            call get_offset(l,l0)
+            call get_offset(k,k0)
 
             ierr=talsh_tensor_init(Res, ZERO)
-            print *, "Res init error", ierr
 
             !sum up previous CD vectors for the indices
-        !   if (m>0) then
-        !         cd_dims(1:2)=1
-        !         cd_dims(3)=m
-        !         print *, 'cd_dims', cd_dims
-        !         ierr=talsh_tensor_construct(CD_v,C8,cd_dims,init_val=ZERO)
-        !         call print_tensor(CD_v, ACC, "CD vector")
+            if (m>0) then
+              cd_dims(1:2)=1
+              cd_dims(3)=m
+              print *, 'cd_dims', cd_dims
+              ierr=talsh_tensor_construct(CD_v,C8,cd_dims,init_val=ZERO)
 
-        !         cd_dims(1)=l
-        !         cd_dims(2)=k
-        !         cd_dims(3)=1
-        !         ierr=talsh_tensor_slice(CD_v,CD,cd_dims,0,DEV_HOST)
-
-        !         call print_tensor(CD_v, ACC, "CD vector")
-
-        !         cd_dims(1:2)=nao
-        !         cd_dims(3)=m
-        !         ierr=talsh_tensor_construct(CD_m,C8,cd_dims,init_val=ZERO)
-        !         cd_dims(1)=0
-        !         cd_dims(2)=0
-        !         cd_dims(3)=0
-        !         ierr=talsh_tensor_slice(CD_m,CD,cd_dims,0,DEV_HOST)
-
-        !         call print_tensor(CD_v, ACC, "CD matrix")
-
-
-        !         ierr=talsh_tensor_contract("T(p,q)+=C(p,q,u)*D(u)",Res,CD_m,CD_v)
-        !         ierr=talsh_tensor_destruct(CD_m)
-        !         ierr=talsh_tensor_destruct(CD_v)
-        !       end if
-            
-            !add the the actual vaues from the current shell
-            if (lsize==1 .and. ksize==1) then
-              !only one value in the shell
-              ierr=talsh_tensor_reshape(Dlk,ao_dims)
+              off3(1)=l-1
+              off3(2)=k-1
+              off3(3)=0
+              ierr=talsh_tensor_slice(CD_v,CD,off3,0,DEV_HOST)
+              print*, 'ierr slice CD V:', ierr
+              call print_tensor(CD_v, ACC, "CD vector")
+              ierr=talsh_tensor_reshape(CD_v,(/ m /))
               print*, 'ierr reshape:', ierr
 
-              ierr=talsh_tensor_contract("T(p,q)+=C(p,q)*D()",Res,Dlk,one_tensor)
-              print *, "Res contract error", ierr
+              cd_dims(1:2)=nao
+              cd_dims(3)=m
+              ierr=talsh_tensor_construct(CD_m,C8,cd_dims,init_val=ZERO)
+              off3=0
+              ierr=talsh_tensor_slice(CD_m,CD,off3,0,DEV_HOST)
+              print*, 'ierr slice CD M:', ierr
+              call print_tensor(CD_m, ACC, "CD mat")
 
-        !       else
-        !         ierr=talsh_tensor_construct(Resi,C8,l_dims,init_val=ZERO)
-        !         off4=1
-        !         off4(3)=l
-        !         off4(4)=k
-        !         print *, 'off4', off4
-                
-        !         call print_tensor(Resi, ACC, "Resi")
-        !         ierr=talsh_tensor_slice(Resi,Dlk,off4,0,DEV_HOST)
-        !         print *, 'slice error:', ierr
-              end if
-              
-            !Denominate 
+              ierr=talsh_tensor_contract("T(p,q)+=C(p,q,u)*D(u)",Res,CD_m,CD_v)
+              print*, 'ierr compute Res:', ierr
+              ierr=talsh_tensor_destruct(CD_m)
+              ierr=talsh_tensor_destruct(CD_v)
+            end if
+
+            ierr=talsh_tensor_init(Temp, ZERO)
+            l_dims(3)=1
+            l_dims(4)=1
+            ierr=talsh_tensor_reshape(Temp,l_dims)
+            print*, 'ierr Temp reshape:', ierr
+            off4=0
+            off4(3)=l-l0-1
+            off4(4)=k-k0-1
+            print *,off4
+            ierr=talsh_tensor_slice(Temp,Dlk,off4,0,DEV_HOST)
+            print *, 'ierr Temp slice:', ierr
+            ierr=talsh_tensor_reshape(Temp,ao_dims)
+            print*, 'ierr Temp reshape:', ierr
+
+            ! Sum and Denominate
+            ierr=talsh_tensor_contract("T(p,q)+=V(p,q)*O()",Temp,Res,one_tensor)
+            print*, 'ierr Temp sum:', ierr
+            ierr=talsh_tensor_init(Res, ZERO)
             denom_fac=ONE / zsqrt(D_el)
             print*, 'Denominator', denom_fac
-            ierr=talsh_tensor_init(Dlk, ZERO)
-            ierr=talsh_tensor_contract("W(p,q)=V(p,q)",Dlk,Res,one_tensor,scale=denom_fac)
+            ierr=talsh_tensor_contract("W(p,q)=V(p,q)*O()",Res,Temp,one_tensor,scale=denom_fac)
             print*, 'ierr denominate:', ierr
-            call print_tensor(Dlk, ACC, "CD entry")
+            call print_tensor(Res, ACC, "CD entry")
 
             !add Cholesky vector
             cd_dims(3)=1
-            ierr=talsh_tensor_reshape(Dlk,cd_dims)
+            ierr=talsh_tensor_reshape(Res,cd_dims)
             print*, 'ierr reshape:', ierr
             off3(3)=m
             print *, off3
-            ierr=talsh_tensor_insert(CD,Dlk,off3)
+            ierr=talsh_tensor_insert(CD_new,Res,off3)
             print *, 'insert error', ierr
-            ierr=talsh_tensor_reshape(Dlk,ao_dims)
+            call print_tensor(CD_new, ACC, "CD new")
+            ierr=talsh_tensor_reshape(Res,ao_dims)
             print*, 'ierr reshape:', ierr
             m=m+1
 
             !update diagonal
-            call square_el(Dlk)
-            call print_tensor(Dlk, ACC, "square")
-            ierr=talsh_tensor_contract("W(p,q)+=V(p,q)",Diag,Dlk,one_tensor,scale=MINUS_ONE)
+            call square_el(Res)
+            !call print_tensor(Dlk, ACC, "square")
+            ierr=talsh_tensor_contract("W(p,q)+=V(p,q)",Diag,Res,one_tensor,scale=MINUS_ONE)
 
 
             !update mask
+            call set_mask_done(Mask,l,k)
 
 
             if (m>nao*nao) print *, 'Cholesky decomposition did not work'
@@ -2234,9 +2234,24 @@ module talsh_cc
             call find_el_talsh_comp(Diag, Mask, lshell, kshell, l, k, D_el)
             print *, '--- largest value found: ', l, k, D_el
 
-            if (m.eq.1) EXIT
-
           end do
+
+          !update CD
+          if (m>1) then
+            ierr = talsh_tensor_dimensions(CD,rank,cd_dims)
+            off3=0
+            ierr=talsh_tensor_insert(CD_new,CD,off3)
+            print *, 'insert error', ierr
+          end if
+          ierr=talsh_tensor_destruct(CD)
+          print*, "ierr CD_new dest", ierr
+          cd_dims(3)=m
+          ierr=talsh_tensor_construct(CD,C8,cd_dims,init_val=ZERO)
+          print*, "ierr CD_new const", ierr
+          off3=0
+          ierr=talsh_tensor_slice(CD,CD_new,off3,0,DEV_HOST)
+          call print_tensor(CD, ACC, "CD")
+
           
           !find shell with next largest element
           call find_shells_talsh_comp(Diag, Mask, lshell, kshell, lsize, ksize, D_max)
@@ -2244,17 +2259,19 @@ module talsh_cc
 
           ierr=talsh_tensor_destruct(Dlk)
 
-          EXIT
+          if (m.gt.2) EXIT
         end do
 
         print *, 'Cholesky decomposition done, used ',m,' elements'
 
 
+        !clean up
+
+        ierr=talsh_tensor_destruct(CD_new)
         ierr=talsh_tensor_destruct(Diag)
         ierr=talsh_tensor_destruct(Mask)
         ierr=talsh_tensor_destruct(Res)
-        ierr=talsh_tensor_destruct(one_real)
-
+        ierr=talsh_tensor_destruct(Temp)
     end subroutine decompose_cholesky_talsh
 
 end module talsh_cc

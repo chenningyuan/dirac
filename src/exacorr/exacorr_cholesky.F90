@@ -25,6 +25,9 @@ public find_shells_talsh_comp
 public get_shell_talsh_comp
 public find_el_talsh_comp
 public square_el
+public set_mask_done
+
+public get_offset
 
 interface cholesky_decompose
    module procedure cholesky_decompose_real_matrix
@@ -689,23 +692,19 @@ subroutine cholesky_decompose_aomat_real(CD_out, threshold)
         !zero out elements that are not treated but should be small
         where (M_ncomp) CD(:,:,m+1)=0.0
         D_max_denom = ONE / sqrt(Dm(max_ind(q,1),max_ind(q,2)))
-        print*,'D_max_denom', D_max_denom
         CD(:,:,m+1)=CD(:,:,m+1) * D_max_denom
-
-        print*, 'CD entry :', CD(:,:,m+1)
 
         ! next element
         m=m+1   
 
         !update diagonal
         Gkl(:,:,1)=CD(:,:,m)*CD(:,:,m)
-        print*, 'square :', Gkl(:,:,1)
         Dm=Dm-Gkl(:,:,1)
 
         !make mask for searching new elements
         M_do(max_ind(q,1),max_ind(q,2))=.false.
 
-        if (m.eq.2) stop "compare"
+        if (m.eq.4) stop "compare"
 
       end if
     end do
@@ -1262,7 +1261,7 @@ subroutine get_diag_talsh_comp(Diag)
 
   type(talsh_tens_t), intent(inout) :: Diag
 
-  real(8), pointer     :: Dm(:,:)
+  complex(8), pointer  :: Dm(:,:)
   type(C_PTR)          :: body_p
   integer              :: rank
   integer              :: dims2(1:2)
@@ -1538,7 +1537,6 @@ subroutine find_el_talsh_comp(Diag, Filter, lsh, ksh, l, k, D_el)
   use talsh
   use exacorr_datatypes
   use exacorr_global
-  use module_interest_eri
 
   implicit none
   
@@ -1614,11 +1612,16 @@ subroutine find_el_talsh_comp(Diag, Filter, lsh, ksh, l, k, D_el)
   Dmask(koff+1:koff+nk,loff+1:loff+nl)=.true.
   where (Dmask) lfilt = rfilt.gt.0
 
-  mind=maxloc(abs(Dm), mask=lfilt)
-
-  k=mind(1)
-  l=mind(2)
-  D_el=Dm(l,k)
+  if (any(lfilt)) then
+    mind=maxloc(abs(Dm), mask=lfilt)
+    k=mind(1)
+    l=mind(2)
+    D_el=Dm(l,k)
+  else
+    k=0
+    l=0
+    D_el=ZERO
+  end if
   
   deallocate(lfilt)
   deallocate(Dmask)
@@ -1697,5 +1700,53 @@ subroutine square_el(h_tensor)
   end if
 
 end subroutine square_el
+
+subroutine set_mask_done(Filter,l,k)
+
+  use tensor_algebra
+  use talsh
+  
+  implicit none
+  
+  integer, intent(in)               :: l, k
+  type(talsh_tens_t), intent(inout) :: Filter
+
+  type(C_PTR)          :: body_p
+  integer              :: dims2(1:2)
+  integer              :: ierr
+  real(4), pointer     :: rfilt(:,:)
+  integer              :: rank
+
+  ! set up Mask
+  rank=talsh_tensor_rank(Filter)
+  if (rank.ne.2) stop 'error: wrong rank in get_shell_talsh'
+  ierr = talsh_tensor_dimensions(Filter,rank,dims2)
+  if (ierr.ne.0) stop 'error: wrong dimension in get_shell_talsh'
+  ierr=talsh_tensor_get_body_access(Filter,body_p,R4,0,DEV_HOST)
+  call c_f_pointer(body_p,rfilt,dims2)
+  
+  rfilt(l,k)=-1.0
+
+end subroutine set_mask_done
+
+subroutine get_offset(l,l0)
+
+  use exacorr_global
+
+  implicit none
+
+  integer, intent(in)  :: l
+  integer, intent(out) :: l0
+  
+  integer :: i, lshells
+
+  lshells=get_shell_index(l)
+  
+  l0=0
+  do i = 1,lshells-1
+    l0=l0+get_shell_size(i)
+  end do
+
+end subroutine get_offset
 
 end module exacorr_cholesky
