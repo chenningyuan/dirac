@@ -28,6 +28,7 @@ public square_el
 public set_mask_done
 
 public get_offset
+public get_shellsize
 
 interface cholesky_decompose
    module procedure cholesky_decompose_real_matrix
@@ -1334,7 +1335,7 @@ subroutine get_diag_talsh_comp(Diag)
 
 end subroutine get_diag_talsh_comp
 
-subroutine find_shells_talsh_comp(Diag, Filter, lshell, kshell, lsize, ksize, D_max)
+subroutine find_shells_talsh_comp(Diag, Filter, lshell, kshell, D_max)
 
   use tensor_algebra
   use talsh
@@ -1345,7 +1346,7 @@ subroutine find_shells_talsh_comp(Diag, Filter, lshell, kshell, lsize, ksize, D_
 
   type(talsh_tens_t), intent(inout) :: Diag
   type(talsh_tens_t), intent(inout) :: Filter
-  integer, intent(out)              :: lshell, kshell, lsize, ksize
+  integer, intent(out)              :: lshell, kshell
   complex(8), intent(out)           :: D_max
 
 
@@ -1388,9 +1389,6 @@ subroutine find_shells_talsh_comp(Diag, Filter, lshell, kshell, lsize, ksize, D_
 
   lshell=get_shell_index(i_max(1))
   kshell=get_shell_index(i_max(2))
-
-  lsize=get_shell_size(lshell)
-  ksize=get_shell_size(kshell)
 
   deallocate(lfilt)
 
@@ -1748,5 +1746,17 @@ subroutine get_offset(l,l0)
   end do
 
 end subroutine get_offset
+
+integer function get_shellsize(lsh)
+
+  use exacorr_global
+
+  implicit none
+
+  integer, intent(in) :: lsh
+
+  get_shellsize = get_shell_size(lsh)
+
+end function get_shellsize
 
 end module exacorr_cholesky
