@@ -2117,7 +2117,6 @@ module talsh_cc
         
         call get_diag_talsh_comp(Diag)
         print *, "========= diagonal computed ============== "
-        !call print_tensor(Diag, ACC, "Diag")
 
         call find_shells_talsh_comp(Diag, Mask, lshell, kshell, D_max)
         lsize=get_shellsize(lshell)
@@ -2138,6 +2137,12 @@ module talsh_cc
           ierr=talsh_tensor_destruct(CD_int)
           dims3(3)=m+lsize*ksize
           ierr=talsh_tensor_construct(CD_int,C8,dims3,init_val=ZERO)
+          if (m>0) then
+            ierr = talsh_tensor_dimensions(CD,rank,dims3)
+            off3=0
+            ierr=talsh_tensor_insert(CD_int,CD,off3)
+            print *, 'ierr CD insert   == ', ierr
+          end if
 
           !get the values for the current shell
           call get_shell_talsh_comp(Dlk, lshell, kshell)
@@ -2161,7 +2166,7 @@ module talsh_cc
               off3(1)=l-1
               off3(2)=k-1
               off3(3)=0
-              ierr=talsh_tensor_slice(CD_v,CD,off3,0,DEV_HOST)
+              ierr=talsh_tensor_slice(CD_v,CD_int,off3,0,DEV_HOST)
               print*, 'ierr CD_v slice   == ', ierr
               ierr=talsh_tensor_reshape(CD_v,(/ m /))
               print*, 'ierr CD_v reshape == ', ierr
@@ -2169,7 +2174,7 @@ module talsh_cc
               dims3(3)=m
               ierr=talsh_tensor_construct(CD_m,C8,dims3,init_val=ZERO)
               off3=0
-              ierr=talsh_tensor_slice(CD_m,CD,off3,0,DEV_HOST)
+              ierr=talsh_tensor_slice(CD_m,CD_int,off3,0,DEV_HOST)
               print*, 'ierr CD_m slice   == ', ierr
               !call print_tensor(CD_m, ACC, "CD_m")
 
@@ -2195,7 +2200,7 @@ module talsh_cc
             print*, 'ierr Res2 reshape == ', ierr
 
             !sum and denominate
-            ierr=talsh_tensor_contract("T(p,q)+=V(p,q)",Res2,Res,one_tensor)
+            ierr=talsh_tensor_contract("T(p,q)+=V(p,q)",Res2,Res,one_tensor,scale=MINUS_ONE)
             print*, 'ierr Res2 sum     == ', ierr
             ierr=talsh_tensor_init(Res, ZERO)
             denom_fac=ONE / zsqrt(D_el)
@@ -2214,16 +2219,26 @@ module talsh_cc
             !call print_tensor(CD_int, ACC, "CD_int")
             ierr=talsh_tensor_reshape(Res,dims2)
             print*, 'ierr Res reshape  == ', ierr
-            m=m+1
 
             !update diagonal
             call square_el(Res)
-            !call print_tensor(Dlk, ACC, "square")
             ierr=talsh_tensor_contract("W(p,q)+=V(p,q)",Diag,Res,one_tensor,scale=MINUS_ONE)
             print*, 'ierr Diag add     == ', ierr
+            !call print_tensor(Diag, ACC, "Diag")
 
             !update mask
             call set_mask_done(Mask,l,k)
+
+            m=m+1
+
+            !update CD
+            ierr=talsh_tensor_destruct(CD)
+            dims3(3)=m
+            ierr=talsh_tensor_construct(CD,C8,dims3,init_val=ZERO)
+            off3=0
+            ierr=talsh_tensor_slice(CD,CD_int,off3,0,DEV_HOST)
+            print *, 'ierr CD_int slice  == ', ierr
+            !call print_tensor(CD, ACC, "CD")
 
             if (m>nao*nao) print *, 'Cholesky decomposition did not work'
 
@@ -2232,23 +2247,6 @@ module talsh_cc
             print *, '--- largest value found: ', l, k, D_el
 
           end do
-
-          !update CD
-          if (m>1) then
-            ierr = talsh_tensor_dimensions(CD,rank,dims3)
-            off3=0
-            ierr=talsh_tensor_insert(CD_int,CD,off3)
-            print *, 'ierr CD insert   == ', ierr
-          end if
-          ierr=talsh_tensor_destruct(CD)
-          dims3(3)=m
-          ierr=talsh_tensor_construct(CD,C8,dims3,init_val=ZERO)
-          off3=0
-          ierr=talsh_tensor_slice(CD,CD_int,off3,0,DEV_HOST)
-          print *, 'ierr CD_int slice  == ', ierr
-          !call print_tensor(CD, ACC, "CD")
-        
-          
           
           !find shell with next largest element
           call find_shells_talsh_comp(Diag, Mask, lshell, kshell, D_max)
@@ -2258,7 +2256,7 @@ module talsh_cc
 
           ierr=talsh_tensor_destruct(Dlk)
 
-          if (m.gt.4) EXIT
+          if (m.gt.6) EXIT
           
         end do
 

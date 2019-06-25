@@ -694,7 +694,7 @@ subroutine cholesky_decompose_aomat_real(CD_out, threshold)
         where (M_ncomp) CD(:,:,m+1)=0.0
         D_max_denom = ONE / sqrt(Dm(max_ind(q,1),max_ind(q,2)))
         CD(:,:,m+1)=CD(:,:,m+1) * D_max_denom
-
+        
         ! next element
         m=m+1   
 
@@ -705,7 +705,7 @@ subroutine cholesky_decompose_aomat_real(CD_out, threshold)
         !make mask for searching new elements
         M_do(max_ind(q,1),max_ind(q,2))=.false.
 
-        if (m.eq.4) stop "compare"
+        if (m.gt.6) stop "compare"
 
       end if
     end do
