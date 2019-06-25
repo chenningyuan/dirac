@@ -705,8 +705,6 @@ subroutine cholesky_decompose_aomat_real(CD_out, threshold)
         !make mask for searching new elements
         M_do(max_ind(q,1),max_ind(q,2))=.false.
 
-        if (m.gt.6) stop "compare"
-
       end if
     end do
 

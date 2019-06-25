@@ -1384,28 +1384,30 @@ module talsh_cc
          !call compute_ao_integrals (nao,ao_tens_real=ao_tens)
          !call cholesky_decompose (ao_tens,nao,CD, t_cholesky)
          !deallocate(ao_tens)
-         call decompose_cholesky_talsh (CD0, t_cholesky, nao)
-         call cholesky_decompose_aomat_real (CD, t_cholesky)
 
-         chol_dims(1)=nao
-         chol_dims(2)=nao
-!        chol_dims(3)=size(CD,2)
-         chol_dims(3)=size(CD,3)
-         call print_date('cholesky decomposition done')
-         ierr=talsh_tensor_construct(chol_tensor,C8,chol_dims,init_val=ZERO)
-         ierr=talsh_tensor_get_body_access(chol_tensor,body_p,C8,0,DEV_HOST)
-         call c_f_pointer(body_p,chol_tens,chol_dims) ! to use the tensor as a regular Fortran array
-         do m = 1, chol_dims(3)
-!           ij = 0
-            do j = 1, nao
-               do i = 1, nao
-!                 ij = ij + 1
-                  !chol_tens(i,j,m)=CD(i,j,m)
-                  chol_tens(i,j,m)=dcmplx(CD(i,j,m),0.D0)
-               end do
-            end do
-         end do
-         deallocate(CD)
+         call decompose_cholesky_talsh (chol_tensor, t_cholesky, nao)
+         ierr = talsh_tensor_dimensions(chol_tensor,i,chol_dims)
+
+!          call cholesky_decompose_aomat_real (CD, t_cholesky)
+!          chol_dims(1)=nao
+!          chol_dims(2)=nao
+! !        chol_dims(3)=size(CD,2)
+!          chol_dims(3)=size(CD,3)
+!          call print_date('cholesky decomposition done')
+!          ierr=talsh_tensor_construct(chol_tensor,C8,chol_dims,init_val=ZERO)
+!          ierr=talsh_tensor_get_body_access(chol_tensor,body_p,C8,0,DEV_HOST)
+!          call c_f_pointer(body_p,chol_tens,chol_dims) ! to use the tensor as a regular Fortran array
+!          do m = 1, chol_dims(3)
+! !           ij = 0
+!             do j = 1, nao
+!                do i = 1, nao
+! !                 ij = ij + 1
+!                   !chol_tens(i,j,m)=CD(i,j,m)
+!                   chol_tens(i,j,m)=dcmplx(CD(i,j,m),0.D0)
+!                end do
+!             end do
+!          end do
+!          deallocate(CD)
 
 !        perform ao to mo transformation for cholesky tensor
          uoo_dims(1:2)=nocc
@@ -2141,7 +2143,6 @@ module talsh_cc
             ierr = talsh_tensor_dimensions(CD,rank,dims3)
             off3=0
             ierr=talsh_tensor_insert(CD_int,CD,off3)
-            print *, 'ierr CD insert   == ', ierr
           end if
 
           !get the values for the current shell
@@ -2149,7 +2150,7 @@ module talsh_cc
           !call print_tensor(Dlk, ACC, "Dlk")
 
           call find_el_talsh_comp(Diag, Mask, lshell, kshell, l, k, D_el)
-          print *, '--- largest value found: ', l, k, D_el
+          !print *, '--- largest value found: ', l, k, D_el
 
           do while(abs(D_el)>abs(D_max/1000))
             call get_offset(l,l0)
@@ -2167,19 +2168,15 @@ module talsh_cc
               off3(2)=k-1
               off3(3)=0
               ierr=talsh_tensor_slice(CD_v,CD_int,off3,0,DEV_HOST)
-              print*, 'ierr CD_v slice   == ', ierr
               ierr=talsh_tensor_reshape(CD_v,(/ m /))
-              print*, 'ierr CD_v reshape == ', ierr
 
               dims3(3)=m
               ierr=talsh_tensor_construct(CD_m,C8,dims3,init_val=ZERO)
               off3=0
               ierr=talsh_tensor_slice(CD_m,CD_int,off3,0,DEV_HOST)
-              print*, 'ierr CD_m slice   == ', ierr
               !call print_tensor(CD_m, ACC, "CD_m")
 
               ierr=talsh_tensor_contract("T(p,q)+=C(p,q,u)*D(u)",Res,CD_m,CD_v)
-              print*, 'ierr Res contract == ', ierr
 
               ierr=talsh_tensor_destruct(CD_m)
               ierr=talsh_tensor_destruct(CD_v)
@@ -2190,40 +2187,29 @@ module talsh_cc
             dims4(3)=1
             dims4(4)=1
             ierr=talsh_tensor_reshape(Res2,dims4)
-            print*, 'ierr Res2 reshape == ', ierr
             off4=0
             off4(3)=l-l0-1
             off4(4)=k-k0-1
             ierr=talsh_tensor_slice(Res2,Dlk,off4,0,DEV_HOST)
-            print *, 'ierr Res2 slice  == ', ierr
             ierr=talsh_tensor_reshape(Res2,dims2)
-            print*, 'ierr Res2 reshape == ', ierr
 
             !sum and denominate
             ierr=talsh_tensor_contract("T(p,q)+=V(p,q)",Res2,Res,one_tensor,scale=MINUS_ONE)
-            print*, 'ierr Res2 sum     == ', ierr
             ierr=talsh_tensor_init(Res, ZERO)
             denom_fac=ONE / zsqrt(D_el)
-            print*, 'denominator =', denom_fac
             ierr=talsh_tensor_contract("W(p,q)=V(p,q)",Res,Res2,one_tensor,scale=denom_fac)
-            print*, 'ierr denominate   == ', ierr
             !call print_tensor(Res, ACC, "CD entry")
 
             !add Cholesky vector
             dims3(3)=1
             ierr=talsh_tensor_reshape(Res,dims3)
-            print*, 'ierr Res reshape  == ', ierr
             off3(3)=m
             ierr=talsh_tensor_insert(CD_int,Res,off3)
-            print *, 'ierr Res insert  == ', ierr
-            !call print_tensor(CD_int, ACC, "CD_int")
             ierr=talsh_tensor_reshape(Res,dims2)
-            print*, 'ierr Res reshape  == ', ierr
 
             !update diagonal
             call square_el(Res)
             ierr=talsh_tensor_contract("W(p,q)+=V(p,q)",Diag,Res,one_tensor,scale=MINUS_ONE)
-            print*, 'ierr Diag add     == ', ierr
             !call print_tensor(Diag, ACC, "Diag")
 
             !update mask
@@ -2237,14 +2223,13 @@ module talsh_cc
             ierr=talsh_tensor_construct(CD,C8,dims3,init_val=ZERO)
             off3=0
             ierr=talsh_tensor_slice(CD,CD_int,off3,0,DEV_HOST)
-            print *, 'ierr CD_int slice  == ', ierr
             !call print_tensor(CD, ACC, "CD")
 
             if (m>nao*nao) print *, 'Cholesky decomposition did not work'
 
             !find next element in this shell
             call find_el_talsh_comp(Diag, Mask, lshell, kshell, l, k, D_el)
-            print *, '--- largest value found: ', l, k, D_el
+            !print *, '--- largest value found: ', l, k, D_el
 
           end do
           
@@ -2252,11 +2237,10 @@ module talsh_cc
           call find_shells_talsh_comp(Diag, Mask, lshell, kshell, D_max)
           lsize=get_shellsize(lshell)
           ksize=get_shellsize(kshell)
-          print *, "--- shell found: ", lshell, kshell, lsize, ksize, D_max
+          write (*,'(a,i6,a,a,i6,i6,a,e12.2)') 'cholesky length =',m,' largest element:', &
+          ' shell = ', lshell, kshell, ' value = ', abs(D_max)
 
           ierr=talsh_tensor_destruct(Dlk)
-
-          if (m.gt.6) EXIT
           
         end do
 
