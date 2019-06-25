@@ -13,6 +13,7 @@ charge=2 # CHARGE OF THE MOLECULE
 nelec=10 # TOTAL NUMBER OF ELECTRONS
 basis1=sto-3g # BASIS SET OF THE ORIGINAL PROBLEM
 basis2=cc-pvtz # LARGE BASIS SET FOR THE FRAGMENTS
+version="Stndrd_2013" # choices: Simple_2014, Simple_2013, Stndrd_2013
 nfrag=2 # NUMBER OF FRAGMENTS (atoms for now!)
 # FRAGMENTS NAMES, ATOMIC NUMBER, COORDINATES
 frag[1]=He
@@ -52,7 +53,7 @@ cp MOLECULE.XYZ $mol.xyz
 ############################################
 # GENERATE INPUT FILE (charge and version) #
 ############################################
-echo "Simple_2013" > INPUT # choices: Simple_2014, Simple_2013, Stndrd_2013
+echo "$version" > INPUT 
 echo "$charge" >> INPUT
 
 cat > $inp1.inp << EOF
@@ -177,7 +178,7 @@ if (( $(echo "$convergence != 1" | bc -l) )); then
   echo
   echo "Convergence after $convergence iterations"
   echo "Energy of the first calculation at iteration 1  :" $iteration1
-  echo "Energy at iteration 1 using the IAO coeffcients :" $iteration1_iao
+  echo "Energy at iteration 1 using the IAO coefficients:" $iteration1_iao
   echo "Hartree-Fock energy                             :" $HF_energy
   echo ERROR IN THE GENERATION OF IAO COEFFICIENTS
 else

@@ -92,6 +92,11 @@
         print*,'-----Compute S11----- (',nmo1,'x',nmo1,') (It is equal to Identity)'
         allocate (S11(nmo1,nmo1))
         call get_mo_overlap (ao_basis_1,cspinor_original,ao_basis_1,cspinor_original,S11)
+        allocate(check(nmo1,nmo1))
+        check = ZERO
+        forall (i=1:nmo1) check(i,i) = ONE
+        print*,"Check that S11 is identity: (S11 - Id) = ", norm2([norm2(real(S11-check)),norm2(aimag(S11-check))])
+        deallocate(check)
 
         print*
         print*,'-----Compute S22-----(',nmo2,'x',nmo2,')'
@@ -133,7 +138,7 @@
 
         allocate (S12(nmo1,nmo2))
         print*,
-        print*,'-----Compute S12-----(',nmo1,'x',nmo2,')'
+        print*,'-----Compute S12-----(',nmo1,'x',nmo2,') (=S21.T)'
         S12 = conjg(transpose(S21))
         do i=1,nmo1
            write(*,'(100G10.2)')(REAL(S12(i,j)),j=1,nmo2)
@@ -149,6 +154,7 @@
         print*,
         print*,'-----Compute P12-----(',nmo1,'x',nmo2,')'
         P12 = S12
+        ! P12 = inv(S11) S12 ---> solve S11 P12 = S12
         call zposv( 'U', nmo1, nmo2, S11, nmo1, P12, nmo1, ierr )
         do i=1,nmo1
            write(*,'(100G10.2)')(REAL(P12(i,j)),j=1,nmo2)
@@ -166,7 +172,7 @@
         ! Calculate the coefficient matrix to go from the MOs of the large basis 1 to the
         ! new set of MOs (basis 2 which combines the MINIMAL basis (core and valence orbs) of the fragments)
         print*,
-        print*,'-----Compute CIb-----(',nmo1,'x',nmo2,')'
+        print*,'-----Compute IAOs-----(',nmo1,'x',nmo2,')'
         allocate (c_Ib(nmo1,nmo2))
         select case (version)
            case ('Stndrd_2013')
@@ -183,43 +189,43 @@
              call MakeIAO_Simple_2014(c_Ib,coeff1_occ,S21,S22,P12,nmo1,nmo2,nocc)
         end select
 
-        print*,
-        print*,"Check normalization (before the symmetrically orthonormalized procedure):"
-        do i=1,nmo2
-         sum_column = ZERO
-         do j=1,nmo1
-           sum_column = sum_column + conjg(c_Ib(j,i))*c_Ib(j,i)
-         end do
-         write(*,*) sum_column
-        end do
+!        print*,
+!        print*,"Check normalization (before the symmetrically orthonormalized procedure):"
+!        do i=1,nmo2
+!         sum_column = ZERO
+!         do j=1,nmo1
+!           sum_column = sum_column + conjg(c_Ib(j,i))*c_Ib(j,i)
+!         end do
+!         write(*,*) sum_column
+!        end do
 
-        allocate(check(nmo2,nmo2))
-        check = matmul(conjg(transpose(c_Ib)),c_Ib)
-        print*,
-        print*,'-----Compute CIb.T*CIb-----(',nmo2,'x',nmo2,')'
-        do i=1,nmo2
-           write(*,'(100G10.2)')(REAL(check(i,j)),j=1,nmo2)
-        enddo
-        deallocate(check)
+!        allocate(check(nmo2,nmo2))
+!        check = matmul(conjg(transpose(c_Ib)),c_Ib)
+!        print*,
+!        print*,'-----Compute CIb.T*CIb-----(',nmo2,'x',nmo2,')'
+!        do i=1,nmo2
+!           write(*,'(100G10.2)')(REAL(check(i,j)),j=1,nmo2)
+!        enddo
+!        deallocate(check)
 
         print*,
-        print*,"-----Symmetrically orthonormalize intrinsic basis (in the mo basis)-----"
+        print*,"-----Symmetrically orthonormalize IAOs-----"
         call SymOrth(c_Ib,S11,nmo1,nmo2)
 
 !       filter out occupation numbers slightly broken due to rounding... At least it clarifies the output
-        do i=1,nmo1
-           do j=1,nmo2
-              if (REAL(c_Ib(i,j)) > 0.999999999999D0 .and. AIMAG(c_Ib(i,j)) < 1.0D-12) c_Ib(i,j) = ONE
-              if (ABS(REAL(c_Ib(i,j))) < 1.0D-12 .and. ABS(AIMAG(c_Ib(i,j))) < 1.0D-12) c_Ib(i,j) = ZERO
-           end do
-        end do
+!        do i=1,nmo1
+!           do j=1,nmo2
+!              if (REAL(c_Ib(i,j)) > 0.999999999999D0 .and. AIMAG(c_Ib(i,j)) < 1.0D-12) c_Ib(i,j) = ONE
+!              if (ABS(REAL(c_Ib(i,j))) < 1.0D-12 .and. ABS(AIMAG(c_Ib(i,j))) < 1.0D-12) c_Ib(i,j) = ZERO
+!           end do
+!        end do
 
         do i=1,nmo1
            write(*,'(100G10.2)')(REAL(c_Ib(i,j)),j=1,nmo2)
         enddo
 
         print*,
-        print*,"Check normalization (after the symmetrically orthonormalized procedure):"
+        print*,"Check normalization after the symmetrically orthonormalized procedure:"
         do i=1,nmo2
          sum_column = ZERO
          do j=1,nmo1
@@ -229,25 +235,35 @@
         end do
 
         print*,
-        print*,'-----Compute CIb.T*CIb-----(',nmo2,'x',nmo2,')'
+        print*,'-----Check CIb.T*S11*CIb = 1-----(',nmo2,'x',nmo2,')'
         allocate(check(nmo2,nmo2))
-        check = matmul(conjg(transpose(c_Ib)),c_Ib)
+        check = matmul(conjg(transpose(c_Ib)),matmul(S11,c_Ib))
         do i=1,nmo2
            write(*,'(100G10.2)')(REAL(check(i,j)),j=1,nmo2)
         enddo
         deallocate(check)
 
+        ! Transform the coefficient matrix back into the atomic orbital basis 1.
+        ! This new coefficient matrix gives the transformation from the AOs of basis 1
+        ! to the IAOs.
+        print*,
+        print*,"Write IAOs into dfcoef file"
+        allocate(c_Ib_ao(nao1,nmo2,2))
+        c_Ib_ao(:,:,1) = matmul(cspinor_original%coeff(:,:,1),c_Ib)
+        c_Ib_ao(:,:,2) = matmul(cspinor_original%coeff(:,:,2),c_Ib)
+        call write_dffiles("iao.dfcoef","iao.dfpcmo",ao_basis_1,c_Ib_ao,nao1,nmo2,"MOLECULE.dfcoef")
+
         allocate (c_Ib_occ(nmo2,nocc))
         print*,
         print*,'-----Re-express occupied orbitals in terms of IAO basis-----(',nmo2,'x',nocc,') &
-                (I think this is not needed, only if we want to construct IBOs)'
+                (I think this is needed only if we want to construct IBOs)'
         c_Ib_occ = matmul(conjg(transpose(c_Ib)),matmul(S11,coeff1_occ))
         do i=1,nmo2
           write(*,'(100G10.2)') (REAL(c_Ib_occ(i,j)),j=1,nocc)
         enddo
 
         print*,
-        print*,"Check normalization:"
+        print*,"Check normalization of the re-expressed occupied orbitals:"
         do i=1,nocc
          sum_column = ZERO
          do j=1,nmo2
@@ -256,17 +272,9 @@
          write(*,*) sum_column
         end do
 
-        ! Transform the coefficient matrix back into the atomic orbital basis 1.
-        ! This new coefficient matrix gives the transformation from the AOs of basis 1
-        ! to the IAOs.
-        print*,
-        print*,"Write CIb into dfcoef file"
-        allocate(c_Ib_ao(nao1,nmo2,2))
-        c_Ib_ao(:,:,1) = matmul(cspinor_original%coeff(:,:,1),c_Ib)
-        c_Ib_ao(:,:,2) = matmul(cspinor_original%coeff(:,:,2),c_Ib)
-        call write_dffiles("iao.dfcoef","iao.dfpcmo",ao_basis_1,c_Ib_ao,nao1,nmo2,"MOLECULE.dfcoef")
-
-        ! Separate the IAO DFCOEF file for each fragment. For instance, it will be interesting to get the IAOs a the metallic atom in a transition metal complex. This can be used in the AVAS theory (https://arxiv.org/abs/1701.07862)
+        ! Separate the IAO DFCOEF file for each fragment. 
+        ! For instance, it will be interesting to get the IAOs a the metallic atom in a transition metal complex. 
+        ! This can be used in the AVAS theory (https://arxiv.org/abs/1701.07862)
         imo=0
         current_atom => first_atom
         do i = 1, n_fragments
@@ -327,18 +335,21 @@
         enddo
         print*,"Sum of diagonal:",sum_diag
 
-        print*,
         allocate(Id(nmo2,nmo2))
         Id = ZERO
         forall (i=1:nmo2) Id(i,i) = ONE
-        print*,'TESTS'
-        print*,"Deviation from orthogonality      :", norm2(real(Id - matmul(conjg(transpose(c_Ib)),matmul(S11,c_Ib))))
+        print*,
+        print*,"***** TESTS *****"
+        print*,"Deviation from orthogonality      :", norm2([norm2(real(Id - matmul(conjg(transpose(c_Ib)),matmul(S11,c_Ib)))), &
+                                                            norm2(aimag(Id - matmul(conjg(transpose(c_Ib)),matmul(S11,c_Ib))))])
 !        print*,"|ib><ib|i> - |i>                  :", norm2(real(matmul(c_Ib,matmul(conjg(transpose(c_Ib)),coeff1_occ))&
 !                                                                  - coeff1_occ))
-        print*,"(occupied MO) |ib><ib|i> - |i>    :", norm2(real(matmul(c_Ib,c_Ib_occ) - coeff1_occ))
+        print*,"(occupied MO) |ib><ib|i> - |i>    :", norm2([norm2(real(matmul(c_Ib,c_Ib_occ) - coeff1_occ)), &
+                                                            norm2(aimag(matmul(c_Ib,c_Ib_occ) - coeff1_occ))])
         print*,"deviation in number of electrons  :", real(sum_diag - nocc)
 
 !        MAKE IBO. I actually do not need that right ? We are only interested about the intrinsic fragment orbitals are we ? 
+!        Anyway, this subroutine is not working for now.
 !        print*,
 !        print*,'----***** MAKE IBOs *****-----'
 !        call MakeIBO(c_Ib,coeff1_occ,S11,cspinor_fragment,n_fragments,nmo1,nmo2,nocc)

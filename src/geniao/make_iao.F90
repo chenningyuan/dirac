@@ -5,15 +5,16 @@ contains
    subroutine MakeIAO_Simple_2014(A,C,S21,S22,P12,nmo1,nmo2,nocc)
 
         implicit none 
-        integer :: ierr
+        integer :: ierr,i,j
         integer, intent(in)     :: nmo1, nmo2, nocc
-        complex(8), allocatable :: coeff2_occ(:,:),c_Ib(:,:)
+        complex(8), allocatable :: coeff2_occ(:,:)
         complex(8), allocatable :: c_tilde(:,:),c_tilde_bar(:,:),c_tilde2_bar(:,:)
         complex(8), allocatable :: s_tilde(:,:),t4(:,:)
         complex(8), intent(in)  :: S21(nmo2,nmo1),S22(nmo2,nmo2) !  the overlap matrices
         complex(8), intent(in)  :: P12(nmo1,nmo2)          !  the projection operator
         complex(8), intent(in)  :: C(nmo1,nocc)
         complex(8), intent(out) :: A(nmo1,nmo2)
+        complex(8), allocatable :: A_X(:,:), P21(:,:), S12(:,:), c_tilde_X(:,:)
 
         ! Make intrinsic basis orbitals for the occupied space (Simple/2014 scheme of Knizia's reference implementation)
         ! Note that our overlap matrices refer to the MO basis of the molecule and its fragments and that the coefficient
@@ -35,6 +36,8 @@ contains
         t4 = C - matmul(P12,c_tilde2_bar)
         A = P12 + matmul(t4,conjg(transpose(coeff2_occ)))
 
+        print*,"IAOs has been built."
+
         ! Reference Python code for Simple/2014
         !COcc2 = mdot(S21, COcc)                # O(N m^2)
         !CTil = la.solve(S2, COcc2)             # O(m^3)
@@ -43,7 +46,36 @@ contains
         !T4 = COcc - mdot(P12, CTil2Bar)        # O(N m^2)
         !CIb = P12 + mdot(T4, COcc2.T)          # O(N m^2)
 
-        deallocate (coeff2_occ,c_tilde,c_tilde_bar,c_tilde2_bar,s_tilde,t4)
+        ! compare with reference result to check (just to check if transformation is okay). I should get rid of this once we are sure the transformation is correct.
+
+        print*,
+        print*," *** Check if Simple/2014 transformation is okay ***"
+        allocate(A_X(nmo1,nmo2)) 
+        allocate(P21(nmo2,nmo1)) 
+        allocate(S12(nmo1,nmo2)) 
+        allocate(c_tilde_X(nmo2,nocc))
+        S12 = conjg(transpose(S21))
+        P21 = S21
+        call zposv( 'U', nmo2, nmo1, S22, nmo2, P21, nmo2, ierr )
+        c_tilde_X = matmul(P21, C)
+        call SymOrth(c_tilde_X,S22,nmo2,nocc)
+        A_X = P12 + matmul(C, matmul(conjg(transpose(C)), S12)) - &
+                    matmul(P12, matmul(c_tilde_X, matmul(conjg(transpose(c_tilde_X)), S22)))
+        if (norm2([norm2(real(A_X - A)),norm2(aimag(A_X-A))]) > 1.D-12) then
+          print*," *** norm2(A_X - A) = ",norm2([norm2(real(A_X - A)),norm2(aimag(A_X-A))]),&
+                 ", Transformation NOT OKAY (or the test has failed... !) ***"
+        else
+          print*," *** norm2(A_X - A) = ",norm2([norm2(real(A_X - A)),norm2(aimag(A_X-A))]),&
+                 ", Transformation OKAY ***"
+        endif
+
+        ! Reference Python code for the check:
+        !compare with reference result to check (just to check if transformation is okay)
+        !CTilX = SymOrth(mdot(P21, COcc), S2)
+        !CIbX = P12 + mdot(COcc, COcc.T, S12) - mdot(P12, CTilX, CTilX.T, S2)
+        !print("ref - opt: %8.2e" % la.norm((CIbX - CIb).flatten()))
+
+        deallocate (coeff2_occ,c_tilde,c_tilde_bar,c_tilde2_bar,s_tilde,t4,A_X,P21,S12,c_tilde_X)
 
 
    end subroutine MakeIAO_Simple_2014
@@ -110,7 +142,7 @@ contains
         term22 = matmul(Id-matmul(c_tilde,matmul(conjg(transpose(c_tilde)),S11)),P12)
         A = matmul(term11,term12) + matmul(term21,term22)       
 
-      ! Reference Python code for Simple/2013
+      ! Reference Python code for Standard/2013
       ! Calculate de-polarized occupied orbitals CTil by projecting COcc from 1 to 2 and back (Knizia, eq.1)
       ! CTil = SymOrth(mdot(P12, P21, COcc), S1)
       ! this is Knizia, eq. 2.
@@ -123,32 +155,67 @@ contains
    end subroutine MakeIAO_Standard_2013
 
    subroutine SymOrth(C,S,nmo1,nmo2)
-        !Symmetrically orthogonalize intrinsic basis to arrive at standard IAOs
+        !Symmetrically orthogonalize orbitals C with respect to overlap matrix S (i.e., such that Cnew^T S Cnew == id).
         use utils
 
         implicit none
-        integer                      :: i,j
+        complex(8), parameter        :: ZERO=(0.D0,0.D0), ONE=(1.D0,0.D0)
+        real(8), parameter           :: ThrDel=1.D-7
+        integer                      :: i,j, iDel
         integer,    intent(in)       :: nmo1, nmo2
         complex(8), intent(in)       :: S(nmo1,nmo1)
         complex(8), intent(inout)    :: C(nmo1,nmo2)
-        complex(8), allocatable      :: matrix(:,:)
+        complex(8), allocatable      :: matrix(:,:),matrix2(:,:),Id(:,:)
         real(8),    allocatable      :: ew(:)
 
         allocate(matrix(nmo2,nmo2))
         allocate(ew(nmo2))
+        allocate(Id(nmo2,nmo2))
+        Id = ZERO
+        forall(i=1:nmo2) Id(i,i)=ONE
         matrix = matmul(conjg(transpose(C)),matmul(S,C))
+
+        print*," * Entering SymOrth subroutine *"
+        print*,"   Deviation from orthogonality before SymOrth:", &
+                   norm2([norm2(real(Id - matrix)),norm2(aimag(Id - matrix))])
 
         call diag_matrix(matrix,nmo2,ew)
 
-        do i=1,nmo2
-           ew(i) = 1.0/sqrt(sqrt(ew(i)))
+        iDel = 0
+        do while (ew(iDel+1) < ThrDel)
+          iDel = iDel + 1
         enddo
-        do i=1, nmo2
-           matrix(:,i)=matrix(:,i)*ew(i)
-        enddo
-        C = matmul(C,matmul(matrix,conjg(transpose(matrix))))
+        if (iDel == 0) then
+          do i=1,nmo2
+            ew(i) = 1.0/sqrt(sqrt(ew(i)))
+          enddo
+          do i=1,nmo2
+            matrix(:,i)=matrix(:,i)*ew(i)
+          enddo
+          C = matmul(C,matmul(matrix,conjg(transpose(matrix))))
+        else
+          print*,"   ** WARNING: deleted", iDel, " eigenvalues in S^{-1/2} construction."
+          allocate(matrix2(nmo2,nmo2-iDel))
+          do i=1,nmo2-iDel
+            ew(i+iDel) = 1.0/sqrt(sqrt(ew(i+iDel)))
+          enddo
+          do i=1,nmo2-iDel
+            matrix2(:,i)=matrix(:,i+iDel)*ew(i+iDel)
+          enddo
+          C = matmul(C,matmul(matrix2,conjg(transpose(matrix2))))
+          deallocate(matrix2)
+        endif
 
-        deallocate(matrix,ew)
+        print*,"   Deviation from orthogonality after SymOrth:", &
+                   norm2([norm2(real(Id - matmul(conjg(transpose(C)),matmul(S,C)))), &
+                         norm2(aimag(Id - matmul(conjg(transpose(C)),matmul(S,C))))])
+        if (norm2([norm2(real(Id - matmul(conjg(transpose(C)),matmul(S,C)))), &
+                  norm2(aimag(Id - matmul(conjg(transpose(C)),matmul(S,C))))]) > 1.D-12) then
+         print*,"   Symmetrical orthogonalization has failed."
+        end if
+        print*," * End SymOrth subroutine *"
+
+        deallocate(matrix,ew,Id)
 
    end subroutine SymOrth
 

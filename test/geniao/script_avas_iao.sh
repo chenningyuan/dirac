@@ -13,23 +13,27 @@ path_to_geniao=../../build-caar-ibos/ # PATH TO THE EXECUTABLE
 path_to_avas=../../build-caar-ibos/ # PATH TO THE EXECUTABLE
 inp1=HF_closedshell # INPUT FOR THE MOLECULE (ionic species can be considered)
 inp2=HF # INPUT FOR THE FRAGMENT (neutral)
-mol=HeNe # NAME OF THE MOLECULE
-charge=2 # CHARGE OF THE MOLECULE 
+mol=H2O # NAME OF THE MOLECULE
+charge=0 # CHARGE OF THE MOLECULE 
 nelec=10 # TOTAL NUMBER OF ELECTRONS
 basis1_iao=sto-3g # BASIS SET OF THE ORIGINAL PROBLEM
 basis2_iao=cc-pvtz # LARGE BASIS SET FOR THE FRAGMENTS
-nfrag=2 # NUMBER OF FRAGMENTS (atoms for now!)
+version="Stndrd_2013" # choices: Simple_2014, Simple_2013, Stndrd_2013
+nfrag=3 # NUMBER OF FRAGMENTS (atoms for now!)
 # FRAGMENTS NAMES, ATOMIC NUMBER, COORDINATES
-frag[1]=He
-Z[1]=002 # MUST BE IN THIS FORMAT
-coord[1]="0. 0. -1.0"
-frag[2]=Ne
-Z[2]=010 # MUST BE IN THIS FORMAT
-coord[2]="0. 0. +1.0"
+frag[1]=O
+Z[1]=008 # MUST BE IN THIS FORMAT
+coord[1]="0. 0. 0."
+frag[2]=H
+Z[2]=001
+coord[2]="0.  0.75115500  -0.5816060"
+frag[3]=H
+Z[3]=001
+coord[3]="0. -0.75115500  -0.5816060"
 
 # Choose the atomic valence orbitals B2.
-B2frag=Ne # atom for basis B2
-atom_number=010 # The atomic number of B2frag (format i3.3) that will form the basis B2 (only the valence orbitals will then be considered by the program)
+B2frag=O # atom for basis B2
+atom_number=008 # The atomic number of B2frag (format i3.3) that will form the basis B2 (only the valence orbitals will then be considered by the program)
 basis_avas=cc-pvtz
 
 ######################
@@ -52,7 +56,7 @@ cp MOLECULE.XYZ $mol.xyz
 ############################################
 # GENERATE INPUT FILE (charge and version) #
 ############################################
-echo "Simple_2013" > INPUT # choices: Simple_2014, Simple_2013, Stndrd_2013
+echo "$version" > INPUT 
 echo "$charge" >> INPUT
 
 echo "$nelec" > INPUT_AVAS
@@ -187,7 +191,7 @@ if (( $(echo "$convergence != 1" | bc -l) )); then
   echo
   echo "Convergence after $convergence iterations"
   echo "Energy of the first calculation at iteration 1  :" $iteration1
-  echo "Energy at iteration 1 using the IAO coeffcients :" $iteration1_iao
+  echo "Energy at iteration 1 using the IAO coeffocients:" $iteration1_iao
   echo "Hartree-Fock energy                             :" $HF_energy
   echo ERROR IN THE GENERATION OF IAO COEFFICIENTS
 else
@@ -228,7 +232,7 @@ if (( $(echo "$convergence != 1" | bc -l) )); then
   echo
   echo "Convergence after $convergence iterations"
   echo "Energy of the first calculation at iteration 1     :" $iteration1
-  echo "Energy at iteration 1 with transformed coeffcients :" $iteration1_avas
+  echo "Energy at iteration 1 with transformed coefficients:" $iteration1_avas
   echo "Hartree-Fock energy                                :" $HF_energy
   echo ERROR IN THE TRANSFORMATION, NOT UNITARY ?
 else

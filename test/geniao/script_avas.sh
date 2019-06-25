@@ -12,21 +12,22 @@ path_to_avas=../../build-caar-ibos/ # PATH TO THE EXECUTABLE
 inp=HF # INPUT FOR THE MOLECULE (ionic species can be considered)
 
 #molecule:
-mol=HeNe # NAME OF THE MOLECULE
+mol=H2O # NAME OF THE MOLECULE
 nelec=10
-charge=2
+charge=0
 basis1=cc-pvtz # LARGE BASIS SET B1
 cat > $mol.xyz << EOF
-2
+3
 $mol
-He 0. 0. -0.5
-Ne 0. 0. +0.5
+O 0. 0. 0.
+H 0.  0.75115500  -0.5816060
+H 0. -0.75115500  -0.5816060
 EOF
 
 #atom:
-B2frag=Ne # atom for basis B2
-atom_number=010 # The atomic number of B2frag (format i3.3) that will form the basis B2 (only the valence orbitals will then be considered by the program)
-nelec2=10
+B2frag=O # atom for basis B2
+atom_number=008 # The atomic number of B2frag (format i3.3) that will form the basis B2 (only the valence orbitals will then be considered by the program)
+nelec2=8
 basis2=cc-pvdz # can be big, anyway only the valence orbitals are considered by the program !
 cat > $B2frag.xyz << EOF
 1
@@ -110,7 +111,7 @@ if (( $(echo "$convergence != 1" | bc -l) )); then
   echo
   echo "Convergence after $convergence iterations"
   echo "Energy of the first calculation at iteration 1     :" $iteration1
-  echo "Energy at iteration 1 with transformed coeffcients :" $iteration1_avas
+  echo "Energy at iteration 1 with transformed coefficients:" $iteration1_avas
   echo "Hartree-Fock energy                                :" $HF_energy
   echo ERROR IN THE TRANSFORMATION, NOT UNITARY ?
 else
