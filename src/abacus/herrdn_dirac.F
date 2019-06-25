@@ -639,7 +639,7 @@ C
   100 CONTINUE
       END DO
       IF ((JSEND-JSBEG) .NE. NUC_IBS) THEN
-         IF (.NOT.PARHER) WRITE(LUPRI,'(A,I3,A,I3)')
+         IF (.NOT.SLAVE) WRITE(LUPRI,'(A,I3,A,I3)')
      &   ' INFO: GENSML deleted',(JSEND-JSBEG) - NUC_IBS,
      &   ' small functions in a block out of',(JSEND-JSBEG)
       END IF
