@@ -30,6 +30,7 @@ module exacorr_global
         public get_mo_coefficients
         public exist_one_el
         public get_one_el
+        public make_spinor_list
 
        contains
          
@@ -322,5 +323,392 @@ module exacorr_global
         end do
 
      end subroutine get_one_el
+
+      subroutine string2mo ( inp_str, a_or_b, nmo, mo_list)
+
+        implicit none
+
+        character(len = *), intent(in)        :: inp_str
+        !indicate if alpha or beta orbitals
+        logical, intent(in)                   :: a_or_b
+        integer,intent(out),optional          :: nmo
+        integer,optional                      :: mo_list(:)
+
+        integer :: str_len, sl, p_len, check, nmo_all
+        integer :: mo1, mo2, i, j, k, i_mo, size_mo
+        character(len=20) :: sav_str
+        character(len=10) :: num_str
+        character(len=1)  :: p_str, c_str, e_str
+        real(8)                  :: e_min, e_max, e_dist
+        real(8), allocatable     :: dist_a(:), eps(:)
+        integer, allocatable     :: lmo(:)
+        logical                  :: do_nmo, do_mo
+
+        do_nmo=.false.
+        do_mo=.false.
+        if (present(nmo)) then
+          do_nmo = .true.
+          if (present(mo_list)) stop 'use only one output in string2mo'
+          nmo=0
+        else if (present(mo_list)) then
+          do_mo = .true.
+          mo_list=-9898
+          size_mo=size(mo_list)
+        else
+          stop 'no output in string2mo'
+        end if
+
+        str_len=len(inp_str)
+        num_str='0123456789'
+        p_str='.'
+        c_str=','
+        e_str=' '
+        sl=0
+        p_len=0
+        check=0
+
+        ! check if energy or mo list
+        if (inp_str(1:6) == 'energy') then
+          !get orbital energies
+          nmo_all = cspinor_all%nmo/2
+          allocate(lmo(nmo_all))
+          do i = 1, nmo_all
+            if (a_or_b) then
+              lmo(i)=i*2-1
+            else
+              lmo(i)=i*2
+            end if
+          end do
+          allocate(eps(nmo_all))
+          eps=cspinor_all%energy(lmo)  
+          deallocate(lmo)
+
+          !read thresholds
+          i=7
+          do k=1,100
+            if (inp_str(i:i).eq.' ') then
+              i=i+1
+            else
+              EXIT
+            end if
+          end do
+          j=index(inp_str(i:),' ')
+          j=i+j
+          read(inp_str(i:j-1) , *) e_min
+          i=j
+          do k=1,100
+            if (inp_str(i:i).eq.' ') then
+              i=i+1
+            else
+              EXIT
+            end if
+          end do
+          j=index(inp_str(i:),' ')
+          j=i+j
+          read(inp_str(i:j-1) , *) e_max
+          read(inp_str(j+1:) , *) e_dist
+          if (e_min.ge.e_max) stop 'string2mo use: energy e_min, e_max, e_dist'
+
+          sl=size(eps)
+          allocate(dist_a(sl))
+
+          dist_a=eps-e_min
+          where(dist_a<0) dist_a=1000
+          j=minloc(abs(dist_a),1)
+          mo1=1
+          do i=j-1,1,-1
+            if (abs(eps(i+1)-eps(i))>e_dist) then
+              mo1=i+1
+              EXIT
+            end if
+          end do
+
+          dist_a=eps-e_max
+          where(dist_a>0) dist_a=1000
+          j=minloc(abs(dist_a),1)
+          mo2=sl
+          do i=j,sl-1
+            if (abs(eps(i)-eps(i+1))>e_dist) then
+              mo2=i
+              EXIT
+            end if
+          end do
+          if (do_nmo) then
+            nmo=mo2-mo1+1
+          end if
+
+          if (do_mo) then
+            i=mo2-mo1+1
+            if(i.ne.size_mo) stop 'mo_list wrong size in string2mo'
+            i_mo=0
+            do k=mo1,mo2
+              i_mo=i_mo+1
+              mo_list(i_mo)=k
+            end do
+          end if
+          deallocate(dist_a)
+          deallocate(eps)
+        else
+          i_mo=0
+          do i=1,str_len
+            if (inp_str(i:i)==e_str) then
+              cycle
+            else if (inp_str(i:i)==p_str) then
+              p_len=p_len+1
+              if (p_len==1) then
+                read(sav_str(1:sl) , *) mo1
+                sl=0
+              else if (p_len>2) then
+                stop 'wrong number of points in string2mo'
+              end if
+            else if (inp_str(i:i)==c_str) then
+              if(p_len==0) then
+                if (do_nmo) then
+                  nmo=nmo+1
+                end if
+                if (do_mo) then
+                  read(sav_str(1:sl) , *) mo1
+                  i_mo=i_mo+1
+                  mo_list(i_mo)=mo1
+                end if
+                sl=0
+              else if (p_len==2) then
+                read(sav_str(1:sl) , *) mo2
+                if (do_nmo) then
+                  if (mo1>mo2) nmo=nmo+mo1-mo2+1
+                  if (mo2>mo1) nmo=nmo+mo2-mo1+1
+                end if
+                if (do_mo) then
+                  do k=mo1,mo2
+                    i_mo=i_mo+1
+                    mo_list(i_mo)=k
+                  end do
+                end if
+                p_len=0
+                sl=0
+              else
+                stop 'not enough points in string2mo'
+              end if
+            else
+              check=0
+              do j=1,10
+                if (inp_str(i:i).eq.num_str(j:j)) then
+                  sl=sl+1
+                  sav_str(sl:sl)=inp_str(i:i)
+                  check=check+1
+                end if
+              end do
+              if (check.ne.1) stop 'wrong character in string2mo'
+            end if
+          end do
+          if (sl>0) then
+            if(p_len==0) then
+              if (do_nmo) then
+                nmo=nmo+1
+              end if
+              if (do_mo) then
+                read(sav_str(1:sl) , *) mo1
+                i_mo=i_mo+1
+                mo_list(i_mo)=mo1
+              end if
+              sl=0
+            else if (p_len==2) then
+              read(sav_str(1:sl) , *) mo2
+              if (do_nmo) then
+                if (mo1>mo2) nmo=nmo+mo1-mo2+1
+                if (mo2>mo1) nmo=nmo+mo2-mo1+1
+              end if
+              if (do_mo) then
+                do k=mo1,mo2
+                  i_mo=i_mo+1
+                  mo_list(i_mo)=k
+                end do
+              end if
+              p_len=0
+              sl=0
+            else
+              stop 'not enough points in string2mo'
+            end if
+          end if
+          if (do_mo) then
+            if (i_mo.ne.size_mo) stop 'mo_list wrong size in string2mo'
+            !sort list
+            j=1
+            print *, 'go to sorting'
+            call quicksort(mo_list, j, size_mo) ! to do: replace by lapack
+            !check for elements occuring twice
+            do j=1,size_mo-1
+              if (mo_list(j)==mo_list(j+1)) stop 'mo appearing twice in string2mo'
+            end do
+          end if
+        end if
+      if (do_mo) print *, "mos:", mo_list
+      end subroutine string2mo
+
+      recursive subroutine quicksort(mo_list, i_beg, i_end)
+
+        implicit none
+
+        integer,intent(inout) :: mo_list(:)
+        integer, intent(in) :: i_beg, i_end
+        integer :: i,j
+        integer :: ref, tem
+
+        i=floor((float(i_end)+float(i_beg))/2)
+        ref=mo_list(i)
+        i=i_beg
+        j=i_end
+
+        do
+          do while (mo_list(i)<ref)
+            i=i+1
+          end do
+          do while (mo_list(j)>ref)
+            j=j-1
+          end do
+          if (i<j) then
+            tem=mo_list(i)
+            mo_list(i)=mo_list(j)
+            mo_list(j)=tem
+            i=i+1
+            j=j-1
+          else if(i.eq.j) then
+            i=i+1
+            EXIT
+          else
+            EXIT
+          end if
+        end do
+
+        if (i_beg<j) call quicksort(mo_list, i_beg, j)
+        if (i<i_end) call quicksort(mo_list, i, i_end)
+
+      end subroutine quicksort
+
+      subroutine make_spinor_list ( exa_input, string_occupied, & 
+        string_occ_beta, string_virtual, string_vir_beta)
+
+        use exacorr_datatypes
+
+        implicit none
+
+        type(exacc_input), intent(inout) :: exa_input
+        character(len = *), intent(in)   :: string_occupied
+        character(len = *), intent(in)   :: string_virtual
+        character(len = *), intent(in)   :: string_occ_beta
+        character(len = *), intent(in)   :: string_vir_beta
+
+        integer, allocatable :: mobe_occ(:), mobe_vir(:)
+        integer              :: i
+        integer              :: nmo(4)
+        integer              :: imo, ialpha, ibeta
+
+        if (exa_input%beta_occ) then
+          if (exa_input%beta_vir) then
+            nmo(1:4)=0
+            
+            call string2mo(string_occupied,.true.,nmo=nmo(1))
+            call string2mo(string_occ_beta,.false.,nmo=nmo(2))
+            call string2mo(string_virtual,.true.,nmo=nmo(3))
+            call string2mo(string_vir_beta,.false.,nmo=nmo(4))
+
+            exa_input%nkr_occ=nmo(1)
+            allocate (exa_input%mokr_occ(exa_input%nkr_occ))
+            allocate (mobe_occ(nmo(2)))
+            exa_input%nkr_vir=nmo(3)
+            allocate (exa_input%mokr_vir(exa_input%nkr_vir))
+            allocate (mobe_vir(nmo(4)))
+
+            call string2mo(string_occupied,.true.,mo_list=exa_input%mokr_occ)
+            call string2mo(string_occ_beta,.false.,mo_list=mobe_occ)
+            call string2mo(string_virtual,.true.,mo_list=exa_input%mokr_vir)
+            call string2mo(string_vir_beta,.false.,mo_list=mobe_vir)
+
+            if(exa_input%mokr_occ(1).ne.mobe_occ(1)) then
+              print *, "core orbital need to be closed shell"
+              call quit ("change .OCC_BETA in EXACORR")
+            end if
+            
+            exa_input%nocc=nmo(1)+nmo(2)
+            exa_input%nvir=nmo(3)+nmo(4)
+            allocate (exa_input%mo_occ(exa_input%nocc))
+            allocate (exa_input%mo_vir(exa_input%nvir))
+
+            imo=0
+            do i=1, max(nmo(1), nmo(2))
+              if(i.le.nmo(1)) then
+                imo=imo+1
+                exa_input%mo_occ(imo)=exa_input%mokr_occ(i)*2-1
+              end if
+              if(i.le.nmo(2)) then
+                imo=imo+1
+                exa_input%mo_occ(imo)=mobe_occ(i)*2
+              end if
+            end do
+         
+            ialpha=1
+            ibeta=1
+            imo=0
+            do i=1, nmo(3)+nmo(4)
+              if(ibeta.gt.nmo(4)) then
+                if (ialpha.le.nmo(3)) then
+                  imo=imo+1
+                  exa_input%mo_vir(imo)=exa_input%mokr_vir(ialpha)*2-1
+                  ialpha=ialpha+1
+                end if
+              else if (ialpha.gt.nmo(3)) then
+                if (ibeta.le.nmo(4)) then
+                  imo=imo+1
+                  exa_input%mo_vir(imo)=mobe_vir(ibeta)*2
+                  ibeta=ibeta+1
+                end if
+           else if(exa_input%mokr_vir(ialpha).eq.mobe_vir(ibeta)) then
+                imo=imo+1
+                exa_input%mo_vir(imo)=exa_input%mokr_vir(ialpha)*2-1
+                ialpha=ialpha+1
+                imo=imo+1
+                exa_input%mo_vir(imo)=mobe_vir(ibeta)*2
+                ibeta=ibeta+1
+           else if (exa_input%mokr_vir(ialpha).lt.mobe_vir(ibeta)) then
+                imo=imo+1
+                exa_input%mo_vir(imo)=exa_input%mokr_vir(ialpha)*2-1
+                ialpha=ialpha+1
+              else                   
+                imo=imo+1
+                exa_input%mo_vir(imo)=mobe_vir(ibeta)*2
+                ibeta=ibeta+1
+              end if
+            end do
+
+            deallocate (mobe_occ)
+            deallocate (mobe_vir)
+          else
+            call quit ("also define .OCC_BETA in EXACORR")
+          end if
+        else if (exa_input%beta_vir) then
+          call quit ("also define .VIR_BETA in EXACORR")
+        else
+          call string2mo(string_occupied,.true.,nmo=exa_input%nkr_occ)
+          allocate (exa_input%mokr_occ(exa_input%nkr_occ))
+          call string2mo(string_occupied,.true.,mo_list=exa_input%mokr_occ)
+          exa_input%nocc = 2 * exa_input%nkr_occ
+          allocate (exa_input%mo_occ(exa_input%nocc))
+          do i = 1, exa_input%nocc
+            exa_input%mo_occ(i) = (exa_input%mokr_occ(1)-1)*2+i
+          end do
+
+          
+          call string2mo(string_virtual,.true.,nmo=exa_input%nkr_vir)
+          allocate (exa_input%mokr_vir(exa_input%nkr_vir))
+          call string2mo(string_virtual,.true.,mo_list=exa_input%mokr_vir)
+          exa_input%nvir = 2 * exa_input%nkr_vir
+          allocate (exa_input%mo_vir(exa_input%nvir))
+          do i = 1, exa_input%nvir
+            exa_input%mo_vir(i) = &
+                  exa_input%mo_occ(exa_input%nocc)+i
+          end do
+        end if
+
+      end subroutine make_spinor_list
 
 end module exacorr_global
