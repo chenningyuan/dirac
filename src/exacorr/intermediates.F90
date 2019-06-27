@@ -17,6 +17,14 @@ module intermediates
         module procedure get_tau_talsh
      end interface get_tau
 
+     interface get_tauCC2 !L
+#if defined (VAR_MPI)
+        module procedure get_tauCC2_exatns
+#endif
+        module procedure get_tauCC2_talsh
+     end interface get_tauCC2
+
+
      interface get_hoo
 #if defined (VAR_MPI)
         module procedure get_hoo_exatns
@@ -159,6 +167,7 @@ module intermediates
 
 !    CCSD intermediates
      public get_tau
+     public get_tauCC2  !L
      public get_hoo
      public get_hov
      public get_hvv
@@ -203,6 +212,24 @@ module intermediates
         end if
 
        end subroutine get_tau_exatns
+
+       subroutine get_tauCC2_exatns(comm_t,one_tensor) !L
+
+        use exatensor
+        use exacorr_datatypes, only : exatns_comm_tens
+
+        type(exatns_comm_tens),intent(inout) :: comm_t
+        type(tens_rcrsv_t),intent(inout) :: one_tensor
+        integer :: ierr
+
+!       make tau ! validated
+!L        ierr=exatns_tensor_init(comm_t%tau)
+        ierr=exatns_tensor_contract("T(a,b,i,j)+=R(a,b,i,j)*K()",comm_t%tau,comm_t%t2,one_tensor)
+        ierr=exatns_tensor_contract("T(a,b,i,j)+=T(a,i)*T(b,j)",comm_t%tau,comm_t%t1,comm_t%t1) ! o(2)v(2)
+        ierr=exatns_tensor_contract("T(a,b,i,j)+=T(a,j)*T(b,i)",comm_t%tau,comm_t%t1,comm_t%t1,MINUS_ONE) ! o(2)v(2)
+ 
+       end subroutine get_tauCC2_exatns
+
 
        subroutine get_hoo_exatns(comm_t,oovv_tensor,one_tensor)
 
@@ -598,6 +625,23 @@ module intermediates
         end if
 
        end subroutine get_tau_talsh
+
+       subroutine get_tauCC2_talsh(comm_t)  !L
+
+        use talsh
+        use exacorr_datatypes, only : talsh_comm_tens
+
+        type(talsh_comm_tens),intent(inout) :: comm_t
+        integer :: ierr
+
+!       tau ! validated
+        ierr=talsh_tensor_init(comm_t%tau)
+!        ierr=talsh_tensor_add("T(a,b,i,j)+=R(a,b,i,j)",comm_t%tau,comm_t%t2)
+        ierr=talsh_tensor_contract("T(a,b,i,j)+=T(a,i)*T(b,j)",comm_t%tau,comm_t%t1,comm_t%t1)                  ! o(2)v(2)
+        ierr=talsh_tensor_contract("T(a,b,i,j)+=T(a,j)*T(b,i)",comm_t%tau,comm_t%t1,comm_t%t1,scale=MINUS_ONE)  ! o(2)v(2)
+
+       end subroutine get_tauCC2_talsh
+
 
        subroutine get_hoo_talsh(comm_t,oovv_tensor)
 
