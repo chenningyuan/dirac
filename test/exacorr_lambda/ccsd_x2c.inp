@@ -5,6 +5,7 @@
 .TITLE
 Water molecule. X2C Hamiltonian. CC energies.
 .WAVE F
+.PROPERTIES
 **HAMILTONIAN
 .X2C
 **WAVE FUNCTIONS
@@ -19,5 +20,7 @@ Water molecule. X2C Hamiltonian. CC energies.
 .VIRTUAL
 6..17
 .LAMBDA
-!.CCDOUBLES
+**PROPERTIES
+.DIPOLE
+.EFG
 *END OF

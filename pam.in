@@ -1432,6 +1432,7 @@ Options are also read from ~/.diracrc"""
            mpi_command = "jsrun --smpiargs='-mca common_pami_use_odp 1' -bnone" 
            mpi_command =  mpi_command + ' -n ' + str(self.nr_proc)
            mpi_command =  mpi_command + ' -a 1'
+           mpi_command =  mpi_command + ' -r ' + os.environ.get('QF_PROCS_PER_NODE')
            mpi_command =  mpi_command + ' -c ' + os.environ.get('QF_CORES_PER_PROCESS')
            mpi_command =  mpi_command + ' -g ' + os.environ.get('QF_GPUS_PER_PROCESS') + ' '
            self.dirac_mpi_command = mpi_command 

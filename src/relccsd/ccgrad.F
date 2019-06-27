@@ -1458,6 +1458,7 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbgen.h"
+#include "dcbprp.h"
 C
 C---------------Calling variables--------------------------------------
 C
@@ -1491,6 +1492,23 @@ C     without being able to do a replace or check for old data.
       CALL WRITT(MCCDENS,NORBT*NORBT*NZ,DMO)
       CALL NEWLAB(EOFLABEL,MCCDENS,LUPRI)
       CLOSE(Unit=MCCDENS,Status='KEEP')
+
+C     Switch on evaluation of property output
+      DOEXP = .TRUE.
+C     Add this density matrix to the list to be evaluated
+      IPRP_WF = 0
+      DO I = 1, NPRP_WF
+         IF (PRP_WF(I).EQ.WF) IPRP_WF = I
+      END DO
+      IF (IPRP_WF.EQ.0) THEN
+         IF (NPRP_WF .GE. MXPRP_WF) THEN
+             IPRP_WF = 1 ! Unlikely that this happens, just skip the HF print out in this case
+         ELSE
+             NPRP_WF = NPRP_WF + 1
+             IPRP_WF = NPRP_WF
+         END IF
+         PRP_WF(IPRP_WF) = WF
+      END IF
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
