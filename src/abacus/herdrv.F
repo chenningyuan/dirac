@@ -981,6 +981,7 @@ C.....Find center of mass
       CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),ISOTOP,IPRDEF)
       IF(.NOT.GAGORG_SET) THEN
          CALL DCOPY(3,CMXYZ,1,GAGORG,1)
+         CALL DCOPY(3,GAGORG,1,DIPORG,1)
       ENDIF
       WRITE (LUPRI,'(/,A,3F20.15)')
      &    ' Gauge origin (a.u.)   :', (GAGORG(I),I=1,3)
