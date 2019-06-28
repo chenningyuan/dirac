@@ -19,11 +19,6 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 !
-#ifdef HAVE_MKL_BLAS
-!radovan: workaround for strange crash when using MKL zdotc
-#define ZDOTC z_dot_c
-#define zdotc z_dot_c
-#endif
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !      ****  Diagonalization Routines for the RELADC package  ****
