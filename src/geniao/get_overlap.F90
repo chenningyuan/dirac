@@ -27,6 +27,12 @@ contains
 
         call  get_ao_overlap (ao_basis_bra,ao_basis_ket,SAO)
 
+        print*,
+        print*,"SAO:"
+        do i=1,cspinor_bra%nao
+          write(*,'(100G10.2)') (REAL(SAO(i,j)),j=1,cspinor_ket%nao)
+        enddo
+
         SC  = matmul(SAO,cspinor_ket%coeff(:,:,1))                        ! multiply with alpha coefficients
         SMO = matmul(conjg(transpose(cspinor_bra%coeff(:,:,1))),SC)       ! alpha-alpha contribution
         SC  = matmul(SAO,cspinor_ket%coeff(:,:,2))                        ! multiply with beta coefficients

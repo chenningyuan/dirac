@@ -7,23 +7,23 @@ echo "set -e : IF AN ERROR OCCUR, THE SCRIPT WILL STOP"
 #################
 # MANUAL SET-UP #
 #################
-path_to_geniao=../../build-caar-ibos/ # PATH TO THE EXECUTABLE
+path_to_geniao=/Users/bsenjean/Documents/Git_repositories/dirac-caar-ibos/build-caar-ibos/ # PATH TO THE EXECUTABLE
 inp1=HF_closedshell # INPUT FOR THE MOLECULE (ionic species can be considered)
 inp2=HF # INPUT FOR THE FRAGMENT (neutral)
 mol=HeNe # NAME OF THE MOLECULE
 charge=2 # CHARGE OF THE MOLECULE
 nelec=10 # TOTAL NUMBER OF ELECTRONS
 basis1=sto-3g # BASIS SET OF THE ORIGINAL PROBLEM
-basis2=cc-pvtz # LARGE BASIS SET FOR THE FRAGMENTS
-version="Simple_2013" # choices: Simple_2014, Simple_2013, Stndrd_2013
+basis2=cc-pvqz # LARGE BASIS SET FOR THE FRAGMENTS
+version="Stndrd_2013" # choices: Simple_2014, Simple_2013, Stndrd_2013
 nfrag=2 # NUMBER OF FRAGMENTS (atoms for now!)
 # FRAGMENTS NAMES, ATOMIC NUMBER, COORDINATES
 frag[1]=He
 Z[1]=002 # MUST BE IN THIS FORMAT
-coord[1]="0. 0. -1."
+coord[1]="0. 0. 0."
 frag[2]=Ne
 Z[2]=010 # MUST BE IN THIS FORMAT
-coord[2]="0. 0. +1."
+coord[2]="0. 0. 2."
 
 #frag[1]=O
 #Z[1]=008 # MUST BE IN THIS FORMAT
