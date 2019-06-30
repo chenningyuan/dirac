@@ -55,8 +55,16 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FIXED_CFUN_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
 endif()
 
+if(ENABLE_RUNTIMECHECK)
+    message(STATUS "runtime-check flags activated for the 'cfun' module")
+    set_source_files_properties(${FREE_CFUN_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+    set_source_files_properties(${FIXED_CFUN_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+    set_source_files_properties(${CFUN_C_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_C_FLAGS_runtimecheck})
+endif()
+
 add_library(
     cfun
+    OBJECT
     ${FIXED_CFUN_FORTRAN_SOURCES}
     ${FREE_CFUN_FORTRAN_SOURCES}
     ${CFUN_C_SOURCES}

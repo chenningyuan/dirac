@@ -8,11 +8,13 @@ include(autocmake_CMakeDependentOption)
 # FIXME re-introduce
 # set_source_files_properties(${PROJECT_BINARY_DIR}/config_info.F90 PROPERTIES GENERATED 1)
 
-            list(REMOVE_ITEM CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES  "pthread")
+#Miro: remove problematic linking library
+list(REMOVE_ITEM CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES  "pthread")
 
-# Ivan Hrasko's determination of compiler versions 
+# Ivan Hrasko's determination of compiler versions - very good tool !
 include(FindCompilerVersion)
-# Miro Ilias restrored CMake printout, associated with build_info.h generation
+
+# Miro Ilias restored CMake printout, associated with build_info.h generation
 include(build_info)
 
 set(_lisd_of_executables)
@@ -21,17 +23,26 @@ macro(compile_standalone _executable _source _list_of_executables)
         ${_executable}
         ${_source}
     )
+
+    # each executable is of Fortran language ...
     set_property(TARGET ${_executable} PROPERTY LINKER_LANGUAGE Fortran)
+
+    # extend list of executables
     set(_list_of_executables
         ${_list_of_executables}
         ${_executable}
     )
 endmacro()
+
 compile_standalone(dirac.x src/main/main.F90 "${_list_of_executables}")
+
+#synchronize basis set directories of trunk/basis* into the installation directory
+add_custom_command(TARGET dirac.x PRE_LINK COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/basis ${PROJECT_BINARY_DIR}/basis COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/basis_ecp ${PROJECT_BINARY_DIR}/basis_ecp  COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/basis_dalton ${PROJECT_BINARY_DIR}/basis_dalton COMMAND ${CMAKE_COMMAND} -E echo "INFO:basis set directories, basis*, synchronized into current installation directory")
 
 option(ENABLE_UTILITIES "Enable utilities" ON)
 if(ENABLE_UTILITIES)
     compile_standalone(dirac_mointegral_export.x utils/dirac_mointegral_export.F90   "${_list_of_executables}")
+    compile_standalone(dirac_openfermion_mointegral_export.x utils/dirac_openfermion_mointegral_export.F90   "${_list_of_executables}")
     compile_standalone(rspread.x                 utils/rspread.F90                   "${_list_of_executables}")
     compile_standalone(labread.x                 utils/labread.F90                   "${_list_of_executables}")
     compile_standalone(twofit.x                  utils/twofit.F90                    "${_list_of_executables}")
@@ -41,6 +52,17 @@ if(ENABLE_UTILITIES)
     compile_standalone(mx2fit.x                  utils/mx2fit.F90                    "${_list_of_executables}")
     compile_standalone(diag.x                    utils/diag.F90                      "${_list_of_executables}")
     compile_standalone(test_allocator.x          utils/test_allocator.F90            "${_list_of_executables}")
+#   compile_standalone(test_davidson.x           utils/test_davidson.F90             "${_list_of_executables}")
+endif()
+
+if(ENABLE_GEN1INT)
+    add_dependencies(dirac gen1int)
+endif()
+
+if(ENABLE_PELIB)
+    add_dependencies(gen1int_interface gen1int)
+    add_dependencies(pelib gen1int_interface)
+    add_dependencies(dirac pelib)
 endif()
 
 if(ENABLE_RELCCSD_STANDALONE)
@@ -48,7 +70,8 @@ if(ENABLE_RELCCSD_STANDALONE)
         set_source_files_properties(src/relccsd/ccmain.F PROPERTIES COMPILE_FLAGS "-qfixed")
     endif()
     compile_standalone(relccsd.x                 src/relccsd/ccmain.F                "${_list_of_executables}")
-    target_link_libraries(relccsd.x relccsd)
+# miro: take care of object lib
+    target_link_libraries(relccsd.x objlib.relccsd.x)
 endif()
 
 option(ENABLE_HSCC "Enable compilation of the standalone hsmrcc.x" OFF)
@@ -72,10 +95,12 @@ foreach(
     if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
         SET_TARGET_PROPERTIES(${_executable} PROPERTIES LINK_FLAGS "-Wl,-E")
     endif()
-    target_link_libraries(
-        ${_executable}
-        ${EXTERNAL_LIBS}
-        )
+
+#miro: libraries are OBJECT type
+    add_library(objlib.${_executable} ${EXTERNAL_OBJECTS})
+    SET_TARGET_PROPERTIES(objlib.${_executable}  PROPERTIES LINKER_LANGUAGE Fortran)
+    target_link_libraries( ${_executable} objlib.${_executable} ${EXTERNAL_LIBS} )
+
     if(ENABLE_STATIC_LINKING)
         if(ENABLE_OLD_LINKER)
            set(_no_dyn_export "")
@@ -93,11 +118,11 @@ foreach(
             target_link_libraries(${_executable} -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
         endif()
         if ( CMAKE_Fortran_COMPILER_ID MATCHES GNU )
-            # miro: GNU+NoneLibs/MKL/OPENBLAS-static needs extra lib !
+            # miro: GNU+NoneLibs/MKL/OPENBLAS-static needs this extra lib !
             target_link_libraries(${_executable} -ldl)
         endif()
         if ( BLAS_TYPE MATCHES OPENBLAS )
-            # miro: OPENBLAS-static needs extra lib !
+            # miro: OPENBLAS-static needs this extra lib !
             target_link_libraries(${_executable} -lgfortran)
         endif()
         if ( BLAS_TYPE MATCHES OPENBLAS AND CMAKE_Fortran_COMPILER_ID MATCHES Intel )

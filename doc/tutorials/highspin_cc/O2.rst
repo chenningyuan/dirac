@@ -45,7 +45,7 @@ of which there are 10 closed shell electrons.
 
 The closed shell electrons occupy the nonbonding 2s :math:`\sigma_g` and :math:`\sigma_u` 
 orbitals and the bonding 2p :math:`\sigma_g` and :math:`\pi_u` orbitals, while the 2 open shell electrons are distributed over the 
-two antibonding 2p :math:`\pi_u` orbitals. 
+two antibonding 2p :math:`\pi_g` orbitals. 
 
 Let us suppose that we want to take the :math:`M_S=1` state as our reference 
 and assign alpha spin to both our open shell electrons. In the double group (:math:`D_{2h}^*`) we do not distinguish between 

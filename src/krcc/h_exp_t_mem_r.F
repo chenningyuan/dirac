@@ -40,7 +40,7 @@
 * memory available and speed. Moved to input and default is set there!
 *
 C     LCCB = 130
-      WRITE(6,*) ' Batch lenght LCCB ',LCCB
+      WRITE(6,*) ' Batch length LCCB ',LCCB
 *
 *.1 : KCCF : Intermediate F-vectors for needed out of space 
 *         excitations in the form sum_I T(I) F(I) 

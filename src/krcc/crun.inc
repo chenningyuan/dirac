@@ -1,42 +1,47 @@
-*/CRUN/ : Defines RUN 
+!*/CRUN/ : Defines RUN
+
       COMMON/KRCC_CRUN/CCCONV
 
-* !!! NOTE : only integers in next section !!! ( real*8 above, logicals at bottom)
-      COMMON/KRCC_CRUNI/
-     &            MAXIT,
+!!!* !!! NOTE : only integers in next section !!! ( real*8 above, logicals at bottom)
+      COMMON/KRCC_CRUNI/                                                &
+     &            MAXIT,                                                &
 ! See if next line is needed
-     &            IDIAG,
+     &            IDIAG,                                                &
 ! use MXCCV
-     &            MXCCV,NTOTORB,
-     &            LCSBLK,
+     &            MXCCV,NTOTORB,                                        &
+     &            LCSBLK,                                               &
 ! Add idensi to input
-     &            IDENSI,
-     &            MK2REF,MK2DEL,MK2INT,
+     &            IDENSI,                                               &
+     &            MK2REF,MK2DEL,MK2INT,                                 &
 ! Set ISPINFREE or remove it
-     &            ISPINFREE,
+     &            ISPINFREE,                                            &
 ! For properties
-     &            NPROP,
+     &            NPROP,                                                &
 ! Add symmetry of T to input and use it
-     &            ISYM_T,N_CC_AMP,
-     &            NORB_F(MXPIRR),
+     &            ISYM_T,N_CC_AMP,                                      &
+     &            NORB_F(MXPIRR),                                       &
 ! Note sure to keep IAAEXC_TYP
-     &            MXSPOX,IAAEXC_TYP,
-     &            MX_EXC_LEVEL,
-     &            IMAXKRFLIP,IMUBMAX,
+     &            MXSPOX,IAAEXC_TYP,                                    &
+     &            MX_EXC_LEVEL,                                         &
+     &            IMAXKRFLIP,IMUBMAX,                                   &
 ! add ICCSOLVE and I_DO_SBSPJA to input for different optimization
-     &            ICCSOLVE, I_DO_SBSPJA,
+     &            ICCSOLVE, I_DO_SBSPJA,                                &
 ! add an option to set LCCB from input
-     &            LCCB,
+     &            LCCB,                                                 &
 ! For block sizes in read and write
-     &            I_READ_BLOCK,
+     &            I_READ_BLOCK,                                         &
 ! For CC excitation energies
-     &            I_DO_CC_EXC_E, NEXC_PER_SYM(8),
+     &            I_DO_CC_EXC_E, NEXC_PER_SYM(8),                       &
 ! set and add input for MXCIV_ORIG
-     &            MXCIV_ORIG,MXCIV,MXITLR,CCCONV_EX,
+     &            MXCIV_ORIG,MXCIV,MXITLR,CCCONV_EX,                    &
 ! add input for I_DO_CC_EXP
-     &            I_DO_CC_EXP,IDONOT,
-     &            NO4IDX, ! No 4-index transformation
-     &            IONLYTRANS, ! Only transformation no CC
+     &            I_DO_CC_EXP,IDONOT,                                   &
+! No 4-index transformation
+     &            NO4IDX,                                               & 
+! Only transformation no CC
+     &            IONLYTRANS,                                           &
 ! logicals
-     &            IRECOM,    ! for real/complex algebra
-     &            IFORM ! restart (set automatically)
+!             for real/complex algebra
+     &            IRECOM,                                               &
+!             restart (set automatically)
+     &            IFORM 

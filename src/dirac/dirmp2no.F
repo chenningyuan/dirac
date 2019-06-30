@@ -1,7 +1,7 @@
 !define DEBUG_MP2_NO
 
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -246,7 +246,7 @@ C
       END
       SUBROUTINE MAKE_VECMP2NO_occ(VECMP2NO_occ,VEC,NSTR,NOCC_I)
 !
-!     July 2015, Hans Jørgen Aa. Jensen
+!     July 2015, Hans Joergen Aa. Jensen
 !
 #include "priunit.h"
       CHARACTER VECMP2NO_occ*(*)
@@ -302,7 +302,6 @@ C
 C
       CALL QENTER('MP2NOGEN')
 
-#include "memint.h"
       CALL TITLER('MP2 natural orbitals','*',125)
 C
         WRITE(LUPRI,'(//A/A/A/)')
@@ -323,6 +322,7 @@ C
       IF (TOBE) THEN
 C       ... search for coefficients label
         CALL OPNFIL(LUKRMC,'KRMCOLD','UNKNOWN','MP2_NA')
+        IF( FNDLAB('MP2NATOB',LUKRMC)) THEN
         IF( FNDLAB('NEWNATOB',LUKRMC)) THEN 
            SKIP_MP2DEN = .TRUE.
            WRITE(LUPRI,'(//A/A)') 
@@ -330,6 +330,7 @@ C       ... search for coefficients label
      &'     *****             using existing orbitals          *****'
         END IF
         CLOSE(LUKRMC,STATUS='KEEP')
+      END IF
       END IF
       INQUIRE(FILE='MDCINT',EXIST=TOBE)
       IF (TOBE) SKIP_ITRAFO = .TRUE.
@@ -437,7 +438,7 @@ C          ... boson irrep info (or mj-values if linear symmetry is available)
 C          ... MO coefficients
            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MP2NOG')
            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO_TRA),XDUMMY,XDUMMY,
-     &                 XDUMMY,2,WORK,KFREE,LFREE)
+     &                 XDUMMY,2)
            CLOSE(LUCOEF,STATUS='KEEP')
 C
 C          transformation 
@@ -715,13 +716,14 @@ C
       DO I = 1,4
         NSTRT(I) = 0
         DO IFRP = 1,NFSYM
-cluuk     IF (I .EQ. 1 .OR. I .EQ. 3) THEN ! all active orbitals
+          IF (I .EQ. 1 .OR. I .EQ. 3 .OR. NFSYM .GT. 1) THEN ! all active orbitals
              TEMP_TRA4_INDSTR = VECMP2NO(IFRP)
-cluuk     ELSE ! only occupied active orbitals
-cluuk        TEMP_TRA4_INDSTR = VECMP2NO_occ(IFRP)
-cluuk     END IF
-! see above: activate HJs scheme only if you know what you are doing, this requires
+          ELSE ! only occupied active orbitals
+             TEMP_TRA4_INDSTR = VECMP2NO_occ(IFRP)
+          END IF
+! Luuk Oct 2015, see above: activate HJs scheme only if you know what you are doing, this requires
 ! non-trivial changes in the RELCCSD integral reader
+! hjaaj Jun 2016: activated it again for NFSYM .eq. 1, there was only a problem for g/u addressing in RELCCSD
           CALL MEMGET2('INTE','VEC4 tmp',KVEC(IFRP,I),NR(IFRP),
      &       WORK,KFREE,LFREE)
           NSTR(IFRP,0,I) = - 1
@@ -807,7 +809,8 @@ C
 C
          IF (ISAME(I).EQ.I) THEN
 C           new coefficient matrix
-            IF (I.NE.1) CALL QUIT ('All ranges should be equal')
+!           IF (I.NE.1) CALL QUIT ('All ranges should be equal')
+! hjaaj: disabled this check again June 2016
             CALL MEMGET2('REAL','KQ_4',KQ(1,I),NQT(I),WORK,KFREE,LFREE)
          ELSE
 C           same coefficient matrix as before
@@ -865,7 +868,7 @@ C
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MP2DEN')
          CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
-     &               WORK(KIBEIG),TOTERG,14,WORK,KFREE,LFREE)
+     &               WORK(KIBEIG),TOTERG,14)
          CLOSE(LUCOEF,STATUS='KEEP')
       END IF
 C
@@ -1061,7 +1064,7 @@ C
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MP2DEN')
          CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
-     &               WORK(KIBEIG),TOTERG,14,WORK,KFREE,LFREE)
+     &               WORK(KIBEIG),TOTERG,14)
       ENDIF
 C
 C     Select the set that we need
@@ -1157,6 +1160,14 @@ C
       relcc_do_mp2gradient = .true.
       relcc_do_naturalorbitals = .true.
       relcc_no_recompute = .true.
+C     The original NO generation treats open shells as closed, set occupation explicitly to keep this definition.
+C     These lines are necessary because the default for information written to MRCONEE has changed to closed shells only.
+C     / Luuk June 2016
+      do ifrp = 1, nfsym
+         relcc_nelec(ifrp*2-1) = naocc(ifrp)
+         relcc_nelec(ifrp*2)   = naocc(ifrp)
+      enddo
+      nelec_input = .true.
 
 !     no frozen orbitals in MP2
       relcc_ifroz_input  = .false.

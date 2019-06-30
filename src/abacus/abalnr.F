@@ -1,10 +1,10 @@
 !dalton_copyright_start
-!      Copyright (c) 2015 by the authors of Dalton (see below).
+!      Copyright (c) 2017 by the authors of Dalton (see below).
 !      All Rights Reserved.
 !
 !      The source code in this file is part of
 !      "Dalton, a molecular electronic structure program,
-!       Release DALTON2015 (2015), see http://daltonprogram.org"
+!       Release DALTON2017 (2017), see http://daltonprogram.org"
 !
 !      This source code is provided under a written licence and may be
 !      used, copied, transmitted, or stored only in accord with that
@@ -307,7 +307,7 @@ C
       CALL TIMER('START ',TIMEIN,TIMOUT)
 C
       IF (IPRLNR .GE. 0) 
-     &     CALL TITLER('Solving Linear Response Equations','¤',118)
+     &     CALL TITLER('Solving Linear Response Equations','#',118)
 C
       IPRRSP = IPRLNR
 C

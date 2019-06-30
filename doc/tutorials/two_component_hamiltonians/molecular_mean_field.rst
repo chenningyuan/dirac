@@ -63,13 +63,16 @@ and set the keyword combination as indicated below under the \*\*HAMILTONIAN inp
 
 In order to run a (MR)CC calculation add also the following keyword(s) to the namelist RELCCSSD input::
 
-    &CCSORT USEOE=T, NORECMP=T &END
+    *CCSORT 
+    .USEOE
+    .NORECMP
+    END
 
 
 or the new RELCCSD deck input::
 
     *CCSORT
-    .NORCMP
+    .NORECMP
 
 Dirac will automatically read the two-component coefficients from the file DFCOEF and proceed in two-component mode for
 any wave function analysis or post-HF step required for a (MR)CC calculation.

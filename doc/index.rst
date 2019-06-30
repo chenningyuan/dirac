@@ -19,6 +19,7 @@ Setting up DIRAC
 * **64-bit integer support:**
   :doc:`Do I need it? <installation/int64/faq>` |
   :doc:`Math libraries <installation/int64/math>` |
+  :doc:`64-bit OpenMPI <installation/int64/mpi64>` |
   :doc:`Troubleshooting <installation/int64/troubleshooting>`
 
 * **Testing:**
@@ -28,8 +29,8 @@ Setting up DIRAC
   :doc:`HPC cluster (Strasbourg) <installation/examples/hpc-unistra>`
 
 * **pam script:**
-  :doc:`How to set the scratch directory <pam/scratch>` |
-  :doc:`How to define an alternative MPI launcher <pam/mpi_command>` |
+  :doc:`Setting the scratch directory <pam/scratch>` |
+  :doc:`Alternative MPI launcher and passing arguments for it <pam/mpi_command>` |
   :doc:`String replacement <pam/replace>`
 
 
@@ -84,7 +85,7 @@ Tutorials and walkthrus
 * **Restarting and multi-step jobs:**
   :doc:`SCF <tutorials/restart/scf>` |
   :doc:`X2C <tutorials/restart/x2c>` |
-  :doc:`Coupled cluster <tutorials/restart/coupled_cluster>` |
+  :doc:`Coupled Cluster restart <tutorials/restart/coupled_cluster>` |
   :doc:`DFCOEF and DFPCMO <tutorials/restart/dfcoef_and_dfpcmo>` |
   :doc:`Troubleshooting <tutorials/restart/troubleshooting>`
 
@@ -105,6 +106,9 @@ Tutorials and walkthrus
   :doc:`BSSE <tutorials/dft/bsse>` |
   :doc:`CAM functional <tutorials/dft/cam>` |
   :doc:`Troubleshooting <tutorials/dft/troubleshooting>`
+  
+* **Frozen orbitals:**
+  :doc:`Frozen orbitals <tutorials/frozen_orbitals/tutorial>` 
 
 * **Long-range WFT/short-range DFT:**
   :doc:`General <tutorials/srDFT/general>`
@@ -112,7 +116,16 @@ Tutorials and walkthrus
 * **Property calculations:**
   :doc:`Calculation of NMR shieldings using simple magnetic balance <tutorials/simple_magnetic_balance/tutorial>` |
   :doc:`An introduction to complex reponse <tutorials/properties/complex_response>` |
-  :doc:`Magnetizabilities with London Atomic Orbitals <tutorials/lao_magnetizabilities/lao-magnetizabilities>`
+  :doc:`Magnetizabilities with London Atomic Orbitals <tutorials/lao_magnetizabilities/lao-magnetizabilities>` |
+  :doc:`Dipole moment and polarizability of open-shell molecule <tutorials/properties/dipmom-polariz>` 
+
+* **X-ray spectroscopy:**
+  :doc:`Core ionization in the CO and N2 molecules <tutorials/x_ray/CO_N2_IP1s/tutorial>` |
+  :doc:`Core electron excitations and ionization in water at the HF and DFT levels <tutorials/x_ray/water_Kedge/tutorial>`
+
+* **Spectroscopy:**
+  :doc:`Electronic excitations using the POLPRP module <tutorials/polprp/general>` |
+  :doc:`Full scope application: Excitation spectrum of an osmium complex <tutorials/polprp/osmium>`
 
 * **Analysis:**
   :doc:`Projection analysis <tutorials/analysis/projection_analysis>`
@@ -121,23 +134,28 @@ Tutorials and walkthrus
   :doc:`General overview <tutorials/visual/general/tutorial>` |
   :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>` |
   :doc:`Magnetizability density <tutorials/visual/magnetizability_density/tutorial>` |
-  :doc:`Molecular electrostatic potential <tutorials/visual/mep/tutorial>`
+  :doc:`Molecular electrostatic potential <tutorials/visual/mep/tutorial>` |
+  :doc:`Radial distributions <tutorials/visual/radial_distributions/tutorial>`     
 
 * **Open-shell SCF:**
   :doc:`Basics <tutorials/open_shell_scf/aoc>` |
   :doc:`Nb atom <tutorials/open_shell_scf/nb>` |
   :doc:`Np atom <tutorials/open_shell_scf/np>`
 
-* **High-spin open-shell Coupled-Cluster:**
-  :doc:`The oxygen molecule <tutorials/highspin_cc/O2>`
+* **Coupled-Cluster:**
+  :doc:`The high spin oxygen molecule <tutorials/highspin_cc/O2>` |
+  :doc:`Coupled Cluster memory count <tutorials/cc_memory_count/count_cc_memory>` |
+  :doc:`Hybrid-parallel run <tutorials/hybrid_parallel_cc_run/hybrid_parallel_cc_run>` 
 
 * **Case studies:**
   :doc:`W atom <tutorials/case_studies/W>` |
   :doc:`Ir(16+) cation <tutorials/case_studies/Ir_16plus>` |
-  :doc:`MnO6 system <tutorials/case_studies/MnO6>`  |
-  :doc:`UF6(-) anion <tutorials/case_studies/UF6_anion/UF6_anion>`  |
-  :doc:`UO6(-6) anion <tutorials/case_studies/UO6_6minus/UO6_6minus>`  |
-  :doc:`LuF3 system <tutorials/case_studies/LuF3/LuF3>`
+  :doc:`CmF molecule <tutorials/case_studies/CmF/CmF>` |
+  :doc:`MnO6 system <tutorials/case_studies/MnO6>` |
+  :doc:`UF6 molecule <tutorials/case_studies/UF6_molecule/UF6>` |
+  :doc:`UF6(-) anion <tutorials/case_studies/UF6_anion/UF6_anion>` |
+  :doc:`UO6(-6) anion <tutorials/case_studies/UO6_6minus/UO6_6minus>` |
+  :doc:`LuF3 molecule <tutorials/case_studies/LuF3/LuF3>`
 
 * **ADC:**
   :doc:`Triatomic molecule <tutorials/reladc/triatomic_molecule>` |
@@ -152,6 +170,13 @@ Tutorials and walkthrus
   :doc:`Hartree-Fock and DFT calculations in solution with the polarizable continuum model <tutorials/pcm/pcm_scf>` |
   :doc:`Calculation of polarizabilities in solution: response theory approach <tutorials/pcm/pcm_response>`
 
+* **Polarizable embedding (PE) model:**
+  :doc:`PE-HF calculations on micro-solvated H2O <tutorials/polarizable_embedding/pe_scf>` |
+  :doc:`PE-TDDFT calculations on micro-solvated H2O <tutorials/polarizable_embedding/pe_response>`
+
+* **Frozen density embedding (FDE):**
+  :doc:`NMR shieldings in Frozen Density Embedding (FDE) scheme with London atomic orbitals (LAOs) <tutorials/fde_nmr/tutorial>`
+ 
 * **Davidson corrections for relCI (LUCITA and KRCI):**
   :doc:`+Q corrections <tutorials/relci_q_corrections/q_corrections>`
 
@@ -182,6 +207,9 @@ Exercises
 Developers
 ==========
 
+* **Code review:**
+  :doc:`Code review workflow <programmers/code_review>`
+
 * **Releasing:**
   :doc:`Release preparation <programmers/release_preparation>` |
   :doc:`Beta testing <programmers/beta_testing>` |
@@ -202,6 +230,9 @@ Developers
   :doc:`Further development <programmers/further_development>` |
   :doc:`Good Fortran 90 practices <programmers/good_fortran_90_practices>` |
   :doc:`FAQ <programmers/faq>`
+
+* **Basis sets:**
+  :doc:`Testing basis sets in DIRAC <programmers/test_basis_sets>` 
 
 * **Moving code between machines:**
   :doc:`Transfering uncommitted code <programmers/transfering_uncommitted_code>`

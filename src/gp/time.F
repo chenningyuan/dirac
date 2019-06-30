@@ -43,13 +43,13 @@ C
 C Written 18-Dec-1984 Hans Joergen Aa. Jensen
 C Rewrite Feb 6 2014 Trond Saue
 C
-C Return elapsed CPU time and elapsed real time.
+C Return elapsed CPU time (all threads) and elapsed real time.
 C
       real(8) :: timcpu,timwal
       integer :: clock_count, clock_rate, clock_max
       call cpu_time (timcpu)
       call system_clock ( clock_count, clock_rate, clock_max )
-      timwal = real ( clock_count ) / real ( clock_rate )
+      timwal = dble ( clock_count ) / dble ( clock_rate )
       return
       end
 C  /* Deck timtxt */

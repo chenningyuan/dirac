@@ -9,7 +9,12 @@ Keyword reference
 * :doc:`**GENERAL <general>` --- General input
    - :doc:`*PARALLEL <parallel>` --- Parallel run directives
 
-* :doc:`**MOLECULE<molecule>` --- Specification of basis set information
+* :doc:`**MOLECULE<molecule>` --- Specification of basis set and other atom-specific information
+   - :doc:`*CHARGE <molecule>` --- Define the molecular charge
+   - :doc:`*BASIS <molecule>` --- Define default and atom-specific basis sets
+   - :doc:`*CENTERS <molecule>` --- Define specific properties for atoms (e.g. ghost centers, point charges)
+   - :doc:`*SYMMETRY <molecule>` --- Set symmetry manually (when reading from xyz file)
+   - :doc:`*COORDINATES <molecule>` --- Set unit for the input coordinates
 
 * :doc:`**HAMILTONIAN <hamiltonian>` --- Specify the Hamiltonian
    - :doc:`*DFT <dft>` --- DFT directives
@@ -18,7 +23,8 @@ Keyword reference
    - :doc:`*FDE <fde>` --- Frozen Density Embedding directives
    - :doc:`*PCM <pcm>` --- Polarizable Continuum Model directives
    - :doc:`*PCMSOL <pcmsolver>` --- PCMSolver module directives
-
+   - :doc:`*PEQM <peqm>` --- Polarizable embedding model directives
+    
 * :doc:`**WAVE FUNCTION <wave_function>` --- Method specification
    - :doc:`SCF <wave_function/scf>` --- SCF module (Hartree-Fock/Kohn-Sham)
    - :doc:`MP2CAL <wave_function/mp2cal>` --- second-order Møller-Plesset perturbation theory
@@ -30,7 +36,8 @@ Keyword reference
    - :doc:`KR CI <wave_function/krci>` --- Kramers-restricted relativistic large-scale CI module
    - :doc:`KRMCSCF <wave_function/krmcscf>` --- Kramers-restricted relativistic large-scale MCSCF module
    - :doc:`RELCCSD <wave_function/relccsd>` --- Coupled cluster module
-   - :doc:`RELADC <wave_function/reladc>` --- Propagator module (Green's functions) for ionizations
+   - :doc:`RELADC <wave_function/reladc>` --- Propagator module (ADC) for single and double ionizations
+   - :doc:`POLPRP <wave_function/polprp>` --- Polarization Propagator module (ADC) for excitations
    - :doc:`MVOCAL <wave_function/mvocal>` --- Modified virtual orbitals
    - :doc:`MP2 NO <wave_function/mp2no>` --- MP2 natural orbitals module
 
@@ -60,6 +67,9 @@ Keyword reference
 
 * :doc:`**MOLTRA <moltra>` --- Integral transformation module
 
-* :doc:`One-electron operators <one_electron_operators>`
+Notes:
+------
 
-* :doc:`Orbital strings <orbital_strings>`
+  :doc:`One-electron operators <one_electron_operators>` |
+  :doc:`Orbital strings <orbital_strings>` |
+  :doc:`Symmetry-handling at the correlated level <groupchain>`

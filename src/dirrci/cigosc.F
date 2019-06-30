@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -499,6 +499,11 @@ C
 C     ===========================================================
       SUBROUTINE HMAT (ID,JD,HMR,HMI,INDTWR,INDTWI,INDGAR,INDGAI,
      &                 TWOINR,TWOINI,MAXINT)
+
+C
+CMiro Sept2016: consider c1,c2,c3 scaling parameters according  for DFT-COSCI
+C  according to Roemelt et al, The Journal of Chemical Physics 138, 204101 (2013)
+C
 C     ===========================================================
       IMPLICIT REAL*8 (A-H,O-Z)
 C
@@ -544,6 +549,7 @@ C---------------------
             SI = SIGN(1,INDI)
             INDR = ABS(INDR)
             INDI = ABS(INDI)
+!Miro: c1 to Coulomb(Breit) term for DFT-COSCI
             HMR = HMR + SR * TWOINR (INDR)
             HMI = HMI + SI * TWOINI (INDI)
             IF (BREIT) THEN
@@ -565,6 +571,7 @@ C---------------------
             SI = SIGN(1,INDI)
             INDR = ABS(INDR)
             INDI = ABS(INDI)
+!Miro: c2 to exchange(Breit) term for DFT-COSCI
             HMR = HMR - SR * TWOINR (INDR)
             HMI = HMI - SI * TWOINI (INDI)
             IF (BREIT) THEN
@@ -597,6 +604,7 @@ C
         IF (IBTAND(IB, IBTSHL(1, I - 1)) .NE. 0) L = I
 35      CONTINUE
 C
+!Miro: c3 to damp all off-diagonal terms (one-el, COulomb, exchange) for DFT-COSCI
       HMR = HMR + ONER (K, L)
       HMI = HMI + ONEI (K, L)
 C
@@ -612,6 +620,7 @@ C---------------------
             SI = SIGN(1,INDI)
             INDR = ABS(INDR)
             INDI = ABS(INDI)
+!Miro: c3 to damp all off-diagonal terms (one-el, Coulomb, exchange) for DFT-COSCI
             HMR = HMR + SR * TWOINR (INDR)
             HMI = HMI + SI * TWOINI (INDI)
             IF (BREIT) THEN
@@ -621,6 +630,7 @@ C---------------------
                SI = SIGN(1,INDI)
                INDR = ABS(INDR)
                INDI = ABS(INDI)
+!Miro: c3 to damp all off-diagonal terms (one-el, Coulomb, exchange) for DFT-COSCI
                HMR = HMR + SR * TWOINR (INDR)
                HMI = HMI + SI * TWOINI (INDI)
             ENDIF
@@ -633,6 +643,7 @@ C---------------------
             SI = SIGN(1,INDI)
             INDR = ABS(INDR)
             INDI = ABS(INDI)
+!Miro: c3 to damp all off-diagonal terms (one-el, Coulomb, exchange) for DFT-COSCI
             HMR = HMR - SR * TWOINR (INDR)
             HMI = HMI - SI * TWOINI (INDI)
             IF (BREIT) THEN
@@ -642,6 +653,7 @@ C---------------------
                SI = SIGN(1,INDI)
                INDR = ABS(INDR)
                INDI = ABS(INDI)
+!Miro: c3 to damp all off-diagonal terms (one-el, Coulomb, exchange) for DFT-COSCI
                HMR = HMR - SR * TWOINR (INDR)
                HMI = HMI - SI * TWOINI (INDI)
             ENDIF
@@ -683,6 +695,7 @@ C---------------------
       SI = SIGN(1,INDI)
       INDR = ABS(INDR)
       INDI = ABS(INDI)
+!Miro: c3 to damp all off-diagonal terms (one-el, Coulomb, exchange) for DFT-COSCI
       HMR = HMR + SR * TWOINR (INDR)
       HMI = HMI + SI * TWOINI (INDI)
       IF (BREIT) THEN
@@ -692,6 +705,7 @@ C---------------------
          SI = SIGN(1,INDI)
          INDR = ABS(INDR)
          INDI = ABS(INDI)
+!Miro: c3 to damp all off-diagonal terms (one-el, Coulomb, exchange) for DFT-COSCI
          HMR = HMR + SR * TWOINR (INDR)
          HMI = HMI + SI * TWOINI (INDI)
       ENDIF
@@ -704,6 +718,7 @@ C---------------------
       SI = SIGN(1,INDI)
       INDR = ABS(INDR)
       INDI = ABS(INDI)
+!Miro: c3 to damp all off-diagonal terms (one-el, Coulomb, exchange) for DFT-COSCI
       HMR = HMR - SR * TWOINR (INDR)
       HMI = HMI - SI * TWOINI (INDI)
       IF (BREIT) THEN
@@ -713,6 +728,7 @@ C---------------------
          SI = SIGN(1,INDI)
          INDR = ABS(INDR)
          INDI = ABS(INDI)
+!Miro: c3 to damp all off-diagonal terms (one-el, Coulomb, exchange) for DFT-COSCI
          HMR = HMR - SR * TWOINR (INDR)
          HMI = HMI - SI * TWOINI (INDI)
       ENDIF
@@ -1838,7 +1854,7 @@ C
         CALL RDCIVEC(NRIVEC,MSTATE,IRRP_I,IREP_I,NVEC_I,CL,DET_I,
      &               NZCONF_I,KST,IRVEC,IPRINT)
         IF( KST .NE. 0 ) THEN
-          WRITE(LUPRI,"(/'<bra|      irrep',I3,A
+          WRITE(LUPRI,"(/'<bra|      irrep',I3,A,
      &                   '     skipped.',I4)") 
      &          IREP_I,REPNA(IREP_I),KST
           CYCLE
@@ -1926,7 +1942,7 @@ C
       DIMENSION IXDET(NDETMX)
       CHARACTER*11 VECFIL
       DATA K8BYTE/8/
-!SK   DATA K4BYTE/4/, K1WORD/1/, K4WORD/4/
+      DATA K4BYTE/4/, K1WORD/1/, K4WORD/4/ ! Miro: necessary to fix runtimecheck
       INTEGER KXBYTE
       DATA LUCIVC/10/
 !----------------------------------------------------------------------
@@ -1941,9 +1957,7 @@ C
 !#    LENREC = LEN * 2 * 8
       LENW   = NDETMX
       LENR0  = LENW * NRIVEC * K8BYTE 
-!radovan: K1WORD is not initialized
       LENR2  = (K1WORD + NDETMX) * KXBYTE
-!radovan: K4WORD is not initialized
       LENR1  = K4WORD * KXBYTE + NDETMX * K8BYTE
       LENREC = MAX(LENR0,LENR2,LENR1)
 !.q
@@ -3421,7 +3435,7 @@ c#include "dcbbas.h"
         WRITE(*,"(/1X,'Dump TODM real part')")
         CALL OUTPUT(TODM(1,1,KREAL),1,NOCCSP,1,NOCCSP,
      &    NOCCSP,NOCCSP,1,LUPRI)
-        IF( KRANDI. EQ. KIMAG ) THEN
+        IF( KRANDI .EQ. KIMAG ) THEN
           WRITE(*,"(/1X,'Dump TODM imaginary part')")
           CALL OUTPUT(TODM(1,1,KIMAG),1,NOCCSP,1,NOCCSP,
      &      NOCCSP,NOCCSP,1,LUPRI)

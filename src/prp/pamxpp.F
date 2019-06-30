@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -112,7 +112,7 @@ C
       NEXCF  = MAXEXC*NBSYM
       IF(ORBXPP) THEN
         CALL MEMGET('INTE',KPPO,4*NORBT,WORK,KFREE,LFREE)
-        CALL DEFORB(WORK(KPPO),NCLS_XPP,3,XPP_INDSTR,
+        CALL DEFORB(WORK(KPPO),NCLS_XPP,XPP_INDSTR,
      &              WORK,KFREE,LFREE,IPRXPP)
         NI = 0
 C       Number of inactive orbitals
@@ -152,8 +152,7 @@ C     Initialize:
      &            WORK(KSSYM),WORK,KFREE,LFREE)
 C
  10   CONTINUE
-      IF (XPPANA) CALL ANAXRS(XPP_INDSTR,XPP_SKIPEE,XPP_SKIPEP,
-     &                        WORK,KFREE,LFREE,IPRXPP)
+      IF (XPPANA) CALL ANAXRS(WORK,KFREE,LFREE,IPRXPP)
 C
       CALL MEMCHK('PRPXPP memory check',WORK,1)
 C     ... note: NOT MEMREL here as info is passed to calling
@@ -575,7 +574,7 @@ C&&&& INTENS: ask for oscillator strengths to order k in the wave vector
                    IMMAX = 0
                    IMMAX = 0
                  ELSE
-                   WRITE(6,*) 
+                   WRITE(LUPRI,*) 
      &   '* User asked for oscillator strengths to order :',KVAL_OSC
                    CALL QUIT('XPPINT: Not implemented yet !')
                  ENDIF
@@ -840,7 +839,8 @@ C     ************************************
 C     *** Set orbital strings          ***
 C     ************************************
 C
-      CALL OSTRING(XPP_INDSTR,XPP_SKIPEE,XPP_SKIPEP,WORK,KFREE,LFREE)
+      CALL OSTRING(XPP_INDSTR,XPP_SKIPEE,XPP_SKIPEP,IPRXPP,
+     &             WORK,KFREE,LFREE)
 C
 C     ************************************
 C     *** Sort operators on symmetries ***
@@ -887,7 +887,7 @@ C     Indicate from vectors are read...
 C
       LUBUF = 22
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','EIGEXT')
-      CALL REACMO(LUBUF,'DFCOEF',DUM,DUM,DUM,XPPERG,1,DUM,IDUM,IDUM)
+      CALL REACMO(LUBUF,'DFCOEF',DUM,DUM,DUM,XPPERG,1)
 
       CLOSE(LUBUF,STATUS='KEEP')
 C
@@ -980,7 +980,7 @@ C
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','GETPPF')
       CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
       CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),
-     &              TOTERG,10,WORK,KFREE,LFREE)
+     &              TOTERG,10)
       CLOSE(LUBUF,STATUS='KEEP')
 C
       IOFF  = 1
@@ -1248,7 +1248,7 @@ C.........excitation from unbarred to barred (or vice versa);
 C.........Total mj of excited state is therefore mj(virtual)+mj(inactive)
             IFAC = +1
           ELSE
-            WRITE(6,'(A,A3)') 
+            WRITE(LUPRI,'(A,A3)') 
      &      'XPPsupersymmetry: something went wrong! Irrep: ',REP(IREP)
           ENDIF
           DO IEXC = 1,NEXCNV
@@ -1387,7 +1387,7 @@ C
                ELSEIF(ISPIN.EQ.ISYMAX(1,2)) THEN
                  WRITE(SYMLAB(1:2),'(A2)') 'Tx'
                ELSE
-                 WRITE(6,*)
+                 WRITE(LUPRI,*)
      &            'ERROR: Spin-space symmetry failed',ISPIN,ISPACE
                ENDIF
                WRITE(LUPRI,'(0P,A17,A5,F30.4,A)')
@@ -1458,11 +1458,10 @@ C
 C              Dipole oscillator strengths
 C
                IF (OSCIL .GE. 1.0D-3) THEN
-                   PFMT = '(5X,A,F12.8)'
+                   PFMT = '(/5X,A,F12.8)'
                 ELSE
-                   PFMT = '(5X,A,1P,E16.8)'
+                   PFMT = '(/5X,A,E16.8)'
                 END IF
-                WRITE(LUPRI,'()')
                 WRITE(LUPRI,PFMT)
      &             '-> dipole oscillator strength (length)   :',OSCILL
                 WRITE(LUPRI,PFMT)
@@ -1489,7 +1488,7 @@ c                 DO JHSO=1,3
 c                    XDIP=XDIP+PHOSMAT(I,JHSO,I)
 c                 END DO
 c                 XRATE = 4*ALPHAC**3*omega**3/3*XDIPL**2/AUTIME
-c                 WRITE(LUW6,'(2A,G12.5)')
+c                 WRITE(LUPRI,'(2A,G12.5)')
 c    &               ' Partial rates: ',
 c    &               CHAR(ICHAR('X')+I-1)//'-polarization     ',
 c    &               XRATE
@@ -1863,7 +1862,7 @@ C
 #include "ibtfun.h"
       CALL HEADER('Linear response excitations; final output ',-1)
 C.....Find total number of excitations
-      NEXC = ISUM(NBSYM,KEXCNV,1)+1
+      NEXC = ISUM(NBSYM,KEXCNV,1) + 1 ! + reference state
       allocate(EXCERG(NEXC))
       allocate(INDX(NEXC))
       allocate(IRPS(NEXC))
@@ -1912,7 +1911,7 @@ C     ===============
           ENDDO
         ENDIF
 C.......distribute excitation energies on linear symmetries
-        allocate(EXCBUF(NEXC))
+        allocate(EXCBUF(NEXC+1)) ! Miro: NEXC+1 due to out-of-bounds fix
         allocate(iebuf(2,NEXC))
 C.......we include the ground state
         EXCBUF(1) = 0.0D0        
@@ -1984,12 +1983,12 @@ C     ==========================================================================
           SYMLAB(IREP+IOFF)='3'//REP(IREP)     
         ENDDO
 C.......distribute excitation energies on spinfree symmetries
-        allocate(EXCBUF(NEXC))
+        allocate(EXCBUF(NEXC+1)) ! Miro: NEXC+1 due to out-of-bounds fix
         allocate(iebuf(2,NEXC))
 C.......we include the ground state
         EXCBUF(1) = 0.0D0        
         IEBUF(1,1) = 1
-        IEBUF(1,1) = 1
+        IEBUF(2,1) = 1
         N_EV(1)   = 1
         IRPS(1)   = 1
         ICNT = 1
@@ -2129,7 +2128,7 @@ C.......All crossterms
      &        PRPNAM(INDPRA),REP(IREP),TTYP(ITIMA),
      &        PRPNAM(INDPRB),REP(IREP),TTYP(ITIMB)
               WRITE(LUPRI,'(80A1)') ('=',I=1,80)
-              WRITE(LUPRI,'(3X,A,7X,A,14X,A)') 'eigenvalue (au)',
+              WRITE(LUPRI,'(3X,A,9X,A,11X,A)') 'eigenvalue (au and eV)',
      &        'f','Higher symmetry (if detected)'
               NTMOM = 0
               MEXC = KEXCNV(ISYM)
@@ -2141,13 +2140,14 @@ C.......All crossterms
                     NTMOM=NTMOM+1
                     ILAB = ISSYM(IEXC,ISYM)
                     OSCIL = D2*AMOM*BMOM*OMEGA(IEXC,ISYM)
-                    WRITE(LUPRI,'(F18.10,3X,F14.10,5X,A4)')
-     &              OMEGA(IEXC,ISYM), OSCIL, SYMLAB(ILAB)
+                    WRITE(LUPRI,'(F13.6,F12.5,F17.10,5X,A4)')
+     &              OMEGA(IEXC,ISYM), OMEGA(IEXC,ISYM)*XTEV,
+     &              OSCIL, SYMLAB(ILAB)
                   ENDIF
                 ENDIF
               ENDDO
               IF(NTMOM.EQ.0) THEN
-                WRITE(LUPRI,'(A,E9.4)')
+                WRITE(LUPRI,'(A,1P,E9.2)')
      &            '* No values above threshold : ',TTOL
               ENDIF
             ENDIF
@@ -2172,16 +2172,18 @@ C.......Isotropic contribution
           ENDDO
         ENDDO
         CALL DSCAL(NDIM,D2R3,FVAL,1)
-        WRITE(6,'(/A)') '* ISOTROPIC DL-DL OSCILLATOR STRENGTHS (f)'
-        WRITE(LUPRI,'(80A1)') ('=',I=1,42)
+        WRITE(LUPRI,'(/A)')
+     &  '* Isotropic DL-DL non-zero oscillator strengths (f)'
+        WRITE(LUPRI,'(80A1)') ('=',I=1,51)
         WRITE(LUPRI,'(A)') 'DL = dipole length'
         WRITE(LUPRI,'(A)') 'Rate = Dipole radiation rate (s-1)'
         WRITE(LUPRI,'(A)') 
      &      'Lifetime = corresponding radiation lifetime (s)'
         WRITE(LUPRI,'(/A)')
-     &  'Level     Frequency     f             Rate           Lifetime'
+     &  'Level  Frequency (eV)    f           Rate         Lifetime'//
+     &     '    Symmetry'
         WRITE(LUPRI,'(80A1)') ('-',I=1,72)
-        DO JEXC = 2,NEXC
+        DO JEXC = 2,NEXC ! skip reference state
           II = INDX(JEXC)
           IEXC = IEERG(1,II)
           ISYM = IEERG(2,II)
@@ -2189,13 +2191,13 @@ C.......Isotropic contribution
           IF(OSCIL .GT. 1.0D-8) THEN
             ILAB = ISSYM(IEXC,ISYM)
             RATE = D2*ALPHAC**3*OSCIL*OMEGA(IEXC,ISYM)**2/AUTIME
-            WRITE(6,'(I5,F17.10,F12.8,2(3X,E12.5),3X,A4)') 
-     &           JEXC,OMEGA(IEXC,ISYM),OSCIL,RATE,D1/RATE,SYMLAB(ILAB)
+            WRITE(LUPRI,'(I5,F13.5,F12.6,1P,2E15.5,3X,A4)') 
+     &      JEXC-1,OMEGA(IEXC,ISYM)*XTEV,OSCIL,RATE,D1/RATE,SYMLAB(ILAB)
           ENDIF
         ENDDO
         WRITE(LUPRI,'(80A1)') ('-',I=1,72)
         TOT = DSUM(NDIM,FVAL,1)
-        WRITE(6,'(A,F12.5)') 'Sum of oscillator strenghts: ',TOT
+        WRITE(LUPRI,'(A,F12.5)') 'Sum of oscillator strengths: ',TOT
         deallocate(fval)
       ENDIF
  10   CONTINUE

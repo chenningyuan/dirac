@@ -22,6 +22,8 @@
  0 0
 .EVCCNV
  1.0D-4         !we use poor convergence threshold for the test
+.MOSTART        !we need to start in the same way as the test was made
+BNCORR
 **PROPERTIES
 .FIRST ORDER HYPERPOLAR
 *EXPECTATION

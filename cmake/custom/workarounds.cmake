@@ -28,6 +28,15 @@ if ( ENABLE_STATIC_LINKING AND BLAS_TYPE MATCHES OPENBLAS AND (CMAKE_Fortran_COM
     list(REMOVE_ITEM CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES  "pthread")
     list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES  "pthread")
     list(REMOVE_ITEM CMAKE_CXX_IMPLICIT_LINK_LIBRARIES  "pthread")
-    message(STATUS "Linking flag -lpthread fremoved from CMAKE_SHARED_LIBRARY_LINK_Fortran/CXX/C_FLAGS (OpenMPI/Intel,GNU/OPENBLAS/static)")
+    message(STATUS "Linking flag -lpthread removed from CMAKE_SHARED_LIBRARY_LINK_Fortran/CXX/C_FLAGS (OpenMPI/Intel,GNU/OPENBLAS/static)")
 endif()
+
+if ( ENABLE_STATIC_LINKING AND BLAS_TYPE MATCHES OPENBLAS AND (CMAKE_Fortran_COMPILER_ID MATCHES Intel) AND (MPI_FOUND AND ENABLE_MPI) )
+    #miro: workaround to get dirac.x for OpenMPI/Intel/OPENBLAS/static linking
+    list(REMOVE_ITEM CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES  "dl")
+    list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES  "dl")
+    list(REMOVE_ITEM CMAKE_CXX_IMPLICIT_LINK_LIBRARIES  "dl")
+    message(STATUS "Linking flag -ldl removed from CMAKE_SHARED_LIBRARY_LINK_Fortran/CXX/C_FLAGS (OpenMPI/Intel/OPENBLAS/static)")
+endif()
+
 

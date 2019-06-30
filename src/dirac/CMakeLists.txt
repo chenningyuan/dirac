@@ -45,8 +45,7 @@ set(FIXED_DIRAC_FORTRAN_SOURCES
 )
 
 set(FREE_DIRAC_FORTRAN_SOURCES
-# dependency on interest !
-    ${PROJECT_SOURCE_DIR}/src/interest/module_interest_interface.F90
+   dirimpmos.F90
 #   dirmp2no.F needs 
     ${PROJECT_SOURCE_DIR}/src/relccsd/relcc_cfg.F90
 # needs also input reader..
@@ -55,19 +54,32 @@ set(FREE_DIRAC_FORTRAN_SOURCES
     ${PROJECT_SOURCE_DIR}/src/input/input_reader_sections.F90
 )
 
+if(ENABLE_INTEREST)
+    set(FREE_DIRAC_FORTRAN_SOURCES ${PROJECT_SOURCE_DIR}/src/interest/module_interest_interface.F90 ${FREE_DIRAC_FORTRAN_SOURCES})
+endif()
+
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FREE_DIRAC_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
     set_source_files_properties(${FIXED_DIRAC_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
 endif()
 
+
+if(ENABLE_RUNTIMECHECK)
+    message(STATUS "runtime-check flags activated for the 'dirac' module without exceptions")
+    set_source_files_properties(${FREE_DIRAC_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+    set_source_files_properties(${FIXED_DIRAC_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+endif()
+
 add_library(
     dirac
+    OBJECT
     ${FIXED_DIRAC_FORTRAN_SOURCES}
     ${FREE_DIRAC_FORTRAN_SOURCES}
 )
 
 # add intermodule dependendencies
 add_dependencies(dirac main)
+add_dependencies(dirac abacus)
 add_dependencies(dirac gp)
 add_dependencies(dirac xcfun_fortran_bindings)
 add_dependencies(dirac embedding)

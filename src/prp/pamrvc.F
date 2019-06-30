@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -18,6 +18,9 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
+
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xrssvc */
@@ -416,7 +419,7 @@ C     SB_(si) = -FB_(si) - GB_(si)
 C
 C     with
 C
-C     FA_(si) = WA_(st)h_(ti) - h_(st)WA_(ti)
+C     FA_(si) = WA_(st)F_(ti) - F_(st)WA_(ti)
 C
 C     GA_(si) = [g_(si,xy)-g_(sy,xi)] DA_(yx)
 C
@@ -533,7 +536,7 @@ C     ------------------------------------------------
 C
       NDIM = NCSIM + NOSIM
       IF (NASHT .GT. 0) NDIM = NDIM + NOSIM
-      CALL MEMGET('REAL',KF,NDIM*N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','F',KF,NDIM*N2BBASXQ,WORK,KFREE,LFREE)
 C
       IF (LSVCFG(1)) THEN
         CALL GMOLITX(WORK(KF),WORK(KDVT),WORK(KDV),
@@ -747,9 +750,14 @@ C
 C           inactive density matrix...
 C
  
-            NI  = NISH(I2) - NFRO(I2)
-            II  = IORB(I2) + NPSH(I2) + NFRO(I2) + 1
-            JI  = ICMOQ(I2) + (NPSH(I2)+ NFRO(I2))*NFBAS(I2,0) + 1
+          ! hjaaj Feb 2017: do not exclude frozen orbitals here:
+          !   simpler code, and does not matter for performance.
+          ! NI  = NISH(I2) - NFRO(I2)
+          ! II  = IORB(I2) + NPSH(I2) + NFRO(I2) + 1
+          ! JI  = ICMOQ(I2) + (NPSH(I2)+ NFRO(I2))*NFBAS(I2,0) + 1
+            NI  = NISH(I2)
+            II  = IORB(I2) + NPSH(I2) + 1
+            JI  = ICMOQ(I2) + NPSH(I2)*NFBAS(I2,0) + 1
 C
 C          Generate modified density matrix as transformation MO to AO
 C
@@ -1387,7 +1395,7 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 C
-      DIMENSION IHRMOP(NTSIM),IFCKOP(NTSIM),ISYMOP(NTSIM)
+      DIMENSION IHRMOP(*),IFCKOP(*),ISYMOP(*)
       DIMENSION IBCVC(*),IBEVC(*),IBPVC(*),IBTYP(2,*)
 C
       IM = 0
@@ -1874,7 +1882,6 @@ C
           IND = IBVEC(IREC)
           IH  = IBTYP(2,IND)
           IF(IH.EQ.ITYP) THEN
-!            CALL READAC(LUBVEC,NBDIM,BVBUF,IREC+IRECOFF)
           CALL READ_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVBUF)
             IBOFF = 1
             DO IFREQ = 1,MFREQ
@@ -1894,7 +1901,6 @@ C
           INDI = 2*IND
           IH  = IBTYP(2,IND)
           IF(IH.EQ.ITYP) THEN
-!            CALL READAC(LUBVEC,NBDIM,BVBUF,IREC+IRECOFF)
           CALL READ_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVBUF)
             IBOFF = 1
             DO IFREQ = 1,MFREQ
@@ -3848,7 +3854,9 @@ C        IBCVC, IBEVC, IBPVC: index stuff
 C        NPOS   : something needed for the call to TWOFCK
 C
 C     Output:
-C        FMO    :  Fock matrices.
+C        FMO    : Fock matrices in MO basis: FMO(N2ORBXQ,NDSIM)
+C                 NOTE: FMO is used as scratch space for AO matrices and
+C                 it should therefore be allocated with NDSIM*NBBASXQ.
 C
 C     Written by J. Thyssen - Nov 24 2000
 C     Replaces GMOLI by T.Saue Sep 1996
@@ -3918,7 +3926,7 @@ C
          ENDIF
          IF (IPRXRS .GE. 10) IOPT = IOPT + 1
          CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
-     &               TOTERG,IOPT,WORK,KFREE,LFREE)
+     &               TOTERG,IOPT)
          CLOSE(LUBUF,STATUS='KEEP')
       ELSE
 C
@@ -3992,6 +4000,11 @@ C***********************************************************************
         use pcm_linear_response, only: pcm_oit_asc
         use pcmmod_cfg
 #endif
+
+#ifdef HAS_PELIB
+        use polarizable_embedding, only: pe_master
+        use pe_variables, only: peqm, pe_gspol
+#endif
         use orbital_rotation_indices
 
 
@@ -4007,9 +4020,6 @@ C
 #include "dgroup.h"
 #include "dcbham.h"
 #include "dcbgen.h"
-#ifdef MOD_DNF
-#include "densfit.h"
-#endif
 C
       DIMENSION FMO(N2ORBXQ,*), DV(*), DVT(*), CMO(*),IBEIG(*)
       DIMENSION BEVEC(*), BPVEC(*), FAO(N2BBASXQ,*)
@@ -4056,10 +4066,6 @@ C
 C
 C     Calculate AO Fock matrices
 C     --------------------------
-C
-#ifdef MOD_DNF
-      DODFLR = .TRUE.
-#endif
       CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FAO,FMO,NDMAT,NPOS,INTFLG,
      &     IPRTWO,WORK(KFREE),LFREE)
 
@@ -4067,10 +4073,6 @@ C
 !       ================================
 
         if (dirac_cfg_dft_calculation) then
-
-#ifdef MOD_DNF
-        if (.not. df_fitvxc) then
-#endif
 
           if (ncsim > 0) then
             call quit('gmolitx1: mcscf-dft not implemented')
@@ -4086,7 +4088,7 @@ C
 
           call generate_num_grid(work(kbuf))
 #ifdef VAR_MPI
-          if (parcal) call dirac_parctl(4)
+          if (parcal) call dirac_parctl( XCINT_PAR )
 #endif
           call integrate_xc (xc_mat_dim            = ntbas(0),
      &                       xc_nz                 = nz,
@@ -4102,10 +4104,6 @@ C
 
           call memrel('gmoli1.dft', work, 1, kbuf, kfree, lfree)
 
-#ifdef MOD_DNF
-        end if
-#endif
-
         end if
 
         if (dirac_cfg_fde_response) then
@@ -4120,6 +4118,9 @@ C
 
               call fde_dirac_set_isymop(isymop)
               call fde_dirac_set_ihrmop(ihrmop)
+#ifdef VAR_MPI
+          if (parcal) call dirac_parctl( FDE_PAR )
+#endif
               call fde_dirac_emb_matrices_via_integration(       
      &                       fde_mat_dim            = ntbas(0),
      &                       fde_nz                 = nz,
@@ -4177,8 +4178,17 @@ C
               deallocate(mep_oit_asc)
            endif
         endif 
+#endif      
+#ifdef HAS_PELIB
+        if (peqm .and. .not. pe_gspol) then
+           if (IPRXRS .gt. 3) then
+              write(lupri,'(/A)') ' Polarizable embedding'//
+     &        ' contributions included in linear response.'
+           endif
+           call pelib_ifc_response(fao, fmo, ndmat, ihrmop)
+        endif
 #endif
- 
+
 C
 C
 C     *******************************************
@@ -4959,12 +4969,12 @@ C
       CALL RTKTIME(.TRUE.,16)
 C
       LFPV = NZ*NASHT*NORBT
-      CALL MEMGET('REAL',KFPV,LFPV,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FPV',KFPV,LFPV,WORK,KFREE,LFREE)
 C
       IREP = JSYMOP - 1
       IM = 0
 C
-      CALL MEMGET('REAL',KFC,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FC',KFC,N2ORBXQ,WORK,KFREE,LFREE)
       CALL GETMAT('FCMO',WORK(KFC),IPRXRS,FKRMC,WORK(KFREE),LFREE)
 C
 C
@@ -5021,12 +5031,16 @@ C
 C
       IF(IPRXRS.GE.5) THEN
          CALL HEADER('Output from RSIGOC',-1)
+      IF (NXOPE .GT. 0) THEN
          WRITE(LUPRI,'(/I5,A)') NCSIM,
      &        ' e-e orbital part of conf. sigma vectors'
-         CALL PRBVEC(LUPRI,SEVEC(1,1,1+NOSIM),NCSIM,NZXOPE)
+         CALL PRBVEC(LUPRI,SEVEC(1,1,1+NOSIM),NCSIM,NXOPE)
+      END IF
+      IF (NXOPP .GT. 0) THEN
          WRITE(LUPRI,'(/I5,A)') NCSIM,
      &        ' e-p orbital part of conf. sigma vectors'
-         CALL PRBVEC(LUPRI,SPVEC(1,1,1+NOSIM),NCSIM,NZXOPP)
+         CALL PRBVEC(LUPRI,SPVEC(1,1,1+NOSIM),NCSIM,NXOPP)
+      END IF
       ENDIF
 C
       CALL MEMREL('RSIGOC',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -5081,7 +5095,7 @@ C
 C
 C
 C     ***************************
-C     *** e-e sigma vector(s) ***
+C     *** e-e trial vector(s) ***
 C     ***************************
 C
 C
@@ -5101,8 +5115,8 @@ C
             DFAC(2) = +1.0D00
          END IF
 C
-C        e-e part
-C        --------
+C        e-e part of sigma vector
+C        ------------------------
 C
          IF (NXOPE .GT. 0) THEN
            IF (NASHT.NE.0) THEN
@@ -5116,8 +5130,8 @@ C
            ENDIF
          END IF
 C
-C        e-p part
-C        --------
+C        e-p part of sigma vector
+C        ------------------------
 C
          IF (NXOPP .GT. 0) THEN
            IF (NASHT.NE.0) THEN
@@ -5137,7 +5151,7 @@ C
 C
 C
 C     ***************************
-C     *** e-p sigma vector(s) ***
+C     *** e-p trial vector(s) ***
 C     ***************************
 C
 C
@@ -5157,8 +5171,8 @@ C
             DFAC(2) = +1.0D00
          END IF
 C
-C        e-e part
-C        --------
+C        e-e part of sigma vector
+C        ------------------------
 C
          IF (NXOPE .GT. 0) THEN
            IF (NASHT.NE.0) THEN
@@ -5174,8 +5188,8 @@ C
            ENDIF
          END IF
 C
-C        e-p part
-C        --------
+C        e-p part of sigma vector
+C        ------------------------
 C
          IF (NXOPP .GT. 0) THEN
            IF (NASHT.NE.0) THEN
@@ -5198,15 +5212,15 @@ C
       CALL MEMREL('RORBGRD.KFPV',WORK,KFPV,KFPV,KFREE,LFREE)
 C
       IF(IPRXRS.GE.5) THEN
-        IF (NZXOPE .GT. 0) THEN
+        IF (NXOPE .GT. 0) THEN
          WRITE(LUPRI,'(/I5,A)') NOSIM,
      &        ' (e-e) orbital part of orbital (e-e) sigma vectors'
-         CALL PRBVEC(LUPRI,SEVEC(1,1,1),NOSIM,NZXOPE)
+         CALL PRBVEC(LUPRI,SEVEC(1,1,1),NOSIM,NXOPE)
         ENDIF
-        IF (NZXOPP .GT. 0) THEN
+        IF (NXOPP .GT. 0) THEN
          WRITE(LUPRI,'(/I5,A)') NOSIM,
      &        ' (e-p) orbital part of orbital (e-p) sigma vectors'
-         CALL PRBVEC(LUPRI,SPVEC(1,1,1),NOSIM,NZXOPP)
+         CALL PRBVEC(LUPRI,SPVEC(1,1,1),NOSIM,NXOPP)
         ENDIF
       ENDIF
 C
@@ -5644,7 +5658,7 @@ C     Generate one-index transformed Fock-matrices
 C     for use in generation of sigma vectors
 C
 C
-C     Bit 1 of ITYP = 0   e-e  rotations in BMAT
+C     Bit 1 of ITYP = 0   e-e rotations in BMAT
 C                     1   e-p rotations in BMAT
 C     Bit 2 of ITYP = 0   inactive density matrix
 C                     1   active density matrix

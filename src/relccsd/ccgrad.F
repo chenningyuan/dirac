@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -24,7 +24,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCDENSC(IOPT,T1,S1,T2,S2,
      &                   BUF1,BUF2,BUF3,DOO,DVV,DVO,DOV,DMO)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -298,7 +298,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       SUBROUTINE CONVDM(BUF1,BUF2,DOO,DVV,DVO,DOV,dmo)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -312,13 +312,17 @@ C     DOOTODIR
 C     DVVTODIR
 C---------------Last modified------------------------------------------
 C
-C     Author : Joost van Stralen - March 2002
+C     Author : Joost van Stralen - March 2002 : Extended by Avijit Shee
+C     for CC
 C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 DOO(*),DVV(*),DOV(*),DVO(*)
       REAL*8 BUF1(*),BUF2(*)
       REAL*8 DMO(*)
+      REAL*8 sym_factor !we will change this factor depending on the
+                        !fact whether our desired property opeartor is
+                        !hermition or anti-hermition.   
 C
 C
 C---------------Common Blocks--------------------------------------
@@ -326,10 +330,12 @@ C
 #include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
+#include "dgroup.h"
 C
 C---------------Local variables--------------------------------------
 C
-       real*8, allocatable :: DOO_TRANS(:),DVV_TRANS(:),D_TRANS(:) 
+       real*8, allocatable :: DOO_TRANS(:),DVV_TRANS(:),D_TRANS(:)
+      integer a, ab, ai,b,i,ia,ij,irep,j 
 
 C---------------Executable code--------------------------------------
 C
@@ -351,17 +357,18 @@ C                                            unbar + bar
 C######################################################################
 C
 
+      sym_factor = 1.0d0 !1.0d0 for the hermition part of density matrix.
+                         !it will be -1.0d0 for the anti-hermition part. 
 
-!!!   ALLOCATE(D_TRANS(NFVO*RCW))
+      ALLOCATE(D_TRANS(NFVO*RCW))
 
-!!!   CALL SRT1C1 (NREP,NO,NV,DVO,D_TRANS)
+      CALL SRT1C1 (NREP,NO,NV,DVO,D_TRANS)
 
-!!!   CALL XAXPY (NFVO,A1,D_TRANS,1,DOV,1)
+      CALL XAXPY (NFVO,sym_factor*A1,D_TRANS,1,DOV,1)
 
-!!!   CALL XSCAL (NFVO,AP5,DOV,1)
+      CALL XSCAL (NFVO,AP5,DOV,1)
 
-!!!   DEALLOCATE(D_TRANS)
-
+      DEALLOCATE(D_TRANS)
 
       CALL DZERO(DMO,NORBT*NORBT*NZ)
 
@@ -397,16 +404,15 @@ C##############
 
       buf1(1:nfoo*rcw) = 0.0d0
 
-!!!!  ALLOCATE(DOO_TRANS(NFOO*RCW))
+      ALLOCATE(DOO_TRANS(NFOO*RCW))
 
-!!!!  CALL SRT1C1 (NREP,NO,NO,DOO,DOO_TRANS)
+      CALL SRT1C1 (NREP,NO,NO,DOO,DOO_TRANS)
 
-!!!!  CALL XAXPY (NFOO,A1,DOO_TRANS,1,DOO,1)
+      CALL XAXPY (NFOO,sym_factor*A1,DOO_TRANS,1,DOO,1)
 
-!!!!  DEALLOCATE(DOO_TRANS)
+      DEALLOCATE(DOO_TRANS)
 
-!!!!  CALL XSCAL (NFOO,AP5,DOO,1)
-
+      CALL XSCAL (NFOO,AP5,DOO,1)
 
       IJ = 0
       DO IREP = 1, NREP
@@ -428,12 +434,7 @@ C
       IF (CARITH) THEN
          CALL DCOPY(NFOO,BUF2,1,BUF1(NFOO+1),1)
       ENDIF
-c     do i = 1, nfoo
-c        print*,'real DOO ',i,buf1(i)
-c        print*,'imag DOO ',i,buf1(i+nfoo)
-c     enddo
-C
-c     print*,'laat oo deel dmo op 0'
+
       CALL DOOTODIR(dmo,BUF1,NO,nfoo,NREP,RCW)
 
 C##############
@@ -442,12 +443,12 @@ C##############
 
       buf1(1:nfvv*rcw) = 0.0d0
 
-!!!!  ALLOCATE(DVV_TRANS(NFVV*RCW))
-!!!!  CALL SRT1C1 (NREP,NV,NV,DVV,DVV_TRANS)
-!!!!  CALL XAXPY (NFVV,A1,DVV_TRANS,1,DVV,1)
-!!!!  DEALLOCATE(DVV_TRANS)
+      ALLOCATE(DVV_TRANS(NFVV*RCW))
+      CALL SRT1C1 (NREP,NV,NV,DVV,DVV_TRANS)
+      CALL XAXPY (NFVV,sym_factor*A1,DVV_TRANS,1,DVV,1)
+      DEALLOCATE(DVV_TRANS)
 
-!!!!  CALL XSCAL (NFVV,AP5,DVV,1)
+      CALL XSCAL (NFVV,AP5,DVV,1)
 
       AB = 0
       DO IREP = 1, NREP
@@ -470,12 +471,7 @@ C
          CALL DCOPY(NFVV,BUF2,1,BUF1(NFVV+1),1)
       ELSE
       ENDIF
-c     do i = 1, nfvv
-c        print*,'real DVV ',i,buf1(i)
-c        print*,'imag DVV ',i,buf1(i+nfvv)
-c     enddo
-C
-c     print*,'laat vv deel dmo op 0'
+
       CALL DVVTODIR(dmo,BUF1,NV,nfvv,NREP,RCW)
 
 C##############
@@ -484,13 +480,9 @@ C##############
 
       buf1(1:nfvo*rcw) = 0.0d0
 
+      CALL SRT1C1 (NREP,NV,NO,DOV,DVO)
 
-!     ALLOCATE(D_TRANS(NFVO*RCW))
-!     CALL SRT1C1 (NREP,NV,NO,DVO,D_TRANS)
-
-!     CALL XAXPY (NFVO,A1,DOV,1,DVO,1)
-
-!     CALL XSCAL (NFVO,AP5,DVO,1)
+      CALL XSCAL (NFVO,sym_factor*A1,DVO,1)
 
       IA = 0
       DO IREP = 1, NREP
@@ -506,8 +498,6 @@ C##############
             ENDDO
          ENDDO
       ENDDO
-
-!      DEALLOCATE(D_TRANS)
 
       IF (CARITH) THEN
          CALL DCOPY(NFVO,BUF2,1,BUF1(NFVO+1),1)
@@ -526,7 +516,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                   EVO,EOV,D2VO,D2OV,DG,CC1,BB1,BB2,CONV)
 C
       use interface_to_mpi
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -546,7 +536,7 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      INTEGER IOPT
+      INTEGER IOPT,NSP,IREPSPI,NBUF2,NBUF3,CC1,BB1,BB2,CONV
       REAL*8 T1(*),S1(*),T2(*),S2(*)
       REAL*8 DOO(*),DVO(*),DOV(*),DVV(*)
       REAL*8 D2VO(*),D2OV(*),DG(*)
@@ -569,6 +559,7 @@ C
       CHARACTER*8 NAME
       COMPLEX*16 EPHASE(MAXOP)
       LOGICAL BDONE,USEDZ,RIGHT
+      integer dum,eoff,eoper,jprnt,k,m,maxit,n
 C
 C---------------Executable code--------------------------------------
 C
@@ -657,7 +648,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE MP2ZVEC(T2,BUF1,BUF2,BUF3,NBUF3,XMO,DMO)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -678,6 +669,7 @@ C
       REAL*8 DMO(*)
       REAL*8 XMO(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)
+      INTEGER NBUF3
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -688,6 +680,8 @@ C
 #include "complex.inc"
 C
 C---------------Local variables--------------------------------------
+C
+      integer kfree, lfree
 C
 C---------------Executable code--------------------------------------
 C
@@ -746,7 +740,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CONVXM(BUF1,BUF2,XVO,XMO)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -771,8 +765,11 @@ C
 #include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
+#include "dgroup.h"
 C
 C---------------Local variables--------------------------------------
+C
+       integer a, ai, i, irep
 C
 C---------------Executable code--------------------------------------
 C
@@ -829,7 +826,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXPVAL (DOO,DVV,DVO,DOV,EOO,EVV,EVO,EOV,EPHASE,CEXPA)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -859,6 +856,7 @@ C---------------Local variables--------------------------------------
 C
       COMPLEX*16 EXPA,EXPA_SUM
       REAL*8 DDOT,ZDOT
+      integer ii,irep
 C
 C---------------Executable code--------------------------------------
 C
@@ -946,7 +944,7 @@ C
 !     !> read ibeig (info array on boson irreps) from DFCOEF
       if( linear .or. spinfr )then
         call opnfil(lucoef,'DFCOEF','OLD','RIBEIG ')
-        call reacmo_no_work(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8)
+        call reacmo(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8)
         close(lucoef,STATUS='KEEP')
       end if
 C
@@ -1270,6 +1268,12 @@ C---------------Executable code--------------------------------------
             FILE_NAME    = 'CCDENS'
             ADD_2_FOCK   = .TRUE.
             IERR         = 0
+         CASE ("EOM ")
+            WRITE (LUPRI,*) " Retrieving EOMCC density matrix from file"
+            LABEL        = 'EOM DENS'
+            FILE_NAME    = 'CCDENS'
+            ADD_2_FOCK   = .FALSE.
+            IERR         = 0
          CASE ("MC  ")
             WRITE (LUPRI,*) " Retrieving MCSCF density matrix from file"
             LABEL        = 'MC  DENS'
@@ -1305,6 +1309,7 @@ C     Read the appropriate correlated density from file
       FND =  FNDLAB(LABEL,MCCDENS)
       CALL READT(MCCDENS,NORBT*NORBT*NZ,DMO)
       CLOSE(Unit=MCCDENS,Status='KEEP')
+!      CLOSE(Unit=MCCDENS,Status='DELETE')
 
       
 C     Add the closed shell Hartree-Fock contribution
@@ -1326,7 +1331,107 @@ C       The add_two routine scales by 2, scale back to the orginal afterwards
             CALL DENSMO_TO_DENSAO (DMO,DMAT)
       END SELECT
 
+      DEALLOCATE(DMO)
       END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GET_EOM_DENSITY (BASIS,STATE,DMAT,IERR)
+C
+C---------------Description--------------------------------------------
+C
+C     Retrieve relaxed density matrix for processing by other modules
+C     of DIRAC (currenty only first-order properties)
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "implicit.h"
+#include "files.inc"
+#include "priunit.h"
+#include "mxcent.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+C
+C---------------Calling variables--------------------------------------
+C
+      PARAMETER (HALF=0.5D0)
+      CHARACTER*2 BASIS                  ! Representation
+      REAL*8 DMAT(*)                     ! Density matrix
+      INTEGER IERR                       ! Error code
+      INTEGER STATE                      ! Number of state for which density has been stored  
+C
+C---------------Local variables--------------------------------------
+C
+      REAL*8, ALLOCATABLE:: DMO(:,:,:)   ! Density matrix in MO basis
+      LOGICAL FND,FNDLAB,ADD_2_FOCK
+      CHARACTER*8 LABEL
+      CHARACTER*6 FILE_NAME
+      INTEGER dlength,dstart  
+      INTEGER, PARAMETER :: EOMDEN=299
+C
+C---------------Executable code--------------------------------------
+
+            ADD_2_FOCK = .FALSE.
+
+            WRITE (LUPRI,*) " Retrieving EOMCC density matrix from file"
+           ADD_2_FOCK   = .TRUE.
+!              ADD_2_FOCK = .FALSE.
+            IERR         = 0
+
+C     Read the appropriate correlated density from file
+
+      ALLOCATE (DMO(NORBT,NORBT,NZ),STAT=IERR)
+      IF (IERR.NE.0) THEN
+        CALL QUIT('Error in DMO allocation !')
+      ENDIF
+
+!      call waio_open(itapt+7)
+      
+      inquire(iolength=dlength) DMO
+
+      dstart = (state-1)*norbt*norbt*nz+1    
+!      dlength = norbt*norbt*nz*8
+
+      open (eomden,file='EOM_DENS',access='direct',status='old',
+     &      recl=dlength)
+
+      read (eomden,rec=state) dmo
+
+!      write(*,*)(dmo(i,i,1),i=1,norbt) 
+!      call rread (itapt+7,dmo,dlength,dstart)
+      
+C     Add the closed shell Hartree-Fock contribution
+      IF(ADD_2_FOCK)THEN
+C       The add_two routine scales by 2, scale back to the orginal afterwards
+        CALL ADD_TWO_FOCK(DMO,.TRUE.,0)
+        CALL DSCAL(NZ*NORBT*NORBT,HALF,DMO,1)
+      END IF
+
+
+      SELECT CASE (BASIS)
+         CASE ("MO")
+            CALL DCOPY (N2ORBTQ,DMO,1,DMAT,1)
+         CASE ("AO")
+            CALL DENSMO_TO_DENSAO (DMO,DMAT)
+         CASE DEFAULT
+            WRITE (LUPRI,*) " Unknown or unimplemented basis: ",BASIS
+            WRITE (LUPRI,*) " Use density matrix in AO basis "
+            IERR = IERR + 2
+            CALL DENSMO_TO_DENSAO (DMO,DMAT)
+      END SELECT
+
+      deallocate(dmo)
+      
+      close (eomden,status='keep')
+      END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE STORE_CC_DENSITY (WF,DMO)
 C
@@ -1387,4 +1492,71 @@ C     without being able to do a replace or check for old data.
       CALL NEWLAB(EOFLABEL,MCCDENS,LUPRI)
       CLOSE(Unit=MCCDENS,Status='KEEP')
 
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE STORE_EOM_DENSITY (WF,STATE,DMO)
+C
+C---------------Description--------------------------------------------
+C     Storing relaxed EOM density matrix for processing by other modules
+C     of DIRAC (currenty only first-order properties)
+C     This should work with multi-state methods as well...
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Avijit Shee
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "implicit.h"
+#include "files.inc"
+#include "priunit.h"
+#include "mxcent.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+C
+C---------------Calling variables--------------------------------------
+C
+      CHARACTER*4 WF                     ! Wave function type
+      REAL*8, INTENT(IN):: DMO(*)                      ! Density matrix (MO-basis)
+      INTEGER STATE                      ! I designate each state by a Number
+C
+C---------------Local variables--------------------------------------
+C
+      CHARACTER*8 :: LABEL,EOFLABEL
+      LOGICAL, SAVE :: INIT=.FALSE.
+      LOGICAL :: FNDLAB
+      logical            :: exist
+      INTEGER, PARAMETER :: EOMDEN=299
+      integer :: dlength
+C---------------Executable code--------------------------------------
+ 
+      WRITE (LUPRI,*) "Storing the ",WF," density matrix on file"
+
+C     Write the correlated density to file
+C     Code should be replaced by proper storage routine, this just adds to the end of a file 
+C     without being able to do a replace or check for old data.
+
+      inquire(iolength=dlength) DMO(1:norbt*norbt*nz)
+
+      inquire(file='EOM_DENS', exist=exist)
+      if (exist) then
+
+      open (eomden,file='EOM_DENS',access='direct',status='old',
+     &      recl=dlength)
+
+      else
+
+       open (eomden,file='EOM_DENS',access='direct',status='new',
+     &      recl=dlength)
+     
+      endif
+
+      write (eomden,rec=state) dmo(1:norbt*norbt*nz)
+
+      close (eomden,status='keep')
+
+      print *,"done for state ",state
       END

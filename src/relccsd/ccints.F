@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -28,7 +28,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                  EPS,FOO,FVO,FVV,BREIT_LOC,SRTALL,INTERFACE_LOC)
 C
       use interface_to_mpi
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -59,7 +59,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       INTEGER*8 NVT
-      INTEGER NSP
+      INTEGER NSP,iprnt_loc
       INTEGER KR(-NSP:NSP),INDK(*),INDL(*)
       INTEGER INDEX(NSP,NSP,4,*),IBUF(7,*)
       INTEGER IREPSP(NSP,4),IREPSPI(NSP,MXREP,2)
@@ -76,9 +76,12 @@ C---------------Local variables--------------------------------------
 C
       REAL*8 E0,E1
       CHARACTER*10 DATEX,TIMEX*8
-      LOGICAL FOCKSP
+      LOGICAL FOCKSP,PERMSYM
       INTEGER*8 N5F,N5L,N6F,N6L,IND,ICOUNT
       CHARACTER*10 FNODE,LFNAM
+      integer dummy,i,idum,idummy,ind1,ind2,inze,ipass,irep,itrs,itrsgn
+      integer ityp,jtrs,mreader,n5,n6,nkr,nkr2,nonzr,npass,nsec,nsec5
+      integer nsec6,nze,INTTYP
 C
 C---------------Executable code--------------------------------------
 C
@@ -92,6 +95,11 @@ C
 C
       CALL FLSHFO (IW)
       FOCKSP = EQNS.EQ.'FOCKSP'
+      IF (INTERFACE_LOC(1:6).EQ.'DIRAC6'.AND..NOT.SPINFR) THEN
+         PERMSYM = .FALSE.
+      ELSE
+         PERMSYM = .TRUE.
+      END IF
 C
       IF (FOCKSP) THEN
          CALL FKINDEX (NSP,IREPSP,IREPSPI,INDEX)
@@ -180,11 +188,12 @@ C
 C
       CALL DAYTIME (DATEX,TIMEX)
       WRITE(IW,*)
-      WRITE(IW,*) 'Start sorting of integral classes at '//datex//timex
+      WRITE(IW,*) 
+     &     'Start sorting of integral classes at '//datex//' '//timex
       WRITE(IW,*)
 C
   100 CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,1,INDK,INDL,
-     &               NONZR,NZE,CBUF,IBUF,MREADER)
+     &               NONZR,NZE,CBUF,IBUF,MREADER,PERMSYM)
       IF (NONZR.LT.0) THEN
 C        We ran out of integrals on this node
          IF (MREADER.LT.NMPROC-1.AND.INTERFACE_LOC(6:6).EQ.'6') THEN
@@ -192,7 +201,7 @@ C            There will be more integrals to read on the next node
              MREADER = MREADER + 1
              GOTO 100
          ELSE
-C            This was the last node, we're done processing the integrals, goto the antisymmetrization step
+C            This was the last node, we are done processing the integrals, goto the antisymmetrization step
              GOTO 110
          ENDIF
       ELSE
@@ -206,7 +215,7 @@ C            This was the last node, we're done processing the integrals, goto t
             ITRS = IBUF(5,INZE)
             JTRS = IBUF(6,INZE)
             I    = IBUF(7,INZE)
-            IF (ITYP.EQ.1) THEN         
+            IF (ITYP.EQ.1) THEN
                IND = IOOOOTT(IREP) + (IND1-1)*NOOT(IREP) + IND2
                VOOOO(1,IND) = CBUF(1,I) * ITRS
                IF (CARITH) VOOOO(2,IND) = CBUF(2,I) * JTRS
@@ -281,7 +290,8 @@ C        call relcc_restart_check('OOOO to VOVO sorted integrals ',IW)
       ELSE
          CALL DAYTIME (DATEX,TIMEX)
          WRITE(IW,*)
-         WRITE(IW,*) 'Sorting of first 4 classes done at '//datex//timex
+         WRITE(IW,*) 
+     &         'Sorting of first 4 classes done at '//datex//' '//timex
       ENDIF
       CALL FLSHFO (IW)
 C
@@ -334,7 +344,7 @@ C
       CALL XCOPY (N5,A0,0,VVOVVA,1)
 C
   200 CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,14,INDK,INDL,
-     &               NONZR,NZE,CBUF,IBUF,MREADER)
+     &               NONZR,NZE,CBUF,IBUF,MREADER,PERMSYM)
       IF (NONZR.LT.0) THEN
          IF (MREADER.LT.NMPROC-1.AND.INTERFACE_LOC(6:6).EQ.'6') THEN
              MREADER = MREADER + 1
@@ -406,7 +416,7 @@ C
 C  end of IPASS LOOP
 C ----------------------
       CALL DAYTIME (DATEX,TIMEX)
-      WRITE(IW,'(A,I6,A)') '  Pass',ipass,' ended at '//datex//timex
+      WRITE(IW,'(A,I6,A)') ' Pass',ipass,' ended at '//datex//' '//timex
       CALL FLSHFO (IW)
       ENDDO
 C ----------------------
@@ -423,7 +433,7 @@ C        call relcc_restart_check('VOVV sorted integrals        ',IW)
       ELSE
          CALL DAYTIME (DATEX,TIMEX)
          WRITE(IW,*)
-         WRITE(IW,*) 'VOVV sorting done at '//datex//timex
+         WRITE(IW,*) 'VOVV sorting done at '//datex//' '//timex
       ENDIF
       CALL FLSHFO (IW)
 
@@ -470,7 +480,7 @@ C
       CALL XCOPY (N6,A0,0,VVVVVA,1)
 C
   300 CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,16,INDK,INDL,
-     &               NONZR,NZE,CBUF,IBUF,MREADER)
+     &               NONZR,NZE,CBUF,IBUF,MREADER,PERMSYM)
       IF (NONZR.LT.0) THEN
          IF (MREADER.LT.NMPROC-1.AND.INTERFACE_LOC(6:6).EQ.'6') THEN
              MREADER = MREADER + 1
@@ -541,7 +551,7 @@ C
 C     end of IPASS loop for the VVVV
 C --------------------------
       CALL DAYTIME (DATEX,TIMEX)
-      WRITE(IW,'(A,I6,A)') '  Pass',ipass,' ended at '//datex//timex
+      WRITE(IW,'(A,I6,A)') ' Pass',ipass,' ended at '//datex//' '//timex
       CALL FLSHFO (IW)
       ENDDO
 C --------------------------
@@ -549,8 +559,8 @@ C
   500 CLOSE(MDINT)
       CALL DAYTIME (DATEX,TIMEX)
       write(iw,*)
-      WRITE(IW,*) 'VVVV sorting done at '//datex//timex
-      CALL FLSHFO (IW)
+      WRITE(IW,*) 'VVVV sorting done at '//datex//' '//timex
+      CALL FLSHFO (IW)  
 C
 C
 C  NOW PASS THE BREIT INTEGRAL FILE IF DESIRED
@@ -587,8 +597,7 @@ C        call relcc_restart_check('VVVV sorted integrals         ',IW)
 C
   600 WRITE (IW,1006)
 C
-      CALL GETFM (INDEX,NSP,EPS,BUF1,BUF2,
-     &            VVOVO,VVOVOA,FOO,FVO,FVV,E0,E1)
+      CALL GETFM (INDEX,NSP,EPS,FOO,FVO,FVV,E0,E1)
 C
 C     This is a restart point : save the files and update status.
 C
@@ -616,8 +625,7 @@ C     when we run with the MOLMF(3) hamiltonian
               CALL QUIT('RDINTS: Coefficient file DFCOEF not found !')
           ENDIF
           CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RDINTS')
-          CALL REACMO_no_work(LUCOEF,'DFCOEF',DUMMY,DUMMY,IDUMMY,
-     &                        ORIG_TOTSCF,1)
+          CALL REACMO(LUCOEF,'DFCOEF',DUMMY,DUMMY,IDUMMY,ORIG_TOTSCF,1)
         ENDIF
 #if defined VAR_MPI
         call interface_mpi_BCAST(ORIG_TOTSCF,1,MASTER,
@@ -669,10 +677,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       end subroutine
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ADDPROP (PROP_NAME,FF_STRENGTH,NSP,FOCKR,FOCKI,
-     &                    PROPR,PROPI)
+      SUBROUTINE ADDPROP (PROP_NAME,FF_STRENGTH,NSP,FOCKR,FOCKI)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -698,7 +705,6 @@ C
 C---------------Calling variables--------------------------------------
 C
       INTEGER NSP,NSPQ
-      REAL*8 PROPR(NSP,NSP),PROPI(NSP,NSP)
       REAL*8 FOCKR(NSP,NSP),FOCKI(NSP,NSP)
       REAL*8 FF_STRENGTH(2), F_ANTI_HERMITIAN
       CHARACTER*8 PROP_NAME
@@ -707,7 +713,9 @@ C---------------Local variables--------------------------------------
 C
       REAL*8 AH_CHECK
       PARAMETER (AH_CHECK=1.D-5)
+      REAL*8 PROPR(NSP,NSP),PROPI(NSP,NSP)
       CHARACTER*32 ACHAR
+      integer i,j,inop
 C
 C---------------Executable code--------------------------------------
 C
@@ -766,7 +774,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                  AVO,AOV,AOO,AVV)
 C
       use interface_to_mpi
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -790,7 +798,7 @@ C
 C
 C---------------Calling variables--------------------------------------
 C
-      INTEGER NSP,IREPSPI(NSP,MXREP,2)
+      INTEGER NSP,IREPSPI(NSP,MXREP,2),iprnt
       REAL*8 AVO(*),AOV(*),AOO(*),AVV(*)
       REAL*8 PROP(2,NSP,NSP)
       REAL*8 APHASE(2)
@@ -801,6 +809,8 @@ C---------------Local variables--------------------------------------
 C
       CHARACTER*32 ACHAR
       REAL*8 AVOI,AOVI,AMAXR,AMAXI,ANORM
+      integer a,aa,ab,ai,airep,arep,b,bb,brep,i,ii,iimax,ij,inop,irep
+      integer j,jj,jrep,aamax
 C
 C---------------Executable code--------------------------------------
 C
@@ -957,15 +967,15 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,IATYP,INDK,INDL,
-     &                     NONZR,NZE,CBUF,IBUF,MREADER)
+     &                     NONZR,NZE,CBUF,IBUF,MREADER,PERMSYM)
 C
       use interface_to_mpi
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
 C     Reads block of 2-electron integrals from MOLFDIR file MDINT
-C     Expands Kramers' reduced list into full list.
+C     Expands Kramers reduced list into full list.
 C     Reorder from (ij|kl) to <ik||jl>
 C     Expanded (16 permutations) indices are written in array IBUF :
 C     IBUF(1,INZE) : Type (OOOO, VOOO, VVOO, VOVO, VVVO, VVVV)
@@ -982,12 +992,6 @@ C---------------Last modified------------------------------------------
 C
 C     Author : Luuk Visscher
 C
-C---------------Calling variables--------------------------------------
-C
-      INTEGER KR(-NSP:NSP),INDK(*),INDL(*)
-      REAL*8 CBUF(RCW,*)
-      INTEGER IBUF(7,*)
-      INTEGER INDEX(NSP,NSP,4,*)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -999,14 +1003,25 @@ C
 #include "dgroup.h"
 #include "dcbham.h"
 C
+C---------------Calling variables--------------------------------------
+C
+      INTEGER KR(-NSP:NSP),INDK(*),INDL(*),MREADER
+      REAL*8 CBUF(RCW,*)
+      INTEGER IBUF(7,*)
+      INTEGER INDEX(NSP,NSP,4,*),MDINT,NSP,ITRSGN,IATYP,NONZR,NZE
+      LOGICAL PERMSYM
+C
 C---------------Local variables--------------------------------------
 C
       INTEGER IKR,JKR,KKR,LKR
-      integer   INZ
+      integer   INZ,l1,j1
 
       REAL*8 RDUM
       LOGICAL FOCKSP, CHECK_INTS
       CHARACTER*10 NEXTFIL
+      integer i,i0,i1,icase,icc,ijsg,ijsign,ikind,iktyp,ipi,itr1,itr2
+      integer ityp,j,j0,jcase,jlind,jltyp,k,k0,k1,kiind,kityp,klsg,l,l0
+      integer itr, itrsg_r,itrsg_i
 C
 C---------------Executable code--------------------------------------
 C
@@ -1029,7 +1044,6 @@ C     A number of different formats are possible.
          READ (MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,
      &        (INDK(INZ),INDL(INZ),INZ=1,NONZR),
      &        (CBUF(1,INZ),INZ=1,NONZR) 
-CMI      ... NONZR is read before from MDINT file !
 CMI      ... zero imaginary part of two-el. integrals
          if(rcw > 1)then
            DO INZ=1,NONZR
@@ -1061,7 +1075,6 @@ C     For real groups we skip the zero imaginary part in MOLFDIR format.
      &        (CBUF(1,INZ),RDUM,INZ=1,NONZR) 
       ENDIF
 
-
       IF (IKR.EQ.0) THEN
          IF (JKR.EQ.0) THEN
             NONZR = -1
@@ -1072,8 +1085,9 @@ C     For real groups we skip the zero imaginary part in MOLFDIR format.
             GOTO 1
          ENDIF
       ENDIF
-      ENDIF
 
+      ENDIF
+C     End of reader branch, now all nodes are active again
 
 #if defined (VAR_MPI)
       IF (NMPROC.GT.1 ) THEN
@@ -1106,9 +1120,136 @@ C     For real groups we skip the zero imaginary part in MOLFDIR format.
          
       IJSIGN = SIGN(1,IKR*JKR) * ITRSGN
 C
-C     Expand to the full list
 C
-      IF(FOCKSP) THEN
+      IF(.NOT.PERMSYM.AND..NOT.FOCKSP) THEN
+C
+C     We only need to account for time-reversal symmetry
+C
+      NZE = 0
+      DO INZ = 1, NONZR
+         KKR = INDK(INZ)
+         LKR = INDL(INZ)
+         I = KR(IKR)
+         J = KR(JKR)
+         K = KR(KKR)
+         L = KR(LKR)
+         ITRSG_R = 1
+         ITRSG_I = 1
+         DO ITR = 1, 2
+            JLIND = INDEX(J,L,4,1)
+            IKIND = INDEX(I,K,4,1)
+            IF (JLIND.NE.0.AND.I.NE.K) THEN
+C              Canonical integral : Direct or exchange
+               NZE = NZE + 1
+               IF (IKIND.NE.0) THEN
+C                 Contribution to direct part
+                  ITYP = (INDEX(J,L,1,1)-1)*4+INDEX(I,K,1,1)
+                  IBUF(1,NZE) = ITYP
+                  IBUF(2,NZE) = INDEX(J,L,3,1)
+                  IBUF(3,NZE) = INDEX(J,L,4,1)
+                  IBUF(4,NZE) = INDEX(I,K,4,1)
+                  IBUF(5,NZE) = ITRSG_R
+                  IBUF(6,NZE) = ITRSG_I
+                  IBUF(7,NZE) = INZ
+C                 Skip unnecessary integrals
+                  IF (IATYP.NE.ITYP.AND.ITYP.GT.6) NZE=NZE-1
+               ELSE
+C                 Contribution to exchange part
+                  ITYP = (INDEX(J,L,1,1)-1)*4+INDEX(K,I,1,1)
+                  IBUF(1,NZE) = - ITYP
+                  IBUF(2,NZE) = INDEX(J,L,3,1)
+                  IBUF(3,NZE) = INDEX(J,L,4,1)
+                  IBUF(4,NZE) = INDEX(K,I,4,1)
+                  IBUF(5,NZE) = ITRSG_R
+                  IBUF(6,NZE) = ITRSG_I
+                  IBUF(7,NZE) = INZ
+C                 Skip unnecessary integrals
+                  IF (IATYP.NE.ITYP.AND.ITYP.GT.6) NZE=NZE-1
+               ENDIF
+            ENDIF
+            I = KR(-IKR)
+            J = KR(-JKR)
+            K = KR(-KKR)
+            L = KR(-LKR)
+            ! Calculate sign for applying with time-reveral, no need to specifally
+            ! account for Coulomb / Gaunt (ITRSGN=+/-1) because we operate on all 4 indices
+            ITRSG_R = SIGN(1,IKR*JKR*KKR*LKR)
+            ITRSG_I = - ITRSG_R
+         END DO
+      END DO
+
+      ELSEIF(.NOT.PERMSYM.AND.FOCKSP) THEN
+C     We are doing a Fock space calculation in which integrals containing active
+C     spinors need to be stored at multiple places (as occ and as virt)
+      NZE = 0
+      DO INZ = 1, NONZR
+         KKR = INDK(INZ)
+         LKR = INDL(INZ)
+         I = KR(IKR)
+         J = KR(JKR)
+         K = KR(KKR)
+         L = KR(LKR)
+         ITRSG_R = 1
+         ITRSG_I = 1
+         DO ITR = 1, 2
+C
+C           One integral can contribute to a maximum of
+C           16 classes in Fock space CC calculations
+C
+            DO ICASE = 1, 4
+               DO JCASE = 1, 4
+                  JLTYP = INDEX(J,L,1,ICASE)
+                  IKTYP = INDEX(I,K,1,JCASE)
+                  KITYP = INDEX(K,I,1,JCASE)
+                  JLIND = INDEX(J,L,4,JLTYP)
+                  IKIND = INDEX(I,K,4,IKTYP)
+                  KIIND = INDEX(K,I,4,KITYP)
+                  IF (JLIND.NE.0.AND.IKIND.NE.0) THEN
+C                   Canonical integral : direct
+                    NZE = NZE + 1
+                    ITYP = (JLTYP-1)*4 + IKTYP
+                    IBUF(1,NZE) = ITYP
+                    IBUF(2,NZE) = INDEX(J,L,3,JLTYP)
+                    IBUF(3,NZE) = JLIND
+                    IBUF(4,NZE) = IKIND
+                    IBUF(5,NZE) = ITRSG_R
+                    IBUF(6,NZE) = ITRSG_I
+                    IBUF(7,NZE) = INZ
+C                   Skip unnecessary integrals
+                    IF (IATYP.NE.ITYP.AND.ITYP.GT.6) NZE=NZE-1
+                  ENDIF
+
+                  IF (JLIND.NE.0.AND.KIIND.NE.0) THEN
+C                   Canonical integral : exchange
+                    NZE = NZE + 1
+                    ITYP = (JLTYP-1)*4 + KITYP
+                    IBUF(1,NZE) = - ITYP
+                    IBUF(2,NZE) = INDEX(J,L,3,JLTYP)
+                    IBUF(3,NZE) = JLIND
+                    IBUF(4,NZE) = KIIND
+                    IBUF(5,NZE) = ITRSG_R
+                    IBUF(6,NZE) = ITRSG_I
+                    IBUF(7,NZE) = INZ
+C                   Skip unnecessary integrals
+                    IF (IATYP.NE.ITYP.AND.ITYP.GT.6) NZE=NZE-1
+                  ENDIF
+               ENDDO
+            ENDDO
+            I = KR(-IKR)
+            J = KR(-JKR)
+            K = KR(-KKR)
+            L = KR(-LKR)
+            ! Calculate sign for applying with time-reveral, no need to specifally
+            ! account for Coulomb / Gaunt (ITRSGN=+/-1) because we operate on all 4 indices
+            ITRSG_R = SIGN(1,IKR*JKR*KKR*LKR)
+            ITRSG_I = - ITRSG_R
+         END DO
+      END DO
+
+      ELSEIF (PERMSYM.AND.FOCKSP) THEN
+
+C     Expand to the full list in which integrals may be needed at several places
+C     the most complicated (and time-consuming) sort
       NZE = 0 
       DO 50 INZ = 1, NONZR
          KKR = INDK(INZ)
@@ -1143,7 +1284,7 @@ C
                         JLIND = INDEX(J,L,4,JLTYP)
                         IKIND = INDEX(I,K,4,IKTYP)
                         KIIND = INDEX(K,I,4,KITYP)
-                        IF (JLIND.NE.0.AND.IKIND.NE.0) THEN 
+                        IF (JLIND.NE.0.AND.IKIND.NE.0) THEN
 C                         Canonical integral : direct
                           NZE = NZE + 1
                           ITYP = (JLTYP-1)*4 + IKTYP
@@ -1162,8 +1303,7 @@ C
 C                         Canonical integral : exchange
                           NZE = NZE + 1
                           ITYP = (JLTYP-1)*4 + KITYP
-                          ITYP = - ITYP
-                          IBUF(1,NZE) = ITYP
+                          IBUF(1,NZE) = - ITYP
                           IBUF(2,NZE) = INDEX(J,L,3,JLTYP)
                           IBUF(3,NZE) = JLIND
                           IBUF(4,NZE) = KIIND
@@ -1171,7 +1311,6 @@ C                         Canonical integral : exchange
                           IBUF(6,NZE) = ICC * IJSG * KLSG
                           IBUF(7,NZE) = INZ
 C                         Skip unnecessary integrals
-                          ITYP = - ITYP
                           IF (IATYP.NE.ITYP.AND.ITYP.GT.6) NZE=NZE-1
                         ENDIF
                       ENDDO
@@ -1195,9 +1334,10 @@ C                         Skip unnecessary integrals
             IJSG = IJSIGN
    40    CONTINUE
    50 CONTINUE
-      ELSE
+      ELSEIF (PERMSYM.AND..NOT.FOCKSP) THEN
 C
-C     Expand to the full list
+C     integrals have permutation symmetry, we need to expand
+C     to the full list
 C
       NZE = 0 
       DO 150 INZ = 1, NONZR
@@ -1223,10 +1363,10 @@ C
                   DO 110 ICC = 1, -1, -2
                        JLIND = INDEX(J,L,4,1)
                        IKIND = INDEX(I,K,4,1)
-                       IF (JLIND.NE.0.AND.I.NE.K) THEN 
+                       IF (JLIND.NE.0.AND.I.NE.K) THEN
 C                         Canonical integral : Direct or exchange
                           NZE = NZE + 1
-                          IF (IKIND.NE.0) THEN  
+                          IF (IKIND.NE.0) THEN
 C                            Contribution to direct part
                              ITYP = (INDEX(J,L,1,1)-1)*4+INDEX(I,K,1,1)
                              IBUF(1,NZE) = ITYP
@@ -1241,8 +1381,7 @@ C                            Skip unnecessary integrals
                           ELSE
 C                            Contribution to exchange part
                              ITYP = (INDEX(J,L,1,1)-1)*4+INDEX(K,I,1,1)
-                             ITYP = - ITYP
-                             IBUF(1,NZE) = ITYP
+                             IBUF(1,NZE) = - ITYP
                              IBUF(2,NZE) = INDEX(J,L,3,1)
                              IBUF(3,NZE) = INDEX(J,L,4,1)
                              IBUF(4,NZE) = INDEX(K,I,4,1)
@@ -1250,7 +1389,6 @@ C                            Contribution to exchange part
                              IBUF(6,NZE) = ICC * IJSG * KLSG
                              IBUF(7,NZE) = INZ
 C                            Skip unnecessary integrals
-                             ITYP = - ITYP
                              IF (IATYP.NE.ITYP.AND.ITYP.GT.6) NZE=NZE-1
                           ENDIF
                        ENDIF
@@ -1286,11 +1424,10 @@ C
       CALL QUIT('ERROR READING 2-E INTEGRALS')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE GETFM (INDEX,NSP,EPS,BUF1,BUF2,VBUF1,VBUF2,
-     &                  FOO,FVO,FVV,E0,E1)
+      SUBROUTINE GETFM (INDEX,NSP,EPS,FOO,FVO,FVV,E0,E1)
 C
       use interface_to_mpi
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1308,8 +1445,7 @@ C---------------Calling variables--------------------------------------
 C
       REAL*8 E0,E1,EPS(*)
       REAL*8 FOO(*),FVO(*),FVV(*)
-      REAL*8 BUF1(*),BUF2(*),VBUF1(*),VBUF2(*)
-      INTEGER INDEX(NSP,NSP,4,*)
+      INTEGER NSP,INDEX(NSP,NSP,4,*)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1332,6 +1468,8 @@ C
       CHARACTER*2 ORBTYP
       REAL*8 FF_STRENGTH(2)
       CHARACTER*8 PROP_NAME
+      integer i,icase,ii,ij,ijoo,ijvo,ind,ioper,irep,ityp,j,ncase,nspq
+      real*8, allocatable :: buf1(:),buf2(:)
 C
 C---------------Executable code--------------------------------------
 C
@@ -1339,6 +1477,7 @@ C
       FOCKSP = EQNS.EQ.'FOCKSP'
 C
       IF (NORECMP) GOTO 100
+      allocate (buf1(nspq),buf2(nspq)) ! scratch arrays for unsorted hamiltonian matrix elements
 C
 C  READ ONE ELECTRON INTEGRALS
 C
@@ -1355,8 +1494,6 @@ C
 C       We may add a property operator here, scaled with a field strength
 C       Note that the input can supply a list of operators, here we just assume
 C       that only one is added.
-C       Use the VBUF arrays as scratch arrays, they will always be large enough
-C
 !MI,EE (Aug2013) extended as we need to more propety operators, each scaled with own 
 !       field strength
         IF (ADD_FINITE_FIELD) THEN
@@ -1366,8 +1503,7 @@ C
            FF_STRENGTH(1) = FF_PROP_STRENGTHS(1,IOPER)
            FF_STRENGTH(2) = FF_PROP_STRENGTHS(2,IOPER)
            PROP_NAME = FF_PROP_NAMES(IOPER)
-           CALL ADDPROP (PROP_NAME,FF_STRENGTH,NSP,
-     &                   BUF1,BUF2,VBUF1,VBUF2)
+           CALL ADDPROP (PROP_NAME,FF_STRENGTH,NSP,BUF1,BUF2)
           ENDDO
         ENDIF
       ENDIF
@@ -1437,6 +1573,7 @@ C-----------------------------------------------------------------------
             ENDDO
          ENDDO
       ENDDO
+      deallocate (buf1,buf2)
 C
   100 CONTINUE
 C
@@ -1449,7 +1586,7 @@ C        We calculate the 1-determinant energy, which can be compared
 C        to the value given by the DHF code as a check on the correctness
 C        of the index transformations.
 C
-         CALL MAKEFM (VBUF1,VBUF2,FOO,FVO,FVV,E0,E1)
+         CALL MAKEFM (FOO,FVO,FVV,E0,E1)
 C
       ELSE
 C
@@ -1464,7 +1601,7 @@ C
          CALL XCOPY (NFOO,A0,0,FOO,1)
          CALL XCOPY (NFVO,A0,0,FVO,1)
          CALL XCOPY (NFVV,A0,0,FVV,1)
-         CALL MAKEFM (VBUF1,VBUF2,FOO,FVO,FVV,E0,E1)
+         CALL MAKEFM (FOO,FVO,FVV,E0,E1)
          CALL XCOPY (NFOO,A0,0,FOO,1)
          CALL XCOPY (NFVO,A0,0,FVO,1)
          CALL XCOPY (NFVV,A0,0,FVV,1)
@@ -1642,9 +1779,9 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE MAKEFM (BUF1,BUF2,FOO,FVO,FVV,E0,E1)
+      SUBROUTINE MAKEFM (FOO,FVO,FVV,E0,E1)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1662,7 +1799,6 @@ C---------------Calling variables--------------------------------------
 C
       REAL*8 E0,E1
       REAL*8 FOO(*),FVO(*),FVV(*)
-      REAL*8 BUF1(*),BUF2(*)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1674,9 +1810,27 @@ C
 C---------------Local variables--------------------------------------
 C
       REAL*8 CSUM(2)
+      real*8, allocatable :: buf1(:),buf2(:)
+      integer ii,irep,k,kk,krep
+      integer*8 nvtdim1, nvtdim2
 C
 C---------------Executable code--------------------------------------
 C
+
+C     Calculate size needed for buffer array 1: should be able to hold all unsorted integrals of types 1, 2, and 4
+      nvtdim1 = INT(NV1,8)
+      nvtdim1 = MAX(nvtdim1,INT(NV2,8))
+      nvtdim1 = MAX(nvtdim1,INT(NV4,8))
+C     Calculate size needed for buffer array 2: should be able to hold all sorted integrals of types 1, 2, and 4
+C     for which the product irrep is totally symmetric. This is usually a smaller number, but due to less permutation
+C     symmetry it may become larger than nvtdim1 in case of no point group symmetry.
+      nvtdim2 = INT(JOOOO(2),8)
+      nvtdim2 = MAX(nvtdim2,INT(JVOOO(2),8))
+      nvtdim2 = MAX(nvtdim2,INT(JVVOO(2),8))
+
+      allocate(buf1(rcw*nvtdim1))
+      allocate(buf2(rcw*nvtdim2))
+
       E0 = AR0
       E1 = AR0
 C
@@ -1695,7 +1849,7 @@ C  E1 = E1 - V(II,KK)
 C---------------------------------------------------------------------
             II = 0
             DO IREP = 1, NREP
-               IF (K.LE.NE(KREP)) THEN
+               IF (K.LE.NE(KREP) .AND. NE(IREP).GT.0) THEN
                   CALL XSUM(CSUM,NE(IREP),BUF2(II+KK),NO(IREP)+1)
                   E1 = E1 - CSUM(1)
                ENDIF
@@ -1746,12 +1900,14 @@ C---------------------------------------------------------------------
          KK = KK - NO(KREP) * NFVV * RCW
       ENDDO
 C
+      deallocate(buf1)
+      deallocate(buf2)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE MKINDEX (NSP,IREPSP,IREPSPI,INDEX)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1775,10 +1931,11 @@ C
 C
 C---------------Calling variables--------------------------------------
 C
-      INTEGER IREPSP(NSP,4),IREPSPI(NSP,MXREP,2),INDEX(NSP,NSP,4)
+      INTEGER NSP,IREPSP(NSP,4),IREPSPI(NSP,MXREP,2),INDEX(NSP,NSP,4)
 C
 C---------------Local variables--------------------------------------
 C
+      integer i,ii,ij,ijrep,imin,irep,j,jj,jrep
 C
 C---------------Executable code--------------------------------------
 C
@@ -1913,7 +2070,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FKINDEX (NSP,IREPSP,IREPSPI,INDEX)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1937,10 +2094,11 @@ C
 C
 C---------------Calling variables--------------------------------------
 C
-      INTEGER IREPSP(NSP,4),IREPSPI(NSP,MXREP,2),INDEX(NSP,NSP,4,4)
+      INTEGER NSP,IREPSP(NSP,4),IREPSPI(NSP,MXREP,2),INDEX(NSP,NSP,4,4)
 C
 C---------------Local variables--------------------------------------
 C
+      integer i,icase,ii,ij,ijcase,ijrep,imin,irep,j,jcase,jj,jrep
 C
 C---------------Executable code--------------------------------------
 C

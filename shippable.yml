@@ -14,9 +14,7 @@ branches:
 # environment variable for Dirac MPI command
 env:
     - DIRAC_MPI_COMMAND="mpirun -np 2"
-
-env:
-    - CTEST_PROJECT_NAME="DIRACext"
+    - CTEST_PROJECT_NAME="DIRAC"
     
 # language settings - prepare Python environment
 language: python
@@ -28,8 +26,8 @@ install:
 # remove Open MPI installation if any
     - sudo apt-get remove openmpi-bin libopenmpi-dev
 # install MPICH2
-    - sudo apt-get install mpich2
-# newest cmake
+    - sudo apt-get install mpich
+# get newest cmake
     - wget --no-check-certificate https://cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.tar.gz
     - tar xzf cmake-3.5.2-Linux-x86_64.tar.gz
     - export PATH=$PWD/cmake-3.5.2-Linux-x86_64/bin:$PATH
@@ -48,19 +46,40 @@ before_script:
     - df -h
 # show available memory
     - free -m
+# show cmake version
+    - cmake --version
+# show Python version
+    - python -V
+#number of available processors/jobs for test will be 2 times less because we use "mpirun -np 2"
+    - TEST_N_PROC=$(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 2)
+# print
+    - echo "Number of processors/jobs for build step is $(nproc)."
+    - echo "Number of processors/jobs for test step is $TEST_N_PROC ."
+
     
 # update submodule; configure, build optimized code and run tests (Dirac 64-bit with MPICH2)
 script:
     - git submodule update --init --recursive
-    - python ./setup --fc=mpif90 --cc=mpicc --cxx=mpicxx --int64 --mpi --cmake-options="-D BUILDNAME='mpich2.gnu.i8-shippable-ci' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_UNIT_TESTS=ON" build_shippableci_mpi
+    - python ./setup --fc=mpif90 --cc=mpicc --cxx=mpicxx --int64 --mpi --cmake-options="-D BUILDNAME='mpich2.gnu.i8-shippable-ci' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_UNIT_TESTS=ON -D ENABLE_BASIS_SETS_CHECK=ON" build_shippableci_mpi
     - cd build_shippableci_mpi
     - ctest -D ExperimentalConfigure
     - ctest -j $(nproc) -D ExperimentalBuild
 # ldd : show dependencies
     - ldd dirac.x
 # if some tests fail build/ctest can continue because of: || true
-    - ctest -j $(nproc)  -D ExperimentalTest -L short || true
+   # - ctest -j $(nproc)  -D ExperimentalTest -L short || true
+    - ctest -j $TEST_N_PROC  -D ExperimentalTest -L short || true
     - ctest -D ExperimentalSubmit
+# now check the release subset
+
+#    - make -j $(nproc) release
+#    - tar xzf DIRAC-16.0-Source.tar.gz
+#    - cd DIRAC-16.0-Source
+#    - python ./setup --type=debug build_release
+#    - cd build_release
+#    - ctest -D ExperimentalConfigure
+#    - ctest -j $(nproc) -D ExperimentalBuild
+#    - ctest -D ExperimentalSubmit
 
 # turn off email notifications
 notifications:

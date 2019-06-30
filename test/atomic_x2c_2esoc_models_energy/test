@@ -22,7 +22,7 @@ test.run(['li.inp'], ['li.xyz'], f, args='--get="X2CMAT aoo2esoc.003"')
 #test.run(['li.inp'], ['li.xyz'], f, args='--get="X2CMAT"')
 shutil.copy('X2CMAT', 'X2CMAT.003')
 
-test.run(['lihe-4c.inp'], ['lihe.xyz'], f, args='--get=X2CMAT')
+test.run(['lihe-4c.inp'], ['lihe.mol'], f, args='--get=X2CMAT')
 shutil.copy('X2CMAT', 'X2CMAT.000')
 
 # molecular U matrix (from molecular core h1^{4c}) + AMFI 2e-SO corrections

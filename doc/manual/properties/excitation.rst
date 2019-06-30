@@ -32,23 +32,32 @@ times to add more operators.
 
 keyword(EPOLE)
 
-Specification of electric Cartesian multipole operators of order L 
-for the calculation of transition moments. Specify order.
+Specification of electric Cartesian multipole operators of order :math:`n`
 
-*Example:* Electric dipole operators
+.. math::
 
-::
+    \hat{Q}_{j_{1}\ldots j_{n}}^{\left[n\right]}=-er_{1}r_{2}\ldots r_{j_{n}}   
+
+for the calculation of transition moments (note that they contribute to one order less in the wave vector). Specify order.
+
+*Example:* Electric dipole operators::
+  
       .EPOLE
       1
 
 keyword(MPOLE)
 
-Specification of magnetic Cartesian multipole operators of order L 
-for the calculation of transition moments. Specify order.
+Specification of magnetic Cartesian multipole operators of order :math:`n`
 
-*Example:* Magnetic dipole operators
+.. math::
 
-::
+   \hat{m}_{j_{1}\ldots j_{n-1};j_{n}}^{\left[n\right]}=\frac{n}{n+1}r_{j_{1}}r_{j_{2}}\ldots r_{j_{n-1}}(\boldsymbol{r}\times\hat{\mathbf{j}})_{j_{n}};\quad\hat{\mathbf{j}}=-ec\boldsymbol{\alpha}
+
+
+for the calculation of transition moments (note that they contribute to the same order in the wave vector). Specify order.
+
+*Example:* Magnetic dipole operators::
+
       .MPOLE
       1
 
@@ -61,9 +70,7 @@ keyword(INTENS)
 
 Invoke calculation of oscillator strengths. Followed by oscillator strengths to order k in the wave vector, which must be zero.
 
-*Example:* 
-
-::
+*Example:* ::
 
      .INTENS
      0
@@ -77,9 +84,7 @@ For each fermion ircop give an :ref:`orbital_strings` of inactive orbitals from
 which excitations are allowed. By default excitations from all occupied
 orbitals are included in the generalized eigenvalue problem.
 
-Example:
-
-::
+Example: ::
 
     .OCCUP
     1..3
@@ -112,9 +117,7 @@ keyword(MAXITR)
 
 Maximum number of iterations.
 
-*Default:*
-
-::
+*Default:* ::
 
     .MAXITR
      30
@@ -123,9 +126,7 @@ keyword(MAXRED)
 
 Maximum dimension of matrix in reduced system.
 
-*Default:*
-
-::
+*Default:* ::
 
     .MAXRED
      200
@@ -134,9 +135,7 @@ keyword(THRESH)
 
 Threshold for convergence of reduced system.
 
-*Default:*
-
-::
+*Default:* ::
 
     .THRESH
      1.0D-5
@@ -157,9 +156,7 @@ keyword(CNVINT)
 Set threshold for convergence before adding SL and SS integrals to
 SCF-iterations.
 
-*2 (real) Arguments:*
-
-::
+*2 (real) Arguments:* ::
 
     .CNVINT
      CNVXQR(1) CNVXQR(2)
@@ -171,9 +168,7 @@ keyword(ITRINT)
 Set the number of iterations before adding SL and SS integrals to
 SCF-iterations.
 
-*Default:*
-
-::
+*Default:* ::
 
     .ITRINT
      1 1

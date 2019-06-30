@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -26,8 +26,6 @@
 !
 #include "implicit.h"
 #include "priunit.h"
-!gosia#include "../include/implicit.h"
-!gosia#include "../include/priunit.h"
       PARAMETER (LUINP = 1)
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2,LBUF*16
       INTEGER   NARG,IARG,JARG

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,6 +19,8 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -59,7 +61,7 @@
 #include "cc_exc.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) ITEST_OFF
 #endif
 #include "parluci.h"
@@ -1016,7 +1018,7 @@ C
       IMPLICIT REAL*8(A-H,O-Z)
 #include "infpar.h"
 #if defined (VAR_MPI2)
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 #include "files.inc"
@@ -1041,7 +1043,8 @@ C     character line and machinename
       CHARACTER*72 CARD
       CHARACTER*255 MACHINENAME
       INTEGER NAMELENGTH, MIN_ONE
-      INTEGER*8 K_OFFSET, K8BASE_LUCITA
+      INTEGER*8 K8_OFFSET, K8_END
+      INTEGER   K_OFFSET,  K_END
       integer global_scratch_disk
 
       real(8), allocatable :: WRK(:)
@@ -1064,24 +1067,30 @@ C     No floating point underflow
 C     Assign diskunits
 C
       CALL DISKUN
-C
+
 C     Static memory, initialization and allocation
-C
-C     Compute offset from WRK to WORK
-C
-      CALL COMPOFF(WRK,WORK,K_OFFSET)
-      KBASE_LUCITA  = K_OFFSET
-      KADD          = KBASE_LUCITA + LWRK ! i*4 evaluation
-      K8BASE_LUCITA = K_OFFSET     + LWRK ! i*8 evaluation
-      IF (K8BASE_LUCITA .ne. KADD) THEN
-         print *, 'controlled stop: only int64'
+
+C     Compute offset from WRK in parameter list
+C     to WORK in common in wrkspc.inc. WORK is used internally in LUCITA.
+C     This offset is added to all Ksomething addresses in WORK(Ksomething)
+C     so that WRK(1:LWRK) are the memory addresses really used.
+
+C     However, the offset K_OFFSET may be too big for i*4.
+C     We test for that and quit if this is the case.
+
+      CALL COMPOFF(WRK,WORK,K8_OFFSET)
+C     *k_offset = (long) (wrk-work+1);
+      K_OFFSET  = K8_OFFSET
+      K_END     = K_OFFSET  + LWRK ! maybe i*4 evaluation
+      K8_END    = K8_OFFSET + LWRK ! i*8 evaluation
+      IF (K8_END .ne. K_END) THEN
          CALL QUIT(
-     &   'LUCITA WORK(MXPWRD) memory off-set too big for INTEGER*4')
+     &   'LUCITA WORK(MXPWRD) memory off-set is too big for INTEGER*4')
       END IF
 C
       MXPWRD = LWRK
       KADD   = MXPWRD
-      CALL MEMMAN(KBASE_LUCITA,KADD,'INI   ',IDUMMY,'DUMMY')
+      CALL MEMMAN(K_OFFSET,KADD,'INI   ',IDUMMY,'DUMMY')
 C
 C     Call input conversion program MOLUC (subroutine now)
 C
@@ -1718,8 +1727,8 @@ C     UPPCAS(LINE,LENGTH)
          GOTO 1001
       ELSE IF(MOLCS.EQ.0.AND.CARD(1:1).NE.'.') THEN
 *. Line out of context
-         WRITE(LUOUT,'(1H ,A)') ' Warning, card out of context : '
-         WRITE(LUOUT,'(1H ,A)') CARD
+         WRITE(LUOUT,'(1X,A)') ' Warning, card out of context : '
+         WRITE(LUOUT,'(1X,A)') CARD
          NWARN = NWARN + 1
       ELSE IF(MOLCS.EQ.1.OR.CARD(1:1).EQ.'.') THEN
          IF(MOLCS.EQ.1) THEN
@@ -1900,7 +1909,7 @@ C     UPPCAS(LINE,LENGTH)
             ELSE
                ISETKW(5) = - 1
                WRITE(LUOUT,*) ' Illegal card for EXTSPC : '
-               WRITE(LUOUT,'(1H ,A)') CARD1
+               WRITE(LUOUT,'(1X,A)') CARD1
                NERROR = NERROR + 1
             END IF
             GOTO 999
@@ -2043,7 +2052,7 @@ C!         READ(LUCMOL,*) MXER30
                READ(LUCMOL,*) XWCNF
             ELSE
                WRITE(LUOUT,*) ' Error : Illegal card in INTSEL :'
-               WRITE(LUOUT,'(1H ,A)') CARD1
+               WRITE(LUOUT,'(1X,A)') CARD1
                ISETKW(15) = - 1
                NERROR = NERROR + 1
             END IF
@@ -2435,7 +2444,7 @@ C?       WRITE(6,'(A)') CARD1
 *.
             ELSE
                WRITE(LUOUT,*) ' Unknown partitioning '
-               WRITE(LUOUT,'(1H ,A)') CARD1
+               WRITE(LUOUT,'(1X,A)') CARD1
                NERROR = NERROR + 1
             END IF
 * Zero order energy :
@@ -2454,7 +2463,7 @@ C?       WRITE(6,'(A)') CARD1
                WRITE(LUOUT,*) ' Zero order energy =',E0READ
             ELSE
                WRITE(LUOUT,*) ' Unknown form of zero order energy '
-               WRITE(LUOUT,'(1H ,A)') CARD1
+               WRITE(LUOUT,'(1X,A)') CARD1
                NERROR = NERROR + 1
             END IF
 *
@@ -2480,7 +2489,7 @@ C?       WRITE(6,'(A)') CARD1
                MPORENR = 2
             ELSE
                WRITE(LUOUT) ' Unknown partitioning '
-               WRITE(LUOUT,'(1H ,A)') CARD1
+               WRITE(LUOUT,'(1X,A)') CARD1
                NERROR = NERROR + 1
             END IF
 *
@@ -2507,7 +2516,7 @@ C?       WRITE(6,'(A)') CARD1
                MPORENZ = 2
             ELSE
                WRITE(LUOUT) ' Unknown partitioning '
-               WRITE(LUOUT,'(1H ,A)') CARD1
+               WRITE(LUOUT,'(1X,A)') CARD1
                NERROR = NERROR + 1
             END IF
             IAPRZER = 1
@@ -4666,7 +4675,7 @@ C        NERROR = NERROR + 1
 *
 *
       IF(NMISS.NE.0) THEN
-        WRITE(LUOUT,'(1H ,A,I9)')
+        WRITE(LUOUT,'(1X,A,I9)')
      &  ' Number of missing required keyword ', NMISS
         WRITE(LUOUT,*)
      &  ' You have wounded me I give up '
@@ -4725,55 +4734,55 @@ C     WRITE(6,'(A,A)') '    Machine in use : ', MACHINE
       WRITE(LUOUT,*)
 *. Point group
       IF(PNTGRP.EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A)')
-     &  '     Point group ............ D2H'
+        WRITE(LUOUT,'(A)')
+     &  '     Point group ............ D2h'
         if (ENVIRO(1:6).eq.'DIRAC ') then
-          WRITE(LUOUT,'(1H ,A,A)')
+          WRITE(LUOUT,'(A,A)')
      &  '       Using subgroup ......... ',DOUGRP
-          WRITE(LUOUT,'(1H ,A,A)')
+          WRITE(LUOUT,'(A)')
      &  '         (D2 equiv. C2v, C2 eq. Cs) '
         end if
       ELSE IF(PNTGRP.EQ.2) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Point group ............ C inf v'
       ELSE IF(PNTGRP.EQ.3) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Point group ............ D inf h'
       ELSE IF(PNTGRP.EQ.4) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Point group ............ O3'
       END IF
 *.Spatial symmetry
       IF(PNTGRP.EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A,I1)')
+        WRITE(LUOUT,'(A,I1)')
      &  '     Spatial symmetry ....... ', IREFSM
       ELSE IF(PNTGRP.EQ.2) THEN
-        WRITE(LUOUT,'(1H ,A,I1)')
+        WRITE(LUOUT,'(A,I1)')
      &  '     ML value ............... ', IREFML
       ELSE IF(PNTGRP.EQ.3) THEN
-        WRITE(LUOUT,'(1H ,A,I1)')
+        WRITE(LUOUT,'(A,I1)')
      &  '     ML value ............... ', IREFML
-        IF(IREFPA.EQ.1) WRITE(LUOUT,'(1H ,A)')
+        IF(IREFPA.EQ.1) WRITE(LUOUT,'(A)')
      &  '     Parity   ..............  Gerade'
-        IF(IREFPA.EQ.2) WRITE(LUOUT,'(1H ,A)')
+        IF(IREFPA.EQ.2) WRITE(LUOUT,'(A)')
      &  '     Parity   ..............  Ungerade'
       ELSE IF(PNTGRP.EQ.4) THEN
-        WRITE(LUOUT,'(1H ,A,I1)')
+        WRITE(LUOUT,'(A,I1)')
      &  '     L  value ............... ', IREFL
-        WRITE(LUOUT,'(1H ,A,I1)')
+        WRITE(LUOUT,'(A,I1)')
      &  '     ML value ............... ', IREFML
-        IF(IREFPA.EQ.1) WRITE(LUOUT,'(1H ,A)')
+        IF(IREFPA.EQ.1) WRITE(LUOUT,'(A)')
      &  '     Parity   ..............  Gerade'
-        IF(IREFPA.EQ.2) WRITE(LUOUT,'(1H ,A)')
+        IF(IREFPA.EQ.2) WRITE(LUOUT,'(A)')
      &  '     Parity   ..............  Ungerade'
       END IF
 *.Spin
-      WRITE(LUOUT,'(1H ,A,I2)')
+      WRITE(LUOUT,'(A,I2)')
      &  '     2 times spinprojection  ', MS2
-      WRITE(LUOUT,'(1H ,A,I2)')
+      WRITE(LUOUT,'(A,I2)')
      &  '     Spin multiplicity ....  ', MULTS
 *.Number of active electrons
-      WRITE(LUOUT,'(1H ,A,I2)')
+      WRITE(LUOUT,'(A,I2)')
      &  '     Active electrons .....  ', NACTEL
       WRITE(LUOUT,*)
       WRITE(LUOUT,*) '*********************************************'
@@ -4787,66 +4796,66 @@ C     WRITE(6,'(A,A)') '    Machine in use : ', MACHINE
 *. NOT a GAS expansion
 *
 *
-      WRITE(LUOUT,'(1H ,A,10I4)')
+      WRITE(LUOUT,'(A,10I4)')
      &  '                Irrep ',(I,I = 1,NIRREP)
-      WRITE(LUOUT,'(1H ,A,2X,10A)')
+      WRITE(LUOUT,'(A,2X,10A)')
      &  '                ===== ',('====',I = 1,NIRREP)
 *
 *. Inactive
       IF(ISETKW(7).EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A,10I4)')
+        WRITE(LUOUT,'(A,10I4)')
      &  '     Inactive         ',(NINASH(I),I=1,NIRREP)
       END IF
 *. Core
       IF(ISETKW(8).EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A,10I4)')
+        WRITE(LUOUT,'(A,10I4)')
      &  '     Core             ',(NRS0SH(I,1),I=1,NIRREP)
       END IF
 *. RAS1
       IF(ISETKW(9).EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A,10I4)')
+        WRITE(LUOUT,'(A,10I4)')
      &  '     Ras1             ',(NRSSH(I,1),I=1,NIRREP)
       END IF
 *. RAS2/ACTIVE
       IF(ISETKW(10).EQ.1) THEN
         IF(INTSPC.EQ.1) THEN
-          WRITE(LUOUT,'(1H ,A,10I4)')
+          WRITE(LUOUT,'(A,10I4)')
      &  '     Active           ',(NRSSH(I,2),I=1,NIRREP)
         ELSE IF(INTSPC.EQ.2) THEN
-          WRITE(LUOUT,'(1H ,A,10I4)')
+          WRITE(LUOUT,'(A,10I4)')
      &  '     Ras2             ',(NRSSH(I,2),I=1,NIRREP)
         END IF
       END IF
 *. RAS3
       IF(ISETKW(11).EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A,10I4)')
+        WRITE(LUOUT,'(A,10I4)')
      &  '     Ras3             ',(NRSSH(I,3),I=1,NIRREP)
       END IF
-      IF(INTSPC.EQ.2.AND.IMLCR3.EQ.1) WRITE(LUOUT,'(1H ,A)')
+      IF(INTSPC.EQ.2.AND.IMLCR3.EQ.1) WRITE(LUOUT,'(A)')
      &  '     ( RAS 3 space supplied by courtesy of TRAONE )'
 *. Secondary space
       IF(ISETKW(13).EQ.1) THEN
         DO 310 ITP = 1,MXR4TP
-          WRITE(LUOUT,'(1H ,A,I2,A,10I4)')
+          WRITE(LUOUT,'(A,I2,A,10I4)')
      &  '     Secondary',ITP,'      ',(NRS4SH(I,ITP),I=1,NIRREP)
   310   CONTINUE
       END IF
 *. Deleted space
       IF(ISETKW(26).EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A,10I4)')
+        WRITE(LUOUT,'(A,10I4)')
      &  '     Deleted          ',(NDELSH(I),I=1,NIRREP)
       END IF
-      IF(IMLCR3.EQ.2) WRITE(LUOUT,'(1H ,A)')
+      IF(IMLCR3.EQ.2) WRITE(LUOUT,'(A)')
      &  '     ( Deleted shells supplied by courtesy of TRAONE )'
 *.Core space
       WRITE(LUOUT,*)
       IF(ISETKW(8).EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A,I2)')
+        WRITE(LUOUT,'(A,I2)')
      &  '     Largest number of excitations out of core .....   ',MXHR0
       END IF
 *.Secondary space
       IF(ISETKW(13).EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A,I2)')
+        WRITE(LUOUT,'(A,I2)')
      &  '     Largest number of excitations to secondary space  ',MXER4
       END IF
       ELSE
@@ -4861,9 +4870,9 @@ C     WRITE(6,'(A,A)') '    Machine in use : ', MACHINE
       WRITE(LUOUT,'(A)') ' Orbital subspaces:'
       WRITE(LUOUT,'(A)') ' ================== '
       WRITE(LUOUT,*)
-      WRITE(LUOUT,'(1H ,A,10I4,A)')
+      WRITE(LUOUT,'(A,10I4,A)')
      &  '                Irrep ',(I,I = 1,NIRREP)
-      WRITE(LUOUT,'(1H ,A,2X,10A,A)')
+      WRITE(LUOUT,'(A,2X,10A,A)')
      &  '                ===== ',('====',I = 1,NIRREP)
       DO IGAS = 1, NGAS
         WRITE(LUOUT,'(A,I2,A,10I4,6X,2I6)')
@@ -4912,7 +4921,7 @@ C     WRITE(6,'(A,A)') '    Machine in use : ', MACHINE
         WRITE(LUOUT,*)
         WRITE(LUOUT,'(A,I3)') ' Information about CI space ', JCMBSPC
         WRITE(LUOUT,'(A)')    ' =================================='
-        WRITE(LUOUT,'(1H ,3X,A,I3)')
+        WRITE(LUOUT,'(3X,A,I3)')
      &  'Number of occupation spaces included  ',LCMBSPC(JCMBSPC)
         WRITE(LUOUT,'(A,10I3)') '    Occupation spaces included ',
      &  (ICMBSPC(II,JCMBSPC),II=1,LCMBSPC(JCMBSPC))
@@ -5001,9 +5010,9 @@ C       WRITE(6,'(A)')   '  =============================='
       WRITE(LUOUT,*) '*  Roots  *'
       WRITE(LUOUT,*) '*********** '
       WRITE(LUOUT,*)
-      WRITE(LUOUT,'(1H ,A,I3)')
+      WRITE(LUOUT,'(A,I3)')
      &  '     Number of roots to be obtained ', NROOT
-      WRITE(LUOUT,'(1H ,A,(20I3))')
+      WRITE(LUOUT,'(A,(20I3))')
      &  '     Roots to be obtained ', (IROOT(I),I=1, NROOT )
 *
       WRITE(LUOUT,*)
@@ -5015,86 +5024,86 @@ C       WRITE(6,'(A)')   '  =============================='
       WRITE(LUOUT,'(A,A6)') '      Program environment... ', ENVIRO
 *. Integral import
       IF(NOINT.EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     No integrals will be read in       '
       ELSE IF(NOINT.EQ.0) THEN
       IF(INTIMP.EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Integrals read in in MOLCAS format '
       ELSE IF(INTIMP.EQ.5) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Integrals read in in SIRIUS format '
       ELSE IF(INTIMP.EQ.2) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Integrals read in in LUCAS format '
       ELSE IF(INTIMP.EQ.3) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Integrals read in in formatted form (E22.15) ',
      &  '      From unit 13'
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     All integrals of correct symmetry combination read in'
       END IF
 *. Integral storage
-      IF(INCORE.EQ.1) WRITE(LUOUT,'(1H ,A)')
+      IF(INCORE.EQ.1) WRITE(LUOUT,'(A)')
      &  '     All integrals stored in core'
       END IF
       WRITE(LUOUT,*)
 * ( END IF for NOINT
 *. CSF or SD expansion
       IF(NOCSF.EQ.0) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     CI optimization performed with CSF''s '
       ELSE
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     CI optimization performed with SD''s '
       END IF
 *. Ms,Ml combinations
       IF(ISETKW(27).EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A,F8.3)')
+        WRITE(LUOUT,'(A,F8.3)')
      &  '     Spin combinations used with sign ',PSSIGN
       END IF
       IF(ISETKW(28).EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A,F8.3)')
+        WRITE(LUOUT,'(A,F8.3)')
      &  '     ML   combinations used with sign ',PLSIGN
       END IF
 *. Initial approximation to vectors
       WRITE(LUOUT,*)
       IF(IRESTR.EQ.1.AND.IRESTRF.EQ.0) THEN
-         WRITE(LUOUT,'(1H ,A)')
+         WRITE(LUOUT,'(A)')
      &  '     Restarted calculation '
       ELSE IF(IRESTRF.EQ.1) THEN
-         WRITE(LUOUT,'(1H ,A)')
+         WRITE(LUOUT,'(A)')
      &  '     Restarted calculation from REFERENCE space expansion'
       ELSE
          IF(MXP1.NE.0) THEN
-           WRITE(LUOUT,'(1H ,A)')
+           WRITE(LUOUT,'(A)')
      &  '     Initial vectors obtained from explicit Hamiltonian'
          ELSE IF(MXP1.EQ.0) THEN
-           WRITE(LUOUT,'(1H ,A)')
+           WRITE(LUOUT,'(A)')
      &  '     Initial vectors obtained from diagonal'
          END IF
       END IF
       IF(I_RESTRT_CC.EQ.1) THEN
-           WRITE(LUOUT,'(1H ,A)') '     CC calculation restarted '
+           WRITE(LUOUT,'(A)') '     CC calculation restarted '
       END IF
 *. Handling of degenerencies of initial vectors
       IF(INIDEG.EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Symmetric combination of degenerate initial vectors'
       ELSE IF (INIDEG.EQ.-1) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Antiymmetric combination of degenerate initial vectors'
       ELSE IF (INIDEG.EQ.0) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     No combination of degenerate initial vectors'
       END IF
 *. Ms,Ml combinations
 C     IF(ISETKW(27).EQ.1) THEN
-C       WRITE(LUOUT,'(1H ,A,F8.3)')
+C       WRITE(LUOUT,'(A,F8.3)')
 C    &  '     Spin combinations used with sign ',PSSIGN
 C     END IF
 C     IF(ISETKW(28).EQ.1) THEN
-C       WRITE(LUOUT,'(1H ,A,F8.3)')
+C       WRITE(LUOUT,'(A,F8.3)')
 C    &  '     ML   combinations used with sign ',PLSIGN
 C     END IF
 *. CI storage mode
@@ -5111,142 +5120,142 @@ C     END IF
       END IF
       IF(LCSBLK.NE.0) WRITE(LUOUT,'(A,I10)')
      &  '      Smallest allowed size of sigma- and C-batch ',LCSBLK
-      WRITE(LUOUT,'(1H ,A,I4)')
+      WRITE(LUOUT,'(A,I4)')
      &  '     Dimension of block of resolution strings ', MXINKA
       IF(IUSE_PH.EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Particle-hole separation used '
       ELSE
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      & '      Particle-hole separation not used '
       END IF
 *
       IF(IADVICE.EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Advice routine call to optimize sigma generation'
       END IF
 *
       IF(IUSE_PA.EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Strings divided into active and passive parts'
       ELSE
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     Strings not divided into active and passive parts'
       END IF
 *
-C?    IF(MOCAA.NE.0) WRITE(LUOUT,'(1H ,A,I4)')
+C?    IF(MOCAA.NE.0) WRITE(LUOUT,'(A,I4)')
 C?   &  '     MOC method used for alpha-alpha+beta-beta loop '
-C?    IF(MOCAB.NE.0) WRITE(LUOUT,'(1H ,A,I4)')
+C?    IF(MOCAB.NE.0) WRITE(LUOUT,'(A,I4)')
 C?   &  '     MOC method used for alpha-beta loop            '
 *
       WRITE(LUOUT,*)
       IF(IDENSI.EQ.0) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     No calculation of density matrices  '
       ELSE IF(IDENSI.EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     One-body density matrix calculated'
       ELSE IF(IDENSI.EQ.2) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     One- and two-body density matrices  calculated'
       END IF
       WRITE(LUOUT,*)
-C?    IF(MOCAA.NE.0) WRITE(LUOUT,'(1H ,A,I4)')
+C?    IF(MOCAA.NE.0) WRITE(LUOUT,'(A,I4)')
 C?   &  '     MOC method used for alpha-alpha+beta-beta loop '
-C?    IF(MOCAB.NE.0) WRITE(LUOUT,'(1H ,A,I4)')
+C?    IF(MOCAB.NE.0) WRITE(LUOUT,'(A,I4)')
 C?   &  '     MOC method used for alpha-beta loop            '
 *
 *. Diagonalization information
-      WRITE(LUOUT,'(1H ,A)')
+      WRITE(LUOUT,'(A)')
      &  '     CI diagonalization : '
-      WRITE(LUOUT,'(1H ,A)')
+      WRITE(LUOUT,'(A)')
      &  '     ==================== '
 *. Subspace Hamiltinian
       IF(MXP1+MXP2+MXQ .EQ.0) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '        No subspace Hamiltonian '
       ELSE
-        WRITE(LUOUT,'(1H ,A,3I4)')
+        WRITE(LUOUT,'(A,3I4)')
      &  '        Dimensions of subspace Hamiltonian ',MXP1,MXP2,MXQ
       END IF
 *. Diagonalizer
       IF(IDIAG.EQ.1.AND.ICISTR.EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &    '        Diagonalizer : MINDV4 '
       ELSE IF(IDIAG.EQ.1.AND.ICISTR.GE.2) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &    '        Diagonalizer : MICDV* '
       ELSE IF(IDIAG.EQ.2) THEN
-      WRITE(LUOUT,'(1H ,A)')
+      WRITE(LUOUT,'(A)')
      &    '        Diagonalizer : PICO*  '
       END IF
 *. Root homing
       IF(IROOTHOMING.EQ.1) THEN
-      WRITE(LUOUT,'(1H ,A)')
+      WRITE(LUOUT,'(A)')
      &  '        Root homing will be used '
       ELSE
-      WRITE(LUOUT,'(1H ,A)')
+      WRITE(LUOUT,'(A)')
      &  '        No root homing '
       END IF
 *. No restart in CI calc 2
       IF(IRST2.EQ.0) THEN
-      WRITE(LUOUT,'(1H ,A)')
+      WRITE(LUOUT,'(A)')
      &  '        No restart from previous vectors in second calc '
       END IF
       IF(ISKIPEI.EQ.1) THEN
-      WRITE(LUOUT,'(1H ,A)')
+      WRITE(LUOUT,'(A)')
      &  '        Initial energy evaluations skipped after first calc'
-      WRITE(LUOUT,'(1H ,A)')
+      WRITE(LUOUT,'(A)')
      &  '        (Only active in connection with TERACI )'
       END IF
 *. Number of iterations
-C     WRITE(LUOUT,'(1H ,A,I2)')
+C     WRITE(LUOUT,'(A,I2)')
 C    &  '        Allowed number of iterations    ',MAXIT
 *. Number of CI vectors in subspace
-      WRITE(LUOUT,'(1H ,A,I2)')
+      WRITE(LUOUT,'(A,I2)')
      &  '        Allowed Dimension of CI subspace',MXCIV
 *
       WRITE(LUOUT,'(A,1P,E11.5)')
      &  '         Convergence threshold for energy ',THRES_E
 *. Multispace (multigrid info )
       IF(MULSPC.EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &    '        Multispace method in use from space ',
      &             IFMULSPC
         WRITE(LUOUT,*)
      &    '        Pattern '
         CALL IWRTMA(IPAT,1,LPAT,1,LPAT)
       ELSE
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &    '        No multispace method in use '
       END IF
 *
       WRITE(LUOUT,*)
       IF(IDIAG.EQ.2) THEN
-        WRITE(LUOUT,'(1H ,A,E11.5)')
+        WRITE(LUOUT,'(A,E11.5)')
      &   '        Individual second order energy threshold ',E_THRE
-        WRITE(LUOUT,'(1H ,A,E11.5)')
+        WRITE(LUOUT,'(A,E11.5)')
      &   '        Individual first order wavefunction threshold ',C_THRE
         IF(ICLSSEL.EQ.1) THEN
          WRITE(LUOUT,*)
-         WRITE(LUOUT,'(1H ,A)')
+         WRITE(LUOUT,'(A)')
      &   '         Class selection will be performed : '
-         WRITE(LUOUT,'(1H ,A)')
+         WRITE(LUOUT,'(A)')
      &   '         =================================== '
-         WRITE(LUOUT,'(1H ,A,E11.5)')
+         WRITE(LUOUT,'(A,E11.5)')
      &    '          Total second order energy threshold ',E_CONV
-         WRITE(LUOUT,'(1H ,A,E11.5)')
+         WRITE(LUOUT,'(A,E11.5)')
      &    '          Total first order wavefunction threshold ',C_CONV
         ELSE
-         WRITE(LUOUT,'(1H ,A)')
+         WRITE(LUOUT,'(A)')
      &'            No class selection in iterative procedure '
         END IF
       END IF
 *
       IF(IPERT.NE.0) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &    '     Perturbation calculation'
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
      &  '     ======================= '
         WRITE(LUOUT,*)
      &  '        Root Choosen as zero order state ', IRFROOT
@@ -5407,7 +5416,7 @@ C       WRITE(6,*) ' Number of A-operators : ', N_AVE_OP
         WRITE(LUOUT,*) ' ======================='
         WRITE(LUOUT,*)
         DO IAVE = 1, N_AVE_OP
-          WRITE(LUOUT,'(1H , 6X,A)') AVE_OP(IAVE)
+          WRITE(LUOUT,'( 6X,A)') AVE_OP(IAVE)
         END DO
         WRITE(LUOUT,*)
 C       WRITE(6,*) ' Number of response calculations ', NRESP
@@ -5416,7 +5425,7 @@ C       WRITE(6,*) ' Number of response calculations ', NRESP
         WRITE(LUOUT,*)
         WRITE(LUOUT,*) ' Calc  Op1    Op2    Mxord1     Mxord2    Freq '
         DO IRESP = 1, NRESP
-          WRITE(LUOUT,'(1H ,I2,2X,A,A,3X,I4,3X,I4,2X,F12.7)' )
+          WRITE(LUOUT,'(I2,2X,A,A,3X,I4,3X,I4,2X,F12.7)' )
      &    IRESP,RESP_OP(1,IRESP),RESP_OP(2,IRESP),MAXORD_OP(1,IRESP),
      &    MAXORD_OP(2,IRESP),RESP_W(IRESP)
         END DO
@@ -5486,76 +5495,76 @@ C       WRITE(6,'(5X,A)')  ' No transformation of CI vectors'
 *. Print levels
 *
       WRITE(LUOUT,*)
-      WRITE(LUOUT,'(1H ,A)')  '     Print levels : '
+      WRITE(LUOUT,'(A)')  '     Print levels : '
       IF(ISETKW(29).EQ.2) THEN
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Default print level for string    information = ', IPRSTR
       ELSE
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Raised  print level for string    information = ', IPRSTR
       END IF
       IF(ISETKW(30).EQ.2) THEN
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Default print level for CI space  information = ', IPRCIX
       ELSE
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Raised  print level for CI space  information = ', IPRCIX
       END IF
       IF(ISETKW(31).EQ.2) THEN
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Default print level for orbital   information = ', IPRORB
       ELSE
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Raised  print level for orbital   information = ', IPRORB
       END IF
       IF(ISETKW(65).EQ.2) THEN
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Default print level for density matrix        = ', IPRDEN
       ELSE
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Raised  print level for density matrix        = ', IPRDEN
       END IF
       IF(ISETKW(32).EQ.2) THEN
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Default print level for iterative information = ', IPRDIA
       ELSE
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Raised  print level for iterative information = ', IPRDIA
       END IF
       IF(ISETKW(36).EQ.2) THEN
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Default print level for External blocks       = ', IPRXT
       ELSE
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Raised  print level for External blocks       = ', IPRXT
       END IF
 *
       IF(IRESPONS.NE.0) THEN
       IF(ISETKW(84).EQ.2) THEN
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Default print level for response section      = ', IPRRSP
       ELSE
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Raised  print level for response section      = ', IPRRSP
       END IF
       END IF
 *
       IF(IPROCC.NE.0) THEN
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Occupation of SD''s/ configurations           = ',IPROCC
       END IF
 *
       IF(IPRNCIV.EQ.1 ) THEN
-        WRITE(LUOUT,'(1H ,A,I3)')
+        WRITE(LUOUT,'(A,I3)')
      &  '      Final CI vectors will be printed '
       END IF
 *
       WRITE(LUOUT,*)
-C     IF(MOLCS.EQ.1) WRITE(LUOUT,'(1H ,A,E18.9)')
+C     IF(MOLCS.EQ.1) WRITE(LUOUT,'(A,E18.9)')
 C    &  '      Core energy : ', ECORE
 *
       IF(IDMPIN.EQ.1) THEN
-        WRITE(LUOUT,'(1H ,A)')
+        WRITE(LUOUT,'(A)')
         WRITE(LUOUT,*) 
      & '      Integrals written in formatted form (E22.15)'
         WRITE(LUOUT,*) '      on file 90 '
@@ -5572,28 +5581,28 @@ C    &  '      Core energy : ', ECORE
 *
 * Introduce LUCIA
 *
-      WRITE(LUOUT,'(1H ,8X,A)')
+      WRITE(LUOUT,'(8X,A)')
      &'****************************************************************'
-      WRITE(LUOUT,'(1H ,8X,A)')
+      WRITE(LUOUT,'(8X,A)')
      &'*                                                              *'
-      WRITE(LUOUT,'(1H ,8X,A)')
+      WRITE(LUOUT,'(8X,A)')
      &'*           Welcome to LUCIA, A direct CI program              *'
-      WRITE(LUOUT,'(1H ,8X,A)')
+      WRITE(LUOUT,'(8X,A)')
      &'*                                                              *'
-      WRITE(LUOUT,'(1H ,8X,A)')
+      WRITE(LUOUT,'(8X,A)')
      &'* Written by Jeppe Olsen, University of Lund, Sweden           *'
-      WRITE(LUOUT,'(1H ,8X,A)')
+      WRITE(LUOUT,'(8X,A)')
      &'* Version of Sept 97   (GAS-CI, GAS-PERT, CI- RESPONS )        *'
-      WRITE(LUOUT,'(1H ,8X,A)')
+      WRITE(LUOUT,'(8X,A)')
      &'****************************************************************'
 *
       WRITE(LUOUT,*)
-      WRITE(LUOUT,'(1H ,8X,A)')
+      WRITE(LUOUT,'(8X,A)')
      &' In case of trouble please contact : '
-      WRITE(LUOUT,'(1H ,12X,2A)')
+      WRITE(LUOUT,'(12X,2A)')
      &' Jeppe Olsen, Chemical Centre, University of Lund, P.O.Box 124',
      &' Lund, S-22100 Sweden '
-      WRITE(LUOUT,'(1H ,12X,2A)')
+      WRITE(LUOUT,'(12X,2A)')
      &' Telephone : 46 46 2224915, FAX : 46 46 2224543,',
      &' E-mail : TEOJEO@garm.teokem.lu.se'
       WRITE(6,*)
@@ -5619,9 +5628,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "maxorb.h"
 #include "dcbgen.h"
 C
-C     ITASK = 5 for parallel LUCITA
+C     Send task code for parallel LUCITA
 C
-      IF (PARCAL) CALL DIRAC_PARCTL( 5 )
+      IF (PARCAL) CALL DIRAC_PARCTL( LUCITA_PAR )
 C
       END
 C/* Deck LUMSTE */
@@ -5650,7 +5659,7 @@ C
 C
 C     Let the slaves sleep (if relevant for this operating system)
 C
-      CALL DIRAC_PARCTL( 0 )
+      CALL DIRAC_PARCTL( RELEASE_NODES )
 C
       END
 #if defined (VAR_MPI2)

@@ -16,6 +16,8 @@ pbex=1.0 pbec=1.0
 .SCF
 .RELCCSD
 *SCF
+.MOSTART ! test is made with old start procedure and not converged, so we need to use this
+BNCORR    
 .EVCCNV
  1.0D-2
 **PROPERTIES
@@ -30,4 +32,7 @@ all
 .NOSDT
 .MAXIT
 10
+*CCFOPR
+.MP2G
+.RELAXED
 *END OF

@@ -5,6 +5,8 @@ module electrostatic_potential
    implicit none 
    
    public get_esp
+!gosia: temporarily:
+   public get_electronic_mep
 
    private
 
@@ -49,7 +51,7 @@ module electrostatic_potential
       call legacy_lwork_get(lwork)
       call alloc(work, lwork, id='temporary work array in electrostatic potential')
 ! Never neglect SS-block for visualization purposes
-      call get_electronic_mep(nr_points, dmat, r, esp, work, lwork, 0, .false., .false.)
+      call get_electronic_mep(nr_points, dmat, mat_dim, r, esp, work, lwork, 0, .false., .false.)
       call dealloc(work)
    end if
 
@@ -139,20 +141,20 @@ module electrostatic_potential
       integer :: iprint
 
 !     Local variables
-      real(8) :: coora(3, nucdep), charges(nucdep), dist, small_chg
+      real(8) :: coora(3, nucdep), charges(nucdep), dist
       integer :: ipoint, i, j, k
 
 !     Get coordinates and charges of all centers, not only the ones
 !     that are symmetry independent      
       call getacord(coora)
-      i = 0
+      i = 1
       do j=1, nucind
-!     Get small charges
-         call scdens_2(charge(j), small_chg, 1, 0) 
-         do k = 1, nucdeg(j)
-            i = i + 1
-            charges(i) = small_chg 
-         enddo
+          !     Get small component charges
+          call scdens_2(charges(i), j, j, 0)
+          do k = 1, nucdeg(j)-1
+            charges(i+k) = charges(i)
+          enddo
+          i = i + nucdeg(j) 
       enddo
 
       do i = 1, nucdep 
@@ -172,7 +174,7 @@ module electrostatic_potential
 
    end subroutine
 
-   subroutine get_electronic_mep(nr_points, matrix, points, vector,    &
+   subroutine get_electronic_mep(nr_points, matrix, mat_dim, points, vector,    &
                         work, lwork, iprint, get_matrix, skipss_block)
 !      
 ! Driver routine for the calculation of the electronic part of the molecular 
@@ -223,7 +225,8 @@ module electrostatic_potential
 
 ! Passed variables
       integer, intent(in) :: nr_points
-      real(8)             :: matrix(ntbas(0), ntbas(0), nz)
+      integer, intent(in) :: mat_dim 
+      real(8)             :: matrix(mat_dim,mat_dim, *)
 ! Triggers whether we want PCM Fock matrix contribution or just the
 ! potential.      
       logical, optional   :: get_matrix 
@@ -240,6 +243,8 @@ module electrostatic_potential
       integer :: multa, multb, nhktab, kab
       integer :: ipoint, idxmax
       logical :: do_matrix
+      real(8) :: debug_dij , debug_vij,  debug_prod , debug_sum
+      integer :: idxa, idxb
 
       if (nbsym > 1) then
          call quit('ESP calculation cannot handle symmetry!')
@@ -269,6 +274,14 @@ module electrostatic_potential
           idxmax = kmax
       end if
 ! Loop over bras <mu|      
+
+!!!!
+!! aspg, 23/10/2015
+!! debug printouts
+!     print *,'debug: mc, skipss_block, idxmax, kmax, nlrgsh:',mc,skipss_block,idxmax,kmax,nlrgsh
+!
+!!!
+
       idena = 0
       do ishela = 1, idxmax
         ica   = lclass(ishela)
@@ -333,6 +346,14 @@ module electrostatic_potential
 !        enddo
 !     enddo 
               do ipoint = 1, nr_points
+!!!!
+!! aspg, 23/10/2015
+!! debug printouts
+!             debug_sum = 0.0d0
+!             print *, " debug -- at point:",ipoint
+!             write (*, '(A,6I4)') "khkta, khktb, multa, multb, idena, idenb:", khkta, khktb, multa, multb,idena, idenb
+!             print *, "      i, j, Dij, Vij, DV, sum"
+!!!!
               if (do_matrix) then
                  do ib = 1, kcktb
                    do ia = 1, kckta 
@@ -344,6 +365,22 @@ module electrostatic_potential
                vector(ipoint) = vector(ipoint) + 2.0d0                    * &
                     sum(matrix(idena+1:idena+kckta, idenb+1:idenb+kcktb, 1) * &
                             ader(ipoint, 1:kckta, 1:kcktb))
+                
+                   do ib = 1, kcktb
+                   do ia = 1, kckta 
+                      idxa = idena+ia
+                      idxb = idenb+ia
+!!!!
+!! aspg, 23/10/2015
+!! debug printouts
+!                     debug_dij  = matrix(idxa,idxb,1)
+!                     debug_vij  = ader(ipoint, ia, ib)
+!                     debug_prod = debug_dij * debug_vij 
+!                     debug_sum  = debug_sum + debug_prod 
+!                     write (*,'(5x,2i4,e20.8,2i4,e20.8,2e20.8)') idxa,idxb,debug_dij,ia,ib,debug_vij,debug_prod,debug_sum
+!!!!
+                   end do
+                   end do
                 end if
               end do 
               deallocate(ader)
@@ -368,6 +405,12 @@ module electrostatic_potential
           do ipoint = 1, nr_points
             print *, "Electronic ESP @point", ipoint, vector(ipoint)
           end do
+          if (do_matrix) then
+            write(*, *) 'matrix from get_electronic_mep'
+           CALL PRQMAT(matrix(1,1,1),mat_dim, mat_dim, mat_dim, &
+                        mat_dim, 1,(/1, 2, 3, 4/), 6)
+          end if
+
       end if
 
    end subroutine 
@@ -745,5 +788,6 @@ module electrostatic_potential
       end do      
 
    end subroutine
+
 
 end module

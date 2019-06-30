@@ -3,7 +3,6 @@ module london_utils
 
   use memory_allocator 
   use dirac_cfg
-  use dft_cfg
   use num_grid_gen
   use dirac_interface
 
@@ -45,7 +44,7 @@ module london_utils
 #include "infpar.h"
 #ifdef VAR_MPI
 #include "mpif.h"
-  dimension     istat(mpi_status_size)
+  integer istat(mpi_status_size)
 #endif /* ifdef VAR_MPI */
 
 
@@ -63,7 +62,7 @@ contains
 !    ---------------------------------------------------------------------------
      real(8), intent(inout) :: m(norbt, norbt, nz)
      logical, intent(in) :: ee, ep
-     real(8), allocatable   :: m_cp(:,:,:)
+     real(8), allocatable :: m_cp(:,:,:)
      integer, allocatable :: indices_virt(:)
      integer, allocatable :: indices_occ(:)
      integer :: isym, iz, i, j, ip
@@ -439,7 +438,12 @@ contains
         do i = 1, nr_occ_used(isym)
            do j = 1, nr_virt_used(isym)
               if (temp_occ(i) .ne. 0 .and. temp_virt(j) .ne. 0) then
-                 ioff = (isym - 1)*nr_occ_used(isym - 1)*nr_virt_used(isym - 1)
+                ! miro: fix due to runtimecheck
+                 if (isym.gt.1) then
+                     ioff = (isym - 1)*nr_occ_used(isym - 1)*nr_virt_used(isym - 1) 
+                 else
+                     ioff = 0
+                 endif
                  ind = ioff + (i-1)*nr_virt_used(isym) + j
                  orbital_rotation_indices(1, ind) = temp_occ(i)
                  orbital_rotation_indices(2, ind) = temp_virt(j)
@@ -706,12 +710,24 @@ contains
      end do
 
 
+     debug_me = .false.
+     if (debug_me) then
+        write(*, *) 'get_m_ee, m full:'
+        call prqmat(m, &
+                    norbt, norbt, norbt, norbt, &
+                    nz, ipqtoq(1, 0), lupri)
+        write(*, *) 'get_m_ee, m_cp, ee only:'
+        call prqmat(m_cp, &
+                    norbt, norbt, norbt, norbt, &
+                    nz, ipqtoq(1, 0), lupri)
+     end if
+
+
 !    clean
 !    -----
      call dzero(m, n2orbxq)
      call dcopy(n2orbxq, m_cp, 1, m, 1)
      call dealloc(m_cp)
-
 
   end subroutine
 
@@ -768,6 +784,19 @@ contains
         call dealloc(indices_occ)
         call dealloc(indices_virt)
      end do
+
+     debug_me = .false.
+     if (debug_me) then
+        write(*, *) 'get_m_ep, m full:'
+        call prqmat(m, &
+                    norbt, norbt, norbt, norbt, &
+                    nz, ipqtoq(1, 0), lupri)
+        write(*, *) 'get_m_ep, m_cp, ep only:'
+        call prqmat(m_cp, &
+                    norbt, norbt, norbt, norbt, &
+                    nz, ipqtoq(1, 0), lupri)
+     end if
+
 
 !    clean
 !    -----

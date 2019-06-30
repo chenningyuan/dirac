@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -251,11 +251,9 @@ C
 C       read HF coefficients 
         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GRDOR1')
         IF(SPINFR) THEN
-          CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IBEIG,TOTERG,10,
-     &                WORK,KFREE,LFREE)
+          CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IBEIG,TOTERG,10)
         ELSE
-          CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,DUM,TOTERG,2,
-     &                WORK,KFREE,LFREE)
+          CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,DUM,TOTERG,2)
         ENDIF
         CLOSE(LUCOEF,STATUS='KEEP')
       END IF
@@ -270,6 +268,8 @@ CMI NOTE/27.10'04 The new IBEIG parameters for spin-free properties !
 CMI This has to be adapted also for LAO properties !
       IF (PRPNAM(INDXPR)(1:3).EQ.'LAO') THEN
         IB = 7 ! 0111 = full H(B) prop. gradient
+!gosia: fac2lo is not set? i'm setting it to 1.0
+        fac2lo = 1.0d0
         CALL GETDHB(IB,FAC2LO,PRPMO,INDXPR,IOPSY,
      &                    WORK,KFREE,LFREE,IPRINT)
       ELSE
@@ -543,6 +543,9 @@ C     =================================================================
 C         
       CALL DZERO(PRPMO,N2PMOX*NZ)
       IOPSY = JBTOF(IREP,1)
+!     write(*,*) 'N2PMOX,NZ:', N2PMOX,NZ
+!     write(*,*) 'IOPSY:', IOPSY
+!     write(*,*) 'IREP:', IREP
       QBTR = .FALSE.
       DO I1 = 1,NFSYM
         I2  = MOD(I1+IOPSY,2) + 1
@@ -563,7 +566,7 @@ C
      &         NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,IREP),LUPRI)
               CALL FLSHFO(LUPRI)
             ENDIF
-          ENDIF		
+          ENDIF
 
           IF(SPINFR.AND.((ITIM.EQ.1).OR.NOSPIN)) THEN
             CALL QBTRANS(IREP,'AOMO','S',D0,
@@ -774,6 +777,8 @@ C
      &         FILE='AOPROPER')
       IF (PRPNAM(INDXPR)(1:3).EQ.'LAO') THEN
         IB = 7 ! 111
+!gosia: fac2lo is not set? i'm setting it to 1.0
+        fac2lo = 1.0d0
         CALL GETDHB(IB,FAC2LO,PRPMO,INDXPR,IOPSY,
      &                    WORK,KFREE,LFREE,IPRINT)
       ELSE

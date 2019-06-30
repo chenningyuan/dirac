@@ -2,30 +2,48 @@
 
 import os
 import sys
-
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from runtest_dirac import Filter, TestRun
 
-test = TestRun(__file__, sys.argv)
+from runtest import version_info, get_filter, cli, run
+from runtest_config import configure
 
-f = Filter()
+assert version_info.major == 2
 
-f.add(from_string = 'Expectation values',
-      to_string   = '    s0 = T : Expectation value zero by point group symmetry.',
-      rel_tolerance = 1.0e-5)
-f.add(from_string = 'DIRAC  - INDIRECT NUCLEAR SPIN-SPIN-COUPLINGS',
-      to_string   = 'DSO contribution to reduced SSCC K (SI)',
-      rel_tolerance = 1.0e-5)
-f.add(from_string = 'At1  #  iso',
-      num_lines   = 4,
-      rel_tolerance   = 1.0e-3)
+f = [
+    get_filter(from_string='Expectation values',
+               to_string='    s0 = T : Expectation value zero by point group symmetry.',
+               rel_tolerance=5.0e-5),
+    get_filter(from_string='DIRAC  - INDIRECT NUCLEAR SPIN-SPIN-COUPLINGS',
+               to_string='DSO contribution to reduced SSCC K (SI:10**19 m-2 kg s-2 A-2)',
+               rel_tolerance=5.0e-5),
+    get_filter(from_string='At1  #  iso',
+               num_lines=4,
+               rel_tolerance=1.0e-3),
+]
 
-test.run(['bss_rkb+mfsso.spsp.inp'], ['H2O.mol'], f, args='--mw=100 --aw=128')
+options = cli()
 
-f.add(from_string = 'RPA results',
-      to_string   = 'Timing of routine RPAA',
-      rel_tolerance = 1.0e-5)
+ierr = 0
+for inp in ['bss_rkb+mfsso.spsp.inp']:
+    for mol in ['H2O.mol']:
+        ierr += run(options,
+                    configure,
+                    input_files=[inp, mol],
+                    filters={'out': f},
+                    extra_args='--mw=100 --aw=128')
 
-test.run(['spsp.inp', 'bss.spsp.inp', 'bss+mfsso.spsp.inp'], ['H2O.mol'], f, args='--mw=100 --aw=128')
+f = [
+    get_filter(from_string='RPA results',
+               to_string='Timing of routine RPAA',
+               rel_tolerance=5.0e-5),
+]
 
-sys.exit(test.return_code)
+for inp in ['spsp.inp', 'bss.spsp.inp', 'bss+mfsso.spsp.inp']:
+    for mol in ['H2O.mol']:
+        ierr += run(options,
+                    configure,
+                    input_files=[inp, mol],
+                    filters={'out': f},
+                    extra_args='--mw=100 --aw=128')
+
+sys.exit(ierr)

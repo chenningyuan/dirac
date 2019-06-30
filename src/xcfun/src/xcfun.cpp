@@ -319,8 +319,3 @@ int xcfun_test(void)
   return nr_failed;
 }
 
-// Return the tau_a of the uniform electron gas of density n_a
-static ireal_t ueg_tau(ireal_t na)
-{
-  return 3.0/5.0*pow(6*M_PI*M_PI,2.0/3.0)*pow(na,5.0/3.0);
-}

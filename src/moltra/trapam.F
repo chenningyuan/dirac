@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,7 +19,8 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-C
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck PAMTRA */
       SUBROUTINE PAMTRA()
@@ -70,6 +71,18 @@ C
 C
       CALL GETTIM(CPU1,WALL1)
       CALL TRAHI(IPRTRA,3)
+
+C     Define NOMDCINT from **MOLTRA input
+
+      NOMDCINT = NOMDCINT_TRAINP
+      ISTRAT_save = ISTRAT
+      IF (NOMDCINT .AND. ISTRAT .NE. 4) THEN
+         WRITE(LUPRI,'(/A,I0/)')
+     &   'INFO, .NOMDCINT is only implemented for strategy 4;'//
+     &   ' therefore use stategy 4 instead of ',ISTRAT
+         ISTRAT = 4
+      END IF
+
 C
 C     Define number of double quaternionic classes
 C
@@ -202,8 +215,27 @@ C
       Allocate (IBEIG(NORBT))
       CALL IZERO(IBEIG,NORBT)
       CALL DZERO(EIG,NORBT)
-      INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
-      INQUIRE(FILE='KRMCOLD',EXIST=TOBEKK)
+
+      SELECT CASE ( MOFILE_TRAINP )
+         CASE ( "DFCOEF" )
+            TOBEK  = .FALSE.
+            TOBEKK = .FALSE.
+         CASE ( "KRMCSCF" )
+            TOBEK  = .TRUE.
+            TOBEKK = .FALSE.
+         CASE ( "KRMCOLD" )
+            TOBEK  = .FALSE.
+            TOBEKK = .TRUE.
+         CASE ( "UNKNOWN" )
+            INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
+            INQUIRE(FILE='KRMCOLD',EXIST=TOBEKK)
+         CASE DEFAULT
+            WRITE(LUPRI,'(/2A)')
+     &      'FATAL ERROR for **MOLTRA input: Unknown .MOFILE name : ',
+     &      MOFILE_TRAINP
+            CALL QUIT('Unknown .MOFILE from **MOLTRA input')
+      END SELECT
+
 
       IF (TOBEK) THEN
          CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','PAMTRA')
@@ -250,13 +282,16 @@ C
             CALL QUIT('PAMTRA: No MO coefficient file !')
          ELSE
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMTRA')
-            CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,
-     &                  IBEIG,TOTERG,14,WORK,KFREE,LFREE)
+            CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
             CLOSE(LUCOEF,STATUS='KEEP')
+         END IF
+         IF (IPRTRA .GE. 0) THEN
+            WRITE(LUPRI,'(/A)')
+     &          ' (PAMTRA)  Orbitals read from DFCOEF'
          END IF
       END IF
 C
-C     Select the set that we need
+C     Select the set of MOs(CMO), eigenvalues(EIG) and boson array id(IBEIG) that we need for core transformation
 C
       DO I = 1, 4
         DO IFRP = 1, NFSYM
@@ -399,8 +434,6 @@ C
       Allocate (CMO(NCMOTQ))
       Allocate (EIG(NORBT))
       Allocate (IBEIG(NORBT))
-      INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
-      INQUIRE(FILE='KRMCOLD',EXIST=TOBEKK)
       IF (TOBEK) THEN
          CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','PAMTRA')
          JRDMO = -1
@@ -428,12 +461,11 @@ C
             CALL QUIT('PAMTRA: No MO coefficient file !')
          ELSE
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMTRA')
-            CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,
-     &                  IBEIG,TOTERG,14,WORK,KFREE,LFREE)
+            CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
          ENDIF
       END IF
 C
-C     Select the set that we need
+C     Select the set of MOs that we need for core transformation
 C
       DO IFRP = 1, NFSYM
          CALL SELCFS (CMO(1+ICMOQ(IFRP)),IFRP,WORK(KQC(IFRP)),
@@ -443,7 +475,6 @@ C
       ENDDO
 C
 C     Throw away the complete set, keep only the selected sets
-C
       DeAllocate (CMO)
       DeAllocate (EIG)
       DeAllocate (IBEIG)
@@ -457,9 +488,11 @@ C
 C
       CALL FLSHFO(LUPRI)
 C
-      IF (.NOT.NO2IND)
-     &   CALL TRAONE(TOTERG,WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,KQ,
+      IF (.NOT.NO2IND) THEN
+         CALL FLSHFO(LUPRI)
+         CALL TRAONE(TOTERG,WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,KQ,
      &               KQC,KE,KIBE)
+      ENDIF
 C
       CALL FLSHFO(LUPRI)
 C
@@ -498,6 +531,7 @@ C
 C
       CALL FLSHFO(LUPRI)
 
+      ISTRAT = ISTRAT_save
       call dealloc(WORK)
       CALL QEXIT('PAMTRA')
       RETURN
@@ -570,6 +604,7 @@ C
 #include "memint.h"
       call alloc(WORK,LWORK,id='WORK in PSIMP2')
       KFRSAV = KFREE
+      TRANOP = .false.
       CALL MP2HI(IPRMP2)
 C
 C     Check to see if coefficients are there
@@ -651,6 +686,7 @@ C
      &              NSTR(IFRP,2,2),NSTR(IFRP,1,2))
         NSTR(IFRP,0,2)   = NSTR(IFRP,1,2) + NSTR(IFRP,2,2)
       ENDDO
+      
 C
 C     If energy threshold, truncate virtual space
 C     ===========================================
@@ -711,8 +747,14 @@ C
       Allocate (CMO(N2BBASXQ))
       Allocate (EIG(NORBT))
       Allocate (IBEIG(NORBT))
-      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,
-     &            ESCF,14,WORK,KFREE,LFREE)
+      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+      IF (.NOT.TOBE) THEN
+         WRITE(LUPRI,'(/A)') 'MO coefficient file not present'
+         CALL QUIT('PSIMP2: No MO coefficient file !')
+      ELSE
+         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PSIMP2')
+         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,ESCF,14)
+      ENDIF
       CLOSE(LUCOEF,STATUS='KEEP')
       WRITE(LUPRI,'(A,F18.10,/)')
      &  'Coefficients imported. Total DHF energy:', ESCF
@@ -1084,8 +1126,7 @@ C
          CALL QUIT('LAGTAU: No MO coefficient file !')
       ELSE  
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','LAGTAU')
-         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,
-     &               TOTERG,14,WORK,KFREE,LFREE)
+         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
          CLOSE(LUCOEF,STATUS='KEEP')
       ENDIF 
 C           
@@ -1603,8 +1644,7 @@ C
                CALL QUIT('TRAHI: No MO coefficient file !')
             ELSE
                CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAHI')
-               CALL REACMO(LUCOEF,'DFCOEF',DUM,DUM,IDUM,TOTERG,1,
-     &                     DUM,IDUM,IDUM)
+               CALL REACMO(LUCOEF,'DFCOEF',DUM,DUM,IDUM,TOTERG,1)
                CLOSE(LUCOEF,STATUS='KEEP')
             ENDIF
          END IF
@@ -3416,7 +3456,7 @@ C
 C       Get hold of the slaves if we run in parallel.
 C        ( ITASK = 1 for Fock matrices )
 C
-        IF (PARCAL) CALL DIRAC_PARCTL( 1 )
+        IF (PARCAL) CALL DIRAC_PARCTL( HERFCK_PAR )
 C
         NELM = 0
         DO IFRP = 1,NFSYM
@@ -3434,7 +3474,7 @@ C
 C       Release the slaves if we run in parallel.
 C        ( ITASK = -1 )
 C
-        IF (PARCAL) CALL DIRAC_PARCTL( -1 )
+        IF (PARCAL) CALL DIRAC_PARCTL( EXIT_NODEMENU )
       END IF
 C
       CALL QEXIT('VIRCAN')
@@ -3595,8 +3635,7 @@ C
 C     Read and check eigenvalues
 C
       CALL MEMGET2('REAL','EIG',KEIG,NORBT,WORK,KFREE,LFREE)
-      CALL REACMO(LUCOEF,'DFCOEF',DUM,WORK(KEIG),DUM,DUM,4,
-     &            WORK,KFREE,LFREE)
+      CALL REACMO(LUCOEF,'DFCOEF',DUM,WORK(KEIG),DUM,DUM,4)
       DO IFRP = 1,NFSYM
         NSEL = 0
         NDEL = 0
@@ -3770,7 +3809,9 @@ C     Driver routine for 4-index transformation for
 C     resolution of electronic states within open-shell manifold
 C
 C     Based on PAMTRA
+C
 C     Written by T.Saue Jan 18 1999
+C     Modified by Miro for DFT-COSCI, August 2016
 C
 C***********************************************************************
 
@@ -3944,7 +3985,9 @@ C
 C
 C     Allocate buffer spaced for coefficients AND core Fock matrix
 C
+!Miro: extra space (KBUF1) for full set of MO coeff for DFT-COSCI
       CALL MEMGET2('REAL','KBUF',KBUF,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','KBUF1',KBUF1,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','KEIG',KEIG,NORBT ,WORK,KFREE,LFREE)
       CALL MEMGET2('INTE','KIBEIG',KIBEIG,NORBT,WORK,KFREE,LFREE)
 C
@@ -3959,7 +4002,9 @@ C
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RESOLV')
          CALL REACMO(LUCOEF,'DFCOEF',WORK(KBUF),WORK(KEIG),WORK(KIBEIG),
-     &               TOTERG,14,WORK,KFREE,LFREE)
+     &               TOTERG,14)
+        CALL REACMO(LUCOEF,'DFCOEF',WORK(KBUF1),WORK(KEIG),WORK(KIBEIG),
+     &               TOTERG,14)
          CLOSE(LUCOEF,STATUS='KEEP')
       ENDIF
 C
@@ -3997,15 +4042,16 @@ C
 C       Get hold of the slaves if we run in parallel.
 C        ( ITASK = 1 for Fock matrices )
 C
-        IF (PARCAL) CALL DIRAC_PARCTL( 1 )
+        IF (PARCAL) CALL DIRAC_PARCTL( HERFCK_PAR )
 C
 C       Transform core-fock matrix to active MO basis
 C       ---------------------------------------------
-C
+CMiro/Aug 2016 - introduced DFT-COSCI, core-fock mtx contains xc contrib 
+
         CALL GTCFCK(WORK(KBUF),IPRRES,WORK(KQ(1,1)),WORK(KQ(1,2)),
-     &              WORK(KQC(1)),NDMOQR,ICMOQR,NSTR(1,0,1),
-     &              NDMOQC,ICMOQC,NSPC(1,0),
-     &              INTRES,WORK,KFREE,LFREE)
+     &            WORK(KQC(1)),WORK(KBUF1),NDMOQR,ICMOQR,NSTR(1,0,1),
+     &             NDMOQC,ICMOQC,NSPC(1,0),
+     &             INTRES,WORK,KFREE,LFREE)
 C
 C       Write MOLFDIR file MRCONEE
 C       --------------------------
@@ -4021,7 +4067,7 @@ C
 C       Release the slaves if we run in parallel.
 C        ( ITASK = -1 )
 C
-        IF (PARCAL) CALL DIRAC_PARCTL( -1 )
+        IF (PARCAL) CALL DIRAC_PARCTL( EXIT_NODEMENU )
       ENDIF
 C
 C     Release buffer memory
@@ -4141,6 +4187,12 @@ C
 #include "memint.h"
       call alloc(WORK,LWORK,id='WORK in SY_COSCI')
 
+! .. definitions to satisfy ifort runtime check
+      TRANOP = .false.
+      SCRBUF = 0.0D0
+      THRBUF = 0.0D0
+      IPRBUF = 0
+      ISTBUF = 0
       KFRSAV = KFREE
 !@m   CALL TITLER('Resolution of open-shell states','*',120)
       CALL TITLER('Stand-alone COS_CI','*',120)
@@ -4322,7 +4374,7 @@ C
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RESOLV')
          CALL REACMO(LUCOEF,'DFCOEF',WORK(KBUF),WORK(KEIG),WORK(KIBEIG),
-     &               TOTERG,14,WORK,KFREE,LFREE)
+     &               TOTERG,14)
          CLOSE(LUCOEF,STATUS='KEEP')
       ENDIF
 C
@@ -4360,7 +4412,7 @@ C
 C       Get hold of the slaves if we run in parallel.
 C        ( ITASK = 1 for Fock matrices )
 C
-!@d     IF (PARCAL) CALL DIRAC_PARCTL( 1 )
+!@d     IF (PARCAL) CALL DIRAC_PARCTL( HERFCK_PAR )
 C
 C       Transform core-fock matrix to active MO basis
 C       ---------------------------------------------
@@ -4384,7 +4436,7 @@ C
 C       Release the slaves if we run in parallel.
 C        ( ITASK = -1 )
 C
-!@d     IF (PARCAL) CALL DIRAC_PARCTL( -1 )
+!@d     IF (PARCAL) CALL DIRAC_PARCTL( EXIT_NODEMENU )
 !@d   ENDIF
 C
 C     Release buffer memory
@@ -4567,8 +4619,6 @@ C
       CALL QENTER('TRAPARI')
 C
       KFRSAV = KFREE
-      PARHER = .TRUE.
-      PARCAL = .TRUE.
 C
       FINISH = .FALSE.
 C
@@ -4916,6 +4966,7 @@ C       Receive orbital energies
      &                   MPARID,global_communicator)
         ENDDO
 C       Receive orbital (single group) info
+        KIBE = 1 ! initialize these memory locations to avoid bound check errors if nfsym = 1
         DO I = 1,4
           DO J = 1,NFSYM
             CALL MEMGET2('REAL','KIBE',KIBE(J,I),NSTR(J,0,I),
@@ -4963,9 +5014,9 @@ C
 #include "aovec.h"
 #include "maxorb.h"
 #include "blocks.h"
-      LOGICAL ANTIS,LMP2
-      DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4)
-      DIMENSION DINTSKP(8),TIM1(7)
+      LOGICAL   ANTIS,LMP2
+      INTEGER   NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4)
+      REAL(8)   DINTSKP(8),TIM1(7)
       real(8), allocatable :: WORK(:)
 C
       CALL QENTER('TRANOD')
@@ -4976,6 +5027,7 @@ C
 C
 C     Initialize the common blocks.
 C
+      PARHER = .TRUE.
       IPRINT = -1
       CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
      &             KINDX,KGAB,KDRIJ,
@@ -5036,6 +5088,7 @@ C
 C
       CALL MEMREL('TRANOD',WORK,1,KFRSAV,KFREE,LFREE)
       call dealloc(WORK)
+      PARHER = .FALSE.
       CALL QEXIT('TRANOD')
 C
       RETURN
@@ -5057,7 +5110,7 @@ C***********************************************************************
       PARAMETER(D0=0.0D0,D1=1.0D0)
 C
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 C
 #include "priunit.h"
 #include "mxcent.h"

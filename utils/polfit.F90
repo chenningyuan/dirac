@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -26,13 +26,13 @@
       PARAMETER(MDIM=MORDER+1)
       PARAMETER(DTOL = 1.0D-4,DM1 = -1.0D0,D1 = 1.0D0)
       PARAMETER(NITER=10)
-      DIMENSION A(MP,MDIM),B(MDIM),C(MDIM),D(MDIM)
+      DIMENSION A(MP,MDIM),B(MP),C(MDIM),D(MDIM)
       DIMENSION X(MP),Y(MP)
       CHARACTER RESFIL*40,REPLY*1,POTFIL*44
       IUNIT = 1
       ILOGG = 2
       WRITE(LUPRI,'(A)') 'Name input file with potential curve(A16)'
-      READ(LUCMD,'(A)') POTFIL
+      READ(LUSTDIN,'(A)') POTFIL
       i=LNBLNK(POTFIL)
       RESFIL = POTFIL(1:i)//'.polfit'
       OPEN(IUNIT,FILE=POTFIL,STATUS='OLD',FORM='FORMATTED',             &
@@ -57,7 +57,7 @@
       WRITE(ILOGG,'(2(4X,E20.10))') (X(I),Y(I),I=1,NP)
  30   CONTINUE
       WRITE(*,'(A)') 'Give order of polynomial:'
-      READ(LUCMD,*) NORDER
+      READ(LUSTDIN,*) NORDER
       WRITE(*,'(I3)') NORDER
       IF(NP.LE.NORDER) THEN
         WRITE(*,'(A,I3)')                                               &
@@ -93,7 +93,7 @@
       WRITE(ILOGG,'(3X,A,E9.4)') '* Chi square per point:  ',CHISQ/NP
       WRITE(ILOGG,'(3X,A,I3)') '* Number of singularities(SVD): ',ISKIP
       WRITE(LUPRI,'(A)') '* Do you want to find min. of curve (y/n) ?'
-      READ(LUCMD,'(A1)') REPLY
+      READ(LUSTDIN,'(A1)') REPLY
       IF(REPLY.NE.'y') GOTO 664
 !* Find smallest y-value and take corresponding x-value as start value
 !* for Newton-Raphsons method      
@@ -114,11 +114,11 @@
  664  CONTINUE
       WRITE(LUPRI,'(A)')                                                &
    '* Do you want a function value at some point(y/n) ?'
-      READ(LUCMD,'(A1)') REPLY
+      READ(LUSTDIN,'(A1)') REPLY
       IF(REPLY.NE.'y') GOTO 665
       WRITE(LUPRI,'(A)')                                                &
    '* Give point:'
-      READ(LUCMD,*) XMIN   
+      READ(LUSTDIN,*) XMIN   
       YMIN = POLVAL(NORDER,C,XMIN)      
       WRITE(LUPRI,'(3X,F6.3,4X,E22.16)') XMIN,YMIN
       WRITE(ILOGG,'(3X,A,F6.3,4X,E22.16)')                              &
@@ -128,7 +128,7 @@
  665  CONTINUE
       WRITE(LUPRI,'(A)')                                                &
    '* Do you want derivatives of curve at minimum(y/n) ?'
-      READ(LUCMD,'(A1)') REPLY
+      READ(LUSTDIN,'(A1)') REPLY
       IF(REPLY.NE.'y') GOTO 666
       TMP = POLNDER(NORDER,C,XMIN,2)
       WRITE(LUPRI,'(A,1P,E18.10)') '2nd derivative at minimum: ',TMP
@@ -142,14 +142,14 @@
  666  CONTINUE
       WRITE(LUPRI,'(A)')                                                &
    '* Do you want derivatives of curve at some point(y/n) ?'
-      READ(LUCMD,'(A1)') REPLY
+      READ(LUSTDIN,'(A1)') REPLY
       IF(REPLY.NE.'y') GOTO 667
       WRITE(LUPRI,'(A)') 'Give maximal order of derivative..'
-      READ(LUCMD,*) MAXDER
+      READ(LUSTDIN,*) MAXDER
       MAXDER = MIN(MAXDER,NORDER)
       WRITE(LUPRI,'(A)')                                                &
    '* Give point:'
-      READ(LUCMD,*) XMIN   
+      READ(LUSTDIN,*) XMIN   
       WRITE(LUPRI,'(A,1P,E18.10)') 'X = ',XMIN
       WRITE(ILOGG,'(A,1P,E18.10)') 'X = ',XMIN
       DO I = 1,MAXDER
@@ -160,7 +160,7 @@
       GOTO 666
  667  CONTINUE
       WRITE(LUPRI,'(A)') '* Do you want a new polynomial fit ?(y/n)'
-      READ(LUCMD,'(A1)') REPLY
+      READ(LUSTDIN,'(A1)') REPLY
       IF(REPLY.EQ.'y') GOTO 30
       END
 !

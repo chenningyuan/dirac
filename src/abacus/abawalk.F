@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1210,7 +1210,6 @@ C
       IF (NCRTOT .GT. LWORK) CALL STOPIT('WLKCGH',' ',LWORK,NCRTOT)
       DO 100 IREP = 0, MAXREP
          DO 110 ICENT = 1, NUCIND
-#include "scalar.h"
             DO 120 ICOOR = 1, 3
                ISCOOR = IPTCNT(3*(ICENT-1)+ICOOR,IREP,1)
                IF (ISCOOR .GT. 0) THEN
@@ -2072,7 +2071,7 @@ C
 C
 C     Coordinates written are always in atomic units
 C
-      MLINE(NMLAU)(20:20) = ' '
+      IF (NMLAU.GE.1) MLINE(NMLAU)(20:20) = ' '
       DO 100 N = 1, NUCIND
          CRX = COONEW(1,N) - CCAVX
          CRY = COONEW(2,N) - CCAVY
@@ -6057,13 +6056,20 @@ C          XMIN ; FUNCT(..,XMIN,..) < 0
 C  Output: XDET ; FUNCT(..,XDET,..) = 0
 C
 #include "implicit.h"
+#include "priunit.h"
       DIMENSION GDDIA(*),HESDIA(*)
       PARAMETER ( MAXIT=100 , D2=2.0D0 , D0=0.0D0 , DTEST=1.0D-7 )
       EXTERNAL FUNCT
       IFAIL = 0
       FMAX  = FUNCT(GDDIA,HESDIA,XMAX,NCORD,TRUSTR)
       FMIN  = FUNCT(GDDIA,HESDIA,XMIN,NCORD,TRUSTR)
-      IF ( (FMAX.LT.D0) .OR. (FMIN.GT.D0) )  RETURN
+      IF ( (FMAX.LT.D0) .OR. (FMIN.GT.D0) )  THEN
+         WRITE(LUPRI,'(1P,//A,2(/A,2D15.2))')
+     &    'Invalid input to WLKBIS, expected E(XMAX)>0 and E(XMIN)<0',
+     &    '   XMAX, E(XMAX) : ',XMAX,FMAX,
+     &    '   XMIN, E(XMIN) : ',XMIN,FMIN
+         RETURN
+      END IF
 C
       ITER = 0
  100  CONTINUE

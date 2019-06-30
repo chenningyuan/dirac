@@ -10,19 +10,22 @@ endif()
 set(FIXED_KRMC_FORTRAN_SOURCES
     dcbbos.h 
     dcbnrt.h
-    krci_ctl.F
     krmc_gradient.F
     krmccan.F
     krmcgascip.F
     krmcgp.F
     krmcinp.F
-    krmcluci.F
     krmcmlf.F
     krmcopt.F
     krmcout.F
     krmcsav.F
     krmctra.F
     krmcvec.F
+)
+
+set(FIXED_KRMC_FORTRAN_SOURCES_noruntimecheck
+    krmcluci.F
+    krci_ctl.F # Miro: DKRCI_THRGCI not defined
 )
 
 set(FREE_KRMC_FORTRAN_SOURCES
@@ -37,11 +40,21 @@ set(KRMC_C_SOURCES
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FREE_KRMC_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
     set_source_files_properties(${FIXED_KRMC_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
+    set_source_files_properties(${FIXED_KRMC_FORTRAN_SOURCES_noruntimecheck} PROPERTIES COMPILE_FLAGS "-qfixed")
+endif()
+
+if(ENABLE_RUNTIMECHECK)
+    message(STATUS "runtime-check flags activated for the 'krmc' module with some exceptions")
+    set_source_files_properties(${FREE_KRMC_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+    set_source_files_properties(${FIXED_KRMC_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+    set_source_files_properties(${KRMC_C_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_C_FLAGS_runtimecheck})
 endif()
 
 add_library(
     krmc
+    OBJECT
     ${FIXED_KRMC_FORTRAN_SOURCES}
+    ${FIXED_KRMC_FORTRAN_SOURCES_noruntimecheck}
     ${FREE_KRMC_FORTRAN_SOURCES}
     ${KRMC_C_SOURCES}
 )
@@ -53,6 +66,7 @@ add_dependencies(krmc gp)
 add_dependencies(krmc dirac)
 add_dependencies(krmc main)
 add_dependencies(krmc luciarel)
+add_dependencies(krmc interface_mpi)
 if(ENABLE_QCORR)
 #   it's module qcorr_cfg
     add_dependencies(krmc qcorr)

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -46,7 +46,10 @@ C***********************************************************************
 #ifdef HAS_PCMSOLVER      
       use pcmmod_cfg
       use pcm_write
-#endif      
+#endif
+#ifdef HAS_PELIB
+      use pe_variables, only: peqm
+#endif
       use x2cmod_cfg
 #ifdef MOD_XAMFI
       use xamfi_global_parameters
@@ -57,6 +60,8 @@ C***********************************************************************
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dgroup.h"
+#include "dcbimp.h"
+#include "dcborb.h"
 #include "cbirea.h"
 
       integer, parameter   :: lwork = 100000
@@ -203,8 +208,14 @@ C
       OPEN(LUCMD,FILE='DIRAC.INP')
       CALL HAMINP(WORK,LWORK)
       CLOSE(LUCMD)
-
-
+C
+C     Initialize PE library
+C
+#ifdef HAS_PELIB
+      IF (PEQM) THEN
+        CALL PELIB_IFC_INIT()
+      END IF
+#endif
 !     this is the new input reader
 !     contains:
 !     *DFT
@@ -311,6 +322,18 @@ C
 C     Consistency checks
 C
       CALL CONINP
+
+C
+C     set number of blocks in case of import
+C     complex spinors from ReSpect (TODO) or Turbomole
+C
+      NKRBLK = 1
+      IF (DOIMPMOS) THEN
+       IF ((FAKE2C .OR. NZC1.EQ.4) .AND.
+     &     INDEX(QCPACK,"TURBOMOLE").GT.0) THEN
+        NKRBLK = 2
+       END IF
+      END IF
 C
       CALL TITLER('End of input processing','*',124)
 C
@@ -354,6 +377,8 @@ C
 #include "dcbxpr.h"
 #include "dcbprl.h"
 #include "dcb_rkbimp.h"
+#include "dcbimp.h"
+#include "dcborb.h"
 #include "logging.h"
 #include "infpar.h"
 C
@@ -364,7 +389,7 @@ C
      &             '.SPHTRA','.ECP   ','.LOGMEM','.QJACO ',
      &             '.ACMOUT','.ACMOIN','.XXXXXX','.FAMILY',
      &             '.SKIP2E','.LOWJAC','.RKBIMP','.PRJTHR',
-     &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &             '.IMPMOS','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
 C     Initialise NOGENINP and USER_STOL
 C     NOGENINP is set, if there is no **GENERAL
@@ -377,7 +402,10 @@ C
       LOWJACO    = .FALSE.
       LOGMEMGET  = .FALSE.
       DOQJACO    = .FALSE.
+      DOIMPMOS   = .FALSE.
+C
       RKBIMP_PRJTHR = 2.0D-5
+
 C
 C     Look for 2c. Hamiltonians, MDIRAC and more
 C
@@ -520,9 +548,16 @@ C&&&& RKBIMP: import RKB coefficients
             GO TO 100
   120    CONTINUE
 C&&&& PRJTHR
-            READ(5,*) RKBIMP_PRJTHR
+            READ(LUCMD,*) RKBIMP_PRJTHR
             GO TO 100
   121    CONTINUE
+C&&&& IMPMOS
+            DOIMPMOS = .TRUE.
+            READ(LUCMD,*) NFILES
+            IF (NFILES.GT.2 .OR. NFILES.LT.1)  THEN
+             CALL QUIT('1 or 2 MO files to import!')
+            END IF
+            READ(LUCMD,*) QCPACK, (FILIMP(IDEG),IDEG=1,NFILES)
             GO TO 100
   122    CONTINUE
             GO TO 100
@@ -557,6 +592,50 @@ ctec we require that it is a direct calculation
 !       STOL(2) = STOL(1) / (2.0D0 * CVAL ** 2 )
         STOL(2) = 1.0d-04 / (2.0D0 * CVAL ** 2 )
       end if
+
+C
+C     process IMPMOS input
+C
+
+      IF (DOIMPMOS) THEN
+
+       QCPACK = ADJUSTL(QCPACK)
+       FILIMP(1) = ADJUSTL(FILIMP(1))
+
+       if (nfiles.eq.2) then
+        FILIMP(2) = ADJUSTL(FILIMP(2))
+       else
+        FILIMP(2) = ' -- unknown file name -- '
+       end if
+
+       CALL UPCASE(QCPACK)
+
+       SELECT CASE (QCPACK(1:10))
+        CASE ('MOLCAS    ')
+         WRITE (LUPRI,'(/,A)') 
+     &    "import MO coefficients from"
+         WRITE (LUPRI,'(/,A,/)') 
+     &    "  MOLCAS file "//TRIM(FILIMP(1))
+        CASE ('RESPECT   ')
+         WRITE (LUPRI,'(/,A)') 
+     &    "import MO coefficients from"
+         WRITE (LUPRI,'(/,A,/)') 
+     &    "  ReSpect file "//TRIM(FILIMP(1))
+        CASE ('TURBOMOLE ')
+         WRITE (LUPRI,'(/,A)') 
+     &    "import MO coefficients from"
+         WRITE (LUPRI,'(/,A,/)') 
+     &    "  Turbomole file "// TRIM(FILIMP(1))
+        CASE DEFAULT
+         CALL QUIT("unknown QCPACK type! Available options: "// 
+     &             "MOLCAS, ReSpect")
+       END SELECT
+
+      ELSE
+       QCPACK    = 'DIRAC '
+       FILIMP(:) = ' -- unknown file name -- '
+      END IF
+
 C
 C     Print section
 C     =============
@@ -596,9 +675,6 @@ C
         IF(ISSDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '- SS-integrals'
         IF(IGTDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '- GT-integrals'
       ENDIF
-C
-      IF(DENSFIT)
-     &  WRITE(LUPRI,'(1X,A)') '* Employ density fitting techniques'
 C
       IF(LBIT(ISPHTR,1)) THEN
         WRITE(LUPRI,'(1X,A)')
@@ -676,6 +752,8 @@ C
     2 CONTINUE
 #if defined (VAR_MPI)
       CALL PRLINP(WORD)
+#else
+      CALL QUIT('*PARALLEL in input, but this is a non_MPI version')
 #endif
         GO TO 200
     3 CONTINUE
@@ -955,7 +1033,7 @@ C
      &            '.NODIIS','.MXDIIS','.CNVINT','.ITRINT','.INTFLG',
      &            '.MOSTAR','.XXXXXX','.CLOSED','.EIGPRI','.OPEN S',      ! 20
      &            '.AUTOCC','.OWNBAS','.NOBNCR','.DIISTH','.DAMPFC',
-     &            '.OVLSEL','.NODYNS','.XXXXXX','.DIISMO','.DIISAO',      ! 30
+     &            '.OVLSEL','.NODYNS','.BNCORR','.DIISMO','.DIISAO',      ! 30
      &            '.XXXXXX','.MAX MA','.MAX MI','.2NDOPT','.SKIPEE',
      &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.BOSONS',      ! 40
      &            '.MJSELE','.AOC   ','.FOCC  ','.LSHIFT','.MAXIT2',
@@ -1004,8 +1082,9 @@ C     initial molecular orbitals:
       TRIVEC    = .TRUE. ! default!
       TRIFCK    = .FALSE.
       BARNUC    = .TRUE.
-      BNCRON    = .TRUE.
-      force_bnc = .false.
+      BNCRON    = .FALSE.
+      FORCE_BNC = .false.
+      BNSPON    = .TRUE.  ! use either this or BNCRON
       SIRIFC    = .FALSE.
       DOHUCKEL  = .false.  
       EWMO      = .FALSE. ! in huckel.h
@@ -1105,7 +1184,8 @@ CMI   ... criteria of convergence for prelim.BSS-SCF
       PRJTHR    = 1.0D-10
       DOLEVEL   = .FALSE.
       DLSHIF    = D0
-      OPEN_FAC  = 0.5D0 ! this value seems to a good compromise value for good convergence
+      OPEN_FAC  = -0.5D0 ! abs(OPEN_FAC) seems to a good compromise value for good convergence
+      ! the negative sign signifies that this is the default value, i.e. not user input
       CALL DZERO(OLEV,MXOPEN)
       CALL DZERO(SCFTID,8)
       CALL IZERO(ITRSCF,8)
@@ -1326,9 +1406,15 @@ C&&& MOSTARt: How to obtain initial MOs [ default: 1) TRIVEC, 2) BNCORR ]
      &                  INDEX(LINE,'BARE NUC').ne.0) THEN
                   BARNUC = .TRUE.
                   BNCRON = .FALSE.
+                  BNSPON = .FALSE.
                ELSE IF (INDEX(LINE,'BNCORR').ne.0) THEN
                   BARNUC = .TRUE.
                   BNCRON = .TRUE.
+                  BNSPON = .FALSE.
+               ELSE IF (INDEX(LINE,'SCRPOT').ne.0) THEN
+                  BARNUC = .TRUE.
+                  BNCRON = .FALSE.
+                  BNSPON = .TRUE.
                ELSE IF (INDEX(LINE,'TRIFCK').ne.0) THEN
 C              TRIFCK: Start on two-electron Fock matrix read from file
                   TRIFCK = .TRUE.
@@ -1498,6 +1584,7 @@ C&&&& OWNBASis: Use local basis for projection
    23          CONTINUE
 C&&&& NOBNCR : Deactivate screening for use with bare nucleus start guess
                   BNCRON = .FALSE.
+                  BNSPON = .FALSE.
                GO TO 100
    24          CONTINUE
 C&&& DIISTH: Change default threshold for DIIS
@@ -1519,6 +1606,9 @@ C            (new overlap selection matrix formed in each iteration)
                   DYNSEL = .FALSE.
                GO TO 100
    28          CONTINUE
+C&&& BNCORR: Bare nucleus screening (based on Slaters rules)
+                  BNCRON = .TRUE.
+                  BNSPON = .FALSE.
                GO TO 100
    29          CONTINUE
 C&&& DIISMO: Do DIIS in MO-basis
@@ -1617,6 +1707,7 @@ C&&& FOCC: Fractional Occupation
 C&&& LSHIFT: Level shift
                   READ(LUCMD,*) DLSHIF
                   DOLEVEL = .TRUE.
+                  IF (OPEN_FAC .LT. 0) OPEN_FAC = -1.0D0
                GOTO 100
  45            CONTINUE
 C&&& Specify the maximum number of preliminary BSS-SCF iterations
@@ -1690,6 +1781,7 @@ C&&& OLEVEL: Open-shell level shifts
                   ELSE
                     READ(LUCMD,*) (OLEV(IOPEN),IOPEN=1,NOPEN)
                     DOLEVEL = .TRUE.
+                    IF (OPEN_FAC .LT. 0) OPEN_FAC = -1.0D0
                   ENDIF
                GOTO 100
  51            CONTINUE
@@ -1717,7 +1809,7 @@ C&&& OPENFA: extra factor on active-active correction block to open shell Fock m
  54            CONTINUE
 C&&& BNC_FO: force bare nucleus correction (usefull for charged systems)
 C    PBS+MI/Aug2014
-               force_bnc = .true.
+               FORCE_BNC = .true.
                GOTO 100
  55            CONTINUE
 !&&& FOMOUT: print out the Fock MO matrices for diagonalization for each
@@ -2017,29 +2109,36 @@ C
 
       IF(.NOT.dirac_cfg_scf_calculation) GOTO 999
 C
-      IF (BNCRON) THEN
-         WRITE (LUPRI,'(A)')
-     &      ' * Bare nucleus screening correction used for start guess'
-!     psb 1/13/10 (psb+mi Aug2014) New parameter force_bnc (.BNC_FORCE) force input for
-!        bncron variable w/o checking value of molecular charge
-         if (force_bnc) write (lupri,'(5x,a)')
-     1   'the bare nuclear correction used independently of '//
-     2   'the system charge'
+      IF (BNCRON.OR.BNSPON) THEN
 C     hjaaj nov 2004: bare nucleus correction is
 C     designed for approx. neutral molecules,
 C     and it will give very poor start guess for e.g.
 C     a U(+90) calculation.
-         CALL RMOLCHR(ICHRG)
-         KCHARG = ICHRG - NELECT_DHF - NAELEC_DHF
-         IF (ABS(KCHARG) .GT. 10 .and. .not.force_bnc) THEN
+        IF (FORCE_BNC) THEN
+           WRITE (LUPRI,'(A)')
+     &     ' - INFO: bare nucleus correction used independently of '//
+     &  'the system charge'
+        ELSE
+          CALL RMOLCHR(ICHRG)
+          KCHARG = ICHRG - NELECT_DHF - NAELEC_DHF
+          IF (ABS(KCHARG) .GT. 10) THEN
+            BNCRON = .FALSE.
             BNCRON = .FALSE.
             WRITE (LUPRI,'(A)')
      &      ' - INFO: bare nucleus correction disabled because'//
      &      ' abs(molecular charge) .gt. 10'
-         END IF
-      END IF
-      IF(BNCRON) THEN
-        DHF_INTTYP= 'Scr. nuclei '
+          END IF
+        END IF
+        IF (BNCRON) THEN
+          DHF_INTTYP='Scr. nuclei'
+         WRITE (LUPRI,'(A)')
+     &     ' * Bare nucleus screening correction used for start guess'
+        END IF
+        IF (BNSPON) THEN
+          DHF_INTTYP='Atom. scrpot'
+          WRITE (LUPRI,'(A)')
+     &      ' * Sum of atomic potentials used for start guess'
+        END IF
       ENDIF
 C
       IF (DOBOSSEL) THEN
@@ -2159,9 +2258,19 @@ C
       ELSE
         CALL QUIT('ERROR, initial trial SCF function not defined!')
       ENDIF
-      IF (OPEN_FAC .NE. D1) WRITE (LUPRI,'(A,F12.6)')
+      IF (abs(OPEN_FAC) .NE. D1) THEN
+         WRITE (LUPRI,'(A,F12.6)')
      &   ' * Scaling of active-active block correction to '//
-     &   'open shell Fock operator', OPEN_FAC
+     &   'open shell Fock operator', abs(OPEN_FAC)
+         IF (OPEN_FAC .LT. 0.0D0) THEN
+            WRITE (LUPRI,'(A)')
+     &   '   to improve convergence (default value).',
+     &   '   The final open-shell orbital energies are recalculated '//
+     &   'with 1.0 scaling,',
+     &   '   such that all occupied orbital energies correspond to '//
+     &   "Koopmans' theorem ionization energies."
+         END IF
+      END IF
 
       WRITE(LUPRI,'(/A)') ' ***** SCF CONVERGENCE CRITERIA *****'
       IF(ERGCNV) THEN
@@ -2534,7 +2643,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 19, NTABLE = 23)
+      PARAMETER (NDIR = 19, NTABLE = 24)
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,CTEMP*90
@@ -2557,7 +2666,7 @@ C
      &             '.RESOLV','.ORBROT','.LUCIAR','.KRMCSC',
      &             '.PHCOEF','.MP2 NO','.RELADC','.KR CI ',
      &             '.KR CC ','.COSCI ','.GASCIP','.HSFS  ',
-     &             '.ARDUCC','.SCF   ','.KRCI  '/
+     &             '.ARDUCC','.SCF   ','.KRCI  ','.POLPRP'/
 C
       N_WF = 0
 C
@@ -2581,6 +2690,7 @@ C
       DOCOSCI = .FALSE.
       DOGASCIP= .FALSE.
       DOHSFS  = .FALSE.
+      DOPOLPRP= .FALSE.
 C
 C *** Initialize /CBIREO/ in dcbreo.h
 C     ===================
@@ -2625,7 +2735,7 @@ C
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (101,102,103,104,105,106,107,108,
      &                109,110,111,112,113,114,115,116,
-     &                117,118,119,120,121,122,123),I
+     &                117,118,119,120,121,122,123,124),I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -2804,6 +2914,13 @@ C&&&& SCF
 C&&&& KRCI :  alternative spelling of KR CI
   123    CONTINUE
             GO TO 116
+C&&&& POLPRP: Calculate polarization propagator for excitations
+  124    CONTINUE
+            IF (.NOT.NOTRA) DOTRA = .TRUE.
+            DOPOLPRP   = .TRUE.
+            N_WF = N_WF + 1
+            DIRAC_WF(N_WF) = 'POLPRP'
+            GO TO 100
 
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
@@ -2860,6 +2977,7 @@ C hj aug03: TODO: idea was/is to maybe follow MCSCF by big CI
       IF(DOLUCT)   WRITE(LUPRI,'(A)') ' * Run LUCITA CI code'
       IF(DOARDUC)  WRITE(LUPRI,'(A)') ' * Run ARDUCCA CC code'
       IF(DOADC)    WRITE(LUPRI,'(A)') ' * Run RELADC code'
+      IF(DOPOLPRP) WRITE(LUPRI,'(A)') ' * Run POLPRP code'
       IF(DOKRCI)   WRITE(LUPRI,'(A)')
      &   ' * Kramers restricted CI calculation'
       IF(DOKRCC)   WRITE(LUPRI,'(A)')
@@ -3093,7 +3211,7 @@ C
             write (*,*) ' Warning! Warning! Warning! Warning! Warning!'
             write (*,*) ' '
             write (*,*) '  RELADC does not run in parallel. To avoid'
-            write (*,*) '  inconsitencies, it is suggested that jobs'
+            write (*,*) '  inconsistencies, it is suggested that jobs'
             write (*,*) '  such as this are rerun setting the number'
             write (*,*) '  of MPI processes to one (e.g. in calling'
             write (*,*) '  pam with the argument -mpi 1)'
@@ -4211,9 +4329,21 @@ C&&&& VECREF: Fragment vectors
                     CALL QUIT('*PROJECT input: Too many fragments !')
                   ENDIF
                   DO J = 1,NREFS
-                    READ(LUCMD,'(A6)') REFFIL(J)
-                    READ(LUCMD, '(I8)') NPROJNUC(J)
-                    READ(LUCMD,'(A72)') (VECREF(I,J),I=1,NFSYM)
+                    READ(LUCMD,'(A6)', IOSTAT=IOS1) REFFIL(J)
+                    IF (IOS1.NE.0) THEN ! miro: specific error message
+                      call quit('error in REFFIL(J) reading!')
+                    ENDIF
+                    READ(LUCMD, '(I8)', IOSTAT=IOS2) NPROJNUC(J)
+                    IF (IOS2.NE.0) THEN ! miro: specific error message
+                      write(LUPRI,*) 'J,NREFS:',J,NREFS
+                      call quit('error in NPROJNUC(J) reading!')
+                    ENDIF
+                    READ(LUCMD,'(A72)', IOSTAT=IOS3) 
+     &              (VECREF(I,J),I=1,NFSYM)
+                    IF (IOS3.NE.0) THEN ! miro: specific error message
+                      call quit('error in VECREF(I,J) reading!')
+                    ENDIF
+
                  ENDDO
                   REFFIL(NREFS+1) = 'Polari'
                GO TO 100
@@ -4246,26 +4376,28 @@ C&&& POLNRM: Normalize polarization contribution
  11            CONTINUE
 C&&& ATOMS : Do projection analysis using atomic fragments
                   PATOMS = .TRUE.
-                  NREFS=NUCDEP
-                  IF((NREFS+1).GT.MAXREF) THEN
+                  IREFS=1
+                  ININD=1
+                  DO ITYP = 1,NONTYP
+                    IF(.NOT.NOORBT(ININD)) THEN
+                      READ(LUCMD,'(A6)') REFFIL(IREFS)
+                      READ(LUCMD,'(A72)') VECREF(1,IREFS)
+                      NPROJNUC(IREFS)=1
+                      DO J = 0,NONT(ITYP)-1
+                        IREFS = IREFS + NUCDEG(ININD+J)
+                      ENDDO
+                    ENDIF
+                    ININD = ININD + NONT(ITYP)
+                  ENDDO
+                  IF(IREFS.GT.MAXREF) THEN
                     WRITE(LUPRI,'(A,I5)')
-     &         '* Number of atomic types specified  :',NREFS,
+     &         '* Number of atomic types specified  :',IREFS,
      &         '* Current maximum no. of fragments  :',MAXREF
                     CALL QUIT('*PROJECT input: Too many fragments !')
                   ENDIF
-                  INDEP=1
-                  ININD=1
-                  DO ITYP = 1,NONTYP
-                    READ(LUCMD,'(A6)') REFFIL(INDEP)
-                    NPROJNUC(INDEP)=1
-                    READ(LUCMD,'(A72)') VECREF(1,INDEP)
-                    DO J = 0,NONT(ITYP)-1
-                      INDEP = INDEP + NUCDEG(ININD+J)
-                    ENDDO
-                    ININD = ININD + NONT(ITYP)
-                  ENDDO
-                  REFFIL(INDEP) = 'Polari'
-               GO TO 100
+                  REFFIL(IREFS) = 'Polari'
+                  NREFS=IREFS-1
+                  GO TO 100
  12            CONTINUE
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
@@ -4355,13 +4487,15 @@ C
         WRITE(LUPRI,'(1X,A)')
      &   '* Projection analysis based on atomic fragments, ',
      &   '  calculated in their individual bases'
-        INDEP=1
+        IREFS=1
         ININD=1
         DO ITYP = 1,NONTYP
-          WRITE(LUPRI,'(A6,3X,A72)') REFFIL(INDEP),VECREF(1,INDEP)
-          DO J = 0,NONT(ITYP)-1
-            INDEP = INDEP + NUCDEG(ININD+J)
-          ENDDO
+          IF(.NOT.NOORBT(ININD)) THEN
+            WRITE(LUPRI,'(6X,A6,3X,A72)') REFFIL(IREFS),VECREF(1,IREFS)
+            DO J = 0,NONT(ITYP)-1
+              IREFS = IREFS + NUCDEG(ININD+J)
+            ENDDO
+          ENDIF 
           ININD = ININD + NONT(ITYP)
         ENDDO
       ELSE
@@ -4619,7 +4753,6 @@ C
       DOTRA    = .FALSE.
       NOTRA    = .FALSE.
       OPTIMI   = .FALSE.
-      DENSFIT  = .FALSE.
       NOSET    = .FALSE.
       OPTWLK   = .FALSE.
       OPTNEW   = .FALSE.
@@ -4687,9 +4820,6 @@ C     ======================================
       NPRPS        = 0
 C
       CALL OPTINI()
-#ifdef MOD_ERI
-      CALL FCK3INI
-#endif
 C
       RETURN
       END
@@ -4710,8 +4840,11 @@ C***********************************************************************
       use xc_derv
       use interface_functional_read
       use x2cmod_cfg
-#ifdef HAS_PCMSOLVER      
+#ifdef HAS_PCMSOLVER
       use pcmmod_cfg
+#endif
+#ifdef HAS_PELIB
+      use pe_variables, only: peqm
 #endif
 #ifdef MOD_XAMFI
       use atomic_oo_order_so_correction_cfg
@@ -4720,7 +4853,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 68,NDIR = 11)
+      PARAMETER (NTABLE = 68,NDIR = 12)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include "maxaqn.h"
@@ -4738,9 +4871,6 @@ C
 #include "dcbprl.h"
 #include "gencon.h"
 #include "nuclei.h"
-#ifdef MOD_ERI
-#include "cbieri.h"
-#endif
 C
       LOGICAL  SYMSTP,TRSSTP,NOINPUT,SETFUN,SUCCESS,IOTC,GAUNT_SAVE,
      &         TWOCOMP_SAVE, TWOCOMPBSS_SAVE, find_keyword,INTFLG_CHANGE
@@ -4752,7 +4882,7 @@ C
       SAVE SETFUN
       DATA TABDIR /'*END OF','*SOLVEN','*DFT   ','*CAP   ',
      &             '*FDE   ','*AMFI  ','*X2C   ','*ECP   ',
-     &             '*PCM   ','*X-AMFI','*PCMSOL'/
+     &             '*PCM   ','*X-AMFI','*PEQM  ','*PCMSOL'/
 
 !                    1         2         3         4
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
@@ -4787,7 +4917,7 @@ C
 !                   61        62        63        64
      &            '.ECP   ','.X2CMMF','.DOSSSS','.MDIRAC',
 !                   65        66        67        68
-     &            '.TRSMIX','.JZOUT ','xxxxxxx','xxxxxxx'/
+     &            '.TRSMIX','.PEQM  ','.JZOUT', '.FAKE2C'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -4821,6 +4951,7 @@ C
       MDIRAC  = .FALSE.
       LEVYLE  = .FALSE.
       NONREL  = .FALSE.
+      FAKE2C  = .FALSE.
       SPINFR  = .FALSE.
       NOSPIN  = .FALSE.
       SPINFR2 = .FALSE.
@@ -4901,6 +5032,10 @@ C ... get integral flags in advance
       IGTINT    = IBTAND(INTGEN/8,1)
 !mi:  by default do not allow mixing T+ with T-
       TRS_MIX=.FALSE.
+!jmho: deafult - no polarizable embedding
+#ifdef HAS_PELIB
+      PEQM = .FALSE.
+#endif
 !mi:  by default, do not save Jz_MO matrices
       WRITE_Jz_MATRIX = .FALSE.
 
@@ -5084,20 +5219,6 @@ C                  we get n*functional for n'th call !!!! /3-Jun-2003 hjaaj
                      call quit('failure in DFTINPUT after .DFT')
                   end if
                   call set_hf_exchange_factor(hfxfac)
-
-#ifdef MOD_ERI
-C aspg, 20070909
-c if the calculation is performed with non-hybrid functionals,
-C and j-engine is set, we force dolink to true even if it was
-C not specified in the input, so that no extra work in the
-c integral evaluation is done. for hfxfac set to zero, the
-C link driver just acts to scale the fock matrix according to
-c DIRAOF->SKLFC1
-                  IF (DOFCK3.AND.(HFXFAC.EQ.D0)) THEN
-                     DOLINK = .TRUE.
-                  ENDIF
-#endif /* MOD_ERI */
-
                END IF
                dirac_cfg_dft_calculation = .true.
                SETFUN = .TRUE.
@@ -5226,7 +5347,7 @@ C&&&&  ONESTEP: Do NOT do preliminary free-particle transformation
   130     CONTINUE
 C&&& BLOCKD:   Do use block diagonalization
 CMI      ... not active yet
-#if defined MOD_UNRELEASED
+#ifdef MOD_UNRELEASED
              BLOCKD = .TRUE.
 #else
              call quit('block diagonalizing feature not in release!')
@@ -5499,16 +5620,36 @@ C&&& MDIRAC: use modified Dirac Hamiltonian as implemented in INTEREST integral 
             GO TO 100
 C..TODO: check for inconsistencies and add stops
   165     CONTINUE
-!&&&& .TRSMIX : allow mixing T+ Hamiltonian with added T- perturbation operaror
+!&&&& .TRSMIX : allow mixing T+ Hamiltonian with added T- perturbation operator
             TRS_MIX = .TRUE.
-            GO TO 100
+          GO TO 100
+!&&&& .PEQM: polarizable embedding
   166     CONTINUE
-!!&&&& .JZOUT : save Jz_MO matrices into formatted files for analysis
-            WRITE_Jz_MATRIX = .TRUE.
+#ifdef HAS_PELIB
+           IF(NBSYM.GT.1) THEN
+             CALL QUIT('Polarized embedding '//
+     &       'does not work with symmetry yet.')
+            ENDIF
+            WRITE(LUPRI,*) 'PE library will be used.'
+            PEQM = .TRUE.
+#else
+            WRITE(LUPRI,*) 'ERROR for .PEQM: PE library not enabled.'
+            CALL QUIT('ERROR for .PEQM: PE library not enabled.')
+#endif
             GO TO 100
   167     CONTINUE
+!&&&& .JZOUT : save Jz_MO matrices into formatted files for analysis
+            WRITE_Jz_MATRIX = .TRUE.
           GO TO 100
   168     CONTINUE
+!&&&& .FAKE2C : do a 2C calculation without generating a 2C
+!               1-electron Hamilonian (can be used for correlated
+!                energy calculations)
+            FAKE2C  = .TRUE.
+            TWOCOMP = .TRUE.
+            NONREL  = .TRUE.
+            SPINFR  = .TRUE.
+            DOLVC   = .FALSE.
           GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
         GO TO 300
@@ -5745,7 +5886,12 @@ C
 C
 C     NZC1 is the NZ value in C1 symmetry
 C
-      NZC1 = 4
+      IF (NONREL .AND. .NOT. FAKE2C) THEN
+       NZC1 = 1
+      ELSE
+       NZC1 = 4
+      END IF
+C
 C.....Check RKBIMP
       IF (DORKBIMP) THEN
         IF (.NOT.URKBAL) THEN
@@ -5891,6 +6037,10 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb Hamiltonian'
       ENDIF
 
+      if (x2c.and.ecpcalc) then
+         call quit('Incompatible options: X2C and ECP')
+      end if
+
       IF (ICHANG.GT.0) WRITE(LUPRI,'(3X,A)')
      &    'with the following modifications:'
 
@@ -5950,18 +6100,6 @@ CMI    ... quantum dots
 !         so let's not call it in this case
           call dftreport()
         end if
-
-#ifdef MOD_ERI
-C aspg, 20070909
-         IF (DOLINK.AND.(HFXFAC.EQ.D0)) then
-            WRITE (LUPRI,*) ' '
-            WRITE (LUPRI,*) '     Note: as J-Engine was selected '//
-     &                      'together with non-hybrid functionals,'
-            WRITE (LUPRI,*) '           only pure Coulomb integrals'//
-     &                      ' will be calculated.'
-            WRITE (LUPRI,*) ' '
-         ENDIF
-#endif /* MOD_ERI */
 
          IF (IGTINT.EQ.1) THEN
             IF (LSCALE_DFT_GAUNT) THEN
@@ -6427,6 +6565,13 @@ C
           ENDDO
         ENDIF
       ENDIF
+#ifdef HAS_PELIB
+      IF (PEQM) THEN
+        WRITE(LUPRI,'(1X,A,A)')
+     &  '* Environment is modeled using polarizable embedding scheme'//
+     &  ' (PE library)'
+      END IF
+#endif
       IF (NOINPUT) GOTO 500
 C
 C     Process input for various program sections
@@ -6438,7 +6583,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10,11), I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11,12), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -6482,7 +6627,7 @@ C       if *CAP in input but MOD_CAP is not defined !!!
       GO TO 200
     6 CONTINUE
 CMI  ... reading input routine for AMFI+RELSCF
-        IF((IBSS.GT.999.or.x2c).AND..NOT.NOAMFI) THEN
+        IF((IBSS.GT.999.or.x2c).AND..NOT.NOAMFI.AND..NOT.SPINFR) THEN
           CALL AMFI_RELSCF_INP(WORD,.FALSE.)
         ELSE
           GO TO 1
@@ -6511,8 +6656,16 @@ CMI  ... reading input routine for AMFI+RELSCF
       ! by new input reader
         call move_to_next_star(word, lucmd)
         go to 200
+!       *PEQM
+   11 CONTINUE
+#ifdef HAS_PELIB
+        CALL PELIB_IFC_INPUT_READER(WORD)
+#else
+        CALL QUIT('ERROR for *PEQM: PE library not enabled.')
+#endif
+        GO TO 200
 !       *PCMSOL
-   11 continue
+   12 continue
       ! this is a cheat so that *PCMSOL section is parsed
       ! by new input reader
         call move_to_next_star(word, lucmd)
@@ -6645,7 +6798,7 @@ c     Spin-orbit integrals for ECP centres ...
 c     ========================================
 c
         PNAME            = 'Spin-orbit Pseudopotentials'
-        IPTYP            = 22 ! for the new definition
+        IPTYP            = 20 ! for the new definition
         NPCOMP           = 3
         PFAC(1)          = +1.0
         PFAC(2)          = +1.0
@@ -6895,6 +7048,7 @@ C.....Individual atoms
         ILABDF = 1
         NLAB   = 0
 C.......consider only large component labels
+        ICLS=1 ! Miro: runtimecheck fix
         DO ILAB1 = 1,NPLAB(1)
           IC     = IGET(IATTR(ILAB1,ILABDF))          
           ICENT  = JGET(IATTR(ILAB1,ILABDF))          
@@ -6929,6 +7083,7 @@ C     First make pointer to orbital angular momentum
         ILABDF = 1
         NLAB   = 0
 C.......consider only large component labels
+        ICLS=1 ! Miro: runtimecheck fix
         DO ILAB1 = 1,NPLAB(1)
           IC     = IGET(IATTR(ILAB1,ILABDF))          
           ICENT  = JGET(IATTR(ILAB1,ILABDF))          
@@ -7224,8 +7379,12 @@ C
 !radovan: i think they are now rather ok tested
 !     IF (SPINFR.AND.DOPRP)WRITE (LUPRI,1000)'Spinfree properties'
 
+#ifndef MOD_UNRELEASED
       IF (DORES .AND.dirac_cfg_dft_calculation)
-     &   CALL QUIT ('.RESOLVE does not work with DFT')
+     &   CALL QUIT ('.RESOLVE does not work with DFT !')
+#endif
+
+
 C hjaaj April 2002: why not DORES .and. DOTRA ??? TODO
 C     the input routines use different common blocks,
 C     so I think running both should be OK. I have modified the test:
@@ -8215,7 +8374,7 @@ C............variable telling that this is a 2-component relativistic calculatio
            TWOCOMPBSS=.TRUE.
            CNTMAT=.TRUE.
          ENDIF
-         IF (WORD.EQ.'.NONREL') THEN
+         IF (WORD.EQ.'.NONREL' .OR. WORD.EQ.'.FAKE2C') THEN
             TWOCOMP=.TRUE.
             NONREL =.TRUE.
          ENDIF

@@ -8,7 +8,7 @@
       use intermediates_1b_2b
       use lambda_equation
 
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 
 C---------------Description--------------------------------------------
 C
@@ -23,7 +23,7 @@ C     Intermediaries etc.
       REAL*8 W_OOOO(*),W_VOOV(*),W_OVVO(*),W_OVOO(*),HO(*),HV(*),
      & HOV(*),BUF1(*),BUF2(*),BUF3(*)
       REAL*8 CZ(*) ! is only allocated for Lambda equations
-      INTEGER NBUF2,NBUF3 
+      INTEGER NBUF2,NBUF3,MAXIT
 
 C     for diis ...
 
@@ -47,7 +47,7 @@ C---------------Common Blocks--------------------------------------
 #include "complex.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      integer ISTAT(df_MPI_STATUS_SIZE)
 #endif
 
 C---------------Local variables--------------------------------------
@@ -55,37 +55,21 @@ C---------------Local variables--------------------------------------
       LOGICAL    :: FOCKSP,PRENE
       real*8,allocatable :: resL1(:),resL2(:),dinv_one(:),dinv_two(:)
       real*8,allocatable :: G_oo(:),G_vv(:),int_wooop(:),w_v_temp(:)
+      real*8,allocatable :: l1_temp(:),l2_temp(:)
       integer            :: i !remove
       real*8             :: val  
-
+      integer            :: it, itc, nit,ierr
 C---------------Executable code--------------------------------------
 C
-C
-C     Get initial values of timers for the most important contractions
-C     This is important in Fock space calculations where we enter this
-C     routine more than once. We do it in this manner rather than resetting
-C     the timer because we want the overall timing at the end.
-
-      IF (EQNS.EQ.'LAMBDA') THEN
-         FOCKSP = .FALSE.
-      ELSE
-         CALL QUIT('Wrong keyword in call to CCEQNS')
-      ENDIF
-
-
-C     Initialize the work arrays to zero.
-
        buf2(1:nbuf2*rcw) = 0.0d0
        buf1(1:ndimt2*rcw) = 0.0d0
 
 
 !     Calculate fixed intermediaries for Lambda equations
 
-    5   format(10f10.6)  
+    5   format(1f10.6)  
                         
-       call getampt (s1,s2)
-
-!!       CALL ZCORE (S1,S2)
+        call getampt (s1,s2)
 
          call f_bar_mi(foo,fvo,s1,s2,ho)
 
@@ -93,29 +77,51 @@ C     Initialize the work arrays to zero.
 
          call f_bar_me(fvo,S1,hov)
 
+         call wbar_mbej(S2,w_ovvo)
+
+         call w_ijmn(S1,S2,w_oooo)
+
+         call f_bar_me(fvo,S1,hov)
+
          call f_bar_ae(fvv,fvo,s1,s2,hv)
-
-!        write(*,*)'wpp done',ddot(nfvv,hv,1,hv,1)
-
-!!         call w_ejmb(S1,S2,w_voov)
-
-          call wbar_mbej(S2,w_ovvo,buf2,buf3)
 
          call w_mbej(s1,s2,w_voov)
 
-!       write(*,*)'starting w_iemn intermediate'
-
          call w_iemn(s1,s2,w_ovoo,w_ovvo,w_oooo,hov)
-
 
       CALL XTIME(5,1,'-- "efam" Intermediate                     ')
 
-         call w_efam(s1,s2,w_ovvo,hov,cz,buf2,buf3)
+        call w_efam(s1,s2,w_ovvo,hov,cz)
 
-         call w_efam_diagram2 (s1,s2,buf1,buf2,buf3,nbuf3,cz)
+        if (myproc.gt.0) then
+          cz(1:nv5*rcw) = 0.0d0
+        endif
 
       CALL XTIME(5,2,'-- "efam" Intermediate                     ')
 
+         call w_efam_diagram2 (s1,s2,buf2,buf3,nbuf3,cz)
+
+!   synchronize all the w_efam contributions from different nodes to the master 
+
+#if defined (VAR_MPI)
+      if (nmproc .gt. 1) then
+
+!        call xtime(4,1,'-- combining w_efam via mpi_reduce')
+        call xcopy (nv5,a0,0,buf3,1)
+        ierr = 0
+
+        call interface_mpi_allreduce_r1_work_f77(cz,buf3(1),
+     &       rcw*ivovvt(nrep+1),
+     &       op_mpi_sum,global_communicator)
+
+        if(ierr.gt.0) then
+           call quit('mpi_reduce error in collecting w_efam !')
+        endif
+        call xcopy(ivovvt(nrep+1),buf3,1,cz,1)
+!        call xtime(4,2,'-- combining w_efam via mpi_reduce')
+
+      endif
+#endif
         
       allocate (int_wooop(iovoot(nrep+1)*rcw))
 
@@ -127,13 +133,11 @@ C     Initialize the work arrays to zero.
 
 ! out-of-core section of the intemediates
 
-!        call f_bar_ae_out_of_core (s1,buf2,nbuf2,hv)
+!      call f_bar_ae_out_of_core (s1,buf2,nbuf2,hv)
 
 !       call w_ejmb_out_of_core (s1,s2,buf1,buf2,buf3,nbuf3,w_voov)
 
-
 !       call w_iemn_out_of_core (s1,s2,buf1,buf2,nbuf3,w_ovoo)
-
 
 !       call w_efam_out_of_core (s1,s2,hov,w_voov,w_ovvo,buf1,buf2,
 !    &              buf3,nbuf3,nbuf2,CZ)
@@ -146,8 +150,6 @@ C     Initialize the work arrays to zero.
 
       call srt1c1 (nrep,nv,no,s1,l1) 
       call srt1c1 (nrep,nvvt,noot,s2,l2) 
-
-!!      CALL ZCORE (L1,L2)
 
 !     Initialize the work arrays to zero.
 
@@ -207,7 +209,7 @@ C     Initialize the work arrays to zero.
       CALL XTIME(5,1,'-- L2 equations                     ')
 
        CALL lambda_equation_L2(s1,s2,l1,l2,ho,hv,hov,w_voov,w_oooo,
-     &                      int_wooop,G_oo,G_vv,buf1,buf2,buf3,
+     &                      int_wooop,w_v_temp,G_oo,G_vv,buf1,buf2,buf3,
      &                      nbuf3,resL2,iprnt,nit)
 
       CALL XTIME(5,2,'-- L2 equations                     ')
@@ -239,7 +241,6 @@ C     Initialize the work arrays to zero.
 !      call xaxpy (ndimt1,-a1,resL1,1,l1,1)
 !      call xaxpy (ndimt2,-a2,resL2,1,l2,1)
 
-
        call xaxpy (ndimt1,-a1,resL1*dinv_one,1,l1,1)
        call xaxpy (ndimt2,-a2,resL2*dinv_two,1,l2,1)
 
@@ -250,7 +251,25 @@ C     Initialize the work arrays to zero.
      &           it,cc1,bb1,itc,bb2,rms1)
       CALL XTIME(5,2,'- DIIS extrapolation            ')
 
+
+      CALL PARTS (2,RMS,L1,L2,BUF1,BUF2)
+
+
       IF (IPRNT.GE.1) WRITE(IW,6001) NIT,RMS
+
+
+      allocate(l1_temp(ndimt1*rcw))
+      allocate(l2_temp(ndimt2*rcw))
+
+    
+      call srt1c1 (nrep,no,nv,l1,l1_temp) 
+      call srt1c1 (nrep,noot,nvvt,l2,l2_temp) 
+
+      call gettau(s1,s2,buf2)
+
+      deallocate(l1_temp)
+      deallocate(l2_temp)
+
       CALL FLSHFO(IW)
 
       if(rms.lt.conv) exit

@@ -9,13 +9,7 @@ endif()
 
 set(FIXED_DIRRCI_FORTRAN_SOURCES
  cosbit.h  
- files.inc 
- general.inc 
- goscom.h 
- iterat.inc 
- mempoint.inc 
- param.inc 
- symm.inc
+ goscom.h
  cidirr.F
  cigenp.F
  cigosc.F
@@ -30,8 +24,15 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FIXED_DIRRCI_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
 endif()
 
+if(ENABLE_RUNTIMECHECK)
+    message(STATUS "runtime-check flags activated for the 'dirrci' module without exceptions")
+    set_source_files_properties(${FREE_DIRRCI_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+    set_source_files_properties(${FIXED_DIRRCI_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+endif()
+
 add_library(
     dirrci 
+    OBJECT
     ${FIXED_DIRRCI_FORTRAN_SOURCES}
     ${FREE_DIRRCI_FORTRAN_SOURCES}
 )

@@ -2,24 +2,12 @@
 ## Simple DIRAC buildup configuration file for the Wercker-CI service http://devcenter.wercker.com/articles/werckeryml/
 ##
 ##
-box: wercker/python
+box: nodesource/trusty
 
 build:
   steps:
     - install-packages:
-        packages: "git gcc g++ gfortran make libblas-dev liblapack-dev libfreetype6-dev zlib1g-dev doxygen"
-
-    - pip-install:
-        requirements_file: ""
-        packages_list: "matplotlib sphinx==1.2.3 sphinxcontrib-bibtex sphinx_rtd_theme hieroglyph"
-
-    - script:
-        name: install the newest cmake form their webpage
-        code: |
-          wget --no-check-certificate https://cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.tar.gz
-          tar xzf cmake-3.5.2-Linux-x86_64.tar.gz
-          export PATH=$PWD/cmake-3.5.2-Linux-x86_64/bin:$PATH
-          cmake --version
+        packages: "git gcc g++ gfortran make cmake libblas-dev liblapack-dev libfreetype6-dev zlib1g-dev openmpi-bin"
 
     - script:
         name: show system resources
@@ -32,13 +20,14 @@ build:
         name: update submodule, setup configuration scripts
         code: |
           git submodule update --init --recursive
-          python ./setup --type=debug --cmake-options="-D BUILDNAME='wercker-ci.i8.gdb' -D ENABLE_UNIT_TESTS=ON"  build_wercker-ci
+          python ./setup --mpi --type=debug --cmake-options="-D BUILDNAME='wercker-ci.i8.openmpi.gdb' -D ENABLE_UNIT_TESTS=ON -D ENABLE_BASIS_SETS_CHECK=ON"  build_wercker-ci
 
     - script:
         name: run ctest for configuration/buildup/test/submit
         code: |
           cd build_wercker-ci
           export CTEST_PROJECT_NAME="DIRACext"
+          export DIRAC_MPI_COMMAND="mpirun -np 2"
           ## ctest -D ExperimentalUpdate
           ctest  -D ExperimentalConfigure
           ## we have only 30 minutes for the whole buildup !
@@ -46,27 +35,9 @@ build:
           ## ldd : show dependencies
           ldd dirac.x
           ## true : this script continues even if some of tests fail
-          ctest -j 8  -D ExperimentalTest -L short || true
+          ctest -j 4  -D ExperimentalTest -L short || true
           ## deliver buildup status to CDash-web
           ctest -D ExperimentalSubmit
-
-    - script:
-        name: build sphinx documentation
-        code: |
-          cd build_wercker-ci
-          make html
-
-    - script:
-        name: build doxygen documentation
-        code: |
-          cd build_wercker-ci
-          make doxygen
-
-    - script:
-        name: build slides
-        code: |
-          cd build_wercker-ci
-          make slides
 
 ## turn off email notifications
 notifications:

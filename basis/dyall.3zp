@@ -4,7 +4,7 @@ $ H  He Li Be Na Mg
 $ K  Ca Rb Sr Cs Ba Fr Ra 
 $ B  C  N  O  F  Ne Al Si P  S  Cl Ar
 $ Ga Ge As Se Br Kr In Sn Sb Te I  Xe Tl Pb Bi Po At Rn 
-$ Uut Fl Uup Lv Uus Uuo
+$ Nh Fl Mc Lv Ts Og
 $ Sc Ti V  Cr Mn Fe Co Ni Cu Zn
 $ Y  Zr Nb Mo Tc Ru Rh Pd Ag Cd Hf Ta W  Re Os Ir Pt Au Hg 
 $ Rf Db Sg Bh Hs Mt Ds Rg Cn
@@ -13,9 +13,9 @@ $ Ac Th Pa U  Np Pu Am Cm Bk Cf Es Fm Md No Lr
 $ 
 $  REFERENCE
 $ 
-$ 1s-3s: K.G. Dyall, unpublished.
+$ 1s-3s: K.G. Dyall, Theor. Chem. Acc. (2016) 135:128.
 $ 4s-7s: K.G. Dyall, J. Phys. Chem. A. (2009) 113:12638.
-$ 2p-3p: K.G. Dyall, unpublished.
+$ 2p-3p: K.G. Dyall, Theor. Chem. Acc. (2016) 135:128.
 $ 4p-6p: K.G. Dyall, Theor. Chem. Acc. (2002) 108:335;
 $        revision K.G. Dyall, Theor. Chem. Acc. (2006) 115:441.
 $    7p: K.G. Dyall, Theor. Chem. Acc. (2012) 131:1172.
@@ -8901,7 +8901,7 @@ $ f functions
     4.30218881E-01
     1.30576120E-01
 
-$ Uut
+$ Nh
 a 113
 $ s functions
    30    0    0
@@ -9107,7 +9107,7 @@ $ f functions
     5.69645516E-01
     2.38837202E-01
 
-$ Uup
+$ Mc
 a 115
 $ s functions
    30    0    0
@@ -9313,7 +9313,7 @@ $ f functions
     6.93496557E-01
     3.18133817E-01
 
-$ Uus
+$ Ts
 a 117
 $ s functions
    30    0    0
@@ -9416,7 +9416,7 @@ $ f functions
     7.54241563E-01
     3.56439303E-01
 
-$ Uuo
+$ Og
 a 118
 $ s functions
    30    0    0

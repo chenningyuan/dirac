@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -18,6 +18,9 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
+
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 
       SUBROUTINE XQRINP(WORD,RESET)
 !*****************************************************************************
@@ -63,9 +66,7 @@
       DATA SET/.FALSE./
 !
 #include "ibtfun.h"
-!
-      LFREE = LWRK
-      KFREE = 1
+
 !
       NEWDEF = (WORD .EQ. '*QUADRA')
       IF (SET) THEN
@@ -495,12 +496,10 @@
       CALL OPNFIL(LUCMO,'DFCOEF','OLD','PRPXQR')
       IF(SPINFR) THEN
         allocate(ibeig(ntbas(0)))
-        CALL REACMO(LUCMO,'DFCOEF',CMO,DUM,ibeig,          &
-               TOTERG,11,WORK,KFREE,LFREE)
+        CALL REACMO(LUCMO,'DFCOEF',CMO,DUM,ibeig,TOTERG,11)
       ELSE
         allocate(ibeig(1))
-        CALL REACMO(LUCMO,'DFCOEF',CMO,DUM,IDUM,TOTERG,3,        &
-               WORK,KFREE,LFREE)
+        CALL REACMO(LUCMO,'DFCOEF',CMO,DUM,IDUM,TOTERG,3)
       ENDIF
       CLOSE(LUCMO,STATUS='KEEP')
 !
@@ -615,7 +614,7 @@
          XQR_SKIPEP = .TRUE.
       END IF
 !
-      CALL OSTRING(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,WORK,KFREE,LFREE)
+      CALL OSTRING(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,IPRXQR,WORK,KFREE,LFREE)
 !
       NQROP  = 0
       NQRHYP = 0
@@ -2415,7 +2414,7 @@
 
          call generate_num_grid(work(kdmat))
 #ifdef VAR_MPI
-         if (parcal) call dirac_parctl(4)
+         if (parcal) call dirac_parctl( XCINT_PAR )
 #endif
          call integrate_xc(xc_mat_dim           = ntbas(0),             &
                        xc_nz                = nz,                       &
@@ -2634,8 +2633,8 @@
 !
       CALL QENTER('QDENS1')
 !
-      KFREE = 1
-      LFREE = LWRK
+      !KFREE = 1
+      !LFREE = LWRK
 !
 !     D_{ab} = C_{ai} W1_{iu} C+_{bu} - C_{au} W1_{ui} C+_{bi}
 !
@@ -2685,9 +2684,6 @@
       DIMENSION CMO(*)
 !
       CALL QENTER('QDEN1')
-!
-      KFREE = 1
-      LFREE = LWRK
 !
       IF (ITIM1.EQ.1) THEN
          T='S'
@@ -2789,9 +2785,7 @@
 !
 !
       CALL QENTER('QDENS2')
-!
-      KFREE = 1
-      LFREE = LWRK
+
 !
 !     D_{ab} = C_{ai} W1_{iu} W2_{uv} C+_{bv}
 !            + C_{av} W2_{vu} W1_{ui} C+_{bi}
@@ -2860,9 +2854,6 @@
       DIMENSION T(-1:1),IQBF(4),CMO(*)
 !
       CALL QENTER('QDEN2')
-!
-      KFREE = 1
-      LFREE = LWRK
 !
 !     Zero temporary storage DTMP
 !

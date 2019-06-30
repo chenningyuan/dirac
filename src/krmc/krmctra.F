@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -459,13 +459,13 @@ C
          IIDX(IFSYM) = IT
          DO I = 1, NORB(IFSYM)
             IA = IA + 1
-            IF (.NOT. USENOROT .OR. NOROT(IA) .EQ. 0) THEN
+            IF (IDXFLG) THEN
+               IG = IDX(IA)
+            ELSE
+               IG = IA
+            END IF
+            IF (.NOT. USENOROT .OR. NOROT(IG) .EQ. 0) THEN
                IT = IT + 1
-               IF (IDXFLG) THEN
-                  IG = IDX(IA)
-               ELSE
-                  IG = IA
-               END IF
                IDXT2G(IT) = IG
             END IF
          END DO
@@ -799,7 +799,7 @@ C         ... -1 tells NUMLST to _not_ reorder orbital list
           NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
           NSTRT(I) = NSTRT(I) +  NSTR(IFRP,0,I)
           CALL MEMREL('PAMTRA',WORK,KFRSAV,KVEC(IFRP,I),KFREE,LFREE)
-          CALL MEMGET('INTE',KVEC(IFRP,I),NSTR(IFRP,0,I),
+          CALL MEMGET2('INTE','VEC',KVEC(IFRP,I),NSTR(IFRP,0,I),
      &                WORK,KFREE,LFREE)
         ENDDO
       ENDDO
@@ -1182,8 +1182,6 @@ C
       OPEN(LUINT, FILE = '4INDINFO', STATUS = 'OLD',
      &     FORM = 'UNFORMATTED' )
 C
-      write(print_unit,'(/a)') ' Reading from file : 4INDINFO '
-C
 C     Read time & date for creation
 C
       READ (LUINT) DATEX, TIMEX
@@ -1271,7 +1269,8 @@ C     LUINT = 56 + IREPIJ, IREPIJ = 1,NFSYM are actually used
            mytid      = mytid_save
          end if
 
-         WRITE(print_unit,'(A,A)') ' Reading from file : ',FNODE
+         IF (IPRINT .GE. 5)
+     &   WRITE(print_unit,'(A,A)') ' Reading from file : ',FNODE
          OPEN (LUINT+IREPIJ,FILE=FNODE,STATUS='OLD',
      &        ACCESS='DIRECT',RECL=IRECL)
          IIKLB = IIKLB + NFPCK34(IREPIJ)
@@ -1299,8 +1298,8 @@ C
             CALL GTXY(NXY,IX,IY,IXU,IYU,idxkr12)
             call dzero(h2xy,nclass*n2orbx)
 #if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
-            write(6,'(2x,a,2i8)') ' active : ',ixu,iyu
-            write(6,'(2x,a, i8)') ' IXY is     : ',IXY
+      write(print_unit,'(2x,a,2i8)') ' active : ',ixu,iyu
+      write(print_unit,'(2x,a, i8)') ' IXY is     : ',IXY
       write(print_unit,'(2x,a,i4)') ' (RGETH21) idxkr12(1,ixy)',
      &                              idxkr12(1,ixy)
       write(print_unit,'(2x,a,i4)') ' (RGETH21) idxkr12(2,ixy)',

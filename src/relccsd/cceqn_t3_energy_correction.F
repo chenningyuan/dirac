@@ -2,7 +2,7 @@
      &                   VVVO,VVOO,VOOO)
 C
       use interface_to_mpi
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -38,7 +38,7 @@ C
 #include "complex.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      integer ISTAT(df_MPI_STATUS_SIZE)
 #endif
 
 C
@@ -46,6 +46,13 @@ C---------------Local variables--------------------------------------
 C
       REAL*8 EPSIJK,EIJKABC,VMIN(2)
       INTEGER*8 I8,IT3OFF1,JT3OFF1,KT3OFF1,EBCI,EBCJ,EBCK
+      integer a,aa,ab,abc,abc1,abc2,abij,abik,abjk,abrep,aljk
+      integer ac,acb,acrep,aeij,aeik,aejk,alij,alik,amin,arep,b,bac
+      integer bb,bc,bca,bcrep,bmin,brep,c,cab,cc,ci,cj,ck,crep,erep
+      integer i,ii,ij,ijkrep,ijoff1,ijoff2,ijoff3,ijrep,ik,ikoff1
+      integer ikoff2,ikoff3,ikrep,imin,ioff2,irep,j,jj,jk,jkoff1,jkoff2
+      integer jkoff3,jkrep,jmin,joff2,jrep,k,kk,koff2,krep,lbci,lbcj
+      integer lbck,lrep,m,n,nn,o,off1,off2
 C---------------Executable code--------------------------------------
 C
 C     Initialize the timing.

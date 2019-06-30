@@ -1,129 +1,48 @@
-!dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
-!      All Rights Reserved.
+! mxmpack.F - Two old Cray library routines from the 1980s still called
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
-!
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
-!
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
-!dirac_copyright_end
-
-C
-C
-C  /* Deck mxm */
-#if !defined (SYS_CRAY) && !defined (VAR_MOTECC)
       SUBROUTINE MXM(A,NAR,B,NAC,C,NBC)
-#include "implicit.h"
-      DIMENSION A(NAR,NAC), B(NAC,NBC), C(NAR,NBC)
-#if defined (VAR_F90)
-C
-C     tuh Mar 1988 - Alliant spends a lot of time setting up this call,
-C     it might therefore be best to avoid calling MATMUL
-C
-      C=MATMUL(A,B)
-#else
-#if defined (VAR_ESSL)
-C
-C ESSL DGEMUL uses same cpu time as DGEMM /930330-hjaaj
-C     but has no problem with NaN /931022-hjaaj
-      CALL DGEMUL(A,NAR,'N',B,NAC,'N',C,NAR,NAR,NAC,NBC)
-#endif
-#endif
-#if !defined (VAR_ESSL) && !defined (VAR_F90)
-#if defined (SYS_CONVEX) || defined (SYS_IRIX) || defined (SYS_AIX) || defined (VAR_BLAS3) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_HPUX) || defined (SYS_SX) || defined (SYS_DARWIN)
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
-C
-C     Necessary to zero out because of NaN, tuh
-C
-      CALL DZERO(C,NAR*NBC)
-      CALL DGEMM('N','N',NAR,NBC,NAC,D1,A,NAR,B,NAC,D0,C,NAR)
-#else
-C
-C     C(I,J) = A(I,K) * B(K,J)
-C
-      DO 100 J = 1,NBC
-         DO 100 I = 1,NAR
-  100       C(I,J) = A(I,1)*B(1,J)
-C
-      DO 300 K = 2,NAC
-         DO 300 J = 1,NBC
-            BKJ = B(K,J)
-            DO 300 I = 1,NAR
-  300          C(I,J) = C(I,J) + A(I,K) * BKJ
-C
-#endif
-#endif
+! For the old Cray MXM library routine use optimized DGEMM
+      implicit none
+      INTEGER  NAR, NAC, NBC
+      REAL*8   A(NAR,NAC), B(NAC,NBC), C(NAR,NBC)
+
+      CALL DGEMM('N','N',NAR,NBC,NAC,1.0D0,A,NAR,B,NAC,0.0D0,C,NAR)
       RETURN
       END
-#endif
-C  /* Deck mxmd */
-#if defined (VAR_NOTUSED  )
-C930522-hjaaj: MXMD not used in Hermit/Abacus any more
-#if !defined (VAR_MOTECC)
-#if defined (VAR_F90)
-      SUBROUTINE MXMD(A,NAR,NARA,B,NAC,NACA,C,NBC)
-C
-C     tuh Mar 1988 - Alliant spends a lot of time setting up this call,
-C     it might therefore be best to avoid calling MATMUL
-C
+
+      SUBROUTINE MXMA(A,ICA,IRA,B,ICB,IRB,C,ICC,IRC,NROW,NSUM,NCOL)
+!
+! General row and column spacing in A, B, and C.
+! Can be used for e.g. C = A(transposed) * B
+! or using a subblock of e.g. A.
+
 #include "implicit.h"
-      DIMENSION A(NARA,NACA), B(NAC,NBC), C(NAR,NBC)
-      C(1:NARA,:)=MATMUL(A,B(1:NACA,:))
+      REAL*8  A(*),B(*),C(*)
+      DO 100 IROW=0,NROW-1
+      DO 100 ICOL=0,NCOL-1
+         CSUM=0.0D0
+         DO 110 ISUM=0,NSUM-1
+            CSUM=CSUM +
+     &          A(1+IROW*ICA+ISUM*IRA) *
+     &          B(1+ISUM*ICB+ICOL*IRB)
+110      CONTINUE
+         INDEXC=1+ICC*IROW+IRC*ICOL
+         C(INDEXC)=CSUM
+100   CONTINUE
       RETURN
       END
-#endif
-#if defined (SYS_CONVEX) || defined (VAR_ESSL) || defined (VAR_BLAS3)
-      SUBROUTINE MXMD(A,NAR,NARA,B,NAC,NACA,C,NBC)
-C     890905 tuh
-#include "implicit.h"
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
-      DIMENSION A(NARA,NACA), B(NAC,NBC), C(NAR,NBC)
-      CALL DZERO(C,NAR*NBC)
-      CALL DGEMM('N','N',NARA,NBC,NACA,D1,A,NARA,B,NAC,D0,C,NAR)
-      RETURN
-      END
-#endif
-#if !defined (SYS_CONVEX) && !defined (VAR_ESSL) && !defined (VAR_F90) && !defined (VAR_BLAS3)
-      SUBROUTINE MXMD(A,NAR,NARA,B,NAC,NACA,C,NBC)
-C
-C     Modified MXM by Trygve U. Helgaker
-C
-#include "implicit.h"
-      DIMENSION A(NARA,NACA), B(NAC,NBC), C(NAR,NBC)
-C
-C     C(1:NARA,:)=MATMUL(A,B(1:NACA,:))
-C     C(I,J) = A(I,K) * B(K,J)
-C
-      DO 100 J = 1,NBC
-         DO 100 I = 1,NARA
-  100       C(I,J) = A(I,1)*B(1,J)
-C
-      DO 300 K = 2,NACA
-         DO 300 J = 1,NBC
-            BKJ = B(K,J)
-            DO 300 I = 1,NARA
-  300          C(I,J) = C(I,J) + A(I,K) * BKJ
-C
-      RETURN
-      END
-#endif
-#endif
-#else
-C
-C     This is only to avoid the object file being empty, causing problems
-C     on Cray C90./jth 980716
-C
-      SUBROUTINE GNYF
-      END
-#endif
+! description:
+!     CALL MXMA (A, NA, IAD, B, NB, IBD, C, NC, ICD, NAR, NAC, NBC)
+!     where the arguments have the following meanings:
+!     A first matrix of the product
+!     NA spacing between column elements of A
+!     IAD spacing between row elements of A
+!     B second matrix of the product
+!     NB spacing between column elements of B
+!     IBD spacing between row elements of B
+!     C output matrix
+!     NC spacing between column elements of C
+!     ICD spacing between row elements of C.
+!     NAR number of rows in the first operand and result
+!     NAC number of columns in the first operand and number of rows in the second
+!     NBC number of columns in the second operand and result

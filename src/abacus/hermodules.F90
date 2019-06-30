@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -30,6 +30,7 @@
 
       MODULE READ_XYZFILE
         USE FILE
+        USE CODATA
         IMPLICIT NONE
 
         PRIVATE
@@ -84,6 +85,9 @@
         INTEGER :: NSYMOP=0
         CHARACTER(LEN=1) :: KASYM(3,3)=' '
         INTEGER :: natoms_given
+
+!     The unit conversion global variable is used when reading/writing xyz files
+       REAL(KIND=8),PUBLIC  :: UNIT_CONVERSION = 1.D0 / XTANG
 
       CONTAINS
 
@@ -433,7 +437,7 @@
           INTEGER,TARGET,ALLOCATABLE         :: JCO(:)
 
 !     FOR UNIT CONVERSION and explicitly defined charges and/or nuclear exponents
-          REAL(KIND=8)      :: UNIT_CONVERSION,ONE=1.0
+          REAL(KIND=8)      :: ONE=1.0
           CHARACTER(LEN=32) :: UNITNAME='Angstrom'
           TYPE(atom), POINTER                :: mol
 
@@ -457,9 +461,7 @@
           NSYMOP=0
           ADDSYM=.TRUE.
           KASYM(:,:)=' '
-
-!     Standard for xyz is angstrom, initialize with the AU/ANG conversion factor
-          UNIT_CONVERSION = ONE / XTANG
+          KCHARG=0
 
           DO
             read(tmp_file,*,iostat=ios) str
@@ -481,10 +483,18 @@
 !           The options and suboptions are flattened out in one if then else if construction.
             IF(section(1)=='**MOLECULE') THEN
 
+!             add molecular charge. it is perhaps redundant to have *CHARGE and .CHARGE but i'm not
+!             sure we will not want to add other keywords in the menu later on - plus this keeps in 
+!             line with the other fields that always place keywords (=section(3)) under single-star
+!             menus 
+              IF (section(2)=='*CHARGE'.AND.                            &
+     &            section(3)=='.CHARGE') THEN
+                      read(tmp_file,*,iostat=ios) KCHARG 
+
 !            Symmetry specification (Only NOSYM supported, otherwise automatic recognition)
-              IF (section(2)=='*SYMMETRY'.AND.                          &
-     &            section(3)=='.NOSYM') THEN
-                      ADDSYM=.FALSE.
+              ELSE IF (section(2)=='*SYMMETRY'.AND.                     &
+     &                 section(3)=='.NOSYM') THEN
+                       ADDSYM=.FALSE.
 
 !             Basis specification
               ELSE IF (section(2)=='*BASIS'.AND.                        &
@@ -653,12 +663,6 @@
                     call Quit ("error reading units in .UNITS")
                   end if
                 END SELECT
-                IF (.NOT.first_call) THEN
-!               In geometry optimizations this routine will be called multiple times,
-!               and since we will write new XYZ files in Angstroms we overrule the initial unit choice here
-                  UNIT_CONVERSION = ONE / XTANG
-                  unitname='angstrom'
-                END IF
 
 !             End of processing of the **MOLECULE BLOCK
               END IF
@@ -789,8 +793,7 @@
 
       END SUBROUTINE WRITE_ATOMS
 
-        SUBROUTINE POS_FILE(infile,lupri,linelen,                       &
-     &     section,subsection,name)
+        SUBROUTINE POS_FILE(infile,lupri,linelen,section,subsection,name)
 !         Position a file to a specific keyword.
         
           INTEGER, INTENT(IN)   :: infile,lupri,linelen
@@ -800,7 +803,7 @@
           INTEGER                :: ios
 
           REWIND(infile,iostat=ios)
-! miro: insert this check
+! miro: insert this control printout
           if (ios.ne.0) then
        write(lupri,*) 'POS_FILE: error in rewind command ! ios=',ios
        write(lupri,*) 'POS_FILE: infile(in)=',infile
@@ -808,7 +811,7 @@
        write(lupri,*) 'POS_FILE: section(in)=',section
        write(lupri,*) 'POS_FILE: subsection(in)=',subsection
        write(lupri,*) 'POS_FILE: name(in)=',name
-           call quit('POS_FILE: error in rewind command !')
+           call quit('POS_FILE: ios<>0, error in rewind command !')
           endif
           DO            
             read(infile,*,iostat=ios) str
@@ -831,10 +834,9 @@
           END DO
         END SUBROUTINE POS_FILE
 
-        SUBROUTINE WRITE_ATOMTYPES(infile,lupri,WORK,LWORK,                 &
-     &                  KANG,KSETS,KBLOCK,KPRIM,HERMIT)
+        SUBROUTINE WRITE_ATOMTYPES(infile,lupri,WORK,LWORK,KANG,KSETS,KBLOCK,KPRIM,HERMIT)
 !     JHS050707 Writes the contained in the basisset list to the common blocks.
-!               Note the routine is higly similar tot the subroutine READI1 for
+!               Note the routine is higly similar to the subroutine READI1 for
 !               .MOL files, the main difference is the split between reading the files
 !               and writing them to the common blocks
 
@@ -850,9 +852,7 @@
 #include "symmet.h"
 
 !     COMMON BLOCKS
-! clsfmm.h : THRCLS
 ! cbirea.h : IPREAD,TOL_SYMADD, ...
-#include "clsfmm.h"
 #include "cbirea.h"
       REAL(KIND=8), PARAMETER :: THRMIN = 1.D-15,DSM=1.0D-30
 
@@ -863,7 +863,8 @@
      &                katom,basindex,index, iqm_check
 
       REAL(KIND=8) :: QEXP=D0
-      REAL         :: MXSPD
+!Miro: MXSPD is integer, not real, and that was causing problems later with parallel-GNU-compilers !!!
+      INTEGER      :: MXSPD
       LOGICAL      :: HERMIT,DOOWN,ANG,NOORBTS,NOFITFS,                 & 
      &                CNTBAS=.FALSE.,DIRCON(2)=.FALSE.,IFXYZ(3)
       CHARACTER(LEN=72) :: TTITLE(2)=' '
@@ -946,6 +947,7 @@
 
       typepointer=>firstatomtype
       basindex=0
+      index=0
       NONTYP=0
 
       DO
@@ -970,12 +972,10 @@
         CALL RDLINE(infile)
 !       POSITION the input file.
         IF (baspointer%name == 'DEFAULT') THEN
-           CALL POS_FILE(infile, lupri, linelen,                        &
-     &       '**MOLECULE', '*BASIS', '.DEFAULT')
+           CALL POS_FILE(infile, lupri, linelen,'**MOLECULE', '*BASIS', '.DEFAULT')
            CALL RDLINE(infile)
         ELSE
-           CALL POS_FILE(infile, lupri, linelen,                        &
-     &       '**MOLECULE', '*BASIS', baspointer%name)
+           CALL POS_FILE(infile, lupri, linelen,'**MOLECULE', '*BASIS', baspointer%name)
         ENDIF
 
         SELECT CASE (baspointer%type)
@@ -1173,8 +1173,7 @@
         END IF
 
         IBLOCK(1:2)=IBLOCK(1:2)+NBLCK(basindex,1:2)
-        NOORBT(basindex+1:NONT(basindex)+basindex) = NOORBTS
-          
+        NOORBT(index+1:NONT(basindex)+index) = NOORBTS
         DO i=3,4
 !     JHS060707 TMP Include also the reading of fitsets.
           IBSFLAG=2
@@ -1182,9 +1181,10 @@
         END DO
 
 !       This routine reads the next line to check whether an ECP is specified for this type
-        CALL RECP_LNK_READCP(infile,basindex,NONT(basindex))
+        CALL RECP_LNK_READCP(infile,basindex,NONT(basindex),IPREAD)
 
         typepointer=>typepointer%next
+        index=index+NONT(basindex)
         
       END DO
 
@@ -1209,6 +1209,8 @@
 !     ***** Process symmetry input data *****
 !     ***************************************
 !
+!     Fix a problem with ADDSYM for some D(2) cases
+      CALL FIX_DUPLICATE_GENERATORS (NSYMOP,KASYM)
       CALL SYMINP(NSYMOP,KASYM,IFXYZ, CLASS)
 
 !
@@ -1224,6 +1226,12 @@
 !     ***** Print orbital and geometry input data *****
 !     *************************************************
 !
+#ifdef BUILD_GEN1INT
+!     initialize basis sets (large and small components) used in Gen1Int interface
+      call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM,               &
+     &                       NBLCK, KANG, JCO, KBLOCK,                  &
+     &                       NUC, NRC, KPRIM, ALPHA, CPRIMU)
+#endif
 
       CALL BASOUT(WORK,LWORK,IQM,NBLCK,JCO,BASREF,                      &
      &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,      &
@@ -1231,10 +1239,6 @@
 !
 !     TMP copy input to .out file.
 
-!     Default threshold for distinguishing classical and
-!     non-classical contributions to Coulomb integrals
-
-      THRCLS = THRS
 !
 !     ****************************************
 !     ***** Output on LUONEL *****************

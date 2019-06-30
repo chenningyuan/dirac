@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -55,6 +55,9 @@ C
 #include "cbihr1.h"
 #include "cbiher.h"
 #include "nuclei.h"
+
+      CHARACTER CPUTID*12, WALLTID*12, SECTID*12
+
       CALL QENTER('ONEGEN')
 C.....With modified Hamiltonian this routine is skipped for now
       IF(MDIRAC) GOTO 20
@@ -66,6 +69,7 @@ C     Loop through list of class labels; calculate only the active ones(CLSCAL)
 C     =========================================================================
 C
       IF (NOSMLV) CALL NOSSNUCATT
+      IF (IPRONE .GT. 0) CALL GETTIM(CPU0,WALL0)
       DO 10 I = 1,NPRPCLS
       IF(.NOT.CLSCAL(I)) GOTO 10
         IF (IPRONE.GE.2) WRITE(LUPRI,'(/2A,2X,A)')
@@ -149,6 +153,13 @@ C
    10 CONTINUE
 C
       CLOSE(LU1INT,STATUS='KEEP')
+      IF (IPRONE .GT. 0) THEN
+         CALL GETTIM(CPUE,WALLE)
+         CPUTID  = SECTID(CPUE-CPU0)
+         WALLTID = SECTID(WALLE-WALL0)
+         WRITE(LUPRI,'(/4A)')
+     &  'Total time used in ONEGEN (CPU) ',CPUTID,' and (WALL) ',WALLTID
+      END IF
  20   CONTINUE
       CALL QEXIT('ONEGEN')
       RETURN
@@ -1123,7 +1134,7 @@ C               Get integrals from the AOPROPER file
 C =============================================================
         CALL PRPREA(LU1INT,PRPLBL(KLBL),RTNLBL,PDOINT(KLBL),
      &              OP1INT,NDIM,IPRINT)
-        IF(IPRINT.GE.15) THEN
+        IF(IPRINT.GE.10) THEN
           WRITE(LUPRI,'(A,I3)')
      &    '* Integrals from AOPROPER, size of matrix ',NTBAS(0)
           IF (NTBAS(0).EQ.NTBAS(1)) THEN
@@ -1633,6 +1644,7 @@ C
       NBRP = 4/NZ
       ISOFF = 1
       IVOFF = 1
+      NLINDEP=0
       CALL HEADER('Generating Lowdin canonical matrix:',-1)
       DO IFRP = 1,NFSYM
         JSOFF = ISOFF
@@ -1654,14 +1666,16 @@ C
           IF(NBBAS(IREP,IC).GT.0) THEN
             IF(LBIT(ISPHTR,IC)) THEN
               CALL SPHLOW(IREP,IC,SMAT(JSOFF),VMAT(JVOFF),
-     &                    NFBAS(IFRP,0),NEFF,STOL(IC),EIG,
+     &                    NFBAS(IFRP,0),NEFF,NLDP,STOL(IC),EIG,
      &                    WORK,LWORK,IPRINT)
               NDEL  = NBBAS(IREP,IC) - NEFF
+              NLINDEP=NLINDEP+NLDP
             ELSE
               CALL LOWGEN(SMAT(JSOFF),NBBAS(IREP,IC),
      &                    VMAT(JVOFF),NEFF,NFBAS(IFRP,0),
      &                    STOL(IC),IPRINT,EIG,WORK,LWORK)
               NDEL  = NBBAS(IREP,IC) - NEFF
+              NLINDEP=NLINDEP+NDEL              
               WRITE(LUPRI,'(3X,A1,3X,A3,3X,A,I10,A,E8.2)')
      &          COMP(IC),REP(IREP),'* Deleted: ',NDEL,
      &          ' *Smin: ',EIG(NBBAS(IREP,IC))
@@ -1700,20 +1714,22 @@ C
             IF(LBIT(ISPHTR,IC)) THEN
               IF(MDIRAC) THEN
                 CALL SPHLOW(IREP,IC,SMAT(JSOFF),VMAT(JVOFF),
-     &                      NFBAS(IFRP,0),NEFF,STOL(IC),EIG,
+     &                      NFBAS(IFRP,0),NEFF,NLDP,STOL(IC),EIG,
      &                      WORK,LWORK,IPRINT)
               ELSE
                 CALL RKBLOW(IREP,IC,SMAT(JSOFF),VMAT(JVOFF),
-     &                      NFBAS(IFRP,0),NEFF,STOL(IC),EIG,
+     &                      NFBAS(IFRP,0),NEFF,NLDP,STOL(IC),EIG,
      &                      IRKB,WORK,LWORK,IPRINT)
               ENDIF
-              NDEL  = NBBAS(IREP,IC) - NEFF
+              NDEL    = NBBAS(IREP,IC) - NEFF
+              NLINDEP = NLINDEP+NLDP              
             ELSE
               CALL LOWGEN(SMAT(JSOFF),NBBAS(IREP,IC),
      &                    VMAT(JVOFF),NEFF,NFBAS(IFRP,0),
      &                    STOL(IC),IPRINT,EIG,WORK,LWORK)
               NDEL  = NBBAS(IREP,IC) - NEFF
-              WRITE(LUPRI,'(3X,A1,3X,A3,3X,A,I10)')
+              NLINDEP=NLINDEP+NDEL
+              WRITE(LUPRI,'(3X,A1,3X,A3,3X,A,I10,38X,A,E10.2)')
      &           COMP(IC),REP(IREP),'* Deleted: ',NDEL,
      &          ' *Smin: ',EIG(NBBAS(IREP,IC))
             ENDIF
@@ -1746,6 +1762,10 @@ C
         ISOFF = ISOFF + NFBAS(IFRP,0)*NFBAS(IFRP,0)
         IVOFF = IVOFF + NFBAS(IFRP,0)*NFORB(IFRP,0)
       ENDDO
+      IF(NLINDEP.GT.0) THEN
+        WRITE(LUPRI,'(A,I0,A)') '*** WARNING *** : ',NLINDEP,
+     &    ' functions deleted due to numerical linear dependence.'
+      ENDIF
 
       CALL QEXIT('LOWDI1')
       RETURN
@@ -1919,14 +1939,11 @@ C
 C
 C     Memory allocation
 C
-      CALL MEMGET('REAL',KFTRI ,NZ*NNBBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KONEIN,   NNBBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KFIRST,NZ        ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FTRI',KFTRI ,NZ*NNBBASX,WORK,KFREE,LFREE)
 C
 C     ****** Construct Fock matrix ******
 C
-      CALL FREEM1(FOCK,WORK(KFTRI),WORK(KONEIN),WORK(KFIRST),
-     &              WORK(KFREE),LFREE,IPRINT)
+      CALL FREEM1(FOCK,WORK(KFTRI),WORK(KFREE),LFREE,IPRINT)
 
 C     Memory deallocation
       CALL MEMREL('FREEMT.FREEM1',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -1937,7 +1954,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck freem1 */
-      SUBROUTINE FREEM1(FOCK,FTRI,OP1INT,FIRST,WORK,LWORK,IPRINT)
+      SUBROUTINE FREEM1(FOCK,FTRI,WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
 C     Driver for the construction of the one-electron free particle matrix
@@ -1986,31 +2003,31 @@ C
 #include "dcbham.h"
 #include "dcbgen.h"
 C
-      LOGICAL FIRST(NZ)
-      DIMENSION FOCK(N2BBASX,NZ),FTRI(NNBBASX,NZ),OP1INT(NNBBASX),
+      LOGICAL FIRST(4)
+      DIMENSION FOCK(N2BBASX,NZ),FTRI(NNBBASX,NZ),
      &          WORK(LWORK)
       CALL QENTER('FREEM1')
 
 C
 C     Initialize
 C
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
+      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
-      CALL LSET(NZ,.TRUE.,FIRST)
+      FIRST(1:4) = .TRUE.
 C
-C     Beta matrix
+C     Beta matrix (FOCK is used as scratch space)
 C     ===========
 C
       IOP = IPBETAMT
       CALL PRPMAO(LU1INT,IOP,.TRUE.,NNBBASX,FTRI,
-     &            OP1INT,FIRST,IPRHAM)
+     &            FOCK,FIRST,IPRHAM)
 C
-C     Kinetic energy
+C     Kinetic energy (FOCK is used as scratch space)
 C     ==============
 C
       IOP = IPKINERG
       CALL PRPMAO(LU1INT,IOP,.TRUE.,NNBBASX,FTRI,
-     &            OP1INT,FIRST,IPRHAM)
+     &            FOCK,FIRST,IPRHAM)
 C
       CLOSE(LU1INT,STATUS = 'KEEP')
 C
@@ -2159,7 +2176,7 @@ C   PAMIOU: LUTMAT
       logical              :: TOBE, FNDLAB, FNDLAB12, gmotra_case3
       logical              :: is_2c_rel_run
       integer              :: is_defining_h1mat
-      integer              :: ndim_lowmat
+      integer              :: ndim_lowmat,idum
       integer              :: lulmat = 99
       character(len=12)    :: flabel
       real(8), allocatable :: tmat_mmf(:)
@@ -2173,6 +2190,7 @@ C   PAMIOU: LUTMAT
       logical              :: no1esystem_aoosoc, aoc_save
       logical              :: x2c_save
 #endif
+      real(8)              :: timstr(2), timend(2), dum
 
       CALL QENTER('GMOTRA')
 
@@ -2214,7 +2232,7 @@ C
      &    CALL MK1CEX (WORK,KFREE,LFREE,IPRGEN)
 
 !     we use N2BBASXQ instead of N2BBASX for BSS...to be checked
-      CALL MEMGET('REAL',KVMAT,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','VMAT',KVMAT,N2BBASXQ,WORK,KFREE,LFREE)
 C
 C     Get Lowdin canonical orthonormalization matrix
 C     ==============================================
@@ -2236,9 +2254,9 @@ C     ==============================================
         call readi(lulmat,1,ndim_lowmat)
         call readt(lulmat,ndim_lowmat,work(kvmat))
       else
-        CALL TIMER('START ',TIMSTR,TIMEND)
+        CALL TIMER2('START ',TIMSTR,TIMEND)
         CALL LOWDIN(WORK(KVMAT),WORK(KFREE),LFREE,IPRHAM)
-        CALL TIMER('Lwdn_a',TIMSTR,TIMEND)
+        CALL TIMER2('Lwdn_a',TIMSTR,TIMEND)
 
 !       save LOWDIN matrix on file
         ndim_lowmat = 0
@@ -2305,7 +2323,7 @@ C
 !       --------------------------------------------
       ELSE IF(is_2c_rel_run)THEN
 !
-        CALL TIMER('START ',TIMSTR,TIMEND)
+        CALL TIMER2('START ',TIMSTR,TIMEND)
 
         TOBE=.FALSE.
         IF(GOFAST) THEN
@@ -2473,7 +2491,7 @@ C.........reset NEWPRP to re-initialize AOPROPER
 
         ENDIF ! restart X2C or re-do X2C switch
 
-        CALL TIMER('mk_h2c',TIMSTR,TIMEND)
+        CALL TIMER2('mk_h2c',TIMSTR,TIMEND)
 
 !
 !       case 2 - step b: generate Lowdin canonical orthonormalization matrix in 2c-mode
@@ -2481,7 +2499,7 @@ C.........reset NEWPRP to re-initialize AOPROPER
         if(.not.(twocompbss.or.x2c).or.x2cmod_mmf)then
 
           if(x2cmod_mmf)then
-            CALL MEMGET('REAL',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','TMAT',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
             call dzero(work(KTMAT),N2BBASXQ)
             open(lux2c,file='X2CMAT',status='old',form='unformatted',
      &           access='sequential',action='readwrite',
@@ -2524,11 +2542,11 @@ C.........reset NEWPRP to re-initialize AOPROPER
           CALL LSET(NPRPCLS,.TRUE.,CLSCAL)
           CALL ONEGEN(WORK,LWORK)
 
-          CALL MEMGET('REAL',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
+          CALL MEMGET2('REAL','TMAT',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
 C.........do canonical orthonormalization
-          CALL TIMER('START ',TIMSTR,TIMEND)
+          CALL TIMER2('START ',TIMSTR,TIMEND)
           CALL LOWDIN(WORK(KTMAT),WORK(KFREE),LFREE,IPRHAM)
-          CALL TIMER('Lwdn_b',TIMSTR,TIMEND)
+          CALL TIMER2('Lwdn_b',TIMSTR,TIMEND)
 
 !         save new 2c-LOWDIN matrix on file
           call opnfil(lulmat,'LOWDMAT','UNKNOWN','gmotra')
@@ -2565,9 +2583,9 @@ C.........do canonical orthonormalization
 !     Case 3: Transformation matrix with modified Dirac equation embedded
 !     -------------------------------------------------------------------
       ELSE
-        CALL MEMGET('REAL',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','TMAT',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','EIG' ,KEIG ,NTBAS(0),WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','TBUF',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
 
 !       defining h1 matrix control variable (in the X2C module) -
 !       set here for consistency to the maximum value
@@ -2597,7 +2615,7 @@ C
 C     ** End of branching **
 C=======================================================================
 C     
-      CALL MEMGET('REAL',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','TBUF',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
 
       N2TMT   = 0
       N2TMOTQ = 0
@@ -2626,8 +2644,8 @@ C.......SUB_BL will be set true if linear symmetry works
         CALL DCOPY(N2TMT,WORK(KTMAT),1,WORK(KTBUF),1)
 !       in:  KTMAT + KTBUF
 !       out: KTMAT
-        CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KTBUF2,N2BBASXQ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','EIG'  ,KEIG  ,NTBAS(0),WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','TBUF2',KTBUF2,N2BBASXQ,WORK,KFREE,LFREE)
 
 !        in: AO2MO                         --> KTBUF
 
@@ -2676,22 +2694,15 @@ C     respect to a set of fragment orbitals
 C
       IF(PROJEC) THEN
         CALL PSIPRJ(WORK(KTMAT),WORK(KTBUF),IPRONE,WORK,KFREE,LFREE)
-        N2TMOTQ = 0
-        DO IFRP = 1,NFSYM
-          I2TMOT(IFRP) = N2TMOTQ
-          N2TMO(IFRP) = NTMO(IFRP)*NTMO(IFRP)
-          N2TMOTQ = N2TMOTQ + N2TMO(IFRP)*NZ
-          NORB(IFRP) = NTMO(IFRP) + NFRO(IFRP)
-        ENDDO
         CALL SETDC2(0)
       ENDIF
 C
 C     Write transformation matrices
 C
       CALL OPNFIL(LUTMAT,'AOMOMAT','UNKNOWN','GMOTRA')
-!     AO2MO transformation matrix (linear symmetry adapted if linsym == .true.) --> S(-1/2)
+!     AO2MO transformation matrix (linear symmetry adapted if linsym == .true.)
       CALL WRITT(LUTMAT,N2TMT,WORK(KTMAT))
-!     right index transformed overlap matrix Saomo --> S(+1/2)
+!     right index transformed overlap matrix Saomo 
       CALL WRITT(LUTMAT,N2TMT,WORK(KTBUF))
 !     orbital dimensions, etc --> "runtime" data
       CALL ORBDAT
@@ -2727,7 +2738,7 @@ C
 
 !           !> read MO coefficients
             call opnfil(lucoef,'DFCOEF','OLD','aoosoc')
-            call reacmo_no_work(lucoef,'DFCOEF',cmo_aoosoc,xx,ii,jj,2)
+            call reacmo(lucoef,'DFCOEF',cmo_aoosoc,dum,idum,dum,2)
             close(lucoef,status='keep')
 
 !           !> generate density matrix
@@ -2806,7 +2817,7 @@ C
           CALL OPNFIL(LUTMAT,'AOMOMAT','UNKNOWN','GMOTRA')
           CALL READT(LUTMAT,N2TMT,tmat_mmf)
           CLOSE(LUTMAT,STATUS='KEEP')
- 
+
           call x2c_molecular_mean_field_mos(tmat_mmf,tbuf_mmf,cmo_mmf,
      &                                      scratch_mmf,
      &                                      i2tmt,i2tmot,icmoq,ntmo,
@@ -2901,7 +2912,7 @@ C
           tbuf_mmf    = 0
           !> read 2c-mos
           call opnfil(lucoef,'DFCOEF','OLD','mmfmos')
-          call reacmo_no_work(lucoef,'DFCOEF',cmo_mmf,xx,ii,jj,2)
+          call reacmo(lucoef,'DFCOEF',cmo_mmf,dum,idum,dum,2)
           close(lucoef,status='keep')
 
           !> calculate density matrix/ces
@@ -2938,7 +2949,7 @@ C
      &           form='unformatted',position='rewind')
             call write_fock_matrices_saao_basis_x2c(
      &                                              tbuf_mmf,
-     &                                              len_fmat, 1,
+     &                                              len_fmat, 1,'Fock',
      &                                              lux2c, 0)
             close(lux2c, status='keep')
 
@@ -2949,7 +2960,7 @@ C
      &           form='unformatted',position='rewind')
             call write_fock_matrices_saao_basis_x2c(
      &                                              tmat_mmf,
-     &                                              len_fmat, 1,
+     &                                              len_fmat, 1,'F[2]',
      &                                              lux2c, 0)
             close(lux2c, status='keep')
 
@@ -2989,7 +3000,7 @@ C
      &                                             tmat_mmf,
      &                                             len_fmat, 1,
      &                                             lux2c, 0,
-     &                                             .false.,scratch_mmf)
+     &                                             scratch_mmf)
             close(lux2c, status='keep')
 
             !> read {U+ G_A[4c] U}^{++}
@@ -3105,7 +3116,8 @@ C            possibly with sperical and RKB transformations embedded.
 C            (is destroyed!)
 C
 C     SLGROUP - if .true. (=Trond's 2comp.approach-one step BSS transformation)
-C                resort columns of the transformation matrix into "S-L" order)
+C                resort columns of the transformation matrix into "S-L" order);
+C               routine SLSORT does nothing if conditions for transformations are not met
 C
 C     LSYMAD  - if .true., apply the LINSYM procedure for adaptation
 C               of the transformation matrix for the linear symmetry - needed in connection
@@ -3122,8 +3134,8 @@ C
 C  VMAT - if SLGROUP=.true., then it contains the standard (ALWAYS non-linear symmetry) transformation
 C         matrix with SL-resorted columns
 C
-C  TBUF - if linear symmetry (LSYMAD) is on, it contains the transformation matrix from non-linear MO
-C         to the linear MO
+C  TBUF - if linear symmetry (LSYMAD) is on, it contains the transformation matrix from non-linear symmetry MOs
+C         to the MOs of linear symmetry
 C
 C   Written by T.Saue, October 1995
 C   Modified by L. Visscher, Jan 20, 1998 to include Levy-Leblond
@@ -3266,8 +3278,9 @@ C
  80     CONTINUE
       ENDIF
 
-CMI ...  For the BSS.RKB (ie 1step approach) do resort columns of transformation matrix so that
-CMI     they are in the order S1 S2 ... S(nbsym) L1 L2 ... L(nbsym) instead of former S1 L1 S2 L2 ...
+CMI ...  For the the BSS.RKB (ie 1step approach,X2c) resort columns of transformation matrix so that
+CMI     they are in the order "S1 S2 ... S(nbsym) L1 L2 ... L(nbsym)" instead of default "S1 L1 S2 L2 ..."
+!Miro:  Resorting is also applied for 4c DC_RKB Hamiltonians
       IF(SLGROUP)THEN
         ISIZE = NFBAS(1,0)*NORB(1)*NZ
         IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ
@@ -3281,14 +3294,13 @@ CMI     they are in the order S1 S2 ... S(nbsym) L1 L2 ... L(nbsym) instead of f
         if(is_defining_h1mat.gt.3.or.
      &    (is_defining_h1mat.eq.2.and.LSYMAD))then
 !       if(is_defining_h1mat.gt.3)then
-          CALL MEMGET('REAL',KBUF,ISIZE,WORK,KFREE,LFREE)
+          CALL MEMGET2('REAL','BUF',KBUF,ISIZE,WORK,KFREE,LFREE)
 !         in:  AO2MO transformation matrix             --> TMAT
 !         out: AO2MO transformation matrix             --> TMAT
 !              AO2MO transformation matrix SL resorted --> WORK(KBUF)
           CALL SLSORT(TMAT,WORK(KBUF),IPRHAM,WORK(KFREE),LFREE)
           call writt(99,ISIZE, WORK(KBUF))
 !CTROND
-!        print *,'SLSORT branch 1...'
         else
           call dzero(VMAT,n2bbasxq)
 !         in:  AO2MO transformation matrix             --> TMAT
@@ -3297,7 +3309,6 @@ CMI     they are in the order S1 S2 ... S(nbsym) L1 L2 ... L(nbsym) instead of f
           CALL SLSORT(TMAT,VMAT,IPRHAM,WORK(KFREE),LFREE)
           call writt(99,ISIZE, vmat)
 !CTROND
-!        print *,'SLSORT branch 2...'
         end if
         close(99,status='keep')
       ENDIF
@@ -3317,7 +3328,7 @@ CMI     they are in the order S1 S2 ... S(nbsym) L1 L2 ... L(nbsym) instead of f
       END IF
 
       IF(LSYMAD)THEN
-        CALL MEMGET('REAL',KBUF1,ISIZE,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','BUF1',KBUF1,ISIZE,WORK,KFREE,LFREE)
         CALL DCOPY(ISIZE,TMAT,1,VMAT,1)
         CALL DCOPY(ISIZE,TMAT,1,WORK(KBUF1),1)
         IF(IPRHAM.GE.5) THEN
@@ -3518,7 +3529,7 @@ CMI       ... control print out ...
       ENDIF
       RETURN
       END
-
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GTOVLX(SMAT,SSMETR)
 C*****************************************************************************
 C
@@ -3761,7 +3772,7 @@ C  /* Deck reno */
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck sphlow */
-      SUBROUTINE SPHLOW(IREP,IC,SMAT,VMAT,LDM,NEFF,STOL,
+      SUBROUTINE SPHLOW(IREP,IC,SMAT,VMAT,LDM,NEFF,NLDP,STOL,
      &                  EIG,WORK,LWORK,IPRINT)
 C***********************************************************************
 C
@@ -3782,8 +3793,8 @@ C
 #include "memint.h"
       NCAR = NBBAS(IREP,IC)
       NMAT = NCAR*NCAR
-      CALL MEMGET('REAL',KTMAT,NMAT,WORK,KFREE,LFREE)
-      CALL SPHLO1(IREP,IC,NCAR,SMAT,VMAT,LDM,NEFF,STOL,EIG,
+      CALL MEMGET2('REAL','TMAT',KTMAT,NMAT,WORK,KFREE,LFREE)
+      CALL SPHLO1(IREP,IC,NCAR,SMAT,VMAT,LDM,NEFF,NLDP,STOL,EIG,
      &            WORK(KTMAT),WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('SPHLOW',WORK,KWORK,KWORK,KFREE,LFREE)
 C
@@ -3792,7 +3803,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck sphlo1 */
-      SUBROUTINE SPHLO1(IREP,IC,NCAR,SMAT,VMAT,LDM,NEFF,STOL,EIG,
+      SUBROUTINE SPHLO1(IREP,IC,NCAR,SMAT,VMAT,LDM,NEFF,NLDP,STOL,EIG,
      &                  TMAT,WORK,LWORK,IPRINT)
 C***********************************************************************
 C
@@ -3843,18 +3854,18 @@ C
      &            EIG,WORK,LWORK)
       CALL DGEMM('N','N',NCAR,NEFF,NSPH,D1,TMAT,NCAR,
      &           SMAT,LDM,D0,VMAT,LDM)
-      NA = NCAR - NSPH
-      NB = NSPH - NEFF
-      ND = NA + NB
+      NA   = NCAR - NSPH
+      NLDP = NSPH - NEFF
+      ND   = NA + NLDP
       WRITE(LUPRI,'(3X,A1,3X,A3,3X,3(A,I10),A,E8.2)')
      &           COMP(IC),REP(IREP),'* Deleted: ',ND,
-     &           '(Proj: ',NA,', Lindep: ',NB,') Smin: ',
+     &           '(Proj: ',NA,', Lindep: ',NLDP,') Smin: ',
      &           EIG(NSPH)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck rkblow */
-      SUBROUTINE RKBLOW(IREP,IC,SMAT,VMAT,LDM,NEFF,STOL,
+      SUBROUTINE RKBLOW(IREP,IC,SMAT,VMAT,LDM,NEFF,NLDP,STOL,
      &                  EIG,IRKB,WORK,LWORK,IPRINT)
 C***********************************************************************
 C
@@ -3874,8 +3885,8 @@ C
 #include "memint.h"
       NCAR = NBBAS(IREP,IC)
       NMAT = NCAR*NCAR
-      CALL MEMGET('REAL',KTMAT,NMAT,WORK,KFREE,LFREE)
-      CALL RKBLO1(IREP,IC,NCAR,SMAT,VMAT,LDM,NEFF,STOL,EIG,
+      CALL MEMGET2('REAL','TMAT',KTMAT,NMAT,WORK,KFREE,LFREE)
+      CALL RKBLO1(IREP,IC,NCAR,SMAT,VMAT,LDM,NEFF,NLDP,STOL,EIG,
      &            WORK(KTMAT),IRKB,WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('RKBLOW',WORK,KWORK,KWORK,KFREE,LFREE)
 C
@@ -3884,7 +3895,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck rkblo1 */
-      SUBROUTINE RKBLO1(IREP,IC,NCAR,SMAT,VMAT,LDM,NEFF,STOL,EIG,
+      SUBROUTINE RKBLO1(IREP,IC,NCAR,SMAT,VMAT,LDM,NEFF,NLDP,STOL,EIG,
      &                  TMAT,IRKB,WORK,LWORK,IPRINT)
 C***********************************************************************
 C
@@ -3953,12 +3964,12 @@ C
      &     EIG,WORK,LWORK)
       CALL DGEMM('N','N',NCAR,NEFF,NSPH,D1,TMAT,NCAR,
      &     SMAT,LDM,D0,VMAT,LDM)
-      NA = NCAR - NSPH
-      NB = NSPH - NEFF
-      ND = NA + NB
+      NA   = NCAR - NSPH
+      NLDP = NSPH - NEFF
+      ND   = NA + NLDP
       WRITE(LUPRI,'(3X,A1,3X,A3,3X,3(A,I10),A,E8.2)')
      &     COMP(IC),REP(IREP),'* Deleted: ',ND,
-     &     '(Proj: ',NA,', Lindep: ',NB,') Smin: ',
+     &     '(Proj: ',NA,', Lindep: ',NLDP,') Smin: ',
      &     EIG(NSPH)
 C
       RETURN
@@ -4027,8 +4038,8 @@ c    It would be better to rewrite the code below instead..
       ELSE
 CMI   ... (quaternion) Jacobi diagonalization routine
         NSS=NS*NS
-        CALL MEMGET('REAL',KSMAT,NSS,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KVMAT,NSS,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','SMAT',KSMAT,NSS,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','VMAT',KVMAT,NSS,WORK,KFREE,LFREE)
         IPOS=0
         DO II=1,NS
         DO JJ=1,NS
@@ -4231,8 +4242,8 @@ C
       CALL QENTER('TSCORR')
 #include "memint.h"
 C     Memory allocation
-      CALL MEMGET('REAL',KONEMT,N2BBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KONEIN,NNBBASX,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','ONEMT',KONEMT,N2BBASX,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','ONEIN',KONEIN,NNBBASX,WORK,KFREE,LFREE)
 C
 C     Buffer info
 C
@@ -4324,8 +4335,8 @@ C
       LOGICAL DOINT(2,2), FINISH, ISONBSSMAT, WEHAVE
       CHARACTER*4 OMITVNUC
       CHARACTER*8 BNCRLAB
-      DIMENSION WORK(LWORK),FMAT(*)
-      logical fndlab12
+      REAL*8    WORK(LWORK),FMAT(*)
+      logical   fndlab12
       character*12 flabel
 #include "dcbgen.h"
 #include "dgroup.h"
@@ -4336,12 +4347,14 @@ C
 #include "cbiher.h"
 #include "cbihr1.h"
 #include "cbisol.h"
+
+      real(8)  :: TIMSTR(2), TIMEND(2)
 C
       CALL QENTER('BNCORR')
 c
 c     Start timer
 c
-      TIMSTR = SECOND()
+      CALL TIMER2('START',TIMSTR,TIMEND)
 c
 #include "memint.h"
 
@@ -4390,19 +4403,19 @@ CMI   ... read 2c screened bare nucleus from the BSSMAT file in 4c or 2c metric
 
 CMI   ... continue the standard way
 C     Memory allocation
-      CALL MEMGET('REAL',KONEMT, N2BBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KONEIN, NNBBASX,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','ONEMT',KONEMT, N2BBASX,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','ONEIN',KONEIN, NNBBASX,WORK,KFREE,LFREE)
       LFCBA = NUCDEP**3
-      CALL MEMGET('REAL',KFCBA ,  LFCBA ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCOORC,3*NUCDEP,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSIGNC,3*NUCDEP,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KNCENT,  NUCDEP,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KJSYMC,  NUCDEP,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KJCENT,  NUCDEP,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGEXP ,  NUCDEP,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KXGEXP,  NUCIND,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCHRG ,  NUCIND,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KESHEL,7*NUCIND,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FCBA' ,KFCBA ,  LFCBA ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','COORC',KCOORC,3*NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','SIGNC',KSIGNC,3*NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','NCENT',KNCENT,  NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','JSYMC',KJSYMC,  NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','JCENT',KJCENT,  NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','GEXP' ,KGEXP ,  NUCDEP,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','XGEXP',KXGEXP,  NUCIND,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CHRG' ,KCHRG ,  NUCIND,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','ESHEL',KESHEL,7*NUCIND,WORK,KFREE,LFREE)
 !     allocate(eshell_vec(7*NUCIND))
       LEN_WRK   = LWORK - KFREE + 1
       CALL DZERO(WORK(KCHRG),NUCIND)
@@ -4429,6 +4442,8 @@ c
          IF (.not.NOORBT(I)) Z = MAX(Z,CHARGE(I)) ! skip point charges
       ENDDO
 
+C    ... find maximum number of shells we need to run over
+C        and return number in NSHELL
       CALL BNCOR1(GNU,ZEFF,0,Z,NSHELL,0,DUMMY,NUCIND,.TRUE.)
 
 c   ... loop over shells
@@ -4438,9 +4453,9 @@ c       in the zeroth run (N=0) by using a diffuse Gaussian (see BNCOR1)
 c
       IF (IPRINT .GE. 1) THEN
          WRITE(LUPRI,'(/4X,A/4X,A//14X,A/14X,A)')
-     &' *** BNCORR for < X_A | (-Zeff*G(a,r_C))/r_C | X_B > ***',
+     &' *** BNCORR for < X_A | (Qeff*G(a,r_C))/r_C | X_B > ***',
      &'     X=L,S ; G(a,r_C)=exp(-a*r_C^2)',
-     &      ' Nucleus    Charge=(-Zeff)   Exponent(a)',
+     &      ' Nucleus   shell charge=Qeff  Exponent(a)',
      &      '-----------------------------------------'
       ENDIF
       DO N = 0,NSHELL
@@ -4515,6 +4530,7 @@ c  ... end loop within shells
          ENDDO ! DO L = 1,NSLOOP
 c  ... end loop over shells
       ENDDO ! DO N = 0,NSHELL
+
       IF (IPRINT .GE. 1) WRITE(LUPRI,'(14X,A/)')
      &      '-----------------------------------------'
 C
@@ -4548,10 +4564,8 @@ C     Memory deallocation
 C
 c     Stop timer
 c
- 999  TIMEND = SECOND()
-      TIME   = TIMEND - TIMSTR
-      IF (IPRINT.GE.2)
-     &  CALL TIMTXT('>>> Time used in BNCORR is',TIME,LUPRI)
+ 999  IF (IPRINT.GE.2)
+     &  CALL TIMER2('>>> Time used in BNCORR is',TIMSTR,TIMEND)
       CALL QEXIT('BNCORR')
       RETURN
       END
@@ -4863,6 +4877,9 @@ C***********************************************************************
 C
 C     Eliminate a set of fragment orbitals from the variational space;
 C     this is done by projecting them out of the MO transformation matrix
+C     On input:
+C       TMAT contains the MO transformation matrix T (canonical orthogonalization)
+C       TINV contains the inverse of T^{dagger}, that is, TINV = ST
 C     Written by T.Saue March 26 1999
 C
 C***********************************************************************
@@ -4893,7 +4910,8 @@ C
       NORBT = 0
       NCMOT  = 0
       DO IFRP = 1,NFSYM
-        NORBT       = NORBT  + NORB(IFRP)
+         IORB(IFRP)  = NORBT
+         NORBT       = NORBT  + NORB(IFRP)
         ICMO(IFRP)  = NCMOT
         ICMOQ(IFRP) = NCMOT*NZ
         NCMO(IFRP)  = NFBAS(IFRP,0)*NORB(IFRP)
@@ -4943,20 +4961,20 @@ C
         NCDIM = NCDIM + NFBAS(IFRP,0)*NVECS(IFRP)*NZ
         NEDIM = NEDIM + NVECS(IFRP)
       ENDDO
-      CALL MEMGET('REAL',KQ,NCDIM,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KE,NEDIM,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KI,NEDIM,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','Q',KQ,NCDIM,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','E',KE,NEDIM,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','I',KI,NEDIM,WORK,KFREE,LFREE)
       CALL IZERO(WORK(KI),NEDIM)
 C
 C     Allocate buffer space for coefficients, eigenvalues
 C     and boson irrep information
 C     ===================================================
 C
-      CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG,NORBT   ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CMO',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EIG',KEIG,NORBT   ,WORK,KFREE,LFREE)
       IF(SUB_BL) THEN
         IOPT = 15
-        CALL MEMGET('REAL',KIBE,NORBT,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','IBEIG',KIBE,NORBT,WORK,KFREE,LFREE)
       ELSE
         IOPT = 7
         KIBE = KFREE
@@ -4971,7 +4989,13 @@ C
       CALL SELFRAG(WORK(KQ),NVECS,WORK(KE),WORK(KI),
      &             NFRAG,NSTR,PRJFIL,PROOWN,NPRJNUC,IOPT,KVEC,
      &             WORK(KCMO),WORK(KEIG),WORK(KIBE),IOFF,
-     &             WORK,KFREE,LFREE)
+     &             KDUM,WORK,KFREE,LFREE)
+C
+C     Collect fragment info
+C      
+      CALL MEMGET2('INTE','SEL',KSEL,2*NVECT,WORK,KFREE,LFREE)
+      CALL FRAGINFO(WORK(KSEL),NVECT,KVEC,NFRAG,NSTR,
+     &              WORK,KFREE,LFREE)
 C
 C     Throw away the full set of coefficients and eigenvalues
 C     =======================================================
@@ -4980,276 +5004,15 @@ C
 C
 C     Reduce variational space by projection using the fragment orbitals
 C     ===================================================================
-C     If more than one set of fragment orbitals, they must be orthogonalized !
-C
-C     Do projection
 C
       CALL PSIPR1(NVECS,WORK(KQ),WORK(KE),WORK(KI),TMAT,TINV,
-     &            NSTR,IPRINT,WORK,KFREE,LFREE)
+     &            NSTR,WORK(KSEL),IPRINT,WORK,KFREE,LFREE)
  30   CONTINUE
       CALL MEMREL('PSIPRJ.final',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck PRJORT */
-      SUBROUTINE PRJORT(VECS,IBVEC,VREF,IBREF,IREF,NREF,
-     &                  THRLDP,THRMAX,NVDIM,NVECS,NVREF,NDEL,IP,IPRINT)
-C*****************************************************************************
-C
-C     On input:
-C        VECS  - unit matrix (transformation matrix in MO-basis)
-C        IBVEC - integer array with boson irrep info for transformation matrix
-C        VREF  - fragment vectors in MO-basis
-C        IBREF - integer array with boson irrep info for fragment vectors
-C        NREF  - number of fragment vectors to project out
-C        IREF  - starting adress of fragment vectors to project out
-C
-C     Written by T. Saue
-C
-C*****************************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0 = 0.0D0,D1 = 1.0D0,DM1=-1.0D0)
-      PARAMETER (T1MIN = 1.0D-8, THRRND = 1.0D-4)
-C
-#include "dgroup.h"
-      DIMENSION VECS(NVDIM,NVECS,NZ),VREF(NVDIM,NVREF,NZ),
-     &          IBVEC(NVECS),IBREF(NVREF)
-      DIMENSION P(4)
-C
-CTROND
-      IF(IPRINT.GE.7) THEN
-         CALL HEADER('PRJORT: MO transformation matrix on input',-1)
-         CALL PRQMAT(VECS,NVDIM,NVECS,NVDIM,NVECS,1,IPQTOQ(1,0),LUPRI)
-      ENDIF
-      THRMAX = D0
-      NDEL   = 0
-      N2VECS = NVDIM*NVECS
-      N2VREF = NVDIM*NVREF
-      IROUND = 0
-      ITURN  = 0
- 10   CONTINUE
-      ITURN  = ITURN + 1
-      IF(IPRINT.GE.2) WRITE(6,'(A,I5)') '* Projection turn :',ITURN
-C
-C     First project out fragment vectors
-C     ===================================
-C
-      JTOP = IREF+NREF-1
-      DO JREF = IREF,JTOP
-        IF(IPRINT.GE.3) THEN
-          CALL QDOT(VNRM,IPQTOQ(1,0),1,NVDIM,
-     &           'H',IPQTOQ(1,0),VREF(1,JREF,1),N2VREF,NZ,1,
-     &           'N',IPQTOQ(1,0),VREF(1,JREF,1),N2VREF,NZ,1)
-          VNRM=SQRT(VNRM)
-          WRITE(LUPRI,'(A,I3,A,1P,D12.5,4X,A,I5)')
-     &      'Fragment vector no.',JREF,' Norm: ',VNRM,
-     &      'Bsym: ',IBREF(JREF)
-        ENDIF
-        DO 100 IVEC = 1,NVECS
-          IF(IBVEC(IVEC).NE.IBREF(JREF)) GOTO 100
-C
-C         Form -<VREF|IVEC>
-C
-          CALL QDOT(P,IPQTOQ(1,0),NZ,NVDIM,
-     &         'H',IPQTOQ(1,0),VREF(1,JREF,1),N2VREF,NZ,1,
-     &         'N',IPQTOQ(1,0),VECS(1,IVEC,1),N2VECS,NZ,1)
-          DO IZ = 1,NZ
-            P(IZ) = -P(IZ)
-          ENDDO
-C
-C         Form VECS = VECS -VREF<VREF|VECS>
-C
-          CALL  QXAPY(NVDIM,'N','N',P,IPQTOQ(1,0),NZ,
-     &                VREF(1,JREF,1),N2VREF,1,IPQTOQ(1,0),NZ,
-     &                VECS(1,IVEC,1),N2VECS,1,IPQTOQ(1,0),NZ)
- 100    CONTINUE
-      ENDDO
-C
-C     Next commence internal orthogonalization
-C     =========================================
-C
-      IF(IPRINT.GE.2) THEN
-        WRITE(LUPRI,'(A)')
-     &      '* MO-vectors after projecting out reference vectors:'
-      ENDIF
-      DO 200 IVEC = 1,NVECS
-CTROND: This is a bit dangerous; should be fixed !
-        IF(IBVEC(IVEC).LT.-100) GOTO 200
-C
-C       Check size of norm
-C       ==================
-C
-        CALL QDOT(VNRM,IPQTOQ(1,0),1,NVDIM,
-     &           'H',IPQTOQ(1,0),VECS(1,IVEC,1),N2VECS,NZ,1,
-     &           'N',IPQTOQ(1,0),VECS(1,IVEC,1),N2VECS,NZ,1)
-        VNRM=SQRT(VNRM)
-
-        THRMAX=MAX(THRMAX,VNRM)
-        IF(VNRM.LT.THRLDP) THEN
-          IF(IPRINT.GE.1) THEN
-            WRITE(LUPRI,'(3X,A,I3,A,1P,D12.5,3X,A,I5)')
-     &        'Vector no.',IVEC,' removed. Linear dependence: ',VNRM,
-     &        ' Bsym: ',IBVEC(IVEC)
-          ENDIF
-C         Store information about irrep and neg/pos solution
-C         of deleted vector
-          IBVEC(IVEC) = -(IP*1000+IBVEC(IVEC))
-          NDEL = NDEL + 1
-          GOTO 200
-        ELSE
-          IF(IPRINT.GE.2) WRITE(LUPRI,'(3X,A,I3,A,1P,D12.5,3X,A,I5)')
-     &      'Vector no.',IVEC,' Norm: ',VNRM,
-     &      'Bsym:',IBVEC(IVEC)
-          IF(VNRM.LT.THRRND.AND.ITURN.EQ.1) IROUND=IROUND+1
-          IF(VNRM.LT.T1MIN) THEN
-            VNRM = D1/VNRM
-            DO IZ = 1,NZ
-              CALL DSCAL(NVDIM,VNRM,VECS(1,IVEC,IZ),1)
-            ENDDO
-            CALL QDOT(VNRM,IPQTOQ(1,0),1,NVDIM,
-     &           'H',IPQTOQ(1,0),VECS(1,IVEC,1),N2VECS,NZ,1,
-     &           'N',IPQTOQ(1,0),VECS(1,IVEC,1),N2VECS,NZ,1)
-          END IF
-          VNRM = D1 / VNRM
-          DO IZ = 1,NZ
-            CALL DSCAL(NVDIM,VNRM,VECS(1,IVEC,IZ),1)
-          ENDDO
-        ENDIF
-        DO 300 JVEC = (IVEC+1),NVECS
-          IF(IBVEC(JVEC).NE.IBVEC(IVEC)) GOTO 300
-C
-C         Form -<IVEC|JVEC>
-C
-          CALL QDOT(P,IPQTOQ(1,0),NZ,NVDIM,
-     &         'H',IPQTOQ(1,0),VECS(1,IVEC,1),N2VECS,NZ,1,
-     &         'N',IPQTOQ(1,0),VECS(1,JVEC,1),N2VECS,NZ,1)
-          DO IZ = 1,NZ
-            P(IZ) = -P(IZ)
-          ENDDO
-C
-C         Form JVEC = JVEC -IVEC<IVEC|JVEC>
-C
-          CALL  QXAPY(NVDIM,'N','N',P,IPQTOQ(1,0),NZ,
-     &                VECS(1,IVEC,1),N2VECS,1,IPQTOQ(1,0),NZ,
-     &                VECS(1,JVEC,1),N2VECS,1,IPQTOQ(1,0),NZ)
- 300    CONTINUE
- 200  CONTINUE
-      IF (ITURN.LT.4) THEN
-        GO TO 10
-      ENDIF
-      IF(IPRINT.GE.7) THEN
-         CALL HEADER('PRJORT: MO transformation matrix on output',-1)
-         CALL PRQMAT(VECS,NVDIM,NVECS,NVDIM,NVECS,1,IPQTOQ(1,0),LUPRI)
-      ENDIF
-C
-      RETURN
-C
-      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C /* Deck prjcnt */
-      SUBROUTINE PRJCNT(VMO,VAO,IFRP,NMO,NAO,NEFF,IVEC,TMAT)
-C***********************************************************************
-C
-C     After a projection step, backtransform to SO-basis
-C     VMO is Mo transformation matrix after transformation.
-C     The columns for which IVEC=1 are backtransformed to
-C     VAO, the transformation matrix in AO-basis, using
-C     the transformation matrix TMAT
-C
-C     Written by T.Saue Jan 31 2001
-C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0=0.0D0,D1=1.0D0)
-C
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dgroup.h"
-#include "dcbham.h"
-      DIMENSION VMO(NMO,NMO,NZ),VAO(NAO,NEFF,NZ),IVEC(*),
-     &          TMAT(NAO,NMO,NZT)
-      DIMENSION IBOS(0:7)
-      NBRP = 4/NZ
-      DO ISYM = 1, NBRP
-        IREP = JFSYM(ISYM,IFRP) - 1
-        IBOS(IREP) = ISYM
-      ENDDO
-      II = 0
-      DO I = 1,NMO
-      IF(IVEC(I).GE.-100) THEN
-        II = II + 1
-        CALL QGEMM(NAO,1,NMO,D1,
-     &          'N','N',IPQTOQ(1,0),TMAT,NAO,NMO,NZT,
-     &          'N','N',IPQTOQ(1,0),VMO(1,I,1), NMO,NMO,NZ,
-     &          D0,IPQTOQ(1,0),VAO(1,II,1),NAO,NEFF,NZ)
-      ELSE
-        IF(SUB_BL) THEN
-          ID = -MOD(IVEC(I),1000)
-          IP   = -(IVEC(I)+ID)/1000
-          DO IB = 1, N_SUB_BL(IFRP)
-            IF(ID.eq.ID_SUB_BL(IB,IFRP)) THEN
-              NORB_SUB(IB,IFRP,IP) = NORB_SUB(IB,IFRP,IP) - 1
-              GOTO 10
-            ENDIF
-          ENDDO
- 10       CONTINUE
-        ENDIF
-      ENDIF
-      ENDDO
-      DO IB = 1, N_SUB_BL(IFRP)
-        NORB_SUB(IB,IFRP,0) = NORB_SUB(IB,IFRP,1)+NORB_SUB(IB,IFRP,2)
-      ENDDO
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C /* Deck prjcnt2 */
-      SUBROUTINE PRJCNT2(IVEC,IFRP,NBAS,TMAT,NMAT,TBUF,NBUF)
-C***********************************************************************
-C
-C     After a projection step, update dimension arrays in
-C     COMMON blocks DCBBAS and DCBORB
-C     Written by T.Saue Jan 31 2001
-C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dgroup.h"
-      DIMENSION IVEC(*),TMAT(NBAS,NMAT,NZ),TBUF(NBAS,NBUF,NZ)
-      NSYM = 4/NZ
-      JVEC = 0
-      JBUF = 0
-      DO ISYM = 1,NSYM
-        DO IC = 2,1,-1
-          NVEC = NBORB(ISYM,IFRP,IC)
-          IF(NVEC.GT.0) THEN
-            NBORB(ISYM,IFRP,IC)=ISUM(NVEC,IVEC(JVEC+1),1)
-            DO II = 1,NVEC
-              JVEC = JVEC + 1
-              IF(IVEC(JVEC).EQ.1) THEN
-                JBUF = JBUF + 1
-                DO IZ = 1,NZ
-                  CALL DCOPY(NBAS,TMAT(1,JVEC,IZ),1,TBUF(1,JBUF,IZ),1)
-                ENDDO
-              ENDIF
-            ENDDO
-          ENDIF
-        ENDDO
-        NBORB(ISYM,IFRP,0) = NBORB(ISYM,IFRP,1) + NBORB(ISYM,IFRP,2)
-      ENDDO
-      NESH(IFRP) = ISUM(NSYM,NBORB(1,IFRP,1),1)
-      NPSH(IFRP) = ISUM(NSYM,NBORB(1,IFRP,2),1)
-      NORB(IFRP) = NESH(IFRP) + NPSH(IFRP)
-      RETURN
-      END
-C
-C*****************************************************************************
 C  /* Deck mk1cex */
       SUBROUTINE MK1CEX (WORK,KFREE,LFREE,IPRINT)
 C*****************************************************************************
@@ -5281,10 +5044,10 @@ C
 C
       LDM = NTBAS(0)
       LDM2 = LDM * LDM
-      CALL MEMGET('REAL',KSMAT1,LDM2,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSMAT2,LDM2,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KINDAO,LDM,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KINDAOS,LDM,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','SMAT1' ,KSMAT1 ,LDM2,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','SMAT2' ,KSMAT2 ,LDM2,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','INDAO' ,KINDAO ,LDM ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','INDAOS',KINDAOS,LDM ,WORK,KFREE,LFREE)
       NIND = 2 * NUCDEP + 2
       CALL MEMGET('INTE',KINDNAO,NIND,WORK,KFREE,LFREE)
 C
@@ -5334,7 +5097,7 @@ C
       CALL QEXIT('MK1CEX')
       RETURN
       END
-C*****************************************************************************
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mk1cex2 */
       SUBROUTINE MK1CEX2 (LDM,STOT,PTOT,INDNAO,WORK,KFREE,LFREE,IPRINT)
 C*****************************************************************************
@@ -5383,9 +5146,9 @@ C
            NLOC = NB2-NB1+1
            NV = NLOC*LDM
            NW = NLOC*NLOC
-           CALL MEMGET('REAL',KEIG,NLOC,WORK,KFREE,LFREE)
-           CALL MEMGET('REAL',KV,NV,WORK,KFREE,LFREE)
-           CALL MEMGET('REAL',KW,NW,WORK,KFREE,LFREE)
+           CALL MEMGET2('REAL','EIG',KEIG,NLOC,WORK,KFREE,LFREE)
+           CALL MEMGET2('REAL','V'  ,KV,NV,WORK,KFREE,LFREE)
+           CALL MEMGET2('REAL','W'  ,KW,NW,WORK,KFREE,LFREE)
 C
 C          Make the local projection operator
 C
@@ -5415,7 +5178,7 @@ C
       CALL QEXIT('MK1CEX2')
       RETURN
       END
-C*****************************************************************************
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mk1cex3 */
       SUBROUTINE MK1CEX3 (STOT,SLOC,PTOT,LDM,NTOT,NLOC,V,W,EIG,STOL,
      &                    IPRINT,WORK,KFREE,LFREE)
@@ -5535,8 +5298,8 @@ C
 C     Allocate work space to store the projection operator and
 C     a work array.
 C
-      CALL MEMGET('REAL',KPROJ,N2BBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBUF1,N2BBASX*4,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','PROJ',KPROJ,N2BBASX,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','BUF1',KBUF1,N2BBASX*4,WORK,KFREE,LFREE)
 C
 C     Get the projection operator
 C
@@ -5833,9 +5596,9 @@ C
       CALL LINSYM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
       SUB_BL = .TRUE.
 
-      IF (IPRHAM.GE.2) THEN
-       WRITE(LUPRI,'(/2X,A/)')
-     &'GLINSM: TMAT and Saomo were adapted for the linear symmetry.'
+      IF (IPRHAM.GE.1) THEN
+        WRITE(LUPRI,'(/2X,A/)')
+     &'* TMAT and Saomo were adapted for the linear symmetry in GLINSM.'
       ENDIF
       CALL FLSHFO(LUPRI)
 
@@ -5912,7 +5675,9 @@ C figure this one out (LV).
 C
       IOFT = 1
       IOFV = 1
+      N2TMT   = 0
       DO 10 I = 1,NFSYM
+        N2TMT = N2TMT + NFBAS(I,0)*NORB(I)*NZT
         IF(NORB(I).EQ.0) GOTO 10
         IOFTB = I2BASX(I,I) + 1
         CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
@@ -5991,17 +5756,17 @@ C
 C       Allocate memory for the diagonalization. We want to
 C       have the LL and SS blocks in separate blocks.
 C
-        CALL MEMGET('REAL',KFLL,NLL,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KFSS,NSS,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KVLL,NLL,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KVSS,NSS,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','FLL',KFLL,NLL,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','VLL',KVLL,NLL,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','FSS',KFSS,NSS,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','VSS',KVSS,NSS,WORK,KFREE,LFREE)
 C
 C       Extract LL block of Jz matrix
 C
         CALL EXTRSB (1,I,NBORB,4,NBRP,NBORB,4,NBRP,0,0,1,1,1,NZ,
      &               WORK(KFLL),NL,NL,1,
      &               TMAT(IOFT),NT,NT,NZ)
-C
+C     
 C       Find eigenvalues of Jz
 C
         IF (NL.GT.0) THEN
@@ -6041,15 +5806,13 @@ C
               CALL RSJACO(NL,NL,NL,WORK(KFLL),EIG(IEIGE),1,1,0,
      &                  WORK(KVLL))
             ELSE
-              CALL QDIAG(1,NL,WORK(KFLL),NL,NL,
-     &                EIG(IEIGE),1,
-     &                WORK(KVLL),NL,NL,
-     &                WORK(KFREE),LFREE,IERR)
+               CALL QDIAG(1,NL,WORK(KFLL),NL,NL,EIG(IEIGE),1,
+     &                WORK(KVLL),NL,NL,WORK(KFREE),LFREE,IERR)
               IF (IERR.NE.0) THEN
                 WRITE(LUPRI,'(2X,A)')
-     &         'LINSYM: Errorneous QDIAG diagonalization of Jz_LL!'
+     &         'LINSYM: Erroneous QDIAG diagonalization of Jz_LL!'
                CALL QUIT(
-     &        'LINSYM: Errorneous QDIAG diagonalization of Jz_LL !')
+     &        'LINSYM: Erroneous QDIAG diagonalization of Jz_LL !')
               ENDIF
             ENDIF
 #ifdef MOD_UNRELEASED
@@ -6065,7 +5828,9 @@ C
            CALL HEADER('LINSYM: Jz_LL eigenvalues / eigenvectors',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
      &     '*** Fermion corep ',I,'/',NFSYM
-           write(lupri,*) (EIG(IEIGE+II),II=0,NL-1)
+           DO II = 1,NL
+             WRITE(LUPRI,*) II,EIG(IEIGE+II-1)
+           ENDDO
            CALL PRQMAT(WORK(KVLL),NL,NL,NL,NL,1,
      &          IPQTOQ(1,0),LUPRI)
            CALL FLSHFO(LUPRI)
@@ -6122,9 +5887,9 @@ C
      &                WORK(KFREE),LFREE,IERR)
               IF (IERR.NE.0) THEN
                 WRITE(LUPRI,'(2X,A)')
-     &         'LINSYM: Errorneous QDIAG diagonalization of Jz_SS!'
+     &         'LINSYM: Erroneous QDIAG diagonalization of Jz_SS!'
                CALL QUIT(
-     &        'LINSYM: Errorneous QDIAG diagonalization of Jz_SS !')
+     &        'LINSYM: Erroneous QDIAG diagonalization of Jz_SS !')
               ENDIF
             ENDIF
 #ifdef MOD_UNRELEASED
@@ -6139,8 +5904,10 @@ C
           IF (IPRHAM.GE.5) THEN
            CALL HEADER('LINSYM: Jz_SS eigenvalues/eigenvectors',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
-     &     '*** Fermion corep ',I,'/',NFSYM
-           write(lupri,*) (EIG(IEIGP+II),II=0,NS-1)
+     &          '*** Fermion corep ',I,'/',NFSYM
+           DO II = 1,NS
+             WRITE(LUPRI,*) II,EIG(IEIGP+II-1)
+           ENDDO
            CALL PRQMAT(WORK(KVSS),NS,NS,NS,NS,1,
      &          IPQTOQ(1,0),LUPRI)
            CALL FLSHFO(LUPRI)
@@ -6212,9 +5979,9 @@ C       scratch arrays. The IBEIG part will not be used but we will
 C       initialize it to prevent problems with uninitialized data while
 C       sorting it.
 C
-        CALL MEMGET('INTE',KINDX,NS,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIDUM,NS,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIBEI,NS,WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','INDX' ,KINDX,NS,WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IDUM' ,KIDUM,NS,WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IBEIG',KIBEI,NS,WORK,KFREE,LFREE)
         MJ = 0
         CALL ICOPY (NS,MJ,0,WORK(KIBEI),1)
         CALL SELBOS (I,NS,WORK(KINDX),EIG(IEIGP),
@@ -6227,9 +5994,9 @@ C
         DO IX = IEIGE, IEIGE+NL-1
            EIG(IX) = ABS(EIG(IX))
         ENDDO
-        CALL MEMGET('INTE',KINDX,NL,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIDUM,NL,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIBEI,NL,WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','INDX' ,KINDX,NL,WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IDUM' ,KIDUM,NL,WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IBEIG',KIBEI,NL,WORK,KFREE,LFREE)
         MJ = 0
         CALL ICOPY (NL,MJ,0,WORK(KIBEI),1)
         CALL SELBOS (I,NL,WORK(KINDX),EIG(IEIGE),
@@ -6343,8 +6110,9 @@ C
         IOFT = IOFT + NFBAS(I,0)*NORB(I)
         IOFU = IOFU + NORB(I)*NORB(I)
         IOFV = IOFV + NORB(I)*NFBAS(I,0)
-   30 CONTINUE
-
+ 30   CONTINUE
+C.....Also initialize NTMO_SUB which will be the number of orbitals in each subblock in orthonormal basis
+      CALL ICOPY(MAX_SUB_BL*3*2,NORB_SUB,1,NTMO_SUB,1)
 C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('LINSYM')
@@ -6379,9 +6147,9 @@ C
 C
 C     Memory allocation
 C
-      CALL MEMGET('REAL',KFTRI ,NZ*NNBBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KONEIN,   NNBBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KFIRST,NZ        ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FTRI' ,KFTRI ,NZ*NNBBASX,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','ONEIN',KONEIN,   NNBBASX,WORK,KFREE,LFREE)
+      CALL MEMGET2('LOGI','FIRST',KFIRST,NZ        ,WORK,KFREE,LFREE)
 C
 C     *************************************************
 C     ****** Construct one-electron matrix of Jz ******
@@ -6443,7 +6211,7 @@ C
       IOP =  IPSPNMOM
       CALL PRPMAO(LU1INT,IOP,.TRUE.,NNBBASX,FTRI,
      &        OP1INT,FIRST,IPRHAM)
-      CALL MEMGET('REAL',KBUF,N2BBASX,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','BUF',KBUF,N2BBASX,WORK,KFREE,LFREE)
       CALL DSPTSI(NTBAS(0),FTRI,WORK(KBUF))
 C
 C     Make the Jz operator (in case of spinfree we make Lz)
@@ -6485,7 +6253,8 @@ C  /* Deck Wrifrz */
      &                  NVEC,NDEL)
 C***********************************************************************
 C
-C     Dump frozen orbitals to file
+C     Dump frozen orbitals to file.
+C     Also adjust orbital parameters accordingly      
 C     Written by T. Saue May 2003
 C
 C***********************************************************************
@@ -6496,17 +6265,18 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
+#include "dcbham.h"
       DIMENSION CSEL(*),ESEL(*),ISEL(*),
      &          BUF(*),IVEC(*),IBUF(*),NDEL(2)
 C
 C     Get index array for frozen orbitals;
 C
       NTOT=1
-      NESH(IFRP) = NESH(IFRP) + NDEL(1)
-      NPSH(IFRP) = NPSH(IFRP) + NDEL(2)
+      NTOP = NESH(IFRP) + NDEL(1)
+      NLOW = NPSH(IFRP) + NDEL(2)
       CALL NUMLS3(VCFROZ(IFRP),IVEC,NFBAS(IFRP,0),
-     &            -NPSH(IFRP),NESH(IFRP),NTOT,NZERO)
-C
+     &            -NLOW,NTOP,NTOT,NZERO)
+C     
 C     Consistency check
 C
       IF(NFRO(IFRP).NE.(NTOT-NZERO)) THEN
@@ -6529,13 +6299,29 @@ C
         II = II + 1
         IBUF(II)=I
 C       Positronic position
-        IF(IP.LT.0.AND.IP.GE.(-NPSH(IFRP))) THEN
+        IF(IP.LT.0.AND.IP.GE.(-NLOW)) THEN
           IVEC(II)=1+IP
           NP = NP + 1
+          IF (SUB_BL) THEN
+            DO ISUB = 1,N_SUB_BL(IFRP)
+            IF(ISEL(I).EQ.ID_SUB_BL(ISUB,IFRP)) THEN
+              NORB_SUB(ISUB,IFRP,2)=NORB_SUB(ISUB,IFRP,2)+1
+              NORB_SUB(ISUB,IFRP,0)=NORB_SUB(ISUB,IFRP,0)+1
+            ENDIF
+            ENDDO
+          ENDIF
 C       Electronic position
-        ELSEIF (IP.GT.0.AND.IP.LE.NESH(IFRP)) THEN
+        ELSEIF (IP.GT.0.AND.IP.LE.NTOP) THEN
           IVEC(II)=IP
           NE = NE + 1
+          IF (SUB_BL) THEN
+            DO ISUB = 1,N_SUB_BL(IFRP)
+            IF(ISEL(I).EQ.ID_SUB_BL(ISUB,IFRP)) THEN             
+              NORB_SUB(ISUB,IFRP,1)=NORB_SUB(ISUB,IFRP,1)+1
+              NORB_SUB(ISUB,IFRP,0)=NORB_SUB(ISUB,IFRP,0)+1
+            ENDIF
+            ENDDO
+          ENDIF
 C         Check if orbital belongs to closed or open shells.
 C         If so, subtract from occupation number
           IF(IP.GT.0.AND.IP.LE.NISH(IFRP)) THEN
@@ -6544,7 +6330,7 @@ C         If so, subtract from occupation number
             I1 = NISH(IFRP)
             DO IOPEN = 1,NOPEN
               I2 = I1 + NACSH(IFRP,IOPEN)
-              IF(IP.GT.I1.OR.IP.LE.I2) THEN
+              IF(IP.GT.I1.AND.IP.LE.I2) THEN
                 NACSHMF(IFRP,IOPEN) = NACSHMF(IFRP,IOPEN) - 1
                 GOTO 20
               ENDIF
@@ -6563,8 +6349,8 @@ C         If so, subtract from occupation number
 C
 C     Final adjustments
 C
-      NPSHMF(IFRP) = NPSH(IFRP) - NP
-      NESHMF(IFRP) = NESH(IFRP) - NE
+      NPSH(IFRP) = NPSH(IFRP) + NP
+      NESH(IFRP) = NESH(IFRP) + NE
       DO I = 1,NFRO(IFRP)
         IVEC(I) = IVEC(I) + NPSH(IFRP)
       ENDDO
@@ -6587,7 +6373,7 @@ C
           JOFF = JOFF + NFBAS(IFRP,0)
         ENDDO
         CALL WRITT(IUNIT,JDIM,BUF)
-        WRITE(IUNIT) ESEL(I),ISEL(I)
+ 99     WRITE(IUNIT) ESEL(I),ISEL(I)
       ENDDO
 C
       RETURN
@@ -6596,7 +6382,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Inisub */
       SUBROUTINE INISUB
 C***********************************************************************
-C
 C
 C     Copy information from NBORB to the subblock array if we have not
 C     partioned the orbital space otherwise.
@@ -6619,6 +6404,8 @@ C
           ID_SUB_BL(IB,IFRP) = IREP
         ENDDO
       ENDDO
+C.....Also initialize NTMO_SUB which will be the number of orbitals in each subblock in orthonormal basis
+      CALL ICOPY(MAX_SUB_BL*3*2,NORB_SUB,1,NTMO_SUB,1)
 C
       RETURN
       END
@@ -7017,8 +6804,8 @@ C     These variables are later set by SETDC2, but needed here...
           N2TMO(IFRP)  = NTMO(IFRP)*NTMO(IFRP)
           N2TMOTQ      = N2TMOTQ + NTMO(IFRP)*NTMO(IFRP)*NZ
         ENDDO
-        CALL MEMGET('REAL',KBUF,N2ORBT*NZ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','BUF'  ,KBUF,N2ORBT*NZ,WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IBEIG',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
         CALL DELPOS(TMAT,TBUF,WORK(KBUF),EIG,WORK(KBEIG),
      &              VMAT,WORK,KFREE,LFREE)
         CALL MEMREL('MOD_DIREQ.delpos',WORK,KBUF,KBUF,KFREE,LFREE)
@@ -7049,9 +6836,26 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck psipr1 */
       SUBROUTINE PSIPR1(NVECS,CSEL,ESEL,ISEL,TMAT,TINV,NSTR,
-     &                  IPRINT,WORK,KFREE,LFREE)
+     &                  INFOSEL,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
+C      Reduce variational space by projection using the fragment orbitals
+C      On input:
+C        NVECS(ifrp) is the number of fragment orbitals in ifrp
+C        CSEL, ESEL, ISEL contains fragment orbitals (coefficients), 
+C           their energies and, if available, supersymmetry labels
+C        TMAT is the AOMO transformation matrix T (canonical orhogonalization)
+C        TINV is the inverse of T^{dagger}, that is TINV = ST, where S is the
+C           AO overlap matrix
+C
+C      On input, for a given fermion ircop, the AOMO transformation matrix
+C      has the dimension
+C         TMAT(nfbas(ifrp,0),norb(ifr),nz)
+C      On output, the dimension has been modified to
+C         TMAT(nfbas(ifrp,0),ntmo(ifr),nz)
+C   
+C
+C      Written by Trond Saue long time ago....
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -7061,136 +6865,234 @@ C
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dgroup.h"
+#include "pgroup.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbdhf.h"
-      DIMENSION CSEL(*),ESEL(*),ISEL(*),TMAT(*),TINV(*),WORK(*)
+      integer, allocatable :: NVECS_SUB(:)
+      DIMENSION CSEL(*),ESEL(*),ISEL(*),TMAT(*),TINV(*),
+     &          INFOSEL(2,*),WORK(*)
       DIMENSION NVECS(2),NQ(2),NSTR(2,0:2,MFRAG)
 C
+      CALL QENTER('PSIPR1')
       KFRSAV = KFREE
       NFROT = 0
       DO IFRP = 1,NFSYM
         NFROT = NFROT + NFRO(IFRP)
       ENDDO
       IF(NFROT.GT.0) CALL OPNFIL(LUCOEF,'DFFROZ','UNKNOWN','PSIPR1')
-      TOBE = .FALSE.
-      N2TMT = 0
-      ICOFF = 1
-      IEOFF = 1
-      DO 10 IFRP = 1,NFSYM
+C.....For simplification , set subblock information, also 
+C     when there is no subblock ... allows single code
+      IF(SUB_BL) THEN
+        NZMO = 1 ! in the spinfree and linear case arrays in orthonormal basis are real
+      ELSE
+        NZMO = NZ
+        DO IFRP = 1,NFSYM
+          N_SUB_BL(IFRP) = 1
+          NORB_SUB(1,IFRP,0) = NORB(IFRP)
+          ID_SUB_BL(1,IFRP)  = 0
+        ENDDO
+      ENDIF
+      TOBE    = .FALSE.
+      N2TMT   = 0
+      N2TMOTQ = 0      
+      ICOFF   = 0
+      IEOFF   = 0
+      IVOFF   = 0
+      ITEFF = 1
+      DO 10 IFRP =  1,NFSYM
         WRITE(LUPRI,'(A,A3,A2)') '* Fermion ircop ',FREP(IFRP),' :'
-C       Transform fragment coefficients to orthonormal basis
-        NDEL = 0
         NQ(1) = 0
         NQ(2) = 0
-        IF(NVECS(IFRP).EQ.0) THEN
-           WRITE(LUPRI,'(2X,A)') '- No orbitals deleted.'
-          GOTO 11
-        ENDIF
-        NREF = NORB(IFRP)*NVECS(IFRP)*NZ
-        NPRJ = NORB(IFRP)*NORB(IFRP)*NZ
-        CALL MEMGET('REAL',KBUF,NPRJ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIBOS,NORB(IFRP),WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KREF,NREF,WORK,KFREE,LFREE)
-        CALL QGEMM(NORB(IFRP),NVECS(IFRP),NFBAS(IFRP,0),D1,
-     &            'H','N',IPQTOQ(1,0),TINV(I2TMT(IFRP)+1),
-     &                    NFBAS(IFRP,0),NORB(IFRP),NZT,
-     &            'N','N',IPQTOQ(1,0),CSEL(ICOFF),
-     &                    NFBAS(IFRP,0),NVECS(IFRP),NZ,
-     &            D0,IPQTOQ(1,0),WORK(KREF),NORB(IFRP),NVECS(IFRP),NZ)
         IF(IPRINT.GE.5) THEN
-          CALL HEADER('PSIPR1: Fragment coefs in orthonormal basis',-1)
-          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',IFRP
-          CALL PRQMAT(WORK(KREF),NORB(IFRP),NVECS(IFRP),
-     &                NORB(IFRP),NVECS(IFRP),NZ,IPQTOQ(1,0),LUPRI)
+           WRITE(6,*) '* Energies and symmetry labels of coefficients:'
+           DO IVEC = 1,NVECS(IFRP)
+              WRITE(6,*) IVEC,ESEL(IVOFF+IVEC),ISEL(IVOFF+IVEC)
+           ENDDO
+           WRITE(6,*)
+     &       '  Input selected coefficients: '
+           CALL PRQMAT(CSEL(ICOFF+1),
+     &              NFBAS(IFRP,0),NVECS(IFRP),
+     &              NFBAS(IFRP,0),NVECS(IFRP),
+     &              NZ,IPQTOQ(1,0),LUPRI)
         ENDIF
-C       Initialize unit matrix (transformation matrix in MO-basis)
-        CALL DUNIT2(WORK(KBUF),NORB(IFRP),NORB(IFRP),NORB(IFRP),NZ)
-        IF(SUB_BL) THEN
-C         Spin-free or linear case: Fill array with subblock info
-          CALL INIBOS(WORK(KIBOS),IFRP,.FALSE.,0)
-        ELSE
-C         Spin-orbit coupling: Fill array with zeros..
-          CALL ICOPY (NORB(IFRP),0,0,WORK(KIBOS),1)
-        ENDIF
-C       Do projection
-        IREF  = 1
-        DO IFRAG = 1,NFRAG
-          DO IP = 2,1,-1
-            NREF = NSTR(IFRP,IP,IFRAG)
-            IF(NREF.GT.0) THEN
-              CALL PRJORT(WORK(KBUF),WORK(KIBOS),
-     &              WORK(KREF),ISEL(IEOFF),IREF,NREF,
-     &              PRJTHR,THRMAX,NORB(IFRP),NORB(IFRP),
-     &              NVECS(IFRP),NDEL,IP,IPRHAM)
-              IREF = IREF + NREF
-              NQ(IP) = NQ(IP) + NDEL
+        allocate(NVECS_SUB(N_SUB_BL(IFRP)))
+C.......First find how the selected vectors are distributed on subblocks
+        NREF = 0
+        DO ISUB = 1,N_SUB_BL(IFRP)
+        IF(NORB_SUB(ISUB,IFRP,0).GT.0) THEN
+C.........Find orbitals in this subblock
+          NVECS_SUB(ISUB) = 0
+          DO IVEC = 1,NVECS(IFRP)
+          IF(ISEL(IVEC+IVOFF).EQ.ID_SUB_BL(ISUB,IFRP)) THEN
+            NVECS_SUB(ISUB) = NVECS_SUB(ISUB) + 1
+            IF(INFOSEL(1,IVOFF+IVEC).GT.0) THEN
+C..............Positive energy solution                  
+               NTMO_SUB(ISUB,IFRP,1) = NTMO_SUB(ISUB,IFRP,1) - 1
+               NQ(1) = NQ(1) + 1
+            ELSE
+C..............Negative-energy solution                  
+               NTMO_SUB(ISUB,IFRP,2) = NTMO_SUB(ISUB,IFRP,2) - 1
+               NQ(2)= NQ(2) + 1
             ENDIF
+          ENDIF
           ENDDO
+          NREF = NREF+NORB_SUB(ISUB,IFRP,0)*NVECS_SUB(ISUB)*NZMO
+        ENDIF
         ENDDO
-        CALL MEMREL('PSIPRJ.prjort',WORK,KFRSAV,KREF,KFREE,LFREE)
-        NDEL = NQ(1) + NQ(2)
+C.......Allocate an array to hold all vectors
+        CALL MEMGET2('REAL','REF',KREF,NREF,WORK,KFREE,LFREE)
+C.......Transform vector of each subblock to orthonormal basis
+        IBORB = 0
+        IREF  = KREF
+        DO ISUB = 1,N_SUB_BL(IFRP)
+        IF(NVECS_SUB(ISUB).GT.0) THEN
+C.........Transform vector of this subblock to orthonormal basis
+          ITM  = I2TMT(IFRP) + NFBAS(IFRP,0)*IBORB + 1 ! old offset for transformation
+          IMO  = ICOFF + 1
+          JREF = IREF
+          DO IVEC = 1,NVECS(IFRP)
+            IF(ISEL(IVEC+IVOFF).EQ.ID_SUB_BL(ISUB,IFRP)) THEN
+               CALL QGEMM(NORB_SUB(ISUB,IFRP,0),1,NFBAS(IFRP,0),D1,
+     &           'H','N',IPQTOQ(1,0),TINV(ITM),
+     &                   NFBAS(IFRP,0),NORB(IFRP),NZT,
+     &           'N','N',IPQTOQ(1,0),CSEL(IMO),
+     &                   NFBAS(IFRP,0),NVECS(IFRP),NZ,
+     &           D0,IPQTOQ(1,0),WORK(JREF),NORB_SUB(ISUB,IFRP,0),
+     &           NVECS_SUB(ISUB),NZMO)
+               JREF = JREF + NORB_SUB(ISUB,IFRP,0)
+            ENDIF
+            IMO = IMO + NFBAS(IFRP,0)
+          ENDDO
+          IF(IPRINT.GE.5) THEN
+             WRITE(6,*)
+     &       '  Transformed coefficients for subblock ',ISUB
+              CALL PRQMAT(WORK(IREF),
+     &              NORB_SUB(ISUB,IFRP,0),NVECS_SUB(ISUB),
+     &              NORB_SUB(ISUB,IFRP,0),NVECS_SUB(ISUB),
+     &              NZMO,IPQTOQ(1,0),LUPRI)
+          ENDIF
+          IREF = IREF + NORB_SUB(ISUB,IFRP,0)*NVECS_SUB(ISUB)*NZMO
+        ENDIF             
+        IBORB = IBORB + NORB_SUB(ISUB,IFRP,0)
+        ENDDO
+C.......We have now transformed all vectors of this irrep to orthonormal basis
+C.......and overwrite TINV with TMAT        
+        IOFF = I2TMT(IFRP)  + 1
+        NDIM = NFBAS(IFRP,0)*NORB(IFRP)
+        DO IZ = 1,NZ
+          CALL DCOPY(NDIM,TMAT(IOFF),1,TINV(IOFF),1)
+          IOFF = IOFF + NDIM
+        ENDDO
+C.......We now start accumulating the new transformation matrix for each subblock
+        NTMO(IFRP) = NORB(IFRP) - NVECS(IFRP)
         WRITE(LUPRI,'(2X,A,I6)')
-     &     '- Total number of orbitals deleted: ',NDEL,
+     &     '- Total number of orbitals deleted: ',NVECS(IFRP),
      &     '       - positive energy solutions: ',NQ(1),
      &     '       - negative energy solutions: ',NQ(2)
- 11     CONTINUE
-        NTMO(IFRP)  = NORB(IFRP)-NDEL
-        NESH(IFRP)  = NESH(IFRP)-NQ(1)
-        NPSH(IFRP)  = NPSH(IFRP)-NQ(2)
-        IEFF        = I2TMT(IFRP)+1
-        I2TMT(IFRP) = N2TMT
-        N2TMT = N2TMT + NFBAS(IFRP,0)*NTMO(IFRP)*NZT
-        IF(NFRO(IFRP).GT.0) THEN
-          IF(NDEL.LT.NFRO(IFRP)) THEN
-            WRITE(LUPRI,'(2X,A,I6,A)')
-     &      'is smaller than number of frozen orbitals',
-     &      NFRO(IFRP),'!'
-            WRITE(LUPRI,'(2X,A)')
-     &      'You may rerun with PRINT.GE.2 under **HAMILTONIAN',
-     &      'to see the norms of the remaining vectors.',
-     &      'Based on this, you may set the projection threshold'
-            WRITE(LUPRI,'(2X,A,E12.4)')
-     &      'PRJTHR lower. Current value is ',PRJTHR
-            CALL QUIT
-     &      ('PSIPRJ:Fewer deleted orbitals than frozen ones!')
-          ENDIF
-C         Backtransform to SO-basis
-          NDIM = NFBAS(IFRP,0)*NORB(IFRP)*NZT
-          CALL DCOPY(NDIM,TMAT(IEFF),1,TINV(IEFF),1)
-          CALL PRJCNT(WORK(KBUF),TMAT(I2TMT(IFRP)+1),
-     &                IFRP,NORB(IFRP),NFBAS(IFRP,0),
-     &                NTMO(IFRP),WORK(KIBOS),TINV(IEFF))
-          CALL MEMREL('PSIPRJ.prj',WORK,KFRSAV,KBUF,KFREE,LFREE)
+        NESH(IFRP)   = NESH(IFRP)-NQ(1) 
+        NPSH(IFRP)   = NPSH(IFRP)-NQ(2) 
+        NESHMF(IFRP) = NESH(IFRP)
+        NPSHMF(IFRP) = NPSH(IFRP)          
 C
-C         Save frozen orbitals to file
-C
-C
-          NBUF = NFBAS(IFRP,0)*NZ
-          CALL MEMGET('INTE',KSEL,NVECS(IFRP),WORK,KFREE,LFREE)
-          CALL MEMGET('INTE',KIND,NFRO(IFRP),WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KBUF,NBUF,WORK,KFREE,LFREE)
-          CALL WRIFRZ(LUCOEF,IFRP,CSEL(ICOFF),ESEL(IEOFF),ISEL(IEOFF),
-     &                  WORK(KSEL),WORK(KBUF),WORK(KIND),NVECS(IFRP),NQ)
-          CALL MEMREL('PSIPRJ.froz',WORK,KFRSAV,KBUF,KFREE,LFREE)
-          TOBE = .TRUE.
-        ELSEIF((I2TMT(IFRP)+1).NE.IEFF) THEN
-C         Move transformation matrix if columns was deleted in previous
-C         irrep ...
-          NDIM = NFBAS(IFRP,0)*NTMO(IFRP)*NZT
-          CALL DCOPY(NDIM,TMAT(IEFF),1,TMAT(I2TMT(IFRP)+1),1)
+        IBORB      = 0
+        IREF       = KREF
+        DO ISUB = 1,N_SUB_BL(IFRP)
+        IF(NORB_SUB(ISUB,IFRP,0).GT.0) THEN
+          ITM   = I2TMT(IFRP) + NFBAS(IFRP,0)*IBORB + 1 ! old offset for transformation
+          NEFF  = NORB_SUB(ISUB,IFRP,0) - NVECS_SUB(ISUB)
+C.........New matrix
+          IF(NVECS_SUB(ISUB).GT.0) THEN
+            IF(SUB_BL) THEN
+              ID = ID_SUB_BL(ISUB,IFRP)
+              IF (SPINFR) THEN
+                WRITE(LUPRI,'(/2A)') '* Boson symmetry ',REP(ID)
+              ELSE
+                WRITE(LUPRI,'(/A,I4,3A,I2,A)')
+     &              '* Block',ISUB,' in ',FREP(IFRP),
+     &              ':  Omega = ',ABS(ID),'/2'
+              ENDIF
+            ENDIF
+            NPRJ = NORB_SUB(ISUB,IFRP,0)*NORB_SUB(ISUB,IFRP,0)*NZMO
+            CALL MEMGET2('REAL','BUF',KBUF,NPRJ,WORK,KFREE,LFREE)
+C...........Do projection
+            CALL PRJORT(WORK(KBUF),WORK(IREF),NORB_SUB(ISUB,IFRP,0),
+     &           NVECS_SUB(ISUB),NZMO,WORK,KFREE,LFREE)
+            IF(IPRINT.GE.5) THEN
+            WRITE(6,*)
+     &         'PSIPR1: Eigenvectors from PRJORT for subblock ', ISUB
+            CALL PRQMAT(WORK(KBUF),
+     &              NORB_SUB(ISUB,IFRP,0),NORB_SUB(ISUB,IFRP,0),
+     &              NORB_SUB(ISUB,IFRP,0),NORB_SUB(ISUB,IFRP,0),
+     &              NZMO,IPQTOQ(1,0),LUPRI)
+            ENDIF            
+C...........Backtransform new transformation matrix (TINV now contains this part of TMAT)
+           CALL QGEMM(NFBAS(IFRP,0),NEFF,NORB_SUB(ISUB,IFRP,0),D1,
+     &     'N','N',IPQTOQ(1,0),TINV(ITM),NFBAS(IFRP,0),NORB(IFRP),NZT,
+     &     'N','N',IPQTOQ(1,0),WORK(KBUF),NORB_SUB(ISUB,IFRP,0),
+     &     NORB_SUB(ISUB,IFRP,0),NZMO,D0,
+     &     IPQTOQ(1,0),TMAT(ITEFF),NFBAS(IFRP,0),NTMO(IFRP),NZ)
+            CALL MEMREL('PSIPRJ.prj',WORK,KFRSAV,KBUF,KFREE,LFREE)
+            IREF  = IREF + NORB_SUB(ISUB,IFRP,0)*NVECS_SUB(ISUB)*NZMO
+            TOBE = .TRUE.
+          ELSE
+            IOFF = ITM
+            JOFF = ITEFF
+            NDIM = NFBAS(IFRP,0)*NORB_SUB(ISUB,IFRP,0)
+            DO IZ = 1,NZ
+              CALL DCOPY(NDIM,TINV(IOFF),1,TMAT(JOFF),1)
+              IOFF = IOFF + NFBAS(IFRP,0)*NORB(IFRP)
+              JOFF = JOFF + NFBAS(IFRP,0)*NTMO(IFRP)
+            ENDDO
+          ENDIF ! IF(NVECS_SUB(ISUB).GT.0) THEN
+          IF(IPRINT.GE.5) THEN
+            WRITE(6,*) '* PSIPR1: Transformation matrix..',
+     &               ID_SUB_BL(ISUB,IFRP)
+            CALL PRQMAT(TMAT(ITEFF),
+     &            NFBAS(IFRP,0),NEFF,
+     &            NFBAS(IFRP,0),NTMO(IFRP),
+     &            NZ,IPQTOQ(1,0),LUPRI)
+          ENDIF            
+          IBORB = IBORB + NORB_SUB(ISUB,IFRP,0)
+          ITEFF = ITEFF + NFBAS(IFRP,0)*NEFF   ! new offset for transformation
+          NTMO_SUB(ISUB,IFRP,0) = NTMO_SUB(ISUB,IFRP,1)
+     &                          + NTMO_SUB(ISUB,IFRP,2)
+          NORB_SUB(ISUB,IFRP,0) = NTMO_SUB(ISUB,IFRP,0) 
+          NORB_SUB(ISUB,IFRP,1) = NTMO_SUB(ISUB,IFRP,1)
+          NORB_SUB(ISUB,IFRP,2) = NTMO_SUB(ISUB,IFRP,2)            
         ENDIF
-        ICOFF = ICOFF + NFBAS(IFRP,0)*NVECS(IFRP)*NZ
-        IEOFF = IEOFF + NVECS(IFRP)
+        ENDDO                    ! DO ISUB = 1,N_SUB_BL(IFRP)
+        deallocate(NVECS_SUB)
+C
+C       Save frozen orbitals to file
+C
+        IF(NFRO(IFRP).GT.0) THEN
+          NBUF = NFBAS(IFRP,0)*NZ
+          CALL MEMGET2('INTE','SEL',KSEL,NVECS(IFRP),WORK,KFREE,LFREE)
+          CALL MEMGET2('INTE','IND',KIND,NFRO(IFRP),WORK,KFREE,LFREE)
+          CALL MEMGET2('REAL','BUF',KBUF,NBUF,WORK,KFREE,LFREE)
+          CALL WRIFRZ(LUCOEF,IFRP,CSEL(ICOFF+1),ESEL(IVOFF+1),
+     &         ISEL(IVOFF+1),WORK(KSEL),WORK(KBUF),WORK(KIND),
+     &         NVECS(IFRP),NQ)
+          CALL MEMREL('PSIPRJ.froz',WORK,KFRSAV,KBUF,KFREE,LFREE)
+       ENDIF
+       NORB(IFRP)   = NTMO(IFRP) + NFRO(IFRP)
+       I2TMT(IFRP)  = N2TMT
+       N2TMT        = N2TMT + NFBAS(IFRP,0)*NTMO(IFRP)*NZT
+       I2TMOT(IFRP) = N2TMOTQ
+       N2TMO(IFRP)  = NTMO(IFRP)*NTMO(IFRP)
+       N2TMOTQ      = N2TMOTQ + N2TMO(IFRP)*NZ
+       ICOFF = ICOFF + NFBAS(IFRP,0)*NVECS(IFRP)*NZ  ! update offset for selected coefficients
+       IEOFF = IEOFF + NVECS(IFRP) ! update offset for energies and supersymmetries
  10   CONTINUE
       IF(NFROT.GT.0) CLOSE(LUCOEF,STATUS='KEEP')
       IF(IPRHAM.GE.5) THEN
         CALL HEADER('PSIPRJ: Final transformation matrix ',-1)
-        DO 20 I = 1,NFSYM
-        IF(NTMO(I).GT.0) THEN
-          WRITE(LUPRI,'(A,I5)') '* Fermion ircop no.',I
-          CALL PRQMAT(TMAT(I2TMT(I)+1),NFBAS(I,0),NTMO(I),
-     &                NFBAS(I,0),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
+        DO 20 IFRP = 1,NFSYM
+        IF(NTMO(IFRP).GT.0) THEN
+          WRITE(LUPRI,'(A,I5)') '* Fermion ircop no.',IFRP
+          CALL PRQMAT(TMAT(I2TMT(IFRP)+1),NFBAS(IFRP,0),NTMO(IFRP),
+     &                NFBAS(IFRP,0),NTMO(IFRP),NZ,IPQTOQ(1,0),LUPRI)
         ENDIF
  20     CONTINUE
       ENDIF
@@ -7202,6 +7104,7 @@ C
         CALL MKSAOMO(TINV,TMAT,.FALSE.,IPRHAM,WORK(KFREE),LFREE)
       ENDIF
 C
+      CALL QEXIT('PSIPR1')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -7219,7 +7122,7 @@ C
       DIMENSION SMAT(*),WORK(*)
       KFRSAV=KFREE
 C.....Get overlap matrix in SO-basis (no symmetry packing)
-      CALL MEMGET('REAL',KSBUF,N2BBASX,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','SBUF',KSBUF,N2BBASX,WORK,KFREE,LFREE)
       CALL GTOVLX(WORK(KSBUF),SSMTRC)
 C.....Transform to AO-basis and release memory
       CALL MTSOAO(WORK(KSBUF),SMAT,NTBAS(0),0,IPRINT)
@@ -7233,7 +7136,9 @@ C.....Print section
 C      
       RETURN
       END
-      subroutine set_intflg(new_intflg)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
+      SUBROUTINE SET_INTFLG(new_intflg)
+C***********************************************************************      
 #include "implicit.h"
       integer, intent(in) :: new_intflg
 #include "mxgas.h"
@@ -7276,7 +7181,9 @@ C
       call set_intfl2(new_intflg)
 
       end
-      subroutine set_intfl1(new_intflg)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
+      SUBROUTINE SET_INTFL1(NEW_INTFLG)
+C***********************************************************************      
       implicit none
       integer, intent(in) :: new_intflg
 #include "mxgas.h"
@@ -7298,7 +7205,9 @@ C
       INTNMR       = new_intflg
 
       end
-      subroutine set_intfl2(new_intflg)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
+      SUBROUTINE SET_INTFL2(NEW_INTFLG)
+C***********************************************************************      
       implicit none
       integer, intent(in) :: new_intflg
 #include "dcbgen.h"
@@ -7333,4 +7242,243 @@ C.....Static embedding potential
            PDOINT(ILBL)(4:4) = '0'
        ENDIF
        END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck prjort */
+      SUBROUTINE PRJORT(VMO,COEF,NORB,NVEC,NZ,WORK,KFREE,LFREE)
+C***********************************************************************
+C     This routine projects vectors COEF out of the identity matrix
+C     Presently, this is done by first forming the density matrix 
+C     of vectors COEF and then diagonalize it.
+C     Provided that eigenvalues are given in ascending order, then
+C     the first NORB-NVEC columns of the resulting eigenvectors have
+C     zero eigenvalues and provide the orthogonal complement.
+C     A possible better approach is to do a "fat" QR decomposition.
+C     Thanks to Ulf Ekstrom for suggestions.
+C
+C     Written by Trond Saue
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
+      DIMENSION VMO(NORB,NORB,NZ),COEF(NORB,NVEC,NZ),WORK(*)
+C.....Form density matrix
+      KFRSAV = KFREE
+      CALL MEMGET2('REAL','DMAT',KDMAT,NORB*NORB*NZ,WORK,KFREE,LFREE)
+      CALL DENST1(WORK(KDMAT),NORB,NORB,NZ,D1,D0,
+     &     COEF,NORB,NVEC,1,NVEC,NORB)
+      CALL MEMGET2('REAL','EIG',KEIG,NORB,WORK,KFREE,LFREE)
+      CALL QDIAG(NZ,NORB,WORK(KDMAT),NORB,NORB,
+     &           WORK(KEIG),1,VMO,NORB,
+     &           NORB,WORK(KFREE),LFREE,IERR)
+CTROND
+      WRITE(6,*) ' Eigenvalues from PRJORT: ',NVEC
+      CALL OUTPUT(WORK(KEIG),1,NORB,1,1,
+     &            NORB,NORB,-1,LUPRI)
+      CALL MEMREL('PRJORT',WORK,1,KFRSAV,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE Add_Screening_Potential(FMAT,WORK,LWORK,IPRINT)
+C*****************************************************************************
+C
+C     Replacement for BNCORR, add screening potential by reading in fitted local
+C     potential from GRASP DFT calculations. 
+C
+C     Lucas Visscher, July 2016
+C
+C     For each center in a molecule we estimate the screening
+C     neglected in the bare nucleus approximation by a sum of the
+C     contributions from Gaussian functions :
+C           sum_(n) <X_A|(c(n)*G(n,a,r_C))/r_C|X_B>
+C           X=L,S ; G(a,r)=exp(-a*r^2)
+C
+C     On input/ouput:     FMAT - assumed one-electron (2c/4c bare nucleus) Fock matrix (input),
+C    =================    screening bare nucleus added (ouput)
+C
+C     Called from: PREDHF/dirscf.F
+C                  RH1DIAG/../krmc/krmcopt.F
+C
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+      PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
+C
+      LOGICAL DOINT(2,2), FINISH
+      DIMENSION WORK(LWORK),FMAT(*)
+      real*8, allocatable  :: ONEMT(:),ONEIN(:),FCBA(:,:,:),COORC(:,:)
+      real*8, allocatable  :: SIGNC(:,:),GEXP(:)
+      integer, allocatable :: NCENT(:),JSYMC(:),JCENT(:)
+      real*8, allocatable  :: fit_exp(:),fit_coef(:)
+#include "dcbgen.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "cbiher.h"
+#include "cbihr1.h"
+#include "cbisol.h"
+C
+#include "ibtfun.h"
+c
+#include "memint.h"
+
+        if(mdirac)then
+        write(lupri,*)
+     &  ' bare-nucleus correction not implemented yet for MDIRAC'
+        write(lupri,*)
+     &  ' program will continue with the default 1-el Hamiltonian'
+          return
+        end if
+
+C     Memory allocation
+      Allocate (ONEMT(N2BBASX))
+      Allocate (ONEIN(N2BBASX))
+      Allocate (COORC(3,NUCDEP))
+      Allocate (SIGNC(3,NUCDEP))
+      Allocate (GEXP(NUCDEP))
+      Allocate (NCENT(NUCDEP))
+      Allocate (JSYMC(NUCDEP))
+      Allocate (JCENT(NUCDEP))
+
+      ONEMT = D0
+C
+C     Initialization (calculate LL and SS)
+C
+      DOINT(1,1) = .TRUE.
+      IF (NOSMLV.OR.BSS.OR.x2c) THEN
+         DOINT(2,2) = .FALSE.
+         IF (IPRINT.GE.1) WRITE(LUPRI,'(/A)')
+     &     '  SCRPOT: SS contribution to the bare nuclei omitted !'
+      ELSE
+         DOINT(2,2) = .TRUE.
+      END IF
+      DOINT(1,2) = .FALSE.
+      DOINT(2,1) = .FALSE.
+c
+
+      DO I = 1,NUCIND
+         IF (NOORBT(I) .OR. CHARGE(I).EQ.0.0D0) THEN ! skip point charges and floating orbitals
+            CYCLE
+         ELSE
+c        ... Get charges and exponents for the electrons in this group
+            n_charge = NINT(CHARGE(I))
+            n_exp = -1 ! signal the routine to provide the number of exponents only
+            CALL Read_screening_parameters
+     &           (n_charge,n_exp,DUMMY,DUMMY)
+!    &           (n_charge,n_exp,fit_exp,fit_coef)
+            Allocate (fit_exp(n_exp))
+            Allocate (fit_coef(n_exp))
+            CALL Read_screening_parameters 
+     &           (n_charge,n_exp,fit_exp,fit_coef)
+         END IF
+
+c        The driver routines below cannot take a generally contracted potential, so we need to loop. 
+c        if this becomes a bottleneck: rewrite the catdr1 routine....
+
+         MXCENTC = 0
+         MULC   = ISTBNU(I)
+         CORCX0 = CORD(1,I)
+         CORCY0 = CORD(2,I)
+         CORCZ0 = CORD(3,I)
+c
+c        ... Count number of symmetry-dependent nuclei so we can allocate FCBA
+c
+         DO ISYMOP = 0, MAXOPR
+            IF (IBTAND(ISYMOP,MULC) .EQ. 0) THEN
+               MXCENTC = MXCENTC + 1
+            END IF
+         end do
+         Allocate (FCBA(MXCENTC,NUCDEP,NUCDEP))
+
+         DO N = 1, n_exp
+            NCENTC = 0
+            CHARG1 = - fit_coef(N)
+            DO ISYMOP = 0, MAXOPR
+               IF (IBTAND(ISYMOP,MULC) .EQ. 0) THEN
+                  NCENTC = NCENTC + 1
+                  JSYMC(NCENTC)   = ISYMOP
+                  JCENT(NCENTC)   = I
+                  SIGNC(1,NCENTC) = PT(IBTAND(ISYMAX(1,1),ISYMOP))
+                  SIGNC(2,NCENTC) = PT(IBTAND(ISYMAX(2,1),ISYMOP))
+                  SIGNC(3,NCENTC) = PT(IBTAND(ISYMAX(3,1),ISYMOP))
+                  COORC(1,NCENTC) = SIGNC(1,NCENTC)*CORCX0
+                  COORC(2,NCENTC) = SIGNC(2,NCENTC)*CORCY0
+                  COORC(3,NCENTC) = SIGNC(3,NCENTC)*CORCZ0
+                  GEXP(NCENTC)    = fit_exp(N)
+                  CALL DCOPY(NUCDEP*NUCDEP,CHARG1,0,
+     &                       FCBA(NCENTC,1,1),MXCENTC)
+               END IF
+            end do
+c
+c       ... Calculate integrals (both LL and SS)
+c
+            CALL CATDR1(ONEMT,DUMMY,NCENTC,FCBA,
+     &                  COORC,SIGNC,JSYMC,
+     &                  JCENT,GEXP,WORK,LWORK,IPRONE,
+     &                  .FALSE.,0,NNBBASX,DOINT)
+         ENDDO ! Loop over exponents
+         DeAllocate (fit_exp)
+         DeAllocate (fit_coef)
+         DeAllocate (FCBA)
+      ENDDO ! Loop over nuclei
+C
+C     Symmetry unpack integrals
+C
+      CALL SYMUPK(ONEMT,ONEIN,1,NNBBASX)
+      CALL DSPTSI(NTBAS(0),ONEIN,ONEMT)
+      CALL BUTOBS(ONEMT,1,WORK,LWORK)
+ 
+C     Add correction to (entering) Fock-matrix, FMAT
+
+      CALL DAXPY(N2BBASX,D1,ONEMT,1,FMAT,1)
+
+      IF(IPRINT.GE.11) THEN
+         CALL HEADER('Screening potential for DC FMAT',-1)
+         CALL OUTPUT(ONEMT,1,NTBAS(0),1,NTBAS(0),
+     &        NTBAS(0),NTBAS(0),-1,LUPRI)
+      END IF
+C
+C     Memory deallocation
+      DeAllocate (ONEMT)
+      DeAllocate (ONEIN)
+      DeAllocate (COORC)
+      DeAllocate (SIGNC)
+      DeAllocate (GEXP)
+      DeAllocate (NCENT)
+      DeAllocate (JSYMC)
+      DeAllocate (JCENT)
+
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE READ_SCREENING_PARAMETERS (N_CHARGE,N_EXP,
+     &     FIT_EXP,FIT_COEF)
+C***********************************************************************      
+      implicit none
+      logical newel, early_exit
+      integer,intent (in)    :: n_charge
+      integer,intent (inout) :: n_exp
+      real*8,intent (out)    :: fit_exp(*),fit_coef(*)
+      integer                :: i,intorb,intisg
+      integer, parameter     :: lupot=91, iprint=0
+
+      early_exit = n_exp .eq. -1 ! Use this to query the number of exponents
+      call findel ('SCRPOT',n_charge,lupot)
+      call finpos (newel,n_exp,intorb,intisg,lupot,iprint)
+      if (early_exit) then
+         rewind (lupot)
+         return
+      end if
+      
+      do i = 1, n_exp
+         read (lupot,*) fit_exp(i),fit_coef(i)
+      end do
+      rewind (lupot)
+
+      end
 ! -- end of dirone.F --

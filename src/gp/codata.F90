@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -213,7 +213,8 @@ module codata
 
 #endif
 
-! -------------------- common derived constants --------------------------
+  ! -------------------- common derived constants --------------------------
+  real(8), parameter, public :: planck   = hbar*2*pi
   real(8), parameter, public :: xtangm10 = xtang*1.0d-10
   real(8), parameter, public :: cvel     = ccm*xtangm10*emass/hbar
   real(8), parameter, public :: alphac   = 1.0d0/cvel
@@ -232,6 +233,8 @@ module codata
   real(8), parameter, public :: xfsec    = autime
   real(8), parameter, public :: tesla    = (xtang*xtang*echarge/hbar)*1.0d-20
   real(8), parameter, public :: debye    = echarge*xtang*ccm*1.0d11
+  real(8), parameter, public :: nmagn    = echarge*hbar/(2*xfmp*emass) ! nuclear magneton
+  real(8), parameter, public :: nmagnau  = 1.0d0/(2*xfmp) ! nuclear magneton in au  
 
   contains
 

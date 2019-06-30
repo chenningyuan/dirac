@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1338,16 +1338,6 @@ CTROND      END IF
 C
       call dealloc(WORK)
       CALL RUNOPT(MXRINT)
-#ifndef PRG_DIRAC
-#if defined (VAR_MPI)
-      IF (NODTOT .GT. 1 .AND. MYNUM .EQ. 0) THEN
-         IJOB = 0
-         CALL interface_MPI_BCAST(IJOB,1,NODEID(MOTHER),
-     &                  global_communicator)
-      END IF
-#endif      
-#endif 
-
 
  9999 CALL QEXIT('OPTMIN')
       RETURN
@@ -2283,6 +2273,9 @@ C
 #ifdef HAS_PCMSOLVER      
       use pcm_scf
 #endif      
+#ifdef HAS_PELIB
+      use pe_variables, only: peqm
+#endif 
 
 #include "implicit.h"
 #include "priunit.h"
@@ -2331,6 +2324,12 @@ C     Geometry optimization for Dirac
 C
 C     Execute Dirac, and retrieve energy.
 C
+#ifdef HAS_PELIB
+      if (peqm) then 
+         call quit('PELib geometry optimization '//
+     &   'not implemented in DIRAC')
+      endif 
+#endif 
       IF ( .NOT. EXSIR ) THEN
          CALL EXEDIR()
          IF (DOCCM) THEN
@@ -2516,7 +2515,6 @@ C     normalization vector in WLKCGH).
 C
       DO 1 IREP = 0, MAXREP
          DO 2 ICENT = 1, NUCIND
-#include "scalar.h"
             DO 3 ICOOR = 1, 3
                ISCOOR = IPTCNT(3*(ICENT-1)+ICOOR,IREP,1)
                IF (ISCOOR .GT. 0) THEN
@@ -6732,7 +6730,6 @@ C
       CALL DZERO(SCLVEC,MXCOOR)
       DO 1 IREP = 0, MAXREP
          DO 2 ICENT = 1, NUCIND
-#include "scalar.h"
             DO 3 ICOOR = 1, 3
                ISCOOR = IPTCNT(3*(ICENT-1)+ICOOR,IREP,1)
                IF (ISCOOR .GT. 0) THEN
@@ -7009,9 +7006,9 @@ C        hjaaj Jan 2014
 C           We want to find the RNU for which the step length SL is TRUSTR
 C           We want RNU = 0 (Newton step) or RNU > 0 (restricted step)
 C           We know that SL = norm(- (Hess + RNU)^-1 grad )
-C               SL ≤ contribution if all eigenvalues where equal to EVAL(1)
+C               SL  contribution if all eigenvalues where equal to EVAL(1)
 C                  = GRD_ASUM  / (EVAL(1) + RNU)
-C               SL ≥ contribution from first eigenvector
+C               SL  contribution from first eigenvector
 C                  = GRDDIA(1) / (EVAL(1) + RNU)
 C           From this you can derive the formulas for XMIN and XMAX,
 C           when we also remember that if RNU corresponding to trust
@@ -7460,6 +7457,7 @@ C
 C
 #ifdef PRG_DIRAC
          use dirac_cfg
+         use read_xyzfile
 #endif
       use codata
 #include "implicit.h"
@@ -7561,7 +7559,7 @@ C
 C
 C     Update geometry in common block
 C
-         MLINE(NMLAU)(20:20) = ' '
+         IF (NMLAU.GE.1) MLINE(NMLAU)(20:20) = ' ' 
          DO 100 N = 1, NUCIND
             CRX = COOR(1,N)
             CRY = COOR(2,N)
@@ -7606,9 +7604,9 @@ C        Write updated .xyz style geometry file
                      if (ibtand(i_symop, mulcnt) == 0)
      &                  write (lumol,'(A4,3F26.16)')  
      &                     namn(icent),
-     *      pt(ibtand(isymax(1, 1), i_symop))*coor(1, icent)*xtang,
-     *      pt(ibtand(isymax(2, 1), i_symop))*coor(2, icent)*xtang,
-     *      pt(ibtand(isymax(3, 1), i_symop))*coor(3, icent)*xtang
+     * pt(ibtand(isymax(1, 1), i_symop))*coor(1, icent)/unit_conversion,
+     * pt(ibtand(isymax(2, 1), i_symop))*coor(2, icent)/unit_conversion,
+     * pt(ibtand(isymax(3, 1), i_symop))*coor(3, icent)/unit_conversion
                 end do
                end if
             end do
@@ -7669,6 +7667,7 @@ CTROND      deallocate(STPCAR)
 C     Write an XYZ file
 C
       use codata
+      use read_xyzfile
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -7678,9 +7677,9 @@ C
       DIMENSION UNIQUE_CORD(3,MXCENT),XYZ(3)
 #include "ibtfun.h"
 C
-!     XYZ files are written in Angstroms
+!     XYZ files are written in Angstroms (default) or a user-specified Unit
 !
-      FAC = XTANG
+      FAC = 1.D0 / UNIT_CONVERSION
 
 !     Write the file
 

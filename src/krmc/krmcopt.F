@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -20,7 +20,9 @@
 !dirac_copyright_end
 
 C FILE    : krmcopt.F
-C
+
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck psiopt */
       SUBROUTINE PSIOPT(WFTYP,WFCONV)
@@ -1914,6 +1916,9 @@ C
       DIMENSION WORK(*), ILIST(MXCORB)
       LOGICAL   GASWF
 
+      integer, allocatable :: reduced_pp(:)
+      integer, allocatable :: reduced_pn(:)
+
 C
       CALL QENTER('RSETWOP')
 C
@@ -1965,7 +1970,8 @@ C     ***************************************************
 C     *** Orbital parameters ****************************
 C     ***************************************************
 C
-      CALL IZERO(NOROT,NORBT)
+      LNOROT = .FALSE.
+      NOROT(1:NORBT) = 0
 C
       NDSHT = 0
       NVSHT = 0
@@ -2012,6 +2018,15 @@ C         the associated IDX* arrays could not be made in
 C         the SETDCBIDX routines.) SK+HJAaJ Aug 08
 C        ***************************************************
 C
+         IF (NFRO(I) .GT. 0) THEN
+            WRITE(LUPRI,'(5X,A,I4)')
+     &      'Frozen orbitals     : 1..',NFRO(I)
+            LNOROT = .TRUE.
+            DO J = 1, NFRO(I)
+               K = IORB(I) + NPSH(I) + J
+               NOROT(K) = 1
+            END DO
+         END IF
          NVEC = 1
          CALL NUMLST(OPT_DELSTR(I),ILIST,NORB(I),
      &        -NPSH(I),NESH(I),I,NVEC)
@@ -2024,6 +2039,13 @@ C        we still want to freeze but doubly occupied core
 C        orbitals...
 C        TODO FIXME: IMPLEMENT ME - SK Aug 2008
 C
+C        hjaaj comment Feb 2017: we could use OPT_DELSTR
+C        also for .FREEZE and remove .DELETE
+C        (i.e. let .DELETE be part of .FREEZE);
+C        I have today implemented that NDSH(I) only
+C        counts deleted secondary orbitals.
+C        
+C
 csk      CALL NUMLST(OPT_FRZSTR(I),ILIST,NORB(I),
 csk  &        -NPSH(I),NESH(I),I,NVEC)
          IF (NVEC .GT. 0) THEN
@@ -2032,11 +2054,13 @@ csk         WRITE(LUPRI,'(A,A50)')
 csk  &           '     Frozen orbitals      : ',OPT_FRZSTR(I)
             WRITE(LUPRI,'(A,A50)')
      &           '     Deleted orbitals     : ',OPT_DELSTR(I)
+            NVEC_I = 0
             DO J = 1, NVEC
                K = ILIST(J) + IORB(I) + NPSH(I)
                NOROT(K) = 1
+               IF (ILIST(J) .GT. NOCC(I)) NVEC_I = NVEC_I + 1
             END DO
-            NDSH(I) = NVEC
+            NDSH(I) = NVEC_I
          END IF
 C
          NVSH(I) = NSSH(I) - NDSH(I)
@@ -2044,6 +2068,7 @@ C
          NDSHT = NDSHT + NDSH(I)
          NVSHT = NVSHT + NVSH(I)
       END DO
+      NOROTC(1:NORBT) = NOROT(1:NORBT)
 C     ... 'active' secondary orbitals
       N2VSHX   = NVSHT   * NVSHT
       N2VSHXQ  = N2VSHX  * NZ
@@ -2141,10 +2166,36 @@ C
 C       set internal control variable
         IREDJOB = 10
 C
+        if (nzhope > 0) then
+          allocate(reduced_pp(nzhope*2))
+          call icopy(nzhope*2,
+     &               get_orbital_rotation_indices_pp(), 1,
+     &               reduced_pp, 1)
+        else
+          allocate(reduced_pp(1))
+        end if
+
+        if (nzxopp > 0) then
+          allocate(reduced_pn(nzxopp*2))
+          call icopy(nzxopp*2,
+     &               get_orbital_rotation_indices_pn(), 1,
+     &               reduced_pn, 1)
+        else
+          allocate(reduced_pn(1))
+        end if
+
         CALL RESETXOP_sym(DUMMY,
-     &                    get_orbital_rotation_indices_pp(),
-     &                    get_orbital_rotation_indices_pn(),
+     &                    reduced_pp,
+     &                    reduced_pn,
      &                    IREDJOB,1)
+
+        call update_orbital_rotation_indices(nzhope,
+     &                                       nzxope,
+     &                                       nzxopp,
+     &                                       reduced_pp,
+     &                                       reduced_pn)
+
+         deallocate(reduced_pp, reduced_pn)
 C
       END IF
 
@@ -2165,6 +2216,7 @@ C
             NOROT(IORB(I) + NPSH(I) + NISH(I) + J) = 0
          END DO
       END DO
+      NOROTC(1:NORBT) = NOROT(1:NORBT)
       IF (IPROPT .GT. 4) THEN
          WRITE(LUPRI,*) 'Orbitals excluded from 4-index transformation:'
          CALL IWRTMA(NOROT,NORBT,1,NORBT,1)
@@ -2343,8 +2395,7 @@ C
         ELSE
 C         read orbital symmetry values from DFCOEF
           CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RSETCI')
-          CALL REACMO_no_work(LUCOEF,'DFCOEF',DUMMY,DUMMY,orb_sym_vec,
-     &                        TOTERG,8)
+          CALL REACMO(LUCOEF,'DFCOEF',DUMMY,DUMMY,orb_sym_vec,TOTERG,8)
           CLOSE(LUCOEF,STATUS='KEEP')
           if(IPROPT .ge. 2)then
             WRITE(LUPRI,'(/A)')
@@ -2490,7 +2541,7 @@ C
      &      ' (dimension ',NZCONFQ,')',
      &      ' CPU (Wall) time for generation of determinants: ',
      &      CPUTID,'(',WALLTID,')'
-      IF (NASHT .GT. 1 .AND. NZCONF .LE. 0) THEN
+      IF (NASHT .GT. 0 .AND. NZCONF .LE. 0) THEN
          WRITE(LUPRI,'(/A)') ' INFO: no determinants in this symmetry!'
       END IF
 C
@@ -3122,8 +3173,7 @@ C
          INQUIRE ( FILE = 'DFCOEF', EXIST = EX )
          IF ( EX ) THEN
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RREADMO')
-            CALL REACMO(LUCOEF,'DFCOEF',CMO,DUMMY,DUMMY,DUMMY,2,
-     &                  WORK,KFREE,LFREE)
+            CALL REACMO(LUCOEF,'DFCOEF',CMO,DUMMY,DUMMY,DUMMY,2)
             CLOSE(LUCOEF,STATUS='KEEP')
             readmj_df = .true.
             IF (IPRINT .GE. 0) THEN
@@ -3206,7 +3256,7 @@ C
           if( readmj_df )then
             call opnfil(lucoef,'DFCOEF','OLD','RMJVEC ')
             call reacmo(lucoef,'DFCOEF',dummy,dummy,work(kmjvec),
-     &                  dummy,8,work,kfree,lfree)
+     &                  dummy,8)
             close(lucoef,STATUS='KEEP')
           else
             call ireakrmc(lukrm5,'MJVEC   ',work(kmjvec),norbt)
@@ -3257,8 +3307,7 @@ C         write back on file - if not present
 !         read ibeig (info array on boson irreps) from DFCOEF or KRMC"SCF"(OLD)
           if( readmj_df )then
             call opnfil(lucoef,'DFCOEF','OLD','RIBEIG ')
-            call reacmo(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8,
-     &                  work,kfree,lfree)
+            call reacmo(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8)
 !           WRITE(LUPRI,'(/A)') ' IBEIG array read from file DFCOEF'
 !           call iwrtmamn(ibeig,1,norbt,1,norbt,lupri)
             close(lucoef,STATUS='KEEP')
@@ -3523,7 +3572,7 @@ C     Generate CI start vectors.
 C
 C     Input : CMO - MO coefficents
 C
-C     Output: CREF - CI vector
+C     Output: CREF - CI vectors
 C
 C
 C     Written by J. Thyssen - Jun 27 2000
@@ -3568,9 +3617,9 @@ C
       end if
 
       IF (MAXCIT .LT. 0 .AND. NZCONF .GT. 100000) THEN
-         WRITE(LUPRI,'(//A,I9,A/A)')
-     &      ' Are you mad? Full CI with',NZCONF,' determinants?',
-     &      ' Using MAXCIT = 3 instead!'
+         WRITE(LUPRI,'(//A,I0,A/A)')
+     &      'INFO: Are you mad? Full CI with ',NZCONF,' determinants?',
+     &      'INFO: Using MAXCIT = 3 instead!'
          MAXCIT = 3
       END IF
 C
@@ -3769,7 +3818,6 @@ C
 C     ***************************************************
 C     *** Compress orbital rotations ********************
 C     ***************************************************
-C
 C
 C
       IF (COMPROT) THEN
@@ -5715,10 +5763,15 @@ C
       DIMENSION JXOPE(2,*), JXOPP(2,*)
       integer orb_type_vec(NORBT)
 C
-      IF( IPRINT .ge. 1 )THEN
+      IF( IPRINT .ge. 5 )THEN
         WRITE(LUPRI,'(/A)')' (DELPAR): vector of orbital types:'//
      &              ' mj-/ml-/boson-irrep values'
         CALL IWRTMAMN(orb_type_vec,1,NORBT,1,NORBT,LUPRI)
+        WRITE(LUPRI,'(/A)')' (DELPAR): orbital rotations'
+        do i = 1, nhope
+          write(lupri,'(a,i0,a,i0,a,i0)') ' rotation ',i,': orbital ',
+     &    JXOPE(1,I),' --> ',JXOPE(2,I)
+        end do
       END IF
 
       IF(NXOPE.GT.0) THEN
@@ -5732,23 +5785,35 @@ C
              JXOPE(2,II) = JXOPE(2,I)
            ENDIF
          ENDDO
-         WRITE(LUPRI,'(/A)')
-     & ' (DELPAR) ** statistics of deleted orbital rotations: **'
-         WRITE(LUPRI,9000)
+         if(iprint .ge. 1)then
+           WRITE(LUPRI,'(/A)')
+     &   ' (DELPAR) ** statistics of deleted orbital rotations: **'
+           WRITE(LUPRI,9000)
+         end if
          IF(II.LT.NXOPE) THEN
-            IF(IPRINT.GE.0) THEN
+            IF(IPRINT.GE.1) THEN
                DTST = DC*(NXOPE-II)/NXOPE
                WRITE(LUPRI,9001) 'e-e',NHOPE,NXOPE,II,III,DTST
             ENDIF
             NHOPE  = II
             NXOPE  = III
          ELSE
-            WRITE(LUPRI,9001) 'e-e',NHOPE,NXOPE,NHOPE,NXOPE,D0
+            if(iprint .ge. 1)then
+              WRITE(LUPRI,9001) 'e-e',NHOPE,NXOPE,NHOPE,NXOPE,D0
+            end if
          ENDIF
       ENDIF
  9000 FORMAT(3X,'Type',T10,'Before',T30,'After',T50,'Reduction')
  9001 FORMAT(3X,A,T10,I5,T18,'(',I5,')',T30,I5,T38,'(',I5,')',
      &     T50,F5.1,'%')
+
+      IF( IPRINT .ge. 5 )THEN
+        WRITE(LUPRI,'(/A)')' (DELPAR): orbital rotations (reduced)'
+        do i = 1, nhope
+          write(lupri,'(a,i0,a,i0,a,i0)') ' rotation ',i,': orbital ',
+     &    JXOPE(1,I),' --> ',JXOPE(2,I)
+        end do
+      END IF
 C
 C     e-p orbital rotations
 C     =====================
@@ -5763,11 +5828,13 @@ C
             JXOPP(2,II) = JXOPP(2,I)
           ENDIF
         ENDDO
-        WRITE(LUPRI,'(/A)')
-     & ' (DELPAR) ** statistics of deleted orbital rotations: **'
-        WRITE(LUPRI,9000)
+        if(iprint .ge. 1)then
+          WRITE(LUPRI,'(/A)')
+     &   ' (DELPAR) ** statistics of deleted orbital rotations: **'
+          WRITE(LUPRI,9000)
+        end if
         IF(II.LT.NXOPP) THEN
-          IF(IPRINT.GE.0) THEN
+          IF(IPRINT.GE.1) THEN
             DTST = DC*(NXOPP-II)/NXOPP
             III  = II
             WRITE(LUPRI,9001) 'e-p',NXOPP,NXOPP,II,III,DTST
@@ -6102,7 +6169,7 @@ C
 C     Calculate transformation to SV orbitals
 C     ---------------------------------------
 C
-      CALL DCOPY(NORBT,NOROT,1,NOROTC,1)
+      NOROTC(1:NORBT) = NOROT(1:NORBT)
 C
       IF (NXOPE .GT. 0) THEN
 C
@@ -6476,7 +6543,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     ITASK = 7 for parallel KR-MCSCF
 C
-      IF (PARCAL) CALL DIRAC_PARCTL( 7 )
+      IF (PARCAL) CALL DIRAC_PARCTL( KRMCSCF_PAR )
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -6497,7 +6564,7 @@ C
 C
 C     Let the slaves sleep (if relevant for this operating system)
 C
-      CALL DIRAC_PARCTL( 0 )
+      CALL DIRAC_PARCTL( RELEASE_NODES )
 C
       END
 #if defined (VAR_MPI2)
@@ -6515,7 +6582,7 @@ C
 #include "infpar.h"
 #include "mpif.h"
 #include "parkrmc.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER ISTAT(MPI_STATUS_SIZE)
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dcbgen.h"
