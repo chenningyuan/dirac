@@ -25,6 +25,7 @@ endif()
 
 add_library(
     x-amfi
+    OBJECT
     ${FIXED_XAMFI_FORTRAN_SOURCES}
     ${FREE_XAMFI_FORTRAN_SOURCES}
 )
