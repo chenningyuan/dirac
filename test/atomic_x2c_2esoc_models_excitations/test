@@ -1,0 +1,44 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import shutil
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = ' TOTAL ENERGY',
+      num_lines   = 11,
+      rel_tolerance   = 1.0e-8)
+
+test.run(['atoms.inp'], ['atoms.xyz'],
+                 args='--replace closed_occ="10" --replace open_e="2" --replace open_orb="2" --replace myatom="Mg" --get="X2CMAT aoo2esoc.012"')
+shutil.copy('X2CMAT', 'X2CMAT.012')
+
+#test.run(['atoms.inp'], ['atoms.xyz'],
+#                 args='--replace closed_occ="12" --replace open_e="4" --replace open_orb="6" --replace myatom="S" --get="X2CMAT aoo2esoc.016"')
+#shutil.copy('X2CMAT', 'X2CMAT.016')
+
+# 4c reference
+test.run(['fsccsd.inp'], ['Mg.mol'], f)
+
+# molecular U matrix (from molecular core h1^{4c}) + AMFI 2e-SO corrections
+test.run(['fsccsd_molecular-x2c-amfi.inp'], ['Mg.mol'], f)
+
+# molecular U matrix (from molecular core h1^{4c}) + atomic 2e-SO corrections
+test.run(['fsccsd_molecular-x2c-xamfi.inp'], ['Mg.mol'], f, args='--put="aoo2esoc*"')
+
+#os.unlink('X2CMAT.000')
+#os.unlink('X2CMAT.002')
+#os.unlink('X2CMAT.003')
+#os.unlink('X2CMAT.009')
+#os.unlink('X2CMAT.016')
+#os.unlink('aoo2esoc.002')
+#os.unlink('aoo2esoc.003')
+#os.unlink('aoo2esoc.009')
+#os.unlink('aoo2esoc.016')
+
+sys.exit(test.return_code)
