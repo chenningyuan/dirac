@@ -209,7 +209,7 @@ class MolData_Dirac(object):
             self.filename = filename
         else:
             if data_directory is None:
-                self.data_directory = os.getcpwd()
+                self.data_directory = os.getcwd()
             self.filename = self.data_directory + '/' + self.name
 
         # Attributes generated automatically by class.

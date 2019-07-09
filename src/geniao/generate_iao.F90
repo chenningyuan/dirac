@@ -18,6 +18,7 @@
         type(cmo)                          :: cspinor_original ! MO-coefficients before localization 
         type(cmo), allocatable             :: cspinor_fragment(:) ! MO-coefficients of the fragments
         type(atom), pointer                :: first_atom,current_atom ! linked list to store coordindate information
+        type(one_el_t)                     :: int_1el
         integer                            :: luxyz, ierr, i, j, k, l
         integer                            :: nmo1, nmo2, imo, jmo, nmoi, nmoj, nao1, ncore, nvale
         integer                            :: n_fragments ! the number of fragments used to project on to
@@ -36,10 +37,8 @@
         complex(8), allocatable            :: HF_RDM(:,:), IAO_RDM(:,:), Id(:,:)
         complex(8)                         :: sum_diag, sum_column
         complex(8), allocatable            :: check(:,:)
-        real(8),    allocatable            :: coeff_quaternion(:,:,:)
         character(len=14)                  :: fragfile_dfcoef, fragfile_dfpcmo
         character(len=18)                  :: fragfile_val_dfcoef, fragfile_val_dfpcmo
-
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !           READ Input Files         !
@@ -55,9 +54,16 @@
         nao1 = cspinor_original%nao
         ! The following Coeff file is here to check that I indeed get the same format as the DFPCMO_mol file.
         ! It will be removed when I'll be sure it is indeed correct in any cases.
-        allocate(coeff_quaternion(cspinor_original%nao,int(cspinor_original%nmo/2),4))
         call write_dffiles("test.dfcoef","test.dfpcmo",ao_basis_1,cspinor_original%coeff,nao1,nmo1,"MOLECULE.dfcoef")
 
+        ! Read the integrals to get the Fock matrix.
+        call read_from_mrconee (int_1el, ierr)
+        print*,"Number of spinor in MRCONEE:",int_1el%n_spinor," compare to nmo1:", nmo1," and core energy:",int_1el%e_core
+        print*,"ierr:",ierr
+        print*,"1e integrals:"
+        do i=1,int_1el%n_spinor
+         write(*,'(100G10.2)') (REAL(int_1el%h_core(i,j)),j=1,int_1el%n_spinor)
+        enddo
 
         call get_free_fileunit(luxyz)
         open (luxyz,file='MOLECULE.XYZ',form='formatted')
