@@ -33,9 +33,10 @@ module xamfi_driver
   use xamfi_utils
   use xamfi_internal_parameters
 
-!#define DEBUG_SOC
+#define DEBUG_SOC
 #ifdef  DEBUG_SOC
   use x2c_utils, only: print_x2cmat
+#undef DEBUG_SOC
 #endif
 
   implicit none
@@ -120,9 +121,10 @@ contains
                                  print_lvl             &
                                 )
 
+#define DEBUG_SOC
 #ifdef DEBUG_SOC
       !> debug print
-      if(print_lvl > 2)then
+!     if(print_lvl > 2)then
         call print_x2cmat(                             &
                           fmat,                        &
                           nr_ao_large_aoo,             &
@@ -132,7 +134,8 @@ contains
                           'X-AMFI - 2e-normalized',    &
                           6                            &
                          )
-      end if
+!     end if
+#undef DEBUG_SOC
 #endif
 
       !> save spin-orbit parts on file (of atom(1) ... == atomic fragment)

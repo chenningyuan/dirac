@@ -2780,7 +2780,8 @@ C
      &                               )
             !> restore logicals
             if(aoofocc)then
-              aoc = aoc_save
+              aoc   = aoc_save
+              nfmat = nfmat_save
             end if
             x2c = x2c_save
 
@@ -3017,7 +3018,7 @@ C
             !> G_A^{++} = {U+ G_A[4c] U}^{++} - G_A[2c]
             call daxpy(len_fmat,-1.0d0,tmat_mmf,1,tbuf_mmf,1)
 
-!#define DEBUG_SOC
+#define DEBUG_SOC
 #ifdef DEBUG_SOC
             CALL HEADER(
      &      'X-AMFI - 2e-normalized (final)',-1)
@@ -3035,6 +3036,12 @@ C
      &                                  nint(charge(1)),
      &                                  lux2c
      &                                 )
+            !> restore logicals
+            if(aoofocc)then
+              aoc   = aoc_save
+              nfmat = nfmat_save
+            end if
+
             deallocate(scratch_mmf)
             deallocate(tbuf_mmf)
             deallocate(tmat_mmf)
