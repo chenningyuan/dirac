@@ -36,18 +36,8 @@ contains
         t4 = C - matmul(P12,c_tilde2_bar)
         A = P12 + matmul(t4,conjg(transpose(coeff2_occ)))
 
-        print*,"IAOs has been built."
-
-        ! Reference Python code for Simple/2014
-        !COcc2 = mdot(S21, COcc)                # O(N m^2)
-        !CTil = la.solve(S2, COcc2)             # O(m^3)
-        !STil = mdot(COcc2.T, CTil)             # O(m^3)
-        !CTil2Bar = la.solve(STil, CTil.T).T    # O(m^3)
-        !T4 = COcc - mdot(P12, CTil2Bar)        # O(N m^2)
-        !CIb = P12 + mdot(T4, COcc2.T)          # O(N m^2)
-
-        ! compare with reference result to check (just to check if transformation is okay). I should get rid of this once we are sure the transformation is correct.
-
+        ! Compare with reference result to check (just to check if transformation is okay). 
+        ! I should get rid of this once we are sure the transformation is correct.
         print*,
         print*," *** Check if Simple/2014 transformation is okay ***"
         allocate(A_X(nmo1,nmo2)) 
@@ -68,12 +58,6 @@ contains
           print*," *** norm2(A_X - A) = ",norm2([norm2(real(A_X - A)),norm2(aimag(A_X-A))]),&
                  ", Transformation OKAY ***"
         endif
-
-        ! Reference Python code for the check:
-        !compare with reference result to check (just to check if transformation is okay)
-        !CTilX = SymOrth(mdot(P21, COcc), S2)
-        !CIbX = P12 + mdot(COcc, COcc.T, S12) - mdot(P12, CTilX, CTilX.T, S2)
-        !print("ref - opt: %8.2e" % la.norm((CIbX - CIb).flatten()))
 
         deallocate (coeff2_occ,c_tilde,c_tilde_bar,c_tilde2_bar,s_tilde,t4,A_X,P21,S12,c_tilde_X)
 
@@ -101,10 +85,6 @@ contains
         call SymOrth(c_tilde,S11,nmo1,nocc)
         A = P12 + matmul(C,matmul(conjg(transpose(C)),S12))&
         &               - matmul(c_tilde,matmul(conjg(transpose(c_tilde)),S12))
-
-        ! Reference Python code for Simple/2013
-        !CTil = SymOrth(mdot(P12, P21, COcc), S1)
-        !CIb = P12 + mdot(COcc, COcc.T, S12) - mdot(CTil, CTil.T, S12)
 
         deallocate (c_tilde,P21)
 
@@ -142,14 +122,6 @@ contains
         term22 = matmul(Id-matmul(c_tilde,matmul(conjg(transpose(c_tilde)),S11)),P12)
         A = matmul(term11,term12) + matmul(term21,term22)       
 
-      ! Reference Python code for Standard/2013
-      ! Calculate de-polarized occupied orbitals CTil by projecting COcc from 1 to 2 and back (Knizia, eq.1)
-      ! CTil = SymOrth(mdot(P12, P21, COcc), S1)
-      ! this is Knizia, eq. 2.
-      ! make [ |i><i| |itil><itil|  + (1-|i><i|)(1-|itil><itil|) ] P12 |mu>
-      ! CIb = mdot(mdot(COcc, COcc.T, S1), mdot(CTil, CTil.T, S1), P12) +\
-      !      mdot(np.eye(nBf)-mdot(COcc, COcc.T, S1), np.eye(nBf)-mdot(CTil, CTil.T, S1), P12)
-
         deallocate(P21,c_tilde,Id,term11,term12,term21,term22)
 
    end subroutine MakeIAO_Standard_2013
@@ -174,10 +146,6 @@ contains
         Id = ZERO
         forall(i=1:nmo2) Id(i,i)=ONE
         matrix = matmul(conjg(transpose(C)),matmul(S,C))
-
-        print*," * Entering SymOrth subroutine *"
-        print*,"   Deviation from orthogonality before SymOrth:", &
-                   norm2([norm2(real(Id - matrix)),norm2(aimag(Id - matrix))])
 
         call diag_matrix(matrix,nmo2,ew)
 
@@ -206,14 +174,10 @@ contains
           deallocate(matrix2)
         endif
 
-        print*,"   Deviation from orthogonality after SymOrth:", &
-                   norm2([norm2(real(Id - matmul(conjg(transpose(C)),matmul(S,C)))), &
-                         norm2(aimag(Id - matmul(conjg(transpose(C)),matmul(S,C))))])
         if (norm2([norm2(real(Id - matmul(conjg(transpose(C)),matmul(S,C)))), &
                   norm2(aimag(Id - matmul(conjg(transpose(C)),matmul(S,C))))]) > 1.D-12) then
-         print*,"   Symmetrical orthogonalization has failed."
+         print*,"**WARNING** Symmetrical orthogonalization has failed (thrsh: 1.D-12)."
         end if
-        print*," * End SymOrth subroutine *"
 
         deallocate(matrix,ew,Id)
 

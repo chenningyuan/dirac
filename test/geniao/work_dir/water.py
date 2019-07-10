@@ -35,6 +35,7 @@ molecule = MolData_Dirac(geometry=geometry,
 
 molecule = run_dirac_dfcoef(molecule,
                      version=version,
+                     get_mrconee=True,
                      point_nucleus=point_nucleus)
 
 subprocess.check_call("mv -f DFCOEF MOLECULE.dfcoef", shell=True, cwd=data_directory)

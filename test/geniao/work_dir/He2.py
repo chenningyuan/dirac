@@ -13,7 +13,7 @@ charge = 0
 data_directory="/Users/bsenjean/Documents/Git_repositories/dirac-caar-ibos/test/geniao/work_dir/"
 geometry = [('He', (0., 0., 0.)), ('He', (0., 0., bond_length))]
 point_nucleus = True
-version = ["Stndrd_2013","Simple_2013","Simple_2014"][0]
+version = ["Stndrd_2013","Simple_2013","Simple_2014"][2]
 # by default :
 #symmetry = False
 #unconstract = True
@@ -34,6 +34,7 @@ molecule = gen_dfcoef.MolData_Dirac(geometry=geometry,
 
 molecule = gen_dfcoef.run_dirac_dfcoef(molecule,
                      version=version,
+                     get_mrconee=True,
                      point_nucleus=point_nucleus)
 
 subprocess.check_call("mv -f DFCOEF MOLECULE.dfcoef", shell=True, cwd=data_directory)

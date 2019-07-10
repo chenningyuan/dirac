@@ -3,10 +3,10 @@ import os
 import subprocess
 
 #----------------------------  MANUAL SET UP -----------------------------
-basis1 = 'CC-pVTZ'
+basis1 = 'STO-3G'
 basis2 = 'CC-pVTZ'
 bond_length = 1.71
-charge = 0
+charge = 2
 data_directory="/Users/bsenjean/Documents/Git_repositories/dirac-caar-ibos/test/geniao/work_dir/"
 geometry = [('He', (0., 0., 0.)), ('Ne', (0., 0., bond_length))]
 point_nucleus = True
@@ -31,6 +31,7 @@ molecule = MolData_Dirac(geometry=geometry,
 
 molecule = run_dirac_dfcoef(molecule,
                      version=version,
+                     get_mrconee=True,
                      point_nucleus=point_nucleus)
 
 subprocess.check_call("mv -f DFCOEF MOLECULE.dfcoef", shell=True, cwd=data_directory)

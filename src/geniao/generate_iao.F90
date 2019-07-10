@@ -8,6 +8,7 @@
         use make_iao
         use utils
         use check
+        use energy
         use atomic_fragments
 
         implicit none
@@ -35,8 +36,9 @@
         complex(8), allocatable            :: Cocc_IAO_B1(:,:,:)        !  coefficient matrix, occupied MOs in terms of IAOs transformed back to B1
         complex(8), allocatable            :: IAO_frag(:,:,:)           !  coefficient matrix, IAOs of a fragment in terms of AOs of basis 1.
         complex(8), allocatable            :: coeff1_occ(:,:)
-        complex(8), allocatable            :: HF_RDM(:,:), IAO_RDM(:,:), Id(:,:)
-        complex(8)                         :: sum_diag, sum_column
+        complex(8), allocatable            :: HF_RDM(:,:), HF_Fock(:,:)
+        complex(8), allocatable            :: IAO_RDM(:,:), IAO_Fock(:,:), IAO_CoreH(:,:)
+        real(8)                            :: E_HF, E_HF_IAO
         character(len=14)                  :: fragfile_dfcoef, fragfile_dfpcmo
         character(len=18)                  :: fragfile_val_dfcoef, fragfile_val_dfpcmo
 
@@ -185,11 +187,6 @@
         end select
 
         print*,
-        print*,"C_IAO normalization and Symmetrically Orthogonalization with S11:"
-        call check_normalization(IAO,nmo1,nmo2)
-        call check_SymOrth(IAO,S11,nmo1,nmo2)
-
-        print*,
         print*,"-----Symmetrically orthonormalize IAOs with S11-----"
         call SymOrth(IAO,S11,nmo1,nmo2)
 
@@ -197,11 +194,53 @@
            write(*,'(100G10.2)')(REAL(IAO(i,j)),j=1,nmo2)
         enddo
 
+! Check the calcul of HF energy for the MO of the original basis
+! HF energy = 0.5* Tr[(h + F)*gamma] + nuclear_repulsion
+! (If it was only the Fock matrix, it would be the some of orbital energies, which is obviously only correct for a non-interacting case.)
+! Therefore, we need to read the one-electron integrals:
+        ! Read the integrals to get the H core matrix (int_1el%h_core)
+        call read_from_mrconee (int_1el, ierr)
+        ! Fock matrix:
+        allocate(HF_Fock(nmo1,nmo1))
+        HF_Fock = ZERO
+        forall (i=1:nmo1) HF_Fock(i,i) = cspinor_original%energy(i)
+
+        ! 1RDM:
+        allocate(HF_RDM(nmo1,nmo1)) ! In the MO basis, should be 0 everywhere except 1 on part of the diagonal (only for nocc)
+        HF_RDM = ZERO
+        forall (i=1:nocc) HF_RDM(i,i) = ONE
+  
+        ! Same in the IAO basis:
+        ! Transforme the H core matrix in the basis of IAOs
+        IAO_CoreH = matmul(conjg(transpose(IAO)),matmul(int_1el%h_core,IAO))
+
+        ! Fock matrix in the IAO basis
+        allocate(IAO_Fock(nmo2,nmo2))
+        IAO_Fock = matmul(conjg(transpose(IAO)),matmul(HF_Fock,IAO))
+
+        ! 1RDM in the IAO basis
+        allocate(IAO_RDM(nmo2,nmo2))
+        IAO_RDM = matmul(conjg(transpose(IAO)),matmul(S11,matmul(HF_RDM,matmul(S11,IAO))))
+
         print*,
-        print*,"C_IAO normalization and Symmetrically Orthogonalization with S11:"
+        print*,"***** TESTS *****"
         call check_normalization(IAO,nmo1,nmo2)
         call check_SymOrth(IAO,S11,nmo1,nmo2)
-
+        call deviation_nelec(IAO_RDM,nmo2,nocc)
+        ! Energy:
+        if (int_1el%n_spinor .ne. nmo1) then
+          print*,
+          print*,'**WARNING** number of spinor when reading MRCONEE is not the same as nmo1 of basis B1.'
+          print*,"            MRCONEE n_spinor = ", int_1el%n_spinor, " and B1 nmo1 = ", nmo1 
+          print*,"            Cannot compute the HF energy..."
+        else
+          call HF_energy(E_HF,int_1el%h_core,HF_Fock,HF_RDM,nmo1,int_1el%e_core)
+          call HF_energy(E_HF_IAO,IAO_CoreH,IAO_Fock,IAO_RDM,nmo2,int_1el%e_core)
+          print*,"HF energy (B1) : ",E_HF
+          print*,"HF energy (IAO): ",E_HF_IAO
+          print*,"Deviation from the HF energy in the original basis and in the IAO basis:",REAL(E_HF_IAO - E_HF)
+        endif
+        
         print*,
         print*,"-----Express IAO in terms of the original AOs-----(",nao1,"x",nmo2,")"
         allocate(IAO_B1(nao1,nmo2,2))
@@ -233,60 +272,6 @@
            current_atom=>current_atom%next
         end do
 
-!       clean up list of atoms
-        call del_atoms(first_atom)
-
-!      Check IAOs, python reference:
-!      IbRdm = mdot(CIb.T, S1, hfr.Rdm, S1, CIb)
-!      IbFock = mdot(CIb.T, hfr.Fock, CIb)
-!      IbCoreH = mdot(CIb.T, CoreH, CIb)
-!      print("*** Check of properties of the intrinsic basis:\n")
-!      print(FR("Deviation from orthogonality", la.norm((np.eye(CIb.shape[1]) - mdot(CIb.T, S1, CIb))).flatten()))
-!      print(FR("|ib><ib|i> - |i>", la.norm(mdot(CIb, CIb.T, S1, COcc) - COcc)))
-!      print(FR("nElec/IB", np.trace(IbRdm)))
-!      print(FR("Hartree-Fock energy/IB", .5*dot2(IbFock+IbCoreH, IbRdm) + Atoms.fCoreRepulsion()))
-
-        allocate(HF_RDM(nmo1,nmo1)) ! In the MO basis, should be 0 everywhere except 1 on part of the diagonal.
-        HF_RDM = 0.D0
-        do i=1,nmo1
-         do j=1,nmo1
-           do k=1,nocc
-              HF_RDM(i,j) = HF_RDM(i,j) + conjg(coeff1_occ(i,k))*coeff1_occ(j,k)
-           enddo
-         enddo
-        enddo
-      
-        allocate(IAO_RDM(nmo2,nmo2))
-!       IAO_RDM = matmul(conjg(transpose(IAO)),matmul(S11,matmul(HF_RDM,matmul(S11,IAO))))
-!       S11 is identity matrix in the MO basis...
-        IAO_RDM = matmul(conjg(transpose(IAO)),matmul(HF_RDM,IAO))
-        print*,
-        print*,'-----1RDM in IAO basis-----(',nmo2,'x',nmo2,')'
-        do i = 1, nmo2
-           write(*,'(100G10.2)') (REAL(IAO_RDM(i,j)),j=1,nmo2)
-        end do
-        sum_diag = 0.0
-        do i=1,nmo2
-         sum_diag = sum_diag + IAO_RDM(i,i)
-        enddo
-        print*,"Sum of diagonal:",sum_diag
-
-        allocate(Id(nmo2,nmo2))
-        Id = ZERO
-        forall (i=1:nmo2) Id(i,i) = ONE
-        print*,
-        print*,"***** TESTS *****"
-        print*,"Deviation from orthogonality      :", norm2([norm2(real(Id - matmul(conjg(transpose(IAO)),matmul(S11,IAO)))), &
-                                                            norm2(aimag(Id - matmul(conjg(transpose(IAO)),matmul(S11,IAO))))])
-        print*,"|ib><ib|i> - |i>                  :", &
-                norm2([norm2(real(matmul(IAO,matmul(conjg(transpose(IAO)),matmul(S11,coeff1_occ)))-coeff1_occ)), &
-                      norm2(aimag(matmul(IAO,matmul(conjg(transpose(IAO)),matmul(S11,coeff1_occ)))-coeff1_occ))])
-        print*,"deviation in number of electrons  :", real(sum_diag - nocc)
-        print*,"Check the HF energy obtained from the new occupied MO expressed in terms of IAOs, &
-                transformed back to the B1 basis &
-                (normally I could check it with the standard IAOs, &
-                but I need to compute the Fock and CoreH matrices as done in Knizia's program):"
-
         allocate (Cocc_IAO(nmo2,nocc))
         print*,
         print*,'-----Re-express occupied orbitals in terms of the orthonormal IAO basis-----(',nmo2,'x',nocc,')'
@@ -294,16 +279,8 @@
         do i=1,nmo2
           write(*,'(100G10.2)') (REAL(Cocc_IAO(i,j)),j=1,nocc)
         enddo
-
-        print*,
         print*,"Check normalization of the re-expressed occupied orbitals:"
-        do i=1,nocc
-         sum_column = ZERO
-         do j=1,nmo2
-           sum_column = sum_column + conjg(Cocc_IAO(j,i))*Cocc_IAO(j,i)
-         end do
-         write(*,*) sum_column
-        end do
+        call check_normalization(Cocc_IAO,nmo2,nocc)
 
         ! Transform the coefficient matrix back into the atomic orbital basis 1.
         ! This new coefficient matrix gives the transformation from the AOs of basis 1
@@ -326,6 +303,8 @@
 !        print*,'----***** MAKE IBOs *****-----'
 !        call MakeIBO(IAO,coeff1_occ,S11,cspinor_fragment,n_fragments,nmo1,nmo2,nocc)
 
+!       clean up list of atoms
+        call del_atoms(first_atom)
 !     55 FORMAT( 100(:,1X,'(',G10.2,',',G10.2,')') ) ! Useful format to write complex matrices.
 
    end program generate_iao
