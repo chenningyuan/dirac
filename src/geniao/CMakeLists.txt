@@ -11,6 +11,7 @@ if(ENABLE_GENIAO)
    utils.F90
    atomic_fragments.F90
    read_xyz.F90
+   check.F90
    write_basis.F
   )
 

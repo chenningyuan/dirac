@@ -7,6 +7,7 @@
         use get_overlap
         use make_iao
         use utils
+        use check
         use atomic_fragments
 
         implicit none
@@ -36,7 +37,6 @@
         complex(8), allocatable            :: coeff1_occ(:,:)
         complex(8), allocatable            :: HF_RDM(:,:), IAO_RDM(:,:), Id(:,:)
         complex(8)                         :: sum_diag, sum_column
-        complex(8), allocatable            :: check(:,:)
         character(len=14)                  :: fragfile_dfcoef, fragfile_dfpcmo
         character(len=18)                  :: fragfile_val_dfcoef, fragfile_val_dfpcmo
 
@@ -55,15 +55,6 @@
         ! The following Coeff file is here to check that I indeed get the same format as the DFPCMO_mol file.
         ! It will be removed when I'll be sure it is indeed correct in any cases.
         call write_dffiles("test.dfcoef","test.dfpcmo",ao_basis_1,cspinor_original%coeff,nao1,nmo1,"MOLECULE.dfcoef")
-
-        ! Read the integrals to get the Fock matrix.
-        call read_from_mrconee (int_1el, ierr)
-        print*,"Number of spinor in MRCONEE:",int_1el%n_spinor," compare to nmo1:", nmo1," and core energy:",int_1el%e_core
-        print*,"ierr:",ierr
-        print*,"1e integrals:"
-        do i=1,int_1el%n_spinor
-         write(*,'(100G10.2)') (REAL(int_1el%h_core(i,j)),j=1,int_1el%n_spinor)
-        enddo
 
         call get_free_fileunit(luxyz)
         open (luxyz,file='MOLECULE.XYZ',form='formatted')
@@ -101,11 +92,6 @@
         print*,'-----Compute S11----- (',nmo1,'x',nmo1,') (It is equal to Identity)'
         allocate (S11(nmo1,nmo1))
         call get_mo_overlap (ao_basis_1,cspinor_original,ao_basis_1,cspinor_original,S11)
-        allocate(check(nmo1,nmo1))
-        check = ZERO
-        forall (i=1:nmo1) check(i,i) = ONE
-        print*,"Check that S11 is identity: (S11 - Id) = ", norm2([norm2(real(S11-check)),norm2(aimag(S11-check))])
-        deallocate(check)
 
         print*
         print*,'-----Compute S22-----(',nmo2,'x',nmo2,')'
@@ -199,7 +185,12 @@
         end select
 
         print*,
-        print*,"-----Symmetrically orthonormalize IAOs-----"
+        print*,"C_IAO normalization and Symmetrically Orthogonalization with S11:"
+        call check_normalization(IAO,nmo1,nmo2)
+        call check_SymOrth(IAO,S11,nmo1,nmo2)
+
+        print*,
+        print*,"-----Symmetrically orthonormalize IAOs with S11-----"
         call SymOrth(IAO,S11,nmo1,nmo2)
 
         do i=1,nmo1
@@ -207,24 +198,11 @@
         enddo
 
         print*,
-        print*,"Check normalization after the symmetrically orthonormalized procedure:"
-        do i=1,nmo2
-         sum_column = ZERO
-         do j=1,nmo1
-           sum_column = sum_column + conjg(IAO(j,i))*IAO(j,i)
-         end do
-         write(*,*) sum_column
-        end do
+        print*,"C_IAO normalization and Symmetrically Orthogonalization with S11:"
+        call check_normalization(IAO,nmo1,nmo2)
+        call check_SymOrth(IAO,S11,nmo1,nmo2)
 
         print*,
-        print*,'-----Check IAO.T*S11*IAO = 1-----(',nmo2,'x',nmo2,')'
-        allocate(check(nmo2,nmo2))
-        check = matmul(conjg(transpose(IAO)),matmul(S11,IAO))
-        do i=1,nmo2
-           write(*,'(100G10.2)')(REAL(check(i,j)),j=1,nmo2)
-        enddo
-        deallocate(check)
-
         print*,"-----Express IAO in terms of the original AOs-----(",nao1,"x",nmo2,")"
         allocate(IAO_B1(nao1,nmo2,2))
         IAO_B1(:,:,1) = matmul(cspinor_original%coeff(:,:,1),IAO)
