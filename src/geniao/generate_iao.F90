@@ -43,9 +43,9 @@
         complex(8), allocatable            :: coeff1_occ(:,:)
         complex(8), allocatable            :: HF_RDM(:,:), HF_Fock(:,:)
         complex(8), allocatable            :: IAO_RDM(:,:), IAO_Fock(:,:), IAO_CoreH(:,:)
-        complex(8), allocatable            :: IBO_RDM(:,:)
+        complex(8), allocatable            :: IBO_RDM(:,:), tmp(:,:)
         real(8)                            :: E_HF, E_HF_IAO, E_HF_IBO
-        real(8),    allocatable            :: Cocc_IBO_real(:,:)
+        real(8),    allocatable            :: Cocc_IBO_real(:,:), tmp_ew(:)
         character(len=14)                  :: fragfile_dfcoef, fragfile_dfpcmo
         character(len=18)                  :: fragfile_val_dfcoef, fragfile_val_dfpcmo
 
@@ -231,7 +231,7 @@
         !-----Compute IBOs (Localized occupied MO in terms of IAOs)----- (nmo2 x nocc)
         allocate(Cocc_IBO_real(nmo2,nocc)) ! should be replaced by Cocc_IBO once it will work for complex orbitals.
         allocate(Cocc_IBO(nmo2,nocc))
-        call MakeIBO(real(Cocc_IAO),Cocc_IBO_real,cspinor_fragment,n_fragments,nmo2,nocc,Expnt)
+        call LocalizeIbosInIaoBasis(real(Cocc_IAO),Cocc_IBO_real,cspinor_fragment,n_fragments,nmo2,nocc,Expnt)
 
         ! Temporary rewrite into complex format... :
         do i=1,nmo2
@@ -251,6 +251,9 @@
         ! It will be used to test the HF energy (using the Fock and H_core matrix of basis B1)
         allocate(Cocc_IBO_moB1(nmo1,nocc))
         Cocc_IBO_moB1 = matmul(IAO,Cocc_IBO)
+
+        ! In Knizia's program, another call is made to sort the new localized orbitals by energy.
+        ! I think in our case they are already sorted, but I'm not 100% convinced...
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !       Compute HF energies and tests     !

@@ -2,40 +2,21 @@ module make_ibo
 
 contains
 
-   subroutine MakeIBO(CIbOcc,LIbocc,cspinor_fragment,n_fragments,nmo2,nocc,Expnt)
+   subroutine LocalizeIbosInIaoBasis(CIbOcc,LIbocc,cspinor_fragment,n_fragments,nmo2,nocc,Expnt)
    ! make intrinsic bond orbitals (IBOs)
 
         use exacorr_mo
 
         implicit none
 
-        integer :: i,j
+        logical                 :: conv
+        integer                 :: i,j,k,l, imo, nmoi, it
         integer, intent(in)     :: n_fragments, nmo2, nocc, Expnt
         real(8), intent(in)     :: CIbOcc(nmo2,nocc)
         type(cmo),  intent(in)  :: cspinor_fragment(n_fragments) ! MO-coefficients of the fragments
         real(8), intent(  out)  :: LIbOcc(nmo2,nocc)
-         
-        call LocalizeIbosInIaoBasis(CIbOcc,LIbOcc,cspinor_fragment,n_fragments,nmo2,nocc,Expnt)
-        ! In Knizia's program, another call is made to sort the new localized orbitals by energy.
-        ! Not sure we need this here... If not, I can make a single subroutine MakeIBO instead of
-        ! having an additional LocalizeIbosInIaoBasis subroutine...
-
-   end subroutine MakeIBO
-
-   subroutine LocalizeIbosInIaoBasis(CIbOcc,LIbOcc,cspinor_fragment,n_fragments,nmo2,nocc,Expnt)
-        ! Not working for now, I am a bit confused with the imaginary part.
-        use exacorr_mo
-
-        implicit none
-        integer, intent(in) :: Expnt
-        logical :: conv
-        integer :: i,j,k,l, imo, nmoi, it
-        integer, intent(in) :: n_fragments, nmo2, nocc
-        real(8), intent(in) :: CIbOcc(nmo2,nocc)
-        real(8), intent(out) :: LIbOcc(nmo2,nocc)
-        type(cmo), intent(in) :: cspinor_fragment(n_fragments) ! MO-coefficients of the fragments
-        real(8) :: phi,func, fGrad, Aij, Bij, Cii, Cij, Cjj, Loc
-        real(8), allocatable :: C(:,:), Ai(:), Aj(:), vec(:)
+        real(8)                 :: phi,func, fGrad, Aij, Bij, Cii, Cij, Cjj, Loc
+        real(8), allocatable    :: C(:,:), Ai(:), Aj(:), vec(:)
 
         LIbOcc = CIbOcc
         conv = .false.
