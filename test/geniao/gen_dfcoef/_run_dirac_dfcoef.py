@@ -44,7 +44,8 @@ def generate_dirac_input(molecule,
                         point_nucleus,
                         uncontract,
                         speed_of_light,
-                        version):
+                        version,
+                        exponent):
     """This function creates and saves a Dirac input file.
 
     Args:
@@ -127,7 +128,8 @@ def generate_dirac_input(molecule,
 
     with open(molecule.data_directory+"/INPUT_IAO","w") as f:
       f.write(version+"\n")
-      f.write(str(molecule.charge))
+      f.write(str(molecule.charge)+"\n")
+      f.write(str(exponent))
 
     return input_file, xyz_file
 
@@ -143,6 +145,7 @@ def run_dirac_dfcoef(molecule,
              uncontract=True,
              speed_of_light=False,
              version="Stndrd_2013",
+             exponent=4,
              get_mrconee=False,
              restart=False):
     """This function runs a Dirac calculation.
@@ -166,7 +169,8 @@ def run_dirac_dfcoef(molecule,
                         point_nucleus,
                         uncontract,
                         speed_of_light,
-                        version)
+                        version,
+                        exponent)
 
     # Run Dirac
     print('Starting Dirac calculation\n')

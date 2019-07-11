@@ -487,7 +487,6 @@ C
           nto = npo+nmo   ! total number of solutions on this file
           if (npo > 0) print*, "warning: reading from 4C DFCOEF file" ! this warning will go once we have the full index transform implemented
        end if
-       print*,'nao, npo, nmo, nto : ', nao, npo, nmo, nto
 
        allocate(coeff(nao,nto,nz))
        allocate(eig(nto))

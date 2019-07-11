@@ -22,7 +22,10 @@ contains
         ! Should include path information, for now assume this is copied into the working dir
         write (fragfile,'(i3.3,a7)') atom_number,'.dfcoef'
         call read_from_dirac (ao_basis,cspinor_full,fragfile,ierr)
-        print*,'  ierr (0 --> NO ERROR) = ', ierr
+
+        if (ierr .ne. 0) then
+          write(*,*)"**WARNING** Reading the DFCOEF file has led to an error : ierr = ",ierr
+        endif
         ! All atomic coefficients are generated with the atom in the origin, translate the basis to the actual position
         do ishell = 1, ao_basis%nshells ! somehow the compiler wants an explicit loop for this
             ao_basis%gtos(ishell)%coord = atom_coord
