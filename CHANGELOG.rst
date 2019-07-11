@@ -19,6 +19,11 @@ Performance improvements:
 - Reduced static memory requirement from common blocks.
 
 
+Documentation:
+
+- Restore local build of Sphinx documentation.
+
+
 18.0 (2018-12-13)
 -----------------
 
