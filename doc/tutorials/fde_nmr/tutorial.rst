@@ -94,9 +94,9 @@ The menu file ``getfrozen.inp`` reads:
 
 .. literalinclude:: getfrozen.inp
 
-and we make sure to get the text file ``GRIDOUT`` (related to the :ref:`GRIDOU` keyword).
+and we make sure to get the text file ``GRIDOUT`` (related to the :ref:`FDE_.GRIDOU` keyword).
 We should also remember to supply two files, 
-related to keywords :ref:`GRIDOU` (``GRIDOUT``) and :ref:`EXONLY` (``FILEEX``),
+related to keywords :ref:`FDE_.GRIDOU` (``GRIDOUT``) and :ref:`FDE_.EXONLY` (``FILEEX``),
 which are copies of a numerical grid file:
 
 .. literalinclude:: getfrozen.run
@@ -111,7 +111,7 @@ Step 2: SCF and response calculation on the subsystem I
 Now we can use the information about the subsystem II written on the ``GRIDOUT`` file for constructing
 the embedding potential, :math:`v_{emb}^{I}`, and embedding kernel, :math:`w_{emb}^{I,I}`.
 In order to do that, we use the ``GRIDOUT`` file saved from Step 1 and copy it to a ``FROZEN`` file,
-which is given as an argument to the :ref:`FRDENS` keyword.
+which is given as an argument to the :ref:`FDE_.FRDENS` keyword.
 
 We use the following input file for the SCF step:
 
@@ -127,7 +127,7 @@ To calculate the NMR shielding tensor, we use the following input file:
 
 .. literalinclude:: shield_v_w11.inp
 
-in which the keyword :ref:`LAO11` denotes that the contributions from the embedding potential, :math:`v_{emb}^{I}`,
+in which the keyword :ref:`FDE_.LAO11` denotes that the contributions from the embedding potential, :math:`v_{emb}^{I}`,
 and the uncoupled embedding kernel, :math:`w_{emb}^{I,I}`, will be added to the property gradient.
 The corresponding ``pam`` command is:
 
@@ -189,7 +189,7 @@ In order to get the density perturbed by an external magnetic field in LAO basis
 
 .. literalinclude:: getfrozenpert.inp
 
-with the keyword :ref:`EXPPED` (under :ref:`NMR` section) asking the program to save the contributions to the perturbed density on two files ``pertden_direct_lao.FINAL`` and ``pertden_reorth_lao.FINAL``. The corresponding pam command is:
+with the keyword :ref:`NMR_.EXPPED` asking the program to save the contributions to the perturbed density on two files ``pertden_direct_lao.FINAL`` and ``pertden_reorth_lao.FINAL``. The corresponding pam command is:
 
 .. literalinclude:: getfrozenpert.run
 
@@ -213,14 +213,14 @@ The response input is then the following:
 
 .. literalinclude:: shield_v_w11_w12_nocoulomb.inp
 
-with two new keywords: :ref:`LAOFRZ` and :ref:`PERTIM`. The corresponding ``pam`` command is:
+with two new keywords: :ref:`FDE_.LAOFRZ` and :ref:`FDE_.PERTIM`. The corresponding ``pam`` command is:
 
 .. literalinclude:: shield_v_w11_w12_nocoulomb.run
 
 This input does not include the computationally expensive Coulomb term in the embedding kernel, only the nonadditive
 exchange-correlation and kinetic parts of the embedding kernel. 
-If the Coulomb term is to be calculated then an additional keyword is required in the input, :ref:`LFCOUL`.
-Instead of using the :ref:`LFCOUL` and the :ref:`LAOFRZ` keywords together, it is possible to use a single :ref:`LAO12` keyword,
+If the Coulomb term is to be calculated then an additional keyword is required in the input, :ref:`FDE_.LFCOUL`.
+Instead of using the :ref:`FDE_.LFCOUL` and the :ref:`FDE_.LAOFRZ` keywords together, it is possible to use a single :ref:`FDE_.LAO12` keyword,
 which represents both contributions to the coupled embedding kernel:
 
 .. literalinclude:: shield_v_w11_w12.inp
