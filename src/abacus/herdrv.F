@@ -983,10 +983,10 @@ C.....Find center of mass
          CALL DCOPY(3,CMXYZ,1,GAGORG,1)
          CALL DCOPY(3,GAGORG,1,DIPORG,1)
       ENDIF
-      WRITE (LUPRI,'(/,A,3F20.15)')
-     &    ' Gauge origin (a.u.)   :', (GAGORG(I),I=1,3)
-      WRITE (LUPRI,'(/,A,3F20.15)')
-     &    ' Dipole origin (a.u.)  :', (DIPORG(I),I=1,3)
+      WRITE (LUPRI,'(/,A,18X,3F20.15)')
+     &    ' Gauge origin (a.u.):', (GAGORG(I),I=1,3)
+      WRITE (LUPRI,'(/,A,17X,3F20.15)')
+     &    ' Dipole origin (a.u.):', (DIPORG(I),I=1,3)
       WRITE (LUPRI,'(/,A,3F20.15)')
      &    ' Origin for London phase factor (a.u.):', (ORIGIN(I),I=1,3)
       IF (DORLM .AND. .NOT. CAVUSR) THEN

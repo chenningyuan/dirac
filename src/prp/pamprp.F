@@ -10601,7 +10601,7 @@ C
      &            .TRUE.,PLANAR,LINMOL,IPRINT)  
 C     On output 
 C        TINERT - inertia tensor
-C        EIGVAL - inverse eigenvalues in descending order
+C        EIGVAL - inverse eigenvalues (for linear molecules, in descending order)
 C        EIGVEC - corresponding eigenvectors
 C        PLANAR=T : planar molecule
 C        LINMOL=T : linear molecule (EIGVAL(1) = 0.0)
@@ -10625,8 +10625,8 @@ C
 !
          IF (IPRINT .GE. 0) THEN
             WRITE (LUPRI,'(/,1X,A)') ' The molecule is linear.'
-            WRITE (LUPRI,'(A,F16.6)')' Moment of inertia :',
-     &                                  XFAMU/EIGVAL(3)
+            WRITE (LUPRI,'(2X,A,F14.8,/)')
+     &          'Moment of inertia (a.u.): ', XFAMU/EIGVAL(3)
          END IF
          DO 98 IATOM = 1, NUCDEP
 C     NSR constants are defined only for nuclei with non-zero gvalue
@@ -10711,13 +10711,8 @@ C
           IF(LINMOL) THEN
             IF (IPRINT .GE. 0) THEN
               WRITE (LUPRI,'(/,1X,A)') ' The molecule is linear.'
-              IF(EIGVAL(1).NE.0) THEN
-                WRITE (LUPRI,'(2X,A,F14.8,/)')
-     &            'Moment of inertia (a.u.): ', XFAMU/EIGVAL(1)
-              ELSE
-                WRITE (LUPRI,'(2X,A,F14.8,/)')
-     &            'Moment of inertia (a.u.): ', XFAMU/EIGVAL(2)
-              END IF
+              WRITE (LUPRI,'(2X,A,F14.8,/)')
+     &          'Moment of inertia (a.u.): ', XFAMU/EIGVAL(3)
             END IF
           ELSE
             IF (IPRINT .GE. 0) THEN
@@ -10736,7 +10731,7 @@ C
                IF (IPRINT .GE. 0) THEN
                  CALL HEADER('Spin-rotation constants (kHz) for '//
      &                      NAMDEP(IATOM),-1)
-                 WRITE (LUPRI,'(2X,A17,F12.6)')
+                 WRITE (LUPRI,'(2X,A17,F12.6,/)')
      &                 'Nuclear g-value: ',GVAL(IATOM)
                END IF
             ELSE   !   if GVAL = 0

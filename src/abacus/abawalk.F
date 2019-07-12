@@ -6943,47 +6943,45 @@ C
 C      
 C     Inverse moments of inertia
 C
+      EIGVALUE(1)    = D1/EIGVAL(1)
+      EIGVALUE(2)    = D1/EIGVAL(2)
+      EIGVALUE(3)    = D1/EIGVAL(3)
+C
+C.....Order eigenvalues and corresponding eigenvectors in ascending order E(1) < E(2) < E(3)
+      CALL ORDER(EIGVEC,EIGVAL,3,3)
+C
       IF (EIGVAL(1).gt.TSTLIN.and.EIGVAL(2).gt.TSTLIN
      & .and.EIGVAL(3).gt.TSTLIN) THEN
 C     Non-linear molecules
-         EIGVALUE(1)    = D1/EIGVAL(1)
-         EIGVALUE(2)    = D1/EIGVAL(2)
-         EIGVALUE(3)    = D1/EIGVAL(3) 
          LINEAR = .FALSE.
-         WRITE (LUPRI,'(/,1X,A)') 'Non-linear molecule'
-C.....Order eigenvalues and corresponding eigenvectors in ascending order E(1) < E(2) < E(3)
-         CALL ORDER(EIGVEC,EIGVAL,3,3)
-C
+         WRITE (LUPRI,'(/,2X,A)') 'Non-linear molecule'
          IF (ABS(EIGVAL(3)-(EIGVAL(2)+EIGVAL(1))) .LT. TSTLIN) THEN
             PLANAR = .TRUE.
-            write(lupri,*) 'Planar molecule'
+            WRITE (LUPRI,'(/,2X,A)') 'Planar molecule'
          ELSE
             PLANAR = .FALSE.
+            WRITE (LUPRI,'(/,2X,A)') 'Non-planar molecule'
          END IF
          IF (EIGVAL(1).eq.EIGVAL(2).and.EIGVAL(1).eq.EIGVAL(3))
-     &    write(lupri,*) 'Spherical top molecule'
+     &    WRITE (LUPRI,'(/,2X,A)')  'Spherical top molecule'
          IF (EIGVAL(1).eq.EIGVAL(2).and.EIGVAL(1).ne.EIGVAL(3))
-     &    write(lupri,*) 'Oblate symmetric top molecule'
+     &    WRITE (LUPRI,'(/,2X,A)')  'Oblate symmetric top molecule'
          IF (EIGVAL(2).eq.EIGVAL(3).and.EIGVAL(2).ne.EIGVAL(1))
-     &    write(lupri,*) 'Prolate symmetric top molecule'
+     &    WRITE (LUPRI,'(/,2X,A)')  'Prolate symmetric top molecule'
       ELSE
 C     Linear molecules
-         LINEAR = .TRUE.
-         PLANAR = .FALSE.
          IF (EIGVAL(1).lt.TSTLIN) THEN
+          LINEAR = .TRUE.
+          PLANAR = .FALSE.
           EIGVALUE(1) = D0
           EIGVALUE(2) = D1/EIGVAL(2)
           EIGVALUE(3) = D1/EIGVAL(3)
-         ELSE IF (EIGVAL(2).lt.TSTLIN) THEN
-          EIGVALUE(1) = D1/EIGVAL(1)
-          EIGVALUE(2) = D0
-          EIGVALUE(3) = D1/EIGVAL(3)
-         ELSE
-          EIGVALUE(1) = D1/EIGVAL(1)
-          EIGVALUE(2) = D1/EIGVAL(2)
-          EIGVALUE(3) = D0
+          DO 600 I = 1, 3
+          DO 600 J = 1, 3
+          EIGVECTOR(I,J) = EIGVEC(I,J)
+  600 CONTINUE
          END IF
-         write(lupri,*) 'Linear molecule'
+         WRITE (LUPRI,'(/,2X,A)') 'Linear molecule'
       END IF
 C
       CALL DZERO(TINVER,9)
