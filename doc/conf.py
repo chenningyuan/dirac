@@ -129,8 +129,6 @@ try:
     html_context = {
         # custom theme css file, put your styles here
         'css_files': ['_static/theme-custom.css'],
-        # google analytics account id
-        'google_analytics_account': 'UA-61958338-1',
     }
 except ImportError:
     print('sphinx_rtd_theme extension not found - fallback to the old theme')
