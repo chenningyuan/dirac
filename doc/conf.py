@@ -24,6 +24,7 @@ sys.path.append(os.path.abspath('sphinxext'))
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 # miro: this is safe list of extensions for (almost) all versions of sphinx
 extensions = ['sphinx.ext.autodoc',
+              'sphinx.ext.mathjax',
               'sphinx.ext.doctest',]
 
 # be safe about adding new extensions
