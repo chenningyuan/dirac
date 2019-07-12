@@ -14,15 +14,23 @@ New features:
 
 Revised features:
 
-- max number of basis functions increased from 30k to 40k
+- Maximum number of basis functions increased from 30k to 40k.
 
 Error corrections:
 
-- Fix spelling error in keyword .GAUNTSCALE (was .GAUTSCALE)
+- Fixed Be basis set in cc-pV5Z.
+- Fixed spelling error in keyword .GAUNTSCALE (was .GAUTSCALE).
+- Fixed T1EQN1 function call in src/relccsd/ccgrad.F (thanks to Martin Siegert).
 
 Performance improvements:
 
-- Reduced static memory requirement from common blocks
+- Reduced static memory requirement from common blocks.
+
+
+Documentation:
+
+- Restore local build of Sphinx documentation.
+
 
 18.0 (2018-12-13)
 -----------------
@@ -45,8 +53,7 @@ Performance improvements:
 - New much more efficient complex diagonalization routine using openMP for performance. Contributor: Hans Joergen Aa. Jensen.
 - Use MPI_REDUCE for adding Fock matrix contributions from MPI worker nodes on MPI master node. Contributor: Hans Joergen Aa. Jensen.
 - Save memory in direct Fock matrix constructions, now >13000 basis functions can be run in 32GB RAM. Contributor: Hans Joergen Aa. Jensen.
-  (With these performance improvements, a 4c HF test calculation with 13000 basis functions, 3300 postive energy orbitals (6600 in total)
-   has been run on Titan at ORNL with 800 nodes, each with 8 openMP threads, at 1h59m-2h06m per HF iteration.)
+- (With these performance improvements, a 4c HF test calculation with 13000 basis functions, 3300 postive energy orbitals (6600 in total) has been run on Titan at ORNL with 800 nodes, each with 8 openMP threads, at 1h59m-2h06m per HF iteration.)
 
 Framework changes:
 

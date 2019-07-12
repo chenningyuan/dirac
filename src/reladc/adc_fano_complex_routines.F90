@@ -68,7 +68,6 @@ CONTAINS
 !
 
     use adc_cfg
-    use adc_fano_routines
     use memory_allocator
 
     IMPLICIT NONE
@@ -252,7 +251,6 @@ CONTAINS
 !
 
     use adc_cfg
-    use adc_fano_routines
     use memory_allocator
 
     IMPLICIT NONE

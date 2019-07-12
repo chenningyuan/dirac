@@ -5082,7 +5082,7 @@ C        ... do not print all the small numbers
      &   ' CPU (Wall) time in GASCIP_CISIG_SCREEN kernel: ',CPUTID,' (',
      &   WALLTID,')',' Number of BVEC elements skipped:',NBSKIP,
      &   ' out of',NDET,'; remaining ',NDET-NBSKIP
-         IF (NODTOT .GT. 0) THEN
+         IF (NUMNOD .GT. 0) THEN
             WRITE(LUPRI,'(A,I5,A,2I15)')
      &      ' Node',MYTID,'; start and end in SVEC:',IS_START,IS_END
          END IF
@@ -5766,19 +5766,19 @@ C     master: 1) send bc-vectors to all slaves
 !      will give OK load balancing)
 !!    (2: could still be better, now set length to 2000 instead,
 !!     independent of number of nodes)
-!!    N_TASKS = 5 * NODTOT
+!!    N_TASKS = 5 * NUMNOD
 !!    LEN_SCVEC_PER_TASK = (NDET - 1) / N_TASKS + 1
 !!    IF (LEN_SCVEC_PER_TASK .LT. 2000) THEN
          LEN_SCVEC_PER_TASK = 2000
          N_TASKS = (NDET - 1) / LEN_SCVEC_PER_TASK + 1
-         N_TASKS = MAX(N_TASKS, NODTOT)
+         N_TASKS = MAX(N_TASKS, NUMNOD)
          LEN_SCVEC_PER_TASK = (NDET - 1) / N_TASKS + 1
 !!    END IF
 
       call interface_MPI_BCAST(
      &     N_TASKS,1,MPARID,global_communicator)
 
-      NEXT_TASK = NODTOT + 1 ! nodes start automatically with their first task
+      NEXT_TASK = NUMNOD + 1 ! nodes start automatically with their first task
 
       WAIT_MAX = 0.0D0
       I_WAIT_MAX = 0
