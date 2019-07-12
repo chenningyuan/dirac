@@ -28,7 +28,6 @@ contains
        idim(1,1) = 0
        idim(2,1) = int(nmo/2)
 
-       ! I think that I need to have this format for the DFCOEF file ?
        call convert_complex_to_quaternion_format(coeff,coeff_quaternion,nao,nmo)
 
        open (UNIT = iunit,file=filename_unformatted,FORM='UNFORMATTED',access='SEQUENTIAL')
@@ -57,28 +56,15 @@ contains
       integer,    intent(in   ) :: nao, nmo
       complex(8), intent(in   ) :: scoeff(nao,nmo,2)
       real(8),    intent(  out) :: coeff(nao,int(nmo/2),4)
-      integer                   :: i, j, spin
+      integer                   :: i, j
 
-      do spin = 1, 2
-        if (spin == 1) then
-            do j = 1, int(nmo/2)
-                do i = 1, nao
-                coeff(i,j,1) = real(scoeff(i,2*j-1,spin))
-                coeff(i,j,2) = aimag(scoeff(i,2*j-1,spin))
-                coeff(i,j,3) = real(scoeff(i,2*j,spin))
-                coeff(i,j,4) = aimag(scoeff(i,2*j,spin))
-                end do
-            end do
-!        else if (spin == 2) then
-!            do j = 1, int(nmo/2)
-!                do i = 1, nao
-!                coeff(i,j,3) = - real(scoeff(i,2*j-1,spin))
-!                coeff(i,j,4) = aimag(scoeff(i,2*j-1,spin))
-!                coeff(i,j,1) = real(scoeff(i,2*j,spin))
-!                coeff(i,j,2) = - aimag(scoeff(i,2*j,spin))
-!                end do
-!            end do
-        end if
+      do j = 1, int(nmo/2)
+        do i = 1, nao
+        coeff(i,j,1) = real(scoeff(i,2*j-1,1))
+        coeff(i,j,2) = aimag(scoeff(i,2*j-1,1))
+        coeff(i,j,3) = real(scoeff(i,2*j,1))
+        coeff(i,j,4) = aimag(scoeff(i,2*j,1))
+        end do
       end do
 
    end subroutine convert_complex_to_quaternion_format

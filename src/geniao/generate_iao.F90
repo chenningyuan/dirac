@@ -289,21 +289,23 @@
         IAO_RDM = matmul(conjg(transpose(IAO)),matmul(S11,matmul(HF_RDM,matmul(S11,IAO))))
 
         ! 1RDM in the IAO basis
-        allocate(IBO_RDM(nmo2,nmo2))
+        allocate(IBO_RDM(nmo1,nmo1))
         IBO_RDM = matmul(Cocc_IBO_moB1,conjg(transpose(Cocc_IBO_moB1)))
 
         print*,
         print*,"***** TESTS *****"
         call check_normalization(IAO,nmo1,nmo2)
         call check_normalization(Cocc_IAO,nmo2,nocc)
+        call check_normalization(Cocc_IBO,nmo2,nocc)
+        call check_normalization(Cocc_IBO_moB1,nmo1,nocc)
         call check_SymOrth(IAO,S11,nmo1,nmo2)
         call deviation_nelec(IAO_RDM,nmo2,nocc)
+        call deviation_nelec(IBO_RDM,nmo1,nocc)
         ! Energy:
         if (int_1el%n_spinor .ne. nmo1) then
           print*,
           print*,'**WARNING** number of spinor when reading MRCONEE is not the same as nmo1 of MO basis B1.'
-          print*,"            MRCONEE n_spinor = ", int_1el%n_spinor, " and nmo1 = ", nmo1
-          print*,"            Cannot compute the HF energy..."
+          print*,"            Cannot compute the HF energy."
         else
           call HF_energy(E_HF,int_1el%h_core,HF_Fock,HF_RDM,nmo1,int_1el%e_core)
           call HF_energy(E_HF_IAO,IAO_CoreH,IAO_Fock,IAO_RDM,nmo2,int_1el%e_core)

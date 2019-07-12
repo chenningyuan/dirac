@@ -5,7 +5,6 @@ import subprocess
 #----------------------------  MANUAL SET UP -----------------------------
 basis1 = 'STO-3G'
 basis2 = 'CC-pVDZ'
-bond_length = 2.0
 charge = 0
 data_directory="/Users/bsenjean/Documents/Git_repositories/dirac-caar-ibos/test/geniao/work_dir/"
 geometry = [\
@@ -15,7 +14,7 @@ geometry = [\
 fragment_list=['H','O'] # from the lowest atomic number to the highest
 point_nucleus = True
 version = ["Stndrd_2013","Simple_2013","Simple_2014"][0]
-exponent = [2,3,4][1]
+exponent = [2,3,4][2]
 # by default :
 #symmetry = False
 #unconstract = True
