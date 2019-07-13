@@ -1345,8 +1345,8 @@ C
          CALL interface_MPI_BCAST(IJOB,1,NODEID(MOTHER),
      &                  global_communicator)
       END IF
-#endif      
-#endif 
+#endif
+#endif
 
 
  9999 CALL QEXIT('OPTMIN')

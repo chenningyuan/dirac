@@ -6940,7 +6940,7 @@ C
       DO 500 J = 1, 3
       EIGVECTOR(I,J) = EIGVEC(I,J)
   500 CONTINUE
-C      
+C
 C     Inverse moments of inertia
 C
       EIGVALUE(1)    = D1/EIGVAL(1)
