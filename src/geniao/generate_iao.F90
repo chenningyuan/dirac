@@ -22,6 +22,9 @@
         type(cmo)                          :: cspinor_original ! MO-coefficients before localization 
         type(cmo), allocatable             :: cspinor_fragment(:) ! MO-coefficients of the fragments
         type(atom), pointer                :: first_atom,current_atom ! linked list to store coordindate information
+        type(cmo)                          :: cspinor_localized ! MO-coefficients after localization 
+        type(cmo)                          :: cspinor_localized_ibo ! MO-coefficients after localization (IBOs)
+        type(cmo)                          :: cspinor_frag_IAO ! MO-coefficients in IAO basis for the fragments
         type(one_el_t)                     :: int_1el
         integer                            :: luxyz, ierr, i, j, k, l
         integer                            :: nmo1, nmo2, imo, jmo, nmoi, nmoj, nao1, ncore, nvale
@@ -63,9 +66,6 @@
         call read_from_dirac (ao_basis_1,cspinor_original,'MOLECULE.dfcoef',ierr)
         nmo1 = cspinor_original%nmo
         nao1 = cspinor_original%nao
-        ! The following Coeff file is here to check that I indeed get the same format as the DFPCMO_mol file.
-        ! It will be removed when I'll be sure it is indeed correct in any cases.
-        call write_dffiles("test.dfcoef","test.dfpcmo",ao_basis_1,cspinor_original%coeff,nao1,nmo1,"MOLECULE.dfcoef")
 
         call get_free_fileunit(luxyz)
         open (luxyz,file='MOLECULE.XYZ',form='formatted')
@@ -196,8 +196,11 @@
            allocate(IAO_frag(nao1,nmoi,2))
            IAO_frag = IAO_aoB1(:,imo+1:imo+nmoi,:)
            write (fragfile_dfcoef,'(i3.3,a11)') nint(current_atom%bascharge),'_iao.dfcoef'
-           write (fragfile_dfpcmo,'(i3.3,a11)') nint(current_atom%bascharge),'_iao.dfpcmo'
-           call write_dffiles(fragfile_dfcoef,fragfile_dfpcmo,ao_basis_1,IAO_frag,nao1,nmoi,"MOLECULE.dfcoef")
+           call alloc_mo(cspinor_frag_IAO,nao1,nmoi)
+           cspinor_frag_IAO%coeff = IAO_frag
+           cspinor_frag_IAO%total_energy = cspinor_original%total_energy
+           call write_mos_to_dirac (ao_basis_1,cspinor_frag_IAO,fragfile_dfcoef)
+           call dealloc_mo(cspinor_frag_IAO)
            deallocate(IAO_frag)
 
            ! Do it also for valence orbitals only
@@ -205,8 +208,12 @@
            allocate(IAO_frag(nao1,nvale,2))
            IAO_frag = IAO_aoB1(:,imo+1+ncore:imo+nmoi,:)
            write (fragfile_val_dfcoef,'(i3.3,a15)') nint(current_atom%bascharge),'_iao_val.dfcoef'
-           write (fragfile_val_dfpcmo,'(i3.3,a15)') nint(current_atom%bascharge),'_iao_val.dfpcmo'
-           call write_dffiles(fragfile_val_dfcoef,fragfile_val_dfpcmo,ao_basis_1,IAO_frag,nao1,nvale,"MOLECULE.dfcoef")
+           deallocate(IAO_frag)
+           call alloc_mo(cspinor_frag_IAOval,nao1,nvale)
+           cspinor_frag_IAOval%coeff = IAO_frag
+           cspinor_frag_IAOval%total_energy = cspinor_original%total_energy
+           call write_mos_to_dirac (ao_basis_1,cspinor_frag_IAOval,fragfile_val_dfcoef)
+           call dealloc_mo(cspinor_frag_IAOval)
            deallocate(IAO_frag)
            imo = imo + nmoi
            current_atom=>current_atom%next
@@ -221,7 +228,10 @@
         Cocc_IAO_aoB1(:,:,1) = matmul(IAO_aoB1(:,:,1),Cocc_IAO)
         Cocc_IAO_aoB1(:,:,2) = matmul(IAO_aoB1(:,:,2),Cocc_IAO)
         ! Write the coefficient matrix into the unformatted dfcoef file.
-        call write_dffiles("iao.dfcoef","iao.dfpcmo",ao_basis_1,Cocc_IAO_aoB1,nao1,nocc,"MOLECULE.dfcoef")
+        call alloc_mo(cspinor_localized,nao1,nmo1)
+        cspinor_localized%coeff = Cocc_IAO_aoB1
+        cspinor_localized%total_energy = cspinor_original%total_energy
+        call write_mos_to_dirac (ao_basis_1,cspinor_localized,"iao.dfcoef")
 
         ! Compute partial charges with occupied MO expressed in terms of IAOs.
         call partial_charges(Cocc_IAO,cspinor_fragment,n_fragments,nmo2,nocc)
@@ -248,7 +258,10 @@
         Cocc_IBO_aoB1(:,:,1) = matmul(IAO_aoB1(:,:,1),Cocc_IBO)
         Cocc_IBO_aoB1(:,:,2) = matmul(IAO_aoB1(:,:,2),Cocc_IBO)
         ! Write the coefficient matrix into the unformatted dfcoef file.
-        call write_dffiles("ibo.dfcoef","ibo.dfpcmo",ao_basis_1,Cocc_IBO_aoB1,nao1,nocc,"MOLECULE.dfcoef")
+        call alloc_mo(cspinor_localized,nao1,nmo1)
+        cspinor_localized_ibo%coeff = Cocc_IBO_aoB1
+        cspinor_localized_ibo%total_energy = cspinor_original%total_energy
+        call write_mos_to_dirac (ao_basis_1,cspinor_localized_ibo,"ibo.dfcoef")
 
         !-----Transform IBOs back to MO basis B1----- (nmo1 x nocc)
         ! It will be used to test the HF energy (using the Fock and H_core matrix of basis B1)
@@ -298,7 +311,6 @@
         allocate(IBO_RDM(nmo1,nmo1))
         IBO_RDM = matmul(Cocc_IBO_moB1,conjg(transpose(Cocc_IBO_moB1)))
 
-        print*,
         print*,"***** TESTS *****"
         call check_normalization(IAO,nmo1,nmo2)
         call check_normalization(Cocc_IAO,nmo2,nocc)

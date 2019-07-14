@@ -8,14 +8,13 @@ module exacorr_mo
 
 !   Extended from dirac_mo by Stan Papadopoulos, January 2019
 
-!!!!!!!!!!!!!!!!!LOSE DEPENDENCY ON DIRAC_MO -> PUT EVERYTHING IN HERE
 
     implicit none
 
     private
 
     public :: alloc_mo, dealloc_mo, sync_mo
-    public :: convert_quaternion_to_complex
+    public :: convert_quaternion_to_complex,convert_complex_to_quaternion
 
     type  :: mo_root
         integer             :: &
@@ -287,5 +286,36 @@ module exacorr_mo
       end do
 
      end subroutine convert_quaternion_to_complex
+
+     subroutine convert_complex_to_quaternion(cm,qm)
+
+!     switch to Kramer's restricted format, taking unbarred spinors (odd indices) as reference
+!     NB: will not work for unrestricted calculations in which unbar/bar are not intertwined exactly
+
+      implicit none
+      type(cmo),  intent(inout) :: cm
+      type(qumo), intent(inout) :: qm
+      integer                   :: i, j
+
+      call alloc_mo (qm,cm%nao,cm%nmo/2,4)
+    
+      qm%total_energy  = cm%total_energy
+      qm%fermion_irrep = cm%fermion_irrep
+
+      do j = 1, qm%nmo
+        qm%energy(j) = cm%energy(2*j-1)
+      end do
+
+      do j = 1, qm%nmo
+         do i = 1, qm%nao
+          qm%coeff(i,j,1) =  real(cm%coeff(i,2*j-1,1))
+          qm%coeff(i,j,2) = aimag(cm%coeff(i,2*j-1,1))
+          qm%coeff(i,j,3) = -real(cm%coeff(i,2*j-1,2))
+          qm%coeff(i,j,4) = aimag(cm%coeff(i,2*j-1,2))
+         end do
+      end do
+
+     end subroutine convert_complex_to_quaternion
+
 
 end module exacorr_mo
