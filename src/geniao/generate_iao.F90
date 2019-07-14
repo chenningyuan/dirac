@@ -18,6 +18,7 @@
         type(cmo)                          :: cspinor_original ! MO-coefficients before localization 
         type(cmo), allocatable             :: cspinor_fragment(:) ! MO-coefficients of the fragments
         type(atom), pointer                :: first_atom,current_atom ! linked list to store coordindate information
+        type(cmo)                          :: cspinor_localized ! MO-coefficients after localization 
         integer                            :: luxyz, ierr, i, j, k, l
         integer                            :: nmo1, nmo2, imo, jmo, nmoi, nmoj, nao1, ncore, nvale
         integer                            :: n_fragments ! the number of fragments used to project on to
@@ -330,11 +331,10 @@
         allocate(Cocc_IAO_B1(nao1,nocc,2))
         Cocc_IAO_B1(:,:,1) = matmul(IAO_B1(:,:,1),Cocc_IAO)
         Cocc_IAO_B1(:,:,2) = matmul(IAO_B1(:,:,2),Cocc_IAO)
-        call write_dffiles("iao.dfcoef","iao.dfpcmo",ao_basis_1,Cocc_IAO_B1,nao1,nocc,"MOLECULE.dfcoef")
-        ! check if I indeed
-        Cocc_IAO_B1(:,:,1) = matmul(cspinor_original%coeff(:,:,1),coeff1_occ)
-        Cocc_IAO_B1(:,:,2) = matmul(cspinor_original%coeff(:,:,2),coeff1_occ)
-        call write_dffiles("iao_test.dfcoef","iao_test.dfpcmo",ao_basis_1,Cocc_IAO_B1,nao1,nocc,"MOLECULE.dfcoef")
+        call alloc_mo(cspinor_localized,nao1,nmo1)
+        cspinor_localized%coeff = Cocc_IAO_B1
+        cspinor_localized%total_energy = cspinor_original%total_energy
+        call write_mos_to_dirac (ao_basis_1,cspinor_localized,"iao.dfcoef")
 
 !        MAKE IBO. I actually do not need that right ? We are only interested about the intrinsic fragment orbitals are we ? 
 !        Anyway, this subroutine is not working for now.
