@@ -10,6 +10,7 @@
         use utils
         use check
         use energy
+        use properties
         use atomic_fragments
 
         implicit none
@@ -222,6 +223,8 @@
         ! Write the coefficient matrix into the unformatted dfcoef file.
         call write_dffiles("iao.dfcoef","iao.dfpcmo",ao_basis_1,Cocc_IAO_aoB1,nao1,nocc,"MOLECULE.dfcoef")
 
+        ! Compute partial charges with occupied MO expressed in terms of IAOs.
+        call partial_charges(Cocc_IAO,cspinor_fragment,n_fragments,nmo2,nocc)
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !         Calculate the intrinsic bonding orbital (IBO) basis                                        !
@@ -254,6 +257,9 @@
 
         ! In Knizia's program, another call is made to sort the new localized orbitals by energy.
         ! I think in our case they are already sorted, but I'm not 100% convinced...
+
+        ! Let's try to compute the partial charges using IBO?
+        call partial_charges(Cocc_IBO,cspinor_fragment,n_fragments,nmo2,nocc)
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !       Compute HF energies and tests     !
