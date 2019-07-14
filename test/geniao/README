@@ -1,6 +1,0 @@
-INSTALLATION:
-
-pip install -e .
-
-RUN:
-An example is provided for HeNe in the work_dir/

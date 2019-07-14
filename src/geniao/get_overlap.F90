@@ -20,18 +20,8 @@ contains
         ! allocate auxilliaries
         allocate (SAO(cspinor_bra%nao,cspinor_ket%nao))
         allocate (SC(cspinor_bra%nao,cspinor_ket%nmo))
-!        print*,'    MO overlap (nao basis, nshells basis, nao cspinor) bra:', &
-!                                 ao_basis_bra%nao, ao_basis_bra%nshells, cspinor_bra%nao, &
-!                                 ' ket:', &
-!                                 ao_basis_ket%nao, ao_basis_ket%nshells, cspinor_ket%nao
 
         call  get_ao_overlap (ao_basis_bra,ao_basis_ket,SAO)
-
-        print*,
-        print*,"SAO:"
-        do i=1,cspinor_bra%nao
-          write(*,'(100G10.2)') (REAL(SAO(i,j)),j=1,cspinor_ket%nao)
-        enddo
 
         SC  = matmul(SAO,cspinor_ket%coeff(:,:,1))                        ! multiply with alpha coefficients
         SMO = matmul(conjg(transpose(cspinor_bra%coeff(:,:,1))),SC)       ! alpha-alpha contribution

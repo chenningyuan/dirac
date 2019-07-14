@@ -8,9 +8,12 @@ if(ENABLE_GENIAO)
    generate_avas.F90
    get_overlap.F90
    make_iao.F90
+   make_ibo.F90
    utils.F90
    atomic_fragments.F90
    read_xyz.F90
+   check.F90
+   energy.F90
    write_basis.F
   )
 

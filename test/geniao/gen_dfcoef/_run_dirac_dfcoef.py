@@ -44,7 +44,8 @@ def generate_dirac_input(molecule,
                         point_nucleus,
                         uncontract,
                         speed_of_light,
-                        version):
+                        version,
+                        exponent):
     """This function creates and saves a Dirac input file.
 
     Args:
@@ -83,6 +84,7 @@ def generate_dirac_input(molecule,
     input_file = molecule.filename + '.inp'
     with open(input_file, 'w') as f:
       f.write("**DIRAC\n")
+      f.write(".4INDEX\n")
       f.write(".WAVE FUNCTION\n")
       f.write("**WAVE FUNCTION\n")
       f.write(".SCF\n")
@@ -104,6 +106,9 @@ def generate_dirac_input(molecule,
        f.write(" " + str(speed_of_light) + "\n")
       f.write("**MOLTRA\n")
       f.write(".MDCINT\n")
+      # all active has to be set for the MRCONEE and DFCOEF files to have the same number of spinors.
+      f.write(".ACTIVE\n") 
+      f.write(" all\n") 
       f.write("**MOLECULE\n")
       f.write("*CHARGE\n")
       f.write(".CHARGE\n")
@@ -123,7 +128,8 @@ def generate_dirac_input(molecule,
 
     with open(molecule.data_directory+"/INPUT_IAO","w") as f:
       f.write(version+"\n")
-      f.write(str(molecule.charge))
+      f.write(str(molecule.charge)+"\n")
+      f.write(str(exponent))
 
     return input_file, xyz_file
 
@@ -139,6 +145,8 @@ def run_dirac_dfcoef(molecule,
              uncontract=True,
              speed_of_light=False,
              version="Stndrd_2013",
+             exponent=4,
+             get_mrconee=False,
              restart=False):
     """This function runs a Dirac calculation.
 
@@ -161,13 +169,16 @@ def run_dirac_dfcoef(molecule,
                         point_nucleus,
                         uncontract,
                         speed_of_light,
-                        version)
+                        version,
+                        exponent)
 
     # Run Dirac
     print('Starting Dirac calculation\n')
-    if not restart:
+    if not restart and not get_mrconee:
      subprocess.check_call("pam --mol=" + xyz_file + " --inp=" + input_file + " --get='DFCOEF' --silent --noarch", shell=True, cwd=molecule.data_directory)
-    else:
+    elif not restart and get_mrconee:
+     subprocess.check_call("pam --mol=" + xyz_file + " --inp=" + input_file + " --get='DFCOEF MRCONEE' --silent --noarch", shell=True, cwd=molecule.data_directory)
+    elif restart:
      subprocess.check_call("pam --mol=" + xyz_file + " --inp=" + input_file + " --put='DFCOEF' --silent --noarch", shell=True, cwd=molecule.data_directory)
 
     try:
