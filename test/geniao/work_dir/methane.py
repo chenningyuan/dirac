@@ -4,7 +4,7 @@ import subprocess
 
 #----------------------------  MANUAL SET UP -----------------------------
 basis1 = 'STO-3G'
-basis2 = 'CC-pVQZ'
+basis2 = 'CC-pVDZ'
 charge = 0
 data_directory="/Users/bsenjean/Documents/Git_repositories/dirac-caar-ibos/test/geniao/work_dir/"
 geometry = [\

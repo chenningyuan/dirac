@@ -25,6 +25,7 @@
         type(cmo)                          :: cspinor_localized ! MO-coefficients after localization 
         type(cmo)                          :: cspinor_localized_ibo ! MO-coefficients after localization (IBOs)
         type(cmo)                          :: cspinor_frag_IAO ! MO-coefficients in IAO basis for the fragments
+        type(cmo)                          :: cspinor_frag_IAOval ! valence MO-coefficients in IAO basis for the fragments
         type(one_el_t)                     :: int_1el
         integer                            :: luxyz, ierr, i, j, k, l
         integer                            :: nmo1, nmo2, imo, jmo, nmoi, nmoj, nao1, ncore, nvale
@@ -208,7 +209,6 @@
            allocate(IAO_frag(nao1,nvale,2))
            IAO_frag = IAO_aoB1(:,imo+1+ncore:imo+nmoi,:)
            write (fragfile_val_dfcoef,'(i3.3,a15)') nint(current_atom%bascharge),'_iao_val.dfcoef'
-           deallocate(IAO_frag)
            call alloc_mo(cspinor_frag_IAOval,nao1,nvale)
            cspinor_frag_IAOval%coeff = IAO_frag
            cspinor_frag_IAOval%total_energy = cspinor_original%total_energy
@@ -228,7 +228,7 @@
         Cocc_IAO_aoB1(:,:,1) = matmul(IAO_aoB1(:,:,1),Cocc_IAO)
         Cocc_IAO_aoB1(:,:,2) = matmul(IAO_aoB1(:,:,2),Cocc_IAO)
         ! Write the coefficient matrix into the unformatted dfcoef file.
-        call alloc_mo(cspinor_localized,nao1,nmo1)
+        call alloc_mo(cspinor_localized,nao1,nocc)
         cspinor_localized%coeff = Cocc_IAO_aoB1
         cspinor_localized%total_energy = cspinor_original%total_energy
         call write_mos_to_dirac (ao_basis_1,cspinor_localized,"iao.dfcoef")
@@ -244,6 +244,7 @@
         !-----Compute IBOs (Localized occupied MO in terms of IAOs)----- (nmo2 x nocc)
         allocate(Cocc_IBO_real(nmo2,nocc)) ! should be replaced by Cocc_IBO once it will work for complex orbitals.
         allocate(Cocc_IBO(nmo2,nocc))
+        print*, "ibo?"
         call LocalizeIbosInIaoBasis(real(Cocc_IAO),Cocc_IBO_real,cspinor_fragment,n_fragments,nmo2,nocc,Expnt)
 
         ! Temporary rewrite into complex format... :
@@ -258,7 +259,7 @@
         Cocc_IBO_aoB1(:,:,1) = matmul(IAO_aoB1(:,:,1),Cocc_IBO)
         Cocc_IBO_aoB1(:,:,2) = matmul(IAO_aoB1(:,:,2),Cocc_IBO)
         ! Write the coefficient matrix into the unformatted dfcoef file.
-        call alloc_mo(cspinor_localized,nao1,nmo1)
+        call alloc_mo(cspinor_localized_ibo,nao1,nocc)
         cspinor_localized_ibo%coeff = Cocc_IBO_aoB1
         cspinor_localized_ibo%total_energy = cspinor_original%total_energy
         call write_mos_to_dirac (ao_basis_1,cspinor_localized_ibo,"ibo.dfcoef")
