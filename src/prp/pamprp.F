@@ -3979,6 +3979,7 @@ C
 C
 C       Atoms
 C
+C       First define left-hand operators
 C
         DO 200 IATOM1 = 1, NUCIND
         IF(DOATOM(IATOM1)) THEN
@@ -8387,6 +8388,7 @@ C
 
       CALL WLKDIN(GEOM,AMASS,KATOM,ANGMOM,TINERT,OMEGA,EIGVAL,EIGVEC,
      &            .TRUE.,PLANAR,LINEAR,IPRINT)
+
 C
 C     Transform molecular g-factor to principal axis system, and multiply by
 C     inverse moment of inertia and proton mass
@@ -9576,7 +9578,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       implicit none
 #include "priunit.h"
 C
-#include "mxcent.h" 
+#include "mxcent.h"
 C..parameters of maximum number of nuclei
 #include "maxaqn.h"
 C..highest angular quantum number
@@ -9685,7 +9687,7 @@ C
      &                       INDXPR,MAXLLR)
 C
 C     Spin angular momentum
-C                  
+C
        PNAME     = 'X Spin ang.mom. '
        IPTYP     = 10  ! Sigma_x
        NPCOMP    = 1   ! one component
@@ -9731,7 +9733,7 @@ C
      &                       INDXPR,MAXLLR)
 C
 C     Spin angular momentum
-C                  
+C
        PNAME     = 'X Spin ang.mom. '
        IPTYP     = 10  ! Sigma_x
        NPCOMP    = 1   ! one component
@@ -9933,7 +9935,7 @@ C***********************************************************************
 #include "dcbham.h"   ! added
 #include "dcbspinro.h" ! added
 C
-C 
+C
       logical, allocatable :: DOATOM(:)
       double precision, allocatable :: TMAT(:,:,:),
      &                                 PMATL(:,:,:,:),PMATS(:,:,:,:),
@@ -10481,7 +10483,7 @@ C     This routine is modelled after SPRRES (Prof K. Ruud) in DALTON
 C
 C   INPUT:
 C     DMAT  - expectation value term of NSR
-C     PMATL - contribution from orbital angular moment to linear response term 
+C     PMATL - contribution from orbital angular moment to linear response term
 C     PMATS - contribution from spin to linear response term
 C
 C     Agustín Aucar and Trond Saue
@@ -10494,7 +10496,7 @@ C
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h" 
+#include "maxorb.h"
 #include "abainf.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -10554,31 +10556,13 @@ C
          DO 200 I = 1, 3
             ANGUMOM(I) = D1
             DO 200 J = 1, 3
-             TOTSPR(I,J,IATOM) = DMAT(I,J,IATOM)  
-     &                         + PMATL(I,J,IATOM,1) 
+             TOTSPR(I,J,IATOM) = DMAT(I,J,IATOM)
+     &                         + PMATL(I,J,IATOM,1)
      &                         + PMATL(I,J,IATOM,2)
-     &                         + PMATS(I,J,IATOM,1) 
+     &                         + PMATS(I,J,IATOM,1)
      &                         + PMATS(I,J,IATOM,2)
      &                         + SPRNUC(I,J,IATOM)
  200        CONTINUE
-CTROND: some test statements..to be removed later
-c         CALL HEADER('Raw data for  '//
-c     &                          NAMDEP(IATOM),-1)
-c         CALL HEADER('DMAT in spinrot',-1)
-c         CALL OUTPUT(DMAT(1,1,IATOM),1,3,1,3,3,3,1,LUPRI)
-c         CALL HEADER('PMATL1 in spinrot',-1)
-c         CALL OUTPUT(PMATL(1,1,IATOM,1),1,3,1,3,3,3,1,LUPRI)
-c         CALL HEADER('PMATL2 in spinrot',-1)
-c         CALL OUTPUT(PMATL(1,1,IATOM,2),1,3,1,3,3,3,1,LUPRI)
-c         CALL HEADER('PMATS1 in spinrot',-1)
-c         CALL OUTPUT(PMATS(1,1,IATOM,1),1,3,1,3,3,3,1,LUPRI)
-c         CALL HEADER('PMATS2 in spinrot',-1)
-c         CALL OUTPUT(PMATS(1,1,IATOM,2),1,3,1,3,3,3,1,LUPRI)
-c         CALL HEADER('SPRNUC in spinrot',-1)
-c         CALL OUTPUT(SPRNUC(1,1,IATOM),1,3,1,3,3,3,1,LUPRI)
-c         CALL HEADER('TOTSPR in spinrot',-1)
-c         CALL OUTPUT(TOTSPR(1,1,IATOM),1,3,1,3,3,3,1,LUPRI)
-C
 C
  99   CONTINUE
 C
@@ -10605,8 +10589,8 @@ C     Set up coordinates (relative to center of mass), g-values and masses of al
  100  CONTINUE
 C
       CALL WLKDIN(GEOM,AMASS,KATOM,ANGUMOM,TINERT,OMEGA,EIGVAL,EIGVEC,
-     &            .TRUE.,PLANAR,LINMOL,IPRINT)  
-C     On output 
+     &            .TRUE.,PLANAR,LINMOL,IPRINT)
+C     On output
 C        TINERT - inertia tensor
 C        EIGVAL - inverse eigenvalues (for linear molecules, in descending order)
 C        EIGVEC - corresponding eigenvectors
@@ -10669,7 +10653,7 @@ C
 C
               NSRLR=NSRLRLEE+NSRLRLEP+NSRLRSEE+NSRLRSEP
 C
-              IF (IPRINT .GE. 0) 
+              IF (IPRINT .GE. 0)
      &   WRITE(LUPRI,'((1X,A,F16.8,/),/,2(1X,A,F16.8,/),(1X,A,F16.8))')
      & ' Total spin-rotation constant (SRC)      :',NSRTOT,
      & '   Nuclear contribution to SRC           :',NSRNUC,
@@ -10777,18 +10761,18 @@ C
                        GTRANPLEE(I,J,IATOM) = GTRANPLEE(I,J,IATOM)
      &                       + EIGVEC(IX,I)
      &                        *PMATL(JX,JY,IATOM,1)*EIGVEC(IY,J)*CONST
-                       GTRANPLEP(I,J,IATOM) = GTRANPLEP(I,J,IATOM) 
+                       GTRANPLEP(I,J,IATOM) = GTRANPLEP(I,J,IATOM)
      &                       + EIGVEC(IX,I)
      &                        *PMATL(JX,JY,IATOM,2)*EIGVEC(IY,J)*CONST
                        GTRANPSEE(I,J,IATOM) = GTRANPSEE(I,J,IATOM)
      &                       + EIGVEC(IX,I)
      &                        *PMATS(JX,JY,IATOM,1)*EIGVEC(IY,J)*CONST
-                       GTRANPSEP(I,J,IATOM) = GTRANPSEP(I,J,IATOM) 
+                       GTRANPSEP(I,J,IATOM) = GTRANPSEP(I,J,IATOM)
      &                       + EIGVEC(IX,I)
      &                        *PMATS(JX,JY,IATOM,2)*EIGVEC(IY,J)*CONST
-                        GTRANP(I,J,IATOM) = GTRANPLEE(I,J,IATOM) 
+                        GTRANP(I,J,IATOM) = GTRANPLEE(I,J,IATOM)
      &                       + GTRANPLEP(I,J,IATOM)
-     &                       + GTRANPSEE(I,J,IATOM) 
+     &                       + GTRANPSEE(I,J,IATOM)
      &                       + GTRANPSEP(I,J,IATOM)
  60               CONTINUE
  50            CONTINUE
@@ -10819,18 +10803,18 @@ C
                 GTRANPLEEPPM(I,J,IATOM) = GTRANPLEEPPM(I,J,IATOM)
      &                + EIGVEC(IX,I)
      &                 *PMATL(JX,JY,IATOM,1)*EIGVEC(IY,J)*CONST2
-                GTRANPLEPPPM(I,J,IATOM) = GTRANPLEPPPM(I,J,IATOM) 
+                GTRANPLEPPPM(I,J,IATOM) = GTRANPLEPPPM(I,J,IATOM)
      &                + EIGVEC(IX,I)
      &                 *PMATL(JX,JY,IATOM,2)*EIGVEC(IY,J)*CONST2
                 GTRANPSEEPPM(I,J,IATOM) = GTRANPSEEPPM(I,J,IATOM)
      &                + EIGVEC(IX,I)
      &                 *PMATS(JX,JY,IATOM,1)*EIGVEC(IY,J)*CONST2
-                GTRANPSEPPPM(I,J,IATOM) = GTRANPSEPPPM(I,J,IATOM) 
+                GTRANPSEPPPM(I,J,IATOM) = GTRANPSEPPPM(I,J,IATOM)
      &                + EIGVEC(IX,I)
      &                 *PMATS(JX,JY,IATOM,2)*EIGVEC(IY,J)*CONST2
-                 GTRANPPPM(I,J,IATOM) = GTRANPLEEPPM(I,J,IATOM) 
+                 GTRANPPPM(I,J,IATOM) = GTRANPLEEPPM(I,J,IATOM)
      &                + GTRANPLEPPPM(I,J,IATOM)
-     &                + GTRANPSEEPPM(I,J,IATOM) 
+     &                + GTRANPSEEPPM(I,J,IATOM)
      &                + GTRANPSEPPPM(I,J,IATOM)
  80               CONTINUE
  70            CONTINUE

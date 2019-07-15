@@ -634,6 +634,7 @@
         call quit('ERROR: NMR shielding with open shells not possible')
        end if
       end if
+
 !gosia: probably here is a good place to add Miro's warning, 
 ! but i need to think of correct flags (for DC and SPINFREE Hamiltonians)
 ! so commented out for now
@@ -642,6 +643,7 @@
 !     &  'component set in RKB scheme, you need very large basis sets,'//
 !     &  '  or use simple magn.balance instead...'
 !      end if
+
       CALL FLSHFO(LUPRI)
       CALL QEXIT('PRPINP')
 

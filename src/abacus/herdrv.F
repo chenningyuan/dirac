@@ -863,6 +863,15 @@ C&&& MAGCOR - print magnetic coordinates
             WRITE (LUPRI,'(12X,A)') 'Hamiltonian integrals'
          ENDIF
       END IF
+
+! Miro: I hope that these coordinates are in atomic units
+      IF (DNRM2(3,ORIGIN,1) .GT. D0) WRITE (LUPRI,'(/,A,3F20.15)')
+     &    ' Operator center (a.u.):', (ORIGIN(I),I=1,3)
+      IF (DNRM2(3,GAGORG,1) .GT. D0) WRITE (LUPRI,'(/,A,3F20.15)')
+     &    ' Gauge origin (a.u.)   :', (GAGORG(I),I=1,3)
+      IF (DNRM2(3,DIPORG,1) .GT. D0) WRITE (LUPRI,'(/,A,3F20.15)')
+     &    ' Dipole origin (a.u.)  :', (DIPORG(I),I=1,3)
+
       IF (EXPIKR) WRITE (LUPRI,'(/,A,3F20.15)')
      &    ' Wave numbers:', (EXPKR(I),I=1,3)
       IF (SOTEST) WRITE (LUPRI,'(/,A,/)')

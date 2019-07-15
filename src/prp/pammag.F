@@ -65,7 +65,6 @@ C
      &          PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK)
 C
-
       SAVE SET
       DATA TABLE /'.GAUGEO','.NOLOND','.SYMCON','.NOORTH',
      &            '.INTFLG','.NOTWO ','.NOONEI','.FULMAT',
@@ -77,6 +76,7 @@ C
 #include "memint.h"
 C
 C     IF (RESET) GOTO 999
+
       NEWDEF = (WORD .EQ. '*NMR')
       IF (SET) THEN
          IF (NEWDEF)
