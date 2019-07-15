@@ -85,6 +85,12 @@ class pam_enviroment:
         # default: do not show pam settings
         self.just_show_settings = False
 
+        # list of environment variables thar are to be set by dirac (useful to specify defaults in .diracrc)
+        self.environment = []
+
+        # supercomputers are special, need to know whether we run on summit
+        self.summit = False
+
         self.expert_mode = False # disable various safety checks
 
         # set the basis set directories
@@ -115,7 +121,7 @@ class pam_enviroment:
         # variables related to parallel calculations
         self.parallel_run = False  # whether parallel run - decide upon the "--mpi=xxx" parameter
         self.mpiarg = None  # additional arguments for the MPIRUN
-        self.nr_proc = 0  # number of processors, default 0-serial run
+        self.nr_proc = 1  # number of processors, default 1, i.e. serial run
         self.dirac_mpi_command = None # MPI launcher 
         self.distribute_files = False # if there is some distribution of files over different nodes
 
@@ -740,6 +746,15 @@ Options are also read from ~/.diracrc"""
             )
 
         group.add_option(
+            '--env',
+            type='string',
+            action='append',
+            dest='dest_env',
+            help='set environment variables',
+            metavar='"env_var1=value1 env_var2=value2 ..."',
+            )
+
+        group.add_option(
             '--replace',
             action='append',
             default=[],
@@ -822,6 +837,9 @@ Options are also read from ~/.diracrc"""
         group.add_option('--debug', action='store_true',
                          dest='dest_debug', default=False,
                          help='run in debugger [default: %default]')
+        group.add_option('--summit', action='store_true',
+                         dest='dest_summit', default=False,
+                         help='run with summits jsrun [default: %default]')
         group.add_option(
             '--debugger',
             type='string',
@@ -927,10 +945,16 @@ Options are also read from ~/.diracrc"""
             if self.mpiarg: 
                 self.dirac_mpi_command = self.dirac_mpi_command + str(self.mpiarg) + ' ' 
 
+        # overwrite whatever was specified for MPI because summit does not fit the general scheme
+        if options.dest_summit:
+            self.summit = True
+
         # The CMAKE variable ENABLE_MPI is "True" for "setup --mpi", otherwise it is "False".
         if "@ENABLE_MPI@" == "True" or "@ENABLE_MPI@" == "ON":
             # always is parallel run if ENABLE_MPI=ON
             self.parallel_run = True
+            if self.dirac_mpi_command is None:
+               self.dirac_mpi_command = self.mpirun + ' -np ' + str(self.nr_proc) + ' '
             if os.environ.get('LOCAL_SCRATCH_BOOL'):
                 # set local disks for paralell run
                 self.global_scratch_disk = False
@@ -962,6 +986,9 @@ Options are also read from ~/.diracrc"""
         if options.dest_get:
             self.get_files = options.dest_get
 
+        if options.dest_env:
+            self.environment = options.dest_env
+
         if options.replace:
             self.string_replace_list = options.replace
 
@@ -982,6 +1009,7 @@ Options are also read from ~/.diracrc"""
 
         if options.dest_debug:
             self.debug = True
+
 
         if options.dest_debugger:
             debugger_full_path=str(find_executable(options.dest_debugger))
@@ -1161,36 +1189,53 @@ Options are also read from ~/.diracrc"""
         These variables are valid for both serial and (hybrid) parallel runs.
         TODO: Extend variables setting for OpenBLAS !
         '''
+        if self.verbose:
+            print()
+            print('  Setting MKL and OPENMP environment to default values (if not set already)')
         if not os.environ.get('MKL_NUM_THREADS'):
             os.environ['MKL_NUM_THREADS'] = '1'
             if self.verbose:
-                print('  Setting MKL_NUM_THREADS=1')
+                print('   MKL_NUM_THREADS = 1')
         else:
             if self.verbose:
-                print('  Variabl.MKL_NUM_THREADS=',os.environ.get('MKL_NUM_THREADS'))
+                print('   Variabl.MKL_NUM_THREADS = ',os.environ.get('MKL_NUM_THREADS'))
         if not os.environ.get('MKL_DYNAMIC'):
             os.environ['MKL_DYNAMIC'] = 'FALSE'
             if self.verbose:
-                print('  Setting MKL_DYNAMIC="FALSE"')
+                print('   MKL_DYNAMIC = "FALSE"')
         else:
             if self.verbose:
-                print('  Variabl.MKL_DYNAMIC=',os.environ.get('MKL_DYNAMIC'))
+                print('   Variabl.MKL_DYNAMIC = ',os.environ.get('MKL_DYNAMIC'))
         if not os.environ.get('OMP_NUM_THREADS'):
             os.environ['OMP_NUM_THREADS'] = '1'
             if self.verbose:
-                print('  Setting OMP_NUM_THREADS=1')
+                print('   OMP_NUM_THREADS = 1')
         else:
             if self.verbose:
-                print('  Variabl.OMP_NUM_THREADS=',os.environ.get('OMP_NUM_THREADS'))
+                print('   Variabl.OMP_NUM_THREADS = ',os.environ.get('OMP_NUM_THREADS'))
         if not os.environ.get('OMP_DYNAMIC'):
             os.environ['OMP_DYNAMIC'] = 'FALSE'
             if self.verbose:
-                print('  Setting OMP_DYNAMIC="FALSE"')
+                print('   OMP_DYNAMIC="FALSE"')
         else:
             if self.verbose:
-                print('  Variabl.OMP_DYNAMIC=',os.environ.get('OMP_DYNAMIC'))
+                print('   Variabl.OMP_DYNAMIC=',os.environ.get('OMP_DYNAMIC'))
+
+    def set_environment(self):
+        '''
+        Set environment variables as specified by the user (e.g. in .diracrc)
+        Implemented for the ExaTensor library, but useful in general.
+        '''
+
         if self.verbose:
-            print('  INFO: Variables set by user are not overwritten by pam. ')
+           print('  Setting environment variables (as specified explicitly or in .diracrc)')
+        for env_options in self.environment:
+            for env_var in env_options.split(' '):
+                env = env_var.split('=')[0]
+                var = env_var.split('=')[1]
+                os.environ[env] = var
+                if self.verbose:
+                    print('  ',env,'=',var)
 
     def copy_files(self):
         '''copy file from any directory to the scratch directory'''
@@ -1382,6 +1427,31 @@ Options are also read from ~/.diracrc"""
         if not os.path.isfile(dirac_executable):
             print_error_message(dirac_executable+' not found!')
             sys.exit(13)
+
+        # On summit we execute a script that executes dirac.x (to keep things simple...)
+        if self.summit:
+           # assemble the jsrun command that we need and put this at the place of mpirun command
+           mpi_command = "jsrun --smpiargs='-mca common_pami_use_odp 1' -bnone"
+           mpi_command =  mpi_command + ' -n ' + str(self.nr_proc)
+           mpi_command =  mpi_command + ' -a 1'
+           mpi_command =  mpi_command + ' -r ' + os.environ.get('QF_PROCS_PER_NODE')
+           mpi_command =  mpi_command + ' -c ' + os.environ.get('QF_CORES_PER_PROCESS')
+           mpi_command =  mpi_command + ' -g ' + os.environ.get('QF_GPUS_PER_PROCESS') + ' '
+           self.dirac_mpi_command = mpi_command
+           # create an executable script to set the correct OMP_PLACES before starting dirac.x
+           path_to_script = os.path.join(self.scratch_dir,'exec_script.sh')
+           with open(path_to_script, 'w') as script:
+               script.write("#!/bin/bash\n")
+               script.write("remainder=$(( $PMIX_RANK % 2 ))\n")
+               script.write("if [ $remainder -eq 0 ]; then\n")
+               script.write("export OMP_PLACES='{0},{4},{8},{12},{28:56},{16},{20},{24}' \n")
+               script.write("else\n")
+               script.write("export OMP_PLACES='{88},{92},{96},{100},{116:56},{104},{108},{112}'\n")
+               script.write("fi\n")
+               script.write("./dirac.x\n")
+               script.close()
+           os.chmod(path_to_script, 509)
+           dirac_executable = path_to_script
 
         if self.parallel_run:
             if self.mpirun == None:
@@ -1900,6 +1970,7 @@ class pam_run(pam_enviroment):
         self.pam_variables.set_dirac_environment()
         self.pam_variables.print_header()
         self.pam_variables.set_mkl_environment_variables()
+        self.pam_variables.set_environment()
 
         self.pam_variables.copy_files()
         if self.pam_variables.distribute_files:

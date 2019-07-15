@@ -1,4 +1,5 @@
   module eom_driver
+  use projectors
   use sigma_eom
   use trial_vectors_eom
   use relcc_cfg
@@ -15,33 +16,6 @@
     character(8) :: eomtype
     integer :: nroot,state_sym
     integer :: irpoff = 0
-
-! aspg, WIP june/july 2018
-! the excited determinant derived type holds the information on occupied/virtual spinor energies, irreps and position within
-! the irreps, for the spinors making up a given excited state determinant
-!
-! what's still to be done, if found necessary/useful, is to have functions which inquire the variable of this type and provide
-! information on this excited determinant: whether it is a 1h/1p/2h1p/2p1h/1p1h/2p2h etc (which one can get by the dimensions
-! of the "occupied_energies" and "virtuals_energies" variables), the irrep to which it belongs to etc
-   public excited_determinant
-   type excited_determinant
-      real*8,  allocatable :: occupied_energies(:)
-      integer, allocatable :: occupied_irreps(:)
-      integer, allocatable :: occupied_indexes_in_irreps(:)
-
-      real*8,  allocatable :: virtuals_energies(:)
-      integer, allocatable :: virtuals_irreps(:)
-      integer, allocatable :: virtuals_indexes_in_irreps(:)
-   end type excited_determinant
-
-! the mapping derived type is meant to collect the different determinants into an array, and with that the position of the
-! determinant on the hamiltonian would be provided by its index in the "det" variable. having a derived type has the advantage of
-! being able to keep track of multiple mappings if needed.
-   public mapping
-   type mapping
-       type(excited_determinant), allocatable :: det(:)
-   endtype mapping
-! aspg, WIP june/july 2018
  
 
    contains
@@ -172,6 +146,10 @@
    integer :: ndimr1, ndimr2, search_dimension, xroot, N1, N2, N
    real*8,allocatable :: R1_dum(:,:) 
    integer :: fudge_factor
+   real*8 :: in_window_HbarSS_threshold
+   integer :: number_diagonal_elements_in_window
+   logical, allocatable :: index_in_window(:)
+   integer :: ai_norcw
 
 !initialize the R-vector
 !=======================
@@ -183,6 +161,16 @@
 
     R1(1:N1,1:nroot) = 0.0d0 
     R2(1:N2,1:nroot) = 0.0d0 
+
+! aspg, WIP
+
+    allocate(index_in_window(ndimr1))
+    index_in_window = .false.
+    number_diagonal_elements_in_window = 0
+    in_window_HbarSS_threshold = huge(in_window_HbarSS_threshold)
+! aspg, WIP
+
+! aspg, WIP
 
 ! 1> Determine the minimum energy determinants for IP, EA & EE. The number of them is equal to the number of roots. 
 
@@ -204,6 +192,15 @@
    select case (eomtype)
 
    case ("EE")
+! aspg, WIP
+! whereas for IP/EA one can use the spinor energies as a guide for which
+! diagonal element of Hbar relates to the core-core part of the diagonal, 
+! for EE we have to look at the orbital energy differences and therefore
+! use a helper variable to map between the core-core part of the diagonal
+! and the occupied spinor energy threshold given as input 
+   in_window_HbarSS_threshold = huge(in_window_HbarSS_threshold)
+   ai_norcw = 1
+! aspg, WIP
 
     ai = 1
     ii = 0
@@ -222,6 +219,26 @@
               iaai = (iovvo(state_sym) + (iivo(arep,irep)+(i-1)*nv(arep)+a-1)*nov(iarep) + &
        &      iiov(irep,arep) + (a-1)*no(irep)+ i - 1)*rcw+1   
               H_II(ai) = -fac1 + eps(aa)! - vbar_ss (iaai)
+! aspg, WIP
+! whereas for IP/EA one can use the spinor energies as a guide for which
+! diagonal element of Hbar relates to the core-core part of the diagonal, 
+! for EE we have to look at the orbital energy differences and therefore
+! use a helper variable to map between the core-core part of the diagonal Hbar(ai,ai)
+! and the occupied spinor energy threshold given as input. We will use this
+! variable to determine the trial vectors below 
+              if (((eps(ii).le.relcc_projectors_rew_occ_max_energy).and.&
+                 & (eps(ii).ge.relcc_projectors_rew_occ_min_energy).and.&
+                 & ((eps(aa).ge.relcc_projectors_rew_virt_min_energy).and.&
+                 &  (eps(aa).le.relcc_projectors_rew_virt_max_energy))) &
+                 ) then
+                 index_in_window(ai_norcw) = .true. 
+                 if (H_II(ai).lt.in_window_HbarSS_threshold) then
+                    in_window_HbarSS_threshold = H_II(ai)
+                 end if
+                 number_diagonal_elements_in_window = number_diagonal_elements_in_window + 1
+              end if
+! aspg, WIP
+              ai_norcw = ai_norcw + 1
               ai = ai + rcw
           enddo
         enddo
@@ -317,15 +334,87 @@
           allocate(diag_H(ndimr1))
           diag_H = H_II(1:N1:rcw)
 
-          do iroot = 1, nroot
-              k = minloc(diag_H)
-              if (iprnt.ge.3) write(iw,*)'roots',iroot,diag_H(k(1)),k(1)
-              i = k(1)
-              jroot = i
-              if (rcw.eq.2) jroot = 2*i - 1
-              R1(jroot,iroot) = 1.0d0
-              diag_H(i) = 8000.0d0
-          enddo
+! aspg, WIP june/july 2018
+! in principle we can eigenvalue shift with any of the schemes below 
+          if ((relcc_mfd_eigenvalues_energy_shift(1).gt.(0.0d0))) then
+              do i = 1, size(diag_H,1)
+                 diag_H(i) = abs(diag_H(i) - relcc_mfd_eigenvalues_energy_shift(1))
+              end do
+          end if
+! aspg, WIP june/july 2018
+
+          if (relcc_projectors_do_restricted_excitation_window &
+             & .or.relcc_projectors_do_core_valence_separation) then ! find the lowest elements of the diagonal within the given excitation window
+
+              if (iprnt.ge.1) then
+                  write (iw,*) ''
+                  if (relcc_projectors_do_restricted_excitation_window) then 
+                      write (iw,*) '   Restricted excitation window (REW) via projectors will be invoked'
+                      write (iw,*) '      - 1h1p determinants with all (quasi)particles within' 
+                      write (iw,*) '        the occupied/virtual windows will be retained'
+                  else if (relcc_projectors_do_core_valence_separation) then
+                      write (iw,*) '   Core valence separation (CVS) via projectors will be invoked'
+                      write (iw,*) '      - 1h1p determinants with all particles within' 
+                      write (iw,*) '        the occupied window will be retained'
+                  end if
+                  if (relcc_projectors_rew_strict) then
+                      write (iw,*) '      - 2h2p/... determinants with all (quasi)particles within' 
+                      write (iw,*) '        the occupied/virtual windows will be retained'
+                  else if (relcc_projectors_rew_remove_double_occupied) then
+                      write (iw,*) '      - 2h2p/... determinants with only one (quasi)particle within'            
+                      write (iw,*) '        the occupied window will be retained'
+                  else
+                      write (iw,*) '      - 2h2p/... determinants with at least one (quasi)particle within' 
+                      write (iw,*) '        the occupied/virtual windows will be retained'
+                  end if
+                  write (iw,*) '   Spinors/orbitals in the following window(s) will be active'
+                  write (iw,*) '      occupied min     ',relcc_projectors_rew_occ_min_energy,'a.u.'
+                  write (iw,*) '               max     ',relcc_projectors_rew_occ_max_energy,'a.u.'
+                  write (iw,*) '      virtual  min     ',relcc_projectors_rew_virt_min_energy,'a.u.'
+                  write (iw,*) '               max     ',relcc_projectors_rew_virt_max_energy,'a.u.'
+                  write (iw,*) '   There are',number_diagonal_elements_in_window,'possible 1h1p determinants within the window'
+                  write (iw,*) ''
+              end if
+              if (number_diagonal_elements_in_window.lt.nroot) then
+                  call quit ('Requested more roots than there are 1h1p determinants within the window. Stopping.')
+              end if
+
+              if (iprnt.ge.2) write (iw,*) 'diag(Hbar_SS): ',diag_H
+              if (iprnt.ge.2) write (iw,*) 'in_window_HbarSS_threshold',in_window_HbarSS_threshold
+! aspg, WIP june/july 2018
+              iroot = 1
+              do while (iroot.le.nroot)
+                 k = minloc(diag_H, MASK=(diag_H .ge. in_window_HbarSS_threshold))
+                 i = k(1)
+                 if (iprnt.ge.2) write(iw,*)'roots',iroot,diag_H(i),i
+                 if (iprnt.ge.4) write(iw,*) 'making',i,'huge'
+                 diag_H(i) = huge(diag_H)
+! we may have diagonal elements which do not correspond to an element within the windows, so we check that
+! this is the case
+                 if (index_in_window(i).eqv..true.) then
+                     if (iprnt.ge.2) write(iw,*)'determinant in window',i
+                     jroot = i
+                     if (rcw.eq.2) jroot = 2*i - 1
+                     R1(jroot,iroot) = 1.0d0 
+                     iroot = iroot + 1
+                 end if
+              end do
+
+              if (iprnt.ge.3) call davidson_print_vectors(R1, label="debug:  R1 vector             ")
+! aspg, WIP june/july 2018
+
+          else ! this is the standard way of doing it, find the lowest elements of the diagonal
+
+              do iroot = 1, nroot
+                  k = minloc(diag_H)
+                  if (iprnt.ge.3) write(iw,*)'roots',iroot,diag_H(k(1)),k(1)
+                  i = k(1)
+                  jroot = i
+                  if (rcw.eq.2) jroot = 2*i - 1
+                  R1(jroot,iroot) = 1.0d0
+                  diag_H(i) = huge(diag_H)
+              enddo
+          end if
           deallocate(diag_H)
 
       else if (relcc_mfd_trial_restart) then
@@ -339,8 +428,10 @@
 
 !As of now, I am targetting the lowest energy determinants across the symmetries.
 
+    ai_norcw = 1
     ai = 1
     ii = 0
+
     do irep = 1, nrep
         arep = multb (1+nrep,irep,2)
         do i = 1, no(irep)
@@ -348,6 +439,18 @@
          fac1 = eps(ii)
           do a = 1, ncont(arep)
              H_II(ai) = -fac1 
+! aspg, WIP
+              if ( ((eps(ii).le.relcc_projectors_rew_occ_max_energy).and.&
+                 &  (eps(ii).ge.relcc_projectors_rew_occ_min_energy)) &
+                 ) then
+                 index_in_window(ai_norcw) = .true.
+                 if (H_II(ai).lt.in_window_HbarSS_threshold) then
+                    in_window_HbarSS_threshold = H_II(ai)
+                 end if
+                 number_diagonal_elements_in_window = number_diagonal_elements_in_window + 1
+              end if
+! aspg, WIP
+             ai_norcw = ai_norcw + 1
              ai = ai + rcw
           enddo
 
@@ -446,31 +549,87 @@
           allocate(diag_H(ndimr1))
           diag_H = H_II(1:N1:rcw)
 
-          if (relcc_projectors_do_restricted_excitation_window) then ! find the lowest elements of the diagonal within the given excitation window
-             call quit('REW not implemented')
+! aspg, WIP june/july 2018
+! in principle we can eigenvalue shift with any of the schemes below 
+          if ((relcc_mfd_eigenvalues_energy_shift(1).gt.(0.0d0))) then
+              do i = 1, size(diag_H,1)
+                 diag_H(i) = abs(diag_H(i) - relcc_mfd_eigenvalues_energy_shift(1))
+              end do
+          end if
+! aspg, WIP june/july 2018
 
-          else if (relcc_projectors_do_core_valence_separation) then ! find the lowest elements of the diagonal involving core electrons only
-             call quit('CVS not implemented')
+
+          if (relcc_projectors_do_restricted_excitation_window &
+             & .or.relcc_projectors_do_core_valence_separation) then ! find the lowest elements of the diagonal within the given excitation window
+
+              if (iprnt.ge.1) then
+                  write (iw,*) ''
+                  if (relcc_projectors_do_restricted_excitation_window) then
+                      write (iw,*) '   Restricted ionization window (RIW) via projectors will be invoked'
+                      write (iw,*) '      - 1h determinants with all (quasi)particles within'
+                      write (iw,*) '        the occupied/virtual windows will be retained'
+                  else if (relcc_projectors_do_core_valence_separation) then
+                      write (iw,*) '   Core valence separation (CVS) via projectors will be invoked'
+                      write (iw,*) '      - 1h  determinants with all particles within'
+                      write (iw,*) '        the occupied window will be retained'
+                  end if
+                  if (relcc_projectors_rew_strict) then
+                      write (iw,*) '      - 2h1p/... determinants with all (quasi)particles within'
+                      write (iw,*) '        the occupied/virtual windows will be retained'
+                  else if (relcc_projectors_rew_remove_double_occupied) then
+                      write (iw,*) '      - 2h1p/... determinants with only one (quasi)particle within'
+                      write (iw,*) '        the occupied window will be retained'
+                  else
+                      write (iw,*) '      - 2h1p/... determinants with at least one (quasi)particle within'
+                      write (iw,*) '        the occupied/virtual windows will be retained'
+                  end if
+                  write (iw,*) '   Spinors/orbitals in the following window(s) will be active'
+                  write (iw,*) '      occupied min     ',relcc_projectors_rew_occ_min_energy,'a.u.'
+                  write (iw,*) '               max     ',relcc_projectors_rew_occ_max_energy,'a.u.'
+                  write (iw,*) '      virtual  min     ',relcc_projectors_rew_virt_min_energy,'a.u.'
+                  write (iw,*) '               max     ',relcc_projectors_rew_virt_max_energy,'a.u.'
+                  write (iw,*) '   There are',number_diagonal_elements_in_window,'possible 1h determinans within the window'
+                  write (iw,*) ''
+              end if
+
+              if (number_diagonal_elements_in_window.lt.nroot) then
+                  call quit ('Requested more roots than there are 1h determinants within the window. Stopping.')
+              end if
+
+              if (iprnt.ge.2) write (iw,*) 'diag(Hbar_SS): ',diag_H
+              if (iprnt.ge.2) write (iw,*) 'in_window_HbarSS_threshold',in_window_HbarSS_threshold
+! aspg, WIP june/july 2018
+              iroot = 1
+              do while (iroot.le.nroot)
+                 k = minloc(diag_H, MASK=(diag_H .ge. in_window_HbarSS_threshold))
+                 if (iprnt.ge.2) write(iw,*)'roots',iroot,diag_H(k(1)),k(1)
+                 if (iprnt.ge.3) write(iw,*) diag_H
+                 i = k(1)
+                 if (iprnt.ge.3) write(iw,*) 'making',i,'huge'
+                 diag_H(i) = huge(diag_H)
+! we may have diagonal elements which do not correspond to an element within the windows, so we check that
+! this is the case
+                 if (index_in_window(i).eqv..true.) then
+                     jroot = i
+                     if (rcw.eq.2) jroot = 2*i - 1
+                     R1(jroot,iroot) = 1.0d0
+                     iroot = iroot + 1
+                 end if
+              end do
+
+              if (iprnt.ge.3) call davidson_print_vectors(R1, label="debug:  R1 vector             ")
+! aspg WIP june/july 2018
 
           else ! this is the standard way of doing it, find the lowest elements of the diagonal
 
-              xroot = 0 
-
-              if ((relcc_mfd_eigenvalues_energy_shift(1).gt.(1.0d-3))) then
-                 do i = 1, size(diag_H,1)
-                    diag_H(i) = abs(diag_H(i) - relcc_mfd_eigenvalues_energy_shift(1))
-                 end do
-              end if
-
               do iroot = 1, nroot
                   k = minloc(diag_H) 
-                  if (iprnt.ge.2) write(iw,*)'roots',iroot,diag_H(k(1)),k(1) 
+                  if (iprnt.ge.1) write(iw,*)'roots',iroot,diag_H(k(1)),k(1) 
                   i = k(1)
-                  diag_H(i) = 8000.0d0
-                  xroot = xroot + 1
+                  diag_H(i) = huge(diag_H)
                   jroot = i
                   if (rcw.eq.2) jroot = 2*i - 1
-                  R1(jroot,xroot) = 1.0d0
+                  R1(jroot,iroot) = 1.0d0
               enddo
           end if
           deallocate(diag_H)
@@ -593,7 +752,13 @@
           allocate(diag_H(ndimr1))
           diag_H = H_II(1:N1:rcw)
 
-          xroot = 0
+! aspg, WIP june/july 2018
+          if ((relcc_mfd_eigenvalues_energy_shift(1).gt.(0.0d0))) then
+              do i = 1, size(diag_H,1)
+                 diag_H(i) = abs(diag_H(i) - relcc_mfd_eigenvalues_energy_shift(1))
+              end do
+          end if
+! aspg, WIP june/july 2018
 
           fudge_factor = 2
 ! here we set the factor to 1 because for C1, with only one fermion irrep,
@@ -604,11 +769,10 @@
               k = minloc(diag_H) 
               if (iprnt.ge.2) write(iw,*)'roots',iroot,diag_H(k(1)),k(1) 
               i = k(1)
-              diag_H(i) = 8000.0d0
-                   xroot = xroot + 1
-                   jroot = i
-                   if (rcw.eq.2) jroot = 2*i - 1
-                   R1(jroot,xroot) = 1.0d0
+              diag_H(i) = huge(diag_H)
+              jroot = i
+              if (rcw.eq.2) jroot = 2*i - 1
+              R1(jroot,iroot) = 1.0d0
           enddo
  
           deallocate(diag_H)
@@ -620,6 +784,8 @@
       end if ! if chain for trial vectors 
 
   end select 
+ 
+   deallocate(index_in_window)
 
    end subroutine
 
@@ -1541,7 +1707,7 @@
      do j_eigenvalue = 1, nstate_sym(ssym,select_eom) 
           i_eigenvalue = i_eigenvalue + 1 
 !    I have seen crazy ouputs with large fock space calcs, put a limit
-          if (j_eigenvalue.lt.100) then
+          if (j_eigenvalue.lt.100000) then
           write (iw,1010) repna(irpoff+ssym),j_eigenvalue,  &
     &             e_off+ev_all(1,i_eigenvalue),ev_all(1,i_eigenvalue)
 !    Loop over the R-vectors and print the interesting ones
@@ -1905,7 +2071,11 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
       &                               B%H_II)
  
              end if
-
+             if (.not.(relcc_projectors_do_core_valence_separation.or.relcc_projectors_do_restricted_excitation_window)) then
+                projector => NULL()
+             else
+                projector => create_projector(4, (ndimr1 + ndimr2), state_sym, eps)
+             end if
 
           case ('IP')
 
@@ -1958,8 +2128,12 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
       &                               B%H_II)
 
              end if
-          
-             projector => create_projector(3, (ndimr1 + ndimr2), eps)  
+
+             if (.not.(relcc_projectors_do_core_valence_separation.or.relcc_projectors_do_restricted_excitation_window)) then
+                projector => NULL()
+             else
+                projector => create_projector(3, (ndimr1 + ndimr2), state_sym, eps)
+             end if
 
           case('EA')
 
@@ -2012,6 +2186,12 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
       &                               trial_vector(N1+1:N,:),  &
       &                               B%H_II)
  
+             end if
+             
+             if (.not.(relcc_projectors_do_core_valence_separation.or.relcc_projectors_do_restricted_excitation_window)) then
+                projector => NULL()
+             else
+                projector => create_projector(2, (ndimr1 + ndimr2), state_sym, eps)
              end if
 
          end select 
@@ -2067,100 +2247,6 @@ subroutine eom_initialize_HII(H_II)
 
 end subroutine
 
-! aspg, WIP, june/july 2018
-! function to create the operator to project out certain lines of the trial vectors in the
-! davidson procedure
-! it returs an array of logical variables, where the entries are set to false if a given line is
-! to be suppressed. we determine these lines by creating a mapping between the composition of the 
-! excited determinants in terms of the orbital energies and and their position on the similarity
-! transformed hamiltonian with a call to mapping_spinors_configurations(), which works quite similarly
-! to the routines to print out the solution vectors.
-! aspg, WIP, june/july 2018
-function create_projector(eom_type, ndet, eps)
-#include "files.inc"
-#include "inpt.inc"
-   logical, pointer :: create_projector(:) 
-
-   integer, intent(in) :: eom_type
-   integer, intent(in) :: ndet
-   real(kind=8), intent(in) :: eps(*)
-
-   type(mapping) :: det_map
-   integer :: i, j
-   logical :: spinors_in_occupied_window
-   logical :: spinors_in_virtuals_window
-
-   if (.not.(relcc_projectors_do_core_valence_separation.or.relcc_projectors_do_restricted_excitation_window)) then
-      create_projector => NULL()
-      return
-
-   else
-      call mapping_spinors_configurations (det_map, eom_type, ndet, eps)
-
-      allocate(create_projector(ndet))
-      create_projector = .true.
-
-      if (relcc_projectors_do_core_valence_separation) then
-          do i = 1, ndet
-             if (allocated(det_map%det(i)%occupied_energies)) then
-                do j = 1, size(det_map%det(i)%occupied_energies,1)
-                   if (det_map%det(i)%occupied_energies(j).gt.relcc_projectors_cvs_energy_threshold) then
-                      create_projector(i) = .false.
-                      cycle
-                   end if
-                end do 
-                if (create_projector(i)) then
-                   if (iprnt.ge.2) write (iw,*) 'determinant ',i,' has all spinors in core       :', &
-    &                                           det_map%det(i)%occupied_energies,create_projector(i) 
-                else
-                   if (iprnt.ge.2) write (iw,*) 'determinant ',i,' has at least a valence spinor :', &
-    &                                           det_map%det(i)%occupied_energies,create_projector(i) 
-                end if
-             else
-                create_projector(i) = .false.
-                if (iprnt.ge.2) &
-    &              write (iw,*) 'determinant ',i,' has no occupied spinors and hence no core spinors',create_projector(i) 
-             end if
-          end do
-       end if
-      
-       if (relcc_projectors_do_restricted_excitation_window) then
-! for restricted excitation window, in what goes below we either have all occupied indices and/or all virtual indices within the respective windows 
-          do i = 1, ndet
-             spinors_in_occupied_window = .true.
-             spinors_in_virtuals_window = .true.
-
-             if (allocated(det_map%det(i)%occupied_energies)) then 
-                spinors_in_occupied_window = .true.
-                do j = 1, size(det_map%det(i)%occupied_energies,1)
-                   if ( (det_map%det(i)%occupied_energies(j).lt.relcc_projectors_rew_occ_min_energy).or. &
-                      & (det_map%det(i)%occupied_energies(j).gt.relcc_projectors_rew_occ_max_energy) ) then
-                      spinors_in_occupied_window = .false.
-                   end if
-                end do
-             else
-! there are no occupied in this excited determinant so the occupied  are outside any window..
-                spinors_in_occupied_window = .false.
-             end if
-
-            if (allocated(det_map%det(i)%virtuals_energies)) then
-                spinors_in_virtuals_window = .true.
-                do j = 1, size(det_map%det(i)%virtuals_energies,1)
-                   if ( (det_map%det(i)%virtuals_energies(j).lt.relcc_projectors_rew_virt_min_energy).or. &
-                      & (det_map%det(i)%virtuals_energies(j).gt.relcc_projectors_rew_virt_max_energy) ) then
-                         spinors_in_virtuals_window = .false.
-                   end if
-                end do
-             else
-! there are no virtuals in this excited determinant so the occupied  are outside any window..
-                spinors_in_virtuals_window = .false.
-             end if
-
-             create_projector(i) = spinors_in_occupied_window.and.spinors_in_virtuals_window
-          end do
-       end if
-   end if
-end function 
 
 
 
@@ -2177,298 +2263,608 @@ subroutine eom_analysis_allirreps(davResults, eps)
    write (iw,*) "Analysis of all EOM roots not implemented yet !"
 end subroutine
 
-! aspg, WIP june/july 2018
-   subroutine mapping_spinors_configurations (map, select_eom, ndt, eps)
-
-!---------------Description--------------------------------------------
-!
-!     create a mapping between the index of a determinant (i.e. its position on R/L (eigen)vectors Analyze the excited states and calculate transition moments
-!     
-!---------------Arguments----------------------------------------------
-!     mapping    : derived type storing information on the determinants
-!     select_eom : selection of eomtype
-!     eps        : orbital energies
-!     print_level: print level
-!
-!---------------Last modified------------------------------------------
-!
-!     Author : Andre Gomes, adapting from Avijit Shee's evector_analysis 
-!
-!---------------Calling variables--------------------------------------
-
-#include "complex.inc"
+#if 0
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE DENOMF (EPS,T1,T2,CT1,CT2,OPTION)
+C
+      implicit none
+C
+C---------------Description--------------------------------------------
+C
+C     Option 1) :
+C     Divide parts of T1 and T2 that correspond to WF by denominators
+C     Parts that correspond to the effective Hamiltonian are untouched.
+C     In the intermediate Hamiltonian IH-2 formalism we zero out Pi->Q
+C     excitations (but keep Pm->Q) and corresponding Hamiltonian parts.
+C
+C     Option 2) :
+C     Delete parts of T1 and T2 that correspond to the Hamiltonian.
+C
+C     Option 3) :
+C     In the intermediate Hamiltonian (IH-2) formalism we zero out Pi->Q
+C     excitations (but keep Pm->Q) and corresponding Hamiltonian parts.
+C     NO division of the T1 and T2 by dets!
+C
+C---------------Routines called----------------------------------------
+C
+C     XCOPY
+C
+C---------------Last modified------------------------------------------
+C
+C     Authors : Lucas Visscher (LV), Ephraim Eliav (EE) & Andre Zaitsevskii (AZ)
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 EPS(*)
+      REAL*8 T1(*),T2(*)
+      COMPLEX*16 CT1(*),CT2(*)
+      INTEGER OPTION
+C
+C---------------Common Blocks----------------------------------------
+C
 #include "symm.inc"
-
-   real*8,  intent(in) :: eps(*)
-   integer, intent(in) :: select_eom 
-   integer, intent(in) :: ndt
-   type(mapping), intent(inout) :: map 
-
-   integer            :: nstate_sym(nrep,4)
-
-!---------------Common Blocks--------------------------------------
-
 #include "files.inc"
+#include "complex.inc"
 #include "param.inc"
-#include "ccpar.inc"
+#include "ihm.inc"
+#include "eqns.inc"
+C
+C---------------Local variables--------------------------------------
+C
+      REAL*8 FAC,FAC1,FAC2,FAC3,VALUE,FACIH
+      complex*16 CFACIH
+      REAL*8 AFAC
+      logical yimshift
+      INTEGER IOI(0:3), IVA(0:3)
+      INTEGER IOJ(0:3), IVB(0:3)
+      CHARACTER*2 CLASS(3,2)
+      LOGICAL DENO,ZERO,Z1,Z2,Z3,Z4,IHZERO
+      LOGICAL DOIHDN
+      INTEGER A,AA,ABIJ,acv,acvMIN,AI,AMIN,AOFF,ARP,B,BB,bcv,BRP,i,ico
+      INTEGER icomin,ijrp,ii,imin,ioff,irp,isecth,isecth1,isecth2
+      INTEGER isectp,isectp1,isectp2,j,jj,jco,jrp
+C
+C---------------Executable code--------------------------------------
+C
+      CLASS(1,1) = 'Oi'
+      CLASS(2,1) = 'Oa'
+      CLASS(3,1) = 'Va'
+      CLASS(1,2) = 'Va'
+      CLASS(2,2) = 'Vi'
+      CLASS(3,2) = 'Oa'
 
-!---------------Local variables--------------------------------------
+      yimshift= CARITH .and. ( AIH .lt. -1.d-7 )
+    
+c
+c
+c The Fock Space blocks construction:
+c
+c
+c      #       O         V
+c     -----------------------
+c      1      IO        AV
+c      2      AO        IV
+c      3      AV        AO
+C
+C T1 part:
+C
+c
+      II = 0
+      AI = 0
+C
+      DO IRP = 1, NREP
+c
+      IOI(0)=0
+      IOI(1)=NIO(IRP)+IOI(0)
+      IOI(2)=NAO(IRP)+IOI(1)
+      IOI(3)=NAV(IRP)+IOI(2)
+c
+      do ico=1,3
+      DO I = IOI(ico-1)+1, IOI(ico)
+         Z1 = .FALSE.
+         II = II + 1
+         FAC1 = EPS(II)
+         ISECTP=0
+         IF (DOIH.AND.ICO.EQ.3) THEN
+             ISECTP=1
+             IF (IPIORB(II).EQ.1) Z1=.TRUE.
+         ENDIF
+         AOFF = IO(NREP+1) + IV(IRP)
+c
+         IVA(0)=0
+         IVA(1)=NAV(IRP)+IVA(0)
+         IVA(2)=NIV(IRP)+IVA(1)
+         IVA(3)=NAO(IRP)+IVA(2)
+c
+         do acv=1,3
+C        Find out whether we need to divide by the denominators
+C        leave Hamiltonian matrix elements untouched.
 
-   integer       :: i,ii,irep,j,aoff,a,aa,ai,arep,ssym
-   integer       :: ijrp, abrp, jrp, jj, kk, irp, ioff, imin, bb, amin, arp, brp, b
+C        Find out whether we need to zero non-wf parts
+C        This will zero Hamiltonian elements
 
-!---------------Executable code--------------------------------------
- 
-    ii = 1
+         IF (OPTION.EQ.2) THEN
+            IF ((ICO.EQ.3.AND.ACV.EQ.3).OR.
+     &          (ICO.EQ.3.AND.ACV.EQ.1).OR.
+     &          (ICO.EQ.2.AND.ACV.EQ.3)) THEN
+                ZERO = .TRUE.
+            ELSE
+                ZERO = .FALSE.
+            ENDIF
+         ELSE
+            ZERO = .FALSE. 
+         ENDIF
+C
+         DO A = IVA(acv-1)+1, IVA(acv)
+             Z2 = .FALSE.
+             AA = AOFF + A
+             FAC = FAC1 - EPS(AA)
+             FACIH = FAC
+             CFACIH=cmplx(FAC,0.d00)
+             ISECTH=0
+             IF (DOIH.AND.ACV.EQ.3) THEN
+                ISECTH=1
+                IF (IPIORB(AA).EQ.1) Z2=.TRUE.
+             ENDIF
+             AI = AI + 1
+             DOIHDN=.FALSE.
+             IHZERO=.FALSE.
+             DOIHDN = (Z1.OR.Z2).AND.IHSCHEME.EQ.1
+             IHZERO = (Z1.OR.Z2).AND.IHSCHEME.EQ.2
+             IF (DENO) THEN
+                IF (DOIHDN) THEN
+c                  Compute modified denominators for extrapolated intermediate Hamiltonian scheme
+caz                EEs version of intermediate denominators is assumed 
+caz                for positive aih parameter. otherwise, AZs version works 
+                   if ( AIH  .gt. 1.d-7) then
+c                     positive aih
+                      IF (ISECTP.EQ.1.AND.ISECTH.EQ.0) 
+     &                   FACIH=FAC+SHIFT_IH(1,2)
+                      IF (ISECTP.EQ.0.AND.ISECTH.EQ.1) 
+     &                   FACIH=FAC+SHIFT_IH(1,3)
+                   else
+c                     zero or negative aih
+                      if (yimshift) then
+c                        imaginary shift                  
+                         if (ISECTP.EQ.1 .AND. ISECTH.EQ.0) then
+c                           0h1p sector        
+                            AFAC = dabs( SHIFT_IH(1,2) ) / 
+     &                            ( dsqrt( FAC**2+SHIFT_IH(1,2)**2 ) ) 
+                            CFACIH=cmplx(FAC,SHIFT_IH(1,2)*AFAC**NIH)
+                        
+                         endif    
+                         if (ISECTP.EQ.0.AND.ISECTH.EQ.1) then 
+c                           1h0p sector        
+                             AFAC = dabs( SHIFT_IH(1,3) ) / 
+     &                            ( dsqrt( FAC**2+SHIFT_IH(1,3)**2 ) ) 
+                             CFACIH=cmplx(FAC,SHIFT_IH(1,3)*AFAC**NIH)
+                         endif
+                      else
+c                        real shift
+                         if (ISECTP.EQ.1 .AND. ISECTH.EQ.0) then
+c                           0h1p sector        
+                            AFAC=1.d0 - ( FAC / (FAC+SHIFT_IH(1,2)) )
+                            FACIH=FAC+SHIFT_IH(1,2)*AFAC**NIH
+                         endif    
+                         if (ISECTP.EQ.0.AND.ISECTH.EQ.1) then 
+c                           1h0p sector        
+                            AFAC=1.d0 - ( FAC / (FAC+SHIFT_IH(1,3)) )
+                            FACIH=FAC+SHIFT_IH(1,3)*AFAC**NIH
+                         endif
+                      endif ! end imaginary / real shift branching
+                   endif ! end positve / negative shift branching
+                ENDIF ! end special code for extrapolated IH 
 
-    allocate(map%det(ndt))
+!               Start division of amplitudes by (modified) denominators
+                IF (CARITH) THEN
+!                  complex arithmetic variant (CARITH True)
+                   IF (IHZERO) CT1(AI) = A0
+                   if ( yimshift ) then
+!                     imaginary shift is used
+                      IF (DOIHDN.AND.ABS(CFACIH-cmplx(FAC,0.d+0))
+     &                    .GT.1.D-7)  THEN
+                          CT1(AI)=CT1(AI)/CFACIH
+                      ELSE
+                          CT1(AI) = CT1(AI)/FAC
+                      ENDIF
+                   else                    
+!                     real shift is used
+                      IF (DOIHDN.AND.DABS(FACIH-FAC).GT.1.D-7) THEN
+                         CT1(AI)=CT1(AI)/FACIH
+caz                      aih is strictly positive because the ee denoms are not active
+                         IF (AIH.GT.1.D-7) THEN
+                            IF (NIH.GT.0.AND.NIH.LT.100) THEN
+                                CT1(AI)=CT1(AI)*
+     &                          (1.d0-(AIH*(FACIH-FAC)/FACIH)**NIH)/
+     &                          (1.d0-AIH*(FACIH-FAC)/FACIH)
+                            ELSE IF (NIH.GE.100) THEN
+                                CT1(AI)=CT1(AI)/
+     &                          (1.d0 - AIH*(FACIH-FAC)/FACIH)
+                            ENDIF
+                         ENDIF
+                      ELSE
+                         CT1(AI) = CT1(AI)/FAC
+                      ENDIF
+                   endif ! end of real/imaginary shift branching
+                ELSE
+!                   real arithmetic variant (CARITH False)
+                    IF (IHZERO) T1(AI) = A0
+                    IF (DOIHDN.AND.DABS(FACIH-FAC).GT.1.D-7) THEN
+                       T1(AI)=T1(AI)/FACIH
+                       IF (AIH.GT.1.D-7) THEN
+                          IF (NIH.GT.0.AND.NIH.LT.100) THEN
+                             T1(AI)=T1(AI)*
+     &                         (1.d0 - (AIH*(FACIH-FAC)/FACIH)**NIH)/
+     &                         (1.d0 - AIH*(FACIH-FAC)/FACIH)
+                           ELSE IF (NIH.GE.100) THEN
+                             T1(AI)=T1(AI)/
+     &                         (1.d0 - AIH*(FACIH-FAC)/FACIH)
+                           ENDIF
+                       ENDIF
+                    ELSE
+                       T1(AI) = T1(AI)/FAC
+                    ENDIF
+                ENDIF ! end of real/complex arithmetic branching
 
-    select case(eomtype)
+             ENDIF ! end of code for division of T1-amplitudes by denominators
+C
+             IF (ZERO.OR.(OPTION.EQ.3.AND.IHZERO)) THEN
+!               ampltitudes will be zeroed (sector is not yet active, or
+!               non-dressed, CI-like, IH variant is used)
+                IF (CARITH) THEN
+                   CT1(AI) = A0
+                ELSE
+                   T1(AI) = A0
+                ENDIF
+             ENDIF
 
-      case('EA')
+             ISECTP=0
+             ISECTH=0
+         ENDDO ! A (spinor index within specific ACV)
+         enddo ! ACV (types of virtual spinors)
+      ENDDO ! I (spinor index within specific ICO)
+      enddo ! ICO (types of occupied spinors)
+      ENDDO ! IRP (symmetry irreps)
+C
 
-         do irep=1,nrep
-            arep = multb (irep,1+nrep,1)
-            do i = 1, ncont(irep)
-               aoff = io(nrep+1) + iv(arep)
-               do a = 1, nv(arep)
-                  aa = aoff + a
+c T2 part:
+      ABIJ = 0
+c
+      DO IJRP = 1, NREP
+      DO 10 JRP = 1, NREP
+         JJ = IO(JRP)
+         IRP = MULTB(JRP,IJRP+NREP,2)
+         IF (IRP.LT.JRP) GOTO 10
+c
+         IOJ(0)=0
+         IOJ(1)=NIO(JRP)+IOJ(0)
+         IOJ(2)=NAO(JRP)+IOJ(1)
+         IOJ(3)=NAV(JRP)+IOJ(2)
+c
+         IOFF = IO(IRP) 
+c
+         IOI(0)=0
+         IOI(1)=NIO(IRP)+IOI(0)
+         IOI(2)=NAO(IRP)+IOI(1)
+         IOI(3)=NAV(IRP)+IOI(2)
+c
 
-                  allocate(map%det(ii)%virtuals_energies(1))
-                  allocate(map%det(ii)%virtuals_irreps(1))
-                  allocate(map%det(ii)%virtuals_indexes_in_irreps(1))
+         do jco=1,3
+         DO J = IOJ(jco-1)+1, IOJ(jco)
+           Z1 = .FALSE.
+           JJ = JJ + 1
+           FAC1 = EPS(JJ)
+           ISECTP1=0
+           IF (DOIH.AND.JCO.EQ.3) THEN
+                ISECTP1=1
+                IF (IPIORB(JJ).EQ.1) Z1 = .TRUE.
+           ENDIF
+           icomin=1
+           IF (IRP.EQ.JRP) icoMIN = jco
+           do ico=icoMIN,3
+           IMIN = IOI(ico-1)+1
+           IF (IRP.EQ.JRP.and.ico.eq.jco) IMIN = J + 1
+           DO I = IMIN, IOI(ico)
+             Z2 = .FALSE.
+             II = IOFF + I
+             FAC2 = EPS(II) + FAC1
+             ISECTP2=0
+             IF (DOIH.AND.ICO.EQ.3) THEN
+                ISECTP2=1
+                IF (IPIORB(II).EQ.1) Z2 = .TRUE.
+             ENDIF
+c
+             DO 20 BRP = 1, NREP
+                BB = IV(BRP) + IO(NREP+1)
+                ARP = MULTB(BRP,IJRP+NREP,2)
+                IF (ARP.LT.BRP) GOTO 20
+c
+                IVB(0)=0
+                IVB(1)=NAV(BRP)+IVB(0)
+                IVB(2)=NIV(BRP)+IVB(1)
+                IVB(3)=NAO(BRP)+IVB(2)
+c
+                AOFF = IV(ARP) + IO(NREP+1)
+c
+                IVA(0)=0
+                IVA(1)=NAV(ARP)+IVA(0)
+                IVA(2)=NIV(ARP)+IVA(1)
+                IVA(3)=NAO(ARP)+IVA(2)
+c
+                do bcv=1,3
+                DO B = IVB(bcv-1)+1, IVB(bcv)
+                   Z3 = .FALSE.
+                   BB = BB + 1
+                   FAC3 = FAC2 - EPS(BB)
+                   ISECTH1=0
+                   IF (DOIH.AND.BCV.EQ.3) THEN
+                      ISECTH1=1
+                      IF (IPIORB(BB).EQ.1) Z3 = .TRUE.
+                   ENDIF
+                   acvMIN=1
+                   IF (ARP.EQ.BRP) acvMIN = Bcv
+                   do acv=acvMIN,3
+C                    Find out whether we need to divide by the denoms
+C                    leave Hamiltonian matrix elements untouched.
+                     IF (OPTION.EQ.1) THEN
+                 IF ( (ICO.EQ.3.AND.JCO.EQ.3.AND.ACV.EQ.1.AND.BCV.EQ.1)
+     &            .OR.(ICO.EQ.2.AND.JCO.EQ.2.AND.ACV.EQ.3.AND.BCV.EQ.3)
+     &            .OR.(ICO.EQ.3.AND.JCO.EQ.2.AND.ACV.EQ.3.AND.BCV.EQ.1)
+     &            .OR.(ICO.EQ.3.AND.JCO.EQ.2.AND.ACV.EQ.1.AND.BCV.EQ.3)
+     &            .OR.(ICO.EQ.2.AND.JCO.EQ.3.AND.ACV.EQ.3.AND.BCV.EQ.1)
+     &            .OR.(ICO.EQ.2.AND.JCO.EQ.3.AND.ACV.EQ.1.AND.BCV.EQ.3)
+     &            .OR.(             JCO.EQ.3.AND.ACV.EQ.3.AND.BCV.EQ.3)
+     &            .OR.(ICO.EQ.3.             AND.ACV.EQ.3.AND.BCV.EQ.3)
+     &            .OR.(ICO.EQ.3.AND.JCO.EQ.3.             AND.BCV.EQ.3)
+     &            .OR.(ICO.EQ.3.AND.JCO.EQ.3.AND.ACV.EQ.3             ))
+     &                  THEN
+                            DENO = .FALSE.
+                        ELSE
+                            DENO = .TRUE.
+                        ENDIF
+                     ELSE
+                        DENO = .FALSE. 
+                     ENDIF
+C                    Find out whether we need to zero non-wf parts
+C                    This will zero out Hamiltonian elements
+                     IF (OPTION.EQ.2) THEN
+!lv: Indentation is broken below due to 72 character F77 format limitation
+                 IF ( (ICO.EQ.3.AND.JCO.EQ.3.AND.ACV.EQ.1.AND.BCV.EQ.1)      ! H2 (EF,GH) (0,2) sector
+     &            .OR.(ICO.EQ.2.AND.JCO.EQ.2.AND.ACV.EQ.3.AND.BCV.EQ.3)      ! H2 (MN,OP) (2,0) sector
+     &            .OR.(ICO.EQ.3.AND.JCO.EQ.2.AND.ACV.EQ.3.AND.BCV.EQ.1)      ! H2 (MF,GP) (1,1) sector
+     &            .OR.(ICO.EQ.3.AND.JCO.EQ.2.AND.ACV.EQ.1.AND.BCV.EQ.3)      ! H2 (EN,GP) (1,1) sector
+     &            .OR.(ICO.EQ.2.AND.JCO.EQ.3.AND.ACV.EQ.3.AND.BCV.EQ.1)      ! H2 (MF,OH) (1,1) sector
+     &            .OR.(ICO.EQ.2.AND.JCO.EQ.3.AND.ACV.EQ.1.AND.BCV.EQ.3)      ! H2 (EN,OH) (1,1) sector
+     &            .OR.(             JCO.EQ.3.AND.ACV.EQ.3.AND.BCV.EQ.3)
+     &            .OR.(ICO.EQ.3.             AND.ACV.EQ.3.AND.BCV.EQ.3)
+     &            .OR.(ICO.EQ.3.AND.JCO.EQ.3.             AND.BCV.EQ.3)
+     &            .OR.(ICO.EQ.3.AND.JCO.EQ.3.AND.ACV.EQ.3             ))
+     &                  THEN
+!lv: Resume proper indentation
+                            ZERO = .TRUE.
+                        ELSE
+                            ZERO = .FALSE.
+                        ENDIF
+                     ELSE
+                        ZERO = .FALSE. 
+                     ENDIF
+                     AMIN = IVA(acv-1)+1
+                     IF (ARP.EQ.BRP.and.acv.eq.bcv) AMIN = B + 1
+                        DO A = AMIN, IVA(acv)
+                           Z4 = .FALSE.
+                           AA = AOFF + A
+                           FAC = FAC3 - EPS(AA)
+                           FACIH = FAC
+                           CFACIH = cmplx( FAC, 0.d+0)
+                           ISECTH2=0
+                           IF (DOIH.AND.ACV.EQ.3) THEN
+                            ISECTH2=1
+                            IF (IPIORB(AA).EQ.1) Z4 = .TRUE.
+                           ENDIF
+                           ABIJ = ABIJ + 1
+                           DOIHDN = .FALSE.
+                           IHZERO = .FALSE.
+                           DOIHDN = (Z1.OR.Z2.OR.Z3.OR.Z4)
+     &                              .AND.IHSCHEME.EQ.1
+                           IHZERO = (Z1.OR.Z2.OR.Z3.OR.Z4)
+     &                              .AND.IHSCHEME.EQ.2
+                           ISECTP=ISECTP1+ISECTP2
+                           ISECTH=ISECTH1+ISECTH2
+                           IF (DENO) THEN
+!lv: Indentation is resetbelow due to 72 character F77 format limitation
+! this whole DOIHDN block has to do with the extrapolated IH scheme of AZ & EE
+             IF (DOIHDN) THEN
+                if (AIH .gt. 1.d-7) then
+czai               EEs version .......
+                   IF (ISECTP.EQ.1.AND.ISECTH.EQ.0) THEN
+                       FACIH=FAC+SHIFT_IH(2,2)
+                   ELSEIF (ISECTP.EQ.0.AND.ISECTH.EQ.1) THEN
+                       FACIH=FAC+SHIFT_IH(2,3)
+                   ELSEIF (ISECTP.EQ.2.AND.ISECTH.EQ.0) THEN
+                      FACIH=FAC+SHIFT_IH(2,5)
+                      IF (Z1.AND.Z2) FACIH=FACIH+SHIFT_IH(2,5)
+                   ELSEIF (ISECTP.EQ.0.AND.ISECTH.EQ.2) THEN
+                      FACIH=FAC+SHIFT_IH(2,6)
+                      IF (Z3.AND.Z4) FACIH=FACIH+SHIFT_IH(2,6)
+                   ELSEIF (ISECTP.EQ.1.AND.ISECTH.EQ.1) THEN
+                      FACIH=FAC+SHIFT_IH(2,4)
+                      IF ((Z1.AND.Z4).OR.(Z1.AND.Z3).OR.
+     &                    (Z2.AND.Z4).OR.(Z2.AND.Z3)) 
+     &                FACIH=FACIH+SHIFT_IH(2,4)
+                   ENDIF
+                else
+c                  ...... AZs version 
+                  if ( yimshift ) then
+c                     imaginary shift
+                      IF (ISECTP.EQ.1.AND.ISECTH.EQ.0) THEN
+                         AFAC=dabs(SHIFT_IH(2,2))/
+     &                        dsqrt(FAC**2+SHIFT_IH(2,2)**2)
+                         CFACIH=cmplx(FAC,SHIFT_IH(2,2)*AFAC**NIH)
+                      ELSE IF (ISECTP.EQ.0.AND.ISECTH.EQ.1) THEN
+                         AFAC=dabs(SHIFT_IH(2,3))/
+     &                        dsqrt(FAC**2+SHIFT_IH(2,3)**2)
+                         CFACIH=cmplx(FAC,SHIFT_IH(2,3)*AFAC**NIH)
+                      ELSEIF (ISECTP.EQ.2.AND.ISECTH.EQ.0) THEN
+                         AFAC=SHIFT_IH(2,5)
+                         IF (Z1.AND.Z2) AFAC=AFAC+SHIFT_IH(2,5) 
+                         AFAC=dabs(AFAC)/sqrt(FAC**2+AFAC**2)
+                         CFACIH=cmplx(FAC,SHIFT_IH(2,5)*AFAC**NIH) 
+                      ELSEIF (ISECTP.EQ.0.AND.ISECTH.EQ.2) THEN
+                         AFAC=SHIFT_IH(2,6)
+                         IF (Z3.AND.Z4) AFAC=AFAC+SHIFT_IH(2,6)
+                         AFAC=dabs(AFAC)/sqrt(FAC**2+AFAC**2)
+                         CFACIH=cmplx(FAC,SHIFT_IH(2,6)*AFAC**NIH)  
+                      ELSEIF (ISECTP.EQ.1.AND.ISECTH.EQ.1) THEN
+                          AFAC=SHIFT_IH(2,4)
+                          IF ((Z1.AND.Z4).OR.(Z1.AND.Z3).OR.
+     &                    (Z2.AND.Z4).OR.(Z2.AND.Z3))
+     &                    AFAC=AFAC+SHIFT_IH(2,4)
+                          AFAC=dabs(AFAC)/sqrt(FAC**2+AFAC**2)
+                          CFACIH=cmplx(FAC,SHIFT_IH(2,4)*AFAC**NIH)
+                       ENDIF
+                  else
+c                   real shift
+                    IF (ISECTP.EQ.1.AND.ISECTH.EQ.0) THEN
+                        AFAC=1.d0 - ( FAC / (FAC+SHIFT_IH(2,2)) )
+                        FACIH=FAC+SHIFT_IH(2,2)*AFAC**NIH
+                    ELSEIF (ISECTP.EQ.0.AND.ISECTH.EQ.1) THEN
+                        AFAC=1.d0 - ( FAC / (FAC+SHIFT_IH(2,3)) )
+                        FACIH=FAC+SHIFT_IH(2,3)*AFAC**NIH
+                    ELSEIF (ISECTP.EQ.2.AND.ISECTH.EQ.0) THEN
+                         AFAC=SHIFT_IH(2,5)
+                         if (Z1.and.Z2) AFAC=AFAC+SHIFT_IH(2,5)
+                         FACIH=FACIH+AFAC*(AFAC/(FAC+AFAC))**NIH
+                    ELSEIF (ISECTP.EQ.0.AND.ISECTH.EQ.2) THEN
+                        AFAC=SHIFT_IH(2,6)
+                        IF (Z3.AND.Z4) AFAC=AFAC+SHIFT_IH(2,6)
+                        FACIH=FACIH+AFAC*(AFAC/(FAC+AFAC))**NIH
+                    ELSEIF (ISECTP.EQ.1.AND.ISECTH.EQ.1) THEN
+                        AFAC=SHIFT_IH(2,4)
+                        IF ((Z1.AND.Z4).OR.(Z1.AND.Z3).OR.
+     &                     (Z2.AND.Z4).OR.(Z2.AND.Z3)) 
+     &                  AFAC=AFAC+SHIFT_IH(2,4)
+                        FACIH=FACIH+AFAC*(AFAC/(FAC+AFAC))**NIH
+                    ENDIF
+                  endif ! end of real/imaginary shift branching
+                endif ! end positive / negative shift branching
+c
+             ENDIF ! end of DOIHDN block but we are still inside the T2 DENOM block
 
-                  map%det(ii)%virtuals_energies(1) = eps(aa)
-                  map%det(ii)%virtuals_irreps(1) = arep
-                  map%det(ii)%virtuals_indexes_in_irreps(1) = a+no(arep)
+!            Check for zero denominators and abort if necessary
+             IF( ((.not.yimshift).and.DABS(FACIH).LT.1.D-7).or. 
+     &           (DOIHDN.and.yimshift.and.ABS(CFACIH).LT.1.D-7) ) THEN
+                        WRITE (IW,1000) IRP,JRP,ARP,BRP,
+     &                  I,J,A,B,
+     &                  CLASS(ICO,1),CLASS(JCO,1),
+     &                  CLASS(ACV,2),CLASS(BCV,2),
+     &                  EPS(II),EPS(JJ),EPS(AA),EPS(BB),FAC,FACIH
+                        write (IW,*) ' CFACIH' , CFACIH
+                        CALL QUIT('Zero denominator in DENOMF')
+             ENDIF
 
-                  ii = ii + 1
-               enddo
-            enddo
-         enddo
+             IF (CARITH) THEN
+!               complex arithmetics branch
+                if( yimshift ) then
+!                  complex shift
+                   IF (DOIHDN.AND.ABS(CFACIH-FAC).GT.1.D-7) THEN
+                     CT2(ABIJ)=CT2(ABIJ)/CFACIH
+                   ELSE
+                     CT2(ABIJ) = CT2(ABIJ)/FAC
+                   ENDIF
+                else 
+!                  real shift
+                   IF (DOIHDN.AND.DABS(FACIH-FAC).GT.1.D-7) THEN
+                      CT2(ABIJ)=CT2(ABIJ)/FACIH
+                      IF ( AIH .GT. 1.D-7) THEN
+                         IF (NIH.GT.0.AND.NIH.LT.100) THEN
+                              CT2(ABIJ)=CT2(ABIJ)*
+     &                        (1.d0 - (AIH*(FACIH-FAC)/FACIH)**NIH)/
+     &                        (1.d0 - AIH*(FACIH-FAC)/FACIH)
+                         ELSEIF (NIH.GE.100) THEN
+                              CT2(ABIJ)=CT2(ABIJ)/
+     &                        (1.d0 - AIH*(FACIH-FAC)/FACIH)
+                         ENDIF
+                       ENDIF
+                   ELSE
+                     CT2(ABIJ) = CT2(ABIJ)/FAC
+                   ENDIF
+                endif ! end of real/imaginary shift branching
+c
+             ELSE
+!               real arithmetics branch
+                IF (IHZERO) T2(ABIJ) = A0
+                IF (DOIHDN.AND.DABS(FACIH-FAC).GT.1.D-7) THEN
+                   T2(ABIJ)=T2(ABIJ)/FACIH
+                    IF (AIH .GT. 1.D-7) THEN
+                       IF (NIH.GT.0.AND.NIH.LT.100) THEN
+                          T2(ABIJ)=T2(ABIJ)*
+     &                    (1.d0 - (AIH*(FACIH-FAC)/FACIH)**NIH)/
+     &                    (1.d0 - AIH*(FACIH-FAC)/FACIH)
+                       ELSEIF (NIH.GE.100) THEN
+                          T2(ABIJ)=T2(ABIJ)/
+     &                    (1.d0 - AIH*(FACIH-FAC)/FACIH)
+                       ENDIF
+                    ENDIF
+                ELSE
+                   T2(ABIJ) = T2(ABIJ)/FAC
+                ENDIF
+             ENDIF ! end of real/complex arithmetic branching
+    
+                           ENDIF ! End of T2-denominator (DENO True) code block, resume original indentation
 
-         do irep=1,nrep
-            ijrp = irep
-            abrp = multb (ijrp+nrep,1+nrep,1)
-            do jrp = 1, nrep
-               jj = io(jrp)
-               irp = multb(jrp,ijrp+nrep,2)
-               do j = 1, no(jrp)
-                  jj = jj + 1
-                  do i = 1, ncont(irp)
-                     do brp = 1, nrep
-                        bb = iv(brp) + io(nrep+1)
-                        arp = multb(brp,abrp+nrep,2)
-                        if (arp.lt.brp) cycle
-                           aoff = iv(arp) + io(nrep+1)
-                           do b = 1, nv(brp)
-                              bb = bb + 1
-                              amin = 1
-                              if (arp.eq.brp) amin = b + 1
-                              do a = amin, nv(arp)
-                                 aa = aoff + a
-
-                                 allocate(map%det(ii)%occupied_energies(1))
-                                 allocate(map%det(ii)%occupied_irreps(1))
-                                 allocate(map%det(ii)%occupied_indexes_in_irreps(1))
-
-
-                                 map%det(ii)%virtuals_energies(1) = eps(jj)
-                                 map%det(ii)%virtuals_irreps(1) = jrp 
-                                 map%det(ii)%virtuals_indexes_in_irreps(1) = j 
-
-                                 allocate(map%det(ii)%virtuals_energies(2))
-                                 allocate(map%det(ii)%virtuals_irreps(2))
-                                 allocate(map%det(ii)%virtuals_indexes_in_irreps(2))
-
-                                 map%det(ii)%virtuals_energies(1) = eps(aa)
-                                 map%det(ii)%virtuals_energies(2) = eps(bb)
-
-                                 map%det(ii)%virtuals_irreps(1) = arp
-                                 map%det(ii)%virtuals_irreps(2) = brp
-
-                                 map%det(ii)%virtuals_indexes_in_irreps(1) = a+no(arp)
-                                 map%det(ii)%virtuals_indexes_in_irreps(2) = b+no(brp)
-
-                                 ii = ii + 1
-                              enddo
-                           enddo
-                        enddo
-                     enddo
-                  enddo
-               enddo
-            enddo
-
-      case('IP')
-
-         jj = 0
-         do irep = 1, nrep
-            arep = multb (irep,1+nrep,1)
-            do i = 1, no(irep)
-               jj = jj + 1
-               do a = 1, ncont(arep)
-
-                  allocate(map%det(ii)%occupied_energies(1))
-                  allocate(map%det(ii)%occupied_irreps(1))
-                  allocate(map%det(ii)%occupied_indexes_in_irreps(1))
-
-                  map%det(ii)%occupied_energies(1) = eps(jj)
-                  map%det(ii)%occupied_irreps(1) = irep
-                  map%det(ii)%occupied_indexes_in_irreps(1) = i
-
-                  ii = ii + 1
-               enddo
-            enddo
-         enddo
-
-         do ijrp = 1, nrep
-!           abrp = multb (ijrp+nrep,1+nrep,1)
-            abrp = multb (1+nrep,ijrp+nrep,2)
-            do jrp = 1, nrep
-               jj = io(jrp)
-               irp = multb(jrp,ijrp+nrep,2)
-               if (irp.lt.jrp) cycle
-               ioff = io(irp)
-               do j = 1, no(jrp)
-                  jj = jj + 1
-                  imin = 1
-                  if (irp.eq.jrp) imin = j + 1
-                  do i = imin, no(irp)
-                     kk = ioff + i
-                     do brp = 1, nrep
-                        bb = iv(brp) + io(nrep+1)
-                        arp = multb(brp,abrp+nrep,2)
-                        aoff = iv(arp) + io(nrep+1)
-                        do b = 1, nv(brp)
-                           bb = bb + 1
-                           do a = 1, ncont(arp)
-
-                              allocate(map%det(ii)%occupied_energies(2))
-                              allocate(map%det(ii)%occupied_irreps(2))
-                              allocate(map%det(ii)%occupied_indexes_in_irreps(2))
-
-                              map%det(ii)%occupied_energies(1) = eps(kk)
-                              map%det(ii)%occupied_energies(2) = eps(jj)
-
-                              map%det(ii)%occupied_irreps(1) = irp
-                              map%det(ii)%occupied_irreps(2) = jrp
-
-                              map%det(ii)%occupied_indexes_in_irreps(1) = i
-                              map%det(ii)%occupied_indexes_in_irreps(2) = j
-
-                              allocate(map%det(ii)%virtuals_energies(1))
-                              allocate(map%det(ii)%virtuals_irreps(1))
-                              allocate(map%det(ii)%virtuals_indexes_in_irreps(1))
-
-                              map%det(ii)%virtuals_energies(1) = eps(bb)
-                              map%det(ii)%virtuals_irreps(1) = brp
-                              map%det(ii)%virtuals_indexes_in_irreps(1) = b+no(brp)
-
-                              ii = ii + 1
-                           enddo
-                        enddo
-                     enddo
-                  enddo
-               enddo
-            enddo
-         enddo
-
-
-      case('EE')
-
-         jj = 0
-         do irep = 1, nrep
-            arep = multb (state_sym+nrep,irep,2)
-            do i = 1, no(irep)
-               jj = jj + 1
-               aoff = io(nrep+1) + iv(arep)
-               do a = 1, nv(arep)
-                  aa = aoff + a
-
-                  allocate(map%det(ii)%occupied_energies(1))
-                  allocate(map%det(ii)%occupied_irreps(1))
-                  allocate(map%det(ii)%occupied_indexes_in_irreps(1))
-                  
-                  map%det(ii)%virtuals_energies(1) = eps(jj)
-                  map%det(ii)%virtuals_irreps(1) = irep
-                  map%det(ii)%virtuals_indexes_in_irreps(1) = i
-               
-                  allocate(map%det(ii)%virtuals_energies(1))
-                  allocate(map%det(ii)%virtuals_irreps(1))
-                  allocate(map%det(ii)%virtuals_indexes_in_irreps(1))
-      
-                  map%det(ii)%virtuals_energies(1) = eps(aa)
-                  map%det(ii)%virtuals_irreps(1) = arep
-                  map%det(ii)%virtuals_indexes_in_irreps(1) = a+no(arep)
-
-                  ii = ii + 1
-               enddo
-            enddo
-         enddo
-
-         do ijrp = 1, nrep
-            abrp = multb (state_sym+nrep,ijrp+nrep,2)
-            do jrp = 1, nrep
-               jj = io(jrp)
-               irp = multb(jrp,ijrp+nrep,2)
-               if (irp.lt.jrp) cycle
-               ioff = io(irp)
-               do j = 1, no(jrp)
-                  jj = jj + 1
-                  imin = 1
-                  if (irp.eq.jrp) imin = j + 1
-                  do i = imin, no(irp)
-                     kk = ioff + i
-                     do brp = 1, nrep
-                        bb = iv(brp) + io(nrep+1)
-                        arp = multb(brp,abrp+nrep,2)
-                        if (arp.lt.brp) cycle
-                        aoff = iv(arp) + io(nrep+1)
-                        do b = 1, nv(brp)
-                           bb = bb + 1
-                           amin = 1
-                           if (arp.eq.brp) amin = b + 1
-                           do a = amin, nv(arp)
-                              aa = aoff + a
-
-                              allocate(map%det(ii)%occupied_energies(2))
-                              allocate(map%det(ii)%occupied_irreps(2))
-                              allocate(map%det(ii)%occupied_indexes_in_irreps(2))
-
-                              map%det(ii)%virtuals_energies(1) = eps(kk)
-                              map%det(ii)%virtuals_energies(2) = eps(jj)
-
-                              map%det(ii)%virtuals_irreps(1) = irp
-                              map%det(ii)%virtuals_irreps(2) = jrp
-
-                              map%det(ii)%virtuals_indexes_in_irreps(1) = i
-                              map%det(ii)%virtuals_indexes_in_irreps(2) = j
-
-                              allocate(map%det(ii)%virtuals_energies(2))
-                              allocate(map%det(ii)%virtuals_irreps(2))
-                              allocate(map%det(ii)%virtuals_indexes_in_irreps(2))
-
-                              map%det(ii)%virtuals_energies(1) = eps(aa)
-                              map%det(ii)%virtuals_energies(2) = eps(bb)
-
-                              map%det(ii)%virtuals_irreps(1) = arp
-                              map%det(ii)%virtuals_irreps(2) = brp
-
-                              map%det(ii)%virtuals_indexes_in_irreps(1) = a+no(arp)
-                              map%det(ii)%virtuals_indexes_in_irreps(2) = b+no(brp)
-
-                              ii = ii + 1
-                           enddo
-                        enddo
-                     enddo
-                  enddo
-               enddo
-            enddo
-         enddo
-
-      end select
- 
-  end subroutine
-! aspg, WIP june/july 2018
-
+                           IF (ZERO.OR.(OPTION.EQ.3.AND.IHZERO)) THEN
+                             IF (CARITH) THEN
+                                CT2(ABIJ) = A0
+                             ELSE
+                                T2(ABIJ) = A0
+                             ENDIF
+                           ENDIF
+C-----------------------------------------------------------------------
+CThis may cause large output : activate only when debugging toy systems
+C                            Check for large amplitudes
+C                            IF (CARITH) THEN
+C                               VALUE = CDABS(CT2(ABIJ))
+C                            ELSE
+C                               VALUE = ABS(T2(ABIJ))
+C                            ENDIF
+C                            IF (VALUE.GT.0.1D0.AND..OPTION.EQ.2) THEN
+C                               WRITE (IW,1001) IRP,JRP,ARP,BRP,
+C    &                          I,J,A,B,
+C    &                          CLASS(ICO,1),CLASS(JCO,1),
+C    &                          CLASS(ACV,2),CLASS(BCV,2),
+C    &                          EPS(II),EPS(JJ),EPS(AA),EPS(BB),VALUE
+C                            ENDIF
+C-----------------------------------------------------------------------
+                        ENDDO ! A (spinor index within specific ACV)
+                        enddo ! ACV (types of virtual spinors)
+                  ENDDO ! B (spinor index within specific BCV)
+                  enddo ! BCV (types of virtual spinors)
+ 20          CONTINUE ! BRP (irreps of second virtual spinor)
+             ENDDO ! I (spinor index within specific ICO)
+             enddo ! ICO (types of occupied spinors)
+          ENDDO ! J (spinor index within specific JCO)
+         enddo ! JCO ((types of occupied spinors)
+ 10   CONTINUE ! JRP (irreps of second occupied spinor)
+      ENDDO ! IJRP (compound irreps: Gamma(IRP)*Gamma(JRP) = Gamma (ARP) * Gamma(BRP) = Gamma(IJRP)
+C
+      IF (ABIJ.NE.NDIMT2) CALL QUIT ('ERROR in DENOMF') ! Sanity check: we should have looped over all array elements
+C
+      RETURN
+ 1000 FORMAT (//' Zero denominator found in DENOMF',
+     &/T30,'I',14X,'J',14x,'A',14X,'B',
+     &/' Irreps      : ',4I15,
+     &/' Indices     : ',4I15,
+     &/' Classes     : ',4(13X,A2),
+     &/' Energies    : ',4F15.5,
+     &/' Denominators: ',2E15.5,
+     &//' Please choose a better model space ! We will stop now.')
+ 1001 FORMAT (//' Large amplitude in DENOMF',
+     &/T30,'I',14X,'J',14x,'A',14X,'B',
+     &/' Irreps      : ',4I15,
+     &/' Indices     : ',4I15,
+     &/' Classes     : ',4(13X,A2),
+     &/' Energies    : ',4F15.5,
+     &/' Absolute value ',E15.5)
+      END
+#endif
    end module 

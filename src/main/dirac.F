@@ -19,7 +19,13 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-C FILE    : dirac.F
+! FILE    : main/dirac.F
+
+! if openMP, then let MPI slave nodes sleep 10 ms before probing for a new task
+! then the same cores can be used more efficiently for both openMP and MPI.
+#ifdef HAVE_OPENMP
+#define VAR_SLEEPING_SLAVES
+#endif
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
 #include "dirac_partask.h"
@@ -41,6 +47,8 @@ C***********************************************************************
 
 #ifdef HAVE_OPENMP
       INTEGER omp_get_num_procs, omp_get_num_threads
+      INTEGER omp_get_thread_limit, omp_get_thread_num
+      CHARACTER*10 my_OMP_NUM_THREADS
 #endif
 
 C     Set up basic information for parallel execution, to be stored in the
@@ -49,8 +57,16 @@ C     common block infpar
 #ifdef HAVE_OPENMP
       MAX_OMP_THREADS = omp_get_num_procs()
       write(lupri,'(//A,2I5)')
-     &' * openMP activated, number of processes and number of threads:',
+     &' * openMP activated, number of processes and number of threads'//
+     &' in non-parallel region:',
      &   MAX_OMP_THREADS, omp_get_num_threads()
+!$OMP PARALLEL
+      MAX_OMP_THREADS = omp_get_thread_limit()
+      write(lupri,'(//A,I20,2I5)') ' * openMP parallel region, '//
+     &'max number of threads and current number of threads:',
+     &   MAX_OMP_THREADS, omp_get_num_threads()
+     & , omp_get_thread_num()
+!$OMP END PARALLEL
 #else
       MAX_OMP_THREADS = 0
 #endif
@@ -61,11 +77,12 @@ C     NUMNOD = INUMNOD - 1
 C     SK - Sep 08: subtraction has already been done in mpixinit.
       NUMNOD = INUMNOD
       MYTID  = IMYTID
-      MYNUM  = MYTID
 C Additional check for parallelism, parallel with only a master is the same as serial
       PARCAL = PARCAL.AND.NUMNOD.ne.0
 C Test the communication by sending an empty task
       IF (PARCAL) CALL DIRAC_PARCTL( RELEASE_NODES )
+      SLAVE = .FALSE. ! this is the master node (or the only node if not PARCAL)
+      PARHER = .FALSE.
 C
 C     Set basis set directory
 C
@@ -399,6 +416,14 @@ C**** W A V E     F U N C T I O N S   **********************************
 C**** after 4-index transformation   ***********************************
 C***********************************************************************
       IF(DOPSI) THEN
+C
+C***********************************************************************
+C******* E X A _ C C  M O D U L E **************************************
+C***********************************************************************
+C
+#ifdef MOD_EXACORR
+        IF(DOEXACC) CALL EXA_CC()
+#endif
 C
 C***********************************************************************
 C******* R E L C C S D  M O D U L E ************************************
@@ -1097,6 +1122,8 @@ C     Last revision: July 29 1996
 C
 C***********************************************************************
       use interface_to_mpi
+      use iso_c_binding
+
 #ifdef MOD_INTEREST
       use module_interest_interface,                                    &
      &    only: initialize_interest_herd,                               &
@@ -1107,6 +1134,21 @@ C***********************************************************************
       use fde_mod, only : fde_launch_slave_process
 
       implicit none
+
+#if defined (VAR_SLEEPING_SLAVES)
+      interface
+         ! fortran sleep() is only in seconds,
+         ! so we use the usleep() from C to sleep in microseconds
+         subroutine usleep_ftn(useconds) bind(C,name="usleep")
+      !  integer(c_int) function usleep(useconds) bind(C)
+          use iso_c_binding
+          implicit none
+          integer(c_int32_t), value :: useconds
+      !  end function
+         end subroutine
+      end interface
+#endif
+
 #include "dcbdhf.h"
 #include "dcbgen.h"
 #include "priunit.h"
@@ -1132,10 +1174,15 @@ C***********************************************************************
 #ifdef HAVE_OPENMP
       MAX_OMP_THREADS = omp_get_num_procs()
       if (mytid .eq. mytid_print) then
-         write(lupri,'(//A,2I5)')
-     &' * node 10 openMP, number of processes and number of threads:',
-     &   MAX_OMP_THREADS, omp_get_num_threads()
-         print *,'node 10 openMP, call omp_set_num_threads(1)'
+!$OMP PARALLEL
+!        write(lupri,'(//A,2I5)')
+!    &' * node 10 openMP, number of processes and number of threads:',
+!    &   MAX_OMP_THREADS, omp_get_num_threads()
+!        write(lupri,'(//A,I10)')
+!    &' * node 10 openMP, number of mkl threads:',
+!    &    mkl_get_max_threads()
+!        print *,'node 10 openMP, call omp_set_num_threads(1)'
+!$OMP END PARALLEL
       end if
       call omp_set_num_threads(1)
       MAX_OMP_THREADS = 0
@@ -1155,6 +1202,10 @@ C     SK - Sep 08: subtraction has already been done in mpixinit.
       IF (.NOT. PARCAL) THEN
          CALL QUIT('ERROR: PARCAL false, but DIRNOD called')
       END IF
+C
+C     This is a slave in a parallel run
+C
+      SLAVE = .TRUE.
 
 #if defined (SLOWDOWN_SLAVES)
 !mi+sk: introduce slowdown statement for debug purposes :
@@ -1166,6 +1217,15 @@ C     SK - Sep 08: subtraction has already been done in mpixinit.
       endif
 #endif
 
+C     Initialize infpar.h control variables
+      PARHER = .FALSE.
+      ! Hermit can be called two ways with mpi:
+      !   PARHER true for MPI parallelization in HERMIT
+      !      (Feb.2019: set true in HERNOD and in TRANOD)
+      !   PARHER false elsewhere,
+      !      in particular for FCK2TRA integral transformation
+      !      calls of Hermit (Feb.2018/hjaaj)
+
 C
 C     Set basis set directory for this slave
 C     (it may be needed for reading the .mol file)
@@ -1176,32 +1236,25 @@ C
 #if defined (VAR_SLEEPING_SLAVES)
 ! If it is important that the slaves are not idling
 ! then one can define VAR_SLEEPING_SLAVES.
-! If set, then the slaves test once per second if there
-! is a new task (because of the CALL SLEEP(1))
+! If set, then the slaves test once per 10 ms if there
+! is a new task.
       call interface_mpi_iprobe(MPARID,27,NEWTASK,global_communicator,
      &                          ISTAT)
       IF (NEWTASK) THEN
-chj      write (0,*) 'mpi_iprobe true for node',mytid
-chj      write (0,*) 'istatus(source,tag,error):',
-chj  &     ( istatus(i),i=1,3)
          CALL interface_MPI_RECV(ITASK,1,MPARID,27,
      &                           global_communicator)
-chj      write (0,*) ' itask, node',itask,mytid
-chj      write (0,*) 'istatus(source,tag,error):',
-chj  &     ( istatus(i),i=1,3)
       ELSE
-         CALL SLEEP(1)
+!        CALL SLEEP(1) ! 1 second is too long, costs a lot of waste when 100, 1000 slaves or more
+         call usleep_ftn(10000_c_int32_t) ! sleep for 10 ms = 10000 microseconds
          GO TO 100
       END IF
 #else
 C
-Csk      write(6,*) 'node will recieve itask',MYTID
          CALL interface_MPI_RECV(ITASK,1,MPARID,27,
      &                           global_communicator)
-! debug         print*,'node',mytid,' has recieved itask',itask
-      if (mytid .eq. mytid_print) 
-     &          print*,'node',mytid,' has recieved itask',itask
 #endif
+      if (mytid .eq. mytid_print) 
+     &   print*,'info: node',mytid,' has received itask',itask
 C
 C     check for proper LUCITA / LUCIAREL installation
 C
@@ -1209,7 +1262,7 @@ C
 C
       IF (ITASK .eq. 5 .or. ITASK .eq. 6) THEN
         WRITE(LUPRI,'(//A)') 'Fatal error in starting a parallel LUCITA'
-     & //' / LUCIAREL run; you do not have a MPI-2 library installed'
+     & //' / LUCIAREL run; you do not have an MPI-2 library installed'
        CALL QUIT('Error in DIRNOD: missing MPI-2 library functions')
       END IF
 #endif
@@ -1363,6 +1416,27 @@ C
 C        start FDE MPI calculation
 C
          call fde_launch_slave_process()
+      ELSE IF (ITASK .EQ. 19) THEN
+C
+C        start exacorr moltra with MPI
+C
+#ifndef MOD_EXACORR
+          call quit(
+     &    'worker error: exa_moltra task not included in this version')
+#else
+         call exa_moltra()
+#endif
+
+      ELSE IF (ITASK .EQ. 20) THEN
+C
+C        start exacorr cc with MPI
+C
+#ifndef MOD_EXACORR
+          call quit(
+     &    'worker error: exa_cc task not included in this version')
+#else
+         call exa_cc()
+#endif
 
       ELSE
 C

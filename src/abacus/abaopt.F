@@ -1338,16 +1338,6 @@ CTROND      END IF
 C
       call dealloc(WORK)
       CALL RUNOPT(MXRINT)
-#ifndef PRG_DIRAC
-#if defined (VAR_MPI)
-      IF (NODTOT .GT. 1 .AND. MYNUM .EQ. 0) THEN
-         IJOB = 0
-         CALL interface_MPI_BCAST(IJOB,1,NODEID(MOTHER),
-     &                  global_communicator)
-      END IF
-#endif
-#endif
-
 
  9999 CALL QEXIT('OPTMIN')
       RETURN

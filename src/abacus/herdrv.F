@@ -347,13 +347,13 @@ C
   119    CONTINUE
             READ (LUCMD,'(I5)') NPQUAD
             GO TO 100
-  120    CONTINUE
+  120    CONTINUE ! .SELECT
             READ (LUCMD, *) NPATOM
             IF (NPATOM .GT. MXCENT) THEN
-               WRITE (LUPRI,'(/A,/A,I3,/A,I3)')
-     &             ' Too many atoms selected.',
-     &             ' Number of atoms selected:    ',NPATOM,
-     &             ' Number of atoms allowed:     ',MXCENT
+               WRITE (LUPRI,'(/A,/A,I6,/A,I6)')
+     &             ' Too many atoms selected with .SELECT.',
+     &             ' Number of atoms selected: ',NPATOM,
+     &             ' Number of atoms allowed:  ',MXCENT
                CALL QUIT('Error in HERINP')
             END IF
             READ (LUCMD, *) (IPATOM(I),I=1,NPATOM)
@@ -653,7 +653,7 @@ C&&& MAGCOR - print magnetic coordinates
       ELSE
          WRITE (LUPRI,'(/,3A,/)') ' Prompter "',PROMPT,'" illegal'
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT('Illegal prompt in HERINP.')
+         CALL QUIT('Illegal prompt in '//WORD1)
       END IF
  199  CONTINUE
       NMRISS = FERMI.OR.PSO.OR.SPIDIP.OR.DSO.OR.SDFC.OR.MGCOOR
@@ -921,12 +921,12 @@ C
   210    CONTINUE
          WRITE (LUPRI,'(/,3A,/)') ' Directory ',WORD,' nonexistent.'
          CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
-         CALL QUIT('Illegal directory in HERINP.')
+         CALL QUIT('Illegal directory in '//WORD1)
       ELSE
          WRITE (LUPRI,'(/,3A,/)') ' Prompter "',PROMPT,
      *      '" illegal or out of order.'
          CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
-         CALL QUIT('Program stopped in HERINP, error in prompt.')
+         CALL QUIT('Program stopped in '//WORD1//', error in prompt.')
       END IF
     2   CALL REAINP(WORD,RELCAL,TSTINP)
       GO TO 201
@@ -986,12 +986,8 @@ C
 C
       CLOSE(UNIT=LUCMD,STATUS='KEEP')
 C
-C
       RETURN
 C
-!radovan: this is unreachable!
- 9000 WRITE (LUPRI,'(//A)') ' *** ERROR *** unable to open input file'
-      CALL QUIT('*** ERROR (HERINP) unable to open input file (unit 5)')
       END
 C  /* Deck hr1inp */
       SUBROUTINE HR1INP(WORD)

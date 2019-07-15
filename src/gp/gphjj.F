@@ -1307,20 +1307,20 @@ C
       INTEGER FILELN
       LOGICAL VALUE
 #include "chrnos.h"
-c maxorb for infpar.h
-#include "maxorb.h"
-#include "infpar.h"
+! maxorb for infpar.h
+!include "maxorb.h"
+!include "infpar.h"
 C
       FILELN = LEN(FILENM)
-      IF (MYNUM .GT. 0) THEN
-         FILTMP(1:FILELN+4) = FILENM(1:FILELN)//
-     &                        '#'//CHRNOS(MYNUM/100)//
-     &                        CHRNOS(MOD(MYNUM,100)/10)//
-     &                        CHRNOS(MOD(MOD(MYNUM,100),10))
-         FILELN = FILELN + 4
-      ELSE
+!     IF (MYTID .GT. 0) THEN
+!        FILTMP(1:FILELN+4) = FILENM(1:FILELN)//
+!    &                        '#'//CHRNOS(MYTID/100)//
+!    &                        CHRNOS(MOD(MYTID,100)/10)//
+!    &                        CHRNOS(MOD(MOD(MYTID,100),10))
+!        FILELN = FILELN + 4
+!     ELSE
          FILTMP(1:FILELN) = FILENM(1:FILELN)
-      END IF
+!     END IF
       IF (TASK(1:5) .EQ. 'EXIST') THEN
          INQUIRE(FILE=FILTMP(1:FILELN),EXIST=VALUE)
       ELSE IF (TASK(1:5) .EQ. 'OPENE') THEN
