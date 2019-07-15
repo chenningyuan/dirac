@@ -159,3 +159,4 @@ dirac_test(spinorbit-from-spinfree "short;scf;resolve" "")
 dirac_test(spinrot "short;response" "")
 # disabing eomcc expectation value test until the code is verified
 #dirac_test(eomcc_expval "short;cc" "")
+
