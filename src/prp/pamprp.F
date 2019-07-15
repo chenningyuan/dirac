@@ -9571,6 +9571,8 @@ C     Written by Agustin Aucar and Trond Saue Sep 2013
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use codata
+      use memory_allocator
+
       implicit none
 #include "priunit.h"
 C
@@ -9605,6 +9607,7 @@ C...common block for linear reponse
       DOUBLE PRECISION PFAC,WORK,D1,DL,DS
 
       logical, allocatable :: DOATOM(:)
+
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3),IOP(3)
 C.....ANGMOM integrals correspond to -iL, so we set DL = -1
@@ -9618,7 +9621,9 @@ C
       NNSTIN = 0
       NSCOOR = 3*NUCDEP
       CALL IZERO(IPSPINRO,6+MXCOOR)
+c
       allocate(DOATOM(NUCIND))
+c
       CALL SETATM(DOATOM,NATOM,-29)
 C
 C     Here we set up the operators needed for the expectation value
@@ -9888,6 +9893,7 @@ C
       ENDDO
 C
       deallocate(DOATOM)
+C
       CALL QEXIT('DEF_SPINRO1')
       RETURN
       END
@@ -9943,7 +9949,7 @@ C
       PARAMETER (D2 = 2.0D0)
       PARAMETER (FAC = ALPHA2/(PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
 C
-      LOGICAL TEST,ee, ep,occ,PLANAR
+      LOGICAL TEST,ee,ep,occ,PLANAR
 C
       INTEGER IBUFA(3*NUCDEP), IBUFEXP(3*NUCDEP), I,IA,IB1,IB2,
      &        IATOM,IDEG,IDEP, IFREQ, INUC,ISO,ISYMOP,ITYP,IZ,J,
@@ -10118,7 +10124,6 @@ C     The NSCOOR nucl. electric field operators as NEF operators in < 0 | NEF | 
         WRITE(LUPRI,'(2X,A,I2)') 'PRP_SPINRO: NEXP=',NEXP
         CALL QUIT('PRP_SPINRO:Wrong value of NEXP!')
       ENDIF
-C
 C--------------------------------------------------------------------
 C     NUCLEAR PART OF NSR TENSOR
 C
@@ -10131,6 +10136,8 @@ c      END DO
 c****
 C
       CALL CMMASS(GEOM,MASS,NAT,ISOTOP,IPRPRP)
+      WRITE (LUPRI,'(/,A,18X,3F20.15,//)')
+     &    ' Gauge origin (a.u.):', (GAGORG(I),I=1,3)
       CALL DCOPY(3,CMXYZ,1,GAGORG,1)
       CALL NUCSPR(GEOM,CMXYZ,IPRPRP)
 C-------------------------------------------------------------------
@@ -10271,7 +10278,7 @@ C       ... add the nuclear term to TMAT
 C
 C iaa: USECM is seted as default option, May 2014 (TSaue)
       WRITE(LUPRI,'(2X,A)')
-     & 'NOTE: The gauge origin has to be placed'//
+     & 'NOTE: The gauge origin must be placed'//
      & ' at the molecular CM in order to get'//
      & ' correct values of spin-rotation tensor.'
 C--------------------------------------------------------------------

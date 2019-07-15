@@ -971,30 +971,18 @@ C
       IF (THRSUP .LT. 0.0D0) THRSUP = THRS
 #endif
       CALL SETDCH
-C.....Find center of mass
-      KGEOM = 1
-      KMASS = KGEOM + 3*NATOMS
-      KNAT  = KMASS + NATOMS
-      KLAST = KNAT + (NATOMS + 1)/IRAT
-      IF (KLAST .GT. LWORK) CALL STOPIT('HERDRV','CMMASS',KLAST,
-     &                                     LWORK)
-      CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),ISOTOP,IPRDEF)
-      IF(.NOT.GAGORG_SET) THEN
-         CALL DCOPY(3,CMXYZ,1,GAGORG,1)
-         CALL DCOPY(3,GAGORG,1,DIPORG,1)
-      ENDIF
-      WRITE (LUPRI,'(/,A,18X,3F20.15)')
-     &    ' Gauge origin (a.u.):', (GAGORG(I),I=1,3)
-      WRITE (LUPRI,'(/,A,17X,3F20.15)')
-     &    ' Dipole origin (a.u.):', (DIPORG(I),I=1,3)
-      WRITE (LUPRI,'(/,A,3F20.15)')
-     &    ' Origin for London phase factor (a.u.):', (ORIGIN(I),I=1,3)
       IF (DORLM .AND. .NOT. CAVUSR) THEN
-         CALL DCOPY(3,CMXYZ,1,CAVORG,1)
-         WRITE(LUPRI,'(/,A,3F12.6)') ' Cavity center (center of mass):',
+        KGEOM = 1
+        KMASS = KGEOM + 3*NATOMS
+        KNAT  = KMASS + NATOMS
+        KLAST = KNAT + (NATOMS + 1)/IRAT
+        IF (KLAST .GT. LWORK) CALL STOPIT('HERDRV','CMMASS',KLAST,
+     &                                    LWORK)
+        CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),ISOTOP,IPRDEF)
+        CALL DCOPY(3,CMXYZ,1,CAVORG,1)
+        WRITE(LUPRI,'(/,A,3F12.6)') ' Cavity center (center of mass):',
      &                               (CAVORG(I), I = 1, 3)
       END IF
-C
 C
       CLOSE(UNIT=LUCMD,STATUS='KEEP')
 C
