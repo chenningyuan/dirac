@@ -2001,6 +2001,7 @@ C     ... Total NUClear MASs = TOTal MASs - Total ELeCtron MASs
 C  /* Deck vibmas */
       SUBROUTINE VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,NNATOM,
      &                  GEOM,ORIGIN,IPRINT)
+      USE CODATA, ONLY : XTANG
 #include "implicit.h"
 C
 C     Sets up masses and calculates total mass for an isotopic
@@ -2009,7 +2010,7 @@ C
 #include "priunit.h"
 #include "mxcent.h"
       PARAMETER ( D0 = 0.0D0, D100 = 100.0D0, DP01 = 0.01D0,
-     &            BIGMAS = 1.0D20, XTANG    = 0.5291772108D0 )
+     &            BIGMAS = 1.0D20 )
 C
       DIMENSION NUMIS(*), NATTYP(*), AMASS(*), GEOM(3,NNATOM), ORIGIN(3)
 C
