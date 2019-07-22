@@ -91,6 +91,13 @@ module exacorr_tensor_methods
           procedure, public:: apply=>set_cholesky
         end type get_cholesky
 
+        !Scale by denominators:
+        type, extends(tens_method_uni_t), public:: find_maximum
+         real(8), allocatable, private:: eps_occ(:),eps_vir(:)
+         contains
+          procedure, public:: apply=>search_maximum
+        end type find_maximum
+
        contains
 
        subroutine TensInitTestCtorReal(this,val)
@@ -1214,6 +1221,107 @@ module exacorr_tensor_methods
           end do
 
         end function cholesky_set
+
+        function search_maximum(this,tensor,scalar) result(ierr)
+         use, intrinsic:: ISO_C_BINDING
+         implicit none
+         integer(INTD):: ierr,n
+         class(find_maximum), intent(in):: this
+         class(tens_rcrsv_t), intent(inout):: tensor
+         complex(8), intent(inout), optional:: scalar
+         type(tens_dense_t):: tens
+         integer, allocatable :: tens_id(:)
+         integer(INTL), allocatable  :: tens_root(:)
+         logical :: lambda=.false.
+
+         ierr=0
+         tens=tensor%get_dense_adapter(ierr)
+         if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
+
+         select case (tens%num_dims)
+         case (2)
+            allocate (tens_id  (2))
+            allocate (tens_root(2))
+         case (4)
+            allocate (tens_id  (4))
+            allocate (tens_root(4))
+         case default
+            call quit ('Error: wrong dimension of tensor in denominate')
+         end select
+
+         call tensor%get_space_ids(tens_id,tens_root,ierr)
+         if (tens_id(1) == 1) lambda = .true. ! tens_id 1 corresponds to occupied space
+
+         ierr=maximum_search(tens%num_dims,tens%body_ptr,tens%data_kind,tens%dims(1:n),tens%bases(1:n))
+
+        end function search_maximum
+
+        integer function maximum_search(num_dims,tens_body,data_kind,tens_dims,tens_bases) result (ierr)
+
+        !Scale with denominators for 2-d or 4-d tensor for regular CC and for lambda
+
+         use, intrinsic:: ISO_C_BINDING
+
+         implicit none
+
+         integer,intent(in):: num_dims            !in: number of dimensions of the tensor
+         type(C_PTR), value:: tens_body           !in: C pointer to the tensor body (tensor elements)
+         integer(4), value:: data_kind            !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
+         integer(8), intent(in):: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
+         integer(8), intent(in):: tens_bases(1:*) !in: base offsets for each tensor dimension)
+
+         integer :: p,q,r,s
+         real(8) :: denominator
+         complex(8),pointer :: t1_tens(:,:),t2_tens(:,:,:,:)
+         integer    :: t1_max(1:2), t2_max(1:4)
+         complex(8) :: max_val
+
+         ierr=0 !set error code to success
+         if(data_kind /= EXA_DATA_KIND_C8) then
+           ierr=-1 !invalid data kind requested
+           return
+         endif
+         
+         max_val=0.0
+         select case (num_dims)
+         case (2)
+            t1_max=-666
+            call c_f_pointer(tens_body,t1_tens,tens_dims(1:2)) !map C pointer to 2-dimensional array
+            do p = 1, tens_dims(2)
+              do q = 1, tens_dims(1)
+                if (abs(t1_tens(q,p)).gt.abs(max_val)) then
+                  max_val=t1_tens(q,p)
+                  t1_max(1)=q+tens_bases(1)
+                  t1_max(2)=p+tens_bases(2)
+                end if 
+              end do
+            end do
+            print *, t1_max, max_val
+         case (4)
+            t2_max=-666
+            call c_f_pointer(tens_body,t2_tens,tens_dims(1:4)) !map C pointer to 2-dimensional array
+            do p = 1, tens_dims(4)
+              do q = 1, tens_dims(3)
+                do r = 1, tens_dims(2)
+                  do s = 1, tens_dims(1)
+                    if (abs(t2_tens(s,r,q,p)).gt.abs(max_val)) then
+                      max_val=t2_tens(s,r,q,p)
+                      t2_max(1)=s+tens_bases(1)
+                      t2_max(2)=r+tens_bases(2)
+                      t2_max(3)=q+tens_bases(3)
+                      t2_max(4)=p+tens_bases(4)
+                    end if
+                  end do
+                end do
+              end do
+            end do
+            print *, t2_max, max_val
+         case default
+            call quit ('Error: wrong dimension of tensor in maximum_search')
+         end select
+
+        end function maximum_search
+
 
 
 end module exacorr_tensor_methods

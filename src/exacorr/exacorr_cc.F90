@@ -247,6 +247,7 @@ module exacorr_cc
             ierr=exatns_tensor_create(comm_t%fvv,"fvv",vv_id,vv_root,EXA_DATA_KIND_C8)
             call init_fock (comm_t,int_t,oo_id,oo_root,ov_id,ov_root,vv_id,vv_root, print_level)
             call print_date('initialized Fock matrix')
+            ierr=exatns_tensor_transform(int_t%oooo,'Find Maximum')
 
 !           Initialize t1 amplitudes to zero (we assume canonical orbitals for the moment)
             if (.not.CCD) ierr=exatns_tensor_create(comm_t%t1,"t1",vo_id,vo_root,EXA_DATA_KIND_C8)
@@ -704,6 +705,7 @@ module exacorr_cc
          type(init_one_el_t)          :: one_el(3)            ! one electron integrals
          type(set_energy_t)           :: orb_set              ! place orbital energies on diagonal
          type(get_cholesky)           :: chol_set             ! to retrieve the cholesky vector
+         type(find_maximum)           :: f_max                ! look for maximum
 
          integer:: spin
          integer:: min_occ
@@ -796,6 +798,10 @@ module exacorr_cc
             ierr=exatns_method_register('OrbSet',orb_set)
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(OrbSet) failed!')
          end if
+
+         !Register method to search maximum
+         ierr=exatns_method_register('Find Maximum',f_max)
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(Find Maximum) failed!')
 
         end subroutine exacorr_cc_methods
 
