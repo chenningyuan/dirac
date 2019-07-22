@@ -1058,8 +1058,8 @@ C
      &                                    GAO2(1, i))                   
                i = i + cartesian_deg(ishell)
               end if
-             end do
-            end do
+             end do  !isym
+            end do  !ishell
 !                   call get_ao(                                  
 !     &                    nblock_length,                     
 !     &                    X8(ipoint:ipoint+nblock_length-1), 
@@ -1070,33 +1070,9 @@ C
 !     &                  )
 !            call ao_to_so(nblock_length, GAO2, BUFGAO)            
             DO II=1,NTBAS(0)
-              DO  III=1,nblock_length
-                 GAO(ipoint+III-1,II)=GAO2(III,II)
-              ENDDO
+              CALL DCOPY(nblock_length,GAO2(1,II),1,GAO(ipoint,II),1)
             ENDDO
 C
-!     DO II=1,NTBAS(0)
-              II=35
-              DO  III=1,nblock_length-1
-!              DO  III=1,5
-!                 IF(GAO(ipoint+III,II).ne.0.0D0)THEN
-!                 write(*,*)
-!                 write(*,*)'GAO,III,II',GAO(ipoint+III,II),III,II
-!       write(*,*)'X8,Y8,Z8',X8(ipoint+III),Y8(ipoint+III),Z8(ipoint+III)
-!                 ENDIF
-              ENDDO
-              write(*,*)"*********"
-              write(*,*)"*********"
-              write(*,*)"basis"
-              II=46
-              DO  III=1,nblock_length-1
-!     DO  III=1,5
-!                 IF(GAO(ipoint+III,II).ne.0.0D0)THEN
-!                 write(*,*)
-!                 write(*,*)'GAO,III,II',GAO(ipoint+III,II),III,II
-!       write(*,*)'X8,Y8,Z8',X8(ipoint+III),Y8(ipoint+III),Z8(ipoint+III)
-!                 ENDIF
-              ENDDO
               write(*,*)"*********"
               write(*,*)"*********"
               write(*,*)"basis"
