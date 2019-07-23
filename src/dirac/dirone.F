@@ -1005,6 +1005,9 @@ C
            CALL DGER(m,MXNP,D1,ANG(1,1),1,R,1,X8,m)
            CALL DGER(m,MXNP,D1,ANG(1,2),1,R,1,Y8,m)
            CALL DGER(m,MXNP,D1,ANG(1,3),1,R,1,Z8,m)
+C
+C Getting WT8
+C           
            DO IR = 1,MXNP
               RFAC = R(IR) * NUMIR(IR)
               CALL DAXPY(m,RFAC,ANG(1,4),1,WT8((IR-1)*m+1),1)
@@ -1091,13 +1094,6 @@ C     &                  )
             deallocate(GAO2)
             deallocate(BUFGAO)
            end do ! ipoint
-C
-C           write(*,*)'nr_ao_cartesian',nr_ao_cartesian
-C           DO III=1,NTBAS(0)
-C             DO II=1,nblock_length
-C                 write(*,*)'GAO,IRiy,nr_ao',GAO(II,III),II,III
-C              ENDDO   
-C           ENDDO   
            INDEX = 0
 C           stop
            DO 40 IR = 1, MXNP
@@ -1124,11 +1120,12 @@ C               CALL WTAOSO(BUFGAO,GAO,NTBAS(0),1,IPRINT)
 C     
 C     Get "overlap" matrix
 C
+C As far as I considered, Math library cannot be applied to here.
                IOFF   = 0
                ISTART = 0
                DO IRP = 1,MAXREP+1 
                  DO IC = 1, MC
-                    DO I = 1, NCOS(IRP,IC)
+                   DO I = 1, NCOS(IRP,IC)
                      IADD = I*(I-1)/2
                      DO J = 1, I
                        IJ = IADD + J + IOFF
@@ -1138,14 +1135,15 @@ C
 !     write(*,*)'IJ+ISTART*I',IJ+ISTART*I
                      ENDDO
                    ENDDO
-!                   write(*,*)
                    ISTART = ISTART + NCOS(IRP,IC)
                    IOFF   = ISTART*(ISTART+1)/2
                  ENDDO  
                ENDDO
 !               stop
                CALL DAXPY(NDIM2,WT8(INDEX),BUF,1,TC,1)
+               write(*,*)'WT8,INDEX',WT8(INDEX),INDEX
  50          CONTINUE
+             stop
              CALL DAXPY(NDIM2,W(IR),TC,1,INTAO,1)
 !             write(*,*)
 !             write(*,*)'*************'
@@ -1183,8 +1181,11 @@ c$$$           CALL OUTPAK(INTAO(IOFF),NTBAS(IC),-1,LUPRI)
 c$$$           IOFF = IOFF + NTBAS(IC)*(NTBAS(IC)+1)/2 + NTBAS(IC)
 c$$$           DIM = DIM + NTBAS(2)
 c$$$         ENDDO
-c$$$         write(*,*)
-          CALL OUTPAK(INTAO(1),NTBAS(0),-1,LUPRI)
+c$$$  write(*,*)
+C         
+C     writing the matrix in output
+C         
+!          CALL OUTPAK(INTAO(1),NTBAS(0),-1,LUPRI)
         Endif        !(IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0)
         deallocate(TD)
         deallocate(NUMIR)
