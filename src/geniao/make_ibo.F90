@@ -38,7 +38,8 @@ contains
              do j=1,nocc
                 allocate(vec(nmoi))
                 vec = LIbOcc(imo+1:imo+nmoi,j)
-                ! For real orbitals only. For complex, I should consider conjg(vec):
+                ! dot_product should work with complex matrices without any change:
+                ! if vec is complex, dot_product = sum(conj(vec)*vec)
                 func = func + dot_product(vec,vec)**Expnt
                 deallocate(vec)
              enddo
@@ -64,14 +65,13 @@ contains
                    Ai = C(:,i)
                    Aj = C(:,j)
                    ! Compute the charge matrix elements of fragment k
-                   ! For complex coefficients, one should consider a conjugate.
                    Qii = dot_product(Ai,Ai)
                    Qij = dot_product(Ai,Aj)
                    Qjj = dot_product(Aj,Aj)
                    if ((Expnt.eq.2) .or. (Expnt.eq.3)) then
                    ! Pipek-Mezey localization
                      Aij = Aij + 4.D0*Qij**2 - (Qii-Qjj)**2
-                     Bij = Bij + 4*Qij*(Qii - Qjj)
+                     Bij = Bij + 4.D0*Qij*(Qii - Qjj)
                    else if (Expnt.eq.4) then
                    ! Appendix D of Knizia's paper
                      Bij = Bij + 4.D0*Qij*(Qii**3 - Qjj**3)
@@ -91,7 +91,8 @@ contains
                 if ((Aij**2 + Bij**2) .gt. 1D-12) then
                   allocate(Ai(nmo2))
                   allocate(Aj(nmo2))
-                  phi = 0.25*datan2(Bij,-Aij)
+                  ! I don't know how to compute phi for complex Bij, Aij.
+                  phi = dble(0.25)*datan2(Bij,-Aij)
                   !Bij is the actual gradient. Aij is effectively
                   !the second derivative at phi=0.
                   fGrad = fGrad + Bij**2

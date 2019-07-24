@@ -45,6 +45,7 @@ def generate_dirac_input(molecule,
                         uncontract,
                         speed_of_light,
                         version,
+                        get_mrconee,
                         exponent):
     """This function creates and saves a Dirac input file.
 
@@ -104,11 +105,13 @@ def generate_dirac_input(molecule,
        f.write("**GENERAL\n")
        f.write(".CVALUE\n")
        f.write(" " + str(speed_of_light) + "\n")
-      f.write("**MOLTRA\n")
-      f.write(".MDCINT\n")
+      if get_mrconee:
       # all active has to be set for the MRCONEE and DFCOEF files to have the same number of spinors.
-      f.write(".ACTIVE\n") 
-      f.write(" all\n") 
+      # This is important for the test only, otherwise we don't need the MRCONEE file.
+       f.write("**MOLTRA\n")
+       f.write(".MDCINT\n")
+       f.write(".ACTIVE\n") 
+       f.write(" all\n") 
       f.write("**MOLECULE\n")
       f.write("*CHARGE\n")
       f.write(".CHARGE\n")
@@ -170,6 +173,7 @@ def run_dirac_dfcoef(molecule,
                         uncontract,
                         speed_of_light,
                         version,
+                        get_mrconee,
                         exponent)
 
     # Run Dirac

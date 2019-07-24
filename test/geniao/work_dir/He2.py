@@ -32,10 +32,10 @@ molecule = MolData_Dirac(geometry=geometry,
                                charge=charge,
                                data_directory=data_directory)
 
+# set get_mrconee=True in run_dirac_dfcoef if you want to extract the MRCONEE, used for testing the HF energy.
 molecule = run_dirac_dfcoef(molecule,
                      version=version,
                      exponent=exponent,
-                     get_mrconee=True,
                      point_nucleus=point_nucleus)
 
 subprocess.check_call("mv -f DFCOEF MOLECULE.dfcoef", shell=True, cwd=data_directory)

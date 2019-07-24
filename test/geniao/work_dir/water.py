@@ -3,7 +3,7 @@ import os
 import subprocess
 
 #----------------------------  MANUAL SET UP -----------------------------
-basis1 = 'STO-3G'
+basis1 = 'CC-pVDZ'
 basis2 = 'CC-pVTZ'
 charge = 0
 data_directory="/Users/bsenjean/Documents/Git_repositories/dirac-caar-ibos/test/geniao/work_dir/"
@@ -14,7 +14,7 @@ geometry = [\
 fragment_list=['H','O'] # from the lowest atomic number to the highest
 point_nucleus = True
 version = ["Stndrd_2013","Simple_2013","Simple_2014"][0]
-exponent = [2,3,4][2]
+exponent = [2,3,4][0]
 # by default :
 #symmetry = False
 #unconstract = True
@@ -33,10 +33,10 @@ molecule = MolData_Dirac(geometry=geometry,
                                charge=charge,
                                data_directory=data_directory)
 
+# set get_mrconee=True in run_dirac_dfcoef if you want to extract the MRCONEE, used for testing the HF energy.
 molecule = run_dirac_dfcoef(molecule,
                      version=version,
                      exponent=exponent,
-                     get_mrconee=True,
                      point_nucleus=point_nucleus)
 
 subprocess.check_call("mv -f DFCOEF MOLECULE.dfcoef", shell=True, cwd=data_directory)
