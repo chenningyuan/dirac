@@ -753,7 +753,6 @@ C The values of ultrafine (.ULTRAF) at DFT input-reader section.
 !     It is important, because LABEL must be 8, while CLSINT(IOP) is 7
       allocate( ANG   (m,4)      )
 !      allocate( GAO   (NTBAS(0)) )
-!      allocate( BUFGAO(NTBAS(0)) )
       allocate( BUF   (NDIM2)    )
       allocate( TC    (NDIM2)    )
       allocate( INTAO (NDIM2)    )
@@ -997,8 +996,6 @@ C              ENDDO
 C           ENDDO
 C     CALL DCOPY(nr_points_on_this_proc,X8,1)
 C
-C
-C           
            X8 = C(1,IATOM)
            Y8 = C(2,IATOM)
            Z8 = C(3,IATOM)
@@ -1009,21 +1006,23 @@ C
 C Getting WT8
 C           
            DO IR = 1,MXNP
-              RFAC = R(IR) * NUMIR(IR)
-              CALL DAXPY(m,RFAC,ANG(1,4),1,WT8((IR-1)*m+1),1)
+              W(IR) = W(IR) * R(IR) * NUMIR(IR)
+              CALL DAXPY(m,D1,ANG(1,4),1,WT8((IR-1)*m+1),1)
            ENDDO
 C
 C    GET AO's
 C
-           nr_ao_slices = 1
+C     nr_ao_slices = 1
+           IR = 1
+           CALL DZERO(TC,NDIM2)
            do ipoint = 1, nr_points_on_this_proc, m
 !            nblock_length = nr_points_on_this_proc
-            nblock_length = min(m, nr_points_on_this_proc - ipoint + 1)
+            nblock_length = m !min(m, nr_points_on_this_proc - ipoint + 1)
             write(*,*)'nblock_length'  ,nblock_length
-            allocate(GAO2(nblock_length,   NTBAS(0)))
-            CALL DZERO(GAO2,nblock_length*nr_ao_slices*NTBAS(0))
-            allocate(BUFGAO(nblock_length,NTBAS(0)))
-            CALL DZERO(BUFGAO,block_length*nr_ao_slices*NTBAS(0))
+            allocate( GAO2  (nblock_length, NTBAS(0)) )
+            allocate( BUFGAO(nblock_length, NTBAS(0)) )
+            CALL DZERO(GAO2,  nblock_length*NTBAS(0))
+            CALL DZERO(BUFGAO,nblock_length*NTBAS(0))
 
             call dirac_ao_eval_init(0,0,.FALSE.)
             i = 1
@@ -1062,96 +1061,95 @@ C
                i = i + cartesian_deg(ishell)
               end if
              end do  !isym
-            end do  !ishell
-!                   call get_ao(                                  
-!     &                    nblock_length,                     
-!     &                    X8(ipoint:ipoint+nblock_length-1), 
-!     &                    Y8(ipoint:ipoint+nblock_length-1), 
-!     &                    Z8(ipoint:ipoint+nblock_length-1), 
-!     &                    GAO2,                               
-!     &                    BUFGAO                            
-!     &                  )
-!            call ao_to_so(nblock_length, GAO2, BUFGAO)            
-            DO II=1,NTBAS(0)
-              CALL DCOPY(nblock_length,GAO2(1,II),1,GAO(ipoint,II),1)
+            end do                !ishell
+            DO  iy = 1,m        
+              CALL DAXPY(NTBAS(0),WT8(iy),
+     &                   GAO2(iy,1),m,BUFGAO(iy,1),m)
             ENDDO
+!            write(*,*)'GAO2,BUFGAO1',GAO2(1,1),BUFGAO(1,1),WT8(1)
+!            write(*,*)'GAO2,BUFGAO2',GAO2(1,2),BUFGAO(1,2),WT8(1)
+!            write(*,*)'GAO2,BUFGAO3',GAO2(1,3),BUFGAO(1,3),WT8(1)
+!            write(*,*)
+            CALL DGEMM('T','N',NTBAS(0),NTBAS(0),m,
+     &                  D1,BUFGAO,m,GAO2,m,D0,TC,NTBAS(0))
+            CALL DAXPY(NDIM2,W(IR),TC,1,INTAO,1)
+            IR = IR + 1
+
+            
+C            DO II=1,NTBAS(0)
+C              CALL DCOPY(nblock_length,GAO2(1,II),1,GAO(ipoint,II),1)
+C            ENDDO
+           
 C
+              write(*,*)"IR",IR
               write(*,*)"*********"
               write(*,*)"*********"
               write(*,*)"basis"
-!            ENDDO  
-
-C            CALL DCOPY(MXNP,GAO2(1,1),1,GAO(1,(ipoint-1)*MXNP+1),1)
-C            call get_ao(                                  
-C     &                   nblock_length,                     
-C     &                   X8(1:nblock_length), 
-C     &                   Y8(1:nblock_length), 
-C     &                   Z8(1:block_length), 
-C     &                   GAO,                              
-C     &                   BUFGAO                            
-C     &                  )
-!           call ao_to_so(nblock_length, GAO, BUFGAO)
             deallocate(GAO2)
             deallocate(BUFGAO)
            end do ! ipoint
-           INDEX = 0
-C           stop
-           DO 40 IR = 1, MXNP
-C
-C       1/r in Eq. (2), (4),and (6) of Rinker's paper is NOT calculated in VCMPOL.
-C       Integrand = 1/r * VP(r) * (Large*Large + Small*Small) * r^2
-C       Meaning:   1/r * NUMIR(IR) *   wavefunction     * Radial int.
-C       Finally,    We multiply R(IR).
-C
-             CALL DZERO(TC,NDIM2)
-C            
-C            loop over angular points
-C            ========================
-C
-             DO 50 iy = 1, m
-               INDEX = INDEX + 1 
-CC    
-CC     GET AO's
-CC
-C               CALL GETAOS(BUFGAO,TEMP,TEMP,TEMP,TEMP,
-C     &                      X8(INDEX),Y8(INDEX),Z8(INDEX),
-C     &                      NTBAS(0),0,.FALSE.,0) !The last is IPRINT
-C               CALL WTAOSO(BUFGAO,GAO,NTBAS(0),1,IPRINT)
-C     
-C     Get "overlap" matrix
-C
-C As far as I considered, Math library cannot be applied to here.
-               IOFF   = 0
-               ISTART = 0
-               DO IRP = 1,MAXREP+1 
-                 DO IC = 1, MC
-                   DO I = 1, NCOS(IRP,IC)
-                     IADD = I*(I-1)/2
-                     DO J = 1, I
-                       IJ = IADD + J + IOFF
-                       BUF(IJ+ISTART*I)
-     &                 = GAO(INDEX,I+ISTART)*GAO(INDEX,J+ISTART)
-!                       write(*,*)'IJ,ISTART,IOFF,I,J',IJ,ISTART,IOFF,I,J
-!     write(*,*)'IJ+ISTART*I',IJ+ISTART*I
-                     ENDDO
-                   ENDDO
-                   ISTART = ISTART + NCOS(IRP,IC)
-                   IOFF   = ISTART*(ISTART+1)/2
-                 ENDDO  
-               ENDDO
-!               stop
-               CALL DAXPY(NDIM2,WT8(INDEX),BUF,1,TC,1)
-               write(*,*)'WT8,INDEX',WT8(INDEX),INDEX
- 50          CONTINUE
-             stop
-             CALL DAXPY(NDIM2,W(IR),TC,1,INTAO,1)
-!             write(*,*)
-!             write(*,*)'*************'
-!             write(*,*)'TC,2104',TC(2104),IR
-!             write(*,*)'TC,2105',TC(2105),IR
-!             write(*,*)'TC,2106',TC(2106),IR
-!             write(*,*)'TC,2107',TC(2107),IR
- 40        CONTINUE
+C     stop
+CCCCCCCCCCCCCCCC
+C  Old numerical integration
+CCCCCCCCCCCCCCCC           
+C$$$         INDEX = 0
+c$$$           DO 40 IR = 1, MXNP
+c$$$C
+c$$$C       1/r in Eq. (2), (4),and (6) of Rinker's paper is NOT calculated in VCMPOL.
+c$$$C       Integrand = 1/r * VP(r) * (Large*Large + Small*Small) * r^2
+c$$$C       Meaning:   1/r * NUMIR(IR) *   wavefunction     * Radial int.
+c$$$C       Finally,    We multiply R(IR).
+c$$$C
+c$$$             CALL DZERO(TC,NDIM2)
+c$$$C            
+c$$$C            loop over angular points
+c$$$C            ========================
+c$$$C
+c$$$             DO 50 iy = 1, m
+c$$$               INDEX = INDEX + 1 
+c$$$CC    
+c$$$CC     GET AO's
+c$$$CC
+c$$$C               CALL GETAOS(BUFGAO,TEMP,TEMP,TEMP,TEMP,
+c$$$C     &                      X8(INDEX),Y8(INDEX),Z8(INDEX),
+c$$$C     &                      NTBAS(0),0,.FALSE.,0) !The last is IPRINT
+c$$$C               CALL WTAOSO(BUFGAO,GAO,NTBAS(0),1,IPRINT)
+c$$$C     
+c$$$C     Get "overlap" matrix
+c$$$C
+c$$$C As far as I considered, Math library cannot be applied to here.
+c$$$               IOFF   = 0
+c$$$               ISTART = 0
+c$$$               DO IRP = 1,MAXREP+1 
+c$$$                 DO IC = 1, MC
+c$$$                   DO I = 1, NCOS(IRP,IC)
+c$$$                     IADD = I*(I-1)/2
+c$$$                     DO J = 1, I
+c$$$                       IJ = IADD + J + IOFF
+c$$$                       BUF(IJ+ISTART*I)
+c$$$     &                 = GAO(INDEX,I+ISTART)*GAO(INDEX,J+ISTART)
+c$$$!                       write(*,*)'IJ,ISTART,IOFF,I,J',IJ,ISTART,IOFF,I,J
+c$$$!     write(*,*)'IJ+ISTART*I',IJ+ISTART*I
+c$$$                     ENDDO
+c$$$                   ENDDO
+c$$$                   ISTART = ISTART + NCOS(IRP,IC)
+c$$$                   IOFF   = ISTART*(ISTART+1)/2
+c$$$                 ENDDO  
+c$$$               ENDDO
+c$$$!               stop
+c$$$               CALL DAXPY(NDIM2,WT8(INDEX),BUF,1,TC,1)
+c$$$ 50          CONTINUE
+c$$$             CALL DAXPY(NDIM2,W(IR),TC,1,INTAO,1)
+c$$$!             write(*,*)
+c$$$!             write(*,*)'*************'
+c$$$!             write(*,*)'TC,2104',TC(2104),IR
+c$$$!             write(*,*)'TC,2105',TC(2105),IR
+c$$$!             write(*,*)'TC,2106',TC(2106),IR
+c$$$!             write(*,*)'TC,2107',TC(2107),IR
+c$$$ 40       CONTINUE
+CCCCCCCCCCCCCCCC
+C  Old numerical integration
+CCCCCCCCCCCCCCCC                     
          ENDIF   !num_grid_cfg_grasp
 C
 !             write(*,*)'INTAO,2104',INTAO(2104)
