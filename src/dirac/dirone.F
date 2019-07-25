@@ -717,9 +717,9 @@ C
       CHARACTER RADC*2,ANGC*2,RADANGC*5 !sunaga
       PARAMETER (D0=0.0D0,D1=1.0D0,D2=2.0D0)      
       real(8), allocatable :: ZAN(:),C(:,:)
-      real(8), allocatable :: ANG(:,:),GAO(:,:),GAO2(:,:), BUFGAO(:,:)
+      real(8), allocatable :: ANG(:,:),GAO(:,:),GAO2(:,:),BUFGAO(:,:)
       real(8), allocatable :: BUF(:),TC(:),TD(:,:)
-      real(8), allocatable :: NUMIR(:),R(:),W(:),INTAO(:)
+      real(8), allocatable :: NUMIR(:),R(:),W(:),INTAO(:),INTAOBUF(:)
       real(8), allocatable :: X8(:),Y8(:),Z8(:),WT8(:)
       real(8), allocatable :: px(:),py(:),pz(:),p2(:)
       real(8), parameter   :: bitstring_parity(0:7) =
@@ -753,15 +753,17 @@ C The values of ultrafine (.ULTRAF) at DFT input-reader section.
 !     It is important, because LABEL must be 8, while CLSINT(IOP) is 7
       allocate( ANG   (m,4)      )
 !      allocate( GAO   (NTBAS(0)) )
-      allocate( BUF   (NDIM2)    )
-      allocate( TC    (NDIM2)    )
-      allocate( INTAO (NDIM2)    )
+      allocate( BUF      (NDIM2) )
+      allocate( TC       (NDIM2) )
+      allocate( INTAO    (NDIM2) )
+      allocate( INTAOBUF (NDIM2) )
       allocate( px    (m)        )
       allocate( py    (m)        )
       allocate( pz    (m)        )
       allocate( p2    (m)        )
 C      
-      CALL DZERO(INTAO,NDIM2)
+      CALL DZERO(INTAO   ,NDIM2)
+      CALL DZERO(INTAOBUF,NDIM2)
 C      
       CALL LEBEDEV(INTANG,ANG(1,1),ANG(1,2),ANG(1,3),ANG(1,4),n)
       CALL DSCAL(m,4.0D0*PI,ANG(1,4),1)
@@ -1072,10 +1074,8 @@ C     nr_ao_slices = 1
 !            write(*,*)
             CALL DGEMM('T','N',NTBAS(0),NTBAS(0),m,
      &                  D1,BUFGAO,m,GAO2,m,D0,TC,NTBAS(0))
-            CALL DAXPY(NDIM2,W(IR),TC,1,INTAO,1)
+            CALL DAXPY(NDIM2,W(IR),TC,1,INTAOBUF,1)
             IR = IR + 1
-
-            
 C            DO II=1,NTBAS(0)
 C              CALL DCOPY(nblock_length,GAO2(1,II),1,GAO(ipoint,II),1)
 C            ENDDO
@@ -1083,11 +1083,22 @@ C            ENDDO
 C
               write(*,*)"IR",IR
               write(*,*)"*********"
-              write(*,*)"*********"
+              write(*,*)"*********,***"
               write(*,*)"basis"
             deallocate(GAO2)
             deallocate(BUFGAO)
-           end do ! ipoint
+           end do                 ! ipoint
+C
+C Transformation from full-matrix to triangle-matrix
+C
+           DO J = 1, NTBAS(0)
+              IOFF = 0
+              IOFT = (J-1)*J/2
+              DO IT = 1, J
+                 INTAO(IT+IOFT) = INTAOBUF(J+IOFF)
+                 IOFF = IOFF + NTBAS(0)
+              ENDDO
+           ENDDO   
 C     stop
 CCCCCCCCCCCCCCCC
 C  Old numerical integration
@@ -1152,11 +1163,6 @@ C  Old numerical integration
 CCCCCCCCCCCCCCCC                     
          ENDIF   !num_grid_cfg_grasp
 C
-!             write(*,*)'INTAO,2104',INTAO(2104)
-!             write(*,*)'INTAO,2105',INTAO(2105)
-!             write(*,*)'INTAO,2106',INTAO(2106)
-!             write(*,*)'INTAO,2107',INTAO(2107)
-!             INTAO(2106)=10000000000
          CALL HEADER('Numerical ovelap integral',-1)
          
 !         DO II = 1,NDIM2
@@ -1245,6 +1251,7 @@ CCCCCCCCCCC
       deallocate(BUF)
 !      deallocate(BUFGAO)
       deallocate(INTAO)
+      deallocate(INTAOBUF)
       deallocate(px)
       deallocate(py)
       deallocate(pz)
