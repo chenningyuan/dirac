@@ -408,8 +408,6 @@ C
 C           loop over angular points
 C           ========================
 C
-            write(*,*)'num_grid_cfg_ANGINT',num_grid_cfg_ANGINT !sunaga
-            write(*,*)'NANG',NANG !sunaga
             DO 30 iy = 1, NANG
                IPT   = IPT + 1
                INDEX = INDEX + 1
@@ -421,10 +419,7 @@ C
 C              Becke partitioning
 C              ==================
 C
-               write(*,*)'IPT',IPT
                IF (IPT.EQ.IVECL) THEN
-                  write(*,*)'*******8'!sunaga
-                  write(*,*)''!sunaga
                   CALL BWGHT(RJ,PSMU,RIJ,AIJ,APASC,XPASC,
      &                       X8(NDEX),Y8(NDEX),Z8(NDEX),WT8(NDEX),
      &                       NAT,NUC,ZAN,C,

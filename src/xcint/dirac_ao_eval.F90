@@ -143,9 +143,7 @@ contains
       i = 1
       do ishell = 1, nr_shells
          do isym = 0, nr_boson_ireps - 1
-             write(*,*)'shell,nr_boson_ireps',nr_shells,nr_boson_ireps
             if (iand(isym, shell_stabilizing_irep(ishell)) == 0) then
-!             write(*,*)'22_sunaga'
 
                sx = bitstring_parity(iand(irep_of_axes(1), isym))*center_xyz(shell_center(ishell), 1)
                sy = bitstring_parity(iand(irep_of_axes(2), isym))*center_xyz(shell_center(ishell), 2)
@@ -164,7 +162,6 @@ contains
                end do
 
                if (need_ao_order(2, 0)) then
-!             write(*,*)'33_sunaga'
                   call get_cartesian_ao_g2(block_length,                  &
                                            ishell,                        &
                                            px,                            &
@@ -183,7 +180,6 @@ contains
                                            ao(1, ao_off_g2_m0(6, 0) + i))
                else
                   if (need_ao_order(1, 0)) then
-             write(*,*)'44_sunaga'
                      call get_cartesian_ao_g1(block_length,                  &
                                               ishell,                        &
                                               px,                            &
@@ -195,7 +191,6 @@ contains
                                               ao(1, ao_off_g1_m0(2, 0) + i), &
                                               ao(1, ao_off_g1_m0(3, 0) + i))
                   else
-                     write(*,*)'00_sunaga'
                      call get_cartesian_ao_g0(block_length, &
                                               ishell,       &
                                               px,           &
