@@ -1175,6 +1175,9 @@ C
         deallocate(NUMIR)
         deallocate(R)
         deallocate(W)
+        deallocate(X8)
+        deallocate(Y8)
+        deallocate(Z8)
 10    CONTINUE   ! IATOM = 1, NUCIND
 C      
       IF(NDEG.GT.0) THEN
