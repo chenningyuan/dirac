@@ -743,27 +743,25 @@ C     Get information about basis sets
 C
       CALL NUCBAS(NUCORB,AA,IPRINT)
 C     
-C The values of ultrafine (.ULTRAF) at DFT input-reader section.      
-!num_grid_cfg_ANGINT !64
       INTANG=num_grid_cfg_ANGMIN
-      
-      m = NLEB(INTANG) ! num_grid_cfg_ANGINT
+      m = NLEB(INTANG)
       NDIM2 = NTBAS(0)*NTBAS(0)
       LABEL = CLSINT(IOP)
 !     It is important, because LABEL must be 8, while CLSINT(IOP) is 7
-      allocate( ANG   (m,4)      )
+      allocate( ANG      (m,4)    )
 !      allocate( GAO   (NTBAS(0)) )
       allocate( BUF      (NDIM2) )
       allocate( TC       (NDIM2) )
       allocate( INTAO    (NDIM2) )
       allocate( INTAOBUF (NDIM2) )
-      allocate( px    (m)        )
-      allocate( py    (m)        )
-      allocate( pz    (m)        )
-      allocate( p2    (m)        )
+      allocate( px       (m)     )
+      allocate( py       (m)     )
+      allocate( pz       (m)     )
+      allocate( p2       (m)     )
 C      
       CALL DZERO(INTAO   ,NDIM2)
       CALL DZERO(INTAOBUF,NDIM2)
+      CALL DZERO(TC,      NDIM2)
 C      
       CALL LEBEDEV(INTANG,ANG(1,1),ANG(1,2),ANG(1,3),ANG(1,4),n)
       CALL DSCAL(m,4.0D0*PI,ANG(1,4),1)
@@ -812,10 +810,10 @@ C
          allocate( X8(nr_points_on_this_proc)  )
          allocate( Y8(nr_points_on_this_proc)  )
          allocate( Z8(nr_points_on_this_proc)  )
-         allocate( WT8(nr_points_on_this_proc) )
-         allocate( GAO(nr_points_on_this_proc,NTBAS(0)) )  
 C         
          IF(num_grid_cfg_grasp)THEN
+c$$$           allocate( WT8(nr_points_on_this_proc) )
+c$$$           allocate( GAO(nr_points_on_this_proc,NTBAS(0)) )  
 c$$$           allocate( TD(NDIM2,MXNP) )         
 c$$$           CALL DZERO(TD,NDIM2*MXNP)
 c$$$C           
@@ -926,9 +924,8 @@ c$$$ 30          CONTINUE
 c$$$             CALL DCOPY(NDIM2,TC,1,TD(1,IR),1)
 c$$$ 20        CONTINUE
 c$$$           CALL QUAD2(INTAO,TD,MXNP,NDIM2)
+c$$$           deallocate(TD)            
          ELSE  ! num_grid_cfg_grasp: DIRAC grid start from here
-           allocate( TD(NDIM2,1) )         
-           CALL DZERO(TD,NDIM2*1) 
 !     The grids are calculated at MEMSET routine.           
            R(1) = RNT
            W(1)  = (RNT+GRDC)*H 
@@ -959,6 +956,9 @@ C
                 NUMIR(I) = NUMIR(I)*R(I)
              ENDDO
            ENDIF
+           DO IR = 1,MXNP
+              W(IR) = W(IR) * R(IR) * NUMIR(IR)
+           ENDDO
 C          
            DO IRP=1,MAXREP+1
               write(*,*)'NCOS',NCOS(IRP,1),IRP        !sunagatest
@@ -979,13 +979,12 @@ C
              write(*,*)
              write(*,*)'NUMIR/R',LABEL
              DO I = 1,MXNP
-                write(*,*)R(I),NUMIR(I)/R(I)
+                write(*,*)R(I),NUMIR(I)/R(I)  !debug
              ENDDO
            ENDIF            
 C           
            write(*,*)"R(1),Z",R(1),ZAN(IATOM) 
            write(*,*)"J,NUMIR"
-           INDEX = 0
 C           DO IR = 1,MXNP
 C              DO iy = 1, m
 C                INDEX = INDEX + 1 
@@ -1004,36 +1003,32 @@ C
            CALL DGER(m,MXNP,D1,ANG(1,1),1,R,1,X8,m)
            CALL DGER(m,MXNP,D1,ANG(1,2),1,R,1,Y8,m)
            CALL DGER(m,MXNP,D1,ANG(1,3),1,R,1,Z8,m)
-C
-C Getting WT8
-C           
-           DO IR = 1,MXNP
-              W(IR) = W(IR) * R(IR) * NUMIR(IR)
-              CALL DAXPY(m,D1,ANG(1,4),1,WT8((IR-1)*m+1),1)
-           ENDDO
-C
-C    GET AO's
-C
-C     nr_ao_slices = 1
+           write(*,*)'nr_points_on_this_proc,m',nr_points_on_this_proc,m
            IR = 1
-           CALL DZERO(TC,NDIM2)
            do ipoint = 1, nr_points_on_this_proc, m
-!            nblock_length = nr_points_on_this_proc
-            nblock_length = m !min(m, nr_points_on_this_proc - ipoint + 1)
-            write(*,*)'nblock_length'  ,nblock_length
-            allocate( GAO2  (nblock_length, NTBAS(0)) )
+C              
+C     nr_ao_slices = 1
+C     nblock_length = nr_points_on_this_proc
+C     nblock_length = min(m, nr_points_on_this_proc - ipoint + 1)
+C              
+C     In the case of effective QED potential, m=86, which is similar to
+C     m=100. Here, we can simply do nblock_length = m.        
+C
+            nblock_length = m 
+            allocate( GAO   (nblock_length, NTBAS(0)) )
             allocate( BUFGAO(nblock_length, NTBAS(0)) )
-            CALL DZERO(GAO2,  nblock_length*NTBAS(0))
+            CALL DZERO(GAO,   nblock_length*NTBAS(0))
             CALL DZERO(BUFGAO,nblock_length*NTBAS(0))
 
             call dirac_ao_eval_init(0,0,.FALSE.)
+C
+C    GET AO's
+C
             i = 1
             do ishell = 1, nr_shells
              do isym = 0, nr_boson_ireps - 1
-             write(*,*)'shell,nr_boson_ireps',nr_shells,nr_boson_ireps
+!             write(*,*)'shell,nr_boson_ireps',nr_shells,nr_boson_ireps
               if (iand(isym, shell_stabilizing_irep(ishell)) == 0) then
-!             write(*,*)'22_sunaga'
-
                sx = bitstring_parity(iand(irep_of_axes(1), isym))
      &              * center_xyz(shell_center(ishell), 1)
                sy = bitstring_parity(iand(irep_of_axes(2), isym))
@@ -1059,37 +1054,24 @@ C     nr_ao_slices = 1
      &                                    py,           
      &                                    pz,           
      &                                    p2,
-     &                                    GAO2(1, i))                   
+     &                                    GAO(1, i))                   
                i = i + cartesian_deg(ishell)
               end if
              end do  !isym
             end do                !ishell
             DO  iy = 1,m        
-              CALL DAXPY(NTBAS(0),WT8(iy),
-     &                   GAO2(iy,1),m,BUFGAO(iy,1),m)
+              CALL DAXPY(NTBAS(0),ANG(iy,4),
+     &                   GAO(iy,1),m,BUFGAO(iy,1),m)
             ENDDO
-!            write(*,*)'GAO2,BUFGAO1',GAO2(1,1),BUFGAO(1,1),WT8(1)
-!            write(*,*)'GAO2,BUFGAO2',GAO2(1,2),BUFGAO(1,2),WT8(1)
-!            write(*,*)'GAO2,BUFGAO3',GAO2(1,3),BUFGAO(1,3),WT8(1)
-!            write(*,*)
             CALL DGEMM('T','N',NTBAS(0),NTBAS(0),m,
-     &                  D1,BUFGAO,m,GAO2,m,D0,TC,NTBAS(0))
+     &                  D1,BUFGAO,m,GAO,m,D0,TC,NTBAS(0))
             CALL DAXPY(NDIM2,W(IR),TC,1,INTAOBUF,1)
             IR = IR + 1
-C            DO II=1,NTBAS(0)
-C              CALL DCOPY(nblock_length,GAO2(1,II),1,GAO(ipoint,II),1)
-C            ENDDO
-           
-C
-              write(*,*)"IR",IR
-              write(*,*)"*********"
-              write(*,*)"*********,***"
-              write(*,*)"basis"
-            deallocate(GAO2)
+            deallocate(GAO)
             deallocate(BUFGAO)
            end do                 ! ipoint
 C
-C Transformation from full-matrix to triangle-matrix
+C    Transformation from full-matrix to triangle-matrix
 C
            DO J = 1, NTBAS(0)
               IOFF = 0
@@ -1099,7 +1081,6 @@ C
                  IOFF = IOFF + NTBAS(0)
               ENDDO
            ENDDO   
-C     stop
 CCCCCCCCCCCCCCCC
 C  Old numerical integration
 CCCCCCCCCCCCCCCC           
@@ -1189,13 +1170,12 @@ c$$$  write(*,*)
 C         
 C     writing the matrix in output
 C         
-!          CALL OUTPAK(INTAO(1),NTBAS(0),-1,LUPRI)
+!          CALL OUTPAK(INTAO(1),NTBAS(0),-1,LUPRI) !debug
         Endif        !(IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0)
-        deallocate(TD)
         deallocate(NUMIR)
         deallocate(R)
         deallocate(W)
-10    CONTINUE
+10    CONTINUE   ! IATOM = 1, NUCIND
 C      
       IF(NDEG.GT.0) THEN
 C       Scale weights with multiplicity of center
@@ -1205,7 +1185,6 @@ C       Scale weights with multiplicity of center
 C      
 C     Generate integral labels
 C
-C     LABEL = 'UEHLING'
       CALL GETDAT(RTNLBL(1),RTNLBL(2))
       RTNLBL(2)(1:2) = 'SY'
       WRITE(RTNLBL(2)(3:4),'(I2)') 1
@@ -1223,7 +1202,7 @@ C     sunaga
       write(*,*)"RADC,ANGC",RADC,ANGC
       RADANGC(1:2) = RADC
       RADANGC(3:3) = '.'
-      RADANGC(4:5) = ANGC
+      RADANGC(4:5) = ANGC  !debug, numerical integration
 C      RADANGC(1:) = RADC
 C      RADANGC(2:) = '.'
 C      RADANGC(3:4) = ANGC
@@ -1241,15 +1220,13 @@ C     &     FORM='FORMATTED',ACCESS='SEQUENTIAL')
       CLOSE(30,STATUS='KEEP')
 C      write(*,*) "RADINT,log,NRAD",num_grid_cfg_RADINT,
 C     &  log10(num_grid_cfg_RADINT),NRAD
-
+! debug time counting
 C      sunaga
 CCCCCCCCCCC      
       deallocate(ZAN)
       deallocate(C)
       deallocate(ANG)
-!      deallocate(GAO)
       deallocate(BUF)
-!      deallocate(BUFGAO)
       deallocate(INTAO)
       deallocate(INTAOBUF)
       deallocate(px)
