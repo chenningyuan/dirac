@@ -756,6 +756,7 @@ C
 !     It is important, because LABEL must be 8, while CLSINT(IOP) is 7
       allocate( ANG      (m,4)    )
 !      allocate( GAO   (NTBAS(0)) )
+<<<<<<< HEAD
       allocate( TC       (NDIM2) )
       allocate( INTAO    (NDIM2) )
       allocate( INTAOBUF (NDIM2) )
@@ -766,6 +767,19 @@ C
 C      
       CALL DZERO(INTAOBUF,NDIM2)
       CALL DZERO(TC,      NDIM2)
+=======
+      allocate( BUF      (NDIM2) )
+      allocate( TC       (NDIM2) )
+      allocate( INTAO    (NDIM2) )
+      allocate( INTAOBUF (NDIM2) )
+      allocate( px    (m)        )
+      allocate( py    (m)        )
+      allocate( pz    (m)        )
+      allocate( p2    (m)        )
+C      
+      CALL DZERO(INTAO   ,NDIM2)
+      CALL DZERO(INTAOBUF,NDIM2)
+>>>>>>> b20e105bb2f54723c651e0b7219931c23da44e6f
 C      
       CALL LEBEDEV(INTANG,ANG(1,1),ANG(1,2),ANG(1,3),ANG(1,4),n)
       CALL DSCAL(m,4.0D0*PI,ANG(1,4),1)
@@ -1072,6 +1086,7 @@ C
      &                   GAO(iy,1),m,BUFGAO(iy,1),m)
             ENDDO
             CALL DGEMM('T','N',NTBAS(0),NTBAS(0),m,
+<<<<<<< HEAD
      &                  DM1,BUFGAO,m,GAO,m,D0,TC,NTBAS(0))
             CALL DAXPY(NDIM2,W(IR),TC,1,INTAOBUF,1)
             IR = IR + 1
@@ -1080,6 +1095,25 @@ C
            end do                 ! ipoint
 C
 C    Transformation from full-matrix to triangle-matrix
+=======
+     &                  D1,BUFGAO,m,GAO2,m,D0,TC,NTBAS(0))
+            CALL DAXPY(NDIM2,W(IR),TC,1,INTAOBUF,1)
+            IR = IR + 1
+C            DO II=1,NTBAS(0)
+C              CALL DCOPY(nblock_length,GAO2(1,II),1,GAO(ipoint,II),1)
+C            ENDDO
+           
+C
+              write(*,*)"IR",IR
+              write(*,*)"*********"
+              write(*,*)"*********,***"
+              write(*,*)"basis"
+            deallocate(GAO2)
+            deallocate(BUFGAO)
+           end do                 ! ipoint
+C
+C Transformation from full-matrix to triangle-matrix
+>>>>>>> b20e105bb2f54723c651e0b7219931c23da44e6f
 C
            DO J = 1, NTBAS(0)
               IOFF = 0
@@ -1088,6 +1122,7 @@ C
                  INTAO(IT+IOFT) = INTAOBUF(J+IOFF)
                  IOFF = IOFF + NTBAS(0)
               ENDDO
+<<<<<<< HEAD
            ENDDO
            LLTRI = NTBAS(1)*(NTBAS(1)+1)/2
            CALL DSCAL(LLTRI,D0,INTAO(1),1)
@@ -1102,6 +1137,10 @@ C
 C     If I do not substitute zero (D0), the matrix element does not agree with
 C     that of the old version.      
 C           
+=======
+           ENDDO   
+C     stop
+>>>>>>> b20e105bb2f54723c651e0b7219931c23da44e6f
 CCCCCCCCCCCCCCCC
 C  Old numerical integration
 CCCCCCCCCCCCCCCC           
