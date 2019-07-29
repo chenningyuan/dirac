@@ -24,6 +24,7 @@ sys.path.append(os.path.abspath('sphinxext'))
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 # miro: this is safe list of extensions for (almost) all versions of sphinx
 extensions = ['sphinx.ext.autodoc',
+              'sphinx.ext.mathjax',
               'sphinx.ext.doctest',]
 
 # be safe about adding new extensions
@@ -128,8 +129,6 @@ try:
     html_context = {
         # custom theme css file, put your styles here
         'css_files': ['_static/theme-custom.css'],
-        # google analytics account id
-        'google_analytics_account': 'UA-61958338-1',
     }
 except ImportError:
     print('sphinx_rtd_theme extension not found - fallback to the old theme')

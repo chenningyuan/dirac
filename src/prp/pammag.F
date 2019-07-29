@@ -2033,7 +2033,7 @@ C ...Integral type - London orbitals and without EXPECT in her2ave !!!
 C
 C     Check what type of two-electron integrals to include
 C
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
       MTOTTK(1) = NLRGBL*(NLRGBL+1)/2 ! MI...hm..some length...
       MTOTTK(2) = NLRGBL*(NLRGBL+1)/2
       MTOTTK(3) = NSMLBL*(NSMLBL+1)/2
@@ -2048,7 +2048,7 @@ C
 !         3 (SS|SS) integrals
       DO I2TYP = 1,3
          IF (LBIT(INTNMR,I2TYP)) THEN
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
          IF (PARCAL) THEN
            CALL MEMGET('INTE',KNPOS,MTOTTK(I2TYP),WORK,KFREE,LFREE)
            CALL DIRAC_PARCTL( HERFCK_PAR )
@@ -2069,7 +2069,7 @@ C
      &          I2TYP,IDUMMY,SCRDUM,DUMMY,DUMMY,DUMMY,DUMMY,RELCAL,
      &          .FALSE.,IDUMMY,DUMMY)
            CALL MEMREL('SUSC2EL.seq',WORK,1,KFMAT,KFREE,LFREE)
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
          ENDIF
 #endif
          ENDIF
