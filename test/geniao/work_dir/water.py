@@ -48,7 +48,7 @@ print('Hartree-Fock energy of {} Hartree in {} iterations'.format(molecule.get_
 charge0 = 0
 j = 0
 for i in range(len(geometry)):
- if (j <= len(fragment_list)):
+ if (j < len(fragment_list)):
    if (molecule.atoms[i] == fragment_list[j]): # avoid to calculate several time the same fragment...
      j = j+1
      frag_geo = [(molecule.atoms[i],(0.,0.,0.))]
