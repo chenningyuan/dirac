@@ -15,7 +15,7 @@ contains
         integer :: i,j,k,imo,nmoi,luxyz
         complex(8), allocatable :: Cocc_IAO_frag(:,:)
         real(8) :: partial_charge(n_fragments)
-        real(8), allocatable :: vec(:)
+        complex(8), allocatable :: vec(:)
 
         call get_free_fileunit(luxyz)
         open (luxyz,file='MOLECULE.XYZ',form='formatted')
@@ -42,9 +42,9 @@ contains
            partial_charge(i) = current_atom%bascharge
            do j=1,nocc
               allocate(vec(nmoi))
-              vec = real(Cocc_IAO(imo+1:imo+nmoi,j))
-              !  For real orbitals only. For complex, I should consider conjg(vec):
-              partial_charge(i) = partial_charge(i) - dot_product(vec,vec)
+              vec = Cocc_IAO(imo+1:imo+nmoi,j)
+              ! dot_product should be valid for complex vectors.
+              partial_charge(i) = partial_charge(i) - real(dot_product(vec,vec))
               deallocate(vec)
            enddo
            write(*,'(A12,F12.2)'),current_atom%name,partial_charge(i)

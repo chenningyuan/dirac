@@ -1,0 +1,1343 @@
+  ** interface to 32-bit integer MPI enabled **
+
+DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB)
+ of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
+
+Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
+
+ *******************************************************************************
+ *                                                                             *
+ *                                O U T P U T                                  *
+ *                                   from                                      *
+ *                                                                             *
+ *                   @@@@@    @@   @@@@@     @@@@     @@@@@                    *
+ *                   @@  @@        @@  @@   @@  @@   @@                        *
+ *                   @@  @@   @@   @@@@@    @@@@@@   @@                        *
+ *                   @@  @@   @@   @@ @@    @@  @@   @@                        *
+ *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                    *
+ *                                                                             *
+ *                                                                             *
+ %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:%
+ $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::$
+ (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::(
+ $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:$
+ SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.S
+ SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::S
+ ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::?
+ S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.S
+ (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.(
+ $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/$
+ S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:iS
+ c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::c
+ S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::S
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::$
+ $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::$
+ ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::(
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:Z
+ (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|(
+ SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||S
+ $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:$
+ %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::%
+ $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:$
+ $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::$
+ )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/)
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii$
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////$
+ Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/Z
+ $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::$
+ &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::&
+ =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/=
+ $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|$
+ MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>M
+ MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:M
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%M
+ MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;M
+ MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<SM
+ MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$SM
+ MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<M
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></M
+ MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&M
+ MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SFM
+ MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]ZkM
+ MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&M
+ MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&M
+ MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&FM
+ MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&M
+ MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6M
+ MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969kM
+ MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&M
+ MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1M
+ MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&M
+ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9ZM
+ MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6M
+ MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][FM
+ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&M
+ *******************************************************************************
+ *                                                                             *
+ *         =========================================================           *
+ *                     Program for Atomic and Molecular                        *
+ *          Direct Iterative Relativistic All-electron Calculations            *
+ *         =========================================================           *
+ *                                                                             *
+ *                                                                             *
+ *    Written by:                                                              *
+ *                                                                             *
+ *    Trond Saue               Universite Toulouse III           France        *
+ *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
+ *    Radovan Bast             UiT The Arctic University of      Norway        *
+ *                                                                             *
+ *    with contributions from:                                                 *
+ *                                                                             *
+ *    Vebjoern Bakken          University of Oslo                Norway        *
+ *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *
+ *    Sebastien Dubillard      University of Strasbourg          France        *
+ *    Ulf Ekstroem             University of Oslo                Norway        *
+ *    Ephraim Eliav            University of Tel Aviv            Israel        *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
+ *    Elke Fasshauer           University of Aarhus              Denmark       *
+ *    Timo Fleig               Universite Toulouse III           France        *
+ *    Olav Fossgaard           UiT The Arctic University of      Norway        *
+ *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
+ *    Erik D. Hedegaard        Lund University                   Sweden        *
+ *    Trygve Helgaker          University of Oslo                Norway        *
+ *    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. Germany       *
+ *    Johan Henriksson         Linkoeping University             Sweden        *
+ *    Miroslav Ilias           Matej Bel University              Slovakia      *
+ *    Christoph R. Jacob       TU Braunschweig                   Germany       *
+ *    Stefan Knecht            ETH Zuerich                       Switzerland   *
+ *    Stanislav Komorovsky     UiT The Arctic University of      Norway        *
+ *    Ossama Kullie            University of Kassel              Germany       *
+ *    Jon K. Laerdahl          University of Oslo                Norway        *
+ *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
+ *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
+ *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
+ *    Malaya Kumar Nayak       Bhabha Atomic Research Centre     India         *
+ *    Patrick Norman           Linkoeping University             Sweden        *
+ *    Malgorzata Olejniczak    CNRS/Universite de Lille          France        *
+ *    Jeppe Olsen              Aarhus University                 Denmark       *
+ *    Jogvan Magnus H. Olsen   University of Southern Denmark    Denmark       *
+ *    Young Choon Park         KAIST, Daejeon                    South Korea   *
+ *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
+ *    Markus Pernpointner      University of Heidelberg          Germany       *
+ *    Roberto Di Remigio       UiT The Arctic University of      Norway        *
+ *    Kenneth Ruud             UiT The Arctic University of      Norway        *
+ *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
+ *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
+ *    Avijit Shee              University of Michigan            USA           *
+ *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
+ *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
+ *    Joern Thyssen            University of Southern Denmark    Denmark       *
+ *    Joost van Stralen        Vrije Universiteit Amsterdam      Netherlands   *
+ *    Sebastien Villaume       Linkoeping University             Sweden        *
+ *    Olivier Visser           University of Groningen           Netherlands   *
+ *    Toke Winther             University of Southern Denmark    Denmark       *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan         *
+ *                                                                             *
+ *    For more information about the DIRAC code see http://diracprogram.org    *
+ *                                                                             *
+ *    This is an experimental code. The authors accept no responsibility       *
+ *    for the performance of the code or for the correctness of the results.   *
+ *                                                                             *
+ *    The code (in whole or part) is not to be reproduced for further          *
+ *    distribution without the written permission of the authors or            *
+ *    their representatives.                                                   *
+ *                                                                             *
+ *    If results obtained with this code are published, an                     *
+ *    appropriate citation would be:                                           *
+ *                                                                             *
+ *    DIRAC, a relativistic ab initio electronic structure program,            *
+ *    Release DIRAC18 (2018),                                                  *
+ *    written by T. Saue, L. Visscher, H. J. Aa. Jensen, and R. Bast,          *
+ *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,            *
+ *    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *
+ *    O. Fossgaard, A. S. P. Gomes, E. D. Hedegaard, T. Helgaker,              *
+ *    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky,         *
+ *    O. Kullie, J. K. Laerdahl, C. V. Larsen, Y. S. Lee, H. S. Nataraj,       *
+ *    M. K. Nayak, P. Norman, G. Olejniczak, J. Olsen, J. M. H. Olsen,         *
+ *    Y. C. Park, J. K. Pedersen, M. Pernpointner, R. Di Remigio, K. Ruud,     *
+ *    P. Salek, B. Schimmelpfennig, A. Shee, J. Sikkema, A. J. Thorvaldsen,    *
+ *    J. Thyssen, J. van Stralen, S. Villaume, O. Visser,T. Winther,           *
+ *    and S. Yamamoto (see http://diracprogram.org).                           *
+ *                                                                             *
+ *******************************************************************************
+
+
+Version information
+-------------------
+
+Branch        | caar-ibos
+Commit hash   | c67e5b177
+Commit author | bsenjean
+Commit date   | Sun Jul 14 23:10:56 2019 +0200
+
+
+Configuration and build information
+-----------------------------------
+
+Who compiled             | senjean
+Compiled on server       | maris075
+Operating system         | Linux-4.19.15-300.fc29.x86_64
+CMake version            | 3.14.5
+CMake generator          | Unix Makefiles
+CMake build type         | release
+Configuration time       | 2019-07-24 10:15:23.528532
+Python version           | 3.7.3
+Fortran compiler         | /usr/lib64/mpich/bin/mpifort
+Fortran compiler version | 8.3.1
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS  -fopenmp
+C compiler               | /usr/lib64/mpich/bin/mpicc
+C compiler version       | 8.3.1
+C compiler flags         |  -g  -fopenmp
+C++ compiler             | /usr/lib64/mpich/bin/mpicxx
+C++ compiler version     | 8.3.1
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused  -fopenmp
+Static linking           | False
+64-bit integers          | False
+MPI parallelization      | True
+MPI launcher             | /usr/lib64/mpich/bin/mpiexec
+Math libraries           | /lib64/libopenblas.so;/lib64/libopenblas.so
+Builtin BLAS library     | OFF
+Builtin LAPACK library   | OFF
+Explicit libraries       | unknown
+Compile definitions      | HAVE_OPENBLAS_BLAS;HAVE_OPENBLAS_LAPACK;HAVE_MPI;HAVE_OPENMP;VAR_MPI;VAR_MPI2;USE_MPI_MOD_F90;MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;MOD_QCORR;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT;MOD_EXACORR
+
+
+ Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
+
+
+ * openMP activated, number of processes and number of threads in non-parallel region:    2    1
+
+
+ * openMP parallel region, max number of threads and current number of threads:                 256    1    0
+
+Execution time and host
+-----------------------
+
+ 
+     Date and time (Linux)  : Wed Jul 31 10:38:49 2019
+     Host name              : maris048                                
+
+
+Contents of the input file
+--------------------------
+
+**DIRAC                                                                                             
+#.WAVE FUNCTION                                                                                     
+.PROPERTIES                                                                                         
+**INTEGRALS                                                                                         
+*READIN                                                                                             
+.UNCONTRACT                                                                                         
+**HAMILTONIAN                                                                                       
+.NONREL                                                                                             
+**WAVE FUNCTION                                                                                     
+.SCF                                                                                                
+**PROPERTIES                                                                                        
+.RHONUC                                                                                             
+*EXPECTATION                                                                                        
+.ORBANA                                                                                             
+**MOLECULE                                                                                          
+*SYMMETRY                                                                                           
+.NOSYM                                                                                              
+*BASIS                                                                                              
+.DEFAULT                                                                                            
+cc-pVDZ                                                                                             
+*END OF                                                                                             
+
+
+Contents of the molecule file
+-----------------------------
+
+12                                                                                                  
+/home/senjean/Git_repo/dirac/dirac-caar-ibos/test/geniao/work_dir/H6-C6_cc-pVDZ_NONREL # anything ca
+C -1.39880212 0.0 0.0                                                                               
+C 1.39880212 0.0 0.0                                                                                
+C -0.69940106 -1.21139817 0.0                                                                       
+C -0.69940106 1.21139817 0.0                                                                        
+C 0.69940106 1.21139817 0.0                                                                         
+C 0.69940106 -1.21139817 0.0                                                                        
+H -2.49009098 0.0 0.0                                                                               
+H -1.24504549 2.15648204 0.0                                                                        
+H 1.24504549 2.15648204 0.0                                                                         
+H 2.49009098 0.0 0.0                                                                                
+H 1.24504549 -2.15648204 0.0                                                                        
+H -1.24504549 -2.15648204 0.0                                                                       
+
+
+    *************************************************************************
+    ********************* DIRAC: No title specified !!! *********************
+    *************************************************************************
+
+ Jobs in this run:
+   * Properties
+
+
+    **************************************************************************
+    ************************** General DIRAC set-up **************************
+    **************************************************************************
+
+   CODATA Recommended Values of the Fundamental Physical Constants: 1998  
+                Peter J. Mohr and Barry N. Taylor                         
+   Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
+ * The speed of light :        137.0359998
+ * Running in two-component mode
+ * Direct evaluation of the following two-electron integrals:
+   - LL-integrals
+ * Spherical transformation embedded in MO-transformation
+   for large components
+ * Transformation to scalar RKB basis embedded in
+   MO-transformation for small components
+ * Thresholds for linear dependence:
+   Large components:   1.00D-06
+   Small components:   1.00D-08
+ * General print level   :   0
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+ Default print level:        1
+ Nuclear model: Gaussian charge distribution.
+
+ Two-electron integrals not calculated.
+
+
+ Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
+
+
+
+ Changes of defaults for *READIN
+ -------------------------------
+
+
+ Uncontracted basis forced, irrespective of basis input file.
+
+
+
+   ***************************************************************************
+   ****************** Output from MOLECULE input processing ******************
+   ***************************************************************************
+
+
+
+                          SYMGRP:Point group information
+                          ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                            **************************
+                            *** Output from DBLGRP ***
+                            **************************
+
+   * One fermion irrep:   E1 
+   * Quaternionic group. NZ = 4
+   * Direct product decomposition:
+          E1  x E1  : A   + A   + A   + A  
+
+
+                                 Spinor structure
+                                 ----------------
+
+
+   * Fermion irrep no.: 1
+      La  |  A  (1)  A  (1)  |
+      Sa  |  A  (1)  A  (1)  |
+      Lb  |  A  (1)  A  (1)  |
+      Sb  |  A  (1)  A  (1)  |
+
+
+                              Quaternion symmetries
+                              ---------------------
+
+    Rep  T(+)
+    -----------------------------
+    A    1  i  j  k
+
+  QM-QM nuclear repulsion energy :    202.796925253639
+
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:   12
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  C           6       6      27      27      L  - [9s4p1d|9s4p1d]                                                
+                              0       0      S  - No small component basis functions attached                    
+  H           6       1       7       7      L  - [4s1p|4s1p]                                                    
+                              0       0      S  - No small component basis functions attached                    
+  ----------------------------------------------------------------------
+                            204     204      L  - large components
+  ----------------------------------------------------------------------
+  total:     12      42     204     204
+
+  Cartesian basis used.
+  Threshold for integrals (to be written to file):  1.00D-15
+
+
+  References for the basis sets
+  -----------------------------
+
+  Atom type   1   2
+   Elements                             References                                
+   --------                             ----------                                
+   H      : T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                     
+   He     : D.E. Woon and T.H. Dunning, Jr. J. Chem. Phys. 100, 2975 (1994).      
+   Li - Ne: T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                     
+   Na - Mg: D.E. Woon and T.H. Dunning, Jr.  (to be published)                    
+   Al - Ar: D.E. Woon and T.H. Dunning, Jr.  J. Chem. Phys. 98, 1358 (1993).      
+   Ca     : J. Koput and K.A. Peterson, J. Phys. Chem. A, 106, 9595 (2002).       
+   Ga - Kr: A.K. Wilson, D.E. Woon, K.A. Peterson, T.H. Dunning, Jr.,             
+            J. Chem. Phys., 110, 7667 (1999)                                      
+
+
+  Cartesian Coordinates (bohr)
+  ----------------------------
+
+  Total number of coordinates: 36
+
+
+   1   C        x     -2.6433529223
+   2            y      0.0000000000
+   3            z      0.0000000000
+
+   4   C        x      2.6433529223
+   5            y      0.0000000000
+   6            z      0.0000000000
+
+   7   C        x     -1.3216764612
+   8            y     -2.2892107804
+   9            z      0.0000000000
+
+  10   C        x     -1.3216764612
+  11            y      2.2892107804
+  12            z      0.0000000000
+
+  13   C        x      1.3216764612
+  14            y      2.2892107804
+  15            z      0.0000000000
+
+  16   C        x      1.3216764612
+  17            y     -2.2892107804
+  18            z      0.0000000000
+
+  19   H        x     -4.7055900007
+  20            y      0.0000000000
+  21            z      0.0000000000
+
+  22   H        x     -2.3527950004
+  23            y      4.0751604683
+  24            z      0.0000000000
+
+  25   H        x      2.3527950004
+  26            y      4.0751604683
+  27            z      0.0000000000
+
+  28   H        x      4.7055900007
+  29            y      0.0000000000
+  30            z      0.0000000000
+
+  31   H        x      2.3527950004
+  32            y     -4.0751604683
+  33            z      0.0000000000
+
+  34   H        x     -2.3527950004
+  35            y     -4.0751604683
+  36            z      0.0000000000
+
+
+
+  Cartesian coordinates in XYZ format (Angstrom)
+  ----------------------------------------------
+
+   12
+
+C     -1.3988021200   0.0000000000   0.0000000000
+C      1.3988021200   0.0000000000   0.0000000000
+C     -0.6994010600  -1.2113981700   0.0000000000
+C     -0.6994010600   1.2113981700   0.0000000000
+C      0.6994010600   1.2113981700   0.0000000000
+C      0.6994010600  -1.2113981700   0.0000000000
+H     -2.4900909800   0.0000000000   0.0000000000
+H     -1.2450454900   2.1564820400   0.0000000000
+H      1.2450454900   2.1564820400   0.0000000000
+H      2.4900909800   0.0000000000   0.0000000000
+H      1.2450454900  -2.1564820400   0.0000000000
+H     -1.2450454900  -2.1564820400   0.0000000000
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            C           C           C           C           C           C   
+
+   C       0.000000
+   C       2.797604    0.000000
+   C       1.398802    2.422796    0.000000
+   C       1.398802    2.422796    2.422796    0.000000
+   C       2.422796    1.398802    2.797604    1.398802    0.000000
+   C       2.422796    1.398802    1.398802    2.797604    2.422796    0.000000
+   H       1.091289    3.888893    2.161957    2.161957    3.411795    3.411795
+   H       2.161956    3.411795    3.411795    1.091289    2.161956    3.888893
+   H       3.411795    2.161956    3.888893    2.161956    1.091289    3.411795
+   H       3.888893    1.091289    3.411795    3.411795    2.161957    2.161957
+   H       3.411795    2.161956    2.161956    3.888893    3.411795    1.091289
+   H       2.161956    3.411795    1.091289    3.411795    3.888893    2.161956
+
+            H           H           H           H           H           H   
+
+   H       0.000000
+   H       2.490091    0.000000
+   H       4.312964    2.490091    0.000000
+   H       4.980182    4.312964    2.490091    0.000000
+   H       4.312964    4.980182    4.312964    2.490091    0.000000
+   H       2.490091    4.312964    4.980182    4.312964    2.490091    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    C          C                              1.398802
+  bond distance:    C          C                              1.398802
+  bond distance:    C          C                              1.398802
+  bond distance:    C          C                              1.398802
+  bond distance:    C          C                              1.398802
+  bond distance:    C          C                              1.398802
+  bond distance:    H          C                              1.091289
+  bond distance:    H          C                              1.091289
+  bond distance:    H          C                              1.091289
+  bond distance:    H          C                              1.091289
+  bond distance:    H          C                              1.091289
+  bond distance:    H          C                              1.091289
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       C          C          C                    120.000
+  bond angle:       H          C          C                    120.000
+  bond angle:       H          C          C                    120.000
+  bond angle:       C          C          C                    120.000
+  bond angle:       H          C          C                    120.000
+  bond angle:       H          C          C                    120.000
+  bond angle:       C          C          C                    120.000
+  bond angle:       H          C          C                    120.000
+  bond angle:       H          C          C                    120.000
+  bond angle:       C          C          C                    120.000
+  bond angle:       H          C          C                    120.000
+  bond angle:       H          C          C                    120.000
+  bond angle:       C          C          C                    120.000
+  bond angle:       H          C          C                    120.000
+  bond angle:       H          C          C                    120.000
+  bond angle:       C          C          C                    120.000
+  bond angle:       H          C          C                    120.000
+  bond angle:       H          C          C                    120.000
+
+
+
+   Nuclear repulsion energy :  202.796925253639 Hartree
+
+
+                                GETLAB: AO-labels
+                                -----------------
+
+   * Large components:   84
+     1  L C   1 s        2  L C   1 px       3  L C   1 py       4  L C   1 pz       5  L C   1 dxx      6  L C   1 dxy 
+     7  L C   1 dxz      8  L C   1 dyy      9  L C   1 dyz     10  L C   1 dzz     11  L C   1 s       12  L C   1 px  
+    13  L C   1 py      14  L C   1 pz      15  L C   1 dxx     16  L C   1 dxy     17  L C   1 dxz     18  L C   1 dyy 
+    19  L C   1 dyz     20  L C   1 dzz     21  L C   1 s       22  L C   1 px      23  L C   1 py      24  L C   1 pz  
+    25  L C   1 dxx     26  L C   1 dxy     27  L C   1 dxz     28  L C   1 dyy     29  L C   1 dyz     30  L C   1 dzz 
+    31  L C   1 s       32  L C   1 px      33  L C   1 py      34  L C   1 pz      35  L C   1 dxx     36  L C   1 dxy 
+    37  L C   1 dxz     38  L C   1 dyy     39  L C   1 dyz     40  L C   1 dzz     41  L C   1 s       42  L C   1 px  
+    43  L C   1 py      44  L C   1 pz      45  L C   1 dxx     46  L C   1 dxy     47  L C   1 dxz     48  L C   1 dyy 
+    49  L C   1 dyz     50  L C   1 dzz     51  L C   1 s       52  L C   1 px      53  L C   1 py      54  L C   1 pz  
+    55  L C   1 dxx     56  L C   1 dxy     57  L C   1 dxz     58  L C   1 dyy     59  L C   1 dyz     60  L C   1 dzz 
+    61  L H   1 s       62  L H   1 px      63  L H   1 py      64  L H   1 pz      65  L H   1 s       66  L H   1 px  
+    67  L H   1 py      68  L H   1 pz      69  L H   1 s       70  L H   1 px      71  L H   1 py      72  L H   1 pz  
+    73  L H   1 s       74  L H   1 px      75  L H   1 py      76  L H   1 pz      77  L H   1 s       78  L H   1 px  
+    79  L H   1 py      80  L H   1 pz      81  L H   1 s       82  L H   1 px      83  L H   1 py      84  L H   1 pz  
+   * Small components:    0
+
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          204
+  Number of large orbitals in each symmetry:    204
+  Number of small orbitals in each symmetry:      0
+
+* Large component functions
+
+  Symmetry  A  ( 1)
+
+        9 functions:    C  s   
+        4 functions:    C  px  
+        4 functions:    C  py  
+        4 functions:    C  pz  
+        1 functions:    C  dxx 
+        1 functions:    C  dxy 
+        1 functions:    C  dxz 
+        1 functions:    C  dyy 
+        1 functions:    C  dyz 
+        1 functions:    C  dzz 
+        9 functions:    C  s   
+        4 functions:    C  px  
+        4 functions:    C  py  
+        4 functions:    C  pz  
+        1 functions:    C  dxx 
+        1 functions:    C  dxy 
+        1 functions:    C  dxz 
+        1 functions:    C  dyy 
+        1 functions:    C  dyz 
+        1 functions:    C  dzz 
+        9 functions:    C  s   
+        4 functions:    C  px  
+        4 functions:    C  py  
+        4 functions:    C  pz  
+        1 functions:    C  dxx 
+        1 functions:    C  dxy 
+        1 functions:    C  dxz 
+        1 functions:    C  dyy 
+        1 functions:    C  dyz 
+        1 functions:    C  dzz 
+        9 functions:    C  s   
+        4 functions:    C  px  
+        4 functions:    C  py  
+        4 functions:    C  pz  
+        1 functions:    C  dxx 
+        1 functions:    C  dxy 
+        1 functions:    C  dxz 
+        1 functions:    C  dyy 
+        1 functions:    C  dyz 
+        1 functions:    C  dzz 
+        9 functions:    C  s   
+        4 functions:    C  px  
+        4 functions:    C  py  
+        4 functions:    C  pz  
+        1 functions:    C  dxx 
+        1 functions:    C  dxy 
+        1 functions:    C  dxz 
+        1 functions:    C  dyy 
+        1 functions:    C  dyz 
+        1 functions:    C  dzz 
+        9 functions:    C  s   
+        4 functions:    C  px  
+        4 functions:    C  py  
+        4 functions:    C  pz  
+        1 functions:    C  dxx 
+        1 functions:    C  dxy 
+        1 functions:    C  dxz 
+        1 functions:    C  dyy 
+        1 functions:    C  dyz 
+        1 functions:    C  dzz 
+        4 functions:    H  s   
+        1 functions:    H  px  
+        1 functions:    H  py  
+        1 functions:    H  pz  
+        4 functions:    H  s   
+        1 functions:    H  px  
+        1 functions:    H  py  
+        1 functions:    H  pz  
+        4 functions:    H  s   
+        1 functions:    H  px  
+        1 functions:    H  py  
+        1 functions:    H  pz  
+        4 functions:    H  s   
+        1 functions:    H  px  
+        1 functions:    H  py  
+        1 functions:    H  pz  
+        4 functions:    H  s   
+        1 functions:    H  px  
+        1 functions:    H  py  
+        1 functions:    H  pz  
+        4 functions:    H  s   
+        1 functions:    H  px  
+        1 functions:    H  py  
+        1 functions:    H  pz  
+
+
+   ***************************************************************************
+   *************************** Hamiltonian defined ***************************
+   ***************************************************************************
+
+ * Print level:    0
+ * Non-relativistic Hamiltonian
+   - Spin-orbit interactions neglected
+ * Default integral flags passed to all modules
+   - LL-integrals:     1
+   - LS-integrals:     0
+   - SS-integrals:     0
+   - GT-integrals:     0
+ * Basis set:
+   - uncontracted large component basis set
+
+
+    **************************************************************************
+    ************************** Wave function module **************************
+    **************************************************************************
+
+ Wave function types requested (in input order):
+     HF        
+
+ Wave function jobs in execution order (expanded):
+ * Hartree-Fock calculation
+
+ * Initial Automatic occupation based on:
+   Total charge of atoms =  42
+   Charge of molecule    =   0
+   i.e. no. of electrons =  42
+===========================================================================
+ *SCF: Set-up for Hartree-Fock calculation:
+===========================================================================
+ * Number of fermion irreps: 1
+ * Closed shell SCF calculation with    42 electrons in   21 orbitals.
+ * Sum of atomic potentials used for start guess
+ * General print level   :   0
+
+ ***** INITIAL TRIAL SCF FUNCTION *****
+ * Trial vectors read from file DFCOEF
+ * Scaling of active-active block correction to open shell Fock operator    0.500000
+   to improve convergence (default value).
+   The final open-shell orbital energies are recalculated with 1.0 scaling,
+   such that all occupied orbital energies correspond to Koopmans' theorem ionization energies.
+
+ ***** SCF CONVERGENCE CRITERIA *****
+ * Convergence on norm of error vector (gradient).
+   Desired convergence:1.000D-07
+   Allowed convergence:1.000D-06
+
+ ***** CONVERGENCE CONTROL *****
+ * Fock matrix constructed using differential density matrix
+    with optimal parameter.
+ * DIIS (in MO basis)
+ * DIIS will be activated when convergence reaches : 1.00D+20
+   - Maximum size of B-matrix:   10
+ * Damping of Fock matrix when DIIS is not activated. 
+   Weight of old matrix    : 0.250
+ * Maximum number of SCF iterations  :   50
+ * No quadratic convergent Hartree-Fock
+ * Contributions from 2-electron integrals to Fock matrix:
+   LL-integrals.
+    ---> this is default setting from Hamiltonian input
+ ***** OUTPUT CONTROL *****
+ * Only electron eigenvalues written out.
+
+
+   ***************************************************************************
+   ***************************** Property module *****************************
+   ***************************************************************************
+
+ * Print level:   0
+ * Input label: **PROPE
+ * Properties calculated for the following wave functions:
+     1: DHF 
+ These initial settings of center and origins might be changed later:
+ * Operator center (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * Gauge origin    (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * Dipole origin   (a.u.):      0.0000000000      0.0000000000      0.0000000000
+===========================================================================
+ EXPINP: Expectation values
+* Expectation values analyzed in terms of 
+   - individual orbitals
+===========================================================================
+ * The following expectation values will be calculated:
+---------------------------------------------------------------------------
+===========================================================================
+   Magnetic properties:
+===========================================================================
+===========================================================================
+ Electronic density at nuclei
+===========================================================================
+
+
+ ********************************************************************************
+ *************************** Input consistency checks ***************************
+ ********************************************************************************
+
+ NB: Properties & TWOCOMP require non-relativistic form of operators !
+
+
+
+    *************************************************************************
+    ************************ End of input processing ************************
+    *************************************************************************
+
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                               au             Debye
+
+                    x     -0.00000000     -0.00000000
+                    y      0.00000000      0.00000000
+                    z      0.00000000      0.00000000
+
+                        1 Debye =   2.54177000 a.u. 
+
+Total time used in ONEGEN (CPU)  0.30591700s and (WALL)  0.34900000s
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+
+QDIAG timings. NZ,N = 1  198
+
+QDIAG: QTRIDI CPU (WALL) time:  0.01305300s ( 0.01300000s)
+QDIAG: TQL2   CPU (WALL) time:  0.01448700s ( 0.01500000s)
+QDIAG: QTRIBK CPU (WALL) time:  0.00002500s ( 0.00000000s)
+   L   A     * Deleted:          6(Proj:          6, Lindep:          0) Smin: 0.31E-03
+
+
+      **********************************************************************
+      ************************* Orbital dimensions *************************
+      **********************************************************************
+
+No. of positive energy orbitals (NESH):   198
+No. of negative energy orbitals (NPSH):     0
+Total no. of orbitals           (NORB):   198
+ >>> CPU  time used in PAMSET is   0.36 seconds
+ >>> WALL time used in PAMSET is   0.42 seconds
+
+
+       *******************************************************************
+       ************************* Property module *************************
+       *******************************************************************
+
+
+
+   This is output from the Dirac property module:
+
+   HF & DFT first order properties
+      Trond Saue
+
+   First-order ESR properties
+      Hans Joergen Aa. Jensen et al.
+
+   MP2 first order properties:
+      J. N. P. van Stralen, L. Visscher, C. V. Larsen and H. J. Aa Jensen, Chem. Phys. 311 (2005) 81.
+
+   KR-RPA second-order properties
+      Hans Joergen Aa. Jensen and Trond Saue
+
+   KR-QR third order properties
+      Patrick Norman and Hans Joergen Aa. Jensen
+
+   Molecular gradient
+      Joern Thyssen
+
+   Additional contributions from:
+      Thomas Enevoldsen, Miroslav Ilias (London orbitals)
+
+
+
+
+             *******************************************************
+             ********** Properties for DHF  wave function **********
+             *******************************************************
+
+
+
+    **************************************************************************
+    *************************** Expectation values ***************************
+    **************************************************************************
+
+
+
+ Operator Rho at nuc C  01:
+ --------------------------
+
+
+
+                    Expectation value for individual orbitals
+                    -----------------------------------------
+
+
+                Matrix element     Occ.  
+    E1     1    0.76902081E-03     2.0000      0.15380416E-02
+    E1     2    0.10177075E-04     2.0000      0.20354149E-04
+    E1     3    0.76592301E-03     2.0000      0.15318460E-02
+    E1     4     60.0577169130     2.0000      120.1154338261
+    E1     5    0.22265801E-04     2.0000      0.44531601E-04
+    E1     6    0.22346601E-04     2.0000      0.44693202E-04
+    E1     7    0.57108541E-02     2.0000      0.11421708E-01
+    E1     8    0.20061686E-03     2.0000      0.40123371E-03
+    E1     9    0.57155348E-02     2.0000      0.11431070E-01
+    E1    10    0.16125810E-02     2.0000      0.32251619E-02
+    E1    11    0.075706380625     2.0000      0.151412761250
+    E1    12    0.18627291E-03     2.0000      0.37254582E-03
+    E1    13    0.41970145E-07     2.0000      0.83940291E-07
+    E1    14    0.073429226467     2.0000      0.146858452934
+    E1    15    0.16137436E-02     2.0000      0.32274872E-02
+    E1    16    0.076684811477     2.0000      0.153369622954
+    E1    17    0.14033064E-03     2.0000      0.28066128E-03
+    E1    18    0.52314312E-02     2.0000      0.10462862E-01
+    E1    19    0.53501778E-02     2.0000      0.10700356E-01
+    E1    20    0.36127678E-07     2.0000      0.72255357E-07
+    E1    21    0.19704581E-03     2.0000      0.39409162E-03
+    -------------------------------------------------------------------------------------
+    Total :                                    120.6221714634 a.u.      s0 = F   t0 = F
+    -------------------------------------------------------------------------------------
+
+
+ Operator Rho at nuc C  02:
+ --------------------------
+
+
+
+                    Expectation value for individual orbitals
+                    -----------------------------------------
+
+
+                Matrix element     Occ.  
+    E1     1    0.22379054E-04     2.0000      0.44758109E-04
+    E1     2     60.0576245365     2.0000      120.1152490730
+    E1     3    0.22288592E-04     2.0000      0.44577184E-04
+    E1     4    0.10180958E-04     2.0000      0.20361916E-04
+    E1     5    0.76610147E-03     2.0000      0.15322029E-02
+    E1     6    0.76919253E-03     2.0000      0.15383851E-02
+    E1     7    0.16242050E-02     2.0000      0.32484099E-02
+    E1     8    0.075826107704     2.0000      0.151652215408
+    E1     9    0.16236396E-02     2.0000      0.32472793E-02
+    E1    10    0.57178202E-02     2.0000      0.11435640E-01
+    E1    11    0.19798842E-03     2.0000      0.39597685E-03
+    E1    12    0.073609977392     2.0000      0.147219954785
+    E1    13    0.076779693168     2.0000      0.153559386337
+    E1    14    0.18250737E-03     2.0000      0.36501475E-03
+    E1    15    0.57184218E-02     2.0000      0.11436844E-01
+    E1    16    0.55614954E-07     2.0000      0.11122991E-06
+    E1    17    0.14367974E-04     2.0000      0.28735948E-04
+    E1    18    0.53350989E-02     2.0000      0.10670198E-01
+    E1    19    0.52192288E-02     2.0000      0.10438458E-01
+    E1    20    0.13663206E-04     2.0000      0.27326413E-04
+    E1    21    0.82773686E-05     2.0000      0.16554737E-04
+    -------------------------------------------------------------------------------------
+    Total :                                    120.6221714634 a.u.      s0 = F   t0 = F
+    -------------------------------------------------------------------------------------
+
+
+ Operator Rho at nuc C  03:
+ --------------------------
+
+
+
+                    Expectation value for individual orbitals
+                    -----------------------------------------
+
+
+                Matrix element     Occ.  
+    E1     1    0.19054483E-04     2.0000      0.38108965E-04
+    E1     2    0.18637611E-04     2.0000      0.37275222E-04
+    E1     3     60.0707291948     2.0000      120.1414583895
+    E1     4    0.79356578E-03     2.0000      0.15871316E-02
+    E1     5    0.10031411E-04     2.0000      0.20062822E-04
+    E1     6    0.80433252E-03     2.0000      0.16086650E-02
+    E1     7    0.15740395E-02     2.0000      0.31480790E-02
+    E1     8    0.39689434E-03     2.0000      0.79378869E-03
+    E1     9    0.073827217301     2.0000      0.147654434602
+    E1    10    0.52165655E-02     2.0000      0.10433131E-01
+    E1    11    0.074309765086     2.0000      0.148619530172
+    E1    12    0.51437836E-02     2.0000      0.10287567E-01
+    E1    13    0.15750219E-02     2.0000      0.31500438E-02
+    E1    14    0.55527291E-02     2.0000      0.11105458E-01
+    E1    15    0.33425188E-04     2.0000      0.66850377E-04
+    E1    16    0.52069192E-02     2.0000      0.10413838E-01
+    E1    17    0.36601547E-04     2.0000      0.73203093E-04
+    E1    18    0.30530262E-03     2.0000      0.61060524E-03
+    E1    19    0.064918315176     2.0000      0.129836630353
+    E1    20    0.87453108E-05     2.0000      0.17490622E-04
+    E1    21    0.60558999E-03     2.0000      0.12111800E-02
+    -------------------------------------------------------------------------------------
+    Total :                                    120.6221714640 a.u.      s0 = F   t0 = F
+    -------------------------------------------------------------------------------------
+
+
+ Operator Rho at nuc C  04:
+ --------------------------
+
+
+
+                    Expectation value for individual orbitals
+                    -----------------------------------------
+
+
+                Matrix element     Occ.  
+    E1     1     60.0741962575     2.0000      120.1483925151
+    E1     2    0.17881121E-04     2.0000      0.35762242E-04
+    E1     3    0.18225309E-04     2.0000      0.36450619E-04
+    E1     4    0.80388653E-03     2.0000      0.16077731E-02
+    E1     5    0.81151372E-03     2.0000      0.16230274E-02
+    E1     6    0.10092428E-04     2.0000      0.20184856E-04
+    E1     7    0.073281422063     2.0000      0.146562844127
+    E1     8    0.51880293E-02     2.0000      0.10376059E-01
+    E1     9    0.15670123E-02     2.0000      0.31340247E-02
+    E1    10    0.54371384E-04     2.0000      0.10874277E-03
+    E1    11    0.54767708E-02     2.0000      0.10953542E-01
+    E1    12    0.42545558E-03     2.0000      0.85091116E-03
+    E1    13    0.15671252E-02     2.0000      0.31342504E-02
+    E1    14    0.071778535468     2.0000      0.143557070936
+    E1    15    0.51186573E-02     2.0000      0.10237315E-01
+    E1    16    0.51098055E-02     2.0000      0.10219611E-01
+    E1    17    0.66996632E-03     2.0000      0.13399326E-02
+    E1    18    0.064581464225     2.0000      0.129162928449
+    E1    19    0.35204095E-03     2.0000      0.70408190E-03
+    E1    20    0.17921786E-04     2.0000      0.35843572E-04
+    E1    21    0.39297220E-04     2.0000      0.78594440E-04
+    -------------------------------------------------------------------------------------
+    Total :                                    120.6221714640 a.u.      s0 = F   t0 = F
+    -------------------------------------------------------------------------------------
+
+
+ Operator Rho at nuc C  05:
+ --------------------------
+
+
+
+                    Expectation value for individual orbitals
+                    -----------------------------------------
+
+
+                Matrix element     Occ.  
+    E1     1    0.80420404E-03     2.0000      0.16084081E-02
+    E1     2    0.79346188E-03     2.0000      0.15869238E-02
+    E1     3    0.10026713E-04     2.0000      0.20053426E-04
+    E1     4    0.18654361E-04     2.0000      0.37308723E-04
+    E1     5     60.0707294769     2.0000      120.1414589538
+    E1     6    0.19039047E-04     2.0000      0.38078095E-04
+    E1     7    0.52011074E-02     2.0000      0.10402215E-01
+    E1     8    0.074629288489     2.0000      0.149258576978
+    E1     9    0.33241537E-04     2.0000      0.66483075E-04
+    E1    10    0.15681121E-02     2.0000      0.31362241E-02
+    E1    11    0.38571403E-03     2.0000      0.77142807E-03
+    E1    12    0.55423685E-02     2.0000      0.11084737E-01
+    E1    13    0.52030386E-02     2.0000      0.10406077E-01
+    E1    14    0.51692589E-02     2.0000      0.10338518E-01
+    E1    15    0.073884894641     2.0000      0.147769789281
+    E1    16    0.15779861E-02     2.0000      0.31559722E-02
+    E1    17    0.30732984E-05     2.0000      0.61465969E-05
+    E1    18    0.064941318179     2.0000      0.129882636358
+    E1    19    0.30690644E-03     2.0000      0.61381287E-03
+    E1    20    0.26126097E-03     2.0000      0.52252194E-03
+    E1    21    0.32999383E-05     2.0000      0.65998766E-05
+    -------------------------------------------------------------------------------------
+    Total :                                    120.6221714640 a.u.      s0 = F   t0 = F
+    -------------------------------------------------------------------------------------
+
+
+ Operator Rho at nuc C  06:
+ --------------------------
+
+
+
+                    Expectation value for individual orbitals
+                    -----------------------------------------
+
+
+                Matrix element     Occ.  
+    E1     1    0.10087327E-04     2.0000      0.20174654E-04
+    E1     2    0.80382869E-03     2.0000      0.16076574E-02
+    E1     3    0.81143041E-03     2.0000      0.16228608E-02
+    E1     4    0.17897087E-04     2.0000      0.35794174E-04
+    E1     5    0.18217691E-04     2.0000      0.36435382E-04
+    E1     6     60.0741755199     2.0000      120.1483510399
+    E1     7    0.53877511E-04     2.0000      0.10775502E-03
+    E1     8    0.54621166E-02     2.0000      0.10924233E-01
+    E1     9    0.51070628E-02     2.0000      0.10214126E-01
+    E1    10    0.073351956648     2.0000      0.146703913297
+    E1    11    0.52138153E-02     2.0000      0.10427631E-01
+    E1    12    0.072148131826     2.0000      0.144296263652
+    E1    13    0.51069279E-02     2.0000      0.10213856E-01
+    E1    14    0.41424267E-03     2.0000      0.82848535E-03
+    E1    15    0.15638069E-02     2.0000      0.31276138E-02
+    E1    16    0.15712119E-02     2.0000      0.31424238E-02
+    E1    17    0.41571029E-05     2.0000      0.83142058E-05
+    E1    18    0.35214692E-03     2.0000      0.70429385E-03
+    E1    19    0.064703726129     2.0000      0.129407452258
+    E1    20    0.19497917E-03     2.0000      0.38995835E-03
+    E1    21    0.59144706E-06     2.0000      0.11828941E-05
+    -------------------------------------------------------------------------------------
+    Total :                                    120.6221714640 a.u.      s0 = F   t0 = F
+    -------------------------------------------------------------------------------------
+
+
+ Operator Rho at nuc H  07:
+ --------------------------
+
+
+
+                    Expectation value for individual orbitals
+                    -----------------------------------------
+
+
+                Matrix element     Occ.  
+    E1     1    0.80341727E-05     2.0000      0.16068345E-04
+    E1     2    0.68573230E-07     2.0000      0.13714646E-06
+    E1     3    0.73900601E-05     2.0000      0.14780120E-04
+    E1     4    0.50087213E-03     2.0000      0.10017443E-02
+    E1     5    0.73867466E-06     2.0000      0.14773493E-05
+    E1     6    0.81815375E-06     2.0000      0.16363075E-05
+    E1     7    0.15670275E-03     2.0000      0.31340550E-03
+    E1     8    0.10006075E-03     2.0000      0.20012150E-03
+    E1     9    0.18110316E-03     2.0000      0.36220632E-03
+    E1    10    0.55150035E-04     2.0000      0.11030007E-03
+    E1    11    0.16048098E-03     2.0000      0.32096197E-03
+    E1    12    0.94464652E-04     2.0000      0.18892930E-03
+    E1    13    0.99772220E-06     2.0000      0.19954444E-05
+    E1    14    0.14550209E-03     2.0000      0.29100418E-03
+    E1    15    0.52191669E-04     2.0000      0.10438334E-03
+    E1    16    0.200050904087     2.0000      0.400101808173
+    E1    17    0.16896442E-04     2.0000      0.33792885E-04
+    E1    18    0.50595068E-03     2.0000      0.10119014E-02
+    E1    19    0.47580686E-03     2.0000      0.95161373E-03
+    E1    20    0.29210771E-06     2.0000      0.58421542E-06
+    E1    21    0.24679343E-04     2.0000      0.49358686E-04
+    -------------------------------------------------------------------------------------
+    Total :                                    0.405078210184 a.u.      s0 = F   t0 = F
+    -------------------------------------------------------------------------------------
+
+
+ Operator Rho at nuc H  08:
+ --------------------------
+
+
+
+                    Expectation value for individual orbitals
+                    -----------------------------------------
+
+
+                Matrix element     Occ.  
+    E1     1    0.48583709E-03     2.0000      0.97167419E-03
+    E1     2    0.66408131E-06     2.0000      0.13281626E-05
+    E1     3    0.97059075E-06     2.0000      0.19411815E-05
+    E1     4    0.62028741E-05     2.0000      0.12405748E-04
+    E1     5    0.83942768E-05     2.0000      0.16788554E-04
+    E1     6    0.33228915E-07     2.0000      0.66457830E-07
+    E1     7    0.199978362238     2.0000      0.399956724475
+    E1     8    0.51463302E-03     2.0000      0.10292660E-02
+    E1     9    0.56165948E-04     2.0000      0.11233190E-03
+    E1    10    0.10903222E-06     2.0000      0.21806444E-06
+    E1    11    0.45553634E-03     2.0000      0.91107268E-03
+    E1    12    0.59940527E-04     2.0000      0.11988105E-03
+    E1    13    0.46162489E-04     2.0000      0.92324978E-04
+    E1    14    0.32349311E-04     2.0000      0.64698622E-04
+    E1    15    0.31957247E-03     2.0000      0.63914495E-03
+    E1    16    0.45728914E-03     2.0000      0.91457828E-03
+    E1    17    0.40090277E-04     2.0000      0.80180555E-04
+    E1    18    0.14210635E-04     2.0000      0.28421270E-04
+    E1    19    0.38764198E-04     2.0000      0.77528395E-04
+    E1    20    0.19531887E-04     2.0000      0.39063774E-04
+    E1    21    0.42867949E-05     2.0000      0.85735897E-05
+    -------------------------------------------------------------------------------------
+    Total :                                    0.405078212905 a.u.      s0 = F   t0 = F
+    -------------------------------------------------------------------------------------
+
+
+ Operator Rho at nuc H  09:
+ --------------------------
+
+
+
+                    Expectation value for individual orbitals
+                    -----------------------------------------
+
+
+                Matrix element     Occ.  
+    E1     1    0.88121665E-05     2.0000      0.17624333E-04
+    E1     2    0.59816674E-05     2.0000      0.11963335E-04
+    E1     3    0.40168846E-07     2.0000      0.80337692E-07
+    E1     4    0.62238926E-06     2.0000      0.12447785E-05
+    E1     5    0.48946502E-03     2.0000      0.97893004E-03
+    E1     6    0.10066343E-05     2.0000      0.20132686E-05
+    E1     7    0.25819611E-03     2.0000      0.51639223E-03
+    E1     8    0.48297558E-04     2.0000      0.96595115E-04
+    E1     9    0.19687271E-06     2.0000      0.39374543E-06
+    E1    10    0.58491953E-04     2.0000      0.11698391E-03
+    E1    11    0.65780688E-04     2.0000      0.13156138E-03
+    E1    12    0.43823955E-03     2.0000      0.87647910E-03
+    E1    13    0.42103792E-03     2.0000      0.84207584E-03
+    E1    14    0.55011950E-03     2.0000      0.11002390E-02
+    E1    15    0.200017879751     2.0000      0.400035759503
+    E1    16    0.45687728E-04     2.0000      0.91375457E-04
+    E1    17    0.75008914E-06     2.0000      0.15001783E-05
+    E1    18    0.24968399E-04     2.0000      0.49936799E-04
+    E1    19    0.44715628E-04     2.0000      0.89431256E-04
+    E1    20    0.44573246E-04     2.0000      0.89146493E-04
+    E1    21    0.14243405E-04     2.0000      0.28486811E-04
+    -------------------------------------------------------------------------------------
+    Total :                                    0.405078212905 a.u.      s0 = F   t0 = F
+    -------------------------------------------------------------------------------------
+
+
+ Operator Rho at nuc H  10:
+ --------------------------
+
+
+
+                    Expectation value for individual orbitals
+                    -----------------------------------------
+
+
+                Matrix element     Occ.  
+    E1     1    0.81819548E-06     2.0000      0.16363910E-05
+    E1     2    0.50085798E-03     2.0000      0.10017160E-02
+    E1     3    0.73858731E-06     2.0000      0.14771746E-05
+    E1     4    0.69043277E-07     2.0000      0.13808655E-06
+    E1     5    0.73894447E-05     2.0000      0.14778889E-04
+    E1     6    0.80332537E-05     2.0000      0.16066507E-04
+    E1     7    0.55066993E-04     2.0000      0.11013399E-03
+    E1     8    0.17216431E-03     2.0000      0.34432862E-03
+    E1     9    0.52088032E-04     2.0000      0.10417606E-03
+    E1    10    0.15730261E-03     2.0000      0.31460523E-03
+    E1    11    0.10268597E-03     2.0000      0.20537194E-03
+    E1    12    0.15296215E-03     2.0000      0.30592430E-03
+    E1    13    0.200067486683     2.0000      0.400134973367
+    E1    14    0.94943932E-04     2.0000      0.18988786E-03
+    E1    15    0.18177560E-03     2.0000      0.36355121E-03
+    E1    16    0.94138702E-06     2.0000      0.18827740E-05
+    E1    17    0.50199761E-06     2.0000      0.10039952E-05
+    E1    18    0.47692313E-03     2.0000      0.95384627E-03
+    E1    19    0.50416218E-03     2.0000      0.10083244E-02
+    E1    20    0.19230362E-06     2.0000      0.38460723E-06
+    E1    21    0.20012962E-05     2.0000      0.40025924E-05
+    -------------------------------------------------------------------------------------
+    Total :                                    0.405078210184 a.u.      s0 = F   t0 = F
+    -------------------------------------------------------------------------------------
+
+
+ Operator Rho at nuc H  11:
+ --------------------------
+
+
+
+                    Expectation value for individual orbitals
+                    -----------------------------------------
+
+
+                Matrix element     Occ.  
+    E1     1    0.33019755E-07     2.0000      0.66039510E-07
+    E1     2    0.62002957E-05     2.0000      0.12400591E-04
+    E1     3    0.83919625E-05     2.0000      0.16783925E-04
+    E1     4    0.66387368E-06     2.0000      0.13277474E-05
+    E1     5    0.97012867E-06     2.0000      0.19402573E-05
+    E1     6    0.48582992E-03     2.0000      0.97165984E-03
+    E1     7    0.11129207E-06     2.0000      0.22258414E-06
+    E1     8    0.44937358E-03     2.0000      0.89874716E-03
+    E1     9    0.32030619E-03     2.0000      0.64061238E-03
+    E1    10    0.199982177095     2.0000      0.399964354190
+    E1    11    0.53044174E-03     2.0000      0.10608835E-02
+    E1    12    0.25704026E-04     2.0000      0.51408052E-04
+    E1    13    0.45822790E-03     2.0000      0.91645581E-03
+    E1    14    0.53783945E-04     2.0000      0.10756789E-03
+    E1    15    0.55832347E-04     2.0000      0.11166469E-03
+    E1    16    0.45982094E-04     2.0000      0.91964188E-04
+    E1    17    0.16504944E-04     2.0000      0.33009888E-04
+    E1    18    0.38454907E-04     2.0000      0.76909815E-04
+    E1    19    0.13752238E-04     2.0000      0.27504476E-04
+    E1    20    0.41402804E-04     2.0000      0.82805608E-04
+    E1    21    0.49621452E-05     2.0000      0.99242903E-05
+    -------------------------------------------------------------------------------------
+    Total :                                    0.405078212905 a.u.      s0 = F   t0 = F
+    -------------------------------------------------------------------------------------
+
+
+ Operator Rho at nuc H  12:
+ --------------------------
+
+
+
+                    Expectation value for individual orbitals
+                    -----------------------------------------
+
+
+                Matrix element     Occ.  
+    E1     1    0.10069764E-05     2.0000      0.20139528E-05
+    E1     2    0.62239641E-06     2.0000      0.12447928E-05
+    E1     3    0.48946854E-03     2.0000      0.97893707E-03
+    E1     4    0.59836132E-05     2.0000      0.11967226E-04
+    E1     5    0.40416745E-07     2.0000      0.80833490E-07
+    E1     6    0.88135514E-05     2.0000      0.17627103E-04
+    E1     7    0.58701359E-04     2.0000      0.11740272E-03
+    E1     8    0.73526469E-04     2.0000      0.14705294E-03
+    E1     9    0.200020322197     2.0000      0.400040644395
+    E1    10    0.25787637E-03     2.0000      0.51575274E-03
+    E1    11    0.58270694E-04     2.0000      0.11654139E-03
+    E1    12    0.53312610E-03     2.0000      0.10662522E-02
+    E1    13    0.45739289E-04     2.0000      0.91478578E-04
+    E1    14    0.44629610E-03     2.0000      0.89259219E-03
+    E1    15    0.19029776E-06     2.0000      0.38059552E-06
+    E1    16    0.42054354E-03     2.0000      0.84108709E-03
+    E1    17    0.21260498E-05     2.0000      0.42520997E-05
+    E1    18    0.44374554E-04     2.0000      0.88749107E-04
+    E1    19    0.24865141E-04     2.0000      0.49730282E-04
+    E1    20    0.19031998E-04     2.0000      0.38063995E-04
+    E1    21    0.28180804E-04     2.0000      0.56361608E-04
+    -------------------------------------------------------------------------------------
+    Total :                                    0.405078212905 a.u.      s0 = F   t0 = F
+    -------------------------------------------------------------------------------------
+    s0 = T : Expectation value zero by point group symmetry.
+    t0 = T : Expectation value zero by time reversal symmetry.
+----------------------------------------------------------------------------
+
+*****************************************************
+********** E N D   of   D I R A C  output  **********
+*****************************************************
+
+
+ 
+     Date and time (Linux)  : Wed Jul 31 10:38:50 2019
+     Host name              : maris048                                
+
+>>>> Node 0, utime: 1, stime: 0, minflt: 28212, majflt: 0, nvcsw: 174, nivcsw: 3, maxrss: 121564
+>>>> Total WALL time used in DIRAC: 1s
+  
+  Dynamical Memory Usage Summary for Master
+  
+  Mean allocation size (Mb) :       152.69
+  
+  Largest          10  allocations
+  
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMPRP_1                          
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for test allocation of work array in DIRAC mai
+        0.76 Mb at subroutine __allocator_track_if_MOD_allocator_registe for PAMINP WORK array                         
+        0.32 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
+        0.16 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTADR in XPLDEF                          
+        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTREP in XPLDEF                          
+  
+  Peak memory usage:       488.60 MB
+  Peak memory usage:        0.477 GB
+       reached at subroutine : __allocator_track_if_MOD_allocator_registe
+              for variable   : buf in butobs                             
+  
+ MEMGET high-water mark:     0.00 MB
+
+*****************************************************
+DIRAC pam run in /home/senjean/Git_repo/dirac/dirac-caar-ibos/test/geniao/work_dir/benzene_case

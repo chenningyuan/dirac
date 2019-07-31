@@ -303,7 +303,7 @@
 ! This test requires the presence of the MRCONEE file to get the core matrix h. Also, ACTIVE .all has to be
 ! set in the Dirac input to be sure that the latter matrix has the correct dimension nmo1 x nmo1.
 
-!        call test_IAO_and_IBO(IAO,Cocc_IAO,Cocc_IBO_moB1,S11,cspinor_original,nmo1,nmo2,nocc)
+        call test_IAO_and_IBO(IAO,Cocc_IAO,Cocc_IBO_moB1,S11,cspinor_original,nmo1,nmo2,nocc)
 
 !!!!!!!!!!!!!!!!!!!!
 !       END        !
