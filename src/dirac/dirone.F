@@ -838,198 +838,7 @@ CCCCCCCCCCCCCCCC
 C routine
 CCCCCCCCCCCCCCCC           
            CALL INTSUM(INTAO,NDIM2,NUMIR,R,MXNP,ANG,m,IXYZ,C(1,IATOM),
-     &                 num_grid_cfg_grasp,.FALSE.,.TRUE.,IPRINT)
-c$$$           X8 = C(1,IATOM)
-c$$$           Y8 = C(2,IATOM)
-c$$$           Z8 = C(3,IATOM)
-c$$$           CALL DGER(m,MXNP,D1,ANG(1,1),1,R,1,X8,m)
-c$$$           CALL DGER(m,MXNP,D1,ANG(1,2),1,R,1,Y8,m)
-c$$$           CALL DGER(m,MXNP,D1,ANG(1,3),1,R,1,Z8,m)
-c$$$           write(*,*)'nr_points_on_this_proc,m',nr_points_on_this_proc,m
-c$$$           IR = 1
-c$$$           IF (m.LE.100) THEN
-c$$$            do ipoint = 1, nr_points_on_this_proc, m
-c$$$C              
-c$$$C     nr_ao_slices = 1
-c$$$C     nblock_length = nr_points_on_this_proc
-c$$$C     nblock_length = min(m, nr_points_on_this_proc - ipoint + 1)
-c$$$C              
-c$$$C     In the case of effective QED potential, m=86, which is similar to
-c$$$C     m=100. Here, we can simply do nblock_length = m.        
-c$$$C
-c$$$             nblock_length = m 
-c$$$             allocate( GAO   (nblock_length, NTBAS(0)) )
-c$$$             allocate( BUFGAO(nblock_length, NTBAS(0)) )
-c$$$             CALL DZERO(GAO,   nblock_length*NTBAS(0))
-c$$$             CALL DZERO(BUFGAO,nblock_length*NTBAS(0)) 
-c$$$
-c$$$             call dirac_ao_eval_init(0,0,.FALSE.) 
-c$$$C
-c$$$C    GET AO's
-c$$$C
-c$$$             i = 1
-c$$$             do ishell = 1, nr_shells
-c$$$              do isym = 0, nr_boson_ireps - 1
-c$$$!              write(*,*)'shell,nr_boson_ireps',nr_shells,nr_boson_ireps
-c$$$               if (iand(isym, shell_stabilizing_irep(ishell)) == 0) then
-c$$$                sx = bitstring_parity(iand(irep_of_axes(1), isym))
-c$$$     &               * center_xyz(shell_center(ishell), 1)
-c$$$                sy = bitstring_parity(iand(irep_of_axes(2), isym))
-c$$$     &               * center_xyz(shell_center(ishell), 2)
-c$$$                sz = bitstring_parity(iand(irep_of_axes(3), isym))
-c$$$     &               * center_xyz(shell_center(ishell), 3)
-c$$$     
-c$$$                do k = 1, nblock_length
-c$$$                   px(k) = X8(ipoint+k-1) - sx
-c$$$                   py(k) = Y8(ipoint+k-1) - sy
-c$$$                   pz(k) = Z8(ipoint+k-1) - sz
-c$$$                end do
-c$$$
-c$$$                do k = 1, nblock_length
-c$$$                   p2(k) = px(k)*px(k) 
-c$$$     &                   + py(k)*py(k) 
-c$$$     &                   + pz(k)*pz(k)
-c$$$                end do
-c$$$               
-c$$$                call get_cartesian_ao_g0(nblock_length, 
-c$$$     &                                     ishell,       
-c$$$     &                                     px,           
-c$$$     &                                     py,           
-c$$$     &                                     pz,           
-c$$$     &                                     p2,
-c$$$     &                                     GAO(1, i))                   
-c$$$                i = i + cartesian_deg(ishell)
-c$$$               end if
-c$$$              end do  !isym
-c$$$             end do               !ishell
-c$$$             write(*,*)
-c$$$             write(*,*)
-c$$$             DO  iy = 1, m        
-c$$$               ANGXYZ = ANG(iy,4)*ANG(iy,IXYZ)
-c$$$               CALL DAXPY(NTBAS(0),ANGXYZ,
-c$$$     &                    GAO(iy,1),m,BUFGAO(iy,1),m)
-c$$$             ENDDO
-c$$$             CALL DSCAL(NTBAS(0)*m,NUMIR(IR),BUFGAO(1,1),1)
-c$$$C
-c$$$C  This minus (DM1) is due to Beta Alpha, although we use Alpha. 
-c$$$C
-c$$$             CALL DGEMM('T','N',NTBAS(0),NTBAS(0),m,
-c$$$     &                   DM1,BUFGAO,m,GAO,m,D0,TC,NTBAS(0))
-c$$$             CALL DCOPY(NDIM2,TC,1,TD(1,IR),1)
-c$$$             IR = IR + 1
-c$$$             deallocate(GAO)
-c$$$             deallocate(BUFGAO)
-c$$$            end do                ! ipoint
-c$$$           ELSE                   ! (m.GT.100) start from here
-c$$$            write(*,*)'nr_shells',nr_shells
-c$$$            do ipoint = 1, nr_points_on_this_proc, m
-c$$$C                 
-c$$$C     In the case of m>100, a speciAL treatment is needed.
-c$$$C
-c$$$            nblock_length = 100
-c$$$            m_NUM_MAX = INT(m/100) + 1              
-c$$$            allocate( GAO   (m, NTBAS(0)) )
-c$$$            allocate( BUFGAO(m, NTBAS(0)) )
-c$$$            CALL DZERO(GAO, m*NTBAS(0))
-c$$$
-c$$$            call dirac_ao_eval_init(0,0,.FALSE.) 
-c$$$C
-c$$$C    GET AO's
-c$$$C
-c$$$            IOFM = 1
-c$$$!            write(*,*)'m_NUM_MAX', m_NUM_MAX
-c$$$!            write(*,*)'nblock_length', nblock_length
-c$$$            DO m_NUM = 1, m_NUM_MAX
-c$$$             IF (m_NUM.EQ.m_NUM_MAX) nblock_length = mod(m,100)                
-c$$$             allocate( GAO2(nblock_length, NTBAS(0)) )
-c$$$             CALL DZERO(GAO2,nblock_length*NTBAS(0))
-c$$$             i = 1
-c$$$             do ishell = 1, nr_shells
-c$$$              do isym = 0, nr_boson_ireps - 1
-c$$$!              write(*,*)'ishell,nr_boson_ireps',nr_shells,nr_boson_ireps
-c$$$!              write(*,*)'cartesian_deg', cartesian_deg(ishell)
-c$$$               if (iand(isym, shell_stabilizing_irep(ishell)) == 0) then
-c$$$                sx = bitstring_parity(iand(irep_of_axes(1), isym))
-c$$$     &               * center_xyz(shell_center(ishell), 1)
-c$$$                sy = bitstring_parity(iand(irep_of_axes(2), isym))
-c$$$     &               * center_xyz(shell_center(ishell), 2)
-c$$$                sz = bitstring_parity(iand(irep_of_axes(3), isym))
-c$$$     &               * center_xyz(shell_center(ishell), 3)
-c$$$
-c$$$!             write(*,*)'ipoint,IOFM,ipoint+IOFM',ipoint,IOFM,ipoint+IOFM
-c$$$                do k = 1, nblock_length
-c$$$                   px(k) = X8(ipoint+IOFM+k-2) - sx
-c$$$                   py(k) = Y8(ipoint+IOFM+k-2) - sy
-c$$$                   pz(k) = Z8(ipoint+IOFM+k-2) - sz
-c$$$                end do
-c$$$
-c$$$                do k = 1, nblock_length
-c$$$                   p2(k) = px(k)*px(k) 
-c$$$     &                   + py(k)*py(k) 
-c$$$     &                   + pz(k)*pz(k)
-c$$$                end do
-c$$$               
-c$$$                call get_cartesian_ao_g0(nblock_length, 
-c$$$     &                                     ishell,       
-c$$$     &                                     px,           
-c$$$     &                                     py,           
-c$$$     &                                     pz,           
-c$$$     &                                     p2,
-c$$$     &                                     GAO2(1, i))                   
-c$$$                i = i + cartesian_deg(ishell)
-c$$$               end if
-c$$$              end do  ! isym
-c$$$             end do               ! ishell
-c$$$             DO IB = 1, NTBAS(0)
-c$$$                CALL DCOPY(nblock_length,GAO2(1,IB),1,
-c$$$     &                      GAO(IOFM,IB),1)
-c$$$             ENDDO
-c$$$             IOFM = IOFM + nblock_length
-c$$$             deallocate(GAO2)
-c$$$            ENDDO                 ! m_NUM          
-c$$$C          
-c$$$            CALL DZERO(BUFGAO,m*NTBAS(0))
-c$$$            DO  iy = 1, m
-c$$$              ANGXYZ = ANG(iy,4)*ANG(iy,IXYZ)
-c$$$              CALL DAXPY(NTBAS(0),ANGXYZ,
-c$$$     &                   GAO(iy,1),m,BUFGAO(iy,1),m)
-c$$$            ENDDO
-c$$$            CALL DSCAL(NTBAS(0)*m,NUMIR(IR),BUFGAO(1,1),1)           
-c$$$C
-c$$$C  This minus (DM1) is due to Beta Alpha, although we use Alpha. 
-c$$$C
-c$$$            CALL DGEMM('T','N',NTBAS(0),NTBAS(0),m,
-c$$$     &                  DM1,BUFGAO,m,GAO,m,D0,TC,NTBAS(0))
-c$$$            CALL DCOPY(NDIM2,TC,1,TD(1,IR),1)
-c$$$            IR = IR + 1
-c$$$            deallocate(GAO)
-c$$$            deallocate(BUFGAO)
-c$$$            end do                ! ipoint
-c$$$           ENDIF ! (m.LE.100)
-c$$$           CALL QUAD2(INTAOBUF,TD,MXNP,NDIM2)
-c$$$C
-c$$$C    Transformation from full-matrix to triangle-matrix
-c$$$C
-c$$$C    I do not why, but the substitution of zero (D0) is not needed here.
-c$$$C    (The substitution is needed for L-S coupling)
-c$$$C     
-c$$$           DO J = 1, NTBAS(0)
-c$$$              IOFF = 0
-c$$$              IOFT = (J-1)*J/2
-c$$$              DO IT = 1, J
-c$$$                 INTAO(IT+IOFT) = INTAOBUF(J+IOFF)
-c$$$                 IOFF = IOFF + NTBAS(0)
-c$$$              ENDDO
-c$$$           ENDDO   
-c$$$           LLTRI = NTBAS(1)*(NTBAS(1)+1)/2
-c$$$           CALL DSCAL(LLTRI,D0,INTAO(1),1)
-c$$$           IOFL = LLTRI + NTBAS(1)
-c$$$           DO MAXSS = 1, NTBAS(2)
-c$$$              DO J = 1,MAXSS
-c$$$                INTAO(IOFL+J) = D0
-c$$$              ENDDO
-c$$$              IOFL = IOFL + NTBAS(1) + MAXSS
-c$$$           ENDDO   
+     &                 num_grid_cfg_grasp,.TRUE.,IPRINT)
 c$$$c$$$!!! debug           
 c$$$c$$$!           OPEN(20,FILE='LOG_DIRAC',STATUS='REPLACE',          
 c$$$c$$$!     &          FORM='FORMATTED',ACCESS='SEQUENTIAL')  
@@ -1094,8 +903,11 @@ C
 CCCCCCCCCCCCCCCC
 C routine
 CCCCCCCCCCCCCCCC
+c$$$C
+c$$$C  This minus (DM1) is due to Beta Alpha of magnetic term, although we use Alpha. 
+c$$$C
            CALL INTSUM(INTAO,NDIM2,W,R,MXNP,ANG,m,IXYZ,C(1,IATOM),
-     &                 num_grid_cfg_grasp,.FALSE.,.TRUE.,IPRINT)
+     &                 num_grid_cfg_grasp,.TRUE.,IPRINT)
 c$$$           X8 = C(1,IATOM)
 c$$$           Y8 = C(2,IATOM)
 c$$$           Z8 = C(3,IATOM)
@@ -1339,10 +1151,6 @@ C
         deallocate(Z8)
 10    CONTINUE   ! IATOM = 1, NUCIND
 C      
-c$$$C
-c$$$C  This minus (DM1) is due to Beta Alpha of magnetic term, although we use Alpha. 
-c$$$C
-      CALL DSCAL(NDIM2,DM1,INTAO,1)
       IF(NDEG.GT.0) THEN
 C       Scale weights with multiplicity of center
         FAC = dble(NDEG) 
@@ -1596,7 +1404,7 @@ C
            write(*,*)"R(1),Z",R(1),ZAN(IATOM) 
            write(*,*)"J,NUMIR"
            CALL INTSUM(INTAO,NDIM2,NUMIR,R,MXNP,ANG,m,0,C(1,IATOM),
-     &                  num_grid_cfg_grasp,.TRUE.,.TRUE.,IPRINT)
+     &                  num_grid_cfg_grasp,.FALSE.,IPRINT)
 CCCCCCCCCCCCCCCCCCCCC
 C subroutine
 CCCCCCCCCCCCCCCCCCCCC           
@@ -1849,7 +1657,7 @@ C
              ENDDO
            ENDIF            
            CALL INTSUM(INTAO,NDIM2,W,R,MXNP,ANG,m,0,C(1,IATOM),
-     &                 num_grid_cfg_grasp,.TRUE.,.TRUE.,IPRINT)
+     &                 num_grid_cfg_grasp,.FALSE.,IPRINT)
 C           
            write(*,*)"R(1),Z",R(1),ZAN(IATOM) 
            write(*,*)"J,NUMIR"
@@ -1932,7 +1740,7 @@ CCCCCCCCCCC
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck intsum */
       SUBROUTINE INTSUM(INTAO,NDIM2,VWRR,R,MXNP,ANG,m,IXYZ,C,
-     &                   GRASP,DIAG,TRIMAT,IPRINT)
+     &                   GRASP,ANTI,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C     The integration of radial and angular integral   
@@ -1955,8 +1763,8 @@ C     C      ... Center of IATOM:
 C                It is obtained by CALL SET_GRID_INFO(NAT,NUM,ZAN,C)
 C     GRASP  ... TRUE : GRASP grid
 C                FALSE: DIRAC grid
-C     DIAG  ... TRUE : LL,SS matrix
-C               FALSE: LS,SL matrix
+C     ANTI  ... TRUE : LS(+) and SL(-) have differenti signs
+C               FALSE: Diagonal matrix or LS and SL have same signs.
 C     TRIMAT ... TRUE : triangle matrix
 C                FALSE: full matrix for the format of INTAO
 C
@@ -1988,7 +1796,7 @@ C
 #include "dgroup.h"
       REAL*8 R(MXNP), ANG(m,4), INTAO(NDIM2), VWRR(MXNP), C(3,1)
 C      
-      LOGICAL GRASP,TRIMAT,DIAG
+      LOGICAL GRASP,TRIMAT,ANTI
       PARAMETER (D0=0.0D0,D1=1.0D0,DM1=-1.0D0,D2=2.0D0)      
       real(8), allocatable :: GAO(:,:),GAO2(:,:),BUFGAO(:,:)
       real(8), allocatable :: TC(:),TD(:,:),INTAOBUF(:),INTSOBUF(:) 
@@ -1997,10 +1805,7 @@ C
       real(8), parameter   :: bitstring_parity(0:7) =
      &    (/1.0d0, -1.0d0, -1.0d0, 1.0d0, -1.0d0, 1.0d0, 1.0d0, -1.0d0/)     
 C    
-C      m = NLEB(INTANG)
-C      allocate( ANG      (m,4)   )
       allocate( TC       (NDIM2) )
-C      allocate( INTAO    (NDIM2) )
       allocate( INTAOBUF (NDIM2) )
       allocate( ANGXYZ   (m)     )
       allocate( XYZ8     (m,4)   )
@@ -2014,10 +1819,8 @@ C
       allocate( pz(nblock_size) )
       allocate( p2(nblock_size) )
 C      
-C      
-C      CALL DZERO(INTAO   ,NDIM2)
       CALL DZERO(INTAOBUF,NDIM2)
-      CALL DZERO(TC,      NDIM2)
+C      CALL DZERO(TC,      NDIM2)
       IF(IXYZ.EQ.0)THEN
         CALL DCOPY(m,ANG(1,4),1,ANGXYZ,1)         
       ELSE  
@@ -2037,52 +1840,51 @@ C      CALL DSCAL(m,4.0D0*PI,ANG(1,4),1)
 C
       nr_points_on_this_proc=MXNP*m
 C
-           write(*,*)'nr_points_on_this_proc,m',nr_points_on_this_proc,m
-           IR = 1
+      write(*,*)'nr_points_on_this_proc,m',nr_points_on_this_proc,m
 CCCCCCCCCCCCc           
 C     IF (m.LE.100) THEN
 CCCCCCCCCCCC           
 c$$$C           ELSE                   ! (m.GT.100) start from here
-            write(*,*)'nr_shells',nr_shells
-            write(*,*)'max_block_length',max_block_length
-           IF(GRASP)THEN
-            allocate( TD(NDIM2,MXNP) )         
-            do IR = 1, MXNP
-             IOF_block = 1
+      write(*,*)'nr_shells',nr_shells
+      write(*,*)'max_block_length',max_block_length
+      IF(GRASP)THEN
+        allocate( TD(NDIM2,MXNP) )         
+        do IR = 1, MXNP
+          CALL DZERO(TC,      NDIM2)
+          IOF_block = 1
 C                 
 C     In the case of m>100, a speciAL treatment is needed.
 C
 C             nblock_length = 100
-             m_NUM_MAX = INT(m/100) + 1              
-             allocate( GAO   (m, NTBAS(0)) )
-             allocate( BUFGAO(m, NTBAS(0)) )
-             CALL DZERO(GAO, m*NTBAS(0))
-             CALL DZERO(BUFGAO,m*NTBAS(0))
+          m_NUM_MAX = INT(m/100) + 1              
+          allocate( GAO   (m, NTBAS(0)) )
+          allocate( BUFGAO(m, NTBAS(0)) )
+          CALL DZERO(GAO, m*NTBAS(0))
+          CALL DZERO(BUFGAO,m*NTBAS(0))
 C
-             call dirac_ao_eval_init(0,0,.FALSE.) 
+          call dirac_ao_eval_init(0,0,.FALSE.) 
 C
 C    GET AO's
 C
-             IOFM = 1
-             DO m_NUM = 1, m_NUM_MAX
-              nblock_length = min(max_block_length, m - IOF_block+ 1)
-C     &        min(max_block_length, nr_points_on_this_proc - IOF_block+ 1)
-              nblock_length = min(nblock_length, m)
+          IOFM = 1
+          DO m_NUM = 1, m_NUM_MAX
+            nblock_length = min(max_block_length, m - IOF_block+ 1)
+            nblock_length = min(nblock_length, m)
 C              
-              allocate( GAO2(nblock_length, NTBAS(0)) )              
-              CALL DZERO(GAO2,nblock_length*NTBAS(0))
-              X8 = C(1,1)
-              Y8 = C(2,1)
-              Z8 = C(3,1)
-              CALL DAXPY(nblock_length,R(IR),ANG(IOFM,1),1,X8,1)
-              CALL DAXPY(nblock_length,R(IR),ANG(IOFM,2),1,Y8,1)
-              CALL DAXPY(nblock_length,R(IR),ANG(IOFM,3),1,Z8,1)
-              
-              i = 1
-              do ishell = 1, nr_shells
-               do isym = 0, nr_boson_ireps - 1
+            allocate( GAO2(nblock_length, NTBAS(0)) )              
+            CALL DZERO(GAO2,nblock_length*NTBAS(0))
+            X8 = C(1,1)
+            Y8 = C(2,1)
+            Z8 = C(3,1)
+            CALL DAXPY(nblock_length,R(IR),ANG(IOFM,1),1,X8,1)
+            CALL DAXPY(nblock_length,R(IR),ANG(IOFM,2),1,Y8,1)
+            CALL DAXPY(nblock_length,R(IR),ANG(IOFM,3),1,Z8,1)
+             
+            i = 1
+            do ishell = 1, nr_shells
+              do isym = 0, nr_boson_ireps - 1
 C              write(*,*)'ishell,nr_boson_ireps',nr_shells,nr_boson_ireps
-               write(*,*)'cartesian_deg', cartesian_deg(ishell)
+C                write(*,*)'cartesian_deg', cartesian_deg(ishell)
                 if (iand(isym, shell_stabilizing_irep(ishell)) == 0)then
                  sx = bitstring_parity(iand(irep_of_axes(1), isym))
      &                * center_xyz(shell_center(ishell), 1)
@@ -2113,68 +1915,68 @@ C              write(*,*)'ishell,nr_boson_ireps',nr_shells,nr_boson_ireps
      &                                      GAO2(1, i))                   
                  i = i + cartesian_deg(ishell)
                 end if
-               end do  ! isym
-              end do               ! ishell
-              DO IB = 1, NTBAS(0)
-                 CALL DCOPY(nblock_length,GAO2(1,IB),1,
-     &                       GAO(IOFM,IB),1)
-              ENDDO
-              IOFM = IOFM + nblock_length
-              deallocate(GAO2)
-              IOF_block = IOF_block + nblock_length
-             ENDDO                 ! m_NUM          
+              end do  ! isym
+            end do               ! ishell
+            DO IB = 1, NTBAS(0)
+               CALL DCOPY(nblock_length,GAO2(1,IB),1,GAO(IOFM,IB),1)
+            ENDDO
+            IOFM = IOFM + nblock_length
+            deallocate(GAO2)
+            IOF_block = IOF_block + nblock_length
+          ENDDO                 ! m_NUM          
 C          
 C             CALL DSCAL(m,VWRR(IR),ANG(1,4),1)
-             DO  iy = 1, m
-               CALL DAXPY(NTBAS(0),ANGXYZ(iy),
-     &                    GAO(iy,1),m,BUFGAO(iy,1),m)
-             ENDDO
-             CALL DSCAL(NTBAS(0)*m,VWRR(IR),BUFGAO(1,1),1)           
-             CALL DGEMM('T','N',NTBAS(0),NTBAS(0),m,
-     &                   D1,BUFGAO,m,GAO,m,D0,TC,NTBAS(0))
-             CALL DCOPY(NDIM2,TC,1,TD(1,IR),1)
+          DO  iy = 1, m
+            CALL DAXPY(NTBAS(0),ANGXYZ(iy),GAO(iy,1),m,BUFGAO(iy,1),m)
+          ENDDO
+          CALL DSCAL(NTBAS(0)*m,VWRR(IR),BUFGAO(1,1),1)           
+          CALL DGEMM('T','N',NTBAS(0),NTBAS(0),m,
+     &                D1,BUFGAO,m,GAO,m,D0,TC,NTBAS(0))
+          CALL DCOPY(NDIM2,TC,1,TD(1,IR),1)
+          write(*,*)'TD,IR',TD(9,IR),IR
 C             IR = IR + 1
-             deallocate(GAO)
-             deallocate(BUFGAO)
-            end do                ! ipoint
-            CALL QUAD2(INTAOBUF,TD,MXNP,NDIM2)
-            deallocate(TD)
-           ELSE  !DIRAC grid from here
-            do IR = 1, MXNP
-             IOF_block = 1
+          deallocate(GAO)
+          deallocate(BUFGAO)
+        end do                ! IR
+        CALL QUAD2(INTAOBUF,TD,MXNP,NDIM2)
+        deallocate(TD)
+      ELSE  !DIRAC grid from here
+        do IR = 1, MXNP
+          CALL DZERO(TC,      NDIM2)
+          IOF_block = 1
 C                 
 C     In the case of m>100, a speciAL treatment is needed.
 C
 C             nblock_length = 100
-             m_NUM_MAX = INT(m/100) + 1              
-             allocate( GAO   (m, NTBAS(0)) )  !change
-             allocate( BUFGAO(m, NTBAS(0)) )
-             CALL DZERO(GAO, m*NTBAS(0))
-             CALL DZERO(BUFGAO,m*NTBAS(0))
+          m_NUM_MAX = INT(m/100) + 1              
+          allocate( GAO   (m, NTBAS(0)) )  !change
+          allocate( BUFGAO(m, NTBAS(0)) )
+          CALL DZERO(GAO, m*NTBAS(0))
+          CALL DZERO(BUFGAO,m*NTBAS(0))
 C
-             call dirac_ao_eval_init(0,0,.FALSE.) 
+          call dirac_ao_eval_init(0,0,.FALSE.) 
 C
 C    GET AO's
 C
-             IOFM = 1
-             DO m_NUM = 1, m_NUM_MAX
-              nblock_length = min(max_block_length, m - IOF_block+ 1)
+          IOFM = 1
+          DO m_NUM = 1, m_NUM_MAX
+            nblock_length = min(max_block_length, m - IOF_block+ 1)
 C     &        min(max_block_length, nr_points_on_this_proc - IOF_block+ 1)
-              nblock_length = min(nblock_length, m)
+            nblock_length = min(nblock_length, m)
 C              IF (m_NUM.EQ.m_NUM_MAX) nblock_length = mod(m,100)                
              write(*,*)'nblock_length,IOF_block',nblock_length,IOF_block
-              allocate( GAO2(nblock_length, NTBAS(0)) )
-              CALL DZERO(GAO2,nblock_length*NTBAS(0))
-              X8 = C(1,1)
-              Y8 = C(2,1)
-              Z8 = C(3,1)
-              CALL DAXPY(nblock_length,R(IR),ANG(IOFM,1),1,X8,1)
-              CALL DAXPY(nblock_length,R(IR),ANG(IOFM,2),1,Y8,1)
-              CALL DAXPY(nblock_length,R(IR),ANG(IOFM,3),1,Z8,1)
+            allocate( GAO2(nblock_length, NTBAS(0)) )
+            CALL DZERO(GAO2,nblock_length*NTBAS(0))
+            X8 = C(1,1)
+            Y8 = C(2,1)
+            Z8 = C(3,1)
+            CALL DAXPY(nblock_length,R(IR),ANG(IOFM,1),1,X8,1)
+            CALL DAXPY(nblock_length,R(IR),ANG(IOFM,2),1,Y8,1)
+            CALL DAXPY(nblock_length,R(IR),ANG(IOFM,3),1,Z8,1)
 C
-              i = 1
-              do ishell = 1, nr_shells
-               do isym = 0, nr_boson_ireps - 1
+            i = 1
+            do ishell = 1, nr_shells
+              do isym = 0, nr_boson_ireps - 1
 C              write(*,*)'ishell,nr_boson_ireps',nr_shells,nr_boson_ireps
                  write(*,*)'cartesian_deg', cartesian_deg(ishell)
                 if (iand(isym, shell_stabilizing_irep(ishell)) == 0)then
@@ -2209,88 +2011,73 @@ C                    write(*,*)'px,k',px(k),k
      &                                      GAO2(1, i))                   
                  i = i + cartesian_deg(ishell)
                 end if
-               end do  ! isym
-              end do               ! ishell
-              DO IB = 1, NTBAS(0)
-                 CALL DCOPY(nblock_length,GAO2(1,IB),1,
-     &                       GAO(IOFM,IB),1)
-              ENDDO
-              IOFM = IOFM + nblock_length
-              IOF_block = IOF_block + nblock_length
-              deallocate(GAO2)
-             ENDDO                 ! m_NUM          
+              end do  ! isym
+            end do               ! ishell
+            DO IB = 1, NTBAS(0)
+              CALL DCOPY(nblock_length,GAO2(1,IB),1,GAO(IOFM,IB),1)
+            ENDDO
+            IOFM = IOFM + nblock_length
+            IOF_block = IOF_block + nblock_length
+            deallocate(GAO2)
+          ENDDO                 ! m_NUM          
 C          
-C             CALL DSCAL(m,VWRR(IR),ANG(1,4),1)
-             DO  iy = 1, m
-               CALL DAXPY(NTBAS(0),ANGXYZ(iy),
-     &                    GAO(iy,1),m,BUFGAO(iy,1),m)
+          DO  iy = 1, m
+            CALL DAXPY(NTBAS(0),ANGXYZ(iy),GAO(iy,1),m,BUFGAO(iy,1),m)
                write(*,*)'ANG(iy,4),iy',ANG(iy,4),iy
-             ENDDO
-             CALL DGEMM('T','N',NTBAS(0),NTBAS(0),m,
-     &                   D1,BUFGAO,m,GAO,m,D0,TC,NTBAS(0))
-             CALL DAXPY(NDIM2,VWRR(IR),TC,1,INTAOBUF,1)
+          ENDDO
+          CALL DGEMM('T','N',NTBAS(0),NTBAS(0),m,
+     &                D1,BUFGAO,m,GAO,m,D0,TC,NTBAS(0))
+          CALL DAXPY(NDIM2,VWRR(IR),TC,1,INTAOBUF,1)
              write(*,*)'VWRR,IR',VWRR(IR),IR
-C             IR = IR + 1
-             deallocate(GAO)
-             deallocate(BUFGAO)
-            end do                ! ipoint
-           ENDIF  ! GRASP
-C           ENDIF ! (m.LE.100)
+          deallocate(GAO)
+          deallocate(BUFGAO)
+        end do                ! IR
+      ENDIF  ! GRASP or DIRAC
+C
+      allocate( INTSOBUF (NDIM2) )
+      IF(IXYZ.EQ.0)THEN
+        CALL MTAOSO(INTAOBUF,INTSOBUF,NTBAS(0),0,IPRINT)
+      ELSE
+         IF(ANTI)THEN
+          IOFF = 1
+          DO J = 1,NTBAS(1)
+            IOFF = IOFF + NTBAS(1) 
+            CALL DSCAL(NTBAS(2),DM1,INTAOBUF(IOFF),1)
+            IOFF = IOFF + NTBAS(2)
+          ENDDO   
+C          IOFF = 0  
+C          DO J = 1, NTBAS(0)
+C             DO IT = 1, NTBAS(0)-J
+C                INTAOBUF(J+IT+IOFF) = DM1*INTAOBUF(J+IT+IOFF) 
+C             ENDDO
+C             IOFF = IOFF + NTBAS(0)
+C          ENDDO
+        ENDIF   
+        CALL MTAOSO(INTAOBUF,INTSOBUF,NTBAS(0),
+     &               ISYMAX(IXYZ,2),IPRINT)
+      ENDIF   
 C
 C    Transformation from full-matrix to triangle-matrix
 C
-C    I do not why, but the substitution of zero (D0) is not needed here.
-C    (The substitution is needed for L-S coupling)
-C
-           allocate( INTSOBUF (NDIM2) )
-           IF(IXYZ.EQ.0)THEN
-              CALL MTAOSO(INTAOBUF,INTSOBUF,NTBAS(0),0,IPRINT)
-           ELSE
-CCCCCCCCCCCC              
-C      irep  = isymax(icomp, 2)
-C      ipari = jbtof(irep, 1)
-
-!     transform fmat from AO to SO basis
-!     ----------------------------------
-C      do iz = 1, nr_mat
-C         irepd = irqmat(iz, irep)
-CCCCCCCCCCCCCc         
-              CALL MTAOSO(INTAOBUF,INTSOBUF,NTBAS(0),
-     &                     ISYMAX(IXYZ,2),IPRINT)
-C              CALL MTAOSO(INTAOBUF,INTSOBUF,NTBAS(0),
-C     &                     IRQMAT(1,ISYMAX(IXYZ,2)),IPRINT)
-C     CALL MTAOSO(INTAOBUF,INTSOBUF,NTBAS(0),IXYZ,IPRINT)
-C              CALL MTAOSO(INTAOBUF,INTSOBUF,NTBAS(0),
-C     &                     ISYMAX(IXYZ,1),IPRINT)
-              
-           ENDIF   
-C           
-           DO J = 1, NTBAS(0)
-              IOFF = 0
-              IOFT = (J-1)*J/2
-              DO IT = 1, J
-                 INTAO(IT+IOFT) = INTSOBUF(J+IOFF) + INTAO(IT+IOFT) 
-                 IOFF = IOFF + NTBAS(0)
-              ENDDO
-           ENDDO
-           IF(DIAG .EQV. .FALSE.)THEN
-             LLTRI = NTBAS(1)*(NTBAS(1)+1)/2
-             CALL DSCAL(LLTRI,D0,INTAO(1),1)
-             IOFL = LLTRI + NTBAS(1)
-             DO MAXSS = 1, NTBAS(2)
-                DO J = 1,MAXSS
-                  INTAO(IOFL+J) = D0
-                ENDDO
-                IOFL = IOFL + NTBAS(1) + MAXSS
-             ENDDO   
-           ENDIF
-           DO I=1,3
-              DO J=1,2
-              write(*,*)'ISYMAX,I,J',ISYMAX(I,J),I,J
-C              write(*,*)'IBTXOR',IBTXOR(I,J),I,J
-           ENDDO   
-           ENDDO   
-C           ENDDO   
+      DO J = 1, NTBAS(0)
+        IOFF = 0
+        IOFT = (J-1)*J/2
+        DO IT = 1, J
+           INTAO(IT+IOFT) = INTSOBUF(J+IOFF) + INTAO(IT+IOFT) 
+           IOFF = IOFF + NTBAS(0)
+        ENDDO
+      ENDDO      
+C           IF(DIAG .EQV. .FALSE.)THEN
+C             LLTRI = NTBAS(1)*(NTBAS(1)+1)/2
+C             CALL DSCAL(LLTRI,D0,INTAO(1),1)
+C             IOFL = LLTRI + NTBAS(1)
+C             DO MAXSS = 1, NTBAS(2)
+C                DO J = 1,MAXSS
+C                  INTAO(IOFL+J) = D0
+C                ENDDO
+C                IOFL = IOFL + NTBAS(1) + MAXSS
+C             ENDDO   
+C           ENDIF
       deallocate( TC      )
       deallocate( INTAOBUF)
       deallocate( INTSOBUF)
