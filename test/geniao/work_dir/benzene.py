@@ -7,7 +7,7 @@ basis1 = 'cc-pVDZ'
 basis2 = 'cc-pVQZ'
 charge = 0
 geniao_executable="geniao.x"
-data_directory="/Users/bsenjean/Documents/Git_repositories/dirac-caar-ibos/test/geniao/work_dir/"
+data_directory="/home/senjean/Git_repo/dirac/dirac-caar-ibos/test/geniao/work_dir"
 data_directory=os.getcwd()
 point_nucleus = False
 geometry = [
@@ -27,6 +27,7 @@ geometry = [
 fragment_list = ['H','C'] # from the lowest atomic number to the highest
 version = ["Stndrd_2013","Simple_2013","Simple_2014"][0]
 exponent = [2,3,4][2]
+get_mrconee=True
 # by default :
 #symmetry = False
 #unconstract = True
@@ -49,6 +50,7 @@ molecule = MolData_Dirac(geometry=geometry,
 molecule = run_dirac_dfcoef(molecule,
                      version=version,
                      exponent=exponent,
+                     get_mrconee=get_mrconee,
                      point_nucleus=point_nucleus)
 
 subprocess.check_call("mv -f DFCOEF MOLECULE.dfcoef", shell=True, cwd=data_directory)
@@ -60,7 +62,7 @@ print('Hartree-Fock energy of {} Hartree in {} iterations'.format(molecule.get_
 charge0 = 0
 j=0
 for i in range(len(geometry)):
- if (j <= len(fragment_list)):
+ if (j < len(fragment_list)):
    if (molecule.atoms[i] == fragment_list[j]): # avoid to calculate several time the same fragment...
      j = j+1
      frag_geo = [(molecule.atoms[i],(0.,0.,0.))]

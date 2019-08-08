@@ -7,7 +7,6 @@ basis1 = 'cc-pVDZ'
 basis2 = 'cc-pVQZ'
 charge = 0
 geniao_executable="geniao.x"
-data_directory="/Users/bsenjean/Documents/Git_repositories/dirac-caar-ibos/test/geniao/work_dir/"
 data_directory=os.getcwd()
 point_nucleus = False
 geometry = [
@@ -26,7 +25,6 @@ exponent = [2,3,4][2]
 #symmetry = False
 #unconstract = True
 #speed_of_light = False
-#hamiltonian = False (means the default of Dirac, i.e. Dirac-Coulomb Hamiltonian using the Simple Coulombic Correction.
 #point_nucleus = False
 #version = "Stndrd_2013"
 #restart = False
@@ -55,7 +53,7 @@ print('Hartree-Fock energy of {} Hartree in {} iterations'.format(molecule.get_
 charge0 = 0
 j=0
 for i in range(len(geometry)):
- if (j <= len(fragment_list)):
+ if (j < len(fragment_list)):
    if (molecule.atoms[i] == fragment_list[j]): # avoid to calculate several time the same fragment...
      j = j+1
      frag_geo = [(molecule.atoms[i],(0.,0.,0.))]

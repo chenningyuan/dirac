@@ -8,13 +8,13 @@ contains
         use exacorr_mo
         use exacorr_utils
 
-        integer, intent(in) :: n_fragments, nmo2, nocc
-        complex(8), intent(in) :: Cocc_IAO(nmo2,nocc)
-        type(cmo), intent(in)             :: cspinor_fragment(n_fragments)
-        type(atom), pointer                :: first_atom,current_atom ! linked list to store coordindate information
-        integer :: i,j,k,imo,nmoi,luxyz
+        integer                 :: i,j,k,imo,nmoi,luxyz
+        integer, intent(in)     :: n_fragments, nmo2, nocc
+        complex(8), intent(in)  :: Cocc_IAO(nmo2,nocc)
+        type(cmo), intent(in)   :: cspinor_fragment(n_fragments)
+        type(atom), pointer     :: first_atom,current_atom ! linked list to store coordindate information
         complex(8), allocatable :: Cocc_IAO_frag(:,:)
-        real(8) :: partial_charge(n_fragments)
+        real(8)                 :: partial_charge(n_fragments)
         complex(8), allocatable :: vec(:)
 
         call get_free_fileunit(luxyz)
@@ -30,24 +30,15 @@ contains
         write(*,'(2A12)') "FRAG.", "Par.Chrg."
         do i = 1, n_fragments
            nmoi = cspinor_fragment(i)%nmo
-!           allocate(Cocc_IAO_frag(nmoi,nocc))
-!           Cocc_IAO_frag = Cocc_IAO(imo+1:imo+nmoi,:)
-!           partial_charge(i) = current_atom%bascharge
-!           do j=1,nocc
-!            do k=1,nmoi
-!              partial_charge(i) = partial_charge(i) - real(conjg(Cocc_IAO_frag(k,j))*Cocc_IAO_frag(k,j))
-!            enddo
-!           enddo
-!           deallocate(Cocc_IAO_frag)
            partial_charge(i) = current_atom%bascharge
            do j=1,nocc
               allocate(vec(nmoi))
               vec = Cocc_IAO(imo+1:imo+nmoi,j)
-              ! dot_product should be valid for complex vectors.
+              ! dot_product should be valid for complex vectors. Dot product of a complex vector with itself is real.
               partial_charge(i) = partial_charge(i) - real(dot_product(vec,vec))
               deallocate(vec)
            enddo
-           write(*,'(A12,F12.2)'),current_atom%name,partial_charge(i)
+           write(*,'(A12,F12.4)'),current_atom%name,partial_charge(i)
            imo = imo + nmoi
            current_atom=>current_atom%next
         end do

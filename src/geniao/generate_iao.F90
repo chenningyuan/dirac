@@ -33,6 +33,7 @@
         integer                            :: nvir ! Number of virtual spinors
         integer                            :: charge ! Charge of the molecule
         integer                            :: Expnt ! Exponent to be used in the localization procedure (Make IBO).
+        integer                            :: test ! test=1 means that the tests will be executed.
         character(11)                      :: version ! Version of the IAO construction (Standard_2013, Simple_2013, Simple_2014)
         complex(8), allocatable            :: S_block(:,:) ! sub block of the overlap matrix
         complex(8), allocatable            :: S11(:,:),S21(:,:),S12(:,:),S22(:,:) !  the overlap matrices
@@ -61,6 +62,7 @@
         read(luxyz,'(A11)') version
         read(luxyz,'(I2)') charge
         read(luxyz,'(I2)') Expnt
+        read(luxyz,'(I2)') test
         close(luxyz)
 
         call read_from_dirac (ao_basis_1,cspinor_original,'MOLECULE.dfcoef',ierr)
@@ -262,14 +264,7 @@
         !-----Compute IBOs (Localized occupied MO in terms of IAOs)----- (nmo2 x nocc)
         allocate(Cocc_IBO_real(nmo2,nocc)) ! should be replaced by Cocc_IBO once it will work for complex orbitals.
         allocate(Cocc_IBO(nmo2,nocc))
-        call LocalizeIbosInIaoBasis(real(Cocc_IAO),Cocc_IBO_real,cspinor_fragment,n_fragments,nmo2,nocc,Expnt)
-
-        ! Temporary rewrite into complex format... :
-        do i=1,nmo2
-         do j=1,nocc
-          Cocc_IBO(i,j) = DCMPLX(Cocc_IBO_real(i,j),0.D0)
-         enddo
-        enddo
+        call LocalizeIbosInIaoBasis(Cocc_IAO,Cocc_IBO,cspinor_fragment,n_fragments,nmo2,nocc,Expnt)
 
         !-----Transform IBOs back to AO basis B1----- (nao1 x nocc)
         allocate(Cocc_IBO_aoB1(nao1,nocc,2))
@@ -303,7 +298,9 @@
 ! This test requires the presence of the MRCONEE file to get the core matrix h. Also, ACTIVE .all has to be
 ! set in the Dirac input to be sure that the latter matrix has the correct dimension nmo1 x nmo1.
 
-        call test_IAO_and_IBO(IAO,Cocc_IAO,Cocc_IBO_moB1,S11,cspinor_original,nmo1,nmo2,nocc)
+        if (test .eq. 1) then
+          call test_IAO_and_IBO(IAO,Cocc_IAO,Cocc_IBO_moB1,S11,cspinor_original,nmo1,nmo2,nocc)
+        endif
 
 !!!!!!!!!!!!!!!!!!!!
 !       END        !

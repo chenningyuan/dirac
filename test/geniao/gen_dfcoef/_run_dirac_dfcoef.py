@@ -46,6 +46,7 @@ def generate_dirac_input(molecule,
                         speed_of_light,
                         version,
                         get_mrconee,
+                        test,
                         exponent):
     """This function creates and saves a Dirac input file.
 
@@ -77,8 +78,12 @@ def generate_dirac_input(molecule,
     elif (molecule.basis != "special") and (molecule.special_basis is not None):
        raise SpecialBasisError('special_basis was specified without setting basis = "special"')
 
-    if speed_of_light is not False and relativistic is False:
-       raise SpeedOfLightError('A given speed of light has been specified without setting relativistic to True')
+    if speed_of_light is not False and hamiltonian=="NONREL":
+       raise SpeedOfLightError('A given speed of light has been specified without setting a relativistic Hamiltonian')
+
+    if test and not get_mrconee:
+        warnings.warn('MRCONEE is needed for the test. If you have not provided it, please switch on get_mrconee=True')
+       
 
     nelec=int(molecule.n_electrons)
     # Write input file and return handle.
@@ -132,8 +137,12 @@ def generate_dirac_input(molecule,
     with open(molecule.data_directory+"/INPUT_IAO","w") as f:
       f.write(version+"\n")
       f.write(str(molecule.charge)+"\n")
-      f.write(str(exponent))
-
+      f.write(str(exponent)+"\n")
+      if test==True:
+        f.write("1")
+      else:
+        f.write("0")
+    
     return input_file, xyz_file
 
 def rename(molecule):
@@ -150,6 +159,7 @@ def run_dirac_dfcoef(molecule,
              version="Stndrd_2013",
              exponent=4,
              get_mrconee=False,
+             test=False,
              restart=False):
     """This function runs a Dirac calculation.
 
@@ -174,6 +184,7 @@ def run_dirac_dfcoef(molecule,
                         speed_of_light,
                         version,
                         get_mrconee,
+                        test,
                         exponent)
 
     # Run Dirac

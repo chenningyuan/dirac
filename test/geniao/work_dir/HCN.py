@@ -6,7 +6,8 @@ import subprocess
 basis1 = 'STO-3G'
 basis2 = 'CC-pVTZ'
 charge = 0
-data_directory="/Users/bsenjean/Documents/Git_repositories/dirac-caar-ibos/test/geniao/work_dir/"
+geniao_executable="geniao.x"
+data_directory=os.getcwd()
 geometry = [\
 ('C',       (0.00000000,       0.00000000,       1.04219000)),\
 ('N',       (0.00000000,       0.00000000,       2.20064000)),\
@@ -15,11 +16,11 @@ fragment_list = ['H','C','N'] # from the lowest atomic number to the highest
 point_nucleus = True
 version = ["Stndrd_2013","Simple_2013","Simple_2014"][0]
 exponent=[2,3,4][0]
+get_mrconee=True
 # by default :
 #symmetry = False
 #unconstract = True
 #speed_of_light = False
-#hamiltonian = False (means the default of Dirac, i.e. Dirac-Coulomb Hamiltonian using the Simple Coulombic Correction.
 #point_nucleus = False
 #version = "Stndrd_2013"
 #restart = False
@@ -37,6 +38,7 @@ molecule = MolData_Dirac(geometry=geometry,
 molecule = run_dirac_dfcoef(molecule,
                      version=version,
                      exponent=exponent,
+                     get_mrconee=get_mrconee,
                      point_nucleus=point_nucleus)
 
 subprocess.check_call("mv -f DFCOEF MOLECULE.dfcoef", shell=True, cwd=data_directory)
@@ -48,7 +50,7 @@ print('Hartree-Fock energy of {} Hartree in {} iterations'.format(molecule.get_
 j = 0
 charge0=0
 for i in range(len(geometry)):
- if (j <= len(fragment_list)):
+ if (j < len(fragment_list)):
    if (molecule.atoms[i] == fragment_list[j]): # avoid to calculate several time the same fragment...
      j = j+1
      frag_geo = [(molecule.atoms[i],(0.,0.,0.))]
@@ -64,7 +66,7 @@ for i in range(len(geometry)):
      subprocess.check_call("mv -f {}.xyz {}.xyz".format(fragment.name,molecule.atoms[i]), shell=True, cwd=data_directory)
 
 #-------------------------  IAO CONSTRUCTION -----------------------
-subprocess.check_call("geniao.x", shell=True, cwd=data_directory)
+subprocess.check_call(geniao_executable, shell=True, cwd=data_directory)
 
 #-------------------------  CHECK HF ENERGY -----------------------
 # For IAO
