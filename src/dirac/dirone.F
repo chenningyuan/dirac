@@ -838,7 +838,7 @@ CCCCCCCCCCCCCCCC
 C routine
 CCCCCCCCCCCCCCCC           
            CALL INTSUM(INTAO,NDIM2,NUMIR,R,MXNP,ANG,m,IXYZ,C(1,IATOM),
-     &                 num_grid_cfg_grasp,.TRUE.,IPRINT)
+     &                 num_grid_cfg_grasp,'ANTI',IPRINT)
 c$$$c$$$!!! debug           
 c$$$c$$$!           OPEN(20,FILE='LOG_DIRAC',STATUS='REPLACE',          
 c$$$c$$$!     &          FORM='FORMATTED',ACCESS='SEQUENTIAL')  
@@ -907,7 +907,7 @@ c$$$C
 c$$$C  This minus (DM1) is due to Beta Alpha of magnetic term, although we use Alpha. 
 c$$$C
            CALL INTSUM(INTAO,NDIM2,W,R,MXNP,ANG,m,IXYZ,C(1,IATOM),
-     &                 num_grid_cfg_grasp,.TRUE.,IPRINT)
+     &                 num_grid_cfg_grasp,'ANTI',IPRINT)
 c$$$           X8 = C(1,IATOM)
 c$$$           Y8 = C(2,IATOM)
 c$$$           Z8 = C(3,IATOM)
@@ -1404,7 +1404,7 @@ C
            write(*,*)"R(1),Z",R(1),ZAN(IATOM) 
            write(*,*)"J,NUMIR"
            CALL INTSUM(INTAO,NDIM2,NUMIR,R,MXNP,ANG,m,0,C(1,IATOM),
-     &                  num_grid_cfg_grasp,.FALSE.,IPRINT)
+     &                  num_grid_cfg_grasp,'DIAG',IPRINT)
 CCCCCCCCCCCCCCCCCCCCC
 C subroutine
 CCCCCCCCCCCCCCCCCCCCC           
@@ -1657,7 +1657,7 @@ C
              ENDDO
            ENDIF            
            CALL INTSUM(INTAO,NDIM2,W,R,MXNP,ANG,m,0,C(1,IATOM),
-     &                 num_grid_cfg_grasp,.FALSE.,IPRINT)
+     &                 num_grid_cfg_grasp,'DIAG',IPRINT)
 C           
            write(*,*)"R(1),Z",R(1),ZAN(IATOM) 
            write(*,*)"J,NUMIR"
@@ -1740,7 +1740,7 @@ CCCCCCCCCCC
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck intsum */
       SUBROUTINE INTSUM(INTAO,NDIM2,VWRR,R,MXNP,ANG,m,IXYZ,C,
-     &                   GRASP,ANTI,IPRINT)
+     &                   GRASP,MAT,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C     The integration of radial and angular integral   
@@ -1763,7 +1763,7 @@ C     C      ... Center of IATOM:
 C                It is obtained by CALL SET_GRID_INFO(NAT,NUM,ZAN,C)
 C     GRASP  ... TRUE : GRASP grid
 C                FALSE: DIRAC grid
-C     ANTI  ... TRUE : LS(+) and SL(-) have differenti signs
+C     MAT  ... TRUE : LS(+) and SL(-) have differenti signs
 C               FALSE: Diagonal matrix or LS and SL have same signs.
 C     TRIMAT ... TRUE : triangle matrix
 C                FALSE: full matrix for the format of INTAO
@@ -1794,8 +1794,11 @@ C
 #include "mxcent.h"
 #include "symmet.h"
 #include "dgroup.h"
-      REAL*8 R(MXNP), ANG(m,4), INTAO(NDIM2), VWRR(MXNP), C(3,1)
+#include "dcbham.h"
 C      
+      REAL*8 R(MXNP), ANG(m,4), INTAO(NDIM2), VWRR(MXNP), C(3,1)
+C
+      CHARACTER*4 MAT
       LOGICAL GRASP,TRIMAT,ANTI
       PARAMETER (D0=0.0D0,D1=1.0D0,DM1=-1.0D0,D2=2.0D0)      
       real(8), allocatable :: GAO(:,:),GAO2(:,:),BUFGAO(:,:)
@@ -1834,17 +1837,58 @@ C      CALL DZERO(TC,      NDIM2)
            stop
         ENDIF
       ENDIF
+C
+C 
 C      
-C      CALL LEBEDEV(INTANG,ANG(1,1),ANG(1,2),ANG(1,3),ANG(1,4),n)
-C      CALL DSCAL(m,4.0D0*PI,ANG(1,4),1)
+      IF(MAT.EQ.'DIAG')THEN
+         IA1 = 1
+         IB1 = 1
+         IA2 = 2
+         IB2 = 2
+         ITC1 = 1
+         ALPHA1 = D1
+         ALPHA2 = D1
+         IF(MC.EQ.2)THEN
+            ITC2 =  NTBAS(1)*(NTBAS(0)+1) + 1
+            IOFA1 = 1
+            IOFB1 = 1
+            IOFA2 = 1 + NTBAS(1)
+            IOFB2 = 1 + NTBAS(1)
+         ELSE
+            ITC2 = 1            
+            IOFA1 = 1
+            IOFB1 = 1
+            IOFA2 = 1
+            IOFB2 = 1
+         ENDIF         
+      ELSE !ANTI or OFFD
+         IA1 = 2
+         IB1 = 1
+         IA2 = 1
+         IB2 = 2
+         ALPHA1 = D1  !Only difference between and ANTI and OFFD
+         ALPHA2 = D1
+         IF(MC.EQ.2)THEN
+            ITC1 =  NTBAS(1)          + 1
+            ITC2 =  NTBAS(1)*NTBAS(0) + 1
+            IOFA1 = 1 + NTBAS(1)
+            IOFB1 = 1
+            IOFA2 = 1
+            IOFB2 = 1 + NTBAS(1)
+         ELSE
+            ITC1 = 1
+            ITC2 = 1            
+            IOFA1 = 1
+            IOFB1 = 1
+            IOFA2 = 1
+            IOFB2 = 1
+         ENDIF
+      ENDIF
+      IF(MAT.EQ.'ANTI')ALPHA1 = DM1
 C
       nr_points_on_this_proc=MXNP*m
 C
       write(*,*)'nr_points_on_this_proc,m',nr_points_on_this_proc,m
-CCCCCCCCCCCCc           
-C     IF (m.LE.100) THEN
-CCCCCCCCCCCC           
-c$$$C           ELSE                   ! (m.GT.100) start from here
       write(*,*)'nr_shells',nr_shells
       write(*,*)'max_block_length',max_block_length
       IF(GRASP)THEN
@@ -1852,10 +1896,6 @@ c$$$C           ELSE                   ! (m.GT.100) start from here
         do IR = 1, MXNP
           CALL DZERO(TC,      NDIM2)
           IOF_block = 1
-C                 
-C     In the case of m>100, a speciAL treatment is needed.
-C
-C             nblock_length = 100
           m_NUM_MAX = INT(m/100) + 1              
           allocate( GAO   (m, NTBAS(0)) )
           allocate( BUFGAO(m, NTBAS(0)) )
@@ -1868,6 +1908,9 @@ C    GET AO's
 C
           IOFM = 1
           DO m_NUM = 1, m_NUM_MAX
+C                 
+C     In the case of m>100, a speciAL treatment is needed.
+C
             nblock_length = min(max_block_length, m - IOF_block+ 1)
             nblock_length = min(nblock_length, m)
 C              
@@ -1921,6 +1964,7 @@ C                write(*,*)'cartesian_deg', cartesian_deg(ishell)
                CALL DCOPY(nblock_length,GAO2(1,IB),1,GAO(IOFM,IB),1)
             ENDDO
             IOFM = IOFM + nblock_length
+            write(*,*)'IOFM',IOFM
             deallocate(GAO2)
             IOF_block = IOF_block + nblock_length
           ENDDO                 ! m_NUM          
@@ -1929,11 +1973,17 @@ C             CALL DSCAL(m,VWRR(IR),ANG(1,4),1)
           DO  iy = 1, m
             CALL DAXPY(NTBAS(0),ANGXYZ(iy),GAO(iy,1),m,BUFGAO(iy,1),m)
           ENDDO
-          CALL DSCAL(NTBAS(0)*m,VWRR(IR),BUFGAO(1,1),1)           
-          CALL DGEMM('T','N',NTBAS(0),NTBAS(0),m,
-     &                D1,BUFGAO,m,GAO,m,D0,TC,NTBAS(0))
+          CALL DSCAL(NTBAS(0)*m,VWRR(IR),BUFGAO(1,1),1)
+CCCCCCCC          
+C          CALL DGEMM('T','N',NTBAS(0),NTBAS(0),m,
+C     &                D1,BUFGAO,m,GAO,m,D0,TC,NTBAS(0))
+CCCCCCCC
+          CALL DGEMM('T','N',NTBAS(IA1),NTBAS(IB1),m,
+     &    ALPHA1,BUFGAO(1,IOFA1),m,GAO(1,IOFB1),m,D0,TC(ITC1),NTBAS(0))
+          CALL DGEMM('T','N',NTBAS(IA2),NTBAS(IB2),m,
+     &    ALPHA2,BUFGAO(1,IOFA2),m,GAO(1,IOFB2),m,D0,TC(ITC2),NTBAS(0))          
           CALL DCOPY(NDIM2,TC,1,TD(1,IR),1)
-          write(*,*)'TD,IR',TD(9,IR),IR
+C          write(*,*)'TD,IR',TD(9,IR),IR
 C             IR = IR + 1
           deallocate(GAO)
           deallocate(BUFGAO)
@@ -2023,12 +2073,18 @@ C                    write(*,*)'px,k',px(k),k
 C          
           DO  iy = 1, m
             CALL DAXPY(NTBAS(0),ANGXYZ(iy),GAO(iy,1),m,BUFGAO(iy,1),m)
-               write(*,*)'ANG(iy,4),iy',ANG(iy,4),iy
+C               write(*,*)'ANG(iy,4),iy',ANG(iy,4),iy
           ENDDO
+CCCCCCCCC         
           CALL DGEMM('T','N',NTBAS(0),NTBAS(0),m,
      &                D1,BUFGAO,m,GAO,m,D0,TC,NTBAS(0))
+CCCCCCCCC
+C          CALL DGEMM('T','N',NTBAS(IA1),NTBAS(IB1),m,
+C     &     ALPHA1,BUFGAO(1,IOFA1),m,GAO(1,IOFB1),m,D0,TC(ITC1),NTBAS(0))
+C          CALL DGEMM('T','N',NTBAS(IA2),NTBAS(IB2),m,
+C     &     ALPHA2,BUFGAO(1,IOFA2),m,GAO(1,IOFB2),m,D0,TC(ITC2),NTBAS(0))
           CALL DAXPY(NDIM2,VWRR(IR),TC,1,INTAOBUF,1)
-             write(*,*)'VWRR,IR',VWRR(IR),IR
+C             write(*,*)'VWRR,IR',VWRR(IR),IR
           deallocate(GAO)
           deallocate(BUFGAO)
         end do                ! IR
@@ -2038,13 +2094,13 @@ C
       IF(IXYZ.EQ.0)THEN
         CALL MTAOSO(INTAOBUF,INTSOBUF,NTBAS(0),0,IPRINT)
       ELSE
-         IF(ANTI)THEN
-          IOFF = 1
-          DO J = 1,NTBAS(1)
-            IOFF = IOFF + NTBAS(1) 
-            CALL DSCAL(NTBAS(2),DM1,INTAOBUF(IOFF),1)
-            IOFF = IOFF + NTBAS(2)
-          ENDDO   
+C         IF(ANTI)THEN
+C          IOFF = 1
+C          DO J = 1,NTBAS(1)
+C            IOFF = IOFF + NTBAS(1) 
+C            CALL DSCAL(NTBAS(2),DM1,INTAOBUF(IOFF),1)
+C            IOFF = IOFF + NTBAS(2)
+C          ENDDO   
 C          IOFF = 0  
 C          DO J = 1, NTBAS(0)
 C             DO IT = 1, NTBAS(0)-J
@@ -2052,7 +2108,7 @@ C                INTAOBUF(J+IT+IOFF) = DM1*INTAOBUF(J+IT+IOFF)
 C             ENDDO
 C             IOFF = IOFF + NTBAS(0)
 C          ENDDO
-        ENDIF   
+C        ENDIF   
         CALL MTAOSO(INTAOBUF,INTSOBUF,NTBAS(0),
      &               ISYMAX(IXYZ,2),IPRINT)
       ENDIF   
