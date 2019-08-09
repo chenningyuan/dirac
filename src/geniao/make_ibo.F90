@@ -25,10 +25,28 @@ contains
 
         LIbOcc = CIbOcc
         conv = .false.
+        write(*,*)"Localization Procedure (IBO)"
         write(*,*)"Warning : real(Qij) is taken instead of complx(Qij) for now."
-        write(*,'(1A5,2A12)') "ITER","LOC(orbs)","Gradient"
 
+        write(*,*)"Function n_A(i): number of |i>'s electrons located on the IAOs of the fragments."
+        imo = 0
+        do i=1,n_fragments
+           write(*,"(A16,I2,A7)")"------ FRAGMENT ", i, " ------"
+           write(*,"(A12,A12)")"occ.MO","#.elec"
+           nmoi = cspinor_fragment(i)%nmo
+           do j=1,nocc
+              allocate(vec(nmoi))
+              vec = LIbOcc(imo+1:imo+nmoi,j)
+              write(*,"(I12,F12.6)") j,real(dot_product(vec,vec))
+              deallocate(vec)
+           enddo
+           imo = imo + nmoi
+        enddo
+
+        write(*,*)
+        write(*,'(1A5,2A12)') "ITER","LOC(orbs)","Gradient"
         do it=1,2048
+          write(*,*)
           func = 0.D0
           imo = 0
           ! Compute the function in Eq.(4) of Knizia's paper [JCTC, 9, 4834 (2013)]
@@ -45,6 +63,7 @@ contains
                 func = func + real(dot_product(vec,vec))**dble(Expnt)
                 deallocate(vec)
              enddo
+             write(*,*)
              imo = imo + nmoi
           enddo
   
@@ -115,13 +134,28 @@ contains
              exit
           endif
         enddo
-  
+
         if (.not. conv) then
            print*,"No convergence reached, value of fGrad = ", fGrad
         else
            print*,"Final converged values (it, LOC, fGrad):"
            write(*,"(I5,F12.6,ES12.2)") it,Loc,fGrad
         endif
+
+        write(*,*)"Function n_A(i): number of |i>'s electrons located on the IAOs of the fragments."
+        imo = 0
+        do i=1,n_fragments
+           write(*,"(A16,I2,A7)")"------ FRAGMENT ", i, " ------"
+           write(*,"(A12,A12)")"occ.MO","#.elec"
+           nmoi = cspinor_fragment(i)%nmo
+           do j=1,nocc
+              allocate(vec(nmoi))
+              vec = LIbOcc(imo+1:imo+nmoi,j)
+              write(*,"(I12,F12.6)") j,real(dot_product(vec,vec))
+              deallocate(vec)
+           enddo
+           imo = imo + nmoi
+        enddo
 
    end subroutine LocalizeIbosInIaoBasis
 

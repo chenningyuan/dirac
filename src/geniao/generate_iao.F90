@@ -254,7 +254,8 @@
         call write_mos_to_dirac_formatted (cspinor_localized,"iao.dfpcmo")
 
         ! Compute partial charges with occupied MO expressed in terms of IAOs.
-        call partial_charges(Cocc_IAO,cspinor_fragment,n_fragments,nmo2,nocc)
+!        call partial_charges(Cocc_IAO,cspinor_fragment,n_fragments,nmo2,nocc)
+        call fragment_charges_IAO(IAO,cspinor_fragment,n_fragments,nmo1,nmo2,nocc)
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !         Calculate the intrinsic bonding orbital (IBO) basis                                        !
@@ -262,7 +263,6 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         !-----Compute IBOs (Localized occupied MO in terms of IAOs)----- (nmo2 x nocc)
-        allocate(Cocc_IBO_real(nmo2,nocc)) ! should be replaced by Cocc_IBO once it will work for complex orbitals.
         allocate(Cocc_IBO(nmo2,nocc))
         call LocalizeIbosInIaoBasis(Cocc_IAO,Cocc_IBO,cspinor_fragment,n_fragments,nmo2,nocc,Expnt)
 
@@ -291,6 +291,8 @@
 
         ! Let's try to compute the partial charges using IBO?
         call partial_charges(Cocc_IBO,cspinor_fragment,n_fragments,nmo2,nocc)
+        write(*,*)
+        call fragment_charges_IAO(IAO,cspinor_fragment,n_fragments,nmo1,nmo2,nocc)
 
 !!!!!!!!!!!!!!!!!!!!
 !      TEST        !
