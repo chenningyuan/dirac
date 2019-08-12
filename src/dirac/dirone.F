@@ -1837,6 +1837,7 @@ C      CALL DZERO(TC,      NDIM2)
            stop
         ENDIF
       ENDIF
+      write(*,*)'IXYZ',IXYZ
 C
 C 
 C      
@@ -1891,6 +1892,7 @@ C
       write(*,*)'nr_points_on_this_proc,m',nr_points_on_this_proc,m
       write(*,*)'nr_shells',nr_shells
       write(*,*)'max_block_length',max_block_length
+      write(*,*)'NTBAS(1)',NTBAS(1)
       IF(GRASP)THEN
         allocate( TD(NDIM2,MXNP) )         
         do IR = 1, MXNP
@@ -2076,24 +2078,53 @@ C
 C               write(*,*)'ANG(iy,4),iy',ANG(iy,4),iy
           ENDDO
 CCCCCCCCC         
-          CALL DGEMM('T','N',NTBAS(0),NTBAS(0),m,
-     &                D1,BUFGAO,m,GAO,m,D0,TC,NTBAS(0))
+C          CALL DGEMM('T','N',NTBAS(0),NTBAS(0),m,
+C     &                D1,BUFGAO,m,GAO,m,D0,TC,NTBAS(0))
 CCCCCCCCC
-C          CALL DGEMM('T','N',NTBAS(IA1),NTBAS(IB1),m,
-C     &     ALPHA1,BUFGAO(1,IOFA1),m,GAO(1,IOFB1),m,D0,TC(ITC1),NTBAS(0))
-C          CALL DGEMM('T','N',NTBAS(IA2),NTBAS(IB2),m,
-C     &     ALPHA2,BUFGAO(1,IOFA2),m,GAO(1,IOFB2),m,D0,TC(ITC2),NTBAS(0))
+          CALL DGEMM('T','N',NTBAS(IA1),NTBAS(IB1),m,
+     &     ALPHA1,BUFGAO(1,IOFA1),m,GAO(1,IOFB1),m,D0,TC(ITC1),NTBAS(0))
+          CALL DGEMM('T','N',NTBAS(IA2),NTBAS(IB2),m,
+     &     ALPHA2,BUFGAO(1,IOFA2),m,GAO(1,IOFB2),m,D0,TC(ITC2),NTBAS(0))
           CALL DAXPY(NDIM2,VWRR(IR),TC,1,INTAOBUF,1)
 C             write(*,*)'VWRR,IR',VWRR(IR),IR
           deallocate(GAO)
           deallocate(BUFGAO)
         end do                ! IR
-      ENDIF  ! GRASP or DIRAC
+      ENDIF                     ! GRASP or DIRAC
 C
-      allocate( INTSOBUF (NDIM2) )
+C            write(*,*)'OUTPUT1'      
+C            CALL OUTPUT(INTAOBUF,1,NTBAS(0),1,NTBAS(0),
+C     &                  NTBAS(0),NTBAS(0),-1,LUPRI)
+C
+C      IF(MAT .EQ. 'ANTI')THEN
+C        LLTRI = NTBAS(1)*(NTBAS(1)+1)/2
+C        CALL DSCAL(LLTRI,D0,INTAOBUF(1),1)
+C        IOFL = LLTRI + NTBAS(1)
+C        IF(MC.EQ.2)THEN
+C          DO MAXSS = 1, NTBAS(2)
+C             DO J = 1,MAXSS
+C               INTAOBUF(IOFL+J) = D0
+C             ENDDO
+C             IOFL = IOFL + NTBAS(1) + MAXSS
+C          ENDDO
+C        ENDIF
+C      ENDIF
+       allocate( INTSOBUF (NDIM2) )
+C      write(*,*)'INTSOBUF1'      
+C            CALL OUTPUT(INTSOBUF,1,NTBAS(0),1,NTBAS(0),
+C     &                   NTBAS(0),NTBAS(0),-1,LUPRI)
+      CALL DZERO(INTSOBUF,NDIM2)
+C      write(*,*)'INTSOBUF2'      
+C            CALL OUTPUT(INTSOBUF,1,NTBAS(0),1,NTBAS(0),
+C     &                   NTBAS(0),NTBAS(0),-1,LUPRI)
+      
       IF(IXYZ.EQ.0)THEN
+         write(*,*)'IXYZ=0'
         CALL MTAOSO(INTAOBUF,INTSOBUF,NTBAS(0),0,IPRINT)
       ELSE
+         write(*,*)'IF,IXYZ=',IXYZ
+         write(*,*)'(ISYMAX(IXYZ,1)',ISYMAX(IXYZ,1)
+         write(*,*)'(ISYMAX(IXYZ,2)',ISYMAX(IXYZ,2)
 C         IF(ANTI)THEN
 C          IOFF = 1
 C          DO J = 1,NTBAS(1)
@@ -2109,9 +2140,15 @@ C             ENDDO
 C             IOFF = IOFF + NTBAS(0)
 C          ENDDO
 C        ENDIF   
+C        CALL MTAOSO(INTAOBUF,INTSOBUF,NTBAS(0),
+C     &               ISYMAX(IXYZ,NFSYM),IPRINT)
         CALL MTAOSO(INTAOBUF,INTSOBUF,NTBAS(0),
-     &               ISYMAX(IXYZ,2),IPRINT)
-      ENDIF   
+     &               ISYMAX(IXYZ,2),IPRINT) 
+      ENDIF
+C
+C      write(*,*)'OUTPUT2'      
+C            CALL OUTPUT(INTSOBUF,1,NTBAS(0),1,NTBAS(0),
+C     &                   NTBAS(0),NTBAS(0),-1,LUPRI)
 C
 C    Transformation from full-matrix to triangle-matrix
 C
@@ -2123,17 +2160,6 @@ C
            IOFF = IOFF + NTBAS(0)
         ENDDO
       ENDDO      
-C           IF(DIAG .EQV. .FALSE.)THEN
-C             LLTRI = NTBAS(1)*(NTBAS(1)+1)/2
-C             CALL DSCAL(LLTRI,D0,INTAO(1),1)
-C             IOFL = LLTRI + NTBAS(1)
-C             DO MAXSS = 1, NTBAS(2)
-C                DO J = 1,MAXSS
-C                  INTAO(IOFL+J) = D0
-C                ENDDO
-C                IOFL = IOFL + NTBAS(1) + MAXSS
-C             ENDDO   
-C           ENDIF
       deallocate( TC      )
       deallocate( INTAOBUF)
       deallocate( INTSOBUF)
