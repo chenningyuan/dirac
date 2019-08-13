@@ -55,7 +55,7 @@ if os.environ.get('DIRAC_MPI_COMMAND'):
   ierr += run(options,
             configure,
             input_files=['CN.x2c.scf.inp','CN.sto2g.mol'],
-            extra_args='--noarch --mpi=2 --ag=0.6 --gb=0.5', # each parallel run must have at leat 2 threads
+            extra_args='--noarch --mpi=2 --mpiarg="--allow-run-as-root" --ag=0.6 --gb=0.5', # each parallel run must have at leat 2 threads
             filters={'out': f2})
 
 else:
