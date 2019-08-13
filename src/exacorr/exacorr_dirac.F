@@ -706,6 +706,22 @@ C
 !      values of the contraction coefficients for all shells (packed into a 1-d array)
        write (lucoef) priccf
 
+       write(*,*)"TEST LUUK SUBROUTINE:"
+       write(*,*)"nao_bas:",ao_basis%nao
+       write(*,*)"nshells:",ao_basis%nshells
+       write(*,*)"npriexp (jstrt(nshells)+nuco(nshells)):",npriexp
+       write (*,*)"ncnt:",ncnt
+       write (*,*)"nhkt",ao_basis%gtos(:)%orb_momentum
+       write(*,*)"ncent:",ao_basis%gtos(:)%atom_number
+       write(*,*)"nuco:",ao_basis%gtos(:)%n_primitives
+       write(*,*)"jstrt:",jstrt
+       write (*,*)"numcf:",numcf
+       write (*,*)"cent:", (ao_basis%gtos(ishell)%coord(:),
+     &                 ishell=1,nshells)
+       write (*,*)"priexp:", priexp
+       write (*,*)"priccf:", priccf
+
+
        deallocate(jstrt)
        deallocate(numcf)
        deallocate(priexp)

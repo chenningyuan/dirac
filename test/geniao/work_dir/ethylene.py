@@ -22,7 +22,7 @@ exponent=[2,3,4][2]
 get_mrconee=True
 test=True
 hamiltonian = "X2C"
-speed_of_light = 12.0
+speed_of_light = False
 # by default :
 #symmetry = False
 #unconstract = True

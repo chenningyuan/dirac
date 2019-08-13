@@ -66,8 +66,11 @@
         close(luxyz)
 
         call read_from_dirac (ao_basis_1,cspinor_original,'MOLECULE.dfcoef',ierr)
+        ! test the write_mos_to_dirac subroutine:
+        call write_mos_to_dirac (ao_basis_1,cspinor_original,"test.dfcoef")
         nmo1 = cspinor_original%nmo
         nao1 = cspinor_original%nao
+        call write_dffiles("test2.dfcoef","test2.dfpcmo",ao_basis_1,cspinor_original%coeff,nao1,nmo1,"MOLECULE.dfcoef")
 
         call get_free_fileunit(luxyz)
         open (luxyz,file='MOLECULE.XYZ',form='formatted')
@@ -280,6 +283,7 @@
         cspinor_localized_ibo%total_energy = cspinor_original%total_energy
         call write_mos_to_dirac (ao_basis_1,cspinor_localized_ibo,"ibo.dfcoef")
         call write_mos_to_dirac_formatted (cspinor_localized_ibo,"ibo.dfpcmo")
+        call write_dffiles("test_ibo.dfcoef","test_ibo.dfpcmo",ao_basis_1,cspinor_localized_ibo%coeff,nao1,nmo1,"MOLECULE.dfcoef")
 
         !-----Transform IBOs back to MO basis B1----- (nmo1 x nocc)
         ! It will be used to test the HF energy (using the Fock and H_core matrix of basis B1)

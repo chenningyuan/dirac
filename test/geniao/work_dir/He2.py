@@ -6,7 +6,7 @@ import subprocess
 
 #----------------------------  MANUAL SET UP -----------------------------
 basis1 = 'STO-3G'
-basis2 = 'cc-pVTZ'
+basis2 = 'STO-3G'
 bond_length = 1.7
 charge = 0
 geniao_executable="geniao.x"
