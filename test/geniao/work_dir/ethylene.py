@@ -120,4 +120,3 @@ molecule = run_dirac_dfcoef(molecule,
                      point_nucleus=point_nucleus)
 
 print('(IBO) Hartree-Fock energy of {} Hartree in {} iterations'.format(molecule.get_scf()[0],molecule.get_scf()[1]))
-

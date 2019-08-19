@@ -129,20 +129,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
        write (iunit) priexp
        write (iunit) priccf
 
-       write(*,*)'TEST BRUNO SUBROUTINE'
-       write(*,*)"nao_bas:",nao_bas
-       write(*,*)"nshells:",nshells
-       write(*,*)"npriexp (jstrt(nshells)+nuco(nshells)):",npriexp
-       write (*,*)"ncnt:",ncnt
-       write (*,*)"nhkt", nhkt
-       write(*,*)"ncent:",ncent
-       write(*,*)"nuco:",nuco
-       write(*,*)"jstrt:",jstrt
-       write (*,*)"numcf:",numcf
-       write (*,*)"cent:", cent
-       write (*,*)"priexp:", priexp
-       write (*,*)"priccf:", priccf
-
        deallocate(ncent)
        deallocate(nhkt)
        deallocate(nuco)
