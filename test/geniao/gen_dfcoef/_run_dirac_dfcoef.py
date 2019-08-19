@@ -110,10 +110,11 @@ def generate_dirac_input(molecule,
        f.write("**GENERAL\n")
        f.write(".CVALUE\n")
        f.write(" " + str(speed_of_light) + "\n")
+      f.write("**MOLTRA\n")
+      f.write(".NO4IND\n")
       if get_mrconee:
       # all active has to be set for the MRCONEE and DFCOEF files to have the same number of spinors.
       # This is important for the test only, otherwise we don't need the MRCONEE file.
-       f.write("**MOLTRA\n")
        f.write(".MDCINT\n")
        f.write(".ACTIVE\n") 
        f.write(" all\n") 

@@ -54,7 +54,7 @@ module talsh_cc
          integer   :: ierr
          complex(8), pointer :: result_tens(:)
          type(C_PTR):: body_p
-         integer(C_SIZE_T), parameter:: BUF_SIZE=1_8*1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
+         integer(C_SIZE_T), parameter:: BUF_SIZE=500_8*1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
          integer(C_SIZE_T):: host_buf_size
          integer(C_INT):: host_arg_max
 
@@ -173,6 +173,11 @@ module talsh_cc
          print*," MP2 energy = ",mp2_energy
          print*,""
 
+!=====================
+!        Calculate the pair correlation energy for each pair of occupied spin-orbits       
+         call pair_correlation_energies(comm_t%t2, int_t%oovv, nocc, nvir)
+!=====================
+     
 !        Start CCSD iterations
 
          oo_dims = nocc
