@@ -103,8 +103,8 @@ C
 C     Self-energy(3component)
 C
       ELSEIF (CLSINT(I)(3:6).EQ.'FGMG') THEN
-C        CALL NUMINT_ANGOLD(I,COMB,IPRONE) 
-        CALL NUMINT_ANG(I,COMB,IPRONE) 
+        CALL NUMINT_ANGOLD(I,COMB,IPRONE) 
+C        CALL NUMINT_ANG(I,COMB,IPRONE) 
 C
 C     Self-energy(Flambaum)
 C
@@ -238,7 +238,7 @@ C
       real(8), allocatable :: ZAN(:),C(:,:)
       real(8), allocatable :: ANG(:,:),GAO(:),BUFGAO(:)
       real(8), allocatable :: BUF(:),TC(:),TD(:,:)
-      real(8), allocatable :: NUMIR(:),R(:),W(:),INTAO(:)
+      real(8), allocatable :: NUMIR(:),R(:),W(:),INTAO(:),INTAOBUF(:)
       DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND)
 
       CALL QENTER('NUMINT_ANG')
@@ -327,8 +327,10 @@ C
 C         
          IF(num_grid_cfg_grasp)THEN
            allocate( TD(NDIM2,MXNP) )         
+           allocate( INTAOBUF(NDIM2) )
            CALL DZERO(TD,NDIM2*MXNP)
-C           
+           CALL DZERO(INTAOBUF,NDIM2)
+C     
            R(1) = RNT
            DO J = 2,MXNP
               R(J) = R(J-1)*EPH
@@ -459,8 +461,12 @@ CCCCC
 !         ENDIF
 C         
  20       CONTINUE
-          CALL QUAD2(INTAO,TD,MXNP,NDIM2)
-         ELSE  ! num_grid_cfg_grasp
+          CALL OUTPAK(INTAOBUF,NTBAS(0),-1,LUPRI)
+          CALL QUAD2(INTAOBUF,TD,MXNP,NDIM2)
+          CALL OUTPAK(INTAOBUF,NTBAS(0),-1,LUPRI)
+          CALL DAXPY(NDIM2,D1,INTAOBUF,1,INTAO,1)
+          deallocate(INTAOBUF)
+        ELSE                    ! num_grid_cfg_grasp
            allocate( TD(NDIM2,1) )         
            CALL DZERO(TD,NDIM2*1) 
 !     The grids are calculated at MEMSET routine.           
@@ -775,7 +781,8 @@ C
 !     ENDDO
 C
       write(*,*)'NUCIND',NUCIND
-      DO 5 IXYZ = 1, 3
+      DO 5 IMXYZ = 1, 3
+         IXYZ = 4-IMXYZ
       CALL DZERO(INTAO   ,NDIM2)
       DO 10 IATOM = 1, NUCIND !change
 !      DO 10 ISYMOP = 0, MXOPR
@@ -824,24 +831,15 @@ C
 C         
            CALL INTMG(NUMIR,R,ZAN(IATOM),GEXP,MXNP,NUCTYP)
            DO I = 1,MXNP
+              write(*,*)R(I),NUMIR(I) !debug
               NUMIR(I) = NUMIR(I)*R(I)*R(I)*R(I)
-              write(*,*)R(I),NUMIR(I)
            ENDDO
 C
            CALL INTSUM(INTAO,NDIM2,NUMIR,R,MXNP,ANG,m,IXYZ,C(1,IATOM),
-     &                 num_grid_cfg_grasp,'ANTI',IPRINT)
-c$$$c$$$!!! debug           
-c$$$c$$$!           OPEN(20,FILE='LOG_DIRAC',STATUS='REPLACE',          
-c$$$c$$$!     &          FORM='FORMATTED',ACCESS='SEQUENTIAL')  
-c$$$c$$$!           DO  J = 1,MXNP
-c$$$c$$$!             WRITE(20,*)NUMIR(J)          !sunaga
-c$$$c$$$!           ENDDO
-c$$$c$$$!           DO  J = 1,MXNP
-c$$$c$$$!             WRITE(*,*)NUMIR(J),J          !sunaga
-c$$$c$$$!           ENDDO
-c$$$c$$$!           CLOSE(20,STATUS='KEEP')
-c$$$c$$$!!! debug           
-c$$$           deallocate(TD)                       
+     &          num_grid_cfg_grasp,'ANTI',IPRINT)
+           IBUG = 31
+           write(*,*)'INTAO,IBUG',INTAO(IBUG),IBUG
+         write(*,*)'INTAO,IBUG+2',INTAO(IBUG+2*NTBAS(0)),IBUG+2*NTBAS(0)
          ELSE  ! num_grid_cfg_grasp: DIRAC grid start from here
 !     The grids are calculated at MEMSET routine.           
            R(1) = RNT
@@ -1128,6 +1126,7 @@ C
          CALL MEMSET_NUM(ZAN(IATOM),IATOM,MXNP,RNT,H,EPH,GRDC,
      &                    num_grid_cfg_grasp,IPRINT)
          write(*,*)'HH2,INTANG,m_ang',H,INTANG,m
+C            MXNP = 2000  !sunaga
 C         
 C NUCPRM is for making nuclear parameter of Fermi and Uniform nucleus. 
 C We do not have to use it for the Gaussian nucleus.
@@ -1179,7 +1178,8 @@ C     This roop is for QUAD2. In order to use QUAD2
 C     We have to muliply extra R(I) here.       
 C
            DO I = 1,MXNP
-              NUMIR(I) = NUMIR(I)*R(I)*R(I)
+C              NUMIR(I) = R(I)*R(I)*R(I)
+              NUMIR(I) = R(I)*R(I)*NUMIR(I)  !sunaga
               write(*,*)R(I),NUMIR(I)
            ENDDO          
            write(*,*)LABEL
@@ -1241,7 +1241,8 @@ C
              ENDDO
            ENDIF
            DO IR = 1,MXNP
-              W(IR) = W(IR) * R(IR) * NUMIR(IR)
+C              W(IR) = W(IR) * R(IR) * R(IR)
+              W(IR) = W(IR) * R(IR) * NUMIR(IR) 
            ENDDO
 C          
            DO IRP=1,MAXREP+1
@@ -1436,7 +1437,7 @@ C
       allocate( py(nblock_size) )
       allocate( pz(nblock_size) )
       allocate( p2(nblock_size) )
-C      
+C
       CALL DZERO(INTAOBUF,NDIM2)
       IF(IXYZ.EQ.0)THEN
         CALL DCOPY(m,ANG(1,4),1,ANGXYZ,1)
@@ -1644,6 +1645,17 @@ C             IR = IR + 1
           deallocate(GAO)
           deallocate(BUFGAO)
         end do                ! IR
+          IBUG = 31
+          write(*,*)'IBUG',IBUG
+          DO IR=1,MXNP
+             write(*,*)'TD,R,IR',TD(IBUG,IR),R(IR),IR
+          ENDDO   
+          write(*,*)
+          write(*,*)'IBUG+2*NTBAS(0)',IBUG+2*NTBAS(0)
+          DO IR=1,MXNP
+             write(*,*)'TD,R,IR',TD(IBUG+2*NTBAS(0),IR),R(IR),IR
+          ENDDO   
+C         write(*,*)'INTAO,IBUG+2',INTAO(IBUG+2*NTBAS(0)),IBUG+2*NTBAS(0)         
         CALL QUAD2(INTAOBUF,TD,MXNP,NDIM2)
         deallocate(TD)
       ELSE  !DIRAC grid from here
@@ -1856,7 +1868,7 @@ C
      &           W2 = 68.0D0*W7,  W1 = 112.0D0*W7)
 C
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
-      PARAMETER(EPSI = 1.0D-35,H=0.01) !-35
+      PARAMETER(EPSI = 1.0D-35,H=1.0D-2) !-35
 !      REAL(8) TE(NR)      
 !      DIMENSION TE(NR)      
       DIMENSION TE(NDIM,NR), RESULT(NDIM)
@@ -1894,16 +1906,30 @@ C
       K = ND2-N1D2+1
       JJ = J+K
       JJ1 = JJ+1
+      IF(II.EQ.31)THEN
+      DO 25 I = JJ1,NR-3,2
+         SUM = SUM + W1*TE(II,I) + W2*TE(II,I+1)
+         write(*,*)"SUM,I",SUM,I
+ 25   CONTINUE
+         write(*,*)'SUM1',SUM
+      SUM = SUM + W1*TE(II,NR-1)
+         write(*,*)'SUM2',SUM
+      SUM = SUM + W4*( TE(II,JJ)   + TE(II,NR)   )
+     &          + W5*( TE(II,JJ1)  + TE(II,NR-1) )
+     &          + W6*( TE(II,JJ+2) + TE(II,NR-2) )
+     &          + W7*( TE(II,JJ+3) + TE(II,NR-3) )
+         write(*,*)'SUM3',SUM
+      ELSE
       DO 30 I = JJ1,NR-3,2
          SUM = SUM + W1*TE(II,I) + W2*TE(II,I+1)
 !         write(*,*)"TE5",TE(I) !sunaga
-   30 CONTINUE
+ 30   CONTINUE
       SUM = SUM + W1*TE(II,NR-1)
       SUM = SUM + W4*( TE(II,JJ)   + TE(II,NR)   )
      &          + W5*( TE(II,JJ1)  + TE(II,NR-1) )
      &          + W6*( TE(II,JJ+2) + TE(II,NR-2) )
      &          + W7*( TE(II,JJ+3) + TE(II,NR-3) )
-      
+      ENDIF
 C
 C   ADD THE CONTRIBUTION FROM 0 TO R(JJ), PLUS THE CONTRIBUTION
 C   TO SIMPSONS RULE FROM TE(JJ).
@@ -1980,6 +2006,8 @@ C
            IF(X.LT.1.0D-50)THEN
               TEMP = X
               MXNP = I
+              write(*,*)'MEMSET_NUM'
+              write(*,*)'TEMP,RTEMP',TEMP,RTEMP           
               exit
            ENDIF   
            RTEMP = RTEMP*EPH
@@ -2024,8 +2052,10 @@ C
 !           write(*,*)'PREFAC,Z,RTEMP,X,I',PREFAC,Z,RTEMP,X,I
            IF(X.LT.1.0D-50)THEN
               TEMP = X
-              MXNP = I
-              exit
+              MXNP = I 
+              write(*,*)'MEMSET_NUM'
+              write(*,*)'TEMP,RTEMP,MXNP',TEMP,RTEMP,MXNP                         
+             exit
            ENDIF 
            RTEMP = (RTEMP+GRDC)*EPH-GRDC
  2      CONTINUE
