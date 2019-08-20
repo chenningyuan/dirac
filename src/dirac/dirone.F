@@ -103,8 +103,8 @@ C
 C     Self-energy(3component)
 C
       ELSEIF (CLSINT(I)(3:6).EQ.'FGMG') THEN
-        CALL NUMINT_ANGOLD(I,COMB,IPRONE) 
-C        CALL NUMINT_ANG(I,COMB,IPRONE) 
+C        CALL NUMINT_ANGOLD(I,COMB,IPRONE) 
+        CALL NUMINT_ANG(I,COMB,IPRONE) 
 C
 C     Self-energy(Flambaum)
 C
@@ -199,6 +199,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck numint_ang */
       SUBROUTINE NUMINT_ANGOLD(IOP,COMB,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C$$$C It is ported from ayaki_qedgrid
 C      
 C On iuput: IOP   ... Index of operator: e.g. CLSINT(IOP)='UEHLING'
 C           IXYZ  ... Index of XYZ, which is used in angular roop
@@ -491,7 +492,7 @@ C
 !             WRITE(*,*)R(J),NUMIR(J)          !sunaga
 !           ENDDO
 !           CLOSE(20,STATUS='KEEP')
-           DO IRP=0,MAXREP+1
+           DO IRP=1,MAXREP
               write(*,*)'NCOS',NCOS(IRP,1),IRP        !sunagatest
               write(*,*)'NCOS',NCOS(IRP,2),IRP        !sunagatest
            ENDDO
@@ -581,9 +582,6 @@ C** LS - block
                    ENDIF   !(IBTXOR(IREP,JREP).EQ.IREPOP)
                  ENDDO
                ENDDO
-CCCCC 
-C sym
-CCCCC
                WT8 = WT8 * ANG(iy,IXYZ) 
                CALL DAXPY(NDIM2,WT8,BUF,1,TC,1)
  50         CONTINUE
@@ -676,7 +674,8 @@ C
 c$$$C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 c$$$C     /* Deck numint_ang */
 c$$$      SUBROUTINE NUMINT_ANGOLD(IOP,COMB,IPRINT)
-c$$$CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+c$$$  CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C$$$C It is the previous version of NUMINT_ANGOLD      
 c$$$C      
 c$$$C On iuput: IOP   ... Index of operator: e.g. CLSINT(IOP)='UEHLING'
 c$$$C           IXYZ  ... Index of XYZ, which is used in angular roop
@@ -1315,9 +1314,9 @@ C
 C
            CALL INTSUM(INTAO,NDIM2,NUMIR,R,MXNP,ANG,m,IXYZ,C(1,IATOM),
      &          num_grid_cfg_grasp,'ANTI',IPRINT)
-           IBUG = 31
+           IBUG = 139
            write(*,*)'INTAO,IBUG',INTAO(IBUG),IBUG
-         write(*,*)'INTAO,IBUG+2',INTAO(IBUG+2*NTBAS(0)),IBUG+2*NTBAS(0)
+         write(*,*)'INTAO,IBUG+1',INTAO(IBUG+NTBAS(0)),IBUG+NTBAS(0)
          ELSE  ! num_grid_cfg_grasp: DIRAC grid start from here
 !     The grids are calculated at MEMSET routine.           
            R(1) = RNT
@@ -2123,15 +2122,15 @@ C             IR = IR + 1
           deallocate(GAO)
           deallocate(BUFGAO)
         end do                ! IR
-          IBUG = 31
+          IBUG = 139
           write(*,*)'IBUG',IBUG
           DO IR=1,MXNP
              write(*,*)'TD,R,IR',TD(IBUG,IR),R(IR),IR
           ENDDO   
           write(*,*)
-          write(*,*)'IBUG+2*NTBAS(0)',IBUG+2*NTBAS(0)
+          write(*,*)'IBUG+NTBAS(0)',IBUG+NTBAS(0)
           DO IR=1,MXNP
-             write(*,*)'TD,R,IR',TD(IBUG+2*NTBAS(0),IR),R(IR),IR
+             write(*,*)'TD,R,IR',TD(IBUG+NTBAS(0),IR),R(IR),IR
           ENDDO   
 C         write(*,*)'INTAO,IBUG+2',INTAO(IBUG+2*NTBAS(0)),IBUG+2*NTBAS(0)         
         CALL QUAD2(INTAOBUF,TD,MXNP,NDIM2)
@@ -2384,7 +2383,7 @@ C
       K = ND2-N1D2+1
       JJ = J+K
       JJ1 = JJ+1
-      IF(II.EQ.31)THEN
+      IF(II.EQ.139)THEN
       DO 25 I = JJ1,NR-3,2
          SUM = SUM + W1*TE(II,I) + W2*TE(II,I+1)
          write(*,*)"SUM,I",SUM,I
