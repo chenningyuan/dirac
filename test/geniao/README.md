@@ -4,5 +4,7 @@ This program is a python interface for DIRAC to generate the DFCOEF files, neede
 
 $> pip install -e .
 
-RUN:
-An example is provided for HeNe in the work_dir/
+(set the option --user if you don't have permissions: $> pip install --user -e .)
+
+# RUN:
+Examples are provided in the work_dir/ directory.

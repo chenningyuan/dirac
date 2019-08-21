@@ -14,7 +14,7 @@ contains
         complex(8), intent(in)  :: P12(nmo1,nmo2)          !  the projection operator
         complex(8), intent(in)  :: C(nmo1,nocc)
         complex(8), intent(out) :: A(nmo1,nmo2)
-        complex(8), allocatable :: A_X(:,:), P21(:,:), S12(:,:), c_tilde_X(:,:)
+        complex(8), allocatable :: A_X(:,:), P21(:,:), S_12(:,:), c_tilde_X(:,:)
 
         ! Make intrinsic basis orbitals for the occupied space (Simple/2014 scheme of Knizia's reference implementation)
         ! Note that our overlap matrices refer to the MO basis of the molecule and its fragments and that the coefficient
@@ -26,12 +26,14 @@ contains
         allocate (s_tilde(nocc,nocc))
         allocate (t4(nmo1,nocc))
 
+
+        ! use of zposv : CALL ZPOSV( 'Lower', N, NRHS, A, LDA, B, LDB, INFO ) with A(LDA,N) and B(LDB,NRHS). This solves AX=B and returns A = X.
         coeff2_occ = matmul(S21,C)
         c_tilde = coeff2_occ
         call zposv( 'U', nmo2, nocc, S22, nmo2, c_tilde, nmo2, ierr )
         s_tilde = matmul(conjg(transpose(coeff2_occ)),c_tilde)
         c_tilde_bar = conjg(transpose(c_tilde))
-        call zposv( 'U', nocc, nmo2, s_tilde, nmo2, c_tilde_bar, nmo2, ierr )
+        call zposv( 'U', nocc, nmo2, s_tilde, nocc, c_tilde_bar, nocc, ierr )
         c_tilde2_bar = conjg(transpose(c_tilde_bar))
         t4 = C - matmul(P12,c_tilde2_bar)
         A = P12 + matmul(t4,conjg(transpose(coeff2_occ)))
@@ -42,14 +44,14 @@ contains
         print*," *** Check if Simple/2014 transformation is okay ***"
         allocate(A_X(nmo1,nmo2)) 
         allocate(P21(nmo2,nmo1)) 
-        allocate(S12(nmo1,nmo2)) 
+        allocate(S_12(nmo1,nmo2)) 
         allocate(c_tilde_X(nmo2,nocc))
-        S12 = conjg(transpose(S21))
+        S_12 = conjg(transpose(S21))
         P21 = S21
         call zposv( 'U', nmo2, nmo1, S22, nmo2, P21, nmo2, ierr )
         c_tilde_X = matmul(P21, C)
         call SymOrth(c_tilde_X,S22,nmo2,nocc)
-        A_X = P12 + matmul(C, matmul(conjg(transpose(C)), S12)) - &
+        A_X = P12 + matmul(C, matmul(conjg(transpose(C)), S_12)) - &
                     matmul(P12, matmul(c_tilde_X, matmul(conjg(transpose(c_tilde_X)), S22)))
         if (norm2([norm2(real(A_X - A)),norm2(aimag(A_X-A))]) > 1.D-12) then
           print*," *** norm2(A_X - A) = ",norm2([norm2(real(A_X - A)),norm2(aimag(A_X-A))]),&
@@ -59,7 +61,7 @@ contains
                  ", Transformation OKAY ***"
         endif
 
-        deallocate (coeff2_occ,c_tilde,c_tilde_bar,c_tilde2_bar,s_tilde,t4,A_X,P21,S12,c_tilde_X)
+        deallocate (coeff2_occ,c_tilde,c_tilde_bar,c_tilde2_bar,s_tilde,t4,A_X,P21,S_12,c_tilde_X)
 
 
    end subroutine MakeIAO_Simple_2014

@@ -15,18 +15,48 @@ contains
         implicit none
 
         logical                 :: conv
-        integer                 :: i,j,k,l, imo, nmoi, it
+        integer                 :: i,j,k,l, imo, nmoi, it, orb_deloc(nocc)
         integer, intent(in)     :: n_fragments, nmo2, nocc, Expnt
-        real(8), intent(in)     :: CIbOcc(nmo2,nocc) ! The occupied MO in terms of IAOs
+        complex(8), intent(in)  :: CIbOcc(nmo2,nocc) ! The occupied MO in terms of IAOs
         type(cmo),  intent(in)  :: cspinor_fragment(n_fragments) ! MO-coefficients of the fragments
-        real(8), intent(  out)  :: LIbOcc(nmo2,nocc) ! The localized occupied MO in terms of IAOs
+        complex(8), intent(out) :: LIbOcc(nmo2,nocc) ! The localized occupied MO in terms of IAOs
         real(8)                 :: phi, func, fGrad, Aij, Bij, Qii, Qij, Qjj, Loc
-        real(8), allocatable    :: C(:,:), Ai(:), Aj(:), vec(:)
+        complex(8), allocatable :: C(:,:), Ai(:), Aj(:), vec(:)
 
         LIbOcc = CIbOcc
         conv = .false.
-        write(*,'(1A5,2A12)') "ITER","LOC(orbs)","Gradient"
+        write(*,*)"------- Localization Procedure (IBO) -------"
+        write(*,*)
+        write(*,'(1A11,I1)')"Exponent = ",Expnt
+        write(*,*)"Warning : real(Qij) is taken instead of complx(Qij) for now."
+!        write(*,*)
+!        write(*,*)"Function n_A(i): number of |i>'s electrons located on the IAOs of the fragments."
+        imo = 0
+        orb_deloc = 0
+        do i=1,n_fragments
+!           write(*,"(A16,I2,A7)")"------ FRAGMENT ", i, " ------"
+!           write(*,"(A12,A12)")"occ.MO","#.elec"
+           nmoi = cspinor_fragment(i)%nmo
+           do j=1,nocc
+              allocate(vec(nmoi))
+              vec = LIbOcc(imo+1:imo+nmoi,j)
+!              write(*,"(I12,F12.6)") j,real(dot_product(vec,vec))
+              if (real(dot_product(vec,vec)) > 0.01D0) then
+                 orb_deloc(j) = orb_deloc(j) + 1
+              endif
+              deallocate(vec)
+           enddo
+           imo = imo + nmoi
+        enddo
 
+        write(*,*)
+        write(*,"(A12,A12,A20)")"occ.MO","deloc.#frag","(thrs 0.01)"
+        do i=1,nocc
+           write(*,"(I12,I12)") i,orb_deloc(i)
+        enddo
+
+        write(*,*)
+        write(*,'(1A5,2A12)') "ITER","LOC(orbs)","Gradient"
         do it=1,2048
           func = 0.D0
           imo = 0
@@ -38,8 +68,10 @@ contains
              do j=1,nocc
                 allocate(vec(nmoi))
                 vec = LIbOcc(imo+1:imo+nmoi,j)
-                ! For real orbitals only. For complex, I should consider conjg(vec):
-                func = func + dot_product(vec,vec)**Expnt
+                ! dot_product should work with complex matrices without any change:
+                ! if vec is complex, dot_product = sum(conj(vec)*vec).
+                ! dot_product of a complex vector with itself is real.
+                func = func + real(dot_product(vec,vec))**dble(Expnt)
                 deallocate(vec)
              enddo
              imo = imo + nmoi
@@ -64,20 +96,19 @@ contains
                    Ai = C(:,i)
                    Aj = C(:,j)
                    ! Compute the charge matrix elements of fragment k
-                   ! For complex coefficients, one should consider a conjugate.
-                   Qii = dot_product(Ai,Ai)
-                   Qij = dot_product(Ai,Aj)
-                   Qjj = dot_product(Aj,Aj)
+                   Qii = real(dot_product(Ai,Ai)) ! dot product is real
+                   Qij = real(dot_product(Ai,Aj)) ! dot product is complex....
+                   Qjj = real(dot_product(Aj,Aj)) ! dot product is real
                    if ((Expnt.eq.2) .or. (Expnt.eq.3)) then
                    ! Pipek-Mezey localization
-                     Aij = Aij + 4.D0*Qij**2 - (Qii-Qjj)**2
-                     Bij = Bij + 4*Qij*(Qii - Qjj)
+                     Aij = Aij + 4.D0*Qij*Qij - (Qii-Qjj)*(Qii-Qjj)
+                     Bij = Bij + 4.D0*Qij*(Qii - Qjj)
                    else if (Expnt.eq.4) then
                    ! Appendix D of Knizia's paper
-                     Bij = Bij + 4.D0*Qij*(Qii**3 - Qjj**3)
-                     Aij = Aij - Qii**4 - Qjj**4 + &
-                         & 6.D0*(Qii**2 + Qjj**2)*Qij**2 + Qjj*Qii**3 + &
-                         & Qii*Qjj**3
+                     Bij = Bij + 4.D0*Qij*(Qii*Qii*Qii - Qjj*Qjj*Qjj)
+                     Aij = Aij - Qii*Qii*Qii*Qii - Qjj*Qjj*Qjj*Qjj + &
+                         & 6.D0*(Qii*Qii + Qjj*Qjj)*Qij*Qij + Qjj*Qii*Qii*Qii + &
+                         & Qii*Qjj*Qjj*Qjj
                    else
                      write(*,*)"STOP: exponent should be 2, 3 or 4."
                      stop
@@ -88,13 +119,14 @@ contains
                 enddo
 
                 ! Now perform the rotation:
-                if ((Aij**2 + Bij**2) .gt. 1D-12) then
+                if ((Aij*Aij + Bij*Bij) .gt. 1D-12) then
                   allocate(Ai(nmo2))
                   allocate(Aj(nmo2))
-                  phi = 0.25*datan2(Bij,-Aij)
+                  ! I don't know how to compute phi for complex Bij, Aij.
+                  phi = 0.25D0*datan2(Bij,-Aij)
                   !Bij is the actual gradient. Aij is effectively
                   !the second derivative at phi=0.
-                  fGrad = fGrad + Bij**2
+                  fGrad = fGrad + Bij*Bij
                   Ai = LIbOcc(:,i)
                   Aj = LIbOcc(:,j)
                   LIbOcc(:,i) = dcos(phi)*Ai + dsin(phi)*Aj 
@@ -104,15 +136,15 @@ contains
              enddo
           enddo
 
-          fGrad = fGrad**0.5
-          Loc = func**(1.D0/(1.D0*Expnt))
+          fGrad = fGrad**0.5D0
+          Loc = func**(1.D0/(1.D0*dble(Expnt)))
           write(*,"(I5,F12.6,ES12.2)") it,Loc,fGrad
           if (abs(fGrad) .lt. 1.0D-12) then
              conv = .true.
              exit
           endif
         enddo
-  
+
         if (.not. conv) then
            print*,"No convergence reached, value of fGrad = ", fGrad
         else
@@ -120,6 +152,34 @@ contains
            write(*,"(I5,F12.6,ES12.2)") it,Loc,fGrad
         endif
 
+!        write(*,*)
+!        write(*,*)"Function n_A(i): number of |i>'s electrons located on the IAOs of the fragments."
+        imo = 0
+        orb_deloc = 0
+        do i=1,n_fragments
+!           write(*,"(A16,I2,A7)")"------ FRAGMENT ", i, " ------"
+!           write(*,"(A12,A12)")"occ.MO","#.elec"
+           nmoi = cspinor_fragment(i)%nmo
+           do j=1,nocc
+              allocate(vec(nmoi))
+              vec = LIbOcc(imo+1:imo+nmoi,j)
+!              write(*,"(I12,F12.6)") j,real(dot_product(vec,vec))
+              if (real(dot_product(vec,vec)) > 0.01D0) then
+                 orb_deloc(j) = orb_deloc(j) + 1
+              endif
+              deallocate(vec)
+           enddo
+           imo = imo + nmoi
+        enddo
+
+        write(*,*)
+        write(*,"(A12,A12,A20)")"occ.MO","deloc.#frag","(thrs 0.01)"
+        do i=1,nocc
+           write(*,"(I12,I12)") i,orb_deloc(i)
+        enddo
+        
+        write(*,*)
+        write(*,*)"------- End of Localization Procedure -------"
    end subroutine LocalizeIbosInIaoBasis
 
 end module make_ibo

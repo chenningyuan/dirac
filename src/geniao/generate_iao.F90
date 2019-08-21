@@ -10,6 +10,7 @@
         use utils
         use check
         use energy
+        use properties
         use atomic_fragments
 
         implicit none
@@ -22,13 +23,17 @@
         type(cmo), allocatable             :: cspinor_fragment(:) ! MO-coefficients of the fragments
         type(atom), pointer                :: first_atom,current_atom ! linked list to store coordindate information
         type(cmo)                          :: cspinor_localized ! MO-coefficients after localization 
-        type(one_el_t)                     :: int_1el
+        type(cmo)                          :: cspinor_localized_ibo ! MO-coefficients after localization (IBOs)
+        type(cmo)                          :: cspinor_frag_IAO ! MO-coefficients in IAO basis for the fragments
+        type(cmo)                          :: cspinor_frag_IAOval ! valence MO-coefficients in IAO basis for the fragments
         integer                            :: luxyz, ierr, i, j, k, l
         integer                            :: nmo1, nmo2, imo, jmo, nmoi, nmoj, nao1, ncore, nvale
         integer                            :: n_fragments ! the number of fragments used to project on to
         integer                            :: nocc ! Number of occupied spinors
+        integer                            :: nvir ! Number of virtual spinors
         integer                            :: charge ! Charge of the molecule
         integer                            :: Expnt ! Exponent to be used in the localization procedure (Make IBO).
+        integer                            :: test ! test=1 means that the tests will be executed.
         character(11)                      :: version ! Version of the IAO construction (Standard_2013, Simple_2013, Simple_2014)
         complex(8), allocatable            :: S_block(:,:) ! sub block of the overlap matrix
         complex(8), allocatable            :: S11(:,:),S21(:,:),S12(:,:),S22(:,:) !  the overlap matrices
@@ -36,17 +41,16 @@
         complex(8), allocatable            :: IAO(:,:)                  !  coefficient matrix, IAOs (MO basis)
         complex(8), allocatable            :: IAO_aoB1(:,:,:)             !  coefficient matrix, IAOs in terms of AO basis B1
         complex(8), allocatable            :: Cocc_IAO(:,:)             !  coefficient matrix, occupied MOs in terms of IAOs.
+        complex(8), allocatable            :: Cvir_IAO(:,:)             !  coefficient matrix, virtual MOs in terms of IAOs.
         complex(8), allocatable            :: Cocc_IAO_aoB1(:,:,:)        !  coefficient matrix, occupied MOs in terms of IAOs transformed back to AO basis B1
+        complex(8), allocatable            :: Cvir_IAO_aoB1(:,:,:)        !  coefficient matrix, occupied MOs in terms of IAOs transformed back to AO basis B1
         complex(8), allocatable            :: Cocc_IBO(:,:)             !  coefficient matrix, Localized occupied MOs in terms of IAOs. (called IBO)
         complex(8), allocatable            :: Cocc_IBO_aoB1(:,:,:)        !  coefficient matrix, IBOs transformed back to AO basis B1
         complex(8), allocatable            :: Cocc_IBO_moB1(:,:)        !  coefficient matrix, IBOs transformed back to MO basis B1
         complex(8), allocatable            :: IAO_frag(:,:,:)           !  coefficient matrix, IAOs of a fragment in terms of AO basis B1.
         complex(8), allocatable            :: coeff1_occ(:,:)
-        complex(8), allocatable            :: HF_RDM(:,:), HF_Fock(:,:)
-        complex(8), allocatable            :: IAO_RDM(:,:), IAO_Fock(:,:), IAO_CoreH(:,:)
-        complex(8), allocatable            :: IBO_RDM(:,:), tmp(:,:)
-        real(8)                            :: E_HF, E_HF_IAO, E_HF_IBO
-        real(8),    allocatable            :: Cocc_IBO_real(:,:), tmp_ew(:)
+        complex(8), allocatable            :: coeff1_vir(:,:)
+        real(8),    allocatable            :: Cocc_IBO_real(:,:)
         character(len=14)                  :: fragfile_dfcoef, fragfile_dfpcmo
         character(len=18)                  :: fragfile_val_dfcoef, fragfile_val_dfpcmo
 
@@ -58,14 +62,15 @@
         read(luxyz,'(A11)') version
         read(luxyz,'(I2)') charge
         read(luxyz,'(I2)') Expnt
+        read(luxyz,'(I2)') test
         close(luxyz)
 
         call read_from_dirac (ao_basis_1,cspinor_original,'MOLECULE.dfcoef',ierr)
+        ! test the write_mos_to_dirac subroutine:
+        call write_mos_to_dirac (ao_basis_1,cspinor_original,"test.dfcoef")
         nmo1 = cspinor_original%nmo
         nao1 = cspinor_original%nao
-        ! The following Coeff file is here to check that I indeed get the same format as the DFPCMO_mol file.
-        ! It will be removed when I'll be sure it is indeed correct in any cases.
-        call write_dffiles("test.dfcoef","test.dfpcmo",ao_basis_1,cspinor_original%coeff,nao1,nmo1,"MOLECULE.dfcoef")
+        call write_dffiles("test2.dfcoef","test2.dfpcmo",ao_basis_1,cspinor_original%coeff,nao1,nmo1,"MOLECULE.dfcoef")
 
         call get_free_fileunit(luxyz)
         open (luxyz,file='MOLECULE.XYZ',form='formatted')
@@ -155,9 +160,13 @@
         ! for each isolated fragment. For now, we consider atomic fragments only (i.e. one fragment = one atom)
 
         !-----Compute COcc----- (nmo1 x nocc) (diagonal matrix)
+        nvir = nmo1-nocc
         allocate(coeff1_occ(nmo1,nocc))
+        allocate(coeff1_vir(nmo1,nvir))
         coeff1_occ = ZERO
         forall (i=1:nocc) coeff1_occ(i,i) = ONE
+        coeff1_vir = ZERO
+        forall (i=1:nvir) coeff1_vir(i+nocc,i) = ONE
 
         ! Calculate the Intrinsic Atomic Orbitals
         ! expressed in terms of the MO basis B1
@@ -196,8 +205,11 @@
            allocate(IAO_frag(nao1,nmoi,2))
            IAO_frag = IAO_aoB1(:,imo+1:imo+nmoi,:)
            write (fragfile_dfcoef,'(i3.3,a11)') nint(current_atom%bascharge),'_iao.dfcoef'
-           write (fragfile_dfpcmo,'(i3.3,a11)') nint(current_atom%bascharge),'_iao.dfpcmo'
-           call write_dffiles(fragfile_dfcoef,fragfile_dfpcmo,ao_basis_1,IAO_frag,nao1,nmoi,"MOLECULE.dfcoef")
+           call alloc_mo(cspinor_frag_IAO,nao1,nmoi)
+           cspinor_frag_IAO%coeff = IAO_frag
+           cspinor_frag_IAO%total_energy = cspinor_original%total_energy
+           call write_mos_to_dirac (ao_basis_1,cspinor_frag_IAO,fragfile_dfcoef)
+           call dealloc_mo(cspinor_frag_IAO)
            deallocate(IAO_frag)
 
            ! Do it also for valence orbitals only
@@ -205,8 +217,11 @@
            allocate(IAO_frag(nao1,nvale,2))
            IAO_frag = IAO_aoB1(:,imo+1+ncore:imo+nmoi,:)
            write (fragfile_val_dfcoef,'(i3.3,a15)') nint(current_atom%bascharge),'_iao_val.dfcoef'
-           write (fragfile_val_dfpcmo,'(i3.3,a15)') nint(current_atom%bascharge),'_iao_val.dfpcmo'
-           call write_dffiles(fragfile_val_dfcoef,fragfile_val_dfpcmo,ao_basis_1,IAO_frag,nao1,nvale,"MOLECULE.dfcoef")
+           call alloc_mo(cspinor_frag_IAOval,nao1,nvale)
+           cspinor_frag_IAOval%coeff = IAO_frag
+           cspinor_frag_IAOval%total_energy = cspinor_original%total_energy
+           call write_mos_to_dirac (ao_basis_1,cspinor_frag_IAOval,fragfile_val_dfcoef)
+           call dealloc_mo(cspinor_frag_IAOval)
            deallocate(IAO_frag)
            imo = imo + nmoi
            current_atom=>current_atom%next
@@ -216,15 +231,34 @@
         allocate (Cocc_IAO(nmo2,nocc))
         Cocc_IAO = matmul(conjg(transpose(IAO)),matmul(S11,coeff1_occ))
 
+        !-----Virtual MO in terms of the orthonormal IAO basis----- (nmo2 x nvir)
+        allocate (Cvir_IAO(nmo2,nocc))
+        Cvir_IAO = matmul(conjg(transpose(IAO)),matmul(S11,coeff1_vir))
+
         !-----Transform occupied MO in terms of IAOs back to AO basis B1----- (nao1 x nocc)
         allocate(Cocc_IAO_aoB1(nao1,nocc,2))
         Cocc_IAO_aoB1(:,:,1) = matmul(IAO_aoB1(:,:,1),Cocc_IAO)
         Cocc_IAO_aoB1(:,:,2) = matmul(IAO_aoB1(:,:,2),Cocc_IAO)
+
+        !-----Transform virtual MO in terms of IAOs back to AO basis B1----- (nao1 x nocc)
+        allocate(Cvir_IAO_aoB1(nao1,nvir,2))
+        Cvir_IAO_aoB1(:,:,1) = matmul(IAO_aoB1(:,:,1),Cvir_IAO)
+        Cvir_IAO_aoB1(:,:,2) = matmul(IAO_aoB1(:,:,2),Cvir_IAO)
+
         ! Write the coefficient matrix into the unformatted dfcoef file.
         call alloc_mo(cspinor_localized,nao1,nmo1)
-        cspinor_localized%coeff = Cocc_IAO_aoB1
+        cspinor_localized%coeff(:,1:nocc,:) = Cocc_IAO_aoB1
+        ! cspinor_localized%coeff(:,nocc+1:nmo1,:) = Cvir_IAO_aoB1
+        ! keep the original virtual orbitals:
+        cspinor_localized%coeff(:,nocc+1:nmo1,:) = cspinor_original%coeff(:,nocc+1:nmo1,:)
+        cspinor_localized%energy(nocc+1:nmo1) = cspinor_original%energy(nocc+1:nmo1)
         cspinor_localized%total_energy = cspinor_original%total_energy
         call write_mos_to_dirac (ao_basis_1,cspinor_localized,"iao.dfcoef")
+        call write_mos_to_dirac_formatted (cspinor_localized,"iao.dfpcmo")
+
+        ! Compute partial charges with occupied MO expressed in terms of IAOs.
+!        call partial_charges(Cocc_IAO,cspinor_fragment,n_fragments,nmo2,nocc)
+        call fragment_charges_IAO(IAO,cspinor_fragment,n_fragments,nmo1,nmo2,nocc)
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !         Calculate the intrinsic bonding orbital (IBO) basis                                        !
@@ -232,23 +266,24 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         !-----Compute IBOs (Localized occupied MO in terms of IAOs)----- (nmo2 x nocc)
-        allocate(Cocc_IBO_real(nmo2,nocc)) ! should be replaced by Cocc_IBO once it will work for complex orbitals.
         allocate(Cocc_IBO(nmo2,nocc))
-        call LocalizeIbosInIaoBasis(real(Cocc_IAO),Cocc_IBO_real,cspinor_fragment,n_fragments,nmo2,nocc,Expnt)
-
-        ! Temporary rewrite into complex format... :
-        do i=1,nmo2
-         do j=1,nocc
-          Cocc_IBO(i,j) = CMPLX(Cocc_IBO_real(i,j),0.D0)
-         enddo
-        enddo
+        call LocalizeIbosInIaoBasis(Cocc_IAO,Cocc_IBO,cspinor_fragment,n_fragments,nmo2,nocc,Expnt)
 
         !-----Transform IBOs back to AO basis B1----- (nao1 x nocc)
         allocate(Cocc_IBO_aoB1(nao1,nocc,2))
         Cocc_IBO_aoB1(:,:,1) = matmul(IAO_aoB1(:,:,1),Cocc_IBO)
         Cocc_IBO_aoB1(:,:,2) = matmul(IAO_aoB1(:,:,2),Cocc_IBO)
         ! Write the coefficient matrix into the unformatted dfcoef file.
-        call write_dffiles("ibo.dfcoef","ibo.dfpcmo",ao_basis_1,Cocc_IBO_aoB1,nao1,nocc,"MOLECULE.dfcoef")
+        call alloc_mo(cspinor_localized_ibo,nao1,nmo1)
+        cspinor_localized_ibo%coeff(:,1:nocc,:) = Cocc_IBO_aoB1
+        ! cspinor_localized_ibo%coeff(:,1+nocc:nmo1,:) = Cvir_IAO_aoB1
+        ! keep the original virtual orbitals:
+        cspinor_localized_ibo%coeff(:,nocc+1:nmo1,:) = cspinor_original%coeff(:,nocc+1:nmo1,:)
+        cspinor_localized_ibo%energy(nocc+1:nmo1) = cspinor_original%energy(nocc+1:nmo1)
+        cspinor_localized_ibo%total_energy = cspinor_original%total_energy
+        call write_mos_to_dirac (ao_basis_1,cspinor_localized_ibo,"ibo.dfcoef")
+        call write_mos_to_dirac_formatted (cspinor_localized_ibo,"ibo.dfpcmo")
+        call write_dffiles("test_ibo.dfcoef","test_ibo.dfpcmo",ao_basis_1,cspinor_localized_ibo%coeff,nao1,nmo1,"MOLECULE.dfcoef")
 
         !-----Transform IBOs back to MO basis B1----- (nmo1 x nocc)
         ! It will be used to test the HF energy (using the Fock and H_core matrix of basis B1)
@@ -258,67 +293,24 @@
         ! In Knizia's program, another call is made to sort the new localized orbitals by energy.
         ! I think in our case they are already sorted, but I'm not 100% convinced...
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!       Compute HF energies and tests     !
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        ! Let's try to compute the partial charges using IBO?
+        call partial_charges(Cocc_IBO,cspinor_fragment,n_fragments,nmo2,nocc)
+        write(*,*)
+        call fragment_charges_IAO(IAO,cspinor_fragment,n_fragments,nmo1,nmo2,nocc)
 
-        ! Check the calcul of HF energy for the MO of the original basis
-        ! HF energy = 0.5* Tr[(h + F)*gamma] + nuclear_repulsion
-        ! (If it was only the Fock matrix, it would be the some of orbital energies, which is obviously only correct for a non-interacting case.)
+!!!!!!!!!!!!!!!!!!!!
+!      TEST        !
+!!!!!!!!!!!!!!!!!!!!
+! This test requires the presence of the MRCONEE file to get the core matrix h. Also, ACTIVE .all has to be
+! set in the Dirac input to be sure that the latter matrix has the correct dimension nmo1 x nmo1.
 
-        ! Therefore, we need to read the one-electron integrals:
-        ! Read the integrals to get the H core matrix (int_1el%h_core)
-        call read_from_mrconee (int_1el, ierr)
-        ! Fock matrix:
-        allocate(HF_Fock(nmo1,nmo1))
-        HF_Fock = ZERO
-        forall (i=1:nmo1) HF_Fock(i,i) = cspinor_original%energy(i)
-
-        ! 1RDM:
-        allocate(HF_RDM(nmo1,nmo1)) ! In the MO basis, should be 0 everywhere except 1 on part of the diagonal (only for nocc)
-        HF_RDM = ZERO
-        forall (i=1:nocc) HF_RDM(i,i) = ONE
-
-        ! Same in the IAO basis:
-        ! Transforme the H core matrix in the basis of IAOs
-        IAO_CoreH = matmul(conjg(transpose(IAO)),matmul(int_1el%h_core,IAO))
-
-        ! Fock matrix in the IAO basis
-        allocate(IAO_Fock(nmo2,nmo2))
-        IAO_Fock = matmul(conjg(transpose(IAO)),matmul(HF_Fock,IAO))
-
-        ! 1RDM in the IAO basis
-        allocate(IAO_RDM(nmo2,nmo2))
-        IAO_RDM = matmul(conjg(transpose(IAO)),matmul(S11,matmul(HF_RDM,matmul(S11,IAO))))
-
-        ! 1RDM in the IAO basis
-        allocate(IBO_RDM(nmo1,nmo1))
-        IBO_RDM = matmul(Cocc_IBO_moB1,conjg(transpose(Cocc_IBO_moB1)))
-
-        print*,"***** TESTS *****"
-        call check_normalization(IAO,nmo1,nmo2)
-        call check_normalization(Cocc_IAO,nmo2,nocc)
-        call check_normalization(Cocc_IBO,nmo2,nocc)
-        call check_normalization(Cocc_IBO_moB1,nmo1,nocc)
-        call check_SymOrth(IAO,S11,nmo1,nmo2)
-        call deviation_nelec(IAO_RDM,nmo2,nocc)
-        call deviation_nelec(IBO_RDM,nmo1,nocc)
-        ! Energy:
-        if (int_1el%n_spinor .ne. nmo1) then
-          print*,
-          print*,'**WARNING** number of spinor when reading MRCONEE is not the same as nmo1 of MO basis B1.'
-          print*,"            Cannot compute the HF energy."
-        else
-          call HF_energy(E_HF,int_1el%h_core,HF_Fock,HF_RDM,nmo1,int_1el%e_core)
-          call HF_energy(E_HF_IAO,IAO_CoreH,IAO_Fock,IAO_RDM,nmo2,int_1el%e_core)
-          call HF_energy(E_HF_IBO,int_1el%h_core,HF_Fock,IBO_RDM,nmo1,int_1el%e_core)
-          print*,"HF energy (moB1)   : ",E_HF  
-          print*,"HF energy (IAO)    : ",E_HF_IAO
-          print*,"HF energy (IBO/MO) : ",E_HF_IBO
-          print*,"Deviation from the HF energy in the original basis and in the IAO basis:",REAL(E_HF_IAO - E_HF)
-          print*,"Deviation from the HF energy in the original basis and in the IBO basis:",REAL(E_HF_IBO - E_HF)
+        if (test .eq. 1) then
+          call test_IAO_and_IBO(IAO,Cocc_IAO,Cocc_IBO_moB1,S11,cspinor_original,nmo1,nmo2,nocc)
         endif
 
+!!!!!!!!!!!!!!!!!!!!
+!       END        !
+!!!!!!!!!!!!!!!!!!!!
 !       clean up list of atoms
         call del_atoms(first_atom)
 !     55 FORMAT( 100(:,1X,'(',G10.2,',',G10.2,')') ) ! Useful format to write complex matrices.

@@ -720,6 +720,59 @@ C
 
        end subroutine write_mos_to_dirac
 
+       subroutine write_mos_to_dirac_formatted(cspinor,file_name)
+
+       use exacorr_mo
+       use exacorr_utils
+
+       implicit none
+
+!      write mo coefficients in dirac format
+
+       character(len=*),intent(in) :: file_name
+       type(cmo), intent(inout):: cspinor
+       type(qumo)             :: qorbital
+       character              :: text*74      ! holds text read from DFCOEF, only used for printing this
+       integer                :: nsym
+       real(8)                :: total_energy
+       logical                :: tobe
+       integer                :: lucoef
+       integer                :: nao
+       integer                :: nmo, npo
+
+!      switch to Kramers-restricted format
+       text = "MO coefficients produced by geniao "
+       npo = 0  ! number of "positronic orbitals is hardwired to 0 for now
+       nsym = 1 ! we do not use symmetry, so nsym is always 1
+       call convert_complex_to_quaternion(cspinor,qorbital)
+       ! print warning in case we overwrite a file and open the file
+       call get_free_fileunit(lucoef)
+       inquire (file=file_name,exist=tobe)
+       if (tobe) then
+          print*, "warning: overwriting file "//file_name
+          open (lucoef,file=file_name,status='OLD',FORM='FORMATTED',
+     &     access='SEQUENTIAL')
+       else
+          open (lucoef,file=file_name,status='NEW',FORM='FORMATTED',
+     &     access='SEQUENTIAL')
+       end if
+
+       ! write the header
+       write (lucoef,'(A74)') text
+       write (lucoef,'(7(X,I0))') nsym,npo,qorbital%nmo,qorbital%nao
+       write (lucoef,'(E24.16)') qorbital%total_energy
+       ! write the mo-coefficients
+       write (lucoef,'(6F22.16)') qorbital%coeff
+       ! write the orbital energies
+       write (lucoef,'(6E22.12)') qorbital%energy
+       ! write the boson symnmetry information
+       write (lucoef,'(66(X,I0))') qorbital%boson_irrep
+
+       close (lucoef,status='KEEP')
+       return
+       
+       end subroutine write_mos_to_dirac_formatted
+
        subroutine Write_To_Mdcint (nmo,mo_tens)
 
 !      Utility routine to write to the DIRAC moltra format, makes it easier to test the index transform
