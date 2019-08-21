@@ -670,12 +670,15 @@ C
        ! convert basis set info to 1-d lists used by DIRAC (assuming uncontracted basis sets)
        ! TODO: change storage on DIRAC side to use the basis set type
        nshells = ao_basis%nshells
+       ! we always have uncontracted basis sets, so can hardwire the next variable and equate the number of exponents to the number of shells
+       ncnt = 1
+       npriexp =  nshells
        allocate(jstrt(nshells))
        allocate(numcf(nshells))
        allocate(priexp(nshells))
        allocate(priccf(nshells))
        do ishell = 1, nshells
-          jstrt(ishell) = ishell
+          jstrt(ishell) = ishell-1
           numcf(ishell) = 1
           priexp(ishell) = ao_basis%gtos(ishell)%exponent(1)
           priccf(ishell) = ao_basis%gtos(ishell)%coefficient(1)
