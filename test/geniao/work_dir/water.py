@@ -6,7 +6,7 @@ import subprocess
 basis1 = 'STO-3G'
 basis2 = 'CC-pVDZ'
 charge = 0
-data_directory="/Users/bsenjean/Documents/Git_repositories/dirac-caar-ibos/test/geniao/work_dir/"
+data_directory="."
 geometry = [\
 ('O',       (0.21719693,       0.20658242,      -0.00185068)),\
 ('H',       (0.11462359,       0.76846104,       0.80708169)),\
