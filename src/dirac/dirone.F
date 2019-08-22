@@ -237,13 +237,13 @@ C
       PARAMETER (D0=0.0D0,D1=1.0D0,D2=2.0D0,DM1=-1.0D0)      
       real(8), allocatable :: ZAN(:),C(:,:)
       real(8), allocatable :: ANG(:,:),GAO(:), BUFGAO(:)
-      real(8), allocatable :: BUF(:),TC(:),TD(:,:)
+      real(8), allocatable :: WT8G(:),BUF(:,:),TC(:),TD(:,:)
       real(8), allocatable :: NUMIR(:),R(:),W(:),INTAO(:),INTAOBUF(:)
       DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND)
 
       CALL QENTER('NUMINT_ANG')
       write(*,*)"****************"
-      write(*,*)"NUMINT_ANG"
+      write(*,*)"NUMINT_ANGOLD"
       write(*,*)"****************"
       write(*,*)"IOP",IOP
       write(*,*)"CLSINT",CLSINT(IOP)
@@ -271,18 +271,17 @@ C The values of ultrafine (.ULTRAF) at DFT input-reader section.
       allocate( ANG   (m,4)      )
       allocate( GAO   (NTBAS(0)) )
       allocate( BUFGAO(NTBAS(0)) )
-      allocate( BUF   (NDIM2)    )
       allocate( TC    (NDIM2)    )
       allocate( INTAO (NDIM2)    )
 C      
       CALL LEBEDEV(INTANG,ANG(1,1),ANG(1,2),ANG(1,3),ANG(1,4),n)
-      CALL DSCAL(m,4*PI,ANG(1,4),1)
+      CALL DSCAL(m,4.0D0*PI,ANG(1,4),1)
 ! DSCAl is corresponding to the below part in SLEB/dftgrf.F
 !      DO J=1,NCOUNT
 !         WT(J)=WT(J)*4.0D0*PI
 !     ENDDO
 C
-      write(*,*)'NUCIND',NUCIND
+      write(*,*)'NUCIND,PI',NUCIND,PI
       write(*,*)'INTAMG,m',INTANG,m
       DO 5 IJXYZ = 1, 3
          IXYZ = 4 - IJXYZ
@@ -327,6 +326,8 @@ C
          IF(num_grid_cfg_grasp)THEN
            allocate( TD(NDIM2,MXNP) )         
            allocate( INTAOBUF(NDIM2) )         
+           allocate( BUF(NDIM2,m)    )
+           allocate( WT8G    (m) )         
            CALL DZERO(TD,NDIM2*MXNP)
            CALL DZERO(INTAOBUF,NDIM2)
 C           
@@ -365,16 +366,17 @@ C     Finally,    We multiply R(IR)*R(IR).
 C
              RFAC = R(IR)*R(IR)*R(IR) * NUMIR(IR)
              CALL DZERO(TC,NDIM2)
-C            
+             CALL DZERO(BUF,NDIM2*m) 
+C           
 C            loop over angular points
 C            ========================
 C
              DO 30 iy = 1, m
-               CALL DZERO(BUF,NDIM2) 
                X8  = ANG(iy,1)*R(IR)+C(1,IATOM)
                Y8  = ANG(iy,2)*R(IR)+C(2,IATOM)
                Z8  = ANG(iy,3)*R(IR)+C(3,IATOM)
-               WT8 = ANG(iy,4)*RFAC
+C               WT8 = ANG(iy,4)*RFAC
+C               WT8 = ANG(iy,4) !*RFAC
 C
 C     GET AO's
 C 
@@ -405,19 +407,15 @@ C** SL - block
                      IADD = JOFF
                      IJ = 0
                      DO I = 1,NCOS(ISYM,2)
-                       DO J = 1,NCOS(JSYM,1)
-                         IJ = IJ + 1  
-                         BUF(IJ+IJOFF+IADD)=DM1*GAO(I+IOFF)*GAO(J+JOFF)
+                      DO J = 1,NCOS(JSYM,1)
+                       IJ = IJ + 1  
+C                        BUF(IJ+IJOFF+IADD)=DM1*GAO(I+IOFF)*GAO(J+JOFF)
+                       BUF(IJ+IJOFF+IADD,iy)=DM1*GAO(I+IOFF)*GAO(J+JOFF)
 C
 C  This minus DSCAL is due to Beta Alpha, although we use Alpha. 
 C
-!                         write(*,*)'IJ+IJOFF+IADD,I,J',IJ+IJOFF+IADD,
-!     &                                                 I+IOFF,J+JOFF
-!                         write(*,*)'IJOFF,IOFF,JOFF,IADD',
-!     &                        IJOFF,IOFF,JOFF,IADD
-!                         write(*,*)
-                       ENDDO
-                       IADD = IADD + JOFF + IOFF - ICOS(JSYM,2) + I
+                      ENDDO
+                      IADD = IADD + JOFF + IOFF - ICOS(JSYM,2) + I
                      ENDDO
 C** LS - block
                      IF(IREP.NE.JREP) THEN
@@ -429,7 +427,8 @@ C** LS - block
                        DO I = 1,NCOS(ISYM,1)
                          DO J = 1,NCOS(JSYM,2)
                            IJ = IJ + 1  
-                           BUF(IJ+IJOFF+IADD)=GAO(I+IOFF)*GAO(J+JOFF)
+C                           BUF(IJ+IJOFF+IADD)=GAO(I+IOFF)*GAO(J+JOFF)
+                           BUF(IJ+IJOFF+IADD,iy)=GAO(I+IOFF)*GAO(J+JOFF)
 !                           write(*,*)'IJ+IJOFF+IADD,I,J',IJ+IJOFF+IADD,
 !     &                                                   I+IOFF,J+JOFF
 !                           write(*,*)'IJOFF,IOFF,JOFF,IADD',
@@ -447,21 +446,46 @@ C$$$
 CCCCC 
 C sym
 CCCCC
-               WT8 = WT8 * ANG(iy,IXYZ)
-               CALL DAXPY(NDIM2,WT8,BUF,1,TC,1)
+               WT8G(iy) = ANG(iy,IXYZ)*ANG(iy,4)
+               IBUG = 138*139/2 + 1
+C               IBUG =  1
+C               CALL DAXPY(NDIM2,WT8G(iy),BUF(1,iy),1,TC,1)
+C               IF(IR.EQ.5)THEN
+C            write(*,*)'TC(ibug),BUF,WT8,iy',TC(ibug),BUF(ibug,iy),WT8,iy
+C               ENDIF
  30          CONTINUE
+             CALL DSCAL(NDIM2*m,RFAC,BUF,1)
+             CALL DGEMV('N',NDIM2,m,D1,BUF,NDIM2,WT8G,1,D0,TC,1)
+C             DO iy=1,m
+C                DO IJ=1,NDIM2
+C                   TC(IJ)=BUF(IJ,iy)*WT8G(iy)+TC(IJ)
+C                ENDDO   
+C             ENDDO   
+C             CALL DSCAL(NDIM2,RFAC,TC,1)
              CALL DCOPY(NDIM2,TC,1,TD(1,IR),1)
  20        CONTINUE
-           write(*,*)'INTAOBUF1'
-           CALL OUTPAK(INTAOBUF,NTBAS(0),-1,LUPRI)
            CALL QUAD2(INTAOBUF,TD,MXNP,NDIM2)
-           write(*,*)'INTAOBUF2'
-           CALL OUTPAK(INTAOBUF,NTBAS(0),-1,LUPRI)
+C           write(*,*)'INTAOBUF2'
+C     CALL OUTPAK(INTAOBUF,NTBAS(0),-1,LUPRI)           
            CALL DAXPY(NDIM2,D1,INTAOBUF,1,INTAO,1)
+           write(*,*)'INTAO,IBUG',INTAO(IBUG),IBUG
+           write(*,*)'INTAO,IBUG+1',INTAO(IBUG+1),IBUG+1
+C
+          write(*,*)'IBUG',IBUG
+          DO IR=1,MXNP
+             write(*,*)'TD,R,IR',TD(IBUG,IR),R(IR),IR
+          ENDDO   
+          write(*,*)
+          write(*,*)'IBUG+1',IBUG+2
+          DO IR=1,MXNP
+             write(*,*)'TD,R,IR',TD(IBUG+2,IR),R(IR),IR
+          ENDDO              
            deallocate(INTAOBUF)
+           deallocate(WT8G)
          ELSE  ! num_grid_cfg_grasp
-           allocate( TD(NDIM2,1) )         
-           CALL DZERO(TD,NDIM2*1) 
+C           allocate( TD (NDIM2,1) )         
+           allocate( BUF(NDIM2,1)    )
+C           CALL DZERO(TD,NDIM2*1) 
 !     The grids are calculated at MEMSET routine.           
            R(1) = RNT
            W(1)  = (RNT+GRDC)*H 
@@ -471,7 +495,6 @@ C R(IR)**2 is multiplized in RFAC, later
            DO IR = 2,MXNP
              R(IR) = (R(IR-1)+GRDC)*EPH-GRDC
              W(IR) = (R(IR)+GRDC)*H
-!             write(*,*)'R,W',R(IR),W(IR),IR
            ENDDO
            write(*,*)
            write(*,*)"***************"
@@ -480,7 +503,6 @@ C R(IR)**2 is multiplized in RFAC, later
 C
 C  This minus DSCAL is due to Beta Alpha, although we use Alpha. 
 C
-!     CALL DSCAL(MXNP,DM1,NUMIR,1)
            write(*,*)'magnetic'
            DO J = 1,MXNP
 !              NUMIR(J)=D1
@@ -549,8 +571,8 @@ C** SL - block
                      IJ = 0
                      DO I = 1,NCOS(ISYM,2)
                        DO J = 1,NCOS(JSYM,1)
-                         IJ = IJ + 1  
-                         BUF(IJ+IJOFF+IADD)=DM1*GAO(I+IOFF)*GAO(J+JOFF)
+                        IJ = IJ + 1  
+                        BUF(IJ+IJOFF+IADD,1)=DM1*GAO(I+IOFF)*GAO(J+JOFF)
 !                         write(*,*)'IJ+IJOFF+IADD,I,J',IJ+IJOFF+IADD,
 !     &                                                 I+IOFF,J+JOFF
 !                         write(*,*)'IJOFF,IOFF,JOFF,IADD',
@@ -568,8 +590,8 @@ C** LS - block
                        IJ = 0
                        DO I = 1,NCOS(ISYM,1)
                          DO J = 1,NCOS(JSYM,2)
-                           IJ = IJ + 1  
-                           BUF(IJ+IJOFF+IADD)=GAO(I+IOFF)*GAO(J+JOFF)
+                          IJ = IJ + 1  
+                          BUF(IJ+IJOFF+IADD,1)=GAO(I+IOFF)*GAO(J+JOFF)
 !                           write(*,*)'IJ+IJOFF+IADD,I,J',IJ+IJOFF+IADD,
 !     &                                                   I+IOFF,J+JOFF
 !                           write(*,*)'IJOFF,IOFF,JOFF,IADD',
@@ -597,11 +619,12 @@ C
 C         
          CALL OUTPAK(INTAO,NTBAS(0),-1,LUPRI)
         Endif        !(IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0)
+        deallocate(BUF)
         deallocate(TD)
         deallocate(NUMIR)
         deallocate(R)
         deallocate(W)
-10    CONTINUE
+10    CONTINUE   !IATOM
 C      
       IF(NDEG.GT.0) THEN
 C       Scale weights with multiplicity of center
@@ -642,9 +665,6 @@ C     sunaga
       RADANGC(3:3) = '.'
       RADANGC(4:5) = ANGC
       RADANGC(6:6) = LABEL(1:1)
-C      write(RADANGC(1,2),'(I2)')RADC
-C      write(RADANGC(3),'(A)')"."
-C      write(RADANGC(4,5),'(I2)')ANGC
       write(*,*)RADANGC
 C      OPEN(30,FILE=RADANGC,STATUS='NEW',  
 C     &     FORM='FORMATTED',ACCESS='SEQUENTIAL')
@@ -665,7 +685,7 @@ C
       deallocate(C)
       deallocate(ANG)
       deallocate(GAO)
-      deallocate(BUF)
+C      deallocate(BUF)
       deallocate(BUFGAO)
       deallocate(INTAO)
       CALL QEXIT('NUMINT_ANG')
@@ -1857,7 +1877,9 @@ C     C      ... Center of IATOM:
 C                It is obtained by CALL SET_GRID_INFO(NAT,NUM,ZAN,C)
 C     GRASP  ... TRUE : GRASP grid
 C                FALSE: DIRAC grid
-C     MAT    ... 
+C     MAT    ... DIAG :
+C                ANTI :
+C                OFFD :
 C
 C     On output:
 C     INTSO ... AO matrix at SO basis after the integration + previous INTSO     
@@ -1970,53 +1992,6 @@ C
          ENDIF
       ENDIF
       IF(MAT.EQ.'ANTI')ALPHA(1) = DM1
-CCCCCCCCCCCCC      
-c$$$      IF(MAT.EQ.'DIAG')THEN
-c$$$         IA1 = 1
-c$$$         IB1 = 1
-c$$$         IA2 = 2
-c$$$         IB2 = 2
-c$$$         ITC1 = 1
-c$$$         ALPHA1 = D1
-c$$$         ALPHA2 = D1
-c$$$         IF(MC.EQ.2)THEN
-c$$$            ITC2 =  NTBAS(1)*(NTBAS(0)+1) + 1
-c$$$            IOFA1 = 1
-c$$$            IOFB1 = 1
-c$$$            IOFA2 = 1 + NTBAS(1)
-c$$$            IOFB2 = 1 + NTBAS(1)
-c$$$         ELSE
-c$$$            ITC2 = 1            
-c$$$            IOFA1 = 1
-c$$$            IOFB1 = 1
-c$$$            IOFA2 = 1
-c$$$            IOFB2 = 1
-c$$$         ENDIF         
-c$$$      ELSE !ANTI or OFFD
-c$$$         IA1 = 2
-c$$$         IB1 = 1
-c$$$         IA2 = 1
-c$$$         IB2 = 2
-c$$$         ALPHA1 = D1  !Only difference between and ANTI and OFFD
-c$$$         ALPHA2 = D1
-c$$$         IF(MC.EQ.2)THEN
-c$$$            ITC1 =  NTBAS(1)          + 1
-c$$$            ITC2 =  NTBAS(1)*NTBAS(0) + 1
-c$$$            IOFA1 = 1 + NTBAS(1)
-c$$$            IOFB1 = 1
-c$$$            IOFA2 = 1
-c$$$            IOFB2 = 1 + NTBAS(1)
-c$$$         ELSE
-c$$$            ITC1 = 1
-c$$$            ITC2 = 1            
-c$$$            IOFA1 = 1
-c$$$            IOFB1 = 1
-c$$$            IOFA2 = 1
-c$$$            IOFB2 = 1
-c$$$         ENDIF
-c$$$      ENDIF
-c$$$      IF(MAT.EQ.'ANTI')ALPHA1 = DM1
-c$$$CCCCCCCCCCCCC      
 C
       nr_points_on_this_proc=MXNP*m
 C
@@ -2110,7 +2085,11 @@ CCCCCCCC
 C          CALL DGEMM('T','N',NTBAS(IA1),NTBAS(IB1),m,
 C     &    ALPHA1,BUFGAO(1,IOFA1),m,GAO(1,IOFB1),m,D0,TC(ITC1),NTBAS(0))
 C          CALL DGEMM('T','N',NTBAS(IA2),NTBAS(IB2),m,
-C     &    ALPHA2,BUFGAO(1,IOFA2),m,GAO(1,IOFB2),m,D0,TC(ITC2),NTBAS(0))          
+C     &    ALPHA2,BUFGAO(1,IOFA2),m,GAO(1,IOFB2),m,D0,TC(ITC2),NTBAS(0))
+          IBUG = NTBAS(0)*69 + 2
+C          IF(IR.EQ.5)THEN
+C              write(*,*)'TC(ibug),BUF,WT8,iy',BUFGAO(iy,IBUG)
+C          ENDIF   
           DO IC = 1, MC
            CALL DGEMM('T','N',NTBAS(IA(IC)),NTBAS(IB(IC)),m,
      &                 ALPHA(IC),BUFGAO(1,IOFA(IC)),m,GAO(1,IOFB(IC)),
@@ -2122,18 +2101,21 @@ C             IR = IR + 1
           deallocate(GAO)
           deallocate(BUFGAO)
         end do                ! IR
-          IBUG = 139
           write(*,*)'IBUG',IBUG
           DO IR=1,MXNP
              write(*,*)'TD,R,IR',TD(IBUG,IR),R(IR),IR
           ENDDO   
           write(*,*)
-          write(*,*)'IBUG+NTBAS(0)',IBUG+NTBAS(0)
+          write(*,*)'IBUG+1',IBUG+2
           DO IR=1,MXNP
-             write(*,*)'TD,R,IR',TD(IBUG+NTBAS(0),IR),R(IR),IR
+             write(*,*)'TD,R,IR',TD(IBUG+2,IR),R(IR),IR
           ENDDO   
 C         write(*,*)'INTAO,IBUG+2',INTAO(IBUG+2*NTBAS(0)),IBUG+2*NTBAS(0)         
-        CALL QUAD2(INTAOBUF,TD,MXNP,NDIM2)
+          CALL QUAD2(INTAOBUF,TD,MXNP,NDIM2)
+          write(*,*)
+          write(*,*)'forTD'
+        CALL OUTPUT(INTAOBUF,1,NTBAS(0),1,NTBAS(0),
+     &                  NTBAS(0),NTBAS(0),-1,LUPRI)
         deallocate(TD)
       ELSE  !DIRAC grid from here
         do IR = 1, MXNP
@@ -2383,7 +2365,7 @@ C
       K = ND2-N1D2+1
       JJ = J+K
       JJ1 = JJ+1
-      IF(II.EQ.139)THEN
+      IF(II.EQ.16424)THEN
       DO 25 I = JJ1,NR-3,2
          SUM = SUM + W1*TE(II,I) + W2*TE(II,I+1)
          write(*,*)"SUM,I",SUM,I
