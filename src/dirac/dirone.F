@@ -103,8 +103,8 @@ C
 C     Self-energy(3component)
 C
       ELSEIF (CLSINT(I)(3:6).EQ.'FGMG') THEN
-C        CALL NUMINT_ANGOLD(I,COMB,IPRONE) 
-        CALL NUMINT_ANG(I,COMB,IPRONE) 
+        CALL NUMINT_ANGOLD(I,COMB,IPRONE) 
+C        CALL NUMINT_ANG(I,COMB,IPRONE) 
 C
 C     Self-energy(Flambaum)
 C
@@ -411,6 +411,7 @@ C** SL - block
                        IJ = IJ + 1  
 C                        BUF(IJ+IJOFF+IADD)=DM1*GAO(I+IOFF)*GAO(J+JOFF)
                        BUF(IJ+IJOFF+IADD,iy)=DM1*GAO(I+IOFF)*GAO(J+JOFF)
+     &                                        *ANG(iy,IXYZ)*ANG(iy,4)
 C
 C  This minus DSCAL is due to Beta Alpha, although we use Alpha. 
 C
@@ -429,6 +430,7 @@ C** LS - block
                            IJ = IJ + 1  
 C                           BUF(IJ+IJOFF+IADD)=GAO(I+IOFF)*GAO(J+JOFF)
                            BUF(IJ+IJOFF+IADD,iy)=GAO(I+IOFF)*GAO(J+JOFF)
+     &                                           *ANG(iy,IXYZ)*ANG(iy,4)
 !                           write(*,*)'IJ+IJOFF+IADD,I,J',IJ+IJOFF+IADD,
 !     &                                                   I+IOFF,J+JOFF
 !                           write(*,*)'IJOFF,IOFF,JOFF,IADD',
@@ -441,12 +443,8 @@ C                           BUF(IJ+IJOFF+IADD)=GAO(I+IOFF)*GAO(J+JOFF)
                    ENDIF   !(IBTXOR(IREP,JREP).EQ.IREPOP)
                  ENDDO
                ENDDO
-!              stop 
-C$$$
-CCCCC 
-C sym
-CCCCC
-               WT8G(iy) = ANG(iy,IXYZ)*ANG(iy,4)
+               WT8G(iy) = D1
+C               WT8G(iy) = ANG(iy,IXYZ)*ANG(iy,4)
                IBUG = 138*139/2 + 1
 C               IBUG =  1
 C               CALL DAXPY(NDIM2,WT8G(iy),BUF(1,iy),1,TC,1)
@@ -2366,6 +2364,8 @@ C
       JJ = J+K
       JJ1 = JJ+1
       IF(II.EQ.16424)THEN
+         write(*,*)
+         write(*,*)'IBUG',II
       DO 25 I = JJ1,NR-3,2
          SUM = SUM + W1*TE(II,I) + W2*TE(II,I+1)
          write(*,*)"SUM,I",SUM,I
@@ -2377,8 +2377,59 @@ C
      &          + W5*( TE(II,JJ1)  + TE(II,NR-1) )
      &          + W6*( TE(II,JJ+2) + TE(II,NR-2) )
      &          + W7*( TE(II,JJ+3) + TE(II,NR-3) )
-         write(*,*)'SUM3',SUM
-      ELSE
+      write(*,*)'SUM3',SUM
+      write(*,*)'TE(II,JJ), TE(II,NR)',TE(II,JJ), TE(II,NR)
+      write(*,*)'TE(II,JJ1), TE(II,NR-1)',TE(II,JJ1), TE(II,NR-1)
+      write(*,*)'TE(II,JJ+2), TE(II,NR-2)',TE(II,JJ+2), TE(II,NR-2)
+      write(*,*)'TE(II,JJ+3), TE(II,NR-3)',TE(II,JJ+3), TE(II,NR-3)
+      write(*,*)'J,K,JJ',J,K,JJ
+      write(*,*)'ND2,N1D2',ND2,N1D2
+      ELSEIF(II.EQ.16426)THEN
+      DO 26 I = JJ1,NR-3,2
+         SUM = SUM + W1*TE(II,I) + W2*TE(II,I+1)
+         write(*,*)"SUM,I",SUM,I
+ 26   CONTINUE
+         write(*,*)'SUM1',SUM
+      SUM = SUM + W1*TE(II,NR-1)
+         write(*,*)'SUM2',SUM
+      SUM = SUM + W4*( TE(II,JJ)   + TE(II,NR)   )
+     &          + W5*( TE(II,JJ1)  + TE(II,NR-1) )
+     &          + W6*( TE(II,JJ+2) + TE(II,NR-2) )
+     &          + W7*( TE(II,JJ+3) + TE(II,NR-3) )
+         write(*,*)'SUM3',SUM         
+      ELSEIF(II.EQ.9592)THEN
+      DO 27 I = JJ1,NR-3,2
+         SUM = SUM + W1*TE(II,I) + W2*TE(II,I+1)
+         write(*,*)"SUM,I",SUM,I
+ 27   CONTINUE
+         write(*,*)'SUM1',SUM
+      SUM = SUM + W1*TE(II,NR-1)
+         write(*,*)'SUM2',SUM
+      SUM = SUM + W4*( TE(II,JJ)   + TE(II,NR)   )
+     &          + W5*( TE(II,JJ1)  + TE(II,NR-1) )
+     &          + W6*( TE(II,JJ+2) + TE(II,NR-2) )
+     &          + W7*( TE(II,JJ+3) + TE(II,NR-3) )
+      write(*,*)'SUM3',SUM
+      write(*,*)'TE(II,JJ), TE(II,NR)',TE(II,JJ), TE(II,NR)
+      write(*,*)'TE(II,JJ1), TE(II,NR-1)',TE(II,JJ1), TE(II,NR-1)
+      write(*,*)'TE(II,JJ+2), TE(II,NR-2)',TE(II,JJ+2), TE(II,NR-2)
+      write(*,*)'TE(II,JJ+3), TE(II,NR-3)',TE(II,JJ+3), TE(II,NR-3)
+      write(*,*)'J,K,JJ',J,K,JJ
+      write(*,*)'ND2,N1D2',ND2,N1D2      
+      ELSEIF(II.EQ.9593)THEN
+      DO 28 I = JJ1,NR-3,2
+         SUM = SUM + W1*TE(II,I) + W2*TE(II,I+1)
+         write(*,*)"SUM,I",SUM,I
+ 28   CONTINUE
+         write(*,*)'SUM1',SUM
+      SUM = SUM + W1*TE(II,NR-1)
+         write(*,*)'SUM2',SUM
+      SUM = SUM + W4*( TE(II,JJ)   + TE(II,NR)   )
+     &          + W5*( TE(II,JJ1)  + TE(II,NR-1) )
+     &          + W6*( TE(II,JJ+2) + TE(II,NR-2) )
+     &          + W7*( TE(II,JJ+3) + TE(II,NR-3) )
+         write(*,*)'SUM3',SUM         
+      ELSE   
       DO 30 I = JJ1,NR-3,2
          SUM = SUM + W1*TE(II,I) + W2*TE(II,I+1)
 !         write(*,*)"TE5",TE(I) !sunaga
