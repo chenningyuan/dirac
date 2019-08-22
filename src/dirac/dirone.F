@@ -103,13 +103,12 @@ C
 C     Self-energy(3component)
 C
       ELSEIF (CLSINT(I)(3:6).EQ.'FGMG') THEN
-        CALL NUMINT_ANGOLD(I,COMB,IPRONE) 
-C        CALL NUMINT_ANG(I,COMB,IPRONE) 
+C        CALL NUMINT_ANGOLD(I,COMB,IPRONE) 
+        CALL NUMINT_ANG(I,COMB,IPRONE) 
 C
 C     Self-energy(Flambaum)
 C
       ELSEIF (CLSINT(I)(1:4).EQ.'SEFG') THEN
-C     sunaga
         IF(NOSMLV) COMB(4:4) = 'F'
         CALL NUMINT(I,COMB,IPRONE)       
 C
@@ -1333,8 +1332,8 @@ C
            CALL INTSUM(INTAO,NDIM2,NUMIR,R,MXNP,ANG,m,IXYZ,C(1,IATOM),
      &          num_grid_cfg_grasp,'ANTI',IPRINT)
            IBUG = 139
-           write(*,*)'INTAO,IBUG',INTAO(IBUG),IBUG
-         write(*,*)'INTAO,IBUG+1',INTAO(IBUG+NTBAS(0)),IBUG+NTBAS(0)
+C           write(*,*)'INTAO,IBUG',INTAO(IBUG),IBUG
+C         write(*,*)'INTAO,IBUG+1',INTAO(IBUG+NTBAS(0)),IBUG+NTBAS(0)
          ELSE  ! num_grid_cfg_grasp: DIRAC grid start from here
 !     The grids are calculated at MEMSET routine.           
            R(1) = RNT
@@ -1395,14 +1394,6 @@ c$$$C
 C           
          ENDIF   !num_grid_cfg_grasp
 C
-         CALL HEADER('Numerical ovelap integral',-1)
-         
-!         DO II = 1,NDIM2
-!            write(*,*)'TD',TD(II,1)
-!         ENDDO
-!     CALL QUAD2(RESULT,TD,MXNP,NDIM2) 
-!     CALL QUAD2(INTAO,TD,MXNP,NDIM2)
-!         CALL RADINT_WRAPPER(INTAO,TD,R,W,MXNP,NDIM2)
 C         
 C         CALL OUTPAK(INTAO,NTBAS(0),-1,LUPRI) !debug
 c$$$         IOFF = 1 
@@ -1420,9 +1411,12 @@ c$$$         ENDDO
 c$$$  write(*,*)
 C         
 C     writing the matrix in output
-C         
+C
+         IF(IPRINT.GE.2)THEN
+            CALL HEADER('Numerical ovelap integral',-1)
             CALL OUTPUT(INTAO,1,NTBAS(0),1,NTBAS(0),
-     &                   NTBAS(0),NTBAS(0),-1,LUPRI)
+     &           NTBAS(0),NTBAS(0),-1,LUPRI)
+         ENDIF !debug   
 C          CALL OUTPAK(INTAO(1),NTBAS(0),-1,LUPRI) !debug
         Endif        !(IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0)
         deallocate(NUMIR)
@@ -1477,12 +1471,14 @@ C     sunaga
       RADANGC(4:5) = ANGC  !debug, numerical integration
       RADANGC(6:6) = LABEL(1:1)
       write(*,*)RADANGC
+      IF(IPRINT.GE.2)THEN      
       OPEN(30,FILE=RADANGC,STATUS='REPLACE')
       DO I = 1,NDIM2
          write(30,*)INTAOTRI(I)
       ENDDO   
       write(30,*)'INTAO,RADC,ANGC',RADC,ANGC,LABEL
       CLOSE(30,STATUS='KEEP')
+      ENDIF
 C      write(*,*) "RADINT,log,NRAD",num_grid_cfg_RADINT,
 C     &  log10(num_grid_cfg_RADINT),NRAD
 ! debug time counting
@@ -1772,11 +1768,12 @@ C     writing the matrix in output
 C         
          ENDIF   !num_grid_cfg_grasp
 C
-         CALL HEADER('Numerical ovelap integral',-1)
 C
+         IF(IPRINT.GE.2)THEN
+            CALL HEADER('Numerical ovelap integral',-1)
             CALL OUTPUT(INTAO,1,NTBAS(0),1,NTBAS(0),
-     &                   NTBAS(0),NTBAS(0),-1,LUPRI)
-C         CALL OUTPAK(INTAO(1),NTBAS(0),-1,LUPRI) !debug
+     &           NTBAS(0),NTBAS(0),-1,LUPRI)
+         ENDIF !debug   
         Endif        !(IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0)
         deallocate(NUMIR)
         deallocate(R)
@@ -1825,12 +1822,14 @@ C      write(RADANGC(4,5),'(I2)')ANGC
       write(*,*)RADANGC
 C      OPEN(30,FILE=RADANGC,STATUS='NEW',  
 C     &     FORM='FORMATTED',ACCESS='SEQUENTIAL')
+      IF(IPRINT.GE.2)THEN      
       OPEN(30,FILE=RADANGC,STATUS='REPLACE')
       DO I = 1,NDIM2
          write(30,*)INTAOTRI(I)
       ENDDO   
       write(30,*)'INTAO,RADC,ANGC',RADC,ANGC,LABEL
       CLOSE(30,STATUS='KEEP')
+      ENDIF
 C      write(*,*) "RADINT,log,NRAD",num_grid_cfg_RADINT,
 C     &  log10(num_grid_cfg_RADINT),NRAD
 ! debug time counting
@@ -1939,16 +1938,16 @@ C
       IF(IXYZ.EQ.0)THEN
         CALL DCOPY(m,ANG(1,4),1,ANGXYZ,1)
         MTXYZ = 0 
-        write(*,*)'IXYZ=0'
+C        write(*,*)'IXYZ=0'
       ELSE  
         IF (IXYZ.LE.3)THEN
           DO iy = 1, m
             ANGXYZ(iy) = ANG(iy,4)*ANG(iy,IXYZ)
           ENDDO
           MTXYZ = ISYMAX(IXYZ,2)
-         write(*,*)'IF,IXYZ=',IXYZ
-         write(*,*)'(ISYMAX(IXYZ,1)',ISYMAX(IXYZ,1)
-         write(*,*)'(ISYMAX(IXYZ,2)',ISYMAX(IXYZ,2)
+C         write(*,*)'IF,IXYZ=',IXYZ
+C         write(*,*)'(ISYMAX(IXYZ,1)',ISYMAX(IXYZ,1)
+C         write(*,*)'(ISYMAX(IXYZ,2)',ISYMAX(IXYZ,2)
        ELSE
          write(*,*)'IXYZ=',IXYZ
          write(*,*)'is wrong number!' !debug
@@ -2080,11 +2079,7 @@ CCCCCCCC
 C          CALL DGEMM('T','N',NTBAS(0),NTBAS(0),m,
 C     &                D1,BUFGAO,m,GAO,m,D0,TC,NTBAS(0))
 CCCCCCCC
-C          CALL DGEMM('T','N',NTBAS(IA1),NTBAS(IB1),m,
-C     &    ALPHA1,BUFGAO(1,IOFA1),m,GAO(1,IOFB1),m,D0,TC(ITC1),NTBAS(0))
-C          CALL DGEMM('T','N',NTBAS(IA2),NTBAS(IB2),m,
-C     &    ALPHA2,BUFGAO(1,IOFA2),m,GAO(1,IOFB2),m,D0,TC(ITC2),NTBAS(0))
-          IBUG = NTBAS(0)*69 + 2
+C          IBUG = NTBAS(0)*69 + 2
 C          IF(IR.EQ.5)THEN
 C              write(*,*)'TC(ibug),BUF,WT8,iy',BUFGAO(iy,IBUG)
 C          ENDIF   
@@ -2099,21 +2094,21 @@ C             IR = IR + 1
           deallocate(GAO)
           deallocate(BUFGAO)
         end do                ! IR
-          write(*,*)'IBUG',IBUG
-          DO IR=1,MXNP
-             write(*,*)'TD,R,IR',TD(IBUG,IR),R(IR),IR
-          ENDDO   
-          write(*,*)
-          write(*,*)'IBUG+1',IBUG+2
-          DO IR=1,MXNP
-             write(*,*)'TD,R,IR',TD(IBUG+2,IR),R(IR),IR
-          ENDDO   
+C          write(*,*)'IBUG',IBUG
+C          DO IR=1,MXNP
+C             write(*,*)'TD,R,IR',TD(IBUG,IR),R(IR),IR
+C          ENDDO   
+C          write(*,*)
+C          write(*,*)'IBUG+1',IBUG+2
+C          DO IR=1,MXNP
+C             write(*,*)'TD,R,IR',TD(IBUG+2,IR),R(IR),IR
+C          ENDDO   
 C         write(*,*)'INTAO,IBUG+2',INTAO(IBUG+2*NTBAS(0)),IBUG+2*NTBAS(0)         
           CALL QUAD2(INTAOBUF,TD,MXNP,NDIM2)
           write(*,*)
           write(*,*)'forTD'
-        CALL OUTPUT(INTAOBUF,1,NTBAS(0),1,NTBAS(0),
-     &                  NTBAS(0),NTBAS(0),-1,LUPRI)
+C        CALL OUTPUT(INTAOBUF,1,NTBAS(0),1,NTBAS(0),
+C     &                  NTBAS(0),NTBAS(0),-1,LUPRI)
         deallocate(TD)
       ELSE  !DIRAC grid from here
         do IR = 1, MXNP
@@ -2139,7 +2134,7 @@ C
 C     &        min(max_block_length, nr_points_on_this_proc - IOF_block+ 1)
             nblock_length = min(nblock_length, m)
 C              IF (m_NUM.EQ.m_NUM_MAX) nblock_length = mod(m,100)                
-             write(*,*)'nblock_length,IOF_block',nblock_length,IOF_block
+C             write(*,*)'nblock_length,IOF_block',nblock_length,IOF_block
             allocate( GAO2(nblock_length, NTBAS(0)) )
             CALL DZERO(GAO2,nblock_length*NTBAS(0))
             X8 = C(1,1)
@@ -2153,7 +2148,7 @@ C
             do ishell = 1, nr_shells
               do isym = 0, nr_boson_ireps - 1
 C              write(*,*)'ishell,nr_boson_ireps',nr_shells,nr_boson_ireps
-                 write(*,*)'cartesian_deg', cartesian_deg(ishell)
+C                 write(*,*)'cartesian_deg', cartesian_deg(ishell)
                 if (iand(isym, shell_stabilizing_irep(ishell)) == 0)then
                  sx = bitstring_parity(iand(irep_of_axes(1), isym))
      &                * center_xyz(shell_center(ishell), 1)
@@ -2241,28 +2236,9 @@ C      allocate( INTSOBUF (NDIM2) )
 C      CALL DZERO(INTSOBUF,NDIM2)
 C      
       CALL MTAOSO(INTAOBUF,INTSO,NTBAS(0),MTXYZ,IPRINT)
-C      IF(IXYZ.EQ.0)THEN
-C      CALL MTAOSO(INTAOBUF,INTSO,NTBAS(0),0,IPRINT) 
-C      ELSE
-C         write(*,*)'IF,IXYZ=',IXYZ
-C         write(*,*)'(ISYMAX(IXYZ,1)',ISYMAX(IXYZ,1)
-C         write(*,*)'(ISYMAX(IXYZ,2)',ISYMAX(IXYZ,2)
-C         CALL MTAOSO(INTAOBUF,INTSO,NTBAS(0),
-C     &                ISYMAX(IXYZ,2),IPRINT) 
-C      ENDIF
-C
 C      write(*,*)'OUTPUT2'      
 C            CALL OUTPUT(INTSOBUF,1,NTBAS(0),1,NTBAS(0),
 C     &                   NTBAS(0),NTBAS(0),-1,LUPRI)  !debug?
-CCCCCCCCCCCCCCCCCCCCC      
-CC
-CC    Transformation from full-matrix to triangle-matrix
-CC
-C      CALL DZERO(TC,NDIM2)
-C      CALL MTFULTRI(INTSOBUF,TC,NTBAS(0),IPRINT)
-CC
-C      CALL DAXPY(NDIM2,D1,TC,1,INTAO,1)
-CCCCCCCCCCCCCCCCCCCCC      
       deallocate( TC      )
       deallocate( INTAOBUF)
 C      deallocate( INTSOBUF)
@@ -2363,83 +2339,82 @@ C
       K = ND2-N1D2+1
       JJ = J+K
       JJ1 = JJ+1
-      IF(II.EQ.16424)THEN
-         write(*,*)
-         write(*,*)'IBUG',II
-      DO 25 I = JJ1,NR-3,2
-         SUM = SUM + W1*TE(II,I) + W2*TE(II,I+1)
-         write(*,*)"SUM,I",SUM,I
- 25   CONTINUE
-         write(*,*)'SUM1',SUM
-      SUM = SUM + W1*TE(II,NR-1)
-         write(*,*)'SUM2',SUM
-      SUM = SUM + W4*( TE(II,JJ)   + TE(II,NR)   )
-     &          + W5*( TE(II,JJ1)  + TE(II,NR-1) )
-     &          + W6*( TE(II,JJ+2) + TE(II,NR-2) )
-     &          + W7*( TE(II,JJ+3) + TE(II,NR-3) )
-      write(*,*)'SUM3',SUM
-      write(*,*)'TE(II,JJ), TE(II,NR)',TE(II,JJ), TE(II,NR)
-      write(*,*)'TE(II,JJ1), TE(II,NR-1)',TE(II,JJ1), TE(II,NR-1)
-      write(*,*)'TE(II,JJ+2), TE(II,NR-2)',TE(II,JJ+2), TE(II,NR-2)
-      write(*,*)'TE(II,JJ+3), TE(II,NR-3)',TE(II,JJ+3), TE(II,NR-3)
-      write(*,*)'J,K,JJ',J,K,JJ
-      write(*,*)'ND2,N1D2',ND2,N1D2
-      ELSEIF(II.EQ.16426)THEN
-      DO 26 I = JJ1,NR-3,2
-         SUM = SUM + W1*TE(II,I) + W2*TE(II,I+1)
-         write(*,*)"SUM,I",SUM,I
- 26   CONTINUE
-         write(*,*)'SUM1',SUM
-      SUM = SUM + W1*TE(II,NR-1)
-         write(*,*)'SUM2',SUM
-      SUM = SUM + W4*( TE(II,JJ)   + TE(II,NR)   )
-     &          + W5*( TE(II,JJ1)  + TE(II,NR-1) )
-     &          + W6*( TE(II,JJ+2) + TE(II,NR-2) )
-     &          + W7*( TE(II,JJ+3) + TE(II,NR-3) )
-         write(*,*)'SUM3',SUM         
-      ELSEIF(II.EQ.9592)THEN
-      DO 27 I = JJ1,NR-3,2
-         SUM = SUM + W1*TE(II,I) + W2*TE(II,I+1)
-         write(*,*)"SUM,I",SUM,I
- 27   CONTINUE
-         write(*,*)'SUM1',SUM
-      SUM = SUM + W1*TE(II,NR-1)
-         write(*,*)'SUM2',SUM
-      SUM = SUM + W4*( TE(II,JJ)   + TE(II,NR)   )
-     &          + W5*( TE(II,JJ1)  + TE(II,NR-1) )
-     &          + W6*( TE(II,JJ+2) + TE(II,NR-2) )
-     &          + W7*( TE(II,JJ+3) + TE(II,NR-3) )
-      write(*,*)'SUM3',SUM
-      write(*,*)'TE(II,JJ), TE(II,NR)',TE(II,JJ), TE(II,NR)
-      write(*,*)'TE(II,JJ1), TE(II,NR-1)',TE(II,JJ1), TE(II,NR-1)
-      write(*,*)'TE(II,JJ+2), TE(II,NR-2)',TE(II,JJ+2), TE(II,NR-2)
-      write(*,*)'TE(II,JJ+3), TE(II,NR-3)',TE(II,JJ+3), TE(II,NR-3)
-      write(*,*)'J,K,JJ',J,K,JJ
-      write(*,*)'ND2,N1D2',ND2,N1D2      
-      ELSEIF(II.EQ.9593)THEN
-      DO 28 I = JJ1,NR-3,2
-         SUM = SUM + W1*TE(II,I) + W2*TE(II,I+1)
-         write(*,*)"SUM,I",SUM,I
- 28   CONTINUE
-         write(*,*)'SUM1',SUM
-      SUM = SUM + W1*TE(II,NR-1)
-         write(*,*)'SUM2',SUM
-      SUM = SUM + W4*( TE(II,JJ)   + TE(II,NR)   )
-     &          + W5*( TE(II,JJ1)  + TE(II,NR-1) )
-     &          + W6*( TE(II,JJ+2) + TE(II,NR-2) )
-     &          + W7*( TE(II,JJ+3) + TE(II,NR-3) )
-         write(*,*)'SUM3',SUM         
-      ELSE   
+c$$$      IF(II.EQ.16424)THEN
+c$$$         write(*,*)
+c$$$         write(*,*)'IBUG',II
+c$$$      DO 25 I = JJ1,NR-3,2
+c$$$         SUM = SUM + W1*TE(II,I) + W2*TE(II,I+1)
+c$$$         write(*,*)"SUM,I",SUM,I
+c$$$ 25   CONTINUE
+c$$$         write(*,*)'SUM1',SUM
+c$$$      SUM = SUM + W1*TE(II,NR-1)
+c$$$         write(*,*)'SUM2',SUM
+c$$$      SUM = SUM + W4*( TE(II,JJ)   + TE(II,NR)   )
+c$$$     &          + W5*( TE(II,JJ1)  + TE(II,NR-1) )
+c$$$     &          + W6*( TE(II,JJ+2) + TE(II,NR-2) )
+c$$$     &          + W7*( TE(II,JJ+3) + TE(II,NR-3) )
+c$$$      write(*,*)'SUM3',SUM
+c$$$      write(*,*)'TE(II,JJ), TE(II,NR)',TE(II,JJ), TE(II,NR)
+c$$$      write(*,*)'TE(II,JJ1), TE(II,NR-1)',TE(II,JJ1), TE(II,NR-1)
+c$$$      write(*,*)'TE(II,JJ+2), TE(II,NR-2)',TE(II,JJ+2), TE(II,NR-2)
+c$$$      write(*,*)'TE(II,JJ+3), TE(II,NR-3)',TE(II,JJ+3), TE(II,NR-3)
+c$$$      write(*,*)'J,K,JJ',J,K,JJ
+c$$$      write(*,*)'ND2,N1D2',ND2,N1D2
+c$$$      ELSEIF(II.EQ.16426)THEN
+c$$$      DO 26 I = JJ1,NR-3,2
+c$$$         SUM = SUM + W1*TE(II,I) + W2*TE(II,I+1)
+c$$$         write(*,*)"SUM,I",SUM,I
+c$$$ 26   CONTINUE
+c$$$         write(*,*)'SUM1',SUM
+c$$$      SUM = SUM + W1*TE(II,NR-1)
+c$$$         write(*,*)'SUM2',SUM
+c$$$      SUM = SUM + W4*( TE(II,JJ)   + TE(II,NR)   )
+c$$$     &          + W5*( TE(II,JJ1)  + TE(II,NR-1) )
+c$$$     &          + W6*( TE(II,JJ+2) + TE(II,NR-2) )
+c$$$     &          + W7*( TE(II,JJ+3) + TE(II,NR-3) )
+c$$$         write(*,*)'SUM3',SUM         
+c$$$      ELSEIF(II.EQ.9592)THEN
+c$$$      DO 27 I = JJ1,NR-3,2
+c$$$         SUM = SUM + W1*TE(II,I) + W2*TE(II,I+1)
+c$$$         write(*,*)"SUM,I",SUM,I
+c$$$ 27   CONTINUE
+c$$$         write(*,*)'SUM1',SUM
+c$$$      SUM = SUM + W1*TE(II,NR-1)
+c$$$         write(*,*)'SUM2',SUM
+c$$$      SUM = SUM + W4*( TE(II,JJ)   + TE(II,NR)   )
+c$$$     &          + W5*( TE(II,JJ1)  + TE(II,NR-1) )
+c$$$     &          + W6*( TE(II,JJ+2) + TE(II,NR-2) )
+c$$$     &          + W7*( TE(II,JJ+3) + TE(II,NR-3) )
+c$$$      write(*,*)'SUM3',SUM
+c$$$      write(*,*)'TE(II,JJ), TE(II,NR)',TE(II,JJ), TE(II,NR)
+c$$$      write(*,*)'TE(II,JJ1), TE(II,NR-1)',TE(II,JJ1), TE(II,NR-1)
+c$$$      write(*,*)'TE(II,JJ+2), TE(II,NR-2)',TE(II,JJ+2), TE(II,NR-2)
+c$$$      write(*,*)'TE(II,JJ+3), TE(II,NR-3)',TE(II,JJ+3), TE(II,NR-3)
+c$$$      write(*,*)'J,K,JJ',J,K,JJ
+c$$$      write(*,*)'ND2,N1D2',ND2,N1D2      
+c$$$      ELSEIF(II.EQ.9593)THEN
+c$$$      DO 28 I = JJ1,NR-3,2
+c$$$         SUM = SUM + W1*TE(II,I) + W2*TE(II,I+1)
+c$$$         write(*,*)"SUM,I",SUM,I
+c$$$ 28   CONTINUE
+c$$$         write(*,*)'SUM1',SUM
+c$$$      SUM = SUM + W1*TE(II,NR-1)
+c$$$         write(*,*)'SUM2',SUM
+c$$$      SUM = SUM + W4*( TE(II,JJ)   + TE(II,NR)   )
+c$$$     &          + W5*( TE(II,JJ1)  + TE(II,NR-1) )
+c$$$     &          + W6*( TE(II,JJ+2) + TE(II,NR-2) )
+c$$$     &          + W7*( TE(II,JJ+3) + TE(II,NR-3) )
+c$$$         write(*,*)'SUM3',SUM         
+c$$$      ELSE   
       DO 30 I = JJ1,NR-3,2
          SUM = SUM + W1*TE(II,I) + W2*TE(II,I+1)
-!         write(*,*)"TE5",TE(I) !sunaga
  30   CONTINUE
       SUM = SUM + W1*TE(II,NR-1)
       SUM = SUM + W4*( TE(II,JJ)   + TE(II,NR)   )
      &          + W5*( TE(II,JJ1)  + TE(II,NR-1) )
      &          + W6*( TE(II,JJ+2) + TE(II,NR-2) )
      &          + W7*( TE(II,JJ+3) + TE(II,NR-3) )
-      ENDIF
+C      ENDIF
 C
 C   ADD THE CONTRIBUTION FROM 0 TO R(JJ), PLUS THE CONTRIBUTION
 C   TO SIMPSONS RULE FROM TE(JJ).
