@@ -129,10 +129,10 @@ class pam_enviroment:
         # agreed policy (Stefan,Miro,Ulf) - each user is responsible for what he has in $PATH
         if self.operating_system == 'AIX':
         #   IBM
-            self.mpirun = str(find_executable('poe'))
+            self.mpirun = find_executable('poe')
         else:
         #   Linux, Windows, ...
-            self.mpirun = str(find_executable('mpirun'))
+            self.mpirun = find_executable('mpirun')
 
         #  restrict distribution of working files over nodes by own flag/variable
         self.distribute = []
@@ -343,7 +343,7 @@ class pam_enviroment:
         else:
             print_error_message('scratch dir:'+self.scratch_dir+' not found/not accessible !')
         print("  Relevant for parallel builds:")
-        print("    mpi launcher         ",  self.mpirun)
+        print("    mpi launcher         ",  str(self.mpirun))
         print("    mpirun extra args    ",  self.mpiarg)
         print("    global scratch disk  ",  self.global_scratch_disk)
         print("    Machine file         ", self.machinefile)
@@ -941,7 +941,7 @@ Options are also read from ~/.diracrc"""
         if options.dest_mpi:
             self.parallel_run = True
             self.nr_proc = int(options.dest_mpi)
-            self.dirac_mpi_command = self.mpirun + ' -np ' + str(self.nr_proc) + ' '
+            self.dirac_mpi_command = str(self.mpirun) + ' -np ' + str(self.nr_proc) + ' '
             if self.mpiarg: 
                 self.dirac_mpi_command = self.dirac_mpi_command + str(self.mpiarg) + ' ' 
 
@@ -1454,7 +1454,7 @@ Options are also read from ~/.diracrc"""
            dirac_executable = path_to_script
 
         if self.parallel_run:
-            if self.mpirun == None:
+            if self.mpirun is None:
                 # radovan: it can happen that pam is called with --mpi but it doesn't find mpirun
                 #          then self.mpirun is None and we have to stop here otherwise pam calls
                 #          'None -np N /path/to/dirac.x'
@@ -1890,7 +1890,7 @@ Options are also read from ~/.diracrc"""
         print nice informative header after all Dirac run variables are properly setup
         """
         if self.parallel_run:
-            dirac_run = 'parallel (launcher: ' + self.mpirun + ')'
+            dirac_run = 'parallel (launcher: ' + str(self.mpirun) + ')'
         else:
             dirac_run = 'serial'
         if self.verbose:
