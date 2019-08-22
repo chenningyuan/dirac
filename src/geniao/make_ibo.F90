@@ -24,9 +24,9 @@ contains
         complex(8), intent(in)  :: CIbOcc(nmo2,nocc) ! The occupied MO in terms of IAOs
         type(cmo),  intent(in)  :: cspinor_fragment(n_fragments) ! MO-coefficients of the fragments
         complex(8), intent(out) :: LIbOcc(nmo2,nocc) ! The localized occupied MO in terms of IAOs
-        real(8)                 :: Aij, Bij, phi, func, fGrad, Loc, func0, Delta_func, max_condition
-        complex(8)              :: Qii, Qij, Qjj
-        complex(8), allocatable :: Ai(:), Aj(:), vec(:)
+        real(8)                 :: phi, func, fGrad, Aij, Qii, Qjj, Loc, max_condition
+        complex(8)              :: Bij, Qij, Pij
+        complex(8), allocatable :: C(:,:), Ai(:), Aj(:), vec(:)
 
         LIbOcc = CIbOcc
         conv = .false.
@@ -37,7 +37,6 @@ contains
 !        write(*,*)"Function n_A(i): number of |i>'s electrons located on the IAOs of the fragments."
         imo = 0
         orb_deloc = 0
-        func0 = 0.D0
         do i=1,n_fragments
 !           write(*,"(A16,I2,A7)")"------ FRAGMENT ", i, " ------"
 !           write(*,"(A12,A12)")"occ.MO","#.elec"
@@ -45,7 +44,6 @@ contains
            do j=1,nocc
               allocate(vec(nmoi))
               vec = LIbOcc(imo+1:imo+nmoi,j)
-              func0 = func0 + real(dot_product(vec,vec),8)**dble(Expnt)
 !              write(*,"(I12,F12.6)") j,real(dot_product(vec,vec))
               if (real(dot_product(vec,vec)) > 0.01D0) then
                  orb_deloc(j) = orb_deloc(j) + 1
@@ -71,7 +69,6 @@ contains
           ! The goal is to maximize this function. 
           ! Normally it requires between 5 and 10 iterations.
           call get_func(LIbOcc,cspinor_fragment,n_fragments,nmo2,nocc,Expnt,func)
-          Delta_func = func - func0
   
           ! Start the orbital localization procedure:
           fGrad = 0.D0
@@ -83,7 +80,7 @@ contains
                 ! Note that Aij is only the approximate diagonal elements of the Hessian, not the full one.
                 ! Bij is the gradient (see g_ij in Eq.(7) of [2])
                 Aij = 0.D0
-                Bij = 0.D0
+                Bij = dcmplx(0.D0,0.D0)
                 imo = 0
                 ! Increment Aij and Bij for each fragments:
                 do k=1,n_fragments
@@ -93,19 +90,19 @@ contains
                    Ai = LIbOcc(imo+1:imo+nmoi,i)
                    Aj = LIbOcc(imo+1:imo+nmoi,j)
                    ! Compute the charge matrix elements of fragment k
-                   Qii = dot_product(Ai,Ai) ! correspond to Mii in [3] (or z_i, because I labels a general reciprocal lattice vector 
-                   Qij = real(dot_product(Ai,Aj)) ! correspond to Mij in [3]
-                   Qjj = dot_product(Aj,Aj) ! correspond to Mjj in [3]
+                   Qii = real(dot_product(Ai,Ai)) ! dot product is real
+                   Qjj = real(dot_product(Aj,Aj)) ! dot product is real
+                   Qij = dot_product(Ai,Aj)       ! dot product is complex
                    if ((Expnt.eq.2) .or. (Expnt.eq.3)) then
-                   ! Pipek-Mezey localization
-                     Aij = Aij + real(conjg(Qij)*Qij - 0.25D0*conjg((Qii-Qjj))*(Qii-Qjj),8) ! Correspond to b in [3]
-                     Bij = Bij + real(Qij*(Qii - Qjj),8) ! Correspond to a in [3]
+                   ! Pipek-Mezey localization for complex orbitals
+                     Aij = Aij + 4.D0*abs(Qij)**2 - (Qii-Qjj)*(Qii-Qjj)
+                     Bij = Bij + 4.D0*Qij*(Qii - Qjj)
                    else if (Expnt.eq.4) then
-                   ! see Appendix D of [1].
-                     Aij = Aij + real( - Qii*Qii*Qii*Qii - Qjj*Qjj*Qjj*Qjj + &
-                         & 6.D0*(Qii*Qii + Qjj*Qjj)*conjg(Qij)*Qij + Qjj*Qii*Qii*Qii + &
-                         & Qii*Qjj*Qjj*Qjj,8)
-                     Bij = Bij + real(4.D0*Qij*(Qii*Qii*Qii - Qjj*Qjj*Qjj),8)
+                   ! Appendix D of Knizia's paper adapted for complex orbitals
+                     Bij = Bij + 4.D0*Qij*(Qii*Qii*Qii - Qjj*Qjj*Qjj)
+                     Aij = Aij - Qii*Qii*Qii*Qii - Qjj*Qjj*Qjj*Qjj + &
+                         & 6.D0*(Qii*Qii + Qjj*Qjj)*abs(Qij)**2 + Qjj*Qii*Qii*Qii + &
+                         & Qii*Qjj*Qjj*Qjj
                    else
                      write(*,*)"STOP: exponent should be 2, 3 or 4."
                      stop
@@ -114,21 +111,27 @@ contains
                    imo = imo + nmoi
                 enddo
 
-                if ((Aij*Aij + Bij*Bij) .lt. 1.0D-12) then
+                ! As orbitals are complex, we first isolate the phase factor that is needed to make Qij real
+                ! In this way we can apply the same equation as is used for real orbitals, by simply scaling one of the orbitals
+                Pij = Bij / abs(Bij)
+
+                ! Now perform the rotation:
+                if ((Aij*Aij + abs(Bij)**2) .lt. 1.0D-12) then
                   write(*,'(A17,I2,A1,I2,A9)')"Rotation of pair ",i,"/",j," ignored."
                 else
-                  phi = 0.25D0*datan2(Bij,-Aij)
-                  !Bij is the actual gradient. Aij is effectively
-                  !the second derivative at phi=0.
-                  fGrad = fGrad + Bij*Bij
                   allocate(Ai(nmo2))
                   allocate(Aj(nmo2))
-                  Ai = LIbOcc(:,i)
+                  phi = 0.25D0*datan2(abs(Bij),-Aij)
+                  !Bij is the actual gradient. Aij is effectively
+                  !the second derivative at phi=0.
+                  fGrad = fGrad + abs(Bij)**2
+                  Ai = LIbOcc(:,i) * Pij
                   Aj = LIbOcc(:,j)
                   LIbOcc(:,i) = dcos(phi)*Ai + dsin(phi)*Aj 
                   LIbOcc(:,j) = -dsin(phi)*Ai + dcos(phi)*Aj 
                   deallocate(Ai,Aj)
-                  max_condition = 16.D0*Aij*dcos(4.D0*phi) - 16.D0*Bij*dsin(4.D0*phi)
+                  ! condition for the maximum in Ref. [3].
+                  max_condition = 16.D0*Aij*dcos(4.D0*phi) - 16.D0*real(Bij)*dsin(4.D0*phi)
                   if (max_condition > 0.D0) then
                      write(*,*)"Warning: The condition for the maximum is not fulfilled &
                               & (i.e. max_condition is not < 0) for orbital pair i,j = ",i,j
@@ -193,7 +196,7 @@ contains
 
         use exacorr_mo
 
-        integer                 :: i,j,k,l, imo, nmoi
+        integer                 :: i,j,k,l,imo,nmoi
         integer, intent(in)     :: n_fragments, nmo2, nocc, Expnt
         type(cmo),  intent(in)  :: cspinor_fragment(n_fragments) ! MO-coefficients of the fragments
         complex(8), intent(in)  :: LIbOcc(nmo2,nocc) ! The localized occupied MO in terms of IAOs

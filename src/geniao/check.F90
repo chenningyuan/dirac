@@ -102,7 +102,7 @@ contains
         call check_normalization(IAO,nmo1,nmo2)
         call check_normalization(Cocc_IAO,nmo2,nocc)
         call check_normalization(Cocc_IBO_moB1,nmo1,nocc)
-        write(*,*) "Deviation of IBO_RDM from HF_RDM  : ", norm2([norm2(real(IBO_RDM-HF_RDM)),norm2(aimag(IBO_RDM-HF_RDM))])
+        write(*,*) "Deviation of IBO_RDM from HF_RDM  :", norm2([norm2(real(IBO_RDM-HF_RDM)),norm2(aimag(IBO_RDM-HF_RDM))])
         call check_SymOrth(IAO,S11,nmo1,nmo2)
         call check_SymOrth(Cocc_IBO_moB1,S11,nmo1,nocc)
         call deviation_nelec(IAO_RDM,nmo2,nocc)
