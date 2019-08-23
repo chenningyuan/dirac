@@ -6988,7 +6988,8 @@ C
       DO 200 X = 1, 3
       DO 200 Y = 1, 3
       DO 200 I = 1, 3
-         TINVER(X,Y) = TINVER(X,Y) + EIGVEC(X,I)*EIGVEC(Y,I)*EIGVALUE(I)
+         TINVER(X,Y) = TINVER(X,Y) + 
+     &                 EIGVECTOR(X,I)*EIGVECTOR(Y,I)*EIGVALUE(I)
   200 CONTINUE
 C
       DO 300 X = 1, 3
