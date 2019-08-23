@@ -20,8 +20,8 @@ contains
         complex(8), intent(in)  :: CIbOcc(nmo2,nocc) ! The occupied MO in terms of IAOs
         type(cmo),  intent(in)  :: cspinor_fragment(n_fragments) ! MO-coefficients of the fragments
         complex(8), intent(out) :: LIbOcc(nmo2,nocc) ! The localized occupied MO in terms of IAOs
-        real(8)                 :: phi, func, fGrad, Aij, Qii, Qjj, Loc
-        complex(8)              :: Bij, Qij, Pij
+        real(8)                 :: phi, func, fGrad, Aij, Qii, Qjj, Loc, Pij
+        complex(8)              :: Bij, Qij
         complex(8), allocatable :: C(:,:), Ai(:), Aj(:), vec(:)
 
         LIbOcc = CIbOcc
@@ -68,7 +68,7 @@ contains
              do j=1,nocc
                 allocate(vec(nmoi))
                 vec = LIbOcc(imo+1:imo+nmoi,j)
-                ! dot_product should work with complex matrices without any change:
+                ! dot_product works with complex matrices as well:
                 ! if vec is complex, dot_product = sum(conj(vec)*vec).
                 ! dot_product of a complex vector with itself is real.
                 func = func + real(dot_product(vec,vec))**dble(Expnt)
@@ -79,7 +79,6 @@ contains
   
           ! Start the orbital localization procedure:
           fGrad = 0.D0
-!          write(*,'(3A5,5A8)') "i","j","Frag","Qii","Qij","Qjj","Aij","Bij"
           ! Sum over all occupied orbital pairs i,j ; j < i
           do i=2,nocc
              do j=1,i-1
@@ -98,7 +97,7 @@ contains
                    ! Compute the charge matrix elements of fragment k
                    Qii = real(dot_product(Ai,Ai)) ! dot product is real
                    Qjj = real(dot_product(Aj,Aj)) ! dot product is real
-                   Qij = dot_product(Ai,Aj)       ! dot product is complex....
+                   Qij = dot_product(Ai,Aj)       ! dot product is complex
                    if ((Expnt.eq.2) .or. (Expnt.eq.3)) then
                    ! Pipek-Mezey localization for complex orbitals
                      Aij = Aij + 4.D0*abs(Qij)**2 - (Qii-Qjj)*(Qii-Qjj)
@@ -113,14 +112,14 @@ contains
                      write(*,*)"STOP: exponent should be 2, 3 or 4."
                      stop
                    end if
-!                   write(*,'(3I5,5F8.4)') i,j,k,Qii,Qij,Qjj,Aij,Bij
                    deallocate(C,Ai,Aj)
                    imo = imo + nmoi
                 enddo
 
-                ! As orbitals are complex, we first isolate the phase factor that is needed to make Qij real
-                ! In this way we can apply the same equation as is used for real orbitals, by simply scaling one of the orbitals
-                Pij = Bij / abs(Bij)
+                ! As orbitals are complex, we first calculate the complex phase of Bij
+                ! In this way we can apply the same equation as is used for real orbitals,
+                ! by simply scaling one of the orbitals with this phase factor
+                Pij = datan2(aimag(Bij),real(Bij))
 
                 ! Now perform the rotation:
                 if ((Aij*Aij + abs(Bij)**2) .gt. 1D-12) then
@@ -130,7 +129,11 @@ contains
                   !Bij is the actual gradient. Aij is effectively
                   !the second derivative at phi=0.
                   fGrad = fGrad + abs(Bij)**2
-                  Ai = LIbOcc(:,i) * Pij
+                  ! we multiply the bra function with the phase factor
+                  ! this makes Bij real and positive as was assumed in the calculation of phi
+                  ! reason to pick i rather than j is that in this way the phase of the first orbital is never changed
+                  ! this orbital changes only by mixing in other orbitals, similar to what is done in the real orbital case
+                  Ai = LIbOcc(:,i) * dcmplx(dcos(Pij),dsin(Pij))
                   Aj = LIbOcc(:,j)
                   LIbOcc(:,i) = dcos(phi)*Ai + dsin(phi)*Aj 
                   LIbOcc(:,j) = -dsin(phi)*Ai + dcos(phi)*Aj 
