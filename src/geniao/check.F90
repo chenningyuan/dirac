@@ -102,6 +102,7 @@ contains
         call check_normalization(IAO,nmo1,nmo2)
         call check_normalization(Cocc_IAO,nmo2,nocc)
         call check_normalization(Cocc_IBO_moB1,nmo1,nocc)
+        write(*,*) "Deviation of IBO_RDM from HF_RDM  :", norm2([norm2(real(IBO_RDM-HF_RDM)),norm2(aimag(IBO_RDM-HF_RDM))])
         call check_SymOrth(IAO,S11,nmo1,nmo2)
         call check_SymOrth(Cocc_IBO_moB1,S11,nmo1,nocc)
         call deviation_nelec(IAO_RDM,nmo2,nocc)
@@ -123,5 +124,6 @@ contains
         endif
 
         deallocate(IAO_Fock,IAO_RDM,HF_RDM,HF_Fock,IBO_RDM)
+     55 FORMAT( 100(:,1X,'(',G10.2,',',G10.2,')') ) ! Useful format to write complex matrices.
  end subroutine test_IAO_and_IBO
 end module
