@@ -1,33 +1,3 @@
-!dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
-!      All Rights Reserved.
-!
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
-!
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
-!
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
-!dirac_copyright_end
-
-!     !!! MODULE FOR READING XYZ FILES !!!
-!     Module for reading xyz files. 
-!     The coordinates are given in the .xyz file.
-!     The basisset and possible charges and nuclear exponents are 
-!     specified in the .inp file
-!
-!     In the long run the readingsection for the .inp file move to dirac/dirrdn.F
-!     JHS 05-07-07
-
       MODULE READ_XYZ
         IMPLICIT NONE
 
@@ -61,7 +31,6 @@
 !     Symmetry of the molecule
         LOGICAL :: ADDSYM=.TRUE.
         INTEGER :: NSYMOP=0
-        CHARACTER(LEN=1) :: KASYM(3,3)=' '
         INTEGER :: natoms_given
 
 !     The unit conversion global variable is used when reading/writing xyz files
@@ -78,8 +47,6 @@
 !       fatom: pointer to the first atom in the list
 !       latom: pointer to the last atom in the list
 !
-!     JHS050707 Adds a new node to the atom list.
-!     LV2011-simplified and added on-the-fly sort
 
           TYPE(atom), POINTER :: latom,fatom,newatom,sameatom
           CHARACTER(LEN=*), INTENT(IN)     :: name
@@ -131,8 +98,6 @@
           REAL(KIND=8)                       :: x(3)
           INTEGER                            :: ios
  
-!          CALL QENTER('READ_ATOMS')
-
           latom=>null()
 
           ios=0
@@ -147,8 +112,6 @@
               CALL ADD_ATOM(latom,fatom,name,x)  
             end if
           end do
-
-!          CALL QEXIT('READ_ATOMS')
 
         END SUBROUTINE READ_ATOMS
       
@@ -210,22 +173,12 @@
           INTEGER                :: ios
 
           REWIND(infile,iostat=ios)
-! miro: insert this control printout
-          if (ios.ne.0) then
-       write(lupri,*) 'POS_FILE: error in rewind command ! ios=',ios
-       write(lupri,*) 'POS_FILE: infile(in)=',infile
-       write(lupri,*) 'POS_FILE: linelen(in)=',linelen
-       write(lupri,*) 'POS_FILE: section(in)=',section
-       write(lupri,*) 'POS_FILE: subsection(in)=',subsection
-       write(lupri,*) 'POS_FILE: name(in)=',name
-           call quit('POS_FILE: ios<>0, error in rewind command !')
-          endif
           DO            
             read(infile,*,iostat=ios) str
             IF (ios.ne.0) THEN
              WRITE(lupri,*) '*** ERROR KEY NOT FOUND. ***'
-       write(lupri,*) 'POS_FILE: error in read command ! ios=',ios
-            write(lupri,*) 'infile(in)=',infile
+             write(lupri,*) 'POS_FILE: error in read command ! ios=',ios
+             write(lupri,*) 'infile(in)=',infile
              WRITE(lupri,*) "section=",section
              WRITE(lupri,*) "subsection=",subsection
              WRITE(lupri,*) "name=",name
@@ -247,7 +200,7 @@
           INTEGER, INTENT(IN) :: lupri
           TYPE(atom), POINTER :: mol
 
-          CALL TITLER('XYZ coordinates read','*',118)
+          WRITE(lupri,*)' XYZ coordinates read'
           WRITE(lupri,'(a,t13,a,t25,a,t37,a,t49,a,t61,a)') 'Label',     &
      &         'x','y','z','charge','nuc exp'
           mol=>firstatom
@@ -309,7 +262,6 @@
         natoms_given = 0
         READ (molfile,*,iostat=ios) natoms_given
 !       Skip the comment line
-!        CALL RDLINE(molfile)
         read (molfile,*)
         CALL READ_ATOMS(molfile,linelen,firstatom,lupri)
 !       Check number of atoms
@@ -325,11 +277,35 @@
        END SUBROUTINE READ_XYZ_ATOMS
 
         INTEGER FUNCTION FIND_CHARGE(atomname,LUPRI)
-!     JHS050707 For a given atomname the corresponding charge is searched for in nucdata.h
           CHARACTER(LEN=*),INTENT(IN) :: atomname
           INTEGER,OPTIONAL,INTENT(IN) :: LUPRI
           INTEGER :: i
-#include "nucdata.h"
+
+        CHARACTER(LEN=4), PARAMETER :: NUCLABEL(1:118)=(/               &
+     &  'H  ', 'He ', 'Li ', 'Be ', 'B  ',                              &
+     &  'C  ', 'N  ', 'O  ', 'F  ', 'Ne ',                              &
+     &  'Na ', 'Mg ', 'Al ', 'Si ', 'P  ',                              &
+     &  'S  ', 'Cl ', 'Ar ', 'K  ', 'Ca ',                              &
+     &  'Sc ', 'Ti ', 'V  ', 'Cr ', 'Mn ',                              &
+     &  'Fe ', 'Co ', 'Ni ', 'Cu ', 'Zn ',                              &
+     &  'Ga ', 'Ge ', 'As ', 'Se ', 'Br ',                              &
+     &  'Kr ', 'Rb ', 'Sr ', 'Y  ', 'Zr ',                              &
+     &  'Nb ', 'Mo ', 'Tc ', 'Ru ', 'Rh ',                              &
+     &  'Pd ', 'Ag ', 'Cd ', 'In ', 'Sn ',                              &
+     &  'Sb ', 'Te ', 'I  ', 'Xe ', 'Cs ',                              &
+     &  'Ba ', 'La ', 'Ce ', 'Pr ', 'Nd ',                              &
+     &  'Pm ', 'Sm ', 'Eu ', 'Gd ', 'Tb ',                              &
+     &  'Dy ', 'Ho ', 'Er ', 'Tm ', 'Yb ',                              &
+     &  'Lu ', 'Hf ', 'Ta ', 'W  ', 'Re ',                              &
+     &  'Os ', 'Ir ', 'Pt ', 'Au ', 'Hg ',                              &
+     &  'Tl ', 'Pb ', 'Bi ', 'Po ', 'At ',                              &
+     &  'Rn ', 'Fr ', 'Ra ', 'Ac ', 'Th ',                              &
+     &  'Pa ', 'U  ', 'Np ', 'Pu ', 'Am ',                              &
+     &  'Cm ', 'Bk ', 'Cf ', 'Es ', 'Fm ',                              &
+     &  'Md ', 'No ', 'Lr ', 'Rf ', 'Db ',                              &
+     &  'Sg ', 'Bh ', 'Hs ', 'Mt ', 'Ds ',                              &
+     &  'Rg ', 'Cn ', 'Nh ', 'Fl ', 'Mc ',                              &
+     &  'Lv ', 'Ts ', 'Og '/)
 
           find_charge=0
           DO i=1,SIZE(NUCLABEL)

@@ -4,13 +4,14 @@ module make_ibo
    ! [0] : Pipek and Mezey, J. Chem. Phys. 90, 4916 (1989)
    ! [1] : Knizia, J. Chem. Theory. Comput. 9, 4834 (2013)
    ! [2] : Dubillard et al. J. Chem. Phys. 124, 154307 (2006)
+   ! [3] : G. Berghold et al., Phys Rev B. 61 (2000) 10040–10048. doi:10.1103/PhysRevB.61.10040.
 
 contains
 
    subroutine Localization(CIbOcc,LIbocc,cspinor_fragment,n_fragments,nmo2,nocc,Expnt)
-   ! make REAL intrinsic bond orbitals (IBOs) (localized occupied orbitals expressed in terms of REAL IAOs)
+   ! make intrinsic bond orbitals (IBOs) (localized occupied orbitals expressed in terms of IAOs)
    ! It consists in effectively minimizing the number of atoms an orbital is centered on.
-   ! For this, unitary operations (rotations) are perform amongst the occupied real MO
+   ! For this, unitary operations (rotations) are perform amongst the occupied MOs
    ! (leaving the Slater Determinant invariant) until a function (that contains information
    ! about the # of electrons located on the IAO of each atoms) is maximised.
 
@@ -73,8 +74,8 @@ contains
           ! Start the orbital localization procedure:
           fGrad = 0.D0
           ! Sum over all occupied orbital pairs i,j ; j < i
-          do i=1,nocc
-             do j=i+1,nocc
+          do i=2,nocc
+             do j=1,i-1
                 ! Aij and Bij are given in Appendix D of [1]
                 ! Aij is the second derivative at phi=0 (see Eq.(8) of [2]).
                 ! Note that Aij is only the approximate diagonal elements of the Hessian, not the full one.
@@ -133,7 +134,7 @@ contains
                   LIbOcc(:,i) = dcos(phi)*Ai + dsin(phi)*Aj 
                   LIbOcc(:,j) = -dsin(phi)*Ai + dcos(phi)*Aj 
                   deallocate(Ai,Aj)
-                  ! condition for the maximum in Ref. [3].
+                  ! condition for the maximum in Ref. [3], should be checked for applicability for exponent > 2
                   max_condition = 16.D0*Aij*dcos(4.D0*phi) - 16.D0*abs(Bij)*dsin(4.D0*phi)
                   if (max_condition > 0.D0) then
                      write(*,*)"Warning: The condition for the maximum is not fulfilled &

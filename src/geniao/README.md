@@ -1,4 +1,6 @@
-Program to construct the Intrinsic Atomic Orbitals (IAOs).
+Program to construct Intrinsic Atomic Orbitals (IAOs) and Localized orbitals following the procedure of
+G. Knizia, J Chem Theory Comput. 9 (2013) 4834–4843. doi:10.1021/ct400687b
+adapted to allow for complex orbitals.
 
 Executable:
 ./geniao.x

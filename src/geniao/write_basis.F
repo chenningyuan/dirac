@@ -21,7 +21,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
        implicit none
 
 !      read all positive energy mo coefficients present on DFCOEF file
-!      check for imcompatibiklities (use of symmetry) as well and continue
+!      check for imcompatibilities (use of symmetry) as well and continue
 !      by reading also the basis set information into gtos
 
        character(len=*),intent(in) :: file_name

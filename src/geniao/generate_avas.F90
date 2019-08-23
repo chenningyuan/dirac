@@ -1,5 +1,5 @@
 program avas
-   ! Ref: https://arxiv.org/abs/1701.07862
+   ! Ref: E.R. Sayfutyarova, Q. Sun, G.K.-L. Chan, G. Knizia, Automated Construction of Molecular Active Spaces from Atomic Valence Orbitals, J Chem Theory Comput. 13 (2017) 4063–4078. doi:10.1021/acs.jctc.7b00128.
    ! Basis B2 can be the IAOs, and one wants to compute the overlap between this "minimal" basis and a larger basis B1. Especially, one could take only a target set of AOs in B2, like the one corresponding to the d orbitals of a transition metal. Then, a complete active space is automatically constructed according to the calculated overlap matrices for occupied and virtual orbitals.
    ! For the moment, I did just put the equations here where B2 is the set of orthonormalized IAOs and B1 is the same as in the IAO construction...
 

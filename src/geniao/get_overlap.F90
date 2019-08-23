@@ -28,16 +28,7 @@ contains
         SC  = matmul(SAO,cspinor_ket%coeff(:,:,2))                        ! multiply with beta coefficients
         SMO = SMO + matmul(conjg(transpose(cspinor_bra%coeff(:,:,2))),SC) ! add the beta-beta contribution
 
-!       filter out occupation numbers slightly broken due to rounding.
-!        do i=1,cspinor_bra%nmo
-!           do j=1,cspinor_ket%nmo
-!              if (REAL(SMO(i,j)) > 0.999999999999D0 .and. AIMAG(SMO(i,j)) < 1.0D-12) SMO(i,j) = ONE
-!              if (ABS(REAL(SMO(i,j))) < 1.0D-12 .and. ABS(AIMAG(SMO(i,j))) < 1.0D-12) SMO(i,j) = ZERO
-!           end do
-!        end do
-
         deallocate(SAO,SC)
-!     55 FORMAT( 100(:,1X,'(',G10.2,',',G10.2,')') )
 
    end subroutine get_mo_overlap
 

@@ -39,20 +39,22 @@
         complex(8), allocatable            :: S11(:,:),S21(:,:),S12(:,:),S22(:,:) !  the overlap matrices
         complex(8), allocatable            :: P12(:,:),P21(:,:)         !  the projection operators
         complex(8), allocatable            :: IAO(:,:)                  !  coefficient matrix, IAOs (MO basis)
-        complex(8), allocatable            :: IAO_aoB1(:,:,:)             !  coefficient matrix, IAOs in terms of AO basis B1
+        complex(8), allocatable            :: IAO_aoB1(:,:,:)           !  coefficient matrix, IAOs in terms of AO basis B1
         complex(8), allocatable            :: Cocc_IAO(:,:)             !  coefficient matrix, occupied MOs in terms of IAOs.
+        complex(8), allocatable            :: Cocc_IAO_res(:,:)         !  coefficient matrix, same as previous but for half the space (restricted algorithm)
         complex(8), allocatable            :: Cvir_IAO(:,:)             !  coefficient matrix, virtual MOs in terms of IAOs.
-        complex(8), allocatable            :: Cocc_IAO_aoB1(:,:,:)        !  coefficient matrix, occupied MOs in terms of IAOs transformed back to AO basis B1
-        complex(8), allocatable            :: Cvir_IAO_aoB1(:,:,:)        !  coefficient matrix, occupied MOs in terms of IAOs transformed back to AO basis B1
+        complex(8), allocatable            :: Cocc_IAO_aoB1(:,:,:)      !  coefficient matrix, occupied MOs in terms of IAOs transformed back to AO basis B1
+        complex(8), allocatable            :: Cvir_IAO_aoB1(:,:,:)      !  coefficient matrix, occupied MOs in terms of IAOs transformed back to AO basis B1
         complex(8), allocatable            :: Cocc_IBO(:,:)             !  coefficient matrix, Localized occupied MOs in terms of IAOs. (called IBO)
-        complex(8), allocatable            :: Cocc_IBO_aoB1(:,:,:)        !  coefficient matrix, IBOs transformed back to AO basis B1
+        complex(8), allocatable            :: Cocc_IBO_res(:,:)         !  coefficient matrix, same as previous but for half the space (restricted algorithm)
+        complex(8), allocatable            :: Cocc_IBO_aoB1(:,:,:)      !  coefficient matrix, IBOs transformed back to AO basis B1
         complex(8), allocatable            :: Cocc_IBO_moB1(:,:)        !  coefficient matrix, IBOs transformed back to MO basis B1
         complex(8), allocatable            :: IAO_frag(:,:,:)           !  coefficient matrix, IAOs of a fragment in terms of AO basis B1.
         complex(8), allocatable            :: coeff1_occ(:,:)
         complex(8), allocatable            :: coeff1_vir(:,:)
-        real(8),    allocatable            :: Cocc_IBO_real(:,:)
         character(len=14)                  :: fragfile_dfcoef, fragfile_dfpcmo
         character(len=18)                  :: fragfile_val_dfcoef, fragfile_val_dfpcmo
+        logical                            :: restricted = .false.      !  maintain (Kramers)-restriction for the localized orbital set
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !           READ Input Files         !
@@ -101,7 +103,7 @@
 !       Compute Overlap Matrices     !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-        !-----Compute S11----- (nmo1 x nmo1) (It is equal to Identity)
+        !-----Compute S11----- (nmo1 x nmo1) (Should be equal to Identity)
         allocate (S11(nmo1,nmo1))
         call get_mo_overlap (ao_basis_1,cspinor_original,ao_basis_1,cspinor_original,S11)
 
@@ -192,6 +194,13 @@
         IAO_aoB1(:,:,1) = matmul(cspinor_original%coeff(:,:,1),IAO)
         IAO_aoB1(:,:,2) = matmul(cspinor_original%coeff(:,:,2),IAO)
 
+        ! skip writing fragment files with iao's for now. If an atom type is present
+        ! multiple times, then only the last atom is kept with the current code. If
+        ! we define unique names, we will have zillions of files that will not be used
+        ! anyhow at the moment.
+        ! As the code may be useful later this is kept for the moment (LV, Aug 2019)
+
+        if (.false.) then
         ! Separate the IAO DFCOEF file for each fragment. 
         ! For instance, it will be interesting to get the IAOs of the metallic atom in a transition metal complex. 
         ! This can be used in the AVAS theory (https://arxiv.org/abs/1701.07862)
@@ -223,6 +232,7 @@
            imo = imo + nmoi
            current_atom=>current_atom%next
         end do
+        end if ! See comment above
 
         !-----Occupied MO in terms of the orthonormal IAO basis----- (nmo2 x nocc)
         allocate (Cocc_IAO(nmo2,nocc))
@@ -254,7 +264,6 @@
         call write_mos_to_dirac_formatted (cspinor_localized,"iao.dfpcmo")
 
         ! Compute partial charges with occupied MO expressed in terms of IAOs.
-!        call partial_charges(Cocc_IAO,cspinor_fragment,n_fragments,nmo2,nocc)
         call fragment_charges_IAO(IAO,cspinor_fragment,n_fragments,nmo1,nmo2,nocc)
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -264,12 +273,32 @@
 
         !-----Compute IBOs (Localized occupied MO in terms of IAOs)----- (nmo2 x nocc)
         allocate(Cocc_IBO(nmo2,nocc))
-        call Localization(Cocc_IAO,Cocc_IBO,cspinor_fragment,n_fragments,nmo2,nocc,Expnt)
+
+        if (restricted) then
+           allocate(Cocc_IAO_res(nmo2,nocc/2))
+           allocate(Cocc_IBO_res(nmo2,nocc/2))
+           do i = 1, nocc, 2
+              Cocc_IAO_res(:,(i+1)/2) = Cocc_IAO(:,i)
+           end do
+           call Localization(Cocc_IAO_res,Cocc_IBO_res,cspinor_fragment,n_fragments,nmo2,nocc/2,Expnt)
+           ! put the same coefficients for unbarred and barred spinors to keep the (Kramers) restriction
+           do i = 1, nocc-1, 2
+              do j = 1, nao1
+                 Cocc_IBO(j,i)   =        Cocc_IBO_res(j,(i+1)/2)
+                 Cocc_IBO(j,i+1) = dconjg(Cocc_IBO_res(j,(i+1)/2))
+              end do
+           end do
+           deallocate(Cocc_IAO_res)
+           deallocate(Cocc_IBO_res)
+        else
+           call Localization(Cocc_IAO,Cocc_IBO,cspinor_fragment,n_fragments,nmo2,nocc,Expnt)
+        end if
 
         !-----Transform IBOs back to AO basis B1----- (nao1 x nocc)
         allocate(Cocc_IBO_aoB1(nao1,nocc,2))
         Cocc_IBO_aoB1(:,:,1) = matmul(IAO_aoB1(:,:,1),Cocc_IBO)
         Cocc_IBO_aoB1(:,:,2) = matmul(IAO_aoB1(:,:,2),Cocc_IBO)
+
         ! Write the coefficient matrix into the unformatted dfcoef file.
         call alloc_mo(cspinor_localized_ibo,nao1,nmo1)
         cspinor_localized_ibo%coeff(:,1:nocc,:) = Cocc_IBO_aoB1
