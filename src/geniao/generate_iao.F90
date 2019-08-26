@@ -253,10 +253,6 @@
         call write_mos_to_dirac (ao_basis_1,cspinor_localized,"iao.dfcoef")
         call write_mos_to_dirac_formatted (cspinor_localized,"iao.dfpcmo")
 
-        ! Compute partial charges with occupied MO expressed in terms of IAOs.
-!        call partial_charges(Cocc_IAO,cspinor_fragment,n_fragments,nmo2,nocc)
-        call fragment_charges_IAO(IAO,cspinor_fragment,n_fragments,nmo1,nmo2,nocc)
-
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !         Calculate the intrinsic bonding orbital (IBO) basis                                        !
 !         Reference: Knizia, J. Chem. Theory Comput., http://dx.doi.org/10.1021/ct400687b            !

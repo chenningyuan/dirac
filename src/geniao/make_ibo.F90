@@ -19,7 +19,7 @@ contains
         implicit none
 
         logical                 :: conv
-        integer                 :: i,j,k,l, imo, nmoi, it, orb_deloc(nocc)
+        integer                 :: i,j,k,l, imo, nmoi, it, orb_deloc(nocc), orb_deloc0(nocc)
         integer, intent(in)     :: n_fragments, nmo2, nocc, Expnt
         complex(8), intent(in)  :: CIbOcc(nmo2,nocc) ! The occupied MO in terms of IAOs
         type(cmo),  intent(in)  :: cspinor_fragment(n_fragments) ! MO-coefficients of the fragments
@@ -36,7 +36,7 @@ contains
 !        write(*,*)
 !        write(*,*)"Function n_A(i): number of |i>'s electrons located on the IAOs of the fragments."
         imo = 0
-        orb_deloc = 0
+        orb_deloc0 = 0
         do i=1,n_fragments
 !           write(*,"(A16,I2,A7)")"------ FRAGMENT ", i, " ------"
 !           write(*,"(A12,A12)")"occ.MO","#.elec"
@@ -46,17 +46,11 @@ contains
               vec = LIbOcc(imo+1:imo+nmoi,j)
 !              write(*,"(I12,F12.6)") j,real(dot_product(vec,vec))
               if (real(dot_product(vec,vec)) > 0.01D0) then
-                 orb_deloc(j) = orb_deloc(j) + 1
+                 orb_deloc0(j) = orb_deloc0(j) + 1
               endif
               deallocate(vec)
            enddo
            imo = imo + nmoi
-        enddo
-
-        write(*,*)
-        write(*,"(A12,A12,A20)")"occ.MO","deloc.#frag","(thrs 0.01)"
-        do i=1,nocc
-           write(*,"(I12,I12)") i,orb_deloc(i)
         enddo
 
         write(*,*)
@@ -73,8 +67,8 @@ contains
           ! Start the orbital localization procedure:
           fGrad = 0.D0
           ! Sum over all occupied orbital pairs i,j ; j < i
-          do i=1,nocc
-             do j=i+1,nocc
+          do i=2,nocc
+             do j=1,i-1
                 ! Aij and Bij are given in Appendix D of [1]
                 ! Aij is the second derivative at phi=0 (see Eq.(8) of [2]).
                 ! Note that Aij is only the approximate diagonal elements of the Hessian, not the full one.
@@ -183,9 +177,9 @@ contains
         enddo
 
         write(*,*)
-        write(*,"(A12,A12,A20)")"occ.MO","deloc.#frag","(thrs 0.01)"
+        write(*,"(3A12,A20)")"MO","deloc.#frag","after-loc.","(thrs 0.01)"
         do i=1,nocc
-           write(*,"(I12,I12)") i,orb_deloc(i)
+           write(*,"(3I12)") i,orb_deloc0(i),orb_deloc(i)
         enddo
         
         write(*,*)
