@@ -35,7 +35,7 @@ contains
               allocate(vec(nmoi))
               vec = Cocc_IAO(imo+1:imo+nmoi,j)
               ! dot_product should be valid for complex vectors. Dot product of a complex vector with itself is real.
-              partial_charge(i) = partial_charge(i) - real(dot_product(vec,vec))
+              partial_charge(i) = partial_charge(i) - real(dot_product(vec,vec),8)
               deallocate(vec)
            enddo
            write(*,'(A12,F12.4)'),current_atom%name,partial_charge(i)

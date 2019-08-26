@@ -14,7 +14,7 @@ contains
         complex(8), intent(in)  :: P12(nmo1,nmo2)          !  the projection operator
         complex(8), intent(in)  :: C(nmo1,nocc)
         complex(8), intent(out) :: A(nmo1,nmo2)
-        complex(8), allocatable :: A_X(:,:), P21(:,:), S_12(:,:), c_tilde_X(:,:)
+        complex(8), allocatable :: A_X(:,:), P21(:,:), S_12(:,:), c_tilde_X(:,:), S22_copy(:,:)
 
         ! Make intrinsic basis orbitals for the occupied space (Simple/2014 scheme of Knizia's reference implementation)
         ! Note that our overlap matrices refer to the MO basis of the molecule and its fragments and that the coefficient
@@ -25,12 +25,15 @@ contains
         allocate (c_tilde2_bar(nmo2,nocc))
         allocate (s_tilde(nocc,nocc))
         allocate (t4(nmo1,nocc))
+        allocate (S22_copy(nmo2,nmo2))
 
 
         ! use of zposv : CALL ZPOSV( 'Lower', N, NRHS, A, LDA, B, LDB, INFO ) with A(LDA,N) and B(LDB,NRHS). This solves AX=B and returns A = X.
+        ! Careful, matrices A and B are replaced by the use of zposv.
         coeff2_occ = matmul(S21,C)
         c_tilde = coeff2_occ
-        call zposv( 'U', nmo2, nocc, S22, nmo2, c_tilde, nmo2, ierr )
+        S22_copy = S22
+        call zposv( 'U', nmo2, nocc, S22_copy, nmo2, c_tilde, nmo2, ierr )
         s_tilde = matmul(conjg(transpose(coeff2_occ)),c_tilde)
         c_tilde_bar = conjg(transpose(c_tilde))
         call zposv( 'U', nocc, nmo2, s_tilde, nocc, c_tilde_bar, nocc, ierr )
@@ -48,7 +51,8 @@ contains
         allocate(c_tilde_X(nmo2,nocc))
         S_12 = conjg(transpose(S21))
         P21 = S21
-        call zposv( 'U', nmo2, nmo1, S22, nmo2, P21, nmo2, ierr )
+        S22_copy = S22
+        call zposv( 'U', nmo2, nmo1, S22_copy, nmo2, P21, nmo2, ierr )
         c_tilde_X = matmul(P21, C)
         call SymOrth(c_tilde_X,S22,nmo2,nocc)
         A_X = P12 + matmul(C, matmul(conjg(transpose(C)), S_12)) - &
@@ -61,8 +65,7 @@ contains
                  ", Transformation OKAY ***"
         endif
 
-        deallocate (coeff2_occ,c_tilde,c_tilde_bar,c_tilde2_bar,s_tilde,t4,A_X,P21,S_12,c_tilde_X)
-
+        deallocate (coeff2_occ,c_tilde,c_tilde_bar,c_tilde2_bar,s_tilde,t4,A_X,P21,S_12,c_tilde_X,S22_copy)
 
    end subroutine MakeIAO_Simple_2014
 
@@ -75,12 +78,14 @@ contains
         complex(8), intent(in)  :: S11(nmo1,nmo1),S12(nmo1,nmo2),S21(nmo2,nmo1),S22(nmo2,nmo2) !  the overlap matrices
         complex(8), intent(in)  :: P12(nmo1,nmo2)          !  the projection operator
         complex(8), intent(in)  :: C(nmo1,nocc)
-        complex(8), allocatable :: c_tilde(:,:),P21(:,:)
+        complex(8), allocatable :: c_tilde(:,:),P21(:,:), S22_copy(:,:)
 
 
         allocate (c_tilde(nmo1,nocc))
         allocate (P21(nmo2,nmo1))
+        allocate (S22_copy(nmo2,nmo2))
         P21 = S21
+        S22_copy = S22
         call zposv( 'U', nmo2, nmo1, S22, nmo2, P21, nmo2, ierr )
 
         c_tilde = matmul(P12,matmul(P21,C))
@@ -88,7 +93,7 @@ contains
         A = P12 + matmul(C,matmul(conjg(transpose(C)),S12))&
         &               - matmul(c_tilde,matmul(conjg(transpose(c_tilde)),S12))
 
-        deallocate (c_tilde,P21)
+        deallocate (c_tilde,P21,S22_copy)
 
    end subroutine MakeIAO_Simple_2013
 
@@ -101,13 +106,15 @@ contains
         complex(8), intent(in) :: P12(nmo1,nmo2)
         complex(8), intent(in) :: C(nmo1,nocc)
         complex(8), intent(out) :: A(nmo1,nmo2)
-        complex(8), allocatable :: c_tilde(:,:),P21(:,:),Id(:,:)
+        complex(8), allocatable :: c_tilde(:,:),P21(:,:),Id(:,:), S22_copy(:,:)
         complex(8), allocatable :: term11(:,:),term12(:,:),term21(:,:),term22(:,:)
        
         allocate (c_tilde(nmo1,nocc))
         allocate (P21(nmo2,nmo1))
         allocate (Id(nmo1,nmo1))
+        allocate (S22_copy(nmo2,nmo2))
         P21 = S21
+        S22_copy = S22
         call zposv( 'U', nmo2, nmo1, S22, nmo2, P21, nmo2, ierr )
 
         Id = ZERO
@@ -134,7 +141,7 @@ contains
 
         implicit none
         complex(8), parameter        :: ZERO=(0.D0,0.D0), ONE=(1.D0,0.D0)
-        real(8), parameter           :: ThrDel=1.D-7
+        real(8), parameter           :: ThrDel=1.D-12
         integer                      :: i,j, iDel
         integer,    intent(in)       :: nmo1, nmo2
         complex(8), intent(in)       :: S(nmo1,nmo1)
@@ -152,8 +159,8 @@ contains
         call diag_matrix(matrix,nmo2,ew)
 
         iDel = 0
-        do while (ew(iDel+1) < ThrDel)
-          iDel = iDel + 1
+        do i=1,nmo2
+          if (ew(iDel+1) < ThrDel) iDel = iDel + 1
         enddo
         if (iDel == 0) then
           do i=1,nmo2
