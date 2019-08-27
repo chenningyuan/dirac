@@ -777,7 +777,11 @@ C
 !         WT(J)=WT(J)*4.0D0*PI
 !     ENDDO
 C
-      write(*,*)'NUCIND,PI',NUCIND,PI
+      write(*,*)'NUCIND,NUCDEP,PI',NUCIND,NUCDEP,PI
+      write(*,*)'ZAN1',ZAN(1)
+      write(*,*)'ZAN2',ZAN(2)
+      write(*,*)'CHARGE1',CHARGE(1)
+      write(*,*)'CHARGE2',CHARGE(2)
       IF(NXYZ.EQ.0)THEN
         INIXYZ = 0
         MAXXYZ = 0
@@ -793,29 +797,33 @@ C
 C         IXYZ = 4-IMXYZ
       CALL DZERO(INTAO   ,NDIM2)
       DO 10 IATOM = 1, NUCIND !change
-!      DO 10 ISYMOP = 0, MXOPR
+      DO 10 ISYMOP = 0, MXOPR ! needed for h2se2
 !ayaki  What is this roop? MXOPR=0 in dftgrd.F
-       IF (IBTAND(0,ISTBNU(IATOM)).EQ.0) THEN 
-!        IF (IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN
+C       IF (IBTAND(0,ISTBNU(IATOM)).EQ.0) THEN 
+       IF (IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN 
 !ayaki   IBTAND=IAND, but I am not sure what is it.     
          IF(NOORBT(IATOM)) GOTO 10 
          IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 10
+         C(1,IATOM)= PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
+         C(2,IATOM)= PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
+         C(3,IATOM)= PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM) !change
          GEXP = GNUEXP(IATOM)
 !         AT3 =  (DBLE(20)-7.5609D-003) **  (1.0D0/3.0D0)
 !         RFM = 0.836D00*AT3+0.570D00
 !         PARM1 = RFM*1.88972598858D-5
 !         GEXP = 1.5D0/(PARM1*PARM1)
          NDEG = MULT(ISTBNU(IATOM))
+         write(*,*)'NDEG,IATOM,ISYMOP',NDEG,IATOM,ISYMOP
 C         
 C   SET DEFAULT VALUES OF PARAMETERS FOR CALCULATION
 C
          MXNP = 4000            !same to GRASP
          NUCTYP = 0
          IF(GAUNUC) NUCTYP = 3
-         write(*,*)"NUCTYP",NUCTYP
-         CALL MEMSET_NUM(ZAN(IATOM),IATOM,MXNP,RNT,H,EPH,GRDC,
+         write(*,*)"NUCTYP,IATOM",NUCTYP,IATOM
+         CALL MEMSET_NUM(CHARGE(IATOM),IATOM,MXNP,RNT,H,EPH,GRDC,
      &                    num_grid_cfg_grasp,IPRINT)
-         write(*,*)'HH2,INTANG,m_ang',H,INTANG,m
+         write(*,*)'H,INTANG,m_ang',H,INTANG,m
 C         
 C NUCPRM is for making nuclear parameter of Fermi and Uniform nucleus. 
 C We do not have to use it for the Gaussian nucleus.
@@ -825,7 +833,6 @@ C
          write(*,*)"MXNP",MXNP
          allocate( NUMIR(MXNP) )
          allocate( R(MXNP)     )
-C         allocate( W(MXNP)     )
 C         
          IF(num_grid_cfg_grasp)THEN
            R(1) = RNT
@@ -833,7 +840,7 @@ C
               R(J) = R(J-1)*EPH
            ENDDO
 C R**2 is multiplized in NUMPOT
-           CALL NUMPOT(IOP,NUMIR,R,ZAN(IATOM),GEXP,MXNP,IPRINT)
+           CALL NUMPOT(IOP,NUMIR,R,CHARGE(IATOM),GEXP,MXNP,IPRINT)
 C Additional R is needed for GRASP grid (QUAD2)
            DO I = 1,MXNP
 C              write(*,*)R(I),NUMIR(I) !debug
@@ -848,7 +855,7 @@ C
              R(IR) = (R(IR-1)+GRDC)*EPH-GRDC
            ENDDO
 C R**2 is multiplized in NUMPOT
-           CALL NUMPOT(IOP,NUMIR,R,ZAN(IATOM),GEXP,MXNP,IPRINT)
+           CALL NUMPOT(IOP,NUMIR,R,CHARGE(IATOM),GEXP,MXNP,IPRINT)
            W = (RNT+GRDC)*H 
            NUMIR(1) = NUMIR(1) * W
            DO IR = 2,MXNP
@@ -879,7 +886,7 @@ C
              ENDDO
            ENDIF            
 C           
-           write(*,*)"R(1),Z",R(1),ZAN(IATOM) 
+           write(*,*)"R(1),Z",R(1),CHARGE(IATOM) 
            write(*,*)"J,NUMIR"
          ENDIF   !num_grid_cfg_grasp
 C Numerical integration
@@ -896,7 +903,7 @@ C          CALL OUTPAK(INTAO(1),NTBAS(0),-1,LUPRI) !debug
         deallocate(NUMIR)
         deallocate(R)
 C        deallocate(W)
-10    CONTINUE   ! IATOM = 1, NUCIND
+10    CONTINUE   ! IATOM = 1, NUCIND, ISYMOP = 0, MXOPR 
 C      
       IF(NDEG.GT.0) THEN
 C       Scale weights with multiplicity of center
@@ -1329,30 +1336,37 @@ C      GEXP = GNUEXP(IATOM)
       ELSE   
          NUCTYP = 0
       ENDIF   
-C      
+C
+      write(*,*)
+      write(*,*)CLSINT(IOP)
       IF(CLSINT(IOP).EQ.'SEFGMG')THEN
-        CALL INTMG(NUMIR,R,Z,GEXP,MXNP,NUCTYP)         
+        CALL INTMG(NUMIR,R,Z,GEXP,MXNP,NUCTYP)
         DO IR = 1,MXNP
-          NUMIR(IR) = NUMIR(IR) * R(IR) * R(IR) 
+          write(*,*)'NUMIR,R',NUMIR(IR),R(IR) !debug 
+         NUMIR(IR) = NUMIR(IR) * R(IR) * R(IR) 
         ENDDO
       ELSEIF(CLSINT(IOP).EQ.'UEHLING')THEN
         CALL VCMPOL(NUMIR,R,Z,GEXP,MXNP,NNUC,NUCTYP,1)
         DO IR = 1,MXNP
+          write(*,*)'NUMIR,R',NUMIR(IR),R(IR) !debug
           NUMIR(IR) = NUMIR(IR) * R(IR)
         ENDDO
       ELSEIF(CLSINT(IOP).EQ.'SEFGHF')THEN
         CALL INTHF (NUMIR,R,Z,GEXP,MXNP,NUCTYP)
         DO IR = 1,MXNP
+          write(*,*)'NUMIR,R',NUMIR(IR),R(IR) !debug
           NUMIR(IR) = NUMIR(IR) * R(IR) * R(IR) 
         ENDDO
       ELSEIF(CLSINT(IOP).EQ.'SEFGLF')THEN
         CALL INTLF (NUMIR,R,Z,MXNP             )
         DO IR = 1,MXNP
+          write(*,*)'NUMIR,R',NUMIR(IR),R(IR) !debug
           NUMIR(IR) = NUMIR(IR) * R(IR) * R(IR) 
         ENDDO
       ELSEIF(CLSINT(IOP).EQ.'SEPZ'  )THEN
         CALL INTPZ (NUMIR,R,Z,MXNP             )
         DO IR = 1,MXNP
+          write(*,*)'NUMIR,R',NUMIR(IR),R(IR) !debug
           NUMIR(IR) = NUMIR(IR) * R(IR) * R(IR) 
         ENDDO
       ENDIF
@@ -1451,10 +1465,10 @@ C
       allocate( p2(nblock_size) )
 C
       CALL DZERO(INTAOBUF,NDIM2)
+      write(*,*)'C1,C2,C3',C(1,1),C(2,1),C(3,1)
       IF(IXYZ.EQ.0)THEN
         CALL DCOPY(m,ANG(1,4),1,ANGXYZ,1)
         MTXYZ = 0 
-C        write(*,*)'IXYZ=0'
       ELSE  
         IF (IXYZ.LE.3)THEN
           DO iy = 1, m
@@ -1463,7 +1477,7 @@ C        write(*,*)'IXYZ=0'
           MTXYZ = ISYMAX(IXYZ,2)
 C         write(*,*)'IF,IXYZ=',IXYZ
 C         write(*,*)'(ISYMAX(IXYZ,1)',ISYMAX(IXYZ,1)
-C         write(*,*)'(ISYMAX(IXYZ,2)',ISYMAX(IXYZ,2)
+C         write(*,*)'(ISYMAX(IXYZ,2)',ISYMAX(IXYZ,2) !debug
        ELSE
          write(*,*)'IXYZ=',IXYZ
          write(*,*)'is wrong number!' !debug
@@ -1560,13 +1574,13 @@ C
                     py(k) = Y8(k) - sy
                     pz(k) = Z8(k) - sz
                  end do
-
+C
                  do k = 1, nblock_length
                     p2(k) = px(k)*px(k) 
      &                    + py(k)*py(k) 
      &                    + pz(k)*pz(k)
                  end do
-               
+C               
                  call get_cartesian_ao_g0(nblock_length, 
      &                                      ishell,       
      &                                      px,           
@@ -1629,7 +1643,6 @@ C     &                  NTBAS(0),NTBAS(0),-1,LUPRI)
 C                 
 C     In the case of m>100, a speciAL treatment is needed.
 C
-C             nblock_length = 100
           m_NUM_MAX = INT(m/100) + 1              
           allocate( GAO   (m, NTBAS(0)) )  !change
           allocate( BUFGAO(m, NTBAS(0)) )
@@ -1657,10 +1670,11 @@ C             write(*,*)'nblock_length,IOF_block',nblock_length,IOF_block
             CALL DAXPY(nblock_length,R(IR),ANG(IOFM,3),1,Z8,1)
 C
             i = 1
+              write(*,*)'nr_boson_ireps',nr_shells,nr_boson_ireps
             do ishell = 1, nr_shells
+               write(*,*)
+               write(*,*)'cartesian_deg', cartesian_deg(ishell)
               do isym = 0, nr_boson_ireps - 1
-C              write(*,*)'ishell,nr_boson_ireps',nr_shells,nr_boson_ireps
-C                 write(*,*)'cartesian_deg', cartesian_deg(ishell)
                 if (iand(isym, shell_stabilizing_irep(ishell)) == 0)then
                  sx = bitstring_parity(iand(irep_of_axes(1), isym))
      &                * center_xyz(shell_center(ishell), 1)
@@ -1668,6 +1682,8 @@ C                 write(*,*)'cartesian_deg', cartesian_deg(ishell)
      &                * center_xyz(shell_center(ishell), 2)
                  sz = bitstring_parity(iand(irep_of_axes(3), isym))
      &                * center_xyz(shell_center(ishell), 3)
+                 write(*,*)'ishell,isym',ishell,isym
+                 write(*,*)"sx,sy,sz",sx,sy,sz
 
 !             write(*,*)'ipoint,IOFM,ipoint+IOFM',ipoint,IOFM,ipoint+IOFM
 C                 write(*,*)'R,IR',R(IR),IR
@@ -2032,7 +2048,8 @@ C
      &              (MC.GT.1.AND.(.NOT.LEVYLE))
         RADDER = num_grid_cfg_RADINT
         CALL LMGGRID(H,RNT,RH,RADDER,IATOM,ADDSML,NUCORB,AA,IPRINT)
-C        
+C
+        write(*,*)
         write(*,*)'GRDC1,RADDER',GRDC,RADDER
         EPH   = EXP(H)
         GRDC  = RNT/(EPH-ONE)
@@ -2043,6 +2060,7 @@ C     SET UP POTENTIAL FOR POINT NUCLEUS
 C
         DO 2 I = 1,N
            X = PREFAC*EXP(-Z*RTEMP)
+           write(*,*)'X,Z,I',X,Z,I
            IF(X.LT.1.0D-50)THEN
               TEMP = X
               MXNP = I 

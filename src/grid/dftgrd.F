@@ -79,7 +79,9 @@ C     =====
 
       call alloc(kzan, nucdep)
       call alloc(kc,   nucdep*3)
+      write(*,*)'sunaga1'
       CALL SET_GRID_INFO(NAT,NUM,kzan,kc)
+      write(*,*)'sunaga2'
 C
 C     DFTWRK
 C     ======
@@ -1570,6 +1572,8 @@ C
           C(1,NAT)= PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
           C(2,NAT)= PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
           C(3,NAT)= PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+          write(*,*)'ZCNT,NAT,NUCIND',ZCNT,NAT,NUCIND !sunaga
+          write(*,*)'C3',C(3,NAT) !sunaga
         ENDIF
         ENDDO
       ENDDO
