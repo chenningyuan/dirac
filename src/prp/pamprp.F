@@ -10518,7 +10518,7 @@ C
      &                 NSREXVPPM,NSRLRPPM,NSRNUCPPM,NSRTOTPPM,
      &                 NSRLRLEEPPM,NSRLRLEPPPM,NSRLRSEEPPM,NSRLRSEPPPM,
      &                 CONST,CONST2,EIGVAL(3),EIGVEC(3,3),
-     &                 FACTOT,OMEGA(3,3),SIGMAS,TINERT(9),DISOTP,
+     &                 FACTOT,OMEGA(3),SIGMAS,TINERT(9),DISOTP,
      &                 GTRANPLEE(3,3,KATOM),GTRANPLEP(3,3,KATOM),
      &                 GTRANPSEE(3,3,KATOM),GTRANPSEP(3,3,KATOM),
      &                 GTRANP(3,3,KATOM),GTRAND(3,3,KATOM),
@@ -10552,9 +10552,13 @@ C
 C
 C     We add up the total spin-rotation constants.
 C
+C iaa: Nuclear rotational angular momentum could be defined here to obtain Omega afterwards
+      DO 300 I = 1, 3
+        ANGUMOM(I) = D1
+ 300  CONTINUE
+C
       DO 99 IATOM = 1, NUCDEP
          DO 200 I = 1, 3
-            ANGUMOM(I) = D1
             DO 200 J = 1, 3
              TOTSPR(I,J,IATOM) = DMAT(I,J,IATOM)
      &                         + PMATL(I,J,IATOM,1)
@@ -10600,7 +10604,16 @@ C
 C     Transform each spin-rotation constant to principal axis system,
 C     and multiply by inverse moment of inertia and various constants
 C
-
+C iaa: To obtain Omega, the nuclear rot. angular momentum (ANGUMOM) should be defined before
+      IF (IPRINT .GE. 8) THEN
+      CALL HEADER
+     &    ('Nuclear angular velocity (a.u.)',0)
+      WRITE (LUPRI,'(3X,A,F16.8)')
+     &       'Omega_A',OMEGA(1),
+     &       'Omega_B',OMEGA(2),
+     &       'Omega_C',OMEGA(3)
+      END IF
+C
       WRITE (LUPRI,'(/,1X,A)')' Results are valid only for '//
      &                              'equilibrium geometry.'
 C
