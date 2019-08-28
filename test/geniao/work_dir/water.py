@@ -9,9 +9,9 @@ charge = 0
 geniao_executable="geniao.x"
 data_directory=os.getcwd()
 geometry = [\
-('O',       (0.21719693,       0.20658242,      -0.00185068)),\
-('H',       (0.11462359,       0.76846104,       0.80708169)),\
-('H',       (0.56789851,       0.82534397,      -0.69086664))]
+('O',      ( 0.00000000,       0.00000000,       0.59372000)),\
+('H',      ( 0.00000000,       0.76544000,      -0.00836000)),\
+('H',      ( 0.00000000,      -0.76544000,      -0.00836000))]
 fragment_list=['H','O'] # from the lowest atomic number to the highest
 point_nucleus = True
 version = ["Stndrd_2013","Simple_2013","Simple_2014"][0]
