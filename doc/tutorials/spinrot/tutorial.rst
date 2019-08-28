@@ -17,7 +17,7 @@ The nuclear spin-rotation (SR) tensor elements of a nucleus :math:`N` are given 
 
 .. math::
 
-   M_{N,\alpha\beta} = M_{N,\alpha\beta}^{NU} + M_{N,\alpha\beta}^{EV} + M_{N,\alpha\beta}^{LR}.
+   M_{N,\alpha\beta} = M_{N,\alpha\beta}^{NU} + M_{N,\alpha\beta}^{EV} + M_{N,\alpha\beta}^{LR}
 
 They have three terms: the first of them is independent on the electronic variables, the second one depends on an expectation value (EV) on the electronic ground state, and the latter is given by a linear response (LR) calculation.
 
@@ -25,7 +25,7 @@ For molecules in their equilibrium geometry, it is found that the sum of the fir
 
 .. math::
 
-   M_{N,\alpha\beta}^{nuc} = M_{N,\alpha\beta}^{NU} + M_{N,\alpha\beta}^{EV}.
+   M_{N,\alpha\beta}^{nuc} = M_{N,\alpha\beta}^{NU} + M_{N,\alpha\beta}^{EV}
 
 
 Therefore, the electronic dependence of the nuclear spin-rotation tensor of a nucleus :math:`N` in a molecule in equilibrium is completely given by its linear response term, :math:`M_{N,\alpha\beta}^{LR}` (see Eq. 59 of :cite:`Aucar_JCP2012`).
