@@ -1,0 +1,14 @@
+                       Spin-rotation constants (kHz) for F
+                       -----------------------------------
+
+  Nuclear g-value:     5.257736
+
+  Total spin-rotation constant (SRC)      :   -442.83910391
+
+    Nuclear contribution to SRC           :     55.25785492
+    Expectation value contribution to SRC :     -2.43137791
+    Linear response contribution to SRC   :   -495.66558092
+            M^L(e-e) :   -506.40736353
+            M^S(e-e) :     10.72532326
+            M^L(e-p) :      4.23930607
+            M^S(e-p) :     -4.22284671

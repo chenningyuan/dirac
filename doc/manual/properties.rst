@@ -213,3 +213,14 @@ nucleus(nuclei), :cite:`Knecht2011`.
 
 Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
+keyword(SPIN-ROTATION)
+
+Evaluate nuclear spin-rotation constants: linear response, expectation value and nuclear contributions.
+
+The results are valid only for molecules in equilibrium geometry. Results are given in kHz and also in ppm (to compare with :ref:`PROPERTIES_.SHIELDING`).
+
+Using :ref:`PROPERTIES_.PRINT` 2, the linear response, expectation value and nuclear contributions are given separately.
+In addition, employing :ref:`PROPERTIES_.PRINT` 4 the paramagnetic-like (e-e) and diamagnetic-like (e-p) parts of the linear response contributions are given as well, together with separated results for the :math:`\mathbf{L}` and :math:`\mathbf{S}` parts of the linear response.
+
+See :cite:`AucarAg2012` for theoretical details.
+
