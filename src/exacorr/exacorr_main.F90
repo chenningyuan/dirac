@@ -13,6 +13,7 @@
       use exacc_cfg
       use exacorr_global
       use exacorr_utils
+      use, intrinsic:: ISO_C_BINDING
 
       implicit none
 

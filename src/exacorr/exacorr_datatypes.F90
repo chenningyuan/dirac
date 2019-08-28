@@ -3,6 +3,7 @@
 
         use exatensor
         use talsh
+        use, intrinsic:: ISO_C_BINDING
 
         implicit none
         private

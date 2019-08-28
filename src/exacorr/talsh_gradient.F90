@@ -9,6 +9,7 @@ module talsh_gradient
   use talsh_ao_to_mo, only    : tensor_norm2
   use exacorr_datatypes, only : talsh_dm_tens, exacc_input
   use exacorr_utils, only     : print_date
+  use, intrinsic:: ISO_C_BINDING
 
   implicit none
 
@@ -32,11 +33,11 @@ module talsh_gradient
 !     density matrices type, output
       type(talsh_dm_tens) :: gamma
 !     tensor dimensions
-      integer, dimension(2) :: oo_dims,ov_dims,vo_dims,vv_dims
+      integer(INTD), dimension(2) :: oo_dims,ov_dims,vo_dims,vv_dims
 !     CCD switch
       logical :: CCD
 !     error code
-      integer :: ierr
+      integer(INTD) :: ierr
 
       CCD = exa_input%CCD
 
@@ -112,9 +113,9 @@ module talsh_gradient
       type(talsh_tens_t) :: tau2_tensor
       type(talsh_tens_t) :: oo_aux_tensor, vv_aux_tensor
 !     tensor dimensions
-      integer :: one_dims(1)=1
-      integer, dimension(2) :: oo_dims, vv_dims
-      integer, dimension(4) :: vvoo_dims
+      integer(C_INT)              :: one_dims(1)=1
+      integer(INTD), dimension(2) :: oo_dims, vv_dims
+      integer(INTD), dimension(4) :: vvoo_dims
 !     CCD switch
       logical :: CCD = .false.
 !     error code
@@ -291,23 +292,23 @@ module talsh_gradient
 !     -----------
 
 !     oo
-      ierr=talsh_tensor_get_body_access(gamma%symm_oo,body_p2,C8,0,DEV_HOST)
+      ierr=talsh_tensor_get_body_access(gamma%symm_oo,body_p2,C8,int(0,C_INT),DEV_HOST)
       call c_f_pointer(body_p2,dm_block,(/nocc,nocc/)) ! to use <dm_mo_block> as a regular Fortran 2d array
       dm_mo_fort(1:nocc,1:nocc) = dm_block
 
 !     vo + ov
       if (.not.CCD) then
-        ierr=talsh_tensor_get_body_access(gamma%symm_vo,body_p2,C8,0,DEV_HOST)
+        ierr=talsh_tensor_get_body_access(gamma%symm_vo,body_p2,C8,int(0,C_INT),DEV_HOST)
         call c_f_pointer(body_p2,dm_block,(/nvir,nocc/)) ! to use <dm_mo_block> as a regular Fortran 2d array
         dm_mo_fort(1+nocc:nocc+nvir,1:nocc) = dm_block
 
-        ierr=talsh_tensor_get_body_access(gamma%symm_ov,body_p2,C8,0,DEV_HOST)
+        ierr=talsh_tensor_get_body_access(gamma%symm_ov,body_p2,C8,int(0,C_INT),DEV_HOST)
         call c_f_pointer(body_p2,dm_block,(/nocc,nvir/)) ! to use <dm_mo_block> as a regular Fortran 2d array
         dm_mo_fort(1:nocc,1+nocc:nocc+nvir) = dm_block
       end if
 
 !     vv
-      ierr=talsh_tensor_get_body_access(gamma%symm_vv,body_p2,C8,0,DEV_HOST)
+      ierr=talsh_tensor_get_body_access(gamma%symm_vv,body_p2,C8,int(0,C_INT),DEV_HOST)
       call c_f_pointer(body_p2,dm_block,(/nvir,nvir/)) ! to use <dm_mo_block> as a regular Fortran 2d array
       dm_mo_fort(1+nocc:nocc+nvir,1+nocc:nocc+nvir) = dm_block
 

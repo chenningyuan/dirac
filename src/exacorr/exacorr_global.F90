@@ -4,6 +4,7 @@ module exacorr_global
 
         use exacorr_datatypes
         use exacorr_mo
+        use, intrinsic:: ISO_C_BINDING
 
         implicit none
         private

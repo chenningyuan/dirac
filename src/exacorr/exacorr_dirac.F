@@ -17,6 +17,7 @@ C***********************************************************************
       use exacorr_ao_to_mo,only     : exacorr_compute_mo_integrals
       use talsh_ao_to_mo,only       : talsh_compute_mo_integrals
       use exacorr_utils, only       : print_date
+      use, intrinsic:: ISO_C_BINDING
 #if defined (VAR_MPI)
       use interface_to_mpi
 #endif
