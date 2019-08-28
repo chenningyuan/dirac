@@ -66,7 +66,7 @@ One should recall that in the case of linear molecules, as the present one, only
 As it can be seen, the total SR constant of the fluorine nucleus is given, and then it is splitted out in its three terms (NU, EV and LR). The latter is also splitted out in their (e-e) and (e-p) linear response contributions, as well as in their :math:`\mathbf{L}` and :math:`\mathbf{S}` parts. It is seen how the (e-p) contribution to the linear response term of the SR constants is almost zero.
 
 
-Finally, as one should be interested in the relationship between SR constants and :ref:`PROPERTIES_.SHIELDING` (see :cite:`Aucar_JPCL2016` and :cite:`AucarChap2019`), we print also the SR constants in ppm, by multiplying each SR tensor element :math:`M_{N,\alpha\beta}` by :math:`\frac{m_p I_{\beta\gamma}}{g_N}`, where :math:`m_p` is the mass of a proton and `g_N` is the g-factor of the nucleus `N`.
+Finally, as one should be interested in the relationship between SR constants and :ref:`PROPERTIES_.SHIELDING` (see :cite:`Aucar_JPCL2016` and :cite:`AucarChap2019`), we print also the SR constants in ppm, by multiplying each SR tensor element :math:`M_{N,\alpha\beta}` by :math:`\frac{m_p I_{\beta\gamma}}{g_N}`, where :math:`m_p` is the mass of a proton and :math:`g_N` is the g-factor of the nucleus `N`.
 
 
 In this way, one obtains the following output:
