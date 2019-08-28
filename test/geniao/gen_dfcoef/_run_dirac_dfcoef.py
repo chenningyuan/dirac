@@ -46,6 +46,7 @@ def generate_dirac_input(molecule,
                         speed_of_light,
                         version,
                         get_mrconee,
+                        get_dfpcmo,
                         test,
                         exponent):
     """This function creates and saves a Dirac input file.
@@ -106,10 +107,13 @@ def generate_dirac_input(molecule,
       if uncontract:
        f.write("*READIN\n")
        f.write(".UNCONTRACT\n")
-      if speed_of_light is not False:
+      if (speed_of_light is not False) or (get_dfpcmo):
        f.write("**GENERAL\n")
+      if speed_of_light is not False:
        f.write(".CVALUE\n")
        f.write(" " + str(speed_of_light) + "\n")
+      if get_dfpcmo:
+       f.write(".PCMOUT\n")
       f.write("**MOLTRA\n")
       f.write(".NO4IND\n")
       if get_mrconee:
@@ -159,6 +163,7 @@ def run_dirac_dfcoef(molecule,
              version="Stndrd_2013",
              exponent=4,
              get_mrconee=False,
+             get_dfpcmo=False,
              test=False,
              restart=False):
     """This function runs a Dirac calculation.
@@ -184,16 +189,20 @@ def run_dirac_dfcoef(molecule,
                         speed_of_light,
                         version,
                         get_mrconee,
+                        get_dfpcmo,
                         test,
                         exponent)
 
     # Run Dirac
     print('Starting Dirac calculation\n')
-    if not restart and not get_mrconee:
-     subprocess.check_call("pam --mol=" + xyz_file + " --inp=" + input_file + " --get='DFCOEF' --silent --noarch", shell=True, cwd=molecule.data_directory)
-    elif not restart and get_mrconee:
-     subprocess.check_call("pam --mol=" + xyz_file + " --inp=" + input_file + " --get='DFCOEF MRCONEE' --silent --noarch", shell=True, cwd=molecule.data_directory)
-    elif restart:
+    get="DFCOEF "
+    if get_mrconee:
+       get += " MRCONEE"
+    if get_dfpcmo:
+       get += " DFPCMO"
+    if not restart:
+     subprocess.check_call("pam --mol=" + xyz_file + " --inp=" + input_file + " --get='" + get + "' --silent --noarch", shell=True, cwd=molecule.data_directory)
+    else:
      subprocess.check_call("pam --mol=" + xyz_file + " --inp=" + input_file + " --put='DFCOEF' --silent --noarch", shell=True, cwd=molecule.data_directory)
 
     try:

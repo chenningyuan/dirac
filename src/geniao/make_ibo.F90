@@ -89,13 +89,13 @@ contains
                    Qij = dot_product(Ai,Aj)       ! dot product is complex
                    if ((Expnt.eq.2) .or. (Expnt.eq.3)) then
                    ! Pipek-Mezey localization for complex orbitals
-                     Aij = Aij + 4.D0*abs(Qij)**2 - (Qii-Qjj)*(Qii-Qjj)
+                     Aij = Aij + 4.D0*abs(Qij)**2.D0 - (Qii-Qjj)*(Qii-Qjj)
                      Bij = Bij + 4.D0*Qij*(Qii - Qjj)
                    else if (Expnt.eq.4) then
                    ! Appendix D of Knizia's paper adapted for complex orbitals
                      Bij = Bij + 4.D0*Qij*(Qii*Qii*Qii - Qjj*Qjj*Qjj)
                      Aij = Aij - Qii*Qii*Qii*Qii - Qjj*Qjj*Qjj*Qjj + &
-                         & 6.D0*(Qii*Qii + Qjj*Qjj)*abs(Qij)**2 + Qjj*Qii*Qii*Qii + &
+                         & 6.D0*(Qii*Qii + Qjj*Qjj)*abs(Qij)**2.D0 + Qjj*Qii*Qii*Qii + &
                          & Qii*Qjj*Qjj*Qjj
                    else
                      write(*,*)"STOP: exponent should be 2, 3 or 4."
@@ -111,13 +111,13 @@ contains
                 Pij = datan2(aimag(Bij),real(Bij))
 
                 ! Now perform the rotation:
-                if ((Aij*Aij + abs(Bij)**2) > 1.0D-12) then
+                if ((Aij*Aij + abs(Bij)**2.D0) > 1.0D-12) then
                   allocate(Ai(nmo2))
                   allocate(Aj(nmo2))
                   phi = 0.25D0*datan2(abs(Bij),-Aij)
                   !Bij is the actual gradient. Aij is effectively
                   !the second derivative at phi=0.
-                  fGrad = fGrad + abs(Bij)**2
+                  fGrad = fGrad + abs(Bij)**2.D0
                   ! we multiply the bra function with the phase factor
                   ! this makes Bij real and positive as was assumed in the calculation of phi
                   ! reason to pick i rather than j is that in this way the phase of the first orbital is never changed
@@ -128,11 +128,13 @@ contains
                   LIbOcc(:,j) = -dsin(phi)*Ai + dcos(phi)*Aj 
                   deallocate(Ai,Aj)
                   ! condition for the maximum in Ref. [3].
-                  max_condition = 16.D0*Aij*dcos(4.D0*phi) - 16.D0*abs(Bij)*dsin(4.D0*phi)
-                  if (max_condition > 0.D0) then
+                  if (Expnt .eq. 2) then
+                     max_condition = 16.D0*Aij*dcos(4.D0*phi) - 16.D0*abs(Bij)*dsin(4.D0*phi)
+                     if (max_condition > 0.D0) then
                      write(*,*)"Warning: The condition for the maximum is not fulfilled &
                               & (i.e. max_condition is not < 0) for orbital pair i,j = ",i,j
                      write(*,'(A20,ES12.4)') "  max_condition = ", max_condition
+                     endif
                   endif
                 endif
              enddo

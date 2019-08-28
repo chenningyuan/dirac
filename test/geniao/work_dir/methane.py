@@ -19,8 +19,10 @@ point_nucleus = True
 version = ["Stndrd_2013","Simple_2013","Simple_2014"][0]
 exponent=[2,3,4][0]
 get_mrconee=True
+get_dfpcmo=True
 test=True
-hamiltonian="X2C"
+hamiltonian = "X2C"
+speed_of_light = False
 # by default :
 #symmetry = False
 #unconstract = True
@@ -37,18 +39,22 @@ molecule = MolData_Dirac(geometry=geometry,
                                basis=basis1,
                                charge=charge,
                                hamiltonian=hamiltonian,
+                               speed_of_light=speed_of_light,
                                data_directory=data_directory)
 
 # set get_mrconee=True in run_dirac_dfcoef if you want to extract the MRCONEE, used for testing the HF energy.
 molecule = run_dirac_dfcoef(molecule,
                      version=version,
                      exponent=exponent,
-                     hamiltonian=hamiltonian,
-                     test=test,
+                     speed_of_light=speed_of_light,
                      get_mrconee=get_mrconee,
+                     get_dfpcmo=get_dfpcmo,
+                     test=test,
+                     hamiltonian=hamiltonian,
                      point_nucleus=point_nucleus)
 
 subprocess.check_call("mv -f DFCOEF MOLECULE.dfcoef", shell=True, cwd=data_directory)
+subprocess.check_call("mv -f DFPCMO MOLECULE.dfpcmo", shell=True, cwd=data_directory)
 subprocess.check_call("mv -f {}.xyz MOLECULE.XYZ".format(molecule.name), shell=True, cwd=data_directory)
 subprocess.check_call("mv -f INPUT_IAO INPUT", shell=True, cwd=data_directory)
 
@@ -64,12 +70,14 @@ for i in range(len(geometry)):
      fragment = MolData_Dirac(geometry=frag_geo,
                                     basis=basis2,
                                     charge=charge0,
+                                    speed_of_light=speed_of_light,
                                     hamiltonian=hamiltonian,
                                     data_directory=data_directory)
      fragment = run_dirac_dfcoef(fragment,
                           version=version,
                           hamiltonian=hamiltonian,
                           exponent=exponent,
+                          speed_of_light=speed_of_light,
                           point_nucleus=point_nucleus)
      subprocess.check_call("mv -f DFCOEF {:03d}.dfcoef".format(molecule.protons[i]), shell=True, cwd=data_directory)
      subprocess.check_call("mv -f {}.xyz {}.xyz".format(fragment.name,molecule.atoms[i]), shell=True, cwd=data_directory)
@@ -84,10 +92,12 @@ molecule = MolData_Dirac(geometry=geometry,
                                basis=basis1,
                                charge=charge,
                                hamiltonian=hamiltonian,
+                               speed_of_light=speed_of_light,
                                data_directory=data_directory)
 molecule = run_dirac_dfcoef(molecule,
                      version=version,
                      hamiltonian=hamiltonian,
+                     speed_of_light=speed_of_light,
                      exponent=exponent,
                      restart=True,
                      point_nucleus=point_nucleus)
@@ -101,10 +111,12 @@ molecule = MolData_Dirac(geometry=geometry,
                                basis=basis1,
                                hamiltonian=hamiltonian,
                                charge=charge,
+                               speed_of_light=speed_of_light,
                                data_directory=data_directory)
 molecule = run_dirac_dfcoef(molecule,
                      version=version,
                      hamiltonian=hamiltonian,
+                     speed_of_light=speed_of_light,
                      exponent=exponent,
                      restart=True,
                      point_nucleus=point_nucleus)
