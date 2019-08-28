@@ -70,7 +70,7 @@ Finally, as one should be interested in the relationship between SR constants an
 
 .. math::
 
-\frac{m_p I_{\beta\gamma}}{g_N}
+   \frac{m_p I_{\beta\gamma}}{g_N}
 
 where :math:`m_p` is the mass of a proton and `g_N` is the g-factor of the nucleus `N`.
 
