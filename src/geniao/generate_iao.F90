@@ -34,6 +34,7 @@
         integer                            :: charge ! Charge of the molecule
         integer                            :: Expnt ! Exponent to be used in the localization procedure (Make IBO).
         integer                            :: test ! test=1 means that the tests will be executed.
+        integer                            :: restrict ! restrict = 1 means that the logical variable "restricted" will be set to .true.
         character(11)                      :: version ! Version of the IAO construction (Standard_2013, Simple_2013, Simple_2014)
         complex(8), allocatable            :: S_block(:,:) ! sub block of the overlap matrix
         complex(8), allocatable            :: S11(:,:),S21(:,:),S12(:,:),S22(:,:) !  the overlap matrices
@@ -66,7 +67,10 @@
         read(luxyz,'(I2)') charge
         read(luxyz,'(I2)') Expnt
         read(luxyz,'(I2)') test
+        read(luxyz,'(I2)') restrict
         close(luxyz)
+
+        if (restrict .eq. 1) restricted = .true.
 
         call read_from_dirac (ao_basis_1,cspinor_original,'MOLECULE.dfcoef',ierr)
         nmo1 = cspinor_original%nmo
@@ -285,7 +289,7 @@
            call Localization(Cocc_IAO_res,Cocc_IBO_res,cspinor_fragment,n_fragments,nmo2,nocc/2,Expnt)
            ! put the same coefficients for unbarred and barred spinors to keep the (Kramers) restriction
            do i = 1, nocc-1, 2
-              do j = 1, nao1
+              do j = 1, nmo2
                  Cocc_IBO(j,i)   =        Cocc_IBO_res(j,(i+1)/2)
                  Cocc_IBO(j,i+1) = dconjg(Cocc_IBO_res(j,(i+1)/2))
               end do
