@@ -18,8 +18,9 @@ geometry = [\
 fragment_list = ['H','C'] # from the lowest atomic number to the highest
 point_nucleus = True
 version = ["Stndrd_2013","Simple_2013","Simple_2014"][0]
-exponent=[2,3,4][2]
+exponent=[2,3,4][0]
 get_mrconee=True
+get_dfpcmo=True
 test=True
 hamiltonian = "X2C"
 speed_of_light = False
@@ -48,11 +49,13 @@ molecule = run_dirac_dfcoef(molecule,
                      exponent=exponent,
                      speed_of_light=speed_of_light,
                      get_mrconee=get_mrconee,
+                     get_dfpcmo=get_dfpcmo,
                      test=test,
                      hamiltonian=hamiltonian,
                      point_nucleus=point_nucleus)
 
 subprocess.check_call("mv -f DFCOEF MOLECULE.dfcoef", shell=True, cwd=data_directory)
+subprocess.check_call("mv -f DFPCMO MOLECULE.dfpcmo", shell=True, cwd=data_directory)
 subprocess.check_call("mv -f {}.xyz MOLECULE.XYZ".format(molecule.name), shell=True, cwd=data_directory)
 subprocess.check_call("mv -f INPUT_IAO INPUT", shell=True, cwd=data_directory)
 

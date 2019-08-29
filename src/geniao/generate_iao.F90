@@ -37,6 +37,7 @@
         character(11)                      :: version ! Version of the IAO construction (Standard_2013, Simple_2013, Simple_2014)
         complex(8), allocatable            :: S_block(:,:) ! sub block of the overlap matrix
         complex(8), allocatable            :: S11(:,:),S21(:,:),S12(:,:),S22(:,:) !  the overlap matrices
+        complex(8), allocatable            :: S11_copy(:,:)
         complex(8), allocatable            :: P12(:,:),P21(:,:)         !  the projection operators
         complex(8), allocatable            :: IAO(:,:)                  !  coefficient matrix, IAOs (MO basis)
         complex(8), allocatable            :: IAO_aoB1(:,:,:)           !  coefficient matrix, IAOs in terms of AO basis B1
@@ -150,9 +151,13 @@
 
         ! Make the projector, zposv solves AX = B in which B is input and overwritten by X on output.
         allocate (P12(nmo1,nmo2))
+        allocate (S11_copy(nmo1,nmo1))
         P12 = S12
         ! P12 = inv(S11) S12 ---> solve S11 P12 = S12
+        ! Careful, matrices A and B are replaced by the use of zposv.
+        S11_copy = S11
         call zposv( 'U', nmo1, nmo2, S11, nmo1, P12, nmo1, ierr )
+        deallocate (S11_copy)
 
         ! In contrast to Knizia's approach, we work in the MO basis.
         ! Note that the MO fragment orbitals are of course localized on the fragments, as they are calculated separately
@@ -262,9 +267,6 @@
         cspinor_localized%total_energy = cspinor_original%total_energy
         call write_mos_to_dirac (ao_basis_1,cspinor_localized,"iao.dfcoef")
         call write_mos_to_dirac_formatted (cspinor_localized,"iao.dfpcmo")
-
-        ! Compute partial charges with occupied MO expressed in terms of IAOs.
-        call fragment_charges_IAO(IAO,cspinor_fragment,n_fragments,nmo1,nmo2,nocc)
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !         Calculate the intrinsic bonding orbital (IBO) basis                                        !

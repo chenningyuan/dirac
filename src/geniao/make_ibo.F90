@@ -20,7 +20,7 @@ contains
         implicit none
 
         logical                 :: conv
-        integer                 :: i,j,k,l, imo, nmoi, it, orb_deloc(nocc)
+        integer                 :: i,j,k,l, imo, nmoi, it, orb_deloc(nocc), orb_deloc0(nocc)
         integer, intent(in)     :: n_fragments, nmo2, nocc, Expnt
         complex(8), intent(in)  :: CIbOcc(nmo2,nocc) ! The occupied MO in terms of IAOs
         type(cmo),  intent(in)  :: cspinor_fragment(n_fragments) ! MO-coefficients of the fragments
@@ -37,7 +37,7 @@ contains
 !        write(*,*)
 !        write(*,*)"Function n_A(i): number of |i>'s electrons located on the IAOs of the fragments."
         imo = 0
-        orb_deloc = 0
+        orb_deloc0 = 0
         do i=1,n_fragments
 !           write(*,"(A16,I2,A7)")"------ FRAGMENT ", i, " ------"
 !           write(*,"(A12,A12)")"occ.MO","#.elec"
@@ -47,17 +47,11 @@ contains
               vec = LIbOcc(imo+1:imo+nmoi,j)
 !              write(*,"(I12,F12.6)") j,real(dot_product(vec,vec))
               if (real(dot_product(vec,vec)) > 0.01D0) then
-                 orb_deloc(j) = orb_deloc(j) + 1
+                 orb_deloc0(j) = orb_deloc0(j) + 1
               endif
               deallocate(vec)
            enddo
            imo = imo + nmoi
-        enddo
-
-        write(*,*)
-        write(*,"(A12,A12,A20)")"occ.MO","deloc.#frag","(thrs 0.01)"
-        do i=1,nocc
-           write(*,"(I12,I12)") i,orb_deloc(i)
         enddo
 
         write(*,*)
@@ -96,13 +90,13 @@ contains
                    Qij = dot_product(Ai,Aj)       ! dot product is complex
                    if ((Expnt.eq.2) .or. (Expnt.eq.3)) then
                    ! Pipek-Mezey localization for complex orbitals
-                     Aij = Aij + 4.D0*abs(Qij)**2 - (Qii-Qjj)*(Qii-Qjj)
+                     Aij = Aij + 4.D0*abs(Qij)**2.D0 - (Qii-Qjj)*(Qii-Qjj)
                      Bij = Bij + 4.D0*Qij*(Qii - Qjj)
                    else if (Expnt.eq.4) then
                    ! Appendix D of Knizia's paper adapted for complex orbitals
                      Bij = Bij + 4.D0*Qij*(Qii*Qii*Qii - Qjj*Qjj*Qjj)
                      Aij = Aij - Qii*Qii*Qii*Qii - Qjj*Qjj*Qjj*Qjj + &
-                         & 6.D0*(Qii*Qii + Qjj*Qjj)*abs(Qij)**2 + Qjj*Qii*Qii*Qii + &
+                         & 6.D0*(Qii*Qii + Qjj*Qjj)*abs(Qij)**2.D0 + Qjj*Qii*Qii*Qii + &
                          & Qii*Qjj*Qjj*Qjj
                    else
                      write(*,*)"STOP: exponent should be 2, 3 or 4."
@@ -118,13 +112,13 @@ contains
                 Pij = datan2(aimag(Bij),real(Bij))
 
                 ! Now perform the rotation:
-                if ((Aij*Aij + abs(Bij)**2) > 1.0D-12) then
+                if ((Aij*Aij + abs(Bij)**2.D0) > 1.0D-12) then
                   allocate(Ai(nmo2))
                   allocate(Aj(nmo2))
                   phi = 0.25D0*datan2(abs(Bij),-Aij)
                   !Bij is the actual gradient. Aij is effectively
                   !the second derivative at phi=0.
-                  fGrad = fGrad + abs(Bij)**2
+                  fGrad = fGrad + abs(Bij)**2.D0
                   ! we multiply the bra function with the phase factor
                   ! this makes Bij real and positive as was assumed in the calculation of phi
                   ! reason to pick i rather than j is that in this way the phase of the first orbital is never changed
@@ -134,12 +128,14 @@ contains
                   LIbOcc(:,i) = dcos(phi)*Ai + dsin(phi)*Aj 
                   LIbOcc(:,j) = -dsin(phi)*Ai + dcos(phi)*Aj 
                   deallocate(Ai,Aj)
-                  ! condition for the maximum in Ref. [3], should be checked for applicability for exponent > 2
-                  max_condition = 16.D0*Aij*dcos(4.D0*phi) - 16.D0*abs(Bij)*dsin(4.D0*phi)
-                  if (max_condition > 0.D0) then
+                  ! condition for the maximum in Ref. [3].
+                  if (Expnt .eq. 2) then
+                     max_condition = 16.D0*Aij*dcos(4.D0*phi) - 16.D0*abs(Bij)*dsin(4.D0*phi)
+                     if (max_condition > 0.D0) then
                      write(*,*)"Warning: The condition for the maximum is not fulfilled &
                               & (i.e. max_condition is not < 0) for orbital pair i,j = ",i,j
                      write(*,'(A20,ES12.4)') "  max_condition = ", max_condition
+                     endif
                   endif
                 endif
              enddo
@@ -184,9 +180,9 @@ contains
         enddo
 
         write(*,*)
-        write(*,"(A12,A12,A20)")"occ.MO","deloc.#frag","(thrs 0.01)"
+        write(*,"(3A12,A20)")"MO","deloc.#frag","after-loc.","(thrs 0.01)"
         do i=1,nocc
-           write(*,"(I12,I12)") i,orb_deloc(i)
+           write(*,"(3I12)") i,orb_deloc0(i),orb_deloc(i)
         enddo
         
         write(*,*)
