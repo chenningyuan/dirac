@@ -34,17 +34,17 @@ Therefore, the electronic dependence of the nuclear spin-rotation tensor of a nu
 Application to the HF molecule
 ------------------------------
 
-As an example, we show a calculation of the SR constant of the fluorine nucleus at the Hydrogen fluoride molecule. The input file `SR.inp` is given by
+As an example, we show a calculation of the SR constant of the fluorine nucleus at the Hydrogen fluoride molecule. The input file `spinrot.inp` is given by
 
 .. literalinclude:: spinrot.inp
 
-whereas the molecular input file `HF.mol` is
+whereas the molecular input file `HF_acv4z.mol` is
 
-.. literalinclude:: HF_cc-pVDZ.mol
+.. literalinclude:: HF_acv4z.mol
 
 The calculation is run using::
 
-   pam --inp=SR --mol=HF
+   pam --inp=spinrot --mol=HF_acv4z
 
 
 As a result, SR constants are obtained at the Random Phase Approximation (RPA) level of approach. Other approaches (as DFT) are also available.
@@ -55,7 +55,7 @@ It is also interesting to note that as :ref:`HAMILTONIAN_.URKBAL` is requested i
 Reading the output file
 -----------------------
 
-As the :ref:`PROPERTIES_.PRINT` value choose in the input file was 4, the results are more detailed (than when :ref:`PROPERTIES_.PRINT` is 2) and they are also given in both, kHz and ppm units.
+As the :ref:`PROPERTIES_.PRINT` value choose in the input file was 3, the results are fully detailed; they are also given in both, kHz and ppm units.
 
 The SR constant of the fluorine nucleus, in kHz, will look like:
 

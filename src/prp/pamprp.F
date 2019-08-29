@@ -10877,9 +10877,17 @@ C
 C
 C
                  ELSE
-                    WRITE (LUPRI,'(2X,A,/)') 'Components in the '//
-     &              'principal axis system'
-                    IF (IPRINT .GT. 1) THEN
+C                    WRITE (LUPRI,'(2X,A,/)') 'Components in the '//
+C     &              'principal axis system'
+                    IF (IPRINT .GT. 0) THEN
+                    CALL HEADER('Total spin-rotation constant',-1)
+                    WRITE (LUPRI,'(3X,A,6X,3F16.8)')
+     &                 'A', (GTRANT(I,1,IATOM),I = 1,3),
+     &                 'B', (GTRANT(I,2,IATOM),I = 1,3),
+     &                 'C', (GTRANT(I,3,IATOM),I = 1,3)
+                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
+     &       'iso', (GTRANT(1,1,IATOM)
+     &              +GTRANT(2,2,IATOM)+GTRANT(3,3,IATOM))/3
                       CALL HEADER('Nuclear contribution',-1)
                       WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                    'A', (GTRANN(I,1,IATOM),I = 1,3),
@@ -10905,6 +10913,7 @@ C
      &       'iso', (GTRANP(1,1,IATOM)
      &              +GTRANP(2,2,IATOM)+GTRANP(3,3,IATOM))/3
 C
+                      IF (IPRINT .GT. 1) THEN
                       CALL HEADER('M^L(e-e)',-1)
                       WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                    'A', (GTRANPLEE(I,1,IATOM),I = 1,3),
@@ -10938,21 +10947,22 @@ C
      &       'iso', (GTRANPSEP(1,1,IATOM)
      &              +GTRANPSEP(2,2,IATOM)+GTRANPSEP(3,3,IATOM))/3
 C
-                      CALL HEADER('Total spin-rotation constant',-1)
+                      END IF
                     END IF
-                    WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                 'A', (GTRANT(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANT(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANT(I,3,IATOM),I = 1,3)
-                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
-     &       'iso', (GTRANT(1,1,IATOM)
-     &              +GTRANT(2,2,IATOM)+GTRANT(3,3,IATOM))/3
 C
 C    Print values in ppm
 C
                     IF (IPRINT .GE. 2) THEN
          CALL HEADER('Spin-rotation constants (in ppm) for '//
      &                      NAMDEP(IATOM),-1)
+                    CALL HEADER('Total spin-rotation constant',-1)
+                    WRITE (LUPRI,'(3X,A,6X,3F16.8)')
+     &                 'A', (GTRANTPPM(I,1,IATOM),I = 1,3),
+     &                 'B', (GTRANTPPM(I,2,IATOM),I = 1,3),
+     &                 'C', (GTRANTPPM(I,3,IATOM),I = 1,3)
+                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
+     &       'iso', (GTRANTPPM(1,1,IATOM)
+     &              +GTRANTPPM(2,2,IATOM)+GTRANTPPM(3,3,IATOM))/3
                       CALL HEADER('Nuclear contribution',-1)
                       WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                    'A', (GTRANNPPM(I,1,IATOM),I = 1,3),
@@ -10978,6 +10988,7 @@ C
      &       'iso', (GTRANPPPM(1,1,IATOM)
      &              +GTRANPPPM(2,2,IATOM)+GTRANPPPM(3,3,IATOM))/3
 C
+                      IF (IPRINT .GE. 3) THEN
                       CALL HEADER('M^L(e-e)',-1)
                       WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                    'A', (GTRANPLEEPPM(I,1,IATOM),I = 1,3),
@@ -11011,15 +11022,8 @@ C
      &       'iso', (GTRANPSEPPPM(1,1,IATOM)
      &              +GTRANPSEPPPM(2,2,IATOM)+GTRANPSEPPPM(3,3,IATOM))/3
 C
-                      CALL HEADER('Total spin-rotation constant',-1)
+                      END IF
                     END IF
-                    WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                 'A', (GTRANTPPM(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANTPPM(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANTPPM(I,3,IATOM),I = 1,3)
-                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
-     &       'iso', (GTRANTPPM(1,1,IATOM)
-     &              +GTRANTPPM(2,2,IATOM)+GTRANTPPM(3,3,IATOM))/3
                  END IF
  45      CONTINUE
       END IF
