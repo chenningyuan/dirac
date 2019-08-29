@@ -10131,12 +10131,6 @@ C     NUCLEAR PART OF NSR TENSOR
 C
       CALL DZERO(SPRNUC,NCMAT)
 C
-c**** iaa: Only most abundant isotopes are considered
-c      DO I = 1, MXCENT
-c            ISOTOP(I) = 1
-c      END DO
-c****
-C
       CALL CMMASS(GEOM,MASS,NAT,ISOTOP,IPRPRP)
       WRITE (LUPRI,'(/,A,18X,3F20.15,//)')
      &    ' Gauge origin (a.u.):', (GAGORG(I),I=1,3)
@@ -10278,7 +10272,6 @@ C       ... add the nuclear term to TMAT
             CALL DAXPY(9*NUCDEP,D1,SPRNUC,1,TMAT,1)
       END DO
 C
-C iaa: USECM is seted as default option, May 2014 (TSaue)
       WRITE(LUPRI,'(2X,A)')
      & 'NOTE: The gauge origin must be placed'//
      & ' at the molecular CM in order to get'//
@@ -10534,12 +10527,6 @@ C
       PARAMETER (FACPPM = ALPHA2/2.D0*1.0D+6)
       LOGICAL PLANAR, LINMOL
 C
-C**** iaa: Only most abundant isotopes are considered
-c      DO I = 1, MXCENT
-c            ISOTOP(I) = 1
-c      END DO
-C****
-C
       CALL DZERO(TOTSPR,3*MXCOOR)
       CALL DZERO(GTRANT,9*MXCENT)
 C
@@ -10550,12 +10537,12 @@ C
       CALL DCOPY(9*NUCDEP,SPRDNL,1,DMAT,1)
       CALL DSCAL(9*NUCDEP,D1,DMAT,1)
 C
-C     We add up the total spin-rotation constants.
-C
 C iaa: Nuclear rotational angular momentum could be defined here to obtain Omega afterwards
       DO 300 I = 1, 3
         ANGUMOM(I) = D1
  300  CONTINUE
+C
+C     We add up the total spin-rotation constants.
 C
       DO 99 IATOM = 1, NUCDEP
          DO 200 I = 1, 3
