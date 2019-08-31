@@ -6890,7 +6890,7 @@ C************************************************************************
       DIMENSION COR(N,3), TINERT(3,3), TINVER(3,3), TMASS(N),
      &          ANGMOM(3), OMEGA(3)
       DIMENSION EIGVAL(3), EIGVEC(3,3), AMAT(6), AWRK(3), IWRK(3),
-     &          CEPVAL(*), CEPVEC(*), EIGVALUE(3), EIGVECTOR(3,3)
+     &          CEPVAL(*), CEPVEC(*)
 C
       CALL DZERO(TINERT,9)
       CALL DZERO(OMEGA,3)
@@ -6924,8 +6924,8 @@ C
 C
       CALL DUNIT(EIGVEC,3)
       CALL JACO(AMAT,EIGVEC,3,3,3,AWRK,IWRK)
-!     In output, AMAT contains the elements of the diagonalized TINERT
-!                EIGVEC contains the eigenvectors of the non-diagonalized matrix
+C     In output, AMAT contains the elements of the diagonalized TINERT
+C                EIGVEC contains the eigenvectors of the non-diagonalized matrix
 C
       IF (IPRINT.GE.9) THEN
        write(lupri,*)
@@ -6936,31 +6936,24 @@ C
       EIGVAL(2) = AMAT(3)
       EIGVAL(3) = AMAT(6)
 C
-      DO 500 I = 1, 3
-      DO 500 J = 1, 3
-      EIGVECTOR(I,J) = EIGVEC(I,J)
-  500 CONTINUE
-C
-C     Inverse moments of inertia
-C
-      EIGVALUE(1)    = D1/EIGVAL(1)
-      EIGVALUE(2)    = D1/EIGVAL(2)
-      EIGVALUE(3)    = D1/EIGVAL(3)
-C
 C.....Order eigenvalues and corresponding eigenvectors in ascending order E(1) < E(2) < E(3)
       CALL ORDER(EIGVEC,EIGVAL,3,3)
 C
-      IF (EIGVAL(1).gt.TSTLIN.and.EIGVAL(2).gt.TSTLIN
-     & .and.EIGVAL(3).gt.TSTLIN) THEN
+      IF (EIGVAL(1) .LT. TSTLIN) THEN
+C     Linear molecules
+         LINEAR = .TRUE.
+         PLANAR = .FALSE.
+         WRITE (LUPRI,'(/,2X,A)') 'Linear molecule'
+         EIGVAL(1) = D0
+      ELSE
 C     Non-linear molecules
          LINEAR = .FALSE.
-         WRITE (LUPRI,'(/,2X,A)') 'Non-linear molecule'
-         IF (ABS(EIGVAL(3)-(EIGVAL(2)+EIGVAL(1))) .LT. TSTLIN) THEN
+         EIGVAL(1) = D1/EIGVAL(1)
+         IF (ABS(EIGVAL(3)-EIGVAL(2)-EIGVAL(1)) .LT. TSTLIN) THEN
             PLANAR = .TRUE.
             WRITE (LUPRI,'(/,2X,A)') 'Planar molecule'
          ELSE
             PLANAR = .FALSE.
-            WRITE (LUPRI,'(/,2X,A)') 'Non-planar molecule'
          END IF
          IF (EIGVAL(1).eq.EIGVAL(2).and.EIGVAL(1).eq.EIGVAL(3))
      &    WRITE (LUPRI,'(/,2X,A)')  'Spherical top molecule'
@@ -6968,28 +6961,18 @@ C     Non-linear molecules
      &    WRITE (LUPRI,'(/,2X,A)')  'Oblate symmetric top molecule'
          IF (EIGVAL(2).eq.EIGVAL(3).and.EIGVAL(2).ne.EIGVAL(1))
      &    WRITE (LUPRI,'(/,2X,A)')  'Prolate symmetric top molecule'
-      ELSE
-C     Linear molecules
-         IF (EIGVAL(1).lt.TSTLIN) THEN
-          LINEAR = .TRUE.
-          PLANAR = .FALSE.
-          EIGVALUE(1) = D0
-          EIGVALUE(2) = D1/EIGVAL(2)
-          EIGVALUE(3) = D1/EIGVAL(3)
-          DO 600 I = 1, 3
-          DO 600 J = 1, 3
-          EIGVECTOR(I,J) = EIGVEC(I,J)
-  600 CONTINUE
-         END IF
-         WRITE (LUPRI,'(/,2X,A)') 'Linear molecule'
       END IF
+C
+      EIGVAL(2) = D1/EIGVAL(2)
+      EIGVAL(3) = D1/EIGVAL(3)
+C
+C     Inverse moments of inertia
 C
       CALL DZERO(TINVER,9)
       DO 200 X = 1, 3
       DO 200 Y = 1, 3
       DO 200 I = 1, 3
-         TINVER(X,Y) = TINVER(X,Y) + 
-     &                 EIGVECTOR(X,I)*EIGVECTOR(Y,I)*EIGVALUE(I)
+         TINVER(X,Y) = TINVER(X,Y) + EIGVEC(X,I)*EIGVEC(Y,I)*EIGVAL(I)
   200 CONTINUE
 C
       DO 300 X = 1, 3
@@ -6998,8 +6981,8 @@ C
   300 CONTINUE
 C
       IF (DOCOPY) THEN
-         CALL DCOPY(3,EIGVALUE,1,CEPVAL,1)
-         CALL DCOPY(9,EIGVECTOR,1,CEPVEC,1)
+         CALL DCOPY(3,EIGVAL,1,CEPVAL,1)
+         CALL DCOPY(9,EIGVEC,1,CEPVEC,1)
       END IF
       RETURN
       END
