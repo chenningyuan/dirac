@@ -10,6 +10,8 @@ class SpecialBasisError(Exception):
     pass
 class SpeedOfLightError(Exception):
     pass
+class SpinFreeError(Exception):
+    pass
 
 def create_geometry_string(geometry):
     """This function converts MolData_Dirac geometry to Dirac geometry.
@@ -41,6 +43,7 @@ def create_geometry_string(geometry):
 def generate_dirac_input(molecule,
                         symmetry,
                         hamiltonian,
+                        spinfree,
                         point_nucleus,
                         uncontract,
                         speed_of_light,
@@ -48,6 +51,7 @@ def generate_dirac_input(molecule,
                         get_mrconee,
                         get_dfpcmo,
                         test,
+                        restricted,
                         exponent):
     """This function creates and saves a Dirac input file.
 
@@ -55,11 +59,19 @@ def generate_dirac_input(molecule,
         molecule: An instance of the MolData_Dirac class.
         symmetry: Boolean to specify the use of symmetry
         hamiltonian: string defining the Hamiltonian (NONREL, X2C or X2CMMF)
+        spinfree: Get rid of spin-coupling for 4- and 2-component relativistic hamiltonians
         point_nucleus : Boolean to specify the use of the nuclear model of point nucleus,
                         instead of Gaussian charge distribution (default).
+        uncontract: use uncontracted basis set.
         speed_of_light: Real value for the speed of light (137 a.u.) in atomic unit,
                         to be changed if wanted in order to increase or decrease relativistic
                         effects.
+        version: Either Standard2013, Simple2013 or Simple2014. Those are version of the localization procedure implemented by Knizia, J. Chem. Theory Comput., http://dx.doi.org/10.1021/ct400687b
+        get_mrconee: Extract the MRCONEE unformatted file containing the one-electron integrals.
+        get_dfpcmo: Extract the DFPCMO formatted file containing the molecular orbital coefficients.
+        test: if set to 1, several tests will be performed in the generation of intrinsic atomic orbital procedure.
+        restricted: use of restricted algorithm ; i.e. the coefficient matrix will span half the space compare to the unrestricted calculation. It maintains (Kramers)-restriction for the localized orbital set
+        exponent: set the exponent to 2, 3 or 4 for the localization procedure.
 
     Returns:
         input_file: A string giving the name of the saved input file, and the xyz file.
@@ -82,6 +94,9 @@ def generate_dirac_input(molecule,
     if speed_of_light is not False and hamiltonian=="NONREL":
        raise SpeedOfLightError('A given speed of light has been specified without setting a relativistic Hamiltonian')
 
+    if spinfree and hamiltonian=="NONREL":
+       raise SpinFreeError('spinfree keyword should be set to False for nonrelativistic Hamiltonian. This keyword is only used for 4- and 2-component relativistic Hamiltonians.')
+
     if test and not get_mrconee:
         warnings.warn('MRCONEE is needed for the test. If you have not provided it, please switch on get_mrconee=True')
        
@@ -100,6 +115,8 @@ def generate_dirac_input(molecule,
       f.write("500\n")
       f.write("**HAMILTONIAN\n")
       f.write("."+ hamiltonian + "\n")
+      if spinfree:
+       f.write(".SPINFREE\n")
       f.write("**INTEGRALS\n")
       if point_nucleus:
        f.write(".NUCMOD\n")
@@ -143,6 +160,10 @@ def generate_dirac_input(molecule,
       f.write(str(molecule.charge)+"\n")
       f.write(str(exponent)+"\n")
       if test==True:
+        f.write("1\n")
+      else:
+        f.write("0\n")
+      if restricted==True:
         f.write("1")
       else:
         f.write("0")
@@ -157,14 +178,16 @@ def rename(molecule):
 def run_dirac_dfcoef(molecule,
              symmetry=False,
              hamiltonian="NONREL",
+             spinfree=False,
              point_nucleus=False,
              uncontract=True,
              speed_of_light=False,
              version="Stndrd_2013",
-             exponent=4,
+             exponent=2,
              get_mrconee=False,
              get_dfpcmo=False,
              test=False,
+             restricted=False,
              restart=False):
     """This function runs a Dirac calculation.
 
@@ -184,6 +207,7 @@ def run_dirac_dfcoef(molecule,
     input_file, xyz_file = generate_dirac_input(molecule,
                         symmetry,
                         hamiltonian,
+                        spinfree,
                         point_nucleus,
                         uncontract,
                         speed_of_light,
@@ -191,6 +215,7 @@ def run_dirac_dfcoef(molecule,
                         get_mrconee,
                         get_dfpcmo,
                         test,
+                        restricted,
                         exponent)
 
     # Run Dirac

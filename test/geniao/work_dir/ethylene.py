@@ -23,7 +23,9 @@ get_mrconee=True
 get_dfpcmo=True
 test=True
 hamiltonian = "X2C"
+spinfree=True
 speed_of_light = False
+restricted = False
 # by default :
 #symmetry = False
 #unconstract = True
@@ -52,6 +54,8 @@ molecule = run_dirac_dfcoef(molecule,
                      get_dfpcmo=get_dfpcmo,
                      test=test,
                      hamiltonian=hamiltonian,
+                     spinfree=spinfree,
+                     restricted=restricted,
                      point_nucleus=point_nucleus)
 
 subprocess.check_call("mv -f DFCOEF MOLECULE.dfcoef", shell=True, cwd=data_directory)
@@ -77,6 +81,7 @@ for i in range(len(geometry)):
      fragment = run_dirac_dfcoef(fragment,
                           version=version,
                           hamiltonian=hamiltonian,
+                          spinfree=spinfree,
                           exponent=exponent,
                           speed_of_light=speed_of_light,
                           point_nucleus=point_nucleus)
@@ -98,6 +103,7 @@ molecule = MolData_Dirac(geometry=geometry,
 molecule = run_dirac_dfcoef(molecule,
                      version=version,
                      hamiltonian=hamiltonian,
+                     spinfree=spinfree,
                      speed_of_light=speed_of_light,
                      exponent=exponent,
                      restart=True,
@@ -117,6 +123,7 @@ molecule = MolData_Dirac(geometry=geometry,
 molecule = run_dirac_dfcoef(molecule,
                      version=version,
                      hamiltonian=hamiltonian,
+                     spinfree=spinfree,
                      speed_of_light=speed_of_light,
                      exponent=exponent,
                      restart=True,
