@@ -5,6 +5,8 @@
 #if multiple MPI processes reside on the same node. In this case
 #the environment variable QF_PROCS_PER_NODE must be set appropriately!
 
+#Note that these variables are set by pam (after defining them in .diracrc), this runscript is needed if you don't use pam.
+
 #ExaTensor specific:
 export QF_PATH=../..              #full path to ExaTENSOR root directory
 export QF_NUM_PROCS=4             #total number of MPI processes

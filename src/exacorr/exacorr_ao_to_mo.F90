@@ -416,7 +416,6 @@ module exacorr_ao_to_mo
 
 !        Do 1st and 2nd quarter-transformation
          ierr=exatns_tensor_create(a1int_tensor,'a1int',a1int_id,a1int_root,EXA_DATA_KIND_C8)
-!        ierr=exatns_tensor_create(a2int_tensor,'a2int',a2int_id,a2int_root,EXA_DATA_KIND_C8)
          ierr=exatns_tensor_contract(a1int_tensor,mocoef_tensor(1,1),aoint_tensor,"D(i,q,r,s)+=R+(p,i)*L(p,q,r,s)")
          if(ierr.ne.EXA_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=11; return; endif
          ierr=exatns_tensor_contract(a2int_tensor,a1int_tensor,mocoef_tensor(1,2),"D(i,j,r,s)+=L(i,q,r,s)*R(q,j)")
@@ -821,8 +820,7 @@ module exacorr_ao_to_mo
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create(one_tens) failed!')
          ierr=exatns_tensor_init(one_tensor,ONE)
 
-         ! Now do the actual sort
-         ierr=exatns_tensor_init(dirac_tensor,ZERO)
+         ! Now do the actual sort, note that we do not initialize as we may be accumulating in the target tensor
          ierr=exatns_tensor_contract(dirac_tensor,mulliken_tensor,one_tensor,"D(p,q,r,s)+=M(p,r,q,s)*C()")
 
          if (antisymmetrize .eq. 12) then
