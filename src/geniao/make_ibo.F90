@@ -20,7 +20,7 @@ contains
         implicit none
 
         logical                 :: conv
-        integer                 :: i,j,k,l, imo, nmoi, it, orb_deloc(nocc), orb_deloc0(nocc)
+        integer                 :: i,j,k,l, ibar, jbar, imo, nmoi, it, orb_deloc(nocc), orb_deloc0(nocc)
         integer, intent(in)     :: n_fragments, nmo2, nocc, Expnt
         complex(8), intent(in)  :: CIbOcc(nmo2,nocc) ! The occupied MO in terms of IAOs
         type(cmo),  intent(in)  :: cspinor_fragment(n_fragments) ! MO-coefficients of the fragments
@@ -68,7 +68,7 @@ contains
           ! Start the orbital localization procedure:
           fGrad = 0.D0
           ! Sum over all occupied orbital pairs i,j ; j < i
-          do i=2,nocc
+          do i=3,nocc,2
              do j=1,i-1
                 ! Aij and Bij are given in Appendix D of [1]
                 ! Aij is the second derivative at phi=0 (see Eq.(8) of [2]).
@@ -127,6 +127,17 @@ contains
                   Aj = LIbOcc(:,j)
                   LIbOcc(:,i) = dcos(phi)*Ai + dsin(phi)*Aj 
                   LIbOcc(:,j) = -dsin(phi)*Ai + dcos(phi)*Aj 
+                  ! Keep restricted formalism and rotate also the Kramers partners
+                  ibar = i+1
+                  if (mod(j,2) == 0) then
+                     jbar = j-1
+                  else
+                     jbar = j+1
+                  endif
+                  Ai = LIbOcc(:,ibar) * dcmplx(dcos(-Pij),dsin(-Pij))
+                  Aj = LIbOcc(:,jbar)
+                  LIbOcc(:,ibar) = dcos(phi)*Ai + dsin(phi)*Aj
+                  LIbOcc(:,jbar) = -dsin(phi)*Ai + dcos(phi)*Aj
                   deallocate(Ai,Aj)
                   ! condition for the maximum in Ref. [3].
                   if (Expnt .eq. 2) then
