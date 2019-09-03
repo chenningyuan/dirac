@@ -1,4 +1,0 @@
-!
-! This is a test for the exacorr combined with ExaTensor to check if the fock matrix is built correctly.
-! This test only works if the build is parallel. For running it without test scripts note that ExaTensor 
-! only runs with at least 3 MPI processes.
