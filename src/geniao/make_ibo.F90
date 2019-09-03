@@ -8,7 +8,7 @@ module make_ibo
 
 contains
 
-   subroutine Localization(CIbOcc,LIbocc,cspinor_fragment,n_fragments,nmo2,nocc,Expnt)
+   subroutine Localization(CIbOcc,LIbocc,cspinor_fragment,n_fragments,nmo2,nocc,Expnt,restricted)
    ! make intrinsic bond orbitals (IBOs) (localized occupied orbitals expressed in terms of IAOs)
    ! It consists in effectively minimizing the number of atoms an orbital is centered on.
    ! For this, unitary operations (rotations) are perform amongst the occupied MOs
@@ -19,8 +19,9 @@ contains
 
         implicit none
 
+        logical, intent(in)     :: restricted
         logical                 :: conv
-        integer                 :: i,j,k,l, ibar, jbar, imo, nmoi, it, orb_deloc(nocc), orb_deloc0(nocc)
+        integer                 :: i,j,k,l, ibar, jbar, imo, nmoi, it, orb_deloc(nocc), orb_deloc0(nocc), i_start, i_increment
         integer, intent(in)     :: n_fragments, nmo2, nocc, Expnt
         complex(8), intent(in)  :: CIbOcc(nmo2,nocc) ! The occupied MO in terms of IAOs
         type(cmo),  intent(in)  :: cspinor_fragment(n_fragments) ! MO-coefficients of the fragments
@@ -34,18 +35,18 @@ contains
         write(*,*)"------- Localization Procedure (IBO) -------"
         write(*,*)
         write(*,'(1A11,I1)')"Exponent = ",Expnt
-!        write(*,*)
-!        write(*,*)"Function n_A(i): number of |i>'s electrons located on the IAOs of the fragments."
+        if (restricted) then
+           write(*,'(A)')"Rotations are Kramers-Restricted"
+        else
+           write(*,'(A)')"Rotations are unrestricted"
+        end if
         imo = 0
         orb_deloc0 = 0
         do i=1,n_fragments
-!           write(*,"(A16,I2,A7)")"------ FRAGMENT ", i, " ------"
-!           write(*,"(A12,A12)")"occ.MO","#.elec"
            nmoi = cspinor_fragment(i)%nmo
            do j=1,nocc
               allocate(vec(nmoi))
               vec = LIbOcc(imo+1:imo+nmoi,j)
-!              write(*,"(I12,F12.6)") j,real(dot_product(vec,vec))
               if (real(dot_product(vec,vec)) > 0.01D0) then
                  orb_deloc0(j) = orb_deloc0(j) + 1
               endif
@@ -68,7 +69,14 @@ contains
           ! Start the orbital localization procedure:
           fGrad = 0.D0
           ! Sum over all occupied orbital pairs i,j ; j < i
-          do i=3,nocc,2
+          if (restricted) then
+             i_start = 3
+             i_increment = 2
+          else
+             i_start = 2
+             i_increment = 1
+          endif
+          do i=i_start,nocc,i_increment
              do j=1,i-1
                 ! Aij and Bij are given in Appendix D of [1]
                 ! Aij is the second derivative at phi=0 (see Eq.(8) of [2]).
@@ -127,17 +135,19 @@ contains
                   Aj = LIbOcc(:,j)
                   LIbOcc(:,i) = dcos(phi)*Ai + dsin(phi)*Aj 
                   LIbOcc(:,j) = -dsin(phi)*Ai + dcos(phi)*Aj 
-                  ! Keep restricted formalism and rotate also the Kramers partners
-                  ibar = i+1
-                  if (mod(j,2) == 0) then
-                     jbar = j-1
-                  else
-                     jbar = j+1
+                  if (restricted) then
+                     ! Keep restricted formalism and rotate also the Kramers partners
+                     ibar = i+1
+                     if (mod(j,2) == 0) then
+                        jbar = j-1
+                     else
+                        jbar = j+1
+                     endif
+                     Ai = LIbOcc(:,ibar) * dcmplx(dcos(-Pij),dsin(-Pij))
+                     Aj = LIbOcc(:,jbar)
+                     LIbOcc(:,ibar) = dcos(phi)*Ai + dsin(phi)*Aj
+                     LIbOcc(:,jbar) = -dsin(phi)*Ai + dcos(phi)*Aj
                   endif
-                  Ai = LIbOcc(:,ibar) * dcmplx(dcos(-Pij),dsin(-Pij))
-                  Aj = LIbOcc(:,jbar)
-                  LIbOcc(:,ibar) = dcos(phi)*Ai + dsin(phi)*Aj
-                  LIbOcc(:,jbar) = -dsin(phi)*Ai + dcos(phi)*Aj
                   deallocate(Ai,Aj)
                   ! condition for the maximum in Ref. [3].
                   if (Expnt .eq. 2) then

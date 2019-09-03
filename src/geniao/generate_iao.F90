@@ -56,7 +56,7 @@
         complex(8), allocatable            :: coeff1_vir(:,:)
         character(len=14)                  :: fragfile_dfcoef, fragfile_dfpcmo
         character(len=18)                  :: fragfile_val_dfcoef, fragfile_val_dfpcmo
-        logical                            :: restricted = .false.      !  maintain (Kramers)-restriction for the localized orbital set
+        logical                            :: restricted = .true.       !  maintain (Kramers)-restriction for the localized orbital set
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !           READ Input Files         !
@@ -197,6 +197,8 @@
 
         !-----Symmetrically orthonormalize IAOs with S11-----
         call SymOrth(IAO,S11,nmo1,nmo2)
+        !-----Calculate partial charges based on the IAOs----
+        call fragment_charges_IAO(IAO,cspinor_fragment,n_fragments,nmo1,nmo2,nocc)
 
         !-----Express IAO in terms of the original AO basis B1----- (nao1 x nmo2)
         allocate(IAO_aoB1(nao1,nmo2,2))
@@ -280,25 +282,7 @@
         !-----Compute IBOs (Localized occupied MO in terms of IAOs)----- (nmo2 x nocc)
         allocate(Cocc_IBO(nmo2,nocc))
 
-        if (restricted) then
-           allocate(Cocc_IAO_res(nmo2,nocc/2))
-           allocate(Cocc_IBO_res(nmo2,nocc/2))
-           do i = 1, nocc, 2
-              Cocc_IAO_res(:,(i+1)/2) = Cocc_IAO(:,i)
-           end do
-           call Localization(Cocc_IAO_res,Cocc_IBO_res,cspinor_fragment,n_fragments,nmo2,nocc/2,Expnt)
-           ! put the same coefficients for unbarred and barred spinors to keep the (Kramers) restriction
-           do i = 1, nocc-1, 2
-              do j = 1, nmo2
-                 Cocc_IBO(j,i)   =        Cocc_IBO_res(j,(i+1)/2)
-                 Cocc_IBO(j,i+1) = dconjg(Cocc_IBO_res(j,(i+1)/2))
-              end do
-           end do
-           deallocate(Cocc_IAO_res)
-           deallocate(Cocc_IBO_res)
-        else
-           call Localization(Cocc_IAO,Cocc_IBO,cspinor_fragment,n_fragments,nmo2,nocc,Expnt)
-        end if
+        call Localization(Cocc_IAO,Cocc_IBO,cspinor_fragment,n_fragments,nmo2,nocc,Expnt,restricted)
 
         !-----Transform IBOs back to AO basis B1----- (nao1 x nocc)
         allocate(Cocc_IBO_aoB1(nao1,nocc,2))
@@ -324,10 +308,8 @@
         ! In Knizia's program, another call is made to sort the new localized orbitals by energy.
         ! I think in our case they are already sorted, but I'm not 100% convinced...
 
-        ! Let's try to compute the partial charges using IBO?
+        ! Compute partial charges using IBO?
         call partial_charges(Cocc_IBO,cspinor_fragment,n_fragments,nmo2,nocc)
-        write(*,*)
-        call fragment_charges_IAO(IAO,cspinor_fragment,n_fragments,nmo1,nmo2,nocc)
 
 !!!!!!!!!!!!!!!!!!!!
 !      TEST        !

@@ -23,7 +23,7 @@ contains
         call get_atoms(luxyz,first_atom)
         close (luxyz,status='keep')
 
-        write(*,*) " PARTIAL CHARGES:"
+        write(*,*) " Partial Charges: (directly from MOs)"
         imo=0
         current_atom => first_atom
         print*,
@@ -68,7 +68,7 @@ contains
         call get_atoms(luxyz,first_atom)
         close (luxyz,status='keep')
 
-        write(*,*) " PARTIAL CHARGES (second version...):"
+        write(*,*) " Partial Charges: (1-RDM method)"
         ! 1RDM:
         allocate(HF_RDM(nmo1,nmo1)) ! In the MO basis, should be 0 everywhere except 1 on part of the diagonal (only for nocc)
         HF_RDM = ZERO
