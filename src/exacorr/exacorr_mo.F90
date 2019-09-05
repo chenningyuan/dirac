@@ -8,7 +8,6 @@ module exacorr_mo
 
 !   Extended from dirac_mo by Stan Papadopoulos, January 2019
 
-
     implicit none
 
     private
@@ -18,12 +17,13 @@ module exacorr_mo
 
     type  :: mo_root
         integer             :: &
-         fermion_irrep, &     ! fermion irrep (1=gerade, 2=ungerade) to which the spinors belongs
          nao, &               ! number of aos
          nmo                  ! number of mos
 
         logical             :: &
-         allocated = .false.
+         allocated=.false.,    &        ! coefficient array is allocated
+         restricted=.true.,    &        ! spinors (or spin-orbitals) are paired
+         complex_algebra=.true.         ! coefficients are complex
 
         real(8)             :: &
          total_energy         ! total (SCF) energy as stored on the coefficient file
@@ -31,26 +31,45 @@ module exacorr_mo
         real(8), pointer    :: &
          energy (:)           ! orbital energies
 
-        integer, pointer    :: &
-         index(:), &          ! index of the spinor in the full list of spinors for this fermion symmetry
-         boson_irrep(:)       ! for spinfree calculations: boson irrep to which the spinor belongs
+        real(8), pointer :: &
+         coeff_r (:,:,:)      ! coefficients (AO,MO,spin)
+
+        complex(8), pointer :: &
+         coeff_c (:,:,:)      ! coefficients (AO,MO,spin)
+
+        real(8), pointer :: &
+         coeff_q (:,:,:)      ! coefficients (AO,MO,IZ)
 
     end type mo_root
 
     type, public, extends(mo_root) :: cmo
 
+        integer, pointer    :: &
+         index(:), &          ! index of the spinor in the full list of spinors for this fermion symmetry
+         boson_irrep(:)       ! for spinfree calculations: boson irrep to which the spinor belongs
+
+        integer             :: &
+         fermion_irrep        ! fermion irrep (1=gerade, 2=ungerade) to which the spinors belongs
+
         complex(8), pointer :: &
-         coeff (:,:,:)          ! coefficients (AO,MO,spin)
+         coeff (:,:,:)        ! coefficients (AO,MO,spin)
 
     end type cmo
 
     type, public, extends(mo_root) :: qumo
 
+        integer, pointer    :: &
+         index(:), &          ! index of the spinor in the full list of spinors for this fermion symmetry
+         boson_irrep(:)       ! for spinfree calculations: boson irrep to which the spinor belongs
+
+        integer             :: &
+         fermion_irrep        ! fermion irrep (1=gerade, 2=ungerade) to which the spinors belongs
+
         integer :: &
          nz                   ! number of active quaternion units
 
         real(8), pointer :: &
-         coeff (:,:,:)        ! coefficients (AO,MO,IZ)
+         coeff   (:,:,:)      ! coefficients (AO,MO,iz)
 
     end type qumo
 
@@ -196,6 +215,7 @@ module exacorr_mo
       call interface_mpi_bcast (M%nmo,1,my_MPI_master,global_communicator)
       if (my_MPI_rank /= my_MPI_master) then
          call alloc_mo (M,M%nao,M%nmo)
+         M%allocated = .true.
       end if
       call interface_mpi_bcast (M%fermion_irrep,    1,my_MPI_master,global_communicator)
       call interface_mpi_bcast (M%boson_irrep,  M%nmo,my_MPI_master,global_communicator)
@@ -223,6 +243,7 @@ module exacorr_mo
       call interface_mpi_bcast (M%nz ,1,my_MPI_master,global_communicator)
       if (my_MPI_rank /= my_MPI_master) then
          call alloc_mo(M,M%nao,M%nmo,M%nz)
+         M%allocated = .true.
       end if
       call interface_mpi_bcast (M%fermion_irrep,    1,my_MPI_master,global_communicator)
       call interface_mpi_bcast (M%boson_irrep,  M%nmo,my_MPI_master,global_communicator)
