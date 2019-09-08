@@ -10610,8 +10610,8 @@ C
 !
 ! iaa: Symmetry. It is not working for diatomic molecules with 2 equal atoms
         IF (CHARGE(1).EQ.CHARGE(2)) THEN
-          CALL QUIT('SPRRES: spin-rotation constants using symmetry '//
-     &                  'and 2 equal atoms is not yet implemented')
+          CALL QUIT('Spin-rotation constants using symmetry '//
+     &              'and 2 equal atoms is not yet implemented')
         END IF
 !
          IF (IPRINT .GE. 0) THEN

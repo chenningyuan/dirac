@@ -407,9 +407,15 @@
             DOXLR = .TRUE.
             SPINRO = .TRUE.
 !iaa Work in progress to include symmetries other than C1
-            if(NBSYM .gt. 1) then
-             call quit("Spin-rotation tensors"//                        &
-     &              " available in C1 symmetry only")
+            if(LINEAR) then
+             if (NUCDEP.GT.2) then
+              call quit("Spin-rotation constants using linear "//      &
+     &         "symmetry detection and more than 2 nuclei are "//      &
+     &         "not yet implemented")
+             end if
+            else if(NBSYM .gt. 1) then
+             call quit("Spin-rotation tensors "//                      &
+     &        "available in C1 symmetry only")
             end if
             GO TO 100
   135    CONTINUE 
