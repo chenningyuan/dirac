@@ -217,7 +217,8 @@ CONTAINS
     !> local
     integer :: index
     integer :: la,lb,lc,ld
-    real(8) :: fint(nccx*nccx)
+    real(8), save :: fint(nccx*nccx)
+    !$OMP threadprivate(fint)
     real(8) :: alpha,ax,ay,az,anorm
     real(8) :: beta, bx,by,bz,bnorm
     real(8) :: gamma,cx,cy,cz,cnorm
@@ -517,7 +518,8 @@ CONTAINS
     !> local
     integer :: nint,index
     integer :: la,lb,lc,ld
-    real(8) :: fint(nccx*nccx)
+    real(8), save :: fint(nccx*nccx)
+    !$OMP threadprivate(fint)
     real(8) :: alpha,ax,ay,az,anorm
     real(8) :: beta, bx,by,bz,bnorm
     real(8) :: gamma,cx,cy,cz,cnorm
@@ -762,7 +764,8 @@ CONTAINS
     !> local
     integer :: index
     integer :: la,lb,lc,ld
-    real(8) :: fint(nccx*nccx)
+    real(8), save :: fint(nccx*nccx)
+    !$OMP threadprivate(fint)
     real(8) :: alpha,ax,ay,az,anorm
     real(8) :: beta, bx,by,bz,bnorm
     real(8) :: gamma,cx,cy,cz,cnorm
