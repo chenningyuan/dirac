@@ -94,9 +94,9 @@ module exacorr_mo
 
 !     Prepare to work with a block of Mos
 
-      type(cmo), intent(out) :: M
-      integer,   intent(in ) :: nao
-      integer,   intent(in ) :: nmo
+      type(cmo), intent(inout) :: M
+      integer,   intent(in )   :: nao
+      integer,   intent(in )   :: nmo
 
       M%nao = nao  ! Size of AO basis. Is kept here as we may want to use non-global defs
       M%nmo = nmo  ! Size of MO basis. May vary (e.g. in the 4-index when we have different ranges)
@@ -125,10 +125,10 @@ module exacorr_mo
 
 !      Prepare to work with a block of Mos
 
-       type(qumo), intent(out)           :: M
-       integer,    intent(in )           :: nao
-       integer,    intent(in )           :: nmo
-       integer,    intent(in ), optional :: nz
+       type(qumo), intent(inout)           :: M
+       integer,    intent(in )             :: nao
+       integer,    intent(in )             :: nmo
+       integer,    intent(in ), optional   :: nz
 
        M%nao = nao  ! Size of AO basis. Is kept here as we may want to use non-global defs
        M%nmo = nmo  ! Size of MO basis. May vary (e.g. in the 4-index when we have different ranges)
