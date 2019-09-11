@@ -31,7 +31,8 @@ f.add(from_string = 'Norm of VV part Fock matrix ',
       num_lines   = 1,
       abs_tolerance   = 1.0e-9)
 
-os.environ['DIRAC_MPI_COMMAND'] = "mpiexec -n 4"
+if (os.getenv('DIRAC_MPI_COMMAND') is None) or (os.getenv('DIRAC_MPI_COMMAND')==''):
+    os.environ['DIRAC_MPI_COMMAND'] = "mpiexec -n 4 "
 
 os.system('ulimit -s unlimited')
 
