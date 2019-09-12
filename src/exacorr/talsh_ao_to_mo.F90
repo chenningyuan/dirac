@@ -45,7 +45,7 @@ module talsh_ao_to_mo
          integer             :: ierr, my_MPI_rank
          integer             :: nao                        ! the size of the atomic orbital basis
 
-         integer(C_SIZE_T), parameter:: BUF_SIZE=500_8*1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
+         integer(C_SIZE_T), parameter:: BUF_SIZE=200_8*1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
          type(talsh_tens_t):: aoint_tensor
          type(talsh_tens_t):: moint_tensor
          integer(C_INT):: aoint_dims(1:4),moint_dims(1:4)
