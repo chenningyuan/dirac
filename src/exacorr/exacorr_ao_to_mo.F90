@@ -5,6 +5,7 @@ module exacorr_ao_to_mo
 
         use exatensor
         use exacorr_utils
+        use, intrinsic:: ISO_C_BINDING
 
         implicit none
         private
@@ -45,14 +46,15 @@ module exacorr_ao_to_mo
          use exacorr_global
          use exacorr_tensor_methods
          use exatensor
-         use, intrinsic:: ISO_C_BINDING
+         
 
          implicit none
 
          integer, intent(in) :: nmo(4)       ! the size of the mo basis for each of the 4 indices (mulliken ordering)
          integer, intent(in) :: mo_list(:)   ! and their indices (4 lists consecutively)
 
-         integer:: my_role, my_MPI_rank                 ! needed to start exatensor, MPI should already be started in threaded mode
+         integer(INTD)       :: my_role
+         integer             :: my_MPI_rank    ! needed to start exatensor, MPI should already be started in threaded mode
          integer             :: nshells                 ! the number of shells (orbitals with the same center and l-value)
          integer             :: nao                     ! the number of atomic orbitals)
          integer             :: basis_angular           ! 1=cartesian, 2=spherical
@@ -66,7 +68,7 @@ module exacorr_ao_to_mo
          type(subspace_basis_t):: basis_ao, basis_mo(4)
          integer(INTL)::          nao_l, ao_space_root
          integer(INTL)::          nmo_l, mo_space_root(4)
-         integer::                ao_space_id, mo_space_id(4)
+         integer(INTD)::          ao_space_id, mo_space_id(4)
 
          ! variables for the definition of colors inside the spaces
          type(color_symmetry_t), allocatable :: color(:)
@@ -84,11 +86,11 @@ module exacorr_ao_to_mo
          type(tens_rcrsv_t):: moint_tensor
 
          ! loop and other auxilliary variables
-         integer:: i, ierr
-         integer:: spin,imo,jmo,imo12,jmo12,imo34,jmo34
-         integer:: lsh, l, nl
+         integer(INTD) ::  spin,ierr, lsh
+         integer:: i,imo,jmo,imo12,jmo12,imo34,jmo34
+         integer:: l, nl
          character(len=2)  :: vs_str
-         integer branch_factor
+         integer(INTD) branch_factor
 
 !        Make some noise so that we know we are here
          call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
@@ -214,7 +216,7 @@ module exacorr_ao_to_mo
 !        These other nodes return only after exatns_stop() is called by the driver.
 
 !        Start ExaTENSOR within MPI_COMM_WORLD (called global_communicator in the MPI interface that DIRAC uses):
-         ierr=exatns_start(global_communicator)
+         ierr=exatns_start(int(global_communicator,INTD))
 
          if(ierr.eq.EXA_SUCCESS) then
           ierr=exatns_process_role(my_role) ! only EXA_DRIVER will return immediately
@@ -319,8 +321,8 @@ module exacorr_ao_to_mo
          type(tens_rcrsv_t):: a2int_tensor
 
          integer, parameter:: print_level=0
-         integer           :: ierr
-         integer           :: aoint_id(4),moint_id(4),a2int_id(4)
+         integer(INTD)     :: ierr
+         integer(INTD)     :: aoint_id(4),moint_id(4),a2int_id(4)
          integer(INTL)     :: aoint_root(4),moint_root(4),a2int_root(4)
 
          if (print_level >0) call print_date('entered aomo_transform_1')
@@ -367,8 +369,9 @@ module exacorr_ao_to_mo
          type(tens_rcrsv_t):: a1int_tensor
 
          integer, parameter:: print_level=0
-         integer           :: ierr,i,spin
-         integer           :: aoint_id(4),a1int_id(4),a2int_id(4),mocoef_id(2)
+         integer           :: i
+         integer(INTD)     :: ierr,spin
+         integer(INTD)     :: aoint_id(4),a1int_id(4),a2int_id(4),mocoef_id(2)
          integer(INTL)     :: aoint_root(4),a1int_root(4),a2int_root(4),mocoef_root(2)
          character(len=9)  :: mocoef_name
 
@@ -455,8 +458,9 @@ module exacorr_ao_to_mo
          type(tens_rcrsv_t):: a3int_tensor
 
          integer, parameter:: print_level=0
-         integer           :: ierr,i,spin
-         integer           :: moint_id(4),a2int_id(4),a3int_id(4),mocoef_id(2)
+         integer(INTD)     :: ierr,spin
+         integer           :: i
+         integer(INTD)     :: moint_id(4),a2int_id(4),a3int_id(4),mocoef_id(2)
          integer(INTL)     :: moint_root(4),a2int_root(4),a3int_root(4),mocoef_root(2)
          character(len=9)  :: mocoef_name
 
@@ -544,8 +548,8 @@ module exacorr_ao_to_mo
          type(tens_rcrsv_t):: a2int_tensor
 
          integer, parameter:: print_level=0
-         integer           :: ierr
-         integer           :: aoint_id(4),moint_id(4),a2int_id(4),dm_id(4)
+         integer(INTD)     :: ierr
+         integer(INTD)     :: aoint_id(4),moint_id(4),a2int_id(4),dm_id(4)
          integer(INTL)     :: aoint_root(4),moint_root(4),a2int_root(4),dm_root(4)
 
          if (print_level >0) call print_date('entered aomo_transform_2')
@@ -629,8 +633,8 @@ module exacorr_ao_to_mo
          type(tens_rcrsv_t):: a2int_tensor
 
          integer, parameter:: print_level=1
-         integer           :: ierr
-         integer           :: ao_space_id, moint_id(4),a2int_id(4),dm_id(4)
+         integer(INTD)     :: ierr
+         integer(INTD)     :: ao_space_id, moint_id(4),a2int_id(4),dm_id(4)
          integer(INTL)     :: ao_space_root,moint_root(4),a2int_root(4),dm_root(4)
 
          if (print_level >0) call print_date('entered aomo_transform_3')
@@ -691,8 +695,8 @@ module exacorr_ao_to_mo
          integer, intent(in)                :: antisymmetrize
          integer, optional                  :: algorithm
 
-         integer           :: ierr, tens_rank
-         integer           :: aoint_id(4),integral_id(4),moint_id(4)
+         integer(INTD)     :: ierr, tens_rank
+         integer(INTD)     :: aoint_id(4),integral_id(4),moint_id(4)
          integer(INTL)     :: aoint_root(4),integral_root(4),moint_root(4)
 
          if (.not.present(algorithm)) algorithm = 1
@@ -749,8 +753,8 @@ module exacorr_ao_to_mo
 
          integer, intent(in)                :: antisymmetrize
 
-         integer           :: ierr, tens_rank
-         integer           :: a2int_id(4),integral_id(4),moint_id(4)
+         integer(INTD)     :: ierr, tens_rank
+         integer(INTD)     :: a2int_id(4),integral_id(4),moint_id(4)
          integer(INTL)     :: a2int_root(4),integral_root(4),moint_root(4)
 
 !        Check integrity of tensors
@@ -796,10 +800,10 @@ module exacorr_ao_to_mo
          integer, intent(in)                :: antisymmetrize
 
 
-         integer           :: mulliken_id(4),dirac_id(4)
-         integer(INTL)     :: mulliken_root(4),dirac_root(4)
+         integer(INTD)   :: mulliken_id(4),dirac_id(4)
+         integer(INTL)   :: mulliken_root(4),dirac_root(4)
 
-         integer   :: ierr, mismatch
+         integer(INTD)   :: ierr, mismatch
 
          type(tens_rcrsv_t) :: one_tensor
 
@@ -836,7 +840,7 @@ module exacorr_ao_to_mo
         function print_tensornorm2 (tens) result(scalar_real)
 
           type(tens_rcrsv_t):: tens, scalar
-          integer ierr,rank
+          integer(INTD) :: ierr,rank
           complex(8) :: scalar_complex
           real(8)    :: scalar_real
 
@@ -873,7 +877,7 @@ module exacorr_ao_to_mo
          !we assume that we can use a single digit to indicate the ao and mo spaces
          !if we start using more spaces, we can simply define a longer string here
 
-         integer,intent(in):: ao_space_id, mo_space_id, spin
+         integer(INTD),intent(in):: ao_space_id, mo_space_id, spin
          character(len=9)  :: initlabel
          character(len=2)  :: vs_str
 
@@ -893,10 +897,10 @@ module exacorr_ao_to_mo
          !we assume that we can use a single digit to indicate the ao and mo spaces
          !if we start using more spaces, we can simply define a longer string here
 
-         integer,intent(in):: ao_space_id(2), mo_space_id(2)
-         character(len=9)  :: initlabel
-         character(len=2)  :: vs_str(2)
-         integer           :: i
+         integer(INTD),intent(in):: ao_space_id(2), mo_space_id(2)
+         character(len=9)        :: initlabel
+         character(len=2)        :: vs_str(2)
+         integer                 :: i
 
          do i = 1, 2
             if (ao_space_id(i)>9.or.mo_space_id(i)>9) then

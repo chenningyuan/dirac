@@ -5,6 +5,7 @@ module talsh_eom
         use exacorr_datatypes
         use exacorr_utils, only : print_date
         use intermediates
+        use, intrinsic:: ISO_C_BINDING
 
         implicit none
         complex(8), parameter :: MINUS_ONE=(-1.D0,0.D0),ONE_HALF=(0.5D0,0.D0)

@@ -42,7 +42,7 @@ module exacorr_cc
          use exacorr_tensor_methods
          use exacorr_ao_to_mo
          use exacorr_gradient
-         use, intrinsic:: ISO_C_BINDING
+         
 
          implicit none
 
@@ -50,9 +50,10 @@ module exacorr_cc
 
          integer                :: nocc,nvir           ! the size of the mo basis for occupied and virtual spinors
 
-         integer :: my_role, my_MPI_rank                    ! needed to start exatensor, MPI should already be started in threaded mode
+         integer(INTD) :: my_role
+         integer       :: my_MPI_rank                    ! needed to start exatensor, MPI should already be started in threaded mode
 
-         integer                        :: ierr
+         integer(INTD)                  :: ierr
          complex(8)                     :: result_val
 
 !        Common tensors
@@ -78,10 +79,10 @@ module exacorr_cc
          integer(INTL),dimension(2) :: oo_root, ov_root, vo_root, vv_root
          integer(INTL),dimension(4) :: oooo_root, ooov_root, oovv_root, vovo_root, &
                                        vvoo_root, vovv_root, vvvv_root
-         integer,dimension(2)       :: oo_id, ov_id, vo_id, vv_id 
-         integer,dimension(4)       :: oooo_id, ooov_id, oovv_id, vovo_id, &
+         integer(INTD),dimension(2) :: oo_id, ov_id, vo_id, vv_id 
+         integer(INTD),dimension(4) :: oooo_id, ooov_id, oovv_id, vovo_id, &
                                        vvoo_id, vovv_id, vvvv_id
-         integer                    :: ao_space_id, occ_space_id, vir_space_id
+         integer(INTD)              :: ao_space_id, occ_space_id, vir_space_id
 
          integer :: ncycles
 
@@ -174,7 +175,7 @@ module exacorr_cc
 !        These other nodes return only after exatns_stop() is called by the driver.
 
 !        Start ExaTENSOR within MPI_COMM_WORLD (called global_communicator in the MPI interface that DIRAC uses):
-         ierr=exatns_start(global_communicator)
+         ierr=exatns_start(int(global_communicator,INTD))
 
          if(ierr.eq.EXA_SUCCESS) then
             ierr=exatns_process_role(my_role) ! only EXA_DRIVER will return immediately
@@ -346,7 +347,6 @@ module exacorr_cc
          use interface_to_mpi
          use exacorr_global
          use exacorr_ao_to_mo
-         use, intrinsic:: ISO_C_BINDING
 
          implicit none
 
@@ -354,7 +354,7 @@ module exacorr_cc
          ! classes for the definition of spaces (AO and 2 different MO spaces)
          class(h_space_t), pointer     :: ao_space, occ_space, vir_space
          ! ids of these spaces (are not stored in the space class itself ?)
-         integer, intent(out)          :: ao_space_id, occ_space_id, vir_space_id
+         integer(INTD), intent(out)    :: ao_space_id, occ_space_id, vir_space_id
 
          integer                :: nocc,nvir       ! the size of the mo basis for occupied and virtual ORBITALS
          integer(INTL)          :: nocc_l, nvir_l  ! the size of the mo basis for occupied and virtual SPINORS
@@ -367,16 +367,17 @@ module exacorr_cc
          ! variables for the definition of spaces (AO and 2 different MO spaces)
          type(subspace_basis_t)     :: basis_ao, basis_occ, basis_vir
          integer(INTL)              :: nao_l ! (same as nao, as long integer)
-         integer                    :: branch_factor, tavp_mng_depth, my_MPI_rank
+         integer(INTD)              :: branch_factor, tavp_mng_depth
+         integer                    :: my_MPI_rank
 
          ! variables for the definition of colors inside the spaces
          type(color_symmetry_t), allocatable    :: color(:)
          integer(INTL)                          :: labs
 
          ! Loop counters and error codes
-         integer:: ierr
+         integer(INTD) :: ierr, lsh
 
-         integer:: lsh, l, nl
+         integer:: l, nl
 
          call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
 
@@ -477,20 +478,19 @@ module exacorr_cc
          use exacorr_global
          use exacorr_tensor_methods
          use exacorr_ao_to_mo
-         use, intrinsic:: ISO_C_BINDING
 
          implicit none
 
          ! container with user input (we only need the indices of the occupied and virtual MOs here)
          type(exacc_input), intent(in) :: exa_input
          ! identifiers of the spaces that we will use in the methods
-         integer, intent(in)        :: ao_space_id, occ_space_id, vir_space_id
+         integer(INTD), intent(in)     :: ao_space_id, occ_space_id, vir_space_id
 
          integer                :: nocc,nvir           ! the size of the mo basis for occupied and virtual orbitals (Kramers pairs)
          integer, allocatable   :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
          integer, allocatable   :: mo_oo(:),mo_vo(:),mo_ov(:),mo_vv(:) ! joined lists needed for dm init (ugly code, should be refactored)
 
-         integer                        :: ierr
+         integer(INTD)                :: ierr, spin
 
          ! types of the initializer methods
          type(tens_printer_t)         :: tens_printer         ! generic method, but needs to be defined here in specific form
@@ -502,7 +502,6 @@ module exacorr_cc
          type(init_one_el_t)          :: one_el(3)            ! one electron integrals
          type(set_energy_t)           :: orb_set              ! place orbital energies on diagonal
 
-         integer:: spin
          integer:: min_occ
 
          !Copy user input to local arrays for the definition of MO spaces (for standard CC we only distinguish occupied and virtual spinors)
@@ -622,8 +621,8 @@ module exacorr_cc
          type(tens_rcrsv_t) :: result_t_tensor
          complex(8)         :: result_val
 !        Ids and roots for tensors
-         integer,dimension(2) :: oo_id,ov_id,vo_id
-         integer,dimension(4) :: ovoo_id,vvoo_id
+         integer(INTD),dimension(2) :: oo_id,ov_id,vo_id
+         integer(INTD),dimension(4) :: ovoo_id,vvoo_id
          integer(INTL),dimension(2) :: oo_root,ov_root,vo_root
          integer(INTL),dimension(4) :: ovoo_root,vvoo_root
 
@@ -631,7 +630,7 @@ module exacorr_cc
 
          integer :: iccsd
          integer,intent(in) :: ncycles
-         integer :: ierr
+         integer(INTD) :: ierr
 
          occ_space_id=dims%occ_space_id
          vir_space_id=dims%vir_space_id
@@ -848,10 +847,10 @@ module exacorr_cc
          type(tens_rcrsv_t) :: s1_tensor, s2_tensor
 !        Tensor dimensions
          type(space_dims),intent(in) :: dims
-         integer :: occ_space_id, vir_space_id
+         integer(INTD) :: occ_space_id, vir_space_id
          integer(INTL) :: occ_space_root, vir_space_root
-         integer, dimension(2) :: oo_id, ov_id, vv_id
-         integer, dimension(4) :: oooo_id,ovoo_id,ooov_id,vovo_id,oovv_id, &
+         integer(INTD), dimension(2) :: oo_id, ov_id, vv_id
+         integer(INTD), dimension(4) :: oooo_id,ovoo_id,ooov_id,vovo_id,oovv_id, &
                                   vvvo_id,vovv_id,vvvv_id
          integer(INTL), dimension(2) :: oo_root, ov_root, vv_root
          integer(INTL), dimension(4) :: oooo_root,ovoo_root,ooov_root,vovo_root,oovv_root, &
@@ -862,7 +861,7 @@ module exacorr_cc
          real(8), intent(in) :: t_target_precision
          real(8) :: t_convergence
          logical :: CCD=.false.
-         integer :: ierr
+         integer(INTD) :: ierr
 
          write(*,*) ""
          write(*,'(A)') "*******************************************************************************"
@@ -1234,7 +1233,7 @@ module exacorr_cc
          use exacorr_global
 
 !        information needed to compute the ao-tensor
-         integer,intent(in)       :: ao_space_id
+         integer(INTD),intent(in)              :: ao_space_id
          class(h_space_t), pointer, intent(in) :: ao_space
 !        target integral tensors to be filled and given back to the caller
          type(exatns_intg_tens), intent(inout) :: int_t 
@@ -1243,9 +1242,10 @@ module exacorr_cc
          integer(INTL),allocatable  :: ao_subspaces(:)
          type(tens_rcrsv_t)         :: a2int_tensor, ovvo_tensor ! Auxilliary tensors
          integer(INTL),dimension(4) :: a2int_root, vovo_root, ovvo_root
-         integer,dimension(4)       :: a2int_id, vovo_id, ovvo_id
-
-         integer                           :: i,ierr, sub3, sub4
+         integer(INTD),dimension(4) :: a2int_id, vovo_id, ovvo_id
+         
+         integer(INTD)                     :: ierr
+         integer                           :: i, sub3, sub4
          integer                           :: moint_scheme ! (0: put zeroes for testing. 1: n^5 algorithm, 2: n^6 algorithm
                                                            !  3: n^5 with re-use of ints 4: as 3, but with sliced AO and HT)
          character(len=15)                 :: text
@@ -1372,7 +1372,7 @@ module exacorr_cc
            call print_date('choosing moint_scheme 4')
            ! in this algorithm we only keep part of the AO and HT integrals in memory
            subspace_id(1:2) = ao_space_root
-           call ao_space%get_level_composition(1,ao_subspaces,num_subspaces,ierr)
+           call ao_space%get_level_composition(int(1,INTD),ao_subspaces,num_subspaces,ierr)
            do sub4 = 1, num_subspaces
               subspace_id(4)=ao_subspaces(sub4)
               do sub3 = 1, num_subspaces
@@ -1441,9 +1441,10 @@ module exacorr_cc
 
          type(tens_rcrsv_t), intent(inout),optional :: t1_tensor
          type(tens_rcrsv_t), intent(inout)          :: t2_tensor
-         integer                                    :: ierr, i, tens_rank
-         integer,dimension(2),optional              :: vo_id
-         integer,dimension(4),optional              :: vvoo_id
+         integer(INTD)                              :: ierr, tens_rank
+         integer                                    :: i
+         integer(INTD),dimension(2),optional        :: vo_id
+         integer(INTD),dimension(4),optional        :: vvoo_id
          integer(INTL),dimension(2),optional        :: vo_root
          integer(INTL),dimension(4),optional        :: vvoo_root
          logical                                    :: init, clean_up, CCD
@@ -1604,7 +1605,6 @@ module exacorr_cc
 
         subroutine init_fock (comm_t,int_t,oo_id,oo_root,ov_id,ov_root,vv_id,vv_root, print_level)
 
-          use, intrinsic:: ISO_C_BINDING
           use exacorr_global
           use exacorr_tensor_methods
 
@@ -1613,7 +1613,7 @@ module exacorr_cc
           type(exatns_comm_tens), intent(inout)  :: comm_t
           type(exatns_intg_tens), intent(inout)  :: int_t
           integer(INTL),dimension(2), intent(in) :: oo_root, ov_root, vv_root
-          integer,dimension(2), intent(in)       :: oo_id, ov_id, vv_id 
+          integer(INTD),dimension(2), intent(in) :: oo_id, ov_id, vv_id 
           integer, intent(in)                    :: print_level
 
           real(8)                    :: ev_energy, off_diag, hf_energy
@@ -1621,7 +1621,7 @@ module exacorr_cc
           type(tens_rcrsv_t)         :: r_tensor, o_tensor, orb_tensor, h_tensor
           !        identity matrix for contraction 
           type(tens_rcrsv_t)         :: id_mat_occ
-          integer                    :: ierr
+          integer(INTD)              :: ierr
           complex(8)                 :: result_val
 
 

@@ -450,12 +450,12 @@ module intermediates
         type(tens_rcrsv_t),intent(inout) :: oovv_tensor
         type(tens_rcrsv_t),intent(inout) :: one_tensor
         type(tens_rcrsv_t) :: tau2_tensor
-        integer, intent(in) :: occ_space_id, vir_space_id
+        integer(INTD), intent(in) :: occ_space_id, vir_space_id
         integer(INTL), intent(in) :: occ_space_root, vir_space_root
-        integer :: vvoo_id(4) 
+        integer(INTD) :: vvoo_id(4) 
         integer(INTL) :: vvoo_root(4)
         logical, intent(in) :: CCD
-        integer :: ierr
+        integer(INTD) :: ierr
 
         !Auxiliary tensor
         vvoo_id   = (/vir_space_id, vir_space_id, occ_space_id, occ_space_id/)
@@ -837,8 +837,8 @@ module intermediates
         integer,intent(in) :: nocc, nvir
         logical, intent(in) :: CCD
         type(talsh_tens_t) :: tau2_tensor
-        integer :: vvoo_dims(4)
-        integer :: ierr
+        integer(INTD) :: vvoo_dims(4)
+        integer(INTD) :: ierr
 
 !       Auxiliary tensor
         vvoo_dims(1:2) = nvir
