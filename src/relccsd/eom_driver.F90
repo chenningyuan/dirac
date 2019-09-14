@@ -1239,15 +1239,63 @@
   real*8 :: threshold
   double precision dznrm2
 
+    call allocator_get_words_inuse(start_mem_use)
+    call legacy_lwork_get(work_memsize)
+
     nbuf1 = max(joooo(nrep+1),jvooo(nrep+1),jvvoo(nrep+1),jvovo(nrep+1))
     nbuf2 = nbuf1
 
     call alloc( buf1  , nbuf1*rcw             , id="buf1" )
     call alloc( buf2  , nbuf2*rcw             , id="buf2" )
 
-    call allocator_get_words_inuse(start_mem_use)
-    call legacy_lwork_get(work_memsize)
+!   call allocator_get_words_inuse(start_mem_use)
+!   call legacy_lwork_get(work_memsize)
 
+!   call allocator_get_maxbuff(freemem,kind(BUF3))
+
+!   NBUF3 = freemem / RCW
+
+!   NV5IRP = MAX(JVOVV(NREP+1),JOVVV(NREP+1))
+!   NV6IRP = 1
+!   DO IRP = 1, NREP
+       NV6IRP = MAX(NV6IRP,INT(NVVT(IRP),8)*INT(NVVT(IRP),8))
+!   ENDDO
+
+!   Check the minimum size for the general use of this array
+
+!   NVIRP = MAX(NV5IRP,NV6IRP)
+
+!   NBUF3 = MIN(NVIRP,INT(NBUF3,8))
+!   NBUF3 = MAX(NBUF1,NBUF3)
+
+!     Allocate now also this remaining work array
+
+!   call alloc( BUF3  , NBUF3*RCW             , id="buf3" )
+!!!!
+
+!   For the moment I am using as much in-core memory as possible. However we
+!   may think of writing them in files, replacing the integral ones...  
+! aspg: we should collect these actions into a routine, like
+!    call initialize_intermediates() 
+    call alloc(B%Fbar_mi,   (nfoo*rcw), id="Fbar_mi")  
+    call alloc(B%Fbar_me,   (nfvo*rcw), id="Fbar_me")  
+    call alloc(B%Fbar_ae,   (nfvv*rcw), id="Fbar_ae")  
+
+    call alloc(B%W_ijmn,    (nv1*rcw),            id="W_ijmn") 
+    call alloc(B%W_ejmb,    (iovvo(nrep+1)*rcw),  id="W_ejmb")
+    call alloc(B%W_mbej,    (iovvo(nrep+1)*rcw),  id="W_mbej")
+    call alloc(B%W_iemn,    (iovoot(nrep+1)*rcw), id="W_iemn")
+
+    call alloc(B%W_efam,    (nv5*rcw),            id="W_efam")
+    call alloc(B%W_amef,    (nv5*rcw),            id="W_amef")
+
+    call alloc(B%W_mnie,    (iovoot(nrep+1)*rcw), id="W_mnie")
+    call alloc(B%Wbar_mbej, (iovvo(nrep+1)*rcw),  id="Wbar_mbej")
+
+    call alloc(B%t1, (ndimt1*rcw), id="t1")
+    call alloc(B%t2, (ndimt2*rcw), id="t2")
+! end of intermediates, now passing on to the last local buffer
+       
     call allocator_get_maxbuff(freemem,kind(BUF3))
 
     NBUF3 = freemem / RCW
@@ -1269,32 +1317,6 @@
 
     call alloc( BUF3  , NBUF3*RCW             , id="buf3" )
 
-!   For the moment I am using as much in-core memory as possible. However we
-!   may think of writing them in files, replacing the integral ones...  
-! aspg: we should collect these actions into a routine, like
-!    call initialize_intermediates() 
-    call alloc(B%Fbar_mi,   (nfoo*rcw), id="Fbar_mi")  
-    call alloc(B%Fbar_me,   (nfvo*rcw), id="Fbar_me")  
-    call alloc(B%Fbar_ae,   (nfvv*rcw), id="Fbar_ae")  
-
-    call alloc(B%W_ijmn,    (nv1*rcw),            id="W_ijmn") 
-    call alloc(B%W_ejmb,    (iovvo(nrep+1)*rcw),  id="W_ejmb")
-    call alloc(B%W_mbej,    (iovvo(nrep+1)*rcw),  id="W_mbej")
-    call alloc(B%W_iemn,    (iovoot(nrep+1)*rcw), id="W_iemn")
-
-! todo: get special handling for these in the case of i4 ? we keep using deallocate here for the time being
-!   call alloc(B%W_efam,    (nv5*rcw),            id="W_efam")
-!   call alloc(B%W_amef,    (nv5*rcw),            id="W_amef")
-    allocate (B%W_efam(nv5*rcw))
-    allocate (B%W_amef(nv5*rcw))
-
-    call alloc(B%W_mnie,    (iovoot(nrep+1)*rcw), id="W_mnie")
-    call alloc(B%Wbar_mbej, (iovvo(nrep+1)*rcw),  id="Wbar_mbej")
-
-    call alloc(B%t1, (ndimt1*rcw), id="t1")
-    call alloc(B%t2, (ndimt2*rcw), id="t2")
-       
-! allocate the amplitudes
 
     call allocator_get_words_inuse(current_mem_use)
     mxcorr = current_mem_use - start_mem_use
