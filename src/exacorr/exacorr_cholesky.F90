@@ -1,7 +1,8 @@
 module exacorr_cholesky
 
 !routines to perform cholesky decomposition
-!Johann Pototschnig, 04-2019
+
+!       written by Johann Pototschnig, Summer 2019
 
 use, intrinsic:: ISO_C_BINDING
 
@@ -11,6 +12,7 @@ complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0)
 
 private
 
+!talsh routines:
 public talsh_get_diag_real
 public talsh_get_diag_comp
 public talsh_find_shells_real
@@ -22,12 +24,15 @@ public talsh_find_el_comp
 public talsh_square_el
 public talsh_set_mask_done
 
+!general routines to handle shells:
 public get_offset
 public get_shellsize
 
 contains
 
 subroutine talsh_get_diag_real(Diag)
+
+! routine to compute diagonal 2D tensor
 
   use tensor_algebra
   use talsh
@@ -113,6 +118,8 @@ subroutine talsh_get_diag_real(Diag)
 end subroutine talsh_get_diag_real
 
 subroutine talsh_get_diag_comp(Diag)
+
+! routine to compute diagonal 2D tensor
 
   use tensor_algebra
   use talsh
@@ -200,6 +207,8 @@ end subroutine talsh_get_diag_comp
 
 subroutine talsh_find_shells_real(Diag, Filter, lshell, kshell, lsize, ksize, D_max)
 
+! routine to find shell with largest element
+
   use tensor_algebra
   use talsh
   use exacorr_datatypes
@@ -262,6 +271,8 @@ end subroutine talsh_find_shells_real
 
 subroutine talsh_find_shells_comp(Diag, Filter, lshell, kshell, D_max)
 
+! routine to find shell with largest element
+
   use tensor_algebra
   use talsh
   use exacorr_datatypes
@@ -321,6 +332,8 @@ end subroutine talsh_find_shells_comp
 
 
 subroutine talsh_get_shell_real(Dshell, lsh, ksh)
+
+! routine to compute ao integrals for a shell
 
   use tensor_algebra
   use talsh
@@ -455,6 +468,8 @@ subroutine talsh_get_shell_real(Dshell, lsh, ksh)
 end subroutine talsh_get_shell_real
 
 subroutine talsh_get_shell_comp(Dshell, lsh, ksh)
+
+! routine to compute ao integrals for a shell
 
   use tensor_algebra
   use talsh
@@ -591,6 +606,8 @@ end subroutine talsh_get_shell_comp
 
 subroutine talsh_find_el_real(Diag, Filter, lsh, ksh, l, k, D_el)
 
+! routine to locate largest element in a shell
+
   use tensor_algebra
   use talsh
   use exacorr_datatypes
@@ -683,6 +700,8 @@ subroutine talsh_find_el_real(Diag, Filter, lsh, ksh, l, k, D_el)
 end subroutine talsh_find_el_real
 
 subroutine talsh_find_el_comp(Diag, Filter, lsh, ksh, l, k, D_el)
+
+! routine to locate largest element in a shell
 
   use tensor_algebra
   use talsh
@@ -781,6 +800,8 @@ end subroutine talsh_find_el_comp
 
 subroutine talsh_square_el(h_tensor)
 
+! squaring talsh tensor
+
   use tensor_algebra
   use talsh
 
@@ -853,6 +874,8 @@ subroutine talsh_square_el(h_tensor)
 end subroutine talsh_square_el
 
 subroutine talsh_set_mask_done(Filter,l,k)
+
+! updating mask
 
   use tensor_algebra
   use talsh

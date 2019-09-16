@@ -1335,7 +1335,7 @@ module talsh_cc
 !        full integral list. We do assume that we deal with a closed shell (Kramers-restricted) case, so nocc and nvir
 !        refer to Kramers pairs rather than spinors.
 
-!        Written by Lucas Visscher, summer 2017
+!        Written by Johann Pototschnig, summer 2019
 
          use exacorr_global
          use talsh_ao_to_mo
@@ -1385,35 +1385,8 @@ module talsh_cc
          nao     = get_nao()      ! number of basis functions
 
 !        Get cholesky-vectors and copy them in to a talsh tensor
-
-         !allocate(ao_tens(nao,nao,nao,nao))
-         !call compute_ao_integrals (nao,ao_tens_real=ao_tens)
-         !call cholesky_decompose (ao_tens,nao,CD, t_cholesky)
-         !deallocate(ao_tens)
-
          call decompose_cholesky_talsh (chol_tensor, t_cholesky, nao)
          ierr = talsh_tensor_dimensions(chol_tensor,i,chol_dims)
-
-!          call cholesky_decompose_aomat_real (CD, t_cholesky)
-!          chol_dims(1)=nao
-!          chol_dims(2)=nao
-! !        chol_dims(3)=size(CD,2)
-!          chol_dims(3)=size(CD,3)
-!          call print_date('cholesky decomposition done')
-!          ierr=talsh_tensor_construct(chol_tensor,C8,chol_dims,init_val=ZERO)
-!          ierr=talsh_tensor_get_body_access(chol_tensor,body_p,C8,0,DEV_HOST)
-!          call c_f_pointer(body_p,chol_tens,chol_dims) ! to use the tensor as a regular Fortran array
-!          do m = 1, chol_dims(3)
-! !           ij = 0
-!             do j = 1, nao
-!                do i = 1, nao
-! !                 ij = ij + 1
-!                   !chol_tens(i,j,m)=CD(i,j,m)
-!                   chol_tens(i,j,m)=dcmplx(CD(i,j,m),0.D0)
-!                end do
-!             end do
-!          end do
-!          deallocate(CD)
 
 !        perform ao to mo transformation for cholesky tensor
          uoo_dims(1:2)=nocc
@@ -2082,6 +2055,13 @@ module talsh_cc
        end subroutine get_subtensor
 
     subroutine decompose_cholesky_talsh (CD, t_cholesky, nao)
+
+!       Cholesky decomposition based on treating the shells seperately using talsh tensor operations
+!       possible additions: 
+!                          SVD (How to combine with tensor library)
+!                          Additional screening in the computation of integrals
+
+!       written by Johann Pototschnig, Summer 2019
 
         use exacorr_cholesky
 
