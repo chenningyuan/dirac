@@ -48,7 +48,7 @@
             integer, allocatable    :: mo_occ(:), mo_vir(:)     ! list of active spinors
             real(REALD)             :: t_econv = 1.0D-9         ! convergence criterium
             real(REALD)             :: level_shift = 0.D0       ! level shift
-            real(REALD)             :: t_cholesky = 1.0D-8      ! threshold for cholesky
+            real(REALD)             :: t_cholesky = 1.0D-9      ! threshold for cholesky
         end type exacc_input
 
 !       All two electron integral tensors
