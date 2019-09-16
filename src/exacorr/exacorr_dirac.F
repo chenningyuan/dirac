@@ -17,6 +17,7 @@ C***********************************************************************
       use exacorr_ao_to_mo,only     : exacorr_compute_mo_integrals
       use talsh_ao_to_mo,only       : talsh_compute_mo_integrals
       use exacorr_utils, only       : print_date
+      use, intrinsic:: ISO_C_BINDING
 #if defined (VAR_MPI)
       use interface_to_mpi
 #endif
@@ -371,7 +372,7 @@ C
           npo = idim(1,1) ! "positronic" (= negative energy) solutions (can be thrown away for our purposes)
           nmo = idim(2,1) ! "electronic" (= positive energy) solutions (we only need these)
           nto = npo+nmo   ! total number of solutions on this file
-          if (npo > 0) print*, "warning: reading from 4C DFCOEF file" ! this warning will go once we have the full index transform implementedd
+          if (npo > 0) print*, "warning: reading from 4C DFCOEF file" ! this warning will go once we have the full index transform implemented
        end if
 
        allocate(coeff(nao,nto,nz))
@@ -413,6 +414,7 @@ C
        read (LUCOEF,err=20,end=20) nao_bas,nshells,npriexp,ncnt 
        if (nao /= nao_bas) then
           ierr = INCONSIS
+          print*,"Inconsistency: use NONREL, X2C, or X2CMMF Hamiltonian"
           close (lucoef,status='KEEP')
           return
        end if
@@ -509,6 +511,154 @@ C
        return
 
        end subroutine read_from_dirac
+
+       subroutine write_mos_to_dirac (ao_basis,cspinor,file_name)
+
+       use exacorr_mo
+       use exacorr_datatypes
+       use exacorr_utils
+
+       implicit none
+
+!      write mo coefficients in dirac format
+
+       character(len=*),intent(in) :: file_name
+       type(basis_set_info_t), intent(inout) :: ao_basis
+       type(cmo), intent(inout):: cspinor
+       type(qumo)             :: qorbital
+       character              :: text*74      ! holds text read from DFCOEF, only used for printing this
+       integer                :: nsym
+       real(8)                :: total_energy
+       logical                :: tobe
+       integer                :: lucoef
+       integer                :: ishell
+       integer                :: nao, nshells, iao, ibas
+       integer                :: nmo, npo, nto, npriexp, ncnt
+       integer, allocatable   :: numcf(:),jstrt(:)
+       real(8), allocatable   :: priexp(:),priccf(:)
+
+!      switch to Kramers-restricted format
+       text = "MO coefficients produced by geniao "
+       npo = 0  ! number of "positronic orbitals is hardwired to 0 for now
+       nsym = 1 ! we do not use symmetry, so nsym is always 1
+       call convert_complex_to_quaternion(cspinor,qorbital)
+       ! print warning in case we overwrite a file and open the file
+       call get_free_fileunit(lucoef)
+       inquire (file=file_name,exist=tobe)
+       if (tobe) then
+          print*, "warning: overwriting file "//file_name
+          open (lucoef,file=file_name,status='OLD',FORM='UNFORMATTED',
+     &     access='SEQUENTIAL')
+       else
+          open (lucoef,file=file_name,status='NEW',FORM='UNFORMATTED',
+     &     access='SEQUENTIAL')
+       end if
+
+       ! convert basis set info to 1-d lists used by DIRAC (assuming uncontracted basis sets)
+       ! TODO: change storage on DIRAC side to use the basis set type
+       nshells = ao_basis%nshells
+       ! we always have uncontracted basis sets, so can hardwire the next variable and equate the number of exponents to the number of shells
+       ncnt = 1
+       npriexp =  nshells
+       allocate(jstrt(nshells))
+       allocate(numcf(nshells))
+       allocate(priexp(nshells))
+       allocate(priccf(nshells))
+       do ishell = 1, nshells
+          jstrt(ishell) = ishell-1
+          numcf(ishell) = 1
+          priexp(ishell) = ao_basis%gtos(ishell)%exponent(1)
+          priccf(ishell) = ao_basis%gtos(ishell)%coefficient(1)
+       end do
+ 
+       ! write the header
+       write (lucoef) text,nsym,npo,qorbital%nmo,
+     &                qorbital%nao,qorbital%total_energy
+       ! write the mo-coefficients
+       write (lucoef) qorbital%coeff
+       ! write the orbital energies
+       write (lucoef) qorbital%energy
+       ! write the boson symnmetry information
+       write (lucoef) qorbital%boson_irrep
+       ! write the ao basis information header
+       write (lucoef) ao_basis%nao,ao_basis%nshells,npriexp,ncnt 
+!      orb_momentum, atom_number, n_primives for all shells
+       write (lucoef) ao_basis%gtos(:)%orb_momentum,
+     &                ao_basis%gtos(:)%atom_number,
+     &                ao_basis%gtos(:)%n_primitives
+!      start of exponent values, number of contracted for all shells
+       write (lucoef) jstrt,numcf
+!      coordinates (x, y, z) of center for all shells
+       write (lucoef) (ao_basis%gtos(ishell)%coord(:),
+     &                 ishell=1,nshells)
+!      values of the exponents for all shells (packed into a 1-d array)
+       write (lucoef) priexp
+!      values of the contraction coefficients for all shells (packed into a 1-d array)
+       write (lucoef) priccf
+
+       deallocate(jstrt)
+       deallocate(numcf)
+       deallocate(priexp)
+       deallocate(priccf)
+
+       close (lucoef,status='KEEP')
+
+       return
+
+       end subroutine write_mos_to_dirac
+
+       subroutine write_mos_to_dirac_formatted(cspinor,file_name)
+
+       use exacorr_mo
+       use exacorr_utils
+
+       implicit none
+
+!      write mo coefficients in dirac format
+
+       character(len=*),intent(in) :: file_name
+       type(cmo), intent(inout):: cspinor
+       type(qumo)             :: qorbital
+       character              :: text*74      ! holds text read from DFCOEF, only used for printing this
+       integer                :: nsym
+       real(8)                :: total_energy
+       logical                :: tobe
+       integer                :: lucoef
+       integer                :: nao
+       integer                :: nmo, npo
+
+!      switch to Kramers-restricted format
+       text = "MO coefficients produced by geniao "
+       npo = 0  ! number of "positronic orbitals is hardwired to 0 for now
+       nsym = 1 ! we do not use symmetry, so nsym is always 1
+       call convert_complex_to_quaternion(cspinor,qorbital)
+       ! print warning in case we overwrite a file and open the file
+       call get_free_fileunit(lucoef)
+       inquire (file=file_name,exist=tobe)
+       if (tobe) then
+          print*, "warning: overwriting file "//file_name
+          open (lucoef,file=file_name,status='OLD',FORM='FORMATTED',
+     &     access='SEQUENTIAL')
+       else
+          open (lucoef,file=file_name,status='NEW',FORM='FORMATTED',
+     &     access='SEQUENTIAL')
+       end if
+
+       ! write the header
+       write (lucoef,'(A74)') text
+       write (lucoef,'(7(X,I0))') nsym,npo,qorbital%nmo,qorbital%nao
+       write (lucoef,'(E24.16)') qorbital%total_energy
+       ! write the mo-coefficients
+       write (lucoef,'(6F22.16)') qorbital%coeff
+       ! write the orbital energies
+       write (lucoef,'(6E22.12)') qorbital%energy
+       ! write the boson symnmetry information
+       write (lucoef,'(66(X,I0))') qorbital%boson_irrep
+
+       close (lucoef,status='KEEP')
+       return
+       
+       end subroutine write_mos_to_dirac_formatted
 
        subroutine Write_To_Mdcint (nmo,mo_tens)
 

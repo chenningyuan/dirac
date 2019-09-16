@@ -7,6 +7,7 @@ module talsh_cc
         use exacorr_utils
         use intermediates
         use talsh_common_routines
+        use, intrinsic:: ISO_C_BINDING
 
         implicit none
         complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
@@ -51,10 +52,10 @@ module talsh_cc
          integer                :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
          integer,  allocatable  :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
 
-         integer   :: ierr
+         integer(INTD)       :: ierr
          complex(8), pointer :: result_tens(:)
          type(C_PTR):: body_p
-         integer(C_SIZE_T), parameter:: BUF_SIZE=1_8*1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
+         integer(C_SIZE_T), parameter:: BUF_SIZE=200_8*1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
          integer(C_SIZE_T):: host_buf_size
          integer(C_INT):: host_arg_max
 
@@ -65,11 +66,11 @@ module talsh_cc
 !        Lambda tensors
          type(talsh_tens_t) :: l1_tensor, l2_tensor
 !        intermediate tensors (same notation as in relccsd)
-         integer, dimension(2) :: oo_dims, ov_dims, vo_dims, vv_dims
-         integer, dimension(4) :: oooo_dims, oovv_dims, vvoo_dims, vovo_dims
+         integer(INTD), dimension(2) :: oo_dims, ov_dims, vo_dims, vv_dims
+         integer(INTD), dimension(4) :: oooo_dims, oovv_dims, vvoo_dims, vovo_dims
 !        scalars (need to be defined as tensor types)
-         type(talsh_tens_t):: result_tensor
-         integer:: one_dims(1)
+         type(talsh_tens_t) :: result_tensor
+         integer(INTD)      :: one_dims(1)
 !        orbital energies
          real(8), allocatable :: eps_occ(:),eps_vir(:)
 !        CCSD control and result variables
@@ -95,7 +96,7 @@ module talsh_cc
          print *,'one_tensor index', one_dims(1:0)
          ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
          ierr=talsh_tensor_construct(result_tensor,C8,one_dims(1:0),init_val=ZERO)
-         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,0,DEV_HOST)
+         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(body_p,result_tens,one_dims)
 
          !DO NOT CHANGE THESE VARIABLES
@@ -182,6 +183,11 @@ module talsh_cc
          print*,""
          print*," MP2 energy = ",mp2_energy
          print*,""
+
+!=====================
+!        Calculate the pair correlation energy for each pair of occupied spin-orbits
+         call pair_correlation_energies(comm_t%t2, int_t%oovv, nocc, nvir)
+!=====================
 
 !        Start CCSD iterations
 
@@ -337,10 +343,10 @@ module talsh_cc
          type(talsh_tens_t) :: s1_tensor, s2_tensor
 !        scalars (need to be defined as tensor types)
          type(talsh_tens_t) :: result_tensor
-         integer            :: result_dims(1)
+         integer(INTD)      :: result_dims(1)
          !Tensor dimensions
-         integer, dimension(2) :: oo_dims, ov_dims, vo_dims
-         integer, dimension(4) :: vvoo_dims, ovoo_dims
+         integer(INTD), dimension(2) :: oo_dims, ov_dims, vo_dims
+         integer(INTD), dimension(4) :: vvoo_dims, ovoo_dims
          !Orbital energies for scaling
          real(8), intent(in)   :: eps_occ(:), eps_vir(:)
          integer :: iccsd
@@ -348,13 +354,13 @@ module talsh_cc
          real(8), intent(in) :: t_target_precision
          real(8) :: t_convergence
          real(8), intent(out) :: ccsd_energy
-         logical, intent(in) :: CCD
-         integer :: ierr
+         logical, intent(in)  :: CCD
+         integer (INTD)       :: ierr
 
 !        Initialize scalars that are to be used as tensors in contractions
          result_dims = 1
          ierr=talsh_tensor_construct(result_tensor,C8,result_dims(1:0),init_val=ZERO)
-         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,0,DEV_HOST)
+         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(body_p,result_tens,result_dims)
 
          if (.not.CCD) then
@@ -579,8 +585,8 @@ module talsh_cc
          type(talsh_tens_t), intent(inout), optional :: l1_tensor
          type(talsh_tens_t) :: s1_tensor, s2_tensor
 !        Tensor dimensions
-         integer, dimension(2) :: oo_dims, ov_dims, vv_dims
-         integer, dimension(4) :: oooo_dims,ovoo_dims,ooov_dims,vovo_dims,oovv_dims, &
+         integer(INTD), dimension(2) :: oo_dims, ov_dims, vv_dims
+         integer(INTD), dimension(4) :: oooo_dims,ovoo_dims,ooov_dims,vovo_dims,oovv_dims, &
                                   vvvo_dims,vovv_dims,vvvv_dims
 !        Orbital energies for scaling
          real(8), intent(in)   :: eps_occ(:), eps_vir(:)
@@ -591,7 +597,7 @@ module talsh_cc
 
          logical :: CCD = .false.
 
-         integer :: ierr
+         integer(INTD) :: ierr
 
          write(*,*) ""
          write(*,'(A)') "*******************************************************************************"
@@ -961,8 +967,8 @@ module talsh_cc
 
          type(talsh_tens_t)              :: id_mat_occ, diag_mat_occ, diag_mat_vir
          type(talsh_tens_t)              :: h_tensor
-         integer                         :: fo_dims(1:2),fv_dims(1:2),fov_dims(1:2)
-         integer                         :: ierr
+         integer(INTD)                   :: fo_dims(1:2),fv_dims(1:2),fov_dims(1:2)
+         integer(INTD)                   :: ierr
          logical                         :: one_el_exist
          type(one_el_t)                  :: one_int
          real(8)                         :: e_core, ev_energy, off_diag, hf_energy
@@ -971,7 +977,7 @@ module talsh_cc
          complex(8), pointer, contiguous :: h_tens(:,:)
          integer                         :: i, j, iv, jv, imo, jmo
          type(talsh_tens_t)              :: result_tensor
-         integer                         :: result_dims(1)
+         integer(INTD)                   :: result_dims(1)
          complex(8), pointer             :: result_tens(:)
 
          real(8)            :: e_lumo, e_homo
@@ -1002,7 +1008,7 @@ module talsh_cc
 
 !           create density (identity) matrix for the occupied space
             ierr=talsh_tensor_construct(id_mat_occ,C8,fo_dims,init_val=ZERO)
-            ierr=talsh_tensor_get_body_access(id_mat_occ,body_p,C8,0,DEV_HOST)
+            ierr=talsh_tensor_get_body_access(id_mat_occ,body_p,C8,int(0,C_INT),DEV_HOST)
             call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
             h_tens = ZERO
             do i = 1, nocc
@@ -1011,23 +1017,23 @@ module talsh_cc
 
 !           now write one electron integrals
 
-            ierr=talsh_tensor_get_body_access(fo_tensor,body_p,C8,0,DEV_HOST)
+            ierr=talsh_tensor_get_body_access(fo_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
             call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
             call get_one_el(h_tens,mo_occ,nocc,mo_occ,nocc,min_occ)
 
 
-            ierr=talsh_tensor_get_body_access(fv_tensor,body_p,C8,0,DEV_HOST)
+            ierr=talsh_tensor_get_body_access(fv_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
             call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
             call get_one_el(h_tens,mo_vir,nvir,mo_vir,nvir,min_occ)
 
-            ierr=talsh_tensor_get_body_access(fov_tensor,body_p,C8,0,DEV_HOST)
+            ierr=talsh_tensor_get_body_access(fov_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
             call c_f_pointer(body_p,h_tens,fov_dims) ! to use as a regular Fortran array
             call get_one_el(h_tens,mo_occ,nocc,mo_vir,nvir,min_occ)
 
 !           Get access to result
             result_dims(1) = 1
             ierr=talsh_tensor_construct(result_tensor,C8,result_dims(1:0),init_val=ZERO)
-            ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,0,DEV_HOST)
+            ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
             call c_f_pointer(body_p,result_tens,result_dims)
 
 !           compute HF energy
@@ -1055,13 +1061,13 @@ module talsh_cc
             if (print_level >3) call print_tensor(fv_tensor, 1.0D-6, 'fv_tensor')
 
             !now we can get the correct epsilon values
-            ierr=talsh_tensor_get_body_access(fo_tensor,body_p,C8,0,DEV_HOST)
+            ierr=talsh_tensor_get_body_access(fo_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
             call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
             do i=1,fo_dims(1)
               eps_occ(i)=h_tens(i,i)
             end do
 
-            ierr=talsh_tensor_get_body_access(fv_tensor,body_p,C8,0,DEV_HOST)
+            ierr=talsh_tensor_get_body_access(fv_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
             call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
             do i=1,fv_dims(1)
               eps_vir(i)=h_tens(i,i)
@@ -1087,7 +1093,7 @@ module talsh_cc
 
             !set diag_mat
             ierr=talsh_tensor_construct(diag_mat_occ,C8,fo_dims,init_val=ZERO)
-            ierr=talsh_tensor_get_body_access(diag_mat_occ,body_p,C8,0,DEV_HOST)
+            ierr=talsh_tensor_get_body_access(diag_mat_occ,body_p,C8,int(0,C_INT),DEV_HOST)
             call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
             h_tens = ZERO
             do i = 1, nocc
@@ -1095,7 +1101,7 @@ module talsh_cc
             end do
 
             ierr=talsh_tensor_construct(diag_mat_vir,C8,fv_dims,init_val=ZERO)
-            ierr=talsh_tensor_get_body_access(diag_mat_vir,body_p,C8,0,DEV_HOST)
+            ierr=talsh_tensor_get_body_access(diag_mat_vir,body_p,C8,int(0,C_INT),DEV_HOST)
             call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
             h_tens = ZERO
             do i = 1, nvir
@@ -1163,25 +1169,25 @@ module talsh_cc
          integer, intent(in)    :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
 !        target integral tensors to be filled and given back to the caller
          type(talsh_intg_tens),intent(inout)    :: int_t
-         integer :: oovv_dims(1:4),vvvv_dims(1:4),oooo_dims(1:4),vovo_dims(1:4),ooov_dims(1:4),vovv_dims(1:4)
+         integer(INTD) :: oovv_dims(1:4),vvvv_dims(1:4),oooo_dims(1:4),vovo_dims(1:4),ooov_dims(1:4),vovv_dims(1:4)
 
-         integer                            :: ierr
+         integer(INTD)                      :: ierr
          complex(8), pointer, contiguous    :: ao_tens(:,:,:,:)
          type(C_PTR)                        :: body_p
 
          integer :: nao
 
 !        auxilliary integral tensors (only needed inside this routine)
-         type(talsh_tens_t):: aoint_tensor, ovvo_tensor
-         integer:: aoint_dims(1:4), ovvo_dims(1:4)
+         type(talsh_tens_t) :: aoint_tensor, ovvo_tensor
+         integer(INTD)      :: aoint_dims(1:4), ovvo_dims(1:4)
 
 !        arrays needed to communicate with the MO integral generator
          integer:: nmo(4)
          integer, allocatable :: mo_list(:)
 
 !        scalars (need to be defined as tensor types)
-         type(talsh_tens_t):: minusone_tensor
-         integer:: minusone_dims(1)
+         type(talsh_tens_t) :: minusone_tensor
+         integer(INTD)      :: minusone_dims(1)
 
          call print_date('entering integral transformation, scheme = 2')
 
@@ -1193,7 +1199,7 @@ module talsh_cc
          ierr=talsh_tensor_construct(aoint_tensor,C8,aoint_dims,init_val=ZERO)
          call print_date('allocated AO integral tensor')
 !        Initialize AO integral tensors (ideally via an initialization routine, for now via direct access)
-         ierr=talsh_tensor_get_body_access(aoint_tensor,body_p,C8,0,DEV_HOST)
+         ierr=talsh_tensor_get_body_access(aoint_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(body_p,ao_tens,aoint_dims(1:4)) ! to use <ao_tens> as a regular Fortran 4d array
          call compute_ao_integrals (nao,ao_tens)
          call print_date('finished ao integral calculation')
@@ -1555,20 +1561,21 @@ module talsh_cc
 
          type(talsh_tens_t), intent(inout)  :: t2_tensor
          type(talsh_tens_t), intent(inout), optional  :: t1_tensor
-         integer            :: ierr, i, tens_rank
-         integer, save      :: t1_dims(1:2), t2_dims(1:4)
-         logical            :: init, clean_up, CCD
-         integer, save      :: itens, ntens
-         complex(8), save   :: b_diis(maxdim,maxdim)
-         complex(8)         :: bb(0:maxdim,0:maxdim),coeff(0:maxdim)
-         real(8)            :: b_max, b_scale
+         integer             :: i
+         integer(INTD)       :: ierr, tens_rank
+         integer(INTD), save :: t1_dims(1:2), t2_dims(1:4)
+         logical             :: init, clean_up, CCD
+         integer, save       :: itens, ntens
+         complex(8), save    :: b_diis(maxdim,maxdim)
+         complex(8)          :: bb(0:maxdim,0:maxdim),coeff(0:maxdim)
+         real(8)             :: b_max, b_scale
          type(talsh_tens_t), save :: t1_inp_tensor, t2_inp_tensor
          type(talsh_tens_t), save :: t1_res_tensor(maxdim), t2_res_tensor(maxdim)
          type(talsh_tens_t), save :: t1_err_tensor(maxdim), t2_err_tensor(maxdim)
-         integer            :: ipiv(0:maxdim), info  ! needed for ZHESV solver
-         real(8)            :: work(maxdim,maxdim)   ! needed for ZHESV solver
+         integer             :: ipiv(0:maxdim), info  ! needed for ZHESV solver
+         real(8)             :: work(maxdim,maxdim)   ! needed for ZHESV solver
          type(talsh_tens_t), save  :: scalar_tensor
-         integer:: scalar_dims(1)
+         integer(INTD)       :: scalar_dims(1)
          complex(8), pointer :: scalar_tens(:)
          type(C_PTR):: body_p
 
@@ -1586,7 +1593,7 @@ module talsh_cc
 !        define scalar tensor needed to extract the error
          scalar_dims(1) = 1
          ierr=talsh_tensor_construct(scalar_tensor,C8,scalar_dims(1:0),init_val=ZERO)
-         ierr=talsh_tensor_get_body_access(scalar_tensor,body_p,C8,0,DEV_HOST)
+         ierr=talsh_tensor_get_body_access(scalar_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(body_p,scalar_tens,scalar_dims)
 
          if (init) then
@@ -1725,7 +1732,7 @@ module talsh_cc
          real(8), intent(in)                :: eps_occ(:),eps_vir(:)
          real(8), intent(out)               :: t_energy(3)
 
-         integer:: t2_dims(4), abc_dims(3), ab_dims(2), ia_dims(2), abi_dims(3)
+         integer(INTD)     :: t2_dims(4), abc_dims(3), ab_dims(2), ia_dims(2), abi_dims(3)
          type(talsh_tens_t):: w_tensor, y_tensor, we_tensor
          type(talsh_tens_t):: vovv_i_tensor, vovv_j_tensor, vovv_k_tensor
          type(talsh_tens_t):: ooov_ij_tensor, ooov_jk_tensor, ooov_ki_tensor
@@ -1733,13 +1740,14 @@ module talsh_cc
          type(talsh_tens_t):: t2_i_tensor, t2_j_tensor, t2_k_tensor
 
 !        scalars (need to be defined as tensor types)
-         type(C_PTR):: body_p
-         type(talsh_tens_t):: result_tensor
-         integer:: result_dims(1)
+         type(C_PTR)         :: body_p
+         type(talsh_tens_t)  :: result_tensor
+         integer(INTD)       :: result_dims(1)
          complex(8), pointer :: result_tens(:)
 
-         real(8)   :: eps_ijk
-         integer   :: ierr, tens_rank, nocc, nvir, i, j, k
+         real(8)        :: eps_ijk
+         integer(INTD)  :: ierr, tens_rank
+         integer        :: nocc, nvir, i, j, k
          complex(8), allocatable :: y(:,:,:) ! used in form_y_intermediate, but allocated here to have fewer alloc/dealloc calls
 
 !        Get nocc and nvir from tensor information
@@ -1761,7 +1769,7 @@ module talsh_cc
 !        Initialize scalars that are to be used as tensors in contractions
          result_dims(1) = 1
          ierr=talsh_tensor_construct(result_tensor,C8,result_dims(1:0),init_val=ZERO)
-         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,0,DEV_HOST)
+         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(body_p,result_tens,result_dims)
 
 !        Allocate tensors of dimension nvir**3 to hold intermediates
@@ -1791,7 +1799,7 @@ module talsh_cc
          ierr=talsh_tensor_construct(t2_k_tensor,C8,abi_dims,init_val=ZERO)
 
 !        Get access to result
-         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,0,DEV_HOST)
+         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(body_p,result_tens,result_dims)
 
          t_energy = ZERO
@@ -1887,10 +1895,10 @@ module talsh_cc
          complex(8), intent(inout)         :: y(:,:,:)
 
          type(C_PTR):: body_p
-         integer              :: ierr, tens_rank
+         integer(INTD)        :: ierr, tens_rank
          complex(8), pointer  :: t1_tens(:,:), t2_tens(:,:,:,:), y_tens(:,:,:)
          complex(8), pointer  :: fov_tens(:,:),oovv_tens(:,:,:,:)
-         integer              :: t1_dims(2), t2_dims(4), y_dims(3), fov_dims(2), oovv_dims(4)
+         integer(INTD)        :: t1_dims(2), t2_dims(4), y_dims(3), fov_dims(2), oovv_dims(4)
          integer              :: nvir, a, b, c
 
 !        Determine source dimensions and get direct access to the tensor bodies
@@ -1898,35 +1906,35 @@ module talsh_cc
          tens_rank = talsh_tensor_rank(t1_tensor)
          if (tens_rank .ne. 2) stop 'Error: t1 tensor corrupted in form_y2_intermediate'
          ierr = talsh_tensor_dimensions(t1_tensor,tens_rank,t1_dims)
-         ierr=talsh_tensor_get_body_access(t1_tensor,body_p,C8,0,DEV_HOST)
+         ierr=talsh_tensor_get_body_access(t1_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
          if (ierr.ne.0) stop 'error in y2_intermediate'
          call c_f_pointer(body_p,t1_tens,t1_dims)
 
          tens_rank = talsh_tensor_rank(t2_tensor)
          if (tens_rank .ne. 4) stop 'Error: t2 tensor corrupted in form_y2_intermediate'
          ierr = talsh_tensor_dimensions(t2_tensor,tens_rank,t2_dims)
-         ierr=talsh_tensor_get_body_access(t2_tensor,body_p,C8,0,DEV_HOST)
+         ierr=talsh_tensor_get_body_access(t2_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
          if (ierr.ne.0) stop 'error in y2_intermediate'
          call c_f_pointer(body_p,t2_tens,t2_dims)
 
          tens_rank = talsh_tensor_rank(y_tensor)
          if (tens_rank .ne. 3) stop 'Error: y tensor corrupted in form_y2_intermediate'
          ierr = talsh_tensor_dimensions(y_tensor,tens_rank,y_dims)
-         ierr=talsh_tensor_get_body_access(y_tensor,body_p,C8,0,DEV_HOST)
+         ierr=talsh_tensor_get_body_access(y_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
          if (ierr.ne.0) stop 'error in y2_intermediate'
          call c_f_pointer(body_p,y_tens,y_dims)
 
          tens_rank = talsh_tensor_rank(fov_tensor)
          if (tens_rank .ne. 2) stop 'Error: fo tensor corrupted in form_y2_intermediate'
          ierr = talsh_tensor_dimensions(fov_tensor,tens_rank,fov_dims)
-         ierr=talsh_tensor_get_body_access(fov_tensor,body_p,C8,0,DEV_HOST)
+         ierr=talsh_tensor_get_body_access(fov_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
          if (ierr.ne.0) stop 'error in y2_intermediate'
          call c_f_pointer(body_p,fov_tens,fov_dims)
 
          tens_rank = talsh_tensor_rank(oovv_tensor)
          if (tens_rank .ne. 4) stop 'Error: oovv tensor corrupted in form_y2_intermediate'
          ierr = talsh_tensor_dimensions(oovv_tensor,tens_rank,oovv_dims)
-         ierr=talsh_tensor_get_body_access(oovv_tensor,body_p,C8,0,DEV_HOST)
+         ierr=talsh_tensor_get_body_access(oovv_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
          if (ierr.ne.0) stop 'error in y2_intermediate'
          call c_f_pointer(body_p,oovv_tens,oovv_dims)
 
@@ -1964,9 +1972,9 @@ module talsh_cc
          complex(8), intent(inout)         :: y(:,:,:)
 
          type(C_PTR):: body_p
-         integer              :: ierr, tens_rank
+         integer(INTD)        :: ierr, tens_rank
          complex(8), pointer  :: t1_tens(:,:), t2_tens(:,:,:,:), y_tens(:,:,:)
-         integer              :: t1_dims(2), t2_dims(4), y_dims(3)
+         integer(INTD)        :: t1_dims(2), t2_dims(4), y_dims(3)
          integer              :: nvir, a, b, c
 
 !        Determine source dimensions and get direct access to the tensor bodies
@@ -1974,19 +1982,19 @@ module talsh_cc
          tens_rank = talsh_tensor_rank(t1_tensor)
          if (tens_rank .ne. 2) stop 'Error: t1 tensor corrupted in form_y_intermediate'
          ierr = talsh_tensor_dimensions(t1_tensor,tens_rank,t1_dims)
-         ierr=talsh_tensor_get_body_access(t1_tensor,body_p,C8,0,DEV_HOST)
+         ierr=talsh_tensor_get_body_access(t1_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(body_p,t1_tens,t1_dims)
 
          tens_rank = talsh_tensor_rank(t2_tensor)
          if (tens_rank .ne. 4) stop 'Error: t2 tensor corrupted in form_y_intermediate'
          ierr = talsh_tensor_dimensions(t2_tensor,tens_rank,t2_dims)
-         ierr=talsh_tensor_get_body_access(t2_tensor,body_p,C8,0,DEV_HOST)
+         ierr=talsh_tensor_get_body_access(t2_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(body_p,t2_tens,t2_dims)
 
          tens_rank = talsh_tensor_rank(y_tensor)
          if (tens_rank .ne. 3) stop 'Error: y tensor corrupted in form_y_intermediate'
          ierr = talsh_tensor_dimensions(y_tensor,tens_rank,y_dims)
-         ierr=talsh_tensor_get_body_access(y_tensor,body_p,C8,0,DEV_HOST)
+         ierr=talsh_tensor_get_body_access(y_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(body_p,y_tens,y_dims)
 
 !        Form the intermediate
@@ -2031,26 +2039,26 @@ module talsh_cc
          integer, intent(in), optional     :: j
 
          type(C_PTR):: body_p
-         integer              :: ierr, tens_rank, subtens_rank
+         integer(INTD)        :: ierr, tens_rank, subtens_rank
          complex(8), pointer  :: tens(:,:,:,:), subtens3(:,:,:), subtens2(:,:)
-         integer              :: tens_dims(4), subtens_dims(3)
+         integer(INTD)        :: tens_dims(4), subtens_dims(3)
 
 !        Determine source dimensions and get direct access to the tensor body to enable copying
          tens_rank = talsh_tensor_rank(tensor)
          if (tens_rank .ne. 4) stop 'Error: Only extraction from 4-dimensional tensors possible'
          ierr = talsh_tensor_dimensions(tensor,tens_rank,tens_dims)
-         ierr=talsh_tensor_get_body_access(tensor,body_p,C8,0,DEV_HOST)
+         ierr=talsh_tensor_get_body_access(tensor,body_p,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(body_p,tens,tens_dims)
 
 !        Determine target  dimensions and get direct access to the tensor body to enable copying
          subtens_rank = talsh_tensor_rank(subtensor)
          if (subtens_rank .eq. 3) then
             ierr = talsh_tensor_dimensions(subtensor,subtens_rank,subtens_dims)
-            ierr=talsh_tensor_get_body_access(subtensor,body_p,C8,0,DEV_HOST)
+            ierr=talsh_tensor_get_body_access(subtensor,body_p,C8,int(0,C_INT),DEV_HOST)
             call c_f_pointer(body_p,subtens3,subtens_dims)
          elseif (subtens_rank .eq. 2) then
             ierr = talsh_tensor_dimensions(subtensor,subtens_rank,subtens_dims)
-            ierr=talsh_tensor_get_body_access(subtensor,body_p,C8,0,DEV_HOST)
+            ierr=talsh_tensor_get_body_access(subtensor,body_p,C8,int(0,C_INT),DEV_HOST)
             call c_f_pointer(body_p,subtens2,subtens_dims(1:2))
          else
             stop 'Error: Only insertion into 3- or 2-dimensional tensors possible'
@@ -2093,7 +2101,7 @@ module talsh_cc
         integer            :: dims2(1:2)
         integer            :: dims3(1:3), off3(1:3)
         integer            :: dims4(1:4), off4(1:4)
-        
+
         integer            :: rank
         integer(4)         :: m
 
@@ -2115,8 +2123,8 @@ module talsh_cc
         ierr=talsh_tensor_construct(Diag,C8,dims2,init_val=ZERO)
         ierr=talsh_tensor_construct(Res,C8,dims2,init_val=ZERO)
         ierr=talsh_tensor_construct(Res2,C8,dims2,init_val=ZERO)
-        
-        
+
+
         call get_diag_talsh_comp(Diag)
         print *, "========= diagonal computed ============== "
 
@@ -2135,7 +2143,7 @@ module talsh_cc
           dims4(4)=ksize
 
           ierr=talsh_tensor_construct(Dlk,C8,dims4,init_val=ZERO)
-            
+
           ierr=talsh_tensor_destruct(CD_int)
           dims3(3)=m+lsize*ksize
           ierr=talsh_tensor_construct(CD_int,C8,dims3,init_val=ZERO)
@@ -2232,7 +2240,7 @@ module talsh_cc
             !print *, '--- largest value found: ', l, k, D_el
 
           end do
-          
+
           !find shell with next largest element
           call find_shells_talsh_comp(Diag, Mask, lshell, kshell, D_max)
           lsize=get_shellsize(lshell)
@@ -2241,14 +2249,14 @@ module talsh_cc
           ' shell = ', lshell, kshell, ' value = ', abs(D_max)
 
           ierr=talsh_tensor_destruct(Dlk)
-          
+
         end do
 
         print *, 'Cholesky decomposition done, used ',m,' elements'
 
         !clean up
         ierr=talsh_tensor_destruct(CD_int)
-        
+
         ierr=talsh_tensor_destruct(Mask)
         ierr=talsh_tensor_destruct(Diag)
         ierr=talsh_tensor_destruct(Res)

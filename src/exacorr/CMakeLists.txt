@@ -3,7 +3,6 @@ if(ENABLE_EXATENSOR)
     ${PROJECT_SOURCE_DIR}/src/include
     )
 
-
   set(FIXED_EXACORR_FORTRAN_SOURCES
     exacorr_dirac.F
   )
@@ -44,4 +43,3 @@ if(ENABLE_EXATENSOR)
   add_dependencies(exacorr  main)
   add_dependencies(exacorr  exatensor)
 endif()
-
