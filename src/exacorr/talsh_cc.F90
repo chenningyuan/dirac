@@ -1422,7 +1422,7 @@ module talsh_cc
          allocate(mo_list(2*nocc))
          mo_list(1:nocc)                      = mo_occ(1:nocc)
          mo_list(nocc+1:nocc+nocc)            = mo_occ(1:nocc)
-         call aomo_cholesky (chol_tensor,uoo_tensor,uoo_dims(1:2),mo_list)
+         call ao2mo_2ind (chol_tensor,uoo_tensor,uoo_dims(1:2),mo_list)
          deallocate(mo_list)
 
          uov_dims(1)=nocc
@@ -1432,7 +1432,7 @@ module talsh_cc
          allocate(mo_list(nocc+nvir))
          mo_list(1:nocc)                      = mo_occ(1:nocc)
          mo_list(nocc+1:nocc+nvir)            = mo_vir(1:nvir)
-         call aomo_cholesky (chol_tensor,uov_tensor,uov_dims(1:2),mo_list)
+         call ao2mo_2ind (chol_tensor,uov_tensor,uov_dims(1:2),mo_list)
          deallocate(mo_list)
 
          uvo_dims(1)=nvir
@@ -1442,7 +1442,7 @@ module talsh_cc
          allocate(mo_list(nocc+nvir))
          mo_list(1:nvir)                      = mo_vir(1:nvir)
          mo_list(nvir+1:nvir+nocc)            = mo_occ(1:nocc)
-         call aomo_cholesky (chol_tensor,uvo_tensor,uvo_dims(1:2),mo_list)
+         call ao2mo_2ind (chol_tensor,uvo_tensor,uvo_dims(1:2),mo_list)
          deallocate(mo_list)
 
          uvv_dims(1:2)=nvir
@@ -1451,7 +1451,7 @@ module talsh_cc
          allocate(mo_list(2*nvir))
          mo_list(1:nvir)                      = mo_vir(1:nvir)
          mo_list(nvir+1:nvir+nvir)            = mo_vir(1:nvir)
-         call aomo_cholesky (chol_tensor,uvv_tensor,uvv_dims(1:2),mo_list)
+         call ao2mo_2ind (chol_tensor,uvv_tensor,uvv_dims(1:2),mo_list)
          deallocate(mo_list)
 
 !        Get antisymmetric oovv tensor
@@ -2125,10 +2125,10 @@ module talsh_cc
         ierr=talsh_tensor_construct(Res2,C8,dims2,init_val=ZERO)
 
 
-        call get_diag_talsh_comp(Diag)
+        call talsh_get_diag_comp(Diag)
         print *, "========= diagonal computed ============== "
 
-        call find_shells_talsh_comp(Diag, Mask, lshell, kshell, D_max)
+        call talsh_find_shells_comp(Diag, Mask, lshell, kshell, D_max)
         lsize=get_shellsize(lshell)
         ksize=get_shellsize(kshell)
         print *, "--- shell found: ", lshell, kshell, lsize, ksize, D_max
@@ -2154,10 +2154,10 @@ module talsh_cc
           end if
 
           !get the values for the current shell
-          call get_shell_talsh_comp(Dlk, lshell, kshell)
+          call talsh_get_shell_comp(Dlk, lshell, kshell)
           !call print_tensor(Dlk, ACC, "Dlk")
 
-          call find_el_talsh_comp(Diag, Mask, lshell, kshell, l, k, D_el)
+          call talsh_find_el_comp(Diag, Mask, lshell, kshell, l, k, D_el)
           !print *, '--- largest value found: ', l, k, D_el
 
           do while(abs(D_el)>abs(D_max/1000))
@@ -2216,12 +2216,12 @@ module talsh_cc
             ierr=talsh_tensor_reshape(Res,dims2)
 
             !update diagonal
-            call square_el(Res)
+            call talsh_square_el(Res)
             ierr=talsh_tensor_contract("W(p,q)+=V(p,q)",Diag,Res,one_tensor,scale=MINUS_ONE)
             !call print_tensor(Diag, ACC, "Diag")
 
             !update mask
-            call set_mask_done(Mask,l,k)
+            call talsh_set_mask_done(Mask,l,k)
 
             m=m+1
 
@@ -2236,13 +2236,13 @@ module talsh_cc
             if (m>nao*nao) print *, 'Cholesky decomposition did not work'
 
             !find next element in this shell
-            call find_el_talsh_comp(Diag, Mask, lshell, kshell, l, k, D_el)
+            call talsh_find_el_comp(Diag, Mask, lshell, kshell, l, k, D_el)
             !print *, '--- largest value found: ', l, k, D_el
 
           end do
 
           !find shell with next largest element
-          call find_shells_talsh_comp(Diag, Mask, lshell, kshell, D_max)
+          call talsh_find_shells_comp(Diag, Mask, lshell, kshell, D_max)
           lsize=get_shellsize(lshell)
           ksize=get_shellsize(kshell)
           write (*,'(a,i6,a,a,i6,i6,a,e12.2)') 'cholesky length =',m,' largest element:', &
