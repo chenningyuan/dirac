@@ -11,13 +11,12 @@ module exacorr_global
 
 !       Global data (should limit this to the minimum required to function)
         integer :: my_MPI_master=0 ! Define the MPI master proces (is always zero in the DIRAC MPI environment)
-        type(basis_set_info_t) :: ao_basis ! information about the ao basis 
-        type(cmo):: cspinor_all ! Stores all MO-coefficients and energies obtained from the parent code 
+        type(basis_set_info_t) :: ao_basis ! information about the ao basis
+        type(cmo):: cspinor_all ! Stores all MO-coefficients and energies obtained from the parent code
         type(one_el_t)  :: int_1el ! stores 1 electron integrals
         logical :: TALSH_ONLY = .TRUE. ! use single-node TALSH library instead of the full EXATENSOR library
         logical, public, parameter :: debug_exa = .false. ! switch on and off debug
         logical :: one_el_exist=.FALSE. ! logical if MRCONEE is available or not
-        integer :: m_cholesky=-666  ! length of cholesky vector
 
 !       Functions and routines to interact with these data
         public nfunctions
@@ -32,14 +31,12 @@ module exacorr_global
         public get_mo_coefficients
         public exist_one_el
         public get_one_el
-        public set_m_cholesky
-        public get_m_cholesky
         public get_shell_index
         public get_shell_size
         public make_spinor_list
 
        contains
-         
+
          subroutine set_talsh_only(new_value)
              logical, intent(in) :: new_value
              TALSH_ONLY = new_value
@@ -80,7 +77,7 @@ module exacorr_global
 !               Slaves go to the sync immediately and get all that is necessary from master
                 call synchronize_global_data
                 return
-             end if 
+             end if
 #endif
              ! read MO coefficients and ao basis set information
              inquire (file='DFCOEF',exist=tobe)
@@ -124,7 +121,7 @@ module exacorr_global
                  if (scf_file == 0) call quit ('One electron integrals required in the open shell case (MOLTRA)')
                end if
              end if
-             
+
              call synchronize_global_data
 
          end subroutine initialize_global_data
@@ -148,12 +145,12 @@ module exacorr_global
              call interface_mpi_bcast (ao_basis%basis_angular,1,my_MPI_master,global_communicator)
              nshells       = ao_basis%nshells
              nao           = ao_basis%nao
-   
+
              if (my_MPI_rank /= my_MPI_master) nullify (ao_basis%gtos)
              if (my_MPI_rank /= my_MPI_master) allocate(ao_basis%gtos(nshells))
              if (my_MPI_rank /= my_MPI_master) nullify (ao_basis%shell_indices)
              if (my_MPI_rank /= my_MPI_master) allocate(ao_basis%shell_indices(nao))
-             
+
 !            Note that this communication step could be speeded up by packing and unpacking the data for all shells
 !            Assuming that the time for this step is insignificant, a simpler option is chosen here.
              do ish = 1, nshells
@@ -173,7 +170,7 @@ module exacorr_global
                    allocate (ao_basis%gtos(ish)%coefficient(n_primitives))
                 end do
              end if
- 
+
              do ish = 1, nshells
                 n_primitives = ao_basis%gtos(ish)%n_primitives
                 call interface_mpi_bcast (ao_basis%gtos(ish)%coord,3,my_MPI_master,global_communicator)
@@ -183,7 +180,7 @@ module exacorr_global
 
 !            We finally broadcast the pointers from a basis function index to its shell that were determined on master
              call interface_mpi_bcast (ao_basis%shell_indices,nao,my_MPI_master,global_communicator)
-             
+
 !            One electron integrals
              call interface_mpi_bcast_l0 (one_el_exist,1,my_MPI_master,global_communicator)
              if(one_el_exist) then
@@ -199,7 +196,7 @@ module exacorr_global
 #else
              return ! For running a serial version no action is required.
 #endif
- 
+
          end subroutine synchronize_global_data
 
          subroutine delete_global_data
@@ -337,28 +334,6 @@ module exacorr_global
 
      end subroutine get_one_el
 
-     subroutine get_m_cholesky(m)
-
-      integer, intent(out)  ::  m
-
-      m=m_cholesky
-
-     end subroutine get_m_cholesky
-
-     subroutine set_m_cholesky(m)
-       use interface_to_mpi
-       
-       integer, intent(in)  :: m
-       integer :: my_MPI_rank
-
-       call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
-
-       m_cholesky=m
-
-       call interface_mpi_bcast (m_cholesky,1,my_MPI_rank,global_communicator)
-
-    end subroutine set_m_cholesky
-
       subroutine string2mo ( inp_str, a_or_b, nmo, mo_list)
 
         implicit none
@@ -415,7 +390,7 @@ module exacorr_global
             end if
           end do
           allocate(eps(nmo_all))
-          eps=cspinor_all%energy(lmo)  
+          eps=cspinor_all%energy(lmo)
           deallocate(lmo)
 
           !read thresholds
@@ -620,7 +595,7 @@ module exacorr_global
 
       end subroutine quicksort
 
-      subroutine make_spinor_list ( exa_input, string_occupied, & 
+      subroutine make_spinor_list ( exa_input, string_occupied, &
         string_occ_beta, string_virtual, string_vir_beta)
 
         use exacorr_datatypes
@@ -641,7 +616,7 @@ module exacorr_global
         if (exa_input%beta_occ) then
           if (exa_input%beta_vir) then
             nmo(1:4)=0
-            
+
             call string2mo(string_occupied,.true.,nmo=nmo(1))
             call string2mo(string_occ_beta,.false.,nmo=nmo(2))
             call string2mo(string_virtual,.true.,nmo=nmo(3))
@@ -663,7 +638,7 @@ module exacorr_global
               print *, "core orbital need to be closed shell"
               call quit ("change .OCC_BETA in EXACORR")
             end if
-            
+
             exa_input%nocc=nmo(1)+nmo(2)
             exa_input%nvir=nmo(3)+nmo(4)
             allocate (exa_input%mo_occ(exa_input%nocc))
@@ -680,7 +655,7 @@ module exacorr_global
                 exa_input%mo_occ(imo)=mobe_occ(i)*2
               end if
             end do
-         
+
             ialpha=1
             ibeta=1
             imo=0
@@ -708,7 +683,7 @@ module exacorr_global
                 imo=imo+1
                 exa_input%mo_vir(imo)=exa_input%mokr_vir(ialpha)*2-1
                 ialpha=ialpha+1
-              else                   
+              else
                 imo=imo+1
                 exa_input%mo_vir(imo)=mobe_vir(ibeta)*2
                 ibeta=ibeta+1
@@ -732,7 +707,7 @@ module exacorr_global
             exa_input%mo_occ(i) = (exa_input%mokr_occ(1)-1)*2+i
           end do
 
-          
+
           call string2mo(string_virtual,.true.,nmo=exa_input%nkr_vir)
           allocate (exa_input%mokr_vir(exa_input%nkr_vir))
           call string2mo(string_virtual,.true.,mo_list=exa_input%mokr_vir)

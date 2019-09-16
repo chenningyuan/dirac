@@ -22,8 +22,6 @@ module exacorr_ao_to_mo
         public get_ht1_integral_tensor
         public get_ht2_integral_tensor
         public print_tensornorm2
-        public aomo_trans_chol
-        public mulliken_to_dirac_sort
 
         complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0)
 
@@ -915,90 +913,6 @@ module exacorr_ao_to_mo
 
         end function dm_initlabel
 
-        subroutine aomo_trans_chol(mo_tens,ao_tens)
-
-          implicit none
-
-          type(tens_rcrsv_t), intent(inout)     :: ao_tens
-          type(tens_rcrsv_t), intent(inout)  :: mo_tens
-
-          ! Auxilliary tensors that are created and destroyed inside this subroutine
-          type(tens_rcrsv_t):: mocoef_tensor(2,2)
-          type(tens_rcrsv_t):: int_tens
-
-          integer, parameter:: print_level=0
-          integer           :: ierr,i,spin
-          integer           :: ao_id(3),int_id(3),mo_id(3),mocoef_id(2)
-          integer(INTL)     :: ao_root(3),int_root(3),mo_root(3),mocoef_root(2)
-          character(len=9)  :: mocoef_name
-
-         if (print_level >0) call print_date('aomo_trans_chol')
-
-!        Determine space ids and root
-         call ao_tens%get_space_ids(ao_id,ao_root,ierr)
-         if(ierr.ne.EXA_SUCCESS) call quit('ao(chol) tensor corrupted')
-         call mo_tens%get_space_ids(mo_id,mo_root,ierr)
-         if(ierr.ne.EXA_SUCCESS) call quit('mo(chol) tensor corrupted')
-
-!        Initialize tensors with MO coefficients, one for each index and alpha/beta
-         do i = 1, 2
-           mocoef_id(1)   = ao_id(i)
-           mocoef_root(1) = ao_root(i)
-           mocoef_id(2)   = mo_id(i)
-           mocoef_root(2) = mo_root(i)
-           do spin = 1, 2
-!             The name of the tensor needs to be unique, define a name that makes sense
-              write (mocoef_name,'(A7,2I1)') 'mocoef_',spin,i
-!             Create mo-coefficient-tensor
-              ierr=exatns_tensor_create(mocoef_tensor(spin,i),mocoef_name, &
-               mocoef_id,mocoef_root,EXA_DATA_KIND_C8)
-              if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
-!             Initialize mocoef-tensor 
-              ierr=exatns_tensor_init(mocoef_tensor(spin,i),mocoef_initlabel(mocoef_id(1),mocoef_id(2),spin))
-              if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_init() failed!')
-!             next two lines can be used for debugging
-!              print*,"created and initialized mocoef_tensor ", &
-!              i,spin,mocoef_initlabel(mocoef_id(1),mocoef_id(2),spin),print_tensornorm2 (mocoef_tensor(spin,i))
-           end do
-         end do
-!        next two lines can be used for debugging
-!        ierr=exatns_tensor_traverse(mocoef_tensor(2,1),'TensorPrinter')
-!        ierr=exatns_sync(); if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_sync() failed!')
-
-         if (print_level >0) call print_date('initialized mo-coefficients')
-
-!        Copy the information about spaces from the starting and target tensor to the auxilliary one
-         int_id(1)   = mo_id(1)
-         int_id(2:3) = ao_id(2:3)
-
-         int_root(1)   = mo_root(1)
-         int_root(2:3) = ao_root(2:3)
-
-!        Do 1st and 2nd transformation
-         ierr=exatns_tensor_create(int_tens,'int',int_id,int_root,EXA_DATA_KIND_C8)
-         ierr=exatns_tensor_contract(int_tens,mocoef_tensor(1,1),ao_tens,"D(i,q,u)+=R+(p,i)*L(p,q,u)")
-         if(ierr.ne.EXA_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=11; return; endif
-         ierr=exatns_tensor_contract(mo_tens,int_tens,mocoef_tensor(1,2),"D(i,j,u)+=L(i,q,u)*R(q,j)")
-         if(ierr.ne.EXA_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=21; return; endif
-         ierr=exatns_tensor_init(int_tens,zero) ! alpha-alpha part done, continue with beta-beta part
-         ierr=exatns_tensor_contract(int_tens,mocoef_tensor(2,1),ao_tens,"D(i,q,u)=R+(p,i)*L(p,q,u)")
-         if(ierr.ne.EXA_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=12; return; endif
-         ierr=exatns_tensor_contract(mo_tens,int_tens,mocoef_tensor(2,2),"D(i,j,u)+=L(i,q,u)*R(q,j)")
-         if(ierr.ne.EXA_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=22; return; endif
-
-!        Destruct int integrals:
-         ierr=exatns_tensor_destroy(int_tens); if(ierr.ne.EXA_SUCCESS) then; ierr=25; return; endif
-
-!        Destruct mocoef tensors:
-         do i = 1, 2
-           do spin = 1, 2
-            ierr=exatns_tensor_destroy(mocoef_tensor(spin,i)); if(ierr.ne.EXA_SUCCESS) then; ierr=45; return; endif
-            end do
-         end do
-
-         if (print_level >0) call print_date('leaving aomo_trans_chol')
-
-        end subroutine aomo_trans_chol
 ! stub non-MPI routine to satisfy references
 
 #else
