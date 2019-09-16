@@ -1248,31 +1248,6 @@
     call alloc( buf1  , nbuf1*rcw             , id="buf1" )
     call alloc( buf2  , nbuf2*rcw             , id="buf2" )
 
-!   call allocator_get_words_inuse(start_mem_use)
-!   call legacy_lwork_get(work_memsize)
-
-!   call allocator_get_maxbuff(freemem,kind(BUF3))
-
-!   NBUF3 = freemem / RCW
-
-!   NV5IRP = MAX(JVOVV(NREP+1),JOVVV(NREP+1))
-!   NV6IRP = 1
-!   DO IRP = 1, NREP
-       NV6IRP = MAX(NV6IRP,INT(NVVT(IRP),8)*INT(NVVT(IRP),8))
-!   ENDDO
-
-!   Check the minimum size for the general use of this array
-
-!   NVIRP = MAX(NV5IRP,NV6IRP)
-
-!   NBUF3 = MIN(NVIRP,INT(NBUF3,8))
-!   NBUF3 = MAX(NBUF1,NBUF3)
-
-!     Allocate now also this remaining work array
-
-!   call alloc( BUF3  , NBUF3*RCW             , id="buf3" )
-!!!!
-
 !   For the moment I am using as much in-core memory as possible. However we
 !   may think of writing them in files, replacing the integral ones...  
 ! aspg: we should collect these actions into a routine, like
