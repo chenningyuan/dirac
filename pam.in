@@ -2108,9 +2108,9 @@ class disk_space:
         if not is_windows():
             # Unix/Linux stuff
             self.disk_info = os.statvfs(path)
-            self.capacity = ( self.disk_info.f_bsize * self.disk_info.f_blocks ) / gb_factor
-            self.available = ( self.disk_info.f_bsize * self.disk_info.f_bavail ) /  gb_factor
-            self.used = ( self.disk_info.f_bsize * (self.disk_info.f_blocks - self.disk_info.f_bavail)) / gb_factor
+            self.capacity = ( self.disk_info.f_frsize * self.disk_info.f_blocks ) / gb_factor
+            self.available = ( self.disk_info.f_frsize * self.disk_info.f_bavail ) /  gb_factor
+            self.used = ( self.disk_info.f_frsize * (self.disk_info.f_blocks - self.disk_info.f_bavail)) / gb_factor
         else:
             # Windows stuff
             import ctypes
