@@ -225,5 +225,5 @@ Using :ref:`PROPERTIES_.PRINT` 1 or 2, results are only given in kHz, whereas em
 
 In addition, when :ref:`PROPERTIES_.PRINT` 2 or 4 are used, the paramagnetic-like (e-e) and diamagnetic-like (e-p) parts of the linear response contributions are given separately, together with results for the :math:`\mathbf{L}` and :math:`\mathbf{S}` parts of the linear response.
 
-See :cite:`AucarAg2012` for theoretical details.
+See :cite:`Aucar_JCP2012` for theoretical details.
 
