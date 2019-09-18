@@ -93,7 +93,6 @@ module talsh_cc
 
 !        Initialize scalars that are to be used as tensors in contractions
          one_dims(1) = 1
-         print *,'one_tensor index', one_dims(1:0)
          ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
          ierr=talsh_tensor_construct(result_tensor,C8,one_dims(1:0),init_val=ZERO)
          ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
