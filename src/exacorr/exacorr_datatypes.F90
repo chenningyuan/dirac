@@ -39,7 +39,7 @@
             logical                 :: beta_occ = .false.
             logical                 :: beta_vir = .false.
             integer                 :: exa_blocksize = 75
-            integer                 :: moint_scheme = 42        ! 42 for cholesky
+            integer                 :: moint_scheme = 3
             integer                 :: ncycles = 30
             integer                 :: print_level = 0
             integer                 :: nkr_occ, nkr_vir         ! number of Kramer pairs

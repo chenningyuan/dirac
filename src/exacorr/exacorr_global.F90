@@ -544,7 +544,6 @@ module exacorr_global
             if (i_mo.ne.size_mo) stop 'mo_list wrong size in string2mo'
             !sort list
             j=1
-            print *, 'go to sorting'
             call quicksort(mo_list, j, size_mo) ! to do: replace by lapack
             !check for elements occuring twice
             do j=1,size_mo-1
@@ -552,7 +551,6 @@ module exacorr_global
             end do
           end if
         end if
-      if (do_mo) print *, "mos:", mo_list
       end subroutine string2mo
 
       recursive subroutine quicksort(mo_list, i_beg, i_end)
