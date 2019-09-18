@@ -164,7 +164,7 @@ module talsh_common_routines
         complex(8), pointer :: tens4(:, :, :, :)
 
         rank=talsh_tensor_rank(h_tensor)
-        
+
         if (rank.eq.2) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims2)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
@@ -248,7 +248,7 @@ module talsh_common_routines
         real(8), pointer :: tens4(:, :, :, :)
 
         rank=talsh_tensor_rank(h_tensor)
-        
+
         if (rank.eq.2) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims2)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
@@ -313,7 +313,7 @@ module talsh_common_routines
       end subroutine print_tensor_real
 
      subroutine Pair_correlation_energies( t2_amp, int_oovv, nocc, nvir )
-    
+
         implicit none
         type(talsh_tens_t)  :: t2_amp, int_oovv
         integer(INTD)       :: ierr
@@ -330,28 +330,28 @@ module talsh_common_routines
 100 format(*(ES10.2)) ! A scientific format to visualize the possible vanishing values of the matrix E_ij
 
         allocate(tens_E_pair_corr(nocc,nocc))
-    
-        ! Getting the tensor encoding the amplitudes T2(vir_a, vir_b, occ_i, occ_j) 
+
+        ! Getting the tensor encoding the amplitudes T2(vir_a, vir_b, occ_i, occ_j)
         ierr = talsh_tensor_dimensions(t2_amp,rranka,dimsa)
         ierr = talsh_tensor_get_body_access(t2_amp,bodya_p,C8,int(0,C_INT),DEV_HOST)
         call c_f_pointer(bodya_p,tens_t2,dimsa)
-    
-        ! Getting the tensor encoding the elements < occ_i, occ_j || vir_a, vir_b > 
+
+        ! Getting the tensor encoding the elements < occ_i, occ_j || vir_a, vir_b >
         ierr = talsh_tensor_dimensions(int_oovv,rrankb,dimsb)
         ierr = talsh_tensor_get_body_access(int_oovv,bodyb_p,C8,int(0,C_INT),DEV_HOST)
-        call c_f_pointer(bodyb_p,tens_int_oovv,dimsb)    
+        call c_f_pointer(bodyb_p,tens_int_oovv,dimsb)
         tens_E_pair_corr = (0.d0,0.d0)
         do i=1,nocc
           do j=1,nocc
             do a=1,nvir
               do b=1,nvir
-                tens_E_pair_corr(i,j) = tens_E_pair_corr(i,j)               &   
+                tens_E_pair_corr(i,j) = tens_E_pair_corr(i,j)               &
                 + 0.5d0 * tens_t2(a,b,i,j) * tens_int_oovv(i,j,a,b)
               enddo
             enddo
           enddo
         enddo
-    
+
         write(*,*)
         write(*,*) '======================================='
         write(*,*) '  Matrix of pair correlation energies'
@@ -361,13 +361,13 @@ module talsh_common_routines
         enddo
         write(*,*) "Sum of pair correlation energies : ", sum(real(tens_E_pair_corr))
         write(*,*) "Correlation energy               : ", sum(real(tens_E_pair_corr))/2.D0
-    
+
         write(*,*) '============================================='
         write(*,*) '======================================='
         write(*,*)
 
         deallocate(tens_E_pair_corr)
-    
+
       end subroutine Pair_correlation_energies
 
 end module talsh_common_routines
