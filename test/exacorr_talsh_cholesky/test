@@ -28,6 +28,7 @@ f2.add(from_string = 'Norm of VV part Fock matrix ',
 
 os.system('ulimit -s unlimited')
 
+test.run(['talsh_cholesky_li2.inp'], ['Li2_nosym.mol'], f2, " ")
 test.run(['talsh_cholesky_lio.inp'], ['LiO_nosym.mol'], f2, " ")
 
 sys.exit(test.return_code)
