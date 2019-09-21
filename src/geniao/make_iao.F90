@@ -115,7 +115,7 @@ contains
         allocate (S22_copy(nmo2,nmo2))
         P21 = S21
         S22_copy = S22
-        call zposv( 'U', nmo2, nmo1, S22, nmo2, P21, nmo2, ierr )
+        call zposv( 'U', nmo2, nmo1, S22_copy, nmo2, P21, nmo2, ierr )
 
         Id = ZERO
         forall (i=1:nmo1) Id(i,i) = ONE

@@ -70,9 +70,11 @@
         read(luxyz,'(I2)') restrict
         close(luxyz)
 
-        if (restrict .eq. 1) restricted = .true.
+        if (restrict .ne. 1) restricted = .false.
 
         call read_from_dirac (ao_basis_1,cspinor_original,'MOLECULE.dfcoef',ierr)
+        call write_mos_to_dirac (ao_basis_1,cspinor_original,"original.dfcoef")
+        call write_mos_to_dirac_formatted (cspinor_original,"original.dfpcmo")
         nmo1 = cspinor_original%nmo
         nao1 = cspinor_original%nao
 
