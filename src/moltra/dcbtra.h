@@ -22,7 +22,7 @@
 !     with MPI.
 !     NBNBNB! THEY MUST BE UPDATED IF YOU CHANGE THE COMMON BLOCKS!!!!
       INTEGER NDCBTRI,NDCBTRR,NDCBTRL
-      PARAMETER (NDCBTRI=283,NDCBTRR=258,NDCBTRL=14)
+      PARAMETER (NDCBTRI=283,NDCBTRR=258,NDCBTRL=16)
 ! ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
       COMMON/DCBTC/TRA_INDSTR(2),TRA2_INDSTR(2,2),TRA4_INDSTR(4,2),     &
@@ -37,10 +37,10 @@
      &              NFPCK12(2),NFPCK34(2),NFPCK12T,NFPCK34T,            &
      &              IFPCK12(2,2),IFPCK34(2,2),N2EFIL,NTKL,IPAR4BS
 
-      COMMON/DCBTRL/TRA_ANTIS,TRA_EXACORR,TRA_MSOUT,                    &
+      COMMON/DCBTRL/TRA_ANTIS,TRA_EXACORR,TRA_MSOUT,                              &
      &              NOPAIR,NO2IND,NO4IND,PRPTRA,RCORBS,                 &
      &              FKRMC, MDCSCAT, TRA_ASCII, PRPSYA,                  &
-     &              NOMDCINT, NOMDCINT_TRAINP,                          &
+     &              NOMDCINT,NOMDCINT_TRAINP,                           &
      &              do_finesort,set_auto_finesort
 
 
