@@ -77,11 +77,12 @@ C     NUMNOD = INUMNOD - 1
 C     SK - Sep 08: subtraction has already been done in mpixinit.
       NUMNOD = INUMNOD
       MYTID  = IMYTID
-      MYNUM  = MYTID
 C Additional check for parallelism, parallel with only a master is the same as serial
       PARCAL = PARCAL.AND.NUMNOD.ne.0
 C Test the communication by sending an empty task
       IF (PARCAL) CALL DIRAC_PARCTL( RELEASE_NODES )
+      SLAVE = .FALSE. ! this is the master node (or the only node if not PARCAL)
+      PARHER = .FALSE.
 C
 C     Set basis set directory
 C
@@ -1204,6 +1205,10 @@ C     SK - Sep 08: subtraction has already been done in mpixinit.
       IF (.NOT. PARCAL) THEN
          CALL QUIT('ERROR: PARCAL false, but DIRNOD called')
       END IF
+C
+C     This is a slave in a parallel run
+C
+      SLAVE = .TRUE.
 
 #if defined (SLOWDOWN_SLAVES)
 !mi+sk: introduce slowdown statement for debug purposes :
@@ -1214,6 +1219,15 @@ C     SK - Sep 08: subtraction has already been done in mpixinit.
          call sleep(sleep_time)
       endif
 #endif
+
+C     Initialize infpar.h control variables
+      PARHER = .FALSE.
+      ! Hermit can be called two ways with mpi:
+      !   PARHER true for MPI parallelization in HERMIT
+      !      (Feb.2019: set true in HERNOD and in TRANOD)
+      !   PARHER false elsewhere,
+      !      in particular for FCK2TRA integral transformation
+      !      calls of Hermit (Feb.2018/hjaaj)
 
 C
 C     Set basis set directory for this slave

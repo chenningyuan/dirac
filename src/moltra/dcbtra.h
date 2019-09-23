@@ -3,13 +3,17 @@
 ! Adapted for include-into-Fortran90 form by Miro Ilias
 !
 !     Length of common block : keep up to date !!
-      LOGICAL TRA_ANTIS,TRA_EXACORR,NOPAIR,NO2IND,NO4IND,PRPTRA,RCORBS
-      LOGICAL FKRMC, NOMDCINT, MDCSCAT, TRA_ASCII, PRPSYA
+      LOGICAL TRA_ANTIS,TRA_EXACORR,TRA_MSOUT
+      LOGICAL NOPAIR,NO2IND,NO4IND,PRPTRA,RCORBS
+      LOGICAL FKRMC, MDCSCAT, TRA_ASCII, PRPSYA
+      LOGICAL NOMDCINT, NOMDCINT_TRAINP
+
 !     aspg, 20090424, for fine-sort of 1HT
       logical do_finesort,set_auto_finesort
 !
       CHARACTER*72 TRA_INDSTR,TRA2_INDSTR,TRA4_INDSTR,TRA_CORSTR,       &
      &             TRA2_INDPRP
+      CHARACTER*7  MOFILE_TRAINP
 
 ! vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !     NDCBTRI, NDCBTRR, NDCBTRL are *4 lengths of the three
@@ -22,7 +26,7 @@
 ! ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
       COMMON/DCBTC/TRA_INDSTR(2),TRA2_INDSTR(2,2),TRA4_INDSTR(4,2),     &
-     &             TRA_CORSTR(2), TRA2_INDPRP(2)
+     &             TRA_CORSTR(2), TRA2_INDPRP(2), MOFILE_TRAINP
 
       INTEGER IPRTRA,ISTRAT,ITRA_INTFLG,ITRA_INTFL2,ITRA_INTFL4,        &
      &              NQQCLASS,ISAME,ICLARR,                              &
@@ -33,9 +37,12 @@
      &              NFPCK12(2),NFPCK34(2),NFPCK12T,NFPCK34T,            &
      &              IFPCK12(2,2),IFPCK34(2,2),N2EFIL,NTKL,IPAR4BS
 
-      COMMON/DCBTRL/TRA_ANTIS,TRA_EXACORR,NOPAIR,NO2IND,NO4IND,PRPTRA,    &
-     &              RCORBS,FKRMC,NOMDCINT,MDCSCAT,TRA_ASCII,            &
-     &              do_finesort,set_auto_finesort, PRPSYA
+      COMMON/DCBTRL/TRA_ANTIS,TRA_EXACORR,TRA_MSOUT,                    &
+     &              NOPAIR,NO2IND,NO4IND,PRPTRA,RCORBS,                 &
+     &              FKRMC, MDCSCAT, TRA_ASCII, PRPSYA,                  &
+     &              NOMDCINT, NOMDCINT_TRAINP,                          &
+     &              do_finesort,set_auto_finesort
+
 
       REAL*8 THROUT,SCRTRA,RINVICLARR
       COMMON/DCBTRR/THROUT,SCRTRA,RINVICLARR(4,4,16)
