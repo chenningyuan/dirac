@@ -728,7 +728,7 @@ C
 C      
       LOGICAL ADDSML
       CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4,MATINF*2 !check
-      CHARACTER RADC*2,ANGC*2,RADANGC*6 !sunaga
+      CHARACTER RADC*2,ANGC*2,RADANGC*6 
       PARAMETER (D0=0.0D0,D1=1.0D0,D2=2.0D0,DM1=-1.0D0)      
       real(8), allocatable :: ZAN(:),C(:,:)
       real(8), allocatable :: ANG(:,:),GAO(:,:),GAO2(:,:),BUFGAO(:,:)
@@ -799,18 +799,18 @@ C         IXYZ = 4-IMXYZ
       CALL DZERO(INTAOTRI,NDIM2)
       NAT = 0
       DO 10 IATOM = 1, NUCIND !change
-      DO 10 ISYMOP = 0, MAXOPR ! needed for h2se2
+C      DO 10 ISYMOP = 0, MAXOPR ! needed for h2se2
 !ayaki  What is this roop? MXOPR=0 in dftgrd.F
 C       IF (IBTAND(0,ISTBNU(IATOM)).EQ.0) THEN 
-       IF (IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN 
+C       IF (IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN 
 !ayaki   IBTAND=IAND, but I am not sure what is it.     
          IF(NOORBT(IATOM)) GOTO 10 
          IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 10
          NAT = NAT + 1
 C         Z = ZAN(IATOM)
-C         C(1,IATOM)= PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
-C         C(2,IATOM)= PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
-C         C(3,IATOM)= PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM) !change
+         C(1,IATOM)= PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
+         C(2,IATOM)= PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
+         C(3,IATOM)= PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM) !change
          GEXP = GNUEXP(IATOM)
 !         AT3 =  (DBLE(20)-7.5609D-003) **  (1.0D0/3.0D0)
 !         RFM = 0.836D00*AT3+0.570D00
@@ -825,10 +825,10 @@ C
          NUCTYP = 0
          IF(GAUNUC) NUCTYP = 3
          write(*,*)"NUCTYP,IATOM",NUCTYP,IATOM
-C         CALL MEMSET_NUM(CHARGE(IATOM),IATOM,MXNP,RNT,H,EPH,GRDC,
-C     &                    num_grid_cfg_grasp,IPRINT)
-         CALL MEMSET_NUM(ZAN(NAT),IATOM,MXNP,RNT,H,EPH,GRDC,
+         CALL MEMSET_NUM(CHARGE(IATOM),IATOM,MXNP,RNT,H,EPH,GRDC,
      &                    num_grid_cfg_grasp,IPRINT)
+C         CALL MEMSET_NUM(ZAN(NAT),IATOM,MXNP,RNT,H,EPH,GRDC,
+C     &                    num_grid_cfg_grasp,IPRINT)
          write(*,*)'H,INTANG,m_ang',H,INTANG,m
 C         
 C NUCPRM is for making nuclear parameter of Fermi and Uniform nucleus. 
@@ -846,8 +846,8 @@ C
               R(J) = R(J-1)*EPH
            ENDDO
 C R**2 is multiplized in NUMPOT
-C           CALL NUMPOT(IOP,NUMIR,R,CHARGE(IATOM),GEXP,MXNP,IPRINT)
-           CALL NUMPOT(IOP,NUMIR,R,ZAN(NAT),GEXP,MXNP,IPRINT)
+           CALL NUMPOT(IOP,NUMIR,R,CHARGE(IATOM),GEXP,MXNP,IPRINT)
+C           CALL NUMPOT(IOP,NUMIR,R,ZAN(NAT),GEXP,MXNP,IPRINT)
 C Additional R is needed for GRASP grid (QUAD2)
            DO I = 1,MXNP
 C              write(*,*)R(I),NUMIR(I) !debug
@@ -862,7 +862,8 @@ C
              R(IR) = (R(IR-1)+GRDC)*EPH-GRDC
            ENDDO
 C R**2 is multiplized in NUMPOT
-           CALL NUMPOT(IOP,NUMIR,R,ZAN(NAT),GEXP,MXNP,IPRINT)
+           CALL NUMPOT(IOP,NUMIR,R,CHARGE(IATOM),GEXP,MXNP,IPRINT)
+C           CALL NUMPOT(IOP,NUMIR,R,ZAN(NAT),GEXP,MXNP,IPRINT)
            W = (RNT+GRDC)*H 
            NUMIR(1) = NUMIR(1) * W
            DO IR = 2,MXNP
@@ -879,7 +880,7 @@ C
          ENDIF   !num_grid_cfg_grasp
 C     Numerical integration
 C     Here, INTAOTRI is a buffer
-         CALL INTSUM(INTAOTRI,NDIM2,NUMIR,R,MXNP,ANG,m,IXYZ,C(1,NAT),
+         CALL INTSUM(INTAOTRI,NDIM2,NUMIR,R,MXNP,ANG,m,IXYZ,C(1,IATOM),
      &                 num_grid_cfg_grasp,MATINF,IPRINT)
 C     writing the matrix in output
          IF(IPRINT.GE.2)THEN
@@ -887,23 +888,23 @@ C     writing the matrix in output
            CALL OUTPUT(INTAOTRI,1,NTBAS(0),1,NTBAS(0),
      &                   NTBAS(0),NTBAS(0),-1,LUPRI)
          ENDIF !debug   
-C         IF(NDEG.GT.0) THEN
+         IF(NDEG.GT.0) THEN
 C       Scale weights with multiplicity of center
-C           FAC = dble(NDEG) 
-C           CALL DSCAL(NDIM2,FAC,INTAOTRI,1)
-C         ENDIF
+           FAC = dble(NDEG) 
+           CALL DSCAL(NDIM2,FAC,INTAOTRI,1)
+         ENDIF
 C     Here, INTAOTRI is a buffer
          CALL DAXPY(NDIM2,D1,INTAOTRI,1,INTAO,1)
          CALL DZERO(INTAOTRI,NDIM2)
          write(*,*)'INTAO'
-         CALL OUTPUT(INTAO,1,NTBAS(0),1,NTBAS(0),
-     &                   NTBAS(0),NTBAS(0),-1,LUPRI)
+C         CALL OUTPUT(INTAO,1,NTBAS(0),1,NTBAS(0),
+C     &                   NTBAS(0),NTBAS(0),-1,LUPRI)
 C          CALL OUTPAK(INTAO(1),NTBAS(0),-1,LUPRI) !debug
 C        Endif        !(IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0)
          deallocate(NUMIR)
          deallocate(R)
 C     deallocate(W)
-        ENDIF !    (IBTAND(0,ISTBNU(IATOM)).EQ.0)
+C        ENDIF !    (IBTAND(0,ISTBNU(IATOM)).EQ.0)
 10    CONTINUE   ! IATOM = 1, NUCIND, ISYMOP = 0, MXOPR 
 C      
 C
@@ -938,9 +939,10 @@ C
      &               'should be X/Y/Z')
         ENDIF
       ENDIF 
-      CALL WRTPRO(INTAOTRI,NNBBASX,LABEL,RTNLBL,IPRINT)      
-CCCCCCCCCCC
-C     sunaga
+      CALL WRTPRO(INTAOTRI,NNBBASX,LABEL,RTNLBL,IPRINT)
+C      
+C     debug print
+C      
       NRAD = int(-log10(num_grid_cfg_RADINT))
       write(*,*)"NRAD",NRAD
       write(RADC,'(I2)')NRAD
@@ -952,11 +954,11 @@ C     sunaga
       RADANGC(6:6) = LABEL(1:1)
       write(*,*)RADANGC
       IF(IPRINT.GE.2)THEN      
-      OPEN(30,FILE=RADANGC,STATUS='REPLACE')
-      DO I = 1,NDIM2
-         write(30,*)INTAOTRI(I)
-      ENDDO   
-      write(30,*)'INTAO,RADC,ANGC',RADC,ANGC,LABEL
+        OPEN(30,FILE=RADANGC,STATUS='REPLACE')
+        DO I = 1,NDIM2
+           write(30,*)INTAOTRI(I)
+        ENDDO   
+        write(30,*)'INTAO,RADC,ANGC',RADC,ANGC,LABEL
       CLOSE(30,STATUS='KEEP')
       ENDIF
  5    CONTINUE !IXYZ
@@ -1551,10 +1553,6 @@ C
             CALL DAXPY(NTBAS(0),ANGXYZ(iy),GAO(iy,1),m,BUFGAO(iy,1),m)
           ENDDO
           CALL DSCAL(NTBAS(0)*m,VWRR(IR),BUFGAO(1,1),1)
-C          IBUG = NTBAS(0)*69 + 2
-C          IF(IR.EQ.5)THEN
-C              write(*,*)'TC(ibug),BUF,WT8,iy',BUFGAO(iy,IBUG)
-C          ENDIF   
           DO IC = 1, MC
            CALL DGEMM('T','N',NTBAS(IA(IC)),NTBAS(IB(IC)),m,
      &                 ALPHA(IC),BUFGAO(1,IOFA(IC)),m,GAO(1,IOFB(IC)),
