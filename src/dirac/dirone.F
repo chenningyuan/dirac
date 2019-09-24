@@ -727,14 +727,13 @@ C
 #include "dcbcls.h"
 C      
       LOGICAL ADDSML
-      CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4,MATINF*2 !check
+      CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4,MATINF*2
       CHARACTER RADC*2,ANGC*2,RADANGC*6 
       PARAMETER (D0=0.0D0,D1=1.0D0,D2=2.0D0,DM1=-1.0D0)      
-      real(8), allocatable :: ZAN(:),C(:,:)
       real(8), allocatable :: ANG(:,:),GAO(:,:),GAO2(:,:),BUFGAO(:,:)
       real(8), allocatable :: BUF(:),TC(:), NUMIR(:),R(:)
       real(8), allocatable :: INTAO(:),INTAOTRI(:)
-      DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND)
+C      real(8), allocatable :: ZAN(:),C(:,:)
 
       CALL QENTER('NUMINT')
       write(*,*)"****************"
@@ -748,19 +747,14 @@ C     ZAN... Nuclear charge
 C     C  ... atomic center
 C     ===================
 C      
-      allocate(ZAN(nucdep))
-      allocate(C(3,nucdep))
-      CALL SET_GRID_INFO(NAT,NUM,ZAN,C)
-C
-C     Get information about basis sets
-C
-      CALL NUCBAS(NUCORB,AA,IPRINT)
+C      allocate(ZAN(nucdep))
+C      allocate(C(3,nucdep))
+C      CALL SET_GRID_INFO(NAT,NUM,ZAN,C)
 C     
       INTANG=num_grid_cfg_ANGMIN
       m = NLEB(INTANG)
       NDIM2 = NTBAS(0)*NTBAS(0)
       allocate( ANG      (m,4)    )
-!      allocate( GAO   (NTBAS(0)) )
       allocate( TC       (NDIM2) )
       allocate( INTAO    (NDIM2) )
       allocate( INTAOTRI (NDIM2) )
@@ -775,8 +769,6 @@ C
 !     ENDDO
 C
       write(*,*)'NUCIND,NUCDEP,MAXOPR',NUCIND,NUCDEP,MAXOPR
-C      write(*,*)'ZAN1',ZAN(1)
-C     write(*,*)'ZAN2',ZAN(2)
       write(*,*)'CHARGE(1)',CHARGE(1)
       write(*,*)'CHARGE(2)',CHARGE(2)
       DO II=1,NUCIND
@@ -808,9 +800,9 @@ C       IF (IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN
          IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 10
          NAT = NAT + 1
 C         Z = ZAN(IATOM)
-         C(1,IATOM)= PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
-         C(2,IATOM)= PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
-         C(3,IATOM)= PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM) !change
+C         C(1,IATOM)= PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
+C         C(2,IATOM)= PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
+C         C(3,IATOM)= PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM) !change
          GEXP = GNUEXP(IATOM)
 !         AT3 =  (DBLE(20)-7.5609D-003) **  (1.0D0/3.0D0)
 !         RFM = 0.836D00*AT3+0.570D00
@@ -880,8 +872,8 @@ C
          ENDIF   !num_grid_cfg_grasp
 C     Numerical integration
 C     Here, INTAOTRI is a buffer
-         CALL INTSUM(INTAOTRI,NDIM2,NUMIR,R,MXNP,ANG,m,IXYZ,C(1,IATOM),
-     &                 num_grid_cfg_grasp,MATINF,IPRINT)
+         CALL INTSUM(INTAOTRI,NDIM2,NUMIR,R,MXNP,ANG,m,IXYZ,
+     &                 CORD(1,IATOM),num_grid_cfg_grasp,MATINF,IPRINT)
 C     writing the matrix in output
          IF(IPRINT.GE.2)THEN
            CALL HEADER('Numerical ovelap integral',-1)
@@ -922,7 +914,7 @@ C
 C     Write integrals to file
 C
       IF(IXYZ.EQ.0)THEN
-!     It is important, because LABEL must be 8, while CLSINT(IOP) is 7
+!     This transformation is important, because LABEL must be 8, while CLSINT(IOP) is 7
         LABEL = CLSINT(IOP)
         WRITE(RTNLBL(2)(3:4),'(I2)') 1
       ELSE   
@@ -962,8 +954,8 @@ C
       CLOSE(30,STATUS='KEEP')
       ENDIF
  5    CONTINUE !IXYZ
-      deallocate(ZAN)
-      deallocate(C)
+C      deallocate(ZAN)
+C      deallocate(C)
       deallocate(ANG)
       deallocate(INTAO)
       deallocate(INTAOTRI)
@@ -1162,8 +1154,8 @@ C
          ENDIF   !num_grid_cfg_grasp
 C     Numerical integration
 C     Here, INTAOTRI is a buffer
-         CALL INTSUM(INTAOTRI,NDIM2,NUMIR,R,MXNP,ANG,m,IXYZ,C(1,IATOM),
-     &                 num_grid_cfg_grasp,MATINF,IPRINT)
+         CALL INTSUM(INTAOTRI,NDIM2,NUMIR,R,MXNP,ANG,m,IXYZ,
+     &               CORD(1,IATOM),num_grid_cfg_grasp,MATINF,IPRINT)
 C     writing the matrix in output
          IF(IPRINT.GE.2)THEN
            CALL HEADER('Numerical ovelap integral',-1)
@@ -1284,44 +1276,47 @@ C      GEXP = GNUEXP(IATOM)
          NUCTYP = 0
       ENDIF   
 C
-      write(*,*)
-      write(*,*)CLSINT(IOP)
       IF(CLSINT(IOP).EQ.'SEFGMG')THEN
         CALL INTMG(NUMIR,R,Z,GEXP,MXNP,NUCTYP)
         DO IR = 1,MXNP
-          write(*,*)'NUMIR,R',NUMIR(IR),R(IR) !debug 
+C          write(*,*)'NUMIR,R',NUMIR(IR),R(IR) !debug 
          NUMIR(IR) = NUMIR(IR) * R(IR) * R(IR) 
         ENDDO
       ELSEIF(CLSINT(IOP).EQ.'UEHLING')THEN
         CALL VCMPOL(NUMIR,R,Z,GEXP,MXNP,NNUC,NUCTYP,1)
         DO IR = 1,MXNP
-          write(*,*)'NUMIR/R,R',NUMIR(IR)/R(IR),R(IR) !debug
+C          write(*,*)'NUMIR/R,R',NUMIR(IR)/R(IR),R(IR) !debug
           NUMIR(IR) = NUMIR(IR) * R(IR)
         ENDDO
       ELSEIF(CLSINT(IOP).EQ.'SEFGHF')THEN
         CALL INTHF (NUMIR,R,Z,GEXP,MXNP,NUCTYP)
         DO IR = 1,MXNP
-          write(*,*)'NUMIR,R',NUMIR(IR),R(IR) !debug
+C          write(*,*)'NUMIR,R',NUMIR(IR),R(IR) !debug
           NUMIR(IR) = NUMIR(IR) * R(IR) * R(IR) 
         ENDDO
       ELSEIF(CLSINT(IOP).EQ.'SEFGLF')THEN
         CALL INTLF (NUMIR,R,Z,MXNP             )
         DO IR = 1,MXNP
-          write(*,*)'NUMIR,R',NUMIR(IR),R(IR) !debug
+C          write(*,*)'NUMIR,R',NUMIR(IR),R(IR) !debug
           NUMIR(IR) = NUMIR(IR) * R(IR) * R(IR) 
         ENDDO
       ELSEIF(CLSINT(IOP).EQ.'SEPZ'  )THEN
         CALL INTPZ (NUMIR,R,Z,MXNP             )
         DO IR = 1,MXNP
-          write(*,*)'NUMIR,R',NUMIR(IR),R(IR) !debug
+C          write(*,*)'NUMIR,R',NUMIR(IR),R(IR) !debug
           NUMIR(IR) = NUMIR(IR) * R(IR) * R(IR) 
         ENDDO
       ENDIF
-C
-C      IF(CLSINT(IOP).EQ.UEHLING)THEN 
-C      ELSE 
-C      ENDIF 
-C       
+C      IF(IPRINT.GE.2)THEN
+        WRITE(LUPRI,'(2X,/A)')
+     &        '**Numerical potential*R^2 at each radial grid'
+        write(*,*)
+        write(*,*)CLSINT(IOP)
+        write(*,*)'NUMIR,R'
+        DO IR = 1,MXNP
+          write(*,*)NUMIR(IR),R(IR)
+        ENDDO
+C      ENDIF                   !debug
       RETURN
       END
       
