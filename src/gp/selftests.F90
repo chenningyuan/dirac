@@ -99,12 +99,23 @@
  !Miro: df_MPI_STATUS_SIZE is defined somwhere in interface_to_mpi ?
       INTEGER :: ISTAT(df_MPI_STATUS_SIZE)
       integer :: big_int, big_int_recv, big_int_arr(3), big_int_recv_arr(3)
+      integer :: my_MPI_master=0
+      integer :: my_MPI_slave=1
+      integer :: my_MPI_rank, num_MPI_proc
 
       big_int=huge(i) ! the biggest signed integer*4/8 number, 2^31-1 or 2^63-1, resp.
       big_int_arr=big_int
       big_int_recv=0
       big_int_recv_arr=0
-!
+
+!     check number of MPI processes
+      CALL interface_mpi_comm_size(global_communicator,num_MPI_proc)
+!     if num_MPI_proc=1 only MASTER else we have SLAVES
+
+!     get rank of processor
+      CALL interface_mpi_comm_rank(global_communicator,my_MPI_rank)
+
+      if (my_MPI_rank.eq.my_MPI_master) then
 !     send dummy message (from MASTER to MASTER...)
 !
       CALL interface_MPI_ISEND(MYTID,1,0,25,global_communicator,IREQ)
@@ -150,22 +161,35 @@
         print *,'selftest_mpi: big_int, big_int_recv=',big_int, big_int_recv
         call quit('selftest_mpi:  probles with your MPI-integer setting ! ')
       endif
-
+      
+      endif
 !  .. Miro: check array integer*4/8 variable MPI sending and receiving
-      CALL interface_MPI_SEND(big_int_arr,3,0,26,global_communicator)
-      CALL interface_MPI_PROBE(df_MPI_ANY_SOURCE,df_MPI_ANY_TAG, global_communicator,ISTAT)
-      CALL interface_MPI_RECV(big_int_recv_arr,3,0,df_MPI_ANY_TAG,global_communicator)
+!     only if we have a master and at least one slave 
 
-      if (  big_int_arr(1).ne.big_int_recv_arr(1).and.  &
-            big_int_arr(2).ne.big_int_recv_arr(2).and.  &
-            big_int_arr(3).ne.big_int_recv_arr(3))         then
-        print *,'selftest_mpi:    big_int_arr  =',big_int_arr
-        print *,'selftest_mpi: big_int_recv_arr=',big_int_recv_arr
-        call quit('selftest_mpi:  problems with your MPI-integer array setting ! ')
+      if (num_MPI_proc.gt.1) then
+        if (my_MPI_rank.eq.my_MPI_master) then
+          !only master sending
+          CALL interface_MPI_SEND(big_int_arr,3,my_MPI_slave,26,global_communicator)
+        endif
+        if (my_MPI_rank.eq.my_MPI_slave) then
+          !only slave receiving
+          !CALL interface_MPI_PROBE(df_MPI_ANY_SOURCE,df_MPI_ANY_TAG, global_communicator,ISTAT)
+          CALL interface_MPI_RECV(big_int_recv_arr,3,my_MPI_master,df_MPI_ANY_TAG,global_communicator)
+          if (big_int_arr(1).ne.big_int_recv_arr(1).or.  &
+              big_int_arr(2).ne.big_int_recv_arr(2).or.  &
+              big_int_arr(3).ne.big_int_recv_arr(3)) then
+            print *,'selftest_mpi:    big_int_arr  =',big_int_arr
+            print *,'selftest_mpi: big_int_recv_arr=',big_int_recv_arr
+            call quit('selftest_mpi:  problems with your MPI-integer array setting ! ')
+          endif
+        endif
       endif
 
+      if (my_MPI_rank.eq.my_MPI_master) then
       ! Finally, flush out the "all OK" message
       write(*,'(1X,A,I1,A)') 'MPI selftest passed with MPI_INTEGER of the size ',get_integer_model_in_mpi(),' bytes'
+      endif
+
       END 
 #endif
     
