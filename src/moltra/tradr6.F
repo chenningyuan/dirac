@@ -155,7 +155,12 @@ C
 C
 C     Initialize MOLFDIR integral file
 C
-      CALL MDINTI(IPRINT)
+      IF (NOMDCINT) THEN
+         CALL QUIT('ERROR:'//
+     &   ' .NOMDCINT not valid for strategy 6 integral transformation')
+      END IF
+      CALL MDINTI(NSTR,IPRINT)
+
 C
 C     Make index arrays to translate pair index to individual indices
 C

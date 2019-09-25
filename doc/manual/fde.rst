@@ -204,7 +204,7 @@ Other contributions to the property gradient can be included or excluded by usin
 keyword(LDPT)
 
 This keyword turns on the term dependent on the embedding potential (:math:`v_{emb}^I`) only.
-Calculations with the :ref:`LDPT` keyword are less demanding than calculations with the :ref:`LAO11` keyword,
+Calculations with the :ref:`FDE_.LDPT` keyword are less demanding than calculations with the :ref:`FDE_.LAO11` keyword,
 but may lead to inaccurate results, especially for heavy elements.
 
 
@@ -252,25 +252,25 @@ the coupled embedding kernel (:math:`w_{emb}^{I,II}`).
 This option includes both, the term dependent on the non-additive part of the coupled embedding kernel and
 the Coulomb term.
 Each of these terms can be turned on by separate keywords (below).
-If this keyword is employed, it is also necessary to import perturbed densities using the :ref:`PERTIM` keyword.
+If this keyword is employed, it is also necessary to import perturbed densities using the :ref:`FDE_.PERTIM` keyword.
 
 
 keyword(LAOFRZ)
 
 This keyword corresponds to the term dependent on the non-additive part of embedding kernel involving the coupling between 
 two subsystems (:math:`w_{emb}^{I,II}`). In order to calculate this term, it is necessary also to use 
-the keyword :ref:`PERTIM`. 
+the keyword :ref:`FDE_.PERTIM`. 
 
 
 keyword(LFCOUL)
 
 This keyword corresponds to the term dependent on the Coulomb part of embedding kernel involving the coupling between 
 two subsystems (:math:`w_{emb}^{I,II}`). In order to calculate this term, it is necessary also to use 
-the keyword :ref:`PERTIM`. 
+the keyword :ref:`FDE_.PERTIM`. 
 
 keyword(PERTIM)
 
-This keyword should be used whenever :ref:`LAOFRZ` keyword is present. It commands the program to read the contributions
+This keyword should be used whenever :ref:`FDE_.LAOFRZ` keyword is present. It commands the program to read the contributions
 ("direct" LAO contribution and "reorthonormalization" contribution) to the perturbed density in LAO basis from files.
 
 *Default:*

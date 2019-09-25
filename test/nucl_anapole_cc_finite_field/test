@@ -18,8 +18,15 @@ f = [
 options = cli()
 
 ierr = 0
-for inp in ['MgF.dc_rkb.scf_relcc_Wa-zalpha.1e-4.inp']:
-    for mol in ['MgF.sto-2g.C2v.mol']:
+for inp in ['MgF.dc_rkb.scf_relcc_Wa-xalpha.1e-6.inp']:
+    for mol in ['MgF.sto-2g.Cs_y.mol']:
+        ierr += run(options,
+                    configure,
+                    input_files=[inp, mol],
+                    filters={'out': f})
+
+for inp in ['MgOH.dc_rkb.scf_relcc_Wa-xalpha.-1e-6.inp']:
+    for mol in ['MgOH.sto-2g.Cs_y.mol']:
         ierr += run(options,
                     configure,
                     input_files=[inp, mol],

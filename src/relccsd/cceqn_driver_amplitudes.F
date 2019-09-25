@@ -82,7 +82,6 @@ C
       NIT = 0
 
       do
-
       NIT = NIT + 1
       IF (NIT.GT.MAXIT) THEN
          maxit = maxit + 1
@@ -186,6 +185,8 @@ C
       IF (NOCCD) CALL XCOPY (NDIMT2,A0,0,T2,1)
 C
       CALL ZCORE (T1,T2)
+      !mlv
+      CALL FCORE(T1,T2,EPS)
 C
 C  EXTRAPOLATE THE AMPLITUDES
 C

@@ -154,6 +154,10 @@ foreach(
 
 endforeach()
 
+#printout of all linked libraries to dirac.x executable
+get_target_property(OUT dirac.x  LINK_LIBRARIES)
+message(STATUS "For checking, linked libraries to dirac.x: ${OUT} ")
+
 # radovan: no! we cannot unset
 #          these are used in the make install target
 # unset(_list_of_executables)
