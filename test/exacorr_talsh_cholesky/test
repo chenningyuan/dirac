@@ -18,13 +18,13 @@ f2.add(from_string = 'Energy of reference wave function (HF single determinant)'
       rel_tolerance   = 5.0e-9)
 f2.add(from_string = 'Norm of OO part Fock matrix ',
       num_lines   = 1,
-      abs_tolerance   = 5.0e-5)
+      abs_tolerance   = 1.0e-4)
 f2.add(from_string = 'Norm of OV part Fock matrix ',
       num_lines   = 1,
-      abs_tolerance   = 5.0e-5)
+      abs_tolerance   = 1.0e-3)
 f2.add(from_string = 'Norm of VV part Fock matrix ',
       num_lines   = 1,
-      abs_tolerance   = 5.0e-2)
+      abs_tolerance   = 1.0e-2)
 
 os.system('ulimit -s unlimited')
 
