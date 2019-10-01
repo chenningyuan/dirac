@@ -809,6 +809,11 @@ C         C(3,IATOM)= PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM) !change
 !         PARM1 = RFM*1.88972598858D-5
 !         GEXP = 1.5D0/(PARM1*PARM1)
          NDEG = MULT(ISTBNU(IATOM))
+         DO II2=1,2
+          DO III=1,3
+             write(*,*)'ISYMAX(I,J),I,J',ISYMAX(III,II2),III,II2
+          ENDDO
+         ENDDO 
          write(*,*)'NDEG,IATOM,ISYMOP',NDEG,IATOM,ISYMOP
 C         
 C   SET DEFAULT VALUES OF PARAMETERS FOR CALCULATION
@@ -1466,7 +1471,6 @@ C
       nr_points_on_this_proc=MXNP*m
 C
       write(*,*)'nr_points_on_this_proc,m',nr_points_on_this_proc,m
-      write(*,*)'nr_shells',nr_shells
       write(*,*)'max_block_length',max_block_length
       write(*,*)'NTBAS(1)',NTBAS(1)
       IF(GRASP)THEN
@@ -1589,6 +1593,7 @@ C
           CALL DZERO(BUFGAO,m*NTBAS(0))
 C
           call dirac_ao_eval_init(0,0,.FALSE.) 
+          write(*,*)'nr_shells',nr_shells
 C
 C    GET AO's
 C
