@@ -24,9 +24,9 @@
 ! called at the beginning of dirac.x run by main.F90
 !
 ! Tests involve:
-!  
+!
 ! - Integer typecasting in lapack
-! - MPI compatibility 
+! - MPI compatibility
 ! - Fortran - C/C++ data interoperability
 !
 ! Written by : Ulf Eckstrom, Stefan Knecht,  Radovan Bast, Miro Ilias
@@ -60,8 +60,8 @@
       liwork_4 = -1
       mone_4 = -1
       mone2_4 = -1
-      CALL DSYEVR('V','A','U',N_4,A,N2_4,DDUM,DDUM2,IDUM_4,        & 
-          IDUM2_4,0.0D0, IDUM3_4,EIG,VEC,N3_4,IDUM4_4,WORKDUM,     & 
+      CALL DSYEVR('V','A','U',N_4,A,N2_4,DDUM,DDUM2,IDUM_4,        &
+          IDUM2_4,0.0D0, IDUM3_4,EIG,VEC,N3_4,IDUM4_4,WORKDUM,     &
           mone_4,liwork_4,mone2_4,INFO_4)
       if (info_4.eq.0.and.liwork_4.gt.0) then
          print *,'WARNING: Self test failed!'
@@ -130,12 +130,12 @@
          print *,' your particular MPI library version.'
          print *,' '
 #ifdef INT_STAR8
-         print *,' DIRAC is configured to use integer*8 ' & 
+         print *,' DIRAC is configured to use integer*8 ' &
               //'(64 bit integers).'
          print *,' You need to link a MPI library that is compiled'
          print *,' using integer*8, make sure that this is the case.'
 #else
-         print *,' DIRAC is configured to use integer*4 '   & 
+         print *,' DIRAC is configured to use integer*4 '   &
               //' (32 bit integers).'
          print *,' You need to link a MPI library that is compiled'
          print *,' using integer*4, make sure that this is the case.'
@@ -161,10 +161,10 @@
         print *,'selftest_mpi: big_int, big_int_recv=',big_int, big_int_recv
         call quit('selftest_mpi:  probles with your MPI-integer setting ! ')
       endif
-      
+
       endif
 !  .. Miro: check array integer*4/8 variable MPI sending and receiving
-!     only if we have a master and at least one slave 
+!     only if we have a master and at least one slave
 
       if (num_MPI_proc.gt.1) then
         if (my_MPI_rank.eq.my_MPI_master) then
@@ -190,9 +190,9 @@
       write(*,'(1X,A,I1,A)') 'MPI selftest passed with MPI_INTEGER of the size ',get_integer_model_in_mpi(),' bytes'
       endif
 
-      END 
+      END
 #endif
-    
+
 subroutine selftest_fortran_c_cxx_interoperability()
 !------------------------------------------------------------------------------------
 !
@@ -200,16 +200,16 @@ subroutine selftest_fortran_c_cxx_interoperability()
 !
 ! The Fortran-to-C/C++ interfacing is based solely upon the ISO_C_BINDING scheme.
 !
-! For the ISO_C_BINDING description, see  for example:  
+! For the ISO_C_BINDING description, see  for example:
 !         https://stackoverflow.com/tags/fortran-iso-c-binding/info
 !         https://www-n.oca.eu/pichon/inter_C.pdf
 !
-! Passing Fortran Integer*4/Integer*8 data to equivalent ISO_C_BINDING 
+! Passing Fortran Integer*4/Integer*8 data to equivalent ISO_C_BINDING
 ! c_int/c_long integer data types must be carried out as the ISO_C_BINDING
 ! integer data types have constant length.
 !
-! Developers can add more data types (incuding derived) for passing checks, 
-! depending on how heavily they employ C/C++ routines 
+! Developers can add more data types (incuding derived) for passing checks,
+! depending on how heavily they employ C/C++ routines
 ! called from inside DIRAC Fortran sources.
 !
 ! Written by Miro Ilias, Nov. 2015 after consulting with Roberto, Radovan, Ulf
@@ -234,10 +234,10 @@ subroutine selftest_fortran_c_cxx_interoperability()
   integer(kind=8) :: big_i8_integer=+9223372036854775807_8 ! the biggest signed integer*8 number, 2^63-1
 
   interface
-     subroutine selftest_fortran_c_interoperability(arr_size, int_c_int, int_c_long, int_c_long_array_ptr, & 
-                            real_c_double, real_c_double_array_ptr,string_c_char_c_ptr, string_len, & 
+     subroutine selftest_fortran_c_interoperability(arr_size, int_c_int, int_c_long, int_c_long_array_ptr, &
+                            real_c_double, real_c_double_array_ptr,string_c_char_c_ptr, string_len, &
                                         int_c_long_ptr, real_c_double_ptr) bind(c)
-       use iso_c_binding 
+       use iso_c_binding
        type(c_ptr),value :: string_c_char_c_ptr
        integer(c_int)    :: int_c_int, arr_size, string_len   ! always 4-bytes
        integer(c_long)   :: int_c_long  ! always 8-bytes
@@ -250,7 +250,7 @@ subroutine selftest_fortran_c_cxx_interoperability()
 
 ! assign numbers you are sending to C/C++ routine and bringing them back
 !
-  real_c_double=-1.797693D+308 
+  real_c_double=-1.797693D+308
   real_c_double_saved=real_c_double
 
 ! It's programmer's responsibility to ensure proper Fortran-to-C/C++ integer passing
@@ -296,16 +296,16 @@ subroutine selftest_fortran_c_cxx_interoperability()
   int_c_long_ptr = c_loc(int_c_long_target)
   real_c_double_ptr = c_loc(real_c_double)
 
-  call selftest_fortran_c_interoperability(arr_size, int_c_int, int_c_long, c_loc(int_c_long_array), & 
+  call selftest_fortran_c_interoperability(arr_size, int_c_int, int_c_long, c_loc(int_c_long_array), &
   real_c_double, c_loc(real_c_double_array), c_loc(string_c_char(1:1)), string_len, int_c_long_ptr,real_c_double_ptr)
 
 
   ! verify that data are intact after returning from C routine
-  verify_int_long_double = (int_c_int==int_c_int_saved) .and. (int_c_long==int_c_long_saved) .and. & 
+  verify_int_long_double = (int_c_int==int_c_int_saved) .and. (int_c_long==int_c_long_saved) .and. &
                             ( real_c_double==real_c_double_saved ) .and. verify_sizeofs
   verify_arrays=.true.
   do i=1,arr_size
-     if (.not.(real_c_double_array_saved(i)==real_c_double_array(i) .and. & 
+     if (.not.(real_c_double_array_saved(i)==real_c_double_array(i) .and. &
                int_c_long_array_saved(i)==int_c_long_array(i))) verify_arrays=.false.
   enddo
   verify_chars=.true.
@@ -313,7 +313,7 @@ subroutine selftest_fortran_c_cxx_interoperability()
       if (.not.(string_c_char(i:i) == string_c_char_saved(i:i) )) verify_chars=.false.
   enddo
 
-  if (.not.(verify_int_long_double .and. verify_arrays .and. verify_chars)) then 
+  if (.not.(verify_int_long_double .and. verify_arrays .and. verify_chars)) then
      print *,"int_c_int,int_c_int_saved:",int_c_int,int_c_int_saved
      print *,"int_c_long,int_c_long_saved:",int_c_long,int_c_long_saved
      print *,"real_c_double,real_c_double_saved:",real_c_double,real_c_double_saved
