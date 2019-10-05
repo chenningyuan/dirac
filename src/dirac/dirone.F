@@ -769,8 +769,7 @@ C
 !     ENDDO
 C
       write(*,*)'NUCIND,NUCDEP,MAXOPR',NUCIND,NUCDEP,MAXOPR
-      write(*,*)'CHARGE(1)',CHARGE(1)
-      write(*,*)'CHARGE(2)',CHARGE(2)
+      write(*,*)'test,test3'
       DO II=1,NUCIND
          write(*,*)'CHARGE=,II',CHARGE(II),II
       ENDDO
@@ -791,10 +790,10 @@ C         IXYZ = 4-IMXYZ
       CALL DZERO(INTAOTRI,NDIM2)
       NAT = 0
       DO 10 IATOM = 1, NUCIND !change
-C      DO 10 ISYMOP = 0, MAXOPR ! needed for h2se2
+      DO 10 ISYMOP = 0, MAXOPR ! needed for h2se2
 !ayaki  What is this roop? MXOPR=0 in dftgrd.F
 C       IF (IBTAND(0,ISTBNU(IATOM)).EQ.0) THEN 
-C       IF (IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN 
+       IF (IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN 
 !ayaki   IBTAND=IAND, but I am not sure what is it.     
          IF(NOORBT(IATOM)) GOTO 10 
          IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 10
@@ -885,11 +884,11 @@ C     writing the matrix in output
            CALL OUTPUT(INTAOTRI,1,NTBAS(0),1,NTBAS(0),
      &                   NTBAS(0),NTBAS(0),-1,LUPRI)
          ENDIF !debug   
-         IF(NDEG.GT.0) THEN
+!         IF(NDEG.GT.0) THEN
 C       Scale weights with multiplicity of center
-           FAC = dble(NDEG) 
-           CALL DSCAL(NDIM2,FAC,INTAOTRI,1)
-         ENDIF
+!           FAC = dble(NDEG) 
+!           CALL DSCAL(NDIM2,FAC,INTAOTRI,1)
+!         ENDIF
 C     Here, INTAOTRI is a buffer
          CALL DAXPY(NDIM2,D1,INTAOTRI,1,INTAO,1)
          CALL DZERO(INTAOTRI,NDIM2)
@@ -901,7 +900,7 @@ C        Endif        !(IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0)
          deallocate(NUMIR)
          deallocate(R)
 C     deallocate(W)
-C        ENDIF !    (IBTAND(0,ISTBNU(IATOM)).EQ.0)
+        ENDIF !    (IBTAND(0,ISTBNU(IATOM)).EQ.0)
 10    CONTINUE   ! IATOM = 1, NUCIND, ISYMOP = 0, MXOPR 
 C      
 C
@@ -1314,13 +1313,23 @@ C          write(*,*)'NUMIR,R',NUMIR(IR),R(IR) !debug
       ENDIF
 C      IF(IPRINT.GE.2)THEN
         WRITE(LUPRI,'(2X,/A)')
-     &        '**Numerical potential*R^2 at each radial grid'
+     &        '**Numerical potential (not operator) at each radial grid'
         write(*,*)
         write(*,*)CLSINT(IOP)
         write(*,*)'NUMIR,R'
         DO IR = 1,MXNP
-          write(*,*)NUMIR(IR),R(IR)
+          write(*,*)R(IR),-NUMIR(IR)/(R(IR)*R(IR))
         ENDDO
+C      ENDIF                   !debug
+C      IF(IPRINT.GE.2)THEN
+C        WRITE(LUPRI,'(2X,/A)')
+C     &        '**Numerical potential*R^2 at each radial grid'
+C        write(*,*)
+C        write(*,*)CLSINT(IOP)
+C        write(*,*)'NUMIR,R'
+C        DO IR = 1,MXNP
+C          write(*,*)NUMIR(IR),R(IR)
+C        ENDDO
 C      ENDIF                   !debug
       RETURN
       END
@@ -1390,7 +1399,7 @@ C
       PARAMETER (D0=0.0D0,D1=1.0D0,DM1=-1.0D0,D2=2.0D0)      
       REAL*8    ALPHA(2)
       INTEGER*8 IA(2), IB(2), ITC(2), IOFA(2), IOFB(2)
-      real(8), allocatable :: GAO(:,:),GAO2(:,:),BUFGAO(:,:)
+      real(8), allocatable :: GAO(:,:),GAO2(:,:),GAOAGMX(:),BUFGAO(:,:)
       real(8), allocatable :: TC(:),TD(:,:),INTAOBUF(:)  
       real(8), allocatable :: X8(:),Y8(:),Z8(:),ANGXYZ(:),XYZ8(:,:)
       real(8), allocatable :: px(:),py(:),pz(:),p2(:)
@@ -1492,6 +1501,7 @@ C
           DO m_NUM = 1, m_NUM_MAX
 C                 
 C     In the case of m>100, a speciAL treatment is needed.
+C     m is the number of angular grid             
 C
             nblock_length = min(max_block_length, m - IOF_block+ 1)
             nblock_length = min(nblock_length, m)
@@ -1563,16 +1573,6 @@ C             IR = IR + 1
           deallocate(GAO)
           deallocate(BUFGAO)
         end do                ! IR
-C          write(*,*)'IBUG',IBUG
-C          DO IR=1,MXNP
-C             write(*,*)'TD,R,IR',TD(IBUG,IR),R(IR),IR
-C          ENDDO   
-C          write(*,*)
-C          write(*,*)'IBUG+1',IBUG+2
-C          DO IR=1,MXNP
-C             write(*,*)'TD,R,IR',TD(IBUG+2,IR),R(IR),IR
-C          ENDDO   
-C         write(*,*)'INTAO,IBUG+2',INTAO(IBUG+2*NTBAS(0)),IBUG+2*NTBAS(0)         
           CALL QUAD2(INTAOBUF,TD,MXNP,NDIM2)
           write(*,*)
           write(*,*)'forTD'
@@ -1580,20 +1580,20 @@ C        CALL OUTPUT(INTAOBUF,1,NTBAS(0),1,NTBAS(0),
 C     &                  NTBAS(0),NTBAS(0),-1,LUPRI)
         deallocate(TD)
       ELSE  !DIRAC grid from here
-        do IR = 1, MXNP
+        do IR = MXNP, 1, -1  !change
           CALL DZERO(TC,      NDIM2)
           IOF_block = 1
 C                 
 C     In the case of m>100, a speciAL treatment is needed.
 C
-          m_NUM_MAX = INT(m/100) + 1              
-          allocate( GAO   (m, NTBAS(0)) )  !change
-          allocate( BUFGAO(m, NTBAS(0)) )
+          m_NUM_MAX = INT(m/100) + 1               
+          allocate( GAO    (m, NTBAS(0)) )  !change
+          allocate( BUFGAO (m, NTBAS(0)) )
           CALL DZERO(GAO, m*NTBAS(0))
           CALL DZERO(BUFGAO,m*NTBAS(0))
 C
           call dirac_ao_eval_init(0,0,.FALSE.) 
-          write(*,*)'nr_shells',nr_shells
+C          write(*,*)'nr_shells',nr_shells
 C
 C    GET AO's
 C
@@ -1626,11 +1626,7 @@ C               write(*,*)'cartesian_deg', cartesian_deg(ishell)
      &                * center_xyz(shell_center(ishell), 2)
                  sz = bitstring_parity(iand(irep_of_axes(3), isym))
      &                * center_xyz(shell_center(ishell), 3)
-C                 write(*,*)'ishell,isym',ishell,isym
-C                 write(*,*)"sx,sy,sz",sx,sy,sz
-
-!             write(*,*)'ipoint,IOFM,ipoint+IOFM',ipoint,IOFM,ipoint+IOFM
-C                 write(*,*)'R,IR',R(IR),IR
+C
                  do k = 1, nblock_length
                     px(k) = X8(k) - sx
                     py(k) = Y8(k) - sy
@@ -1655,31 +1651,50 @@ C                    write(*,*)'px,k',px(k),k
                 end if
               end do  ! isym
             end do               ! ishell
+C     Copy a set of 100 AO (GAO2) to total AO array (GAO)
+            
             DO J = 1, NTBAS(0)
               CALL DCOPY(nblock_length,GAO2(1,J),1,GAO(IOFM,J),1)
             ENDDO
             IOFM = IOFM + nblock_length
             IOF_block = IOF_block + nblock_length
             deallocate(GAO2)
-          ENDDO                 ! m_NUM          
-C          
+          ENDDO                  ! m_NUM
+CCCCCCCCC
+C test
+cCCCCCCCC
+!          IF(IR.EQ.MXNP)THEN
+!             write(*,*)'It is MXNP!'
+!          ENDIF  !Next, making roop for this again
+!          allocate( GAOAGMX(   NTBAS(0)) )
+!          CALL DZERO(GAOAGMX,NTBAS(0))
+!          write(*,*)'GAOANGMAX'
+!          DO J = 1, NTBAS(0)
+!          DO IM = 1,m
+!             GAOAGMX(J)=MAX(GAOAGMX(J),ABS(GAO(IM,J)))
+!          ENDDO
+!          write(*,*)J,GAOAGMX(J)
+!          ENDDO
+!          deallocate(GAOAGMX)   !Next change for using again
+CCCCCCCCC
+C test
+cCCCCCCCC          
+C     Multiplying the factor for angular part ANGXYZ. BUFGAO = ANGXYZ*GAO
           DO  iy = 1, m
             CALL DAXPY(NTBAS(0),ANGXYZ(iy),GAO(iy,1),m,BUFGAO(iy,1),m)
-C               write(*,*)'ANG(iy,4),iy',ANG(iy,4),iy
           ENDDO
           DO IC = 1, MC
            CALL DGEMM('T','N',NTBAS(IA(IC)),NTBAS(IB(IC)),m,
      &                 ALPHA(IC),BUFGAO(1,IOFA(IC)),m,GAO(1,IOFB(IC)),
      &                 m,D0,TC(ITC(IC)),NTBAS(0))
-          ENDDO           
+          ENDDO
+C sum  weight*r^2*V(r)*Basis^2        
           CALL DAXPY(NDIM2,VWRR(IR),TC,1,INTAOBUF,1)
 C             write(*,*)'VWRR,IR',VWRR(IR),IR
           deallocate(GAO)
           deallocate(BUFGAO)
         end do                ! IR
       ENDIF                     ! GRASP or DIRAC
-C
-C            write(*,*)'OUTPUT1'      
 C            CALL OUTPUT(INTAOBUF,1,NTBAS(0),1,NTBAS(0),
 C     &                  NTBAS(0),NTBAS(0),-1,LUPRI)    ! debug
 C
@@ -1821,7 +1836,7 @@ C     point charge
 C
 C     ii) Deciding some values for numerical integral
 C
-C     On iuput: 
+C     On iuput: Z...Nuclear charge of the atom
 C      
 C      
 C     On output: GRDC - Grid for numerical integral
@@ -1865,7 +1880,7 @@ C     SET UP POTENTIAL FOR POINT NUCLEUS
 C
         H     = 1.0D-2
         EPH   = EXP(H)
-        RNT   = 1.0D-06/Z           !CHARGE(IATOM)
+        RNT   = 1.0D-06/Z       
         RTEMP = RNT
         DO 1 I = 1,N
            X = PREFAC*EXP(-Z*RTEMP)
@@ -1884,7 +1899,7 @@ c$$$              MXNP = I
 c$$$              IF(MOD(MXNP,2).eq.0)THEN
 c$$$                 MXNP = MXNP + 1
 c$$$!     sunaga
-c$$$!     As far as I check GRASP, the number of grid (MXNP) must be odd number.
+c$$$!     As far as I check GRASP, the number of grid (MXNP) must be odd number,
 c$$$!     for the integral of Vacuum polarization using Ne and Hg atoms.         
 c$$$!     If it is even number, the value of QUAD
 c$$$!     does not agree with the one of GRASP (Maximu error in each grid is 10e-5). 
@@ -1896,8 +1911,7 @@ C           ENDIF
 C
 C     Get information about basis sets
 C
-C        CALL NUCBAS(NUCORB,AA,IPRINT)
-        CALL NUCBAS(NUCORB,AA,2)
+        CALL NUCBAS(NUCORB,AA,IPRINT)
         ADDSML = num_grid_cfg_force_4c_grid.OR.
      &              (MC.GT.1.AND.(.NOT.LEVYLE))
         RADDER = num_grid_cfg_RADINT
@@ -1933,6 +1947,8 @@ C           write(*,*)'X,Z,I',X,Z,I
 !     IF(VPTST2-VPTST1.GT.THSHD)THEN
               TEMP = FACTOR*FUNK (X,1)              
               MUEHLING = J
+              MXNP = J  !delete   
+              CALL HEADER('It is r_max in UEHLING!',-1) !delete
               exit
            ENDIF   
            RTEMP = (RTEMP+GRDC)*EPH-GRDC
