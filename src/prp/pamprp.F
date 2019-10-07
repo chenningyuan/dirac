@@ -5173,7 +5173,7 @@ C  /* Deck DEF_NSTDIA */
       SUBROUTINE DEF_NSTDIA(PNAME,PLABEL,PFAC,IPRINT)
 C***********************************************************************
 C
-C     Define diamagnetic contribution to shieldings
+C     Define diamagnetic contribution to nuclear shielding tensor (NST)
 C     (based on the Sternheimer approximation, see
 C      Aucar et al., JCP 110 (1999) 6208) )
 !
