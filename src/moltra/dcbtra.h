@@ -4,12 +4,14 @@
 !
 !     Length of common block : keep up to date !!
       LOGICAL TRA_ANTIS,TRA_MSOUT,NOPAIR,NO2IND,NO4IND,PRPTRA,RCORBS
-      LOGICAL FKRMC, NOMDCINT, MDCSCAT, TRA_ASCII, PRPSYA
+      LOGICAL FKRMC, MDCSCAT, TRA_ASCII, PRPSYA
+      LOGICAL NOMDCINT, NOMDCINT_TRAINP
 !     aspg, 20090424, for fine-sort of 1HT
       logical do_finesort,set_auto_finesort
 !
       CHARACTER*72 TRA_INDSTR,TRA2_INDSTR,TRA4_INDSTR,TRA_CORSTR,       &
      &             TRA2_INDPRP
+      CHARACTER*7  MOFILE_TRAINP
 
 ! vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !     NDCBTRI, NDCBTRR, NDCBTRL are *4 lengths of the three
@@ -22,7 +24,7 @@
 ! ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
       COMMON/DCBTC/TRA_INDSTR(2),TRA2_INDSTR(2,2),TRA4_INDSTR(4,2),     &
-     &             TRA_CORSTR(2), TRA2_INDPRP(2)
+     &             TRA_CORSTR(2), TRA2_INDPRP(2), MOFILE_TRAINP
 
       INTEGER IPRTRA,ISTRAT,ITRA_INTFLG,ITRA_INTFL2,ITRA_INTFL4,        &
      &              NQQCLASS,ISAME,ICLARR,                              &
@@ -35,7 +37,8 @@
 
       COMMON/DCBTRL/TRA_ANTIS,TRA_MSOUT,NOPAIR,NO2IND,NO4IND,PRPTRA,    &
      &              RCORBS,FKRMC,NOMDCINT,MDCSCAT,TRA_ASCII,            &
-     &              do_finesort,set_auto_finesort, PRPSYA
+     &              do_finesort,set_auto_finesort, PRPSYA,              &
+     &              NOMDCINT_TRAINP
 
       REAL*8 THROUT,SCRTRA,RINVICLARR
       COMMON/DCBTRR/THROUT,SCRTRA,RINVICLARR(4,4,16)

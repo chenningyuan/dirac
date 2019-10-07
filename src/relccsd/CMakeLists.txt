@@ -49,6 +49,7 @@ set(FREE_RELCCSD_FORTRAN_SOURCES
    davidson/davidson.F90
    trial_vectors_eom.F90
    density.F90
+   projectors.F90
    eom_driver.F90 
    # needs dependency
    ${PROJECT_SOURCE_DIR}/src/main/mpi_framework.F90

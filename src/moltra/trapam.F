@@ -71,6 +71,18 @@ C
 C
       CALL GETTIM(CPU1,WALL1)
       CALL TRAHI(IPRTRA,3)
+
+C     Define NOMDCINT from **MOLTRA input
+
+      NOMDCINT = NOMDCINT_TRAINP
+      ISTRAT_save = ISTRAT
+      IF (NOMDCINT .AND. ISTRAT .NE. 4) THEN
+         WRITE(LUPRI,'(/A,I0/)')
+     &   'INFO, .NOMDCINT is only implemented for strategy 4;'//
+     &   ' therefore use stategy 4 instead of ',ISTRAT
+         ISTRAT = 4
+      END IF
+
 C
 C     Define number of double quaternionic classes
 C
@@ -203,8 +215,27 @@ C
       Allocate (IBEIG(NORBT))
       CALL IZERO(IBEIG,NORBT)
       CALL DZERO(EIG,NORBT)
-      INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
-      INQUIRE(FILE='KRMCOLD',EXIST=TOBEKK)
+
+      SELECT CASE ( MOFILE_TRAINP )
+         CASE ( "DFCOEF" )
+            TOBEK  = .FALSE.
+            TOBEKK = .FALSE.
+         CASE ( "KRMCSCF" )
+            TOBEK  = .TRUE.
+            TOBEKK = .FALSE.
+         CASE ( "KRMCOLD" )
+            TOBEK  = .FALSE.
+            TOBEKK = .TRUE.
+         CASE ( "UNKNOWN" )
+            INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
+            INQUIRE(FILE='KRMCOLD',EXIST=TOBEKK)
+         CASE DEFAULT
+            WRITE(LUPRI,'(/2A)')
+     &      'FATAL ERROR for **MOLTRA input: Unknown .MOFILE name : ',
+     &      MOFILE_TRAINP
+            CALL QUIT('Unknown .MOFILE from **MOLTRA input')
+      END SELECT
+
 
       IF (TOBEK) THEN
          CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','PAMTRA')
@@ -253,6 +284,10 @@ C
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMTRA')
             CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
             CLOSE(LUCOEF,STATUS='KEEP')
+         END IF
+         IF (IPRTRA .GE. 0) THEN
+            WRITE(LUPRI,'(/A)')
+     &          ' (PAMTRA)  Orbitals read from DFCOEF'
          END IF
       END IF
 C
@@ -399,8 +434,6 @@ C
       Allocate (CMO(NCMOTQ))
       Allocate (EIG(NORBT))
       Allocate (IBEIG(NORBT))
-      INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
-      INQUIRE(FILE='KRMCOLD',EXIST=TOBEKK)
       IF (TOBEK) THEN
          CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','PAMTRA')
          JRDMO = -1
@@ -498,6 +531,7 @@ C
 C
       CALL FLSHFO(LUPRI)
 
+      ISTRAT = ISTRAT_save
       call dealloc(WORK)
       CALL QEXIT('PAMTRA')
       RETURN
