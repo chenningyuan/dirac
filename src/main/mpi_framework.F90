@@ -2,7 +2,7 @@
 #define MPIX_DEBUG -1
 #endif
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -354,8 +354,9 @@ use interface_to_mpi
     DO IJ = 1, NUMNOD
       CALL interface_MPI_BARRIER(global_communicator)
       IF( MYTID .eq. IJ ) THEN
+         flush(lupri)
          CALL STOPWATCH(0,MYTID)
-         CALL FLSHFO(LUPRI)
+         flush(lupri)
       END IF
       CALL interface_MPI_BARRIER(global_communicator)
     END DO

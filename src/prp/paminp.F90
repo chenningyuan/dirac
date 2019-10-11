@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -253,7 +253,7 @@
             READ(LUCMD,*) IPRPRP
             GO TO 100
   109    CONTINUE
-!&&&& ABUND: abundance of atomic type
+!&&&& ABUND: minimum abundance in % of atomic isotopes to be included
             READ (LUCMD,*) ABUND
             GO TO 100
   110    CONTINUE
@@ -267,7 +267,7 @@
             DOEXP    = .TRUE.
             GO TO 100
   112    CONTINUE
-!&&&& DSO - diamagnetic spin-orbit 
+!&&&& DSO - nonrel. diamagnetic spin-orbit contribution to indirect spin-spin couplings
             DSO   = .TRUE.
             DOEXP = .TRUE.
             GO TO 100
@@ -276,7 +276,7 @@
             MGRAD = .TRUE.
             GO TO 100
   114    CONTINUE
-!&&&& NSTDIA diamagnetic contribution to shielding
+!&&&& NSTDIA - nonrel. diamagnetic contribution to nuclear shielding tensor
             NSTDIA   = .TRUE.
             DOEXP = .TRUE.
             GO TO 100

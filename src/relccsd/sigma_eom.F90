@@ -84,11 +84,8 @@ module sigma_eom
       call dealloc(A%W_mbej,    id="W_mbej")
       call dealloc(A%W_iemn,    id="W_iemn")
 
-! todo: get special handling for these in the case of i4 ? we keep using deallocate here for the time being
-!     call dealloc(A%W_efam,    id="W_efam")
-!     call dealloc(A%W_amef,    id="W_amef")
-      if (allocated(A%W_efam)) deallocate(A%W_efam)
-      if (allocated(A%W_amef)) deallocate(A%W_amef)
+      call dealloc(A%W_efam,    id="W_efam")
+      call dealloc(A%W_amef,    id="W_amef")
 
       call dealloc(A%W_mnie,    id="W_mnie")
       call dealloc(A%Wbar_mbej, id="Wbar_mbej")
@@ -190,10 +187,12 @@ module sigma_eom
       start_r2 = end_r1 + 1
       end_r2   = end_r1 + N2
 
-
       select case (A%eomtype)
          case ('IP')
 
+!$OMP PARALLEL IF((L_already_done - L) .GT. 1)
+            call show_number_of_threads(iw)
+!$OMP DO
              do iroot = L_already_done + 1, L 
 
                 create_sigma_vector_left(:,iroot:iroot) = 0.0d0
@@ -204,8 +203,14 @@ module sigma_eom
                  &             create_sigma_vector_left(start_r1:end_r1, iroot), &
                  &             create_sigma_vector_left(start_r2:end_r2, iroot))
              enddo
+!$OMP END DO
+!$OMP END PARALLEL
 
          case ("EA")
+
+!$OMP PARALLEL IF((L_already_done - L) .GT. 1)
+            call show_number_of_threads(iw)
+!$OMP DO
              do iroot = L_already_done + 1, L 
 
                 create_sigma_vector_left(:,iroot:iroot) = 0.0d0
@@ -217,11 +222,15 @@ module sigma_eom
 !                &             create_sigma_vector_left(start_r2:end_r2, iroot:iroot), &
 !                &             nbuf3) 
 
-
              enddo
+!$OMP END DO
+!$OMP END PARALLEL 
 
          case ('EE')
 
+!$OMP PARALLEL IF((L_already_done - L) .GT. 1)
+            call show_number_of_threads(iw)
+!$OMP DO
              do iroot = L_already_done + 1, L
 
                 create_sigma_vector_left(:,iroot:iroot) = 0.0d0
@@ -233,6 +242,8 @@ module sigma_eom
                  &                  create_sigma_vector_left(start_r2:end_r2, iroot), state_sym)
 
              enddo
+!$OMP END DO
+!$OMP END PARALLEL 
       end select
 
 
@@ -277,6 +288,9 @@ module sigma_eom
       select case (A%eomtype)
          case ('IP')
 
+!$OMP PARALLEL IF((L_already_done - L) .GT. 1)
+            call show_number_of_threads(iw)
+!$OMP DO
              do iroot = L_already_done + 1, L 
 
                 create_sigma_vector_right(:,iroot:iroot) = 0.0d0
@@ -286,10 +300,16 @@ module sigma_eom
                  &             create_sigma_vector_right(start_r1:end_r1, iroot), &
                  &             create_sigma_vector_right(start_r2:end_r2, iroot))
              enddo
+!$OMP END DO
+!$OMP END PARALLEL 
 
          case ("EA")
-             do iroot = L_already_done + 1, L 
 
+!$OMP PARALLEL IF((L_already_done - L) .GT. 1)
+            call show_number_of_threads(iw)
+!$OMP DO
+             do iroot = L_already_done + 1, L 
+!               print *,'thread number',omp_get_thread_num(),'root',iroot
                 create_sigma_vector_right(:,iroot:iroot) = 0.0d0
                 if (iprnt.ge.2) write(iw,"(2x,a,i6,a,i6)") "debug, constructing EOM-EA sigma vector ",iroot," out of ",L
                 call sigma_EA(r(start_r1:end_r1, iroot), &
@@ -298,9 +318,14 @@ module sigma_eom
                  &             create_sigma_vector_right(start_r2:end_r2, iroot)) 
 
              enddo
+!$OMP END DO
+!$OMP END PARALLEL 
 
          case ('EE')
 
+!$OMP PARALLEL IF((L_already_done - L) .GT. 1)
+            call show_number_of_threads(iw)
+!$OMP DO
              do iroot = L_already_done + 1, L
 
                 create_sigma_vector_right(:,iroot:iroot) = 0.0d0
@@ -312,6 +337,8 @@ module sigma_eom
                  &                  create_sigma_vector_right(start_r2:end_r2, iroot),state_sym)
 
              enddo
+!$OMP END DO
+!$OMP END PARALLEL 
       end select
 
 
@@ -1167,6 +1194,7 @@ integer :: ierr
 !       call interface_mpi_allreduce(sigma2, &
              local_buffer, N2, &
              op_mpi_sum,global_communicator)
+      if (iprnt.ge.2) &
    write(*,*)'diagram 7b ', ddot(N2,sigma2_local,1,sigma2_local,1),myproc
 !  write(*,*)'diagram 7b ', ddot(N2,sigma2,1,sigma2,1),myproc
 
@@ -1705,5 +1733,23 @@ integer :: ierr
   call dealloc_array(e)
 
  end subroutine
+
+      subroutine show_number_of_threads(write_unit) 
+#ifdef HAVE_OPENMP
+         use omp_lib, only : omp_get_num_threads, omp_get_num_procs
+#endif
+         integer :: number_of_threads
+         integer :: number_of_procs
+         integer :: write_unit
+
+#ifdef HAVE_OPENMP
+         number_of_threads = omp_get_num_threads()
+         number_of_procs   = omp_get_num_procs()
+#else
+         number_of_threads = 1
+         number_of_procs   = 1
+#endif
+         write(write_unit,"(2x,a,2i6)") "Number of OMP threads, procs in use:",number_of_threads,number_of_procs
+      end subroutine
 
    end module 

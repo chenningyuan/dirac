@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -3991,7 +3991,7 @@ C
       DIMENSION X(NP),Y(NP),A(NP,*),B(NP),C(NP),D(NP)
       WRITE(LUPRI,'(A)') 
      &  'Polynomial fit: Give order of polynomial '
-      READ(LUCMD,*) NORDER
+      READ(LUSTDIN,*) NORDER
       IF(NORDER.LT.2) THEN
         WRITE(LUPRI,'(A)') 
      &    '* This program requires at least a quadratic fit.'

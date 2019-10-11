@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -605,7 +605,7 @@ C--------------------------------------------
 C X(A,I) = X(A,I) + V(K,L,C,I) * TAU(A,C,K,L)
 C--------------------------------------------
       CALL XCOPY (NDIMT2,S2,1,BUF3,1)
-      CALL T1EQN1 (BUF1,BUF2,BUF3,NBUF3,XVO)
+      CALL T1EQN1 (BUF3,XVO)
 C---------------------------------------------------------------------
 C X(A,I) = X(A,I) + V(IK,AL) * D(K,L)
 C---------------------------------------------------------------------

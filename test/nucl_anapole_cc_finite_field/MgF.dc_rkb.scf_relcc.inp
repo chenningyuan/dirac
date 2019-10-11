@@ -52,6 +52,6 @@ energy -1000.00   2000.0 0.01
 .MAXIT # maximum number of iterations for (0,0) sector
 45        
 .NTOL
-12
+13
 *CCSORT
 *END OF

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -341,10 +341,6 @@ C
       END IF
       LUINFO = LUMLCL
 C
-C     PARHER is true for slaves, false for master.
-C     If (PARHER) then RDLINE reads from common block transferred
-C       from master, not from file LUINFO.
-C
       NEWFILE = LUINFO .NE. LUCMD
       IF (NEWFILE) THEN
           moltype='MOL'
@@ -585,7 +581,7 @@ C
 C        nothing specified, default minimum value used
          THRS = THRMIN
       ELSE IF (THRS .LT. THRMIN) THEN
-         IF (.NOT.PARHER) THEN
+         IF (.NOT.SLAVE) THEN
             WRITE (LUPRI,'(/2X,A)') '*** WARNING from READIN ***'
             WRITE (LUPRI,'(2(/2X,A,1P,D12.2))')
      &      'Threshold for discarding integrals was',THRS,
@@ -615,7 +611,7 @@ C     Also automatic symmetry detection for Dinfh or Cinfv
       NMLAU = NMLINE
       IF (ID3 .NE. ' ') THEN
         ANG = .TRUE.
-        IF (.NOT. PARHER)
+        IF (.NOT. SLAVE)
      &       WRITE (LUPRI,'(/2X,A/10X,A,F11.8,A2/)')
      &          'Coordinates are entered in Angstroms'//
      &          ' and converted to atomic units.',
@@ -1902,7 +1898,7 @@ C
 C
 C       Read RECP parameter if exist
 C
-        CALL RECP_LNK_READCP(LUINFO,I,NONT(I))
+        CALL RECP_LNK_READCP(LUINFO,I,NONT(I),IPREAD)
 C
 C     End of loop over unique atom types
   100 CONTINUE
@@ -2286,9 +2282,9 @@ C*****************************************************************************
      &            KATOM,KANG,KBLOCK,KPRIM,
      &            ISHELL_FIT,IPRIM_FIT,IPRIMD_FIT,
      &            IORB_FIT,IORBD_FIT,LCOMP_FIT)
-      IF (ISHELL_FIT.GT. MXSHEL) GOTO 5000
-      IF (IORBD_FIT .GT. MXCORB) GOTO 5010
-      IF (IPRIM_FIT .GT. MXPRIM) GOTO 5020
+      IF (ISHELL_FIT.GT. MXSHEL_FIT) GOTO 5000
+      IF (IORBD_FIT .GT. MXCORB_FIT) GOTO 5010
+      IF (IPRIM_FIT .GT. MXPRIM_FIT) GOTO 5020
       KMAX_FIT   = ISHELL_FIT
       NSMLSH_FIT = KMAX_FIT - NLRGSH_FIT
       NBASIS_FIT = IORBD_FIT
@@ -4924,11 +4920,12 @@ C     For Charge.GT.109 Nuclear Mass = CHARGE*2.556.
 C     Conversion Factor Bohr/fm 52917.7249.
 C                                      T. Saue and J.K. Laerdahl 12.02.1996
 C.......................................................................
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "nucdata.h"
       PARAMETER (DP3=1.0D0/3.0D0)
-      PARAMETER (FAC=1.5D10,AF=0.529177249D0,BF=0.836D0,CF=0.570D0)
+      PARAMETER (FAC=1.5D10,BF=0.836D0,CF=0.570D0)
       PARAMETER (FAC2=2.556D0)
 C
       IF (INUC.LE.109.AND.INUC.GT.0) THEN
@@ -4937,22 +4934,8 @@ C
          A = INUC*FAC2
       END IF
       A = A**DP3
-      DELTA = (AF/(BF*A+CF))
+      DELTA = (XTANG/(BF*A+CF))
       DELTA = FAC*DELTA*DELTA
-C      IF (INUC.LE.109) THEN
-C         WRITE(LUPRI,'(2X,A,I4,A,A3,A)')
-C     +        'Element', INUC, ', ',ASYMB(INUC), ':'
-C         WRITE(LUPRI,'(10X,A,F6.2)')
-C     +        'Nuclear Mass:', AMASS(INUC)
-C      ELSE
-C         WRITE(LUPRI,'(2X,A,I4,A)')
-C     +        'Element', INUC, ':'
-C         WRITE(LUPRI,'(10X,A,F6.2)')
-C     +        'Nuclear Mass:', CHARGE*FAC2
-C      ENDIF
-C      WRITE(LUPRI,'(10X,A,D20.11,/)')
-C     +     'Exponent for Gaussian Charge Distribution : ',
-C     +     DELTA
       RETURN
       END
 C  /* Deck sphlab */
@@ -5448,7 +5431,7 @@ C  /* Deck rdline */
 C
 C     Purpose: Read a line from MOLECULE.INP
 C
-C     We keep track of which line we've read last time (NMLN_LASTREAD).
+C     We keep track of which line we read last time (NMLN_LASTREAD).
 C     This allows some routines to read a line, check if it want to use
 C     that line, and then discard it by decrementing NMLINE.
 C     Note that we only allow decrements of one /jth-20000621.
@@ -5494,7 +5477,7 @@ C
 
          READ (LUINFO,'(A)',END=12,IOSTAT=IOS) MLINE(NMLINE)
 
-!miro print lenghty error message for debug purposes
+!miro print lengthy error message for debug purposes
          IF (IOS.NE.0) THEN
           WRITE(LUPRI,*) 
      &    'ERROR(subroutine RDLINE): Error in reading molecule.MOL. '

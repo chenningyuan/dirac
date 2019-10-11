@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -377,9 +377,6 @@ C 3 = pretty print traceback to stdout...
 #   else
       CALL interface_MPI_ABORT(global_communicator,IERR)
 #   endif
-#endif
-#if defined (VAR_PVM)
-      CALL PVMFEXIT(INFO)
 #endif
 
 CMI ... .*F -> *.p dependency brings -DNO_SF_QUIT
@@ -915,7 +912,7 @@ C
       GOTO 9100
 C
  9004 CONTINUE
-#ifdef GFORTRAN
+#ifdef VAR_GFORTRAN
 C
       call perror(' GPOPEN calling perror:')
 #endif

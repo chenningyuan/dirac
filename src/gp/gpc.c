@@ -1,6 +1,6 @@
 /* dirac_copyright_start */
 /*
- *     Copyright (c) 2017 by the authors of DIRAC.
+ *     Copyright (c) 2018 by the authors of DIRAC.
  *     All Rights Reserved.
  *
  *     This source code is part of the DIRAC program package.
@@ -215,7 +215,7 @@ int icommsize_(const fortran_int_t *istart, const fortran_int_t *iend)
 */
 void crash_(void)
 {
-  *(int *)0 = 0;
+  __builtin_trap();
 }
 
 /*

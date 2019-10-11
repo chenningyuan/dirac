@@ -196,8 +196,6 @@ FDE contributions to property gradient can be included by the keywords presented
 
 keyword(LAO11)
 
-.. warning:: Development version only. 
-
 This keyword turns on the FDE-LAO contributions to the property gradient dependent on the embedding potential (:math:`v_{emb}^I`)
 and the uncoupled embedding kernel (:math:`w_{emb}^{I,I}`). This is the advised option. 
 Other contributions to the property gradient can be included or excluded by using expert keywords (below).
@@ -205,38 +203,27 @@ Other contributions to the property gradient can be included or excluded by usin
 
 keyword(LDPT)
 
-.. warning:: Development version only. 
-
 This keyword turns on the term dependent on the embedding potential (:math:`v_{emb}^I`) only.
-Calculations with the :ref:`LDPT` keyword are less demanding than calculations with the :ref:`LAO11` keyword,
+Calculations with the :ref:`FDE_.LDPT` keyword are less demanding than calculations with the :ref:`FDE_.LAO11` keyword,
 but may lead to inaccurate results, especially for heavy elements.
 
 
 keyword(NOLDPT)
-
-.. warning:: Development version only. 
 
 This keyword turns off the term dependent on the embedding potential (:math:`v_{emb}^I`).
 
 
 keyword(L11KR)
 
-.. warning:: Development version only. 
-
 This keyword turns on the terms dependent on the uncoupled embedding kernel (:math:`w_{emb}^{I,I}`).
 
 
 keyword(NL11KR)
 
-.. warning:: Development version only. 
-
 This keyword turns off the terms dependent on the uncoupled embedding kernel (:math:`w_{emb}^{I,I}`).
 
 
 keyword(LDKR)
-
-.. warning:: Development version only. 
-
 
 This keyword corresponds to the term dependent on the uncoupled embedding kernel (:math:`w_{emb}^{I,I}`), 
 which involves only the "direct" LAO contribution.
@@ -244,16 +231,10 @@ which involves only the "direct" LAO contribution.
 
 keyword(NOLDKR)
 
-.. warning:: Development version only. 
-
-
 This keyword excludes the "direct" LAO contribution to the uncoupled embedding kernel (:math:`w_{emb}^{I,I}`).
 
 
 keyword(LRKR)
-
-
-.. warning:: Development version only. 
 
 This keyword corresponds to the term dependent on the uncoupled embedding kernel (:math:`w_{emb}^{I,I}`), 
 which involves only the "reorthonormalization" LAO contribution.
@@ -261,46 +242,35 @@ which involves only the "reorthonormalization" LAO contribution.
 
 keyword(NOLRKR)
 
-.. warning:: Development version only. 
-
-
 This keyword excludes the "reorthonormalization" LAO contribution to the uncoupled embedding kernel (:math:`w_{emb}^{I,I}`).
 
 
 keyword(LAO12)
-
-.. warning:: Development version only. 
 
 This keyword turns on the FDE-LAO contributions to the property gradient dependent on 
 the coupled embedding kernel (:math:`w_{emb}^{I,II}`).
 This option includes both, the term dependent on the non-additive part of the coupled embedding kernel and
 the Coulomb term.
 Each of these terms can be turned on by separate keywords (below).
-If this keyword is employed, it is also necessary to import perturbed densities using the :ref:`PERTIM` keyword.
+If this keyword is employed, it is also necessary to import perturbed densities using the :ref:`FDE_.PERTIM` keyword.
 
 
 keyword(LAOFRZ)
 
-.. warning:: Development version only. 
-
 This keyword corresponds to the term dependent on the non-additive part of embedding kernel involving the coupling between 
 two subsystems (:math:`w_{emb}^{I,II}`). In order to calculate this term, it is necessary also to use 
-the keyword :ref:`PERTIM`. 
+the keyword :ref:`FDE_.PERTIM`. 
 
 
 keyword(LFCOUL)
 
-.. warning:: Development version only. 
-
 This keyword corresponds to the term dependent on the Coulomb part of embedding kernel involving the coupling between 
 two subsystems (:math:`w_{emb}^{I,II}`). In order to calculate this term, it is necessary also to use 
-the keyword :ref:`PERTIM`. 
+the keyword :ref:`FDE_.PERTIM`. 
 
 keyword(PERTIM)
 
-.. warning:: Development version only. 
-
-This keyword should be used whenever :ref:`LAOFRZ` keyword is present. It commands the program to read the contributions
+This keyword should be used whenever :ref:`FDE_.LAOFRZ` keyword is present. It commands the program to read the contributions
 ("direct" LAO contribution and "reorthonormalization" contribution) to the perturbed density in LAO basis from files.
 
 *Default:*
@@ -313,8 +283,6 @@ This keyword should be used whenever :ref:`LAOFRZ` keyword is present. It comman
 
 
 keyword(FRZNOS)
-
-.. warning:: Development version only. 
 
 This keyword means that no spin-density contributions to the perturbed density will be used in FDE calculations.
 
@@ -330,8 +298,6 @@ uncoupled embedding kernel (:math:`w_{emb}^{I,I}`) and coupled embedding kernel 
 
 keyword(EMAFDE)
 
-.. warning:: Development version only. 
-
 This keyword turns on all FDE-LAO contributions to the expectation value part of the magnetizability tensor.
 This is the advised option. 
 It is possible to exclude each contribution by using expert keywords (presented below).
@@ -339,23 +305,17 @@ It is possible to exclude each contribution by using expert keywords (presented 
 
 keyword(MNOPOT)
 
-.. warning:: Development version only. 
-
 This keyword turns off the contribution to the expectation value part of the magnetizability tensor
 dependent on the embedding potential (:math:`v_{emb}^I`).
 
 
 keyword(MNOUKE)
 
-.. warning:: Development version only. 
-
 This keyword turns off the contribution to the expectation value part of the magnetizability tensor
 dependent on the uncoupled embedding kernel (:math:`w_{emb}^{I,I}`).
 
 
 keyword(MNONKE)
-
-.. warning:: Development version only. 
 
 This keyword turns off the contribution to the expectation value part of the magnetizability tensor
 dependent on the non-additive part of the coupled embedding kernel (:math:`w_{emb}^{I,II}`).

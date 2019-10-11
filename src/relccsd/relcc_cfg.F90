@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -130,12 +130,15 @@ module relcc_cfg
   logical, public :: relcc_mfd_trial_lhs_use_rhs = .true.
 
   logical, public :: relcc_projectors_do_restricted_excitation_window = .false. 
-  logical, public :: relcc_projectors_do_core_valence_separation = .false.
+  logical, public :: relcc_projectors_do_core_valence_separation = .false. 
+  logical, public :: relcc_projectors_rew_strict = .false.
+  logical, public :: relcc_projectors_rew_remove_double_occupied = .false.
+  logical, public :: relcc_projectors_frozen_core = .false.
   real*8, public  :: relcc_projectors_rew_occ_min_energy = -huge(relcc_projectors_rew_occ_min_energy)
-  real*8, public  :: relcc_projectors_rew_occ_max_energy = -huge(relcc_projectors_rew_occ_max_energy)
-  real*8, public  :: relcc_projectors_rew_virt_min_energy = huge(relcc_projectors_rew_virt_min_energy)
-  real*8, public  :: relcc_projectors_rew_virt_max_energy = huge(relcc_projectors_rew_virt_max_energy)
-  real*8, public  :: relcc_projectors_cvs_energy_threshold = 0.0d0
+  real*8, public  :: relcc_projectors_rew_occ_max_energy =  huge(relcc_projectors_rew_occ_max_energy)
+  real*8, public  :: relcc_projectors_rew_virt_min_energy = -huge(relcc_projectors_rew_virt_min_energy)
+  real*8, public  :: relcc_projectors_rew_virt_max_energy =  huge(relcc_projectors_rew_virt_max_energy)
+  real*8, public  :: relcc_projectors_frozen_core_max_energy =  huge(relcc_projectors_frozen_core_max_energy)
 
 ! will add filenames etc here too
 
@@ -259,12 +262,15 @@ contains
 ! information relevant to projectors that modify the matrix-free trial vectores
 
   call interface_mpi_bcast_l0(relcc_projectors_do_restricted_excitation_window,1,0,global_communicator)
-  call interface_mpi_bcast_l0(relcc_projectors_do_core_valence_separation     ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_projectors_do_core_valence_separation,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_projectors_rew_strict                     ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_projectors_rew_remove_double_occupied     , 1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_projectors_frozen_core     , 1,0,global_communicator)
   call interface_mpi_bcast(relcc_projectors_rew_occ_min_energy    ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_projectors_rew_occ_max_energy    ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_projectors_rew_virt_min_energy   ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_projectors_rew_virt_max_energy   ,1,0,global_communicator)
-  call interface_mpi_bcast(relcc_projectors_cvs_energy_threshold  ,1,0,global_communicator)
+  call interface_mpi_bcast(relcc_projectors_frozen_core_max_energy    ,1,0,global_communicator)
 
 ! Information relevant to restarts
   call interface_mpi_bcast_l0(relcc_restart_skipsect,    6,0,global_communicator)

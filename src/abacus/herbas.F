@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -186,10 +186,6 @@ C      except for 2c NR calculations
 
 
       IF (ISET .EQ. 2) THEN
-C jan 2000 hjaaj:
-#ifdef STO3G_HUCKEL
-         BASTMP = 'Huckel       '
-#else
 C
 C hjaaj jan 2000:
 C        New Huckel based on ano-4 instead of STO-3G.
@@ -231,7 +227,6 @@ C           ...  Ga, Ge, As, Se, Br, Kr
          ELSE
             CALL QUIT('BASLIB error: Huckel not defined for Z.gt.36')
          END IF
-#endif   /* STO3G-HUCKEL */
 C djw Feb 2005
 C notation changed from 'd' to 'd-' for consistency with EMSL
       ELSE
@@ -619,9 +614,13 @@ C
       IF (IPRINT.GE.5) THEN
        CALL HEADER('Output from READNU',-1)
        write(lupri,*) 'entering READNU, IPREAD=',IPRINT
-       write(lupri,*) 'NBLOCK,INTORB:',NBLOCK,INTORB
+       write(lupri,*) 'NBLOCK,INTEXP,INTORB:',NBLOCK,INTEXP,INTORB
        write(lupri,*) 'DSM=',DSM
       ENDIF
+
+      IF (intexp .GT. KPRIM) THEN
+         CALL QUIT('ERROR, too many primitives. Increase .MAXPRI')
+      END IF
 
 C
 C Initializing a counting variable that must be 0 before loop
@@ -834,6 +833,9 @@ C
               intexp = intexp + 1
               intorb = intorb + 1
 
+               IF (intexp .GT. KPRIM) THEN
+               CALL QUIT('ERROR, too many primitives. Increase .MAXPRI')
+               END IF
               alpha(intexp, nblock) 
      &            = alpha_lowest*alpha_lowest/alpha_second_lowest
               cprimu(intexp, intorb, nblock) = 1.0d0
@@ -858,6 +860,9 @@ C
                IF (IQUANT .EQ. NBLOCK) THEN
                   INTEXP = INTEXP + 1
                   INTORB = INTORB + 1
+                  IF (intexp .GT. KPRIM) THEN
+               CALL QUIT('ERROR, too many primitives. Increase .MAXPRI')
+                  END IF
                   ALPHA(INTEXP,NBLOCK) = EXPON
                   CPRIMU(INTEXP,INTORB,NBLOCK) = 1.0D0
 
@@ -910,17 +915,21 @@ C
         WRITE(LUPRI,*) ' KPRIM=',KPRIM
       ENDIF
 
+      IF (intexp .GT. KPRIM) THEN
+         CALL QUIT('ERROR, too many primitives. Increase .MAXPRI')
+      END IF
+
 !
 !      ISTART_ANO=10
 !     IF (ANO) CALL FREFRM(BASNAM,ISTART,INTORB,DUMMY,'INT')
 !     IF (ANO) CALL FREFRM(BASNAM,ISTART_ANO,INTORB,DUMMY,'INT')
 
-      IF (IPRINT.GE.8) THEN
-        WRITE(LUPRI,'(/,8x,a)') 'REAANO - After FREFRM:'
-        WRITE(LUPRI,'(A,A)') 'BASNAM=',BASNAM
-        WRITE(LUPRI,*) 'ISTART=',ISTART
-        wRITE(LUPRI,*) 'INTEXP,INTORB=',INTEXP,INTORB
-      ENDIF
+!     IF (IPRINT.GE.8) THEN
+!       WRITE(LUPRI,'(/,8x,a)') 'REAANO - After FREFRM:'
+!       WRITE(LUPRI,'(A,A)') 'BASNAM=',BASNAM
+!       WRITE(LUPRI,*) 'ISTART=',ISTART
+!       WRITE(LUPRI,*) 'INTEXP,INTORB=',INTEXP,INTORB
+!     ENDIF
 
 C
  20   CONTINUE
@@ -985,6 +994,9 @@ C
             IF (IQUANT .EQ. NBLOCK) THEN
                INTEXP = INTEXP + 1
                INTORB = INTORB + 1
+               IF (intexp .GT. KPRIM) THEN
+               CALL QUIT('ERROR, too many primitives. Increase .MAXPRI')
+               END IF
                ALPHA(INTEXP,NBLOCK) = EXPON
                CPRIMU(INTEXP,INTORB,NBLOCK) = 1.0D0
             END IF

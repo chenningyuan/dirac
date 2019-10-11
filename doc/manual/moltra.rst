@@ -258,12 +258,12 @@ index 1 to 4 and fermion irrep 1 and 2.
 
 keyword(MDCINT)
 
-Write 4-index transformed integrals to file (default).
+Write 4-index transformed integrals to MDCINT file (default).
 
 keyword(NOMDCI)
 
-Skip writing 4-index transformed integrals to file. Instead, write file
-MDINFO, which contains infos used in the MCSCF program.
+Skip writing 4-index transformed integrals to MDCINT file. Instead, keep 4IND* files
+and write file 4INDINFO, which contains info about how to read the 4IND* files.
 
 keyword(SCATTER)
 
@@ -272,6 +272,20 @@ Scatter 4-index transformed integrals to all nodes (default).
 keyword(NOSCAT)
 
 Do not scatter 4-index transformed integrals to all nodes
+
+keyword(MOFILE)
+
+Name of file with MO coefficients to be used for integral transformation.
+Valid options: "DFCOEF", "KRMCSCF", "KRMCOLD", and "UNKNOWN".
+The "UNKNOWN" option means use the first one found of "KRMCSCF", "KRMCOLD", "DFCOEF" in this order.
+
+*Default:*
+
+::
+
+    .MOFILE
+    UNKNOWN
+
 
 keyword(PAR4BAS)
 

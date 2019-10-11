@@ -372,7 +372,8 @@ C
       WRITE(IW,*) ' are described in'
       WRITE(IW,*)
       WRITE(IW,*) ' M. Pernpointner, L. Visscher and A. B. Trofimov,'
-      WRITE(IW,*) ' J. Chem. Theory Comput. 2017 (submitted)'
+      WRITE(IW,*) ' J. Chem. Theory Comput. 14, 1510 (2017).'
+      WRITE(IW,*) ' doi: 10.1021/acs.jctc.7b01056'
       WRITE(IW,*)
       WRITE(IW,*)
       WRITE(IW,*)' ________________________________________________ '
@@ -575,7 +576,8 @@ C
 !
 #include  "../relccsd/symm.inc"
 #include  "../relccsd/complex.inc"
-#include  "../relccsd/param.inc"     !LTR/LFA are defined here (true, false)
+#include  "../relccsd/param.inc"
+!LTR/LFA are defined here (true, false)
 #include  "../relccsd/ccpar.inc"
 #include "polprp_servercodes.h"
 #include "polprp_stacklines.h"

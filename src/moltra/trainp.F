@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -149,19 +149,19 @@ C&&&& PRINT - print level in MP2 module
                   READ(LUCMD,*) IPRMP2
                GO TO 100
     2          CONTINUE
-C&&&& String of active occupied pairs in MP2 module
+C&&&& OCCUP - String of active occupied pairs in MP2 module
                   DO I=1,NFSYM
                      READ(LUCMD,'(A)') MP2_INDSTR(1,I)
                   ENDDO
                GO TO 100
     3          CONTINUE
-C&&&& String of active virtual pairs in MP2 module
+C&&&& VIRTUA -String of active virtual pairs in MP2 module
                   DO I=1,NFSYM
                      READ(LUCMD,'(A)') MP2_INDSTR(2,I)
                   ENDDO
                GO TO 100
     4          CONTINUE
-C&&&& Integral classes not included in 4-index transformation
+C&&&& INTFLG -Integral classes not included in 4-index transformation
                   IF (IGTINT .EQ. 1) THEN
                      READ(LUCMD,*,IOSTAT=IOS) 
      &                  ILLINT,ILSINT,ISSINT,IGTINT
@@ -179,7 +179,7 @@ C&&&& Integral classes not included in 4-index transformation
                   MP2_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
                GO TO 100
     5          CONTINUE
-C&&&& Write 4-index transformed integrals to file
+C&&&& MSOUT :Write 4-index transformed integrals to file
 C     aug 2001 hjaaj TODO: disabled this option because only false implemented
                   MP2_MSOUT = .TRUE.
                GO TO 100
@@ -240,17 +240,17 @@ C&&&& SCREEN: Screening threshold for 4-index transformation
                READ(LUCMD,*) SCRMP2
                GO TO 100
    14          CONTINUE
-C&&&& MP2ORG: Activate/deactivate original MP2 algorithm
+C&&&& ORGALG: Activate/deactivate original MP2 algorithm
                MP2ORG = .TRUE.
                GO TO 100
    15          CONTINUE
-C&&&& SRTSHL: Controls the sorting of shells in decreasing size
+C&&&& NOSORT: Controls the sorting of shells in decreasing size
                SRTSHL = .FALSE.
                GO TO 100
    16          CONTINUE
                GO TO 100
    17          CONTINUE
-C&&&& CMMNFO: Active printing of communication status (for parallel jobs)
+C&&&& COMMINfo: Active printing of communication status (for parallel jobs)
                CMMNFO = .TRUE.
                GO TO 100
    18          CONTINUE
@@ -419,7 +419,7 @@ C*****************************************************************************
 #include "dummy.h"
 #include "maxorb.h"
       PARAMETER(D0=0.0D0)
-      PARAMETER (NDIR = 3, NTABLE = 26)
+      PARAMETER (NDIR = 3, NTABLE = 27)
 C
       LOGICAL SET, NEWDEF,LSPES,LSPES2,LSPES4
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
@@ -444,7 +444,7 @@ C
      &            '.NO2IND','.NO4IND','.2INDEX','.INTFL2','.INTFL4',
      &            '.PRPTRA','.SCREEN','.RCORBS','.NOMDCI','.NOSCAT',
      &            '.PAR4BS','.SCATTE','.MDCINT','.HSCC  ','.HTSORT',
-     &            '.ASCII '/
+     &            '.ASCII ','.MOFILE'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -467,7 +467,7 @@ C     Initialize /DCBTRA/
 C     ===================
 C
       IPRTRA  = 0
-Caspg, default in MOLTA is scheme 6 unless it's a GOSCIP, DIRRCI or LUCITA run... 
+Caspg, default in MOLTRA is scheme 6 unless it's a GOSCIP, DIRRCI or LUCITA run... 
 C      if problems are encountered, should be reverted to scheme 4
 Clv,   reason is that scheme 6 produces a list of integrals that is distributed over nodes and the
 clv,   authors of the above-mentioned modules nor anyone else have taken the time to adjust the
@@ -516,13 +516,15 @@ C     aug 2001 hjaaj TODO : disabled this option because only true implemented
          PRPTRA = .TRUE.  ! Always on to allow intensity calculation in RELCCSD
       END IF
       RCORBS = .FALSE.
-      NOMDCINT = .FALSE.
+      NOMDCINT = .FALSE. ! will be reset depending on where PAMTR1 is called
+      NOMDCINT_TRAINP = .FALSE. ! for **MOLTRA input, used to set NOMDCINT for DOTRA call of PAMTRA
       MDCSCAT = .FALSE.
 !.s/sya,2007.0907/ SK - 30-11-2009
       PRPSYA = .FALSE.
 !.q
       THROUT = 1.0D-14
       SCRTRA = 1.0D-14
+      MOFILE_TRAINP = 'UNKNOWN'
 C
 C     Process input for MOLTRA
 C     ========================
@@ -564,7 +566,7 @@ C         if reading input from a terminal
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
-     &                      16,17,18,19,20,21,22,23,24,25,26), I
+     &                      16,17,18,19,20,21,22,23,24,25,26,27), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -580,7 +582,7 @@ C&&&& PRINT - print level in 4-index transformation module
                   READ(LUCMD,*) IPRTRA
                GO TO 100
     2          CONTINUE
-C&&&& Range of ACTIVE orbitals in 4-index transformation module
+C&&&& ACTIVE - Range of ACTIVE orbitals in 4-index transformation module
                   IF (LSPES) THEN
                      WRITE (LUPRI,*) ' Warning : encountered .ACTIVE '//
      &                               'block twice , using first block'
@@ -631,7 +633,7 @@ C&&&& INTFLG - Integral classes not included in transformation
                   ITRA_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
                GO TO 100
     4          CONTINUE
-C&&&& Anti-Symmetrize integrals
+C&&&& "ANTIS " - Anti-Symmetrize integrals
 C     aug 2001 hjaaj TODO: disabled this option because not implemented
                   TRA_ANTIS = .TRUE.
                GO TO 100
@@ -665,7 +667,7 @@ C
                   ENDDO
                GO TO 100
     6          CONTINUE
-C&&&& Write 4-index transformed integrals to file
+C&&&& "MSOUT " - Write 4-index transformed integrals to file
 C     aug 2001 hjaaj TODO : disabled this option because only true implemented
                   TRA_MSOUT = .TRUE.
                GO TO 100
@@ -674,7 +676,7 @@ C&&&& POSITRONS - allow positronic solutions
                   NOPAIR = .FALSE.
                GO TO 100
     8          CONTINUE
-C&&&& Range of CORE orbitals in 2-index transformation module
+C&&&& "CORE  " - Range of CORE orbitals in 2-index transformation module
                   DO I=1,NFSYM
                      READ(LUCMD,'(A)') TRA_CORSTR(I)
                   ENDDO
@@ -788,10 +790,10 @@ C&&&& RCORBS - Recanonize orbitals before transforming
                GO TO 100
    19          CONTINUE
 C&&&& NOMDCINT - Don't write MDCINT file, instead save scratch files
-C              and write an additional MDINFO file which contains various
+C              and write an additional 4INDINFO file which contains various
 C              pointers'n'stuff. This options is used within the MCSCF
-C              program to avoid the generation of the enourmous MDCINT file.
-                  NOMDCINT = .TRUE.
+C              program to avoid the generation of the enormous MDCINT file.
+                  NOMDCINT_TRAINP = .TRUE.
                GO TO 100
    20          CONTINUE
 C&&&& NOSCATTER - Don't Scatter MDCINT/4IND to all nodes
@@ -807,14 +809,14 @@ C&&&& SCATTER - Do Scatter MDCINT/4IND to all nodes
                GO TO 100
    23          CONTINUE
 C&&&& MDCINT - Force writing of the MDCINT file in MOLFDIR format
-                  NOMDCINT = .FALSE.
+                  NOMDCINT_TRAINP = .FALSE.
                GO TO 100
    24          CONTINUE
-!&&&& HSMRCC - interface
+!&&&& "HSCC  " - HSMRCC interface
                   DOHSCC = .TRUE.
                GO TO 100
    25          CONTINUE
-!&&&& MOLTRA scheme 6 stuff
+!&&&& HTSORT - MOLTRA scheme 6 stuff
                READ(LUCMD,*) IS6SORT
 #ifndef VAR_PFS
                if (is6sort.eq.0) then
@@ -831,8 +833,14 @@ C&&&& MDCINT - Force writing of the MDCINT file in MOLFDIR format
 #endif
                GO TO 100
    26          CONTINUE
-!&&&& Write ASCII file with transformed MO integrals
+!&&&& "ASCII " - Write ASCII file with transformed MO integrals
                   TRA_ASCII = .TRUE.
+               GO TO 100
+   27          CONTINUE
+!&&&& "MOFILE" - which file to read MO coefficients from
+!      note: list directed read will ignore initial blanks, so MOFILE_TRAINP
+!            will always begin with the first non-blank character in input line.
+                  READ(LUCMD,*) MOFILE_TRAINP
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -953,11 +961,15 @@ C
       IF(NOPAIR) WRITE(LUPRI,'(1X,A)') '* Electronic orbitals only.'
       IF(NO2IND) WRITE(LUPRI,'(1X,A)') '* Skip 2-index transformation.'
       IF(NO4IND) WRITE(LUPRI,'(1X,A)') '* Skip 4-index transformation.'
-      IF(NOMDCINT) WRITE(LUPRI,'(1X,A)')
+      IF(NOMDCINT_TRAINP) WRITE(LUPRI,'(1X,A)')
      &     '* MDCINT is not going to be written, 4IND1* is kept.'
       IF(MDCSCAT) WRITE(LUPRI,'(1X,2A)')
      &     '* MDCINT (and in principle the 4IND*-files) ',
      &     '  will be scattered to all nodes.'
+      IF ( MOFILE_TRAINP .NE. 'UNKNOWN' ) THEN
+         WRITE(LUPRI,'(2A)')
+     &   ' * MO coeffients will be read from ',MOFILE_TRAINP
+      END IF
       WRITE(LUPRI,'(1X,A)') '* Total active space.'
       NTVEC(1) = 0
       DO I = 1,NFSYM

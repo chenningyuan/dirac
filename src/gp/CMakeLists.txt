@@ -60,6 +60,7 @@ set(FREE_GP_FORTRAN_SOURCES
     memory_allocator.F90
     memory_control.F90
     memory_errorhandler.F90
+    memory_internal_special_i8.F90
     memory_internal_ada_1d.F90
     memory_internal_ada_2d.F90
     memory_internal_ada_3d.F90

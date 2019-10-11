@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -5348,7 +5348,7 @@ C&&&&  ONESTEP: Do NOT do preliminary free-particle transformation
   130     CONTINUE
 C&&& BLOCKD:   Do use block diagonalization
 CMI      ... not active yet
-#if defined MOD_UNRELEASED
+#ifdef MOD_UNRELEASED
              BLOCKD = .TRUE.
 #else
              call quit('block diagonalizing feature not in release!')
@@ -7380,7 +7380,7 @@ C
 !radovan: i think they are now rather ok tested
 !     IF (SPINFR.AND.DOPRP)WRITE (LUPRI,1000)'Spinfree properties'
 
-#if !defined MOD_UNRELEASED
+#ifndef MOD_UNRELEASED
       IF (DORES .AND.dirac_cfg_dft_calculation)
      &   CALL QUIT ('.RESOLVE does not work with DFT !')
 #endif
