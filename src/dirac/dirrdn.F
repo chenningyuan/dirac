@@ -997,7 +997,7 @@ C***********************************************************************
        use dirac_cfg
        use x2cmod_cfg
 #ifdef MOD_XAMFI
-       use atomic_oo_order_so_correction_cfg
+       use xamfi_global_parameters
 #endif
 
 #include "implicit.h"
@@ -4847,7 +4847,7 @@ C***********************************************************************
       use pe_variables, only: peqm
 #endif
 #ifdef MOD_XAMFI
-      use atomic_oo_order_so_correction_cfg
+      use xamfi_global_parameters
 #endif
 
 #include "implicit.h"
