@@ -1771,7 +1771,7 @@ C
           IX = IDAMIN(3,PVAL(1),1)
           CALL DSWAP(1,PVAL(1),1,PVAL(IX),1)
           ETA = (PVAL(1) - PVAL(2))/ PVAL(3)
-          NUCCHA = NINT(CHARGE(IATOM))
+          NUCCHA = IZATOM(IATOM)
           DO ISO = 1, 5
             QMOM = DISOTP(NUCCHA,ISO,'QMOM')
             IF (QMOM .NE. 0.D0) THEN
@@ -2604,7 +2604,6 @@ C
       DO IATOM = 1, NUCIND
          DO ISYMOP = 0, MAXOPR
             IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
-               ICHARG = NINT(CHARGE(IATOM))
                   DO KCOOR = 1, 3
                      GEOM(3*JATOM + KCOOR) =
      &                    PT(IBTAND(ISYMAX(KCOOR,1),ISYMOP))
@@ -2854,7 +2853,7 @@ C
         DO IDEG = 1,NUCDEG(IATOM)
           NATOM =  NATOM + 1
           DMPV(NATOM) = TEMP(IATOM)
-          ICHARGE = NINT(CHARGE(IATOM))
+          ICHARGE = IZATOM(IATOM)
           IMASS = NINT(DISOTP(ICHARGE,ISOTOP(IATOM),'MASS'))
           NPROTON  = ICHARGE
           NNEUTRON = IMASS - ICHARGE
@@ -3021,7 +3020,7 @@ C
       IDEG = NUCDEG(INUC)
       IF(DOATOM(INUC)) THEN
         TEST = .FALSE.
-        IZ   = NINT(CHARGE(INUC))
+        IZ   = IZATOM(INUC)
         NISO = 0
         DO ISO = 1,5
           GVAL = DISOTP(IZ,ISO,'GVAL')
@@ -3677,7 +3676,7 @@ C
       IDEG = NUCDEG(INUC)
       IF(DOATOM(INUC)) THEN
         TEST = .FALSE.
-        IZ   = NINT(CHARGE(INUC))
+        IZ   = IZATOM(INUC)
         NISO = 0
         DO ISO = 1,5
           GVAL = DISOTP(IZ,ISO,'GVAL')
@@ -7454,7 +7453,7 @@ C
 C         extract nuclear g factor
 C         ========================
 C
-          IZ = NINT(CHARGE(IATOM))
+          IZ = IZATOM(IATOM)
           ABUNDANCE = D0
           DO ISO = 1,5
             GVAL = DISOTP(IZ,ISO,'GVAL')
@@ -7612,14 +7611,14 @@ C
 C         extract nuclear g factors
 C         =========================
 C
-          IZ = NINT(CHARGE(IATOM))
+          IZ = IZATOM(IATOM)
           ABUNDANCE = D0
           DO ISO = 1,5
             GVAL_IATOM = DISOTP(IZ,ISO,'GVAL')
             IF(GVAL_IATOM .NE. D0) GOTO 1
           ENDDO
  1        CONTINUE
-          IZ = NINT(CHARGE(JATOM))
+          IZ = IZATOM(JATOM)
           ABUNDANCE = D0
           DO ISO = 1,5
             GVAL_JATOM = DISOTP(IZ,ISO,'GVAL')
@@ -8344,7 +8343,7 @@ C     Determine principal moments of inertia
 C
       JATOM = 1
       DO 100 IATOM = 1, NUCIND
-         NATTYP = NINT(CHARGE(IATOM))
+         NATTYP = IZATOM(IATOM)
          NUMIS  = ISOTOP(IATOM)
          DO 110 ISYMOP = 0, MAXOPR
             IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
@@ -9485,7 +9484,6 @@ C
       DO IATOM = 1, NUCIND
          DO ISYMOP = 0, MAXOPR
             IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
-               ICHARG = NINT(CHARGE(IATOM))
                   DO KCOOR = 1, 3
                      GEOM(3*JATOM + KCOOR) =
      &                    PT(IBTAND(ISYMAX(KCOOR,1),ISYMOP))
@@ -9581,7 +9579,6 @@ C
       DO IATOM = 1, NUCIND
          DO ISYMOP = 0, MAXOPR
             IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
-               ICHARG = NINT(CHARGE(IATOM))
                   DO KCOOR = 1, 3
                      GEOM(3*JATOM + KCOOR) =
      &                    PT(IBTAND(ISYMAX(KCOOR,1),ISYMOP))

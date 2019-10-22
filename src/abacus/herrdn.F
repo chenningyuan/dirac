@@ -306,7 +306,6 @@ C
       INTEGER          :: inpfile
 
 C     JHS
-      CHARACTER(LEN=72) :: str
       INTEGER :: i
       REAL :: time1,time2
 
@@ -500,9 +499,6 @@ C         management easier.
       REAL(KIND=8),ALLOCATABLE :: ALPHA(:,:,:), 
      &                CPRIM(:,:,:,:),
      &                CPRIMU(:,:,:,:)
-
-C     JHS
-      CHARACTER(LEN=72) :: str
 
       LOGICAL :: HERMIT,DOOWN,ZMAT
 
@@ -948,7 +944,6 @@ C
       CHARACTER*80 BASREFT(10,KATOM,MAXBSFIL)
       CHARACTER*20 BSFIL(MAXBSFIL)
       LOGICAL SEGT
-      CHARACTER(LEN=72) :: str
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
@@ -1011,8 +1006,6 @@ C
         IF(.NOT.ZMTTST) THEN
           IF (DIRAC) THEN
             DOHUCKEL = .FALSE.
-            READ(LUINFO,'(a)', ADVANCE='yes') str
-            BACKSPACE(LUINFO)
             READ (MLINE(NMLINE),'(BN,1X,F9.0,I5,F20.5)',IOSTAT=IOS)
      &            Q,NONT(I),QEXP
             IF (IOS.NE.0) THEN
@@ -1150,6 +1143,7 @@ C
      &              BSKEYWORD(1:7) .EQ. 'NOBASIS') THEN
                   IBSFLAG = 1
                   IQM(I,1) = 0
+                  IZATOM(I) = 0
                ELSE IF ( BSKEYWORD(1:6) .EQ. 'INTGRL' ) THEN
                   IBSFLAG = 1
                   READ (MLINE(NMLINE)(13:),*,IOSTAT=IOS)
@@ -1680,13 +1674,14 @@ C
                  IF(NHTYP.GT.MXQN) GOTO 5000
                ENDIF
  300         CONTINUE
-           ENDIF
-C
-           DO 400 K = 1,NONT(I)
-              NOORBT(K+INUC) = NOORBTS
- 400       CONTINUE
-C       End of switch DALTON/DIRAC
+
+           ENDIF ! End of switch DALTON/DIRAC
         END IF 
+
+C       Point charge (i.e. NO ORBITALS) ?
+        DO K = 1,NONT(I)
+           NOORBT(K+INUC) = NOORBTS
+        END DO
 C
         DO ISET = 3, 4
 C
@@ -1901,7 +1896,7 @@ C
         CALL RECP_LNK_READCP(LUINFO,I,NONT(I),IPREAD)
 C
 C     End of loop over unique atom types
-  100 CONTINUE
+  100 CONTINUE !  DO 100 I = 1, NONTYP
 C
       RETURN
 C
@@ -2437,7 +2432,7 @@ C
          NUCLEI_IN_TYPE = 0
          DO 20 N = 1,NONT(I)
             ICENT  = ICENT + 1
-            NCHARG = NINT(CHARGE(ICENT))
+            NCHARG = IZATOM(ICENT)
             NCHTOT = NCHTOT + NUCDEG(ICENT)*NCHARG
             NUCLEI_IN_TYPE = NUCLEI_IN_TYPE + NUCDEG(ICENT)
    20    CONTINUE
