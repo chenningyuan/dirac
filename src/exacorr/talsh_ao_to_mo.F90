@@ -7,6 +7,7 @@ module talsh_ao_to_mo
         use tensor_algebra
         use talsh
         use exacorr_utils
+        use, intrinsic:: ISO_C_BINDING
 
         implicit none
         private
@@ -14,6 +15,7 @@ module talsh_ao_to_mo
         public compute_ao_integrals
         public get_integral_tensor
         public tensor_norm2
+        public compute_nelectrons
 
         complex(8), parameter:: zero=(0.D0,0.D0)
 
@@ -30,7 +32,6 @@ module talsh_ao_to_mo
          use exacorr_mo
          use exacorr_datatypes
          use exacorr_global
-         use, intrinsic:: ISO_C_BINDING
          use module_interest_interface
          use module_interest_eri
 #if defined (VAR_MPI) 
@@ -44,7 +45,7 @@ module talsh_ao_to_mo
          integer             :: ierr, my_MPI_rank
          integer             :: nao                        ! the size of the atomic orbital basis
 
-         integer(C_SIZE_T), parameter:: BUF_SIZE=1_8*1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
+         integer(C_SIZE_T), parameter:: BUF_SIZE=200_8*1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
          type(talsh_tens_t):: aoint_tensor
          type(talsh_tens_t):: moint_tensor
          integer(C_INT):: aoint_dims(1:4),moint_dims(1:4)
@@ -85,7 +86,7 @@ module talsh_ao_to_mo
 !        Get tensor for AO integrals
          ierr=talsh_tensor_construct(aoint_tensor,C8,aoint_dims,init_val=zero)
 !        Initialize AO integral tensors (ideally via an initialization routine, for now via direct access)
-         ierr=talsh_tensor_get_body_access(aoint_tensor,body_p,C8,0,DEV_HOST)
+         ierr=talsh_tensor_get_body_access(aoint_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(body_p,ao_tens,aoint_dims(1:4)) ! to use <ao_tens> as a regular Fortran 4d array
          call compute_ao_integrals (nao,ao_tens)
          call print_date('Calculated AO integrals')
@@ -100,7 +101,7 @@ module talsh_ao_to_mo
          end if
 
 !        Write to old format MO-integrals file to allow for easy debugging of the integral transform
-         ierr=talsh_tensor_get_body_access(moint_tensor,body_p,C8,0,DEV_HOST)
+         ierr=talsh_tensor_get_body_access(moint_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(body_p,mo_tens,moint_dims(1:4))
          call write_to_mdcint (nmo,mo_tens)
 
@@ -140,17 +141,17 @@ module talsh_ao_to_mo
          integer, intent(in) :: mo_list(:)   ! and their indices
          type(talsh_tens_t), intent(inout) :: mocoefa_tensor,mocoefb_tensor
 
-         integer             :: ierr
+         integer(INTD)       :: ierr, tens_rank
          type(cmo)           :: cspinor
-         integer             :: tens_rank, mocoef_dims(1:2)
+         integer(INTD)       :: mocoef_dims(1:2)
 
          complex(8), pointer, contiguous:: camo_tens(:,:),cbmo_tens(:,:)
          type(C_PTR):: body_p
 
          ierr=talsh_tensor_dimensions(mocoefa_tensor,tens_rank,mocoef_dims)
-         ierr=talsh_tensor_get_body_access(mocoefa_tensor,body_p,C8,0,DEV_HOST)
+         ierr=talsh_tensor_get_body_access(mocoefa_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(body_p,camo_tens,mocoef_dims(1:2)) ! to use camo_tens as a regular Fortran 2d array
-         ierr=talsh_tensor_get_body_access(mocoefb_tensor,body_p,C8,0,DEV_HOST)
+         ierr=talsh_tensor_get_body_access(mocoefb_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(body_p,cbmo_tens,mocoef_dims(1:2)) ! to use cbmo_tens as a regular Fortran 2d array
 
          call get_mo_coefficients (cspinor,mo_list,nmo)
@@ -292,10 +293,11 @@ module talsh_ao_to_mo
 
          type(talsh_tens_t):: mocoefa_tensor(4),mocoefb_tensor(4)
          type(talsh_tens_t):: a1int_tensor,a2int_tensor, a3int_tensor
-         integer:: aoint_dims(1:4),mocoef_dims(1:2),a1int_dims(1:4)
-         integer:: a2int_dims(1:4),a3int_dims(1:4),moint_dims(1:4)
+         integer(INTD) :: aoint_dims(1:4),mocoef_dims(1:2),a1int_dims(1:4)
+         integer(INTD) :: a2int_dims(1:4),a3int_dims(1:4),moint_dims(1:4)
 
-         integer   :: ierr, tens_rank, i, imo, nao
+         integer(INTD) :: ierr, tens_rank
+         integer       :: i, imo, nao
 
          ! call print_date('entered aomo_transform')
 !        Get tensor dimension of input and output tensors
@@ -377,7 +379,7 @@ module talsh_ao_to_mo
          integer, intent(in)                :: nmo(4), mo_list(:)
          integer, intent(in)                :: antisymmetrize
 
-         integer                            :: ierr, moint_dims(4)
+         integer(INTD)                      :: ierr, moint_dims(4)
          type(talsh_tens_t)                 :: moint_tensor
 
          moint_dims = nmo
@@ -399,13 +401,13 @@ module talsh_ao_to_mo
          type(talsh_tens_t), intent(inout)  :: mulliken_tensor,dirac_tensor
          integer, intent(in)                :: antisymmetrize
 
-         integer:: mulliken_dims(1:4),dirac_dims(1:4)
+         integer(INTD) :: mulliken_dims(1:4),dirac_dims(1:4)
 
-         integer   :: ierr, tens_rank, mismatch
+         integer(INTD) :: ierr, tens_rank, mismatch
 
 !        work-around: addition with permutation is not implemented
-         type(talsh_tens_t):: one_tensor, minusone_tensor
-         integer:: scalar_dims(1)
+         type(talsh_tens_t) :: one_tensor, minusone_tensor
+         integer(C_INT)     :: scalar_dims(1)
          scalar_dims(1) = 1
          ierr=talsh_tensor_construct(one_tensor,C8,scalar_dims(1:0),init_val=ONE)
          ierr=talsh_tensor_construct(minusone_tensor,C8,scalar_dims(1:0),init_val=MINUS_ONE)
@@ -450,12 +452,12 @@ module talsh_ao_to_mo
 
          type(talsh_tens_t), intent(inout):: a_tensor
 
-         integer:: a_dims(1:4)
-         integer:: ierr, a_rank
+         integer(INTD) :: a_dims(1:4)
+         integer(INTD) :: ierr, a_rank
 
 !        scalars (need to be defined as tensor types)
-         type(talsh_tens_t):: result_tensor
-         integer:: result_dims(1)
+         type(talsh_tens_t)  :: result_tensor
+         integer(C_INT)      :: result_dims(1)
          complex(8), pointer :: result_tens(:)
          type(C_PTR):: body_p
          real(8) :: a_norm2
@@ -463,7 +465,7 @@ module talsh_ao_to_mo
 !        Initialize scalars that are to be used as tensors in contractions
          result_dims(1) = 1
          ierr=talsh_tensor_construct(result_tensor,C8,result_dims(1:0),init_val=ZERO)
-         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,0,DEV_HOST)
+         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(body_p,result_tens,result_dims)
 
          ierr = talsh_tensor_dimensions(a_tensor,a_rank,a_dims)
@@ -486,5 +488,105 @@ module talsh_ao_to_mo
          ierr=talsh_tensor_destruct(result_tensor)
 
         end function tensor_norm2
+
+        subroutine compute_nelectrons(mo_occ)
+
+          use exacorr_datatypes
+          use exacorr_mo
+          use exacorr_respect
+
+          ! input variables
+          integer, intent(in) :: mo_occ(:)
+          ! local variables
+          type(cmo)              :: cspinor
+          type(basis_set_info_t) :: ao_basis
+
+          integer :: ksh, lsh,koff, loff
+          integer :: lk,ll,nk,nl,k,l,kl
+          real(8) :: ek,el,ck,cl,xk,yk,zk,xl,yl,zl
+
+          integer :: nrkb
+          real(8) :: skl(21*21) ! hardwired for maximum  l-value of 5 (s=1,p=3,d=6,f=10,g=15,h=21)
+          real(8), parameter :: fijkl = 1.0
+          integer :: ncentr=1
+          real(8) :: atomic_data(5) = (/0.0,0.0,0.0,0.0,0.0/)
+
+          integer :: nocc
+          complex(8), allocatable :: s_ao(:,:), s_c(:,:), s_mo(:,:)
+          real(8) :: nelec
+
+          logical :: tobe
+
+          integer :: ierr
+
+          ! read MO coefficients and ao basis set information
+          inquire (file='DFCOEF',exist=tobe)
+          if (tobe) then
+             call read_from_dirac (ao_basis,cspinor,'DFCOEF',ierr)
+          else
+             inquire (file='RSD_MOS',exist=tobe)
+             if (tobe) then
+                call read_from_respect (ao_basis,cspinor,ierr)
+             end if
+          end if
+
+          allocate(s_ao(ao_basis%nao,ao_basis%nao))
+
+!         AO overlap
+          loff = 0
+          do lsh = 1, ao_basis%nshells
+            ll   =  ao_basis%gtos(lsh)%orb_momentum
+            el   =  ao_basis%gtos(lsh)%exponent(1)
+            xl   =  ao_basis%gtos(lsh)%coord(1)
+            yl   =  ao_basis%gtos(lsh)%coord(2)
+            zl   =  ao_basis%gtos(lsh)%coord(3)
+            cl   =  ao_basis%gtos(lsh)%coefficient(1)
+            koff = 0
+            do ksh = 1, ao_basis%nshells
+              lk   =  ao_basis%gtos(ksh)%orb_momentum
+              ek   =  ao_basis%gtos(ksh)%exponent(1)
+              xk   =  ao_basis%gtos(ksh)%coord(1)
+              yk   =  ao_basis%gtos(ksh)%coord(2)
+              zk   =  ao_basis%gtos(ksh)%coord(3)
+              ck   =  ao_basis%gtos(ksh)%coefficient(1)
+              call  interest_overlap(.false.,   &
+                              skl,nk,nl,nrkb,   &
+                              lk,ek,xk,yk,zk,ck,&
+                              ll,el,xl,yl,zl,cl,&
+                              ncentr,atomic_data)
+              kl = 1
+              do l = 1, nl
+                do k = 1, nk
+                  s_ao(koff+k,loff+l) = dcmplx(skl(kl),0.D0)
+                  kl = kl + 1
+                end do
+              end do
+
+              koff = koff + nk
+            end do
+            loff = loff + nl
+          end do
+
+          nocc = size(mo_occ)
+          allocate(s_c (cspinor%nao,nocc))
+          allocate(s_mo(nocc,       nocc))
+
+          s_c  = matmul(s_ao,cspinor%coeff(:,mo_occ,1))
+          s_mo = matmul(conjg(transpose(cspinor%coeff(:,mo_occ,1))),s_c)
+          s_c  = matmul(s_ao,cspinor%coeff(:,mo_occ,2))
+          s_mo = s_mo + matmul(conjg(transpose(cspinor%coeff(:,mo_occ,2))),s_c)
+
+!         take trace of matrix
+          nelec = 0
+          do k = 1, nocc
+            nelec = nelec + real(s_mo(k,k),8)
+            print*, "nelec : ", nelec
+          end do
+
+          deallocate(s_ao)
+          deallocate(s_c)
+          deallocate(s_mo)
+
+        end subroutine compute_nelectrons
 
 end module talsh_ao_to_mo

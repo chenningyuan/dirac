@@ -17,7 +17,7 @@ include(FindCompilerVersion)
 # Miro Ilias restored CMake printout, associated with build_info.h generation
 include(build_info)
 
-set(_lisd_of_executables)
+set(_list_of_executables)
 macro(compile_standalone _executable _source _list_of_executables)
     add_executable(
         ${_executable}
@@ -42,6 +42,11 @@ add_custom_command(TARGET dirac.x PRE_LINK COMMAND ${CMAKE_COMMAND} -E copy_dire
 # In the branch, we always want a stand-alone version of exacorr as well. Make this optional when merging into master
 if (ENABLE_EXATENSOR)
    compile_standalone(exacorr.x src/exacorr/exacorr_main.F90   "${_list_of_executables}")
+endif()
+
+if (ENABLE_GENIAO)
+   compile_standalone(geniao.x src/geniao/generate_iao.F90   "${_list_of_executables}")
+   compile_standalone(avas.x src/geniao/generate_avas.F90   "${_list_of_executables}")
 endif()
 
 option(ENABLE_UTILITIES "Enable utilities" ON)

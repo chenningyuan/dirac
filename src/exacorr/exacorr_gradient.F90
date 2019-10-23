@@ -9,6 +9,7 @@ module exacorr_gradient
   use exacorr_datatypes
   use exacorr_global,    only : debug_exa
   use exacorr_utils,     only : print_date
+  use, intrinsic:: ISO_C_BINDING
 
   implicit none
 
@@ -33,12 +34,12 @@ module exacorr_gradient
 !     density matrices type, output
       type(exatns_dm_tens) :: gamma
 !     tensor dimensions
-      integer,       dimension(2) :: oo_id,  ov_id,  vo_id,  vv_id
+      integer(INTD), dimension(2) :: oo_id,  ov_id,  vo_id,  vv_id
       integer(INTL), dimension(2) :: oo_root,ov_root,vo_root,vv_root
 !     CCD switch
       logical :: CCD
 !     error code
-      integer :: ierr
+      integer(INTD) :: ierr
 
       CCD = exa_input%CCD
 
@@ -121,12 +122,12 @@ module exacorr_gradient
       type(tens_rcrsv_t) :: tau2_tensor
       type(tens_rcrsv_t) :: vv_aux_tensor,oo_aux_tensor
 !     tensor dimensions
-      integer,       dimension(2) :: oo_id,   vv_id
+      integer(INTD), dimension(2) :: oo_id,   vv_id
       integer(INTL), dimension(2) :: oo_root, vv_root
-      integer,       dimension(4) :: vvoo_id
+      integer(INTD), dimension(4) :: vvoo_id
       integer(INTL), dimension(4) :: vvoo_root
 !     error code
-      integer :: ierr
+      integer(INTD) :: ierr
 
 !*********************************
 !     construct auxiliary tensor *

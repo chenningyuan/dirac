@@ -7,8 +7,8 @@ option(ENABLE_EXATENSOR "Enable ExaTensor library" ON)
 if(ENABLE_EXATENSOR)
     ExternalProject_Add(exatensor
         PREFIX "${PROJECT_BINARY_DIR}/exatensor"
-        GIT_REPOSITORY git@gitlab.com:DmitryLyakh/ExaTensor.git
-        GIT_TAG dirac
+        GIT_REPOSITORY https://github.com/ornl-qci/exatensor.git
+        GIT_TAG f2cbb5117059d16c03b5985abe066a664a45808d
         CONFIGURE_COMMAND true  # currently no configure command
         BUILD_COMMAND cd ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/ && make
         INSTALL_COMMAND true  # currently no install command
@@ -16,7 +16,7 @@ if(ENABLE_EXATENSOR)
         )
 
     set(EXTERNAL_LIBS ${EXTERNAL_LIBS} ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib/libexatensor.a)
-    set(EXTERNAL_LIBS ${EXTERNAL_LIBS} ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib/libtalsh.a -lgomp)
+    set(EXTERNAL_LIBS ${EXTERNAL_LIBS} ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib/libtalsh.a)
 
     include_directories(${PROJECT_BINARY_DIR}/exatensor/src/exatensor/include)
 endif()

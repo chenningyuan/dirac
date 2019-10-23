@@ -8,20 +8,22 @@ module exacorr_mo
 
 !   Extended from dirac_mo by Stan Papadopoulos, January 2019
 
-!!!!!!!!!!!!!!!!!LOSE DEPENDENCY ON DIRAC_MO -> PUT EVERYTHING IN HERE
-
     implicit none
 
     private
 
     public :: alloc_mo, dealloc_mo, sync_mo
-    public :: convert_quaternion_to_complex
+    public :: convert_quaternion_to_complex,convert_complex_to_quaternion,apply_Kramers_operator
 
     type  :: mo_root
         integer             :: &
-         fermion_irrep, &     ! fermion irrep (1=gerade, 2=ungerade) to which the spinors belongs
          nao, &               ! number of aos
          nmo                  ! number of mos
+
+        logical             :: &
+         allocated=.false.,    &        ! coefficient array is allocated
+         restricted=.true.,    &        ! spinors (or spin-orbitals) are paired
+         complex_algebra=.true.         ! coefficients are complex
 
         real(8)             :: &
          total_energy         ! total (SCF) energy as stored on the coefficient file
@@ -29,26 +31,45 @@ module exacorr_mo
         real(8), pointer    :: &
          energy (:)           ! orbital energies
 
-        integer, pointer    :: &
-         index(:), &          ! index of the spinor in the full list of spinors for this fermion symmetry
-         boson_irrep(:)       ! for spinfree calculations: boson irrep to which the spinor belongs
+        real(8), pointer :: &
+         coeff_r (:,:,:)      ! coefficients (AO,MO,spin)
+
+        complex(8), pointer :: &
+         coeff_c (:,:,:)      ! coefficients (AO,MO,spin)
+
+        real(8), pointer :: &
+         coeff_q (:,:,:)      ! coefficients (AO,MO,IZ)
 
     end type mo_root
 
     type, public, extends(mo_root) :: cmo
 
+        integer, pointer    :: &
+         index(:), &          ! index of the spinor in the full list of spinors for this fermion symmetry
+         boson_irrep(:)       ! for spinfree calculations: boson irrep to which the spinor belongs
+
+        integer             :: &
+         fermion_irrep        ! fermion irrep (1=gerade, 2=ungerade) to which the spinors belongs
+
         complex(8), pointer :: &
-         coeff (:,:,:)          ! coefficients (AO,MO,spin)
+         coeff (:,:,:)        ! coefficients (AO,MO,spin)
 
     end type cmo
 
     type, public, extends(mo_root) :: qumo
 
+        integer, pointer    :: &
+         index(:), &          ! index of the spinor in the full list of spinors for this fermion symmetry
+         boson_irrep(:)       ! for spinfree calculations: boson irrep to which the spinor belongs
+
+        integer             :: &
+         fermion_irrep        ! fermion irrep (1=gerade, 2=ungerade) to which the spinors belongs
+
         integer :: &
          nz                   ! number of active quaternion units
 
         real(8), pointer :: &
-         coeff (:,:,:)        ! coefficients (AO,MO,IZ)
+         coeff   (:,:,:)      ! coefficients (AO,MO,iz)
 
     end type qumo
 
@@ -73,9 +94,9 @@ module exacorr_mo
 
 !     Prepare to work with a block of Mos
 
-      type(cmo), intent(out) :: M
-      integer,   intent(in ) :: nao
-      integer,   intent(in ) :: nmo
+      type(cmo), intent(inout) :: M
+      integer,   intent(in )   :: nao
+      integer,   intent(in )   :: nmo
 
       M%nao = nao  ! Size of AO basis. Is kept here as we may want to use non-global defs
       M%nmo = nmo  ! Size of MO basis. May vary (e.g. in the 4-index when we have different ranges)
@@ -96,6 +117,7 @@ module exacorr_mo
       nullify  (M%index)
       allocate (M%index(M%nmo))
       M%index = 0
+      M%allocated = .true.
 
      end subroutine alloc_mo_complex
 
@@ -103,10 +125,10 @@ module exacorr_mo
 
 !      Prepare to work with a block of Mos
 
-       type(qumo), intent(out)           :: M
-       integer,    intent(in )           :: nao
-       integer,    intent(in )           :: nmo
-       integer,    intent(in ), optional :: nz
+       type(qumo), intent(inout)           :: M
+       integer,    intent(in )             :: nao
+       integer,    intent(in )             :: nmo
+       integer,    intent(in ), optional   :: nz
 
        M%nao = nao  ! Size of AO basis. Is kept here as we may want to use non-global defs
        M%nmo = nmo  ! Size of MO basis. May vary (e.g. in the 4-index when we have different ranges)
@@ -132,6 +154,7 @@ module exacorr_mo
        nullify  (M%index)
        allocate (M%index(M%nmo))
        M%index = 0
+       M%allocated = .true.
 
      end subroutine alloc_mo_quaternion
 
@@ -150,6 +173,7 @@ module exacorr_mo
       deallocate (M%coeff)
       deallocate (M%boson_irrep)
       deallocate (M%index)
+      M%allocated = .false.
 
      end subroutine dealloc_mo_complex
 
@@ -169,6 +193,7 @@ module exacorr_mo
        deallocate (M%coeff)
        deallocate (M%boson_irrep)
        deallocate (M%index)
+       M%allocated = .false.
 
      end subroutine dealloc_mo_quaternion
 
@@ -190,6 +215,7 @@ module exacorr_mo
       call interface_mpi_bcast (M%nmo,1,my_MPI_master,global_communicator)
       if (my_MPI_rank /= my_MPI_master) then
          call alloc_mo (M,M%nao,M%nmo)
+         M%allocated = .true.
       end if
       call interface_mpi_bcast (M%fermion_irrep,    1,my_MPI_master,global_communicator)
       call interface_mpi_bcast (M%boson_irrep,  M%nmo,my_MPI_master,global_communicator)
@@ -217,6 +243,7 @@ module exacorr_mo
       call interface_mpi_bcast (M%nz ,1,my_MPI_master,global_communicator)
       if (my_MPI_rank /= my_MPI_master) then
          call alloc_mo(M,M%nao,M%nmo,M%nz)
+         M%allocated = .true.
       end if
       call interface_mpi_bcast (M%fermion_irrep,    1,my_MPI_master,global_communicator)
       call interface_mpi_bcast (M%boson_irrep,  M%nmo,my_MPI_master,global_communicator)
@@ -287,5 +314,67 @@ module exacorr_mo
       end do
 
      end subroutine convert_quaternion_to_complex
+
+     subroutine convert_complex_to_quaternion(cm,qm)
+
+!     switch to Kramer's restricted format, taking unbarred spinors (odd indices) as reference
+!     NB: will not work for unrestricted calculations in which unbar/bar are not intertwined exactly
+
+      implicit none
+      type(cmo),  intent(inout) :: cm
+      type(qumo), intent(inout) :: qm
+      integer                   :: i, j
+
+      call alloc_mo (qm,cm%nao,cm%nmo/2,4)
+    
+      qm%total_energy  = cm%total_energy
+      qm%fermion_irrep = cm%fermion_irrep
+
+      do j = 1, qm%nmo
+        qm%energy(j) = cm%energy(2*j-1)
+        qm%boson_irrep(j) = cm%boson_irrep(2*j-1)
+      end do
+
+      do j = 1, qm%nmo
+         do i = 1, qm%nao
+          qm%coeff(i,j,1) =  real(cm%coeff(i,2*j-1,1))
+          qm%coeff(i,j,2) = aimag(cm%coeff(i,2*j-1,1))
+          qm%coeff(i,j,3) = -real(cm%coeff(i,2*j-1,2))
+          qm%coeff(i,j,4) = aimag(cm%coeff(i,2*j-1,2))
+         end do
+      end do
+
+     end subroutine convert_complex_to_quaternion
+
+     subroutine apply_Kramers_operator(cm,cmbar)
+
+!     apply Kramers operator: returns time-reversed set of spinors
+
+      implicit none
+      type(cmo),  intent(inout) :: cm    ! original set of spinors
+      type(cmo), intent(inout)  :: cmbar ! time-reversed set of spinors
+      integer                   :: i, j
+
+      if (cmbar%allocated) call dealloc_mo(cmbar)
+      call alloc_mo (cmbar,cm%nao,cm%nmo)
+
+      cmbar%total_energy  = cm%total_energy
+      cmbar%fermion_irrep = cm%fermion_irrep
+
+      do j = 1, cm%nmo
+        cmbar%energy(j)      = cm%energy(j)
+        cmbar%index(j)       = cm%index(j)
+        cmbar%boson_irrep(j) = cm%boson_irrep(j)
+      end do
+
+      do j = 1, cm%nmo
+         do i = 1, cm%nao
+          cmbar%coeff(i,j,1) = - dconjg(cm%coeff(i,j,2)) ! c_alpha <- - c_beta*
+          cmbar%coeff(i,j,2) =   dconjg(cm%coeff(i,j,1)) ! c_beta  <- + c_alpha*
+         end do
+      end do
+
+     end subroutine apply_Kramers_operator
+
 
 end module exacorr_mo

@@ -5,6 +5,7 @@ module exacorr_eom
         use exatensor
         use exacorr_datatypes
         use intermediates
+        use, intrinsic:: ISO_C_BINDING
 
         implicit none
         complex(8), parameter :: MINUS_ONE=(-1.D0,0.D0),ONE_HALF=(0.5D0,0.D0)
