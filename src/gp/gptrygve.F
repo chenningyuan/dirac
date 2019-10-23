@@ -378,9 +378,6 @@ C 3 = pretty print traceback to stdout...
       CALL interface_MPI_ABORT(global_communicator,IERR)
 #   endif
 #endif
-#if defined (VAR_PVM)
-      CALL PVMFEXIT(INFO)
-#endif
 
 CMI ... .*F -> *.p dependency brings -DNO_SF_QUIT
 #if defined (NO_SF_QUIT)
@@ -915,7 +912,7 @@ C
       GOTO 9100
 C
  9004 CONTINUE
-#ifdef GFORTRAN
+#ifdef VAR_GFORTRAN
 C
       call perror(' GPOPEN calling perror:')
 #endif

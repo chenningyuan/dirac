@@ -6,15 +6,23 @@
 
 Revised features:
 
-- max number of basis functions increased from 30k to 40k
+- Maximum number of basis functions increased from 30k to 40k.
 
 Error corrections:
 
-- Fix spelling error in keyword .GAUNTSCALE (was .GAUTSCALE)
+- Fixed use of point charges (do not try to obtain e.g. mass of a point charge).
+- Fixed Be basis set in cc-pV5Z.
+- Fixed spelling error in keyword .GAUNTSCALE (was .GAUTSCALE).
+- Fixed T1EQN1 function call in src/relccsd/ccgrad.F (thanks to Martin Siegert).
 
 Performance improvements:
 
-- Reduced static memory requirement from common blocks
+- Reduced static memory requirement from common blocks.
+
+Documentation:
+
+- Restore local build of Sphinx documentation.
+
 
 18.0 (2018-12-13)
 -----------------

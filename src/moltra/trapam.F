@@ -4619,8 +4619,6 @@ C
       CALL QENTER('TRAPARI')
 C
       KFRSAV = KFREE
-      PARHER = .TRUE.
-      PARCAL = .TRUE.
 C
       FINISH = .FALSE.
 C
@@ -5016,9 +5014,9 @@ C
 #include "aovec.h"
 #include "maxorb.h"
 #include "blocks.h"
-      LOGICAL ANTIS,LMP2
-      DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4)
-      DIMENSION DINTSKP(8),TIM1(7)
+      LOGICAL   ANTIS,LMP2
+      INTEGER   NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4)
+      REAL(8)   DINTSKP(8),TIM1(7)
       real(8), allocatable :: WORK(:)
 C
       CALL QENTER('TRANOD')
@@ -5029,6 +5027,7 @@ C
 C
 C     Initialize the common blocks.
 C
+      PARHER = .TRUE.
       IPRINT = -1
       CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
      &             KINDX,KGAB,KDRIJ,
@@ -5089,6 +5088,7 @@ C
 C
       CALL MEMREL('TRANOD',WORK,1,KFRSAV,KFREE,LFREE)
       call dealloc(WORK)
+      PARHER = .FALSE.
       CALL QEXIT('TRANOD')
 C
       RETURN
