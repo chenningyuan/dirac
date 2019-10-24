@@ -58,16 +58,21 @@ C
       LOGICAL TOBE,TOBEK,TOBEKK,TRASAM,ACTIVE
       DIMENSION NSTR(2,0:2,4),KVEC(2,5),KQ(2,4),KIBE(2,4),
      &          IR(2,2),NR(2),NQ(2,4),NQT(4),KE(2,4),
-     &          NSPC(2,0:2),KQC(2),NSTRT(4)
+     &          NSPC(2,0:2),KQC(2),NSTRT(4),NSPC2(2,0:3)
       Real(8), Allocatable :: CMO(:),EIG(:)
       Integer, Allocatable :: IBEIG(:)
       real(8), allocatable :: WORK(:)
+C     Initialize (for debug mode)
+      KE=1
+      KIBE=1
+      KQC=1
 C
       CALL QENTER('PAMTRA')
       call legacy_lwork_get(LWORK)
 #include "memint.h"
       call alloc(WORK,LWORK,id='WORK in PAMTRA')
       KFRSAV = KFREE
+
 C
       CALL GETTIM(CPU1,WALL1)
       CALL TRAHI(IPRTRA,3)
@@ -358,6 +363,26 @@ C
             CALL ORBCNT(WORK(KVEC(IFRP,5)),NSPC(IFRP,0),
      &                  NPSH(IFRP),NESH(IFRP),
      &                  NSPC(IFRP,2),NSPC(IFRP,1))
+         ENDIF
+         IF (INDEX(TRA_CORSTR2(IFRP),'not specified').EQ.0) THEN
+             WRITE(LUPRI,'(/A)') '+++++ add open shell '
+             Allocate (IBEIG(NR(IFRP)))
+             CALL NUMLST(TRA_CORSTR2(IFRP),IBEIG,
+     &                  NR(IFRP),IR(1,IFRP),IR(2,IFRP),
+     &                  IFRP,NSPC2(IFRP,0))
+             CALL ORBCNT(IBEIG,NSPC2(IFRP,0),
+     &                  NPSH(IFRP),NESH(IFRP),
+     &                  NSPC2(IFRP,2),NSPC2(IFRP,1))
+
+             CALL ADDCORE2(NR(IFRP),WORK(KVEC(IFRP,5)),NSPC(IFRP,0),
+     &                     IBEIG,NSPC2(IFRP,0))
+             CALL ORBCNT(WORK(KVEC(IFRP,5)),NSPC(IFRP,0),
+     &                  NPSH(IFRP),NESH(IFRP),
+     &                  NSPC(IFRP,2),NSPC(IFRP,1))
+             NSPC2(IFRP,3)=NCORE2
+             DeAllocate (IBEIG)
+         ELSE
+             NSPC2=-1
          ENDIF
          NSPC(IFRP,0) = NSPC(IFRP,1) + NSPC(IFRP,2)
          CALL MEMREL('PAMTRA.4',WORK,KFRSAV,KVEC(IFRP,5),KFREE,LFREE)
@@ -3834,11 +3859,15 @@ C
 #include "dcbdhf.h"
       CHARACTER DAYTID*24,SECTID*12,CPUTID*12
       LOGICAL TOBE,TRANOP,SKPONE,SKPTWO
-      DIMENSION NSTR(2,0:2,4),NSTRT(2),NSPC(2,0:2),
+      DIMENSION NSTR(2,0:2,4),NSTRT(2),NSPC(2,0:2),NSPC2(2,0:3),
      &          KVEC(2,2),KQ(2,4),KE(2,4),KIBE(2,4),NQ(2),KQC(2)
 CTROND: to fix !
       DIMENSION MINE(16),MAXE(16),NGASO(256)
       real(8), allocatable :: WORK(:)
+C     Initialize (for debug mode)
+      KE=1
+      KIBE=1
+      KQC=1
 C
       CALL QENTER('RESOLV')
       call legacy_lwork_get(LWORK)
@@ -4044,15 +4073,17 @@ C        ( ITASK = 1 for Fock matrices )
 C
         IF (PARCAL) CALL DIRAC_PARCTL( HERFCK_PAR )
 C
+C       don't use frozen open shells
+        NSPC2=-1
 C       Transform core-fock matrix to active MO basis
 C       ---------------------------------------------
-CMiro/Aug 2016 - introduced DFT-COSCI, core-fock mtx contains xc contrib 
+C Miro/Aug 2016 - introduced DFT-COSCI, core-fock mtx contains xc contrib 
 
         CALL GTCFCK(WORK(KBUF),IPRRES,WORK(KQ(1,1)),WORK(KQ(1,2)),
      &            WORK(KQC(1)),WORK(KBUF1),NDMOQR,ICMOQR,NSTR(1,0,1),
-     &             NDMOQC,ICMOQC,NSPC(1,0),
+     &             NDMOQC,ICMOQC,NSPC(1,0),WORK(KQC(1)),NSPC2,
      &             INTRES,WORK,KFREE,LFREE)
-C
+C 
 C       Write MOLFDIR file MRCONEE
 C       --------------------------
 C
@@ -5546,5 +5577,27 @@ C
      &    IELC(IOPEN),(NGASO(IREP,IOPEN),IREP = 1,NREP)
       ENDDO
 !
+      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck TRAPAM */
+      SUBROUTINE ADDCORE2(NLIST,TLIST,TNUM,
+     &                     SLIST,SNUM)
+C***********************************************************************
+C
+C     Written by J.Pototschnig, Fall 2019
+C
+C***********************************************************************
+C     add SLIST to TLIST
+
+      INTEGER NLIST,TNUM,SNUM
+      INTEGER TLIST(NLIST),SLIST(NLIST)
+
+      DO I=1,SNUM
+        TLIST(TNUM+I)=SLIST(I)
+      ENDDO
+      TNUM=TNUM+SNUM
+
       RETURN
       END

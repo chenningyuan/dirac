@@ -23,7 +23,7 @@
 #include "dirac_partask.h"
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRAONE */
-      SUBROUTINE TRAONE(TOTERG,WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,
+      SUBROUTINE TRAONE(TOTERG,WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,NSPC2,
      &                  KQ,KQC,KE,KIBE)
 C***********************************************************************
 C
@@ -46,7 +46,7 @@ C
       LOGICAL TOBE,TRASAM
       real*8, intent(in) :: toterg
       DIMENSION WORK(*),NSTR(2,0:2,2),NSTRT(2),KQ(2,2),
-     &          NSPC(2,0:2),KQC(2),KE(2,2),KIBE(2,4)
+     &          NSPC(2,0:2),NSPC2(2,0:3),KQC(2),KE(2,2),KIBE(2,4)
       Real(8), Allocatable :: FMO(:),ORBE(:)
       Integer, Allocatable :: IBORB(:)
 
@@ -68,7 +68,7 @@ C
 !Miro: used parameter DUMMY -no need for full set of MOs
       CALL GTCFCK(FMO,IPRTRA,WORK(KQ(1,1)),WORK(KQ(1,2)),
      &        WORK(KQC(1)),DUMMY,NDMOQR,ICMOQR,NSTR,NDMOQC,ICMOQC,NSPC,
-     &        ITRA_INTFL2,WORK,KFREE,LFREE)
+     &        WORK(KQC(1)),NSPC2,ITRA_INTFL2,WORK,KFREE,LFREE)
 C
 C     Write MOLFDIR file MRCONEE
 C     --------------------------
@@ -97,7 +97,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck gtcfck */
       SUBROUTINE GTCFCK(FMO,IPRINT,Q1,Q2,QCO,CMO,NDMOQR,ICMOQR,NSTR,
-     &                  NDMOQC,ICMOQC,NSPC,INTFLG2,WORK,KFREE,LFREE)
+     &          NDMOQC,ICMOQC,NSPC,QCO2,NSPC2,INTFLG2,WORK,KFREE,LFREE)
 C***********************************************************************
 C     
 C     Get core Fock-matrix in MO-basis; 
@@ -121,8 +121,8 @@ C
       LOGICAL TOBE
       DIMENSION FMO(*),WORK(*)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2),NSTR(2,0:2,2)
-      DIMENSION NDMOQC(2,2),ICMOQC(2),NSPC(2,0:2)
-      DIMENSION Q1(*),Q2(*),QCO(*),CMO(*)
+      DIMENSION NDMOQC(2,2),ICMOQC(2),NSPC(2,0:2),NSPC2(2,0:3)
+      DIMENSION Q1(*),Q2(*),QCO(*),CMO(*),QCO2(*)
       Real(8), Allocatable :: FAO(:),DMAT(:),DMATfull(:)
 C
       CALL QENTER('GTCFCK')
@@ -137,7 +137,7 @@ C
       Allocate(DMATfull(N2BBASXQ))! Miro: full density matrix
 C
       CALL GTCFC1(FMO,FAO,DMAT,DMATfull,Q1,Q2,QCO,CMO,NDMOQR,ICMOQR,
-     &            NSTR,NDMOQC,ICMOQC,NSPC,IPRINT,WORK,KFREE,LFREE)
+     &      NSTR,NDMOQC,ICMOQC,NSPC,QCO2,NSPC2,IPRINT,WORK,KFREE,LFREE)
 C
 C     Print section
 C
@@ -167,7 +167,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck GTCFC1 */
       SUBROUTINE GTCFC1(
      &   FMO,FAO,DMAT,DMATfull,Q1,Q2,QCO,CMO,NDMOQR,ICMOQR,NSTR,
-     &             NDMOQC,ICMOQC,NSPC,IPRINT,WORK,KFREE,LFREE)
+     &          NDMOQC,ICMOQC,NSPC,QCO2,NSPC2,IPRINT,WORK,KFREE,LFREE)
 C*****************************************************************************
 C     
 C     Get core Fock-matrix in MO-basis; 
@@ -208,8 +208,8 @@ C
       LOGICAL :: dirac_cfg_dft_calculation_save
       DIMENSION FMO(*),FAO(*),DMAT(*),DMATfull(*),WORK(*)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2),NSTR(2,0:2,2)
-      DIMENSION NDMOQC(2,2),ICMOQC(2),NSPC(2,0:2)
-      DIMENSION Q1(*),Q2(*),QCO(*),CMO(*)
+      DIMENSION NDMOQC(2,2),ICMOQC(2),NSPC(2,0:2),NSPC2(2,0:3)
+      DIMENSION Q1(*),Q2(*),QCO(*),QCO2(*),CMO(*)
 
       Integer, Allocatable :: POS(:)
 C
@@ -234,11 +234,15 @@ C
 C       1. Get two-electron Fock matrix in AO-basis
 C       ===========================================
 C
-        call SaveTaskDistribFlags(saveflags)
-       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
-        call SetIntTaskArrayDimension(NPOS,PARCAL)
+      call SaveTaskDistribFlags(saveflags)
+      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+      call SetIntTaskArrayDimension(NPOS,PARCAL)
         Allocate (POS(NPOS))
 C
+
+C       Modified Fall 2019 by J. Pototschnig to allow for open shell core
+        IF(NSPC2(1,3).LT.0) THEN
+
 C       Closed shell Hartree - Fock
 C       ===========================
 C       Totally symmetric operator
@@ -252,6 +256,28 @@ C       Get core density matrix
 C       Get the two-electron Fock matrix using core density matrix
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FMO,DMAT,NFMAT,
      &       POS,INTFLG,IPRINT,WORK(KFREE),LFREE)
+
+        ELSE
+
+C       Add for frozen open-shell
+C       ===========================
+
+        print*, "++++ density to add:"
+        print*, NSPC2
+
+C       Totally symmetric operator
+        ISYMOP(1) = 1
+C       Fock matrix type
+        IFCKOP(1) = 1
+C       Hermitian operator
+        IHRMOP(1) = 1
+C       Get core density matrix
+        CALL CDENS(DMAT,QCO,NDMOQC,ICMOQC,NSPC,IPRINT) 
+C       Get the two-electron Fock matrix using core density matrix
+        CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FMO,DMAT,NFMAT,
+     &       POS,INTFLG,IPRINT,WORK(KFREE),LFREE)
+
+        ENDIF
 
 ! Miro:  control printout for DFT-COSCI
         IF(IPRINT.GE.5) THEN
