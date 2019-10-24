@@ -723,6 +723,12 @@ contains
        close(99,status='keep')
 #endif
 
+       open(99,file='XAMFI-ss-soc-contributions',status='replace',form='unformatted',  &
+       access='sequential',action="readwrite",position='rewind')
+
+       write(99) scr3_mat(1:nr_ao_L*nr_ao_L*nz)
+       close(99,status='keep')
+
        deallocate(aooso_info)
 
 !      -----------------------------------------
