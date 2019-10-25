@@ -1401,23 +1401,19 @@ C
       INTEGER*8 IA(2), IB(2), ITC(2), IOFA(2), IOFB(2)
       real(8), allocatable :: GAO(:,:),GAO2(:,:),GAOAGMX(:),BUFGAO(:,:)
       real(8), allocatable :: TC(:),TD(:,:),INTAOBUF(:)  
-      real(8), allocatable :: X8(:),Y8(:),Z8(:),ANGXYZ(:),XYZ8(:,:)
-      real(8), allocatable :: px(:),py(:),pz(:),p2(:)
+      real(8), allocatable :: ANGXYZ(:),XYZ8(:,:)
+      real(8), allocatable :: pxyz(:,:),p2(:)
       real(8), parameter   :: bitstring_parity(0:7) =
      &    (/1.0d0, -1.0d0, -1.0d0, 1.0d0, -1.0d0, 1.0d0, 1.0d0, -1.0d0/)     
 C    
       allocate( TC       (NDIM2) )
       allocate( INTAOBUF (NDIM2) )
       allocate( ANGXYZ   (m)     )
-      allocate( XYZ8     (m,4)   )
 C      
       nblock_size = min(max_block_length, m)
-      allocate( X8(nblock_size) )
-      allocate( Y8(nblock_size) )
-      allocate( Z8(nblock_size) )              
-      allocate( px(nblock_size) )
-      allocate( py(nblock_size) )
-      allocate( pz(nblock_size) )
+      nsize3 = nblock_size*3
+      allocate( XYZ8(nblock_size,3) )
+      allocate( pxyz(nblock_size,3) )
       allocate( p2(nblock_size) )
 C
       CALL DZERO(INTAOBUF,NDIM2)
@@ -1505,46 +1501,40 @@ C     m is the number of angular grid
 C
             nblock_length = min(max_block_length, m - IOF_block+ 1)
             nblock_length = min(nblock_length, m)
+            nblock3 = nblock_length*3
 C              
             allocate( GAO2(nblock_length, NTBAS(0)) )              
             CALL DZERO(GAO2,nblock_length*NTBAS(0))
-            X8 = C(1,1)
-            Y8 = C(2,1)
-            Z8 = C(3,1)
-            CALL DAXPY(nblock_length,R(IR),ANG(IOFM,1),1,X8,1)
-            CALL DAXPY(nblock_length,R(IR),ANG(IOFM,2),1,Y8,1)
-            CALL DAXPY(nblock_length,R(IR),ANG(IOFM,3),1,Z8,1)
+            DO JXYZ = 1,3
+               XYZ8(:,JXYZ) = C(JXYZ,1)
+               CALL DAXPY(nblock_length,R(IR),ANG(IOFM,JXYZ),1,
+     &                                        XYZ8(   1,JXYZ),1)
+            ENDDO   
              
             i = 1
             do ishell = 1, nr_shells
               do isym = 0, nr_boson_ireps - 1
                 if (iand(isym, shell_stabilizing_irep(ishell)) == 0)then
-                 sx = bitstring_parity(iand(irep_of_axes(1), isym))
-     &                * center_xyz(shell_center(ishell), 1)
-                 sy = bitstring_parity(iand(irep_of_axes(2), isym))
-     &                * center_xyz(shell_center(ishell), 2)
-                 sz = bitstring_parity(iand(irep_of_axes(3), isym))
-     &                * center_xyz(shell_center(ishell), 3)
+                 DO JXYZ = 1, 3
+                  pxyz(:,JXYZ) = DM1 
+     &               * bitstring_parity(iand(irep_of_axes(JXYZ), isym))
+     &               * center_xyz(shell_center(ishell), JXYZ)
+                 ENDDO 
+C
+                 CALL DAXPY(nsize3,D1,XYZ8,1,pxyz,1)
 C
                  do k = 1, nblock_length
-                    px(k) = X8(k) - sx
-                    py(k) = Y8(k) - sy
-                    pz(k) = Z8(k) - sz
+                    p2(k) = DDOT(3,pxyz(k,1),nblock_size,
+     &                             pxyz(k,1),nblock_size) 
                  end do
-C
-                 do k = 1, nblock_length
-                    p2(k) = px(k)*px(k) 
-     &                    + py(k)*py(k) 
-     &                    + pz(k)*pz(k)
-                 end do
-C               
+C      
                  call get_cartesian_ao_g0(nblock_length, 
      &                                      ishell,       
-     &                                      px,           
-     &                                      py,           
-     &                                      pz,           
+     &                                      pxyz(1,1),           
+     &                                      pxyz(1,2),           
+     &                                      pxyz(1,3),           
      &                                      p2,
-     &                                      GAO2(1, i))                   
+     &                                      GAO2(1, i))
                  i = i + cartesian_deg(ishell)
                 end if
               end do  ! isym
@@ -1602,16 +1592,14 @@ C
             nblock_length = min(max_block_length, m - IOF_block+ 1)
 C     &        min(max_block_length, nr_points_on_this_proc - IOF_block+ 1)
             nblock_length = min(nblock_length, m)
-C              IF (m_NUM.EQ.m_NUM_MAX) nblock_length = mod(m,100)                
-C             write(*,*)'nblock_length,IOF_block',nblock_length,IOF_block
+C            nblock3 = nblock_length*3
             allocate( GAO2(nblock_length, NTBAS(0)) )
             CALL DZERO(GAO2,nblock_length*NTBAS(0))
-            X8 = C(1,1)
-            Y8 = C(2,1)
-            Z8 = C(3,1)
-            CALL DAXPY(nblock_length,R(IR),ANG(IOFM,1),1,X8,1)
-            CALL DAXPY(nblock_length,R(IR),ANG(IOFM,2),1,Y8,1)
-            CALL DAXPY(nblock_length,R(IR),ANG(IOFM,3),1,Z8,1)
+            DO JXYZ = 1,3
+               XYZ8(:,JXYZ) = C(JXYZ,1)
+               CALL DAXPY(nblock_length,R(IR),ANG(IOFM,JXYZ),1,
+     &                                        XYZ8(   1,JXYZ),1)
+            ENDDO
 C
             i = 1
 C              write(*,*)'nr_boson_ireps',nr_shells,nr_boson_ireps
@@ -1620,33 +1608,34 @@ C               write(*,*)
 C               write(*,*)'cartesian_deg', cartesian_deg(ishell)
               do isym = 0, nr_boson_ireps - 1
                 if (iand(isym, shell_stabilizing_irep(ishell)) == 0)then
-                 sx = bitstring_parity(iand(irep_of_axes(1), isym))
-     &                * center_xyz(shell_center(ishell), 1)
-                 sy = bitstring_parity(iand(irep_of_axes(2), isym))
-     &                * center_xyz(shell_center(ishell), 2)
-                 sz = bitstring_parity(iand(irep_of_axes(3), isym))
-     &                * center_xyz(shell_center(ishell), 3)
+                 DO JXYZ = 1, 3
+                  pxyz(:,JXYZ) = DM1 
+     &               * bitstring_parity(iand(irep_of_axes(JXYZ), isym))
+     &               * center_xyz(shell_center(ishell), JXYZ)
+                 ENDDO 
 C
+                 CALL DAXPY(nsize3,D1,XYZ8,1,pxyz,1)
+C
+C                 do k = 1, nblock_length
+C                    do jxyz = 1,3
+C                    pxyz(k,jxyz) = XYZ8(k,jxyz) + pxyz(k,jxyz)
+C                    enddo   
+C                 enddo   
                  do k = 1, nblock_length
-                    px(k) = X8(k) - sx
-                    py(k) = Y8(k) - sy
-                    pz(k) = Z8(k) - sz
-C                    write(*,*)'px,k',px(k),k
+                    p2(k) = DDOT(3,pxyz(k,1),nblock_size,
+     &                             pxyz(k,1),nblock_size) 
+C                    p2(k) = pxyz(k,1)*pxyz(k,1)
+C     &                    +  pxyz(k,2)*pxyz(k,2)
+C     &                    +  pxyz(k,3)*pxyz(k,3)       
                  end do
-
-                 do k = 1, nblock_length
-                    p2(k) = px(k)*px(k) 
-     &                    + py(k)*py(k) 
-     &                    + pz(k)*pz(k)
-                 end do
-               
+C      
                  call get_cartesian_ao_g0(nblock_length, 
      &                                      ishell,       
-     &                                      px,           
-     &                                      py,           
-     &                                      pz,           
+     &                                      pxyz(1,1),           
+     &                                      pxyz(1,2),           
+     &                                      pxyz(1,3),           
      &                                      p2,
-     &                                      GAO2(1, i))                   
+     &                                      GAO2(1, i))
                  i = i + cartesian_deg(ishell)
                 end if
               end do  ! isym
@@ -1705,12 +1694,8 @@ C     &                   NTBAS(0),NTBAS(0),-1,LUPRI)  !debug?
       deallocate( TC      )
       deallocate( INTAOBUF)
 C      deallocate( INTSOBUF)
-      deallocate( X8 )
-      deallocate( Y8 )
-      deallocate( Z8 )
-      deallocate( px      )
-      deallocate( py      )
-      deallocate( pz      )
+      deallocate( XYZ8    )
+      deallocate( pxyz    )
       deallocate( p2      )
       deallocate( ANGXYZ  )
       RETURN
