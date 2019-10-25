@@ -1546,7 +1546,7 @@ module talsh_cc
          type(talsh_tens_t), save :: t1_err_tensor(maxdim), t2_err_tensor(maxdim)
          integer             :: ipiv(0:maxdim), info  ! needed for ZHESV solver
          real(8)             :: work(maxdim,maxdim)   ! needed for ZHESV solver
-         type(talsh_tens_t), save  :: scalar_tensor
+         type(talsh_tens_t)  :: scalar_tensor
          integer(INTD)       :: scalar_dims(1)
          complex(8), pointer :: scalar_tens(:)
          type(C_PTR):: body_p
@@ -1561,12 +1561,6 @@ module talsh_cc
          end if
 
          if (.not.present(t1_tensor)) CCD = .true.
-
-!        define scalar tensor needed to extract the error
-         scalar_dims(1) = 1
-         ierr=talsh_tensor_construct(scalar_tensor,C8,scalar_dims(1:0),init_val=ZERO)
-         ierr=talsh_tensor_get_body_access(scalar_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-         call c_f_pointer(body_p,scalar_tens,scalar_dims)
 
          if (init) then
 !           get dimensions of the tensors
@@ -1615,6 +1609,12 @@ module talsh_cc
             end do
             return
          end if
+
+!        define scalar tensor needed to extract the error
+         scalar_dims(1) = 1
+         ierr=talsh_tensor_construct(scalar_tensor,C8,scalar_dims(1:0),init_val=ZERO)
+         ierr=talsh_tensor_get_body_access(scalar_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body_p,scalar_tens,scalar_dims)
 
 !        update counters
          itens = itens + 1
