@@ -135,6 +135,8 @@ Evaluate nuclear magnetic shieldings and indirect spin-spin couplings
 
 Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
+See below for advice on calculation of diamagnetic terms.
+
 keyword(SHIELDING)
 
 Evaluate nuclear magnetic shieldings (linear response). :ref:`PROPERTIES_.PRINT`
@@ -154,17 +156,25 @@ Evaluate indirect spin-spin couplings (linear response).
 
 Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
+The default is to calculate the diamagnetic term via occupied positive energy to virtual negative energy orbital rotations
+(also called electron-positron rotations), see :cite:`Aucar1999` for the theory.
+The quality of this is very basis set dependent.
+It is generally more accurate to use the non-relativistic expectation value expression
+for the diamagnetic term, activated with keyword .DSO in this section.
+You must also add :ref:`LINEAR_RESPONSE_.SKIPEP` under :ref:`*LINEAR RESPONSE` to 
+exclude the diamagnetic term from the linear response calculation.
+
 keyword(DSO)
 
 Evaluate the diamagnetic contribution to indirect spin-spin couplings as
-an expectation value.
+an expectation value of the non-relativistic DSO operator.
 
 Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
 keyword(NSTDIAMAGNETIC)
 
-Evaluate the diamagnetic contribution to nuclear magnetic shieldings as
-an expectation value.
+Evaluate the diamagnetic contribution to nuclear magnetic shielding tensor as
+an expectation value of the non-relativistic operator.
 
 Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 

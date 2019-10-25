@@ -11,41 +11,41 @@
 #endif
 
 #if defined(__CVERSION__)
-#define nodtot numnod
 extern struct common_diracinfpar {
     double totval;
 #if defined (INT_STAR8)
-    long iprpar, ntask, ncode, ndegdi, mynum, mytid;
-    long numnod, icount, mparid, node, nodes, iparex;
+    long iprpar, ntask, mytid, numnod, mparid;
+    long icount, node, nodes, iparex;
     long max_omp_threads;
-    long parher, slave, timing, debug, pario;
+    long parher, slave, timing;
 #else
-    int  iprpar, ntask, ncode, ndegdi, mynum, mytid;
-    int  numnod, icount, mparid, node, nodes, iparex;
+    int  iprpar, ntask, mytid, numnod, mparid;
+    int  icount, node, nodes, iparex;
     int  max_omp_threads;
-    int  parher, slave, timing, debug, pario;
+    int  parher, slave, timing;
 #endif 
 } diracinfpar_;
 #else /* __CVERSION__ */
 !  -- File: infpar.h for DIRAC; specific information for parallel calculations
-!     .. mpi variables (used to be in an infmpi.h /hjaaj Jan 2003):
-!        NODTOT = NUMNOD = number of slaves = number of nodes - 1 (from MPI_Comm_rank)
+!     .. mpi variables:
+!        NUMNOD = number of slaves = number of nodes - 1 (from MPI_Comm_rank)
 !        MYTID  = mpi ID of this process (from MPI_Comm_rank)
+!
+!        PARHER true when MPI parallel Hermit calculation
+!                    (only set true in subroutines HERNOD and NODTRA)
+!
+!     .. openMP variables:
+!         MAX_OMP_THREADS
       REAL*8 TOTWAL
-      INTEGER IPRPAR, NTASK, NCODE, NDEGDI, MYNUM, MYTID, NODTOT
-      INTEGER NUMNOD, ICOUNT,MPARID,NODE,NODES,IPAREX
-      INTEGER MAX_OMP_THREADS ! for 
-      LOGICAL PARHER, SLAVE, TIMING, DEBUG, PARIO
+      INTEGER IPRPAR, NTASK, MYTID, NUMNOD, MPARID
+      INTEGER ICOUNT, NODE,  NODES, IPAREX
+      INTEGER MAX_OMP_THREADS ! for openMP
+      LOGICAL PARHER, SLAVE, TIMING
       COMMON /DIRACINFPAR/ TOTWAL                                        &
-     &       ,IPRPAR, NTASK, NCODE, NDEGDI, MYNUM, MYTID, NODTOT         &
-     &       ,ICOUNT, MPARID, NODE, NODES, IPAREX                        &
+     &       ,IPRPAR, NTASK, MYTID, NUMNOD, MPARID                       &
+     &       ,ICOUNT, NODE,  NODES, IPAREX                               &
      &       ,MAX_OMP_THREADS                                            &
-     &       ,PARHER, SLAVE, TIMING, DEBUG, PARIO
-
-      EQUIVALENCE (NODTOT, NUMNOD)
-!     ... for some obscure reason NODTOT in Dalton is called NUMNOD in Dirac.
-!         This equivalence is important such that both e.g. abacus routines using NODTOT
-!         and dirac routines using NUMNOD are working correctly together /hjaaj Dec 07
+     &       ,PARHER, SLAVE, TIMING
 
 ! -- end of infpar.h --
 #endif

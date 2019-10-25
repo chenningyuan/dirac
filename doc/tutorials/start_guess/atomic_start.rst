@@ -32,7 +32,8 @@ The SCF input file ``HF.inp`` reads::
   .MULPOP
   *END OF
 
-and the molecular input ``hg-porphyrin.mol`` reads : ::
+for an SCF calculation with a Mulliken population analysis. We specify the maximum number of iterations allowed for th caclulation to 20 and as we are chosing a molecule with inversion symmetry we specify the occupation number for both irreducible representations under the keyword ``CLOSED SHELL``. The print level is set to 2 in order to have the eigenvlues printed for each iteration. 
+The molecular input ``hg-porphyrin.mol`` reads : ::
 
   BASIS
   6-31 and finite DK3 basis sets, geometry in au, ref ECP: Theor.Chim.Acta 1990,77,123 (from Gaussian)
@@ -192,12 +193,12 @@ Unfortunately, this HF does not converge: ::
   It.   20    -16289.37827128      9.92D+00 -2.58D-01  2.74D+02   DIIS   9    3min42.223s   LL SL          Fri Oct 19
 
 We see that the corrected bare nucleus start is quite far from the energies of subsequent iterations. Although the energy in the second iteration
-drops considerably it bounces back and gets stuck. We will therefore switch to an atomic start :cite:`vanLenthe2006` .
+drops considerably it bounces back and gets stuck. We will therefore switch to an atomic start :cite:`vanLenthe2006` . Observe that this caclulation will take more than an hour.
 
 
 Preparing the atomic start
 --------------------------
-For each atom we run a SCF calculation in full (linear) symmetry based on the atomic ground state configuration.
+For each atom we now run a SCF calculation in full (linear) symmetry based on the atomic ground state configuration.
 For open-shell atoms this amounts to an average-of-configuration (AOC) calculation at the HF level, and a fractional
 occupation calculation at the DFT level. 
 
@@ -223,7 +224,7 @@ The input file ``N.inp`` reads: ::
   .MULPOP
   *END OF
 
-Note the keywords ``ACMOUT`` asking that the MO coeffcients transformed to no symmetry and written to file ``DFACMO``.
+Note the keywords ``ACMOUT`` asking that the MO coeffcients transformed to no symmetry and written to file ``DFACMO``. The open shell input specifies 1 open shell with 3 electrons in 0 and 6 spinors respectively for the two irriducible representations.
 The molecular input ``N.mol`` is ::
 
   BASIS
@@ -257,7 +258,7 @@ For mercury we use ::
   .CLOSED SHELL
   42 38
 
-whereas the hydrogen atom is run as a one-electron system ::
+whereas the hydrogen atom is run as a one-electron system, meaning that the keyword for ignoring two-particle interactions ``ONESYS`` will be invoked ::
 
   **DIRAC
   .WAVE FUNCTION
@@ -321,8 +322,8 @@ The input file ``atomstart.inp`` reads ::
   .MULPOP
   *END OF
 
-The keyword ``ATOMST`` is followed by input for each atomic type. The
-occupations chosen corresponds to those of the atomic runs, but the user may
+The keyword ``ATOMST`` is followed by input for each atomic type. The first input ``AFYYXX`` specifies the file to be read for an atomtype YY, and next to it a number specifying inversion symmtry (2) or not (1). Next, for each symmetry, the spinors of that symmetry is specified followed by the occupation of the spinors.
+The occupations chosen corresponds to those of the atomic runs, but the user may
 modify this at will.  Please note that the order of atoms corresponds to the
 order they appear in the molecule file.
 
