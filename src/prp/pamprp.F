@@ -9937,8 +9937,7 @@ C***********************************************************************
 C
 C
       logical, allocatable :: DOATOM(:)
-      double precision, allocatable :: TMAT(:,:,:),
-     &                                 PMATL(:,:,:,:),PMATS(:,:,:,:),
+      double precision, allocatable :: PMATL(:,:,:,:),PMATS(:,:,:,:),
      &                                 CSTRA(:),SCTRA(:),
      &                                 TMPMATL(:,:,:),TMPMATS(:,:,:),
      &                                 GEOM(:,:),MASS(:),
@@ -9972,7 +9971,6 @@ C
       KFRSAV = KFREE
       NCMAT =  NUCDEP*9
       allocate(DOATOM(NUCIND))
-      allocate(TMAT(3,3,NUCDEP))
       allocate(PMATL(3,3,NUCDEP,2)) ! L part of NSR for ee and ep contributions.
       allocate(PMATS(3,3,NUCDEP,2)) ! S part of NSR for ee and ep contributions.
       allocate(CSTRA(NUCDEP*NUCDEP*9))
@@ -10017,10 +10015,8 @@ C
         NISO = 0
         DO ISO = 1,5
           GVALUE = DISOTP(IZ,ISO,'GVAL')
-!iaa       In the current implementation, spin-rotation of isotopes
-!          without g-value (GVALUE = 0) can be obtained
-!          setting their (artificial) g-value equal to 1
-!          IF(GVALUE.NE.0) THEN
+!iaa       Spin-rotations of isotopes without g-value (GVALUE = 0)
+!          are obtained setting their (artificial) g-value equal to 1
             ABND = DISOTP(IZ,ISO,'ABUNDANCE')
             IF(ABND.GT.ABUND.OR.(.NOT.TEST)) THEN
               TEST = .TRUE.
@@ -10029,7 +10025,6 @@ C
               RATINF(2,NISO,NSPEC+1) = ABND
               RATINF(3,NISO,NSPEC+1) = GVALUE
             ENDIF
-!          ENDIF
         ENDDO
         IF(NISO.GT.0) THEN
           IATINF(1,NSPEC+1) = IDEP + 1
@@ -10142,7 +10137,7 @@ C
       CALL DZERO(SPRDNL,NCMAT)
 C
       IF (XLR_SKIPEP) THEN
-Ciaa... A revision is needed for those cases in which .SKIPEP is activated in addition
+Ciaa    A revision is needed for those cases in which .SKIPEP is activated in addition
 C       to another property that use EXPVAL, as NMR shielding or spin-spin coupling.
 C       In such cases, the following values are not what we need 
 C       (because EXPVAL(I) is also used in those properties).
@@ -10202,6 +10197,7 @@ C
         DO IB1 = 1,NB1
           JB1 = IBUFB1(IB1)
           KB1 = IPSPINRO(MXCOOR+JB1)
+          JB1 = IPTAX(JB1,2)
           DO IA = 1,NA
             JA = IBUFA(IA)
             KA = IPSPINRO(JA)
@@ -10217,6 +10213,7 @@ C
         DO IB2 = 1,NB2
           JB2 = IBUFB2(IB2)
           KB2 = IPSPINRO(MXCOOR+3+JB2)
+          JB2 = IPTAX(JB2,2)
           DO IA = 1,NA
             JA = IBUFA(IA)
             KA = IPSPINRO(JA)
@@ -10231,51 +10228,27 @@ C...        then extract the e-p contribution
 C
         CALL DZERO(PMATL,2*NCMAT)
         CALL DZERO(PMATS,2*NCMAT)
-        CALL DZERO(TMAT,NCMAT)
 C
         IF (.NOT. XLR_SKIPEE) THEN
-          IF(LINEAR) THEN
-            PMATL(1,1,1,1)=TMPMATL(1,3,1)
-            PMATL(1,1,2,1)=TMPMATL(1,4,1)
-            PMATS(1,1,1,1)=TMPMATS(1,3,1)
-            PMATS(1,1,2,1)=TMPMATS(1,4,1)
-          ELSE
 C           .... extract the e-e response part into PMAT(...,1)
             CALL TRADIP(TMPMATL,PMATL,CSTRA,SCTRA,3*NUCDEP,2,2)
             CALL TRADIP(TMPMATS,PMATS,CSTRA,SCTRA,3*NUCDEP,2,2)
-C           .... save e-e response part into TMAT
-            CALL DAXPY(9*NUCDEP,D1,PMATL(1,1,1,1),1,TMAT,1)
-            CALL DAXPY(9*NUCDEP,D1,PMATS(1,1,1,1),1,TMAT,1)
-          END IF
         END IF
         IF (.NOT.XLR_SKIPEP) THEN
-          IF(LINEAR) THEN
-            PMATL(1,1,1,2)=TMPMATL(1,3,2)
-            PMATL(1,1,2,2)=TMPMATL(1,4,2)
-            PMATS(1,1,1,2)=TMPMATS(1,3,2)
-            PMATS(1,1,2,2)=TMPMATS(1,4,2)
-          ELSE
 C           ... extract the e-p response part into PMAT(...,2)
             CALL TRADIP(TMPMATL(1,1,2),PMATL(1,1,1,2),
      &                CSTRA,SCTRA,3*NUCDEP,2,2)
             CALL TRADIP(TMPMATS(1,1,2),PMATS(1,1,1,2),
      &                CSTRA,SCTRA,3*NUCDEP,2,2)
-C           ... add the e-p response PMAT(...,2) into TMAT
-C           so the TMAT now contains total response
-            CALL DAXPY(9*NUCDEP,D1,PMATL(1,1,1,2),1,TMAT,1)
-            CALL DAXPY(9*NUCDEP,D1,PMATS(1,1,1,2),1,TMAT,1)
-          END IF
         END IF
-C       ... add the diamagnetic term,SPRDNL, to TMAT
-            CALL DAXPY(9*NUCDEP,D1,SPRDNL,1,TMAT,1)
-C       ... add the nuclear term to TMAT
-            CALL DAXPY(9*NUCDEP,D1,SPRNUC,1,TMAT,1)
       END DO
 C
       WRITE(LUPRI,'(2X,A)')
-     & 'NOTE: The gauge origin must be placed'//
-     & ' at the molecular CM in order to get'//
-     & ' correct values of spin-rotation tensor.'
+     & 'NOTE: The electronic angular momentum operator is defined'//
+     & ' with respect to the gauge origin.'
+      WRITE(LUPRI,'(8X,A)')
+     & 'Then, it must be placed at the molecular CM to get correct'//
+     & ' values of spin-rotation tensors.'
 C--------------------------------------------------------------------
       CALL SPRRES(GEOM,AMASS,GVAL,SPRDNL,PMATL,PMATS,
      &            JATOM,IPRPRP)
@@ -10288,7 +10261,6 @@ C-------------------------------------------------------------------
       deallocate(MASS)
       deallocate(NAT)
       deallocate(DOATOM)
-      deallocate(TMAT)
       deallocate(PMATL)
       deallocate(PMATS)
       deallocate(CSTRA)
@@ -10477,7 +10449,7 @@ C
 C   INPUT:
 C     DMAT  - expectation value term of NSR
 C     PMATL - contribution from orbital angular moment to linear response term
-C     PMATS - contribution from spin to linear response term
+C     PMATS - contribution from spin angular moment to linear response term
 C
 C     Agustín Aucar and Trond Saue
 C     June 2014
@@ -10498,9 +10470,10 @@ C
 #include "ibtfun.h"
 #include "dgroup.h"   ! added
 C
-      integer I,J,KATOM,IPRINT,IATOM,ICOOR,
+      logical, allocatable :: DOATOM(:)
+      integer I,J,K,KATOM,IPRINT,IATOM,ICOOR,
      &        ISYMOP,IX,IY,JATOM,JX,JY,CSTRA,
-     &        SCTRA,NATTYP,NUMIS
+     &        SCTRA,NATTYP,NUMIS,KHZPPM
 C
       double precision D1,D2,D3,D4,THRESH,DP5,FAC,FACPPM,
      &                 GEOM(KATOM,3),AMASS(KATOM),GVAL(KATOM),
@@ -10508,54 +10481,34 @@ C
      &                 DMAT(3,3,KATOM),ANGUMOM(3),
      &                 NSREXV,NSRLR,NSRNUC,NSRTOT,
      &                 NSRLRLEE,NSRLRLEP,NSRLRSEE,NSRLRSEP,
-     &                 NSREXVPPM,NSRLRPPM,NSRNUCPPM,NSRTOTPPM,
-     &                 NSRLRLEEPPM,NSRLRLEPPPM,NSRLRSEEPPM,NSRLRSEPPPM,
      &                 CONST,CONST2,EIGVAL(3),EIGVEC(3,3),
      &                 FACTOT,OMEGA(3),SIGMAS,TINERT(9),DISOTP,
      &                 GTRANPLEE(3,3,KATOM),GTRANPLEP(3,3,KATOM),
      &                 GTRANPSEE(3,3,KATOM),GTRANPSEP(3,3,KATOM),
      &                 GTRANP(3,3,KATOM),GTRAND(3,3,KATOM),
-     &                 GTRANN(3,3,KATOM),
-     &                 GTRANPLEEPPM(3,3,KATOM),GTRANPLEPPPM(3,3,KATOM),
-     &                 GTRANPSEEPPM(3,3,KATOM),GTRANPSEPPPM(3,3,KATOM),
-     &                 GTRANPPPM(3,3,KATOM),GTRANDPPM(3,3,KATOM),
-     &                 GTRANNPPM(3,3,KATOM),GTRANTPPM(3,3,KATOM)
+     &                 GTRANN(3,3,KATOM)
 C
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
      &           THRESH = 1.0D-5, DP5 = 1/D2)
       PARAMETER (FAC = ALPHA2/(2.D0*PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
-      PARAMETER (FACPPM = ALPHA2/2.D0*1.0D+6)
+      PARAMETER (FACPPM = ALPHA2/2.D0*1.0D6)
       LOGICAL PLANAR, LINMOL
+C
+      allocate(DOATOM(NUCIND))
 C
       CALL DZERO(TOTSPR,3*MXCOOR)
       CALL DZERO(GTRANT,9*MXCENT)
 C
-C     We need to transform the expectation value part
-C     of the spin-rotation constant
+C     We need to transform the expectation value term of NSR
 C
-! iaa check
       CALL DCOPY(9*NUCDEP,SPRDNL,1,DMAT,1)
-      CALL DSCAL(9*NUCDEP,D1,DMAT,1)
+C iaa check the following commented line. Can I delete it, right?
+c      CALL DSCAL(9*NUCDEP,D1,DMAT,1)
 C
-C iaa: Nuclear rotational angular momentum could be defined here to obtain Omega afterwards
+C iaa Nuclear rotational angular momentum could be defined here to obtain Omega afterwards
       DO 300 I = 1, 3
         ANGUMOM(I) = D1
  300  CONTINUE
-C
-C     We add up the total spin-rotation constants.
-C
-      DO 99 IATOM = 1, NUCDEP
-         DO 200 I = 1, 3
-            DO 200 J = 1, 3
-             TOTSPR(I,J,IATOM) = DMAT(I,J,IATOM)
-     &                         + PMATL(I,J,IATOM,1)
-     &                         + PMATL(I,J,IATOM,2)
-     &                         + PMATS(I,J,IATOM,1)
-     &                         + PMATS(I,J,IATOM,2)
-     &                         + SPRNUC(I,J,IATOM)
- 200        CONTINUE
-C
- 99   CONTINUE
 C
 C
 C     Determine principal moments of inertia
@@ -10591,428 +10544,275 @@ C
 C     Transform each spin-rotation constant to principal axis system,
 C     and multiply by inverse moment of inertia and various constants
 C
-C iaa: To obtain Omega, the nuclear rot. angular momentum (ANGUMOM) should be defined before
+C iaa To obtain Omega, the nuclear rot. angular momentum (ANGUMOM) should be defined before
       IF (IPRINT .GE. 8) THEN
-      CALL HEADER
+       CALL HEADER
      &    ('Nuclear angular velocity (a.u.)',0)
-      WRITE (LUPRI,'(3X,A,F16.8)')
+       WRITE (LUPRI,'(3X,A,F16.8)')
      &       'Omega_A',OMEGA(1),
      &       'Omega_B',OMEGA(2),
      &       'Omega_C',OMEGA(3)
       END IF
 C
       WRITE (LUPRI,'(/,1X,A)')' Results are valid only for '//
-     &                              'equilibrium geometry.'
+     &                     'molecules in their equilibrium geometry'
 C
-C     All components of the moment of inertia not defined for linear molecules
+C    Print inertia tensor or moment
 C
-      IF (LINEAR) THEN     ! linear molecule detected using symmetry
-!
-! iaa: Symmetry. It is not working for diatomic molecules with 2 equal atoms
-        IF (CHARGE(1).EQ.CHARGE(2)) THEN
-          CALL QUIT('Spin-rotation constants using symmetry '//
-     &              'and 2 equal atoms is not yet implemented')
+      IF (IPRINT .GE. 0) THEN
+       IF (LINEAR) THEN       ! Linear molecule detected using symmetry
+              WRITE (LUPRI,'(2X,A,F16.8,/)')
+     &         'Moment of inertia (a.u.): ', XFAMU/EIGVAL(3)
+       ELSE
+        IF(LINMOL) THEN      ! Linear molecule (without symmetry detection)
+         WRITE (LUPRI,'(2X,A,F16.8,/)')
+     &         'Moment of inertia (a.u.): ', XFAMU/EIGVAL(3)
+        ELSE                 ! Non-linear molecule
+         CALL HEADER
+     &    ('Principal moments of inertia (a.u.) and principal axes',0)
+         WRITE (LUPRI,'(3X,A,F16.8,6X,3F16.8)')
+     &       'IA',XFAMU/EIGVAL(1), (EIGVEC(I,1),I = 1,3),
+     &       'IB',XFAMU/EIGVAL(2), (EIGVEC(I,2),I = 1,3),
+     &       'IC',XFAMU/EIGVAL(3), (EIGVEC(I,3),I = 1,3)
+         WRITE (LUPRI,'(/,2X,A)') 'Components of spin-rotation'//
+     &               ' tensor in the principal axis system'
         END IF
-!
-         IF (IPRINT .GE. 0) THEN
-            WRITE (LUPRI,'(/,1X,A)') ' The molecule is linear.'
-            WRITE (LUPRI,'(2X,A,F14.8,/)')
-     &          'Moment of inertia (a.u.): ', XFAMU/EIGVAL(3)
-         END IF
-         DO 98 IATOM = 1, NUCDEP
-C     NSR constants are defined only for nuclei with non-zero gvalue
-           IF (GVAL(IATOM) .NE. 0.0D0) THEN
-              IF (IPRINT .GE. 0) THEN
-                CALL HEADER('Spin-rotation constants (kHz) for '//
-     &                          NAMDEP(IATOM),-1)
-                WRITE (LUPRI,'(2X,A17,F12.6,/)')
-     &                   'Nuclear g-value: ',GVAL(IATOM)
-              END IF
-              FACTOT = EIGVAL(3)*GVAL(IATOM)*FAC
+       END IF
+      END IF
 C
-           ELSE   ! if GVAL = 0
-              IF (IPRINT .GE. 0) THEN
+C    Print spin-rotation constants or tensors
+C
+      IATOM = 0
+      DO 98 K = 1, NUCIND
+       DO 200 ISYMOP = 0, MAXOPR
+        IF (IBTAND(ISTBNU(K),ISYMOP).EQ.0) THEN
+        IATOM = IATOM + 1
+Ciaa TODO: check why some DOATOM(K) are False when they shouldn't. Some NSR are not printed out!
+!         IF (DOATOM(K)) THEN
+C
+C    Print g-values of selected nuclei
+C
+          IF (GVAL(IATOM) .NE. 0.0D0) THEN
+           IF (IPRINT .GE. 0) THEN
+            CALL HEADER('Spin-rotation constants (kHz) for '//
+     &                     NAMDEP(IATOM),-1)
+            WRITE (LUPRI,'(2X,A17,F12.6)')
+     &                 'Nuclear g-value: ',GVAL(IATOM)
+           END IF
+          ELSE   !   if GVAL = 0
+           IF (IPRINT .GE. 0) THEN
           CALL HEADER('Artificial spin-rotation constants (kHz) for '//
      &                     NAMDEP(IATOM),-1)
-               WRITE (LUPRI,'(2X,A,F8.3)')
+            WRITE (LUPRI,'(2X,A,F8.3)')
      &  'WARNING: Nuclear g-value NOT available for isotope of mass ',
      &  AMASS(IATOM)
-               WRITE (LUPRI,'(2X,A,/)')
+            WRITE (LUPRI,'(2X,A)')
      &  'Nuclear g-value is artificially seted equal to 1'
-              END IF
-              FACTOT = EIGVAL(3)*FAC  ! GVAL(IATOM) = 1
-           END IF  ! GVAL.NE.0
+           END IF
+          END IF
 C
-              NSRTOT = TOTSPR(1,1,IATOM)*FACTOT
-              NSRNUC = SPRNUC(1,1,IATOM)*FACTOT
-              NSREXV = DMAT(1,1,IATOM)*FACTOT
-              NSRLRLEE = PMATL(1,1,IATOM,1)*FACTOT
-              NSRLRLEP = PMATL(1,1,IATOM,2)*FACTOT
-              NSRLRSEE = PMATS(1,1,IATOM,1)*FACTOT
-              NSRLRSEP = PMATS(1,1,IATOM,2)*FACTOT
+C         Linear molecule detected using symmetry
 C
-              NSRLR=NSRLRLEE+NSRLRLEP+NSRLRSEE+NSRLRSEP
+          IF (LINEAR) THEN
 C
-              IF (IPRINT .GE. 0)
-     &   WRITE(LUPRI,'((1X,A,F16.8,/),/,2(1X,A,F16.8,/),(1X,A,F16.8))')
+           IF (GVAL(IATOM) .NE. 0.0D0) THEN
+            FACTOT = EIGVAL(3)*GVAL(IATOM)*FAC
+           ELSE
+            FACTOT = EIGVAL(3)*FAC  ! GVAL(IATOM) = 1
+           END IF
+C
+           DO 46 KHZPPM= 1,2          ! Results in 1: kHz ; 2: ppm
+            IF (KHZPPM.EQ.2) THEN
+            FACTOT = FACPPM
+             IF (IPRINT .GE. 2) THEN
+             CALL HEADER('Spin-rotation constants (in ppm) for '//
+     &                          NAMDEP(IATOM),-1)
+             END IF
+            END IF
+            NSRNUC = SPRNUC(1,1,IATOM)*FACTOT
+            NSREXV = DMAT(1,1,IATOM)*FACTOT
+            NSRLRLEE = PMATL(1,1,IATOM,1)*FACTOT
+            NSRLRLEP = PMATL(1,1,IATOM,2)*FACTOT
+            NSRLRSEE = PMATS(1,1,IATOM,1)*FACTOT
+            NSRLRSEP = PMATS(1,1,IATOM,2)*FACTOT
+C           Total linear response contribution to NSR
+            NSRLR=NSRLRLEE+NSRLRLEP+NSRLRSEE+NSRLRSEP
+C           Total spin-rotation constant
+            NSRTOT=NSRNUC+NSREXV+NSRLR
+C
+             IF (IPRINT .GE. 2*KHZPPM-2)
+     &  WRITE(LUPRI,'((1X,A,F16.8,/),/,2(1X,A,F16.8,/),(1X,A,F16.8))')
      & ' Total spin-rotation constant (SRC)      :',NSRTOT,
      & '   Nuclear contribution to SRC           :',NSRNUC,
      & '   Expectation value contribution to SRC :',NSREXV,
      & '   Linear response contribution to SRC   :',NSRLR
 C
-              IF (IPRINT .GE. 1) WRITE(LUPRI,'(4(1X,A,F16.8,/))')
+            IF (IPRINT .GE. 2*KHZPPM-1) 
+     &  WRITE(LUPRI,'(3(1X,A,F16.8,/),(1X,A,F16.8))')
      & '           M^L(e-e) :',NSRLRLEE,
      & '           M^S(e-e) :',NSRLRSEE,
      & '           M^L(e-p) :',NSRLRLEP,
      & '           M^S(e-p) :',NSRLRSEP
+ 46        CONTINUE
 C
-C       Values in ppm
+C         Linear symmetry is not detected
 C
-              NSRTOTPPM = TOTSPR(1,1,IATOM)*FACPPM
-              NSRNUCPPM = SPRNUC(1,1,IATOM)*FACPPM
-              NSREXVPPM = DMAT(1,1,IATOM)*FACPPM
-              NSRLRLEEPPM = PMATL(1,1,IATOM,1)*FACPPM
-              NSRLRLEPPPM = PMATL(1,1,IATOM,2)*FACPPM
-              NSRLRSEEPPM = PMATS(1,1,IATOM,1)*FACPPM
-              NSRLRSEPPPM = PMATS(1,1,IATOM,2)*FACPPM
-C
-              NSRLRPPM=NSRLRLEEPPM+NSRLRLEPPPM+NSRLRSEEPPM+NSRLRSEPPPM
-C
-              IF (IPRINT .GE. 2) THEN
-                CALL HEADER('Spin-rotation constants (in ppm) for '//
-     &                          NAMDEP(IATOM),-1)
-         WRITE(LUPRI,'((1X,A,F16.8,/),/,2(1X,A,F16.8,/),(1X,A,F16.8))')
-     & ' Total spin-rotation constant (SRC)      :',NSRTOTPPM,
-     & '   Nuclear contribution to SRC           :',NSRNUCPPM,
-     & '   Expectation value contribution to SRC :',NSREXVPPM,
-     & '   Linear response contribution to SRC   :',NSRLRPPM
-C
-                 IF (IPRINT .GE. 3) WRITE(LUPRI,'(4(1X,A,F16.8,/))')
-     & '           M^L(e-e) :',NSRLRLEEPPM,
-     & '           M^S(e-e) :',NSRLRSEEPPM,
-     & '           M^L(e-p) :',NSRLRLEPPPM,
-     & '           M^S(e-p) :',NSRLRSEPPPM
-C
-              END IF
- 98      CONTINUE
-C
-!     If linear symmetry is not detected:
-      ELSE
-C
-          IF(LINMOL) THEN
-            IF (IPRINT .GE. 0) THEN
-              WRITE (LUPRI,'(/,1X,A)') ' The molecule is linear.'
-              WRITE (LUPRI,'(2X,A,F14.8,/)')
-     &          'Moment of inertia (a.u.): ', XFAMU/EIGVAL(3)
-            END IF
           ELSE
-            IF (IPRINT .GE. 0) THEN
-              CALL HEADER
-     &    ('Principal moments of inertia (a.u.) and principal axes',0)
-              WRITE (LUPRI,'(3X,A,F16.8,6X,3F16.8)')
-     &       'IA',XFAMU/EIGVAL(1), (EIGVEC(I,1),I = 1,3),
-     &       'IB',XFAMU/EIGVAL(2), (EIGVEC(I,2),I = 1,3),
-     &       'IC',XFAMU/EIGVAL(3), (EIGVEC(I,3),I = 1,3)
+C
+           IF (GVAL(IATOM) .NE. 0.0D0) THEN
+            FACTOT = GVAL(IATOM)*FAC
+           ELSE
+            FACTOT = FAC  ! GVAL(IATOM) = 1
+           END IF
+C
+           DO 47 KHZPPM= 1,2          ! Results in 1: kHz ; 2: ppm
+            IF (KHZPPM.EQ.2.AND.IPRINT.GE.2) THEN
+             CALL HEADER('Spin-rotation constants (in ppm) for '//
+     &                          NAMDEP(IATOM),-1)
             END IF
-          END IF
-C
-         DO 45 IATOM = 1, NUCDEP
-            IF (GVAL(IATOM) .NE. 0.0D0) THEN
-               FACTOT = GVAL(IATOM)*FAC
-               IF (IPRINT .GE. 0) THEN
-                 CALL HEADER('Spin-rotation constants (kHz) for '//
-     &                      NAMDEP(IATOM),-1)
-                 WRITE (LUPRI,'(2X,A17,F12.6,/)')
-     &                 'Nuclear g-value: ',GVAL(IATOM)
-               END IF
-            ELSE   !   if GVAL = 0
-               FACTOT = FAC  ! GVAL(IATOM) = 1
-               IF (IPRINT .GE. 0) THEN
-          CALL HEADER('Artificial spin-rotation constants (kHz) for '//
-     &                     NAMDEP(IATOM),-1)
-               WRITE (LUPRI,'(2X,A,F8.3)')
-     &  'WARNING: Nuclear g-value NOT available for isotope of mass ',
-     &  AMASS(IATOM)
-               WRITE (LUPRI,'(2X,A,/)')
-     &  'Nuclear g-value is artificially seted equal to 1'
-               END IF
-             END IF
-C
-               CALL DZERO(GTRANN,9*NUCDEP)
-               CALL DZERO(GTRAND,9*NUCDEP)
-               CALL DZERO(GTRANP,9*NUCDEP)
-               CALL DZERO(GTRANPLEE,9*NUCDEP)
-               CALL DZERO(GTRANPLEP,9*NUCDEP)
-               CALL DZERO(GTRANPSEE,9*NUCDEP)
-               CALL DZERO(GTRANPSEP,9*NUCDEP)
-               DO 50 I = 1, 3
-               DO 50 J = 1, 3
-                  DO 60 IX = 1, 3
-                  DO 60 IY = 1, 3
-                        JX = IPTAX(IX,2)
-                        JY = IPTAX(IY,2)
-                        CONST = EIGVAL(I)*FACTOT
-                       GTRANT(I,J,IATOM)=GTRANT(I,J,IATOM)+EIGVEC(IX,I)
-     &                       *TOTSPR(JX,JY,IATOM)*EIGVEC(IY,J)*CONST
-                       GTRANN(I,J,IATOM)=GTRANN(I,J,IATOM)+EIGVEC(IX,I)
+            CALL DZERO(GTRANN,9*NUCDEP)
+            CALL DZERO(GTRAND,9*NUCDEP)
+            CALL DZERO(GTRANP,9*NUCDEP)
+            CALL DZERO(GTRANPLEE,9*NUCDEP)
+            CALL DZERO(GTRANPLEP,9*NUCDEP)
+            CALL DZERO(GTRANPSEE,9*NUCDEP)
+            CALL DZERO(GTRANPSEP,9*NUCDEP)
+            DO 50 I = 1, 3
+             DO 50 J = 1, 3
+              DO 60 IX = 1, 3
+               DO 60 IY = 1, 3
+                JX = IPTAX(IX,2)
+                JY = IPTAX(IY,2)
+                IF (KHZPPM.EQ.1) THEN
+                 CONST = EIGVAL(I)*FACTOT
+                ELSE
+                 CONST = FACPPM
+                END IF
+                GTRANN(I,J,IATOM)=GTRANN(I,J,IATOM)+EIGVEC(IX,I)
      &                       *SPRNUC(JX,JY,IATOM)*EIGVEC(IY,J)*CONST
-                       GTRAND(I,J,IATOM)=GTRAND(I,J,IATOM)+EIGVEC(IX,I)
+                GTRAND(I,J,IATOM)=GTRAND(I,J,IATOM)+EIGVEC(IX,I)
      &                       *DMAT(JX,JY,IATOM)*EIGVEC(IY,J)*CONST
-                       GTRANPLEE(I,J,IATOM) = GTRANPLEE(I,J,IATOM)
+                GTRANPLEE(I,J,IATOM) = GTRANPLEE(I,J,IATOM)
      &                       + EIGVEC(IX,I)
      &                        *PMATL(JX,JY,IATOM,1)*EIGVEC(IY,J)*CONST
-                       GTRANPLEP(I,J,IATOM) = GTRANPLEP(I,J,IATOM)
+                GTRANPLEP(I,J,IATOM) = GTRANPLEP(I,J,IATOM)
      &                       + EIGVEC(IX,I)
      &                        *PMATL(JX,JY,IATOM,2)*EIGVEC(IY,J)*CONST
-                       GTRANPSEE(I,J,IATOM) = GTRANPSEE(I,J,IATOM)
+                GTRANPSEE(I,J,IATOM) = GTRANPSEE(I,J,IATOM)
      &                       + EIGVEC(IX,I)
      &                        *PMATS(JX,JY,IATOM,1)*EIGVEC(IY,J)*CONST
-                       GTRANPSEP(I,J,IATOM) = GTRANPSEP(I,J,IATOM)
+                GTRANPSEP(I,J,IATOM) = GTRANPSEP(I,J,IATOM)
      &                       + EIGVEC(IX,I)
      &                        *PMATS(JX,JY,IATOM,2)*EIGVEC(IY,J)*CONST
-                        GTRANP(I,J,IATOM) = GTRANPLEE(I,J,IATOM)
+C               Total linear response contribution to NSR
+                GTRANP(I,J,IATOM) = GTRANPLEE(I,J,IATOM)
      &                       + GTRANPLEP(I,J,IATOM)
      &                       + GTRANPSEE(I,J,IATOM)
      &                       + GTRANPSEP(I,J,IATOM)
- 60               CONTINUE
- 50            CONTINUE
+C               Total spin-rotation tensor
+                GTRANT(I,J,IATOM) = GTRANN(I,J,IATOM)
+     &                       + GTRAND(I,J,IATOM) + GTRANP(I,J,IATOM)
+ 60           CONTINUE
+ 50         CONTINUE
 C
-C   To calculate values in ppm
-C
-               CALL DZERO(GTRANTPPM,9*NUCDEP)
-               CALL DZERO(GTRANNPPM,9*NUCDEP)
-               CALL DZERO(GTRANDPPM,9*NUCDEP)
-               CALL DZERO(GTRANPPPM,9*NUCDEP)
-               CALL DZERO(GTRANPLEEPPM,9*NUCDEP)
-               CALL DZERO(GTRANPLEPPPM,9*NUCDEP)
-               CALL DZERO(GTRANPSEEPPM,9*NUCDEP)
-               CALL DZERO(GTRANPSEPPPM,9*NUCDEP)
-               DO 70 I = 1, 3
-               DO 70 J = 1, 3
-                  DO 80 IX = 1, 3
-                  DO 80 IY = 1, 3
-                        JX = IPTAX(IX,2)
-                        JY = IPTAX(IY,2)
-                        CONST2 = FACPPM
-                GTRANTPPM(I,J,IATOM)=GTRANTPPM(I,J,IATOM)+EIGVEC(IX,I)
-     &                *TOTSPR(JX,JY,IATOM)*EIGVEC(IY,J)*CONST2
-                GTRANNPPM(I,J,IATOM)=GTRANNPPM(I,J,IATOM)+EIGVEC(IX,I)
-     &                *SPRNUC(JX,JY,IATOM)*EIGVEC(IY,J)*CONST2
-                GTRANDPPM(I,J,IATOM)=GTRANDPPM(I,J,IATOM)+EIGVEC(IX,I)
-     &                *DMAT(JX,JY,IATOM)*EIGVEC(IY,J)*CONST2
-                GTRANPLEEPPM(I,J,IATOM) = GTRANPLEEPPM(I,J,IATOM)
-     &                + EIGVEC(IX,I)
-     &                 *PMATL(JX,JY,IATOM,1)*EIGVEC(IY,J)*CONST2
-                GTRANPLEPPPM(I,J,IATOM) = GTRANPLEPPPM(I,J,IATOM)
-     &                + EIGVEC(IX,I)
-     &                 *PMATL(JX,JY,IATOM,2)*EIGVEC(IY,J)*CONST2
-                GTRANPSEEPPM(I,J,IATOM) = GTRANPSEEPPM(I,J,IATOM)
-     &                + EIGVEC(IX,I)
-     &                 *PMATS(JX,JY,IATOM,1)*EIGVEC(IY,J)*CONST2
-                GTRANPSEPPPM(I,J,IATOM) = GTRANPSEPPPM(I,J,IATOM)
-     &                + EIGVEC(IX,I)
-     &                 *PMATS(JX,JY,IATOM,2)*EIGVEC(IY,J)*CONST2
-                 GTRANPPPM(I,J,IATOM) = GTRANPLEEPPM(I,J,IATOM)
-     &                + GTRANPLEPPPM(I,J,IATOM)
-     &                + GTRANPSEEPPM(I,J,IATOM)
-     &                + GTRANPSEPPPM(I,J,IATOM)
- 80               CONTINUE
- 70            CONTINUE
-C
-C
-! If there is at least one inertia tensor eigenvalue equal to zero (linear molecule):
-C
-C
-                 IF(LINMOL) THEN
-                   IF (IPRINT .GE. 0)
-     &   WRITE(LUPRI,'((1X,A,F16.8,/),/,2(1X,A,F16.8,/),(1X,A,F16.8))')
+C    At least one inertia tensor eigenvalue equal to zero (linear molecule):
+            IF(LINMOL) THEN
+             IF (IPRINT .GE. 2*KHZPPM-2)
+     &  WRITE(LUPRI,'(/,(1X,A,F16.8,/),/,2(1X,A,F16.8,/),(1X,A,F16.8))')
      &  ' Total spin-rotation constant (SRC)      :',GTRANT(3,3,IATOM),
      &  '   Nuclear contribution to SRC           :',GTRANN(3,3,IATOM),
      &  '   Expectation value contribution to SRC :',GTRAND(3,3,IATOM),
      &  '   Linear response contribution to SRC   :',GTRANP(3,3,IATOM)
 C
-                   IF (IPRINT .GE. 1) WRITE(LUPRI,'(4(1X,A,F16.8,/))')
+             IF (IPRINT .GE. 2*KHZPPM-1)
+     &        WRITE(LUPRI,'(4(1X,A,F16.8,/))')
      &  '           M^L(e-e) :',GTRANPLEE(3,3,IATOM),
      &  '           M^S(e-e) :',GTRANPSEE(3,3,IATOM),
      &  '           M^L(e-p) :',GTRANPLEP(3,3,IATOM),
      &  '           M^S(e-p) :',GTRANPSEP(3,3,IATOM)
 C
-C    Print values in ppm
-C
-                   IF (IPRINT .GE. 2) THEN
-         CALL HEADER('Spin-rotation constants (in ppm) for '//
-     &                      NAMDEP(IATOM),-1)
-        WRITE(LUPRI,'((1X,A,F16.8,/),/,2(1X,A,F16.8,/),(1X,A,F16.8))'),
-     &  ' Total spin-rotation constant (SRC)      :',
-     & GTRANTPPM(3,3,IATOM),
-     &  '   Nuclear contribution to SRC           :',
-     & GTRANNPPM(3,3,IATOM),
-     &  '   Expectation value contribution to SRC :',
-     & GTRANDPPM(3,3,IATOM),
-     &  '   Linear response contribution to SRC   :',
-     & GTRANPPPM(3,3,IATOM)
-C
-         IF (IPRINT .GE. 3) WRITE(LUPRI,'(4(1X,A,F16.8,/))')
-     &  '           M^L(e-e) :',GTRANPLEEPPM(3,3,IATOM),
-     &  '           M^S(e-e) :',GTRANPSEEPPM(3,3,IATOM),
-     &  '           M^L(e-p) :',GTRANPLEPPPM(3,3,IATOM),
-     &  '           M^S(e-p) :',GTRANPSEPPPM(3,3,IATOM)
-                   END IF
-C
-C
-! If the inertia tensor corresponds to a non-linear molecule (with and without symmetry):
-C
-C
-                 ELSE
-C                    WRITE (LUPRI,'(2X,A,/)') 'Components in the '//
-C     &              'principal axis system'
-                    IF (IPRINT .GT. 0) THEN
-                    CALL HEADER('Total spin-rotation constant',-1)
-                    WRITE (LUPRI,'(3X,A,6X,3F16.8)')
+C    Inertia tensor of a non-linear molecule (with and without symmetry):
+            ELSE
+             IF (IPRINT .GE. 2*KHZPPM-2) THEN
+              CALL HEADER('Total spin-rotation constant',-1)
+              WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                 'A', (GTRANT(I,1,IATOM),I = 1,3),
      &                 'B', (GTRANT(I,2,IATOM),I = 1,3),
      &                 'C', (GTRANT(I,3,IATOM),I = 1,3)
-                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
-     &       'iso', (GTRANT(1,1,IATOM)
+              WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
+     &                 'iso', (GTRANT(1,1,IATOM)
      &              +GTRANT(2,2,IATOM)+GTRANT(3,3,IATOM))/3
-                      CALL HEADER('Nuclear contribution',-1)
-                      WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                    'A', (GTRANN(I,1,IATOM),I = 1,3),
-     &                    'B', (GTRANN(I,2,IATOM),I = 1,3),
-     &                    'C', (GTRANN(I,3,IATOM),I = 1,3)
-                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
-     &       'iso', (GTRANN(1,1,IATOM)
+              CALL HEADER('Nuclear contribution',-1)
+              WRITE (LUPRI,'(3X,A,6X,3F16.8)')
+     &                 'A', (GTRANN(I,1,IATOM),I = 1,3),
+     &                 'B', (GTRANN(I,2,IATOM),I = 1,3),
+     &                 'C', (GTRANN(I,3,IATOM),I = 1,3)
+              WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
+     &                 'iso', (GTRANN(1,1,IATOM)
      &              +GTRANN(2,2,IATOM)+GTRANN(3,3,IATOM))/3
-                      CALL HEADER('Expectation value contribution',-1)
-                      WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                    'A', (GTRAND(I,1,IATOM),I = 1,3),
-     &                    'B', (GTRAND(I,2,IATOM),I = 1,3),
-     &                    'C', (GTRAND(I,3,IATOM),I = 1,3)
-                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
-     &       'iso', (GTRAND(1,1,IATOM)
+              CALL HEADER('Expectation value contribution',-1)
+              WRITE (LUPRI,'(3X,A,6X,3F16.8)')
+     &                 'A', (GTRAND(I,1,IATOM),I = 1,3),
+     &                 'B', (GTRAND(I,2,IATOM),I = 1,3),
+     &                 'C', (GTRAND(I,3,IATOM),I = 1,3)
+              WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
+     &                 'iso', (GTRAND(1,1,IATOM)
      &              +GTRAND(2,2,IATOM)+GTRAND(3,3,IATOM))/3
-                      CALL HEADER('Linear response contribution',-1)
-                      WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                    'A', (GTRANP(I,1,IATOM),I = 1,3),
-     &                    'B', (GTRANP(I,2,IATOM),I = 1,3),
-     &                    'C', (GTRANP(I,3,IATOM),I = 1,3)
-                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
-     &       'iso', (GTRANP(1,1,IATOM)
+              CALL HEADER('Linear response contribution',-1)
+              WRITE (LUPRI,'(3X,A,6X,3F16.8)')
+     &                 'A', (GTRANP(I,1,IATOM),I = 1,3),
+     &                 'B', (GTRANP(I,2,IATOM),I = 1,3),
+     &                 'C', (GTRANP(I,3,IATOM),I = 1,3)
+              WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
+     &                 'iso', (GTRANP(1,1,IATOM)
      &              +GTRANP(2,2,IATOM)+GTRANP(3,3,IATOM))/3
+             END IF
 C
-                      IF (IPRINT .GT. 1) THEN
-                      CALL HEADER('M^L(e-e)',-1)
-                      WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                    'A', (GTRANPLEE(I,1,IATOM),I = 1,3),
-     &                    'B', (GTRANPLEE(I,2,IATOM),I = 1,3),
-     &                    'C', (GTRANPLEE(I,3,IATOM),I = 1,3)
-                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
-     &       'iso', (GTRANPLEE(1,1,IATOM)
+C            Print linear response contributions to NSR in detail
+C
+             IF (IPRINT .GE. 2*KHZPPM-1) THEN
+              CALL HEADER('M^L(e-e)',-1)
+              WRITE (LUPRI,'(3X,A,6X,3F16.8)')
+     &                 'A', (GTRANPLEE(I,1,IATOM),I = 1,3),
+     &                 'B', (GTRANPLEE(I,2,IATOM),I = 1,3),
+     &                 'C', (GTRANPLEE(I,3,IATOM),I = 1,3)
+              WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
+     &                 'iso', (GTRANPLEE(1,1,IATOM)
      &              +GTRANPLEE(2,2,IATOM)+GTRANPLEE(3,3,IATOM))/3
-                      CALL HEADER('M^S(e-e)',-1)
-                      WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                    'A', (GTRANPSEE(I,1,IATOM),I = 1,3),
-     &                    'B', (GTRANPSEE(I,2,IATOM),I = 1,3),
-     &                    'C', (GTRANPSEE(I,3,IATOM),I = 1,3)
-                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
-     &       'iso', (GTRANPSEE(1,1,IATOM)
+              CALL HEADER('M^S(e-e)',-1)
+              WRITE (LUPRI,'(3X,A,6X,3F16.8)')
+     &                 'A', (GTRANPSEE(I,1,IATOM),I = 1,3),
+     &                 'B', (GTRANPSEE(I,2,IATOM),I = 1,3),
+     &                 'C', (GTRANPSEE(I,3,IATOM),I = 1,3)
+              WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
+     &                 'iso', (GTRANPSEE(1,1,IATOM)
      &              +GTRANPSEE(2,2,IATOM)+GTRANPSEE(3,3,IATOM))/3
-                      CALL HEADER('M^L(e-p)',-1)
-                      WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                    'A', (GTRANPLEP(I,1,IATOM),I = 1,3),
-     &                    'B', (GTRANPLEP(I,2,IATOM),I = 1,3),
-     &                    'C', (GTRANPLEP(I,3,IATOM),I = 1,3)
-                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
-     &       'iso', (GTRANPLEP(1,1,IATOM)
+              CALL HEADER('M^L(e-p)',-1)
+              WRITE (LUPRI,'(3X,A,6X,3F16.8)')
+     &                 'A', (GTRANPLEP(I,1,IATOM),I = 1,3),
+     &                 'B', (GTRANPLEP(I,2,IATOM),I = 1,3),
+     &                 'C', (GTRANPLEP(I,3,IATOM),I = 1,3)
+              WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
+     &                 'iso', (GTRANPLEP(1,1,IATOM)
      &              +GTRANPLEP(2,2,IATOM)+GTRANPLEP(3,3,IATOM))/3
-                      CALL HEADER('M^S(e-p)',-1)
-                      WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                    'A', (GTRANPSEP(I,1,IATOM),I = 1,3),
-     &                    'B', (GTRANPSEP(I,2,IATOM),I = 1,3),
-     &                    'C', (GTRANPSEP(I,3,IATOM),I = 1,3)
-                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
-     &       'iso', (GTRANPSEP(1,1,IATOM)
+              CALL HEADER('M^S(e-p)',-1)
+              WRITE (LUPRI,'(3X,A,6X,3F16.8)')
+     &                 'A', (GTRANPSEP(I,1,IATOM),I = 1,3),
+     &                 'B', (GTRANPSEP(I,2,IATOM),I = 1,3),
+     &                 'C', (GTRANPSEP(I,3,IATOM),I = 1,3)
+              WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
+     &                 'iso', (GTRANPSEP(1,1,IATOM)
      &              +GTRANPSEP(2,2,IATOM)+GTRANPSEP(3,3,IATOM))/3
+             END IF
+            END IF ! (LINMOL)
+ 47        CONTINUE
+          END IF ! (LINEAR)
+!         END IF ! (DOATOM(K))
+        END IF
+ 200   CONTINUE
+ 98   CONTINUE
 C
-                      END IF
-                    END IF
+      deallocate(DOATOM)
 C
-C    Print values in ppm
-C
-                    IF (IPRINT .GE. 2) THEN
-         CALL HEADER('Spin-rotation constants (in ppm) for '//
-     &                      NAMDEP(IATOM),-1)
-                    CALL HEADER('Total spin-rotation constant',-1)
-                    WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                 'A', (GTRANTPPM(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANTPPM(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANTPPM(I,3,IATOM),I = 1,3)
-                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
-     &       'iso', (GTRANTPPM(1,1,IATOM)
-     &              +GTRANTPPM(2,2,IATOM)+GTRANTPPM(3,3,IATOM))/3
-                      CALL HEADER('Nuclear contribution',-1)
-                      WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                    'A', (GTRANNPPM(I,1,IATOM),I = 1,3),
-     &                    'B', (GTRANNPPM(I,2,IATOM),I = 1,3),
-     &                    'C', (GTRANNPPM(I,3,IATOM),I = 1,3)
-                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
-     &       'iso', (GTRANNPPM(1,1,IATOM)
-     &              +GTRANNPPM(2,2,IATOM)+GTRANNPPM(3,3,IATOM))/3
-                      CALL HEADER('Expectation value contribution',-1)
-                      WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                    'A', (GTRANDPPM(I,1,IATOM),I = 1,3),
-     &                    'B', (GTRANDPPM(I,2,IATOM),I = 1,3),
-     &                    'C', (GTRANDPPM(I,3,IATOM),I = 1,3)
-                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
-     &       'iso', (GTRANDPPM(1,1,IATOM)
-     &              +GTRANDPPM(2,2,IATOM)+GTRANDPPM(3,3,IATOM))/3
-                      CALL HEADER('Linear response contribution',-1)
-                      WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                    'A', (GTRANPPPM(I,1,IATOM),I = 1,3),
-     &                    'B', (GTRANPPPM(I,2,IATOM),I = 1,3),
-     &                    'C', (GTRANPPPM(I,3,IATOM),I = 1,3)
-                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
-     &       'iso', (GTRANPPPM(1,1,IATOM)
-     &              +GTRANPPPM(2,2,IATOM)+GTRANPPPM(3,3,IATOM))/3
-C
-                      IF (IPRINT .GE. 3) THEN
-                      CALL HEADER('M^L(e-e)',-1)
-                      WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                    'A', (GTRANPLEEPPM(I,1,IATOM),I = 1,3),
-     &                    'B', (GTRANPLEEPPM(I,2,IATOM),I = 1,3),
-     &                    'C', (GTRANPLEEPPM(I,3,IATOM),I = 1,3)
-                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
-     &       'iso', (GTRANPLEEPPM(1,1,IATOM)
-     &              +GTRANPLEEPPM(2,2,IATOM)+GTRANPLEEPPM(3,3,IATOM))/3
-                      CALL HEADER('M^S(e-e)',-1)
-                      WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                    'A', (GTRANPSEEPPM(I,1,IATOM),I = 1,3),
-     &                    'B', (GTRANPSEEPPM(I,2,IATOM),I = 1,3),
-     &                    'C', (GTRANPSEEPPM(I,3,IATOM),I = 1,3)
-                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
-     &       'iso', (GTRANPSEEPPM(1,1,IATOM)
-     &              +GTRANPSEEPPM(2,2,IATOM)+GTRANPSEEPPM(3,3,IATOM))/3
-                      CALL HEADER('M^L(e-p)',-1)
-                      WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                    'A', (GTRANPLEPPPM(I,1,IATOM),I = 1,3),
-     &                    'B', (GTRANPLEPPPM(I,2,IATOM),I = 1,3),
-     &                    'C', (GTRANPLEPPPM(I,3,IATOM),I = 1,3)
-                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
-     &       'iso', (GTRANPLEPPPM(1,1,IATOM)
-     &              +GTRANPLEPPPM(2,2,IATOM)+GTRANPLEPPPM(3,3,IATOM))/3
-                      CALL HEADER('M^S(e-p)',-1)
-                      WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                    'A', (GTRANPSEPPPM(I,1,IATOM),I = 1,3),
-     &                    'B', (GTRANPSEPPPM(I,2,IATOM),I = 1,3),
-     &                    'C', (GTRANPSEPPPM(I,3,IATOM),I = 1,3)
-                      WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
-     &       'iso', (GTRANPSEPPPM(1,1,IATOM)
-     &              +GTRANPSEPPPM(2,2,IATOM)+GTRANPSEPPPM(3,3,IATOM))/3
-C
-                      END IF
-                    END IF
-                 END IF
- 45      CONTINUE
-      END IF
       RETURN
       END

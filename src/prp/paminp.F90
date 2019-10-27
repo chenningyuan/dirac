@@ -407,16 +407,17 @@
             DOXLR = .TRUE.
             SPINRO = .TRUE.
 !iaa Work in progress to include symmetries other than C1
-            if(LINEAR) then
-             if (NUCDEP.GT.2) then
-              call quit("Spin-rotation constants using linear "//      &
-     &         "symmetry detection and more than 2 nuclei are "//      &
-     &         "not yet implemented")
-             end if
-            else if(NBSYM .gt. 1) then
-             call quit("Spin-rotation tensors "//                      &
-     &        "available in C1 symmetry only")
-            end if
+!iaa            if(LINEAR) then
+!iaa             if (NUCDEP.NE.NUCIND) then
+!iaa              call quit("*** ERROR in PAMINP *** "               //    &
+!iaa               "Spin-rotation constants using linear "           //    &
+!iaa     &         "symmetry detection and two or more equal nuclei "//    &
+!iaa     &         "are not yet implemented")
+!iaa             end if
+!iaa            else if(NBSYM .gt. 1) then
+!iaa         call quit("*** ERROR in PAMINP *** "                //    &
+!iaa     &           "Spin-rotation tensors available in C1 symmetry only"
+!iaa            end if
             GO TO 100
   135    CONTINUE 
 !&&&& BXLAO 
