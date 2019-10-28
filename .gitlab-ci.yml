@@ -32,6 +32,7 @@ ubuntu_serial32-check:
     - apt-get -qq -y install gfortran
     - apt-get -qq -y install gcc
     - apt-get -qq -y install g++
+    - apt-get -qq -y install libomp-dev
     - apt-get -qq -y install python python-pip
     - pip install sphinx matplotlib sphinx_rtd_theme hieroglyph sphinxcontrib-bibtex
   script:
@@ -53,9 +54,9 @@ ubuntu_parallel32-check:
     - apt-get -qq update
     - apt-get -qq -y install git
     - apt-get -qq -y install cmake
-    - apt-get -qq -y install gfortran-8
-    - apt-get -qq -y install gcc-8
-    - apt-get -qq -y install g++-8
+    - apt-get -qq -y install gfortran
+    - apt-get -qq -y install gcc
+    - apt-get -qq -y install g++
     - apt-get -qq -y install libomp-dev
     - apt-get -qq -y install openmpi-bin libopenmpi-dev openssh-client openssh-server
     - apt-get -qq -y install python 
@@ -83,9 +84,9 @@ ubuntu_parallel64-check:
     - apt-get -qq update
     - apt-get -qq -y install git
     - apt-get -qq -y install cmake
-    - apt-get -qq -y install gfortran-8
-    - apt-get -qq -y install gcc-8
-    - apt-get -qq -y install g++-8
+    - apt-get -qq -y install gfortran
+    - apt-get -qq -y install gcc
+    - apt-get -qq -y install g++
     - apt-get -qq -y install libomp-dev
     - apt-get -qq -y install openmpi-bin libopenmpi-dev openssh-client openssh-server
     - apt-get -qq -y install python 
