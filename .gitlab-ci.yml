@@ -19,6 +19,7 @@ ubuntu_serial32-check:
   image: ubuntu
   before_script:
     - apt-get -qq update
+    - apt-get -qq -y install git
     - apt-get -qq -y install cmake
     - apt-get -qq -y install gfortran
     - apt-get -qq -y install gcc
@@ -42,6 +43,7 @@ ubuntu_parallel32-check:
   image: ubuntu
   before_script:
     - apt-get -qq update
+    - apt-get -qq -y install git
     - apt-get -qq -y install cmake
     - apt-get -qq -y install gfortran
     - apt-get -qq -y install gcc
@@ -69,6 +71,7 @@ ubuntu_parallel64-check:
   image: ubuntu
   before_script:
     - apt-get -qq update
+    - apt-get -qq -y install git
     - apt-get -qq -y install cmake
     - apt-get -qq -y install gfortran
     - apt-get -qq -y install gcc
@@ -83,7 +86,7 @@ ubuntu_parallel64-check:
     - echo "Number of processors/jobs for the build step is N_PROC=$N_PROC"
     - let "TEST_N_PROC=$(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 2)" || TEST_N_PROC=1 # if only 1CPU on worker 
     - echo "Number of processors/jobs for parallel test step is TEST_N_PROC=$TEST_N_PROC"
-    - ./setup --mpi --int64 --lapack=off --blas=off --cmake-options="-D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_UNIT_TESTS=ON" --check build_parallel64
+    - ./setup --mpi --int64 --lapack=off --blas=off --cmake-options="-D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_UNIT_TESTS=ON -D ENABLE_EXATENSOR=OFF" --check build_parallel64
     - cd build_parallel64
     - make -j $N_PROC
     - ldd dirac.x
