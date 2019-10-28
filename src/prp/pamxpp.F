@@ -373,7 +373,7 @@ C
      &            '.ITRINT','.CNVINT','.REAXVC','.BEDCHK',
      &            '.RESFAC','.ORBANA','.ROTAV ','.SKIPEE',
      &            '.MXLOAD','.ONLYSF','.ONLYSG','.BED   ',
-     &            '.BEDDER','.BEDSTP','.BEDCON','.XXXXXX'/
+     &            '.XXXXXX','.BEDSTP','.BEDCON','.XXXXXX'/
 C
 #include "ibtfun.h"
 C
@@ -425,7 +425,6 @@ C
       ORBXPP     = .FALSE.
       DOBED      = .FALSE.
       ORIENTED   = .FALSE.
-      DOBEDDER   = .FALSE.
       BEDSTP     = 0.001D0
       BEDCHK     = .FALSE.
 C     hj: initialize some parts of dcbxlr; (nov. 2000)
@@ -650,8 +649,6 @@ C&&&& BED: Full light-matter interaction
                   DOBED = .TRUE.
                GO TO 100
  33            CONTINUE
-C&&&& BEDDER: Calculate derivatives of oscillator strengths
-                  DOBEDDER = .TRUE.
                GO TO 100
  34            CONTINUE
 C&&&& BEDSTP: Step length for numerical BED derivatives
@@ -2398,8 +2395,9 @@ C.....Oscillator strenghts: general length gauge
 C.....Anisotropic oscillator strenghts
       IF(ORIENTED) THEN
         CALL HEADER('Anisotropic oscillator strengths',-1)         
-        WRITE(LUPRI,*) '* Unit wave vector    : ',(UWAVE(I),I=1,3)
-        WRITE(LUPRI,*) '* Polarization vector : ',(UPOL(I),I=1,3)
+      WRITE (LUPRI,'(1X,A,3F18.10)')                                    &
+     &     '* Unit wave vector   :', (UWAVE(I),I=1,3),                  &
+     &     '* Polarization vector:', (UPOL(I),I=1,3)                   
 C.......Generalized velocity gauge        
         allocate(fosc(MAXEXC,NBSYM,-1:K2ORD,1))
         FOSC=0.0D0

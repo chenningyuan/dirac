@@ -9811,11 +9811,8 @@ C***********************************************************************
       UPOL(2)  = W1*COS(THETA2)*SIN(PHI2) + W2*COS(PHI2)
       UPOL(3)  =-W1*SIN(THETA2)
 C.....Output section
-      WRITE(LUPRI,*) '* Wave unit vector:'
-      WRITE(LUPRI,'(A1,3(F7.4,A1))')
-     &     '(',UWAVE(1),',',UWAVE(2),',',UWAVE(3),')'
-      WRITE(LUPRI,*) '* Polarization vector:'
-      WRITE(LUPRI,'(A1,3(F7.4,A1))')
-     &     '(',UPOL(1),',',UPOL(2),',',UPOL(3),')'
+      WRITE (LUPRI,'(1X,A,3F18.10)')                                    &
+     &     '* Unit wave vector   :', (UWAVE(I),I=1,3),                  &
+     &     '* Polarization vector:', (UPOL(I),I=1,3)                   
       RETURN
       END
