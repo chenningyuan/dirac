@@ -1741,8 +1741,8 @@ C             write(*,*)'VWRR,IR',VWRR(IR),IR
           deallocate(BUFGAO)
         end do                ! IR
       ENDIF                     ! GRASP or DIRAC
-      CALL OUTPUT(INTAOBUF,1,NTBAS(0),1,NTBAS(0),
-     &             NTBAS(0),NTBAS(0),-1,LUPRI)    ! debug
+C      CALL OUTPUT(INTAOBUF,1,NTBAS(0),1,NTBAS(0),
+C     &             NTBAS(0),NTBAS(0),-1,LUPRI)    ! debug
 C
       CALL MTAOSO(INTAOBUF,INTSO,NTBAS(0),MTXYZ,IPRINT)
 C      write(*,*)'OUTPUT2'      
