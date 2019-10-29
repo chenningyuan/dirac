@@ -1,8 +1,13 @@
-option(ENABLE_EXATENSOR "Enable ExaTensor library" ON)
-
+#deactivate exatensor if mpi is not available
+if(DEFINED VAR_MPI)
+    option(ENABLE_EXATENSOR "Enable ExaTensor library" ON)
+else()
+    option(ENABLE_EXATENSOR "Enable ExaTensor library" OFF)
+endif()
 # configure with (e.g.):
 # $ export WRAP=NOWRAP && export TOOLKIT=GNU && export BUILD_TYPE=DEV && export MPILIB=OPENMPI && export BLASLIB=ATLAS && export GPU_CUDA=NOCUDA && export PATH_OPENMPI=/home/bast/openmpi/1.10.2 && ./setup
 # in future we could use cmake discovery to infer this information, now it has to be given by the user
+
 
 if(ENABLE_EXATENSOR)
     ExternalProject_Add(exatensor
