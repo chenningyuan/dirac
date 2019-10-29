@@ -1495,8 +1495,9 @@ C
 C     Determination of the maximum value for each (isym,ishell)
 C     for cutoff of the numerical integration 
 C      
-      CALL DZERO(GMAX,(MAXOPR+1)*KHKT)      
-      do IR = 1, MXNP, MXNP  !change
+      CALL DZERO(GMAX,(MAXOPR+1)*KHKT)
+      MXNP_ODD = MXNP - mod(MXNP,2) 
+      do IR = 1, MXNP_ODD, (MXNP_ODD-1)/2  !change
         IOF_block = 1
 C                 
 C     In the case of m>100, a speciAL treatment is needed.
@@ -1596,7 +1597,7 @@ C
             i = 1
             do ishell = 1, nr_shells
               do isym = 0, nr_boson_ireps - 1
-               IF(GMAX(isym,ishell).GT.10D-10)THEN   
+               IF(GMAX(isym,ishell).GT.SCREEN)THEN   
                 if (iand(isym, shell_stabilizing_irep(ishell)) == 0)then                 
                  DO JXYZ = 1, 3
                   pxyz(:,JXYZ) = DM1 
