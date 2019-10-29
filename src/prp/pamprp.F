@@ -10136,6 +10136,7 @@ C-------------------------------------------------------------------
 C
 C     MEAN VALUE PART OF NSR TENSOR
 C
+      CALL DZERO(SPRDNL,NCMAT)
       CALL DZERO(DMAT,NCMAT)
       CALL DZERO(ELFLD,NSCOOR)
       EXPVAL(0) = D0
@@ -10282,7 +10283,7 @@ C
 C--------------------------------------------------------------------
       CALL SPRRES(GEOM,AMASS,GVAL,SPRDNL,PMATL,PMATS,
      &            JATOM,IPRPRP)
-C-------------------------------------------------------------------
+C--------------------------------------------------------------------
       CALL QEXIT('PRP_SPINRO')
 
       deallocate(AMASS)
@@ -10430,7 +10431,6 @@ C
 C
 C     We start by sorting the electric field results
 C
-!        write(LUPRI,*) 'OLD-ELFLD(',i,',',j,')=',ELFLD(i,j)
 !      CALL TRACOR(CSTRA,SCTRA,1,3*NUCDEP,0)
 !      CALL DGEMM('N','T',1,3*NUCDEP,3*NUCDEP,1.D0,
 !     &           EXPVAL,1,
@@ -10506,18 +10506,16 @@ C
      &        ISYMOP,IX,IY,JATOM,JX,JY,CHECK,
      &        NATTYP,NUMIS,KHZPPM
 C
-      double precision D1,FAC,FACPPM,
-     &                 GEOM(KATOM,3),AMASS(KATOM),GVAL(KATOM),
+      double precision D1,FAC,FACPPM,GEOM(KATOM,3),AMASS(KATOM),
+     &                 GVAL(KATOM),DMAT(3,3,KATOM),ANGUMOM(3),
      &                 PMATL(3,3,KATOM,2),PMATS(3,3,KATOM,2),
-     &                 DMAT(3,3,KATOM),ANGUMOM(3),
-     &                 NSREXV,NSRLR,NSRNUC,NSRTOT,
+     &                 NSREXV,NSRLR,NSRNUC,NSRTOT,CONST,FACTOT,
      &                 NSRLRLEE,NSRLRLEP,NSRLRSEE,NSRLRSEP,
-     &                 CONST,EIGVAL(3),EIGVEC(3,3),
-     &                 FACTOT,OMEGA(3),TINERT(9),DISOTP,
+     &                 EIGVAL(3),EIGVEC(3,3),OMEGA(3),TINERT(9),
+     &                 DISOTP,GTRANN(3,3,KATOM),
      &                 GTRANPLEE(3,3,KATOM),GTRANPLEP(3,3,KATOM),
      &                 GTRANPSEE(3,3,KATOM),GTRANPSEP(3,3,KATOM),
-     &                 GTRANP(3,3,KATOM),GTRAND(3,3,KATOM),
-     &                 GTRANN(3,3,KATOM)
+     &                 GTRANP(3,3,KATOM),GTRAND(3,3,KATOM)
 C
       PARAMETER (D1 = 1.0D0, FACPPM = ALPHA2/2.D0*1.0D6,
      &           FAC = ALPHA2/(2.D0*PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
