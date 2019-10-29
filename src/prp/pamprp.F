@@ -9675,7 +9675,7 @@ C      even when in further steps it could be changed, as occur
 C      for UKB, spin-free and ZORA calculations.
        LINDET=.TRUE.  ! save that linear symmetry is used
 C
-C      Orbital angular momentum
+C     Orbital angular momentum
 C
        PNAME     = 'X Orb. ang. mom.'
        IPTYP     = 1  ! diagonal operator
@@ -9701,7 +9701,7 @@ C
 C
       ELSE ! if LINEAR is not TRUE
 C
-C      Orbital angular momentum
+C     Orbital angular momentum
 C
        PNAME     = 'X Orb. ang. mom.'
        IPTYP     = 1  ! diagonal operator
