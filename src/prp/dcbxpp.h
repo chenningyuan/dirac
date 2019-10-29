@@ -26,10 +26,10 @@
       PARAMETER (MAXLPP = 3016, MAX_KVAL = 12)
       LOGICAL XPP_SKIPEE,XPP_SKIPEP,XPP_LSFG,                           &
      &        XPPNRM,ORBXPP,XPPANA,XPP_TRIPLET,                         &
-     &        XPP_E2CHEK,DOBED,ORIENTED,BEDCHK,DOBEDDER
+     &        XPP_E2CHEK,DOBED,ORIENTED,BEDCHK
       COMMON /XCBLPP/XPP_SKIPEE,XPP_SKIPEP,XPP_LSFG(2),                 &
      &        XPPNRM,ORBXPP,XPPANA,XPP_TRIPLET,XPP_E2CHEK,DOBED,        &
-     &        ORIENTED,BEDCHK,DOBEDDER
+     &        ORIENTED,BEDCHK
       COMMON /XCBRPP/THCPP,CNVXPP(2),RESXPP,XPPERG,                     &
      &        UWAVE(3),UPOL(3),BEDSTP
       COMMON /XCBIPP/IPRXPP,ITRXPP,MAXEXC,                              &
