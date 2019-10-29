@@ -9603,16 +9603,16 @@ C...common block for linear reponse
      &        IC1,IC2,ICOOR,ICOOR1,IFIRST,ILOW,INDOP1,
      &        INDXPR,IOP,IPTYP,IREP,IREP1,IREP2,IREPO,IS1,
      &        IS2,ISCOOR,ISCORD1,ISECND,
-     &        ISYXPR,ITHIRD,ITOP,ITRXPR,ITYP,MXATM2,NPCOMP,
+     &        ISYXPR,ITHIRD,ITOP,ITRXPR,ITYP,NPCOMP,
      &        NSCOOR,ISCOR1
-
-      DOUBLE PRECISION PFAC,WORK,D1,DL,DS
+C
+      DOUBLE PRECISION PFAC,D1,DL,DS
 
       logical, allocatable :: DOATOM(:)
 
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3),IOP(3)
-C.....ANGMOM integrals correspond to -iL, so we set DL = -1
+C     ANGMOM integrals correspond to -iL, so we set DL = -1
 C     XSIGMA,YSIGMA and ZSIGMA come with imaginary i, so we set DS = +1
       PARAMETER(D1 = 1.0D0,DL = -1.0D0,DS = 0.5D0)
 #include "chrnos.h"
@@ -9636,6 +9636,7 @@ C
       PFAC(1)   = D1 ! factor
       ILOW = 1
       IF (LINEAR) ILOW = 3
+C
       DO IATOM = 1, NUCIND ! loop over symmetry-independent nuclei
       IF (DOATOM(IATOM)) THEN ! selection of atoms
         DO IREP = 0, MAXREP ! loop over irreps to generate full list of nuclei
@@ -9674,7 +9675,7 @@ C      even when in further steps it could be changed, as occur
 C      for UKB, spin-free and ZORA calculations.
        LINDET=.TRUE.  ! save that linear symmetry is used
 C
-C.....Orbital angular momentum
+C      Orbital angular momentum
 C
        PNAME     = 'X Orb. ang. mom.'
        IPTYP     = 1  ! diagonal operator
@@ -9700,7 +9701,7 @@ C
 C
       ELSE ! if LINEAR is not TRUE
 C
-C.....Orbital angular momentum
+C      Orbital angular momentum
 C
        PNAME     = 'X Orb. ang. mom.'
        IPTYP     = 1  ! diagonal operator
@@ -9738,7 +9739,7 @@ C
        IPTYP     = 10  ! Sigma_x
        NPCOMP    = 1   ! one component
        PFAC(1)   = DS ! factor
-!
+C
        PLABEL(1) = 'OVERLAP'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
@@ -9791,7 +9792,6 @@ C       Atoms
 C
         DO IATOM1 = 1, NUCIND
         IF(DOATOM(IATOM1)) THEN
-          MXATM2 = NUCIND
 C
 C         Cartesian directions
 C
@@ -9938,29 +9938,26 @@ C
 C
       logical, allocatable :: DOATOM(:)
       double precision, allocatable :: PMATL(:,:,:,:),PMATS(:,:,:,:),
-     &                                 CSTRA(:),SCTRA(:),
      &                                 TMPMATL(:,:,:),TMPMATS(:,:,:),
-     &                                 GEOM(:,:),MASS(:),
-     &                                 AMASS(:),GVAL(:),ELFLD(:,:)
+     &                                 CSTRA(:),SCTRA(:),GEOM(:,:),
+     &                                 MASS(:),AMASS(:),GVAL(:),
+     &                                 ELFLD(:,:),DMAT(:,:,:)
 C
       integer, allocatable :: NAT(:)
 C
-      double precision D0,D1,DM1,D2,FAC
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0)
-      PARAMETER (D2 = 2.0D0)
-      PARAMETER (FAC = ALPHA2/(PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
+      double precision D0
+      PARAMETER (D0 = 0.0D0)
 C
-      LOGICAL TEST,ee,ep,occ,PLANAR
+      LOGICAL TEST
 C
-      INTEGER IBUFA(3*NUCDEP), IBUFEXP(3*NUCDEP), I,IA,IB1,IB2,
-     &        IATOM,IDEG,IDEP, IFREQ, INUC,ISO,ISYMOP,ITYP,IZ,J,
-     &        JA, JATOM,JB1,JB2,K,KA,KB1,KB2,KFRSAV,KFREE,L,NA,
-     &        NATOM,NB1,NB2,NCMAT,
-     &        NEXP,NISO,NSCOOR, NSPEC,ICONVXYZ,IEXP,
-     &        JEXP,KEXP,IBUFB1(3),IBUFB2(3),IATINF(3,NUCDEP)
+      INTEGER IBUFA(3*NUCDEP),IBUFEXP(3*NUCDEP),I,IA,IB1,IB2,
+     &        IATOM,IDEG,IDEP,IFREQ,INUC,ISO,ISYMOP,ITYP,IZ,J,
+     &        JA,JATOM,JB1,JB2,K,KA,KB1,KB2,L,NA,NATOM,NB1,NB2,
+     &        NCMAT,NEXP,NISO,NSCOOR,NSPEC,IEXP,JEXP,KEXP,
+     &        IBUFB1(3),IBUFB2(3),IATINF(3,NUCDEP)
 C
       double precision RATINF(3,5,NUCDEP),DISOTP,
-     &                 EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
+     &                 EXPVAL(3*NUCDEP),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &                 ABCNV(NBFREQ,NLRBPT),ABND,
      &                 GVALUE,IABLRF_EE,IABLRF_EP
 C
@@ -9968,9 +9965,9 @@ C
 
       JATOM  = NATOMS + NFLOAT
       NSCOOR = 3*NUCDEP
-      KFRSAV = KFREE
-      NCMAT =  NUCDEP*9
+      NCMAT =  9*NUCDEP
       allocate(DOATOM(NUCIND))
+      allocate(DMAT(3,3,NUCDEP))    ! exp. value part of NSR.
       allocate(PMATL(3,3,NUCDEP,2)) ! L part of NSR for ee and ep contributions.
       allocate(PMATS(3,3,NUCDEP,2)) ! S part of NSR for ee and ep contributions.
       allocate(CSTRA(NUCDEP*NUCDEP*9))
@@ -10015,8 +10012,8 @@ C
         NISO = 0
         DO ISO = 1,5
           GVALUE = DISOTP(IZ,ISO,'GVAL')
-!iaa       Spin-rotations of isotopes without g-value (GVALUE = 0)
-!          are obtained setting their (artificial) g-value equal to 1
+Ciaa       Spin-rotations of isotopes without g-value (GVALUE = 0)
+C          are obtained setting their (artificial) g-value equal to 1
             ABND = DISOTP(IZ,ISO,'ABUNDANCE')
             IF(ABND.GT.ABUND.OR.(.NOT.TEST)) THEN
               TEST = .TRUE.
@@ -10110,6 +10107,7 @@ C     The 3 S spin angular momentum directions as B operators in <<A;B>> :
       ENDIF
 C
 C     The NSCOOR nucl. electric field operators as NEF operators in < 0 | NEF | 0 > :
+      CALL IZERO(IBUFEXP,NSCOOR)
       NEXP = 0
       DO ITYP = 1,NSCOOR
         IF(IPEFN(ITYP).GT.0) THEN
@@ -10121,7 +10119,9 @@ C     The NSCOOR nucl. electric field operators as NEF operators in < 0 | NEF | 
         WRITE(LUPRI,'(2X,A,I2)') 'PRP_SPINRO: NEXP=',NEXP
         CALL QUIT('PRP_SPINRO:Wrong value of NEXP!')
       ENDIF
+C
 C--------------------------------------------------------------------
+C
 C     NUCLEAR PART OF NSR TENSOR
 C
       CALL DZERO(SPRNUC,NCMAT)
@@ -10131,10 +10131,14 @@ C
      &    ' Gauge origin (a.u.):', (GAGORG(I),I=1,3)
       CALL DCOPY(3,CMXYZ,1,GAGORG,1)
       CALL NUCSPR(GEOM,CMXYZ,IPRPRP)
+C
 C-------------------------------------------------------------------
+C
 C     MEAN VALUE PART OF NSR TENSOR
 C
-      CALL DZERO(SPRDNL,NCMAT)
+      CALL DZERO(DMAT,NCMAT)
+      CALL DZERO(ELFLD,NSCOOR)
+      EXPVAL(0) = D0
 C
       IF (XLR_SKIPEP) THEN
 Ciaa    A revision is needed for those cases in which .SKIPEP is activated in addition
@@ -10146,12 +10150,12 @@ C       (because EXPVAL(I) is also used in those properties).
      &    'values of spin-rotation constants in the current ' //
      &    'implementation, when other properties are also requested.'
       END IF
+C
       DO IEXP = 1,NEXP
         JEXP = IBUFEXP(IEXP)
         KEXP = IPEFN(JEXP)
         IF (LINEAR) THEN
-            ELFLD( 3 , 1 ) = EXPVAL(1)
-            ELFLD( 3 , 2 ) = EXPVAL(2)
+            ELFLD( 3 , KEXP ) = EXPVAL(KEXP)
         ELSE
           IF (MOD(JEXP,3).NE.0) THEN
             ELFLD( MOD(JEXP,3) ,(JEXP-1)/3 + 1 ) = EXPVAL(KEXP)
@@ -10160,6 +10164,30 @@ C       (because EXPVAL(I) is also used in those properties).
           END IF
         END IF
       END DO
+C
+Ciaa Order EXPVAL matrix in C1 basis
+C
+!      IF (LINEAR) THEN
+!        DO IEXP = 1,NSCOOR
+!        JEXP = IBUFEXP(IEXP)
+!        KEXP = IPEFN(JEXP)
+!        IF (KEXP.NE.0) THEN
+!          EXPVAL(3*KEXP-2) = EXPVAL(KEXP)
+!          IF ( (KEXP+2.)/3. .NE. (KEXP+2)/3 ) EXPVAL(KEXP) = D0
+!        ELSE
+!          IF ( (IEXP-1.)/3. .NE. (IEXP-1)/3 ) EXPVAL(IEXP) = D0
+!        END IF
+!        END DO
+!      END IF
+C
+C     Transform to C1 basis
+C
+Ciaa review: not working for symmetries other than C1!
+      CALL TRACOR(CSTRA,SCTRA,1,3*NUCDEP,0)
+      CALL DGEMM('N','T',1,3*NUCDEP,3*NUCDEP,1.D0,
+     &           EXPVAL,1,
+     &           SCTRA,3*NUCDEP,0.D0,
+     &           ELFLD,1)
       CALL DIASPR(EXPVAL,ELFLD,CSTRA,SCTRA,NCMAT,IPRPRP)
 C
 C--------------------------------------------------------------------
@@ -10226,6 +10254,8 @@ C...        then extract the e-p contribution
           ENDDO
         ENDDO
 C
+C     Transform to C1 basis
+C
         CALL DZERO(PMATL,2*NCMAT)
         CALL DZERO(PMATS,2*NCMAT)
 C
@@ -10261,6 +10291,7 @@ C-------------------------------------------------------------------
       deallocate(MASS)
       deallocate(NAT)
       deallocate(DOATOM)
+      deallocate(DMAT)
       deallocate(PMATL)
       deallocate(PMATS)
       deallocate(CSTRA)
@@ -10395,17 +10426,17 @@ C
      &                 COORX,COORY,COORZ
 C
       CALL DZERO(SPRDNL,NCMAT)
+!iaa review
 C
 C     We start by sorting the electric field results
 C
-! iaa analice with symmetry
-c*******************************************************
-      CALL TRACOR(CSTRA,SCTRA,1,3*NUCDEP,0)
-      CALL DGEMM('N','T',1,3*NUCDEP,3*NUCDEP,1.D0,
-     &           EXPVAL,1,
-     &           SCTRA(1,1),3*NUCDEP,0.D0,
-     &           ELFLD,1)
-c*******************************************************
+!        write(LUPRI,*) 'OLD-ELFLD(',i,',',j,')=',ELFLD(i,j)
+!      CALL TRACOR(CSTRA,SCTRA,1,3*NUCDEP,0)
+!      CALL DGEMM('N','T',1,3*NUCDEP,3*NUCDEP,1.D0,
+!     &           EXPVAL,1,
+!     &           SCTRA(1,1),3*NUCDEP,0.D0,
+!     &           ELFLD,1)
+!iaa review
 C
 C     Then we construct the expectation value contribution
 C
@@ -10472,40 +10503,31 @@ C
 C
       logical, allocatable :: DOATOM(:)
       integer I,J,K,KATOM,IPRINT,IATOM,ICOOR,
-     &        ISYMOP,IX,IY,JATOM,JX,JY,CSTRA,
-     &        SCTRA,NATTYP,NUMIS,KHZPPM
+     &        ISYMOP,IX,IY,JATOM,JX,JY,CHECK,
+     &        NATTYP,NUMIS,KHZPPM
 C
-      double precision D1,D2,D3,D4,THRESH,DP5,FAC,FACPPM,
+      double precision D1,FAC,FACPPM,
      &                 GEOM(KATOM,3),AMASS(KATOM),GVAL(KATOM),
      &                 PMATL(3,3,KATOM,2),PMATS(3,3,KATOM,2),
      &                 DMAT(3,3,KATOM),ANGUMOM(3),
      &                 NSREXV,NSRLR,NSRNUC,NSRTOT,
      &                 NSRLRLEE,NSRLRLEP,NSRLRSEE,NSRLRSEP,
-     &                 CONST,CONST2,EIGVAL(3),EIGVEC(3,3),
-     &                 FACTOT,OMEGA(3),SIGMAS,TINERT(9),DISOTP,
+     &                 CONST,EIGVAL(3),EIGVEC(3,3),
+     &                 FACTOT,OMEGA(3),TINERT(9),DISOTP,
      &                 GTRANPLEE(3,3,KATOM),GTRANPLEP(3,3,KATOM),
      &                 GTRANPSEE(3,3,KATOM),GTRANPSEP(3,3,KATOM),
      &                 GTRANP(3,3,KATOM),GTRAND(3,3,KATOM),
      &                 GTRANN(3,3,KATOM)
 C
-      PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
-     &           THRESH = 1.0D-5, DP5 = 1/D2)
-      PARAMETER (FAC = ALPHA2/(2.D0*PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
-      PARAMETER (FACPPM = ALPHA2/2.D0*1.0D6)
+      PARAMETER (D1 = 1.0D0, FACPPM = ALPHA2/2.D0*1.0D6,
+     &           FAC = ALPHA2/(2.D0*PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
       LOGICAL PLANAR, LINMOL
 C
       allocate(DOATOM(NUCIND))
 C
-      CALL DZERO(TOTSPR,3*MXCOOR)
       CALL DZERO(GTRANT,9*MXCENT)
 C
-C     We need to transform the expectation value term of NSR
-C
-      CALL DCOPY(9*NUCDEP,SPRDNL,1,DMAT,1)
-C iaa check the following commented line. Can I delete it, right?
-c      CALL DSCAL(9*NUCDEP,D1,DMAT,1)
-C
-C iaa Nuclear rotational angular momentum could be defined here to obtain Omega afterwards
+Ciaa  Nuclear rotational angular momentum could be defined here to obtain Omega afterwards
       DO 300 I = 1, 3
         ANGUMOM(I) = D1
  300  CONTINUE
@@ -10560,7 +10582,7 @@ C
 C    Print inertia tensor or moment
 C
       IF (IPRINT .GE. 0) THEN
-       IF (LINEAR) THEN       ! Linear molecule detected using symmetry
+       IF (LINEAR) THEN      ! Linear molecule detected using symmetry
               WRITE (LUPRI,'(2X,A,F16.8,/)')
      &         'Moment of inertia (a.u.): ', XFAMU/EIGVAL(3)
        ELSE
@@ -10588,7 +10610,9 @@ C
         IF (IBTAND(ISTBNU(K),ISYMOP).EQ.0) THEN
         IATOM = IATOM + 1
 Ciaa TODO: check why some DOATOM(K) are False when they shouldn't. Some NSR are not printed out!
-!         IF (DOATOM(K)) THEN
+        CHECK = 0
+         IF (DOATOM(K)) THEN
+          CHECK = CHECK + 1
 C
 C    Print g-values of selected nuclei
 C
@@ -10804,13 +10828,15 @@ C
      &                 'iso', (GTRANPSEP(1,1,IATOM)
      &              +GTRANPSEP(2,2,IATOM)+GTRANPSEP(3,3,IATOM))/3
              END IF
-            END IF ! (LINMOL)
+            END IF  ! (LINMOL)
  47        CONTINUE
-          END IF ! (LINEAR)
-!         END IF ! (DOATOM(K))
+          END IF    ! (LINEAR)
+         END IF     ! (DOATOM(K))
         END IF
  200   CONTINUE
  98   CONTINUE
+        IF (CHECK.eq.0) WRITE (LUPRI,'(/,2X,A)') 'WARNING:'       //
+     & ' DOATOM(K) are all false in SPRRES subroutine, PAMPRP.F'
 C
       deallocate(DOATOM)
 C
