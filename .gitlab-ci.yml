@@ -20,7 +20,7 @@ variables:
   BUILD_TYPE: "DEV"
   BLASLIB: "NONE"
   GPU_CUDA: "NOCUDA"
-  EXA_OS: "NO_LINUX"  
+  EXA_OS: "LINUX"  
   MPILIB: "OPENMPI"
 
 ubuntu_serial32-check:
