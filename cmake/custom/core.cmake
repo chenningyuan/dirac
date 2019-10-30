@@ -147,11 +147,6 @@ foreach(
         target_link_libraries(${_executable} -lstdc++)
     endif()
 
-    if(ENABLE_EXATENSOR)
-    # added -libstdc++ linking flag for each ${_executable} due to EXATENSOR
-        target_link_libraries(${_executable} -lstdc++)
-    endif()
-
     if(CMAKE_Fortran_COMPILER_ID MATCHES GNU AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
     # add -lC linking flag for each ${_executable} to satisfy missing objects - sqrtf,logf,cosf,powf 
         target_link_libraries(${_executable} -lC)
@@ -160,9 +155,18 @@ foreach(
 endforeach()
 
 if(ENABLE_EXATENSOR)
-  #printout of all linked libraries to exacorr.x executable
-  get_target_property(OUT exacorr.x  LINK_LIBRARIES)
-  message(STATUS "For checking, linked libraries to exacorr.x: ${OUT} ")
+    # added -libstdc++ linking flag for each ${_executable} due to EXATENSOR
+    target_link_libraries(exacorr.x ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib/libtalsh.a)
+    target_link_libraries(exacorr.x ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib/libexatensor.a)
+    target_link_libraries(exacorr.x -lstdc++)
+    
+    target_link_libraries(dirac.x ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib/libtalsh.a)
+    target_link_libraries(dirac.x ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib/libexatensor.a)
+    target_link_libraries(dirac.x -lstdc++)
+
+    #printout of all linked libraries to exacorr.x executable
+    get_target_property(OUT exacorr.x  LINK_LIBRARIES)
+    message(STATUS "For checking, linked libraries to exacorr.x: ${OUT} ")
 endif()
 
 #printout of all linked libraries to dirac.x executable
