@@ -10005,7 +10005,7 @@ C
       IDEG = NUCDEG(INUC)
       IF(DOATOM(INUC)) THEN
         TEST = .FALSE.
-        IZ   = NINT(CHARGE(INUC))
+        IZ   = IZATOM(INUC)
         NISO = 0
         DO ISO = 1,5
           GVALUE = DISOTP(IZ,ISO,'GVAL')
@@ -10534,7 +10534,7 @@ C
 C     Set up coordinates (relative to center of mass), g-values and masses of all nuclei
       JATOM = 0
       DO 100 IATOM = 1, NUCIND
-         NATTYP = NINT(CHARGE(IATOM))
+         NATTYP = IZATOM(IATOM)
          NUMIS  = ISOTOP(IATOM)
          DO 110 ISYMOP = 0, MAXOPR
          IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
