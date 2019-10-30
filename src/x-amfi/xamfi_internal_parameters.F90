@@ -28,12 +28,13 @@ module xamfi_internal_parameters
 ! parameters
 
   integer, parameter :: aoo_funit                   =  25    ! file unit for X2CMAT
+  integer, parameter :: aoo_mxopen                  =  10    ! same as mxopen
 
   logical            :: aoo_mdirac                             =  .false. ! .true. if MDIRAC in DIRAC is active
 
 ! real(8) block
   real(8), public    :: aoo_cspeed                             = -1.0d0   ! speed of light
-  real(8),allocatable:: aoo_dfopen(:)
+  real(8)            :: aoo_dfopen(0:aoo_mxopen)               =  0.0d0
 
   integer            :: dim_pshell(2)                          =  0
   integer            :: dim_eshell(2)                          =  0
@@ -48,7 +49,9 @@ module xamfi_internal_parameters
   integer            :: nr_ao_large_aoo                        =  0
   integer            :: nr_ao_small_aoo                        =  0
   integer            :: n2bastq_dim_aoo                        =  0
+  integer            :: n2bbasxq_dim_aoo                       =  0
   integer            :: nr_cmo_q                               =  0
+  integer            :: aoo_n2tmt                              =  0
   integer            :: nr_ao_all(2)                           =  0
   integer            :: nr_ao_l(2)                             =  0
   integer            :: nr_ao_s(2)                             =  0
@@ -70,6 +73,10 @@ module xamfi_internal_parameters
   integer            :: aoo_mxcent                             =  0
   integer            :: aoo_nontyp                             =  0
   integer            :: aoo_nopen                              =  0
+  integer            :: lutmat_aoo                             =  0
+  integer            :: nr_tmo(2)                              =  0
+  integer            :: ioff_tmt(2)                            =  0
+  integer            :: ioff_tmot(2)                            =  0
   integer, allocatable :: aoo_nont(:)
   integer, allocatable :: aoo_nucdeg(:)
 

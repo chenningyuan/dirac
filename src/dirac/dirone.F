@@ -2184,6 +2184,7 @@ C   PAMIOU: LUTMAT
       real(8), allocatable :: cmo_mmf(:)
       real(8), allocatable :: scratch_mmf(:)
 #ifdef MOD_XAMFI
+      real(8), allocatable :: scr1_aoosoc(:)
       real(8), allocatable :: dmat_aoosoc(:)
       real(8), allocatable :: cmo_aoosoc(:)
       real(8), allocatable :: pctm_aoosoc(:)
@@ -2696,13 +2697,37 @@ C
         CALL PSIPRJ(WORK(KTMAT),WORK(KTBUF),IPRONE,WORK,KFREE,LFREE)
         CALL SETDC2(0)
       ENDIF
+
+#ifdef MOD_XAMFI
+      if(x2c.and.x2cmod_mmf.and.aoomod.and.nucdep==1.and.nucind==1)then
+       CALL MEMGET2('REAL','SCR1'  ,KTMATaoo,aoo_N2TMT,WORK,KFREE,LFREE)
+       CALL MEMGET2('REAL','SCR2'  ,KTBUFaoo,aoo_N2TMT,WORK,KFREE,LFREE)
+
+       write(6,*) ' dimensions for AOMOMAT reading ... ',aoo_n2tmt
+
+       CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','GMOTRA ')
+       CALL READT(LUTMAT,aoo_N2TMT,work(ktmataoo))
+       CALL READT(LUTMAT,aoo_N2TMT,work(ktbufaoo))
+       CLOSE(LUTMAT,STATUS='KEEP')
+
+       CALL OPNFIL(LUTMAT,'AOMOMATaoo','UNKNOWN','GMOTRA')
+       CALL WRITT(LUTMAT,aoo_N2TMT,WORK(ktmataoo))
+       CALL WRITT(LUTMAT,aoo_N2TMT,WORK(ktbufaoo))
+       CALL ORBDAT
+       CLOSE(LUTMAT,STATUS='KEEP')
+      end if
+#endif
+
+
+      write(lupri,*) ' dimensions for AOMOMAT ... ',n2tmt
+
 C
 C     Write transformation matrices
 C
       CALL OPNFIL(LUTMAT,'AOMOMAT','UNKNOWN','GMOTRA')
 !     AO2MO transformation matrix (linear symmetry adapted if linsym == .true.)
       CALL WRITT(LUTMAT,N2TMT,WORK(KTMAT))
-!     right index transformed overlap matrix Saomo 
+!     right index transformed overlap matrix Saomo
       CALL WRITT(LUTMAT,N2TMT,WORK(KTBUF))
 !     orbital dimensions, etc --> "runtime" data
       CALL ORBDAT
@@ -2743,7 +2768,6 @@ C
 
 !           !> generate density matrix
             call denmat(dmat_aoosoc,cmo_aoosoc,iprham)
-            deallocate(cmo_aoosoc)
 
             allocate(pctm_aoosoc(ntbas(0)**2*4))
             open(lux2c,file='X2CMAT',status='old',form='unformatted',
@@ -2769,10 +2793,12 @@ C
                        no1esystem_aoosoc = (ichrg - kcharg > 1)
             if(onesys) no1esystem_aoosoc = .false.
 
-            lwork_local = lwork - ntbas(0)**2*nz*nfmat - ntbas(0)**2*nz
+            lwork_local = lwork - ntbas(0)**2*nz*nfmat
+     &                  - ntbas(0)**2*nz - ncmotq
 
             call get_xamfi_correction(
      &                                dmat_aoosoc,
+     &                                cmo_aoosoc,
      &                                pctm_aoosoc,
      &                                no1esystem_aoosoc,
      &                                lwork_local,
@@ -2786,6 +2812,7 @@ C
             x2c = x2c_save
 
             deallocate(pctm_aoosoc)
+            deallocate(cmo_aoosoc)
             deallocate(dmat_aoosoc)
           end if ! check for atomic run
 #else

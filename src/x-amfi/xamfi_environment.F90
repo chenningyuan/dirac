@@ -88,9 +88,13 @@ contains
       nr_ao_small_aoo  = ntbas(2)
 !
       n2bastq_dim_aoo  = n2bastq
+      n2bbasxq_dim_aoo = n2bbasxq
 !
       nr_cmo_q         = ncmotq
 !
+      aoo_n2tmt        = n2tmt
+      lutmat_aoo       = lutmat
+
       do i = 1, nr_fsym
         j               =  nesh(i)
         k               =  norb(i)
@@ -104,6 +108,10 @@ contains
         nr_ao_l(i)      = nfbas(i,1)
 !                         [    S  ]
         nr_ao_s(i)      = nfbas(i,2)
+
+        nr_tmo(i)       = ntmo(i)
+        ioff_tmt(i)     = i2tmt(i)
+        ioff_tmot(i)    = i2tmot(i)
 
         do m = 1, nr_fsym
           ioff_aomat_x(m,i) = i2basx(m,i)
@@ -133,14 +141,9 @@ contains
         aoo_nopen                              = nopen
       end if
 
-
+      aoo_dfopen(0) = df(0)
 !     active density matrix factors
-      if(aoo_nopen > 1)then 
-        if(.not.allocated(aoo_dfopen))    &
-        allocate(aoo_dfopen(0:aoo_nopen-1), stat=ier ); if( ier.ne.0 )stop ' Error in allocation: aoo_dfopen(:)'
-        aoo_dfopen(0)           = 1.0d0
-        aoo_dfopen(1:(aoo_nopen-1)) = df(1:(aoo_nopen-1))
-      end if
+      if(aoo_nopen >=1) aoo_dfopen(1:aoo_nopen) = df(1:aoo_nopen)
 
       j = nucind
 !     j = 0
@@ -174,7 +177,6 @@ contains
 
   subroutine xamfi_finalize()
 
-     if(aoo_nopen > 1) deallocate(aoo_dfopen)
      deallocate(atom)
      deallocate(aoo_nont)
      deallocate(aoo_nucdeg)

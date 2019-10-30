@@ -51,6 +51,7 @@ contains
 !----------------------------------------------------------------------
   subroutine get_xamfi_correction(            &
                                   dmat,       &
+                                  cmo,        &
                                   pct_mat,    &
                                   calc_2esoc, &
                                   lwork_ext,  &
@@ -58,6 +59,7 @@ contains
                                   )
 !**********************************************************************
      real(8), intent(inout)             :: dmat(nrows,ncols,nr_quat,nr_2e_fock_matrices)
+     real(8), intent(inout)             :: cmo(*)
      real(8), intent(in)                :: pct_mat(*)
      logical, intent(in)                :: calc_2esoc
      integer, intent(in)                :: lwork_ext
@@ -76,6 +78,7 @@ contains
       !> get full (scalar+spin-orbit) 2e-fock matrix
       call get_scso_2e_fock(                           &
                             dmat,                      &
+                            cmo,                       &
                             fmat,                      &
                             nrows,                     &
                             ncols,                     &
