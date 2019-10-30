@@ -1346,8 +1346,7 @@ C
          DO 300 IREP = 0, MAXREP
             IF (DOREP(IREP)) THEN
                DO 310 IATOM = 1, NUCIND
-                  NATTYP = NINT(CHARGE(IATOM))
-                  DMASS  = DISOTP(NATTYP,ISOTPS(IATOM),'MASS')
+                  DMASS  = DISOTP(IZATOM(IATOM),ISOTPS(IATOM),'MASS')
                   DO 320 ICOOR = 1, 3
                      JCOOR = 3*(IATOM - 1) + ICOOR
                      ISCOOR = IPTCNT(JCOOR,IREP,1)
@@ -2415,7 +2414,7 @@ C
       ICOOR = 0
       IATOM = 0
       DO 100 ICENT = 1, NUCIND
-         DMSS = DISOTP(NINT(CHARGE(ICENT)),ISOTPS(ICENT),'MASS')
+         DMSS = DISOTP(IZATOM(ICENT),ISOTPS(ICENT),'MASS')
          MULCNT = ISTBNU(ICENT)
          DO 200 IOP = 0, MAXOPR
             IF (IBTAND(IOP,MULCNT) .EQ. 0) THEN
@@ -2520,7 +2519,7 @@ C
          CALL HEADER('Atomic masses',1)
          JATOM = 0
          DO 510 IATOM = 1, NUCIND
-            DMASS = DISOTP(NINT(CHARGE(IATOM)),ISOTPS(IATOM),'MASS')
+            DMASS = DISOTP(IZATOM(IATOM),ISOTPS(IATOM),'MASS')
             NDEG  = NUCDEG(IATOM)
             DO 515 IDEG = 1, NDEG
                WRITE (LUPRI,'(2X,A6,2X,F12.6)') NAMDEP(JATOM+IDEG),DMASS
@@ -3045,9 +3044,8 @@ C
       DO 100 ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          FAC    = D1/SQRT(FMULT(MULCNT))
-         NATTYP = NINT(CHARGE(ICENT))
          NISOTP = ISOTPS(ICENT)
-         AMASS  = XFAMU*DISOTP(NATTYP,NISOTP,'MASS')
+         AMASS  = XFAMU*DISOTP(IZATOM(ICENT),NISOTP,'MASS')
          DO 200 ISYMOP = 0, MAXOPR
             IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
                IATOM = IATOM + 1
@@ -6479,9 +6477,8 @@ C
       DO 100 ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          FAC    = D1/SQRT(FMULT(MULCNT))
-         NATTYP = NINT(CHARGE(ICENT))
          NISOTP = ISOTPS(ICENT)
-         ATMAS  = XFAMU*DISOTP(NATTYP,NISOTP,'MASS')
+         ATMAS  = XFAMU*DISOTP(IZATOM(ICENT),NISOTP,'MASS')
          DO 110 ISYMOP = 0, MAXOPR
             IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
                IATOM = IATOM + 1
@@ -7623,7 +7620,7 @@ C  /* Deck wlkcvt */
 #include "cbisol.h"
 #include "nuclei.h"
 #include "symmet.h"
-      AMASS(I) = DISOTP(NINT(CHARGE(I)),ISOTPS(I),'MASS')
+      AMASS(I) = DISOTP(IZATOM(I),ISOTPS(I),'MASS')
 C
 C     Total mass
 C

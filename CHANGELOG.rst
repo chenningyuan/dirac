@@ -17,6 +17,7 @@ Revised features:
 
 Error corrections:
 
+- Fixed use of point charges (do not try to obtain e.g. mass of a point charge).
 - Fixed Be basis set in cc-pV5Z.
 - Fixed spelling error in keyword .GAUNTSCALE (was .GAUTSCALE).
 - Fixed T1EQN1 function call in src/relccsd/ccgrad.F (thanks to Martin Siegert).
@@ -24,7 +25,6 @@ Error corrections:
 Performance improvements:
 
 - Reduced static memory requirement from common blocks.
-
 
 Documentation:
 

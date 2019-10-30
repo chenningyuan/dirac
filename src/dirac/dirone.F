@@ -7302,7 +7302,9 @@ c
             CYCLE
          ELSE
 c        ... Get charges and exponents for the electrons in this group
-            n_charge = NINT(CHARGE(I))
+            n_charge = nint(CHARGE(I))
+            ! do no use atom number in IZATOM(I) here
+            ! Reason: if ECP we need the reduced charge to get a reasonable start guess ...
             n_exp = -1 ! signal the routine to provide the number of exponents only
             CALL Read_screening_parameters
      &           (n_charge,n_exp,DUMMY,DUMMY)
