@@ -1,5 +1,5 @@
 #deactivate exatensor if mpi is not available
-if(DEFINED VAR_MPI)
+if(ENABLE_MPI)
     option(ENABLE_EXATENSOR "Enable ExaTensor library" ON)
 else()
     option(ENABLE_EXATENSOR "Enable ExaTensor library" OFF)
