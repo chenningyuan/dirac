@@ -1,5 +1,5 @@
 #deactivate exatensor if mpi is not available
-if(ENABLE_MPI)
+if(ENABLE_MPI AND (NOT ENABLE_64BIT_INTEGERS))
     option(ENABLE_EXATENSOR "Enable ExaTensor library" ON)
 else()
     option(ENABLE_EXATENSOR "Enable ExaTensor library" OFF)

@@ -147,6 +147,11 @@ foreach(
         target_link_libraries(${_executable} -lstdc++)
     endif()
 
+    if(ENABLE_EXATENSOR)
+    # added -libstdc++ linking flag for each ${_executable} due to EXATENSOR
+        target_link_libraries(${_executable} -lstdc++)
+    endif()
+
     if(CMAKE_Fortran_COMPILER_ID MATCHES GNU AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
     # add -lC linking flag for each ${_executable} to satisfy missing objects - sqrtf,logf,cosf,powf 
         target_link_libraries(${_executable} -lC)
