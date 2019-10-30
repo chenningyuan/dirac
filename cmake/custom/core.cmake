@@ -152,18 +152,14 @@ foreach(
         target_link_libraries(${_executable} -lC)
     endif()
 
+    if(ENABLE_EXATENSOR)
+        # added -libstdc++ linking flag for each ${_executable} due to EXATENSOR
+        target_link_libraries(objlib.${_executable} -lstdc++) 
+	target_link_libraries(${_executable} -lstdc++)
+    endif()
 endforeach()
 
 if(ENABLE_EXATENSOR)
-    # added -libstdc++ linking flag for each ${_executable} due to EXATENSOR
-    target_link_libraries(exacorr.x ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib/libtalsh.a)
-    target_link_libraries(exacorr.x ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib/libexatensor.a)
-    target_link_libraries(exacorr.x -lstdc++)
-    
-    target_link_libraries(dirac.x ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib/libtalsh.a)
-    target_link_libraries(dirac.x ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib/libexatensor.a)
-    target_link_libraries(dirac.x -lstdc++)
-
     #printout of all linked libraries to exacorr.x executable
     get_target_property(OUT exacorr.x  LINK_LIBRARIES)
     message(STATUS "For checking, linked libraries to exacorr.x: ${OUT} ")
