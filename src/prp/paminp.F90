@@ -415,8 +415,8 @@
      &         "are not yet implemented")
              end if
             else if(NBSYM .gt. 1) then
-              call quit("*** ERROR in PAMINP *** "               //    &
-     &         "Spin-rotation tensors available in C1 symmetry only")
+!              call quit("*** ERROR in PAMINP *** "               //    &
+!     &         "Spin-rotation tensors available in C1 symmetry only")
             end if
             GO TO 100
   135    CONTINUE 
