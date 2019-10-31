@@ -56,7 +56,6 @@ ubuntu_parallel32-check:
     - apt-get -qq -y install gfortran
     - apt-get -qq -y install gcc
     - apt-get -qq -y install g++
-    - apt-get -qq -y install libstdc++-7-dev
     - apt-get -qq -y install libomp-dev
     - apt-get -qq -y install openmpi-bin libopenmpi-dev openssh-client openssh-server
     - apt-get -qq -y install python 

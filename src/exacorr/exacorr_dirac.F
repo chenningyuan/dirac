@@ -215,46 +215,7 @@ C
 
       end
 
-       subroutine Initialize_Shells (shell,ierr)
-
-!      get information from common blocks about the basis set
-!      raise an error for contracted sets that can not yet be handled by Interest
-
-!      NB: this routine is outdated, replaced by read_from_dirac. Just keeping it in case we still need it.
-
-       use exacorr_datatypes
-
-#include "implicit.h"
-#include "maxorb.h"
-#include "shells.h"
-#include "aovec.h"
-#include "primit.h"
-
-       integer ishell, iPrimStart, iPrimEnd, k, ierr
-       type(basis_func_info_t) :: shell(*)
-
-       do ishell = 1, nlrgsh
-          shell(ishell)%orb_momentum = nhkt(ishell)
-          shell(ishell)%atom_number  = ncent(ishell)
-          shell(ishell)%n_primitives = nuco(ishell)
-          nullify  (shell(ishell)%exponent)
-          allocate (shell(ishell)%exponent(nuco(ishell)))
-          nullify  (shell(ishell)%coefficient)
-          allocate (shell(ishell)%coefficient(nuco(ishell)))
-          iPrimStart = jstrt(ishell) + 1
-          iPrimEnd   = jstrt(ishell) + nuco(ishell)
-          k          = numcf(ishell)
-         shell(ishell)%exponent = priexp(iPrimStart:iPrimEnd)
-         shell(ishell)%coefficient = priccf(iPrimStart:iPrimEnd,k)
-         shell(ishell)%coord = cent(ishell,1:3,1)
-!        In DIRAC uncontracted shells are stored as quasi-contracted, fix this.
-         call compress_unc_shell (shell(ishell),ierr)
-       end do
-
-       return 
-       end
-
-       subroutine compress_unc_shell (shell,ierr)
+      subroutine compress_unc_shell (shell,ierr)
 !If basis functions were grouped together in the input, they appear as quasi-contracted functions
 !with a lot of zero coefficients. Remove these zeroes and reduce the length to just one function.
 !Routine will produce an error, if the function is a true contraced function (more than one non-zero coefficient)
