@@ -2338,11 +2338,11 @@ C.....Oscillator strenghts: general velocity gauge: rotational average
         IEXC  = IEERG(1,II)
         ISYM  = IEERG(2,II)
         OSCIL = FOSC(IEXC,ISYM,-1,1)
-        IF(OSCIL .GT. TTOL) THEN
+        IF(ABS(OSCIL) .GT. TTOL) THEN ! allowing negative oscillator strengths
           ILAB  = ISSYM(IEXC,ISYM)
           WRITE(LUPRI,
      &         '(I5,1X,F16.5,2X,A3,1X,A4,'//FMT//'(2X,ES14.6))') JEXC-1,
-     &         OMEGA(IEXC,ISYM)*XTEV,REP(ISYM-1),SYMLAB(ILAB),OSCIL,
+     &         OMEGA(IEXC,ISYM)*XTEV,REP(ISYM-1),SYMLAB(ILAB),
      &         (FOSC(IEXC,ISYM,IK,1),IK=0,K2ORD)
         ENDIF
       ENDDO
@@ -2373,7 +2373,7 @@ C.....Oscillator strenghts: general length gauge
         IEXC  = IEERG(1,II)
         ISYM  = IEERG(2,II)
         OSCIL = FOSC(1,IEXC,ISYM,-1)
-        IF(OSCIL .GT. TTOL) THEN
+        IF(ABS(OSCIL) .GT. TTOL) THEN ! allowing negative oscillator strengths
           ILAB  = ISSYM(IEXC,ISYM)
           WRITE(LUPRI,
      &         '(I5,1X,F16.5,2X,A3,1X,A4,'//FMT//'(2X,ES14.6))') JEXC-1,
@@ -2419,7 +2419,7 @@ C.......Generalized velocity gauge
           IEXC  = IEERG(1,II)
           ISYM  = IEERG(2,II)
           OSCIL = FOSC(IEXC,ISYM,-1,1)
-          IF(OSCIL .GT. TTOL) THEN
+          IF(ABS(OSCIL) .GT. TTOL) THEN ! allowing negative oscillator strengths
             ILAB  = ISSYM(IEXC,ISYM)
             WRITE(LUPRI,
      &         '(I5,1X,F16.5,2X,A3,1X,A4,'//FMT//'(2X,ES14.6))') JEXC-1,
@@ -2454,7 +2454,7 @@ C.......Generalized length gauge
           IEXC  = IEERG(1,II)
           ISYM  = IEERG(2,II)
           OSCIL = FOSC(1,IEXC,ISYM,-1)
-          IF(OSCIL .GT. TTOL) THEN
+          IF(ABS(OSCIL) .GT. TTOL) THEN ! allowing negative oscillator strengths
             ILAB  = ISSYM(IEXC,ISYM)
             WRITE(LUPRI,
      &         '(I5,1X,F16.5,2X,A3,1X,A4,'//FMT//'(2X,ES14.6))') JEXC-1,
