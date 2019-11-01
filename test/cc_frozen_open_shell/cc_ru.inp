@@ -1,4 +1,4 @@
-computation of ci energy for lanthanides
+ruthenium with frozen open shell
 **DIRAC
 .TITLE
 CI for atomic lanthanides
@@ -22,6 +22,8 @@ CI for atomic lanthanides
 1.0E-8
 .MXDIIS
 30
+.PRINT
+1
 **MOLTRA
 .ACTIVE
 3..9,15..30
@@ -32,7 +34,7 @@ CI for atomic lanthanides
 .CORE2
 7
 10..14
-10..14
+
 **RELCCSD
 .NELEC
 8 7 6 6
