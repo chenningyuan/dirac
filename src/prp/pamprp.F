@@ -9661,6 +9661,78 @@ C
 C
 C     Here we set up the operators needed for the linear reponse part
 C
+C     Define left-hand operators: -c\alpha x r/r^3
+C
+C     XAVECTOR
+      IOP(1) = 5
+C     YAVECTOR
+      IOP(2) = 6
+C     ZAVECTOR
+      IOP(3) = 7
+C
+      PFAC(1)  = -CVAL
+      PFAC(2)  = -CVAL
+      NPCOMP   = 2
+C
+      ITOP = 3
+      IF (LINEAR) ITOP = 1
+C
+C     Irreps
+C
+      DO IREPO = 0, MAXREP
+C
+C       Atoms
+C
+        DO IATOM1 = 1, NUCIND
+        IF(DOATOM(IATOM1)) THEN
+C
+C         Cartesian directions
+C
+          DO ICOOR1 = 1, ITOP
+            ISCOR1 = IPTCNT(3*(IATOM1 - 1) + ICOOR1,IREPO,2)
+            IF (ISCOR1 .GE. 1000) THEN
+              CALL QUIT(
+     &'DEF_SPINRO1: Max 1000 coords in this implementation !')
+            ENDIF
+            IF (ISCOR1 .GT. 0) THEN
+              IFIRST = ISCOR1/100
+              ISECND = MOD(ISCOR1,100)/10
+              ITHIRD = MOD(MOD(ISCOR1,100),10)
+              PNAME    = 'NUCSP'//CHRNOS(IFIRST)
+     &                   //CHRNOS(ISECND)//CHRNOS(ITHIRD)
+     &                   //NAMN(IATOM1)//REP(IREPO)//CHRXYZ(ICOOR1)
+              IPTYP    = IOP(ICOOR1)
+              IC1      = MOD(ICOOR1+1,3) + 1
+              IC2      = MOD(ICOOR1  ,3) + 1
+              IREP1    = IBTXOR(IREPO,ISYMAX(IC2,1))
+              IREP2    = IBTXOR(IREPO,ISYMAX(IC1,1))
+              IS1      = IPTCNT(3*(IATOM1 - 1) + IC1,IREP1,1)
+              IS2      = IPTCNT(3*(IATOM1 - 1) + IC2,IREP2,1)
+              IF((IS1.LE.0).OR.(IS2.LE.0))
+     &          WRITE(LUPRI,'(A,5I5)')
+     &          'DEF_SPINRO: sym. error !',IATOM1,ICOOR1,IC1,IC2
+              IFIRST = IS1/100
+              ISECND = MOD(IS1,100)/10
+              ITHIRD = MOD(MOD(IS1,100),10)
+              PLABEL(1)= 'NEF '//CHRNOS(IFIRST)//CHRNOS(ISECND)
+     &                     //CHRNOS(ITHIRD)//' '
+              IFIRST = IS2/100
+              ISECND = MOD(IS2,100)/10
+              ITHIRD = MOD(MOD(IS2,100),10)
+              PLABEL(2)= 'NEF '//CHRNOS(IFIRST)//CHRNOS(ISECND)
+     &                     //CHRNOS(ITHIRD)//' '
+              CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &           INDXPR,ISYXPR,ITRXPR,IPRINT)
+              CALL OP1IND('XSPINRA',IPSPINRO(ISCOR1),LLRAPU,NLRAPT,
+     &                      INDXPR,MAXLLR)
+            ENDIF
+          ENDDO
+
+        END IF
+        ENDDO
+      ENDDO
+C
+C
 C     Define right-hand operators
 C
       LINDET=.FALSE.  ! to detect if linear symmetry is used
@@ -9763,78 +9835,6 @@ C
        CALL OP1IND('ZSPINMOM',IPSPINRO(6+MXCOOR),LLRBPU,NLRBPT,
      &                       INDXPR,MAXLLR)
       END IF !LINEAR
-C
-C
-C    Left-hand operators: -c\alpha x r/r^3
-C
-C     XAVECTOR
-      IOP(1) = 5
-C     YAVECTOR
-      IOP(2) = 6
-C     ZAVECTOR
-      IOP(3) = 7
-C
-      PFAC(1)  = -CVAL
-      PFAC(2)  = -CVAL
-      NPCOMP   = 2
-C
-      ITOP = 3
-      IF (LINEAR) ITOP = 1
-C
-C     Irreps
-C
-      DO IREPO = 0, MAXREP
-C
-C       Atoms
-C
-        DO IATOM1 = 1, NUCIND
-        IF(DOATOM(IATOM1)) THEN
-C
-C         Cartesian directions
-C
-          DO ICOOR1 = 1, ITOP
-            ISCOR1 = IPTCNT(3*(IATOM1 - 1) + ICOOR1,IREPO,2)
-            IF (ISCOR1 .GE. 1000) THEN
-              CALL QUIT(
-     &'DEF_SPINRO1: Max 1000 coords in this implementation !')
-            ENDIF
-            IF (ISCOR1 .GT. 0) THEN
-              IFIRST = ISCOR1/100
-              ISECND = MOD(ISCOR1,100)/10
-              ITHIRD = MOD(MOD(ISCOR1,100),10)
-              PNAME    = 'NUCSP'//CHRNOS(IFIRST)
-     &                   //CHRNOS(ISECND)//CHRNOS(ITHIRD)
-     &                   //NAMN(IATOM1)//REP(IREPO)//CHRXYZ(ICOOR1)
-              IPTYP    = IOP(ICOOR1)
-              IC1      = MOD(ICOOR1+1,3) + 1
-              IC2      = MOD(ICOOR1  ,3) + 1
-              IREP1    = IBTXOR(IREPO,ISYMAX(IC2,1))
-              IREP2    = IBTXOR(IREPO,ISYMAX(IC1,1))
-              IS1      = IPTCNT(3*(IATOM1 - 1) + IC1,IREP1,1)
-              IS2      = IPTCNT(3*(IATOM1 - 1) + IC2,IREP2,1)
-              IF((IS1.LE.0).OR.(IS2.LE.0))
-     &          WRITE(LUPRI,'(A,5I5)')
-     &          'DEF_SPINRO: sym. error !',IATOM1,ICOOR1,IC1,IC2
-              IFIRST = IS1/100
-              ISECND = MOD(IS1,100)/10
-              ITHIRD = MOD(MOD(IS1,100),10)
-              PLABEL(1)= 'NEF '//CHRNOS(IFIRST)//CHRNOS(ISECND)
-     &                     //CHRNOS(ITHIRD)//' '
-              IFIRST = IS2/100
-              ISECND = MOD(IS2,100)/10
-              ITHIRD = MOD(MOD(IS2,100),10)
-              PLABEL(2)= 'NEF '//CHRNOS(IFIRST)//CHRNOS(ISECND)
-     &                     //CHRNOS(ITHIRD)//' '
-              CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &           INDXPR,ISYXPR,ITRXPR,IPRINT)
-              CALL OP1IND('XSPINRA',IPSPINRO(ISCOR1),LLRAPU,NLRAPT,
-     &                      INDXPR,MAXLLR)
-            ENDIF
-          ENDDO
-
-        END IF
-        ENDDO
-      ENDDO
 C
 C     Print section for spin-rotation:
 C
@@ -9987,6 +9987,8 @@ C
       WRITE(LUPRI,*) ''
 C
 C
+C     EF1INT: INTTYP = 29 (electric field at individual nuclei)
+C     (SETATM code -29: accept .SELECT specification)
       CALL SETATM(DOATOM,NATOM,-29)
 C--------------------------------------------------------------------
 C--------------------------------------------------------------------
@@ -10278,8 +10280,8 @@ C
      & 'Then, it must be placed at the molecular CM to get correct'//
      & ' values of spin-rotation tensors.'
 C--------------------------------------------------------------------
-      CALL SPRRES(GEOM,AMASS,GVAL,SPRDNL,PMATL,PMATS,
-     &            JATOM,IPRPRP)
+      CALL SPRRES(GEOM,AMASS,GVAL,SPRDNL,PMATL,PMATS,JATOM,
+     &            IPRPRP,DOATOM)
 C--------------------------------------------------------------------
       CALL QEXIT('PRP_SPINRO')
 
@@ -10468,7 +10470,8 @@ C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck sprres */
-      SUBROUTINE SPRRES(GEOM,AMASS,GVAL,DMAT,PMATL,PMATS,KATOM,IPRINT)
+      SUBROUTINE SPRRES(GEOM,AMASS,GVAL,DMAT,PMATL,PMATS,KATOM,
+     &                  IPRINT,DOATOM)
 C***********************************************************************
 C
 C     Analyze routine for nuclear spin-rotation constants
@@ -10498,9 +10501,8 @@ C
 #include "ibtfun.h"
 #include "dgroup.h"   ! added
 C
-      logical, allocatable :: DOATOM(:)
       integer I,J,K,KATOM,IPRINT,IATOM,ICOOR,
-     &        ISYMOP,IX,IY,JATOM,JX,JY,CHECK,
+     &        ISYMOP,IX,IY,JATOM,JX,JY,
      &        NATTYP,NUMIS,KHZPPM
 C
       double precision D1,FAC,FACPPM,GEOM(KATOM,3),AMASS(KATOM),
@@ -10516,11 +10518,8 @@ C
 C
       PARAMETER (D1 = 1.0D0, FACPPM = ALPHA2/2.D0*1.0D6,
      &           FAC = ALPHA2/(2.D0*PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
-      LOGICAL PLANAR, LINMOL
+      LOGICAL PLANAR, LINMOL,DOATOM(NUCIND)
 C
-      allocate(DOATOM(NUCIND))
-C
-      CALL DZERO(GTRANT,9*MXCENT)
 C
 Ciaa  Nuclear rotational angular momentum could be defined here to obtain Omega afterwards
       DO 300 I = 1, 3
@@ -10603,11 +10602,8 @@ C
       DO 98 K = 1, NUCIND
        DO 200 ISYMOP = 0, MAXOPR
         IF (IBTAND(ISTBNU(K),ISYMOP).EQ.0) THEN
-        IATOM = IATOM + 1
-Ciaa TODO: check why some DOATOM(K) are False when they shouldn't. Some NSR are not printed out!
-        CHECK = 0
+         IATOM = IATOM + 1
          IF (DOATOM(K)) THEN
-          CHECK = CHECK + 1
 C
 C    Print g-values of selected nuclei
 C
@@ -10830,10 +10826,6 @@ C
         END IF
  200   CONTINUE
  98   CONTINUE
-        IF (CHECK.eq.0) WRITE (LUPRI,'(/,2X,A)') 'WARNING:'       //
-     & ' DOATOM(K) are all false in SPRRES subroutine, PAMPRP.F'
-C
-      deallocate(DOATOM)
 C
       RETURN
       END
