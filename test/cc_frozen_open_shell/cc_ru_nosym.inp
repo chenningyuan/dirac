@@ -24,7 +24,7 @@ CI for atomic lanthanides
 30
 **MOLTRA
 .ACTIVE
-6..18,24..50
+6..18,24..59
 .CORE
 1..5
 .CORE2
@@ -32,7 +32,7 @@ CI for atomic lanthanides
 19..23
 **RELCCSD
 .NELEC
-14 10
+14 13
 **INTEGRALS
 *READIN
 .UNCONTRACT

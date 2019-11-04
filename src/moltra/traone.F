@@ -220,6 +220,7 @@ C
       DIMENSION Q1(*),Q2(*),QCO(*),QCO2(*),CMO(*)
 
       Integer, Allocatable :: POS(:)
+      real(8)              :: f_occ
 C
       CALL QENTER('GTCFC1')
       KFRSAV = KFREE
@@ -231,6 +232,12 @@ C     Initialize with open shell !
         NOPENBUF = NOPEN
         NFMAT = 2
         NOPEN = 1
+C       get number of orbitals
+        f_occ = 0
+        DO IFRP = 1,NFSYM
+          f_occ = f_occ + real(NSPC2(IFRP,0))
+        ENDDO
+        f_occ=real(NSPC2(1,3))/(2*f_occ)
       ELSE
 C     Initialize - core is the closed-shell system !
         NOPENBUF = NOPEN
@@ -385,11 +392,10 @@ C     5. Add 1- and 2-electron matrix and transform to MO-basis
 C     =========================================================
 C
       IF(NTOT.GT.0) THEN
+        CALL DAXPY(N2BBASXQ,D1,FMO,1,FAO,1) 
         IF(NFMAT.GT.1) THEN
 C         for now only one froze open-shell included
-          CALL DAXPY(N2BBASXQ,D1,FMO,1,FAO,1) 
-        ELSE
-          CALL DAXPY(N2BBASXQ,D1,FMO,1,FAO,1) 
+          CALL DAXPY(N2BBASXQ,f_occ,FMO(1+N2BBASXQ),1,FAO,1) 
         ENDIF
       ENDIF
 C

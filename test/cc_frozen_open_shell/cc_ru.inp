@@ -22,12 +22,10 @@ CI for atomic lanthanides
 1.0E-8
 .MXDIIS
 30
-.PRINT
-1
 **MOLTRA
 .ACTIVE
-3..9,15..30
-4..9,15..30
+3..9,15..28
+4..32
 .CORE
 1..2
 1..3
