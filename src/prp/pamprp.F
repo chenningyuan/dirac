@@ -9938,7 +9938,7 @@ C
      &                                 TMPMATL(:,:,:),TMPMATS(:,:,:),
      &                                 CSTRA(:),SCTRA(:),GEOM(:,:),
      &                                 MASS(:),AMASS(:),GVAL(:),
-     &                                 ELFLD(:,:),DMAT(:,:,:)
+     &                                 ELFLD(:,:)
 C
       integer, allocatable :: NAT(:)
 C
@@ -9956,15 +9956,15 @@ C
       double precision RATINF(3,5,NUCDEP),DISOTP,
      &                 EXPVAL(3*NUCDEP),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &                 ABCNV(NBFREQ,NLRBPT),ABND,
-     &                 GVALUE,IABLRF_EE,IABLRF_EP
+     &                 GVALUE,IABLRF_EE,IABLRF_EP!,STAVEC(3*NUCDEP)
 C
       CHARACTER*1 CJB
+!      CHARACTER NSTNUM*2, LABINT(9*MXCENT)*8, WORD*8
 
       JATOM  = NATOMS + NFLOAT
       NSCOOR = 3*NUCDEP
       NCMAT =  9*NUCDEP
       allocate(DOATOM(NUCIND))
-      allocate(DMAT(3,3,NUCDEP))    ! exp. value part of NSR.
       allocate(PMATL(3,3,NUCDEP,2)) ! L part of NSR for ee and ep contributions.
       allocate(PMATS(3,3,NUCDEP,2)) ! S part of NSR for ee and ep contributions.
       allocate(CSTRA(NUCDEP*NUCDEP*9))
@@ -10069,7 +10069,7 @@ C     The NSCOOR nucl. magn. dipole operators as A operators in <<A;B>> :
       END DO
       IF (NA.LE.0) THEN
         WRITE(LUPRI,'(2X,A,I2)') 'PRP_SPINRO: NA=',NA
-        CALL QUIT('PRP_SPINRO:Wrong value of NA!')
+        CALL QUIT('PRP_SPINRO: Wrong value of NA!')
       ENDIF
 C
 Ciaa   As in the current implementation UKB, spin-free and ZORA
@@ -10089,7 +10089,7 @@ C     The 3 L orbital angular momentum directions as B operators in <<A;B>> :
       END DO
       IF (NB1.LE.0) THEN
         WRITE(LUPRI,'(2X,A,I2)') 'PRP_SPINRO: NB1=',NB1
-        CALL QUIT('PRP_SPINRO:Wrong value of NB1!')
+        CALL QUIT('PRP_SPINRO: Wrong value of NB1!')
       ENDIF
 C
 C     The 3 S spin angular momentum directions as B operators in <<A;B>> :
@@ -10102,7 +10102,7 @@ C     The 3 S spin angular momentum directions as B operators in <<A;B>> :
       END DO
       IF (NB2.LE.0) THEN
         WRITE(LUPRI,'(2X,A,I2)') 'PRP_SPINRO: NB2=',NB2
-        CALL QUIT('PRP_SPINRO:Wrong value of NB2!')
+        CALL QUIT('PRP_SPINRO: Wrong value of NB2!')
       ENDIF
 C
 C     The NSCOOR nucl. electric field operators as NEF operators in < 0 | NEF | 0 > :
@@ -10116,7 +10116,7 @@ C     The NSCOOR nucl. electric field operators as NEF operators in < 0 | NEF | 
       END DO
       IF (NEXP.LE.0) THEN
         WRITE(LUPRI,'(2X,A,I2)') 'PRP_SPINRO: NEXP=',NEXP
-        CALL QUIT('PRP_SPINRO:Wrong value of NEXP!')
+        CALL QUIT('PRP_SPINRO: Wrong value of NEXP!')
       ENDIF
 C
 C--------------------------------------------------------------------
@@ -10135,16 +10135,14 @@ C-------------------------------------------------------------------
 C
 C     MEAN VALUE PART OF NSR TENSOR
 C
-      CALL DZERO(SPRDNL,NCMAT)
-      CALL DZERO(DMAT,NCMAT)
       CALL DZERO(ELFLD,NSCOOR)
       EXPVAL(0) = D0
 C
       IF (XLR_SKIPEP) THEN
 Ciaa    A revision is needed for those cases in which .SKIPEP is activated in addition
-C       to another property that use EXPVAL, as NMR shielding or spin-spin coupling.
-C       In such cases, the following values are not what we need 
-C       (because EXPVAL(I) is also used in those properties).
+C       to other properties that use EXPVAL, as NMR shieldings or spin-spin couplings.
+C       In such cases, the following values are not what we need because EXPVAL(I) is
+C       also used in those properties.
              WRITE (LUPRI,'(/,2X,A,/)')
      &    'WARNING: .SKIPEP gives rise to wrong expectaction ' //
      &    'values of spin-rotation constants in the current ' //
@@ -10165,6 +10163,16 @@ C
         END IF
       END DO
 C
+!iaa review: from DALTON, subroutine EFNTRA in abamag.F
+!      DO 10 IEXP = 1, NSCOOR
+!         WORD = LABINT(IEXP)
+!         NSTNUM = WORD(6:7)
+!         JEXP = (ICHAR(NSTNUM(1:1)) - ICHAR('0'))*10
+!         KEXP = JEXP + ICHAR(NSTNUM(2:2)) - ICHAR('0')
+!         STAVEC(KEXP) = EXPVAL(IEXP)
+! 10   CONTINUE
+!iaa review
+c
 Ciaa Order EXPVAL matrix in C1 basis
 C
 !      IF (LINEAR) THEN
@@ -10180,14 +10188,6 @@ C
 !        END DO
 !      END IF
 C
-C     Transform to C1 basis
-C
-Ciaa review: not working for symmetries other than C1!
-      CALL TRACOR(CSTRA,SCTRA,1,3*NUCDEP,0)
-      CALL DGEMM('N','T',1,3*NUCDEP,3*NUCDEP,1.D0,
-     &           EXPVAL,1,
-     &           SCTRA,3*NUCDEP,0.D0,
-     &           ELFLD,1)
       CALL DIASPR(EXPVAL,ELFLD,CSTRA,SCTRA,NCMAT,IPRPRP)
 C
 C--------------------------------------------------------------------
@@ -10291,7 +10291,6 @@ C--------------------------------------------------------------------
       deallocate(MASS)
       deallocate(NAT)
       deallocate(DOATOM)
-      deallocate(DMAT)
       deallocate(PMATL)
       deallocate(PMATS)
       deallocate(CSTRA)
@@ -10430,11 +10429,11 @@ C
 C
 C     We start by sorting the electric field results
 C
-!      CALL TRACOR(CSTRA,SCTRA,1,3*NUCDEP,0)
-!      CALL DGEMM('N','T',1,3*NUCDEP,3*NUCDEP,1.D0,
-!     &           EXPVAL,1,
-!     &           SCTRA(1,1),3*NUCDEP,0.D0,
-!     &           ELFLD,1)
+      CALL TRACOR(CSTRA,SCTRA,1,3*NUCDEP,0)
+      CALL DGEMM('N','T',1,3*NUCDEP,3*NUCDEP,1.D0,
+     &           EXPVAL,1,
+     &           SCTRA(1,1),3*NUCDEP,0.D0,
+     &           ELFLD,1)
 !iaa review
 C
 C     Then we construct the expectation value contribution
