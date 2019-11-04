@@ -9818,6 +9818,7 @@ C***********************************************************************
         UPOL(3,2)  = W2*SIN(THETA2)
       ENDIF
 C.....Output section
+<<<<<<< HEAD
       WRITE(LUPRI,*) '* Wave unit vector:'
       WRITE(LUPRI,'(A1,3(F7.4,A1))')
      &     '(',UWAVE(1),',',UWAVE(2),',',UWAVE(3),')'
@@ -9833,5 +9834,10 @@ C.....Output section
         WRITE(LUPRI,'(A1,3(F7.4,A1))')
      &      '(',UPOL(1,1),',',UPOL(2,1),',',UPOL(3,1),')'
       ENDIF
+=======
+      WRITE (LUPRI,'(1X,A,3F18.10)')                                    &
+     &     '* Unit wave vector   :', (UWAVE(I),I=1,3),                  &
+     &     '* Polarization vector:', (UPOL(I),I=1,3)                   
+>>>>>>> d842c63cf584df452f4896b89c061977bc2a2e11
       RETURN
       END

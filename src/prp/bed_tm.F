@@ -255,20 +255,7 @@ C
       IF (BEDECD) allocate(ECD(NPAR+1,NEXCNV))
       IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,NOP))
       IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,NOP))      
-      IF(DOBEDDER) THEN
-         IH = 4
-         H  = BEDSTP
-         allocate(TMOM_P(NOP,-IH:IH))
-         allocate(TMOM_DER(NOP,4,3,NEXCNV))
-         allocate(TMOM_DOM(NOP,4))
-         allocate(TMOM_DE(NOP,4))                  
-         allocate(OSC_P(-IH:IH))
-         allocate(OSC_DOM(4))
-         allocate(OSC_DE(4))
-         allocate(OSC_DER(4,3,NEXCNV))
-      ELSE
-         IH = 0
-      ENDIF
+      IH = 0
       WRITE(6,'(A18,10X,A9,8X,A5)')
      &   'Transition moments','Freq(au)','Value'
       DO 10 IEXC = 1,NEXCNV
@@ -314,10 +301,6 @@ C         Generate integrals
 C
           IF(BEDCHK) THEN
              CALL DCOPY(3,D0,0,WAVEVEC,1)
-          ELSEIF(DOBEDDER) THEN
-            DO I = 1,3
-              WAVEVEC(I) = K*H*FAC*UWAVE(I)
-            ENDDO
           ELSE
             DO I = 1,3
               WAVEVEC(I) = FAC*UWAVE(I)
@@ -415,152 +398,12 @@ C         ====================================
               OSC(NPAR+1,IEXC) = OSC(NPAR+1,IEXC) + OSC(IPAR,IEXC)
             ENDIF
           ENDIF
-          IF(DOBEDDER) THEN
-            DO IOP = 1,NOP
-              TMOM_P(IOP,K) = TMOM(IOP,NPAR+1,IEXC)
-           ENDDO
-           OSC_P(K) = OSC(NPAR+1,IEXC)           
-          ENDIF
         ENDDO
-        IF(DOBEDDER) THEN
-C.........Prepare derivatives of transition moments
-          DO IOP = 1,NOP
-            TMOM_DOM(IOP,1)=(TMOM_P(IOP,+1)-TMOM_P(IOP,-1))/D2
-            TMOM_DOM(IOP,2)=((TMOM_P(IOP,+2)-TMOM_P(IOP,-2))
-     &          -2.0D0*(TMOM_P(IOP,+1)-TMOM_P(IOP,-1)))/D2
-            TMOM_DOM(IOP,3)=((TMOM_P(IOP,+3)-TMOM_P(IOP,-3))
-     &           -4.0D0*(TMOM_P(IOP,+2)-TMOM_P(IOP,-2))
-     &           +5.0D0*(TMOM_P(IOP,+1)-TMOM_P(IOP,-1)))/D2
-            TMOM_DOM(IOP,4)=((TMOM_P(IOP,+4)-TMOM_P(IOP,-4))
-     &           -6.0D0*(TMOM_P(IOP,+3)-TMOM_P(IOP,-3))
-     &           +14.0D0*(TMOM_P(IOP,+2)-TMOM_P(IOP,-2))
-     &           -14.0D0*(TMOM_P(IOP,+1)-TMOM_P(IOP,-1)))/D2
-            TMOM_DE(IOP,1)=(TMOM_P(IOP,+1)+TMOM_P(IOP,-1))
-     &           -2.0D0*TMOM_P(IOP,0)
-            TMOM_DE(IOP,2)=(TMOM_P(IOP,+2)+TMOM_P(IOP,-2))
-     &           -4.0D0*(TMOM_P(IOP,+1)+TMOM_P(IOP,-1))
-     &           +6.0D0*TMOM_P(IOP,0)
-            TMOM_DE(IOP,3)=(TMOM_P(IOP,+3)+TMOM_P(IOP,-3))
-     &           -6.0D0*(TMOM_P(IOP,+2)+TMOM_P(IOP,-2))
-     &           +15.0D0*(TMOM_P(IOP,+1)+TMOM_P(IOP,-1))
-     &           -20.0D0*TMOM_P(IOP,0)
-            TMOM_DE(IOP,4)=(TMOM_P(IOP,+4)+TMOM_P(IOP,-4))
-     &           -8.0D0*(TMOM_P(IOP,+3)+TMOM_P(IOP,-3))
-     &           +28.0D0*(TMOM_P(IOP,+2)+TMOM_P(IOP,-2))
-     &           -56.0D0*(TMOM_P(IOP,+1)+TMOM_P(IOP,-1))
-     &           +70.0*TMOM_P(IOP,0)
-            WRITE(6,*) '* Transition moments --- tabulated points:',
-     &        IEXC,OMEGA(IEXC),IOP
-            DO K = -IH,IH
-               WRITE(6,*) K*H*FAC,TMOM_P(IOP,K)
-            ENDDO
-C...........Zeroth order            
-            TMOM(IOP,NPAR+1,IEXC)=TMOM_P(IOP,0)
-C...........First derivative
-            TFAC=D1/H
-            DFAC=TFAC
-            TMOM_DER(IOP,1,1,IEXC)=TMOM_DOM(IOP,1)
-            TMOM_DER(IOP,1,2,IEXC)=TMOM_DER(IOP,1,1,IEXC)
-     &                            -TMOM_DOM(IOP,2)/6.0D0
-            TMOM_DER(IOP,1,3,IEXC)=TMOM_DER(IOP,1,2,IEXC)
-     &           +TMOM_DOM(IOP,3)/30.0D0
-            DO I = 1,3
-              TMOM_DER(IOP,1,I,IEXC)=DFAC*TMOM_DER(IOP,1,I,IEXC)
-            ENDDO
-C...........Second derivative
-            DFAC=DFAC*TFAC/2.0D0
-            TMOM_DER(IOP,2,1,IEXC)=TMOM_DE(IOP,1)
-            TMOM_DER(IOP,2,2,IEXC)=TMOM_DER(IOP,2,1,IEXC)
-     &                            -TMOM_DE(IOP,2)/12.0D0
-            TMOM_DER(IOP,2,3,IEXC)=TMOM_DER(IOP,2,2,IEXC)
-     &                            +TMOM_DE(IOP,3)/90.0D0
-            DO I = 1,3
-              TMOM_DER(IOP,2,I,IEXC)=DFAC*TMOM_DER(IOP,2,I,IEXC)
-            ENDDO
-C...........Third derivative
-            DFAC=DFAC*TFAC/3.0D0
-            TMOM_DER(IOP,3,1,IEXC)=TMOM_DOM(IOP,2)
-            TMOM_DER(IOP,3,2,IEXC)=TMOM_DER(IOP,3,1,IEXC)
-     &                            -TMOM_DOM(IOP,3)/4.0D0
-            TMOM_DER(IOP,3,3,IEXC)=TMOM_DER(IOP,3,2,IEXC)
-     &                            +TMOM_DOM(IOP,4)*7.0D0/120.0D0
-            DO I = 1,3
-              TMOM_DER(IOP,3,I,IEXC)=DFAC*TMOM_DER(IOP,3,I,IEXC)
-            ENDDO
-C...........Fourth derivative
-            DFAC=DFAC*TFAC/4.0D0
-            TMOM_DER(IOP,4,1,IEXC)=TMOM_DE(IOP,2)
-            TMOM_DER(IOP,4,2,IEXC)=TMOM_DER(IOP,4,1,IEXC)
-     &                            -TMOM_DE(IOP,3)/6.0D0
-            TMOM_DER(IOP,4,3,IEXC)=TMOM_DER(IOP,4,2,IEXC)
-     &                            +TMOM_DE(IOP,4)*7.0D0/240.0D0
-            DO I = 1,3
-              TMOM_DER(IOP,4,I,IEXC)=DFAC*TMOM_DER(IOP,4,I,IEXC)
-            ENDDO
-          ENDDO
-C.........Prepare derivatives of oscillator strenghts         
-          OSC_DOM(1)=(OSC_P(+1)-OSC_P(-1))/D2
-          OSC_DOM(2)=((OSC_P(+2)-OSC_P(-2))
-     &              -2.0D0*(OSC_P(+1)-OSC_P(-1)))/D2
-          OSC_DOM(3)=((OSC_P(+3)-OSC_P(-3))-4.0D0*(OSC_P(+2)-OSC_P(-2))
-     &              +5.0D0*(OSC_P(+1)-OSC_P(-1)))/D2
-          OSC_DOM(4)=((OSC_P(+4)-OSC_P(-4))-6.0D0*(OSC_P(+3)-OSC_P(-3))
-     &              +14.0D0*(OSC_P(+2)-OSC_P(-2))
-     &              -14.0D0*(OSC_P(+1)-OSC_P(-1)))/D2
-          OSC_DE(1)=(OSC_P(+1)+OSC_P(-1))-2.0D0*OSC_P(0)
-          OSC_DE(2)=(OSC_P(+2)+OSC_P(-2))-4.0D0*(OSC_P(+1)+OSC_P(-1))
-     &             +6.0D0*OSC_P(0)
-          OSC_DE(3)=(OSC_P(+3)+OSC_P(-3))-6.0D0*(OSC_P(+2)+OSC_P(-2))
-     &             +15.0D0*(OSC_P(+1)+OSC_P(-1))
-     &             -20.0D0*OSC_P(0)
-          OSC_DE(4)=(OSC_P(+4)+OSC_P(-4))-8.0D0*(OSC_P(+3)+OSC_P(-3))
-     &             +28.0D0*(OSC_P(+2)+OSC_P(-2))
-     &             -56.0D0*(OSC_P(+1)+OSC_P(-1))+70.0*OSC_P(0)
-            WRITE(6,*) '* Oscillator strengths --- tabulated points:',
-     &        IEXC,OMEGA(IEXC)
-            DO K = -IH,IH
-               WRITE(6,*) K*H*FAC,OSC_P(K)
-            ENDDO
-C.........Zeroth order
-          OSC(NPAR+1,IEXC)= OSC_P(0)
-C.........First derivative
-          TFAC=D1/H
-          DFAC=TFAC
-          OSC_DER(1,1,IEXC)=OSC_DOM(1)
-          OSC_DER(1,2,IEXC)=OSC_DER(1,1,IEXC)-OSC_DOM(2)/6.0D0
-          OSC_DER(1,3,IEXC)=OSC_DER(1,2,IEXC)+OSC_DOM(3)/30.0D0
-          DO I = 1,3
-            OSC_DER(1,I,IEXC)=DFAC*OSC_DER(1,I,IEXC)
-          ENDDO
-C.........Second derivative
-          DFAC=DFAC*TFAC/2.0D0
-          OSC_DER(2,1,IEXC)=OSC_DE(1)
-          OSC_DER(2,2,IEXC)=OSC_DER(2,1,IEXC)-OSC_DE(2)/12.0D0
-          OSC_DER(2,3,IEXC)=OSC_DER(2,2,IEXC)+OSC_DE(3)/90.0D0
-          DO I = 1,3
-            OSC_DER(2,I,IEXC)=DFAC*OSC_DER(2,I,IEXC)
-          ENDDO
-C.........Third derivative
-          DFAC=DFAC*TFAC/3.0D0
-          OSC_DER(3,1,IEXC)=OSC_DOM(2)
-          OSC_DER(3,2,IEXC)=OSC_DER(3,1,IEXC)-OSC_DOM(3)/4.0D0
-          OSC_DER(3,3,IEXC)=OSC_DER(3,2,IEXC)+OSC_DOM(4)*7.0D0/120.0D0
-          DO I = 1,3
-            OSC_DER(3,I,IEXC)=DFAC*OSC_DER(3,I,IEXC)
-          ENDDO
-C.........Fourth derivative
-          DFAC=DFAC*TFAC/4.0D0
-          OSC_DER(4,1,IEXC)=OSC_DE(2)
-          OSC_DER(4,2,IEXC)=OSC_DER(4,1,IEXC)-OSC_DE(3)/6.0D0
-          OSC_DER(4,3,IEXC)=OSC_DER(4,2,IEXC)+OSC_DE(4)*7.0D0/240.0D0
-          DO I = 1,3
-            OSC_DER(4,I,IEXC)=DFAC*OSC_DER(4,I,IEXC)
-          ENDDO
-       ENDIF
  10   CONTINUE
 C
 C     Print section
 C
+<<<<<<< HEAD
       IF(DOBEDDER) THEN
          WRITE(6,*)
      &   '* Transition moments expansion --- real part (sin [kr]):'
@@ -656,13 +499,29 @@ c
          ENDDO
         WRITE(6,*) '* Oscillator strengths:'
         WRITE(6,'(A4,1X,A18,3(3X,A5,9X))')     
+=======
+       WRITE(6,*) '* Transition moments:'
+       WRITE(6,'(A4,1X,A18,14X,3(3X,A5,9X))')     
      &  'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
-        DO IEXC = 1,NEXCNV
-          WRITE(6,'(I4,1X,F18.10,3(3X,'//FMT//'))')
-     &     IEXC,OMEGA(IEXC),
-     &     (OSC(IPAR,IEXC),IPAR = 1,NPAR+1)
-        ENDDO
-      ENDIF
+       DO IEXC = 1,NEXCNV
+         TMP=MAX(ABS(TMOM(1,NPAR+1,IEXC)),ABS(TMOM(2,NPAR+1,IEXC)))
+         FMT=MXFORM(TMP,14)
+         WRITE(6,'(I4,1X,F18.10,A,3(3X,'//FMT//'))')
+     &   IEXC,OMEGA(IEXC),' real part (sin [kr]): ',
+     &   (TMOM(2,IPAR,IEXC),IPAR = 1,NPAR+1)
+         WRITE(6,'(23X,A,3(3X,'//FMT//'))')
+     &   ' imag. part (cos[kr]) : ',
+     &   (-TMOM(1,IPAR,IEXC),IPAR = 1,NPAR+1)
+      ENDDO
+      WRITE(6,*) '* Oscillator strengths:'
+      WRITE(6,'(A4,1X,A18,3(3X,A5,9X))')     
+>>>>>>> d842c63cf584df452f4896b89c061977bc2a2e11
+     &  'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
+      DO IEXC = 1,NEXCNV
+        WRITE(6,'(I4,1X,F18.10,3(3X,'//FMT//'))')
+     &   IEXC,OMEGA(IEXC),
+     &   (OSC(IPAR,IEXC),IPAR = 1,NPAR+1)
+      ENDDO
 C     
 C     Memory deallocation
       IF(NZXOPE.GT.0) THEN
@@ -675,16 +534,6 @@ C     Memory deallocation
       ENDIF
       deallocate(TMOM)
       deallocate(OSC)
-      IF(DOBEDDER) THEN
-         deallocate(TMOM_P)
-         deallocate(TMOM_DER)                           
-         deallocate(TMOM_DOM)
-         deallocate(TMOM_DE)
-         deallocate(OSC_P)
-         deallocate(OSC_DER)
-         deallocate(OSC_DOM)
-         deallocate(OSC_DE)                  
-      ENDIF
       deallocate(PRPINT)
       deallocate(LABINT)
       deallocate(INTREP)
