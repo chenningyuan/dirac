@@ -2399,7 +2399,7 @@ C.....Anisotropic oscillator strenghts
       IF(ORIENTED) THEN
         CALL HEADER('Anisotropic oscillator strengths',-1)         
         WRITE(LUPRI,*) '* Unit wave vector    : ',(UWAVE(I),I=1,3)
-        WRITE(LUPRI,*) '* Polarization vector : ',(UPOL(I),I=1,3)
+        WRITE(LUPRI,*) '* Polarization vector : ',(UPOL(I,1),I=1,3)
 C.......Generalized velocity gauge        
         allocate(fosc(MAXEXC,NBSYM,-1:K2ORD,1))
         FOSC=0.0D0

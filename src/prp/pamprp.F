@@ -9797,7 +9797,9 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      DIMENSION UWAVE(3),UPOL(3)
+      DIMENSION UWAVE(3),UPOL(3,2)
+      LOGICAL ECDBED
+      ECDBED = .TRUE.
       FAC      = ACOS(-1.0D0)/180.0D0
       THETA2   = THETA*FAC
       PHI2     = PHI*FAC
@@ -9807,15 +9809,29 @@ C***********************************************************************
       UWAVE(3) = COS(THETA2)
       W1       = COS(CHI2)
       W2       = SIN(CHI2)
-      UPOL(1)  = W1*COS(THETA2)*COS(PHI2) - W2*SIN(PHI2)
-      UPOL(2)  = W1*COS(THETA2)*SIN(PHI2) + W2*COS(PHI2)
-      UPOL(3)  =-W1*SIN(THETA2)
+      UPOL(1,1)  = W1*COS(THETA2)*COS(PHI2) - W2*SIN(PHI2)
+      UPOL(2,1)  = W1*COS(THETA2)*SIN(PHI2) + W2*COS(PHI2)
+      UPOL(3,1)  =-W1*SIN(THETA2)
+      IF (ECDBED) THEN
+        UPOL(1,2)  = -W2*COS(THETA2)*COS(PHI2) - W1*SIN(PHI2)
+        UPOL(2,2)  = -W2*COS(THETA2)*SIN(PHI2) + W1*COS(PHI2)
+        UPOL(3,2)  = W2*SIN(THETA2)
+      ENDIF
 C.....Output section
       WRITE(LUPRI,*) '* Wave unit vector:'
       WRITE(LUPRI,'(A1,3(F7.4,A1))')
      &     '(',UWAVE(1),',',UWAVE(2),',',UWAVE(3),')'
-      WRITE(LUPRI,*) '* Polarization vector:'
-      WRITE(LUPRI,'(A1,3(F7.4,A1))')
-     &     '(',UPOL(1),',',UPOL(2),',',UPOL(3),')'
+      IF (ECDBED) THEN
+        WRITE(LUPRI,*) '* Polarization vector 1:'
+        WRITE(LUPRI,'(A1,3(F7.4,A1))')
+     &       '(',UPOL(1,1),',',UPOL(2,1),',',UPOL(3,1),')'
+        WRITE(LUPRI,*) '* Polarization vector 2:'
+        WRITE(LUPRI,'(A1,3(F7.4,A1))')
+     &       '(',UPOL(1,2),',',UPOL(2,2),',',UPOL(3,2),')'
+      ELSE
+        WRITE(LUPRI,*) '* Polarization vector:'
+        WRITE(LUPRI,'(A1,3(F7.4,A1))')
+     &      '(',UPOL(1,1),',',UPOL(2,1),',',UPOL(3,1),')'
+      ENDIF
       RETURN
       END

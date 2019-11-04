@@ -31,7 +31,7 @@
      &        XPPNRM,ORBXPP,XPPANA,XPP_TRIPLET,XPP_E2CHEK,DOBED,        &
      &        ORIENTED,BEDCHK,DOBEDDER
       COMMON /XCBRPP/THCPP,CNVXPP(2),RESXPP,XPPERG,                     &
-     &        UWAVE(3),UPOL(3),BEDSTP
+     &        UWAVE(3),UPOL(3,2),BEDSTP
       COMMON /XCBIPP/IPRXPP,ITRXPP,MAXEXC,                              &
      &     KEXCNV(8), KEXSIM(8), KEXSTV(8),                             &
      &     LPPAPU(MAXLPP),LPPAPS(MAXLPP),NPPAPT,NPPAP(8),JPPAP(8),      &

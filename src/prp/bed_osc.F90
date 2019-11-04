@@ -442,7 +442,7 @@
             ISYM    = IPRPSYM(INDPRA)
             NEXC    = KEXCNV(ISYM)
             DO IEXC=1,NEXC
-              TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+UPOL(IP)*TFAC*ATMPPF(IEXC,INDAP,ISYM)
+              TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+UPOL(IP,1)*TFAC*ATMPPF(IEXC,INDAP,ISYM)
 !             WRITE(6,*) 'TEST2..',IORDER,IX,IY,IZ,IEXC,ISYM,TMOM(IEXC,ISYM),UPOL(IP),TFAC,ATMPPF(IEXC,INDAP,ISYM)
             ENDDO
           ENDDO
@@ -535,7 +535,7 @@
           DO IB = 0,IA
             IY = IA - IB
             IZ = IB
-            TFAC=FAC*UPOL(IP)*(UWAVE(1)**IX)*(UWAVE(2)**IY)*(UWAVE(3)**IZ)*IBKA*IBAB
+            TFAC=FAC*UPOL(IP,1)*(UWAVE(1)**IX)*(UWAVE(2)**IY)*(UWAVE(3)**IZ)*IBKA*IBAB
             DO IR = 1,3
               INDAP   = INDAP + 1
               CALL LEVI_CEVITA(IP,IR,IS,IPRS)
@@ -590,7 +590,7 @@
             ISYM    = IPRPSYM(INDPRA)
             NEXC    = KEXCNV(ISYM)
             DO IEXC=1,NEXC
-              TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+UPOL(IP)*TFAC*ATMPPF(IEXC,INDAP,ISYM)
+              TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+UPOL(IP,1)*TFAC*ATMPPF(IEXC,INDAP,ISYM)
 !              WRITE(6,*) 'TEST2..',IORDER,IX,IY,IZ,IEXC,ISYM,TMOM(IEXC,ISYM),UPOL(IP),TFAC,ATMPPF(IEXC,INDAP,ISYM)
             ENDDO
           ENDDO
