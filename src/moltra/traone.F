@@ -64,7 +64,11 @@ C
 C     Transform core-fock matrix to active MO basis
 C     ---------------------------------------------
 C
-      Allocate (FMO(N2BBASXQ))
+      IF(NSPC2(1,3).GT.0) THEN
+        Allocate(FMO(N2BBASXQ*2)) ! core density matrix
+      ELSE
+        Allocate(FMO(N2BBASXQ)) ! core density matrix
+      ENDIF
 !Miro: used parameter DUMMY -no need for full set of MOs
       CALL GTCFCK(FMO,IPRTRA,WORK(KQ(1,1)),WORK(KQ(1,2)),
      &        WORK(KQC(1)),DUMMY,NDMOQR,ICMOQR,NSTR,NDMOQC,ICMOQC,NSPC,
@@ -258,15 +262,13 @@ C         Get density matrix
           CALL CDENSO(DMAT,QCO,NDMOQC,ICMOQC,NSPC,NSPC2,IPRINT) 
 C         Totally symmetric operator
           ISYMOP(1) = 1
+          ISYMOP(2) = 1
 C         Fock matrix type
           IFCKOP(1) = 1
+          IFCKOP(2) = 1
 C         Hermitian operator
           IHRMOP(1) = 1
-          print*, "++++ two electron part"
-C         Get the two-electron Fock matrix using core density matrix
-          CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FMO,DMAT,NFMAT,
-     &       POS,INTFLG,IPRINT,WORK(KFREE),LFREE)
-
+          IHRMOP(2) = 1
         ELSE
 C         Closed shell Hartree - Fock
 C         ===========================
@@ -278,10 +280,11 @@ C         Fock matrix type
           IFCKOP(1) = 1
 C         Hermitian operator
           IHRMOP(1) = 1
-C         Get the two-electron Fock matrix using core density matrix
-          CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FMO,DMAT,NFMAT,
-     &       POS,INTFLG,IPRINT,WORK(KFREE),LFREE)
         ENDIF
+
+C       Get the two-electron Fock matrix using the density matrix
+        CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FMO,DMAT,NFMAT,
+     &       POS,INTFLG,IPRINT,WORK(KFREE),LFREE)
 
 ! Miro:  control printout for DFT-COSCI
         IF(IPRINT.GE.5) THEN
@@ -381,7 +384,14 @@ C
 C     5. Add 1- and 2-electron matrix and transform to MO-basis
 C     =========================================================
 C
-      IF(NTOT.GT.0) CALL DAXPY(N2BBASXQ,D1,FMO,1,FAO,1) 
+      IF(NTOT.GT.0) THEN
+        IF(NFMAT.GT.1) THEN
+C         for now only one froze open-shell included
+          CALL DAXPY(N2BBASXQ,D1,FMO,1,FAO,1) 
+        ELSE
+          CALL DAXPY(N2BBASXQ,D1,FMO,1,FAO,1) 
+        ENDIF
+      ENDIF
 C
 C     Make the matrix spinfree if desired.
 C
@@ -2313,9 +2323,8 @@ C*****************************************************************************
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
-
+C
       CALL DZERO(DMAT,2*N2BBASXQ)
-
 C     get closed shell denstiy matrix
       do i = 1,NFSYM
         do j=0,2
@@ -2327,31 +2336,29 @@ C     get closed shell denstiy matrix
      &              QCO(ICMOQC(i)),NDMOQC(1,i),NDMOQC(2,i),
      &              1,ncspin(i,0),NFBAS(i,0))
       enddo
-
 C     get open-shell density matrix
       iopen=1
 C     only use the first (one) open-shell
       do i = 1,NFSYM
 
         IF(NSPC2(i,0).EQ.0) CYCLE
-        CALL DENST1(DMAT(1+N2BBASXQ*IOPEN+I2BASX(i,i)),
+        CALL DENST1(DMAT(1+N2BBASXQ*iopen+I2BASX(i,i)),
      &              NTBAS(0),NTBAS(0),NZ,d1,d0,
      &              QCO(ICMOQC(i)),NDMOQC(1,i),NDMOQC(2,i),
      &              ncspin(i,0)+1,NSPC2(i,0),NFBAS(i,0))
       enddo 
-
 C     reset values
       do i = 1,NFSYM
             NDMOQC(2,i) = NSPC(i,0)
       enddo 
 C     
-      IF (IPRINT.GE.5) THEN
+      IF (IPRINT.GE.7) THEN
         CALL TITLER('Output from CDENSO','*',103)
         DO 20 I = 1,NFSYM
         IF(NORB(I).EQ.0) GOTO 20
           WRITE(LUPRI,'(/3X,A,I1,A,I1/)')
      &    '*** Fermion corep ',I,'/',NFSYM
-          IF (IPRINT.GE.7) THEN
+          IF (IPRINT.GE.10) THEN
             write(LUPRI,*)
      &      'Core molecular orbitals, QCO:',NDMOQC(1,I),NDMOQC(2,I)
             CALL PRQMAT(QCO(ICMOQC(I)),NDMOQC(1,I),NDMOQC(2,I),
@@ -2360,6 +2367,9 @@ C
           write(LUPRI,*) 'Core density matrix, DMAT:'
           CALL PRQMAT(DMAT(I2BASX(I,I)+1),NFBAS(I,0),NFBAS(I,0),
      &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+          write(LUPRI,*) 'Open-shell core density matrix, DMAT:'
+          CALL PRQMAT(DMAT(I2BASX(I,I)+1+N2BBASXQ*iopen),NFBAS(I,0),
+     &            NFBAS(I,0),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
    20   CONTINUE
       ENDIF
       RETURN
