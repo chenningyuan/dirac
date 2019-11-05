@@ -879,7 +879,7 @@ C     Here, INTAOTRI is a buffer
          CALL INTSUM(INTAOTRI,NDIM2,NUMIR,R,MXNP,ANG,m,IXYZ,
      &                 CORD(1,IATOM),num_grid_cfg_grasp,MATINF,IPRINT)
 C     writing the matrix in output
-         IF(IPRINT.GE.2)THEN
+         IF(IPRINT.GE.4)THEN
            CALL HEADER('Numerical ovelap integral',-1)
            CALL OUTPUT(INTAOTRI,1,NTBAS(0),1,NTBAS(0),
      &                   NTBAS(0),NTBAS(0),-1,LUPRI)
@@ -1420,7 +1420,8 @@ C
       allocate( pxyz(nblock_size,3) )
       allocate( p2  (nblock_size  ) )
 C
-      allocate( GMAX(0:MAXOPR, KMAX) )
+      call dirac_ao_eval_init(0,0,.FALSE.)       
+      allocate( GMAX(0:nr_boson_ireps-1, nr_shells) )
 C      allocate( GMAX(0:MAXOPR, 100) )
 C     same to allocate( GMAX(0:nr_boson_ireps-1, nr_shells) )
 C
@@ -1487,6 +1488,8 @@ C
       write(*,*)'nr_points_on_this_proc,m',nr_points_on_this_proc,m
       write(*,*)'max_block_length',max_block_length
       write(*,*)'NTBAS(1)',NTBAS(1)
+      write(*,*)'nr_shells, nr_boson_ireps',nr_shells, nr_boson_ireps
+      write(*,*)'KMAX,MAXOPR+1,',KMAX,MAXOPR+1
 C
 CCCCCCC
 C test         do IR = MXNP, 1, -1    !change
@@ -1495,7 +1498,7 @@ C
 C     Determination of the maximum value for each (isym,ishell)
 C     for cutoff of the numerical integration 
 C      
-      CALL DZERO(GMAX,(MAXOPR+1)*KHKT)
+      CALL DZERO(GMAX, nr_boson_ireps*nr_shells)
       MXNP_ODD = MXNP - mod(MXNP,2) 
       do IR = 1, MXNP_ODD, (MXNP_ODD-1)/2  !change
         IOF_block = 1
@@ -1504,8 +1507,7 @@ C     In the case of m>100, a speciAL treatment is needed.
 C
         m_NUM_MAX = INT(m/100) + 1               
 C
-        call dirac_ao_eval_init(0,0,.FALSE.) 
-C          write(*,*)'nr_shells',nr_shells
+          write(*,*)'IR',IR
 C
 C    GET AO's
 C
@@ -1518,7 +1520,7 @@ C
           DO JXYZ = 1,3
              XYZ8(:,JXYZ) = C(JXYZ,1)
              CALL DAXPY(nblock_length,R(IR),ANG(IOFM,JXYZ),1,
-     &                                        XYZ8(   1,JXYZ),1)
+     &                               XYZ8(   1,JXYZ),1)
           ENDDO
 C
           i = 1
@@ -1532,12 +1534,12 @@ C
                ENDDO
 C               
                CALL DAXPY(nsize3,D1,XYZ8,1,pxyz,1)
-C                 
+C
                do k = 1, nblock_length
                   p2(k) = DDOT(3,pxyz(k,1),nblock_size,
      &                           pxyz(k,1),nblock_size) 
                end do
-C      
+C
                call get_cartesian_ao_g0(nblock_length, 
      &                                    ishell,       
      &                                    pxyz(1,1),           
@@ -1545,9 +1547,35 @@ C
      &                                    pxyz(1,3),           
      &                                    p2,
      &                                    GAO2(1, i))
+C               IF(ishell.eq.nr_shells)THEN
+C                  write(*,*)'IR',IR
+C               write(*,*) 
+C               DO JJ = 1,NTBAS(0)
+C                 write(*,*)'GAO2(1),JJ',GAO2(1,JJ),JJ
+C               ENDDO
+C               write(*,*) 
+C               DO JJ = 1,NTBAS(0)
+C                 write(*,*)'GAO2(2),JJ',GAO2(2,JJ),JJ
+C               ENDDO
+C               write(*,*) 
+C               DO JJ = 1,NTBAS(0)
+C                 write(*,*)'GAO2(3),JJ',GAO2(3,JJ),JJ
+C               ENDDO
+C               ENDIF 
+C              
                DO k = 1, nblock_length
+C                 IF(GMAX(isym,ishell).GT.1.0D2)THEN
+C                    write(*,*)'GMAX,before',
+C     &               GMAX(isym,ishell),isym,ishell,IR,k
+C                 ENDIF
+                 DO ICOMP = 1,KHKT(ishell)
                  GMAX(isym,ishell)
-     &               = MAX( ABS(GAO2(k,i)), ABS(GMAX(isym,ishell)) )
+     &          = MAX( ABS(GAO2(k,i+ICOMP-1)), ABS(GMAX(isym,ishell)) )
+                 ENDDO
+C                 IF(GMAX(isym,ishell).GT.1.0D2)THEN
+C                    write(*,*)'GMAX,isym,ishell,IR,i',
+C     &               GMAX(isym,ishell),isym,ishell,IR,i
+C                 ENDIF   !debug, which is cutoff
                ENDDO   
                i = i + cartesian_deg(ishell)
               end if
@@ -1591,14 +1619,14 @@ C
             DO JXYZ = 1,3
                XYZ8(:,JXYZ) = C(JXYZ,1)
                CALL DAXPY(nblock_length,R(IR),ANG(IOFM,JXYZ),1,
-     &                                        XYZ8(   1,JXYZ),1)
+     &                                 XYZ8(1   ,JXYZ),1)
             ENDDO   
              
             i = 1
             do ishell = 1, nr_shells
               do isym = 0, nr_boson_ireps - 1
-               IF(GMAX(isym,ishell).GT.SCREEN)THEN   
-                if (iand(isym, shell_stabilizing_irep(ishell)) == 0)then                 
+               if (iand(isym, shell_stabilizing_irep(ishell)) == 0)then                 
+                IF(GMAX(isym,ishell).GE.SCREEN)THEN   
                  DO JXYZ = 1, 3
                   pxyz(:,JXYZ) = DM1 
      &               * bitstring_parity(iand(irep_of_axes(JXYZ), isym))
@@ -1619,9 +1647,9 @@ C
      &                                      pxyz(1,3),           
      &                                      p2,
      &                                      GAO2(1, i))
-                 i = i + cartesian_deg(ishell)
-                end if
-               ENDIF  ! GMAX cutoff  
+                ENDIF  ! GMAX cutoff  
+                i = i + cartesian_deg(ishell)
+               end if
               end do  ! isym
             end do               ! ishell
             DO J = 1, NTBAS(0)
@@ -1655,7 +1683,7 @@ C        CALL OUTPUT(INTAOBUF,1,NTBAS(0),1,NTBAS(0),
 C     &                  NTBAS(0),NTBAS(0),-1,LUPRI)
         deallocate(TD)
       ELSE  !DIRAC grid from here
-        do IR = MXNP, 1, -1  !change
+        do IR = 1, MXNP  !change
           CALL DZERO(TC,      NDIM2)
           IOF_block = 1
 C                 
@@ -1676,20 +1704,22 @@ C
           DO m_NUM = 1, m_NUM_MAX
             nblock_length = min(max_block_length, m - IOF_block+ 1)
             nblock_length = min(nblock_length, m)
-            allocate( GAO2(nblock_length, NTBAS(0)) )
+C     This allocation is needed, because the size of GAO2
+C     in get_cartesian_ao_g0 must be nblock_length 
+            allocate( GAO2(nblock_length, NTBAS(0)) )   
             CALL DZERO(GAO2,nblock_length*NTBAS(0))
             DO JXYZ = 1,3
                XYZ8(:,JXYZ) = C(JXYZ,1)
                CALL DAXPY(nblock_length,R(IR),ANG(IOFM,JXYZ),1,
-     &                                        XYZ8(   1,JXYZ),1)
+     &                                 XYZ8(1   ,JXYZ),1)
             ENDDO
 C
             i = 1
 C              write(*,*)'nr_boson_ireps',nr_shells,nr_boson_ireps
             do ishell = 1, nr_shells
               do isym = 0, nr_boson_ireps - 1
-               IF(GMAX(isym,ishell).GE.SCREEN)THEN   
-                if (iand(isym, shell_stabilizing_irep(ishell)) == 0)then                 
+               if (iand(isym, shell_stabilizing_irep(ishell)) == 0)then                 
+                IF(GMAX(isym,ishell).GE.SCREEN)THEN   
                  DO JXYZ = 1, 3
                   pxyz(:,JXYZ) = DM1 
      &               * bitstring_parity(iand(irep_of_axes(JXYZ), isym))
@@ -1698,14 +1728,24 @@ C              write(*,*)'nr_boson_ireps',nr_shells,nr_boson_ireps
 C
                  CALL DAXPY(nsize3,D1,XYZ8,1,pxyz,1)
 C
+C                 IF(IR.EQ.1)THEN
+C                    IF(ishell.eq.16)THEN
+C                       DO k = 1, nblock_length
+C             write(*,*)'pxyz,XYZ8,ANG,k',pxyz(k,3),XYZ8(k,3),ANG(k,3),k
+C                       ENDDO   
+C                   ENDIF   
+C                 ENDIF
+C
+C
                  do k = 1, nblock_length
                     p2(k) = DDOT(3,pxyz(k,1),nblock_size,
      &                             pxyz(k,1),nblock_size) 
-C                    p2(k) = pxyz(k,1)*pxyz(k,1)
-C     &                    +  pxyz(k,2)*pxyz(k,2)
-C     &                    +  pxyz(k,3)*pxyz(k,3)       
                  end do
 C      
+C                 IF(IR.EQ.MXNP)THEN
+C                   write(*,*)'GMAX,isym,ishell',
+C     &                GMAX(isym,ishell),isym,ishell
+C                 ENDIF
                  call get_cartesian_ao_g0(nblock_length, 
      &                                      ishell,       
      &                                      pxyz(1,1),           
@@ -1713,8 +1753,8 @@ C
      &                                      pxyz(1,3),           
      &                                      p2,
      &                                      GAO2(1, i))
-                 i = i + cartesian_deg(ishell)
                 end if
+                i = i + cartesian_deg(ishell)
                ENDIF  ! GMAX
               end do  ! isym
             end do               ! ishell
@@ -1722,10 +1762,30 @@ C     Copy a set of 100 AO (GAO2) to total AO array (GAO)
             DO J = 1, NTBAS(0)
               CALL DCOPY(nblock_length,GAO2(1,J),1,GAO(IOFM,J),1)
             ENDDO
+C            write(*,*)'IR_GAO2',IR
+C            write(*,*)
+C            DO JJ = 1,NTBAS(0)
+C              write(*,*)'GAO2,JJ',GAO2(1,JJ),JJ
+C            ENDDO
             IOFM = IOFM + nblock_length
             IOF_block = IOF_block + nblock_length
             deallocate(GAO2)
           ENDDO                  ! m_NUM
+C          write(*,*)'IR',IR
+C          write(*,*)
+C          DO JJ = 1,NTBAS(0)
+C             write(*,*)'GAO,JJ',GAO(1,JJ),JJ
+C          ENDDO
+C          write(*,*)
+C          write(*,*)'2' 
+C          DO JJ = 1,NTBAS(0)
+C             write(*,*)'GAO2,JJ',GAO(2,JJ),JJ
+C          ENDDO   
+C          write(*,*)
+C          write(*,*)'3'
+C          DO JJ = 1,NTBAS(0)
+C             write(*,*)'GAO2,JJ',GAO(3,JJ),JJ
+C          ENDDO   
 C     Multiplying the factor for angular part ANGXYZ. BUFGAO = ANGXYZ*GAO
           DO  iy = 1, m
             CALL DAXPY(NTBAS(0),ANGXYZ(iy),GAO(iy,1),m,BUFGAO(iy,1),m)
@@ -1737,13 +1797,14 @@ C     Multiplying the factor for angular part ANGXYZ. BUFGAO = ANGXYZ*GAO
           ENDDO
 C sum  weight*r^2*V(r)*Basis^2        
           CALL DAXPY(NDIM2,VWRR(IR),TC,1,INTAOBUF,1)
-C             write(*,*)'VWRR,IR',VWRR(IR),IR
           deallocate(GAO)
           deallocate(BUFGAO)
         end do                ! IR
       ENDIF                     ! GRASP or DIRAC
-C      CALL OUTPUT(INTAOBUF,1,NTBAS(0),1,NTBAS(0),
-C     &             NTBAS(0),NTBAS(0),-1,LUPRI)    ! debug
+      IF(IPRINT.GE.2)THEN
+        CALL OUTPUT(INTAOBUF,1,NTBAS(0),1,NTBAS(0),
+     &               NTBAS(0),NTBAS(0),-1,LUPRI) ! debug, title
+      ENDIF   
 C
       CALL MTAOSO(INTAOBUF,INTSO,NTBAS(0),MTXYZ,IPRINT)
 C      write(*,*)'OUTPUT2'      
@@ -1991,8 +2052,8 @@ C           write(*,*)'X,Z,I',X,Z,I
 !     IF(VPTST2-VPTST1.GT.THSHD)THEN
               TEMP = FACTOR*FUNK (X,1)              
               MUEHLING = J
-              MXNP = J  !delete   
-              CALL HEADER('It is r_max in UEHLING!',-1) !delete
+C              MXNP = J  !delete   
+C              CALL HEADER('It is r_max in UEHLING!',-1) !delete
               exit
            ENDIF   
            RTEMP = (RTEMP+GRDC)*EPH-GRDC
