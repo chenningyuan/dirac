@@ -1977,7 +1977,7 @@ C
          DO 20 ISYMOP = 0, MAXOPR
             IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                ICHARG = IZATOM(IATOM)
-               IF (ICHARG .NE. 0) THEN
+               IF (ICHARG .GT. 0) THEN
                   ICHTOT = ICHTOT + ICHARG
                   DO 30 KCOOR = 1, 3
                      GEOM(3*JATOM + KCOOR) =
@@ -2037,9 +2037,11 @@ C
          IF (IPRINT .GE. 0)
      &      WRITE (LUPRI,'(27X,A6,2X,F12.6)')  NAMDEP(IATOM), RMASS
  100  CONTINUE
-      ORIGIN(1) = ORIGIN(1)/TOTMAS
-      ORIGIN(2) = ORIGIN(2)/TOTMAS
-      ORIGIN(3) = ORIGIN(3)/TOTMAS
+      IF(TOTMAS.NE.D0) THEN
+        ORIGIN(1) = ORIGIN(1)/TOTMAS
+        ORIGIN(2) = ORIGIN(2)/TOTMAS
+        ORIGIN(3) = ORIGIN(3)/TOTMAS
+      ENDIF
       IF (IPRINT .GE. 0) THEN
         WRITE (LUPRI,'(/23X,A,F12.6,A)') 'Total mass: ',TOTMAS,' amu'
         WRITE (LUPRI,'( 23X,A,F8.3,A)')  'Natural abundance:',ABUND,' %'

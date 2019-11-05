@@ -166,8 +166,10 @@ end interface
      call selftest_lapack()
      call selftest_fortran_c_cxx_interoperability()
 #ifdef VAR_MPI
-!    MASTER checks MPI library compatibility (now done at compile time)
+!    checks MPI library compatibility 
+     endif
      if ( parcal ) call selftest_mpi()
+     if (mytid == 0) then
 #endif
 #endif
 ! debug     print*,'++++ calling dirac with',iparcal,mytid,mparid,numnod
@@ -194,8 +196,9 @@ end interface
      write (lupri, '(a/)') '*****************************************************'
      CALL TSTAMP(' ',LUPRI)
      write (lupri,'()')
+     flush(lupri)
      call stopwatch(0,mytid)
-     CALL FLSHFO(LUPRI)
+     flush(lupri)
   endif
 #ifdef VAR_MPI
   if (iparex .gt. 0) call mpixfinalize()

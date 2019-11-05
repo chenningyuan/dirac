@@ -37,7 +37,7 @@
 !
       CALL TITLER('DIAGRID for diatomics : Written by T. Saue ','*',110)
       WRITE(LUPRI,'(A)') 'Give project name (A40)'
-      READ(LUCMD,*) PROJECT
+      READ(LUSTDIN,*) PROJECT
       i=LNBLNK(PROJECT)
       OPEN(ILOGG,FILE=PROJECT(1:i)//'.diagrid',STATUS='UNKNOWN',          &
       FORM='FORMATTED',ACCESS='SEQUENTIAL')
@@ -47,11 +47,11 @@
 !     =======================
 !
       WRITE(LUPRI,'(A)') 'Give equilibrium bond length in Angstroms: '
-      READ(LUCMD,*) REQ
+      READ(LUSTDIN,*) REQ
       WRITE(LUPRI,'(A)') 'Give harmonic frequency in cm-1'
-      READ(LUCMD,*) WEQ
+      READ(LUSTDIN,*) WEQ
       WRITE(LUPRI,'(A)') 'Select vibrational quantum number'
-      READ(LUCMD,*) NU
+      READ(LUSTDIN,*) NU
       WRITE(ILOGG,*) ' - Equilibrium bond length (Angstrom)   ',REQ
       WRITE(ILOGG,*) ' - Harmonic frequency (cm-1)            ',WEQ
       WRITE(ILOGG,*) ' - Selected vibrational quantum number  ',NU
@@ -65,10 +65,10 @@
    '  1. Select masses of the most abundant isotopes.',                 &
    '  2. Employ user-defined atomic masses.',                           &
    '  3. Normal modes: Give reduced mass.'
-      READ(LUCMD,*) I
+      READ(LUSTDIN,*) I
       IF(I.EQ.1) THEN
         WRITE(LUPRI,'(A)') '* Give charge of atom A:'
-        READ(LUCMD,*) IZ
+        READ(LUSTDIN,*) IZ
         CALL GETMSS(IZ,AM,ABUND,INFO)
         IF(INFO.EQ.0) THEN
           WRITE(LUPRI,'(A,F12.4)')                                      &
@@ -76,10 +76,10 @@
      '* Abundance:', ABUND
         ELSE
           WRITE(LUPRI,'(A)') 'Routine failed. Give mass in Daltons:'
-          READ(LUCMD,*) AM
+          READ(LUSTDIN,*) AM
         ENDIF
         WRITE(LUPRI,'(A)') '* Give charge of atom B :'
-        READ(LUCMD,*) IZ
+        READ(LUSTDIN,*) IZ
         CALL GETMSS(IZ,BM,ABUND,INFO)
         IF(INFO.EQ.0) THEN
           WRITE(LUPRI,'(A,F12.4)')                                      &
@@ -87,16 +87,16 @@
      '* Abundance:', ABUND
         ELSE
           WRITE(LUPRI,'(A)') 'Routine failed. Give mass in Daltons:'
-          READ(LUCMD,*) BM
+          READ(LUSTDIN,*) BM
         ENDIF
       ELSEIF(I.EQ.2) THEN
         WRITE(LUPRI,'(A)') '* Give mass of atom A in Daltons:'
-        READ(LUCMD,*) AM
+        READ(LUSTDIN,*) AM
         WRITE(LUPRI,'(A)') '* Give mass of atom B in Daltons:'
-        READ(LUCMD,*) BM
+        READ(LUSTDIN,*) BM
       ELSEIF(I.EQ.3) THEN
         WRITE(LUPRI,'(A)') '* Give reduced mass in Daltons:'
-        READ(LUCMD,*) UM
+        READ(LUSTDIN,*) UM
         GOTO 50
       ELSE
         WRITE(LUPRI,'(A)') ' You stupid fart ! Try again !'
