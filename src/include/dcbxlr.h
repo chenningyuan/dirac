@@ -7,7 +7,7 @@
 ! MAXLLR - max number of operators allowed in XLR
 ! MAXFLR - max number of frequencies allowed in XLR
 ! Note: if you change any of these two parameters, then you
-!       must do a 'make depend' followed by 'make'.
+!       must rebuild with 'make'.
 !
       INTEGER MAXLLR, MAXFLR
       PARAMETER (MAXLLR = 60, MAXFLR = 60)

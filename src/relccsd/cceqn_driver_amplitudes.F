@@ -1,5 +1,5 @@
       SUBROUTINE cceqn_driver_amplitudes(MAXDIM,MAXIT,EPS,FOO,FVO,FVV,
-     &                 T1,S1,T2,S2,AZ,H,HO,HV,HOV,
+     &                 T1,S1,T2,S2,AZ,H,HO,HV,HOV,GO,GV,
      &                 BUF1,BUF2,BUF3,CONV,NBUF2,NBUF3)
 
       use interface_to_mpi
@@ -23,7 +23,8 @@ C
 
 C     Pre-allocated arrays used for intermediaries etc.
       REAL*8 EPS(*),FOO(*),FVO(*),FVV(*),T1(*),S1(*),T2(*),S2(*)
-      REAL*8 AZ(*),H(*),HO(*),HV(*),HOV(*),BUF1(*),BUF2(*),BUF3(*)
+      REAL*8 AZ(*),H(*),HO(*),HV(*),HOV(*),GO(*),GV(*)
+      REAL*8 BUF1(*),BUF2(*),BUF3(*)
 
 
 C---------------Common Blocks--------------------------------------
@@ -80,7 +81,6 @@ C
       NIT = 0
 
       do
-
       NIT = NIT + 1
       IF (NIT.GT.MAXIT) THEN
          maxit = maxit + 1
@@ -113,10 +113,12 @@ C  EVALUATE T2 INTERMEDIATES
 C
       CALL XTIME(5,1,'- T2 equations                  ')
       CALL XTIME(0,1,'-- GOINTM                        ')
-      CALL GOINTM (FVO,T1,BUF1,BUF2,HO)
+      CALL XCOPY (NFOO,HO,1,GO,1)
+      CALL GOINTM (FVO,T1,BUF1,BUF2,GO)
       CALL XTIME(0,2,'-- GOINTM                        ')
       CALL XTIME(0,1,'-- GVINTM                        ')
-      CALL GVINTM (FVO,T1,BUF3,NBUF3,BUF2,NBUF2,HV)
+      CALL XCOPY (NFVV,HV,1,GV,1)
+      CALL GVINTM (FVO,T1,BUF3,NBUF3,BUF2,NBUF2,GV)
       CALL XTIME(0,2,'-- GVINTM                        ')
       CALL XTIME(0,1,'-- AINTM                         ')
       CALL AINTM (T1,T2,BUF1,BUF2,AZ)
@@ -128,7 +130,7 @@ C
 C  INTERMEDIATES FORMED --- START T2 EQUATIONS
 C
       CALL XTIME(5,1,'-- T2 EQNS                     ')
-      CALL amplitude_equation_T2 (T1,T2,HO,HV,HOV,H,AZ,
+      CALL amplitude_equation_T2 (T1,T2,GO,GV,HOV,H,AZ,
      &        BUF1,BUF2,BUF3,NBUF3,S2)
       CALL XTIME(5,2,'-- T2 EQNS                     ')
 C
@@ -150,9 +152,8 @@ C
       CALL XTIME(4,2,'- adding partial T1/T2 amplitudes ')
 C
       IF (FOCKSP) THEN
-C       Adding folded diagrams, use HOV and H as scratch arrays
-        CALL FOLDED (ICURFSS,IHEQ,T1,T2,BUF1,BUF2,BUF3,HOV,H,
-     &               S1,S2)
+C       Adding folded diagrams
+        CALL FOLDED(ICURFSS,IHEQ,T1,T2,BUF1,BUF2,BUF3,S1,S2)
       ENDIF
 C
 C  Make new T1s and T2 by dividing S1s and S2 by eigenvalues
@@ -179,6 +180,8 @@ C
       IF (NOCCD) CALL XCOPY (NDIMT2,A0,0,T2,1)
 C
       CALL ZCORE (T1,T2)
+      !mlv
+      CALL FCORE(T1,T2,EPS)
 C
 C  EXTRAPOLATE THE AMPLITUDES
 C

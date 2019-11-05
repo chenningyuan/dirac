@@ -8,9 +8,9 @@ DIRAC suite offers possibility to easily modify employed basis sets.
 
 The purpose of this tutorial, which is reflected in the test *basis_automatic_augmentation*,  
 is to show nonstandard automatic augmentation of provided standard basis sets, like
-cc-pVXZ, Turbmole and Dyall's.
+cc-pVXZ, Turbomole and Dyall's.
 
-In the following table we demonstrate influence of the (contracted) basis set extension on the total 
+In the following table we demonstrate the influence of the (contracted) basis set extension on the total 
 nonrelativistic energy and on the dipole moment, which is simply calculated through SCF wave-function expectation value.
 
 Two molecules were chosen: HF and HBr. For the former molecule, the pre-cc-pVXZ and Turbomole basis sets are used for both F and H atoms.
