@@ -213,21 +213,21 @@ C--------------------------------------------
 C S(A,I) = S(A,I) + V(A,K,C,D) * TAU(C,D,I,K)   ! VOVV contributions !
 C--------------------------------------------
 CPi
-      write(*,*) '---------------------------------------------------'
-      write(*,*) 'Before problematic case'
+CPi      write(*,*) '---------------------------------------------------'
+CPi      write(*,*) 'Before problematic case'
 CPi-end
       CALL GETTAU (T1,T2,BUF1)
       CALL XTIME(0,1,'--- T1EQNS VOVV contribution  ')
-      CALL GETVOVV_incore (BUF3)
-      CALL DELINT ('VOVV','KDDD',BUF3,0,0,0)
-      call contraction_442((/"p1","o2","p2","p3"/),(/"p2","p3","o1","o2"&
-     &          /),(/"p1","o1"/),S1,1.0d0,1.0d0,nrep,                   &
-     &          LeftTensor=BUF3,RightTensor=BUF1)
-CPi old      CALL T1EQN2 (BUF1,BUF3,NBUF3,S1)   ! VOVV contractions, term 6 !
+CPi new      CALL GETVOVV_incore (BUF3)
+CPi new      CALL DELINT ('VOVV','KDDD',BUF3,0,0,0)
+CPi new      call contraction_442((/"p1","o2","p2","p3"/),(/"p2","p3","o1","o2"&
+CPi new     &          /),(/"p1","o1"/),S1,1.0d0,1.0d0,nrep,                   &
+CPi new     &          LeftTensor=BUF3,RightTensor=BUF1)
+      CALL T1EQN2 (BUF1,BUF3,NBUF3,S1)   ! VOVV contractions, term 6 !
       CALL XTIME(0,2,'--- T1EQNS VOVV contribution  ')
 CPi
-      write(*,*) 'After problematic case'
-      write(*,*) '---------------------------------------------------'
+CPi      write(*,*) 'After problematic case'
+CPi      write(*,*) '---------------------------------------------------'
 CPi-end
 
 C--------------------------------------
