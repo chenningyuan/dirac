@@ -42,7 +42,7 @@ C#include "cbiher.h"
       character (len=5)                 :: TPAR(3)
       integer, allocatable              :: INTREP(:),IPSYM2INT(:,:)
       integer, allocatable              :: IVECS(:)
-      real(8)             :: PBUF(3,2),EVECR(NREDM,*)
+      real(8)             :: PBUF(3,4),EVECR(NREDM,*)
       integer             :: IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*)
       real(8), allocatable              :: GPOE(:,:),GPOP(:,:)
       real(8), allocatable              :: XPOE(:,:),XPOP(:,:)
@@ -50,11 +50,26 @@ C#include "cbiher.h"
       real(8), allocatable              :: TMOM_DE(:,:),TMOM_DOM(:,:)
       real(8), allocatable              :: OSC_P(:),OSC_DER(:,:,:)
       real(8), allocatable              :: OSC_DE(:),OSC_DOM(:)
+      real(8), allocatable              :: ECD(:,:)
       logical, allocatable              :: first(:)
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
+      LOGICAL BEDECD
 C
 #include "ibtfun.h"
-      NOP = 2
+c    Martin
+
+      BEDECD = .TRUE.
+
+c     The parameter NOP represents the real and imaginairy component
+c     of the exponential operator, e1cos(kr) and e1sin(kr). For calculation 
+c     of circular dichoroism,four types of integrals are needes: e1cos(kr), 
+c     e1sin(kr), e2cos(kr) and e2sin(kr). Therefore, NOP needs to equal 4 
+c     when calculating the ECD.     
+      IF (BEDECD) THEN
+        NOP = 4
+      ELSE
+        NOP = 2
+      ENDIF
 C     
 C     Allocate placeholders for integral labels and irreps 
 C
@@ -92,14 +107,42 @@ C     Find what symmetries are available
 C
       allocate(IPSYM2INT(NBSYM,NOP))
       NCOMP=NPRPINT/2
-      CALL ICOPY(2*NBSYM,-1,0,IPSYM2INT,1)
-      DO I = 1,NCOMP
+      CALL ICOPY(NOP*NBSYM,-1,0,IPSYM2INT,1)
+      DO I = 1,NCOMP      
+
         ISYM = INTREP(I) + 1
         IPSYM2INT(ISYM,1) = I
         II = NCOMP + I
         ISYM = INTREP(II) + 1
         IPSYM2INT(ISYM,2) = II
       ENDDO
+
+
+c     Martin
+c     For NOP=2, IPSYMINT contains which boson irreps the integrals
+c     span. IPSYM2INT(:,1) contains the information on e1cos(kr), while
+c     IPSYM2INT(:,2) the information on e1sin(kr).
+c     In our case, NOP is 4, so the dimension of IPSYM2INT is increased.
+c     When calculating ECD, additional lines have to be added for
+c     assigning IPSYM2INT(:,3) and IPSYM2INT(:,4).
+c     These lines should be something like:
+c     IPSYM2INT(:,1)=IPSYM2INT(:,3) and IPSYM2INT(:,2)=IPSYM2INT(:,4)
+c     Alternitavely, the IPSYM2INT is kept two dimensional in its second
+c     index, 
+
+      IF (BEDECD) THEN
+          IPSYM2INT(:,3) = IPSYM2INT(:,1)
+          IPSYM2INT(:,4) = IPSYM2INT(:,2)
+      ENDIF
+      WRITE(LUPRI,*) "BEST TEST EVER"
+      WRITE(LUPRI,*) IPSYM2INT(:,1)
+      WRITE(LUPRI,*) IPSYM2INT(:,2)
+      WRITE(LUPRI,*) IPSYM2INT(:,3)
+      WRITE(LUPRI,*) IPSYM2INT(:,4)
+
+
+
+
 C
 C     Operator setup
 C
@@ -126,8 +169,20 @@ C
           IF(IPSYM2INT(IBSYM,IOP).EQ.-1) THEN
             PBUF(IMAT,IOP) = D0
           ELSE
-            PBUF(IMAT,IOP)          = UPOL(IMAT) ! factor 0.5 not included
-            IPRPLBL(IMAT,NPRPS+IOP) = IPSYM2INT(IBSYM,IOP)+NPRPLBL
+            IF (BEDECD) THEN
+              IF (IOP==1 .OR. IOP==2) THEN
+                PBUF(IMAT,IOP) = UPOL(IMAT,1)
+                IPRPLBL(IMAT,NPRPS+IOP) = IPSYM2INT(IBSYM,IOP)+NPRPLBL
+              ELSE 
+c               For IOP=3 and IOP=4, PBUF(IMAT,IOP) needs to equall the components
+c               of e2     
+                PBUF(IMAT,IOP)          = UPOL(IMAT,2) 
+                IPRPLBL(IMAT,NPRPS+IOP) = IPSYM2INT(IBSYM,IOP)+NPRPLBL
+              ENDIF
+            ELSE 
+              PBUF(IMAT,IOP)          = UPOL(IMAT,1) ! factor 0.5 not included
+              IPRPLBL(IMAT,NPRPS+IOP) = IPSYM2INT(IBSYM,IOP)+NPRPLBL
+            ENDIF
           ENDIF
         ENDDO
         IF(DSUM(NMAT,PBUF(1,IOP),1).EQ.D0) THEN
@@ -136,9 +191,30 @@ C
            IPRPTYP(NPRPS+IOP) = IOPTYP
         ENDIF
       ENDDO
+
+      WRITE(LUPRI,*) "DIT IS ALWEER EEN TEST"
+      DO IVEC = 1,3
+        DO IOP = 1,NOP
+          WRITE(LUPRI,'(A4,I1,A7,I1,A4,F7.4)') "IOP:",IOP,"  IVEC:",
+     &     IVEC,"PBUF", PBUF(IVEC,IOP)
+        ENDDO
+      ENDDO
+
+
+      WRITE(LUPRI,*) "DIT IS ALWEER EEN TEST"
+      DO IVEC = 1,3
+        DO IOP = 1,2
+          WRITE(LUPRI,'(A4,I1,A7,I1,A4,F7.4)') "IOP:",IOP,"  IVEC:",
+     &     IVEC,"UPOL", UPOL(IVEC,IOP)
+        ENDDO
+      ENDDO
+
+
       CALL PRSYMB(LUPRI,'=',80,0)
       WRITE(LUPRI,'(/A,I2,A,A3/)')
      &     ' *** Excitations of boson symmetry',JSYMOP,' : ',REP(IREP)
+
+
 C
 C     Prepare solution vectors
 C     ========================
@@ -184,6 +260,7 @@ C     =============================
 C
       allocate(TMOM(NOP,NPAR+1,NEXCNV))
       allocate(OSC(NPAR+1,NEXCNV))
+      IF (BEDECD) allocate(ECD(NPAR+1,NEXCNV))
       IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,NOP))
       IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,NOP))      
       IH = 0
@@ -200,7 +277,7 @@ C
 C       Length of wave vector
 C 
         FAC=OMEGA(IEXC)/CVAL
-        DO IOP = 1,2
+        DO IOP = 1,NOP
            WRITE(PRPNAM(NPRPS+IOP)(9:16),'(A4,I4)') '_exc',IEXC
            DO IMAT = 1,NMAT
               FACPRP(IMAT,NPRPS+IOP) = PBUF(IMAT,IOP)/FAC
@@ -209,7 +286,7 @@ C
 C
 C       Debug output
 C
-        IF(IPRXPP.GE.2) THEN
+c        IF(IPRXPP.GE.2) THEN
           DO IOP = 1,NOP
             WRITE(6,*) PRPNAM(NPRPS+IOP),IPRPTYP(NPRPS+IOP),FAC
             IF(IPRPTYP(NPRPS+IOP).EQ.-1) THEN
@@ -221,7 +298,7 @@ C
               ENDDO
             ENDIF
           ENDDO
-        ENDIF
+c        ENDIF
         DO K = -IH,IH
 C     
 C         Generate integrals
@@ -249,6 +326,11 @@ C
           OSC(NPAR+1,IEXC)    = D0
           TMOM(1,NPAR+1,IEXC) = D0
           TMOM(2,NPAR+1,IEXC) = D0
+          IF (BEDECD) THEN
+            TMOM(3,NPAR+1,IEXC) = D0
+            TMOM(4,NPAR+1,IEXC) = D0
+            ECD(NPAR+1,IEXC) = D0
+          ENDIF
           IPAR = 0
 C
 C         Gradient - orbital (e-e) part
@@ -270,10 +352,19 @@ C         ====================================
               ENDIF
               TMOM(IOP,NPAR+1,IEXC)=TMOM(IOP,NPAR+1,IEXC)
      &                             +TMOM(IOP,IPAR,IEXC)
+              IF (.NOT.BEDECD) THEN
               TMP = TMP + TMOM(IOP,IPAR,IEXC)*TMOM(IOP,IPAR,IEXC)
+              ENDIF
             ENDDO
+            IF (BEDECD) THEN
+              ECD(IPAR,IEXC) = D2*OMEGA(IEXC)*
+     &                         (TMOM(4,IPAR,IEXC)*TMOM(1,IPAR,IEXC)
+     &                         -TMOM(2,IPAR,IEXC)*TMOM(3,IPAR,IEXC))
+              ECD(NPAR+1,IEXC) = ECD(NPAR+1,IEXC) + ECD(IPAR,IEXC)
+            ELSE
             OSC(IPAR,IEXC) = D2*OMEGA(IEXC)*TMP
             OSC(NPAR+1,IEXC) = OSC(NPAR+1,IEXC) + OSC(IPAR,IEXC)
+            ENDIF
           ENDIF
 C
 C         Gradient - orbital (e-p) part
@@ -295,37 +386,76 @@ C         ====================================
               ENDIF
               TMOM(IOP,NPAR+1,IEXC)=TMOM(IOP,NPAR+1,IEXC)
      &                             +TMOM(IOP,IPAR,IEXC)
-              TMP = TMP + TMOM(IOP,IPAR,IEXC)*TMOM(IOP,IPAR,IEXC)
+              IF (.NOT.BEDECD) THEN
+                TMP = TMP + TMOM(IOP,IPAR,IEXC)*TMOM(IOP,IPAR,IEXC)
+              ENDIF
             ENDDO
+            IF (BEDECD) THEN
+              ECD(IPAR,IEXC) = D2*OMEGA(IEXC)*
+     &                         (TMOM(4,IPAR,IEXC)*TMOM(1,IPAR,IEXC)
+     &                         -TMOM(2,IPAR,IEXC)*TMOM(3,IPAR,IEXC))
+              ECD(NPAR+1,IEXC) = ECD(NPAR+1,IEXC) + ECD(IPAR,IEXC)
+            ELSE
             OSC(IPAR,IEXC)   = D2*OMEGA(IEXC)*TMP
             OSC(NPAR+1,IEXC) = OSC(NPAR+1,IEXC) + OSC(IPAR,IEXC)
+            ENDIF
           ENDIF
         ENDDO
  10   CONTINUE
 C
 C     Print section
-C
-       WRITE(6,*) '* Transition moments:'
-       WRITE(6,'(A4,1X,A18,14X,3(3X,A5,9X))')     
-     &  'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
-       DO IEXC = 1,NEXCNV
+C           
+      IF (BEDECD) THEN
          TMP=MAX(ABS(TMOM(1,NPAR+1,IEXC)),ABS(TMOM(2,NPAR+1,IEXC)))
          FMT=MXFORM(TMP,14)
-         WRITE(6,'(I4,1X,F18.10,A,3(3X,'//FMT//'))')
-     &   IEXC,OMEGA(IEXC),' real part (sin [kr]): ',
-     &   (TMOM(2,IPAR,IEXC),IPAR = 1,NPAR+1)
-         WRITE(6,'(23X,A,3(3X,'//FMT//'))')
-     &   ' imag. part (cos[kr]) : ',
-     &   (-TMOM(1,IPAR,IEXC),IPAR = 1,NPAR+1)
-      ENDDO
-      WRITE(6,*) '* Oscillator strengths:'
-      WRITE(6,'(A4,1X,A18,3(3X,A5,9X))')     
-     &  'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
-      DO IEXC = 1,NEXCNV
-        WRITE(6,'(I4,1X,F18.10,3(3X,'//FMT//'))')
-     &   IEXC,OMEGA(IEXC),
-     &   (OSC(IPAR,IEXC),IPAR = 1,NPAR+1)
-      ENDDO
+         WRITE(LUPRI,*) '* Transition moments:'
+         WRITE(LUPRI,'(A4,1X,A18,14X,3(3X,A5,9X))')     
+     &   'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
+         DO IEXC = 1,NEXCNV
+           WRITE(6,'(I4,1X,F18.10,A,3(3X,'//FMT//'))')
+     &     IEXC,OMEGA(IEXC),' (e1cos [kr]): ',
+     &     (TMOM(1,IPAR,IEXC),IPAR = 1,NPAR+1)
+           WRITE(6,'(I4,1X,F18.10,A,3(3X,'//FMT//'))')
+     &     IEXC,OMEGA(IEXC),' (e1sin [kr]): ',
+     &     (TMOM(2,IPAR,IEXC),IPAR = 1,NPAR+1)
+           WRITE(6,'(I4,1X,F18.10,A,3(3X,'//FMT//'))')
+     &     IEXC,OMEGA(IEXC),' (e2cos [kr]): ',
+     &     (TMOM(3,IPAR,IEXC),IPAR = 1,NPAR+1)
+           WRITE(6,'(I4,1X,F18.10,A,3(3X,'//FMT//'))')
+     &     IEXC,OMEGA(IEXC),' (e2sin [kr]): ',
+     &     (TMOM(4,IPAR,IEXC),IPAR = 1,NPAR+1)
+         ENDDO      
+           WRITE(6,*) '* Circular dichroism:'
+           WRITE(LUPRI,'(A4,1X,A18,14X,3(3X,A5,9X))')     
+     &           'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
+         DO IEXC = 1,NEXCNV
+            WRITE(6,'(I4,1X,F18.10,3(3X,'//FMT//'))')
+     &      IEXC,OMEGA(IEXC),
+     &      (ECD(IPAR,IEXC),IPAR = 1,NPAR+1)
+         ENDDO
+      ELSE
+        WRITE(6,*) '* Transition moments:'
+        WRITE(6,'(A4,1X,A18,14X,3(3X,A5,9X))')     
+     &   'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
+        DO IEXC = 1,NEXCNV
+          TMP=MAX(ABS(TMOM(1,NPAR+1,IEXC)),ABS(TMOM(2,NPAR+1,IEXC)))
+          FMT=MXFORM(TMP,14)
+          WRITE(6,'(I4,1X,F18.10,A,3(3X,'//FMT//'))')
+     &    IEXC,OMEGA(IEXC),' real part (sin [kr]): ',
+     &    (TMOM(2,IPAR,IEXC),IPAR = 1,NPAR+1)
+          WRITE(6,'(23X,A,3(3X,'//FMT//'))')
+     &    ' imag. part (cos[kr]) : ',
+     &    (-TMOM(1,IPAR,IEXC),IPAR = 1,NPAR+1)
+        ENDDO
+        WRITE(6,*) '* Oscillator strengths:'
+        WRITE(6,'(A4,1X,A18,3(3X,A5,9X))')     
+     &    'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
+        DO IEXC = 1,NEXCNV
+          WRITE(6,'(I4,1X,F18.10,3(3X,'//FMT//'))')
+     &     IEXC,OMEGA(IEXC),
+     &     (OSC(IPAR,IEXC),IPAR = 1,NPAR+1)
+        ENDDO
+      ENDIF
 C     
 C     Memory deallocation
       IF(NZXOPE.GT.0) THEN
@@ -336,6 +466,7 @@ C     Memory deallocation
         deallocate(GPOP)
         deallocate(XPOP)         
       ENDIF
+      IF (BEDECD) deallocate(ECD)
       deallocate(TMOM)
       deallocate(OSC)
       deallocate(PRPINT)
