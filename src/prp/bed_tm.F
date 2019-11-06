@@ -403,59 +403,59 @@ C         ====================================
 C
 C     Print section
 C
-<<<<<<< HEAD
-      IF(DOBEDDER) THEN
-         WRITE(6,*)
-     &   '* Transition moments expansion --- real part (sin [kr]):'
-         DO IP = 1,3
-           WRITE(6,*) '   Stencil: ',IP
-           WRITE(6,'(5X,A,14X,6(A6,9X))') 'Freq.','Tmom0 ','Tmom1 ',
-     &        'Tmom2 ','Tmom3 ','Tmom4 ','Ttotal'
-           DO IEXC = 1,NEXCNV
-             TMP=TMOM(2,NPAR+1,IEXC)
-             DO IDER = 1,4
-               TMP = TMP + TMOM_DER(2,IDER,IP,IEXC)
-             ENDDO
-           WRITE(6,'(I4,1X,F18.10,6(1X,E14.8))')
-     &            IEXC,OMEGA(IEXC),TMOM(2,NPAR+1,IEXC),
-     &           (TMOM_DER(2,IDER,IP,IEXC),IDER=1,4),TMP
-           ENDDO
-         ENDDO
-         WRITE(6,*)
-     &   '* Transition moments expansion --- imag. part (cos[kr]) :'
-         DO IP = 1,3
-           WRITE(6,*) '   Stencil: ',IP
-           WRITE(6,'(5X,A,14X,6(A6,9X))') 'Freq.','Tmom0 ','Tmom1 ',
-     &        'Tmom2 ','Tmom3 ','Tmom4 ','Ttotal'
-           DO IEXC = 1,NEXCNV
-             TMP=TMOM(1,NPAR+1,IEXC)
-             DO IDER = 1,4
-               TMP = TMP + TMOM_DER(1,IDER,IP,IEXC)
-             ENDDO
-             WRITE(6,'(I4,1X,F18.10,6(1X,E14.8))')
-     &            IEXC,OMEGA(IEXC),-TMOM(1,NPAR+1,IEXC),
-     &           (-TMOM_DER(1,IDER,IP,IEXC),IDER=1,4),-TMP
-           ENDDO
-         ENDDO
-         WRITE(6,*) '* Oscillator strengths expansion:'
-           DO IP = 1,3
-             WRITE(6,*) '   Stencil: ',IP
-             WRITE(6,'(5X,A,14X,6(A6,9X))') 'Freq.','Osc0  ','Osc1  ',
-     &        'Osc2  ','Osc3  ','Osc4  ','Ototal'
-             DO IEXC = 1,NEXCNV
-               TMP=OSC(NPAR+1,IEXC)
-               DO IDER = 1,4
-                 TMP = TMP + OSC_DER(IDER,IP,IEXC)
-             ENDDO
-             WRITE(6,'(I4,1X,F18.10,6(1X,E14.8))')
-     &            IEXC,OMEGA(IEXC),OSC(NPAR+1,IEXC),
-     &           (OSC_DER(IDER,IP,IEXC),IDER=1,4),TMP
-           ENDDO
-         ENDDO
+c<<<<<<< HEAD
+C      IF(DOBEDDER) THEN
+C         WRITE(6,*)
+C     &   '* Transition moments expansion --- real part (sin [kr]):'
+C         DO IP = 1,3
+C           WRITE(6,*) '   Stencil: ',IP
+C           WRITE(6,'(5X,A,14X,6(A6,9X))') 'Freq.','Tmom0 ','Tmom1 ',
+C     &        'Tmom2 ','Tmom3 ','Tmom4 ','Ttotal'
+C           DO IEXC = 1,NEXCNV
+C             TMP=TMOM(2,NPAR+1,IEXC)
+C             DO IDER = 1,4
+C               TMP = TMP + TMOM_DER(2,IDER,IP,IEXC)
+C             ENDDO
+C           WRITE(6,'(I4,1X,F18.10,6(1X,E14.8))')
+C     &            IEXC,OMEGA(IEXC),TMOM(2,NPAR+1,IEXC),
+C     &           (TMOM_DER(2,IDER,IP,IEXC),IDER=1,4),TMP
+C           ENDDO
+C         ENDDO
+C         WRITE(6,*)
+C     &   '* Transition moments expansion --- imag. part (cos[kr]) :'
+C         DO IP = 1,3
+C           WRITE(6,*) '   Stencil: ',IP
+C           WRITE(6,'(5X,A,14X,6(A6,9X))') 'Freq.','Tmom0 ','Tmom1 ',
+C     &        'Tmom2 ','Tmom3 ','Tmom4 ','Ttotal'
+C           DO IEXC = 1,NEXCNV
+C             TMP=TMOM(1,NPAR+1,IEXC)
+C             DO IDER = 1,4
+C               TMP = TMP + TMOM_DER(1,IDER,IP,IEXC)
+C             ENDDO
+C             WRITE(6,'(I4,1X,F18.10,6(1X,E14.8))')
+C     &            IEXC,OMEGA(IEXC),-TMOM(1,NPAR+1,IEXC),
+C     &           (-TMOM_DER(1,IDER,IP,IEXC),IDER=1,4),-TMP
+C           ENDDO
+C         ENDDO
+C         WRITE(6,*) '* Oscillator strengths expansion:'
+C           DO IP = 1,3
+C             WRITE(6,*) '   Stencil: ',IP
+C             WRITE(6,'(5X,A,14X,6(A6,9X))') 'Freq.','Osc0  ','Osc1  ',
+C     &        'Osc2  ','Osc3  ','Osc4  ','Ototal'
+C             DO IEXC = 1,NEXCNV
+C               TMP=OSC(NPAR+1,IEXC)
+C               DO IDER = 1,4
+C                 TMP = TMP + OSC_DER(IDER,IP,IEXC)
+C             ENDDO
+C             WRITE(6,'(I4,1X,F18.10,6(1X,E14.8))')
+C     &            IEXC,OMEGA(IEXC),OSC(NPAR+1,IEXC),
+C     &           (OSC_DER(IDER,IP,IEXC),IDER=1,4),TMP
+C           ENDDO
+C         ENDDO
 c     Martin
 c     Here needs to be an ELSEIF statement that activates the ECD output
 c     
-      ELSEIF (BEDECD) THEN
+      IF (BEDECD) THEN
          TMP=MAX(ABS(TMOM(1,NPAR+1,IEXC)),ABS(TMOM(2,NPAR+1,IEXC)))
          FMT=MXFORM(TMP,14)
          WRITE(LUPRI,*) '* Transition moments:'
@@ -497,9 +497,9 @@ c
      &     ' imag. part (cos[kr]) : ',
      &     (-TMOM(1,IPAR,IEXC),IPAR = 1,NPAR+1)
          ENDDO
-        WRITE(6,*) '* Oscillator strengths:'
-        WRITE(6,'(A4,1X,A18,3(3X,A5,9X))')     
-=======
+c       WRITE(6,*) '* Oscillator strengths:'
+c        WRITE(6,'(A4,1X,A18,3(3X,A5,9X))')     
+c=======
        WRITE(6,*) '* Transition moments:'
        WRITE(6,'(A4,1X,A18,14X,3(3X,A5,9X))')     
      &  'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
@@ -515,13 +515,14 @@ c
       ENDDO
       WRITE(6,*) '* Oscillator strengths:'
       WRITE(6,'(A4,1X,A18,3(3X,A5,9X))')     
->>>>>>> d842c63cf584df452f4896b89c061977bc2a2e11
+c>>>>>>> d842c63cf584df452f4896b89c061977bc2a2e11
      &  'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
       DO IEXC = 1,NEXCNV
         WRITE(6,'(I4,1X,F18.10,3(3X,'//FMT//'))')
      &   IEXC,OMEGA(IEXC),
      &   (OSC(IPAR,IEXC),IPAR = 1,NPAR+1)
       ENDDO
+      ENDIF
 C     
 C     Memory deallocation
       IF(NZXOPE.GT.0) THEN
@@ -1087,6 +1088,10 @@ C#include "cbiher.h"
       real(8), allocatable              :: X(:),Y(:),Z(:),WT(:)      
       logical, allocatable              :: first(:)
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
+      LOGICAL BEDECD
+C     MARTIN
+      INTEGER                           :: EIJK, K 
+C     MARTIN      
 C
 #include "ibtfun.h"
       NEXCNV = KEXCNV(JSYMOP)
@@ -1095,6 +1100,23 @@ C
 C     
 C     Allocate placeholders for integral labels and irreps 
 C
+
+C    MARTIN
+      BEDECD = .FALSE.
+      IC=2
+      IF (BEDECD) THEN
+        IC = 4
+      ELSE
+        IC = 2
+      ENDIF
+C     MARTIN
+c      CALL LEVI_CEVITA(1,2, K, EIJK)
+c      WRITE(6,*) "DIT IS EEN TEST"
+c      WRITE(6,'(A2,I1,A4,A5,I1)') "K=",K,"    ","EIJK=",EIJK
+C     MARTIN
+
+
+
       allocate(LABINT(8))
       allocate(INTREP(8))
       allocate(first(nz))
@@ -1127,9 +1149,9 @@ C.....allocate array for holding integrals (on lower triangular form)
 C      
 C     Find what symmetries are available
 C
-      allocate(IPSYM2INT(NBSYM,2))
+      allocate(IPSYM2INT(NBSYM,NIC))
       NCOMP=NPRPINT/2
-      CALL ICOPY(2*NBSYM,-1,0,IPSYM2INT,1)
+      CALL ICOPY(NIC*NBSYM,-1,0,IPSYM2INT,1)
       DO I = 1,NCOMP
         ISYM = INTREP(I) + 1
         IPSYM2INT(ISYM,1) = I
@@ -1137,6 +1159,10 @@ C
         ISYM = INTREP(II) + 1
         IPSYM2INT(ISYM,2) = II
       ENDDO
+      IF (BEDECD) THEN
+        IPSYM2INT(:,3) = IPSYM2INT(:,1)
+        IPSYM2INT(:,4) = IPSYM2INT(:,2)
+      ENDIF
 C
 C     Operator setup
 C
@@ -1150,7 +1176,7 @@ C
         CALL QUIT('BEDLEB: Too may properties !')
       ENDIF
       II = 0
-      DO IC = 1,2
+      DO IC = 1,NIC
         DO IOP = 1,NOP
           II = II + 1
           IOPTYP = 1 + IOP
@@ -1251,7 +1277,7 @@ C         Length of wave vector
 C
           FAC=OMEGA(IEXC)/CVAL
           II = 0
-          DO IC = 1,2
+          DO IC = 1,NIC
             DO IOP = 1,NOP
               II = II + 1
               WRITE(PRPNAM(NPRPS+II)(9:16),'(A4,I4)') '_exc',IEXC
@@ -1288,7 +1314,7 @@ C     ====================================
           IPAR = IPAR + 1
           II = 0
           TMP = D0
-          DO IC = 1,2
+          DO IC = 1,NIC
             DO IOP = 1,NOP
               II = II + 1
               INDXPR = NPRPS+II
@@ -1320,7 +1346,7 @@ C     ====================================
           IPAR = IPAR + 1
           II = 0
           TMP = D0
-          DO IC = 1,2
+          DO IC = 1,NIC
             DO IOP = 1,NOP
               II = II + 1
               INDXPR = NPRPS+II
