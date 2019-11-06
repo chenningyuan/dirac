@@ -79,6 +79,7 @@ C
 C
 C     Integral directives
 C
+
       IPRINT=0
       CALL PR1DIR('CXIKR   ',INTTYP,NPRPINT,INTREP,
      &            ANTI,SQUARE,DUMMY,LABINT,TRIANG,TRASPH,
@@ -104,11 +105,14 @@ C.....allocate array for holding integrals (on lower triangular form)
       NPQUAD=0
 C      
 C     Find what symmetries are available
+C     The second index of IPSYM2INT distinguishes the cos(kr) and sin(kr)
+C     integrals
 C
+
       allocate(IPSYM2INT(NBSYM,NOP))
       NCOMP=NPRPINT/2
       CALL ICOPY(NOP*NBSYM,-1,0,IPSYM2INT,1)
-      DO I = 1,NCOMP
+      DO I = 1,NCOMP      
         ISYM = INTREP(I) + 1
         IPSYM2INT(ISYM,1) = I
         II = NCOMP + I
@@ -133,12 +137,7 @@ c     index,
           IPSYM2INT(:,4) = IPSYM2INT(:,2)
       ENDIF
 
-      WRITE(LUPRI,*) 'BEST TEST EVER'
-      WRITE(LUPRI,*) IPSYM2INT(:,1)
-      WRITE(LUPRI,*) IPSYM2INT(:,2)
-      WRITE(LUPRI,*) IPSYM2INT(:,3)
-      WRITE(LUPRI,*) IPSYM2INT(:,4)
-      WRITE(LUPRI,*) SHAPE(PBUF)
+
 C
 C     Operator setup
 C
@@ -154,6 +153,7 @@ C
         CALL QUIT('GET_BED: Too may properties !')
       ENDIF
       DO IOP = 1,NOP
+        WRITE(LUPRI,*) IOP
         WRITE(PRPNAM(NPRPS+IOP)(1:8),'(A3,I1,A1,A3)')
      &        'BED',IOP,'_',REP(IREP)
         IPRPSYM(NPRPS+IOP) = JSYMOP ! Total symmetry of operator
@@ -201,12 +201,22 @@ c               of e2
       CALL PRSYMB(LUPRI,'=',80,0)
       WRITE(LUPRI,'(/A,I2,A,A3/)')
      &     ' *** Excitations of boson symmetry',JSYMOP,' : ',REP(IREP)
+
+      WRITE(LUPRI,*) "DIT IS ALWEER EEN TEST"
+      DO IVEC = 1,3
+        DO IOP = 1,NOP
+          WRITE(LUPRI,'(A4,I1,A7,I1,A4,F7.4)') "IOP:",IOP,"  IVEC:",
+     &     IVEC,"PBUF", PBUF(IVEC,IOP)
+        ENDDO
+      ENDDO
 C
 C     Prepare solution vectors
 C     ========================
 C
 C      - orbital (e-e) part      
 C
+      
+
       NPAR = 0
       IF(NZXOPE.GT.0) THEN
          allocate(XPOE(NZXOPEQ,NEXCNV))
@@ -269,8 +279,10 @@ C
               FACPRP(IMAT,NPRPS+IOP) = PBUF(IMAT,IOP)/FAC
            ENDDO
         ENDDO
+
+
 C
-C       Debug outpu
+C       Debug output
 C
         IF(IPRXPP.GE.2) THEN
           DO IOP = 1,NOP
@@ -309,6 +321,7 @@ C
             ENDDO
           ENDIF
 C
+          
           OSC(NPAR+1,IEXC)    = D0
           TMOM(1,NPAR+1,IEXC) = D0
           TMOM(2,NPAR+1,IEXC) = D0
@@ -331,6 +344,7 @@ C         ====================================
      &               get_orbital_rotation_indices_pp(),
      &               NZXOPE,CMO,IBEIG,JBENDX,.FALSE.,PRPINT,
      &               WORK,KFREE,LFREE,IPRXPP)
+c    Martin          what is the meaning of this factor of two?           
                 TMOM(IOP,IPAR,IEXC)=D2*
      &               DDOT(NZXOPEQ,GPOE(1,IOP),1,XPOE(1,IEXC),1)
               ELSE
@@ -1009,6 +1023,10 @@ C#include "cbiher.h"
       real(8), allocatable              :: X(:),Y(:),Z(:),WT(:)      
       logical, allocatable              :: first(:)
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
+      LOGICAL BEDECD
+C     MARTIN
+      INTEGER                           :: EIJK, K 
+C     MARTIN      
 C
 #include "ibtfun.h"
       NEXCNV = KEXCNV(JSYMOP)
@@ -1017,6 +1035,23 @@ C
 C     
 C     Allocate placeholders for integral labels and irreps 
 C
+
+C    MARTIN
+      BEDECD = .FALSE.
+      IC=2
+      IF (BEDECD) THEN
+        IC = 4
+      ELSE
+        IC = 2
+      ENDIF
+C     MARTIN
+c      CALL LEVI_CEVITA(1,2, K, EIJK)
+c      WRITE(6,*) "DIT IS EEN TEST"
+c      WRITE(6,'(A2,I1,A4,A5,I1)') "K=",K,"    ","EIJK=",EIJK
+C     MARTIN
+
+
+
       allocate(LABINT(8))
       allocate(INTREP(8))
       allocate(first(nz))
@@ -1049,9 +1084,9 @@ C.....allocate array for holding integrals (on lower triangular form)
 C      
 C     Find what symmetries are available
 C
-      allocate(IPSYM2INT(NBSYM,2))
+      allocate(IPSYM2INT(NBSYM,NIC))
       NCOMP=NPRPINT/2
-      CALL ICOPY(2*NBSYM,-1,0,IPSYM2INT,1)
+      CALL ICOPY(NIC*NBSYM,-1,0,IPSYM2INT,1)
       DO I = 1,NCOMP
         ISYM = INTREP(I) + 1
         IPSYM2INT(ISYM,1) = I
@@ -1059,6 +1094,10 @@ C
         ISYM = INTREP(II) + 1
         IPSYM2INT(ISYM,2) = II
       ENDDO
+      IF (BEDECD) THEN
+        IPSYM2INT(:,3) = IPSYM2INT(:,1)
+        IPSYM2INT(:,4) = IPSYM2INT(:,2)
+      ENDIF
 C
 C     Operator setup
 C
@@ -1072,7 +1111,7 @@ C
         CALL QUIT('BEDLEB: Too may properties !')
       ENDIF
       II = 0
-      DO IC = 1,2
+      DO IC = 1,NIC
         DO IOP = 1,NOP
           II = II + 1
           IOPTYP = 1 + IOP
@@ -1173,7 +1212,7 @@ C         Length of wave vector
 C
           FAC=OMEGA(IEXC)/CVAL
           II = 0
-          DO IC = 1,2
+          DO IC = 1,NIC
             DO IOP = 1,NOP
               II = II + 1
               WRITE(PRPNAM(NPRPS+II)(9:16),'(A4,I4)') '_exc',IEXC
@@ -1210,7 +1249,7 @@ C     ====================================
           IPAR = IPAR + 1
           II = 0
           TMP = D0
-          DO IC = 1,2
+          DO IC = 1,NIC
             DO IOP = 1,NOP
               II = II + 1
               INDXPR = NPRPS+II
@@ -1242,7 +1281,7 @@ C     ====================================
           IPAR = IPAR + 1
           II = 0
           TMP = D0
-          DO IC = 1,2
+          DO IC = 1,NIC
             DO IOP = 1,NOP
               II = II + 1
               INDXPR = NPRPS+II
