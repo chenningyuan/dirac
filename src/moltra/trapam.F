@@ -394,6 +394,15 @@ C
          NDMOQC(1,IFRP,2) = NFBAS(IFRP,0)
          NDMOQC(2,IFRP,2) = NSPC(IFRP,0)
       ENDDO
+      IF (NSPC2(1,3).LT.0) THEN
+        NCORE2=0
+      ELSE
+        I=0
+        DO IFRP = 1,NFSYM
+          I=I+NSPC2(IFRP,0)*2
+        ENDDO
+        NCORE2=I-NCORE2
+      ENDIF
 C####################################################
 C
 C     number of active occupied

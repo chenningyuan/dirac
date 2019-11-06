@@ -24,7 +24,7 @@ CI for atomic lanthanides
 30
 **MOLTRA
 .ACTIVE
-3..9,15..28
+3..9,15..27
 4..32
 .CORE
 1..2

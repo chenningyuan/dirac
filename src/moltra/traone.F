@@ -806,7 +806,7 @@ C     group type (1 real, 2 complex, 4 quat.),spinfree formalism,
 C     total number of orbitals (so including frozen or deleted orbitals)
 !     total SCF energy
       WRITE (LUMLF1) 2*NSTRT,BREIT,DHFERG,NFSYM,NZ,SPINFR,
-     &               NORBT,TOTERG
+     &               NORBT,TOTERG,NSPC,NCORE2
 C     NSYMRP        - Number of fermion irreps in parent group
 C     REPN          - names of these irreps (gerade, ungerade)
 C     NAEL          - number of spinors active in the transformation
@@ -815,6 +815,7 @@ C                     0: total
 C                     1: positive energy
 C                     2: negative energy
 C     NESH-NST-NSPC -number of deleted spinors.
+C     NCORE2        - spinors missing due to frozen open shell
       WRITE (LUMLF1) NSYMRP,(REPN(IRP),IRP=1,NSYMRP),  
      &                      (NAEL(IRP),IRP=1,NSYMRP),
      &                      (NSTR(IRP),IRP=1,NFSYM),

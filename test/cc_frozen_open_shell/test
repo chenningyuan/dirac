@@ -17,10 +17,10 @@ f.add(from_string = 'Electronic energy',
 
 f.add(from_string = ' Overview of calculated energies',
       to_string   = '@ Total CCSD-T  energy',
-      rel_tolerance   = 1.0e-5)
+      rel_tolerance   = 1.0e-4)
 
-test.run(['cc_ru.inp'], ['Ru.mol'], f, args='       ')
+test.run(['cc_ru.inp'], ['Ru.mol'], f, args='--mw=120 ')
 
-test.run(['cc_ru_nosym.inp'], ['Ru_nosym.mol'], f, args='       ')
+test.run(['cc_ru_nosym.inp'], ['Ru_nosym.mol'], f, args='--mw=120 ')
 
 sys.exit(test.return_code)
