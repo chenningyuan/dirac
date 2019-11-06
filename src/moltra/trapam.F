@@ -365,7 +365,7 @@ C
      &                  NSPC(IFRP,2),NSPC(IFRP,1))
          ENDIF
          IF (INDEX(TRA_CORSTR2(IFRP),'not specified').EQ.0) THEN
-             WRITE(LUPRI,'(/A)') '* frozen open-shell added:'
+             WRITE(LUPRI,'(/A)') '* frozen open-shell added'
              Allocate (IBEIG(NR(IFRP)))
              CALL NUMLST(TRA_CORSTR2(IFRP),IBEIG,
      &                  NR(IFRP),IR(1,IFRP),IR(2,IFRP),
@@ -5600,14 +5600,15 @@ C     Written by J.Pototschnig, Fall 2019
 C
 C***********************************************************************
 C     add SLIST to TLIST
-
-      INTEGER NLIST,TNUM,SNUM
+#include "priunit.h"
+      INTEGER NLIST,TNUM,SNUM,I
       INTEGER TLIST(NLIST),SLIST(NLIST)
 
       DO I=1,SNUM
         TLIST(TNUM+I)=SLIST(I)
       ENDDO
       TNUM=TNUM+SNUM
+      WRITE(LUPRI,'(6X,12I5)') (SLIST(I),I=1,SNUM)
 
       RETURN
       END
