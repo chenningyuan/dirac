@@ -373,7 +373,7 @@ C
      &            '.ITRINT','.CNVINT','.REAXVC','.BEDCHK',
      &            '.RESFAC','.ORBANA','.ROTAV ','.SKIPEE',
      &            '.MXLOAD','.ONLYSF','.ONLYSG','.BED   ',
-     &            '.XXXXXX','.BEDSTP','.BEDCON','.XXXXXX'/
+     &            '.GNOISE','.BEDSTP','.BEDCON','.XXXXXX'/
 C
 #include "ibtfun.h"
 C
@@ -427,6 +427,7 @@ C
       ORIENTED   = .FALSE.
       BEDSTP     = 0.001D0
       BEDCHK     = .FALSE.
+      GNOISE     = .FALSE.
 C     hj: initialize some parts of dcbxlr; (nov. 2000)
 Chj: dcbxlr includes some general information
 Chj: which should be moved to dcbxrs (?) or another one:
@@ -649,6 +650,9 @@ C&&&& BED: Full light-matter interaction
                   DOBED = .TRUE.
                GO TO 100
  33            CONTINUE
+C&&&& GNOISE: Add noise to MO coefficients when evaluating gradient elements
+                  GNOISE = .TRUE.
+                  READ(LUCMD,*) GNOISE_FAC
                GO TO 100
  34            CONTINUE
 C&&&& BEDSTP: Step length for numerical BED derivatives
@@ -770,7 +774,10 @@ C
       IF(XPP_E2CHEK) WRITE(LUPRI,'(A)')
      &   ' * Explicit contruction of the electronic Hessian'
       IF(ORBXPP) WRITE(LUPRI,'(A)')
-     &   ' * Analysis of individual orbital contributions.'
+     &     ' * Analysis of individual orbital contributions.'
+      IF(GNOISE) WRITE(LUPRI,'(A,ES8.2)')
+     &     ' * Noise added to coefficients during construction of '//
+     &     'property gradients. Noise level: ',GNOISE_FAC
       IF(XPPFIL.NE.'NORXVC') WRITE(LUPRI,'(A,A,A6)')
      &    ' * The program will attemp restart on solution vectors ',
      &    'on file ',XPPFIL
@@ -1144,10 +1151,12 @@ C
 #include "dcbxrs.h"
 #include "dcbxpp.h"
 #include "dcbham.h"
+#include "dcborb.h"
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbxpr.h"
       LOGICAL FIRST,TEST
+      real(8), allocatable :: cmobuf(:)
       CHARACTER FILNAM*6,MEMTYP*6,BLANK16*16,BLANK2*2
       DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),RCNV(*),
      &          GPO(NXPAR,NZ),XPO(NXPAR,NZ,MAXEXC),BBUF(*),
@@ -1189,6 +1198,11 @@ C
      +         ACCESS='DIRECT',RECL=8*NBDIM,STATUS='UNKNOWN')
       ITIM = IPX
       NXDIM = NBDIM*NEXCNV
+      IF(GNOISE) THEN
+         allocate(CMOBUF(NCMOTQ))
+         CALL DCOPY(NCMOTQ,CMO,1,CMOBUF,1)
+         CALL NOISE(CMO,NCMOTQ,GNOISE_FAC)
+      ENDIF
 C
 C     We have two rounds,
 C     first with ITIM = IPX = JTIMOP and second with ITIM = IMX
@@ -1299,6 +1313,10 @@ C
         GO TO 100
       END IF
       CLOSE(LUBVEC,STATUS = 'KEEP')
+      IF(GNOISE) THEN
+         CALL DCOPY(NCMOTQ,CMOBUF,1,CMO,1)
+         deallocate(CMOBUF)
+      ENDIF      
 C
       IF(TEST) THEN
         IREP = JSYMOP-1

@@ -4399,4 +4399,30 @@ C***********************************************************************
       IJK = IJKTAB(I,J)
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE NOISE(A,N,FACTOR)
+C***********************************************************************
+C
+C     Input is an array A of length N. On output noise has been added.
+C     FACTOR controls the magnitude of the nois ("noise level")
+C     Since RANDOM_NUMBER returns numbers in the interval (0,1],
+C     we extend to (-1,1].      
+C
+C     Written by Trond Saue Nov 7 2019
+C
+C***********************************************************************
+      implicit none
+      integer, intent(in)   :: N
+      real*8, intent(in)    :: factor
+      real*8, intent(inout) :: A(N)
+      integer               :: I
+      real*8                :: R
+
+      DO I = 1,N
+        CALL RANDOM_NUMBER(r)
+        A(I) = A(I) + FACTOR*(2.0D00*R-1.0D00)
+      ENDDO
+      RETURN
+      END
+      
       
