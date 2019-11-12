@@ -9634,11 +9634,19 @@ C
       ILOW = 1
       IF (LINEAR) ILOW = 3
 C
-      DO IATOM = 1, NUCIND ! loop over symmetry-independent nuclei
-      IF (DOATOM(IATOM)) THEN ! selection of atoms
-        DO IREP = 0, MAXREP ! loop over irreps to generate full list of nuclei
-          DO ICOOR = ILOW, 3 ! loop over coordinates
-            ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)
+C     Irreps
+C
+      DO 100 IREP = 0, MAXREP ! loop over irreps to generate full list of nuclei
+C
+C       Atoms
+C
+        DO 200 IATOM = 1, NUCIND ! loop over symmetry-independent nuclei
+        IF (DOATOM(IATOM)) THEN ! selection of atoms
+C
+C         Cartesian directions
+C
+          DO 500 ICOOR = ILOW, 3 ! loop over coordinates
+            ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)  !iaa: review last 1 (should be 1 or 2?)
             IF(ISCOOR .GT. 0) THEN
               ITYP = ITYP + 1
               IFIRST=ISCOOR/100
@@ -9650,18 +9658,18 @@ C
      &                    //CHRNOS(ISECND)//CHRNOS(ITHIRD)
      &                //NAMN(IATOM)//REP(IREP)//CHRXYZ(ICOOR)
               CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
+     &                    INDXPR,ISYXPR,ITRXPR,IPRINT)
               CALL OP1IND(CHRXYZ(ICOOR)//'EFN',
      &                 IPEFN(ITYP),LEXPP,NEXPP,INDXPR,MAXEXP)
             END IF
-          ENDDO
-        ENDDO
-      END IF
-      ENDDO
+ 500      CONTINUE
+        END IF
+ 200    CONTINUE
+ 100  CONTINUE
 C
 C     Here we set up the operators needed for the linear reponse part
 C
-C     Define left-hand operators: -c\alpha x r/r^3
+C     Define left-hand operators: -c alpha x r/r^3
 C
 C     XAVECTOR
       IOP(1) = 5
@@ -9956,11 +9964,10 @@ C
       double precision RATINF(3,5,NUCDEP),DISOTP,
      &                 EXPVAL(3*NUCDEP),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &                 ABCNV(NBFREQ,NLRBPT),ABND,
-     &                 GVALUE,IABLRF_EE,IABLRF_EP!iaa ,STAVEC(3*NUCDEP)
+     &                 GVALUE,IABLRF_EE,IABLRF_EP
 C
       CHARACTER*1 CJB
-!iaa      CHARACTER NSTNUM*2, LABINT(9*MXCENT)*8, WORD*8
-
+C
       JATOM  = NATOMS + NFLOAT
       NSCOOR = 3*NUCDEP
       NCMAT =  9*NUCDEP
