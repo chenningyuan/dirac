@@ -344,7 +344,7 @@ C*****************************************************************************
 #include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 36,DRESFAC = 1.0D2)
+      PARAMETER (NTABLE = 37,DRESFAC = 1.0D2)
 C
 #include "dcbgen.h"
 #include "dcbprp.h"
@@ -373,7 +373,9 @@ C
      &            '.ITRINT','.CNVINT','.REAXVC','.BEDCHK',
      &            '.RESFAC','.ORBANA','.ROTAV ','.SKIPEE',
      &            '.MXLOAD','.ONLYSF','.ONLYSG','.BED   ',
-     &            '.XXXXXX','.BEDSTP','.BEDCON','.XXXXXX'/
+     &            '.XXXXXX','.BEDSTP','.BEDCON','.BEDECD',
+     &            '.XXXXXX'/
+
 C
 #include "ibtfun.h"
 C
@@ -427,6 +429,7 @@ C
       ORIENTED   = .FALSE.
       BEDSTP     = 0.001D0
       BEDCHK     = .FALSE.
+      BEDECD     = .FALSE.
 C     hj: initialize some parts of dcbxlr; (nov. 2000)
 Chj: dcbxlr includes some general information
 Chj: which should be moved to dcbxrs (?) or another one:
@@ -473,7 +476,7 @@ C
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
      &                     11,12,13,14,15,16,17,18,19,20,
      &                     21,22,23,24,25,26,27,28,29,30,
-     &                     31,32,33,34,35,36), I
+     &                     31,32,33,34,35,36,37), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -668,7 +671,11 @@ C&&&& BEDCON: Contribution to order L in the wave vector from full light-matter 
                CALL DEF_BEDCON(IORDER,LPPAPU(NPPAPT+1),IPRXPP)
                NPPAPT = NPPAPT + NDEG
                GO TO 100
- 36            CONTINUE
+ 36            CONTINUE 
+C&&&& BEDECD: Electronic circular dichroism with the full light-matter interaction operator
+               BEDECD=.TRUE.
+               GO TO 100 
+ 37            CONTINUE
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
