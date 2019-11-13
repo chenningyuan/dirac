@@ -9617,7 +9617,6 @@ C     XSIGMA,YSIGMA and ZSIGMA come with imaginary i, so we set DS = +1
 C
       CALL QENTER('DEF_SPINRO1')
 C
-      NNSTIN = 0
       NSCOOR = 3*NUCDEP
       CALL IZERO(IPSPINRO,6+MXCOOR)
 C
@@ -10144,21 +10143,10 @@ C
       EXPVAL(0) = D0
       CALL DZERO(STAVEC,NSCOOR)
 C
-      IF (XLR_SKIPEP) THEN
-Ciaa    A revision is needed for those cases in which .SKIPEP is activated in addition
-C       to other properties that use EXPVAL, as NMR shieldings or spin-spin couplings.
-C       In such cases, the following values are not what we need because EXPVAL(I) is
-C       also used in those properties.
-             WRITE (LUPRI,'(/,2X,A,/)')
-     &    'WARNING: .SKIPEP gives rise to wrong expectaction ' //
-     &    'values of spin-rotation constants in the current ' //
-     &    'implementation, when other properties are also requested.'
-      END IF
-C
       DO IEXP = 1,NEXP
         JEXP = IBUFEXP(IEXP)
         KEXP = IPEFN(JEXP)
-        STAVEC( KEXP ) = EXPVAL(KEXP)
+        STAVEC(IEXP) = EXPVAL(KEXP)
       END DO
 C
       CALL DIASPR(STAVEC,EXPVAL,CSTRA,SCTRA,NCMAT,IPRPRP)
