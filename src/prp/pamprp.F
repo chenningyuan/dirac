@@ -9646,7 +9646,7 @@ C
 C         Cartesian directions
 C
           DO 500 ICOOR = ILOW, 3 ! loop over coordinates
-            ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)  !iaa: review last 1 (should be 1 or 2?)
+            ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)
             IF(ISCOOR .GT. 0) THEN
               ITYP = ITYP + 1
               IFIRST=ISCOOR/100
@@ -9946,7 +9946,7 @@ C
      &                                 TMPMATL(:,:,:),TMPMATS(:,:,:),
      &                                 CSTRA(:),SCTRA(:),GEOM(:,:),
      &                                 MASS(:),AMASS(:),GVAL(:),
-     &                                 ELFLD(:,:)
+     &                                 STAVEC(:)
 C
       integer, allocatable :: NAT(:)
 C
@@ -9972,11 +9972,11 @@ C
       NSCOOR = 3*NUCDEP
       NCMAT =  9*NUCDEP
       allocate(DOATOM(NUCIND))
+      allocate(STAVEC(NSCOOR))
       allocate(PMATL(3,3,NUCDEP,2)) ! L part of NSR for ee and ep contributions.
       allocate(PMATS(3,3,NUCDEP,2)) ! S part of NSR for ee and ep contributions.
       allocate(CSTRA(NUCDEP*NUCDEP*9))
       allocate(SCTRA(NUCDEP*NUCDEP*9))
-      allocate(ELFLD(3,NUCDEP))
       allocate(TMPMATL(3,3*NUCDEP,2))
       allocate(TMPMATS(3,3*NUCDEP,2))
       allocate(GEOM(NUCDEP,3))
@@ -10142,7 +10142,6 @@ C-------------------------------------------------------------------
 C
 C     MEAN VALUE PART OF NSR TENSOR
 C
-      CALL DZERO(ELFLD,NSCOOR)
       EXPVAL(0) = D0
 C
       IF (XLR_SKIPEP) THEN
@@ -10159,43 +10158,10 @@ C
       DO IEXP = 1,NEXP
         JEXP = IBUFEXP(IEXP)
         KEXP = IPEFN(JEXP)
-        IF (LINEAR) THEN
-            ELFLD( 3 , KEXP ) = EXPVAL(KEXP)
-        ELSE
-          IF (MOD(JEXP,3).NE.0) THEN
-            ELFLD( MOD(JEXP,3) ,(JEXP-1)/3 + 1 ) = EXPVAL(KEXP)
-          ELSE
-            ELFLD( 3 ,(JEXP-1)/3 + 1 ) = EXPVAL(KEXP)
-          END IF
-        END IF
+        STAVEC( KEXP ) = EXPVAL(KEXP)
       END DO
 C
-!iaa review: from DALTON, subroutine EFNTRA in abamag.F
-!      DO 10 IEXP = 1, NSCOOR
-!         WORD = LABINT(IEXP)
-!         NSTNUM = WORD(6:7)
-!         JEXP = (ICHAR(NSTNUM(1:1)) - ICHAR('0'))*10
-!         KEXP = JEXP + ICHAR(NSTNUM(2:2)) - ICHAR('0')
-!         STAVEC(KEXP) = EXPVAL(IEXP)
-! 10   CONTINUE
-!iaa review
-c
-Ciaa Order EXPVAL matrix in C1 basis
-C
-!      IF (LINEAR) THEN
-!        DO IEXP = 1,NSCOOR
-!        JEXP = IBUFEXP(IEXP)
-!        KEXP = IPEFN(JEXP)
-!        IF (KEXP.NE.0) THEN
-!          EXPVAL(3*KEXP-2) = EXPVAL(KEXP)
-!          IF ( (KEXP+2.)/3. .NE. (KEXP+2)/3 ) EXPVAL(KEXP) = D0
-!        ELSE
-!          IF ( (IEXP-1.)/3. .NE. (IEXP-1)/3 ) EXPVAL(IEXP) = D0
-!        END IF
-!        END DO
-!      END IF
-C
-      CALL DIASPR(EXPVAL,ELFLD,CSTRA,SCTRA,NCMAT,IPRPRP)
+      CALL DIASPR(STAVEC,EXPVAL,CSTRA,SCTRA,NCMAT,IPRPRP)
 C
 C--------------------------------------------------------------------
 C
@@ -10302,7 +10268,7 @@ C--------------------------------------------------------------------
       deallocate(PMATS)
       deallocate(CSTRA)
       deallocate(SCTRA)
-      deallocate(ELFLD)
+      deallocate(STAVEC)
       deallocate(TMPMATL)
       deallocate(TMPMATS)
 
@@ -10432,7 +10398,6 @@ C
      &                 COORX,COORY,COORZ
 C
       CALL DZERO(SPRDNL,NCMAT)
-!iaa review
 C
 C     We start by sorting the electric field results
 C
@@ -10441,7 +10406,6 @@ C
      &           EXPVAL,1,
      &           SCTRA(1,1),3*NUCDEP,0.D0,
      &           ELFLD,1)
-!iaa review
 C
 C     Then we construct the expectation value contribution
 C
@@ -10739,14 +10703,14 @@ C
 C    At least one inertia tensor eigenvalue equal to zero (linear molecule):
             IF(LINMOL) THEN
              IF (IPRINT .GE. 2*KHZPPM-2)
-     &  WRITE(LUPRI,'(/,(1X,A,F16.8,/),/,2(1X,A,F16.8,/),(1X,A,F16.8))')
+     &  WRITE(LUPRI,'((1X,A,F16.8,/),/,2(1X,A,F16.8,/),(1X,A,F16.8))')
      &  ' Total spin-rotation constant (SRC)      :',GTRANT(3,3,IATOM),
      &  '   Nuclear contribution to SRC           :',GTRANN(3,3,IATOM),
      &  '   Expectation value contribution to SRC :',GTRAND(3,3,IATOM),
      &  '   Linear response contribution to SRC   :',GTRANP(3,3,IATOM)
 C
              IF (IPRINT .GE. 2*KHZPPM-1)
-     &        WRITE(LUPRI,'(4(1X,A,F16.8,/))')
+     &  WRITE(LUPRI,'(3(1X,A,F16.8,/),(1X,A,F16.8))')
      &  '           M^L(e-e) :',GTRANPLEE(3,3,IATOM),
      &  '           M^S(e-e) :',GTRANPSEE(3,3,IATOM),
      &  '           M^L(e-p) :',GTRANPLEP(3,3,IATOM),
