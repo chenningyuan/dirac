@@ -1499,7 +1499,13 @@ C     Determination of the maximum value for each (isym,ishell)
 C     for cutoff of the numerical integration 
 C      
       CALL DZERO(GMAX, nr_boson_ireps*nr_shells)
-      MXNP_ODD = MXNP - mod(MXNP,2) 
+         MXNP_ODD = MXNP - mod(MXNP,2)
+C      IF(R(MXNP).LE.D1)THEN
+C         MXNP_ODD = MXNP - mod(MXNP,2)
+C      ELSE
+C         DO
+C         MXNP_ODD = 
+C      ENDIF
       do IR = 1, MXNP_ODD, (MXNP_ODD-1)/2  !change
         IOF_block = 1
 C                 
@@ -1576,7 +1582,11 @@ C                 IF(GMAX(isym,ishell).GT.1.0D2)THEN
 C                    write(*,*)'GMAX,isym,ishell,IR,i',
 C     &               GMAX(isym,ishell),isym,ishell,IR,i
 C                 ENDIF   !debug, which is cutoff
-               ENDDO   
+               ENDDO
+                IF(IR.EQ.(MXNP_ODD-1)/2)THEN
+                   write(*,*)'GMAX,isym,ishell',
+     &                GMAX(isym,ishell),isym,ishell
+                 ENDIF
                i = i + cartesian_deg(ishell)
               end if
             end do  ! isym
@@ -1727,15 +1737,6 @@ C              write(*,*)'nr_boson_ireps',nr_shells,nr_boson_ireps
                  ENDDO 
 C
                  CALL DAXPY(nsize3,D1,XYZ8,1,pxyz,1)
-C
-C                 IF(IR.EQ.1)THEN
-C                    IF(ishell.eq.16)THEN
-C                       DO k = 1, nblock_length
-C             write(*,*)'pxyz,XYZ8,ANG,k',pxyz(k,3),XYZ8(k,3),ANG(k,3),k
-C                       ENDDO   
-C                   ENDIF   
-C                 ENDIF
-C
 C
                  do k = 1, nblock_length
                     p2(k) = DDOT(3,pxyz(k,1),nblock_size,
