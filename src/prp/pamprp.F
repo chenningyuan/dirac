@@ -10142,6 +10142,7 @@ C
 C     MEAN VALUE PART OF NSR TENSOR
 C
       EXPVAL(0) = D0
+      CALL DZERO(STAVEC,NSCOOR)
 C
       IF (XLR_SKIPEP) THEN
 Ciaa    A revision is needed for those cases in which .SKIPEP is activated in addition
