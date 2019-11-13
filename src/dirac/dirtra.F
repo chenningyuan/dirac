@@ -1908,7 +1908,6 @@ C
             ENDDO
           ENDDO
         ENDDO
-        IZOFF = IZOFF + N2BBASX
       ENDDO
 C
       call dealloc(buf)

@@ -1,7 +1,7 @@
 :orphan:
  
 
-star(EXPECTATION VALUE)
+star(EXPECTATION VALUES)
 
 This section gives directives for the calculation of expectation values.
 

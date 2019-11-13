@@ -1977,7 +1977,7 @@ C
          DO 20 ISYMOP = 0, MAXOPR
             IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                ICHARG = IZATOM(IATOM)
-               IF (ICHARG .NE. 0) THEN
+               IF (ICHARG .GT. 0) THEN
                   ICHTOT = ICHTOT + ICHARG
                   DO 30 KCOOR = 1, 3
                      GEOM(3*JATOM + KCOOR) =
