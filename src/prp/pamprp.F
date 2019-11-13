@@ -9571,7 +9571,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use codata
       use memory_allocator
-
+C
       implicit none
 #include "priunit.h"
 C
@@ -9595,7 +9595,7 @@ C...common block for linear reponse
 #include "dcbxpr.h"
 #include "dcbgen.h"
 #include "dcbspinro.h"
-
+C
       INTEGER IPRINT,NATOM,I,J,IATOM,IATOM1,
      &        IC1,IC2,ICOOR,ICOOR1,IFIRST,ILOW,INDOP1,
      &        INDXPR,IOP,IPTYP,IREP,IREP1,IREP2,IREPO,IS1,
@@ -9604,9 +9604,9 @@ C...common block for linear reponse
      &        NSCOOR,ISCOR1
 C
       DOUBLE PRECISION PFAC,D1,DL,DS
-
+C
       logical, allocatable :: DOATOM(:)
-
+C
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3),IOP(3)
 C     ANGMOM integrals correspond to -iL, so we set DL = -1
@@ -9616,13 +9616,13 @@ C     XSIGMA,YSIGMA and ZSIGMA come with imaginary i, so we set DS = +1
 #include "ibtfun.h"
 C
       CALL QENTER('DEF_SPINRO1')
-
+C
       NNSTIN = 0
       NSCOOR = 3*NUCDEP
       CALL IZERO(IPSPINRO,6+MXCOOR)
-c
+C
       allocate(DOATOM(NUCIND))
-c
+C
       CALL SETATM(DOATOM,NATOM,-29)
 C
 C     Here we set up the operators needed for the expectation value
@@ -9916,7 +9916,7 @@ C
 C***********************************************************************
       use codata
       use memory_allocator
-
+C
       implicit none
 #include "priunit.h"
 #include "mxcent.h"
@@ -9931,15 +9931,14 @@ C***********************************************************************
 #include "dcbprl.h"
 #include "dcbnmr.h"
 #include "symmet.h"
-#include "gfac.h"  ! added
-#include "orgcom.h"  ! added
-#include "spinro.h"  ! added
-#include "iratdef.h"  ! added
-#include "dgroup.h"   ! added
+#include "gfac.h"
+#include "orgcom.h"
+#include "spinro.h"
+#include "iratdef.h"
+#include "dgroup.h"
 #include "ibtfun.h"
-#include "dcbham.h"   ! added
-#include "dcbspinro.h" ! added
-C
+#include "dcbham.h"
+#include "dcbspinro.h"
 C
       logical, allocatable :: DOATOM(:)
       double precision, allocatable :: PMATL(:,:,:,:),PMATS(:,:,:,:),
@@ -9984,9 +9983,9 @@ C
       allocate(NAT(NATOMS))
       allocate(AMASS(NUCDEP))
       allocate(GVAL(NUCDEP))
-
+C
       CALL QENTER('PRP_SPINRO')
-
+C
       CALL TITLER('NUCLEAR SPIN-ROTATION TENSOR','*',116)
       WRITE(LUPRI,'(13X,A)')
      & 'According to I. A. Aucar et al, JCP 136 (2012) p.204119'
@@ -10202,10 +10201,10 @@ C
           DO IA = 1,NA
             JA = IBUFA(IA)
             KA = IPSPINRO(JA)
-C...        First extract the e-e contribution
+C           First extract the e-e contribution
             IF (.NOT. XLR_SKIPEE)
      &         TMPMATL(JB1,JA,1) = ABLRF(IFREQ,KA,KB1,IABLRF_EE)
-C...        then extract the e-p contribution
+C           then extract the e-p contribution
             IF (.NOT. XLR_SKIPEP)
      &         TMPMATL(JB1,JA,2) = ABLRF(IFREQ,KA,KB1,IABLRF_EP)
           ENDDO
@@ -10218,10 +10217,10 @@ C
           DO IA = 1,NA
             JA = IBUFA(IA)
             KA = IPSPINRO(JA)
-C...        First extract the e-e contribution
+C           First extract the e-e contribution
             IF (.NOT. XLR_SKIPEE)
      &         TMPMATS(JB2,JA,1) = ABLRF(IFREQ,KA,KB2,IABLRF_EE)
-C...        then extract the e-p contribution
+C           then extract the e-p contribution
             IF (.NOT. XLR_SKIPEP)
      &         TMPMATS(JB2,JA,2) = ABLRF(IFREQ,KA,KB2,IABLRF_EP)
           ENDDO
@@ -10257,7 +10256,7 @@ C--------------------------------------------------------------------
      &            IPRPRP,DOATOM)
 C--------------------------------------------------------------------
       CALL QEXIT('PRP_SPINRO')
-
+C
       deallocate(AMASS)
       deallocate(GVAL)
       deallocate(GEOM)
@@ -10271,7 +10270,7 @@ C--------------------------------------------------------------------
       deallocate(STAVEC)
       deallocate(TMPMATL)
       deallocate(TMPMATS)
-
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -10296,7 +10295,7 @@ C
 #include "ibtfun.h"
 C
       double precision D0,D1,GEOM,ORIGIN
-
+C
       PARAMETER (D1 = 1.0D0, D0 = 0.D0)
       DIMENSION GEOM(3*(NATOMS+NFLOAT)), ORIGIN(3)
 C
@@ -10387,7 +10386,6 @@ C
 #include "symmet.h"
 #include "spinro.h"
 #include "orgcom.h"
-!#include "helfey.h"
 #include "ibtfun.h"
 C
       integer IPRINT,I,J,IATOM,ISYMOP,NATOM,NCMAT
@@ -10469,7 +10467,7 @@ C
 #include "spinro.h"
 #include "orgcom.h"
 #include "ibtfun.h"
-#include "dgroup.h"   ! added
+#include "dgroup.h"
 C
       integer I,J,K,KATOM,IPRINT,IATOM,ICOOR,
      &        ISYMOP,IX,IY,JATOM,JX,JY,
