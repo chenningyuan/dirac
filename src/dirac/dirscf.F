@@ -306,7 +306,6 @@ C       Open files necessary for Dirac-Fock calculation
 C
 !        N2TMOTQ = N2TMO(I)*NZ        
 !        N2TMOTQ = N2TMO(I)*NZ        
-        write(*,*)"N2TMOTQ",N2TMOTQ !sunaga
         OPEN (LUEVEC, FILE='DFEVEC', FORM='UNFORMATTED',
      +      ACCESS='DIRECT',RECL=8*N2TMOTQ,STATUS='UNKNOWN')
         CALL OPNFIL(LUFCK2,'DFFCK2','UNKNOWN','PREDHF')
@@ -2133,7 +2132,7 @@ C     Select occupied orbitals based on (approximate) boson symmetry.
 C     Input is coefficients in MO-basis.
 C
 C     Written by H.J.Aa.Jensen Oct. 2004
-C     Modified by A. Sunaga Oct. 2018 for Kappa   
+C     Modified by A. Sunaga Oct. 2018 for atomic symmetry
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -2197,6 +2196,7 @@ C     Select occupied orbitals based on (approximate) boson symmetry.
 C     Input is coefficients in MO-basis in a fermion symmetry IFSYM.
 C
 C     Written by H.J.Aa.Jensen Oct. 2004
+C     Modified by A. Sunaga Oct. 2018 for atomic symmetry
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -2231,7 +2231,7 @@ C           ... IBEIG = ID. ID = ID_SUB_BL(ISUB,IFRP) in dirscf.F/INIBOS.
             JSYM = (abs(IBEIG(J)) + 1) / 2
 C           ... IBEIG = 2 * abs(MJ)
 C           IF (IFSYM.EQ.2) JSYM = JSYM + N_SUB_BL(1)
-Csunaga     It is no longer neccessary, because Atomic symmetry is used. 
+Cayaki      ^ It is no longer neccessary, because Atomic symmetry is used. 
          ELSE
             JSYM = IBEIG(J) + 1
 C           ... IBEIG = (approximate) boson irrep

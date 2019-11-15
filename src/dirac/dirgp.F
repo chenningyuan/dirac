@@ -382,9 +382,7 @@ C
           CALL READI(IUNIT,NO,ki)
           CALL ADAIBP(IBEIG,ki,IDIM)
           call dealloc(ki)
-!          write(*,*)"IBEIG1 ", IBEIG         !sunaga  
        ELSE
-!          write(*,*)"IBEIG2 ", IBEIG         !sunaga 
           READ (IUNIT,END=70,ERR=80) IBEIG
         ENDIF
         IF(IOPT.LT.16) RETURN

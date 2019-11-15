@@ -249,7 +249,6 @@ C
         JSOP(IND) = 7
         NINVC       = 1
       ENDIF
-      write(*,*)"NINVC", NINVC
 C     
 C     Reflections
 C
@@ -476,7 +475,6 @@ C
         FREP(1) = 'E1g'
         FREP(2) = 'E1u'
       ENDIF
-      write(*,*)"NFSYM"
 C     
 C     Determine NZ - parameter
 C     ========================

@@ -3300,13 +3300,9 @@ CMI     they are in the order "S1 S2 ... S(nbsym) L1 L2 ... L(nbsym)" instead of
 !       out: AO2MO                         --> VMAT
 !       out: MO2MO linear symmetry adapted --> TBUF (discarded if not x2c-mmf)
         IF(ATOMIC)THEN
-        IF(LINLIN .eqv. .false.)THEN             
           CALL GATMSM(TMAT,VMAT,TBUF, EIG,WORK(KFREE),LFREE)
         ELSE
-           CALL GLINSM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
-        Endif
-        ELSE
-           CALL GLINSM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
+          CALL GLINSM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
         ENDIF
 !       save matrices on file to be re-used in the x2c-module
         if(.not.spinfr)then
@@ -5563,9 +5559,8 @@ C*****************************************************************************
 C
 C     This routine makes an additional transformation from the
 C     matrix supplied by GMOTRA to a basis that is diagonal in
-C     one component of angular momentum (j in general, l for spinfree
-C     and Levy-Leblond). This can be used for systems that posess
-C     linear symmetry.
+C     one component of angular momentum (Kappa and mj).
+C     This can be used for systems that posess atomic symmetry.
 C
 C     Routine based on GLINSM
 C      
@@ -5607,12 +5602,10 @@ C
          RETURN
       ENDIF
 C
-C     sunaga
       IF(ATOMIC)THEN
          CALL ATMSYM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
       ENDIF
-Csunaga
-
+C
       SUB_BL = .TRUE.
 
       IF (IPRHAM.GE.1) THEN
@@ -6145,8 +6138,8 @@ C*****************************************************************************
 C
 C     Construct matrix Kappa and transform to eigenvectors of this operator
 C
-C     Routine based on ATMSYM
-C     (Some comments written in ATMSYM are not removed)
+C     Routine based on LINSYM
+C     (LINSYM and ATMSYM have Some comments in common)
 C     
 C     Called from GLINSM, LOWD2C
 C
@@ -6174,7 +6167,7 @@ C  DGROUP:
 #include "dgroup.h"
 #include "cbihr1.h"
 #include "dummy.h"
-#include "dcbdhf.h"             !sunaga
+#include "dcbdhf.h"            
 #include "dcbibt.h"      
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
@@ -6208,13 +6201,10 @@ C
       DO 10 I = 1,NFSYM
         IF(NORB(I).EQ.0) GOTO 10
         I2TMT(I)  = N2TMT
-!        write(*,*)"N2TMT ,NFBAS(I,0)*NORB(I)*NZT"
-!        write(*,*)N2TMT,NFBAS(I,0),NORB(I),NZT
         N2TMT     = N2TMT + NFBAS(I,0)*NORB(I)*NZT
         I2TMOT(I) = N2TMOTQ
         N2TMO(I)  = NTMO(I)*NTMO(I)
         N2TMOTQ   = N2TMOTQ + N2TMO(I)*NZ
-!        write(*,*)"N2TMOTQ",N2TMOTQ
 C        
         IOFTB = I2BASX(I,I) + 1        
         CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
@@ -6268,13 +6258,14 @@ C
 !     stefan - june 2011: save LL block of <j_z>-eigenvectors (temporary) on file
 !                         this block is needed to transform the 2c-LOWDIN matrix
 !                         in the x2c-mmf approach (thus ensuring numerical stability by not re-doing this step).
-!sunaga
+!     ayaki.15.11.2019
+!     I have not tested do4c2c (X2Cmmf) yet,
+!     because the correlation part has not been finished yet.
       if(do4c2c)then
         open(13,file='KMOLLb',status='replace',form='unformatted',
      &       access='sequential',action='readwrite',
      &       position='rewind')
       end if
-!sunaga
       
 C
       IOFT = 1
@@ -6506,7 +6497,7 @@ CCCCCCCCCCCCCCCCCCCCCCC
            IF(KP.NE.KPBUF) THEN
               KPBUF = KP
               KPABS = ABS(KP)
-              IF(NFSYM.eq.2)THEN !sunaga
+              IF(NFSYM.eq.2)THEN 
                  KPADD = KPABS*(KPABS-1)/2 + 1
               ELSE
                  KPADD = KPABS*(KPABS-1) + 1
@@ -6520,7 +6511,6 @@ CCCCCCCCCCCCCCCCCCCCCCC
 C
 C       Same thing for the positive energy solutions
 C
-Csunaga
 C       This part is only for sorting, so we can change EIG(IX).
 C       The part is needed when NFSYM=1
         DO IX = IEIGE, IEIGE+NL-1
@@ -6529,7 +6519,6 @@ C       The part is needed when NFSYM=1
            ELSE
               EIG(IX) = EIG(IX)**D2
            ENDIF
-!     EIG(IX) = ABS(EIG(IX)+0.4D0) 
         ENDDO
         CALL MEMGET('INTE',KINDX,NL,WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KIDUM,NL,WORK,KFREE,LFREE)
@@ -6576,7 +6565,6 @@ C
               EIG(IX) = EIG(IX)**D2 - EIG(IX)
 C       Note the sign of Kappa at small
            ENDIF
-!     EIG(IX) = ABS(EIG(IX))
         ENDDO
 C
 C       The SELBOS routine does just the reordering that we want,
@@ -6748,9 +6736,8 @@ C
        ENDIF
 C       
 CCCCCCCCCCCCCCCCCC
-C.....Here we can start MJ-part
+C.....Here we start MJ-part
 CCCCCCCCCCCCCCCCCC
-C.....First make MJ-matrix
 C
       CALL DZERO (TBUF,N2TMT)
 C
@@ -6766,8 +6753,6 @@ C
       IOFT    = 1
       IOFVS   = 1
       IOFVL   = 1
-!      N2TMT = 0
-!      N2TMT = 0
       DO 40 I = 1,NFSYM
 C
 C        output for ABS(Kappa)=1,
@@ -6816,7 +6801,7 @@ C
          CALL MEMGET('REAL',KVLL,NLL,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KVSS,NSS,WORK,KFREE,LFREE)
 C         
-C........Here you tranaform the MJ-matrix for particular kappa; look TSUBBL
+C........Here we tranaform the MJ-matrix for particular kappa; look TSUBBL
          NL = 0  
          NS = 0
          INVMAX=1
@@ -6993,6 +6978,7 @@ C
        DO IX = IEIGP, IEIGP+NS-1
           EIG(IX) = ABS(EIG(IX))
        ENDDO
+C
 C      The SELBOS routine does just the reordering that we want,
 C      use work(kfss) as scratch, and allocate a few other small
 C      scratch arrays. The IBEIG part will not be used but we will
@@ -7042,7 +7028,6 @@ C
        CALL MEMREL('ATMSYM',WORK,KINDX,KINDX,KFREE,LFREE)
 C       
        DO IC = 0,2
-!          IF(NFSYM.eq.2)THEN         
           NDIM = NORB_SUB(KPADD,I,IC)/IKAP 
           DO IK = 1,IKAP
              NORB_SUB(KPADD+IK-1,I,IC) = NDIM
@@ -7104,7 +7089,8 @@ C
       CALL MEMREL('ATMSYM',WORK,KFLL,KFLL,KFREE,LFREE)      
 C         
  40   CONTINUE !IFRP
-C.....Also initialize NTMO_SUB which will be the number of orbitals in each subblock in orthonormal basis      
+C.....Also initialize NTMO_SUB which will be the number of orbitals
+C      in each subblock in orthonormal basis      
       CALL ICOPY(MAX_SUB_BL*3*2,NORB_SUB,1,NTMO_SUB,1)
 C
       CALL FLSHFO(LUPRI)

@@ -1358,7 +1358,6 @@ C
       RUNSUP = SUPMAT
       IPRSUP = IPRDEF
       NOSSUP = .FALSE.
-      LINLIN = .FALSE.
       OLDSUP = .FALSE.
       THRSUP = -1.0D0
 C

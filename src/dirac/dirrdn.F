@@ -1888,7 +1888,7 @@ C&&& HUCPAR: modify Huckel parameter
                READ(LUCMD,*) HUCPAR
                GOTO 100
  58            CONTINUE
-C&&& KPSELE: Selection based on Kappa symmetry, ! added by sunaga.
+C&&& KPSELE: Selection based on Kappa symmetry
 C    NSUBBL = # of subblocks for KP sym.
 C    copied from MJSELE
                DOBOSSEL = .TRUE.
@@ -1934,7 +1934,7 @@ C    copied from MJSELE
                deallocate(SEL_NORB)               
                GO TO 100
  59            CONTINUE
-C&&& SELECT: Generalized Selection based on Kappa symmetry, ! added by sunaga.
+C&&& SELECT: Generalized Selection based on Kappa symmetry
 C    NSUBBL = # of subblocks.
 C    copied from MJSELE
                DOBOSSEL = .TRUE.
@@ -1979,7 +1979,6 @@ C    copied from MJSELE
                END DO
                deallocate(SEL_NORB)               
                GO TO 100
-!sunaga 
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -2279,7 +2278,7 @@ C     a U(+90) calculation.
 C
       IF (DOBOSSEL) THEN
 C     .BOSONS/.MJSELE were programmed by hjaaj Oct 2004
-C     .KPSELE was added by sunaga Oct 2018.         
+C     .KPSELE was added by ayaki Oct 2018.         
          NERR = 0
          IF (MAX_BOS_BL .NE. MAX_SUB_BL) THEN
             NERR = NERR + 1
@@ -2356,7 +2355,7 @@ C   So, we have to devide each array.
            IF(mod(KPBUF, 2).eq.0)THEN ! Max angular momentum (l) is s,d,g.. 
              KPMAX(1) = KPBUF-1
              KPMAX(2) = KPBUF
-           ELSE ! Max l is p,f
+           ELSE ! Max l is p,f,h..
              KPMAX(1) = KPBUF
              KPMAX(2) = KPBUF-1      
            ENDIF
@@ -2380,7 +2379,6 @@ C
                ENDIF
                DO INV=1,INVMAX
                  IOFKV = -INV+1+IOFK
-!                 IF(INV.EQ.2) KPADD = KPADD-IKAP 
                  IF(mod(NISH_BOS(IKAP*INVMAX+IOFKV),IKAP).eq.0)THEN
                    KCBUF = NISH_BOS(IKAP*INVMAX+IOFKV)/IKAP
                  ELSE
@@ -2409,14 +2407,11 @@ C
                  ENDDO
                  KPADD = KPADD-IKAP
                ENDDO  !INV            
-             ENDDO !IKAP
+             ENDDO    !IKAP
              IOFK = 0
              IOFM = 0
-           ENDDO                 !NFSYM
-           DO II=1,30
-              write(*,*)"NISH_BOS",NISH_BOS(II)
-           ENDDO   
-         ENDIF                   ! IF(ATOMIC)
+           ENDDO      !NFSYM
+         ENDIF        ! IF(ATOMIC)
 C  TODO HJAAJ: for NFSYM.eq.2
 C  TODO HJAAJ: check NISH_DHF(1/2) against gerade/ungerade NISH_BOS etc.
          IF (NERR .GT. 0) THEN
@@ -5254,7 +5249,7 @@ C ... get integral flags in advance
 #endif
 !mi:  by default, do not save Jz_MO matrices
       WRITE_Jz_MATRIX = .FALSE.
-      WRITE_K_MATRIX = .FALSE. !added by sunaga
+      WRITE_K_MATRIX = .FALSE. 
 
       NOINPUT   = .FALSE.
 C
@@ -7089,7 +7084,7 @@ C
      &                  INDXPR,ISYXPR,ITRXPR,IPRHAM)
          IPSPNMOM         = INDXPR
       ENDIF
-Csunaga
+C
       IF (ATOMIC) THEN
 C
 C        Spin-orbit integrals (used in case of atomic symmetry !)
@@ -7110,7 +7105,7 @@ C
       ENDIF
 C
       CALL QEXIT('OP1INI')
-Csunaga
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

@@ -1089,7 +1089,6 @@ C         Write identification of the blocks. At the moment we have only
 C         the spinfree or the linear symmetry case.
 C
             ID = ID_SUB_BL(ISUB,IFSYM)
-Csunaga             
             INDEX1 = 0 
             INDEX2 = 0 
             KP = 0 

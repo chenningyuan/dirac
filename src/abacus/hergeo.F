@@ -218,6 +218,7 @@ C
 C
 #include "nuclei.h"
 #include "symmet.h"
+#include "dgroup.h"
 C
       PARAMETER (LUPUNCH = 4)
       DIMENSION COORD(3,*),
@@ -234,15 +235,13 @@ C
       IPAK(I,J) = MAX(I,J)*(MAX(I,J)-1)/2 + MIN(I,J)
 C
       NBONDS = 0
-Csunaga      IF (NUCDEP .EQ. 1) RETURN
-      IF (NUCDEP .EQ. 1) THEN !sunaga
-!         ATOMIC = .TRUE.
-          ATOMIC = 1.0d0
+C     IF (NUCDEP .EQ. 1) RETURN !ayaki: modified for atomic symmetry
+      IF (NUCDEP .EQ. 1) THEN 
+         ATOMIC = .TRUE.
          RETURN
       ELSE
-!         ATOMIC = .FALSE.
-          ATOMIC = 0.0d0
-      END IF !sunaga
+         ATOMIC = .FALSE.
+      END IF 
 C
 C     set up bond vectors
 C
