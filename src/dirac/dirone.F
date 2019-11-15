@@ -2053,8 +2053,11 @@ C           write(*,*)'X,Z,I',X,Z,I
 !     IF(VPTST2-VPTST1.GT.THSHD)THEN
               TEMP = FACTOR*FUNK (X,1)              
               MUEHLING = J
+C              
+              CALL HEADER('It is r_max in LF!',-1) !delete
 C              MXNP = J  !delete   
 C              CALL HEADER('It is r_max in UEHLING!',-1) !delete
+C              
               exit
            ENDIF   
            RTEMP = (RTEMP+GRDC)*EPH-GRDC
