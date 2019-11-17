@@ -23,7 +23,26 @@ The nuclear spin-rotation (SR) tensor elements of a nucleus :math:`N` are given 
 
 They have three terms: the first of them is independent of the electronic variables, whereas the second and third are given by an expectation value (EV) and a linear response (LR) function, respectively.
 
-For molecules at their equilibrium geometry, it is found that the sum of the first two terms, :math:`M_{\alpha\beta}^{nuc} + M_{\alpha\beta}^{EV}`, is equal to a new tensor element which is independent of the electronic dynamics (see Eq. 60 of :cite:`Aucar_JCP2012`),
+In tensorial notation, the nuclear spin-rotation contributions of a nucleus :math:`N` are given by:
+
+.. math::
+
+   {\bf M}_N^{NU} = \frac{e^2 \hslash^2}{2 m_p c^2} g_N \sum_{M \neq N} Z_M
+       \frac{ \left(  {\bf R}_{MN} \cdot {\bf R}_{MN} \right) {\bf 1} - {\bf R}_{MN} {\bf R}_{MN} }
+                {|{\bf R}_{MN}|^{3}}   \otimes {\bf I}^{-1} .
+
+.. math::
+
+   {\bf M}_N^{EV} = \frac{e^2 \hslash^2}{2 m_p c^2} g_N
+               \left[ \left(  \langle 0 | \frac{{\bf r}-{\bf r}_N}{|{\bf r} -{\bf r}_N|^3 } | 0 \rangle \cdot {\bf R}_{N,CM} \right) {\bf 1} - \langle 0 | \frac{{\bf r}-{\bf r}_N}{|{\bf r} -{\bf r}_N|^3 } | 0 \rangle  \; \; {\bf R}_{N,CM}\right] \otimes {\bf I}^{-1}.
+
+.. math::
+
+   {\bf M}_N^{LR} = \frac{e^2 \hslash^2}{2 m_p c^2} g_N  \;  \langle \langle  \left (\frac{{\bf r}-{\bf r}_N}{|{\bf r} -{\bf r}_N|^3 }\times c \, {\bf \alpha}\right) \; ; \; {\bf J}_e\rangle\rangle \; \otimes  \; {\bf I}^{-1}.
+
+where :math:`{\bf R}_{MN}` is the position of nucleus :math:`M` with respect to the position of nucleus :math:`N`; :math:`{\bf R}_{N,CM}` is the position of nucleus :math:`N` with respect to the molecular center of mass; :math:`{\bf I}` is the inertia tensor of the molecule and :math:`{\bf J}_e = \left({\bf r} - {\bf R}_{CM} \right) \times {\bf p}+{\bf S}_e` is the electronic total angular momentum.
+
+For molecules at their equilibrium geometry, it is found that the sum of the first two terms, :math:`M_{N,\alpha\beta}^{nuc} + M_{N,\alpha\beta}^{EV}`, is equal to a new tensor element which is independent of the electronic dynamics (see Eq. 60 of :cite:`Aucar_JCP2012`),
 
 .. math::
 
