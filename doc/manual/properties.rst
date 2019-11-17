@@ -217,7 +217,12 @@ keyword(SPIN-ROTATION)
 
 Evaluate nuclear spin-rotation constants: linear response, expectation value and nuclear contributions.
 
-The results are valid only for molecules in equilibrium geometry. Results are given in kHz, but for particular :ref:`PROPERTIES_.PRINT` values they could also be given in ppm (to compare results with :ref:`PROPERTIES_.SHIELDING`).
+.. note::
+
+   The current implementation gives theoretically correct results only for molecules in equilibrium.
+
+   
+Results are given in kHz, but for particular :ref:`PROPERTIES_.PRINT` values they could also be given in ppm (to compare results with :ref:`PROPERTIES_.SHIELDING`).
 
 The total spin-rotation tensor, as well as their linear response, expectation value and nuclear contributions are always given separately.
 
@@ -225,5 +230,5 @@ Using :ref:`PROPERTIES_.PRINT` 1 or 2, results are only given in kHz, whereas em
 
 In addition, when :ref:`PROPERTIES_.PRINT` 2 or 4 are used, the paramagnetic-like (e-e) and diamagnetic-like (e-p) parts of the linear response contributions are given separately, together with results for the :math:`\mathbf{L}` and :math:`\mathbf{S}` parts of the linear response.
 
-See :cite:`Aucar_JCP2012` for theoretical details.
+See :cite:`Aucar_JCP2012` for further details.
 
