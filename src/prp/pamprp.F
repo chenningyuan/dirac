@@ -9618,33 +9618,37 @@ C
       CALL QENTER('DEF_SPINRO1')
 C
       NSCOOR = 3*NUCDEP
+C
+      CALL IZERO(IPEFN,MXCOOR)
       CALL IZERO(IPSPINRO,6+MXCOOR)
 C
       allocate(DOATOM(NUCIND))
 C
+C     EF1INT: INTTYP = 29 (electric field at individual nuclei)
+C     (SETATM code -29: accept .SELECT specification)
       CALL SETATM(DOATOM,NATOM,-29)
 C
 C     Here we set up the operators needed for the expectation value
 C
-      ITYP = 0
-      IPTYP     = 1 ! diagonal operator
-      NPCOMP    = 1 ! number of components
-      PFAC(1)   = D1 ! factor
-      ILOW = 1
+      ITYP    = 0
+      IPTYP   = 1  ! diagonal operator
+      NPCOMP  = 1  ! number of components
+      PFAC(1) = D1 ! factor
+      ILOW    = 1
       IF (LINEAR) ILOW = 3
 C
 C     Irreps
 C
-      DO 100 IREP = 0, MAXREP ! loop over irreps to generate full list of nuclei
+      DO 100 IREP = 0, MAXREP     ! loop over irreps to generate full list of nuclei
 C
 C       Atoms
 C
-        DO 200 IATOM = 1, NUCIND ! loop over symmetry-independent nuclei
-        IF (DOATOM(IATOM)) THEN ! selection of atoms
+        DO 200 IATOM = 1, NUCIND  ! loop over symmetry-independent nuclei
+        IF (DOATOM(IATOM)) THEN   ! selection of atoms
 C
 C         Cartesian directions
 C
-          DO 500 ICOOR = ILOW, 3 ! loop over coordinates
+          DO 500 ICOOR = ILOW, 3  ! loop over coordinates
             ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)
             IF(ISCOOR .GT. 0) THEN
               ITYP = ITYP + 1
@@ -9742,21 +9746,21 @@ C
 C
 C     Define right-hand operators
 C
-      LINDET=.FALSE.  ! to detect if linear symmetry is used
+      LINDET=.FALSE.    ! to detect if linear symmetry is used
 C
       IF (LINEAR) THEN  ! linear molecule detected using symmetry
 C
 Ciaa   LINDET is used to record that LINEAR symmetry is used,
 C      even when in further steps it could be changed, as occur
 C      for UKB, spin-free and ZORA calculations.
-       LINDET=.TRUE.  ! save that linear symmetry is used
+       LINDET=.TRUE.    ! save that linear symmetry is used
 C
 C     Orbital angular momentum
 C
        PNAME     = 'X Orb. ang. mom.'
-       IPTYP     = 1  ! diagonal operator
-       NPCOMP    = 1  ! one component
-       PFAC(1)   = DL ! factor
+       IPTYP     = 1    ! diagonal operator
+       NPCOMP    = 1    ! one component
+       PFAC(1)   = DL   ! factor
        PLABEL(1) = 'XANGMOM'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
@@ -9766,9 +9770,9 @@ C
 C     Spin angular momentum
 C
        PNAME     = 'X Spin ang.mom. '
-       IPTYP     = 10  ! Sigma_x
-       NPCOMP    = 1   ! one component
-       PFAC(1)   = DS ! factor
+       IPTYP     = 10   ! Sigma_x
+       NPCOMP    = 1    ! one component
+       PFAC(1)   = DS   ! factor
        PLABEL(1) = 'OVERLAP'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
@@ -9780,9 +9784,9 @@ C
 C     Orbital angular momentum
 C
        PNAME     = 'X Orb. ang. mom.'
-       IPTYP     = 1  ! diagonal operator
-       NPCOMP    = 1  ! one component
-       PFAC(1)   = DL ! factor
+       IPTYP     = 1    ! diagonal operator
+       NPCOMP    = 1    ! one component
+       PFAC(1)   = DL   ! factor
        PLABEL(1) = 'XANGMOM'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
@@ -9790,9 +9794,9 @@ C
      &                       INDXPR,MAXLLR)
 C
        PNAME     = 'Y Orb. ang. mom.'
-       IPTYP     = 1  ! diagonal operator
-       NPCOMP    = 1  ! one component
-       PFAC(1)   = DL ! factor
+       IPTYP     = 1    ! diagonal operator
+       NPCOMP    = 1    ! one component
+       PFAC(1)   = DL   ! factor
        PLABEL(1) = 'YANGMOM'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
@@ -9800,9 +9804,9 @@ C
      &                       INDXPR,MAXLLR)
 C
        PNAME     = 'Z Orb. ang. mom.'
-       IPTYP     = 1  ! diagonal operator
-       NPCOMP    = 1  ! one component
-       PFAC(1)   = DL ! factor
+       IPTYP     = 1    ! diagonal operator
+       NPCOMP    = 1    ! one component
+       PFAC(1)   = DL   ! factor
        PLABEL(1) = 'ZANGMOM'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
@@ -9812,9 +9816,9 @@ C
 C     Spin angular momentum
 C
        PNAME     = 'X Spin ang.mom. '
-       IPTYP     = 10  ! Sigma_x
-       NPCOMP    = 1   ! one component
-       PFAC(1)   = DS ! factor
+       IPTYP     = 10   ! Sigma_x
+       NPCOMP    = 1    ! one component
+       PFAC(1)   = DS   ! factor
 C
        PLABEL(1) = 'OVERLAP'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
@@ -9823,9 +9827,9 @@ C
      &                       INDXPR,MAXLLR)
 C
        PNAME     = 'Y Spin ang.mom. '
-       IPTYP     = 11  ! Sigma_y
-       NPCOMP    = 1   ! one component
-       PFAC(1)   = DS ! factor
+       IPTYP     = 11   ! Sigma_y
+       NPCOMP    = 1    ! one component
+       PFAC(1)   = DS   ! factor
        PLABEL(1) = 'OVERLAP'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
@@ -9833,9 +9837,9 @@ C
      &                       INDXPR,MAXLLR)
 C
        PNAME     = 'Z Spin ang.mom. '
-       IPTYP     = 12  ! Sigma_z
-       NPCOMP    = 1   ! one component
-       PFAC(1)   = DS ! factor
+       IPTYP     = 12   ! Sigma_z
+       NPCOMP    = 1    ! one component
+       PFAC(1)   = DS   ! factor
        PLABEL(1) = 'OVERLAP'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
@@ -10016,8 +10020,6 @@ C
         NISO = 0
         DO ISO = 1,5
           GVALUE = DISOTP(IZ,ISO,'GVAL')
-Ciaa       Spin-rotations of isotopes without g-value (GVALUE = 0)
-C          are obtained setting their (artificial) g-value equal to 1
             ABND = DISOTP(IZ,ISO,'ABUNDANCE')
             IF(ABND.GT.ABUND.OR.(.NOT.TEST)) THEN
               TEST = .TRUE.
@@ -10111,7 +10113,6 @@ C     The 3 S spin angular momentum directions as B operators in <<A;B>> :
       ENDIF
 C
 C     The NSCOOR nucl. electric field operators as NEF operators in < 0 | NEF | 0 > :
-      CALL IZERO(IBUFEXP,NSCOOR)
       NEXP = 0
       DO ITYP = 1,NSCOOR
         IF(IPEFN(ITYP).GT.0) THEN
@@ -10283,9 +10284,9 @@ C
 #include "spinro.h"
 #include "ibtfun.h"
 C
-      double precision D0,D1,GEOM,ORIGIN
+      double precision D0,GEOM,ORIGIN
 C
-      PARAMETER (D1 = 1.0D0, D0 = 0.D0)
+      PARAMETER (D0 = 0.D0)
       DIMENSION GEOM(3*(NATOMS+NFLOAT)), ORIGIN(3)
 C
       integer I,J,IPRINT,IATOM1,IATOM2,ISYM1,ISYM2,
@@ -10462,7 +10463,7 @@ C
      &        ISYMOP,IX,IY,JATOM,JX,JY,
      &        NATTYP,NUMIS,KHZPPM
 C
-      double precision D1,FAC,FACPPM,GEOM(KATOM,3),AMASS(KATOM),
+      double precision D0,D1,FAC,FACPPM,GEOM(KATOM,3),AMASS(KATOM),
      &                 GVAL(KATOM),DMAT(3,3,KATOM),ANGUMOM(3),
      &                 PMATL(3,3,KATOM,2),PMATS(3,3,KATOM,2),
      &                 NSREXV,NSRLR,NSRNUC,NSRTOT,CONST,FACTOT,
@@ -10473,7 +10474,7 @@ C
      &                 GTRANPSEE(3,3,KATOM),GTRANPSEP(3,3,KATOM),
      &                 GTRANP(3,3,KATOM),GTRAND(3,3,KATOM)
 C
-      PARAMETER (D1 = 1.0D0, FACPPM = ALPHA2/2.D0*1.0D6,
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, FACPPM = ALPHA2/2.D0*1.0D6,
      &           FAC = ALPHA2/(2.D0*PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
       LOGICAL PLANAR, LINMOL,DOATOM(NUCIND)
 C
@@ -10564,7 +10565,7 @@ C
 C
 C    Print g-values of selected nuclei
 C
-          IF (GVAL(IATOM) .NE. 0.0D0) THEN
+          IF (GVAL(IATOM) .NE. D0) THEN
            IF (IPRINT .GE. 0) THEN
             CALL HEADER('Spin-rotation constants (kHz) for '//
      &                     NAMDEP(IATOM),-1)
@@ -10579,7 +10580,7 @@ C
      &  'WARNING: Nuclear g-value NOT available for isotope of mass ',
      &  AMASS(IATOM)
             WRITE (LUPRI,'(2X,A)')
-     &  'Nuclear g-value is artificially seted equal to 1'
+     &  'Nuclear g-value is artificially set equal to 1'
            END IF
           END IF
 C
@@ -10587,7 +10588,7 @@ C         Linear molecule detected using symmetry
 C
           IF (LINEAR) THEN
 C
-           IF (GVAL(IATOM) .NE. 0.0D0) THEN
+           IF (GVAL(IATOM) .NE. D0) THEN
             FACTOT = EIGVAL(3)*GVAL(IATOM)*FAC
            ELSE
             FACTOT = EIGVAL(3)*FAC  ! GVAL(IATOM) = 1
@@ -10601,8 +10602,8 @@ C
      &                          NAMDEP(IATOM),-1)
              END IF
             END IF
-            NSRNUC = SPRNUC(1,1,IATOM)*FACTOT
-            NSREXV = DMAT(1,1,IATOM)*FACTOT
+            NSRNUC   = SPRNUC(1,1,IATOM)*FACTOT
+            NSREXV   = DMAT(1,1,IATOM)*FACTOT
             NSRLRLEE = PMATL(1,1,IATOM,1)*FACTOT
             NSRLRLEP = PMATL(1,1,IATOM,2)*FACTOT
             NSRLRSEE = PMATS(1,1,IATOM,1)*FACTOT
@@ -10631,7 +10632,7 @@ C         Linear symmetry is not detected
 C
           ELSE
 C
-           IF (GVAL(IATOM) .NE. 0.0D0) THEN
+           IF (GVAL(IATOM) .NE. D0) THEN
             FACTOT = GVAL(IATOM)*FAC
            ELSE
             FACTOT = FAC  ! GVAL(IATOM) = 1
