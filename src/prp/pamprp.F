@@ -9944,35 +9944,28 @@ C
 #include "dcbspinro.h"
 C
       logical, allocatable :: DOATOM(:)
+      integer, allocatable :: NAT(:)
       double precision, allocatable :: PMATL(:,:,:,:),PMATS(:,:,:,:),
      &                                 TMPMATL(:,:,:),TMPMATS(:,:,:),
      &                                 CSTRA(:),SCTRA(:),GEOM(:,:),
      &                                 MASS(:),AMASS(:),GVAL(:),
      &                                 STAVEC(:)
 C
-      integer, allocatable :: NAT(:)
-C
-      double precision D0
-      PARAMETER (D0 = 0.0D0)
-C
       LOGICAL TEST
-C
       INTEGER IBUFA(3*NUCDEP),IBUFEXP(3*NUCDEP),I,IA,IB1,IB2,
      &        IATOM,IDEG,IDEP,IFREQ,INUC,ISO,ISYMOP,ITYP,IZ,J,
      &        JA,JATOM,JB1,JB2,K,KA,KB1,KB2,L,NA,NATOM,NB1,NB2,
      &        NCMAT,NEXP,NISO,NSCOOR,NSPEC,IEXP,JEXP,KEXP,
      &        IBUFB1(3),IBUFB2(3),IATINF(3,NUCDEP)
-C
-      double precision RATINF(3,5,NUCDEP),DISOTP,
+      DOUBLE PRECISION RATINF(3,5,NUCDEP),DISOTP,ABCNV(NBFREQ,NLRBPT),
      &                 EXPVAL(3*NUCDEP),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
-     &                 ABCNV(NBFREQ,NLRBPT),ABND,
-     &                 GVALUE,IABLRF_EE,IABLRF_EP
+     &                 ABND,GVALUE,IABLRF_EE,IABLRF_EP,D0
 C
-      CHARACTER*1 CJB
+      PARAMETER (D0 = 0.0D0)
 C
       JATOM  = NATOMS + NFLOAT
       NSCOOR = 3*NUCDEP
-      NCMAT =  9*NUCDEP
+      NCMAT  =  9*NUCDEP
       allocate(DOATOM(NUCIND))
       allocate(STAVEC(NSCOOR))
       allocate(PMATL(3,3,NUCDEP,2)) ! L part of NSR for ee and ep contributions.
