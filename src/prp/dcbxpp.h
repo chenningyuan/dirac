@@ -22,18 +22,20 @@
 ! IBDOFF(IORDER) - offset in list of properties to truncated light-matter interaction of IORDER (in wave vector)
 ! GNOISE - turn on noise in coefficients upon gradient evaluation
 ! GNOISE_FAC - noise level  
+! GCLEAN - clean coefficients upon gradient evaluation
+! GCLEAN_FAC - relative threshold for setting coefficients to zero
 !
 !    dcbxpp.h -- Feb. 18, 1999, hjaaj
 !
       PARAMETER (MAXLPP = 3016, MAX_KVAL = 12)
       LOGICAL XPP_SKIPEE,XPP_SKIPEP,XPP_LSFG,                           &
      &        XPPNRM,ORBXPP,XPPANA,XPP_TRIPLET,                         &
-     &        XPP_E2CHEK,DOBED,ORIENTED,BEDCHK,GNOISE
+     &        XPP_E2CHEK,DOBED,ORIENTED,BEDCHK,GNOISE,GCLEAN
       COMMON /XCBLPP/XPP_SKIPEE,XPP_SKIPEP,XPP_LSFG(2),                 &
      &        XPPNRM,ORBXPP,XPPANA,XPP_TRIPLET,XPP_E2CHEK,DOBED,        &
-     &        ORIENTED,BEDCHK,GNOISE
+     &        ORIENTED,BEDCHK,GNOISE,GCLEAN
       COMMON /XCBRPP/THCPP,CNVXPP(2),RESXPP,XPPERG,                     &
-     &        UWAVE(3),UPOL(3),BEDSTP,GNOISE_FAC
+     &        UWAVE(3),UPOL(3),BEDSTP,GNOISE_FAC,GCLEAN_FAC
       COMMON /XCBIPP/IPRXPP,ITRXPP,MAXEXC,                              &
      &     KEXCNV(8), KEXSIM(8), KEXSTV(8),                             &
      &     LPPAPU(MAXLPP),LPPAPS(MAXLPP),NPPAPT,NPPAP(8),JPPAP(8),      &

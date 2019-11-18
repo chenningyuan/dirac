@@ -373,7 +373,7 @@ C
      &            '.ITRINT','.CNVINT','.REAXVC','.BEDCHK',
      &            '.RESFAC','.ORBANA','.ROTAV ','.SKIPEE',
      &            '.MXLOAD','.ONLYSF','.ONLYSG','.BED   ',
-     &            '.GNOISE','.BEDSTP','.BEDCON','.XXXXXX'/
+     &            '.GNOISE','.GCLEAN','.BEDCON','.XXXXXX'/
 C
 #include "ibtfun.h"
 C
@@ -425,9 +425,9 @@ C
       ORBXPP     = .FALSE.
       DOBED      = .FALSE.
       ORIENTED   = .FALSE.
-      BEDSTP     = 0.001D0
       BEDCHK     = .FALSE.
       GNOISE     = .FALSE.
+      GCLEAN     = .FALSE.
 C     hj: initialize some parts of dcbxlr; (nov. 2000)
 Chj: dcbxlr includes some general information
 Chj: which should be moved to dcbxrs (?) or another one:
@@ -655,8 +655,9 @@ C&&&& GNOISE: Add noise to MO coefficients when evaluating gradient elements
                   READ(LUCMD,*) GNOISE_FAC
                GO TO 100
  34            CONTINUE
-C&&&& BEDSTP: Step length for numerical BED derivatives
-                  READ(LUCMD,*) BEDSTP
+C&&&& GCLEAN: Set MO coefficients below a certain relative threshold to zero
+                  GNOISE = .TRUE.
+                  READ(LUCMD,*) GCLEAN_FAC
                GO TO 100
  35            CONTINUE
 C&&&& BEDCON: Contribution to order L in the wave vector from full light-matter interaction
@@ -1152,6 +1153,7 @@ C
 #include "dcbxpp.h"
 #include "dcbham.h"
 #include "dcborb.h"
+#include "dcbbas.h"
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbxpr.h"
@@ -1202,6 +1204,14 @@ C
          allocate(CMOBUF(NCMOTQ))
          CALL DCOPY(NCMOTQ,CMO,1,CMOBUF,1)
          CALL NOISE(CMO,NCMOTQ,GNOISE_FAC)
+      ENDIF
+      IF(GCLEAN) THEN
+         allocate(CMOBUF(NCMOTQ))
+         CALL DCOPY(NCMOTQ,CMO,1,CMOBUF,1)
+         DO IFRP = 1,NFSYM
+           CALL CMOCLEAN(CMO(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NORB(IFRP),
+     &                   NZ,GCLEAN_FAC)
+         ENDDO
       ENDIF
 C
 C     We have two rounds,
@@ -1268,6 +1278,12 @@ C
             IF (KTIMOP .EQ. ITIM) THEN
               ATMPPF(IEXC,INDAP,JSYMOP,1)  =
      &        D2*DDOT(NBDIM,GPO,1,XPO(1,1,IEXC),1)
+CTROND
+      IF (PRPNAM(INDPRA)(1:5).EQ.'BEDcZ'.AND.
+     &    PRPNAM(INDPRA)(8:10).EQ.'X00' .AND.
+     &    PRPNAM(INDPRA)(14:16).EQ.'Z00') THEN
+              WRITE(6,*) 'TEST..',PRPNAM(INDPRA),'..',GPO(1,1)
+      ENDIF
               IF(ORBXPP) THEN
                 DO IZ = 1,NZ
                   DO I = 1,NXPAR
@@ -1314,6 +1330,10 @@ C
       END IF
       CLOSE(LUBVEC,STATUS = 'KEEP')
       IF(GNOISE) THEN
+         CALL DCOPY(NCMOTQ,CMOBUF,1,CMO,1)
+         deallocate(CMOBUF)
+      ENDIF      
+      IF(GCLEAN) THEN
          CALL DCOPY(NCMOTQ,CMOBUF,1,CMO,1)
          deallocate(CMOBUF)
       ENDIF      

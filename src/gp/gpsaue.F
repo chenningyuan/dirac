@@ -4404,7 +4404,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C***********************************************************************
 C
 C     Input is an array A of length N. On output noise has been added.
-C     FACTOR controls the magnitude of the nois ("noise level")
+C     FACTOR controls the magnitude of the noise ("noise level")
 C     Since RANDOM_NUMBER returns numbers in the interval (0,1],
 C     we extend to (-1,1].      
 C
@@ -4424,5 +4424,3 @@ C***********************************************************************
       ENDDO
       RETURN
       END
-      
-      
