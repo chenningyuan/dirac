@@ -11,9 +11,14 @@ Revised features:
 Error corrections:
 
 - Fixed use of point charges (do not try to obtain e.g. mass of a point charge).
-- Fixed Be basis set in cc-pV5Z.
 - Fixed spelling error in keyword .GAUNTSCALE (was .GAUTSCALE).
 - Fixed T1EQN1 function call in src/relccsd/ccgrad.F (thanks to Martin Siegert).
+
+Basis set corrections:
+
+- Fixed Be basis set in cc-pV5Z.
+- Fixed Al basis set in aug-cc-pV(D+d)Z, aug-cc-pV(T+d)Z and aug-cc-pV(Q+d)Z.
+- Fixed Si basis set in aug-cc-pV(D+d)Z and aug-cc-pV(Q+d)Z.
 
 Performance improvements:
 
