@@ -9625,7 +9625,7 @@ C
       allocate(DOATOM(NUCIND))
 C
 C     EF1INT: INTTYP = 29 (electric field at individual nuclei)
-C     (SETATM code -29: accept .SELECT specification)
+C     (-29: accept .SELECT specification)
       CALL SETATM(DOATOM,NATOM,-29)
 C
 C     Here we set up the operators needed for the expectation value
@@ -9990,7 +9990,7 @@ C
 C
 C
 C     EF1INT: INTTYP = 29 (electric field at individual nuclei)
-C     (SETATM code -29: accept .SELECT specification)
+C     (-29: accept .SELECT specification)
       CALL SETATM(DOATOM,NATOM,-29)
 C--------------------------------------------------------------------
 C--------------------------------------------------------------------
