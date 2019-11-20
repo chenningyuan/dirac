@@ -1,6 +1,9 @@
       SUBROUTINE amplitude_equation_T2 (T1,T2,
      &          GO,GV,HOV,H,AZ,BUF1,BUF2,BUF3,NBUF3,S2)
 C
+CPi use contraction module to include tensor contraction routiones
+      use contraction
+C
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -18,9 +21,13 @@ C
 C---------------Calling variables--------------------------------------
 C
       INTEGER NBUF3
-      REAL*8 T1(*),T2(*)
-      REAL*8 S2(*)
-      REAL*8 GO(*),GV(*),HOV(*)
+CPi      REAL*8 T1(*),T2(*)
+      REAL*8 T1(NDIMT1*RCW), T2(NDIMT2*RCW)
+CPi      REAL*8 S2(*)
+      REAL*8 S2(NDIMT2*RCW)
+CPi      REAL*8 GO(*),GV(*),HOV(*)
+CPi NFOO=MOO(1). See also ccdriv.F:2426
+      REAL*8 GO(NFOO*RCW),GV(NFVV*RCW),HOV(NFVO*RCW)
       REAL*8 AZ(*),H(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)
 C
@@ -92,13 +99,19 @@ C ********************
       IF(MYPROC.EQ.MASTER) THEN
 C----------------------------------------------------------------
 C S(AB,IJ) = S(AB,IJ) - PIJ [ T2(AB,IK) * GO(K,J) ]
+CPi Either the minus sign is wrong or the IK should be KI.
 C----------------------------------------------------------------
-      CALL SRT1T3 (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
-     &             T2,BUF1)
-      CALL CNTRCT ('N','N',NVVOT,NO,NO,A1,BUF1,GO,A0,BUF2,NREP)
-      CALL SRT1T3 (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
-     &             BUF2,BUF1)
-      CALL XAXPY (NDIMT2,-A1,BUF1,1,S2,1)
+CPi-old      CALL SRT1T3 (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
+CPi-old     &             T2,BUF1)
+CPi-old      CALL CNTRCT ('N','N',NVVOT,NO,NO,A1,BUF1,GO,A0,BUF2,NREP)
+CPi-old      CALL SRT1T3 (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
+CPi-old     &             BUF2,BUF1)
+CPi-old      CALL XAXPY (NDIMT2,-A1,BUF1,1,S2,1)
+CPi-begin
+      call contraction_244 ((/"o3","o1"/),(/"p1","p2","o3","o2"/),
+     &  (/"p1","p2","o1","o2"/),S2,-1.0d0,1.0d0,nrep,LeftTensor=GO,
+     &   RightTensor=T2)
+CPi-end
 
 C ***************************
 C ** END OF TASK SPLITTING **
