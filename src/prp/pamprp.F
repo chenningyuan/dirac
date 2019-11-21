@@ -9651,19 +9651,19 @@ C
           DO 500 ICOOR = ILOW, 3  ! loop over coordinates
             ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)
             IF(ISCOOR .GT. 0) THEN
-              ITYP = ITYP + 1
-              IFIRST=ISCOOR/100
-              ISECND=MOD(ISCOOR,100)/10
+              ITYP   = ITYP + 1
+              IFIRST = ISCOOR/100
+              ISECND = MOD(ISCOOR,100)/10
               ITHIRD = MOD(MOD(ISCOOR,100),10)
               PLABEL(1) = 'NEF '//CHRNOS(IFIRST)
      &                    //CHRNOS(ISECND)//CHRNOS(ITHIRD)//' '
-              PNAME    = 'NEF '//CHRNOS(IFIRST)
+              PNAME     = 'NEF '//CHRNOS(IFIRST)
      &                    //CHRNOS(ISECND)//CHRNOS(ITHIRD)
-     &                //NAMN(IATOM)//REP(IREP)//CHRXYZ(ICOOR)
+     &                    //NAMN(IATOM)//REP(IREP)//CHRXYZ(ICOOR)
               CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &                    INDXPR,ISYXPR,ITRXPR,IPRINT)
               CALL OP1IND(CHRXYZ(ICOOR)//'EFN',
-     &                 IPEFN(ITYP),LEXPP,NEXPP,INDXPR,MAXEXP)
+     &                    IPEFN(ITYP),LEXPP,NEXPP,INDXPR,MAXEXP)
             END IF
  500      CONTINUE
         END IF
