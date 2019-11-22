@@ -9615,7 +9615,7 @@ C     XSIGMA,YSIGMA and ZSIGMA come with imaginary i, so we set DS = +1
 #include "chrnos.h"
 #include "ibtfun.h"
 C
-      CALL QENTER('DEF_SPINRO1')
+      CALL QENTER('DEF_SPINRO')
 C
       NSCOOR = 3*NUCDEP
 C
@@ -9688,7 +9688,6 @@ C
       NPCOMP   = 2
 C
       ITOP = 3
-      IF (LINEAR) ITOP = 1
 C
 C     Irreps
 C
@@ -9705,7 +9704,7 @@ C
             ISCOR1 = IPTCNT(3*(IATOM1 - 1) + ICOOR1,IREPO,2)
             IF (ISCOR1 .GE. 1000) THEN
               CALL QUIT(
-     &'DEF_SPINRO1: Max 1000 coords in this implementation !')
+     &'DEF_SPINRO: Max 1000 coords in this implementation !')
             ENDIF
             IF (ISCOR1 .GT. 0) THEN
               IFIRST = ISCOR1/100
@@ -9906,7 +9905,7 @@ C
 C
       deallocate(DOATOM)
 C
-      CALL QEXIT('DEF_SPINRO1')
+      CALL QEXIT('DEF_SPINRO')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -9954,14 +9953,14 @@ C
      &                                 STAVEC(:)
 C
       LOGICAL TEST
-      INTEGER IBUFA(3*NUCDEP),IBUFEXP(3*NUCDEP),I,IA,IB1,IB2,
-     &        IATOM,IDEG,IDEP,IFREQ,INUC,ISO,ISYMOP,ITYP,IZ,J,
-     &        JA,JATOM,JB1,JB2,K,KA,KB1,KB2,L,NA,NATOM,NB1,NB2,
-     &        NCMAT,NEXP,NISO,NSCOOR,NSPEC,IEXP,JEXP,KEXP,
-     &        IBUFB1(3),IBUFB2(3),IATINF(3,NUCDEP)
+      INTEGER IBUFA(3*NUCDEP),IBUFB1(3),IBUFB2(3),IBUFEXP(3*NUCDEP),
+     &        IATINF(3,NUCDEP),I,IA,IB1,IB2,IATOM,IDEG,IDEP,IFREQ,
+     &        INUC,ISO,ISYMOP,ITYP,IZ,J,JA,JATOM,JB1,JB2,K,KA,KB1,KB2,
+     &        L,NA,NATOM,NB1,NB2,NCMAT,NEXP,NISO,NSCOOR,NSPEC,IEXP,
+     &        JEXP,KEXP,IABLRF_EE,IABLRF_EP
       DOUBLE PRECISION RATINF(3,5,NUCDEP),DISOTP,ABCNV(NBFREQ,NLRBPT),
      &                 EXPVAL(3*NUCDEP),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
-     &                 ABND,GVALUE,IABLRF_EE,IABLRF_EP,D0
+     &                 ABND,GVALUE,D0
 C
       PARAMETER (D0 = 0.0D0)
 C
