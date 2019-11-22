@@ -9607,8 +9607,8 @@ C
 C
       logical, allocatable :: DOATOM(:)
 C
-      CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION PFAC(3),IOP(3)
+      CHARACTER PNAME*16, PLABEL(2)*8
+      DIMENSION PFAC(2),IOP(3)
 C     ANGMOM integrals correspond to -iL, so we set DL = -1
 C     XSIGMA,YSIGMA and ZSIGMA come with imaginary i, so we set DS = +1
       PARAMETER(D1 = 1.0D0,DL = -1.0D0,DS = 0.5D0)
@@ -9644,7 +9644,6 @@ C
 C       Atoms
 C
         DO 200 IATOM = 1, NUCIND  ! loop over symmetry-independent nuclei
-        IF (DOATOM(IATOM)) THEN   ! selection of atoms
 C
 C         Cartesian directions
 C
@@ -9660,13 +9659,16 @@ C
               PNAME     = 'NEF '//CHRNOS(IFIRST)
      &                    //CHRNOS(ISECND)//CHRNOS(ITHIRD)
      &                    //NAMN(IATOM)//REP(IREP)//CHRXYZ(ICOOR)
+        IF (DOATOM(IATOM)) THEN   ! selection of atoms
               CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &                    INDXPR,ISYXPR,ITRXPR,IPRINT)
               CALL OP1IND(CHRXYZ(ICOOR)//'EFN',
      &                    IPEFN(ITYP),LEXPP,NEXPP,INDXPR,MAXEXP)
+        ELSE
+              IPEFN(ITYP) = -1
+        END IF
             END IF
  500      CONTINUE
-        END IF
  200    CONTINUE
  100  CONTINUE
 C
@@ -10108,7 +10110,7 @@ C
 C     The NSCOOR nucl. electric field operators as NEF operators in < 0 | NEF | 0 > :
       NEXP = 0
       DO ITYP = 1,NSCOOR
-        IF(IPEFN(ITYP).GT.0) THEN
+        IF(IPEFN(ITYP).GT.0 .OR. IPEFN(ITYP).EQ.-1) THEN
           NEXP = NEXP + 1
           IBUFEXP(NEXP) = ITYP
         ENDIF
@@ -10140,7 +10142,7 @@ C
       DO IEXP = 1,NEXP
         JEXP = IBUFEXP(IEXP)
         KEXP = IPEFN(JEXP)
-        STAVEC(IEXP) = EXPVAL(KEXP)
+        IF(KEXP.NE.-1) STAVEC(IEXP) = EXPVAL(KEXP)
       END DO
 C
       CALL DIASPR(STAVEC,EXPVAL,CSTRA,SCTRA,NCMAT,IPRPRP)
