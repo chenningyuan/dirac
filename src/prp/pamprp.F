@@ -10135,7 +10135,6 @@ C-------------------------------------------------------------------
 C
 C     MEAN VALUE PART OF NSR TENSOR
 C
-      EXPVAL(0) = D0
       CALL DZERO(STAVEC,NSCOOR)
 C
       DO IEXP = 1,NEXP
