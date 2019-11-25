@@ -9594,7 +9594,7 @@ c...common block for expectation values
 C...common block for linear reponse
 #include "dcbxpr.h"
 #include "dcbgen.h"
-#include "dcbspinro.h"
+#include "spinro.h"
 C
       INTEGER IPRINT,NATOM,I,J,IATOM,IATOM1,
      &        IC1,IC2,ICOOR,ICOOR1,IFIRST,ILOW,INDOP1,
@@ -9942,7 +9942,6 @@ C
 #include "dgroup.h"
 #include "ibtfun.h"
 #include "dcbham.h"
-#include "dcbspinro.h"
 C
       logical, allocatable :: DOATOM(:)
       integer, allocatable :: NAT(:)
