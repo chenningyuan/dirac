@@ -132,8 +132,13 @@ module exacorr_cc
             end if
             write(*,'(A,I3)') " - Print Level :                    ",exa_input%print_level
             if (print_level > 1) then
-              print*, " - occupied spinors :                ", exa_input%mo_occ
-              print*, " - virtual spinors :                 ", exa_input%mo_vir
+              write(*,*) " - occupied spinors :                ", exa_input%mo_occ
+              write(*,*) " - virtual spinors :                 ", exa_input%mo_vir
+            end if
+            if(exa_input%lambda) then
+              write(*,*) ""
+              write(*,*) "Attention: For properties the density matrix is saved on a node."
+              write(*,*) "           buffer size: ",exa_input%talsh_buff,"GB"
             end if
             write(*,*) ""
          end if

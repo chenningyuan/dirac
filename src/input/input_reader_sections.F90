@@ -917,6 +917,10 @@
          call kw_read(word, exa_input%print_level)
       end if
 
+      if (kw_matches(word, '.TALSH_BUFF')) then
+         call kw_read(word, exa_input%talsh_buff)
+      end if
+
       call check_whether_kw_found(word, kw_section)
 
 #endif
