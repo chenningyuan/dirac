@@ -150,6 +150,23 @@ keyword(MAGNET)
 Evaluate the magnetic susceptibilities tensor (linear response and
 expectation values).
 
+keyword(ROTG)
+
+Evaluate rotational g-tensors: linear response and nuclear contributions.
+
+.. note::
+
+   The current implementation gives theoretically correct results only for molecules in equilibrium.
+
+   
+Results are dimensionless.
+
+The total g-tensor, as well as its linear response and nuclear contributions are always given separately.
+
+Using :ref:`PROPERTIES_.PRINT` 2, the paramagnetic (e-e) and diamagnetic (e-p) parts of the linear response contributions are given separately, together with results for the :math:`\mathbf{L}` and :math:`\mathbf{S}` parts of the linear response.
+
+See :cite:`Aucar_JCP2014` for further details.
+
 keyword(SPIN-SPIN COUPLING)
 
 Evaluate indirect spin-spin couplings (linear response).
@@ -224,7 +241,7 @@ Evaluate nuclear spin-rotation constants: linear response, expectation value and
    
 Results are given in kHz, but for particular :ref:`PROPERTIES_.PRINT` values they could also be given in ppm (to compare results with :ref:`PROPERTIES_.SHIELDING`).
 
-The total spin-rotation tensor, as well as their linear response, expectation value and nuclear contributions are always given separately.
+The total spin-rotation tensors, as well as their linear response, expectation value and nuclear contributions are always given separately.
 
 Using :ref:`PROPERTIES_.PRINT` 1 or 2, results are only given in kHz, whereas employing :ref:`PROPERTIES_.PRINT` 3 or 4 they are also shown in ppm.
 

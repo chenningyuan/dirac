@@ -360,8 +360,7 @@
             CALL DEF_VERDET(WORK,LWORK)
             GO TO 100
  126     CONTINUE
-!&&&& ROTG rotational g-tensor
-!MI ... at present it is not implemented
+!&&&& ROTG - rotational g-tensor according to Aucar et al
             ROTG  = .TRUE.
             DOXLR = .TRUE.
             GO TO 100

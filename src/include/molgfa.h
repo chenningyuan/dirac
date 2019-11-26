@@ -1,3 +1,5 @@
-      REAL*8 TOTMGF(3,3), GFANUC(3,3), ELMGF(3,3), GFACDIA(3,3),
-     &                GTRAN(3,3)
-      COMMON /MOLGFA/ TOTMGF, GFANUC, ELMGF, GFACDIA, GTRAN
+      REAL*8          GFANUC(3,3)
+
+      LOGICAL         LINDET
+
+      COMMON /MOLGFA/ GFANUC,LINDET
