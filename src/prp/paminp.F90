@@ -37,6 +37,7 @@
 !       Last revision: June 14 1996 - tsaue
 !
 !***********************************************************************
+         use memory_allocator
 #ifdef MOD_LAO_REARRANGED
          use london_helper
 #endif
@@ -60,11 +61,18 @@
      &          WORD1*7, WRDSRC*7
       DIMENSION WORK(LWORK)
       LOGICAL CHGO
+      double precision, allocatable :: GEOM(:,:),MASS(:)
+      integer, allocatable :: NAT(:)
 !
 #include "orgcom.h"
 #include "dcbprp.h"
 #include "dcborb.h"
 #include "dgroup.h"
+#include "nuclei.h"
+!
+      allocate(GEOM(NUCDEP,3))
+      allocate(MASS(NATOMS))
+      allocate(NAT(NATOMS))
 !
       DATA TABDIR /'*END OF','*EXPECT','*LINEAR','*EXCITA',             &
      &             '*MOLGRD','*NMR   ','*ESR   ','*QUADRA',             &
@@ -86,7 +94,7 @@
 !                    29        30        31        32
      &             '.NOPCTR','.EXCDIP','.MAGOUT','.OPTROT',             &
 !                    33        34        35        36
-     &             '.C6    ','.XXXXXX','.BXLAO ','.BYLAO ',             &
+     &             '.C6    ','.SPIN-R','.BXLAO ','.BYLAO ',             &
 !                    37        38        39        40
      &             '.BZLAO ','.EFFDEN','.EFFDE2','.SHIEL2' /
 
@@ -114,6 +122,7 @@
       MSUSCP       = .FALSE.
       IMAGOUT      = 0
       SHIELD       = .FALSE.
+      SPINRO       = .FALSE.
       PVC_SHIELD   = .FALSE.
       PVC_SPINSPIN = .FALSE.
       SPNSPN       = .FALSE.
@@ -393,6 +402,10 @@
             DOVDW  = .TRUE.
             GO TO 100
   134    CONTINUE 
+!&&&& SPIN-R - spin-rotation constant according to Aucar et al
+            DOEXP = .TRUE.
+            DOXLR = .TRUE.
+            SPINRO = .TRUE.
             GO TO 100
   135    CONTINUE 
 !&&&& BXLAO 
@@ -576,6 +589,22 @@
 #ifdef MOD_ESR
       IF(DOESR) CALL ESRINP(WORD,.TRUE.,WORK,LWORK)
 #endif
+
+!=========================================================================
+!iaa  Set the molecular CM as gauge origin (origin of L angular moment)
+!     for spin-rotations and molecular g-tensors
+!=========================================================================
+      if (spinro.or.rotg) then
+! ... make the center of mass the gauge and dipole origin (default in dalton)
+! ... call the routine in abacus/hergp.F
+        CALL CMMASS(GEOM,MASS,NAT,ISOTOP,IPRPRP)
+        CALL DCOPY(3,CMXYZ,1,GAGORG,1)
+        CALL DCOPY(3,GAGORG,1,DIPORG,1)
+        write(LUPRI,'(//,1X,A)')                                        &
+     &'Gauge & dipole origin are changed to the molecular CM position'
+        write(LUPRI,'(/A,9X,3F20.15)')                                  &
+     &  ' Gauge & dipole origin (a.u.):',(GAGORG(I), I = 1, 3)
+      end if
 !===========================================================================
 ! Define special operators for the list of properties programmed in DIRAC
 !===========================================================================
@@ -617,6 +646,11 @@
 
       CALL FLSHFO(LUPRI)
       CALL QEXIT('PRPINP')
+
+      deallocate(GEOM)
+      deallocate(MASS)
+      deallocate(NAT)
+
       RETURN
 !
       END
