@@ -10274,15 +10274,15 @@ C
 #include "spinro.h"
 #include "ibtfun.h"
 C
-      double precision D0,GEOM,ORIGIN,CMXYZ
+      double precision D0,GEOM,ORIGIN
 C
       PARAMETER (D0 = 0.D0)
-      DIMENSION GEOM(3*(NATOMS+NFLOAT)), ORIGIN(3), CMXYZ(3)
+      DIMENSION GEOM(3*(NATOMS+NFLOAT)), ORIGIN(3)
 C
       integer I,J,IPRINT,IATOM1,IATOM2,ISYM1,ISYM2,
      &        KK,LL,NATOM1
 C
-      double precision XDIF,YDIF,ZDIF,ZVAL2,PFAC,COORX,COORY,COORZ
+      double precision XDIF,YDIF,ZDIF,ZVAL2,PFAC,XDIFCM,YDIFCM,ZDIFCM
 C
       IF (IPRINT.GE.5) THEN
        CALL HEADER(
@@ -10294,8 +10294,8 @@ C
        enddo
       ENDIF
 C
-      CALL DZERO(SPRNUC,3*MXCOOR)
-      CALL DZERO(SPRNUC2,3*MXCOOR)
+      CALL DZERO(SPRNUC,9*NUCIND)
+      CALL DZERO(SPRNUC2,9*NUCIND)
 
       KK = 1
       NATOM1 = 1
@@ -10310,56 +10310,57 @@ C
                            ZVAL2 = CHARGE(IATOM2)
                            IF (ZVAL2 .GT. D0) THEN
                               IF (KK .NE. LL) THEN
+C
                                  XDIF = GEOM(KK) - GEOM(LL)
                                  YDIF = GEOM(KK + 1) - GEOM(LL + 1)
                                  ZDIF = GEOM(KK + 2) - GEOM(LL + 2)
 C
-                  COORX = GEOM(KK) - CMXYZ(1)
-                  COORY = GEOM(KK + 1) - CMXYZ(2)
-                  COORZ = GEOM(KK + 2) - CMXYZ(3)
+                                 XDIFCM = GEOM(KK) - ORIGIN(1)
+                                 YDIFCM = GEOM(KK + 1) - ORIGIN(2)
+                                 ZDIFCM = GEOM(KK + 2) - ORIGIN(3)
 C
                                  PFAC  = ZVAL2/(SQRT(XDIF*XDIF
      &                                + YDIF*YDIF + ZDIF*ZDIF))**3
 C
-                                 SPRNUC(1,1,NATOM1) = SPRNUC(1,1,NATOM1)
+                                SPRNUC(1,1,NATOM1) = SPRNUC(1,1,NATOM1)
      &                                + (YDIF*YDIF + ZDIF*ZDIF)*PFAC
-                                 SPRNUC(2,2,NATOM1) = SPRNUC(2,2,NATOM1)
+                                SPRNUC(2,2,NATOM1) = SPRNUC(2,2,NATOM1)
      &                                + (XDIF*XDIF + ZDIF*ZDIF)*PFAC
-                                 SPRNUC(3,3,NATOM1) = SPRNUC(3,3,NATOM1)
+                                SPRNUC(3,3,NATOM1) = SPRNUC(3,3,NATOM1)
      &                                + (XDIF*XDIF + YDIF*YDIF)*PFAC
-                                 SPRNUC(2,1,NATOM1) = SPRNUC(2,1,NATOM1)
+                                SPRNUC(2,1,NATOM1) = SPRNUC(2,1,NATOM1)
      &                                - YDIF*XDIF*PFAC
-                                 SPRNUC(3,1,NATOM1) = SPRNUC(3,1,NATOM1)
+                                SPRNUC(3,1,NATOM1) = SPRNUC(3,1,NATOM1)
      &                                - ZDIF*XDIF*PFAC
-                                 SPRNUC(1,2,NATOM1) = SPRNUC(1,2,NATOM1)
+                                SPRNUC(1,2,NATOM1) = SPRNUC(1,2,NATOM1)
      &                                - XDIF*YDIF*PFAC
-                                 SPRNUC(3,2,NATOM1) = SPRNUC(3,2,NATOM1)
+                                SPRNUC(3,2,NATOM1) = SPRNUC(3,2,NATOM1)
      &                                - ZDIF*YDIF*PFAC
-                                 SPRNUC(1,3,NATOM1) = SPRNUC(1,3,NATOM1)
+                                SPRNUC(1,3,NATOM1) = SPRNUC(1,3,NATOM1)
      &                                - XDIF*ZDIF*PFAC
-                                 SPRNUC(2,3,NATOM1) = SPRNUC(2,3,NATOM1)
+                                SPRNUC(2,3,NATOM1) = SPRNUC(2,3,NATOM1)
      &                                - YDIF*ZDIF*PFAC
 C
 C     Thomas precesion contribution to nuclear spin-rotation tensor
 C
                               SPRNUC2(1,1,NATOM1) = SPRNUC2(1,1,NATOM1)
-     &                                - (COORY*YDIF + COORZ*ZDIF)*PFAC
+     &                                - (YDIFCM*YDIF + ZDIFCM*ZDIF)*PFAC
                               SPRNUC2(2,2,NATOM1) = SPRNUC2(2,2,NATOM1)
-     &                                - (COORX*XDIF + COORZ*ZDIF)*PFAC
+     &                                - (XDIFCM*XDIF + ZDIFCM*ZDIF)*PFAC
                               SPRNUC2(3,3,NATOM1) = SPRNUC2(3,3,NATOM1)
-     &                                - (COORX*XDIF + COORY*YDIF)*PFAC
+     &                                - (XDIFCM*XDIF + YDIFCM*YDIF)*PFAC
                               SPRNUC2(2,1,NATOM1) = SPRNUC2(2,1,NATOM1)
-     &                                + COORY*XDIF*PFAC
+     &                                + YDIFCM*XDIF*PFAC
                               SPRNUC2(3,1,NATOM1) = SPRNUC2(3,1,NATOM1)
-     &                                + COORZ*XDIF*PFAC
+     &                                + ZDIFCM*XDIF*PFAC
                               SPRNUC2(1,2,NATOM1) = SPRNUC2(1,2,NATOM1)
-     &                                + COORX*YDIF*PFAC
+     &                                + XDIFCM*YDIF*PFAC
                               SPRNUC2(3,2,NATOM1) = SPRNUC2(3,2,NATOM1)
-     &                                + COORZ*YDIF*PFAC
+     &                                + ZDIFCM*YDIF*PFAC
                               SPRNUC2(1,3,NATOM1) = SPRNUC2(1,3,NATOM1)
-     &                                + COORX*ZDIF*PFAC
+     &                                + XDIFCM*ZDIF*PFAC
                               SPRNUC2(2,3,NATOM1) = SPRNUC2(2,3,NATOM1)
-     &                                + COORY*ZDIF*PFAC
+     &                                + YDIFCM*ZDIF*PFAC
                               END IF
                               LL = LL + 3
                            END IF
@@ -10581,6 +10582,7 @@ C
         IF (IBTAND(ISTBNU(K),ISYMOP).EQ.0) THEN
          IATOM = IATOM + 1
          IF (DOATOM(K)) THEN
+          IF (CHARGE(IATOM).GT. D0) THEN
 C
 C    Print g-values of selected nuclei
 C
@@ -10626,9 +10628,6 @@ C
 C           Nuclear contributions to spin-rotations
             NSRNUC   = SPRNUC(1,1,IATOM)*FACTOT
             NSRNUCTHO= SPRNUC2(1,1,IATOM)*FACTOT*FACTHOMAS
-!iaa test
-           write(lupri,*) 'agus',sprnuc(1,1,iatom),sprnuc2(1,1,iatom)
-!iaa test
             NSRNUC   = NSRNUC + NSRNUCTHO
 C           Expectation value contribution to spin-rotations
             NSREXV   = DMAT(1,1,IATOM)*FACTOT*(1-FACTHOMAS)
@@ -10818,6 +10817,7 @@ C
             END IF  ! (LINMOL)
  47        CONTINUE
           END IF    ! (LINEAR)
+          END IF    ! (CHARGE(IATOM).GT.D0)
          END IF     ! (DOATOM(K))
         END IF
  200   CONTINUE
