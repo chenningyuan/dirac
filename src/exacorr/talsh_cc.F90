@@ -55,8 +55,7 @@ module talsh_cc
          integer(INTD)       :: ierr
          complex(8), pointer :: result_tens(:)
          type(C_PTR):: body_p
-         integer(C_SIZE_T), parameter:: BUF_SIZE=200_8*1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
-         integer(C_SIZE_T):: host_buf_size
+         integer(C_SIZE_T):: buf_size=1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
          integer(C_INT):: host_arg_max
 
 !        Common tensors
@@ -84,10 +83,10 @@ module talsh_cc
          call print_date('Entered cc_driver routine')
 
 !        Initialize libraries
-         host_buf_size=BUF_SIZE
-         ierr=talsh_init(host_buf_size,host_arg_max)
+         buf_size=exa_input%talsh_buff*buf_size
+         ierr=talsh_init(buf_size,host_arg_max)
          call print_date('Initialized talsh library')
-         write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,host_buf_size,host_arg_max
+         write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
          call interest_initialize(.true.)
          call print_date('Initialized interest library')
 
@@ -130,9 +129,10 @@ module talsh_cc
          end if
          write(*,'(A,I3)') " - Print Level :                    ",exa_input%print_level
          if (print_level > 1) then
-           print*, " - occupied spinors :                ", exa_input%mo_occ
-           print*, " - virtual spinors :                 ", exa_input%mo_vir
+           write(*,*) " - occupied spinors :                ", exa_input%mo_occ
+           write(*,*) " - virtual spinors :                 ", exa_input%mo_vir
          end if
+         write(*,*) " - buffer size: ",exa_input%talsh_buff,"GB"
          write(*,'(A)') ""
 
          call print_date("Getting orbital energies")

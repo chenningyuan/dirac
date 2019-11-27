@@ -27,7 +27,7 @@ module talsh_ao_to_mo
 
        contains
 !-----------------------------------------------------------
-        subroutine talsh_compute_mo_integrals (nmo, mo_list)
+        subroutine talsh_compute_mo_integrals (nmo, mo_list, talsh_buff)
 
 !This subroutine drives the AO to MO integral transformation using AO integrals from InteRest and the tensor contraction library from ExaTensor
 !Currently everything is done in-core, purpose is to provide a working implementation that is suitable for debugging the production code
@@ -47,15 +47,15 @@ module talsh_ao_to_mo
          implicit none
          integer, intent(in) :: nmo(4)       ! the size of the mo basis for each of the 4 indices (mulliken ordering)
          integer, intent(in) :: mo_list(:)   ! and their indices (4 lists consecutively)
+         integer, intent(in) :: talsh_buff   ! buffer size for talsh in MB 
 
          integer             :: ierr, my_MPI_rank
          integer             :: nao                        ! the size of the atomic orbital basis
 
-         integer(C_SIZE_T), parameter:: BUF_SIZE=200_8*1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
          type(talsh_tens_t):: aoint_tensor
          type(talsh_tens_t):: moint_tensor
          integer(C_INT):: aoint_dims(1:4),moint_dims(1:4)
-         integer(C_SIZE_T):: host_buf_size
+         integer(C_SIZE_T):: buf_size=1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
          integer(C_INT):: host_arg_max
 
          complex(8), pointer, contiguous:: ao_tens(:,:,:,:),mo_tens(:,:,:,:)
@@ -75,10 +75,10 @@ module talsh_ao_to_mo
          call print_date('Initialized global data')
 
 !        Initialize libraries
-         host_buf_size=BUF_SIZE
-         ierr=talsh_init(host_buf_size,host_arg_max)
+         buf_size=talsh_buff*buf_size
+         ierr=talsh_init(buf_size,host_arg_max)
          call print_date('Initialized talsh library')
-         write(*,'(" Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,host_buf_size,host_arg_max
+         write(*,'(" Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
          call interest_initialize(.true.)
          call print_date('Initialized interest library')
 

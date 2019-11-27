@@ -13,7 +13,7 @@ if(ENABLE_EXATENSOR)
     ExternalProject_Add(exatensor
         PREFIX "${PROJECT_BINARY_DIR}/exatensor"
         GIT_REPOSITORY https://github.com/ornl-qci/exatensor.git
-        GIT_TAG f6e84561cbe25872bd3e0a98d664f81425c715b8
+        GIT_TAG a3a550e67d2beba1750719cc1d9882a3c308f5b2
         CONFIGURE_COMMAND true  # currently no configure command
         BUILD_COMMAND cd ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/ && make
         INSTALL_COMMAND true  # currently no install command
