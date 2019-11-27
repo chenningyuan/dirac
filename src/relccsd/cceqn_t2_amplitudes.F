@@ -251,13 +251,19 @@ C------------------------------------------------
                    
          CALL GETVOOO (BUF2)
          CALL DELINT ('VOOO','KDKK',BUF2,0,0,0)
+CPi Include half of term 9 here:
          CALL XAXPY (NV2,-A1,BUF3,1,BUF2,1)
           
            
-      CALL SRT1L1 (NREP,MULTB,LFA,NVO,NV,NO,NOOT,IVOOOT,IIOV,BUF2,BUF3)
-      CALL SRT1S2 (NREP,MULTB,LFA,NVO,NO,NV,NOOT,LOVOOT,LLVOOT,
-     &             BUF3,BUF2)
-      CALL CNTRCT ('N','N',NV,NVOOT,NO,-A1,T1,BUF2,A1,BUF1,NREP)
+CPi old      CALL SRT1L1 (NREP,MULTB,LFA,NVO,NV,NO,NOOT,IVOOOT,IIOV,BUF2,BUF3)
+CPi old      CALL SRT1S2 (NREP,MULTB,LFA,NVO,NO,NV,NOOT,LOVOOT,LLVOOT,
+CPi old     &             BUF3,BUF2)
+CPi old      CALL CNTRCT ('N','N',NV,NVOOT,NO,-A1,T1,BUF2,A1,BUF1,NREP)
+CPi-begin
+      call contraction_424 ((/"p1","o3","o1","o2"/),(/"p2","o3"/),
+     &    (/"p1","p2","o1","o2"/),S2,-1.0d0,1.0d0,nrep,LeftTensor=BUF2,
+     &    RightTensor=T1)
+CPi-end
 
 C ***
 C *** end of task splitting
