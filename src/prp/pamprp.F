@@ -9940,7 +9940,7 @@ C
 #include "spinro.h"
 #include "iratdef.h"
 #include "dgroup.h"
-#include "ibtfun.h"
+C#include "ibtfun.h"
 #include "dcbham.h"
 C
       logical, allocatable :: DOATOM(:)
@@ -10266,6 +10266,8 @@ C
 C***********************************************************************
 C
       implicit none
+      integer I,J
+
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -10281,7 +10283,7 @@ C
       PARAMETER (D0 = 0.D0)
       DIMENSION GEOM(3*(NATOMS+NFLOAT)), ORIGIN(3)
 C
-      integer I,J,IPRINT,IATOM1,IATOM2,ISYM1,ISYM2,
+      integer IPRINT,IATOM1,IATOM2,ISYM1,ISYM2,
      &        KK,LL,NATOM1
 C
       double precision XDIF,YDIF,ZDIF,ZVAL2,PFAC
@@ -10359,6 +10361,9 @@ C
 C***********************************************************************
 C
       implicit none
+
+      integer I,J
+
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -10370,7 +10375,7 @@ C
 #include "orgcom.h"
 #include "ibtfun.h"
 C
-      integer IPRINT,I,J,IATOM,ISYMOP,NATOM,NCMAT
+      integer IPRINT,IATOM,ISYMOP,NATOM,NCMAT
 C
       double precision EXPVAL(3*NUCDEP), ELFLD(3,NUCDEP),
      &                 CSTRA(3*NUCDEP,3*NUCDEP),
@@ -10439,6 +10444,9 @@ C***********************************************************************
       use codata
 C
       implicit none
+
+      integer I,J
+
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -10451,7 +10459,7 @@ C
 #include "ibtfun.h"
 #include "dgroup.h"
 C
-      integer I,J,K,KATOM,IPRINT,IATOM,ICOOR,
+      integer K,KATOM,IPRINT,IATOM,ICOOR,
      &        ISYMOP,IX,IY,JATOM,JX,JY,
      &        NATTYP,NUMIS,KHZPPM
 C
