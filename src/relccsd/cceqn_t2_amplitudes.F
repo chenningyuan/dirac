@@ -20,7 +20,8 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      INTEGER NBUF3
+CPi      INTEGER NBUF3
+      INTEGER NBUF2,NBUF3
 CPi      REAL*8 T1(*),T2(*)
       REAL*8 T1(NDIMT1*RCW), T2(NDIMT2*RCW)
 CPi      REAL*8 S2(*)
@@ -29,7 +30,8 @@ CPi      REAL*8 GO(*),GV(*),HOV(*)
 CPi NFOO=MOO(1). See also ccdriv.F:2426
       REAL*8 GO(NFOO*RCW),GV(NFVV*RCW),HOV(NFVO*RCW)
       REAL*8 AZ(*),H(*)
-      REAL*8 BUF1(*),BUF2(*),BUF3(*)
+CPi      REAL*8 BUF1(*),BUF2(*),BUF3(*)
+      REAL*8 BUF1(NBUF2*RCW),BUF2(NBUF2*RCW),BUF3(NBUF3*RCW)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -120,64 +122,74 @@ C ***************************
       ENDIF
 C-----------------------------------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + PIJ [ W(AB,CJ) * T1(C,I) ]
+CPi Again problem with sign. C and J are switched compared to reference,
+CPi but sign is the same...
 C-----------------------------------------------------------------------
+CPi Modify this label maybe:
       CALL XTIME(0,1,'--- T2EQNS: VOVV*T1              ')
-      DO 30 IRP = 1, NREP
-         IF (NVO(IRP).EQ.0) GOTO 30
-         DONE = .FALSE.
-         ISTART = 0
-         MINT = NBUF3/NVO(IRP)  ! max. # of NVO batches that fit in mem.
-  10     CONTINUE
-         CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
-         CALL DELINT ('VOVV','DKKK',BUF3,IRP,ISTART,NINT)
-         IF (CARITH) CALL CONJUGA (NVO(IRP)*NINT,BUF3,1)
-         IJ = 0
-         DO 20 JREP = 1, NREP
-           CREP = MULTB(JREP,IRP+NREP,2)
-           IREP = CREP
-           IF (IREP.LT.JREP) GOTO 20
-           DO J = 1, NO(JREP)
-              IMIN = 1
-              IF (JREP.EQ.IREP) IMIN = J + 1
-              DO I = IMIN, NO(IREP)
-                 IJ = IJ + 1
-                 ABIJ = (IVVOOTT(IRP)+(IJ-1)*NVVT(IRP)+ISTART)*RCW+1
-                 DO C = 1, NV(CREP)
-                    CJ = (IIVO(CREP,JREP)+(J-1)*NV(CREP)+C-1) * RCW + 1
-                    T1CI = (IVO(CREP)+(I-1)*NV(CREP)+C-1) * RCW + 1
-                    T1VAL(1) = T1(T1CI)
-                    IF (CARITH) T1VAL(2) = T1(T1CI+1)
-                    CALL XAXPY(NINT,T1VAL,BUF3(CJ),NVO(IRP),S2(ABIJ),1)
-                 ENDDO
-              ENDDO
-           ENDDO
- 20      CONTINUE
-         JI = 0
-         DO 21 IREP = 1, NREP
-           JREP = MULTB(IREP,IRP+NREP,2)
-           CREP = IREP
-           IF (JREP.LT.IREP) GOTO 21
-           DO I = 1, NO(IREP)
-              JMIN = 1
-              IF (JREP.EQ.IREP) JMIN = I + 1
-              DO J = JMIN, NO(JREP)
-                 JI = JI + 1
-                 ABJI = (IVVOOTT(IRP)+(JI-1)*NVVT(IRP)+ISTART)*RCW+1
-                 DO C = 1, NV(CREP)
-                    CJ = (IIVO(CREP,JREP)+(J-1)*NV(CREP)+C-1) * RCW + 1
-                    T1CI = (IVO(CREP)+(I-1)*NV(CREP)+C-1) * RCW + 1
-                    T1VAL(1) = - T1(T1CI)
-                    IF (CARITH) T1VAL(2) = - T1(T1CI+1)
-                    CALL XAXPY(NINT,T1VAL,BUF3(CJ),NVO(IRP),S2(ABJI),1)
-                 ENDDO
-              ENDDO
-           ENDDO
- 21      CONTINUE
-         IF (.NOT.DONE) THEN
-            ISTART = ISTART + NINT
-            GOTO 10
-         ENDIF
- 30    CONTINUE
+CPi-begin
+      CALL GETVVOV_incore (BUF3)
+      CALL DELINT ('VVOV','KKKD',BUF3,0,0,0)
+      call contraction_424 ((/"p1","p2","o1","p3"/),(/"p3","o2"/),
+     &    (/"p1","p2","o1","o2"/),S2,1.0d0,1.0d0,nrep,LeftTensor=BUF3,
+     &    RightTensor=T1)
+CPi-end
+CPi-old      DO 30 IRP = 1, NREP
+CPi-old         IF (NVO(IRP).EQ.0) GOTO 30
+CPi-old         DONE = .FALSE.
+CPi-old         ISTART = 0
+CPi-old         MINT = NBUF3/NVO(IRP)  ! max. # of NVO batches that fit in mem.
+CPi-old  10     CONTINUE
+CPi-old         CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
+CPi-old         CALL DELINT ('VOVV','DKKK',BUF3,IRP,ISTART,NINT)
+CPi-old         IF (CARITH) CALL CONJUGA (NVO(IRP)*NINT,BUF3,1)
+CPi-old         IJ = 0
+CPi-old         DO 20 JREP = 1, NREP
+CPi-old           CREP = MULTB(JREP,IRP+NREP,2)
+CPi-old           IREP = CREP
+CPi-old           IF (IREP.LT.JREP) GOTO 20
+CPi-old           DO J = 1, NO(JREP)
+CPi-old              IMIN = 1
+CPi-old              IF (JREP.EQ.IREP) IMIN = J + 1
+CPi-old              DO I = IMIN, NO(IREP)
+CPi-old                 IJ = IJ + 1
+CPi-old                 ABIJ = (IVVOOTT(IRP)+(IJ-1)*NVVT(IRP)+ISTART)*RCW+1
+CPi-old                 DO C = 1, NV(CREP)
+CPi-old                    CJ = (IIVO(CREP,JREP)+(J-1)*NV(CREP)+C-1) * RCW + 1
+CPi-old                    T1CI = (IVO(CREP)+(I-1)*NV(CREP)+C-1) * RCW + 1
+CPi-old                    T1VAL(1) = T1(T1CI)
+CPi-old                    IF (CARITH) T1VAL(2) = T1(T1CI+1)
+CPi-old                    CALL XAXPY(NINT,T1VAL,BUF3(CJ),NVO(IRP),S2(ABIJ),1)
+CPi-old                 ENDDO
+CPi-old              ENDDO
+CPi-old           ENDDO
+CPi-old 20      CONTINUE
+CPi-old         JI = 0
+CPi-old         DO 21 IREP = 1, NREP
+CPi-old           JREP = MULTB(IREP,IRP+NREP,2)
+CPi-old           CREP = IREP
+CPi-old           IF (JREP.LT.IREP) GOTO 21
+CPi-old           DO I = 1, NO(IREP)
+CPi-old              JMIN = 1
+CPi-old              IF (JREP.EQ.IREP) JMIN = I + 1
+CPi-old              DO J = JMIN, NO(JREP)
+CPi-old                 JI = JI + 1
+CPi-old                 ABJI = (IVVOOTT(IRP)+(JI-1)*NVVT(IRP)+ISTART)*RCW+1
+CPi-old                 DO C = 1, NV(CREP)
+CPi-old                    CJ = (IIVO(CREP,JREP)+(J-1)*NV(CREP)+C-1) * RCW + 1
+CPi-old                    T1CI = (IVO(CREP)+(I-1)*NV(CREP)+C-1) * RCW + 1
+CPi-old                    T1VAL(1) = - T1(T1CI)
+CPi-old                    IF (CARITH) T1VAL(2) = - T1(T1CI+1)
+CPi-old                    CALL XAXPY(NINT,T1VAL,BUF3(CJ),NVO(IRP),S2(ABJI),1)
+CPi-old                 ENDDO
+CPi-old              ENDDO
+CPi-old           ENDDO
+CPi-old 21      CONTINUE
+CPi-old         IF (.NOT.DONE) THEN
+CPi-old            ISTART = ISTART + NINT
+CPi-old            GOTO 10
+CPi-old         ENDIF
+CPi-old 30    CONTINUE
       CALL XTIME(0,2,'--- T2EQNS: VOVV*T1              ')
 
 C ********************
@@ -204,6 +216,7 @@ C-----------------------------------------------------------------------
      &                BUF1,BUF3)
 C-------------------------------------------------------------------
 C        Integrals are now in VO,OOT format : combine with next term
+CPi Which next term?
 C-------------------------------------------------------------------
            
 
