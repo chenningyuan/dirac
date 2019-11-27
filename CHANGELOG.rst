@@ -4,6 +4,13 @@
 18.1 (unreleased)
 -----------------
 
+New features:
+
+- Calculation of Nuclear Spin-Rotation tensors. Activated with ".SPINRO". Contributors: Trond Saue and I. Agustín Aucar.
+   I. A. Aucar, S. S. Gómez, M. C. Ruiz de Azúa, and C. G. Giribet.
+   Theoretical study of the nuclear spin-molecular rotation coupling for relativistic electrons and non-relativistic nuclei.
+   J. Chem. Phys. 136, 204119 (2012); http://dx.doi.org/10.1063/1.4721627 doi: 10.1063/1.4721627
+
 Revised features:
 
 - Maximum number of basis functions increased from 30k to 40k.
