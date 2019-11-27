@@ -10122,8 +10122,6 @@ C--------------------------------------------------------------------
 C
 C     NUCLEAR PART OF NSR TENSOR
 C
-      CALL DZERO(SPRNUC,NCMAT)
-C
       CALL CMMASS(GEOM,MASS,NAT,ISOTOP,IPRPRP)
       WRITE (LUPRI,'(/,A,18X,3F20.15,//)')
      &    ' Gauge origin (a.u.):', (GAGORG(I),I=1,3)
@@ -10276,15 +10274,15 @@ C
 #include "spinro.h"
 #include "ibtfun.h"
 C
-      double precision D0,GEOM,ORIGIN
+      double precision D0,GEOM,ORIGIN,CMXYZ
 C
       PARAMETER (D0 = 0.D0)
-      DIMENSION GEOM(3*(NATOMS+NFLOAT)), ORIGIN(3)
+      DIMENSION GEOM(3*(NATOMS+NFLOAT)), ORIGIN(3), CMXYZ(3)
 C
       integer I,J,IPRINT,IATOM1,IATOM2,ISYM1,ISYM2,
      &        KK,LL,NATOM1
 C
-      double precision XDIF,YDIF,ZDIF,ZVAL2,PFAC
+      double precision XDIF,YDIF,ZDIF,ZVAL2,PFAC,COORX,COORY,COORZ
 C
       IF (IPRINT.GE.5) THEN
        CALL HEADER(
@@ -10297,6 +10295,7 @@ C
       ENDIF
 C
       CALL DZERO(SPRNUC,3*MXCOOR)
+      CALL DZERO(SPRNUC2,3*MXCOOR)
 
       KK = 1
       NATOM1 = 1
@@ -10314,8 +10313,17 @@ C
                                  XDIF = GEOM(KK) - GEOM(LL)
                                  YDIF = GEOM(KK + 1) - GEOM(LL + 1)
                                  ZDIF = GEOM(KK + 2) - GEOM(LL + 2)
+C
+                  COORX = PT(IBTAND(ISYMAX(1,1),ISYM1))*CORD(1,IATOM1)
+     &                    - CMXYZ(1)
+                  COORY = PT(IBTAND(ISYMAX(2,1),ISYM1))*CORD(2,IATOM1)
+     &                    - CMXYZ(2)
+                  COORZ = PT(IBTAND(ISYMAX(3,1),ISYM1))*CORD(3,IATOM1)
+     &                    - CMXYZ(3)
+C
                                  PFAC  = ZVAL2/(SQRT(XDIF*XDIF
      &                                + YDIF*YDIF + ZDIF*ZDIF))**3
+C
                                  SPRNUC(1,1,NATOM1) = SPRNUC(1,1,NATOM1)
      &                                + (YDIF*YDIF + ZDIF*ZDIF)*PFAC
                                  SPRNUC(2,2,NATOM1) = SPRNUC(2,2,NATOM1)
@@ -10334,6 +10342,27 @@ C
      &                                - XDIF*ZDIF*PFAC
                                  SPRNUC(2,3,NATOM1) = SPRNUC(2,3,NATOM1)
      &                                - YDIF*ZDIF*PFAC
+C
+C     Thomas precesion contribution to nuclear spin-rotation tensor
+C
+                              SPRNUC2(1,1,NATOM1) = SPRNUC2(1,1,NATOM1)
+     &                                - (COORY*YDIF + COORZ*ZDIF)*PFAC
+                              SPRNUC2(2,2,NATOM1) = SPRNUC2(2,2,NATOM1)
+     &                                - (COORX*XDIF + COORZ*ZDIF)*PFAC
+                              SPRNUC2(3,3,NATOM1) = SPRNUC2(3,3,NATOM1)
+     &                                - (COORX*XDIF + COORY*YDIF)*PFAC
+                              SPRNUC2(2,1,NATOM1) = SPRNUC2(2,1,NATOM1)
+     &                                + COORY*XDIF*PFAC
+                              SPRNUC2(3,1,NATOM1) = SPRNUC2(3,1,NATOM1)
+     &                                + COORZ*XDIF*PFAC
+                              SPRNUC2(1,2,NATOM1) = SPRNUC2(1,2,NATOM1)
+     &                                + COORX*YDIF*PFAC
+                              SPRNUC2(3,2,NATOM1) = SPRNUC2(3,2,NATOM1)
+     &                                + COORZ*YDIF*PFAC
+                              SPRNUC2(1,3,NATOM1) = SPRNUC2(1,3,NATOM1)
+     &                                + COORX*ZDIF*PFAC
+                              SPRNUC2(2,3,NATOM1) = SPRNUC2(2,3,NATOM1)
+     &                                + COORY*ZDIF*PFAC
                               END IF
                               LL = LL + 3
                            END IF
@@ -10459,9 +10488,10 @@ C
      &                 GVAL(KATOM),DMAT(3,3,KATOM),ANGUMOM(3),
      &                 PMATL(3,3,KATOM,2),PMATS(3,3,KATOM,2),
      &                 NSREXV,NSRLR,NSRNUC,NSRTOT,CONST,FACTOT,
-     &                 NSRLRLEE,NSRLRLEP,NSRLRSEE,NSRLRSEP,
+     &                 NSRNUCTHO,NSRLRLEE,NSRLRLEP,NSRLRSEE,NSRLRSEP,
      &                 EIGVAL(3),EIGVEC(3,3),OMEGA(3),TINERT(9),
-     &                 DISOTP,GTRANN(3,3,KATOM),
+     &                 DISOTP,GTRANN(3,3,KATOM),GTRANNUC(3,3,KATOM),
+     &                 GTRANNTHO(3,3,KATOM),FACTHOMAS,
      &                 GTRANPLEE(3,3,KATOM),GTRANPLEP(3,3,KATOM),
      &                 GTRANPSEE(3,3,KATOM),GTRANPSEP(3,3,KATOM),
      &                 GTRANP(3,3,KATOM),GTRAND(3,3,KATOM)
@@ -10561,7 +10591,7 @@ C
            IF (IPRINT .GE. 0) THEN
             CALL HEADER('Spin-rotation constants (kHz) for '//
      &                     NAMDEP(IATOM),-1)
-            WRITE (LUPRI,'(2X,A17,F12.6)')
+            WRITE (LUPRI,'(2X,A17,F12.6,/)')
      &                 'Nuclear g-value: ',GVAL(IATOM)
            END IF
           ELSE   !   if GVAL = 0
@@ -10575,6 +10605,8 @@ C
      &  'Nuclear g-value is artificially set equal to 1'
            END IF
           END IF
+C
+          FACTHOMAS=(CHARGE(IATOM)*PMASS)/(AMASS(IATOM)*GVAL(IATOM))
 C
 C         Linear molecule detected using symmetry
 C
@@ -10594,8 +10626,13 @@ C
      &                          NAMDEP(IATOM),-1)
              END IF
             END IF
+C           Nuclear contributions to spin-rotations
             NSRNUC   = SPRNUC(1,1,IATOM)*FACTOT
-            NSREXV   = DMAT(1,1,IATOM)*FACTOT
+            NSRNUCTHO= SPRNUC2(1,1,IATOM)*FACTOT*FACTHOMAS
+            NSRNUC   = NSRNUC + NSRNUCTHO
+C           Expectation value contribution to spin-rotations
+            NSREXV   = DMAT(1,1,IATOM)*FACTOT*(1-FACTHOMAS)
+C           Linear response contributions to spin-rotations
             NSRLRLEE = PMATL(1,1,IATOM,1)*FACTOT
             NSRLRLEP = PMATL(1,1,IATOM,2)*FACTOT
             NSRLRSEE = PMATS(1,1,IATOM,1)*FACTOT
@@ -10636,6 +10673,8 @@ C
      &                          NAMDEP(IATOM),-1)
             END IF
             CALL DZERO(GTRANN,9*NUCDEP)
+            CALL DZERO(GTRANNTHO,9*NUCDEP)
+            CALL DZERO(GTRANNUC,9*NUCDEP)
             CALL DZERO(GTRAND,9*NUCDEP)
             CALL DZERO(GTRANP,9*NUCDEP)
             CALL DZERO(GTRANPLEE,9*NUCDEP)
@@ -10655,8 +10694,12 @@ C
                 END IF
                 GTRANN(I,J,IATOM)=GTRANN(I,J,IATOM)+EIGVEC(IX,I)
      &                       *SPRNUC(JX,JY,IATOM)*EIGVEC(IY,J)*CONST
+                GTRANNTHO(I,J,IATOM)=GTRANNTHO(I,J,IATOM)+EIGVEC(IX,I)
+     &                       *SPRNUC2(JX,JY,IATOM)*EIGVEC(IY,J)*CONST
+     &                       *FACTHOMAS
                 GTRAND(I,J,IATOM)=GTRAND(I,J,IATOM)+EIGVEC(IX,I)
      &                       *DMAT(JX,JY,IATOM)*EIGVEC(IY,J)*CONST
+     &                       *(1-FACTHOMAS)
                 GTRANPLEE(I,J,IATOM) = GTRANPLEE(I,J,IATOM)
      &                       + EIGVEC(IX,I)
      &                        *PMATL(JX,JY,IATOM,1)*EIGVEC(IY,J)*CONST
@@ -10669,13 +10712,16 @@ C
                 GTRANPSEP(I,J,IATOM) = GTRANPSEP(I,J,IATOM)
      &                       + EIGVEC(IX,I)
      &                        *PMATS(JX,JY,IATOM,2)*EIGVEC(IY,J)*CONST
+C               Total nuclear contribution to NSR
+                GTRANNUC(I,J,IATOM) = GTRANN(I,J,IATOM)
+     &                               +GTRANNTHO(I,J,IATOM)
 C               Total linear response contribution to NSR
                 GTRANP(I,J,IATOM) = GTRANPLEE(I,J,IATOM)
      &                       + GTRANPLEP(I,J,IATOM)
      &                       + GTRANPSEE(I,J,IATOM)
      &                       + GTRANPSEP(I,J,IATOM)
 C               Total spin-rotation tensor
-                GTRANT(I,J,IATOM) = GTRANN(I,J,IATOM)
+                GTRANT(I,J,IATOM) = GTRANNUC(I,J,IATOM)
      &                       + GTRAND(I,J,IATOM) + GTRANP(I,J,IATOM)
  60           CONTINUE
  50         CONTINUE
@@ -10684,10 +10730,10 @@ C    At least one inertia tensor eigenvalue equal to zero (linear molecule):
             IF(LINMOL) THEN
              IF (IPRINT .GE. 2*KHZPPM-2)
      &  WRITE(LUPRI,'((1X,A,F16.8,/),/,2(1X,A,F16.8,/),(1X,A,F16.8))')
-     &  ' Total spin-rotation constant (SRC)      :',GTRANT(3,3,IATOM),
-     &  '   Nuclear contribution to SRC           :',GTRANN(3,3,IATOM),
-     &  '   Expectation value contribution to SRC :',GTRAND(3,3,IATOM),
-     &  '   Linear response contribution to SRC   :',GTRANP(3,3,IATOM)
+     &' Total spin-rotation constant (SRC)      :',GTRANT(3,3,IATOM),
+     &'   Nuclear contribution to SRC           :',GTRANNUC(3,3,IATOM),
+     &'   Expectation value contribution to SRC :',GTRAND(3,3,IATOM),
+     &'   Linear response contribution to SRC   :',GTRANP(3,3,IATOM)
 C
              IF (IPRINT .GE. 2*KHZPPM-1)
      &  WRITE(LUPRI,'(3(1X,A,F16.8,/),(1X,A,F16.8))')
@@ -10709,12 +10755,12 @@ C    Inertia tensor of a non-linear molecule (with and without symmetry):
      &              +GTRANT(2,2,IATOM)+GTRANT(3,3,IATOM))/3
               CALL HEADER('Nuclear contribution',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                 'A', (GTRANN(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANN(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANN(I,3,IATOM),I = 1,3)
+     &                 'A', (GTRANNUC(I,1,IATOM),I = 1,3),
+     &                 'B', (GTRANNUC(I,2,IATOM),I = 1,3),
+     &                 'C', (GTRANNUC(I,3,IATOM),I = 1,3)
               WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
-     &                 'iso', (GTRANN(1,1,IATOM)
-     &              +GTRANN(2,2,IATOM)+GTRANN(3,3,IATOM))/3
+     &                 'iso', (GTRANNUC(1,1,IATOM)
+     &              +GTRANNUC(2,2,IATOM)+GTRANNUC(3,3,IATOM))/3
               CALL HEADER('Expectation value contribution',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                 'A', (GTRAND(I,1,IATOM),I = 1,3),
