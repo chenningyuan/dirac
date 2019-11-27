@@ -11,6 +11,11 @@ New features:
    Theoretical study of the nuclear spin-molecular rotation coupling for relativistic electrons and non-relativistic nuclei.
    J. Chem. Phys. 136, 204119 (2012); http://dx.doi.org/10.1063/1.4721627 doi: 10.1063/1.4721627
 
+- Calculation of Rotational Molecular g-tensors. Activated with ".ROTG". Contributor: I. Agustín Aucar.
+   I. A. Aucar, S. S. Gómez, C. G. Giribet and M. C. Ruiz de Azúa.
+   Theoretical study of the relativistic molecular rotational g-tensor.
+   J. Chem. Phys. 141, 194103 (2014); http://dx.doi.org/10.1063/1.4901422 doi: 10.1063/1.4901422
+
 Revised features:
 
 - Maximum number of basis functions increased from 30k to 40k.
