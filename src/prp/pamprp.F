@@ -10626,6 +10626,9 @@ C
 C           Nuclear contributions to spin-rotations
             NSRNUC   = SPRNUC(1,1,IATOM)*FACTOT
             NSRNUCTHO= SPRNUC2(1,1,IATOM)*FACTOT*FACTHOMAS
+!iaa test
+           write(lupri,*) 'agus',sprnuc(1,1,iatom),sprnuc2(1,1,iatom)
+!iaa test
             NSRNUC   = NSRNUC + NSRNUCTHO
 C           Expectation value contribution to spin-rotations
             NSREXV   = DMAT(1,1,IATOM)*FACTOT*(1-FACTHOMAS)
