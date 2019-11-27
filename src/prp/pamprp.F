@@ -10314,12 +10314,9 @@ C
                                  YDIF = GEOM(KK + 1) - GEOM(LL + 1)
                                  ZDIF = GEOM(KK + 2) - GEOM(LL + 2)
 C
-                  COORX = PT(IBTAND(ISYMAX(1,1),ISYM1))*CORD(1,IATOM1)
-     &                    - CMXYZ(1)
-                  COORY = PT(IBTAND(ISYMAX(2,1),ISYM1))*CORD(2,IATOM1)
-     &                    - CMXYZ(2)
-                  COORZ = PT(IBTAND(ISYMAX(3,1),ISYM1))*CORD(3,IATOM1)
-     &                    - CMXYZ(3)
+                  COORX = GEOM(KK) - CMXYZ(1)
+                  COORY = GEOM(KK + 1) - CMXYZ(2)
+                  COORZ = GEOM(KK + 2) - CMXYZ(3)
 C
                                  PFAC  = ZVAL2/(SQRT(XDIF*XDIF
      &                                + YDIF*YDIF + ZDIF*ZDIF))**3
