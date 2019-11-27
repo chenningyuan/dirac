@@ -233,8 +233,13 @@ C ** of the G(A,C) array before entering T2EQNS
 C-------------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + PAB [ GV(A,C) * T2(CB,IJ)]
 C-------------------------------------------------
-      CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,T2,BUF2)
-      CALL CNTRCT ('N','N',NV,NVOOT,NV,A1,GV,BUF2,A0,BUF1,NREP)
+CPi old      CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,T2,BUF2)
+CPi old      CALL CNTRCT ('N','N',NV,NVOOT,NV,A1,GV,BUF2,A0,BUF1,NREP)
+CPi-begin
+      call contraction_244 ((/"p1","p3"/),(/"p3","p2","o1","o2"/),
+     &  (/"p1","p2","o1","o2"/),S2,1.0d0,1.0d0,nrep,LeftTensor=GV,
+     &   RightTensor=T2)
+CPi-end
 
 C ** the contraction of G(A,C) with the T2 amplitudes now is in BUF1 !
 C ** these are the partial contributions available on EACH node
@@ -270,9 +275,11 @@ C *** end of task splitting
 C ***
       ENDIF
 
-      CALL SRT1T2 (NREP,MULTB,LTR,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
-     &             BUF1,BUF2)
-      CALL XAXPY (NDIMT2,A1,BUF2,1,S2,1)
+CPi This is left over since the contractions which were previously added to BUF1
+CPi are now added directly to S2 (new contraction routines take care of sorting)
+CPi old      CALL SRT1T2 (NREP,MULTB,LTR,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
+CPi old     &             BUF1,BUF2)
+CPi old      CALL XAXPY (NDIMT2,A1,BUF2,1,S2,1)
 
 C ** now the final H*T2 contraction. H is complete since we communicated
 C ** it already.
