@@ -9573,6 +9573,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use memory_allocator
 C
       implicit none
+C
+      INTEGER I,J
+C
 #include "priunit.h"
 C
 #include "mxcent.h"
@@ -9596,7 +9599,7 @@ C...common block for linear reponse
 #include "dcbgen.h"
 #include "spinro.h"
 C
-      INTEGER IPRINT,NATOM,I,J,IATOM,IATOM1,
+      INTEGER IPRINT,NATOM,IATOM,IATOM1,
      &        IC1,IC2,ICOOR,ICOOR1,IFIRST,ILOW,INDOP1,
      &        INDXPR,IOP,IPTYP,IREP,IREP1,IREP2,IREPO,IS1,
      &        IS2,ISCOOR,ISECND,NSCOOR,ISCOR1,
@@ -9921,6 +9924,7 @@ C***********************************************************************
       use memory_allocator
 C
       implicit none
+C
 #include "priunit.h"
 #include "mxcent.h"
 #include "dcbprp.h"
@@ -10263,8 +10267,9 @@ C
 C***********************************************************************
 C
       implicit none
+C
       integer I,J
-
+C
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -10414,9 +10419,9 @@ C
 C***********************************************************************
 C
       implicit none
-
+C
       integer I,J
-
+C
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -10497,9 +10502,9 @@ C***********************************************************************
       use codata
 C
       implicit none
-
+C
       integer I,J
-
+C
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -10512,7 +10517,7 @@ C
 #include "ibtfun.h"
 #include "dgroup.h"
 C
-      integer I,J,K,KATOM,IPRINT,IATOM,ICOOR,ISYMOP,IX,IY,
+      integer K,KATOM,IPRINT,IATOM,ICOOR,ISYMOP,IX,IY,
      &        JATOM,JX,JY,NATTYP,NUMIS,KHZPPM
 C
       double precision D0,D1,FAC,FACPPM,FACTOT,FACTHOMAS,CONST,
@@ -10908,7 +10913,7 @@ C
 C           Total nuclear contribution to NSR
              IF (IPRINT .GE. 4) THEN
               WRITE(LUPRI,'(/,/,A)')
-     & '******************************************************'
+     & '*************************************************************'
               CALL HEADER('M^NU',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                 'A', (GTRANNUC(I,1,IATOM),I = 1,3),
@@ -10927,7 +10932,7 @@ C           Total expectation value contribution to NSR
      &                 'iso', (GTRANEXP(1,1,IATOM)
      &              +GTRANEXP(2,2,IATOM)+GTRANEXP(3,3,IATOM))/3
               WRITE(LUPRI,'(A)')
-     & '******************************************************'
+     & '*************************************************************'
              END IF
             END IF  ! (LINMOL)
  47        CONTINUE
