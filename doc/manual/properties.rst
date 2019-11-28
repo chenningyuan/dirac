@@ -226,9 +226,11 @@ Results are given in kHz, but for particular :ref:`PROPERTIES_.PRINT` values the
 
 The total spin-rotation tensor, as well as their linear response, expectation value and nuclear contributions are always given separately.
 
-Using :ref:`PROPERTIES_.PRINT` 1 or 2, results are only given in kHz, whereas employing :ref:`PROPERTIES_.PRINT` 3 or 4 they are also shown in ppm.
+Using :ref:`PROPERTIES_.PRINT` 0 or 1, results are only given in kHz, whereas employing :ref:`PROPERTIES_.PRINT` 2 or 3 they are also shown in ppm.
 
-In addition, when :ref:`PROPERTIES_.PRINT` 2 or 4 are used, the paramagnetic-like (e-e) and diamagnetic-like (e-p) parts of the linear response contributions are given separately, together with results for the :math:`\mathbf{L}` and :math:`\mathbf{S}` parts of the linear response.
+In addition, when :ref:`PROPERTIES_.PRINT` 1 or 3 are used, the paramagnetic-like (e-e) and diamagnetic-like (e-p) parts of the linear response contributions are given separately, together with results for the :math:`\mathbf{L}` and :math:`\mathbf{S}` parts of the linear response.
+
+Finally, employing :ref:`PROPERTIES_.PRINT` 4, nuclear and expectation value contributions are given separately (with Thomas precesion included). More details in the Tutorial Section.
 
 See :cite:`Aucar_JCP2012` for further details.
 
