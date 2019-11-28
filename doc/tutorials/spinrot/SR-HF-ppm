@@ -1,12 +1,18 @@
                       Spin-rotation constants (in ppm) for F
                       --------------------------------------
 
-  Total spin-rotation constant (SRC)      :    -87.08882243
+  Total spin-rotation constant (SRC)      :    -87.08399187
 
-    Nuclear contribution to SRC           :     15.36499609
-    Expectation value contribution to SRC :     -0.77887007
-    Linear response contribution to SRC   :   -101.67494844
-            M^L(e-e) :   -105.04708296
-            M^S(e-e) :      3.36858116
-            M^L(e-p) :      1.18892519
-            M^S(e-p) :     -1.18537183
+    Nuclear contribution to SRC (M^nuc)   :     14.59097576
+    Electronic contribution to SRC (M^LR) :   -101.67496763
+            M^LR-L(e-e) :   -105.04725872
+            M^LR-S(e-e) :      3.36873510
+            M^LR-L(e-p) :      1.18892779
+            M^LR-S(e-p) :     -1.18537180
+
+******************************************************
+ ********      M^NU         ********:     15.29474910
+ ********      M^EV         ********:     -0.70818294
+ ********      M^LR         ********:   -101.67496763
+ ********      M^total      ********:    -87.08840147
+******************************************************

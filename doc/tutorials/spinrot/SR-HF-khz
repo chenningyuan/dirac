@@ -4,10 +4,18 @@
   Nuclear g-value:     5.257736
   Total spin-rotation constant (SRC)      :   -313.20155993
 
-    Nuclear contribution to SRC           :     55.25784606
-    Expectation value contribution to SRC :     -2.80108646
-    Linear response contribution to SRC   :   -365.65831952
-            M^L(e-e) :   -377.78568284
-            M^S(e-e) :     12.11458422
-            M^L(e-p) :      4.27578665
-            M^S(e-p) :     -4.26300755
+  Total spin-rotation constant (SRC)      :   -313.18418758
+
+    Nuclear contribution to SRC (M^nuc)   :     52.47420095
+    Electronic contribution to SRC (M^LR) :   -365.65838853
+            M^LR-L(e-e) :   -377.78631495
+            M^LR-S(e-e) :     12.11513783
+            M^LR-L(e-p) :      4.27579601
+            M^LR-S(e-p) :     -4.26300742
+
+******************************************************
+ ********      M^NU         ********:     55.00521357
+ ********      M^EV         ********:     -2.54687107
+ ********      M^LR         ********:   -365.65838853
+ ********      M^total      ********:   -313.20004603
+******************************************************
