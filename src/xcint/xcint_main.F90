@@ -40,7 +40,6 @@ module xcint_main
       real(8), allocatable :: gs(:, :, :)
       real(8), allocatable :: tn(:)
       real(8), allocatable :: ts(:, :)
-!gosia, temporarily for sdft+lao
       real(8), allocatable :: s_lao(:, :)
       real(8), allocatable :: gs_lao(:, :, :)
    end type
@@ -519,7 +518,7 @@ contains
       if (do_london_susc2el_der1 .or. do_london_susc2el_der2) then
         max_ao_m_order = 2
       end if
-     
+
       call dirac_ao_eval_init(max_ao_g_order, &
                         max_ao_m_order, &
                         .true.)
@@ -682,7 +681,6 @@ contains
          if (use_blas3_scheme .or. (use_gga                         &
                                    .and. .not. do_london_rhs_direct_der1 &
                                    .and. .not. do_london_rhs_direct_der2 &
-                                   .and. .not. do_london_rhs_ro          &
                                    .and. .not. do_london_susc2el_der1    &
                                    .and. .not. do_london_susc2el_der2    &
                                    .and. .not. do_london_ks         &
@@ -690,14 +688,19 @@ contains
             if (nr_dmat > 0) then
                call gga_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym, dmat_ih_sym)
             else
-               call gga_sym(mat_dim, nz, 1, fmat, (/1/), (/1/))
+             call gga_sym(mat_dim, nz, 1, fmat, (/1/), (/1/))
             end if
          end if
 
-         if (do_london_rhs_direct_der1 .or. do_london_rhs_direct_der2 .or. do_london_rhs_ro) then
-            call mat_lao_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym)
+         if (do_london_rhs_direct_der2 .and. use_gga) then
+            ! symmetrize the imaginary part of fmat
+            call gga_lao_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym)
          end if
 
+         if (do_london_rhs_direct_der1) then
+            ! antisymmetrize the real part of fmat
+            call mat_lao_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym)
+         end if
 
          call insert_half_phases()
 
@@ -822,7 +825,7 @@ contains
       real(8) :: f
 !     --------------------------------------------------------------------------
 
-      call dscal(mat_dim*mat_dim, f, dmat_0(1,1,1), 1)
+      call dscal(mat_dim*mat_dim*nz, f, dmat_0(1,1,1), 1)
       if (nr_dmat > 0) then
         call dscal(mat_dim*mat_dim*nz*nr_dmat, f, dmat, 1)
       end if
@@ -852,10 +855,15 @@ contains
                end do
             end do
          end if
+         if (do_london_rhs_direct_der2) then
+           do iz = 1, nz
+             iq = pq_to_uq(iz, 0)
+             call my_q2bphase('D', iq, 1, dmat_0(1,1,iz))
+           end do
+         end if
       end if
 
    end subroutine
-
 
 
 
@@ -1074,6 +1082,7 @@ contains
 !      (/1,2,3,4/), 6)
 !   end do
 !  end if
+
    do ipoint = 1, nr_points_on_this_proc
    
 !     print *, "check points",ipoint,xc_mpi_get_rank(),ipoint,rx(ipoint),ry(ipoint),rz(ipoint)
@@ -1665,11 +1674,8 @@ contains
                                 ao(1, ao_off_g1_m0(3, 0) + 1))
              end if
 
-!gosia:
-!sdft+lao now separately, later will be moved to u%s and u%gs,
-!now i left it separately for debugging
-
 !radovan: this code does not seem to be covered by any test, is this true?
+!gosia: tested in 'london_properties_symmetry'
 
              us_lao_above_threshold = .false.
              if (maxval((/dabs(u%s_lao(1, im)), &
@@ -1692,6 +1698,8 @@ contains
              end if
 
              if (ugs_lao_above_threshold) then
+!               F_pq(im) +=   u%s_lao(j, im)   \chi_p* \Sigma_j \chi_q
+!                        + 2 u%gs_lao(:, j, im) \chi_p* \Sigma_j \nabla_i \chi_q
                 call nabla_omega_imag(fmat,                &
                                       im,                  &
                                       fmat_pg_sym(im) - 1, &
@@ -1702,13 +1710,13 @@ contains
                                       ao)
              else
                 if (us_lao_above_threshold) then
-!                  F_pq += u%s_j \chi_p* \Sigma_j \chi_q
+!                  F_pq(im) += u%s_lao(j, im) \chi_p* \Sigma_j \chi_q
                    call omega_imag(fmat,                &
-                                   im,                  &
-                                   fmat_pg_sym(im) - 1, &
+                                   im,                  &  ! in order: Bx, By, Bz
+                                   fmat_pg_sym(im) - 1, &  ! irep of property gradient
                                    mat_dim,             &
                                    nz,                  &
-                                   u%s_lao(1, im),    &
+                                   u%s_lao(1, im),      &
                                    ao)
                 end if
              end if
@@ -2721,9 +2729,9 @@ contains
 
       call get_gs_lao(s_b_lao,    &
                      gs_b_lao,    &
-                     fmat_pg_sym - 1, &
+                     (/0/),       & ! irep of unperturbed dmat_0 (totally symmetric)
                      mat_dim,     &
-                     dmat_full,   &
+                     dmat_full,   & ! this is the unperturbed dmat_0
                      ao,          &
                      px, py, pz, buffer)
     else
@@ -2736,13 +2744,14 @@ contains
       !                          (/px, py, pz/))
 
       call get_s_lao(s_b_lao,      &
-                     fmat_pg_sym-1,  &
+                     (/0/),        & ! irep of unperturbed dmat_0 (totally symmetric)
                      mat_dim,      &
-                     dmat_full,    &
+                     dmat_full,    & ! this is the unperturbed dmat_0
                      ao,           & 
                      px, py, pz,   &
                      buffer)
     end if
+
 
      do im = 1, nr_fmat         ! B_{x,y,z}
         do k = k_start, 3       ! Sigma_{x,y,z}
