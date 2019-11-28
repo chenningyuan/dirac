@@ -9599,9 +9599,8 @@ C
       INTEGER IPRINT,NATOM,I,J,IATOM,IATOM1,
      &        IC1,IC2,ICOOR,ICOOR1,IFIRST,ILOW,INDOP1,
      &        INDXPR,IOP,IPTYP,IREP,IREP1,IREP2,IREPO,IS1,
-     &        IS2,ISCOOR,ISCORD1,ISECND,
-     &        ISYXPR,ITHIRD,ITOP,ITRXPR,ITYP,NPCOMP,
-     &        NSCOOR,ISCOR1
+     &        IS2,ISCOOR,ISECND,NSCOOR,ISCOR1,
+     &        ISYXPR,ITHIRD,ITOP,ITRXPR,ITYP,NPCOMP
 C
       DOUBLE PRECISION PFAC,D1,DL,DS
 C
@@ -10277,7 +10276,7 @@ C
       double precision D0,GEOM,ORIGIN
 C
       PARAMETER (D0 = 0.D0)
-      DIMENSION GEOM(3*(NATOMS+NFLOAT)), ORIGIN(3)
+      DIMENSION GEOM(3*(NATOMS+NFLOAT)),ORIGIN(3)
 C
       integer I,J,IPRINT,IATOM1,IATOM2,ISYM1,ISYM2,
      &        KK,LL,NATOM1
@@ -10505,9 +10504,8 @@ C
 #include "ibtfun.h"
 #include "dgroup.h"
 C
-      integer I,J,K,KATOM,IPRINT,IATOM,ICOOR,
-     &        ISYMOP,IX,IY,JATOM,JX,JY,
-     &        NATTYP,NUMIS,KHZPPM
+      integer I,J,K,KATOM,IPRINT,IATOM,ICOOR,ISYMOP,IX,IY,
+     &        JATOM,JX,JY,NATTYP,NUMIS,KHZPPM
 C
       double precision D0,D1,FAC,FACPPM,FACTOT,FACTHOMAS,CONST,
      &                 GEOM(KATOM,3),AMASS(KATOM),GVAL(KATOM),
@@ -10526,11 +10524,11 @@ C
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, FACPPM = ALPHA2/2.D0*1.0D6,
      &           FAC = ALPHA2/(2.D0*PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
-      LOGICAL PLANAR, LINMOL,DOATOM(NUCIND)
+      LOGICAL PLANAR,LINMOL,DOATOM(NUCIND)
 C
 C
 Ciaa  Nuclear rotational angular momentum could be defined here to obtain Omega afterwards
-      DO 300 I = 1, 3
+      DO 300 I = 1,3
         ANGUMOM(I) = D1
  300  CONTINUE
 C
@@ -10688,14 +10686,14 @@ C
      & '   Nuclear contribution to SRC (M^nuc)   :',NSRNUCEQ,
      & '   Electronic contribution to SRC (M^LR) :',NSRLR
 C
-            IF (IPRINT .GE. 2*KHZPPM-1) 
+            IF (IPRINT .GE. 2*KHZPPM-1)
      &  WRITE(LUPRI,'(3(1X,A,F16.8,/),(1X,A,F16.8))')
      & '           M^LR-L(e-e) :',NSRLRLEE,
      & '           M^LR-S(e-e) :',NSRLRSEE,
      & '           M^LR-L(e-p) :',NSRLRLEP,
      & '           M^LR-S(e-p) :',NSRLRSEP
 C
-            IF (IPRINT .GE. 4) 
+            IF (IPRINT .GE. 4)
      &  WRITE(LUPRI,'(/,A,3(/,1X,A,F16.8),/,1X,A,F16.8,/,A)')
      & '******************************************************',
      & '********      M^NU         ********:',NSRNUC,
@@ -10809,14 +10807,14 @@ C
      & '   Nuclear contribution to SRC (M^nuc)   :',GTRANNEQ(3,3,IATOM),
      & '   Electronic contribution to SRC (M^LR) :',GTRANP(3,3,IATOM)
 C
-            IF (IPRINT .GE. 2*KHZPPM-1) 
+            IF (IPRINT .GE. 2*KHZPPM-1)
      &  WRITE(LUPRI,'(3(1X,A,F16.8,/),(1X,A,F16.8))')
      & '           M^LR-L(e-e) :',GTRANPLEE(3,3,IATOM),
      & '           M^LR-S(e-e) :',GTRANPSEE(3,3,IATOM),
      & '           M^LR-L(e-p) :',GTRANPLEP(3,3,IATOM),
      & '           M^LR-S(e-p) :',GTRANPSEP(3,3,IATOM)
 C
-            IF (IPRINT .GE. 4) 
+            IF (IPRINT .GE. 4)
      &  WRITE(LUPRI,'(/,A,4(/,1X,A,F16.8),/,A)')
      & '******************************************************',
      & '********      M^NU         ********:',GTRANNUC(3,3,IATOM),

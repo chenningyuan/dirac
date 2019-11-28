@@ -45,8 +45,8 @@ For molecules at their equilibrium geometry, it is found that the sum of the fir
 .. math::
 
    {\bf M}_N^{nuc} =& \; {\bf M}_N^{NU} (eq) \; + \; {\bf M}_N^{EV} (eq) \\
-                           =& \frac{e^2 \hslash^2}{2 m_p c^2} \, g_N \sum_{M \neq N} Z_M 
-                              \left[  \left( {\bf R}_{M,CM}  \cdot \frac{{\bf R}_{MN}}{|{\bf R}_{MN}|^3} \right) {\bf 1} 
+                           =& \frac{e^2 \hslash^2}{2 m_p c^2} \, g_N \sum_{M \neq N} Z_M
+                              \left[  \left( {\bf R}_{M,CM}  \cdot \frac{{\bf R}_{MN}}{|{\bf R}_{MN}|^3} \right) {\bf 1}
                                     - {\bf R}_{M,CM} \frac{{\bf R}_{MN}}{|{\bf R}_{MN}|^3} \right]   \otimes {\bf I}^{-1}
 
 Therefore, the electronic dependence of the nuclear spin-rotation tensor of a nucleus :math:`N` in a molecule in equilibrium is completely given by its linear response term, :math:`M_{N,\alpha\beta}^{LR}` (see Eq. 59 of :cite:`Aucar_JCP2012`).
