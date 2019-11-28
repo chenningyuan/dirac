@@ -7938,6 +7938,9 @@ C*****************************************************************************
       use memory_allocator
 C
       implicit none
+C
+      integer I
+C
 #include "priunit.h"
 C
 #include "mxcent.h"
@@ -7953,7 +7956,7 @@ C
 #include "molgfa.h"
 #include "dgroup.h"
 C
-      INTEGER IPRINT,I,INDOP1,INDXPR,IOP,IPTYP,
+      INTEGER IPRINT,INDOP1,INDXPR,IOP,IPTYP,
      &        ISYXPR,ITRXPR,NPCOMP
 C
       DOUBLE PRECISION PFAC,DL,DS
@@ -8198,6 +8201,9 @@ C***********************************************************************
       use memory_allocator
 C
       implicit none
+C
+      integer I,J
+C
 #include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -8219,7 +8225,7 @@ C
       double precision, allocatable :: PMATL(:,:,:),PMATS(:,:,:),
      &                                 GEOM(:,:),MASS(:),AMASS(:)
 C
-      integer IBUFA(3),IBUFB1(3),IBUFB2(3),I,IA,IB1,IB2,IFREQ,J,JA,
+      integer IBUFA(3),IBUFB1(3),IBUFB2(3),IA,IB1,IB2,IFREQ,JA,
      &        JATOM,JB1,JB2,KA,KB1,KB2,NA,NB1,NB2,IABLRF_EE,IABLRF_EP
       double precision ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &                 ABCNV(NBFREQ,NLRBPT),D0
@@ -8399,6 +8405,9 @@ C
 C***********************************************************************
 C
       implicit none
+C
+      integer I,J
+C
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -8412,7 +8421,7 @@ C
 C
       DIMENSION GEOM(3*(NATOMS+NFLOAT)),CMXYZ(3),ORIGIN(3)
 C
-      integer I,J,IX,IY,IZ,IPRINT,ISYMOP,KK
+      integer IX,IY,IZ,IPRINT,ISYMOP,KK
 C
       double precision XCOOR1,YCOOR1,ZCOOR1,XCOOR2,YCOOR2,ZCOOR2,D0
 
@@ -8478,9 +8487,12 @@ C     Agustín Aucar
 C     November 2019
 C
 C***********************************************************************
-C
       use codata
+C
       implicit none
+C
+      integer I,J
+C
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -8493,7 +8505,7 @@ C
 #include "ibtfun.h"
 #include "dgroup.h"
 C
-      integer I,IATOM,IX,IY,IPRINT,ISYMOP,J,JATOM,JX,JY,KATOM,NUMIS,
+      integer IATOM,IX,IY,IPRINT,ISYMOP,JATOM,JX,JY,KATOM,NUMIS,
      &        ICOOR,NATTYP
 C
       double precision GEOM(KATOM,3),AMASS(KATOM),ANGUMOM(3),
@@ -9759,7 +9771,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
       implicit none
 C
-      INTEGER I,J
+      integer I,J
 C
 #include "priunit.h"
 C
@@ -10110,6 +10122,8 @@ C***********************************************************************
 C
       implicit none
 C
+      integer I,J
+C
 #include "priunit.h"
 #include "mxcent.h"
 #include "dcbprp.h"
@@ -10141,8 +10155,8 @@ C
 C
       LOGICAL TEST
       INTEGER IBUFA(3*NUCDEP),IBUFB1(3),IBUFB2(3),IBUFEXP(3*NUCDEP),
-     &        IATINF(3,NUCDEP),I,IA,IB1,IB2,IATOM,IDEG,IDEP,IFREQ,
-     &        INUC,ISO,ISYMOP,ITYP,IZ,J,JA,JATOM,JB1,JB2,K,KA,KB1,KB2,
+     &        IATINF(3,NUCDEP),IA,IB1,IB2,IATOM,IDEG,IDEP,IFREQ,
+     &        INUC,ISO,ISYMOP,ITYP,IZ,JA,JATOM,JB1,JB2,K,KA,KB1,KB2,
      &        L,NA,NATOM,NB1,NB2,NCMAT,NEXP,NISO,NSCOOR,NSPEC,IEXP,
      &        JEXP,KEXP,IABLRF_EE,IABLRF_EP
       DOUBLE PRECISION RATINF(3,5,NUCDEP),DISOTP,ABCNV(NBFREQ,NLRBPT),
