@@ -9573,6 +9573,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use memory_allocator
 C
       implicit none
+C
+      INTEGER I,J
+C
 #include "priunit.h"
 C
 #include "mxcent.h"
@@ -9596,12 +9599,11 @@ C...common block for linear reponse
 #include "dcbgen.h"
 #include "spinro.h"
 C
-      INTEGER IPRINT,NATOM,I,J,IATOM,IATOM1,
+      INTEGER IPRINT,NATOM,IATOM,IATOM1,
      &        IC1,IC2,ICOOR,ICOOR1,IFIRST,ILOW,INDOP1,
      &        INDXPR,IOP,IPTYP,IREP,IREP1,IREP2,IREPO,IS1,
-     &        IS2,ISCOOR,ISCORD1,ISECND,
-     &        ISYXPR,ITHIRD,ITOP,ITRXPR,ITYP,NPCOMP,
-     &        NSCOOR,ISCOR1
+     &        IS2,ISCOOR,ISECND,NSCOOR,ISCOR1,
+     &        ISYXPR,ITHIRD,ITOP,ITRXPR,ITYP,NPCOMP
 C
       DOUBLE PRECISION PFAC,D1,DL,DS
 C
@@ -9922,6 +9924,7 @@ C***********************************************************************
       use memory_allocator
 C
       implicit none
+C
 #include "priunit.h"
 #include "mxcent.h"
 #include "dcbprp.h"
@@ -10122,8 +10125,6 @@ C--------------------------------------------------------------------
 C
 C     NUCLEAR PART OF NSR TENSOR
 C
-      CALL DZERO(SPRNUC,NCMAT)
-C
       CALL CMMASS(GEOM,MASS,NAT,ISOTOP,IPRPRP)
       WRITE (LUPRI,'(/,A,18X,3F20.15,//)')
      &    ' Gauge origin (a.u.):', (GAGORG(I),I=1,3)
@@ -10266,8 +10267,9 @@ C
 C***********************************************************************
 C
       implicit none
+C
       integer I,J
-
+C
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -10281,12 +10283,13 @@ C
       double precision D0,GEOM,ORIGIN
 C
       PARAMETER (D0 = 0.D0)
-      DIMENSION GEOM(3*(NATOMS+NFLOAT)), ORIGIN(3)
+      DIMENSION GEOM(3*(NATOMS+NFLOAT)),ORIGIN(3)
 C
       integer IPRINT,IATOM1,IATOM2,ISYM1,ISYM2,
      &        KK,LL,NATOM1
 C
-      double precision XDIF,YDIF,ZDIF,ZVAL2,PFAC
+      double precision XDIF,YDIF,ZDIF,XDIFCM,YDIFCM,ZDIFCM,
+     &                 XDIFCM2,YDIFCM2,ZDIFCM2,ZVAL2,PFAC
 C
       IF (IPRINT.GE.5) THEN
        CALL HEADER(
@@ -10298,8 +10301,10 @@ C
        enddo
       ENDIF
 C
-      CALL DZERO(SPRNUC,3*MXCOOR)
-
+      CALL DZERO(SPRNUC,9*NUCDEP)
+      CALL DZERO(SPRNUC2,9*NUCDEP)
+      CALL DZERO(SPRNUC3,9*NUCDEP)
+C
       KK = 1
       NATOM1 = 1
       DO 10 IATOM1 = 1, NUCIND
@@ -10313,29 +10318,82 @@ C
                            ZVAL2 = CHARGE(IATOM2)
                            IF (ZVAL2 .GT. D0) THEN
                               IF (KK .NE. LL) THEN
+C
                                  XDIF = GEOM(KK) - GEOM(LL)
                                  YDIF = GEOM(KK + 1) - GEOM(LL + 1)
                                  ZDIF = GEOM(KK + 2) - GEOM(LL + 2)
+C
+                                 XDIFCM = GEOM(KK) - ORIGIN(1)
+                                 YDIFCM = GEOM(KK + 1) - ORIGIN(2)
+                                 ZDIFCM = GEOM(KK + 2) - ORIGIN(3)
+C
+                                 XDIFCM2 = GEOM(LL) - ORIGIN(1)
+                                 YDIFCM2 = GEOM(LL + 1) - ORIGIN(2)
+                                 ZDIFCM2 = GEOM(LL + 2) - ORIGIN(3)
+C
                                  PFAC  = ZVAL2/(SQRT(XDIF*XDIF
      &                                + YDIF*YDIF + ZDIF*ZDIF))**3
-                                 SPRNUC(1,1,NATOM1) = SPRNUC(1,1,NATOM1)
+C
+                                SPRNUC(1,1,NATOM1) = SPRNUC(1,1,NATOM1)
      &                                + (YDIF*YDIF + ZDIF*ZDIF)*PFAC
-                                 SPRNUC(2,2,NATOM1) = SPRNUC(2,2,NATOM1)
+                                SPRNUC(2,2,NATOM1) = SPRNUC(2,2,NATOM1)
      &                                + (XDIF*XDIF + ZDIF*ZDIF)*PFAC
-                                 SPRNUC(3,3,NATOM1) = SPRNUC(3,3,NATOM1)
+                                SPRNUC(3,3,NATOM1) = SPRNUC(3,3,NATOM1)
      &                                + (XDIF*XDIF + YDIF*YDIF)*PFAC
-                                 SPRNUC(2,1,NATOM1) = SPRNUC(2,1,NATOM1)
+                                SPRNUC(2,1,NATOM1) = SPRNUC(2,1,NATOM1)
      &                                - YDIF*XDIF*PFAC
-                                 SPRNUC(3,1,NATOM1) = SPRNUC(3,1,NATOM1)
+                                SPRNUC(3,1,NATOM1) = SPRNUC(3,1,NATOM1)
      &                                - ZDIF*XDIF*PFAC
-                                 SPRNUC(1,2,NATOM1) = SPRNUC(1,2,NATOM1)
+                                SPRNUC(1,2,NATOM1) = SPRNUC(1,2,NATOM1)
      &                                - XDIF*YDIF*PFAC
-                                 SPRNUC(3,2,NATOM1) = SPRNUC(3,2,NATOM1)
+                                SPRNUC(3,2,NATOM1) = SPRNUC(3,2,NATOM1)
      &                                - ZDIF*YDIF*PFAC
-                                 SPRNUC(1,3,NATOM1) = SPRNUC(1,3,NATOM1)
+                                SPRNUC(1,3,NATOM1) = SPRNUC(1,3,NATOM1)
      &                                - XDIF*ZDIF*PFAC
-                                 SPRNUC(2,3,NATOM1) = SPRNUC(2,3,NATOM1)
+                                SPRNUC(2,3,NATOM1) = SPRNUC(2,3,NATOM1)
      &                                - YDIF*ZDIF*PFAC
+C
+C     Thomas precesion contribution to nuclear spin-rotation tensor
+C
+                              SPRNUC2(1,1,NATOM1) = SPRNUC2(1,1,NATOM1)
+     &                               - (YDIFCM*YDIF + ZDIFCM*ZDIF)*PFAC
+                              SPRNUC2(2,2,NATOM1) = SPRNUC2(2,2,NATOM1)
+     &                               - (XDIFCM*XDIF + ZDIFCM*ZDIF)*PFAC
+                              SPRNUC2(3,3,NATOM1) = SPRNUC2(3,3,NATOM1)
+     &                               - (XDIFCM*XDIF + YDIFCM*YDIF)*PFAC
+                              SPRNUC2(2,1,NATOM1) = SPRNUC2(2,1,NATOM1)
+     &                               + YDIFCM*XDIF*PFAC
+                              SPRNUC2(3,1,NATOM1) = SPRNUC2(3,1,NATOM1)
+     &                               + ZDIFCM*XDIF*PFAC
+                              SPRNUC2(1,2,NATOM1) = SPRNUC2(1,2,NATOM1)
+     &                               + XDIFCM*YDIF*PFAC
+                              SPRNUC2(3,2,NATOM1) = SPRNUC2(3,2,NATOM1)
+     &                               + ZDIFCM*YDIF*PFAC
+                              SPRNUC2(1,3,NATOM1) = SPRNUC2(1,3,NATOM1)
+     &                               + XDIFCM*ZDIF*PFAC
+                              SPRNUC2(2,3,NATOM1) = SPRNUC2(2,3,NATOM1)
+     &                               + YDIFCM*ZDIF*PFAC
+C
+C     Nuclear contribution to NSR for molecules in equilibrium
+C
+                            SPRNUC3(1,1,NATOM1) = SPRNUC3(1,1,NATOM1)
+     &                             - (YDIFCM2*YDIF + ZDIFCM2*ZDIF)*PFAC
+                            SPRNUC3(2,2,NATOM1) = SPRNUC3(2,2,NATOM1)
+     &                             - (XDIFCM2*XDIF + ZDIFCM2*ZDIF)*PFAC
+                            SPRNUC3(3,3,NATOM1) = SPRNUC3(3,3,NATOM1)
+     &                             - (XDIFCM2*XDIF + YDIFCM2*YDIF)*PFAC
+                            SPRNUC3(2,1,NATOM1) = SPRNUC3(2,1,NATOM1)
+     &                             + YDIFCM2*XDIF*PFAC
+                            SPRNUC3(3,1,NATOM1) = SPRNUC3(3,1,NATOM1)
+     &                             + ZDIFCM2*XDIF*PFAC
+                            SPRNUC3(1,2,NATOM1) = SPRNUC3(1,2,NATOM1)
+     &                             + XDIFCM2*YDIF*PFAC
+                            SPRNUC3(3,2,NATOM1) = SPRNUC3(3,2,NATOM1)
+     &                             + ZDIFCM2*YDIF*PFAC
+                            SPRNUC3(1,3,NATOM1) = SPRNUC3(1,3,NATOM1)
+     &                             + XDIFCM2*ZDIF*PFAC
+                            SPRNUC3(2,3,NATOM1) = SPRNUC3(2,3,NATOM1)
+     &                             + YDIFCM2*ZDIF*PFAC
                               END IF
                               LL = LL + 3
                            END IF
@@ -10361,9 +10419,9 @@ C
 C***********************************************************************
 C
       implicit none
-
+C
       integer I,J
-
+C
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -10444,9 +10502,9 @@ C***********************************************************************
       use codata
 C
       implicit none
-
+C
       integer I,J
-
+C
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -10459,28 +10517,31 @@ C
 #include "ibtfun.h"
 #include "dgroup.h"
 C
-      integer K,KATOM,IPRINT,IATOM,ICOOR,
-     &        ISYMOP,IX,IY,JATOM,JX,JY,
-     &        NATTYP,NUMIS,KHZPPM
+      integer K,KATOM,IPRINT,IATOM,ICOOR,ISYMOP,IX,IY,
+     &        JATOM,JX,JY,NATTYP,NUMIS,KHZPPM
 C
-      double precision D0,D1,FAC,FACPPM,GEOM(KATOM,3),AMASS(KATOM),
-     &                 GVAL(KATOM),DMAT(3,3,KATOM),ANGUMOM(3),
-     &                 PMATL(3,3,KATOM,2),PMATS(3,3,KATOM,2),
-     &                 NSREXV,NSRLR,NSRNUC,NSRTOT,CONST,FACTOT,
-     &                 NSRLRLEE,NSRLRLEP,NSRLRSEE,NSRLRSEP,
+      double precision D0,D1,FAC,FACPPM,FACTOT,FACTHOMAS,CONST,
+     &                 GEOM(KATOM,3),AMASS(KATOM),GVAL(KATOM),
      &                 EIGVAL(3),EIGVEC(3,3),OMEGA(3),TINERT(9),
-     &                 DISOTP,GTRANN(3,3,KATOM),
+     &                 DISOTP,ANGUMOM(3),DMAT(3,3,KATOM),
+     &                 PMATL(3,3,KATOM,2),PMATS(3,3,KATOM,2),
+     &                 NSRTOT,NSRNUC,NSRNUCTHO,NSREXV,NSREXVTHO,NSRLR,
+     &                 NSRLRLEE,NSRLRLEP,NSRLRSEE,NSRLRSEP,NSRNUCEQ,
+     &                 GTRANN(3,3,KATOM),GTRANNTHO(3,3,KATOM),
+     &                 GTRANNUC(3,3,KATOM),GTRAND(3,3,KATOM),
+     &                 GTRANEXP(3,3,KATOM),GTRANDTHO(3,3,KATOM),
      &                 GTRANPLEE(3,3,KATOM),GTRANPLEP(3,3,KATOM),
      &                 GTRANPSEE(3,3,KATOM),GTRANPSEP(3,3,KATOM),
-     &                 GTRANP(3,3,KATOM),GTRAND(3,3,KATOM)
+     &                 GTRANP(3,3,KATOM),GTRANNEQ(3,3,KATOM),
+     &                 GTRANTNEQ(3,3,KATOM)
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, FACPPM = ALPHA2/2.D0*1.0D6,
      &           FAC = ALPHA2/(2.D0*PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
-      LOGICAL PLANAR, LINMOL,DOATOM(NUCIND)
+      LOGICAL PLANAR,LINMOL,DOATOM(NUCIND)
 C
 C
 Ciaa  Nuclear rotational angular momentum could be defined here to obtain Omega afterwards
-      DO 300 I = 1, 3
+      DO 300 I = 1,3
         ANGUMOM(I) = D1
  300  CONTINUE
 C
@@ -10562,27 +10623,31 @@ C
         IF (IBTAND(ISTBNU(K),ISYMOP).EQ.0) THEN
          IATOM = IATOM + 1
          IF (DOATOM(K)) THEN
+          IF (CHARGE(IATOM).GT. D0) THEN
 C
 C    Print g-values of selected nuclei
 C
           IF (GVAL(IATOM) .NE. D0) THEN
+           FACTHOMAS=(CHARGE(IATOM)*PMASS)/(AMASS(IATOM)*GVAL(IATOM))
            IF (IPRINT .GE. 0) THEN
             CALL HEADER('Spin-rotation constants (kHz) for '//
      &                     NAMDEP(IATOM),-1)
-            WRITE (LUPRI,'(2X,A17,F12.6)')
+            WRITE (LUPRI,'(2X,A17,F12.6,/)')
      &                 'Nuclear g-value: ',GVAL(IATOM)
            END IF
           ELSE   !   if GVAL = 0
+           FACTHOMAS=(CHARGE(IATOM)*PMASS)/(AMASS(IATOM))
            IF (IPRINT .GE. 0) THEN
           CALL HEADER('Artificial spin-rotation constants (kHz) for '//
      &                     NAMDEP(IATOM),-1)
             WRITE (LUPRI,'(2X,A,F8.3)')
      &  'WARNING: Nuclear g-value NOT available for isotope of mass ',
      &  AMASS(IATOM)
-            WRITE (LUPRI,'(2X,A)')
+            WRITE (LUPRI,'(2X,A,/)')
      &  'Nuclear g-value is artificially set equal to 1'
            END IF
           END IF
+C
 C
 C         Linear molecule detected using symmetry
 C
@@ -10602,30 +10667,54 @@ C
      &                          NAMDEP(IATOM),-1)
              END IF
             END IF
-            NSRNUC   = SPRNUC(1,1,IATOM)*FACTOT
-            NSREXV   = DMAT(1,1,IATOM)*FACTOT
+C           Nuclear contribution to NSR for molecules in equilibrium
+            NSRNUCEQ = SPRNUC3(1,1,IATOM)*FACTOT
+C           Linear response contributions to NSR
             NSRLRLEE = PMATL(1,1,IATOM,1)*FACTOT
             NSRLRLEP = PMATL(1,1,IATOM,2)*FACTOT
             NSRLRSEE = PMATS(1,1,IATOM,1)*FACTOT
             NSRLRSEP = PMATS(1,1,IATOM,2)*FACTOT
 C           Total linear response contribution to NSR
             NSRLR=NSRLRLEE+NSRLRLEP+NSRLRSEE+NSRLRSEP
-C           Total spin-rotation constant
-            NSRTOT=NSRNUC+NSREXV+NSRLR
+C
+C           Total NSR for molecules in equilibrium
+C
+            NSRTOT=NSRNUCEQ+NSRLR
+C
+C           For molecules in non-equilibrium (general case)
+C
+C           Nuclear contributions to NSR
+            NSRNUC   = SPRNUC(1,1,IATOM)*FACTOT
+            NSRNUCTHO= SPRNUC2(1,1,IATOM)*FACTOT*FACTHOMAS
+            NSRNUC   = NSRNUC + NSRNUCTHO
+C           Expectation value contributions to NSR
+            NSREXV   = DMAT(1,1,IATOM)*FACTOT
+            NSREXVTHO= DMAT(1,1,IATOM)*FACTOT*FACTHOMAS
+            NSREXV   = NSREXV - NSREXVTHO
+C
 C
              IF (IPRINT .GE. 2*KHZPPM-2)
-     &  WRITE(LUPRI,'((1X,A,F16.8,/),/,2(1X,A,F16.8,/),(1X,A,F16.8))')
+     &  WRITE(LUPRI,'((1X,A,F16.8,/),/,1X,A,F16.8,/,1X,A,F16.8)')
      & ' Total spin-rotation constant (SRC)      :',NSRTOT,
-     & '   Nuclear contribution to SRC           :',NSRNUC,
-     & '   Expectation value contribution to SRC :',NSREXV,
-     & '   Linear response contribution to SRC   :',NSRLR
+     & '   Nuclear contribution to SRC (M^nuc)   :',NSRNUCEQ,
+     & '   Electronic contribution to SRC (M^LR) :',NSRLR
 C
-            IF (IPRINT .GE. 2*KHZPPM-1) 
+            IF (IPRINT .GE. 2*KHZPPM-1)
      &  WRITE(LUPRI,'(3(1X,A,F16.8,/),(1X,A,F16.8))')
-     & '           M^L(e-e) :',NSRLRLEE,
-     & '           M^S(e-e) :',NSRLRSEE,
-     & '           M^L(e-p) :',NSRLRLEP,
-     & '           M^S(e-p) :',NSRLRSEP
+     & '           M^LR-L(e-e) :',NSRLRLEE,
+     & '           M^LR-S(e-e) :',NSRLRSEE,
+     & '           M^LR-L(e-p) :',NSRLRLEP,
+     & '           M^LR-S(e-p) :',NSRLRSEP
+C
+            IF (IPRINT .GE. 4)
+     &  WRITE(LUPRI,'(/,A,3(/,1X,A,F16.8),/,1X,A,F16.8,/,A)')
+     & '******************************************************',
+     & '********      M^NU         ********:',NSRNUC,
+     & '********      M^EV         ********:',NSREXV,
+     & '********      M^LR         ********:',NSRLR,
+     & '********      M^total      ********:',NSRNUC+NSREXV+NSRLR,
+     & '******************************************************'
+C
  46        CONTINUE
 C
 C         Linear symmetry is not detected
@@ -10643,13 +10732,21 @@ C
              CALL HEADER('Spin-rotation constants (in ppm) for '//
      &                          NAMDEP(IATOM),-1)
             END IF
+C
+            CALL DZERO(GTRANT,9*NUCDEP)
+            CALL DZERO(GTRANNEQ,9*NUCDEP)
             CALL DZERO(GTRANN,9*NUCDEP)
+            CALL DZERO(GTRANNTHO,9*NUCDEP)
+            CALL DZERO(GTRANNUC,9*NUCDEP)
             CALL DZERO(GTRAND,9*NUCDEP)
+            CALL DZERO(GTRANDTHO,9*NUCDEP)
+            CALL DZERO(GTRANEXP,9*NUCDEP)
             CALL DZERO(GTRANP,9*NUCDEP)
             CALL DZERO(GTRANPLEE,9*NUCDEP)
             CALL DZERO(GTRANPLEP,9*NUCDEP)
             CALL DZERO(GTRANPSEE,9*NUCDEP)
             CALL DZERO(GTRANPSEP,9*NUCDEP)
+C
             DO 50 I = 1, 3
              DO 50 J = 1, 3
               DO 60 IX = 1, 3
@@ -10661,10 +10758,10 @@ C
                 ELSE
                  CONST = FACPPM
                 END IF
-                GTRANN(I,J,IATOM)=GTRANN(I,J,IATOM)+EIGVEC(IX,I)
-     &                       *SPRNUC(JX,JY,IATOM)*EIGVEC(IY,J)*CONST
-                GTRAND(I,J,IATOM)=GTRAND(I,J,IATOM)+EIGVEC(IX,I)
-     &                       *DMAT(JX,JY,IATOM)*EIGVEC(IY,J)*CONST
+C           Nuclear contribution to NSR for molecules in equilibrium
+                GTRANNEQ(I,J,IATOM)=GTRANNEQ(I,J,IATOM)+EIGVEC(IX,I)
+     &                       *SPRNUC3(JX,JY,IATOM)*EIGVEC(IY,J)*CONST
+C           Linear response contributions to NSR
                 GTRANPLEE(I,J,IATOM) = GTRANPLEE(I,J,IATOM)
      &                       + EIGVEC(IX,I)
      &                        *PMATL(JX,JY,IATOM,1)*EIGVEC(IY,J)*CONST
@@ -10677,36 +10774,75 @@ C
                 GTRANPSEP(I,J,IATOM) = GTRANPSEP(I,J,IATOM)
      &                       + EIGVEC(IX,I)
      &                        *PMATS(JX,JY,IATOM,2)*EIGVEC(IY,J)*CONST
-C               Total linear response contribution to NSR
+C           Total linear response contribution to NSR
                 GTRANP(I,J,IATOM) = GTRANPLEE(I,J,IATOM)
      &                       + GTRANPLEP(I,J,IATOM)
      &                       + GTRANPSEE(I,J,IATOM)
      &                       + GTRANPSEP(I,J,IATOM)
-C               Total spin-rotation tensor
-                GTRANT(I,J,IATOM) = GTRANN(I,J,IATOM)
-     &                       + GTRAND(I,J,IATOM) + GTRANP(I,J,IATOM)
+C
+C           Total NSR for molecules in equilibrium
+C
+            GTRANT(I,J,IATOM) = GTRANNEQ(I,J,IATOM) + GTRANP(I,J,IATOM)
+C
+C           For molecules in non-equilibrium (general case)
+C
+C           Nuclear contributions to NSR
+C
+                GTRANN(I,J,IATOM)=GTRANN(I,J,IATOM)+EIGVEC(IX,I)
+     &                       *SPRNUC(JX,JY,IATOM)*EIGVEC(IY,J)*CONST
+                GTRANNTHO(I,J,IATOM)=GTRANNTHO(I,J,IATOM)+EIGVEC(IX,I)
+     &                       *SPRNUC2(JX,JY,IATOM)*EIGVEC(IY,J)*CONST
+     &                       *FACTHOMAS
+C           Total nuclear contribution to NSR
+                GTRANNUC(I,J,IATOM) = GTRANN(I,J,IATOM)
+     &                               +GTRANNTHO(I,J,IATOM)
+C           Expectation value contributions to NSR
+                GTRAND(I,J,IATOM)=GTRAND(I,J,IATOM)+EIGVEC(IX,I)
+     &                       *DMAT(JX,JY,IATOM)*EIGVEC(IY,J)*CONST
+                GTRANDTHO(I,J,IATOM)=GTRANDTHO(I,J,IATOM)+EIGVEC(IX,I)
+     &                       *DMAT(JX,JY,IATOM)*EIGVEC(IY,J)*CONST
+     &                       *(-FACTHOMAS)
+C           Total expectation value contribution to NSR
+                GTRANEXP(I,J,IATOM) = GTRAND(I,J,IATOM)
+     &                               +GTRANDTHO(I,J,IATOM)
+C           TOTAL NSR for general case
+                GTRANTNEQ(I,J,IATOM) = GTRANNUC(I,J,IATOM)
+     &                       + GTRANEXP(I,J,IATOM) + GTRANP(I,J,IATOM)
  60           CONTINUE
  50         CONTINUE
 C
 C    At least one inertia tensor eigenvalue equal to zero (linear molecule):
             IF(LINMOL) THEN
-             IF (IPRINT .GE. 2*KHZPPM-2)
-     &  WRITE(LUPRI,'((1X,A,F16.8,/),/,2(1X,A,F16.8,/),(1X,A,F16.8))')
-     &  ' Total spin-rotation constant (SRC)      :',GTRANT(3,3,IATOM),
-     &  '   Nuclear contribution to SRC           :',GTRANN(3,3,IATOM),
-     &  '   Expectation value contribution to SRC :',GTRAND(3,3,IATOM),
-     &  '   Linear response contribution to SRC   :',GTRANP(3,3,IATOM)
 C
-             IF (IPRINT .GE. 2*KHZPPM-1)
+             IF (IPRINT .GE. 2*KHZPPM-2)
+     &  WRITE(LUPRI,'((1X,A,F16.8,/),/,1X,A,F16.8,/,1X,A,F16.8)')
+     & ' Total spin-rotation constant (SRC)      :',GTRANT(3,3,IATOM),
+     & '   Nuclear contribution to SRC (M^nuc)   :',GTRANNEQ(3,3,IATOM),
+     & '   Electronic contribution to SRC (M^LR) :',GTRANP(3,3,IATOM)
+C
+            IF (IPRINT .GE. 2*KHZPPM-1)
      &  WRITE(LUPRI,'(3(1X,A,F16.8,/),(1X,A,F16.8))')
-     &  '           M^L(e-e) :',GTRANPLEE(3,3,IATOM),
-     &  '           M^S(e-e) :',GTRANPSEE(3,3,IATOM),
-     &  '           M^L(e-p) :',GTRANPLEP(3,3,IATOM),
-     &  '           M^S(e-p) :',GTRANPSEP(3,3,IATOM)
+     & '           M^LR-L(e-e) :',GTRANPLEE(3,3,IATOM),
+     & '           M^LR-S(e-e) :',GTRANPSEE(3,3,IATOM),
+     & '           M^LR-L(e-p) :',GTRANPLEP(3,3,IATOM),
+     & '           M^LR-S(e-p) :',GTRANPSEP(3,3,IATOM)
+C
+            IF (IPRINT .GE. 4)
+     &  WRITE(LUPRI,'(/,A,4(/,1X,A,F16.8),/,A)')
+     & '******************************************************',
+     & '********      M^NU         ********:',GTRANNUC(3,3,IATOM),
+     & '********      M^EV         ********:',GTRANEXP(3,3,IATOM),
+     & '********      M^LR         ********:',GTRANP(3,3,IATOM),
+     & '********      M^total      ********:',GTRANTNEQ(3,3,IATOM),
+     & '******************************************************'
+C
 C
 C    Inertia tensor of a non-linear molecule (with and without symmetry):
             ELSE
              IF (IPRINT .GE. 2*KHZPPM-2) THEN
+C
+C           Total NSR for molecules in equilibrium
+C
               CALL HEADER('Total spin-rotation constant',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                 'A', (GTRANT(I,1,IATOM),I = 1,3),
@@ -10715,23 +10851,17 @@ C    Inertia tensor of a non-linear molecule (with and without symmetry):
               WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &                 'iso', (GTRANT(1,1,IATOM)
      &              +GTRANT(2,2,IATOM)+GTRANT(3,3,IATOM))/3
-              CALL HEADER('Nuclear contribution',-1)
+C           Nuclear contribution to NSR for molecules in equilibrium
+              CALL HEADER('Nuclear contribution to SRC (M^nuc)',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                 'A', (GTRANN(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRANN(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRANN(I,3,IATOM),I = 1,3)
+     &                 'A', (GTRANNEQ(I,1,IATOM),I = 1,3),
+     &                 'B', (GTRANNEQ(I,2,IATOM),I = 1,3),
+     &                 'C', (GTRANNEQ(I,3,IATOM),I = 1,3)
               WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
-     &                 'iso', (GTRANN(1,1,IATOM)
-     &              +GTRANN(2,2,IATOM)+GTRANN(3,3,IATOM))/3
-              CALL HEADER('Expectation value contribution',-1)
-              WRITE (LUPRI,'(3X,A,6X,3F16.8)')
-     &                 'A', (GTRAND(I,1,IATOM),I = 1,3),
-     &                 'B', (GTRAND(I,2,IATOM),I = 1,3),
-     &                 'C', (GTRAND(I,3,IATOM),I = 1,3)
-              WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
-     &                 'iso', (GTRAND(1,1,IATOM)
-     &              +GTRAND(2,2,IATOM)+GTRAND(3,3,IATOM))/3
-              CALL HEADER('Linear response contribution',-1)
+     &                 'iso', (GTRANNEQ(1,1,IATOM)
+     &              +GTRANNEQ(2,2,IATOM)+GTRANNEQ(3,3,IATOM))/3
+C           Total linear response contribution to NSR
+              CALL HEADER('Electronic contribution to SRC (M^LR)',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                 'A', (GTRANP(I,1,IATOM),I = 1,3),
      &                 'B', (GTRANP(I,2,IATOM),I = 1,3),
@@ -10741,7 +10871,7 @@ C    Inertia tensor of a non-linear molecule (with and without symmetry):
      &              +GTRANP(2,2,IATOM)+GTRANP(3,3,IATOM))/3
              END IF
 C
-C            Print linear response contributions to NSR in detail
+C           Linear response contributions to NSR
 C
              IF (IPRINT .GE. 2*KHZPPM-1) THEN
               CALL HEADER('M^L(e-e)',-1)
@@ -10777,9 +10907,37 @@ C
      &                 'iso', (GTRANPSEP(1,1,IATOM)
      &              +GTRANPSEP(2,2,IATOM)+GTRANPSEP(3,3,IATOM))/3
              END IF
+C
+C           For molecules in non-equilibrium (general case)
+C
+C           Total nuclear contribution to NSR
+             IF (IPRINT .GE. 4) THEN
+              WRITE(LUPRI,'(/,/,A)')
+     & '*************************************************************'
+              CALL HEADER('M^NU',-1)
+              WRITE (LUPRI,'(3X,A,6X,3F16.8)')
+     &                 'A', (GTRANNUC(I,1,IATOM),I = 1,3),
+     &                 'B', (GTRANNUC(I,2,IATOM),I = 1,3),
+     &                 'C', (GTRANNUC(I,3,IATOM),I = 1,3)
+              WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
+     &                 'iso', (GTRANNUC(1,1,IATOM)
+     &              +GTRANNUC(2,2,IATOM)+GTRANNUC(3,3,IATOM))/3
+C           Total expectation value contribution to NSR
+              CALL HEADER('M^EV',-1)
+              WRITE (LUPRI,'(3X,A,6X,3F16.8)')
+     &                 'A', (GTRANEXP(I,1,IATOM),I = 1,3),
+     &                 'B', (GTRANEXP(I,2,IATOM),I = 1,3),
+     &                 'C', (GTRANEXP(I,3,IATOM),I = 1,3)
+              WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
+     &                 'iso', (GTRANEXP(1,1,IATOM)
+     &              +GTRANEXP(2,2,IATOM)+GTRANEXP(3,3,IATOM))/3
+              WRITE(LUPRI,'(A)')
+     & '*************************************************************'
+             END IF
             END IF  ! (LINMOL)
  47        CONTINUE
           END IF    ! (LINEAR)
+          END IF    ! (CHARGE(IATOM).GT.D0)
          END IF     ! (DOATOM(K))
         END IF
  200   CONTINUE
