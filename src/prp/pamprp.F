@@ -8628,16 +8628,16 @@ C       Total molecular g-factor
 C
         IF (IPRINT .GE. 1)
      &  WRITE(LUPRI,'((1X,A,F16.8,/),/,2(1X,A,F16.8,/),(1X,A,F16.8))')
-     & ' Total molecular g-factor                    :',GFATOT,
-     & '   Nuclear contribution to g-factor          :',GFAN,
-     & '   Linear response contribution to g-factor  :',GFALR
+     & ' Total molecular g-factor                     :',GFATOT,
+     & '   Nuclear contribution to g-factor (g^nuc)   :',GFAN,
+     & '   Electronic contribution to g-factor (g^LR) :',GFALR
 C
         IF (IPRINT .GE. 2) 
      &  WRITE(LUPRI,'(3(1X,A,F16.8,/),(1X,A,F16.8))')
-     & '           g^L(e-e) :',GFALRLEE,
-     & '           g^S(e-e) :',GFALRSEE,
-     & '           g^L(e-p) :',GFALRLEP,
-     & '           g^S(e-p) :',GFALRSEP
+     & '           g^LR-L(e-e) :',GFALRLEE,
+     & '           g^LR-S(e-e) :',GFALRSEE,
+     & '           g^LR-L(e-p) :',GFALRLEP,
+     & '           g^LR-S(e-p) :',GFALRSEP
 C
 C     Linear symmetry is not detected
 C
@@ -8679,16 +8679,16 @@ C    At least one inertia tensor eigenvalue equal to zero (linear molecule):
         IF(LINMOL) THEN
           IF (IPRINT .GE. 1)
      &  WRITE(LUPRI,'((1X,A,F16.8,/),/,2(1X,A,F16.8,/),(1X,A,F16.8))')
-     &  ' Total molecular g-factor                    :',GTRANT(3,3),
-     &  '   Nuclear contribution to g-factor          :',GTRANN(3,3),
-     &  '   Linear response contribution to g-factor  :',GTRANP(3,3)
+     &  ' Total molecular g-factor                     :',GTRANT(3,3),
+     &  '   Nuclear contribution to g-factor (g^nuc)   :',GTRANN(3,3),
+     &  '   Electronic contribution to g-factor (g^LR) :',GTRANP(3,3)
 C
           IF (IPRINT .GE. 2)
      &  WRITE(LUPRI,'(3(1X,A,F16.8,/),(1X,A,F16.8))')
-     &  '           g^L(e-e) :',GTRANPLEE(3,3),
-     &  '           g^S(e-e) :',GTRANPSEE(3,3),
-     &  '           g^L(e-p) :',GTRANPLEP(3,3),
-     &  '           g^S(e-p) :',GTRANPSEP(3,3)
+     &  '           g^LR-L(e-e) :',GTRANPLEE(3,3),
+     &  '           g^LR-S(e-e) :',GTRANPSEE(3,3),
+     &  '           g^LR-L(e-p) :',GTRANPLEP(3,3),
+     &  '           g^LR-S(e-p) :',GTRANPSEP(3,3)
 C
 C    Inertia tensor of a non-linear molecule (with and without symmetry):
         ELSE
@@ -8701,7 +8701,7 @@ C    Inertia tensor of a non-linear molecule (with and without symmetry):
             WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &               'iso', (GTRANT(1,1)
      &            +GTRANT(2,2)+GTRANT(3,3))/3
-            CALL HEADER('Nuclear contribution',-1)
+            CALL HEADER('Nuclear contribution (g^nuc)',-1)
             WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &               'A', (GTRANN(I,1),I = 1,3),
      &               'B', (GTRANN(I,2),I = 1,3),
@@ -8709,7 +8709,7 @@ C    Inertia tensor of a non-linear molecule (with and without symmetry):
             WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &               'iso', (GTRANN(1,1)
      &            +GTRANN(2,2)+GTRANN(3,3))/3
-            CALL HEADER('Linear response contribution',-1)
+            CALL HEADER('Electronic contribution (g^LR)',-1)
             WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &               'A', (GTRANP(I,1),I = 1,3),
      &               'B', (GTRANP(I,2),I = 1,3),
@@ -8722,7 +8722,7 @@ C
 C         Print linear response contributions to NSR in detail
 C
           IF (IPRINT .GE. 2) THEN
-            CALL HEADER('g^L(e-e)',-1)
+            CALL HEADER('g^LR-L(e-e)',-1)
             WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &               'A', (GTRANPLEE(I,1),I = 1,3),
      &               'B', (GTRANPLEE(I,2),I = 1,3),
@@ -8730,7 +8730,7 @@ C
             WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &               'iso', (GTRANPLEE(1,1)
      &            +GTRANPLEE(2,2)+GTRANPLEE(3,3))/3
-            CALL HEADER('g^S(e-e)',-1)
+            CALL HEADER('g^LR-S(e-e)',-1)
             WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &               'A', (GTRANPSEE(I,1),I = 1,3),
      &               'B', (GTRANPSEE(I,2),I = 1,3),
@@ -8738,7 +8738,7 @@ C
             WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &               'iso', (GTRANPSEE(1,1)
      &            +GTRANPSEE(2,2)+GTRANPSEE(3,3))/3
-            CALL HEADER('g^L(e-p)',-1)
+            CALL HEADER('g^LR-L(e-p)',-1)
             WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &               'A', (GTRANPLEP(I,1),I = 1,3),
      &               'B', (GTRANPLEP(I,2),I = 1,3),
@@ -8746,7 +8746,7 @@ C
             WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &               'iso', (GTRANPLEP(1,1)
      &              +GTRANPLEP(2,2)+GTRANPLEP(3,3))/3
-            CALL HEADER('g^S(e-p)',-1)
+            CALL HEADER('g^LR-S(e-p)',-1)
             WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &               'A', (GTRANPSEP(I,1),I = 1,3),
      &               'B', (GTRANPSEP(I,2),I = 1,3),
@@ -11074,7 +11074,7 @@ C
 C           Linear response contributions to NSR
 C
              IF (IPRINT .GE. 2*KHZPPM-1) THEN
-              CALL HEADER('M^L(e-e)',-1)
+              CALL HEADER('M^LR-L(e-e)',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                 'A', (GTRANPLEE(I,1,IATOM),I = 1,3),
      &                 'B', (GTRANPLEE(I,2,IATOM),I = 1,3),
@@ -11082,7 +11082,7 @@ C
               WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &                 'iso', (GTRANPLEE(1,1,IATOM)
      &              +GTRANPLEE(2,2,IATOM)+GTRANPLEE(3,3,IATOM))/3
-              CALL HEADER('M^S(e-e)',-1)
+              CALL HEADER('M^LR-S(e-e)',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                 'A', (GTRANPSEE(I,1,IATOM),I = 1,3),
      &                 'B', (GTRANPSEE(I,2,IATOM),I = 1,3),
@@ -11090,7 +11090,7 @@ C
               WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &                 'iso', (GTRANPSEE(1,1,IATOM)
      &              +GTRANPSEE(2,2,IATOM)+GTRANPSEE(3,3,IATOM))/3
-              CALL HEADER('M^L(e-p)',-1)
+              CALL HEADER('M^LR-L(e-p)',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                 'A', (GTRANPLEP(I,1,IATOM),I = 1,3),
      &                 'B', (GTRANPLEP(I,2,IATOM),I = 1,3),
@@ -11098,7 +11098,7 @@ C
               WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &                 'iso', (GTRANPLEP(1,1,IATOM)
      &              +GTRANPLEP(2,2,IATOM)+GTRANPLEP(3,3,IATOM))/3
-              CALL HEADER('M^S(e-p)',-1)
+              CALL HEADER('M^LR-S(e-p)',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                 'A', (GTRANPSEP(I,1,IATOM),I = 1,3),
      &                 'B', (GTRANPSEP(I,2,IATOM),I = 1,3),
