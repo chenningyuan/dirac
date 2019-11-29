@@ -163,7 +163,7 @@ Results are dimensionless.
 
 The total g-tensor, as well as its linear response and nuclear contributions are always given separately.
 
-Using :ref:`PROPERTIES_.PRINT` 2, the paramagnetic (e-e) and diamagnetic (e-p) parts of the linear response contributions are given separately, together with results for the :math:`\mathbf{L}` and :math:`\mathbf{S}` parts of the linear response.
+Using :ref:`PROPERTIES_.PRINT` 1, the paramagnetic (e-e) and diamagnetic (e-p) parts of the linear response contributions are given separately, together with results for the :math:`\mathbf{L}` and :math:`\mathbf{S}` parts of the linear response.
 
 See :cite:`Aucar_JCP2014` for further details.
 

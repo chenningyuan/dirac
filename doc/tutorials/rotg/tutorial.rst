@@ -60,7 +60,7 @@ It is also interesting to note that as :ref:`HAMILTONIAN_.URKBAL` is requested i
 Reading the output file
 -----------------------
 
-As the :ref:`PROPERTIES_.PRINT` flag in the input file is set to 2, the results are fully detailed.
+As the :ref:`PROPERTIES_.PRINT` flag in the input file is set to 1, the results are fully detailed.
 
 The g-factor Hydrogen fluoride molecule will look like:
 

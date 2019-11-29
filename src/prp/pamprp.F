@@ -8374,12 +8374,15 @@ C           then extract the e-p contribution
         ENDDO
       END DO
 C
-      WRITE(LUPRI,'(2X,A)')
-     & 'NOTE: The electronic angular momentum operator is defined'//
-     & ' with respect to the gauge origin.'
-      WRITE(LUPRI,'(8X,A)')
+      WRITE(LUPRI,'(/,A,/2X,A,/,8X,A,/,A)')
+     & '*********************************************************' //
+     & '********************************************',
+     & 'NOTE: The electronic angular momentum operator is defined' //
+     & ' with respect to the gauge origin.',
      & 'Then, it must be placed at the molecular CM to get correct'//
-     & ' values of g-tensors.'
+     & ' values of spin-rotation tensors.',
+     & '*********************************************************' //
+     & '********************************************'
 C--------------------------------------------------------------------
       CALL MGFRES(GEOM,AMASS,JATOM,PMATL,PMATS,IPRPRP)
 C--------------------------------------------------------------------
@@ -8626,13 +8629,13 @@ C       Total linear response contribution to GFA
 C       Total molecular g-factor
         GFATOT=GFAN+GFALR
 C
-        IF (IPRINT .GE. 1)
+        IF (IPRINT .GE. 0)
      &  WRITE(LUPRI,'((1X,A,F16.8,/),/,2(1X,A,F16.8,/),(1X,A,F16.8))')
      & ' Total molecular g-factor                     :',GFATOT,
      & '   Nuclear contribution to g-factor (g^nuc)   :',GFAN,
      & '   Electronic contribution to g-factor (g^LR) :',GFALR
 C
-        IF (IPRINT .GE. 2) 
+        IF (IPRINT .GE. 1) 
      &  WRITE(LUPRI,'(3(1X,A,F16.8,/),(1X,A,F16.8))')
      & '           g^LR-L(e-e) :',GFALRLEE,
      & '           g^LR-S(e-e) :',GFALRSEE,
@@ -8677,13 +8680,13 @@ C           Total spin-rotation tensor
 C
 C    At least one inertia tensor eigenvalue equal to zero (linear molecule):
         IF(LINMOL) THEN
-          IF (IPRINT .GE. 1)
+          IF (IPRINT .GE. 0)
      &  WRITE(LUPRI,'((1X,A,F16.8,/),/,2(1X,A,F16.8,/),(1X,A,F16.8))')
      &  ' Total molecular g-factor                     :',GTRANT(3,3),
      &  '   Nuclear contribution to g-factor (g^nuc)   :',GTRANN(3,3),
      &  '   Electronic contribution to g-factor (g^LR) :',GTRANP(3,3)
 C
-          IF (IPRINT .GE. 2)
+          IF (IPRINT .GE. 1)
      &  WRITE(LUPRI,'(3(1X,A,F16.8,/),(1X,A,F16.8))')
      &  '           g^LR-L(e-e) :',GTRANPLEE(3,3),
      &  '           g^LR-S(e-e) :',GTRANPSEE(3,3),
@@ -8692,7 +8695,7 @@ C
 C
 C    Inertia tensor of a non-linear molecule (with and without symmetry):
         ELSE
-          IF (IPRINT .GE. 1) THEN
+          IF (IPRINT .GE. 0) THEN
             CALL HEADER('Total g-tensor',-1)
             WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &               'A', (GTRANT(I,1),I = 1,3),
@@ -8721,7 +8724,7 @@ C    Inertia tensor of a non-linear molecule (with and without symmetry):
 C
 C         Print linear response contributions to NSR in detail
 C
-          IF (IPRINT .GE. 2) THEN
+          IF (IPRINT .GE. 1) THEN
             CALL HEADER('g^LR-L(e-e)',-1)
             WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &               'A', (GTRANPLEE(I,1),I = 1,3),
@@ -10427,12 +10430,15 @@ C           ... extract the e-p response part into PMAT(...,2)
         END IF
       END DO
 C
-      WRITE(LUPRI,'(2X,A)')
-     & 'NOTE: The electronic angular momentum operator is defined'//
-     & ' with respect to the gauge origin.'
-      WRITE(LUPRI,'(8X,A)')
+      WRITE(LUPRI,'(/,A,/2X,A,/,8X,A,/,A)')
+     & '*********************************************************' //
+     & '********************************************',
+     & 'NOTE: The electronic angular momentum operator is defined' //
+     & ' with respect to the gauge origin.',
      & 'Then, it must be placed at the molecular CM to get correct'//
-     & ' values of spin-rotation tensors.'
+     & ' values of spin-rotation tensors.',
+     & '*********************************************************' //
+     & '********************************************'
 C--------------------------------------------------------------------
       CALL SPRRES(GEOM,AMASS,GVAL,SPRDNL,PMATL,PMATS,JATOM,
      &            IPRPRP,DOATOM)
