@@ -1,7 +1,7 @@
 :orphan:
 
 
-18.1 (unreleased)
+19.0 (2019-12-12)
 -----------------
 
 New features:
