@@ -1236,12 +1236,12 @@ C
             TEMP(1) = DIPORG(1)
             TEMP(2) = DIPORG(2)
             TEMP(3) = DIPORG(3)
-         ELSE IF ((INTTYP .EQ. 18) .OR. (INTTYP .EQ. 37) .OR.
-     &            (INTTYP .EQ. 38)) THEN
+         ELSE IF ((INTTYP .EQ. 37) .OR. (INTTYP .EQ. 38)) THEN
             TEMP(1) = GAGORG(1)
             TEMP(2) = GAGORG(2)
             TEMP(3) = GAGORG(3)
-         ELSE IF ((INTTYP .EQ. 46) .OR. (INTTYP .EQ. 47)) THEN
+         ELSE IF ((INTTYP .EQ. 18) .OR. (INTTYP .EQ. 46) .OR.
+     &            (INTTYP .EQ. 47)) THEN
             TEMP(1) = CAVORG(1)
             TEMP(2) = CAVORG(2)
             TEMP(3) = CAVORG(3)

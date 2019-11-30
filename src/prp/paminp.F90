@@ -590,19 +590,17 @@
 #endif
 
 !=========================================================================
-!iaa  Set the molecular CM as gauge origin (origin of L angular moment)
+!iaa  Set the molecular CM as CAVORG (origin of L angular moment)
 !     for spin-rotations and molecular g-tensors
 !=========================================================================
       if (spinro.or.rotg) then
-! ... make the center of mass the gauge and dipole origin (default in dalton)
-! ... call the routine in abacus/hergp.F
+! ... make the center of mass the CAVORG
         CALL CMMASS(GEOM,MASS,NAT,ISOTOP,IPRPRP)
-        CALL DCOPY(3,CMXYZ,1,GAGORG,1)
-        CALL DCOPY(3,GAGORG,1,DIPORG,1)
-        write(LUPRI,'(//,1X,A)')                                        &
-     &'Gauge & dipole origin are changed to the molecular CM position'
-        write(LUPRI,'(/A,9X,3F20.15)')                                  &
-     &  ' Gauge & dipole origin (a.u.):',(GAGORG(I), I = 1, 3)
+        CALL DCOPY(3,CMXYZ,1,CAVORG,1)
+        write(LUPRI,'(/,1X,A)')                                        &
+     &'CAVORG was defined as the molecular CM position'
+        write(LUPRI,'(/A,24X,3F20.15)')                                  &
+     &  ' CAVORG (a.u.):',(CAVORG(I), I = 1, 3)
       end if
 !===========================================================================
 ! Define special operators for the list of properties programmed in DIRAC

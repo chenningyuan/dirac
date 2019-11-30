@@ -8246,7 +8246,6 @@ C
       WRITE(LUPRI,'(13X,A)')
      & 'According to I. A. Aucar et al, JCP 141 (2014) p.194103'
       CALL PRSYMB(LUPRI,'-',81,0)
-      WRITE(LUPRI,*) ''
 C
 C--------------------------------------------------------------------
 C--------------------------------------------------------------------
@@ -8306,9 +8305,6 @@ C
       CALL DZERO(GFANUC,9)
 C
       CALL CMMASS(GEOM,MASS,NAT,ISOTOP,IPRPRP)
-      WRITE (LUPRI,'(/,A,18X,3F20.15,//)')
-     &    ' Gauge origin (a.u.):', (GAGORG(I),I=1,3)
-      CALL DCOPY(3,CMXYZ,1,GAGORG,1)
       CALL NUCMGF(GEOM,CMXYZ,GAGORG,IPRPRP)
 C
 C--------------------------------------------------------------------
@@ -8335,8 +8331,8 @@ C
 C
 C
       DO IFREQ = 1,NBFREQ
-        CALL PRSYMB(LUPRI,'-',72,2)
         IF(.NOT.BFREQ(IFREQ).EQ.D0) THEN
+           CALL PRSYMB(LUPRI,'-',72,2)
            WRITE(LUPRI,'(A,F15.8,A)') 
      &          '*** Frequency    :',BFREQ(IFREQ),'a.u.'
         ENDIF
@@ -8374,13 +8370,19 @@ C           then extract the e-p contribution
         ENDDO
       END DO
 C
+      WRITE (LUPRI,'(/,A,18X,3F20.15)')
+     &    ' Gauge origin (a.u.):', (GAGORG(I),I=1,3)
+C
+      WRITE (LUPRI,'(/,A,17X,3F20.15)')
+     &    ' Cavity origin (a.u.):', (CAVORG(I),I=1,3)
+C
       WRITE(LUPRI,'(/,A,/2X,A,/,8X,A,/,A)')
      & '*********************************************************' //
      & '********************************************',
      & 'NOTE: The electronic angular momentum operator is defined' //
-     & ' with respect to the gauge origin.',
+     & ' with respect to the "cavity origin".',
      & 'Then, it must be placed at the molecular CM to get correct'//
-     & ' values of spin-rotation tensors.',
+     & ' values of g-tensors.',
      & '*********************************************************' //
      & '********************************************'
 C--------------------------------------------------------------------
@@ -10328,9 +10330,6 @@ C
 C     NUCLEAR PART OF NSR TENSOR
 C
       CALL CMMASS(GEOM,MASS,NAT,ISOTOP,IPRPRP)
-      WRITE (LUPRI,'(/,A,18X,3F20.15,//)')
-     &    ' Gauge origin (a.u.):', (GAGORG(I),I=1,3)
-      CALL DCOPY(3,CMXYZ,1,GAGORG,1)
       CALL NUCSPR(GEOM,CMXYZ,IPRPRP)
 C
 C-------------------------------------------------------------------
@@ -10371,8 +10370,8 @@ C
 C
 C
       DO IFREQ = 1,NBFREQ
-        CALL PRSYMB(LUPRI,'-',72,2)
         IF(.NOT.BFREQ(IFREQ).EQ.D0) THEN
+           CALL PRSYMB(LUPRI,'-',72,2)
            WRITE(LUPRI,'(A,F15.8,A)')
      &          '*** Frequency    :',BFREQ(IFREQ),' a.u.'
         ENDIF
@@ -10430,11 +10429,14 @@ C           ... extract the e-p response part into PMAT(...,2)
         END IF
       END DO
 C
+      WRITE (LUPRI,'(/,A,17X,3F20.15)')
+     &    ' Cavity origin (a.u.):', (CAVORG(I),I=1,3)
+C
       WRITE(LUPRI,'(/,A,/2X,A,/,8X,A,/,A)')
      & '*********************************************************' //
      & '********************************************',
      & 'NOTE: The electronic angular momentum operator is defined' //
-     & ' with respect to the gauge origin.',
+     & ' with respect to the "cavity origin".',
      & 'Then, it must be placed at the molecular CM to get correct'//
      & ' values of spin-rotation tensors.',
      & '*********************************************************' //
