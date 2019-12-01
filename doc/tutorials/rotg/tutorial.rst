@@ -11,7 +11,7 @@ In this tutorial we introduce the calculation of molecular rotational g-tensors 
 developments by I. Agustín Aucar *et al.* For details, you are welcome to consult :cite:`Aucar_JCP2014`.
 
 .. note::
-   
+
    The current implementation gives theoretically correct results only for molecules in equilibrium.
 
 
@@ -27,7 +27,7 @@ In tensorial notation, the rotational g-tensor contributions of a molecule are g
 
 .. math::
 
-   {\bf g}^{nuc} = m_p \; \left\{ \sum_{M} Z_M \left[ \left( {\bf R}_{M,GO} \cdot {\bf R}_{M,CM} \right) {\bf 1} - {\bf R}_{M,GO} {\bf R}_{M,CM} \right] \right\} \otimes {\bf I}^{-1} 
+   {\bf g}^{nuc} = m_p \; \left\{ \sum_{M} Z_M \left[ \left( {\bf R}_{M,GO} \cdot {\bf R}_{M,CM} \right) {\bf 1} - {\bf R}_{M,GO} {\bf R}_{M,CM} \right] \right\} \otimes {\bf I}^{-1}
 
 .. math::
 

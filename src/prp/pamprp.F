@@ -8333,7 +8333,7 @@ C
       DO IFREQ = 1,NBFREQ
         IF(.NOT.BFREQ(IFREQ).EQ.D0) THEN
            CALL PRSYMB(LUPRI,'-',72,2)
-           WRITE(LUPRI,'(A,F15.8,A)') 
+           WRITE(LUPRI,'(A,F15.8,A)')
      &          '*** Frequency    :',BFREQ(IFREQ),'a.u.'
         ENDIF
         CALL DZERO(PMATL,2*9)
@@ -8637,7 +8637,7 @@ C
      & '   Nuclear contribution to g-factor (g^nuc)   :',GFAN,
      & '   Electronic contribution to g-factor (g^LR) :',GFALR
 C
-        IF (IPRINT .GE. 1) 
+        IF (IPRINT .GE. 1)
      &  WRITE(LUPRI,'(3(1X,A,F16.8,/),(1X,A,F16.8))')
      & '           g^LR-L(e-e) :',GFALRLEE,
      & '           g^LR-S(e-e) :',GFALRSEE,
@@ -8666,7 +8666,7 @@ C
      &                   *GFANUC(JX,JY)*EIGVEC(IY,J)*CONST
             GTRANPLEE(I,J) = GTRANPLEE(I,J) + EIGVEC(IX,I)
      &                   *PMATL(JX,JY,1)*EIGVEC(IY,J)*CONST
-            GTRANPLEP(I,J) = GTRANPLEP(I,J) + EIGVEC(IX,I) 
+            GTRANPLEP(I,J) = GTRANPLEP(I,J) + EIGVEC(IX,I)
      &                   *PMATL(JX,JY,2)*EIGVEC(IY,J)*CONST
             GTRANPSEE(I,J) = GTRANPSEE(I,J) + EIGVEC(IX,I)
      &                   *PMATS(JX,JY,1)*EIGVEC(IY,J)*CONST
