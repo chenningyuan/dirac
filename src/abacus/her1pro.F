@@ -24,6 +24,7 @@ C  /* Deck pr1int */
      &                  TRIANG,PROPRI,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
+#include "dummy.h"
 #include "maxmom.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -4012,7 +4013,7 @@ C
       RETURN
       END
 C  /* Deck binom */
-      FUNCTION BINOM(I,J)
+      REAL*8 FUNCTION BINOM(I,J)
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D1=1.D0)
@@ -4041,13 +4042,12 @@ C
 #include "iratdef.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
+      PARAMETER ( LUPROP = 19 )
 #else
 #include "gnrinf.h"
 #endif
-      PARAMETER ( LUPROP = 19 )
 C
       CHARACTER*8 LABEL,RTNLBL(2)
-      LOGICAL FIRST
       DIMENSION AINT(LENGTH)
 C
 C     Open file
@@ -4075,7 +4075,7 @@ C
 C     We add an extra label to signify EOF
 C
       CALL NEWLB2('EOFLABEL',RTNLBL,LUPROP,LUPRI)
-C      
+C
       RETURN
       END
 C  /* Deck dsotst */
@@ -4300,5 +4300,4 @@ C.....Imaginary part of exponential
 C
       RETURN
       END
-      
-      
+C --- end of her1pro.F ---

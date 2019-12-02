@@ -84,11 +84,8 @@ module sigma_eom
       call dealloc(A%W_mbej,    id="W_mbej")
       call dealloc(A%W_iemn,    id="W_iemn")
 
-! todo: get special handling for these in the case of i4 ? we keep using deallocate here for the time being
-!     call dealloc(A%W_efam,    id="W_efam")
-!     call dealloc(A%W_amef,    id="W_amef")
-      if (allocated(A%W_efam)) deallocate(A%W_efam)
-      if (allocated(A%W_amef)) deallocate(A%W_amef)
+      call dealloc(A%W_efam,    id="W_efam")
+      call dealloc(A%W_amef,    id="W_amef")
 
       call dealloc(A%W_mnie,    id="W_mnie")
       call dealloc(A%Wbar_mbej, id="Wbar_mbej")

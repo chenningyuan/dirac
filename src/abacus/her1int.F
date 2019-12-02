@@ -40,7 +40,7 @@ C
      &     ' <<<<<<<<<< OUTPUT FROM PR1DRV >>>>>>>>>> '
       npoint = 1
 
-      if      (inttyp == 12) then
+      if      (inttyp == 12) then ! DSO
         npoint = npquad
         nshint = 9*natom*natom
       else if (inttyp == 101) then
@@ -172,7 +172,7 @@ C
          JMAXM  = 0
          DONUC1 = .TRUE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ.12) THEN
+      ELSE IF (INTTYP .EQ.12) THEN ! DSO
          JMAXD  = 1
          JMAXM  = 0
          DONUC1 = .TRUE.
@@ -545,7 +545,7 @@ C     ****************************************************************
 C     *** Prepare for Gaussian quadrature (diamagnetic spin-orbit) ***
 C     ****************************************************************
 C
-      IF (INTTYP .EQ. 12) THEN
+      IF (INTTYP .EQ. 12) THEN ! DSO
 C        HER = NPOINT .EQ. 5 .OR. NPOINT .EQ. 6 .OR.
 C    &         NPOINT .EQ. 8 .OR. NPOINT .EQ. 10
          HER = .FALSE.
@@ -806,7 +806,7 @@ C
       NATOMC = 0
       IF ((INTTYP .EQ. 5) .OR. (INTTYP .EQ. 10)
      &                    .OR. (INTTYP .EQ. 11)
-     &                    .OR. (INTTYP .EQ. 12)
+     &                    .OR. (INTTYP .EQ. 12) ! DSO
      &                    .OR. (INTTYP .EQ. 13)
      &                    .OR. (INTTYP .EQ. 19)
      &                    .OR. (INTTYP .EQ. 20)
@@ -835,7 +835,7 @@ C
          IF (INTTYP .EQ.  5) JMAX = JMAX + 1
          IF (INTTYP .EQ. 10) JMAX = JMAX + 1
          IF (INTTYP .EQ. 11) JMAX = JMAX + 2
-         IF (INTTYP .EQ. 12) JMAX = JMAX + 2
+         IF (INTTYP .EQ. 12) JMAX = JMAX + 2 ! DSO
          IF (INTTYP .EQ. 13) JMAX = JMAX + 2
          IF (INTTYP .EQ. 19) JMAX = JMAX + 1
          IF (INTTYP .EQ. 20) JMAX = JMAX + 1
@@ -871,7 +871,7 @@ C
          ISTEPU = JMAX + 1
          ISTEPV = ISTEPU*ISTEPU
          NAHGTF = ISTEPU*ISTEPV
-         IF (INTTYP .NE. 12) THEN
+         IF (INTTYP .NE. 12) THEN ! not DSO
             NATOMC = 0
             DO 300 IATOMC = 1, NUCIND
             IF (DOATOM(IATOMC)) THEN
@@ -971,7 +971,7 @@ C
          ELSE IF (INTTYP .EQ. 11 .OR. INTTYP .EQ. 13) THEN
             CALL SDTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                 NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
-         ELSE IF (INTTYP .EQ. 12) THEN
+         ELSE IF (INTTYP .EQ. 12) THEN ! DSO
             CALL DSOTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,DOATOM,
      &                  KAB,TRIANG,NATOM,INTADR,NSHINT,IPRINT)
          ELSE IF ((INTTYP .EQ. 14) .OR. (INTTYP .EQ. 44)) THEN
@@ -1104,7 +1104,7 @@ C     Integrals for Parity Violation - chirality
      &               LABINT,INTTYP,NOPTYP,NBAST,IORDER,DOATOM,IPRINT,
      &               TOLS,TOLOG,NATOMC,DISTAB,FACINT,CORCX,CORCY,CORCZ,
      &               DIFABX,DIFABY,DIFABZ,DONUC1,DOMOM1,HUCFAC)
-      ELSE IF (INTTYP .NE. 12) THEN
+      ELSE IF (INTTYP .NE. 12) THEN ! not DSO
          CALL PR1PRA(WORK(KODC),JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
      &               WORK(KAHGTF),SHLINT,WORK(KLAST),LWRK,
      &               LABINT,INTTYP,NOPTYP,NBAST,IORDER,DOATOM,IPRINT,
@@ -1112,11 +1112,11 @@ C     Integrals for Parity Violation - chirality
      &               DIFABX,DIFABY,DIFABZ,GEXP,DONUC1,DOMOM1,HUCFAC,
      &               ncentc)
       ELSE
-C     Diamagnetic spin-orbit integrals
+C     DSO - Diamagnetic spin-orbit integrals
          CALL PR1PRD(WORK(KODC),JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
      &               WORK(KAHGTF),SHLINT,WORK(KLAST),LWRK,NPOINT,LABINT,
      &               INTTYP,NOPTYP,NBAST,DOATOM,WEIGHT,ABSCIS,TRIANG,
-     &               IPRINT,TOLS,TOLOG,NATOMC,DISTAB,FACINT,CORCX,CORCY,
+     &               IPRINT,TOLS,TOLOG,DISTAB,FACINT,CORCX,CORCY,
      &               CORCZ,DIFABX,DIFABY,DIFABZ,KAB,DONUC1,DOMOM1)
       END IF
       RETURN
@@ -2018,8 +2018,11 @@ C  /* Deck pr1prd */
       SUBROUTINE PR1PRD(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT,
      &                  WORK,LWORK,NPOINT,LABINT,INTTYP,NOPTYP,NBAST,
      &                  DOATOM,WEIGHT,ABSCIS,TRIANG,IPRINT,TOLS,TOLOG,
-     &                  NATOMC,DISTAB,FACINT,CORCX,CORCY,CORCZ,DIFABX,
+     &                  DISTAB,FACINT,CORCX,CORCY,CORCZ,DIFABX,
      &                  DIFABY,DIFABZ,KAB,DONUC1,DOMOM1)
+!
+!     Special subroutine for DSO - diamagnetic spin-orbit integrals
+!
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"

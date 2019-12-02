@@ -1346,8 +1346,7 @@ C
          DO 300 IREP = 0, MAXREP
             IF (DOREP(IREP)) THEN
                DO 310 IATOM = 1, NUCIND
-                  NATTYP = NINT(CHARGE(IATOM))
-                  DMASS  = DISOTP(NATTYP,ISOTPS(IATOM),'MASS')
+                  DMASS  = DISOTP(IZATOM(IATOM),ISOTPS(IATOM),'MASS')
                   DO 320 ICOOR = 1, 3
                      JCOOR = 3*(IATOM - 1) + ICOOR
                      ISCOOR = IPTCNT(JCOOR,IREP,1)
@@ -2415,7 +2414,7 @@ C
       ICOOR = 0
       IATOM = 0
       DO 100 ICENT = 1, NUCIND
-         DMSS = DISOTP(NINT(CHARGE(ICENT)),ISOTPS(ICENT),'MASS')
+         DMSS = DISOTP(IZATOM(ICENT),ISOTPS(ICENT),'MASS')
          MULCNT = ISTBNU(ICENT)
          DO 200 IOP = 0, MAXOPR
             IF (IBTAND(IOP,MULCNT) .EQ. 0) THEN
@@ -2520,7 +2519,7 @@ C
          CALL HEADER('Atomic masses',1)
          JATOM = 0
          DO 510 IATOM = 1, NUCIND
-            DMASS = DISOTP(NINT(CHARGE(IATOM)),ISOTPS(IATOM),'MASS')
+            DMASS = DISOTP(IZATOM(IATOM),ISOTPS(IATOM),'MASS')
             NDEG  = NUCDEG(IATOM)
             DO 515 IDEG = 1, NDEG
                WRITE (LUPRI,'(2X,A6,2X,F12.6)') NAMDEP(JATOM+IDEG),DMASS
@@ -3045,9 +3044,8 @@ C
       DO 100 ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          FAC    = D1/SQRT(FMULT(MULCNT))
-         NATTYP = NINT(CHARGE(ICENT))
          NISOTP = ISOTPS(ICENT)
-         AMASS  = XFAMU*DISOTP(NATTYP,NISOTP,'MASS')
+         AMASS  = XFAMU*DISOTP(IZATOM(ICENT),NISOTP,'MASS')
          DO 200 ISYMOP = 0, MAXOPR
             IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
                IATOM = IATOM + 1
@@ -6479,9 +6477,8 @@ C
       DO 100 ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          FAC    = D1/SQRT(FMULT(MULCNT))
-         NATTYP = NINT(CHARGE(ICENT))
          NISOTP = ISOTPS(ICENT)
-         ATMAS  = XFAMU*DISOTP(NATTYP,NISOTP,'MASS')
+         ATMAS  = XFAMU*DISOTP(IZATOM(ICENT),NISOTP,'MASS')
          DO 110 ISYMOP = 0, MAXOPR
             IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
                IATOM = IATOM + 1
@@ -6869,6 +6866,19 @@ C
 C  /* Deck wlkdin */
       SUBROUTINE WLKDIN(COR,TMASS,N,ANGMOM,TINERT,OMEGA,CEPVAL,
      &                  CEPVEC,DOCOPY,PLANAR,LINEAR,IPRINT)
+C***********************************************************************
+C
+C     Input:
+C        COR    - nuclear coordinates
+C        TMASS  - nuclear masses
+C        N      - number of nuclei
+C        ANGMOM - total nuclear angular momentum L_N
+C     Output:
+C        TINERT - tensor of inertia
+C        OMEGA  - nuclear angular velocity
+C        If(DOCOPY): CEPVAL - inverse eigenvalues
+C                    CEPVEC - eigenvectors
+C************************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, TSTLIN = 1.D-4)
@@ -6904,36 +6914,52 @@ C
       AMAT(4) = TINERT(3,1)
       AMAT(5) = TINERT(3,2)
       AMAT(6) = TINERT(3,3)
-
+C
       IF (IPRINT.GE.9) THEN
        write(lupri,*) 'WLKDIN: AMAT:',(AMAT(i),i=1,6)
       ENDIF
-
+C
       CALL DUNIT(EIGVEC,3)
       CALL JACO(AMAT,EIGVEC,3,3,3,AWRK,IWRK)
+C     In output, AMAT contains the elements of the diagonalized TINERT
+C                EIGVEC contains the eigenvectors of the non-diagonalized matrix
+C
       IF (IPRINT.GE.9) THEN
        write(lupri,*)
      &  'WLKDIN: EIGVEC',((EIGVEC(i,j),i=1,3),j=1,3)
       ENDIF
-
+C
       EIGVAL(1) = AMAT(1)
       EIGVAL(2) = AMAT(3)
       EIGVAL(3) = AMAT(6)
+C
+C.....Order eigenvalues and corresponding eigenvectors in ascending order E(1) < E(2) < E(3)
       CALL ORDER(EIGVEC,EIGVAL,3,3)
 C
-      IF ( ABS(EIGVAL(3)-EIGVAL(2)-EIGVAL(1)) .LT. TSTLIN) THEN
-         PLANAR = .TRUE.
-      ELSE
-         PLANAR = .FALSE.
-      END IF
       IF (EIGVAL(1) .LT. TSTLIN) THEN
+C     Linear molecules
          LINEAR = .TRUE.
          PLANAR = .FALSE.
+         WRITE (LUPRI,'(/,2X,A)') 'Linear molecule'
          EIGVAL(1) = D0
       ELSE
+C     Non-linear molecules
          LINEAR = .FALSE.
          EIGVAL(1) = D1/EIGVAL(1)
+         IF (ABS(EIGVAL(3)-EIGVAL(2)-EIGVAL(1)) .LT. TSTLIN) THEN
+            PLANAR = .TRUE.
+            WRITE (LUPRI,'(/,2X,A)') 'Planar molecule'
+         ELSE
+            PLANAR = .FALSE.
+         END IF
+         IF (EIGVAL(1).eq.EIGVAL(2).and.EIGVAL(1).eq.EIGVAL(3))
+     &    WRITE (LUPRI,'(/,2X,A)')  'Spherical top molecule'
+         IF (EIGVAL(1).eq.EIGVAL(2).and.EIGVAL(1).ne.EIGVAL(3))
+     &    WRITE (LUPRI,'(/,2X,A)')  'Oblate symmetric top molecule'
+         IF (EIGVAL(2).eq.EIGVAL(3).and.EIGVAL(2).ne.EIGVAL(1))
+     &    WRITE (LUPRI,'(/,2X,A)')  'Prolate symmetric top molecule'
       END IF
+C
       EIGVAL(2) = D1/EIGVAL(2)
       EIGVAL(3) = D1/EIGVAL(3)
 C
@@ -7594,7 +7620,7 @@ C  /* Deck wlkcvt */
 #include "cbisol.h"
 #include "nuclei.h"
 #include "symmet.h"
-      AMASS(I) = DISOTP(NINT(CHARGE(I)),ISOTPS(I),'MASS')
+      AMASS(I) = DISOTP(IZATOM(I),ISOTPS(I),'MASS')
 C
 C     Total mass
 C
