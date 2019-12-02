@@ -459,8 +459,9 @@ C
 C     Process input
 C     =============
 C
-      ICHANG = 0
-      INPERR = 0
+      NPRPBUF = NPRPS
+      ICHANG  = 0
+      INPERR  = 0
       IF (NEWDEF) THEN
          WORD1 = WORD
   100    CONTINUE
@@ -758,13 +759,21 @@ C.....Calculate total number of operators
      &      'XPPINP(BEDCON): Increase MAXLPP to ',(NPPAPT+NOP)
           IBED=IBED+1
       ENDIF
-      IF(NPRPS+NOP.GT.MAXPRPS) THEN
+      NPRPBUF=NPRPBUF+NOP
+      IF(DOBED) THEN
+        IF(ORIENTED) THEN
+          NPRPBUF = NPRPBUF + 6
+        ELSE
+          NPRPBUF = NPRPBUF + 2
+        ENDIF
+      ENDIF      
+      IF(NPRPBUF.GT.MAXPRPS) THEN
           WRITE(LUPRI,'(A,I5)') 
-     &      'XPPINP(BEDCON): Increase MAXPRPS to ',(NPRPS+NOP)
+     &      'XPPINP(BED): Increase MAXPRPS to ',NPRPBUF
           IBED=IBED+1
       ENDIF
       IF(IBED.GT.0) THEN
-        CALL QUIT('XPPINP(BEDCON): Out of bounds. Check output !')
+        CALL QUIT('XPPINP(BED): Out of bounds. Check output !')
       ENDIF
 C.....Generalized velocity gauge
       DO IORDER = 0,IBMAX
@@ -1154,21 +1163,15 @@ C     ..not yet written.....tsaue
 C
 C     BED: Beyond Electric Dipole Approximation
 C
-      IF (ORIENTED) THEN
-         CALL GET_ED_LENGTH(OMEGA,ISSYM,WORK(KCMO),WORK(KIBRP),
-     &        EVECR,IBTYP,IBCVC,IBEVC,IBPVC,
-     &        WORK,KFREE,LFREE)
-         CALL GET_ED_VELOCITY(OMEGA,ISSYM,WORK(KCMO),WORK(KIBRP),
-     &        EVECR,IBTYP,IBCVC,IBEVC,IBPVC,
-     &        WORK,KFREE,LFREE)
-         CALL GET_BED(OMEGA,ISSYM,WORK(KCMO),WORK(KIBRP),
-     &        EVECR,IBTYP,IBCVC,IBEVC,IBPVC,
-     &        WORK,KFREE,LFREE)
-      ENDIF
       IF(DOBED) THEN
          CALL BEDLEB(OMEGA,ISSYM,WORK(KCMO),WORK(KIBRP),
      &        EVECR,IBTYP,IBCVC,IBEVC,IBPVC,
      &        WORK,KFREE,LFREE)
+        IF(ORIENTED) THEN
+           CALL GET_BED(OMEGA,ISSYM,WORK(KCMO),WORK(KIBRP),
+     &        EVECR,IBTYP,IBCVC,IBEVC,IBPVC,
+     &        WORK,KFREE,LFREE)
+        ENDIF
       ENDIF
       CALL MEMREL('GETPPF.end',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('GETPPF')
