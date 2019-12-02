@@ -597,9 +597,9 @@
 ! ... make the center of mass the CAVORG
         CALL CMMASS(GEOM,MASS,NAT,ISOTOP,IPRPRP)
         CALL DCOPY(3,CMXYZ,1,CAVORG,1)
-        write(LUPRI,'(/,1X,A)')                                        &
-     &'CAVORG was defined as the molecular CM position'
-        write(LUPRI,'(/A,24X,3F20.15)')                                  &
+        write(LUPRI,'(/,1X,A)')                                         &
+     &'CAVORG was placed at the molecular CM position'
+        write(LUPRI,'(/A,24X,3F20.15)')                                 &
      &  ' CAVORG (a.u.):',(CAVORG(I), I = 1, 3)
       end if
 !===========================================================================

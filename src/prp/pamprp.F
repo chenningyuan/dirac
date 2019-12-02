@@ -1390,6 +1390,7 @@ C
 C     Rotational g-tensor
 C
       IF(ROTG) THEN
+         IF(LONDON) CALL QUIT('.ROTG only implemented for CGO')
          CALL DEF_ROTG(PNAME,PLABEL,PFAC,IPRPRP)
       ENDIF
 C
