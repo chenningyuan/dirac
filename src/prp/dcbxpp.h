@@ -27,13 +27,14 @@
 !
 !    dcbxpp.h -- Feb. 18, 1999, hjaaj
 !
-      PARAMETER (MAXLPP = 3016, MAX_KVAL = 12)
+      PARAMETER (MAXLPP = 5316, MAX_KVAL = 20)
       LOGICAL XPP_SKIPEE,XPP_SKIPEP,XPP_LSFG,                           &
      &        XPPNRM,ORBXPP,XPPANA,XPP_TRIPLET,                         &
-     &        XPP_E2CHEK,DOBED,ORIENTED,BEDCHK,GNOISE,GCLEAN
+     &        XPP_E2CHEK,DOBED,ORIENTED,BEDCHK,GNOISE,GCLEAN,           &
+     &        DOVELR,DOLENR
       COMMON /XCBLPP/XPP_SKIPEE,XPP_SKIPEP,XPP_LSFG(2),                 &
      &        XPPNRM,ORBXPP,XPPANA,XPP_TRIPLET,XPP_E2CHEK,DOBED,        &
-     &        ORIENTED,BEDCHK,GNOISE,GCLEAN
+     &        ORIENTED,BEDCHK,GNOISE,GCLEAN,DOVELR,DOLENR
       COMMON /XCBRPP/THCPP,CNVXPP(2),RESXPP,XPPERG,                     &
      &        UWAVE(3),UPOL(3),BEDSTP,GNOISE_FAC,GCLEAN_FAC
       COMMON /XCBIPP/IPRXPP,ITRXPP,MAXEXC,                              &
