@@ -2507,3 +2507,30 @@ C       Give major orbital rotations in excitations
       ENDDO
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE PRINT_GP_XP(GP,XP,JXOP,NXOP,NZ)
+C***********************************************************************
+C
+C     Printout of proprty gradient and solution vector
+C     Written by Trond Saue Nov 26 2019
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION GP(NXOP,NZ),XP(NXOP,NZ),JXOP(2,NXOP)
+      CHARACTER M(4)*6
+      M(1) = 'A real'
+      M(2) = 'A imag'
+      M(3) = 'B real'
+      M(4) = 'B imag'
+      DO IZ = 1,NZ
+        WRITE(LUPRI,'(/A,A6,A/)') '*** ',M(IZ),' part ***';
+        WRITE(LUPRI,'(A)')
+     & '    A    I   Property gradient     Solution vector'
+        DO IXOP = 1,NXOP
+          WRITE(LUPRI,'(2I5,2ES20.8)')
+     &         JXOP(1,IXOP),JXOP(2,IXOP),GP(IXOP,IZ),XP(IXOP,IZ)
+        ENDDO
+      ENDDO
+      RETURN
+      END

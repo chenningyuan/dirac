@@ -1,4 +1,9 @@
       SUBROUTINE GENOSC_BED(K,FOSC,ATMPPF,OMEGA)
+!***********************************************************************
+!
+!     Calculate rotationally averaged oscillator strengths
+!
+!***********************************************************************
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbxpp.h"
@@ -8,7 +13,7 @@
       iterm = 0
       jterm = 0
       K2=K+K
-      IF(IPRXPP.GE.2) THEN
+      IF(IPRXPP.GE.4) THEN
         WRITE(6,'(/A,I4)') 'GENOSC_BED: Rotational weights of order: ',K2
         CALL PRSYMB(6,'-',60,0)
         WRITE(6,'(18X,100A1)') (' ',J=1,K2+2),'P','Q'
@@ -29,7 +34,7 @@
           FOSC(IEXC,ISYM)=FOSC(IEXC,ISYM)*(OMEGA(IEXC,ISYM)/CVAL)**K2*2.0D0/OMEGA(IEXC,ISYM)
         ENDDO
       ENDDO   
-      IF(IPRXPP.GE.2) THEN
+      IF(IPRXPP.GE.4) THEN
         WRITE(6,*) 'Total/non-zero terms: ',ITERM,JTERM
         CALL PRSYMB(6,'-',60,0)
       ENDIF
@@ -88,10 +93,10 @@
           ENDIF
           WROT=WROT/4.0D0/ACOS(-1.0D0)
           FAC = GAMMA(REAL(K2+5))/GAMMA(REAL(K2/2+3))/2**(K2/2+1)
-          IF(IPRXPP.GE.2) THEN
+          IF(IPRXPP.GE.4) THEN
             IFAC= NINT(FAC)
             WRITE(DENOM,'(A,I8,A)') '/',IFAC,':'
-            WRITE(6,'(F6.1,A10,2X,18A1)') WROT*IFAC,DENOM,&
+            WRITE(6,'(F12.1,A10,2X,18A1)') WROT*IFAC,DENOM,&
                  (CHAR(87+INDICES(J)),J=1,K2),' ',' ',CHAR(87+IP),CHAR(87+IQ)
           ENDIF
           DO M = 0,K
@@ -129,7 +134,7 @@
             ISYMB   = IPRPSYM(INDPRB)
             IF(ISYMB.NE.ISYM) CALL QUIT('ROTFAC_BED: Symmetry problem !')
 !...........Form product
-            IF(IPRXPP.GE.2) THEN
+            IF(IPRXPP.GE.5) THEN
               WRITE(6,'(2(2X,I3,2X,A16,2X,A3))') K+M,PRPNAM(INDPRA),REP(ISYM-1),K-M,PRPNAM(INDPRB),REP(ISYMB-1)
             ENDIF 
             NEXC=KEXCNV(ISYM)
@@ -153,7 +158,7 @@
       iterm = 0
       jterm = 0
       K2=K+K
-      IF(IPRXPP.GE.2) THEN
+      IF(IPRXPP.GE.4) THEN
         WRITE(6,'(/A,I4)') 'GENOSC_MPOL: Rotational weights of order: ',K2
         CALL PRSYMB(6,'-',60,0)
         WRITE(6,'(18X,100A1)') (' ',J=1,K2+2),'P','Q'
@@ -178,7 +183,7 @@
          FOSC(1,IEXC,ISYM)=FOSC(2,IEXC,ISYM)+FOSC(3,IEXC,ISYM)+FOSC(4,IEXC,ISYM)
        ENDDO
      ENDDO
-     IF(IPRXPP.GE.2) THEN
+     IF(IPRXPP.GE.4) THEN
        WRITE(6,*) 'Total/non-zero terms: ',ITERM,JTERM
        CALL PRSYMB(6,'-',60,0)
      ENDIF
@@ -237,10 +242,10 @@
           ENDIF
           WROT=WROT/4.0D0/ACOS(-1.0D0)
           FAC = GAMMA(REAL(K2+5))/GAMMA(REAL(K2/2+3))/2**(K2/2+1)
-          IF(IPRXPP.GE.2) THEN
+          IF(IPRXPP.GE.4) THEN
             IFAC= NINT(FAC)
             WRITE(DENOM,'(A,I8,A)') '/',IFAC,':'
-            WRITE(6,'(F6.1,A10,2X,18A1)') WROT*IFAC,DENOM,&
+            WRITE(6,'(F12.1,A10,2X,18A1)') WROT*IFAC,DENOM,&
                  (CHAR(87+INDICES(J)),J=1,K2),' ',' ',CHAR(87+IP),CHAR(87+IQ)
           ENDIF
           DO M = 0,K
@@ -323,7 +328,7 @@
               ENDIF
             ENDIF
 !...........Form product
-            IF(IPRXPP.GE.2) THEN            
+            IF(IPRXPP.GE.5) THEN            
               IF(INDAPM.GT.0) THEN            
                  WRITE(6,'(A,2(2X,I3,2X,A16,2X,A3),I3)') 'Left : ',&
                       K+M+1,PRPNAM(INDPEL),REP(ISYMEL-1),K+M,PRPNAM(INDPML),REP(ISYMML-1),IJKL
@@ -380,6 +385,11 @@
       END SUBROUTINE ROTFAC_MPOL
       
       SUBROUTINE OSC_BED(K,FOSC,ATMPPF,OMEGA)
+!***********************************************************************
+!
+!     Calculated oscillator strength for oriented sample
+!
+!***********************************************************************
 #include "implicit.h"
 #include "dcbgen.h"
 #include "dgroup.h"

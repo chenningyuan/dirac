@@ -1299,7 +1299,7 @@ CTROND
                 FREQ = OMEGA(IEXC)
 Chj: MAERKE change to trans.mom. output
                 WRITE(LUPRI,1000)
-     &          '< 0 |',INDAP,' | ',IEXC,' > =',
+     &          '< 0 |',PRPNAM(INDPRA),'| ',IEXC,' > =',
      &          ATMPPF(IEXC,INDAP,JSYMOP,1),
      &          ' a.u.,',BVTYP(ITYP),
      &          ' contribution, excitation energy',FREQ,' a.u.'
@@ -1374,7 +1374,7 @@ C.........Total mj of excited state is therefore mj(virtual)+mj(inactive)
 C
       CALL QEXIT('GETPP1')
       RETURN
- 1000 FORMAT(/A,I2,A,I2,A,F16.10,A,/3X,A2,A,F16.10,A)
+ 1000 FORMAT(/A,A16,A,I2,A,ES18.10,A,/3X,A2,A,ES18.10,A)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck XPPOUT_old */
@@ -1539,7 +1539,7 @@ C - positronic orbitals
                       DO K = 1,NVAR
                         A = A + ATMPPF(I,INDAP,ISYM,IBUF(K)+IND)
                       ENDDO
-                      WRITE(LUPRI,'(3X,A3,A1,4(2X,F16.8))')
+                      WRITE(LUPRI,'(3X,A3,A1,4(2X,ES18.8))')
      &          FREP(IFRP),'p',EIG(IND),A,
      &          (ATMPPF(I,INDAP,ISYM,IBUF(K)+IND),K=1,NVAR)
                     ENDDO
@@ -1550,7 +1550,7 @@ C - electronic orbitals
                       DO K = 1,NVAR
                         A = A + ATMPPF(I,INDAP,ISYM,IBUF(K)+IND)
                       ENDDO
-                      WRITE(LUPRI,'(3X,A3,A1,4(2X,F16.8))')
+                      WRITE(LUPRI,'(3X,A3,A1,4(2X,ES18.8))')
      &       FREP(IFRP),'e',EIG(IND),A,
      &       (ATMPPF(I,INDAP,ISYM,IBUF(K)+IND),K=1,NVAR)
                     ENDDO
