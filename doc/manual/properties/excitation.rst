@@ -170,6 +170,13 @@ wave vector
    \left(c\boldsymbol{\alpha}\cdot\boldsymbol{\epsilon}\right)e^{+i\left(\boldsymbol{k}\cdot\boldsymbol{r}\right)}\right]_{k=0}
    =\frac{e}{\omega}\frac{i^{n}}{n!}\left(c\boldsymbol{\alpha}\cdot\boldsymbol{\epsilon}\right)\left(\boldsymbol{k}\cdot\boldsymbol{r}\right)^{n}
 
+keyword(NOLENR)
+
+Deactivate length representation.
+
+keyword(NOVELR)
+
+Deactivate velocity representation.
 
 
 Control variational parameters
