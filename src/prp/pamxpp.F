@@ -2429,7 +2429,7 @@ C.....Oscillator strenghts: general velocity gauge: rotational average
             ILAB  = ISSYM(IEXC,ISYM)
             WRITE(LUPRI,
      &         '(I5,1X,F16.5,2X,A3,1X,A4,'//FMT//'(2X,ES14.6))') JEXC-1,
-     &         OMEGA(IEXC,ISYM)*XTEV,REP(ISYM-1),SYMLAB(ILAB),
+     &         OMEGA(IEXC,ISYM)*XTEV,REP(ISYM-1),SYMLAB(ILAB),OSCIL,
      &         (FOSC(IEXC,ISYM,IK,1),IK=0,K2ORD)
           ENDIF
         ENDDO
