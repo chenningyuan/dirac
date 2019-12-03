@@ -6252,7 +6252,7 @@ C
       CALL DZERO (TBUF,N2TMT)
       CALL IZERO (ID_SUB_BL,MAX_SUB_BL*2)
       CALL IZERO (NORB_SUB,MAX_SUB_BL*3*2)
-      IF (IPRHAM.GE.6) THEN
+      IF (IPRHAM.GE.2) THEN
         WRITE (LUPRI,1000)
       ENDIF
 !     stefan - june 2011: save LL block of <j_z>-eigenvectors (temporary) on file
@@ -6363,7 +6363,7 @@ C
          ENDIF
          KPMAXL = NINT( MAX( ABS(EIG(IEIGE)), ABS(EIG(IEIGE+NL-1)) ) )
 #endif
-          IF (IPRHAM.GE.2) THEN
+          IF (IPRHAM.GE.3) THEN
             CALL HEADER('ATMSYM: Kappa_LL eigenvalues',-1)
             WRITE(LUPRI,'(3X,A,I1,A,I1/)')
      &      '*** Fermion corep ',I,'/',NFSYM
@@ -6450,7 +6450,7 @@ C
          ENDIF
          KPMAXS=NINT(MAX(ABS(EIG(IEIGP)),ABS(EIG(IEIGP+NS-1))))
 #endif
-          IF (IPRHAM.GE.2) THEN
+          IF (IPRHAM.GE.3) THEN
             CALL HEADER('ATMSYM: Kappa_SS eigenvalues',-1)
             WRITE(LUPRI,'(3X,A,I1,A,I1/)')
      &           '*** Fermion corep ',I,'/',NFSYM
@@ -6585,7 +6585,7 @@ C
 C
 C     Write information to output
 C
-      IF (IPRHAM.GE.6) THEN
+      IF (IPRHAM.GE.2) THEN
         DO KPADD = 1, MAXSUB
            WRITE (LUPRI,1010) 3-2*I,ID_SUB_BL(KPADD,I),
      &                       (NORB_SUB(KPADD,I,IC),IC=0,2)
@@ -6871,7 +6871,7 @@ C
            ENDIF
            MJMAXL = NINT( MAX( ABS(EIG(IEIGE)), ABS(EIG(IEIGE+NL-1)) ) )
 #endif
-           IF (IPRHAM.GE.2) THEN
+           IF (IPRHAM.GE.3) THEN
              CALL HEADER('ATMSYM: Mj_LL eigenvalues',-1)
              WRITE(LUPRI,'(A,I2)') ' * Kappa:', ID_SUB_BL(KPADD,I)
              WRITE(LUPRI,'(3X,A,I1,A,I1/)')
@@ -6938,7 +6938,7 @@ C
          ENDIF
          MJMAXS=NINT(MAX(ABS(EIG(IEIGP)),ABS(EIG(IEIGP+NS-1))))
 #endif
-         IF (IPRHAM.GE.2) THEN
+         IF (IPRHAM.GE.3) THEN
            CALL HEADER('ATMSYM: Mj_SS eigenvalues',-1)
            WRITE(LUPRI,'(A,I2)') ' * Kappa:', ID_SUB_BL(KPADD,I)
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
@@ -8588,4 +8588,37 @@ C***********************************************************************
       rewind (lupot)
 
       end
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck kptomj */
+      SUBROUTINE KPTOMJ(IFRP,IBEIG,IPRINT)
+C***********************************************************************
+C
+C     Converting IBEIG in Kappa with MJ to that in MJ
+C
+C     last revison: Oct, 2018 A.Sunaga
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "dgroup.h"
+#include "dcborb.h"
+C
+      DIMENSION IBEIG(*)
+      IF (IPRINT.GE.2) THEN
+        CALL HEADER('KPTOMJ: IBEIG before transoformation',-1)
+        WRITE(LUPRI,'(A)')'Before After  J'
+      ENDIF
+C
+      DO J = 1,NORB(IFRP)
+        INDEX1   = INT(SQRT(dble(2*ABS(IBEIG(J))) + 0.25D0) + 0.4999D0)
+        INDEX2   = ABS(IBEIG(J)) - INDEX1*(INDEX1-1)/2
+        MJ       = (2*INDEX2 - 1) * (-1)**(INDEX2+1)         
+        IF (IPRINT.GE.2) THEN
+          WRITE(LUPRI,'(I5,I5,I5)') IBEIG(J),MJ,J
+        ENDIF         
+        IBEIG(J) = MJ
+      ENDDO
+C      
+      RETURN
+      END
 ! -- end of dirone.F --

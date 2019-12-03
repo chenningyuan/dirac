@@ -4709,39 +4709,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck kptomj */
-      SUBROUTINE KPTOMJ(IFRP,IBEIG,IPRINT)
-C***********************************************************************
-C
-C     Converting IBEIG in Kappa with MJ to that in MJ
-C
-C     last revison: Oct, 2018 A.Sunaga
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-#include "dgroup.h"
-#include "dcborb.h"
-C
-      DIMENSION IBEIG(*)
-      IF (IPRINT.GE.2) THEN
-        CALL HEADER('KPTOMJ: IBEIG before transoformation',-1)
-        WRITE(LUPRI,'(A)')'Before After  J'
-      ENDIF
-C
-      DO J = 1,NORB(IFRP)
-        INDEX1   = INT(SQRT(dble(2*ABS(IBEIG(J))) + 0.25D0) + 0.4999D0)
-        INDEX2   = ABS(IBEIG(J)) - INDEX1*(INDEX1-1)/2
-        MJ       = (2*INDEX2 - 1) * (-1)**(INDEX2+1)         
-        IF (IPRINT.GE.2) THEN
-          WRITE(LUPRI,'(I5,I5,I5)') IBEIG(J),MJ,J
-        ENDIF         
-        IBEIG(J) = MJ
-      ENDDO
-C      
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck detocc */
       SUBROUTINE DETOCC(EIG,WORK,KFREE,LFREE)
 C***********************************************************************
