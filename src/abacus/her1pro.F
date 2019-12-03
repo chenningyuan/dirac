@@ -744,12 +744,12 @@ C
          SQUARE = .TRUE.
       GO TO 200
 C
-C     Electronic angular momentum around the origin
-C     ---------------------------------------------
+C     Electronic angular momentum around the cavity origin
+C     ----------------------------------------------------
 C
  20   CONTINUE
          IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
-     &      ' Calculation of angular momentum around the gauge origin'
+     &      ' Calculation of angular momentum around the cavity origin'
          INTTYP = 18
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
