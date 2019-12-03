@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -112,7 +112,7 @@ print *, '*    Radovan Bast             UiT The Arctic University of      Norway
 print *, '*                                                                             *'
 print *, '*    with contributions from:                                                 *'
 print *, '*                                                                             *'
-print *, '*    Ignacio Agustín Aucar    Northeast National University     Argentina     *'
+print *, '*    Ignacio Agustn Aucar    Northeast National University     Argentina     *'
 print *, '*    Vebjoern Bakken          University of Oslo                Norway        *'
 print *, '*    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *'
 print *, '*    Sebastien Dubillard      University of Strasbourg          France        *'
