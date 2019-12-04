@@ -1,7 +1,7 @@
 :orphan:
 
 
-18.1 (unreleased)
+19.0 (2019-12-12)
 -----------------
 
 New features:
@@ -20,6 +20,7 @@ Error corrections:
 - Fixed use of point charges (do not try to obtain e.g. mass of a point charge).
 - Fixed spelling error in keyword .GAUNTSCALE (was .GAUTSCALE).
 - Fixed T1EQN1 function call in src/relccsd/ccgrad.F (thanks to Martin Siegert).
+- Fixed wrong memory allocation for spin-free or non-relativistic KRMCSCF.
 
 Basis set corrections:
 
