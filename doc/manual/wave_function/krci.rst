@@ -392,7 +392,6 @@ The nuclear Magnetic-Quadrupole-Moment (MQM) constants in BeH can be defined by 
   COMFACTOR
   -0.333333333D0
 
-
 One can define many more :ref:`one_electron_operators` as per their requirements.
 
 keyword(DIPMOM)
