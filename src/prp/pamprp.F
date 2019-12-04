@@ -7927,12 +7927,12 @@ C*****************************************************************************
 C
 C     Define operators for rotational g-tensor
 C     DEF_SHIELD1 as skeleton
-C     and based on DEF_SPINRO as well (Agustín Aucar)
+C     and based on DEF_SPINRO as well (Agustin Aucar)
 C
 C     Written by T. Enevoldsen - Jul. 1998
 C     Last revision: MI, jan.2003 - added from TEC's code
 C                    MI, Sept.2006 - making functional
-C                    Agustín Aucar, November 2019
+C                    Agustin Aucar, November 2019
 C
 C*****************************************************************************
       use codata
@@ -8195,7 +8195,7 @@ C   Written by T.Enevoldsen Jul. 1998
 C     
 C   Revisions: MI, jan.2003 - added from TEC's 'left' code
 C              MI, Prievidza/Odense, August 2006
-C              Agustín Aucar, November 2019
+C              Agustin Aucar, November 2019
 C     
 C***********************************************************************
       use codata
@@ -8489,7 +8489,7 @@ C   INPUT:
 C     PMATL - contribution from orbital angular moment to linear response term
 C     PMATS - contribution from spin angular moment to linear response term
 C
-C     Agustín Aucar
+C     Agustin Aucar
 C     November 2019
 C
 C***********************************************************************
@@ -10703,7 +10703,7 @@ C     DMAT  - expectation value term of NSR
 C     PMATL - contribution from orbital angular moment to linear response term
 C     PMATS - contribution from spin angular moment to linear response term
 C
-C     Agustín Aucar and Trond Saue
+C     Agustin Aucar and Trond Saue
 C     June 2014
 C
 C***********************************************************************
