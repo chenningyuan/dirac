@@ -11,7 +11,7 @@ New features:
    Theoretical study of the nuclear spin-molecular rotation coupling for relativistic electrons and non-relativistic nuclei.
    J. Chem. Phys. 136, 204119 (2012); http://dx.doi.org/10.1063/1.4721627 doi: 10.1063/1.4721627
 - Calculation of Nuclear Magnetic-Quadrupole-Moment constant using ".OPERATOR" and ".NMQM" keyword in KRCI. Contributor: Malaya K. Nayak
-   T. Fleig and M. K. Nayak. 
+   T. Fleig and M. K. Nayak and M. G. Kozlov.
    TaN, a molecular system for probing P,T-violating hadron physics.
    Phys. Rev. A 93, 012505, 2016; http://dx.doi.org/10.1103/PhysRevA.93.012505 doi: 10.1103/PhysRevA.93.012505
 Revised features:
