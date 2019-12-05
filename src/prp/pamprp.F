@@ -9574,7 +9574,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
       implicit none
 C
-      INTEGER I,J
+      integer I,J
 C
 #include "priunit.h"
 C
@@ -9925,6 +9925,8 @@ C***********************************************************************
 C
       implicit none
 C
+      integer I,J
+C
 #include "priunit.h"
 #include "mxcent.h"
 #include "dcbprp.h"
@@ -9956,8 +9958,8 @@ C
 C
       LOGICAL TEST
       INTEGER IBUFA(3*NUCDEP),IBUFB1(3),IBUFB2(3),IBUFEXP(3*NUCDEP),
-     &        IATINF(3,NUCDEP),I,IA,IB1,IB2,IATOM,IDEG,IDEP,IFREQ,
-     &        INUC,ISO,ISYMOP,ITYP,IZ,J,JA,JATOM,JB1,JB2,K,KA,KB1,KB2,
+     &        IATINF(3,NUCDEP),IA,IB1,IB2,IATOM,IDEG,IDEP,IFREQ,
+     &        INUC,ISO,ISYMOP,ITYP,IZ,JA,JATOM,JB1,JB2,K,KA,KB1,KB2,
      &        L,NA,NATOM,NB1,NB2,NCMAT,NEXP,NISO,NSCOOR,NSPEC,IEXP,
      &        JEXP,KEXP,IABLRF_EE,IABLRF_EP
       DOUBLE PRECISION RATINF(3,5,NUCDEP),DISOTP,ABCNV(NBFREQ,NLRBPT),
@@ -10169,8 +10171,8 @@ C
 C
 C
       DO IFREQ = 1,NBFREQ
-        CALL PRSYMB(LUPRI,'-',72,2)
         IF(.NOT.BFREQ(IFREQ).EQ.D0) THEN
+           CALL PRSYMB(LUPRI,'-',72,2)
            WRITE(LUPRI,'(A,F15.8,A)')
      &          '*** Frequency    :',BFREQ(IFREQ),' a.u.'
         ENDIF
@@ -10495,7 +10497,7 @@ C     DMAT  - expectation value term of NSR
 C     PMATL - contribution from orbital angular moment to linear response term
 C     PMATS - contribution from spin angular moment to linear response term
 C
-C     Agustín Aucar and Trond Saue
+C     Agustin Aucar and Trond Saue
 C     June 2014
 C
 C***********************************************************************
@@ -10537,6 +10539,7 @@ C
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, FACPPM = ALPHA2/2.D0*1.0D6,
      &           FAC = ALPHA2/(2.D0*PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
+C
       LOGICAL PLANAR,LINMOL,DOATOM(NUCIND)
 C
 C
@@ -10874,7 +10877,7 @@ C
 C           Linear response contributions to NSR
 C
              IF (IPRINT .GE. 2*KHZPPM-1) THEN
-              CALL HEADER('M^L(e-e)',-1)
+              CALL HEADER('M^LR-L(e-e)',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                 'A', (GTRANPLEE(I,1,IATOM),I = 1,3),
      &                 'B', (GTRANPLEE(I,2,IATOM),I = 1,3),
@@ -10882,7 +10885,7 @@ C
               WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &                 'iso', (GTRANPLEE(1,1,IATOM)
      &              +GTRANPLEE(2,2,IATOM)+GTRANPLEE(3,3,IATOM))/3
-              CALL HEADER('M^S(e-e)',-1)
+              CALL HEADER('M^LR-S(e-e)',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                 'A', (GTRANPSEE(I,1,IATOM),I = 1,3),
      &                 'B', (GTRANPSEE(I,2,IATOM),I = 1,3),
@@ -10890,7 +10893,7 @@ C
               WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &                 'iso', (GTRANPSEE(1,1,IATOM)
      &              +GTRANPSEE(2,2,IATOM)+GTRANPSEE(3,3,IATOM))/3
-              CALL HEADER('M^L(e-p)',-1)
+              CALL HEADER('M^LR-L(e-p)',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                 'A', (GTRANPLEP(I,1,IATOM),I = 1,3),
      &                 'B', (GTRANPLEP(I,2,IATOM),I = 1,3),
@@ -10898,7 +10901,7 @@ C
               WRITE (LUPRI,'(/,3X,A,4X,F16.8)')
      &                 'iso', (GTRANPLEP(1,1,IATOM)
      &              +GTRANPLEP(2,2,IATOM)+GTRANPLEP(3,3,IATOM))/3
-              CALL HEADER('M^S(e-p)',-1)
+              CALL HEADER('M^LR-S(e-p)',-1)
               WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                 'A', (GTRANPSEP(I,1,IATOM),I = 1,3),
      &                 'B', (GTRANPSEP(I,2,IATOM),I = 1,3),
