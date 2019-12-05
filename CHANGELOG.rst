@@ -14,7 +14,11 @@ New features:
    T. E. O'Brien, B. Senjean, R. Sagastizabal, X. Bonet-Monroig, A. Dutkiewicz, F. Buda, L. DiCarlo and L. Visscher
    Calculating energy derivatives for quantum chemistry on a quantum computer.
    Accepted to npj: Quantum Information. https://arxiv.org/abs/1905.03742
-
+- Expectation value of Nuclear Magnetic-Quadrupole-Moment interaction constant using ".OPERATOR" and ".NMQM" keyword in KRCI. Contributor: Malaya K. Nayak
+   T. Fleig, M. K. Nayak and M. G. Kozlov.
+   TaN, a molecular system for probing P,T-violating hadron physics.
+   Phys. Rev. A 93, 012505, 2016; http://dx.doi.org/10.1103/PhysRevA.93.012505 doi: 10.1103/PhysRevA.93.012505
+   
 Revised features:
 
 - Maximum number of basis functions increased from 30k to 40k.

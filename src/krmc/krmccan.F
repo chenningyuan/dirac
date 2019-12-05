@@ -2211,6 +2211,59 @@ C
 C
       end if
 C     =======================================================
+C     7. Nuclear Magnetic Quadrupole Moment Interaction 
+C     Written by Malaya K. Nayak, Mar 23, 2015
+C     =======================================================
+      if (donmqm_krci) then
+C
+C       print title
+        write(lupri,*)
+        write(lupri,'(/28x,a/28x,a/28x,a)')
+     & ' ********************************************************',
+     & ' *********  Nuclear Magnetic Quadrupole Moment  *********',
+     & ' ********************************************************'
+C
+      DO I = 1, NPROP_KRCI
+         INDXPR = LPROP_KRCI(I)
+         XLABEL = PRPNAM(INDXPR)(1:8)
+         IF (XLABEL(4:6).EQ.'MQM') THEN
+         IND_PRP(I) = IXPRPINDEX(PRPNAM,LPROP_KRCI,NPROP_KRCI,XLABEL)
+C
+C       ----------------------------
+C       print nMQM expectation value
+C       ----------------------------
+        write(lupri,'(/a,A6,a/a)')
+     & '    < state | ',XLABEL,' [alpha X EFG] | state >  '//
+     & '    Nuc. MQM Constant [a.u.]       Norm [a.u.]'
+        write(lupri,'(a)')
+     & '  __________________       _________________'//
+     & '    ___________________________________________________'//
+     & '_______'
+C
+       DO IVEC  = 1,NPROP_ROOTS_KRCI
+          JVEC  = IVEC
+          INIST = IVEC
+          JFLST = JVEC
+          ISYMST_IN = ISYMEIG_KRCI(INIST)
+          ISYMST_FL = ISYMEIG_KRCI(JFLST)
+          EDMMOM = DCMPLX(XPROPMAT(INIST,JFLST,IND_PRP(I),1),
+     &                    XPROPMAT(INIST,JFLST,IND_PRP(I),2))
+          EDMNORM = SQRT(EDMMOM**2)
+C
+          write(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F20.12,5X,1F20.12)')
+     & ' NMQM  state',INIST,'(',XREPEIG(ISYMST_IN),')         state',
+     &      JFLST,'(',XREPEIG(ISYMST_FL),')   ',
+     &      EDMMOM,EDMNORM
+       END DO
+        write(lupri,'(a)')
+     & '  __________________________________________'//
+     & '    ___________________________________________________'//
+     & '_______'
+         END IF
+       END DO
+C
+      end if
+C     =======================================================
 C
 C     release dynamically allocated memory
       if(print_ev) call dealloc(INDX)
