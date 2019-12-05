@@ -1,8 +1,15 @@
 :orphan:
 
 
-18.1 (unreleased)
+19.0 (2019-12-12)
 -----------------
+
+New features:
+
+- Calculation of Nuclear Spin-Rotation tensors. Activated with ".SPINRO". Contributors: Trond Saue and I. Agustín Aucar.
+   I. A. Aucar, S. S. Gómez, M. C. Ruiz de Azúa, and C. G. Giribet.
+   Theoretical study of the nuclear spin-molecular rotation coupling for relativistic electrons and non-relativistic nuclei.
+   J. Chem. Phys. 136, 204119 (2012); http://dx.doi.org/10.1063/1.4721627 doi: 10.1063/1.4721627
 
 Revised features:
 
@@ -11,9 +18,15 @@ Revised features:
 Error corrections:
 
 - Fixed use of point charges (do not try to obtain e.g. mass of a point charge).
-- Fixed Be basis set in cc-pV5Z.
 - Fixed spelling error in keyword .GAUNTSCALE (was .GAUTSCALE).
 - Fixed T1EQN1 function call in src/relccsd/ccgrad.F (thanks to Martin Siegert).
+- Fixed wrong memory allocation for spin-free or non-relativistic KRMCSCF.
+
+Basis set corrections:
+
+- Fixed Be basis set in cc-pV5Z.
+- Fixed Al basis set in aug-cc-pV(D+d)Z, aug-cc-pV(T+d)Z and aug-cc-pV(Q+d)Z.
+- Fixed Si basis set in aug-cc-pV(D+d)Z and aug-cc-pV(Q+d)Z.
 
 Performance improvements:
 
