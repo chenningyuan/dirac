@@ -10,11 +10,6 @@ Introduction
 In this tutorial we introduce the calculation of molecular rotational g-tensors as given in the DIRAC code, based on the theoretical
 developments by I. Agustín Aucar *et al.* For details, you are welcome to consult :cite:`Aucar_JCP2014`.
 
-.. note::
-
-   The current implementation gives theoretically correct results only for molecules in equilibrium.
-
-
 The Molecular rotational g-tensor elements are given by
 
 .. math::

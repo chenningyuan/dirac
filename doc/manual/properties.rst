@@ -154,11 +154,6 @@ keyword(ROTG)
 
 Evaluate rotational g-tensors: linear response and nuclear contributions.
 
-.. note::
-
-   The current implementation gives theoretically correct results only for molecules in equilibrium.
-
-
 Results are dimensionless.
 
 The total g-tensor, as well as its linear response and nuclear contributions are always given separately.

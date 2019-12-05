@@ -8503,13 +8503,13 @@ C
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "abainf.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "molgfa.h"
 #include "orgcom.h"
 #include "ibtfun.h"
 #include "dgroup.h"
+#include "dcbprp.h"
 C
       integer IATOM,IX,IY,IPRINT,ISYMOP,JATOM,JX,JY,KATOM,NUMIS,
      &        ICOOR,NATTYP
@@ -8525,8 +8525,6 @@ C
       PARAMETER (D1 = 1.0D0)
 C
       LOGICAL PLANAR,LINMOL
-C
-      NOLOND = .TRUE.
 C
 Ciaa  Nuclear rotational angular momentum could be defined here to obtain Omega afterwards
       DO 300 I = 1,3
@@ -8574,9 +8572,6 @@ C iaa To obtain Omega, the nuclear rot. angular momentum (ANGUMOM) should be def
      &       'Omega_C',OMEGA(3)
       END IF
 C
-      WRITE (LUPRI,'(/,1X,A)')' Results are valid only for '//
-     &                     'molecules in their equilibrium geometry'
-C
 C    Print inertia tensor or moment
 C
       IF (IPRINT .GE. 0) THEN
@@ -8604,7 +8599,7 @@ C
 C    Print molecular g-tensors
 C
       IF (IPRINT .GE. 0) THEN
-         IF (NOLOND) THEN
+         IF (.NOT.LONDON) THEN
             WRITE (LUPRI,'(/,1X,A)')' Calculation without '//
      &                               'London orbitals.'
          ELSE
