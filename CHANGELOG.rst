@@ -10,6 +10,10 @@ New features:
    I. A. Aucar, S. S. Gómez, M. C. Ruiz de Azúa, and C. G. Giribet.
    Theoretical study of the nuclear spin-molecular rotation coupling for relativistic electrons and non-relativistic nuclei.
    J. Chem. Phys. 136, 204119 (2012); http://dx.doi.org/10.1063/1.4721627 doi: 10.1063/1.4721627
+- Interface with the Quantum Computing package OpenFermion. https://github.com/bsenjean/Openfermion-Dirac. Contributors: Bruno Senjean and Luuk Visscher.
+   T. E. O'Brien, B. Senjean, R. Sagastizabal, X. Bonet-Monroig, A. Dutkiewicz, F. Buda, L. DiCarlo and L. Visscher
+   Calculating energy derivatives for quantum chemistry on a quantum computer.
+   Accepted to npj: Quantum Information. https://arxiv.org/abs/1905.03742
 
 Revised features:
 
