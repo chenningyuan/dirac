@@ -154,7 +154,7 @@ print *, '*    Jetze Sikkema            Vrije Universiteit Amsterdam      Nether
 print *, '*    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *'
 print *, '*    Joern Thyssen            University of Southern Denmark    Denmark       *'
 print *, '*    Joost van Stralen        Vrije Universiteit Amsterdam      Netherlands   *'
-print *, '*    Marta Lopez Vidal        Technical University of Denmark   Denmark       *'
+print *, '*    Marta L. Vidal           Technical University of Denmark   Denmark       *'
 print *, '*    Sebastien Villaume       Linkoeping University             Sweden        *'
 print *, '*    Olivier Visser           University of Groningen           Netherlands   *'
 print *, '*    Toke Winther             University of Southern Denmark    Denmark       *'
