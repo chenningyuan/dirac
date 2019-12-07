@@ -2295,6 +2295,12 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck FLIP_BLOCK */
       SUBROUTINE FLIP_BLOCK(PROP,ACHAR,IPRINT)
+C
+C     Flip the Off-diagonal blocks of property matrix to Diagonal blocks
+C     for parallel components of Hyperfine and Anapole moment operators. 
+C
+C     Written by Malaya K. Nayak Sept 04 2013
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
