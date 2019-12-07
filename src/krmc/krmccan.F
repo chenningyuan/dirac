@@ -1734,16 +1734,6 @@ C
           JFLST = JVEC
           ISYMST_IN = ISYMEIG_KRCI(INIST)
           ISYMST_FL = ISYMEIG_KRCI(JFLST)
-CMKN To be fixed soon!!!
-C              XREAL         = XPROPMAT(INIST,JFLST,IND_PRP(I),1)
-C              XMOM          = XREAL
-C              IF (MZ .EQ. 2) THEN
-C              XCOMP         = XPROPMAT(INIST,JFLST,IND_PRP(I),2)
-C              XMOM          = DCMPLX(XREAL,XCOMP)
-C              END IF
-C          EDMMOM = XMOM
-C          EDMNORM = SQRT(EDMMOM**2)
-CMKN in next release!!!
           EDMMOM = DCMPLX(XPROPMAT(INIST,JFLST,IND_PRP(I),1),
      &                    XPROPMAT(INIST,JFLST,IND_PRP(I),2))
           EDMNORM = SQRT(EDMMOM**2)
@@ -2257,16 +2247,6 @@ C
           JFLST = JVEC
           ISYMST_IN = ISYMEIG_KRCI(INIST)
           ISYMST_FL = ISYMEIG_KRCI(JFLST)
-CMKN To be fixed soon!!!
-C              XREAL         = XPROPMAT(INIST,JFLST,IND_PRP(I),1)
-C              XMOM          = XREAL
-C              IF (MZ .EQ. 2) THEN
-C              XCOMP         = XPROPMAT(INIST,JFLST,IND_PRP(I),2)
-C              XMOM          = DCMPLX(XREAL,XCOMP)
-C              END IF
-C          EDMMOM = XMOM
-C          EDMNORM = SQRT(EDMMOM**2)
-CMKN in next release!!!
           EDMMOM = DCMPLX(XPROPMAT(INIST,JFLST,IND_PRP(I),1),
      &                    XPROPMAT(INIST,JFLST,IND_PRP(I),2))
           EDMNORM = SQRT(EDMMOM**2)
