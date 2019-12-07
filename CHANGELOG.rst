@@ -29,6 +29,7 @@ Error corrections:
 - Fixed spelling error in keyword .GAUNTSCALE (was .GAUTSCALE).
 - Fixed T1EQN1 function call in src/relccsd/ccgrad.F (thanks to Martin Siegert).
 - Fixed wrong memory allocation for spin-free or non-relativistic KRMCSCF.
+- Fixed runtime error for XPROPMAT in src/krmc/krmccan.F property modules.
 
 Basis set corrections:
 
