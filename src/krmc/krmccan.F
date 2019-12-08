@@ -1606,7 +1606,8 @@ C#include "chrnos.h"
       DOUBLE COMPLEX XMOM
       REAL*8 OSCL, OSCLABS
       DIMENSION XPROPMAT(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,
-     &                   NPROP_KRCI,MZ)
+     &                   NPROP_KRCI,2)
+CMKN     &                   NPROP_KRCI,MZ)
       DIMENSION GTENSOR(NPROP_ROOTS_KRCI),GTENSORNORM(NPROP_ROOTS_KRCI),
      &          ENSPSMOM(NPROP_ROOTS_KRCI),HYFENFIN(NPROP_ROOTS_KRCI),
      &          HYFEDMFIN(NPROP_ROOTS_KRCI),EEFFAU(NPROP_ROOTS_KRCI)
@@ -2274,6 +2275,12 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck FLIP_BLOCK */
       SUBROUTINE FLIP_BLOCK(PROP,ACHAR,IPRINT)
+C
+C     Flip the Off-diagonal blocks of property matrix to Diagonal blocks
+C     for parallel components of Hyperfine and Anapole moment operators. 
+C
+C     Written by Malaya K. Nayak Sept 04 2013
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
