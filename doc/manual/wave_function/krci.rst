@@ -428,10 +428,6 @@ the order given by the basis file. Reference: :cite:`Fleig2014`
 
 keyword(EEDM)
 
- ::
- 
-  .EEDM
-
 compute electron electric dipole moment effective electric field as an
 expectation value over the effective one-electron momentum-form operator
 (J. Phys. B: At. Mol. Opt. Phys. 22 (1989) 559, stratagem II). Reference:
@@ -439,20 +435,12 @@ expectation value over the effective one-electron momentum-form operator
 
 keyword(ENSPS)
 
- ::
- 
-  .ENSPS
-
 compute nucleon-electron scalar-pseudoscalar interaction constant as an
 expectation value over the corresponding effective four-fermion operator
 in the limit for an infinitely heavy nucleon (Sov. Phys. JETP 62 (1985) 872).
 Reference: :cite:`Fleig2015`
 
 keyword(NMQM)
-
- ::
- 
-  .NMQM
 
 compute nuclear Magnetic-Quadrupole-Moment (MQM) Interaction constatn as an
 expectation value over the corresponding effective four-component operator

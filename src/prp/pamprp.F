@@ -4458,7 +4458,6 @@ CTF   over EDM integrals in the molecular spinor basis.
 C
       IOP(1)   = 21
       PLABEL(1) = 'KINENERG'
-        write(*,*)'Malaya 1',IPRINT
       CALL XPRIND(PNAME(1),IOP(1),NPCOMP,PFAC(1),PLABEL(1),
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
 C      SUBROUTINE XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
@@ -4497,7 +4496,6 @@ C
 C     MHYP: INTTYP = 29 (electric field at individual nuclei)
 C     (-29: accept .SELECT specification)
       CALL SETATM(WORK(KDATOM),NATOM,-29)
-        write(*,*)'Malaya 2',IPRINT
       CALL DEF_MHYP1(WORK(KDATOM),WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('DEF_MHYP',WORK,KWORK,KWORK,KFREE,LFREE)
 C      RETURN
@@ -4636,7 +4634,6 @@ C
 C     ENSPS: INTTYP = 62 (nuclear charge density normalised)
 C     (-62: accept .SELECT specification)
       CALL SETATM(WORK(KDATOM),NATOM,-62)
-        write(*,*)'Malaya 3',IPRINT
       CALL DEF_ENSPS1(WORK(KDATOM),WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('DEF_ENSPS',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
@@ -4747,7 +4744,6 @@ C
 C     NMQM: INTTYP = 30 (cart. el. field grad. at indiv. nuclei)
 C     (-30: accept .SELECT specification)
       CALL SETATM(WORK(KDATOM),NATOM,-30)
-        write(*,*)'Malaya 4',IPRINT
       CALL DEF_NMQM1(WORK(KDATOM),WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('DEF_NMQM',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
