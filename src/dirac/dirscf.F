@@ -1514,8 +1514,8 @@ C
 !                      nz, ipqtoq(1,0), 6)
            deallocate(fock_pcm)
            time_pcm_fock = second() - time_pcm_fock
-         endif 
-#endif         
+         endif
+#endif
 
 C
 C        Add one-electron Fock matrix to two-electron matrix
@@ -1538,7 +1538,10 @@ C
 C
 C       Write total Fock matrix
 C
+        print *, 'writing to DFFCKT --> NFMAT is ',NFMAT
         CALL WRIFCK(LUFCKT,FOCK,NFMAT)
+        !> DFFCK1 --> one-electron part
+        !> DFFCKT --> first entry
 C
          IF(IPRSCF.GE.5) THEN
            IF (NISHT .GT. 0) THEN

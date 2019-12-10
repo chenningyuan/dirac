@@ -169,7 +169,7 @@ contains
        if(nr_2e_fock_matrices == 1) goto 9999
 
        !> Add active two-electron Fock matrices to closed-shell Fock matrix
-       do I = 1,aoo_nopen
+       do i = 1,aoo_nopen
          !> The factor is DF and not D2*DF because of the multiplication with D2 in TWOFCK.
          call daxpy(nrows*ncols*nz,aoo_dfopen(i),fmat(1,1,1,i+1),1,fmat(1,1,1,1),1)
        end do
@@ -211,7 +211,7 @@ contains
                      WORK(IOFF_TMOT(I)+KFMO ),nr_tmo(I),nr_tmo(I),NZ,IPQTOQ(1,0),         &
                      WORK(KTMAT+ioff_tmt(I)),nr_ao_all(I),nr_tmo(I),nzt_aoo,IPQTOQ(1,0),  &
                      WORK(KTMAT+ioff_tmt(I)),nr_ao_all(I),nr_tmo(I),nzt_aoo,IPQTOQ(1,0),  &
-                     WORK(KFREE),LFREE,0)
+                     WORK(KFREE),LFREE,30)
        end do
 
        fmat = 0; call dcopy(nrows*ncols*nz,work(kfao),1,fmat(1,1,1,1),1)

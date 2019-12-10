@@ -36,9 +36,9 @@ module xamfi_internal_parameters
   real(8), public    :: aoo_cspeed                             = -1.0d0   ! speed of light
   real(8)            :: aoo_dfopen(0:aoo_mxopen)               =  0.0d0
 
-  integer            :: dim_pshell(2)                          =  0
-  integer            :: dim_eshell(2)                          =  0
-  integer            :: dim_oshell(2)                          =  0
+  integer            :: dim_pshell(1:2)                        =  0
+  integer            :: dim_eshell(1:2)                        =  0
+  integer            :: dim_oshell(1:2)                        =  0
   integer            :: nzt_aoo                                =  0
   integer            :: nr_quat                                =  0
   integer            :: nr_fsym                                =  0
@@ -52,13 +52,13 @@ module xamfi_internal_parameters
   integer            :: n2bbasxq_dim_aoo                       =  0
   integer            :: nr_cmo_q                               =  0
   integer            :: aoo_n2tmt                              =  0
-  integer            :: nr_ao_all(2)                           =  0
-  integer            :: nr_ao_l(2)                             =  0
-  integer            :: nr_ao_s(2)                             =  0
-  integer            :: ioff_aomat_x(2,2)                      =  0
-  integer            :: aoo_cb_pq_to_uq(4, 0:7)                =  0
-  integer            :: aoo_cb_uq_to_pq(4, 0:7)                =  0
-  integer            :: aoo_bs_to_fs(0:7, 2)                   =  0
+  integer            :: nr_ao_all(1:2)                         =  0
+  integer            :: nr_ao_l(1:2)                           =  0
+  integer            :: nr_ao_s(1:2)                           =  0
+  integer            :: ioff_aomat_x(1:2,1:2)                  =  0
+  integer            :: aoo_cb_pq_to_uq(1:4, 0:7)              =  0
+  integer            :: aoo_cb_uq_to_pq(1:4, 0:7)              =  0
+  integer            :: aoo_bs_to_fs(0:7, 1:2)                 =  0
   integer            :: aoo_num_nuclei_i                       =  0
   integer            :: aoo_num_nuclei_d                       =  0
   integer            :: aoo_is_nuclei                          =  0
@@ -66,7 +66,7 @@ module xamfi_internal_parameters
   integer            :: aoo_bs_irrep_mat(1:4, 0:7)             =  0
   integer            :: aoo_iqmult_trip_q(1:4, 1:4, 1:4)       =  0
   integer            :: aoo_pointer_quat_op(0:7)               =  0
-  integer            :: aoo_ihqmat(4,-1:1)                     =  0
+  integer            :: aoo_ihqmat(1:4,-1:1)                   =  0
   integer            :: nr_2e_fock_matrices                    =  0
   integer            :: aoo_intflg                             =  0
   integer            :: aoo_mxatom                             =  0
@@ -76,7 +76,7 @@ module xamfi_internal_parameters
   integer            :: lutmat_aoo                             =  0
   integer            :: nr_tmo(2)                              =  0
   integer            :: ioff_tmt(2)                            =  0
-  integer            :: ioff_tmot(2)                            =  0
+  integer            :: ioff_tmot(2)                           =  0
   integer, allocatable :: aoo_nont(:)
   integer, allocatable :: aoo_nucdeg(:)
 
@@ -89,6 +89,32 @@ module xamfi_internal_parameters
   end  type
   type(type_atom), allocatable :: atom(:)
   !> end
+
+  !> cb exchange
+  integer            :: nr_quat_save            = 0
+  integer            :: nzt_aoo_save            = 0
+  integer            :: nr_ao_total_aoo_save    = 0
+  integer            :: nrows_save              = 0
+  integer            :: ncols_save              = 0
+  integer            :: nr_ao_large_aoo_save    = 0
+  integer            :: nr_ao_small_aoo_save    = 0
+  integer            :: n2bastq_dim_aoo_save    = 0
+  integer            :: n2bbasxq_dim_aoo_save   = 0
+  integer            :: nr_cmo_q_save           = 0
+  integer            :: aoo_n2tmt_save          = 0
+
+  integer            :: dim_pshell_save(1:2)    = 0
+  integer            :: dim_eshell_save(1:2)    = 0
+  integer            :: dim_oshell_save(1:2)    = 0
+  integer            :: nr_ao_all_save(1:2)     = 0
+  integer            :: nr_ao_l_save(1:2)       = 0
+  integer            :: nr_ao_s_save(1:2)       = 0
+
+  integer            :: nr_tmo_save(1:2)        = 0
+  integer            :: ioff_tmt_save(1:2)      = 0
+  integer            :: ioff_tmot_save(1:2)     = 0
+
+  integer            :: ioff_aomat_x_save(1:2,1:2) = 0
 
 
 end module

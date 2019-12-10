@@ -2708,6 +2708,8 @@ C
        CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','GMOTRA ')
        CALL READT(LUTMAT,aoo_N2TMT,work(ktmataoo))
        CALL READT(LUTMAT,aoo_N2TMT,work(ktbufaoo))
+       print *, ' BLU0 first elements of 4c AOMOMAT and inverse one ',
+     & work(ktmataoo), work(ktbufaoo)
        CLOSE(LUTMAT,STATUS='KEEP')
 
        CALL OPNFIL(LUTMAT,'AOMOMATaoo','UNKNOWN','GMOTRA')
@@ -2720,6 +2722,9 @@ C
 
 
       write(lupri,*) ' dimensions for AOMOMAT ... ',n2tmt
+       print *, ' BLU1 first elements of 4c AOMOMAT and inverse one ',
+     & work(ktmat:ktmat+100), work(ktbuf:ktbuf+100)
+            iprscf = 40
 
 C
 C     Write transformation matrices
@@ -2796,6 +2801,13 @@ C
             lwork_local = lwork - ntbas(0)**2*nz*nfmat
      &                  - ntbas(0)**2*nz - ncmotq
 
+
+
+            !> debugging
+            iprscf = 40
+
+            call xamfi_set_cb(+1)
+
             call get_xamfi_correction(
      &                                dmat_aoosoc,
      &                                cmo_aoosoc,
@@ -2804,6 +2816,9 @@ C
      &                                lwork_local,
      &                                iprham
      &                               )
+
+            call xamfi_set_cb(-1)
+
             !> restore logicals
             if(aoofocc)then
               aoc   = aoc_save

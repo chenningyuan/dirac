@@ -36,6 +36,7 @@ module xamfi_environment
 
   public xamfi_init
   public xamfi_finalize
+  public xamfi_set_cb
 
   private
 
@@ -184,4 +185,116 @@ contains
   end subroutine xamfi_finalize
 !**********************************************************************
 
+  subroutine xamfi_set_cb(myway)
+
+      use quaternion_algebra
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "dcborb.h"
+#include "dcbgen.h"
+#include "dgroup.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "maxaqn.h"
+#include "ccom.h"
+#include "dcbprp.h"
+#include "dcbxpr.h"
+#include "dcbdhf.h"
+#include "priunit.h"
+
+    integer, intent(in) :: myway
+!   ----------------------------------------------------------------------------
+!   local variables
+!   ----------------------------------------------------------------------------
+    integer             :: i, j, k, l, m
+    integer             :: ier
+!   ----------------------------------------------------------------------------
+
+      if(myway == 1)then
+
+      nr_quat_save            = nz
+      nzt_aoo_save            = nzt
+      if(mdirac) nzt_aoo_save = nz ! default: 1
+
+!                               [  L+S  ] (ifsym==1) + [  L+S  ] (ifsym==2)
+      nr_ao_total_aoo_save    = ntbas(0)
+      nrows_save              = ntbas(0)
+      ncols_save              = ntbas(0)
+!                       [  L    ] (ifsym==1) + [  L    ] (ifsym==2)
+      nr_ao_large_aoo_save    = ntbas(1)
+!                       [    S  ] (ifsym==1) + [    S  ] (ifsym==2)
+      nr_ao_small_aoo_save    = ntbas(2)
+!
+      n2bastq_dim_aoo_save    = n2bastq
+      n2bbasxq_dim_aoo_save   = n2bbasxq
+!
+      nr_cmo_q_save           = ncmotq
+!
+      aoo_n2tmt_save          = n2tmt
+
+      do i = 1, nr_fsym
+        dim_pshell_save(i)       =  npsh(i)
+        dim_eshell_save(i)       =  nesh(i)
+        dim_oshell_save(i)       =  norb(i)
+!                         [  L+S  ]
+        nr_ao_all_save(i)        = nfbas(i,0)
+!                         [  L    ]
+        nr_ao_l_save(i)          = nfbas(i,1)
+!                         [    S  ]
+        nr_ao_s_save(i)          = nfbas(i,2)
+
+        nr_tmo_save(i)           = ntmo(i)
+        ioff_tmt_save(i)         = i2tmt(i)
+        ioff_tmot_save(i)        = i2tmot(i)
+
+        do m = 1, nr_fsym
+          ioff_aomat_x_save(m,i) = i2basx(m,i)
+        end do
+      end do
+
+      else
+
+      nz = nr_quat_save
+      nzt = nzt_aoo_save
+      if(mdirac) nz = nzt_aoo_save
+
+!                               [  L+S  ] (ifsym==1) + [  L+S  ] (ifsym==2)
+      ntbas(0) = nr_ao_total_aoo_save
+!                       [  L    ] (ifsym==1) + [  L    ] (ifsym==2)
+      ntbas(1) = nr_ao_large_aoo_save
+!                       [    S  ] (ifsym==1) + [    S  ] (ifsym==2)
+      ntbas(2) = nr_ao_small_aoo_save
+!
+      n2bastq  = n2bastq_dim_aoo_save
+      n2bbasxq = n2bbasxq_dim_aoo_save
+!
+      ncmotq = nr_cmo_q_save
+!
+      n2tmt  = aoo_n2tmt_save
+
+      do i = 1, nr_fsym
+        npsh(i) = dim_pshell_save(i)
+        nesh(i) = dim_eshell_save(i)
+        norb(i) = dim_oshell_save(i)
+!                         [  L+S  ]
+        nfbas(i,0) = nr_ao_all_save(i)
+!                         [  L    ]
+        nfbas(i,1) = nr_ao_l_save(i)
+!                         [    S  ]
+        nfbas(i,2) = nr_ao_s_save(i)
+
+        ntmo(i)   = nr_tmo_save(i)
+        i2tmt(i)  = ioff_tmt_save(i)
+        i2tmot(i) = ioff_tmot_save(i)
+
+        do m = 1, nr_fsym
+          i2basx(m,i) = ioff_aomat_x_save(m,i)
+        end do
+      end do
+
+      end if
+
+  end subroutine xamfi_set_cb
+!**********************************************************************
 end module
