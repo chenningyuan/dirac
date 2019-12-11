@@ -464,9 +464,25 @@
       DO I = 1, NPRP_WF
          WRITE(LUPRI,'(I6,2A)') I,': ',PRP_WF(I)
       END DO
-
-!MI ...for magnetic susceptibility, NMR shielding constants and rotational
-!MI   g_tensors operator centers might be changed
+!
+!=========================================================================
+!iaa  Set the molecular CM as CAVORG (origin of L angular moment)
+!     for spin-rotations and molecular g-tensors
+!=========================================================================
+!
+      if (spinro.or.rotg) then
+!     Make the center of mass the CAVORG position
+        CALL CMMASS(GEOM,MASS,NAT,ISOTOP,IPRPRP)
+        CALL DCOPY(3,CMXYZ,1,CAVORG,1)
+        write(LUPRI,'(/,1X,A)')                                         &
+     &'CAVORG was placed at the molecular CM position'
+        write(LUPRI,'(/A,24X,3F20.15)')                                 &
+     &  ' CAVORG (a.u.):',(CAVORG(I), I = 1, 3)
+      end if
+!
+!=========================================================================
+!MI   For magnetic susceptibilities, NMR shielding constants and rotational
+!MI   g-tensors, operator centers might be changed
       WRITE(LUPRI,'(1X,A)')                                             &
      &'These initial settings of center and origins'//                  &
      &' might be changed later:'
@@ -589,19 +605,6 @@
       IF(DOESR) CALL ESRINP(WORD,.TRUE.,WORK,LWORK)
 #endif
 
-!=========================================================================
-!iaa  Set the molecular CM as CAVORG (origin of L angular moment)
-!     for spin-rotations and molecular g-tensors
-!=========================================================================
-      if (spinro.or.rotg) then
-! ... make the center of mass the CAVORG
-        CALL CMMASS(GEOM,MASS,NAT,ISOTOP,IPRPRP)
-        CALL DCOPY(3,CMXYZ,1,CAVORG,1)
-        write(LUPRI,'(/,1X,A)')                                         &
-     &'CAVORG was placed at the molecular CM position'
-        write(LUPRI,'(/A,24X,3F20.15)')                                 &
-     &  ' CAVORG (a.u.):',(CAVORG(I), I = 1, 3)
-      end if
 !===========================================================================
 ! Define special operators for the list of properties programmed in DIRAC
 !===========================================================================
