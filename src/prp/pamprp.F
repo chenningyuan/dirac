@@ -4422,7 +4422,7 @@ C
 C     Define operator for electron EDM calculation
 C
 C     Written by T. Fleig, May 2012
-C     and Malaya K. Nayak Dec 10 2019
+C     and Malaya K. Nayak, Dec 2019
 C
 C***********************************************************************
 #include "implicit.h"
