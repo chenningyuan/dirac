@@ -10,7 +10,14 @@ New features:
    I. A. Aucar, S. S. Gómez, M. C. Ruiz de Azúa, and C. G. Giribet.
    Theoretical study of the nuclear spin-molecular rotation coupling for relativistic electrons and non-relativistic nuclei.
    J. Chem. Phys. 136, 204119 (2012); http://dx.doi.org/10.1063/1.4721627 doi: 10.1063/1.4721627
-
+- Interface with the Quantum Computing package OpenFermion. https://github.com/bsenjean/Openfermion-Dirac. Contributors: Bruno Senjean and Luuk Visscher.
+   T. E. O'Brien, B. Senjean, R. Sagastizabal, X. Bonet-Monroig, A. Dutkiewicz, F. Buda, L. DiCarlo and L. Visscher
+   Calculating energy derivatives for quantum chemistry on a quantum computer.
+   Accepted to npj: Quantum Information. https://arxiv.org/abs/1905.03742
+- Expectation value of Nuclear Magnetic-Quadrupole-Moment interaction constant using ".OPERATOR" and ".NMQM" keyword in KRCI. Contributor: Malaya K. Nayak
+   T. Fleig, M. K. Nayak and M. G. Kozlov.
+   TaN, a molecular system for probing P,T-violating hadron physics.
+   Phys. Rev. A 93, 012505, 2016; http://dx.doi.org/10.1103/PhysRevA.93.012505 doi: 10.1103/PhysRevA.93.012505
 - Calculation of Rotational Molecular g-tensors. Activated with ".ROTG". Contributor: I. Agustín Aucar.
    I. A. Aucar, S. S. Gómez, C. G. Giribet and M. C. Ruiz de Azúa.
    Theoretical study of the relativistic molecular rotational g-tensor.
@@ -26,6 +33,8 @@ Error corrections:
 - Fixed spelling error in keyword .GAUNTSCALE (was .GAUTSCALE).
 - Fixed T1EQN1 function call in src/relccsd/ccgrad.F (thanks to Martin Siegert).
 - Fixed wrong memory allocation for spin-free or non-relativistic KRMCSCF.
+- Fixed runtime error for XPROPMAT in src/krmc/krmccan.F property modules.
+- Fixed runtime error for calling XPRIND in src/prp/pamprp.F property modules.
 
 Basis set corrections:
 

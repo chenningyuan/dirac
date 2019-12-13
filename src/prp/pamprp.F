@@ -1,4 +1,4 @@
-!      Copyright (c) 2017 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -4416,12 +4416,13 @@ C     define s_z and l_z as j_z = s_z + l_z
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_EEDM */
-      SUBROUTINE DEF_EEDM(WORK,LWORK,NTEST)
+      SUBROUTINE DEF_EEDM(IPRINT,WORK,LWORK)
 C***********************************************************************
 C
 C     Define operator for electron EDM calculation
 C
 C     Written by T. Fleig, May 2012
+C     and Malaya K. Nayak, Dec 2019
 C
 C***********************************************************************
 #include "implicit.h"
@@ -4443,13 +4444,6 @@ C
       CHARACTER PNAME(1)*16, PLABEL(1)*8
       DIMENSION WORK(LWORK),PFAC(1),IOP(1)
 C
-      NTEST = 0
-      if (NTEST.ge.1) then
-        write(6,*)
-        write(6,*) ' (DEF_EEDM) testing '
-        write(6,*)
-      end if
-C
 C     define operator type, factor, name and label
 C
       NPCOMP = 1
@@ -4465,21 +4459,23 @@ C
       IOP(1)   = 21
       PLABEL(1) = 'KINENERG'
       CALL XPRIND(PNAME(1),IOP(1),NPCOMP,PFAC(1),PLABEL(1),
-     &            INDXPR,ISYXPR,ITRXPR,NTEST)
+     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
 C      SUBROUTINE XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
 C     &           INDXPR,ISYXPR,ITRXPR,IPRINT)
-      if (NTEST.ge.1) then
+      CALL OP1IND('KRCI PROPEDM',LUCIINDTRP,LPROP_KRCI,
+     &            NPROP_KRCI,INDXPR,MXPROP_KRCI)
+      if (IPRINT.GE.1) then
+        write(6,*)' (DEF_EEDM) testing ',LPROP_KRCI(NPROP_KRCI),
+     &             NPROP_KRCI,INDXPR,PRPNAM(INDXPR)
         print*,'ISYXPR,ITRXPR,IPTYP,NPCOMP',ISYXPR,ITRXPR,IPTYP,NPCOMP
       end if
 C The output should be
 C   ISYXPR= 4  ITRXPR=-1  IPTYP=21  NPCOMP= 1
-      CALL OP1IND('KRCI PROPEDM',LUCIINDTRP,LPROP_KRCI,
-     &            NPROP_KRCI,INDXPR,MXPROP_KRCI)
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_MHYP */
-      SUBROUTINE DEF_MHYP(WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_MHYP(IPRINT,WORK,LWORK)
 C***********************************************************************
 C
 C     Define operator for magnetic hyperfine constants
@@ -4597,8 +4593,10 @@ C     &                   //NAMN(IATOM)//REP(IREPO)//CHRXYZ(ICOOR)
               ITHIRD = MOD(MOD(IS2,100),10)
               PLABEL(2)= 'NEF '//CHRNOS(IFIRST)//CHRNOS(ISECND)
      &                     //CHRNOS(ITHIRD)//' '
+C       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+C     &           INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &           INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &           INDXPR,ISYXPR,ITRXPR,IPRINT)
        CALL OP1IND('KRCI PROPHYP',LUCIINDTRP,LPROP_KRCI,
      &           NPROP_KRCI,INDXPR,MXPROP_KRCI)
        IF (IPRINT.GE.1) THEN
@@ -4614,7 +4612,7 @@ C      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_ENSPS */
-      SUBROUTINE DEF_ENSPS(WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_ENSPS(IPRINT,WORK,LWORK)
 C***********************************************************************
 C
 C     Define operator for electron-Nucleus Scalar-Pseudoscalar
@@ -4706,8 +4704,10 @@ C....             Point charge
      &                        //CHRNOS(IPTNUC(IATOM,IREP)/10)//
      &                        CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
                   ENDIF
+C                  CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+C     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
                   CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
                   CALL OP1IND('KRCI PROPENSPS',LUCIINDTRP,LPROP_KRCI,
      &           NPROP_KRCI,INDXPR,MXPROP_KRCI)
        IF (IPRINT.GE.1) THEN
@@ -4718,6 +4718,111 @@ C....             Point charge
   200       CONTINUE
          END IF
   100 CONTINUE
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_NMQM */
+      SUBROUTINE DEF_NMQM(IPRINT,WORK,LWORK)
+C***********************************************************************
+C
+C     Define operator for nuclear magnetic quadruple moment constant
+C
+C     Written by Malaya K. Nayak March 20 2015
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "mxcent.h"
+#include "nuclei.h"
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION WORK(LWORK),PFAC(3)
+C
+#include "memint.h"
+      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+C     NMQM: INTTYP = 30 (cart. el. field grad. at indiv. nuclei)
+C     (-30: accept .SELECT specification)
+      CALL SETATM(WORK(KDATOM),NATOM,-30)
+      CALL DEF_NMQM1(WORK(KDATOM),WORK(KFREE),LFREE,IPRINT)
+      CALL MEMREL('DEF_NMQM',WORK,KWORK,KWORK,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck def_nmqm1 */
+      SUBROUTINE DEF_NMQM1(DOATOM,WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define nuclear quadruple moment interaction constant
+C
+C     Written by Malaya K. Nayak - March 20 2015
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "maxorb.h"
+      PARAMETER(D1 = 1.0D0, D3 = 3.0D0, D3INV = D1/D3)
+      CHARACTER PNAME*16, PLABEL(2)*8
+      DIMENSION WORK(LWORK),PFAC(2)
+      LOGICAL   DOATOM(NUCIND)
+#include "dcbxpr.h"
+#include "dcbexp.h"
+C
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "chrxyz.h"
+#include "ibtfun.h"
+#include "krciprop.h"
+C
+      ITYP = 0
+C     ZAVECTOR
+      IPTYP     = 7
+      NPCOMP    = 2
+      PFAC(1)   = -D3INV
+      PFAC(2)   = -D3INV
+CMKN  Factor and Sign included, see Eq. (19) of reference on TaN P,T-odd
+Cproperties.
+      DO 100 IATOM = 1, NUCIND
+         IF (.NOT. DOATOM(IATOM)) GOTO 100
+                ICOOR1 = 2
+                ICOOR2 = 3
+            ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+            IOFF = 0
+            DO 300 IREPC = 0, MAXREP
+               IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+                  IOFF = IOFF + 1
+                  ITYP = ITYP + 1
+C                  PNAME        = 'EFG:
+C                  '//CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)
+C     *                 //CHRNOS(IATOM/10)
+C     &                 //CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
+                  PNAME    = CHRXYZ(ICOOR2)//CHRNOS(IATOM)//'-MQM'
+                  PLABEL(1) = CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//'EFG'//
+     &                 CHRNOS(IATOM/10)//
+     &                 CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
+                  PLABEL(2) = CHRXYZ(ICOOR1-1)//CHRXYZ(ICOOR2)//'EFG'//
+     &                 CHRNOS(IATOM/10)//
+     &                 CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
+C                  CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+C     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+                  CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
+                  CALL OP1IND('KRCI PROPNMQM',LUCIINDTRP,LPROP_KRCI,
+     &                 NPROP_KRCI,INDXPR,MXPROP_KRCI)
+C                  CALL OP1IND(CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//'EFG'
+C     *                 ,IPEFG(ITYP),LEXPP,NEXPP,INDXPR,MAXEXP)
+      IF(IPRINT.GE.1) THEN
+        write(6,*)'NMQM DEF Testing',LPROP_KRCI(NPROP_KRCI),
+     &             NPROP_KRCI,INDXPR,PRPNAM(INDXPR)
+      ENDIF
+               END IF
+ 300        CONTINUE
+ 200     CONTINUE
+ 100  CONTINUE
 C
       RETURN
       END

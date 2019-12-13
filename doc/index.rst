@@ -188,6 +188,9 @@ Tutorials and walkthrus
   :doc:`CFREAD <tutorials/utils/cfread>` |
   :doc:`LABREAD <tutorials/utils/labread>`
 
+* **Python interface with OpenFermion:**
+  :doc:`Openfermion-Dirac <tutorials/openfermion/openfermion-dirac>`
+
 * **Outdated tutorials (need update):**
   :doc:`DIRRCI <tutorials/dusty_attic/dirrci>` |
   :doc:`GOSCIP <tutorials/dusty_attic/goscip>` |
