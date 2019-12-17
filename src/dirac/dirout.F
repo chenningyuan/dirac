@@ -700,7 +700,8 @@ C
 C     KNFBAS = NFBAS(IFRP,0)
 C     KNORB  = NORB(IFRP)
 C
-      DIMENSION CMO(KNFBAS,KNORB,NZ),CBUF(KNFBAS,LCB,NZ),JVEC(*)
+      DIMENSION CMO(KNFBAS,KNORB,NZ),CBUF(KNFBAS,LCB,NZ),
+     &          JVEC(NPVEC+NEVEC)
 C
       NVEC = NPVEC + NEVEC
       DO IZ = 1,NZ
@@ -1424,8 +1425,6 @@ C.........note: IC=0 when print of positr. shells desired
               WRITE(LUPRI,'(A,I4,A,I4)')
      &          'ISUM=',ISUM,'<> NORB_SUB(ISUB,IFSYM,IC)=',
      &          NORB_SUB(ISUB,IFSYM,IC)
-CTROND
-              WRITE(6,*) 'ISUB =',ISUB
            ENDIF
           ENDDO
         ENDDO

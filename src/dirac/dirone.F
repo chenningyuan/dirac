@@ -4846,15 +4846,15 @@ C
       KFRSAV = KFREE
       CALL TITLER('Reduction of variational space by projection',
      &     '*',125)
-C
+C     
 C     Set dimensions for coefficients
 C     ===============================
 C
       NORBT = 0
       NCMOT  = 0
       DO IFRP = 1,NFSYM
-         IORB(IFRP)  = NORBT
-         NORBT       = NORBT  + NORB(IFRP)
+        IORB(IFRP)  = NORBT
+        NORBT       = NORBT  + NORB(IFRP)
         ICMO(IFRP)  = NCMOT
         ICMOQ(IFRP) = NCMOT*NZ
         NCMO(IFRP)  = NFBAS(IFRP,0)*NORB(IFRP)
@@ -4890,7 +4890,7 @@ C.......loop over fragments
         NVECT = NVECT + NVECS(IFRP)
       ENDDO
       IF(NVECT.EQ.0) GOTO 30
-C
+C     
 C     Calculate dimensions of fragment coefficients array
 C     ====================================================
 C
@@ -4932,7 +4932,7 @@ C
       CALL SELFRAG(WORK(KQ),NVECS,WORK(KE),WORK(KI),
      &             NFRAG,NSTR,PRJFIL,PROOWN,NPRJNUC,IOPT,KVEC,
      &             WORK(KCMO),WORK(KEIG),WORK(KIBE),IOFF,
-     &             WORK,KFREE,LFREE)
+     &             KRMC_FLG,WORK,KFREE,LFREE)
 C
 C     Collect fragment info
 C      
@@ -8376,7 +8376,6 @@ C.....Form density matrix
       CALL QDIAG(NZ,NORB,WORK(KDMAT),NORB,NORB,
      &           WORK(KEIG),1,VMO,NORB,
      &           NORB,WORK(KFREE),LFREE,IERR)
-CTROND
       WRITE(6,*) ' Eigenvalues from PRJORT: ',NVEC
       CALL OUTPUT(WORK(KEIG),1,NORB,1,1,
      &            NORB,NORB,-1,LUPRI)

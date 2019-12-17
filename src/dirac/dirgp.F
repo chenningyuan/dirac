@@ -2679,7 +2679,7 @@ C.......Fragment orbitals in molecular basis
           ICOFF = 1
           IEOFF = 1
           DO IFRP = 1, NFSYM
-             IF(NSTR(IFRP,0,IFRAG).GT.0) THEN
+            IF(NSTR(IFRP,0,IFRAG).GT.0) THEN
 C             Select coefficients
               IF(LBIT(IOPT,2)) THEN
                 ICSEL = ICOFF + NFBAS(IFRP,0)*IOFF(IFRP)
