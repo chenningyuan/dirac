@@ -70,18 +70,25 @@ contains
 
   subroutine initialize ()
 
-     integer       ::  number_of_kramerspairs, i, j
+     integer       ::  number_of_kramerspairs, i, j, norbt
      character(10) ::  date_of_generation
      character(8)  ::  time_of_generation
-     logical       ::  breit_included
+     logical       ::  breit_included,spinfree
      character(14) ::  representation_name
+     real(8)       ::  total_energy
 
      open (filenumber_1e, file='MRCONEE', Form='UNFORMATTED')
      read (filenumber_1e) number_of_spinors, &
                           breit_included,    &
                           core_energy,       &
                           inversion_symmetry,&
-                          group_type
+                          group_type,        &
+                          spinfree,          &
+                          norbt,             &
+                          total_energy
+
+     if (spinfree) group_type = 1 ! In spinfree calculations we always use real arithmetic
+
      read (filenumber_1e) number_of_irreps,(representation_name,i=1,number_of_irreps), &
                           (irrep_occupation(i),i=1,number_of_irreps)
      read (filenumber_1e) number_of_abelian_irreps
