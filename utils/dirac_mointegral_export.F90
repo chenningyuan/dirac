@@ -22,6 +22,7 @@
 module dirac_mointegral_export
 
 ! Written by Lucas Visscher, VU University Amsterdam, December 2009, July 2010
+! Addition made by Bruno Senjean, November 2018, December 2019
 
   implicit none
 
@@ -30,14 +31,16 @@ module dirac_mointegral_export
   integer, parameter     :: filenumber_nw = 23
   integer, parameter     :: filenumber_fcidump = 24
   integer, parameter     :: filenumber_mtable  = 25
+  integer, parameter     :: filenumber_propint = 26
+  integer, parameter     :: filenumber_ccamp = 27
+  logical, parameter     :: generate_full_list = .true.
+  logical, parameter     :: generate_lower_triangular = .false.
+  logical, parameter     :: sorting_wrt_energy = .true. ! sort wrt spinor's energy.
+  logical, parameter     :: sorting_wrt_occupied = .false. ! sort wrt spinor's lowest occupied
   integer, parameter     :: filenumber_55 = 55
   integer, parameter     :: filenumber_56 = 56
-  logical, parameter     :: generate_full_list = .false. 
-  logical, parameter     :: generate_lower_triangular = .true.
-! The target variable should involve into an input option, for now we have no input since mrcc
-! is presently the only code that is supported (the interface to nwchem is in an experimental stage)
-  character(10)          :: target = 'fcidump'
-! character(10)          :: target = 'mrcc'
+  character(10)          :: target
+  character(10)          :: prop_name
 
   type SpinorInformation
 
@@ -50,13 +53,16 @@ module dirac_mointegral_export
   end type SpinorInformation
 
   integer                 :: number_of_spinors, number_of_electrons, number_of_irreps, number_of_abelian_irreps
-  integer                 :: inversion_symmetry, group_type
+  integer                 :: inversion_symmetry, group_type, inop
   real(8)                 :: core_energy
   real(8)                 :: threshold = 1.0E-16
   integer, allocatable    :: kramer_to_spinor(:)
   integer, allocatable    :: multiplication_table(:,:)
   integer                 :: irrep_occupation(128)
   type(SpinorInformation), allocatable :: spinor(:)
+  character(32)           :: ACHAR
+  real(8), allocatable    :: propr(:,:)
+  real(8), allocatable    :: propi(:,:)
 
   public initialize, write_mrcc_fort55, write_mrcc_fort56
   private process_1e, process_2e, make_index_to_occupied_first, irrep_reordered
@@ -103,8 +109,14 @@ contains
      read (filenumber_1e) ((multiplication_table(i,j),i=1,2*number_of_abelian_irreps),j=1,2*number_of_abelian_irreps)
      read (filenumber_1e) (spinor(i)%irrep,spinor(i)%abelian_irrep,spinor(i)%energy,i=1,number_of_spinors)
 
-!    create indices for optional reordering according to occupation
-     call make_index_to_occupied_first 
+     if (sorting_wrt_energy .and. sorting_wrt_occupied) stop 'sorting_wrt_energy and sorting_wrt_occupied cannot be both true'
+     if (sorting_wrt_energy) then
+!       create indices for optional reordering according to energy
+        call make_index_lowestenergy_first
+     else if (sorting_wrt_occupied) then
+!       create indices for optional reordering according to occupation
+        call make_index_to_occupied_first
+     endif
 
      write (*,*) " Initialized reading from MRCONEE"
      write (*,*) " Core energy: ", core_energy
@@ -115,15 +127,15 @@ contains
      read (filenumber_2e) date_of_generation,  &
                           time_of_generation,  &
                           number_of_kramerspairs, &
-                          (kramer_to_spinor(i),kramer_to_spinor(-i),i=1,number_of_spinors/2) 
+                          (kramer_to_spinor(i),kramer_to_spinor(-i),i=1,number_of_spinors/2)
 
      if (2 * number_of_kramerspairs /= number_of_spinors ) then
         write (*,*) number_of_spinors, number_of_kramerspairs
         stop 'inconsistent MRCONEE and MDCINT files'
-     end if 
+     end if
      write (*,*) " Initialized reading from MDCINT"
      write (*,*) " MDCINT created: ",date_of_generation,"  ",time_of_generation
-     
+
   end subroutine
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -161,7 +173,7 @@ contains
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   subroutine process_2e
-  
+
      integer                :: nonzero, ikr, jkr, inz
      integer                :: i, rcw
      integer                :: ii, jj, kk, ll
@@ -201,6 +213,7 @@ contains
               do inz = 1, nonzero
                     call print_2e_integral(filenumber_nw,ikr,jkr,indk(inz),indl(inz),inz,integral,rcw)
 
+
 !                   make also kramers-related integral if desired
 !                   note that we assume real integrals, in which case the kr integral is identical
                     if (generate_full_list) then
@@ -227,7 +240,7 @@ contains
 
                     ij = ii*(ii-1)/2 + jj
                     kl = kk*(kk-1)/2 + ll
-                    
+
                     select_integral = (ii .ge. jj).and.(kk .ge. ll).and.(ij .ge. kl)
                  else
                     select_integral = .true.
@@ -240,18 +253,16 @@ contains
 !                   note that we assume real integrals, in which case the kr integral is identical
                     if (generate_full_list) then
                        call print_2e_integral(filenumber_fcidump,-ikr,-jkr,-indk(inz),-indl(inz),inz,integral,rcw)
-                    end if   
+                    end if
                  end if
               end do
            end do
-
     end select
-  
+
     deallocate(integral)
     deallocate(indk)
     deallocate(indl)
-    
-  
+   
   end subroutine
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -268,21 +279,24 @@ contains
            end_index = number_of_spinors
         end if
         do j = 1, end_index
-!           if (abs(integral(i,j,1)) > threshold .or. abs(integral(i,j,2)) > threshold) then
            if (abs(integral(i,j,1)) > threshold .or. abs(integral(i,j,2)) > threshold) then
               if (rcw .ne. 1) then
-                 write (filenumber_fcidump,'(1P,2E20.12,4i3)') &
+                 write (filenumber_fcidump,'(1P,2E20.12,7i4)') &
                     integral(i,j,1),                &
                     integral(i,j,2),                &
-                    i,                              &
-                    j,                              &
+!                    i,                              &
+!                    j,                              &
+                    spinor(i)%index,                              &
+                    spinor(j)%index,                              &
                     0,                              &
                     0
               else
-                 write (filenumber_fcidump,'(1P,E20.12,4i3)') &
+                 write (filenumber_fcidump,'(1P,E20.12,7i4)') &
                     integral(i,j,1),                &
-                    i,                              &
-                    j,                              &
+!                    i,                              &
+!                    j,                              &
+                    spinor(i)%index,                              &
+                    spinor(j)%index,                              &
                     0,                              &
                     0
               end if
@@ -294,32 +308,31 @@ contains
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   subroutine print_2e_integral(filenumber,ikr,jkr,kkr,lkr,inz,integral,g_type)
-     integer :: filenumber 
-     integer :: i, g_type 
+     integer :: filenumber
+     integer :: i, g_type
      integer :: ikr, jkr, kkr, lkr, inz
      real(8) :: integral(:)
 
      if ( g_type .ne. 1 ) then
-        write (filenumber,'(1P,2E20.12,4i3)') (integral(g_type*(inz-1)+i), i=1,g_type), &
-              kramer_to_spinor(ikr),                  &
-              kramer_to_spinor(jkr),                  &
-              kramer_to_spinor(kkr),                  &
-              kramer_to_spinor(lkr)
+        write (filenumber,'(1P,2E20.12,7i4)') (integral(g_type*(inz-1)+i), i=1,g_type), &
+              spinor(kramer_to_spinor(ikr))%index,                  &
+              spinor(kramer_to_spinor(jkr))%index,                  &
+              spinor(kramer_to_spinor(kkr))%index,                  &
+              spinor(kramer_to_spinor(lkr))%index
      else
-        write (filenumber,'(1P,E20.12,4i3)') integral(inz), &
-              kramer_to_spinor(ikr),                  &
-              kramer_to_spinor(jkr),                  &
-              kramer_to_spinor(kkr),                  &
-              kramer_to_spinor(lkr)
+        write (filenumber,'(1P,E20.12,7i4)') integral(inz), &
+              spinor(kramer_to_spinor(ikr))%index,                  &
+              spinor(kramer_to_spinor(jkr))%index,                  &
+              spinor(kramer_to_spinor(kkr))%index,                  &
+              spinor(kramer_to_spinor(lkr))%index
      end if
 
   end subroutine
 
-
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   integer function irrep_reordered (irrep)
-     
+    
      integer, intent(in) :: irrep
 
 ! Reorder the irreps such that boson irreps are given first and fermion irreps follow
@@ -328,8 +341,8 @@ contains
         irrep_reordered = irrep - number_of_abelian_irreps
      else
         irrep_reordered = irrep + number_of_abelian_irreps
-     end if 
-  
+     end if
+ 
   end function
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -339,7 +352,6 @@ contains
      integer :: index, i, j, n
 
 !    We may want to reorder spinors such that we have all occupied first, create index for that
-     index = 0
      do i = 1, number_of_irreps
         n = 0
         do j = 1, number_of_spinors
@@ -371,12 +383,44 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+  subroutine make_index_lowestenergy_first
+
+     integer :: index, i, j, k
+
+     do i = 1, number_of_spinors
+        spinor(i)%index = 1
+        do j = 1, number_of_spinors
+           if (spinor(i)%energy > spinor(j)%energy) then
+              spinor(i)%index = spinor(i)%index + 1
+           end if
+        end do
+     end do
+
+     do i = 1, number_of_spinors
+        do j = i+1, number_of_spinors
+           if ((spinor(i)%energy == spinor(j)%energy) .and. (spinor(i)%irrep == spinor(j)%irrep)) then
+              spinor(j)%index = spinor(j)%index + 2
+           end if
+        end do
+     end do
+
+     do i = 1, number_of_spinors
+        do j = i+1, number_of_spinors
+           if ((spinor(i)%index == spinor(j)%index) .and. (spinor(i)%irrep .ne. spinor(j)%irrep)) then
+              spinor(j)%index = spinor(j)%index + 1
+           end if
+        end do
+     end do
+
+  end subroutine
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
   subroutine write_mrcc_fort55
 
 ! Write mrcc integral file fort.55. 
 ! Note that it is no longer necessary to reorder the spinors to occupied first, kept the code as an example
 ! to show how this can be done.
-
   integer               :: i, j
   integer, allocatable  :: number_of_spinors_in_irrep(:)
   integer, allocatable  :: reordered_multiplication_table(:,:)
@@ -413,11 +457,12 @@ contains
   write (filenumber_55,'(2i6)') 2 * number_of_abelian_irreps
   do j = 1, 2 * number_of_abelian_irreps
      write (filenumber_55,'(8i6)') (reordered_multiplication_table(i,j),i=1,2*number_of_abelian_irreps)
-  end do 
+  end do
   write (filenumber_55,'(8i6)') (number_of_spinors_in_irrep(i),i=1,number_of_abelian_irreps)
 !  call process_2e
 !  call process_1e
   close (filenumber_55, status='keep')
+
 
   deallocate (multiplication_table)
   deallocate (reordered_multiplication_table)
@@ -445,6 +490,7 @@ contains
  &      " CS ,spatial, HF, ndoub,nacto,nactv, tol, maxex, sacc, freq,  dboc,   mem, locno, eps"
 
 ! Third line of the input contains a string with occupation numbers.
+
   write (filenumber_56,'(40i2)') (spinor(i)%occupation,i=1,number_of_spinors)
 
   close (filenumber_56, status='keep')
@@ -466,7 +512,7 @@ contains
   write (filenumber_nw,'(2i6)') 2 * number_of_abelian_irreps
   do j = 1, 2 * number_of_abelian_irreps
      write (filenumber_nw,'(8i6)') (multiplication_table(i,j),i=1,2*number_of_abelian_irreps)
-  end do 
+  end do
   write (filenumber_nw,'(E28.20)') core_energy
   call process_1e
   call process_2e
@@ -480,16 +526,13 @@ contains
 
   subroutine write_fcidump_file
 
-
-!  Should still be tuned to Karols preferences...
-
   integer               :: i, j
 
   open  (filenumber_fcidump, file='FCIDUMP', Form='FORMATTED')
   write (filenumber_fcidump,'(A,I5,A)') "&FCI NORB=",number_of_spinors,","
   write (filenumber_fcidump,'(A,I5,A)') "    NELEC=",number_of_electrons,","
   write (filenumber_fcidump,'(A,30(I2,A))') "    ORBSYM=", &
-  & (spinor(i)%abelian_irrep,",",i=1,number_of_spinors) 
+  & (spinor(i)%abelian_irrep,",",i=1,number_of_spinors)
   write (filenumber_fcidump,'(A,I5,A)') "    ISYM=",(2 * number_of_abelian_irreps),","
   write (filenumber_fcidump,'(A)') "    IUHF=1,"
   write (filenumber_fcidump,'(A)') "&END"
@@ -505,19 +548,151 @@ contains
 
   do j = 1, number_of_spinors
     if (group_type .ne. 1) then
-        write (filenumber_fcidump,'(1P,2E20.12,4i3)') (spinor(j)%energy),0.0d0,j,0,0,0
+        write (filenumber_fcidump,'(1P,2E20.12,7i4)') (spinor(j)%energy),0.0d0,spinor(j)%index,0,0,0
     else
-        write (filenumber_fcidump,'(1P,E20.12,4i3)') (spinor(j)%energy),j,0,0,0
+        write (filenumber_fcidump,'(1P,E20.12,7i4)') (spinor(j)%energy),spinor(j)%index,0,0,0
     end if
   end do
 
   if (group_type .ne. 1) then
-     write (filenumber_fcidump,'(1P,2E20.12,4i3)') core_energy,0.0d0,0,0,0,0
+     write (filenumber_fcidump,'(1P,2E20.12,7i4)') core_energy,0.0d0,0,0,0,0
   else
-     write (filenumber_fcidump,'(1P,E20.12,4i3)') core_energy,0,0,0,0
+     write (filenumber_fcidump,'(1P,E20.12,7i4)') core_energy,0,0,0,0
   end if
 
   deallocate (multiplication_table)
+
+  end subroutine
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  subroutine write_propint_file
+
+      integer               :: i, j
+
+      allocate (propr(number_of_spinors,number_of_spinors))
+      allocate (propi(number_of_spinors,number_of_spinors))
+
+      open (filenumber_propint,FILE='MDPROP',FORM='UNFORMATTED')
+      inop = 0
+    1 read (filenumber_propint,ERR=10,END=11) ACHAR
+      if (ACHAR(1:8).NE.'********'.OR.ACHAR(25:32).NE.prop_name) GOTO 1 !Once ACHAR = prop_name, it continues to read the integrals. 
+      write (*,1000) prop_name,ACHAR(9:16),ACHAR(17:24)
+      read (filenumber_propint) ((propr(i,j),propi(i,j),i=1,number_of_spinors),j=1,number_of_spinors)
+      close (filenumber_propint,STATUS='KEEP')
+      GOTO 12
+   10 INOP = 1
+      GOTO 12
+   11 INOP = 2
+   12 CONTINUE
+
+!
+!     Error exit if the integrals could not be read
+!
+      if (inop.EQ.1) then
+       write (*,*) ' Error reading property ',prop_name,' on file MDPROP'
+       stop ' Error reading property integrals'
+      end if
+      if (inop.EQ.2) then
+       write (*,*) ' Property ',prop_name,' not found on file MDPROP'
+       stop ' Property integrals missing'
+      end if
+
+ 1000 format (/' Read integral type ',A8,' created ',  &
+             A8,' storage info : ',A8)
+
+!  deallocate(propr) ; deallocate(propi)
+
+      open (filenumber_propint, file='PROPINT', Form = 'FORMATTED')
+      write (filenumber_propint,'(A,I5,A)') "&FCI NORB=",number_of_spinors,","
+      write (filenumber_propint,'(A,I5,A)') "    NELEC=",number_of_electrons,","
+      write (filenumber_propint,'(A,30(I2,A))') "    ORBSYM=", &
+      & (spinor(i)%abelian_irrep,",",i=1,number_of_spinors)
+      write (filenumber_propint,'(A,I5,A)') "    ISYM=",(2 * number_of_abelian_irreps),","
+      write (filenumber_propint,'(A)') "    IUHF=1,"
+      write (filenumber_propint,'(A,A)') "   PROP_NAME = ", prop_name
+      write (filenumber_propint,'(A)') "&END"
+
+      do i = 1, number_of_spinors
+         do j = 1, number_of_spinors
+            if (abs(propr(i,j)) > threshold .or. abs(propi(i,j)) > threshold) then
+              write (filenumber_propint,'(1P,2E20.12,7i4)') &
+                 propr(i,j),                &
+                 propi(i,j),                &
+                 spinor(i)%index,                              &
+                 spinor(j)%index,                              &
+                 0,                              &
+                 0
+            end if
+         end do
+      end do
+
+      deallocate(propr) ; deallocate(propi)
+
+  end subroutine
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  subroutine write_ccamp_file
+
+      ! NOT YET WORKING
+      ! This subroutine should write CC amplitudes into a readable format that can be interpreted in the OpenFermion-Dirac interface.
+
+      real(8), allocatable :: T1(:),T2(:), BUFF(:)
+      integer              :: occ_spinors, vir_spinors, ini, N, NDIMT1, NDIMT2
+
+      occ_spinors = number_of_electrons
+      vir_spinors = number_of_spinors - occ_spinors
+      NDIMT1 = occ_spinors*vir_spinors
+      NDIMT2 = (occ_spinors*(occ_spinors-1)/2)*(vir_spinors*(vir_spinors-1)/2)
+      print*,"occ_spinors",occ_spinors
+      print*,"vir_spinors",vir_spinors
+      print*,"NDIMT1",NDIMT1
+      print*,"NDIMT2",NDIMT2
+
+      allocate(T1(NDIMT1))
+      allocate(T2(NDIMT2))
+
+      open(filenumber_ccamp,FILE='MCCRES.0',ACCESS='DIRECT',STATUS='OLD')
+        N = NDIMT1
+        ini = 0
+        do while (N .gt. 0)
+           if (N .lt. 1024) then
+              allocate(BUFF(N))
+              read(filenumber_ccamp) BUFF
+              print*,"hey,N",N,BUFF
+              T1(ini+1:ini+N) = BUFF
+           else
+              allocate(BUFF(1024))
+              read(filenumber_ccamp) BUFF
+              print*,"hey,N,",N,BUFF
+              T1(ini+1:ini+1024) = BUFF
+           end if
+           deallocate(BUFF)
+           ini = ini + 1024
+           N = N - 1024
+        end do
+        N = NDIMT2
+        do while (N .gt. 0)
+           if (N .lt. 1024) then
+              allocate(BUFF(N))
+              read(filenumber_ccamp) BUFF
+              T2(ini+1:ini+N) = BUFF
+           else
+              allocate(BUFF(1024))
+              read(filenumber_ccamp) BUFF
+              T2(ini+1:ini+1024) = BUFF
+           end if
+           deallocate(BUFF)
+           ini = ini + 1024
+           N = N - 1024
+        end do
+
+      close (filenumber_ccamp,STATUS='KEEP')
+
+      open(filenumber_ccamp,FILE='CCAMP',FORM='FORMATTED')
+        write(filenumber_ccamp,*) T1
+        write(filenumber_ccamp,*) T2
+      close (filenumber_ccamp,STATUS='KEEP')
 
   end subroutine
 
@@ -527,10 +702,13 @@ contains
 end module
 
   program make_interface_files
-  
+ 
   use dirac_mointegral_export
 
-  call initialize 
+  call get_command_argument(1, target)
+  call get_command_argument(2, prop_name)
+  write(*,*) target,prop_name
+  call initialize
   select case (target)
      case ('mrcc')
        write (*,*) ' Writing sample fort.56 ccsd input file for mrcc...'
@@ -547,6 +725,14 @@ end module
        write (*,*) ' Writing fcidump interface file ...'
        call write_fcidump_file
        write (*,*) ' fcidump file ready'
+     case ('propint')
+       write (*,*) ' Writing property integrals file ...'
+       call write_propint_file
+       write (*,*) ' propint file ready'
+     case ('ccamp')
+       write (*,*) ' Writing coupled-cluster amplitudes into file ... (NOT YET WORKING)'
+       call write_ccamp_file
+       write (*,*) ' ccamp file ready'
   end select
 
-  end
+  end program
