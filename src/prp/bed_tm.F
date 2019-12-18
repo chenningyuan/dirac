@@ -1149,12 +1149,12 @@ C
       DO IP = 1,NPOINTS
 C.......Set up chi-average over polarization directions 
         IF (BEDECD) THEN			! sign determined by Levi-Cevita symbol
-          EEWT(1) =  DP5*X(IP)		! (x,y,z)  
-          EEWT(2) =  DP5*Y(IP)		! (y,z,x)
-          EEWT(3) =  DP5*Z(IP)		! (z,x,y)
-          EEWT(4) = -DP5*X(IP)		! (x,z,y)
-          EEWT(5) = -DP5*Y(IP)		! (y,x,z)
-          EEWT(6) = -DP5*Z(IP)		! (z,y,x)
+          EEWT(1) =  D2*X(IP)		! (x,y,z)  
+          EEWT(2) =  D2*Y(IP)		! (y,z,x)
+          EEWT(3) =  D2*Z(IP)		! (z,x,y)
+          EEWT(4) = -D2*X(IP)		! (x,z,y)
+          EEWT(5) = -D2*Y(IP)		! (y,x,z)
+          EEWT(6) = -D2*Z(IP)		! (z,y,x)
         ELSE 
           EEWT(1) =  DP5*(Y(IP)*Y(IP)+Z(IP)*Z(IP)) ! (1,1)
           EEWT(2) = -X(IP)*Y(IP)                   ! (2,1) ! factor 0.5 cancelled by triangular sum
