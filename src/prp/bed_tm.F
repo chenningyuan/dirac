@@ -1273,7 +1273,7 @@ C     ====================================
      &	   - EEWT(3)*TMOM(1,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC)
      &	   - EEWT(4)*TMOM(3,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC)
      &     - EEWT(5)*TMOM(1,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC)
-     &	   - EEWT(6)*TMOM(2,1,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC)
+     &	   - EEWT(6)*TMOM(2,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC)
      		     ECD(IPAR,IEXC) = ECD(IPAR,IEXC) + WT(IP)*TMP
      	    ELSE 
      	  	   OSC(IPAR,IEXC) = OSC(IPAR,IEXC) + WT(IP)*TMP
@@ -1305,7 +1305,7 @@ C     ====================================
             IF (.NOT.BEDECD) THEN
         	  TMP = TMP
      &       + EEWT(1)*TMOM(1,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
-     &  	 + EEWT(2)*TMOM(2,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
+     &  	   + EEWT(2)*TMOM(2,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
      &    	 + EEWT(3)*TMOM(3,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
      &    	 + EEWT(4)*TMOM(2,IC,IPAR,IEXC)*TMOM(2,IC,IPAR,IEXC)
      &    	 + EEWT(5)*TMOM(3,IC,IPAR,IEXC)*TMOM(2,IC,IPAR,IEXC)
@@ -1319,7 +1319,7 @@ C     ====================================
      &	   - EEWT(3)*TMOM(1,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC)
      &	   - EEWT(4)*TMOM(3,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC)
      &     - EEWT(5)*TMOM(1,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC)
-     &	   - EEWT(6)*TMOM(2,1,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC)
+     &	   - EEWT(6)*TMOM(2,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC)
      		     ECD(IPAR,IEXC) = ECD(IPAR,IEXC) + WT(IP)*TMP
      	    ELSE 
      	  	   OSC(IPAR,IEXC) = OSC(IPAR,IEXC) + WT(IP)*TMP
