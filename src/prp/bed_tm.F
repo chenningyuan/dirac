@@ -50,7 +50,6 @@ C#include "cbiher.h"
       real(8), allocatable              :: TMOM_DE(:,:),TMOM_DOM(:,:)
       real(8), allocatable              :: OSC_P(:),OSC_DER(:,:,:)
       real(8), allocatable              :: OSC_DE(:),OSC_DOM(:)
-      real(8), allocatable              :: ECD(:,:)
       logical, allocatable              :: first(:)
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
 C
@@ -239,11 +238,7 @@ C     Loop over excitation energies
 C     =============================
 C
       allocate(TMOM(NOP,NPAR+1,NEXCNV))
-      IF (BEDECD) THEN
-      	allocate(ECD(NPAR+1,NEXCNV))
-      ELSE
-      	allocate(OSC(NPAR+1,NEXCNV))
-      ENDIF
+      allocate(OSC(NPAR+1,NEXCNV))
       IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,NOP))
       IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,NOP))      
       IH = 0
@@ -314,10 +309,8 @@ C
           IF (BEDECD) THEN
             TMOM(3,NPAR+1,IEXC) = D0
             TMOM(4,NPAR+1,IEXC) = D0
-            ECD(NPAR+1,IEXC) = D0
-          ELSE
-          	OSC(NPAR+1,IEXC)    = D0
           ENDIF
+          OSC(NPAR+1,IEXC)    = D0
           IPAR = 0
 C
 C         Gradient - orbital (e-e) part
@@ -344,15 +337,11 @@ C         ====================================
               ENDIF
             ENDDO
             IF (BEDECD) THEN
-              ECD(IPAR,IEXC) = D2*OMEGA(IEXC)*
-     &                         (TMOM(4,IPAR,IEXC)*TMOM(1,IPAR,IEXC)
-     &                         -TMOM(2,IPAR,IEXC)*TMOM(3,IPAR,IEXC))
-              ECD(NPAR+1,IEXC) = ECD(NPAR+1,IEXC) + ECD(IPAR,IEXC)
-            ELSE
-              OSC(IPAR,IEXC) = D2*OMEGA(IEXC)*TMP
-              OSC(NPAR+1,IEXC) = OSC(NPAR+1,IEXC) + OSC(IPAR,IEXC)
-
+              TMP =  (TMOM(4,IPAR,IEXC)*TMOM(1,IPAR,IEXC)
+     &               -TMOM(2,IPAR,IEXC)*TMOM(3,IPAR,IEXC))
             ENDIF
+            OSC(IPAR,IEXC)   = D2*OMEGA(IEXC)*TMP
+            OSC(NPAR+1,IEXC) = OSC(NPAR+1,IEXC) + OSC(IPAR,IEXC)
           ENDIF
 C
 C         Gradient - orbital (e-p) part
@@ -380,14 +369,11 @@ C         ====================================
               ENDIF
             ENDDO
             IF (BEDECD) THEN
-              ECD(IPAR,IEXC) = D2*OMEGA(IEXC)*
-     &                         (TMOM(4,IPAR,IEXC)*TMOM(1,IPAR,IEXC)
-     &                         -TMOM(2,IPAR,IEXC)*TMOM(3,IPAR,IEXC))
-              ECD(NPAR+1,IEXC) = ECD(NPAR+1,IEXC) + ECD(IPAR,IEXC)
-            ELSE
-              OSC(IPAR,IEXC)   = D2*OMEGA(IEXC)*TMP
-              OSC(NPAR+1,IEXC) = OSC(NPAR+1,IEXC) + OSC(IPAR,IEXC)
+              TMP =  (TMOM(4,IPAR,IEXC)*TMOM(1,IPAR,IEXC)
+     &               -TMOM(2,IPAR,IEXC)*TMOM(3,IPAR,IEXC))
             ENDIF
+            OSC(IPAR,IEXC)   = D2*OMEGA(IEXC)*TMP
+            OSC(NPAR+1,IEXC) = OSC(NPAR+1,IEXC) + OSC(IPAR,IEXC)
           ENDIF
         ENDDO
  10   CONTINUE
@@ -421,7 +407,7 @@ C
          DO IEXC = 1,NEXCNV
             WRITE(6,'(I4,1X,F18.10,3(3X,'//FMT//'))')
      &      IEXC,OMEGA(IEXC),
-     &      (ECD(IPAR,IEXC),IPAR = 1,NPAR+1)
+     &      (OSC(IPAR,IEXC),IPAR = 1,NPAR+1)
          ENDDO
       ELSE
         WRITE(6,*) '* Transition moments:'
@@ -456,11 +442,7 @@ C     Memory deallocation
         deallocate(GPOP)
         deallocate(XPOP)         
       ENDIF
-      IF (BEDECD) THEN
-      	deallocate(ECD)
-      ELSE
-      	deallocate(OSC)
-      ENDIF
+      deallocate(OSC)
       deallocate(TMOM)
       deallocate(PRPINT)
       deallocate(LABINT)
@@ -1004,7 +986,6 @@ C#include "cbiher.h"
       DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC),CMO(*),WORK(*)
       real(8), allocatable              :: PRPINT(:,:),BBUF(:)
       real(8), allocatable              :: TMOM(:,:,:,:),OSC(:,:)
-      real(8), allocatable 				:: ECD(:,:)
       character (len=8),  allocatable   :: LABINT(:)
       character (len=5)                 :: TPAR(3)
       integer, allocatable              :: INTREP(:),IPSYM2INT(:,:)
@@ -1022,16 +1003,10 @@ C
       NEXCNV = KEXCNV(JSYMOP)
       IF (NEXCNV .EQ. 0) RETURN
       NPOINTS = NLEB(NROTAV)
-
 C     
 C     Allocate placeholders for integral labels and irreps 
 C
-
-
-
       NC = 2
-
-
       allocate(LABINT(8))
       allocate(INTREP(8))
       allocate(first(nz))
@@ -1159,13 +1134,8 @@ C     Loop over quadrature points
 C     =============================
 C
       allocate(TMOM(NOP,NC,NPAR,NEXCNV))
-      IF (BEDECD) THEN
-      	allocate(ECD(NPAR+1,NEXCNV))
-        CALL DCOPY((NPAR+1)*NEXCNV,D0,0,ECD,1)	
-      ELSE
-      	allocate(OSC(NPAR+1,NEXCNV))
-      	CALL DCOPY((NPAR+1)*NEXCNV,D0,0,OSC,1)
-      ENDIF
+      allocate(OSC(NPAR+1,NEXCNV))
+      CALL DCOPY((NPAR+1)*NEXCNV,D0,0,OSC,1)
 
       IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,NOP))
       IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,NOP))      
@@ -1175,15 +1145,16 @@ C
       allocate(WT(NPOINTS))
       CALL LEBEDEV(NROTAV,X,Y,Z,WT,NCOUNT)
       IF(NCOUNT.NE.NPOINTS) CALL QUIT('BEDLEB: Grid inconsistency.')
+C
       DO IP = 1,NPOINTS
 C.......Set up chi-average over polarization directions 
-        IF (BEDECD) THEN			! sign determined by Levi-Cevitas symbol
-          EEWT(1) = DP5*X(IP)		! (x,y,z)  
-          EEWT(2) = DP5*Y(IP)		! (y,z,x)
-          EEWT(3) = DP5*Z(IP)		! (z,x,y)
-          EEWT(4) = -DP5*X(IP)		! (x,z,y)
-          EEWT(5) = -DP5*Y(IP)		! (y,x,z)
-          EEWT(6) = -DP5*Z(IP)		! (z,y,x)
+        IF (BEDECD) THEN			! sign determined by Levi-Cevita symbol
+          EEWT(1) =  D2*X(IP)		! (x,y,z)  
+          EEWT(2) =  D2*Y(IP)		! (y,z,x)
+          EEWT(3) =  D2*Z(IP)		! (z,x,y)
+          EEWT(4) = -D2*X(IP)		! (x,z,y)
+          EEWT(5) = -D2*Y(IP)		! (y,x,z)
+          EEWT(6) = -D2*Z(IP)		! (z,y,x)
         ELSE 
           EEWT(1) =  DP5*(Y(IP)*Y(IP)+Z(IP)*Z(IP)) ! (1,1)
           EEWT(2) = -X(IP)*Y(IP)                   ! (2,1) ! factor 0.5 cancelled by triangular sum
@@ -1258,26 +1229,25 @@ C     ====================================
             ENDDO
             IF (.NOT.BEDECD) THEN
         	     TMP = TMP
-     &       + EEWT(1)*TMOM(1,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
-     &  	   + EEWT(2)*TMOM(2,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
+     &           + EEWT(1)*TMOM(1,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
+     &  	 + EEWT(2)*TMOM(2,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
      &    	 + EEWT(3)*TMOM(3,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
      &    	 + EEWT(4)*TMOM(2,IC,IPAR,IEXC)*TMOM(2,IC,IPAR,IEXC)
      &    	 + EEWT(5)*TMOM(3,IC,IPAR,IEXC)*TMOM(2,IC,IPAR,IEXC)
      &    	 + EEWT(6)*TMOM(3,IC,IPAR,IEXC)*TMOM(3,IC,IPAR,IEXC)
-     		    ENDIF
+     	    ENDIF
           ENDDO
           IF (BEDECD) THEN
-          	 TMP = TMP 
-     &     - EEWT(1)*TMOM(2,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC)
-     &	   - EEWT(2)*TMOM(3,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC)
-     &	   - EEWT(3)*TMOM(1,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC)
-     &	   - EEWT(4)*TMOM(3,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC)
-     &     - EEWT(5)*TMOM(1,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC)
-     &	   - EEWT(6)*TMOM(2,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC)
-     		     ECD(IPAR,IEXC) = ECD(IPAR,IEXC) + WT(IP)*TMP
-     	    ELSE 
-     	  	   OSC(IPAR,IEXC) = OSC(IPAR,IEXC) + WT(IP)*TMP
-     	    ENDIF
+
+             TMP = TMP  !   sine                cosine
+     &     - EEWT(1)*TMOM(2,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC) ! (x,y,z)  
+     &	   - EEWT(2)*TMOM(3,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC) ! (y,z,x)
+     &	   - EEWT(3)*TMOM(1,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC) ! (z,x,y)
+     &	   - EEWT(4)*TMOM(3,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC) ! (x,z,y)
+     &     - EEWT(5)*TMOM(1,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC) ! (y,x,z)
+     &	   - EEWT(6)*TMOM(2,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC) ! (z,y,x)
+     	  ENDIF
+     	  OSC(IPAR,IEXC) = OSC(IPAR,IEXC) + WT(IP)*TMP
        ENDIF
 
 C
@@ -1304,26 +1274,26 @@ C     ====================================
             ENDDO
             IF (.NOT.BEDECD) THEN
         	  TMP = TMP
-     &       + EEWT(1)*TMOM(1,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
-     &  	   + EEWT(2)*TMOM(2,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
+
+     &           + EEWT(1)*TMOM(1,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
+     &  	 + EEWT(2)*TMOM(2,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
      &    	 + EEWT(3)*TMOM(3,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
      &    	 + EEWT(4)*TMOM(2,IC,IPAR,IEXC)*TMOM(2,IC,IPAR,IEXC)
      &    	 + EEWT(5)*TMOM(3,IC,IPAR,IEXC)*TMOM(2,IC,IPAR,IEXC)
      &    	 + EEWT(6)*TMOM(3,IC,IPAR,IEXC)*TMOM(3,IC,IPAR,IEXC)
-     		ENDIF
+            ENDIF
           ENDDO
           IF (BEDECD) THEN
-          	TMP = TMP 
-     &     - EEWT(1)*TMOM(2,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC)
-     &	   - EEWT(2)*TMOM(3,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC)
-     &	   - EEWT(3)*TMOM(1,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC)
-     &	   - EEWT(4)*TMOM(3,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC)
-     &     - EEWT(5)*TMOM(1,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC)
-     &	   - EEWT(6)*TMOM(2,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC)
-     		     ECD(IPAR,IEXC) = ECD(IPAR,IEXC) + WT(IP)*TMP
-     	    ELSE 
-     	  	   OSC(IPAR,IEXC) = OSC(IPAR,IEXC) + WT(IP)*TMP
-     	    ENDIF
+
+              TMP = TMP !   sine                cosine
+     &     - EEWT(1)*TMOM(2,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC) ! (x,y,z)  
+     &	   - EEWT(2)*TMOM(3,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC) ! (y,z,x)
+     &	   - EEWT(3)*TMOM(1,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC) ! (z,x,y)
+     &	   - EEWT(4)*TMOM(3,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC) ! (x,z,y)
+     &     - EEWT(5)*TMOM(1,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC) ! (y,x,z)
+     &	   - EEWT(6)*TMOM(2,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC) ! (z,y,x)
+     	  ENDIF
+          OSC(IPAR,IEXC) = OSC(IPAR,IEXC) + WT(IP)*TMP
         ENDIF
    10   CONTINUE
       ENDDO
@@ -1331,44 +1301,28 @@ C
 C     Final values for oscillator strengths or circular dichroism
 C
       DO IEXC = 1,NEXCNV
-      	 IF (BEDECD) THEN
-      	 	ECD(NPAR+1,IEXC) = D0
-      	 	DO IPAR = 1,NPAR
-      	 		ECD(IPAR,IEXC) = D2*OMEGA(IEXC)*ECD(IPAR,IEXC)
-      	 		ECD(NPAR+1,IEXC) = ECD(NPAR+1,IEXC) + ECD(IPAR,IEXC)
-      	 	ENDDO
-      	 ELSE
-         	OSC(NPAR+1,IEXC) = D0
-         	DO IPAR = 1,NPAR
-           		OSC(IPAR  ,IEXC) = D2*OMEGA(IEXC)*OSC(IPAR,IEXC)
-           		OSC(NPAR+1,IEXC) = OSC(NPAR+1,IEXC) + OSC(IPAR,IEXC)
-        	ENDDO
-         ENDIF
+        OSC(NPAR+1,IEXC) = D0
+        DO IPAR = 1,NPAR
+          OSC(IPAR  ,IEXC) = D2*OMEGA(IEXC)*OSC(IPAR,IEXC)
+          OSC(NPAR+1,IEXC) = OSC(NPAR+1,IEXC) + OSC(IPAR,IEXC)
+        ENDDO
       ENDDO
 C
 C     Print section
 C
-	  IF (BEDECD) THEN
-	  	  WRITE(6,*) '* Isotropic circular dichroism'
-        WRITE(6,'(A4,1X,A18,3(3X,A5,9X))') 
-     &  'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
-     	DO IEXC = 1,NEXCNV
-        	FMT=MXFORM(ECD(NPAR+1,IEXC),14)
-        	WRITE(6,'(I4,1X,F18.10,3(3X,'//FMT//'))')
-     &      IEXC,OMEGA(IEXC),
-     &      (ECD(IPAR,IEXC),IPAR = 1,NPAR+1)
-      	ENDDO
+      IF (BEDECD) THEN
+	WRITE(6,*) '* Isotropic circular dichroism'
       ELSE
-      	WRITE(6,*) '* Isotropic oscillator strengths:'
-      	WRITE(6,'(A4,1X,A18,3(3X,A5,9X))')     
-     &  'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
-      	DO IEXC = 1,NEXCNV
-       	 FMT=MXFORM(OSC(NPAR+1,IEXC),14)
-         WRITE(6,'(I4,1X,F18.10,3(3X,'//FMT//'))')
-     &     IEXC,OMEGA(IEXC),
-     &     (OSC(IPAR,IEXC),IPAR = 1,NPAR+1)
-      	ENDDO
+       	WRITE(6,*) '* Isotropic oscillator strengths:'
       ENDIF
+      WRITE(6,'(A4,1X,A18,3(3X,A5,9X))')     
+     &  'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
+      DO IEXC = 1,NEXCNV
+        FMT=MXFORM(OSC(NPAR+1,IEXC),14)
+        WRITE(6,'(I4,1X,F18.10,3(3X,'//FMT//'))')
+     &       IEXC,OMEGA(IEXC),
+     &       (OSC(IPAR,IEXC),IPAR = 1,NPAR+1)
+      ENDDO
 
 C            
 C     Memory deallocation
@@ -1381,11 +1335,7 @@ C     Memory deallocation
         deallocate(XPOP)         
       ENDIF
       deallocate(TMOM)
-      IF (BEDECD) THEN
-      	deallocate(ECD)
-      ELSE
-      	deallocate(OSC)
-      ENDIF
+      deallocate(OSC)
       deallocate(PRPINT)
       deallocate(LABINT)
       deallocate(INTREP)
