@@ -33,9 +33,9 @@ module dirac_mointegral_export
   integer, parameter     :: filenumber_mtable  = 25
   integer, parameter     :: filenumber_propint = 26
   integer, parameter     :: filenumber_ccamp = 27
-  logical, parameter     :: generate_full_list = .true.
-  logical, parameter     :: generate_lower_triangular = .false.
-  logical, parameter     :: sorting_wrt_energy = .true. ! sort wrt spinor's energy.
+  logical, parameter     :: generate_full_list = .false.
+  logical, parameter     :: generate_lower_triangular = .true.
+  logical, parameter     :: sorting_wrt_energy = .false. ! sort wrt spinor's energy.
   logical, parameter     :: sorting_wrt_occupied = .false. ! sort wrt spinor's lowest occupied
   integer, parameter     :: filenumber_55 = 55
   integer, parameter     :: filenumber_56 = 56
@@ -116,6 +116,8 @@ contains
      else if (sorting_wrt_occupied) then
 !       create indices for optional reordering according to occupation
         call make_index_to_occupied_first
+     else
+        call make_index
      endif
 
      write (*,*) " Initialized reading from MRCONEE"
@@ -279,6 +281,7 @@ contains
            end_index = number_of_spinors
         end if
         do j = 1, end_index
+           print*,i,j,spinor(i)%index,spinor(j)%index
            if (abs(integral(i,j,1)) > threshold .or. abs(integral(i,j,2)) > threshold) then
               if (rcw .ne. 1) then
                  write (filenumber_fcidump,'(1P,2E20.12,7i4)') &
@@ -352,6 +355,7 @@ contains
      integer :: index, i, j, n
 
 !    We may want to reorder spinors such that we have all occupied first, create index for that
+     index = 0
      do i = 1, number_of_irreps
         n = 0
         do j = 1, number_of_spinors
@@ -410,6 +414,18 @@ contains
               spinor(j)%index = spinor(j)%index + 1
            end if
         end do
+     end do
+
+  end subroutine
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  subroutine make_index
+
+     integer :: index, i, j, k
+
+     do i = 1, number_of_spinors
+           spinor(i)%index = i
      end do
 
   end subroutine
