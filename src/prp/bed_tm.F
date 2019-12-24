@@ -19,7 +19,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 C
-      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0)
+      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0,D4=4.0D0)
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "pgroup.h"
@@ -337,10 +337,10 @@ C         ====================================
               ENDIF
             ENDDO
             IF (BEDECD) THEN
-              TMP =  (TMOM(4,IPAR,IEXC)*TMOM(1,IPAR,IEXC)
-     &               -TMOM(2,IPAR,IEXC)*TMOM(3,IPAR,IEXC))
+              TMP =  (TMOM(2,IPAR,IEXC)*TMOM(3,IPAR,IEXC) 
+     &               - TMOM(4,IPAR,IEXC)*TMOM(1,IPAR,IEXC))
             ENDIF
-            OSC(IPAR,IEXC)   = D2*OMEGA(IEXC)*TMP
+            OSC(IPAR,IEXC)   = D4*OMEGA(IEXC)*TMP
             OSC(NPAR+1,IEXC) = OSC(NPAR+1,IEXC) + OSC(IPAR,IEXC)
           ENDIF
 C
@@ -369,10 +369,10 @@ C         ====================================
               ENDIF
             ENDDO
             IF (BEDECD) THEN
-              TMP =  (TMOM(4,IPAR,IEXC)*TMOM(1,IPAR,IEXC)
-     &               -TMOM(2,IPAR,IEXC)*TMOM(3,IPAR,IEXC))
+              TMP =  (TMOM(2,IPAR,IEXC)*TMOM(3,IPAR,IEXC)
+     &               -TMOM(4,IPAR,IEXC)*TMOM(1,IPAR,IEXC))
             ENDIF
-            OSC(IPAR,IEXC)   = D2*OMEGA(IEXC)*TMP
+            OSC(IPAR,IEXC)   = D4*OMEGA(IEXC)*TMP
             OSC(NPAR+1,IEXC) = OSC(NPAR+1,IEXC) + OSC(IPAR,IEXC)
           ENDIF
         ENDDO
@@ -1240,12 +1240,12 @@ C     ====================================
           IF (BEDECD) THEN
 
              TMP = TMP  !   sine                cosine
-     &     - EEWT(1)*TMOM(2,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC) ! (x,y,z)  
-     &	   - EEWT(2)*TMOM(3,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC) ! (y,z,x)
-     &	   - EEWT(3)*TMOM(1,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC) ! (z,x,y)
-     &	   - EEWT(4)*TMOM(3,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC) ! (x,z,y)
-     &     - EEWT(5)*TMOM(1,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC) ! (y,x,z)
-     &	   - EEWT(6)*TMOM(2,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC) ! (z,y,x)
+     &     + EEWT(1)*TMOM(2,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC) ! (x,y,z)  
+     &	   + EEWT(2)*TMOM(3,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC) ! (y,z,x)
+     &	   + EEWT(3)*TMOM(1,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC) ! (z,x,y)
+     &	   + EEWT(4)*TMOM(3,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC) ! (x,z,y)
+     &     + EEWT(5)*TMOM(1,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC) ! (y,x,z)
+     &	   + EEWT(6)*TMOM(2,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC) ! (z,y,x)
      	  ENDIF
      	  OSC(IPAR,IEXC) = OSC(IPAR,IEXC) + WT(IP)*TMP
        ENDIF
@@ -1286,12 +1286,12 @@ C     ====================================
           IF (BEDECD) THEN
 
               TMP = TMP !   sine                cosine
-     &     - EEWT(1)*TMOM(2,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC) ! (x,y,z)  
-     &	   - EEWT(2)*TMOM(3,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC) ! (y,z,x)
-     &	   - EEWT(3)*TMOM(1,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC) ! (z,x,y)
-     &	   - EEWT(4)*TMOM(3,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC) ! (x,z,y)
-     &     - EEWT(5)*TMOM(1,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC) ! (y,x,z)
-     &	   - EEWT(6)*TMOM(2,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC) ! (z,y,x)
+     &     + EEWT(1)*TMOM(2,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC) ! (x,y,z)  
+     &	   + EEWT(2)*TMOM(3,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC) ! (y,z,x)
+     &	   + EEWT(3)*TMOM(1,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC) ! (z,x,y)
+     &	   + EEWT(4)*TMOM(3,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC) ! (x,z,y)
+     &     + EEWT(5)*TMOM(1,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC) ! (y,x,z)
+     &	   + EEWT(6)*TMOM(2,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC) ! (z,y,x)
      	  ENDIF
           OSC(IPAR,IEXC) = OSC(IPAR,IEXC) + WT(IP)*TMP
         ENDIF
