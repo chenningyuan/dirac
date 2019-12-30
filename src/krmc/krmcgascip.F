@@ -4105,7 +4105,9 @@ C        ... do not print all the small numbers
         END IF
       END IF
 C
+      print*, '+++ GASCIP_CI 11'
       CALL FLSHFO(LUPRI)
+      print*, '+++ GASCIP_CI 12'
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
