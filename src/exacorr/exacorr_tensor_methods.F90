@@ -1420,7 +1420,7 @@ module exacorr_tensor_methods
           complex(8),pointer     :: tens2(:,:)
 
           call get_delta(delta)
-          if (delta(1).lt.1) call quit('Error: wrong delta index in tensor_fill_delta')
+          if (delta(1).lt.1) call quit('Error: wrong delta index in tensor_fill_delta (r=1)')
 
           ierr=0
 
@@ -1432,7 +1432,7 @@ module exacorr_tensor_methods
           else
               call c_f_pointer(tens_body,tens2,tens_dims(1:2)) !map C pointer to array
               tens2= ZERO
-              if (delta(2).lt.1) call quit('Error: wrong delta index in tensor_fill_delta')
+              if (delta(2).lt.1) call quit('Error: wrong delta index in tensor_fill_delta (r=2)')
               delta(2)=delta(2)-tens_bases(2)+1
               if (delta(2).gt.0 .and. delta(2).le.tens_dims(2)) then
                 if (delta(1).gt.0 .and. delta(1).le.tens_dims(1)) tens2(delta(1),delta(2))=ONE 

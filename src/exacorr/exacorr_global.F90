@@ -733,15 +733,14 @@ module exacorr_global
         use interface_to_mpi
 
         integer, dimension(2) :: ind
-        integer               :: my_MPI_rank, i, IREQ
+        integer               :: i, IREQ, exa_MPI_rank
+
+        call interface_mpi_comm_size(global_communicator,exa_MPI_rank)
+        exa_MPI_rank=exa_MPI_rank-1
 
         chol_J_ind=ind
-            
-        call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
-        print*,"srank", my_MPI_rank
-
        
-        do i=0,my_MPI_rank
+        do i=0,exa_MPI_rank
           call interface_mpi_isend(chol_J_ind,2,i,chol_J_tag,global_communicator,IREQ)
         end do 
 
@@ -752,9 +751,8 @@ module exacorr_global
         use interface_to_mpi
 
         integer, dimension(2) :: ind
-        integer               :: my_MPI_rank, i, IREQ, exa_MPI_rank
+        integer               :: i, IREQ, exa_MPI_rank
 
-        call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
         call interface_mpi_comm_size(global_communicator,exa_MPI_rank)
         exa_MPI_rank=exa_MPI_rank-1
         
@@ -769,15 +767,17 @@ module exacorr_global
 
         use interface_to_mpi
         
-        integer           :: n
-        integer           :: ind(1:n)
+        integer               :: n
+        integer               :: ind(1:n)
+        integer               :: i, IREQ, exa_MPI_rank
 
-        integer           :: my_MPI_rank, i, IREQ
+        call interface_mpi_comm_size(global_communicator,exa_MPI_rank)
+        exa_MPI_rank=exa_MPI_rank-1
 
         delta=-88
         delta(1:n)=ind(1:n)
        
-        do i=0,my_MPI_rank
+        do i=0,exa_MPI_rank
           call interface_mpi_isend(delta,2,i,delta_tag,global_communicator,IREQ)
         end do 
 
@@ -787,10 +787,9 @@ module exacorr_global
 
         use interface_to_mpi
 
-        integer               :: my_MPI_rank, i, IREQ, exa_MPI_rank
         integer, dimension(2) :: ind
+        integer               :: i, IREQ, exa_MPI_rank
 
-        call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
         call interface_mpi_comm_size(global_communicator,exa_MPI_rank)
         exa_MPI_rank=exa_MPI_rank-1
         
