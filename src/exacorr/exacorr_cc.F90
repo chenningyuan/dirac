@@ -199,7 +199,7 @@ module exacorr_cc
             ierr=exatns_tensor_create(int_t%vovo,"vovo",vovo_id,vovo_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(int_t%vovv,"vovv",vovv_id,vovv_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(int_t%vvvv,"vvvv",vvvv_id,vvvv_root,EXA_DATA_KIND_C8)
-            call get_CC_integrals (ao_space_id,ao_space,int_t,exa_input%moint_scheme)
+            call get_CC_integrals (ao_space_id,ao_space,int_t,exa_input)
             call print_date('initialized two electron integrals')
 
             ! If we have the 1-body integrals we rebuild the Fock matrix and check consistency, otherwise we use the orbital energies
@@ -506,6 +506,10 @@ module exacorr_cc
          type(set_diagonal_t)         :: one_diag             ! identity matrix
          type(init_one_el_t)          :: one_el(3)            ! one electron integrals
          type(set_energy_t)           :: orb_set              ! place orbital energies on diagonal
+         type(chol_diag)              :: diag_chol            ! Cholesky: compute diagonal elements
+         type(chol_J)                 :: j_chol               ! Cholesky: compute diagonal elements
+         type(fill_delta)             :: fdelta               ! fill delta matrix
+         type(square_tensor)          :: tsquare              ! square matrix elements
 
          integer:: min_occ
 
@@ -597,6 +601,20 @@ module exacorr_cc
             ierr=exatns_method_register('OrbSet',orb_set)
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(OrbSet) failed!')
          end if
+
+         !Register computation of diagonals for cholesky
+         ierr=exatns_method_register('CholDiag',diag_chol)
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(CholDiag) failed!')
+
+         !Register computation of diagonals for cholesky
+         ierr=exatns_method_register('CholJ',j_chol)
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(CholJ) failed!')
+
+         ierr=exatns_method_register('FillDelta',fdelta)
+         if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(FillDelta) failed!')
+
+         ierr=exatns_method_register('Square',tsquare)
+         if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(Square) failed!')
 
         end subroutine exacorr_cc_methods
 
@@ -1225,7 +1243,7 @@ module exacorr_cc
 
         end subroutine solve_lambda_equations
 
-        subroutine get_CC_integrals (ao_space_id,ao_space,int_t,moint_scheme)
+        subroutine get_CC_integrals (ao_space_id,ao_space,int_t,exa_input)
 
 !        Routine to get integrals needed in CC in the form of antisymmetric tensors.
 !        In this implementation we take all AO integrals into memory, the result tensor themselves can be subsets of the
@@ -1242,6 +1260,7 @@ module exacorr_cc
          class(h_space_t), pointer, intent(in) :: ao_space
 !        target integral tensors to be filled and given back to the caller
          type(exatns_intg_tens), intent(inout) :: int_t 
+         type(exacc_input), intent(in)         :: exa_input
 
          integer(INTL)              :: ao_space_root,subspace_id(4),num_subspaces
          integer(INTL),allocatable  :: ao_subspaces(:)
@@ -1258,8 +1277,16 @@ module exacorr_cc
 !        auxilliary integral tensor (only needed inside this routine)
          type(tens_rcrsv_t) :: aoint_tensor
 
+         !Cholesky decomposition
+         type(tens_rcrsv_t), allocatable  :: CD(:)
+         integer                          :: m
+
+         moint_scheme=exa_input%moint_scheme
+
 !        get the root space, covers all ao's
          ao_space_root=ao_space%get_root_id(ierr)
+
+         call decompose_cholesky_exatensor (CD, ao_space, ao_space_id, exa_input, m)
 
 !        Determine space ids and root for auxilliary voov tensor from vovo tensor
          call int_t%vovo%get_space_ids(vovo_id,vovo_root,ierr)
@@ -1715,6 +1742,100 @@ module exacorr_cc
           end if
 
         end subroutine init_fock
+
+        subroutine decompose_cholesky_exatensor (CD, ao_space, ao_space_id, exa_input, m)
+
+          use exacorr_global
+
+          type(tens_rcrsv_t), intent(inout)     :: CD(:)
+          class(h_space_t), pointer, intent(in) :: ao_space
+          integer(INTD),intent(in)              :: ao_space_id
+          type(exacc_input), intent(in)         :: exa_input
+          integer                               :: m
+
+   
+          integer(INTL)              :: ao_space_root
+          integer(INTD)              :: ierr
+          integer(INTL),dimension(2) :: ao2_root
+          integer(INTD),dimension(2) :: ao2_id
+
+          real(8)                    :: t_cholesky
+          integer                    :: print_level, nao, i
+          type(tens_rcrsv_t)         :: D_tensor, R_tensor, O_tensor, delta
+          integer, dimension(2)      :: ind_max
+          complex(8)                 :: scal_fac, D_max
+          character(len=9)           :: vs_str
+
+          t_cholesky=exa_input%t_cholesky
+          print_level=exa_input%print_level
+
+          nao  = get_nao()   ! This is the total number of ao's
+          ao_space_root=ao_space%get_root_id(ierr) !get the root space, covers all ao's
+          ao2_root=ao_space_root
+          ao2_id=ao_space_id
+
+          !Initialize
+          m=1
+          ierr=exatns_tensor_create(D_tensor,"DIAG",ao2_id,ao2_root,EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_init(D_tensor,ZERO)
+          ierr=exatns_tensor_create(R_tensor,"Residual",ao2_id,ao2_root,EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_init(R_tensor,ZERO)
+          ierr=exatns_tensor_create(delta,"Delta",ao2_id,ao2_root,EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_init(delta,ZERO)
+          ierr=exatns_tensor_create(O_tensor,"OneElement",EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_init(O_tensor,ZERO)
+
+          !get diagonal
+          ierr=exatns_tensor_traverse(D_tensor,'CholDiag')
+          ierr=exatns_tensor_traverse(D_tensor,'PrintTensor')
+          !find maximum
+          ind_max=1
+          call set_delta(ind_max,2)
+          ierr=exatns_tensor_traverse(delta,'FillDelta')
+          ierr=exatns_tensor_contract("O()=L(p,q)*D(p,q)",O_tensor,D_tensor,delta)
+          ierr=exatns_tensor_get_scalar(O_tensor,D_max)
+
+          do while (ind_max(1)<2) ! (abs(D_max)>t_cholesky)
+
+            !compute off-diagonals with fixed index
+            call set_chol_J_ind(ind_max)
+            ierr=exatns_tensor_traverse(R_tensor,'CholJ')
+            ierr=exatns_tensor_traverse(R_tensor,'PrintTensor')
+
+            !add previous cholesky elements
+            do i=1,m-1
+              call set_delta(ind_max,2)
+              ierr=exatns_tensor_traverse(delta,'FillDelta')
+              ierr=exatns_tensor_contract("O()=L(p,q)*D(p,q)",O_tensor,CD(i),delta)
+              ierr=exatns_tensor_get_scalar(O_tensor,scal_fac)
+              scal_fac=-scal_fac
+              ierr=exatns_tensor_contract("R(p,q)+=L(p,q)*O()",R_tensor,CD(i),one_tensor,scal_fac)
+            end do
+
+            !create new cholesky element
+            write (vs_str, '(I9.9)') m
+            ierr=exatns_tensor_create(CD(m),"cholesky_" // vs_str,ao2_id,ao2_root,EXA_DATA_KIND_C8)
+            scal_fac=ONE/ZSQRT(D_max)
+            ierr=exatns_tensor_scale(R_tensor,scal_fac)
+            ierr=exatns_tensor_contract("L(p,q)=R(p,q)*O()",CD(m),R_tensor,one_tensor)
+
+            !update Diagonal
+            ierr=exatns_tensor_traverse(R_tensor,'Square')
+            ierr=exatns_tensor_contract("D(p,q)+=L(p,q)*O()",D_tensor,R_tensor,one_tensor,MINUS_ONE)
+
+            !set m
+            m=m+1
+
+            !find new maximum
+            ind_max=m
+            
+          end do
+
+          
+          !cleanup
+          ierr=exatns_tensor_destroy(D_tensor)
+
+        end subroutine decompose_cholesky_exatensor
 
 #else
         implicit none

@@ -83,6 +83,30 @@ module exacorr_tensor_methods
           procedure, public:: apply=>set_one_el_int
         end type init_one_el_t
 
+        !Cholesky: Diagonal tensor
+        type, extends(tens_method_uni_t), public:: chol_diag
+         contains
+          procedure, public:: apply=>comp_chol_diag
+        end type chol_diag
+
+        !Cholesky: Offdiagonal tensor
+        type, extends(tens_method_uni_t), public:: chol_J
+         contains
+          procedure, public:: apply=>comp_chol_J
+        end type chol_J
+
+        ! fill delta tensor
+        type, extends(tens_method_uni_t), public:: fill_delta
+        contains
+          procedure, public:: apply=>comp_fill_delta
+        end type fill_delta
+
+        !square elements
+        type, extends(tens_method_uni_t), public:: square_tensor
+         contains
+          procedure, public:: apply=>comp_square_tensor
+        end type square_tensor
+
        contains
 
        subroutine TensInitTestCtorReal(this,val)
@@ -184,7 +208,7 @@ module exacorr_tensor_methods
          real(8) :: ei,ej,ek,el,ci,cj,ck,cl,xi,yi,zi,xj,yj,zj,xk,yk,zk,xl,yl,zl
          real(8),save :: gout(21*21*21*21) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
          !$OMP threadprivate(gout)
-         real(8), parameter :: fijkl = 1.0
+         real(8), parameter :: FIJKL = 1.0
 
          ierr=0 !set error code to success
          if(data_kind /= EXA_DATA_KIND_C8) then
@@ -246,7 +270,7 @@ module exacorr_tensor_methods
                      ci   =  gto1(ish)%coefficient(1)
                      ni   =  nfunctions(li,basis_angular)
 !                    output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
-                     call interest_eri('llll',fijkl,gout,&
+                     call interest_eri('llll',FIJKL,gout,&
                                   lk,ek,xk,yk,zk,ck,&
                                   ll,el,xl,yl,zl,cl,&
                                   li,ei,xi,yi,zi,ci,&
@@ -684,7 +708,7 @@ module exacorr_tensor_methods
          real(8),save :: gout(21*21*21*21) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
          !$OMP threadprivate(gout)
          complex(8) :: dP
-         real(8), parameter :: fijkl = 1.0
+         real(8), parameter :: FIJKL = 1.0
 
          ierr=0 !set error code to success
          if(data_kind /= EXA_DATA_KIND_C8) then
@@ -748,7 +772,7 @@ module exacorr_tensor_methods
                      ci   =  gto1(ish)%coefficient(1)
                      ni   =  nfunctions(li,basis_angular)
                      ! output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
-                     call interest_eri('llll',fijkl,gout,&
+                     call interest_eri('llll',FIJKL,gout,&
                                   lk,ek,xk,yk,zk,ck,&
                                   ll,el,xl,yl,zl,cl,&
                                   li,ei,xi,yi,zi,ci,&
@@ -1104,5 +1128,390 @@ module exacorr_tensor_methods
           end do
 
         end function energy_set_diag
+
+        function comp_chol_diag(this,tensor,scalar) result(ierr)
+         implicit none
+         integer(INTD):: ierr,n
+         class(chol_diag), intent(in):: this
+         class(tens_rcrsv_t), intent(inout):: tensor
+         complex(8), intent(inout), optional:: scalar
+         type(tens_dense_t):: tens
+
+         ierr=0
+         tens=tensor%get_dense_adapter(ierr)
+         if (ierr.ne.EXA_SUCCESS) call quit('Error in comp_chol_diag: getting dense_adapter')
+         n=tens%num_dims
+         if (n.ne.2) call quit('Error in comp_chol_diag: dimension not 2')
+         ierr=get_chol_diag(tens%body_ptr,tens%data_kind,tens%dims(1:n),tens%bases(1:n),n)
+         return
+        end function comp_chol_diag
+
+        integer function get_chol_diag(tens_body, data_kind, tens_dims, tens_bases,nind) result (ierr)
+          !Initialization routine that is used to fill a tensor with AO integrals
+
+          use exacorr_datatypes
+          use exacorr_global
+          use module_interest_eri
+
+          implicit none
+
+          type(C_PTR), value        :: tens_body       !in: C pointer to the tensor body (tensor elements)
+          integer(4), value         :: data_kind       !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
+          integer(8), intent(in)    :: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
+          integer(8), intent(in)    :: tens_bases(1:*) !in: base offsets for each tensor dimension)
+          integer(INTD), intent(in) :: nind            ! number of independent indices
+
+          integer             :: nao(nind)
+          integer             :: basis_angular ! 1=cartesian, 2=spherical
+          complex(8),pointer  :: ao_tens(:,:)
+          integer             :: first_ao(1:nind)
+
+          integer                              :: nshells(nind)
+          type(basis_func_info_t), allocatable :: gto1(:), gto2(:)  ! arrays with basis function information
+
+          integer            :: i, j, ish, jsh, ioff, joff, ijij
+          integer            :: li,lj,ni,nj
+          real(8)            :: ei,ej,ci,cj,xi,yi,zi,xj,yj,zj
+          real(8),save       :: gout(21*21*21*21) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
+          !$OMP threadprivate(gout)
+          real(8), parameter :: FIJKL = 1.0
+
+          ierr=0 !set error code to success
+          if(data_kind /= EXA_DATA_KIND_C8) then
+            ierr=-1 !invalid data kind requested
+            return
+          endif
+
+!         Interest needs to be initalized for each thread, this function will initialize (or return immediately if it is).
+          call interest_initialize(.false.)
+
+          ! map the arguments to names used in the context of integral evaluation
+          first_ao(1:nind) = tens_bases(1:nind)
+          nao(1:nind) = tens_dims(1:nind)
+          call c_f_pointer(tens_body,ao_tens,nao(1:nind)) !map C pointer to array
+
+!         Allocate and get shell information for all shells that we will treat
+          call get_gtos(first_ao(1),nao(1),gto1,nshells(1))
+          call get_gtos(first_ao(2),nao(2),gto2,nshells(2))
+          basis_angular = get_basis_angular()
+
+!         Intranode parallelization should be possible in the loops below because Interest is thread safe
+
+          joff = 0
+          do jsh = 1, nshells(2)
+            lj   =  gto2(jsh)%orb_momentum
+            ej   =  gto2(jsh)%exponent(1)
+            xj   =  gto2(jsh)%coord(1)
+            yj   =  gto2(jsh)%coord(2)
+            zj   =  gto2(jsh)%coord(3)
+            cj   =  gto2(jsh)%coefficient(1)
+            nj   =  nfunctions(lj,basis_angular)
+            ioff = 0
+            do ish = 1, nshells(1)
+              li   =  gto1(ish)%orb_momentum
+              ei   =  gto1(ish)%exponent(1)
+              xi   =  gto1(ish)%coord(1)
+              yi   =  gto1(ish)%coord(2)
+              zi   =  gto1(ish)%coord(3)
+              ci   =  gto1(ish)%coefficient(1)
+              ni   =  nfunctions(li,basis_angular)
+
+!             output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
+              call interest_eri('llll',FIJKL,gout,&
+                                  li,ei,xi,yi,zi,ci,&
+                                  lj,ej,xj,yj,zj,cj,&
+                                  li,ei,xi,yi,zi,ci,&
+                                  lj,ej,xj,yj,zj,cj )
+
+              do j = 1, nj
+                do i = 1, ni
+                  ijij = (j-1)*ni*nj*ni+(i-1)*nj*ni+(j-1)*ni+i
+                  ao_tens(i+ioff,j+joff) = dcmplx(gout(ijij),0.D0)
+                end do
+              end do
+
+              ioff = ioff + ni
+            end do
+            joff = joff + nj
+          end do
+
+          deallocate(gto1)
+          deallocate(gto2)
+
+        end function get_chol_diag
+
+        function comp_chol_J(this,tensor,scalar) result(ierr)
+         implicit none
+         integer(INTD):: ierr,n
+         class(chol_J), intent(in):: this
+         class(tens_rcrsv_t), intent(inout):: tensor
+         complex(8), intent(inout), optional:: scalar
+         type(tens_dense_t):: tens
+
+         ierr=0
+         tens=tensor%get_dense_adapter(ierr)
+         if (ierr.ne.EXA_SUCCESS) call quit('Error in comp_chol_J: getting dense_adapter')
+         n=tens%num_dims
+         if (n.ne.2) call quit('Error in comp_chol_J: dimension not 2')
+         ierr=get_chol_J(tens%body_ptr,tens%data_kind,tens%dims(1:n),tens%bases(1:n),n)
+         return
+        end function comp_chol_J
+
+        integer function get_chol_J(tens_body, data_kind, tens_dims, tens_bases, nind) result (ierr)
+        !Initialization routine that is used to fill a tensor with AO integrals
+
+         use exacorr_datatypes
+         use exacorr_global
+         use module_interest_eri
+
+         implicit none
+
+         type(C_PTR), value:: tens_body           !in: C pointer to the tensor body (tensor elements)
+         integer(4), value:: data_kind            !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
+         integer(8), intent(in):: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
+         integer(8), intent(in):: tens_bases(1:*) !in: base offsets for each tensor dimension)
+         integer(INTD), intent(in) :: nind            ! number of independent indices
+
+         integer, dimension(2) :: ind
+         integer:: nao(4)
+         integer:: basis_angular ! 1=cartesian, 2=spherical
+         complex(8),pointer :: ao_tens(:,:)
+         integer :: first_ao(1:4)
+
+
+         integer :: nshells(4)
+         type(basis_func_info_t), allocatable :: gto1(:), gto2(:), gto3(:), gto4(:)  ! arrays with basis function information
+
+         integer :: i, j, k, l, ish, jsh, ksh, lsh, ioff, joff, ijkl
+         integer :: li,lj,lk,ll,ni,nj,nk,nl
+         real(8) :: ei,ej,ek,el,ci,cj,ck,cl,xi,yi,zi,xj,yj,zj,xk,yk,zk,xl,yl,zl
+         real(8),save :: gout(21*21*21*21) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
+         !$OMP threadprivate(gout)
+         real(8), parameter :: FIJKL = 1.0
+
+         ierr=0 !set error code to success
+         if(data_kind /= EXA_DATA_KIND_C8) then
+           ierr=-1 !invalid data kind requested
+           return
+         endif
+
+!        get fixed indices 
+         call get_chol_J_ind(ind)
+
+!        Interest needs to be initalized for each thread, this function will initialize (or return immediately if it is).
+         call interest_initialize(.false.)
+
+         ! map the arguments to names used in the context of integral evaluation
+         first_ao(1:nind) = tens_bases(1:nind)
+         first_ao(3:4)=ind
+         nao(1:nind) = tens_dims(1:nind)
+         nao(3:4)=1 ! fixed single element 
+         call c_f_pointer(tens_body,ao_tens,nao(1:nind)) !map C pointer to 4-dimensional array
+
+!        Allocate and get shell information for all shells that we will treat
+         call get_gtos(first_ao(1),nao(1),gto1,nshells(1))
+         call get_gtos(first_ao(2),nao(2),gto2,nshells(2))
+         call get_gtos(first_ao(3),nao(3),gto3,nshells(3))
+         call get_gtos(first_ao(4),nao(4),gto4,nshells(4))
+         basis_angular = get_basis_angular()
+
+!        Intranode parallelization should be possible in the loops below because Interest is thread safe
+
+         lsh = 1
+            ll   =  gto4(lsh)%orb_momentum
+            el   =  gto4(lsh)%exponent(1)
+            xl   =  gto4(lsh)%coord(1)
+            yl   =  gto4(lsh)%coord(2)
+            zl   =  gto4(lsh)%coord(3)
+            cl   =  gto4(lsh)%coefficient(1)
+            nl   =  nfunctions(ll,basis_angular)
+
+            ksh = 1
+               lk   =  gto3(ksh)%orb_momentum
+               ek   =  gto3(ksh)%exponent(1)
+               xk   =  gto3(ksh)%coord(1)
+               yk   =  gto3(ksh)%coord(2)
+               zk   =  gto3(ksh)%coord(3)
+               ck   =  gto3(ksh)%coefficient(1)
+               nk   =  nfunctions(lk,basis_angular)
+               joff = 0
+               do jsh = 1, nshells(2)
+                  lj   =  gto2(jsh)%orb_momentum
+                  ej   =  gto2(jsh)%exponent(1)
+                  xj   =  gto2(jsh)%coord(1)
+                  yj   =  gto2(jsh)%coord(2)
+                  zj   =  gto2(jsh)%coord(3)
+                  cj   =  gto2(jsh)%coefficient(1)
+                  nj   =  nfunctions(lj,basis_angular)
+                  ioff = 0
+                  do ish = 1, nshells(1)
+                     li   =  gto1(ish)%orb_momentum
+                     ei   =  gto1(ish)%exponent(1)
+                     xi   =  gto1(ish)%coord(1)
+                     yi   =  gto1(ish)%coord(2)
+                     zi   =  gto1(ish)%coord(3)
+                     ci   =  gto1(ish)%coefficient(1)
+                     ni   =  nfunctions(li,basis_angular)
+!                    output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
+                     call interest_eri('llll',FIJKL,gout,&
+                                  lk,ek,xk,yk,zk,ck,&
+                                  ll,el,xl,yl,zl,cl,&
+                                  li,ei,xi,yi,zi,ci,&
+                                  lj,ej,xj,yj,zj,cj )
+                     ijkl = 0
+                     do l = 1, nl
+                        do k = 1, nk
+                           do j = 1, nj
+                              do i = 1, ni
+                                 ijkl = ijkl + 1
+                                 ao_tens(i+ioff,j+joff) = dcmplx(gout(ijkl),0.D0)
+                              end do
+                           end do
+                        end do
+                     end do
+                     ioff = ioff + ni
+                  end do
+                  joff = joff + nj
+               end do
+     
+
+         deallocate(gto1)
+         deallocate(gto2)
+         deallocate(gto3)
+         deallocate(gto4)
+
+        end function get_chol_J
+
+        function comp_fill_delta(this,tensor,scalar) result(ierr)
+
+          integer(INTD) :: ierr, rank
+          class(fill_delta), intent(in) :: this
+          class(tens_rcrsv_t), intent(inout) :: tensor
+          complex(8), intent(inout), optional :: scalar
+
+          type(tens_dense_t)      :: tens
+          integer(8), allocatable :: tens_root(:)
+          integer(4), allocatable :: tens_id(:)
+
+          ierr=0
+          tens=tensor%get_dense_adapter(ierr)
+          if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
+          rank=tens%num_dims
+          if (rank.gt.2) call quit('Error: only up to 2 dim. implemented in fill_delta_tensor')
+
+          ierr=tensor_fill_delta(tens%body_ptr,tens%dims(1:rank),tens%bases(1:rank),rank)
+
+        end function comp_fill_delta
+
+        integer function tensor_fill_delta(tens_body,tens_dims,tens_bases,rank) result (ierr)
+          !routine to make delta tensor
+
+          use exacorr_global
+
+          implicit none
+
+          type(C_PTR), value     :: tens_body       !in: C pointer to the tensor body (tensor elements)
+          integer(8), intent(in) :: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
+          integer(8), intent(in) :: tens_bases(1:*) !in: base offsets for each tensor dimension)
+          integer(INTD)          :: rank
+
+          integer, dimension(2)  :: delta = -99 ! value to extract slices
+          complex(8),pointer     :: tens1(:)
+          complex(8),pointer     :: tens2(:,:)
+
+          call get_delta(delta)
+          if (delta(1).lt.1) call quit('Error: wrong delta index in tensor_fill_delta')
+
+          ierr=0
+
+          delta(1)=delta(1)-tens_bases(1)+1
+          if (rank.eq.1) then
+              call c_f_pointer(tens_body,tens1,tens_dims(1:1)) !map C pointer to array
+              tens1= ZERO
+              if (delta(1).gt.0 .and. delta(1).le.tens_dims(1)) tens1(delta(1))=ONE 
+          else
+              call c_f_pointer(tens_body,tens2,tens_dims(1:2)) !map C pointer to array
+              tens2= ZERO
+              if (delta(2).lt.1) call quit('Error: wrong delta index in tensor_fill_delta')
+              delta(2)=delta(2)-tens_bases(2)+1
+              if (delta(2).gt.0 .and. delta(2).le.tens_dims(2)) then
+                if (delta(1).gt.0 .and. delta(1).le.tens_dims(1)) tens2(delta(1),delta(2))=ONE 
+              end if
+          end if
+
+        end function tensor_fill_delta
+
+
+        function comp_square_tensor(this,tensor,scalar) result(ierr)
+         implicit none
+         integer(INTD):: ierr,n
+         class(square_tensor), intent(in):: this
+         class(tens_rcrsv_t), intent(inout):: tensor
+         complex(8), intent(inout), optional:: scalar
+         type(tens_dense_t):: tens
+
+         ierr=0
+         tens=tensor%get_dense_adapter(ierr)
+         if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
+
+         n=tens%num_dims
+         ierr=square(tens%num_dims,tens%body_ptr,tens%data_kind,tens%dims(1:n),tens%bases(1:n))
+
+        end function comp_square_tensor
+
+        integer function square(num_dims,tens_body,data_kind,tens_dims,tens_bases) result (ierr)
+
+        !Scale with denominators for 2-d or 4-d tensor for regular CC and for lambda
+
+         implicit none
+
+         integer(INTD),intent(in)    :: num_dims            !in: number of dimensions of the tensor
+         type(C_PTR), value          :: tens_body           !in: C pointer to the tensor body (tensor elements)
+         integer(4), value           :: data_kind            !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
+         integer(INTL), intent(in)   :: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
+         integer(INTL), intent(in)   :: tens_bases(1:*) !in: base offsets for each tensor dimension)
+
+         integer :: p,q,r,s
+         complex(8),pointer :: t2_tens(:,:),t3_tens(:,:,:),t4_tens(:,:,:,:)
+
+         ierr=0 !set error code to success
+         if(data_kind /= EXA_DATA_KIND_C8) then
+           ierr=-1 !invalid data kind requested
+           return
+         endif
+
+         select case (num_dims)
+         case (2)
+            call c_f_pointer(tens_body,t2_tens,tens_dims(1:2)) !map C pointer to 2-dimensional array
+            do q = 1, tens_dims(2)
+              do p = 1, tens_dims(1)
+                t2_tens(p,q) = t2_tens(p,q)**2
+              end do
+            end do
+         case (3)
+            call c_f_pointer(tens_body,t3_tens,tens_dims(1:3)) !map C pointer to 2-dimensional array
+            do r = 1, tens_dims(3)
+              do q = 1, tens_dims(2)
+                do p = 1, tens_dims(1)
+                  t3_tens(p,q,r) = t3_tens(p,q,r)**2
+                end do
+              end do
+            end do
+         case (4)
+            call c_f_pointer(tens_body,t4_tens,tens_dims(1:4)) !map C pointer to 2-dimensional array
+            do s = 1, tens_dims(4)
+              do r = 1, tens_dims(3)
+                do q = 1, tens_dims(2)
+                  do p = 1, tens_dims(1)
+                    t4_tens(p,q,r,s) = t4_tens(p,q,r,s)**2
+                  end do
+                end do
+              end do
+            end do
+         case default
+            call quit ('Error in square: dimension not implemented')
+         end select
+
+        end function square
 
 end module exacorr_tensor_methods
