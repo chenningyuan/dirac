@@ -1940,7 +1940,7 @@ C
      &         CALL QUIT('*SCF error: negative number of '//
      &                   'closed shell electrons!')
             IF (MOD(NELEC_DHF(IFRP),2).NE.0)
-     &         CALL QUIT('*SCF erro: odd even number of '//
+     &         CALL QUIT('*SCF error: odd even number of '//
      &                   'closed shell electrons!')
             NISH_DHF(IFRP)  = NELEC_DHF(IFRP)/2
          END DO
