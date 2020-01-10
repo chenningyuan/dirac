@@ -2631,6 +2631,13 @@ C
         N2TMO(IFRP)  = NTMO(IFRP)*NTMO(IFRP)
         N2TMOTQ      = N2TMOTQ + N2TMO(IFRP)*NZ
       ENDDO
+
+#ifdef MOD_XAMFI
+      !> store common block variables while still being in 4c mode
+      if(aoomod.and. .not. x2c)then
+         call xamfi_set_cb(+1)
+      endif
+#endif
 C
 C     Copy information from NBORB to the subblock array if we have not
 C     partioned the orbital space otherwise.
@@ -2806,7 +2813,6 @@ C
             !> debugging
             iprscf = 40
 
-            call xamfi_set_cb(+1)
 
             call get_xamfi_correction(
      &                                dmat_aoosoc,
@@ -2817,6 +2823,7 @@ C
      &                                iprham
      &                               )
 
+            !> reset common block variables
             call xamfi_set_cb(-1)
 
             !> restore logicals
