@@ -77,6 +77,7 @@ module visual_cfg
    integer, public :: iq_jy       = 39
    integer, public :: iq_jz       = 40
    integer, public :: iq_density_gradient  =  41
+   integer, public :: iq_gradj    = 42
    
 !                     visualization in 2d
    logical, public :: visual_cfg_2d             = .false.
@@ -146,6 +147,8 @@ module visual_cfg
 
    logical, public              :: visual_cfg_use_orbital_string = .false.
    real(8), public, allocatable :: visual_cfg_occupation(:, :)
+
+   logical,      public :: visual_cfg_tensor          = .false.
 
    private
 

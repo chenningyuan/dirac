@@ -102,7 +102,8 @@ contains
            (visual_cfg_property(imat) == iq_divs)    .or. &
            (visual_cfg_property(imat) == iq_rots)    .or. &
            (visual_cfg_property(imat) == iq_divj)    .or. &
-           (visual_cfg_property(imat) == iq_rotj)         &
+           (visual_cfg_property(imat) == iq_rotj)    .or. &
+           (visual_cfg_property(imat) == iq_gradj)        &
           ) then
           if (max_ao_g_order < 1) then
              max_ao_g_order = 1
@@ -514,20 +515,24 @@ contains
       real(8)              :: vx(3), vx_norm
       real(8)              :: vy(3), vy_norm
       real(8)              :: vz(3), vz_norm
-      real(8)              :: r(3), v(3), w(0:3), s, rad, radtot, qbuf(0:3)
+      real(8)              :: r(3), v(3), t(9), w(0:12), s, rad, radtot, qbuf(0:12)
       integer              :: lunit_2d_scalar
       integer              :: lunit_2d_vector
       integer              :: lunit_2d_flow
+      integer              :: lunit_2d_tensor
       integer              :: lunit_3d_cube
       integer              :: lunit_3d_scalar
       integer              :: lunit_3d_vector
+      integer              :: lunit_3d_tensor
       integer              :: lunit_3d_vector_vtk
       integer              :: lunit_3d_jbfile
       integer              :: lunit_line_scalar
       integer              :: lunit_line_vector
+      integer              :: lunit_line_tensor
       integer              :: lunit_3d_gridimp
       integer              :: lunit_radial_scalar
       integer              :: lunit_radial_vector
+      integer              :: lunit_radial_tensor
       real(8), allocatable :: temp(:, :)
       real(8), allocatable :: temp2(:, :, :, :)
       real(8), allocatable :: res(:)
@@ -543,7 +548,7 @@ contains
       if (visual_cfg_ncube(3) > 0) then
          i = visual_cfg_ncube(3)
       end if
-      allocate(q(0:3, i))
+      allocate(q(0:12, i))
 
       allocate(atom_xyz(4, nucdep))
 
@@ -578,6 +583,10 @@ contains
       lunit_radial_scalar = 24
       lunit_radial_vector = 25
       lunit_3d_jbfile     = 26
+      lunit_2d_tensor     = 27
+      lunit_3d_tensor     = 28
+      lunit_line_tensor   = 29
+      lunit_radial_tensor = 30
 
       if (visual_cfg_2d) then
          open(lunit_2d_scalar,           &
@@ -587,6 +596,11 @@ contains
               form   = 'formatted')
          open(lunit_2d_vector,           &
               file   = 'plot.2d.vector', &
+              status = 'new',            &
+              access = 'sequential',     &
+              form   = 'formatted')
+         open(lunit_2d_tensor,           &
+              file   = 'plot.2d.tensor', &
               status = 'new',            &
               access = 'sequential',     &
               form   = 'formatted')
@@ -618,6 +632,11 @@ contains
               status = 'new',            &
               access = 'sequential',     &
               form   = 'formatted')
+         open(lunit_3d_tensor,           &
+              file   = 'plot.3d.tensor', &
+              status = 'new',            &
+              access = 'sequential',     &
+              form   = 'formatted')
       end if
 
       if (visual_cfg_3d_gridimp .or. visual_cfg_3d_readjb) then
@@ -634,6 +653,11 @@ contains
               status = 'new',            &
               access = 'sequential',     &
               form   = 'formatted')
+         open(lunit_3d_tensor,           &
+              file   = 'plot.3d.tensor', &
+              status = 'new',            &
+              access = 'sequential',     &
+              form   = 'formatted')
       end if
 
       if (visual_cfg_line) then
@@ -646,6 +670,11 @@ contains
               file   = 'plot.line.vector', &
               status = 'new',              &
               access = 'sequential',       &
+              form   = 'formatted')
+         open(lunit_line_tensor,           &
+              file   = 'plot.line.tensor', &
+              status = 'new',            &
+              access = 'sequential',     &
               form   = 'formatted')
       end if
 
@@ -660,6 +689,11 @@ contains
               status = 'new',                &
               access = 'sequential',         &
               form   = 'formatted')
+         open(lunit_radial_tensor,           &
+              file   = 'plot.radial.tensor', &
+              status = 'new',                &
+              access = 'sequential',         &
+              form   = 'formatted')
       end if
 
       if (visual_cfg_list) then
@@ -667,34 +701,73 @@ contains
          call around('Requested density at point(s)')
 
          write(lupri, *)
-         write(lupri, '(a8, 2a14, a18, a32, 2a26)') &
-            'r_x',                                  &
-            'r_y',                                  &
-            'r_z',                                  &
-            'scalar',                               &
-            'x-component',                          &
-            'y-component',                          &
-            'z-component'
-         write(lupri, *)
-
-         do i = 1, visual_cfg_nr_points_in_list
-            call get_quantity_in_point(visual_cfg_nr_dmat,        &
-                                       D,                         &
-                                       D_0,                       &
-                                       visual_cfg_xyz_list(i, 1), &
-                                       visual_cfg_xyz_list(i, 2), &
-                                       visual_cfg_xyz_list(i, 3), &
-                                       ao,                        &
-                                       buffer,                    &
-                                       q)
-
-            write(lupri, '(3e14.6, 4ES26.16E3)') &
-               visual_cfg_xyz_list(i, 1),        &
-               visual_cfg_xyz_list(i, 2),        &
-               visual_cfg_xyz_list(i, 3),        &
-               q(0:3, 1)
-         end do
-
+         if (visual_cfg_tensor) then
+           write(lupri, '(a8, 2a14, a18, a32, 2a26)') &
+              'r_x',                                  &
+              'r_y',                                  &
+              'r_z',                                  &
+              'scalar',                               &
+              'x-component',                          &
+              'y-component',                          &
+              'z-component',                          &
+              'xx-component',                         &
+              'xy-component',                         &
+              'xz-component',                         &
+              'yx-component',                         &
+              'yy-component',                         &
+              'yz-component',                         &
+              'zx-component',                         &
+              'zy-component',                         &
+              'zz-component'
+           write(lupri, *)
+           
+           do i = 1, visual_cfg_nr_points_in_list
+              call get_quantity_in_point(visual_cfg_nr_dmat,        &
+                                         D,                         &
+                                         D_0,                       &
+                                         visual_cfg_xyz_list(i, 1), &
+                                         visual_cfg_xyz_list(i, 2), &
+                                         visual_cfg_xyz_list(i, 3), &
+                                         ao,                        &
+                                         buffer,                    &
+                                         q)
+           
+              write(lupri, '(3e14.6, 13ES26.16E3)') &
+                 visual_cfg_xyz_list(i, 1),        &
+                 visual_cfg_xyz_list(i, 2),        &
+                 visual_cfg_xyz_list(i, 3),        &
+                 q(0:12, 1)
+           end do
+         else
+           write(lupri, '(a8, 2a14, a18, a32, 2a26)') &
+              'r_x',                                  &
+              'r_y',                                  &
+              'r_z',                                  &
+              'scalar',                               &
+              'x-component',                          &
+              'y-component',                          &
+              'z-component'
+           write(lupri, *)
+           
+           do i = 1, visual_cfg_nr_points_in_list
+              call get_quantity_in_point(visual_cfg_nr_dmat,        &
+                                         D,                         &
+                                         D_0,                       &
+                                         visual_cfg_xyz_list(i, 1), &
+                                         visual_cfg_xyz_list(i, 2), &
+                                         visual_cfg_xyz_list(i, 3), &
+                                         ao,                        &
+                                         buffer,                    &
+                                         q)
+           
+              write(lupri, '(3e14.6, 4ES26.16E3)') &
+                 visual_cfg_xyz_list(i, 1),        &
+                 visual_cfg_xyz_list(i, 2),        &
+                 visual_cfg_xyz_list(i, 3),        &
+                 q(0:3, 1)
+           end do
+         end if
+           
          write(lupri, *)
          call prsymb(lupri, '-', 100, 0)
          write(lupri, *)
@@ -729,6 +802,11 @@ contains
                r(2),                                             &
                r(3),                                             &
                q(1:3, 1)
+            write(lunit_line_tensor, '(3e18.10,9ES26.16E3)')     &
+               r(1),                                             &
+               r(2),                                             &
+               r(3),                                             &
+               q(4:12, 1)
 
          end do
       end if
@@ -754,6 +832,7 @@ contains
 
 !           Angular integration
 !           ===================
+!gosia TODO: adapt to tensors
             q(0:3,1) = 0.0d0
             do i = 1,m
               r   = visual_cfg_radial_from + rad*temp(i,1:3)
@@ -814,8 +893,10 @@ contains
                                           buffer,             &
                                           q)
 
-               s      = q(0,   1)
-               v(1:3) = q(1:3, 1)
+               s       = q(0,   1)
+               v(1:3)  = q(1:3, 1)
+!              gosia TODO add tensors
+               t(4:12) = q(4:12, 1)
 
                write(lunit_2d_scalar, '(2e18.10,ES26.16E3)')     &
                   ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2, &
@@ -868,6 +949,9 @@ contains
             write(lunit_3d_scalar, '(4e13.5)') &
                r(1:3),                         &
                w(0)
+            write(lunit_3d_tensor, '(12e13.5)') &
+               r(1:3),                          &
+               w(4:12)
 
          end do
  98      continue
@@ -903,6 +987,9 @@ contains
             write(lunit_3d_scalar, '(4e13.5)') &
                r(1:3),                         &
                w(0)
+            write(lunit_3d_tensor, '(12e13.5)') &
+               r(1:3),                         &
+               w(4:12)
 
          end do
  99      continue
@@ -1120,6 +1207,7 @@ contains
                      write(lunit_3d_scalar, '(3e13.5,ES26.16E3)')  &
                         r(1:3),                                    &
                         q(0, kcube)
+!gosia TODO: adapt for tensor
                      temp2(icube, jcube, kcube, 1:3) = q(1:3, kcube)
                   end do
                end if
@@ -1148,19 +1236,24 @@ contains
 
       if (visual_cfg_line) close(lunit_line_scalar, status = 'keep')
       if (visual_cfg_line) close(lunit_line_vector, status = 'keep')
+      if (visual_cfg_line) close(lunit_line_tensor, status = 'keep')
 
       if (visual_cfg_radial) close(lunit_radial_scalar, status = 'keep')
       if (visual_cfg_radial) close(lunit_radial_vector, status = 'keep')
+      if (visual_cfg_radial) close(lunit_radial_tensor, status = 'keep')
 
       if (visual_cfg_2d) close(lunit_2d_scalar, status = 'keep')
       if (visual_cfg_2d) close(lunit_2d_vector, status = 'keep')
       if (visual_cfg_2d) close(lunit_2d_flow,   status = 'keep')
+      if (visual_cfg_2d) close(lunit_2d_tensor, status = 'keep')
 
       if (visual_cfg_3d .or. visual_cfg_3d_fast) close(lunit_3d_cube,       status = 'keep')
       if (visual_cfg_3d .or. visual_cfg_3d_fast .or. visual_cfg_3d_gridimp .or. visual_cfg_3d_readjb) &
                                                  close(lunit_3d_scalar,     status = 'keep')
       if (visual_cfg_3d .or. visual_cfg_3d_fast .or. visual_cfg_3d_gridimp .or. visual_cfg_3d_readjb) &
                                                  close(lunit_3d_vector,     status = 'keep')
+      if (visual_cfg_3d .or. visual_cfg_3d_fast .or. visual_cfg_3d_gridimp .or. visual_cfg_3d_readjb) &
+                                                 close(lunit_3d_tensor,     status = 'keep')
       if (visual_cfg_3d .or. visual_cfg_3d_fast) close(lunit_3d_vector_vtk, status = 'keep')
 
       if (visual_cfg_3d_gridimp) close(lunit_3d_gridimp, status = 'keep')

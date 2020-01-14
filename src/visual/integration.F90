@@ -51,8 +51,8 @@ contains
 
       type(matrix)        :: D_0
 
-      dimension QUANTITY_INTEGRAL(0:3), &
-                QUANTITY_INTEGRAL_LAST(0:3)
+      dimension QUANTITY_INTEGRAL(0:12), &
+                QUANTITY_INTEGRAL_LAST(0:12)
 
       real(8), allocatable :: x(:)
       real(8), allocatable :: y(:)
@@ -60,7 +60,7 @@ contains
       real(8), allocatable :: w(:)
       character(2) :: grid_orientation(3) = (/'xy', 'xz', 'yz'/)
 
-      CALL DZERO(QUANTITY_INTEGRAL,4)
+      CALL DZERO(QUANTITY_INTEGRAL,13)
       if (visual_cfg_3d_integration) then
 
         CALL AROUND('3D numerical integration')
@@ -106,17 +106,49 @@ contains
         close(interface_file_unit, status = 'keep')
 
         WRITE(LUPRI,'(A)')
-        WRITE(LUPRI,'(A12,A25,2A20)') 'scalar', &
-     &                                'x-component', &
-     &                                'y-component', &
-     &                                'z-component'
-        WRITE(LUPRI,'(A)')
+        if (visual_cfg_tensor) then
+          WRITE(LUPRI,'(A12,A25,2A20,9A25)') 'scalar', &
+     &                                  'x-component', &
+     &                                  'y-component', &
+     &                                  'z-component', &
+     &                                  'xx-component', &
+     &                                  'xy-component', &
+     &                                  'xz-component', &
+     &                                  'yx-component', &
+     &                                  'yy-component', &
+     &                                  'yz-component', &
+     &                                  'zx-component', &
+     &                                  'zy-component', &
+     &                                  'zz-component'
+          WRITE(LUPRI,'(A)')
+          
+          WRITE(LUPRI,'(4E20.10)') QUANTITY_INTEGRAL(0), &
+     &                             QUANTITY_INTEGRAL(1), &
+     &                             QUANTITY_INTEGRAL(2), &
+     &                             QUANTITY_INTEGRAL(3), &
+     &                             QUANTITY_INTEGRAL(4), &
+     &                             QUANTITY_INTEGRAL(5), &
+     &                             QUANTITY_INTEGRAL(6), &
+     &                             QUANTITY_INTEGRAL(7), &
+     &                             QUANTITY_INTEGRAL(8), &
+     &                             QUANTITY_INTEGRAL(9), &
+     &                             QUANTITY_INTEGRAL(10), &
+     &                             QUANTITY_INTEGRAL(11), &
+     &                             QUANTITY_INTEGRAL(12)
 
-        WRITE(LUPRI,'(4E20.10)') QUANTITY_INTEGRAL(0), &
-     &                           QUANTITY_INTEGRAL(1), &
-     &                           QUANTITY_INTEGRAL(2), &
-     &                           QUANTITY_INTEGRAL(3)
+        else
+          WRITE(LUPRI,'(A12,A25,2A20)') 'scalar', &
+     &                                  'x-component', &
+     &                                  'y-component', &
+     &                                  'z-component'
+          WRITE(LUPRI,'(A)')
+          
+          WRITE(LUPRI,'(4E20.10)') QUANTITY_INTEGRAL(0), &
+     &                             QUANTITY_INTEGRAL(1), &
+     &                             QUANTITY_INTEGRAL(2), &
+     &                             QUANTITY_INTEGRAL(3)
 
+        end if
         WRITE(LUPRI,'(A)')
         CALL PRSYMB(LUPRI,'-',100,0)
 
@@ -221,9 +253,9 @@ contains
      &          PY(*), &
      &          PZ(*), &
      &          buffer(*), &
-     &          QUANTITY_INTEGRAL(0:3), &
+     &          QUANTITY_INTEGRAL(0:12), &
      &          WEIGHT(*), &
-     &          QUANTITY(0:3)
+     &          QUANTITY(0:12)
 
 
       DO IPOINT = 1,NR_POINTS
@@ -238,7 +270,7 @@ contains
                                       buffer,             &
                                       quantity)
 
-        CALL DAXPY(4,WEIGHT(IPOINT),QUANTITY,1, &
+        CALL DAXPY(13,WEIGHT(IPOINT),QUANTITY,1, &
      &                              QUANTITY_INTEGRAL,1)
       ENDDO
 

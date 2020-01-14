@@ -376,6 +376,11 @@
          call read_input_visual_helper(iq_rotj)
       end if
 
+      if (kw_matches(word, '.GRADJ ')) then
+         visual_cfg_tensor = .true.
+         call read_input_visual_helper(iq_gradj)
+      end if
+
       if (kw_matches(word, '.S     ')) then
          call read_input_visual_helper(iq_s)
       end if

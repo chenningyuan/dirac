@@ -75,7 +75,7 @@ contains
       real(8), intent(in)  :: pz
       real(8)              :: ao(*)
       real(8)              :: buffer(*)
-      real(8), intent(out) :: result(0:3)
+      real(8), intent(out) :: result(0:12)
       real(8), intent(in), optional    :: jb_input(3)
 !     --------------------------------------------------------------------------
       integer              :: imat, i, icomp
@@ -420,8 +420,9 @@ contains
             end if
 
 !           divergence or curl of current density
-            if ((visual_cfg_property(imat) == iq_divj) .or. &
-                (visual_cfg_property(imat) == iq_rotj)) then
+            if ((visual_cfg_property(imat) == iq_divj)  .or.  &
+                (visual_cfg_property(imat) == iq_rotj)  .or.  &
+                (visual_cfg_property(imat) == iq_gradj)) then
 
                if (levyle) then
                   print *, 'error: Levy-Leblond divj and rotj not implemented'
@@ -460,6 +461,17 @@ contains
                   result(1) = result(1) - matrix_33(2, 3) + matrix_33(3, 2)
                   result(2) = result(2) - matrix_33(3, 1) + matrix_33(1, 3)
                   result(3) = result(3) - matrix_33(1, 2) + matrix_33(2, 1)
+               end if
+               if (visual_cfg_property(imat) == iq_gradj) then
+                  result(4)  = result(4)  + matrix_33(1, 1)  ! xx
+                  result(5)  = result(5)  + matrix_33(1, 2)  ! xy
+                  result(6)  = result(6)  + matrix_33(1, 3)  ! xz
+                  result(7)  = result(7)  + matrix_33(2, 1)  ! yx
+                  result(8)  = result(8)  + matrix_33(2, 2)  ! yy
+                  result(9)  = result(9)  + matrix_33(2, 3)  ! yz
+                  result(10) = result(10) + matrix_33(3, 1)  ! zx
+                  result(11) = result(11) + matrix_33(3, 2)  ! zy
+                  result(12) = result(12) + matrix_33(3, 3)  ! zz
                end if
             end if
 
