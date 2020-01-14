@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -484,7 +484,7 @@
 !                    AO-matrix (the half-transformed integrals were
 !                    triangular in the AO-indices). Diagonal elements
 !                    are scaled before storage to avoid double-counting.
-!                    
+!
                      IREPK =  JBTOF(IREPS,IC4)
                      IREPL =  JBTOF(IREPR,IC3)
                      NK = NSTR3(IREPK)
@@ -853,23 +853,23 @@
       Real(8)              :: GMAT(*)
       Real(8), allocatable :: RBUF(:)
       Integer, allocatable :: LBUF(:)
-	  Integer, intent(in)  :: NGBFSZ
-	  Integer :: istat
-	  
+      Integer, intent(in)  :: NGBFSZ
+      Integer :: istat
+
       IF (IREC.EQ.0) RETURN
 ! miro: provide with checking parameter
       Allocate (RBUF(NGBFSZ),stat=istat)
-	  If (istat.ne.0) then
-	    Write(LUPRI,*)                                                     &
-     & "Real*8 RBUF(NGBFSZ) allocation failed, NGBFSZ=",NGBFSZ
-		Call Quit('Real*8 RBUF(NGBFSZ) allocation failed !')
-	  EndIf
+      If (istat.ne.0) then
+        Write(LUPRI,*)                                                  &
+     &  "Real*8 RBUF(NGBFSZ) allocation failed, NGBFSZ=",NGBFSZ
+           Call Quit('Real*8 RBUF(NGBFSZ) allocation failed !')
+      EndIf
       Allocate (LBUF(NGBFSZ),stat=istat)
-	  If (istat.ne.0) then
-	    Write(LUPRI,*)                                                     &
+      If (istat.ne.0) then
+        Write(LUPRI,*)                                                  &
      &  "Integer LBUF(NGBFSZ) allocation failed, NGBFSZ=",NGBFSZ
-		Call Quit('Integer LBUF(NGBFSZ) allocation failed !')
-	  EndIf	  
+        Call Quit('Integer LBUF(NGBFSZ) allocation failed !')
+      EndIf
 !
 !     Read a batch and the link to the previous record.
 !

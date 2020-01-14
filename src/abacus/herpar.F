@@ -1,6 +1,6 @@
 #define DEBUG_IPRPAR -1
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1177,11 +1177,6 @@ C     Start timing.
 C
       CALL GETTIM(CPU1,WALL1)
 C
-C     This is a slave in a parallel run
-C
-      SLAVE = .TRUE.
-      DEBUG  = .FALSE.
-C
 C
 C     ***************************************************
 C     ***** Receive initialization data from master *****
@@ -1280,6 +1275,7 @@ C
  999  CONTINUE
 C
       call dealloc(WORK)
+      PARHER = .FALSE.
       CALL QEXIT('HERNOD')
       END
 C  /* Deck rvinit */
@@ -2144,9 +2140,9 @@ C
 C
 C     For infpar.h
 C
-      SLAVE  = .FALSE.
-C
-      PARHER = .FALSE.
+! SLAVE is set and PARHER is initialized to .false. in dirac.F at beginning of execution
+!     SLAVE  = .FALSE.
+!     PARHER = .FALSE.
 #if defined (VAR_MPI)
       NODES = NUMNOD
 #else

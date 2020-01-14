@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -162,6 +162,7 @@ C
         NREDGP = 0
       ENDIF
 C.....NSTAT is set to one in the static case, two otherwise
+      IF (E2CHEK) STATIC = .FALSE.
       NSTAT = 2
       IF(STATIC) NSTAT = 1
 C.....NDAMP is set to two in the complex case since the solution vector now
@@ -242,7 +243,7 @@ C
      &            WORK(KRNORM),WORK(KIVECS),WORK(KISIM),
      &            WORK(KPOS),WORK,KFREE,LFREE)
 C
-      CALL MEMREL('XRSCTL.XRSRED',WORK,1,KFRSAV,KFREE,LFREE)
+      CALL MEMREL('XRSCTL.XRSCT1',WORK,1,KFRSAV,KFREE,LFREE)
 C
       CALL QEXIT('XRSCTL')
       RETURN
@@ -449,7 +450,9 @@ C     If   (not user specified SCRFCK)
 C     then SCRFCK may be dynamically determined
 C          (both for LINEQ and for PP) /hjaaj jan 2001
 C
-      IF (.NOT. USRSCR) THEN
+      IF (E2CHEK) THEN
+         SCRFCK = 1.D-14 ! we need accuracy for symmetry check of E2 matrix
+      ELSE IF (.NOT. USRSCR) THEN
          IDTEST = IBTAND(INTDEF, IDFLAG)
          IF (IDTEST .NE. 0) THEN
 C
@@ -1730,6 +1733,7 @@ C
       IF (NTSIM.LT.1) GO TO 9999
 C
       E2FULL = .FALSE.
+      IF (E2CHEK) E2FULL = .TRUE.
       IF (IPRXRS .GE. 15) THEN
          CALL HEADER('(XRSRED) Sigma vectors',-1)
          IF (NZCONF .GT. 1) THEN
@@ -2740,8 +2744,8 @@ C solve A2*X=G
       CALL ZSYSV('L',N,1,A2,LDA,WORK(KPVT),X,LDA,
      &           WORK(KFREE),LFREE,INFO)
 CPP remove after debug
-      ALPHAR = DP5 * DDOT(N,G,1,X,2)
-      ALPHAI = DP5 * DDOT(N,G,1,X(2),2)
+!     ALPHAR = DP5 * DDOT(N,G,1,X,2)
+!     ALPHAI = DP5 * DDOT(N,G,1,X(2),2)
 C
       CALL MEMREL('XRSLINRE2',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('XRSLINRE2')
@@ -4333,22 +4337,20 @@ C/* Deck setrsp */
       SUBROUTINE SETRSP
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
-C     Set a default values for a number of variables of the response
-C     module such that they need to be modified only in modules where they
-C     are used.
+C     Set default values for a number of control variables of the response
+C     module such that they need to be modified only in modules where
+C     they are used.
 C
 C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
 C
-      PARAMETER(D0=0.0D0)
+      implicit none
 #include "dcbxrs.h"
       FKRMC  = .FALSE.
       UNCOUP = .FALSE.
       IMFREQ = .FALSE.
       E2CHEK = .FALSE.
       STERNC = .FALSE.
-      DAMPFREQ = D0
+      DAMPFREQ = 0.0D0
       NEVEC  = NREDM
       RETURN
       END

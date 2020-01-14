@@ -135,6 +135,8 @@ Evaluate nuclear magnetic shieldings and indirect spin-spin couplings
 
 Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
+See below for advice on calculation of diamagnetic terms.
+
 keyword(SHIELDING)
 
 Evaluate nuclear magnetic shieldings (linear response). :ref:`PROPERTIES_.PRINT`
@@ -154,17 +156,25 @@ Evaluate indirect spin-spin couplings (linear response).
 
 Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
+The default is to calculate the diamagnetic term via occupied positive energy to virtual negative energy orbital rotations
+(also called electron-positron rotations), see :cite:`Aucar1999` for the theory.
+The quality of this is very basis set dependent.
+It is generally more accurate to use the non-relativistic expectation value expression
+for the diamagnetic term, activated with keyword .DSO in this section.
+You must also add :ref:`LINEAR_RESPONSE_.SKIPEP` under :ref:`*LINEAR RESPONSE` to 
+exclude the diamagnetic term from the linear response calculation.
+
 keyword(DSO)
 
 Evaluate the diamagnetic contribution to indirect spin-spin couplings as
-an expectation value.
+an expectation value of the non-relativistic DSO operator.
 
 Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
 keyword(NSTDIAMAGNETIC)
 
-Evaluate the diamagnetic contribution to nuclear magnetic shieldings as
-an expectation value.
+Evaluate the diamagnetic contribution to nuclear magnetic shielding tensor as
+an expectation value of the non-relativistic operator.
 
 Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
@@ -200,6 +210,29 @@ keyword(EFFDEN)
 
 Calculate effective electronic density at the
 nucleus(nuclei), :cite:`Knecht2011`.
+
+Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
+
+keyword(SPIN-ROTATION)
+
+Evaluate nuclear spin-rotation constants: linear response, expectation value and nuclear contributions.
+
+.. note::
+
+   The current implementation gives by default (:ref:`PROPERTIES_.PRINT` values up to 3) results only for molecules in equilibrium.
+
+   
+Results are given in kHz, but for particular :ref:`PROPERTIES_.PRINT` values they could also be given in ppm (to compare results with :ref:`PROPERTIES_.SHIELDING`).
+
+The total spin-rotation tensors, as well as their electronic (linear response) and nuclear contributions are always given separately.
+
+Using :ref:`PROPERTIES_.PRINT` 0 or 1, results are only given in kHz, whereas employing :ref:`PROPERTIES_.PRINT` 2 or 3 they are also shown in ppm.
+
+In addition, when :ref:`PROPERTIES_.PRINT` 1 or 3 are used, the paramagnetic-like (e-e) and diamagnetic-like (e-p) parts of the linear response contributions are given separately, together with results for the :math:`\mathbf{L}` and :math:`\mathbf{S}` parts of the linear response.
+
+Finally, employing :ref:`PROPERTIES_.PRINT` 4 expectation value and nuclear contributions are given separately, with the inclusion of Thomas precesion effects, in order to properly include contributions to nuclear spin-rotations out of the equilibrium geometry of the molecular system. More details in the Tutorial Section.
+
+See :cite:`Aucar_JCP2012` for further details.
 
 Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 

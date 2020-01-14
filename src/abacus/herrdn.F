@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -306,7 +306,6 @@ C
       INTEGER          :: inpfile
 
 C     JHS
-      CHARACTER(LEN=72) :: str
       INTEGER :: i
       REAL :: time1,time2
 
@@ -340,10 +339,6 @@ C
          CALL TITLER('Output from MOLECULE input processing','*',118)
       END IF
       LUINFO = LUMLCL
-C
-C     PARHER is true for slaves, false for master.
-C     If (PARHER) then RDLINE reads from common block transferred
-C       from master, not from file LUINFO.
 C
       NEWFILE = LUINFO .NE. LUCMD
       IF (NEWFILE) THEN
@@ -505,9 +500,6 @@ C         management easier.
      &                CPRIM(:,:,:,:),
      &                CPRIMU(:,:,:,:)
 
-C     JHS
-      CHARACTER(LEN=72) :: str
-
       LOGICAL :: HERMIT,DOOWN,ZMAT
 
 C     JHS The following variables come from a common block and are thus kept in F77
@@ -585,7 +577,7 @@ C
 C        nothing specified, default minimum value used
          THRS = THRMIN
       ELSE IF (THRS .LT. THRMIN) THEN
-         IF (.NOT.PARHER) THEN
+         IF (.NOT.SLAVE) THEN
             WRITE (LUPRI,'(/2X,A)') '*** WARNING from READIN ***'
             WRITE (LUPRI,'(2(/2X,A,1P,D12.2))')
      &      'Threshold for discarding integrals was',THRS,
@@ -615,7 +607,7 @@ C     Also automatic symmetry detection for Dinfh or Cinfv
       NMLAU = NMLINE
       IF (ID3 .NE. ' ') THEN
         ANG = .TRUE.
-        IF (.NOT. PARHER)
+        IF (.NOT. SLAVE)
      &       WRITE (LUPRI,'(/2X,A/10X,A,F11.8,A2/)')
      &          'Coordinates are entered in Angstroms'//
      &          ' and converted to atomic units.',
@@ -952,7 +944,6 @@ C
       CHARACTER*80 BASREFT(10,KATOM,MAXBSFIL)
       CHARACTER*20 BSFIL(MAXBSFIL)
       LOGICAL SEGT
-      CHARACTER(LEN=72) :: str
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
@@ -1015,8 +1006,6 @@ C
         IF(.NOT.ZMTTST) THEN
           IF (DIRAC) THEN
             DOHUCKEL = .FALSE.
-            READ(LUINFO,'(a)', ADVANCE='yes') str
-            BACKSPACE(LUINFO)
             READ (MLINE(NMLINE),'(BN,1X,F9.0,I5,F20.5)',IOSTAT=IOS)
      &            Q,NONT(I),QEXP
             IF (IOS.NE.0) THEN
@@ -1154,6 +1143,7 @@ C
      &              BSKEYWORD(1:7) .EQ. 'NOBASIS') THEN
                   IBSFLAG = 1
                   IQM(I,1) = 0
+                  IZATOM(I) = 0
                ELSE IF ( BSKEYWORD(1:6) .EQ. 'INTGRL' ) THEN
                   IBSFLAG = 1
                   READ (MLINE(NMLINE)(13:),*,IOSTAT=IOS)
@@ -1684,13 +1674,14 @@ C
                  IF(NHTYP.GT.MXQN) GOTO 5000
                ENDIF
  300         CONTINUE
-           ENDIF
-C
-           DO 400 K = 1,NONT(I)
-              NOORBT(K+INUC) = NOORBTS
- 400       CONTINUE
-C       End of switch DALTON/DIRAC
+
+           ENDIF ! End of switch DALTON/DIRAC
         END IF 
+
+C       Point charge (i.e. NO ORBITALS) ?
+        DO K = 1,NONT(I)
+           NOORBT(K+INUC) = NOORBTS
+        END DO
 C
         DO ISET = 3, 4
 C
@@ -1905,7 +1896,7 @@ C
         CALL RECP_LNK_READCP(LUINFO,I,NONT(I),IPREAD)
 C
 C     End of loop over unique atom types
-  100 CONTINUE
+  100 CONTINUE !  DO 100 I = 1, NONTYP
 C
       RETURN
 C
@@ -2441,7 +2432,7 @@ C
          NUCLEI_IN_TYPE = 0
          DO 20 N = 1,NONT(I)
             ICENT  = ICENT + 1
-            NCHARG = NINT(CHARGE(ICENT))
+            NCHARG = IZATOM(ICENT)
             NCHTOT = NCHTOT + NUCDEG(ICENT)*NCHARG
             NUCLEI_IN_TYPE = NUCLEI_IN_TYPE + NUCDEG(ICENT)
    20    CONTINUE
@@ -5435,7 +5426,7 @@ C  /* Deck rdline */
 C
 C     Purpose: Read a line from MOLECULE.INP
 C
-C     We keep track of which line we've read last time (NMLN_LASTREAD).
+C     We keep track of which line we read last time (NMLN_LASTREAD).
 C     This allows some routines to read a line, check if it want to use
 C     that line, and then discard it by decrementing NMLINE.
 C     Note that we only allow decrements of one /jth-20000621.
@@ -5481,7 +5472,7 @@ C
 
          READ (LUINFO,'(A)',END=12,IOSTAT=IOS) MLINE(NMLINE)
 
-!miro print lenghty error message for debug purposes
+!miro print lengthy error message for debug purposes
          IF (IOS.NE.0) THEN
           WRITE(LUPRI,*) 
      &    'ERROR(subroutine RDLINE): Error in reading molecule.MOL. '

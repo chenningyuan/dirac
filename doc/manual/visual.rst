@@ -16,7 +16,7 @@ Sampling
 
 keyword(LIST)
 
-Calculate various densities in few points. Example (3 points; coordinates in
+Calculate various densities in few points. Scalar and vector densities are written to the standard output file. Example (3 points; coordinates in
 bohr)::
 
   .LIST
@@ -80,6 +80,9 @@ Example (coordinates in bohr)::
    0.0 10.0  0.0     !"top"
    200               !nr of points origin-"top"
 
+Scalar and vector densities are written to files ``plot.2d.scalar`` and ``plot.2d.vector``, respectively, and should be saved after calculation, e.g. ::
+
+   pam --get=plot.2d.scalar ...
 
 keyword(2D_INT)
 
@@ -105,6 +108,11 @@ Example (coordinates in bohr)::
   .3D
    40 40 40          ! 40 x 40 x 40 points
 
+Scalar and vector densities are written to files ``plot.3d.scalar`` and ``plot.3d.vector``, respectively, and should be saved after calculation, e.g. ::
+
+   pam --get=plot.3d.scalar ...
+   
+Scalar densities are also written to a Gaussian cube file ``plot.3d.cube``.
 
 keyword(3D_IMP)
 

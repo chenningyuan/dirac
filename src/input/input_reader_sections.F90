@@ -1157,6 +1157,14 @@
 
       call reset_available_kw_list()
 
+      if (kw_matches(word, '.REW_STRICT')) then
+         relcc_projectors_rew_strict = .true.
+      end if
+
+      if (kw_matches(word, '.REW_NOSTRICT')) then
+         relcc_projectors_rew_strict = .false.
+      end if
+
       if (kw_matches(word, '.REW_OCC')) then
          relcc_projectors_do_restricted_excitation_window = .true.
          call kw_read(word,  relcc_projectors_rew_occ_min_energy)
@@ -1171,7 +1179,19 @@
 
       if (kw_matches(word, '.CVS_CORE')) then
          relcc_projectors_do_core_valence_separation = .true.
-         call kw_read(word,  relcc_projectors_cvs_energy_threshold)
+         call kw_read(word,  relcc_projectors_rew_occ_max_energy)
+         relcc_projectors_rew_occ_min_energy = -huge(relcc_projectors_rew_occ_min_energy)
+         relcc_projectors_rew_virt_min_energy = -huge(relcc_projectors_rew_virt_min_energy)
+         relcc_projectors_rew_virt_max_energy = huge(relcc_projectors_rew_virt_min_energy)
+      end if
+
+      if (kw_matches(word, '.FCORE ')) then
+         relcc_projectors_frozen_core = .true.
+         call kw_read(word,  relcc_projectors_frozen_core_max_energy)
+      end if
+
+      if (kw_matches(word, '.NODOCC')) then
+         relcc_projectors_rew_remove_double_occupied = .true.
       end if
 
       call check_whether_kw_found(word, kw_section)

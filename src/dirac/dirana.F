@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1441,7 +1441,7 @@ C
       DIMENSION CMO(NBAS,NTOT,NZP),EIG(NTOT),IBEIG(NTOT),OCC(NMOL),
      &          BVEC(NTOT,NMOL,NZP),SMAT(NBAS,NBAS),NFRAGV(NREFS)
       DIMENSION NSTR(2,0:2,0:MAXREF),JREF(3,NREF),JMOL(3,NMOL),IPQ(NZP),
-     &          WORK(*)
+     &          WORK(LFREE)
 C
       KFRSAV = KFREE
       IMOL   = NREF+1
@@ -1452,7 +1452,8 @@ C
         CALL MEMGET('REAL',KAMAT,NTOT*NTOT*NZP,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KAMAT1,NTOT*NTOT,WORK,KFREE,LFREE)
       ELSE
-        KAMAT = KFREE
+        KAMAT  = KFREE
+        KAMAT1 = KFREE
       ENDIF
 C
 C     If requested, polarize reference using scheme of Knizia
@@ -3792,7 +3793,6 @@ C.......ntot   = nmol + nref
           CALL PRJINF(JMOL,IFRP,0,IVEC,NSTR,WORK(KVEC(IFRP,0)),
      &                NPSH(IFRP))
           NPTOT = NPTOT + NPSH(IFRP)
-          CALL MEMCHK('TESTTEST',WORK,1)
           IVEC=IVEC + NSTR(IFRP,0,0)
         ENDDO
         IF(KRMC_FLG.GT.0) THEN
@@ -3827,46 +3827,49 @@ C.....Analysis in terms of symmetry-adapted fragments
         NBDIM = 0
         NCDIM = 0
         DO IFRP = 1,NFSYM
-          KBUF   = KFREE
           NMOL   = NVECS(IFRP,2)
           NREF   = NVECS(IFRP,1)
-C.........ntot   = nmol + nref
           NTOT   = NVECS(IFRP,0)
           NBAS   = NFBAS(IFRP,0)
-          NBDIM  = NBDIM + NTOT*NMOL*NZ
-          NCDIM  = NCDIM + NBAS*NTOT*NZ
-          allocate(NFRAGV(NREFS))
-          allocate(OCC(NMOL))
-          allocate(JMOL(3,NMOL))
-          allocate(JREF(3,NREF))
-          CALL PRJINF(JMOL,IFRP,0,0,NSTR,WORK(KVEC(IFRP,0)),NPSH(IFRP))
-          IF(KRMC_FLG.GT.0) THEN
-            CALL DCOPY(NMOL,ESEL(IVOFF+NREF),1,OCC(IOCC),1)
-          ELSE
-            CALL SETOCC(NMOL,OCC,JMOL)
-          ENDIF
-          IVEC = 0
-          DO I = 1,NREFS
-            CALL PRJINF(JREF,IFRP,I,IVEC,NSTR,WORK(KVEC(IFRP,I)),
+          IF(NMOL*NREF.NE.0) THEN
+            KBUF   = KFREE
+C...........ntot   = nmol + nref
+            NBDIM  = NBDIM + NTOT*NMOL*NZ
+            NCDIM  = NCDIM + NBAS*NTOT*NZ
+            allocate(NFRAGV(NREFS))
+            allocate(OCC(NMOL))
+            allocate(JMOL(3,NMOL))
+            allocate(JREF(3,NREF))
+            CALL PRJINF(JMOL,IFRP,0,0,NSTR,WORK(KVEC(IFRP,0)),
      &                  NPSH(IFRP))
-            NFRAGV(I) = NSTR(IFRP,0,I)
-            IVEC = IVEC + NSTR(IFRP,0,I)
-          ENDDO
-          CALL PRJAN1(CSEL(ICOFF),ESEL(IVOFF),IBSEL(IVOFF),OCC,
-     &                BVEC(IBOFF),NTOT,NREF,NMOL,NBAS,NFRAGV,FREP,
-     &                IPQTOQ(1,0),IFRP,NZ,JMOL,JREF,
-     &                NSTR,WORK(ISOFF),GROSS,POL(IFRP),IOPT,KRMC_FLG,
-     &                IPRPRJ,WORK,KFREE,LFREE)
+            IF(KRMC_FLG.GT.0) THEN
+              CALL DCOPY(NMOL,ESEL(IVOFF+NREF),1,OCC(IOCC),1)
+            ELSE
+              CALL SETOCC(NMOL,OCC,JMOL)
+            ENDIF
+            IVEC = 0
+            DO I = 1,NREFS
+              CALL PRJINF(JREF,IFRP,I,IVEC,NSTR,WORK(KVEC(IFRP,I)),
+     &                    NPSH(IFRP))
+              NFRAGV(I) = NSTR(IFRP,0,I)
+              IVEC = IVEC + NSTR(IFRP,0,I)
+            ENDDO
+            CALL PRJAN1(CSEL(ICOFF),ESEL(IVOFF),IBSEL(IVOFF),OCC,
+     &                  BVEC(IBOFF),NTOT,NREF,NMOL,NBAS,NFRAGV,FREP,
+     &                  IPQTOQ(1,0),IFRP,NZ,JMOL,JREF,
+     &                  NSTR,WORK(ISOFF),GROSS,POL(IFRP),IOPT,KRMC_FLG,
+     &                  IPRPRJ,WORK,KFREE,LFREE)
+            CALL MEMREL('ANAPR1.soloop',WORK,KBUF,KBUF,KFREE,LFREE)
+            deallocate(NFRAGV)
+            deallocate(OCC)
+            deallocate(JMOL)
+            deallocate(JREF)
+          ENDIF
           POLT  = POLT + POL(IFRP)
           ISOFF = ISOFF + N2BAS(IFRP)
           ICOFF = ICOFF + NBAS*NTOT*NZ
           IVOFF = IVOFF + NTOT
           IBOFF = IBOFF + NTOT*NMOL*NZ
-          CALL MEMREL('ANAPR1.soloop',WORK,KBUF,KBUF,KFREE,LFREE)
-          deallocate(NFRAGV)
-          deallocate(OCC)
-          deallocate(JMOL)
-          deallocate(JREF)
         ENDDO
  5      IF(NFSYM.EQ.2) THEN
           CALL HEADER('Total gross contributions:',-1)

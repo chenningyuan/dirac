@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,11 +19,6 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 !
-#ifdef HAVE_MKL_BLAS
-!radovan: workaround for strange crash when using MKL zdotc
-#define ZDOTC z_dot_c
-#define zdotc z_dot_c
-#endif
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !      ****  Diagonalization Routines for the RELADC package  ****
