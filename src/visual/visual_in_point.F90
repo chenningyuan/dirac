@@ -463,15 +463,15 @@ contains
                   result(3) = result(3) - matrix_33(1, 2) + matrix_33(2, 1)
                end if
                if (visual_cfg_property(imat) == iq_gradj) then
-                  result(4)  = result(4)  + matrix_33(1, 1)  ! xx
-                  result(5)  = result(5)  + matrix_33(1, 2)  ! xy
-                  result(6)  = result(6)  + matrix_33(1, 3)  ! xz
-                  result(7)  = result(7)  + matrix_33(2, 1)  ! yx
-                  result(8)  = result(8)  + matrix_33(2, 2)  ! yy
-                  result(9)  = result(9)  + matrix_33(2, 3)  ! yz
-                  result(10) = result(10) + matrix_33(3, 1)  ! zx
-                  result(11) = result(11) + matrix_33(3, 2)  ! zy
-                  result(12) = result(12) + matrix_33(3, 3)  ! zz
+                  result(4)  = result(4)  + matrix_33(1, 1)  ! xx: d(jx)/dx
+                  result(5)  = result(5)  + matrix_33(2, 1)  ! xy: d(jx)/dy
+                  result(6)  = result(6)  + matrix_33(3, 1)  ! xz: d(jx)/dz
+                  result(7)  = result(7)  + matrix_33(1, 2)  ! yx: d(jy)/dx
+                  result(8)  = result(8)  + matrix_33(2, 2)  ! yy: d(jy)/dy
+                  result(9)  = result(9)  + matrix_33(3, 2)  ! yz: d(jy)/dz
+                  result(10) = result(10) + matrix_33(1, 3)  ! zx: d(jz)/dx
+                  result(11) = result(11) + matrix_33(2, 3)  ! zy: d(jz)/dy
+                  result(12) = result(12) + matrix_33(3, 3)  ! zz: d(jz)/dz
                end if
             end if
 
