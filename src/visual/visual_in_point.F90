@@ -419,10 +419,14 @@ contains
                end if
             end if
 
-!           divergence or curl of current density
+!           divergence or curl or gradient of current density
             if ((visual_cfg_property(imat) == iq_divj)  .or.  &
                 (visual_cfg_property(imat) == iq_rotj)  .or.  &
                 (visual_cfg_property(imat) == iq_gradj)) then
+
+               matrix_33 = 0.d0
+               temp_33   = 0.d0
+               v    = 0.d0
 
                if (levyle) then
                   print *, 'error: Levy-Leblond divj and rotj not implemented'
@@ -440,7 +444,7 @@ contains
 
                if (visual_cfg_london .and. .not. visual_cfg_london_skip_direct) then
                   if (levyle) then
-                     print *, 'error: Levy-Leblond divj and rotj not implemented'
+                     print *, 'error: Levy-Leblond divj and rotj and gradj not implemented'
                      stop
                   else
                      call get_gjblao(visual_cfg_london_component, &
@@ -458,6 +462,7 @@ contains
                   result(0) = result(0) + matrix_33(1, 1) + matrix_33(2, 2) + matrix_33(3, 3)
                end if
                if (visual_cfg_property(imat) == iq_rotj) then
+                  ! gosia: i think the signs should be reversed here (to test):
                   result(1) = result(1) - matrix_33(2, 3) + matrix_33(3, 2)
                   result(2) = result(2) - matrix_33(3, 1) + matrix_33(1, 3)
                   result(3) = result(3) - matrix_33(1, 2) + matrix_33(2, 1)

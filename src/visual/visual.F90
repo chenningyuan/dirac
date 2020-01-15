@@ -702,7 +702,7 @@ contains
 
          write(lupri, *)
          if (visual_cfg_tensor) then
-           write(lupri, '(a8, 2a14, a18, a32, 2a26)') &
+           write(lupri, '(a8, 2a14, a18, a32, 11a26)') &
               'r_x',                                  &
               'r_y',                                  &
               'r_z',                                  &
@@ -719,25 +719,6 @@ contains
               'zx-component',                         &
               'zy-component',                         &
               'zz-component'
-           write(lupri, *)
-           
-           do i = 1, visual_cfg_nr_points_in_list
-              call get_quantity_in_point(visual_cfg_nr_dmat,        &
-                                         D,                         &
-                                         D_0,                       &
-                                         visual_cfg_xyz_list(i, 1), &
-                                         visual_cfg_xyz_list(i, 2), &
-                                         visual_cfg_xyz_list(i, 3), &
-                                         ao,                        &
-                                         buffer,                    &
-                                         q)
-           
-              write(lupri, '(3e14.6, 13ES26.16E3)') &
-                 visual_cfg_xyz_list(i, 1),        &
-                 visual_cfg_xyz_list(i, 2),        &
-                 visual_cfg_xyz_list(i, 3),        &
-                 q(0:12, 1)
-           end do
          else
            write(lupri, '(a8, 2a14, a18, a32, 2a26)') &
               'r_x',                                  &
@@ -747,26 +728,35 @@ contains
               'x-component',                          &
               'y-component',                          &
               'z-component'
-           write(lupri, *)
+         end if
+
+         write(lupri, *)
            
-           do i = 1, visual_cfg_nr_points_in_list
-              call get_quantity_in_point(visual_cfg_nr_dmat,        &
-                                         D,                         &
-                                         D_0,                       &
-                                         visual_cfg_xyz_list(i, 1), &
-                                         visual_cfg_xyz_list(i, 2), &
-                                         visual_cfg_xyz_list(i, 3), &
-                                         ao,                        &
-                                         buffer,                    &
-                                         q)
+         do i = 1, visual_cfg_nr_points_in_list
+           call get_quantity_in_point(visual_cfg_nr_dmat,        &
+                                      D,                         &
+                                      D_0,                       &
+                                      visual_cfg_xyz_list(i, 1), &
+                                      visual_cfg_xyz_list(i, 2), &
+                                      visual_cfg_xyz_list(i, 3), &
+                                      ao,                        &
+                                      buffer,                    &
+                                      q)
            
-              write(lupri, '(3e14.6, 4ES26.16E3)') &
+           if (visual_cfg_tensor) then
+             write(lupri, '(3e14.6, 13ES26.12E3)') &
                  visual_cfg_xyz_list(i, 1),        &
                  visual_cfg_xyz_list(i, 2),        &
                  visual_cfg_xyz_list(i, 3),        &
-                 q(0:3, 1)
-           end do
-         end if
+                 q(0:12, 1)
+           else
+             write(lupri, '(3e14.6, 4ES26.12E3)') &
+                visual_cfg_xyz_list(i, 1),        &
+                visual_cfg_xyz_list(i, 2),        &
+                visual_cfg_xyz_list(i, 3),        &
+                q(0:3, 1)
+           end if
+         end do
            
          write(lupri, *)
          call prsymb(lupri, '-', 100, 0)
