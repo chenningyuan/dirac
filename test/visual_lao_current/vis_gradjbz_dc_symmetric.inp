@@ -18,10 +18,10 @@
  1.0  1.0  0.0
 -1.0 -1.0  0.0
 -1.0  1.0  0.0
-.J
- PAMXVC 1
-.J
- PAMXVC 2
+#.J
+# PAMXVC 1
+#.J
+# PAMXVC 2
 .GRADJ
  PAMXVC 1
 .GRADJ
