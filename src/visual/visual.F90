@@ -86,6 +86,8 @@ contains
     logical              :: natorb_found
     logical, external    :: fndlab
 
+    integer              :: q_max_dim
+
     integer :: i, j, off_ij, off_iz, off_ij_s, off_ij_e, jrdmo
     type(matrix) :: D_mo_dagger, TP, TM, T
     logical, allocatable :: matrix_is_unperturbed(:)
@@ -398,6 +400,10 @@ contains
 
 !      collect matrices for identical densities to save time
        if (visual_cfg_property(imat) /= iq_elf) then
+       !if (visual_cfg_property(imat) /= iq_elf .and. visual_cfg_property(imat) /= iq_gradj) then
+       ! gosia TODO: i need to figure out a better way to sum up contribs involving the same densities
+       ! for a moment it's messing up the "GRADJ" calculations if done in the same input as "J" calculations
+
 !         elf has nonlinear dependence
           j = visual_cfg_property_to_matrix(visual_cfg_property(imat))
           if (j == 0) then
@@ -452,6 +458,11 @@ contains
 
 !   plot and integrate
 !   ==================
+    if (visual_cfg_tensor) then
+      q_max_dim=12
+    else
+      q_max_dim=3
+    end if
 
     if (visual_cfg_nics) then
       write(*,*)"VISUAL: nics value in ", visual_cfg_nics_origin(1), &
@@ -474,7 +485,8 @@ contains
                                D,                  &
                                D_0,                &
                                ao,                 &
-                               buffer)
+                               buffer, &
+                               q_max_dim)
     end if
     call timtxt('>>>> time used in integration:', (second() - time_start), lupri)
 
@@ -507,6 +519,7 @@ contains
       real(8)              :: buffer(*)
 !     --------------------------------------------------------------------------
       real(8), allocatable :: q(:, :)
+      integer              :: q_max_dim
       real(8), allocatable :: atom_xyz(:, :)
       real(8)              :: step_3d(3, 0:3)
       integer              :: i, j, k, l, m, istep, n
@@ -548,7 +561,13 @@ contains
       if (visual_cfg_ncube(3) > 0) then
          i = visual_cfg_ncube(3)
       end if
-      allocate(q(0:12, i))
+      if (visual_cfg_tensor) then
+        q_max_dim=12
+        allocate(q(0:12, i))
+      else
+        q_max_dim=3
+        allocate(q(0:3, i))
+      end if
 
       allocate(atom_xyz(4, nucdep))
 
@@ -741,6 +760,7 @@ contains
                                       visual_cfg_xyz_list(i, 3), &
                                       ao,                        &
                                       buffer,                    &
+                                      q_max_dim,                 &
                                       q)
            
            if (visual_cfg_tensor) then
@@ -780,6 +800,7 @@ contains
                                        r(3),               &
                                        ao,                 &
                                        buffer,             &
+                                       q_max_dim,          &
                                        q)
 
             write(lunit_line_scalar, '(3e18.10,ES26.16E3)')      &
@@ -834,6 +855,7 @@ contains
                                          r(3),               &
                                          ao,                 &
                                          buffer,             &
+                                         3,                  &
                                          qbuf)
               q(0:3,1) = q(0:3,1) + qbuf(0:3)*temp(i,4)
             end do
@@ -881,12 +903,13 @@ contains
                                           r(3),               &
                                           ao,                 &
                                           buffer,             &
+                                          3,                  &
                                           q)
 
                s       = q(0,   1)
                v(1:3)  = q(1:3, 1)
 !              gosia TODO add tensors
-               t(4:12) = q(4:12, 1)
+               !t(4:12) = q(4:12, 1)
 
                write(lunit_2d_scalar, '(2e18.10,ES26.16E3)')     &
                   ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2, &
@@ -931,6 +954,7 @@ contains
                                        r(3),               &
                                        ao,                 &
                                        buffer,             &
+                                       q_max_dim,          &
                                        w)
 
             write(lunit_3d_vector, '(6e13.5)') &
@@ -968,6 +992,7 @@ contains
                                        r(3),               &
                                        ao,                 &
                                        buffer,             &
+                                       q_max_dim,          &
                                        w, &
                                        jb_input=v)
 
@@ -1189,6 +1214,7 @@ contains
                                                 r(3),               &
                                                 ao,                 &
                                                 buffer,             &
+                                                3,                  &
                                                 q(0, kcube))
 
                      write(lunit_3d_vector, '(3e13.5,3ES26.16E3)') &

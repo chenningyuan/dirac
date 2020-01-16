@@ -38,7 +38,7 @@ module visual_integrate
 
 contains
 
-      subroutine visual_integration(nr_dmat, D, D_0, ao, buffer)
+      subroutine visual_integration(nr_dmat, D, D_0, ao, buffer,QUANTITY_INTEGRAL_MAX_DIM)
 
 #include "implicit.h"
 #include "priunit.h"
@@ -48,11 +48,12 @@ contains
       type(matrix)        :: D(nr_dmat)
       real(8), intent(in) :: ao(*)
       real(8), intent(in) :: buffer(*)
+      integer, intent(in) :: QUANTITY_INTEGRAL_MAX_DIM
 
       type(matrix)        :: D_0
 
-      dimension QUANTITY_INTEGRAL(0:12), &
-                QUANTITY_INTEGRAL_LAST(0:12)
+      dimension QUANTITY_INTEGRAL(0:QUANTITY_INTEGRAL_MAX_DIM), &
+                QUANTITY_INTEGRAL_LAST(0:QUANTITY_INTEGRAL_MAX_DIM)
 
       real(8), allocatable :: x(:)
       real(8), allocatable :: y(:)
@@ -60,7 +61,7 @@ contains
       real(8), allocatable :: w(:)
       character(2) :: grid_orientation(3) = (/'xy', 'xz', 'yz'/)
 
-      CALL DZERO(QUANTITY_INTEGRAL,13)
+      CALL DZERO(QUANTITY_INTEGRAL, QUANTITY_INTEGRAL_MAX_DIM+1)
       if (visual_cfg_3d_integration) then
 
         CALL AROUND('3D numerical integration')
@@ -91,6 +92,7 @@ contains
                                 ao,                &
                                 x, y, z,           &
                                 buffer,            &
+                                quantity_integral_max_dim, &
                                 quantity_integral, &
                                 w,                 &
                                 nr_points)
@@ -106,7 +108,7 @@ contains
         close(interface_file_unit, status = 'keep')
 
         WRITE(LUPRI,'(A)')
-        if (visual_cfg_tensor) then
+        if (QUANTITY_INTEGRAL_MAX_DIM .eq. 12) then
           WRITE(LUPRI,'(A12,A25,2A20,9A25)') 'scalar', &
      &                                  'x-component', &
      &                                  'y-component', &
@@ -122,21 +124,21 @@ contains
      &                                  'zz-component'
           WRITE(LUPRI,'(A)')
           
-          WRITE(LUPRI,'(4E20.10)') QUANTITY_INTEGRAL(0), &
-     &                             QUANTITY_INTEGRAL(1), &
-     &                             QUANTITY_INTEGRAL(2), &
-     &                             QUANTITY_INTEGRAL(3), &
-     &                             QUANTITY_INTEGRAL(4), &
-     &                             QUANTITY_INTEGRAL(5), &
-     &                             QUANTITY_INTEGRAL(6), &
-     &                             QUANTITY_INTEGRAL(7), &
-     &                             QUANTITY_INTEGRAL(8), &
-     &                             QUANTITY_INTEGRAL(9), &
-     &                             QUANTITY_INTEGRAL(10), &
-     &                             QUANTITY_INTEGRAL(11), &
-     &                             QUANTITY_INTEGRAL(12)
+          WRITE(LUPRI,'(13E20.10)') QUANTITY_INTEGRAL(0), &
+     &                              QUANTITY_INTEGRAL(1), &
+     &                              QUANTITY_INTEGRAL(2), &
+     &                              QUANTITY_INTEGRAL(3), &
+     &                              QUANTITY_INTEGRAL(4), &
+     &                              QUANTITY_INTEGRAL(5), &
+     &                              QUANTITY_INTEGRAL(6), &
+     &                              QUANTITY_INTEGRAL(7), &
+     &                              QUANTITY_INTEGRAL(8), &
+     &                              QUANTITY_INTEGRAL(9), &
+     &                              QUANTITY_INTEGRAL(10), &
+     &                              QUANTITY_INTEGRAL(11), &
+     &                              QUANTITY_INTEGRAL(12)
 
-        else
+        else if (QUANTITY_INTEGRAL_MAX_DIM .eq. 3) then
           WRITE(LUPRI,'(A12,A25,2A20)') 'scalar', &
      &                                  'x-component', &
      &                                  'y-component', &
@@ -149,6 +151,7 @@ contains
      &                             QUANTITY_INTEGRAL(3)
 
         end if
+
         WRITE(LUPRI,'(A)')
         CALL PRSYMB(LUPRI,'-',100,0)
 
@@ -204,6 +207,7 @@ contains
                                  AO, &
                                  x, y, z, &
                                  buffer, &
+                                 QUANTITY_INTEGRAL_MAX_DIM, &
                                  QUANTITY_INTEGRAL, &
                                  w, &
                                  NR_POINTS)
@@ -215,10 +219,26 @@ contains
 
          CLOSE(LUNIT,STATUS = 'DELETE')
 
-         WRITE(LUPRI,'(4E20.10)') QUANTITY_INTEGRAL(0), &
-     &                            QUANTITY_INTEGRAL(1), &
-     &                            QUANTITY_INTEGRAL(2), &
-     &                            QUANTITY_INTEGRAL(3)
+         if (QUANTITY_INTEGRAL_MAX_DIM .eq. 3) then
+           WRITE(LUPRI,'(4E20.10)') QUANTITY_INTEGRAL(0), &
+     &                              QUANTITY_INTEGRAL(1), &
+     &                              QUANTITY_INTEGRAL(2), &
+     &                              QUANTITY_INTEGRAL(3)
+         else if (QUANTITY_INTEGRAL_MAX_DIM .eq. 12) then
+           WRITE(LUPRI,'(13E20.10)') QUANTITY_INTEGRAL(0), &
+     &                              QUANTITY_INTEGRAL(1), &
+     &                              QUANTITY_INTEGRAL(2), &
+     &                              QUANTITY_INTEGRAL(3), &
+     &                              QUANTITY_INTEGRAL(4), &
+     &                              QUANTITY_INTEGRAL(5), &
+     &                              QUANTITY_INTEGRAL(6), &
+     &                              QUANTITY_INTEGRAL(7), &
+     &                              QUANTITY_INTEGRAL(8), &
+     &                              QUANTITY_INTEGRAL(9), &
+     &                              QUANTITY_INTEGRAL(10), &
+     &                              QUANTITY_INTEGRAL(11), &
+     &                              QUANTITY_INTEGRAL(12)
+         end if
 
          WRITE(LUPRI,'(A)')
          CALL PRSYMB(LUPRI,'-',100,0)
@@ -235,6 +255,7 @@ contains
                                     AO, &
                                     PX,PY,PZ, &
                                     buffer, &
+                                    QUANTITY_INTEGRAL_MAX_DIM, &
                                     QUANTITY_INTEGRAL, &
                                     WEIGHT, &
                                     NR_POINTS)
@@ -246,6 +267,7 @@ contains
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
 
       integer, intent(in) :: nr_dmat
+      integer, intent(in) :: QUANTITY_INTEGRAL_MAX_DIM
       type(matrix)        :: D(nr_dmat)
       type(matrix)        :: D_0
       dimension AO(*), &
@@ -253,9 +275,9 @@ contains
      &          PY(*), &
      &          PZ(*), &
      &          buffer(*), &
-     &          QUANTITY_INTEGRAL(0:12), &
+     &          QUANTITY_INTEGRAL(0:QUANTITY_INTEGRAL_MAX_DIM), &
      &          WEIGHT(*), &
-     &          QUANTITY(0:12)
+     &          QUANTITY(0:QUANTITY_INTEGRAL_MAX_DIM)
 
 
       DO IPOINT = 1,NR_POINTS
@@ -268,9 +290,10 @@ contains
                                       pz(ipoint),         &
                                       ao,                 &
                                       buffer,             &
+                                      QUANTITY_INTEGRAL_MAX_DIM, &
                                       quantity)
 
-        CALL DAXPY(13,WEIGHT(IPOINT),QUANTITY,1, &
+        CALL DAXPY(QUANTITY_INTEGRAL_MAX_DIM+1, WEIGHT(IPOINT),QUANTITY,1, &
      &                              QUANTITY_INTEGRAL,1)
       ENDDO
 
