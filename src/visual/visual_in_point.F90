@@ -63,6 +63,7 @@ contains
                                     pz,      &
                                     ao,      &
                                     buffer,  &
+                                    result_max_dim, &
                                     result,  &
                                     jb_input)
 
@@ -75,7 +76,8 @@ contains
       real(8), intent(in)  :: pz
       real(8)              :: ao(*)
       real(8)              :: buffer(*)
-      real(8), intent(out) :: result(0:12)
+      integer, intent(in)  :: result_max_dim
+      real(8), intent(out) :: result(0:result_max_dim)
       real(8), intent(in), optional    :: jb_input(3)
 !     --------------------------------------------------------------------------
       integer              :: imat, i, icomp
@@ -88,12 +90,23 @@ contains
       real(8)              :: density_gradient_squared
       real(8)              :: b, f, distance_to_origin
       real(8)              :: rx, ry, rz, r(3)
+
+      logical :: gosia_debug_print
 !     --------------------------------------------------------------------------
+      gosia_debug_print = .false.
 
       call get_ao(1, (/px/), (/py/), (/pz/), ao, buffer)
 
       result = 0.0d0
       do imat = 1, nr_dmat
+         if (gosia_debug_print) then
+           write(*, *) 'imat, visual_cfg_property(imat), result_max_dim: ', &
+                        imat, visual_cfg_property(imat), result_max_dim
+           write(*, *) 'result1 before: ', result(1)
+           if (result_max_dim > 3) then
+             write(*, *) 'result4 before: ', result(4)
+           end if
+         end if
          if (.not. visual_cfg_skip(imat)) then
 
 !           gamma5 density: \psi^\dag \gamma^5 \psi
@@ -383,9 +396,18 @@ contains
                                     (/px, py, pz/),                &
                                     v2)
                   end if
-                  v = v + v2
+                  v(1:3) = v(1:3) + v2(1:3)
                end if
                result(1:3) = result(1:3) + v(1:3)
+               if (gosia_debug_print) then
+                 ! gosia: "v2" contribution depends on D_0 - be careful when calculaing more than 1 density
+                 ! at once (see 'collect matrices for identical densities to save time' in visual.F90)
+                 write(*, *) 'after iq_j: visual_cfg_london_component, v2: ', visual_cfg_london_component, v2 
+                 write(*, *) 'result1 after iq_j: ', result(1)
+                 if (result_max_dim > 3) then
+                   write(*, *) 'result4 after iq_j: ', result(4)
+                 end if
+               end if
             end if
 
 !           spin density: \psi^\dag \Sigma \psi
@@ -424,10 +446,6 @@ contains
                 (visual_cfg_property(imat) == iq_rotj)  .or.  &
                 (visual_cfg_property(imat) == iq_gradj)) then
 
-               matrix_33 = 0.d0
-               temp_33   = 0.d0
-               v    = 0.d0
-
                if (levyle) then
                   print *, 'error: Levy-Leblond divj and rotj not implemented'
                   stop
@@ -455,7 +473,7 @@ contains
                                      (/px, py, pz/),              &
                                      temp_33)
                   end if
-                  matrix_33 = matrix_33 + temp_33
+                  matrix_33(1:3, 1:3) = matrix_33(1:3, 1:3) + temp_33(1:3, 1:3)
                end if
 
                if (visual_cfg_property(imat) == iq_divj) then
@@ -477,6 +495,14 @@ contains
                   result(10) = result(10) + matrix_33(1, 3)  ! zx: d(jz)/dx
                   result(11) = result(11) + matrix_33(2, 3)  ! zy: d(jz)/dy
                   result(12) = result(12) + matrix_33(3, 3)  ! zz: d(jz)/dz
+               end if
+               if (gosia_debug_print) then
+                ! its better not to run it with .J
+                ! see debug tests in visual_lao_current
+                 write(*, *) 'result1 after iq_gradj: ', result(1)
+                 if (result_max_dim > 3) then
+                   write(*, *) 'result4 after iq_gradj: ', result(4)
+                 end if
                end if
             end if
 
@@ -667,6 +693,14 @@ contains
 
             end if
 
+         end if
+         if (gosia_debug_print) then
+           write(*, *) 'imat, visual_cfg_property(imat), result_max_dim: ', &
+                        imat, visual_cfg_property(imat), result_max_dim
+           write(*, *) 'result1 after: ', result(1)
+           if (result_max_dim > 3) then
+             write(*, *) 'result4 after: ', result(4)
+           end if
          end if
       end do
 
