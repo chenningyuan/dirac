@@ -813,11 +813,13 @@ contains
                r(2),                                             &
                r(3),                                             &
                q(1:3, 1)
-            write(lunit_line_tensor, '(3e18.10,9ES26.16E3)')     &
-               r(1),                                             &
-               r(2),                                             &
-               r(3),                                             &
-               q(4:12, 1)
+            if (visual_cfg_tensor) then
+              write(lunit_line_tensor, '(3e18.10,9ES26.16E3)')     &
+                 r(1),                                             &
+                 r(2),                                             &
+                 r(3),                                             &
+                 q(4:12, 1)
+            end if
 
          end do
       end if
@@ -963,9 +965,11 @@ contains
             write(lunit_3d_scalar, '(4e13.5)') &
                r(1:3),                         &
                w(0)
-            write(lunit_3d_tensor, '(12e13.5)') &
-               r(1:3),                          &
-               w(4:12)
+            if (visual_cfg_tensor) then
+              write(lunit_3d_tensor, '(12e13.5)') &
+                 r(1:3),                          &
+                 w(4:12)
+            end if
 
          end do
  98      continue
@@ -1002,9 +1006,11 @@ contains
             write(lunit_3d_scalar, '(4e13.5)') &
                r(1:3),                         &
                w(0)
-            write(lunit_3d_tensor, '(12e13.5)') &
-               r(1:3),                         &
-               w(4:12)
+            if (visual_cfg_tensor) then
+              write(lunit_3d_tensor, '(12e13.5)') &
+                 r(1:3),                         &
+                 w(4:12)
+            end if
 
          end do
  99      continue
@@ -1133,7 +1139,11 @@ contains
          write(lunit_3d_vector_vtk, '(a)')
          write(lunit_3d_vector_vtk, '(a)')       'VECTORS vectors float'
 
-         allocate(temp2(visual_cfg_ncube(1), visual_cfg_ncube(2), visual_cfg_ncube(3), 3))
+         if (visual_cfg_tensor) then
+           allocate(temp2(visual_cfg_ncube(1), visual_cfg_ncube(2), visual_cfg_ncube(3), 12))
+         else
+           allocate(temp2(visual_cfg_ncube(1), visual_cfg_ncube(2), visual_cfg_ncube(3), 3))
+         end if
 
          if (visual_cfg_3d_fast) then
             if (visual_cfg_ncube(3) > max_batch_length) then
@@ -1214,7 +1224,7 @@ contains
                                                 r(3),               &
                                                 ao,                 &
                                                 buffer,             &
-                                                3,                  &
+                                                q_max_dim,          &
                                                 q(0, kcube))
 
                      write(lunit_3d_vector, '(3e13.5,3ES26.16E3)') &
@@ -1223,8 +1233,16 @@ contains
                      write(lunit_3d_scalar, '(3e13.5,ES26.16E3)')  &
                         r(1:3),                                    &
                         q(0, kcube)
-!gosia TODO: adapt for tensor
-                     temp2(icube, jcube, kcube, 1:3) = q(1:3, kcube)
+                     if (visual_cfg_tensor) then
+                       write(lunit_3d_tensor, '(3e13.5,9ES26.16E3)')  &
+                          r(1:3),                                    &
+                          q(4:12, kcube)
+                     end if
+                     if (visual_cfg_tensor) then
+                       temp2(icube, jcube, kcube, 1:12) = q(1:12, kcube)
+                     else
+                       temp2(icube, jcube, kcube, 1:3) = q(1:3, kcube)
+                     end if
                   end do
                end if
                write(lunit_3d_cube, '(6ES26.16E3)')  &
