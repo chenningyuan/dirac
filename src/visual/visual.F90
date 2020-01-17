@@ -764,13 +764,13 @@ contains
                                       q)
            
            if (visual_cfg_tensor) then
-             write(lupri, '(3e14.6, 13ES26.12E3)') &
+             write(lupri, '(16ES18.8E3)') &
                  visual_cfg_xyz_list(i, 1),        &
                  visual_cfg_xyz_list(i, 2),        &
                  visual_cfg_xyz_list(i, 3),        &
                  q(0:12, 1)
            else
-             write(lupri, '(3e14.6, 4ES26.12E3)') &
+             write(lupri, '(7ES18.8E3)') &
                 visual_cfg_xyz_list(i, 1),        &
                 visual_cfg_xyz_list(i, 2),        &
                 visual_cfg_xyz_list(i, 3),        &
@@ -803,18 +803,18 @@ contains
                                        q_max_dim,          &
                                        q)
 
-            write(lunit_line_scalar, '(3e18.10,ES26.16E3)')      &
+            write(lunit_line_scalar, '(4ES18.8E3)')      &
                r(1),                                             &
                r(2),                                             &
                r(3),                                             &
                q(0, 1)
-            write(lunit_line_vector, '(3e18.10,3ES26.16E3)')     &
+            write(lunit_line_vector, '(6ES18.8E3)')     &
                r(1),                                             &
                r(2),                                             &
                r(3),                                             &
                q(1:3, 1)
             if (visual_cfg_tensor) then
-              write(lunit_line_tensor, '(3e18.10,9ES26.16E3)')     &
+              write(lunit_line_tensor, '(12ES18.8E3)')     &
                  r(1),                                             &
                  r(2),                                             &
                  r(3),                                             &
@@ -959,14 +959,14 @@ contains
                                        q_max_dim,          &
                                        w)
 
-            write(lunit_3d_vector, '(6e13.5)') &
+            write(lunit_3d_vector, '(6ES18.8E3)') &
                r(1:3),                         &
                w(1:3)
-            write(lunit_3d_scalar, '(4e13.5)') &
+            write(lunit_3d_scalar, '(4ES18.8E3)') &
                r(1:3),                         &
                w(0)
             if (visual_cfg_tensor) then
-              write(lunit_3d_tensor, '(12e13.5)') &
+              write(lunit_3d_tensor, '(12ES18.8E3)') &
                  r(1:3),                          &
                  w(4:12)
             end if
@@ -1000,14 +1000,14 @@ contains
                                        w, &
                                        jb_input=v)
 
-            write(lunit_3d_vector, '(6e13.5)') &
+            write(lunit_3d_vector, '(6ES18.8E3)') &
                r(1:3),                         &
                w(1:3)
-            write(lunit_3d_scalar, '(4e13.5)') &
+            write(lunit_3d_scalar, '(4ES18.8E3)') &
                r(1:3),                         &
                w(0)
             if (visual_cfg_tensor) then
-              write(lunit_3d_tensor, '(12e13.5)') &
+              write(lunit_3d_tensor, '(12ES18.8E3)') &
                  r(1:3),                         &
                  w(4:12)
             end if
@@ -1227,14 +1227,14 @@ contains
                                                 q_max_dim,          &
                                                 q(0, kcube))
 
-                     write(lunit_3d_vector, '(3e13.5,3ES26.16E3)') &
+                     write(lunit_3d_vector, '(6ES18.8E3)') &
                         r(1:3),                                    &
                         q(1:3, kcube)
-                     write(lunit_3d_scalar, '(3e13.5,ES26.16E3)')  &
+                     write(lunit_3d_scalar, '(4ES18.8E3)')  &
                         r(1:3),                                    &
                         q(0, kcube)
                      if (visual_cfg_tensor) then
-                       write(lunit_3d_tensor, '(3e13.5,9ES26.16E3)')  &
+                       write(lunit_3d_tensor, '(12ES18.8E3)')  &
                           r(1:3),                                    &
                           q(4:12, kcube)
                      end if
@@ -1245,7 +1245,7 @@ contains
                      end if
                   end do
                end if
-               write(lunit_3d_cube, '(6ES26.16E3)')  &
+               write(lunit_3d_cube, '(6ES18.8E3)')  &
                   (q(0, m), m = 1, visual_cfg_ncube(3))
             end do
          end do
@@ -1260,7 +1260,7 @@ contains
          do kcube = 1, visual_cfg_ncube(3)
             do jcube = 1, visual_cfg_ncube(2)
                do icube = 1, visual_cfg_ncube(1)
-                  write(lunit_3d_vector_vtk, '(3e13.5)') &
+                  write(lunit_3d_vector_vtk, '(3ES18.8E3)') &
                      temp2(icube, jcube, kcube, 1:3)
                end do
             end do
