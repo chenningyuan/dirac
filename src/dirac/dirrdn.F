@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2075,7 +2075,7 @@ C
      &         CALL QUIT('*SCF error: negative number of '//
      &                   'closed shell electrons!')
             IF (MOD(NELEC_DHF(IFRP),2).NE.0)
-     &         CALL QUIT('*SCF erro: odd even number of '//
+     &         CALL QUIT('*SCF error: odd even number of '//
      &                   'closed shell electrons!')
             NISH_DHF(IFRP)  = NELEC_DHF(IFRP)/2
          END DO

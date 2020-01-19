@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -419,7 +419,7 @@ C*****************************************************************************
 #include "dummy.h"
 #include "maxorb.h"
       PARAMETER(D0=0.0D0)
-      PARAMETER (NDIR = 3, NTABLE = 27)
+      PARAMETER (NDIR = 3, NTABLE = 28)
 C
       LOGICAL SET, NEWDEF,LSPES,LSPES2,LSPES4
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
@@ -444,7 +444,7 @@ C
      &            '.NO2IND','.NO4IND','.2INDEX','.INTFL2','.INTFL4',
      &            '.PRPTRA','.SCREEN','.RCORBS','.NOMDCI','.NOSCAT',
      &            '.PAR4BS','.SCATTE','.MDCINT','.HSCC  ','.HTSORT',
-     &            '.ASCII ','.MOFILE'/
+     &            '.ASCII ','.MOFILE','.CORE2 '/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -492,8 +492,10 @@ c
       ITRA_INTFL2 = -8
       ITRA_INTFL4 = -8
       IPAR4BS = -1
+      NCORE2 = -1
       DO I = 1,NFSYM
         WRITE(TRA_CORSTR(I),'(A)') 'not specified'
+        WRITE(TRA_CORSTR2(I),'(A)') 'not specified'
         WRITE(TRA_INDSTR(I),'(A)') 'energy -10.0 20.0 1.0'
         DO J = 1,2
           WRITE(TRA2_INDSTR(J,I),'(A)') 'energy -10.0 20.0 1.0'
@@ -566,7 +568,7 @@ C         if reading input from a terminal
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
-     &                      16,17,18,19,20,21,22,23,24,25,26,27), I
+     &                      16,17,18,19,20,21,22,23,24,25,26,27,28), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -841,6 +843,16 @@ C&&&& MDCINT - Force writing of the MDCINT file in MOLFDIR format
 !      note: list directed read will ignore initial blanks, so MOFILE_TRAINP
 !            will always begin with the first non-blank character in input line.
                   READ(LUCMD,*) MOFILE_TRAINP
+               GO TO 100
+   28          CONTINUE
+C&&&& "CORE2 " - Range of open shell CORE orbitals in 2-index transformation module
+                  WRITE (LUPRI,'(A)') '* use open-shell core:'
+                  READ(LUCMD,*) NCORE2
+                  WRITE (LUPRI,'(I4,A)') NCORE2,' el. in'
+                  DO I=1,NFSYM
+                     READ(LUCMD,'(A)') TRA_CORSTR2(I)
+                     WRITE (LUPRI,'(A)') TRA_CORSTR2(I)
+                  ENDDO
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300

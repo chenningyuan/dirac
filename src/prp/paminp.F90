@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -466,8 +466,24 @@
          WRITE(LUPRI,'(I6,2A)') I,': ',PRP_WF(I)
       END DO
 
-!MI ...for magnetic susceptibility, NMR shielding constants and rotational
-!MI   g_tensors operator centers might be changed
+!=========================================================================
+!iaa  Set the molecular CM as gauge origin (origin of L angular moment)
+!     for spin-rotations and rotational molecular g-tensors
+!=========================================================================
+      if (spinro.or.rotg) then
+! ... make the center of mass the gauge and dipole origin (default in dalton)
+! ... call the routine in abacus/hergp.F
+        CALL CMMASS(GEOM,MASS,NAT,ISOTOP,IPRPRP)
+        CALL DCOPY(3,CMXYZ,1,GAGORG,1)
+        CALL DCOPY(3,GAGORG,1,DIPORG,1)
+        write(LUPRI,'(//,1X,A)')                                        &
+     &'Gauge & dipole origin are changed to the molecular CM position'
+        write(LUPRI,'(/A,9X,3F20.15)')                                  &
+     &  ' Gauge & dipole origin (a.u.):',(GAGORG(I), I = 1, 3)
+      end if
+!=========================================================================
+!MI   For magnetic susceptibilities, NMR shielding constants, rotational
+!MI   g-tensors and spin-rotation tensors operator centers might be changed
       WRITE(LUPRI,'(1X,A)')                                             &
      &'These initial settings of center and origins'//                  &
      &' might be changed later:'
@@ -590,21 +606,6 @@
       IF(DOESR) CALL ESRINP(WORD,.TRUE.,WORK,LWORK)
 #endif
 
-!=========================================================================
-!iaa  Set the molecular CM as gauge origin (origin of L angular moment)
-!     for spin-rotations and molecular g-tensors
-!=========================================================================
-      if (spinro.or.rotg) then
-! ... make the center of mass the gauge and dipole origin (default in dalton)
-! ... call the routine in abacus/hergp.F
-        CALL CMMASS(GEOM,MASS,NAT,ISOTOP,IPRPRP)
-        CALL DCOPY(3,CMXYZ,1,GAGORG,1)
-        CALL DCOPY(3,GAGORG,1,DIPORG,1)
-        write(LUPRI,'(//,1X,A)')                                        &
-     &'Gauge & dipole origin are changed to the molecular CM position'
-        write(LUPRI,'(/A,9X,3F20.15)')                                  &
-     &  ' Gauge & dipole origin (a.u.):',(GAGORG(I), I = 1, 3)
-      end if
 !===========================================================================
 ! Define special operators for the list of properties programmed in DIRAC
 !===========================================================================
