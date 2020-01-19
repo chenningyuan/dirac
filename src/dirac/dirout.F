@@ -977,7 +977,7 @@ C
 C     Prints eigenvalues - new version.
 C
 C     Written by J. Thyssen - 26 Aug 1999
-C     Modified by A. SUnaga - 20 Sep 2018 for Atomic output
+C     Modified by A. Sunaga - 20 Sep 2018 for Atomic output
 C
 C***********************************************************************
 #include "implicit.h"
