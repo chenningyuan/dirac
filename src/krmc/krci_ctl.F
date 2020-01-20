@@ -52,6 +52,7 @@ C                    Added CI keyword EEDM   Timo Fleig     30.04.2012
 C                    Added CI keyword MHYP   Malaya Nayak   28.08.2013
 C                    Added CI keyword ENSPS  Malaya Nayak   27.02.2014
 C                    Added CI keyword TERSE  Timo Fleig     29.03.2016
+C                    Added CI keyword NMQM   Malaya Nayak   28.09.2018
 C
 C***********************************************************************
       use symmetry_setup_krci
@@ -97,8 +98,8 @@ C
      &            '.CASSCF','.TRDM  ','.OMEGAQ','.THRECI','.CHECKP',
      &            '.USE PB','.GENFOC','.TRA NO','.LOWSRT','.SEL ST',
      &            '.DIPMOM','.MCANA ','.GAS SH','.SVRONO','.SVRONX',
-     &            '.EEDM  ','.MHYP  ','.ENSPS ','.XXXXXX','.XXXXXX',
-     &            '.XXXXXX','.TERSE '/
+     &            '.EEDM  ','.MHYP  ','.ENSPS ','.NMQM  ','.XXXXXX',
+     &            '.XXXXXX','.TERSE '/ !MKN
       DATA SET/.FALSE./
       character (len= 4)              :: symmetry_str
       character (len= 4)              :: symmetry_str1
@@ -235,6 +236,7 @@ C     ... in "krciprop.h"
       DOEEDM_KRCI   = .FALSE.
       DOMHYP_KRCI   = .FALSE.
       DOENSPS_KRCI  = .FALSE.
+      DONMQM_KRCI   = .FALSE. !MKN
 C     ... in dcbopt.h
       ISHMEM_TYPE =  - 1
 C
@@ -307,7 +309,7 @@ C&&& .MAX CI ITER...: maximum number of initial CI iterations.
 C&&& .OPERATOR: define one-electron operator to use in
 C               CI property calculation
                   CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                        WORK,LWORK,IPRKRCI)
+     &                        IPRKRCI)
                   CALL OP1IND('KRCIPR',LUCIINDTRP,LPROP_KRCI,
      &                        NPROP_KRCI,INDXPR,MXPROP_KRCI)
                   DOPROP_KRCI = .TRUE.
@@ -856,7 +858,7 @@ C&&&  EEDM  :  calculate electron EDM effective electric field
    47          CONTINUE
 C&&&  MHYP  : calculate magnetic hyperfine structure constants
 C           : alpha X electric field matrix elements
-               doprop_krci   = .true.
+               doprop_krci = .true.
                domhyp_krci = .true.
                READ(LUCMD,*) (VKRCI_NUCSPIN(IATOM),IATOM=1,NUCIND,1)
                READ(LUCMD,*) (VKRCI_NUCMAGMOM(IATOM),IATOM=1,NUCIND,1)
@@ -865,12 +867,17 @@ CMKN The mHYP is newly implemented following eEDM
    48          CONTINUE
 C&&&  ENSPS : calculate electron-Nucleus scalar-pseudoscalar P,T-odd
 C           : interection constant i x gamma^0 gamma^5 \rho_N(r_e)
-               doprop_krci   = .true.
+               doprop_krci  = .true.
                doensps_krci = .true.
                GO TO 100
 CMKN The eNSPS is newly implemented following eEDM
    49          CONTINUE
+C&&&  NMQM : calculate nuclear Magnetic Quadruple Moment interaction constant
+C          : (\alpha X r)_z.(r_z) (i.e. \alpha X Electric Field Gradient)
+               doprop_krci = .true.
+               donmqm_krci = .true.
                GO TO 100
+CMKN The nMQM is newly implemented following mHYP
    50          CONTINUE
                GO TO 100
    51          CONTINUE
@@ -1251,9 +1258,10 @@ C       subgroup notation
      &     ' one-electron operators: '
         if(dooscillst.or.dodipmom_krci)call def_oscill(0)
         if(dojzexp)                    call def_omegaquant(0)
-        if(doeedm_krci)                call def_eedm(work,lwork,NTEST)
-        if(domhyp_krci)                call def_mhyp(work,lwork,NTEST)
-        if(doensps_krci)               call def_ensps(work,lwork,NTEST)
+        if(doeedm_krci)                call def_eedm(iprkrci,work,lwork)
+        if(domhyp_krci)                call def_mhyp(iprkrci,work,lwork)
+        if(doensps_krci)              call def_ensps(iprkrci,work,lwork)
+        if(donmqm_krci)                call def_nmqm(iprkrci,work,lwork) !MKN
         DO I = 1, NPROP_KRCI
 C         ... initialize operator symmetry array
           ISYMOPPRP_KRCI(I) = 0
@@ -1282,6 +1290,10 @@ C
       if(doensps_krci)then
         write(lupri,'(/a)') ' * Calculation of electron-Nucleus'//
      &                     ' Scalar-Pseudoscalar matrix elements'
+      end if
+      if(donmqm_krci)then
+        write(lupri,'(/a)') ' * Calculation of the Nuclear MQM'//
+     &                     ' P,T-odd interaction matrix elements' !MKN
       end if
       IF(DOJZEXP) THEN
         WRITE(LUPRI,'(/A)') ' * Determine Omega quantum number for'//
