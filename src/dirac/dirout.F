@@ -947,10 +947,11 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-      DIMENSION EIG(*),IBEIG(*),WORK(LWORK)
+#include "dcborb.h"
+C
+      DIMENSION EIG(NORBT),IBEIG(NORBT),WORK(LWORK)
       LOGICAL PRPOS
 C
-#include "dcborb.h"
 C
       CALL QENTER('PREIGN')
 #include "memint.h"
@@ -991,15 +992,14 @@ C***********************************************************************
 #include "dcbham.h"
 #include "dcbibt.h"            
 C     
-      DIMENSION EIG(*),IBEIG(*),EIGBUF(*),
-     &          IFIRST(*),NMULT(*)
+      DIMENSION EIG(NORBT),IBEIG(NORBT),EIGBUF(NORBT),
+     &          IFIRST(NORBT),NMULT(NORBT)
       CHARACTER FMTE*6,FMTP*6,MXFORM*6, TLINE*(5*NCOL+5),
      &          TLINE2*(6*NCOL+5),TLINE3*(6*NCOL+5)
       CHARACTER*4 NAME_SUB (-MAX_SUB_BL:MAX_SUB_BL)
       CHARACTER*6 NAME_SUB2(-MAX_SUB_BL:MAX_SUB_BL),
      &            NAME_SUB3(-MAX_SUB_BL:MAX_SUB_BL)! for MJ of ATOMIC
       CHARACTER SPDCAR*1 ! type declaration for external function
-      DIMENSION IOFF(2),ISS(0:7)
       DIMENSION ISHEL_SUB(3+MXOPEN,MAX_SUB_BL,2)
       LOGICAL   PRPOS
 C
@@ -1033,29 +1033,27 @@ C
 C       Print eigenvalues
 C
         DO IFSYM = 1,NFSYM
-          IOFF(IFSYM) = IORB(IFSYM)+NPSH(IFSYM)+NISH(IFSYM)+1
-        END DO
-        DO IFSYM = 1,NFSYM
           WRITE(LUPRI,'(/2A)') '* Fermion symmetry ',FREP(IFSYM)
 C
 C         Closed shell eigenvalues
 C
+          IOFF = IORB(IFSYM)+NPSH(IFSYM)
           IF (NISH(IFSYM) .GT. 0) THEN
             WRITE(LUPRI,'(2X,A,F6.4)') '* Closed shell, f = ',DF(0)
-            CALL PREIGN2(EIG(IORB(IFSYM)+NPSH(IFSYM)+1),
-     &                   IFIRST,NMULT,NISH(IFSYM),FMTE)
+            CALL PREIGN2(EIG(IOFF+1),IFIRST,NMULT,NISH(IFSYM),FMTE)
           END IF
 C
 C         Open shell eigenvalues
 C
+          IOFF = IOFF+NISH(IFSYM)
           DO IOPEN = 1,NOPEN
             IF (NACSH(IFSYM,IOPEN) .GT. 0) THEN
               WRITE(LUPRI,'(2X,A,I1,A,F6.4)')
      &           '* Open shell #',IOPEN,', f = ',DF(IOPEN)
-              CALL PREIGN2(EIG(IOFF(IFSYM)),
-     &                     IFIRST,NMULT,NACSH(IFSYM,IOPEN),FMTE)
+              CALL PREIGN2(EIG(IOFF+1),IFIRST,NMULT,
+     &                     NACSH(IFSYM,IOPEN),FMTE)
+              IOFF = IOFF + NACSH(IFSYM,IOPEN)
             END IF
-            IOFF(IFSYM) = IOFF(IFSYM) + NACSH(IFSYM,IOPEN)
           END DO
 C
 C         Virtual eigenvalues
@@ -1063,8 +1061,7 @@ C
           IF (NSSH(IFSYM) .GT. 0)  THEN
             WRITE(LUPRI,'(2X,A,F6.4)')
      &            '* Virtual eigenvalues, f = ',D0
-            CALL PREIGN2(EIG(IORB(IFSYM)+NPSH(IFSYM)+NOCC(IFSYM)+1),
-     &                   IFIRST,NMULT,NSSH(IFSYM),FMTE)
+            CALL PREIGN2(EIG(IOFF+1),IFIRST,NMULT,NSSH(IFSYM),FMTE)
           END IF
 C
 C         Positronic eigenvalues
@@ -1080,29 +1077,24 @@ C
         END DO
       ELSE
 C
-C     Supersymmetry: linear symmetry and/or spinfree case
+C     Supersymmetry: linear/atomic symmetry and/or spinfree case
 C     ===================================================
 C
         DO IFSYM = 1, NFSYM
           DO ISUB = 1, N_SUB_BL(IFSYM)
 C
-C         Write identification of the blocks. At the moment we have only
-C         the spinfree or the linear symmetry case.
+C         Write identification of the blocks. 
 C
             ID = ID_SUB_BL(ISUB,IFSYM)
-            INDEX1 = 0 
-            INDEX2 = 0 
-            KP = 0 
-            MJ = 0 
-            IF (SPINFR) THEN
+            IF (SPINFR) THEN     ! Spinfree case
               WRITE(LUPRI,'(/2A)') '* Boson symmetry ',REP(ID)
-                   NAME_SUB(ID) = REP(ID)
-            ELSEIF(ATOMIC) THEN
+              NAME_SUB(ID) = REP(ID)
+            ELSEIF(ATOMIC) THEN  ! Atomic supersymmetry
               INDEX1 = INT(SQRT(dble(2*ABS(ID)) + 0.25D0) + 0.4999D0)
               INDEX2 = ABS(ID) - INDEX1*(INDEX1-1)/2
               KP     = INDEX1          * (-1)**(IFSYM+INDEX1+1)
               IF(NFSYM.EQ.1)THEN
-                  KP = ABS(KP) * ID/ABS(ID)
+                KP = ABS(KP) * ID/ABS(ID)
               ENDIF
               MJ     = (2*INDEX2 - 1) * (-1)**(INDEX2+1)
               J      = 2*ABS(KP) - 1
@@ -1117,7 +1109,7 @@ C
      &            ':  ',SPDCAR(LL),J,'/2',';',MJ,'/2'
               WRITE (NAME_SUB2(ID),'(A,I2,"/2")') SPDCAR(LL),J
               WRITE (NAME_SUB3(ID),'(I3,"/2")')MJ
-            ELSE       
+            ELSE                 ! Linear supersymmetry       
               WRITE(LUPRI,'(/A,I4,3A,I2,A)')
      &            '* Block',ISUB,' in ',FREP(IFSYM),
      &            ':  Omega = ',ABS(ID),'/2'
@@ -1125,9 +1117,9 @@ C
             ENDIF
 C
             NTOT = 0
-C...........Closed shell eigenvalues: pick eigenvalues of symmetry ISYM
-            CALL PCKEIG(EIG,IORB(IFSYM)+NPSH(IFSYM)+1,
-     &                IORB(IFSYM)+NPSH(IFSYM)+NISH(IFSYM),
+C...........Closed shell eigenvalues: pick eigenvalues of symmetry ID
+            IOFF = IORB(IFSYM)+NPSH(IFSYM)
+            CALL PCKEIG(EIG,IOFF+1,IOFF+NISH(IFSYM),
      &                IBEIG,ID,NEIG,EIGBUF)
             ISHEL_SUB(1,ISUB,IFSYM) = NEIG
 C
@@ -1136,11 +1128,10 @@ C
               WRITE(LUPRI,'(2X,A,F6.4)') '* Closed shell, f = ',DF(0)
               CALL PREIGN2(EIGBUF,IFIRST,NMULT,NEIG,FMTE)
             END IF
-C...........Open shell eigenvalues: pick eigenvalues of symmetry ISYM
-            IOFF(IFSYM) = IORB(IFSYM)+NPSH(IFSYM)+NISH(IFSYM)
+C...........Open shell eigenvalues: pick eigenvalues of symmetry ID
+            IOFF = IOFF+NISH(IFSYM)            
             DO IOPEN = 1,NOPEN
-              CALL PCKEIG(EIG,IOFF(IFSYM)+1,
-     &                    IOFF(IFSYM)+NACSH(IFSYM,IOPEN),
+              CALL PCKEIG(EIG,IOFF+1,IOFF+NACSH(IFSYM,IOPEN),
      &                    IBEIG,ID,NEIG,EIGBUF)
               ISHEL_SUB(1+IOPEN,ISUB,IFSYM) = NEIG
 C
@@ -1150,10 +1141,10 @@ C
      &              '* Open shell #',IOPEN,', f = ',DF(IOPEN)
                 CALL PREIGN2(EIGBUF,IFIRST,NMULT,NEIG,FMTE)
               END IF
-              IOFF(IFSYM) = IOFF(IFSYM) + NACSH(IFSYM,IOPEN)
+              IOFF = IOFF + NACSH(IFSYM,IOPEN)
             END DO
-C...........Virtual eigenvalues: pick eigenvalues of symmetry ISYM
-            CALL PCKEIG(EIG,IORB(IFSYM)+NPSH(IFSYM)+NOCC(IFSYM)+1,
+C...........Virtual eigenvalues: pick eigenvalues of symmetry ID
+            CALL PCKEIG(EIG,IOFF+1,
      &                  IORB(IFSYM)+NORB(IFSYM),IBEIG,ID,NEIG,EIGBUF)
             ISHEL_SUB(1+MXOPEN+1,ISUB,IFSYM) = NEIG
 C          
@@ -1163,7 +1154,7 @@ C
      &            '* Virtual eigenvalues, f = ',D0
               CALL PREIGN2(EIGBUF,IFIRST,NMULT,NEIG,FMTE)
             END IF  
-C...........Positronic eigenvalues: pick eigenvalues of symmetry ISYM
+C...........Positronic eigenvalues: pick eigenvalues of symmetry ID
             ISHEL_SUB(1+MXOPEN+2,ISUB,IFSYM) = 0
             IF (PRPOS .AND. NPSH(IFSYM) .GT.0) THEN
               CALL PCKEIG(EIG,IORB(IFSYM)+1,IORB(IFSYM)+NPSH(IFSYM),
@@ -1182,7 +1173,7 @@ C...........No eigenvalues
               WRITE(LUPRI,'(2X,A)') '* No eigenvalues.'
             ENDIF
           END DO
-       END DO
+        END DO
 C     
 C       Print occupation string for each fermion symmetry
 C
