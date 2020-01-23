@@ -1661,7 +1661,7 @@ module exacorr_cc
             ierr=exatns_tensor_get_scalar(r_tensor,result_val)
             hf_energy=real(result_val,8) ! Casting into real(8)
             ierr=exatns_tensor_destroy(h_tensor)
-            print*," Energy of reference wave function (HF single determinant) = ", hf_energy+e_core
+            write (*,'(A,F23.15)') " Energy of reference wave function (HF single determinant) = ", hf_energy+e_core
 
             ! Make the complete Fock matrix by addding the valence electron contributions
             ierr=exatns_tensor_contract("F(i,j)+=V(i,k,j,l)*I(k,l)",comm_t%foo,int_t%oooo,id_mat_occ, ONE)

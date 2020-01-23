@@ -1044,7 +1044,7 @@ module talsh_cc
             ierr=talsh_tensor_destruct(h_tensor)
 
             hf_energy=real(result_tens(1),8) ! Casting into real(8)
-            print*," Energy of reference wave function (HF single determinant) = ", hf_energy+e_core
+            write (*,'(A,F23.15)') " Energy of reference wave function (HF single determinant) = ", hf_energy+e_core
 
             call print_date('one electron integrals added to Fock Matrix')
 
