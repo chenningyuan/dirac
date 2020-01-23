@@ -996,13 +996,13 @@ C
      &          IFIRST(NORBT),NMULT(NORBT)
       CHARACTER FMTE*6,FMTP*6,MXFORM*6, TLINE*(5*NCOL+5),
      &          TLINE2*(6*NCOL+5),TLINE3*(6*NCOL+5)
-      CHARACTER*4 NAME_SUB (-MAX_SUB_BL:MAX_SUB_BL)
-      CHARACTER*6 NAME_SUB2(-MAX_SUB_BL:MAX_SUB_BL),
+      CHARACTER*3 NAME_SUB (-MAX_SUB_BL:MAX_SUB_BL)
+      CHARACTER*5 NAME_SUB2(-MAX_SUB_BL:MAX_SUB_BL),
      &            NAME_SUB3(-MAX_SUB_BL:MAX_SUB_BL)! for MJ of ATOMIC
       CHARACTER SPDCAR*1 ! type declaration for external function
       DIMENSION ISHEL_SUB(3+MXOPEN,MAX_SUB_BL,2)
       LOGICAL   PRPOS
-C
+C     
 C
 C     Closed shell eigenvalues
 C
@@ -1182,9 +1182,9 @@ C
             WRITE(LUPRI,'(/2A)')
      &          '* Occupation in fermion symmetry ',FREP(IFSYM)
 C...........Closed shell
+            JST = IORB(IFSYM) + NPSH(IFSYM)
             IF (NISH(IFSYM) .GT. 0) THEN
               WRITE(LUPRI,'(2X,A)') '* Inactive orbitals'
-              JST = IORB(IFSYM) + NPSH(IFSYM)
               TMP = NISH(IFSYM)
               DO I = JST,JST+NISH(IFSYM)-1,18
                 IF(TMP.GT.18)THEN
@@ -1193,21 +1193,21 @@ C...........Closed shell
                   JMAX = TMP
                 ENDIF   
                 IF(ATOMIC)THEN
-                  WRITE(LUPRI,'(4X,18A6)')
-     &                 (NAME_SUB2(IBEIG(J)),J=I+1,I+JMAX)
-                  WRITE(LUPRI,'(2X,A,18A6)')
+                  WRITE(LUPRI,'(4X,18(A5,1X))')
+     &                      (NAME_SUB2(IBEIG(J)),J=I+1,I+JMAX)
+                  WRITE(LUPRI,'(2X,A,18(A5,1X))')
      &                 'Mj',(NAME_SUB3(IBEIG(J)),J=I+1,I+JMAX)
                 ELSE
-                  WRITE(LUPRI,'(4X,18A4)')
+                  WRITE(LUPRI,'(4X,18(A3,1X))')
      &                 (NAME_SUB(IBEIG(J)),J=I+1,I+JMAX)
                 ENDIF
                 TMP = TMP - 18
               ENDDO
             END IF
 C...........Open shells
+            JST = JST + NISH(IFSYM)
             IF (NASH(IFSYM) .GT. 0) THEN
               WRITE(LUPRI,'(2X,A)') '* Active orbitals'
-              JST = IORB(IFSYM) + NPSH(IFSYM) + NISH(IFSYM)
               TMP = NASH(IFSYM)
               DO I = JST,JST+NASH(IFSYM)-1,18
                 IF(TMP.GT.18)THEN
@@ -1216,9 +1216,9 @@ C...........Open shells
                   JMAX = TMP
                 ENDIF                   
                 IF(ATOMIC)THEN
-                  WRITE(LUPRI,'(4X,18A6)')
-     &                 (NAME_SUB2(IBEIG(J)),J=I+1,I+JMAX)
-                  WRITE(LUPRI,'(2X,A,18A6)')
+                  WRITE(LUPRI,'(4X,18(A5,1X))')
+     &                      (NAME_SUB2(IBEIG(J)),J=I+1,I+JMAX)
+                  WRITE(LUPRI,'(2X,A,18(A5,1X))')
      &                 'Mj',(NAME_SUB3(IBEIG(J)),J=I+1,I+JMAX)
                 ELSE  
                   WRITE(LUPRI,'(4X,18A4)')
@@ -1228,10 +1228,9 @@ C...........Open shells
               ENDDO
             END IF
 C...........Virtual shells
+            JST = JST + NASH(IFSYM)
             IF (NSSH(IFSYM) .GT. 0) THEN
               WRITE(LUPRI,'(2X,A)') '* Virtual orbitals'
-              JST = IORB(IFSYM) + NPSH(IFSYM)
-     &              + NISH(IFSYM) + NASH(IFSYM)
               TMP = NSSH(IFSYM)
               DO I = JST,JST+NSSH(IFSYM)-1,18
                 IF(TMP.GT.18)THEN
@@ -1240,12 +1239,12 @@ C...........Virtual shells
                   JMAX = TMP
                 ENDIF                
                 IF(ATOMIC)THEN
-                  WRITE(LUPRI,'(4X,18A6)')
+                  WRITE(LUPRI,'(4X,18(A5,1X))')
      &                 (NAME_SUB2(IBEIG(J)),J=I+1,I+JMAX)
-                  WRITE(LUPRI,'(2X,A,18A6)')
+                  WRITE(LUPRI,'(2X,A,18(A5,1X))')
      &                 'Mj',(NAME_SUB3(IBEIG(J)),J=I+1,I+JMAX)
                 ELSE 
-                  WRITE(LUPRI,'(4X,18A4)')
+                  WRITE(LUPRI,'(4X,18(A3,1X))')
      &                 (NAME_SUB(IBEIG(J)),J=I+1,I+JMAX)
                 ENDIF
                 TMP = TMP - 18                   
@@ -1263,12 +1262,12 @@ C...........Negative energy shells
                   JMAX = TMP
                 ENDIF 
                 IF(ATOMIC)THEN
-                  WRITE(LUPRI,'(4X,18A6)')
-     &                 (NAME_SUB2(IBEIG(J)),J=I+1,I+JMAX)
-                  WRITE(LUPRI,'(2X,A,18A6)')
+                  WRITE(LUPRI,'(4X,18(A5,1X))')
+     &                      (NAME_SUB2(IBEIG(J)),J=I+1,I+JMAX)
+                  WRITE(LUPRI,'(2X,A,18(A5,1X))')
      &                 'Mj',(NAME_SUB3(IBEIG(J)),J=I+1,I+JMAX)
                 ELSE
-                  WRITE(LUPRI,'(4X,18A4)')
+                  WRITE(LUPRI,'(4X,18(A3,1X))')
      &                 (NAME_SUB(IBEIG(J)),J=I+1,I+JMAX)
                 ENDIF
                 TMP = TMP - 18                
@@ -1299,26 +1298,13 @@ C
             IF (SPINFR) THEN
               WRITE(TLINE(IT:),'(1X,A)') REP(ID)
             ELSEIF(ATOMIC) THEN
-              INDEX1 = INT(SQRT(dble(2*ABS(ID)) + 0.25D0) + 0.4999D0)
-              INDEX2 = ABS(ID) - INDEX1*(INDEX1-1)/2
-              KP     = INDEX1         * (-1)**(IFSYM+INDEX1+1)
-              IF(NFSYM.EQ.1)THEN
-                  KP = ABS(KP) * ID/ABS(ID)
-              ENDIF
-              MJ     = (2*INDEX2 - 1) * (-1)**(INDEX2+1)
-              J      = 2*ABS(KP) - 1
-              IF(KP.GT.0)THEN
-                 LL = ABS(KP)
-              ELSE   
-                 LL = ABS(KP)-1
-              ENDIF
-              WRITE(TLINE2(IT:),'(1X,A,I2,A)')SPDCAR(LL), J,'/2'
-              WRITE(TLINE3(IT:),'(1X,I3,A)') MJ,'/2'
+              WRITE(TLINE2(IT:),'(1X,A5)') NAME_SUB2(ID)
+              WRITE(TLINE3(IT:),'(1X,A5)') NAME_SUB3(ID)
               IT = IT + 1
             ELSE
-              WRITE(TLINE(IT:),'(I2,A)') ABS(ID),'/2 '
+              WRITE(TLINE(IT:),'(A3)') NAME_SUB(ID)
             ENDIF  
-              IT = IT + 5
+            IT = IT + 5
           ENDDO
           IF(ATOMIC)THEN
             WRITE (LUPRI,'(23X,A)') TLINE2
@@ -1390,9 +1376,9 @@ C
 
 C     ... do the consistency check with the NORB_SUB(MJABS,IFSYM,IC) variable
 C     sunaga
-        DO I=1,NFSYM
-           CALL KPTOMJ(I,IBEIG(IORB(I)+1),2)
-        ENDDO   
+C        DO I=1,NFSYM
+C           CALL KPTOMJ(I,IBEIG(IORB(I)+1),2)
+C        ENDDO   
 Csunaga        
         IC =1
         IF (PRPOS) IC=0
@@ -1411,7 +1397,7 @@ C.........add positronic shells
 C.........note: IC=0 when print of positr. shells desired
             IF (ISUM.NE.NORB_SUB(ISUB,IFSYM,IC)) THEN
               WRITE(LUPRI,'(2X,A,A,A,I3)') 
-     &          'WARNING! Inconsistency for ifsym=',
+     &          'WARNING! PREIGN: Inconsistency for ifsym=',
      &        FREP(IFSYM),' and  mj_id=',ID_SUB_BL(ISUB,IFSYM)
               WRITE(LUPRI,'(A,I4,A,I4)')
      &          'ISUM=',ISUM,'<> NORB_SUB(ISUB,IFSYM,IC)=',
