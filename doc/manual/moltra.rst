@@ -188,6 +188,16 @@ of active orbitals.
 
 *Default:* All occupied orbitals that are not active.
 
+keyword(CORE2)
+
+Specify the frozen core spinors for open (average of configuration) shell,
+
+In the first line give the number of electrons in the open shell.
+For each fermion irrep, give an :ref:`orbital_strings`
+of active orbitals. ATTENTION: A continous set of orbitals is assumed.
+
+*Default:* No frozen open shell. 
+
 keyword(POSITRONS)
 
 Allow negative energy ("positronic") spinors in active set. If this
