@@ -8,6 +8,26 @@ from runtest_dirac import Filter, TestRun
 
 test = TestRun(__file__, sys.argv)
 
+#Pi Testing nosym open shell
+f = Filter()
+f.add(from_string = ' Overview of calculated energies',
+      to_string   = '@ Total CCSD-T  energy',
+#Pi      rel_tolerance   = 1.0e-7)
+#Pi      rel_tolerance   = 1.0e-14)
+      rel_tolerance   = 1.0e-13)
+
+test.run(['ccsd.small.ion.inp'], ['H2O_nosym.mol'], f, args='--mw=64 --aw=130         ')
+
+##Pi Testing nosym closed shell
+#f = Filter()
+#f.add(from_string = ' Overview of calculated energies',
+#      to_string   = '@ Total CCSD-T  energy',
+##Pi      rel_tolerance   = 1.0e-7)
+##Pi      rel_tolerance   = 1.0e-14)
+#      rel_tolerance   = 1.0e-13)
+#
+#test.run(['ccsd.small.inp'], ['H2O_nosym.mol'], f, args='--mw=64 --aw=130         ')
+
 #Pi Testing complex arimethic
 f = Filter()
 f.add(from_string = ' Overview of calculated energies',
