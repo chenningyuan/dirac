@@ -198,29 +198,28 @@ C ********************
 C ** here a VOOV dependent contribution (Term 7 in the paper) is to be
 C ** calculated only by the master
 
-      IF(MYPROC.EQ.MASTER) THEN
-
-C--------------------------------
-C Terms specific for T2 equations
-C--------------------------------
-                   
-C-----------------------------------------------------------------------
-C S(AB,IJ) = S(AB,IJ) + PAB.PIJ [T1(A,K)*W(BK,IC)*T1(C,J)]
-C-----------------------------------------------------------------------
-         CALL GETVOVO (BUF1)
-         CALL DELINT ('VOVO','KDDK',BUF1,0,0,0)
-         CALL SRT19 (NREP,MULTB,LFA,NVO,NV,NO,NVOO,KVOOV,KKVOO,
-     &               BUF1,BUF2)
-         CALL CNTRCT ('N','N',NVOO,NO,NV,A1,BUF2,T1,A0,BUF1,NREP)
-         CALL SRT1T3 (NREP,MULTB,LTR,NVO,NO,NO,NVOO,KVOOO,KKVOO,
-     &                BUF1,BUF3)
-C-------------------------------------------------------------------
-C        Integrals are now in VO,OOT format : combine with next term
-CPi Which next term?
-C-------------------------------------------------------------------
-           
-
-      ENDIF
+CPi old      IF(MYPROC.EQ.MASTER) THEN
+CPi old
+CPi oldC--------------------------------
+CPi oldC Terms specific for T2 equations
+CPi oldC--------------------------------
+CPi old                   
+CPi oldC-----------------------------------------------------------------------
+CPi oldC S(AB,IJ) = S(AB,IJ) + PAB.PIJ [T1(A,K)*W(BK,IC)*T1(C,J)]
+CPi oldC-----------------------------------------------------------------------
+CPi old         CALL GETVOVO (BUF1)
+CPi old         CALL DELINT ('VOVO','KDDK',BUF1,0,0,0)
+CPi old         CALL SRT19 (NREP,MULTB,LFA,NVO,NV,NO,NVOO,KVOOV,KKVOO,
+CPi old     &               BUF1,BUF2)
+CPi old         CALL CNTRCT ('N','N',NVOO,NO,NV,A1,BUF2,T1,A0,BUF1,NREP)
+CPi old         CALL SRT1T3 (NREP,MULTB,LTR,NVO,NO,NO,NVOO,KVOOO,KKVOO,
+CPi old     &                BUF1,BUF3)
+CPi oldC-------------------------------------------------------------------
+CPi oldC        Integrals are now in VO,OOT format : combine with next term
+CPi oldC-------------------------------------------------------------------
+CPi old           
+CPi old
+CPi old      ENDIF
 
 C ****************************
 C ** END OF TASK SPLITTING. **
@@ -250,6 +249,39 @@ C ****** task splitting
 C ***
       IF(MYPROC.EQ.MASTER) THEN
 
+C-----------------------------------------------------------------------
+C S(AB,IJ) = S(AB,IJ) + PAB.PIJ [T1(A,K)*W(BK,IC)*T1(C,J)]
+C-----------------------------------------------------------------------
+         CALL GETVOVO (BUF1)
+         CALL DELINT ('VOVO','KDDK',BUF1,0,0,0)
+         CALL SRT19 (NREP,MULTB,LFA,NVO,NV,NO,NVOO,KVOOV,KKVOO,
+     &               BUF1,BUF2)
+         CALL CNTRCT ('N','N',NVOO,NO,NV,A1,BUF2,T1,A0,BUF1,NREP)
+         CALL SRT1T3 (NREP,MULTB,LTR,NVO,NO,NO,NVOO,KVOOO,KKVOO,
+     &                BUF1,BUF3)
+C      call contraction_424 ((/"p1","o3","p3","o1"/),(/"p3","o2"/),
+C     &    (/"p1","o3","o1","o2"/),BUF3,1.0d0,0.0d0,nrep,LeftTensor=BUF1,
+C     &    RightTensor=T1)
+CPi Split up contraction:
+      CALL SRT1L1 (NREP,MULTB,LFA,NVO,NV,NO,NOOT,IVOOOT,IIOV,BUF3,BUF2)
+      CALL SRT1S2 (NREP,MULTB,LFA,NVO,NO,NV,NOOT,LOVOOT,LLVOOT,
+     &             BUF2,BUF3)
+CPi Remove minus on diagram factor since eliminated by minus in XAXPY
+C      CALL CNTRCT ('N','N',NV,NVOOT,NO,-A1,T1,BUF3,A0,BUF1,NREP)
+      CALL CNTRCT ('N','N',NV,NVOOT,NO,A1,T1,BUF3,A0,BUF1,NREP)
+CPi copy sorting from outside IF MASTER
+      CALL SRT1T2 (NREP,MULTB,LTR,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
+     &             BUF1,BUF2)
+      CALL XAXPY (NDIMT2,A1,BUF2,1,S2,1)
+CCPi-begin
+C      call contraction_424 ((/"p1","o3","o1","o2"/),(/"p2","o3"/),
+C     &    (/"p1","p2","o1","o2"/),S2,-1.0d0,1.0d0,nrep,LeftTensor=BUF3,
+C     &    RightTensor=T1)
+CCPi-end
+C-------------------------------------------------------------------
+C        Integrals are now in VO,OOT format : combine with next term
+C-------------------------------------------------------------------
+           
 C------------------------------------------------
 C S(AB,IJ) = S(AB,IJ) - PAB [ T1(A,K) *W(KB,IJ) ]
 C------------------------------------------------
@@ -257,7 +289,7 @@ C------------------------------------------------
          CALL GETVOOO (BUF2)
          CALL DELINT ('VOOO','KDKK',BUF2,0,0,0)
 CPi Include half of term 9 here:
-         CALL XAXPY (NV2,-A1,BUF3,1,BUF2,1)
+C         CALL XAXPY (NV2,-A1,BUF3,1,BUF2,1)
           
            
 CPi old      CALL SRT1L1 (NREP,MULTB,LFA,NVO,NV,NO,NOOT,IVOOOT,IIOV,BUF2,BUF3)
@@ -277,9 +309,9 @@ C ***
 
 CPi This is left over since the contractions which were previously added to BUF1
 CPi are now added directly to S2 (new contraction routines take care of sorting)
-CPi old      CALL SRT1T2 (NREP,MULTB,LTR,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
-CPi old     &             BUF1,BUF2)
-CPi old      CALL XAXPY (NDIMT2,A1,BUF2,1,S2,1)
+CPi copied to above      CALL SRT1T2 (NREP,MULTB,LTR,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
+CPi copied to above     &             BUF1,BUF2)
+CPi copied to above      CALL XAXPY (NDIMT2,A1,BUF2,1,S2,1)
 
 C ** now the final H*T2 contraction. H is complete since we communicated
 C ** it already.
