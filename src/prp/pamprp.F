@@ -1810,7 +1810,7 @@ C
      &          'Nucleus: ',NAMDEP(IATOMD),
      &          'Proton charge:',NUCCHA,
      &          'Mass: ',MASS,'Spin: ',
-     &           SPIN,'Quadrupole moment: ',QMOM
+     &           SPIN,'Quadrupole moment (b): ',QMOM
               DO I=1,3
                 WRITE(LUPRI,'(2X,A3,6X,3(3X,F16.10,A))')
      &                'X'//CHAR(IOFF+I)//CHAR(IOFF+I),
