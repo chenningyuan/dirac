@@ -141,7 +141,7 @@ Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INT
 
 keyword(POLARIZABILITY)
 
-Evaluate the static electronic dipole polarizability tensor, see :cite:`Saue2003` (HF) and :cite:`Salek2005` (DFT).
+Evaluate the electronic dipole polarizability tensor, see :cite:`Saue2003` (HF) and :cite:`Salek2005` (DFT).
 
 Linear response function: :math:`\quad\alpha_{\alpha\beta}(-\omega;\omega)=\langle\langle\hat{\mu}_{\alpha};\hat{\mu}_{\beta}\rangle\rangle_{\omega}`
 
