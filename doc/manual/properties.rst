@@ -235,7 +235,7 @@ Evaluate indirect spin-spin couplings :cite:`Visscher_jcc1999` . The indirect sp
 
    2\pi J_{KL}=\gamma_{K}\gamma_{L}K_{KL}
 
-where appears gyromagnetic ratios :math:`gamma_K`. The elements of the reduced tensor :math:`K_{KL}` are expressed in terms of linear response functions as
+where appears gyromagnetic ratios :math:`\gamma_K`. The elements of the reduced tensor :math:`K_{KL}` are expressed in terms of linear response functions as
 
 .. math::
 
