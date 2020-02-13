@@ -8327,7 +8327,7 @@ C
 #include "dgroup.h"
 #include "dcbham.h"
 C
-      integer, allocatable :: NAT(:)
+      integer, allocatable :: NAT(:),ISOT(:)
       double precision, allocatable :: PMATL(:,:,:),PMATS(:,:,:),
      &                                 GEOM(:,:),MASS(:),AMASS(:)
 C
@@ -8344,6 +8344,7 @@ C
       allocate(GEOM(NUCDEP,3))
       allocate(MASS(NATOMS))
       allocate(NAT(NATOMS))
+      allocate(ISOT(NATOMS))
       allocate(AMASS(NUCDEP))
 C
       CALL QENTER('PRP_ROTG')
@@ -8410,7 +8411,7 @@ C     NUCLEAR PART OF G-TENSOR
 C
       CALL DZERO(GFANUC,9)
 C
-      CALL CMMASS(GEOM,MASS,NAT,ISOTOP,IPRPRP)
+      CALL CMMASS(GEOM,MASS,NAT,ISOT,IPRPRP)
       CALL NUCMGF(GEOM,CMXYZ,GAGORG,IPRPRP)
 C
 C--------------------------------------------------------------------
@@ -8497,11 +8498,12 @@ C--------------------------------------------------------------------
       CALL QEXIT('PRP_ROTG')
 C
       deallocate(AMASS)
-      deallocate(GEOM)
-      deallocate(MASS)
+      deallocate(ISOT)
       deallocate(NAT)
-      deallocate(PMATL)
+      deallocate(MASS)
+      deallocate(GEOM)
       deallocate(PMATS)
+      deallocate(PMATL)
 C
       RETURN
       END
