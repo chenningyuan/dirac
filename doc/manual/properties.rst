@@ -273,7 +273,7 @@ Evaluate indirect spin-spin couplings :cite:`Visscher_jcc1999` . The indirect sp
 
    2\pi J_{KL}=\gamma_{K}\gamma_{L}K_{KL}
 
-where appears gyromagnetic ratios :math:`gamma_K`. The elements of the reduced tensor :math:`K_{KL}` are expressed in terms of linear response functions as
+where appears gyromagnetic ratios :math:`\gamma_K`. The elements of the reduced tensor :math:`K_{KL}` are expressed in terms of linear response functions as
 
 .. math::
 
@@ -453,7 +453,35 @@ Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INT
 
 keyword(SPIN-ROTATION)
 
-Evaluate nuclear spin-rotation constants: linear response, expectation value and nuclear contributions
+Evaluate nuclear spin-rotation constants: linear response, expectation value and nuclear contributions, see :cite:`Aucar_JCP2012` and :cite:`AucarChap2019`.
+
+Elements of the nuclear spin-rotation tensor for center :math:`K` in a molecule in equilibrium are given by
+
+.. math::
+
+   M_{K;\mu\nu} = M^{nuc}_{K;\mu\nu} + M^{elec}_{K;\mu\nu}
+
+with
+
+.. math::
+
+   M^{elec}_{K;\mu\nu} = - \hslash^2 \frac{\partial^2}{\partial I_{K;\mu}\partial L_{\nu}}\langle\langle\hat{h}^{hfs}_{K};\hat{h}^{BO}\rangle\rangle_0
+
+where appears the relativistic hyperfine operator
+
+.. math::
+
+   \hat{h}^{hfs}_{K}=-\sum_i\mathbf{m}_K\cdot\hat{\mathbf{B}}^{el}_{K}(i);\quad \mathbf{B}^{el}_{K}(i)=-\frac{1}{4\pi\varepsilon_0 c^2}\frac{\mathbf{r}_{iK}\times ec\boldsymbol{\boldsymbol{\alpha}}}{r_{iK}^3},
+
+expressed in terms of the nuclear magnetic dipole :math:`\mathbf{m}_K=\hslash \gamma_K \mathbf{I}_K` and the operator :math:`\hat{\mathbf{B}}^{el}_{K}` giving the magnetic field due to the electrons at the nuclear position, and the first order correction to the Born-Oppenheimer (BO) approximation
+
+.. math::
+
+   \hat{h}^{BO}=-\boldsymbol{\boldsymbol{\omega}}\cdot\hat{\mathbf{J}}_e;
+   \quad\boldsymbol{\boldsymbol{\omega}}=\mathbf{L}\otimes\mathbf{I}^{-1},
+
+expressed in terms of the angular velocity :math:`\boldsymbol{\boldsymbol{\omega}}` associated with the total angular momentum of the electrons :math:`\hat{\mathbf{J}}_e=\hat{\mathbf{L}}_e+\hat{\mathbf{S}}_e`. Note that the origin of the orbital angular momentum is the molecular center of mass.
+
 
 .. note::
 
@@ -468,9 +496,9 @@ Using :ref:`PROPERTIES_.PRINT` 0 or 1, results are only given in kHz, whereas em
 
 In addition, when :ref:`PROPERTIES_.PRINT` 1 or 3 are used, the paramagnetic-like (e-e) and diamagnetic-like (e-p) parts of the linear response contributions are given separately, together with results for the :math:`\mathbf{L}` and :math:`\mathbf{S}` parts of the linear response.
 
-Finally, employing :ref:`PROPERTIES_.PRINT` 4 expectation value and nuclear contributions are given separately, with the inclusion of Thomas precesion effects, in order to properly include contributions to nuclear spin-rotations out of the equilibrium geometry of the molecular system. More details in the Tutorial Section.
+Finally, employing :ref:`PROPERTIES_.PRINT` 4 expectation value and nuclear contributions are given separately, with the inclusion of Thomas precesion effects, in order to properly include contributions to nuclear spin-rotations out of the equilibrium geometry of the molecular system.
 
-See :cite:`Aucar_JCP2012` for further details.
+For more details, the user is welcome to see the Tutorial Section.
 
 Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
