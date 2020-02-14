@@ -62,7 +62,7 @@
       DIMENSION WORK(LWORK)
       LOGICAL CHGO
       double precision, allocatable :: GEOM(:,:),MASS(:)
-      integer, allocatable :: NAT(:)
+      integer, allocatable :: NAT(:),ISOT(:)
 !
 #include "orgcom.h"
 #include "dcbprp.h"
@@ -73,6 +73,7 @@
       allocate(GEOM(NUCDEP,3))
       allocate(MASS(NATOMS))
       allocate(NAT(NATOMS))
+      allocate(ISOT(NATOMS))
 !
       DATA TABDIR /'*END OF','*EXPECT','*LINEAR','*EXCITA',             &
      &             '*MOLGRD','*NMR   ','*ESR   ','*QUADRA',             &
@@ -473,7 +474,7 @@
       if (spinro.or.rotg) then
 ! ... make the center of mass the gauge and dipole origin (default in dalton)
 ! ... call the routine in abacus/hergp.F
-        CALL CMMASS(GEOM,MASS,NAT,ISOTOP,IPRPRP)
+        CALL CMMASS(GEOM,MASS,NAT,ISOT,IPRPRP)
         CALL DCOPY(3,CMXYZ,1,GAGORG,1)
         CALL DCOPY(3,GAGORG,1,DIPORG,1)
         write(LUPRI,'(//,1X,A)')                                        &
@@ -648,9 +649,10 @@
       CALL FLSHFO(LUPRI)
       CALL QEXIT('PRPINP')
 
-      deallocate(GEOM)
-      deallocate(MASS)
+      deallocate(ISOT)
       deallocate(NAT)
+      deallocate(MASS)
+      deallocate(GEOM)
 
       RETURN
 !
