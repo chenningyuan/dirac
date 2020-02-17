@@ -10254,7 +10254,7 @@ C#include "ibtfun.h"
 #include "dcbham.h"
 C
       logical, allocatable :: DOATOM(:)
-      integer, allocatable :: NAT(:)
+      integer, allocatable :: NAT(:),ISOT(:)
       double precision, allocatable :: PMATL(:,:,:,:),PMATS(:,:,:,:),
      &                                 TMPMATL(:,:,:),TMPMATS(:,:,:),
      &                                 CSTRA(:),SCTRA(:),GEOM(:,:),
@@ -10288,6 +10288,7 @@ C
       allocate(MASS(NATOMS))
       allocate(NAT(NATOMS))
       allocate(AMASS(NUCDEP))
+      allocate(ISOT(NUCDEP))
       allocate(GVAL(NUCDEP))
 C
       CALL QENTER('PRP_SPINRO')
@@ -10432,7 +10433,7 @@ C--------------------------------------------------------------------
 C
 C     NUCLEAR PART OF NSR TENSOR
 C
-      CALL CMMASS(GEOM,MASS,NAT,ISOTOP,IPRPRP)
+      CALL CMMASS(GEOM,MASS,NAT,ISOT,IPRPRP)
       CALL NUCSPR(GEOM,CMXYZ,IPRPRP)
 C
 C-------------------------------------------------------------------
@@ -10551,6 +10552,7 @@ C--------------------------------------------------------------------
       CALL QEXIT('PRP_SPINRO')
 C
       deallocate(AMASS)
+      deallocate(ISOT)
       deallocate(GVAL)
       deallocate(GEOM)
       deallocate(MASS)

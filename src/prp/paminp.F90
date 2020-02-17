@@ -62,7 +62,7 @@
       DIMENSION WORK(LWORK)
       LOGICAL CHGO
       double precision, allocatable :: GEOM(:,:),MASS(:)
-      integer, allocatable :: NAT(:)
+      integer, allocatable :: NAT(:),ISOT(:)
 !
 #include "orgcom.h"
 #include "dcbprp.h"
@@ -73,6 +73,7 @@
       allocate(GEOM(NUCDEP,3))
       allocate(MASS(NATOMS))
       allocate(NAT(NATOMS))
+      allocate(ISOT(NATOMS))
 !
       DATA TABDIR /'*END OF','*EXPECT','*LINEAR','*EXCITA',             &
      &             '*MOLGRD','*NMR   ','*ESR   ','*QUADRA',             &
@@ -647,9 +648,10 @@
       CALL FLSHFO(LUPRI)
       CALL QEXIT('PRPINP')
 
-      deallocate(GEOM)
-      deallocate(MASS)
+      deallocate(ISOT)
       deallocate(NAT)
+      deallocate(MASS)
+      deallocate(GEOM)
 
       RETURN
 !
