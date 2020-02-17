@@ -209,3 +209,133 @@ C
       CALL QEXIT('KRMCSAV')
       RETURN
       END
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck save_moltra_inp */
+      SUBROUTINE SAVE_MOLTRA_INP(SAVTRA,SAVLOG,SAVREAL,SAVINT,IPRINT)
+C***********************************************************************
+C
+C    routine to save common block for MOLTRA
+C
+C     Written by JVP 2020
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "../moltra/dcbtra.h"
+C
+      CHARACTER SAVTRA(4,2,2)*(*)
+      LOGICAL SAVLOG(*)
+      REAL*8  SAVREAL(*)
+      INTEGER SAVINT(*)
+C
+C     /DCBTC/
+C
+      DO I = 1, 4
+         DO J = 1, 2
+            SAVTRA(I,J,1)= TRA4_INDSTR(I,J)
+         END DO
+      END DO
+      DO I = 1,2
+         DO J = 1,2
+            SAVTRA(I,J,2) = TRA2_INDSTR(I,J)
+         END DO
+         SAVTRA(3,I,2) = TRA_INDSTR(I)
+         SAVTRA(4,I,2) = TRA_CORSTR(I)
+      END DO
+C
+C     /DCBTRI/
+C
+      SAVINT(1) = ITRA_INTFLG 
+      SAVINT(2) = ITRA_INTFL2 
+      SAVINT(3) = ITRA_INTFL4
+      SAVINT(4) = IPRTRA
+      SAVINT(5) = ISTRAT
+C
+C     /DCBTRL/
+C
+      SAVLOG(1) = TRA_ANTIS
+      SAVLOG(2) = TRA_MSOUT
+      SAVLOG(3) = NO2IND
+      SAVLOG(4) = NO4IND
+      SAVLOG(5) = NOPAIR
+      SAVLOG(6) = PRPTRA
+      SAVLOG(7) = RCORBS
+      SAVLOG(8) = FKRMC
+      SAVLOG(9) = NOMDCINT
+      SAVLOG(10) = MDCSCAT
+C
+C     /DCBTRR/
+C
+      SAVREAL(1) = THROUT
+      SAVREAL(2) = SCRTRA
+C
+C
+      RETURN
+      END
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck reset_moltra_inp */
+      SUBROUTINE RESET_MOLTRA_INP(SAVTRA,SAVLOG,SAVREAL,SAVINT,IPRINT)
+C***********************************************************************
+C
+C    routine to reset common block for MOLTRA
+C
+C     Written by JVP 2020
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "../moltra/dcbtra.h"
+C
+      CHARACTER SAVTRA(4,2,2)*(*)
+      LOGICAL SAVLOG(*)
+      REAL*8  SAVREAL(*)
+      INTEGER SAVINT(*)
+C
+C     /DCBTC/
+C
+      DO I = 1, 4
+         DO J = 1, 2
+            TRA4_INDSTR(I,J) = SAVTRA(I,J,1)
+         END DO
+      END DO
+      DO I = 1,2
+         DO J = 1,2
+            TRA2_INDSTR(I,J) = SAVTRA(I,J,2)
+         END DO
+         TRA_INDSTR(I) = SAVTRA(3,I,2)
+         TRA_CORSTR(I) = SAVTRA(4,I,2)
+      END DO
+C
+C     /DCBTRI/
+C
+      ITRA_INTFLG = SAVINT(1)
+      ITRA_INTFL2 = SAVINT(2)
+      ITRA_INTFL4 = SAVINT(3)
+      IPRTRA = SAVINT(4)
+      ISTRAT = SAVINT(5)
+C
+C     /DCBTRL/
+C
+      TRA_ANTIS = SAVLOG(1)
+      TRA_MSOUT = SAVLOG(2)
+      NO2IND = SAVLOG(3)
+      NO4IND = SAVLOG(4)
+      NOPAIR = SAVLOG(5)
+      PRPTRA = SAVLOG(6)
+      RCORBS = SAVLOG(7)
+      FKRMC  = SAVLOG(8)
+      NOMDCINT = SAVLOG(9)
+      MDCSCAT = SAVLOG(10)
+C
+C     /DCBTRR/
+C
+      THROUT = SAVREAL(1)
+      SCRTRA = SAVREAL(2)
+C
+C
+      RETURN
+      END
