@@ -2844,8 +2844,11 @@ c
                DEALLOCATE (DIP_SUB)
                DEALLOCATE (DIP_RHS)
                DEALLOCATE (TDIP_SUB)
-             
+
+         II = II + NDTL
          ENDDO !irreps in lhs
+
+         JJ = JJ + NDTR
        enddo ! irreps on rhs
 
  1000 Format (/' Transition dipoles and partial intensities for ',A,/
