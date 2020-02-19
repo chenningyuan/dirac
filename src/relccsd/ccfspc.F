@@ -2798,6 +2798,7 @@ c
                IF (DDOT(RCW*NDTR*NDTL,DIP_SUB,1,DIP_SUB,1)
      &             .LT.1.E-16) THEN
                   DEALLOCATE (DIP_SUB)
+                  II = II + NDTL
                   CYCLE
                END IF
 
