@@ -13,12 +13,13 @@ endif()
 # in this case EXATENSOR_GIT_REPO_LOCATION can be set to point to a path on the hard disk
 # ./setup --cmake-options="-DEXATENSOR_GIT_REPO_LOCATION='/path/to/exatensor/'"
 set(EXATENSOR_GIT_REPO_LOCATION "https://github.com/ornl-qci/exatensor.git" CACHE STRING "ExaTENSOR Git repository location")
+set(EXATENSOR_GIT_HASH a3a550e67d2beba1750719cc1d9882a3c308f5b2 CACHE STRING "ExaTENSOR Git repository hash in use")
 
 if(ENABLE_EXATENSOR)
     ExternalProject_Add(exatensor
         PREFIX "${PROJECT_BINARY_DIR}/exatensor"
         GIT_REPOSITORY ${EXATENSOR_GIT_REPO_LOCATION}
-        GIT_TAG a3a550e67d2beba1750719cc1d9882a3c308f5b2
+        GIT_TAG ${EXATENSOR_GIT_HASH}
         CONFIGURE_COMMAND true  # currently no configure command
         BUILD_COMMAND cd ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/ && make
         INSTALL_COMMAND true  # currently no install command
