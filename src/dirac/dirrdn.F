@@ -9032,12 +9032,12 @@ C&&&& STEPMX - step length in line search algorithm
                GO TO 100
     8          CONTINUE
 C&&&& XPNTS  - Laplace exponents
-               LXPNTS = .TRUE.
+               LXPNTS = (NLAP.GT.0)
                MAXCOL = 0
                DO WHILE (MAXCOL.LT.NLAP)
                 MINCOL = MAXCOL+1
                 MAXCOL = MIN(MAXCOL+5,NLAP)
-                READ(LUCMD,'(5(E20.12,1X))',IOSTAT=IOS) 
+                READ(LUCMD,*,IOSTAT=IOS) 
      &            (XPNTS(ILAP),ILAP=MINCOL,MAXCOL)
                 IF (IOS.NE.0) THEN
                  CALL QUIT(CHRERR//'Error in reading Laplace exponents')
@@ -9046,12 +9046,12 @@ C&&&& XPNTS  - Laplace exponents
                GO TO 100
     9          CONTINUE
 C&&&& WGHTS  - Laplace weights
-               LWGHTS = .TRUE.
+               LWGHTS = (NLAP.GT.0)
                MAXCOL = 0
                DO WHILE (MAXCOL.LT.NLAP)
                 MINCOL = MAXCOL+1
                 MAXCOL = MIN(MAXCOL+5,NLAP)
-                READ(LUCMD,'(5(E20.12,1X))',IOSTAT=IOS) 
+                READ(LUCMD,*,IOSTAT=IOS) 
      &            (WGHTS(ILAP),ILAP=MINCOL,MAXCOL)
                 IF (IOS.NE.0) THEN
                  CALL QUIT(CHRERR//'Error in reading Laplace exponents')

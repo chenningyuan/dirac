@@ -22,7 +22,6 @@ subroutine lap_driver(laplace)
 
 ! explicit interface
 #include "laplace_minimax.h"
-#include "rddirmos.h"
 
 ! common block:
 #include "dcblap.h"
