@@ -376,7 +376,6 @@ if(ENABLE_LAPLACE)
     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
     -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}  )
   add_external(laplace-minimax)
-  # Miro: how will this cope with OBJECT libraries ?
   set(EXTERNAL_LIBS
     ${PROJECT_BINARY_DIR}/external/lib/liblaplace-minimax.a
     ${EXTERNAL_LIBS})
