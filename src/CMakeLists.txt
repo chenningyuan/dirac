@@ -352,22 +352,10 @@ message(STATUS "srDFT module: ${ENABLE_SRDFT}")
 
 # laplace-minimax as separate external library
 if(ENABLE_LAPLACE)
-    message(STATUS "laplace-minimax external module ENABLED")
 
-#    ExternalProject_Add(laplace-minimax
-#        PREFIX "${PROJECT_BINARY_DIR}/laplace-minimax"
-#        GIT_REPOSITORY https://github.com/bhelmichparis/laplace-minimax.git
-#        GIT_TAG "v1.5"
-#        CONFIGURE_COMMAND true  # currently no configure command
-#        BUILD_COMMAND cd ${PROJECT_BINARY_DIR}/laplace-minimax/src/laplace-minimax/ && FC=${CMAKE_Fortran_COMPILER} make
-#        INSTALL_COMMAND true  # currently no install command
-#        INSTALL_DIR "${PROJECT_BINARY_DIR}/laplace-minimax/install"
-#        )
-#
-#    set(EXTERNAL_LIBS ${EXTERNAL_LIBS} ${PROJECT_BINARY_DIR}/laplace-minimax/src/laplace-minimax/lib/liblaplace_minimax.a)
+# external part
+#include_directories (${PROJECT_BINARY_DIR}/external/laplace-minimax-build)
 
-#    include_directories(${PROJECT_BINARY_DIR}/laplace-minimax/src/laplace-minimax/inc)
-  include_directories (${PROJECT_BINARY_DIR}/external/laplace-minimax-build)
   set(ExternalProjectCMakeArgs
     -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
     -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
@@ -375,14 +363,21 @@ if(ENABLE_LAPLACE)
     -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
     -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}  )
+
   add_external(laplace-minimax)
+
   set(EXTERNAL_LIBS
     ${PROJECT_BINARY_DIR}/external/lib/liblaplace-minimax.a
     ${EXTERNAL_LIBS})
+
+# dirac part
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/laplace)
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:laplace> ${EXTERNAL_OBJECTS})
+
 else()
-    message(STATUS "laplace-minimax external module DISABLED")
+    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_LAPLACE)
 endif()
-#bhp test
+message(STATUS "Laplace module: ${ENABLE_LAPLACE}")
 
 # pelib interface routines added as module
 if(ENABLE_PELIB)

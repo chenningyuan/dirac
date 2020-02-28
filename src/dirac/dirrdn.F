@@ -2644,7 +2644,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 20, NTABLE = 24)
+      PARAMETER (NDIR = 20, NTABLE = 25)
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,CTEMP*90
@@ -2667,7 +2667,8 @@ C
      &             '.RESOLV','.ORBROT','.LUCIAR','.KRMCSC',
      &             '.PHCOEF','.MP2 NO','.RELADC','.KR CI ',
      &             '.KR CC ','.COSCI ','.GASCIP','.HSFS  ',
-     &             '.ARDUCC','.SCF   ','.KRCI  ','.POLPRP'/
+     &             '.ARDUCC','.SCF   ','.KRCI  ','.POLPRP',
+     &             '.LAPLCE'/
 C
       N_WF = 0
 C
@@ -2692,6 +2693,7 @@ C
       DOGASCIP= .FALSE.
       DOHSFS  = .FALSE.
       DOPOLPRP= .FALSE.
+      DOLAPLCE= .FALSE.
 C
 C *** Initialize /CBIREO/ in dcbreo.h
 C     ===================
@@ -2736,7 +2738,8 @@ C
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (101,102,103,104,105,106,107,108,
      &                109,110,111,112,113,114,115,116,
-     &                117,118,119,120,121,122,123,124),I
+     &                117,118,119,120,121,122,123,124,
+     &                125),I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -2922,6 +2925,11 @@ C&&&& POLPRP: Calculate polarization propagator for excitations
             N_WF = N_WF + 1
             DIRAC_WF(N_WF) = 'POLPRP'
             GO TO 100
+C&&&& LAPLCE: Laplace transformation test program
+  125    CONTINUE
+            N_WF = N_WF + 1
+            DIRAC_WF(N_WF) = 'LAPLCE'
+            GO TO 100
 
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
@@ -2983,6 +2991,7 @@ C hj aug03: TODO: idea was/is to maybe follow MCSCF by big CI
      &   ' * Kramers restricted CI calculation'
       IF(DOKRCC)   WRITE(LUPRI,'(A)')
      &   ' * Kramers restricted CC calculation'
+      IF(DOLAPLCE) WRITE(LUPRI,'(A)') ' * Run Laplace test'
 C
 C     Orbital manipulations
 C

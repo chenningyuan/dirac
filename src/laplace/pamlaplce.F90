@@ -1,5 +1,5 @@
 !==============================================================================!
-subroutine test_laplace
+subroutine pamlaplce
 !------------------------------------------------------------------------------!
 !
 !  test the static library that does the numerical Laplace transformation
@@ -97,5 +97,5 @@ subroutine test_laplace
  call laplace_minimax(errmax,xpnts,wghts,nlap,ymin,ymax,&
                       tolerr=1.d-9,iprint=11,do_rmsd=.true.,do_nlap=.true.)
 
-end subroutine test_laplace
+end subroutine pamlaplce
 !==============================================================================!

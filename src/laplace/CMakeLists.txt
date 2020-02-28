@@ -14,7 +14,7 @@ if (ENABLE_LAPLACE)
      )
  
    set(FREE_F03_LAPLACE_FORTRAN_SOURCES
-      test_laplace.F90
+      pamlaplce.F90
      )
 
    # compile with 2003 standard
@@ -46,5 +46,7 @@ if (ENABLE_LAPLACE)
       )
 
   add_dependencies(laplace laplace-minimax)
+  add_dependencies(laplace dirac)
+  add_dependencies(laplace main)
 
 endif()
