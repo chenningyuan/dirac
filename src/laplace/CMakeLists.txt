@@ -1,6 +1,12 @@
+if (ENABLE_LAPLACE)
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/include
     ${PROJECT_BINARY_DIR}/laplace-minimax/src/laplace-minimax/inc
+        ${PROJECT_SOURCE_DIR}/external/stieltjes/stieltjes_ql_diag.f90
+)
+  #miro: needs extra sources !
+   set(FREE_RELADC_FORTRAN_SOURCES
+)
 )
 
 if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
