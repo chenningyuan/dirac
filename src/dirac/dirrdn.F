@@ -8962,7 +8962,7 @@ C     ===================
 C
       IPRLAP = 1
       NLAP   = 0
-      MXITER = 50
+      MXITER = 100
       STEPMX = 0.3D0
       TOLRNG = 1.D-10
       TOLPAR = 1.D-15
