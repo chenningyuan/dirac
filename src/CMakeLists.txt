@@ -62,6 +62,10 @@ cmake_dependent_option(ENABLE_SRDFT "srDFT module" ON  "ENABLE_UNRELEASED" OFF)
 if(ENABLE_SRDFT)
     add_definitions(-DMOD_SRDFT)
 endif()
+cmake_dependent_option(ENABLE_LAPLACE "Laplace module" ON  "ENABLE_UNRELEASED" OFF)
+if(ENABLE_LAPLACE)
+    add_definitions(-DMOD_LAPLACE)
+endif()
 
 #--------------------------------------------------------------------------------------------------------------
 #
@@ -346,6 +350,40 @@ else()
 endif()
 message(STATUS "srDFT module: ${ENABLE_SRDFT}")
 
+# laplace-minimax as separate external library
+if(ENABLE_LAPLACE)
+    message(STATUS "laplace-minimax external module ENABLED")
+
+#    ExternalProject_Add(laplace-minimax
+#        PREFIX "${PROJECT_BINARY_DIR}/laplace-minimax"
+#        GIT_REPOSITORY https://github.com/bhelmichparis/laplace-minimax.git
+#        GIT_TAG "v1.5"
+#        CONFIGURE_COMMAND true  # currently no configure command
+#        BUILD_COMMAND cd ${PROJECT_BINARY_DIR}/laplace-minimax/src/laplace-minimax/ && FC=${CMAKE_Fortran_COMPILER} make
+#        INSTALL_COMMAND true  # currently no install command
+#        INSTALL_DIR "${PROJECT_BINARY_DIR}/laplace-minimax/install"
+#        )
+#
+#    set(EXTERNAL_LIBS ${EXTERNAL_LIBS} ${PROJECT_BINARY_DIR}/laplace-minimax/src/laplace-minimax/lib/liblaplace_minimax.a)
+
+#    include_directories(${PROJECT_BINARY_DIR}/laplace-minimax/src/laplace-minimax/inc)
+  include_directories (${PROJECT_BINARY_DIR}/external/laplace-minimax-build)
+  set(ExternalProjectCMakeArgs
+    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+    -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
+    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+    -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}  )
+  add_external(laplace-minimax)
+  # Miro: how will this cope with OBJECT libraries ?
+  set(EXTERNAL_LIBS
+    ${PROJECT_BINARY_DIR}/external/lib/liblaplace-minimax.a
+    ${EXTERNAL_LIBS})
+else()
+    message(STATUS "laplace-minimax external module DISABLED")
+endif()
+#bhp test
 
 # pelib interface routines added as module
 if(ENABLE_PELIB)
