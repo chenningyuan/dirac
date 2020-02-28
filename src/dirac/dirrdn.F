@@ -2927,6 +2927,7 @@ C&&&& POLPRP: Calculate polarization propagator for excitations
             GO TO 100
 C&&&& LAPLCE: Laplace transformation test program
   125    CONTINUE
+            DOLAPLCE = .TRUE.
             N_WF = N_WF + 1
             DIRAC_WF(N_WF) = 'LAPLCE'
             GO TO 100

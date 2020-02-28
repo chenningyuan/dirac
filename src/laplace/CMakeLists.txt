@@ -11,10 +11,11 @@ if (ENABLE_LAPLACE)
 
   # source files
   set(FREE_F95_LAPLACE_FORTRAN_SOURCES
+      pamlaplce.F90
      )
  
    set(FREE_F03_LAPLACE_FORTRAN_SOURCES
-      pamlaplce.F90
+      lap_driver.F90
      )
 
    # compile with 2003 standard
@@ -46,6 +47,7 @@ if (ENABLE_LAPLACE)
       )
 
   add_dependencies(laplace laplace-minimax)
+  add_dependencies(laplace gp)
   add_dependencies(laplace dirac)
   add_dependencies(laplace main)
 

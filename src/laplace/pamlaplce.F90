@@ -1,101 +1,118 @@
 !==============================================================================!
-subroutine pamlaplce
+subroutine pamlaplce()
 !------------------------------------------------------------------------------!
 !
-!  test the static library that does the numerical Laplace transformation
-!  following the minimax approximation algorithm by Tatsuka et al.
 !
-! BHP
+!                              L A P L A C E
+!
+!
+!                uses the numerical Laplace transformation for
+!                       orbital energy denominators
+!
+!
+!  author:         Benjamin Helmich-Paris
+!
+!  variables taken from EVIL EVIL common blocks:
+!
 !------------------------------------------------------------------------------!
+ 
+ use type_laplace, only : laplace_info, deallocate_laplace
 
  implicit none
 
-#include "laplace_minimax.h"
+! parameters
+#include "lapdim.h"
+
+! common blocks:
+#include "dcblap.h"
+#include "dcbgen.h"
+#include "dcborb.h"
+
+! local parameter:
+ character(len=*),parameter :: chrdbg     = "pamlaplce>"
 
 ! local scalars:
- integer :: nlap
- real(8) :: errmax
+ type(laplace_info) :: laplace
 
-! local arrays:
- real(8) :: xpnts(mxlap), wghts(mxlap), eig(4), ymin, ymax
+ integer :: noct, nvirct, nfro_lap, nfrv_lap
+ integer :: idum
+ integer :: istro,istrv,iendo, iendv
+ logical :: filex
+ real(8) :: dum, toterg
 
-! ------
-! test 1
-! ------
- nlap = 3
- eig(1) = -2.d0; eig(2) = -1.d0; eig(3) = +1.d0; eig(4) = +2.d0
+! local allocatables:
+ real(8), allocatable :: eig(:)
 
- ymin = 2.d0*(eig(3)-eig(2))
- ymax = 2.d0*(eig(4)-eig(1))
+ call qenter("pamlaplce")
 
- call laplace_minimax(errmax,xpnts,wghts,nlap,ymin,ymax,&
-                      iprint=11,do_rmsd=.true.)
+!------------------------------------------------------------------------------!
+! echo AOMP2 input parameter
+!------------------------------------------------------------------------------!
+ write(6,'(/3a/)') '+',repeat('=',70),'+'
+ write(6,'(/2a/)')     repeat(' ',27),'L A P L A C E   module'
+ write(6,'(/3a/)') '+',repeat('=',70),'+'
 
-! ------
-! test 2
-! ------
- nlap = 8
- eig(1) = -23.d0; eig(2) = -1.7d0; eig(3) = +1.7d0; eig(4) = +23.d0
 
- ymin = 2.d0*(eig(3)-eig(2))
- ymax = 2.d0*(eig(4)-eig(1))
+!------------------------------------------------------------------------------!
+! orbital occupation 
+!
+! @trond: Please figure out the number of frozen occupied and virtual orbitals
+!------------------------------------------------------------------------------!
+ nfro_lap = 0
+ nfrv_lap = 0
 
- call laplace_minimax(errmax,xpnts,wghts,nlap,ymin,ymax,&
-                      iprint=11,do_rmsd=.true.)
+ noct   = nish(1)-nfro_lap
+ nvirct = nssh(1)-nfrv_lap
 
-! ------
-! test 3
-! ------
- nlap = 25
- eig(1) = -2.3d3; eig(2) = -0.8d-1; eig(3) = +0.8d-1; eig(4) = +2.3d3
+ write(6,'(////,a,/)') "         orbital occupation                "
+ write(6,'(a,/)')      "  -------------------------------          "
+ write(6,'(a,i5,/)')   "   positronic MOs: ",npsh(1)
+ write(6,'(a,i5,/)')   "   electronic MOs: ",nesh(1)
+ write(6,'(a,i5)')     "   occupied: ",noct+nfro_lap
+ if (nfro_lap.gt.0) then
+  write(6,'(a,i5)')    "    frz. occupied: ",nfro_lap
+  write(6,'(a,i5,/)')  "    act. occupied: ",noct
+ end if
+ write(6,'(a,i5)')     "   virtual: ",nvirct+nfrv_lap
+ if (nfrv_lap.gt.0) then
+  write(6,'(a,i5)')    "    act.  virtual: ",nvirct
+  write(6,'(a,i5)')    "    frz.  virtual: ",nfrv_lap
+ end if
+ write(6,'(a)')        "  -------------------------------          "
+ write(6,'(a,i5,//)')  "   total # of MOs: ",norb(1)
+ !write(6,'(a,i5,//)')  "   total # of cart. AOs: ",nbfcao
+ !write(6,'(a,i5,//)')  "   total # of sphr. AOs: ",nbfsao
 
- ymin = 2.d0*(eig(3)-eig(2))
- ymax = 2.d0*(eig(4)-eig(1))
+!------------------------------------------------------------------------------!
+! Laplace quadrature 
+!------------------------------------------------------------------------------!
 
- call laplace_minimax(errmax,xpnts,wghts,nlap,ymin,ymax,&
-                      iprint=11,do_rmsd=.true.)
+  allocate(eig(npsh(1)+nesh(1)))
 
-! ------
-! test 4
-! ------
- nlap = 3
+  ! read MO energies from DFCOEF
+  INQUIRE(FILE='DFCOEF',EXIST=FILEX)
+  IF(.NOT.FILEX) CALL QUIT ('DFCOEF missing')
+  CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPEXP')
+  call reacmo(LUCOEF, 'DFCOEF', dum, eig, idum, toterg, 4  )
+  CLOSE(LUCOEF,STATUS='KEEP')
 
- eig(1) = -20.557772190846030D0
- eig(2) = -20.557772190846030D0
- eig(3) = +1.1900668172888584D0
- eig(4) = +2.6379585887262555D0
+  ! orbital start and end addresses
+  istro = npsh(1)+nfro_lap+1
+  iendo = npsh(1)+nfro_lap+noct
+  istrv = npsh(1)+nfro_lap+noct+1
+  iendv = npsh(1)+nfro_lap+noct+nvirct
+ 
+  ! bounds of orbital energy denominator
+  laplace%bounds(1) = 2.d0*(eig(istrv)-eig(iendo))
+  laplace%bounds(2) = 2.d0*(eig(iendv)-eig(istro))
 
- xpnts(1) = 0.009260954330D0; wghts(1) = 0.024005004419D0
- xpnts(2) = 0.051107515326D0; wghts(2) = 0.061536647229D0
- xpnts(3) = 0.140142919490D0; wghts(3) = 0.124833915648D0
+  deallocate(eig)
 
- ymin = 2.d0*(eig(3)-eig(2))
- ymax = 2.d0*(eig(4)-eig(1))
+  call lap_driver(laplace)
 
- call laplace_minimax(errmax,xpnts,wghts,nlap,ymin,ymax,&
-                      iprint=11,mxiter=100,do_rmsd=.true.,do_init=.false.)
+ call deallocate_laplace(laplace)
 
-! ------
-! test 5
-! ------
- eig(1) = -2.d0; eig(2) = -1.d0; eig(3) = +0.8d0; eig(4) = +2.3d0
-
- ymin = 2.d0*(eig(3)-eig(2))
- ymax = 2.d0*(eig(4)-eig(1))
-
- call laplace_minimax(errmax,xpnts,wghts,nlap,ymin,ymax,&
-                      tolerr=1.d-06,iprint=11,do_rmsd=.true.,do_nlap=.true.)
-
-! ------
-! test 6
-! ------
- eig(1) = -1.3d0; eig(2) = -1.d0; eig(3) = +1.0d0; eig(4) = +1.3d0
-
- ymin = 2.d0*(eig(3)-eig(2))
- ymax = 2.d0*(eig(4)-eig(1))
-
- call laplace_minimax(errmax,xpnts,wghts,nlap,ymin,ymax,&
-                      tolerr=1.d-9,iprint=11,do_rmsd=.true.,do_nlap=.true.)
-
+ call qexit("pamlaplce")
+ 
 end subroutine pamlaplce
 !==============================================================================!
