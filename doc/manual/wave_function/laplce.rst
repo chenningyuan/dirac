@@ -11,11 +11,11 @@ Laplace transformation module by B. Helmich-Paris.
 The Laplace transform of orbital energies denominators can evaluated
 numerically by quadrature procedures.
 This is an interesting reformulation for perturbation-theory based
-approaches like Green's functions methods, M{\o}ller--Plesset perturbation
+approaches like Green's functions methods, Møller-Plesset perturbation
 theory etc.
 Here the minimax algorithm is employed, which is very fast and gives also
 a good accuracy for vanishing HOMO-LUMO gaps.
-See also Ref. :cite:`Takatsuka2008` and `Helmich-Paris2016` for more details.
+See also Ref. :cite:`Takatsuka2008` and `HelmichParis2016` for more details.
 
 Keywords
 ========
@@ -95,7 +95,7 @@ You should not touch that.
 
 keyword(XPNTS)
 
-You start the iterative quadrature algorithm
+You can start the iterative quadrature algorithm
 with some guess for the exponents.
 This only works if you are close to the final
 exponents. Also you have to provide the weights
@@ -103,7 +103,7 @@ exponents. Also you have to provide the weights
 
 keyword(WGHTS)
 
-You start the iterative quadrature algorithm
+You can start the iterative quadrature algorithm
 with some guess for the weights.
 This only works if you are close to the final
 weights. Also you have to provide the exponents
