@@ -15,7 +15,7 @@ approaches like Green's functions methods, Møller-Plesset perturbation
 theory etc.
 Here the minimax algorithm is employed, which is very fast and gives also
 a good accuracy for vanishing HOMO-LUMO gaps.
-See also Ref. :cite:`Takatsuka2008` and `HelmichParis2016` for more details.
+See also Ref. :cite:`Takatsuka2008` and :cite:`HelmichParis2016` for more details.
 
 Keywords
 ========
