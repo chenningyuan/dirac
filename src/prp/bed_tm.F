@@ -996,8 +996,13 @@ C#include "cbiher.h"
       real(8), allocatable              :: XPOE(:,:),XPOP(:,:)
       real(8), allocatable              :: X(:),Y(:),Z(:),WT(:)      
       logical, allocatable              :: first(:)
-      LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE   
+      LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE         
 C
+
+c    Martin
+      logical DEBUG, PLOT
+      real(8), allocatable              :: ECD(:) 
+c    Martin 
 
 #include "ibtfun.h"
       NEXCNV = KEXCNV(JSYMOP)
@@ -1143,6 +1148,9 @@ C
       allocate( Y(NPOINTS))
       allocate( Z(NPOINTS))
       allocate(WT(NPOINTS))
+c    MARTIN
+      allocate(ECD(NPOINTS))
+C    MARTIN
       CALL LEBEDEV(NROTAV,X,Y,Z,WT,NCOUNT)
       IF(NCOUNT.NE.NPOINTS) CALL QUIT('BEDLEB: Grid inconsistency.')
 C
@@ -1191,6 +1199,15 @@ C
             WAVEVEC(1) = FAC*X(IP)
             WAVEVEC(2) = FAC*Y(IP)
             WAVEVEC(3) = FAC*Z(IP)
+C         MARTIN
+            DEBUG = .TRUE.
+            IF (DEBUG) THEN
+              WRITE(6,'(A11, I5)') "Grid Point:", IP
+              WRITE(6,'(A13,F10.5,A2,F10.5,A2,F10.5)') "WAVE VECTOR :", 
+     &        X(IP), "  ", Y(IP), "  ", Z(IP)
+              WRITE(6,'(A8,F10.5)') "WEIGHT: ", WT(IP)
+            ENDIF
+C         MARTIN
           ENDIF
           CALL PR1IN2(WORK(KFREE),LFREE,PRPINT,INTTYP,
      &       NPRPINT,INTREP,ANTI,SQUARE,DUMMY,LABINT,TRIANG,
@@ -1229,8 +1246,8 @@ C     ====================================
             ENDDO
             IF (.NOT.BEDECD) THEN
         	     TMP = TMP
-     &           + EEWT(1)*TMOM(1,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
-     &  	 + EEWT(2)*TMOM(2,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
+     &       + EEWT(1)*TMOM(1,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
+     &  	   + EEWT(2)*TMOM(2,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
      &    	 + EEWT(3)*TMOM(3,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
      &    	 + EEWT(4)*TMOM(2,IC,IPAR,IEXC)*TMOM(2,IC,IPAR,IEXC)
      &    	 + EEWT(5)*TMOM(3,IC,IPAR,IEXC)*TMOM(2,IC,IPAR,IEXC)
@@ -1292,6 +1309,28 @@ C     ====================================
      &	   + EEWT(4)*TMOM(3,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC) ! (x,z,y)
      &     + EEWT(5)*TMOM(1,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC) ! (y,x,z)
      &	   + EEWT(6)*TMOM(2,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC) ! (z,y,x)
+
+C    MARTIN
+        PLOT=.TRUE.
+        IF (PLOT) THEN
+          !ALLOCATE(ECD(NPOINTS))
+             ECD(IP) =       
+     &     + EEWT(1)*TMOM(2,2,1,IEXC)*TMOM(3,1,1,IEXC) ! (x,y,z)  
+     &     + EEWT(2)*TMOM(3,2,1,IEXC)*TMOM(1,1,1,IEXC) ! (y,z,x)
+     &     + EEWT(3)*TMOM(1,2,1,IEXC)*TMOM(2,1,1,IEXC) ! (z,x,y)
+     &     + EEWT(4)*TMOM(3,2,1,IEXC)*TMOM(2,1,1,IEXC) ! (x,z,y)
+     &     + EEWT(5)*TMOM(1,2,1,IEXC)*TMOM(3,1,1,IEXC) ! (y,x,z)
+     &     + EEWT(6)*TMOM(2,2,1,IEXC)*TMOM(1,1,1,IEXC) ! (z,y,x)
+     &     + EEWT(1)*TMOM(2,2,2,IEXC)*TMOM(3,1,2,IEXC) ! (x,y,z)  
+     &     + EEWT(2)*TMOM(3,2,2,IEXC)*TMOM(1,1,2,IEXC) ! (y,z,x)
+     &     + EEWT(3)*TMOM(1,2,2,IEXC)*TMOM(2,1,2,IEXC) ! (z,x,y)
+     &     + EEWT(4)*TMOM(3,2,2,IEXC)*TMOM(2,1,2,IEXC) ! (x,z,y)
+     &     + EEWT(5)*TMOM(1,2,2,IEXC)*TMOM(3,1,2,IEXC) ! (y,x,z)
+     &     + EEWT(6)*TMOM(2,2,2,IEXC)*TMOM(1,1,2,IEXC) ! (z,y,x)
+        ENDIF
+C    MARTIN
+
+
      	  ENDIF
           OSC(IPAR,IEXC) = OSC(IPAR,IEXC) + WT(IP)*TMP
         ENDIF
@@ -1311,7 +1350,7 @@ C
 C     Print section
 C
       IF (BEDECD) THEN
-	WRITE(6,*) '* Isotropic circular dichroism'
+	       WRITE(6,*) '* Isotropic circular dichroism'
       ELSE
        	WRITE(6,*) '* Isotropic oscillator strengths:'
       ENDIF
@@ -1323,6 +1362,24 @@ C
      &       IEXC,OMEGA(IEXC),
      &       (OSC(IPAR,IEXC),IPAR = 1,NPAR+1)
       ENDDO
+
+C    MARTIN
+      IF (PLOT) THEN
+        DO IEXC = 1,NEXCNV
+          WRITE(6,"(A24, I4)") "Angular plot excitation ", IEXC
+          WRITE(6,*) "X      Y       Z       ECD"
+          DO IP = 1,NPOINTS
+             WRITE(6,"(3F18.10, E18.10)") X(IP), Y(IP), Z(IP), ECD(IP)
+          ENDDO
+          WRITE(6,"(A22,I4)") "End output excitation ", IEXC
+        ENDDO
+        deallocate(ECD)
+      ENDIF
+C    MARTIN
+
+
+
+
 
 C            
 C     Memory deallocation
