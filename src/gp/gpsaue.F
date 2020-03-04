@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -3813,7 +3813,7 @@ C
 #include "nuclei.h"
       TOTMASS = D0
       DO IATOM = 1, NUCIND
-        NCHARG = NINT(CHARGE(IATOM))
+        NCHARG = IZATOM(IATOM)
         IF (NCHARG .NE. 0 .AND. .NOT. NOORBT(IATOM)) THEN
           TOTMASS = TOTMASS
      &            + NUCDEG(IATOM)*DISOTP(NCHARG,ISOTOP(IATOM),'MASS')

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -49,6 +49,7 @@ C
       PARAMETER (D0 = 0.0D0)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
+      LOGICAL   DIPORG_SET,  GAGORG_SET, CAVORG_SET
       DIMENSION WORK(LWORK)
 C
 #ifdef PRG_DIRAC
@@ -186,6 +187,9 @@ C
       TRIANG = .TRUE.
       EXPIKR = .FALSE.
       MGCOOR = .FALSE.
+      DIPORG_SET = .FALSE.
+      GAGORG_SET = .FALSE.
+      CAVORG_SET = .FALSE.
       CALL DZERO(ORIGIN,3)
       CALL DZERO(GAGORG,3)
       CALL DZERO(DIPORG,3)
@@ -586,12 +590,14 @@ C
             GO TO 100
  170     CONTINUE
             READ (LUCMD, *,IOSTAT=IOS) (GAGORG(I),I=1,3)
+            GAGORG_SET = .TRUE.
             IF (IOS.NE.0) THEN
               CALL QUIT('Error in reading (GAGORG(I),I=1,3)!')
             ENDIF
             GO TO 100
  171     CONTINUE
             READ (LUCMD, *,IOSTAT=IOS) (DIPORG(I),I=1,3)
+            DIPORG_SET = .TRUE.
             IF (IOS.NE.0) THEN
               CALL QUIT('Error in reading (DIPORG(I),I=1,3)!')
             ENDIF
@@ -975,15 +981,17 @@ C
 #endif
       CALL SETDCH
       IF (DORLM .AND. .NOT. CAVUSR) THEN
-         KGEOM = 1
-         KMASS = KGEOM + 3*NATOMS
-         KNAT  = KMASS + NATOMS
-         KLAST = KNAT + (NATOMS + 1)/IRAT
-         IF (KLAST .GT. LWORK) CALL STOPIT('HERDRV','CMMASS',KLAST,
-     &                                     LWORK)
-         CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),ISOTOP,IPRDEF)
-         CALL DCOPY(3,CMXYZ,1,CAVORG,1)
-         WRITE(LUPRI,'(/,A,3F12.6)') ' Cavity center (center of mass):',
+        KGEOM  = 1
+        KMASS  = KGEOM  + 3*NATOMS
+        KNUMIS = KMASS  + NATOMS
+        KNAT   = KNUMIS + NATOMS
+        KLAST  = KNAT   + (NATOMS + 1)/IRAT
+        IF (KLAST .GT. LWORK) CALL STOPIT('HERDRV','CMMASS',KLAST,
+     &                                    LWORK)
+        CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),
+     &              WORK(KNUMIS),IPRDEF)
+        CALL DCOPY(3,CMXYZ,1,CAVORG,1)
+        WRITE(LUPRI,'(/,A,3F12.6)') ' Cavity center (center of mass):',
      &                               (CAVORG(I), I = 1, 3)
       END IF
 C

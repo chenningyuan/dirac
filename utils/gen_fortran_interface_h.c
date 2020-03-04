@@ -24,13 +24,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-int main(int argc, char *argv[])
+// int main(int argc, char *argv[])
+int gen_fortran_interface_h_c_()
 {
-  if (argc > 1)
-    {
-      printf("Generate a C header file for Fortran->C calling\n");
-      return EXIT_SUCCESS;
-    }
+  printf("/* Generate a C header file 'fortran_interface.h' for C-language routines */\n");
+
   printf("#ifndef FORTRAN_INTERFACE_H\n");
   printf("#define FORTRAN_INTERFACE_H\n");
 

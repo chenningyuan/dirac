@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -262,17 +262,6 @@ C ... header:
       WRITE(LUPRI,'(3X,A)') 'Magnetic properties:'
       CALL PRSYMB(LUPRI,'=',75,0)
 
-      if (nz .ne. 4) then
-        if (msuscp .and. london .and. dirac_cfg_dft_calculation) then
-          call quit("Magnetizabilities with DFT and London atomic"//
-     &              " orbitals available in C1 symmetry only")
-        end if
-        if (shield .and. london .and. dirac_cfg_dft_calculation) then
-          call quit("Shieldings with DFT and London atomic orbitals"//
-     &              " available in C1 symmetry only")
-        end if
-      end if
-
       IF (USECM.AND.GORG) THEN
        WRITE(LUPRI,'(A)')
      & 'You have asked for center of mass to be the gauge origin!'
@@ -299,8 +288,10 @@ C ... make the center of mass the gauge origin (default in dalton)
          CALL MEMGET('REAL',KGEOM  ,3*NATOMS ,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KMASS  ,  NATOMS ,WORK,KFREE,LFREE)
          CALL MEMGET('INTE',KNAT   ,  NATOMS ,WORK,KFREE,LFREE)
+         CALL MEMGET('INTE',KNUMIS ,  NATOMS ,WORK,KFREE,LFREE)
 C ... call the routine in abacus/hergp.F
-         CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),ISOTOP,IPRDEF)
+         CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),
+     &               WORK(KNUMIS),IPRDEF)
          CALL MEMREL('NMRINP.CMMASS',WORK,KWORK,KGEOM,KFREE,LFREE)
          CALL DCOPY(3,CMXYZ,1,GAGORG,1)
          CALL DCOPY(3,GAGORG,1,DIPORG,1)

@@ -24,6 +24,8 @@ variables:
   MPILIB: "OPENMPI"
 
 ubuntu_serial32-check:
+  only:
+    - merge_requests
   image: ubuntu
   before_script:
     - apt-get -qq update
@@ -48,6 +50,8 @@ ubuntu_serial32-check:
     - make -j $N_PROC html
 
 ubuntu_parallel32-check:
+  only:
+    - merge_requests
   image: ubuntu
   before_script:
     - apt-get -qq update
@@ -78,6 +82,8 @@ ubuntu_parallel32-check:
 
 
 ubuntu_parallel64-check:
+  only:
+    - merge_requests
   image: ubuntu
   before_script:
     - apt-get -qq update
