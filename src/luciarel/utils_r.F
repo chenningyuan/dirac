@@ -482,6 +482,7 @@ C***********************************************************************
       INTEGER(KIND=df_MPI_OFFSET_KIND) IS_LENGTH8
 #endif
 #include "parluci.h"
+#include "mpif.h"
 #include "typesz_mpi2.h"
       CHARACTER*6 ENVIRO, SIGDEN_ROUTE
       DIMENSION T_BUFF(*)

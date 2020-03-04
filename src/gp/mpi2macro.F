@@ -62,8 +62,8 @@ C
 C***********************************************************************
       IMPLICIT REAL*8 (A-H,O-Z)
 #include "infpar.h"
-#include "mpif.h"
 #include "priunit.h"
+#include "mpif.h"
 #include "mxdim_mpi2.h"
       INTEGER ISTAT(MPI_STATUS_SIZE)
       DIMENSION RBUF(*), MY_WIN(*)
