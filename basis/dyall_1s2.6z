@@ -1,10 +1,13 @@
 $ 
 $ Elements Supported
-$ He Ne Kr Ar Xe Rn Uuo
+$ He Ne Kr Ar Xe Rn U Og
 $ 
-$  REFERENCE
+$  REFERENCES
 $ 
-$  K. G. Dyall, 2012
+$ He Ne Kr Ar Xe Rn Og:
+$   A. Almoukhalalati, S. Knecht, H. J. Aa. Jensen, K. G. Dyall and T. Saue
+$   J. Chem. Phys. 145, 074104 (2016). DOI: 10.1063/1.4959452
+$ U: K. G. Dyall, 2020, unpublished.
 $
 
 $ He
@@ -280,7 +283,52 @@ $ h functions
     1    0    0
  1.7321156E+04
 
-$ Uuo
+$ U 
+a 92
+$ s functions
+   15    0    0
+    5.64919439E+07
+    1.49851941E+07
+    5.08329607E+06
+    1.90239693E+06
+    7.70779458E+05
+    3.26604229E+05
+    1.43636334E+05
+    6.49000754E+04
+    3.00508196E+04
+    1.42150918E+04
+    6.85929600E+03
+    3.36969317E+03
+    1.68081395E+03
+    8.45555806E+02
+    4.18301425E+02
+$ p functions
+    5    0    0
+    2.17436192E+05
+    4.97056229E+04
+    1.60986582E+04
+    5.55256608E+03
+    1.83748765E+03
+$ d functions
+    4    0    0
+    9.13480408E+04
+    2.83225149E+04
+    1.01406720E+04
+    3.36208482E+03
+$ f functions
+    3    0    0
+    5.80395234E+04
+    1.86568749E+04
+    6.08809379E+03
+$ g functions
+    2    0    0
+    3.72542898E+04
+    1.10547296E+04
+$ h functions
+    1    0    0
+    2.20013647E+04
+
+$ Og
 a 118
 $ s functions
    13    0    0
