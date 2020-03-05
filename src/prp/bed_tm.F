@@ -1000,7 +1000,6 @@ C#include "cbiher.h"
 C
 
 c    Martin
-      logical DEBUG, PLOT
       real(8), allocatable              :: ECD(:) 
 c    Martin 
 
@@ -1199,15 +1198,6 @@ C
             WAVEVEC(1) = FAC*X(IP)
             WAVEVEC(2) = FAC*Y(IP)
             WAVEVEC(3) = FAC*Z(IP)
-C         MARTIN
-            DEBUG = .TRUE.
-            IF (DEBUG) THEN
-              WRITE(6,'(A11, I5)') "Grid Point:", IP
-              WRITE(6,'(A13,F10.5,A2,F10.5,A2,F10.5)') "WAVE VECTOR :", 
-     &        X(IP), "  ", Y(IP), "  ", Z(IP)
-              WRITE(6,'(A8,F10.5)') "WEIGHT: ", WT(IP)
-            ENDIF
-C         MARTIN
           ENDIF
           CALL PR1IN2(WORK(KFREE),LFREE,PRPINT,INTTYP,
      &       NPRPINT,INTREP,ANTI,SQUARE,DUMMY,LABINT,TRIANG,
@@ -1311,8 +1301,7 @@ C     ====================================
      &	   + EEWT(6)*TMOM(2,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC) ! (z,y,x)
 
 C    MARTIN
-        PLOT=.TRUE.
-        IF (PLOT) THEN
+        IF (ANGPLOT) THEN
           !ALLOCATE(ECD(NPOINTS))
              ECD(IP) =       
      &     + EEWT(1)*TMOM(2,2,1,IEXC)*TMOM(3,1,1,IEXC) ! (x,y,z)  
@@ -1364,7 +1353,7 @@ C
       ENDDO
 
 C    MARTIN
-      IF (PLOT) THEN
+      IF (ANGPLOT) THEN
         DO IEXC = 1,NEXCNV
           WRITE(6,"(A24, I4)") "Angular plot excitation ", IEXC
           WRITE(6,*) "X      Y       Z       ECD"

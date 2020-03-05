@@ -344,7 +344,7 @@ C*****************************************************************************
 #include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 37,DRESFAC = 1.0D2)
+      PARAMETER (NTABLE = 38,DRESFAC = 1.0D2)
 C
 #include "dcbgen.h"
 #include "dcbprp.h"
@@ -374,7 +374,7 @@ C
      &            '.RESFAC','.ORBANA','.ROTAV ','.SKIPEE',
      &            '.MXLOAD','.ONLYSF','.ONLYSG','.BED   ',
      &            '.XXXXXX','.BEDSTP','.BEDCON','.BEDECD',
-     &            '.XXXXXX'/
+     &            '.ANGPLOT','.XXXXXX'/
 
 C
 #include "ibtfun.h"
@@ -675,7 +675,11 @@ C&&&& BEDCON: Contribution to order L in the wave vector from full light-matter 
 C&&&& BEDECD: Electronic circular dichroism with the full light-matter interaction operator
                BEDECD=.TRUE.
                GO TO 100 
+C&&&& ANGPLOT: prints the data points for the angular dependency of electronic circular dichroism
  37            CONTINUE
+               ANGPLOT=.TRUE.
+               GO TO 100
+ 38            CONTINUE
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
