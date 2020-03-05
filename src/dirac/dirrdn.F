@@ -2662,7 +2662,7 @@ C
      &             '*OPTIMI','*MP2 NO','*KRCICA','*COSCI ',
      &             '*GASCIP','*HSFS  ','*KRCCCA','*ARDUCC',
      &             '*SCF   ','*KRCI  ','*QCORR ','*LAPLCE',
-     &             '.EXACC '/
+     &             '.EXACC '/ 
 
       DATA TABLE  /'xxxxxxx','.MP2   ','.LUCITA','.REORDE',
      &             '.POST S','.RELCCS','.DIRRCI','.MVO   ',
@@ -2670,7 +2670,7 @@ C
      &             '.PHCOEF','.MP2 NO','.RELADC','.KR CI ',
      &             '.KR CC ','.COSCI ','.GASCIP','.HSFS  ',
      &             '.ARDUCC','.SCF   ','.KRCI  ','.POLPRP',
-     &             '.LAPLCE','.EXACC '/
+     &             '.EXACC ','.LAPLCE'/
 C
       N_WF = 0
 C
@@ -2742,7 +2742,7 @@ C
                GO TO (101,102,103,104,105,106,107,108,
      &                109,110,111,112,113,114,115,116,
      &                117,118,119,120,121,122,123,124,
-     &                125),I
+     &                125,126),I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -2929,19 +2929,19 @@ C&&&& POLPRP: Calculate polarization propagator for excitations
             DIRAC_WF(N_WF) = 'POLPRP'
             GO TO 100
 
-C&&&& LAPLCE: Laplace transformation test program
-  125    CONTINUE
-            DOLAPLCE = .TRUE.
-            N_WF = N_WF + 1
-            DIRAC_WF(N_WF) = 'LAPLCE'
-            GO TO 100
-
 C&&&& EXACC: Perfrom coupled cluster calculations with exacc
-  126    CONTINUE
+  125    CONTINUE
             DOEXACC = .TRUE.
             dirac_cfg_exacc = .true.
             N_WF = N_WF + 1
             DIRAC_WF(N_WF) = 'EXA_CC'
+            GO TO 100
+
+C&&&& LAPLCE: Laplace transformation test program
+  126    CONTINUE
+            DOLAPLCE = .TRUE.
+            N_WF = N_WF + 1
+            DIRAC_WF(N_WF) = 'LAPLCE'
             GO TO 100
 
       ELSE IF (PROMPT .EQ. '*') THEN
