@@ -530,6 +530,7 @@ C
          WRITE (LUPRI,'(A,3F20.10)') ' GAUGE  ', (GAGORG(I),I=1,3)
          WRITE (LUPRI,'(A,3F20.10)') ' DIPOLE ', (DIPORG(I),I=1,3)
          WRITE (LUPRI,'(A,3F20.10)') ' CAVITY ', (CAVORG(I),I=1,3)
+         WRITE (LUPRI,'(A,3F20.10)') ' CM     ', (CMXYZ(I),I=1,3)
          WRITE (LUPRI,'(A,I5)') ' JMAXD  ',JMAXD
          WRITE (LUPRI,'(A,I5)') ' JMAXM  ',JMAXM
       END IF
@@ -1218,7 +1219,8 @@ C     Choose origin for expansions coefficients:
 C     1) A certain nuclei
 C     2) Dipole origin
 C     3) Gauge origin
-C     4) Operator center ("molecular" origin)
+C     4) Molecular center of mass
+C     5) Operator center ("molecular" origin)
 C
          IF ((INTTYP .EQ. 17) .OR. (INTTYP .EQ. 20) .OR.
      &       (INTTYP .EQ. 22) .OR. (INTTYP .EQ. 26).OR. 
@@ -1230,9 +1232,8 @@ C
      &            (INTTYP .EQ. 6) .OR. (INTTYP .EQ. 7) .OR.
      &            (INTTYP .EQ. 8) .OR. (INTTYP .EQ. 29) .OR.
      &            (INTTYP .EQ. 30) .OR. (INTTYP .EQ. 31) .OR.
-     &            (INTTYP .EQ. 53) .OR.
-     &            (INTTYP .EQ. 56) .OR. (INTTYP .EQ. 57) .OR.
-     &            (INTTYP .EQ. 58)) THEN
+     &            (INTTYP .EQ. 53) .OR. (INTTYP .EQ. 56) .OR.
+     &            (INTTYP .EQ. 57) .OR. (INTTYP .EQ. 58)) THEN
             TEMP(1) = DIPORG(1)
             TEMP(2) = DIPORG(2)
             TEMP(3) = DIPORG(3)
@@ -1240,8 +1241,11 @@ C
             TEMP(1) = GAGORG(1)
             TEMP(2) = GAGORG(2)
             TEMP(3) = GAGORG(3)
-         ELSE IF ((INTTYP .EQ. 18) .OR. (INTTYP .EQ. 46) .OR.
-     &            (INTTYP .EQ. 47)) THEN
+         ELSE IF (INTTYP .EQ. 18) THEN
+            TEMP(1) = CMXYZ(1)
+            TEMP(2) = CMXYZ(2)
+            TEMP(3) = CMXYZ(3)
+         ELSE IF ((INTTYP .EQ. 46) .OR. (INTTYP .EQ. 47)) THEN
             TEMP(1) = CAVORG(1)
             TEMP(2) = CAVORG(2)
             TEMP(3) = CAVORG(3)
@@ -1460,8 +1464,8 @@ C
             CALL AM1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                  D1)
 C
-C        Angular momentum around the origin
-C        ----------------------------------
+C        Angular momentum around the molecular center of mass
+C        ----------------------------------------------------
 C
          ELSE IF (INTTYP .EQ. 18) THEN
             CALL AM1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,

@@ -8480,18 +8480,6 @@ C
       WRITE (LUPRI,'(/,A,18X,3F20.15)')
      &    ' Gauge origin (a.u.):', (GAGORG(I),I=1,3)
 C
-      WRITE (LUPRI,'(/,A,17X,3F20.15)')
-     &    ' Cavity origin (a.u.):', (CAVORG(I),I=1,3)
-C
-      WRITE(LUPRI,'(/,A,/2X,A,/,8X,A,/,A)')
-     & '*********************************************************' //
-     & '********************************************',
-     & 'NOTE: The electronic angular momentum operator is defined' //
-     & ' with respect to the "cavity origin".',
-     & 'Then, it must be placed at the molecular CM to get correct'//
-     & ' values of g-tensors.',
-     & '*********************************************************' //
-     & '********************************************'
 C--------------------------------------------------------------------
       CALL MGFRES(GEOM,AMASS,JATOM,PMATL,PMATS,IPRPRP)
 C--------------------------------------------------------------------
@@ -10533,18 +10521,6 @@ C           ... extract the e-p response part into PMAT(...,2)
         END IF
       END DO
 C
-      WRITE (LUPRI,'(/,A,17X,3F20.15)')
-     &    ' Cavity origin (a.u.):', (CAVORG(I),I=1,3)
-C
-      WRITE(LUPRI,'(/,A,/2X,A,/,8X,A,/,A)')
-     & '*********************************************************' //
-     & '********************************************',
-     & 'NOTE: The electronic angular momentum operator is defined' //
-     & ' with respect to the "cavity origin".',
-     & 'Then, it must be placed at the molecular CM to get correct'//
-     & ' values of spin-rotation tensors.',
-     & '*********************************************************' //
-     & '********************************************'
 C--------------------------------------------------------------------
       CALL SPRRES(GEOM,AMASS,GVAL,SPRDNL,PMATL,PMATS,JATOM,
      &            IPRPRP,DOATOM)
