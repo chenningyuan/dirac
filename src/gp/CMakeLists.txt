@@ -61,6 +61,7 @@ set(FREE_GP_FORTRAN_SOURCES
     memory_allocator.F90
     memory_control.F90
     memory_errorhandler.F90
+    memory_internal_special_i8.F90
     memory_internal_ada_1d.F90
     memory_internal_ada_2d.F90
     memory_internal_ada_3d.F90
@@ -79,6 +80,7 @@ set(FREE_GP_FORTRAN_SOURCES
     quaternion_algebra.F90
     selftests.F90
     string_manipulations.f90
+    type_laplace.F90
     unit_test_generator.f90
     unit_testing.F90
     vector_functions.F90

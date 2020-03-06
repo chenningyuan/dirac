@@ -61,7 +61,7 @@ class TestRun(runtest.TestRun):
             dirac_exe = 'dirac_mointegral_export.x.exe'
         else:
             dirac_exe = 'dirac_mointegral_export.x'
-        launch_script = os.path.normpath(os.path.join(self.binary_dir, dirac_exe ))
+        launch_script = os.path.normpath(os.path.join(self.binary_dir, dirac_exe))
         if self.skip_run:
             sys.stdout.write('\nskipping actual run\n')
         else:
@@ -76,7 +76,7 @@ class TestRun(runtest.TestRun):
             sys.stdout.write('\nrunning test: %s %s with arguments=%s\n' % (args))
         else:
             sys.stdout.write('\nrunning test: %s \n' % (launcher))
-            command = launcher 
+            command = launcher
             try:
                 runtest.TestRun.execute(self,command=command,stdout_file_name=out,accepted_errors=accepted_errors)
                 if f is None:
@@ -109,7 +109,7 @@ f = Filter()
 f.add(from_string = 'Initialized reading from MRCONEE',
        num_lines   = 5,
        abs_tolerance   = 1.0e-7)  # we check only core energy of BeH
-test.run(f, args='') # own run
+test.run(f, args='fcidump') # own run
 ierr +=test.return_code
 
 #os.unlink('MRCONEE')
