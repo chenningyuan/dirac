@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2798,6 +2798,7 @@ c
                IF (DDOT(RCW*NDTR*NDTL,DIP_SUB,1,DIP_SUB,1)
      &             .LT.1.E-16) THEN
                   DEALLOCATE (DIP_SUB)
+                  II = II + NDTL
                   CYCLE
                END IF
 
@@ -2844,8 +2845,11 @@ c
                DEALLOCATE (DIP_SUB)
                DEALLOCATE (DIP_RHS)
                DEALLOCATE (TDIP_SUB)
-             
+
+         II = II + NDTL
          ENDDO !irreps in lhs
+
+         JJ = JJ + NDTR
        enddo ! irreps on rhs
 
  1000 Format (/' Transition dipoles and partial intensities for ',A,/

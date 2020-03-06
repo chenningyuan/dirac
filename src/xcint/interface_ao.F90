@@ -68,6 +68,7 @@ module interface_ao
    integer, public :: uq_to_pq(4, 0:7)
    logical, public :: basis_is_spherical
    logical, public :: use_only_large
+   !real(8), public :: global_gauge_origin(3)
 
    integer, allocatable, public :: cartesian_deg(:)
    integer, allocatable, public :: cartesian_off(:)
@@ -133,6 +134,7 @@ contains
       uq_to_pq                   = 0
       basis_is_spherical         = .false.
       use_only_large             = .false.
+      !global_gauge_origin        = 0.0d0
 
       if (allocated(cartesian_deg                )) deallocate(cartesian_deg                )
       if (allocated(cartesian_off                )) deallocate(cartesian_off                )
@@ -908,6 +910,7 @@ contains
          call xc_mpi_bcast(uq_to_pq                      )
          call xc_mpi_bcast(basis_is_spherical            )
          call xc_mpi_bcast(use_only_large                )
+         !call xc_mpi_bcast(global_gauge_origin           )
 
          call xc_mpi_bcast(cartesian_deg                 )
          call xc_mpi_bcast(cartesian_off                 )
