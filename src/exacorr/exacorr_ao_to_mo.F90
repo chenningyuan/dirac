@@ -383,6 +383,8 @@ module exacorr_ao_to_mo
          call a2int_tensor%get_space_ids(a2int_id,a2int_root,ierr)
          if(ierr.ne.EXA_SUCCESS) call quit('a2int tensor corrupted')
 
+         ierr=exatns_tensor_init(a2int_tensor,ZERO)
+
 !        Initialize tensors with MO coefficients, one for each index and alpha/beta
          do i = 1, 2
            mocoef_id(1)   = aoint_id(i)
@@ -419,6 +421,7 @@ module exacorr_ao_to_mo
 
 !        Do 1st and 2nd quarter-transformation
          ierr=exatns_tensor_create(a1int_tensor,'a1int',a1int_id,a1int_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_init(a1int_tensor,ZERO)
          ierr=exatns_tensor_contract(a1int_tensor,mocoef_tensor(1,1),aoint_tensor,"D(i,q,r,s)+=R+(p,i)*L(p,q,r,s)")
          if(ierr.ne.EXA_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=11; return; endif
          ierr=exatns_tensor_contract(a2int_tensor,a1int_tensor,mocoef_tensor(1,2),"D(i,j,r,s)+=L(i,q,r,s)*R(q,j)")
@@ -769,6 +772,7 @@ module exacorr_ao_to_mo
          call integral_tensor%get_space_ids(integral_id,integral_root,ierr)
          if(ierr.ne.EXA_SUCCESS) call quit('integral tensor corrupted')
 
+
 !        Copy the information about spaces from the starting and target tensors to the auxilliary ones
 !        Use relation (12|34) = <13|24>
          moint_id(1) = integral_id(1)
@@ -785,6 +789,8 @@ module exacorr_ao_to_mo
          ierr=exatns_tensor_create(moint_tensor,'mulliken',moint_id,moint_root,EXA_DATA_KIND_C8)
 
 !        Transform integrals
+         ierr=exatns_tensor_init(moint_tensor,ZERO)
+         ierr=exatns_tensor_init(integral_tensor,ZERO)
          call aomo_halftransform_2 (a2int_tensor,moint_tensor)
 !        Switch to Dirac order and antisymmetrize
          call mulliken_to_dirac_sort (moint_tensor,integral_tensor,antisymmetrize)
