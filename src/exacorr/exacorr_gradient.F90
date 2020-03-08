@@ -63,15 +63,23 @@ module exacorr_gradient
 !************************************
 
       ierr=exatns_tensor_create(gamma%prime_oo,"gprime_oo",oo_id,oo_root,EXA_DATA_KIND_C8)
+      ierr=exatns_tensor_init(gamma%prime_oo,ZERO)
       if (.not.CCD) then
         ierr=exatns_tensor_create(gamma%prime_ov,"gprime_ov",ov_id,ov_root,EXA_DATA_KIND_C8)
         ierr=exatns_tensor_create(gamma%symm_ov,"gsymm_ov",ov_id,ov_root,EXA_DATA_KIND_C8)
         ierr=exatns_tensor_create(gamma%prime_vo,"gprime_vo",vo_id,vo_root,EXA_DATA_KIND_C8)
         ierr=exatns_tensor_create(gamma%symm_vo,"gsymm_vo",vo_id,vo_root,EXA_DATA_KIND_C8)
+        ierr=exatns_tensor_init(gamma%prime_ov,ZERO)
+        ierr=exatns_tensor_init(gamma%symm_ov, ZERO)
+        ierr=exatns_tensor_init(gamma%prime_vo,ZERO)
+        ierr=exatns_tensor_init(gamma%symm_vo, ZERO)
       end if
       ierr=exatns_tensor_create(gamma%prime_vv,"gprime_vv",vv_id,vv_root,EXA_DATA_KIND_C8)
       ierr=exatns_tensor_create(gamma%symm_oo,"gsymm_oo",oo_id,oo_root,EXA_DATA_KIND_C8)
       ierr=exatns_tensor_create(gamma%symm_vv,"gsymm_vv",vv_id,vv_root,EXA_DATA_KIND_C8)
+      ierr=exatns_tensor_init(gamma%prime_vv,ZERO)
+      ierr=exatns_tensor_init(gamma%symm_oo,ZERO)
+      ierr=exatns_tensor_init(gamma%symm_vv,ZERO)
 
 !**************************************
 !     calculate DM blocks in MO basis *
@@ -146,6 +154,9 @@ module exacorr_gradient
         ierr=exatns_tensor_create(tau2_tensor,"tau2_dm",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
         ierr=exatns_tensor_create(vv_aux_tensor,"vv_aux",vv_id,vv_root,EXA_DATA_KIND_C8)
         ierr=exatns_tensor_create(oo_aux_tensor,"oo_aux",oo_id,oo_root,EXA_DATA_KIND_C8)
+        ierr=exatns_tensor_init(tau2_tensor,ZERO)
+        ierr=exatns_tensor_init(vv_aux_tensor,ZERO)
+        ierr=exatns_tensor_init(oo_aux_tensor,ZERO)
       end if
 
 !********************

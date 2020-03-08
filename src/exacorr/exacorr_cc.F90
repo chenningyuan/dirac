@@ -284,10 +284,12 @@ module exacorr_cc
 !            construct lambda tensors + initialize with t-amplitudes
              if (.not.CCD) then
                 ierr=exatns_tensor_create(l1_tensor,"l1",ov_id,ov_root,EXA_DATA_KIND_C8)
+                ierr=exatns_tensor_init(l1_tensor,ZERO)
                 ierr=exatns_tensor_contract("L(i,a)+=T+(a,i)*K()",l1_tensor,comm_t%t1,one_tensor)
              end if
 
              ierr=exatns_tensor_create(l2_tensor,"l2",oovv_id,oovv_root,EXA_DATA_KIND_C8)
+             ierr=exatns_tensor_init(l2_tensor,ZERO)
              ierr=exatns_tensor_contract("L(i,j,a,b)+=T+(a,b,i,j)*K()",l2_tensor,comm_t%t2,one_tensor)
 
 !            solve lambda-equations and caluclate density matrix in MO basis
@@ -1033,7 +1035,7 @@ module exacorr_cc
 !******************************
 
           if (.not.CCD) then
-            ierr=exatns_tensor_init(s1_tensor)
+            ierr=exatns_tensor_init(s1_tensor,ZERO)
 
 !----------------------------------------
 !           term 1: S(i,a) += Fbar(i,a) |
@@ -1087,7 +1089,7 @@ module exacorr_cc
 !         calculate s2 tensor *
 !******************************
 
-          ierr=exatns_tensor_init(s2_tensor)
+          ierr=exatns_tensor_init(s2_tensor,ZERO)
 
 !---------------------------------------
 !         term 1: S(ij,ab) += V(ij,ab) |
