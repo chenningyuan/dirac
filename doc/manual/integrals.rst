@@ -59,11 +59,17 @@ Origin appearing in the London atomic orbital phase-factors. Default::
 
 keyword(GAUGEORIGIN)
 
-Set the gauge origin. By default it is set to the coordinate origin::
+Set the gauge origin (in bohr) for an external magnetic field, e.g. for NMR shielding calculations.
+To set the gauge origin in angstrom use :ref:`INTEGRALS_.GO ANG`.
+By default gauge origin is set to the coordinate origin::
 
   .GAUGEORIGIN
    0.0 0.0 0.0
 
+keyword(GO ANG)
+
+Same as :ref:`INTEGRALS_.GAUGEO` but
+reads gauge origin coordinates in angstrom instead of bohr.
 
 keyword(DIPORG)
 

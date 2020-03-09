@@ -945,7 +945,7 @@
          write(lupri,*) 'NGBFSZ,NPASS,IRECL',NGBFSZ,NPASS,IRECL
          call quit('ERROR: bad record length in INITGBF')
       END IF
-C
+!
       FNODE = LFNAM('SCLIN')
       OPEN (UNIT=LGFIL,FILE=FNODE,ACCESS='DIRECT',RECL=IRECL)
 !

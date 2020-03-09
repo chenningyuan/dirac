@@ -492,9 +492,6 @@
      &     '* Operator center (a.u.):', (ORIGIN(I),I=1,3),              &
      &     '* Gauge origin    (a.u.):', (GAGORG(I),I=1,3),              &
      &     '* Dipole origin   (a.u.):', (DIPORG(I),I=1,3)
-      GAGORGX = GAGORG(1)
-      GAGORGY = GAGORG(2)
-      GAGORGZ = GAGORG(3)
 
       IF (X2C .OR. BSS) THEN
       IF (DOPCT) THEN
@@ -618,10 +615,9 @@
      &      DABS(GAGORGY-GAGORG(2)).GE.THRS1.OR.                        &
      &      DABS(GAGORGZ-GAGORG(3)).GE.THRS1
       IF (CHGO) THEN
-         WRITE (LUPRI,'(1X,A,3F18.10)')                                 &
-     &     '* Operator center:', (ORIGIN(I),I=1,3),                     &
-     &     '* Gauge origin   :', (GAGORG(I),I=1,3),                     &
-     &     '* Dipole origin  :', (DIPORG(I),I=1,3)
+         WRITE (LUPRI,'(A/A,3F18.10)')                                  &
+     &     '   Gauge origin has been changed:',                         &
+     &     ' * Gauge origin   :', (GAGORG(I),I=1,3)
       ENDIF
 
 !     consistency checks

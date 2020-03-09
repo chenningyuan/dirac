@@ -58,7 +58,7 @@ C*****************************************************************************
 C
 
       PARAMETER (NTABLE = 16)
-      LOGICAL :: SET, NEWDEF, RESET, GORG, LBIT, USECM
+      LOGICAL :: SET, NEWDEF, RESET, LBIT, USECM
       LOGICAL :: INTNMR_SET
       LOGICAL :: oneexi, twoexi, fckexi
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,
@@ -66,10 +66,10 @@ C
       DIMENSION WORK(LWORK)
 C
       SAVE SET
-      DATA TABLE /'.GAUGEO','.NOLOND','.SYMCON','.NOORTH',
+      DATA TABLE /'xXXXXXX','.NOLOND','.SYMCON','.NOORTH',
      &            '.INTFLG','.NOTWO ','.NOONEI','.FULMAT',
      &            '.REGRAD','.LONDON','.USECM ','.MLLSUS',
-     &            '.GO ANG','.SEPTEP','.EXPPED','.XXXXXX'  /
+     &            'xXXXXXX','.SEPTEP','.EXPPED','xXXXXXX'  /
       DATA SET/.FALSE./
 C
       CALL QENTER('NMRINP')
@@ -101,7 +101,6 @@ CMI ... by default we use conventional orbitals to ease running DIRAC tests
       NOORTH = .FALSE.
       NOTWOL = .FALSE.
       NOONEI = .FALSE.
-      GORG   = .FALSE.
       USECM  = .FALSE.
       RDSUSLLMOD = .FALSE.
       SEPTEP = .FALSE.
@@ -139,21 +138,12 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in NMRINP.'
+     &            '" not recognized in NMRINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in NMRINP.')
 
-!              .GAUGEO
+!
     1          CONTINUE
-C ... read user specified gauge origin
-                  READ(LUCMD,*,IOSTAT=IOS) (GAGORG(ICOOR),ICOOR=1,3)
-                  IF (IOS.NE.0) THEN
-                   WRITE(LUPRI,*) '(GAGORG(ICOOR),ICOOR=1,3:',
-     &             (GAGORG(ICOOR),ICOOR=1,3)
-                   CALL QUIT(
-     & 'NMRINP: error in reading (GAGORG(ICOOR),ICOOR=1,3) !')
-                  ENDIF
-                  GORG = .TRUE.
                GO TO 100
 
     2          CONTINUE
@@ -215,26 +205,14 @@ C&&&& .MLLSUS: Activate the nonrelativistic modification of the relativistic RDS
 ! Hamiltonian and with the (RKB,c->infinite) Hamiltonian with the Sternheim's diamagnetic term
                RDSUSLLMOD = .TRUE.
                GO TO 100
-
-!              .GO_ANG
    13          continue
-!              read user specified gauge origin in angstrom
-               read(lucmd, *, iostat=ios) gagorg
-               if (ios /= 0) then
-                 call quit('error in reading .GO_ANG')
-               end if
-!              convert from angstrom to bohr
-               gagorg = gagorg/xtang
-               gorg = .true.
                go to 100
-   14          CONTINUE
-!              .SEPTEP
+   14          CONTINUE ! .SEPTEP
 !              gosia: SEParate T matrix to electronic and positronic blocks
 !              it does not affect shieldings, it is only for analysis.
                SEPTEP = .true.
                GO TO 100
-   15          CONTINUE
-!              .EXPPED
+   15          CONTINUE ! .EXPPED
 !              gosia: export contributions to perturbed density to files
 !              direct-LAO phase factor part write to pertden_direct_lao.FINAL
 !              reorthonormalization part write to pertden_reorth_lao.FINAL
@@ -262,28 +240,7 @@ C ... header:
       WRITE(LUPRI,'(3X,A)') 'Magnetic properties:'
       CALL PRSYMB(LUPRI,'=',75,0)
 
-      IF (USECM.AND.GORG) THEN
-       WRITE(LUPRI,'(A)')
-     & 'You have asked for center of mass to be the gauge origin!'
-       WRITE(LUPRI,'(A)')
-     & '...your defined gauge origin is then ignored.'
-       GORG = .FALSE.
-      ENDIF
-
-      IF (GORG) THEN
-         CALL PRSYMB(LUPRI,'=',75,0)
-         WRITE(LUPRI,'(3X,A,3F12.6)') 'User defined gauge '//
-     &   'origin used (a.u.):',(GAGORG(I), I = 1, 3)
-
-         if (maxrep > 0) then
-            IF (.NOT.SYMCON.AND.LONDON) WRITE(LUPRI,'(3X,A,/)')
-     &     'WARNING: User defined gauge '//
-     &     'may give wrong results when using symmetry !'   
-         end if
-CMI      .... Don't forget to copy GAGORG into the DIPORG !!!
-         CALL DCOPY(3,GAGORG,1,DIPORG,1)
-      ELSE
-       IF (LONDON.OR.USECM) THEN
+      IF (LONDON.OR.USECM) THEN
 C ... make the center of mass the gauge origin (default in dalton)
          CALL MEMGET('REAL',KGEOM  ,3*NATOMS ,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KMASS  ,  NATOMS ,WORK,KFREE,LFREE)
@@ -295,16 +252,15 @@ C ... call the routine in abacus/hergp.F
          CALL MEMREL('NMRINP.CMMASS',WORK,KWORK,KGEOM,KFREE,LFREE)
          CALL DCOPY(3,CMXYZ,1,GAGORG,1)
          CALL DCOPY(3,GAGORG,1,DIPORG,1)
-         WRITE(LUPRI,'(1X,A,3F12.6)')
-     &  '* Center of mass used for the gauge & dipole '//
-     &  'origin (a.u.) :',(GAGORG(I), I = 1, 3)
-       END IF
+         WRITE(LUPRI,'(A,3F12.6)')
+     &  ' * Center of mass used for the gauge & dipole '//
+     &  'origins (a.u.) :',GAGORG(1:3)
       END IF
 
       IF (LONDON) THEN
        IF (NOONEI) THEN
-         WRITE(LUPRI,'(/,1X,A)')
-     &': No calculation of {T(1),H(0)} reorthonormalization'//
+         WRITE(LUPRI,'(/A)')
+     &' : No calculation of {T(1),H(0)} reorthonormalization'//
      &' terms for the H(B) property gradient !'
        ENDIF
 
@@ -322,9 +278,9 @@ C ... call the routine in abacus/hergp.F
        IF ((LEVYLE.OR.BSS.or.x2c).AND.(INTNMR.GT.1)) THEN
          INTNMR=1 ! Include only LL integrals...
          IF (INTNMR_SET) THEN
-           WRITE(LUPRI,'(2X,A)') 'WARNING: For the LevyLe/BSS/x2c '//
-     &     'Hamiltonian only LL integrals '//
-     &     ' for the dg(1,2)/dB terms are needed !'
+           WRITE(LUPRI,'(2X,A)') 'WARNING: For a '//
+     &     'LevyLeblond/BSS/x2c Hamiltonian only LL integrals '//
+     &     'for the dg(1,2)/dB terms are needed !'
          ENDIF
        ENDIF
 
@@ -362,7 +318,7 @@ C   .... defined conventional atomic orbitals (AO), not London AO
      &'  Using conventional atomic orbitals, not London orbitals !',
      &'  WARNING: Calculated magnetic properties are dependent'//
      &  ' on the choice of the gauge origin!',
-     &'  NMRINP: The gauge & dipole origin :', (GAGORG(I), I = 1, 3)
+     &'  NMRINP: The gauge & dipole origin :', GAGORG(1:3)
        END IF
       END IF  !  (LONDON)
 
@@ -1855,12 +1811,12 @@ C
       IF (IPRINT .GE. 4) THEN
        CALL HEADER('GTCNVD: Final quaternion density matrices.',-1)
        DO IMAT = 1,NFMAT
-         WRITE(LUPRI,'(2X,A,I1,A,I1,A)')
-     &    '**** >>>>> Matrix number(1-cs,2-os1,3-os2...): ',
-     &    IMAT,'/',NFMAT,' <<<<<< ****'
+         WRITE(LUPRI,'(A,I1,A,I1,A)')
+     &    '  **** ----- Matrix number(1-cs,2-os1,3-os2...): ',
+     &    IMAT,'/',NFMAT,' ----- ****'
          DO IZ = 1, 4
-          WRITE(LUPRI,'(/2X,A,I1)')
-     &    '=====  quaternion number (1-4): ',IZ
+          WRITE(LUPRI,'(/A,I1)')
+     &    '  =====  quaternion number (1-4): ',IZ
           CALL OUTPUT(DMAT(1,IZ,IMAT),1,NTBAS(0),1,NTBAS(0),
      &                  NTBAS(0),NTBAS(0),1,LUPRI) 
          END DO

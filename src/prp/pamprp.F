@@ -8176,9 +8176,10 @@ CMI ... added
 #include "molgfa.h"
 #include "iratdef.h"
 
-      DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT),ABCNV(NBFREQ,NLRBPT),
-     &     WORK(*),IBUFA(3),IBUFB(3)
-      INTEGER ICONVXYZ
+      REAL*8    ABLRF(NBFREQ,NLRAPT,NLRBPT),ABCNV(NBFREQ,NLRBPT),
+     &          WORK(*)
+      REAL*8    GAGORG_save(3)
+      INTEGER   ICONVXYZ,IBUFA(3),IBUFB(3)
       CHARACTER AX*1,BX*1
 
       CALL QENTER('PRP_ROTG')
@@ -8191,7 +8192,7 @@ C
       WRITE(LUPRI,'(A)') '*** WARNING *** Using code for XH4 !'
 #endif
 C     
-C     *** Extract g-tensor ***
+C     *** Extract rotational g-tensor ***
 C     
       NA = 0
       NB = 0
@@ -8211,8 +8212,8 @@ C
          CALL PRSYMB(LUPRI,'-',72,2)
 
          IF(BFREQ(IFREQ).NE.0.0D0) THEN
-            WRITE(LUPRI,'(A,F15.8,2X,A)') 
-     &      '*** Frequency    :',BFREQ(IFREQ),'a.u.'
+            WRITE(LUPRI,'(A,F15.8,A)') 
+     &      '*** Frequency    :',BFREQ(IFREQ),' a.u.'
          ENDIF
 
          DO IB = 1,NB
@@ -8233,14 +8234,14 @@ C
                ELMGF (KA,KB) = ABLRF(IFREQ,IBUFA(IA),IBUFB(IB))
                ELMGF (KB,KA) = ELMGF (KA,KB)
 
-       WRITE(LUPRI,'(5A,F15.8,2X,A)') '@ g(',AX,',',BX,') =',
-     &             VALUE,'a.u.'
+       WRITE(LUPRI,'(5A,F15.8,A)') '@ g(',AX,',',BX,') =',
+     &             VALUE,' a.u.'
             ENDDO
          ENDDO
 C         
          IF (IPRPRP.GE.7) THEN
          CALL HEADER('Electronic contribution to molecular'//
-     &                  ' g-factor',-1)
+     &                  ' rotational g-factor',-1)
          CALL OUTPUT(ELMGF,1,3,1,3,3,3,1,LUPRI)
          write(lupri,*) 'POLPRI output:'
          CALL POLPRI(ELMGF,'   ',-2)
@@ -8262,8 +8263,12 @@ C
       CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),ISOTOP,
      &            IPRPRP)
 
-       CALL DCOPY(3,CMXYZ,1,GAGORG,1)
+       GAGORG_save(:) = GAGORG(:)
+       GAGORG(:) = CMXYZ(:)
+
        CALL NUCMGF(WORK(KGEOM),GAGORG,LUPRI,IPRPRP)
+
+       GAGORG(:) = CMXYZ(:)
 
 CMI ... from DALTON
          JATOM  = NATOMS + NFLOAT

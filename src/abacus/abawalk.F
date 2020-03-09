@@ -869,9 +869,8 @@ C        Generate normal coordinates for numerical differentiation
 C
          KAMASS = 1
          KNUMIS = KAMASS + NUCDEP
-         KNATYP = KNUMIS + NUCDEP
-         KORIG  = KNATYP + (NUCDEP + 1)/IRAT
-         KGEOM  = KORIG  + 3
+         KNATYP = KNUMIS + (NUCDEP + 1)/IRAT
+         KGEOM  = KNATYP + (NUCDEP + 1)/IRAT
          KDKIN  = KGEOM  + 3*NUCDEP
          KHESMW = KDKIN  + NCART
          KEVECS = KHESMW + NCART*(NCART + 1)/2

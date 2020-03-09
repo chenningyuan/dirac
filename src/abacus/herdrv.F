@@ -45,11 +45,10 @@ C
 #include "maxaqn.h"
 #include "efield.h"
 C
-      PARAMETER (NDIR = 6, NTABLE = 79)
+      PARAMETER (NDIR = 6, NTABLE = 80)
       PARAMETER (D0 = 0.0D0)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
-      LOGICAL   DIPORG_SET,  GAGORG_SET, CAVORG_SET
       DIMENSION WORK(LWORK)
 C
 #ifdef PRG_DIRAC
@@ -93,7 +92,7 @@ C     Bin Gao, Nov. 9, 2011
      &             '.CM-1  ', '.CM-2  ', '.SQHDOL', '.SQHDOR',
      &             '.NOTWO ', '.GAUGEO', '.DIPORG', '.GFACDI',
      &             '.S1ELE ', '.S1ELB ', '.ONEELD', '.THETA ',
-     &             '.NUCMOD', '.MAGCOR', '.GENINT'/
+     &             '.NUCMOD', '.MAGCOR', '.GENINT', '.GO ANG'/
 C
 C     Check if input has been processed earlier.
 C
@@ -187,15 +186,12 @@ C
       TRIANG = .TRUE.
       EXPIKR = .FALSE.
       MGCOOR = .FALSE.
-      DIPORG_SET = .FALSE.
-      GAGORG_SET = .FALSE.
-      CAVORG_SET = .FALSE.
-      CALL DZERO(ORIGIN,3)
-      CALL DZERO(GAGORG,3)
-      CALL DZERO(DIPORG,3)
-      CALL DZERO(EXPKR ,3)
+      ORIGIN(1:3) = 0.0d0
+      GAGORG(1:3) = 0.0d0
+      DIPORG(1:3) = 0.0d0
+      EXPKR (1:3) = 0.0d0
       NPATOM = 0
-      CALL IZERO(IPATOM,MXCENT)
+      IPATOM(1:MXCENT) = 0
 C    Initialize nuclear model in NUCLEI
 C      1 - Point nucleus
 C      2 - Gaussian nucleus
@@ -303,9 +299,9 @@ C
   110    CONTINUE
             READ (LUCMD, *,IOSTAT=IOS) (ORIGIN(I),I=1,3)
             IF (IOS.NE.0) THEN
-              WRITE(LUPRI,*) 'Error in reading (ORIGIN(I),I=1,3)!'
-              WRITE(LUPRI,*) '(ORIGIN(I),I=1,3):', (ORIGIN(I),I=1,3)
-              CALL QUIT('Error in reading (ORIGIN(I),I=1,3)!')
+              WRITE(LUPRI,*) 'Error in reading ORIGIN(1:3) !'
+              WRITE(LUPRI,*) 'ORIGIN(1:3) :', (ORIGIN(I),I=1,3)
+              CALL QUIT('Error in reading ORIGIN(1:3) !')
             ENDIF
             GO TO 100
   111    CONTINUE
@@ -584,25 +580,23 @@ C
             SQHDOR = .TRUE.
             ONEPRP = .TRUE.
             GOTO 100
- 169     CONTINUE
+ 169     CONTINUE ! '.NOTWO '
             NOTWO = .TRUE.
             SUPMAT = .FALSE.
             GO TO 100
- 170     CONTINUE
+ 170     CONTINUE ! '.GAUGEO'
             READ (LUCMD, *,IOSTAT=IOS) (GAGORG(I),I=1,3)
-            GAGORG_SET = .TRUE.
             IF (IOS.NE.0) THEN
               CALL QUIT('Error in reading (GAGORG(I),I=1,3)!')
             ENDIF
             GO TO 100
- 171     CONTINUE
-            READ (LUCMD, *,IOSTAT=IOS) (DIPORG(I),I=1,3)
-            DIPORG_SET = .TRUE.
+ 171     CONTINUE ! '.DIPORG'
+            READ (LUCMD, *,IOSTAT=IOS) DIPORG(1:3)
             IF (IOS.NE.0) THEN
-              CALL QUIT('Error in reading (DIPORG(I),I=1,3)!')
+              CALL QUIT('Error in reading DIPORG(1:3)')
             ENDIF
             GO TO 100
- 172     CONTINUE
+ 172     CONTINUE ! '.GFACDI'
             GFACDI = .TRUE.
             ONEPRP = .TRUE.
             GOTO 100
@@ -647,7 +641,15 @@ C&&& MAGCOR - print magnetic coordinates
             TEST_GEN1INT = .true.
 #endif
             goto 100
- 180     CONTINUE
+ 180     CONTINUE ! .GO ANG
+!           read user specified gauge origin in angstrom
+            read(lucmd, *, iostat=ios) gagorg
+            if (ios /= 0) then
+              call quit('error in reading .GO ANG')
+            end if
+!           convert from angstrom to bohr
+            gagorg = gagorg/xtang
+            goto 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 199
       ELSE
@@ -683,6 +685,13 @@ C&&& MAGCOR - print magnetic coordinates
          IF (NOTWO) WRITE (LUPRI,'(/A/)')
      &          ' Two-electron integrals not calculated.'
       END IF
+
+      WRITE (LUPRI,'(/A/,(A,3F20.15))')
+     &    ' One-electron operator origins:',
+     &    ' - General operator origin (a.u.)       :', ORIGIN(1:3),
+     &    ' - Magnetic gauge origin (a.u.)         :', GAGORG(1:3),
+     &    ' - Dipole (and multipole) origin (a.u.) :', DIPORG(1:3)
+
       IF (ONEPRP) THEN
          WRITE (LUPRI,'(/A/)')
      &  ' The following one-electron property integrals are calculated:'
@@ -853,24 +862,16 @@ C&&& MAGCOR - print magnetic coordinates
      &      ' All one-electron property integrals are printed.'
          IF (S1ELE) WRITE (LUPRI,'(10X,A)')
      &       '- first electric derivatives of overlap integrals,'//
-     $        'Type A'
+     &        'Type A'
          IF (S1ELB) WRITE (LUPRI,'(10X,A)')
      &       '- first electric derivatives of overlap integrals,'//
-     $        'Type B'
+     &        'Type B'
          IF (ONEELD) THEN
             WRITE (LUPRI,'(10X,A)')
-     $       '- first electric derivatives of one-electron'
+     &       '- first electric derivatives of one-electron'
             WRITE (LUPRI,'(12X,A)') 'Hamiltonian integrals'
          ENDIF
       END IF
-
-! Miro: I hope that these coordinates are in atomic units
-      IF (DNRM2(3,ORIGIN,1) .GT. D0) WRITE (LUPRI,'(/,A,3F20.15)')
-     &    ' Operator center (a.u.):', (ORIGIN(I),I=1,3)
-      IF (DNRM2(3,GAGORG,1) .GT. D0) WRITE (LUPRI,'(/,A,3F20.15)')
-     &    ' Gauge origin (a.u.)   :', (GAGORG(I),I=1,3)
-      IF (DNRM2(3,DIPORG,1) .GT. D0) WRITE (LUPRI,'(/,A,3F20.15)')
-     &    ' Dipole origin (a.u.)  :', (DIPORG(I),I=1,3)
 
       IF (EXPIKR) WRITE (LUPRI,'(/,A,3F20.15)')
      &    ' Wave numbers:', (EXPKR(I),I=1,3)
@@ -981,25 +982,26 @@ C
 #endif
       CALL SETDCH
       IF (DORLM .AND. .NOT. CAVUSR) THEN
-        KGEOM  = 1
-        KMASS  = KGEOM  + 3*NATOMS
-        KNUMIS = KMASS  + NATOMS
-        KNAT   = KNUMIS + NATOMS
-        KLAST  = KNAT   + (NATOMS + 1)/IRAT
-        IF (KLAST .GT. LWORK) CALL STOPIT('HERDRV','CMMASS',KLAST,
-     &                                    LWORK)
-        CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),
-     &              WORK(KNUMIS),IPRDEF)
-        CALL DCOPY(3,CMXYZ,1,CAVORG,1)
-        WRITE(LUPRI,'(/,A,3F12.6)') ' Cavity center (center of mass):',
-     &                               (CAVORG(I), I = 1, 3)
+         KGEOM = 1
+         KMASS = KGEOM + 3*NATOMS
+         KNAT  = KMASS + NATOMS
+         KNUMIS= KNAT  + (NATOMS + 1)/IRAT
+         KLAST = KNUMIS+ (NATOMS + 1)/IRAT
+         IF (KLAST .GT. LWORK) CALL STOPIT('HERDRV','CMMASS',KLAST,
+     &                                     LWORK)
+         CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),
+     &      WORK(KNUMIS),IPRDEF)
+         CAVORG(1:3) = CMXYZ(1:3)
+         WRITE(LUPRI,'(/A,3F15.6)')
+     &      ' Cavity center (at center of mass):',
+     &      CAVORG(1:3)
       END IF
 C
       CLOSE(UNIT=LUCMD,STATUS='KEEP')
 C
       RETURN
-C
       END
+
 C  /* Deck hr1inp */
       SUBROUTINE HR1INP(WORD)
 #include "implicit.h"
@@ -1038,7 +1040,7 @@ C
       DORLM  = .FALSE.
       ALLRLM = .FALSE.
       CAVUSR = .FALSE.
-      CALL DZERO(CAVORG,3)
+      CAVORG(1:3) = 0.0d0
 C
       NEWDEF = WORD .EQ. '*ONEINT'
       ICHANG = 0
@@ -1474,7 +1476,7 @@ C
 #include "ccom.h"
 C
 C
-      DIMENSION   RLMORI(3)
+      DIMENSION   DIPORG_save(3)
       CHARACTER*8 LABELT(3), LABELS(6)
 C
       DIMENSION WORK(LWORK)
@@ -1517,13 +1519,13 @@ C
             CALL TIMER('START ',TIMSTR,TIMEND)
             CALL RLMNUC(WORK,LWORK,LMAX,IPRONE)
             CALL TIMER('RLMNUC',TIMSTR,TIMEND)
-            CALL DCOPY(3,DIPORG,1,RLMORI,1)
-            CALL DCOPY(3,CAVORG,1,DIPORG,1)
+            DIPORG_save(1:3) = DIPORG(1:3)
+            DIPORG(1:3)      = CAVORG(1:3)
             DO 100 IORDER = 0, LMAX
                CALL PR1INT('SOLVENT',WORK,LWORK,IORDER,
      &                     IDUMMY,TRIANG,PROPRI,IPRONE)
   100       CONTINUE
-            CALL DCOPY(3,RLMORI,1,DIPORG,1)
+            DIPORG(1:3)      = DIPORG_save(1:3)
             CALL TIMER('RLMINT',TIMSTR,TIMEND)
             CALL FLSHFO(LUPRI)
          END IF
@@ -2100,11 +2102,11 @@ C           ***** Cosine and sine integrals *****
 C
             IF (EXPIKR) THEN
                CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL DCOPY(3,ORIGIN,1,RLMORI,1)
-               CALL DCOPY(3,EXPKR,1,ORIGIN,1)
+               DIPORG_save(1:3) = ORIGIN(1:3)
+               ORIGIN(1:3)      = EXPKR(1:3)
                CALL PR1INT('EXPIKR ',WORK,LWORK,IDUMMY,
      &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL DCOPY(3,RLMORI,1,ORIGIN,1)
+               ORIGIN(1:3)      = DIPORG_save(1:3)
                CALL TIMER('EXPIKR',TIMSTR,TIMEND)
                CALL FLSHFO(LUPRI)
             END IF

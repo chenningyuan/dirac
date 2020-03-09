@@ -518,7 +518,7 @@ C
       END IF
 C
       IF (IPRINT .GT. 5) THEN
-            WRITE (LUPRI,'(A,I5)') ' NBAST  ', NBAST
+         WRITE (LUPRI,'(A,I5)') ' NBAST  ', NBAST
          WRITE (LUPRI,'(A,I5)') ' NELMNT ', NELMNT
          WRITE (LUPRI,'(A,I5)') ' INTTYP ', INTTYP
          WRITE (LUPRI,'(A,I5)') ' NOPTYP ', NOPTYP
@@ -1990,14 +1990,6 @@ Cdj mixed bra-ket part
             DIFOBZ = GAGORG(3) - CORBZ
             CALL SM2BIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                  DIFAOX,DIFAOY,DIFAOZ,DIFOBX,DIFOBY,DIFOBZ)
-
-
-
-
-
-
-
-
          END IF
   200    CONTINUE
   100 CONTINUE
