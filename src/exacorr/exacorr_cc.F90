@@ -131,10 +131,6 @@ module exacorr_cc
               write(*,'(A,ES10.1)') " - Level Shift :                    ",exa_input%level_shift
             end if
             write(*,'(A,I3)') " - Print Level :                    ",exa_input%print_level
-            if (print_level > 1) then
-              write(*,*) " - occupied spinors :                ", exa_input%mo_occ
-              write(*,*) " - virtual spinors :                 ", exa_input%mo_vir
-            end if
             if(exa_input%lambda) then
               write(*,*) ""
               write(*,*) "Attention: For properties the density matrix is saved on a node."
