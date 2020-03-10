@@ -11,6 +11,7 @@ module exacorr_utils
   public print_exacorr_logo
   public print_iteration
   public write_tensor
+  public quicksort
 
   contains
 
@@ -148,5 +149,45 @@ module exacorr_utils
       ierr = talsh_shutdown()
       
     end subroutine write_tensor
+
+    recursive subroutine quicksort(mo_list, i_beg, i_end)
+
+        implicit none
+
+        integer,intent(inout) :: mo_list(:)
+        integer, intent(in) :: i_beg, i_end
+        integer :: i,j
+        integer :: ref, tem
+
+        i=floor((float(i_end)+float(i_beg))/2)
+        ref=mo_list(i)
+        i=i_beg
+        j=i_end
+
+        do
+          do while (mo_list(i)<ref)
+            i=i+1
+          end do
+          do while (mo_list(j)>ref)
+            j=j-1
+          end do
+          if (i<j) then
+            tem=mo_list(i)
+            mo_list(i)=mo_list(j)
+            mo_list(j)=tem
+            i=i+1
+            j=j-1
+          else if(i.eq.j) then
+            i=i+1
+            EXIT
+          else
+            EXIT
+          end if
+        end do
+
+        if (i_beg<j) call quicksort(mo_list, i_beg, j)
+        if (i<i_end) call quicksort(mo_list, i, i_end)
+
+    end subroutine quicksort
 
 end module exacorr_utils
