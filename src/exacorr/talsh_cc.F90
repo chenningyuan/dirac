@@ -612,6 +612,7 @@ module talsh_cc
          integer, dimension(4) :: vvvv_dims, oooo_dims    !L
          integer, dimension(4) :: vvvo_dims    !L
 
+         logical :: debug_local = .false.
 
          !Orbital energies for scaling
          real(8), intent(in)   :: eps_occ(:), eps_vir(:)
@@ -663,148 +664,105 @@ module talsh_cc
 
          
           call get_tau(comm_t, CCD)
-          print*, "Tau    = ",tensor_norm2(comm_t%tau)*ONE_QUARTER
-          print*, "t1    = ",tensor_norm2(comm_t%t1)
-          print*, "t2    = ",tensor_norm2(comm_t%t2)
+          if (debug_local) print*, "Tau    = ",tensor_norm2(comm_t%tau)*ONE_QUARTER
+          if (debug_local) print*, "t1    = ",tensor_norm2(comm_t%t1)
+          if (debug_local) print*, "t2    = ",tensor_norm2(comm_t%t2)
 
           if (ierr.ne.TALSH_SUCCESS) then
              print*," ccdriver: error in calculation of common blocks, code=",ierr
              return
           end if
 
-!NOTE: contractions marked with "validated" gave numerically significant contributions and could be validated by comparison
-!to the reference implementation, the ones marked "moretests" were too small to decide whether it was correct or not.
-!        calculate intermediaries
-
           ierr=talsh_tensor_init(s2_tensor)
-          print*, "norm s2 tensor before diagram 15 ",tensor_norm2(s2_tensor)
-!!!!!!!!!!!!!!!!!!!!
-!           CC2 S(a,b,i,j) - START
-!!!!!!!!!!!!!!!!!!!!
+          if (debug_local) print*, "norm s2 tensor at the start of CC2 t2 ",tensor_norm2(s2_tensor)
 
-!         For CC2 I cannot use hoo/goo... because of the presesence of $T_2$
-
-
-!          Creation of : $\tau_CC2=\ts ai \ts bj-\ts aj \ts bi$       
+!         creation of tau-like intermediates for cc2
+!
+!         a. tau_CC2 = t^a_i t^b_j - t^a_j t^b_i
           ierr=talsh_tensor_init(tauCC2_tensor)
           ierr=talsh_tensor_contract("T(a,b,i,j)+=T(a,i)*T(b,j)",tauCC2_tensor,comm_t%t1,comm_t%t1)
           ierr=talsh_tensor_contract("T(a,b,i,j)+=T(a,j)*T(b,i)",tauCC2_tensor,comm_t%t1,comm_t%t1,scale=MINUS_ONE)
-          print*, "norm contraction tauCC2 ",tensor_norm2(tauCC2_tensor)
+          if (debug_local) print*, "norm contraction tauCC2 ",tensor_norm2(tauCC2_tensor)
 
-!           Diagram 15 :
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=V+(i,j,a,b)*K()",s2_tensor,int_t%oovv,one_tensor)
-          print*, "norm s2 tensor after diagram 15 ",tensor_norm2(s2_tensor)
-
-!          Creation of : $\ts ai \ts bj$
+!         b. tau2 =  t^a_i t^b_j
           ierr=talsh_tensor_init(tau2_tensor)
           ierr=talsh_tensor_contract("T(e,a,i,m)+=T(e,i)*T(a,m)",tau2_tensor,comm_t%t1,comm_t%t1)
-          print*, "norm tau2_tensor ",tensor_norm2(tau2_tensor)
+          if (debug_local) print*, "norm tau2_tensor ",tensor_norm2(tau2_tensor)
 
+!         t2 equation contraction
+!
+!         Diagram 15 : s2_{ij}^{ab} += < ab || ij >
+          ierr=talsh_tensor_contract("S(a,b,i,j)+=V+(i,j,a,b)*K()",s2_tensor,int_t%oovv,one_tensor)
+          if (debug_local) print*, "norm s2 tensor after diagram 15 ",tensor_norm2(s2_tensor)
 
-!           Diagram 16 :
-!          ierr=talsh_tensor_contract("S(a,b,i,j)+=V(m,b,e,j)*T(e,a,i,m)",s2_tensor,int_t%ovvo,tau2_tensor)
-!          ierr=talsh_tensor_contract("S(a,b,i,j)+=V(m,a,e,j)*T(e,b,i,m)",s2_tensor,int_t%ovvo,tau2_tensor,scale=MINUS_ONE)
-!          ierr=talsh_tensor_contract("S(a,b,i,j)+=V(m,b,e,i)*T(e,a,j,m)",s2_tensor,int_t%ovvo,tau2_tensor,scale=MINUS_ONE)
-!          ierr=talsh_tensor_contract("S(a,b,i,j)+=V(m,a,e,i)*T(e,b,j,m)",s2_tensor,int_t%ovvo,tau2_tensor)
+!         Diagram 16 : s2_{ij}^{ab} += -P\_(ij)P\_(ab)\sum_{me} t^e_i t^a_m V_{ej}^{mb}
           ierr=talsh_tensor_contract("S(a,b,i,j)+=V(b,m,e,j)*T(e,a,i,m)",s2_tensor,int_t%vovo,tau2_tensor,scale=MINUS_ONE)
           ierr=talsh_tensor_contract("S(a,b,i,j)+=V(a,m,e,j)*T(e,b,i,m)",s2_tensor,int_t%vovo,tau2_tensor)
           ierr=talsh_tensor_contract("S(a,b,i,j)+=V(b,m,e,i)*T(e,a,j,m)",s2_tensor,int_t%vovo,tau2_tensor)
           ierr=talsh_tensor_contract("S(a,b,i,j)+=V(a,m,e,i)*T(e,b,j,m)",s2_tensor,int_t%vovo,tau2_tensor,scale=MINUS_ONE)
-          print*, "norm s2 tensor after diagram 16 ",tensor_norm2(s2_tensor)
+          if (debug_local) print*, "norm s2 tensor after diagram 16 ",tensor_norm2(s2_tensor)
 
-
-
-!          Diagram 19 :
-!          ierr=talsh_tensor_contract("S(a,b,i,j)+=V(a,b,e,j)*T(e,i)",s2_tensor,int_t%vvvo,comm_t%t1)
-!          ierr=talsh_tensor_contract("S(a,b,i,j)+=V(a,b,e,i)*T(e,j)",s2_tensor,int_t%vvvo,comm_t%t1,scale=MINUS_ONE)
-! copy line 424  ierr=talsh_tensor_contract("C(k,b,i,j)=V+(i,j,k,b)*K()",cint_tensor,int_t%ooov,one_tensor)
+!         Diagram 19 : s2_{ij}^{ab} +=  P\_(ij)\sum_{e} t^e_i V_{ej}^{ab}
           ierr=talsh_tensor_construct(cint_tensor,C8,vvvo_dims,init_val=ZERO)
           ierr=talsh_tensor_init(cint_tensor)
           ierr=talsh_tensor_contract("C(b,c,a,i)+=V+(a,i,b,c)*K()",cint_tensor,int_t%vovv,one_tensor) !Inversion, warning : no more + in +=
-!          ierr=talsh_tensor_contract("S(a,b,i,j)+=C(a,b,e,j)*T(e,i)",s2_tensor,int_t%vvvo,comm_t%t1)
-!          ierr=talsh_tensor_contract("S(a,b,i,j)+=C(a,b,e,i)*T(e,j)",s2_tensor,int_t%vvvo,comm_t%t1,scale=MINUS_ONE)
           ierr=talsh_tensor_contract("S(a,b,i,j)+=C(a,b,e,j)*T(e,i)",s2_tensor,cint_tensor,comm_t%t1)
           ierr=talsh_tensor_contract("S(a,b,i,j)+=C(a,b,e,i)*T(e,j)",s2_tensor,cint_tensor,comm_t%t1,scale=MINUS_ONE)
-          print*, "norm s2 tensor after diagram 19 ",tensor_norm2(s2_tensor)
+          if (debug_local) print*, "norm s2 tensor after diagram 19 ",tensor_norm2(s2_tensor)
 
-
-!          Diagram 20 :
-!          ierr=talsh_tensor_contract("S(a,b,i,j)+=V(m,b,i,j)*T(a,m)",s2_tensor,int_t%ovoo,comm_t%t1,scale=MINUS_ONE)
-!          ierr=talsh_tensor_contract("S(a,b,i,j)+=V(m,a,i,j)*T(b,m)",s2_tensor,int_t%ovoo,comm_t%t1)
+!         Diagram 20 : s2_{ij}^{ab} += -P\_(ab)\sum_{m} t^a_m V_{ij}^{mb}
           ierr=talsh_tensor_construct(cint_tensor,C8,ovoo_dims,init_val=ZERO)
           ierr=talsh_tensor_init(cint_tensor)
           ierr=talsh_tensor_contract("C(k,a,i,j)+=V+(i,j,k,a)*K()",cint_tensor,int_t%ooov,one_tensor) !Inversion, warning : no more + in +=
           ierr=talsh_tensor_contract("S(a,b,i,j)+=C(k,b,i,j)*T(a,m)",s2_tensor,cint_tensor,comm_t%t1,scale=MINUS_ONE)
           ierr=talsh_tensor_contract("S(a,b,i,j)+=C(k,a,i,j)*T(b,m)",s2_tensor,cint_tensor,comm_t%t1)
-          print*, "norm s2 tensor after diagram 20 ",tensor_norm2(s2_tensor)
+          if (debug_local) print*, "norm s2 tensor after diagram 20 ",tensor_norm2(s2_tensor)
 
-
-
-
-
-
-!          Intermediate : $\W mnij \CC2$
+!         additional CC2 W intermediates
+!
+!         a. W_{ij}^{mn} = V_{ij}^{mn} + P\_(ij)\sum_{e} t^e_i V_{ej}^{mn} + \frac{1}{4}P\_(ij)\sum_{ef} t^e_i t^f_j V_{ef}^{mn}
           ierr=talsh_tensor_init(Wmnij_tensor)
           ierr=talsh_tensor_contract("Wmnij(m,n,i,j)+=V(m,n,i,j)*K()",Wmnij_tensor,int_t%oooo,one_tensor)
           ierr=talsh_tensor_contract("Wmnij(m,n,i,j)+=V(m,n,i,e)*T(e,j)",Wmnij_tensor,int_t%ooov,comm_t%t1)
           ierr=talsh_tensor_contract("Wmnij(m,n,i,j)+=V(m,n,j,e)*T(e,i)",Wmnij_tensor,int_t%ooov,comm_t%t1,scale=MINUS_ONE)
-!          ierr=talsh_tensor_init(tau2_tensor)
-!          ierr=talsh_tensor_contract("T(e,f,i,j)+=T(e,i)*T(f,j)",tau2_tensor,comm_t%t1,comm_t%t1)
-!!          ierr=talsh_tensor_contract("Wmnij(m,n,i,j)+=V(m,n,e,f)*T(e,f,i,j)",&
-!!    &                                 Wmnij_tensor,int_t%oovv,tau2_tensor,scale=ONE_QUARTER_C)
-!!          ierr=talsh_tensor_contract("Wmnij(m,n,i,j)+=V(m,n,j,e)*T(e,f,j,i)",&
-!!    &                                 Wmnij_tensor,int_t%ooov,tau2_tensor,scale=MINUS_ONE_QUARTER_C)
-
           ierr=talsh_tensor_contract("Wmnij(m,n,i,j)+=V(m,n,e,f)*T(e,f,i,j)",&
     &                                 Wmnij_tensor,int_t%oovv,tauCC2_tensor,scale=ONE_QUARTER_C)
 
-!          Diagram with $\W mnij \CC2$
-!          ierr=talsh_tensor_init(tau2_tensor)
-!          ierr=talsh_tensor_contract("T(a,b,m,n)+=T(a,m)*T(b,n)",tau2_tensor,comm_t%t1,comm_t%t1)
-!!          ierr=talsh_tensor_contract("S(a,b,i,j)+=Wmnij(m,n,i,j)*T(a,b,m,n)",&
-!!    &                                s2_tensor,Wmnij_tensor,tau2_tensor,scale=ONE_HALF)
-!!          ierr=talsh_tensor_contract("S(a,b,i,j)+=Wmnij(m,n,i,j)*T(b,a,m,n)",&
-!!    &                                s2_tensor,Wmnij_tensor,tau2_tensor,scale=MINUS_ONE_HALF)
-
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=Wmnij(m,n,i,j)*T(a,b,m,n)",&
-    &                                s2_tensor,Wmnij_tensor,tau2_tensor,scale=ONE_HALF)
-        print*, "norm s2 tensor after diagram ?? ",tensor_norm2(s2_tensor)
-
-
-!          Intermediate : $\W abef \CC2$
+!         b. W_{ij}^{ab} = V_{ef}^{ab} - P\_(ab)\sum_{m} t_m^b V_{ef}^{am} + \frac{1}{4}P\_(ab)\sum_{ef} t^e_i t^f_j V_{ef}^{mn}
           ierr=talsh_tensor_init(Wabef_tensor)
           ierr=talsh_tensor_contract("Wabef(a,b,e,f)+=V(a,b,e,f)*K()",Wabef_tensor,int_t%vvvv,one_tensor)
           ierr=talsh_tensor_contract("Wabef(a,b,e,f)+=V(a,m,e,f)*T(b,m)",Wabef_tensor,int_t%vovv,comm_t%t1,scale=MINUS_ONE)
           ierr=talsh_tensor_contract("Wabef(a,b,e,f)+=V(b,m,e,f)*T(a,m)",Wabef_tensor,int_t%vovv,comm_t%t1)
- !         ierr=talsh_tensor_init(tau2_tensor)
- !         ierr=talsh_tensor_contract("T(a,b,m,n)+=T(a,m)*T(b,n)",tau2_tensor,comm_t%t1,comm_t%t1)
-!!          ierr=talsh_tensor_contract("Wabef(m,n,i,j)+=V(m,n,e,f)*T(a,b,m,n)",&
-!!    &                                 Wabef_tensor,int_t%oovv,tau2_tensor,scale=ONE_QUARTER_C)
-!!          ierr=talsh_tensor_contract("Wabef(m,n,i,j)+=V(m,n,j,e)*T(b,a,m,n)",&
-!!    &                                 Wabef_tensor,int_t%ooov,tau2_tensor,scale=MINUS_ONE_QUARTER_C)
-
           ierr=talsh_tensor_contract("Wabef(a,b,e,f)+=V(m,n,e,f)*T(a,b,m,n)",&
     &                                 Wabef_tensor,int_t%oovv,tauCC2_tensor,scale=ONE_QUARTER_C)
 
-!          Diagram with $\W abef \CC2$
-!          ierr=talsh_tensor_init(tau2_tensor)
-!          ierr=talsh_tensor_contract("T(e,f,i,j)+=T(e,i)*T(f,j)",tau2_tensor,comm_t%t1,comm_t%t1)
-!!          ierr=talsh_tensor_contract("S(a,b,i,j)+=Wabef(a,b,e,f)*T(e,f,i,j)",&
-!!    &                                 s2_tensor,Wabef_tensor,tau2_tensor,scale=ONE_HALF)
-!!          ierr=talsh_tensor_contract("S(a,b,i,j)+=Wabef(a,b,e,f)*T(e,f,j,i)",&
-!!    &                                 s2_tensor,Wabef_tensor,tau2_tensor,scale=MINUS_ONE_HALF)
+!         Diagrams using the CC2 W intermediates above
+!
+!         Diagram 21 : s2_{ij}^{ab} += \frac{1}{2}P\_(ab)\sum_{mn} t_m^a t_n^b  W_{ij}^{mn}
+          ierr=talsh_tensor_contract("S(a,b,i,j)+=Wmnij(m,n,i,j)*T(a,b,m,n)",&
+    &                                s2_tensor,Wmnij_tensor,tau2_tensor,scale=ONE_HALF)
+          ierr=talsh_tensor_contract("S(a,b,i,j)+=Wmnij(m,n,i,j)*T(b,a,m,n)",&
+    &                                s2_tensor,Wmnij_tensor,tau2_tensor,scale=ONE_HALF)
+          if (debug_local) print*, "norm s2 tensor after diagram 21 ",tensor_norm2(s2_tensor)
+
+!         Diagram 22 : s2_{ij}^{ab} += \frac{1}{2}P\_(ij)\sum_{ef} t_i^e t_j^f  W_{ef}^{ab}  
           ierr=talsh_tensor_contract("S(a,b,i,j)+=Wabef(a,b,e,f)*T(e,f,i,j)",&
     &                                 s2_tensor,Wabef_tensor,tauCC2_tensor,scale=ONE_HALF)
+          ierr=talsh_tensor_contract("S(a,b,i,j)+=Wabef(a,b,e,f)*T(e,f,j,i)",&
+    &                                 s2_tensor,Wabef_tensor,tauCC2_tensor,scale=ONE_HALF)
+          if (debug_local) print*, "norm s2 tensor after diagram 22 ",tensor_norm2(s2_tensor)
 
-!           Diagram with $\f vv$
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=F+(b,e)*T(a,e,i,j)",s2_tensor,comm_t%fvv,comm_t%t2)
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=F+(a,e)*T(b,e,i,j)",s2_tensor,comm_t%fvv,comm_t%t2,scale=MINUS_ONE)
-!           Diagram with $\f oo$
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=F+(m,j)*T(a,b,i,m)",s2_tensor,comm_t%foo,comm_t%t2,scale=MINUS_ONE)
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=F+(m,i)*T(a,b,j,m)",s2_tensor,comm_t%foo,comm_t%t2)
-!!!!!!!!!!!!!!!!!!!!
-!           CC2 S(a,b,i,j) - END
-!!!!!!!!!!!!!!!!!!!!
+!        Diagram with $\f vv$
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=F+(b,e)*T(a,e,i,j)",s2_tensor,comm_t%fvv,comm_t%t2)
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=F+(a,e)*T(b,e,i,j)",s2_tensor,comm_t%fvv,comm_t%t2,scale=MINUS_ONE)
+         if (debug_local) print*, "norm s2 tensor after diagram 23 ",tensor_norm2(s2_tensor)
+
+!        Diagram with $\f oo$
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=F+(m,j)*T(a,b,i,m)",s2_tensor,comm_t%foo,comm_t%t2,scale=MINUS_ONE)
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=F+(m,i)*T(a,b,j,m)",s2_tensor,comm_t%foo,comm_t%t2)
+         if (debug_local) print*, "norm s2 tensor after diagram 24 ",tensor_norm2(s2_tensor)
+
+!        done with cc2 t2 equation, now cc2 t1 equation, which is exactly the same as the ccsd t1 equation
 
 !         calculate s1 tensor
           if (.not.CCD) then
@@ -830,10 +788,10 @@ module talsh_cc
           end if
 
 !         prepare for next iteration
-!L          if (.not.CCD) then
-          ierr=talsh_tensor_init(comm_t%t1)
-          ierr=talsh_tensor_add("T1(a,i)+=S1(a,i)",comm_t%t1,s1_tensor)
-!L          end if
+          if (.not.CCD) then
+             ierr=talsh_tensor_init(comm_t%t1)
+             ierr=talsh_tensor_add("T1(a,i)+=S1(a,i)",comm_t%t1,s1_tensor)
+          end if
           ierr=talsh_tensor_init(comm_t%t2)
           ierr=talsh_tensor_add("T2(a,b,i,j)+=S2(a,b,i,j)",comm_t%t2,s2_tensor)
           
