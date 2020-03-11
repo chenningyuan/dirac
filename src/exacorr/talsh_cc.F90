@@ -753,13 +753,13 @@ module talsh_cc
           if (debug_local) print*, "norm s2 tensor after diagram 22 ",tensor_norm2(s2_tensor)
 
 !        Diagram with $\f vv$
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=F+(b,e)*T(a,e,i,j)",s2_tensor,comm_t%fvv,comm_t%t2)
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=F+(a,e)*T(b,e,i,j)",s2_tensor,comm_t%fvv,comm_t%t2,scale=MINUS_ONE)
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=F(b,e)*T(a,e,i,j)",s2_tensor,comm_t%fvv,comm_t%t2)
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=F(a,e)*T(b,e,i,j)",s2_tensor,comm_t%fvv,comm_t%t2,scale=MINUS_ONE)
          if (debug_local) print*, "norm s2 tensor after diagram 23 ",tensor_norm2(s2_tensor)
 
 !        Diagram with $\f oo$
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=F+(m,j)*T(a,b,i,m)",s2_tensor,comm_t%foo,comm_t%t2,scale=MINUS_ONE)
-         ierr=talsh_tensor_contract("S(a,b,i,j)+=F+(m,i)*T(a,b,j,m)",s2_tensor,comm_t%foo,comm_t%t2)
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=F(m,j)*T(a,b,i,m)",s2_tensor,comm_t%foo,comm_t%t2,scale=MINUS_ONE)
+         ierr=talsh_tensor_contract("S(a,b,i,j)+=F(m,i)*T(a,b,j,m)",s2_tensor,comm_t%foo,comm_t%t2)
          if (debug_local) print*, "norm s2 tensor after diagram 24 ",tensor_norm2(s2_tensor)
 
 !        done with cc2 t2 equation, now cc2 t1 equation, which is exactly the same as the ccsd t1 equation
