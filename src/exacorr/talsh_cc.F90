@@ -662,7 +662,7 @@ module talsh_cc
          do iccsd = 1, ncycles
 
          
-          call get_tauCC2(comm_t)
+          call get_tau(comm_t, CCD)
           print*, "Tau    = ",tensor_norm2(comm_t%tau)*ONE_QUARTER
           print*, "t1    = ",tensor_norm2(comm_t%t1)
           print*, "t2    = ",tensor_norm2(comm_t%t2)
@@ -858,7 +858,7 @@ module talsh_cc
           end if
 
 !         Update tau
-          call get_tauCC2(comm_t)
+          call get_tau(comm_t,CCD)
 
           ierr=talsh_tensor_init(result_tensor)
           ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%tau,int_t%oovv) ! o(2)v(2)
