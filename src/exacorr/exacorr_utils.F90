@@ -10,6 +10,7 @@ module exacorr_utils
   public get_free_fileunit
   public print_exacorr_logo
   public print_iteration
+  public write_tensor
 
   contains
 
@@ -109,5 +110,43 @@ module exacorr_utils
       end if
 
     end subroutine print_iteration
+
+    subroutine write_tensor(exa_tensor, i_dims)
+
+      use exatensor
+      use talsh
+      use tensor_algebra
+
+      type(tens_rcrsv_t)              :: exa_tensor
+      integer(INTL), dimension(2)     :: i_dims
+      integer(INTD), dimension(2)     :: h_dims
+      type(talsh_tens_t)              :: talsh_tensor
+      complex(8), pointer, contiguous :: talsh_tens(:,:)
+      type(C_PTR)                     :: body_p
+      integer                         :: i,j
+      integer(INTD)                   :: ierr
+      integer(C_SIZE_T)               :: buf_size=1_8*1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
+      integer(C_INT)                  :: host_arg_max
+
+      ierr=talsh_init(buf_size,host_arg_max)
+      call print_date('Initialized talsh library')
+      write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
+
+      h_dims=i_dims
+      print *, '+++ write to file'
+      ierr=talsh_tensor_construct(talsh_tensor,C8,h_dims,init_val=(0.D0,0.D0))
+      print *, 'construct err:', ierr
+      ierr=exatns_tensor_get_slice(exa_tensor,talsh_tensor)
+      print *, 'get_slice err:', ierr
+      ierr=talsh_tensor_get_body_access(talsh_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+      call c_f_pointer(body_p,talsh_tens,h_dims) 
+      do i=1,h_dims(2)
+          print*, (talsh_tens(i,j), j=1,h_dims(1))
+      enddo
+      ierr=talsh_tensor_destruct(talsh_tensor)
+
+      ierr = talsh_shutdown()
+      
+    end subroutine write_tensor
 
 end module exacorr_utils

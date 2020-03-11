@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -108,14 +108,14 @@ contains
 !   density matrix
     allocate(dmat_ao(n2bbasx, nr_mat))
     dmat_ao = 0.0d0
-    call get_dmat_ao(cmo, ibeig, dmat_ao)
+    call get_dmat_ao(cmo, dmat_ao)
 
 !   fock matrix
     allocate(fmat(n2bbasx*nr_mat*max_nr_xyz_comp))
     fmat = 0.0d0
 
 !   get 2-electron lao-integrals
-    call get_ao_fock_2el_lao(cmo, ibeig, fmat, dmat_ao)
+    call get_ao_fock_2el_lao(fmat, dmat_ao)
 
     deallocate(dmat_ao)
 
@@ -198,7 +198,7 @@ contains
 !   --------------------------------------------------------------------
     real(8), intent(inout) :: fmat(n2bbasx, nr_mat, max_nr_xyz_comp)
     real(8), allocatable   :: buffer(:, :)
-    integer :: i, icomp, iq, iz, ipq, irepd, irep, ipari, ioff, itim, ih
+    integer :: icomp, iq, iz, ipq, irepd, irep, ipari, ioff
 !   --------------------------------------------------------------------
 
     call alloc(buffer, n2bbasx, nz)
@@ -244,7 +244,7 @@ contains
 
   subroutine initialize_direct_lao()
 !   --------------------------------------------------------------------
-    integer :: i, j
+    integer :: i
 
 #include "dcbfir.h"
 !   --------------------------------------------------------------------
@@ -274,24 +274,21 @@ contains
   end subroutine
 
 
-  subroutine get_ao_fock_2el_lao(cmo, ibeig, fmat, dmat)
+  subroutine get_ao_fock_2el_lao(fmat, dmat)
 !   --------------------------------------------------------------------
     real(8), intent(inout) :: fmat(n2bbasx, nr_mat, max_nr_xyz_comp)
     real(8), intent(inout) :: dmat(n2bbasx, nr_mat)
-    real(8), intent(in)    :: cmo(*)
-    integer, intent(in)    :: ibeig(*)
 
     real(8), pointer       :: work(:)
     integer                :: lwork
 
     integer, allocatable   :: npos(:)
+
     integer :: i2typ
     integer :: itype, max_deriv, iatom
     logical :: nodv, nopv, nocont, retur, relcal, ddfock, fckddr, &
                london, first(3)
 
-    logical :: debug_me
-    integer :: iq, ipq, iz, irepd, i, ioff(3)
     integer :: mtottk(3)
     real(8) :: cpu1, cpu2, wall1, wall2, cputot, wlltot
 !   --------------------------------------------------------------------
@@ -373,14 +370,13 @@ contains
   end subroutine
 
 
-  subroutine get_dmat_ao(cmo, ibeig, dmat_ao)
+  subroutine get_dmat_ao(cmo, dmat_ao)
 !   --------------------------------------------------------------------
     real(8), intent(inout) :: dmat_ao(n2bbasx, *)
     real(8), intent(in)    :: cmo(*)
-    integer, intent(in)    :: ibeig(*)
 
     real(8), allocatable   :: dmat(:, :)
-    integer                :: iz, irep, ipari, irepd, iq, ipq, ioff
+    integer                :: iz, irep, ipari, irepd, iq, ipq
 !   --------------------------------------------------------------------
 
     call alloc(dmat, n2bbasx, nz)
@@ -419,10 +415,8 @@ contains
 !   --------------------------------------------------------------------
     real(8), intent(in)    :: cmo(*)
     real(8), intent(inout) :: fmat(n2bbasx, nz, max_nr_xyz_comp)
-    real(8), allocatable   :: dmat(:, :), buffer(:,:)
+    real(8), allocatable   :: dmat(:, :)
 
-    integer :: icomp
-    logical :: debug_me
 !   gosia todo: Bx, By and Bz contributions are added on top, if we want just one
 !   of these contributions (for instance for VISUAL), then routines in density_eval
 !   need to be adapted...
@@ -624,10 +618,8 @@ contains
 !   --------------------------------------------------------------------
     real(8), intent(in)    :: cmo(*)
     real(8), intent(inout) :: fmat(n2bbasx, nz, max_nr_xyz_comp)
-    real(8), allocatable   :: dmat(:, :), buffer(:)
+    real(8), allocatable   :: dmat(:, :)
 
-    integer :: icomp
-    logical :: debug_me
     type(fde_import) :: itmp
 !   --------------------------------------------------------------------
 

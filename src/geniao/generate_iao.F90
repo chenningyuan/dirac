@@ -70,9 +70,11 @@
         read(luxyz,'(I2)') restrict
         close(luxyz)
 
-        if (restrict .eq. 1) restricted = .true.
+        if (restrict .ne. 1) restricted = .false.
 
         call read_from_dirac (ao_basis_1,cspinor_original,'MOLECULE.dfcoef',ierr)
+        call write_mos_to_dirac (ao_basis_1,cspinor_original,"original.dfcoef")
+        call write_mos_to_dirac_formatted (cspinor_original,"original.dfpcmo")
         nmo1 = cspinor_original%nmo
         nao1 = cspinor_original%nao
 
@@ -122,7 +124,7 @@
               nmoj = cspinor_fragment(j)%nmo
               allocate (S_block(nmoi,nmoj))
               call get_mo_overlap (ao_basis_2(i),cspinor_fragment(i),ao_basis_2(j),cspinor_fragment(j),S_block)
-                 S22(imo+1:imo+nmoi,jmo+1:jmo+nmoj) = S_block
+              S22(imo+1:imo+nmoi,jmo+1:jmo+nmoj) = S_block
               if (i /= j) then
                  S22(jmo+1:jmo+nmoj,imo+1:imo+nmoi) = conjg(transpose(S_block))
               end if
@@ -160,7 +162,7 @@
         ! P12 = inv(S11) S12 ---> solve S11 P12 = S12
         ! Careful, matrices A and B are replaced by the use of zposv.
         S11_copy = S11
-        call zposv( 'U', nmo1, nmo2, S11, nmo1, P12, nmo1, ierr )
+        call zposv( 'U', nmo1, nmo2, S11_copy, nmo1, P12, nmo1, ierr )
         deallocate (S11_copy)
 
         ! In contrast to Knizia's approach, we work in the MO basis.
@@ -197,6 +199,7 @@
 
         !-----Symmetrically orthonormalize IAOs with S11-----
         call SymOrth(IAO,S11,nmo1,nmo2)
+
         !-----Calculate partial charges based on the IAOs----
         call fragment_charges_IAO(IAO,cspinor_fragment,n_fragments,nmo1,nmo2,nocc)
 

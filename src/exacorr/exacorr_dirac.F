@@ -108,7 +108,8 @@ C     Convert to Kramers unrestricted picture
 #endif
 C
       if (.true.) then !Always use talsh for now
-         call talsh_compute_mo_integrals (nmo, mo_list)
+        call talsh_compute_mo_integrals(nmo,mo_list,
+     &      exa_input%talsh_buff)
       else
 #if defined (VAR_MPI)
          !slaves need the same info to get started
@@ -205,6 +206,11 @@ C
          if (mytid /= 0) allocate(exa_input%mo_vir(exa_input%nvir))
          call exacc_sync_cw(0)
 #endif
+         !if lambda is activated set prop flags
+         if (exa_input%lambda) then 
+           if (mytid == 0) call set_prop_flags()
+         end if
+
          call exacorr_cc_driver (exa_input)
       end if
 
@@ -857,6 +863,49 @@ C
        return
 
        end subroutine read_from_mrconee
+
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE set_prop_flags()
+C
+C---------------Description--------------------------------------------
+C
+C   set flags to perform property computations if lambda is activated
+C
+C   Johann Pototschnig, Fall 2019
+
+C---------------Common Blocks--------------------------------------
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+
+      character(4)  :: WF
+C
+      WF='CCSD'
+C     Switch on evaluation of property output
+      DOEXP = .TRUE.
+C     Add this density matrix to the list to be evaluated
+      IPRP_WF = 0
+      DO I = 1, NPRP_WF
+         IF (PRP_WF(I).EQ.WF) IPRP_WF = I
+      END DO
+      IF (IPRP_WF.EQ.0) THEN
+         IF (NPRP_WF .GE. MXPRP_WF) THEN
+             IPRP_WF = 1 ! Unlikely that this happens, just skip the HF print out in this case
+         ELSE
+             NPRP_WF = NPRP_WF + 1
+             IPRP_WF = NPRP_WF
+         END IF
+         PRP_WF(IPRP_WF) = WF
+      END IF
+
+      END
 
 
 

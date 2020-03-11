@@ -8,6 +8,7 @@ include(autocmake_CMakeDependentOption)
 # FIXME re-introduce
 # set_source_files_properties(${PROJECT_BINARY_DIR}/config_info.F90 PROPERTIES GENERATED 1)
 
+
 #Miro: remove problematic linking library
 list(REMOVE_ITEM CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES  "pthread")
 
@@ -52,7 +53,6 @@ endif()
 option(ENABLE_UTILITIES "Enable utilities" ON)
 if(ENABLE_UTILITIES)
     compile_standalone(dirac_mointegral_export.x utils/dirac_mointegral_export.F90   "${_list_of_executables}")
-    compile_standalone(dirac_openfermion_mointegral_export.x utils/dirac_openfermion_mointegral_export.F90   "${_list_of_executables}")
     compile_standalone(rspread.x                 utils/rspread.F90                   "${_list_of_executables}")
     compile_standalone(labread.x                 utils/labread.F90                   "${_list_of_executables}")
     compile_standalone(twofit.x                  utils/twofit.F90                    "${_list_of_executables}")
@@ -152,7 +152,22 @@ foreach(
         target_link_libraries(${_executable} -lC)
     endif()
 
+    if(ENABLE_EXATENSOR)
+        # added -libstdc++ linking flag for each ${_executable} due to EXATENSOR
+        target_link_libraries(objlib.${_executable} -lstdc++) 
+	target_link_libraries(${_executable} -lstdc++)
+    endif()
 endforeach()
+
+if(ENABLE_EXATENSOR)
+    #printout of all linked libraries to exacorr.x executable
+    get_target_property(OUT exacorr.x  LINK_LIBRARIES)
+    message(STATUS "For checking, linked libraries to exacorr.x: ${OUT} ")
+endif()
+
+#printout of all linked libraries to dirac.x executable
+get_target_property(OUT dirac.x  LINK_LIBRARIES)
+message(STATUS "For checking, linked libraries to dirac.x: ${OUT} ")
 
 # radovan: no! we cannot unset
 #          these are used in the make install target

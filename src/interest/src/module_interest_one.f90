@@ -88,7 +88,8 @@
     integer :: nint
     integer :: index
     integer :: la,lb
-    real(8) :: fint(nccx)
+    real(8), save :: fint(nccx)
+    !$OMP threadprivate(fint)
     real(8) :: rxab,ryab,rzab,rrab
     real(8) :: alpha,ax,ay,az,anorm
     real(8) :: beta, bx,by,bz,bnorm
@@ -208,14 +209,16 @@
     integer :: index
     integer :: la,lb
     integer :: n1,n2,iat
-    real(8) :: fint(nccx)
+    real(8), save :: fint(nccx)
+    !$OMP threadprivate(fint)
     real(8) :: rxab,ryab,rzab,rrab
     real(8) :: alpha,ax,ay,az,anorm
     real(8) :: beta, bx,by,bz,bnorm
     real(8) :: pexp,rexp,rxpa,rypa,rzpa
     real(8) :: cntr1,cntr,tval,fnbra,fdbra
     real(8) :: cx,cy,cz,px,py,pz,rxcp,rycp,rzcp
-    real(8), dimension(ncc2) :: fintl
+    real(8), save:: fintl(ncc2)
+    !$OMP threadprivate(fintl)
 
 
     !> AB-pair indexation
@@ -360,7 +363,8 @@
     integer :: index
     integer :: la,lb
     integer :: n1,n2,iat
-    real(8) :: fint(nccx)
+    real(8), save :: fint(nccx)
+    !$OMP threadprivate(fint)
     real(8) :: rxab,ryab,rzab,rrab
     real(8) :: alpha,ax,ay,az,anorm
     real(8) :: beta, bx,by,bz,bnorm
@@ -368,7 +372,8 @@
     real(8) :: psq,ppq,rho,rxpq,rypq,rzpq
     real(8) :: cx,cy,cz,px,py,pz
     real(8) :: gamma,rxwp,rywp,rzwp,cntr,cntab,cnorm,tval,fnbra,fdbra
-    real(8), dimension(ncc2) :: fintl
+    real(8), save:: fintl(ncc2)
+    !$OMP threadprivate(fintl)
     real(8), parameter :: pi52     = 34.986836655249725d0 !2*pow(pi,5/2) 
     real(8), parameter :: pow_pi_3 = 31.006276680299816d0 !  pow(pi,3) 
     real(8), parameter :: b2fm     = 52917.720859d0       !GreenBook 3'rd edition 

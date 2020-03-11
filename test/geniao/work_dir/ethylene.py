@@ -6,7 +6,7 @@ import subprocess
 basis1 = 'cc-pVDZ'
 basis2 = 'cc-pVQZ'
 charge = 0
-geniao_executable="geniao.x"
+geniao_executable="/Users/bsenjean/Documents/Git_repositories/dirac-test/dirac/build-caar-ibos/geniao.x"
 data_directory=os.getcwd()
 geometry = [\
 ('C',     (  0.65413470,       0.12613356,       0.03022762)),\
@@ -23,7 +23,7 @@ get_mrconee=True
 get_dfpcmo=True
 test=True
 hamiltonian = "X2C"
-spinfree=True
+spinfree=False
 speed_of_light = False
 restricted = False
 # by default :

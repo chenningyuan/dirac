@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -657,7 +657,7 @@ contains
          call around('Requested density at point(s)')
 
          write(lupri, *)
-         write(lupri, '(a8, 2a14, a18, a21, 2a18)') &
+         write(lupri, '(a8, 2a14, a18, a32, 2a26)') &
             'r_x',                                  &
             'r_y',                                  &
             'r_z',                                  &
@@ -678,10 +678,10 @@ contains
                                        buffer,                    &
                                        q)
 
-            write(lupri, '(3e14.6, 4f18.7)') &
-               visual_cfg_xyz_list(i, 1),    &
-               visual_cfg_xyz_list(i, 2),    &
-               visual_cfg_xyz_list(i, 3),    &
+            write(lupri, '(3e14.6, 4ES26.16E3)') &
+               visual_cfg_xyz_list(i, 1),        &
+               visual_cfg_xyz_list(i, 2),        &
+               visual_cfg_xyz_list(i, 3),        &
                q(0:3, 1)
          end do
 
@@ -696,9 +696,8 @@ contains
 
          v = visual_cfg_line_to - visual_cfg_line_from
          v = v/visual_cfg_line_nr_steps
-
+     
          do istep = 0, visual_cfg_line_nr_steps
-
             r = visual_cfg_line_from + istep*v
             call get_quantity_in_point(visual_cfg_nr_dmat, &
                                        D,                  &
@@ -710,15 +709,15 @@ contains
                                        buffer,             &
                                        q)
 
-            write(lunit_line_scalar, '(4e18.10)') &
-               r(1),                              &
-               r(2),                              &
-               r(3),                              &
+            write(lunit_line_scalar, '(3e18.10,ES26.16E3)')      &
+               r(1),                                             &
+               r(2),                                             &
+               r(3),                                             &
                q(0, 1)
-            write(lunit_line_vector, '(6e18.10)') &
-               r(1),                              &
-               r(2),                              &
-               r(3),                              &
+            write(lunit_line_vector, '(3e18.10,3ES26.16E3)')     &
+               r(1),                                             &
+               r(2),                                             &
+               r(3),                                             &
                q(1:3, 1)
 
          end do
@@ -808,18 +807,18 @@ contains
                s      = q(0,   1)
                v(1:3) = q(1:3, 1)
 
-               write(lunit_2d_scalar, '(3e18.10)')               &
+               write(lunit_2d_scalar, '(2e18.10,ES26.16E3)')     &
                   ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2, &
                   iy*vy_norm - vy_norm*visual_cfg_2d_nr_top/2,   &
                   s
 
-               write(lunit_2d_vector, '(4e18.10)')                &
+               write(lunit_2d_vector, '(2e18.10,2ES26.16E3)')     &
                   ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2,  &
                   iy*vy_norm - vy_norm*visual_cfg_2d_nr_top/2,    &
                   (v(1)*vx(1) + v(2)*vx(2) + v(3)*vx(3))/vx_norm, &
                   (v(1)*vy(1) + v(2)*vy(2) + v(3)*vy(3))/vy_norm
 
-               write(lunit_2d_flow, '(3e18.10)')                  &
+               write(lunit_2d_flow, '(2e18.10,ES26.16E3)')        &
                   ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2,  &
                   iy*vy_norm - vy_norm*visual_cfg_2d_nr_top/2,    &
                   (v(1)*vz(1) + v(2)*vz(2) + v(3)*vz(3))/vz_norm
@@ -1102,16 +1101,16 @@ contains
                                                 buffer,             &
                                                 q(0, kcube))
 
-                     write(lunit_3d_vector, '(6e13.5)') &
-                        r(1:3),                         &
+                     write(lunit_3d_vector, '(3e13.5,3ES26.16E3)') &
+                        r(1:3),                                    &
                         q(1:3, kcube)
-                     write(lunit_3d_scalar, '(4e13.5)') &
-                        r(1:3),                         &
+                     write(lunit_3d_scalar, '(3e13.5,ES26.16E3)')  &
+                        r(1:3),                                    &
                         q(0, kcube)
                      temp2(icube, jcube, kcube, 1:3) = q(1:3, kcube)
                   end do
                end if
-               write(lunit_3d_cube, '(6e13.5)')  &
+               write(lunit_3d_cube, '(6ES26.16E3)')  &
                   (q(0, m), m = 1, visual_cfg_ncube(3))
             end do
          end do

@@ -132,8 +132,13 @@ module exacorr_cc
             end if
             write(*,'(A,I3)') " - Print Level :                    ",exa_input%print_level
             if (print_level > 1) then
-              print*, " - occupied spinors :                ", exa_input%mo_occ
-              print*, " - virtual spinors :                 ", exa_input%mo_vir
+              write(*,*) " - occupied spinors :                ", exa_input%mo_occ
+              write(*,*) " - virtual spinors :                 ", exa_input%mo_vir
+            end if
+            if(exa_input%lambda) then
+              write(*,*) ""
+              write(*,*) "Attention: For properties the density matrix is saved on a node."
+              write(*,*) "           buffer size: ",exa_input%talsh_buff,"GB"
             end if
             write(*,*) ""
          end if
@@ -205,10 +210,14 @@ module exacorr_cc
             call print_date('initialized Fock matrix')
 
 !           Initialize t1 amplitudes to zero (we assume canonical orbitals for the moment)
-            if (.not.CCD) ierr=exatns_tensor_create(comm_t%t1,"t1",vo_id,vo_root,EXA_DATA_KIND_C8)
+            if (.not.CCD) then
+               ierr=exatns_tensor_create(comm_t%t1,"t1",vo_id,vo_root,EXA_DATA_KIND_C8)
+               ierr=exatns_tensor_init(comm_t%t1,ZERO)
+            end if
 
 !           Initialize t2 amplitudes with the MP2 values
             ierr=exatns_tensor_create(comm_t%t2,"t2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
+            ierr=exatns_tensor_init(comm_t%t2,ZERO)
 !           the tensor_add routine is not implemented in exatensor, work around this by using a contraction
             ierr=exatns_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)*K()",comm_t%t2,int_t%oovv,one_tensor) ! o(2)v(2)
             ierr=exatns_tensor_transform(comm_t%t2,'Denominate')
@@ -218,6 +227,7 @@ module exacorr_cc
             ierr=exatns_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%t2,int_t%oovv,ONE_QUARTER) ! o(2)v(2)
             ierr=exatns_tensor_get_scalar(result_tensor,result_val)
             mp2_energy=real(result_val,8) ! Casting into real(8)
+
             print*, ""
             print*," MP2 energy = ", mp2_energy
             print*, ""
@@ -274,10 +284,12 @@ module exacorr_cc
 !            construct lambda tensors + initialize with t-amplitudes
              if (.not.CCD) then
                 ierr=exatns_tensor_create(l1_tensor,"l1",ov_id,ov_root,EXA_DATA_KIND_C8)
+                ierr=exatns_tensor_init(l1_tensor,ZERO)
                 ierr=exatns_tensor_contract("L(i,a)+=T+(a,i)*K()",l1_tensor,comm_t%t1,one_tensor)
              end if
 
              ierr=exatns_tensor_create(l2_tensor,"l2",oovv_id,oovv_root,EXA_DATA_KIND_C8)
+             ierr=exatns_tensor_init(l2_tensor,ZERO)
              ierr=exatns_tensor_contract("L(i,j,a,b)+=T+(a,b,i,j)*K()",l2_tensor,comm_t%t2,one_tensor)
 
 !            solve lambda-equations and caluclate density matrix in MO basis
@@ -689,6 +701,7 @@ module exacorr_cc
           ierr=exatns_tensor_contract("S(a,b,i,j)+=H(b,k,c,j)*T(a,c,k,i)",s2_tensor,comm_t%h_int,comm_t%t2)  ! o(3)v(3)
 
 !         ovoo
+
           ierr=exatns_tensor_init(cint_tensor)
           ierr=exatns_tensor_contract("C(k,b,i,j)+=V(b,k,c,d)*T(c,d,i,j)",cint_tensor,int_t%vovv,comm_t%tau,MINUS_ONE_HALF) ! o(3)v(3)
           if (.not.CCD) then
@@ -934,6 +947,7 @@ module exacorr_cc
 !*********************************
 !        get fixed intermediates *
 !*********************************
+
          call get_w_vvvv(lambda_t%w_vvvv,comm_t,int_t,CCD,one_tensor)
          call get_wbar_vovo(lambda_t%wbar_vovo,comm_t%t2,int_t,one_tensor)
          call get_fbar_ov(lambda_t%fbar_ov,comm_t%hov,one_tensor)
@@ -969,8 +983,12 @@ module exacorr_cc
 !        construct solution tensors *
 !************************************
 
-         if (.not.CCD) ierr=exatns_tensor_create(s1_tensor,"s1",ov_id,ov_root,EXA_DATA_KIND_C8)
+         if (.not.CCD) then
+            ierr=exatns_tensor_create(s1_tensor,"s1",ov_id,ov_root,EXA_DATA_KIND_C8)
+            ierr=exatns_tensor_init(s1_tensor,ZERO)
+         end if 
          ierr=exatns_tensor_create(s2_tensor,"s2",oovv_id,oovv_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_init(s2_tensor,ZERO)
 
 !********************************************
 !        construct mixed type intermediates *
@@ -978,6 +996,8 @@ module exacorr_cc
 
          ierr=exatns_tensor_create(lambda_t%goo,"goo_mixed",oo_id,oo_root,EXA_DATA_KIND_C8)
          ierr=exatns_tensor_create(lambda_t%gvv,"gvv_mixed",vv_id,vv_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_init(lambda_t%goo,ZERO)
+         ierr=exatns_tensor_init(lambda_t%gvv,ZERO)
 
 !*****************************************************************
 !        re-initialize diis, so it can be used in lambda routine *
@@ -1015,7 +1035,7 @@ module exacorr_cc
 !******************************
 
           if (.not.CCD) then
-            ierr=exatns_tensor_init(s1_tensor)
+            ierr=exatns_tensor_init(s1_tensor,ZERO)
 
 !----------------------------------------
 !           term 1: S(i,a) += Fbar(i,a) |
@@ -1069,7 +1089,7 @@ module exacorr_cc
 !         calculate s2 tensor *
 !******************************
 
-          ierr=exatns_tensor_init(s2_tensor)
+          ierr=exatns_tensor_init(s2_tensor,ZERO)
 
 !---------------------------------------
 !         term 1: S(ij,ab) += V(ij,ab) |
@@ -1343,6 +1363,7 @@ module exacorr_cc
            a2int_root(1:2) = vovo_root(2:3)
            ierr=exatns_tensor_create(a2int_tensor,"a2ov",a2int_id,a2int_root,EXA_DATA_KIND_C8) 
            call get_ht1_integral_tensor (aoint_tensor,a2int_tensor)
+
            call print_date('ov halftransformation completed')
            ierr=exatns_tensor_create(ovvo_tensor,"ovvo",ovvo_id,ovvo_root,EXA_DATA_KIND_C8) ! auxilliary for get_CC_integrals
            call get_ht2_integral_tensor (a2int_tensor,ovvo_tensor,0)
@@ -1624,7 +1645,6 @@ module exacorr_cc
           integer(INTD)              :: ierr
           complex(8)                 :: result_val
 
-
           if (one_el_exist) then
 
             ! Allocate two auxilliary tensors needed to extract results or multiply by one
@@ -1656,7 +1676,7 @@ module exacorr_cc
             ierr=exatns_tensor_get_scalar(r_tensor,result_val)
             hf_energy=real(result_val,8) ! Casting into real(8)
             ierr=exatns_tensor_destroy(h_tensor)
-            print*," Energy of reference wave function (HF single determinant) = ", hf_energy+e_core
+            write (*,'(A,F23.15)') " Energy of reference wave function (HF single determinant) = ", hf_energy+e_core
 
             ! Make the complete Fock matrix by addding the valence electron contributions
             ierr=exatns_tensor_contract("F(i,j)+=V(i,k,j,l)*I(k,l)",comm_t%foo,int_t%oooo,id_mat_occ, ONE)
