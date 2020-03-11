@@ -14,8 +14,7 @@ module talsh_cc
                                  ONE_QUARTER_C=(0.25D0,0.D0), MINUS_ONE_QUARTER_C=(-0.25D0,0.D0), &
                                  ONE_HALF=(0.5D0,0.D0), &
                                  MINUS_ONE_HALF=(-0.5D0,0.D0), TWO=(2.D0,0.D0), &
-                                 MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0), &
-                                 INIT_T1_CC2=(0.0001D0,0.D0)
+                                 MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0)
         real(8), parameter    :: ONE_QUARTER=0.25D0
 
         type(talsh_tens_t) :: one_tensor
@@ -161,15 +160,7 @@ module talsh_cc
          if (.not.CCD) then 
             vo_dims(1) = nvir
             vo_dims(2) = nocc
-            ! aspg+lh
-            ! playing around with creating t1 with initial value of -1
-!           if (CC2) then
-!           ierr=talsh_tensor_construct(comm_t%t1,C8,vo_dims,init_val=INIT_T1_CC2)
-!           print*, "t1 init  ICICICICICICI  = ",INIT_T1_CC2
-!           print*, "t1 init  ICICICICICICI  = ",tensor_norm2(comm_t%t1)
-!           else
             ierr=talsh_tensor_construct(comm_t%t1,C8,vo_dims,init_val=ZERO)
-!           end if
          end if
 
 !        Initialize t2 amplitudes with the MP2 values
