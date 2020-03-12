@@ -1000,7 +1000,7 @@ C#include "cbiher.h"
 C
 
 c    Martin
-      real(8), allocatable              :: ECD(:) 
+      real(8), allocatable              :: ECD(:,:) 
 c    Martin 
 
 #include "ibtfun.h"
@@ -1148,7 +1148,7 @@ C
       allocate( Z(NPOINTS))
       allocate(WT(NPOINTS))
 c    MARTIN
-      allocate(ECD(NPOINTS))
+      allocate(ECD(NPOINTS,NEXCNV))
 C    MARTIN
       CALL LEBEDEV(NROTAV,X,Y,Z,WT,NCOUNT)
       IF(NCOUNT.NE.NPOINTS) CALL QUIT('BEDLEB: Grid inconsistency.')
@@ -1303,7 +1303,7 @@ C     ====================================
 C    MARTIN
         IF (ANGPLOT) THEN
           !ALLOCATE(ECD(NPOINTS))
-             ECD(IP) =       
+             ECD(IP,IEXC) =       
      &     + EEWT(1)*TMOM(2,2,1,IEXC)*TMOM(3,1,1,IEXC) ! (x,y,z)  
      &     + EEWT(2)*TMOM(3,2,1,IEXC)*TMOM(1,1,1,IEXC) ! (y,z,x)
      &     + EEWT(3)*TMOM(1,2,1,IEXC)*TMOM(2,1,1,IEXC) ! (z,x,y)
@@ -1358,7 +1358,8 @@ C    MARTIN
           WRITE(6,"(A24, I4)") "Angular plot excitation ", IEXC
           WRITE(6,*) "X      Y       Z       ECD"
           DO IP = 1,NPOINTS
-             WRITE(6,"(3F18.10, E18.10)") X(IP), Y(IP), Z(IP), ECD(IP)
+             WRITE(6,"(3F18.10, E18.10)") X(IP), Y(IP), Z(IP)
+     &        , ECD(IP,IEXC)
           ENDDO
           WRITE(6,"(A22,I4)") "End output excitation ", IEXC
         ENDDO
