@@ -20,5 +20,6 @@ f.add(from_string = 'Eigenvalues',
       rel_tolerance   = 1.0e-5)
 
 test.run(['cc2.inp'], ['LiH.xyz'], f)
+test.run(['cc_pointcharge_large_cvalue.inp'], ['h2o.xyz'], f)
 
 sys.exit(test.return_code)
