@@ -342,7 +342,7 @@ module talsh_cc
          type(talsh_intg_tens), intent(inout) :: int_t
 !        intermediate tensors (same notation as in relccsd)
          !type(talsh_tens_t) :: hoo_int_tensor, hvv_int_tensor
-         type(talsh_tens_t) :: t1t1_tensor
+         type(talsh_tens_t) :: tau2_tensor
          type(talsh_tens_t) :: cint_tensor
 !        auxilliary tensors for t1 equation
          type(talsh_tens_t) :: hov_aux_tensor, hoo_aux_tensor
@@ -383,7 +383,7 @@ module talsh_cc
          vvoo_dims(1:2) = nvir
          vvoo_dims(3:4) = nocc
          ierr=talsh_tensor_construct(s2_tensor,C8,vvoo_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(t1t1_tensor,C8,vvoo_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
          ovoo_dims(1) = nocc
          ovoo_dims(2) = nvir
          ovoo_dims(3:4) = nocc
@@ -417,11 +417,11 @@ module talsh_cc
           call get_gvv(comm_t,int_t%vovv,CCD)
 
 !         vovo ! moretests
-          ierr=talsh_tensor_init(t1t1_tensor)
-          ierr=talsh_tensor_add("T(a,d,l,i)+=R(a,d,l,i)",t1t1_tensor,comm_t%t2,scale=ONE_HALF)
-          if (.not.CCD) ierr=talsh_tensor_contract("T(a,d,l,i)+=T(a,l)*T(d,i)",t1t1_tensor,comm_t%t1,comm_t%t1)                       ! o(2)v(2)
+          ierr=talsh_tensor_init(tau2_tensor)
+          ierr=talsh_tensor_add("T(a,d,l,i)+=R(a,d,l,i)",tau2_tensor,comm_t%t2,scale=ONE_HALF)
+          if (.not.CCD) ierr=talsh_tensor_contract("T(a,d,l,i)+=T(a,l)*T(d,i)",tau2_tensor,comm_t%t1,comm_t%t1)                       ! o(2)v(2)
           call get_h(comm_t,int_t,CCD)
-          ierr=talsh_tensor_contract("H(a,k,c,i)+=V(k,l,c,d)*T(a,d,l,i)",comm_t%h_int,int_t%oovv,t1t1_tensor)           ! o(3)v(3)
+          ierr=talsh_tensor_contract("H(a,k,c,i)+=V(k,l,c,d)*T(a,d,l,i)",comm_t%h_int,int_t%oovv,tau2_tensor)           ! o(3)v(3)
 
 !         This term appears four times as we need to permute both i and j and a and b
           ierr=talsh_tensor_contract("S(a,b,i,j)+=H(a,k,c,i)*T(c,b,j,k)",s2_tensor,comm_t%h_int,comm_t%t2) ! validated o(3)v(3)
@@ -569,7 +569,7 @@ module talsh_cc
 
          if (.not.CCD) ierr=talsh_tensor_destruct(s1_tensor)
          ierr=talsh_tensor_destruct(s2_tensor)
-         ierr=talsh_tensor_destruct(t1t1_tensor)
+         ierr=talsh_tensor_destruct(tau2_tensor)
          ierr=talsh_tensor_destruct(cint_tensor)
          if (.not.CCD) then
             ierr=talsh_tensor_destruct(hoo_aux_tensor)
