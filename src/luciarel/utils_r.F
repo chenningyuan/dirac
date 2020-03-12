@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -482,6 +482,7 @@ C***********************************************************************
       INTEGER(KIND=df_MPI_OFFSET_KIND) IS_LENGTH8
 #endif
 #include "parluci.h"
+#include "mpif.h"
 #include "typesz_mpi2.h"
       CHARACTER*6 ENVIRO, SIGDEN_ROUTE
       DIMENSION T_BUFF(*)

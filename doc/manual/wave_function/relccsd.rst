@@ -453,6 +453,113 @@ Enables debug printout. Massive output.
 
 
 
+star(CCPROJ)
+
+This menu controls the use of projection operators in the CC calculations.
+
+These projectors are used to remove terms from the ground state CC equations (frozen core), the EOM-CC similarity transformed Hamiltonian (CVS and restricted excitation window), or a combination of both.
+
+keyword(FCORE)
+
+Defines which active occupied spinors to consider as part of frozen core within the ground-state CC calculation.
+
+Input is an threshold energy value in atomic units. T amplitudes contaning spinors with energies below such value are set to zero.
+
+Note this value does not have to be the same as for the definition of the core spinors for core-valence separation. Assuring the consistency of these choices is up to the user.
+
+ 
+*Example:* requests that all spinors with energies below -10.0 a.u. are frozen::
+
+      .FCORE
+      -10.0
+
+*Default:*
+
+::
+
+     No frozen core spinors
+
+
+keyword(CVS_CORE)
+
+Defines which active occupied spinors to consider as core spinors for EOM-CC calculations employing the core-valence separation (CVS) framework. To be used with EOM-IP or EOM-EE, in order to target high-lying excited/ionized states, namely for core spectra.
+
+Input is an threshold energy value in atomic units. 
+
+Right/Left-hand side trial vector and similarity transformed Hamiltonian matrix elements representing excited determinants containing at least one occupied spinor with energies below such value are set to zero.
+
+Note this value does not have to be the same as for the definition of the frozen core. Assuring the consistency of these choices is up to the user. 
+
+In addition to this, users should make sure to enable root following (see :ref:`CCDIAG_.OVERLAP`) if they want to target states with dominant singly ionized or singly excited character.
+
+
+*Example:* requests that all spinors with energies below -10.0 a.u. are considered to be core::
+
+      .CVS_CORE
+      -10.0
+
+*Default:*
+
+::
+
+     No core-valence separation is enforced
+
+
+keyword(NODOCC)
+
+Requests that, when using core-valence separation,  Right/Left-hand side trial vector and similarity transformed Hamiltonian matrix elements representing excited determinants containing both core occupied spinors to be projected out. 
+
+
+*Example:* requests that double core excited determinants are projected out::
+
+      .NODOCC
+
+*Default:*
+
+::
+
+     Double core excited determinants are retained in the calculations
+
+
+keyword(REW_OCC)
+keyword(REW_VIRT)
+
+Defines a set or active occupied and/or virtual spinors as part of restricted window for EOM-CC calculations. Can be used with any EOM variant. 
+
+If an occupied/virtual restricted window is defined, the Right/Left-hand side trial vector and similarity transformed Hamiltonian matrix elements representing excited determinants containing at least one occupied/virtual  spinor within the window(s) are retained in the calculation, the rest being projected out.
+
+Input for each keyword is a pair of values defining thethreshold energy value in atomic units, one per line. Note that the two keywords can be used independently.
+
+Right/Left-hand side trial vector and similarity transformed Hamiltonian matrix elements representing excited determinants containing at least one occupied spinor with energies below such value are set to zero.
+
+The option :ref:`CCPROJ_.REW_OCC` is incompatible with :ref:`CCPROJ_.CVS_CORE`. It can however be used with :ref:`CCPROJ_.FCORE`, but assuring the consistency of these choices is up to the user.
+
+In addition to this, users should make sure to enable root following (see under :ref:`*EOMCC`) if they want to target states with dominant singly ionized or singly excited character.
+
+
+*Example:* requests two restricted windows, one for occupied spinors with energies between -200.0 a.u. and -150.0 a.u. and another for virtual spinors with energies between 0.001 a.u. and 35.0 a.u.::
+
+      .REW_OCC      
+       -200.0   
+       -150.0
+      .REW_VIRT      
+       0.001 
+       35.0
+
+*Default:*
+
+::
+
+     No restricted window is defined, all occupied and/or virtual spinors are active
+
+
+
+
+
+
+
+
+
 
 star(CCFSPC)
 

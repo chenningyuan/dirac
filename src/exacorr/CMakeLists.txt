@@ -3,7 +3,6 @@ if(ENABLE_EXATENSOR)
     ${PROJECT_SOURCE_DIR}/src/include
     )
 
-
   set(FIXED_EXACORR_FORTRAN_SOURCES
     exacorr_dirac.F
   )
@@ -20,6 +19,7 @@ if(ENABLE_EXATENSOR)
    exacorr_gradient.F90
    exacorr_mo.F90
    exacorr_respect.F90
+   exacorr_cholesky.F90
    exacorr_cc.F90
    talsh_ao_to_mo.F90
    talsh_common_routines.F90
@@ -46,4 +46,3 @@ if(ENABLE_EXATENSOR)
   add_dependencies(exacorr  main)
   add_dependencies(exacorr  exatensor)
 endif()
-

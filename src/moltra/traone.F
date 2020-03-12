@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -24,7 +24,7 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRAONE */
       SUBROUTINE TRAONE(TOTERG,WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,
-     &                  KQ,KQC,KE,KIBE)
+     &                  KQ,KQC,KE,KIBE,NSPC2)
 C***********************************************************************
 C
 C     Driver routine for 2-index transformations
@@ -46,10 +46,10 @@ C
       LOGICAL TOBE,TRASAM
       real*8, intent(in) :: toterg
       DIMENSION WORK(*),NSTR(2,0:2,2),NSTRT(2),KQ(2,2),
-     &          NSPC(2,0:2),KQC(2),KE(2,2),KIBE(2,4)
+     &          NSPC(2,0:2),KQC(2),KE(2,2),KIBE(2,4),
+     &          NSPC2(2,0:3)
       Real(8), Allocatable :: FMO(:),ORBE(:)
       Integer, Allocatable :: IBORB(:)
-
 C
       CALL QENTER('TRAONE')
       KFRSAV = KFREE
@@ -64,11 +64,15 @@ C
 C     Transform core-fock matrix to active MO basis
 C     ---------------------------------------------
 C
-      Allocate (FMO(N2BBASXQ))
+      IF(NSPC2(1,3).GT.0) THEN
+        Allocate(FMO(N2BBASXQ*2)) ! core density matrix
+      ELSE
+        Allocate(FMO(N2BBASXQ)) ! core density matrix
+      ENDIF
 !Miro: used parameter DUMMY -no need for full set of MOs
       CALL GTCFCK(FMO,IPRTRA,WORK(KQ(1,1)),WORK(KQ(1,2)),
      &        WORK(KQC(1)),DUMMY,NDMOQR,ICMOQR,NSTR,NDMOQC,ICMOQC,NSPC,
-     &        ITRA_INTFL2,WORK,KFREE,LFREE)
+     &        NSPC2,ITRA_INTFL2,WORK,KFREE,LFREE)
 C
 C     Write MOLFDIR file MRCONEE
 C     --------------------------
@@ -97,7 +101,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck gtcfck */
       SUBROUTINE GTCFCK(FMO,IPRINT,Q1,Q2,QCO,CMO,NDMOQR,ICMOQR,NSTR,
-     &                  NDMOQC,ICMOQC,NSPC,INTFLG2,WORK,KFREE,LFREE)
+     &          NDMOQC,ICMOQC,NSPC,NSPC2,INTFLG2,WORK,KFREE,LFREE)
 C***********************************************************************
 C     
 C     Get core Fock-matrix in MO-basis; 
@@ -121,7 +125,7 @@ C
       LOGICAL TOBE
       DIMENSION FMO(*),WORK(*)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2),NSTR(2,0:2,2)
-      DIMENSION NDMOQC(2,2),ICMOQC(2),NSPC(2,0:2)
+      DIMENSION NDMOQC(2,2),ICMOQC(2),NSPC(2,0:2),NSPC2(2,0:3)
       DIMENSION Q1(*),Q2(*),QCO(*),CMO(*)
       Real(8), Allocatable :: FAO(:),DMAT(:),DMATfull(:)
 C
@@ -133,11 +137,15 @@ C
       INTFLG = INTFLG2
 C
       Allocate(FAO(N2BBASXQ))
-      Allocate(DMAT(N2BBASXQ)) ! core density matrix
+      IF(NSPC2(1,3).GT.0) THEN
+        Allocate(DMAT(N2BBASXQ*2)) ! core density matrix
+      ELSE
+        Allocate(DMAT(N2BBASXQ)) ! core density matrix
+      ENDIF
       Allocate(DMATfull(N2BBASXQ))! Miro: full density matrix
 C
       CALL GTCFC1(FMO,FAO,DMAT,DMATfull,Q1,Q2,QCO,CMO,NDMOQR,ICMOQR,
-     &            NSTR,NDMOQC,ICMOQC,NSPC,IPRINT,WORK,KFREE,LFREE)
+     &      NSTR,NDMOQC,ICMOQC,NSPC,QCO2,NSPC2,IPRINT,WORK,KFREE,LFREE)
 C
 C     Print section
 C
@@ -167,7 +175,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck GTCFC1 */
       SUBROUTINE GTCFC1(
      &   FMO,FAO,DMAT,DMATfull,Q1,Q2,QCO,CMO,NDMOQR,ICMOQR,NSTR,
-     &             NDMOQC,ICMOQC,NSPC,IPRINT,WORK,KFREE,LFREE)
+     &          NDMOQC,ICMOQC,NSPC,QCO2,NSPC2,IPRINT,WORK,KFREE,LFREE)
 C*****************************************************************************
 C     
 C     Get core Fock-matrix in MO-basis; 
@@ -208,48 +216,80 @@ C
       LOGICAL :: dirac_cfg_dft_calculation_save
       DIMENSION FMO(*),FAO(*),DMAT(*),DMATfull(*),WORK(*)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2),NSTR(2,0:2,2)
-      DIMENSION NDMOQC(2,2),ICMOQC(2),NSPC(2,0:2)
-      DIMENSION Q1(*),Q2(*),QCO(*),CMO(*)
+      DIMENSION NDMOQC(2,2),ICMOQC(2),NSPC(2,0:2),NSPC2(2,0:3)
+      DIMENSION Q1(*),Q2(*),QCO(*),QCO2(*),CMO(*)
 
       Integer, Allocatable :: POS(:)
+      real(8)              :: f_occ
 C
       CALL QENTER('GTCFC1')
       KFRSAV = KFREE
       LUBUF = 22
 C
+C     Modified Fall 2019 by J. Pototschnig to allow for open shell core
+      IF(NSPC2(1,3).GT.0) THEN
+C     Initialize with open shell !
+        NOPENBUF = NOPEN
+        NFMAT = 2
+        NOPEN = 1
+C       get number of orbitals
+        f_occ = 0
+        DO IFRP = 1,NFSYM
+          f_occ = f_occ + real(NSPC2(IFRP,0))
+        ENDDO
+        f_occ=real(NSPC2(1,3))/(2*f_occ)
+      ELSE
 C     Initialize - core is the closed-shell system !
-C
-      NOPENBUF = NOPEN
-      NFMAT = 1
-      NOPEN = 0
-C
+        NOPENBUF = NOPEN
+        NFMAT = 1
+        NOPEN = 0
+      ENDIF
+
 C     Check if we need two-electron part
-C
       NTOT = 0
       DO IFRP = 1,NFSYM
         NTOT = NTOT + NSPC(IFRP,0)
       ENDDO
+        
       IF(NTOT.GT.0) THEN
 C
 C       1. Get two-electron Fock matrix in AO-basis
 C       ===========================================
 C
-        call SaveTaskDistribFlags(saveflags)
-       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
-        call SetIntTaskArrayDimension(NPOS,PARCAL)
+      call SaveTaskDistribFlags(saveflags)
+      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+      call SetIntTaskArrayDimension(NPOS,PARCAL)
         Allocate (POS(NPOS))
-C
-C       Closed shell Hartree - Fock
-C       ===========================
-C       Totally symmetric operator
-        ISYMOP(1) = 1
-C       Fock matrix type
-        IFCKOP(1) = 1
-C       Hermitian operator
-        IHRMOP(1) = 1
-C       Get core density matrix
-        CALL CDENS(DMAT,QCO,NDMOQC,ICMOQC,NSPC,IPRINT) 
-C       Get the two-electron Fock matrix using core density matrix
+
+C       Modified Fall 2019 by J. Pototschnig to allow for open shell core
+        IF(NSPC2(1,3).GT.0) THEN
+C         with  frozen open-shell
+C         ===========================
+C         Get density matrix
+          CALL CDENSO(DMAT,QCO,NDMOQC,ICMOQC,NSPC,NSPC2,IPRINT) 
+C         Totally symmetric operator
+          ISYMOP(1) = 1
+          ISYMOP(2) = 1
+C         Fock matrix type
+          IFCKOP(1) = 1
+          IFCKOP(2) = 1
+C         Hermitian operator
+          IHRMOP(1) = 1
+          IHRMOP(2) = 1
+        ELSE
+C         Closed shell Hartree - Fock
+C         ===========================
+C         Get core density matrix
+          CALL CDENS(DMAT,QCO,NDMOQC,ICMOQC,NSPC,IPRINT) 
+C         Totally symmetric operator
+          ISYMOP(1) = 1
+C         Fock matrix type
+          IFCKOP(1) = 1
+C         Hermitian operator
+          IHRMOP(1) = 1
+        ENDIF
+
+C       Get the two-electron Fock matrix using the density matrix
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FMO,DMAT,NFMAT,
      &       POS,INTFLG,IPRINT,WORK(KFREE),LFREE)
 
@@ -351,7 +391,13 @@ C
 C     5. Add 1- and 2-electron matrix and transform to MO-basis
 C     =========================================================
 C
-      IF(NTOT.GT.0) CALL DAXPY(N2BBASXQ,D1,FMO,1,FAO,1) 
+      IF(NTOT.GT.0) THEN
+        CALL DAXPY(N2BBASXQ,D1,FMO,1,FAO,1) 
+        IF(NFMAT.GT.1) THEN
+C         for now only one froze open-shell included
+          CALL DAXPY(N2BBASXQ,f_occ,FMO(1+N2BBASXQ),1,FAO,1) 
+        ENDIF
+      ENDIF
 C
 C     Make the matrix spinfree if desired.
 C
@@ -760,7 +806,7 @@ C     group type (1 real, 2 complex, 4 quat.),spinfree formalism,
 C     total number of orbitals (so including frozen or deleted orbitals)
 !     total SCF energy
       WRITE (LUMLF1) 2*NSTRT,BREIT,DHFERG,NFSYM,NZ,SPINFR,
-     &               NORBT,TOTERG
+     &               NORBT,TOTERG,NSPC,NCORE2
 C     NSYMRP        - Number of fermion irreps in parent group
 C     REPN          - names of these irreps (gerade, ungerade)
 C     NAEL          - number of spinors active in the transformation
@@ -769,6 +815,7 @@ C                     0: total
 C                     1: positive energy
 C                     2: negative energy
 C     NESH-NST-NSPC -number of deleted spinors.
+C     NCORE2        - spinors missing due to frozen open shell
       WRITE (LUMLF1) NSYMRP,(REPN(IRP),IRP=1,NSYMRP),  
      &                      (NAEL(IRP),IRP=1,NSYMRP),
      &                      (NSTR(IRP),IRP=1,NFSYM),
@@ -2260,5 +2307,77 @@ c       CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
 c    &              NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
 c       CALL FLSHFO(LUPRI)
 C     
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck CDENSO */
+      SUBROUTINE CDENSO(DMAT,QCO,NDMOQC,ICMOQC,NSPC,NSPC2,IPRINT)
+C*****************************************************************************
+C
+C Get the core density matrix into DMAT, from selected MO's in QCO
+C Modified version of CDENS to also include one cor eopen shell
+C Johann Pototschnig, Fall 2019
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      real(8)            :: DMAT(*),QCO(*)
+      integer            :: NSPC(2,0:2),NDMOQC(2,2),ICMOQC(2)
+      integer            :: NSPC2(2,0:3)
+      real(8), parameter :: d1 = 1.0D0,d0 = 0.0D0
+      integer            :: ncspin(2,0:2), i, j, iopen
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbdhf.h"
+C
+      CALL DZERO(DMAT,2*N2BBASXQ)
+C     get closed shell denstiy matrix
+      do i = 1,NFSYM
+        do j=0,2
+          ncspin(i,j)=NSPC(i,j)-NSPC2(i,j)
+        enddo
+
+        IF(ncspin(i,0).EQ.0) CYCLE
+        CALL DENST1(DMAT(1+I2BASX(i,i)),NTBAS(0),NTBAS(0),NZ,d1,d0,
+     &              QCO(ICMOQC(i)),NDMOQC(1,i),NDMOQC(2,i),
+     &              1,ncspin(i,0),NFBAS(i,0))
+      enddo
+C     get open-shell density matrix
+      iopen=1
+C     only use the first (one) open-shell
+      do i = 1,NFSYM
+
+        IF(NSPC2(i,0).EQ.0) CYCLE
+        CALL DENST1(DMAT(1+N2BBASXQ*iopen+I2BASX(i,i)),
+     &              NTBAS(0),NTBAS(0),NZ,d1,d0,
+     &              QCO(ICMOQC(i)),NDMOQC(1,i),NDMOQC(2,i),
+     &              ncspin(i,0)+1,NSPC2(i,0),NFBAS(i,0))
+      enddo 
+C     reset values
+      do i = 1,NFSYM
+            NDMOQC(2,i) = NSPC(i,0)
+      enddo 
+C     
+      IF (IPRINT.GE.7) THEN
+        CALL TITLER('Output from CDENSO','*',103)
+        DO 20 I = 1,NFSYM
+        IF(NORB(I).EQ.0) GOTO 20
+          WRITE(LUPRI,'(/3X,A,I1,A,I1/)')
+     &    '*** Fermion corep ',I,'/',NFSYM
+          IF (IPRINT.GE.10) THEN
+            write(LUPRI,*)
+     &      'Core molecular orbitals, QCO:',NDMOQC(1,I),NDMOQC(2,I)
+            CALL PRQMAT(QCO(ICMOQC(I)),NDMOQC(1,I),NDMOQC(2,I),
+     &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+          ENDIF
+          write(LUPRI,*) 'Core density matrix, DMAT:'
+          CALL PRQMAT(DMAT(I2BASX(I,I)+1),NFBAS(I,0),NFBAS(I,0),
+     &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+          write(LUPRI,*) 'Open-shell core density matrix, DMAT:'
+          CALL PRQMAT(DMAT(I2BASX(I,I)+1+N2BBASXQ*iopen),NFBAS(I,0),
+     &            NFBAS(I,0),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+   20   CONTINUE
+      ENDIF
       RETURN
       END

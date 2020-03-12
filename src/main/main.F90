@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -166,8 +166,10 @@ end interface
      call selftest_lapack()
      call selftest_fortran_c_cxx_interoperability()
 #ifdef VAR_MPI
-!    MASTER checks MPI library compatibility (now done at compile time)
+!    checks MPI library compatibility 
+     endif
      if ( parcal ) call selftest_mpi()
+     if (mytid == 0) then
 #endif
 #endif
 ! debug     print*,'++++ calling dirac with',iparcal,mytid,mparid,numnod

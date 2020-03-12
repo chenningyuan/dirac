@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -61,19 +61,36 @@ C
       LOGICAL TOBE,TOBEK,TOBEKK,TRASAM,ACTIVE
       DIMENSION NSTR(2,0:2,4),KVEC(2,5),KQ(2,4),KIBE(2,4),
      &          IR(2,2),NR(2),NQ(2,4),NQT(4),KE(2,4),
-     &          NSPC(2,0:2),KQC(2),NSTRT(4)
+     &          NSPC(2,0:2),KQC(2),NSTRT(4),NSPC2(2,0:3)
       Real(8), Allocatable :: CMO(:),EIG(:)
       Integer, Allocatable :: IBEIG(:)
       real(8), allocatable :: WORK(:)
+C     Initialize (for debug mode)
+      KE=0
+      KIBE=0
+      KQC=0
 C
       CALL QENTER('PAMTRA')
       call legacy_lwork_get(LWORK)
 #include "memint.h"
       call alloc(WORK,LWORK,id='WORK in PAMTRA')
       KFRSAV = KFREE
+
 C
       CALL GETTIM(CPU1,WALL1)
       CALL TRAHI(IPRTRA,3)
+
+C     Define NOMDCINT from **MOLTRA input
+
+      NOMDCINT = NOMDCINT_TRAINP
+      ISTRAT_save = ISTRAT
+      IF (NOMDCINT .AND. ISTRAT .NE. 4) THEN
+         WRITE(LUPRI,'(/A,I0/)')
+     &   'INFO, .NOMDCINT is only implemented for strategy 4;'//
+     &   ' therefore use stategy 4 instead of ',ISTRAT
+         ISTRAT = 4
+      END IF
+
 C
 C     Define number of double quaternionic classes
 C
@@ -207,8 +224,27 @@ C
       Allocate (IBEIG(NORBT))
       CALL IZERO(IBEIG,NORBT)
       CALL DZERO(EIG,NORBT)
-      INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
-      INQUIRE(FILE='KRMCOLD',EXIST=TOBEKK)
+
+      SELECT CASE ( MOFILE_TRAINP )
+         CASE ( "DFCOEF" )
+            TOBEK  = .FALSE.
+            TOBEKK = .FALSE.
+         CASE ( "KRMCSCF" )
+            TOBEK  = .TRUE.
+            TOBEKK = .FALSE.
+         CASE ( "KRMCOLD" )
+            TOBEK  = .FALSE.
+            TOBEKK = .TRUE.
+         CASE ( "UNKNOWN" )
+            INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
+            INQUIRE(FILE='KRMCOLD',EXIST=TOBEKK)
+         CASE DEFAULT
+            WRITE(LUPRI,'(/2A)')
+     &      'FATAL ERROR for **MOLTRA input: Unknown .MOFILE name : ',
+     &      MOFILE_TRAINP
+            CALL QUIT('Unknown .MOFILE from **MOLTRA input')
+      END SELECT
+
 
       IF (TOBEK) THEN
          CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','PAMTRA')
@@ -257,6 +293,10 @@ C
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMTRA')
             CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
             CLOSE(LUCOEF,STATUS='KEEP')
+         END IF
+         IF (IPRTRA .GE. 0) THEN
+            WRITE(LUPRI,'(/A)')
+     &          ' (PAMTRA)  Orbitals read from DFCOEF'
          END IF
       END IF
 C
@@ -328,6 +368,27 @@ C
      &                  NPSH(IFRP),NESH(IFRP),
      &                  NSPC(IFRP,2),NSPC(IFRP,1))
          ENDIF
+         IF (INDEX(TRA_CORSTR2(IFRP),'not specified').EQ.0) THEN
+             WRITE(LUPRI,'(/A)') '* frozen open-shell added'
+             Allocate (IBEIG(NR(IFRP)))
+             CALL NUMLST(TRA_CORSTR2(IFRP),IBEIG,
+     &                  NR(IFRP),IR(1,IFRP),IR(2,IFRP),
+     &                  IFRP,NSPC2(IFRP,0))
+             CALL ORBCNT(IBEIG,NSPC2(IFRP,0),
+     &                  NPSH(IFRP),NESH(IFRP),
+     &                  NSPC2(IFRP,2),NSPC2(IFRP,1))
+             CALL ADDCORE2(NR(IFRP),WORK(KVEC(IFRP,5)),NSPC(IFRP,0),
+     &                     IBEIG,NSPC2(IFRP,0))
+             CALL ORBCNT(WORK(KVEC(IFRP,5)),NSPC(IFRP,0),
+     &                  NPSH(IFRP),NESH(IFRP),
+     &                  NSPC(IFRP,2),NSPC(IFRP,1))
+             DeAllocate (IBEIG)
+             WRITE(LUPRI,*) 'WARNING: Frozen open shell is a continous',
+     &                  ' set of ',NSPC2(IFRP,0),'. orbitals'
+             NSPC2(IFRP,3)=NCORE2
+         ELSE
+             NSPC2(IFRP,3)=-1
+         ENDIF
          NSPC(IFRP,0) = NSPC(IFRP,1) + NSPC(IFRP,2)
          CALL MEMREL('PAMTRA.4',WORK,KFRSAV,KVEC(IFRP,5),KFREE,LFREE)
          CALL MEMGET2('INTE','VEC',KVEC(IFRP,5),NSPC(IFRP,0),
@@ -337,6 +398,15 @@ C
          NDMOQC(1,IFRP,2) = NFBAS(IFRP,0)
          NDMOQC(2,IFRP,2) = NSPC(IFRP,0)
       ENDDO
+      IF (NSPC2(1,3).LT.0) THEN
+        NCORE2=0
+      ELSE
+        I=0
+        DO IFRP = 1,NFSYM
+          I=I+NSPC2(IFRP,0)*2
+        ENDDO
+        NCORE2=I-NCORE2
+      ENDIF
 C####################################################
 C
 C     number of active occupied
@@ -403,8 +473,6 @@ C
       Allocate (CMO(NCMOTQ))
       Allocate (EIG(NORBT))
       Allocate (IBEIG(NORBT))
-      INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
-      INQUIRE(FILE='KRMCOLD',EXIST=TOBEKK)
       IF (TOBEK) THEN
          CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','PAMTRA')
          JRDMO = -1
@@ -461,8 +529,8 @@ C
 C
       IF (.NOT.NO2IND) THEN
          CALL FLSHFO(LUPRI)
-         CALL TRAONE(TOTERG,WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,KQ,
-     &               KQC,KE,KIBE)
+         CALL TRAONE(TOTERG,WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,
+     &                  KQ,KQC,KE,KIBE,NSPC2)
       ENDIF
 C
       CALL FLSHFO(LUPRI)
@@ -513,6 +581,7 @@ C
 C
       CALL FLSHFO(LUPRI)
 
+      ISTRAT = ISTRAT_save
       call dealloc(WORK)
       CALL QEXIT('PAMTRA')
       RETURN
@@ -3802,11 +3871,15 @@ C
 #include "dcbdhf.h"
       CHARACTER DAYTID*24,SECTID*12,CPUTID*12
       LOGICAL TOBE,TRANOP,SKPONE,SKPTWO
-      DIMENSION NSTR(2,0:2,4),NSTRT(2),NSPC(2,0:2),
+      DIMENSION NSTR(2,0:2,4),NSTRT(2),NSPC(2,0:2),NSPC2(2,0:3),
      &          KVEC(2,2),KQ(2,4),KE(2,4),KIBE(2,4),NQ(2),KQC(2)
 CTROND: to fix !
       DIMENSION MINE(16),MAXE(16),NGASO(256)
       real(8), allocatable :: WORK(:)
+C     Initialize (for debug mode)
+      KE=0
+      KIBE=0
+      KQC=0
 C
       CALL QENTER('RESOLV')
       call legacy_lwork_get(LWORK)
@@ -4012,15 +4085,17 @@ C        ( ITASK = 1 for Fock matrices )
 C
         IF (PARCAL) CALL DIRAC_PARCTL( HERFCK_PAR )
 C
+C       don't use frozen open shells
+        NSPC2=-1
 C       Transform core-fock matrix to active MO basis
 C       ---------------------------------------------
-CMiro/Aug 2016 - introduced DFT-COSCI, core-fock mtx contains xc contrib 
+C Miro/Aug 2016 - introduced DFT-COSCI, core-fock mtx contains xc contrib 
 
         CALL GTCFCK(WORK(KBUF),IPRRES,WORK(KQ(1,1)),WORK(KQ(1,2)),
      &            WORK(KQC(1)),WORK(KBUF1),NDMOQR,ICMOQR,NSTR(1,0,1),
-     &             NDMOQC,ICMOQC,NSPC(1,0),
+     &             NDMOQC,ICMOQC,NSPC(1,0),NSPC2,
      &             INTRES,WORK,KFREE,LFREE)
-C
+C 
 C       Write MOLFDIR file MRCONEE
 C       --------------------------
 C
@@ -4587,8 +4662,6 @@ C
       CALL QENTER('TRAPARI')
 C
       KFRSAV = KFREE
-      PARHER = .TRUE.
-      PARCAL = .TRUE.
 C
       FINISH = .FALSE.
 C
@@ -4984,9 +5057,9 @@ C
 #include "aovec.h"
 #include "maxorb.h"
 #include "blocks.h"
-      LOGICAL ANTIS,LMP2
-      DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4)
-      DIMENSION DINTSKP(8),TIM1(7)
+      LOGICAL   ANTIS,LMP2
+      INTEGER   NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4)
+      REAL(8)   DINTSKP(8),TIM1(7)
       real(8), allocatable :: WORK(:)
 C
       CALL QENTER('TRANOD')
@@ -4999,6 +5072,7 @@ C
 C
 C     Initialize the common blocks.
 C
+      PARHER = .TRUE.
       IPRINT = -1
       CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
      &             KINDX,KGAB,KDRIJ,
@@ -5058,6 +5132,7 @@ C
 C
       CALL MEMREL('TRANOD',WORK,1,KFRSAV,KFREE,LFREE)
       call dealloc(WORK)
+      PARHER = .FALSE.
       CALL QEXIT('TRANOD')
 C
       RETURN
@@ -5515,5 +5590,28 @@ C
      &    IELC(IOPEN),(NGASO(IREP,IOPEN),IREP = 1,NREP)
       ENDDO
 !
+      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck TRAPAM */
+      SUBROUTINE ADDCORE2(NLIST,TLIST,TNUM,
+     &                     SLIST,SNUM)
+C***********************************************************************
+C
+C     Written by J.Pototschnig, Fall 2019
+C
+C***********************************************************************
+C     add SLIST to TLIST
+#include "priunit.h"
+      INTEGER NLIST,TNUM,SNUM,I
+      INTEGER TLIST(NLIST),SLIST(NLIST)
+
+      DO I=1,SNUM
+        TLIST(TNUM+I)=SLIST(I)
+      ENDDO
+      TNUM=TNUM+SNUM
+      WRITE(LUPRI,'(6X,12I5)') (SLIST(I),I=1,SNUM)
+
       RETURN
       END

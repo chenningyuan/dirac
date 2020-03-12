@@ -1,4 +1,4 @@
-#define QDIAG_TIMING
+!define QDIAG_TIMING
 !define QDIAG_OMP_INFO
 C  /* Deck iqpack */
       SUBROUTINE IQPACK(IQPA,NZA,IQPB,NZB,IQPC,NZC)

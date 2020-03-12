@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -247,7 +247,7 @@ C
                CYA = PT(IBTAND(ISYMAX(2,1),IA))*COORD(2,ICENTA)
                CZA = PT(IBTAND(ISYMAX(3,1),IA))*COORD(3,ICENTA)
 C
-               ICHARG(IATOMA) = NINT(CHARGE(ICENTA))
+               ICHARG(IATOMA) = IZATOM(ICENTA)
 C
                IATOMB = 0
                DO 200 ICENTB = 1, NUCIND

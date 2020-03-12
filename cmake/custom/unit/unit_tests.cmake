@@ -43,6 +43,11 @@ if(ENABLE_UNIT_TESTS)
                 )
         endif()
 
+        if(ENABLE_EXATENSOR)
+          # added -libstdc++ linking flag for each ${_executable} due to EXATENSOR
+          target_link_libraries(${_name}.x -lstdc++)
+        endif()
+
         set_property(
             TARGET ${_name}.x
             PROPERTY

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -789,9 +789,9 @@ C
               IT=IT+1
             ENDIF
             IF(NSSH(I).EQ.1) THEN
-              WRITE(INDSTR(3,I)(IT:IT),'(I1)') 1
+              WRITE(INDSTR(3,I)(IT:IT+5),'(I6)') NOCC(I)+1
             ELSE
-              WRITE(INDSTR(3,I)(IT:IT+14),'(I6,A2,I6)')
+              WRITE(INDSTR(3,I)(IT:IT+13),'(I6,A2,I6)')
      &             NOCC(I)+1,'..',NESH(I)
             ENDIF
           ENDIF

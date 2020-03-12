@@ -135,7 +135,12 @@ if (XCFUN_ENABLE_TESTS)
 	add_subdirectory(test)
 endif()
 
+#Miro: Doxygen searching is in main CMake-in-DIRAC, prevent thus configure error
+# because ${DOXYGEN_EXECUTABLE} tends to be filled with wrong executable!
+set(DOXYGEN_EXECUTABLE "")
 find_package(Doxygen QUIET)
+message("xcfun DOXYGEN_FOUND ?  ${DOXYGEN_FOUND}")
+
 if (DOXYGEN_FOUND)
 	add_custom_target(docs
 		COMMAND ${DOXYGEN_EXECUTABLE}

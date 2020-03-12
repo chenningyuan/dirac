@@ -13,6 +13,7 @@
       use exacc_cfg
       use exacorr_global
       use exacorr_utils
+      use, intrinsic:: ISO_C_BINDING
 
       implicit none
 
@@ -26,6 +27,11 @@
       integer              :: nesh, kvec
       integer              :: i
       integer              :: ialpha, ibeta
+
+!     Temporary hack to call the IAO code
+!      print*,'starting generate iao'
+!      call generate_iao
+!      stop 'generated local orbitals'
 
 !     Initialize MPI variables
       mytid   = 0

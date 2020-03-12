@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,11 +19,6 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 !
-#ifdef HAVE_MKL_BLAS
-!radovan: workaround for strange crash when using MKL zdotc
-#define ZDOTC z_dot_c
-#define zdotc z_dot_c
-#endif
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PAMADC ()
 !
@@ -580,7 +575,6 @@ C
 
       real*8 ddot
       logical done
-      complex*16 zdotc
 
       integer(8) :: ivmax
 
@@ -1664,7 +1658,7 @@ C
 C---------------Local variables--------------------------------------
 C
       REAL*8 ddot,getimag
-      COMPLEX*16 zdotc
+!     COMPLEX*16 zdotc
 C---------------Executable Code --------------------------------------
 C
 C     CALL PST('Calculating coupling block AFFIN/HOLE+')
@@ -1808,7 +1802,7 @@ C
       integer JVVVO_I48(MXREP+1)   !mxrep+1 is defined in symm.inc !
       LOGICAL DONE
       real*8 ddot,getimag
-      complex*16 zdotc
+!     complex*16 zdotc
 C
 C---------------Executable Code --------------------------------------
 C
@@ -1971,7 +1965,7 @@ C---------------Local variables--------------------------------------
 C
       LOGICAL DONE
       real*8 ddot,getimag
-      complex*16 zdotc
+!     complex*16 zdotc
 C
 C---------------Executable Code --------------------------------------
 C
@@ -2109,7 +2103,7 @@ C---------------Local variables--------------------------------------
 C
       LOGICAL DONE
       real*8 ddot,getimag
-      complex*16 zdotc
+!     complex*16 zdotc
 C
 C---------------Executable Code --------------------------------------
 C
@@ -2635,7 +2629,7 @@ C
       COMPLEX*16 CEPSK,CKCVIR,DII,S_UNST,S_STAR,S
       REAL*8 SEC0,SEC1,SEC2,SECA,TITERTIME
 
-      COMPLEX*16 ZDOTC
+!     COMPLEX*16 ZDOTC
       REAL*8 GETIMAG
 C
 C---------------Executable code--------------------------------------
@@ -2851,7 +2845,7 @@ C
       COMPLEX*16 S_UNST,S_STAR
       REAL*8 S
 
-      COMPLEX*16 ZDOTC
+!     COMPLEX*16 ZDOTC
       REAL*8 GETIMAG
 
 C
@@ -3522,7 +3516,7 @@ C
 C---------------Local variables--------------------------------------
 C
       LOGICAL DONE
-      COMPLEX*16 zdotc
+!     COMPLEX*16 zdotc
       REAL*8 ddot,getimag
       INTEGER JVVVO_I48(MXREP+1)   !MXREP is defined in symm.inc !
       INTEGER IVOVVTAUX
@@ -7086,70 +7080,3 @@ c
       return
       end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#ifdef HAVE_MKL_BLAS
-!radovan: workaround for strange crash when using MKL zdotc
-!miro: restricted by preprocessor for IBM XL
-      DOUBLE COMPLEX FUNCTION z_dot_c(N,ZX,INCX,ZY,INCY)
-*     .. Scalar Arguments ..
-      INTEGER INCX,INCY,N
-*     ..
-*     .. Array Arguments ..
-      DOUBLE COMPLEX ZX(*),ZY(*)
-*     ..
-*
-*  Purpose
-*  =======
-*
-*  ZDOTC forms the dot product of a vector.
-*
-*  Further Details
-*  ===============
-*
-*     jack dongarra, 3/11/78.
-*     modified 12/3/93, array(1) declarations changed to array(*)
-*
-*  =====================================================================
-*
-*     .. Local Scalars ..
-      DOUBLE COMPLEX ZTEMP
-      INTEGER I,IX,IY
-*     ..
-*     .. Intrinsic Functions ..
-      INTRINSIC DCONJG
-*     ..
-      ZTEMP = (0.0d0,0.0d0)
-      ZDOTC = (0.0d0,0.0d0)
-      IF (N.LE.0) RETURN
-      IF (INCX.EQ.1 .AND. INCY.EQ.1) THEN
-*
-*        code for both increments equal to 1
-*
-         DO I = 1,N
-            ZTEMP = ZTEMP + DCONJG(ZX(I))*ZY(I)
-         END DO
-      ELSE
-*
-*        code for unequal increments or equal increments
-*          not equal to 1
-*
-         IX = 1
-         IY = 1
-         IF (INCX.LT.0) IX = (-N+1)*INCX + 1
-         IF (INCY.LT.0) IY = (-N+1)*INCY + 1
-         DO I = 1,N
-            ZTEMP = ZTEMP + DCONJG(ZX(IX))*ZY(IY)
-            IX = IX + INCX
-            IY = IY + INCY
-         END DO
-      END IF
-      ZDOTC = ZTEMP
-      RETURN
-      END
-#endif
-!&&&&&&&&&&& intermediate surrogate
-!     SUBROUTINE PAMPOLPRP ()
-!     write(*,*) 'Only strut! Nothing is done here'
-!     return
-!     end
-!&&&&&&&&&&& intermediate surrogate
-

@@ -373,6 +373,25 @@ Similarly, the magnetic hyperfine-structure constants in BeH can be defined as f
   'NEF 006'
   'NEF 004'
 
+The nuclear Magnetic-Quadrupole-Moment (MQM) constants in BeH can be defined by defination as
+
+::
+
+ .OPERATOR
+  'Z1-MQM'    (Z1-MQM, for the first atom as specified in the .mol file)
+  ZAVECTOR
+  YZEFG011
+  XZEFG011
+  COMFACTOR
+  -0.333333333D0
+ .OPERATOR
+  'Z2-MQM'    (Z2-MQM, for the second atom as specfied in the .mol file)
+  ZAVECTOR
+  YZEFG021
+  XZEFG021
+  COMFACTOR
+  -0.333333333D0
+
 One can define many more :ref:`one_electron_operators` as per their requirements.
 
 keyword(DIPMOM)
@@ -420,3 +439,9 @@ compute nucleon-electron scalar-pseudoscalar interaction constant as an
 expectation value over the corresponding effective four-fermion operator
 in the limit for an infinitely heavy nucleon (Sov. Phys. JETP 62 (1985) 872).
 Reference: :cite:`Fleig2015`
+
+keyword(NMQM)
+
+compute nuclear Magnetic-Quadrupole-Moment (MQM) Interaction constatn as an
+expectation value over the corresponding effective four-component operator
+(Sov. Phys. JETP 60 (1984) 873), Reference: :cite:`Fleig2016` 

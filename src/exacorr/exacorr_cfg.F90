@@ -23,24 +23,29 @@ contains
 
   integer :: exa_MPI_rank
 
-  call interface_mpi_bcast_l0(exa_input%noints,1,exa_MPI_RANK,global_communicator)
-  call interface_mpi_bcast_l0(exa_input%lambda,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%ccd,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%eom,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%eom_properties,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%eom_flavour,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast_l0(exa_input%lambda,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast_l0(exa_input%noints,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%beta_occ,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%beta_vir,1,exa_MPI_RANK,global_communicator)
-  call interface_mpi_bcast(exa_input%ncycles,1,exa_MPI_RANK,global_communicator)
+
   call interface_mpi_bcast(exa_input%exa_blocksize,1,exa_MPI_RANK,global_communicator)
-  call interface_mpi_bcast(exa_input%print_level,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast(exa_input%talsh_buff,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%moint_scheme,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast(exa_input%ncycles,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast(exa_input%print_level,1,exa_MPI_RANK,global_communicator)
+  
   call interface_mpi_bcast(exa_input%mokr_occ,exa_input%nkr_occ,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%mokr_vir,exa_input%nkr_vir,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%mo_occ,exa_input%nocc,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%mo_vir,exa_input%nvir,exa_MPI_RANK,global_communicator)
+
   call interface_mpi_bcast(exa_input%t_econv,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%level_shift,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast(exa_input%t_cholesky,1,exa_MPI_RANK,global_communicator)
   
   end subroutine exacc_sync_cw
 #endif

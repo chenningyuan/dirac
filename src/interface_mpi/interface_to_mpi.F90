@@ -1,6 +1,6 @@
 #define interface_to_mpi_DEBUG -1
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -3356,20 +3356,21 @@ contains
 
 !-------------------------------------------------------------------------------
     integer(kind=integer_kind)       :: datatype
-    integer(kind=integer_kind)       :: extent
+    integer(kind=mpi_address_kind)   :: lb, extent 
 !-------------------------------------------------------------------------------
 #ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: datatype_i4
-    integer(kind=4)            :: extent_i4
     integer(kind=4)            :: ierr_i4
+    integer(kind=mpi_address_kind)   :: lb_i4, extent_i4 
 !-------------------------------------------------------------------------------
     datatype_i4     = datatype
+    lb_i4 = extent 
 #if interface_to_mpi_DEBUG > 0
     write (0,*) 'datatype ',datatype
     write (0,*) 'mpi_type_extent called, MPI_INIT ?',MPI_INIT_called
 #endif
     if (.not. MPI_INIT_called) return
-    call mpi_type_extent(datatype_i4, extent_i4, ierr_i4)
+    call mpi_type_get_extent(datatype_i4, lb_i4, extent_i4, ierr_i4)
     extent          = extent_i4
 #else
     integer(kind=integer_kind)       :: ierr
@@ -3378,7 +3379,7 @@ contains
     write (0,*) 'mpi_type_extent called, MPI_INIT ?',MPI_INIT_called
 #endif
     if (.not. MPI_INIT_called) return
-    call mpi_type_extent(datatype   , extent   , ierr   )
+    call mpi_type_get_extent(datatype   , lb, extent   , ierr   )
 #endif
 
   end subroutine

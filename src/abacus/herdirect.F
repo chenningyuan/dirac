@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,30 +19,6 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-#ifdef UNDEF
-/* Comdeck herdirect_log */
-941206-hjaaj
-HERPAR: new routine for defining parallel hermit calc. of Fock matr.
-HERFCK: call PARDRV if PARCAL true
-        changed STATIS to IPRPAR.gt.0 (STATIS missing in newest
-        aba.cdk from oslo)
-941205-from oslo:
-HERFCK: also IPRINT = IPRFCK for PARCAL true (was = 0)
-941103-hjaaj:
-implemented ISYMDM(NDMAT), IFCTYP(NDMAT)
-HERDI1,HERDI2: excluded; not used, are also incomplete
-ABARUN: moved to here from abadrv.u (needed for HERMIT)
-931026-hjaaj: sether now calls READIN; + consistency check
-HERFCK: new parameter (print level in CBITWO)
-931025-hjaaj: sirdirn04.u (i.e. HERFCK,SETHER) added to herdirect.u
-GETFCK now calls HERFCK
-AOLABE renamed to AOLAB4, generalized, and moved to GP.
-GETFCK is now only internal test routine; HERFCK is called from the
-outside (SIRIUS and RESPONS).
-921201-hjaaj:
-   new Sirius input routine for Hermit parameters ? an extended sether?
-   also direct calculation of solvent integrals ?
-#endif
 #ifndef PRG_DIRAC
 C  /* Deck tstdir */
       SUBROUTINE TSTDIR(FMAT,DMAT,NDMAT,WORK,LWORK,IPRINT)

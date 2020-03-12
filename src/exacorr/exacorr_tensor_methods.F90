@@ -141,7 +141,6 @@ module exacorr_tensor_methods
         end function TensInitTestApply
 
         function compute_2e_ao_tensor(this,tensor,scalar) result(ierr)
-         use, intrinsic:: ISO_C_BINDING
          implicit none
          integer(INTD):: ierr,n
          class(compute_2e_ao_tensor_t), intent(in):: this
@@ -164,7 +163,6 @@ module exacorr_tensor_methods
          use exacorr_datatypes
          use exacorr_global
          use module_interest_eri
-         use, intrinsic:: ISO_C_BINDING
 
          implicit none
 
@@ -333,9 +331,9 @@ module exacorr_tensor_methods
          use exacorr_global
 
          implicit none
-         integer, intent(in) :: nmo          ! the length of the mo basis
-         integer, intent(in) :: mo_list(:)   ! and their indices
-         integer, intent(in) :: spin
+         integer, intent(in)       :: nmo          ! the length of the mo basis
+         integer, intent(in)       :: mo_list(:)   ! and their indices
+         integer(INTD), intent(in) :: spin
          class(init_mocoef_tensor_t), intent(out):: this
 
          integer  :: nao
@@ -411,14 +409,13 @@ module exacorr_tensor_methods
         end subroutine init_ht
 
         function scale_with_denom(this,tensor,scalar) result(ierr)
-         use, intrinsic:: ISO_C_BINDING
          implicit none
          integer(INTD):: ierr,n
          class(scale_with_denom_t), intent(in):: this
          class(tens_rcrsv_t), intent(inout):: tensor
          complex(8), intent(inout), optional:: scalar
          type(tens_dense_t):: tens
-         integer, allocatable :: tens_id(:)
+         integer(INTD), allocatable  :: tens_id(:)
          integer(INTL), allocatable  :: tens_root(:)
          logical :: lambda=.false.
 
@@ -450,15 +447,13 @@ module exacorr_tensor_methods
 
         !Scale with denominators for 2-d or 4-d tensor for regular CC and for lambda
 
-         use, intrinsic:: ISO_C_BINDING
-
          implicit none
 
-         integer,intent(in):: num_dims            !in: number of dimensions of the tensor
+         integer(INTD),intent(in):: num_dims            !in: number of dimensions of the tensor
          type(C_PTR), value:: tens_body           !in: C pointer to the tensor body (tensor elements)
          integer(4), value:: data_kind            !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
-         integer(8), intent(in):: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
-         integer(8), intent(in):: tens_bases(1:*) !in: base offsets for each tensor dimension)
+         integer(INTL), intent(in):: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
+         integer(INTL), intent(in):: tens_bases(1:*) !in: base offsets for each tensor dimension)
          real(8), intent(in):: eps_occ(:),eps_vir(:)
          logical, intent(in) :: lambda
 
@@ -524,7 +519,7 @@ module exacorr_tensor_methods
         end function denominate
 
         function init_mocoef_tensor(this,tensor,scalar) result(ierr)
-         use, intrinsic:: ISO_C_BINDING
+
          implicit none
          integer(INTD):: ierr,n
          class(init_mocoef_tensor_t), intent(in):: this
@@ -545,8 +540,6 @@ module exacorr_tensor_methods
         integer function tens_init_mocoef(tens_body,data_kind,tens_dims,tens_bases, &
                          mocoef_all) result (ierr)
         !Initialization routine that is used to fill a tensor with mo coefficients
-
-         use, intrinsic:: ISO_C_BINDING
 
          implicit none
 
@@ -580,7 +573,7 @@ module exacorr_tensor_methods
         end function tens_init_mocoef
 
         function init_dm_tensor(this,tensor,scalar) result(ierr)
-         use, intrinsic:: ISO_C_BINDING
+
          implicit none
          integer(INTD):: ierr,n
          class(init_dm_tensor_t), intent(in):: this
@@ -601,8 +594,6 @@ module exacorr_tensor_methods
         integer function tens_init_dm(tens_body,data_kind,tens_dims,tens_bases, &
                          mocoef_all_1,mocoef_all_2) result (ierr)
         !Initialization routine that is used to fill a tensor with mo coefficients
-
-         use, intrinsic:: ISO_C_BINDING
 
          implicit none
 
@@ -645,7 +636,7 @@ module exacorr_tensor_methods
         end function tens_init_dm
 
         function init_ht_tensor(this,tensor,scalar) result(ierr)
-         use, intrinsic:: ISO_C_BINDING
+
          implicit none
          integer(INTD):: ierr,n
          class(init_ht_tensor_t), intent(in):: this
@@ -670,7 +661,6 @@ module exacorr_tensor_methods
          use exacorr_datatypes
          use exacorr_global
          use module_interest_eri
-         use, intrinsic:: ISO_C_BINDING
 
          implicit none
 
@@ -814,7 +804,7 @@ module exacorr_tensor_methods
         end subroutine set_const
 
         function diag_set(this,tensor,scalar) result(ierr)
-         use, intrinsic:: ISO_C_BINDING
+
          implicit none
          integer(INTD):: ierr,rank
          class(set_diagonal_t), intent(in)    :: this
@@ -833,8 +823,6 @@ module exacorr_tensor_methods
 
         function fill_diagonal(tens_body,data_kind,tens_dims,tens_bases, rank, constant) result (ierr)
           ! routine to fill the diagonal of a matrix
-
-          use, intrinsic:: ISO_C_BINDING
 
           implicit none
 
@@ -889,7 +877,6 @@ module exacorr_tensor_methods
         subroutine init_one_el_int(this,mo1_list,nmo1,mo2_list,nmo2, min_occ)
 
           use exacorr_global
-          use, intrinsic:: ISO_C_BINDING
 
           implicit none
 
@@ -918,7 +905,6 @@ module exacorr_tensor_methods
         function set_one_el_int(this,tensor,scalar) result(ierr)
 
           use exacorr_datatypes
-          use, intrinsic:: ISO_C_BINDING
 
           implicit none
 
@@ -949,7 +935,6 @@ module exacorr_tensor_methods
           !Initialization routine to fill tensor with one electron integrals
 
           use exacorr_datatypes
-          use, intrinsic:: ISO_C_BINDING
 
           implicit none
 
@@ -987,9 +972,10 @@ module exacorr_tensor_methods
          use exacorr_global
 
          implicit none
-         integer, intent(in) :: nocc, occ_space_id, nvir, vir_space_id
-         integer, intent(in) :: mo_occ(:),mo_vir(:)
-         real(8), intent(in) :: level_shift
+         integer, intent(in)      :: nocc, nvir
+         integer(INTD),intent(in) :: occ_space_id, vir_space_id
+         integer, intent(in)      :: mo_occ(:),mo_vir(:)
+         real(8), intent(in)      :: level_shift
          class(set_energy_t), intent(out):: this
 
          type(cmo)          :: cspinor
@@ -1033,7 +1019,6 @@ module exacorr_tensor_methods
         function eps_on_diagonal(this,tensor,scalar) result(ierr)
 
           use exacorr_datatypes
-          use, intrinsic:: ISO_C_BINDING
 
           implicit none
 
@@ -1087,7 +1072,6 @@ module exacorr_tensor_methods
           !Initialization routine to fill tensor diagonals with eigenvalues form dfcoef
 
           use exacorr_datatypes
-          use, intrinsic:: ISO_C_BINDING
 
           implicit none
 
