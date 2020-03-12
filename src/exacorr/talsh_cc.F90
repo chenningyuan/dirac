@@ -738,17 +738,13 @@ module talsh_cc
 
 !         Diagrams using the CC2 W intermediates above
 !
-!         Diagram 21 : s2_{ij}^{ab} += \frac{1}{2}P\_(ab)\sum_{mn} t_m^a t_n^b  W_{ij}^{mn}
+!         Diagram 21 : s2_{ij}^{ab} += \frac{1}{2}\sum_{mn} tauCC2^{mn}_{ab} W_{ij}^{mn}
           ierr=talsh_tensor_contract("S(a,b,i,j)+=Wmnij(m,n,i,j)*T(a,b,m,n)",&
-    &                                s2_tensor,Wmnij_tensor,t1t1_tensor,scale=ONE_HALF)
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=Wmnij(m,n,i,j)*T(b,a,m,n)",&
-    &                                s2_tensor,Wmnij_tensor,t1t1_tensor,scale=ONE_HALF)
+    &                                s2_tensor,Wmnij_tensor,tauCC2_tensor,scale=ONE_HALF)
           if (debug_local) print*, "norm s2 tensor after diagram 21 ",tensor_norm2(s2_tensor)
 
-!         Diagram 22 : s2_{ij}^{ab} += \frac{1}{2}P\_(ij)\sum_{ef} t_i^e t_j^f  W_{ef}^{ab}  
+!         Diagram 22 : s2_{ij}^{ab} += \frac{1}{2}\sum_{ef} tauCC2^{ij}_{ef} W_{ef}^{ab}  
           ierr=talsh_tensor_contract("S(a,b,i,j)+=Wabef(a,b,e,f)*T(e,f,i,j)",&
-    &                                 s2_tensor,Wabef_tensor,tauCC2_tensor,scale=ONE_HALF)
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=Wabef(a,b,e,f)*T(e,f,j,i)",&
     &                                 s2_tensor,Wabef_tensor,tauCC2_tensor,scale=ONE_HALF)
           if (debug_local) print*, "norm s2 tensor after diagram 22 ",tensor_norm2(s2_tensor)
 
