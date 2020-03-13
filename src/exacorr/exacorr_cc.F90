@@ -67,7 +67,7 @@ module exacorr_cc
 !        space ids and roots
          type(space_dims) :: dims
 !        CCSD control and result variables
-         real(8)            :: mp2_energy, ccsd_energy !, t_energy(3) ! triples not implemented
+         real(8)            :: scf_energy, mp2_energy, ccsd_energy!, t_energy(3) ! triples not implemented
          real(8)            :: t_target_precision
 
          ! classes for the definition of spaces (AO and 2 different MO spaces)
@@ -115,28 +115,10 @@ module exacorr_cc
          print_level = exa_input%print_level
 
          if (my_MPI_rank == 0) then
-            write(*,*) ""
-            write(*,'(A)') " Characteristics of this calculation"
-            write(*,'(A)') " -----------------------------------"
-            write(*,'(A,L1)') " - Solve CCD equations :              ", exa_input%ccd
-            write(*,'(A,L1)') " - Solve Lambda equations :           ", exa_input%lambda
-            write(*,'(A,I3)') " - Number of atomic orbitals :      ",ao_space%get_root_id(ierr)
-            write(*,'(A,I3)') " - Number of occupied spinors :     ", exa_input%nocc
-            write(*,'(A,I3)') " - Number of virtual spinors :      ", exa_input%nvir
-            write(*,'(A,ES10.1)') " - Target precision of amplitudes :", exa_input%t_econv
-            write(*,'(A,I3)') " - Maximum number of cycles :       ", exa_input%ncycles
-            write(*,'(A,I3)') " - ExaTensor block size :           ",exa_input%exa_blocksize
-            write(*,'(A,I3)') " - Integral transformation scheme : ",exa_input%moint_scheme
-            if (exa_input%level_shift.gt.1.0D-14) then
-              write(*,'(A,ES10.1)') " - Level Shift :                    ",exa_input%level_shift
-            end if
-            write(*,'(A,I3)') " - Print Level :                    ",exa_input%print_level
-            if(exa_input%lambda) then
-              write(*,*) ""
-              write(*,*) "Attention: For properties the density matrix is saved on a node."
-              write(*,*) "           buffer size: ",exa_input%talsh_buff,"GB"
-            end if
-            write(*,*) ""
+            call print_exainput(exa_input%ccd, exa_input%lambda, exa_input%moint_scheme, exa_input%ncycles, &
+                             exa_input%t_econv, exa_input%t_cholesky, exa_input%level_shift, &
+                             exa_input%talsh, exa_input%exa_blocksize, exa_input%talsh_buff, &
+                             int(ao_space%get_root_id(ierr)), exa_input%nocc, exa_input%nvir, exa_input%print_level)
          end if
 
          !Create all id and root arrays, neccessary for exatns_tensor_create
@@ -202,7 +184,7 @@ module exacorr_cc
             ierr=exatns_tensor_create(comm_t%foo,"foo",oo_id,oo_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(comm_t%fov,"fov",ov_id,ov_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(comm_t%fvv,"fvv",vv_id,vv_root,EXA_DATA_KIND_C8)
-            call init_fock (comm_t,int_t,oo_id,oo_root,ov_id,ov_root,vv_id,vv_root, print_level)
+            call init_fock (comm_t,int_t,oo_id,oo_root,ov_id,ov_root,vv_id,vv_root,scf_energy,print_level)
             call print_date('initialized Fock matrix')
 
 !           Initialize t1 amplitudes to zero (we assume canonical orbitals for the moment)
@@ -224,9 +206,9 @@ module exacorr_cc
             ierr=exatns_tensor_get_scalar(result_tensor,result_val)
             mp2_energy=real(result_val,8) ! Casting into real(8)
 
-            print*, ""
-            print*," MP2 energy = ", mp2_energy
-            print*, ""
+            write(*,*) ""
+            write(*,*) "  MP2 energy = ", mp2_energy
+            write(*,*) ""
 
 !           Start CC(S)D iterations
 
@@ -1620,7 +1602,7 @@ module exacorr_cc
 
         end subroutine diis
 
-        subroutine init_fock (comm_t,int_t,oo_id,oo_root,ov_id,ov_root,vv_id,vv_root, print_level)
+        subroutine init_fock (comm_t,int_t,oo_id,oo_root,ov_id,ov_root,vv_id,vv_root,scf_energy,print_level)
 
           use exacorr_global
           use exacorr_tensor_methods
@@ -1632,8 +1614,9 @@ module exacorr_cc
           integer(INTL),dimension(2), intent(in) :: oo_root, ov_root, vv_root
           integer(INTD),dimension(2), intent(in) :: oo_id, ov_id, vv_id 
           integer, intent(in)                    :: print_level
+          real(8), intent(out)                   :: scf_energy
 
-          real(8)                    :: ev_energy, off_diag, hf_energy
+          real(8)                    :: ev_energy, off_diag
           !        scalars (need to be defined as tensor types)
           type(tens_rcrsv_t)         :: r_tensor, o_tensor, orb_tensor, h_tensor
           !        identity matrix for contraction 
@@ -1670,10 +1653,12 @@ module exacorr_cc
             ierr=exatns_tensor_contract("H(i,j)+=V(i,k,j,l)*I(k,l)",h_tensor,int_t%oooo,id_mat_occ, ONE_HALF)
             ierr=exatns_tensor_contract("R()+=H(i,j)*I(i,j)",r_tensor,h_tensor,id_mat_occ)
             ierr=exatns_tensor_get_scalar(r_tensor,result_val)
-            hf_energy=real(result_val,8) ! Casting into real(8)
+            scf_energy=real(result_val,8) ! Casting into real(8)
             ierr=exatns_tensor_destroy(h_tensor)
-            write (*,'(A,F23.15)') " Energy of reference wave function (HF single determinant) = ", hf_energy+e_core
-
+            scf_energy=scf_energy+e_core
+            write(*,*) ""
+            write (*,'(A,F23.15)') "  SCF energy (single determinant, calculated) = ", scf_energy
+            write(*,*) ""
             ! Make the complete Fock matrix by addding the valence electron contributions
             ierr=exatns_tensor_contract("F(i,j)+=V(i,k,j,l)*I(k,l)",comm_t%foo,int_t%oooo,id_mat_occ, ONE)
             ierr=exatns_tensor_contract("F(i,a)+=V(k,i,l,a)*I(k,l)",comm_t%fov,int_t%ooov,id_mat_occ, ONE)
@@ -1722,6 +1707,11 @@ module exacorr_cc
             ierr=exatns_tensor_init(comm_t%foo,ZERO)
             ierr=exatns_tensor_init(comm_t%fov,ZERO)
             ierr=exatns_tensor_init(comm_t%fvv,ZERO)
+
+            call get_scf ( scf_energy )
+            write(*,*) ""
+            write (*,'(A,F23.15)') " SCF energy ( read ) = ", scf_energy
+            write(*,*) ""
 
           end if
 

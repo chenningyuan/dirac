@@ -35,6 +35,7 @@ module exacorr_global
         public get_shell_index
         public get_shell_size
         public make_spinor_list
+        public get_scf
 
        contains
 
@@ -759,5 +760,10 @@ module exacorr_global
         end do 
 
       end subroutine print_orbitals
+
+      subroutine get_scf ( scf_energy )
+        real(8), intent(out) :: scf_energy
+        scf_energy=cspinor_all%total_energy
+      end subroutine get_scf 
 
 end module exacorr_global
