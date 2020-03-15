@@ -94,55 +94,60 @@ module exacorr_utils
       real(8), intent(in) :: t_econv, t_cholesky, level_shift
 
       write(*,*) ""
-      write(*,'(A)') " Characteristics of this calculation"
-      write(*,'(A)') " -----------------------------------"
-      write(*,'(A,L1)') " - Solve CCD equations :              ", ccd
-      write(*,'(A,L1)') " - Solve Lambda equations :           ", lambda
-      write(*,'(A,I3)') " - Integral transformation scheme  ", moint_scheme
-      write(*,'(A,I3)') " - Maximum number of cycles :       ", ncycles
-      write(*,'(A,ES10.1)') " - Target precision of amplitudes :", t_econv
+      write(*,'(A)') "      Characteristics of this calculation      "
+      write(*,'(A)') "-----------------------------------------------"
+      write(*,'(A,L1)') " - Solve CCD equations :               ", ccd
+      write(*,'(A,L1)') " - Solve Lambda equations :            ", lambda
+      write(*,'(A,I5)') " - Integral transformation scheme :", moint_scheme
+      write(*,'(A,I5)') " - Maximum number of cycles :      ", ncycles
+      write(*,'(A,ES10.1)') " - Target precision of amplitudes :  ", t_econv
       if (moint_scheme.eq.42) then
-        write(*,'(A,ES10.1)') " - Cholesky decomposition threshold ",t_cholesky
+        write(*,'(A,ES10.1)') " - Cholesky decomposition threshold :",t_cholesky
       end if
       if (level_shift.gt.1.0D-14) then
         write(*,'(A,ES10.1)') " - Level Shift :                     ",level_shift
       end if
-      write(*,*) ""
-      write(*,'(A,I3)') " - Number of atomic orbitals :      ", nao
-      write(*,'(A,I3)') " - Number of occupied spinors :     ", nocc
-      write(*,'(A,I3)') " - Number of virtual spinors :      ", nvir
+      write(*,*) "" 
+      write(*,'(A,I5)') " - Number of atomic orbitals :     ", nao
+      write(*,'(A,I5)') " - Number of occupied spinors :    ", nocc
+      write(*,'(A,I5)') " - Number of virtual spinors :     ", nvir
       write(*,*) ""
       if (talsh) then 
         write(*,'(A)') " Using the single-node TALSH library "
-        write(*,*) " - TALSH buffer size: ",talsh_buff,"GB"
+        write(*,'(A,I5,A)') " - TALSH buffer size:               ",talsh_buff,"GB"
       else 
         write(*,'(A)') " Using the multi-node ExaTensor library (MPI) "
-        write(*,'(A,I3)') " - ExaTensor block size :           ", exa_blocksize
+        write(*,'(A,I5)') " - ExaTensor block size :        ", exa_blocksize
         write(*,'(A)') "!! ATTENTION !! Properties require TALSH, density matrix must be smaller than: "
-        write(*,*) " - TALSH buffer size: ",talsh_buff,"GB"
+        write(*,'(A,I5,A)') " - TALSH buffer size:                   ",talsh_buff,"GB"
       end if
       write(*,*) ""
-      write(*,'(A,I3)') " - Print Level :                    ", print_level
-      write(*,'(A)') " -----------------------------------"
+      write(*,'(A,I5)') " - Print Level :                   ", print_level
+      write(*,'(A)') "-----------------------------------------------"
       write(*,*) ""
 
     end subroutine print_exainput
 
-    subroutine print_exaoutput(talsh, scf_energy, mp2_energy, ccsd_energy, t_energy)
+    subroutine print_exaoutput(talsh, ccd, scf_energy, mp2_energy, ccsd_energy, t_energy)
 
-      logical, intent(in)           :: talsh
+      logical, intent(in)           :: talsh, ccd
       real(8), intent(in)           :: scf_energy, mp2_energy, ccsd_energy
       real(8), intent(in), optional :: t_energy(3)
 
-      write(*,'(A)') "      Final results from EXACORR    "
-      write(*,'(A)') " -----------------------------------"
+      write(*,'(A)') "     -     Final results from EXACORR     -    "
+      write(*,'(A)') "-----------------------------------------------"
       if (talsh) then 
         write(*,'(A)') " Using the single-node TALSH library "
       else 
         write(*,'(A)') " Using the multi-node ExaTensor library (MPI) "
       end if
       write(*,*) ""
-      write (*,'(A,F20.15)') "  Final CCSD energy :               ",ccsd_energy
+      write (*,'(A,F20.15)') "  MP2 energy :                      ",mp2_energy
+      if (ccd) then 
+        write (*,'(A,F20.15)') "  Final  CCD energy :               ",ccsd_energy
+      else
+        write (*,'(A,F20.15)') "  Final CCSD energy :               ",ccsd_energy
+      end if
       if (present(t_energy)) then 
         write (*,'(A,F20.15)') "  4th order triples correction :    ",t_energy(1)
         write (*,'(A,F20.15)') "  5th order triples (T) correction :",t_energy(2)
@@ -152,16 +157,20 @@ module exacorr_utils
         write (*,'(A,F20.15)') "  CCSD-T  correlation energy :      ",ccsd_energy+t_energy(1)+t_energy(3)
       end if
       write(*,*) ""
-      write (*,'(A,F20.15)') "  SCF energy :                      ",scf_energy
-      write (*,'(A,F20.15)') "  MP2 energy :                      ",mp2_energy
-      write (*,'(A,F20.15)') "  Total CCSD energy :               ",scf_energy+ccsd_energy
+      write (*,'(A,F25.15)') "  SCF energy :                 ",scf_energy
+      write (*,'(A,F25.15)') "  Total MP2 energy :           ",scf_energy+mp2_energy
+      if (ccd) then 
+        write (*,'(A,F25.15)') "  Total  CCD energy :          ",scf_energy+ccsd_energy
+      else
+        write (*,'(A,F25.15)') "  Total CCSD energy :          ",scf_energy+ccsd_energy
+      end if
       if (present(t_energy)) then 
-        write (*,'(A,F20.15)') "  Total CCSD+T  energy :            ",scf_energy+ccsd_energy+t_energy(1)
-        write (*,'(A,F20.15)') "  Total CCSD(T) energy :            ",scf_energy+ccsd_energy+t_energy(1)+t_energy(2)
-        write (*,'(A,F20.15)') "  Total CCSD-T  energy :            ",scf_energy+ccsd_energy+t_energy(1)+t_energy(3)
+        write (*,'(A,F25.15)') "  Total CCSD+T  energy :       ",scf_energy+ccsd_energy+t_energy(1)
+        write (*,'(A,F25.15)') "  Total CCSD(T) energy :       ",scf_energy+ccsd_energy+t_energy(1)+t_energy(2)
+        write (*,'(A,F25.15)') "  Total CCSD-T  energy :       ",scf_energy+ccsd_energy+t_energy(1)+t_energy(3)
       end if
       write(*,*) ""
-      write(*,'(A)') " -----------------------------------"
+      write(*,'(A)') "-----------------------------------------------"
       write(*,*) ""
 
     end subroutine print_exaoutput
@@ -216,15 +225,15 @@ module exacorr_utils
       write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
 
       h_dims=i_dims
-      print *, '+++ write to file'
+      write(*,*) '+++ write to file'
       ierr=talsh_tensor_construct(talsh_tensor,C8,h_dims,init_val=(0.D0,0.D0))
-      print *, 'construct err:', ierr
+      write(*,*) 'construct err:', ierr
       ierr=exatns_tensor_get_slice(exa_tensor,talsh_tensor)
-      print *, 'get_slice err:', ierr
+      write(*,*) 'get_slice err:', ierr
       ierr=talsh_tensor_get_body_access(talsh_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
       call c_f_pointer(body_p,talsh_tens,h_dims) 
       do i=1,h_dims(2)
-          print*, (talsh_tens(i,j), j=1,h_dims(1))
+          write(*,*) (talsh_tens(i,j), j=1,h_dims(1))
       enddo
       ierr=talsh_tensor_destruct(talsh_tensor)
 

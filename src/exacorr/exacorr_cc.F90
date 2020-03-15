@@ -207,7 +207,7 @@ module exacorr_cc
             mp2_energy=real(result_val,8) ! Casting into real(8)
 
             write(*,*) ""
-            write(*,*) "  MP2 energy = ", mp2_energy
+            write(*,*) "    MP2 energy = ", mp2_energy
             write(*,*) ""
 
 !           Start CC(S)D iterations
@@ -226,29 +226,17 @@ module exacorr_cc
                 call diis (comm_t%t2,vvoo_id,vvoo_root,mode=1)
             end if
             if (ierr.eq.EXA_SUCCESS) then
-               print*," ccdriver: allocated all tensors"
+               write(*,*) " ccdriver: allocated all tensors"
             else
-               print*," ccdriver: error in tensor allocation, code=",ierr
+               write(*,*) " ccdriver: error in tensor allocation, code=",ierr
                return
             end if
 
             call solve_t_equations(comm_t,int_t,dims,CCD,t_target_precision,ccsd_energy,ncycles)
-
+            call print_exaoutput(exa_input%talsh, CCD, scf_energy, mp2_energy, ccsd_energy)
 !           Calculate (T) energy correction, not implemented yet
 !           call t3_energy (t_energy,eps_occ,eps_vir,t1_tensor,t2_tensor,fov_tensor,ooov_tensor,vovv_tensor,oovv_tensor)
-!           write (*,'(A,F20.15)') "  4th order triples correction :    ",t_energy(1)
-!           write (*,'(A,F20.15)') "  5th order triples (T) correction :",t_energy(2)
-!           write (*,'(A,F20.15)') "  5th order triples -T  correction :",t_energy(3)
-!           write (*,'(A,F20.15)') "  CCSD+T  correlation energy :      ",ccsd_energy+t_energy(1)
-!           write (*,'(A,F20.15)') "  CCSD(T) correlation energy :      ",ccsd_energy+t_energy(1)+t_energy(2)
-!           write (*,'(A,F20.15)') "  CCSD-T  correlation energy :      ",ccsd_energy+t_energy(1)+t_energy(3)
-
-            if (.not.CCD) then
-                print*," Final CCSD energy = ",ccsd_energy
-            else
-                print*," Final CCD energy = ",ccsd_energy
-            end if
-!           print*," Final CCSD(T) energy = ",ccsd_energy+t_energy(1)+t_energy(2)  ! no (T) implementation yet
+!           call print_exaoutput(exa_input%talsh, CCD, scf_energy, mp2_energy, ccsd_energy, t_energy)
 
 !           Destroy tensors and shut down library
             if (.not.CCD) then
@@ -321,8 +309,8 @@ module exacorr_cc
 
 !        Make some noise so that we know we are leaving
          if (my_MPI_rank == 0) then
-            print*, ""
-            print*, " Leaving cc_driver routine"
+            write(*,*) ""
+            write(*,*) " Leaving cc_driver routine"
          end if
          return
 
@@ -704,7 +692,7 @@ module exacorr_cc
           call get_a(comm_t,int_t,CCD,one_tensor)
 
           if (ierr.ne.EXA_SUCCESS) then
-             print*," ccdriver: error in calculation of common blocks, code=",ierr
+             write(*,*) " ccdriver: error in calculation of common blocks, code=",ierr
              return
           end if
 
@@ -761,7 +749,7 @@ module exacorr_cc
           end if
 
           if (ierr.ne.EXA_SUCCESS) then
-             print*," ccdriver: error in evaluation of amplitude equations, code=",ierr
+             write(*,*) " ccdriver: error in evaluation of amplitude equations, code=",ierr
              return
           end if
 
@@ -806,7 +794,7 @@ module exacorr_cc
          write(*,*) "-----------------------------------------------"
          write(*,*) ""
 
-         if (t_convergence .gt. t_target_precision) print*, "WARNING: Non-converged amplitudes!"
+         if (t_convergence .gt. t_target_precision) write(*,*) "WARNING: Non-converged amplitudes!"
          write(*,*) ""
 
          if (.not.CCD) ierr=exatns_tensor_destroy(s1_tensor)
@@ -1154,7 +1142,7 @@ module exacorr_cc
           ierr=exatns_tensor_contract("S(i,j,a,b)+=L(i,j,e,f)*W(e,f,a,b)",s2_tensor,l2_tensor,lambda_t%w_vvvv,ONE_HALF)
 
           if (ierr.ne.EXA_SUCCESS) then
-            print*," ccdriver: error in evaluation of lambda equations, code=",ierr
+            write(*,*) " ccdriver: error in evaluation of lambda equations, code=",ierr
             return
           end if
 
@@ -1185,7 +1173,7 @@ module exacorr_cc
          write(*,*) "------------------------"
          write(*,*) ""
 
-         if (t_convergence .gt. t_target_precision) print*, "WARNING: Non-converged amplitudes!"
+         if (t_convergence .gt. t_target_precision) write(*,*) "WARNING: Non-converged amplitudes!"
          if (.not.CCD) write(*,'(A,ES22.16)') "  Final L1amp = ", print_tensornorm2(l1_tensor)
          write(*,'(A,ES22.16)') "  Final L2amp = ", print_tensornorm2(l2_tensor)*0.25D0
          write(*,*) ""
@@ -1568,7 +1556,7 @@ module exacorr_cc
          if (b_max .gt. 1.D-30) then
              b_scale = 1.D0 / b_max
          else
-             print*, "WARNING: something is wrong in DIIS: found zero error for non-converged amplitudes"
+             write(*,*) "WARNING: something is wrong in DIIS: found zero error for non-converged amplitudes"
              return
          end if
          bb = ZERO
@@ -1679,26 +1667,29 @@ module exacorr_cc
             ierr=exatns_tensor_contract("F(a,b)+=E(a,b)*O()",comm_t%fvv,orb_tensor,o_tensor, MINUS_ONE)
             ierr=exatns_tensor_destroy(orb_tensor)
             if (print_level >0) call print_date('orbital energies subtracted from the diagonal')
-
-            ! Compute norms (check whether this single determinant is contructed from optimized orbitals)
-            ierr=exatns_tensor_init(r_tensor, ZERO)
-            ierr=exatns_tensor_contract("R()=F(i,j)*F(i,j)",r_tensor,comm_t%foo,comm_t%foo)
-            ierr=exatns_tensor_get_scalar(r_tensor,result_val)
-            off_diag=real(result_val,8) ! Casting into real(8)
-            if (print_level >0) print*," Norm of OO part Fock matrix (without diag) = ", off_diag
             
-            ierr=exatns_tensor_init(r_tensor, ZERO)
-            ierr=exatns_tensor_contract("R()=F(i,a)*F(i,a)",r_tensor,comm_t%fov,comm_t%fov)
-            ierr=exatns_tensor_get_scalar(r_tensor,result_val)
-            off_diag=real(result_val,8) ! Casting into real(8)
-            if (print_level >0) print*," Norm of OV part Fock matrix =                ", off_diag
+            if (print_level >0) then
+              ! Compute norms (check whether this single determinant is contructed from optimized orbitals)
+              write(*,*) ""
+              ierr=exatns_tensor_init(r_tensor, ZERO)
+              ierr=exatns_tensor_contract("R()=F(i,j)*F(i,j)",r_tensor,comm_t%foo,comm_t%foo)
+              ierr=exatns_tensor_get_scalar(r_tensor,result_val)
+              off_diag=real(result_val,8) ! Casting into real(8)
+              write(*,*) "    Norm of Fock matrix (OO, no diagonal) = ", off_diag
+            
+              ierr=exatns_tensor_init(r_tensor, ZERO)
+              ierr=exatns_tensor_contract("R()=F(i,a)*F(i,a)",r_tensor,comm_t%fov,comm_t%fov)
+              ierr=exatns_tensor_get_scalar(r_tensor,result_val)
+              off_diag=real(result_val,8) ! Casting into real(8)
+              write(*,*) "    Norm of Fock matrix (OV, all        ) = ", off_diag
 
-            ierr=exatns_tensor_init(r_tensor, ZERO)
-            ierr=exatns_tensor_contract("R()=F(a,b)*F(a,b)",r_tensor,comm_t%fvv,comm_t%fvv)
-            ierr=exatns_tensor_get_scalar(r_tensor,result_val)
-            off_diag=real(result_val,8) ! Casting into real(8)
-            if (print_level >0) print*," Norm of VV part Fock matrix (without diag) = ", off_diag
-
+              ierr=exatns_tensor_init(r_tensor, ZERO)
+              ierr=exatns_tensor_contract("R()=F(a,b)*F(a,b)",r_tensor,comm_t%fvv,comm_t%fvv)
+              ierr=exatns_tensor_get_scalar(r_tensor,result_val)
+              off_diag=real(result_val,8) ! Casting into real(8)
+              write(*,*) "    Norm of Fock matrix (VV, no diagonal) = ", off_diag
+              write(*,*) ""
+            end if 
             ierr=exatns_tensor_destroy(h_tensor)
             ierr=exatns_tensor_destroy(id_mat_occ)
             ierr=exatns_tensor_destroy(r_tensor)
@@ -1710,7 +1701,7 @@ module exacorr_cc
 
             call get_scf ( scf_energy )
             write(*,*) ""
-            write (*,'(A,F23.15)') " SCF energy ( read ) = ", scf_energy
+            write (*,'(A,F23.15)') "    SCF energy ( read ) = ", scf_energy
             write(*,*) ""
 
           end if
@@ -1728,8 +1719,8 @@ module exacorr_cc
          use exacorr_datatypes
          implicit none
          type(exacc_input), intent(in) :: exa_input
-         print*,  'called exatensor version of cc_driver in a serial version'
-         print*,  'this functionality only works with MPI, we need to stop here'
+         write(*,*) 'called exatensor version of cc_driver in a serial version'
+         write(*,*) 'this functionality only works with MPI, we need to stop here'
          stop ' activate MPI'
         end subroutine exacorr_cc_driver
 
