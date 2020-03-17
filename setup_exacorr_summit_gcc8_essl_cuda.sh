@@ -16,7 +16,7 @@ export PATH_IBM_XL_CPP=/sw/summit/xl/16.1.1-1/xlC/16.1.1/lib
 export PATH_IBM_XL_FOR=/sw/summit/xl/16.1.1-1/xlf/16.1.1/lib
 export PATH_IBM_XL_SMP=/sw/summit/xl/16.1.1-1/xlsmp/5.1.1/lib
 
-export PATH_CUDA=/sw/summit/cuda/10.1.168
+export PATH_CUDA=/sw/summit/cuda/10.1.243
 
 export PATH_CUTT=/ccs/home/div/src/cutt
 
