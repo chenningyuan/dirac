@@ -27,6 +27,10 @@ interface talsh_davidson_driver
     module procedure talsh_get_values_vectors_davidson
 end interface
 
+interface davidson_print_vectors
+    module procedure davidson_print_vectors_real
+end interface
+
 public talsh_davidson_results
 
 private
@@ -653,7 +657,7 @@ contains
         deallocate(projection)
     end subroutine 
 
-    subroutine davidson_print_vectors(vectors, label, nvectors, complex_dimension)
+    subroutine davidson_print_vectors_real(vectors, label, nvectors, complex_dimension)
         real(kind=8), intent(in) :: vectors(:,:)
         integer, intent(in), optional :: nvectors
         character(len=max_label_length), intent(in), optional :: label 
@@ -720,6 +724,48 @@ contains
             end do
         end if 
     end subroutine
+
+
+    subroutine davidson_print_vectors_complex(vectors, label, nvectors)
+        complex(kind=8), intent(in) :: vectors(:,:)
+        integer, intent(in), optional :: nvectors
+        character(len=max_label_length), intent(in), optional :: label
+
+        integer :: L, N, i, j, N_complex, L_complex, N_step, L_step, kr, ki
+        real(kind=8) :: vr, vi
+! aspg, for debugging, set this threshold to eliminate small values in printout
+!       for both real (and imaginary) parts
+        real(kind=8) :: print_vector_threshold = 1.0d-10
+        character(len=max_label_length) :: label_local
+
+        N = size(vectors,1)
+        L = size(vectors,2)
+        if (present(nvectors)) L = nvectors
+
+        if (present(label)) then
+            label_local = label
+            print *, ""
+            print "(a)", label_local(1:max_label_length)
+            print *, ""
+            print *, ""
+        end if
+
+        do i = 1, N
+           print "(2x,i6,$)", i
+           do j = 1, L
+!              if (abs(vi).lt.print_vector_threshold) vi = 0.0d0
+!              if (abs(vr).lt.print_vector_threshold) vr = 0.0d0
+!              if (vi < 0.0d0) then
+!                  print "(4x,1e14.6,a,1e13.6,a,$)", vr," -",abs(vi)," i"
+!              else
+                   print "(4x,1e14.6,a,1e13.6,a,$)", real(vectors(i,j)), "  ",aimag(vectors(i,j))," i"
+!              end if
+           end do
+           print *, ""
+        end do
+        
+    end subroutine
+
 
 
     subroutine print_values_vectors_R(output_file_unit, eValues, eVectorsR, eVectorsL, left, right, nroots)
@@ -1200,7 +1246,6 @@ contains
 
         M_dims     = (/ workspace%Lmax, workspace%Lmax /)
         ierr=talsh_tensor_construct(workspace%M,C8,M_dims,init_val=ZERO)
-
         
         select case(flavor)
            case("IP")
@@ -1333,15 +1378,15 @@ contains
       type(talsh_davidson_workspace), intent(inout) :: workspace
 
       integer :: s1_dims(2), s1_rank
-      complex(8), pointer, contiguous:: s1_tens(:,:)
+      complex(8), pointer, contiguous:: s1_p(:,:)
       type(C_PTR):: s1_body_p
 
       integer :: t1_dims(1), t1_rank
-      complex(8), pointer, contiguous:: t1_tens(:)
+      complex(8), pointer, contiguous:: t1_p(:,:)
       type(C_PTR):: t1_body_p
 
       integer :: s2_dims(2), s2_rank
-      complex(8), pointer, contiguous:: s2_tens(:,:)
+      complex(8), pointer, contiguous:: s2_p(:,:)
       type(C_PTR):: s2_body_p
 
       integer :: ierr, i, j
@@ -1351,14 +1396,19 @@ contains
          ierr = talsh_tensor_dimensions(workspace%sigma1(i),s1_rank,s1_dims)
          write (6,*) 's1_rank',s1_rank
          write (6,*) 's1_dims',s1_dims
-         write (6,*) 's1_body_p',s1_body_p
+         write (6,*) 's1_body_p before get_body_access()',s1_body_p
          ierr = talsh_tensor_get_body_access(workspace%sigma1(i),s1_body_p,C8,0,DEV_HOST)
-         write (6,*) 's1_body_p',s1_body_p
+         write (6,*) 's1_body_p  after get_body_access()',s1_body_p
 
-         call c_f_pointer(s1_body_p,s1_tens,s1_dims(1:s1_rank))
+         ! associating the pointer to sigma1 to the local, fortran s1_p pointer variable
+         call c_f_pointer(s1_body_p,s1_p,s1_dims(1:s1_rank))
 
-         write (6,*) 's1_tens before construction'
-         write (6,*) s1_tens(i,1)
+         write (6,*) 's1_p after associatio but before construction'
+         write (6,*) 'dimension 1',size(s1_p,1)
+         write (6,*) 'dimension 2',size(s1_p,2)
+         write (6,*) 'b;a'
+         call davidson_print_vectors_complex(s1_p)
+         write (6,*) 'b;a'
 
          ierr = talsh_tensor_dimensions(workspace%trial1(i),t1_rank,t1_dims)
          write (6,*) 't1_rank',t1_rank
@@ -1367,10 +1417,13 @@ contains
          ierr = talsh_tensor_get_body_access(workspace%trial1(i),t1_body_p,C8,0,DEV_HOST)
          write (6,*) 't1_body_p',t1_body_p
 
-         call c_f_pointer(t1_body_p,t1_tens,t1_dims(1:t1_rank))
+         call c_f_pointer(t1_body_p,t1_p,t1_dims(1:t1_rank))
 
          write (6,*) 't1_tens before construction'
-         write (6,*) t1_tens
+         write (6,*) 'dimension 1',size(t1_p,1)
+         write (6,*) 'dimension 2',size(t1_p,2)
+         write (6,*) 'b;a'
+         call davidson_print_vectors_complex(t1_p)
 
 
          call sigma_right_ip(exa_input,int_t,eom_t,t2_tensor, &
@@ -1379,7 +1432,7 @@ contains
 
          write (6,*) 's1_tens after construction'
          do j = 1, s1_dims(1)
-            write (6,*) s1_tens(j,1:s1_dims(2))
+            write (6,*) s1_p(j,1:s1_dims(2))
          end do
       end do
 

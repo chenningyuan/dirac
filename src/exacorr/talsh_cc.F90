@@ -147,6 +147,9 @@ module talsh_cc
          call get_orbital_energies(nvir,mo_vir,eps_vir)
          call print_date("Retrieved orbital energies")
 
+         print *,'before get_CC_integrals'
+         print *,' eps_occ:',eps_occ
+         print *,' eps_vir:',eps_vir
 !        Get fixed two-body tensors
          if (exa_input%moint_scheme.eq.42) then
            call get_CC_integrals_chol (nocc,nvir,mo_occ,mo_vir,int_t, exa_input%t_cholesky)
@@ -154,6 +157,9 @@ module talsh_cc
            call get_CC_integrals (nocc,nvir,mo_occ,mo_vir,int_t)
          end if
 
+         print *,'before get_CC_fockmatrix'
+         print *,' eps_occ:',eps_occ
+         print *,' eps_vir:',eps_vir
 !        Get fixed one-body tensors, needs to follow the two body tensors
          call get_CC_fockmatrix (nocc,nvir,mo_occ,mo_vir,eps_occ,eps_vir, &
                                  comm_t%foo,comm_t%fov,comm_t%fvv, int_t, print_level, exa_input%level_shift)
@@ -165,6 +171,9 @@ module talsh_cc
             ierr=talsh_tensor_construct(comm_t%t1,C8,vo_dims,init_val=ZERO)
          end if
 
+         print *,'before scale_with_denominators'
+         print *,' eps_occ:',eps_occ
+         print *,' eps_vir:',eps_vir
 !        Initialize t2 amplitudes with the MP2 values
          vvoo_dims(1:2) = nvir
          vvoo_dims(3:4) = nocc
@@ -230,6 +239,9 @@ module talsh_cc
             print*, "Voovv = ",tensor_norm2(int_t%oovv)
          end if
 
+         print *,'before solve_t_equations'
+         print *,' eps_occ:',eps_occ
+         print *,' eps_vir:',eps_vir
          call solve_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
                                 ccsd_energy,CCD,ncycles)
 
