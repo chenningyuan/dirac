@@ -37,6 +37,6 @@ if (os.getenv('DIRAC_MPI_COMMAND') is None) or (os.getenv('DIRAC_MPI_COMMAND')==
 os.system('ulimit -s unlimited')
 
 test.run(['scf_beh.inp'], ['BeH_nosym.mol'], f1,"--get='X2CMAT AOMOMAT DFCOEF'")
-test.run(['cc_beh_level.inp'], ['BeH_nosym.mol'], f2, "--put='X2CMAT AOMOMAT DFCOEF' --env='OMP_NUM_THREADS=8' ")
+test.run(['cc_beh_level.inp'], ['BeH_nosym.mol'], f2, "--put='X2CMAT AOMOMAT DFCOEF'")
 
 sys.exit(test.return_code)

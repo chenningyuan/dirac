@@ -29,6 +29,7 @@ module exacorr_global
         public delete_global_data
         public get_gtos
         public get_mo_coefficients
+        public get_eps
         public exist_one_el
         public get_one_el
         public get_shell_index
@@ -100,7 +101,7 @@ module exacorr_global
              if (ierr == 0) then
                 call print_date ("retrieved basis set information")
              else
-                print*, "Error code",ierr," while reading restart file"
+                write(*,*) "Error code",ierr," while reading restart file"
                 call quit ('Could not read restart file')
              end if
 
@@ -112,7 +113,7 @@ module exacorr_global
                   call print_date("read one el. integrals from MRCONEE")
                   one_el_exist = .TRUE.
                 else
-                  print*, "Error code",ierr," while reading MRCONEE"
+                  write(*,*) "Error code",ierr," while reading MRCONEE"
                   call quit ('Could not read MRCONEE')
                 end if
              else
@@ -299,6 +300,16 @@ module exacorr_global
 
       end subroutine get_MO_coefficients
 
+      subroutine get_eps(eps,lmo)
+
+           real(8)  :: eps(:)
+           integer  :: lmo(:)
+
+           eps=cspinor_all%energy(lmo)
+
+      end subroutine get_eps
+
+
       logical function exist_one_el(e_core)
 
         real(8), intent(out) :: e_core
@@ -335,6 +346,8 @@ module exacorr_global
      end subroutine get_one_el
 
       subroutine string2mo ( inp_str, a_or_b, nmo, mo_list)
+
+        use exacorr_utils, only : quicksort
 
         implicit none
 
@@ -376,11 +389,11 @@ module exacorr_global
         sl=0
         p_len=0
         check=0
+        nmo_all = cspinor_all%nmo/2
 
-        ! check if energy or mo list
+        !!!!!!!!!!!!!!!!!!!!!! use energy definition of spinors 
         if (inp_str(1:6) == 'energy') then
           !get orbital energies
-          nmo_all = cspinor_all%nmo/2
           allocate(lmo(nmo_all))
           do i = 1, nmo_all
             if (a_or_b) then
@@ -416,7 +429,8 @@ module exacorr_global
           j=index(inp_str(i:),' ')
           j=i+j
           read(inp_str(i:j-1) , *) e_max
-          read(inp_str(j+1:) , *) e_dist
+          i=index(inp_str(j+1:),' ')+j
+          read(inp_str(j-1:i) , *) e_dist
           if (e_min.ge.e_max) stop 'string2mo use: energy e_min, e_max, e_dist'
 
           sl=size(eps)
@@ -458,6 +472,7 @@ module exacorr_global
           end if
           deallocate(dist_a)
           deallocate(eps)
+        !!!!!!!!!!!!!!!!!!!!!! use orbitals strings for spinors
         else
           i_mo=0
           do i=1,str_len
@@ -473,26 +488,37 @@ module exacorr_global
               end if
             else if (inp_str(i:i)==c_str) then
               if(p_len==0) then
-                if (do_nmo) then
-                  nmo=nmo+1
-                end if
-                if (do_mo) then
-                  read(sav_str(1:sl) , *) mo1
-                  i_mo=i_mo+1
-                  mo_list(i_mo)=mo1
+                read(sav_str(1:sl) , *) mo1
+                if (mo1.le.nmo_all) then
+                  if (do_nmo) then
+                    nmo=nmo+1
+                  end if
+                  if (do_mo) then
+                    i_mo=i_mo+1
+                    mo_list(i_mo)=mo1
+                  end if
                 end if
                 sl=0
               else if (p_len==2) then
                 read(sav_str(1:sl) , *) mo2
-                if (do_nmo) then
-                  if (mo1>mo2) nmo=nmo+mo1-mo2+1
-                  if (mo2>mo1) nmo=nmo+mo2-mo1+1
+                if (mo1>mo2) then
+                  k=mo1
+                  mo1=mo2
+                  mo2=k
                 end if
-                if (do_mo) then
-                  do k=mo1,mo2
-                    i_mo=i_mo+1
-                    mo_list(i_mo)=k
-                  end do
+                if (mo1<nmo_all) then
+                  if (mo2>nmo_all) then
+                    mo2=nmo_all
+                  end if
+                  if (do_nmo) then
+                    nmo=nmo+mo2-mo1+1
+                  end if
+                  if (do_mo) then
+                    do k=mo1,mo2
+                      i_mo=i_mo+1
+                      mo_list(i_mo)=k
+                    end do
+                  end if
                 end if
                 p_len=0
                 sl=0
@@ -513,26 +539,37 @@ module exacorr_global
           end do
           if (sl>0) then
             if(p_len==0) then
-              if (do_nmo) then
-                nmo=nmo+1
-              end if
-              if (do_mo) then
-                read(sav_str(1:sl) , *) mo1
-                i_mo=i_mo+1
-                mo_list(i_mo)=mo1
+              read(sav_str(1:sl) , *) mo1
+              if (mo1.le.nmo_all) then
+                if (do_nmo) then
+                  nmo=nmo+1
+                end if
+                if (do_mo) then
+                  i_mo=i_mo+1
+                  mo_list(i_mo)=mo1
+                end if
               end if
               sl=0
             else if (p_len==2) then
               read(sav_str(1:sl) , *) mo2
-              if (do_nmo) then
-                if (mo1>mo2) nmo=nmo+mo1-mo2+1
-                if (mo2>mo1) nmo=nmo+mo2-mo1+1
+              if (mo1>mo2) then
+                k=mo1
+                mo1=mo2
+                mo2=k
               end if
-              if (do_mo) then
-                do k=mo1,mo2
-                  i_mo=i_mo+1
-                  mo_list(i_mo)=k
-                end do
+              if (mo1<nmo_all) then
+                if (mo2>nmo_all) then
+                  mo2=nmo_all
+                end if
+                if (do_nmo) then
+                  nmo=nmo+mo2-mo1+1
+                end if
+                if (do_mo) then
+                  do k=mo1,mo2
+                    i_mo=i_mo+1
+                    mo_list(i_mo)=k
+                  end do
+                end if
               end if
               p_len=0
               sl=0
@@ -553,46 +590,6 @@ module exacorr_global
         end if
       end subroutine string2mo
 
-      recursive subroutine quicksort(mo_list, i_beg, i_end)
-
-        implicit none
-
-        integer,intent(inout) :: mo_list(:)
-        integer, intent(in) :: i_beg, i_end
-        integer :: i,j
-        integer :: ref, tem
-
-        i=floor((float(i_end)+float(i_beg))/2)
-        ref=mo_list(i)
-        i=i_beg
-        j=i_end
-
-        do
-          do while (mo_list(i)<ref)
-            i=i+1
-          end do
-          do while (mo_list(j)>ref)
-            j=j-1
-          end do
-          if (i<j) then
-            tem=mo_list(i)
-            mo_list(i)=mo_list(j)
-            mo_list(j)=tem
-            i=i+1
-            j=j-1
-          else if(i.eq.j) then
-            i=i+1
-            EXIT
-          else
-            EXIT
-          end if
-        end do
-
-        if (i_beg<j) call quicksort(mo_list, i_beg, j)
-        if (i<i_end) call quicksort(mo_list, i, i_end)
-
-      end subroutine quicksort
-
       subroutine make_spinor_list ( exa_input, string_occupied, &
         string_occ_beta, string_virtual, string_vir_beta)
 
@@ -607,7 +604,7 @@ module exacorr_global
         character(len = *), intent(in)   :: string_vir_beta
 
         integer, allocatable :: mobe_occ(:), mobe_vir(:)
-        integer              :: i
+        integer              :: i, j, i0, cont
         integer              :: nmo(4)
         integer              :: imo, ialpha, ibeta
 
@@ -633,7 +630,7 @@ module exacorr_global
             call string2mo(string_vir_beta,.false.,mo_list=mobe_vir)
 
             if(exa_input%mokr_occ(1).ne.mobe_occ(1)) then
-              print *, "core orbital need to be closed shell"
+              write(*,*) "core orbital need to be closed shell"
               call quit ("change .OCC_BETA in EXACORR")
             end if
 
@@ -701,22 +698,66 @@ module exacorr_global
           call string2mo(string_occupied,.true.,mo_list=exa_input%mokr_occ)
           exa_input%nocc = 2 * exa_input%nkr_occ
           allocate (exa_input%mo_occ(exa_input%nocc))
-          do i = 1, exa_input%nocc
-            exa_input%mo_occ(i) = (exa_input%mokr_occ(1)-1)*2+i
+          do i = 1, exa_input%nkr_occ
+            exa_input%mo_occ(2*i-1) = exa_input%mokr_occ(i)*2-1
+            exa_input%mo_occ(2*i) = exa_input%mokr_occ(i)*2
           end do
-
 
           call string2mo(string_virtual,.true.,nmo=exa_input%nkr_vir)
           allocate (exa_input%mokr_vir(exa_input%nkr_vir))
           call string2mo(string_virtual,.true.,mo_list=exa_input%mokr_vir)
+          !remove overlapping orbitals
+          allocate (exa_input%mo_vir(exa_input%nkr_vir))
+          i0=0
+          do i = 1, exa_input%nkr_vir
+            cont=0
+            do j = 1, exa_input%nkr_occ
+              if (exa_input%mokr_vir(i)==exa_input%mokr_occ(j)) cont=cont+1
+            end do
+            if (cont==0) then
+              i0=i0+1
+              exa_input%mo_vir(i0)=exa_input%mokr_vir(i)
+            end if
+          end do
+          exa_input%nkr_vir=i0
+          deallocate(exa_input%mokr_vir)
+          !add spinors
+          allocate(exa_input%mokr_vir(exa_input%nkr_vir))
+          exa_input%mokr_vir(1:exa_input%nkr_vir)=exa_input%mo_vir(1:exa_input%nkr_vir)
+          deallocate(exa_input%mo_vir)
           exa_input%nvir = 2 * exa_input%nkr_vir
           allocate (exa_input%mo_vir(exa_input%nvir))
-          do i = 1, exa_input%nvir
-            exa_input%mo_vir(i) = &
-                  exa_input%mo_occ(exa_input%nocc)+i
+          do i = 1, exa_input%nkr_vir
+            exa_input%mo_vir(2*i-1) = 2*exa_input%mokr_vir(i)-1
+            exa_input%mo_vir(2*i) = 2*exa_input%mokr_vir(i)
           end do
         end if
+        
+        if (exa_input%print_level>1) call print_orbitals(exa_input)
 
       end subroutine make_spinor_list
+
+      subroutine print_orbitals ( exa_input )
+
+        use exacorr_datatypes
+
+        implicit none
+
+        type(exacc_input), intent(inout) :: exa_input
+        integer                          :: i
+
+        write(*,*) ' --- active occupied spinors --- '
+        write(*,*) '   #             E   '
+        do i=1,exa_input%nocc
+          write(*,'(I8,E18.9)') exa_input%mo_occ(i), cspinor_all%energy(exa_input%mo_occ(i))
+        end do 
+        
+        write(*,*) ' --- active virtual spinors --- '
+        write(*,*) '   #             E   '
+        do i=1,exa_input%nvir
+          write(*,'(I8,E18.9)') exa_input%mo_vir(i), cspinor_all%energy(exa_input%mo_vir(i))
+        end do 
+
+      end subroutine print_orbitals
 
 end module exacorr_global

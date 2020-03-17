@@ -38,7 +38,7 @@ os.system('ulimit -s unlimited')
 
 test.run(['scf_h2o.inp'], ['H2O_nosym.mol'], f1,"--get='X2CMAT AOMOMAT DFCOEF'")
 
-test.run(['cc_h2o.inp'], ['H2O_nosym.mol'], f, "--put='X2CMAT AOMOMAT DFCOEF' --env='OMP_NUM_THREADS=8' ")
-test.run(['cc_h2o_core.inp'], ['H2O_nosym.mol'], f, "--put='X2CMAT AOMOMAT DFCOEF' --env='OMP_NUM_THREADS=8' ")
+test.run(['cc_h2o.inp'], ['H2O_nosym.mol'], f, "--put='X2CMAT AOMOMAT DFCOEF'")
+test.run(['cc_h2o_core.inp'], ['H2O_nosym.mol'], f, "--put='X2CMAT AOMOMAT DFCOEF'")
 
 sys.exit(test.return_code)
