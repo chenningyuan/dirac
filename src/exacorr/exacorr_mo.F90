@@ -213,6 +213,7 @@ module exacorr_mo
       call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
       call interface_mpi_bcast (M%nao,1,my_MPI_master,global_communicator)
       call interface_mpi_bcast (M%nmo,1,my_MPI_master,global_communicator)
+      call interface_mpi_bcast (M%total_energy,1,my_MPI_master,global_communicator)
       if (my_MPI_rank /= my_MPI_master) then
          call alloc_mo (M,M%nao,M%nmo)
          M%allocated = .true.
@@ -240,6 +241,7 @@ module exacorr_mo
       call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
       call interface_mpi_bcast (M%nao,1,my_MPI_master,global_communicator)
       call interface_mpi_bcast (M%nmo,1,my_MPI_master,global_communicator)
+      call interface_mpi_bcast (M%total_energy,1,my_MPI_master,global_communicator) 
       call interface_mpi_bcast (M%nz ,1,my_MPI_master,global_communicator)
       if (my_MPI_rank /= my_MPI_master) then
          call alloc_mo(M,M%nao,M%nmo,M%nz)
