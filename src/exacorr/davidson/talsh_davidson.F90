@@ -18,6 +18,7 @@ public talsh_davidson_setup
 public talsh_davidson_destroy
 public talsh_davidson_driver
 !public davidson_print_vectors
+public davidson_print_vectors_complex
 public talsh_solve_values_vectors
 public talsh_sort_values_vectors
 public talsh_davidson_workspace_create
@@ -29,6 +30,10 @@ end interface
 
 interface davidson_print_vectors
     module procedure davidson_print_vectors_real
+end interface
+
+interface davidson_print_vectors_complex
+    module procedure davidson_print_vectors_complex_1d
 end interface
 
 public talsh_davidson_results
@@ -726,21 +731,18 @@ contains
     end subroutine
 
 
-    subroutine davidson_print_vectors_complex(vectors, label, nvectors)
-        complex(kind=8), intent(in) :: vectors(:,:)
+    subroutine davidson_print_vectors_complex_1d(vectors, N, L, label, nvectors)
+        complex(kind=8), intent(in) :: vectors(:)
+        integer, intent(in) :: N, L
         integer, intent(in), optional :: nvectors
         character(len=max_label_length), intent(in), optional :: label
 
-        integer :: L, N, i, j, N_complex, L_complex, N_step, L_step, kr, ki
+        integer :: i, j, k, kr, ki
         real(kind=8) :: vr, vi
 ! aspg, for debugging, set this threshold to eliminate small values in printout
 !       for both real (and imaginary) parts
         real(kind=8) :: print_vector_threshold = 1.0d-10
         character(len=max_label_length) :: label_local
-
-        N = size(vectors,1)
-        L = size(vectors,2)
-        if (present(nvectors)) L = nvectors
 
         if (present(label)) then
             label_local = label
@@ -750,17 +752,23 @@ contains
             print *, ""
         end if
 
-        do i = 1, N
+        do i = 1, N*L
            print "(2x,i6,$)", i
-           do j = 1, L
-!              if (abs(vi).lt.print_vector_threshold) vi = 0.0d0
-!              if (abs(vr).lt.print_vector_threshold) vr = 0.0d0
-!              if (vi < 0.0d0) then
-!                  print "(4x,1e14.6,a,1e13.6,a,$)", vr," -",abs(vi)," i"
-!              else
-                   print "(4x,1e14.6,a,1e13.6,a,$)", real(vectors(i,j)), "  ",aimag(vectors(i,j))," i"
-!              end if
-           end do
+!          do j = 1, L
+!              
+!              k  = N*(i-1) + L
+!              print "(8x,1e14.6,1e14.6)", vectors(l)
+               k = i
+               vi = real(vectors(k))
+               vr = aimag(vectors(k)) 
+               if (abs(vi).lt.print_vector_threshold) vi = 0.0d0
+               if (abs(vr).lt.print_vector_threshold) vr = 0.0d0
+               if (vi < 0.0d0) then
+                   print "(4x,1e14.6,a,1e13.6,a,$)", vr," -",abs(vi)," i"
+               else
+                   print "(4x,1e14.6,a,1e13.6,a,$)", vr," +",vi," i"
+               end if
+!          end do
            print *, ""
         end do
         
@@ -1378,62 +1386,105 @@ contains
       type(talsh_davidson_workspace), intent(inout) :: workspace
 
       integer :: s1_dims(2), s1_rank
-      complex(8), pointer, contiguous:: s1_p(:,:)
+      complex(8), pointer, contiguous:: s1_p(:)
       type(C_PTR):: s1_body_p
 
       integer :: t1_dims(1), t1_rank
-      complex(8), pointer, contiguous:: t1_p(:,:)
+      complex(8), pointer, contiguous:: t1_p(:)
       type(C_PTR):: t1_body_p
 
+      integer :: t2_dims(1), t2_rank
+      complex(8), pointer, contiguous:: t2_p(:,:,:)
+      type(C_PTR):: t2_body_p
+
       integer :: s2_dims(2), s2_rank
-      complex(8), pointer, contiguous:: s2_p(:,:)
+      complex(8), pointer, contiguous:: s2_p(:,:,:)
       type(C_PTR):: s2_body_p
 
-      integer :: ierr, i, j
+      integer :: ierr, iroot, i, j, a, b
 
-      do i = (workspace%L - workspace%nroots + 1), workspace%L
-         write (6,*) 'root ',i
-         ierr = talsh_tensor_dimensions(workspace%sigma1(i),s1_rank,s1_dims)
+      do iroot = (workspace%L - workspace%nroots + 1), workspace%L
+         write (6,*) 'root ',iroot
+! aspg
+! debug info
+         ierr = talsh_tensor_dimensions(workspace%sigma1(iroot),s1_rank,s1_dims)
+         ierr = talsh_tensor_get_body_access(workspace%sigma1(iroot),s1_body_p,C8,0,DEV_HOST)
          write (6,*) 's1_rank',s1_rank
          write (6,*) 's1_dims',s1_dims
-         write (6,*) 's1_body_p before get_body_access()',s1_body_p
-         ierr = talsh_tensor_get_body_access(workspace%sigma1(i),s1_body_p,C8,0,DEV_HOST)
-         write (6,*) 's1_body_p  after get_body_access()',s1_body_p
-
+         write (6,*) 's1_body_p',s1_body_p
          ! associating the pointer to sigma1 to the local, fortran s1_p pointer variable
          call c_f_pointer(s1_body_p,s1_p,s1_dims(1:s1_rank))
-
-         write (6,*) 's1_p after associatio but before construction'
-         write (6,*) 'dimension 1',size(s1_p,1)
-         write (6,*) 'dimension 2',size(s1_p,2)
-         write (6,*) 'b;a'
-         call davidson_print_vectors_complex(s1_p)
          write (6,*) 'b;a'
 
-         ierr = talsh_tensor_dimensions(workspace%trial1(i),t1_rank,t1_dims)
+         ierr = talsh_tensor_dimensions(workspace%trial1(iroot),t1_rank,t1_dims)
+         ierr = talsh_tensor_get_body_access(workspace%trial1(iroot),t1_body_p,C8,0,DEV_HOST)
          write (6,*) 't1_rank',t1_rank
          write (6,*) 't1_dims',t1_dims
          write (6,*) 't1_body_p',t1_body_p
-         ierr = talsh_tensor_get_body_access(workspace%trial1(i),t1_body_p,C8,0,DEV_HOST)
-         write (6,*) 't1_body_p',t1_body_p
-
          call c_f_pointer(t1_body_p,t1_p,t1_dims(1:t1_rank))
-
-         write (6,*) 't1_tens before construction'
-         write (6,*) 'dimension 1',size(t1_p,1)
-         write (6,*) 'dimension 2',size(t1_p,2)
          write (6,*) 'b;a'
-         call davidson_print_vectors_complex(t1_p)
 
+         ierr = talsh_tensor_dimensions(workspace%sigma2(iroot),s2_rank,s2_dims)
+         ierr = talsh_tensor_get_body_access(workspace%sigma2(iroot),s1_body_p,C8,0,DEV_HOST)
+         write (6,*) 's2_rank',s2_rank
+         write (6,*) 's2_dims',s2_dims
+         write (6,*) 's2_body_p',s2_body_p
+         ! associating the pointer to sigma1 to the local, fortran s1_p pointer variable
+         call c_f_pointer(s2_body_p,s2_p,s2_dims(1:s2_rank))
+         write (6,*) 'b;a'
+
+         ierr = talsh_tensor_dimensions(workspace%trial2(iroot),t2_rank,t2_dims)
+         ierr = talsh_tensor_get_body_access(workspace%trial2(iroot),t2_body_p,C8,0,DEV_HOST)
+         write (6,*) 't2_rank',t2_rank
+         write (6,*) 't2_dims',t2_dims
+         write (6,*) 't2_body_p',t2_body_p
+         call c_f_pointer(t2_body_p,t2_p,t2_dims(1:t2_rank))
+         write (6,*) 'b;a'
+! debug info
+! aspg
 
          call sigma_right_ip(exa_input,int_t,eom_t,t2_tensor, &
-   &                         workspace%trial1(i),workspace%trial2(i),&
-   &                         workspace%sigma1(i),workspace%sigma2(i))
+   &                         workspace%trial1(iroot),workspace%trial2(iroot),&
+   &                         workspace%sigma1(iroot),workspace%sigma2(iroot))
 
-         write (6,*) 's1_tens after construction'
-         do j = 1, s1_dims(1)
-            write (6,*) s1_p(j,1:s1_dims(2))
+! aspg
+! debug info     
+         write (6,*) 'debug >>> t1_tens, root',iroot,' >>>'
+!        call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
+         do i = 1, t1_dims(1)
+            write (6,*) t1_p(i)
          end do
+         write (6,*) 'debug <<< t1_tens <<<'
+         write (6,*) 'debug >>> t2_tens, root',iroot,' >>>'
+!        call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
+         do i = 1, t2_dims(3)
+            do j = 1, t2_dims(2)
+               do a = 1, t2_dims(1)
+                  write (6,*) t2_p(a,j,i)
+               end do
+            end do
+         end do
+         write (6,*) 'debug <<< t2_tens <<<'
+
+         write (6,*) 'debug >>> s1_tens, root',iroot,' >>>'
+!        call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
+         do i = 1, s1_dims(1)
+            write (6,*) s1_p(i)
+         end do
+         write (6,*) 'debug <<< s1_tens <<<'
+         write (6,*) 'debug >>> s2_tens, root',iroot,' >>>'
+!        call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
+         do i = 1, t2_dims(3)
+            do j = 1, t2_dims(2)
+               do a = 1, t2_dims(1)
+                  write (6,*) s2_p(a,j,i)
+               end do
+            end do
+         end do
+         write (6,*) 'debug <<< s2_tens <<<'
+! debug info     
+! aspg
+
       end do
 
    end subroutine

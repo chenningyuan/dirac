@@ -87,7 +87,7 @@ module talsh_eom
               diagonal = 0.0d0
 
               do i = 1, N1
-                 diagonal(i) = realpart(hdiag1_h_p_tens(i))
+                 diagonal(i) = real(hdiag1_h_p_tens(i))
               end do
 
 ! aspg: have to still figure out how to handle the single and double manifolds handled separately
@@ -123,6 +123,7 @@ module talsh_eom
 !          k = minloc(diagonal, MASK=(diag_H .ge. in_window_HbarSS_threshold))
            k = minloc(diagonal)
            i = k(1)
+           j = i - 1
            write(6,*) 'debug, roots',iroot,diagonal(i),i
            diagonal(i) = huge(diagonal)
            write(6,*) 'debug, making diagonal huge',diagonal(i)
@@ -154,7 +155,7 @@ module talsh_eom
 !                   call c_f_pointer(trial2_body_p,trial2_h_p_tens,trial2_dims(1:trial2_rank))
 
 !                   write(6,*)'determinant in window',I,trial1_rank,trial1_dims(1:trial1_rank)
-                    trial1_h_p_tens(i) = ONE
+                    trial1_h_p_tens(j) = ONE
               end select
            end if
 !          write(6,*)'   ff',trial1_h_p_tens
@@ -164,17 +165,20 @@ module talsh_eom
 
         select case(flavor)
            case("IP")
-              write (6,*) 'debug >>> trial1_h_p_tens >>>'
               do iroot = 1, workspace%nroots
+                 write (6,*) 'debug >>> trial1_h_p_tens, root',iroot,' >>>'
                  ierr = talsh_tensor_dimensions(workspace%trial1(iroot),trial1_rank,trial1_dims)
                  ierr = talsh_tensor_get_body_access(workspace%trial1(iroot),trial1_body_p,C8,0,DEV_HOST)
                  call c_f_pointer(trial1_body_p,trial1_h_p_tens,trial1_dims(1:trial1_rank))
-                 write (6,*) trial1_h_p_tens(1:trial1_dims(1))
+!                call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
+                 do i = 1, trial1_dims(1)
+                     write (6,*) trial1_h_p_tens(i)
+                 end do
+                 write (6,*) 'debug <<< trial1_h_p_tens <<<'
               end do
-              write (6,*) 'debug <<< trial1_h_p_tens <<<'
         end select
 
-        call quit('bb') 
+!       call quit('bb') 
 
      end subroutine
 
