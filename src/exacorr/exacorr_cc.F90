@@ -115,10 +115,7 @@ module exacorr_cc
          print_level = exa_input%print_level
 
          if (my_MPI_rank == 0) then
-            call print_exainput(exa_input%ccd, exa_input%lambda, exa_input%moint_scheme, exa_input%ncycles, &
-                             exa_input%t_econv, exa_input%t_cholesky, exa_input%level_shift, &
-                             exa_input%talsh, exa_input%exa_blocksize, exa_input%talsh_buff, &
-                             int(ao_space%get_root_id(ierr)), exa_input%nocc, exa_input%nvir, exa_input%print_level)
+            call print_exainput(exa_input,int(ao_space%get_root_id(ierr)))
          end if
 
          !Create all id and root arrays, neccessary for exatns_tensor_create

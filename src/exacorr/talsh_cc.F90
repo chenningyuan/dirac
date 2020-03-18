@@ -110,10 +110,7 @@ module talsh_cc
          ncycles = exa_input%ncycles
          print_level = exa_input%print_level
 
-         call print_exainput(exa_input%ccd, exa_input%lambda, exa_input%moint_scheme, exa_input%ncycles, &
-                             exa_input%t_econv, exa_input%t_cholesky, exa_input%level_shift, &
-                             exa_input%talsh, exa_input%exa_blocksize, exa_input%talsh_buff, &
-                             get_nao(), exa_input%nocc, exa_input%nvir, exa_input%print_level)
+         call print_exainput(exa_input,get_nao())
 
          call print_date("Getting orbital energies")
 !        Get orbital energies from the DIRAC restart file

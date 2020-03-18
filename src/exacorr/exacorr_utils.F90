@@ -86,43 +86,43 @@ module exacorr_utils
 
     end subroutine print_exacorr_logo
 
-    subroutine print_exainput(ccd, lambda, moint_scheme, ncycles, t_econv, t_cholesky, level_shift, &
-      talsh, exa_blocksize, talsh_buff, nao, nocc, nvir, print_level)
+    subroutine print_exainput(exa_input,nao)
 
-      logical, intent(in) :: ccd, lambda, talsh
-      integer, intent(in) :: moint_scheme, ncycles, exa_blocksize, talsh_buff, nao, nocc, nvir, print_level
-      real(8), intent(in) :: t_econv, t_cholesky, level_shift
+      use exacorr_datatypes,   only : exacc_input
+
+      type(exacc_input), intent(in) :: exa_input
+      integer, intent(in) :: nao
 
       write(*,*) ""
       write(*,'(A)') "      Characteristics of this calculation      "
       write(*,'(A)') "-----------------------------------------------"
-      write(*,'(A,L1)') " - Solve CCD equations :                ", ccd
-      write(*,'(A,L1)') " - Solve Lambda equations :             ", lambda
-      write(*,'(A,I5)') " - Integral transformation scheme : ", moint_scheme
-      write(*,'(A,I5)') " - Maximum number of cycles :       ", ncycles
-      write(*,'(A,ES10.1)') " - Target precision of amplitudes :  ", t_econv
-      if (moint_scheme.eq.42) then
-        write(*,'(A,ES10.1)') " - Cholesky decomposition threshold :",t_cholesky
+      write(*,'(A,L1)') " - Solve CCD equations :                ", exa_input%ccd
+      write(*,'(A,L1)') " - Solve Lambda equations :             ", exa_input%lambda
+      write(*,'(A,I5)') " - Integral transformation scheme : ", exa_input%moint_scheme
+      write(*,'(A,I5)') " - Maximum number of cycles :       ", exa_input%ncycles
+      write(*,'(A,ES10.1)') " - Target precision of amplitudes :  ", exa_input%t_econv
+      if (exa_input%moint_scheme.eq.42) then
+        write(*,'(A,ES10.1)') " - Cholesky decomposition threshold :",exa_input%t_cholesky
       end if
-      if (level_shift.gt.1.0D-14) then
-        write(*,'(A,ES10.1)') " - Level Shift :                      ",level_shift
+      if (exa_input%level_shift.gt.1.0D-14) then
+        write(*,'(A,ES10.1)') " - Level Shift :                      ",exa_input%level_shift
       end if
       write(*,*) "" 
       write(*,'(A,I5)') " - Number of atomic orbitals :      ", nao
-      write(*,'(A,I5)') " - Number of occupied spinors :     ", nocc
-      write(*,'(A,I5)') " - Number of virtual spinors :      ", nvir
+      write(*,'(A,I5)') " - Number of occupied spinors :     ", exa_input%nocc
+      write(*,'(A,I5)') " - Number of virtual spinors :      ", exa_input%nvir
       write(*,*) ""
-      if (talsh) then 
+      if (exa_input%talsh) then 
         write(*,'(A)') " Using the single-node TALSH library "
-        write(*,'(A,I5,A)') " - TALSH buffer size:               ",talsh_buff," GB"
+        write(*,'(A,I5,A)') " - TALSH buffer size:               ",exa_input%talsh_buff," GB"
       else 
         write(*,'(A)') " Using the multi-node ExaTensor library (MPI) "
-        write(*,'(A,I5)') " - ExaTensor block size :           ", exa_blocksize
+        write(*,'(A,I5)') " - ExaTensor block size :           ", exa_input%exa_blocksize
         write(*,'(A)') "!! ATTENTION !! Properties require TALSH, density matrix must be smaller than: "
-        write(*,'(A,I5,A)') " - TALSH buffer size:              ",talsh_buff," GB"
+        write(*,'(A,I5,A)') " - TALSH buffer size:              ",exa_input%talsh_buff," GB"
       end if
       write(*,*) ""
-      write(*,'(A,I5)') " - Print Level :                    ", print_level
+      write(*,'(A,I5)') " - Print Level :                    ", exa_input%print_level
       write(*,'(A)') "-----------------------------------------------"
       write(*,*) ""
 
