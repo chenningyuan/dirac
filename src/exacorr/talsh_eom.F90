@@ -315,7 +315,7 @@ module talsh_eom
      write (6,*) 'hdiag2_dims(3)',hdiag2_dims(3) 
      write (6,*) 'hdiag2_dims(4)',hdiag2_dims(4) 
 
-            do i = 1, nocc 
+            do i = 1,  hdiag1_dims(1) 
                diagonal = -eps_occ(i)
                hdiag1_h_p_tens(i) = diagonal
             end do
@@ -324,9 +324,9 @@ module talsh_eom
      write (6,*) hdiag1_h_p_tens(1:nocc)
      write (6,*) 'debug <<< hdiag1_h_p_tens <<<'
 
-            do i = 1, nocc 
-               do j = 1, nocc 
-                  do a = 1, nvir 
+            do i = 1, hdiag2_dims(3)
+               do j = 1, hdiag2_dims(2)
+                  do a = 1, hdiag2_dims(1) 
                      diagonal = eps_vir(a) - eps_occ(j) - eps_occ(i)
                      hdiag2_h_p_tens(a,j,i) = diagonal 
                   end do
@@ -340,14 +340,14 @@ module talsh_eom
          case("EA")
             call c_f_pointer(Hdiag1_body_p,hdiag1_h_p_tens,hdiag1_dims(1:1))
             call c_f_pointer(Hdiag2_body_p,hdiag2_h_p_tens,hdiag2_dims(1:3))
-            do a = 1, nvir 
+            do a = 1, hdiag1_dims(1) 
                diagonal = eps_vir(a)
                hdiag1_h_p_tens(a) = diagonal
             end do
 
-            do a = 1, nvir 
-               do b = 1, nvir 
-                  do i = 1, nocc 
+            do i = 1, hdiag2_dims(3) 
+               do b = 1, hdiag2_dims(2) 
+                  do a = 1, hdiag2_dims(1) 
                      diagonal = eps_vir(a) + eps_vir(b) - eps_occ(i)
                      hdiag2_h_p_tens(a,b,i) = diagonal
                   end do
@@ -357,17 +357,17 @@ module talsh_eom
          case("EE")
             call c_f_pointer(Hdiag1_body_p,hdiag1_hp_tens,hdiag1_dims(1:2))
             call c_f_pointer(Hdiag2_body_p,hdiag2_hp_tens,hdiag2_dims(1:4))
-            do i = 1, nocc
-               do a = 1, nvir
+            do i = 1, hdiag1_dims(2) 
+               do a = 1, hdiag1_dims(1)
                   diagonal = eps_vir(a) - eps_occ(i)
                   hdiag1_hp_tens(a,i) = diagonal
                end do
             end do
 
-            do i = 1, nocc
-               do j = 1, nocc
-                  do a = 1, nvir
-                     do b = 1, nvir
+            do j = 1, hdiag2_dims(4) 
+               do i = 1, hdiag2_dims(3) 
+                  do b = 1,  hdiag2_dims(2) 
+                     do a = 1,  hdiag2_dims(1) 
                         diagonal = eps_vir(b) + eps_vir(a) - eps_occ(j) - eps_occ(i)
                         hdiag2_hp_tens(a,b,i,j) = diagonal
                      end do
@@ -499,7 +499,7 @@ module talsh_eom
       ooov_dims = (/nocc,nocc,nocc,nvir/)
       ovoo_dims = (/nocc,nvir,nocc,nocc/)
       vovo_dims = (/nvir,nocc,nvir,nocc/)
-      if (exa_input%eom_properties) oov_dims = (/nocc,nocc,nvir/)
+      if (exa_input%eom_properties) oov_dims = (/nocc,nocc,nvir/) ! nocc 1h-states, nocc*nocc*nvir 2h1p states
 
 !     create all fixed intermediates
       ierr=talsh_tensor_construct(eom_t%fbar_oo,C8,oo_dims,init_val=ZERO)

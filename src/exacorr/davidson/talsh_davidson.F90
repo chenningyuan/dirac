@@ -1468,8 +1468,10 @@ contains
 
          write (6,*) 'debug >>> s1_tens before sigma, root',iroot,' >>>'
 !        call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
+         b = 0
          do i = 1, s1_h_p_dims(1)
-            write (6,*) i, s1_h_p_p(i)
+            b = b + 1
+            write (6,*) b, s1_h_p_p(i)
          end do
          write (6,*) 'debug <<< s1_tens before sigma <<<'
          write (6,*) 'debug >>> s2_tens before sigma, root',iroot,' >>>'
@@ -1477,7 +1479,8 @@ contains
          do i = 1, t2_h_p_dims(3)
             do j = 1, t2_h_p_dims(2)
                do a = 1, t2_h_p_dims(1)
-                  write (6,*) a, j, i, s2_h_p_p(a,j,i)
+                  b = b + 1
+                  write (6,*) b, a, j, i, s2_h_p_p(a,j,i)
                end do
             end do
          end do
@@ -1494,13 +1497,14 @@ contains
 ! debug info     
          write (6,*) 'debug >>> t1_tens, root',iroot,' >>>'
 !        call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
+         b = 0
          do i = 1, t1_h_p_dims(1)
-            write (6,*) i, t1_h_p_p(i)
+            b = b + 1
+            write (6,*) b, t1_h_p_p(i)
          end do
          write (6,*) 'debug <<< t1_tens <<<'
          write (6,*) 'debug >>> t2_tens, root',iroot,' >>>'
 !        call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
-         b = 0
          do i = 1, t2_h_p_dims(3)
             do j = 1, t2_h_p_dims(2)
                do a = 1, t2_h_p_dims(1)
@@ -1513,13 +1517,14 @@ contains
 
          write (6,*) 'debug >>> s1_tens, root',iroot,' >>>'
 !        call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
+         b = 0
          do i = 1, s1_h_p_dims(1)
+            b = b + 1
             write (6,*) b, s1_h_p_p(i)
          end do
          write (6,*) 'debug <<< s1_tens <<<'
          write (6,*) 'debug >>> s2_tens, root',iroot,' >>>'
 !        call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
-         b = 0
          do i = 1, t2_h_p_dims(3)
             do j = 1, t2_h_p_dims(2)
                do a = 1, t2_h_p_dims(1)
@@ -1534,7 +1539,7 @@ contains
 
       end do
 
-      call quit('bb')
+!     call quit('bb')
 
    end subroutine
 
@@ -1543,46 +1548,77 @@ contains
       type(talsh_davidson_workspace), intent(inout) :: workspace
       complex(kind=8), pointer, intent(inout) :: M_small(:,:) 
 
+      integer :: mij_dims(2), mij_rank
+      integer(INTD)      :: one_dims(1)
+      type(talsh_tens_t) :: result_tensor
+      complex(8), pointer :: mij_result_tens(:)
+      type(C_PTR):: mij_body_p
+
       integer :: m_dims(2), m_rank
       complex(8), pointer, contiguous:: m_tens(:,:)
       type(C_PTR):: m_body_p
-      integer :: ierr, i
-
-! capital letters here are meant to be the roots
-
-!     do i = 1, workspace%L
-!     ierr=talsh_tensor_contract("M(I,J)+=Bdag(e)*S(e)",workspace%M,&
-!  &                                                    workspace%trial1(i),&
-!  &                                                    workspace%sigma1(i))
-!     ierr=talsh_tensor_contract("M(I,J)+=Bdag(a,b,c,I)*S(a,b,c,J)",workspace%M,&
-!  &                                                                  workspace%trial2,&
-!  &                                                                  workspace%sigma2)
+      integer :: ierr, i, j
 
 !! we need to fish out the small matrix from workspace%M, which is the slice LxL of the full tensor
 !! we also need to conjugate transpose the trial vector 
-       if (associated(M_small)) deallocate(M_small)
-       allocate(M_small(workspace%L,workspace%L))
-       M_small = 0
+      if (associated(M_small)) deallocate(M_small)
+      allocate(M_small(workspace%L,workspace%L))
+      M_small = 0
 
-       ierr = talsh_tensor_dimensions(workspace%M,m_rank,m_dims)
-       write (6,*) 'm_rank',m_rank
-       write (6,*) 'm_dims',m_dims
-       write (6,*) 'm_body_p',m_body_p
-       ierr = talsh_tensor_get_body_access(workspace%M,m_body_p,C8,0,DEV_HOST)
-       write (6,*) 'm_body_p',m_body_p
+      ierr = talsh_tensor_dimensions(workspace%M,m_rank,m_dims)
+      write (6,*) 'm_rank',m_rank
+      write (6,*) 'm_dims',m_dims
+      write (6,*) 'm_body_p',m_body_p
+      ierr = talsh_tensor_get_body_access(workspace%M,m_body_p,C8,0,DEV_HOST)
+      write (6,*) 'm_body_p',m_body_p
 
-       call c_f_pointer(m_body_p,m_tens,m_dims(1:m_rank))
+      call c_f_pointer(m_body_p,m_tens,m_dims(1:m_rank))
 
-       write (6,*) 'M_tens'
-       do i = 1, m_dims(1)
-          write (6,*) M_tens(i,1:m_dims(2))
-       end do
+      write (6,*) 'M_tens'
+      do i = 1, m_dims(1)
+         write (6,*) M_tens(i,1:m_dims(2))
+      end do
 
-       M_small = m_tens
-       write (6,*) 'M small'
-       do i = 1, m_dims(1)
-          write (6,*) M_small(i,1:m_dims(2))
-       end do
+      M_small = m_tens
+      write (6,*) 'M small'
+      do i = 1, m_dims(1)
+         write (6,*) M_small(i,1:m_dims(2))
+      end do
+
+
+!     Initialize scalars that are to be used as tensors in contractions
+      one_dims(1) = 1
+!     ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
+      ierr=talsh_tensor_construct(result_tensor,C8,one_dims(1:0),init_val=ZERO)
+      ierr=talsh_tensor_get_body_access(result_tensor,mij_body_p,C8,int(0,C_INT),DEV_HOST)
+      call c_f_pointer(mij_body_p,mij_result_tens,one_dims)
+
+
+! capital letters here are meant to be the roots
+      write (6,*) 'foobar, before setup M'
+      do i = 1, workspace%L
+         do j = 1, workspace%L
+! this will be a reduction to a scalar at each contractions, and we then will build the 
+            ierr=talsh_tensor_contract("MIJ()=Bdag+(e)*S(e)",                &
+   &                                                    result_tensor,      &
+   &                                                    workspace%trial1(i),&
+   &                                                    workspace%sigma1(j))
+            ierr=talsh_tensor_contract("MIJ()+=Bdag+(a,b,c)*S(a,b,c)",       &
+   &                                                    result_tensor,      &
+   &                                                    workspace%trial2(i),&
+   &                                                    workspace%sigma2(j))
+            write (6,*) 'i,j, m_ij:', i,j, mij_result_tens(1)
+            M_small(i,j) = mij_result_tens(1) 
+         end do
+      end do
+
+      write (6,*) 'M small'
+      do i = 1, m_dims(1)
+         write (6,*) M_small(i,1:m_dims(2))
+      end do
+
+
+       call quit('bb')
 
     end
 
