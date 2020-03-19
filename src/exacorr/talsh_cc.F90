@@ -73,7 +73,7 @@ module talsh_cc
 !        orbital energies
          real(8), allocatable :: eps_occ(:),eps_vir(:)
 !        CCSD control and result variables
-         real(8) :: mp2_energy, ccsd_energy, t_energy(3)
+         real(8) :: scf_energy, mp2_energy, ccsd_energy, t_energy(3)
          real(8) :: t_target_precision
          integer :: ncycles, print_level
 
@@ -110,30 +110,7 @@ module talsh_cc
          ncycles = exa_input%ncycles
          print_level = exa_input%print_level
 
-         write(*,*) ""
-         write(*,'(A)') " Characteristics of this calculation"
-         write(*,'(A)') " -----------------------------------"
-         write(*,'(A,L1)') " - Solve CCD equations :              ", exa_input%ccd
-         write(*,'(A,L1)') " - Solve Lambda equations :           ", exa_input%lambda
-         write(*,'(A,I3)') " - Number of atomic orbitals :      ", get_nao()
-         write(*,'(A,I3)') " - Number of occupied spinors :     ", exa_input%nocc
-         write(*,'(A,I3)') " - Number of virtual spinors :      ", exa_input%nvir
-         write(*,'(A,ES10.1)') " - Target precision of amplitudes :", exa_input%t_econv
-         write(*,'(A,I3)') " - Maximum number of cycles :       ", exa_input%ncycles
-         write(*,'(A,I3)') " - Integral transformation scheme  ",exa_input%moint_scheme
-         if (exa_input%moint_scheme.eq.42) then
-            write(*,'(A,ES10.1)') " - Cholesky decomposition threshold ",exa_input%t_cholesky
-         end if
-         if (exa_input%level_shift.gt.1.0D-14) then
-           write(*,'(A,ES10.1)') " - Level Shift :                     ",exa_input%level_shift
-         end if
-         write(*,'(A,I3)') " - Print Level :                    ",exa_input%print_level
-         if (print_level > 1) then
-           write(*,*) " - occupied spinors :                ", exa_input%mo_occ
-           write(*,*) " - virtual spinors :                 ", exa_input%mo_vir
-         end if
-         write(*,*) " - buffer size: ",exa_input%talsh_buff,"GB"
-         write(*,'(A)') ""
+         call print_exainput(exa_input,get_nao())
 
          call print_date("Getting orbital energies")
 !        Get orbital energies from the DIRAC restart file
@@ -151,8 +128,8 @@ module talsh_cc
          end if
 
 !        Get fixed one-body tensors, needs to follow the two body tensors
-         call get_CC_fockmatrix (nocc,nvir,mo_occ,mo_vir,eps_occ,eps_vir, &
-                                 comm_t%foo,comm_t%fov,comm_t%fvv, int_t, print_level, exa_input%level_shift)
+         call get_CC_fockmatrix (nocc,nvir,mo_occ,mo_vir,eps_occ,eps_vir,comm_t%foo,comm_t%fov,comm_t%fvv, &
+                                  int_t, scf_energy, exa_input%level_shift, print_level)
 
 !        Initialize t1 amplitudes to zero (we assume canonical orbitals for the moment)
          if (.not.CCD) then
@@ -179,10 +156,9 @@ module talsh_cc
          ierr=talsh_tensor_init(result_tensor)
          ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%t2,int_t%oovv) ! o(2)v(2)
          mp2_energy=result_tens(1) * ONE_QUARTER
-         print*,""
-         print*," MP2 energy = ",mp2_energy
-         print*,""
-
+         write(*,*) ""
+         write(*,*) "    MP2 energy = ", mp2_energy
+         write(*,*) ""
 !=====================
 !        Calculate the pair correlation energy for each pair of occupied spin-orbits
          call pair_correlation_energies(comm_t%t2, int_t%oovv, nocc, nvir)
@@ -218,12 +194,12 @@ module talsh_cc
          if (ierr.eq.TALSH_SUCCESS) then
             call print_date('Succesfully allocated all tensors')
          else
-            print*," ccdriver: error in tensor allocation, code=",ierr
+            write(*,*) " ccdriver: error in tensor allocation, code=",ierr
             return
          end if
 
          if (debug_exa) then
-            print*, "Voovv = ",tensor_norm2(int_t%oovv)
+            write(*,*) "Voovv = ",tensor_norm2(int_t%oovv)
          end if
 
          call solve_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
@@ -232,15 +208,9 @@ module talsh_cc
          if (.not.CCD) then
 !           Calculate (T) energy correction
             call t3_energy (t_energy,eps_occ,eps_vir, comm_t%t1,comm_t%t2,comm_t%fov,int_t%ooov,int_t%vovv,int_t%oovv)
-            write (*,'(A,F20.15)') "  Final CCSD energy :               ",ccsd_energy
-            write (*,'(A,F20.15)') "  4th order triples correction :    ",t_energy(1)
-            write (*,'(A,F20.15)') "  5th order triples (T) correction :",t_energy(2)
-            write (*,'(A,F20.15)') "  5th order triples -T  correction :",t_energy(3)
-            write (*,'(A,F20.15)') "  CCSD+T  correlation energy :      ",ccsd_energy+t_energy(1)
-            write (*,'(A,F20.15)') "  CCSD(T) correlation energy :      ",ccsd_energy+t_energy(1)+t_energy(2)
-            write (*,'(A,F20.15)') "  CCSD-T  correlation energy :      ",ccsd_energy+t_energy(1)+t_energy(3)
+            call print_exaoutput(exa_input%talsh, CCD, scf_energy, mp2_energy, ccsd_energy, t_energy)
          else
-            write (*,'(A,F20.15)') "  Final CCD energy     :            ",ccsd_energy
+            call print_exaoutput(exa_input%talsh, CCD, scf_energy, mp2_energy, ccsd_energy)
          end if
 
          !Destruct diis tensors
@@ -313,7 +283,7 @@ module talsh_cc
          call delete_global_data
 
 !        Make some noise so that we know we are leaving
-         print*, ""
+         write(*,*) ""
          call print_date('Leaving cc_driver routine')
 
         end subroutine talsh_cc_driver
@@ -386,7 +356,7 @@ module talsh_cc
           call get_tau(comm_t,CCD)
 
           if (ierr.ne.TALSH_SUCCESS) then
-             print*," ccdriver: error in calculation of common blocks, code=",ierr
+             write(*,*) " ccdriver: error in calculation of common blocks, code=",ierr
              return
           end if
 
@@ -441,7 +411,7 @@ module talsh_cc
           call get_a(comm_t,int_t,CCD)
 
           if (ierr.ne.TALSH_SUCCESS) then
-             print*," ccdriver: error in calculation of intermediates, code=",ierr
+             write(*,*) " ccdriver: error in calculation of intermediates, code=",ierr
              return
           end if
 
@@ -504,7 +474,7 @@ module talsh_cc
           end if
 
           if (ierr.ne.TALSH_SUCCESS) then
-             print*," ccdriver: error in evaluation of amplitude equations, code=",ierr
+             write(*,*) " ccdriver: error in evaluation of amplitude equations, code=",ierr
              return
           end if
 
@@ -551,7 +521,7 @@ module talsh_cc
          write(*,*) "-----------------------------------------------"
          write(*,*) ""
 
-         if (t_convergence .gt. t_target_precision) print*, "WARNING: Non-converged amplitudes!"
+         if (t_convergence .gt. t_target_precision) write(*,*) "WARNING: Non-converged amplitudes!"
          write(*,*) ""
 
          if (.not.CCD) ierr=talsh_tensor_destruct(s1_tensor)
@@ -884,7 +854,7 @@ module talsh_cc
           ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,j,e,f)*W(e,f,a,b)",s2_tensor,l2_tensor,lambda_t%w_vvvv,scale=ONE_HALF)
 
           if (ierr.ne.TALSH_SUCCESS) then
-             print*," ccdriver: error in evaluation of lambda equations, code=",ierr
+             write(*,*) " ccdriver: error in evaluation of lambda equations, code=",ierr
              return
           end if
 
@@ -914,7 +884,7 @@ module talsh_cc
          write(*,*) "------------------------"
          write(*,*) ""
 
-         if (t_convergence .gt. t_target_precision) print*, "WARNING: Non-converged amplitudes!"
+         if (t_convergence .gt. t_target_precision) write(*,*) "WARNING: Non-converged amplitudes!"
          if (.not.CCD) write(*,'(A,ES22.16)') "  Final L1amp = ", tensor_norm2(l1_tensor)
          write(*,'(A,ES22.16)') "  Final L2amp = ", tensor_norm2(l2_tensor)*ONE_QUARTER
          write(*,*) ""
@@ -946,8 +916,8 @@ module talsh_cc
 
         end subroutine solve_lambda_equations
 
-        subroutine get_CC_fockmatrix (nocc,nvir,mo_occ,mo_vir,eps_occ,eps_vir, &
-                                      fo_tensor,fov_tensor,fv_tensor, int_t, print_level, level_shift)
+        subroutine get_CC_fockmatrix (nocc,nvir,mo_occ,mo_vir,eps_occ,eps_vir,fo_tensor,fov_tensor,fv_tensor, &
+                                       int_t, scf_energy, level_shift, print_level)
 
 !        Written by Lucas Visscher, summer 2017
 
@@ -960,6 +930,8 @@ module talsh_cc
          integer, intent(in)                  :: mo_occ(:),mo_vir(:) ! the orbital energies
          real(8), intent(inout)               :: eps_occ(:),eps_vir(:) ! orbital energies
          real(8), intent(in)                  :: level_shift
+         real(8), intent(out)                 :: scf_energy
+
 !        target tensors to be filled and given back to the caller
          type(talsh_tens_t), intent(inout)    :: fo_tensor, fv_tensor, fov_tensor
          type(talsh_intg_tens), intent(inout) :: int_t
@@ -970,7 +942,7 @@ module talsh_cc
          integer(INTD)                   :: ierr
          logical                         :: one_el_exist
          type(one_el_t)                  :: one_int
-         real(8)                         :: e_core, ev_energy, off_diag, hf_energy
+         real(8)                         :: e_core, ev_energy, off_diag
          integer                         :: nkp, min_occ
          type(C_PTR)                     :: body_p
          complex(8), pointer, contiguous :: h_tens(:,:)
@@ -1043,9 +1015,11 @@ module talsh_cc
             ierr=talsh_tensor_contract("R()+=H(i,j)*I(i,j)",result_tensor,h_tensor,id_mat_occ)
             ierr=talsh_tensor_destruct(h_tensor)
 
-            hf_energy=real(result_tens(1),8) ! Casting into real(8)
-            write (*,'(A,F23.15)') " Energy of reference wave function (HF single determinant) = ", hf_energy+e_core
-
+            scf_energy=real(result_tens(1),8) ! Casting into real(8)
+            scf_energy=scf_energy+e_core
+            write(*,*) ""
+            write (*,'(A,F23.15)') "    SCF energy (single determinant, calculated) = ", scf_energy
+            write(*,*) ""
             call print_date('one electron integrals added to Fock Matrix')
 
             ierr=talsh_tensor_contract("F(i,j)+=V(i,k,j,l)*I(k,l)",fo_tensor,int_t%oooo,id_mat_occ, ONE)
@@ -1081,7 +1055,7 @@ module talsh_cc
               do while(e_lumo-e_homo < THRESHOLD)
                 if (e_lumo+level_shift-e_homo >THRESHOLD) then
                   eps_vir(lumo)=e_lumo+level_shift
-                  print *, "lumo energy level shifted by ", level_shift," to ",e_lumo+level_shift
+                  write(*,*) "lumo energy level shifted by ", level_shift," to ",e_lumo+level_shift
                 else
                   call quit('Negative HOMO-LUMO gap')
                 end if
@@ -1111,37 +1085,45 @@ module talsh_cc
             ierr=talsh_tensor_add("F(i,j)+=D(i,j)",fo_tensor,diag_mat_occ,scale=MINUS_ONE)
             ierr=talsh_tensor_add("F(a,b)+=D(a,b)",fv_tensor,diag_mat_vir,scale=MINUS_ONE)
             if (print_level >1) call print_date('diagonal substracted from Fock Matrix')
+            
+            if (print_level >0) then 
+              write(*,*) ""
+              ierr=talsh_tensor_init(result_tensor)
+              ierr=talsh_tensor_contract("R()+=F(i,j)*F(i,j)",result_tensor,fo_tensor,fo_tensor)
+              off_diag=real(result_tens(1),8)
+              write(*,*) "    Norm of Fock matrix (OO, no diagonal) = ", off_diag
 
-            ierr=talsh_tensor_init(result_tensor)
-            ierr=talsh_tensor_contract("R()+=F(i,j)*F(i,j)",result_tensor,fo_tensor,fo_tensor)
-            off_diag=real(result_tens(1),8)
-            if (print_level >0) print*," Norm of OO part Fock matrix (without diag) = ", off_diag
+              ierr=talsh_tensor_init(result_tensor)
+              ierr=talsh_tensor_contract("R()+=F(i,a)*F(i,a)",result_tensor,fov_tensor,fov_tensor)
+              off_diag=real(result_tens(1),8)
+              write(*,*) "    Norm of Fock matrix (OV, all        ) = ", off_diag
 
-            ierr=talsh_tensor_init(result_tensor)
-            ierr=talsh_tensor_contract("R()+=F(i,a)*F(i,a)",result_tensor,fov_tensor,fov_tensor)
-            off_diag=real(result_tens(1),8)
-            if (print_level >0) print*," Norm of OV part Fock matrix =                ", off_diag
-
-            ierr=talsh_tensor_init(result_tensor)
-            ierr=talsh_tensor_contract("R()+=F(a,b)*F(a,b)",result_tensor,fv_tensor,fv_tensor)
-            off_diag=real(result_tens(1),8)
-            if (print_level >0) print*," Norm of VV part Fock matrix (without diag) = ", off_diag
+              ierr=talsh_tensor_init(result_tensor)
+              ierr=talsh_tensor_contract("R()+=F(a,b)*F(a,b)",result_tensor,fv_tensor,fv_tensor)
+              off_diag=real(result_tens(1),8)
+              write(*,*) "    Norm of Fock matrix (VV, no diagonal) = ", off_diag
+              write(*,*) 
+            end if
 
             ierr=talsh_tensor_destruct(id_mat_occ)
             ierr=talsh_tensor_destruct(diag_mat_occ)
             ierr=talsh_tensor_destruct(diag_mat_vir)
             ierr=talsh_tensor_destruct(result_tensor)
          else
+            call get_scf ( scf_energy )
+            write(*,*) ""
+            write (*,'(A,F23.15)') "    SCF energy ( read ) = ", scf_energy
+            write(*,*) ""
             if (level_shift.gt.1.0D-14) then
               e_homo = maxval(eps_occ)
               e_lumo = minval(eps_vir)
               lumo   = minloc(eps_vir,1)
 
               do while(e_lumo-e_homo < THRESHOLD)
-                print*, "e_homo, e_lumo", e_homo, e_lumo
+                write(*,*) "e_homo, e_lumo", e_homo, e_lumo
                 if (e_lumo+level_shift-e_homo >THRESHOLD) then
                   eps_vir(lumo)=e_lumo+level_shift
-                  print *, "lumo energy level shifted by ", level_shift," to ",e_lumo+level_shift
+                  write(*,*) "lumo energy level shifted by ", level_shift," to ",e_lumo+level_shift
                 else
                   call quit('Negative HOMO-LUMO gap')
                 end if
@@ -1378,7 +1360,7 @@ module talsh_cc
          integer                         :: i,j,m,ij
 
          call print_date('entering integral transformation, scheme = 42')
-         print *, "Note: cholesky based ao to mo transformation fails on iMac16,1"
+         write(*,*) "Note: cholesky based ao to mo transformation fails on iMac16,1"
 
 !        Retrieve basis set information
          nao     = get_nao()      ! number of basis functions
@@ -1659,7 +1641,7 @@ module talsh_cc
          if (b_max .gt. 1.D-30) then
              b_scale = 1.D0 / b_max
          else
-             print*, "WARNING: something is wrong in DIIS: found zero error for non-converged amplitudes"
+             write(*,*) "WARNING: something is wrong in DIIS: found zero error for non-converged amplitudes"
              return
          end if
          bb = ZERO
@@ -2087,7 +2069,7 @@ module talsh_cc
         ! accuracy for tensor printing
         real(8), parameter :: ACC=1.0E-9
 
-        print *, "========= entered decompose_cholesky_talsh ============== "
+        write(*,*) "========= entered decompose_cholesky_talsh ============== "
 
         dims2=nao
         dims3=nao
@@ -2105,12 +2087,12 @@ module talsh_cc
 
 
         call talsh_get_diag_comp(Diag)
-        print *, "========= diagonal computed ============== "
+        write(*,*) "========= diagonal computed ============== "
 
         call talsh_find_shells_comp(Diag, Mask, lshell, kshell, D_max)
         lsize=get_shellsize(lshell)
         ksize=get_shellsize(kshell)
-        print *, "--- shell found: ", lshell, kshell, lsize, ksize, D_max
+        !write(*,*) "--- shell found: ", lshell, kshell, lsize, ksize, D_max
 
         m=0
         dims3(3)=1
@@ -2137,7 +2119,7 @@ module talsh_cc
           !call print_tensor(Dlk, ACC, "Dlk")
 
           call talsh_find_el_comp(Diag, Mask, lshell, kshell, l, k, D_el)
-          !print *, '--- largest value found: ', l, k, D_el
+          !write(*,*) '--- largest value found: ', l, k, D_el
 
           do while(abs(D_el)>abs(D_max/1000))
             call get_offset(l,l0)
@@ -2212,11 +2194,11 @@ module talsh_cc
             ierr=talsh_tensor_slice(CD,CD_int,off3,0,DEV_HOST)
             !call print_tensor(CD, ACC, "CD")
 
-            if (m>nao*nao) print *, 'Cholesky decomposition did not work'
+            if (m>nao*nao) write(*,*) 'Cholesky decomposition did not work'
 
             !find next element in this shell
             call talsh_find_el_comp(Diag, Mask, lshell, kshell, l, k, D_el)
-            !print *, '--- largest value found: ', l, k, D_el
+            !write(*,*)  '--- largest value found: ', l, k, D_el
 
           end do
 
@@ -2231,7 +2213,7 @@ module talsh_cc
 
         end do
 
-        print *, 'Cholesky decomposition done, used ',m,' elements'
+        write(*,*) 'Cholesky decomposition done, used ',m,' elements'
 
         !clean up
         ierr=talsh_tensor_destruct(CD_int)
@@ -2241,7 +2223,7 @@ module talsh_cc
         ierr=talsh_tensor_destruct(Res)
         ierr=talsh_tensor_destruct(Res2)
 
-        print *, "========= leaving decompose_cholesky_talsh ============== "
+        write(*,*)  "========= leaving decompose_cholesky_talsh ============== "
 
     end subroutine decompose_cholesky_talsh
 
