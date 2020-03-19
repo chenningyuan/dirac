@@ -151,17 +151,17 @@
 
         type, public :: talsh_davidson_workspace
            integer :: nroots              ! number of roots we're looking for
-           integer, allocatable :: N(:)   ! number of rows per excitation level
+           integer, pointer :: N(:)       ! number of rows per excitation level
            integer :: Nmax                ! total number of rows =  dim(T1)+dim(T2)+...
            integer :: Lmax                ! total number of columns = dim(maximum number of trial vectors)
            integer :: L                   ! counters for keeping tabs on how much of the workspace we've used
                                           ! in most usages N = Nmax and L will grow up to Lmax
            type(talsh_tens_t) :: M        ! subspace matrix, dimension : (Lmax, Lmax); it is in tensor form to conform with the operations, but it will be a pointer to it that will be passed to the lapack routines 
 ! see to change those below to tensors segmented into singly/doubly/... manifolds
-           type(talsh_tens_t), allocatable ::   trial1(:),   trial2(:) ! workspace for trial vectors
-           type(talsh_tens_t), allocatable :: CTtrial1(:), CTtrial2(:) ! workspace for conjugate transpose of trial vectors 
-           type(talsh_tens_t), allocatable :: sigma1(:), sigma2(:)     ! workspace for sigma vectors
-           type(talsh_tens_t), allocatable :: delta1(:), delta2(:)     ! workspace for correction vectors
+           type(talsh_tens_t), pointer :: trial1(:),   trial2(:) ! workspace for trial vectors
+           type(talsh_tens_t), pointer :: CTtrial1(:), CTtrial2(:) ! workspace for conjugate transpose of trial vectors 
+           type(talsh_tens_t), pointer :: sigma1(:), sigma2(:)     ! workspace for sigma vectors
+           type(talsh_tens_t), pointer :: delta1(:), delta2(:)     ! workspace for correction vectors
            type(talsh_tens_t) :: Hdiag1, Hdiag2                        ! workspace for diagonal elements of the similarity-transformed Hamiltonian
         end type
 

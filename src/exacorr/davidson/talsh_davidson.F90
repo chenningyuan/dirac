@@ -1218,7 +1218,7 @@ contains
 
         ierr = talsh_tensor_destruct(workspace%M)
 
-        if (allocated(workspace%N)) deallocate(workspace%N)
+        if (associated(workspace%N)) deallocate(workspace%N)
 
         write(davidson_output_file_unit, "(4x,a)") 'leaving talsh_davidson_workspace_destroy'
     end subroutine 
@@ -1234,7 +1234,7 @@ contains
 !       
 !   for the moment we force the number of roots to be 4
 !
-        workspace%nroots = 4
+        workspace%nroots = 2
         workspace%Lmax   = davidson_max_subspace_size
         workspace%L      = workspace%nroots 
 
@@ -1283,6 +1283,7 @@ contains
                  ierr = talsh_tensor_construct(workspace%CTtrial2(i),C8,tens_dims,init_val=ZERO)
               end do
               ierr = talsh_tensor_construct(workspace%Hdiag2,C8,tens_dims,init_val=ZERO)
+              ierr = talsh_tensor_init(workspace%Hdiag2,ZERO)
               deallocate(tens_dims)
               workspace%N(2) = nvirt*nocc*nocc
 
@@ -1357,10 +1358,13 @@ contains
         write(davidson_output_file_unit, "(4x,a,i6,a,i6)") &
      &  'created tensor for trial vectors, dimensions :',workspace%Nmax,"x",workspace%Lmax
 
-        write(davidson_output_file_unit, "(4x,a)") 'info on workspace%trial1(1)' 
-        call talsh_tensor_print_info(workspace%trial1(1))
-        write(davidson_output_file_unit, "(4x,a)") 'info on workspace%trial2(1)' 
-        call talsh_tensor_print_info(workspace%trial2(1))
+
+        do i = 1, workspace%Lmax
+           write(davidson_output_file_unit, "(4x,a,i4)") 'info on workspace%trial1, element',i
+           call talsh_tensor_print_info(workspace%trial1(i))
+           write(davidson_output_file_unit, "(4x,a,i4)") 'info on workspace%trial2, element',i
+           call talsh_tensor_print_info(workspace%trial2(i))
+        end do
 
         write(davidson_output_file_unit, "(4x,a)") 'info on workspace%Hdiag1' 
         call talsh_tensor_print_info(workspace%Hdiag1)
@@ -1385,63 +1389,102 @@ contains
       type(talsh_intg_tens), intent(inout) :: int_t
       type(talsh_davidson_workspace), intent(inout) :: workspace
 
-      integer :: s1_dims(2), s1_rank
-      complex(8), pointer, contiguous:: s1_p(:)
+      integer :: s1_h_p_dims(1), s1_h_p_rank
+      complex(8), pointer, contiguous:: s1_h_p_p(:)
       type(C_PTR):: s1_body_p
 
-      integer :: t1_dims(1), t1_rank
-      complex(8), pointer, contiguous:: t1_p(:)
+      integer :: t1_h_p_dims(1), t1_h_p_rank
+      complex(8), pointer, contiguous:: t1_h_p_p(:)
       type(C_PTR):: t1_body_p
 
-      integer :: t2_dims(1), t2_rank
-      complex(8), pointer, contiguous:: t2_p(:,:,:)
+      integer :: t2_h_p_dims(3), t2_h_p_rank
+      complex(8), pointer, contiguous:: t2_h_p_p(:,:,:)
       type(C_PTR):: t2_body_p
 
-      integer :: s2_dims(2), s2_rank
-      complex(8), pointer, contiguous:: s2_p(:,:,:)
+      integer :: s2_h_p_dims(3), s2_h_p_rank
+      complex(8), pointer, contiguous:: s2_h_p_p(:,:,:)
       type(C_PTR):: s2_body_p
 
       integer :: ierr, iroot, i, j, a, b
 
       do iroot = (workspace%L - workspace%nroots + 1), workspace%L
+
          write (6,*) 'root ',iroot
 ! aspg
 ! debug info
-         ierr = talsh_tensor_dimensions(workspace%sigma1(iroot),s1_rank,s1_dims)
+         ierr = talsh_tensor_dimensions(workspace%sigma1(iroot),s1_h_p_rank,s1_h_p_dims)
          ierr = talsh_tensor_get_body_access(workspace%sigma1(iroot),s1_body_p,C8,0,DEV_HOST)
-         write (6,*) 's1_rank',s1_rank
-         write (6,*) 's1_dims',s1_dims
+         write (6,*) 's1_h_p_rank',s1_h_p_rank
+         write (6,*) 's1_h_p_dims',s1_h_p_dims
          write (6,*) 's1_body_p',s1_body_p
          ! associating the pointer to sigma1 to the local, fortran s1_p pointer variable
-         call c_f_pointer(s1_body_p,s1_p,s1_dims(1:s1_rank))
+         call c_f_pointer(s1_body_p,s1_h_p_p,s1_h_p_dims(1:s1_h_p_rank))
          write (6,*) 'b;a'
 
-         ierr = talsh_tensor_dimensions(workspace%trial1(iroot),t1_rank,t1_dims)
+         ierr = talsh_tensor_dimensions(workspace%trial1(iroot),t1_h_p_rank,t1_h_p_dims)
          ierr = talsh_tensor_get_body_access(workspace%trial1(iroot),t1_body_p,C8,0,DEV_HOST)
-         write (6,*) 't1_rank',t1_rank
-         write (6,*) 't1_dims',t1_dims
+         write (6,*) 't1_h_p_rank',t1_h_p_rank
+         write (6,*) 't1_h_p_dims',t1_h_p_dims
          write (6,*) 't1_body_p',t1_body_p
-         call c_f_pointer(t1_body_p,t1_p,t1_dims(1:t1_rank))
+         call c_f_pointer(t1_body_p,t1_h_p_p,t1_h_p_dims(1:t1_h_p_rank))
          write (6,*) 'b;a'
 
-         ierr = talsh_tensor_dimensions(workspace%sigma2(iroot),s2_rank,s2_dims)
-         ierr = talsh_tensor_get_body_access(workspace%sigma2(iroot),s1_body_p,C8,0,DEV_HOST)
-         write (6,*) 's2_rank',s2_rank
-         write (6,*) 's2_dims',s2_dims
+         ierr = talsh_tensor_dimensions(workspace%sigma2(iroot),s2_h_p_rank,s2_h_p_dims)
+         ierr = talsh_tensor_get_body_access(workspace%sigma2(iroot),s2_body_p,C8,0,DEV_HOST)
+         write (6,*) 's2_h_p_rank',s2_h_p_rank
+         write (6,*) 's2_h_p_dims',s2_h_p_dims
          write (6,*) 's2_body_p',s2_body_p
          ! associating the pointer to sigma1 to the local, fortran s1_p pointer variable
-         call c_f_pointer(s2_body_p,s2_p,s2_dims(1:s2_rank))
+         call c_f_pointer(s2_body_p,s2_h_p_p,s2_h_p_dims(1:s2_h_p_rank))
          write (6,*) 'b;a'
 
-         ierr = talsh_tensor_dimensions(workspace%trial2(iroot),t2_rank,t2_dims)
+         ierr = talsh_tensor_dimensions(workspace%trial2(iroot),t2_h_p_rank,t2_h_p_dims)
          ierr = talsh_tensor_get_body_access(workspace%trial2(iroot),t2_body_p,C8,0,DEV_HOST)
-         write (6,*) 't2_rank',t2_rank
-         write (6,*) 't2_dims',t2_dims
+         write (6,*) 't2_h_p_rank',t2_h_p_rank
+         write (6,*) 't2_h_p_dims',t2_h_p_dims
          write (6,*) 't2_body_p',t2_body_p
-         call c_f_pointer(t2_body_p,t2_p,t2_dims(1:t2_rank))
+         call c_f_pointer(t2_body_p,t2_h_p_p,t2_h_p_dims(1:t2_h_p_rank))
          write (6,*) 'b;a'
 ! debug info
 ! aspg
+! aspg
+! debug info     
+         write (6,*) 'debug >>> t1_tens before sigma, root',iroot,' >>>'
+!        call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
+         do i = 1, t1_h_p_dims(1)
+            write (6,*) i, t1_h_p_p(i)
+         end do
+         write (6,*) 'debug <<< t1_tens before sigma <<<'
+         write (6,*) 'debug >>> t2_tens before sigma, root',iroot,' >>>'
+!        call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
+         do i = 1, t2_h_p_dims(3)
+            do j = 1, t2_h_p_dims(2)
+               do a = 1, t2_h_p_dims(1)
+                  write (6,*) a, j, i, t2_h_p_p(a,j,i)
+               end do
+            end do
+         end do
+         write (6,*) 'debug <<< t2_tens before sigma <<<'
+
+         write (6,*) 'debug >>> s1_tens before sigma, root',iroot,' >>>'
+!        call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
+         do i = 1, s1_h_p_dims(1)
+            write (6,*) i, s1_h_p_p(i)
+         end do
+         write (6,*) 'debug <<< s1_tens before sigma <<<'
+         write (6,*) 'debug >>> s2_tens before sigma, root',iroot,' >>>'
+!        call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
+         do i = 1, t2_h_p_dims(3)
+            do j = 1, t2_h_p_dims(2)
+               do a = 1, t2_h_p_dims(1)
+                  write (6,*) a, j, i, s2_h_p_p(a,j,i)
+               end do
+            end do
+         end do
+         write (6,*) 'debug <<< s2_tens before sigma <<<'
+! debug info     
+! aspg
+
 
          call sigma_right_ip(exa_input,int_t,eom_t,t2_tensor, &
    &                         workspace%trial1(iroot),workspace%trial2(iroot),&
@@ -1451,16 +1494,18 @@ contains
 ! debug info     
          write (6,*) 'debug >>> t1_tens, root',iroot,' >>>'
 !        call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
-         do i = 1, t1_dims(1)
-            write (6,*) t1_p(i)
+         do i = 1, t1_h_p_dims(1)
+            write (6,*) i, t1_h_p_p(i)
          end do
          write (6,*) 'debug <<< t1_tens <<<'
          write (6,*) 'debug >>> t2_tens, root',iroot,' >>>'
 !        call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
-         do i = 1, t2_dims(3)
-            do j = 1, t2_dims(2)
-               do a = 1, t2_dims(1)
-                  write (6,*) t2_p(a,j,i)
+         b = 0
+         do i = 1, t2_h_p_dims(3)
+            do j = 1, t2_h_p_dims(2)
+               do a = 1, t2_h_p_dims(1)
+                  b = b + 1
+                  write (6,*) b, a, j, i, t2_h_p_p(a,j,i)
                end do
             end do
          end do
@@ -1468,16 +1513,18 @@ contains
 
          write (6,*) 'debug >>> s1_tens, root',iroot,' >>>'
 !        call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
-         do i = 1, s1_dims(1)
-            write (6,*) s1_p(i)
+         do i = 1, s1_h_p_dims(1)
+            write (6,*) b, s1_h_p_p(i)
          end do
          write (6,*) 'debug <<< s1_tens <<<'
          write (6,*) 'debug >>> s2_tens, root',iroot,' >>>'
 !        call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
-         do i = 1, t2_dims(3)
-            do j = 1, t2_dims(2)
-               do a = 1, t2_dims(1)
-                  write (6,*) s2_p(a,j,i)
+         b = 0
+         do i = 1, t2_h_p_dims(3)
+            do j = 1, t2_h_p_dims(2)
+               do a = 1, t2_h_p_dims(1)
+                  b = b + 1
+                  write (6,*) b, a, j, i, s2_h_p_p(a,j,i)
                end do
             end do
          end do
@@ -1486,6 +1533,8 @@ contains
 ! aspg
 
       end do
+
+      call quit('bb')
 
    end subroutine
 
@@ -1601,6 +1650,7 @@ contains
         endif
 
         
+        niter = 1
         write(davidson_output_file_unit,*) ""
 !!      do niter = 1, davidson_max_iterations
             write(davidson_output_file_unit,*) "Iteration ", niter
