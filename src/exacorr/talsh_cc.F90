@@ -597,7 +597,8 @@ module talsh_cc
          type(talsh_tens_t) :: Wabef_tensor,Wmnij_tensor     !L
          !type(talsh_tens_t) :: hoo_int_tensor, hvv_int_tensor
          type(talsh_tens_t) :: t1t1_tensor, tauCC2_tensor
-         type(talsh_tens_t) :: cint_tensor
+         type(talsh_tens_t) :: cint_ovoo_tensor
+	 type(talsh_tens_t) :: cint_xxxx_tensor
 !        auxilliary tensors for t1 equation
          type(talsh_tens_t) :: hov_aux_tensor, hoo_aux_tensor
 !        solution tensors
@@ -653,12 +654,12 @@ module talsh_cc
 
          vvvo_dims(1:3) = nvir !L
          vvvo_dims(4)   = nocc !L
-
+         ierr=talsh_tensor_construct(cint_vvvo_tensor,C8,vvvo_dims,init_val=ZERO)
 
          ovoo_dims(1) = nocc
          ovoo_dims(2) = nvir
          ovoo_dims(3:4) = nocc
-         ierr=talsh_tensor_construct(cint_tensor,C8,ovoo_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(cint_ovoo_tensor,C8,ovoo_dims,init_val=ZERO)
 
          do iccsd = 1, ncycles
 
@@ -702,18 +703,20 @@ module talsh_cc
           ierr=talsh_tensor_contract("S(a,b,i,j)+=V(a,m,e,i)*T(e,b,j,m)",s2_tensor,int_t%vovo,t1t1_tensor)
           if (debug_local) print*, "norm s2 tensor after diagram 16 ",tensor_norm2(s2_tensor)
 
+	! Problem cint est déclaré en ovoo_dims lign 661
+
 !         Diagram 19 : s2_{ij}^{ab} +=  P\_(ij)\sum_{e} t^e_i V_{ej}^{ab}
-          ierr=talsh_tensor_init(cint_tensor)
-          ierr=talsh_tensor_contract("C(b,c,a,i)+=V+(a,i,b,c)*K()",cint_tensor,int_t%vovv,one_tensor) !Inversion, warning : no more + in +=
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=C(a,b,e,j)*T(e,i)",s2_tensor,cint_tensor,comm_t%t1)
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=C(a,b,e,i)*T(e,j)",s2_tensor,cint_tensor,comm_t%t1,scale=MINUS_ONE)
+          ierr=talsh_tensor_init(cint_vvvo_tensor)
+          ierr=talsh_tensor_contract("C(b,c,a,i)+=V+(a,i,b,c)*K()",cint_vvvo_tensor,int_t%vovv,one_tensor) !Inversion, warning : no more + in +=
+          ierr=talsh_tensor_contract("S(a,b,i,j)+=C(a,b,e,j)*T(e,i)",s2_tensor,cint_vvvo_tensor,comm_t%t1)
+          ierr=talsh_tensor_contract("S(a,b,i,j)+=C(a,b,e,i)*T(e,j)",s2_tensor,cint_vvvo_tensor,comm_t%t1,scale=MINUS_ONE)
           if (debug_local) print*, "norm s2 tensor after diagram 19 ",tensor_norm2(s2_tensor)
 
 !         Diagram 20 : s2_{ij}^{ab} += -P\_(ab)\sum_{m} t^a_m V_{ij}^{mb}
-          ierr=talsh_tensor_init(cint_tensor)
-          ierr=talsh_tensor_contract("C(k,a,i,j)+=V+(i,j,k,a)*K()",cint_tensor,int_t%ooov,one_tensor) !Inversion, warning : no more + in +=
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=C(m,b,i,j)*T(a,m)",s2_tensor,cint_tensor,comm_t%t1,scale=MINUS_ONE)
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=C(m,a,i,j)*T(b,m)",s2_tensor,cint_tensor,comm_t%t1)
+          ierr=talsh_tensor_init(cint_ovoo_tensor)
+          ierr=talsh_tensor_contract("C(k,a,i,j)+=V+(i,j,k,a)*K()",cint_ovoo_tensor,int_t%ooov,one_tensor) !Inversion, warning : no more + in +=
+          ierr=talsh_tensor_contract("S(a,b,i,j)+=C(m,b,i,j)*T(a,m)",s2_tensor,cint_ovoo_tensor,comm_t%t1,scale=MINUS_ONE)
+          ierr=talsh_tensor_contract("S(a,b,i,j)+=C(m,a,i,j)*T(b,m)",s2_tensor,cint_ovoo_tensor,comm_t%t1)
           if (debug_local) print*, "norm s2 tensor after diagram 20 ",tensor_norm2(s2_tensor)
 
 !         additional CC2 W intermediates
@@ -757,6 +760,12 @@ module talsh_cc
           if (debug_local) print*, "norm s2 tensor after diagram 24 ",tensor_norm2(s2_tensor)
 
 !        done with cc2 t2 equation, now cc2 t1 equation, which is exactly the same as the ccsd t1 equation
+
+	! F intermediaites 
+          call get_hoo(comm_t,int_t%oovv)
+	  call get_hvv(comm_t,int_t%oovv)
+	  call get_hov(comm_t,int_t%oovv) 
+
 
 !         calculate s1 tensor
           if (.not.CCD) then
@@ -825,7 +834,8 @@ module talsh_cc
          if (.not.CCD) ierr=talsh_tensor_destruct(s1_tensor)
          ierr=talsh_tensor_destruct(s2_tensor)
          ierr=talsh_tensor_destruct(t1t1_tensor)
-         ierr=talsh_tensor_destruct(cint_tensor)
+         ierr=talsh_tensor_destruct(cint_ovoo_tensor)
+	 ierr=talsh_tensor_destruct(cint_vvvo_tensor)
          if (.not.CCD) then
             ierr=talsh_tensor_destruct(hoo_aux_tensor)
             ierr=talsh_tensor_destruct(hov_aux_tensor)
