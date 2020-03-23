@@ -271,22 +271,29 @@ module talsh_eom
 
      end subroutine
 
-    subroutine talsh_eom_Hdiag_create(workspace, eps_occ, eps_vir, flavor)
+    subroutine talsh_eom_Hdiag_create(workspace, Fmi_tensor, Fae_tensor, flavor)
       type(talsh_davidson_workspace), intent(inout) :: workspace
-      real(8), intent(in) :: eps_occ(:), eps_vir(:)
+      type(talsh_tens_t), intent(inout) :: Fmi_tensor, Fae_tensor
       character(len=2), intent(in) :: flavor
       integer :: nocc, nvir, i, j, a, b, ierr 
       integer :: hdiag1_dims(2), hdiag2_dims(4), tens1_rank, tens2_rank
+      integer :: Fmi_dims(2), Fae_dims(2), Fmi_rank, Fae_rank
       real(8) :: diagonal
       complex(8), pointer, contiguous:: hdiag1_hp_tens(:,:), hdiag2_hp_tens(:,:,:,:)
       complex(8), pointer, contiguous:: hdiag1_h_p_tens(:),  hdiag2_h_p_tens(:,:,:)
-      type(C_PTR):: Hdiag1_body_p, Hdiag2_body_p
+      complex(8), pointer, contiguous:: Fmi_p_tens(:,:), Fae_p_tens(:,:) 
+      type(C_PTR):: Hdiag1_body_p, Hdiag2_body_p, Fmi_body_p, Fae_body_p
 
 
       diagonal = ZERO
 
-      nocc = size(eps_occ,1)
-      nvir = size(eps_vir,1)
+      ierr = talsh_tensor_dimensions(Fmi_tensor,Fmi_rank,Fmi_dims)
+      ierr = talsh_tensor_get_body_access(Fmi_tensor,Fmi_body_p,C8,0,DEV_HOST)
+      call c_f_pointer(Fmi_body_p,fmi_p_tens,Fmi_dims(1:2))
+
+      ierr = talsh_tensor_dimensions(Fae_tensor,Fae_rank,Fae_dims)
+      ierr = talsh_tensor_get_body_access(Fae_tensor,Fae_body_p,C8,0,DEV_HOST)
+      call c_f_pointer(Fae_body_p,fae_p_tens,Fmi_dims(1:2))
 
       ierr = talsh_tensor_dimensions(workspace%Hdiag1,tens1_rank,hdiag1_dims)
       ierr = talsh_tensor_get_body_access(workspace%Hdiag1,Hdiag1_body_p,C8,0,DEV_HOST)
@@ -294,12 +301,11 @@ module talsh_eom
       ierr = talsh_tensor_dimensions(workspace%Hdiag2,tens2_rank,hdiag2_dims)
       ierr = talsh_tensor_get_body_access(workspace%Hdiag2,Hdiag2_body_p,C8,0,DEV_HOST)
 
-      print *,'debug, occupied: ',eps_occ
-      print *,'debug, virtuals: ',eps_vir
-
-      print *,'debug, in Hdiag_create: no=',nocc,'nv=',nvir
       print *,'debug, in Hdiag_create: tens1_rank',tens1_rank,'hdiag1_dims',hdiag1_dims
       print *,'debug, in Hdiag_create: tens2_rank',tens2_rank,'hdiag2_dims',hdiag2_dims
+
+! transfer the diagonals of 
+
 
       select case(flavor)
          case("IP")
@@ -316,7 +322,7 @@ module talsh_eom
      write (6,*) 'hdiag2_dims(4)',hdiag2_dims(4) 
 
             do i = 1,  hdiag1_dims(1) 
-               diagonal = -eps_occ(i)
+               diagonal = -fmi_p_tens(i,i)
                hdiag1_h_p_tens(i) = diagonal
             end do
 
@@ -327,7 +333,7 @@ module talsh_eom
             do i = 1, hdiag2_dims(3)
                do j = 1, hdiag2_dims(2)
                   do a = 1, hdiag2_dims(1) 
-                     diagonal = eps_vir(a) - eps_occ(j) - eps_occ(i)
+                     diagonal = fae_p_tens(a,a) - fmi_p_tens(j,j) - fmi_p_tens(i,i)
                      hdiag2_h_p_tens(a,j,i) = diagonal 
                   end do
                end do
@@ -341,14 +347,14 @@ module talsh_eom
             call c_f_pointer(Hdiag1_body_p,hdiag1_h_p_tens,hdiag1_dims(1:1))
             call c_f_pointer(Hdiag2_body_p,hdiag2_h_p_tens,hdiag2_dims(1:3))
             do a = 1, hdiag1_dims(1) 
-               diagonal = eps_vir(a)
+               diagonal = fae_p_tens(a,a)
                hdiag1_h_p_tens(a) = diagonal
             end do
 
             do i = 1, hdiag2_dims(3) 
                do b = 1, hdiag2_dims(2) 
                   do a = 1, hdiag2_dims(1) 
-                     diagonal = eps_vir(a) + eps_vir(b) - eps_occ(i)
+                     diagonal = fae_p_tens(a,a) + fae_p_tens(b,b) - fmi_p_tens(i,i) 
                      hdiag2_h_p_tens(a,b,i) = diagonal
                   end do
                end do
@@ -359,7 +365,7 @@ module talsh_eom
             call c_f_pointer(Hdiag2_body_p,hdiag2_hp_tens,hdiag2_dims(1:4))
             do i = 1, hdiag1_dims(2) 
                do a = 1, hdiag1_dims(1)
-                  diagonal = eps_vir(a) - eps_occ(i)
+                  diagonal = fae_p_tens(a,a) - fmi_p_tens(i,i)
                   hdiag1_hp_tens(a,i) = diagonal
                end do
             end do
@@ -368,7 +374,7 @@ module talsh_eom
                do i = 1, hdiag2_dims(3) 
                   do b = 1,  hdiag2_dims(2) 
                      do a = 1,  hdiag2_dims(1) 
-                        diagonal = eps_vir(b) + eps_vir(a) - eps_occ(j) - eps_occ(i)
+                        diagonal = fae_p_tens(a,a) + fae_p_tens(b,b) - fmi_p_tens(j,j) - fmi_p_tens(i,i)
                         hdiag2_hp_tens(a,b,i,j) = diagonal
                      end do
                   end do
@@ -409,7 +415,7 @@ module talsh_eom
       call talsh_davidson_workspace_create(workspace_t, exa_input%nocc, exa_input%nvir, exa_input%eom_flavour, 2)
       call talsh_tensor_print_info(workspace_t%Hdiag1)
       call talsh_tensor_print_info(workspace_t%Hdiag2)
-      call talsh_eom_Hdiag_create(workspace_t, eps_occ, eps_vir, exa_input%eom_flavour)
+      call talsh_eom_Hdiag_create(workspace_t, foo_tensor, fvv_tensor, exa_input%eom_flavour)
       call talsh_tensor_print_info(workspace_t%Hdiag1)
       call talsh_tensor_print_info(workspace_t%Hdiag2)
       call talsh_eom_trial_create(workspace_t, exa_input%eom_flavour)
@@ -421,6 +427,10 @@ module talsh_eom
       if (.not.exa_input%ccd) then
         select case(exa_input%eom_flavour)
           case("IP")
+             print*, "foo_tensor norm", tensor_norm2(foo_tensor)
+             print*, "fov_tensor norm", tensor_norm2(fov_tensor)
+             print*, "fvv_tensor norm", tensor_norm2(fvv_tensor)
+
             call eom_ip(exa_input,workspace_t,projector_t,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor,t1_tensor)
           case("EA")
             call eom_ea(exa_input,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor,t1_tensor)
@@ -529,7 +539,20 @@ module talsh_eom
         call get_w_ovoo (eom_t%w_ovoo,int_t,eom_t%fbar_ov,eom_t%w_oooo,eom_t%wbar_vovo,t2_tensor)
         call get_w_vovo (eom_t%w_vovo,int_t,t2_tensor)
       end if
+
+      print*, "t1        tensor norm", tensor_norm2(t1_tensor)
+      print*, "t2        tensor norm", tensor_norm2(t2_tensor)
+      print*, "fbar_oo   tensor norm", tensor_norm2(eom_t%fbar_oo)
+      print*, "fbar_ov   tensor norm", tensor_norm2(eom_t%fbar_ov)
+      print*, "fbar_vv   tensor norm", tensor_norm2(eom_t%fbar_vv)
+      print*, "w_oooo    tensor norm", tensor_norm2(eom_t%w_oooo)
+      print*, "w_ooov    tensor norm", tensor_norm2(eom_t%w_ooov)
+      print*, "w_ovoo    tensor norm", tensor_norm2(eom_t%w_ovoo)
+      print*, "w_vooo    tensor norm", tensor_norm2(eom_t%w_vovo)
+      print*, "wbar_vovo tensor norm", tensor_norm2(eom_t%wbar_vovo)
+
       ierr=talsh_tensor_destruct(eom_t%wbar_vovo)
+
 
 !     create all coefficient and sigma tensors
       ierr=talsh_tensor_construct(eom_t%r1_coeff,C8,(/nocc/),init_val=ONE)

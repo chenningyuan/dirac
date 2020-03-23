@@ -174,6 +174,10 @@
 
 ! 1> Determine the minimum energy determinants for IP, EA & EE. The number of them is equal to the number of roots. 
 
+    print *, 'at very top'
+    print *, 'eps        :',eps
+    print *, 'diagonal 1h',H_II(1:ai-1)
+
      i = 1
      ii = 1
      do irep = 1, nrep
@@ -188,6 +192,10 @@
         i  =  i + nv(irep)
         ii =  ii + NV(irep)* nv(irep) * rcw
      enddo
+
+     print *, 'before case'
+    print *, 'eps        :',eps
+    print *, 'diagonal 1h',H_II(1:ai-1)
 
    select case (eomtype)
 
@@ -456,6 +464,9 @@
 
         enddo
     enddo
+    print *, 'after IP setup'
+    print *, 'eps        :',eps
+    print *, 'diagonal 1h',H_II(1:ai-1)
 
 !      H_II = -eps(1:(ndimr1*rcw)) !+ 100.0d0
 
@@ -2096,6 +2107,8 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
              N2 = ndimr2*rcw
              N = N1 + N2 
 
+             print *, 'ndimr1, ndimr2, rcw, N1, N2, N:',ndimr1,ndimr2,rcw,N1,N2,N
+
              call set_eom_ndet(1, N1)
              call set_eom_ndet(2, N2)
 
@@ -2155,6 +2168,7 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
              N2 = ndimr2*rcw
              N = N1 + N2
 
+             
              call set_eom_ndet(1, N1)
              call set_eom_ndet(2, N2)
 

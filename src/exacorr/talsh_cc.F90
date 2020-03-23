@@ -80,6 +80,7 @@ module talsh_cc
 
          logical :: CCD, lambda, eom
          character(len=2) :: eom_flavour
+         logical :: debug_eom = .false.
 
 !        Make some noise so that we know we are here
          call print_date('Entered cc_driver routine')
@@ -308,6 +309,16 @@ module talsh_cc
 !**************************
 
          if (eom) then
+
+!        Get fixed one-body tensors, needs to follow the two body tensors
+         call get_CC_fockmatrix (nocc,nvir,mo_occ,mo_vir,eps_occ,eps_vir, &
+                                 comm_t%foo,comm_t%fov,comm_t%fvv, int_t, print_level, exa_input%level_shift,keep_diagonal=.true.)
+
+             if (debug_eom) then
+             print*, "foo_tensor norm before eom #4", tensor_norm2(comm_t%foo)
+             print*, "fov_tensor norm before eom #4", tensor_norm2(comm_t%fov)
+             print*, "fvv_tensor norm before eom #4", tensor_norm2(comm_t%fvv)
+             end if
 
            if (exa_input%eom_flavour.eq."EE" .and. exa_input%eom_properties .and. .not.lambda) then
              call quit("To do EOM-EE properties, you first need to calculate the Lambda amplitudes!")
@@ -1002,7 +1013,7 @@ module talsh_cc
         end subroutine solve_lambda_equations
 
         subroutine get_CC_fockmatrix (nocc,nvir,mo_occ,mo_vir,eps_occ,eps_vir, &
-                                      fo_tensor,fov_tensor,fv_tensor, int_t, print_level, level_shift)
+                                      fo_tensor,fov_tensor,fv_tensor, int_t, print_level, level_shift, keep_diagonal)
 
 !        Written by Lucas Visscher, summer 2017
 
@@ -1015,6 +1026,7 @@ module talsh_cc
          integer, intent(in)                  :: mo_occ(:),mo_vir(:) ! the orbital energies
          real(8), intent(inout)               :: eps_occ(:),eps_vir(:) ! orbital energies
          real(8), intent(in)                  :: level_shift
+         logical, optional, intent(in)        :: keep_diagonal
 !        target tensors to be filled and given back to the caller
          type(talsh_tens_t), intent(inout)    :: fo_tensor, fv_tensor, fov_tensor
          type(talsh_intg_tens), intent(inout) :: int_t
@@ -1037,6 +1049,13 @@ module talsh_cc
          real(8)            :: e_lumo, e_homo
          integer            :: lumo
          real(8), parameter :: THRESHOLD=1.0D-8
+         logical            :: keep_diagonal_local
+
+         if (present(keep_diagonal)) then
+           keep_diagonal_local = keep_diagonal
+         else
+           keep_diagonal_local = .false.
+         end if
 
          min_occ=minval(mo_occ)
          result_dims(1)=1
@@ -1162,10 +1181,11 @@ module talsh_cc
               h_tens(i,i) = eps_vir(i)
             end do
 
-
-            ierr=talsh_tensor_add("F(i,j)+=D(i,j)",fo_tensor,diag_mat_occ,scale=MINUS_ONE)
-            ierr=talsh_tensor_add("F(a,b)+=D(a,b)",fv_tensor,diag_mat_vir,scale=MINUS_ONE)
-            if (print_level >1) call print_date('diagonal substracted from Fock Matrix')
+            if (.not.keep_diagonal_local) then
+              ierr=talsh_tensor_add("F(i,j)+=D(i,j)",fo_tensor,diag_mat_occ,scale=MINUS_ONE)
+              ierr=talsh_tensor_add("F(a,b)+=D(a,b)",fv_tensor,diag_mat_vir,scale=MINUS_ONE)
+              if (print_level >1) call print_date('diagonal substracted from Fock Matrix')
+            end if
 
             ierr=talsh_tensor_init(result_tensor)
             ierr=talsh_tensor_contract("R()+=F(i,j)*F(i,j)",result_tensor,fo_tensor,fo_tensor)
