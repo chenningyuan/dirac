@@ -43,6 +43,7 @@ module talsh_eom
 
         logical :: enable_double_manifold
 
+         write (6,*) ' in talsh_eom_trial_create'
         hdiag1_body_p = c_null_ptr
         hdiag2_body_p = c_null_ptr
 
@@ -131,9 +132,10 @@ module talsh_eom
                  write (6,*) 'debug <<< t1_h_p_tens <<<'
 
                  write (6,*) 'debug >>> t2_h_p_tens, root',iroot,' >>>'
+                 call talsh_tensor_print_info(workspace%trial2(iroot))
                  ierr = talsh_tensor_dimensions(workspace%trial2(iroot),trial2_h_p_rank,trial2_h_p_dims)
-                 ierr = talsh_tensor_get_body_access(workspace%trial1(iroot),trial2_body_p,C8,0,DEV_HOST)
-                 call c_f_pointer(trial2_body_p,trial2_h_p_tens,trial2_dims(1:trial2_rank))
+                 ierr = talsh_tensor_get_body_access(workspace%trial2(iroot),trial2_body_p,C8,0,DEV_HOST)
+                 call c_f_pointer(trial2_body_p,trial2_h_p_tens,trial2_dims(1:trial2_h_p_rank))
 
 !                call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
                  b = 0
@@ -413,12 +415,12 @@ module talsh_eom
                                 complex_mode=.true.)
 
       call talsh_davidson_workspace_create(workspace_t, exa_input%nocc, exa_input%nvir, exa_input%eom_flavour, 2)
-      call talsh_tensor_print_info(workspace_t%Hdiag1)
-      call talsh_tensor_print_info(workspace_t%Hdiag2)
-      call talsh_eom_Hdiag_create(workspace_t, foo_tensor, fvv_tensor, exa_input%eom_flavour)
-      call talsh_tensor_print_info(workspace_t%Hdiag1)
-      call talsh_tensor_print_info(workspace_t%Hdiag2)
-      call talsh_eom_trial_create(workspace_t, exa_input%eom_flavour)
+!     call talsh_tensor_print_info(workspace_t%Hdiag1)
+!     call talsh_tensor_print_info(workspace_t%Hdiag2)
+!     call talsh_eom_Hdiag_create(workspace_t, foo_tensor, fvv_tensor, exa_input%eom_flavour)
+!     call talsh_tensor_print_info(workspace_t%Hdiag1)
+!     call talsh_tensor_print_info(workspace_t%Hdiag2)
+!     call talsh_eom_trial_create(workspace_t, exa_input%eom_flavour)
 
 !************************************
 !     EOM calculation: IP, EA or EE *
@@ -553,6 +555,12 @@ module talsh_eom
 
       ierr=talsh_tensor_destruct(eom_t%wbar_vovo)
 
+      call talsh_tensor_print_info(workspace_t%Hdiag1)
+      call talsh_tensor_print_info(workspace_t%Hdiag2)
+      call talsh_eom_Hdiag_create(workspace_t, eom_t%Fbar_oo, eom_t%Fbar_vv, exa_input%eom_flavour)
+      call talsh_tensor_print_info(workspace_t%Hdiag1)
+      call talsh_tensor_print_info(workspace_t%Hdiag2)
+      call talsh_eom_trial_create(workspace_t, exa_input%eom_flavour)
 
 !     create all coefficient and sigma tensors
       ierr=talsh_tensor_construct(eom_t%r1_coeff,C8,(/nocc/),init_val=ONE)

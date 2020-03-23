@@ -1561,6 +1561,8 @@ contains
 
 !! we need to fish out the small matrix from workspace%M, which is the slice LxL of the full tensor
 !! we also need to conjugate transpose the trial vector 
+      write (6,*) 'workspace%L',workspace%L
+
       if (associated(M_small)) deallocate(M_small)
       allocate(M_small(workspace%L,workspace%L))
       M_small = 0
@@ -1596,10 +1598,11 @@ contains
 
 ! capital letters here are meant to be the roots
       write (6,*) 'foobar, before setup M'
+      write (6,*) 'foobar, workspace%L',workspace%L
       do i = 1, workspace%L
          do j = 1, workspace%L
 ! this will be a reduction to a scalar at each contractions, and we then will build the 
-            ierr=talsh_tensor_contract("MIJ()=Bdag+(e)*S(e)",                &
+            ierr=talsh_tensor_contract("MIJ()+=Bdag+(e)*S(e)",               &
    &                                                    result_tensor,      &
    &                                                    workspace%trial1(i),&
    &                                                    workspace%sigma1(j))
@@ -1609,6 +1612,7 @@ contains
    &                                                    workspace%sigma2(j))
             write (6,*) 'i,j, m_ij:', i,j, mij_result_tens(1)
             M_small(i,j) = mij_result_tens(1) 
+             mij_result_tens(1) = ZERO
          end do
       end do
 
@@ -1618,7 +1622,7 @@ contains
       end do
 
 
-       call quit('bb')
+!      call quit('bb')
 
     end
 
@@ -1675,6 +1679,7 @@ contains
 
  
         min_subspace_size = nroots
+        workspace%L = nroots
         max_subspace_size = max(nroots, workspace%Lmax)
 
         write(davidson_output_file_unit,"(4x,a,i6,a)") "Requested ",nroots," eigenvales"
@@ -1731,7 +1736,8 @@ contains
                     c_small_l_old = c_small_l(1:2*nroots,1:nroots)
                 end if
             end if
-
+ 
+             call quit('bb')
             if (associated(preconditioner)) deallocate(preconditioner)
             if (associated(delta)) deallocate(delta)
 
