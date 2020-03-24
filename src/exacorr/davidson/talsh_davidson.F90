@@ -906,10 +906,9 @@ contains
         deallocate(r)
     end function
 
-    function form_preconditioner(M_diag, eigenvalues)
-        real(kind=8), pointer     :: form_preconditioner(:,:)
-        real(kind=8), intent(in)  :: eigenvalues(:,:)
-        real(kind=8), intent(in)  :: M_diag(:)
+    subroutine form_preconditioner(workspace, eigenvalues)
+        type(talsh_davidson_workspace) :: workspace
+        complex(kind=8), intent(in)  :: eigenvalues(:)
 
         integer :: i, k, l, j, r
         integer :: vectors_N
@@ -917,15 +916,24 @@ contains
         real(kind=8) :: x2py2
 
 ! careful with dimension 1 of eigenvalues, 
-        nroots    = size(eigenvalues,2)
-        vectors_N = size(M_diag,1)
+        nroots    = size(eigenvalues,1)
+!       vectors_N = size(M_diag,1)
+        vectors_N = 10
 
-        allocate(form_preconditioner(vectors_N,nroots))
-        form_preconditioner = 0.0d0
+!       ierr = talsh_tensor_get_body_access(workspace%precond1_tensor,precond1_body_p,C8,0,DEV_HOST)
+!       precond1_max_dim 
+!       call c_f_pointer(precond1_body_p,precond1_p_tens,Fmi_dims(1:2))
+
+!     ierr = talsh_tensor_dimensions(Fae_tensor,Fae_rank,Fae_dims)
+!     ierr = talsh_tensor_get_body_access(Fae_tensor,Fae_body_p,C8,0,DEV_HOST)
+!     call c_f_pointer(Fae_body_p,fae_p_tens,Fmi_dims(1:2))
+
+
+!       form_preconditioner = 0.0d0
         if (davidson_debug) print *, 'debug, vectors_N in form_preconditioner :',vectors_N
 
         if (.not.davidson_use_preconditioner) then
-            
+                 
             if (davidson_complex_mode_with_reals) then
                 offset = 2
             else
@@ -933,7 +941,7 @@ contains
             end if
             do k = 1, nroots
                 do j = 1, vectors_N, offset
-                    form_preconditioner(j,k) = 1.0d0
+!                   form_preconditioner(j,k) = 1.0d0
                 end do
             end do
         else
@@ -949,8 +957,8 @@ contains
  !                      form_preconditioner(j,k)   = eigenvalues(1,k) - M_diag(j)
  !                      form_preconditioner(j+1,k) = eigenvalues(2,k) - M_diag(j+1)
                         
-                        form_preconditioner(j,k)   = eigenvalues(1,k) - M_diag(j)
-                        form_preconditioner(j+1,k) = 0.0d0
+    !                   form_preconditioner(j,k)   = eigenvalues(1,k) - M_diag(j)
+    !                   form_preconditioner(j+1,k) = 0.0d0
 
 ! using the formula for calculating the reciprocal of the nonzero complex number z = x + yi 
 !
@@ -958,25 +966,25 @@ contains
 !                             ={\frac {\bar {z}}{x^{2}+y^{2}}}
 !                             ={\frac {x}{x^{2}+y^{2}}}-{\frac {y}{x^{2}+y^{2}}}i.} 
 !
-                        x2py2 = form_preconditioner(j,k)*form_preconditioner(j,k)  &
-                              + form_preconditioner(j+1,k)*form_preconditioner(j+1,k)
+            !           x2py2 = form_preconditioner(j,k)*form_preconditioner(j,k)  &
+            !                 + form_preconditioner(j+1,k)*form_preconditioner(j+1,k)
 
                         if (dabs(x2py2) .gt. safe_minimum) then
-                            form_preconditioner(j,k)   =  form_preconditioner(j,k) / x2py2 
-                            form_preconditioner(j+1,k) = -form_preconditioner(j+1,k) / x2py2
+    !                       form_preconditioner(j,k)   =  form_preconditioner(j,k) / x2py2 
+    !                       form_preconditioner(j+1,k) = -form_preconditioner(j+1,k) / x2py2
                         else
 !                           stop ('detected division by zero')
-                            write (davidson_output_file_unit,*) 'Warning : numerator is small', &
-                                                             (1.0d0 / form_preconditioner(j,k)),& 
-&                                    ' element of preconditioner set to 1'
-                            form_preconditioner(j,k) = 1.0d0
-                            form_preconditioner(j+1,k) = 0.0d0
+              !             write (davidson_output_file_unit,*) 'Warning : numerator is small', &
+              !                                              (1.0d0 / form_preconditioner(j,k)),& 
+&             !                      ' element of preconditioner set to 1'
+    !                       form_preconditioner(j,k) = 1.0d0
+    !                       form_preconditioner(j+1,k) = 0.0d0
                         end if
                     end do
                 end do
             end if
         end if ! use preconditioner
-    end function
+    end subroutine 
 
     subroutine form_delta(delta, vectors_to_update, r, preconditioner)
         real(kind=8), intent(inout) :: delta(:,:)
@@ -1206,11 +1214,15 @@ contains
         do i = 1, workspace%nroots
            ierr = talsh_tensor_destruct(workspace%delta1(i))
            ierr = talsh_tensor_destruct(workspace%delta2(i))
+           ierr = talsh_tensor_destruct(workspace%precond1(i))
+           ierr = talsh_tensor_destruct(workspace%precond2(i))
            ierr = talsh_tensor_destruct(workspace%CTtrial1(i))
            ierr = talsh_tensor_destruct(workspace%CTtrial2(i))
         end do
         deallocate(workspace%delta1)
         deallocate(workspace%delta2)
+        deallocate(workspace%precond1)
+        deallocate(workspace%precond2)
         deallocate(workspace%CTtrial1)
         deallocate(workspace%CTtrial2)
 
@@ -1228,7 +1240,6 @@ contains
         character*2 :: flavor
         integer, intent(in) :: nocc, nvirt, excitation_level
 
-        integer, allocatable :: tens_dims(:)
         integer :: M_dims(2) 
         integer :: ierr, i
 !       
@@ -1253,6 +1264,9 @@ contains
         allocate(workspace%delta1(workspace%nroots))
         allocate(workspace%delta2(workspace%nroots))
 
+        allocate(workspace%precond1(workspace%nroots))
+        allocate(workspace%precond2(workspace%nroots))
+
 !       M_dims     = (/ workspace%Lmax, workspace%Lmax /)
 !       ierr=talsh_tensor_construct(workspace%M,C8,M_dims,init_val=ZERO)
         allocate(workspace%M(workspace%Lmax,workspace%Lmax))
@@ -1261,96 +1275,65 @@ contains
         select case(flavor)
            case("IP")
 ! singles
-              allocate(tens_dims(1))
-              tens_dims = (/ nocc /)
-              do i = 1, workspace%Lmax
-                 ierr = talsh_tensor_construct(workspace%trial1(i),C8,tens_dims,init_val=ZERO)
-                 ierr = talsh_tensor_construct(workspace%sigma1(i),C8,tens_dims,init_val=ZERO)
-              end do
-              do i = 1, workspace%nroots
-                 ierr = talsh_tensor_construct(workspace%delta1(i),C8,tens_dims,init_val=ZERO)
-                 ierr = talsh_tensor_construct(workspace%CTtrial1(i),C8,tens_dims,init_val=ZERO)
-              end do
-              ierr = talsh_tensor_construct(workspace%Hdiag1,C8,tens_dims,init_val=ZERO)
-              deallocate(tens_dims)
+              workspace%tens1_rank = 1
+              allocate(workspace%tens1_dims(workspace%tens1_rank))
+              workspace%tens1_dims = (/ nocc /)
               workspace%N(1) = nocc 
 ! doubles
-              allocate(tens_dims(3))
-              tens_dims = (/ nvirt, nocc, nocc /)
-              do i = 1, workspace%Lmax
-                 ierr = talsh_tensor_construct(workspace%trial2(i),C8,tens_dims,init_val=ZERO)
-                 ierr = talsh_tensor_construct(workspace%sigma2(i),C8,tens_dims,init_val=ZERO)
-              end do
-              do i = 1, workspace%nroots
-                 ierr = talsh_tensor_construct(workspace%delta2(i),C8,tens_dims,init_val=ZERO)
-                 ierr = talsh_tensor_construct(workspace%CTtrial2(i),C8,tens_dims,init_val=ZERO)
-              end do
-              ierr = talsh_tensor_construct(workspace%Hdiag2,C8,tens_dims,init_val=ZERO)
-              ierr = talsh_tensor_init(workspace%Hdiag2,ZERO)
-              deallocate(tens_dims)
+              workspace%tens2_rank = 3
+              allocate(workspace%tens2_dims(workspace%tens2_rank))
+              workspace%tens2_dims = (/ nvirt, nocc, nocc /)
               workspace%N(2) = nvirt*nocc*nocc
 
            case("EA")
 ! singles
-              allocate(tens_dims(1))
-              tens_dims = (/ nvirt /)
-              do i = 1, workspace%Lmax
-                 ierr = talsh_tensor_construct(workspace%trial1(i),C8,tens_dims,init_val=ZERO)
-                 ierr = talsh_tensor_construct(workspace%sigma1(i),C8,tens_dims,init_val=ZERO)
-              end do
-              do i = 1, workspace%nroots
-                 ierr = talsh_tensor_construct(workspace%delta1(i),C8,tens_dims,init_val=ZERO)
-                 ierr = talsh_tensor_construct(workspace%CTtrial1(i),C8,tens_dims,init_val=ZERO)
-              end do
-              ierr = talsh_tensor_construct(workspace%Hdiag1,C8,tens_dims,init_val=ZERO)
-              deallocate(tens_dims)
+              workspace%tens1_rank = 1
+              allocate(workspace%tens1_dims(workspace%tens1_rank))
+              workspace%tens1_dims = (/ nvirt /)
               workspace%N(1) = nvirt 
 ! doubles
-              allocate(tens_dims(3))
-              tens_dims = (/ nvirt, nvirt, nocc /)
-              do i = 1, workspace%Lmax
-                 ierr = talsh_tensor_construct(workspace%trial2(i),C8,tens_dims,init_val=ZERO)
-                 ierr = talsh_tensor_construct(workspace%sigma2(i),C8,tens_dims,init_val=ZERO)
-              end do
-              do i = 1, workspace%nroots
-                 ierr = talsh_tensor_construct(workspace%delta2(i),C8,tens_dims,init_val=ZERO)
-                 ierr = talsh_tensor_construct(workspace%CTtrial2(i),C8,tens_dims,init_val=ZERO)
-              end do
-              ierr = talsh_tensor_construct(workspace%Hdiag1,C8,tens_dims,init_val=ZERO)
-              deallocate(tens_dims)
+              workspace%tens2_rank = 3
+              allocate(workspace%tens2_dims(workspace%tens2_rank))
+              workspace%tens2_dims = (/ nvirt, nvirt, nocc /)
               workspace%N(2) = nvirt*nvirt*nocc
 
            case("EE")
 ! singles
-              allocate(tens_dims(2))
-              tens_dims = (/ nvirt, nocc /)
-              do i = 1, workspace%Lmax
-                 ierr = talsh_tensor_construct(workspace%trial1(i),C8,tens_dims,init_val=ZERO)
-                 ierr = talsh_tensor_construct(workspace%sigma1(i),C8,tens_dims,init_val=ZERO)
-              end do
-              do i = 1, workspace%nroots
-                 ierr = talsh_tensor_construct(workspace%delta1(i),C8,tens_dims,init_val=ZERO)
-                 ierr = talsh_tensor_construct(workspace%CTtrial1(i),C8,tens_dims,init_val=ZERO)
-              end do
-              ierr = talsh_tensor_construct(workspace%Hdiag1,C8,tens_dims,init_val=ZERO)
-              deallocate(tens_dims)
+              workspace%tens1_rank = 2
+              allocate(workspace%tens1_dims(workspace%tens1_rank))
+              workspace%tens1_dims = (/ nvirt, nocc /)
               workspace%N(1) = nvirt*nocc
 ! doubles
-              allocate(tens_dims(4))
-              tens_dims = (/ nvirt, nvirt, nocc, nocc /)
-              do i = 1, workspace%Lmax
-                 ierr=talsh_tensor_construct(workspace%trial2(i),C8,tens_dims,init_val=ZERO)
-                 ierr=talsh_tensor_construct(workspace%sigma2(i),C8,tens_dims,init_val=ZERO)
-              end do
-              do i = 1, workspace%nroots
-                 ierr = talsh_tensor_construct(workspace%delta2(i),C8,tens_dims,init_val=ZERO)
-                 ierr = talsh_tensor_construct(workspace%CTtrial2(i),C8,tens_dims,init_val=ZERO)
-              end do 
-              ierr=talsh_tensor_construct(workspace%Hdiag2,C8,tens_dims,init_val=ZERO)
-              deallocate(tens_dims)
+              workspace%tens1_rank = 4
+              allocate(workspace%tens2_dims(workspace%tens1_rank))
+              workspace%tens2_dims = (/ nvirt, nvirt, nocc, nocc /)
               workspace%N(2) = nvirt*nvirt*nocc*nocc
 
         end select
+
+! singles
+        do i = 1, workspace%Lmax
+           ierr = talsh_tensor_construct(workspace%trial1(i),C8,workspace%tens1_dims,init_val=ZERO)
+           ierr = talsh_tensor_construct(workspace%sigma1(i),C8,workspace%tens1_dims,init_val=ZERO)
+        end do
+        do i = 1, workspace%nroots
+           ierr = talsh_tensor_construct(workspace%delta1(i),C8,workspace%tens1_dims,init_val=ZERO)
+           ierr = talsh_tensor_construct(workspace%precond1(i),C8,workspace%tens1_dims,init_val=ZERO)
+           ierr = talsh_tensor_construct(workspace%CTtrial1(i),C8,workspace%tens1_dims,init_val=ZERO)
+        end do
+        ierr = talsh_tensor_construct(workspace%Hdiag1,C8,workspace%tens1_dims,init_val=ZERO)
+
+! doubles
+        do i = 1, workspace%Lmax
+           ierr=talsh_tensor_construct(workspace%trial2(i),C8,workspace%tens2_dims,init_val=ZERO)
+           ierr=talsh_tensor_construct(workspace%sigma2(i),C8,workspace%tens2_dims,init_val=ZERO)
+        end do
+        do i = 1, workspace%nroots
+           ierr = talsh_tensor_construct(workspace%delta2(i),C8,workspace%tens2_dims,init_val=ZERO)
+           ierr = talsh_tensor_construct(workspace%precond2(i),C8,workspace%tens2_dims,init_val=ZERO)
+           ierr = talsh_tensor_construct(workspace%CTtrial2(i),C8,workspace%tens2_dims,init_val=ZERO)
+        end do
+        ierr=talsh_tensor_construct(workspace%Hdiag2,C8,workspace%tens2_dims,init_val=ZERO)
 
         workspace%Nmax = workspace%N(1) + workspace%N(2)
 
@@ -1415,54 +1398,38 @@ contains
          write (6,*) 'root ',iroot
 ! aspg
 ! debug info
-         ierr = talsh_tensor_dimensions(workspace%sigma1(iroot),s1_h_p_rank,s1_h_p_dims)
          ierr = talsh_tensor_get_body_access(workspace%sigma1(iroot),s1_body_p,C8,0,DEV_HOST)
-         write (6,*) 's1_h_p_rank',s1_h_p_rank
-         write (6,*) 's1_h_p_dims',s1_h_p_dims
          write (6,*) 's1_body_p',s1_body_p
          ! associating the pointer to sigma1 to the local, fortran s1_p pointer variable
-         call c_f_pointer(s1_body_p,s1_h_p_p,s1_h_p_dims(1:s1_h_p_rank))
-         write (6,*) 'b;a'
+         call c_f_pointer(s1_body_p,s1_h_p_p,workspace%tens1_dims(1:workspace%tens1_rank))
 
-         ierr = talsh_tensor_dimensions(workspace%trial1(iroot),t1_h_p_rank,t1_h_p_dims)
          ierr = talsh_tensor_get_body_access(workspace%trial1(iroot),t1_body_p,C8,0,DEV_HOST)
-         write (6,*) 't1_h_p_rank',t1_h_p_rank
-         write (6,*) 't1_h_p_dims',t1_h_p_dims
          write (6,*) 't1_body_p',t1_body_p
-         call c_f_pointer(t1_body_p,t1_h_p_p,t1_h_p_dims(1:t1_h_p_rank))
-         write (6,*) 'b;a'
+         call c_f_pointer(t1_body_p,t1_h_p_p,workspace%tens1_dims(1:workspace%tens1_rank))
 
-         ierr = talsh_tensor_dimensions(workspace%sigma2(iroot),s2_h_p_rank,s2_h_p_dims)
          ierr = talsh_tensor_get_body_access(workspace%sigma2(iroot),s2_body_p,C8,0,DEV_HOST)
-         write (6,*) 's2_h_p_rank',s2_h_p_rank
-         write (6,*) 's2_h_p_dims',s2_h_p_dims
          write (6,*) 's2_body_p',s2_body_p
          ! associating the pointer to sigma1 to the local, fortran s1_p pointer variable
-         call c_f_pointer(s2_body_p,s2_h_p_p,s2_h_p_dims(1:s2_h_p_rank))
-         write (6,*) 'b;a'
+         call c_f_pointer(s2_body_p,s2_h_p_p,workspace%tens2_dims(1:workspace%tens2_rank))
 
-         ierr = talsh_tensor_dimensions(workspace%trial2(iroot),t2_h_p_rank,t2_h_p_dims)
          ierr = talsh_tensor_get_body_access(workspace%trial2(iroot),t2_body_p,C8,0,DEV_HOST)
-         write (6,*) 't2_h_p_rank',t2_h_p_rank
-         write (6,*) 't2_h_p_dims',t2_h_p_dims
          write (6,*) 't2_body_p',t2_body_p
-         call c_f_pointer(t2_body_p,t2_h_p_p,t2_h_p_dims(1:t2_h_p_rank))
-         write (6,*) 'b;a'
+         call c_f_pointer(t2_body_p,t2_h_p_p,workspace%tens2_dims(1:workspace%tens2_rank))
 ! debug info
 ! aspg
 ! aspg
 ! debug info     
          write (6,*) 'debug >>> t1_tens before sigma, root',iroot,' >>>'
 !        call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
-         do i = 1, t1_h_p_dims(1)
+         do i = 1, workspace%tens1_dims(1)
             write (6,*) i, t1_h_p_p(i)
          end do
          write (6,*) 'debug <<< t1_tens before sigma <<<'
          write (6,*) 'debug >>> t2_tens before sigma, root',iroot,' >>>'
 !        call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
-         do i = 1, t2_h_p_dims(3)
-            do j = 1, t2_h_p_dims(2)
-               do a = 1, t2_h_p_dims(1)
+         do i = 1, workspace%tens2_dims(3)
+            do j = 1, workspace%tens2_dims(2)
+               do a = 1, workspace%tens2_dims(1)
                   write (6,*) a, j, i, t2_h_p_p(a,j,i)
                end do
             end do
@@ -1472,16 +1439,16 @@ contains
          write (6,*) 'debug >>> s1_tens before sigma, root',iroot,' >>>'
 !        call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
          b = 0
-         do i = 1, s1_h_p_dims(1)
+         do i = 1, workspace%tens1_dims(1)
             b = b + 1
             write (6,*) b, s1_h_p_p(i)
          end do
          write (6,*) 'debug <<< s1_tens before sigma <<<'
          write (6,*) 'debug >>> s2_tens before sigma, root',iroot,' >>>'
 !        call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
-         do i = 1, t2_h_p_dims(3)
-            do j = 1, t2_h_p_dims(2)
-               do a = 1, t2_h_p_dims(1)
+         do i = 1, workspace%tens2_dims(3)
+            do j = 1, workspace%tens2_dims(2)
+               do a = 1, workspace%tens2_dims(1)
                   b = b + 1
                   write (6,*) b, a, j, i, s2_h_p_p(a,j,i)
                end do
@@ -1501,16 +1468,16 @@ contains
          write (6,*) 'debug >>> t1_tens, root',iroot,' >>>'
 !        call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
          b = 0
-         do i = 1, t1_h_p_dims(1)
+         do i = 1, workspace%tens1_dims(1)
             b = b + 1
             write (6,*) b, t1_h_p_p(i)
          end do
          write (6,*) 'debug <<< t1_tens <<<'
          write (6,*) 'debug >>> t2_tens, root',iroot,' >>>'
 !        call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
-         do i = 1, t2_h_p_dims(3)
-            do j = 1, t2_h_p_dims(2)
-               do a = 1, t2_h_p_dims(1)
+         do i = 1, workspace%tens2_dims(3)
+            do j = 1, workspace%tens2_dims(2) 
+               do a = 1, workspace%tens2_dims(1)
                   b = b + 1
                   write (6,*) b, a, j, i, t2_h_p_p(a,j,i)
                end do
@@ -1521,16 +1488,16 @@ contains
          write (6,*) 'debug >>> s1_tens, root',iroot,' >>>'
 !        call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
          b = 0
-         do i = 1, s1_h_p_dims(1)
+         do i = 1, workspace%tens1_dims(1)
             b = b + 1
             write (6,*) b, s1_h_p_p(i)
          end do
          write (6,*) 'debug <<< s1_tens <<<'
          write (6,*) 'debug >>> s2_tens, root',iroot,' >>>'
 !        call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
-         do i = 1, t2_h_p_dims(3)
-            do j = 1, t2_h_p_dims(2)
-               do a = 1, t2_h_p_dims(1)
+         do i = 1, workspace%tens2_dims(3)
+            do j = 1, workspace%tens2_dims(2)
+               do a = 1, workspace%tens2_dims(1)
                   b = b + 1
                   write (6,*) b, a, j, i, s2_h_p_p(a,j,i)
                end do
@@ -1633,17 +1600,13 @@ contains
 ! nullifying all pointers at the start to give them a state, see discussion on http://www.cs.rpi.edu/~szymansk/OOF90/bugs.html
 ! "[...] When a pointer is declared its status is undefined, and cannot be safely queried with the associated intrinsic. [...]"
 ! 
-        complex(kind=8), pointer, contiguous :: M_diag(:)           => NULL()
         complex(kind=8), pointer, contiguous :: M_small(:,:)        => NULL()
         complex(kind=8), pointer, contiguous :: c_small_r(:,:)      => NULL()
         complex(kind=8), pointer, contiguous :: c_small_l(:,:)      => NULL()
-        complex(kind=8), pointer, contiguous :: e_small(:)        => NULL()
+        complex(kind=8), pointer, contiguous :: e_small(:)          => NULL()
 
-        complex(kind=8), pointer :: c_small_r_old(:,:)  => NULL()
-        complex(kind=8), pointer :: c_small_l_old(:,:)  => NULL()
-
-        type(talsh_tens_t), pointer, contiguous :: delta(:)          => NULL()
-        type(talsh_tens_t), pointer, contiguous :: preconditioner(:) => NULL()
+        complex(kind=8), pointer, contiguous :: c_small_r_old(:,:)  => NULL()
+        complex(kind=8), pointer, contiguous :: c_small_l_old(:,:)  => NULL()
 
         integer :: vectors_N, L, min_subspace_size, max_subspace_size, niter
         integer :: i, j, k
@@ -1659,15 +1622,11 @@ contains
 !!                                   davidson_solve_lhs,      &
 !!                                   davidson_solve_rhs)
 
-! todo: replace lines below with a call to a function which also performs the allocation, like
-!        M_diag => create_diagonal(A)
-!!      allocate(M_diag(size(A%H_II))) 
-!!      M_diag = A%H_II 
-
  
         min_subspace_size = nroots
         workspace%L = nroots
         max_subspace_size = max(nroots, workspace%Lmax)
+
 
         write(davidson_output_file_unit,"(4x,a,i6,a)") "Requested ",nroots," eigenvales"
         if ( nroots .gt. vectors_N ) then 
@@ -1726,18 +1685,18 @@ contains
 !           if (associated(preconditioner)) deallocate(preconditioner)
 !           if (associated(delta)) deallocate(delta)
 
-!!          preconditioner =>  form_preconditioner(M_diag, e_small)
+!           call form_preconditioner(workspace, e_small)
 
 !!         if (davidson_solve_rhs) delta => correction_to_vectors(davidson_output_file_unit, nroots,  &
 !!                                         e_small, c_small_r, sigma_vector, & 
 !!                                         b, preconditioner)
 
-            if (.not.associated(delta)) then
-                write(davidson_output_file_unit,*) "All roots converged."
+!           if (.not.associated(delta)) then
+!               write(davidson_output_file_unit,*) "All roots converged."
 !                if (associated(preconditioner)) deallocate(preconditioner)
 !! withouth the do loop this exit is pointless, so comment it out now
 !!              exit
-            end if
+!           end if
              call quit('bb')
 
 ! not converged yet, if asked to refresh the trial vectors do it now, otherwise create
@@ -1776,7 +1735,6 @@ contains
 !!      if (associated(b)) deallocate(b)
 !!      deallocate(M_small)
 !!      if (associated(sigma_vector)) deallocate(sigma_vector)
-!!      deallocate(M_diag)
 !!      deallocate(e_small)
 !!      if (associated(c_small_r)) deallocate(c_small_r)
 !!      if (associated(c_small_l)) deallocate(c_small_l)

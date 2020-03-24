@@ -168,7 +168,11 @@
            type(talsh_tens_t), pointer :: CTtrial1(:), CTtrial2(:) ! workspace for conjugate transpose of trial vectors 
            type(talsh_tens_t), pointer :: sigma1(:), sigma2(:)     ! workspace for sigma vectors
            type(talsh_tens_t), pointer :: delta1(:), delta2(:)     ! workspace for correction vectors
-           type(talsh_tens_t) :: Hdiag1, Hdiag2                        ! workspace for diagonal elements of the similarity-transformed Hamiltonian
+           type(talsh_tens_t), pointer :: precond1(:), precond2(:) ! workspace for preconditioner
+           type(talsh_tens_t) :: Hdiag1, Hdiag2                    ! workspace for diagonal elements of the similarity-transformed Hamiltonian
+           integer, pointer :: tens1_dims(:), tens2_dims(:)        ! since all tensors for a given model IP/EA/EE/... have the same dimensions, we keep this information
+           integer :: tens1_rank, tens2_rank                       ! since all tensors for a given model IP/EA/EE/... have the same rank, we keep this information
+        
         end type
 
 !       One electron integrals
