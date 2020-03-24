@@ -52,6 +52,8 @@ C#include "cbiher.h"
       real(8), allocatable              :: OSC_DE(:),OSC_DOM(:)
       logical, allocatable              :: first(:)
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
+
+
 C
 #include "ibtfun.h"
 c    Martin
@@ -239,6 +241,7 @@ C     =============================
 C
       allocate(TMOM(NOP,NPAR+1,NEXCNV))
       allocate(OSC(NPAR+1,NEXCNV))
+
       IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,NOP))
       IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,NOP))      
       IH = 0
@@ -1301,7 +1304,7 @@ C     ====================================
      &	   + EEWT(6)*TMOM(2,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC) ! (z,y,x)
 
 C    MARTIN
-        IF (ANGPLOT) THEN
+        IF (ANGPLOT.AND.CHIAVG) THEN
           !ALLOCATE(ECD(NPOINTS))
              ECD(IP,IEXC) =       
      &     + EEWT(1)*TMOM(2,2,1,IEXC)*TMOM(3,1,1,IEXC) ! (x,y,z)  
@@ -1316,6 +1319,23 @@ C    MARTIN
      &     + EEWT(4)*TMOM(3,2,2,IEXC)*TMOM(2,1,2,IEXC) ! (x,z,y)
      &     + EEWT(5)*TMOM(1,2,2,IEXC)*TMOM(3,1,2,IEXC) ! (y,x,z)
      &     + EEWT(6)*TMOM(2,2,2,IEXC)*TMOM(1,1,2,IEXC) ! (z,y,x)
+
+        ELSEIF (ANGPLOT) THEN
+          ECD(IP,IEXC) = 
+          !e-e part
+     &    + 4*OMEGA(IEXC)*X(IP)*(TMOM(2,1,1,IEXC)*TMOM(3,2,1,IEXC)            
+     &     - TMOM(2,2,1,IEXC)*TMOM(3,1,1,IEXC))  
+     &    - 4*OMEGA(IEXC)*Y(IP)*(TMOM(1,1,1,IEXC)*TMOM(3,2,1,IEXC)
+     &     - TMOM(3,1,1,IEXC)*TMOM(1,2,1,IEXC)) 
+     &    + 4*OMEGA(IEXC)*Z(IP)*(TMOM(1,1,1,IEXC)*TMOM(2,2,1,IEXC)
+     &     - TMOM(2,1,1,IEXC)*TMOM(1,2,1,IEXC))
+          !e-p part 
+     &    + 4*OMEGA(IEXC)*X(IP)*(TMOM(2,1,2,IEXC)*TMOM(3,2,2,IEXC)            
+     &     - TMOM(2,2,2,IEXC)*TMOM(3,1,2,IEXC))  
+     &    - 4*OMEGA(IEXC)*Y(IP)*(TMOM(1,1,2,IEXC)*TMOM(3,2,2,IEXC)
+     &     - TMOM(3,1,2,IEXC)*TMOM(1,2,2,IEXC)) 
+     &    + 4*OMEGA(IEXC)*Z(IP)*(TMOM(1,1,2,IEXC)*TMOM(2,2,2,IEXC)
+     &     - TMOM(2,1,2,IEXC)*TMOM(1,2,2,IEXC))
         ENDIF
 C    MARTIN
 
@@ -1355,7 +1375,7 @@ C
 C    MARTIN
       IF (ANGPLOT) THEN
         DO IEXC = 1,NEXCNV
-          WRITE(6,"(A24, I4)") "Angular plot excitation ", IEXC
+          WRITE(6,"(A24, I4)") "Angular plot excitation hoihoi ", IEXC
           WRITE(6,*) "X      Y       Z       ECD"
           DO IP = 1,NPOINTS
              WRITE(6,"(3F18.10, E18.10)") X(IP), Y(IP), Z(IP)

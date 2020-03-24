@@ -344,7 +344,7 @@ C*****************************************************************************
 #include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 38,DRESFAC = 1.0D2)
+      PARAMETER (NTABLE = 39,DRESFAC = 1.0D2)
 C
 #include "dcbgen.h"
 #include "dcbprp.h"
@@ -374,7 +374,7 @@ C
      &            '.RESFAC','.ORBANA','.ROTAV ','.SKIPEE',
      &            '.MXLOAD','.ONLYSF','.ONLYSG','.BED   ',
      &            '.XXXXXX','.BEDSTP','.BEDCON','.BEDECD',
-     &            '.ANGPLOT','.XXXXXX'/
+     &            '.ANGPLOT','.CHIAVG','.XXXXXX'/
 
 C
 #include "ibtfun.h"
@@ -430,6 +430,8 @@ C
       BEDSTP     = 0.001D0
       BEDCHK     = .FALSE.
       BEDECD     = .FALSE.
+      ANGPLOT    = .FALSE.
+      CHIAVG     = .FALSE.
 C     hj: initialize some parts of dcbxlr; (nov. 2000)
 Chj: dcbxlr includes some general information
 Chj: which should be moved to dcbxrs (?) or another one:
@@ -679,7 +681,11 @@ C&&&& ANGPLOT: prints the data points for the angular dependency of electronic c
  37            CONTINUE
                ANGPLOT=.TRUE.
                GO TO 100
+C&&&& CHIAVG: makes angular anisotropic ECD plot with chi averaging               
  38            CONTINUE
+               CHIAVG=.TRUE.
+               GO TO 100
+ 39            CONTINUE
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
