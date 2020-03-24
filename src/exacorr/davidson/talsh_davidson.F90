@@ -925,6 +925,7 @@ contains
         if (davidson_debug) print *, 'debug, vectors_N in form_preconditioner :',vectors_N
 
         if (.not.davidson_use_preconditioner) then
+            
             if (davidson_complex_mode_with_reals) then
                 offset = 2
             else
@@ -1216,9 +1217,8 @@ contains
         ierr = talsh_tensor_destruct(workspace%Hdiag1)
         ierr = talsh_tensor_destruct(workspace%Hdiag2)
 
-        ierr = talsh_tensor_destruct(workspace%M)
-
         if (associated(workspace%N)) deallocate(workspace%N)
+        if (associated(workspace%M)) deallocate(workspace%M)
 
         write(davidson_output_file_unit, "(4x,a)") 'leaving talsh_davidson_workspace_destroy'
     end subroutine 
@@ -1237,6 +1237,7 @@ contains
         workspace%nroots = 2
         workspace%Lmax   = davidson_max_subspace_size
         workspace%L      = workspace%nroots 
+        workspace%Lprev  = 0
 
         allocate(workspace%N(excitation_level))
 
@@ -1252,8 +1253,10 @@ contains
         allocate(workspace%delta1(workspace%nroots))
         allocate(workspace%delta2(workspace%nroots))
 
-        M_dims     = (/ workspace%Lmax, workspace%Lmax /)
-        ierr=talsh_tensor_construct(workspace%M,C8,M_dims,init_val=ZERO)
+!       M_dims     = (/ workspace%Lmax, workspace%Lmax /)
+!       ierr=talsh_tensor_construct(workspace%M,C8,M_dims,init_val=ZERO)
+        allocate(workspace%M(workspace%Lmax,workspace%Lmax))
+        workspace%M = ZERO
         
         select case(flavor)
            case("IP")
@@ -1544,9 +1547,9 @@ contains
    end subroutine
 
 
-   subroutine create_subspace_matrix_right(M_small, workspace)
-      type(talsh_davidson_workspace), intent(inout) :: workspace
-      complex(kind=8), pointer, intent(inout) :: M_small(:,:) 
+   subroutine create_subspace_matrix_right(M_small,workspace)
+      type(talsh_davidson_workspace), intent(inout) :: workspace ! here we will keep the M(Lmax,Lmax)
+      complex(kind=8), pointer, contiguous, intent(inout) :: M_small(:,:)    ! this will be a copy of M, M_small(L,L)
 
       integer :: mij_dims(2), mij_rank
       integer(INTD)      :: one_dims(1)
@@ -1565,28 +1568,7 @@ contains
 
       if (associated(M_small)) deallocate(M_small)
       allocate(M_small(workspace%L,workspace%L))
-      M_small = 0
-
-      ierr = talsh_tensor_dimensions(workspace%M,m_rank,m_dims)
-      write (6,*) 'm_rank',m_rank
-      write (6,*) 'm_dims',m_dims
-      write (6,*) 'm_body_p',m_body_p
-      ierr = talsh_tensor_get_body_access(workspace%M,m_body_p,C8,0,DEV_HOST)
-      write (6,*) 'm_body_p',m_body_p
-
-      call c_f_pointer(m_body_p,m_tens,m_dims(1:m_rank))
-
-      write (6,*) 'M_tens'
-      do i = 1, m_dims(1)
-         write (6,*) M_tens(i,1:m_dims(2))
-      end do
-
-      M_small = m_tens
-      write (6,*) 'M small'
-      do i = 1, m_dims(1)
-         write (6,*) M_small(i,1:m_dims(2))
-      end do
-
+      M_small = ZERO 
 
 !     Initialize scalars that are to be used as tensors in contractions
       one_dims(1) = 1
@@ -1599,8 +1581,9 @@ contains
 ! capital letters here are meant to be the roots
       write (6,*) 'foobar, before setup M'
       write (6,*) 'foobar, workspace%L',workspace%L
-      do i = 1, workspace%L
-         do j = 1, workspace%L
+      write (6,*) 'foobar, workspace%Lprev',workspace%Lprev
+      do i = workspace%Lprev + 1, workspace%L
+         do j = workspace%Lprev + 1, workspace%L
 ! this will be a reduction to a scalar at each contractions, and we then will build the 
             ierr=talsh_tensor_contract("MIJ()+=Bdag+(e)*S(e)",               &
    &                                                    result_tensor,      &
@@ -1611,16 +1594,19 @@ contains
    &                                                    workspace%trial2(i),&
    &                                                    workspace%sigma2(j))
             write (6,*) 'i,j, m_ij:', i,j, mij_result_tens(1)
-            M_small(i,j) = mij_result_tens(1) 
-             mij_result_tens(1) = ZERO
+            workspace%M(i,j) = mij_result_tens(1) 
+            mij_result_tens(1) = ZERO
          end do
       end do
 
-      write (6,*) 'M small'
-      do i = 1, m_dims(1)
-         write (6,*) M_small(i,1:m_dims(2))
-      end do
+      M_small = workspace%M(1:workspace%L,1:workspace%L)
 
+      write (6,*) 'M small'
+      do i = 1, workspace%L
+         do j = 1, workspace%L
+            write (6,*) M_small(i,j)
+         end do
+      end do
 
 !      call quit('bb')
 
@@ -1647,23 +1633,24 @@ contains
 ! nullifying all pointers at the start to give them a state, see discussion on http://www.cs.rpi.edu/~szymansk/OOF90/bugs.html
 ! "[...] When a pointer is declared its status is undefined, and cannot be safely queried with the associated intrinsic. [...]"
 ! 
-        complex(kind=8), pointer :: M_diag(:)           => NULL()
-        complex(kind=8), pointer :: delta(:,:)          => NULL()
-        complex(kind=8), pointer :: preconditioner(:,:) => NULL()
-        complex(kind=8), pointer :: M_small(:,:)        => NULL()
-        complex(kind=8), pointer :: c_small_r(:,:)      => NULL()
-        complex(kind=8), pointer :: c_small_l(:,:)      => NULL()
-        complex(kind=8), pointer :: e_small(:)        => NULL()
+        complex(kind=8), pointer, contiguous :: M_diag(:)           => NULL()
+        complex(kind=8), pointer, contiguous :: M_small(:,:)        => NULL()
+        complex(kind=8), pointer, contiguous :: c_small_r(:,:)      => NULL()
+        complex(kind=8), pointer, contiguous :: c_small_l(:,:)      => NULL()
+        complex(kind=8), pointer, contiguous :: e_small(:)        => NULL()
 
         complex(kind=8), pointer :: c_small_r_old(:,:)  => NULL()
         complex(kind=8), pointer :: c_small_l_old(:,:)  => NULL()
+
+        type(talsh_tens_t), pointer, contiguous :: delta(:)          => NULL()
+        type(talsh_tens_t), pointer, contiguous :: preconditioner(:) => NULL()
 
         integer :: vectors_N, L, min_subspace_size, max_subspace_size, niter
         integer :: i, j, k
         integer :: nroots, ierr
 
         vectors_N = workspace%Nmax
-        nroots = workspace%nroots
+        nroots    = workspace%nroots
 !
 ! davidson_create_results() will allocate storage for results from davidson diagonalization when called a first time. 
 ! 
@@ -1691,9 +1678,8 @@ contains
         endif
 
         
-        niter = 1
         write(davidson_output_file_unit,*) ""
-!!      do niter = 1, davidson_max_iterations
+        do niter = 1, davidson_max_iterations
             write(davidson_output_file_unit,*) "Iteration ", niter
             write(davidson_output_file_unit,*) ""
 
@@ -1737,9 +1723,8 @@ contains
                 end if
             end if
  
-             call quit('bb')
-            if (associated(preconditioner)) deallocate(preconditioner)
-            if (associated(delta)) deallocate(delta)
+!           if (associated(preconditioner)) deallocate(preconditioner)
+!           if (associated(delta)) deallocate(delta)
 
 !!          preconditioner =>  form_preconditioner(M_diag, e_small)
 
@@ -1749,10 +1734,11 @@ contains
 
             if (.not.associated(delta)) then
                 write(davidson_output_file_unit,*) "All roots converged."
-                 if (associated(preconditioner)) deallocate(preconditioner)
+!                if (associated(preconditioner)) deallocate(preconditioner)
 !! withouth the do loop this exit is pointless, so comment it out now
 !!              exit
             end if
+             call quit('bb')
 
 ! not converged yet, if asked to refresh the trial vectors do it now, otherwise create
 ! new trial vectors
@@ -1771,7 +1757,7 @@ contains
 !!             write(davidson_output_file_unit, *) "Reached maximum subspace size, stopping."
 !!             exit
 !!          end if
-!!      end do ! davidson iterations
+        end do ! davidson iterations
 
         if (davidson_solve_rhs.and.davidson_overlap_sorting) deallocate(c_small_r_old)
         if (davidson_solve_lhs.and.davidson_overlap_sorting) deallocate(c_small_l_old)

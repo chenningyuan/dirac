@@ -154,9 +154,15 @@
            integer, pointer :: N(:)       ! number of rows per excitation level
            integer :: Nmax                ! total number of rows =  dim(T1)+dim(T2)+...
            integer :: Lmax                ! total number of columns = dim(maximum number of trial vectors)
-           integer :: L                   ! counters for keeping tabs on how much of the workspace we've used
+           integer :: L, Lprev            ! counters for keeping tabs on how much of the workspace we've used
                                           ! in most usages N = Nmax and L will grow up to Lmax
-           type(talsh_tens_t) :: M        ! subspace matrix, dimension : (Lmax, Lmax); it is in tensor form to conform with the operations, but it will be a pointer to it that will be passed to the lapack routines 
+                                          ! with Lprev keeping the number of the prior iteration (staring at 0)
+! aspg, 24/03/2020
+! original idea was to that  to M to be a tensor, but using arrays of tensors as below, better to keep it as a pointer
+!          type(talsh_tens_t) :: M        ! subspace matrix, dimension : (Lmax, Lmax); it is in tensor 
+!                                         ! form to conform with the operations, but it will be a pointer to it 
+!                                         ! that will be passed to the lapack routines 
+           complex(8), pointer, contiguous:: M(:,:) !  subspace matrix, dimension : (Lmax, Lmax)
 ! see to change those below to tensors segmented into singly/doubly/... manifolds
            type(talsh_tens_t), pointer :: trial1(:),   trial2(:) ! workspace for trial vectors
            type(talsh_tens_t), pointer :: CTtrial1(:), CTtrial2(:) ! workspace for conjugate transpose of trial vectors 
