@@ -910,80 +910,184 @@ contains
         type(talsh_davidson_workspace) :: workspace
         complex(kind=8), intent(in)  :: eigenvalues(:)
 
-        integer :: i, k, l, j, r
-        integer :: vectors_N
-        integer :: nroots, offset
-        real(kind=8) :: x2py2
+        complex(8), pointer, contiguous:: preco_1d_p(:)
+        complex(8), pointer, contiguous:: preco_2d_p(:,:) 
+        complex(8), pointer, contiguous:: preco_3d_p(:,:,:) 
+        complex(8), pointer, contiguous:: preco_4d_p(:,:,:,:) 
+        complex(8), pointer, contiguous:: hdiag_1d_p(:)
+        complex(8), pointer, contiguous:: hdiag_2d_p(:,:) 
+        complex(8), pointer, contiguous:: hdiag_3d_p(:,:,:) 
+        complex(8), pointer, contiguous:: hdiag_4d_p(:,:,:,:) 
+        type(C_PTR):: preco1_body_p, preco2_body_p
+        type(C_PTR):: hdiag1_body_p, hdiag2_body_p
+
+        integer :: iroot, ja, jb, jc, jd, ierr
+        integer :: nroots
+        real(kind=8) :: x2py2, proj_r, proj_i, eigenvalue_r, eigenvalue_i 
+        logical :: preconditioner_debug = .true.
+        real(kind=8) :: small_number = 1.0d-10
 
 ! careful with dimension 1 of eigenvalues, 
         nroots    = size(eigenvalues,1)
-!       vectors_N = size(M_diag,1)
-        vectors_N = 10
 
-!       ierr = talsh_tensor_get_body_access(workspace%precond1_tensor,precond1_body_p,C8,0,DEV_HOST)
-!       precond1_max_dim 
-!       call c_f_pointer(precond1_body_p,precond1_p_tens,Fmi_dims(1:2))
+! whether or not we want to precondition, we start by setting up the tensor to one
+        do iroot = 1, nroots
+           ierr=talsh_tensor_init(workspace%precond1(iroot), ONE)   
+           ierr=talsh_tensor_init(workspace%precond2(iroot), ONE)
+        end do
 
-!     ierr = talsh_tensor_dimensions(Fae_tensor,Fae_rank,Fae_dims)
-!     ierr = talsh_tensor_get_body_access(Fae_tensor,Fae_body_p,C8,0,DEV_HOST)
-!     call c_f_pointer(Fae_body_p,fae_p_tens,Fmi_dims(1:2))
+        if (davidson_use_preconditioner) then
+! we want to precondition
+! first prepare to access the rank-1 and rank-2 diagonal of Hbar 
+           ierr = talsh_tensor_get_body_access(workspace%Hdiag1,hdiag1_body_p,C8,0,DEV_HOST)
+           ierr = talsh_tensor_get_body_access(workspace%Hdiag2,hdiag2_body_p,C8,0,DEV_HOST)
 
+           if (workspace%tens1_rank .eq. 1) then
+              call c_f_pointer(hdiag1_body_p,hdiag_1d_p,workspace%tens1_dims(1:workspace%tens1_rank))
+              call c_f_pointer(hdiag2_body_p,hdiag_3d_p,workspace%tens2_dims(1:workspace%tens2_rank))
+           else if (workspace%tens1_rank .eq. 2) then
+              call c_f_pointer(hdiag1_body_p,hdiag_2d_p,workspace%tens1_dims(1:workspace%tens1_rank))
+              call c_f_pointer(hdiag2_body_p,hdiag_4d_p,workspace%tens2_dims(1:workspace%tens2_rank))
+           end if
 
-!       form_preconditioner = 0.0d0
-        if (davidson_debug) print *, 'debug, vectors_N in form_preconditioner :',vectors_N
+           write (6,*) 'debug eigenvalues:',eigenvalues
+! now we get go root by root, and construct the preconditioner for each
+           do iroot = 1, nroots
 
-        if (.not.davidson_use_preconditioner) then
-                 
-            if (davidson_complex_mode_with_reals) then
-                offset = 2
-            else
-                offset = 1
-            end if
-            do k = 1, nroots
-                do j = 1, vectors_N, offset
-!                   form_preconditioner(j,k) = 1.0d0
-                end do
-            end do
-        else
-            if (davidson_complex_mode_with_reals) then
-                do k = 1, nroots
-                   r = 0
-                    do j = 1, vectors_N, 2
-                        r = r + 1
-!                       if (davidson_debug) print *, 'debug, H_II(re,im) : ',j,M_diag(j),M_diag(j+1)
-!                        form_preconditioner(j,k)   = eigenvalues(1,k) - M_diag(r)
-! the diagonal appears not to have the complex part, so for debugging purposes i will set it to zero here
-! and only construct the real part
- !                      form_preconditioner(j,k)   = eigenvalues(1,k) - M_diag(j)
- !                      form_preconditioner(j+1,k) = eigenvalues(2,k) - M_diag(j+1)
-                        
-    !                   form_preconditioner(j,k)   = eigenvalues(1,k) - M_diag(j)
-    !                   form_preconditioner(j+1,k) = 0.0d0
+              eigenvalue_r = real(eigenvalues(iroot))
+              eigenvalue_i = aimag(eigenvalues(iroot))
 
-! using the formula for calculating the reciprocal of the nonzero complex number z = x + yi 
-!
-!{\displaystyle {\frac {1}{z}}={\frac {\bar {z}}{z{\bar {z}}}}
-!                             ={\frac {\bar {z}}{x^{2}+y^{2}}}
-!                             ={\frac {x}{x^{2}+y^{2}}}-{\frac {y}{x^{2}+y^{2}}}i.} 
-!
-            !           x2py2 = form_preconditioner(j,k)*form_preconditioner(j,k)  &
-            !                 + form_preconditioner(j+1,k)*form_preconditioner(j+1,k)
+              ierr = talsh_tensor_get_body_access(workspace%precond1(iroot),preco1_body_p,C8,0,DEV_HOST)
+              ierr = talsh_tensor_get_body_access(workspace%precond2(iroot),preco2_body_p,C8,0,DEV_HOST)
 
-                        if (dabs(x2py2) .gt. safe_minimum) then
-    !                       form_preconditioner(j,k)   =  form_preconditioner(j,k) / x2py2 
-    !                       form_preconditioner(j+1,k) = -form_preconditioner(j+1,k) / x2py2
-                        else
-!                           stop ('detected division by zero')
-              !             write (davidson_output_file_unit,*) 'Warning : numerator is small', &
-              !                                              (1.0d0 / form_preconditioner(j,k)),& 
-&             !                      ' element of preconditioner set to 1'
-    !                       form_preconditioner(j,k) = 1.0d0
-    !                       form_preconditioner(j+1,k) = 0.0d0
-                        end if
+              if (workspace%tens1_rank .eq. 1) then
+                 call c_f_pointer(preco1_body_p,preco_1d_p,workspace%tens1_dims(1:workspace%tens1_rank))
+                 call c_f_pointer(preco2_body_p,preco_3d_p,workspace%tens2_dims(1:workspace%tens2_rank))
+
+                 do ja = 1, workspace%tens1_dims(1)
+                    proj_r = eigenvalue_r - real(hdiag_1d_p(ja))
+                    proj_i = eigenvalue_i - aimag(hdiag_1d_p(ja))
+! aspg: added this check to filter out real or imaginary parts that are too small/noisy and would explode as denominators 
+!       worst case this will set the preconditioner of this element to one (due to the initialization, see above)
+                    if (dabs(proj_r).le.small_number) proj_r = 0.0d0
+                    if (dabs(proj_i).le.small_number) proj_i = 0.0d0
+
+                    x2py2 = proj_r*proj_r + proj_i*proj_i
+                    if (dabs(x2py2).gt.safe_minimum) then
+                       proj_r =  proj_r / x2py2
+                       proj_i = -proj_i / x2py2
+                       preco_1d_p(ja) = cmplx(proj_r,proj_i)
+                    end if
+                 end do
+
+                 do jc = 1, workspace%tens2_dims(3)
+                    do jb = 1, workspace%tens2_dims(2)
+                       do ja = 1, workspace%tens2_dims(1)
+                          proj_r = eigenvalue_r - real(hdiag_3d_p(ja,jb,jc))
+                          proj_i = eigenvalue_i - aimag(hdiag_3d_p(ja,jb,jc))
+! aspg: added this check to filter out real or imaginary parts that are too small/noisy and would explode as denominators 
+!       worst case this will set the preconditioner of this element to one (due to the initialization, see above)
+                          if (dabs(proj_r).le.small_number) proj_r = 0.0d0
+                          if (dabs(proj_i).le.small_number) proj_i = 0.0d0
+
+                          x2py2 = proj_r*proj_r + proj_i*proj_i
+                          if (dabs(x2py2).gt.safe_minimum) then
+                             proj_r =  proj_r / x2py2
+                             proj_i = -proj_i / x2py2
+                             preco_3d_p(ja,jb,jc) = cmplx(proj_r,proj_i)
+                          end if
+                       end do
                     end do
-                end do
-            end if
-        end if ! use preconditioner
+                 end do
+
+                 if (preconditioner_debug) then
+                    write (6,*) 'debug >>> precon1_tens  root',iroot,' >>>'
+                    do ja = 1, workspace%tens1_dims(1)
+                       write (6,*) preco_1d_p(ja)
+                    end do
+                    write (6,*) 'debug <<< precon1_tens <<<'
+
+                    write (6,*) 'debug >>> precon2_tens  root',iroot,' >>>'
+                    do jc = 1, workspace%tens2_dims(3)
+                       do jb = 1, workspace%tens2_dims(2)
+                          do ja = 1, workspace%tens2_dims(1)
+                              write (6,*) preco_3d_p(ja,jb,jc)   
+                          end do
+                       end do
+                    end do
+                    write (6,*) 'debug <<< precon2_tens <<<'
+                 end if
+
+              else if (workspace%tens1_rank .eq. 2) then
+                 call c_f_pointer(preco1_body_p,preco_2d_p,workspace%tens1_dims(1:workspace%tens1_rank))
+                 call c_f_pointer(preco2_body_p,preco_4d_p,workspace%tens2_dims(1:workspace%tens2_rank))
+
+                 do jb = 1, workspace%tens1_dims(2)
+                    do ja = 1, workspace%tens1_dims(1)
+                       proj_r = eigenvalue_r - real(hdiag_2d_p(ja,jb))
+                       proj_i = eigenvalue_i - aimag(hdiag_2d_p(ja,jb))
+! aspg: added this check to filter out real or imaginary parts that are too small/noisy and would explode as denominators 
+!       worst case this will set the preconditioner of this element to one (due to the initialization, see above)
+                       if (dabs(proj_r).le.small_number) proj_r = 0.0d0
+                       if (dabs(proj_i).le.small_number) proj_i = 0.0d0
+
+                       x2py2 = proj_r*proj_r + proj_i*proj_i
+                       if (dabs(x2py2).gt.safe_minimum) then
+                          proj_r =  proj_r / x2py2
+                          proj_i = -proj_i / x2py2
+                          preco_2d_p(ja,jb) = cmplx(proj_r,proj_i)
+                       end if
+                    end do
+                 end do
+
+                 do jd = 1, workspace%tens2_dims(4)
+                    do jc = 1, workspace%tens2_dims(3)
+                       do jb = 1, workspace%tens2_dims(2)
+                          do ja = 1, workspace%tens2_dims(1)
+                             proj_r = eigenvalue_r - real(hdiag_4d_p(ja,jb,jc,jd))
+                             proj_i = eigenvalue_i - aimag(hdiag_4d_p(ja,jb,jc,jd))
+! aspg: added this check to filter out real or imaginary parts that are too small/noisy and would explode as denominators 
+!       worst case this will set the preconditioner of this element to one (due to the initialization, see above)
+                             if (dabs(proj_r).le.small_number) proj_r = 0.0d0
+                             if (dabs(proj_i).le.small_number) proj_i = 0.0d0
+
+                             x2py2 = proj_r*proj_r + proj_i*proj_i
+                             if (dabs(x2py2).gt.safe_minimum) then
+                                proj_r =  proj_r / x2py2
+                                proj_i = -proj_i / x2py2
+                                preco_4d_p(ja,jb,jc,jd) = cmplx(proj_r,proj_i)
+                             end if
+                          end do
+                       end do
+                    end do
+                 end do
+
+                 if (preconditioner_debug) then
+                    write (6,*) 'debug >>> precon1_tens  root',iroot,' >>>'
+                    do jb = 1, workspace%tens1_dims(2)
+                       do ja = 1, workspace%tens1_dims(1)
+                          write (6,*) preco_2d_p(ja,jb)
+                       end do
+                    end do
+                    write (6,*) 'debug <<< precon1_tens <<<'
+
+                    write (6,*) 'debug >>> precon2_tens  root',iroot,' >>>'
+                    do jd = 1, workspace%tens2_dims(4)
+                       do jc = 1, workspace%tens2_dims(3)
+                          do jb = 1, workspace%tens2_dims(2)
+                             do ja = 1, workspace%tens2_dims(1)
+                                 write (6,*) preco_4d_p(ja,jb,jc,jd) 
+                             end do
+                          end do
+                       end do
+                    end do
+                    write (6,*) 'debug <<< precon2_tens <<<'
+                 end if
+
+              end if
+           end do ! iroot
+       end if ! create preconditioner
+
     end subroutine 
 
     subroutine form_delta(delta, vectors_to_update, r, preconditioner)
@@ -1226,6 +1330,9 @@ contains
         deallocate(workspace%CTtrial1)
         deallocate(workspace%CTtrial2)
 
+        deallocate(workspace%tens1_dims)
+        deallocate(workspace%tens2_dims)
+
         ierr = talsh_tensor_destruct(workspace%Hdiag1)
         ierr = talsh_tensor_destruct(workspace%Hdiag2)
 
@@ -1375,19 +1482,15 @@ contains
       type(talsh_intg_tens), intent(inout) :: int_t
       type(talsh_davidson_workspace), intent(inout) :: workspace
 
-      integer :: s1_h_p_dims(1), s1_h_p_rank
       complex(8), pointer, contiguous:: s1_h_p_p(:)
       type(C_PTR):: s1_body_p
 
-      integer :: t1_h_p_dims(1), t1_h_p_rank
       complex(8), pointer, contiguous:: t1_h_p_p(:)
       type(C_PTR):: t1_body_p
 
-      integer :: t2_h_p_dims(3), t2_h_p_rank
       complex(8), pointer, contiguous:: t2_h_p_p(:,:,:)
       type(C_PTR):: t2_body_p
 
-      integer :: s2_h_p_dims(3), s2_h_p_rank
       complex(8), pointer, contiguous:: s2_h_p_p(:,:,:)
       type(C_PTR):: s2_body_p
 
@@ -1685,7 +1788,7 @@ contains
 !           if (associated(preconditioner)) deallocate(preconditioner)
 !           if (associated(delta)) deallocate(delta)
 
-!           call form_preconditioner(workspace, e_small)
+            call form_preconditioner(workspace, e_small)
 
 !!         if (davidson_solve_rhs) delta => correction_to_vectors(davidson_output_file_unit, nroots,  &
 !!                                         e_small, c_small_r, sigma_vector, & 
