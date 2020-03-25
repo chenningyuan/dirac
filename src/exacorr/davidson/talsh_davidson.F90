@@ -843,16 +843,17 @@ contains
 
     
 
-    function correction_to_vectors(output_file_unit, nroots, e_small_M, c_small_M, sigma_vector, b, preconditioner, correct_all)
-        real(kind=8), pointer     :: correction_to_vectors(:,:)
+    function correction_to_vectors(output_file_unit, nroots, e_small_M, c_small_M, workspace, correct_all)
         integer, intent(in)       :: nroots, output_file_unit
-        real(kind=8), intent(in)  :: e_small_M(:,:)
-        real(kind=8), intent(in)  :: c_small_M(:,:)
-        real(kind=8), intent(in)  :: sigma_vector(:,:)
-        real(kind=8), intent(in)  :: b(:,:)
-        real(kind=8), pointer :: preconditioner(:,:)
+        type(talsh_davidson_workspace), intent(inout) :: workspace
+        complex(kind=8), intent(in)  :: e_small_M(:,:)
+        complex(kind=8), intent(in)  :: c_small_M(:,:)
         logical, optional, intent(in) :: correct_all
+        real(kind=8), pointer   :: sigma_vector(:,:)
+        real(kind=8), pointer   :: b(:,:)
 
+        real(kind=8), pointer :: preconditioner(:,:)
+        real(kind=8), pointer     :: correction_to_vectors(:,:)
         integer :: vectors_L, vectors_N
         integer :: k, unconverged_roots
         real(kind=8) :: norm_r = 0.0d0
@@ -874,7 +875,7 @@ contains
 
         allocate(r(vectors_N,nroots))
         r = 0.0d0
-        call form_r(r, nroots, e_small_M, c_small_M, sigma_vector, b)
+!       call form_r(r, nroots, e_small_M, c_small_M, sigma_vector, b)
 
         unconverged_roots = 0
         do k = 1, nroots
@@ -1103,6 +1104,13 @@ contains
 
         nroots    = size(vectors_to_update,1)
 
+!       do k = 1, nroot
+!          if (vectors_to_update(k)) then
+!             this is not a dot product but a product b(i,j,k,...) = a(i,j,k,..)*b(i,j,k,...)
+!             "delta1(i,j)=preconditioner1(i,j)*delta1(i,j)",preconditioner1(k),delta1(k) 
+!             "delta2(i,j)=preconditioner2(i,j)*delta1(i,j)" 
+
+
         if (davidson_complex_mode_with_reals) then
             vectors_N = size(delta,1) 
             vectors_N_complex = vectors_N / 2
@@ -1127,13 +1135,15 @@ contains
 
     end subroutine 
 
-    subroutine form_r(r, nroots,  e_small_M, c_small_M, sigma_vector,  b)
+    subroutine form_r(r, nroots,  e_small_M, c_small_M, workspace)
+        type(talsh_davidson_workspace),  intent(inout) :: workspace
+!sigma_vector,  b)
         real(kind=8), intent(inout) :: r(:,:)
         integer, intent(in)       :: nroots
         real(kind=8), intent(in)  :: e_small_M(:,:)
         real(kind=8), intent(in)  :: c_small_M(:,:)
-        real(kind=8), intent(in)  :: sigma_vector(:,:)
-        real(kind=8), intent(in)  :: b(:,:)
+        real(kind=8), pointer  :: sigma_vector(:,:)
+        real(kind=8), pointer  :: b(:,:)
         integer :: vectors_L, vectors_N
         integer :: k
         real(kind=8), allocatable :: residue_a(:,:)
@@ -1147,6 +1157,23 @@ contains
 
         residue_a = 0.0d0
         residue_b = 0.0d0
+
+!       delta1 = ZERO
+!       delta2 = ZERO
+
+!       create a small tensor (L,L)
+
+!       do k = 1, roots
+!          do i = 1, workspace%L
+!             factor1 =  c_small_M(k,i)
+!             factor2 = -e_small(k)*factor1
+!             delta1_tens(k) += scale(sigma1(i),factor1)
+!             delta1_tens(k) += scale(trial1(i),factor2)
+
+!             delta2_tens(k) += scale(sigma1(i),factor1)
+!             delta2_tens(k) += scale(trial1(i),factor2)
+!          end do
+!       end do
 
         if (davidson_complex_mode_with_reals) then
             vectors_N = vectors_N / 2
@@ -2481,6 +2508,122 @@ contains
 
     end subroutine
 
+
+subroutine multiply_tensor_elements(a_tensor, b_tensor)
+! this routine performs element-wise multiplication of two tensors
+! and stores the outcome in the first argument
+!
+! a(i,j,k,...) = a(i,j,k,..)*b(i,j,k,...)
+!
+        implicit none
+
+        type(talsh_tens_t), intent(inout)    :: a_tensor,b_tensor
+
+        integer(INTD)  ::  a_rank, b_rank
+        integer(INTD)  ::  a_dims1(1),b_dims1(1)
+        integer(INTD)  ::  a_dims2(1:2),b_dims2(1:2)
+        integer(INTD)  ::  a_dims3(1:3),b_dims3(1:3)
+        integer(INTD)  ::  a_dims4(1:4),b_dims4(1:4)
+        integer(INTD)  ::  ierr
+        integer  ::  i, j, k, l
+        type(C_PTR)         :: a_body,b_body
+        complex(8), pointer :: a_tens1(:)
+        complex(8), pointer :: b_tens1(:)
+        complex(8), pointer :: a_tens2(:,:)
+        complex(8), pointer :: b_tens2(:,:)
+        complex(8), pointer :: a_tens3(:,:,:)
+        complex(8), pointer :: b_tens3(:,:,:)
+        complex(8), pointer :: a_tens4(:,:,:,:)
+        complex(8), pointer :: b_tens4(:,:,:,:)
+
+        a_rank=talsh_tensor_rank(a_tensor)
+        b_rank=talsh_tensor_rank(b_tensor)
+
+        if ((a_rank.eq.1).and.(b_rank.eq.1)) then
+          ierr = talsh_tensor_dimensions(a_tensor,a_rank,a_dims1)
+          if (ierr.ne.0) stop 'error in mulitply_tensor'
+          ierr = talsh_tensor_dimensions(b_tensor,b_rank,b_dims1)
+          if (ierr.ne.0) stop 'error in mulitply_tensor'
+
+          ierr=talsh_tensor_get_body_access(a_tensor,a_body,C8,int(0,C_INT),DEV_HOST)
+          call c_f_pointer(a_body,a_tens1,a_dims1)
+          ierr=talsh_tensor_get_body_access(b_tensor,b_body,C8,int(0,C_INT),DEV_HOST)
+          call c_f_pointer(b_body,b_tens1,b_dims1)
+
+          ! add test to check dimensions
+!         a_tens1(:) = a_tens1(:)*b_tens1(:)
+          do i = 1, a_dims2(1)
+             a_tens1(i)=a_tens1(i)*b_tens1(i)
+          end do
+
+        else if ((a_rank.eq.2).and.(b_rank.eq.2)) then
+          ierr = talsh_tensor_dimensions(a_tensor,a_rank,a_dims2)
+          if (ierr.ne.0) stop 'error in mulitply_tensor'
+          ierr = talsh_tensor_dimensions(b_tensor,b_rank,b_dims2)
+          if (ierr.ne.0) stop 'error in mulitply_tensor'
+
+          ierr=talsh_tensor_get_body_access(a_tensor,a_body,C8,int(0,C_INT),DEV_HOST)
+          call c_f_pointer(a_body,a_tens2,a_dims2)
+          ierr=talsh_tensor_get_body_access(b_tensor,b_body,C8,int(0,C_INT),DEV_HOST)
+          call c_f_pointer(b_body,b_tens2,b_dims2)
+
+          ! add test to check dimensions
+!         a_tens2(:,:) = a_tens2(:,:)*b_tens2(:,:)
+          do i = 1, a_dims2(1)
+            do j = 1, a_dims2(2)
+              a_tens2(i,j)=a_tens2(i,j)*b_tens2(i,j)
+            end do
+          end do
+
+        else if ((a_rank.eq.3).and.(b_rank.eq.3)) then
+          ierr = talsh_tensor_dimensions(a_tensor,a_rank,a_dims3)
+          if (ierr.ne.0) stop 'error in mulitply_tensor'
+          ierr = talsh_tensor_dimensions(b_tensor,b_rank,b_dims3)
+          if (ierr.ne.0) stop 'error in mulitply_tensor'
+
+          ierr=talsh_tensor_get_body_access(a_tensor,a_body,C8,int(0,C_INT),DEV_HOST)
+          call c_f_pointer(a_body,a_tens3,a_dims3)
+          ierr=talsh_tensor_get_body_access(b_tensor,b_body,C8,int(0,C_INT),DEV_HOST)
+          call c_f_pointer(b_body,b_tens3,b_dims3)
+
+          ! add test to check dimensions
+!         a_tens3(:,:,:) = a_tens3(:,:,:)*b_tens3(:,:,:)
+          do i = 1, a_dims3(1)
+             do j = 1, a_dims3(2)
+               do k = 1, a_dims3(3)
+                  a_tens3(i,j,k)=a_tens3(i,j,k)*b_tens3(i,j,k)
+              end do
+            end do
+          end do
+
+        else if ((a_rank.eq.4).and.(b_rank.eq.4)) then
+          ierr = talsh_tensor_dimensions(a_tensor,a_rank,a_dims4)
+          if (ierr.ne.0) stop 'error in mulitply_tensor'
+          ierr = talsh_tensor_dimensions(b_tensor,b_rank,b_dims4)
+          if (ierr.ne.0) stop 'error in mulitply_tensor'
+        
+          ierr=talsh_tensor_get_body_access(a_tensor,a_body,C8,int(0,C_INT),DEV_HOST)
+          call c_f_pointer(a_body,a_tens4,a_dims4)
+          ierr=talsh_tensor_get_body_access(b_tensor,b_body,C8,int(0,C_INT),DEV_HOST)
+          call c_f_pointer(b_body,b_tens4,b_dims4)
+
+          ! add test to check dimensions
+!         a_tens4(:,:,:,:) = a_tens4(:,:,:,:)*b_tens4(:,:,:,:)
+          do i = 1, a_dims4(1)
+             do j = 1, a_dims4(2)
+               do k = 1, a_dims4(3)
+                 do l = 1, a_dims4(4)
+                    a_tens4(i,j,k,l)=a_tens4(i,j,k,l)*b_tens4(i,j,k,l)
+                 end do
+              end do
+            end do
+          end do
+
+        else
+           call quit('mismatch in tensor ranks in multiply_tensor')
+        end if
+
+      end subroutine 
 
 end module
 
