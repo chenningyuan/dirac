@@ -27,73 +27,33 @@ module talsh_eom
         integer :: nocc, nvir, i, j, a, b, ierr, iroot, k(1), N, N1, N2 
         real(8), allocatable :: diagonal(:)
 
-        integer :: hdiag1_dims(2), hdiag2_dims(4), hdiag1_rank, hdiag2_rank
         complex(8), pointer, contiguous:: hdiag1_hp_tens(:,:), hdiag2_hp_tens(:,:,:,:)
-
-        integer :: hdiag1_h_p_dims(1), hdiag2_h_p_dims(3), hdiag1_h_p_rank, hdiag2_h_p_rank
         complex(8), pointer, contiguous:: hdiag1_h_p_tens(:),  hdiag2_h_p_tens(:,:,:)
-        type(C_PTR):: hdiag1_body_p, hdiag2_body_p
-
-        integer :: trial1_dims(2), trial2_dims(4), trial1_rank, trial2_rank
         complex(8), pointer, contiguous:: trial1_hp_tens(:,:), trial2_hp_tens(:,:,:,:)
-
-        integer :: trial1_h_p_dims(1), trial2_h_p_dims(3), trial1_h_p_rank, trial2_h_p_rank
         complex(8), pointer, contiguous:: trial1_h_p_tens(:),  trial2_h_p_tens(:,:,:)
+        type(C_PTR):: hdiag1_body_p, hdiag2_body_p
         type(C_PTR):: trial1_body_p, trial2_body_p
 
-        logical :: enable_double_manifold
+        logical :: enable_double_manifold = .false.
+        logical :: debug_trial = .true.
 
-         write (6,*) ' in talsh_eom_trial_create'
-        hdiag1_body_p = c_null_ptr
-        hdiag2_body_p = c_null_ptr
+        ierr = talsh_tensor_get_body_access(workspace%Hdiag1,hdiag1_body_p,C8,0,DEV_HOST)
+        ierr = talsh_tensor_get_body_access(workspace%Hdiag2,hdiag2_body_p,C8,0,DEV_HOST)
 
+! first we copy the diagonal to a local working variable ("diagonal"), in order to sort it later with minloc() 
         select case(flavor)
            case("IP")
+              call c_f_pointer(hdiag1_body_p,hdiag1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
+              call c_f_pointer(hdiag2_body_p,hdiag2_h_p_tens,workspace%tens2_dims(1:workspace%tens2_rank))
 
-              ierr = talsh_tensor_dimensions(workspace%Hdiag1,hdiag1_h_p_rank,hdiag1_h_p_dims)
-              ierr = talsh_tensor_get_body_access(workspace%Hdiag1,hdiag1_body_p,C8,0,DEV_HOST)
-              write (6,*) ' '
-              write (6,*) 'hdiag1_h_p_rank',hdiag1_h_p_rank
-              write (6,*) 'hdiag1_h_p_dims',hdiag1_h_p_dims
-              write (6,*) 'hdiag1_body_p',hdiag1_body_p
-
-              ierr = talsh_tensor_dimensions(workspace%Hdiag2,hdiag2_h_p_rank,hdiag2_h_p_dims)
-              ierr = talsh_tensor_get_body_access(workspace%Hdiag2,hdiag2_body_p,C8,0,DEV_HOST)
-              write (6,*) ' '
-              write (6,*) 'hdiag2_h_p_rank',hdiag2_h_p_rank
-              write (6,*) 'hdiag2_h_p_dims',hdiag2_h_p_dims
-              write (6,*) 'hdiag2_body_p',hdiag2_body_p
-
-              call c_f_pointer(hdiag1_body_p,hdiag1_h_p_tens,hdiag1_h_p_dims(1:hdiag1_h_p_rank))
-              call c_f_pointer(hdiag2_body_p,hdiag2_h_p_tens,hdiag2_h_p_dims(1:hdiag2_h_p_rank))
-
-              N1 = hdiag1_h_p_dims(1)
-              N2 = hdiag2_h_p_dims(1)*hdiag2_h_p_dims(2)*hdiag2_h_p_dims(3)
-              N  = N1 + N2
-
-              write (6,*) ' '
-              write (6,*) 'N1 ',N1
-              do i = 1, N1
-                  write (6,*) i, hdiag1_h_p_tens(i)
-              end do
-
-              write (6,*) ' '
-              write (6,*) 'N2 ',N2
-              b = 0
-              do i = 1, hdiag2_h_p_dims(3)
-                 do j = 1, hdiag2_h_p_dims(2) 
-                    do a = 1, hdiag2_h_p_dims(1) 
-                       b = b + 1
-                       write (6,*) b, a, j, i, hdiag2_h_p_tens(a,j,i)
-                    end do
-                 end do
-              end do
-
-!             allocate(diagonal(N))
-              allocate(diagonal(N1))
+              if (enable_double_manifold) then
+                 allocate(diagonal(workspace%N(1) + workspace%N(2)))
+              else
+                 allocate(diagonal(workspace%N(1)))
+              end if
               diagonal = 0.0d0
 
-              do i = 1, N1
+              do i = 1, workspace%tens1_dims(1) 
                  diagonal(i) = real(hdiag1_h_p_tens(i))
               end do
 
@@ -101,66 +61,66 @@ module talsh_eom
 ! and find which are the workspace%nroots lowest roots more generally (i.e. when some of the trials
 ! belong to single and some to double
 !
-!              b = N1
-!              do i = 1, hdiag2_dims(3)
-!                 do j = 1, hdiag2_dims(2) 
-!                    do a = 1, hdiag2_dims(1) 
-!                       b = b + 1
-!                       diagonal(b) = realpart(hdiag2_h_p_tens(a,j,i))
-!                    end do
-!                 end do
-!              end do
+              if (enable_double_manifold) then
+                  b = workspace%N(1)
+                  do i = 1, workspace%tens2_dims(3)
+                     do j = 1, workspace%tens2_dims(2)
+                        do a = 1, workspace%tens2_dims(1)
+                           b = b + 1
+                           diagonal(b) = realpart(hdiag2_h_p_tens(a,j,i))
+                        end do
+                     end do
+                  end do
+               end if
 
         end select
 
-        select case(flavor)
-           case("IP")
-              do iroot = 1, workspace%nroots
+! now set up the initial trial vectors, as unit matrices (or the equivalent for higher-dimensional tensors)
 
-                 trial1_body_p = c_null_ptr
-                 trial2_body_p = c_null_ptr
+        if (debug_trial) then 
+           select case(flavor)
+              case("IP")
+                 do iroot = 1, workspace%nroots
+   
+                    ierr = talsh_tensor_get_body_access(workspace%trial1(iroot),trial1_body_p,C8,0,DEV_HOST)
+                    ierr = talsh_tensor_get_body_access(workspace%trial2(iroot),trial2_body_p,C8,0,DEV_HOST)
+                    call c_f_pointer(trial1_body_p,trial1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
+                    call c_f_pointer(trial2_body_p,trial2_h_p_tens,workspace%tens2_dims(1:workspace%tens2_rank))
 
-                 write (6,*) 'debug >>> t1_h_p_tens, root',iroot,' >>>'
-                 ierr = talsh_tensor_dimensions(workspace%trial1(iroot),trial1_h_p_rank,trial1_h_p_dims)
-                 ierr = talsh_tensor_get_body_access(workspace%trial1(iroot),trial1_body_p,C8,0,DEV_HOST)
-                 call c_f_pointer(trial1_body_p,trial1_h_p_tens,trial1_dims(1:trial1_rank))
+                    write (6,*) 'debug >>> t1_h_p_tens, root',iroot,' >>>'
+!                   call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
+                    do i = 1, workspace%tens1_dims(1) 
+                        write (6,*) i, trial1_h_p_tens(i)
+                    end do
+                    write (6,*) 'debug <<< t1_h_p_tens <<<'
 
-!                call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
-                 do i = 1, trial1_h_p_dims(1)
-                     write (6,*) i, trial1_h_p_tens(i)
-                 end do
-                 write (6,*) 'debug <<< t1_h_p_tens <<<'
+                    write (6,*) 'debug >>> t2_h_p_tens, root',iroot,' >>>'
+                    call talsh_tensor_print_info(workspace%trial2(iroot))
 
-                 write (6,*) 'debug >>> t2_h_p_tens, root',iroot,' >>>'
-                 call talsh_tensor_print_info(workspace%trial2(iroot))
-                 ierr = talsh_tensor_dimensions(workspace%trial2(iroot),trial2_h_p_rank,trial2_h_p_dims)
-                 ierr = talsh_tensor_get_body_access(workspace%trial2(iroot),trial2_body_p,C8,0,DEV_HOST)
-                 call c_f_pointer(trial2_body_p,trial2_h_p_tens,trial2_dims(1:trial2_h_p_rank))
-
-!                call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
-                 b = 0
-                 do i = 1, trial2_h_p_dims(3)
-                    do j = 1, trial2_h_p_dims(2)
-                       do a = 1, trial2_h_p_dims(1)
-                          b = b + 1
-                          write (6,*) b, a, j, i, trial2_h_p_tens(a,j,i)
+!                   call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
+                    b = 0
+                    do i = 1, workspace%tens2_dims(3)
+                       do j = 1, workspace%tens2_dims(2)
+                          do a = 1, workspace%tens2_dims(1)
+                             b = b + 1
+                             write (6,*) b, a, j, i, trial2_h_p_tens(a,j,i)
+                          end do
                        end do
                     end do
+                    write (6,*) 'debug <<< t2_h_p_tens <<<'
                  end do
-                 write (6,*) 'debug <<< t2_h_p_tens <<<'
-              end do
-        end select
+           end select
 
-
-        write (6,*) 'debug >>> real part of hdiag1_h_p_tens >>>'
-        write (6,*) diagonal
-        write (6,*) 'debug <<< real part of hdiag1_h_p_tens <<<'
+           write (6,*) 'debug >>> real part of hdiag1_h_p_tens >>>'
+           write (6,*) diagonal
+           write (6,*) 'debug <<< real part of hdiag1_h_p_tens <<<'
  
-        enable_double_manifold = .false.
-!       if (workspace%nroots.gt.N1) enable_double_manifold = .true.
+        end if
+
 ! forcing only the single part now
-        if (workspace%nroots.gt.N1) then
-           workspace%nroots = N1
+        if (workspace%nroots.gt.workspace%N(1)) then
+           workspace%nroots = workspace%N(1)
+           write(6,*) 'WARNING!! resetting number of roots to :',workspace%N(1)
         end if 
 
         write(6,*) 'roots',workspace%nroots
@@ -171,18 +131,13 @@ module talsh_eom
            if (size(diagonal).gt.2) then
               k = minloc(diagonal)
               i = k(1)
-              write(6,*) 'debug, roots',iroot,diagonal(i),i
+              if (debug_trial) write(6,*) 'debug, roots',iroot,diagonal(i),i
               diagonal(i) = huge(diagonal)
-              write(6,*) 'debug, making diagonal huge',diagonal(i)
+              if (debug_trial) write(6,*) 'debug, making diagonal huge',diagonal(i)
            else 
               j = j + 1
               i = j
            end if
-
-           trial1_body_p = c_null_ptr 
-           trial2_body_p = c_null_ptr
-           write (6,*) ' trial1_body_p',trial1_body_p
-           write (6,*) ' trial2_body_p',trial2_body_p
 
 !! we may have diagonal elements which do not correspond to an element within the windows, so we check that
 !! this is the case
@@ -191,85 +146,54 @@ module talsh_eom
               select case(flavor)
                  case("IP")
 
-                    ierr = talsh_tensor_dimensions(workspace%trial1(iroot),trial1_h_p_rank,trial1_h_p_dims)
                     ierr = talsh_tensor_get_body_access(workspace%trial1(iroot),trial1_body_p,C8,0,DEV_HOST)
-                    write (6,*) 'root',iroot,' trial1_h_p_rank',trial1_h_p_rank
-                    write (6,*) 'root',iroot,' trial1_h_p_dims',trial1_h_p_dims
-                    write (6,*) 'root',iroot,' trial1_body_p',trial1_body_p
-                    call c_f_pointer(trial1_body_p,trial1_h_p_tens,trial1_dims(1:trial1_h_p_rank))
+                    ierr = talsh_tensor_get_body_access(workspace%trial2(iroot),trial2_body_p,C8,0,DEV_HOST)
+                    call c_f_pointer(trial1_body_p,trial1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
+                    call c_f_pointer(trial2_body_p,trial2_h_p_tens,workspace%tens2_dims(1:workspace%tens2_rank))
 
+! aspg, come back and see how to handle this
 !                   if (enable_double_manifold) then ! we have to go into the 2h1p section to select trial vectors
-                    if (.true.) then ! we have to go into the 2h1p section to select trial vectors
-                       ierr = talsh_tensor_dimensions(workspace%trial2(iroot),trial2_h_p_rank,trial2_h_p_dims)
-                       ierr = talsh_tensor_get_body_access(workspace%trial2(iroot),trial2_body_p,C8,0,DEV_HOST)
-                       write (6,*) 'root',iroot,' trial2_rank',trial2_h_p_rank
-                       write (6,*) 'root',iroot,' trial2_dims',trial2_h_p_dims
-                       write (6,*) 'root',iroot,' trial2_body_p',trial2_body_p
-                       call c_f_pointer(trial2_body_p,trial2_h_p_tens,trial2_dims(1:trial2_h_p_rank))
-                    end if
-
-
-!                   write(6,*)'determinant in window',I,trial1_rank,trial1_dims(1:trial1_rank)
-                    write(6,*) '        t1_h_p(',j,'):',trial1_h_p_tens(j),'  before setting to 1'
-                    write(6,*) '        t2_h_p(1,1,1):',trial2_h_p_tens(1,1,1),'  before setting trial1 to 1'
-                    write(6,*) '        t2_h_p(2,1,1):',trial2_h_p_tens(2,1,1),'  before setting trial1 to 1'
-                    write(6,*) '        t2_h_p(2,2,1):',trial2_h_p_tens(2,2,1),'  before setting trial1 to 1'
+!                   end if
+! aspg, for now, we only set the tens1 part of the trial vectors
                     trial1_h_p_tens(j) = ONE
-                    write(6,*) '        t1_h_p(',j,'):',trial1_h_p_tens(j),'   after setting to 1'
-                    write(6,*) '        t2_h_p(1,1,1):',trial2_h_p_tens(1,1,1),'   after setting trial1 to 1'
-                    write(6,*) '        t2_h_p(2,1,1):',trial2_h_p_tens(2,1,1),'   after setting trial1 to 1'
-                    write(6,*) '        t2_h_p(2,2,1):',trial2_h_p_tens(2,2,1),'   after setting trial1 to 1'
               end select
            end if
-!          write(6,*)'   ff',trial1_h_p_tens
         end do
 
         deallocate (diagonal)
 
-        select case(flavor)
-           case("IP")
-              do iroot = 1, workspace%nroots
-
-                 trial1_body_p = c_null_ptr
-                 trial2_body_p = c_null_ptr
-
-                 write (6,*) 'debug >>> trial1_h_p_tens, root',iroot,' >>>'
-                 ierr = talsh_tensor_dimensions(workspace%trial1(iroot),trial1_h_p_rank,trial1_h_p_dims)
-                 ierr = talsh_tensor_get_body_access(workspace%trial1(iroot),trial1_body_p,C8,0,DEV_HOST)
-                 write (6,*) 'root',iroot,' trial1_h_p_rank',trial1_h_p_rank
-                 write (6,*) 'root',iroot,' trial1_h_p_dims',trial1_h_p_dims
-                 write (6,*) 'root',iroot,' trial1_body_p',trial1_body_p
-                 call c_f_pointer(trial1_body_p,trial1_h_p_tens,trial1_h_p_dims(1:trial1_h_p_rank))
-
-!                call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
-                 do i = 1, trial1_h_p_dims(1)
-                     write (6,*) i, trial1_h_p_tens(i)
-                 end do
-                 write (6,*) 'debug <<< trial1_h_p_tens <<<'
-
-                 write (6,*) 'debug >>> trial2_h_p_tens, root',iroot,' >>>'
-                 ierr = talsh_tensor_dimensions(workspace%trial2(iroot),trial2_h_p_rank,trial2_h_p_dims)
-                 ierr = talsh_tensor_get_body_access(workspace%trial2(iroot),trial2_body_p,C8,0,DEV_HOST)
-                 write (6,*) 'root',iroot,' trial2_rank',trial2_h_p_rank
-                 write (6,*) 'root',iroot,' trial2_dims',trial2_h_p_dims
-                 write (6,*) 'root',iroot,' trial2_body_p',trial2_body_p
-
-                 call c_f_pointer(trial2_body_p,trial2_h_p_tens,trial2_h_p_dims(1:trial2_h_p_rank))
-
-!                call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
-                 b = 0
-                 do i = 1, trial2_h_p_dims(3)
-                    do j = 1, trial2_h_p_dims(2)
-                       do a = 1, trial2_h_p_dims(1)
-                          b = b + 1
-                          write (6,*) b, a, j, i, trial2_h_p_tens(a,j,i)
+! debug information
+        if (debug_trial) then
+           select case(flavor)
+              case("IP")
+                 do iroot = 1, workspace%nroots
+   
+                    ierr = talsh_tensor_get_body_access(workspace%trial1(iroot),trial1_body_p,C8,0,DEV_HOST)
+                    ierr = talsh_tensor_get_body_access(workspace%trial2(iroot),trial2_body_p,C8,0,DEV_HOST)
+                    call c_f_pointer(trial1_body_p,trial1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
+                    call c_f_pointer(trial2_body_p,trial2_h_p_tens,workspace%tens2_dims(1:workspace%tens2_rank))
+   
+                    write (6,*) 'debug >>> trial1_h_p_tens, root',iroot,' >>>'
+!                   call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
+                    do i = 1, workspace%tens1_dims(1)
+                        write (6,*) i, trial1_h_p_tens(i)
+                    end do
+                    write (6,*) 'debug <<< trial1_h_p_tens <<<'
+   
+                    write (6,*) 'debug >>> trial2_h_p_tens, root',iroot,' >>>'
+!                   call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
+                    b = 0
+                    do i = 1, workspace%tens2_dims(3)
+                       do j = 1, workspace%tens2_dims(2)
+                          do a = 1, workspace%tens2_dims(1)
+                             b = b + 1
+                             write (6,*) b, a, j, i, trial2_h_p_tens(a,j,i)
+                       end do
                        end do
                     end do
                  end do
-              end do
-        end select
-
-!      call quit('bb') 
+           end select
+        end if
 
      end subroutine
 
@@ -278,13 +202,13 @@ module talsh_eom
       type(talsh_tens_t), intent(inout) :: Fmi_tensor, Fae_tensor
       character(len=2), intent(in) :: flavor
       integer :: nocc, nvir, i, j, a, b, ierr 
-      integer :: hdiag1_dims(2), hdiag2_dims(4), tens1_rank, tens2_rank
       integer :: Fmi_dims(2), Fae_dims(2), Fmi_rank, Fae_rank
       real(8) :: diagonal
       complex(8), pointer, contiguous:: hdiag1_hp_tens(:,:), hdiag2_hp_tens(:,:,:,:)
       complex(8), pointer, contiguous:: hdiag1_h_p_tens(:),  hdiag2_h_p_tens(:,:,:)
       complex(8), pointer, contiguous:: Fmi_p_tens(:,:), Fae_p_tens(:,:) 
-      type(C_PTR):: Hdiag1_body_p, Hdiag2_body_p, Fmi_body_p, Fae_body_p
+      type(C_PTR):: hdiag1_body_p, hdiag2_body_p
+      type(C_PTR):: Fmi_body_p, Fae_body_p
 
 
       diagonal = ZERO
@@ -295,36 +219,21 @@ module talsh_eom
 
       ierr = talsh_tensor_dimensions(Fae_tensor,Fae_rank,Fae_dims)
       ierr = talsh_tensor_get_body_access(Fae_tensor,Fae_body_p,C8,0,DEV_HOST)
-      call c_f_pointer(Fae_body_p,fae_p_tens,Fmi_dims(1:2))
+      call c_f_pointer(Fae_body_p,fae_p_tens,Fae_dims(1:2))
 
-      ierr = talsh_tensor_dimensions(workspace%Hdiag1,tens1_rank,hdiag1_dims)
-      ierr = talsh_tensor_get_body_access(workspace%Hdiag1,Hdiag1_body_p,C8,0,DEV_HOST)
-
-      ierr = talsh_tensor_dimensions(workspace%Hdiag2,tens2_rank,hdiag2_dims)
-      ierr = talsh_tensor_get_body_access(workspace%Hdiag2,Hdiag2_body_p,C8,0,DEV_HOST)
-
-      print *,'debug, in Hdiag_create: tens1_rank',tens1_rank,'hdiag1_dims',hdiag1_dims
-      print *,'debug, in Hdiag_create: tens2_rank',tens2_rank,'hdiag2_dims',hdiag2_dims
+      ierr = talsh_tensor_get_body_access(workspace%Hdiag1,hdiag1_body_p,C8,0,DEV_HOST)
+      ierr = talsh_tensor_get_body_access(workspace%Hdiag2,hdiag2_body_p,C8,0,DEV_HOST)
 
 ! transfer the diagonals of 
 
-
       select case(flavor)
          case("IP")
-            call c_f_pointer(Hdiag1_body_p,hdiag1_h_p_tens,hdiag1_dims(1:1))
-            call c_f_pointer(Hdiag2_body_p,hdiag2_h_p_tens,hdiag2_dims(1:3))
+            call c_f_pointer(hdiag1_body_p,hdiag1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
+            call c_f_pointer(hdiag2_body_p,hdiag2_h_p_tens,workspace%tens2_dims(1:workspace%tens2_rank))
 
-     write (6,*) 'hdiag1_dims',hdiag1_dims 
-     write (6,*) 'hdiag1_dims(1)',hdiag1_dims(1) 
-     write (6,*) 'hdiag1_dims(2)',hdiag1_dims(2) 
-     write (6,*) 'hdiag2_dims',hdiag2_dims 
-     write (6,*) 'hdiag2_dims(1)',hdiag2_dims(1) 
-     write (6,*) 'hdiag2_dims(2)',hdiag2_dims(2) 
-     write (6,*) 'hdiag2_dims(3)',hdiag2_dims(3) 
-     write (6,*) 'hdiag2_dims(4)',hdiag2_dims(4) 
-
-            do i = 1,  hdiag1_dims(1) 
+            do i = 1,  workspace%tens1_dims(1)
                diagonal = -fmi_p_tens(i,i)
+               write (6,*) 'f_ii:',fmi_p_tens(i,i),'diag:',diagonal
                hdiag1_h_p_tens(i) = diagonal
             end do
 
@@ -332,10 +241,11 @@ module talsh_eom
      write (6,*) hdiag1_h_p_tens(1:nocc)
      write (6,*) 'debug <<< hdiag1_h_p_tens <<<'
 
-            do i = 1, hdiag2_dims(3)
-               do j = 1, hdiag2_dims(2)
-                  do a = 1, hdiag2_dims(1) 
+            do i = 1, workspace%tens2_dims(3)
+               do j = 1, workspace%tens2_dims(2)
+                  do a = 1, workspace%tens2_dims(1)
                      diagonal = fae_p_tens(a,a) - fmi_p_tens(j,j) - fmi_p_tens(i,i)
+                     write (6,*) 'f_ii:',fmi_p_tens(i,i),'f_jj:',fmi_p_tens(j,j),'f_aa',fae_p_tens(a,a),'diag:',diagonal
                      hdiag2_h_p_tens(a,j,i) = diagonal 
                   end do
                end do
@@ -346,16 +256,17 @@ module talsh_eom
 !    write (6,*) 'debug <<< hdiag2_h_p_tens <<<'
 
          case("EA")
-            call c_f_pointer(Hdiag1_body_p,hdiag1_h_p_tens,hdiag1_dims(1:1))
-            call c_f_pointer(Hdiag2_body_p,hdiag2_h_p_tens,hdiag2_dims(1:3))
-            do a = 1, hdiag1_dims(1) 
+            call c_f_pointer(hdiag1_body_p,hdiag1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
+            call c_f_pointer(hdiag2_body_p,hdiag2_h_p_tens,workspace%tens2_dims(1:workspace%tens2_rank))
+
+            do a = 1, workspace%tens1_dims(1)
                diagonal = fae_p_tens(a,a)
                hdiag1_h_p_tens(a) = diagonal
             end do
 
-            do i = 1, hdiag2_dims(3) 
-               do b = 1, hdiag2_dims(2) 
-                  do a = 1, hdiag2_dims(1) 
+            do i = 1, workspace%tens2_dims(3)
+               do b = 1, workspace%tens2_dims(2)
+                  do a = 1, workspace%tens2_dims(1)
                      diagonal = fae_p_tens(a,a) + fae_p_tens(b,b) - fmi_p_tens(i,i) 
                      hdiag2_h_p_tens(a,b,i) = diagonal
                   end do
@@ -363,19 +274,20 @@ module talsh_eom
             end do
 
          case("EE")
-            call c_f_pointer(Hdiag1_body_p,hdiag1_hp_tens,hdiag1_dims(1:2))
-            call c_f_pointer(Hdiag2_body_p,hdiag2_hp_tens,hdiag2_dims(1:4))
-            do i = 1, hdiag1_dims(2) 
-               do a = 1, hdiag1_dims(1)
+            call c_f_pointer(hdiag1_body_p,hdiag1_hp_tens,workspace%tens1_dims(1:workspace%tens1_rank))
+            call c_f_pointer(hdiag2_body_p,hdiag2_hp_tens,workspace%tens2_dims(1:workspace%tens2_rank))
+
+            do i = 1, workspace%tens1_dims(2)
+               do a = 1, workspace%tens1_dims(1)
                   diagonal = fae_p_tens(a,a) - fmi_p_tens(i,i)
                   hdiag1_hp_tens(a,i) = diagonal
                end do
             end do
 
-            do j = 1, hdiag2_dims(4) 
-               do i = 1, hdiag2_dims(3) 
-                  do b = 1,  hdiag2_dims(2) 
-                     do a = 1,  hdiag2_dims(1) 
+            do j = 1,  workspace%tens2_dims(4)
+               do i = 1,  workspace%tens2_dims(3)
+                  do b = 1,  workspace%tens2_dims(2)
+                     do a = 1,   workspace%tens2_dims(1)
                         diagonal = fae_p_tens(a,a) + fae_p_tens(b,b) - fmi_p_tens(j,j) - fmi_p_tens(i,i)
                         hdiag2_hp_tens(a,b,i,j) = diagonal
                      end do
