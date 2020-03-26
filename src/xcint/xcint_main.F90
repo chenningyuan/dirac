@@ -2704,6 +2704,7 @@ contains
     real(8)                :: y_b(3)
 
     integer                :: k_start, k, im, im_off, j, ioff, i
+    integer                :: irep(nr_fmat)
     type(omega_prefactor) :: u
 
     real(8) :: temp(pertden_nr_columns)
@@ -2713,6 +2714,7 @@ contains
 !   s_b_lao(Sigma_{x,y,z}, B_{x,y,z})
     s_b_lao = 0.0d0
     gs_b_lao = 0.0d0
+    irep = 0 ! irep of unperturbed dmat_0 (totally symmetric)
 
     k_start = 1
     if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
@@ -2729,7 +2731,7 @@ contains
 
       call get_gs_lao(s_b_lao,    &
                      gs_b_lao,    &
-                     (/0/),       & ! irep of unperturbed dmat_0 (totally symmetric)
+                     irep,        &
                      mat_dim,     &
                      dmat_full,   & ! this is the unperturbed dmat_0
                      ao,          &
@@ -2744,7 +2746,7 @@ contains
       !                          (/px, py, pz/))
 
       call get_s_lao(s_b_lao,      &
-                     (/0/),        & ! irep of unperturbed dmat_0 (totally symmetric)
+                     irep,         &
                      mat_dim,      &
                      dmat_full,    & ! this is the unperturbed dmat_0
                      ao,           & 
