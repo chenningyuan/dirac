@@ -11,8 +11,8 @@
 # (6) qforce.{N-1}.log, where N = QF_NUM_PROCS.
 #----------------------------------------------
 
-#BSUB -nnodes 30
-#BSUB -W 02:00
+#BSUB -nnodes 20
+#BSUB -W 2:00
 #BSUB -P CHP109
 #BSUB -J dirac
 #BSUB -o info_%J.out
@@ -24,7 +24,7 @@ export EX_PATH=$DIRAC_PATH
 export BASDIR=${DIRAC_PATH}/basis:${DIRAC_PATH}/basis_dalton:${DIRAC_PATH}/basis_ecp
 
 # number of mpi processes (2*nnodes)
-export nmpi=60
+export nmpi=40
 
 # Load modules:
 module load gcc/8.1.1
@@ -41,5 +41,6 @@ module unload darshan-runtime
 ulimit -s unlimited
 
 # run cc
-$EX_PATH/pam --mpi=$nmpi --mol=$MOL_file --inp=$INP_file --put="DFCOEF" --get="DFCOEF" --keep_scratch
+$EX_PATH/pam --mpi=$nmpi --mol=$MOL_file --inp=$INP_file --put="DFCOEF" --get="DFCOEF"
+
 
