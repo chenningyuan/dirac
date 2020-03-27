@@ -30,6 +30,12 @@ end interface
 
 interface davidson_print_vectors
     module procedure davidson_print_vectors_real
+    module procedure davidson_print_vectors_complex
+end interface
+
+interface print_values_vectors
+     module procedure print_values_vectors_R
+     module procedure print_values_vectors_C
 end interface
 
 interface davidson_print_vectors_complex
@@ -662,6 +668,43 @@ contains
         deallocate(projection)
     end subroutine 
 
+
+    subroutine davidson_print_vectors_complex(vectors, label, nvectors)
+        complex(kind=8), intent(in) :: vectors(:,:)
+        integer, intent(in), optional :: nvectors
+        character(len=max_label_length), intent(in), optional :: label
+
+        integer :: L, N, i, j
+        real(kind=8) :: vr, vi
+        real(kind=8) :: print_vector_threshold = 1.0d-10
+        character(len=max_label_length) :: label_local
+
+        N = size(vectors,1)
+        L = size(vectors,2)
+        if (present(nvectors)) L = nvectors
+
+        if (present(label)) then
+            label_local = label
+            print *, ""
+            print "(a)", label_local(1:max_label_length)
+            print *, ""
+            print *, ""
+        end if
+
+        do i = 1, N
+            print "(2x,i6,$)", i
+            do j = 1, L
+                vr = real(vectors(i,j))
+                vi = aimag(vectors(i,j))
+                if (abs(vi).lt.print_vector_threshold) vi = 0.0d0
+                if (abs(vr).lt.print_vector_threshold) vr = 0.0d0
+                print '(4x,1e14.6,2x,SP,1e14.6,"i",$)', cmplx(vr,vi)
+            end do
+            print *, ""
+        end do
+    end subroutine 
+
+
     subroutine davidson_print_vectors_real(vectors, label, nvectors, complex_dimension)
         real(kind=8), intent(in) :: vectors(:,:)
         integer, intent(in), optional :: nvectors
@@ -776,7 +819,7 @@ contains
 
 
 
-    subroutine print_values_vectors_R(output_file_unit, eValues, eVectorsR, eVectorsL, left, right, nroots)
+    subroutine print_values_vectors_C(output_file_unit, eValues, eVectorsR, eVectorsL, left, right, nroots)
         complex(kind=8), intent(in) :: eVectorsL(:,:)
         complex(kind=8), intent(in) :: eVectorsR(:,:)
         complex(kind=8), intent(in) :: eValues(:)
@@ -819,14 +862,69 @@ contains
         end do
         if (left) then
             label = "Left Eigenvectors            "
-!           call davidson_print_vectors(eVectorsL, label=label) 
+            call davidson_print_vectors(eVectorsL, label=label) 
         end if
         if (right) then
             label = "Right Eigenvectors           "
-!           call davidson_print_vectors(eVectorsR, label=label) 
+            call davidson_print_vectors(eVectorsR, label=label) 
         end if
 
     end subroutine 
+
+    subroutine print_values_vectors_R(output_file_unit, eValues, eVectorsR, eVectorsL, left, right, nroots)
+        real(kind=8), intent(in) :: eVectorsL(:,:)
+        real(kind=8), intent(in) :: eVectorsR(:,:)
+        real(kind=8), intent(in) :: eValues(:,:)
+        integer, optional, intent(in) :: nroots
+        integer, intent(in) :: output_file_unit
+
+        logical :: left, right
+        integer :: vectors_N
+        integer :: nroots_local
+        integer :: i
+        character(len=max_label_length) :: label
+        real(kind=8) :: vr, vi
+! aspg, for debugging, set this threshold to eliminate small values in printout
+!       for both real (and imaginary) parts
+        real(kind=8) :: print_values_threshold = 1.0d-10
+
+
+        vectors_N = size(eValues,1)
+        nroots_local = vectors_N
+        if (present(nroots)) nroots_local = nroots
+
+        label = "Eigenvalues"
+        if (davidson_debug) print *, "debug, evalues inside print_values_vectors_R"
+        if (davidson_debug) print *, eValues(1,:)
+        if (davidson_debug) print *, eValues(2,:)
+
+        do i = 1, nroots_local
+            vr = eValues(1,i)
+            vi = eValues(2,i)
+            if (abs(vi).lt.print_values_threshold) vi = 0.0d0
+            if (abs(vr).lt.print_values_threshold) vr = 0.0d0
+
+            if (vi .lt. 0.0d0) then
+                write (davidson_output_file_unit,'(4x,a,i6,a,1e14.6,a,1e14.6,a)')  &
+                      "Eigenvalue ",i," : ", vr," -",abs(vi)," i"
+            else if (vi .gt. 0.0d0) then
+                write (davidson_output_file_unit,'(4x,a,i6,a,1e14.6,a,1e14.6,a)')  &
+                      "Eigenvalue ",i," : ", vr," +",abs(vi)," i"
+            else
+                write (davidson_output_file_unit,'(4x,a,i6,a,1e14.6)')  &
+                      "Eigenvalue ",i," : ", vr
+            end if
+        end do
+        if (left) then
+            label = "Left Eigenvectors            "
+            call davidson_print_vectors(eVectorsL, label=label)
+        end if
+        if (right) then
+            label = "Right Eigenvectors           "
+            call davidson_print_vectors(eVectorsR, label=label)
+        end if
+
+    end subroutine
 
     function vector_norm(v)
         real(kind=8) :: vector_norm
@@ -850,6 +948,7 @@ contains
         complex(kind=8) :: factor1, factor2
         integer(INTD) :: r1_rank 
         integer :: ierr, i
+        logical :: debug_form_r = .true.
 
 ! we only need to know the rank of delta1 because the rank of r2 will always be r1_rank+2, that is: 
 ! r1 = 1 (1h for IP, 1p for EA) then r2 = 3 (2h1p for IP, 1h2p for EA)
@@ -861,10 +960,15 @@ contains
         ierr=talsh_tensor_init(workspace%delta1(k), ZERO)
         ierr=talsh_tensor_init(workspace%delta2(k), ZERO)
 
+!       if (debug_form_r) then
+!          call davidson_print_vectors(eigenvectors_subspace,   label="eigenvectors_subspace in form_r")
+!       end if
+
         do i = 1, workspace%L
 
            factor1 =  eigenvectors_subspace(i,k)
            factor2 = -eigenvalues_subspace(k)*factor1
+           if (debug_form_r) write(6,*) 'i',i,'alpha(i,k)',factor1,'lambda*alpha',factor2
 
            if (r1_rank.eq.1) then
               ierr=talsh_tensor_add("r(a)+=s(a)",workspace%delta1(k),workspace%sigma1(i),scale=factor1)
@@ -881,7 +985,18 @@ contains
               ierr=talsh_tensor_add("r(a,b,c,d)+=t(a,b,c,d)",workspace%delta2(k),workspace%trial2(i),scale=factor2)
 
            end if
+       
        end do
+
+       if (debug_form_r) then
+          write (6,*) 'debug >>> in form_r_tensors, r1 root',k,' >>>'
+          call print_tensor_elements(workspace%delta1(k))
+          write (6,*) 'debug <<< in form_r_tensors, r1 <<<'
+          write (6,*) 'debug >>> in form_r_tensors, r2 root',k,' >>>'
+          call print_tensor_elements(workspace%delta2(k))
+          write (6,*) 'debug <<< in form_r_tensors, r1 <<<'
+       end if
+
 
     end subroutine    
 
@@ -900,6 +1015,7 @@ contains
         integer :: ierr, k, unconverged_roots
         real(kind=8) :: norm_r = 0.0d0
         logical :: correct_all_local
+        logical :: debug_correction_vectors = .true.
 
         if (present(correct_all)) then
             correct_all_local = correct_all
@@ -944,6 +1060,16 @@ contains
                  ierr=talsh_tensor_init(workspace%delta1(k), ZERO)
                  ierr=talsh_tensor_init(workspace%delta2(k), ZERO)
               end if
+
+              if (debug_correction_vectors) then
+                 write (6,*) 'debug >>> in correction_to_vectors, delta1 root',k,' >>>'
+                 call print_tensor_elements(workspace%delta1(k))
+                 write (6,*) 'debug <<< in correction_to_vectors, delta1 <<<'
+                 write (6,*) 'debug >>> in form_r_tensors, delta2 root',k,' >>>'
+                 call print_tensor_elements(workspace%delta2(k))
+                 write (6,*) 'debug <<< in correction_to_vectors, delta2 <<<'
+              end if
+
            end do
         else
             deallocate(correction_to_vectors)
@@ -967,7 +1093,7 @@ contains
         type(C_PTR):: preco1_body_p, preco2_body_p
         type(C_PTR):: hdiag1_body_p, hdiag2_body_p
 
-        integer :: iroot, ja, jb, jc, jd, ierr
+        integer :: iroot, ja, jb, jc, jd, ierr, b
         integer :: nroots
         real(kind=8) :: x2py2, proj_r, proj_i, eigenvalue_r, eigenvalue_i 
         logical :: preconditioner_debug = .true.
@@ -1048,8 +1174,10 @@ contains
 
                  if (preconditioner_debug) then
                     write (6,*) 'debug >>> precon1_tens  root',iroot,' >>>'
+                    b = 0
                     do ja = 1, workspace%tens1_dims(1)
-                       write (6,*) preco_1d_p(ja)
+                       b = b + 1
+                       write (6,*) b, preco_1d_p(ja)
                     end do
                     write (6,*) 'debug <<< precon1_tens <<<'
 
@@ -1057,7 +1185,8 @@ contains
                     do jc = 1, workspace%tens2_dims(3)
                        do jb = 1, workspace%tens2_dims(2)
                           do ja = 1, workspace%tens2_dims(1)
-                              write (6,*) preco_3d_p(ja,jb,jc)   
+                              b = b + 1
+                              write (6,*) b, ja, jb, jc, preco_3d_p(ja,jb,jc)   
                           end do
                        end do
                     end do
@@ -1110,9 +1239,11 @@ contains
 
                  if (preconditioner_debug) then
                     write (6,*) 'debug >>> precon1_tens  root',iroot,' >>>'
+                    b = 0
                     do jb = 1, workspace%tens1_dims(2)
                        do ja = 1, workspace%tens1_dims(1)
-                          write (6,*) preco_2d_p(ja,jb)
+                          b = b + 1
+                          write (6,*) b, ja, jb, preco_2d_p(ja,jb)
                        end do
                     end do
                     write (6,*) 'debug <<< precon1_tens <<<'
@@ -1122,7 +1253,8 @@ contains
                        do jc = 1, workspace%tens2_dims(3)
                           do jb = 1, workspace%tens2_dims(2)
                              do ja = 1, workspace%tens2_dims(1)
-                                 write (6,*) preco_4d_p(ja,jb,jc,jd) 
+                                 b = b + 1
+                                 write (6,*) b, ja, jb, jc, jd, preco_4d_p(ja,jb,jc,jd) 
                              end do
                           end do
                        end do
@@ -1741,17 +1873,14 @@ contains
                                                         left=davidson_solve_lhs,      &
                                                         right=davidson_solve_rhs,     &
                                                         nroots=nroots,                &
-                                                        verbose=davidson_verbose)
+                                                        verbose=.true.)
+!                                                       verbose=davidson_verbose)
 
             if (davidson_solve_rhs.and.davidson_overlap_sorting) then
-                if (davidson_complex_mode_with_reals) then
-                    c_small_r_old = c_small_r(1:2*nroots,1:nroots)
-                end if
+                c_small_r_old = c_small_r
             end if
             if (davidson_solve_lhs.and.davidson_overlap_sorting) then
-                if (davidson_complex_mode_with_reals) then
-                    c_small_l_old = c_small_l(1:2*nroots,1:nroots)
-                end if
+                c_small_l_old = c_small_l
             end if
  
             call form_preconditioner(workspace, e_small)
@@ -1898,9 +2027,6 @@ contains
         end if
 
         M_nroots = size(M,1) 
-        if (davidson_complex_mode_with_reals) then
-            M_nroots = M_nroots / 2
-        end if
 
         if (present(nroots)) then
             nroots_to_print = nroots
@@ -1919,17 +2045,13 @@ contains
                 allocate(overlap(nroot,M_nroots))
                 overlap = 0.0d0 
                 if(right_local) then    
-                    if (davidson_complex_mode_with_reals) then
 ! aspg, check consistency of complex and real modes after real mode is validated
-                        call zgemm('C', 'N', nroot, M_nroots, nroot, (1.0d0, 0.0d0), eVectorsR_old, &
-                                   nroot, eVectorsR(1:2*nroot,1:M_nroots), nroot, (1.0d0, 0.0d0), overlap, nroot)
-                    end if
+                    call zgemm('C', 'N', nroot, M_nroots, nroot, (1.0d0, 0.0d0), eVectorsR_old, &
+                               nroot, eVectorsR, nroot, (1.0d0, 0.0d0), overlap, nroot)
                 else if (left_local) then
-                    if (davidson_complex_mode_with_reals) then
 ! aspg, check consistency of complex and real modes after real mode is validated
-                        call zgemm('C', 'N', nroot, M_nroots, nroot, (1.0d0, 0.0d0), eVectorsL_old, &
-                                   nroot, eVectorsL(1:2*nroot,1:M_nroots), nroot, (1.0d0, 0.0d0), overlap, nroot)
-                    end if
+                     call zgemm('C', 'N', nroot, M_nroots, nroot, (1.0d0, 0.0d0), eVectorsL_old, &
+                                nroot, eVectorsL, nroot, (1.0d0, 0.0d0), overlap, nroot)
                 endif
 
                 call sort_by_overlap(-1, eValues, overlap, eVectorsR, eVectorsL, &
@@ -1950,8 +2072,8 @@ contains
                                      right_local, left_local, apply_evalues_shift, eValuesShift)
         end if
 
-        call print_values_vectors_R(davidson_output_file_unit,eValues, eVectorsR, eVectorsL, &
-                                    .false., .false., nroots=nroots_to_print)
+        call print_values_vectors(davidson_output_file_unit,eValues, eVectorsR, eVectorsL, &
+                                    .true., .true., nroots=nroots_to_print)
 
     end subroutine
 
@@ -2557,6 +2679,124 @@ contains
     
        else
           call quit('mismatch in tensor ranks in multiply_tensor')
+       end if
+    
+    end subroutine 
+
+    subroutine print_tensor_elements(tensor)
+       implicit none
+    
+       type(talsh_tens_t), intent(inout)    :: tensor
+    
+       integer(INTD)  ::  rank
+       integer(INTD)  ::  dims1(1)
+       integer(INTD)  ::  dims2(1:2)
+       integer(INTD)  ::  dims3(1:3)
+       integer(INTD)  ::  dims4(1:4)
+       integer(INTD)  ::  ierr
+       integer  ::  i, j, k, l, b
+       type(C_PTR)         :: body
+       complex(8), pointer :: tens1(:)
+       complex(8), pointer :: tens2(:,:)
+       complex(8), pointer :: tens3(:,:,:)
+       complex(8), pointer :: tens4(:,:,:,:)
+       real(8)    :: threshold = 1.0e-10
+       complex(8) :: value_to_print
+    
+       rank=talsh_tensor_rank(tensor)
+    
+       if (rank.eq.1) then
+         ierr = talsh_tensor_dimensions(tensor,rank,dims1)
+         ierr=talsh_tensor_get_body_access(tensor,body,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body,tens1,dims1)
+    
+         b = 0
+         do i = 1, dims1(1)
+            b = b + 1
+            value_to_print = tens1(i)
+            if ((real(value_to_print).le.threshold).and.(aimag(value_to_print).le.threshold)) then
+               value_to_print = ZERO
+            else if ((real(value_to_print).gt.threshold).and.(aimag(value_to_print).le.threshold)) then
+               value_to_print = cmplx(real(value_to_print),0.0d0) 
+            else if ((real(value_to_print).le.threshold).and.(aimag(value_to_print).le.threshold)) then
+               value_to_print = cmplx(0.0d0,aimag(value_to_print)) 
+            end if
+            write(6,'(4x,i6,1e14.6,2x,SP,1e14.6,"i")') b, value_to_print
+         end do
+    
+       else if (rank.eq.2) then
+         ierr = talsh_tensor_dimensions(tensor,rank,dims2)
+         ierr=talsh_tensor_get_body_access(tensor,body,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body,tens2,dims2)
+    
+         b = 0
+         do j = 1, dims2(2)
+           do i = 1, dims2(1)
+            b = b + 1
+            value_to_print = tens2(i,j)
+            if ((real(value_to_print).le.threshold).and.(aimag(value_to_print).le.threshold)) then
+               value_to_print = ZERO
+            else if ((real(value_to_print).gt.threshold).and.(aimag(value_to_print).le.threshold)) then
+               value_to_print = cmplx(real(value_to_print),0.0d0)
+            else if ((real(value_to_print).le.threshold).and.(aimag(value_to_print).le.threshold)) then
+               value_to_print = cmplx(0.0d0,aimag(value_to_print))
+            end if
+            write(6,'(4x,i6,2x,i6,2x,i6,2x,1e14.6,2x,SP,1e14.6,"i")') b, i, j, value_to_print
+
+           end do
+         end do
+    
+       else if (rank.eq.3) then
+         ierr = talsh_tensor_dimensions(tensor,rank,dims3)
+         ierr=talsh_tensor_get_body_access(tensor,body,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body,tens3,dims3)
+
+         do k = 1, dims3(3)
+            do j = 1, dims3(2)
+              do i = 1, dims3(1)
+                 b = b + 1
+                 value_to_print = tens3(i,j,k)
+                 if ((real(value_to_print).le.threshold).and.(aimag(value_to_print).le.threshold)) then
+                    value_to_print = ZERO
+                 else if ((real(value_to_print).gt.threshold).and.(aimag(value_to_print).le.threshold)) then
+                    value_to_print = cmplx(real(value_to_print),0.0d0)
+                 else if ((real(value_to_print).le.threshold).and.(aimag(value_to_print).le.threshold)) then
+                    value_to_print = cmplx(0.0d0,aimag(value_to_print))
+                 end if
+                 write(6,'(4x,i6,2x,i6,2x,i6,2x,i6,2x,1e14.6,2x,SP,1e14.6,"i")') b, i, j, k, value_to_print
+
+             end do
+           end do
+         end do
+    
+       else if (rank.eq.4) then
+         ierr = talsh_tensor_dimensions(tensor,rank,dims4)
+         ierr=talsh_tensor_get_body_access(tensor,body,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body,tens4,dims4)
+
+         b = 0
+         do l = 1, dims4(4)
+            do k = 1, dims4(3)
+              do j = 1, dims4(2)
+                do i = 1, dims4(1)
+                   b = b + 1
+                   value_to_print = tens4(i,j,k,l)
+                   if ((real(value_to_print).le.threshold).and.(aimag(value_to_print).le.threshold)) then
+                      value_to_print = ZERO
+                   else if ((real(value_to_print).gt.threshold).and.(aimag(value_to_print).le.threshold)) then
+                      value_to_print = cmplx(real(value_to_print),0.0d0)
+                   else if ((real(value_to_print).le.threshold).and.(aimag(value_to_print).le.threshold)) then
+                      value_to_print = cmplx(0.0d0,aimag(value_to_print))
+                   end if
+                   write(6,'(4x,i6,2x,i6,2x,i6,2x,i6,2x,i6,2x,1e14.6,2x,SP,1e14.6,"i")') b, i, j, k, l, value_to_print
+
+                end do
+             end do
+           end do
+         end do
+    
+       else
+          call quit('unsupported tensor rank in print_tensor_elements')
        end if
     
     end subroutine 
