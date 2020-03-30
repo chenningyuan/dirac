@@ -2160,6 +2160,7 @@ C
         call dzero(dmat_0, n2bbasx*nz)
         call genden(dmat_0, cmo, 1, iprprp)
 
+        sus2el_fde   = 0.0d0
         sus2el_fde_1 = 0.0d0
         sus2el_fde_2 = 0.0d0
         sus2el_fde_3 = 0.0d0
