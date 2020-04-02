@@ -247,20 +247,22 @@ module exacorr_ao_to_mo
            if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
            call print_date('created mo integral tensor')
 
+           ierr=exatns_tensor_init(moint_tensor,ZERO)
            call aomo_transform_1 (aoint_tensor,moint_tensor)
            call print_date('completed mo integral tensor: algorithm 1')
            print*, "moint = ", print_tensornorm2 (moint_tensor)
 
-           ierr=exatns_tensor_init(moint_tensor,zero)
+           ierr=exatns_tensor_init(moint_tensor,ZERO)
            call aomo_transform_2 (aoint_tensor,moint_tensor)
            call print_date('completed mo integral tensor: algorithm 2')
            print*, "moint = ", print_tensornorm2 (moint_tensor)
 
-           ierr=exatns_tensor_init(moint_tensor,zero)
+           ierr=exatns_tensor_init(moint_tensor,ZERO)
            call aomo_transform_3 (ao_space_id,ao_space_root,moint_tensor)
            call print_date('completed mo integral tensor: algorithm 3')
            print*,"moint = ", print_tensornorm2 (moint_tensor)
 
+           ierr=exatns_tensor_init(moint_tensor,ZERO)
            call get_integral_tensor (aoint_tensor,moint_tensor,0)
            call print_date('completed dirac-sorted mo integral tensor - not anti-symmetrized')
            print*,"moint = ", print_tensornorm2 (moint_tensor)
@@ -274,11 +276,13 @@ module exacorr_ao_to_mo
            end do
            ierr=exatns_tensor_create(moint_tensor,'motensor',mo_space_id,mo_space_root,EXA_DATA_KIND_C8)
            if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
-
+           
+           ierr=exatns_tensor_init(moint_tensor,ZERO)
            call get_integral_tensor (aoint_tensor,moint_tensor,12)
            call print_date('completed dirac-sorted mo integral tensor - 12 anti-symmetrized')
            print*,"moint = ", print_tensornorm2 (moint_tensor)
-
+           
+           ierr=exatns_tensor_init(moint_tensor,ZERO)
            call get_integral_tensor (aoint_tensor,moint_tensor,34)
            call print_date('completed dirac-sorted mo integral tensor - 34 anti-symmetrized')
            print*, "moint = ", print_tensornorm2 (moint_tensor)
@@ -339,6 +343,7 @@ module exacorr_ao_to_mo
          a2int_root(1:2) = moint_root(1:2)
          a2int_root(3:4) = aoint_root(3:4)
          ierr=exatns_tensor_create(a2int_tensor,'a2int',a2int_id,a2int_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_init(a2int_tensor,ZERO)
 
 !        Do 1st and 2nd quarter-transformation
          call get_ht1_integral_tensor (aoint_tensor,a2int_tensor)
@@ -382,8 +387,6 @@ module exacorr_ao_to_mo
          if(ierr.ne.EXA_SUCCESS) call quit('aoint tensor corrupted')
          call a2int_tensor%get_space_ids(a2int_id,a2int_root,ierr)
          if(ierr.ne.EXA_SUCCESS) call quit('a2int tensor corrupted')
-
-         ierr=exatns_tensor_init(a2int_tensor,ZERO)
 
 !        Initialize tensors with MO coefficients, one for each index and alpha/beta
          do i = 1, 2
@@ -584,6 +587,7 @@ module exacorr_ao_to_mo
 
 !        Do 1st half-transformation
          ierr=exatns_tensor_create(a2int_tensor,'a2int',a2int_id,a2int_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_init(a2int_tensor,ZERO)
          if (print_level >0) call print_date('constructed a2')
          ierr=exatns_tensor_contract(a2int_tensor,aoint_tensor,dm_tensor,"D(i,j,r,s)+=L(p,q,r,s)*R(p,q,i,j)")
          if(ierr.ne.EXA_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=1; return; endif
@@ -709,7 +713,7 @@ module exacorr_ao_to_mo
          if (ierr.ne.0 .or. tens_rank.ne.4) call quit('input tensor corrupted in aomo_transform')
          tens_rank = integral_tensor%get_rank(ierr)
          if (ierr.ne.0 .or. tens_rank.ne.4) call quit('output tensor corrupted in aomo_transform')
-
+         
 !        Determine ids and root
          call aoint_tensor%get_space_ids(aoint_id,aoint_root,ierr)
          if(ierr.ne.EXA_SUCCESS) call quit('aoint tensor corrupted')
@@ -730,7 +734,8 @@ module exacorr_ao_to_mo
 
 !        Allocate auxilliary tensor to get integrals (without anti-symmetrization) in Mulliken order
          ierr=exatns_tensor_create(moint_tensor,'mulliken',moint_id,moint_root,EXA_DATA_KIND_C8)
-
+         ierr=exatns_tensor_init(moint_tensor,ZERO)
+        
 !        Transform integrals
          select case (algorithm)
          case (1)
@@ -772,7 +777,6 @@ module exacorr_ao_to_mo
          call integral_tensor%get_space_ids(integral_id,integral_root,ierr)
          if(ierr.ne.EXA_SUCCESS) call quit('integral tensor corrupted')
 
-
 !        Copy the information about spaces from the starting and target tensors to the auxilliary ones
 !        Use relation (12|34) = <13|24>
          moint_id(1) = integral_id(1)
@@ -787,10 +791,9 @@ module exacorr_ao_to_mo
 
 !        Allocate auxilliary tensor to get integrals (without anti-symmetrization) in Mulliken order
          ierr=exatns_tensor_create(moint_tensor,'mulliken',moint_id,moint_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_init(moint_tensor,ZERO)
 
 !        Transform integrals
-         ierr=exatns_tensor_init(moint_tensor,ZERO)
-         ierr=exatns_tensor_init(integral_tensor,ZERO)
          call aomo_halftransform_2 (a2int_tensor,moint_tensor)
 !        Switch to Dirac order and antisymmetrize
          call mulliken_to_dirac_sort (moint_tensor,integral_tensor,antisymmetrize)
