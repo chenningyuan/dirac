@@ -598,7 +598,7 @@ module talsh_cc
          !type(talsh_tens_t) :: hoo_int_tensor, hvv_int_tensor
          type(talsh_tens_t) :: t1t1_tensor, tauCC2_tensor
          type(talsh_tens_t) :: cint_ovoo_tensor
-	 type(talsh_tens_t) :: cint_xxxx_tensor
+	 type(talsh_tens_t) :: cint_vvvo_tensor
 !        auxilliary tensors for t1 equation
          type(talsh_tens_t) :: hov_aux_tensor, hoo_aux_tensor
 !        solution tensors
