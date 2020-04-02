@@ -38,6 +38,7 @@ set(FIXED_RELCCSD_FORTRAN_SOURCES
 
 set(FREE_RELCCSD_FORTRAN_SOURCES
    relcc_cfg.F90
+   spinor_indexing.F90
    auto_offset.F90
    ccsort.F90
    ccsort_exp.F90
