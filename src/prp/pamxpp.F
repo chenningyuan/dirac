@@ -2043,12 +2043,14 @@ C.....Default case
             ISYM = JFSYM(IBF,IFRP)
             SYMLAB(ISYM)=REP(ISYM-1)//' '
             MEXC=KEXCNV(ISYM)
-            CALL DCOPY(MEXC,OMEGA(1,ISYM),1,EXCERG(IOFF+1),1)
-            DO IEXC = 1,MEXC
-              IEERG(1,IOFF+IEXC) = IEXC
-              IEERG(2,IOFF+IEXC) = ISYM
-            ENDDO
-            IOFF = IOFF + MEXC
+            IF(MEXC.GT.0) THEN
+              CALL DCOPY(MEXC,OMEGA(1,ISYM),1,EXCERG(IOFF+1),1)
+              DO IEXC = 1,MEXC
+                IEERG(1,IOFF+IEXC) = IEXC
+                IEERG(2,IOFF+IEXC) = ISYM
+              ENDDO
+              IOFF = IOFF + MEXC
+            ENDIF
           ENDDO
         ENDDO
         EXCERG(1) = 0.0D0
