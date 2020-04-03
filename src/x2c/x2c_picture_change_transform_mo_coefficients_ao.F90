@@ -584,6 +584,9 @@ contains
        write(fh) (mo_coeff_2c_ao(i),i=1,ndim_2c_mo_ao)
        write(fh) (eigen_values(i),i=1,ndim_2c_ev)
        write(fh) (boson_irreps_jz_eigenvalues(i),i=1,ndim_2c_bj)
+!      Add additional information about basis set to create a simple interface file
+!      for correlated calculations (like exacorr)
+       call append_basisinfo_to_dfcoef (fh)
        close(fh,status='keep')
 
        deallocate(boson_irreps_jz_eigenvalues)
