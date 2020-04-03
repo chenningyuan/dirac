@@ -9,7 +9,7 @@ export GPU_SM_ARCH=70
 export EXA_OS=LINUX
 export WITH_CUTT=NO
 
-export PATH_OPENMPI=/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/xl-16.1.1-5/spectrum-mpi-10.3.1.2-20200121-p6nrnt6vtvkn356wqg6f74n6jspnpjd2
+export PATH_OPENMPI=/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-8.1.1/spectrum-mpi-10.3.1.2-20200121-chae23sgwacfeot7vxkpfboz6wao2c33
 
 export PATH_BLAS_ESSL=/sw/summit/essl/6.1.0-2/essl/6.1/lib64
 export PATH_IBM_XL_CPP=/sw/summit/xl/16.1.1-5/xlC/16.1.1/lib
