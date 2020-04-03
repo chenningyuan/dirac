@@ -43,5 +43,6 @@ ulimit -s unlimited
 
 # run cc
 $EX_PATH/pam --mpi=$nmpi --mol=$MOL_file --inp=$INP_file --put="DFCOEF" --get="DFCOEF"
-
+# if you want scratch for debugging 
+#$EX_PATH/pam --mpi=$nmpi --mol=$MOL_file --inp=$INP_file --put="DFCOEF" --get="DFCOEF" --keep_scratch
 
