@@ -11,7 +11,7 @@
 # (6) qforce.{N-1}.log, where N = QF_NUM_PROCS.
 #----------------------------------------------
 
-#BSUB -nnodes 20
+#BSUB -nnodes 200
 #BSUB -W 2:00
 #BSUB -P CHP109
 #BSUB -J dirac
@@ -24,7 +24,7 @@ export EX_PATH=$DIRAC_PATH
 export BASDIR=${DIRAC_PATH}/basis:${DIRAC_PATH}/basis_dalton:${DIRAC_PATH}/basis_ecp
 
 # number of mpi processes (2*nnodes)
-export nmpi=40
+export nmpi=400
 
 # Load modules:
 module load gcc/8.1.1
@@ -34,7 +34,10 @@ module load git
 module load cmake
 module load python
 module load netlib-lapack
-module load spectrum-mpi
+
+#set additional environmental variables
+export PAMI_IBV_DEVICE_NAME="mlx5_0:1,mlx5_3:1"
+export PAMI_IBV_DEVICE_NAME_1="mlx5_3:1,mlx5_0:1"
 
 ulimit -s unlimited
 
