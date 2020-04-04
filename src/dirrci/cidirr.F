@@ -143,23 +143,19 @@ C This part will calculate the RASCI property
       READ (5,CIFOPR,END=700,ERR=700)
   700 CONTINUE
       IF (PROPER) THEN
-      WRITE (6,'(//80A1)') ('#',I=1,80)
-      WRITE (6,'(A30,//A30)')'Entering RASCI Property Module',
+        WRITE (6,'(//80A1)') ('#',I=1,80)
+        WRITE (6,'(A30,//A30)')'Entering RASCI Property Module',
      &                       'Implemented by Malaya K. Nayak'
-      DO IEOPER = 1,NEOPER
-      NAMEA = NAMEE(IEOPER)
-      CALL SETUP   (CI,DONE)
-      RESTART = .TRUE.
-      IF (DONE) RETURN
-      MAXITER = 1
-      CALL DRIVER  (CI)
-      END DO
-      WRITE(6,'(//10x,A41)')'-- Normal end of RASCI Property Module --'
-      ELSE
-      WRITE (6,'(//70A1)') ('*',I=1,70)
-      WRITE (6,'(A36,//A36)')'RASCI Property Module Implemented by',
-     &                       'Dr. Malaya K. Nayak is not activated'
-      WRITE (6,'(//70A1)') ('*',I=1,70)
+        DO IEOPER = 1,NEOPER
+          NAMEA = NAMEE(IEOPER)
+          CALL SETUP   (CI,DONE)
+          RESTART = .TRUE.
+          IF (DONE) RETURN
+          MAXITER = 1
+          CALL DRIVER  (CI)
+        END DO
+        WRITE(6,'(//10x,A41)')
+     &    '-- Normal end of RASCI Property Module --'
       END IF
       call dealloc(CI)
 C
