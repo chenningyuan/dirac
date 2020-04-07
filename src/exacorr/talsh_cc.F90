@@ -664,7 +664,7 @@ module talsh_cc
          do iccsd = 1, ncycles
 
          
-          call get_tau(comm_t, CCD)
+          call get_tau(comm_t, CCD)   !L : See : is it usefull for cc2
           if (debug_local) print*, "Tau    = ",tensor_norm2(comm_t%tau)*ONE_QUARTER
           if (debug_local) print*, "t1    = ",tensor_norm2(comm_t%t1)
           if (debug_local) print*, "t2    = ",tensor_norm2(comm_t%t2)
@@ -703,7 +703,7 @@ module talsh_cc
           ierr=talsh_tensor_contract("S(a,b,i,j)+=V(a,m,e,i)*T(e,b,j,m)",s2_tensor,int_t%vovo,t1t1_tensor)
           if (debug_local) print*, "norm s2 tensor after diagram 16 ",tensor_norm2(s2_tensor)
 
-	! Problem cint est déclaré en ovoo_dims lign 661
+
 
 !         Diagram 19 : s2_{ij}^{ab} +=  P\_(ij)\sum_{e} t^e_i V_{ej}^{ab}
           ierr=talsh_tensor_init(cint_vvvo_tensor)
@@ -749,31 +749,42 @@ module talsh_cc
     &                                 s2_tensor,Wabef_tensor,tauCC2_tensor,scale=ONE_HALF)
           if (debug_local) print*, "norm s2 tensor after diagram 22 ",tensor_norm2(s2_tensor)
 
-!         Diagram 23 : s2_{ij}^{ab} +=  P\_(ab)\sum_{e} f_e^b t_{ij}^{ae} 
+!         Diagram 23 : s2_{ij}^{ab} +=  P\_(ab)\sum_{e} f_e^b t_{ij}^{ae} ! Use of the Fock matrix 
           ierr=talsh_tensor_contract("S(a,b,i,j)+=F(b,e)*T(a,e,i,j)",s2_tensor,comm_t%fvv,comm_t%t2)
           ierr=talsh_tensor_contract("S(a,b,i,j)+=F(a,e)*T(b,e,i,j)",s2_tensor,comm_t%fvv,comm_t%t2,scale=MINUS_ONE)
           if (debug_local) print*, "norm s2 tensor after diagram 23 ",tensor_norm2(s2_tensor)
 
-!         Diagram 24 : s2_{ij}^{ab} += -P\_(ij)\sum_{k} f_j^k t_{ik}^{ab}
+!         Diagram 24 : s2_{ij}^{ab} += -P\_(ij)\sum_{k} f_j^k t_{ik}^{ab} ! Use of the Fock matrix
           ierr=talsh_tensor_contract("S(a,b,i,j)+=F(m,j)*T(a,b,i,m)",s2_tensor,comm_t%foo,comm_t%t2,scale=MINUS_ONE)
           ierr=talsh_tensor_contract("S(a,b,i,j)+=F(m,i)*T(a,b,j,m)",s2_tensor,comm_t%foo,comm_t%t2)
           if (debug_local) print*, "norm s2 tensor after diagram 24 ",tensor_norm2(s2_tensor)
 
 !        done with cc2 t2 equation, now cc2 t1 equation, which is exactly the same as the ccsd t1 equation
 
-	! F intermediaites 
+	! Call F intermediates - used in \Ss ai
           call get_hoo(comm_t,int_t%oovv)
 	  call get_hvv(comm_t,int_t%oovv)
 	  call get_hov(comm_t,int_t%oovv) 
+          if (.not.CCD) then
+            call get_hov(comm_t,int_t%oovv)
+            ierr=talsh_tensor_init(hov_aux_tensor)
+            ierr=talsh_tensor_add("L(k,c)+=H(k,c)",hov_aux_tensor,comm_t%hov)                       ! copy common term
+            ierr=talsh_tensor_add("H(k,c)+=F(k,c)",hov_aux_tensor,comm_t%fov,scale=MINUS_TWO)       ! subtract fock matrix twice
+          end if
+
 
 
 !         calculate s1 tensor
           if (.not.CCD) then
             ierr=talsh_tensor_init(s1_tensor)
 !           ierr=talsh_tensor_add("S(a,i)+=F+(i,a)",s1_tensor,fov_tensor)
+
 !           work-around because complex conjugation does not work in the above statement
+!           Diagramme b1  :   \Ss ai= \f ai         
             ierr=talsh_tensor_contract("S(a,i)+=F+(i,a)*K()",s1_tensor,comm_t%fov,one_tensor)
 !           end of work-around
+
+!           
             ierr=talsh_tensor_contract("S(a,i)+=V(a,k,c,d)*T(c,d,i,k)",s1_tensor,int_t%vovv,comm_t%tau,scale=ONE_HALF) !validated o(2)v(3)
             ierr=talsh_tensor_contract("S(a,i)+=H(a,c)*T(c,i)",s1_tensor,comm_t%hvv,comm_t%t1)                     !validated o(1)v(2)
             ierr=talsh_tensor_contract("S(a,i)+=H(k,i)*T(a,k)",s1_tensor,comm_t%hoo,comm_t%t1)                     !validated o(2)v(1)
