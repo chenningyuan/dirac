@@ -64,14 +64,6 @@
          type(tens_rcrsv_t) :: vvvv
         end type exatns_intg_tens
 
-!       All cholesky tensors
-        type, public :: exatns_chol_tens
-         type(tens_rcrsv_t) :: oou
-         type(tens_rcrsv_t) :: ovu
-         type(tens_rcrsv_t) :: vou
-         type(tens_rcrsv_t) :: vvu
-        end type exatns_chol_tens
-
 !       Common blocks between t and lambda
         type, public :: exatns_comm_tens
          type(tens_rcrsv_t) :: foo, fov, fvv
