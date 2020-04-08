@@ -19,9 +19,10 @@ f.add(from_string = 'Eigenvalues',
       num_lines   = 32,
       rel_tolerance   = 1.0e-5)
 
-#test.run(['cc2_energy.inp'], ['LiH', 'h2o.xyz', 'sf6.xyz'], f)
-#test.run(['cc2_energy_large_cvalue.inp'], ['LiH', 'h2o.xyz', 'sf6.xyz'], f)
-test.run(['cc2_energy.inp'], ['LiH', 'h2o.xyz'], f)
-test.run(['cc2_energy_large_cvalue.inp'], ['LiH', 'h2o.xyz'], f)
+# these are longer tests
+#test.run(['cc2_energy.inp'], ['LiH', 'h2o.xyz'], f)
+#test.run(['cc2_energy_large_cvalue.inp'], ['LiH', 'h2o.xyz'], f)
+
+test.run(['cc2_energy_small.inp'], ['LiH', 'h2o.xyz'], f)
 
 sys.exit(test.return_code)
