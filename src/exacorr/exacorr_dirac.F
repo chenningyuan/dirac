@@ -360,6 +360,7 @@ C
        integer, allocatable   :: jstrt(:)
        real(8), allocatable   :: cent(:,:),priexp(:),priccf(:,:)
        complex(8), allocatable:: scoeff(:,:,:)
+       integer, allocatable   :: ao_map(:,:)
 
        ierr = NOERROR
 
@@ -427,11 +428,16 @@ C
 
        ! read the basis set information and check for consistency
        read (LUCOEF,err=20,end=20) nao_bas,nshells,npriexp,ncnt 
-       if (nao /= nao_bas) then
+       if (nao < nao_bas) then
           ierr = INCONSIS
-          print*,"Inconsistency: use NONREL, X2C, or X2CMMF Hamiltonian"
           close (lucoef,status='KEEP')
           return
+       elseif (nao > nao_bas) then
+          print*,"WARNING: assuming Levy-Leblond Hamiltonian"
+          print*,"Reading fewer basis functions than MO-coefficients"
+          allocate (ao_map(2,nao_bas))
+          forall (i=1:nao_bas) ao_map(:,i)=i
+          call compress_mo (cspinor,ao_map)
        end if
 
        ! allocate the arrays to read the basis set information in DIRAC format
@@ -457,7 +463,7 @@ C
 
        ! put in gtos
        ao_basis%nshells       = nshells
-       ao_basis%nao           = nao
+       ao_basis%nao           = nao_bas
        ao_basis%basis_angular = 1
        nullify(ao_basis%gtos)
        allocate(ao_basis%gtos(nshells))
