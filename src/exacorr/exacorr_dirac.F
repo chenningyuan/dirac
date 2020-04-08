@@ -30,12 +30,15 @@ C***********************************************************************
 ! we need to broadcast tra4_indstr
 #include "dcborb.h"
 ! to access nesh (number of positive energy "electronlike" orbitals)
+#include "dgroup.h"
+#include "dcbham.h"
+!information about the group
 
       character (len=72)   :: orbital_string(4) ! String with range of MO's to be transformed for each index
       integer              :: kvec              ! Dummy variable needed in first call to numlst
       integer, allocatable :: mo_list(:), mo_list_tmp(:)
       integer              :: nmo(4)
-      integer              :: i, j, imo, jmo, ntmo
+      integer              :: i, j, imo, jmo, ntmo, rcw
 
 #if defined (VAR_MPI)
       ! parallel version of DIRAC
@@ -107,9 +110,15 @@ C     Convert to Kramers unrestricted picture
       end if
 #endif
 C
+      IF (SPINFR.OR.NZ.EQ.1) THEN
+         rcw = 1
+      ELSE
+         rcw = 2
+      ENDIF
+
       if (.true.) then !Always use talsh for now
         call talsh_compute_mo_integrals(nmo,mo_list,
-     &      exa_input%talsh_buff)
+     &      exa_input%talsh_buff,rcw)
       else
 #if defined (VAR_MPI)
          !slaves need the same info to get started
@@ -351,6 +360,7 @@ C
        integer, allocatable   :: jstrt(:)
        real(8), allocatable   :: cent(:,:),priexp(:),priccf(:,:)
        complex(8), allocatable:: scoeff(:,:,:)
+       integer, allocatable   :: ao_map(:,:)
 
        ierr = NOERROR
 
@@ -418,11 +428,16 @@ C
 
        ! read the basis set information and check for consistency
        read (LUCOEF,err=20,end=20) nao_bas,nshells,npriexp,ncnt 
-       if (nao /= nao_bas) then
+       if (nao < nao_bas) then
           ierr = INCONSIS
-          print*,"Inconsistency: use NONREL, X2C, or X2CMMF Hamiltonian"
           close (lucoef,status='KEEP')
           return
+       elseif (nao > nao_bas) then
+          print*,"WARNING: assuming Levy-Leblond Hamiltonian"
+          print*,"Reading fewer basis functions than MO-coefficients"
+          allocate (ao_map(2,nao_bas))
+          forall (i=1:nao_bas) ao_map(:,i)=i
+          call compress_mo (cspinor,ao_map)
        end if
 
        ! allocate the arrays to read the basis set information in DIRAC format
@@ -448,7 +463,7 @@ C
 
        ! put in gtos
        ao_basis%nshells       = nshells
-       ao_basis%nao           = nao
+       ao_basis%nao           = nao_bas
        ao_basis%basis_angular = 1
        nullify(ao_basis%gtos)
        allocate(ao_basis%gtos(nshells))
@@ -666,7 +681,7 @@ C
        
        end subroutine write_mos_to_dirac_formatted
 
-       subroutine Write_To_Mdcint (nmo,mo_tens)
+       subroutine Write_To_Mdcint (nmo,mo_tens,rcw)
 
 !      Utility routine to write to the DIRAC moltra format, makes it easier to test the index transform
  
@@ -686,7 +701,6 @@ C
        iprint = 0
        irepij = 1
        nkr = nmo / 2 ! go to Kramers restricted
-       rcw = 2       ! We have no symmetry or spinfree options yet, so this is always 2
        nclass = 8    ! write the standard classes used in MOLTRA as well
 
 !      Open the MDCINT file
@@ -758,7 +772,7 @@ C
                   do kk = 1, nkr(3)
                      k = (kk-1)*2 + bar(iclass,3) ! Spinor index 3
                      fmat(kk,ll,1) = mo_tens(1,k,l,i,j)
-                     fmat(kk,ll,2) = mo_tens(2,k,l,i,j)
+                     if (rcw.gt.1) fmat(kk,ll,2) = mo_tens(2,k,l,i,j)
                   end do
                end do
 
