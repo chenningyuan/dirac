@@ -1,6 +1,7 @@
 
-This folder contains larger test to be run on summit 
+This folder contains intermediate test to be run on summit 
 
 run all tests by: ./tests_run.sh 9 
+check all tests by: ./tests_check.sh 9
 
 Don't forget to keep ~/.diracrc up to date

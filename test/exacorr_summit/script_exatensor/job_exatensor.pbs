@@ -11,8 +11,8 @@
 export numproc=120    # 2*nnodes
 export PRN000=chp109 # the same as above
 export USE_DFCOEF=1 # larger than zero -> use DFCOEF
-export INP_FILE=cc_uf6.inp
-export MOL_XYZ=UF6.xyz
+export INP_FILE=cc_laf3.inp
+export MOL_XYZ=LaF3.xyz
 
 # Load modules:
 module load gcc/8.1.1
