@@ -892,7 +892,7 @@ module exacorr_cc
 
          integer(INTL),dimension(2) :: oo_root,ov_root,vo_root
          integer(INTL),dimension(4) :: ovoo_root,vvoo_root,vvvo_root
-         integer(INTD),dimension(4) :: vvvv_root, oooo_root
+         integer(INTL),dimension(4) :: vvvv_root, oooo_root
 
          real(8) :: t_convergence
 
