@@ -749,7 +749,7 @@ module exacorr_cc
              write(*,'(A7,F20.15)') "hvint = ",print_tensornorm2 (comm_t%hvv)
              write(*,'(A7,F20.15)') "gvint = ",print_tensornorm2 (comm_t%gvv)
              if (.not.CCD) write(*,'(A7,F20.15)') "hovint= ",print_tensornorm2 (comm_t%hov)
-             write(*,'(A7,F20.15)') "aint  = ",print_tensornorm2 (comm_t%a_int)
+             write(*,'(A7,E20.15)') "aint  = ",print_tensornorm2 (comm_t%a_int)
              write(*,'(A7,F20.15)') "cint  = ",print_tensornorm2 (cint_tensor)
              write(*,'(A7,F20.15)') "hint  = ",print_tensornorm2 (comm_t%h_int)
           end if
@@ -1056,23 +1056,38 @@ module exacorr_cc
 !         oooo
           call get_a(comm_t,int_t,CCD,one_tensor)
 
+
+!         oo
+          call get_hoo(comm_t,int_t%oovv,one_tensor)
+          call get_goo(comm_t,int_t%ooov,CCD,one_tensor)
+
+!         ov
+          if (.not.CCD) then
+            call get_hov(comm_t,int_t%oovv,one_tensor)
+            ierr=exatns_tensor_init(hov_aux_tensor)
+            ierr=exatns_tensor_contract("L(k,c)+=H(k,c)*K()",hov_aux_tensor,comm_t%hov,one_tensor)        ! copy common term
+            ierr=exatns_tensor_contract("H(k,c)+=F(k,c)*K()",hov_aux_tensor,comm_t%fov,one_tensor,MINUS_TWO) ! subtract fock matrix
+          end if
+
+
           if (ierr.ne.EXA_SUCCESS) then
              print*," ccdriver: error in calculation of common blocks, code=",ierr
              return
           end if
 
           if (debug_exa) then
-             if (.not.CCD) write(*,'(A7,F20.15)') "T1amp = ",print_tensornorm2 (comm_t%t1)
-             write(*,'(A7,F20.15)') "T2amp = ",print_tensornorm2 (comm_t%t2)
-             write(*,'(A7,F20.15)') "Tau   = ",print_tensornorm2 (comm_t%tau)
-             write(*,'(A7,F20.15)') "hoint = ",print_tensornorm2 (comm_t%hoo)
-             write(*,'(A7,F20.15)') "goint = ",print_tensornorm2 (comm_t%goo)
-             write(*,'(A7,F20.15)') "hvint = ",print_tensornorm2 (comm_t%hvv)
-             write(*,'(A7,F20.15)') "gvint = ",print_tensornorm2 (comm_t%gvv)
-             if (.not.CCD) write(*,'(A7,F20.15)') "hovint= ",print_tensornorm2 (comm_t%hov)
-             write(*,'(A7,F20.15)') "aint  = ",print_tensornorm2 (comm_t%a_int)
-             write(*,'(A7,F20.15)') "cint  = ",print_tensornorm2 (cint_tensor)
-             write(*,'(A7,F20.15)') "hint  = ",print_tensornorm2 (comm_t%h_int)
+             if (.not.CCD) write(*,'(A7,E20.15)') "T1amp = ",print_tensornorm2 (comm_t%t1)
+             write(*,'(A7,E20.15)') "T2amp = ",print_tensornorm2 (comm_t%t2)
+             write(*,'(A7,E20.15)') "Tau   = ",print_tensornorm2 (comm_t%tau)
+             write(*,'(A7,E20.15)') "hoint = ",print_tensornorm2 (comm_t%hoo)
+             write(*,'(A7,E20.15)') "goint = ",print_tensornorm2 (comm_t%goo)
+             write(*,'(A7,E20.15)') "hvint = ",print_tensornorm2 (comm_t%hvv)
+             write(*,'(A7,E20.15)') "gvint = ",print_tensornorm2 (comm_t%gvv)
+             if (.not.CCD) write(*,'(A7,E20.15)') "hovint= ",print_tensornorm2 (comm_t%hov)
+             write(*,'(A7,E20.15)') "aint  = ",print_tensornorm2 (comm_t%a_int)
+             write(*,'(A7,E20.15)') "cint_ovoo  = ",print_tensornorm2 (cint_ovoo_tensor)
+             write(*,'(A7,E20.15)') "cint_vvvo  = ",print_tensornorm2 (cint_vvvo_tensor)
+             write(*,'(A7,E20.15)') "hint  = ",print_tensornorm2 (comm_t%h_int)
           end if
 
 !!!! C EST ICI QUE LE MENAGE DOIT SE TERMINER !!!!
@@ -1107,11 +1122,23 @@ module exacorr_cc
           ierr=exatns_tensor_contract("T2(a,b,i,j)+=S2(a,b,i,j)*K()",comm_t%t2,s2_tensor,one_tensor)
           ierr=exatns_tensor_transform(comm_t%t2,'Denominate')
 
+          if (debug_local) then
+             if (.not.CCD) write(*,'(A7,F20.15)') "T1amp = ",print_tensornorm2 (comm_t%t1)
+             write(*,'(A7,F20.15)') "T1amp = ",print_tensornorm2 (comm_t%t2)
+          end if
+
+
           if (.not.CCD) then
               call diis (comm_t%t2,vvoo_id,vvoo_root,comm_t%t1,vo_id,vo_root,t_convergence)
           else
               call diis (comm_t%t2,vvoo_id,vvoo_root,t_convergence=t_convergence)
           end if
+          if (debug_local) then
+             if (.not.CCD) write(*,'(A7,F20.15)') "T1amp = ",print_tensornorm2 (comm_t%t1)
+             write(*,'(A7,F20.15)') "T1amp = ",print_tensornorm2 (comm_t%t2)
+             write(*,'(A7,F20.15)') "Fov = ",print_tensornorm2 (comm_t%fov)
+          end if
+
 
           ierr=exatns_tensor_init(result_t_tensor)
           if (.not.CCD) then
