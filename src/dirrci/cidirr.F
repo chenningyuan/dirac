@@ -3602,7 +3602,7 @@ C
 #include "general.inc"
 #include "files.inc"
 C
-      DIMENSION TINTR(NKL),TINTI(NKL),IJEX(NKL)
+      DIMENSION TINTR(*),TINTI(*),IJEX(*)
       LOGICAL ENDFIL
 C
       ENDFIL = .FALSE.
