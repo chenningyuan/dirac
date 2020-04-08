@@ -790,7 +790,6 @@ module exacorr_ao_to_mo
 
 !        Transform integrals
          ierr=exatns_tensor_init(moint_tensor,ZERO)
-         ierr=exatns_tensor_init(integral_tensor,ZERO)
          call aomo_halftransform_2 (a2int_tensor,moint_tensor)
 !        Switch to Dirac order and antisymmetrize
          call mulliken_to_dirac_sort (moint_tensor,integral_tensor,antisymmetrize)
