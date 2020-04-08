@@ -1,19 +1,16 @@
-#deactivate exatensor if mpi is not available
+#Deactivate ExaTensor if MPI is not available
 if(ENABLE_MPI AND (NOT ENABLE_64BIT_INTEGERS))
     option(ENABLE_EXATENSOR "Enable ExaTensor library" ON)
 else()
     option(ENABLE_EXATENSOR "Enable ExaTensor library" OFF)
 endif()
-# configure with (e.g.):
-# $ export WRAP=NOWRAP && export TOOLKIT=GNU && export BUILD_TYPE=DEV && export MPILIB=OPENMPI && export BLASLIB=ATLAS && export GPU_CUDA=NOCUDA && export PATH_OPENMPI=/home/bast/openmpi/1.10.2 && ./setup
-# in future we could use cmake discovery to infer this information, now it has to be given by the user
 
-# this is configurable to make it possible to configure on machines
-# on which the repository is located but where network cannot be accessed
-# in this case EXATENSOR_GIT_REPO_LOCATION can be set to point to a path on the hard disk
+# This is configurable to make it possible to configure on machines
+# on which the repository resides locally but where network cannot be accessed
+# in which case EXATENSOR_GIT_REPO_LOCATION can be set to point to a path on the hard disk
 # ./setup --cmake-options="-DEXATENSOR_GIT_REPO_LOCATION='/path/to/exatensor/'"
-set(EXATENSOR_GIT_REPO_LOCATION "https://github.com/ornl-qci/exatensor.git" CACHE STRING "ExaTENSOR Git repository location")
-set(EXATENSOR_GIT_HASH 2ab28a45499aa0e0dea4a3efc29aa15a4012a905 CACHE STRING "ExaTENSOR Git repository hash in use")
+set(EXATENSOR_GIT_REPO_LOCATION "https://gitlab.com/DmitryLyakh/ExaTensor.git" CACHE STRING "ExaTENSOR Git repository location")
+set(EXATENSOR_GIT_HASH 2b7bcd921e44118302f89f8dd2074444b17c6685 CACHE STRING "ExaTENSOR Git repository hash in use")
 
 if(ENABLE_EXATENSOR)
     ExternalProject_Add(exatensor
@@ -28,8 +25,10 @@ if(ENABLE_EXATENSOR)
 
     set(EXTERNAL_LIBS ${EXTERNAL_LIBS} ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib/libexatensor.a)
     set(EXTERNAL_LIBS ${EXTERNAL_LIBS} ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib/libtalsh.a)
+    #Make sure to manually add all ExaTENSOR dependencies here (BLAS, OpenMP, CUDA, C++):
+    #set(EXTERNAL_LIBS ${EXTERNAL_LIBS} -L/sw/summit/essl/6.1.0-2/essl/6.1/lib64 -L/sw/summit/xl/16.1.1-5/xlC/16.1.1/lib -L/sw/summit/xl/16.1.1-5/xlf/16.1.1/lib -lessl -lxlf90_r -lxlfmath -L/sw/summit/cuda/10.1.243/lib64 -lcublas -lcudart -lnvToolsExt -lstdc++ -lgomp)
 
     include_directories(${PROJECT_BINARY_DIR}/exatensor/src/exatensor/include)
 endif()
 
-message(STATUS "Enable ExaTensor library: ${ENABLE_EXATENSOR}")
+message(STATUS "Enable ExaTENSOR library: ${ENABLE_EXATENSOR}")
