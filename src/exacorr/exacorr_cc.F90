@@ -113,7 +113,7 @@ module exacorr_cc
          nvir = exa_input%nvir
          t_target_precision = exa_input%t_econv
          CCD = exa_input%ccd
-         CC2= exa_input%cc2     !L
+         CC2= exa_input%CC2     !L
          lambda = exa_input%lambda
          noints = exa_input%noints
          ncycles = exa_input%ncycles
@@ -874,12 +874,10 @@ module exacorr_cc
 !        solution tensors
          type(tens_rcrsv_t) :: s1_tensor, s2_tensor
 !        intermediate
-         type(tens_rcrsv_t) :: tau2_tensor, cint_tensor
-
+!!         type(tens_rcrsv_t) :: tau2_tensor, cint_tensor
          type(tens_rcrsv_t) :: t1t1_tensor, tauCC2_tensor
          type(tens_rcrsv_t) :: cint_vvvo_tensor, cint_ovoo_tensor
          type(tens_rcrsv_t) :: Wabef_CC2_tensor, Wmnij_CC2_tensor
-
 !        auxiliary tensors
          type(tens_rcrsv_t) :: hov_aux_tensor, hoo_aux_tensor
 !        result tensor
@@ -889,10 +887,9 @@ module exacorr_cc
          integer(INTD),dimension(2) :: oo_id,ov_id,vo_id
          integer(INTD),dimension(4) :: ovoo_id,vvoo_id,vvvo_id
          integer(INTD),dimension(4) :: vvvv_id, oooo_id
-
          integer(INTL),dimension(2) :: oo_root,ov_root,vo_root
          integer(INTL),dimension(4) :: ovoo_root,vvoo_root,vvvo_root
-         integer(INTD),dimension(4) :: vvvv_root, oooo_root
+         integer(INTL),dimension(4) :: vvvv_root, oooo_root
 
          real(8) :: t_convergence
 
@@ -936,8 +933,8 @@ module exacorr_cc
             ierr=exatns_tensor_create(s1_tensor,"s1",vo_id,vo_root,EXA_DATA_KIND_C8)
          end if
          ierr=exatns_tensor_create(s2_tensor,"s2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
-         ierr=exatns_tensor_create(tau2_tensor,"tau2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
-         ierr=exatns_tensor_create(cint_tensor,"cint",ovoo_id,ovoo_root,EXA_DATA_KIND_C8)
+!!         ierr=exatns_tensor_create(tau2_tensor,"tau2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
+!!         ierr=exatns_tensor_create(cint_tensor,"cint",ovoo_id,ovoo_root,EXA_DATA_KIND_C8)
 
          ierr=exatns_tensor_create(cint_vvvo_tensor,"cint_vvvo",vvvo_id,vvvo_root,EXA_DATA_KIND_C8)
          ierr=exatns_tensor_create(cint_ovoo_tensor,"cint_ovoo",ovoo_id,ovoo_root,EXA_DATA_KIND_C8)
@@ -950,7 +947,7 @@ module exacorr_cc
 
          do iccsd = 1, ncycles
 
-          call get_tau(comm_t,CCD,one_tensor) !L : See : is it usefull for cc2
+          call get_tau(comm_t,CCD,one_tensor) !L : See : is it usefull for CC2
           if (debug_local) print*, "Tau    = ", print_tensornorm2(comm_t%tau)*ONE_QUARTER
           if (debug_local) print*, "t1    = ",print_tensornorm2(comm_t%t1)
           if (debug_local) print*, "t2    = ",print_tensornorm2(comm_t%t2)
@@ -959,9 +956,9 @@ module exacorr_cc
           ierr=exatns_tensor_init(s2_tensor)
           if (debug_local) print*, "norm s2 tensor at the start of CC2 t2",print_tensornorm2(s2_tensor)
 
-!         creation of tau like intermediates for cc2
+!         creation of tau like intermediates for CC2
 !
-!         a. tau_cc2=\ts ai \ts bj -\ts aj \ts bi 
+!         a. tau_CC2=\ts ai \ts bj -\ts aj \ts bi 
           ierr=exatns_tensor_init(tauCC2_tensor)
           ierr=exatns_tensor_contract("T(a,b,i,j)+=T(a,i)*T(b,j)",tauCC2_tensor,comm_t%t1,comm_t%t1)
           ierr=exatns_tensor_contract("T(a,b,i,j)+=T(a,j)*T(b,i)",tauCC2_tensor,comm_t%t1,comm_t%t1,MINUS_ONE)
@@ -1071,7 +1068,7 @@ module exacorr_cc
              write(*,'(A7,F20.15)') "gvint = ",print_tensornorm2 (comm_t%gvv)
              if (.not.CCD) write(*,'(A7,F20.15)') "hovint= ",print_tensornorm2 (comm_t%hov)
              write(*,'(A7,F20.15)') "aint  = ",print_tensornorm2 (comm_t%a_int)
-             write(*,'(A7,F20.15)') "cint  = ",print_tensornorm2 (cint_tensor)
+!!             write(*,'(A7,F20.15)') "cint  = ",print_tensornorm2 (cint_tensor)
              write(*,'(A7,F20.15)') "hint  = ",print_tensornorm2 (comm_t%h_int)
           end if
 
@@ -1143,8 +1140,8 @@ module exacorr_cc
 
          if (.not.CCD) ierr=exatns_tensor_destroy(s1_tensor)
          ierr=exatns_tensor_destroy(s2_tensor)
-         ierr=exatns_tensor_destroy(tau2_tensor)
-         ierr=exatns_tensor_destroy(cint_tensor)
+!!         ierr=exatns_tensor_destroy(tau2_tensor)
+!!         ierr=exatns_tensor_destroy(cint_tensor)
          ierr=exatns_tensor_destroy(t1t1_tensor)
          ierr=exatns_tensor_destroy(tauCC2_tensor)
          ierr=exatns_tensor_destroy(cint_ovoo_tensor)
