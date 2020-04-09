@@ -17,19 +17,19 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = 'Final CCSD energy',
       num_lines   = 1,
-      rel_tolerance   = 1.0e-9)
-f.add(from_string = 'Energy of reference wave function (HF single determinant)',
+      rel_tolerance   = 5.0e-9)
+f.add(from_string = 'SCF energy (',
       num_lines   = 1,
-      rel_tolerance   = 1.0e-9)
-f.add(from_string = 'Norm of OO part Fock matrix ',
+      rel_tolerance   = 5.0e-9)
+f.add(from_string = 'Norm of Fock matrix (OO',
       num_lines   = 1,
-      abs_tolerance   = 1.0e-9)
-f.add(from_string = 'Norm of OV part Fock matrix ',
+      abs_tolerance   = 1.0e-6)
+f.add(from_string = 'Norm of Fock matrix (OV',
       num_lines   = 1,
-      abs_tolerance   = 1.0e-9)
-f.add(from_string = 'Norm of VV part Fock matrix ',
+      abs_tolerance   = 1.0e-4)
+f.add(from_string = 'Norm of Fock matrix (VV',
       num_lines   = 1,
-      abs_tolerance   = 1.0e-9)
+      abs_tolerance   = 1.0e-4)
 
 os.system('ulimit -s unlimited')
 

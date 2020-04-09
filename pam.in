@@ -1437,7 +1437,7 @@ Options are also read from ~/.diracrc"""
         # On summit we execute a script that executes dirac.x (to keep things simple...)
         if self.summit:
            # assemble the jsrun command that we need and put this at the place of mpirun command
-           mpi_command = "jsrun --smpiargs='-mca common_pami_use_odp 1' -bnone"
+           mpi_command = "jsrun --smpiargs='-async' --smpiargs='-mca common_pami_use_odp 1' -bnone"
            mpi_command =  mpi_command + ' -n ' + str(self.nr_proc)
            mpi_command =  mpi_command + ' -a 1'
            mpi_command =  mpi_command + ' -r ' + os.environ.get('QF_PROCS_PER_NODE')

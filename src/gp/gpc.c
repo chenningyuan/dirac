@@ -34,6 +34,10 @@
 #include <math.h>
 #include "fortran_interface.h"
 
+#if defined (VAR_MPI)
+#include <mpi.h>
+#endif
+
 void printaddr_(void *p)
 {
    fprintf(stderr,"Address is %p\n",p);
@@ -170,7 +174,6 @@ void distribute_env(const char* name, int mytid)
 #if !defined (VAR_MPI)
   return;
 #else
-#include <mpi.h>
   char *env_local, *env_master, *newname;
   int len_local, len_master, len_name;
 
@@ -200,7 +203,6 @@ void distribute_env(const char* name, int mytid)
     putenv(newname);
     free(env_master);
   }
-
 #endif
 }
 
