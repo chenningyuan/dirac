@@ -1,4 +1,14 @@
 
+
+.. raw:: html
+
+  <a class="btn btn-info"
+     href="http://diracprogram.org"
+     data-mode="1"
+     style="margin-bottom: 50px"
+     target="_blank">Project website: http://diracprogram.org</a>
+
+
 Setting up DIRAC
 ================
 
