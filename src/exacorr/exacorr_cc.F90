@@ -229,7 +229,7 @@ module exacorr_cc
                return
             end if
 
-            call solve_t_equations(comm_t,int_t,dims,CCD,t_target_precision,ccsd_energy,ncycles)
+            call solve_t_equations(comm_t,int_t,dims,CCD,t_target_precision,ccsd_energy,ncycles,exa_input%print_level)
             call print_exaoutput(exa_input%talsh, CCD, scf_energy, mp2_energy, ccsd_energy)
 !           Calculate (T) energy correction, not implemented yet
 !           call t3_energy (t_energy,eps_occ,eps_vir,t1_tensor,t2_tensor,fov_tensor,ooov_tensor,vovv_tensor,oovv_tensor)
@@ -388,15 +388,16 @@ module exacorr_cc
          !Get ExaTENSOR TAVP-MNG depth:
          ierr = exatns_virtual_depth(tavp_mng_depth)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_virtual_depth() failed!')
-         if(debug_exa .and. my_MPI_rank == 0) write(*,*) 'ExaCorr: Inferred TAVP-MNG depth = ',tavp_mng_depth
+         if(exa_input%print_level.gt.8 .and. my_MPI_rank == 0) write(*,*) 'ExaCorr: Inferred TAVP-MNG depth = ',tavp_mng_depth
 
          !Register the ao vector space:
          branch_factor = max(2, (int(get_num_segments(int(nao,8),int(exa_input%exa_blocksize,8)),4) - 1)/tavp_mng_depth + 1)
          ierr=exatns_space_register('AO_space',basis_ao,ao_space_id,ao_space,branch_factor)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register() failed!')
-         if(debug_exa .and. my_MPI_rank == 0) write (*,'(A,I3,A,I3)') ' ExaCorr: Registered AO vector space of dimension   ',nao, &
-         ': Number of segments = ', branch_factor*(2**(tavp_mng_depth-1)) !debug
-         if(debug_exa .and. my_MPI_rank == 0) call ao_space%print_it()
+         if(exa_input%print_level.gt.8 .and. my_MPI_rank == 0) write (*,'(A,I3,A,I3)') & 
+           ' ExaCorr: Registered AO vector space of dimension   ',nao, &
+           ': Number of segments = ', branch_factor*(2**(tavp_mng_depth-1)) !debug
+         if(exa_input%print_level.gt.8 .and. my_MPI_rank == 0) call ao_space%print_it()
 
          !Copy user input to local arrays for the definition of MO spaces (for standard CC we only distinguish occupied and virtual spinors)
          nocc = exa_input%nocc
@@ -432,15 +433,17 @@ module exacorr_cc
          branch_factor = max(2, (int(get_num_segments(int(nocc,8),int(exa_input%exa_blocksize,8)),4) - 1)/tavp_mng_depth + 1)
          ierr=exatns_space_register('Occupied',basis_occ,occ_space_id,occ_space,branch_factor)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register(occ) failed!')
-         if(debug_exa .and. my_MPI_rank == 0) write (*,'(A,I3,A,I3)') ' ExaCorr: Registered OCC vector space of dimension  ',nocc, &
-         ': Number of segments = ', branch_factor*(2**(tavp_mng_depth-1))
+         if(exa_input%print_level.gt.8 .and. my_MPI_rank == 0) write (*,'(A,I3,A,I3)') &
+           ' ExaCorr: Registered OCC vector space of dimension  ',nocc, &
+           ': Number of segments = ', branch_factor*(2**(tavp_mng_depth-1))
 
          !Register vir mo vector space:
          branch_factor = max(2, (int(get_num_segments(int(nvir,8),int(exa_input%exa_blocksize,8)),4) - 1)/tavp_mng_depth + 1)
          ierr=exatns_space_register('Virtual',basis_vir,vir_space_id,vir_space,branch_factor)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_space_register(vir) failed!')
-         if(debug_exa .and. my_MPI_rank == 0) write (*,'(A,I3,A,I3)') ' ExaCorr: Registered VIRT vector space of dimension ',nvir, &
-         ': Number of segments = ', branch_factor*(2**(tavp_mng_depth-1)) !debug
+         if(exa_input%print_level.gt.8 .and. my_MPI_rank == 0) write (*,'(A,I3,A,I3)') &
+           ' ExaCorr: Registered VIRT vector space of dimension ',nvir, &
+           ': Number of segments = ', branch_factor*(2**(tavp_mng_depth-1)) !debug
 
         end subroutine exacorr_cc_spaces
 
@@ -570,12 +573,11 @@ module exacorr_cc
 
         end subroutine exacorr_cc_methods
 
-        subroutine solve_t_equations(comm_t,int_t,dims,CCD,t_target_precision,ccsd_energy,ncycles)
+        subroutine solve_t_equations(comm_t,int_t,dims,CCD,t_target_precision,ccsd_energy,ncycles,print_level)
 
 !        Routine for solving the t amplitude equations
 
          use exacorr_ao_to_mo, only : print_tensornorm2
-         use exacorr_global,   only : debug_exa
 
 !        Input
          type(exatns_comm_tens), intent(inout) :: comm_t
@@ -583,9 +585,10 @@ module exacorr_cc
          type(space_dims),intent(in) :: dims
          integer :: occ_space_id, vir_space_id
          integer(INTL) :: occ_space_root, vir_space_root
-         logical, intent(in) :: CCD
-         real(8), intent(in) :: t_target_precision
+         logical, intent(in)  :: CCD
+         real(8), intent(in)  :: t_target_precision
          real(8), intent(out) :: ccsd_energy
+         integer, intent(in)  :: print_level
 !        solution tensors
          type(tens_rcrsv_t) :: s1_tensor, s2_tensor
 !        intermediate
@@ -693,7 +696,7 @@ module exacorr_cc
              return
           end if
 
-          if (debug_exa) then
+          if (print_level.gt.8) then
              if (.not.CCD) write(*,'(A7,F20.15)') "T1amp = ",print_tensornorm2 (comm_t%t1)
              write(*,'(A7,F20.15)') "T2amp = ",print_tensornorm2 (comm_t%t2)
              write(*,'(A7,F20.15)') "Tau   = ",print_tensornorm2 (comm_t%tau)
@@ -811,7 +814,6 @@ module exacorr_cc
 !        Routine for solving the lambda equations
 
          use exacorr_ao_to_mo, only : print_tensornorm2
-         use exacorr_global,   only : debug_exa
 
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
          type(exatns_comm_tens), intent(inout) :: comm_t
@@ -986,7 +988,7 @@ module exacorr_cc
           call get_goo_lambda(lambda_t%goo,l2_tensor,comm_t%t2)
 
 !         debug
-          if (debug_exa) then
+          if (print_level.gt.8) then
             if (.not.CCD) print*, "L1  = ", print_tensornorm2(l1_tensor)
             print*, "L2  = ", print_tensornorm2(l2_tensor)*0.25D0
             print*, "goo = ", print_tensornorm2(lambda_t%goo)
@@ -1665,9 +1667,11 @@ module exacorr_cc
             ierr=exatns_tensor_contract("F(a,b)+=V(a,k,b,l)*I(k,l)",comm_t%fvv,int_t%vovo,id_mat_occ, ONE)
             if (print_level >0) call print_date('two electron integrals added to Fock Matrix')
 
-            if (print_level >3) ierr=exatns_tensor_traverse(comm_t%foo,'PrintTensor')
-            if (print_level >3) ierr=exatns_tensor_traverse(comm_t%fov,'PrintTensor')
-            if (print_level >3) ierr=exatns_tensor_traverse(comm_t%fvv,'PrintTensor')
+            if (print_level >10) then
+              ierr=exatns_tensor_traverse(comm_t%foo,'PrintTensor')
+              ierr=exatns_tensor_traverse(comm_t%fov,'PrintTensor')
+              ierr=exatns_tensor_traverse(comm_t%fvv,'PrintTensor')
+            end if
 
             ! Subtract orbital energies from the diagonal (they are moved to the other side of the CC equations)
             ierr=exatns_tensor_create(orb_tensor,"orb_oo",oo_id,oo_root,EXA_DATA_KIND_C8)

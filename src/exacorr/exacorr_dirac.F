@@ -118,7 +118,7 @@ C
 
       if (.true.) then !Always use talsh for now
         call talsh_compute_mo_integrals(nmo,mo_list,
-     &      exa_input%talsh_buff,rcw)
+     &      exa_input%talsh_buff,exa_input%print_level,rcw)
       else
 #if defined (VAR_MPI)
          !slaves need the same info to get started

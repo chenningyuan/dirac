@@ -67,9 +67,9 @@ module talsh_gradient
 !**************************************
 
       if (.not.CCD) then
-        call calc_dm_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,t1_tensor,l1_tensor)
+        call calc_dm_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,exa_input%print_level,t1_tensor,l1_tensor)
       else
-        call calc_dm_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir)
+        call calc_dm_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,exa_input%print_level)
       end if
       call print_date("Calculated density matrices in MO basis")
 
@@ -99,15 +99,13 @@ module talsh_gradient
 
     end subroutine talsh_dm_driver
 
-    subroutine calc_dm_mo(gamma,t2_tensor,l2_tensor,nocc,nvir,t1_tensor,l1_tensor)
-
-      use exacorr_global, only : debug_exa
+    subroutine calc_dm_mo(gamma,t2_tensor,l2_tensor,nocc,nvir,print_level,t1_tensor,l1_tensor)
 
 !     input variables
       type(talsh_dm_tens), intent(inout) :: gamma
       type(talsh_tens_t),  intent(inout) :: t2_tensor, l2_tensor
       type(talsh_tens_t),  intent(inout), optional :: t1_tensor, l1_tensor
-      integer,             intent(in   ) :: nocc, nvir
+      integer,             intent(in   ) :: nocc, nvir, print_level
 !     auxiliary tensors
       type(talsh_tens_t) :: one_tensor
       type(talsh_tens_t) :: tau2_tensor
@@ -218,7 +216,7 @@ module talsh_gradient
       ierr=talsh_tensor_contract("G(j,i)+=X(i,j)*K()",gamma%symm_oo,gamma%prime_oo,one_tensor,scale=ONE_HALF)
 
 !     debug
-      if (debug_exa) then
+      if (print_level.gt.8) then
         print*, "gprime_oo  = ", tensor_norm2(gamma%prime_oo)
         if (.not.CCD) then
           print*, "gprime_ov  = ", tensor_norm2(gamma%prime_ov)
