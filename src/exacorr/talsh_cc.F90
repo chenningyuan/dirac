@@ -1178,11 +1178,15 @@ module talsh_cc
 !        Get tensor with AO integrals
          aoint_dims      = nao
          ierr=talsh_tensor_construct(aoint_tensor,C8,aoint_dims,init_val=ZERO)
+         if (ierr /= 0) then
+            print*, "Could not construct ao integral tensor, increasing TALSH_BUFF may help"
+            call quit ('error constructing aoint_tensor')
+         end if
          call print_date('allocated AO integral tensor')
 !        Initialize AO integral tensors (ideally via an initialization routine, for now via direct access)
          ierr=talsh_tensor_get_body_access(aoint_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(body_p,ao_tens,aoint_dims(1:4)) ! to use <ao_tens> as a regular Fortran 4d array
-         call compute_ao_integrals (nao,ao_tens)
+         call compute_ao_integrals (nao,ao_tens_complex=ao_tens)
          call print_date('finished ao integral calculation')
 
 !        Get antisymmetric oovv tensor
