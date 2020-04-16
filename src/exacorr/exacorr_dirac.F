@@ -128,7 +128,8 @@ C
          call interface_mpi_bcast(mo_list,ntmo,mparid,
      &                            global_communicator)
 #endif
-         call exacorr_compute_mo_integrals (nmo, mo_list)
+         call exacorr_compute_mo_integrals (nmo,mo_list,
+     &                            exa_input%print_level)
       end if
 C
       !Only master should deallocate, since only master completes talsh
