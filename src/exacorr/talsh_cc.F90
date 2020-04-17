@@ -742,7 +742,7 @@ module talsh_cc
 	  call get_hvv(comm_t,int_t%oovv)
 	  call get_hov(comm_t,int_t%oovv) 
           if (.not.CCD) then
-            call get_hov(comm_t,int_t%oovv)
+          !  call get_hov(comm_t,int_t%oovv) !  Useless for CCD and CC2 
             ierr=talsh_tensor_init(hov_aux_tensor)
             ierr=talsh_tensor_add("L(k,c)+=H(k,c)",hov_aux_tensor,comm_t%hov)                       ! copy common term
             ierr=talsh_tensor_add("H(k,c)+=F(k,c)",hov_aux_tensor,comm_t%fov,scale=MINUS_TWO)       ! subtract fock matrix twice
