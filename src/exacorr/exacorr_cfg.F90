@@ -24,6 +24,7 @@ contains
   integer :: exa_MPI_rank
 
   call interface_mpi_bcast_l0(exa_input%ccd,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast_l0(exa_input%cc2,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%lambda,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%noints,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%beta_occ,1,exa_MPI_RANK,global_communicator)
