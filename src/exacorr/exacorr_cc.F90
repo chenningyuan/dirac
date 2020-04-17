@@ -991,7 +991,7 @@ module exacorr_cc
           if (debug_local) print*, "norm s2 tensor after diagram 22",print_tensornorm2(s2_tensor)
 
 
-! VERIFER QUE L APPEL DE LA MATRICE DE FOCK EST BIEN LA AVANT : Toujours dans comm_t         
+! Always check that the Fock matrix is called before, in comm_t 
 
 !         Diagram 23 : s2_{ij}^{ab} +=  P\_(ab)\sum_{e} f_e^b t_{ij}^{ae} ! Use of the Fock matrix 
           ierr=exatns_tensor_contract("S(a,b,i,j)+=F(b,e)*T(a,e,i,j)",s2_tensor,comm_t%fvv,comm_t%t2)
@@ -1003,20 +1003,16 @@ module exacorr_cc
           ierr=exatns_tensor_contract("S(a,b,i,j)+=F(m,i)*T(a,b,j,m)",s2_tensor,comm_t%foo,comm_t%t2)
           if (debug_local) print*, "norm s2 tensor after diagram 24",print_tensornorm2(s2_tensor)
 
-!!!!!!!!! A PARTIR D ICI Il FAUT FAIRE LE MENAGE !!!!!!!
+! Clean LH 170420
 !         vv
           call get_hvv(comm_t,int_t%oovv,one_tensor)
           call get_gvv(comm_t,int_t%vovv,CCD,one_tensor)
 
 !         vovo
           call get_h(comm_t,int_t,CCD,one_tensor)
-          call get_hoo(comm_t,int_t%oovv,one_tensor)
-          call get_goo(comm_t,int_t%ooov,CCD,one_tensor)
 
-          call get_hov(comm_t,int_t%oovv,one_tensor)
 !         oooo
           call get_a(comm_t,int_t,CCD,one_tensor)
-
 
 !         oo
           call get_hoo(comm_t,int_t%oovv,one_tensor)
@@ -1029,7 +1025,6 @@ module exacorr_cc
             ierr=exatns_tensor_contract("L(k,c)+=H(k,c)*K()",hov_aux_tensor,comm_t%hov,one_tensor)        ! copy common term
             ierr=exatns_tensor_contract("H(k,c)+=F(k,c)*K()",hov_aux_tensor,comm_t%fov,one_tensor,MINUS_TWO) ! subtract fock matrix
           end if
-
 
           if (ierr.ne.EXA_SUCCESS) then
              print*," ccdriver: error in calculation of common blocks, code=",ierr
@@ -1051,7 +1046,7 @@ module exacorr_cc
              write(*,'(A7,E20.15)') "hint  = ",print_tensornorm2 (comm_t%h_int)
           end if
 
-!!!! C EST ICI QUE LE MENAGE DOIT SE TERMINER !!!!
+!End clean LH 170420
 
 !         calculate s1 tensor
           if (.not.CCD) then
