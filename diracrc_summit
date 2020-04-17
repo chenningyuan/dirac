@@ -8,13 +8,12 @@
 --env='DIRPAR=1'
 --env='GLBSCR=1'
 
-#exatensor environment variables (for Summit)
---env='QF_NUM_PROCS=1024'
+#ExaTensor environment variables (for Summit)
 --env='QF_PROCS_PER_NODE=2'             #number of MPI processes per node
 --env='QF_CORES_PER_PROCESS=21'         #number of cores per MPI process
---env='QF_MEM_PER_PROCESS=160000'       #host memory limit per MPI process in MB
+--env='QF_MEM_PER_PROCESS=140000'       #host memory limit per MPI process in MB
 --env='QF_NVMEM_PER_PROCESS=0'          #non-volatile memory limit per MPI process in MB
---env='QF_HOST_BUFFER_SIZE=200000'      #non-volatile memory limit per MPI process in MB
+--env='QF_HOST_BUFFER_SIZE=190000'      #tensor storage memory limit per MPI process in MB
 --env='QF_GPUS_PER_PROCESS=3'           #number of discrete NVIDIA GPUs per MPI process (optional)
 --env='QF_MICS_PER_PROCESS=0'
 --env='QF_AMDS_PER_PROCESS=0'
@@ -29,12 +28,11 @@
 --env='OMP_WAIT_POLICY=PASSIVE'         #idle thread behavior
 
 #OpenMP thread binding, OMP_PLACES is set with a special script:
---env='OMP_PLACES_DEFAULT=cores'
 --env='OMP_PROC_BIND=close,spread,spread'  #nest1: Functional threads (DSVU)
                                            #nest2: TAVP-WRK:Dispatcher spawns coarse-grain Executors
-                                           #MKL specific:
+                    
 
---env='MKL_NUM_THREADS=1'               #keep consistent with chosen OMP_PLACES!
+--env='MKL_NUM_THREADS=16'              #keep consistent with chosen OMP_PLACES!
 --env='MKL_DYNAMIC=false'
 
 #Summit specific:
@@ -47,4 +45,3 @@
 --env='PAMI_IBV_ENABLE_DCT=1'           #reduces MPI_Init() time at large scale
                                             
 # end of .diracrc file
-

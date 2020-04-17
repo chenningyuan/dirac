@@ -20,14 +20,14 @@ export PATH_CUDA=/sw/summit/cuda/10.1.243
 
 export PATH_CUTT=/ccs/home/div/src/cutt
 
-#commands for compiling:
+#Commands for compiling:
 module load gcc/8.1.1
+module load spectrum-mpi
 module load essl
 module load cuda
 module load git
 module load cmake
 module load python
 module load netlib-lapack
-module load spectrum-mpi
 
 python setup --mpi --omp --type=release --cmake-options="-DENABLE_EXATENSOR=ON -DENABLE_LAPLACE=OFF -DENABLE_PCMSOLVER=OFF -DENABLE_STIELTJES=OFF -DENABLE_GEN1INT=OFF -DENABLE_PELIB=OFF" build_gcc811_essl_cuda_release
