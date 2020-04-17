@@ -1,17 +1,17 @@
 #!/bin/bash
 
 #If you observe a crash or hang, collect the following files
-#and place them in a new directory in /ccs/proj/chp109/issues:
+#and place them in a new directory inside /ccs/proj/chp109/issues:
 #----------------------------
 # (1) This PBS submit script;
 # (2) DIRAC.INP;
 # (3) MOLECULE.XYZ;
 # (4) DFCOEF (if exists);
 # (5) Dirac output/error logs;
-# (6) qforce.{N-1}.log, where N = QF_NUM_PROCS.
-#----------------------------------------------
+# (6) qforce.*.log files.
+#-----------------------------
 
-#BSUB -nnodes 100
+#BSUB -nnodes 129
 #BSUB -W 4:00
 #BSUB -P CHP109
 #BSUB -J dirac
@@ -20,11 +20,11 @@
 
 # values to adjust
 # Set binary specific paths for dirac.x and exacorr.x
-export EX_PATH=$DIRAC_PATH
+export EX_PATH=${DIRAC_PATH}
 export BASDIR=${DIRAC_PATH}/basis:${DIRAC_PATH}/basis_dalton:${DIRAC_PATH}/basis_ecp
 
 # number of mpi processes (2*nnodes)
-export nmpi=200
+export nmpi=258
 
 # Load modules:
 module load gcc/8.1.1
@@ -35,7 +35,7 @@ module load cmake
 module load python
 module load netlib-lapack
 
-#set additional environmental variables
+# set additional environmental variables
 export PAMI_IBV_DEVICE_NAME="mlx5_0:1,mlx5_3:1"
 export PAMI_IBV_DEVICE_NAME_1="mlx5_3:1,mlx5_0:1"
 
@@ -45,4 +45,3 @@ ulimit -s unlimited
 #$EX_PATH/pam --mpi=$nmpi --mol=$MOL_file --inp=$INP_file --put="DFCOEF" --get="DFCOEF"
 # if you want scratch for debugging 
 $EX_PATH/pam --mpi=$nmpi --mol=$MOL_file --inp=$INP_file --put="DFCOEF" --get="DFCOEF" --keep_scratch
-

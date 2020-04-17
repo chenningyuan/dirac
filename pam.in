@@ -1454,6 +1454,7 @@ Options are also read from ~/.diracrc"""
                script.write("else\n")
                script.write("export OMP_PLACES='{88},{92},{96},{100},{116:56},{104},{108},{112}'\n")
                script.write("fi\n")
+               script.write("export OMP_PROC_BIND=\"close,spread,spread\"\n")
                script.write("./dirac.x\n")
                script.close()
            os.chmod(path_to_script, 509)

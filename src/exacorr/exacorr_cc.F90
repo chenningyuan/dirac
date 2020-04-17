@@ -14,8 +14,7 @@ module exacorr_cc
         implicit none
         complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
                                  ONE_HALF=(0.5D0,0.D0),MINUS_ONE_HALF=(-0.5D0,0.D0),ONE_QUARTER=(0.25D0,0.D0), &
-                                 ONE_QUARTER_C=(0.25D0,0.D0), MINUS_ONE_QUARTER_C=(-0.25D0,0.D0), &
-                                 MINUS_TWO=(-2.D0,0.D0), TWO=(2.D0,0.D0)!, THREE=(3.0,0.0), SIX=(6.0,0.0)
+                                 MINUS_TWO=(-2.D0,0.D0), TWO=(2.D0,0.D0)
         type(tens_rcrsv_t),public :: one_tensor
         real(8) :: e_core
         logical :: one_el_exist
@@ -668,11 +667,13 @@ module exacorr_cc
           call get_h(comm_t,int_t,CCD,one_tensor)
           ierr=exatns_tensor_contract("H(a,k,c,i)+=V(k,l,c,d)*T(a,d,l,i)",comm_t%h_int,int_t%oovv,tau2_tensor)! o(3)v(3)
 
-!         This term appears four times as we need to permute both i and j and a and b
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=H(a,k,c,i)*T(c,b,j,k)",s2_tensor,comm_t%h_int,comm_t%t2)  ! o(3)v(3)
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=H(a,k,c,j)*T(c,b,k,i)",s2_tensor,comm_t%h_int,comm_t%t2)  ! o(3)v(3)
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=H(b,k,c,i)*T(a,c,j,k)",s2_tensor,comm_t%h_int,comm_t%t2)  ! o(3)v(3)
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=H(b,k,c,j)*T(a,c,k,i)",s2_tensor,comm_t%h_int,comm_t%t2)  ! o(3)v(3)
+!         This term contributes with four permutations (we need to permute both i and j and a and b), re-use tau2 to store unpermuted result
+          ierr=exatns_tensor_init(tau2_tensor)
+          ierr=exatns_tensor_contract("R(a,b,i,j)+=H(a,k,c,i)*T(c,b,j,k)",tau2_tensor,comm_t%h_int,comm_t%t2)  ! unpermuted result
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=R(a,b,i,j)*K()",s2_tensor,tau2_tensor,one_tensor)           ! add to S
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=R(a,b,j,i)*K()",s2_tensor,tau2_tensor,one_tensor,MINUS_ONE) ! add with Pij anti-symmetrization
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=R(b,a,i,j)*K()",s2_tensor,tau2_tensor,one_tensor,MINUS_ONE) ! add with Pab anti-symmetrization
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=R(b,a,j,i)*K()",s2_tensor,tau2_tensor,one_tensor)           ! add with PijPab anti-symmetrization
 
 !         ovoo
 
@@ -967,7 +968,7 @@ module exacorr_cc
           ierr=exatns_tensor_contract("W(m,n,i,j)+=V(m,n,i,e)*T(e,j)",Wmnij_CC2_tensor,int_t%ooov,comm_t%t1)
           ierr=exatns_tensor_contract("W(m,n,i,j)+=V(m,n,j,e)*T(e,i)",Wmnij_CC2_tensor,int_t%ooov,comm_t%t1,MINUS_ONE)
           ierr=exatns_tensor_contract("W(m,n,i,j)+=V(m,n,e,f)*T(e,f,i,j)",&
-          Wmnij_CC2_tensor,int_t%oovv,tauCC2_tensor,ONE_QUARTER_C)
+          Wmnij_CC2_tensor,int_t%oovv,tauCC2_tensor,ONE_QUARTER)
 
 !         b.\W abef= \V abef -\Pm ab \ts bm \V amef +\unquart \Pm ab \ts am \ts bn \Vmnef
           ierr=exatns_tensor_init(Wabef_CC2_tensor)
@@ -975,7 +976,7 @@ module exacorr_cc
           ierr=exatns_tensor_contract("W(a,b,e,f)+=V(a,m,e,f)*T(b,m)",Wabef_CC2_tensor,int_t%vovv,comm_t%t1,MINUS_ONE)
           ierr=exatns_tensor_contract("W(a,b,e,f)+=V(b,m,e,f)*T(a,m)",Wabef_CC2_tensor,int_t%vovv,comm_t%t1)
           ierr=exatns_tensor_contract("W(a,b,e,f)+=V(m,n,e,f)*T(a,b,m,n)",&
-          Wabef_CC2_tensor,int_t%oovv,tauCC2_tensor,ONE_QUARTER_C)
+          Wabef_CC2_tensor,int_t%oovv,tauCC2_tensor,ONE_QUARTER)
 
 
 !         Diagrams using the CC2 W intermediates above
