@@ -1604,6 +1604,7 @@ module talsh_cc
 		!Substraction :
 		ierr=talsh_tensor_add("S(i,j,a,b)+=O(i,j,a,b)",s2_tensor,sub_tensor,scale=MINUS_ONE)
 		
+                print*, "SubTensor = ", tensor_norm2(sub_tensor)
 		ierr=talsh_tensor_destruct(sub_tensor)
 		ierr=talsh_tensor_destruct(vv_aux_tensor)
 		ierr=talsh_tensor_destruct(oo_aux_tensor)
