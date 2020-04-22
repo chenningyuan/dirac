@@ -41,7 +41,7 @@ energy -1.0 2. 0.01
 .MAXIT
  50
 .NACTH
- 12 12
+ 10 10
 *CCIH
 .EHMIN
  -1.0

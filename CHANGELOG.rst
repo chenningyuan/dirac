@@ -9,6 +9,13 @@ New features:
 
 -----------------------------------------------------------------------------------------------------
 
+20.0 (2020-12-12)
+-----------------
+New features:
+
+- Improved start potential with far fewer functions and better accuracy. Contributors: Lucas Visscher.
+  Definite reference will follow (see for now: arXiv:2002.02587)
+
 19.0 (2019-12-12)
 -----------------
 
