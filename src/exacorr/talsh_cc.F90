@@ -73,9 +73,10 @@ module talsh_cc
          integer(INTD)      :: one_dims(1)
 !        orbital energies
          real(8), allocatable :: eps_occ(:),eps_vir(:)
-!        CCSD control and result variables
-         real(8) :: scf_energy, mp2_energy, cc2_energy, ccsd_energy, t_energy(3)
+!        CCSD,CC2,... control and result variables
+         real(8) :: scf_energy, mp2_energy, cc_energy, t_energy(3)
          real(8) :: t_target_precision
+         real(8) :: t1diag
          integer :: ncycles
 
          logical :: CCD, lambda
@@ -206,19 +207,23 @@ module talsh_cc
 
          if (.not.CC2) then
             call solve_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
-                                ccsd_energy,CCD,ncycles,exa_input%print_level)
+                                cc_energy,CCD,ncycles,exa_input%print_level)
             if (.not.CCD) then
 !              Calculate (T) energy correction
                call t3_energy (t_energy,eps_occ,eps_vir, comm_t%t1,comm_t%t2,comm_t%fov,int_t%ooov,int_t%vovv,int_t%oovv)
-               call print_exaoutput(exa_input%talsh, CCD, scf_energy, mp2_energy, ccsd_energy, t_energy)
-            else
-               call print_exaoutput(exa_input%talsh, CCD, scf_energy, mp2_energy, ccsd_energy)
             end if
-
          else if (CC2) then
             call solve_CC2_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
-                                cc2_energy,CCD,ncycles,exa_input%print_level)
-            write (*,'(A,F20.15)') "  Final CC2 energy     :            ",cc2_energy
+                                cc_energy,CCD,ncycles,exa_input%print_level)
+         end if
+! calculate T1 diagnostic
+
+         if (.not.CCD) then
+            t1diag = tensor_norm2(comm_t%t1)
+            t1diag = t1diag/sqrt(dble(nocc))
+            call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, t1diag=t1diag, t_energy=t_energy)
+         else
+            call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, t_energy=t_energy)
          end if
 
          !Destruct diis tensors
@@ -638,6 +643,15 @@ module talsh_cc
          ovoo_dims(3:4) = nocc
          ierr=talsh_tensor_construct(cint_ovoo_tensor,C8,ovoo_dims,init_val=ZERO)
 
+! resorted integrals nedded below
+
+         ierr=talsh_tensor_init(cint_vvvo_tensor)
+         ierr=talsh_tensor_contract("C(b,c,a,i)+=V+(a,i,b,c)*K()",cint_vvvo_tensor,int_t%vovv,one_tensor) !Inversion, warning : no more + in +=
+
+         ierr=talsh_tensor_init(cint_ovoo_tensor)
+         ierr=talsh_tensor_contract("C(k,a,i,j)+=V+(i,j,k,a)*K()",cint_ovoo_tensor,int_t%ooov,one_tensor) !Inversion, warning : no more + in +=
+
+
          do iccsd = 1, ncycles
 
          
@@ -683,15 +697,11 @@ module talsh_cc
 
 
 !         Diagram 19 : s2_{ij}^{ab} +=  P\_(ij)\sum_{e} t^e_i V_{ej}^{ab}
-          ierr=talsh_tensor_init(cint_vvvo_tensor)
-          ierr=talsh_tensor_contract("C(b,c,a,i)+=V+(a,i,b,c)*K()",cint_vvvo_tensor,int_t%vovv,one_tensor) !Inversion, warning : no more + in +=
           ierr=talsh_tensor_contract("S(a,b,i,j)+=C(a,b,e,j)*T(e,i)",s2_tensor,cint_vvvo_tensor,comm_t%t1)
           ierr=talsh_tensor_contract("S(a,b,i,j)+=C(a,b,e,i)*T(e,j)",s2_tensor,cint_vvvo_tensor,comm_t%t1,scale=MINUS_ONE)
           if (debug_local) print*, "norm s2 tensor after diagram 19 ",tensor_norm2(s2_tensor)
 
 !         Diagram 20 : s2_{ij}^{ab} += -P\_(ab)\sum_{m} t^a_m V_{ij}^{mb}
-          ierr=talsh_tensor_init(cint_ovoo_tensor)
-          ierr=talsh_tensor_contract("C(k,a,i,j)+=V+(i,j,k,a)*K()",cint_ovoo_tensor,int_t%ooov,one_tensor) !Inversion, warning : no more + in +=
           ierr=talsh_tensor_contract("S(a,b,i,j)+=C(m,b,i,j)*T(a,m)",s2_tensor,cint_ovoo_tensor,comm_t%t1,scale=MINUS_ONE)
           ierr=talsh_tensor_contract("S(a,b,i,j)+=C(m,a,i,j)*T(b,m)",s2_tensor,cint_ovoo_tensor,comm_t%t1)
           if (debug_local) print*, "norm s2 tensor after diagram 20 ",tensor_norm2(s2_tensor)
@@ -743,7 +753,7 @@ module talsh_cc
 	      call get_hvv(comm_t,int_t%oovv)
 	      call get_hov(comm_t,int_t%oovv) 
           if (.not.CCD) then
-            call get_hov(comm_t,int_t%oovv)
+          !  call get_hov(comm_t,int_t%oovv) !  Useless for CCD and CC2 
             ierr=talsh_tensor_init(hov_aux_tensor)
             ierr=talsh_tensor_add("L(k,c)+=H(k,c)",hov_aux_tensor,comm_t%hov)                       ! copy common term
             ierr=talsh_tensor_add("H(k,c)+=F(k,c)",hov_aux_tensor,comm_t%fov,scale=MINUS_TWO)       ! subtract fock matrix twice
@@ -1593,6 +1603,7 @@ module talsh_cc
 		!Substraction :
 		ierr=talsh_tensor_add("S(i,j,a,b)+=O(i,j,a,b)",s2_tensor,sub_tensor,scale=MINUS_ONE)
 		
+                print*, "SubTensor = ", tensor_norm2(sub_tensor)
 		ierr=talsh_tensor_destruct(sub_tensor)
 		ierr=talsh_tensor_destruct(vv_aux_tensor)
 		ierr=talsh_tensor_destruct(oo_aux_tensor)

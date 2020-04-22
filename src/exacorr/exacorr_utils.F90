@@ -129,10 +129,11 @@ module exacorr_utils
 
     end subroutine print_exainput
 
-    subroutine print_exaoutput(talsh, ccd, scf_energy, mp2_energy, ccsd_energy, t_energy)
+    subroutine print_exaoutput(talsh, ccd, cc2, scf_energy, mp2_energy, cc_energy, t1diag, t_energy)
 
-      logical, intent(in)           :: talsh, ccd
-      real(8), intent(in)           :: scf_energy, mp2_energy, ccsd_energy
+      logical, intent(in)           :: talsh, ccd, cc2
+      real(8), intent(in)           :: scf_energy, mp2_energy, cc_energy
+      real(8), intent(in), optional :: t1diag
       real(8), intent(in), optional :: t_energy(3)
 
       write(*,'(A)') "     -     Final results from EXACORR     -    "
@@ -145,30 +146,41 @@ module exacorr_utils
       write(*,*) ""
       write (*,'(A,F20.15)') "  MP2 energy :                      ",mp2_energy
       if (ccd) then 
-        write (*,'(A,F20.15)') "  Final  CCD energy :               ",ccsd_energy
-      else
-        write (*,'(A,F20.15)') "  Final CCSD energy :               ",ccsd_energy
-      end if
-      if (present(t_energy)) then 
-        write (*,'(A,F20.15)') "  4th order triples correction :    ",t_energy(1)
-        write (*,'(A,F20.15)') "  5th order triples (T) correction :",t_energy(2)
-        write (*,'(A,F20.15)') "  5th order triples -T  correction :",t_energy(3)
-        write (*,'(A,F20.15)') "  CCSD+T  correlation energy :      ",ccsd_energy+t_energy(1)
-        write (*,'(A,F20.15)') "  CCSD(T) correlation energy :      ",ccsd_energy+t_energy(1)+t_energy(2)
-        write (*,'(A,F20.15)') "  CCSD-T  correlation energy :      ",ccsd_energy+t_energy(1)+t_energy(3)
+        write (*,'(A,F20.15)') "  Final  CCD energy :               ",cc_energy
+      else 
+        if (cc2) then
+          write (*,'(A,F20.15)') "  Final  CC2 energy :               ",cc_energy
+        else
+          write (*,'(A,F20.15)') "  Final CCSD energy :               ",cc_energy
+          if (present(t_energy)) then 
+            write (*,'(A,F20.15)') "  4th order triples correction :    ",t_energy(1)
+            write (*,'(A,F20.15)') "  5th order triples (T) correction :",t_energy(2)
+            write (*,'(A,F20.15)') "  5th order triples -T  correction :",t_energy(3)
+            write (*,'(A,F20.15)') "  CCSD+T  correlation energy :      ",cc_energy+t_energy(1)
+            write (*,'(A,F20.15)') "  CCSD(T) correlation energy :      ",cc_energy+t_energy(1)+t_energy(2)
+            write (*,'(A,F20.15)') "  CCSD-T  correlation energy :      ",cc_energy+t_energy(1)+t_energy(3)
+          end if
+        end if
+        if (present(t1diag)) then
+          write (*,'(A,F20.15)') "  T1 diagnostic      :              ",t1diag
+        end if
       end if
       write(*,*) ""
       write (*,'(A,F25.15)') "  SCF energy :                 ",scf_energy
       write (*,'(A,F25.15)') "  Total MP2 energy :           ",scf_energy+mp2_energy
       if (ccd) then 
-        write (*,'(A,F25.15)') "  Total  CCD energy :          ",scf_energy+ccsd_energy
-      else
-        write (*,'(A,F25.15)') "  Total CCSD energy :          ",scf_energy+ccsd_energy
-      end if
-      if (present(t_energy)) then 
-        write (*,'(A,F25.15)') "  Total CCSD+T  energy :       ",scf_energy+ccsd_energy+t_energy(1)
-        write (*,'(A,F25.15)') "  Total CCSD(T) energy :       ",scf_energy+ccsd_energy+t_energy(1)+t_energy(2)
-        write (*,'(A,F25.15)') "  Total CCSD-T  energy :       ",scf_energy+ccsd_energy+t_energy(1)+t_energy(3)
+        write (*,'(A,F25.15)') "  Total  CCD energy :          ",scf_energy+cc_energy
+      else 
+        if (cc2) then
+          write (*,'(A,F25.15)') "  Total  CC2 energy :          ",scf_energy+cc_energy
+        else
+          write (*,'(A,F25.15)') "  Total CCSD energy :          ",scf_energy+cc_energy
+          if (present(t_energy)) then 
+            write (*,'(A,F25.15)') "  Total CCSD+T  energy :       ",scf_energy+cc_energy+t_energy(1)
+            write (*,'(A,F25.15)') "  Total CCSD(T) energy :       ",scf_energy+cc_energy+t_energy(1)+t_energy(2)
+            write (*,'(A,F25.15)') "  Total CCSD-T  energy :       ",scf_energy+cc_energy+t_energy(1)+t_energy(3)
+          end if
+        end if
       end if
       write(*,*) ""
       write(*,'(A)') "-----------------------------------------------"

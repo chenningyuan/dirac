@@ -67,7 +67,8 @@ module exacorr_cc
 !        space ids and roots
          type(space_dims) :: dims
 !        CCSD control and result variables
-         real(8)            :: scf_energy, mp2_energy, cc2_energy, ccsd_energy!, t_energy(3) ! triples not implemented
+         real(8)            :: scf_energy, mp2_energy, cc_energy!, t_energy(3) ! triples not implemented
+         real(8)            :: t1diag
          real(8)            :: t_target_precision
 
          ! classes for the definition of spaces (AO and 2 different MO spaces)
@@ -234,14 +235,21 @@ module exacorr_cc
             end if
 
             if (.not.CC2) then
-               call solve_t_equations(comm_t,int_t,dims,CCD,t_target_precision,ccsd_energy,ncycles,exa_input%print_level)
-               call print_exaoutput(exa_input%talsh, CCD, scf_energy, mp2_energy, ccsd_energy)
+               call solve_t_equations(comm_t,int_t,dims,CCD,t_target_precision,cc_energy,ncycles,exa_input%print_level)
 !              Calculate (T) energy correction, not implemented yet
 !              call t3_energy (t_energy,eps_occ,eps_vir,t1_tensor,t2_tensor,fov_tensor,ooov_tensor,vovv_tensor,oovv_tensor)
-!              call print_exaoutput(exa_input%talsh, CCD, scf_energy, mp2_energy, ccsd_energy, t_energy)
+!              call print_exaoutput(exa_input%talsh, CCD, scf_energy, mp2_energy, cc_energy, t_energy)
             else if (CC2) then 
-                 call solve_CC2_t_equations(comm_t,int_t,dims,CCD,t_target_precision,cc2_energy,ncycles,exa_input%print_level)
-                 write (*,'(A,F20.15)') "  Final CC2 energy     :            ",cc2_energy
+               call solve_CC2_t_equations(comm_t,int_t,dims,CCD,t_target_precision,cc_energy,ncycles,exa_input%print_level)
+            end if
+
+            if (.not.CCD) then
+! calculate T1 diagnostic
+               t1diag = print_tensornorm2(comm_t%t1)
+               t1diag = t1diag/sqrt(dble(nocc))
+               call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, t1diag=t1diag)
+            else
+               call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy)
             end if
 
 !           Destroy tensors and shut down library
@@ -915,6 +923,14 @@ module exacorr_cc
          ierr=exatns_tensor_create(Wabef_CC2_tensor,"Wabef_CC2",vvvv_id,vvvv_root,EXA_DATA_KIND_C8)
          ierr=exatns_tensor_create(Wmnij_CC2_tensor,"Wmnij_CC2",oooo_id,oooo_root,EXA_DATA_KIND_C8)
 
+! resorted integrals nedded below
+
+         ierr=exatns_tensor_init(cint_vvvo_tensor)
+         ierr=exatns_tensor_contract("C(b,c,a,i)+=V+(a,i,b,c)*K()",cint_vvvo_tensor,int_t%vovv,one_tensor)
+
+         ierr=exatns_tensor_init(cint_ovoo_tensor)
+         ierr=exatns_tensor_contract("C(k,a,i,j)+=V+(i,j,k,a)*K()",cint_ovoo_tensor,int_t%ooov,one_tensor)
+
          do iccsd = 1, ncycles
 
           call get_tau(comm_t,CCD,one_tensor) !L : See : is it usefull for CC2
@@ -952,15 +968,11 @@ module exacorr_cc
           if (debug_local) print*, "norm s2 tensor after diagram 16 ",print_tensornorm2(s2_tensor)
 
 !         Diagram 19 : \Sd abij = + \Pm ij \ts ei \V abej
-          ierr=exatns_tensor_init(cint_vvvo_tensor)
-          ierr=exatns_tensor_contract("C(b,c,a,i)+=V+(a,i,b,c)*K()",cint_vvvo_tensor,int_t%vovv,one_tensor)
           ierr=exatns_tensor_contract("S(a,b,i,j)+=C(a,b,e,j)*T(e,i)",s2_tensor,cint_vvvo_tensor,comm_t%t1)
           ierr=exatns_tensor_contract("S(a,b,i,j)+=C(a,b,e,i)*T(e,j)",s2_tensor,cint_vvvo_tensor,comm_t%t1,MINUS_ONE)
           if (debug_local) print*, "norm s2 tensor after diagram 19",print_tensornorm2(s2_tensor)
 
 !         Diagram 20 : \Sdabij = - \Pm ab \ts am \V mbij 
-          ierr=exatns_tensor_init(cint_ovoo_tensor)
-          ierr=exatns_tensor_contract("C(k,a,i,j)+=V+(i,j,k,a)*K()",cint_ovoo_tensor,int_t%ooov,one_tensor)
           ierr=exatns_tensor_contract("S(a,b,i,j)+=C(m,b,i,j)*T(a,m)",s2_tensor,cint_ovoo_tensor,comm_t%t1,MINUS_ONE)
           ierr=exatns_tensor_contract("S(a,b,i,j)+=C(m,a,i,j)*T(b,m)",s2_tensor,cint_ovoo_tensor,comm_t%t1)
           if (debug_local) print*, "norm s2 tensor after diagram 20",print_tensornorm2(s2_tensor)
@@ -997,7 +1009,7 @@ module exacorr_cc
           if (debug_local) print*, "norm s2 tensor after diagram 22",print_tensornorm2(s2_tensor)
 
 
-! VERIFER QUE L APPEL DE LA MATRICE DE FOCK EST BIEN LA AVANT : Toujours dans comm_t         
+! Always check that the Fock matrix is called before, in comm_t 
 
 !         Diagram 23 : s2_{ij}^{ab} +=  P\_(ab)\sum_{e} f_e^b t_{ij}^{ae} ! Use of the Fock matrix 
           ierr=exatns_tensor_contract("S(a,b,i,j)+=F(b,e)*T(a,e,i,j)",s2_tensor,comm_t%fvv,comm_t%t2)
@@ -1009,20 +1021,16 @@ module exacorr_cc
           ierr=exatns_tensor_contract("S(a,b,i,j)+=F(m,i)*T(a,b,j,m)",s2_tensor,comm_t%foo,comm_t%t2)
           if (debug_local) print*, "norm s2 tensor after diagram 24",print_tensornorm2(s2_tensor)
 
-!!!!!!!!! A PARTIR D ICI Il FAUT FAIRE LE MENAGE !!!!!!!
+! Clean LH 170420
 !         vv
           call get_hvv(comm_t,int_t%oovv,one_tensor)
           call get_gvv(comm_t,int_t%vovv,CCD,one_tensor)
 
 !         vovo
           call get_h(comm_t,int_t,CCD,one_tensor)
-          call get_hoo(comm_t,int_t%oovv,one_tensor)
-          call get_goo(comm_t,int_t%ooov,CCD,one_tensor)
 
-          call get_hov(comm_t,int_t%oovv,one_tensor)
 !         oooo
           call get_a(comm_t,int_t,CCD,one_tensor)
-
 
 !         oo
           call get_hoo(comm_t,int_t%oovv,one_tensor)
@@ -1035,7 +1043,6 @@ module exacorr_cc
             ierr=exatns_tensor_contract("L(k,c)+=H(k,c)*K()",hov_aux_tensor,comm_t%hov,one_tensor)        ! copy common term
             ierr=exatns_tensor_contract("H(k,c)+=F(k,c)*K()",hov_aux_tensor,comm_t%fov,one_tensor,MINUS_TWO) ! subtract fock matrix
           end if
-
 
           if (ierr.ne.EXA_SUCCESS) then
              print*," ccdriver: error in calculation of common blocks, code=",ierr
@@ -1057,7 +1064,7 @@ module exacorr_cc
              write(*,'(A7,E20.15)') "hint  = ",print_tensornorm2 (comm_t%h_int)
           end if
 
-!!!! C EST ICI QUE LE MENAGE DOIT SE TERMINER !!!!
+!End clean LH 170420
 
 !         calculate s1 tensor
           if (.not.CCD) then
