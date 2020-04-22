@@ -368,10 +368,11 @@ module talsh_cc
 
           call get_tau(comm_t,CCD)
 
-          print*, "Tau    = ",tensor_norm2(comm_t%tau)*ONE_QUARTER
-          print*, "t1    = ",tensor_norm2(comm_t%t1)
-          print*, "t2    = ",tensor_norm2(comm_t%t2)
-
+          if (print_level.gt.2) then
+            write(*,*) "Tau    = ",tensor_norm2(comm_t%tau)*ONE_QUARTER
+            write(*,*) "t1    = ",tensor_norm2(comm_t%t1)
+            write(*,*) "t2    = ",tensor_norm2(comm_t%t2)
+          end if
 
           if (ierr.ne.TALSH_SUCCESS) then
              write(*,*) " ccdriver: error in calculation of common blocks, code=",ierr
