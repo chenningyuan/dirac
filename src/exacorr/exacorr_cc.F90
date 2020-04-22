@@ -910,6 +910,14 @@ module exacorr_cc
          ierr=exatns_tensor_create(Wabef_CC2_tensor,"Wabef_CC2",vvvv_id,vvvv_root,EXA_DATA_KIND_C8)
          ierr=exatns_tensor_create(Wmnij_CC2_tensor,"Wmnij_CC2",oooo_id,oooo_root,EXA_DATA_KIND_C8)
 
+! resorted integrals nedded below
+
+         ierr=exatns_tensor_init(cint_vvvo_tensor)
+         ierr=exatns_tensor_contract("C(b,c,a,i)+=V+(a,i,b,c)*K()",cint_vvvo_tensor,int_t%vovv,one_tensor)
+
+         ierr=exatns_tensor_init(cint_ovoo_tensor)
+         ierr=exatns_tensor_contract("C(k,a,i,j)+=V+(i,j,k,a)*K()",cint_ovoo_tensor,int_t%ooov,one_tensor)
+
          do iccsd = 1, ncycles
 
           call get_tau(comm_t,CCD,one_tensor) !L : See : is it usefull for CC2
@@ -947,15 +955,11 @@ module exacorr_cc
           if (debug_local) print*, "norm s2 tensor after diagram 16 ",print_tensornorm2(s2_tensor)
 
 !         Diagram 19 : \Sd abij = + \Pm ij \ts ei \V abej
-          ierr=exatns_tensor_init(cint_vvvo_tensor)
-          ierr=exatns_tensor_contract("C(b,c,a,i)+=V+(a,i,b,c)*K()",cint_vvvo_tensor,int_t%vovv,one_tensor)
           ierr=exatns_tensor_contract("S(a,b,i,j)+=C(a,b,e,j)*T(e,i)",s2_tensor,cint_vvvo_tensor,comm_t%t1)
           ierr=exatns_tensor_contract("S(a,b,i,j)+=C(a,b,e,i)*T(e,j)",s2_tensor,cint_vvvo_tensor,comm_t%t1,MINUS_ONE)
           if (debug_local) print*, "norm s2 tensor after diagram 19",print_tensornorm2(s2_tensor)
 
 !         Diagram 20 : \Sdabij = - \Pm ab \ts am \V mbij 
-          ierr=exatns_tensor_init(cint_ovoo_tensor)
-          ierr=exatns_tensor_contract("C(k,a,i,j)+=V+(i,j,k,a)*K()",cint_ovoo_tensor,int_t%ooov,one_tensor)
           ierr=exatns_tensor_contract("S(a,b,i,j)+=C(m,b,i,j)*T(a,m)",s2_tensor,cint_ovoo_tensor,comm_t%t1,MINUS_ONE)
           ierr=exatns_tensor_contract("S(a,b,i,j)+=C(m,a,i,j)*T(b,m)",s2_tensor,cint_ovoo_tensor,comm_t%t1)
           if (debug_local) print*, "norm s2 tensor after diagram 20",print_tensornorm2(s2_tensor)
