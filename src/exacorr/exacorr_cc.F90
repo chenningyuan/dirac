@@ -92,9 +92,6 @@ module exacorr_cc
          !CC2
          logical :: CC2         !L
 
-         !controlling print
-         integer :: print_level
-
 !        Make some noise so that we know we are here
          call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
          if (my_MPI_rank == 0) call print_date(" Starting CC calculation with exatensor")
@@ -116,7 +113,6 @@ module exacorr_cc
          lambda = exa_input%lambda
          noints = exa_input%noints
          ncycles = exa_input%ncycles
-         print_level = exa_input%print_level
 
          if (my_MPI_rank == 0) then
             call print_exainput(exa_input,int(ao_space%get_root_id(ierr)))
@@ -179,7 +175,7 @@ module exacorr_cc
             ierr=exatns_tensor_create(int_t%vovv,"vovv",vovv_id,vovv_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(int_t%vvvv,"vvvv",vvvv_id,vvvv_root,EXA_DATA_KIND_C8)
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
-            call get_CC_integrals (ao_space_id,ao_space,int_t,exa_input%moint_scheme,print_level)
+            call get_CC_integrals (ao_space_id,ao_space,int_t,exa_input%moint_scheme,exa_input%print_level)
             call print_date('initialized two electron integrals')
 
             ! If we have the 1-body integrals we rebuild the Fock matrix and check consistency, otherwise we use the orbital energies
@@ -187,7 +183,7 @@ module exacorr_cc
             ierr=exatns_tensor_create(comm_t%fov,"fov",ov_id,ov_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(comm_t%fvv,"fvv",vv_id,vv_root,EXA_DATA_KIND_C8)
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
-            call init_fock (comm_t,int_t,oo_id,oo_root,ov_id,ov_root,vv_id,vv_root,scf_energy,print_level)
+            call init_fock (comm_t,int_t,oo_id,oo_root,ov_id,ov_root,vv_id,vv_root,scf_energy,exa_input%print_level)
             call print_date('initialized Fock matrix')
 
 !           Initialize t1 amplitudes to zero (we assume canonical orbitals for the moment)
@@ -244,7 +240,7 @@ module exacorr_cc
 !              call t3_energy (t_energy,eps_occ,eps_vir,t1_tensor,t2_tensor,fov_tensor,ooov_tensor,vovv_tensor,oovv_tensor)
 !              call print_exaoutput(exa_input%talsh, CCD, scf_energy, mp2_energy, ccsd_energy, t_energy)
             else if (CC2) then 
-                 call solve_CC2_t_equations(comm_t,int_t,dims,CCD,t_target_precision,cc2_energy,ncycles)
+                 call solve_CC2_t_equations(comm_t,int_t,dims,CCD,t_target_precision,cc2_energy,ncycles,exa_input%print_level)
                  write (*,'(A,F20.15)') "  Final CC2 energy     :            ",cc2_energy
             end if
 
@@ -271,10 +267,10 @@ module exacorr_cc
 
 !            solve lambda-equations and caluclate density matrix in MO basis
              if (.not.CCD) then
-               call solve_lambda_equations(comm_t,int_t,l2_tensor,dims,t_target_precision,ncycles,print_level,l1_tensor)
+               call solve_lambda_equations(comm_t,int_t,l2_tensor,dims,t_target_precision,ncycles,exa_input%print_level,l1_tensor)
                call exacorr_dm_driver(exa_input,dims,comm_t%t2,l2_tensor,comm_t%t1,l1_tensor)
              else
-               call solve_lambda_equations(comm_t,int_t,l2_tensor,dims,t_target_precision,ncycles,print_level)
+               call solve_lambda_equations(comm_t,int_t,l2_tensor,dims,t_target_precision,ncycles,exa_input%print_level)
                call exacorr_dm_driver(exa_input,dims,comm_t%t2,l2_tensor)
              end if
 
@@ -826,12 +822,11 @@ module exacorr_cc
 
         end subroutine solve_t_equations
 
-        subroutine solve_CC2_t_equations(comm_t,int_t,dims,CCD,t_target_precision,ccsd_energy,ncycles)
+        subroutine solve_CC2_t_equations(comm_t,int_t,dims,CCD,t_target_precision,ccsd_energy,ncycles,print_level)
 
 !        Routine for solving the t amplitude equations
 
          use exacorr_ao_to_mo, only : print_tensornorm2
-         use exacorr_global,   only : debug_exa
 
          logical :: debug_local = .false.
 
@@ -867,8 +862,10 @@ module exacorr_cc
          real(8) :: t_convergence
 
          integer :: iccsd
-         integer,intent(in) :: ncycles
+         integer,intent(in) :: ncycles,print_level
          integer(INTD) :: ierr
+
+         if (print_level.gt.8) debug_local = .true.
 
          occ_space_id=dims%occ_space_id
          vir_space_id=dims%vir_space_id
@@ -1045,7 +1042,7 @@ module exacorr_cc
              return
           end if
 
-          if (debug_exa) then
+          if (print_level.gt.8) then
              if (.not.CCD) write(*,'(A7,E20.15)') "T1amp = ",print_tensornorm2 (comm_t%t1)
              write(*,'(A7,E20.15)') "T2amp = ",print_tensornorm2 (comm_t%t2)
              write(*,'(A7,E20.15)') "Tau   = ",print_tensornorm2 (comm_t%tau)
