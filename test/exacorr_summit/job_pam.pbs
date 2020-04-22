@@ -11,8 +11,8 @@
 # (6) qforce.*.log files.
 #-----------------------------
 
-#BSUB -nnodes 129
-#BSUB -W 4:00
+#BSUB -nnodes 30
+#BSUB -W 2:00
 #BSUB -P CHP109
 #BSUB -J dirac
 #BSUB -o info_%J.out
@@ -24,7 +24,7 @@ export EX_PATH=${DIRAC_PATH}
 export BASDIR=${DIRAC_PATH}/basis:${DIRAC_PATH}/basis_dalton:${DIRAC_PATH}/basis_ecp
 
 # number of mpi processes (2*nnodes)
-export nmpi=258
+export nmpi=60
 
 # Load modules:
 module load gcc/8.1.1
@@ -42,6 +42,6 @@ export PAMI_IBV_DEVICE_NAME_1="mlx5_3:1,mlx5_0:1"
 ulimit -s unlimited
 
 # run cc
-#$EX_PATH/pam --mpi=$nmpi --mol=$MOL_file --inp=$INP_file --put="DFCOEF" --get="DFCOEF"
+$EX_PATH/pam --mpi=$nmpi --mol=$MOL_file --inp=$INP_file --put="DFCOEF" --get="DFCOEF" --outqforce
 # if you want scratch for debugging 
-$EX_PATH/pam --mpi=$nmpi --mol=$MOL_file --inp=$INP_file --put="DFCOEF" --get="DFCOEF" --keep_scratch
+#$EX_PATH/pam --mpi=$nmpi --mol=$MOL_file --inp=$INP_file --put="DFCOEF" --get="DFCOEF" --keep_scratch --outqforce

@@ -12,15 +12,16 @@ then
   echo "give the number of the test you want to run"
 else
 
-export INP_file=cc_laf3.inp
-export MOL_file=LaF3.xyz
+export INP_file=cc_uf6.inp
+export MOL_file=UF6.xyz
+pam_script=job_pam.pbs
 
 if [ "$1" -eq 1 ] || [ "$1" -gt 8 ]
 then
   fold=scheme1
-  cp job_pam.pbs ${fold}
+  cp ${pam_script} ${fold}
   cd ${fold}
-    bsub job_pam.pbs
+    bsub ${pam_script}
   cd ..
   echo "${fold} submited"
 fi
@@ -28,9 +29,9 @@ fi
 if [ "$1" -eq 2 ] || [ "$1" -gt 8 ]
 then
   fold=scheme2
-  cp job_pam.pbs ${fold}
+  cp ${pam_script} ${fold}
   cd ${fold}
-    bsub job_pam.pbs
+    bsub ${pam_script}
   cd ..
   echo "${fold} submited"
 fi
@@ -38,9 +39,9 @@ fi
 if [ "$1" -eq 3 ] || [ "$1" -gt 8 ]
 then
   fold=scheme3
-  cp job_pam.pbs ${fold}
+  cp ${pam_script} ${fold}
   cd ${fold}
-    bsub job_pam.pbs
+    bsub ${pam_script}
   cd ..
   echo "${fold} submited"
 fi
@@ -48,9 +49,9 @@ fi
 if [ "$1" -eq 4 ] || [ "$1" -gt 8 ]
 then
   fold=scheme4
-  cp job_pam.pbs ${fold}
+  cp ${pam_script} ${fold}
   cd ${fold}
-    bsub job_pam.pbs
+    bsub ${pam_script}
   cd ..
   echo "${fold} submited"
 fi
@@ -58,9 +59,9 @@ fi
 if [ "$1" -eq 5 ] || [ "$1" -gt 8 ]
 then 
   fold=ccd
-  cp job_pam.pbs ${fold}
+  cp ${pam_script} ${fold}
   cd ${fold}
-    bsub job_pam.pbs 
+    bsub ${pam_script} 
   cd ..
   echo "${fold} submited"
 fi

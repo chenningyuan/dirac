@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#BSUB -nnodes 60
+#BSUB -nnodes 20
 #BSUB -W 02:00
 #BSUB -P CHP109
 #BSUB -J dirac
@@ -8,7 +8,7 @@
 #BSUB -e info_%J.err
 
 #input info adept!!!
-export numproc=120    # 2*nnodes
+export numproc=40    # 2*nnodes
 export PRN000=chp109 # the same as above
 export USE_DFCOEF=1 # larger than zero -> use DFCOEF
 export INP_FILE=cc_laf3.inp
