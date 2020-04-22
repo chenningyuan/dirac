@@ -67,7 +67,8 @@ module exacorr_cc
 !        space ids and roots
          type(space_dims) :: dims
 !        CCSD control and result variables
-         real(8)            :: scf_energy, mp2_energy, cc2_energy, ccsd_energy!, t_energy(3) ! triples not implemented
+         real(8)            :: scf_energy, mp2_energy, cc_energy!, t_energy(3) ! triples not implemented
+         real(8)            :: t1diag
          real(8)            :: t_target_precision
 
          ! classes for the definition of spaces (AO and 2 different MO spaces)
@@ -234,16 +235,17 @@ module exacorr_cc
             end if
 
             if (.not.CC2) then
-               call solve_t_equations(comm_t,int_t,dims,CCD,t_target_precision,ccsd_energy,ncycles)
-               call print_exaoutput(exa_input%talsh, CCD, scf_energy, mp2_energy, ccsd_energy)
+               call solve_t_equations(comm_t,int_t,dims,CCD,t_target_precision,cc_energy,ncycles)
 !              Calculate (T) energy correction, not implemented yet
 !              call t3_energy (t_energy,eps_occ,eps_vir,t1_tensor,t2_tensor,fov_tensor,ooov_tensor,vovv_tensor,oovv_tensor)
-!              call print_exaoutput(exa_input%talsh, CCD, scf_energy, mp2_energy, ccsd_energy, t_energy)
+!              call print_exaoutput(exa_input%talsh, CCD, scf_energy, mp2_energy, cc_energy, t_energy)
             else if (CC2) then 
-                 call solve_CC2_t_equations(comm_t,int_t,dims,CCD,t_target_precision,cc2_energy,ncycles)
-                 write (*,'(A,F20.15)') "  Final CC2 energy     :            ",cc2_energy
+               call solve_CC2_t_equations(comm_t,int_t,dims,CCD,t_target_precision,cc_energy,ncycles)
             end if
-
+! calculate T1 diagnostic
+            t1diag = print_tensornorm2(comm_t%t1)
+            t1diag = t1diag/sqrt(dble(nocc))
+            call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, t1diag)
 
 !           Destroy tensors and shut down library
             if (.not.CCD) then

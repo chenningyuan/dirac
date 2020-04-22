@@ -73,9 +73,10 @@ module talsh_cc
          integer(INTD)      :: one_dims(1)
 !        orbital energies
          real(8), allocatable :: eps_occ(:),eps_vir(:)
-!        CCSD control and result variables
-         real(8) :: scf_energy, mp2_energy, cc2_energy, ccsd_energy, t_energy(3)
+!        CCSD,CC2,... control and result variables
+         real(8) :: scf_energy, mp2_energy, cc_energy, t_energy(3)
          real(8) :: t_target_precision
+         real(8) :: t1diag
          integer :: ncycles, print_level
 
          logical :: CCD, lambda
@@ -207,20 +208,19 @@ module talsh_cc
 
          if (.not.CC2) then
             call solve_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
-                                ccsd_energy,CCD,ncycles)
+                                cc_energy,CCD,ncycles)
             if (.not.CCD) then
 !              Calculate (T) energy correction
                call t3_energy (t_energy,eps_occ,eps_vir, comm_t%t1,comm_t%t2,comm_t%fov,int_t%ooov,int_t%vovv,int_t%oovv)
-               call print_exaoutput(exa_input%talsh, CCD, scf_energy, mp2_energy, ccsd_energy, t_energy)
-            else
-               call print_exaoutput(exa_input%talsh, CCD, scf_energy, mp2_energy, ccsd_energy)
             end if
-
          else if (CC2) then
             call solve_CC2_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
-                                cc2_energy,CCD,ncycles)
-            write (*,'(A,F20.15)') "  Final CC2 energy     :            ",cc2_energy
+                                cc_energy,CCD,ncycles)
          end if
+! calculate T1 diagnostic
+         t1diag = tensor_norm2(comm_t%t1)
+         t1diag = t1diag/sqrt(dble(nocc))
+         call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, t1diag, t_energy)
 
          !Destruct diis tensors
          if (.not.CCD) then
