@@ -849,6 +849,8 @@ module exacorr_cc
          real(8), intent(out) :: ccsd_energy
 !        solution tensors
          type(tens_rcrsv_t) :: s1_tensor, s2_tensor
+!        intermediary tensor for handling permutation symmetry
+         type(tens_rcrsv_t) :: intm_p2_tensor
 !        intermediate
 !!         type(tens_rcrsv_t) :: tau2_tensor, cint_tensor
          type(tens_rcrsv_t) :: t1t1_tensor, tauCC2_tensor
@@ -911,6 +913,7 @@ module exacorr_cc
             ierr=exatns_tensor_create(s1_tensor,"s1",vo_id,vo_root,EXA_DATA_KIND_C8)
          end if
          ierr=exatns_tensor_create(s2_tensor,"s2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(intm_p2_tensor,"cc2_intm_p2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
 !!         ierr=exatns_tensor_create(tau2_tensor,"tau2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
 !!         ierr=exatns_tensor_create(cint_tensor,"cint",ovoo_id,ovoo_root,EXA_DATA_KIND_C8)
 
@@ -944,15 +947,19 @@ module exacorr_cc
 
 !         creation of tau like intermediates for CC2
 !
+!         create \ts ai \ts bj in intermediate storage
+          ierr=exatns_tensor_init(intm_p2_tensor)
+          ierr=exatns_tensor_contract("I(a,b,i,j)+=T(a,i)*T(b,j)",intm_p2_tensor,comm_t%t1,comm_t%t1) 
+
 !         a. tau_CC2=\ts ai \ts bj -\ts aj \ts bi 
           ierr=exatns_tensor_init(tauCC2_tensor)
-          ierr=exatns_tensor_contract("T(a,b,i,j)+=T(a,i)*T(b,j)",tauCC2_tensor,comm_t%t1,comm_t%t1)
-          ierr=exatns_tensor_contract("T(a,b,i,j)+=T(a,j)*T(b,i)",tauCC2_tensor,comm_t%t1,comm_t%t1,MINUS_ONE)
+          ierr=exatns_tensor_contract("T(a,b,i,j)+=I(a,b,i,j)*K()",tauCC2_tensor,intm_p2_tensor,one_tensor)
+          ierr=exatns_tensor_contract("T(a,b,i,j)+=I(a,b,j,i)*K()",tauCC2_tensor,intm_p2_tensor,one_tensor,MINUS_ONE)
           if (debug_local) print*, "norm contraction tauCC2",print_tensornorm2(tauCC2_tensor)
 
 !         b. t1t1 = \ts ai \ts bj 
           ierr=exatns_tensor_init(t1t1_tensor)
-          ierr=exatns_tensor_contract("T(e,a,i,m)+=T(e,i)*T(a,m)",t1t1_tensor,comm_t%t1,comm_t%t1)
+          ierr=exatns_tensor_contract("T(a,b,i,j)+=I(a,b,i,j)*K()",t1t1_tensor,intm_p2_tensor,one_tensor)
           if (debug_local) print*, "norm t1t1_tensor ",print_tensornorm2(t1t1_tensor)
 
 
@@ -961,10 +968,15 @@ module exacorr_cc
           if (debug_local) print*, "norm s2 tensor after diagram 15 ",print_tensornorm2(s2_tensor)
 
 !         Diagramme 16 \Sd abij = - \Pm ij \Pm ab \ts ei \ts am \V mbej
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=V(b,m,e,j)*T(e,a,i,m)",s2_tensor,int_t%vovo,t1t1_tensor)
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=V(a,m,e,j)*T(e,b,i,m)",s2_tensor,int_t%vovo,t1t1_tensor,MINUS_ONE)
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=V(b,m,e,i)*T(e,a,j,m)",s2_tensor,int_t%vovo,t1t1_tensor,MINUS_ONE)
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=V(a,m,e,i)*T(e,b,j,m)",s2_tensor,int_t%vovo,t1t1_tensor)
+!         store term that will contribute the four permutations on intm_p2_tensor: \ts ei \ts am \V mbej
+          ierr=exatns_tensor_init(intm_p2_tensor)
+          ierr=exatns_tensor_contract("I(a,b,i,j)+=V(b,m,e,j)*T(e,a,i,m)",intm_p2_tensor,int_t%vovo,t1t1_tensor)
+
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=I(a,b,i,j)*K()",s2_tensor,intm_p2_tensor,one_tensor)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=I(a,b,j,i)*K()",s2_tensor,intm_p2_tensor,one_tensor,MINUS_ONE)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=I(b,a,i,j)*K()",s2_tensor,intm_p2_tensor,one_tensor,MINUS_ONE)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=I(b,a,j,i)*K()",s2_tensor,intm_p2_tensor,one_tensor)
+
           if (debug_local) print*, "norm s2 tensor after diagram 16 ",print_tensornorm2(s2_tensor)
 
 !         Diagram 19 : \Sd abij = + \Pm ij \ts ei \V abej
@@ -1012,13 +1024,19 @@ module exacorr_cc
 ! Always check that the Fock matrix is called before, in comm_t 
 
 !         Diagram 23 : s2_{ij}^{ab} +=  P\_(ab)\sum_{e} f_e^b t_{ij}^{ae} ! Use of the Fock matrix 
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=F(b,e)*T(a,e,i,j)",s2_tensor,comm_t%fvv,comm_t%t2)
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=F(a,e)*T(b,e,i,j)",s2_tensor,comm_t%fvv,comm_t%t2,MINUS_ONE)
+          ierr=exatns_tensor_init(intm_p2_tensor)
+          ierr=exatns_tensor_contract("I(a,b,i,j)+=F(b,e)*T(a,e,i,j)",intm_p2_tensor,comm_t%fvv,comm_t%t2)
+
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=I(a,b,i,j)*K()",s2_tensor,intm_p2_tensor,one_tensor)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=I(b,a,i,j)*K()",s2_tensor,intm_p2_tensor,one_tensor,MINUS_ONE)
           if (debug_local) print*, "norm s2 tensor after diagram 23",print_tensornorm2(s2_tensor)
 
 !         Diagram 24 : s2_{ij}^{ab} += -P\_(ij)\sum_{k} f_j^k t_{ik}^{ab} ! Use of the Fock matrix
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=F(m,j)*T(a,b,i,m)",s2_tensor,comm_t%foo,comm_t%t2,MINUS_ONE)
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=F(m,i)*T(a,b,j,m)",s2_tensor,comm_t%foo,comm_t%t2)
+          ierr=exatns_tensor_init(intm_p2_tensor)
+          ierr=exatns_tensor_contract("I(a,b,i,j)+=F(m,i)*T(a,b,j,m)",intm_p2_tensor,comm_t%foo,comm_t%t2)
+
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=I(a,b,j,i)*K()",s2_tensor,intm_p2_tensor,one_tensor,MINUS_ONE)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=I(a,b,i,j)*K()",s2_tensor,intm_p2_tensor,one_tensor)
           if (debug_local) print*, "norm s2 tensor after diagram 24",print_tensornorm2(s2_tensor)
 
 ! Clean LH 170420
@@ -1152,6 +1170,7 @@ module exacorr_cc
          ierr=exatns_tensor_destroy(cint_vvvo_tensor)
          ierr=exatns_tensor_destroy(Wmnij_CC2_tensor)
          ierr=exatns_tensor_destroy(Wabef_CC2_tensor)
+         ierr=exatns_tensor_destroy(intm_p2_tensor)
          if (.not.CCD) then
             ierr=exatns_tensor_destroy(hoo_aux_tensor)
             ierr=exatns_tensor_destroy(hov_aux_tensor)
