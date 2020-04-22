@@ -850,7 +850,7 @@ module exacorr_cc
 !        solution tensors
          type(tens_rcrsv_t) :: s1_tensor, s2_tensor
 !        intermediary tensor for handling permutation symmetry
-         type(tens_rcrsv_t) :: intm_p2_tensor
+         type(tens_rcrsv_t) :: intm_p2_tensor, intm_vvvv_tensor
 !        intermediate
 !!         type(tens_rcrsv_t) :: tau2_tensor, cint_tensor
          type(tens_rcrsv_t) :: t1t1_tensor, tauCC2_tensor
@@ -922,6 +922,8 @@ module exacorr_cc
 
          ierr=exatns_tensor_create(t1t1_tensor,"t1t1",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
          ierr=exatns_tensor_create(tauCC2_tensor,"tauCC2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
+
+         ierr=exatns_tensor_create(intm_vvvv_tensor,"cc2_intm_vvvv",vvvv_id,vvvv_root,EXA_DATA_KIND_C8)
 
          ierr=exatns_tensor_create(Wabef_CC2_tensor,"Wabef_CC2",vvvv_id,vvvv_root,EXA_DATA_KIND_C8)
          ierr=exatns_tensor_create(Wmnij_CC2_tensor,"Wmnij_CC2",oooo_id,oooo_root,EXA_DATA_KIND_C8)
@@ -1000,10 +1002,13 @@ module exacorr_cc
           Wmnij_CC2_tensor,int_t%oovv,tauCC2_tensor,ONE_QUARTER)
 
 !         b.\W abef= \V abef -\Pm ab \ts bm \V amef +\unquart \Pm ab \ts am \ts bn \Vmnef
+          ierr=exatns_tensor_init(intm_vvvv_tensor)
+          ierr=exatns_tensor_contract("I(a,b,e,f)+=V(a,m,e,f)*T(b,m)",intm_vvvv_tensor,int_t%vovv,comm_t%t1)
+
           ierr=exatns_tensor_init(Wabef_CC2_tensor)
           ierr=exatns_tensor_contract("W(a,b,e,f)+=V(a,b,e,f)*K()",Wabef_CC2_tensor,int_t%vvvv,one_tensor)
-          ierr=exatns_tensor_contract("W(a,b,e,f)+=V(a,m,e,f)*T(b,m)",Wabef_CC2_tensor,int_t%vovv,comm_t%t1,MINUS_ONE)
-          ierr=exatns_tensor_contract("W(a,b,e,f)+=V(b,m,e,f)*T(a,m)",Wabef_CC2_tensor,int_t%vovv,comm_t%t1)
+          ierr=exatns_tensor_contract("W(a,b,e,f)+=I(a,b,e,f)*K()",Wabef_CC2_tensor,intm_vvvv_tensor,one_tensor,MINUS_ONE)
+          ierr=exatns_tensor_contract("W(a,b,e,f)+=I(b,a,e,f)*K()",Wabef_CC2_tensor,intm_vvvv_tensor,one_tensor)
           ierr=exatns_tensor_contract("W(a,b,e,f)+=V(m,n,e,f)*T(a,b,m,n)",&
           Wabef_CC2_tensor,int_t%oovv,tauCC2_tensor,ONE_QUARTER)
 
@@ -1171,6 +1176,7 @@ module exacorr_cc
          ierr=exatns_tensor_destroy(Wmnij_CC2_tensor)
          ierr=exatns_tensor_destroy(Wabef_CC2_tensor)
          ierr=exatns_tensor_destroy(intm_p2_tensor)
+         ierr=exatns_tensor_destroy(intm_vvvv_tensor)
          if (.not.CCD) then
             ierr=exatns_tensor_destroy(hoo_aux_tensor)
             ierr=exatns_tensor_destroy(hov_aux_tensor)
