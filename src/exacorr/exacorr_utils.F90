@@ -132,7 +132,8 @@ module exacorr_utils
     subroutine print_exaoutput(talsh, ccd, cc2, scf_energy, mp2_energy, cc_energy, t1diag, t_energy)
 
       logical, intent(in)           :: talsh, ccd, cc2
-      real(8), intent(in)           :: scf_energy, mp2_energy, cc_energy, t1diag
+      real(8), intent(in)           :: scf_energy, mp2_energy, cc_energy
+      real(8), intent(in), optional :: t1diag
       real(8), intent(in), optional :: t_energy(3)
 
       write(*,'(A)') "     -     Final results from EXACORR     -    "
@@ -160,7 +161,9 @@ module exacorr_utils
             write (*,'(A,F20.15)') "  CCSD-T  correlation energy :      ",cc_energy+t_energy(1)+t_energy(3)
           end if
         end if
-        write (*,'(A,F20.15)') "  T1 diagnostic      :              ",t1diag
+        if (present(t1diag)) then
+          write (*,'(A,F20.15)') "  T1 diagnostic      :              ",t1diag
+        end if
       end if
       write(*,*) ""
       write (*,'(A,F25.15)') "  SCF energy :                 ",scf_energy

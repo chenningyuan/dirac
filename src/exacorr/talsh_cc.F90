@@ -217,9 +217,14 @@ module talsh_cc
                                 cc_energy,CCD,ncycles,exa_input%print_level)
          end if
 ! calculate T1 diagnostic
-         t1diag = tensor_norm2(comm_t%t1)
-         t1diag = t1diag/sqrt(dble(nocc))
-         call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, t1diag, t_energy)
+
+         if (.not.CCD) then
+            t1diag = tensor_norm2(comm_t%t1)
+            t1diag = t1diag/sqrt(dble(nocc))
+            call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, t1diag=t1diag, t_energy=t_energy)
+         else
+            call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, t_energy=t_energy)
+         end if
 
          !Destruct diis tensors
          if (.not.CCD) then

@@ -242,10 +242,15 @@ module exacorr_cc
             else if (CC2) then 
                call solve_CC2_t_equations(comm_t,int_t,dims,CCD,t_target_precision,cc_energy,ncycles,exa_input%print_level)
             end if
+
+            if (.not.CCD) then
 ! calculate T1 diagnostic
-            t1diag = print_tensornorm2(comm_t%t1)
-            t1diag = t1diag/sqrt(dble(nocc))
-            call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, t1diag)
+               t1diag = print_tensornorm2(comm_t%t1)
+               t1diag = t1diag/sqrt(dble(nocc))
+               call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, t1diag=t1diag)
+            else
+               call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy)
+            end if
 
 !           Destroy tensors and shut down library
             if (.not.CCD) then
