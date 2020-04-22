@@ -81,7 +81,7 @@ module talsh_cc
          logical :: CCD, lambda
          logical :: CC2 
 
-         logical :: shunt_CC2_t_eq=.true. ! CC2 shunt (to usual CCSD) for downstream verification
+         logical :: shunt_CC2=.false. ! CC2 shunt (to usual CCSD) for downstream verification
 
 
 !        Make some noise so that we know we are here
@@ -221,9 +221,14 @@ module talsh_cc
             end if
 
          else if (CC2) then
-            if (shunt_CC2_t_eq) then
-              write(*,*) " Take Care :CC2 shunt (to usual CCSD) for downstream verification ",ierr
-              call solve_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
+            if (shunt_CC2) then
+
+                print*, " "
+                print*, " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! WARNING SHUNT IN CC2 talsh_cc  "
+                print*, " "
+
+                write(*,*) " Take Care :CC2 shunt (to usual CCSD) for downstream verification ",ierr
+                call solve_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
                                 ccsd_energy,CCD,ncycles)
               
             else      
@@ -258,7 +263,7 @@ module talsh_cc
                     call solve_lambda_equations(comm_t,int_t,l2_tensor,nocc,nvir, &
                                         eps_occ,eps_vir,t_target_precision,ncycles,l1_tensor)
                 else  
-                    call solve_CC2_lambda_methode3_equations(comm_t,int_t,l2_tensor,nocc,nvir, &
+                    call solve_CC2_lambda_methode1_equations(comm_t,int_t,l2_tensor,nocc,nvir, &
                                         eps_occ,eps_vir,t_target_precision,ncycles,l1_tensor)
                 end if 
             call talsh_dm_driver(exa_input,comm_t%t2,l2_tensor,comm_t%t1,l1_tensor)
@@ -1230,7 +1235,7 @@ module talsh_cc
 
          logical :: CCD = .false.
 
-         logical :: shunt_CC2 = .true.
+         logical :: shunt_CC2 = .false.
 
          integer(INTD) :: ierr
 
@@ -1600,10 +1605,10 @@ module talsh_cc
 !-------------------------------------------------------
 !         term 6: S(ij,ab) += P(a,b) V(ij,ae) * G(e,b) |
 !-------------------------------------------------------
-
-          ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,j,a,e)*G(e,b)",s2_tensor,int_t%oovv,lambda_t%gvv)
-          ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,j,e,b)*G(e,a)",s2_tensor,int_t%oovv,lambda_t%gvv)
-
+          if (shunt_CC2) then
+            ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,j,a,e)*G(e,b)",s2_tensor,int_t%oovv,lambda_t%gvv)
+            ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,j,e,b)*G(e,a)",s2_tensor,int_t%oovv,lambda_t%gvv)
+          end if
 !-------------------------------------------------------
 !         term 7: S(ij,ab) -= P(a,b) L(m,a) * W(ij,mb) |
 !-------------------------------------------------------
@@ -1616,10 +1621,10 @@ module talsh_cc
 !-------------------------------------------------------
 !         term 8: S(ij,ab) -= P(i,j) V(im,ab) * G(j,m) |
 !-------------------------------------------------------
-
-          ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,m,b,a)*G(j,m)",s2_tensor,int_t%oovv,lambda_t%goo)
-          ierr=talsh_tensor_contract("S(i,j,a,b)+=V(j,m,a,b)*G(i,m)",s2_tensor,int_t%oovv,lambda_t%goo)
-
+          if (shunt_CC2) then
+            ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,m,b,a)*G(j,m)",s2_tensor,int_t%oovv,lambda_t%goo)
+            ierr=talsh_tensor_contract("S(i,j,a,b)+=V(j,m,a,b)*G(i,m)",s2_tensor,int_t%oovv,lambda_t%goo)
+          end if
 !----------------------------------------------------------
 !         term 9+10: S(ij,ab) += P(i,j) L(i,e) * W(ej,ab) |          
 !----------------------------------------------------------
@@ -2313,6 +2318,11 @@ module talsh_cc
          write(*,'(A)') "********************** Solving Left Eigenvector Equation **********************"
          write(*,'(A)') "*******************************************************************************"
          write(*,*) ""
+         write(*,*) ""
+         write(*,'(A)') "*******************************************************************************"
+         write(*,'(A)') "********************************** Methode 1 **********************************"
+         write(*,'(A)') "*******************************************************************************"
+         write(*,*) ""
 
          if (.not.present(l1_tensor)) CCD = .true.
 
@@ -2625,25 +2635,26 @@ module talsh_cc
 		ierr=talsh_tensor_contract("S(i,j,a,b)+=R(e,b)*L(i,j,a,e)",sub_tensor,vv_aux_tensor,l2_tensor,scale=MINUS_ONE_HALF)
 		ierr=talsh_tensor_contract("S(i,j,a,b)+=R(e,a)*L(i,j,b,e)",sub_tensor,vv_aux_tensor,l2_tensor,scale=ONE_HALF)
 		!diagramme 23
-                ierr=talsh_tensor_init(vv_aux_tensor)
+                ierr=talsh_tensor_init(vv_aux_tensor,ZERO)
 		ierr=talsh_tensor_contract("R(g,a)+=T(e,g,m,n)*L(m,n,e,a)",vv_aux_tensor,comm_t%t2,l2_tensor)
 		ierr=talsh_tensor_contract("S(i,j,a,b)+=R(g,a)*V(i,j,g,b)",sub_tensor,vv_aux_tensor,int_t%oovv,scale=MINUS_ONE_HALF)
 		ierr=talsh_tensor_contract("S(i,j,a,b)+=R(g,b)*V(i,j,g,a)",sub_tensor,vv_aux_tensor,int_t%oovv,scale=ONE_HALF)
 		!diagramme24
-                ierr=talsh_tensor_init(oo_aux_tensor)
+                ierr=talsh_tensor_init(oo_aux_tensor,ZERO)
 		ierr=talsh_tensor_contract("R(i,n)+=T(e,f,m,n)*L(m,i,e,f)",oo_aux_tensor,comm_t%t2,l2_tensor)
 		ierr=talsh_tensor_contract("S(i,j,a,b)+=R(i,n)*V(n,j,a,b)",sub_tensor,oo_aux_tensor,int_t%oovv,scale=MINUS_ONE_HALF)
 		ierr=talsh_tensor_contract("S(i,j,a,b)+=R(j,n)*V(n,i,a,b)",sub_tensor,oo_aux_tensor,int_t%oovv,scale=ONE_HALF)
 		!diagramme 25
 		ierr=talsh_tensor_contract("R(e,j,m,b)+=T(e,f,m,n)*V(n,j,f,b)",voov_aux_tensor,comm_t%t2,int_t%oovv)
 		ierr=talsh_tensor_contract("S(i,j,a,b)+=R(e,j,m,b)*L(i,m,a,e)",sub_tensor,voov_aux_tensor,l2_tensor)
-		ierr=talsh_tensor_contract("S(i,j,a,b)+=R(e,j,m,a)*R(e,j,m,a)",sub_tensor,voov_aux_tensor,voov_aux_tensor,scale=MINUS_ONE)
-		ierr=talsh_tensor_contract("S(i,j,a,b)+=R(e,i,m,b)*R(e,i,m,b)",sub_tensor,voov_aux_tensor,voov_aux_tensor,scale=MINUS_ONE)
+		ierr=talsh_tensor_contract("S(i,j,a,b)+=R(e,j,m,a)*L(i,m,b,e)",sub_tensor,voov_aux_tensor,l2_tensor,scale=MINUS_ONE)
+		ierr=talsh_tensor_contract("S(i,j,a,b)+=R(e,i,m,b)*L(j,m,a,e)",sub_tensor,voov_aux_tensor,l2_tensor,scale=MINUS_ONE)
 		ierr=talsh_tensor_contract("S(i,j,a,b)+=R(e,i,m,a)*L(j,m,b,e)",sub_tensor,voov_aux_tensor,l2_tensor)
 		!diagramme 27
 		ierr=talsh_tensor_contract("R(i,j,m,n)+=T(e,f,m,n)*L(i,j,e,f)",oooo_aux_tensor,comm_t%t2,l2_tensor)
 		ierr=talsh_tensor_contract("S(i,j,a,b)+=R(i,j,m,n)*V(m,n,a,b)",sub_tensor,oooo_aux_tensor,int_t%oovv,scale=ONE_QUARTER_C)
 		!diagramme 26
+                ierr=talsh_tensor_init(oooo_aux_tensor,ZERO)
 		ierr=talsh_tensor_contract("R(i,j,m,n)+=T(e,f,m,n)*V(i,j,e,f)",oooo_aux_tensor,comm_t%t2,int_t%oovv)
 		ierr=talsh_tensor_contract("S(i,j,a,b)+=R(i,j,m,n)*L(m,n,a,b)",sub_tensor,oooo_aux_tensor,l2_tensor,scale=ONE_QUARTER_C)
 		!Substraction :

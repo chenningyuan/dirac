@@ -1211,7 +1211,7 @@ module intermediates
         type(talsh_comm_tens),intent(inout) :: comm_t_CC2
         integer :: ierr
 
-        logical :: shunt_CC2=.true.
+        logical :: shunt_CC2=.false.
 
 !       tau ! validated
         ierr=talsh_tensor_init(comm_t_CC2%tau)
@@ -1220,7 +1220,11 @@ module intermediates
 !       Here I do a 'usual tau' to check
         if(shunt_CC2) then
                 ierr=talsh_tensor_add("T(a,b,i,j)=H(a,b,i,j)",comm_t_CC2%tau,comm_t_CC2%t2)
+                print*, " "
+                print*, " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! WARNING SHUNT IN TAU_CC2  "
+                print*, " "
                 print*, "t2 comm CC2 - Subroutine   get_tauCC2 access to t2   "
+                print*, " "
         end if
 
         ierr=talsh_tensor_contract("T(a,b,i,j)+=T(a,i)*T(b,j)",comm_t_CC2%tau,comm_t_CC2%t1,comm_t_CC2%t1)                  ! o(2)v(2)
@@ -1319,11 +1323,15 @@ module intermediates
         ierr=talsh_tensor_init(t1t1_aux_tensor)
         ierr=talsh_tensor_contract("T(f,b,j,n)+=T(f,j)*T(b,n)",t1t1_aux_tensor,comm_t_CC2%t1,comm_t_CC2%t1,scale=ONE)
 
-        if(shunt_CC2) then
+
 !ReDo these Lines for Check CC2=CCSD if t2 \neg 0 - That's why t1t1 is negative        !
-                 ierr=talsh_tensor_add("T(f,b,j,n)+=R(f,b,j,n)",t1t1_aux_tensor,comm_t_CC2%t2,scale=ONE)
-!End of
+        if(shunt_CC2) then
+                print*, " "
+                print*, " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! WARNING SHUNT IN W VOVO_CC2  "
+                print*, " "
+                ierr=talsh_tensor_add("T(f,b,j,n)+=R(f,b,j,n)",t1t1_aux_tensor,comm_t_CC2%t2,scale=ONE)
         end if
+!End of
 
         ierr=talsh_tensor_contract("W(b,m,e,j)+=V(m,n,e,f)*T(f,b,j,n)",w_vovo,oovv_tensor,t1t1_aux_tensor,scale=ONE)
 
