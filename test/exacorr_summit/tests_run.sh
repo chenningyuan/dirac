@@ -56,6 +56,7 @@ then
   echo "${fold} submited"
 fi
 
+export INP_file=ccd_uf6.inp
 if [ "$1" -eq 5 ] || [ "$1" -gt 8 ]
 then 
   fold=ccd
