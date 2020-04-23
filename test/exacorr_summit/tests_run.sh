@@ -4,8 +4,8 @@
 echo "Don't forget to keep ~/.diracrc up to date"
 
 # path for dirac.x and exacorr.x
-export DIRAC_PATH=/ccs/home/jpoto/caar-summit/build_gcc811_essl_cuda_release
-# export DIRAC_PATH=/gpfs/alpine/world-shared/chp109/DIRAC_INSTALL
+#export DIRAC_PATH=/ccs/home/jpoto/caar-summit/build_gcc811_essl_cuda_release
+export DIRAC_PATH=/gpfs/alpine/world-shared/chp109/DIRAC_INSTALL
 
 if [ $# -eq 0 ]
 then
