@@ -275,8 +275,14 @@ module exacorr_cc
 
 !            solve lambda-equations and caluclate density matrix in MO basis
              if (.not.CCD) then
-               call solve_lambda_equations(comm_t,int_t,l2_tensor,dims,t_target_precision,ncycles,exa_input%print_level,l1_tensor)
-               call exacorr_dm_driver(exa_input,dims,comm_t%t2,l2_tensor,comm_t%t1,l1_tensor)
+                if (.not.CC2) then
+                  call solve_lambda_equations(comm_t,int_t,l2_tensor,dims,t_target_precision,&
+                      & ncycles,exa_input%print_level,l1_tensor)
+                else
+                  call solve_CC2_lambda_equations(comm_t,int_t,l2_tensor,dims,t_target_precision,&
+                      & ncycles,exa_input%print_level,l1_tensor)
+                end if
+                call exacorr_dm_driver(exa_input,dims,comm_t%t2,l2_tensor,comm_t%t1,l1_tensor)
              else
                call solve_lambda_equations(comm_t,int_t,l2_tensor,dims,t_target_precision,ncycles,exa_input%print_level)
                call exacorr_dm_driver(exa_input,dims,comm_t%t2,l2_tensor)
