@@ -27,7 +27,7 @@ module talsh_ao_to_mo
 
        contains
 !-----------------------------------------------------------
-        subroutine talsh_compute_mo_integrals (nmo, mo_list, talsh_buff, rcw)
+        subroutine talsh_compute_mo_integrals (nmo, mo_list, talsh_buff, print_level, rcw)
 
 !This subroutine drives the AO to MO integral transformation using AO integrals from InteRest and the tensor contraction library from ExaTensor
 !Currently everything is done in-core, purpose is to provide a working implementation that is suitable for debugging the production code
@@ -47,7 +47,8 @@ module talsh_ao_to_mo
          implicit none
          integer, intent(in) :: nmo(4)       ! the size of the mo basis for each of the 4 indices (mulliken ordering)
          integer, intent(in) :: mo_list(:)   ! and their indices (4 lists consecutively)
-         integer, intent(in) :: talsh_buff   ! buffer size for talsh in MB 
+         integer, intent(in) :: talsh_buff   ! buffer size for talsh in MB
+         integer, intent(in) :: print_level  
          integer, intent(in) :: rcw          ! real or complex 
 
          integer             :: ierr, my_MPI_rank
@@ -101,7 +102,7 @@ module talsh_ao_to_mo
 !        Transform to MO basis
          ierr=talsh_tensor_construct(moint_tensor,C8,moint_dims,init_val=ZERO)
          call aomo_transform (aoint_tensor,moint_tensor,nmo,mo_list)
-         if (debug_exa) then
+         if (print_level.gt.8) then
             print*, "AOint = ",tensor_norm2(aoint_tensor)
             print*, "MOint = ",tensor_norm2(moint_tensor)
             print*, "additional transform to get anti-symmetrized integrals"
@@ -112,7 +113,7 @@ module talsh_ao_to_mo
          call c_f_pointer(body_p,mo_tens,moint_dims(1:4))
          call write_to_mdcint (nmo,mo_tens,rcw)
 
-         if (debug_exa) then
+         if (print_level.gt.8) then
             print*, "additional transform to get anti-symmetrized integralss"
             call get_integral_tensor (aoint_tensor,moint_tensor,12,nmo,mo_list)
             print*, "MOint-antisym = ",tensor_norm2(moint_tensor)
