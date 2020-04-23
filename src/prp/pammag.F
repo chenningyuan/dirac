@@ -288,8 +288,10 @@ C ... make the center of mass the gauge origin (default in dalton)
          CALL MEMGET('REAL',KGEOM  ,3*NATOMS ,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KMASS  ,  NATOMS ,WORK,KFREE,LFREE)
          CALL MEMGET('INTE',KNAT   ,  NATOMS ,WORK,KFREE,LFREE)
+         CALL MEMGET('INTE',KNUMIS ,  NATOMS ,WORK,KFREE,LFREE)
 C ... call the routine in abacus/hergp.F
-         CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),ISOTOP,IPRDEF)
+         CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),
+     &               WORK(KNUMIS),IPRDEF)
          CALL MEMREL('NMRINP.CMMASS',WORK,KWORK,KGEOM,KFREE,LFREE)
          CALL DCOPY(3,CMXYZ,1,GAGORG,1)
          CALL DCOPY(3,GAGORG,1,DIPORG,1)
@@ -2158,6 +2160,7 @@ C
         call dzero(dmat_0, n2bbasx*nz)
         call genden(dmat_0, cmo, 1, iprprp)
 
+        sus2el_fde   = 0.0d0
         sus2el_fde_1 = 0.0d0
         sus2el_fde_2 = 0.0d0
         sus2el_fde_3 = 0.0d0

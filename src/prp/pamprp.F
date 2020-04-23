@@ -1810,7 +1810,7 @@ C
      &          'Nucleus: ',NAMDEP(IATOMD),
      &          'Proton charge:',NUCCHA,
      &          'Mass: ',MASS,'Spin: ',
-     &           SPIN,'Quadrupole moment: ',QMOM
+     &           SPIN,'Quadrupole moment (b): ',QMOM
               DO I=1,3
                 WRITE(LUPRI,'(2X,A3,6X,3(3X,F16.10,A))')
      &                'X'//CHAR(IOFF+I)//CHAR(IOFF+I),
@@ -10054,7 +10054,7 @@ C#include "ibtfun.h"
 #include "dcbham.h"
 C
       logical, allocatable :: DOATOM(:)
-      integer, allocatable :: NAT(:)
+      integer, allocatable :: NAT(:),ISOT(:)
       double precision, allocatable :: PMATL(:,:,:,:),PMATS(:,:,:,:),
      &                                 TMPMATL(:,:,:),TMPMATS(:,:,:),
      &                                 CSTRA(:),SCTRA(:),GEOM(:,:),
@@ -10088,6 +10088,7 @@ C
       allocate(MASS(NATOMS))
       allocate(NAT(NATOMS))
       allocate(AMASS(NUCDEP))
+      allocate(ISOT(NUCDEP))
       allocate(GVAL(NUCDEP))
 C
       CALL QENTER('PRP_SPINRO')
@@ -10232,7 +10233,7 @@ C--------------------------------------------------------------------
 C
 C     NUCLEAR PART OF NSR TENSOR
 C
-      CALL CMMASS(GEOM,MASS,NAT,ISOTOP,IPRPRP)
+      CALL CMMASS(GEOM,MASS,NAT,ISOT,IPRPRP)
       WRITE (LUPRI,'(/,A,18X,3F20.15,//)')
      &    ' Gauge origin (a.u.):', (GAGORG(I),I=1,3)
       CALL DCOPY(3,CMXYZ,1,GAGORG,1)
@@ -10348,6 +10349,7 @@ C--------------------------------------------------------------------
       CALL QEXIT('PRP_SPINRO')
 C
       deallocate(AMASS)
+      deallocate(ISOT)
       deallocate(GVAL)
       deallocate(GEOM)
       deallocate(MASS)
