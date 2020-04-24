@@ -655,26 +655,40 @@ module talsh_cc
          do iccsd = 1, ncycles
 
          
-          call get_tau(comm_t, CCD)   !L : See : is it usefull for cc2
-          if (debug_local) print*, "Tau    = ",tensor_norm2(comm_t%tau)*ONE_QUARTER
-          if (debug_local) print*, "t1    = ",tensor_norm2(comm_t%t1)
-          if (debug_local) print*, "t2    = ",tensor_norm2(comm_t%t2)
+!          call get_tau(comm_t, CCD)   !L : See : is it usefull for cc2
+!          if (debug_local) print*, "Tau    = ",tensor_norm2(comm_t%tau)*ONE_QUARTER
+!          if (debug_local) print*, "t1    = ",tensor_norm2(comm_t%t1)
+!          if (debug_local) print*, "t2    = ",tensor_norm2(comm_t%t2)
 
-          if (ierr.ne.TALSH_SUCCESS) then
-             print*," ccdriver: error in calculation of common blocks, code=",ierr
-             return
-          end if
+!          if (ierr.ne.TALSH_SUCCESS) then
+!             print*," ccdriver: error in calculation of common blocks, code=",ierr
+!             return
+!          end if
 
           ierr=talsh_tensor_init(s2_tensor)
           if (debug_local) print*, "norm s2 tensor at the start of CC2 t2 ",tensor_norm2(s2_tensor)
 
-!         creation of tau-like intermediates for cc2
-!
-!         a. tau_CC2 = t^a_i t^b_j - t^a_j t^b_i
-          ierr=talsh_tensor_init(tauCC2_tensor)
-          ierr=talsh_tensor_contract("T(a,b,i,j)+=T(a,i)*T(b,j)",tauCC2_tensor,comm_t%t1,comm_t%t1)
-          ierr=talsh_tensor_contract("T(a,b,i,j)+=T(a,j)*T(b,i)",tauCC2_tensor,comm_t%t1,comm_t%t1,scale=MINUS_ONE)
-          if (debug_local) print*, "norm contraction tauCC2 ",tensor_norm2(tauCC2_tensor)
+
+
+
+          if (iccsd==1) then
+ !         creation of tau-like intermediates for cc2
+ !
+ !         a. tau_CC2 = t^a_i t^b_j - t^a_j t^b_i
+           ierr=talsh_tensor_init(tauCC2_tensor)
+           ierr=talsh_tensor_contract("T(a,b,i,j)+=T(a,i)*T(b,j)",tauCC2_tensor,comm_t%t1,comm_t%t1)
+           ierr=talsh_tensor_contract("T(a,b,i,j)+=T(a,j)*T(b,i)",tauCC2_tensor,comm_t%t1,comm_t%t1,scale=MINUS_ONE)
+           if (debug_local) print*, "norm contraction tauCC2 ",tensor_norm2(tauCC2_tensor)
+
+           ierr=talsh_tensor_init(comm_t%tau,ZERO)
+           ierr=talsh_tensor_add("T(a,b,i,j)+=H(a,b,i,j)",comm_t%tau,tauCC2_tensor)
+           ierr=talsh_tensor_add("T(a,b,i,j)+=H(a,b,i,j)",comm_t%tau,comm_t%t2)
+          else
+           ierr=talsh_tensor_init(tauCC2_tensor)
+           ierr=talsh_tensor_add("T(a,b,i,j)+=H(a,b,i,j)",tauCC2_tensor,comm_t%tau)
+           ierr=talsh_tensor_add("T(a,b,i,j)+=H(a,b,i,j)",tauCC2_tensor,comm_t%t2,scale=MINUS_ONE)
+          end if
+          
 
 !         b. t1t12 =  t^a_i t^b_j
           ierr=talsh_tensor_init(t1t1_tensor)
