@@ -944,10 +944,27 @@ module exacorr_cc
 
          do iccsd = 1, ncycles
 
-          call get_tau(comm_t,CCD,one_tensor) !L : See : is it usefull for CC2
-          if (debug_local) print*, "Tau    = ", print_tensornorm2(comm_t%tau)*ONE_QUARTER
-          if (debug_local) print*, "t1    = ",print_tensornorm2(comm_t%t1)
-          if (debug_local) print*, "t2    = ",print_tensornorm2(comm_t%t2)
+!          call get_tau(comm_t,CCD,one_tensor) !L : See : is it usefull for CC2
+!          if (debug_local) print*, "Tau    = ", print_tensornorm2(comm_t%tau)*ONE_QUARTER
+!          if (debug_local) print*, "t1    = ",print_tensornorm2(comm_t%t1)
+!          if (debug_local) print*, "t2    = ",print_tensornorm2(comm_t%t2)
+
+          if (iccsd==1) then
+ !         creation of tau-like intermediates for cc2
+ !
+ !         a. tau_CC2 = t^a_i t^b_j - t^a_j t^b_i
+           ierr=exatns_tensor_init(tauCC2_tensor)
+           ierr=exatns_tensor_contract("T(a,b,i,j)+=T(a,i)*T(b,j)",tauCC2_tensor,comm_t%t1,comm_t%t1)
+           ierr=exatns_tensor_contract("T(a,b,i,j)+=T(a,j)*T(b,i)",tauCC2_tensor,comm_t%t1,comm_t%t1,MINUS_ONE)
+
+           ierr=exatns_tensor_init(comm_t%tau,ZERO)
+           ierr=exatns_tensor_contract("T(a,b,i,j)+=H(a,b,i,j)*K()",comm_t%tau,tauCC2_tensor,one_tensor)
+           ierr=exatns_tensor_contract("T(a,b,i,j)+=H(a,b,i,j)*K()",comm_t%tau,comm_t%t2,one_tensor)
+          else
+           ierr=exatns_tensor_init(tauCC2_tensor)
+           ierr=exatns_tensor_contract("T(a,b,i,j)+=H(a,b,i,j)*K()",tauCC2_tensor,comm_t%tau,one_tensor)
+           ierr=exatns_tensor_contract("T(a,b,i,j)+=H(a,b,i,j)*K()",tauCC2_tensor,comm_t%t2,one_tensor,MINUS_ONE)
+          end if
 
 
           ierr=exatns_tensor_init(s2_tensor)
