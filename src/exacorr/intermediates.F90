@@ -672,18 +672,20 @@ module intermediates
 
 !       make tau ! validated
 !L        ierr=exatns_tensor_init(comm_t%tau)
-        ierr=exatns_tensor_contract("T(a,b,i,j)+=R(a,b,i,j)*K()",comm_t%tau,comm_t%t2,one_tensor)
+!!        ierr=exatns_tensor_contract("T(a,b,i,j)+=R(a,b,i,j)*K()",comm_t%tau,comm_t%t2,one_tensor)
         ierr=exatns_tensor_contract("T(a,b,i,j)+=T(a,i)*T(b,j)",comm_t%tau,comm_t%t1,comm_t%t1) ! o(2)v(2)
         ierr=exatns_tensor_contract("T(a,b,i,j)+=T(a,j)*T(b,i)",comm_t%tau,comm_t%t1,comm_t%t1,MINUS_ONE) ! o(2)v(2)
  
        end subroutine get_tauCC2_exatns
 
-       subroutine get_fbar_vv_CC2_exatns(lambda_t_CC2,comm_t_CC2,int_t,one_tensor)
+       subroutine get_fbar_vv_CC2_exatns(fbar_vv,comm_t_CC2,int_t,one_tensor)
 
         use exatensor
         use exacorr_datatypes, only : exatns_intg_tens,exatns_comm_tens,exatns_lambda_tens
 
-        type(exatns_lambda_tens),intent(inout) :: lambda_t_CC2
+!        type(exatns_lambda_tens),intent(inout) :: lambda_t_CC2
+        type(tens_rcrsv_t),intent(inout) :: fbar_vv
+
         type(exatns_comm_tens),intent(inout) :: comm_t_CC2
         type(exatns_intg_tens),intent(inout) :: int_t
         type(tens_rcrsv_t),intent(inout) :: one_tensor
@@ -692,20 +694,21 @@ module intermediates
 !       \Ft ea =\f ea -\SUMs \f ma \ts em - \SUMd mf \V mefa \ts fm - \undemi
 !       \Vmnaf \taup efmn (\tau in CC2)  (Eq. A5)
 
-        ierr=exatns_tensor_init(lambda_t_CC2%fbar_vv)
-        ierr=exatns_tensor_contract("H(e,a)+=F(e,a)*K()",lambda_t_CC2%fbar_vv,comm_t_CC2%fvv,one_tensor)
-        ierr=exatns_tensor_contract("H(e,a)+=F(m,a)*T(e,m)",lambda_t_CC2%fbar_vv,comm_t_CC2%fov,comm_t_CC2%t1,MINUS_ONE)
-        ierr=exatns_tensor_contract("H(e,a)+=V(m,e,f,a)*T(f,m)",lambda_t_CC2%fbar_vv,int_t%vovv,comm_t_CC2%t1,ONE)
-        ierr=exatns_tensor_contract("H(e,a)+=V(m,n,a,f)*T(e,f,m,n)",lambda_t_CC2%fbar_vv,int_t%oovv,comm_t_CC2%tau,MINUS_ONE_HALF)
+        ierr=exatns_tensor_init(fbar_vv)
+        ierr=exatns_tensor_contract("H(e,a)+=F(e,a)*K()",fbar_vv,comm_t_CC2%fvv,one_tensor)
+        ierr=exatns_tensor_contract("H(e,a)+=F(m,a)*T(e,m)",fbar_vv,comm_t_CC2%fov,comm_t_CC2%t1,MINUS_ONE)
+        ierr=exatns_tensor_contract("H(e,a)+=V(m,e,f,a)*T(f,m)",fbar_vv,int_t%vovv,comm_t_CC2%t1,ONE)
+        ierr=exatns_tensor_contract("H(e,a)+=V(m,n,a,f)*T(e,f,m,n)",fbar_vv,int_t%oovv,comm_t_CC2%tau,MINUS_ONE_HALF)
 
        end subroutine get_fbar_vv_CC2_exatns
 
-       subroutine get_fbar_oo_CC2_exatns(lambda_t_CC2,comm_t_CC2,int_t,one_tensor)
+       subroutine get_fbar_oo_CC2_exatns(fbar_oo,comm_t_CC2,int_t,one_tensor)
 
         use exatensor
         use exacorr_datatypes, only : exatns_intg_tens,exatns_comm_tens,exatns_lambda_tens
 
-        type(exatns_lambda_tens),intent(inout) :: lambda_t_CC2
+!        type(exatns_lambda_tens),intent(inout) :: lambda_t_CC2
+        type(tens_rcrsv_t),intent(inout) :: fbar_oo
         type(exatns_comm_tens),intent(inout) :: comm_t_CC2
         type(exatns_intg_tens),intent(inout) :: int_t
         type(tens_rcrsv_t),intent(inout) :: one_tensor
@@ -714,11 +717,11 @@ module intermediates
 !      \Ft im =\f im +\SUMs e \f ie \ts em +\SUMd en \V inme \ts en +\ undemi
 !      \SUMt mef \V inef \taup efmn  (\tau in CC2)  (Eq. A4)
 
-        ierr=exatns_tensor_init(lambda_t_CC2%fbar_oo)
-        ierr=exatns_tensor_contract("H(i,m)+=F(i,m)*K()",lambda_t_CC2%fbar_oo,comm_t_CC2%foo,one_tensor)
-        ierr=exatns_tensor_contract("H(i,m)+=F(i,e)*T(e,m)",lambda_t_CC2%fbar_oo,comm_t_CC2%fov,comm_t_CC2%t1,ONE)
-        ierr=exatns_tensor_contract("H(i,m)+=V(i,n,m,e)*T(e,n)",lambda_t_CC2%fbar_oo,int_t%ooov,comm_t_CC2%t1,ONE)
-        ierr=exatns_tensor_contract("H(i,m)+=V(i,n,e,f)*T(e,f,m,n)",lambda_t_CC2%fbar_oo,int_t%oovv,comm_t_CC2%tau,ONE_HALF)
+        ierr=exatns_tensor_init(fbar_oo)
+        ierr=exatns_tensor_contract("H(i,m)+=F(i,m)*K()",fbar_oo,comm_t_CC2%foo,one_tensor)
+        ierr=exatns_tensor_contract("H(i,m)+=F(i,e)*T(e,m)",fbar_oo,comm_t_CC2%fov,comm_t_CC2%t1,ONE)
+        ierr=exatns_tensor_contract("H(i,m)+=V(i,n,m,e)*T(e,n)",fbar_oo,int_t%ooov,comm_t_CC2%t1,ONE)
+        ierr=exatns_tensor_contract("H(i,m)+=V(i,n,e,f)*T(e,f,m,n)",fbar_oo,int_t%oovv,comm_t_CC2%tau,ONE_HALF)
 
        end subroutine get_fbar_oo_CC2_exatns
 
@@ -740,7 +743,7 @@ module intermediates
 
        end subroutine get_fbar_ov_CC2_exatns
 
-       subroutine get_w_vovo_CC2_exatns(w_vovo,comm_t_CC2,oovv_tensor,nocc,nvir,one_tensor)
+       subroutine get_w_vovo_CC2_exatns(w_vovo,comm_t_CC2,oovv_tensor,vvoo_id,vvoo_root,one_tensor)
 
         use exatensor
         use tensor_algebra
@@ -749,16 +752,14 @@ module intermediates
         type(tens_rcrsv_t),intent(inout) :: w_vovo
         type(exatns_comm_tens),intent(inout) :: comm_t_CC2
         type(tens_rcrsv_t),intent(inout) :: oovv_tensor
-        integer,intent(in) :: nocc, nvir
         type(tens_rcrsv_t) :: t1t1_tensor
-        integer(INTD) :: vvoo_dims(4)
         type(tens_rcrsv_t),intent(inout) :: one_tensor
         integer(INTD) :: ierr
-
+        integer(INTD), dimension(4) :: vvoo_id
+        integer(INTL), dimension(4) :: vvoo_root
 !!!!!!!!!!!!!       Auxiliary tensor
-!        vvoo_dims(1:2) = nvir
-!        vvoo_dims(3:4) = nocc
-!        ierr=exatns_tensor_construct(t1t1_tensor,C8,vvoo_dims,init_val=ZERO)
+         ierr=exatns_tensor_create(t1t1_tensor,"t1t1",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
+
 
 !        \W bmje = \V bmje +\SUMs f \V mbef \ts fj - \SUMs n \V mnej \ts bn +
 !                  +\SUMd nf \V mnef (\td fbjn - \ts fj \ts bn)
@@ -773,23 +774,24 @@ module intermediates
 
        end subroutine get_w_vovo_CC2_exatns
 
-       subroutine get_w_oooo_CC2_exatns(comm_t_CC2,int_t,one_tensor)
+       subroutine get_w_oooo_CC2_exatns(w_oooo_CC2,comm_t_CC2,int_t,one_tensor)
 
         use exatensor
         use exacorr_datatypes, only : exatns_intg_tens,exatns_comm_tens
 
+        type(tens_rcrsv_t),intent(inout) :: w_oooo_CC2
         type(exatns_comm_tens),intent(inout) :: comm_t_CC2
         type(exatns_intg_tens),intent(inout) :: int_t
         type(tens_rcrsv_t),intent(inout) :: one_tensor
         integer :: ierr
 
 !       oooo ! validated
-        ierr=exatns_tensor_init(comm_t_CC2%a_int)
-        ierr=exatns_tensor_contract("A(k,l,i,j)+=V(k,l,i,j)*K()",comm_t_CC2%a_int,int_t%oooo,one_tensor)
-        ierr=exatns_tensor_contract("A(k,l,i,j)+=V(k,l,i,c)*T(c,j)",comm_t_CC2%a_int,int_t%ooov,comm_t_CC2%t1) ! o(4)v(1)
-        ierr=exatns_tensor_contract("A(k,l,i,j)+=V(k,l,j,c)*T(c,i)",comm_t_CC2%a_int,int_t%ooov,comm_t_CC2%t1, &
+!        ierr=exatns_tensor_init(w_oooo_CC2)
+        ierr=exatns_tensor_contract("A(k,l,i,j)+=V(k,l,i,j)*K()",w_oooo_CC2,int_t%oooo,one_tensor)
+        ierr=exatns_tensor_contract("A(k,l,i,j)+=V(k,l,i,c)*T(c,j)",w_oooo_CC2,int_t%ooov,comm_t_CC2%t1) ! o(4)v(1)
+        ierr=exatns_tensor_contract("A(k,l,i,j)+=V(k,l,j,c)*T(c,i)",w_oooo_CC2,int_t%ooov,comm_t_CC2%t1, &
                                     MINUS_ONE) ! o(4)v(1)
-        ierr=exatns_tensor_contract("A(k,l,i,j)+=V(k,l,c,d)*T(c,d,i,j)",comm_t_CC2%a_int,int_t%oovv,comm_t_CC2%tau, &
+        ierr=exatns_tensor_contract("A(k,l,i,j)+=V(k,l,c,d)*T(c,d,i,j)",w_oooo_CC2,int_t%oovv,comm_t_CC2%tau, &
                                     ONE_HALF)
 
        end subroutine get_w_oooo_CC2_exatns
@@ -806,6 +808,7 @@ module intermediates
         integer :: ierr
 
 ! \W efab=\V efab -\Pm ef \Vmfab \ts em + \undemi \V mnab \taup efmn
+!        ierr=exatns_tensor_init(w_vvvv_CC2)
         ierr=exatns_tensor_contract("W(e,f,a,b)+=V(e,f,a,b)*K()",w_vvvv_CC2,int_t%vvvv,one_tensor)
 
         ierr=exatns_tensor_contract("W(e,f,a,b)+=V(f,m,a,b)*T(e,m)",w_vvvv_CC2,int_t%vovv,comm_t_CC2%t1)
@@ -1291,11 +1294,10 @@ module intermediates
         ierr=talsh_tensor_init(fbar_ov)
         ierr=talsh_tensor_add("H(m,e)+=F(m,e)",fbar_ov,comm_t_CC2%fov)
         ierr=talsh_tensor_contract("H(m,e)+=V(m,n,e,f)*T(f,n)",fbar_ov,int_t%oovv,comm_t_CC2%t1,scale=ONE)
-        print*, "fvv bar commt - dans intermediates" 
 
        end subroutine get_fbar_ov_CC2_talsh
 
-       subroutine get_w_vovo_CC2_talsh(w_vovo,comm_t_CC2,oovv_tensor,nocc,nvir,shunt_CC2)
+       subroutine get_w_vovo_CC2_talsh(w_vovo,comm_t_CC2,oovv_tensor,nocc,nvir)
 
         use talsh
         use tensor_algebra
@@ -1309,7 +1311,7 @@ module intermediates
         integer(INTD) :: vvoo_dims(4)
         integer(INTD) :: ierr
 
-        logical :: shunt_CC2
+        logical :: shunt_CC2 =.false.
 
 !       Auxiliary tensor
         vvoo_dims(1:2) = nvir

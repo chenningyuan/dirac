@@ -1415,9 +1415,9 @@ module talsh_cc
 !        variables          
          call get_fbar_ov_CC2(lambda_t_CC2%fbar_ov,comm_t_CC2,int_t)
   
-         call get_w_vovo_CC2(lambda_t_CC2%w_vovo,comm_t_CC2,int_t%oovv,nocc,nvir,shunt_CC2) ! Ligne 1122
-         call get_w_oooo_CC2(lambda_t_CC2%w_oooo,comm_t_CC2,int_t) ! Line 1154 intemediate
-         call get_w_vvvv_CC2(lambda_t_CC2%w_vvvv,comm_t_CC2,int_t) ! Line 1193
+         call get_w_vovo_CC2(lambda_t_CC2%w_vovo,comm_t_CC2,int_t%oovv,nocc,nvir)
+         call get_w_oooo_CC2(lambda_t_CC2%w_oooo,comm_t_CC2,int_t) 
+         call get_w_vvvv_CC2(lambda_t_CC2%w_vvvv,comm_t_CC2,int_t) 
 
 
          print*, "fvv bar commt         = ", tensor_norm2(lambda_t%fbar_vv)
