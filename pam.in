@@ -282,6 +282,9 @@ class pam_enviroment:
         self.inkrmc = False
         self.outkrmc = False
 
+    # ... qforce files form exatensor
+        self.outqforce = False
+
     # execution time-limit in seconds (TODO: implement general time format)
         self.timeout = None
 
@@ -778,6 +781,11 @@ Options are also read from ~/.diracrc"""
                          dest='dest_outkrmc', default=False,
                          help='get KRMCSCF and KRMCOLD from scratch directory [default: %default]'
                          )
+        group.add_option('--outqforce', action='store_true',
+                         dest='dest_outqforce', default=False,
+                         help='get qforce.*.log from scratch directory [default: %default]'
+                         )
+
         group.add_option('--keep_scratch', action='store_true',
                          dest='dest_keep_scratch', default=False,
                          help='keep the scratch directory after calculation [default: delete it]'
@@ -996,6 +1004,7 @@ Options are also read from ~/.diracrc"""
         self.outcmo = options.dest_outcmo
         self.outkrmc = options.dest_outkrmc
         self.inkrmc = options.dest_inkrmc
+        self.outqforce = options.dest_outqforce
 
         self.rcp = options.rcp
         self.rsh = options.rsh
@@ -1826,6 +1835,18 @@ Options are also read from ~/.diracrc"""
         if self.outkrmc:
             save_single_file('KRMCSCF')
             save_single_file('KRMCOLD')
+
+        if self.outqforce:
+            qfpath = os.path.join(self.input_directory, 'qfdir')
+            try:
+                os.mkdir(qfpath)
+            except OSError:
+                print ("Creation of the directory %s failed" % qfpath)
+            for p in os.listdir(self.scratch_dir):
+                if 'qforce' in p:
+                    full_file_name_scratch = os.path.join(self.scratch_dir, p)
+                    full_file_name_local = os.path.join(qfpath,p)
+                    self.copy_file(full_file_name_scratch, full_file_name_local)
 
     # take care of individual nodes if parallel run
 

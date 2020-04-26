@@ -15,7 +15,6 @@ module exacorr_global
         type(cmo):: cspinor_all ! Stores all MO-coefficients and energies obtained from the parent code
         type(one_el_t)  :: int_1el ! stores 1 electron integrals
         logical :: TALSH_ONLY = .TRUE. ! use single-node TALSH library instead of the full EXATENSOR library
-        logical, public, parameter :: debug_exa = .false. ! switch on and off debug
         logical :: one_el_exist=.FALSE. ! logical if MRCONEE is available or not
 
 !       Functions and routines to interact with these data

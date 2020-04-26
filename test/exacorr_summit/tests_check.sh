@@ -6,8 +6,8 @@ then
   echo "give the number of the test you want to check"
 else
 
-export INP_file=cc_laf3.inp
-export MOL_file=LaF3.xyz
+INP_file=cc_uf6.inp
+MOL_file=UF6.xyz
 
 if [ "$1" -eq 1 ] || [ "$1" -gt 8 ]
 then
@@ -17,17 +17,17 @@ then
   echo "======================================================"
   cd $FOLD
     fname="${INP_file%.*}_${MOL_file%.*}.out"
-    grep -n -A 0 -a "Final CCSD" ${fname}
+    grep -n -A 8 -a "Final results from EXACORR" ${fname} | tail -n 5
     echo "-----------------------------"
-    grep -n -A 0 -a "Final CCSD" result/${fname}
+    grep -n -A 8 -a "Final results from EXACORR" ../result/${fname} | tail -n 5
     echo ""
     grep -n -A 1 -a "Final L1amp" ${fname}
     echo "-----------------------------"
-    grep -n -A 1 -a "Final L1amp" result/${fname}
+    grep -n -A 1 -a "Final L1amp" ../result/${fname}
     echo ""
-    grep -n -A 5 -a "Dipole length: X" ${fname}
+    grep -n -A 2 -a "Dipole length: X" ${fname} | tail -n 3
     echo "-----------------------------"
-    grep -n -A 5 -a "Dipole length: X" result/${fname}
+    grep -n -A 2 -a "Dipole length: X" ../result/${fname} | tail -n 3
   cd ..
   echo "======================================================"
 fi
@@ -40,17 +40,17 @@ then
   echo "======================================================"
   cd $FOLD
     fname="${INP_file%.*}_${MOL_file%.*}.out"
-    grep -n -A 0 -a "Final CCSD" ${fname}
+    grep -n -A 8 -a "Final results from EXACORR" ${fname} | tail -n 5
     echo "-----------------------------"
-    grep -n -A 0 -a "Final CCSD" result/${fname}
+    grep -n -A 8 -a "Final results from EXACORR" ../result/${fname} | tail -n 5
     echo ""
     grep -n -A 1 -a "Final L1amp" ${fname}
     echo "-----------------------------"
-    grep -n -A 1 -a "Final L1amp" result/${fname}
+    grep -n -A 1 -a "Final L1amp" ../result/${fname}
     echo ""
-    grep -n -A 5 -a "Dipole length: X" ${fname}
+    grep -n -A 2 -a "Dipole length: X" ${fname} | tail -n 3
     echo "-----------------------------"
-    grep -n -A 5 -a "Dipole length: X" result/${fname}
+    grep -n -A 2 -a "Dipole length: X" ../result/${fname} | tail -n 3
   cd ..
   echo "======================================================"
 fi
@@ -63,17 +63,17 @@ then
   echo "======================================================"
   cd $FOLD
     fname="${INP_file%.*}_${MOL_file%.*}.out"
-    grep -n -A 0 -a "Final CCSD" ${fname}
+    grep -n -A 8 -a "Final results from EXACORR" ${fname} | tail -n 5
     echo "-----------------------------"
-    grep -n -A 0 -a "Final CCSD" result/${fname}
+    grep -n -A 8 -a "Final results from EXACORR" ../result/${fname} | tail -n 5
     echo ""
     grep -n -A 1 -a "Final L1amp" ${fname}
     echo "-----------------------------"
-    grep -n -A 1 -a "Final L1amp" result/${fname}
+    grep -n -A 1 -a "Final L1amp" ../result/${fname}
     echo ""
-    grep -n -A 5 -a "Dipole length: X" ${fname}
+    grep -n -A 2 -a "Dipole length: X" ${fname} | tail -n 3
     echo "-----------------------------"
-    grep -n -A 5 -a "Dipole length: X" result/${fname}
+    grep -n -A 2 -a "Dipole length: X" ../result/${fname} | tail -n 3
   cd ..
   echo "======================================================"
 fi
@@ -86,20 +86,47 @@ then
   echo "======================================================"
   cd $FOLD
     fname="${INP_file%.*}_${MOL_file%.*}.out"
-    grep -n -A 0 -a "Final CCSD" ${fname}
+    grep -n -A 8 -a "Final results from EXACORR" ${fname} | tail -n 5
     echo "-----------------------------"
-    grep -n -A 0 -a "Final CCSD" result/${fname}
+    grep -n -A 8 -a "Final results from EXACORR" ../result/${fname} | tail -n 5
     echo ""
     grep -n -A 1 -a "Final L1amp" ${fname}
     echo "-----------------------------"
-    grep -n -A 1 -a "Final L1amp" result/${fname}
+    grep -n -A 1 -a "Final L1amp" ../result/${fname}
     echo ""
-    grep -n -A 5 -a "Dipole length: X" ${fname}
+    grep -n -A 2 -a "Dipole length: X" ${fname} | tail -n 3
     echo "-----------------------------"
-    grep -n -A 5 -a "Dipole length: X" result/${fname}
+    grep -n -A 2 -a "Dipole length: X" ../result/${fname} | tail -n 3
   cd ..
   echo "======================================================"
 fi
+
+INP_file=ccd_uf6.inp
+if [ "$1" -eq 5 ] || [ "$1" -gt 8 ]
+then
+  FOLD=ccd
+  echo ""
+  echo " compare results in ${FOLD}  "
+  echo "======================================================"
+  cd $FOLD
+    fname="${INP_file%.*}_${MOL_file%.*}.out"
+    grep -n -A 8 -a "Final results from EXACORR" ${fname} | tail -n 5
+    echo "-----------------------------"
+    grep -n -A 8 -a "Final results from EXACORR" ../result/${fname} | tail -n 5
+    echo ""
+    grep -n -A 1 -a "Final L1amp" ${fname}
+    echo "-----------------------------"
+    grep -n -A 1 -a "Final L1amp" ../result/${fname}
+    echo ""
+    grep -n -A 2 -a "Dipole length: X" ${fname} | tail -n 3
+    echo "-----------------------------"
+    grep -n -A 2 -a "Dipole length: X" ../result/${fname} | tail -n 3
+  cd ..
+  echo "======================================================"
+fi
+
+INP_file=cc_laf3.inp
+MOL_file=LaF3.xyz
 
 if [ "$1" -eq 6 ] || [ "$1" -gt 8 ]
 then
@@ -109,53 +136,42 @@ then
   echo "======================================================"
   cd $FOLD
     fname="${INP_file%.*}_${MOL_file%.*}.out"
-    grep -n -A 0 -a "Final CCSD" ${fname}
+    grep -n -A 8 -a "Final results from EXACORR" ${fname} | tail -n 5
     echo "-----------------------------"
-    grep -n -A 0 -a "Final CCSD" result/${fname}
+    grep -n -A 8 -a "Final results from EXACORR" ../result/${fname} | tail -n 5
     echo ""
     grep -n -A 1 -a "Final L1amp" ${fname}
     echo "-----------------------------"
-    grep -n -A 1 -a "Final L1amp" result/${fname}
+    grep -n -A 1 -a "Final L1amp" ../result/${fname}
     echo ""
-    grep -n -A 5 -a "Dipole length: X" ${fname}
+    grep -n -A 2 -a "Dipole length: X" ${fname} | tail -n 3
     echo "-----------------------------"
-    grep -n -A 5 -a "Dipole length: X" result/${fname}
+    grep -n -A 2 -a "Dipole length: X" ../result/${fname} | tail -n 3
   cd ..
   echo "======================================================"
 fi
 
-if [ "$1" -eq 5 ] || [ "$1" -gt 8 ]
-then
-  export INP_file=
-  export MOL_file=
-  FOLD=script_exatensor
-  echo ""
-  echo " compare results in ${FOLD}  "
-  echo "======================================================"
-  cd $FOLD
-    fname="${INP_file%.*}_${MOL_file%.*}.out"
-    grep -n -A 0 -a "Final CCD" ${fname}
-    echo "-----------------------------"
-    grep -n -A 0 -a "Final CCD" result/${fname}
-    echo ""
-  cd ..
-  echo "======================================================"
-fi
-
+INP_file=cc_sf6.inp
+MOL_file=SF6.xyz
 if [ "$1" -eq 7 ] || [ "$1" -gt 8 ]
 then
-  export INP_file=cc_sf6.inp
-  export MOL_file=SF6.xyz
   FOLD=script_talsh
   echo ""
   echo " compare results in ${FOLD}  "
   echo "======================================================"
   cd $FOLD
     fname="${INP_file%.*}_${MOL_file%.*}.out"
-    grep -n -A 0 -a "Final CCSD" ${fname}
+    grep -n -A 8 -a "Final results from EXACORR" ${fname} | tail -n 5
     echo "-----------------------------"
-    grep -n -A 0 -a "Final CCSD" result/${fname}
+    grep -n -A 8 -a "Final results from EXACORR" ../result/${fname} | tail -n 5
     echo ""
+    grep -n -A 1 -a "Final L1amp" ${fname}
+    echo "-----------------------------"
+    grep -n -A 1 -a "Final L1amp" ../result/${fname}
+    echo ""
+    grep -n -A 2 -a "Dipole length: X" ${fname} | tail -n 3
+    echo "-----------------------------"
+    grep -n -A 2 -a "Dipole length: X" ../result/${fname} | tail -n 3
   cd ..
   echo "======================================================"
 fi

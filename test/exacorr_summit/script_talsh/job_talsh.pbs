@@ -25,7 +25,6 @@ module load netlib-lapack
 
 #file locations
 export SCRATCHDIR=${MEMBERWORK}/${PRN000}/tmp_dirac
-export DIRAC_PATH=/ccs/home/jpoto/caar-summit/build_gcc811_essl_cuda_release
 #export DIRAC_PATH=/gpfs/alpine/world-shared/chp109/DIRAC_INSTALL
 export FILEDIR=$LS_SUBCWD
 export BASDIR="$DIRAC_PATH/basis:$DIRAC_PATH/basis_dalton:$DIRAC_PATH/basis_ecp"

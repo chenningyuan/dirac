@@ -86,8 +86,10 @@
              mo_list(imo+nmo(1)+nmo(2)+nmo(3)) = imo
          end do
 
-!        call talsh_compute_mo_integrals (nmo, mo_list)
-         call exacorr_compute_mo_integrals (nmo, mo_list)
+!         call talsh_compute_mo_integrals(nmo,mo_list,
+!     &      exa_input%talsh_buff,exa_input%print_level,rcw)
+         call exacorr_compute_mo_integrals (nmo, mo_list, &
+                                      exa_input%print_level)
       end if
 
       if (mytid == 0) then
