@@ -373,7 +373,7 @@ module talsh_cc
 
           call get_tau(comm_t,CCD)
 
-          if (print_level.gt.2) then
+          if (print_level.gt.6) then
             write(*,*) "Tau    = ",tensor_norm2(comm_t%tau)*ONE_QUARTER
             write(*,*) "t1    = ",tensor_norm2(comm_t%t1)
             write(*,*) "t2    = ",tensor_norm2(comm_t%t2)
