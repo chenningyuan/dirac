@@ -3,9 +3,16 @@
 !
 **DIRAC
 .TITLE
-Water molecule. X2C Hamiltonian. CC energies.
+X2C Hamiltonian, CC2 energies and expectation values.
 .WAVE F
 .PROPERTIES
+**PROPERTIES
+.DIPOLE
+.QUADRUPOLE
+.EFG
+**INTEGRALS
+*READIN
+.UNCONTRACTED
 **HAMILTONIAN
 .X2C
 **WAVE FUNCTIONS
@@ -13,15 +20,25 @@ Water molecule. X2C Hamiltonian. CC energies.
 .EXACC
 *SCF
 .EVCCNV
-1.0E-9
+1.0E-9 1.0E-7
+.MAXITR
+30
 **EXACC
-.CC2
 .OCCUPIED
 3..5
 .VIRTUAL
 6..17
+.CC2
 .LAMBDA
-**PROPERTIES
-.DIPOLE
-.EFG
+.PRINT
+2
+**MOLECULE
+*COORDINATES
+.UNITS
+AU
+*SYMMETRY
+.NOSYM
+*BASIS
+.DEFAULT
+cc-pVDZ
 *END OF
