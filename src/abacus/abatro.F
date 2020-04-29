@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -319,10 +319,10 @@ C
 C     Some initialization for spin-spin couplings
 C
       IF (.NOT. DOSELE) THEN
-         DO 10 I = 1, MXCENT
+         DO 10 I = 1, NUCIND
             DOPERT(I,2) = .FALSE.
-            NUCCHA = NINT(CHARGE(I))
-            IF (NUCCHA .NE. 0) THEN
+            NUCCHA = IZATOM(I)
+            IF (NUCCHA .NE. 0 .AND. .NOT. NOORBT(I)) THEN
                DO 20 ISTP = 1, 5
                   GVAL   = DISOTP(NUCCHA,ISTP,'GVAL')
                   ABUND1 = DISOTP(NUCCHA,ISTP,'ABUNDANCE')

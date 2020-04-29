@@ -282,6 +282,9 @@ class pam_enviroment:
         self.inkrmc = False
         self.outkrmc = False
 
+    # ... qforce files form exatensor
+        self.outqforce = False
+
     # execution time-limit in seconds (TODO: implement general time format)
         self.timeout = None
 
@@ -778,6 +781,11 @@ Options are also read from ~/.diracrc"""
                          dest='dest_outkrmc', default=False,
                          help='get KRMCSCF and KRMCOLD from scratch directory [default: %default]'
                          )
+        group.add_option('--outqforce', action='store_true',
+                         dest='dest_outqforce', default=False,
+                         help='get qforce.*.log from scratch directory [default: %default]'
+                         )
+
         group.add_option('--keep_scratch', action='store_true',
                          dest='dest_keep_scratch', default=False,
                          help='keep the scratch directory after calculation [default: delete it]'
@@ -996,6 +1004,7 @@ Options are also read from ~/.diracrc"""
         self.outcmo = options.dest_outcmo
         self.outkrmc = options.dest_outkrmc
         self.inkrmc = options.dest_inkrmc
+        self.outqforce = options.dest_outqforce
 
         self.rcp = options.rcp
         self.rsh = options.rsh
@@ -1391,6 +1400,12 @@ Options are also read from ~/.diracrc"""
 
         #miro: BASDIR enviro-variable is read by dirac.x, so set it
         os.putenv('BASDIR', self.basdir)
+
+        # set path to laplace input data
+        try:
+          os.putenv('LAPLACE_ROOT',os.path.join(pam_directory,'external'))
+        except:
+          pass
         
         dirwrk_amount = str(int(self.max_memory_work_master * 1000000))
         try:
@@ -1431,7 +1446,7 @@ Options are also read from ~/.diracrc"""
         # On summit we execute a script that executes dirac.x (to keep things simple...)
         if self.summit:
            # assemble the jsrun command that we need and put this at the place of mpirun command
-           mpi_command = "jsrun --smpiargs='-mca common_pami_use_odp 1' -bnone"
+           mpi_command = "jsrun --smpiargs='-async' --smpiargs='-mca common_pami_use_odp 1' -bnone"
            mpi_command =  mpi_command + ' -n ' + str(self.nr_proc)
            mpi_command =  mpi_command + ' -a 1'
            mpi_command =  mpi_command + ' -r ' + os.environ.get('QF_PROCS_PER_NODE')
@@ -1448,6 +1463,7 @@ Options are also read from ~/.diracrc"""
                script.write("else\n")
                script.write("export OMP_PLACES='{88},{92},{96},{100},{116:56},{104},{108},{112}'\n")
                script.write("fi\n")
+               script.write("export OMP_PROC_BIND=\"close,spread,spread\"\n")
                script.write("./dirac.x\n")
                script.close()
            os.chmod(path_to_script, 509)
@@ -1819,6 +1835,18 @@ Options are also read from ~/.diracrc"""
         if self.outkrmc:
             save_single_file('KRMCSCF')
             save_single_file('KRMCOLD')
+
+        if self.outqforce:
+            qfpath = os.path.join(self.input_directory, 'qfdir')
+            try:
+                os.mkdir(qfpath)
+            except OSError:
+                print ("Creation of the directory %s failed" % qfpath)
+            for p in os.listdir(self.scratch_dir):
+                if 'qforce' in p:
+                    full_file_name_scratch = os.path.join(self.scratch_dir, p)
+                    full_file_name_local = os.path.join(qfpath,p)
+                    self.copy_file(full_file_name_scratch, full_file_name_local)
 
     # take care of individual nodes if parallel run
 

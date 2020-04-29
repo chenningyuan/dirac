@@ -7,7 +7,6 @@ module exacorr_gradient
   use exatensor
   use exacorr_ao_to_mo,  only : print_tensornorm2
   use exacorr_datatypes
-  use exacorr_global,    only : debug_exa
   use exacorr_utils,     only : print_date
   use, intrinsic:: ISO_C_BINDING
 
@@ -63,24 +62,32 @@ module exacorr_gradient
 !************************************
 
       ierr=exatns_tensor_create(gamma%prime_oo,"gprime_oo",oo_id,oo_root,EXA_DATA_KIND_C8)
+      ierr=exatns_tensor_init(gamma%prime_oo,ZERO)
       if (.not.CCD) then
         ierr=exatns_tensor_create(gamma%prime_ov,"gprime_ov",ov_id,ov_root,EXA_DATA_KIND_C8)
         ierr=exatns_tensor_create(gamma%symm_ov,"gsymm_ov",ov_id,ov_root,EXA_DATA_KIND_C8)
         ierr=exatns_tensor_create(gamma%prime_vo,"gprime_vo",vo_id,vo_root,EXA_DATA_KIND_C8)
         ierr=exatns_tensor_create(gamma%symm_vo,"gsymm_vo",vo_id,vo_root,EXA_DATA_KIND_C8)
+        ierr=exatns_tensor_init(gamma%prime_ov,ZERO)
+        ierr=exatns_tensor_init(gamma%symm_ov, ZERO)
+        ierr=exatns_tensor_init(gamma%prime_vo,ZERO)
+        ierr=exatns_tensor_init(gamma%symm_vo, ZERO)
       end if
       ierr=exatns_tensor_create(gamma%prime_vv,"gprime_vv",vv_id,vv_root,EXA_DATA_KIND_C8)
       ierr=exatns_tensor_create(gamma%symm_oo,"gsymm_oo",oo_id,oo_root,EXA_DATA_KIND_C8)
       ierr=exatns_tensor_create(gamma%symm_vv,"gsymm_vv",vv_id,vv_root,EXA_DATA_KIND_C8)
+      ierr=exatns_tensor_init(gamma%prime_vv,ZERO)
+      ierr=exatns_tensor_init(gamma%symm_oo,ZERO)
+      ierr=exatns_tensor_init(gamma%symm_vv,ZERO)
 
 !**************************************
 !     calculate DM blocks in MO basis *
 !**************************************
 
       if (.not.CCD) then
-        call calc_dm_mo(gamma,t2_tensor,l2_tensor,dims,CCD,t1_tensor,l1_tensor)
+        call calc_dm_mo(gamma,t2_tensor,l2_tensor,dims,CCD,exa_input%print_level,t1_tensor,l1_tensor)
       else
-        call calc_dm_mo(gamma,t2_tensor,l2_tensor,dims,CCD)
+        call calc_dm_mo(gamma,t2_tensor,l2_tensor,dims,CCD,exa_input%print_level)
       end if
       call print_date("Calculated density matrices in MO basis")
 
@@ -109,7 +116,7 @@ module exacorr_gradient
 
     end subroutine exacorr_dm_driver
 
-    subroutine calc_dm_mo(gamma,t2_tensor,l2_tensor,dims,CCD,t1_tensor,l1_tensor)
+    subroutine calc_dm_mo(gamma,t2_tensor,l2_tensor,dims,CCD,print_level,t1_tensor,l1_tensor)
 
 !     input variables
       type(exatns_dm_tens), intent(inout) :: gamma
@@ -117,6 +124,7 @@ module exacorr_gradient
       type(tens_rcrsv_t),   intent(inout), optional :: t1_tensor, l1_tensor
       type(space_dims),     intent(in   ) :: dims
       logical,              intent(in   ) :: CCD
+      integer,              intent(in   ) :: print_level
 !     auxiliary tensors
       type(tens_rcrsv_t) :: one_dm_tensor
       type(tens_rcrsv_t) :: tau2_tensor
@@ -146,6 +154,9 @@ module exacorr_gradient
         ierr=exatns_tensor_create(tau2_tensor,"tau2_dm",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
         ierr=exatns_tensor_create(vv_aux_tensor,"vv_aux",vv_id,vv_root,EXA_DATA_KIND_C8)
         ierr=exatns_tensor_create(oo_aux_tensor,"oo_aux",oo_id,oo_root,EXA_DATA_KIND_C8)
+        ierr=exatns_tensor_init(tau2_tensor,ZERO)
+        ierr=exatns_tensor_init(vv_aux_tensor,ZERO)
+        ierr=exatns_tensor_init(oo_aux_tensor,ZERO)
       end if
 
 !********************
@@ -228,7 +239,7 @@ module exacorr_gradient
       ierr=exatns_tensor_contract("G(j,i)+=X(i,j)*K()",gamma%symm_oo,gamma%prime_oo,one_dm_tensor,ONE_HALF)
 
 !     debug_exa
-      if (debug_exa) then
+      if (print_level.gt.8) then
         print*, "gprime_oo  = ", print_tensornorm2(gamma%prime_oo)
         if (.not.CCD) then
           print*, "gprime_ov  = ", print_tensornorm2(gamma%prime_ov)

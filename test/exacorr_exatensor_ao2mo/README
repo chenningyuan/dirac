@@ -1,0 +1,2 @@
+! testing the different mo transformation schemes in exatensor
+! requirements: exatensor/talsh library (Dmitry Lyakh), efficent with CUDA / OPENMP / MPI

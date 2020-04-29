@@ -22,6 +22,8 @@ How to submit a merge request
 * Check the box next to "Remove source branch when merge request is accepted".
 * Make sure it is directed to the right branch.
 * Click green button "Submit merge request".
+* If you commit does not modify code execution you may use the command "git push -o ci.skip" to avoid invoking runners.
+
 
 
 How to ask for a code review

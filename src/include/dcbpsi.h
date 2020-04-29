@@ -23,15 +23,17 @@
 !  DOCOSCI  - do COSCI calculation
 !  DOGASCIP - do GASCIP calculation
 !  DOPOLPRP - do relativistic polarization propagator for excitations
+!  DOLAPLCE - do Laplace transformation of orbital energy denominator
 
       LOGICAL                      DOMP2, DOMVO, DORES, DOCCM, DOCIM,   &
      &        DOHSCC, DOHSFS, DOLUCT, DOKRMC, DOLUCIAR, DOMP2NO,        &
      &        L1ORBM, L2ORBM, PHCOEF, DOCOSCI, DOADC, DOKRCI, DOKRCC,   &
-     &        DOGASCIP, DOARDUC, DOPOLPRP, DOEXACC
+     &        DOGASCIP, DOARDUC, DOPOLPRP, DOLAPLCE, DOEXACC
 
       COMMON /DCLPSI/                                                   &
      &                             DOMP2, DOMVO, DORES, DOCCM, DOCIM,   &
      &        DOHSCC, DOHSFS, DOLUCT, DOKRMC, DOLUCIAR, DOMP2NO,        &
      &        L1ORBM, L2ORBM, PHCOEF, DOCOSCI, DOADC, DOKRCI, DOKRCC,   &
-     &        DOGASCIP, DOARDUC, DOPOLPRP, DOEXACC
+     &        DOGASCIP, DOARDUC, DOPOLPRP, DOLAPLCE, DOEXACC
+
 ! --- end of dcbpsi.h ---

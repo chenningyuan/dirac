@@ -1,0 +1,9 @@
+
+This folder contains intermediate test to be run on summit 
+
+run all tests by: ./tests_run.sh 9 
+check all tests by: ./tests_check.sh 9
+
+reference contains relccsd results for larger computations in order to test more nodes
+
+Don't forget to keep ~/.diracrc up to date

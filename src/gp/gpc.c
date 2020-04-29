@@ -1,6 +1,6 @@
 /* dirac_copyright_start */
 /*
- *     Copyright (c) 2018 by the authors of DIRAC.
+ *     Copyright (c) 2019 by the authors of DIRAC.
  *     All Rights Reserved.
  *
  *     This source code is part of the DIRAC program package.
@@ -33,6 +33,10 @@
 
 #include <math.h>
 #include "fortran_interface.h"
+
+#if defined (VAR_MPI)
+#include <mpi.h>
+#endif
 
 void printaddr_(void *p)
 {
@@ -170,7 +174,6 @@ void distribute_env(const char* name, int mytid)
 #if !defined (VAR_MPI)
   return;
 #else
-#include <mpi.h>
   char *env_local, *env_master, *newname;
   int len_local, len_master, len_name;
 
@@ -200,7 +203,6 @@ void distribute_env(const char* name, int mytid)
     putenv(newname);
     free(env_master);
   }
-
 #endif
 }
 
