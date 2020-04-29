@@ -188,7 +188,7 @@ module exacorr_gradient
 !-----------------------------------------------------------
 !     vo: g'(a,i) += l(m,e) * (t(ae,im) - t(e,i) * t(a,m)) |
 !-----------------------------------------------------------
-
+        ierr=exatns_tensor_init(tau2_tensor,ZERO)
         ierr=exatns_tensor_contract("T(a,e,i,m)+=R(a,e,i,m)*K()",tau2_tensor,t2_tensor,one_dm_tensor)
         ierr=exatns_tensor_contract("T(a,e,i,m)+=T(e,i)*T(a,m)",tau2_tensor,t1_tensor,t1_tensor,MINUS_ONE)
         ierr=exatns_tensor_contract("G(a,i)+=L(m,e)*T(a,e,i,m)",gamma%prime_vo,l1_tensor,tau2_tensor)
@@ -196,7 +196,8 @@ module exacorr_gradient
 !----------------------------------------------------------------------------
 !     vo: g'(a,i) -= 1/2 l(mn,ef) * (t(ef,in) * t(a,m) + t(e,i) * t(af,mn)) |
 !----------------------------------------------------------------------------
-
+        ierr=exatns_tensor_init(oo_aux_tensor,ZERO) 
+        ierr=exatns_tensor_init(vv_aux_tensor,ZERO) 
         ierr=exatns_tensor_contract("X(m,i)+=L(m,n,e,f)*T(e,f,i,n)",oo_aux_tensor,l2_tensor,t2_tensor)
         ierr=exatns_tensor_contract("G(a,i)+=X(m,i)*T(a,m)",gamma%prime_vo,oo_aux_tensor,t1_tensor,MINUS_ONE_HALF)
         ierr=exatns_tensor_contract("X(a,e)+=L(m,n,e,f)*T(a,f,m,n)",vv_aux_tensor,l2_tensor,t2_tensor)
@@ -211,32 +212,31 @@ module exacorr_gradient
 !--------------------------------------------------
 !       ov symm: g(i,a) = 1/2 (g'(i,a) + g'(a,i)) |
 !--------------------------------------------------
-
+        ierr=exatns_tensor_init(gamma%symm_ov,ZERO)
         ierr=exatns_tensor_contract("G(i,a)+=X(i,a)*K()",gamma%symm_ov,gamma%prime_ov,one_dm_tensor,ONE_HALF)
         ierr=exatns_tensor_contract("G(i,a)+=X+(a,i)*K()",gamma%symm_ov,gamma%prime_vo,one_dm_tensor,ONE_HALF)
 
 !--------------------------------------------------
-!       vo symm: g(a,i) = 1/2 (g'(a,i) + g'(i,a)) |
+!       vo symm: g(a,i) = symmetrized c.c. g(i,a)
 !--------------------------------------------------
-
-        ierr=exatns_tensor_contract("G(a,i)+=X(a,i)*K()",gamma%symm_vo,gamma%prime_vo,one_dm_tensor,ONE_HALF)
-        ierr=exatns_tensor_contract("G(a,i)+=X+(i,a)*K()",gamma%symm_vo,gamma%prime_ov,one_dm_tensor,ONE_HALF)
+         ierr=exatns_tensor_init(gamma%symm_vo,ZERO)
+         ierr=exatns_tensor_contract("G(a,i)+=X+(i,a)*K()",gamma%symm_vo,gamma%symm_ov,one_dm_tensor)
 
       end if
 
 !------------------------------------------------
 !     vv symm: g(b,a) = 1/2 (g'(b,a) + g'(a,b)) |
 !------------------------------------------------
-
+      ierr=exatns_tensor_init(gamma%symm_vv,ZERO)
       ierr=exatns_tensor_contract("G(b,a)+=X(b,a)*K()",gamma%symm_vv,gamma%prime_vv,one_dm_tensor,ONE_HALF)
-      ierr=exatns_tensor_contract("G(b,a)+=X(a,b)*K()",gamma%symm_vv,gamma%prime_vv,one_dm_tensor,ONE_HALF)
+      ierr=exatns_tensor_contract("G(b,a)+=X+(a,b)*K()",gamma%symm_vv,gamma%prime_vv,one_dm_tensor,ONE_HALF)
 
 !------------------------------------------------
 !     oo symm: g(j,i) = 1/2 (g'(j,i) + g'(i,j)) |
 !------------------------------------------------
-
+      ierr=exatns_tensor_init(gamma%symm_oo,ZERO)
       ierr=exatns_tensor_contract("G(j,i)+=X(j,i)*K()",gamma%symm_oo,gamma%prime_oo,one_dm_tensor,ONE_HALF)
-      ierr=exatns_tensor_contract("G(j,i)+=X(i,j)*K()",gamma%symm_oo,gamma%prime_oo,one_dm_tensor,ONE_HALF)
+      ierr=exatns_tensor_contract("G(j,i)+=X+(i,j)*K()",gamma%symm_oo,gamma%prime_oo,one_dm_tensor,ONE_HALF)
 
 !     debug_exa
 !     if (print_level.gt.8) then

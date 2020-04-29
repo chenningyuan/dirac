@@ -197,7 +197,7 @@ module talsh_gradient
         print *,'G(a,i) term c',tensor_norm2(gamma%prime_vo)
         ierr=talsh_tensor_contract("X(a,e)+=L(m,n,e,f)*T(a,f,m,n)",vv_aux_tensor,l2_tensor,t2_tensor)
         print *,'G(a,i) aux vv',tensor_norm2(vv_aux_tensor)
-        ierr=talsh_tensor_contract("G(a,i)+=X(a,e)*T(e,i)",gamma%prime_vo,vv_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF) 
+        ierr=talsh_tensor_contract("G(a,i)+=X(a,e)*T(e,i)",gamma%prime_vo,vv_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
         print *,'G(a,i) term d',tensor_norm2(gamma%prime_vo)
 
 !---------------------------
@@ -213,14 +213,14 @@ module talsh_gradient
         ierr=talsh_tensor_init(gamma%symm_ov,ZERO)
         ierr=talsh_tensor_contract("G(i,a)+=X(i,a)*K()",gamma%symm_ov,gamma%prime_ov,one_tensor,scale=ONE_HALF)
         ierr=talsh_tensor_contract("G(i,a)+=X+(a,i)*K()",gamma%symm_ov,gamma%prime_vo,one_tensor,scale=ONE_HALF)
-         print *,'G(i,a) symmetrized',tensor_norm2(gamma%symm_ov)
+        print *,'G(i,a) symmetrized',tensor_norm2(gamma%symm_ov)
+        
 
 !--------------------------------------------------
-!       vo symm: g(a,i) = 1/2 (g'(a,i) + g'(i,a)) |
+!       vo symm: g(a,i) = symmetrized c.c. g(i,a)
 !--------------------------------------------------
-        ierr=talsh_tensor_init(gamma%symm_vo,ZERO)
-        ierr=talsh_tensor_contract("G(a,i)+=X(a,i)*K()",gamma%symm_vo,gamma%prime_vo,one_tensor,scale=ONE_HALF)
-        ierr=talsh_tensor_contract("G(a,i)+=X+(i,a)*K()",gamma%symm_vo,gamma%prime_ov,one_tensor,scale=ONE_HALF)
+         ierr=talsh_tensor_init(gamma%symm_vo,ZERO)
+         ierr=talsh_tensor_contract("G(a,i)+=X+(i,a)*K()",gamma%symm_vo,gamma%symm_ov,one_tensor)
          print *,'G(a,i) symmetrized',tensor_norm2(gamma%symm_vo)
 
       end if
