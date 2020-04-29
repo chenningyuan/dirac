@@ -3304,6 +3304,7 @@ module talsh_cc
 
 !       written by Johann Pototschnig, Summer 2019
 
+        use exacorr_global
         use exacorr_cholesky
 
         implicit none
@@ -3346,12 +3347,12 @@ module talsh_cc
         ierr=talsh_tensor_construct(Res2,C8,dims2,init_val=ZERO)
 
 
-        call talsh_get_diag_comp(Diag)
+        call talsh_get_diag(Diag)
         write(*,*) "========= diagonal computed ============== "
 
-        call talsh_find_shells_comp(Diag, Mask, lshell, kshell, D_max)
-        lsize=get_shellsize(lshell)
-        ksize=get_shellsize(kshell)
+        call talsh_find_shells(Diag, Mask, lshell, kshell, D_max)
+        lsize=get_shell_size(lshell)
+        ksize=get_shell_size(kshell)
         !write(*,*) "--- shell found: ", lshell, kshell, lsize, ksize, D_max
 
         m=0
@@ -3375,15 +3376,15 @@ module talsh_cc
           end if
 
           !get the values for the current shell
-          call talsh_get_shell_comp(Dlk, lshell, kshell)
+          call talsh_get_shell(Dlk, lshell, kshell)
           !call print_tensor(Dlk, ACC, "Dlk")
 
-          call talsh_find_el_comp(Diag, Mask, lshell, kshell, l, k, D_el)
+          call talsh_find_el(Diag, Mask, lshell, kshell, l, k, D_el)
           !write(*,*) '--- largest value found: ', l, k, D_el
 
           do while(abs(D_el)>abs(D_max/1000))
-            call get_offset(l,l0)
-            call get_offset(k,k0)
+            call get_shell_offset(l,l0)
+            call get_shell_offset(k,k0)
 
             !sum up previous CD vectors for the indices
             ierr=talsh_tensor_init(Res, ZERO)
@@ -3457,15 +3458,15 @@ module talsh_cc
             if (m>nao*nao) write(*,*) 'Cholesky decomposition did not work'
 
             !find next element in this shell
-            call talsh_find_el_comp(Diag, Mask, lshell, kshell, l, k, D_el)
+            call talsh_find_el(Diag, Mask, lshell, kshell, l, k, D_el)
             !write(*,*)  '--- largest value found: ', l, k, D_el
 
           end do
 
           !find shell with next largest element
-          call talsh_find_shells_comp(Diag, Mask, lshell, kshell, D_max)
-          lsize=get_shellsize(lshell)
-          ksize=get_shellsize(kshell)
+          call talsh_find_shells(Diag, Mask, lshell, kshell, D_max)
+          lsize=get_shell_size(lshell)
+          ksize=get_shell_size(kshell)
           write (*,'(a,i6,a,a,i6,i6,a,e12.2)') 'cholesky length =',m,' largest element:', &
           ' shell = ', lshell, kshell, ' value = ', abs(D_max)
 
