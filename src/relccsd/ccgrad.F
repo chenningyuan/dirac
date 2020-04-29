@@ -165,7 +165,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !-------------------------------------------------------------------
        real*8, allocatable :: dvo(:),dov(:)
        real*8, allocatable :: woo_temp(:),wpp_temp(:)
+       integer :: iprnt=2
 !-------------------------------------------------------------------
+
+        if (iprnt.ge.2) write(*,*) 'at start of cc_density'
+        if (iprnt.ge.2) write(*,*) 'T1',dot_product(t1,t1)
+        if (iprnt.ge.2) write(*,*) 'T2',dot_product(t2,t2)
+        if (iprnt.ge.2) write(*,*) 'L1',dot_product(l1,l1)
+        if (iprnt.ge.2) write(*,*) 'L2',dot_product(l2,l2)
 
         doo(1:nfoo*rcw) = 0.0d0
         dvv(1:nfvv*rcw) = 0.0d0
@@ -177,7 +184,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         call contraction_442 ((/"o2","o3","p1","p2"/),
      &    (/"p1","p2","o1","o3"/),(/"o2","o1"/),doo,-1.0d0,1.0d0,nrep,
      &    LeftTensor=l2,RightTensor=t2)
-        if (iprnt.ge.2) write(*,*)'diagram1',dot_product(doo,doo)
+        if (iprnt.ge.2) write(*,*)'diagram1a',dot_product(doo,doo)
 
 !---------------------------------------------------------------------
 !    doo(j,i) = doo(j,i) - l1(j,e)*t1(e,i)
@@ -185,7 +192,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
        call contraction_222 ((/"o2","p1"/),(/"p1","o1"/),(/"o2","o1"/),
      &                         l1,t1,doo,-1.0d0,1.0d0,nrep)
-        if (iprnt.ge.2) write(*,*)'diagram2',dot_product(doo,doo)
+        if (iprnt.ge.2) write(*,*)'diagram1b',dot_product(doo,doo)
 
 !----------------------------------------------------------------------
 !     dvv(b,a) = dvv(b,a) + l2(mn,ae)*t2(be,mn) 
@@ -194,7 +201,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       call contraction_442 ((/"o1","o2","p1","p3"/),
      &    (/"p2","p3","o1","o2"/),(/"p2","p1"/),dvv,1.0d0,1.0d0,nrep,
      &     LeftTensor=l2,RightTensor=t2 )
-        if (iprnt.ge.2) write(*,*)'diagram3',dot_product(dvv,dvv)
+        if (iprnt.ge.2) write(*,*)'diagram2a',dot_product(dvv,dvv)
 
 
 !----------------------------------------------------------------------
@@ -203,7 +210,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       call contraction_222 ((/"o1","p1"/),(/"p2","o1"/),(/"p2","p1"/),
      &              l1,t1,dvv,1.0d0,1.0d0,nrep)
-        if (iprnt.ge.2) write(*,*)'diagram4',dot_product(dvv,dvv)
+        if (iprnt.ge.2) write(*,*)'diagram2b',dot_product(dvv,dvv)
 
 
        allocate(dvo(nfvo*rcw))
@@ -213,6 +220,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !----------------------------------------------------------------------------
 
       call xcopy (nfvo,t1,1,dvo,1)
+        if (iprnt.ge.2) write(*,*)'diagram3a',dot_product(dvo,dvo)
 
 !--------------------------------------------------------------------------
 !     dvo(a,i) = dvo(a,i) + l1(m,e) * t(ae,im)
@@ -224,6 +232,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       call contraction_422 ((/"p1","p2","o1","o2"/),(/"o2","p2"/), 
      & (/"p1","o1"/),l1,dvo,1.0d0,1.0d0,nrep,LeftTensor=t2)
+        if (iprnt.ge.2) write(*,*)'diagram3b',dot_product(dvo,dvo)
 
 
 !----------------------------------------------------------
@@ -236,10 +245,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       call contraction_222 ((/"o2","p2"/),(/"p2","o1"/),(/"o2","o1"/),
      &              l1,t1,woo_temp,1.0d0,1.0d0,nrep)
+        if (iprnt.ge.2) write(*,*)'diagram3c',dot_product(dvo,dvo)
 
 
       call contraction_222 ((/"o2","o1"/),(/"p1","o2"/),(/"p1","o1"/),
      &              woo_temp,t1,dvo,-1.0d0,1.0d0,nrep)
+        if (iprnt.ge.2) write(*,*)'diagram3d',dot_product(dvo,dvo)
 
       deallocate(woo_temp)
 
@@ -254,9 +265,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       call contraction_442((/"o2","o3","p2","p3"/),(/"p2","p3","o1","o3"
      &       /),(/"o2","o1"/),woo_temp,1.0d0,1.0d0,nrep,LeftTensor=L2, 
      &          RightTensor=t2)
+        if (iprnt.ge.2) write(*,*)'diagram3e',dot_product(dvo,dvo)
 
       call contraction_222 ((/"o2","o1"/),(/"p1","o2"/),(/"p1","o1"/),
      &              woo_temp,t1,dvo,-1.0d0,1.0d0,nrep)
+        if (iprnt.ge.2) write(*,*)'diagram3f',dot_product(dvo,dvo)
 
       deallocate(woo_temp)
 
@@ -271,9 +284,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       call contraction_442((/"o2","o3","p2","p3"/),(/"p1","p3","o2","o3"
      &       /),(/"p1","p2"/),wpp_temp,-1.0d0,1.0d0,nrep,LeftTensor=L2, 
      &          RightTensor=t2)
+        if (iprnt.ge.2) write(*,*)'diagram3g',dot_product(dvo,dvo)
 
       call contraction_222 ((/"p1","p2"/),(/"p2","o1"/),(/"p1","o1"/),
      &              wpp_temp,t1,dvo,1.0d0,1.0d0,nrep)
+        if (iprnt.ge.2) write(*,*)'diagram3h',dot_product(dvo,dvo)
 
       deallocate(wpp_temp)
 
@@ -284,15 +299,26 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
        allocate(dov(nfvo*rcw))
 
       call xcopy (nfvo,l1,1,dov,1)
+        if (iprnt.ge.2) write(*,*)'diagram4a',dot_product(dov,dov)
 
+      if (iprnt.ge.2) write(*,*)'doo before c.c.',dot_product(doo,doo)
+      if (iprnt.ge.2) write(*,*)'dvv before c.c.',dot_product(dvv,dvv)
+      if (iprnt.ge.2) write(*,*)'dvo before c.c.',dot_product(dvo,dvo)
+      if (iprnt.ge.2) write(*,*)'dov before c.c.',dot_product(dov,dov)
       if (carith) then
          call conjuga (nfoo,doo,1)
          call conjuga (nfvv,dvv,1)
          call conjuga (nfvo,dvo,1)
          call conjuga (nfvo,dov,1)
       endif
+      if (iprnt.ge.2) write(*,*)'doo after c.c.',dot_product(doo,doo)
+      if (iprnt.ge.2) write(*,*)'dvv after c.c.',dot_product(dvv,dvv)
+      if (iprnt.ge.2) write(*,*)'dvo after c.c.',dot_product(dvo,dvo)
+      if (iprnt.ge.2) write(*,*)'dov after c.c.',dot_product(dov,dov)
 
       CALL CONVDM(BUF1,BUF2,DOO,DVV,DOV,DVO,DMO)
+
+!     if (iprnt.ge.2) write(*,*)'dmo',dot_product(dmo(1:),dmo(1:))
 
        deallocate(dov)
        deallocate(dvo)
@@ -432,6 +458,8 @@ C##############
             ENDDO
          ENDDO
       ENDDO
+
+!     write(*,*)'doo in symmet.',dot_product(doo,doo)
 C
 C Put imaginary part after real part
 C
@@ -468,6 +496,7 @@ C##############
             ENDDO
          ENDDO
       ENDDO
+!     write(*,*)'dvv in symmet.',dot_product(dvv,dvv)
 C
 C Put imaginary part after real part
 C
@@ -502,6 +531,10 @@ C##############
             ENDDO
          ENDDO
       ENDDO
+!     write(*,*)'dov in symmet.',dot_product(dov,dov)
+!     write(*,*)'dvo in symmet.',dot_product(dvo,dvo)
+!     write(*,*)'dvo1 in symmet.',dot_product(buf1,buf1)
+!     write(*,*)'dvo2 in symmet.',dot_product(buf2,buf2)
 
       IF (CARITH) THEN
          CALL DCOPY(NFVO,BUF2,1,BUF1(NFVO+1),1)
