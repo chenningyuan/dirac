@@ -166,14 +166,14 @@ module exacorr_gradient
 !----------------------------------------------------------------
 !     oo: g'(j,i) = - 1/2 t(ef,im) * l(jm,ef) - t(e,i) * l(j,e) |
 !----------------------------------------------------------------
-
+      ierr=exatns_tensor_init(gamma%prime_oo,ZERO)
       ierr=exatns_tensor_contract("G(j,i)+=T(e,f,i,m)*L(m,j,e,f)",gamma%prime_oo,t2_tensor,l2_tensor,ONE_HALF)
       if (.not.CCD) ierr=exatns_tensor_contract("G(j,i)+=T(e,i)*L(j,e)",gamma%prime_oo,t1_tensor,l1_tensor,MINUS_ONE)
 
 !--------------------------------------------------------------
 !     vv: g'(a,b) = 1/2 t(ae,mn) * l(mn,be) + t(a,m) * l(m,b) |
 !--------------------------------------------------------------
-
+      ierr=exatns_tensor_init(gamma%prime_vv,ZERO)
       ierr=exatns_tensor_contract("G(a,b)+=T(a,e,m,n)*L(m,n,b,e)",gamma%prime_vv,t2_tensor,l2_tensor,ONE_HALF)
       if (.not.CCD) ierr=exatns_tensor_contract("G(a,b)+=T(a,m)*L(m,b)",gamma%prime_vv,t1_tensor,l1_tensor)
 
@@ -182,7 +182,7 @@ module exacorr_gradient
 !----------------------------
 !     vo: g'(a,i) += t(a,i) |
 !----------------------------
-
+        ierr=exatns_tensor_init(gamma%prime_vo,ZERO)
         ierr=exatns_tensor_contract("G(a,i)+=T(a,i)*K()",gamma%prime_vo,t1_tensor,one_dm_tensor)
 
 !-----------------------------------------------------------
@@ -205,7 +205,7 @@ module exacorr_gradient
 !---------------------------
 !     ov: g'(i,a) = l(i,a) |
 !---------------------------
-
+        ierr=exatns_tensor_init(gamma%prime_ov,ZERO)
         ierr=exatns_tensor_contract("G(i,a)+=L(i,a)*K()",gamma%prime_ov,l1_tensor,one_dm_tensor)
 
 !--------------------------------------------------
@@ -239,7 +239,7 @@ module exacorr_gradient
       ierr=exatns_tensor_contract("G(j,i)+=X(i,j)*K()",gamma%symm_oo,gamma%prime_oo,one_dm_tensor,ONE_HALF)
 
 !     debug_exa
-      if (print_level.gt.8) then
+!     if (print_level.gt.8) then
         print*, "gprime_oo  = ", print_tensornorm2(gamma%prime_oo)
         if (.not.CCD) then
           print*, "gprime_ov  = ", print_tensornorm2(gamma%prime_ov)
@@ -250,7 +250,7 @@ module exacorr_gradient
         print*, "gprime_vv  = ", print_tensornorm2(gamma%prime_vv)
         print*, "gsymm_oo   = ", print_tensornorm2(gamma%symm_oo)
         print*, "gsymm_vv   = ", print_tensornorm2(gamma%symm_vv)
-      end if
+!     end if
 
 !**************
 !     cleanup *
