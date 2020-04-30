@@ -135,9 +135,9 @@ C
       DOSPLT = (DOTRA .OR. DOKRMC .OR. DOMP2 .OR. DOMP2NO)
       IF (PARCAL) dosplt = .true. ! if parallel, then also split for direct SCF
 
-CDIRAC:..allow contraction only for elements Z.LE.36
-C      except for 2c NR calculations
-      TEST = (TWOCOMP.AND.(.NOT.TWOCOMPBSS)).OR.LEVYLE
+CDIRAC:..by default, allow contraction only for elements Z.LE.36
+C        except for 2c NR calculations
+      TEST = NONREL.OR.LEVYLE
       TEST = UNCONT.OR.((INTQ.GT.36).AND.(.NOT.TEST))
       IF(TEST.AND.(.NOT.UNCONT)) THEN
 #ifdef VAR_MPI
