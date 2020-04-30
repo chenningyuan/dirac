@@ -579,6 +579,7 @@ module talsh_cc
          type(talsh_intg_tens), intent(inout) :: int_t
 !        intermediate tensors (same notation as in relccsd)
          type(talsh_tens_t) :: Wabef_tensor,Wmnij_tensor     !L
+         type(talsh_tens_t) :: Wabej_tensor,Wmbij_tensor     !L
          !type(talsh_tens_t) :: hoo_int_tensor, hvv_int_tensor
          type(talsh_tens_t) :: t1t1_tensor, tauCC2_tensor
          type(talsh_tens_t) :: cint_ovoo_tensor
@@ -609,6 +610,9 @@ module talsh_cc
          logical, intent(in) :: CCD
          integer :: ierr
 
+
+         logical :: MethodContract= .true.
+
          if (print_level.gt.8) debug_local = .true.
 
 !        Initialize scalars that are to be used as tensors in contractions
@@ -629,7 +633,8 @@ module talsh_cc
          vvoo_dims(1:2) = nvir
          vvoo_dims(3:4) = nocc
          ierr=talsh_tensor_construct(s2_tensor,C8,vvoo_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(t1t1_tensor,C8,vvoo_dims,init_val=ZERO)
+
+
          ierr=talsh_tensor_construct(tauCC2_tensor,C8,vvoo_dims,init_val=ZERO)
 
         
@@ -647,6 +652,13 @@ module talsh_cc
          ovoo_dims(3:4) = nocc
          ierr=talsh_tensor_construct(cint_ovoo_tensor,C8,ovoo_dims,init_val=ZERO)
 
+         if (.not.MethodContract) then 
+                 ierr=talsh_tensor_construct(t1t1_tensor,C8,vvoo_dims,init_val=ZERO)
+         else
+                 ierr=talsh_tensor_construct(Wabej_tensor,C8,vvvo_dims,init_val=ZERO)
+                 ierr=talsh_tensor_construct(Wmbij_tensor,C8,ovoo_dims,init_val=ZERO)
+         end if       
+
 ! resorted integrals nedded below
 
          ierr=talsh_tensor_init(cint_vvvo_tensor)
@@ -658,16 +670,6 @@ module talsh_cc
 
          do iccsd = 1, ncycles
 
-         
-!          if (debug_local) print*, "Tau    = ",tensor_norm2(comm_t%tau)*ONE_QUARTER
-!          if (debug_local) print*, "t1    = ",tensor_norm2(comm_t%t1)
-!          if (debug_local) print*, "t2    = ",tensor_norm2(comm_t%t2)
-!
-!          if (ierr.ne.TALSH_SUCCESS) then
-!             print*," ccdriver: error in calculation of common blocks, code=",ierr
-!             return
-!          end if
-!
           ierr=talsh_tensor_init(s2_tensor)
           if (debug_local) print*, "norm s2 tensor at the start of CC2 t2 ",tensor_norm2(s2_tensor)
 
@@ -689,10 +691,6 @@ module talsh_cc
            ierr=talsh_tensor_add("T(a,b,i,j)+=H(a,b,i,j)",tauCC2_tensor,comm_t%t2,scale=MINUS_ONE)
           end if
 
-!         b. t1t12 =  t^a_i t^b_j
-          ierr=talsh_tensor_init(t1t1_tensor)
-          ierr=talsh_tensor_contract("T(e,a,i,m)+=T(e,i)*T(a,m)",t1t1_tensor,comm_t%t1,comm_t%t1)
-          if (debug_local) print*, "norm t1t1_tensor ",tensor_norm2(t1t1_tensor)
 
 !         t2 equation contraction
 !
@@ -700,24 +698,81 @@ module talsh_cc
           ierr=talsh_tensor_contract("S(a,b,i,j)+=V+(i,j,a,b)*K()",s2_tensor,int_t%oovv,one_tensor)
           if (debug_local) print*, "norm s2 tensor after diagram 15 ",tensor_norm2(s2_tensor)
 
-!         Diagram 16 : s2_{ij}^{ab} += -P\_(ij)P\_(ab)\sum_{me} t^e_i t^a_m V_{ej}^{mb}
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=V(b,m,e,j)*T(e,a,i,m)",s2_tensor,int_t%vovo,t1t1_tensor)
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=V(a,m,e,j)*T(e,b,i,m)",s2_tensor,int_t%vovo,t1t1_tensor,scale=MINUS_ONE)
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=V(b,m,e,i)*T(e,a,j,m)",s2_tensor,int_t%vovo,t1t1_tensor,scale=MINUS_ONE)
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=V(a,m,e,i)*T(e,b,j,m)",s2_tensor,int_t%vovo,t1t1_tensor)
-          if (debug_local) print*, "norm s2 tensor after diagram 16 ",tensor_norm2(s2_tensor)
+
+!!!!!!   Here we try a new intermediates
+          call print_date('DATE BEFORE CONTRACTION')
+          if (.not.MethodContract) then
+                  print *, "METHODE CLASSIQUE"
+        !         b. t1t12 =  t^a_i t^b_j
+                  ierr=talsh_tensor_init(t1t1_tensor)
+                  ierr=talsh_tensor_contract("T(e,a,i,m)+=T(e,i)*T(a,m)",t1t1_tensor,comm_t%t1,comm_t%t1)
+                  if (debug_local) print*, "norm t1t1_tensor ",tensor_norm2(t1t1_tensor)
+
+        !         Diagram 16 : s2_{ij}^{ab} += -P\_(ij)P\_(ab)\sum_{me} t^e_i t^a_m V_{ej}^{mb}
+                  ierr=talsh_tensor_contract("S(a,b,i,j)+=V(b,m,e,j)*T(e,a,i,m)",s2_tensor,int_t%vovo,t1t1_tensor)
+                  ierr=talsh_tensor_contract("S(a,b,i,j)+=V(a,m,e,j)*T(e,b,i,m)",s2_tensor,int_t%vovo,t1t1_tensor,scale=MINUS_ONE)
+                  ierr=talsh_tensor_contract("S(a,b,i,j)+=V(b,m,e,i)*T(e,a,j,m)",s2_tensor,int_t%vovo,t1t1_tensor,scale=MINUS_ONE)
+                  ierr=talsh_tensor_contract("S(a,b,i,j)+=V(a,m,e,i)*T(e,b,j,m)",s2_tensor,int_t%vovo,t1t1_tensor)
+                  if (debug_local) print*, "norm s2 tensor after diagram 16 ",tensor_norm2(s2_tensor)
+
+        !         Diagram 19 : s2_{ij}^{ab} +=  P\_(ij)\sum_{e} t^e_i V_{ej}^{ab}
+                  ierr=talsh_tensor_contract("S(a,b,i,j)+=C(a,b,e,j)*T(e,i)",s2_tensor,cint_vvvo_tensor,comm_t%t1)
+                  ierr=talsh_tensor_contract("S(a,b,i,j)+=C(a,b,e,i)*T(e,j)",s2_tensor,cint_vvvo_tensor,comm_t%t1,scale=MINUS_ONE)
+                  if (debug_local) print*, "norm s2 tensor after diagram 19 ",tensor_norm2(s2_tensor)
+
+        !         Diagram 20 : s2_{ij}^{ab} += -P\_(ab)\sum_{m} t^a_m V_{ij}^{mb}
+                  ierr=talsh_tensor_contract("S(a,b,i,j)+=C(m,b,i,j)*T(a,m)",s2_tensor,cint_ovoo_tensor,comm_t%t1,scale=MINUS_ONE)
+                  ierr=talsh_tensor_contract("S(a,b,i,j)+=C(m,a,i,j)*T(b,m)",s2_tensor,cint_ovoo_tensor,comm_t%t1)
+                  if (debug_local) print*, "norm s2 tensor after diagram 20 ",tensor_norm2(s2_tensor)
+                  call print_date('DATE AFTER CLASSIC CONTRACTION')
+         else
+                  print *, "METHODE CONTRACTEE"
+                  ierr=talsh_tensor_init(Wabej_tensor,ZERO)
+                  ierr=talsh_tensor_init(Wmbij_tensor,ZERO)           
+
+
+                  ierr=talsh_tensor_add("W(a,b,e,j)+=C(a,b,e,j)",Wabej_tensor,cint_vvvo_tensor,scale=ONE)
+                  ierr=talsh_tensor_contract("W(a,b,e,j)+=T(a,m)*V(b,m,e,j)",Wabej_tensor,comm_t%t1,int_t%vovo,scale=ONE_HALF)
+                  ierr=talsh_tensor_contract("W(a,b,e,j)+=T(b,m)*V(a,m,e,j)",Wabej_tensor,comm_t%t1,int_t%vovo,scale=MINUS_ONE_HALF)
+       
+                  ierr=talsh_tensor_contract("S(a,b,i,j)=T(e,i)*W(a,b,e,j)",s2_tensor,comm_t%t1,Wabej_tensor,scale=ONE) 
+                  ierr=talsh_tensor_contract("S(a,b,i,j)=T(e,j)*W(a,b,e,i)",s2_tensor,comm_t%t1,Wabej_tensor,scale=MINUS_ONE)
+ 
+         
+                  ierr=talsh_tensor_add("W(m,b,i,j)+=C(m,b,i,j)",Wmbij_tensor,cint_ovoo_tensor,scale=ONE)
+                  ierr=talsh_tensor_contract("W(m,b,i,j)+=T(e,i)*V(b,m,e,j)",Wmbij_tensor,comm_t%t1,int_t%vovo,scale=MINUS_ONE_HALF)
+                  ierr=talsh_tensor_contract("W(m,b,i,j)+=T(e,j)*V(b,m,e,i)",Wmbij_tensor,comm_t%t1,int_t%vovo,scale=ONE_HALF)
+       
+                  ierr=talsh_tensor_contract("S(a,b,i,j)=T(a,m)*W(m,b,i,j)",s2_tensor,comm_t%t1,Wmbij_tensor,scale=MINUS_ONE) 
+                  ierr=talsh_tensor_contract("S(a,b,i,j)=T(b,m)*W(m,a,i,j)",s2_tensor,comm_t%t1,Wmbij_tensor,scale=ONE)
+                  call print_date('DATE AFTER Intermediates CONTRACTION')
+         end if
+!         else
+!                  print *, "METHODE AMELIOREE SIMPLIFIEE 290420"
+!                  ierr=talsh_tensor_init(Wabej_tensor,ZERO)
+!                  ierr=talsh_tensor_init(Wmbij_tensor,ZERO)           
+!
+!
+!                  ierr=talsh_tensor_add("W(a,b,e,j)+=C(a,b,e,j)",Wabej_tensor,cint_vvvo_tensor,scale=ONE)
+!                  ierr=talsh_tensor_contract("W(a,b,e,j)+=T(a,m)*V(b,m,e,j)",Wabej_tensor,comm_t%t1,int_t%vovo,scale=ONE)!_HALF)
+!!                  ierr=talsh_tensor_contract("W(a,b,e,j)+=T(b,m)*V(a,m,e,j)",Wabej_tensor,comm_t%t1,int_t%vovo,scale=MINUS_ONE_HALF)
+!       
+!                  ierr=talsh_tensor_contract("S(a,b,i,j)=T(e,i)*W(a,b,e,j)",s2_tensor,comm_t%t1,Wabej_tensor,scale=ONE) 
+!                  ierr=talsh_tensor_contract("S(a,b,i,j)=T(e,j)*W(a,b,e,i)",s2_tensor,comm_t%t1,Wabej_tensor,scale=MINUS_ONE)
+! 
+!         
+!                  ierr=talsh_tensor_add("W(m,b,i,j)+=C(m,b,i,j)",Wmbij_tensor,cint_ovoo_tensor,scale=ONE)
+!                  ierr=talsh_tensor_contract("W(m,b,i,j)+=T(e,i)*V(b,m,e,j)",Wmbij_tensor,comm_t%t1,int_t%vovo,scale=MINUS_ONE)!_HALF)
+!!                  ierr=talsh_tensor_contract("W(m,b,i,j)+=T(e,j)*V(b,m,e,i)",Wmbij_tensor,comm_t%t1,int_t%vovo,scale=ONE_HALF)
+!       
+!                  ierr=talsh_tensor_contract("S(a,b,i,j)=T(a,m)*W(m,b,i,j)",s2_tensor,comm_t%t1,Wmbij_tensor,scale=MINUS_ONE) 
+!                  ierr=talsh_tensor_contract("S(a,b,i,j)=T(b,m)*W(m,a,i,j)",s2_tensor,comm_t%t1,Wmbij_tensor,scale=ONE)
+!
+!         end if
 
 
 
-!         Diagram 19 : s2_{ij}^{ab} +=  P\_(ij)\sum_{e} t^e_i V_{ej}^{ab}
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=C(a,b,e,j)*T(e,i)",s2_tensor,cint_vvvo_tensor,comm_t%t1)
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=C(a,b,e,i)*T(e,j)",s2_tensor,cint_vvvo_tensor,comm_t%t1,scale=MINUS_ONE)
-          if (debug_local) print*, "norm s2 tensor after diagram 19 ",tensor_norm2(s2_tensor)
 
-!         Diagram 20 : s2_{ij}^{ab} += -P\_(ab)\sum_{m} t^a_m V_{ij}^{mb}
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=C(m,b,i,j)*T(a,m)",s2_tensor,cint_ovoo_tensor,comm_t%t1,scale=MINUS_ONE)
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=C(m,a,i,j)*T(b,m)",s2_tensor,cint_ovoo_tensor,comm_t%t1)
-          if (debug_local) print*, "norm s2 tensor after diagram 20 ",tensor_norm2(s2_tensor)
 
 !         additional CC2 W intermediates
 !
@@ -1305,6 +1360,8 @@ module talsh_cc
 !!!!!!  Inportant here :  The heart of w_vovo intermediate : h_int is the same as in 
 !!!!!!          CCSD and for \Lambda_1 either :
          ierr=talsh_tensor_construct(lambda_t_CC2%w_vovo,C8,vovo_dims,init_val=ZERO) ! Usefull in CC2 - Same part as h_int
+         ierr=talsh_tensor_construct(lambda_t_CC2%w_vvvv,C8,vvvv_dims,init_val=ZERO)   ! Usefull and different
+
 !!!!!!
 !*
 ! End of list
