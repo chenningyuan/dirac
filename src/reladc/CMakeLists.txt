@@ -11,6 +11,7 @@ set(FIXED_RELADC_FORTRAN_SOURCES
     adcdble.F
     adcdiag.F
     adcsort.F
+    adcinpt.inc
     polprp_buildtm.F
     polprp_cousat.F
     polprp_driver.F
@@ -18,6 +19,8 @@ set(FIXED_RELADC_FORTRAN_SOURCES
     polprp_mpimaster.F
     polprp_mpiserver.F
     polprp_prpint.F
+    polprp_servercodes.h
+    polprp_stacklines.h
 )
 
 set(FIXED_RELADC_FORTRAN_SOURCES_noruntimecheck
