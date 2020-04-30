@@ -2123,9 +2123,7 @@ module talsh_cc
          integer, allocatable :: mo_list(:)
 
 !        cholesky
-         real(8), allocatable            :: CD(:,:,:)
-         complex(8), pointer, contiguous :: chol_tens(:,:,:)
-         type(talsh_tens_t)              :: chol_tensor, test_tensor, err_tensor, CD0
+         type(talsh_tens_t)              :: chol_tensor, test_tensor
          type(talsh_tens_t)              :: uoo_tensor, uov_tensor, uvo_tensor, uvv_tensor
          integer, dimension(3)           :: chol_dims, uoo_dims, uov_dims, uvo_dims, uvv_dims
          integer, dimension(4)           :: ovov_dims, vvov_dims
