@@ -443,6 +443,36 @@ contains
         call free_davidson_results(results)
     end subroutine
 
+
+    subroutine update_trial_vectors(delta,workspace)
+        logical, pointer, intent(inout) :: delta(:)
+        type(talsh_davidson_workspace), intent(inout) :: workspace
+
+        integer :: i
+
+        workspace%Lprev = workspace%L
+        do i = 1, size(delta,1)
+           if (delta(i)) then
+              workspace%L = workspace%L + 1
+           ! copy workspace%delta1(i) to workspace%trial1(workspace%L)
+           ! copy workspace%delta2(i) to workspace%trial2(workspace%L)
+           end if 
+        end do
+        call orthonormalize_trial_vectors(workspace%Lprev, workspace%L, workspace%trial1, workspace%trial2)
+
+    end subroutine
+
+    subroutine orthonormalize_trial_vectors(L,Lnew,trial1,trial2)
+        integer, intent(in) :: L, Lnew
+        type(talsh_tens_t), pointer, intent(inout) :: trial1(:), trial2(:) 
+
+        integer :: i, j
+        logical :: debug_ortho = .false.
+
+        gram_schmidt_orthogonalization_tensors(L,Lnew,trial1,trial2,verbose=debug_ortho)
+    end subroutine
+
+
     function updated_subspace_vectors_R(old_vectors_R, delta, orthogonalize_all,verbose)
         real(kind=8), pointer:: updated_subspace_vectors_R(:,:)
 
@@ -985,8 +1015,44 @@ contains
               ierr=talsh_tensor_add("r(a,b,c,d)+=t(a,b,c,d)",workspace%delta2(k),workspace%trial2(i),scale=factor2)
 
            end if
+
+           if (debug_form_r) then
+              write (6,*) 'debug >>> in form_r_tensors, accumulated r1 root',k,' for L',i,' >>>'
+              call print_tensor_elements(workspace%delta1(k))
+              write (6,*) 'debug <<< in form_r_tensors, accumulated r1 for L',i,' <<<'
+              write (6,*) 'debug >>> in form_r_tensors, accumulated r2 root',k,' for L',i,' >>>'
+              call print_tensor_elements(workspace%delta2(k))
+              write (6,*) 'debug <<< in form_r_tensors, accumulated r2 for L',i,' <<<'
+       end if
+
        
        end do
+
+! this should in the end work as what is below, but now we're doing a k at a time 
+!      vectors_L = size(b,2)
+!      vectors_N = size(b,1)
+!      allocate(residue_a(vectors_N,vectors_L))
+!      allocate(residue_b(vectors_N,vectors_L))
+!      residue_a = 0.0d0
+!      residue_b = 0.0d0
+!!! this is residue_a(N,L) = sigma_vector(N,L)*c_small_M(L,L)
+!      call zgemm('N', 'N', vectors_N, vectors_L, vectors_L,                   &
+!                 (1.0d0, 0.0d0), sigma_vector, vectors_N, c_small_M, vectors_L, &
+!                 (0.0d0, 0.0d0), residue_a, vectors_N)
+!!! this is residue_b(N,L) = sigma_vector(N,L)*b(L,L)
+!      call zgemm('N', 'N', vectors_N, vectors_L, vectors_L,                   &
+!                 (1.0d0, 0.0d0), b, vectors_N, c_small_M, vectors_L,            &
+!                 (0.0d0, 0.0d0), residue_b, vectors_N)
+!      do k = 1, nroots
+!         call zscal(vectors_N,e_small_M(:,k),residue_b(:,k),1)
+!         r(:,k) = residue_a(:,k) - residue_b(:,k)
+!      end do
+!
+! so
+! r_a(:,j) = sigma(:,j)*c_small_M(j,j) for j = 1, L
+! r_b(:,j) = b(:,j)*c_small_M(j,j) for j = 1, L
+! r(:k) =  r_a(:,k) - lambda(k)*r_b(:,k) for k = 1, nroot 
+
 
        if (debug_form_r) then
           write (6,*) 'debug >>> in form_r_tensors, r1 root',k,' >>>'
@@ -1896,21 +1962,15 @@ contains
 
 ! not converged yet, if asked to refresh the trial vectors do it now, otherwise create
 ! new trial vectors
-!!          if (davidson_refresh_trial_vectors.and.(mod(niter,davidson_trial_vector_refresh_rate).eq.0)) then
-!!          else
-
-!!             call update_subspace(workspace%b, workspace%delta)
-
-!!          end if
+            if (davidson_refresh_trial_vectors.and.(mod(niter,davidson_trial_vector_refresh_rate).eq.0)) then
+            else
+               call update_trial_vectors(delta,workspace)
+            end if
  
-! now check whether we reached the maximum subspace size
-!!          L = size(b,2)
-!!          if (L .eq. max_subspace_size) then
-!!             if (associated(preconditioner)) deallocate(preconditioner)
-!!             if (associated(delta)) deallocate(delta)
-!!             write(davidson_output_file_unit, *) "Reached maximum subspace size, stopping."
-!!             exit
-!!          end if
+            if (workspace%L .eq. max_subspace_size) then
+               write(davidson_output_file_unit, *) "Reached maximum subspace size, stopping."
+               exit
+            end if
         end do ! davidson iterations
 
         if (davidson_solve_rhs.and.davidson_overlap_sorting) deallocate(c_small_r_old)

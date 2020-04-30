@@ -1005,6 +1005,7 @@ contains
         allocate(r(vectors_N,nroots))
         r = 0.0d0
         call form_r(r, nroots, e_small_M, c_small_M, sigma_vector, b)
+        if (davidson_debug) call davidson_print_vectors(r, label="r_k                           ")
 
         unconverged_roots = 0
         do k = 1, nroots
@@ -1028,6 +1029,7 @@ contains
             allocate(correction_to_vectors(vectors_N,unconverged_roots))
             correction_to_vectors = 0.0d0
             call form_delta(correction_to_vectors, vectors_to_update, r, preconditioner)
+            if (davidson_debug) call davidson_print_vectors(correction_to_vectors, label="corrections to vectors        ")
         else
             correction_to_vectors => NULL()
         end if
