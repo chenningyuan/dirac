@@ -123,7 +123,6 @@ add_library(
 
 # add intermodule dependencies
 add_dependencies(gp interface_mpi)
-add_dependencies(gp dirac_interfaces)
 add_dependencies(gp xcint)
 add_dependencies(gp pdpack)
 
