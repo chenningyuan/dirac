@@ -633,8 +633,6 @@ module talsh_ao_to_mo
 !         Get rank of ao tensor
           rank=talsh_tensor_rank(ao_tensor)
 
-
-
 !         for one electron integrals / matrices
           if (rank.eq.2) then
             ierr = talsh_tensor_dimensions(ao_tensor,rank,mat_ao)
@@ -682,8 +680,7 @@ module talsh_ao_to_mo
               ierr=talsh_tensor_destruct(mocoefa_tensor(i))
               ierr=talsh_tensor_destruct(mocoefb_tensor(i))
             end do
-
-
+            
 
 !         cholesky vectors
           else if (rank.eq.3) then
