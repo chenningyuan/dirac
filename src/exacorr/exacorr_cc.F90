@@ -276,17 +276,11 @@ module exacorr_cc
 !            solve lambda-equations and caluclate density matrix in MO basis
              if (.not.CCD) then
                 if (.not.CC2) then
-!<<<<<<< HEAD
-!                  call solve_lambda_equations(comm_t,int_t,l2_tensor,dims,t_target_precision,ncycles,exa_input%print_level,l1_tensor)
-!                else
-!                  call solve_CC2_lambda_equations(comm_t,int_t,l2_tensor,dims,t_target_precision,ncycles,exa_input%print_level,l1_tensor)
-!=======
                   call solve_lambda_equations(comm_t,int_t,l2_tensor,dims,t_target_precision,&
                       & ncycles,exa_input%print_level,l1_tensor)
                 else
                   call solve_CC2_lambda_equations(comm_t,int_t,l2_tensor,dims,t_target_precision,&
                       & ncycles,exa_input%print_level,l1_tensor)
-!>>>>>>> gomesasp/caar-cc2
                 end if
                 call exacorr_dm_driver(exa_input,dims,comm_t%t2,l2_tensor,comm_t%t1,l1_tensor)
              else
@@ -950,32 +944,6 @@ module exacorr_cc
 
          do iccsd = 1, ncycles
 
-!          call get_tau(comm_t,CCD,one_tensor) !L : See : is it usefull for CC2
-!          if (debug_local) print*, "Tau    = ", print_tensornorm2(comm_t%tau)*ONE_QUARTER
-!          if (debug_local) print*, "t1    = ",print_tensornorm2(comm_t%t1)
-!          if (debug_local) print*, "t2    = ",print_tensornorm2(comm_t%t2)
-!<<<<<<< HEAD
-!=======
-
-!          if (iccsd==1) then
- !         creation of tau-like intermediates for cc2
- !
- !         a. tau_CC2 = t^a_i t^b_j - t^a_j t^b_i
-!           ierr=exatns_tensor_init(tauCC2_tensor)
-!           ierr=exatns_tensor_contract("T(a,b,i,j)+=T(a,i)*T(b,j)",tauCC2_tensor,comm_t%t1,comm_t%t1)
-!           ierr=exatns_tensor_contract("T(a,b,i,j)+=T(a,j)*T(b,i)",tauCC2_tensor,comm_t%t1,comm_t%t1,MINUS_ONE)
-!
-!           ierr=exatns_tensor_init(comm_t%tau,ZERO)
-!           ierr=exatns_tensor_contract("T(a,b,i,j)+=H(a,b,i,j)*K()",comm_t%tau,tauCC2_tensor,one_tensor)
-!           ierr=exatns_tensor_contract("T(a,b,i,j)+=H(a,b,i,j)*K()",comm_t%tau,comm_t%t2,one_tensor)
-!          else
-!           ierr=exatns_tensor_init(tauCC2_tensor)
-!           ierr=exatns_tensor_contract("T(a,b,i,j)+=H(a,b,i,j)*K()",tauCC2_tensor,comm_t%tau,one_tensor)
-!           ierr=exatns_tensor_contract("T(a,b,i,j)+=H(a,b,i,j)*K()",tauCC2_tensor,comm_t%t2,one_tensor,MINUS_ONE)
-!          end if
-!>>>>>>> gomesasp/caar-cc2
-
-
           ierr=exatns_tensor_init(s2_tensor)
           if (debug_local) print*, "norm s2 tensor at the start of CC2 t2",print_tensornorm2(s2_tensor)
 
@@ -1637,10 +1605,6 @@ module exacorr_cc
 
         end subroutine solve_lambda_equations
 
-!<<<<<<< HEAD
-!
-!=======
-!>>>>>>> gomesasp/caar-cc2
         subroutine solve_CC2_lambda_equations(comm_t,int_t,l2_tensor,dims,t_target_precision,ncycles,print_level,l1_tensor)
 
 !        Routine for solving the lambda equations
@@ -1678,7 +1642,6 @@ module exacorr_cc
          integer(INTD) :: ierr
 
          write(*,*) ""
-!<<<<<<< HEAD
          write(*,'(A)')"*******************************************************************************"
          write(*,'(A)') "********************** Solving Left Eigenvector Equation **********************"
          write(*,'(A)')"*******************************************************************************"
@@ -1687,16 +1650,6 @@ module exacorr_cc
          write(*,'(A)')"*******************************************************************************"
          write(*,'(A)') "**********************         CC2 Methode 3            **********************"
          write(*,'(A)')"*******************************************************************************"
-!=======
-!         write(*,'(A)') "*******************************************************************************"
-!         write(*,'(A)') "********************** Solving Left Eigenvector Equation **********************"
-!         write(*,'(A)') "*******************************************************************************"
-!         write(*,*) ""
-!         write(*,*) ""
-!         write(*,'(A)') "*******************************************************************************"
-!         write(*,'(A)') "**********************         CC2 Methode 3             **********************"
-!         write(*,'(A)') "*******************************************************************************"
-!>>>>>>> gomesasp/caar-cc2
          write(*,*) ""
 
          if (.not.present(l1_tensor)) CCD = .true.
@@ -1753,15 +1706,6 @@ module exacorr_cc
 !***
 ! List of NEW INTERMEDIATES for the CC2 Method
 !***
-!<<<<<<< HEAD
-!         ierr=exatns_tensor_create(lambda_t_CC2%fbar_oo,"fbar_oo",oo_id,oo_root,EXA_DATA_KIND_C8)
-!!         ierr=exatns_tensor_create(lambda_t_CC2%fbar_ov,"fbar_ov",oo_id,oo_root,EXA_DATA_KIND_C8) 
-!         ierr=exatns_tensor_create(lambda_t_CC2%fbar_vv,"fbar_vv",vv_id,vv_root,EXA_DATA_KIND_C8)
-!         ierr=exatns_tensor_create(lambda_t_CC2%w_oooo,"w_oooo",oooo_id,oooo_root,EXA_DATA_KIND_C8)
-!!!!!!!  Inportant here :  The heart of w_vovo intermediate : h_int is the same
-!!as in    CCSD and for \Lambda_1 either : 
-!         ierr=exatns_tensor_create(lambda_t_CC2%w_vovo,"w_vovo",vovo_id,vovo_root,EXA_DATA_KIND_C8)!Usefull in CC2 - Same part as h_int
-!=======
          ierr=exatns_tensor_create(lambda_t_CC2%fbar_oo,"fbar_oo",oo_id,oo_root,EXA_DATA_KIND_C8)  
 !         ierr=exatns_tensor_create(lambda_t_CC2%fbar_ov,"fbar_ov",oo_id,oo_root,EXA_DATA_KIND_C8) 
          ierr=exatns_tensor_create(lambda_t_CC2%fbar_vv,"fbar_vv",vv_id,vv_root,EXA_DATA_KIND_C8)
@@ -1769,8 +1713,6 @@ module exacorr_cc
 !!!!!!  Inportant here :  The heart of w_vovo intermediate : h_int is the same
 !as in    CCSD and for \Lambda_1 either : 
          ierr=exatns_tensor_create(lambda_t_CC2%w_vovo,"w_vovo",vovo_id,vovo_root,EXA_DATA_KIND_C8)! Usefull in CC2 - Same part as h_int
-!>>>>>>> gomesasp/caar-cc2
-!!!!!!
          ierr=exatns_tensor_create(lambda_t_CC2%w_vvvv,"w_vvvv",vvvv_id,vvvv_root,EXA_DATA_KIND_C8)
 !*
 ! End of list
@@ -2096,13 +2038,9 @@ module exacorr_cc
 
           ierr=exatns_tensor_contract("S(i,j,a,b)+=L(i,j,e,f)*W(e,f,a,b)",s2_tensor,l2_tensor,lambda_t%w_vvvv,ONE_HALF)
 
-!<<<<<<< HEAD
-!
 !!! L! End of S1 construction
-!
-!
-!=======
-!>>>>>>> gomesasp/caar-cc2
+
+
           if (ierr.ne.EXA_SUCCESS) then
             write(*,*) " ccdriver: error in evaluation of lambda equations, code=",ierr
             return
