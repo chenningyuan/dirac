@@ -33,6 +33,7 @@ module exacorr_global
         public get_one_el
         public get_shell_index
         public get_shell_size
+        public get_shell_offset
         public make_spinor_list
         public get_scf
 
@@ -234,6 +235,19 @@ module exacorr_global
              il=ao_basis%gtos(ish)%orb_momentum
              get_shell_size = nfunctions(il,ao_basis%basis_angular)
          end function get_shell_size
+
+         subroutine get_shell_offset(l,l0)
+
+             integer, intent(in)  :: l
+             integer, intent(out) :: l0
+             integer :: i, lshells
+
+             lshells=get_shell_index(l)
+             l0=0
+             do i = 1,lshells-1
+               l0=l0+get_shell_size(i)
+             end do
+         end subroutine get_shell_offset
 
          type(basis_func_info_t) function get_gto(ish)
              integer, intent(in) :: ish
