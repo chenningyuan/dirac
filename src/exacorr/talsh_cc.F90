@@ -123,8 +123,9 @@ module talsh_cc
          call print_date("Retrieved orbital energies")
 
 !        Get fixed two-body tensors
-         if (exa_input%moint_scheme.eq.42) then
+         if (exa_input%moint_scheme.eq.41) then
            call get_CC_integrals_chol_2 (nocc,nvir,mo_occ,mo_vir,int_t,exa_input%t_cholesky,exa_input%print_level)
+         else if (exa_input%moint_scheme.eq.42) then
            call get_CC_integrals_chol (nocc,nvir,mo_occ,mo_vir,int_t,exa_input%t_cholesky,exa_input%print_level)
          else
            call get_CC_integrals(nocc,nvir,mo_occ,mo_vir,int_t,exa_input%print_level)
