@@ -11,7 +11,6 @@ set(FIXED_RELADC_FORTRAN_SOURCES
     adcdble.F
     adcdiag.F
     adcsort.F
-    adcinpt.inc
     polprp_buildtm.F
     polprp_cousat.F
     polprp_driver.F
@@ -19,8 +18,6 @@ set(FIXED_RELADC_FORTRAN_SOURCES
     polprp_mpimaster.F
     polprp_mpiserver.F
     polprp_prpint.F
-    polprp_servercodes.h
-    polprp_stacklines.h
 )
 
 set(FIXED_RELADC_FORTRAN_SOURCES_noruntimecheck
@@ -52,19 +49,23 @@ set(C_RELADC_SOURCES
     polprp_qstack.c
 )
 
+# collect all include files into separate variable
+set(RELADC_INCLUDES
+    polprp_servercodes.h
+    polprp_stacklines.h
+    adcinpt.inc
+)
+
 if (ENABLE_STIELTJES)
-  #miro: needs extra sources !
+   # explicit dependence of external module sources is needed:
    set(FREE_RELADC_FORTRAN_SOURCES
         ${PROJECT_SOURCE_DIR}/external/stieltjes/stieltjes_ql_diag.f90
         ${PROJECT_SOURCE_DIR}/external/stieltjes/stieltjesmod.f90
         ${FREE_RELADC_FORTRAN_SOURCES}
    )
-   set(C_RELADC_SOURCES
-        ${PROJECT_SOURCE_DIR}/external/stieltjes/herm_spline.c
-        ${C_RELADC_SOURCES}
-   )
 endif()
 
+# adap for IBM XL compilers
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FREE_RELADC_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
     set_source_files_properties(${FREE_RELADC_FORTRAN_SOURCES_noruntimecheck}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
@@ -89,6 +90,9 @@ if(ENABLE_RUNTIMECHECK)
     set_source_files_properties(${RELADC_C_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_C_FLAGS_runtimecheck})
 endif()
 
+# The include "*.inc" files need to be stamped as true header files to prevent CMake error
+set_source_files_properties(${RELADC_INCLUDES} PROPERTIES HEADER_FILE_ONLY ON)
+# Create the module library
 add_library(
     reladc
     OBJECT
@@ -97,9 +101,10 @@ add_library(
     ${FIXED_RELADC_FORTRAN_SOURCES}
     ${FIXED_RELADC_FORTRAN_SOURCES_noruntimecheck}
     ${C_RELADC_SOURCES}
+    ${RELADC_INCLUDES}
 )
 
-# add intermodule dependencies
+# add intermodule dependencies (oh, pain!)
 add_dependencies(reladc gp)
 add_dependencies(reladc interface_mpi)
 if (ENABLE_STIELTJES)
