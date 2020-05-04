@@ -1743,7 +1743,7 @@ module exacorr_cc
            ! get the integrals with ov as first transform
            a2int_id(1:2)   = vovo_id(2:3)
            a2int_root(1:2) = vovo_root(2:3)
-           ierr=exatns_tensor_create(a2int_tensor,"a2ov",a2int_id,a2int_root,EXA_DATA_KIND_C8) 
+           ierr=exatns_tensor_create(a2int_tensor,"a2ov",a2int_id,a2int_root,EXA_DATA_KIND_C8)
            if(ierr.ne.EXA_SUCCESS) call quit('ERROR in get_CC_integrals: tensor too large ')
            ierr=exatns_tensor_init(a2int_tensor,ZERO)
            if(ierr.ne.EXA_SUCCESS) call quit('ERROR in get_CC_integrals: init. failed ')
@@ -1767,7 +1767,7 @@ module exacorr_cc
            ! get the integrals with oo as first transform
            a2int_id(1:2)   = vovo_id(2)
            a2int_root(1:2) = vovo_root(2)
-           ierr=exatns_tensor_create(a2int_tensor,"a2oo",a2int_id,a2int_root,EXA_DATA_KIND_C8) 
+           ierr=exatns_tensor_create(a2int_tensor,"a2oo",a2int_id,a2int_root,EXA_DATA_KIND_C8)
            if(ierr.ne.EXA_SUCCESS) call quit('ERROR in get_CC_integrals: tensor too large ')
            ierr=exatns_tensor_init(a2int_tensor,ZERO)
            if(ierr.ne.EXA_SUCCESS) call quit('ERROR in get_CC_integrals: init. failed ')
@@ -1785,61 +1785,58 @@ module exacorr_cc
            
            call print_date('choosing moint_scheme 4')
            ! in this algorithm we only keep part of the AO and HT integrals in memory
-           subspace_id(1:2) = ao_space_root
+           subspace_id(1:3) = ao_space_root
            call ao_space%get_level_composition(int(1,INTD),ao_subspaces,num_subspaces,ierr)
            do sub4 = 1, num_subspaces
               subspace_id(4)=ao_subspaces(sub4)
-              do sub3 = 1, num_subspaces
-                 subspace_id(3)=ao_subspaces(sub3)
-                 ierr=exatns_tensor_create(aoint_tensor,'aotensor',(/(ao_space_id,i=1,4)/),subspace_id,EXA_DATA_KIND_C8)
-                 if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
-                 ierr=exatns_tensor_init(aoint_tensor,'Aoint_calculator')
-                 if(ierr.ne.EXA_SUCCESS) call quit('Aoint_calculator failed!')
+              ierr=exatns_tensor_create(aoint_tensor,'aotensor',(/(ao_space_id,i=1,4)/),subspace_id,EXA_DATA_KIND_C8)
+              if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
+              ierr=exatns_tensor_init(aoint_tensor,'Aoint_calculator')
+              if(ierr.ne.EXA_SUCCESS) call quit('Aoint_calculator failed!')
 
-                 ! Setting dimensions for the half transformed integral tensor, the last two are always AO spaces
-                 a2int_id(3:4)   = ao_space_id
-                 a2int_root(3:4) = subspace_id(3:4)
+              ! Setting dimensions for the half transformed integral tensor, the last two are always AO spaces
+              a2int_id(3:4)   = ao_space_id
+              a2int_root(3:4) = subspace_id(3:4)
 
-                 ! get the integrals with vv as first transform
-                 a2int_id(1:2)   = vovo_id(1)
-                 a2int_root(1:2) = vovo_root(1)
-                 ierr=exatns_tensor_create(a2int_tensor,"a2vv",a2int_id,a2int_root,EXA_DATA_KIND_C8)
-                 if(ierr.ne.EXA_SUCCESS) call quit('ERROR in get_CC_integrals: tensor too large ')
-                 ierr=exatns_tensor_init(a2int_tensor,ZERO)
-                 call get_ht1_integral_tensor (aoint_tensor,a2int_tensor,print_level)
-                 call get_ht2_integral_tensor (a2int_tensor,int_t%vvvv,12,print_level)
-                 call get_ht2_integral_tensor (a2int_tensor,int_t%vovv,34,print_level)
-                 call get_ht2_integral_tensor (a2int_tensor,int_t%vovo,0,print_level)
-                 ierr=exatns_tensor_destroy(a2int_tensor)
+              ! get the integrals with vv as first transform
+              a2int_id(1:2)   = vovo_id(1)
+              a2int_root(1:2) = vovo_root(1)
+              ierr=exatns_tensor_create(a2int_tensor,"a2vv",a2int_id,a2int_root,EXA_DATA_KIND_C8)
+              if(ierr.ne.EXA_SUCCESS) call quit('ERROR in get_CC_integrals: tensor too large ')
+              ierr=exatns_tensor_init(a2int_tensor,ZERO)
+              call get_ht1_integral_tensor (aoint_tensor,a2int_tensor,print_level)
+              call get_ht2_integral_tensor (a2int_tensor,int_t%vvvv,12,print_level)
+              call get_ht2_integral_tensor (a2int_tensor,int_t%vovv,34,print_level)
+              call get_ht2_integral_tensor (a2int_tensor,int_t%vovo,0,print_level)
+              ierr=exatns_tensor_destroy(a2int_tensor)
 
-                 ! get the integrals with ov as first transform
-                 a2int_id(1:2)   = vovo_id(2:3)
-                 a2int_root(1:2) = vovo_root(2:3)
-                 ierr=exatns_tensor_create(a2int_tensor,"a2ov",a2int_id,a2int_root,EXA_DATA_KIND_C8) 
-                 if(ierr.ne.EXA_SUCCESS) call quit('ERROR in get_CC_integrals: tensor too large ')
-                 ierr=exatns_tensor_init(a2int_tensor,ZERO)
-                 call get_ht1_integral_tensor (aoint_tensor,a2int_tensor,print_level)
-                 ierr=exatns_tensor_create(ovvo_tensor,"ovvo",ovvo_id,ovvo_root,EXA_DATA_KIND_C8) ! auxilliary for get_CC_integrals
-                 ierr=exatns_tensor_init(ovvo_tensor,ZERO)
-                 call get_ht2_integral_tensor (a2int_tensor,ovvo_tensor,0,print_level)
-!                Make anti-symmetrized vovo tensor
-                 ierr=exatns_tensor_contract("V(a,i,b,j)+=V(i,a,b,j)*K()",int_t%vovo,ovvo_tensor,one_tensor,MINUS_ONE)
-                 ierr=exatns_tensor_destroy(ovvo_tensor)
-                 call get_ht2_integral_tensor (a2int_tensor,int_t%oovv,12,print_level)
-                 ierr=exatns_tensor_destroy(a2int_tensor)
+              ! get the integrals with ov as first transform
+              a2int_id(1:2)   = vovo_id(2:3)
+              a2int_root(1:2) = vovo_root(2:3)
+              ierr=exatns_tensor_create(a2int_tensor,"a2ov",a2int_id,a2int_root,EXA_DATA_KIND_C8)
+              if(ierr.ne.EXA_SUCCESS) call quit('ERROR in get_CC_integrals: tensor too large ')
+              ierr=exatns_tensor_init(a2int_tensor,ZERO)
+              call get_ht1_integral_tensor (aoint_tensor,a2int_tensor,print_level)
+              ierr=exatns_tensor_create(ovvo_tensor,"ovvo",ovvo_id,ovvo_root,EXA_DATA_KIND_C8) ! auxilliary for get_CC_integrals
+              ierr=exatns_tensor_init(ovvo_tensor,ZERO)
+              call get_ht2_integral_tensor (a2int_tensor,ovvo_tensor,0,print_level)
+!             Make anti-symmetrized vovo tensor
+              ierr=exatns_tensor_contract("V(a,i,b,j)+=V(i,a,b,j)*K()",int_t%vovo,ovvo_tensor,one_tensor,MINUS_ONE)
+              ierr=exatns_tensor_destroy(ovvo_tensor)
+              call get_ht2_integral_tensor (a2int_tensor,int_t%oovv,12,print_level)
+              ierr=exatns_tensor_destroy(a2int_tensor)
 
-                 ! get the integrals with oo as first transform
-                 a2int_id(1:2)   = vovo_id(2)
-                 a2int_root(1:2) = vovo_root(2)
-                 ierr=exatns_tensor_create(a2int_tensor,"a2oo",a2int_id,a2int_root,EXA_DATA_KIND_C8) 
-                 if(ierr.ne.EXA_SUCCESS) call quit('ERROR in get_CC_integrals: tensor too large ')
-                 ierr=exatns_tensor_init(a2int_tensor,ZERO)
-                 call get_ht1_integral_tensor (aoint_tensor,a2int_tensor,print_level)
-                 call get_ht2_integral_tensor (a2int_tensor,int_t%ooov,12,print_level)
-                 call get_ht2_integral_tensor (a2int_tensor,int_t%oooo,12,print_level)
-                 ierr=exatns_tensor_destroy(a2int_tensor)
-                 ierr=exatns_tensor_destroy(aoint_tensor)
-              end do
+              ! get the integrals with oo as first transform
+              a2int_id(1:2)   = vovo_id(2)
+              a2int_root(1:2) = vovo_root(2)
+              ierr=exatns_tensor_create(a2int_tensor,"a2oo",a2int_id,a2int_root,EXA_DATA_KIND_C8)
+              if(ierr.ne.EXA_SUCCESS) call quit('ERROR in get_CC_integrals: tensor too large ')
+              ierr=exatns_tensor_init(a2int_tensor,ZERO)
+              call get_ht1_integral_tensor (aoint_tensor,a2int_tensor,print_level)
+              call get_ht2_integral_tensor (a2int_tensor,int_t%ooov,12,print_level)
+              call get_ht2_integral_tensor (a2int_tensor,int_t%oooo,12,print_level)
+              ierr=exatns_tensor_destroy(a2int_tensor)
+              ierr=exatns_tensor_destroy(aoint_tensor)
               write (text,'(I6,A,I6)') sub4,' of',num_subspaces
               call print_date('finished transforming subspace'//text)
            end do
