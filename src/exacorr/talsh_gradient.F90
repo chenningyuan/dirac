@@ -139,10 +139,12 @@ module talsh_gradient
         ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
       end if
 
-      print *,'T1',tensor_norm2(t1_tensor)
-      print *,'T2',tensor_norm2(t2_tensor)*0.25d0
-      print *,'L1',tensor_norm2(l1_tensor)
-      print *,'L2',tensor_norm2(l2_tensor)*0.25d0
+      if (print_level.gt.8) then
+        print *,'T1',tensor_norm2(t1_tensor)
+        print *,'T2',tensor_norm2(t2_tensor)*0.25d0
+        print *,'L1',tensor_norm2(l1_tensor)
+        print *,'L2',tensor_norm2(l2_tensor)*0.25d0
+      end if
 
 !********************
 !     calculate DMs *
@@ -153,18 +155,18 @@ module talsh_gradient
 !----------------------------------------------------------------
       ierr=talsh_tensor_init(gamma%prime_oo,ZERO)
       ierr=talsh_tensor_contract("G(j,i)+=T(e,f,i,m)*L(j,m,e,f)",gamma%prime_oo,t2_tensor,l2_tensor,scale=MINUS_ONE_HALF)
-      print *,'G(j,i) a',tensor_norm2(gamma%prime_oo)
+      if (print_level.gt.8) print *,'G(j,i) a',tensor_norm2(gamma%prime_oo)
       if (.not.CCD) ierr=talsh_tensor_contract("G(j,i)+=T(e,i)*L(j,e)",gamma%prime_oo,t1_tensor,l1_tensor,scale=MINUS_ONE)
-      print *,'G(j,i) b',tensor_norm2(gamma%prime_oo)
+      if (print_level.gt.8) print *,'G(j,i) b',tensor_norm2(gamma%prime_oo)
 
 !--------------------------------------------------------------
 !     vv: g'(a,b) = 1/2 t(ae,mn) * l(mn,be) + t(a,m) * l(m,b) |
 !--------------------------------------------------------------
       ierr=talsh_tensor_init(gamma%prime_vv,ZERO)
       ierr=talsh_tensor_contract("G(a,b)+=T(a,e,m,n)*L(m,n,b,e)",gamma%prime_vv,t2_tensor,l2_tensor,scale=ONE_HALF)
-      print *,'G(a,b) a',tensor_norm2(gamma%prime_vv)
+      if (print_level.gt.8) print *,'G(a,b) a',tensor_norm2(gamma%prime_vv)
       if (.not.CCD) ierr=talsh_tensor_contract("G(a,b)+=T(a,m)*L(m,b)",gamma%prime_vv,t1_tensor,l1_tensor)
-      print *,'G(a,b) b',tensor_norm2(gamma%prime_vv)
+      if (print_level.gt.8) print *,'G(a,b) b',tensor_norm2(gamma%prime_vv)
 
 !     no off-diagonal terms in CCD
       if (.not.CCD) then
@@ -173,18 +175,18 @@ module talsh_gradient
 !----------------------------
         ierr=talsh_tensor_init(gamma%prime_vo,ZERO)
         ierr=talsh_tensor_add("G(a,i)+=T(a,i)",gamma%prime_vo,t1_tensor)
-        print *,'G(a,i) a',tensor_norm2(gamma%prime_vo)
+        if (print_level.gt.8) print *,'G(a,i) a',tensor_norm2(gamma%prime_vo)
 
 !-----------------------------------------------------------
 !     vo: g'(a,i) += l(m,e) * (t(ae,im) - t(e,i) * t(a,m)) |
 !-----------------------------------------------------------
         ierr=talsh_tensor_init(tau2_tensor,ZERO)
         ierr=talsh_tensor_add("T(a,e,i,m)+=R(a,e,i,m)",tau2_tensor,t2_tensor)
-        print *,'G(a,i) tau2 a',tensor_norm2(tau2_tensor)
+        if (print_level.gt.8) print *,'G(a,i) tau2 a',tensor_norm2(tau2_tensor)
         ierr=talsh_tensor_contract("T(a,e,i,m)+=T(e,i)*T(a,m)",tau2_tensor,t1_tensor,t1_tensor,scale=MINUS_ONE)
-        print *,'G(a,i) tau2 b',tensor_norm2(tau2_tensor)
+        if (print_level.gt.8) print *,'G(a,i) tau2 b',tensor_norm2(tau2_tensor)
         ierr=talsh_tensor_contract("G(a,i)+=L(m,e)*T(a,e,i,m)",gamma%prime_vo,l1_tensor,tau2_tensor)
-        print *,'G(a,i) b',tensor_norm2(gamma%prime_vo)
+        if (print_level.gt.8) print *,'G(a,i) b',tensor_norm2(gamma%prime_vo)
 
 !----------------------------------------------------------------------------
 !     vo: g'(a,i) -= 1/2 l(mn,ef) * (t(ef,in) * t(a,m) + t(e,i) * t(af,mn)) |
@@ -192,20 +194,20 @@ module talsh_gradient
         ierr=talsh_tensor_init(oo_aux_tensor,ZERO)
         ierr=talsh_tensor_init(vv_aux_tensor,ZERO)
         ierr=talsh_tensor_contract("X(m,i)+=L(m,n,e,f)*T(e,f,i,n)",oo_aux_tensor,l2_tensor,t2_tensor)
-        print *,'G(a,i) aux oo',tensor_norm2(oo_aux_tensor)
+        if (print_level.gt.8) print *,'G(a,i) aux oo',tensor_norm2(oo_aux_tensor)
         ierr=talsh_tensor_contract("G(a,i)+=X(m,i)*T(a,m)",gamma%prime_vo,oo_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF) 
-        print *,'G(a,i) term c',tensor_norm2(gamma%prime_vo)
+        if (print_level.gt.8) print *,'G(a,i) term c',tensor_norm2(gamma%prime_vo)
         ierr=talsh_tensor_contract("X(a,e)+=L(m,n,e,f)*T(a,f,m,n)",vv_aux_tensor,l2_tensor,t2_tensor)
-        print *,'G(a,i) aux vv',tensor_norm2(vv_aux_tensor)
+        if (print_level.gt.8) print *,'G(a,i) aux vv',tensor_norm2(vv_aux_tensor)
         ierr=talsh_tensor_contract("G(a,i)+=X(a,e)*T(e,i)",gamma%prime_vo,vv_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
-        print *,'G(a,i) term d',tensor_norm2(gamma%prime_vo)
+        if (print_level.gt.8) print *,'G(a,i) term d',tensor_norm2(gamma%prime_vo)
 
 !---------------------------
 !     ov: g'(i,a) = l(i,a) |
 !---------------------------
         ierr=talsh_tensor_init(gamma%prime_ov,ZERO)
         ierr=talsh_tensor_add("G(i,a)+=L(i,a)",gamma%prime_ov,l1_tensor)
-        print *,'G(i,a) term a',tensor_norm2(gamma%prime_ov)
+        if (print_level.gt.8) print *,'G(i,a) term a',tensor_norm2(gamma%prime_ov)
 
 !--------------------------------------------------
 !       ov symm: g(i,a) = 1/2 (g'(i,a) + g'(a,i)) |
@@ -213,7 +215,7 @@ module talsh_gradient
         ierr=talsh_tensor_init(gamma%symm_ov,ZERO)
         ierr=talsh_tensor_contract("G(i,a)+=X(i,a)*K()",gamma%symm_ov,gamma%prime_ov,one_tensor,scale=ONE_HALF)
         ierr=talsh_tensor_contract("G(i,a)+=X+(a,i)*K()",gamma%symm_ov,gamma%prime_vo,one_tensor,scale=ONE_HALF)
-        print *,'G(i,a) symmetrized',tensor_norm2(gamma%symm_ov)
+        if (print_level.gt.8) print *,'G(i,a) symmetrized',tensor_norm2(gamma%symm_ov)
         
 
 !--------------------------------------------------
@@ -221,7 +223,7 @@ module talsh_gradient
 !--------------------------------------------------
          ierr=talsh_tensor_init(gamma%symm_vo,ZERO)
          ierr=talsh_tensor_contract("G(a,i)+=X+(i,a)*K()",gamma%symm_vo,gamma%symm_ov,one_tensor)
-         print *,'G(a,i) symmetrized',tensor_norm2(gamma%symm_vo)
+         if (print_level.gt.8) print *,'G(a,i) symmetrized',tensor_norm2(gamma%symm_vo)
 
       end if
 
@@ -231,7 +233,7 @@ module talsh_gradient
       ierr=talsh_tensor_init(gamma%symm_vv,ZERO)
       ierr=talsh_tensor_contract("G(b,a)+=X(b,a)*K()",gamma%symm_vv,gamma%prime_vv,one_tensor,scale=ONE_HALF)
       ierr=talsh_tensor_contract("G(b,a)+=X+(a,b)*K()",gamma%symm_vv,gamma%prime_vv,one_tensor,scale=ONE_HALF)
-      print *,'G(b,a) symmetrized',tensor_norm2(gamma%symm_vv)
+      if (print_level.gt.8) print *,'G(b,a) symmetrized',tensor_norm2(gamma%symm_vv)
 
 !------------------------------------------------
 !     oo symm: g(j,i) = 1/2 (g'(j,i) + g'(i,j)) |
@@ -239,57 +241,55 @@ module talsh_gradient
       ierr=talsh_tensor_init(gamma%symm_oo,ZERO)
       ierr=talsh_tensor_contract("G(j,i)+=X(j,i)*K()",gamma%symm_oo,gamma%prime_oo,one_tensor,scale=ONE_HALF)
       ierr=talsh_tensor_contract("G(j,i)+=X+(i,j)*K()",gamma%symm_oo,gamma%prime_oo,one_tensor,scale=ONE_HALF)
-      print *,'G(j,i) symmetrized',tensor_norm2(gamma%symm_oo)
+      if (print_level.gt.8) print *,'G(j,i) symmetrized',tensor_norm2(gamma%symm_oo)
 
 !     debug
-!     if (print_level.gt.8) then
+      if (print_level.gt.8) then
         if (.not.CCD) then
-          print *,'>>>>> elements, DOV not symmetrized, relccsd order'
-          call print_tensor_elements(gamma%prime_ov,relccsd_order=.true.)
-          print *,'<<<<< elements, DOV not symmetrized, relccsd order'
           print*, "gprime_ov  = ", tensor_norm2(gamma%prime_ov)
-
-          print *,'>>>>> elements, DVO not symmetrized, relccsd order'
-          call print_tensor_elements(gamma%prime_vo,relccsd_order=.true.)
-          print *,'<<<<< elements, DVO not symmetrized, relccsd_order'
+          print*, "gsymm_ov   = ", tensor_norm2(gamma%symm_vo)
           print*, "gprime_vo  = ", tensor_norm2(gamma%prime_vo)
-        end if
-
-        print *,'>>>>> elements, DVV not symmetrized, relccsd order'
-        call print_tensor_elements(gamma%prime_vv,relccsd_order=.true.)
-        print *,'<<<<< elements, DVV not symmetrized, relccsd order'
-        print*, "gprime_vv  = ", tensor_norm2(gamma%prime_vv)
-
-        print *,'>>>>> elements, DOO not symmetrized, relccsd order'
-        call print_tensor_elements(gamma%prime_oo,relccsd_order=.true.)
-        print *,'<<<<< elements, DOO not symmetrized, relccsd order'
-        print*, "gprime_oo  = ", tensor_norm2(gamma%prime_oo)
-
-        if (.not.CCD) then
-          print *,'>>>>> elements, DOV symmetrized'
-          call print_tensor_elements(gamma%symm_ov,relccsd_order=.true.)
-          print *,'<<<<< elements, DOV symmetrized'
-          print*, "gsymm_ov   = ", tensor_norm2(gamma%symm_ov)
-        end if
-
-        print *,'>>>>> elements, DOO symmetrized'
-        call print_tensor_elements(gamma%symm_oo,relccsd_order=.true.)
-        print *,'<<<<< elements, DOO symmetrized'
-        print*, "gsymm_oo   = ", tensor_norm2(gamma%symm_oo)
-
-        print *,'>>>>> elements, DVV symmetrized'
-        call print_tensor_elements(gamma%symm_vv,relccsd_order=.true.)
-        print *,'<<<<< elements, DVV symmetrized'
-        print*, "gsymm_vv   = ", tensor_norm2(gamma%symm_vv)
-
-        if (.not.CCD) then
-          print *,'>>>>> elements, DVO symmetrized'
-          call print_tensor_elements(gamma%symm_vo,relccsd_order=.true.)
-          print *,'<<<<< elements, DVO symmetrized'
           print*, "gsymm_vo   = ", tensor_norm2(gamma%symm_vo)
         end if
+        print*, "gprime_oo  = ", tensor_norm2(gamma%prime_oo)
+        print*, "gsymm_oo   = ", tensor_norm2(gamma%symm_oo)
+        print*, "gprime_vv  = ", tensor_norm2(gamma%prime_vv)
+        print*, "gsymm_vv   = ", tensor_norm2(gamma%symm_vv)
 
-!     end if
+        if (print_level.gt.9) then
+          if (.not.CCD) then
+            print *,'>>>>> elements, DOV not symmetrized, relccsd order'
+            call print_tensor_elements(gamma%prime_ov,relccsd_order=.true.)
+            print *,'<<<<< elements, DOV not symmetrized, relccsd order'
+            print *,'>>>>> elements, DVO not symmetrized, relccsd order'
+            call print_tensor_elements(gamma%prime_vo,relccsd_order=.true.)
+            print *,'<<<<< elements, DVO not symmetrized, relccsd_order'
+          end if
+          print *,'>>>>> elements, DVV not symmetrized, relccsd order'
+          call print_tensor_elements(gamma%prime_vv,relccsd_order=.true.)
+          print *,'<<<<< elements, DVV not symmetrized, relccsd order'
+          print *,'>>>>> elements, DOO not symmetrized, relccsd order'
+          call print_tensor_elements(gamma%prime_oo,relccsd_order=.true.)
+          print *,'<<<<< elements, DOO not symmetrized, relccsd order'
+
+          if (.not.CCD) then
+            print *,'>>>>> elements, DOV symmetrized'
+            call print_tensor_elements(gamma%symm_ov,relccsd_order=.true.)
+            print *,'<<<<< elements, DOV symmetrized'
+          end if
+          print *,'>>>>> elements, DOO symmetrized'
+          call print_tensor_elements(gamma%symm_oo,relccsd_order=.true.)
+          print *,'<<<<< elements, DOO symmetrized'
+          print *,'>>>>> elements, DVV symmetrized'
+          call print_tensor_elements(gamma%symm_vv,relccsd_order=.true.)
+          print *,'<<<<< elements, DVV symmetrized'
+          if (.not.CCD) then
+            print *,'>>>>> elements, DVO symmetrized'
+            call print_tensor_elements(gamma%symm_vo,relccsd_order=.true.)
+            print *,'<<<<< elements, DVO symmetrized'
+          end if
+        end if ! extended print level, 9
+      end if ! extended print level,8
 
 
 !**************
@@ -327,6 +327,10 @@ module talsh_gradient
       integer :: ierr
 !     loop variables
       integer :: i, j, norbt
+      integer :: i_unbar, j_unbar, j_bar
+! debug
+      logical :: debug=.false.
+      integer :: k
 
       CCD = exa_input%CCD
 
@@ -376,6 +380,17 @@ module talsh_gradient
 !*****************************************************************************************************************************
 !     Determine where this should go in the full list of MOs (NB: DIRAC assumes restricted densities and uses Kramers pairs) *
 !*****************************************************************************************************************************
+      if (debug) then
+        print *,'<<<<< DM, complete, before formatting to dirac'
+        k = 1
+        do i=1,(nocc+nvir)
+           do j=1,(nocc+nvir)
+              write(*,'(3X,I4,2x,2F28.10,2x,4I4)') k, dm_mo_fort(i,j),i,j
+              k = k + 1
+           end do
+         end do
+         print *,'>>>>> DM, complete, before formatting to dirac'
+      end if
 
       norbt = nkr_occ + nkr_vir
       allocate(mo_list(norbt))
@@ -386,11 +401,18 @@ module talsh_gradient
       allocate (dm_diracformat(nesh,nesh,4))
       dm_diracformat = real(ZERO)
       do j = 1, norbt
+        j_unbar = 2*j-1
+        j_bar   = 2*j
         do i = 1, norbt
-          ! We copy the unbar-unbar part of the density matrix, would be good to test whether the Kramers-restricted assumption holds
+          ! We copy the unbar-unbar part of the density matrix, as well as the unbar-bar part
+          ! This follows from eq. 27 of Shee, Visscher, Saue JCP 145 184107, 2016
+          ! it would be good to test whether the Kramers-restricted assumption holds
           ! Or even to average over the two density matrices and enforce a Kramers-restricted density
-          dm_diracformat(mo_list(i),mo_list(j),1) = real(dm_mo_fort(2*i-1,2*j-1)) 
-          dm_diracformat(mo_list(i),mo_list(j),2) = imag(dm_mo_fort(2*i-1,2*j-1))
+          i_unbar = 2*i-1
+          dm_diracformat(mo_list(i),mo_list(j),1) = real(dm_mo_fort(i_unbar,j_unbar))
+          dm_diracformat(mo_list(i),mo_list(j),2) = imag(dm_mo_fort(i_unbar,j_unbar))
+          dm_diracformat(mo_list(i),mo_list(j),3) = real(dm_mo_fort(i_unbar,j_bar))
+          dm_diracformat(mo_list(i),mo_list(j),4) = imag(dm_mo_fort(i_unbar,j_bar))
         end do
       end do
 

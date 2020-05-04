@@ -239,7 +239,7 @@ module exacorr_gradient
       ierr=exatns_tensor_contract("G(j,i)+=X+(i,j)*K()",gamma%symm_oo,gamma%prime_oo,one_dm_tensor,ONE_HALF)
 
 !     debug_exa
-!     if (print_level.gt.8) then
+      if (print_level.gt.8) then
         print*, "gprime_oo  = ", print_tensornorm2(gamma%prime_oo)
         if (.not.CCD) then
           print*, "gprime_ov  = ", print_tensornorm2(gamma%prime_ov)
@@ -250,7 +250,7 @@ module exacorr_gradient
         print*, "gprime_vv  = ", print_tensornorm2(gamma%prime_vv)
         print*, "gsymm_oo   = ", print_tensornorm2(gamma%symm_oo)
         print*, "gsymm_vv   = ", print_tensornorm2(gamma%symm_vv)
-!     end if
+      end if
 
 !**************
 !     cleanup *
@@ -301,6 +301,7 @@ module exacorr_gradient
       integer :: ierr
 !     loop variables
       integer :: i, j, norbt
+      integer :: i_unbar, j_unbar, j_bar
 !     variables for talsh, density matrix needs to be smaller than buffer size 
       integer(C_SIZE_T)               :: buf_size=1024_8*1024_8*1024_8 
       integer(C_INT)                  :: host_arg_max
@@ -390,11 +391,18 @@ module exacorr_gradient
       allocate (dm_diracformat(nesh,nesh,4))
       dm_diracformat = ZERO
       do j = 1, norbt
+        j_unbar = 2*j-1
+        j_bar   = 2*j
         do i = 1, norbt
-          ! We copy the unbar-unbar part of the density matrix, would be good to test whether the Kramers-restricted assumption holds
+          ! We copy the unbar-unbar part of the density matrix, as well as the unbar-bar part
+          ! This follows from eq. 27 of Shee, Visscher, Saue JCP 145 184107, 2016
+          ! it would be good to test whether the Kramers-restricted assumption holds
           ! Or even to average over the two density matrices and enforce a Kramers-restricted density
-          dm_diracformat(mo_list(i),mo_list(j),1) = real(dm_mo_fort(2*i-1,2*j-1))
-          dm_diracformat(mo_list(i),mo_list(j),2) = imag(dm_mo_fort(2*i-1,2*j-1))
+          i_unbar = 2*i-1
+          dm_diracformat(mo_list(i),mo_list(j),1) = real(dm_mo_fort(i_unbar,j_unbar))
+          dm_diracformat(mo_list(i),mo_list(j),2) = imag(dm_mo_fort(i_unbar,j_unbar))
+          dm_diracformat(mo_list(i),mo_list(j),3) = real(dm_mo_fort(i_unbar,j_bar))
+          dm_diracformat(mo_list(i),mo_list(j),4) = imag(dm_mo_fort(i_unbar,j_bar))
         end do
       end do
 

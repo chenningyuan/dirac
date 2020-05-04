@@ -301,7 +301,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       call xcopy (nfvo,l1,1,dov,1)
         if (iprnt.ge.2) write(*,*)'diagram4a',dot_product(dov,dov)
 
-      if (iprnt.ge.2) then
+      if (iprnt.ge.9) then
 
          print *,'>>>>> elements, DOV not symmetrized'
          dm_type = 3
@@ -335,14 +335,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
          call conjuga (nfvo,dvo,1)
          call conjuga (nfvo,dov,1)
       endif
-      if (iprnt.ge.2) write(*,*)'doo after c.c.',dot_product(doo,doo)
-      if (iprnt.ge.2) write(*,*)'dvv after c.c.',dot_product(dvv,dvv)
-      if (iprnt.ge.2) write(*,*)'dvo after c.c.',dot_product(dvo,dvo)
-      if (iprnt.ge.2) write(*,*)'dov after c.c.',dot_product(dov,dov)
 
       CALL CONVDM(BUF1,BUF2,DOO,DVV,DOV,DVO,DMO)
-
-!     if (iprnt.ge.2) write(*,*)'dmo',dot_product(dmo(1:),dmo(1:))
 
        deallocate(dov)
        deallocate(dvo)
@@ -462,7 +456,9 @@ C---------------Local variables--------------------------------------
 C
        real*8, allocatable :: DOO_TRANS(:),DVV_TRANS(:),D_TRANS(:)
       integer a, ab, ai,b,i,ia,ij,irep,j 
-      integer dm_type
+! debug
+      logical :: debug=.false.
+      integer :: dm_type
 C---------------Executable code--------------------------------------
 C
 C
@@ -488,26 +484,32 @@ C
 
       ALLOCATE(D_TRANS(NFVO*RCW))
 
-      write(*,*)'dov in symmet. before', 
+      if (debug) then
+         write(*,*)'dov in symmet. before', 
      &           dot_product(dov(1:NFVO*rcw),dov(1:NFVO*rcw))
+      end if 
 
       CALL SRT1C1 (NREP,NO,NV,DVO,D_TRANS)
 
       CALL XAXPY (NFVO,sym_factor*A1,D_TRANS,1,DOV,1)
 
-      write(*,*)'dov in symmet. after', 
+      if (debug) then
+         write(*,*)'dov in symmet. after', 
      &           dot_product(dov(1:NFVO*rcw),dov(1:NFVO*rcw))
-      write(*,*)'dov_trans in symmet.', 
+         write(*,*)'dov_trans in symmet.', 
      &           dot_product(d_trans(1:NFVO*rcw),d_trans(1:NFVO*rcw))
+      end if
 
       CALL XSCAL (NFVO,AP5,DOV,1)
 
-      print *,'>>>>> elements, DOV symmetrized'
-      dm_type = 3
-      call print_density_matrix(dov,dm_type)
-      write(*,*)'dov in symmet. after, scaled by 0.5', 
-     &           dot_product(dov(1:NFVO*rcw),dov(1:NFVO*rcw))
-      print *,'<<<<< elements, DOV symmetrized'
+      if (debug) then
+         print *,'>>>>> elements, DOV symmetrized'
+         dm_type = 3
+         call print_density_matrix(dov,dm_type)
+         write(*,*)'dov in symmet. after, scaled by 0.5', 
+     &              dot_product(dov(1:NFVO*rcw),dov(1:NFVO*rcw))
+         print *,'<<<<< elements, DOV symmetrized'
+      end if
 
       DEALLOCATE(D_TRANS)
 
@@ -534,13 +536,6 @@ C
          CALL DCOPY(NFVO,BUF2,1,BUF1(NFVO+1),1)
       ENDIF
 
-!     print *,'>>>>> elements, DOV symmetrized'
-!     dm_type = 3
-!     call print_density_matrix(buf1,dm_type)
-!     write(*,*)'dov after preparit for dirac:',
-!    &      dot_product(buf1(1:nfvo*rcw),buf1(1:nfvo*rcw))
-!     print *,'<<<<< elements, DOV symmetrized'
-
       CALL RELTODIR(DMO,BUF1,NFVO,RCW,NREP,NV,NO)
 
 C##############
@@ -554,28 +549,34 @@ C##############
 
       ALLOCATE(DOO_TRANS(NFOO*RCW))
 
-      write(*,*)'doo in symmet. before', 
+      if (debug) then
+         write(*,*)'doo in symmet. before', 
      &           dot_product(doo(1:NFOO*rcw),doo(1:NFOO*rcw))
+      end if
 
       CALL SRT1C1 (NREP,NO,NO,DOO,DOO_TRANS)
 
       CALL XAXPY (NFOO,sym_factor*A1,DOO_TRANS,1,DOO,1)
 
-      write(*,*)'doo in symmet. after', 
+      if (debug) then
+         write(*,*)'doo in symmet. after', 
      &           dot_product(doo(1:NFOO*rcw),doo(1:NFOO*rcw))
-      write(*,*)'doo_trans in symmet.', 
+         write(*,*)'doo_trans in symmet.', 
      &          dot_product(doo_trans(1:NFOO*rcw),doo_trans(1:NFOO*rcw))
+      end if
 
       DEALLOCATE(DOO_TRANS)
 
       CALL XSCAL (NFOO,AP5,DOO,1)
 
-      print *,'>>>>> elements, DOO symmetrized'
-      dm_type = 1
-      call print_density_matrix(doo,dm_type)
-      write(*,*)'doo in symmet. after, scaled by 0.5', 
+      if (debug) then
+         print *,'>>>>> elements, DOO symmetrized'
+         dm_type = 1
+         call print_density_matrix(doo,dm_type)
+         write(*,*)'doo in symmet. after, scaled by 0.5', 
      &           dot_product(doo(1:NFOO*rcw),doo(1:NFOO*rcw))
-      print *,'<<<<< elements, DOO symmetrized'
+         print *,'<<<<< elements, DOO symmetrized'
+      end if
 
       IJ = 0
       DO IREP = 1, NREP
@@ -592,20 +593,12 @@ C##############
          ENDDO
       ENDDO
 
-!     write(*,*)'doo in symmet.',dot_product(doo,doo)
 C
 C Put imaginary part after real part
 C
       IF (CARITH) THEN
          CALL DCOPY(NFOO,BUF2,1,BUF1(NFOO+1),1)
       ENDIF
-
-!     print *,'>>>>> elements, DOO not symmetrized'
-!     dm_type = 1
-!     call print_density_matrix(buf1,dm_type)
-!     write(*,*)'doo after preparit for dirac:',
-!    &      dot_product(buf1(1:nfoo*rcw),buf1(1:nfoo*rcw))
-!     print *,'<<<<< elements, DOO not symmetrized'
 
       CALL DOOTODIR(dmo,BUF1,NO,nfoo,NREP,RCW)
 
@@ -619,22 +612,25 @@ C##############
       CALL SRT1C1 (NREP,NV,NV,DVV,DVV_TRANS)
       CALL XAXPY (NFVV,sym_factor*A1,DVV_TRANS,1,DVV,1)
 
-      write(*,*)'dvv in symmet. after',
+      if (debug) then
+         write(*,*)'dvv in symmet. after',
      &           dot_product(dvv(1:NFVV*rcw),dvv(1:NFVV*rcw))
-      write(*,*)'dvv_trans in symmet.',
+         write(*,*)'dvv_trans in symmet.',
      &          dot_product(dvv_trans(1:NFVV*rcw),dvv_trans(1:NFVV*rcw))
-
+      end if
 
       DEALLOCATE(DVV_TRANS)
 
       CALL XSCAL (NFVV,AP5,DVV,1)
 
-      print *,'>>>>> elements, DVV not symmetrized'
-      dm_type = 2
-      call print_density_matrix(dvv,dm_type)
-      write(*,*)'dvv in symmet. after, scaled by 0.5',
+      if (debug) then
+         print *,'>>>>> elements, DVV not symmetrized'
+         dm_type = 2
+         call print_density_matrix(dvv,dm_type)
+         write(*,*)'dvv in symmet. after, scaled by 0.5',
      &           dot_product(dvv(1:NFVV*rcw),dvv(1:NFVV*rcw))
-      print *,'<<<<< elements, DVV not symmetrized'
+         print *,'<<<<< elements, DVV not symmetrized'
+      end if
 
       AB = 0
       DO IREP = 1, NREP
@@ -650,7 +646,6 @@ C##############
             ENDDO
          ENDDO
       ENDDO
-!     write(*,*)'dvv in symmet.',dot_product(dvv,dvv)
 C
 C Put imaginary part after real part
 C
@@ -658,13 +653,6 @@ C
          CALL DCOPY(NFVV,BUF2,1,BUF1(NFVV+1),1)
       ELSE
       ENDIF
-
-!     print *,'>>>>> elements, DVV not symmetrized'
-!     dm_type = 2
-!     call print_density_matrix(buf1,dm_type)
-!     write(*,*)'dvv after preparit for dirac:',
-!    &      dot_product(buf1(1:nfvv*rcw),buf1(1:nfvv*rcw))
-!     print *,'<<<<< elements, DVV not symmetrized'
 
       CALL DVVTODIR(dmo,BUF1,NV,nfvv,NREP,RCW)
 
@@ -678,12 +666,14 @@ C##############
 
       CALL XSCAL (NFVO,sym_factor*A1,DVO,1)
 
-      print *,'>>>>> elements, DVO symmetrized'
-      dm_type = 4
-      call print_density_matrix(dvo,dm_type)
-      write(*,*)'dvo :',
+      if (debug) then
+         print *,'>>>>> elements, DVO symmetrized'
+         dm_type = 4
+         call print_density_matrix(dvo,dm_type)
+         write(*,*)'dvo :',
      &      dot_product(dvo(1:nfvo*rcw),dvo(1:nfvo*rcw))
-      print *,'<<<<< elements, DVO symmetrized'
+         print *,'<<<<< elements, DVO symmetrized'
+      end if
 
       IA = 0
       DO IREP = 1, NREP
@@ -699,23 +689,12 @@ C##############
             ENDDO
          ENDDO
       ENDDO
-!     write(*,*)'dov in symmet.',dot_product(dov,dov)
-!     write(*,*)'dvo in symmet.',dot_product(dvo,dvo)
-!     write(*,*)'dvo1 in symmet.',dot_product(buf1,buf1)
-!     write(*,*)'dvo2 in symmet.',dot_product(buf2,buf2)
 
       IF (CARITH) THEN
          CALL DCOPY(NFVO,BUF2,1,BUF1(NFVO+1),1)
       ENDIF
 
-!     print *,'>>>>> elements, DVO not symmetrized'
-!     dm_type = 4
-!     call print_density_matrix(buf1,dm_type)
-!     write(*,*)'dvo after preparit for dirac:',
-!    &      dot_product(buf1(1:nfvo*rcw),buf1(1:nfvo*rcw))
-!     print *,'<<<<< elements, DVO not symmetrized'
-
-        CALL DOVTODIR(DMO,BUF1,NFVO,RCW,NREP,NO,NV)
+      CALL DOVTODIR(DMO,BUF1,NFVO,RCW,NREP,NO,NV)
 
       RETURN
       END
@@ -1701,6 +1680,14 @@ C     without being able to do a replace or check for old data.
       IF (FNDLAB(EOFLABEL,MCCDENS))
      & BACKSPACE MCCDENS
       CALL NEWLAB(LABEL,MCCDENS,LUPRI)
+! aspg, debug of properties for exacorr
+! keep this code commented out for the moment
+!     write (*,'(3X,A,2I6)') '>>>>> debug : norbt, nz',norbt,nz 
+!     print *,'>>>>> DMO in dirac format'
+!     do i=1, NORBT*NORBT*NZ
+!        write(*,'(3X,I4,2x,F28.10)') i, dmo(i)
+!     end do
+!     print *,'<<<<< DMO in dirac format'
       CALL WRITT(MCCDENS,NORBT*NORBT*NZ,DMO)
       CALL NEWLAB(EOFLABEL,MCCDENS,LUPRI)
       CLOSE(Unit=MCCDENS,Status='KEEP')
